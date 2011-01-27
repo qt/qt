@@ -154,6 +154,7 @@ private slots:
     void variantNotify();
 
     void revisions();
+    void revisionOverloads();
 
     // regression tests for crashes
     void crash1();
@@ -1897,18 +1898,6 @@ void tst_qdeclarativelanguage::variantNotify()
 void tst_qdeclarativelanguage::revisions()
 {
     {
-        QDeclarativeComponent component(&engine, TEST_FILE("revisions10.qml"));
-
-        VERIFY_ERRORS(0);
-        MyRevisionedClass *object = qobject_cast<MyRevisionedClass*>(component.create());
-        QVERIFY(object != 0);
-
-        QCOMPARE(object->prop2(), 2.0);
-        QCOMPARE(object->property("prop2").toReal(), 10.0);
-
-        delete object;
-    }
-    {
         QDeclarativeComponent component(&engine, TEST_FILE("revisions11.qml"));
 
         VERIFY_ERRORS(0);
@@ -1916,21 +1905,6 @@ void tst_qdeclarativelanguage::revisions()
         QVERIFY(object != 0);
 
         QCOMPARE(object->prop2(), 10.0);
-
-        delete object;
-    }
-    {
-        QDeclarativeComponent component(&engine, TEST_FILE("revisionssub10.qml"));
-
-        VERIFY_ERRORS(0);
-        MyRevisionedSubclass *object = qobject_cast<MyRevisionedSubclass*>(component.create());
-        QVERIFY(object != 0);
-
-        QCOMPARE(object->prop2(), 2.0);
-        QCOMPARE(object->property("prop2").toReal(), 10.0);
-
-        QCOMPARE(object->prop4(), 4.0);
-        QCOMPARE(object->property("prop4").toReal(), 10.0);
 
         delete object;
     }
@@ -1950,10 +1924,7 @@ void tst_qdeclarativelanguage::revisions()
         delete object;
     }
     {
-        // If this is uncommented it will work
-        // qmlRegisterType<MySubclass,0>("Test",1,1,"MySubclass");
         QDeclarativeComponent component(&engine, TEST_FILE("versionedbase.qml"));
-        QEXPECT_FAIL("", "Class version 1.0 with base class version 1.1 registered", Abort);
         VERIFY_ERRORS(0);
         MySubclass *object = qobject_cast<MySubclass*>(component.create());
         QVERIFY(object != 0);
@@ -1962,6 +1933,20 @@ void tst_qdeclarativelanguage::revisions()
         QCOMPARE(object->prop2(), 10.0);
 
         delete object;
+    }
+}
+
+void tst_qdeclarativelanguage::revisionOverloads()
+{
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("allowedRevisionOverloads.qml"));
+    VERIFY_ERRORS(0);
+    }
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("disallowedRevisionOverloads.qml"));
+    QEXPECT_FAIL("", "QTBUG-13849", Abort);
+    QVERIFY(0);
+    VERIFY_ERRORS("disallowedRevisionOverloads.errors.txt");
     }
 }
 

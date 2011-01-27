@@ -979,19 +979,19 @@ void tst_QDeclarativeItem::testQtQuick11Attributes_data()
 
     QTest::newRow("implicitWidth") << "implicitWidth: 100"
         << "QDeclarativeComponent: Component is not ready"
-        << ":1 Property \"implicitWidth\" not available in QtQuick/Item 1.0\n";
+        << ":1 \"Item.implicitWidth\" is not available in QtQuick 1.0.\n";
 
     QTest::newRow("implicitHeight") << "implicitHeight: 100"
         << "QDeclarativeComponent: Component is not ready"
-        << ":1 Property \"implicitHeight\" not available in QtQuick/Item 1.0\n";
+        << ":1 \"Item.implicitHeight\" is not available in QtQuick 1.0.\n";
 
     QTest::newRow("onImplicitWidthChanged") << "onImplicitWidthChanged: x"
         << "QDeclarativeComponent: Component is not ready"
-        << ":1 Signal \"onImplicitWidthChanged\" not available in QtQuick/Item 1.0\n";
+        << ":1 \"Item.onImplicitWidthChanged\" is not available in QtQuick 1.0.\n";
 
     QTest::newRow("onImplicitHeightChanged") << "onImplicitHeightChanged: x"
         << "QDeclarativeComponent: Component is not ready"
-        << ":1 Signal \"onImplicitHeightChanged\" not available in QtQuick/Item 1.0\n";
+        << ":1 \"Item.onImplicitHeightChanged\" is not available in QtQuick 1.0.\n";
 }
 
 

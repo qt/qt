@@ -460,6 +460,8 @@ QDeclarativeEnginePrivate::~QDeclarativeEnginePrivate()
         (*iter)->release();
     for(QHash<const QMetaObject *, QDeclarativePropertyCache *>::Iterator iter = propertyCache.begin(); iter != propertyCache.end(); ++iter)
         (*iter)->release();
+    for(QHash<QPair<QDeclarativeType *, int>, QDeclarativePropertyCache *>::Iterator iter = typePropertyCache.begin(); iter != typePropertyCache.end(); ++iter)
+        (*iter)->release();
 
 }
 
@@ -2205,6 +2207,125 @@ static void *voidptr_constructor(const void *v)
     } else {
         return new void*(*(void **)v);
     }
+}
+
+QDeclarativePropertyCache *QDeclarativeEnginePrivate::createCache(const QMetaObject *mo)
+{
+    Q_Q(QDeclarativeEngine);
+
+    if (!mo->superClass()) {
+        QDeclarativePropertyCache *rv = new QDeclarativePropertyCache(q, mo);
+        propertyCache.insert(mo, rv);
+        return rv;
+    } else {
+        QDeclarativePropertyCache *super = cache(mo->superClass());
+        QDeclarativePropertyCache *rv = super->copy();
+        rv->append(q, mo);
+        propertyCache.insert(mo, rv);
+        return rv;
+    }
+}
+
+QDeclarativePropertyCache *QDeclarativeEnginePrivate::createCache(QDeclarativeType *type, int minorVersion, 
+                                                                  QDeclarativeError &error)
+{
+    QList<QDeclarativeType *> types;
+
+    int maxMinorVersion = 0;
+
+    const QMetaObject *metaObject = type->metaObject();
+    while (metaObject) {
+        QDeclarativeType *t = QDeclarativeMetaType::qmlType(metaObject, type->module(), 
+                                                            type->majorVersion(), minorVersion);
+        if (t) {
+            maxMinorVersion = qMax(maxMinorVersion, t->minorVersion());
+            types << t;
+        } else {
+            types << 0;
+        }
+
+        metaObject = metaObject->superClass();
+    }
+
+    if (QDeclarativePropertyCache *c = typePropertyCache.value(qMakePair(type, maxMinorVersion))) {
+        c->addref();
+        typePropertyCache.insert(qMakePair(type, minorVersion), c);
+        return c;
+    }
+
+    QDeclarativePropertyCache *raw = cache(type->metaObject());
+
+    bool hasCopied = false;
+
+    for (int ii = 0; ii < types.count(); ++ii) {
+        QDeclarativeType *currentType = types.at(ii);
+        if (!currentType)
+            continue;
+
+        int rev = currentType->metaObjectRevision();
+        int moIndex = types.count() - 1 - ii;
+
+        if (raw->allowedRevisionCache[moIndex] != rev) {
+            if (!hasCopied) {
+                raw = raw->copy();
+                hasCopied = true;
+            }
+            raw->allowedRevisionCache[moIndex] = rev;
+        }
+    }
+
+    // Test revision compatibility - the basic rule is:
+    //    * Anything that is excluded, cannot overload something that is not excluded *
+
+    // Signals override:
+    //    * other signals and methods of the same name.
+    //    * properties named on<Signal Name> 
+    //    * automatic <property name>Changed notify signals
+
+    // Methods override:
+    //    * other methods of the same name
+
+    // Properties override:
+    //    * other elements of the same name
+
+    bool overloadError = false;
+    QString overloadName;
+
+#if 0
+    for (QDeclarativePropertyCache::StringCache::ConstIterator iter = raw->stringCache.begin();
+         !overloadError && iter != raw->stringCache.end();
+         ++iter) {
+
+        QDeclarativePropertyCache::Data *d = *iter;
+        if (raw->isAllowedInRevision(d))
+            continue; // Not excluded - no problems
+
+        // check that a regular "name" overload isn't happening
+        QDeclarativePropertyCache::Data *current = d;
+        while (!overloadError && current) {
+            current = d->overrideData(current);
+            if (current && raw->isAllowedInRevision(current)) 
+                overloadError = true;
+        }
+    }
+#endif
+
+    if (overloadError) {
+        if (hasCopied) raw->release();
+            
+        error.setDescription(QLatin1String("Type ") + QString::fromUtf8(type->qmlTypeName()) + QLatin1String(" ") + QString::number(type->majorVersion()) + QLatin1String(".") + QString::number(minorVersion) + QLatin1String(" contains an illegal property \"") + overloadName + QLatin1String("\".  This is an error in the type's implementation."));
+        return 0;
+    }
+
+    if (!hasCopied) raw->addref();
+    typePropertyCache.insert(qMakePair(type, minorVersion), raw);
+
+    if (minorVersion != maxMinorVersion) {
+        raw->addref();
+        typePropertyCache.insert(qMakePair(type, maxMinorVersion), raw);
+    }
+
+    return raw;
 }
 
 void QDeclarativeEnginePrivate::registerCompositeType(QDeclarativeCompiledData *data)

@@ -149,8 +149,8 @@ QDeclarativeObjectScriptClass::queryProperty(Object *object, const Identifier &n
 
 QScriptClass::QueryFlags
 QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
-                                    QScriptClass::QueryFlags flags, QDeclarativeContextData *evalContext,
-                                    QueryHints hints)
+                                             QScriptClass::QueryFlags flags, QDeclarativeContextData *evalContext,
+                                             QueryHints hints)
 {
     Q_UNUSED(flags);
     lastData = 0;
@@ -165,19 +165,10 @@ QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &nam
 
     QDeclarativeEnginePrivate *enginePrivate = QDeclarativeEnginePrivate::get(engine);
     lastData = QDeclarativePropertyCache::property(engine, obj, name, local);
-
-    if (lastData && lastData->revision > 0 && (hints & ImplicitObject)) {
-        QDeclarativeData *data = QDeclarativeData::get(obj);
-        if (data) {
-            if (!data->type) {
-                lastData = 0;
-            } else if (lastData->flags & QDeclarativePropertyCache::Data::IsFunction) {
-                if (!data->type->isMethodAvailable(lastData->coreIndex, lastData->revision))
-                    lastData = 0;
-            } else if (!data->type->isPropertyAvailable(lastData->coreIndex, lastData->revision)) {
-                lastData = 0;
-            }
-        }
+    if ((hints & ImplicitObject) && lastData && lastData->revision != 0) {
+        QDeclarativeData *ddata = QDeclarativeData::get(obj);
+        if (ddata && ddata->propertyCache && !ddata->propertyCache->isAllowedInRevision(lastData))
+            return 0;
     }
 
     if (lastData)

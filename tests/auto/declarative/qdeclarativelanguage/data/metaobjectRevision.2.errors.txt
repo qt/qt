@@ -1,1 +1,1 @@
-6:5:Signal "onSignal2" not available in Test/MyRevisionedClass 1.0
+6:5:"MyRevisionedClass.onSignal2" is not available in Test 1.0.

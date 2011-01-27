@@ -640,6 +640,18 @@ protected:
     qreal m_pb;
 };
 
+class MyRevisionedIllegalOverload : public MyRevisionedBaseClassRegistered
+{
+    Q_OBJECT
+    Q_PROPERTY(qreal propA READ propA WRITE setPropA REVISION 1);
+};
+
+class MyRevisionedLegalOverload : public MyRevisionedBaseClassRegistered
+{
+    Q_OBJECT
+    Q_PROPERTY(qreal propB READ propB WRITE setPropB REVISION 1);
+};
+
 class MyRevisionedBaseClassUnregistered : public MyRevisionedBaseClassRegistered
 {
     Q_OBJECT

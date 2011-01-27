@@ -113,12 +113,12 @@ public:
     QByteArray typeName() const;
     QByteArray qmlTypeName() const;
 
+    QByteArray module() const;
     int majorVersion() const;
     int minorVersion() const;
+
     bool availableInVersion(int vmajor, int vminor) const;
     bool availableInVersion(const QByteArray &module, int vmajor, int vminor) const;
-    bool isPropertyAvailable(int index, int revision) const;
-    bool isMethodAvailable(int index, int revision) const;
 
     QObject *create() const;
     void create(QObject **, void **, size_t) const;
@@ -139,6 +139,8 @@ public:
 
     const QMetaObject *metaObject() const;
     const QMetaObject *baseMetaObject() const;
+    int metaObjectRevision() const;
+    bool containsRevisionedAttributes() const;
 
     QDeclarativeAttachedPropertiesFunc attachedPropertiesFunction() const;
     const QMetaObject *attachedPropertiesType() const;

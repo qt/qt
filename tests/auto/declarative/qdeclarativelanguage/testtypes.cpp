@@ -54,6 +54,8 @@ void registerTypes()
     qmlRegisterType<MyGroupedObject>();
     qmlRegisterType<MyRevisionedClass>("Test",1,0,"MyRevisionedClass");
     qmlRegisterType<MyRevisionedClass,1>("Test",1,1,"MyRevisionedClass");
+    qmlRegisterType<MyRevisionedIllegalOverload>("Test",1,0,"MyRevisionedIllegalOverload");
+    qmlRegisterType<MyRevisionedLegalOverload>("Test",1,0,"MyRevisionedLegalOverload");
 
     // Register the uncreatable base class
     qmlRegisterRevision<MyRevisionedBaseClassRegistered,1>("Test",1,1);
