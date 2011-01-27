@@ -274,6 +274,13 @@ QDeclarativeBinding::QDeclarativeBinding(const QString &str, QObject *obj, QDecl
     setNotifyOnValueChanged(true);
 }
 
+QDeclarativeBinding::QDeclarativeBinding(const QScriptValue &func, QObject *obj, QDeclarativeContextData *ctxt, QObject *parent)
+: QDeclarativeExpression(ctxt, obj, func, *new QDeclarativeBindingPrivate)
+{
+    setParent(parent);
+    setNotifyOnValueChanged(true);
+}
+
 QDeclarativeBinding::~QDeclarativeBinding()
 {
 }
@@ -291,6 +298,19 @@ QDeclarativeProperty QDeclarativeBinding::property() const
    Q_D(const QDeclarativeBinding);
    return d->property; 
 }
+
+void QDeclarativeBinding::setEvaluateFlags(EvaluateFlags flags)
+{
+    Q_D(QDeclarativeBinding);
+    d->setEvaluateFlags(QDeclarativeQtScriptExpression::EvaluateFlags(static_cast<int>(flags)));
+}
+
+QDeclarativeBinding::EvaluateFlags QDeclarativeBinding::evaluateFlags() const
+{
+    Q_D(const QDeclarativeBinding);
+    return QDeclarativeBinding::EvaluateFlags(static_cast<int>(d->evaluateFlags()));
+}
+
 
 class QDeclarativeBindingProfiler {
 public:

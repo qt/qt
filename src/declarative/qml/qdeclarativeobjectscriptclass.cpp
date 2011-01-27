@@ -359,8 +359,20 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
         }
     }
 
+    QDeclarativeBinding *newBinding = 0;
+    if (value.isFunction() && !value.isRegExp()) {
+        QScriptContextInfo ctxtInfo(context);
+        QDeclarativePropertyCache::ValueTypeData valueTypeData;
+
+        newBinding = new QDeclarativeBinding(value, obj, evalContext);
+        newBinding->setSourceLocation(ctxtInfo.fileName(), ctxtInfo.functionStartLineNumber());
+        newBinding->setTarget(QDeclarativePropertyPrivate::restore(*lastData, valueTypeData, obj, evalContext));
+        if (newBinding->expression().contains("this"))
+            newBinding->setEvaluateFlags(newBinding->evaluateFlags() | QDeclarativeBinding::RequiresThisObject);
+    }
+
     QDeclarativeAbstractBinding *delBinding =
-        QDeclarativePropertyPrivate::setBinding(obj, lastData->coreIndex, -1, 0);
+        QDeclarativePropertyPrivate::setBinding(obj, lastData->coreIndex, -1, newBinding);
     if (delBinding)
         delBinding->destroy();
 
@@ -379,10 +391,7 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
         QString error = QLatin1String("Cannot assign [undefined] to ") +
                         QLatin1String(QMetaType::typeName(lastData->propType));
         context->throwError(error);
-    } else if (!value.isRegExp() && value.isFunction()) {
-        QString error = QLatin1String("Cannot assign a function to a property.");
-        context->throwError(error);
-    } else {
+    } else if (!value.isFunction()) {
         QVariant v;
         if (lastData->flags & QDeclarativePropertyCache::Data::IsQList)
             v = enginePriv->scriptValueToVariant(value, qMetaTypeId<QList<QObject *> >());

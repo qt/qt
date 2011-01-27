@@ -155,7 +155,10 @@ private slots:
     void qtcreatorbug_1289();
     void noSpuriousWarningsAtShutdown();
     void canAssignNullToQObject();
-    void functionAssignment();
+    void functionAssignment_fromBinding();
+    void functionAssignment_fromJS();
+    void functionAssignment_fromJS_data();
+    void functionAssignmentfromJS_invalid();
     void eval();
     void function();
     void qtbug_10696();
@@ -2514,9 +2517,8 @@ void tst_qdeclarativeecmascript::canAssignNullToQObject()
     }
 }
 
-void tst_qdeclarativeecmascript::functionAssignment()
+void tst_qdeclarativeecmascript::functionAssignment_fromBinding()
 {
-    {
     QDeclarativeComponent component(&engine, TEST_FILE("functionAssignment.1.qml"));
 
     QString url = component.url().toString();
@@ -2529,26 +2531,64 @@ void tst_qdeclarativeecmascript::functionAssignment()
     QVERIFY(!o->property("a").isValid());
 
     delete o;
-    }
+}
 
-    {
+void tst_qdeclarativeecmascript::functionAssignment_fromJS()
+{
+    QFETCH(QString, triggerProperty);
+
     QDeclarativeComponent component(&engine, TEST_FILE("functionAssignment.2.qml"));
+    QVERIFY2(component.errorString().isEmpty(), qPrintable(component.errorString()));
 
     MyQmlObject *o = qobject_cast<MyQmlObject *>(component.create());
     QVERIFY(o != 0);
+    QVERIFY(!o->property("a").isValid());
 
-    QVERIFY(!o->property("a").isValid());
-    
-    QString url = component.url().toString();
-    QString warning = url + ":10: Error: Cannot assign a function to a property.";
-    QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
-    
-    o->setProperty("runTest", true);
-    
-    QVERIFY(!o->property("a").isValid());
+    o->setProperty("aNumber", QVariant(5));
+    o->setProperty(triggerProperty.toUtf8().constData(), true);
+    QCOMPARE(o->property("a"), QVariant(50));
+
+    o->setProperty("aNumber", QVariant(10));
+    QCOMPARE(o->property("a"), QVariant(100));
 
     delete o;
-    }
+}
+
+void tst_qdeclarativeecmascript::functionAssignment_fromJS_data()
+{
+    QTest::addColumn<QString>("triggerProperty");
+
+    QTest::newRow("assign to property") << "assignToProperty";
+    QTest::newRow("assign to property, from JS file") << "assignToPropertyFromJsFile";
+
+    QTest::newRow("assign to value type") << "assignToValueType";
+
+    QTest::newRow("use 'this'") << "assignWithThis";
+    QTest::newRow("use 'this' from JS file") << "assignWithThisFromJsFile";
+}
+
+void tst_qdeclarativeecmascript::functionAssignmentfromJS_invalid()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("functionAssignment.2.qml"));
+    QVERIFY2(component.errorString().isEmpty(), qPrintable(component.errorString()));
+
+    MyQmlObject *o = qobject_cast<MyQmlObject *>(component.create());
+    QVERIFY(o != 0);
+    QVERIFY(!o->property("a").isValid());
+
+    o->setProperty("assignFuncWithoutReturn", true);
+    QVERIFY(!o->property("a").isValid());
+
+    QString url = component.url().toString();
+    QString warning = url + ":63: Unable to assign QString to int";
+    QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
+    o->setProperty("assignWrongType", true);
+
+    warning = url + ":70: Unable to assign QString to int";
+    QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
+    o->setProperty("assignWrongTypeToValueType", true);
+
+    delete o;
 }
 
 void tst_qdeclarativeecmascript::eval()

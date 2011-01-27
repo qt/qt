@@ -78,7 +78,6 @@ public:
     QGraphicsObject *item;
     QDeclarativeComponent *component;
     bool ownComponent : 1;
-    bool isComponentComplete : 1;
     bool updatingSize: 1;
     bool itemWidthValid : 1;
     bool itemHeightValid : 1;

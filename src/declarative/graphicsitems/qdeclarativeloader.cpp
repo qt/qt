@@ -48,7 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 QDeclarativeLoaderPrivate::QDeclarativeLoaderPrivate()
-    : item(0), component(0), ownComponent(false), isComponentComplete(false), updatingSize(false),
+    : item(0), component(0), ownComponent(false), updatingSize(false),
       itemWidthValid(false), itemHeightValid(false)
 {
 }
@@ -279,7 +279,7 @@ void QDeclarativeLoader::setSource(const QUrl &url)
     d->component = new QDeclarativeComponent(qmlEngine(this), d->source, this);
     d->ownComponent = true;
 
-    if (d->isComponentComplete)
+    if (isComponentComplete())
         d->load();
 }
 
@@ -330,7 +330,7 @@ void QDeclarativeLoader::setSourceComponent(QDeclarativeComponent *comp)
         return;
     }
 
-    if (d->isComponentComplete)
+    if (isComponentComplete())
         d->load();
 }
 
@@ -343,7 +343,7 @@ void QDeclarativeLoaderPrivate::load()
 {
     Q_Q(QDeclarativeLoader);
 
-    if (!isComponentComplete || !component)
+    if (!q->isComponentComplete() || !component)
         return;
 
     if (!component->isLoading()) {
@@ -477,7 +477,6 @@ void QDeclarativeLoader::componentComplete()
     Q_D(QDeclarativeLoader);
 
     QDeclarativeItem::componentComplete();
-    d->isComponentComplete = true;
     d->load();
 }
 
