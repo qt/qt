@@ -144,6 +144,10 @@ Q_GUI_EXPORT void qt_x11_set_global_double_buffer(bool enable)
 }
 #endif
 
+#if defined(QT_MAC_USE_COCOA)
+bool qt_mac_clearDirtyOnWidgetInsideDrawWidget = false;
+#endif
+
 static inline bool qRectIntersects(const QRect &r1, const QRect &r2)
 {
     return (qMax(r1.left(), r2.left()) <= qMin(r1.right(), r2.right()) &&
@@ -300,7 +304,6 @@ QWidgetPrivate::QWidgetPrivate(int version)
   #endif
 #elif defined(Q_WS_MAC)
       , needWindowChange(0)
-      , hasAlienChildren(0)
       , window_event(0)
       , qd_hd(0)
 #endif
@@ -322,6 +325,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
     hasOwnContext = false;
     isInUnifiedToolbar = false;
     unifiedSurface = 0;
+    touchEventsEnabled = false;
 #endif // QT_MAC_USE_COCOA
 #ifdef QWIDGET_EXTRA_DEBUG
     static int count = 0;
@@ -1303,9 +1307,9 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     if (f & Qt::MSWindowsOwnDC)
         q->setAttribute(Qt::WA_NativeWindow);
 
-#ifdef Q_WS_MAC
-    q->setAttribute(Qt::WA_NativeWindow);
-#endif
+//#ifdef Q_WS_MAC
+//    q->setAttribute(Qt::WA_NativeWindow);
+//#endif
 
     q->setAttribute(Qt::WA_QuitOnClose); // might be cleared in adjustQuitOnCloseAttribute()
     adjustQuitOnCloseAttribute();
@@ -1412,10 +1416,6 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
 
 #ifndef Q_WS_QPA
     if (QWidget *parent = parentWidget()) {
-#ifdef Q_WS_MAC
-        if (testAttribute(Qt::WA_NativeWindow) == false)
-            parent->d_func()->hasAlienChildren = true;
-#endif
         if (type & Qt::Window) {
             if (!parent->testAttribute(Qt::WA_WState_Created))
                 parent->createWinId();
@@ -5399,6 +5399,9 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
         return;
 
 #if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+    if (qt_mac_clearDirtyOnWidgetInsideDrawWidget)
+        dirtyOnWidget = QRegion();
+
     // We disable the rendering of QToolBar in the backingStore if
     // it's supposed to be in the unified toolbar on Mac OS X.
     if (backingStore && isInUnifiedToolbar)
@@ -5486,7 +5489,6 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 //paint the background
                 if ((asRoot || q->autoFillBackground() || onScreen || q->testAttribute(Qt::WA_StyledBackground))
                     && !q->testAttribute(Qt::WA_OpaquePaintEvent) && !q->testAttribute(Qt::WA_NoSystemBackground)) {
-
                     QPainter p(q);
                     paintBackground(&p, toBePainted, (asRoot || onScreen) ? flags | DrawAsRoot : 0);
                 }
@@ -5668,10 +5670,12 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
     QRect boundingRect;
     bool dirtyBoundingRect = true;
     const bool exludeOpaqueChildren = (flags & DontDrawOpaqueChildren);
+    const bool excludeNativeChildren = (flags & DontDrawNativeChildren);
 
     do {
         QWidget *x =  qobject_cast<QWidget*>(siblings.at(index));
-        if (x && !(exludeOpaqueChildren && x->d_func()->isOpaque) && !x->isHidden() && !x->isWindow()) {
+        if (x && !(exludeOpaqueChildren && x->d_func()->isOpaque) && !x->isHidden() && !x->isWindow()
+            && !(excludeNativeChildren && x->internalWinId())) {
             if (dirtyBoundingRect) {
                 boundingRect = rgn.boundingRect();
                 dirtyBoundingRect = false;
@@ -10075,7 +10079,13 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
 
 #if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_OS_SYMBIAN)
     if (newParent && parent && !desktopWidget) {
-        if (testAttribute(Qt::WA_NativeWindow) && !qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings))
+        if (testAttribute(Qt::WA_NativeWindow) && !qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings)
+#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+            // On Mac, toolbars inside the unified title bar will never overlap with
+            // siblings in the content view. So we skip enforce native siblings in that case
+            && !d->isInUnifiedToolbar && parentWidget() && parentWidget()->isWindow()
+#endif // Q_WS_MAC && QT_MAC_USE_COCOA
+        )
             parent->d_func()->enforceNativeChildren();
         else if (parent->d_func()->nativeChildrenForced() || parent->testAttribute(Qt::WA_PaintOnScreen))
             setAttribute(Qt::WA_NativeWindow);
@@ -10722,7 +10732,13 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
                 ic->setFocusWidget(0);
             }
         }
-        if (!qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget())
+        if (!qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget()
+#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+            // On Mac, toolbars inside the unified title bar will never overlap with
+            // siblings in the content view. So we skip enforce native siblings in that case
+            && !d->isInUnifiedToolbar && parentWidget()->isWindow()
+#endif // Q_WS_MAC && QT_MAC_USE_COCOA
+        )
             parentWidget()->d_func()->enforceNativeChildren();
         if (on && !internalWinId() && testAttribute(Qt::WA_WState_Created))
             d->createWinId();
