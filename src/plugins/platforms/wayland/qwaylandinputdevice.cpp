@@ -282,19 +282,28 @@ void QWaylandInputDevice::inputHandleKeyboardFocus(void *data,
 {
     Q_UNUSED(input_device);
     Q_UNUSED(time);
-    Q_UNUSED(keys);
     QWaylandInputDevice *inputDevice = (QWaylandInputDevice *) data;
     QWaylandWindow *window;
+    uint32_t *k, *end;
+    uint32_t code;
 
-    if (inputDevice->mKeyboardFocus) {
-	window = inputDevice->mKeyboardFocus;
-	inputDevice->mKeyboardFocus = NULL;
+    end = (uint32_t *) ((char *) keys->data + keys->size);
+    inputDevice->mModifiers = 0;
+    for (k = (uint32_t *) keys->data; k < end; k++) {
+	code = *k + inputDevice->mXkb->min_key_code;
+	inputDevice->mModifiers |=
+	    translateModifiers(inputDevice->mXkb->map->modmap[code]);
     }
 
     if (surface) {
 	window = (QWaylandWindow *) wl_surface_get_user_data(surface);
 	inputDevice->mKeyboardFocus = window;
+	QWindowSystemInterface::handleWindowActivated(window->widget());
+    } else {
+	inputDevice->mKeyboardFocus = NULL;
+	QWindowSystemInterface::handleWindowActivated(0);
     }
+
 }
 
 const struct wl_input_device_listener QWaylandInputDevice::inputDeviceListener = {
