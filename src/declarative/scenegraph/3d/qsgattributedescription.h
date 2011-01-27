@@ -50,18 +50,6 @@ QT_BEGIN_NAMESPACE
 
 namespace QSG
 {
-    enum VertexAttribute {
-        Position,
-        Normal,
-        Color,
-        TextureCoord0,
-        TextureCoord1,
-        TextureCoord2,
-        CustomVertex0,
-        CustomVertex1,
-        UserVertex
-    };
-
     enum DrawingMode
     {
         Points                      = 0x0000, // GL_POINTS
@@ -82,13 +70,12 @@ class Q_DECLARATIVE_EXPORT QSGAttributeDescription
 {
 public:
     QSGAttributeDescription();
-    QSGAttributeDescription(QSG::VertexAttribute attribute,
-                            int tupleSize, GLenum type, int stride);
+    QSGAttributeDescription(int attribute, int tupleSize, GLenum type, int stride);
 
     bool isNull() const;
 
-    QSG::VertexAttribute attribute() const;
-    void setAttribute(QSG::VertexAttribute attribute);
+    int attribute() const;
+    void setAttribute(int attribute);
 
     GLenum type() const;
     void setType(GLenum type);
@@ -102,20 +89,20 @@ public:
     void setStride(int stride);
 
 private:
-    QSG::VertexAttribute m_attribute;
+    int m_attribute;
     GLenum m_type;
     int m_tupleSize;
     int m_stride;
 };
 
 inline QSGAttributeDescription::QSGAttributeDescription()
-    : m_attribute(QSG::Position), m_type(GL_FLOAT),
+    : m_attribute(0), m_type(GL_FLOAT),
       m_tupleSize(0), m_stride(0)
 {
 }
 
 inline QSGAttributeDescription::QSGAttributeDescription
-        (QSG::VertexAttribute attribute, int tupleSize, GLenum type, int stride)
+        (int attribute, int tupleSize, GLenum type, int stride)
     : m_attribute(attribute), m_type(type),
       m_tupleSize(tupleSize), m_stride(stride)
 {
@@ -127,12 +114,12 @@ inline bool QSGAttributeDescription::isNull() const
     return m_tupleSize == 0;
 }
 
-inline QSG::VertexAttribute QSGAttributeDescription::attribute() const
+inline int QSGAttributeDescription::attribute() const
 {
     return m_attribute;
 }
 
-inline void QSGAttributeDescription::setAttribute(QSG::VertexAttribute attribute)
+inline void QSGAttributeDescription::setAttribute(int attribute)
 {
     m_attribute = attribute;
 }

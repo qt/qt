@@ -340,7 +340,7 @@ void GeometryNode::setSubtreeRenderOrder(int order)
     Node::setSubtreeRenderOrder(order);
 }
 
-void GeometryNode::setMaterial(AbstractEffect *material)
+void GeometryNode::setMaterial(AbstractMaterial *material)
 {
     RootNode *r = root();
     if (r)
@@ -441,7 +441,7 @@ void RootNode::notifyNodeChange(Node *node, DirtyFlags flags)
         m_renderers.at(i)->nodeChanged(node, flags);
 }
 
-void RootNode::notifyMaterialChange(GeometryNode *node, AbstractEffect *from, AbstractEffect *to)
+void RootNode::notifyMaterialChange(GeometryNode *node, AbstractMaterial *from, AbstractMaterial *to)
 {
     for (int i=0; i<m_renderers.size(); ++i)
         m_renderers.at(i)->materialChanged(node, from, to);
@@ -522,7 +522,7 @@ QDebug operator<<(QDebug d, const GeometryNode *n)
         d << "effect=" << n->material() << "type=" << n->material()->type();
     d << "order=" << n->renderOrder();
 
-    QSGAttributeValue a = g->attributeValue(QSG::Position);
+    QSGAttributeValue a = g->attributeValue(0);
     if (!a.isNull() && a.type() == GL_FLOAT) {
         float x1 = 1e10, x2 = -1e10, y1=1e10, y2=-1e10;
         int stride = a.stride();

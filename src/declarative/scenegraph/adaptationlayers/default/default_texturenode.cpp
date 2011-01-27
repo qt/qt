@@ -53,7 +53,10 @@ DefaultTextureNode::DefaultTextureNode()
     m_materialO.setOpacity(m_opacity);
     setMaterial(&m_material);
 
-    updateGeometryDescription(Utilities::getTexturedRectGeometryDescription(), GL_UNSIGNED_SHORT);
+    QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
+        << QSGAttributeDescription(0, 2, GL_FLOAT, 4 * sizeof(float))
+        << QSGAttributeDescription(1, 2, GL_FLOAT, 4 * sizeof(float));
+    updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
 
 #ifdef QML_RUNTIME_TESTING
     description = QLatin1String("pixmap");

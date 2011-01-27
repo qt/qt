@@ -46,7 +46,6 @@
 #include "adaptationlayer.h"
 
 #include "texturematerial.h"
-#include "utilities.h"
 
 class DefaultTextureNode : public TextureNodeInterface
 {

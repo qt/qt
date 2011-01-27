@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "geometry.h"
-#include "utilities.h"
 
 #include "qsgattributevalue.h"
 #include <QApplication>
@@ -128,7 +127,7 @@ const uint *Geometry::constUintIndexData() const
     return 0;
 }
 
-QSGAttributeValue Geometry::attributeValue(QSG::VertexAttribute attribute) const
+QSGAttributeValue Geometry::attributeValue(int attribute) const
 {
     int offset = 0;
     for (int i = 0; i < m_vertex_description.size(); ++i) {

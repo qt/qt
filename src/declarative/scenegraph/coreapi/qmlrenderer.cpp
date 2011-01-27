@@ -59,8 +59,8 @@ static bool nodeLessThan(GeometryNode *a, GeometryNode *b)
         return a->clipList() < b->clipList();
 
     // Sort by material definition
-    AbstractEffectType *aDef = a->material()->type();
-    AbstractEffectType *bDef = b->material()->type();
+    AbstractMaterialType *aDef = a->material()->type();
+    AbstractMaterialType *bDef = b->material()->type();
     if (aDef != bDef)
         return aDef < bDef;
 
@@ -245,7 +245,7 @@ void QMLRenderer::buildLists(Node *node)
 #ifdef FORCE_NO_REORDER
             if (true) {
 #else
-            if (geomNode->material()->flags() & AbstractEffect::Blending) {
+            if (geomNode->material()->flags() & AbstractMaterial::Blending) {
 #endif
                 geomNode->setRenderOrder(m_currentRenderOrder - 1);
                 m_transparentNodes.append(geomNode);
@@ -328,8 +328,8 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
 
         Q_ASSERT(geomNode->material());
 
-        AbstractEffect *material = geomNode->material();
-        AbstractEffectProgram *program = prepareMaterial(material);
+        AbstractMaterial *material = geomNode->material();
+        AbstractMaterialShader *program = prepareMaterial(material);
 
         bool changeClip = geomNode->clipList() != m_currentClip;
         Renderer::ClipType clipType = Renderer::NoClip;
@@ -339,7 +339,7 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
 #ifdef FORCE_NO_REORDER
             glDepthMask(false);
 #else
-            glDepthMask((material->flags() & AbstractEffect::Blending) == 0);
+            glDepthMask((material->flags() & AbstractMaterial::Blending) == 0);
 #endif
             //++clipChangeCount;
         }
@@ -351,12 +351,7 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
             m_currentProgram = program;
             m_currentProgram->activate();
             //++programChangeCount;
-        }
-
-        if (changeProgram || m_currentMaterial != material) {
-            program->updateEffectState(this, material, changeProgram ? 0 : m_currentMaterial);
-            m_currentMaterial = material;
-            //++materialChangeCount;
+            changeMatrix = true;
         }
 
         bool changeRenderOrder = currentRenderOrder != geomNode->renderOrder();
@@ -369,24 +364,30 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
             changeMatrix = true;
         }
 
-        if (changeMatrix || changeProgram)
-            program->updateRendererState(this, Renderer::UpdateMatrices);
+        if (changeProgram || m_currentMaterial != material) {
+            program->updateState(this, material, changeProgram ? 0 : m_currentMaterial,
+                changeMatrix ? Renderer::UpdateMatrices : Renderer::Update(0));
+            m_currentMaterial = material;
+            //++materialChangeCount;
+        }
 
         //glDepthRange((geomNode->renderOrder() + 0.1) * scale, (geomNode->renderOrder() + 0.9) * scale);
 
         Geometry *g = geomNode->geometry();
 
-        const QSG::VertexAttribute *attributes = program->requiredFields();
+        char const *const *attrNames = program->attributeNames();
         int offset = 0;
-        for (; *attributes != QSG::VertexAttribute(-1); ++attributes) {
-            QSGAttributeValue attr = g->attributeValue(*attributes);
+        for (int j = 0; attrNames[j]; ++j) {
+            if (!*attrNames[j])
+                continue;
+            QSGAttributeValue attr = g->attributeValue(j);
             if (!attr.isNull()) {
 #if defined(QT_OPENGL_ES_2)
                 GLboolean normalize = attr.type() != GL_FLOAT;
 #else
                 GLboolean normalize = attr.type() != GL_FLOAT && attr.type() != GL_DOUBLE;
 #endif
-                glVertexAttribPointer(*attributes, attr.tupleSize(), attr.type(), normalize, attr.stride(),
+                glVertexAttribPointer(j, attr.tupleSize(), attr.type(), normalize, attr.stride(),
                                       GeometryDataUploader::vertexData(g, offset));
                 offset += attr.tupleSize() * attr.sizeOfType();
             } else {

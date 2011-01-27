@@ -44,15 +44,15 @@
 
 #include <material.h>
 
-class DistanceFieldTextMaterial: public AbstractEffect
+class DistanceFieldTextMaterial: public AbstractMaterial
 {
 public:
     DistanceFieldTextMaterial();
     ~DistanceFieldTextMaterial();
 
-    virtual AbstractEffectType *type() const;
-    virtual AbstractEffectProgram *createProgram() const;
-    virtual int compare(const AbstractEffect *other) const;
+    virtual AbstractMaterialType *type() const;
+    virtual AbstractMaterialShader *createShader() const;
+    virtual int compare(const AbstractMaterial *other) const;
 
     void setColor(const QColor &color) { m_color = color; }
     const QColor &color() const { return m_color; }

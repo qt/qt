@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "solidrectnode.h"
-#include "utilities.h"
 #include "flatcolormaterial.h"
 
 
@@ -50,23 +49,26 @@ SolidRectNode::SolidRectNode(const QRectF &rect, const QColor &color, qreal opac
     m_material.setColor(color);
     m_material.setOpacity(opacity);
     setMaterial(&m_material);
-}
 
-SolidRectNode::SolidRectNode(qreal x, qreal y, qreal w, qreal h, const QColor &color, qreal opacity)
-{
-    setRect(QRectF(x, y, w, h));
-    m_material.setColor(color);
-    m_material.setOpacity(opacity);
-    setMaterial(&m_material);
+    QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
+        << QSGAttributeDescription(0, 2, GL_FLOAT, 2 * sizeof(float));
+    updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
 }
 
 void SolidRectNode::updateGeometry()
 {
     Geometry *g = geometry();
-    if (g->isNull()) {
-        updateGeometryDescription(Utilities::getRectGeometryDescription(), GL_UNSIGNED_SHORT);
+
+    g->setDrawingMode(QSG::TriangleStrip);
+    g->setVertexCount(4);
+    g->setIndexCount(0);
+
+    QVector2D *vertices = (QVector2D *)g->vertexData();
+    for (int j = 0; j < 4; ++j) {
+        vertices[j].setX(j & 2 ? m_rect.right() : m_rect.left());
+        vertices[j].setY(j & 1 ? m_rect.bottom() : m_rect.top());
     }
-    Utilities::setupRectGeometry(g, m_rect);
+
     markDirty(Node::DirtyGeometry);
 
     setBoundingRect(m_rect);

@@ -100,7 +100,7 @@ public:
 
     int stride() const { return m_vertex_stride; }
 
-    QSGAttributeValue attributeValue(QSG::VertexAttribute attribute) const;
+    QSGAttributeValue attributeValue(int attribute) const;
 
     bool isNull() const { return m_vertex_description.isEmpty(); }
 

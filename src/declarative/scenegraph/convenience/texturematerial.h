@@ -43,9 +43,8 @@
 #define TEXTUREMATERIAL_H
 
 #include "material.h"
-#include "utilities.h"
 
-class Q_DECLARATIVE_EXPORT TextureMaterial : public AbstractEffect
+class Q_DECLARATIVE_EXPORT TextureMaterial : public AbstractMaterial
 {
 public:
     TextureMaterial()
@@ -56,9 +55,9 @@ public:
     {
     }
 
-    virtual AbstractEffectType *type() const;
-    virtual AbstractEffectProgram *createProgram() const;
-    virtual int compare(const AbstractEffect *other) const;
+    virtual AbstractMaterialType *type() const;
+    virtual AbstractMaterialShader *createShader() const;
+    virtual int compare(const AbstractMaterial *other) const;
 
     // ### gunnar: opaque -> alpha, as "hasAlphaChannel()" is what we normally use
     void setTexture(const QSGTextureRef &texture, bool opaque = false);
@@ -70,7 +69,7 @@ public:
     void setClampToEdge(bool clamp) { m_clamp_to_edge = clamp; }
     bool clampToEdge() const { return m_clamp_to_edge; }
 
-    static bool is(const AbstractEffect *effect);
+    static bool is(const AbstractMaterial *effect);
 
 protected:
     QSGTextureRef m_texture;
@@ -79,20 +78,18 @@ protected:
     bool m_clamp_to_edge;
 };
 
-class TextureMaterialData : public AbstractShaderEffectProgram
+class TextureMaterialShader : public AbstractMaterialShader
 {
 public:
-    virtual void updateRendererState(Renderer *renderer, Renderer::Updates updates);
-    virtual void updateEffectState(Renderer *renderer, AbstractEffect *newEffect, AbstractEffect *oldEffect);
+    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual char const *const *attributeNames() const;
+
+    static AbstractMaterialType type;
+
+protected:
     virtual void initialize();
     virtual const char *vertexShader() const;
     virtual const char *fragmentShader() const;
-    virtual const Attributes attributes() const;
-    virtual const QSG::VertexAttribute *requiredFields() const;
-
-    static const QSG::VertexAttribute attributeIds[];
-    static const char *const attributeNames[];
-    static AbstractEffectType type;
 
     int m_matrix_id;
 };
@@ -103,15 +100,15 @@ class Q_DECLARATIVE_EXPORT TextureMaterialWithOpacity : public TextureMaterial
 public:
     TextureMaterialWithOpacity() : m_opacity(1) { }
 
-    virtual AbstractEffectType *type() const;
-    virtual AbstractEffectProgram *createProgram() const;
-    virtual int compare(const AbstractEffect *other) const;
+    virtual AbstractMaterialType *type() const;
+    virtual AbstractMaterialShader *createShader() const;
+    virtual int compare(const AbstractMaterial *other) const;
     void setTexture(const QSGTextureRef &texture, bool opaque = false);
 
     void setOpacity(qreal opacity);
     qreal opacity() const { return m_opacity; }
 
-    static bool is(const AbstractEffect *effect);
+    static bool is(const AbstractMaterial *effect);
 
 private:
     qreal m_opacity;

@@ -63,14 +63,17 @@ DefaultRectangleNode::DefaultRectangleNode(MaterialPreference preference, QSGCon
     m_border_material.setOpacity(m_opacity);
     m_border.setFlag(OwnedByParent, false);
     m_border.setMaterial(&m_border_material);
-    m_border.updateGeometryDescription(Utilities::getRectGeometryDescription(), GL_UNSIGNED_SHORT);
+
+    QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
+        << QSGAttributeDescription(0, 2, GL_FLOAT, 2 * sizeof(float));
+    m_border.updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
+    updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
 
     // The scene-graph requires that there is a material and a geometry on the node.
     FlatColorMaterial *material = new FlatColorMaterial;
     material->setColor(m_color);
     material->setOpacity(m_opacity);
     setMaterial(m_fill_material = material);
-    updateGeometryDescription(Utilities::getRectGeometryDescription(), GL_UNSIGNED_SHORT);
 
 #ifdef QML_RUNTIME_TESTING
     description = "rectangle";
@@ -190,7 +193,9 @@ void DefaultRectangleNode::setGradientStops(const QGradientStops &stops)
             material->setColor(m_color);
             material->setOpacity(m_opacity);
             m_fill_material = material;
-            updateGeometryDescription(Utilities::getRectGeometryDescription(), GL_UNSIGNED_SHORT);
+            QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
+                << QSGAttributeDescription(0, 2, GL_FLOAT, 2 * sizeof(float));
+            updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
         }
     } else if (m_material_preference == PreferTextureMaterial) {
         if (FlatColorMaterial::is(m_fill_material)) {
@@ -205,7 +210,10 @@ void DefaultRectangleNode::setGradientStops(const QGradientStops &stops)
                 material->setLinearFiltering(true);
                 m_fill_material = material;
             }
-            updateGeometryDescription(Utilities::getTexturedRectGeometryDescription(), GL_UNSIGNED_SHORT);
+            QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
+                << QSGAttributeDescription(0, 2, GL_FLOAT, 4 * sizeof(float))
+                << QSGAttributeDescription(1, 2, GL_FLOAT, 4 * sizeof(float));
+            updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
         }
         m_dirty_gradienttexture = true;
     } else {
@@ -215,7 +223,10 @@ void DefaultRectangleNode::setGradientStops(const QGradientStops &stops)
             VertexColorMaterial *material = new VertexColorMaterial;
             material->setOpacity(m_opacity);
             m_fill_material = material;
-            updateGeometryDescription(Utilities::getColoredRectGeometryDescription(), GL_UNSIGNED_SHORT);
+            QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
+                << QSGAttributeDescription(0, 2, GL_FLOAT, 6 * sizeof(float))
+                << QSGAttributeDescription(1, 4, GL_FLOAT, 6 * sizeof(float));
+            updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
         }
 
         Q_ASSERT(VertexColorMaterial::is(m_fill_material));

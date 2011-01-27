@@ -41,7 +41,6 @@
 
 #include "distancefield_glyphnode.h"
 #include "distancefield_glyphnode_p.h"
-#include "utilities.h"
 #include "distancefieldfontatlas_p.h"
 
 #include <QtCore/qfileinfo.h>
@@ -50,7 +49,10 @@ DistanceFieldGlyphNode::DistanceFieldGlyphNode()
     : m_material(0)
     , m_glyph_atlas(0)
 {
-    updateGeometryDescription(Utilities::getTexturedRectGeometryDescription(), GL_UNSIGNED_SHORT);
+    QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
+        << QSGAttributeDescription(0, 2, GL_FLOAT, 4 * sizeof(float))
+        << QSGAttributeDescription(1, 2, GL_FLOAT, 4 * sizeof(float));
+    updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
 }
 
 DistanceFieldGlyphNode::~DistanceFieldGlyphNode()

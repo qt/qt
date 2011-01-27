@@ -41,49 +41,75 @@
 
 #include "material.h"
 
-AbstractShaderEffectProgram::AbstractShaderEffectProgram()
-    : m_initialized(false)
+AbstractMaterialShader::AbstractMaterialShader()
+    : m_compiled(false)
 {
 }
 
-void AbstractShaderEffectProgram::activate()
+void AbstractMaterialShader::activate()
 {
-    if (!m_initialized)
-        initialize();
+    if (!m_compiled)
+        compile();
 
     m_program.bind();
-    const Attributes attr = attributes();
-    for (int i = 0; attr.names[i]; ++i)
-        m_program.enableAttributeArray(attr.ids[i]);
+    char const *const *attr = attributeNames();
+    for (int i = 0; attr[i]; ++i) {
+        if (*attr[i])
+            m_program.enableAttributeArray(i);
+    }
 }
 
-void AbstractShaderEffectProgram::deactivate()
+void AbstractMaterialShader::deactivate()
 {
-    const Attributes attr = attributes();
-    for (int i = 0; attr.names[i]; ++i)
-        m_program.disableAttributeArray(attr.ids[i]);
+    char const *const *attr = attributeNames();
+    for (int i = 0; attr[i]; ++i) {
+        if (*attr[i])
+            m_program.disableAttributeArray(i);
+    }
 }
 
-const QSG::VertexAttribute *AbstractShaderEffectProgram::requiredFields() const
+void AbstractMaterialShader::updateState(Renderer *, AbstractMaterial *, AbstractMaterial *, Renderer::Updates)
 {
-    return attributes().ids;
 }
 
-void AbstractShaderEffectProgram::initialize()
+void AbstractMaterialShader::compile()
 {
-    Q_ASSERT(!m_initialized);
+    Q_ASSERT(!m_compiled);
 
     m_program.addShaderFromSourceCode(QGLShader::Vertex, vertexShader());
     m_program.addShaderFromSourceCode(QGLShader::Fragment, fragmentShader());
 
-    const Attributes attr = attributes();
-    for (int i = 0; attr.names[i]; ++i)
-        m_program.bindAttributeLocation(attr.names[i], attr.ids[i]);
+    char const *const *attr = attributeNames();
+#ifndef QT_NO_DEBUG
+    int maxVertexAttribs = 0;
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttribs);
+    for (int i = 0; attr[i]; ++i) {
+        if (i >= maxVertexAttribs) {
+            qFatal("List of attribute names is either too long or not null-terminated.\n"
+                   "Maximum number of attributes on this hardware is %i.\n"
+                   "Vertex shader:\n%s\n"
+                   "Fragment shader:\n%s\n",
+                   maxVertexAttribs, vertexShader(), fragmentShader());
+        }
+        if (*attr[i])
+            m_program.bindAttributeLocation(attr[i], i);
+    }
+#else
+    for (int i = 0; attr[i]; ++i) {
+        if (*attr[i])
+            m_program.bindAttributeLocation(attr[i], i);
+    }
+#endif
 
-    m_program.link();
+    if (!m_program.link()) {
+        qWarning("AbstractMaterialShader: Shader compilation failed:");
+        qWarning() << m_program.log();
+    }
 
-    m_initialized = true;
+    m_compiled = true;
+    initialize();
 }
+
 
 #ifndef QT_NO_DEBUG
 static int qt_material_count = 0;
@@ -95,7 +121,8 @@ static void qt_print_material_count()
 }
 #endif
 
-AbstractEffect::AbstractEffect() : m_flags(0)
+AbstractMaterial::AbstractMaterial()
+    : m_flags(0)
 {
 #ifndef QT_NO_DEBUG
     ++qt_material_count;
@@ -107,11 +134,24 @@ AbstractEffect::AbstractEffect() : m_flags(0)
 #endif
 }
 
-AbstractEffect::~AbstractEffect()
+AbstractMaterial::~AbstractMaterial()
 {
 #ifndef QT_NO_DEBUG
     --qt_material_count;
     if (qt_material_count < 0)
         qDebug("Material destroyed after qt_print_material_count() was called.");
 #endif
+}
+
+//int AbstractMaterial::compare(const AbstractMaterial *other) const
+//{
+//    return this - other;
+//}
+
+void AbstractMaterial::setFlag(Flags flags, bool set)
+{
+    if (set)
+        m_flags |= flags;
+    else
+        m_flags &= ~flags;
 }

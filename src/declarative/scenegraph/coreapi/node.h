@@ -240,7 +240,7 @@ private:
 //    UsagePattern m_pattern;
 };
 
-class AbstractEffect;
+class AbstractMaterial;
 
 class Q_DECLARATIVE_EXPORT GeometryNode : public BasicGeometryNode
 {
@@ -248,8 +248,8 @@ public:
     GeometryNode();
     ~GeometryNode();
 
-    void setMaterial(AbstractEffect *material);
-    AbstractEffect *material() const { return m_material; }
+    void setMaterial(AbstractMaterial *material);
+    AbstractMaterial *material() const { return m_material; }
 
     virtual NodeType type() const { return GeometryNodeType; }
     virtual QRectF subtreeBoundingRect() const;
@@ -265,7 +265,7 @@ private:
     friend class NodeUpdater;
 
     int m_render_order;
-    AbstractEffect *m_material;
+    AbstractMaterial *m_material;
     bool m_enabled;
 };
 
@@ -322,7 +322,7 @@ public:
 
 private:
     void notifyNodeChange(Node *node, DirtyFlags flags);
-    void notifyMaterialChange(GeometryNode *node, AbstractEffect *from, AbstractEffect *to);
+    void notifyMaterialChange(GeometryNode *node, AbstractMaterial *from, AbstractMaterial *to);
 
     friend class Node;
     friend class GeometryNode;

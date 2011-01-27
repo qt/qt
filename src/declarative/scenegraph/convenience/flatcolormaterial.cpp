@@ -43,27 +43,60 @@
 
 #include <qglshaderprogram.h>
 
-class FlatColorMaterialData : public AbstractShaderEffectProgram
+class FlatColorMaterialShader : public AbstractMaterialShader
 {
 public:
-    virtual void updateRendererState(Renderer *renderer, Renderer::Updates updates);
-    virtual void updateEffectState(Renderer *renderer, AbstractEffect *newEffect, AbstractEffect *oldEffect);
+    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual char const *const *attributeNames() const;
 
-    static AbstractEffectType type;
+    static AbstractMaterialType type;
 
 private:
     virtual void initialize();
     virtual const char *vertexShader() const;
     virtual const char *fragmentShader() const;
-    virtual const Attributes attributes() const;
 
     int m_matrix_id;
     int m_color_id;
 };
 
-AbstractEffectType FlatColorMaterialData::type;
+AbstractMaterialType FlatColorMaterialShader::type;
 
-const char *FlatColorMaterialData::vertexShader() const {
+void FlatColorMaterialShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+{
+    Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
+
+    FlatColorMaterial *oldMaterial = static_cast<FlatColorMaterial *>(oldEffect);
+    FlatColorMaterial *newMaterial = static_cast<FlatColorMaterial *>(newEffect);
+
+    const QColor &c = newMaterial->color();
+    if (oldMaterial == 0 || c != oldMaterial->color()
+        || newMaterial->opacity() != oldMaterial->opacity())
+    {
+        QVector4D v(c.redF() * c.alphaF() * newMaterial->opacity(),
+                    c.greenF() * c.alphaF() * newMaterial->opacity(),
+                    c.blueF() * c.alphaF() * newMaterial->opacity(),
+                    c.alphaF() * newMaterial->opacity());
+        m_program.setUniformValue(m_color_id, v);
+    }
+
+    if (updates & Renderer::UpdateMatrices)
+        m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
+}
+
+char const *const *FlatColorMaterialShader::attributeNames() const
+{
+    static char const *const attr[] = { "vCoord", 0 };
+    return attr;
+}
+
+void FlatColorMaterialShader::initialize()
+{
+    m_matrix_id = m_program.uniformLocation("matrix");
+    m_color_id = m_program.uniformLocation("color");
+}
+
+const char *FlatColorMaterialShader::vertexShader() const {
     return
         "attribute highp vec4 vCoord;                   \n"
         "uniform highp mat4 matrix;                     \n"
@@ -72,52 +105,12 @@ const char *FlatColorMaterialData::vertexShader() const {
         "}";
 }
 
-const char *FlatColorMaterialData::fragmentShader() const {
+const char *FlatColorMaterialShader::fragmentShader() const {
     return
         "uniform lowp vec4 color;                       \n"
         "void main() {                                  \n"
         "    gl_FragColor = color;                      \n"
         "}";
-}
-
-const AbstractShaderEffectProgram::Attributes FlatColorMaterialData::attributes() const {
-    static const QSG::VertexAttribute ids[] = { QSG::Position, QSG::VertexAttribute(-1) };
-    static const char *const names[] = { "vCoord", 0 };
-    static const Attributes attr = { ids, names };
-    return attr;
-}
-
-void FlatColorMaterialData::initialize()
-{
-    AbstractShaderEffectProgram::initialize();
-    m_matrix_id = m_program.uniformLocation("matrix");
-    m_color_id = m_program.uniformLocation("color");
-}
-
-void FlatColorMaterialData::updateRendererState(Renderer *renderer, Renderer::Updates updates)
-{
-    if (updates & Renderer::UpdateMatrices)
-        m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
-}
-
-void FlatColorMaterialData::updateEffectState(Renderer *renderer, AbstractEffect *newEffect, AbstractEffect *oldEffect)
-{
-    Q_UNUSED(renderer)
-    Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
-
-    FlatColorMaterial *oldMaterial = static_cast<FlatColorMaterial *>(oldEffect);
-    FlatColorMaterial *newMaterial = static_cast<FlatColorMaterial *>(newEffect);
-
-    const QColor &c = newMaterial->color();
-    if (oldMaterial == 0
-            || c != oldMaterial->color()
-            || newMaterial->opacity() != oldMaterial->opacity()) {
-        QVector4D v(c.redF() * c.alphaF() * newMaterial->opacity(),
-                    c.greenF() * c.alphaF() * newMaterial->opacity(),
-                    c.blueF() * c.alphaF() * newMaterial->opacity(),
-                    c.alphaF() * newMaterial->opacity());
-        m_program.setUniformValue(m_color_id, v);
-    }
 }
 
 
@@ -128,27 +121,27 @@ FlatColorMaterial::FlatColorMaterial() : m_color(Qt::white), m_opacity(1.0)
 void FlatColorMaterial::setOpacity(qreal opacity)
 {
     m_opacity = opacity;
-    setFlags(m_color.alpha() == 0xff && m_opacity >= 1.0 ? Flags(0) : Blending);
+    setFlag(Blending, m_color.alpha() != 0xff || m_opacity < 1.0);
 }
 
 void FlatColorMaterial::setColor(const QColor &color)
 {
     m_color = color;
-    setFlags(m_color.alpha() == 0xff && m_opacity >= 1.0 ? Flags(0) : Blending);
+    setFlag(Blending, m_color.alpha() != 0xff || m_opacity < 1.0);
 }
 
 
-AbstractEffectType *FlatColorMaterial::type() const
+AbstractMaterialType *FlatColorMaterial::type() const
 {
-    return &FlatColorMaterialData::type;
+    return &FlatColorMaterialShader::type;
 }
 
-AbstractEffectProgram *FlatColorMaterial::createProgram() const
+AbstractMaterialShader *FlatColorMaterial::createShader() const
 {
-    return new FlatColorMaterialData;
+    return new FlatColorMaterialShader;
 }
 
-int FlatColorMaterial::compare(const AbstractEffect *o) const
+int FlatColorMaterial::compare(const AbstractMaterial *o) const
 {
     Q_ASSERT(o && type() == o->type());
     const FlatColorMaterial *other = static_cast<const FlatColorMaterial *>(o);
@@ -157,8 +150,8 @@ int FlatColorMaterial::compare(const AbstractEffect *o) const
     return int(c2 < c1) - int(c1 < c2);
 }
 
-bool FlatColorMaterial::is(const AbstractEffect *effect)
+bool FlatColorMaterial::is(const AbstractMaterial *effect)
 {
-    return effect->type() == &FlatColorMaterialData::type;
+    return effect->type() == &FlatColorMaterialShader::type;
 }
 

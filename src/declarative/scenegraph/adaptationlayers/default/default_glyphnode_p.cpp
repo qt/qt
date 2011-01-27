@@ -48,18 +48,17 @@
 #include <private/qfontengine_p.h>
 #include <private/qglextensions_p.h>
 
-class TextMaskMaterialData : public AbstractShaderEffectProgram
+class TextMaskMaterialData : public AbstractMaterialShader
 {
 public:
     TextMaskMaterialData();
 
-    virtual void updateRendererState(Renderer *renderer, Renderer::Updates updates);
-    virtual void updateEffectState(Renderer *renderer, AbstractEffect *newEffect, AbstractEffect *oldEffect);
+    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual char const *const *attributeNames() const;
 private:
     virtual void initialize();
     virtual const char *vertexShader() const;
     virtual const char *fragmentShader() const;
-    virtual const Attributes attributes() const;
 
     int m_matrix_id;
     int m_color_id;
@@ -90,10 +89,9 @@ const char *TextMaskMaterialData::fragmentShader() const {
         "}";
 }
 
-const AbstractShaderEffectProgram::Attributes TextMaskMaterialData::attributes() const {
-    static const QSG::VertexAttribute ids[] = { QSG::Position, QSG::TextureCoord0, QSG::VertexAttribute(-1) };
-    static const char *const names[] = { "vCoord", "tCoord", 0 };
-    static const Attributes attr = { ids, names };
+char const *const *TextMaskMaterialData::attributeNames() const
+{
+    static char const *const attr[] = { "vCoord", "tCoord", 0 };
     return attr;
 }
 
@@ -103,19 +101,12 @@ TextMaskMaterialData::TextMaskMaterialData()
 
 void TextMaskMaterialData::initialize()
 {
-    AbstractShaderEffectProgram::initialize();
     m_matrix_id = m_program.uniformLocation("matrix");
     m_color_id = m_program.uniformLocation("color");
     m_textureScale_id = m_program.uniformLocation("textureScale");
 }
 
-void TextMaskMaterialData::updateRendererState(Renderer *renderer, Renderer::Updates updates)
-{
-    if (updates & Renderer::UpdateMatrices)
-        m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
-}
-
-void TextMaskMaterialData::updateEffectState(Renderer *renderer, AbstractEffect *newEffect, AbstractEffect *oldEffect)
+void TextMaskMaterialData::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
 {
     Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
     TextMaskMaterial *material = static_cast<TextMaskMaterial *>(newEffect);
@@ -149,6 +140,9 @@ void TextMaskMaterialData::updateEffectState(Renderer *renderer, AbstractEffect 
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         }
     }
+
+    if (updates & Renderer::UpdateMatrices)
+        m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
 }
 
 TextMaskMaterial::TextMaskMaterial(QFontEngine *fontEngine)
@@ -179,7 +173,7 @@ TextMaskMaterial::~TextMaskMaterial()
 void TextMaskMaterial::init()
 {
     QFontEngineGlyphCache::Type type = QFontEngineGlyphCache::Raster_A8;
-    setFlags(Blending);
+    setFlag(Blending, true);
 
     m_glyphCache = m_fontEngine->glyphCache(0, type, QTransform());
     if (!m_glyphCache || m_glyphCache->cacheType() != type) {
@@ -256,9 +250,9 @@ void TextMaskMaterial::populate(const QPointF &p,
     }
 }
 
-AbstractEffectType *TextMaskMaterial::type() const
+AbstractMaterialType *TextMaskMaterial::type() const
 {
-    static AbstractEffectType type;
+    static AbstractMaterialType type;
     return &type;
 }
 
@@ -267,12 +261,12 @@ QGLTextureGlyphCache *TextMaskMaterial::glyphCache() const
     return static_cast<QGLTextureGlyphCache*>(m_glyphCache.data());
 }
 
-AbstractEffectProgram *TextMaskMaterial::createProgram() const
+AbstractMaterialShader *TextMaskMaterial::createShader() const
 {
     return new TextMaskMaterialData;
 }
 
-int TextMaskMaterial::compare(const AbstractEffect *o) const
+int TextMaskMaterial::compare(const AbstractMaterial *o) const
 {
     Q_ASSERT(o && type() == o->type());
     const TextMaskMaterial *other = static_cast<const TextMaskMaterial *>(o);

@@ -59,8 +59,8 @@ private:
     void renderNodes(const QVector <GeometryNode *> &list);
 
     const ClipNode *m_currentClip;
-    AbstractEffect *m_currentMaterial;
-    AbstractEffectProgram *m_currentProgram;
+    AbstractMaterial *m_currentMaterial;
+    AbstractMaterialShader *m_currentProgram;
     const QMatrix4x4 *m_currentMatrix;
     QMatrix4x4 m_renderOrderMatrix;
     QVector<GeometryNode *> m_opaqueNodes;

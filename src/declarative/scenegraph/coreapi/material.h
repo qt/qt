@@ -46,79 +46,59 @@
 #include "renderer.h"
 #include <qglshaderprogram.h>
 
-class AbstractEffect;
+class AbstractMaterial;
 
-class Q_DECLARATIVE_EXPORT AbstractEffectProgram
+class Q_DECLARATIVE_EXPORT AbstractMaterialShader
 {
 public:
-    virtual ~AbstractEffectProgram() { }
-
-    virtual void activate() { }
-    virtual void deactivate() { }
-    virtual void updateRendererState(Renderer *renderer, Renderer::Updates updates) { Q_UNUSED(renderer) Q_UNUSED(updates) }
-    virtual void updateEffectState(Renderer *renderer, AbstractEffect *newEffect, AbstractEffect *oldEffect) { Q_UNUSED(renderer) Q_UNUSED(newEffect) Q_UNUSED(oldEffect) }
-    virtual const QSG::VertexAttribute *requiredFields() const = 0; // Array must end with QSG::VertexAttribute(-1).
-};
-
-class Q_DECLARATIVE_EXPORT AbstractShaderEffectProgram : public AbstractEffectProgram
-{
-public:
-    AbstractShaderEffectProgram();
+    AbstractMaterialShader();
 
     virtual void activate();
     virtual void deactivate();
-    virtual const QSG::VertexAttribute *requiredFields() const;
-protected:
-    struct Attributes
-    {
-        const QSG::VertexAttribute *ids;
-        const char *const *names;
-    };
+    // First time a material is used, oldMaterial is null.
+    virtual void updateState(Renderer *renderer, AbstractMaterial *newMaterial, AbstractMaterial *oldMaterial, Renderer::Updates updates);
+    virtual char const *const *attributeNames() const = 0; // Array must end with null.
 
-    virtual void initialize();
+protected:
+    void compile();
+    virtual void initialize() { }
 
     virtual const char *vertexShader() const = 0;
     virtual const char *fragmentShader() const = 0;
-    virtual const Attributes attributes() const = 0;
 
     QGLShaderProgram m_program;
-    bool m_initialized;
+    bool m_compiled;
 };
 
+struct AbstractMaterialType { };
 
-struct AbstractEffectType { };
-
-class Q_DECLARATIVE_EXPORT AbstractEffect
+class Q_DECLARATIVE_EXPORT AbstractMaterial
 {
 public:
-    AbstractEffect();
-    virtual ~AbstractEffect();
-
     enum Flag {
-        Blending        = 0x0001,
-        SupportsPicking = 0x0002
+        Blending = 0x0001
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
-    virtual AbstractEffectType *type() const = 0;
-    virtual AbstractEffectProgram *createProgram() const = 0;
-    virtual int compare(const AbstractEffect *other) const { return this - other; }
+    AbstractMaterial();
+    virtual ~AbstractMaterial();
 
-    AbstractEffect::Flags flags() const { return m_flags; }
+    virtual AbstractMaterialType *type() const = 0;
+    virtual AbstractMaterialShader *createShader() const = 0;
+    virtual int compare(const AbstractMaterial *other) const = 0;
+
+    AbstractMaterial::Flags flags() const { return m_flags; }
 
 protected:
-    //void updated();
-
-    void setFlags(Flags flags) { m_flags = flags; }
+    void setFlag(Flags flags, bool set);
 
 private:
     Flags m_flags;
 
-    Q_DISABLE_COPY(AbstractEffect)
+    Q_DISABLE_COPY(AbstractMaterial)
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(AbstractEffect::Flags);
-
+Q_DECLARE_OPERATORS_FOR_FLAGS(AbstractMaterial::Flags);
 
 
 

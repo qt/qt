@@ -42,19 +42,20 @@
 #include "distancefield_glyphnode_p.h"
 #include <qmath.h>
 
-class DistanceFieldTextMaterialData : public AbstractShaderEffectProgram
+class DistanceFieldTextMaterialShader : public AbstractMaterialShader
 {
 public:
-    DistanceFieldTextMaterialData();
+    DistanceFieldTextMaterialShader();
 
-    virtual void updateRendererState(Renderer *renderer, Renderer::Updates updates);
-    virtual void updateEffectState(Renderer *renderer, AbstractEffect *newEffect, AbstractEffect *oldEffect);
-private:
+    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual char const *const *attributeNames() const;
+
+protected:
     virtual void initialize();
     virtual const char *vertexShader() const;
     virtual const char *fragmentShader() const;
-    virtual const Attributes attributes() const;
 
+private:
     void updateAlphaRange();
 
     qreal m_fontScale;
@@ -67,7 +68,7 @@ private:
     int m_opacity_id;
 };
 
-const char *DistanceFieldTextMaterialData::vertexShader() const {
+const char *DistanceFieldTextMaterialShader::vertexShader() const {
     return
         "uniform highp mat4 matrix;                     \n"
         "attribute highp vec4 vCoord;                   \n"
@@ -79,7 +80,7 @@ const char *DistanceFieldTextMaterialData::vertexShader() const {
         "}";
 }
 
-const char *DistanceFieldTextMaterialData::fragmentShader() const {
+const char *DistanceFieldTextMaterialShader::fragmentShader() const {
     return
         "varying highp vec2 sampleCoord;                                             \n"
         "uniform sampler2D texture;                                                  \n"
@@ -93,20 +94,18 @@ const char *DistanceFieldTextMaterialData::fragmentShader() const {
         "}";
 }
 
-const AbstractShaderEffectProgram::Attributes DistanceFieldTextMaterialData::attributes() const {
-    static const QSG::VertexAttribute ids[] = { QSG::Position, QSG::TextureCoord0, QSG::VertexAttribute(-1) };
-    static const char *const names[] = { "vCoord", "tCoord", 0 };
-    static const Attributes attr = { ids, names };
+char const *const *DistanceFieldTextMaterialShader::attributeNames() const {
+    static char const *const attr[] = { "vCoord", "tCoord", 0 };
     return attr;
 }
 
-DistanceFieldTextMaterialData::DistanceFieldTextMaterialData()
+DistanceFieldTextMaterialShader::DistanceFieldTextMaterialShader()
     : m_fontScale(1.0)
     , m_matrixScale(1.0)
 {
 }
 
-void DistanceFieldTextMaterialData::updateAlphaRange()
+void DistanceFieldTextMaterialShader::updateAlphaRange()
 {
     qreal combinedScale = m_fontScale * m_matrixScale;
     qreal alphaMin = qBound(0.0, 0.5 - 0.05 / combinedScale, 0.5);
@@ -115,25 +114,16 @@ void DistanceFieldTextMaterialData::updateAlphaRange()
     m_program.setUniformValue(m_alphaMax_id, GLfloat(alphaMax));
 }
 
-void DistanceFieldTextMaterialData::initialize()
+void DistanceFieldTextMaterialShader::initialize()
 {
-    AbstractShaderEffectProgram::initialize();
+    AbstractMaterialShader::initialize();
     m_matrix_id = m_program.uniformLocation("matrix");
     m_color_id = m_program.uniformLocation("color");
     m_alphaMin_id = m_program.uniformLocation("alphaMin");
     m_alphaMax_id = m_program.uniformLocation("alphaMax");
 }
 
-void DistanceFieldTextMaterialData::updateRendererState(Renderer *renderer, Renderer::Updates updates)
-{
-    if (updates & Renderer::UpdateMatrices) {
-        m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
-        m_matrixScale = qSqrt(renderer->modelViewMatrix().top().determinant());
-        updateAlphaRange();
-    }
-}
-
-void DistanceFieldTextMaterialData::updateEffectState(Renderer *renderer, AbstractEffect *newEffect, AbstractEffect *oldEffect)
+void DistanceFieldTextMaterialShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
 {
     Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
     DistanceFieldTextMaterial *material = static_cast<DistanceFieldTextMaterial *>(newEffect);
@@ -168,30 +158,35 @@ void DistanceFieldTextMaterialData::updateEffectState(Renderer *renderer, Abstra
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         }
     }
+    if (updates & Renderer::UpdateMatrices) {
+        m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
+        m_matrixScale = qSqrt(renderer->modelViewMatrix().top().determinant());
+        updateAlphaRange();
+    }
 }
 
 DistanceFieldTextMaterial::DistanceFieldTextMaterial()
     : m_texture(0), m_opacity(1.0), m_scale(1.0), m_dirtyTexture(false)
 {
-   setFlags(Blending);
+   setFlag(Blending, true);
 }
 
 DistanceFieldTextMaterial::~DistanceFieldTextMaterial()
 {
 }
 
-AbstractEffectType *DistanceFieldTextMaterial::type() const
+AbstractMaterialType *DistanceFieldTextMaterial::type() const
 {
-    static AbstractEffectType type;
+    static AbstractMaterialType type;
     return &type;
 }
 
-AbstractEffectProgram *DistanceFieldTextMaterial::createProgram() const
+AbstractMaterialShader *DistanceFieldTextMaterial::createShader() const
 {
-    return new DistanceFieldTextMaterialData;
+    return new DistanceFieldTextMaterialShader;
 }
 
-int DistanceFieldTextMaterial::compare(const AbstractEffect *o) const
+int DistanceFieldTextMaterial::compare(const AbstractMaterial *o) const
 {
     Q_ASSERT(o && type() == o->type());
     const DistanceFieldTextMaterial *other = static_cast<const DistanceFieldTextMaterial *>(o);

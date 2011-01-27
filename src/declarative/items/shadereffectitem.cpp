@@ -42,7 +42,6 @@
 #include "shadereffectitem.h"
 #include "shadereffectnode.h"
 
-#include "utilities.h"
 #include "material.h"
 #include "qsgitem_p.h"
 
@@ -68,6 +67,11 @@ static const char qt_default_fragment_code[] =
     "    gl_FragColor = texture2D(source, qt_TexCoord0);    \n"
     "}";
 
+static const char qt_postion_attribute_name[] = "qt_Vertex";
+static const char qt_texcoord_attribute_name[] = "qt_MultiTexCoord0";
+static const char qt_emptyAttributeName[] = "";
+
+
 ShaderEffectItem::ShaderEffectItem(QSGItem *parent)
     : QSGItem(parent)
     , m_mesh_resolution(1, 1)
@@ -90,7 +94,7 @@ void ShaderEffectItem::componentComplete()
     QSGItem::componentComplete();
 }
 
-void ShaderEffectItem::setFragmentShader(const QString &code)
+void ShaderEffectItem::setFragmentShader(const QByteArray &code)
 {
     if (m_source.fragmentCode.constData() == code.constData())
         return;
@@ -102,7 +106,7 @@ void ShaderEffectItem::setFragmentShader(const QString &code)
     emit fragmentShaderChanged();
 }
 
-void ShaderEffectItem::setVertexShader(const QString &code)
+void ShaderEffectItem::setVertexShader(const QByteArray &code)
 {
     if (m_source.vertexCode.constData() == code.constData())
         return;
@@ -111,7 +115,6 @@ void ShaderEffectItem::setVertexShader(const QString &code)
         reset();
         updateProperties();
     }
-
     emit vertexShaderChanged();
 }
 
@@ -306,7 +309,6 @@ void ShaderEffectItem::reset()
     disconnectPropertySignals();
 
     m_source.attributeNames.clear();
-    m_source.attributes.clear();
     m_source.uniformNames.clear();
     m_source.respectsOpacity = false;
     m_source.respectsMatrix = false;
@@ -326,27 +328,33 @@ void ShaderEffectItem::reset()
 
 void ShaderEffectItem::updateProperties()
 {
-    QString vertexCode = m_source.vertexCode;
-    QString fragmentCode = m_source.fragmentCode;
+    QByteArray vertexCode = m_source.vertexCode;
+    QByteArray fragmentCode = m_source.fragmentCode;
     if (vertexCode.isEmpty())
-        vertexCode = QString::fromLatin1(qt_default_vertex_code);
+        vertexCode = qt_default_vertex_code;
     if (fragmentCode.isEmpty())
-        fragmentCode = QString::fromLatin1(qt_default_fragment_code);
+        fragmentCode = qt_default_fragment_code;
 
+    m_source.attributeNames.fill(0, 3);
     lookThroughShaderCode(vertexCode);
     lookThroughShaderCode(fragmentCode);
+
+    if (!m_source.attributeNames.contains(qt_postion_attribute_name))
+        qWarning("ShaderEffectItem: Missing reference to \'%s\'.", qt_postion_attribute_name);
+    if (!m_source.attributeNames.contains(qt_texcoord_attribute_name))
+        qWarning("ShaderEffectItem: Missing reference to \'%s\'.", qt_texcoord_attribute_name);
+    if (!m_source.respectsMatrix)
+        qWarning("ShaderEffectItem: Missing reference to \'qt_ModelViewProjectionMatrix\'.");
 
     for (int i = 0; i < m_sources.size(); ++i) {
         QVariant v = property(m_sources.at(i).name);
         setSource(v, i); // Property exists.
     }
 
-    // Append an 'end of array' marker so that m_source.attributes.constData() can be returned in requiredFields().
-    m_source.attributes.append(QSG::VertexAttribute(-1));
     connectPropertySignals();
 }
 
-void ShaderEffectItem::lookThroughShaderCode(const QString &code)
+void ShaderEffectItem::lookThroughShaderCode(const QByteArray &code)
 {
     // Regexp for matching attributes and uniforms.
     // In human readable form: attribute|uniform [lowp|mediump|highp] <type> <name>
@@ -355,36 +363,38 @@ void ShaderEffectItem::lookThroughShaderCode(const QString &code)
 
     int pos = -1;
 
-    while ((pos = re.indexIn(code, pos + 1)) != -1) {
-        QString decl = re.cap(1); // uniform or attribute
-        QString type = re.cap(2); // type
-        QString name = re.cap(3); // variable name
+    QString wideCode = QString::fromLatin1(code.constData(), code.size());
 
-        if (decl == QLatin1String("attribute")) {
-            if (name == QLatin1String("qt_Vertex")) {
-                m_source.attributeNames.append(name.toLatin1());
-                m_source.attributes.append(QSG::Position);
-            } else if (name == QLatin1String("qt_MultiTexCoord0")) {
-                m_source.attributeNames.append(name.toLatin1());
-                m_source.attributes.append(QSG::TextureCoord0);
+    while ((pos = re.indexIn(wideCode, pos + 1)) != -1) {
+        QByteArray decl = re.cap(1).toLatin1(); // uniform or attribute
+        QByteArray type = re.cap(2).toLatin1(); // type
+        QByteArray name = re.cap(3).toLatin1(); // variable name
+
+        if (decl == "attribute") {
+            if (name == qt_postion_attribute_name) {
+                m_source.attributeNames[0] = qt_postion_attribute_name;
+            } else if (name == "qt_MultiTexCoord0") {
+                m_source.attributeNames[1] = qt_texcoord_attribute_name;
+                if (m_source.attributeNames.at(0) == 0)
+                    m_source.attributeNames[0] = qt_emptyAttributeName;
             } else {
                 // TODO: Support user defined attributes.
-                qWarning("ShaderEffectItem: Attribute \'%s\' not recognized.", qPrintable(name));
+                qWarning("ShaderEffectItem: Attribute \'%s\' not recognized.", name.constData());
             }
         } else {
-            Q_ASSERT(decl == QLatin1String("uniform"));
+            Q_ASSERT(decl == "uniform");
 
-            if (name == QLatin1String("qt_ModelViewProjectionMatrix")) {
+            if (name == "qt_ModelViewProjectionMatrix") {
                 m_source.respectsMatrix = true;
-            } else if (name == QLatin1String("qt_Opacity")) {
+            } else if (name == "qt_Opacity") {
                 m_source.respectsOpacity = true;
             } else {
-                m_source.uniformNames.insert(name.toLatin1());
-                if (type == QLatin1String("sampler2D")) {
+                m_source.uniformNames.insert(name);
+                if (type == "sampler2D") {
                     SourceData d;
                     d.mapper = new QSignalMapper;
                     d.source = 0;
-                    d.name = name.toLatin1();
+                    d.name = name;
                     d.ownedByEffect = false;
                     m_sources.append(d);
                 }
@@ -419,8 +429,8 @@ Node *ShaderEffectItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data
     }
 
     // Update blending
-    if (((node->AbstractEffect::flags() & AbstractEffect::Blending) != 0) != m_blending) {
-        node->ShaderEffectEffect::setFlags(m_blending ? AbstractEffect::Blending : AbstractEffect::Flag(0));
+    if (((node->AbstractMaterial::flags() & AbstractMaterial::Blending) != 0) != m_blending) {
+        node->ShaderEffectMaterial::setFlag(AbstractMaterial::Blending, m_blending);
         node->markDirty(Node::DirtyMaterial);
     }
 
@@ -437,7 +447,7 @@ Node *ShaderEffectItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data
             values.append(qMakePair(*it, property(*it)));
         }
 
-        node->setData(values, m_sources);
+        node->setData(values);
         m_dirtyData = false;
     }
 

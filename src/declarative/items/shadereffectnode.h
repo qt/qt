@@ -46,25 +46,40 @@
 #include "material.h"
 #include "shadereffectitem.h"
 
+#include <QtCore/qsharedpointer.h>
+
 class ShaderEffectItem;
-class ShaderEffectEffect : public AbstractEffect // XXX todo - ugly hack
+class ShaderEffectMaterial : public AbstractMaterial // XXX todo - ugly hack
 {
 public:
-    // Inherited from AbstractEffect
-    virtual AbstractEffectType *type() const;
-    void setFlags(Flags flags) { AbstractEffect::setFlags(flags); }
+    ShaderEffectMaterial();
+    virtual AbstractMaterialType *type() const;
+    virtual int compare(const AbstractMaterial *other) const;
 
-private:
-    AbstractEffectType m_type;
+    //void setFlag(Flags flags, bool set) { AbstractMaterial::setFlag(flags, set); }
+
+protected:
+    friend class ShaderEffectItem;
+    friend class CustomMaterialShader;
+
+    // The type pointer needs to be unique. It is not safe to let the type object be part of the
+    // ShaderEffectMaterial, since it can be deleted and a new one constructed on top of the old
+    // one. The new ShaderEffectMaterial would then get the same type pointer as the old one, and
+    // CustomMaterialShaders based on the old one would incorrectly be used together with the new
+    // one. To guarantee that the type pointer is unique, the type object must live as long as
+    // there are any CustomMaterialShaders of that type.
+    QSharedPointer<AbstractMaterialType> m_type_obj;
 };
 
-class CustomShaderMaterialData;
+class CustomMaterialShader;
+
 class ShaderEffectNode : public GeometryNode,
-                         public ShaderEffectEffect
+                         public ShaderEffectMaterial
 
 {
 public:
     ShaderEffectNode(ShaderEffectItem *item);
+    virtual ~ShaderEffectNode();
 
     void setRect(const QRectF &rect);
     QRectF rect() const;
@@ -75,24 +90,23 @@ public:
     // Inherited from Node
     virtual void preprocess();
 
-    // Inherited from AbstractEffect
-    virtual AbstractEffectProgram *createProgram() const;
+    // Inherited from AbstractMaterial
+    virtual AbstractMaterialShader *createShader() const;
 
     qreal opacity() const { return m_opacity; }
     void setOpacity(qreal o);
 
     void setProgramSource(const ShaderEffectProgram &);
-    void setData(const QList<QPair<QByteArray, QVariant> > &uniformValues,
-                 const QVector<ShaderEffectItem::SourceData> &sources);
+    void setData(const QList<QPair<QByteArray, QVariant> > &uniformValues);
 
     void update();
 
 private:
-    friend class CustomShaderMaterialData;
+    friend class CustomMaterialShader;
 
     void updateGeometry();
+    void invalidateShaders();
 
-    bool m_programDirty : 1;
     bool m_dirty_geometry : 1;
 
     QSize m_meshResolution;
@@ -100,11 +114,10 @@ private:
     qreal m_opacity;
     ShaderEffectProgram m_source;
     QList<QPair<QByteArray, QVariant> > m_uniformValues;
-    QVector<ShaderEffectItem::SourceData> m_sources; // XXX todo
 
-    QGLShaderProgram m_program;
     void updateShaderProgram();
 
+    QVector<CustomMaterialShader *> m_shaders;
     ShaderEffectItem *m_item;
 
 };

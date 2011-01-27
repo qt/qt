@@ -44,13 +44,13 @@
 
 #include <material.h>
 
-class VertexColorMaterial : public AbstractEffect
+class VertexColorMaterial : public AbstractMaterial
 {
 public:
     VertexColorMaterial(bool opaque = false);
-    virtual AbstractEffectType *type() const;
-    virtual AbstractEffectProgram *createProgram() const;
-    virtual int compare(const AbstractEffect *other) const;
+    virtual AbstractMaterialType *type() const;
+    virtual AbstractMaterialShader *createShader() const;
+    virtual int compare(const AbstractMaterial *other) const;
 
     void setOpaque(bool opaque);
     bool opaque() const { return m_opaque; }
@@ -58,7 +58,7 @@ public:
     void setOpacity(qreal opacity);
     qreal opacity() const { return m_opacity; }
 
-    static bool is(const AbstractEffect *effect);
+    static bool is(const AbstractMaterial *effect);
 
 private:
     qreal m_opacity;

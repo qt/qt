@@ -43,27 +43,51 @@
 
 #include <qglshaderprogram.h>
 
-class VertexColorMaterialData : public AbstractShaderEffectProgram
+class VertexColorMaterialShader : public AbstractMaterialShader
 {
 public:
-    virtual void updateRendererState(Renderer *renderer, Renderer::Updates updates);
-    virtual void updateEffectState(Renderer *renderer, AbstractEffect *newEffect, AbstractEffect *oldEffect);
+    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual char const *const *attributeNames() const;
 
-    static AbstractEffectType type;
+    static AbstractMaterialType type;
 
 private:
     virtual void initialize();
     virtual const char *vertexShader() const;
     virtual const char *fragmentShader() const;
-    virtual const Attributes attributes() const;
 
     int m_matrix_id;
     int m_opacity_id;
 };
 
-AbstractEffectType VertexColorMaterialData::type;
+AbstractMaterialType VertexColorMaterialShader::type;
 
-const char *VertexColorMaterialData::vertexShader() const {
+void VertexColorMaterialShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+{
+    Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
+    VertexColorMaterial *material = static_cast<VertexColorMaterial *>(newEffect);
+    VertexColorMaterial *oldMaterial = static_cast<VertexColorMaterial *>(oldEffect);
+
+    if (oldMaterial == 0 || oldMaterial->opacity() != material->opacity())
+        m_program.setUniformValue(m_opacity_id, GLfloat(material->opacity()));
+
+    if (updates & Renderer::UpdateMatrices)
+        m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
+}
+
+char const *const *VertexColorMaterialShader::attributeNames() const
+{
+    static const char *const attr[] = { "vertexCoord", "vertexColor", 0 };
+    return attr;
+}
+
+void VertexColorMaterialShader::initialize()
+{
+    m_matrix_id = m_program.uniformLocation("matrix");
+    m_opacity_id = m_program.uniformLocation("opacity");
+}
+
+const char *VertexColorMaterialShader::vertexShader() const {
     return
         "attribute highp vec4 vertexCoord;              \n"
         "attribute highp vec4 vertexColor;              \n"
@@ -76,7 +100,7 @@ const char *VertexColorMaterialData::vertexShader() const {
         "}";
 }
 
-const char *VertexColorMaterialData::fragmentShader() const {
+const char *VertexColorMaterialShader::fragmentShader() const {
     return
         "varying lowp vec4 color;                       \n"
         "void main() {                                  \n"
@@ -84,65 +108,35 @@ const char *VertexColorMaterialData::fragmentShader() const {
         "}";
 }
 
-const AbstractShaderEffectProgram::Attributes VertexColorMaterialData::attributes() const {
-    static const QSG::VertexAttribute ids[] = { QSG::Position, QSG::Color, QSG::VertexAttribute(-1) };
-    static const char *const names[] = { "vertexCoord", "vertexColor", 0 };
-    static const Attributes attr = { ids, names };
-    return attr;
-}
-
-void VertexColorMaterialData::initialize()
-{
-    AbstractShaderEffectProgram::initialize();
-    m_matrix_id = m_program.uniformLocation("matrix");
-    m_opacity_id = m_program.uniformLocation("opacity");
-}
-
-void VertexColorMaterialData::updateRendererState(Renderer *renderer, Renderer::Updates updates)
-{
-    if (updates & Renderer::UpdateMatrices)
-        m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
-}
-
-void VertexColorMaterialData::updateEffectState(Renderer *, AbstractEffect *newEffect, AbstractEffect *oldEffect)
-{
-    Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
-    VertexColorMaterial *material = static_cast<VertexColorMaterial *>(newEffect);
-    VertexColorMaterial *oldMaterial = static_cast<VertexColorMaterial *>(oldEffect);
-
-    if (oldMaterial == 0 || oldMaterial->opacity() != material->opacity())
-        m_program.setUniformValue(m_opacity_id, GLfloat(material->opacity()));
-}
-
 
 VertexColorMaterial::VertexColorMaterial(bool opaque) : m_opacity(1), m_opaque(opaque)
 {
-    setFlags(opaque ? Flags(0) : Blending);
+    setFlag(Blending, !opaque);
 }
 
 void VertexColorMaterial::setOpaque(bool opaque)
 {
-    setFlags(m_opacity == 1 && opaque ? Flags(0) : Blending);
+    setFlag(Blending, m_opacity != 1 || !opaque);
     m_opaque = opaque;
 }
 
 void VertexColorMaterial::setOpacity(qreal opacity)
 {
-    setFlags(opacity == 1 && m_opaque ? Flags(0) : Blending);
+    setFlag(Blending, opacity != 1 || !m_opaque);
     m_opacity = opacity;
 }
 
-AbstractEffectType *VertexColorMaterial::type() const
+AbstractMaterialType *VertexColorMaterial::type() const
 {
-    return &VertexColorMaterialData::type;
+    return &VertexColorMaterialShader::type;
 }
 
-AbstractEffectProgram *VertexColorMaterial::createProgram() const
+AbstractMaterialShader *VertexColorMaterial::createShader() const
 {
-    return new VertexColorMaterialData;
+    return new VertexColorMaterialShader;
 }
 
-int VertexColorMaterial::compare(const AbstractEffect *o) const
+int VertexColorMaterial::compare(const AbstractMaterial *o) const
 {
     Q_ASSERT(o && type() == o->type());
     const VertexColorMaterial *other = static_cast<const VertexColorMaterial *>(o);
@@ -150,7 +144,7 @@ int VertexColorMaterial::compare(const AbstractEffect *o) const
     return int(o2 < o1) - int(o1 < o2);
 }
 
-bool VertexColorMaterial::is(const AbstractEffect *effect)
+bool VertexColorMaterial::is(const AbstractMaterial *effect)
 {
-    return effect->type() == &VertexColorMaterialData::type;
+    return effect->type() == &VertexColorMaterialShader::type;
 }

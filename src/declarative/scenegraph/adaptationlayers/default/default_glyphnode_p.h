@@ -44,21 +44,20 @@
 
 #include <material.h>
 #include <qshareddata.h>
-#include <utilities.h>
 
 class QFontEngineGlyphCache;
 class QGLTextureGlyphCache;
 class QFontEngine;
 class Geometry;
-class TextMaskMaterial: public AbstractEffect
+class TextMaskMaterial: public AbstractMaterial
 {
 public:
     TextMaskMaterial(QFontEngine *fontEngine);
     ~TextMaskMaterial();
 
-    virtual AbstractEffectType *type() const;
-    virtual AbstractEffectProgram *createProgram() const;
-    virtual int compare(const AbstractEffect *other) const;
+    virtual AbstractMaterialType *type() const;
+    virtual AbstractMaterialShader *createShader() const;
+    virtual int compare(const AbstractMaterial *other) const;
 
     void setColor(const QColor &color) { m_color = color; }
     const QColor &color() const { return m_color; }

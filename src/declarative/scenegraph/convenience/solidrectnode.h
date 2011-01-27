@@ -49,7 +49,6 @@ class SolidRectNode : public GeometryNode
 {
 public:
     SolidRectNode(const QRectF &rect, const QColor &color, qreal opacity = 1.0);
-    SolidRectNode(qreal x, qreal y, qreal w, qreal h, const QColor &color, qreal opacity = 1.0);
 
     QRectF rect() const { return m_rect; }
     void setRect(const QRectF &rect);

@@ -41,7 +41,6 @@
 
 #include "default_glyphnode.h"
 #include "default_glyphnode_p.h"
-#include "utilities.h"
 
 #include <qglshaderprogram.h>
 #include <private/qfont_p.h>
@@ -84,7 +83,10 @@ void DefaultGlyphNode::setGlyphs(const QPointF &position, const QGlyphs &glyphs)
     m_material->setOpacity(m_opacity);
 
     QRectF boundingRect;
-    updateGeometryDescription(Utilities::getTexturedRectGeometryDescription(), GL_UNSIGNED_SHORT);
+    QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
+        << QSGAttributeDescription(0, 2, GL_FLOAT, 4 * sizeof(float))
+        << QSGAttributeDescription(1, 2, GL_FLOAT, 4 * sizeof(float));
+    updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
 
     m_material->populate(position, glyphs.glyphIndexes(), glyphs.positions(), geometry(),
                          &boundingRect, &m_baseLine);

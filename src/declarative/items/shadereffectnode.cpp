@@ -41,52 +41,51 @@
 
 #include "shadereffectnode.h"
 
-#include "utilities.h"
-
 #include "shadereffectitem.h" // XXX todo
 
-class CustomShaderMaterialData : public AbstractEffectProgram
+class CustomMaterialShader : public AbstractMaterialShader
 {
 public:
-    CustomShaderMaterialData(ShaderEffectNode *n) : node(n) { Q_ASSERT(node); }
-    virtual void activate();
-    virtual void deactivate();
-    virtual void updateRendererState(Renderer *renderer, Renderer::Updates updates);
-    virtual void updateEffectState(Renderer *renderer, AbstractEffect *newEffect, AbstractEffect *oldEffect);
-    virtual const QSG::VertexAttribute *requiredFields() const;
+    CustomMaterialShader(ShaderEffectNode *n);
+    virtual ~CustomMaterialShader();
+    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual char const *const *attributeNames() const;
 
-    ShaderEffectNode *node;
+protected:
+    friend class ShaderEffectNode;
+
+    virtual void initialize();
+    virtual const char *vertexShader() const;
+    virtual const char *fragmentShader() const;
+
+    ShaderEffectNode *m_node;
+    QSharedPointer<AbstractMaterialType> m_type_obj;
 };
 
-void CustomShaderMaterialData::activate()
+CustomMaterialShader::CustomMaterialShader(ShaderEffectNode *n)
+    : m_node(n)
 {
-    node->updateShaderProgram();
-    node->m_program.bind();
-    for (int i = 0; i < node->m_source.attributeNames.size(); ++i)
-        node->m_program.enableAttributeArray(node->m_source.attributes.at(i));
+    Q_ASSERT(m_node);
+    m_node->m_shaders.append(this);
+    m_type_obj = m_node->m_type_obj;
 }
 
-void CustomShaderMaterialData::deactivate()
+CustomMaterialShader::~CustomMaterialShader()
 {
-    for (int i = 0; i < node->m_source.attributeNames.size(); ++i)
-        node->m_program.disableAttributeArray(node->m_source.attributes.at(i));
+    if (m_node)
+        m_node->m_shaders.remove(m_node->m_shaders.indexOf(this));
 }
 
-void CustomShaderMaterialData::updateRendererState(Renderer *renderer, Renderer::Updates updates)
-{
-    if ((updates & Renderer::UpdateMatrices) && node->m_source.respectsMatrix)
-        node->m_program.setUniformValue("qt_ModelViewProjectionMatrix", renderer->combinedMatrix());
-}
-
-void CustomShaderMaterialData::updateEffectState(Renderer *r, AbstractEffect *newEffect, AbstractEffect *oldEffect)
+void CustomMaterialShader::updateState(Renderer *r, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
 {
     Q_ASSERT(oldEffect == 0);
     Q_ASSERT(newEffect != 0);
+    Q_ASSERT(static_cast<ShaderEffectNode *>(newEffect) == m_node);
     Q_UNUSED(oldEffect);
     Q_UNUSED(newEffect);
 
-    for (int i = node->m_sources.size() - 1; i >= 0; --i) {
-        const ShaderEffectItem::SourceData &source = node->m_sources.at(i);
+    for (int i = m_node->m_item->m_sources.size() - 1; i >= 0; --i) {
+        const ShaderEffectItem::SourceData &source = m_node->m_item->m_sources.at(i);
         if (!source.source)
             continue;
 
@@ -94,63 +93,101 @@ void CustomShaderMaterialData::updateEffectState(Renderer *r, AbstractEffect *ne
         source.source->bind();
     }
 
-    if (node->m_source.respectsOpacity)
-        node->m_program.setUniformValue("qt_Opacity", (float) node->opacity());
+    if (m_node->m_source.respectsOpacity)
+        m_program.setUniformValue("qt_Opacity", (float) m_node->opacity());
 
-    for (int ii = 0; ii < node->m_uniformValues.count(); ++ii) {
-        const QByteArray &name = node->m_uniformValues.at(ii).first;
-        const QVariant &v = node->m_uniformValues.at(ii).second;
+    for (int i = 0; i < m_node->m_uniformValues.count(); ++i) {
+        const QByteArray &name = m_node->m_uniformValues.at(i).first;
+        const QVariant &v = m_node->m_uniformValues.at(i).second;
 
         switch (v.type()) {
         case QVariant::Color:
-            node->m_program.setUniformValue(name.constData(), qvariant_cast<QColor>(v));
+            m_program.setUniformValue(name.constData(), qvariant_cast<QColor>(v));
             break;
         case QVariant::Double:
-            node->m_program.setUniformValue(name.constData(), (float) qvariant_cast<double>(v));
+            m_program.setUniformValue(name.constData(), (float) qvariant_cast<double>(v));
             break;
         case QVariant::Transform:
-            node->m_program.setUniformValue(name.constData(), qvariant_cast<QTransform>(v));
+            m_program.setUniformValue(name.constData(), qvariant_cast<QTransform>(v));
             break;
         case QVariant::Int:
-            node->m_program.setUniformValue(name.constData(), v.toInt());
+            m_program.setUniformValue(name.constData(), v.toInt());
             break;
         case QVariant::Size:
         case QVariant::SizeF:
-            node->m_program.setUniformValue(name.constData(), v.toSizeF());
+            m_program.setUniformValue(name.constData(), v.toSizeF());
             break;
         case QVariant::Point:
         case QVariant::PointF:
-            node->m_program.setUniformValue(name.constData(), v.toPointF());
+            m_program.setUniformValue(name.constData(), v.toPointF());
             break;
         case QVariant::Rect:
         case QVariant::RectF:
             {
                 QRectF r = v.toRectF();
-                node->m_program.setUniformValue(name.constData(), r.x(), r.y(), r.width(), r.height());
+                m_program.setUniformValue(name.constData(), r.x(), r.y(), r.width(), r.height());
             }
             break;
         case QVariant::Vector3D:
-            node->m_program.setUniformValue(name.constData(), qvariant_cast<QVector3D>(v));
+            m_program.setUniformValue(name.constData(), qvariant_cast<QVector3D>(v));
             break;
         default:
             break;
         }
     }
+
+    if ((updates & Renderer::UpdateMatrices) && m_node->m_source.respectsMatrix)
+        m_program.setUniformValue("qt_ModelViewProjectionMatrix", r->combinedMatrix());
 }
 
-const QSG::VertexAttribute *CustomShaderMaterialData::requiredFields() const
+char const *const *CustomMaterialShader::attributeNames() const
 {
-    node->updateShaderProgram();
-    return node->m_source.attributes.constData();
+    return m_node->m_source.attributeNames.constData();
 }
+
+void CustomMaterialShader::initialize()
+{
+    if (m_program.isLinked()) {
+        m_program.bind();
+        for (int i = 0; i < m_node->m_item->m_sources.size(); ++i)
+            m_program.setUniformValue(m_node->m_item->m_sources.at(i).name.constData(), i);
+    }
+}
+
+const char *CustomMaterialShader::vertexShader() const
+{
+    return m_node->m_source.vertexCode.constData();
+}
+
+const char *CustomMaterialShader::fragmentShader() const
+{
+    return m_node->m_source.fragmentCode.constData();
+}
+
+
+ShaderEffectMaterial::ShaderEffectMaterial()
+    : m_type_obj(new AbstractMaterialType)
+{
+}
+
 
 ShaderEffectNode::ShaderEffectNode(ShaderEffectItem *item)
-: m_programDirty(false), m_meshResolution(1, 1), m_opacity(1), m_item(item)
+    : m_meshResolution(1, 1), m_opacity(1), m_item(item)
 {
-    setFlag(UsePreprocess);
-    setGeometry(Utilities::createTexturedRectGeometry(QRectF(0, 0, 1, 1), QSize(1, 1), QRectF(0, 1, 1, -1)));
-    AbstractEffect::setFlags(AbstractEffect::Blending);
+    Node::setFlag(UsePreprocess, true);
+
+    QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
+        << QSGAttributeDescription(0, 2, GL_FLOAT, 4 * sizeof(float))
+        << QSGAttributeDescription(1, 2, GL_FLOAT, 4 * sizeof(float));
+    updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
+    AbstractMaterial::setFlag(Blending, true);
     setMaterial(this);
+}
+
+ShaderEffectNode::~ShaderEffectNode()
+{
+    for (int i = 0; i < m_shaders.size(); ++i)
+        m_shaders.at(i)->m_node = 0;
 }
 
 void ShaderEffectNode::setRect(const QRectF &rect)
@@ -189,6 +226,7 @@ void ShaderEffectNode::updateGeometry()
     int hmesh = m_meshResolution.width();
 
     Geometry *g = geometry();
+    g->setDrawingMode(QSG::TriangleStrip);
     g->setVertexCount((vmesh + 1) * (hmesh + 1));
     g->setIndexCount(vmesh * 2 * (hmesh + 2));
 
@@ -227,6 +265,14 @@ void ShaderEffectNode::updateGeometry()
     markDirty(Node::DirtyGeometry);
 }
 
+void ShaderEffectNode::invalidateShaders()
+{
+    for (int i = 0; i < m_shaders.size(); ++i) {
+        m_shaders.at(i)->m_program.removeAllShaders();
+        m_shaders.at(i)->m_compiled = false;
+    }
+}
+
 void ShaderEffectNode::preprocess()
 {
     // XXX todo
@@ -234,14 +280,20 @@ void ShaderEffectNode::preprocess()
     m_item->preprocess();
 }
 
-AbstractEffectType *ShaderEffectEffect::type() const
+AbstractMaterialType *ShaderEffectMaterial::type() const
 {
-    return const_cast<AbstractEffectType *>(&m_type);
+    return m_type_obj.data();
 }
 
-AbstractEffectProgram *ShaderEffectNode::createProgram() const
+int ShaderEffectMaterial::compare(const AbstractMaterial *other) const
 {
-    return new CustomShaderMaterialData(const_cast<ShaderEffectNode *>(this));
+    return this - static_cast<const ShaderEffectMaterial *>(other);
+}
+
+
+AbstractMaterialShader *ShaderEffectNode::createShader() const
+{
+    return new CustomMaterialShader(const_cast<ShaderEffectNode *>(this));
 }
 
 void ShaderEffectNode::setOpacity(qreal o)
@@ -255,48 +307,13 @@ void ShaderEffectNode::setOpacity(qreal o)
 
 void ShaderEffectNode::setProgramSource(const ShaderEffectProgram &source)
 {
-    m_programDirty = true;
     m_source = source;
+    invalidateShaders();
     markDirty(DirtyMaterial);
 }
 
-void ShaderEffectNode::updateShaderProgram()
-{
-    if (!m_programDirty)
-        return;
-
-    m_program.removeAllShaders();
-    m_program.addShaderFromSourceCode(QGLShader::Vertex, m_source.vertexCode);
-    m_program.addShaderFromSourceCode(QGLShader::Fragment, m_source.fragmentCode);
-
-    for (int i = 0; i < m_source.attributeNames.size(); ++i)
-        m_program.bindAttributeLocation(m_source.attributeNames.at(i), m_source.attributes.at(i));
-
-    if (!m_program.link()) {
-        qWarning("ShaderEffectItem: Shader compilation failed:");
-        qWarning() << m_program.log();
-    }
-
-    if (!m_source.attributes.contains(QSG::Position))
-        qWarning("ShaderEffectItem: Missing reference to \'qt_Vertex\'.");
-    if (!m_source.attributes.contains(QSG::TextureCoord0))
-        qWarning("ShaderEffectItem: Missing reference to \'qt_MultiTexCoord0\'.");
-    if (!m_source.respectsMatrix)
-        qWarning("ShaderEffectItem: Missing reference to \'qt_ModelViewProjectionMatrix\'.");
-
-    if (m_program.isLinked()) {
-        m_program.bind();
-        for (int i = 0; i < m_sources.size(); ++i)
-            m_program.setUniformValue(m_sources.at(i).name.constData(), i);
-    }
-
-    m_programDirty = false;
-}
-
-void ShaderEffectNode::setData(const QList<QPair<QByteArray, QVariant> > &uniformValues,
-                               const QVector<ShaderEffectItem::SourceData> &sources)
+void ShaderEffectNode::setData(const QList<QPair<QByteArray, QVariant> > &uniformValues)
 {
     m_uniformValues = uniformValues;
-    m_sources = sources;
     markDirty(DirtyMaterial);
 }

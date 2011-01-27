@@ -55,8 +55,8 @@
 #include "node.h"
 #include "qsgtexturemanager.h"
 
-class AbstractEffectProgram;
-struct AbstractEffectType;
+class AbstractMaterialShader;
+struct AbstractMaterialType;
 class QGLFramebufferObject;
 class TextureReference;
 
@@ -129,7 +129,7 @@ public:
     void renderScene();
     void renderScene(const Bindable &bindable);
     virtual void nodeChanged(Node *node, Node::DirtyFlags flags);
-    virtual void materialChanged(GeometryNode *node, AbstractEffect *from, AbstractEffect *to);
+    virtual void materialChanged(GeometryNode *node, AbstractMaterial *from, AbstractMaterial *to);
 
 public slots:
 
@@ -141,7 +141,7 @@ protected:
     Renderer::ClipType updateStencilClip(const ClipNode *clip);
 
 
-    AbstractEffectProgram *prepareMaterial(AbstractEffect *material);
+    AbstractMaterialShader *prepareMaterial(AbstractMaterial *material);
     virtual void preprocess();
 
     void addNodesToPreprocess(Node *node);
@@ -155,7 +155,7 @@ private:
     RootNode *m_root_node;
     QRect m_device_rect;
 
-    QHash<AbstractEffectType *, AbstractEffectProgram *> m_materials;
+    QHash<AbstractMaterialType *, AbstractMaterialShader *> m_materials;
     QSet<Node *> m_nodes_to_preprocess;
 
     QMatrix4x4 m_projection_matrix;

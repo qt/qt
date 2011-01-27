@@ -31,14 +31,12 @@ HEADERS += $$PWD/convenience/areaallocator.h \
     $$PWD/convenience/flatcolormaterial.h \
     $$PWD/convenience/solidrectnode.h \
     $$PWD/convenience/texturematerial.h \
-    $$PWD/convenience/utilities.h \
     $$PWD/convenience/vertexcolormaterial.h \
 
 SOURCES += $$PWD/convenience/areaallocator.cpp \
     $$PWD/convenience/flatcolormaterial.cpp \
     $$PWD/convenience/solidrectnode.cpp \
     $$PWD/convenience/texturematerial.cpp \
-    $$PWD/convenience/utilities.cpp \
     $$PWD/convenience/vertexcolormaterial.cpp \
 
 

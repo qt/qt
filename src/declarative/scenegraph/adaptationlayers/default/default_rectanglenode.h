@@ -46,9 +46,8 @@
 #include "adaptationlayer.h"
 
 #include "flatcolormaterial.h"
-#include "utilities.h"
 
-class AbstractEffect;
+class AbstractMaterial;
 class QSGContext;
 
 class DefaultRectangleNode : public RectangleNodeInterface
@@ -79,7 +78,7 @@ private:
 
     MaterialPreference m_material_preference;
     GeometryNode m_border;
-    AbstractEffect *m_fill_material; // Can be FlatColorMaterial, VertexColorMaterial, TextureMaterial or TextureMaterialWithOpacity.
+    AbstractMaterial *m_fill_material; // Can be FlatColorMaterial, VertexColorMaterial, TextureMaterial or TextureMaterialWithOpacity.
     FlatColorMaterial m_border_material;
     QSGTextureRef m_gradient_texture;
 

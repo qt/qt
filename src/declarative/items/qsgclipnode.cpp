@@ -42,7 +42,6 @@
 
 
 #include "qsgclipnode_p.h"
-#include "utilities.h"
 
 #include <QtGui/qvector2d.h>
 #include <QtCore/qmath.h>
@@ -52,8 +51,9 @@ QSGClipNode::QSGClipNode(const QRectF &rect)
     , m_radius(0)
     , m_dirty_geometry(true)
 {
-    updateGeometryDescription(Utilities::getRectGeometryDescription(), GL_UNSIGNED_SHORT);
-    Utilities::setupRectGeometry(geometry(), m_rect);
+    QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
+        << QSGAttributeDescription(0, 2, GL_FLOAT, 2 * sizeof(float));
+    updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
 
     // ### gunnar: Clip nodes should not register for preprocess
     // but rather have an update mechanism similar to updatePaintNode();
@@ -83,16 +83,20 @@ void QSGClipNode::update()
 
 void QSGClipNode::updateGeometry()
 {
-    if (qFuzzyIsNull(m_radius)) {
-        updateGeometryDescription(Utilities::getRectGeometryDescription(), GL_UNSIGNED_SHORT);
-        Utilities::setupRectGeometry(geometry(), m_rect);
-    } else {
-        struct Vertex
-        {
-            QVector2D position;
-        };
+    Geometry *g = geometry();
 
-        Geometry *g = geometry();
+    if (qFuzzyIsNull(m_radius)) {
+        g->setDrawingMode(QSG::TriangleStrip);
+        g->setVertexCount(4);
+        g->setIndexCount(0);
+
+        QVector2D *vertices = (QVector2D *)g->vertexData();
+
+        for (int j = 0; j < 4; ++j) {
+            vertices[j].setX(j & 2 ? m_rect.right() : m_rect.left());
+            vertices[j].setY(j & 1 ? m_rect.bottom() : m_rect.top());
+        }
+    } else {
         int vertexCount = 0;
 
         // Radius should never exceeds half of the width or half of the height
@@ -106,7 +110,7 @@ void QSGClipNode::updateGeometry()
         g->setVertexCount((segments + 1) * 4);
         g->setIndexCount(0);
 
-        Vertex *vertices = (Vertex *)g->vertexData();
+        QVector2D *vertices = (QVector2D *)g->vertexData();
 
         for (int part = 0; part < 2; ++part) {
             for (int i = 0; i <= segments; ++i) {
@@ -118,8 +122,8 @@ void QSGClipNode::updateGeometry()
                 qreal lx = rect.left() - radius * s; // current inner left x-coordinate.
                 qreal rx = rect.right() + radius * s; // current inner right x-coordinate.
 
-                vertices[vertexCount++].position = QVector2D(rx, y);
-                vertices[vertexCount++].position = QVector2D(lx, y);
+                vertices[vertexCount++] = QVector2D(rx, y);
+                vertices[vertexCount++] = QVector2D(lx, y);
             }
         }
 

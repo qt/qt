@@ -54,7 +54,7 @@
 
 class QSGContext;
 class QSignalMapper;
-class CustomShaderMaterialData;
+class CustomMaterialShader;
 
 // TODO: Implement async loading and loading over network.
 // TODO: Implement support for multisampling.
@@ -63,11 +63,10 @@ struct ShaderEffectProgram
     ShaderEffectProgram() 
     : respectsOpacity(false), respectsMatrix(false) {}
 
-    QString vertexCode;
-    QString fragmentCode;
+    QByteArray vertexCode;
+    QByteArray fragmentCode;
 
-    QVector<QSG::VertexAttribute> attributes;
-    QVector<QByteArray> attributeNames;
+    QVector<const char *> attributeNames;
     QSet<QByteArray> uniformNames;
 
     uint respectsOpacity : 1;
@@ -77,8 +76,8 @@ struct ShaderEffectProgram
 class ShaderEffectItem : public QSGItem
 {
     Q_OBJECT
-    Q_PROPERTY(QString fragmentShader READ fragmentShader WRITE setFragmentShader NOTIFY fragmentShaderChanged)
-    Q_PROPERTY(QString vertexShader READ vertexShader WRITE setVertexShader NOTIFY vertexShaderChanged)
+    Q_PROPERTY(QByteArray fragmentShader READ fragmentShader WRITE setFragmentShader NOTIFY fragmentShaderChanged)
+    Q_PROPERTY(QByteArray vertexShader READ vertexShader WRITE setVertexShader NOTIFY vertexShaderChanged)
     Q_PROPERTY(bool blending READ blending WRITE setBlending NOTIFY blendingChanged)
     Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)
     Q_PROPERTY(QSize meshResolution READ meshResolution WRITE setMeshResolution NOTIFY meshResolutionChanged)
@@ -89,11 +88,11 @@ public:
 
     virtual void componentComplete();
 
-    QString fragmentShader() const { return m_source.fragmentCode; }
-    void setFragmentShader(const QString &code);
+    QByteArray fragmentShader() const { return m_source.fragmentCode; }
+    void setFragmentShader(const QByteArray &code);
     
-    QString vertexShader() const { return m_source.vertexCode; }
-    void setVertexShader(const QString &code);
+    QByteArray vertexShader() const { return m_source.vertexCode; }
+    void setVertexShader(const QByteArray &code);
 
     bool blending() const { return m_blending; }
     void setBlending(bool enable);
@@ -122,7 +121,7 @@ private Q_SLOTS:
     void markDirty();
 
 private:
-    friend class CustomShaderMaterialData;
+    friend class CustomMaterialShader;
     friend class ShaderEffectNode;
 
     void setSource(QVariant var, int index);
@@ -130,7 +129,7 @@ private:
     void connectPropertySignals();
     void reset();
     void updateProperties();
-    void lookThroughShaderCode(const QString &code);
+    void lookThroughShaderCode(const QByteArray &code);
 
     ShaderEffectProgram m_source;
     QSize m_mesh_resolution;

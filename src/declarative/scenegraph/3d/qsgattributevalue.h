@@ -93,34 +93,34 @@ inline QSGAttributeValue::QSGAttributeValue()
 }
 
 inline QSGAttributeValue::QSGAttributeValue(const QSGArray<float>& array)
-    : m_description(QSG::Position, 1, GL_FLOAT, 0), m_data(array.constData()), m_count(array.count())
+    : m_description(0, 1, GL_FLOAT, 0), m_data(array.constData()), m_count(array.count())
 {
 }
 
 inline QSGAttributeValue::QSGAttributeValue(const QSGArray<QVector2D>& array)
-    : m_description(QSG::Position, 2, GL_FLOAT, 0), m_data(array.constData()), m_count(array.count())
+    : m_description(0, 2, GL_FLOAT, 0), m_data(array.constData()), m_count(array.count())
 {
 }
 
 inline QSGAttributeValue::QSGAttributeValue(const QSGArray<QVector3D>& array)
-    : m_description(QSG::Position, 3, GL_FLOAT, 0), m_data(array.constData()), m_count(array.count())
+    : m_description(0, 3, GL_FLOAT, 0), m_data(array.constData()), m_count(array.count())
 {
 }
 
 inline QSGAttributeValue::QSGAttributeValue(const QSGArray<QVector4D>& array)
-    : m_description(QSG::Position, 4, GL_FLOAT, 0), m_data(array.constData()), m_count(array.count())
+    : m_description(0, 4, GL_FLOAT, 0), m_data(array.constData()), m_count(array.count())
 {
 }
 
 inline QSGAttributeValue::QSGAttributeValue
         (int tupleSize, GLenum type, int stride, const void *data, int count)
-    : m_description(QSG::Position, tupleSize, type, stride), m_data(data), m_count(count)
+    : m_description(0, tupleSize, type, stride), m_data(data), m_count(count)
 {
 }
 
 inline QSGAttributeValue::QSGAttributeValue
         (int tupleSize, GLenum type, int stride, int offset, int count)
-    : m_description(QSG::Position, tupleSize, type, stride),
+    : m_description(0, tupleSize, type, stride),
       m_data(reinterpret_cast<const void *>(offset)), m_count(count)
 {
 }

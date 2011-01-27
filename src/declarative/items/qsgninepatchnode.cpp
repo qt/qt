@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qsgninepatchnode_p.h"
-#include "utilities.h"
 #include "adaptationlayer.h"
 
 QSGNinePatchNode::QSGNinePatchNode(const QRectF &targetRect, const QSGTextureRef &texture,
@@ -55,7 +54,7 @@ QSGNinePatchNode::QSGNinePatchNode(const QRectF &targetRect, const QSGTextureRef
     m_materialO.setOpacity(m_opacity);
     m_materialO.setLinearFiltering(linearFiltering);
 
-    setMaterial(m_opacity == 1 ? (AbstractEffect *)&m_material : (AbstractEffect *)&m_materialO);
+    setMaterial(m_opacity == 1 ? (AbstractMaterial *)&m_material : (AbstractMaterial *)&m_materialO);
 
     updateGeometry();
 }
@@ -96,7 +95,7 @@ void QSGNinePatchNode::setLinearFiltering(bool linearFiltering)
 
     m_material.setLinearFiltering(linearFiltering);
     m_materialO.setLinearFiltering(linearFiltering);
-    setMaterial(m_opacity == 1 ? (AbstractEffect *)&m_material : (AbstractEffect *)&m_materialO);
+    setMaterial(m_opacity == 1 ? (AbstractMaterial *)&m_material : (AbstractMaterial *)&m_materialO);
 }
 
 void QSGNinePatchNode::updateGeometry()
@@ -106,8 +105,8 @@ void QSGNinePatchNode::updateGeometry()
     Geometry *g = geometry();
     if (g->isNull()) {
         QVector<QSGAttributeDescription> desc;
-        desc << QSGAttributeDescription(QSG::Position, 2, GL_FLOAT, 5 * sizeof(float));
-        desc << QSGAttributeDescription(QSG::TextureCoord0, 2, GL_FLOAT, 5 * sizeof(float));
+        desc << QSGAttributeDescription(0, 2, GL_FLOAT, 4 * sizeof(float));
+        desc << QSGAttributeDescription(1, 2, GL_FLOAT, 4 * sizeof(float));
         updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
         g->setVertexCount(6 * 6); // Grid of 6x6 vertices.
         g->setIndexCount(5 * 5 * 6); // Grid of 5x5 cells, 2 triangles per cell.

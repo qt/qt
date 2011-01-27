@@ -44,13 +44,13 @@
 
 #include <material.h>
 
-class FlatColorMaterial : public AbstractEffect
+class FlatColorMaterial : public AbstractMaterial
 {
 public:
     FlatColorMaterial();
-    virtual AbstractEffectType *type() const;
-    virtual AbstractEffectProgram *createProgram() const;
-    virtual int compare(const AbstractEffect *other) const;
+    virtual AbstractMaterialType *type() const;
+    virtual AbstractMaterialShader *createShader() const;
+    virtual int compare(const AbstractMaterial *other) const;
 
     void setColor(const QColor &color);
     const QColor &color() const { return m_color; }
@@ -58,7 +58,7 @@ public:
     void setOpacity(qreal opacity);
     qreal opacity() const { return m_opacity; }
 
-    static bool is(const AbstractEffect *effect);
+    static bool is(const AbstractMaterial *effect);
 
 private:
     QColor m_color;
