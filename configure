@@ -934,6 +934,16 @@ if [ -d "$relpath/src/plugins/gfxdrivers" ]; then
   CFG_GFX_OFF="$CFG_GFX_AVAILABLE" # assume all off
 fi
 
+CFG_IMAGEFORMAT_PLUGIN_AVAILABLE=
+if [ -d "$relpath/src/plugins/imageformats" ]; then
+    for a in "$relpath/src/plugins/imageformats/"*; do
+        if [ -d "$a" ]; then
+            base_a=`basename "$a"`
+            CFG_IMAGEFORMAT_PLUGIN_AVAILABLE="${CFG_IMAGEFORMAT_PLUGIN_AVAILABLE} ${base_a}"
+        fi
+    done
+fi
+
 #-------------------------------------------------------------------------------
 # Set Default NaCl options
 #-------------------------------------------------------------------------------
@@ -2140,7 +2150,7 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    sql-*|gfx-*|decoration-*|kbd-*|mouse-*)
+    sql-*|gfx-*|decoration-*|kbd-*|mouse-*|imageformat-*)
         # if Qt style options were used, $VAL can be "no", "qt", or "plugin"
         # if autoconf style options were used, $VAL can be "yes" or "no"
         [ "$VAL" = "yes" ] && VAL=qt
@@ -2182,6 +2192,13 @@ while [ "$#" -gt 0 ]; do
 		avail="$CFG_MOUSE_PLUGIN_AVAILABLE"
 	    fi
             ;;
+        imageformat)
+            avail="$CFG_IMAGEFORMAT_PLUGIN_AVAILABLE"
+            if [ "$OPT" != "plugin" ]; then
+                # png is always built in
+                avail="$avail png"
+            fi
+            ;;
         *)
             avail=""
             echo "BUG: Unhandled type $VAR used in $CURRENT_OPT"
@@ -2201,6 +2218,11 @@ while [ "$#" -gt 0 ]; do
         if [ "$VAR" = "sql" ]; then
             # set the CFG_SQL_driver
             eval "CFG_SQL_$VAL=\$OPT"
+            continue
+        elif [ "$VAR" = "imageformat" ]; then
+            [ "$OPT" = "qt" ] && OPT=yes
+            VAL="`echo $VAL |tr a-z A-Z`"
+            eval "CFG_$VAL=$OPT"
             continue
         fi
 
