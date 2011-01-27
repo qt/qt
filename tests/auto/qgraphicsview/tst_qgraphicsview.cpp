@@ -3357,6 +3357,10 @@ void tst_QGraphicsView::moveItemWhileScrolling()
     int a = adjustForAntialiasing ? 2 : 1;
     expectedRegion += QRect(40, 50, 10, 10).adjusted(-a, -a, a, a);
     expectedRegion += QRect(40, 60, 10, 10).adjusted(-a, -a, a, a);
+#ifdef QT_MAC_USE_COCOA
+    if (QApplicationPrivate::graphicsSystem() == 0)
+        QEXPECT_FAIL("", "This will fail with Cocoa because paint events are not send in the order expected by graphicsview", Continue);
+#endif
     COMPARE_REGIONS(view.lastPaintedRegion, expectedRegion);
 }
 
