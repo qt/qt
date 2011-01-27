@@ -560,7 +560,8 @@ bool QtConnection::connect(v8::Handle<v8::Object> receiver, v8::Handle<v8::Objec
     bool ok;
     if (sender) {
         if (QMetaObject::connect(sender, m_signal->index(), this, staticMetaObject.methodOffset(), type)) {
-            if (!receiver.IsEmpty() && (instance = QtInstanceData::safeGet(receiver))) {
+            if (!receiver.IsEmpty() && m_signal->engine->isQtObject(receiver)) {
+                instance = QtInstanceData::get(receiver);
                 QObject *recv = instance->cppObject(QtInstanceData::IgnoreException);
                 if (recv) {
                     // FIXME: we are connecting to qobjects, can we try to connect them directly?

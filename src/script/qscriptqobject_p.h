@@ -50,7 +50,6 @@ class QtData : public QtDataBase
 public:
     inline QtData(QScriptEnginePrivate *engine);
     static T *get(v8::Handle<v8::Object> object);
-    static T *safeGet(v8::Handle<v8::Object> object);
     static void set(v8::Handle<v8::Object> object, T* data);
 };
 

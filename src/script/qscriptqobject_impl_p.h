@@ -66,20 +66,14 @@ T* QtData<T>::get(v8::Handle<v8::Object> object)
 {
     Q_ASSERT(object->InternalFieldCount() == 1);
     void *ptr = object->GetPointerFromInternalField(0);
-    return static_cast<T*>(ptr);
-}
-
-template<class T>
-T* QtData<T>::safeGet(v8::Handle<v8::Object> object)
-{
-    void *ptr = object->InternalFieldCount() > 0 ? object->GetPointerFromInternalField(0) : 0;
+    Q_ASSERT(ptr);
     return static_cast<T*>(ptr);
 }
 
 template<class T>
 void QtData<T>::set(v8::Handle<v8::Object> object, T* data)
 {
-    T* oldData = safeGet(object);
+    T* oldData = get(object);
     delete oldData;
     object->SetPointerInInternalField(0, data);
 }
