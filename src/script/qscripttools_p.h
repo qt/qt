@@ -62,8 +62,12 @@ protected:
     }
 
 private:
+#if defined(Q_NO_TEMPLATE_FRIENDS)
+public:
+#else
     template<class T>
     friend class QScriptBagContainer;
+#endif
     QScriptLinkedNode *m_next;
     QScriptLinkedNode *m_prev;
 };
