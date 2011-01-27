@@ -42,6 +42,7 @@
 #include "qplatformintegration_qpa.h"
 
 #include <QtGui/QPlatformFontDatabase>
+#include <QtGui/QPlatformClipboard>
 
 QT_BEGIN_NAMESPACE
 
@@ -91,6 +92,23 @@ QPlatformFontDatabase *QPlatformIntegration::fontDatabase() const
         db = new QPlatformFontDatabase;
     }
     return db;
+}
+
+/*!
+    Accessor for the platform integrations clipboard.
+
+    Default implementation returns a default QPlatformClipboard.
+
+    \sa QPlatformClipboard
+
+*/
+QPlatformClipboard *QPlatformIntegration::clipboard() const
+{
+    static QPlatformClipboard *clipboard = 0;
+    if (!clipboard) {
+        clipboard = new QPlatformClipboard;
+    }
+    return clipboard;
 }
 
 /*!
