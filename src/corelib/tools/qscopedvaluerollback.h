@@ -72,7 +72,7 @@ private:
     T& varRef;
     T oldValue;
 
-    Q_DISABLE_COPY(QScopedValueRollback);
+    Q_DISABLE_COPY(QScopedValueRollback)
 };
 
 QT_END_NAMESPACE
