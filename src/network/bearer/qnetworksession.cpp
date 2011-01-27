@@ -310,7 +310,7 @@ bool QNetworkSession::waitForOpened(int msecs)
     if (d->isOpen)
         return true;
 
-    if (d->state != Connecting)
+    if (d->state != Connecting && d->state != Connected) //state is connected when opening an already active interface
         return false;
 
     QEventLoop loop;
