@@ -107,6 +107,7 @@ public:
         PersistentIdentifier(const PersistentIdentifier &other);
         PersistentIdentifier &operator=(const PersistentIdentifier &other);
 
+        QString toString() const;
     private:
         friend class QScriptDeclarativeClass;
         PersistentIdentifier(QScriptEnginePrivate *e) : identifier(0), engine(e), d(0) {}

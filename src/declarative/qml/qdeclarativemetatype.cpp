@@ -140,6 +140,7 @@ public:
     int m_version_min;
     int m_typeId; int m_listId; 
     int m_revision;
+    mutable bool m_containsRevisionedAttributes;
     mutable QDeclarativeType *m_superType;
 
     int m_allocationSize;
@@ -167,10 +168,11 @@ public:
 QHash<const QMetaObject *, int> QDeclarativeTypePrivate::m_attachedPropertyIds;
 
 QDeclarativeTypePrivate::QDeclarativeTypePrivate()
-: m_isInterface(false), m_iid(0), m_typeId(0), m_listId(0), m_revision(0), m_superType(0),
-  m_allocationSize(0), m_newFunc(0), m_baseMetaObject(0), m_attachedPropertiesFunc(0), m_attachedPropertiesType(0),
-  m_parserStatusCast(-1), m_propertyValueSourceCast(-1), m_propertyValueInterceptorCast(-1),
-  m_extFunc(0), m_extMetaObject(0), m_index(-1), m_customParser(0), m_isSetup(false), m_haveSuperType(false)
+: m_isInterface(false), m_iid(0), m_typeId(0), m_listId(0), m_revision(0), m_containsRevisionedAttributes(false),
+  m_superType(0), m_allocationSize(0), m_newFunc(0), m_baseMetaObject(0), m_attachedPropertiesFunc(0), 
+  m_attachedPropertiesType(0), m_parserStatusCast(-1), m_propertyValueSourceCast(-1), 
+  m_propertyValueInterceptorCast(-1), m_extFunc(0), m_extMetaObject(0), m_index(-1), m_customParser(0), 
+  m_isSetup(false), m_haveSuperType(false)
 {
 }
 
@@ -235,6 +237,11 @@ QDeclarativeType::~QDeclarativeType()
     delete d;
 }
 
+QByteArray QDeclarativeType::module() const
+{
+    return d->m_module;
+}
+
 int QDeclarativeType::majorVersion() const
 {
     return d->m_version_maj;
@@ -268,36 +275,6 @@ QDeclarativeType *QDeclarativeType::superType() const
     }
 
     return d->m_superType;
-}
-
-bool QDeclarativeType::isPropertyAvailable(int index, int revision) const
-{
-    if (revision == 0)
-        return true;
-
-    if (index < d->m_baseMetaObject->propertyOffset()) {
-        if (QDeclarativeType *super = superType())
-            return super->isPropertyAvailable(index, revision);
-    } else if (index < d->m_baseMetaObject->propertyOffset() + d->m_baseMetaObject->propertyCount()) {
-        return d->m_revision >= revision;
-    }
-
-    return false;
-}
-
-bool QDeclarativeType::isMethodAvailable(int index, int revision) const
-{
-    if (revision == 0)
-        return true;
-
-    if (index < d->m_baseMetaObject->methodOffset()) {
-        if (QDeclarativeType *super = superType())
-            return super->isMethodAvailable(index, revision);
-    } else if (index < d->m_baseMetaObject->methodOffset() + d->m_baseMetaObject->methodCount()) {
-        return d->m_revision >= revision;
-    }
-
-    return false;
 }
 
 static void clone(QMetaObjectBuilder &builder, const QMetaObject *mo, 
@@ -413,6 +390,25 @@ void QDeclarativeTypePrivate::init() const
         m_metaObjects[ii].methodOffset =
             m_metaObjects.at(ii).metaObject->methodOffset();
     }
+    
+    // Check for revisioned details
+    {
+        const QMetaObject *mo = 0;
+        if (m_metaObjects.isEmpty())
+            mo = m_baseMetaObject;
+        else
+            mo = m_metaObjects.first().metaObject;
+
+        for (int ii = 0; !m_containsRevisionedAttributes && ii < mo->propertyCount(); ++ii) {
+            if (mo->property(ii).revision() != 0)
+                m_containsRevisionedAttributes = true;
+        }
+
+        for (int ii = 0; !m_containsRevisionedAttributes && ii < mo->methodCount(); ++ii) {
+            if (mo->method(ii).revision() != 0)
+                m_containsRevisionedAttributes = true;
+        }
+    }
 
     m_isSetup = true;
     lock.unlock();
@@ -519,6 +515,18 @@ const QMetaObject *QDeclarativeType::metaObject() const
 const QMetaObject *QDeclarativeType::baseMetaObject() const
 {
     return d->m_baseMetaObject;
+}
+
+bool QDeclarativeType::containsRevisionedAttributes() const
+{
+    d->init();
+
+    return d->m_containsRevisionedAttributes;
+}
+
+int QDeclarativeType::metaObjectRevision() const
+{
+    return d->m_revision;
 }
 
 QDeclarativeAttachedPropertiesFunc QDeclarativeType::attachedPropertiesFunction() const

@@ -633,11 +633,11 @@ void tst_QDeclarativeRepeater::testQtQuick11Attributes_data()
 
     QTest::newRow("itemAdded") << "onItemAdded: count"
             << "QDeclarativeComponent: Component is not ready"
-            << ":1 Signal \"onItemAdded\" not available in QtQuick/Repeater 1.0\n";
+            << ":1 \"Repeater.onItemAdded\" is not available in QtQuick 1.0.\n";
 
     QTest::newRow("itemRemoved") << "onItemRemoved: count"
             << "QDeclarativeComponent: Component is not ready"
-            << ":1 Signal \"onItemRemoved\" not available in QtQuick/Repeater 1.0\n";
+            << ":1 \"Repeater.onItemRemoved\" is not available in QtQuick 1.0.\n";
 
     QTest::newRow("itemAt") << "Component.onCompleted: itemAt(0)"
             << "<Unknown File>:1: ReferenceError: Can't find variable: itemAt"

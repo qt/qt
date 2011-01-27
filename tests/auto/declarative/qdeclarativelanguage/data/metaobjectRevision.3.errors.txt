@@ -1,1 +1,1 @@
-9:5:Property "propD" not available in Test/MyRevisionedClass 1.1
+9:5:"MyRevisionedClass.propD" is not available in Test 1.1.

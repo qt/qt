@@ -179,6 +179,11 @@ QScriptDeclarativeClass::PersistentIdentifier::operator=(const PersistentIdentif
     return *this;
 }
 
+QString QScriptDeclarativeClass::PersistentIdentifier::toString() const
+{
+    return ((JSC::Identifier &)d).ustring();
+}
+
 QScriptDeclarativeClass::QScriptDeclarativeClass(QScriptEngine *engine)
 : d_ptr(new QScriptDeclarativeClassPrivate)
 {

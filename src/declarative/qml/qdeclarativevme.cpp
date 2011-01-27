@@ -324,10 +324,12 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
 
                 (void)new QDeclarativeVMEMetaObject(target, &mo, data, comp);
 
-                QDeclarativeData *ddata = QDeclarativeData::get(target, true);
-                if (ddata->propertyCache) ddata->propertyCache->release();
-                ddata->propertyCache = propertyCaches.at(instr.storeMeta.propertyCache);
-                ddata->propertyCache->addref();
+                if (instr.storeMeta.propertyCache != -1) {
+                    QDeclarativeData *ddata = QDeclarativeData::get(target, true);
+                    if (ddata->propertyCache) ddata->propertyCache->release();
+                    ddata->propertyCache = propertyCaches.at(instr.storeMeta.propertyCache);
+                    ddata->propertyCache->addref();
+                }
             }
             break;
 
@@ -977,6 +979,11 @@ QDeclarativeCompiledData::TypeReference::createInstance(QDeclarativeContextData 
         QDeclarativeData *ddata = new (memory) QDeclarativeData;
         ddata->ownMemory = false;
         QObjectPrivate::get(rv)->declarativeData = ddata;
+
+        if (typePropertyCache && !ddata->propertyCache) {
+            ddata->propertyCache = typePropertyCache;
+            ddata->propertyCache->addref();
+        }
 
         return rv;
     } else {
