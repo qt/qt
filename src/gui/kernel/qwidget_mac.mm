@@ -580,25 +580,6 @@ inline static void qt_mac_set_window_group_to_popup(OSWindowRef window)
 }
 #endif
 
-#ifdef QT_MAC_USE_COCOA
-void qt_mac_set_needs_display(QWidget *widget, QRegion region)
-{
-    NSView *theNSView = qt_mac_nativeview_for(widget);
-    if (region.isEmpty()) {
-        [theNSView setNeedsDisplay:YES];
-        return;
-    }
-
-    QVector<QRect> rects = region.rects();
-    for (int i = 0; i<rects.count(); ++i) {
-        const QRect &rect = rects.at(i);
-        NSRect nsrect = NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
-        [theNSView setNeedsDisplayInRect:nsrect];
-    }
-
-}
-#endif
-
 inline static bool updateRedirectedToGraphicsProxyWidget(QWidget *widget, const QRect &rect)
 {
     if (!widget)
@@ -3352,7 +3333,7 @@ void QWidgetPrivate::update_sys(const QRect &r)
 #ifndef QT_MAC_USE_COCOA
             HIViewSetNeedsDisplay(qt_mac_nativeview_for(q), true);
 #else
-	    qt_mac_set_needs_display(q, QRegion());
+            qt_mac_setNeedsDisplayInRect(q, QRegion());
 #endif
         return;
     }
@@ -4928,7 +4909,7 @@ void QWidgetPrivate::finishCocoaMaskSetup()
         [window setOpaque:(extra->imageMask == 0)];
         [window invalidateShadow];
     }
-    qt_mac_set_needs_display(q, QRegion());
+    qt_mac_setNeedsDisplayInRect(q, QRegion());
 }
 #endif
 

@@ -229,7 +229,8 @@ void qt_mac_post_retranslateAppMenu();
 
 #ifdef QT_MAC_USE_COCOA
 void qt_mac_display(QWidget *widget);
-void qt_mac_setneedsdisplay(QWidget *widget);
+void qt_mac_setNeedsDisplay(QWidget *widget);
+void qt_mac_setNeedsDisplayInRect(QWidget *widget, QRegion region);
 #endif // QT_MAC_USE_COCOA
 
 

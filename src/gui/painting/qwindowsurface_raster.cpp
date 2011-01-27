@@ -268,7 +268,7 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
     this->regionToFlush += rgn;
 
     // The actual flushing will be processed in [view drawRect:rect]
-    qt_mac_setneedsdisplay(widget);
+    qt_mac_setNeedsDisplay(widget);
 
     // Unified toolbar hack.
     // We issue a flush call for each QToolBar so they get repainted right after
