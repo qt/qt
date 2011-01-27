@@ -48,6 +48,11 @@
 
 QT_BEGIN_NAMESPACE
 
+QDeclarativeImageBase::QDeclarativeImageBase(QDeclarativeItem *parent)
+  : QDeclarativeImplicitSizeItem(*(new QDeclarativeImageBasePrivate), parent)
+{
+}
+
 QDeclarativeImageBase::QDeclarativeImageBase(QDeclarativeImageBasePrivate &dd, QDeclarativeItem *parent)
   : QDeclarativeImplicitSizeItem(dd, parent)
 {

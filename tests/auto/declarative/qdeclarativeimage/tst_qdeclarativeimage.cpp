@@ -90,6 +90,8 @@ private slots:
     void paintedWidthHeight();
     void sourceSize_QTBUG_14303();
     void nullPixmapPaint();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
 
 private:
     template<typename T>
@@ -164,7 +166,7 @@ void tst_qdeclarativeimage::imageSource()
     if (!error.isEmpty())
         QTest::ignoreMessage(QtWarningMsg, error.toUtf8());
 
-    QString componentStr = "import QtQuick 1.0\nImage { source: \"" + source + "\"; asynchronous: "
+    QString componentStr = "import QtQuick 1.1\nImage { source: \"" + source + "\"; asynchronous: "
         + (async ? QLatin1String("true") : QLatin1String("false")) + "; cache: "
         + (cache ? QLatin1String("true") : QLatin1String("false")) + " }";
     QDeclarativeComponent component(&engine);
@@ -280,7 +282,7 @@ void tst_qdeclarativeimage::mirror()
     qreal height = 250;
 
     QString src = QUrl::fromLocalFile(SRCDIR "/data/heart200.png").toString();
-    QString componentStr = "import QtQuick 1.0\nImage { source: \"" + src + "\"; }";
+    QString componentStr = "import QtQuick 1.1\nImage { source: \"" + src + "\"; }";
 
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
@@ -665,6 +667,45 @@ void tst_qdeclarativeimage::nullPixmapPaint()
     qInstallMsgHandler(previousMsgHandler);
     QVERIFY(numberOfWarnings == 0);
     delete image;
+}
+
+void tst_qdeclarativeimage::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; Image { " + code.toUtf8() + " }", QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; Image { " + code.toUtf8() + " }", QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+}
+
+void tst_qdeclarativeimage::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("mirror") << "mirror: true"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Image.mirror\" is not available in QtQuick 1.0.\n";
+
+    QTest::newRow("cache") << "cache: true"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Image.cache\" is not available in QtQuick 1.0.\n";
 }
 
 /*

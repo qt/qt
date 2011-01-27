@@ -71,9 +71,9 @@ class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeText : public QDeclarativeImplici
     Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign NOTIFY horizontalAlignmentChanged)
     Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign NOTIFY verticalAlignmentChanged)
     Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
-    Q_PROPERTY(int lineCount READ lineCount NOTIFY lineCountChanged)
-    Q_PROPERTY(bool truncated READ truncated NOTIFY truncatedChanged)
-    Q_PROPERTY(int maximumLineCount READ maximumLineCount WRITE setMaximumLineCount NOTIFY maximumLineCountChanged RESET resetMaximumLineCount)
+    Q_PROPERTY(int lineCount READ lineCount NOTIFY lineCountChanged REVISION 1)
+    Q_PROPERTY(bool truncated READ truncated NOTIFY truncatedChanged REVISION 1)
+    Q_PROPERTY(int maximumLineCount READ maximumLineCount WRITE setMaximumLineCount NOTIFY maximumLineCountChanged RESET resetMaximumLineCount REVISION 1)
 
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat NOTIFY textFormatChanged)
     Q_PROPERTY(TextElideMode elide READ elideMode WRITE setElideMode NOTIFY elideModeChanged) //### elideMode?
@@ -169,9 +169,9 @@ Q_SIGNALS:
     void horizontalAlignmentChanged(HAlignment alignment);
     void verticalAlignmentChanged(VAlignment alignment);
     void wrapModeChanged();
-    void lineCountChanged();
-    void truncatedChanged();
-    void maximumLineCountChanged();
+    Q_REVISION(1) void lineCountChanged();
+    Q_REVISION(1) void truncatedChanged();
+    Q_REVISION(1) void maximumLineCountChanged();
     void textFormatChanged(TextFormat textFormat);
     void elideModeChanged(TextElideMode mode);
     void paintedSizeChanged();

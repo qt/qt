@@ -129,6 +129,8 @@ private slots:
     void pastingRichText_QTBUG_14003();
     void implicitSize_data();
     void implicitSize();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
 
 private:
     void simulateKey(QDeclarativeView *, int key);
@@ -1474,6 +1476,45 @@ void tst_qdeclarativetextedit::implicitSize()
     textObject->resetWidth();
     QVERIFY(textObject->width() == textObject->implicitWidth());
     QVERIFY(textObject->height() == textObject->implicitHeight());
+}
+
+void tst_qdeclarativetextedit::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; Text { " + code.toUtf8() + " }", QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; Text { " + code.toUtf8() + " }", QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+}
+
+void tst_qdeclarativetextedit::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("canPaste") << "property bool foo: canPaste"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: canPaste"
+        << "";
+
+    QTest::newRow("lineCount") << "property int foo: lineCount"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: lineCount"
+        << "";
 }
 
 QTEST_MAIN(tst_qdeclarativetextedit)

@@ -187,10 +187,12 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativeGrid,1>("QtQuick",1,1,"Grid");
     qmlRegisterType<QDeclarativeFlow,1>("QtQuick",1,1,"Flow");
     qmlRegisterType<QDeclarativeRepeater,1>("QtQuick",1,1,"Repeater");
+    qmlRegisterType<QDeclarativeText,1>("QtQuick",1,1,"Text");
     qmlRegisterType<QDeclarativeTextEdit,1>("QtQuick",1,1,"TextEdit");
 #ifndef QT_NO_LINEEDIT
     qmlRegisterType<QDeclarativeTextInput,1>("QtQuick",1,1,"TextInput");
 #endif
+    qmlRegisterRevision<QDeclarativeImageBase,1>("QtQuick",1,1);
     qmlRegisterRevision<QDeclarativeImplicitSizeItem,0>("QtQuick",1,0);
     qmlRegisterRevision<QDeclarativeImplicitSizeItem,1>("QtQuick",1,1);
     qmlRegisterRevision<QDeclarativeImplicitSizePaintedItem,0>("QtQuick",1,0);
