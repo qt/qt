@@ -140,7 +140,7 @@ bool QTestLiteIntegration::hasOpenGL() const
     static bool wasEglInitialized = false;
     if (!eglHasbeenInitialized) {
         eglHasbeenInitialized = true;
-        QTestLiteScreen *screen = static_cast<const QTestLiteScreen *>(mScreens.at(0));
+        const QTestLiteScreen *screen = static_cast<const QTestLiteScreen *>(mScreens.at(0));
         EGLint major, minor;
         eglBindAPI(EGL_OPENGL_ES_API);
         EGLDisplay disp = eglGetDisplay(screen->display());
