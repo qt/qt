@@ -36,6 +36,8 @@
 #ifndef QSCRIPTQOBJECT_IMPL_P_H
 #define QSCRIPTQOBJECT_IMPL_P_H
 
+#include "qscriptqobject_p.h"
+
 inline QtDataBase::QtDataBase(QScriptEnginePrivate *engine)
     : m_engine(engine)
 {
