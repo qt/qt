@@ -44,6 +44,8 @@
 #include <QtGui/qgraphicsitem.h>
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
+#include <QtDeclarative/qdeclarativeitem.h>
+#include <qcolor.h>
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -60,6 +62,7 @@ private slots:
     void null();
     void loadEmptyUrl();
     void qmlCreateObject();
+    void qmlCreatObjectWithScript();
 
 private:
     QDeclarativeEngine engine;
@@ -116,6 +119,31 @@ void tst_qdeclarativecomponent::qmlCreateObject()
     QVERIFY(testObject3->parent() == object);
     QVERIFY(testObject3->parentItem() == qobject_cast<QGraphicsObject*>(object));
     QCOMPARE(testObject3->metaObject()->className(), "QDeclarativeGraphicsWidget");
+}
+
+void tst_qdeclarativecomponent::qmlCreatObjectWithScript()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/createObjectWithScript.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QObject *testObject1 = object->property("declarativerectangle").value<QObject*>();
+    QVERIFY(testObject1);
+    QVERIFY(testObject1->parent() == object);
+    QCOMPARE(testObject1->property("x").value<int>(), 17);
+    QCOMPARE(testObject1->property("y").value<int>(), 17);
+    QCOMPARE(testObject1->property("color").value<QColor>(), QColor(255,255,255));
+
+    QObject *testObject2 = object->property("declarativeitem").value<QObject*>();
+    QVERIFY(testObject2);
+    QVERIFY(testObject2->parent() == object);
+    QCOMPARE(testObject2->metaObject()->className(), "QDeclarativeItem_QML_2");
+    QCOMPARE(testObject2->property("x").value<int>(), 17);
+    QCOMPARE(testObject2->property("y").value<int>(), 17);
+    QCOMPARE(testObject2->property("testBool").value<bool>(), true);
+    QCOMPARE(testObject2->property("testInt").value<int>(), 17);
+    QCOMPARE(testObject2->property("testObject").value<QObject*>(), object);
 }
 
 QTEST_MAIN(tst_qdeclarativecomponent)
