@@ -1642,12 +1642,10 @@ void HtmlGenerator::generateHeader(const QString& title,
     QString shortVersion = myTree->version();
     if (shortVersion.count(QChar('.')) == 2)
         shortVersion.truncate(shortVersion.lastIndexOf(QChar('.')));
-    if (!shortVersion.isEmpty()) {
-        if (project == "QSA")
-            shortVersion = "QSA " + shortVersion + ": ";
-        else
-            shortVersion = "Qt " + shortVersion + ": ";
-    }
+    if (!project.isEmpty())
+        shortVersion = project + QLatin1String(" ") + shortVersion + QLatin1String(": ");
+    else
+        shortVersion = QLatin1String("Qt ") + shortVersion + QLatin1String(": ");
 
     // Generating page title
     out() << "  <title>" << shortVersion << protectEnc(title) << "</title>\n";
