@@ -51,11 +51,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-extern "C" {
-#include <xf86drm.h>
-}
-
-Q_GLOBAL_STATIC(QMutex,qt_defaultSharedContextMutex);
+Q_GLOBAL_STATIC(QMutex,qt_defaultSharedContextMutex)
 
 EGLint QWaylandGLContext::contextAttibutes[] = {
     EGL_CONTEXT_CLIENT_VERSION, 2,
