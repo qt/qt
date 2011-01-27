@@ -1961,7 +1961,7 @@ v
         <translation>Nezaprt niz na koncu vrstice</translation>
     </message>
     <message>
-        <source>Illegal escape squence</source>
+        <source>Illegal escape sequence</source>
         <translation>Neveljavno ubežno zaporedje</translation>
     </message>
     <message>
