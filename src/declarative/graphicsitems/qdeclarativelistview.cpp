@@ -2603,6 +2603,7 @@ void QDeclarativeListView::positionViewAtIndex(int index, int mode)
         d->layout();
     qreal pos = d->position();
     FxListItem *item = d->visibleItem(index);
+    qreal maxExtent = d->orient == QDeclarativeListView::Vertical ? -maxYExtent() : -maxXExtent();
     if (!item) {
         int itemPos = d->positionAt(index);
         // save the currently visible items in case any of them end up visible again
@@ -2610,7 +2611,7 @@ void QDeclarativeListView::positionViewAtIndex(int index, int mode)
         d->visibleItems.clear();
         d->visiblePos = itemPos;
         d->visibleIndex = index;
-        d->setPosition(itemPos);
+        d->setPosition(qMin(qreal(itemPos), maxExtent));
         // now release the reference to all the old visible items.
         for (int i = 0; i < oldVisible.count(); ++i)
             d->releaseItem(oldVisible.at(i));
@@ -2640,7 +2641,6 @@ void QDeclarativeListView::positionViewAtIndex(int index, int mode)
             if (itemPos < pos)
                 pos = itemPos;
         }
-        qreal maxExtent = d->orient == QDeclarativeListView::Vertical ? -maxYExtent() : -maxXExtent();
         pos = qMin(pos, maxExtent);
         qreal minExtent = d->orient == QDeclarativeListView::Vertical ? -minYExtent() : -minXExtent();
         pos = qMax(pos, minExtent);
