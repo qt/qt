@@ -36,6 +36,7 @@
 #ifndef QSCRIPTTOOLS_P_H
 #define QSCRIPTTOOLS_P_H
 
+#include <qdebug.h>
 template<class T>
 class QScriptBagContainer;
 
@@ -54,6 +55,12 @@ protected:
         : m_next(0)
         , m_prev(0)
     {}
+
+    ~QScriptLinkedNode()
+    {
+        Q_ASSERT_X(!m_next && !m_prev, Q_FUNC_INFO, "Destorying QScriptLinkedNode instance that still is in a container");
+    }
+
 private:
     template<class T>
     friend class QScriptBagContainer;
@@ -78,7 +85,6 @@ class QScriptBagContainer
 public:
     QScriptBagContainer()
         : m_first(0)
-        , m_last(0)
     {}
 
     /*!
@@ -87,20 +93,18 @@ public:
     */
     void insert(T* value)
     {
-        Q_ASSERT(checkState());
+        //dump(Q_FUNC_INFO, value);
         Q_ASSERT_X(!contains(value), Q_FUNC_INFO, "Can't insert a value which is in the bag already");
         QScriptLinkedNode* v = static_cast<QScriptLinkedNode*>(value);
         Q_ASSERT(v);
-        if (!m_last) {
-            Q_ASSERT(!m_first);
-            m_last = v;
-        } else
+        Q_ASSERT_X(!v->m_next && !v->m_prev, Q_FUNC_INFO, "Can't insert a value which is in an another bag");
+
+        if (m_first)
             m_first->m_prev = v;
 
         v->m_next = m_first;
         v->m_prev = 0;
         m_first = v;
-        Q_ASSERT(checkState());
     }
 
     /*!
@@ -109,20 +113,28 @@ public:
     */
     void remove(T* value)
     {
-        Q_ASSERT(checkState());
-        Q_ASSERT_X(contains(value), Q_FUNC_INFO, "Can't remove a value which is not in the bag");
+        //dump(Q_FUNC_INFO, value);
         QScriptLinkedNode* v = static_cast<QScriptLinkedNode*>(value);
         Q_ASSERT(v);
+
+        if (!v->m_next && !v->m_prev && m_first != v) {
+            // ignore that value as it is not registered at all
+            // FIXME: That may be optimized out if unregister call is removed from ~QtDataBase
+            return;
+        }
+
+        Q_ASSERT_X(contains(value), Q_FUNC_INFO, "Can't remove a value which is not in the bag");
+        Q_ASSERT(v->m_prev || (m_first == v && !v->m_prev));
+
         if (v->m_next)
             v->m_next->m_prev= v->m_prev;
-        else
-            m_last = v->m_prev;
 
         if (v->m_prev)
             v->m_prev->m_next = v->m_next;
         else
             m_first = v->m_next;
-        Q_ASSERT(checkState());
+        // reset removed value
+        v->m_next = v->m_prev = 0;
     }
 
     /*!
@@ -134,7 +146,6 @@ public:
     template<class Functor>
     void forEach(Functor fun)
     {
-        Q_ASSERT(checkState());
         QScriptLinkedNode *i = m_first;
         QScriptLinkedNode *tmp;
         while (i) {
@@ -142,7 +153,6 @@ public:
             i = i->m_next;
             fun(static_cast<T*>(tmp));
         }
-        Q_ASSERT(checkState());
     }
 
     /*!
@@ -151,13 +161,13 @@ public:
     */
     void clear()
     {
-        m_first = m_last = 0;
+        m_first = 0;
     }
 
-//    void dump(const char* msg) const
+//    void dump(const char* msg, T* obj = 0) const
 //    {
-//        qDebug() << msg;
-//        qDebug() << m_first << " => " << m_last;
+//        qDebug() << msg << obj;
+//        qDebug() << m_first;
 //        QScriptLinkedNode *i = m_first;
 //        while (i) {
 //            qDebug() <<"  - " << i << "(" << i->m_prev << ", " << i->m_next <<")";
@@ -165,13 +175,7 @@ public:
 //        }
 //    }
 
-
 private:
-    bool checkState() const
-    {
-        return (!m_first && !m_last) || (m_first && m_last);
-    }
-
     bool contains(T *value) const
     {
         QScriptLinkedNode *i = m_first;
@@ -183,7 +187,6 @@ private:
         return false;
     }
     QScriptLinkedNode *m_first;
-    QScriptLinkedNode *m_last;
 };
 
 #endif //QSCRIPTTOOLS_P_H

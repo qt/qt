@@ -37,6 +37,7 @@
 #define QSCRIPTQOBJECT_IMPL_P_H
 
 #include "qscriptqobject_p.h"
+#include "qscriptengine_p.h"
 
 inline QtDataBase::QtDataBase(QScriptEnginePrivate *engine)
     : m_engine(engine)
@@ -46,7 +47,9 @@ inline QtDataBase::QtDataBase(QScriptEnginePrivate *engine)
 }
 
 inline QtDataBase::~QtDataBase()
-{}
+{
+    m_engine->unregisterAdditionalResources(this);
+}
 
 inline QScriptEnginePrivate *QtDataBase::engine() const
 {
@@ -78,7 +81,6 @@ void QtData<T>::set(v8::Handle<v8::Object> object, T* data)
 {
     T* oldData = safeGet(object);
     delete oldData;
-    oldData->engine()->unregisterAdditionalResources(oldData);
     object->SetPointerInInternalField(0, data);
 }
 

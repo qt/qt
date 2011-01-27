@@ -68,7 +68,6 @@ template <typename T>
 void QtNativeFunctionCleanup(v8::Persistent<v8::Value> object, void *parameter)
 {
     T *data = reinterpret_cast<T *>(parameter);
-    data->engine()->unregisterAdditionalResources(data);
     delete data;
     object.Dispose();
     object.Clear();

@@ -355,14 +355,20 @@ inline void QScriptEnginePrivate::unregisterAdditionalResources(QtDataBase *data
 class QtDataBaseDeleter
 {
 public:
-    void operator () (QtDataBase* data)
+    QtDataBaseDeleter(QScriptBagContainer<QtDataBase> *bag)
+        : m_bag(bag)
+    {}
+    void operator () (QtDataBase* data) const
     {
+        m_bag->remove(data);
         delete data;
     }
+private:
+    QScriptBagContainer<QtDataBase> *m_bag;
 };
 inline void QScriptEnginePrivate::deallocateAdditionalResources()
 {
-    QtDataBaseDeleter deleter;
+    QtDataBaseDeleter deleter(&m_additionalResources);
     m_additionalResources.forEach(deleter);
     m_additionalResources.clear();
 }
