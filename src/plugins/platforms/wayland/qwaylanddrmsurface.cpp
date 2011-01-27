@@ -77,7 +77,6 @@ QWaylandDrmBuffer::QWaylandDrmBuffer(QWaylandDisplay *display,
 
     mImage = eglCreateDRMImageMESA(mDisplay->eglDisplay(), imageAttribs);
 
-    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, mImage);
     glGenTextures(1, &mTexture);
     glBindTexture(GL_TEXTURE_2D, mTexture);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, mImage);
@@ -112,7 +111,6 @@ QWaylandDrmBuffer::~QWaylandDrmBuffer(void)
 void QWaylandDrmBuffer::bindToCurrentFbo()
 {
     Q_ASSERT(QPlatformGLContext::currentContext());
-    glBindTexture(GL_TEXTURE_2D, mTexture);
     glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0,
                            GL_TEXTURE_2D, mTexture, 0);
     QT_CHECK_GLERROR();
@@ -134,6 +132,13 @@ QWaylandPaintDevice::QWaylandPaintDevice(QWaylandDisplay *display, QWindowSurfac
     mPlatformGLContext->makeCurrent();
     glGenFramebuffers(1, &m_thisFBO);
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_thisFBO);
+
+    glGenRenderbuffers(1, &mDepthStencil);
+    glBindRenderbuffer(GL_RENDERBUFFER_EXT, mDepthStencil);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+                              GL_RENDERBUFFER_EXT, mDepthStencil);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
+                              GL_RENDERBUFFER_EXT, mDepthStencil);
 
     if (windowSurface->size().isValid())
         resize(windowSurface->size());
@@ -184,15 +189,9 @@ void QWaylandPaintDevice::resize(const QSize &size)
         }
     }
 
-    glDeleteRenderbuffers(1,&mDepthStencil);
-    glGenRenderbuffers(1,&mDepthStencil);
     glBindRenderbuffer(GL_RENDERBUFFER_EXT,mDepthStencil);
     glRenderbufferStorage(GL_RENDERBUFFER_EXT,
                           GL_DEPTH24_STENCIL8_EXT, size.width(), size.height());
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                              GL_RENDERBUFFER_EXT, mDepthStencil);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-                              GL_RENDERBUFFER_EXT, mDepthStencil);
 
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER_EXT);
 
@@ -247,6 +246,7 @@ void QWaylandDrmWindowSurface::flush(QWidget *widget, const QRegion &region, con
     Q_UNUSED(offset);
     QWaylandWindow *ww = (QWaylandWindow *) widget->platformWindow();
 
+    glFlush();
     ww->attach(mPaintDevice->currentDrmBufferAndSwap());
 
     QVector<QRect> rects = region.rects();

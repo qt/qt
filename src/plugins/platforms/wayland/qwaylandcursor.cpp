@@ -48,7 +48,7 @@
 
 #include <QtGui/QImageReader>
 
-#define DATADIR "/home/jlind/install/share"
+#define DATADIR "/usr/share"
 
 static const struct pointer_image {
     const char *filename;
