@@ -233,6 +233,7 @@ struct QTLWExtra {
 #elif defined(Q_WS_QPA)
     QPlatformWindow *platformWindow;
     QPlatformWindowFormat platformWindowFormat;
+    quint32 screenIndex; // index in qplatformscreenlist
 #endif
 };
 
@@ -887,11 +888,9 @@ public:
     void updateCursor() const;
 #endif
     QScreen* getScreen() const;
-#elif defined(Q_WS_QPA)
+#elif defined(Q_WS_QPA) // <--------------------------------------------------------- QPA
     void setMaxWindowState_helper();
     void setFullScreenSize_helper();
-
-    int screenNumber; // screen the widget should be displayed on
 #ifndef QT_NO_CURSOR
     void updateCursor() const;
 #endif

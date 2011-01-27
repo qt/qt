@@ -303,8 +303,6 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , hasAlienChildren(0)
       , window_event(0)
       , qd_hd(0)
-#elif defined (Q_WS_QPA)
-      , screenNumber(0)
 #endif
 {
     if (!qApp) {
@@ -1277,7 +1275,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     }
 #elif defined(Q_WS_QPA)
     if (desktopWidget) {
-        int screen = desktopWidget->d_func()->screenNumber;
+        int screen = desktopWidget->d_func()->topData()->screenIndex;
         QPlatformIntegration *platform = QApplicationPrivate::platformIntegration();
         platform->moveToScreen(q, screen);
     }
@@ -1729,6 +1727,7 @@ void QWidgetPrivate::createTLExtra()
 #if defined(Q_WS_QPA)
         x->platformWindow = 0;
         x->platformWindowFormat = QPlatformWindowFormat::defaultFormat();
+        x->screenIndex = 0;
 #endif
     }
 }
