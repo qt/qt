@@ -39,6 +39,8 @@
 #include <v8.h>
 #include "qscriptv8objectwrapper_p.h"
 
+QT_BEGIN_NAMESPACE
+
 class QScriptEnginePrivate;
 class QScriptValuePrivate;
 
@@ -109,5 +111,7 @@ private:
     QScriptClassPrivate *m_scriptclass;
     v8::Persistent<v8::Object> m_original;
 };
+
+QT_END_NAMESPACE
 
 #endif // QSCRIPTCLASSPRIVATE_P_H

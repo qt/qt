@@ -38,6 +38,8 @@
 #include "qglobal.h"
 #include "qshareddata.h"
 
+QT_BEGIN_NAMESPACE
+
 /*!
   \internal
   This class should have the same interface as the QSharedData, but implementation doesn't
@@ -143,5 +145,7 @@ public:
 private:
     mutable T* m_ptr;
 };
+
+QT_END_NAMESPACE
 
 #endif // QSCRIPTSHAREDDATA_P_H

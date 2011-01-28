@@ -28,6 +28,12 @@
 
 #include "qscriptshareddata_p.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Script)
+
 class QString;
 
 class QScriptSyntaxCheckResultPrivate;
@@ -59,5 +65,9 @@ private:
     friend class QScriptEngine;
     friend class QScriptEnginePrivate;
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif

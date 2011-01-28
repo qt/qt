@@ -39,7 +39,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 v8::Handle<v8::Value> QScriptClassObject::property(v8::Handle<v8::String> property)
 {
     v8::HandleScope handleScope;

@@ -35,11 +35,12 @@
 // We mean it.
 //
 
-QT_BEGIN_NAMESPACE
 
 #include "qscriptcontext_p.h"
 #include "qscriptvalue_p.h"
 #include "qscriptengine_p.h"
+
+QT_BEGIN_NAMESPACE
 
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine)
     : q_ptr(this), engine(engine), arguments(0), accessorInfo(0), parent(engine->setCurrentQSContext(this)),

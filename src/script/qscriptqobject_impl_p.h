@@ -39,6 +39,8 @@
 #include "qscriptqobject_p.h"
 #include "qscriptengine_p.h"
 
+QT_BEGIN_NAMESPACE
+
 inline QtDataBase::QtDataBase(QScriptEnginePrivate *engine)
     : m_engine(engine)
 {
@@ -190,5 +192,7 @@ inline void QtVariantData::setValue(const QVariant &value)
 {
     m_value = value;
 }
+
+QT_END_NAMESPACE
 
 #endif // QSCRIPTQOBJECT_IMPL_P_H

@@ -37,6 +37,9 @@
 #define QSCRIPTTOOLS_P_H
 
 #include <qdebug.h>
+
+QT_BEGIN_NAMESPACE
+
 template<class T>
 class QScriptBagContainer;
 
@@ -192,5 +195,7 @@ private:
     }
     QScriptLinkedNode *m_first;
 };
+
+QT_END_NAMESPACE
 
 #endif //QSCRIPTTOOLS_P_H

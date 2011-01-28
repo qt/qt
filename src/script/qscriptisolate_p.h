@@ -30,7 +30,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 /**
   \internal
   Class used to switch to the right isolate. It does the same thing as v8::Isolate::Scope but

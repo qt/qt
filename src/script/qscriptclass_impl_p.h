@@ -37,6 +37,8 @@
 
 #include "qscriptclass_p.h"
 
+QT_BEGIN_NAMESPACE
+
 inline QScriptClassPrivate* QScriptClassPrivate::get(const QScriptClass* q)
 {
     Q_ASSERT(q);
@@ -81,5 +83,7 @@ inline QScriptClass* QScriptClassPrivate::userCallback() const
 {
     return q_ptr;
 }
+
+QT_END_NAMESPACE
 
 #endif // QSCRIPTCLASSPRIVATE_IMPL_P_H

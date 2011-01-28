@@ -30,6 +30,8 @@
 #include "qscriptvalue_p.h"
 #include "qscriptqobject_p.h"
 
+QT_BEGIN_NAMESPACE
+
 struct QScriptNativeFunctionData : public QtDataBase
 {
     QScriptNativeFunctionData(QScriptEnginePrivate *engine, QScriptEngine::FunctionSignature fun)
@@ -109,5 +111,7 @@ v8::Handle<v8::Value> QtNativeFunctionCallback(const v8::Arguments& arguments)
     // we let its value escape to the outer scope.
     return handleScope.Close(v8::Handle<v8::Value>(*result));
 }
+
+QT_END_NAMESPACE
 
 #endif // QSCRIPTFUNCTION_P_H

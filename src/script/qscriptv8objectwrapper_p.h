@@ -31,6 +31,7 @@
 #include "qscriptcontext_impl_p.h"
 #include <v8.h>
 
+QT_BEGIN_NAMESPACE
 
 namespace QScriptV8ObjectWrapperHelper {
 
@@ -177,10 +178,6 @@ struct QScriptV8ObjectWrapper
 };
 
 
-QT_BEGIN_INCLUDE_NAMESPACE
-#include "qscriptvalue_p.h"
-QT_END_INCLUDE_NAMESPACE
-
 template <typename T, v8::Persistent<v8::FunctionTemplate> QScriptEnginePrivate::*functionTemplate>
 T* QScriptV8ObjectWrapper<T, functionTemplate>::get(v8::Handle<v8::Object> object)
 {
@@ -209,5 +206,6 @@ T* QScriptV8ObjectWrapper<T, functionTemplate>::safeGet(const QScriptValuePrivat
     return get(object);
 }
 
+QT_END_NAMESPACE
 
-#endif // QSCRIPTFUNCTION_P_H
+#endif // QSCRIPTV8OBJECTWRAPPER_P_H
