@@ -187,7 +187,8 @@ void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
     int at = bucketIndex(bucket, which);
     int *b = timerIds[bucket];
 
-    Q_ASSERT(b[at] == -timerId);
+    Q_ASSERT_X(timerId == -b[at], "QAbstractEventDispatcher::releaseTimerId",
+               "Internal error: timer ID not found");
 
     int freeId, newTimerId;
     do {
