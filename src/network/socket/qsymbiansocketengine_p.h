@@ -254,6 +254,11 @@ public:
 
     bool checkProxy(const QHostAddress &address);
     bool fetchConnectionParameters();
+
+    bool multicastGroupMembershipHelper(const QHostAddress &groupAddress,
+                              const QNetworkInterface &iface,
+                              TUint operation);
+    static bool translateSocketOption(QAbstractSocketEngine::SocketOption opt, TUint &n, TUint &level);
 };
 
 QT_END_NAMESPACE

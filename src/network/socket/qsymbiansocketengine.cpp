@@ -436,40 +436,14 @@ bool QSymbianSocketEngine::setOption(QAbstractSocketEngine::SocketOption opt, in
     if (!isValid())
         return false;
 
-    int n = 0;
-    int level = SOL_SOCKET; // default
+    TUint n = 0;
+    TUint level = KSOLSocket; // default
 
-    switch (opt) {
-    case QAbstractSocketEngine::ReceiveBufferSocketOption:
-        n = KSORecvBuf;
-        break;
-    case QAbstractSocketEngine::SendBufferSocketOption:
-        n = KSOSendBuf;
-        break;
-    case QAbstractSocketEngine::BroadcastSocketOption:
+    if (!QSymbianSocketEnginePrivate::translateSocketOption(opt, n, level))
+        return false;
+
+    if (!level && !n)
         return true;
-    case QAbstractSocketEngine::NonBlockingSocketOption:
-        n = KSONonBlockingIO;
-        break;
-    case QAbstractSocketEngine::AddressReusable:
-        level = KSolInetIp;
-        n = KSoReuseAddr;
-        break;
-    case QAbstractSocketEngine::BindExclusively:
-        return true;
-    case QAbstractSocketEngine::ReceiveOutOfBandData:
-        level = KSolInetTcp;
-        n = KSoTcpOobInline;
-        break;
-    case QAbstractSocketEngine::LowDelayOption:
-        level = KSolInetTcp;
-        n = KSoTcpNoDelay;
-        break;
-    case QAbstractSocketEngine::KeepAliveOption:
-        level = KSolInetTcp;
-        n = KSoTcpKeepAlive;
-        break;
-    }
 
     return (KErrNone == d->nativeSocket.SetOpt(n, level, v));
 }
@@ -486,6 +460,24 @@ int QSymbianSocketEngine::option(QAbstractSocketEngine::SocketOption opt) const
     TUint n;
     TUint level = KSOLSocket; // default
 
+    if (!QSymbianSocketEnginePrivate::translateSocketOption(opt, n, level))
+        return false;
+
+    if (!level && !n)
+        return 1;
+
+    int v = -1;
+    //GetOpt() is non const
+    TInt err = d->nativeSocket.GetOpt(n, level, v);
+    if (!err)
+        return v;
+
+    return -1;
+}
+
+bool QSymbianSocketEnginePrivate::translateSocketOption(QAbstractSocketEngine::SocketOption opt, TUint &n, TUint &level)
+{
+
     switch (opt) {
     case QAbstractSocketEngine::ReceiveBufferSocketOption:
         n = KSORecvBuf;
@@ -496,13 +488,14 @@ int QSymbianSocketEngine::option(QAbstractSocketEngine::SocketOption opt) const
     case QAbstractSocketEngine::NonBlockingSocketOption:
         n = KSONonBlockingIO;
         break;
-    case QAbstractSocketEngine::BroadcastSocketOption:
-        return true; //symbian doesn't support or require this option
     case QAbstractSocketEngine::AddressReusable:
         level = KSolInetIp;
         n = KSoReuseAddr;
         break;
+    case QAbstractSocketEngine::BroadcastSocketOption:
     case QAbstractSocketEngine::BindExclusively:
+        level = 0;
+        n = 0;
         return true;
     case QAbstractSocketEngine::ReceiveOutOfBandData:
         level = KSolInetTcp;
@@ -516,17 +509,18 @@ int QSymbianSocketEngine::option(QAbstractSocketEngine::SocketOption opt) const
         level = KSolInetTcp;
         n = KSoTcpKeepAlive;
         break;
+    case QAbstractSocketEngine::MulticastLoopbackOption:
+        level = KSolInetIp;
+        n = KSoIp6MulticastLoop;
+        break;
+    case QAbstractSocketEngine::MulticastTtlOption:
+        level = KSolInetIp;
+        n = KSoIp6MulticastHops;
+        break;
     default:
-        return -1;
+        return false;
     }
-
-    int v = -1;
-    //GetOpt() is non const
-    TInt err = d->nativeSocket.GetOpt(n, level, v);
-    if (!err)
-        return v;
-
-    return -1;
+    return true;
 }
 
 qint64 QSymbianSocketEngine::receiveBufferSize() const
@@ -1156,15 +1150,37 @@ int QSymbianSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool 
 bool QSymbianSocketEngine::joinMulticastGroup(const QHostAddress &groupAddress,
                               const QNetworkInterface &iface)
 {
-    //TODO
-    return false;
+    Q_D(QSymbianSocketEngine);
+    return d->multicastGroupMembershipHelper(groupAddress, iface, KSoIp6JoinGroup);
 }
 
 bool QSymbianSocketEngine::leaveMulticastGroup(const QHostAddress &groupAddress,
                                const QNetworkInterface &iface)
 {
-    //TODO
-    return false;
+    Q_D(QSymbianSocketEngine);
+    return d->multicastGroupMembershipHelper(groupAddress, iface, KSoIp6LeaveGroup);
+}
+
+bool QSymbianSocketEnginePrivate::multicastGroupMembershipHelper(const QHostAddress &groupAddress,
+                          const QNetworkInterface &iface,
+                          TUint operation)
+{
+    //TODO - untested
+    //translate address
+    TPckgBuf<TIp6Mreq> option;
+    Q_IPV6ADDR ip6 = groupAddress.toIPv6Address();
+    memcpy(option().iAddr.u.iAddr8, ip6.c, 16);
+    //translate interface
+    //TODO - can we just use iface.index() ?
+    TPckgBuf<TSoInetIfQuery> query;
+    query().iName = qt_QString2TPtrC(iface.name());
+    TInt err = nativeSocket.GetOpt(KSoInetIfQueryByName, KSolInetIfQuery, query);
+    if (err == KErrNone)
+        option().iInterface = query().iIndex;
+    else
+        option().iInterface = 0;
+    //join or leave group
+    return (KErrNone == nativeSocket.SetOpt(operation, KSolInetIp, option));
 }
 
 QNetworkInterface QSymbianSocketEngine::multicastInterface() const
@@ -1175,7 +1191,7 @@ QNetworkInterface QSymbianSocketEngine::multicastInterface() const
 
 bool QSymbianSocketEngine::setMulticastInterface(const QNetworkInterface &iface)
 {
-    //TODO
+    //TODO - this is possibly a unix'ism as the RConnection on which the socket was created is probably controlling this
     return false;
 }
 
