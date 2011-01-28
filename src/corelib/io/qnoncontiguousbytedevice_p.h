@@ -57,6 +57,7 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qbuffer.h>
 #include <QtCore/qiodevice.h>
+#include <QtCore/QSharedPointer>
 #include "private/qringbuffer_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -70,6 +71,7 @@ public:
     virtual bool atEnd() = 0;
     virtual bool reset() = 0;
     void disableReset();
+    bool isResetDisabled() { return resetDisabled; }
     virtual qint64 size() = 0;
 
     virtual ~QNonContiguousByteDevice();
@@ -89,7 +91,7 @@ class Q_CORE_EXPORT QNonContiguousByteDeviceFactory
 public:
     static QNonContiguousByteDevice* create(QIODevice *device);
     static QNonContiguousByteDevice* create(QByteArray *byteArray);
-    static QNonContiguousByteDevice* create(QRingBuffer *ringBuffer);
+    static QNonContiguousByteDevice* create(QSharedPointer<QRingBuffer> ringBuffer);
     static QIODevice* wrap(QNonContiguousByteDevice* byteDevice);
 };
 
@@ -114,7 +116,7 @@ protected:
 class QNonContiguousByteDeviceRingBufferImpl : public QNonContiguousByteDevice
 {
 public:
-    QNonContiguousByteDeviceRingBufferImpl(QRingBuffer *rb);
+    QNonContiguousByteDeviceRingBufferImpl(QSharedPointer<QRingBuffer> rb);
     ~QNonContiguousByteDeviceRingBufferImpl();
     const char* readPointer(qint64 maximumLength, qint64 &len);
     bool advanceReadPointer(qint64 amount);
@@ -122,13 +124,14 @@ public:
     bool reset();
     qint64 size();
 protected:
-    QRingBuffer* ringBuffer;
+    QSharedPointer<QRingBuffer> ringBuffer;
     qint64 currentPosition;
 };
 
 
 class QNonContiguousByteDeviceIoDeviceImpl : public QNonContiguousByteDevice
 {
+    Q_OBJECT
 public:
     QNonContiguousByteDeviceIoDeviceImpl(QIODevice *d);
     ~QNonContiguousByteDeviceIoDeviceImpl();
@@ -150,6 +153,7 @@ protected:
 
 class QNonContiguousByteDeviceBufferImpl : public QNonContiguousByteDevice
 {
+    Q_OBJECT
 public:
     QNonContiguousByteDeviceBufferImpl(QBuffer *b);
     ~QNonContiguousByteDeviceBufferImpl();

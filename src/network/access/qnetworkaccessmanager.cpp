@@ -65,6 +65,8 @@
 #include "QtNetwork/qsslconfiguration.h"
 #include "QtNetwork/qnetworkconfigmanager.h"
 
+#include "qthread.h"
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_HTTP
@@ -1099,10 +1101,21 @@ void QNetworkAccessManagerPrivate::clearCache(QNetworkAccessManager *manager)
 {
     manager->d_func()->objectCache.clear();
     manager->d_func()->authenticationManager->clearCache();
+
+    if (manager->d_func()->httpThread) {
+        // The thread will deleteLater() itself from its finished() signal
+        manager->d_func()->httpThread->quit();
+        manager->d_func()->httpThread = 0;
+    }
 }
 
 QNetworkAccessManagerPrivate::~QNetworkAccessManagerPrivate()
 {
+    if (httpThread) {
+        // The thread will deleteLater() itself from its finished() signal
+        httpThread->quit();
+        httpThread = 0;
+    }
 }
 
 #ifndef QT_NO_BEARERMANAGEMENT

@@ -164,6 +164,7 @@ public:
     void appendDownstreamData(QIODevice *data);
     void appendDownstreamData(const QByteArray &data);
 
+    void setDownloadBuffer(QSharedPointer<char> sp, qint64 size);
     char* getDownloadBuffer(qint64 size);
     void appendDownstreamDataDownloadBuffer(qint64, qint64);
 
@@ -175,7 +176,7 @@ public:
 
     QNetworkAccessBackend *backend;
     QIODevice *outgoingData;
-    QRingBuffer *outgoingDataBuffer;
+    QSharedPointer<QRingBuffer> outgoingDataBuffer;
     QIODevice *copyDevice;
     QAbstractNetworkCache *networkCache() const;
 

@@ -177,6 +177,12 @@ qint64 QHttpNetworkReply::bytesAvailableNextBlock() const
         return -1;
 }
 
+bool QHttpNetworkReply::readAnyAvailable() const
+{
+    Q_D(const QHttpNetworkReply);
+    return (d->responseData.bufferCount() > 0);
+}
+
 QByteArray QHttpNetworkReply::readAny()
 {
     Q_D(QHttpNetworkReply);

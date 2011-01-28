@@ -253,7 +253,7 @@ bool QHttpNetworkConnectionChannel::sendRequest()
 #endif
         {
             // get pointer to upload data
-            qint64 currentReadSize;
+            qint64 currentReadSize = 0;
             qint64 desiredReadSize = qMin(socketWriteMaxSize, bytesTotal - written);
             const char *readPointer = uploadByteDevice->readPointer(desiredReadSize, currentReadSize);
 
