@@ -7,16 +7,16 @@ DEFINES   += QT_NO_USING_NAMESPACE
 
 unix:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
-include(../qbase.pri)
+include($$PWD/../../qbase.pri)
 
 CONFIG += building-libs
 
-include(v8base.pri)
+include($$PWD/../v8/v8base.pri)
 
 INCLUDEPATH += $$PWD
 
 INCLUDEPATH += $$V8DIR/include
-LIBS += -L. -lv8 -lsnapshot
+LIBS += -L. -L../v8/ -L../snapshot/ -lv8 -lsnapshot
 
 # Avoid qmake adding -lv8 et al as dependencies.
 CONFIG -= explicitlib
