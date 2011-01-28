@@ -51,4 +51,4 @@ qhp.Qt.extraFiles = index.html \
                     images/bullet_up.png \
                     images/horBar.png \
                     images/sprites-combined.png \
-                    style/style.css
+                    style/offline.css
