@@ -137,6 +137,12 @@ void QAbstractEventDispatcherPrivate::init()
 // free list). As an added protection, we use the cell to store an invalid
 // (negative) value that we can later check for integrity.
 //
+// ABA prevention simply adds a value to 7 of the top 8 bits when resetting
+// nextFreeTimerId.
+//
+// The extra code is the bucket allocation which allows us to start with a
+// very small bucket size and grow as needed.
+//
 // (continues below).
 int QAbstractEventDispatcherPrivate::allocateTimerId()
 {
@@ -164,6 +170,8 @@ int QAbstractEventDispatcherPrivate::allocateTimerId()
         newTimerId = prepareNewValueWithSerialNumber(timerId, b[at]);
     } while (!nextFreeTimerId.testAndSetRelaxed(timerId, newTimerId));
 
+    timerId &= TimerIdMask;
+    timerId |= b[at] & TimerSerialMask;
     b[at] = -timerId;
 
     return timerId;
@@ -174,12 +182,13 @@ int QAbstractEventDispatcherPrivate::allocateTimerId()
 //    X[timerId] = nextFreeTimerId;
 // then we update nextFreeTimerId to the timer we've just released
 //
-// The extra code in allocateTimerId and releaseTimerId are ABA prevention
-// and bucket memory. The buckets are simply to make sure we allocate only
-// the necessary number of timers. See above.
-//
 // ABA prevention simply adds a value to 7 of the top 8 bits when resetting
 // nextFreeTimerId.
+//
+// In addition to that, we update the same 7 bits in each entry in the bucket
+// as a counter. That way, a timer ID allocated and released will always be
+// returned with a different ID. This reduces the chances of timers being released
+// erroneously by application code.
 void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
 {
     int which = timerId & TimerIdMask;
@@ -187,12 +196,21 @@ void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
     int at = bucketIndex(bucket, which);
     int *b = timerIds[bucket];
 
-    Q_ASSERT(b[at] == -timerId);
+#ifndef QT_NO_DEBUG
+    // debug code
+    Q_ASSERT_X(timerId == -b[at], "QAbstractEventDispatcher::releaseTimerId", "Timer ID was not found, fix application");
+#else
+    if (timerId != -b[at]) {
+        // release code
+        qWarning("Timer ID %d was not found, fix application", timerId);
+        return;
+    }
+#endif
 
     int freeId, newTimerId;
     do {
         freeId = nextFreeTimerId;//.loadAcquire(); // ### FIXME Proper memory ordering semantics
-        b[at] = freeId & TimerIdMask;
+        b[at] = prepareNewValueWithSerialNumber(-b[at], freeId);
 
         newTimerId = prepareNewValueWithSerialNumber(freeId, timerId);
     } while (!nextFreeTimerId.testAndSetRelease(freeId, newTimerId));
