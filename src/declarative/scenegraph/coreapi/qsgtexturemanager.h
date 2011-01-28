@@ -57,7 +57,7 @@ class Q_DECLARATIVE_EXPORT QSGTexture : public QObject
 public:
     enum Status {
         Null,
-        Loading,
+        InProgress,
         Ready
     };
 
@@ -82,10 +82,6 @@ public:
     void setStatus(Status s);
     Status status() const { return m_status; }
 
-signals:
-    void statusChanged(int status);
-
-    // ### put into the private object...
 public:
     Status m_status;
     int m_texture_id;
@@ -162,6 +158,26 @@ private:
     QRectF m_sub_rect;
 };
 
+class QSGTextureUploadRequestPrivate;
+class QSGTextureUploadRequest : public QObject
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QSGTextureUploadRequest);
+public:
+    QSGTextureUploadRequest();
+
+    void setImage(const QImage &image);
+    QImage image() const;
+
+    QSGTextureRef texture() const;
+    void setTexture(const QSGTextureRef &ref);
+
+    virtual void done();
+
+signals:
+    void requestCompleted();
+};
+
 class QSGTextureManagerPrivate;
 class Q_DECLARATIVE_EXPORT QSGTextureManager : public QObject
 {
@@ -175,7 +191,7 @@ public:
     QSGContext *context() const;
 
     virtual QSGTextureRef upload(const QImage &image);
-    virtual QSGTextureRef requestUpload(const QImage &image, const QObject *listener=0, const char *slot=0);
+    virtual void requestUpload(QSGTextureUploadRequest *request);
 
     static void swizzleBGRAToRGBA(QImage *image);
 

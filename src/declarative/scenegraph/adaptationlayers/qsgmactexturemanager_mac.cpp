@@ -51,5 +51,7 @@ QSGTextureRef QSGMacTextureManager::upload(const QImage &image)
     texture->setAlphaChannel(image.hasAlphaChannel());
     texture->setStatus(QSGTexture::Ready);
 
+    static_cast<QSGTextureManagerPrivate *>(d_ptr.data())->cache.insert(key, texture);
+
     return texture;
 }

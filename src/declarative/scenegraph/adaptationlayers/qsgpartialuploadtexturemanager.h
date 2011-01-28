@@ -58,7 +58,7 @@ public:
     void setContext(QSGContext *context);
 
     QSGTextureRef upload(const QImage &image);
-    QSGTextureRef requestUpload(const QImage &image, const QObject *listener, const char *slot);
+    void requestUpload(QSGTextureUploadRequest *request);
 
 private slots:
     void processAsyncTextures();

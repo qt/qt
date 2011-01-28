@@ -60,7 +60,7 @@ public:
     ~QSGThreadedTexture();
 
     QSGThreadedTextureManager *manager;
-    QImage image;
+    QSGTextureUploadRequest *request;
 };
 
 
@@ -97,7 +97,7 @@ public:
             currentlyUploading = requests.takeFirst();
             mutex.unlock();
 
-            manager->uploadInThread(currentlyUploading->image, currentlyUploading);
+            manager->uploadInThread(currentlyUploading, currentlyUploading->request);
         }
     }
 
@@ -161,7 +161,7 @@ QSGTextureRef QSGThreadedTextureManager::upload(const QImage &image)
 
             // Lock and wait for the texture to uploaded...
             d->thread->mutex.lock();
-            while (ttex->status() == QSGTexture::Loading) {
+            while (ttex->status() == QSGTexture::InProgress) {
                 d->thread->condition.wait(&d->thread->mutex);
             }
             d->thread->mutex.unlock();
@@ -170,24 +170,27 @@ QSGTextureRef QSGThreadedTextureManager::upload(const QImage &image)
         }
     }
 
-    return d->upload(image, 0, 0);
+    return d->upload(image);
 }
 
-QSGTextureRef QSGThreadedTextureManager::requestUpload(const QImage &image, const QObject *listener, const char *slot)
+void QSGThreadedTextureManager::requestUpload(QSGTextureUploadRequest *request)
 {
     Q_D(QSGThreadedTextureManager);
 
+    const QImage image = request->image();
+
     QSGTextureCacheKey key = { image.cacheKey() };
     QSGTexture *texture = d->cache.value(key);
-    if (texture)
-        return QSGTextureRef(texture);
+    if (texture) {
+        request->setTexture(texture);
+        request->done();
+        return;
+    }
 
     QSGThreadedTexture *ttex = new QSGThreadedTexture(this);
-    ttex->image = image;
-    if (listener && slot)
-        connect(ttex, SIGNAL(statusChanged(int)), listener, slot);
-
-    ttex->setStatus(QSGTexture::Loading);
+    ttex->request = request;
+    ttex->request->setTexture(ttex);
+    ttex->setStatus(QSGTexture::InProgress);
 
     d->cache.insert(key, ttex);
 
@@ -199,8 +202,6 @@ QSGTextureRef QSGThreadedTextureManager::requestUpload(const QImage &image, cons
     d->thread->requests << ttex;
     d->thread->condition.wakeOne();
     d->thread->mutex.unlock();
-
-    return QSGTextureRef(ttex);
 }
 
 /*!
@@ -252,15 +253,15 @@ void QSGThreadedTextureManager::makeThreadContextCurrent()
     implementation does this using a single glTexImage2D call.
  */
 
-void QSGThreadedTextureManager::uploadInThread(const QImage &image, QSGTexture *texture)
+void QSGThreadedTextureManager::uploadInThread(QSGTexture *texture, QSGTextureUploadRequest *request)
 {
     GLuint id;
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
 
-    QImage copy = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    QImage copy = request->image().convertToFormat(QImage::Format_ARGB32_Premultiplied);
     swizzleBGRAToRGBA(&copy);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image.constBits());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, copy.width(), copy.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, copy.constBits());
 
     bool fail = glGetError() != GL_NO_ERROR;
 
@@ -271,10 +272,13 @@ void QSGThreadedTextureManager::uploadInThread(const QImage &image, QSGTexture *
         glDeleteTextures(1, &id);
     } else {
         texture->setTextureId(id);
-        texture->setTextureSize(image.size());
-        texture->setAlphaChannel(image.hasAlphaChannel());
+        texture->setTextureSize(copy.size());
+        texture->setAlphaChannel(copy.hasAlphaChannel());
         texture->setStatus(QSGTexture::Ready);
     }
+
+    static_cast<QSGThreadedTexture *>(texture)->request->done();
+    static_cast<QSGThreadedTexture *>(texture)->request = 0;
 }
 
 #include "qsgthreadedtexturemanager.moc"
