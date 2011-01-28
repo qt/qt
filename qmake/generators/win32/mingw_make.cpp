@@ -381,8 +381,11 @@ void MingwMakefileGenerator::writeLibDirPart(QTextStream &t)
     QString libArg = QString::fromLatin1("-L");
     if (project->isActiveConfig("rvct_linker"))
         libArg = QString::fromLatin1("--userlibpath ");
-    for (int i = 0; i < libDirs.size(); ++i)
+    for (int i = 0; i < libDirs.size(); ++i) {
         libDirs[i].remove("\"");
+        if (libDirs[i].endsWith("\\"))
+            libDirs[i].chop(1);
+    }
     t << valGlue(libDirs, libArg+quote, quote+" "+libArg+quote, quote) << " ";
 }
 
