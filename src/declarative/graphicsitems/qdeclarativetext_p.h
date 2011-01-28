@@ -62,6 +62,7 @@ class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeText : public QDeclarativeImplici
     Q_ENUMS(TextFormat)
     Q_ENUMS(TextElideMode)
     Q_ENUMS(WrapMode)
+    Q_ENUMS(LineHeightMode)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY fontChanged)
@@ -79,6 +80,8 @@ class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeText : public QDeclarativeImplici
     Q_PROPERTY(TextElideMode elide READ elideMode WRITE setElideMode NOTIFY elideModeChanged) //### elideMode?
     Q_PROPERTY(qreal paintedWidth READ paintedWidth NOTIFY paintedSizeChanged)
     Q_PROPERTY(qreal paintedHeight READ paintedHeight NOTIFY paintedSizeChanged)
+    Q_PROPERTY(qreal lineHeight READ lineHeight WRITE setLineHeight NOTIFY lineHeightChanged REVISION 1)
+    Q_PROPERTY(LineHeightMode lineHeightMode READ lineHeightMode WRITE setLineHeightMode NOTIFY lineHeightModeChanged REVISION 1)
 
 public:
     QDeclarativeText(QDeclarativeItem *parent=0);
@@ -110,6 +113,8 @@ public:
                     WrapAtWordBoundaryOrAnywhere = QTextOption::WrapAtWordBoundaryOrAnywhere, // COMPAT
                     Wrap = QTextOption::WrapAtWordBoundaryOrAnywhere
                   };
+
+    enum LineHeightMode { MultiplyHeight, PixelHeight };
 
     QString text() const;
     void setText(const QString &);
@@ -148,6 +153,12 @@ public:
     TextElideMode elideMode() const;
     void setElideMode(TextElideMode);
 
+    qreal lineHeight() const;
+    void setLineHeight(qreal lineHeight);
+
+    LineHeightMode lineHeightMode() const;
+    void setLineHeightMode(LineHeightMode);
+
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
     virtual void componentComplete();
@@ -175,6 +186,8 @@ Q_SIGNALS:
     void textFormatChanged(TextFormat textFormat);
     void elideModeChanged(TextElideMode mode);
     void paintedSizeChanged();
+    Q_REVISION(1) void lineHeightChanged(qreal lineHeight);
+    Q_REVISION(1) void lineHeightModeChanged(LineHeightMode mode);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);

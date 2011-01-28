@@ -81,6 +81,7 @@ private slots:
     void embeddedImages();
 
     void lineCount();
+    void lineHeight();
 
     // ### these tests may be trivial    
     void horizontalAlignment();
@@ -1080,6 +1081,37 @@ void tst_qdeclarativetext::lineCount()
     QCOMPARE(myText->lineCount(), 2);
     QCOMPARE(myText->truncated(), true);
     QCOMPARE(myText->maximumLineCount(), 2);
+}
+
+void tst_qdeclarativetext::lineHeight()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/lineHeight.qml");
+
+    QDeclarativeText *myText = canvas->rootObject()->findChild<QDeclarativeText*>("myText");
+    QVERIFY(myText != 0);
+
+    QVERIFY(myText->lineHeight() == 1);
+    QVERIFY(myText->lineHeightMode() == QDeclarativeText::MultiplyHeight);
+
+    qreal h = myText->height();
+    myText->setLineHeight(1.5);
+    QVERIFY(myText->height() == h * 1.5);
+
+    myText->setLineHeightMode(QDeclarativeText::PixelHeight);
+    myText->setLineHeight(20);
+    QCOMPARE(myText->height(), 120.0);
+
+    myText->setText("Lorem ipsum sit <b>amet</b>, consectetur adipiscing elit. Integer felis nisl, varius in pretium nec, venenatis non erat. Proin lobortis interdum dictum.");
+    myText->setLineHeightMode(QDeclarativeText::MultiplyHeight);
+    myText->setLineHeight(1);
+
+    qreal h2 = myText->height();
+    myText->setLineHeight(1.25);
+    QVERIFY(myText->height() == h2 * 1.25);
+
+    myText->setLineHeightMode(QDeclarativeText::PixelHeight);
+    myText->setLineHeight(10);
+    QCOMPARE(myText->height(), 60.0);
 }
 
 void tst_qdeclarativetext::implicitSize_data()

@@ -41,6 +41,7 @@
 
 #include "private/qdeclarativetext_p.h"
 #include "private/qdeclarativetext_p_p.h"
+#include <private/qtextdocumentlayout_p.h>
 #include <qdeclarativestyledtext_p.h>
 #include <qdeclarativeinfo.h>
 #include <qdeclarativepixmapcache_p.h>
@@ -83,6 +84,14 @@ private:
     static QSet<QUrl> errors;
 };
 
+class QDeclarativeTextDocumentLayout : public QTextDocumentLayout
+{
+    Q_OBJECT
+public:
+    QDeclarativeTextDocumentLayout(QTextDocument *doc);
+    void setLineHeight(qreal lineHeight, QDeclarativeText::LineHeightMode mode);
+};
+
 DEFINE_BOOL_CONFIG_OPTION(enableImageCache, QML_ENABLE_TEXT_IMAGE_CACHE);
 
 QString QDeclarativeTextPrivate::elideChar = QString(0x2026);
@@ -90,7 +99,8 @@ QString QDeclarativeTextPrivate::elideChar = QString(0x2026);
 QDeclarativeTextPrivate::QDeclarativeTextPrivate()
 : color((QRgb)0), style(QDeclarativeText::Normal), hAlign(QDeclarativeText::AlignLeft), 
   vAlign(QDeclarativeText::AlignTop), elideMode(QDeclarativeText::ElideNone),
-  format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap), lineCount(1), truncated(false), maximumLineCount(INT_MAX),
+  format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap), lineHeight(1), lineHeightMode(QDeclarativeText::MultiplyHeight),
+  lineCount(1), truncated(false), maximumLineCount(INT_MAX),
   maximumLineCountValid(false), imageCacheDirty(true), updateOnComponentComplete(true), richText(false), singleline(false),
   cacheAllTextAsImage(true), internalWidthUpdate(false), requireImplicitWidth(false), naturalWidth(0), doc(0)
 {
@@ -175,6 +185,15 @@ void QTextDocumentWithImageResources::setText(const QString &text)
 
 QSet<QUrl> QTextDocumentWithImageResources::errors;
 
+QDeclarativeTextDocumentLayout::QDeclarativeTextDocumentLayout(QTextDocument *doc)
+    : QTextDocumentLayout(doc) {
+}
+
+void QDeclarativeTextDocumentLayout::setLineHeight(qreal lineHeight, QDeclarativeText::LineHeightMode mode = QDeclarativeText::MultiplyHeight)
+{
+    QTextDocumentLayout::setLineHeight(lineHeight, QTextDocumentLayout::LineHeightMode(mode));
+}
+
 QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
 {
 }
@@ -220,6 +239,11 @@ void QDeclarativeTextPrivate::updateLayout()
             singleline = false;
             QDeclarativeStyledText::parse(text, layout);
         }
+    } else {
+        ensureDoc();
+        QDeclarativeTextDocumentLayout *layout = new QDeclarativeTextDocumentLayout(doc);
+        layout->setLineHeight(lineHeight, lineHeightMode);
+        doc->setDocumentLayout(layout);
     }
 
     updateSize();
@@ -444,7 +468,7 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
     for (int i = 0; i < layout.lineCount(); ++i) {
         QTextLine line = layout.lineAt(i);
         line.setPosition(QPointF(0, height));
-        height += line.height();
+        height += (lineHeightMode == QDeclarativeText::PixelHeight) ? lineHeight : line.height() * lineHeight;
 
         if (!cacheAllTextAsImage) {
             if ((hAlignment == QDeclarativeText::AlignLeft) || (hAlignment == QDeclarativeText::AlignJustify)) {
@@ -468,7 +492,7 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
         emit q->lineCountChanged();
     }
 
-    return layout.boundingRect().toAlignedRect().size();
+    return QSize(qCeil(widthUsed), qCeil(height));
 }
 
 /*!
@@ -1401,6 +1425,60 @@ qreal QDeclarativeText::paintedHeight() const
 {
     Q_D(const QDeclarativeText);
     return d->paintedSize.height();
+}
+
+/*!
+    \qmlproperty real Text::lineHeight
+
+    Sets the line height for the text.
+    The value can be in pixels or a multiplier depending on lineHeightMode.
+
+*/
+qreal QDeclarativeText::lineHeight() const
+{
+    Q_D(const QDeclarativeText);
+    return d->lineHeight;
+}
+
+void QDeclarativeText::setLineHeight(qreal lineHeight)
+{
+    Q_D(QDeclarativeText);
+
+    if ((d->lineHeight == lineHeight) || (lineHeight < 0.0))
+        return;
+
+    d->lineHeight = lineHeight;
+    d->updateLayout();
+    emit lineHeightChanged(lineHeight);
+}
+
+/*!
+    \qmlproperty real Text::lineHeightMode
+
+    This property determines how the line height is specified.
+    The possible values are:
+
+    \list
+    \o Text.MultiplyHeight (default) - specifies a line height multiplier,
+    \o Text.PixelHeight - specifies the line height in pixels.
+    \endlist
+*/
+QDeclarativeText::LineHeightMode QDeclarativeText::lineHeightMode() const
+{
+    Q_D(const QDeclarativeText);
+    return d->lineHeightMode;
+}
+
+void QDeclarativeText::setLineHeightMode(LineHeightMode mode)
+{
+    Q_D(QDeclarativeText);
+    if (mode == d->lineHeightMode)
+        return;
+
+    d->lineHeightMode = mode;
+    d->updateLayout();
+
+    emit lineHeightModeChanged(mode);
 }
 
 /*!

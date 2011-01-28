@@ -89,6 +89,8 @@ public:
     QDeclarativeText::TextElideMode elideMode;
     QDeclarativeText::TextFormat format;
     QDeclarativeText::WrapMode wrapMode;
+    qreal lineHeight;
+    QDeclarativeText::LineHeightMode lineHeightMode;
     int lineCount;
     bool truncated;
     int maximumLineCount;
