@@ -366,6 +366,8 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
 
     if (maximumLineCountValid) {
         layout.beginLayout();
+        if (!lineWidth)
+            lineWidth = INT_MAX;
         int y = 0;
         int linesLeft = maximumLineCount;
         while (linesLeft > 0) {
@@ -374,34 +376,28 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
                 break;
 
             visibleCount++;
+            line.setLineWidth(lineWidth);
+            visibleTextLength += line.textLength();
 
-            if (lineWidth) {
-                if (--linesLeft == 0) {
-                    line.setLineWidth(q->width()*2); // Set out more than is required, but not too much.
-                    if (line.naturalTextWidth() > lineWidth)
-                        line.setLineWidth(lineWidth - elideWidth);
-                    visibleTextLength += line.textLength(); // Used to catch new lines that are shorter than the layout width.
-
-                    if (visibleTextLength < text.length()) {
-                        truncate = true;
-                        if (elideMode==QDeclarativeText::ElideRight) {
-                            // Need to correct for alignment
-                            int x = line.naturalTextWidth();
-                            if (hAlign == QDeclarativeText::AlignRight) {
-                                x = q->width()-elideWidth;
-                            } else if (hAlign == QDeclarativeText::AlignHCenter) {
-                                x = (q->width()+line.naturalTextWidth()-elideWidth)/2;
-                            }
-                            elidePos = QPointF(x, y + fm.ascent());
+            if (--linesLeft == 0) {
+                if (visibleTextLength < text.length()) {
+                    truncate = true;
+                    if (elideMode==QDeclarativeText::ElideRight && q->widthValid()) {
+                        // Need to correct for alignment
+                        line.setLineWidth(lineWidth-elideWidth);
+                        int x = line.naturalTextWidth();
+                        if (hAlign == QDeclarativeText::AlignRight) {
+                            x = q->width()-elideWidth;
+                        } else if (hAlign == QDeclarativeText::AlignHCenter) {
+                            x = (q->width()+line.naturalTextWidth()-elideWidth)/2;
                         }
+                        elidePos = QPointF(x, y + fm.ascent());
+                        elideText = true;
                     }
-                } else {
-                    line.setLineWidth(lineWidth);
-                    visibleTextLength += line.textLength();
                 }
-
-                y += line.height();
             }
+
+            y += line.height();
         }
         layout.endLayout();
 
