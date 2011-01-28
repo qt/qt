@@ -112,7 +112,7 @@ public:
     qreal opacity() const { return m_opacity; }
 
     virtual void setTexture(const QSGTextureRef &ref) = 0;
-    const QSGTextureRef &texture() const;
+    const QSGTextureRef &texture() const { return m_texture; }
 
     virtual void setClampToEdge(bool clampToEdge) = 0;
     bool clampToEdge() const { return m_clamp_to_edge; }

@@ -45,10 +45,40 @@
 
 #include "qsgcontext.h"
 #include "adaptationlayer.h"
+#include "qsgtexturemanager.h"
 
 #include <QtGui/qpainter.h>
 
 QT_BEGIN_NAMESPACE
+
+QSGImageTextureProvider::QSGImageTextureProvider(const QSGImagePrivate *image)
+    : image(image)
+{
+    Q_ASSERT(image);
+}
+
+QSGTextureRef QSGImageTextureProvider::texture() const
+{
+    TextureNodeInterface *node = static_cast<TextureNodeInterface *>(image->paintNode);
+    if (!node)
+        return QSGTextureRef();
+    node->texture();
+}
+
+void QSGImageTextureProvider::emitTextureChanged()
+{
+    emit textureChanged();
+}
+
+
+QSGImagePrivate::QSGImagePrivate()
+    : fillMode(QSGImage::Stretch)
+    , paintedWidth(0)
+    , paintedHeight(0)
+    , textureProvider(new QSGImageTextureProvider(this))
+    , pixmapChanged(false)
+{
+}
 
 QSGImage::QSGImage(QSGItem *parent)
     : QSGImageBase(*(new QSGImagePrivate), parent)
@@ -89,6 +119,7 @@ void QSGImagePrivate::setPixmap(const QPixmap &pixmap)
 
     q->update();
     q->pixmapChange();
+    textureProvider->emitTextureChanged();
 }
 
 QSGImage::FillMode QSGImage::fillMode() const
@@ -172,6 +203,12 @@ QRectF QSGImage::boundingRect() const
 {
     Q_D(const QSGImage);
     return QRectF(0, 0, qMax(width(), d->paintedWidth), qMax(height(), d->paintedHeight));
+}
+
+QSGTextureProvider *QSGImage::textureProvider() const
+{
+    Q_D(const QSGImage);
+    return d->textureProvider;
 }
 
 Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)

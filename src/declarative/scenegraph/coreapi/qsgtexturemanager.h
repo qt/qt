@@ -205,4 +205,14 @@ protected:
     QSGTextureManager(QSGTextureManagerPrivate &);
 };
 
+class Q_DECLARATIVE_EXPORT QSGTextureProvider : public QObject
+{
+    Q_OBJECT
+public:
+    virtual QSGTextureRef texture() const = 0;
+
+Q_SIGNALS:
+    void textureChanged();
+};
+
 #endif // QSGTEXTUREMANAGER_H
