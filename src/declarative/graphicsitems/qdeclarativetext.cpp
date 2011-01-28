@@ -268,7 +268,8 @@ void QDeclarativeTextPrivate::updateSize()
         singleline = false; // richtext can't elide or be optimized for single-line case
         ensureDoc();
         doc->setDefaultFont(font);
-        QTextOption option((Qt::Alignment)int(hAlign | vAlign));
+        QTextOption option;
+        option.setAlignment((Qt::Alignment)int(hAlign | vAlign));
         option.setWrapMode(QTextOption::WrapMode(wrapMode));
         doc->setDefaultTextOption(option);
         if (requireImplicitWidth && q->widthValid()) {
@@ -341,6 +342,17 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
     textOption.setWrapMode(QTextOption::WrapMode(wrapMode));
     layout.setTextOption(textOption);
 
+    QDeclarativeText::HAlignment hAlignment = hAlign;
+    if(text.isRightToLeft()) {
+        if ((hAlign == QDeclarativeText::AlignLeft) || (hAlign == QDeclarativeText::AlignJustify)) {
+            hAlignment = QDeclarativeText::AlignRight;
+        } else if (hAlign == QDeclarativeText::AlignRight) {
+            hAlignment = QDeclarativeText::AlignLeft;
+        } else {
+            hAlignment = hAlign;
+        }
+    }
+
     bool elideText = false;
     bool truncate = false;
 
@@ -386,9 +398,9 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
                         // Need to correct for alignment
                         line.setLineWidth(lineWidth-elideWidth);
                         int x = line.naturalTextWidth();
-                        if (hAlign == QDeclarativeText::AlignRight) {
+                        if (hAlignment == QDeclarativeText::AlignRight) {
                             x = q->width()-elideWidth;
-                        } else if (hAlign == QDeclarativeText::AlignHCenter) {
+                        } else if (hAlignment == QDeclarativeText::AlignHCenter) {
                             x = (q->width()+line.naturalTextWidth()-elideWidth)/2;
                         }
                         elidePos = QPointF(x, y + fm.ascent());
@@ -435,13 +447,13 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
         height += line.height();
 
         if (!cacheAllTextAsImage) {
-            if ((hAlign == QDeclarativeText::AlignLeft) || (hAlign == QDeclarativeText::AlignJustify)) {
+            if ((hAlignment == QDeclarativeText::AlignLeft) || (hAlignment == QDeclarativeText::AlignJustify)) {
                 x = 0;
-            } else if (hAlign == QDeclarativeText::AlignRight) {
+            } else if (hAlignment == QDeclarativeText::AlignRight) {
                 x = layoutWidth - line.naturalTextWidth();
                 if (elideText && i == layout.lineCount()-1)
                     x -= elideWidth; // Correct for when eliding multilines
-            } else if (hAlign == QDeclarativeText::AlignHCenter) {
+            } else if (hAlignment == QDeclarativeText::AlignHCenter) {
                 x = (layoutWidth - line.naturalTextWidth()) / 2;
                 if (elideText && i == layout.lineCount()-1)
                     x -= elideWidth/2; // Correct for when eliding multilines

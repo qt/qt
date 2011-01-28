@@ -102,6 +102,7 @@ private slots:
 
     // ### these tests may be trivial    
     void hAlign();
+    void hAlign_RightToLeft();
     void vAlign();
     void font();
     void color();
@@ -422,6 +423,30 @@ void tst_qdeclarativetextedit::hAlign()
         }
     }
 
+}
+
+void tst_qdeclarativetextedit::hAlign_RightToLeft()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/horizontalAlignment_RightToLeft.qml");
+    QDeclarativeTextEdit *textEdit = canvas->rootObject()->findChild<QDeclarativeTextEdit*>("text");
+    QVERIFY(textEdit != 0);
+    canvas->show();
+
+    QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
+
+    // "Right" align
+    textEdit->setHAlign(QDeclarativeTextEdit::AlignRight);
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
+    QVERIFY(textEdit->positionToRectangle(0).x() < canvas->width()/2);
+
+    // Center align
+    // Note that position 0 is on the right-hand side
+    textEdit->setHAlign(QDeclarativeTextEdit::AlignHCenter);
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignHCenter);
+    QVERIFY(textEdit->positionToRectangle(0).x() - textEdit->width() < canvas->width()/2);
+    QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextedit::vAlign()

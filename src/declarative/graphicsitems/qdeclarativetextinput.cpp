@@ -51,6 +51,7 @@
 #include <QFontMetrics>
 #include <QPainter>
 #include <QTextBoundaryFinder>
+#include <qstyle.h>
 
 #ifndef QT_NO_LINEEDIT
 
@@ -1094,10 +1095,11 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
     int cix = qRound(control->cursorToX());
     QRect br(q->boundingRect().toRect());
     int widthUsed = calculateTextWidth();
+    Qt::Alignment va = QStyle::visualAlignment(control->layoutDirection(), QFlag(Qt::Alignment(hAlign)));
     if (autoScroll) {
         if (widthUsed <=  br.width()) {
             // text fits in br; use hscroll for alignment
-            switch (hAlign & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
+            switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
             case Qt::AlignRight:
                 hscroll = widthUsed - br.width() - 1;
                 break;
@@ -1121,12 +1123,17 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
             hscroll = widthUsed - br.width() + 1;
         }
     } else {
-        if(hAlign == QDeclarativeTextInput::AlignRight){
+        switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
+        case Qt::AlignRight:
             hscroll = q->width() - widthUsed;
-        }else if(hAlign == QDeclarativeTextInput::AlignHCenter){
+            break;
+        case Qt::AlignHCenter:
             hscroll = (q->width() - widthUsed) / 2;
-        } else {
+            break;
+        default:
+            // Left
             hscroll = 0;
+            break;
         }
     }
 }

@@ -95,6 +95,7 @@ private slots:
 
     void horizontalAlignment_data();
     void horizontalAlignment();
+    void horizontalAlignment_RightToLeft();
 
     void positionAt();
 
@@ -658,6 +659,31 @@ void tst_qdeclarativetextinput::horizontalAlignment()
     QImage expect(expectfile);
 
     QCOMPARE(actual,expect);
+
+    delete canvas;
+}
+
+void tst_qdeclarativetextinput::horizontalAlignment_RightToLeft()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/horizontalAlignment_RightToLeft.qml");
+    QDeclarativeTextInput *textInput = canvas->rootObject()->findChild<QDeclarativeTextInput*>("text");
+    QVERIFY(textInput != 0);
+    canvas->show();
+
+    QDeclarativeTextInputPrivate *textInputPrivate = QDeclarativeTextInputPrivate::get(textInput);
+    QVERIFY(textInputPrivate != 0);
+    QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
+
+    // "Right" Align
+    textInput->setHAlign(QDeclarativeTextInput::AlignRight);
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
+    QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
+
+    // Center Align
+    textInput->setHAlign(QDeclarativeTextInput::AlignHCenter);
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignHCenter);
+    QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
+    QVERIFY(-textInputPrivate->hscroll + textInputPrivate->width() > canvas->width()/2);
 
     delete canvas;
 }

@@ -43,6 +43,7 @@
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <private/qdeclarativetext_p.h>
+#include <private/qdeclarativetext_p_p.h>
 #include <private/qdeclarativevaluetype_p.h>
 #include <QFontMetrics>
 #include <QGraphicsSceneMouseEvent>
@@ -83,6 +84,7 @@ private slots:
 
     // ### these tests may be trivial    
     void horizontalAlignment();
+    void horizontalAlignment_RightToLeft();
     void verticalAlignment();
     void font();
     void style();
@@ -500,6 +502,32 @@ void tst_qdeclarativetext::horizontalAlignment()
         }
     }
 
+}
+
+void tst_qdeclarativetext::horizontalAlignment_RightToLeft()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/horizontalAlignment_RightToLeft.qml");
+    QDeclarativeText *text = canvas->rootObject()->findChild<QDeclarativeText*>("text");
+    QVERIFY(text != 0);
+    canvas->show();
+
+    QDeclarativeTextPrivate *textPrivate = QDeclarativeTextPrivate::get(text);
+    QVERIFY(textPrivate != 0);
+
+    QVERIFY(textPrivate->layout.lineAt(0).x() > canvas->width()/2);
+
+    // "Right" aligned
+    text->setHAlign(QDeclarativeText::AlignRight);
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+    QVERIFY(textPrivate->layout.lineAt(0).x() < canvas->width()/2);
+
+    // Center aligned
+    text->setHAlign(QDeclarativeText::AlignHCenter);
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignHCenter);
+    QVERIFY(textPrivate->layout.lineAt(0).x() < canvas->width()/2);
+    QVERIFY(textPrivate->layout.lineAt(0).x() + textPrivate->layout.lineAt(0).width() > canvas->width()/2);
+
+    delete canvas;
 }
 
 void tst_qdeclarativetext::verticalAlignment()

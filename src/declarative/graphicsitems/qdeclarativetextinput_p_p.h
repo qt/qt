@@ -66,7 +66,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeTextInputPrivate : public QDeclarativeImplicitSizePaintedItemPrivate
+class Q_AUTOTEST_EXPORT QDeclarativeTextInputPrivate : public QDeclarativeImplicitSizePaintedItemPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeTextInput)
 public:
@@ -132,6 +132,10 @@ public:
     bool autoScroll;
     bool selectByMouse;
     bool canPaste;
+
+    static inline QDeclarativeTextInputPrivate *get(QDeclarativeTextInput *t) {
+        return t->d_func();
+    }
 };
 
 QT_END_NAMESPACE
