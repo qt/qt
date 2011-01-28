@@ -211,6 +211,8 @@ public:
     bool ignoreUnusedNavigationEvents;
     bool openExternalLinks;
 
+    bool wordSelectionEnabled;
+
     QString linkToCopy;
     void _q_copyLink();
     void _q_updateBlock(const QTextBlock &);
