@@ -2075,7 +2075,7 @@ void QWidgetPrivate::subtractOpaqueSiblings(QRegion &sourceRegion, bool *hasDirt
 {
     Q_Q(const QWidget);
     static int disableSubtractOpaqueSiblings = qgetenv("QT_NO_SUBTRACTOPAQUESIBLINGS").toInt();
-    if (disableSubtractOpaqueSiblings || q->isWindow())
+    if (disableSubtractOpaqueSiblings || q->isWindow() || q->d_func()->isInUnifiedToolbar)
         return;
 
     QRect clipBoundingRect;
