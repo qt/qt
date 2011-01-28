@@ -4584,15 +4584,16 @@
 
                \raw HTML
                <style type="text/css" id="colorstyles">
-               #blue { background-color: #0000ff; color: #ffffff }
-               #darkBlue { background-color: #000080; color: #ffffff }
-               #cyan { background-color: #00ffff; color: #000000 }
+               #color-blue { background-color: #0000ff; color: #ffffff }
+               #color-darkBlue { background-color: #000080; color: #ffffff }
+               #color-cyan { background-color: #00ffff; color: #000000 }
                </style>
 
                <p>
-               <tt id="blue">Blue(#0000ff)</tt>,
-               <tt id="darkBlue">dark blue(#000080)</tt> and
-               <tt id="cyan">cyan(#00ffff)</tt>.
+               <tt id="color-blue">Blue(#0000ff)</tt>,
+               <tt id="color-darkBlue">dark blue(#000080)</tt> and
+               <tt id="color-cyan">cyan(#00ffff)</tt>.
+	       </p>
                \endraw
            * /
            \endcode
@@ -4604,17 +4605,34 @@
 
                \raw HTML
                <style type="text/css" id="colorstyles">
-               #blue { background-color: #0000ff; color: #ffffff }
-               #darkBlue { background-color: #000080; color: #ffffff }
-               #cyan { background-color: #00ffff; color: #000000 }
+               #color-blue { background-color: #0000ff; color: #ffffff }
+               #color-darkBlue { background-color: #000080; color: #ffffff }
+               #color-cyan { background-color: #00ffff; color: #000000 }
                </style>
 
                <p>
-               <tt id="blue">Blue(#0000ff)</tt>,
-               <tt id="darkBlue">dark blue(#000080)</tt> and
-               <tt id="cyan">cyan(#00ffff)</tt>.
+               <tt id="color-blue">Blue(#0000ff)</tt>,
+               <tt id="color-darkBlue">dark blue(#000080)</tt> and
+               <tt id="color-cyan">cyan(#00ffff)</tt>.
+	       </p>
                \endraw
            \endquotation
+
+	   \note But you can achieve the exact same thing using qdoc
+	   commands. In this case, all you have to do is include the
+	   color styles in your style.css file. Then you can write:
+
+	   \code
+           \tt {\span {id="color-blue"}{Blue(#0000ff)}},
+           \tt {\span {id="color-darkBlue"}{dark blue(#000080)}} and
+           \tt {\span {id="color-cyan"}{cyan(#00ffff)}}.
+	   \endcode
+
+	   ...which is rendered again as:
+
+           \tt {\span {id="color-blue"}{Blue(#0000ff)}},
+           \tt {\span {id="color-darkBlue"}{dark blue(#000080)}} and
+           \tt {\span {id="color-cyan"}{cyan(#00ffff)}}.
 
     \row
         \o \bold \\unicode \target unicode
