@@ -97,6 +97,6 @@ void DefaultGlyphNode::setGlyphs(const QPointF &position, const QGlyphs &glyphs)
     m_material->updateGlyphCache(QGLContext::currentContext());
 
 #ifdef QML_RUNTIME_TESTING
-    description = "glyphs";
+    description = QLatin1String("glyphs");
 #endif
 }

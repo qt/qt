@@ -76,7 +76,7 @@ DefaultRectangleNode::DefaultRectangleNode(MaterialPreference preference, QSGCon
     setMaterial(m_fill_material = material);
 
 #ifdef QML_RUNTIME_TESTING
-    description = "rectangle";
+    description = QLatin1String("rectangle");
 #endif
 }
 
