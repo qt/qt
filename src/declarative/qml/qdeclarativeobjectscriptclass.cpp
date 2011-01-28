@@ -392,7 +392,9 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
         QString error = QLatin1String("Cannot assign [undefined] to ") +
                         QLatin1String(QMetaType::typeName(lastData->propType));
         context->throwError(error);
-    } else if (!value.isFunction()) {
+    } else if (value.isFunction() && !value.isRegExp()) {
+        // this is handled by the binding creation above
+    } else {
         QVariant v;
         if (lastData->flags & QDeclarativePropertyCache::Data::IsQList)
             v = enginePriv->scriptValueToVariant(value, qMetaTypeId<QList<QObject *> >());
