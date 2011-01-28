@@ -361,7 +361,8 @@ public:
         DrawInvisible = 0x08,
         DontSubtractOpaqueChildren = 0x10,
         DontSetCompositionMode = 0x20,
-        DontDrawOpaqueChildren = 0x40
+        DontDrawOpaqueChildren = 0x40,
+        DontDrawNativeChildren = 0x80
     };
 
     enum CloseMode {
@@ -795,7 +796,6 @@ public:
 #elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC
     // This is new stuff
     uint needWindowChange : 1;
-    uint hasAlienChildren : 1;
 
     // Each wiget keeps a list of all its child and grandchild OpenGL widgets.
     // This list is used to update the gl context whenever a parent and a granparent
@@ -826,6 +826,7 @@ public:
     void macUpdateIgnoreMouseEvents();
     void macUpdateMetalAttribute();
     void macUpdateIsOpaque();
+    void macSetNeedsDisplay(QRegion region);
     void setEnabled_helper_sys(bool enable);
     bool isRealWindow() const;
     void adjustWithinMaxAndMinSize(int &w, int &h);
@@ -861,6 +862,7 @@ public:
     bool isInUnifiedToolbar;
     QWindowSurface *unifiedSurface;
     QPoint toolbar_offset;
+    bool touchEventsEnabled;
 #endif
     void determineWindowClass();
     void transferChildren();
@@ -873,7 +875,7 @@ public:
     static OSStatus qt_window_event(EventHandlerCallRef er, EventRef event, void *);
     static OSStatus qt_widget_event(EventHandlerCallRef er, EventRef event, void *);
     static bool qt_widget_rgn(QWidget *, short, RgnHandle, bool);
-    void registerTouchWindow();
+    void registerTouchWindow(bool enable = true);
 #elif defined(Q_WS_QWS) // <--------------------------------------------------------- QWS
     void setMaxWindowState_helper();
     void setFullScreenSize_helper();
