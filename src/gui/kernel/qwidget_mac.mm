@@ -4858,16 +4858,19 @@ int QWidget::metric(PaintDeviceMetric m) const
     case PdmWidthMM:
         return qRound(metric(PdmWidth) * 25.4 / qreal(metric(PdmDpiX)));
     case PdmHeight:
-    case PdmWidth: {
+    case PdmWidth:
 #ifndef QT_MAC_USE_COCOA
-        HIRect rect;
+        { HIRect rect;
         HIViewGetFrame(qt_mac_nativeview_for(this), &rect);
-#else
-        NSRect rect = [qt_mac_nativeview_for(this) frame];
-#endif
         if(m == PdmWidth)
             return (int)rect.size.width;
         return (int)rect.size.height; }
+#else
+        if (m == PdmWidth)
+            return data->crect.width();
+        else
+            return data->crect.height();
+#endif
     case PdmDepth:
         return 32;
     case PdmNumColors:
