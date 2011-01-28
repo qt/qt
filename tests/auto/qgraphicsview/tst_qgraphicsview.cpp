@@ -2967,7 +2967,7 @@ protected:
 void tst_QGraphicsView::task186827_deleteReplayedItem()
 {
     // make sure the mouse is not over the window, causing spontaneous mouse moves
-    QCursor::setPos(0, 0);
+    QCursor::setPos(1, 1);
 
     QGraphicsScene scene;
     scene.addRect(0, 0, 50, 50);
@@ -4504,7 +4504,7 @@ void tst_QGraphicsView::hoverLeave()
     QVERIFY(item->receivedEnterEvent);
     QCOMPARE(item->enterWidget, view.viewport());
 
-    QCursor::setPos(0,0);
+    QCursor::setPos(1,1);
     QTest::qWait(200);
     QVERIFY(item->receivedLeaveEvent);
     QCOMPARE(item->leaveWidget, view.viewport());
