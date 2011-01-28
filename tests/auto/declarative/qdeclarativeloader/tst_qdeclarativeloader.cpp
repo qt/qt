@@ -614,8 +614,6 @@ void tst_QDeclarativeLoader::implicitSize()
     QCOMPARE(item->height(), 150.);
 
     QCOMPARE(item->property("implHeight").toReal(), 100.);
-
-    QEXPECT_FAIL("", "versioned property implicit object reference", Continue);
     QCOMPARE(item->property("implWidth").toReal(), 100.);
 
     delete item;
