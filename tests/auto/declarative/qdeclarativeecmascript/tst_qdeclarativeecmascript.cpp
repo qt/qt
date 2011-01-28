@@ -2983,6 +2983,15 @@ void tst_qdeclarativeecmascript::revision()
         MyRevisionedClass *object = qobject_cast<MyRevisionedClass *>(component.create());
         QVERIFY(object != 0);
     }
+    // Test that non-root classes can resolve revisioned methods
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("metaobjectRevision4.qml"));
+
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+        QCOMPARE(object->property("test").toReal(), 11.);
+        delete object;
+    }
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)

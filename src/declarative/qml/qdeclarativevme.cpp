@@ -194,8 +194,6 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
 
                 QDeclarativeData *ddata = QDeclarativeData::get(o);
                 Q_ASSERT(ddata);
-                if (types.at(instr.create.type).type)
-                    ddata->type = types.at(instr.create.type).type;
 
                 if (stack.isEmpty()) {
                     if (ddata->context) {
@@ -249,10 +247,12 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
                 ::memset(o, 0, instr.createSimple.typeSize + sizeof(QDeclarativeData));
                 instr.createSimple.create(o);
 
-                QDeclarativeData *ddata = 
-                    (QDeclarativeData *)(((const char *)o) + instr.createSimple.typeSize);
-                if (types.at(instr.createSimple.type).type)
-                    ddata->type = types.at(instr.createSimple.type).type;
+                QDeclarativeData *ddata = (QDeclarativeData *)(((const char *)o) + instr.createSimple.typeSize);
+                const QDeclarativeCompiledData::TypeReference &ref = types.at(instr.createSimple.type);
+                if (!ddata->propertyCache && ref.typePropertyCache) {
+                    ddata->propertyCache = ref.typePropertyCache;
+                    ddata->propertyCache->addref();
+                }
                 ddata->lineNumber = instr.line;
                 ddata->columnNumber = instr.createSimple.column;
 

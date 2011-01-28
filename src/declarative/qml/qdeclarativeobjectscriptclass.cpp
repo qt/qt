@@ -166,8 +166,9 @@ QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &nam
     QDeclarativeEnginePrivate *enginePrivate = QDeclarativeEnginePrivate::get(engine);
     lastData = QDeclarativePropertyCache::property(engine, obj, name, local);
     if ((hints & ImplicitObject) && lastData && lastData->revision != 0) {
+
         QDeclarativeData *ddata = QDeclarativeData::get(obj);
-        if (ddata && ddata->propertyCache && !ddata->propertyCache->isAllowedInRevision(lastData))
+        if (ddata && ddata->propertyCache && !ddata->propertyCache->isAllowedInRevision(lastData)) 
             return 0;
     }
 

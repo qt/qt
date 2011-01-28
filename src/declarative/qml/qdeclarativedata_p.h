@@ -66,7 +66,6 @@ class QDeclarativePropertyCache;
 class QDeclarativeContextData;
 class QDeclarativeNotifier;
 class QDeclarativeDataExtended;
-class QDeclarativeType;
 // This class is structured in such a way, that simply zero'ing it is the
 // default state for elemental object allocations.  This is crucial in the
 // workings of the QDeclarativeInstruction::CreateSimpleObject instruction.
@@ -78,7 +77,7 @@ public:
         : ownMemory(true), ownContext(false), indestructible(true), explicitIndestructibleSet(false), 
           context(0), outerContext(0), bindings(0), nextContextObject(0), prevContextObject(0), bindingBitsSize(0), 
           bindingBits(0), lineNumber(0), columnNumber(0), deferredComponent(0), deferredIdx(0), 
-          scriptValue(0), objectDataRefCount(0), propertyCache(0), guards(0), type(0), extendedData(0) {
+          scriptValue(0), objectDataRefCount(0), propertyCache(0), guards(0), extendedData(0) {
           init(); 
       }
 
@@ -136,8 +135,6 @@ public:
     QDeclarativePropertyCache *propertyCache;
 
     QDeclarativeGuard<QObject> *guards;
-
-    const QDeclarativeType *type;
 
     static QDeclarativeData *get(const QObject *object, bool create = false) {
         QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
