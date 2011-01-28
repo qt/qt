@@ -30,11 +30,19 @@ symbian:HEADERS += socket/qsymbiansocketengine_p.h
 !symbian:SOURCES += socket/qnativesocketengine.cpp
 !symbian:HEADERS += socket/qnativesocketengine_p.h
 
-unix:!symbian:SOURCES += socket/qnativesocketengine_unix.cpp
-
-unix:SOURCES +=  \
+unix:!symbian: {
+    SOURCES += socket/qnativesocketengine_unix.cpp \
                 socket/qlocalsocket_unix.cpp \
                 socket/qlocalserver_unix.cpp
+}
+
+symbian: {
+    SOURCES += socket/qlocalsocket_tcp.cpp \
+               socket/qlocalserver_tcp.cpp
+
+    DEFINES += QT_LOCALSOCKET_TCP
+}
+
 unix:HEADERS += \
                 socket/qnet_unix_p.h
 
