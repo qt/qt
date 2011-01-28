@@ -109,7 +109,7 @@ public:
     // CGI callbacks:
     static QString view(const QString &baseline, const QString &rendered, const QString &compared);
     static QString clearAllBaselines(const QString &context);
-    static QString updateBaselines(const QString &context, const QString &mismatchContext, const QString &itemId);
+    static QString updateBaselines(const QString &context, const QString &mismatchContext, const QString &itemFile);
     static QString blacklistTest(const QString &context, const QString &itemId, bool removeFromBlacklist = false);
 
 private slots:

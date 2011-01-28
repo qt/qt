@@ -180,7 +180,8 @@ void Report::writeFunctionResults(const ImageItemList &list)
         QString metadata = prefix + QLS(MetadataFileExt);
         if (item.status == ImageItem::Mismatch) {
             QString rendered = handler->pathForItem(item, false, false) + QLS(FileFormat);
-            writeItem(baseline, rendered, item, ctx, misCtx, metadata);
+            QString itemFile = prefix.section(QLC('/'), -1);
+            writeItem(baseline, rendered, item, itemFile, ctx, misCtx, metadata);
         }
         else {
             out << "<td align=center><a href=\"/" << baseline << "\">image</a> <a href=\"/" << metadata << "\">info</a></td>\n"
@@ -211,7 +212,8 @@ void Report::writeFunctionResults(const ImageItemList &list)
     out << "</table>\n";
 }
 
-void Report::writeItem(const QString &baseline, const QString &rendered, const ImageItem &item, const QString &ctx, const QString &misCtx, const QString &metadata)
+void Report::writeItem(const QString &baseline, const QString &rendered, const ImageItem &item,
+                       const QString &itemFile, const QString &ctx, const QString &misCtx, const QString &metadata)
 {
     QString compared = generateCompared(baseline, rendered);
     QString pageUrl = BaselineServer::baseUrl() + path;
@@ -223,13 +225,8 @@ void Report::writeItem(const QString &baseline, const QString &rendered, const I
     out << "<td align=center>\n"
         << "<p><span style=\"color:red\">Mismatch reported</span></p>\n"
         << "<p><a href=\"/" << metadata << "\">Baseline Info</a>\n"
-#if 0
-        << "<p><a href=\"/cgi-bin/server.cgi?cmd=updateSingleBaseline&oldBaseline=" << baseline
-        << "&newBaseline=" << rendered << "&url=" << pageUrl << "\">Let this be the new baseline</a></p>\n"
-#else
         << "<p><a href=\"/cgi-bin/server.cgi?cmd=updateSingleBaseline&context=" << ctx << "&mismatchContext=" << misCtx
-        << "&itemId=" << item.itemName << "&url=" << pageUrl << "\">Let this be the new baseline</a></p>\n"
-#endif
+        << "&itemFile=" << itemFile << "&url=" << pageUrl << "\">Let this be the new baseline</a></p>\n"
         << "<p><a href=\"/cgi-bin/server.cgi?cmd=blacklist&context=" << ctx
         << "&itemId=" << item.itemName << "&url=" << pageUrl << "\">Blacklist this item</a></p>\n"
         << "<p><a href=\"/cgi-bin/server.cgi?cmd=view&baseline=" << baseline << "&rendered=" << rendered
@@ -291,7 +288,7 @@ void Report::handleCGIQuery(const QString &query)
     else if (command == QLS("updateSingleBaseline")) {
         s << BaselineHandler::updateBaselines(cgiUrl.queryItemValue(QLS("context")),
                                               cgiUrl.queryItemValue(QLS("mismatchContext")),
-                                              cgiUrl.queryItemValue(QLS("itemId")));
+                                              cgiUrl.queryItemValue(QLS("itemFile")));
     } else if (command == QLS("updateAllBaselines")) {
         s << BaselineHandler::updateBaselines(cgiUrl.queryItemValue(QLS("context")),
                                               cgiUrl.queryItemValue(QLS("mismatchContext")),

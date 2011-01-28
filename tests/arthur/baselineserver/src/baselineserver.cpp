@@ -426,13 +426,13 @@ QString BaselineHandler::clearAllBaselines(const QString &context)
     return QString(QLS("%1 of %2 baselines cleared from context ")).arg((tot-failed)/2).arg(tot/2) + context;
 }
 
-QString BaselineHandler::updateBaselines(const QString &context, const QString &mismatchContext, const QString &itemId)
+QString BaselineHandler::updateBaselines(const QString &context, const QString &mismatchContext, const QString &itemFile)
 {
     int tot = 0;
     int failed = 0;
     QString storagePrefix = BaselineServer::storagePath() + QLC('/');
     // If itemId is set, update just that one, otherwise, update all:
-    QString filter = (itemId.isEmpty() ? QLS("*") : itemId) + QLS("_????.");  // Match any checksum. #vulnerable to changes in file naming
+    QString filter = itemFile.isEmpty() ? QLS("*_????.") : itemFile;
     QDirIterator it(storagePrefix + mismatchContext, QStringList() << filter + QLS(FileFormat) << filter + QLS(MetadataFileExt));
     while (it.hasNext()) {
         tot++;
