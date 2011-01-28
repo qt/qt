@@ -164,6 +164,9 @@ void QWaylandCursor::changeCursor(QCursor *cursor, QWidget *widget)
 
     QImageReader reader(p->filename);
 
+    if (!reader.canRead())
+        return;
+
     if (mBuffer == NULL || mBuffer->size() != reader.size()) {
         if (mBuffer)
             delete mBuffer;
