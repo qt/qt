@@ -1,6 +1,11 @@
 symbian-armcc {
     QMAKE_CFLAGS += $$QMAKE_CFLAGS.ARMCC
     QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS.ARMCC
+    # This is to prevent inclusion of the shipped RVCT headers, which are often in the
+    # environment variable RVCTxxINC by default. -J prevents the searching of that location,
+    # but needs a path, so just specify somewhere guaranteed not to contain header files.
+    QMAKE_CFLAGS += -J$${EPOCROOT}epoc32/ignore_this_path
+    QMAKE_CXXFLAGS += -J$${EPOCROOT}epoc32/ignore_this_path
 } else:symbian-gcce {
     QMAKE_CFLAGS += $$QMAKE_CFLAGS.GCCE
     QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS.GCCE
@@ -235,12 +240,7 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@:.*") {
 }
 
 # Symbian resource files
-symbian-armcc: {
-    SYMBIAN_RVCT22INC=$$(RVCT22INC)
-    !isEmpty(SYMBIAN_RVCT22INC):symbian_resources_INCLUDES = -I$${SYMBIAN_RVCT22INC}
-}
-symbian_resources_INCLUDES = $$replace(symbian_resources_INCLUDES, ",", " -I")
-symbian_resources_INCLUDES += $$join(INCLUDEPATH, " -I", "-I")
+symbian_resources_INCLUDES = $$join(INCLUDEPATH, " -I", "-I")
 symbian_resources_DEFINES = $$join(DEFINES, " -D", "-D")
 symbian_resources_DEFINES += -D__QT_SYMBIAN_RESOURCE__
 symbian_resources_RCC_DIR = $$replace(RCC_DIR, "/$", "")
