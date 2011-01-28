@@ -200,4 +200,4 @@ void tst_QScopedValueRollback::earlyExitScope_helper(int exitpoint, int& member)
 }
 
 QTEST_MAIN(tst_QScopedValueRollback)
-#include "tst_QScopedValueRollback.moc"
+#include "tst_qscopedvaluerollback.moc"
