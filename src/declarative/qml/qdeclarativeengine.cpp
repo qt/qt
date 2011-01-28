@@ -69,6 +69,8 @@
 #include "private/qdeclarativetypenamecache_p.h"
 #include "private/qdeclarativeinclude_p.h"
 #include "private/qdeclarativenotifier_p.h"
+#include "private/qdeclarativedebugtrace_p.h"
+#include "private/qdeclarativeapplication_p.h"
 
 #include <QtCore/qmetaobject.h>
 #include <QScriptClass>
@@ -458,6 +460,8 @@ QDeclarativeEnginePrivate::~QDeclarativeEnginePrivate()
         (*iter)->release();
     for(QHash<const QMetaObject *, QDeclarativePropertyCache *>::Iterator iter = propertyCache.begin(); iter != propertyCache.end(); ++iter)
         (*iter)->release();
+    for(QHash<QPair<QDeclarativeType *, int>, QDeclarativePropertyCache *>::Iterator iter = typePropertyCache.begin(); iter != typePropertyCache.end(); ++iter)
+        (*iter)->release();
 
 }
 
@@ -519,6 +523,9 @@ void QDeclarativeEnginePrivate::init()
     typeNameClass = new QDeclarativeTypeNameScriptClass(q);
     listClass = new QDeclarativeListScriptClass(q);
     rootContext = new QDeclarativeContext(q,true);
+
+    QScriptValue applicationObject = objectClass->newQObject(new QDeclarativeApplication(q));
+    scriptEngine.globalObject().property(QLatin1String("Qt")).setProperty(QLatin1String("application"), applicationObject);
 
     if (QCoreApplication::instance()->thread() == q->thread() &&
         QDeclarativeEngineDebugServer::isDebuggingEnabled()) {
@@ -959,7 +966,14 @@ Q_AUTOTEST_EXPORT void qmlExecuteDeferred(QObject *object)
     QDeclarativeData *data = QDeclarativeData::get(object);
 
     if (data && data->deferredComponent) {
-
+        if (QDeclarativeDebugService::isDebuggingEnabled()) {
+            QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Creating);
+            QDeclarativeType *type = QDeclarativeMetaType::qmlType(object->metaObject());
+            QString typeName = type ? QLatin1String(type->qmlTypeName()) : QString::fromLatin1(object->metaObject()->className());
+            QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::Creating, typeName);
+            if (data->outerContext)
+                QDeclarativeDebugTrace::rangeLocation(QDeclarativeDebugTrace::Creating, data->outerContext->url, data->lineNumber);
+        }
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(data->context->engine);
 
         QDeclarativeComponentPrivate::ConstructionState state;
@@ -969,6 +983,7 @@ Q_AUTOTEST_EXPORT void qmlExecuteDeferred(QObject *object)
         data->deferredComponent = 0;
 
         QDeclarativeComponentPrivate::complete(ep, &state);
+        QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Creating);
     }
 }
 
@@ -1372,7 +1387,17 @@ QScriptValue QDeclarativeEnginePrivate::vector3d(QScriptContext *ctxt, QScriptEn
 
 /*!
 \qmlmethod string Qt::formatDate(datetime date, variant format)
-Returns the string representation of \c date, formatted according to \c format.
+
+Returns a string representation of \c date, optionally formatted according
+to \c format.
+
+The \a date parameter may be a JavaScript \c Date object, a \l{date}{date}
+property, a QDate, or QDateTime value. The \a format parameter may be any of
+the possible format values as described for
+\l{QML:Qt::formatDateTime()}{Qt.formatDateTime()}.
+
+If \a format is not specified, \a date is formatted using
+\l {Qt::DefaultLocaleShortDate}{Qt.DefaultLocaleShortDate}.
 */
 #ifndef QT_NO_DATESTRING
 QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptEngine*engine)
@@ -1399,9 +1424,16 @@ QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptE
 
 /*!
 \qmlmethod string Qt::formatTime(datetime time, variant format)
-Returns the string representation of \c time, formatted according to \c format.
 
-See Qt::formatDateTime for how to define \c format.
+Returns a string representation of \c time, optionally formatted according to
+\c format.
+
+The \a time parameter may be a JavaScript \c Date object, a QTime, or QDateTime
+value. The \a format parameter may be any of the possible format values as
+described for \l{QML:Qt::formatDateTime()}{Qt.formatDateTime()}.
+
+If \a format is not specified, \a time is formatted using
+\l {Qt::DefaultLocaleShortDate}{Qt.DefaultLocaleShortDate}.
 */
 QScriptValue QDeclarativeEnginePrivate::formatTime(QScriptContext*ctxt, QScriptEngine*engine)
 {
@@ -1409,29 +1441,49 @@ QScriptValue QDeclarativeEnginePrivate::formatTime(QScriptContext*ctxt, QScriptE
     if(argCount == 0 || argCount > 2)
         return ctxt->throwError(QLatin1String("Qt.formatTime(): Invalid arguments"));
 
-    QTime date = ctxt->argument(0).toDateTime().time();
+    QTime time;
+    QScriptValue sv = ctxt->argument(0);
+    if (sv.isDate())
+        time = sv.toDateTime().time();
+    else if (sv.toVariant().type() == QVariant::Time)
+        time = sv.toVariant().toTime();
+
     Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
     if (argCount == 2) {
         QScriptValue formatArg = ctxt->argument(1);
         if (formatArg.isString()) {
             QString format = formatArg.toString();
-            return engine->newVariant(qVariantFromValue(date.toString(format)));
+            return engine->newVariant(qVariantFromValue(time.toString(format)));
         } else if (formatArg.isNumber()) {
             enumFormat = Qt::DateFormat(formatArg.toUInt32());
         } else {
             return ctxt->throwError(QLatin1String("Qt.formatTime(): Invalid time format"));
         }
     }
-    return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
+    return engine->newVariant(qVariantFromValue(time.toString(enumFormat)));
 }
 
 /*!
 \qmlmethod string Qt::formatDateTime(datetime dateTime, variant format)
-Returns the string representation of \c dateTime, formatted according to \c format.
 
-\c format for the date/time formatting functions is be specified as follows.
+Returns a string representation of \c datetime, optionally formatted according to
+\c format.
 
-    These expressions may be used for the date:
+The \a date parameter may be a JavaScript \c Date object, a \l{date}{date}
+property, a QDate, QTime, or QDateTime value.
+
+If \a format is not provided, \a dateTime is formatted using
+\l {Qt::DefaultLocaleShortDate}{Qt.DefaultLocaleShortDate}. Otherwise,
+\a format should be either.
+
+\list
+\o One of the Qt::DateFormat enumeration values, such as
+   \c Qt.DefaultLocaleShortDate or \c Qt.ISODate
+\o A string that specifies the format of the returned string, as detailed below.
+\endlist
+
+If \a format specifies a format string, it should use the following expressions
+to specify the date:
 
     \table
     \header \i Expression \i Output
@@ -1455,7 +1507,7 @@ Returns the string representation of \c dateTime, formatted according to \c form
     \row \i yyyy \i the year as four digit number
     \endtable
 
-    These expressions may be used for the time:
+In addition the following expressions can be used to specify the time:
 
     \table
     \header \i Expression \i Output
@@ -1476,23 +1528,28 @@ Returns the string representation of \c dateTime, formatted according to \c form
     \endtable
 
     All other input characters will be ignored. Any sequence of characters that
-    are enclosed in singlequotes will be treated as text and not be used as an
-    expression. Two consecutive singlequotes ("''") are replaced by a singlequote
+    are enclosed in single quotes will be treated as text and not be used as an
+    expression. Two consecutive single quotes ("''") are replaced by a single quote
     in the output.
 
-    Example format strings (assumed that the date and time is 21 May 2001
-    14:13:09):
+For example, if the following date/time value was specified:
+
+    \code
+    // 21 May 2001 14:13:09
+    var dateTime = new Date(2001, 5, 21, 14, 13, 09)
+    \endcode
+
+This \a dateTime value could be passed to \c Qt.formatDateTime(),
+\l {QML:Qt::formatDate()}{Qt.formatDate()} or \l {QML:Qt::formatTime()}{Qt.formatTime()}
+with the \a format values below to produce the following results:
 
     \table
-    \header \i Format       \i Result
-    \row \i dd.MM.yyyy      \i 21.05.2001
-    \row \i ddd MMMM d yy   \i Tue May 21 01
-    \row \i hh:mm:ss.zzz    \i 14:13:09.042
-    \row \i h:m:s ap        \i 2:13:9 pm
+    \header \i Format \i Result
+    \row \i "dd.MM.yyyy"      \i 21.05.2001
+    \row \i "ddd MMMM d yy"   \i Tue May 21 01
+    \row \i "hh:mm:ss.zzz"    \i 14:13:09.042
+    \row \i "h:m:s ap"        \i 2:13:9 pm
     \endtable
-
-If no format is specified the locale's short format is used. Alternatively, you can specify
-\c Qt.DefaultLocaleLongDate to get the locale's long format.
 */
 QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScriptEngine*engine)
 {
@@ -2150,6 +2207,125 @@ static void *voidptr_constructor(const void *v)
     } else {
         return new void*(*(void **)v);
     }
+}
+
+QDeclarativePropertyCache *QDeclarativeEnginePrivate::createCache(const QMetaObject *mo)
+{
+    Q_Q(QDeclarativeEngine);
+
+    if (!mo->superClass()) {
+        QDeclarativePropertyCache *rv = new QDeclarativePropertyCache(q, mo);
+        propertyCache.insert(mo, rv);
+        return rv;
+    } else {
+        QDeclarativePropertyCache *super = cache(mo->superClass());
+        QDeclarativePropertyCache *rv = super->copy();
+        rv->append(q, mo);
+        propertyCache.insert(mo, rv);
+        return rv;
+    }
+}
+
+QDeclarativePropertyCache *QDeclarativeEnginePrivate::createCache(QDeclarativeType *type, int minorVersion, 
+                                                                  QDeclarativeError &error)
+{
+    QList<QDeclarativeType *> types;
+
+    int maxMinorVersion = 0;
+
+    const QMetaObject *metaObject = type->metaObject();
+    while (metaObject) {
+        QDeclarativeType *t = QDeclarativeMetaType::qmlType(metaObject, type->module(), 
+                                                            type->majorVersion(), minorVersion);
+        if (t) {
+            maxMinorVersion = qMax(maxMinorVersion, t->minorVersion());
+            types << t;
+        } else {
+            types << 0;
+        }
+
+        metaObject = metaObject->superClass();
+    }
+
+    if (QDeclarativePropertyCache *c = typePropertyCache.value(qMakePair(type, maxMinorVersion))) {
+        c->addref();
+        typePropertyCache.insert(qMakePair(type, minorVersion), c);
+        return c;
+    }
+
+    QDeclarativePropertyCache *raw = cache(type->metaObject());
+
+    bool hasCopied = false;
+
+    for (int ii = 0; ii < types.count(); ++ii) {
+        QDeclarativeType *currentType = types.at(ii);
+        if (!currentType)
+            continue;
+
+        int rev = currentType->metaObjectRevision();
+        int moIndex = types.count() - 1 - ii;
+
+        if (raw->allowedRevisionCache[moIndex] != rev) {
+            if (!hasCopied) {
+                raw = raw->copy();
+                hasCopied = true;
+            }
+            raw->allowedRevisionCache[moIndex] = rev;
+        }
+    }
+
+    // Test revision compatibility - the basic rule is:
+    //    * Anything that is excluded, cannot overload something that is not excluded *
+
+    // Signals override:
+    //    * other signals and methods of the same name.
+    //    * properties named on<Signal Name> 
+    //    * automatic <property name>Changed notify signals
+
+    // Methods override:
+    //    * other methods of the same name
+
+    // Properties override:
+    //    * other elements of the same name
+
+    bool overloadError = false;
+    QString overloadName;
+
+#if 0
+    for (QDeclarativePropertyCache::StringCache::ConstIterator iter = raw->stringCache.begin();
+         !overloadError && iter != raw->stringCache.end();
+         ++iter) {
+
+        QDeclarativePropertyCache::Data *d = *iter;
+        if (raw->isAllowedInRevision(d))
+            continue; // Not excluded - no problems
+
+        // check that a regular "name" overload isn't happening
+        QDeclarativePropertyCache::Data *current = d;
+        while (!overloadError && current) {
+            current = d->overrideData(current);
+            if (current && raw->isAllowedInRevision(current)) 
+                overloadError = true;
+        }
+    }
+#endif
+
+    if (overloadError) {
+        if (hasCopied) raw->release();
+            
+        error.setDescription(QLatin1String("Type ") + QString::fromUtf8(type->qmlTypeName()) + QLatin1String(" ") + QString::number(type->majorVersion()) + QLatin1String(".") + QString::number(minorVersion) + QLatin1String(" contains an illegal property \"") + overloadName + QLatin1String("\".  This is an error in the type's implementation."));
+        return 0;
+    }
+
+    if (!hasCopied) raw->addref();
+    typePropertyCache.insert(qMakePair(type, minorVersion), raw);
+
+    if (minorVersion != maxMinorVersion) {
+        raw->addref();
+        typePropertyCache.insert(qMakePair(type, maxMinorVersion), raw);
+    }
+
+    return raw;
 }
 
 void QDeclarativeEnginePrivate::registerCompositeType(QDeclarativeCompiledData *data)

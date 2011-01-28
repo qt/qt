@@ -108,6 +108,8 @@ private slots:
     void QTBUG_16037();
     void indexAt();
     void incrementalModel();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
 
 private:
     template <class T> void items();
@@ -1383,6 +1385,24 @@ void tst_QDeclarativeListView::positionViewAtIndex()
     listview->positionViewAtIndex(20, QDeclarativeListView::Contain);
     QTRY_COMPARE(listview->contentY(), 100.);
 
+    // positionAtBeginnging
+    listview->positionViewAtBeginning();
+    QTRY_COMPARE(listview->contentY(), 0.);
+
+    listview->setContentY(80);
+    canvas->rootObject()->setProperty("showHeader", true);
+    listview->positionViewAtBeginning();
+    QTRY_COMPARE(listview->contentY(), -30.);
+
+    // positionAtEnd
+    listview->positionViewAtEnd();
+    QTRY_COMPARE(listview->contentY(), 480.); // 40*20 - 320
+
+    listview->setContentY(80);
+    canvas->rootObject()->setProperty("showFooter", true);
+    listview->positionViewAtEnd();
+    QTRY_COMPARE(listview->contentY(), 510.);
+
     delete canvas;
 }
 
@@ -2037,6 +2057,45 @@ void tst_QDeclarativeListView::incrementalModel()
     QTRY_COMPARE(listview->count(), 25);
 
     delete canvas;
+}
+
+void tst_QDeclarativeListView::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; ListView { " + code.toUtf8() + " }", QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; ListView { " + code.toUtf8() + " }", QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+}
+
+void tst_QDeclarativeListView::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("positionViewAtBeginning") << "Component.onCompleted: positionViewAtBeginning()"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: positionViewAtBeginning"
+        << "";
+
+    QTest::newRow("positionViewAtEnd") << "Component.onCompleted: positionViewAtEnd()"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: positionViewAtEnd"
+        << "";
 }
 
 void tst_QDeclarativeListView::qListModelInterface_items()

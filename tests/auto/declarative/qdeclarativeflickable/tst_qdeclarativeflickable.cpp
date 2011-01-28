@@ -46,6 +46,7 @@
 #include <private/qdeclarativevaluetype_p.h>
 #include <QtGui/qgraphicswidget.h>
 #include <math.h>
+#include "../../../shared/util.h"
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -69,6 +70,10 @@ private slots:
     void pressDelay();
     void flickableDirection();
     void qgraphicswidget();
+    void resizeContent();
+    void returnToBounds();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
 
 private:
     QDeclarativeEngine engine;
@@ -276,6 +281,98 @@ void tst_qdeclarativeflickable::qgraphicswidget()
     QGraphicsWidget *widget = findItem<QGraphicsWidget>(flickable->contentItem(), "widget1");
     QVERIFY(widget);
 }
+
+// QtQuick 1.1
+void tst_qdeclarativeflickable::resizeContent()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/resize.qml"));
+    QDeclarativeItem *root = qobject_cast<QDeclarativeItem*>(c.create());
+    QDeclarativeFlickable *obj = findItem<QDeclarativeFlickable>(root, "flick");
+
+    QVERIFY(obj != 0);
+    QCOMPARE(obj->contentX(), 0.);
+    QCOMPARE(obj->contentY(), 0.);
+    QCOMPARE(obj->contentWidth(), 300.);
+    QCOMPARE(obj->contentHeight(), 300.);
+
+    QMetaObject::invokeMethod(root, "resizeContent");
+
+    QCOMPARE(obj->contentX(), 100.);
+    QCOMPARE(obj->contentY(), 100.);
+    QCOMPARE(obj->contentWidth(), 600.);
+    QCOMPARE(obj->contentHeight(), 600.);
+
+    delete root;
+}
+
+// QtQuick 1.1
+void tst_qdeclarativeflickable::returnToBounds()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/resize.qml"));
+    QDeclarativeItem *root = qobject_cast<QDeclarativeItem*>(c.create());
+    QDeclarativeFlickable *obj = findItem<QDeclarativeFlickable>(root, "flick");
+
+    QVERIFY(obj != 0);
+    QCOMPARE(obj->contentX(), 0.);
+    QCOMPARE(obj->contentY(), 0.);
+    QCOMPARE(obj->contentWidth(), 300.);
+    QCOMPARE(obj->contentHeight(), 300.);
+
+    obj->setContentX(100);
+    obj->setContentY(400);
+    QTRY_COMPARE(obj->contentX(), 100.);
+    QTRY_COMPARE(obj->contentY(), 400.);
+
+    QMetaObject::invokeMethod(root, "returnToBounds");
+
+    QTRY_COMPARE(obj->contentX(), 0.);
+    QTRY_COMPARE(obj->contentY(), 0.);
+
+    delete root;
+}
+
+void tst_qdeclarativeflickable::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; Flickable { " + code.toUtf8() + " }", QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; Flickable { " + code.toUtf8() + " }", QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+}
+
+void tst_qdeclarativeflickable::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("resizeContent") << "Component.onCompleted: resizeContent(100,100,Qt.point(50,50))"
+            << "<Unknown File>:1: ReferenceError: Can't find variable: resizeContent"
+            << "";
+
+    QTest::newRow("returnToBounds") << "Component.onCompleted: returnToBounds()"
+            << "<Unknown File>:1: ReferenceError: Can't find variable: returnToBounds"
+            << "";
+
+}
+
 
 template<typename T>
 T *tst_qdeclarativeflickable::findItem(QGraphicsObject *parent, const QString &objectName)

@@ -19,7 +19,7 @@ symbian: {
     qdeclarativepathview \
     qdeclarativepositioners \
     qdeclarativesmoothedanimation \
-    qdeclarativespringfollow \
+    qdeclarativespringanimation \
     qdeclarativetext \
     qdeclarativetextedit \
     qdeclarativetextinput \

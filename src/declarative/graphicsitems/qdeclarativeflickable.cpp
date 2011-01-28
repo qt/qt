@@ -1271,6 +1271,60 @@ void QDeclarativeFlickable::setContentHeight(qreal h)
     d->updateBeginningEnd();
 }
 
+/*!
+    \qmlmethod Flickable::resizeContent(real width, real height, QPointF center)
+    \preliminary
+
+    Resizes the content to \a width x \a height about \a center.
+
+    \bold {This method was added in QtQuick 1.1.}
+
+    This does not scale the contents of the Flickable - it only resizes the \l contentWidth
+    and \l contentHeight.
+
+    Resizing the content may result in the content being positioned outside
+    the bounds of the Flickable.  Calling \l returnToBounds() will
+    move the content back within legal bounds.
+*/
+void QDeclarativeFlickable::resizeContent(qreal w, qreal h, QPointF center)
+{
+    Q_D(QDeclarativeFlickable);
+    if (w != d->hData.viewSize) {
+        qreal oldSize = d->hData.viewSize;
+        setContentWidth(w);
+        if (center.x() != 0) {
+            qreal pos = center.x() * w / oldSize;
+            setContentX(contentX() + pos - center.x());
+        }
+    }
+    if (h != d->vData.viewSize) {
+        qreal oldSize = d->vData.viewSize;
+        setContentHeight(h);
+        if (center.y() != 0) {
+            qreal pos = center.y() * h / oldSize;
+            setContentY(contentY() + pos - center.y());
+        }
+    }
+}
+
+/*!
+    \qmlmethod Flickable::returnToBounds()
+    \preliminary
+
+    Ensures the content is within legal bounds.
+
+    \bold {This method was added in QtQuick 1.1.}
+
+    This may be called to ensure that the content is within legal bounds
+    after manually positioning the content.
+*/
+void QDeclarativeFlickable::returnToBounds()
+{
+    Q_D(QDeclarativeFlickable);
+    d->fixupX();
+    d->fixupY();
+}
+
 qreal QDeclarativeFlickable::vWidth() const
 {
     Q_D(const QDeclarativeFlickable);
