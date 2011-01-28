@@ -228,7 +228,7 @@ static QString varMap(const QString &x)
     return ret;
 }
 
-static QStringList split_arg_list(QString params)
+static QStringList split_arg_list(const QString &params)
 {
     int quote = 0;
     QStringList args;
