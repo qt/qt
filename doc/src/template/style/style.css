@@ -383,10 +383,10 @@
     {
         font-size: 13px;
     }
-	.red
-	{
-		color:red;
-	}
+    .red
+    {
+      color:red;
+    }
 /* end font style elements */
 
 /* global settings*/
@@ -1199,10 +1199,10 @@
 	padding:0px;
 	}
 
-    .content .alignedsummary
-    {
-        margin: 15px;
-    }
+        .content .alignedsummary
+        {
+          margin: 15px;
+        }
 
         .details
         {
@@ -1214,6 +1214,12 @@
         {
             font-family: courier;
 	    color: blue
+        }
+        .newStuff
+        {
+            text-align: left;
+            font-size: 80%;
+            color: red
         }
 
     .qmltype
@@ -1276,11 +1282,11 @@
         height: 120px;
         margin: 0px 25px 10px 15px;
     }
-	#noteHead
-	{
-		font-weight:bold;
-		padding:10px 10px 10px 20px;
-	}
+    #noteHead
+    {
+      font-weight:bold;
+      padding:10px 10px 10px 20px;
+    }
     #feedsubmit
     {
         display: inline;
@@ -1288,12 +1294,12 @@
         margin: 4px 32px 0 0;
     }
 	
-	.note
-	{
-		font-size:7pt;
-		padding-bottom:3px;
-		padding-left:20px;
-	}
+    .note
+    {
+      font-size:7pt;
+      padding-bottom:3px;
+      padding-left:20px;
+    }
 	
     #blurpage
     {

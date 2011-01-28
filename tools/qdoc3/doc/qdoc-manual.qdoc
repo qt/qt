@@ -36,7 +36,7 @@
     \o \l{QDoc Commands}
        \list
        \o \l{Markup Commands}
-       \o \l{Text Formatting Commands}
+       \o \l{Text Formatting Commands} \span {class="newStuff"} {(new commands)}
        \o \l{Document Structuring Commands}
        \o \l{Verbatim Code Commands}
        \o \l{Quoting External Code Commands}
@@ -109,7 +109,7 @@
        \list
        \o \l {Markup Commands}
            \list
-           \o \l {Text Formatting Commands}{Text Formatting}
+           \o \l {Text Formatting Commands}{Text Formatting} \span {class="newStuff"} {(new commands)}
            \o \l {Document Structuring Commands}{Document Structuring}
            \o \l {Verbatim Code Commands}{Verbatim Code}
            \o \l {Quoting External Code Commands}{Quoting External Code}
@@ -218,6 +218,7 @@
     \l {05-qdoc-commands-documentstructuring.html#chapter}{\\chapter},
     \l {06-qdoc-commands-verbatimcode.html#code}{\\code},
     \l {07-0-qdoc-commands-quoting.html#codeline}{\\codeline},
+    \l {04-qdoc-commands-textformatting.html#div}{\\div} \span {class="newStuff"} {(new)},
     \l {07-0-qdoc-commands-quoting.html#dots}{\\dots},
     \l {12-0-qdoc-commands-miscellaneous.html#else}{\\else},
     \l {12-0-qdoc-commands-miscellaneous.html#endif}{\\endif},
@@ -246,7 +247,7 @@
     \l {11-qdoc-commands-documentcontents.html#quotation}{\\quotation},
     \l {07-0-qdoc-commands-quoting.html#quotefile}{\\quotefile},
     \l {07-0-qdoc-commands-quoting.html#quotefromfile}{\\quotefromfile},
-    \l {12-0-qdoc-commands-miscellaneous.html#raw}{\\raw},
+    \l {12-0-qdoc-commands-miscellaneous.html#raw}{\\raw} \span {class="newStuff"} {(avoid)},
     \l {10-qdoc-commands-container.html#row}{\\row},
     \l {08-qdoc-commands-linking.html#sa}{\\sa},
     \l {05-qdoc-commands-documentstructuring.html#sectionOne}{\\section1},
@@ -257,6 +258,7 @@
     \l {07-0-qdoc-commands-quoting.html#skipto}{\\skipto},
     \l {07-0-qdoc-commands-quoting.html#skipuntil}{\\skipuntil},
     \l {07-0-qdoc-commands-quoting.html#snippet}{\\snippet},
+    \l {04-qdoc-commands-textformatting.html#span}{\\span} \span {class="newStuff"} {(new)},
     \l {04-qdoc-commands-textformatting.html#sub}{\\sub},
     \l {04-qdoc-commands-textformatting.html#sup}{\\sup},
     \l {10-qdoc-commands-container.html#table}{\\table},
@@ -300,7 +302,9 @@
     \l {04-qdoc-commands-textformatting.html#a}{\\a},
     \l {04-qdoc-commands-textformatting.html#bold}{\\bold},
     \l {04-qdoc-commands-textformatting.html#c}{\\c},
+    \l {04-qdoc-commands-textformatting.html#div}{\\div} \span {class="newStuff"} {(new)},
     \l {04-qdoc-commands-textformatting.html#i}{\\i},
+    \l {04-qdoc-commands-textformatting.html#span}{\\span} \span {class="newStuff"} {(new)},
     \l {04-qdoc-commands-textformatting.html#sub}{\\sub},
     \l {04-qdoc-commands-textformatting.html#sup}{\\sup},
     \l {04-qdoc-commands-textformatting.html#tt}{\\tt},
@@ -447,6 +451,229 @@
 
            See also \l {tt}{\\tt} and \l {code}{\\code}.
 
+    \row
+        \o \bold \\div \span {class="newStuff"} {(new)}  \target div 
+        \o \bold {The \\div command and the corresponding \\enddiv
+           command delimit a large or small block of text and qdoc
+           commands for which special formatting attributes apply.}
+
+	   An argument must be provided in curly braces, as in the
+	   qdoc comment shown below. The argument is not interpreted
+	   but is used as attribute(s) of the tag that is ultimately
+	   output by qdoc.
+
+           For example, we might want to render an inline image so
+	   that it floats to the right of the current block of text:
+
+	   \code
+           / *!
+
+             \div {class="float-right"}
+             \inlineimage qml-column.png
+             \enddiv
+
+	    * /
+	   \endcode
+
+           If qdoc is generating HTML, it will translate these
+           commands to:
+
+	   \code
+	   <div class="float-right"><p><img src="images/qml-column.png" /></p></div>
+	   \endcode
+
+	   For HTML, the attribute value \e {float-right} then will
+	   refer to a clause in the style.css file. which in this case
+	   could be:
+
+	   \code	   
+           div.float-right
+	   {
+             float: right; margin-left: 2em
+           }
+	   \endcode
+
+	   If qdoc is generating DITA XML, it will translate the commands to:
+
+	   \code
+            <sectiondiv outputclass="float-right">
+                <p>
+                    <fig>
+                        <image href="images/qml-column.png" placement="inline"/>
+                    </fig>
+                </p>
+            </sectiondiv>
+	   \endcode
+
+	   Your DITA XML publishing program must then recognize the \e
+	   outputclass attribute value.
+
+	   \note The \bold {\\div} command can be nested. 
+	   
+	   Below is an example taken from the index.qdoc file used to
+	   generate index.html for Qt 4.7:
+
+	   \code
+          \div {class="indexbox guide"}
+            \div {class="heading"}
+              Qt Developer Guide 
+	    \enddiv
+            \div {class="indexboxcont indexboxbar"}
+              \div {class="section indexIcon"} \emptyspan
+              \enddiv
+              \div {class="section"}
+                Qt is a cross-platform application and UI
+                framework. Using Qt, you can write web-enabled
+                applications once and deploy them across desktop,
+                mobile and embedded operating systems without
+                rewriting the source code.
+              \enddiv
+              \div {class="section sectionlist"}
+                \list
+                  \o \l{Getting Started Guides}{Getting started}
+                  \o \l{Installation}{Installation}
+                  \o \l{how-to-learn-qt.html}{How to learn Qt}
+                  \o \l{tutorials.html}{Tutorials}
+                  \o \l{Qt Examples}{Examples}
+                  \o \l{qt4-7-intro.html}{What's new in Qt 4.7}
+                \endlist
+             \enddiv
+            \enddiv
+          \enddiv
+	   \endcode
+
+	   When all the class attribute values are defined as they are
+	   in the style.css file that is used for rendering the Qt 4.7
+	   documentation, the above example is rendered as:
+
+          \div {class="indexbox guide"}
+            \div {class="heading"}
+              Qt Developer Guide 
+	    \enddiv
+            \div {class="indexboxcont indexboxbar"}
+              \div {class="section indexIcon"} \emptyspan
+              \enddiv
+              \div {class="section"}
+                Qt is a cross-platform application and UI
+                framework. Using Qt, you can write web-enabled
+                applications once and deploy them across desktop,
+                mobile and embedded operating systems without
+                rewriting the source code.
+              \enddiv
+              \div {class="section sectionlist"}
+                \list
+                  \o \l{Getting Started Guides}{Getting started}
+                  \o \l{Installation}{Installation}
+                  \o \l{how-to-learn-qt.html}{How to learn Qt}
+                  \o \l{tutorials.html}{Tutorials}
+                  \o \l{Qt Examples}{Examples}
+                  \o \l{qt4-7-intro.html}{What's new in Qt 4.7}
+                \endlist
+             \enddiv
+            \enddiv
+          \enddiv
+
+	   When generating DITA XML, qdoc outputs the nested \e div commands as:
+
+	   \code
+            <sectiondiv outputclass="indexbox guide">
+                <sectiondiv outputclass="heading">
+                    <p>Qt Developer Guide</p>
+                </sectiondiv>
+                <sectiondiv outputclass="indexboxcont indexboxbar">
+                    <sectiondiv outputclass="section indexIcon"/>
+                    <sectiondiv outputclass="section">
+			<p>Qt is a cross-platform application and UI
+			   framework. Using Qt, you can write
+			   web-enabled applications once and deploy
+			   them across desktop, mobile and embedded
+			   operating systems without rewriting the
+			   source code.
+                        </p>
+                    </sectiondiv>
+                    <sectiondiv outputclass="section sectionlist">
+                        <ul>
+                            <li>
+                                <xref href="gettingstarted.xml#id-606ee7a8-219b-47b7-8f94-91bc8c76e54c">Getting started</xref>
+			    </li>
+                            <li>
+                                <xref href="installation.xml#id-075c20e2-aa1e-4f88-a316-a46517e50443">Installation</xref>
+			    </li>
+                            <li>
+                                <xref href="how-to-learn-qt.xml#id-49f509b5-52f9-4cd9-9921-74217b9a5182">How to learn Qt</xref>
+			    </li>
+                            <li>
+                                <xref href="tutorials.xml#id-a737f955-a904-455f-b4aa-0dc69ed5a64f">Tutorials</xref>
+                            </li>
+                            <li>
+                                <xref href="all-examples.xml#id-98d95159-d65b-4706-b08f-13d80080448d">Examples</xref>
+                            </li>
+                            <li>
+                                <xref href="qt4-7-intro.xml#id-519ae0e3-4242-4c2a-b2be-e05d1e95f177">What's new in Qt 4.7</xref>
+                            </li>
+                        </ul>
+                    </sectiondiv>
+                </sectiondiv>
+            </sectiondiv>
+	   \endcode
+
+	   Your DITA XML publishing program must recognize the values
+	   of the \e outputclass attribute.
+           
+	   See also \l {span}{\\span}.
+
+    \row
+        \o \bold \\span \span {class="newStuff"} {(new)} \target span 
+        \o \bold {The \\span command is for applying special formatting
+	          attributes to a small block of text.}
+
+	   Two arguments must be provided, each argument in curly
+	   braces, as shown in the qdoc comment below. The first
+	   argument is not interpreted but is used as the formatting
+	   attribute(s) of the tag that is ultimately output by
+	   qdoc. The second argument is the text to be rendered with
+	   the special formatting attributes.
+	   
+           For example, we might want to render the first word of each
+           element in a numeric list in blue.
+
+	   \code
+	   / *!
+	       Global variables with complex types:
+	       \list 1
+		  \o \span {class="variableName"} {mutableComplex1} in globals.cpp at line 14
+    		  \o \span {class="variableName"} {mutableComplex2} in globals.cpp at line 15
+    		  \o \span {class="variableName"} {constComplex1} in globals.cpp at line 16
+    		  \o \span {class="variableName"} {constComplex2} in globals.cpp at line 17
+    	       \endlist
+	  * /
+	  \endcode
+
+	  Class \e variableName refers to a clause in your style.css. 
+
+	  \code
+	     .variableName
+             {
+                 font-family: courier;
+	         color: blue
+             }
+	  \endcode
+
+	  Using the \e variableName clause shown above, the example is rendered as:
+
+	  Global variables with complex types:
+	  \list 1
+	    \o \span {class="variableName"} {mutableComplex1} in globals.cpp at line 14
+    	    \o \span {class="variableName"} {mutableComplex2} in globals.cpp at line 15
+    	    \o \span {class="variableName"} {constComplex1} in globals.cpp at line 16
+    	    \o \span {class="variableName"} {constComplex2} in globals.cpp at line 17
+	  \endlist
+
+	  \note The \bold span command does not cause a new paragraph to
+	  be started.
+
+	  See also \l {div}{\\div}.
+           
     \row
         \o \bold \\tt \target tt
         \o \bold {The \\tt command can be used to render variables,
@@ -3608,7 +3835,7 @@
     \l {12-0-qdoc-commands-miscellaneous.html#include}{\\include},
     \l {12-0-qdoc-commands-miscellaneous.html#meta}{\\meta},
     \l {12-0-qdoc-commands-miscellaneous.html#omit}{\\omit},
-    \l {12-0-qdoc-commands-miscellaneous.html#raw}{\\raw},
+    \l {12-0-qdoc-commands-miscellaneous.html#raw}{\\raw} \span {class="newStuff"} {(avoid)},
     \l {12-0-qdoc-commands-miscellaneous.html#raw}{\\unicode}
 
     \section1 Command Descriptions
@@ -4335,10 +4562,16 @@
 
 
     \row
-        \o \bold \\raw \target raw
+        \o \bold \\raw \span {class="newStuff"} {(avoid)} \target raw
         \o \bold {The \\raw command and the corresponding
            \\endraw command delimit a block of raw mark-up language code.}
 
+	   \note Avoid using this command if possible, because it generates
+	   DITA XML code that causes problems. If you are trying to generate
+	   special table or list behavior, try to get the behavior you want
+	   using the \l {span} {\\span} and \l {div} {\\div} commands in your
+	   \l {table} {\\table} or \l {list} {\\list}.
+ 
            The command takes an argument specifying the code's format;
            currently the only supported format is HTML.
 
@@ -4410,10 +4643,6 @@
 
                 \unicode 0x3A3 \i{a}\sub{\i{i}}
            \endquotation
-
-           The \\raw command follows the same conventions as the \l
-           {i}{\\i} command for \l {argument}{punctuation and use of
-           braces} for the argument.
     \endtable
 */
 
@@ -8682,6 +8911,7 @@
     \o \l {07-0-qdoc-commands-quoting.html#codeline}{\\codeline},
     \o \l {16-qdoc-commands-status.html#compat}{\\compat}
     \o \l {15-qdoc-commands-navigation.html#contentspage}{\\contentspage}
+    \o \l {04-qdoc-commands-textformatting.html#div}{\\div} \span {class="newStuff"} {(new)}
     \o \l {07-0-qdoc-commands-quoting.html#dots}{\\dots}
     \o \l {12-0-qdoc-commands-miscellaneous.html#else}{\\else}
     \o \l {12-0-qdoc-commands-miscellaneous.html#endif}{\\endif}
@@ -8733,7 +8963,7 @@
     \o \l {11-qdoc-commands-documentcontents.html#quotation}{\\quotation}
     \o \l {07-0-qdoc-commands-quoting.html#quotefile}{\\quotefile}
     \o \l {07-0-qdoc-commands-quoting.html#quotefromfile}{\\quotefromfile}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#raw}{\\raw}
+    \o \l {12-0-qdoc-commands-miscellaneous.html#raw}{\\raw} \span {class="newStuff"} {(avoid)}
     \o \l {17-qdoc-commands-thread.html#reentrant}{\\reentrant}
     \o \l {18-qdoc-commands-relating.html#reimp}{\\reimp}
     \o \l {18-qdoc-commands-relating.html#relates}{\\relates}
@@ -8749,6 +8979,7 @@
     \o \l {07-0-qdoc-commands-quoting.html#skipto}{\\skipto}
     \o \l {07-0-qdoc-commands-quoting.html#skipuntil}{\\skipuntil}
     \o \l {07-0-qdoc-commands-quoting.html#snippet}{\\snippet},
+    \o \l {04-qdoc-commands-textformatting.html#span}{\\span} \span {class="newStuff"} {(new)}
     \o \l {15-qdoc-commands-navigation.html#startpage}{\\startpage}
     \o \l {04-qdoc-commands-textformatting.html#sub}{\\sub}
     \o \l {20-qdoc-commands-title.html#subtitle}{\\subtitle}
