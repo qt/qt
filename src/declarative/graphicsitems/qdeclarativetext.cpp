@@ -1433,6 +1433,8 @@ qreal QDeclarativeText::paintedHeight() const
     Sets the line height for the text.
     The value can be in pixels or a multiplier depending on lineHeightMode.
 
+    The default value is a multiplier of 1.0.
+    The line height must be a positive value.
 */
 qreal QDeclarativeText::lineHeight() const
 {
@@ -1453,7 +1455,7 @@ void QDeclarativeText::setLineHeight(qreal lineHeight)
 }
 
 /*!
-    \qmlproperty real Text::lineHeightMode
+    \qmlproperty enumeration Text::lineHeightMode
 
     This property determines how the line height is specified.
     The possible values are:
