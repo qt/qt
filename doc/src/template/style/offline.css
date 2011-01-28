@@ -72,11 +72,10 @@
         font-style: italic;
     }
 
-    /* adding Qt theme */
     body
     {
         margin-left: 0.5em;
-        margin-right: 0.5em
+        margin-right: 0.5em;
     }
     a
     {
@@ -202,15 +201,15 @@
     .heading
     {
         font-weight: bold;
-        font-size: 160%;
+        font-size: 125%;
     }
     .subtitle
     {
-        font-size: 130%
+        font-size: 110%
     }
     .small-subtitle
     {
-        font-size: 130%
+        font-size: 100%
     }
     .red
     {
@@ -232,7 +231,7 @@
     {
         color: #00732F;
         font-weight: bold;
-        font-size: 180%;
+        font-size: 130%;
     }
 
     .header .content
@@ -310,19 +309,19 @@
     .content h1
     {
         font-weight: bold;
-        font-size: 180%
+        font-size: 150%
     }
 
     .content h2
     {
         font-weight: bold;
-        font-size: 160%;
+        font-size: 135%;
         width: 100%;
     }
     .content h3
     {
         font-weight: bold;
-        font-size: 1.4em;
+        font-size: 120%;
         width: 100%;
     }
     .content table p
@@ -429,7 +428,7 @@
     .qmltype
     {
         text-align: center;
-        font-size: 160%;
+        font-size: 120%;
     }
     .qmlreadonly
     {
@@ -594,7 +593,7 @@
     }
     .small
     {
-        font-size: 0.75em;
+        font-size: 0.5em;
     }
 /* end footer elements */
 
