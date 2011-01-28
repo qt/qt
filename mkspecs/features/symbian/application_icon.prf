@@ -71,7 +71,7 @@ contains(CONFIG, no_icon) {
                 mifconv.depends = $$ICON
                 PRE_TARGETDEPS += $$mifconv.target
                 QMAKE_EXTRA_TARGETS += mifconv
-                QMAKE_DISTCLEAN += $$mifconv.target
+                QMAKE_CLEAN += $$mifconv.target
             }
             # Rules to use generated MIF file from symbian resources
             RSS_RULES.number_of_icons = $$size(ICON_backslashed)
