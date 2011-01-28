@@ -137,12 +137,13 @@ void tst_qdeclarativecomponent::qmlCreateObjectWithProperties()
     QCOMPARE(testObject1->property("y").value<int>(), 17);
     QCOMPARE(testObject1->property("color").value<QColor>(), QColor(255,255,255));
     QCOMPARE(QDeclarativeProperty::read(testObject1,"border.width").toInt(), 3);
+    QCOMPARE(QDeclarativeProperty::read(testObject1,"innerRect.border.width").toInt(), 20);
     delete testObject1;
 
     QObject *testObject2 = object->property("declarativeitem").value<QObject*>();
     QVERIFY(testObject2);
     QVERIFY(testObject2->parent() == object);
-    QCOMPARE(testObject2->metaObject()->className(), "QDeclarativeItem_QML_2");
+    //QCOMPARE(testObject2->metaObject()->className(), "QDeclarativeItem_QML_2");
     QCOMPARE(testObject2->property("x").value<int>(), 17);
     QCOMPARE(testObject2->property("y").value<int>(), 17);
     QCOMPARE(testObject2->property("testBool").value<bool>(), true);

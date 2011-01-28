@@ -715,10 +715,21 @@ QScriptValue QDeclarativeComponentPrivate::createObject(QObject *publicParent, c
         QScriptValueIterator it(valuemap);
         while (it.hasNext()) {
             it.next();
-            if (it.value().isFunction()) { // To allow property binding from javascript to work
-                newObject.setProperty(it.name(), it.value());
+            QScriptValue prop = newObject;
+            QString propName = it.name();
+            int index = propName.indexOf(QLatin1Char('.'));
+            if (index > 0) {
+                QString subProp = propName;
+                int lastIndex = 0;
+                while (index > 0) {
+                    subProp = propName.mid(lastIndex, index - lastIndex);
+                    prop = prop.property(subProp);
+                    lastIndex = index + 1;
+                    index = propName.indexOf(QLatin1Char('.'), index + 1);
+                }
+                prop.setProperty(propName.mid(propName.lastIndexOf(QLatin1Char('.')) + 1), it.value());
             } else {
-                QDeclarativeProperty::write(ret,it.name(),it.value().toVariant());
+                newObject.setProperty(propName, it.value());
             }
         }
     }
