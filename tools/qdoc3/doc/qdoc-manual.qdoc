@@ -27,12 +27,12 @@
 
 /*!
     \page index.html
-    \nextpage QDoc Manual
+    \nextpage Introduction
 
-    \title QDoc Manual - Table of Contents
+    \title Table of Contents
 
     \list
-    \o \l{QDoc Manual}
+    \o \l{Introduction}
     \o \l{QDoc Commands}
        \list
        \o \l{Markup Commands}
@@ -79,11 +79,11 @@
 
 /*!
     \page 01-qdoc-manual.html
-    \contentspage QDoc Manual - Table of Contents
-    \previouspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
+    \previouspage Table of Contents
     \nextpage QDoc Commands
 
-    \title QDoc Manual
+    \title Introduction
 
     QDoc is the internal tool used by Qt Development Frameworks for generating
     documentation. This document is a reference for QDoc command syntax and
@@ -165,8 +165,8 @@
 
 /*!
     \page 02-qdoc-commands.html
-    \previouspage QDoc Manual
-    \contentspage QDoc Manual - Table of Contents
+    \previouspage Introduction
+    \contentspage Table of Contents
     \nextpage Markup Commands
 
     \title QDoc Commands
@@ -196,7 +196,7 @@
 
 /*!
     \page 03-qdoc-commands-markup.html
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \previouspage QDoc Commands
     \nextpage Text Formatting Commands
 
@@ -287,7 +287,7 @@
 
 /*!
     \page 04-qdoc-commands-textformatting.html
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \previouspage Markup Commands
     \nextpage Document Structuring Commands
 
@@ -928,7 +928,7 @@
 /*!
     \page 05-qdoc-commands-documentstructuring.html
     \previouspage Text Formatting Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage Verbatim Code Commands
 
     \title Document Structuring Commands
@@ -1211,7 +1211,7 @@
 /*!
     \page 06-qdoc-commands-verbatimcode.html
     \previouspage Document Structuring Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage Quoting External Code Commands
 
     \title Verbatim Code Commands
@@ -1425,7 +1425,7 @@
 /*!
     \page 07-0-qdoc-commands-quoting.html
     \previouspage Verbatim Code Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage Linking Commands
 
     \title Quoting External Code Commands
@@ -2097,7 +2097,7 @@
 /*!
     \page  07-1-example.html
     \previouspage Quoting External Code Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
 
     \title Example File
 
@@ -2107,7 +2107,7 @@
 /*!
     \page 08-qdoc-commands-linking.html
     \previouspage Quoting External Code Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage Graphic Commands
 
     \title Linking Commands
@@ -2404,7 +2404,7 @@
 /*!
     \page 09-qdoc-commands-graphic.html
     \previouspage Linking Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage Container Commands
 
     \title Graphic Commands
@@ -2606,7 +2606,7 @@
 /*!
     \page 10-qdoc-commands-container.html
     \previouspage Graphic Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage Document Contents Commands
 
     \title Container Commands
@@ -3146,7 +3146,7 @@
 /*!
     \page 11-qdoc-commands-documentcontents.html
     \previouspage Container Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage Miscellaneous Commands
 
     \title Document Contents Commands
@@ -3816,7 +3816,7 @@
 /*!
     \page 12-0-qdoc-commands-miscellaneous.html
     \previouspage Document Contents Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage Topical Commands
 
     \title Miscellaneous Commands
@@ -4667,7 +4667,7 @@
 /*!
     \page 12-1-signalandslots.html
     \previouspage Miscellaneous Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
 
     \title signalandslots.qdocinc
 
@@ -4677,7 +4677,7 @@
 /*!
     \page 12-2-objectmodel.html
     \previouspage Miscellaneous Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
 
     \title objectmodel.qdocinc
 
@@ -4687,7 +4687,7 @@
 /*!
     \page 12-3-layoutmanagement.html
     \previouspage Miscellaneous Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
 
     \title layoutmanagement.qdocinc
 
@@ -4697,7 +4697,7 @@
 /*!
     \page 13-qdoc-commands-topical.html
     \previouspage Miscellaneous Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage Contextual Commands
 
     \title Topical Commands
@@ -6035,7 +6035,7 @@
 /*!
     \page 14-qdoc-commands-contextualcommands.html
     \previouspage Topical Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage Navigation Commands
 
     \title Contextual Commands
@@ -6082,7 +6082,7 @@
 /*!
     \page 15-qdoc-commands-navigation.html
     \previouspage Contextual Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage Status Commands
 
     \title Navigation Commands
@@ -6315,7 +6315,7 @@
 /*!
     \page 16-qdoc-commands-status.html
     \previouspage Navigation Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage Thread Support Commands
 
     \title Status Commands
@@ -6622,7 +6622,7 @@
 /*!
     \page 17-qdoc-commands-thread.html
     \previouspage Status Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage Relating Commands
 
     \title Thread Support Commands
@@ -6819,7 +6819,7 @@
 /*!
     \page 18-qdoc-commands-relating.html
     \previouspage Thread Support Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage Grouping Commands
 
     \title Relating Commands
@@ -6978,7 +6978,7 @@
 /*!
     \page 19-qdoc-commands-grouping.html
     \previouspage Relating Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage Title Commands
 
     \title Grouping Commands
@@ -7104,7 +7104,7 @@
 /*!
     \page 20-qdoc-commands-title.html
     \previouspage Grouping Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage QDoc Configuration
 
     \title Title Commands
@@ -7208,7 +7208,7 @@
 /*!
     \page 21-0-qdoc-configuration.html
     \previouspage Title Commands
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage General Configuration Variables
 
     \title QDoc Configuration
@@ -7345,7 +7345,7 @@
 /*!
     \page 21-1-minimum-qdocconf.html
     \previouspage QDoc Configuration
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
 
     \title minimum.qdocconf
 
@@ -7355,7 +7355,7 @@
 /*!
     \page 21-2-qt-qdocconf.html
     \previouspage QDoc Configuration
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
 
     \title qt.qdocconf
 
@@ -7365,7 +7365,7 @@
 /*!
     \page 22-qdoc-configuration-generalvariables.html
     \previouspage QDoc Configuration
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage Creating Help Project Files
 
     \title General Configuration Variables
@@ -8279,7 +8279,7 @@
 /*!
     \page 22-creating-help-project-files.html
     \previouspage General Configuration Variables
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage C++ Specific Configuration Variables
 
     \title Creating Help Project Files
@@ -8348,7 +8348,7 @@
 /*!
     \page 23-qdoc-configuration-cppvariables.html
     \previouspage Creating Help Project Files
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage HTML Specific Configuration Variables
 
     \title C++ Specific Configuration Variables
@@ -8486,7 +8486,7 @@
 /*!
     \page 24-qdoc-configuration-htmlvariables.html
     \previouspage C++ Specific Configuration Variables
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage Supporting Derived Projects
 
     \title HTML Specific Configuration Variables
@@ -8616,7 +8616,7 @@
 /*!
     \page 25-qdoc-configuration-derivedprojects.html
     \previouspage HTML Specific Configuration Variables
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage QDoc Compatibility
 
     \title Supporting Derived Projects
@@ -8778,7 +8778,7 @@
 /*!
     \page 26-qdoc-commands-compatibility.html
     \previouspage Supporting Derived Projects
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
     \nextpage QDoc Commands - Alphabetical List
 
     \title QDoc Compatibility
@@ -8910,7 +8910,7 @@
 /*!
     \page 27-qdoc-commmands-alphabetical.html
     \previouspage QDoc Compatibility
-    \contentspage QDoc Manual - Table of Contents
+    \contentspage Table of Contents
 
     \title QDoc Commands - Alphabetical List
 
