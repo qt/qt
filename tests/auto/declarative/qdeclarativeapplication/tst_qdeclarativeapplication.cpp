@@ -87,9 +87,13 @@ void tst_qdeclarativeapplication::active()
     QCOMPARE(item->property("active").toBool(), QApplication::activeWindow() != 0);
 
     // not active again
+    // on mac, setActiveWindow(0) on mac does not deactivate the current application
+    // (you have to switch to a different app or hide the current app to trigger this)
+#if !defined(Q_WS_MAC)
     QApplication::setActiveWindow(0);
     QVERIFY(!item->property("active").toBool());
     QCOMPARE(item->property("active").toBool(), QApplication::activeWindow() != 0);
+#endif
 }
 
 void tst_qdeclarativeapplication::layoutDirection()
