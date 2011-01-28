@@ -715,7 +715,11 @@ QScriptValue QDeclarativeComponentPrivate::createObject(QObject *publicParent, c
         QScriptValueIterator it(valuemap);
         while (it.hasNext()) {
             it.next();
-            newObject.setProperty(it.name(), it.value(), QScriptValue::KeepExistingFlags);
+            if (it.value().isFunction()) { // To allow property binding from javascript to work
+                newObject.setProperty(it.name(), it.value());
+            } else {
+                QDeclarativeProperty::write(ret,it.name(),it.value().toVariant());
+            }
         }
     }
 

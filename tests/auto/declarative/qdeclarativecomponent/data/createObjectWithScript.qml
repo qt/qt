@@ -29,7 +29,7 @@ Item{
     }
 
     Component.onCompleted: {
-        root.declarativerectangle = a.createObject(root, {"x":17,"y":17, "color":"white"});
+        root.declarativerectangle = a.createObject(root, {"x":17,"y":17, "color":"white", "border.width":3});
         root.declarativeitem = b.createObject(root, {"x":17,"y":17,"testBool":true,"testInt":17,"testObject":root});
 
         root.bindingTestObject = c.createObject(root, {'testValue': (function(){return width * 3}) })  // use root.width

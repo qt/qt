@@ -45,6 +45,7 @@
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QtDeclarative/qdeclarativeitem.h>
+#include <QtDeclarative/qdeclarativeproperty.h>
 #include <qcolor.h>
 
 #ifdef Q_OS_SYMBIAN
@@ -135,6 +136,7 @@ void tst_qdeclarativecomponent::qmlCreateObjectWithProperties()
     QCOMPARE(testObject1->property("x").value<int>(), 17);
     QCOMPARE(testObject1->property("y").value<int>(), 17);
     QCOMPARE(testObject1->property("color").value<QColor>(), QColor(255,255,255));
+    QCOMPARE(QDeclarativeProperty::read(testObject1,"border.width").toInt(), 3);
     delete testObject1;
 
     QObject *testObject2 = object->property("declarativeitem").value<QObject*>();
