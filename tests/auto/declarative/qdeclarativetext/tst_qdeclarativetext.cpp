@@ -1099,19 +1099,19 @@ void tst_qdeclarativetext::lineHeight()
 
     myText->setLineHeightMode(QDeclarativeText::PixelHeight);
     myText->setLineHeight(20);
-    QCOMPARE(myText->height(), 120.0);
+    QCOMPARE(myText->height(), myText->lineCount() * 20.0);
 
     myText->setText("Lorem ipsum sit <b>amet</b>, consectetur adipiscing elit. Integer felis nisl, varius in pretium nec, venenatis non erat. Proin lobortis interdum dictum.");
     myText->setLineHeightMode(QDeclarativeText::MultiplyHeight);
     myText->setLineHeight(1);
 
     qreal h2 = myText->height();
-    myText->setLineHeight(1.25);
-    QVERIFY(myText->height() == h2 * 1.25);
+    myText->setLineHeight(2.0);
+    QVERIFY(myText->height() == h2 * 2.0);
 
     myText->setLineHeightMode(QDeclarativeText::PixelHeight);
     myText->setLineHeight(10);
-    QCOMPARE(myText->height(), 60.0);
+    QCOMPARE(myText->height(), myText->lineCount() * 10.0);
 }
 
 void tst_qdeclarativetext::implicitSize_data()
