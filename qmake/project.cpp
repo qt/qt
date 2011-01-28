@@ -1681,10 +1681,10 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
             }
             if(format == UnknownFormat)
                 return IncludeNoExist;
-            if(place["QMAKE_INTERNAL_INCLUDED_FEATURES"].indexOf(file) != -1)
-                return IncludeFeatureAlreadyLoaded;
-            place["QMAKE_INTERNAL_INCLUDED_FEATURES"].append(file);
         }
+        if(place["QMAKE_INTERNAL_INCLUDED_FEATURES"].indexOf(file) != -1)
+            return IncludeFeatureAlreadyLoaded;
+        place["QMAKE_INTERNAL_INCLUDED_FEATURES"].append(file);
     }
     if(QDir::isRelativePath(file)) {
         QStringList include_roots;
