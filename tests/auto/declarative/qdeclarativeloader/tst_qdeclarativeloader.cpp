@@ -90,6 +90,7 @@ private slots:
     void vmeErrors();
     void creationContext();
     void QTBUG_16928();
+    void implicitSize();
 
 private:
     QDeclarativeEngine engine;
@@ -599,6 +600,23 @@ void tst_QDeclarativeLoader::QTBUG_16928()
 
     QCOMPARE(item->width(), 250.);
     QCOMPARE(item->height(), 250.);
+
+    delete item;
+}
+
+void tst_QDeclarativeLoader::implicitSize()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("implicitSize.qml"));
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+
+    QCOMPARE(item->width(), 150.);
+    QCOMPARE(item->height(), 150.);
+
+    QCOMPARE(item->property("implHeight").toReal(), 100.);
+
+    QEXPECT_FAIL("", "versioned property implicit object reference", Continue);
+    QCOMPARE(item->property("implWidth").toReal(), 100.);
 
     delete item;
 }
