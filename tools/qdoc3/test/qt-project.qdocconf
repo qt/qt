@@ -15,7 +15,7 @@ naturallanguage         = en_US
 qhp.projects            = Qt
 
 qhp.Qt.file                = qt.qhp
-qhp.Qt.namespace           = com.trolltech.qt.471
+qhp.Qt.namespace           = com.trolltech.qt.472
 qhp.Qt.virtualFolder       = qdoc
 qhp.Qt.indexTitle          = Qt Reference Documentation
 qhp.Qt.indexRoot           =
