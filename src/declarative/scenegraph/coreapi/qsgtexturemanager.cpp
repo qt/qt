@@ -183,7 +183,7 @@ uint QSGTextureManagerPrivate::upload(const QImage &image, GLuint id)
     QSGTextureManager::swizzleBGRAToRGBA(&i);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, i.width(), i.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, i.constBits());
 #else
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_BGRA, GL_UNSIGNED_BYTE, image.constBits());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, i.width(), i.height(), 0, GL_BGRA, GL_UNSIGNED_BYTE, i.constBits());
 #endif
 
     // Gracefully fail in case of an error...
