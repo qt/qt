@@ -48,7 +48,7 @@
 
     \ingroup frameworks-technologies
     \ingroup qt-basic-concepts
-	
+
 
     \keyword QT_DEBUG_PLUGINS
     \keyword QT_NO_PLUGIN_CHECK
@@ -87,7 +87,7 @@
     directory.
 
     \table
-    \header \o Base Class              \o Directory Name                \o Key Case Sensitivity
+    \header \o Base Class              \o Directory Name      \o Key Case Sensitivity
     \row    \o QAccessibleBridgePlugin \o \c accessiblebridge \o Case Sensitive
     \row    \o QAccessiblePlugin       \o \c accessible       \o Case Sensitive
     \row    \o QDecorationPlugin       \o \c decorations      \o Case Insensitive
@@ -308,6 +308,11 @@
     \note If you are not using qmake to build your application you need
     to make sure that the \c{QT_STATICPLUGIN} preprocessor macro is
     defined.
+
+    \section1 Deploying and Debugging Plugins
+
+    The \l{Deploying Plugins} document covers the process of deploying
+    plugins with applications and debugging them when problems arise.
 
     \sa QPluginLoader, QLibrary, {Plug & Paint Example}
 */

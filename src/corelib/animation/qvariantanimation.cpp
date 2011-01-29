@@ -431,12 +431,17 @@ void QVariantAnimation::registerInterpolator(QVariantAnimation::Interpolator fun
 {
     // will override any existing interpolators
     QInterpolatorVector *interpolators = registeredInterpolators();
+    // When built on solaris with GCC, the destructors can be called
+    // in such an order that we get here with interpolators == NULL,
+    // to continue causes the app to crash on exit with a SEGV
+    if (interpolators) {
 #ifndef QT_NO_THREAD
-    QMutexLocker locker(QMutexPool::globalInstanceGet(interpolators));
+        QMutexLocker locker(QMutexPool::globalInstanceGet(interpolators));
 #endif
-    if (int(interpolationType) >= interpolators->count())
-        interpolators->resize(int(interpolationType) + 1);
-    interpolators->replace(interpolationType, func);
+        if (int(interpolationType) >= interpolators->count())
+            interpolators->resize(int(interpolationType) + 1);
+        interpolators->replace(interpolationType, func);
+    }
 }
 
 

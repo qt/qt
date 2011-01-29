@@ -235,6 +235,10 @@ defined by C++ classes; in fact, many of the core \l {QML Elements} are implemen
 C++ classes. When you create a QML object using one of these elements, you are simply creating an
 instance of a QObject-based C++ class and setting its properties.
 
+To create a visual item that fits in with the Qt Quick elements, base your class off \l QDeclarativeItem instead of QObject directly.
+You can then implement your own painting and functionality like any other QGraphicsObject. Note that QGraphicsItem::ItemHasNoContents is set by default on QDeclarativeItem because
+it does not paint anything; you will need to clear this if your item is supposed to paint anything (as opposed to being solely for input handling or logical grouping).
+
 For example, here is an \c ImageViewer class with an \c image URL property:
 
 \snippet doc/src/snippets/declarative/qtbinding/newelements/imageviewer.h 0
@@ -248,6 +252,11 @@ Then, any QML code loaded by your C++ application or \l{QDeclarativeExtensionPlu
 \c ImageViewer objects:
 
 \snippet doc/src/snippets/declarative/qtbinding/newelements/standalone.qml 0
+
+
+It is advised that you avoid using QGraphicsItem functionality beyond the properties documented in QDeclarativeItem.
+This is because the GraphicsView backend is intended to be an implementation detail for QML, so the QtQuick items can be moved to faster backends as they become available with no change from a QML perspective.
+To minimize any porting requirements for custom visual items, try to stick to the documented properties in QDeclarativeItem where possible. Properties QDeclarativeItem inherits but doesn't document are classed as implementation details; they are not officially supported and may disappear between releases.
 
 Note that custom C++ types do not have to inherit from QDeclarativeItem; this is only necessary if it is
 a displayable item. If the item is not displayable, it can simply inherit from QObject.

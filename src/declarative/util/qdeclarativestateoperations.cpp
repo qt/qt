@@ -634,7 +634,7 @@ void QDeclarativeStateChangeScript::setScript(const QDeclarativeScriptString &s)
     This property holds the name of the script. This name can be used by a
     ScriptAction to target a specific script.
 
-    \sa ScriptAction::stateChangeScriptName
+    \sa ScriptAction::scriptName
 */
 QString QDeclarativeStateChangeScript::name() const
 {

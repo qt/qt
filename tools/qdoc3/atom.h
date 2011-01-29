@@ -78,9 +78,9 @@ class Atom
         EndQmlText,
 #endif
         FootnoteLeft,
-        FootnoteRight,
+        FootnoteRight,      // 20
         FormatElse,
-        FormatEndif,        // 20
+        FormatEndif,
         FormatIf,
         FormattingLeft,
         FormattingRight,
@@ -88,19 +88,23 @@ class Atom
         GuidLink,
         Image,
         ImageText,
-        InlineImage,
+        InlineImage,        // 30
+#ifdef QDOC_QML
+        JavaScript,
+        EndJavaScript,
+#endif
         LegaleseLeft,
-        LegaleseRight,      // 30
+        LegaleseRight,
         LineBreak,
         Link,
         LinkNode,
         ListLeft,
         ListItemNumber,
-        ListTagLeft,        // 36
-        ListTagRight,       // 37
-        ListItemLeft,       // 38
-        ListItemRight,      // 39
-        ListRight,          // 40
+        ListTagLeft,        // 40
+        ListTagRight,       // 41
+        ListItemLeft,       // 42
+        ListItemRight,      // 43
+        ListRight,          // 44
         Nop,
         ParaLeft,
         ParaRight,
@@ -108,30 +112,30 @@ class Atom
         Qml,
         QmlText,
 #endif
-        QuotationLeft,
+        QuotationLeft,      // 50
         QuotationRight,
         RawString,
-        SectionLeft,        // 49
+        SectionLeft,        // 53
         SectionRight,
         SectionHeadingLeft,
         SectionHeadingRight,
         SidebarLeft,
         SidebarRight,
         SinceList,
-        SnippetCommand,
+        SnippetCommand,     // 60
         SnippetIdentifier,
         SnippetLocation,
-        String,             // 59
-        TableLeft,          // 60
+        String,             // 63
+        TableLeft,          // 64
         TableRight,
         TableHeaderLeft,
         TableHeaderRight,
         TableRowLeft,
         TableRowRight,
-        TableItemLeft,
+        TableItemLeft,      // 70
         TableItemRight,
         TableOfContents,
-        Target,             // 69
+        Target,             // 73
         UnhandledFormat, 
         UnknownCommand,
         Last = UnknownCommand

@@ -76,6 +76,7 @@ class MyTypeObject : public QObject
     Q_PROPERTY(QQuaternion quaternion READ quaternion WRITE setQuaternion NOTIFY changed)
     Q_PROPERTY(QMatrix4x4 matrix READ matrix WRITE setMatrix NOTIFY changed)
     Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY changed)
+    Q_PROPERTY(QVariant variant READ variant NOTIFY changed)
 
 public:
     MyTypeObject() :
@@ -151,6 +152,8 @@ public:
     QFont m_font;
     QFont font() const { return m_font; }
     void setFont(const QFont &v) { m_font = v; emit changed(); }
+
+    QVariant variant() const { return sizef(); }
 
     void emitRunScript() { emit runScript(); }
 

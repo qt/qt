@@ -7,7 +7,7 @@ load(default_post)
 # PowerPC-based systems. Note that this logic assumes that Qt has been 
 # configured with an architecture that is usable on the system.
 qt:!isEmpty(QT_CONFIG) {
-    contains(QMAKE_HOST.arch, ppc) {
+    contains(QMAKE_HOST.arch, ppc)|contains(QMAKE_HOST.arch, "Power Macintosh") {
         !contains(QT_CONFIG, ppc64):contains(QT_CONFIG, ppc):CONFIG += ppc
         contains(QT_CONFIG, ppc64):!contains(QT_CONFIG, ppc):CONFIG += ppc64
     } else {

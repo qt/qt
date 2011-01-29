@@ -134,6 +134,7 @@ private slots:
     void endOfLine();
 
     void editBlocksDuringRemove();
+    void selectAllDuringRemove();
 
     void update_data();
     void update();
@@ -1388,6 +1389,17 @@ public slots:
         ++recordingCount;
     }
 
+    void selectAllContents()
+    {
+        // Only test the first time
+        if (!recordingCount) {
+            recordingCount++;
+            cursor->select(QTextCursor::Document);
+            lastRecordedPosition = cursor->position();
+            lastRecordedAnchor = cursor->anchor();
+        }
+    }
+
 private:
     QTextCursor *cursor;
 };
@@ -1409,6 +1421,22 @@ void tst_QTextCursor::editBlocksDuringRemove()
     QCOMPARE(listener.lastRecordedAnchor, 0);
 
     QVERIFY(doc->toPlainText().isEmpty());
+}
+
+void tst_QTextCursor::selectAllDuringRemove()
+{
+    CursorListener listener(&cursor);
+
+    cursor.insertText("Hello World");
+    cursor.movePosition(QTextCursor::End);
+
+    connect(doc, SIGNAL(contentsChanged()), &listener, SLOT(selectAllContents()));
+    listener.recordingCount = 0;
+    QTextCursor localCursor = cursor;
+    localCursor.deletePreviousChar();
+
+    QCOMPARE(listener.lastRecordedPosition, 10);
+    QCOMPARE(listener.lastRecordedAnchor, 0);
 }
 
 void tst_QTextCursor::update_data()
