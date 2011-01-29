@@ -176,15 +176,15 @@ public slots:
     virtual void done();
 
 signals:
-    void requestCompleted();
+    void requestCompleted(QSGTextureUploadRequest *);
 };
 
 class QSGTextureManagerPrivate;
 class Q_DECLARATIVE_EXPORT QSGTextureManager : public QObject
 {
     Q_OBJECT
-
     Q_DECLARE_PRIVATE(QSGTextureManager);
+
 public:
     QSGTextureManager();
 

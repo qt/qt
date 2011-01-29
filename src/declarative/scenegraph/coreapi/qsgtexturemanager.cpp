@@ -303,7 +303,7 @@ QSGTextureRef QSGTextureUploadRequest::texture() const
  */
 void QSGTextureUploadRequest::done()
 {
-    emit requestCompleted();
+    emit requestCompleted(this);
     delete this;
 }
 
