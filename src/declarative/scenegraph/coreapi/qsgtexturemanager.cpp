@@ -246,7 +246,7 @@ QSGTextureRef QSGTextureManager::upload(const QImage &image)
   */
 void QSGTextureManager::requestUpload(QSGTextureUploadRequest *request)
 {
-    upload(request->image());
+    request->setTexture(upload(request->image()));
     request->done();
 }
 
@@ -297,9 +297,6 @@ QSGTextureRef QSGTextureUploadRequest::texture() const
 
 /*!
     Called by the texture manager when the request is done.
-
-    This function may be called from another thread than the object
-    was initially constructed in.
 
     The default implementation will emit the requestCompleted() signal
     and then delete the request object.

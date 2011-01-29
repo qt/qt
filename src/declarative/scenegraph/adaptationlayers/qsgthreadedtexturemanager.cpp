@@ -98,6 +98,9 @@ public:
             mutex.unlock();
 
             manager->uploadInThread(currentlyUploading, currentlyUploading->request);
+
+            QMetaObject::invokeMethod(currentlyUploading->request, "done", Qt::QueuedConnection);
+            currentlyUploading->request = 0;
         }
     }
 
@@ -276,9 +279,6 @@ void QSGThreadedTextureManager::uploadInThread(QSGTexture *texture, QSGTextureUp
         texture->setAlphaChannel(copy.hasAlphaChannel());
         texture->setStatus(QSGTexture::Ready);
     }
-
-    static_cast<QSGThreadedTexture *>(texture)->request->done();
-    static_cast<QSGThreadedTexture *>(texture)->request = 0;
 }
 
 #include "qsgthreadedtexturemanager.moc"

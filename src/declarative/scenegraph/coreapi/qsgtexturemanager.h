@@ -159,7 +159,7 @@ private:
 };
 
 class QSGTextureUploadRequestPrivate;
-class QSGTextureUploadRequest : public QObject
+class Q_DECLARATIVE_EXPORT QSGTextureUploadRequest : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QSGTextureUploadRequest);
@@ -172,6 +172,7 @@ public:
     QSGTextureRef texture() const;
     void setTexture(const QSGTextureRef &ref);
 
+public slots:
     virtual void done();
 
 signals:
