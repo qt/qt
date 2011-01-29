@@ -175,6 +175,9 @@ public:
     void setCursorIsFocusIndicator(bool b);
     bool cursorIsFocusIndicator() const;
 
+    void setDragEnabled(bool enabled);
+    bool isDragEnabled() const;
+
 #ifndef QT_NO_PRINTER
     void print(QPrinter *printer) const;
 #endif

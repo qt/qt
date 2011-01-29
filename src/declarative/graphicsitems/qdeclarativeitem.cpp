@@ -444,6 +444,11 @@ void QDeclarativeItemKeyFilter::componentComplete()
     \c KeyNavigation.BeforeItem allows the event to be used for key navigation
     before the item, rather than after.
 
+    If item to which the focus is switching is not enabled or visible, an attempt will
+    be made to skip this item and focus on the next. This is possible if there are
+    a chain of items with the same KeyNavigation handler. If multiple items in a row are not enabled
+    or visible, they will also be skipped.
+
     \sa {Keys}{Keys attached property}
 */
 
@@ -452,10 +457,12 @@ void QDeclarativeItemKeyFilter::componentComplete()
     \qmlproperty Item KeyNavigation::right
     \qmlproperty Item KeyNavigation::up
     \qmlproperty Item KeyNavigation::down
+    \qmlproperty Item KeyNavigation::tab
+    \qmlproperty Item KeyNavigation::backtab
 
     These properties hold the item to assign focus to
-    when the left, right, up or down cursor keys are
-    pressed.
+    when the left, right, up or down cursor keys, or the
+    tab key are pressed.
 */
 
 /*!
@@ -611,37 +618,37 @@ void QDeclarativeKeyNavigationAttached::keyPressed(QKeyEvent *event, bool post)
     switch(event->key()) {
     case Qt::Key_Left:
         if (d->left) {
-            d->left->setFocus(true);
+            setFocusNavigation(d->left, "left");
             event->accept();
         }
         break;
     case Qt::Key_Right:
         if (d->right) {
-            d->right->setFocus(true);
+            setFocusNavigation(d->right, "right");
             event->accept();
         }
         break;
     case Qt::Key_Up:
         if (d->up) {
-            d->up->setFocus(true);
+            setFocusNavigation(d->up, "up");
             event->accept();
         }
         break;
     case Qt::Key_Down:
         if (d->down) {
-            d->down->setFocus(true);
+            setFocusNavigation(d->down, "down");
             event->accept();
         }
         break;
     case Qt::Key_Tab:
         if (d->tab) {
-            d->tab->setFocus(true);
+            setFocusNavigation(d->tab, "tab");
             event->accept();
         }
         break;
     case Qt::Key_Backtab:
         if (d->backtab) {
-            d->backtab->setFocus(true);
+            setFocusNavigation(d->backtab, "backtab");
             event->accept();
         }
         break;
@@ -698,6 +705,29 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
     }
 
     if (!event->isAccepted()) QDeclarativeItemKeyFilter::keyReleased(event, post);
+}
+
+void QDeclarativeKeyNavigationAttached::setFocusNavigation(QDeclarativeItem *currentItem, const char *dir)
+{
+    QDeclarativeItem *initialItem = currentItem;
+    bool isNextItem = false;
+    do {
+        isNextItem = false;
+        if (currentItem->isVisible() && currentItem->isEnabled()) {
+            currentItem->setFocus(true);
+        } else {
+            QObject *attached =
+                qmlAttachedPropertiesObject<QDeclarativeKeyNavigationAttached>(currentItem, false);
+            if (attached) {
+                QDeclarativeItem *tempItem = qvariant_cast<QDeclarativeItem*>(attached->property(dir));
+                if (tempItem) {
+                    currentItem = tempItem;
+                    isNextItem = true;
+                }
+            }
+        }
+    }
+    while (currentItem != initialItem && isNextItem);
 }
 
 /*!
@@ -3026,13 +3056,24 @@ void QDeclarativeItemPrivate::resetWidth()
     q->setImplicitWidth(q->implicitWidth());
 }
 
+void QDeclarativeItemPrivate::implicitWidthChanged()
+{
+    Q_Q(QDeclarativeItem);
+    emit q->implicitWidthChanged();
+}
+
+qreal QDeclarativeItemPrivate::implicitWidth() const
+{
+    return mImplicitWidth;
+}
+
 /*!
     Returns the width of the item that is implied by other properties that determine the content.
 */
 qreal QDeclarativeItem::implicitWidth() const
 {
     Q_D(const QDeclarativeItem);
-    return d->implicitWidth;
+    return d->implicitWidth();
 }
 
 /*!
@@ -3042,9 +3083,13 @@ qreal QDeclarativeItem::implicitWidth() const
 void QDeclarativeItem::setImplicitWidth(qreal w)
 {
     Q_D(QDeclarativeItem);
-    d->implicitWidth = w;
-    if (d->mWidth == w || widthValid())
+    bool changed = w != d->mImplicitWidth;
+    d->mImplicitWidth = w;
+    if (d->mWidth == w || widthValid()) {
+        if (changed)
+            d->implicitWidthChanged();
         return;
+    }
 
     qreal oldWidth = d->mWidth;
 
@@ -3053,6 +3098,9 @@ void QDeclarativeItem::setImplicitWidth(qreal w)
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), oldWidth, height()));
+
+    if (changed)
+        d->implicitWidthChanged();
 }
 
 /*!
@@ -3134,14 +3182,62 @@ void QDeclarativeItemPrivate::resetHeight()
     q->setImplicitHeight(q->implicitHeight());
 }
 
+void QDeclarativeItemPrivate::implicitHeightChanged()
+{
+    Q_Q(QDeclarativeItem);
+    emit q->implicitHeightChanged();
+}
+
+qreal QDeclarativeItemPrivate::implicitHeight() const
+{
+    return mImplicitHeight;
+}
+
 /*!
     Returns the height of the item that is implied by other properties that determine the content.
 */
 qreal QDeclarativeItem::implicitHeight() const
 {
     Q_D(const QDeclarativeItem);
-    return d->implicitHeight;
+    return d->implicitHeight();
 }
+
+/*!
+    \qmlproperty real Item::implicitWidth
+    \qmlproperty real Item::implicitHeight
+    \since Quick 1.1
+
+    Defines the natural width or height of the Item if no \l width or \l height is specified.
+
+    The default implicit size for most items is 0x0, however some elements have an inherent
+    implicit size which cannot be overridden, e.g. Image, Text.
+
+    Setting the implicit size is useful for defining components that have a preferred size
+    based on their content, for example:
+
+    \code
+    // Label.qml
+    import QtQuick 1.1
+
+    Item {
+        property alias icon: image.source
+        property alias label: text.text
+        implicitWidth: text.implicitWidth + image.implicitWidth
+        implicitHeight: Math.max(text.implicitHeight, image.implicitHeight)
+        Image { id: image }
+        Text {
+            id: text
+            wrapMode: Text.Wrap
+            anchors.left: image.right; anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+        }
+    }
+    \endcode
+
+    \bold Note: using implicitWidth of Text or TextEdit and setting the width explicitly
+    incurs a performance penalty as the text must be laid out twice.
+*/
+
 
 /*!
     Sets the implied height of the item to \a h.
@@ -3150,9 +3246,13 @@ qreal QDeclarativeItem::implicitHeight() const
 void QDeclarativeItem::setImplicitHeight(qreal h)
 {
     Q_D(QDeclarativeItem);
-    d->implicitHeight = h;
-    if (d->mHeight == h || heightValid())
+    bool changed = h != d->mImplicitHeight;
+    d->mImplicitHeight = h;
+    if (d->mHeight == h || heightValid()) {
+        if (changed)
+            d->implicitHeightChanged();
         return;
+    }
 
     qreal oldHeight = d->mHeight;
 
@@ -3161,6 +3261,9 @@ void QDeclarativeItem::setImplicitHeight(qreal h)
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), width(), oldHeight));
+
+    if (changed)
+        d->implicitHeightChanged();
 }
 
 /*!

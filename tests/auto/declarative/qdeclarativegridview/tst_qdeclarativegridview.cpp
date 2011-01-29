@@ -78,6 +78,7 @@ private slots:
     void componentChanges();
     void modelChanges();
     void positionViewAtIndex();
+    void snapping();
     void resetModel();
     void enforceRange();
     void QTBUG_8456();
@@ -85,6 +86,8 @@ private slots:
     void footer();
     void header();
     void indexAt();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
 
 private:
     QDeclarativeView *createView();
@@ -994,6 +997,7 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
 
     // Position on a currently visible item
     gridview->positionViewAtIndex(4, QDeclarativeGridView::Beginning);
+    QTRY_COMPARE(gridview->indexAt(120, 90), 4);
     QTRY_COMPARE(gridview->contentY(), 60.);
 
     // Confirm items positioned correctly
@@ -1008,6 +1012,7 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
 
     // Position on an item beyond the visible items
     gridview->positionViewAtIndex(21, QDeclarativeGridView::Beginning);
+    QTRY_COMPARE(gridview->indexAt(40, 450), 21);
     QTRY_COMPARE(gridview->contentY(), 420.);
 
     // Confirm items positioned correctly
@@ -1022,6 +1027,7 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
 
     // Position on an item that would leave empty space if positioned at the top
     gridview->positionViewAtIndex(31, QDeclarativeGridView::Beginning);
+    QTRY_COMPARE(gridview->indexAt(120, 630), 31);
     QTRY_COMPARE(gridview->contentY(), 520.);
 
     // Confirm items positioned correctly
@@ -1036,6 +1042,9 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
 
     // Position at the beginning again
     gridview->positionViewAtIndex(0, QDeclarativeGridView::Beginning);
+    QTRY_COMPARE(gridview->indexAt(0, 0), 0);
+    QTRY_COMPARE(gridview->indexAt(40, 30), 0);
+    QTRY_COMPARE(gridview->indexAt(80, 60), 4);
     QTRY_COMPARE(gridview->contentY(), 0.);
 
     // Confirm items positioned correctly
@@ -1088,6 +1097,100 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
     gridview->setContentY(60);
     gridview->positionViewAtIndex(20, QDeclarativeGridView::Contain);
     QTRY_COMPARE(gridview->contentY(), 100.);
+
+    // Test for Top To Bottom layout
+    ctxt->setContextProperty("testTopToBottom", QVariant(true));
+
+    // Confirm items positioned correctly
+    itemCount = findItems<QDeclarativeItem>(contentItem, "wrapper").count();
+    for (int i = 0; i < model.count() && i < itemCount-1; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QTRY_VERIFY(item);
+        QTRY_COMPARE(item->x(), (i/5)*80.);
+        QTRY_COMPARE(item->y(), (i%5)*60.);
+    }
+
+    // Position at End
+    gridview->positionViewAtIndex(30, QDeclarativeGridView::End);
+    QTRY_COMPARE(gridview->contentX(), 320.);
+    QTRY_COMPARE(gridview->contentY(), 0.);
+
+    // Position in Center
+    gridview->positionViewAtIndex(15, QDeclarativeGridView::Center);
+    QTRY_COMPARE(gridview->contentX(), 160.);
+
+    // Ensure at least partially visible
+    gridview->positionViewAtIndex(15, QDeclarativeGridView::Visible);
+    QTRY_COMPARE(gridview->contentX(), 160.);
+
+    gridview->setContentX(170);
+    gridview->positionViewAtIndex(25, QDeclarativeGridView::Visible);
+    QTRY_COMPARE(gridview->contentX(), 170.);
+
+    gridview->positionViewAtIndex(30, QDeclarativeGridView::Visible);
+    QTRY_COMPARE(gridview->contentX(), 320.);
+
+    gridview->setContentX(170);
+    gridview->positionViewAtIndex(25, QDeclarativeGridView::Contain);
+    QTRY_COMPARE(gridview->contentX(), 240.);
+
+    // positionViewAtBeginning
+    gridview->positionViewAtBeginning();
+    QTRY_COMPARE(gridview->contentX(), 0.);
+
+    gridview->setContentX(80);
+    canvas->rootObject()->setProperty("showHeader", true);
+    gridview->positionViewAtBeginning();
+    QTRY_COMPARE(gridview->contentX(), -30.);
+
+    // positionViewAtEnd
+    gridview->positionViewAtEnd();
+    QTRY_COMPARE(gridview->contentX(), 430.);
+
+    gridview->setContentX(80);
+    canvas->rootObject()->setProperty("showFooter", true);
+    gridview->positionViewAtEnd();
+    QTRY_COMPARE(gridview->contentX(), 460.);
+
+    delete canvas;
+}
+
+void tst_QDeclarativeGridView::snapping()
+{
+    QDeclarativeView *canvas = createView();
+
+    TestModel model;
+    for (int i = 0; i < 40; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testTopToBottom", QVariant(false));
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
+    qApp->processEvents();
+
+    QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
+    QTRY_VERIFY(gridview != 0);
+
+    gridview->setHeight(220);
+    QCOMPARE(gridview->height(), 220.);
+
+    gridview->positionViewAtIndex(12, QDeclarativeGridView::Visible);
+    QCOMPARE(gridview->contentY(), 80.);
+
+    gridview->setContentY(0);
+    QCOMPARE(gridview->contentY(), 0.);
+
+    gridview->setSnapMode(QDeclarativeGridView::SnapToRow);
+    QCOMPARE(gridview->snapMode(), QDeclarativeGridView::SnapToRow);
+
+    gridview->positionViewAtIndex(12, QDeclarativeGridView::Visible);
+    QCOMPARE(gridview->contentY(), 60.);
+
+    gridview->positionViewAtIndex(15, QDeclarativeGridView::End);
+    QCOMPARE(gridview->contentY(), 120.);
 
     delete canvas;
 }
@@ -1232,6 +1335,15 @@ void tst_QDeclarativeGridView::manualHighlight()
     QTRY_COMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 2));
     QTRY_COMPARE(gridview->highlightItem()->y() - 5, gridview->currentItem()->y());
     QTRY_COMPARE(gridview->highlightItem()->x() - 5, gridview->currentItem()->x());
+
+    gridview->setFlow(QDeclarativeGridView::TopToBottom);
+    QTRY_COMPARE(gridview->flow(), QDeclarativeGridView::TopToBottom);
+
+    gridview->setCurrentIndex(0);
+    QTRY_COMPARE(gridview->currentIndex(), 0);
+    QTRY_COMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 0));
+    QTRY_COMPARE(gridview->highlightItem()->y() - 5, gridview->currentItem()->y());
+    QTRY_COMPARE(gridview->highlightItem()->x() - 5, gridview->currentItem()->x());
 }
 
 void tst_QDeclarativeGridView::footer()
@@ -1335,6 +1447,45 @@ void tst_QDeclarativeGridView::indexAt()
     QCOMPARE(gridview->indexAt(240, 0), -1);
 
     delete canvas;
+}
+
+void tst_QDeclarativeGridView::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; GridView { " + code.toUtf8() + " }", QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; GridView { " + code.toUtf8() + " }", QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+}
+
+void tst_QDeclarativeGridView::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("positionViewAtBeginning") << "Component.onCompleted: positionViewAtBeginning()"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: positionViewAtBeginning"
+        << "";
+
+    QTest::newRow("positionViewAtEnd") << "Component.onCompleted: positionViewAtEnd()"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: positionViewAtEnd"
+        << "";
 }
 
 QDeclarativeView *tst_QDeclarativeGridView::createView()
