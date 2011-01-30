@@ -147,8 +147,6 @@ public:
         return m_data[key];
     }
 
-    RootNode *root() const;
-
     void clearDirty() { m_flags = 0; }
     void markDirty(DirtyFlags flags);
     DirtyFlags dirtyFlags() const { return m_flags; }
@@ -168,6 +166,8 @@ public:
 #ifdef QML_RUNTIME_TESTING
     QString description;
 #endif
+
+    void moveChildren(Node *newParent);
 
 protected:
     // When a node is destroyed, it will detach from the scene graph and the renderer will be
@@ -191,7 +191,6 @@ private:
 
     Flags m_nodeFlags;
     DirtyFlags m_flags;
-    uint m_updateFlags;
     bool m_subtree_enabled;
 };
 
@@ -315,15 +314,12 @@ public:
     ~RootNode();
     NodeType type() const { return RootNodeType; }
 
-    void addRenderer(Renderer *r) { m_renderers << r; }
-    void removeRenderer(Renderer *r);
-
     void updateDirtyStates();
 
 private:
     void notifyNodeChange(Node *node, DirtyFlags flags);
-    void notifyMaterialChange(GeometryNode *node, AbstractMaterial *from, AbstractMaterial *to);
 
+    friend class Renderer;
     friend class Node;
     friend class GeometryNode;
 

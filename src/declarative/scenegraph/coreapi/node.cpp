@@ -51,7 +51,6 @@ Node::Node()
     : m_parent(0)
     , m_nodeFlags(0)
     , m_flags(OwnedByParent)
-    , m_updateFlags(0)
     , m_subtree_enabled(true)
 {
 }
@@ -59,6 +58,21 @@ Node::Node()
 Node::~Node()
 {
     destroy();
+}
+
+
+/*
+   Moves all children from this node to the new node without notifications
+   or anything.
+ */
+
+void Node::moveChildren(Node *newParent)
+{
+    for (int i=0; i<m_children.size(); ++i) {
+        m_children[i]->m_parent = newParent;
+    }
+    newParent->m_children = m_children;
+    m_children.clear();
 }
 
 void Node::destroy()
@@ -79,19 +93,10 @@ void Node::destroy()
     m_data.clear();
 }
 
-RootNode *Node::root() const
-{
-    const Node *n = this;
-    while (n && n->type() != Node::RootNodeType)
-        n = n->m_parent;
-    return (RootNode *) n;
-}
-
 void Node::prependChildNode(Node *node)
 {
     Q_ASSERT_X(!m_children.contains(node), "Node::prependChildNode", "Node is already a child!");
     Q_ASSERT_X(!node->m_parent, "Node::prependChildNode", "Node already has a parent");
-    Q_ASSERT_X(node->type() != RootNodeType, "Node::prependChildNode", "RootNodes cannot be children of other nodes");
 
 #ifndef QT_NO_DEBUG
     if (node->type() == Node::GeometryNodeType) {
@@ -111,7 +116,6 @@ void Node::appendChildNode(Node *node)
 {
     Q_ASSERT_X(!m_children.contains(node), "Node::appendChildNode", "Node is already a child!");
     Q_ASSERT_X(!node->m_parent, "Node::appendChildNode", "Node already has a parent");
-    Q_ASSERT_X(node->type() != RootNodeType, "Node::appendChildNode", "RootNodes cannot be children of other nodes");
 
 #ifndef QT_NO_DEBUG
     if (node->type() == Node::GeometryNodeType) {
@@ -214,16 +218,14 @@ void Node::markDirty(DirtyFlags flags)
     m_flags |= (flags & DirtyPropagationMask);
 
     DirtyFlags subtreeFlags = DirtyFlags((flags & DirtyPropagationMask) << 16);
-    Node *root = this;
     Node *p = m_parent;
     while (p) {
         p->m_flags |= subtreeFlags;
-        root = p;
+        if (p->type() == RootNodeType)
+            static_cast<RootNode *>(p)->notifyNodeChange(this, flags);
         p = p->m_parent;
     }
 
-    if (root->type() == RootNodeType)
-        static_cast<RootNode *>(root)->notifyNodeChange(this, flags);
 }
 
 QRectF Node::subtreeBoundingRect() const
@@ -342,9 +344,6 @@ void GeometryNode::setSubtreeRenderOrder(int order)
 
 void GeometryNode::setMaterial(AbstractMaterial *material)
 {
-    RootNode *r = root();
-    if (r)
-        r->notifyMaterialChange(this, m_material, material);
     m_material = material;
     markDirty(DirtyMaterial);
 }
@@ -429,22 +428,12 @@ RootNode::~RootNode()
     destroy();
 }
 
-void RootNode::removeRenderer(Renderer *r)
-{
-    m_renderers.removeAll(r);
-}
-
 
 void RootNode::notifyNodeChange(Node *node, DirtyFlags flags)
 {
-    for (int i=0; i<m_renderers.size(); ++i)
+    for (int i=0; i<m_renderers.size(); ++i) {
         m_renderers.at(i)->nodeChanged(node, flags);
-}
-
-void RootNode::notifyMaterialChange(GeometryNode *node, AbstractMaterial *from, AbstractMaterial *to)
-{
-    for (int i=0; i<m_renderers.size(); ++i)
-        m_renderers.at(i)->materialChanged(node, from, to);
+    }
 }
 
 void RootNode::updateDirtyStates()
@@ -540,11 +529,12 @@ QDebug operator<<(QDebug d, const GeometryNode *n)
 
         d << "x1=" << x1 << "y1=" << y1 << "x2=" << x2 << "y2=" << y2;
     }
-    d << "dirty=" << hex << (int) n->dirtyFlags() << dec;
+
     d << ")";
 #ifdef QML_RUNTIME_TESTING
     d << n->description;
 #endif
+    d << "dirty=" << hex << (int) n->dirtyFlags() << dec;
     return d;
 }
 
@@ -561,12 +551,12 @@ QDebug operator<<(QDebug d, const ClipNode *n)
 
     d << "bbox=" << n->boundingRect();
     d << "is rect?" << (n->flags() & Node::ClipIsRectangular ? "yes" : "no");
-    d << "dirty=" << hex << (int) n->dirtyFlags() << dec;
 
     d << ")";
 #ifdef QML_RUNTIME_TESTING
     d << n->description;
 #endif
+    d << "dirty=" << hex << (int) n->dirtyFlags() << dec;
     return d;
 }
 
@@ -609,12 +599,18 @@ QDebug operator<<(QDebug d, const Node *n)
     case Node::ClipNodeType:
         d << static_cast<const ClipNode *>(n);
         break;
-    default:
-        d << "Node(" << hex << (void *) n << dec << "children=" << n->childCount();
+    case Node::RootNodeType:
+        d << "RootNode" << hex << (void *) n << dec << "children=" << n->childCount() << "dirty=" << hex << (int) n->dirtyFlags() << dec;
 #ifdef QML_RUNTIME_TESTING
         d << n->description;
 #endif
-        d << "dirty=" << hex << (int) n->dirtyFlags() << dec;
+        d << ")";
+        break;
+    default:
+        d << "Node(" << hex << (void *) n << dec << "children=" << n->childCount() << "dirty=" << hex << (int) n->dirtyFlags() << dec;
+#ifdef QML_RUNTIME_TESTING
+        d << n->description;
+#endif
         d << ")";
         break;
     }

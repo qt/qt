@@ -78,8 +78,7 @@ Renderer::Renderer()
 
 Renderer::~Renderer()
 {
-    if (m_root_node)
-        m_root_node->removeRenderer(this);
+    setRootNode(0);
 }
 
 void Renderer::setRootNode(RootNode *node)
@@ -87,12 +86,13 @@ void Renderer::setRootNode(RootNode *node)
     if (m_root_node == node)
         return;
     if (m_root_node) {
-        m_root_node->removeRenderer(this);
+        m_root_node->m_renderers.removeOne(this);
         nodeChanged(m_root_node, Node::DirtyNodeRemoved);
     }
     m_root_node = node;
     if (m_root_node) {
-        m_root_node->addRenderer(this);
+        Q_ASSERT(!m_root_node->m_renderers.contains(this));
+        m_root_node->m_renderers << this;
         nodeChanged(m_root_node, Node::DirtyNodeAdded);
     }
 }

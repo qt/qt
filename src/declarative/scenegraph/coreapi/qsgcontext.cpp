@@ -148,8 +148,6 @@ void QSGContext::initialize(QGLContext *context)
     d->renderer->setClearColor(Qt::white);
 
     d->rootNode = new RootNode();
-    d->rootNode->addRenderer(d->renderer);
-
     d->renderer->setRootNode(d->rootNode);
 
     d->textureManager = createTextureManager();

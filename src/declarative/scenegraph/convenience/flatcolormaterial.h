@@ -44,7 +44,7 @@
 
 #include <material.h>
 
-class FlatColorMaterial : public AbstractMaterial
+class Q_AUTOTEST_EXPORT FlatColorMaterial : public AbstractMaterial
 {
 public:
     FlatColorMaterial();

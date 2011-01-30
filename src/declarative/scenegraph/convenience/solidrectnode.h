@@ -45,7 +45,7 @@
 #include "node.h"
 #include "flatcolormaterial.h"
 
-class SolidRectNode : public GeometryNode
+class Q_AUTOTEST_EXPORT SolidRectNode : public GeometryNode
 {
 public:
     SolidRectNode(const QRectF &rect, const QColor &color, qreal opacity = 1.0);
