@@ -55,13 +55,13 @@
 
 #include "private/qdeclarativeloader_p.h"
 
-#include "private/qdeclarativeitem_p.h"
+#include "private/qdeclarativeimplicitsizeitem_p_p.h"
 #include "private/qdeclarativeitemchangelistener_p.h"
 
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeContext;
-class QDeclarativeLoaderPrivate : public QDeclarativeItemPrivate, public QDeclarativeItemChangeListener
+class QDeclarativeLoaderPrivate : public QDeclarativeImplicitSizeItemPrivate, public QDeclarativeItemChangeListener
 {
     Q_DECLARE_PUBLIC(QDeclarativeLoader)
 
@@ -72,11 +72,15 @@ public:
     void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry);
     void clear();
     void initResize();
+    void load();
 
     QUrl source;
     QGraphicsObject *item;
     QDeclarativeComponent *component;
     bool ownComponent : 1;
+    bool updatingSize: 1;
+    bool itemWidthValid : 1;
+    bool itemHeightValid : 1;
 
     void _q_sourceLoaded();
     void _q_updateSize(bool loaderGeometryChanged = true);

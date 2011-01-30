@@ -66,6 +66,8 @@
 #define SRCDIR "."
 #endif
 
+Q_DECLARE_METATYPE(QDeclarativeTextEdit::SelectionMode)
+
 QString createExpectedFileIfNotFound(const QString& filebasename, const QImage& actual)
 {
     // XXX This will be replaced by some clever persistent platform image store.
@@ -100,6 +102,7 @@ private slots:
 
     // ### these tests may be trivial    
     void hAlign();
+    void hAlign_RightToLeft();
     void vAlign();
     void font();
     void color();
@@ -107,8 +110,11 @@ private slots:
     void persistentSelection();
     void focusOnPress();
     void selection();
+    void moveCursorSelection_data();
+    void moveCursorSelection();
     void mouseSelection_data();
     void mouseSelection();
+    void dragMouseSelection();
     void inputMethodHints();
 
     void cursorDelegate();
@@ -122,6 +128,10 @@ private slots:
     void openInputPanelOnFocus();
     void geometrySignals();
     void pastingRichText_QTBUG_14003();
+    void implicitSize_data();
+    void implicitSize();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
 
 private:
     void simulateKey(QDeclarativeView *, int key);
@@ -144,7 +154,9 @@ private:
 tst_qdeclarativetextedit::tst_qdeclarativetextedit()
 {
     standard << "the quick brown fox jumped over the lazy dog"
-             << "the quick brown fox\n jumped over the lazy dog";
+             << "the quick brown fox\n jumped over the lazy dog"
+             << "Hello, world!"
+             << "!dlrow ,olleH";
 
     richText << "<i>the <b>quick</b> brown <a href=\\\"http://www.google.com\\\">fox</a> jumped over the <b>lazy</b> dog</i>"
              << "<i>the <b>quick</b> brown <a href=\\\"http://www.google.com\\\">fox</a><br>jumped over the <b>lazy</b> dog</i>";
@@ -411,6 +423,30 @@ void tst_qdeclarativetextedit::hAlign()
         }
     }
 
+}
+
+void tst_qdeclarativetextedit::hAlign_RightToLeft()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/horizontalAlignment_RightToLeft.qml");
+    QDeclarativeTextEdit *textEdit = canvas->rootObject()->findChild<QDeclarativeTextEdit*>("text");
+    QVERIFY(textEdit != 0);
+    canvas->show();
+
+    QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
+
+    // "Right" align
+    textEdit->setHAlign(QDeclarativeTextEdit::AlignRight);
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
+    QVERIFY(textEdit->positionToRectangle(0).x() < canvas->width()/2);
+
+    // Center align
+    // Note that position 0 is on the right-hand side
+    textEdit->setHAlign(QDeclarativeTextEdit::AlignHCenter);
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignHCenter);
+    QVERIFY(textEdit->positionToRectangle(0).x() - textEdit->width() < canvas->width()/2);
+    QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextedit::vAlign()
@@ -704,6 +740,169 @@ void tst_qdeclarativetextedit::selection()
     QVERIFY(textEditObject->selectedText().size() == 10);
     textEditObject->select(0,100);
     QVERIFY(textEditObject->selectedText().size() == 10);
+
+    textEditObject->deselect();
+    QVERIFY(textEditObject->selectedText().isNull());
+    textEditObject->select(0,10);
+    QVERIFY(textEditObject->selectedText().size() == 10);
+    textEditObject->deselect();
+    QVERIFY(textEditObject->selectedText().isNull());
+}
+
+void tst_qdeclarativetextedit::moveCursorSelection_data()
+{
+    QTest::addColumn<QString>("testStr");
+    QTest::addColumn<int>("cursorPosition");
+    QTest::addColumn<int>("movePosition");
+    QTest::addColumn<QDeclarativeTextEdit::SelectionMode>("mode");
+    QTest::addColumn<int>("selectionStart");
+    QTest::addColumn<int>("selectionEnd");
+    QTest::addColumn<bool>("reversible");
+
+    QTest::newRow("(t)he|characters")
+            << standard[0] << 0 << 1 << QDeclarativeTextEdit::SelectCharacters << 0 << 1 << true;
+    QTest::newRow("do(g)|characters")
+            << standard[0] << 43 << 44 << QDeclarativeTextEdit::SelectCharacters << 43 << 44 << true;
+    QTest::newRow("jum(p)ed|characters")
+            << standard[0] << 23 << 24 << QDeclarativeTextEdit::SelectCharacters << 23 << 24 << true;
+    QTest::newRow("jumped( )over|characters")
+            << standard[0] << 26 << 27 << QDeclarativeTextEdit::SelectCharacters << 26 << 27 << true;
+    QTest::newRow("(the )|characters")
+            << standard[0] << 0 << 4 << QDeclarativeTextEdit::SelectCharacters << 0 << 4 << true;
+    QTest::newRow("( dog)|characters")
+            << standard[0] << 40 << 44 << QDeclarativeTextEdit::SelectCharacters << 40 << 44 << true;
+    QTest::newRow("( jumped )|characters")
+            << standard[0] << 19 << 27 << QDeclarativeTextEdit::SelectCharacters << 19 << 27 << true;
+    QTest::newRow("th(e qu)ick|characters")
+            << standard[0] << 2 << 6 << QDeclarativeTextEdit::SelectCharacters << 2 << 6 << true;
+    QTest::newRow("la(zy d)og|characters")
+            << standard[0] << 38 << 42 << QDeclarativeTextEdit::SelectCharacters << 38 << 42 << true;
+    QTest::newRow("jum(ped ov)er|characters")
+            << standard[0] << 23 << 29 << QDeclarativeTextEdit::SelectCharacters << 23 << 29 << true;
+    QTest::newRow("()the|characters")
+            << standard[0] << 0 << 0 << QDeclarativeTextEdit::SelectCharacters << 0 << 0 << true;
+    QTest::newRow("dog()|characters")
+            << standard[0] << 44 << 44 << QDeclarativeTextEdit::SelectCharacters << 44 << 44 << true;
+    QTest::newRow("jum()ped|characters")
+            << standard[0] << 23 << 23 << QDeclarativeTextEdit::SelectCharacters << 23 << 23 << true;
+
+    QTest::newRow("(t)he|words")
+            << standard[0] << 0 << 1 << QDeclarativeTextEdit::SelectWords << 0 << 3 << true;
+    QTest::newRow("do(g)|words")
+            << standard[0] << 43 << 44 << QDeclarativeTextEdit::SelectWords << 41 << 44 << true;
+    QTest::newRow("jum(p)ed|words")
+            << standard[0] << 23 << 24 << QDeclarativeTextEdit::SelectWords << 20 << 26 << true;
+    QTest::newRow("jumped( )over|words")
+            << standard[0] << 26 << 27 << QDeclarativeTextEdit::SelectWords << 27 << 27 << false;
+    QTest::newRow("jumped( )over|words,reversed")
+            << standard[0] << 27 << 26 << QDeclarativeTextEdit::SelectWords << 26 << 26 << false;
+    QTest::newRow("(the )|words")
+            << standard[0] << 0 << 4 << QDeclarativeTextEdit::SelectWords << 0 << 3 << true;
+    QTest::newRow("( dog)|words")
+            << standard[0] << 40 << 44 << QDeclarativeTextEdit::SelectWords << 41 << 44 << true;
+    QTest::newRow("( jumped )|words")
+            << standard[0] << 19 << 27 << QDeclarativeTextEdit::SelectWords << 20 << 26 << true;
+    QTest::newRow("th(e qu)ick|words")
+            << standard[0] << 2 << 6 << QDeclarativeTextEdit::SelectWords << 0 << 9 << true;
+    QTest::newRow("la(zy d)og|words")
+            << standard[0] << 38 << 42 << QDeclarativeTextEdit::SelectWords << 36 << 44 << true;
+    QTest::newRow("jum(ped ov)er|words")
+            << standard[0] << 23 << 29 << QDeclarativeTextEdit::SelectWords << 20 << 31 << true;
+    QTest::newRow("()the|words")
+            << standard[0] << 0 << 0 << QDeclarativeTextEdit::SelectWords << 0 << 0 << true;
+    QTest::newRow("dog()|words")
+            << standard[0] << 44 << 44 << QDeclarativeTextEdit::SelectWords << 44 << 44 << true;
+    QTest::newRow("jum()ped|words")
+            << standard[0] << 23 << 23 << QDeclarativeTextEdit::SelectWords << 23 << 23 << true;
+
+    QTest::newRow("Hello(,) |words")
+            << standard[2] << 5 << 6 << QDeclarativeTextEdit::SelectWords << 5 << 6 << true;
+    QTest::newRow("Hello(, )|words")
+            << standard[2] << 5 << 7 << QDeclarativeTextEdit::SelectWords << 5 << 6 << true;
+    QTest::newRow("Hel(lo, )|words")
+            << standard[2] << 3 << 7 << QDeclarativeTextEdit::SelectWords << 0 << 6 << true;
+    QTest::newRow("Hel(lo),|words")
+            << standard[2] << 3 << 5 << QDeclarativeTextEdit::SelectWords << 0 << 5 << true;
+    QTest::newRow("Hello(),|words")
+            << standard[2] << 5 << 5 << QDeclarativeTextEdit::SelectWords << 5 << 5 << true;
+    QTest::newRow("Hello,()|words")
+            << standard[2] << 6 << 6 << QDeclarativeTextEdit::SelectWords << 6 << 6 << true;
+    QTest::newRow("Hello,( )|words")
+            << standard[2] << 6 << 7 << QDeclarativeTextEdit::SelectWords << 7 << 7 << false;
+    QTest::newRow("Hello,( )|words")
+            << standard[2] << 7 << 6 << QDeclarativeTextEdit::SelectWords << 6 << 6 << false;
+    QTest::newRow("Hello,( world)|words")
+            << standard[2] << 6 << 12 << QDeclarativeTextEdit::SelectWords << 7 << 12 << true;
+    QTest::newRow("Hello,( world!)|words")
+            << standard[2] << 6 << 13 << QDeclarativeTextEdit::SelectWords << 7 << 13 << true;
+    QTest::newRow("Hello(, world!)|words")
+            << standard[2] << 5 << 13 << QDeclarativeTextEdit::SelectWords << 5 << 13 << true;
+    QTest::newRow("world(!)|words")
+            << standard[2] << 12 << 13 << QDeclarativeTextEdit::SelectWords << 12 << 13 << true;
+    QTest::newRow("world!())|words")
+            << standard[2] << 13 << 13 << QDeclarativeTextEdit::SelectWords << 13 << 13 << true;
+    QTest::newRow("world()!)|words")
+            << standard[2] << 12 << 12 << QDeclarativeTextEdit::SelectWords << 12 << 12 << true;
+
+    QTest::newRow("(,)olleH |words")
+            << standard[3] << 7 << 8 << QDeclarativeTextEdit::SelectWords << 7 << 8 << true;
+    QTest::newRow("( ,)olleH|words")
+            << standard[3] << 6 << 8 << QDeclarativeTextEdit::SelectWords << 7 << 8 << true;
+    QTest::newRow("( ,ol)leH|words")
+            << standard[3] << 6 << 10 << QDeclarativeTextEdit::SelectWords << 7 << 13 << true;
+    QTest::newRow(",(ol)leH,|words")
+            << standard[3] << 8 << 10 << QDeclarativeTextEdit::SelectWords << 8 << 13 << true;
+    QTest::newRow(",()olleH|words")
+            << standard[3] << 8 << 8 << QDeclarativeTextEdit::SelectWords << 8 << 8 << true;
+    QTest::newRow("(),olleH|words")
+            << standard[3] << 7 << 7 << QDeclarativeTextEdit::SelectWords << 7 << 7 << true;
+    QTest::newRow("( ),olleH|words")
+            << standard[3] << 6 << 7 << QDeclarativeTextEdit::SelectWords << 7 << 7 << false;
+    QTest::newRow("( ),olleH|words,reversed")
+            << standard[3] << 7 << 6 << QDeclarativeTextEdit::SelectWords << 6 << 6 << false;
+    QTest::newRow("(dlrow ),olleH|words")
+            << standard[3] << 1 << 7 << QDeclarativeTextEdit::SelectWords << 1 << 6 << true;
+    QTest::newRow("(!dlrow ),olleH|words")
+            << standard[3] << 0 << 7 << QDeclarativeTextEdit::SelectWords << 0 << 6 << true;
+    QTest::newRow("(!dlrow ,)olleH|words")
+            << standard[3] << 0 << 8 << QDeclarativeTextEdit::SelectWords << 0 << 8 << true;
+    QTest::newRow("(!)dlrow|words")
+            << standard[3] << 0 << 1 << QDeclarativeTextEdit::SelectWords << 0 << 1 << true;
+    QTest::newRow("()!dlrow|words")
+            << standard[3] << 0 << 0 << QDeclarativeTextEdit::SelectWords << 0 << 0 << true;
+    QTest::newRow("!()dlrow|words")
+            << standard[3] << 1 << 1 << QDeclarativeTextEdit::SelectWords << 1 << 1 << true;
+}
+
+void tst_qdeclarativetextedit::moveCursorSelection()
+{
+    QFETCH(QString, testStr);
+    QFETCH(int, cursorPosition);
+    QFETCH(int, movePosition);
+    QFETCH(QDeclarativeTextEdit::SelectionMode, mode);
+    QFETCH(int, selectionStart);
+    QFETCH(int, selectionEnd);
+    QFETCH(bool, reversible);
+
+    QString componentStr = "import QtQuick 1.1\nTextEdit {  text: \""+ testStr +"\"; }";
+    QDeclarativeComponent textinputComponent(&engine);
+    textinputComponent.setData(componentStr.toLatin1(), QUrl());
+    QDeclarativeTextEdit *texteditObject = qobject_cast<QDeclarativeTextEdit*>(textinputComponent.create());
+    QVERIFY(texteditObject != 0);
+
+    texteditObject->setCursorPosition(cursorPosition);
+    texteditObject->moveCursorSelection(movePosition, mode);
+
+    QCOMPARE(texteditObject->selectionStart(), selectionStart);
+    QCOMPARE(texteditObject->selectionEnd(), selectionEnd);
+
+    if (reversible) {
+        texteditObject->setCursorPosition(movePosition);
+        texteditObject->moveCursorSelection(cursorPosition, mode);
+
+        QCOMPARE(texteditObject->selectionStart(), selectionStart);
+        QCOMPARE(texteditObject->selectionEnd(), selectionEnd);
+    }
 }
 
 void tst_qdeclarativetextedit::mouseSelection_data()
@@ -749,6 +948,51 @@ void tst_qdeclarativetextedit::mouseSelection()
         QVERIFY(str.isEmpty());
 
     delete canvas;
+}
+
+void tst_qdeclarativetextedit::dragMouseSelection()
+{
+    QString qmlfile = SRCDIR "/data/mouseselection_true.qml";
+
+    QDeclarativeView *canvas = createView(qmlfile);
+
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QVERIFY(canvas->rootObject() != 0);
+    QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit *>(canvas->rootObject());
+    QVERIFY(textEditObject != 0);
+
+    textEditObject->setAcceptDrops(true);
+
+    // press-and-drag-and-release from x1 to x2
+    int x1 = 10;
+    int x2 = 70;
+    int y = textEditObject->height()/2;
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x1,y)));
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(x2,y)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x2,y)));
+    QString str1 = textEditObject->selectedText();
+    QVERIFY(str1.length() > 3);
+
+    // press and drag the current selection.
+    x1 = 40;
+    x2 = 100;
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x1,y)));
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(x2,y)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x2,y)));
+    QString str2 = textEditObject->selectedText();
+    QVERIFY(str2.length() > 3);
+
+    QVERIFY(str1 != str2); // Verify the second press and drag is a new selection and doesn't not the first moved.
 }
 
 void tst_qdeclarativetextedit::inputMethodHints()
@@ -906,9 +1150,17 @@ void tst_qdeclarativetextedit::copyAndPaste() {
     QCOMPARE(textEdit->selectedText(), QString("Hello world!"));
     QCOMPARE(textEdit->selectedText().length(), 12);
     textEdit->setCursorPosition(0);
+    QVERIFY(textEdit->canPaste());
     textEdit->paste();
     QCOMPARE(textEdit->text(), QString("Hello world!Hello world!"));
     QCOMPARE(textEdit->text().length(), 24);
+
+    // canPaste
+    QVERIFY(textEdit->canPaste());
+    textEdit->setReadOnly(true);
+    QVERIFY(!textEdit->canPaste());
+    textEdit->setReadOnly(false);
+    QVERIFY(textEdit->canPaste());
 
     // QTBUG-12339
     // test that document and internal text attribute are in sync
@@ -1222,6 +1474,72 @@ void tst_qdeclarativetextedit::pastingRichText_QTBUG_14003()
     QTRY_VERIFY(obj->text() == "");
     QTRY_VERIFY(obj->textFormat() == QDeclarativeTextEdit::PlainText);
 #endif
+}
+
+void tst_qdeclarativetextedit::implicitSize_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<QString>("wrap");
+    QTest::newRow("plain") << "The quick red fox jumped over the lazy brown dog" << "TextEdit.NoWrap";
+    QTest::newRow("richtext") << "<b>The quick red fox jumped over the lazy brown dog</b>" << "TextEdit.NoWrap";
+    QTest::newRow("plain_wrap") << "The quick red fox jumped over the lazy brown dog" << "TextEdit.Wrap";
+    QTest::newRow("richtext_wrap") << "<b>The quick red fox jumped over the lazy brown dog</b>" << "TextEdit.Wrap";
+}
+
+void tst_qdeclarativetextedit::implicitSize()
+{
+    QFETCH(QString, text);
+    QFETCH(QString, wrap);
+    QString componentStr = "import QtQuick 1.1\nTextEdit { text: \"" + text + "\"; width: 50; wrapMode: " + wrap + " }";
+    QDeclarativeComponent textComponent(&engine);
+    textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeTextEdit *textObject = qobject_cast<QDeclarativeTextEdit*>(textComponent.create());
+
+    QVERIFY(textObject->width() < textObject->implicitWidth());
+    QVERIFY(textObject->height() == textObject->implicitHeight());
+
+    textObject->resetWidth();
+    QVERIFY(textObject->width() == textObject->implicitWidth());
+    QVERIFY(textObject->height() == textObject->implicitHeight());
+}
+
+void tst_qdeclarativetextedit::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; Text { " + code.toUtf8() + " }", QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; Text { " + code.toUtf8() + " }", QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+}
+
+void tst_qdeclarativetextedit::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("canPaste") << "property bool foo: canPaste"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: canPaste"
+        << "";
+
+    QTest::newRow("lineCount") << "property int foo: lineCount"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: lineCount"
+        << "";
 }
 
 QTEST_MAIN(tst_qdeclarativetextedit)

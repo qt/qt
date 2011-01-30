@@ -174,6 +174,8 @@ public:
     QBasicTimer trippleClickTimer;
     QPointF trippleClickPoint;
 
+    bool dragEnabled;
+
     bool mousePressed;
 
     bool mightStartDrag;
