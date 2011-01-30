@@ -26,6 +26,10 @@ QSGTextureRef QSGMacTextureManager::upload(const QImage &image)
     if (cached)
         return QSGTextureRef(cached);
 
+    int max = maxTextureSize();
+    if (image.width() > max || image.height() > max)
+        return QSGTextureRef();
+
     GLuint id;
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
@@ -50,6 +54,10 @@ QSGTextureRef QSGMacTextureManager::upload(const QImage &image)
     texture->setOwnsTexture(true);
     texture->setAlphaChannel(image.hasAlphaChannel());
     texture->setStatus(QSGTexture::Ready);
+
+    QObject::connect(texture, SIGNAL(destroyed(QObject*)), this, SLOT(textureDestroyed(QObject*)));
+
+    static_cast<QSGTextureManagerPrivate *>(d_ptr.data())->cache.insert(key, texture);
 
     return texture;
 }

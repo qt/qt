@@ -53,6 +53,27 @@ class TextureManagerTest : public QObject
 public:
     TextureManagerTest();
 
+    void waitForTextures(int count) {
+        QTime time;
+        time.start();
+        while (textures.size() < count && time.elapsed() < 10000) {
+            QTest::qWait(50);
+            QApplication::processEvents();
+        }
+    }
+
+    QSGTextureUploadRequest *request(const QImage &image = QImage(), bool connected = true) {
+        QImage i = image;
+        if (i.isNull())
+            i = QImage(100, 100, QImage::Format_ARGB32_Premultiplied);
+        QSGTextureUploadRequest *r = new QSGTextureUploadRequest;
+        r->setImage(i);
+        if (connected)
+            connect(r, SIGNAL(requestCompleted(QSGTextureUploadRequest*)),
+                    this, SLOT(requestCompleted(QSGTextureUploadRequest*)));
+        return r;
+    }
+
 private Q_SLOTS:
     void initTestCase();
     void cleanupTestCase();
@@ -79,10 +100,16 @@ public slots:
         status = newStatus;
     }
 
+    void requestCompleted(QSGTextureUploadRequest *ref) {
+        textures << ref->texture();
+    }
+
 private:
     QSGContext *context;
     QGLWidget *glWidget;
     QSGTextureManager *tm;
+
+    QList<QSGTextureRef> textures;
 
     int status;
 };
@@ -150,18 +177,15 @@ void TextureManagerTest::uploadSameImageTwice()
  */
 void TextureManagerTest::requestUpload()
 {
-    QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
-    QSGTextureRef t = tm->requestUpload(image, 0, 0);
+    textures.clear();
 
-    QVERIFY(!t.isNull());
+    QSGTextureUploadRequest *req = request();
+    QImage image = req->image();
+    tm->requestUpload(req);
 
-    QVERIFY(t->status() == QSGTexture::Ready || t->status() == QSGTexture::Loading);
-    QTime time;
-    time.start();
-    while (t->status() == QSGTexture::Loading && time.elapsed() < 10000) {
-        QTest::qWait(50);
-        QApplication::processEvents();
-    }
+    waitForTextures(1);
+
+    QSGTextureRef t = textures.at(0);
 
     QVERIFY(t->status() == QSGTexture::Ready);
     QVERIFY(t->textureId() > 0);
@@ -177,21 +201,19 @@ void TextureManagerTest::requestUpload()
  */
 void TextureManagerTest::requestUploadSameImageTwiceWithDelay()
 {
+    textures.clear();
     QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
-    QSGTextureRef t = tm->requestUpload(image, 0, 0);
-    QVERIFY(!t.isNull());
 
-    QTime time;
-    time.start();
-    while (t->status() == QSGTexture::Loading && time.elapsed() < 10000) {
-        QTest::qWait(50);
-        QApplication::processEvents();
-    }
-    QVERIFY(t.isReady());
+    QSGTextureUploadRequest *request1 = request(image);
+    QSGTextureUploadRequest *request2 = request(image);
 
-    QSGTextureRef t2 = tm->requestUpload(image, 0, 0);
-    QVERIFY(t.texture() == t2.texture());
-    QVERIFY(t2.isReady());
+    tm->requestUpload(request1);
+    waitForTextures(1);
+
+    tm->requestUpload(request2);
+
+    QVERIFY(textures.at(0).texture() == textures.at(1).texture());
+    QVERIFY(textures.at(1).isReady());
 }
 
 
@@ -251,11 +273,19 @@ void TextureManagerTest::maxTextureSize()
  */
 void TextureManagerTest::requestUploadSameImageTwice()
 {
+    textures.clear();
     QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
-    QSGTextureRef t1 = tm->requestUpload(image, 0, 0);
-    QSGTextureRef t2 = tm->requestUpload(image, 0, 0);
 
-    QVERIFY(t1.texture() == t2.texture());
+    QSGTextureUploadRequest *request1 = request(image);
+    tm->requestUpload(request1);
+
+    QSGTextureUploadRequest *request2 = request(image);
+    tm->requestUpload(request2);
+
+    waitForTextures(2);
+
+    QVERIFY(textures.at(0).texture() == textures.at(1).texture());
+    QVERIFY(textures.at(1).isReady());
 }
 
 
@@ -266,12 +296,17 @@ void TextureManagerTest::requestUploadSameImageTwice()
  */
 void TextureManagerTest::requestUploadAfterSyncUpload()
 {
+    textures.clear();
+
     QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
     QSGTextureRef t1 = tm->upload(image);
-    QSGTextureRef t2 = tm->requestUpload(image, 0, 0);
 
-    QVERIFY(t1.texture() == t2.texture());
-    QVERIFY(t2.isReady());
+    QSGTextureUploadRequest *r = request(image);
+    tm->requestUpload(r);
+
+    waitForTextures(1);
+
+    QVERIFY(t1.texture() == textures.at(0).texture());
 }
 
 
@@ -283,23 +318,20 @@ void TextureManagerTest::requestUploadAfterSyncUpload()
  */
 void TextureManagerTest::uploadAfterRequestUpload()
 {
-    status = QSGTexture::Null;
-
+    textures.clear();
     QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
 
-    QSGTextureRef async = tm->requestUpload(image, this, SLOT(textureStatusChanged(int)));
+    QSGTextureUploadRequest *req = request(image);
+    tm->requestUpload(req);
+
     QSGTextureRef sync = tm->upload(image);
 
     QVERIFY(sync.isReady());
-    QVERIFY(async.isReady());
 
-    QTest::qWait(100); // If the signal is emitted asynchronously, we need to wait for it...
+    waitForTextures(1);
 
-    QCOMPARE(status, int(QSGTexture::Ready));
-
-    QVERIFY(async.texture() == sync.texture());
+    QVERIFY(textures.at(0).texture() == sync.texture());
 }
-
 
 
 void TextureManagerTest::deletingTextures()
@@ -310,20 +342,18 @@ void TextureManagerTest::deletingTextures()
     // does not cause problems for a following requests.
     // - Async when async is deleted
     for (int i=0; i<100; ++i)
-        QSGTextureRef async2 = tm->requestUpload(image.copy());
-    QSGTextureRef async1 = tm->requestUpload(image);
-    QTime time;
-    time.start();
-    while (!async1.isReady() && time.elapsed() < 10000) {
-        QTest::qWait(50);
-        QApplication::processEvents();
-    }
-    QVERIFY(async1.isReady());
+        tm->requestUpload(request(image.copy(), false));
+
+    textures.clear();
+
+    tm->requestUpload(request(image));
+    waitForTextures(1);
+    QVERIFY(textures.at(0).isReady());
 
 
     // Delete the uploaded texture and force upload it again
     // - sync when async is deleted
-    async1 = QSGTextureRef();
+    textures.clear();
     QSGTextureRef sync = tm->upload(image);
     QVERIFY(sync.isReady());
 
@@ -337,13 +367,9 @@ void TextureManagerTest::deletingTextures()
     // Delete the sync texture and upload it async
     // - async when sync is deleted
     sync = QSGTextureRef();
-    async1 = tm->requestUpload(image);
-    time.start();
-    while (!async1.isReady() && time.elapsed() < 10000) {
-        QTest::qWait(50);
-        QApplication::processEvents();
-    }
-    QVERIFY(async1.isReady());
+    tm->requestUpload(request(image));
+    waitForTextures(1);
+    QVERIFY(textures.at(0).isReady());
 }
 
 

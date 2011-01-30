@@ -6,7 +6,6 @@ HEADERS += \
     $$PWD/default/default_rectanglenode.h \
     $$PWD/default/default_glyphnode.h \
     $$PWD/default/default_glyphnode_p.h \
-#    $$PWD/threadedtexturemanager.h
     $$PWD/qsgpartialuploadtexturemanager.h \
     $$PWD/qsgthreadedtexturemanager.h \
     $$PWD/distancefield_glyphnode.h \
@@ -19,7 +18,6 @@ SOURCES += \
     $$PWD/default/default_rectanglenode.cpp \
     $$PWD/default/default_glyphnode.cpp \
     $$PWD/default/default_glyphnode_p.cpp \
-#    $$PWD/threadedtexturemanager.cpp
     $$PWD/qsgpartialuploadtexturemanager.cpp \
     $$PWD/qsgthreadedtexturemanager.cpp \
     $$PWD/distancefield_glyphnode.cpp \

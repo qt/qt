@@ -58,12 +58,12 @@ public:
     QSGThreadedTextureManager();
 
     QSGTextureRef upload(const QImage &image);
-    QSGTextureRef requestUpload(const QImage &image, const QObject *listener, const char *slot);
+    void requestUpload(QSGTextureUploadRequest *request);
 
 protected:
     virtual void createThreadContext();
     virtual void makeThreadContextCurrent();
-    virtual void uploadInThread(const QImage &image, QSGTexture *texture);
+    virtual void uploadInThread(QSGTexture *texture, const QImage &image);
 
 private:
     friend class QSGThreadedTextureManagerThread;

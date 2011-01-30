@@ -66,7 +66,7 @@ public:
     }
 
     uint upload(const QImage &image, GLuint id);
-    QSGTextureRef upload(const QImage &image, const QObject *listener, const char *slot);
+    QSGTextureRef upload(const QImage &image);
 
     void removeTextureFromCache(QSGTexture *texture);
 

@@ -61,9 +61,8 @@ public:
     int chunkCount;
     int progress;
 
-    QImage image;
-
     QSGPartialUploadTextureManager *manager;
+    QSGTextureUploadRequest *request;
 };
 
 
@@ -108,37 +107,35 @@ void QSGPartialUploadTextureManager::setContext(QSGContext *context)
 }
 
 
-QSGTextureRef QSGPartialUploadTextureManager::requestUpload(const QImage &image,
-                                                            const QObject *listener,
-                                                            const char *slot)
+void QSGPartialUploadTextureManager::requestUpload(QSGTextureUploadRequest *request)
 {
     Q_D(QSGPartialUploadTextureManager);
 
+    const QImage image = request->image();
+
     QSGTextureCacheKey key = { image.cacheKey() };
     QSGTexture *texture = d->cache.value(key);
-    if (texture)
-        return QSGTextureRef(texture);
+    if (texture) {
+        request->setTexture(texture);
+        request->done();
+        return;
+    }
 
     QSGPartialUploadTexture *ptex = new QSGPartialUploadTexture(this);
     ptex->progress = 0;
-    ptex->image = image;
+    ptex->request = request;
+    request->setTexture(ptex);
 
     int hChunkCount = (image.width() + d->uploadChunkSize - 1) / d->uploadChunkSize;
     int vChunkCount = (image.height() + d->uploadChunkSize - 1) / d->uploadChunkSize;
     ptex->chunkCount = hChunkCount * vChunkCount;
-
-    if (listener && slot)
-        connect(ptex, SIGNAL(statusChanged(int)), listener, slot);
-
-    ptex->setStatus(QSGTexture::Loading);
+    ptex->setStatus(QSGTexture::InProgress);
 
     d->cache.insert(key, ptex);
 
     d->requests << ptex;
     if (d->timerId == 0)
         d->timerId = startTimer(100);
-
-    return QSGTextureRef(ptex);
 }
 
 QSGTextureRef QSGPartialUploadTextureManager::upload(const QImage &image)
@@ -167,11 +164,13 @@ QSGTextureRef QSGPartialUploadTextureManager::upload(const QImage &image)
                 ptex->setStatus(QSGTexture::Null);
             }
             d->requests.removeOne(ptex);
+            ptex->request->done();
+            ptex->request = 0;
             return QSGTextureRef(ptex);
         }
     }
 
-    return d->upload(image, 0, 0);
+    return d->upload(image);
 }
 
 
@@ -200,9 +199,10 @@ void QSGPartialUploadTextureManager::processAsyncTextures()
     while (!d->requests.isEmpty()) {
 
         QSGPartialUploadTexture *t = d->requests.at(0);
+        const QImage image = t->request->image();
 
-        int w = t->image.width();
-        int h = t->image.height();
+        int w = image.width();
+        int h = image.height();
 
 //        printf("\nASYNC: texture: %p, id=%d, size=(%dx%d), progress: %d / %d\n",
 //               t,
@@ -231,7 +231,7 @@ void QSGPartialUploadTextureManager::processAsyncTextures()
 
             t->setTextureId(id);
             t->setTextureSize(QSize(w, h));
-            t->setAlphaChannel(t->image.hasAlphaChannel());
+            t->setAlphaChannel(image.hasAlphaChannel());
 
 //            printf("ASYNC: created texture %p with id=%d\n", t, id);
         } else {
@@ -241,14 +241,14 @@ void QSGPartialUploadTextureManager::processAsyncTextures()
         if (time.elapsed() > d->maxUploadTime)
             break;
 
-        int hChunkCount = (t->image.width() + d->uploadChunkSize - 1) / d->uploadChunkSize;
+        int hChunkCount = (image.width() + d->uploadChunkSize - 1) / d->uploadChunkSize;
 
         while (t->progress < t->chunkCount && time.elapsed() < d->maxUploadTime) {
             int x = (t->progress % hChunkCount) * d->uploadChunkSize;
             int y = (t->progress / hChunkCount) * d->uploadChunkSize;
 
-            QRect area = QRect(x, y, d->uploadChunkSize, d->uploadChunkSize) & t->image.rect();
-            QImage subImage = t->image.copy(area).convertToFormat(QImage::Format_ARGB32_Premultiplied);
+            QRect area = QRect(x, y, d->uploadChunkSize, d->uploadChunkSize) & image.rect();
+            QImage subImage = image.copy(area).convertToFormat(QImage::Format_ARGB32_Premultiplied);
 //            printf("ASYNC: - doing another batch: %d (x=%d, y=%d, w=%d, h=%d\n",
 //                   request->progress,
 //                   x, y, subImage.width(), subImage.height());
@@ -261,6 +261,8 @@ void QSGPartialUploadTextureManager::processAsyncTextures()
 
         if (t->progress == t->chunkCount) {
             t->setStatus(QSGTexture::Ready);
+            t->request->done();
+            t->request = 0;
             d->requests.removeAt(0);
             if (d->requests.size() == 0) {
                 killTimer(d->timerId);

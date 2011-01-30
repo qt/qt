@@ -89,10 +89,8 @@ void QSGTexture::setStatus(Status s)
 {
     if (m_status == s)
         return;
-
-    m_status = s;
     Q_ASSERT(s != Ready || (m_texture_id > 0 && !m_texture_size.isEmpty()));
-    emit statusChanged(s);
+    m_status = s;
 }
 
 
@@ -185,7 +183,7 @@ uint QSGTextureManagerPrivate::upload(const QImage &image, GLuint id)
     QSGTextureManager::swizzleBGRAToRGBA(&i);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, i.width(), i.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, i.constBits());
 #else
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_BGRA, GL_UNSIGNED_BYTE, image.constBits());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, i.width(), i.height(), 0, GL_BGRA, GL_UNSIGNED_BYTE, i.constBits());
 #endif
 
     // Gracefully fail in case of an error...
@@ -199,7 +197,7 @@ uint QSGTextureManagerPrivate::upload(const QImage &image, GLuint id)
     return id;
 }
 
-QSGTextureRef QSGTextureManagerPrivate::upload(const QImage &image, const QObject *listener, const char *slot)
+QSGTextureRef QSGTextureManagerPrivate::upload(const QImage &image)
 {
     Q_ASSERT(!image.isNull());
 
@@ -214,8 +212,6 @@ QSGTextureRef QSGTextureManagerPrivate::upload(const QImage &image, const QObjec
         return QSGTextureRef();
 
     texture = new QSGTexture;
-    if (listener && slot)
-        QObject::connect(texture, SIGNAL(statusChanged(int)), listener, slot);
     texture->setTextureId(id);
     texture->setTextureSize(image.size());
     texture->setAlphaChannel(image.hasAlphaChannel());
@@ -233,19 +229,81 @@ QSGTextureRef QSGTextureManagerPrivate::upload(const QImage &image, const QObjec
 QSGTextureRef QSGTextureManager::upload(const QImage &image)
 {
     Q_D(QSGTextureManager);
-    return d->upload(image, 0, 0);
+    return d->upload(image);
 }
 
 
 /*!
-   Schedules \a image to be uploaded.
+    Schedules the image in \a request to be uploaded.
 
+    In most cases, the texture manager will use some means of delaying
+    the upload so that the rendering is interrupted in the least
+    possible way.
+
+    When the upload happens is up to the implementation. It may happen
+    immediately. The ownership of the \a request is transferred to
+    the texture manager.
   */
-QSGTextureRef QSGTextureManager::requestUpload(const QImage &image,
-                                               const QObject *listener,
-                                               const char *slot)
+void QSGTextureManager::requestUpload(QSGTextureUploadRequest *request)
 {
-    Q_D(QSGTextureManager);
-    return d->upload(image, listener, slot);
+    request->setTexture(upload(request->image()));
+    request->done();
+}
+
+
+class QSGTextureUploadRequestPrivate : public QObjectPrivate
+{
+public:
+    QImage image;
+    QSGTextureRef texture;
+};
+
+
+
+/*!
+    Creates a new texture upload request...
+ */
+QSGTextureUploadRequest::QSGTextureUploadRequest()
+    : QObject(*new QSGTextureUploadRequestPrivate)
+{
+}
+
+
+void QSGTextureUploadRequest::setImage(const QImage &image)
+{
+    Q_D(QSGTextureUploadRequest);
+    d->image = image;
+}
+
+QImage QSGTextureUploadRequest::image() const
+{
+    Q_D(const QSGTextureUploadRequest);
+    return d->image;
+}
+
+
+void QSGTextureUploadRequest::setTexture(const QSGTextureRef &ref)
+{
+    Q_D(QSGTextureUploadRequest);
+    d->texture = ref;
+}
+
+QSGTextureRef QSGTextureUploadRequest::texture() const
+{
+    Q_D(const QSGTextureUploadRequest);
+    return d->texture;
+}
+
+
+/*!
+    Called by the texture manager when the request is done.
+
+    The default implementation will emit the requestCompleted() signal
+    and then delete the request object.
+ */
+void QSGTextureUploadRequest::done()
+{
+    emit requestCompleted(this);
+    delete this;
 }
 
