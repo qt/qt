@@ -60,6 +60,7 @@ public:
     ~QSGThreadedTexture();
 
     QSGThreadedTextureManager *manager;
+
     QSGTextureUploadRequest *request;
 };
 
@@ -97,7 +98,7 @@ public:
             currentlyUploading = requests.takeFirst();
             mutex.unlock();
 
-            manager->uploadInThread(currentlyUploading, currentlyUploading->request);
+            manager->uploadInThread(currentlyUploading, currentlyUploading->request->image());
 
             QMetaObject::invokeMethod(currentlyUploading->request, "done", Qt::QueuedConnection);
             currentlyUploading->request = 0;
@@ -186,6 +187,11 @@ void QSGThreadedTextureManager::requestUpload(QSGTextureUploadRequest *request)
     QSGTexture *texture = d->cache.value(key);
     if (texture) {
         request->setTexture(texture);
+        // ### gunnar: This is really a bug... The texture is only scheduled for
+        // upload and might not be done yet, but we don't have a structure to deal
+        // with that yet and I suspect I'll rewrite the async uploaders soon anyway
+        // so let the problem be for now...
+        // if (texture->status() == QSGTexture::Ready)
         request->done();
         return;
     }
@@ -256,13 +262,13 @@ void QSGThreadedTextureManager::makeThreadContextCurrent()
     implementation does this using a single glTexImage2D call.
  */
 
-void QSGThreadedTextureManager::uploadInThread(QSGTexture *texture, QSGTextureUploadRequest *request)
+void QSGThreadedTextureManager::uploadInThread(QSGTexture *texture, const QImage &image)
 {
     GLuint id;
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
 
-    QImage copy = request->image().convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    QImage copy = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
     swizzleBGRAToRGBA(&copy);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, copy.width(), copy.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, copy.constBits());
 

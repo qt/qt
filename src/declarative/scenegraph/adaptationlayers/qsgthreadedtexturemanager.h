@@ -63,7 +63,7 @@ public:
 protected:
     virtual void createThreadContext();
     virtual void makeThreadContextCurrent();
-    virtual void uploadInThread(QSGTexture *texture, QSGTextureUploadRequest *request);
+    virtual void uploadInThread(QSGTexture *texture, const QImage &image);
 
 private:
     friend class QSGThreadedTextureManagerThread;
