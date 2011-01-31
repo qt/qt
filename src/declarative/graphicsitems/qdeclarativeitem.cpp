@@ -1911,11 +1911,26 @@ void QDeclarativeItem::setClip(bool c)
 /*!
     \qmlproperty bool Item::visible
 
-    Whether the item is visible. By default this is true.
+    This property holds whether the item is visible. By default this is true.
 
-    \note visible is not linked to actual visibility; if an item
-    moves off screen, or the opacity changes to 0, this will
-    not affect the visible property.
+    Setting this property directly affects the \c visible value of child
+    items. When set to \c false, the \c visible values of all child items also
+    become \c false. When set to \c true, the \c visible values of child items
+    are returned to \c true, unless they have explicitly been set to \c false.
+
+    (Because of this flow-on behavior, using the \c visible property may not
+    have the intended effect if a property binding should only respond to
+    explicit property changes. In such cases it may be better to use the
+    \l opacity property instead.)
+
+    Setting this property to \c false automatically causes \l focus to be set
+    to \c false, and this item will longer receive mouse and keyboard events.
+    (In contrast, setting the \l opacity to 0 does not affect the \l focus
+    property and the receiving of key events.)
+
+    \note This property's value is only affected by changes to this property or
+    the parent's \c visible property. It does not change, for example, if this
+    item moves off-screen, or if the \l opacity changes to 0.
 */
 
 
@@ -2289,13 +2304,15 @@ void QDeclarativeItem::setBaselineOffset(qreal offset)
 /*!
   \qmlproperty real Item::opacity
 
-  The opacity of the item.  Opacity is specified as a number between 0
-  (fully transparent) and 1 (fully opaque).  The default is 1.
+  This property holds the opacity of the item.  Opacity is specified as a
+  number between 0 (fully transparent) and 1 (fully opaque).  The default is 1.
 
-  Opacity is an \e inherited attribute.  That is, the opacity is
-  also applied individually to child items.  In almost all cases this
-  is what you want, but in some cases (like the following example)
-  it may produce undesired results.
+  When this property is set, the specified opacity is also applied
+  individually to child items.  In almost all cases this is what you want,
+  but in some cases it may produce undesired results. For example in the
+  second set of rectangles below, the red rectangle has specified an opacity
+  of 0.5, which affects the opacity of its blue child rectangle even though
+  the child has not specified an opacity.
 
   \table
   \row
@@ -2330,6 +2347,12 @@ void QDeclarativeItem::setBaselineOffset(qreal offset)
     }
   \endqml
   \endtable
+
+  If an item's opacity is set to 0, the item will no longer receive mouse
+  events, but will continue to receive key events and will retain the keyboard
+  \l focus if it has been set. (In contrast, setting the \l visible property
+  to \c false stops both mouse and keyboard events, and also removes focus
+  from the item.)
 */
 
 /*!
