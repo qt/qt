@@ -63,6 +63,10 @@
 #include <stddef.h>
 
 #ifdef Q_OS_SYMBIAN
+#include <QNetworkConfigurationManager>
+#include <QNetworkConfiguration>
+#include <QNetworkSession>
+#include <QScopedPointer>
 #define PLATFORMSOCKETENGINE QSymbianSocketEngine
 #include <private/qsymbiansocketengine_p.h>
 #include <private/qcore_symbian_p.h>
@@ -310,6 +314,20 @@ void tst_PlatformSocketEngine::udpIPv6LoopbackTest()
 //---------------------------------------------------------------------------
 void tst_PlatformSocketEngine::broadcastTest()
 {
+#ifdef Q_OS_SYMBIAN
+    //broadcast isn't supported on loopback connections, but is on WLAN
+#ifndef QT_NO_BEARERMANAGEMENT
+    QScopedPointer<QNetworkConfigurationManager> netConfMan(new QNetworkConfigurationManager());
+    QNetworkConfiguration networkConfiguration(netConfMan->defaultConfiguration());
+    QScopedPointer<QNetworkSession> networkSession(new QNetworkSession(networkConfiguration));
+    if (!networkSession->isOpen()) {
+        networkSession->open();
+        bool ok = networkSession->waitForOpened(30000);
+        qDebug() << networkSession->isOpen() << networkSession->error() << networkSession->errorString();
+        QVERIFY(ok);
+    }
+#endif
+#endif
 #ifdef Q_OS_AIX
     QSKIP("Broadcast does not work on darko", SkipAll);
 #endif
@@ -327,10 +345,18 @@ void tst_PlatformSocketEngine::broadcastTest()
     // Broadcast an inappropriate troll message
     QByteArray trollMessage
         = "MOOT wtf is a MOOT? talk english not your sutpiD ENGLISH.";
-    QVERIFY(broadcastSocket.writeDatagram(trollMessage.data(),
+    qint64 written = broadcastSocket.writeDatagram(trollMessage.data(),
                                          trollMessage.size(),
                                          QHostAddress::Broadcast,
-                                         port) == trollMessage.size());
+                                         port);
+
+#ifdef Q_OS_SYMBIAN
+    //On symbian, broadcasts return 0 bytes written if none of the interfaces support it.
+    //Notably the loopback interfaces do not. (though they do support multicast!?)
+    if (written == 0)
+        QEXPECT_FAIL("", "No active interface supports broadcast", Abort);
+#endif
+    QCOMPARE((int)written, trollMessage.size());
 
     // Wait until we receive it ourselves
 #if defined(Q_OS_FREEBSD)
