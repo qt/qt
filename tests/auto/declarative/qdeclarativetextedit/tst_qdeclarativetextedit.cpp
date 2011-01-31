@@ -1513,14 +1513,14 @@ void tst_qdeclarativetextedit::testQtQuick11Attributes()
     QObject *obj;
 
     QDeclarativeComponent valid(&engine);
-    valid.setData("import QtQuick 1.1; Text { " + code.toUtf8() + " }", QUrl(""));
+    valid.setData("import QtQuick 1.1; TextEdit { " + code.toUtf8() + " }", QUrl(""));
     obj = valid.create();
     QVERIFY(obj);
     QVERIFY(valid.errorString().isEmpty());
     delete obj;
 
     QDeclarativeComponent invalid(&engine);
-    invalid.setData("import QtQuick 1.0; Text { " + code.toUtf8() + " }", QUrl(""));
+    invalid.setData("import QtQuick 1.0; TextEdit { " + code.toUtf8() + " }", QUrl(""));
     QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
     obj = invalid.create();
     QCOMPARE(invalid.errorString(), error);
@@ -1540,6 +1540,18 @@ void tst_qdeclarativetextedit::testQtQuick11Attributes_data()
     QTest::newRow("lineCount") << "property int foo: lineCount"
         << "<Unknown File>:1: ReferenceError: Can't find variable: lineCount"
         << "";
+
+    QTest::newRow("moveCursorSelection") << "Component.onCompleted: moveCursorSelection(0, TextEdit.SelectCharacters)"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: moveCursorSelection"
+        << "";
+
+    QTest::newRow("deselect") << "Component.onCompleted: deselect()"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: deselect"
+        << "";
+
+    QTest::newRow("onLinkActivated") << "onLinkActivated: {}"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"TextEdit.onLinkActivated\" is not available in QtQuick 1.0.\n";
 }
 
 QTEST_MAIN(tst_qdeclarativetextedit)

@@ -117,6 +117,9 @@ private slots:
 
     void echoMode();
     void geometrySignals();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
+
 private:
     void simulateKey(QDeclarativeView *, int key);
     QDeclarativeView *createView(const QString &filename);
@@ -1432,6 +1435,49 @@ void tst_qdeclarativetextinput::geometrySignals()
     QCOMPARE(o->property("bindingWidth").toInt(), 400);
     QCOMPARE(o->property("bindingHeight").toInt(), 500);
     delete o;
+}
+
+void tst_qdeclarativetextinput::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; TextInput { " + code.toUtf8() + " }", QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; TextInput { " + code.toUtf8() + " }", QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+}
+
+void tst_qdeclarativetextinput::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("canPaste") << "property bool foo: canPaste"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: canPaste"
+        << "";
+
+    QTest::newRow("moveCursorSelection") << "Component.onCompleted: moveCursorSelection(0, TextEdit.SelectCharacters)"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: moveCursorSelection"
+        << "";
+
+    QTest::newRow("deselect") << "Component.onCompleted: deselect()"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: deselect"
+        << "";
 }
 
 QTEST_MAIN(tst_qdeclarativetextinput)

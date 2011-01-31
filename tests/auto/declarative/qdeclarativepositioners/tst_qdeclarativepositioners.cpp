@@ -87,6 +87,8 @@ private slots:
     void test_flow_implicit_resize();
     void test_conflictinganchors();
     void test_vertical_qgraphicswidget();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
 private:
     QDeclarativeView *createView(const QString &filename);
 };
@@ -1070,7 +1072,7 @@ void interceptWarnings(QtMsgType type, const char *msg)
 
 void tst_QDeclarativePositioners::test_conflictinganchors()
 {
-    qInstallMsgHandler(interceptWarnings);
+    QtMsgHandler oldMsgHandler = qInstallMsgHandler(interceptWarnings);
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
 
@@ -1151,6 +1153,7 @@ void tst_QDeclarativePositioners::test_conflictinganchors()
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Flow: Cannot specify anchors for items inside Flow"));
+    qInstallMsgHandler(oldMsgHandler);
 }
 
 void tst_QDeclarativePositioners::test_vertical_qgraphicswidget()
@@ -1193,6 +1196,49 @@ void tst_QDeclarativePositioners::test_vertical_qgraphicswidget()
     QCOMPARE(three->y(), 0.0);
 
     delete canvas;
+}
+
+void tst_QDeclarativePositioners::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; " + code.toUtf8(), QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; " + code.toUtf8(), QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+}
+
+void tst_QDeclarativePositioners::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("Flow.layoutDirection") << "Flow { layoutDirection: Qt.LeftToRight }"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Flow.layoutDirection\" is not available in QtQuick 1.0.\n";
+
+    QTest::newRow("Row.layoutDirection") << "Row { layoutDirection: Qt.LeftToRight }"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Row.layoutDirection\" is not available in QtQuick 1.0.\n";
+
+    QTest::newRow("Grid.layoutDirection") << "Grid { layoutDirection: Qt.LeftToRight }"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Grid.layoutDirection\" is not available in QtQuick 1.0.\n";
 }
 
 QDeclarativeView *tst_QDeclarativePositioners::createView(const QString &filename)

@@ -86,6 +86,8 @@ private slots:
     void invalidSciFile();
     void pendingRemoteRequest();
     void pendingRemoteRequest_data();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
 
 private:
     QDeclarativeEngine engine;
@@ -378,6 +380,45 @@ void tst_qdeclarativeborderimage::pendingRemoteRequest_data()
 
     QTest::newRow("png file") << "http://localhost/none.png";
     QTest::newRow("sci file") << "http://localhost/none.sci";
+}
+
+void tst_qdeclarativeborderimage::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; BorderImage { " + code.toUtf8() + " }", QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; BorderImage { " + code.toUtf8() + " }", QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+}
+
+void tst_qdeclarativeborderimage::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("mirror") << "mirror: true"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"BorderImage.mirror\" is not available in QtQuick 1.0.\n";
+
+    QTest::newRow("cache") << "cache: true"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"BorderImage.cache\" is not available in QtQuick 1.0.\n";
 }
 
 QTEST_MAIN(tst_qdeclarativeborderimage)
