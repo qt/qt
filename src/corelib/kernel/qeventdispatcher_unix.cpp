@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -509,7 +509,6 @@ bool QTimerInfoList::unregisterTimer(int timerId)
         }
     }
     // id not found
-    qWarning("Application asked to unregister timer 0x%x which is not registered in this thread. Fix application.", timerId);
     return false;
 }
 

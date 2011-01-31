@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -50,20 +50,27 @@
 // We mean it.
 //
 
+#ifndef QCOCOAPANEL_MAC_P
+#define QCOCOAPANEL_MAC_P
+
 #include "qmacdefines_mac.h"
 #ifdef QT_MAC_USE_COCOA
 #import <Cocoa/Cocoa.h>
 
 QT_FORWARD_DECLARE_CLASS(QStringList);
+QT_FORWARD_DECLARE_CLASS(QCocoaDropData);
 
 @interface QT_MANGLE_NAMESPACE(QCocoaPanel) : NSPanel {
-    bool leftButtonIsRightButton;
     QStringList *currentCustomDragTypes;
+    QCocoaDropData *dropData;
+    NSInteger dragEnterSequence;
 }
 
 + (Class)frameViewClassForStyleMask:(NSUInteger)styleMask;
 - (void)registerDragTypes;
+- (void)drawRectOriginal:(NSRect)rect;
 
 @end
 #endif
 
+#endif

@@ -199,7 +199,6 @@ SUBDIRS=\
     qtreeview \
     qtreewidget \
     qtreewidgetitemiterator \
-    qtwidgets \
     qudpsocket \
     qundogroup \
     qundostack \

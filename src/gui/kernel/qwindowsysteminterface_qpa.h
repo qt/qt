@@ -83,6 +83,7 @@ public:
     static void handleCloseEvent(QWidget *w);
     static void handleEnterEvent(QWidget *w);
     static void handleLeaveEvent(QWidget *w);
+    static void handleWindowActivated(QWidget *w);
 
     // Changes to the screen
     static void handleScreenGeometryChange(int screenIndex);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1323,6 +1323,19 @@ void tst_QDeclarativeListView::positionViewAtIndex()
     // Confirm items positioned correctly
     itemCount = findItems<QDeclarativeItem>(contentItem, "wrapper").count();
     for (int i = 0; i < model.count() && i < itemCount-1; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QTRY_VERIFY(item);
+        QTRY_COMPARE(item->y(), i*20.);
+    }
+
+    // Position at End using last index
+    listview->positionViewAtIndex(model.count()-1, QDeclarativeListView::End);
+    QTRY_COMPARE(listview->contentY(), 480.);
+
+    // Confirm items positioned correctly
+    itemCount = findItems<QDeclarativeItem>(contentItem, "wrapper").count();
+    for (int i = 24; i < model.count(); ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QTRY_VERIFY(item);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -370,7 +370,7 @@
     \title QTestLib Tutorial
 
     This tutorial gives a short introduction to how to use some of the
-    features of the QTestLib framework. It is divided into four
+    features of the QTestLib framework. It is divided into five
     chapters:
 
     \list 1

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -3772,24 +3772,7 @@ QGLWidget::QGLWidget(QWidget *parent, const QGLWidget* shareWidget, Qt::WindowFl
     setAttribute(Qt::WA_PaintOnScreen);
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoFillBackground(true); // for compatibility
-#ifdef Q_WS_QPA
-    QPlatformWindowFormat platformFormat = QGLFormat::toPlatformWindowFormat(QGLFormat::defaultFormat());
-    platformFormat.setUseDefaultSharedContext(false);
-    if (shareWidget && shareWidget->d_func()->glcx) {
-        QPlatformGLContext *sharedPlatformContext = shareWidget->d_func()->glcx->d_func()->platformContext;
-        platformFormat.setSharedContext(sharedPlatformContext);
-    }
-    setPlatformWindowFormat(platformFormat);
-    winId(); // create window;
-    QGLContext *glContext = 0;
-    if (platformWindow())
-        glContext = QGLContext::fromPlatformGLContext(platformWindow()->glContext());
-    if (glContext){
-        d->init(glContext,shareWidget);
-    }
-#else
     d->init(new QGLContext(QGLFormat::defaultFormat(), this), shareWidget);
-#endif
 }
 
 
@@ -3829,24 +3812,7 @@ QGLWidget::QGLWidget(const QGLFormat &format, QWidget *parent, const QGLWidget* 
     setAttribute(Qt::WA_PaintOnScreen);
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoFillBackground(true); // for compatibility
-#ifdef Q_WS_QPA
-    QPlatformWindowFormat platformFormat = QGLFormat::toPlatformWindowFormat(format);
-    platformFormat.setUseDefaultSharedContext(false);
-    if (shareWidget && shareWidget->d_func()->glcx) {
-        QPlatformGLContext *sharedPlatformContext = shareWidget->d_func()->glcx->d_func()->platformContext;
-        platformFormat.setSharedContext(sharedPlatformContext);
-    }
-    setPlatformWindowFormat(platformFormat);
-    winId(); // create window;
-    QGLContext *glContext = 0;
-    if (platformWindow())
-        glContext = QGLContext::fromPlatformGLContext(platformWindow()->glContext());
-    if (glContext){
-        d->init(glContext,shareWidget);
-    }
-#else
     d->init(new QGLContext(format, this), shareWidget);
-#endif
 }
 
 /*!

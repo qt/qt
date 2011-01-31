@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -162,7 +162,7 @@ QScriptValueIterator::~QScriptValueIterator()
 bool QScriptValueIterator::hasNext() const
 {
     Q_D(const QScriptValueIterator);
-    if (!d)
+    if (!d || !d->engine())
         return false;
 
     const_cast<QScriptValueIteratorPrivate*>(d)->ensureInitialized();
@@ -198,7 +198,7 @@ void QScriptValueIterator::next()
 bool QScriptValueIterator::hasPrevious() const
 {
     Q_D(const QScriptValueIterator);
-    if (!d)
+    if (!d || !d->engine())
         return false;
 
     const_cast<QScriptValueIteratorPrivate*>(d)->ensureInitialized();

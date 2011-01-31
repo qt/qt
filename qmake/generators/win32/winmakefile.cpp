@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -839,6 +839,18 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
             if(!uninst.isEmpty())
                 uninst.append("\n\t");
             uninst.append("-$(DEL_FILE) \"" + dst_prl + "\"");
+        }
+        if(project->isActiveConfig("create_pc")) {
+            QString dst_pc = pkgConfigFileName(false);
+            if (!dst_pc.isEmpty()) {
+                dst_pc = filePrefixRoot(root, targetdir + dst_pc);
+                if(!ret.isEmpty())
+                    ret += "\n\t";
+                ret += "-$(INSTALL_FILE) \"" + pkgConfigFileName(true) + "\" \"" + dst_pc + "\"";
+                if(!uninst.isEmpty())
+                    uninst.append("\n\t");
+                uninst.append("-$(DEL_FILE) \"" + dst_pc + "\"");
+            }
         }
         if(project->isActiveConfig("shared") && !project->isActiveConfig("plugin")) {
             QString lib_target = getLibTarget();

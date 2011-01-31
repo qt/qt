@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -79,7 +79,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_DECL_IMPORT extern QImage qt_imageForBrush(int brushStyle, bool invert); //in qbrush.cpp
+Q_GUI_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert); //in qbrush.cpp
 #ifdef QT_MAC_USE_COCOA
 extern void *qt_current_nsopengl_context(); // qgl_mac.mm
 #endif

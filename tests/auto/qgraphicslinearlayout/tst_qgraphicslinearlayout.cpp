@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -106,6 +106,7 @@ private slots:
     void testAlignmentInLargerLayout();
     void testOffByOneInLargerLayout();
     void testDefaultAlignment();
+    void combineSizePolicies();
 
     // Task specific tests
     void task218400_insertStretchCrash();
@@ -1581,6 +1582,31 @@ void tst_QGraphicsLinearLayout::testDefaultAlignment()
     QCOMPARE(layout->geometry(), QRectF(0,0,100,150));
     QCOMPARE(w->geometry(), QRectF(0,0,50,50));
     QCOMPARE(w2->geometry(), QRectF(0,50,100,100));
+}
+
+void tst_QGraphicsLinearLayout::combineSizePolicies()
+{
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Horizontal, widget);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+
+    QGraphicsWidget *w1 = new QGraphicsWidget;
+    w1->setMaximumSize(200,200);
+    w1->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    layout->addItem(w1);
+
+    QGraphicsWidget *w2 = new QGraphicsWidget;
+    w2->setPreferredSize(50,50);
+    w2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    layout->addItem(w2);
+    QCOMPARE(layout->maximumHeight(), qreal(200));
+
+    // now remove the fixed vertical size policy, and set instead the maximum height to 50
+    // this should in effect give the same maximumHeight
+    w2->setMaximumHeight(50);
+    w2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+    QCOMPARE(layout->maximumHeight(), qreal(200));
 }
 
 QTEST_MAIN(tst_QGraphicsLinearLayout)

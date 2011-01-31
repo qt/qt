@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1781,7 +1781,7 @@ QColor QColor::toHsl() const
     color.ct.ahsl.lightness = qRound(lightness * USHRT_MAX);
     if (qFuzzyIsNull(delta)) {
         // achromatic case, hue is undefined
-        color.ct.ahsl.hue = 0;
+        color.ct.ahsl.hue = USHRT_MAX;
         color.ct.ahsl.saturation = 0;
     } else {
         // chromatic case

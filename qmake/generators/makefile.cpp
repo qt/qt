@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -3121,6 +3121,184 @@ MakefileGenerator::openOutput(QFile &file, const QString &build) const
         return true;
     }
     return false;
+}
+
+QString
+MakefileGenerator::pkgConfigFileName(bool fixify)
+{
+    QString ret = var("TARGET");
+    int slsh = ret.lastIndexOf(Option::dir_sep);
+    if(slsh != -1)
+        ret = ret.right(ret.length() - slsh - 1);
+    if(ret.startsWith("lib"))
+        ret = ret.mid(3);
+    int dot = ret.indexOf('.');
+    if(dot != -1)
+        ret = ret.left(dot);
+    ret += Option::pkgcfg_ext;
+    QString subdir = project->first("QMAKE_PKGCONFIG_DESTDIR");
+    if(!subdir.isEmpty()) {
+        // initOutPaths() appends dir_sep, but just to be safe..
+        if (!subdir.endsWith(Option::dir_sep))
+            ret.prepend(Option::dir_sep);
+        ret.prepend(subdir);
+    }
+    if(fixify) {
+        if(QDir::isRelativePath(ret) && !project->isEmpty("DESTDIR"))
+            ret.prepend(project->first("DESTDIR"));
+        ret = Option::fixPathToLocalOS(fileFixify(ret, qmake_getpwd(), Option::output_dir));
+    }
+    return ret;
+}
+
+QString
+MakefileGenerator::pkgConfigPrefix() const
+{
+    if(!project->isEmpty("QMAKE_PKGCONFIG_PREFIX"))
+        return project->first("QMAKE_PKGCONFIG_PREFIX");
+    return QLibraryInfo::location(QLibraryInfo::PrefixPath);
+}
+
+QString
+MakefileGenerator::pkgConfigFixPath(QString path) const
+{
+    QString prefix = pkgConfigPrefix();
+    if(path.startsWith(prefix))
+        path = path.replace(prefix, "${prefix}");
+    return path;
+}
+
+void
+MakefileGenerator::writePkgConfigFile()
+{
+    QString fname = pkgConfigFileName(), lname = fname;
+    mkdir(fileInfo(fname).path());
+    int slsh = lname.lastIndexOf(Option::dir_sep);
+    if(slsh != -1)
+        lname = lname.right(lname.length() - slsh - 1);
+    QFile ft(fname);
+    if(!ft.open(QIODevice::WriteOnly))
+        return;
+    project->values("ALL_DEPS").append(fileFixify(fname));
+    QTextStream t(&ft);
+
+    QString prefix = pkgConfigPrefix();
+    QString libDir = project->first("QMAKE_PKGCONFIG_LIBDIR");
+    if(libDir.isEmpty())
+        libDir = prefix + Option::dir_sep + "lib" + Option::dir_sep;
+    QString includeDir = project->first("QMAKE_PKGCONFIG_INCDIR");
+    if(includeDir.isEmpty())
+        includeDir = prefix + "/include";
+
+    t << "prefix=" << prefix << endl;
+    t << "exec_prefix=${prefix}\n"
+      << "libdir=" << pkgConfigFixPath(libDir) << "\n"
+      << "includedir=" << pkgConfigFixPath(includeDir) << endl;
+    // non-standard entry. Provides useful info normally only
+    // contained in the internal .qmake.cache file
+    t << varGlue("CONFIG", "qt_config=", " ", "") << endl;
+
+    //extra PKGCONFIG variables
+    const QStringList &pkgconfig_vars = project->values("QMAKE_PKGCONFIG_VARIABLES");
+    for(int i = 0; i < pkgconfig_vars.size(); ++i) {
+        QString var = project->first(pkgconfig_vars.at(i) + ".name"),
+                val = project->values(pkgconfig_vars.at(i) + ".value").join(" ");
+        if(var.isEmpty())
+            continue;
+        if(val.isEmpty()) {
+            const QStringList &var_vars = project->values(pkgconfig_vars.at(i) + ".variable");
+            for(int v = 0; v < var_vars.size(); ++v) {
+                const QStringList &vars = project->values(var_vars.at(v));
+                for(int var = 0; var < vars.size(); ++var) {
+                    if(!val.isEmpty())
+                        val += " ";
+                    val += pkgConfigFixPath(vars.at(var));
+                }
+            }
+        }
+        t << var << "=" << val << endl;
+    }
+
+    t << endl;
+
+    QString name = project->first("QMAKE_PKGCONFIG_NAME");
+    if(name.isEmpty()) {
+        name = project->first("QMAKE_ORIG_TARGET").toLower();
+        name.replace(0, 1, name[0].toUpper());
+    }
+    t << "Name: " << name << endl;
+    QString desc = project->values("QMAKE_PKGCONFIG_DESCRIPTION").join(" ");
+    if(desc.isEmpty()) {
+        if(name.isEmpty()) {
+            desc = project->first("QMAKE_ORIG_TARGET").toLower();
+            desc.replace(0, 1, desc[0].toUpper());
+        } else {
+            desc = name;
+        }
+        if(project->first("TEMPLATE") == "lib") {
+            if(project->isActiveConfig("plugin"))
+               desc += " Plugin";
+            else
+               desc += " Library";
+        } else if(project->first("TEMPLATE") == "app") {
+            desc += " Application";
+        }
+    }
+    t << "Description: " << desc << endl;
+    t << "Version: " << project->first("VERSION") << endl;
+
+    // libs
+    t << "Libs: ";
+    QString pkgConfiglibDir;
+    QString pkgConfiglibName;
+    if (Option::target_mode == Option::TARG_MACX_MODE && project->isActiveConfig("lib_bundle")) {
+        pkgConfiglibDir = "-F${libdir}";
+        QString bundle;
+        if (!project->isEmpty("QMAKE_FRAMEWORK_BUNDLE_NAME"))
+            bundle = unescapeFilePath(project->first("QMAKE_FRAMEWORK_BUNDLE_NAME"));
+        else
+            bundle = unescapeFilePath(project->first("TARGET"));
+        int suffix = bundle.lastIndexOf(".framework");
+        if (suffix != -1)
+            bundle = bundle.left(suffix);
+        pkgConfiglibName = "-framework " + bundle + " ";
+    } else {
+        pkgConfiglibDir = "-L${libdir}";
+        pkgConfiglibName = "-l" + lname.left(lname.length()-Option::libtool_ext.length());
+    }
+    t << pkgConfiglibDir << " " << pkgConfiglibName << " " << endl;
+
+    QStringList libs;
+    if(!project->isEmpty("QMAKE_INTERNAL_PRL_LIBS")) {
+        libs = project->values("QMAKE_INTERNAL_PRL_LIBS");
+    } else {
+        libs << "QMAKE_LIBS"; //obvious one
+    }
+    libs << "QMAKE_LIBS_PRIVATE";
+    libs << "QMAKE_LFLAGS_THREAD"; //not sure about this one, but what about things like -pthread?
+    t << "Libs.private: ";
+    for(QStringList::ConstIterator it = libs.begin(); it != libs.end(); ++it) {
+        t << project->values((*it)).join(" ") << " ";
+    }
+    t << endl;
+
+    // flags
+    // ### too many
+    t << "Cflags: "
+        // << var("QMAKE_CXXFLAGS") << " "
+      << varGlue("PRL_EXPORT_DEFINES","-D"," -D"," ")
+      << project->values("PRL_EXPORT_CXXFLAGS").join(" ")
+      << project->values("QMAKE_PKGCONFIG_CFLAGS").join(" ")
+        //      << varGlue("DEFINES","-D"," -D"," ")
+      << " -I${includedir}" << endl;
+
+    // requires
+    const QString requires = project->values("QMAKE_PKGCONFIG_REQUIRES").join(" ");
+    if (!requires.isEmpty()) {
+        t << "Requires: " << requires << endl;
+    }
+
+    t << endl;
 }
 
 QT_END_NAMESPACE

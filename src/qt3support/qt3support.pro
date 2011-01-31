@@ -21,7 +21,7 @@ include(canvas/canvas.pri)
 include(network/network.pri)
 include(painting/painting.pri)
 
-unix {
+unix|win32-g++* {
    QMAKE_PKGCONFIG_CFLAGS += -DQT3_SUPPORT
    QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui QtNetwork QtSql
 }

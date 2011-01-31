@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -198,7 +198,7 @@ bool QSharedMemoryPrivate::create(int size)
     }
 
     // create
-    if (-1 == shmget(handle(), size, 0666 | IPC_CREAT | IPC_EXCL)) {
+    if (-1 == shmget(unix_key, size, 0666 | IPC_CREAT | IPC_EXCL)) {
         QString function = QLatin1String("QSharedMemory::create");
         switch (errno) {
         case EINVAL:
@@ -219,10 +219,7 @@ bool QSharedMemoryPrivate::create(int size)
 bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
 {
     // grab the shared memory segment id
-    if (!handle())
-        return false;
-
-    int id = shmget(handle(), 0, (mode == QSharedMemory::ReadOnly ? 0444 : 0660));
+    int id = shmget(unix_key, 0, (mode == QSharedMemory::ReadOnly ? 0444 : 0660));
     if (-1 == id) {
         setErrorString(QLatin1String("QSharedMemory::attach (shmget)"));
         return false;
@@ -264,12 +261,11 @@ bool QSharedMemoryPrivate::detach()
         return false;
     }
     memory = 0;
+    size = 0;
 
     // Get the number of current attachments
-    if (!handle())
-        return false;
-    int id = shmget(handle(), 0, 0444);
-    unix_key = 0;
+    int id = shmget(unix_key, 0, 0444);
+    cleanHandle();
 
     struct shmid_ds shmid_ds;
     if (0 != shmctl(id, IPC_STAT, &shmid_ds)) {
