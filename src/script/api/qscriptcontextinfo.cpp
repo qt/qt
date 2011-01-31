@@ -103,13 +103,17 @@ public:
     int functionMetaIndex;
 
     QStringList parameterNames;
-    bool null;
+
+    bool isNull() const { return m_null; }
+private:
+    bool m_null;
 };
 
 /*!
   \internal
 */
 QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *context)
+    : m_null(!context)
 {
     functionType = QScriptContextInfo::NativeFunction;
     functionMetaIndex = -1;
@@ -118,7 +122,6 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
     scriptId = -1;
     lineNumber = -1;
     columnNumber = -1;
-    null = context;
 
     if (!context)
         return;
@@ -330,7 +333,7 @@ int QScriptContextInfo::functionMetaIndex() const
 */
 bool QScriptContextInfo::isNull() const
 {
-    return d_ptr->null;
+    return d_ptr->isNull();
 }
 
 /*!
