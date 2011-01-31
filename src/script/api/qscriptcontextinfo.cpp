@@ -239,7 +239,6 @@ int QScriptContextInfo::lineNumber() const
 int QScriptContextInfo::columnNumber() const
 {
     return d_ptr->columnNumber;
-    return -1;
 }
 
 /*!
