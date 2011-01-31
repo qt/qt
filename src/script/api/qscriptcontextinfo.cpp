@@ -104,6 +104,7 @@ public:
 
     QStringList parameterNames;
 
+    bool operator==(const QScriptContextInfoPrivate &other) const;
     bool isNull() const { return m_null; }
 private:
     bool m_null;
@@ -143,6 +144,21 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
 */
 QScriptContextInfoPrivate::~QScriptContextInfoPrivate()
 {
+}
+
+bool QScriptContextInfoPrivate::operator==(const QScriptContextInfoPrivate &other) const
+{
+    return (scriptId == other.scriptId)
+            && (lineNumber == other.lineNumber)
+            && (columnNumber == other.columnNumber)
+            && (fileName == other.fileName)
+            && (functionName == other.functionName)
+            && (functionType == other.functionType)
+            && (functionStartLineNumber == other.functionStartLineNumber)
+            && (functionEndLineNumber == other.functionEndLineNumber)
+            && (functionMetaIndex == other.functionMetaIndex)
+            && (parameterNames == other.parameterNames)
+            && (m_null == m_null);
 }
 
 /*!
@@ -346,16 +362,7 @@ bool QScriptContextInfo::operator==(const QScriptContextInfo &other) const
         return true;
     if (!d || !od)
         return false;
-    return ((d->scriptId == od->scriptId)
-            && (d->lineNumber == od->lineNumber)
-            && (d->columnNumber == od->columnNumber)
-            && (d->fileName == od->fileName)
-            && (d->functionName == od->functionName)
-            && (d->functionType == od->functionType)
-            && (d->functionStartLineNumber == od->functionStartLineNumber)
-            && (d->functionEndLineNumber == od->functionEndLineNumber)
-            && (d->functionMetaIndex == od->functionMetaIndex)
-            && (d->parameterNames == od->parameterNames));
+    return *d == *od;
 }
 
 /*!
