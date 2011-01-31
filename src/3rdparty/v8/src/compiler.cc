@@ -543,7 +543,12 @@ Handle<SharedFunctionInfo> Compiler::Compile(Handle<String> source,
 Handle<SharedFunctionInfo> Compiler::CompileEval(Handle<String> source,
                                                  Handle<Context> context,
                                                  bool is_global,
-                                                 StrictModeFlag strict_mode) {
+                                                 StrictModeFlag strict_mode
+#ifdef QT_BUILD_SCRIPT_LIB
+                                                 , Handle<Object> script_name,
+                                                 int line_offset, int column_offset
+#endif
+  ) {
   Isolate* isolate = source->GetIsolate();
   int source_length = source->length();
   isolate->counters()->total_eval_size()->Increment(source_length);
@@ -559,11 +564,22 @@ Handle<SharedFunctionInfo> Compiler::CompileEval(Handle<String> source,
   result = compilation_cache->LookupEval(source,
                                          context,
                                          is_global,
-                                         strict_mode);
+                                         strict_mode
+#ifdef QT_BUILD_SCRIPT_LIB
+        ,script_name, line_offset, column_offset
+#endif
+        );
 
   if (result.is_null()) {
     // Create a script object describing the script to be compiled.
     Handle<Script> script = isolate->factory()->NewScript(source);
+#ifdef QT_BUILD_SCRIPT_LIB
+    if (!script_name.is_null()) {
+        script->set_name(*script_name);
+        script->set_line_offset(Smi::FromInt(line_offset));
+        script->set_column_offset(Smi::FromInt(column_offset));
+    }
+#endif
     CompilationInfo info(script);
     info.MarkAsEval();
     if (is_global) info.MarkAsGlobal();

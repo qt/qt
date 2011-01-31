@@ -1513,11 +1513,28 @@ Local<Script> Script::CompileEval(v8::Handle<String> source,
   ENTER_V8(isolate);
   i::Handle<i::String> str = Utils::OpenHandle(*source);
   i::Handle<i::Context> context(isolate->context());
+
+  i::Handle<i::Object> name_obj;
+  int line_offset = 0;
+  int column_offset = 0;
+  if (origin != NULL) {
+    if (!origin->ResourceName().IsEmpty()) {
+      name_obj = Utils::OpenHandle(*origin->ResourceName());
+    }
+    if (!origin->ResourceLineOffset().IsEmpty()) {
+      line_offset = static_cast<int>(origin->ResourceLineOffset()->Value());
+    }
+    if (!origin->ResourceColumnOffset().IsEmpty()) {
+      column_offset = static_cast<int>(origin->ResourceColumnOffset()->Value());
+    }
+  }
+
   i::Handle<i::SharedFunctionInfo> shared = i::Compiler::CompileEval(
       str,
       context,
       context->IsGlobalContext(),
-      i::kNonStrictMode);
+      i::kNonStrictMode,
+      name_obj, line_offset, column_offset);
   if (shared.is_null())
       return Local<Script>();
   i::Handle<i::JSFunction> result = isolate->factory()->NewFunctionFromSharedFunctionInfo(

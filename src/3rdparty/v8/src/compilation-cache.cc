@@ -148,7 +148,7 @@ bool CompilationCacheScript::HasOrigin(
     int line_offset,
     int column_offset) {
   Handle<Script> script =
-      Handle<Script>(Script::cast(function_info->script()), isolate());
+      Handle<Script>(Script::cast(function_info->script()), internal::Isolate::Current());
   // If the script name isn't set, the boilerplate script should have
   // an undefined name to have the same origin.
   if (name.is_null()) {
@@ -254,7 +254,11 @@ void CompilationCacheScript::Put(Handle<String> source,
 Handle<SharedFunctionInfo> CompilationCacheEval::Lookup(
     Handle<String> source,
     Handle<Context> context,
-    StrictModeFlag strict_mode) {
+    StrictModeFlag strict_mode
+#ifdef QT_BUILD_SCRIPT_LIB
+    , Handle<Object> name, int line_offset, int column_offset
+#endif
+    ) {
   // Make sure not to leak the table into the surrounding handle
   // scope. Otherwise, we risk keeping old tables around even after
   // having cleared the cache.
@@ -263,9 +267,18 @@ Handle<SharedFunctionInfo> CompilationCacheEval::Lookup(
   { HandleScope scope(isolate());
     for (generation = 0; generation < generations(); generation++) {
       Handle<CompilationCacheTable> table = GetTable(generation);
-      result = table->LookupEval(*source, *context, strict_mode);
-      if (result->IsSharedFunctionInfo()) {
-        break;
+      Handle<Object> probe(table->LookupEval(*source, *context, strict_mode));
+      if (probe->IsSharedFunctionInfo()) {
+#ifdef QT_BUILD_SCRIPT_LIB
+        Handle<SharedFunctionInfo> function_info =
+          Handle<SharedFunctionInfo>::cast(probe);
+        // Break when we've found a suitable shared function info that
+        // matches the origin.
+        if (CompilationCacheScript::HasOrigin(function_info, name, line_offset, column_offset)) {
+          result = *function_info;
+          break;
+        }
+#endif
       }
     }
   }
@@ -393,16 +406,29 @@ Handle<SharedFunctionInfo> CompilationCache::LookupEval(
     Handle<String> source,
     Handle<Context> context,
     bool is_global,
-    StrictModeFlag strict_mode) {
+    StrictModeFlag strict_mode
+#ifdef QT_BUILD_SCRIPT_LIB
+    , Handle<Object> script_name,
+    int line_offset, int column_offset
+#endif
+) {
   if (!IsEnabled()) {
     return Handle<SharedFunctionInfo>::null();
   }
 
   Handle<SharedFunctionInfo> result;
   if (is_global) {
-    result = eval_global_.Lookup(source, context, strict_mode);
+    result = eval_global_.Lookup(source, context, strict_mode
+#ifdef QT_BUILD_SCRIPT_LIB
+        ,script_name, line_offset, column_offset
+#endif
+        );
   } else {
-    result = eval_contextual_.Lookup(source, context, strict_mode);
+    result = eval_contextual_.Lookup(source, context, strict_mode
+#ifdef QT_BUILD_SCRIPT_LIB
+        ,script_name, line_offset, column_offset
+#endif
+        );
   }
   return result;
 }
