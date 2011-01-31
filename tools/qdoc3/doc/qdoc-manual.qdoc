@@ -94,7 +94,7 @@
     \list I
     \o \section2 \l {QDoc Commands}
 
-       \l {QDoc Commands - Alphabetical List}{A complete alphabetical
+       \l {QDoc Commands - Alphabetical List} {A complete alphabetical
        list}.
 
        There are two main categories of commands for QDoc: markup
@@ -109,25 +109,25 @@
        \list
        \o \l {Markup Commands}
            \list
-           \o \l {Text Formatting Commands}{Text Formatting} \span {class="newStuff"} {(new commands)}
-           \o \l {Document Structuring Commands}{Document Structuring}
-           \o \l {Verbatim Code Commands}{Verbatim Code}
-           \o \l {Quoting External Code Commands}{Quoting External Code}
-           \o \l {Linking Commands}{Linking}
-           \o \l {Graphic Commands}{Graphic}
-           \o \l {Container Commands}{Container}
-           \o \l {Document Contents Commands}{Document Contents}
-           \o \l {Miscellaneous Commands}{Miscellaneous}
+           \o \l {Text Formatting Commands} {Text Formatting} \span {class="newStuff"} {(new commands)}
+           \o \l {Document Structuring Commands} {Document Structuring}
+           \o \l {Verbatim Code Commands} {Verbatim Code}
+           \o \l {Quoting External Code Commands} {Quoting External Code}
+           \o \l {Linking Commands} {Linking}
+           \o \l {Graphic Commands} {Graphic}
+           \o \l {Container Commands} {Container}
+           \o \l {Document Contents Commands} {Document Contents}
+           \o \l {Miscellaneous Commands} {Miscellaneous}
            \endlist
        \o \l {Topical Commands}
        \o \l {Contextual Commands}
            \list
-           \o \l {Navigation Commands}{Navigation}
-           \o \l {Status Commands}{Status}
-           \o \l {Thread Support Commands}{Thread Support}
-           \o \l {Relating Commands}{Relating}
-           \o \l {Grouping Commands}{Grouping}
-           \o \l {Title Commands}{Title}
+           \o \l {Navigation Commands} {Navigation}
+           \o \l {Status Commands} {Status}
+           \o \l {Thread Support Commands} {Thread Support}
+           \o \l {Relating Commands} {Relating}
+           \o \l {Grouping Commands} {Grouping}
+           \o \l {Title Commands} {Title}
            \endlist
        \endlist
     \endlist
@@ -207,68 +207,68 @@
 
     \section1 Alphabetical List
 
-    \l {04-qdoc-commands-textformatting.html#backslash}{\\\\},
-    \l {04-qdoc-commands-textformatting.html#a}{\\a},
-    \l {11-qdoc-commands-documentcontents.html#abstract}{\\abstract},
-    \l {06-qdoc-commands-verbatimcode.html#badcode}{\\badcode},
-    \l {04-qdoc-commands-textformatting.html#bold}{\\bold},
-    \l {11-qdoc-commands-documentcontents.html#brief}{\\brief},
-    \l {04-qdoc-commands-textformatting.html#c}{\\c},
-    \l {09-qdoc-commands-graphic.html#caption}{\\caption},
-    \l {05-qdoc-commands-documentstructuring.html#chapter}{\\chapter},
-    \l {06-qdoc-commands-verbatimcode.html#code}{\\code},
-    \l {07-0-qdoc-commands-quoting.html#codeline}{\\codeline},
-    \l {04-qdoc-commands-textformatting.html#div}{\\div} \span {class="newStuff"} {(new)},
-    \l {07-0-qdoc-commands-quoting.html#dots}{\\dots},
-    \l {12-0-qdoc-commands-miscellaneous.html#else}{\\else},
-    \l {12-0-qdoc-commands-miscellaneous.html#endif}{\\endif},
-    \l {12-0-qdoc-commands-miscellaneous.html#expire}{\\expire},
-    \l {11-qdoc-commands-documentcontents.html#footnote}{\\footnote},
-    \l {12-0-qdoc-commands-miscellaneous.html#generatelist}{\\generatelist},
-    \l {10-qdoc-commands-container.html#header}{\\header},
-    \l {04-qdoc-commands-textformatting.html#i}{\\i},
-    \l {12-0-qdoc-commands-miscellaneous.html#if}{\\if},
-    \l {09-qdoc-commands-graphic.html#image}{\\image},
-    \l {12-0-qdoc-commands-miscellaneous.html#include}{\\include},
-    \l {09-qdoc-commands-graphic.html#inlineimage}{\\inlineimage},
-    \l {08-qdoc-commands-linking.html#keyword}{\\keyword},
-    \l {08-qdoc-commands-linking.html#l}{\\l},
-    \l {11-qdoc-commands-documentcontents.html#legalese}{\\legalese},
-    \l {10-qdoc-commands-container.html#list}{\\list},
-    \l {12-0-qdoc-commands-miscellaneous.html#meta}{\\meta},
-    \l {06-qdoc-commands-verbatimcode.html#newcode}{\\newcode},
-    \l {10-qdoc-commands-container.html#o}{\\o},
-    \l {06-qdoc-commands-verbatimcode.html#oldcode}{\\oldcode},
-    \l {12-0-qdoc-commands-miscellaneous.html#omit}{\\omit},
-    \l {05-qdoc-commands-documentstructuring.html#part}{\\part},
-    \l {07-0-qdoc-commands-quoting.html#printline}{\\printline},
-    \l {07-0-qdoc-commands-quoting.html#printto}{\\printto},
-    \l {07-0-qdoc-commands-quoting.html#printuntil}{\\printuntil},
-    \l {11-qdoc-commands-documentcontents.html#quotation}{\\quotation},
-    \l {07-0-qdoc-commands-quoting.html#quotefile}{\\quotefile},
-    \l {07-0-qdoc-commands-quoting.html#quotefromfile}{\\quotefromfile},
-    \l {12-0-qdoc-commands-miscellaneous.html#raw}{\\raw} \span {class="newStuff"} {(avoid)},
-    \l {10-qdoc-commands-container.html#row}{\\row},
-    \l {08-qdoc-commands-linking.html#sa}{\\sa},
-    \l {05-qdoc-commands-documentstructuring.html#sectionOne}{\\section1},
-    \l {05-qdoc-commands-documentstructuring.html#sectionTwo}{\\section2},
-    \l {05-qdoc-commands-documentstructuring.html#sectionThree}{\\section3},
-    \l {05-qdoc-commands-documentstructuring.html#sectionFour}{\\section4},
-    \l {07-0-qdoc-commands-quoting.html#skipline}{\\skipline},
-    \l {07-0-qdoc-commands-quoting.html#skipto}{\\skipto},
-    \l {07-0-qdoc-commands-quoting.html#skipuntil}{\\skipuntil},
-    \l {07-0-qdoc-commands-quoting.html#snippet}{\\snippet},
-    \l {04-qdoc-commands-textformatting.html#span}{\\span} \span {class="newStuff"} {(new)},
-    \l {04-qdoc-commands-textformatting.html#sub}{\\sub},
-    \l {04-qdoc-commands-textformatting.html#sup}{\\sup},
-    \l {10-qdoc-commands-container.html#table}{\\table},
+    \l {04-qdoc-commands-textformatting.html#backslash} {\\\\},
+    \l {04-qdoc-commands-textformatting.html#a} {\\a},
+    \l {11-qdoc-commands-documentcontents.html#abstract} {\\abstract},
+    \l {06-qdoc-commands-verbatimcode.html#badcode} {\\badcode},
+    \l {04-qdoc-commands-textformatting.html#bold} {\\bold},
+    \l {11-qdoc-commands-documentcontents.html#brief-command} {\\brief},
+    \l {04-qdoc-commands-textformatting.html#c} {\\c},
+    \l {09-qdoc-commands-graphic.html#caption} {\\caption},
+    \l {05-qdoc-commands-documentstructuring.html#chapter} {\\chapter},
+    \l {06-qdoc-commands-verbatimcode.html#code-command} {\\code},
+    \l {07-0-qdoc-commands-quoting.html#codeline} {\\codeline},
+    \l {04-qdoc-commands-textformatting.html#div} {\\div} \span {class="newStuff"} {(new)},
+    \l {07-0-qdoc-commands-quoting.html#dots} {\\dots},
+    \l {12-0-qdoc-commands-miscellaneous.html#else} {\\else},
+    \l {12-0-qdoc-commands-miscellaneous.html#endif} {\\endif},
+    \l {12-0-qdoc-commands-miscellaneous.html#expire} {\\expire},
+    \l {11-qdoc-commands-documentcontents.html#footnote} {\\footnote},
+    \l {12-0-qdoc-commands-miscellaneous.html#generatelist-command} {\\generatelist},
+    \l {10-qdoc-commands-container.html#header} {\\header},
+    \l {04-qdoc-commands-textformatting.html#i} {\\i},
+    \l {12-0-qdoc-commands-miscellaneous.html#if-command} {\\if},
+    \l {09-qdoc-commands-graphic.html#image} {\\image},
+    \l {12-0-qdoc-commands-miscellaneous.html#include} {\\include},
+    \l {09-qdoc-commands-graphic.html#inlineimage-command} {\\inlineimage},
+    \l {08-qdoc-commands-linking.html#keyword} {\\keyword},
+    \l {08-qdoc-commands-linking.html#l} {\\l},
+    \l {11-qdoc-commands-documentcontents.html#legalese} {\\legalese},
+    \l {10-qdoc-commands-container.html#list} {\\list},
+    \l {12-0-qdoc-commands-miscellaneous.html#meta} {\\meta},
+    \l {06-qdoc-commands-verbatimcode.html#newcode} {\\newcode},
+    \l {10-qdoc-commands-container.html#o} {\\o},
+    \l {06-qdoc-commands-verbatimcode.html#oldcode} {\\oldcode},
+    \l {12-0-qdoc-commands-miscellaneous.html#omit} {\\omit},
+    \l {05-qdoc-commands-documentstructuring.html#part} {\\part},
+    \l {07-0-qdoc-commands-quoting.html#printline} {\\printline},
+    \l {07-0-qdoc-commands-quoting.html#printto} {\\printto},
+    \l {07-0-qdoc-commands-quoting.html#printuntil} {\\printuntil},
+    \l {11-qdoc-commands-documentcontents.html#quotation} {\\quotation},
+    \l {07-0-qdoc-commands-quoting.html#quotefile-command} {\\quotefile},
+    \l {07-0-qdoc-commands-quoting.html#quotefromfile-command} {\\quotefromfile},
+    \l {12-0-qdoc-commands-miscellaneous.html#raw} {\\raw} \span {class="newStuff"} {(avoid)},
+    \l {10-qdoc-commands-container.html#row} {\\row},
+    \l {08-qdoc-commands-linking.html#sa} {\\sa},
+    \l {05-qdoc-commands-documentstructuring.html#sectionOne} {\\section1},
+    \l {05-qdoc-commands-documentstructuring.html#sectionTwo} {\\section2},
+    \l {05-qdoc-commands-documentstructuring.html#sectionThree} {\\section3},
+    \l {05-qdoc-commands-documentstructuring.html#sectionFour} {\\section4},
+    \l {07-0-qdoc-commands-quoting.html#skipline} {\\skipline},
+    \l {07-0-qdoc-commands-quoting.html#skipto} {\\skipto},
+    \l {07-0-qdoc-commands-quoting.html#skipuntil} {\\skipuntil},
+    \l {07-0-qdoc-commands-quoting.html#snippet} {\\snippet},
+    \l {04-qdoc-commands-textformatting.html#span} {\\span} \span {class="newStuff"} {(new)},
+    \l {04-qdoc-commands-textformatting.html#sub} {\\sub},
+    \l {04-qdoc-commands-textformatting.html#sup} {\\sup},
+    \l {10-qdoc-commands-container.html#table} {\\table},
     \l {11-qdoc-commands-documentcontents.html#tableofcontents}
        {\\tableofcontents},
-    \l {08-qdoc-commands-linking.html#target}{\\target},
-    \l {04-qdoc-commands-textformatting.html#tt}{\\tt},
-    \l {04-qdoc-commands-textformatting.html#underline}{\\underline},
-    \l {12-0-qdoc-commands-miscellaneous.html#raw}{\\unicode},
-    \l {11-qdoc-commands-documentcontents.html#warning}{\\warning}
+    \l {08-qdoc-commands-linking.html#target} {\\target},
+    \l {04-qdoc-commands-textformatting.html#tt} {\\tt},
+    \l {04-qdoc-commands-textformatting.html#underline} {\\underline},
+    \l {12-0-qdoc-commands-miscellaneous.html#raw} {\\unicode},
+    \l {11-qdoc-commands-documentcontents.html#warning} {\\warning}
 
     \section1 Categories
     \list
@@ -298,17 +298,17 @@
 
     \section1 Alphabetical List
 
-    \l {04-qdoc-commands-textformatting.html#backslash}{\\\\},
-    \l {04-qdoc-commands-textformatting.html#a}{\\a},
-    \l {04-qdoc-commands-textformatting.html#bold}{\\bold},
-    \l {04-qdoc-commands-textformatting.html#c}{\\c},
-    \l {04-qdoc-commands-textformatting.html#div}{\\div} \span {class="newStuff"} {(new)},
-    \l {04-qdoc-commands-textformatting.html#i}{\\i},
-    \l {04-qdoc-commands-textformatting.html#span}{\\span} \span {class="newStuff"} {(new)},
-    \l {04-qdoc-commands-textformatting.html#sub}{\\sub},
-    \l {04-qdoc-commands-textformatting.html#sup}{\\sup},
-    \l {04-qdoc-commands-textformatting.html#tt}{\\tt},
-    \l {04-qdoc-commands-textformatting.html#underline}{\\underline}
+    \l {04-qdoc-commands-textformatting.html#backslash} {\\\\},
+    \l {04-qdoc-commands-textformatting.html#a} {\\a},
+    \l {04-qdoc-commands-textformatting.html#bold} {\\bold},
+    \l {04-qdoc-commands-textformatting.html#c} {\\c},
+    \l {04-qdoc-commands-textformatting.html#div} {\\div} \span {class="newStuff"} {(new)},
+    \l {04-qdoc-commands-textformatting.html#i} {\\i},
+    \l {04-qdoc-commands-textformatting.html#span} {\\span} \span {class="newStuff"} {(new)},
+    \l {04-qdoc-commands-textformatting.html#sub} {\\sub},
+    \l {04-qdoc-commands-textformatting.html#sup} {\\sup},
+    \l {04-qdoc-commands-textformatting.html#tt} {\\tt},
+    \l {04-qdoc-commands-textformatting.html#underline} {\\underline}
 
     \section1 Command Descriptions
 
@@ -344,7 +344,7 @@
            \endquotation
 
            However, if you want your text to appear in a typewriter
-           font as well, you can use the \l {c}{\\c} command instead,
+           font as well, you can use the \l {c} {\\c} command instead,
            which accepts and renders the backslash as any other
            character. For example:
 
@@ -409,7 +409,7 @@
            \endquotation
 
            The \\a command follows the same conventions as the \l
-           {i}{\\i} command for \l {argument}{punctuation, parentheses
+           {i} {\\i} command for \l {argument} {punctuation, parentheses
            and use of braces} for the argument. However, a parameter
            is always a single word, so braces are rarely
            necessary. And for the same reason, parentheses seldom
@@ -441,15 +441,15 @@
            \endquotation
 
            The \\c command follows the same conventions as the \l
-           {i}{\\i} command for \l {argument}{punctuation, parentheses
+           {i} {\\i} command for \l {argument} {punctuation, parentheses
            and use of braces} for the argument.
 
            The \\c command accepts the special character \c \ within
            its argument, i.e. it renders it as a normal character. So
            if you want to use nested commands, you must use the \l
-           {tt}{teletype (\\tt)} command instead.
+           {tt} {teletype (\\tt)} command instead.
 
-           See also \l {tt}{\\tt} and \l {code}{\\code}.
+           See also \l {tt} {\\tt} and \l {code-command} {\\code}.
 
     \row
         \o \bold \\div \span {class="newStuff"} {(new)}  \target div 
@@ -530,12 +530,12 @@
               \enddiv
               \div {class="section sectionlist"}
                 \list
-                  \o \l{Getting Started Guides}{Getting started}
-                  \o \l{Installation}{Installation}
-                  \o \l{how-to-learn-qt.html}{How to learn Qt}
-                  \o \l{tutorials.html}{Tutorials}
-                  \o \l{Qt Examples}{Examples}
-                  \o \l{qt4-7-intro.html}{What's new in Qt 4.7}
+                  \o \l{Getting Started Guides} {Getting started}
+                  \o \l{Installation} {Installation}
+                  \o \l{how-to-learn-qt.html} {How to learn Qt}
+                  \o \l{tutorials.html} {Tutorials}
+                  \o \l{Qt Examples} {Examples}
+                  \o \l{qt4-7-intro.html} {What's new in Qt 4.7}
                 \endlist
              \enddiv
             \enddiv
@@ -562,12 +562,12 @@
               \enddiv
               \div {class="section sectionlist"}
                 \list
-                  \o \l{Getting Started Guides}{Getting started}
-                  \o \l{Installation}{Installation}
-                  \o \l{how-to-learn-qt.html}{How to learn Qt}
-                  \o \l{tutorials.html}{Tutorials}
-                  \o \l{Qt Examples}{Examples}
-                  \o \l{qt4-7-intro.html}{What's new in Qt 4.7}
+                  \o \l{Getting Started Guides} {Getting started}
+                  \o \l{Installation} {Installation}
+                  \o \l{how-to-learn-qt.html} {How to learn Qt}
+                  \o \l{tutorials.html} {Tutorials}
+                  \o \l{Qt Examples} {Examples}
+                  \o \l{qt4-7-intro.html} {What's new in Qt 4.7}
                 \endlist
              \enddiv
             \enddiv
@@ -620,7 +620,7 @@
 	   Your DITA XML publishing program must recognize the values
 	   of the \e outputclass attribute.
            
-	   See also \l {span}{\\span}.
+	   See also \l {span} {\\span}.
 
     \row
         \o \bold \\span \span {class="newStuff"} {(new)} \target span 
@@ -672,7 +672,7 @@
 	  \note The \bold span command does not cause a new paragraph to
 	  be started.
 
-	  See also \l {div}{\\div}.
+	  See also \l {div} {\\div}.
            
     \row
         \o \bold \\tt \target tt
@@ -680,9 +680,9 @@
            user-defined classes and C++ keywords like \c int, \c
            for, etc.}
 
-           The \\tt command behaves just like the \l {c}{\\c} command,
-           except that \\tt parses QDoc commands (like \l {i}{\\i}, \l
-           {bold}{\\bold} and \l {underline}{\\underline}) contained
+           The \\tt command behaves just like the \l {c} {\\c} command,
+           except that \\tt parses QDoc commands (like \l {i} {\\i}, \l
+           {bold} {\\bold} and \l {underline} {\\underline}) contained
            within its argument.
 
            The command renders its argument using a monospace
@@ -707,10 +707,10 @@
            \endquotation
 
            The \\tt command follows the same conventions as the \l
-           {i}{\\i} command for \l {argument}{punctuation, parentheses
+           {i} {\\i} command for \l {argument} {punctuation, parentheses
            and use of braces} for the argument.
 
-           See also \l {c}{\\c}.
+           See also \l {c} {\\c}.
 
     \row
         \o \bold \\bold \target bold
@@ -733,8 +733,8 @@
            the \\bold command}.
            \endquotation
 
-           The command follows the same conventions as the \l {i}{\\i}
-           command for \l {argument}{punctuation, parentheses and use
+           The command follows the same conventions as the \l {i} {\\i}
+           command for \l {argument} {punctuation, parentheses and use
            of braces} for the argument.
 
     \row
@@ -743,7 +743,7 @@
 
            \warning This is preliminary functionality. For
            more information, see the \l
-           {26-qdoc-commands-compatibility.html#i-versus-e}{compatibility}
+           {26-qdoc-commands-compatibility.html#i-versus-e} {compatibility}
            section.
 
            \target argument
@@ -864,7 +864,7 @@
            \endquotation
 
            The \\sub command follows the same conventions as the \l
-           {i}{\\i} command for \l {argument}{punctuation, parentheses
+           {i} {\\i} command for \l {argument} {punctuation, parentheses
            and use of braces} for the argument.
 
     \row
@@ -895,7 +895,7 @@
            \endquotation
 
            The \\sup command follows the same conventions as the \l
-           {i}{\\i} command for \l {argument}{punctuation, parentheses
+           {i} {\\i} command for \l {argument} {punctuation, parentheses
            and use of braces} for the argument.
 
     \row
@@ -921,7 +921,7 @@
            \endquotation
 
            The \\underline command follows the same conventions as the
-           \l {i}{\\i} command for \l {argument}{punctuation,
+           \l {i} {\\i} command for \l {argument} {punctuation,
            parentheses and use of braces} for the argument.  \endtable
 */
 
@@ -942,12 +942,12 @@
 
     \section1 Alphabetical List
 
-    \l {05-qdoc-commands-documentstructuring.html#chapter}{\\chapter},
-    \l {05-qdoc-commands-documentstructuring.html#part}{\\part},
-    \l {05-qdoc-commands-documentstructuring.html#sectionOne}{\\section1},
-    \l {05-qdoc-commands-documentstructuring.html#sectionTwo}{\\section2},
-    \l {05-qdoc-commands-documentstructuring.html#sectionThree}{\\section3},
-    \l {05-qdoc-commands-documentstructuring.html#sectionFour}{\\section4}
+    \l {05-qdoc-commands-documentstructuring.html#chapter} {\\chapter},
+    \l {05-qdoc-commands-documentstructuring.html#part} {\\part},
+    \l {05-qdoc-commands-documentstructuring.html#sectionOne} {\\section1},
+    \l {05-qdoc-commands-documentstructuring.html#sectionTwo} {\\section2},
+    \l {05-qdoc-commands-documentstructuring.html#sectionThree} {\\section3},
+    \l {05-qdoc-commands-documentstructuring.html#sectionFour} {\\section4}
 
     \section1 Command Descriptions
 
@@ -1175,34 +1175,34 @@
         \o \bold {The \\chapter command is intended for use in
            larger documents, and divides the document into chapters.}
 
-           See \l{part}{\\part} for an explanation of the various
+           See \l{part} {\\part} for an explanation of the various
            section units, command argument and rendering.
 
     \row
         \o \bold \\section1 \target sectionOne
         \o \bold {The \\section1 command starts a new section.}
 
-           See \l{part}{\\part} for an explanation of the various
+           See \l{part} {\\part} for an explanation of the various
            section units, command argument and rendering.
     \row
         \o \bold \\section2 \target sectionTwo
         \o \bold {The \\section2 command starts a new section.}
 
-           See \l{part}{\\part} for an explanation of the various
+           See \l{part} {\\part} for an explanation of the various
            section units, command argument and rendering.
 
     \row
         \o \bold \\section3 \target sectionThree
         \o \bold {The \\section3 command starts a new section.}
 
-           See \l{part}{\\part} for an explanation of the various
+           See \l{part} {\\part} for an explanation of the various
            section units, command argument and rendering.
 
     \row
         \o \bold \\section4 \target sectionFour
         \o \bold {The \\section4 command starts a new section.}
 
-           See \l{part}{\\part} for an explanation of the various
+           See \l{part} {\\part} for an explanation of the various
            section units, command argument and rendering.
 
     \endtable
@@ -1221,8 +1221,8 @@
     typewriter font and the standard indentation.
 
     \bold{Note:} Although all of these commands can be used to present
-    C++ code, the \l{07-0-qdoc-commands-quoting.html#snippet}{\\snippet}
-    and \l{07-0-qdoc-commands-quoting.html#codeline}{\\codeline} commands
+    C++ code, the \l{07-0-qdoc-commands-quoting.html#snippet} {\\snippet}
+    and \l{07-0-qdoc-commands-quoting.html#codeline} {\\codeline} commands
     should be used in preference to
     the others when presenting valid code. This allows auxilliary tools
     for Qt language bindings to substitute the relevant code snippets in
@@ -1230,10 +1230,10 @@
 
     \section1 Alphabetical List
 
-    \l {06-qdoc-commands-verbatimcode.html#badcode}{\\badcode},
-    \l {06-qdoc-commands-verbatimcode.html#code}{\\code},
-    \l {06-qdoc-commands-verbatimcode.html#newcode}{\\newcode},
-    \l {06-qdoc-commands-verbatimcode.html#oldcode}{\\oldcode}
+    \l {06-qdoc-commands-verbatimcode.html#badcode} {\\badcode},
+    \l {06-qdoc-commands-verbatimcode.html#code-command} {\\code},
+    \l {06-qdoc-commands-verbatimcode.html#newcode} {\\newcode},
+    \l {06-qdoc-commands-verbatimcode.html#oldcode} {\\oldcode}
 
     \section1 Command Descriptions
 
@@ -1243,26 +1243,26 @@
         \o Description
 
     \row
-        \o \bold \\code \target code
+        \o \bold \\code \target code-command
         \o \bold {The \\code command and the corresponding
            \\endcode command delimit a piece of verbatim code.}
 
-           Whereas the \l {c}{\\c} command can be used for short code
+           Whereas the \l {c} {\\c} command can be used for short code
            fragments within a sentence, the \\code command is for
            longer code snippets and renders the code verbatim in a
            separate paragraph using a typewriter font and the standard
            indentation.
 
-           When processing any of the \\code, \l {badcode}{\\badcode},
-           \l {newcode}{\\newcode} and \l {oldcode}{\\oldcode}
+           When processing any of the \\code, \l {badcode} {\\badcode},
+           \l {newcode} {\\newcode} and \l {oldcode} {\\oldcode}
            commands, QDoc basically removes all indentation that is
            common for the verbatim code blocks within a \c{/}\c{*!} ...
            \c{*}\c{/} comment before it adds the standard
            indentation. For that reason the recommended style is to
            use 8 spaces for the verbatim code contained within these
            commands (note that this doesn't apply to externally
-           quoted code using the \l {quotefromfile}{\\quotefromfile}
-           or \l {quotefile}{\\quotefile} command).
+           quoted code using the \l {quotefromfile-command} {\\quotefromfile}
+           or \l {quotefile-command} {\\quotefile} command).
 
            For example:
 
@@ -1299,13 +1299,13 @@
            You need to type the code manually between the \\code and
            \\endcode commands. If you want to include code snippets
            from a particular file, use the \l
-           {07-0-qdoc-commands-quoting.html#quotefromfile}{\\quotefromfile}
+           {07-0-qdoc-commands-quoting.html#quotefromfile-command} {\\quotefromfile}
            command instead.
 
-           See also \l {c}{\\c}, \l
-           {07-0-qdoc-commands-quoting.html#quotefromfile}{\\quotefromfile},
-           \l {badcode}{\\badcode}, \l {newcode}{\\newcode} and \l
-           {oldcode}{\\oldcode}.
+           See also \l {c} {\\c}, \l
+           {07-0-qdoc-commands-quoting.html#quotefromfile-command} {\\quotefromfile},
+           \l {badcode} {\\badcode}, \l {newcode} {\\newcode} and \l
+           {oldcode} {\\oldcode}.
 
     \row
         \o \bold \\badcode \target badcode
@@ -1313,11 +1313,11 @@
            \\endcode command delimit a piece of code that doesn't
            compile or is wrong for some other reason.}
 
-           The \\badcode command is similar the \l {code}{\\code}
+           The \\badcode command is similar the \l {code-command} {\\code}
            command, but renders the code using a grey font instead of
            black (the default).
 
-           Like the \l {code}{\\code} command, it renders its code on
+           Like the \l {code-command} {\\code} command, it renders its code on
            a new line in the documentation using a typewriter font and
            the standard indentation. For example:
 
@@ -1361,8 +1361,8 @@
            \\badcode... \\endcode, and the special character '\\' is
            accepted and rendered like the rest of the code.
 
-           See also \l {code}{\\code}, \l {newcode}{\\newcode} and \l
-           {oldcode}{\\oldcode}.
+           See also \l {code-command} {\\code}, \l {newcode} {\\newcode} and \l
+           {oldcode} {\\oldcode}.
 
     \row
         \o \bold \\newcode \target newcode
@@ -1372,12 +1372,12 @@
 
            The \\newcode command, and its companion the \\oldcode
            command, is a convenience combination of the \l
-           {code}{\\code} and \l {badcode}{\\badcode} commands: The
+           {code-command} {\\code} and \l {badcode} {\\badcode} commands: The
            combination provides a text relating the two code snippets
            to each other. The command requires a preceding \\oldcode
            statement.
 
-           Like the \l {code}{\\code} and \l {badcode}{\\badcode}
+           Like the \l {code-command} {\\code} and \l {badcode} {\\badcode}
            commands, the \\newcode command renders its code on a new
            line in the documentation using a typewriter font and the
            standard indentation. For example:
@@ -1418,7 +1418,7 @@
            \\newcode statement; otherwise QDoc fails to parse the command
            and emits a warning.}
 
-           See also \l {newcode}{\\newcode} and \l {badcode}{\\badcode}.
+           See also \l {newcode} {\\newcode} and \l {badcode} {\\badcode}.
     \endtable
 */
 
@@ -1437,7 +1437,7 @@
     chunk.
 
     \bold{Note:} Although all of these commands can be used to present
-    C++ code, the \l{#snippet}{\\snippet} and \l{#codeline}{\\codeline}
+    C++ code, the \l{#snippet} {\\snippet} and \l{#codeline} {\\codeline}
     commands should be used in preference to
     the others when presenting valid code. This allows auxilliary tools
     for Qt language bindings to substitute the relevant code snippets in
@@ -1445,17 +1445,17 @@
 
     \section1 Alphabetical List
 
-    \l {07-0-qdoc-commands-quoting.html#codeline}{\\codeline},
-    \l {07-0-qdoc-commands-quoting.html#dots}{\\dots},
-    \l {07-0-qdoc-commands-quoting.html#printline}{\\printline},
-    \l {07-0-qdoc-commands-quoting.html#printto}{\\printto},
-    \l {07-0-qdoc-commands-quoting.html#printuntil}{\\printuntil},
-    \l {07-0-qdoc-commands-quoting.html#quotefile}{\\quotefile},
-    \l {07-0-qdoc-commands-quoting.html#quotefromfile}{\\quotefromfile},
-    \l {07-0-qdoc-commands-quoting.html#skipline}{\\skipline},
-    \l {07-0-qdoc-commands-quoting.html#skipto}{\\skipto},
-    \l {07-0-qdoc-commands-quoting.html#skipuntil}{\\skipuntil},
-    \l {07-0-qdoc-commands-quoting.html#snippet}{\\snippet}
+    \l {07-0-qdoc-commands-quoting.html#codeline} {\\codeline},
+    \l {07-0-qdoc-commands-quoting.html#dots} {\\dots},
+    \l {07-0-qdoc-commands-quoting.html#printline} {\\printline},
+    \l {07-0-qdoc-commands-quoting.html#printto} {\\printto},
+    \l {07-0-qdoc-commands-quoting.html#printuntil} {\\printuntil},
+    \l {07-0-qdoc-commands-quoting.html#quotefile-command} {\\quotefile},
+    \l {07-0-qdoc-commands-quoting.html#quotefromfile-command} {\\quotefromfile},
+    \l {07-0-qdoc-commands-quoting.html#skipline} {\\skipline},
+    \l {07-0-qdoc-commands-quoting.html#skipto} {\\skipto},
+    \l {07-0-qdoc-commands-quoting.html#skipuntil} {\\skipuntil},
+    \l {07-0-qdoc-commands-quoting.html#snippet} {\\snippet}
 
     \section1 Command Descriptions
 
@@ -1465,7 +1465,7 @@
         \o Description
 
     \row
-        \o \bold \\quotefile \target quotefile
+        \o \bold \\quotefile \target quotefile-command
         \o \bold {The \\quotefile command expands to the complete
            contents of the file given as argument.}
 
@@ -1502,14 +1502,14 @@
            \endquotation
 
            \warning If you use the \l {QDoc
-           Compatibility}{compat.qdocconf} file this command is called
+           Compatibility} {compat.qdocconf} file this command is called
            \\include.
 
-           See also \l {quotefromfile}{\\quotefromfile} and \l
-           {code}{\\code}.
+           See also \l {quotefromfile-command} {\\quotefromfile} and
+           \l {code-command} {\\code}.
 
     \row
-        \o \bold \\quotefromfile \target quotefromfile
+        \o \bold \\quotefromfile \target quotefromfile-command
         \o \bold {The \\quotefromfile command opens the file
            given as argument for quoting.}
 
@@ -1519,9 +1519,9 @@
 
            The command is intended for use when quoting parts from
            file with the walkthrough commands: \l
-           {printline}{\\printline}, \l {printto}{\\printto}, \l
-           {printuntil}{\\printuntil}, \l {skipline}{\\skipline}, \l
-           {skipto}{\\skipto}, \l {skipuntil}{\\skipuntil}. This
+           {printline} {\\printline}, \l {printto} {\\printto}, \l
+           {printuntil} {\\printuntil}, \l {skipline} {\\skipline}, \l
+           {skipto} {\\skipto}, \l {skipuntil} {\\skipuntil}. This
            enables you to quote specific portions of a file. For
            example:
 
@@ -1571,10 +1571,10 @@
                ...
            \endquotation
 
-           (\l {Example File}{The complete example file...})
+           (\l {Example File} {The complete example file...})
 
            QDoc remembers which file it's quoting, and the current
-           position within that file (see \l {file}{\\printline} for
+           position within that file (see \l {file} {\\printline} for
            more information). There is no need to "close" the file.
 
            Earlier we called this command \\quotefile. For more
@@ -1582,8 +1582,8 @@
            {26-qdoc-commands-compatibility.html#quotefromfile-versus-quotefile}
            {compatibility} section.
 
-           See also \l {quotefile}{\\quotefile}, \l {code}{\\code} and
-           \l {dots}{\\dots}.
+           See also \l {quotefile-command} {\\quotefile}, \l
+           {code-command} {\\code} and \l {dots} {\\dots}.
 
     \row
         \o \bold \\printline \target printline
@@ -1657,15 +1657,15 @@
                The main function...
            \endquotation
 
-           (\l {Example File}{The complete example file...})
+           (\l {Example File} {The complete example file...})
 
            \target file
 
            QDoc reads the file sequentially. To move the current
            position forward you can use either of the \l
-           {skipline}{\\skip...} commands. To move the current
+           {skipline} {\\skip...} commands. To move the current
            position backward, you can use the \l
-           {quotefromfile}{\\quotefromfile} command again.
+           {quotefromfile-command} {\\quotefromfile} command again.
 
            \target substring
 
@@ -1704,7 +1704,7 @@
                application.
            \endquotation
 
-           (\l {widgets/scribble}{The complete example file...})
+           (\l {widgets/scribble} {The complete example file...})
 
            The regular expression \c /^\}/ makes QDoc print until the
            first '}' character occurring at the beginning of the line
@@ -1717,8 +1717,8 @@
            regular expression cannot be located, i.e. if the source
            code has changed.
 
-           See also \l {printto}{\\printto} and \l
-           {printuntil}{\\printuntil}.
+           See also \l {printto} {\\printto} and \l
+           {printuntil} {\\printuntil}.
 
     \row
         \o \bold \\printto \target printto
@@ -1729,8 +1729,8 @@
            The command considers the rest of the line as part of its
            argument, make sure to follow the substring with a line
            break. The command also follows the same conventions for \l
-           {file}{positioning} and \l {substring}{argument} as the \l
-           {printline}{\\printline} command.
+           {file} {positioning} and \l {substring} {argument} as the \l
+           {printline} {\\printline} command.
 
            The lines from the source file are rendered in a separate
            paragraph, using a typewriter font and the standard
@@ -1765,10 +1765,10 @@
                and \c argv parameters...
            \endquotation
 
-           (\l {Example File}{The complete example file...})
+           (\l {Example File} {The complete example file...})
 
-           See also \l {printline}{\\printline} and \l
-           {printuntil}{\\printuntil}.
+           See also \l {printline} {\\printline} and \l
+           {printuntil} {\\printuntil}.
 
     \row
         \o \bold \\printuntil \target printuntil
@@ -1779,8 +1779,8 @@
            The command considers the rest of the line as part of its
            argument, make sure to follow the substring with a line
            break. The command also follows the same conventions for \l
-           {file}{positioning} and \l {substring}{argument} as the \l
-           {printline}{\\printline} command.
+           {file} {positioning} and \l {substring} {argument} as the \l
+           {printline} {\\printline} command.
 
            The lines from the source file are rendered in a separate
            paragraph, using a typewriter font and the standard
@@ -1814,16 +1814,16 @@
                \printuntil hello
 
                First we create a \l
-               {http://qt.nokia.com/doc/4.0/qapplication}{QApplication}
+               {http://qt.nokia.com/doc/4.0/qapplication} {QApplication}
                object using the \c argc and \c argv parameters, then we
                create a \l
-               {http://qt.nokia.com/doc/4.0/qpushbutton}{QPushButton}.
+               {http://qt.nokia.com/doc/4.0/qpushbutton} {QPushButton}.
            \endquotation
 
-           (\l {Example File}{The complete example file...})
+           (\l {Example File} {The complete example file...})
 
-           See also \l {printline}{\\printline} and \l
-           {printto}{\\printto}.
+           See also \l {printline} {\\printline} and \l
+           {printto} {\\printto}.
 
     \row
         \o \bold \\skipline \target skipline
@@ -1832,15 +1832,15 @@
 
            Doc reads the file sequentially, and the \\skipline command
            is used to move the current position (omitting a line of
-           the source file). See the remark about \l {file}{file
+           the source file). See the remark about \l {file} {file
            positioning} above.
 
            The command considers the rest of the line as part of its
            argument, make sure to follow the substring with a line
            break. The command also follows the same conventions for \l
-           {substring}{argument} as the \l {printline}{\\printline}
+           {substring} {argument} as the \l {printline} {\\printline}
            command, and it is used in conjunction with the \l
-           {quotefromfile}{\\quotefromfile} command. For example:
+           {quotefromfile-command} {\\quotefromfile} command. For example:
 
            \code
            / *!
@@ -1876,10 +1876,10 @@
                that contains its definition.
            \endquotation
 
-           (\l {Example File}{The complete example file...})
+           (\l {Example File} {The complete example file...})
 
-           See also \l {skipto}{\\skipto}, \l
-           {skipuntil}{\\skipuntil} and \l {dots}{\\dots}.
+           See also \l {skipto} {\\skipto}, \l
+           {skipuntil} {\\skipuntil} and \l {dots} {\\dots}.
 
     \row
         \o \bold \\skipto \target skipto
@@ -1890,16 +1890,16 @@
            QDoc reads the file sequentially, and the \\skipto command
            is used to move the current position (omitting one or
            several lines of the source file). See the remark about \l
-           {file}{file positioning} above.
+           {file} {file positioning} above.
 
            The command considers the rest of the line as part of its
            argument, make sure to follow the substring with a line
            break.
 
            The command also follows the same conventions for \l
-           {substring}{argument} as the \l {printline}{\\printline}
+           {substring} {argument} as the \l {printline} {\\printline}
            command, and it is used in conjunction with the \l
-           {quotefromfile}{\\quotefromfile} command. For example:
+           {quotefromfile-command} {\\quotefromfile} command. For example:
 
            \code
            / *!
@@ -1934,10 +1934,10 @@
                reasonable size ...
            \endquotation
 
-           (\l {Example File}{The complete example file...})
+           (\l {Example File} {The complete example file...})
 
-           See also \l {skipline}{\\skipline}, \l
-           {skipuntil}{\\skipuntil} and \l {dots}{\\dots}.
+           See also \l {skipline} {\\skipline}, \l
+           {skipuntil} {\\skipuntil} and \l {dots} {\\dots}.
 
     \row
         \o \bold \\skipuntil \target skipuntil
@@ -1948,16 +1948,16 @@
            QDoc reads the file sequentially, and the \\skipuntil
            command is used to move the current position (omitting one
            or several lines of the source file). See the remark about
-           \l {file}{file positioning} above.
+           \l {file} {file positioning} above.
 
            The command considers the rest of the line as part of its
            argument, make sure to follow the substring with a line
            break.
 
            The command also follows the same conventions for \l
-           {substring}{argument} as the \l {printline}{\\printline}
+           {substring} {argument} as the \l {printline} {\\printline}
            command, and it is used in conjunction with the \l
-           {quotefromfile}{\\quotefromfile} command. For example:
+           {quotefromfile-command} {\\quotefromfile} command. For example:
 
            \code
            / *!
@@ -1991,10 +1991,10 @@
                will return when the application exits...
            \endquotation
 
-           (\l {Example File}{The complete example file...})
+           (\l {Example File} {The complete example file...})
 
-           See also \l {skipline}{\\skipline}, \l {skipto}{\\skipto}
-           and \l {dots}{\\dots}.
+           See also \l {skipline} {\\skipline}, \l {skipto} {\\skipto}
+           and \l {dots} {\\dots}.
 
     \row
         \o \bold \\dots \target dots
@@ -2002,7 +2002,7 @@
            source file have been omitted when quoting a file.}
 
            The command is used in conjunction with the \l
-           {quotefromfile}{\\quotefromfile} command, and should be
+           {quotefromfile-command} {\\quotefromfile} command, and should be
            stated on its own line. The dots are rendered on a new
            line, using a typewriter font. For example:
 
@@ -2026,7 +2026,7 @@
            \skipuntil exec
            \printline }
 
-           (\l {Example File}{The complete example file...})
+           (\l {Example File} {The complete example file...})
 
            The default indentation is 4 spaces, but this can be
            adjusted using the command's optional argument. For
@@ -2050,8 +2050,8 @@
            \dots 12
            \dots 16
 
-           See also \l {skipline}{\\skipline}, \l
-           {skipto}{\\skipto} and \l {skipuntil}{\\skipuntil}.
+           See also \l {skipline} {\\skipline}, \l
+           {skipto} {\\skipto} and \l {skipuntil} {\\skipuntil}.
 
     \row
         \o \bold \\snippet \target snippet
@@ -2119,10 +2119,10 @@
 
     \section1 Alphabetical List
 
-    \l {08-qdoc-commands-linking.html#keyword}{\\keyword},
-    \l {08-qdoc-commands-linking.html#l}{\\l},
-    \l {08-qdoc-commands-linking.html#sa}{\\sa},
-    \l {08-qdoc-commands-linking.html#target}{\\target}
+    \l {08-qdoc-commands-linking.html#keyword} {\\keyword},
+    \l {08-qdoc-commands-linking.html#l} {\\l},
+    \l {08-qdoc-commands-linking.html#sa} {\\sa},
+    \l {08-qdoc-commands-linking.html#target} {\\target}
 
     \section1 Command Descriptions
 
@@ -2138,7 +2138,7 @@
            The command's general syntax is
 
            \code
-           \l {link target}{link text}
+           \l {link target} {link text}
            \endcode
 
            For example:
@@ -2173,7 +2173,7 @@
                ...
 
                Regexps are built up from expressions, quantifiers, and
-               \l {assertions}{assertions}.
+               \l {assertions} {assertions}.
            * /
            \endcode
 
@@ -2195,24 +2195,24 @@
            \endcode
 
            For the one-parameter version the braces can often
-           be omitted. See the \l {i}{\\i} command for the \l
-           {argument}{argument conventions}.
+           be omitted. See the \l {i} {\\i} command for the \l
+           {argument} {argument conventions}.
 
            The \\l command supports several kinds of links:
 
            \list
-           \o \c {\l QWidget} - a defined \l {class}{\\class}
+           \o \c {\l QWidget} - a defined \l {class-command} {\\class}
            \o \c {\l QWidget::sizeHint()} - a defined member
-               function (\l {fn}{\\fn})
-           \o \c {\l <QtGlobal>} - a defined \l {headerfile}{\\headerfile}
+               function (\l {fn} {\\fn})
+           \o \c {\l <QtGlobal>} - a defined \l {headerfile} {\\headerfile}
            \o \c {\l widgets/wiggly} - a defined
-              \l {example-command}{\\example}
-           \o \c {\l {QWidget Class Reference}} - a defined \l {title}{\\title}
-           \o \c {\l {Introduction}}- a defined \l{part}{\\part},
-              \l{chapter}{\\chapter} or \l {sectionOne}{\\section...}
-           \o \c {\l fontmatching} - a defined \l {target}{\\target}
-           \o \c {\l {Shared Classes}} - a defined \l {keyword}{\\keyword}
-           \o \c {\l network.html} - a defined \l {page}{\\page}
+              \l {example-command} {\\example}
+           \o \c {\l {QWidget Class Reference}} - a defined \l {title} {\\title}
+           \o \c {\l {Introduction}}- a defined \l{part} {\\part},
+              \l{chapter} {\\chapter} or \l {sectionOne} {\\section...}
+           \o \c {\l fontmatching} - a defined \l {target} {\\target}
+           \o \c {\l {Shared Classes}} - a defined \l {keyword} {\\keyword}
+           \o \c {\l network.html} - a defined \l {page} {\\page}
            \o \c {\l http://www.trolltech.com/} - a URL
            \endlist
 
@@ -2226,11 +2226,11 @@
            can use the following syntax:
 
            \list
-               \o \c {\l {QWidget::}{sizeHint()}}
+               \o \c {\l {QWidget::} {sizeHint()}}
            \endlist
 
-           See also \l {sa}{\\sa}, \l {target}{\\target} and \l
-           {keyword}{\\keyword}.
+           See also \l {sa} {\\sa}, \l {target} {\\target} and \l
+           {keyword} {\\keyword}.
 
     \row
         \o \bold \\sa \target sa
@@ -2264,7 +2264,7 @@
            \endlist
 
            The \\sa command supports the same kind
-           of links as the \l {l}{\\l} command. For example:
+           of links as the \l {l} {\\l} command. For example:
 
            \code
            / *!
@@ -2288,18 +2288,18 @@
                Appends the actions \i actions to this widget's
                list of actions.
 
-               See also \l {QWidget::removeAction()}{removeAction()},
-               \l QMenu, and \l {QWidget::addAction()}{addAction()}.
+               See also \l {QWidget::removeAction()} {removeAction()},
+               \l QMenu, and \l {QWidget::addAction()} {addAction()}.
            \endquotation
 
-           See also \l {l}{\\l}, \l {target}{\\target} and \l
-           {keyword}{\\keyword}.
+           See also \l {l} {\\l}, \l {target} {\\target} and \l
+           {keyword} {\\keyword}.
 
     \row
         \o \bold \\target \target target
         \o \bold {The \\target command defines an explicit point in the
-           documentation that you can later link to using the \l {l}{\\l}
-           and \l {sa}{\\sa} commands.}
+           documentation that you can later link to using the \l {l} {\\l}
+           and \l {sa} {\\sa} commands.}
 
            The command considers the rest of the line as part of its
            argument, make sure to follow the target name with a line
@@ -2339,21 +2339,21 @@
            If the target name does't contain any spaces, the brackets can
            be omitted as well.
 
-           See also \l {l}{\\l}, \l {sa}{\\sa} and \l
-           {keyword}{\\keyword}.
+           See also \l {l} {\\l}, \l {sa} {\\sa} and \l
+           {keyword} {\\keyword}.
 
     \row
         \o \bold \\keyword \target keyword
         \o \bold {The \\keyword command defines an explicit point in the
-           documentation that you can later link to using the \l {l}{\\l}
-           and \l {sa}{\\sa} commands.}
+           documentation that you can later link to using the \l {l} {\\l}
+           and \l {sa} {\\sa} commands.}
 
            Keywords must be unique within the entire set of
            documentation processed in on QDoc run.  The command
            considers the rest of the line as part of its argument,
            make sure to follow the keyword with a line break.
 
-           The \\keyword command is similar to \l {target}{\\target},
+           The \\keyword command is similar to \l {target} {\\target},
            but stronger.  A keyword can be referenced from anywhere
            using a simple syntax. For example:
 
@@ -2396,8 +2396,8 @@
            If the keyword does't contain any spaces, the brackets can
            be omitted as well.
 
-           See also \l {l}{\\l}, \l {sa}{\\sa} and \l
-           {target}{\\target}.
+           See also \l {l} {\\l}, \l {sa} {\\sa} and \l
+           {target} {\\target}.
     \endtable
 */
 
@@ -2415,9 +2415,9 @@
 
     \section1 Alphabetical List
 
-    \l {09-qdoc-commands-graphic.html#caption}{\\caption},
-    \l {09-qdoc-commands-graphic.html#image}{\\image},
-    \l {09-qdoc-commands-graphic.html#inlineimage}{\\inlineimage}
+    \l {09-qdoc-commands-graphic.html#caption} {\\caption},
+    \l {09-qdoc-commands-graphic.html#image} {\\image},
+    \l {09-qdoc-commands-graphic.html#inlineimage-command} {\\inlineimage}
 
     \section1 Command Descriptions
 
@@ -2476,11 +2476,11 @@
                variants. It is also available for embedded devices.
            \endquotation
 
-           See also \l {inlineimage}{\\inlineimage} and \l
-           {caption}{\\caption}.
+           See also \l {inlineimage-command} {\\inlineimage} and \l
+           {caption} {\\caption}.
 
     \row
-        \o \bold \\inlineimage \target inlineimage
+        \o \bold \\inlineimage \target inlineimage-command
         \o \bold {The \\inlineimage command expands to the image
            specified by its argument; the image is rendered inline
            with the rest of the text.}
@@ -2585,20 +2585,20 @@
                to derive maximum benefit from the course.
            \endquotation
 
-           See also \l {image}{\\image} and \l {caption}{\\caption}.
+           See also \l {image} {\\image} and \l {caption} {\\caption}.
 
     \row
         \o \bold \\caption \target caption
         \o \bold {The \\caption command provides a caption for an image.}
 
            The command follows the same conventions for parentheses and use
-           of braces for its \l argument as the \l {i}{\\i} command.
+           of braces for its \l argument as the \l {i} {\\i} command.
 
            \warning This is preliminary functionality. The
            command is not fully implemented.
 
-           See also \l {image}{\\image} and \l
-           {inlineimage}{\\inlineimage}
+           See also \l {image} {\\image} and \l
+           {inlineimage-command} {\\inlineimage}
 
     \endtable
 */
@@ -2618,13 +2618,13 @@
 
    \section1 Alphabetical List
 
-    \l {10-qdoc-commands-container.html#header}{\\header},
-    \l {10-qdoc-commands-container.html#list}{\\list},
-    \l {10-qdoc-commands-container.html#o}{\\o},
-    \l {10-qdoc-commands-container.html#omitvalue}{\\omitvalue},
-    \l {10-qdoc-commands-container.html#row}{\\row},
-    \l {10-qdoc-commands-container.html#table}{\\table},
-    \l {10-qdoc-commands-container.html#value}{\\value}
+    \l {10-qdoc-commands-container.html#header} {\\header},
+    \l {10-qdoc-commands-container.html#list} {\\list},
+    \l {10-qdoc-commands-container.html#o} {\\o},
+    \l {10-qdoc-commands-container.html#omitvalue-command} {\\omitvalue},
+    \l {10-qdoc-commands-container.html#row} {\\row},
+    \l {10-qdoc-commands-container.html#table} {\\table},
+    \l {10-qdoc-commands-container.html#value-command} {\\value}
 
     \section1 Command Descriptions
 
@@ -2656,9 +2656,9 @@
            the table will be centered in the generated documentation.
 
            A table can contain headers, rows and columns. A row starts
-           with a \l {row}{\\row} command and consists of cells, which
-           starts with a \l {o}{\\o} command. There is also a \l
-           {header}{\\header} command which is a special kind of row
+           with a \l {row} {\\row} command and consists of cells, which
+           starts with a \l {o} {\\o} command. There is also a \l
+           {header} {\\header} command which is a special kind of row
            with a special formatting. For example:
 
            \code
@@ -2775,7 +2775,7 @@
                </table>
            \endraw
 
-           See also \l {header}{\\header}, \l {row}{\\row} and \l {o}{\\o}.
+           See also \l {header} {\\header}, \l {row} {\\row} and \l {o} {\\o}.
 
     \row
         \o \bold \\header \target header
@@ -2784,7 +2784,7 @@
 
            The command can only be used within the \l{table}
            {\\table...\\endtable} commands. A header can contain
-           several cells. A cell is created with the \l {o}{\\o}
+           several cells. A cell is created with the \l {o} {\\o}
            command.
 
            A header cell's text is centered within the table cell and
@@ -2825,7 +2825,7 @@
                </table>
            \endraw
 
-           See also \l {table}{\\table}, \l {row}{\\row} and \l {o}{\\o}.
+           See also \l {table} {\\table}, \l {row} {\\row} and \l {o} {\\o}.
 
     \row
         \o \bold \\row \target row
@@ -2834,7 +2834,7 @@
 
            The command can only be used within the \l{table}
            {\\table...\\endtable} commands. A row can contain
-           several cells. A cell is created with the \l {o}{\\o}
+           several cells. A cell is created with the \l {o} {\\o}
            command.
 
            The background cell color of each row alternate between two
@@ -2907,11 +2907,11 @@
                </table>
            \endraw
 
-           See also \l {table}{\\table}, \l {header}{\\header} and \l
-           {o}{\\o}.
+           See also \l {table} {\\table}, \l {header} {\\header} and \l
+           {o} {\\o}.
 
     \row
-        \o \bold \\value \target value
+        \o \bold \\value \target value-command
         \o \bold {The \\value command starts the documentation of a C++ enum
            item}.
 
@@ -2921,21 +2921,21 @@
            rendered within a table.
 
            The documentation will be located in the associated class,
-           header file or namespace documentation. See the \l
-           {enum}{\\enum} documentation for an example.
+           header file or namespace documentation. See the \l {enum-command}
+           {\\enum} documentation for an example.
 
-           See also \l {enum}{\\enum} and \l {omitvalue}{\\omitvalue}.
+           See also \l {enum-command} {\\enum} and \l {omitvalue-command} {\\omitvalue}.
 
     \row
-        \o \bold \\omitvalue \target omitvalue
+        \o \bold \\omitvalue \target omitvalue-command
         \o \bold {The \\omitvalue command excludes a C++ enum item
            from the documentation}.
 
            The command's only argument is the name of the enum item
-           that will be omitted. See the \l {enum}{\\enum}
+           that will be omitted. See the \l {enum-command} {\\enum}
            documentation for an example.
 
-           See also \l {enum}{\\enum} and \l {value}{\\value}.
+           See also \l {enum-command} {\\enum} and \l {value-command} {\\value}.
 
     \row
         \o \bold \\list \target list
@@ -2943,7 +2943,7 @@
            command delimit a list of items.}
 
            You need to create each list item explicitly using the \l
-           {o}{\\o} command. A list can contain one or more items; it
+           {o} {\\o} command. A list can contain one or more items; it
            can also be nested. For example:
 
            \code
@@ -3064,26 +3064,26 @@
                \o Tutorial and Examples
            \endlist
 
-           See also \l {o}{\\o}.
+           See also \l {o} {\\o}.
 
     \row
         \o \bold \\o \target o
         \o \bold {The \\o command announce a table or list item.}
 
-           Earlier we used the \l {i}{\\i} command for this purpose. For more
+           Earlier we used the \l {i} {\\i} command for this purpose. For more
            information see the \l
-           {26-qdoc-commands-compatibility.html#o-versus-i}{compatibility}
+           {26-qdoc-commands-compatibility.html#o-versus-i} {compatibility}
            section.
 
            The command can only be used within the \l{table}
-           {\\table...\\endtable} or \l{list}{\\list... \\endlist}
+           {\\table...\\endtable} or \l{list} {\\list... \\endlist}
            commands.
 
            It considers everything until the next occurrence
            of the \\o command, or the currently applicable \l
-           {table}{\\endtable} or \l {list}{\\endlist} command, as its
-           argument. For examples, see \l {table}{\\table} and \l
-           {list}{\\list}.
+           {table} {\\endtable} or \l {list} {\\endlist} command, as its
+           argument. For examples, see \l {table} {\\table} and \l
+           {list} {\\list}.
 
            If the command is used within a table, you can in addition
            specify how many rows or columns the item should span. For
@@ -3138,8 +3138,8 @@
 
            If not specified, the item will span one column and one row.
 
-           See also \l {table}{\\table}, \l {header}{\\header},
-           \l {list}{\\list} and \l {o}{\\o}.
+           See also \l {table} {\\table}, \l {header} {\\header},
+           \l {list} {\\list} and \l {o} {\\o}.
     \endtable
 */
 
@@ -3157,14 +3157,14 @@
 
     \section1 Alphabetical List
 
-    \l {11-qdoc-commands-documentcontents.html#abstract}{\\abstract},
-    \l {11-qdoc-commands-documentcontents.html#brief}{\\brief},
-    \l {11-qdoc-commands-documentcontents.html#footnote}{\\footnote},
-    \l {11-qdoc-commands-documentcontents.html#legalese}{\\legalese},
+    \l {11-qdoc-commands-documentcontents.html#abstract} {\\abstract},
+    \l {11-qdoc-commands-documentcontents.html#brief-command} {\\brief},
+    \l {11-qdoc-commands-documentcontents.html#footnote} {\\footnote},
+    \l {11-qdoc-commands-documentcontents.html#legalese} {\\legalese},
     \l {11-qdoc-commands-documentcontents.html#tableofcontents}
        {\\tableofcontents},
-    \l {11-qdoc-commands-documentcontents.html#quotation}{\\quotation},
-    \l {11-qdoc-commands-documentcontents.html#warning}{\\warning}
+    \l {11-qdoc-commands-documentcontents.html#quotation} {\\quotation},
+    \l {11-qdoc-commands-documentcontents.html#warning} {\\warning}
 
     \section1 Command Descriptions
 
@@ -3441,18 +3441,18 @@
            chapter or section.
 
     \row
-        \o \bold \\brief \target brief
+        \o \bold \\brief \target brief-command
         \o \bold {The \\brief command introduces a one-sentence
            description of a class, namespace, header file, property
            or variable.}
 
            The brief text is used to introduce the documentation of
            the associated object, and in lists generated using the \l
-           {generatelist}{\\generatelist} command.
+           {generatelist-command} {\\generatelist} command.
 
            The \\brief command can be used in two significant
-           different ways: \l {brief class}{One for classes,
-           namespaces and header files}, and \l {brief property}{one
+           different ways: \l {brief class} {One for classes,
+           namespaces and header files}, and \l {brief property} {one
            for properties and variables}.
 
            \target brief property
@@ -3519,8 +3519,8 @@
                \endlist
 
                See also \l
-               {QWidget::frameGeometry()}{frameGeometry()}, \l
-               {QWidget::rect()}{rect()}, ...
+               {QWidget::frameGeometry()} {frameGeometry()}, \l
+               {QWidget::rect()} {rect()}, ...
            \endquotation
 
            \target brief class
@@ -3569,7 +3569,7 @@
 
                The PreviewWindow class is a custom widget displaying
                the names of its currently set window flags in a
-               read-only text editor. \l {preview window}{More...}
+               read-only text editor. \l {preview window} {More...}
 
                \raw HTML
                    <h3>Properties</h3>
@@ -3585,8 +3585,8 @@
                \endraw
 
                \list
-                   \o \l {constructor}{PreviewWindow}(QWidget *parent = 0)
-                   \o void \l {function}{setWindowFlags}(Qt::WindowFlags flags)
+                   \o \l {constructor} {PreviewWindow}(QWidget *parent = 0)
+                   \o void \l {function} {setWindowFlags}(Qt::WindowFlags flags)
                \endlist
 
                \list
@@ -3628,7 +3628,7 @@
 
                The PreviewWindow class inherits QWidget. The widget
                displays the names of its window flags set with the \l
-               {function}{setWindowFlags()} function. It is also
+               {function} {setWindowFlags()} function. It is also
                provided with a QPushButton that closes the window.
 
                ...
@@ -3687,8 +3687,8 @@
            * /
            \endcode
 
-           See also \l{property}{\\property}, \l{class}{\\class},
-           \l{namespace}{\\namespace} and  \l{headerfile}{\\headerfile}.
+           See also \l{property} {\\property}, \l{class-command} {\\class},
+           \l{namespace} {\\namespace} and  \l{headerfile} {\\headerfile}.
 
     \row
         \o \bold \\legalese \target legalese
@@ -3704,7 +3704,7 @@
 
            Later the documentation identified by the \\legalese
            command can be accumulated into a list using the \l
-           {generatelist}{\\generatelist} command with the \c legalese
+           {generatelist-command} {\\generatelist} command with the \c legalese
            argument. This is useful to generate an overview of all the
            licenses associated with the source code.
 
@@ -3827,16 +3827,16 @@
 
     \section1 Alphabetical List
 
-    \l {12-0-qdoc-commands-miscellaneous.html#else}{\\else},
-    \l {12-0-qdoc-commands-miscellaneous.html#endif}{\\endif},
-    \l {12-0-qdoc-commands-miscellaneous.html#expire}{\\expire},
-    \l {12-0-qdoc-commands-miscellaneous.html#generatelist}{\\generatelist},
-    \l {12-0-qdoc-commands-miscellaneous.html#if}{\\if},
-    \l {12-0-qdoc-commands-miscellaneous.html#include}{\\include},
-    \l {12-0-qdoc-commands-miscellaneous.html#meta}{\\meta},
-    \l {12-0-qdoc-commands-miscellaneous.html#omit}{\\omit},
-    \l {12-0-qdoc-commands-miscellaneous.html#raw}{\\raw} \span {class="newStuff"} {(avoid)},
-    \l {12-0-qdoc-commands-miscellaneous.html#raw}{\\unicode}
+    \l {12-0-qdoc-commands-miscellaneous.html#else} {\\else},
+    \l {12-0-qdoc-commands-miscellaneous.html#endif} {\\endif},
+    \l {12-0-qdoc-commands-miscellaneous.html#expire} {\\expire},
+    \l {12-0-qdoc-commands-miscellaneous.html#generatelist-command} {\\generatelist},
+    \l {12-0-qdoc-commands-miscellaneous.html#if-command} {\\if},
+    \l {12-0-qdoc-commands-miscellaneous.html#include} {\\include},
+    \l {12-0-qdoc-commands-miscellaneous.html#meta} {\\meta},
+    \l {12-0-qdoc-commands-miscellaneous.html#omit} {\\omit},
+    \l {12-0-qdoc-commands-miscellaneous.html#raw} {\\raw} \span {class="newStuff"} {(avoid)},
+    \l {12-0-qdoc-commands-miscellaneous.html#raw} {\\unicode}
 
     \section1 Command Descriptions
 
@@ -3879,7 +3879,7 @@
            \endquotation
 
     \row
-        \o \bold \\generatelist \target generatelist
+        \o \bold \\generatelist \target generatelist-command
         \o \bold {The \\generatelist command expands to a list of
            various documentation or links to documentation.}
 
@@ -3950,8 +3950,8 @@
               \endquotation
 
               A class is identified within the documentation by the
-              the \l {class}{\\class} command, and the descriptions
-              are based on the argument of the \l {brief}{\\brief}
+              the \l {class-command} {\\class} command, and the descriptions
+              are based on the argument of the \l {brief-command} {\\brief}
               commands in the class documentation.
 
            \target list example
@@ -4005,7 +4005,7 @@
               \endquotation
 
               A class is identified within the documentation by the
-              the \l {class}{\\class} command.
+              the \l {class-command} {\\class} command.
 
            \o \c classesbymodule
 
@@ -4035,14 +4035,14 @@
               a link to the class's reference documentation.
 
               The generated table is rendered similarily to the one
-              generated when using the \l {table example}{\c
+              generated when using the \l {table example} {\c
               annotatedclasses} argument.
 
               For the basic classes in Qt, a class's module is
               determined by its location, i.e. its directory. However,
               for extensions, like ActiveQt and Qt Designer, a class
               is related to a module with the \l
-              {inmodule}{\\inmodule} command.
+              {inmodule} {\\inmodule} command.
 
            \o \c classesbyedition
 
@@ -4073,10 +4073,10 @@
               The \c compatclasses argument provides a complete and
               alphabetical list of the support classes.  A support
               class is identified within the documentation by the \l
-              {compat}{\\compat} command. Each class name is a link to
+              {compat} {\\compat} command. Each class name is a link to
               the class's reference documentation. The list is
               rendered similarily to the list generated by the \l
-              {list example}{\c classes} argument.
+              {list example} {\c classes} argument.
 
               \warning The \c classesbymodule argument will at some
               point replace the this argument.
@@ -4112,7 +4112,7 @@
 
               The \c legalese argument provides a complete list of all
               the licenses. The licenses are identified within the
-              documentation using the \l {legalese}{\\legalese}
+              documentation using the \l {legalese} {\\legalese}
               command.
 
               For example:
@@ -4173,10 +4173,10 @@
               alphabetical list of the main classes. Each class name
               is a link to the class's reference documentation. A
               class is related to the group of main classes by using
-              the \l {mainclass}{\\mainclass} command.
+              the \l {mainclass-command} {\\mainclass} command.
 
               The list is rendered similarily to the list generated by
-              the \l {list example}{\c classes} argument.
+              the \l {list example} {\c classes} argument.
 
            \o \c overviews
 
@@ -4185,10 +4185,10 @@
               entry is a link to the respective documentation page.
 
               The list includes pages declared using commands like \l
-              {page}{\\page} and \l {group}{\\group}. The list omits
+              {page} {\\page} and \l {group-command} {\\group}. The list omits
               examples and classes, and only lists the first page of
               documentation that contains two or more pages using
-              commands like \l {nextpage}{\\nextpage}.
+              commands like \l {nextpage} {\\nextpage}.
 
               For example:
 
@@ -4245,14 +4245,14 @@
            \o \c related
 
               The \c related argument is used in combination with the
-              \l {group}{\\group} command to list all the overviews
+              \l {group-command} {\\group} command to list all the overviews
               related to the given group. Each list entry is a link to
               the respective documentation page.
 
            \o \c relatedinline
 
               The \c related argument is used in combination with the
-              \l {group}{\\group} command to collect all documentation
+              \l {group-command} {\\group} command to collect all documentation
               related to the given group. The various documentation
               snippets are copied directly into the group page.
 
@@ -4263,13 +4263,13 @@
               service's reference documentation.
 
               A service is identified within the documentation by the
-              \l {service}{\\service} command.
+              \l {service} {\\service} command.
 
         \endlist
 
 
     \row
-        \o \bold \\if \target if
+        \o \bold \\if \target if-command
         \o \bold {The \\if command and the corresponding \\endif command
            enclose parts of a QDoc comment that only will be included if
            the condition specified by the command's argument is true.}
@@ -4282,7 +4282,7 @@
                \if defined(opensourceedition)
 
                \bold{Note:} This edition is for the development of
-               \l{Qt Open Source Edition}{Free and Open Source}
+               \l{Qt Open Source Edition} {Free and Open Source}
                software only; see \l{Qt Commercial Editions}.
 
                \endif
@@ -4291,7 +4291,7 @@
 
            This QDoc comment will only be rendered if the \c
            opensourceedition preprocessor symbol is defined, and
-           specified in the \l {definesvariable}{defines} variable in
+           specified in the \l {definesvariable} {defines} variable in
            the configuration file to make QDoc process
            the code within #ifdef and #endif:
 
@@ -4301,31 +4301,31 @@
 
            You can also define the preprocessor symbol manually on the
            command line. For more information see the documentation of
-           the \l {definesvariable}{defines} variable.
+           the \l {definesvariable} {defines} variable.
 
-           See also \l{endif}{\\endif}, \l{else}{\\else}, \l
-           {definesvariable}{defines} and \l falsehoods.
+           See also \l{endif} {\\endif}, \l{else} {\\else}, \l
+           {definesvariable} {defines} and \l falsehoods.
 
     \row
         \o \bold \\endif \target endif
         \o \bold {The \\endif command and the corresponding \\if command
            enclose parts of a QDoc comment that will be included if
-           the condition specified by the \l {if}{\\if} command's
+           the condition specified by the \l {if-command} {\\if} command's
            argument is true.}
 
            For more information, see the documentation of the \l
-           {if}{\\if} command.
+           {if-command} {\\if} command.
 
-           See also \l{if}{\\if}, \l{else}{\\else}, \l
-           {definesvariable}{defines} and \l falsehoods.
+           See also \l{if-command} {\\if}, \l{else} {\\else}, \l
+           {definesvariable} {defines} and \l falsehoods.
 
     \row
         \o \bold \\else \target else
         \o \bold {The \\else command specifies an alternative if the
-           condition in the \l {if}{\\if} command is false.}
+           condition in the \l {if-command} {\\if} command is false.}
 
            The \\else command can only be used within \l
-           {if}{\\if...\\endif} commands, but is useful when there is
+           {if-command} {\\if...\\endif} commands, but is useful when there is
            only two alternatives. For example:
 
            \code
@@ -4413,8 +4413,8 @@
                GCC 3.2+ and MSVC 7.)
            \endquotation
 
-           See also \l{if}{\\if}, \l{endif}{\\endif}, \l
-           {definesvariable}{defines} and \l falsehoods.
+           See also \l{if-command} {\\if}, \l{endif} {\\endif}, \l
+           {definesvariable} {defines} and \l falsehoods.
 
     \row
         \o \bold \\include \target include
@@ -4623,16 +4623,16 @@
 	   color styles in your style.css file. Then you can write:
 
 	   \code
-           \tt {\span {id="color-blue"}{Blue(#0000ff)}},
-           \tt {\span {id="color-darkBlue"}{dark blue(#000080)}} and
-           \tt {\span {id="color-cyan"}{cyan(#00ffff)}}.
+           \tt {\span {id="color-blue"} {Blue(#0000ff)}},
+           \tt {\span {id="color-darkBlue"} {dark blue(#000080)}} and
+           \tt {\span {id="color-cyan"} {cyan(#00ffff)}}.
 	   \endcode
 
 	   ...which is rendered again as:
 
-           \tt {\span {id="color-blue"}{Blue(#0000ff)}},
-           \tt {\span {id="color-darkBlue"}{dark blue(#000080)}} and
-           \tt {\span {id="color-cyan"}{cyan(#00ffff)}}.
+           \tt {\span {id="color-blue"} {Blue(#0000ff)}},
+           \tt {\span {id="color-darkBlue"} {dark blue(#000080)}} and
+           \tt {\span {id="color-cyan"} {cyan(#00ffff)}}.
 
     \row
         \o \bold \\unicode \target unicode
@@ -4708,21 +4708,21 @@
 
     \section1 Alphabetical List
 
-    \l {13-qdoc-commands-topical.html#class}{\\class},
-    \l {13-qdoc-commands-topical.html#enum}{\\enum},
-    \l {13-qdoc-commands-topical.html#example-command}{\\example},
-    \l {13-qdoc-commands-topical.html#externalpage}{\\externalpage},
-    \l {13-qdoc-commands-topical.html#fn}{\\fn},
-    \l {13-qdoc-commands-topical.html#group}{\\group},
-    \l {13-qdoc-commands-topical.html#headerfile}{\\headerfile},
-    \l {13-qdoc-commands-topical.html#macro}{\\macro},
-    \l {13-qdoc-commands-topical.html#module}{\\module},
-    \l {13-qdoc-commands-topical.html#namespace}{\\namespace},
-    \l {13-qdoc-commands-topical.html#page}{\\page},
-    \l {13-qdoc-commands-topical.html#property}{\\property},
-    \l {13-qdoc-commands-topical.html#service}{\\service},
-    \l {13-qdoc-commands-topical.html#typedef}{\\typedef},
-    \l {13-qdoc-commands-topical.html#variable}{\\variable},
+    \l {13-qdoc-commands-topical.html#class-command} {\\class},
+    \l {13-qdoc-commands-topical.html#enum-command} {\\enum},
+    \l {13-qdoc-commands-topical.html#example-command} {\\example},
+    \l {13-qdoc-commands-topical.html#externalpage} {\\externalpage},
+    \l {13-qdoc-commands-topical.html#fn} {\\fn},
+    \l {13-qdoc-commands-topical.html#group-command} {\\group},
+    \l {13-qdoc-commands-topical.html#headerfile} {\\headerfile},
+    \l {13-qdoc-commands-topical.html#macro} {\\macro},
+    \l {13-qdoc-commands-topical.html#module} {\\module},
+    \l {13-qdoc-commands-topical.html#namespace} {\\namespace},
+    \l {13-qdoc-commands-topical.html#page} {\\page},
+    \l {13-qdoc-commands-topical.html#property} {\\property},
+    \l {13-qdoc-commands-topical.html#service} {\\service},
+    \l {13-qdoc-commands-topical.html#typedef} {\\typedef},
+    \l {13-qdoc-commands-topical.html#variable} {\\variable},
 
     \section1 General Description
 
@@ -4744,7 +4744,7 @@
     \endcode
 
     Functions is a special case, the argument's naming convention for
-    the \l {fn}{\\fn} command is that of the function's definition
+    the \l {fn} {\\fn} command is that of the function's definition
     outside the class definition. For example:
 
     \code
@@ -4787,12 +4787,12 @@
         \o Description
 
     \row
-        \o \bold \\class \target class
+        \o \bold \\class \target class-command
         \o \bold {The \\class command tells QDoc that a class is
            part of the public API, and lets you enter a detailed
            description.}
 
-           The command follows \l {topical argument}{the general
+           The command follows \l {topical argument} {the general
            topical command convention} for the argument, and supports
            nested classes, for example:
 
@@ -4821,9 +4821,9 @@
            and slots with empty documentation.
 
            The command is typically accompanied with a \l
-           {brief}{\\brief} command, a \l {mainclass}{\\mainclass}
-           command, an \l {ingroup}{\\ingroup} command and a \l
-           {sa}{\\sa} command. For example:
+           {brief-command} {\\brief} command, a \l {mainclass-command} {\\mainclass}
+           command, an \l {ingroup-command} {\\ingroup} command and a \l
+           {sa} {\\sa} command. For example:
 
            \code
            / *!
@@ -4837,7 +4837,7 @@
 
                The PreviewWindow class inherits QWidget. The widget
                displays the names of its window flags set with the \l
-               {function}{setWindowFlags()} function. It is also
+               {function} {setWindowFlags()} function. It is also
                provided with a QPushButton that closes the window.
 
                ...
@@ -4855,7 +4855,7 @@
 
                The PreviewWindow class is a custom widget displaying
                the names of its currently set window flags in a
-               read-only text editor. \l {preview window}{More...}
+               read-only text editor. \l {preview window} {More...}
 
                \raw HTML
                    <h3>Properties</h3>
@@ -4871,8 +4871,8 @@
                \endraw
 
                \list
-                   \o \l {constructor}{PreviewWindow}(QWidget *parent = 0)
-                   \o void \l {function}{setWindowFlags}(Qt::WindowFlags flags)
+                   \o \l {constructor} {PreviewWindow}(QWidget *parent = 0)
+                   \o void \l {function} {setWindowFlags}(Qt::WindowFlags flags)
                \endlist
 
                \list
@@ -4915,7 +4915,7 @@
 
                The PreviewWindow class inherits QWidget. The widget
                displays the names of its window flags set with the \l
-               {function}{setWindowFlags()} function. It is also
+               {function} {setWindowFlags()} function. It is also
                provided with a QPushButton that closes the window.
 
                ...
@@ -4949,16 +4949,16 @@
            \endquotation
 
     \row
-        \o \bold \\enum \target enum
+        \o \bold \\enum \target enum-command
         \o \bold {The \\enum command allows you to document a C++ enum.}
 
-           The command follows \l {topical argument}{the general
+           The command follows \l {topical argument} {the general
            topical command convention} for the argument.
 
-           The enum items are documented using the \l {value}{\\value}
+           The enum items are documented using the \l {value-command} {\\value}
            command. If an item isn't documented, QDoc will emit a
            warning. This can be avoided using the \l
-           {omitvalue}{\\omitvalue} command excluding an item from the
+           {omitvalue-command} {\\omitvalue} command excluding an item from the
            documentation. The enum documentation will be located in
            the associated class, header file or namespace
            documentation.
@@ -5049,14 +5049,14 @@
 
            in qt.html.
 
-           See also \l {value}{\\value} and \l {omitvalue}{\\omitvalue}.
+           See also \l {value-command} {\\value} and \l {omitvalue-command} {\\omitvalue}.
 
     \row
         \o \bold \\example \target example-command
         \o \bold {The \\example command allows you to document an
            example.}
 
-           The command follows \l {topical argument}{the general
+           The command follows \l {topical argument} {the general
            topical command convention} for the argument. In particular
            the command's argument is the example's path relative to
            the paths listed in the \l exampledirs configuration
@@ -5111,7 +5111,7 @@
         \o \bold \\fn \target fn
         \o \bold {The \\fn command allows you to document a function.}
 
-           The command follows \l {topical argument}{the general
+           The command follows \l {topical argument} {the general
            topical command convention} for the argument. In particular
            it is important that the return type of the function,
            whether it is \c const or not and the complete set of
@@ -5153,30 +5153,30 @@
                \a area; otherwise returns false.
            \endquotation
 
-           See also \l {overload}{\\overload}.
+           See also \l {overload} {\\overload}.
 
     \row
-        \o \bold \\group \target group
+        \o \bold \\group \target group-command
         \o \bold {The \\group command creates a separate page that
            lists the classes belonging to the group specified by the
            command's argument.}
 
-           The command follows \l {topical argument}{the general
+           The command follows \l {topical argument} {the general
            topical command convention} for the argument. The \\group
-           command is typically followed by a \l {title}{\\title}
+           command is typically followed by a \l {title} {\\title}
            command and a short introduction to the group.  The
            generated HTML documentation for the specified group is put
            in <lower-case>\i{group}.html.
 
            A class can be related to a group by using the \l
-           {ingroup}{\\ingroup} command. In addition, overviews can be
+           {ingroup-command} {\\ingroup} command. In addition, overviews can be
            related to a group using the same command, but these must
            be listed explicitly using the \l
-           {generatelist}{\\generatelist} command (see example below).
+           {generatelist-command} {\\generatelist} command (see example below).
 
            Each class is listed with a link to the class reference
            page and a brief description based on the classes' \l
-           {brief}{\\brief} texts. For example:
+           {brief-command} {\\brief} texts. For example:
 
            \code
            / *!
@@ -5234,7 +5234,7 @@
 
            Note that overviews related to the given group, must be
            listed explicitly using the \l
-           {generatelist}{\\generatelist} command with the \c related
+           {generatelist-command} {\\generatelist} command with the \c related
            argument. For example:
 
            \code
@@ -5251,21 +5251,21 @@
            * /
            \endcode
 
-           See also \l {ingroup}{\\ingroup} and \l
-           {generatelist}{\\generatelist}.
+           See also \l {ingroup-command} {\\ingroup} and \l
+           {generatelist-command} {\\generatelist}.
 
     \row
         \o \bold \\headerfile \target headerfile
         \o \bold {The \\headerfile command allows you to document
            global functions, types and macros declared in a header file.}
 
-           The command follows \l {topical argument}{the general
+           The command follows \l {topical argument} {the general
            topical command convention} for the argument, and the
            generated HTML documentation for the specified header file
            is put in <lower-case>\i{headerfilename}.html.
 
            A function, type or macro can be associated with a
-           headerfile using the \l {relates}{\\relates} command.
+           headerfile using the \l {relates-command} {\\relates} command.
 
            If the referenced header file doesn't exist, the
            \\headerfile command will still create a documentation page
@@ -5330,7 +5330,7 @@
         \o \bold \\macro \target macro
         \o \bold {The \\macro command allows you to document a C++ macro.}
 
-           The command follows \l {topical argument}{the general
+           The command follows \l {topical argument} {the general
            topical command convention} for the argument.
 
            QDoc recognizes three different macro syntax: function-like
@@ -5338,7 +5338,7 @@
            Q_PROPERTY() and macros without parentheses like Q_OBJECT.
 
            The \\macro command must be followed by a \l
-           {relates}{\\relates} command which attaches the
+           {relates-command} {\\relates} command which attaches the
            documentation to that of a related class, header file. or
            namespace. Otherwise the documentation will be lost.
 
@@ -5448,17 +5448,17 @@
            classes belonging to the module specified by the command's
            argument.}
 
-           The command follows \l {topical argument}{the general
+           The command follows \l {topical argument} {the general
            topical command convention} for the argument.
 
            A class can be related to a module using the \l
-           {inmodule}{\\inmodule} command.
+           {inmodule} {\\inmodule} command.
 
            The \\module command is typically followed by the \l
-           {title}{\\title} and \l {brief}{\\brief} commands. Each
+           {title} {\\title} and \l {brief-command} {\\brief} commands. Each
            class is listed with a link to the class reference page and
            a brief description based on the classes' \l
-           {brief}{\\brief} texts.
+           {brief-command} {\\brief} texts.
 
            For example:
 
@@ -5489,7 +5489,7 @@
 
                The QtNetwork module offers classes that allow you to
                write TCP/IP clients and servers.\l {module
-               details}{More...}
+               details} {More...}
 
                \raw HTML
                <p>
@@ -5545,19 +5545,19 @@
 
            in qtnetwork.html.
 
-           See also \l {inmodule}{\\inmodule}
+           See also \l {inmodule} {\\inmodule}
 
     \row
         \o \bold \\namespace \target namespace
         \o \bold {The \\namespace command allows you to document a C++
            namespace.}
 
-           The command follows \l {topical argument}{the general
+           The command follows \l {topical argument} {the general
            topical command convention} for the argument.
 
            QDoc will generate the same additional links and
            documentation for all the members of the namespace as it
-           does for \l {framework}{classes}. The documentation for
+           does for \l {framework} {classes}. The documentation for
            the specified namespace is put in <lower-case>\i
            {namespace}.html.
 
@@ -5616,10 +5616,10 @@
         \o \bold {The \\page command allows you to create a stand-alone
            documentation page.}
 
-           The command follows \l {topical argument}{the general
+           The command follows \l {topical argument} {the general
            topical command convention} for the argument.
 
-           The page's title can be set using the \l {title}{\\title}
+           The page's title can be set using the \l {title} {\\title}
            command. For example:
 
            \code
@@ -5652,7 +5652,7 @@
         \o \bold {The \\externalpage command gives a title to
             an external URL.}
 
-           The command follows \l {topical argument}{the general
+           The command follows \l {topical argument} {the general
            topical command convention} for the argument.
 
            For example:
@@ -5679,7 +5679,7 @@
 
            \quotation
                The broad scope of the \l
-               {http://www.trolltech.com/products/embedded/index.html}{Qtopia
+               {http://www.trolltech.com/products/embedded/index.html} {Qtopia
                Core} API enables it to be used across a wide variety
                of development projects.
            \endquotation
@@ -5691,7 +5691,7 @@
            \code
            / *!
                The broad scope of the \l
-               {http://www.trolltech.com/products/embedded/index.html}{Qtopia
+               {http://www.trolltech.com/products/embedded/index.html} {Qtopia
                Core} API enables it to be used across a wide variety
                of development projects.
            * /
@@ -5706,7 +5706,7 @@
         \o \bold {The \\property command allows you to document a Qt
            property.}
 
-           The command follows \l {topical argument}{the general
+           The command follows \l {topical argument} {the general
            topical command convention} for the argument.
 
            A property is defined using the Q_PROPERTY() macro. The
@@ -5725,12 +5725,12 @@
            property.
 
            The \\property command is typically accompanied with a \l
-           {brief}{\\brief} command.  In the case of a property, the
-           \l {brief}{\\brief} command's argument is a sentence
-           fragment that will be included in a one-sentence
-           description of the property generated by QDoc. The command
-           follows the same rules for the \l {brief
-           property}{description} as the \l {variable}{\\variable}
+           {brief-command} {\\brief} command.  In the case of a
+           property, the \l {brief-command} {\\brief} command's
+           argument is a sentence fragment that will be included in a
+           one-sentence description of the property generated by
+           QDoc. The command follows the same rules for the \l {brief
+           property} {description} as the \l {variable} {\\variable}
            command.
 
            For example:
@@ -5797,8 +5797,8 @@
                \o \bold { int width () const}
                \endlist
 
-               See also \l{QWidget::geometry}{geometry},
-               \l{QWidget::height}{height}, and \l{QWidget::size}{size}.
+               See also \l{QWidget::geometry} {geometry},
+               \l{QWidget::height} {height}, and \l{QWidget::size} {size}.
            \endquotation
 
            in qwidget.html.
@@ -5824,21 +5824,21 @@
                 }
             \endcode
 
-            See also \l {class}{\\class} and \l
-            {generatelist}{\\generatelist}.
+            See also \l {class-command} {\\class} and \l
+            {generatelist-command} {\\generatelist}.
 
     \row
         \o \bold \\typedef \target typedef
         \o \bold {The \\typedef command allows you to document a C++ type
            definition.}
 
-           The command follows \l {topical argument}{the general
+           The command follows \l {topical argument} {the general
            topical command convention} for the argument.
 
            The documentation will be located in the associated class,
            header file or namespace documentation. When documenting a
            global type definition, the \\typedef command must be
-           accompanied with a \l {relates}{\\relates} command. For
+           accompanied with a \l {relates-command} {\\relates} command. For
            example:
 
            \code
@@ -5926,15 +5926,15 @@
         \o \bold {The \\variable command allows you to document a
            member variable or a constant.}
 
-           The command follows \l {topical argument}{the general
+           The command follows \l {topical argument} {the general
            topical command convention} for the argument.
 
            The \\variable command is typically followed by a \l
-           {brief}{\\brief} command; QDoc will generate the
-           documentation for the variable based on the brief
+           {brief-command} {\\brief} command; QDoc will generate the
+           documentation for the variable based on the brief-command
            description. The command follows the same rules for the \l
-           {brief property}{description} as the \l
-           {property}{\\property} command.
+           {brief property} {description} as the \l {property}
+           {\\property} command.
 
            The documentation will be located in the in the associated
            class, header file or namespace documentation.
@@ -6011,8 +6011,8 @@
 
                The default type for tree widget items.
 
-               See also \l {QTreeWidgetItem::UserType}{UserType} and
-               \l {QTreeWidgetItem::type()}{type()}.
+               See also \l {QTreeWidgetItem::UserType} {UserType} and
+               \l {QTreeWidgetItem::type()} {type()}.
 
                \raw HTML
                <h3>
@@ -6023,8 +6023,8 @@
                The minimum value for custom types. Values below
                UserType are reserved by Qt.
 
-               See also \l {QTreeWidgetItem::Type}{Type} and
-               \l{QTreeWidgetItem::type()}{type()}.
+               See also \l {QTreeWidgetItem::Type} {Type} and
+               \l{QTreeWidgetItem::type()} {type()}.
 
            \endquotation
 
@@ -6048,25 +6048,25 @@
 
     \section1 Alphabetical List
 
-    \l {16-qdoc-commands-status.html#compat}{\\compat},
-    \l {15-qdoc-commands-navigation.html#contentspage}{\\contentspage},
-    \l {15-qdoc-commands-navigation.html#indexpage}{\\indexpage},
-    \l {19-qdoc-commands-grouping.html#ingroup}{\\ingroup},
-    \l {19-qdoc-commands-grouping.html#inmodule}{\\inmodule},
-    \l {16-qdoc-commands-status.html#internal}{\\internal},
-    \l {19-qdoc-commands-grouping.html#mainclass}{\\mainclass},
-    \l {15-qdoc-commands-navigation.html#nextpage}{\\nextpage},
-    \l {17-qdoc-commands-thread.html#nonreentrant}{\\nonreentrant},
-    \l {16-qdoc-commands-status.html#obsolete}{\\obsolete},
-    \l {18-qdoc-commands-relating.html#overload}{\\overload},
-    \l {16-qdoc-commands-status.html#preliminary}{\\preliminary},
-    \l {15-qdoc-commands-navigation.html#previouspage}{\\previouspage},
-    \l {17-qdoc-commands-thread.html#reentrant}{\\reentrant},
-    \l {18-qdoc-commands-relating.html#reimp}{\\reimp},
-    \l {18-qdoc-commands-relating.html#relates}{\\relates},
-    \l {15-qdoc-commands-navigation.html#startpage}{\\startpage},
-    \l {17-qdoc-commands-thread.html#threadsafe}{\\threadsafe},
-    \l {20-qdoc-commands-title.html#title}{\\title}
+    \l {16-qdoc-commands-status.html#compat} {\\compat},
+    \l {15-qdoc-commands-navigation.html#contentspage} {\\contentspage},
+    \l {15-qdoc-commands-navigation.html#indexpage} {\\indexpage},
+    \l {19-qdoc-commands-grouping.html#ingroup-command} {\\ingroup},
+    \l {19-qdoc-commands-grouping.html#inmodule} {\\inmodule},
+    \l {16-qdoc-commands-status.html#internal} {\\internal},
+    \l {19-qdoc-commands-grouping.html#mainclass-command} {\\mainclass},
+    \l {15-qdoc-commands-navigation.html#nextpage} {\\nextpage},
+    \l {17-qdoc-commands-thread.html#nonreentrant} {\\nonreentrant},
+    \l {16-qdoc-commands-status.html#obsolete} {\\obsolete},
+    \l {18-qdoc-commands-relating.html#overload} {\\overload},
+    \l {16-qdoc-commands-status.html#preliminary} {\\preliminary},
+    \l {15-qdoc-commands-navigation.html#previouspage} {\\previouspage},
+    \l {17-qdoc-commands-thread.html#reentrant} {\\reentrant},
+    \l {18-qdoc-commands-relating.html#reimp} {\\reimp},
+    \l {18-qdoc-commands-relating.html#relates-command} {\\relates},
+    \l {15-qdoc-commands-navigation.html#startpage} {\\startpage},
+    \l {17-qdoc-commands-thread.html#threadsafe} {\\threadsafe},
+    \l {20-qdoc-commands-title.html#title} {\\title}
 
     \section1 Categories
     \list
@@ -6094,11 +6094,11 @@
 
     \section1 Alphabetical List
 
-    \l {15-qdoc-commands-navigation.html#contentspage}{\\contentspage},
-    \l {15-qdoc-commands-navigation.html#indexpage}{\\indexpage},
-    \l {15-qdoc-commands-navigation.html#nextpage}{\\nextpage},
-    \l {15-qdoc-commands-navigation.html#previouspage}{\\previouspage},
-    \l {15-qdoc-commands-navigation.html#startpage}{\\startpage}
+    \l {15-qdoc-commands-navigation.html#contentspage} {\\contentspage},
+    \l {15-qdoc-commands-navigation.html#indexpage} {\\indexpage},
+    \l {15-qdoc-commands-navigation.html#nextpage} {\\nextpage},
+    \l {15-qdoc-commands-navigation.html#previouspage} {\\previouspage},
+    \l {15-qdoc-commands-navigation.html#startpage} {\\startpage}
 
     \section1 General Description
 
@@ -6108,7 +6108,7 @@
     \code
     / *!
         \page basicqt.html
-        \contentspage {Basic Qt}{Contents}
+        \contentspage {Basic Qt} {Contents}
         \nextpage Getting Started
 
         \indexpage Index
@@ -6132,7 +6132,7 @@
     / *!
         \page gettingstarted.html
         \previouspage Basic Qt
-        \contentspage {Basic Qt}{Contents}
+        \contentspage {Basic Qt} {Contents}
         \nextpage Creating Dialogs
 
         \indexpage Index
@@ -6148,7 +6148,7 @@
     / *!
         \page creatingdialogs.html
         \previouspage Getting Started
-        \contentspage {Basic Qt}{Contents}
+        \contentspage {Basic Qt} {Contents}
 
         \indexpage Index
         \startpage Basic Qt
@@ -6212,8 +6212,8 @@
 
     in creatingdialogs.html.
 
-    In addition, the \l {indexpage}{\\indexpage} and \l
-    {startpage}{\\startpage} commands specifies links to the page's
+    In addition, the \l {indexpage} {\\indexpage} and \l
+    {startpage} {\\startpage} commands specifies links to the page's
     index page and start page. These links are used by browsers and
     search engines.
 
@@ -6263,7 +6263,7 @@
            page to the next page in an ordered series of documents}.
 
            The command follows the same syntax and argument convention
-           as the \l {previouspage}{\\previouspage} command.
+           as the \l {previouspage} {\\previouspage} command.
 
            For an example, see the \l {General Description} section.
 
@@ -6289,7 +6289,7 @@
            page to a contents page}.
 
            The command follows the same syntax and argument convention
-           as the \l {previouspage}{\\previouspage} command.
+           as the \l {previouspage} {\\previouspage} command.
 
            For an example, see the \l {General Description} section.
 
@@ -6328,11 +6328,11 @@
 
     \section1 Alphabetical List
 
-    \l {16-qdoc-commands-status.html#compat}{\\compat},
-    \l {16-qdoc-commands-status.html#internal}{\\internal},
-    \l {16-qdoc-commands-status.html#obsolete}{\\obsolete},
-    \l {16-qdoc-commands-status.html#preliminary}{\\preliminary},
-    \l {16-qdoc-commands-status.html#since}{\\since}
+    \l {16-qdoc-commands-status.html#compat} {\\compat},
+    \l {16-qdoc-commands-status.html#internal} {\\internal},
+    \l {16-qdoc-commands-status.html#obsolete} {\\obsolete},
+    \l {16-qdoc-commands-status.html#preliminary} {\\preliminary},
+    \l {16-qdoc-commands-status.html#since} {\\since}
 
     \section1 Command Description
 
@@ -6483,7 +6483,7 @@
                library.} It is provided to keep old source code
                working. We strongly advise against using it in new
                code. See the \l
-               {http://qt.nokia.com/doc/4.0/porting4.html}{Porting
+               {http://qt.nokia.com/doc/4.0/porting4.html} {Porting
                Guide} for more information.
            \endquotation
 
@@ -6602,18 +6602,18 @@
                ...
 
                See also \l
-               {QStyle::standardIconImplementation()}{standardIconImplementation()}
-               and \l {QStyle::standardPixmap()}{standardPixmap()}.
+               {QStyle::standardIconImplementation()} {standardIconImplementation()}
+               and \l {QStyle::standardPixmap()} {standardPixmap()}.
                \endquotation
 
            QDoc generates the "Qt" reference from the \l
-           {25-qdoc-configuration-derivedprojects.html#project}{\c
+           {25-qdoc-configuration-derivedprojects.html#project} {\c
            project} configuration variable. For that reason this
            reference will change according to the current
            documentation project.
 
            See also \l
-           {25-qdoc-configuration-derivedprojects.html#project}{\c
+           {25-qdoc-configuration-derivedprojects.html#project} {\c
            project}.
 
     \endtable
@@ -6632,9 +6632,9 @@
 
     \section1 Alphabetical List
 
-    \l {17-qdoc-commands-thread.html#nonreentrant}{\\nonreentrant},
-    \l {17-qdoc-commands-thread.html#reentrant}{\\reentrant},
-    \l {17-qdoc-commands-thread.html#threadsafe}{\\threadsafe}
+    \l {17-qdoc-commands-thread.html#nonreentrant} {\\nonreentrant},
+    \l {17-qdoc-commands-thread.html#reentrant} {\\reentrant},
+    \l {17-qdoc-commands-thread.html#threadsafe} {\\threadsafe}
 
     \section1 General Description
 
@@ -6654,10 +6654,10 @@
     invocation references shared data.
 
     When a class is declared \c reentrant or \c threadsafe, using the
-    \l {reentrant}{\\reentrant} and \l {threadsafe}{\\threadsafe}
+    \l {reentrant} {\\reentrant} and \l {threadsafe} {\\threadsafe}
     commands respectively, functions in the referenced class can be
     declared \c nonreentrant, using the \l
-    {nonreentrant}{\\nonreentrant} command, excluding the functions
+    {nonreentrant} {\\nonreentrant} command, excluding the functions
     from the general view.
 
     For example:
@@ -6715,8 +6715,8 @@
         \endcode
 
         \bold {Note:} All the functions in this class are \l
-        {threads.html#reentrant}{reentrant}, except \l
-        {QLocale::setDefault()}{setDefault()}.
+        {threads.html#reentrant} {reentrant}, except \l
+        {QLocale::setDefault()} {setDefault()}.
 
         ...
 
@@ -6742,8 +6742,8 @@
 
         \warning This function is not reentrant.
 
-        See also \l {QLocale::system()}{system()} and \l
-        {QLocale::c()}{c()}.
+        See also \l {QLocale::system()} {system()} and \l
+        {QLocale::c()} {c()}.
 
         ...
     \endquotation
@@ -6751,7 +6751,7 @@
     As shown above, QDoc generates a notification when a class is
     declared reentrant, and lists the exceptions (the declared
     nonreentrant functions). A link to the general documentation on \l
-    {threads.html#reentrant}{reentrancy and thread-safety} is
+    {threads.html#reentrant} {reentrancy and thread-safety} is
     included.  In addition a warning, "\bold Warning: This function is
     not reentrant.", is generated in the nonreentrant functions'
     documentation.
@@ -6760,7 +6760,7 @@
     is declared threadsafe.
 
     For more information see the general documentation on \l
-    {threads.html#reentrant}{reentrancy and thread-safety}.
+    {threads.html#reentrant} {reentrancy and thread-safety}.
 
     \section1 Command Descriptions
 
@@ -6780,11 +6780,11 @@
 
            The generated documentation resulting from using the
            \\threadsafe command is similar to the result of using the
-           \l {reentrant}{\\reentrant} command. For an example, see
+           \l {reentrant} {\\reentrant} command. For an example, see
            the \l {General Description} section.
 
-           See also \l{reentrant}{\\reentrant} and
-           \l{nonreentrant}{\\nonreentrant}.
+           See also \l{reentrant} {\\reentrant} and
+           \l{nonreentrant} {\\nonreentrant}.
 
     \row
         \o \bold \\reentrant \target reentrant
@@ -6797,8 +6797,8 @@
 
            For an example, see the \l {General Description} section.
 
-           See also \l{nonreentrant}{\\nonreentrant} and
-            \l{threadsafe}{\\threadsafe}.
+           See also \l{nonreentrant} {\\nonreentrant} and
+            \l{threadsafe} {\\threadsafe}.
 
     \row
         \o \bold \\nonreentrant \target nonreentrant
@@ -6810,8 +6810,8 @@
 
            For an example, see the \l {General Description} section.
 
-           See also \l{reentrant}{\\reentrant} and
-           \l{threadsafe}{\\threadsafe}.
+           See also \l{reentrant} {\\reentrant} and
+           \l{threadsafe} {\\threadsafe}.
 
     \endtable
 */
@@ -6831,9 +6831,9 @@
 
     \section1 Alphabetical List
 
-    \l {18-qdoc-commands-relating.html#overload}{\\overload},
-    \l {18-qdoc-commands-relating.html#reimp}{\\reimp},
-    \l {18-qdoc-commands-relating.html#relates}{\\relates},
+    \l {18-qdoc-commands-relating.html#overload} {\\overload},
+    \l {18-qdoc-commands-relating.html#reimp} {\\reimp},
+    \l {18-qdoc-commands-relating.html#relates-command} {\\relates},
 
     \section1 Command Descriptions
 
@@ -6893,7 +6893,7 @@
                </h3>
                \endraw
 
-	       This function overloads \l {http://qt.nokia.com/doc/4.0/qwidget.html#addAction}{addAction()}
+	       This function overloads \l {http://qt.nokia.com/doc/4.0/qwidget.html#addAction} {addAction()}
 
                This convenience function creates a new action with an
                \i icon and some \i text. The function adds the newly
@@ -6946,7 +6946,7 @@
            documentation.
 
     \row
-        \o \bold \\relates \target relates
+        \o \bold \\relates \target relates-command
         \o \bold {The \\relates command attaches the documentation of
            a global function to that of a related class or header file.}
 
@@ -6990,9 +6990,9 @@
 
     \section1 Alphabetical List
 
-    \l {19-qdoc-commands-grouping.html#ingroup}{\\ingroup},
-    \l {19-qdoc-commands-grouping.html#inmodule}{\\inmodule},
-    \l {19-qdoc-commands-grouping.html#mainclass}{\\mainclass},
+    \l {19-qdoc-commands-grouping.html#ingroup-command} {\\ingroup},
+    \l {19-qdoc-commands-grouping.html#inmodule} {\\inmodule},
+    \l {19-qdoc-commands-grouping.html#mainclass-command} {\\mainclass},
 
     \section1 Command Descriptions
 
@@ -7002,7 +7002,7 @@
         \o Description
 
     \row
-        \o \bold \\mainclass \target mainclass
+        \o \bold \\mainclass \target mainclass-command
         \o \bold {The \\mainclass command relates the documented class to
            a group called mainclasses.}
 
@@ -7025,15 +7025,15 @@
            will ensure that the QWidget class is included in the \c
            mainclasses group, which means, for example, that the class
            will appear on the list created by calling the \l
-           {generatelist}{\\generatelist} command with the \c
+           {generatelist-command} {\\generatelist} command with the \c
            mainclasses argument:
 
            \l http://qt.nokia.com/doc/4.0/mainclasses.html
 
-           See also \l {generatelist}{\\generatelist}.
+           See also \l {generatelist-command} {\\generatelist}.
 
     \row
-        \o \bold \\ingroup \target ingroup
+        \o \bold \\ingroup \target ingroup-command
 
         \o \bold {The \\ingroup command indicates that the given
            overview or documented class belongs to a certain group of
@@ -7059,15 +7059,15 @@
 
            will ensure that the QDir class is included in the \c io
            group, which means, for example, that QDir will appear on
-           the list created by calling the \l {group}{\\group} command
+           the list created by calling the \l {group-command} {\\group} command
            with the \c io argument.
 
            Note that to list overviews that are related to a given
            group, you must generate the list exlicitly by using the \l
-           {generatelist}{\\generatelist} command with the \c related
+           {generatelist-command} {\\generatelist} command with the \c related
            argument.
 
-           See also \l {group}{\\group}.
+           See also \l {group-command} {\\group}.
     \row
         \o \bold \\inmodule \target inmodule
         \o \bold {The \\inmodule command relates the documented class
@@ -7093,11 +7093,11 @@
            will ensure that the QDesignerTaskMenuExtension class is
            included in the \c QtDesigner module, which means, for
            example, that the class will appear on the list created by
-           calling the \l {generatelist}{\\generatelist} command with
+           calling the \l {generatelist-command} {\\generatelist} command with
            the \c {{classesbymodule QtDesigner}} argument.
 
-           See also \l {module}{\\module} and \l
-           {generatelist}{\\generatelist}.
+           See also \l {module} {\\module} and \l
+           {generatelist-command} {\\generatelist}.
     \endtable
 */
 
@@ -7116,8 +7116,8 @@
 
     \section1 Alphabetical List
 
-    \l {20-qdoc-commands-title.html#title}{\\title},
-    \l {20-qdoc-commands-title.html#subtitle}{\\subtitle}
+    \l {20-qdoc-commands-title.html#title} {\\title},
+    \l {20-qdoc-commands-title.html#subtitle} {\\subtitle}
 
     \section1 Command Descriptions
 
@@ -7162,7 +7162,7 @@
 
                ...
            \endquotation
-           See also \l {subtitle}{\\subtitle}.
+           See also \l {subtitle} {\\subtitle}.
 
     \row
         \o \bold \\subtitle \target subtitle
@@ -7201,7 +7201,7 @@
                ...
            \endquotation
 
-           See also \l {title}{\\title}.
+           See also \l {title} {\\title}.
     \endtable
 */
 
@@ -7286,45 +7286,45 @@
 
     \section2 Alphabetical List
 
-    \l {22-qdoc-configuration-generalvariables.html#alias}{alias},
+    \l {22-qdoc-configuration-generalvariables.html#alias} {alias},
     \l {23-qdoc-configuration-cppvariables.html#Cpp.ignoredirectives}
        {Cpp.ignoredirectives},
     \l {23-qdoc-configuration-cppvariables.html#Cpp.ignoretoken}
        {Cpp.ignoretokens},
-    \l {22-qdoc-configuration-generalvariables.html#definesvariable}{defines},
-    \l {22-qdoc-configuration-generalvariables.html#edition}{edition},
-    \l {22-qdoc-configuration-generalvariables.html#exampledirs}{exampledirs},
-    \l {22-qdoc-configuration-generalvariables.html#examples}{examples},
+    \l {22-qdoc-configuration-generalvariables.html#definesvariable} {defines},
+    \l {22-qdoc-configuration-generalvariables.html#edition} {edition},
+    \l {22-qdoc-configuration-generalvariables.html#exampledirs} {exampledirs},
+    \l {22-qdoc-configuration-generalvariables.html#examples} {examples},
     \l {22-qdoc-configuration-generalvariables.html#examples.fileextensions}
        {examples.fileextensions},
-    \l {22-qdoc-configuration-generalvariables.html#extraimages}{extraimages},
-    \l {22-qdoc-configuration-generalvariables.html#falsehoods}{falsehoods},
-    \l {22-qdoc-configuration-generalvariables.html#headerdirs}{headerdirs},
-    \l {22-qdoc-configuration-generalvariables.html#headers}{headers},
+    \l {22-qdoc-configuration-generalvariables.html#extraimages} {extraimages},
+    \l {22-qdoc-configuration-generalvariables.html#falsehoods} {falsehoods},
+    \l {22-qdoc-configuration-generalvariables.html#headerdirs} {headerdirs},
+    \l {22-qdoc-configuration-generalvariables.html#headers} {headers},
     \l {22-qdoc-configuration-generalvariables.html#headers.fileextensions}
        {headers.fileextensions},
-    \l {24-qdoc-configuration-htmlvariables.html#HTML.footer}{HTML.footer},
+    \l {24-qdoc-configuration-htmlvariables.html#HTML.footer} {HTML.footer},
     \l {24-qdoc-configuration-htmlvariables.html#HTML.postheader}
        {HTML.postheader},
-    \l {24-qdoc-configuration-htmlvariables.html#HTML.style}{HTML.style},
-    \l {22-qdoc-configuration-generalvariables.html#imagedirs}{imagedirs},
-    \l {22-qdoc-configuration-generalvariables.html#images}{images},
+    \l {24-qdoc-configuration-htmlvariables.html#HTML.style} {HTML.style},
+    \l {22-qdoc-configuration-generalvariables.html#imagedirs} {imagedirs},
+    \l {22-qdoc-configuration-generalvariables.html#images} {images},
     \l {22-qdoc-configuration-generalvariables.html#images.fileextensions}
        {images.fileextensions},
-    \l {22-qdoc-configuration-generalvariables.html#language}{language},
-    \l {22-qdoc-configuration-generalvariables.html#macro}{macro},
-    \l {22-qdoc-configuration-generalvariables.html#outputdir}{outputdir},
+    \l {22-qdoc-configuration-generalvariables.html#language} {language},
+    \l {22-qdoc-configuration-generalvariables.html#macro} {macro},
+    \l {22-qdoc-configuration-generalvariables.html#outputdir} {outputdir},
     \l {22-qdoc-configuration-generalvariables.html#outputformats}
        {outputformats},
-    \l {22-qdoc-configuration-generalvariables.html#slow}{slow},
-    \l {22-qdoc-configuration-generalvariables.html#sourcedirs}{sourcedirs},
-    \l {22-qdoc-configuration-generalvariables.html#sources}{sources},
+    \l {22-qdoc-configuration-generalvariables.html#slow} {slow},
+    \l {22-qdoc-configuration-generalvariables.html#sourcedirs} {sourcedirs},
+    \l {22-qdoc-configuration-generalvariables.html#sources} {sources},
     \l {22-qdoc-configuration-generalvariables.html#sources.fileextensions}
        {sources.fileextensions},
-    \l {22-qdoc-configuration-generalvariables.html#spurious}{spurious},
-    \l {22-qdoc-configuration-generalvariables.html#tabsize}{tabsize},
-    \l {22-qdoc-configuration-generalvariables.html#version}{version},
-    \l {22-qdoc-configuration-generalvariables.html#versionsym}{versionsym}
+    \l {22-qdoc-configuration-generalvariables.html#spurious} {spurious},
+    \l {22-qdoc-configuration-generalvariables.html#tabsize} {tabsize},
+    \l {22-qdoc-configuration-generalvariables.html#version} {version},
+    \l {22-qdoc-configuration-generalvariables.html#versionsym} {versionsym}
 
     \section2 Categories
 
@@ -7378,40 +7378,40 @@
 
     \section1 Alphabetical List
 
-    \l {22-qdoc-configuration-generalvariables.html#alias}{alias},
-    \l {22-qdoc-configuration-generalvariables.html#codeindent}{codeindent},
-    \l {22-qdoc-configuration-generalvariables.html#definesvariable}{defines},
-    \l {22-qdoc-configuration-generalvariables.html#edition}{edition},
-    \l {22-qdoc-configuration-generalvariables.html#exampledirs}{exampledirs},
-    \l {22-qdoc-configuration-generalvariables.html#examples}{examples},
+    \l {22-qdoc-configuration-generalvariables.html#alias} {alias},
+    \l {22-qdoc-configuration-generalvariables.html#codeindent} {codeindent},
+    \l {22-qdoc-configuration-generalvariables.html#definesvariable} {defines},
+    \l {22-qdoc-configuration-generalvariables.html#edition} {edition},
+    \l {22-qdoc-configuration-generalvariables.html#exampledirs} {exampledirs},
+    \l {22-qdoc-configuration-generalvariables.html#examples} {examples},
     \l {22-qdoc-configuration-generalvariables.html#examples.fileextensions}
        {examples.fileextensions},
-    \l {22-qdoc-configuration-generalvariables.html#extraimages}{extraimages},
-    \l {22-qdoc-configuration-generalvariables.html#falsehoods}{falsehoods},
-    \l {22-qdoc-configuration-generalvariables.html#generateindex}{generateindex},
-    \l {22-qdoc-configuration-generalvariables.html#headerdirs}{headerdirs},
-    \l {22-qdoc-configuration-generalvariables.html#headers}{headers},
+    \l {22-qdoc-configuration-generalvariables.html#extraimages} {extraimages},
+    \l {22-qdoc-configuration-generalvariables.html#falsehoods} {falsehoods},
+    \l {22-qdoc-configuration-generalvariables.html#generateindex} {generateindex},
+    \l {22-qdoc-configuration-generalvariables.html#headerdirs} {headerdirs},
+    \l {22-qdoc-configuration-generalvariables.html#headers} {headers},
     \l {22-qdoc-configuration-generalvariables.html#headers.fileextensions}
        {headers.fileextensions},
-    \l {22-qdoc-configuration-generalvariables.html#imagedirs}{imagedirs},
-    \l {22-qdoc-configuration-generalvariables.html#images}{images},
+    \l {22-qdoc-configuration-generalvariables.html#imagedirs} {imagedirs},
+    \l {22-qdoc-configuration-generalvariables.html#images} {images},
     \l {22-qdoc-configuration-generalvariables.html#images.fileextensions}
        {images.fileextensions},
-    \l {22-qdoc-configuration-generalvariables.html#language}{language},
-    \l {22-qdoc-configuration-generalvariables.html#macro}{macro},
-    \l {22-qdoc-configuration-generalvariables.html#outputdir}{outputdir},
+    \l {22-qdoc-configuration-generalvariables.html#language} {language},
+    \l {22-qdoc-configuration-generalvariables.html#macro} {macro},
+    \l {22-qdoc-configuration-generalvariables.html#outputdir} {outputdir},
     \l {22-qdoc-configuration-generalvariables.html#outputformats}
        {outputformats},
-    \l {22-qdoc-configuration-generalvariables.html#slow}{slow},
-    \l {22-qdoc-configuration-generalvariables.html#sourcedirs}{sourcedirs},
-    \l {22-qdoc-configuration-generalvariables.html#sources}{sources},
+    \l {22-qdoc-configuration-generalvariables.html#slow} {slow},
+    \l {22-qdoc-configuration-generalvariables.html#sourcedirs} {sourcedirs},
+    \l {22-qdoc-configuration-generalvariables.html#sources} {sources},
     \l {22-qdoc-configuration-generalvariables.html#sources.fileextensions}
        {sources.fileextensions},
-    \l {22-qdoc-configuration-generalvariables.html#spurious}{spurious},
-    \l {22-qdoc-configuration-generalvariables.html#tabsize}{tabsize},
-    \l {22-qdoc-configuration-generalvariables.html#tagfile}{tagfile},
-    \l {22-qdoc-configuration-generalvariables.html#version}{version},
-    \l {22-qdoc-configuration-generalvariables.html#versionsym}{versionsym}
+    \l {22-qdoc-configuration-generalvariables.html#spurious} {spurious},
+    \l {22-qdoc-configuration-generalvariables.html#tabsize} {tabsize},
+    \l {22-qdoc-configuration-generalvariables.html#tagfile} {tagfile},
+    \l {22-qdoc-configuration-generalvariables.html#version} {version},
+    \l {22-qdoc-configuration-generalvariables.html#versionsym} {versionsym}
 
     \section1 Variable Descriptions
 
@@ -7438,7 +7438,7 @@
 
            The \c alias variable is often used for compatibility
            reasons; for more information see the \l {QDoc
-           Compatibility}{compatibility section}.
+           Compatibility} {compatibility section}.
 
            See also \l macro.
 
@@ -7450,7 +7450,7 @@
            QDoc originally used a hard-coded value of four spaces for
            code indentation to ensure that code snippets could be easily
            distinguished from surrounding text. Since we can use
-           \l{HTML Specific Configuration Variables#HTML.stylesheets}{stylesheets} to
+           \l{HTML Specific Configuration Variables#HTML.stylesheets} {stylesheets} to
            adjust the appearance of certain types of HTML elements, this
            level of indentation is not always required.
 
@@ -7460,7 +7460,7 @@
            symbols that QDoc will recognize and respond to.}
 
            When a preprocessor symbol is specified using the \c
-           defines variable, you can also use the \l {if}{\\if}
+           defines variable, you can also use the \l {if-command} {\\if}
            command to enclose documentation that only will be included
            if the preprocessor symbol is defined.
 
@@ -7508,7 +7508,7 @@
            consoleedition preprocessor symbol is defined when QDoc
            processes the source files defined in the qt.qdocconf file.
 
-           See also \l falsehoods and \l {if}{\\if}.
+           See also \l falsehoods and \l {if-command} {\\if}.
 
     \row
         \o \bold edition \target edition
@@ -7533,7 +7533,7 @@
            In the above examples, the \c Console edition only includes
            the contents of four modules. Only the classes from these
            modules will be used when the
-           \l{Miscellaneous Commands#generatelist}{generatelist} command
+           \l{Miscellaneous Commands#generatelist-command} {generatelist} command
            is used to generate a list of classes for this edition:
 
            \code
@@ -7545,12 +7545,12 @@
         \o \bold {The \c exampledirs variable specifies the directories
            containing the source code of the example files.}
 
-           The \l {examples}{\c examples} and \c exampledirs variables
-           are used by the \l {quotefromfile}{\\quotefromfile}, \l
-           {quotefile}{\\quotefile} and \l {example}{\\example}
-           commands.  If both the \l {examples}{\c examples} and \c
+           The \l {examples} {\c examples} and \c exampledirs variables
+           are used by the \l {quotefromfile-command} {\\quotefromfile}, \l
+           {quotefile-command} {\\quotefile} and \l {example} {\\example}
+           commands.  If both the \l {examples} {\c examples} and \c
            exampledirs variables are defined, QDoc will search in
-           both, first in \l {examples}{\c examples} then in \c
+           both, first in \l {examples} {\c examples} then in \c
            exampledirs.
 
            QDoc will search through the directories in the specified
@@ -7576,7 +7576,7 @@
            \endcode
 
            QDoc will then see if there exists a file called \c
-           calculator.cpp listed as a value in the \l {examples}{\c
+           calculator.cpp listed as a value in the \l {examples} {\c
            examples} variable. If it doesn't, it will search in the \c
            exampledirs variable, and first see if there exists a file
            called
@@ -7600,22 +7600,22 @@
         \o \bold examples \target examples
         \o \bold {The \c examples variable allows you to specify individual
            example files in addition to those located in the directories
-           specified by the \l {exampledirs}{\c exampledirs} variable.}
+           specified by the \l {exampledirs} {\c exampledirs} variable.}
 
-           The \c examples and \l {exampledirs}{\c exampledirs}
+           The \c examples and \l {exampledirs} {\c exampledirs}
            variables are used by the \l
-           {quotefromfile}{\\quotefromfile}, \l
-           {quotefile}{\\quotefile} and \l {example}{\\example}
-           commands. If both the \c examples and \l {exampledirs}{\c
+           {quotefromfile-command} {\\quotefromfile}, \l
+           {quotefile-command} {\\quotefile} and \l {example} {\\example}
+           commands. If both the \c examples and \l {exampledirs} {\c
            exampledirs} variables are defined, QDoc will search in
-           both, first in \c examples then in \l {exampledirs}{\c
+           both, first in \c examples then in \l {exampledirs} {\c
            exampledirs}.
 
            QDoc will search through the values listed for the \c
            examples variable, in the specified order, and accept
            the first one it finds.
 
-           For an extensive example, see the \l {exampledirs}{\c
+           For an extensive example, see the \l {exampledirs} {\c
            exampledirs} command. But note that if you know the file is
            listed in the \c examples variable, you don't need to
            specify its path:
@@ -7652,7 +7652,7 @@
 
            QDoc will not recognize images used within HTML (or any
            other markup language). If we want the images to be copied
-           from the directories specified by \l {imagedirs}{\c
+           from the directories specified by \l {imagedirs} {\c
            imagedirs} (the images in question must be located in these
            directories) to the output directory, we must specify the
            images using the \c extraimages variable.
@@ -7739,29 +7739,29 @@
            \endcode
 
            When executed, the first QDoc will do is to read through
-           the headers specified in the \l {headers}{\c headers}
+           the headers specified in the \l {headers} {\c headers}
            variable, and the ones located in the directories specified
            in the \c headerdir variable (including all
            subdirectories), building an internal structure of the
            classes and their functions.
 
            Then it will read through the sources specified in the \l
-           {sources}{\c sources}, and the ones located in the
-           directories specified in the \l {sourcedirs}{\c sourcedirs}
+           {sources} {\c sources}, and the ones located in the
+           directories specified in the \l {sourcedirs} {\c sourcedirs}
            varible (including all subdirectories), merging the
            documentation with the structure it retrieved from the
            header files.
 
            If both the \c headers and \c headerdirs variables are
-           defined, QDoc will read through both, first \l {headers}{\c
+           defined, QDoc will read through both, first \l {headers} {\c
            headers} then \c headerdirs.
 
            In the specified directories, QDoc will only read the files
            with the fileextensions specified in the \l
-           {headers.fileextensions}{\c headers.fileextensions}
+           {headers.fileextensions} {\c headers.fileextensions}
            variable. The default extensions are *.ch, *.h, *.h++,
            *.hh, *.hpp and *.hxx". The files specified by \l
-           {headers}{\c headers} will be read independent of their
+           {headers} {\c headers} will be read independent of their
            fileextensions.
 
            See also \l headers and \l headers.fileextensions.
@@ -7770,7 +7770,7 @@
         \o \bold headers \target headers
         \o \bold {The \c headers variable allows you to specify individual
            header files in addition to those located in the directories
-           specified by the \l {headerdirs}{\c headerdirs} variable.}
+           specified by the \l {headerdirs} {\c headerdirs} variable.}
 
            For example:
 
@@ -7780,9 +7780,9 @@
            \endcode
 
            When processing the \c headers variable, QDoc behaves in the
-           same way as it does when processing the \l {headerdirs}{\c
+           same way as it does when processing the \l {headerdirs} {\c
            headerdirs} variable. For more information, see the \l
-           {headerdirs}{\c headerdirs} variable.
+           {headerdirs} {\c headerdirs} variable.
 
            See also \l headerdirs.
 
@@ -7792,7 +7792,7 @@
            extension used by the headers.}
 
            When processing the header files specified in the \l
-           {headerdirs}{\c headerdirs} variable, QDoc will only read
+           {headerdirs} {\c headerdirs} variable, QDoc will only read
            the files with the fileextensions specified in the \c
            headers.fileextensions variable. In this way QDoc avoid
            spending time reading irrelevant files.
@@ -7817,11 +7817,11 @@
         \o \bold {The \c imagedirs variable specifies the directories
            containing the images used in the documentation.}
 
-           The \l {images}{\c images} and \c imagedirs variables are
-           used by the \l {image}{\\image} and \l
-           {inlineimage}{\\inlineimage} commands.  If both the \l
-           {images}{\c images} and \c imagedirs variables are defined,
-           QDoc will search in both, first in \l {images}{\c images}
+           The \l {images} {\c images} and \c imagedirs variables are
+           used by the \l {image} {\\image} and \l
+           {inlineimage-command} {\\inlineimage} commands.  If both the \l
+           {images} {\c images} and \c imagedirs variables are defined,
+           QDoc will search in both, first in \l {images} {\c images}
            then in \c imagedirs.
 
            QDoc will search through the directories in the specified
@@ -7860,13 +7860,13 @@
            \endcode
 
            You can filter the images in an image directory using the
-           \l {images.fileextensions}{\c images.fileextensions}
+           \l {images.fileextensions} {\c images.fileextensions}
            variable.  The general idea behind the \l
-           {images.fileextensions}{\c images.fileextensions} variable
+           {images.fileextensions} {\c images.fileextensions} variable
            is to enable different image format for different output
            format.
 
-           \warning The \l {images.fileextensions}{\c
+           \warning The \l {images.fileextensions} {\c
            images.fileextensions} variable's functionality is
            preliminay since QDoc at this point only support HTML.
 
@@ -7876,7 +7876,7 @@
         \o \bold images \target images
         \o \bold {The \c images variable allows you to specify individual
            image files in addition to those located in the directories
-           specified by the \l {imagedirs}{\c imagedirs} variable.}
+           specified by the \l {imagedirs} {\c imagedirs} variable.}
 
            For example:
 
@@ -7885,9 +7885,9 @@
            \endcode
 
            When processing the \c images variable, QDoc behaves in the
-           same way as it does when processing the \l {imagedirs}{\c
+           same way as it does when processing the \l {imagedirs} {\c
            imagedirs} variable. For more information, see the \l
-           {imagedirs}{\c imagedirs} variable.
+           {imagedirs} {\c imagedirs} variable.
 
            See also \l imagedirs and \l images.fileextensions.
 
@@ -7908,8 +7908,8 @@
                images.fileextensions.LOUT = *.eps
            \endcode
 
-           Then, when processing the \l {image}{\\image} and \l
-           {inlineimage}{\\inlineimage} commands, QDoc will only
+           Then, when processing the \l {image} {\\image} and \l
+           {inlineimage-command} {\\inlineimage} commands, QDoc will only
            search for files with extensions specified in the output
            format's associated image extension variable.
 
@@ -7982,8 +7982,8 @@
            it generates, using the \c lang and \c xml:lang attributes.
 
            See also \l sourceencoding, \l outputencoding,
-           \l{http://www.w3.org/TR/xhtml1/#C_7}{C.7. The lang and xml:lang Attributes} and
-           \l{http://www.w3.org/TR/i18n-html-tech-lang/#ri20040429.113217290}{Best Practice 13: Using Hans and Hant codes}.
+           \l{http://www.w3.org/TR/xhtml1/#C_7} {C.7. The lang and xml:lang Attributes} and
+           \l{http://www.w3.org/TR/i18n-html-tech-lang/#ri20040429.113217290} {Best Practice 13: Using Hans and Hant codes}.
 
     \row
         \o \bold outputdir \target outputdir
@@ -8085,28 +8085,28 @@
            \endcode
 
            When executed, the first QDoc will do is to read through
-           the headers specified in the \l {header}{\c header}
+           the headers specified in the \l {header} {\c header}
            variable, and the ones located in the directories specified
            in the \c headerdir variable (including all
            subdirectories), building an internal structure of the
            classes and their functions.
 
            Then it will read through the sources specified in the \l
-           {sources}{\c sources}, and the ones located in the
-           directories specified in the \l {sourcedirs}{\c sourcedirs}
+           {sources} {\c sources}, and the ones located in the
+           directories specified in the \l {sourcedirs} {\c sourcedirs}
            varible (including all subdirectories), merging the
            documentation with the structure it retrieved from the
            header files.
 
            If both the \c sources and \c sourcedirs variables are
-           defined, QDoc will read through both, first \l {sources}{\c
+           defined, QDoc will read through both, first \l {sources} {\c
            sources} then \c sourcedirs.
 
            In the specified directories, QDoc will only read the files
            with the fileextensions specified in the \l
-           {sources.fileextensions}{\c sources.fileextensions}
+           {sources.fileextensions} {\c sources.fileextensions}
            variable. The default extensions are *.c++, *.cc, *.cpp and
-           *.cxx. The files specified by \l {sources}{\c sources} will
+           *.cxx. The files specified by \l {sources} {\c sources} will
            be read independent of their fileextensions.
 
            See also \l sources and \l sources.fileextensions.
@@ -8139,7 +8139,7 @@
         \o \bold sources \target sources
         \o \bold {The \c sources variable allows you to specify
            individual source files in addition to those located in the
-           directories specified by the \l {sourcedir}{\c sourcedir}
+           directories specified by the \l {sourcedir} {\c sourcedir}
            variable.}
 
            For example:
@@ -8150,9 +8150,9 @@
            \endcode
 
            When processing the \c sources variable, QDoc behaves in the
-           same way as it does when processing the \l {sourcedirs}{\c
+           same way as it does when processing the \l {sourcedirs} {\c
            sourcedirs} variable. For more information, see the \l
-           {sourcedirs}{\c sourcedirs} variable.
+           {sourcedirs} {\c sourcedirs} variable.
 
            See also \l sourcedirs.
 
@@ -8162,7 +8162,7 @@
            files within a source directory.}
 
            When processing the source files specified in the \l
-           {sourcedirs}{\c sourcedirs} variable, QDoc will only read
+           {sourcedirs} {\c sourcedirs} variable, QDoc will only read
            the files with the fileextensions specified in the \c
            sources.fileextensions variable. In this way QDoc avoid
            spending time reading irrelevant files.
@@ -8271,7 +8271,7 @@
            \warning The \\version command's functionality is not fully
            implemented; currently it only works within raw HTML code.
 
-           See also \l {version}{\\version}.
+           See also \l {version} {\\version}.
 
     \endtable
 */
@@ -8498,11 +8498,11 @@
 
     \section1 Alphabetical List
 
-    \l {24-qdoc-configuration-htmlvariables.html#HTML.footer}{HTML.footer},
+    \l {24-qdoc-configuration-htmlvariables.html#HTML.footer} {HTML.footer},
     \l {24-qdoc-configuration-htmlvariables.html#HTML.postheader}
        {HTML.postheader},
-    \l {24-qdoc-configuration-htmlvariables.html#HTML.style}{HTML.style},
-    \l {24-qdoc-configuration-htmlvariables.html#HTML.stylesheets}{HTML.stylesheets}
+    \l {24-qdoc-configuration-htmlvariables.html#HTML.style} {HTML.style},
+    \l {24-qdoc-configuration-htmlvariables.html#HTML.stylesheets} {HTML.stylesheets}
 
 
     \section1 Variable Descriptions
@@ -8535,7 +8535,7 @@
 
            The complete variable entry in \l qt.qdocconf provides the
            standard footer of the \l
-           {http://qt.nokia.com/doc/4.0/index.html}{Qt Reference
+           {http://qt.nokia.com/doc/4.0/index.html} {Qt Reference
            Documentation}.
 
     \row
@@ -8564,7 +8564,7 @@
 
            The complete variable entry in \l qt.qdocconf provides the
            standard header of the \l
-           {http://qt.nokia.com/doc/4.0/index.html}{Qt Reference
+           {http://qt.nokia.com/doc/4.0/index.html} {Qt Reference
            Documentation}.
 
     \row
@@ -8590,7 +8590,7 @@
            \endcode
 
            provides the HTML style for the \l
-           {http://qt.nokia.com/doc/4.0/index.html}{Qt Reference
+           {http://qt.nokia.com/doc/4.0/index.html} {Qt Reference
            Documentation}.
 
     \row
@@ -8633,10 +8633,10 @@
 
     \section2 Alphabetical List
 
-    \l{25-qdoc-configuration-derivedprojects.html#description}{description},
-    \l{25-qdoc-configuration-derivedprojects.html#indexes}{indexes},
-    \l{25-qdoc-configuration-derivedprojects.html#project}{project},
-    \l{25-qdoc-configuration-derivedprojects.html#url}{url}
+    \l{25-qdoc-configuration-derivedprojects.html#description} {description},
+    \l{25-qdoc-configuration-derivedprojects.html#indexes} {indexes},
+    \l{25-qdoc-configuration-derivedprojects.html#project} {project},
+    \l{25-qdoc-configuration-derivedprojects.html#url} {url}
 
     \section2 Variable Descriptions
 
@@ -8803,16 +8803,16 @@
     A compat.qdocconf file is a separate \c .qdocconf file which you
     can include in your main configuration file. It typically contains
     the mapping between old and new commands using the \l alias and \l
-    {22-qdoc-configuration-generalvariables.html#macro}{macro}
+    {22-qdoc-configuration-generalvariables.html#macro} {macro}
     configuration variables.
 
     \section1 Qt Compatibility
 
     In Qt's documentation there still exist occurrences of old
-    commands, and the Qt \l {qt.qdocconf}{configuration file} needs to
+    commands, and the Qt \l {qt.qdocconf} {configuration file} needs to
     include the compat.qdocconf file tailored for Qt. For more
     detailed information about the commands creating compatibility
-    issues, see the \l {Command Comments}{command comments}.
+    issues, see the \l {Command Comments} {command comments}.
 
     \section2 Qt's current compat.qdocconf file
 
@@ -8836,7 +8836,7 @@
            \\e command name.
 
            \bold {We still need to use the \\e command to render in
-           italic in new documentation for \l {reason}{compatibility
+           italic in new documentation for \l {reason} {compatibility
            reasons}}.
 
     \row
@@ -8850,7 +8850,7 @@
 
            \bold {We still need to use the \\input command to include
            plain text in new documentation for \l
-           {reason}{compatibility reasons}}.
+           {reason} {compatibility reasons}}.
 
     \row
         \o \\quotefile \target quotefile-versus-include
@@ -8863,7 +8863,7 @@
 
            \bold {We still need to use the \\include command to quote
            the entire contents of a source file in new documentation
-           for \l {reason}{compatibility reasons}}.
+           for \l {reason} {compatibility reasons}}.
 
     \row
         \o \\quotefromfile \target quotefromfile-versus-quotefile
@@ -8873,7 +8873,7 @@
            that command to quote an entire file, we introduce the new
            \\quotefromfile command to quote from file.
 
-           \bold {Use \l {quotefromfile}{\\quotefromfile} to quote
+           \bold {Use \l {quotefromfile-command} {\\quotefromfile} to quote
            parts from a source file in new documentation}.
 
     \row
@@ -8884,7 +8884,7 @@
            in italic instead, we introduce the new \\o command for
            this purpose.
 
-           \bold {Use \l {o}{\\o} to indicate list and table items in
+           \bold {Use \l {o} {\\o} to indicate list and table items in
            new documentation}.
 
     \row
@@ -8893,7 +8893,7 @@
         \o These commands are equivalent, and represent a simple name
           change.
 
-          \bold {Use \l {quotation}{\\quotation} in new
+          \bold {Use \l {quotation} {\\quotation} in new
           documentation}.
 
     \row
@@ -8902,7 +8902,7 @@
         \o These commands are equivalent, and represent a simple name
            change.
 
-           \bold {Use \l {image}{\\image} in new documentation}.
+           \bold {Use \l {image} {\\image} in new documentation}.
 
     \endtable
 */
@@ -8916,104 +8916,104 @@
 
     \list
 
-    \o \l {04-qdoc-commands-textformatting.html#a}{\\a}
-    \o \l {11-qdoc-commands-documentcontents.html#abstract}{\\abstract}
-    \o \l {06-qdoc-commands-verbatimcode.html#badcode}{\\badcode}
-    \o \l {04-qdoc-commands-textformatting.html#bold}{\\bold}
-    \o \l {11-qdoc-commands-documentcontents.html#brief}{\\brief}
-    \o \l {04-qdoc-commands-textformatting.html#c}{\\c}
-    \o \l {09-qdoc-commands-graphic.html#caption}{\\caption}
-    \o \l {05-qdoc-commands-documentstructuring.html#chapter}{\\chapter}
-    \o \l {13-qdoc-commands-topical.html#class}{\\class}
-    \o \l {06-qdoc-commands-verbatimcode.html#code}{\\code}
-    \o \l {07-0-qdoc-commands-quoting.html#codeline}{\\codeline},
-    \o \l {16-qdoc-commands-status.html#compat}{\\compat}
-    \o \l {15-qdoc-commands-navigation.html#contentspage}{\\contentspage}
-    \o \l {04-qdoc-commands-textformatting.html#div}{\\div} \span {class="newStuff"} {(new)}
-    \o \l {07-0-qdoc-commands-quoting.html#dots}{\\dots}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#else}{\\else}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#endif}{\\endif}
-    \o \l {13-qdoc-commands-topical.html#enum}{\\enum}
-    \o \l {13-qdoc-commands-topical.html#example-command}{\\example}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#expire}{\\expire}
-    \o \l {13-qdoc-commands-topical.html#externalpage}{\\externalpage}
-    \o \l {13-qdoc-commands-topical.html#fn}{\\fn}
-    \o \l {11-qdoc-commands-documentcontents.html#footnote}{\\footnote}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#generatelist}{\\generatelist}
-    \o \l {13-qdoc-commands-topical.html#group}{\\group}
-    \o \l {10-qdoc-commands-container.html#header}{\\header}
-    \o \l {13-qdoc-commands-topical.html#headerfile}{\\headerfile}
-    \o \l {04-qdoc-commands-textformatting.html#i}{\\i}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#if}{\\if}
-    \o \l {09-qdoc-commands-graphic.html#image}{\\image}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#include}{\\include}
-    \o \l {15-qdoc-commands-navigation.html#indexpage}{\\indexpage}
-    \o \l {19-qdoc-commands-grouping.html#ingroup}{\\ingroup}
-    \o \l {19-qdoc-commands-grouping.html#inmodule}{\\inmodule}
-    \o \l {09-qdoc-commands-graphic.html#inlineimage}{\\inlineimage}
-    \o \l {16-qdoc-commands-status.html#internal}{\\internal}
-    \o \l {08-qdoc-commands-linking.html#keyword}{\\keyword}
-    \o \l {08-qdoc-commands-linking.html#l}{\\l}
-    \o \l {11-qdoc-commands-documentcontents.html#legalese}{\\legalese}
-    \o \l {10-qdoc-commands-container.html#list}{\\list}
-    \o \l {13-qdoc-commands-topical.html#macro}{\\macro}
-    \o \l {19-qdoc-commands-grouping.html#mainclass}{\\mainclass}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#meta}{\\meta}
-    \o \l {13-qdoc-commands-topical.html#module}{\\module}
-    \o \l {13-qdoc-commands-topical.html#namespace}{\\namespace}
-    \o \l {15-qdoc-commands-navigation.html#nextpage}{\\nextpage}
-    \o \l {06-qdoc-commands-verbatimcode.html#newcode}{\\newcode}
-    \o \l {17-qdoc-commands-thread.html#nonreentrant}{\\nonreentrant}
-    \o \l {10-qdoc-commands-container.html#o}{\\o}
-    \o \l {16-qdoc-commands-status.html#obsolete}{\\obsolete}
-    \o \l {06-qdoc-commands-verbatimcode.html#oldcode}{\\oldcode}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#omit}{\\omit}
-    \o \l {10-qdoc-commands-container.html#omitvalue}{\\omitvalue}
-    \o \l {18-qdoc-commands-relating.html#overload}{\\overload}
-    \o \l {13-qdoc-commands-topical.html#page}{\\page}
-    \o \l {05-qdoc-commands-documentstructuring.html#part}{\\part}
-    \o \l {16-qdoc-commands-status.html#preliminary}{\\preliminary}
-    \o \l {15-qdoc-commands-navigation.html#previouspage}{\\previouspage}
-    \o \l {07-0-qdoc-commands-quoting.html#printline}{\\printline}
-    \o \l {07-0-qdoc-commands-quoting.html#printto}{\\printto}
-    \o \l {07-0-qdoc-commands-quoting.html#printuntil}{\\printuntil}
-    \o \l {13-qdoc-commands-topical.html#property}{\\property}
-    \o \l {11-qdoc-commands-documentcontents.html#quotation}{\\quotation}
-    \o \l {07-0-qdoc-commands-quoting.html#quotefile}{\\quotefile}
-    \o \l {07-0-qdoc-commands-quoting.html#quotefromfile}{\\quotefromfile}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#raw}{\\raw} \span {class="newStuff"} {(avoid)}
-    \o \l {17-qdoc-commands-thread.html#reentrant}{\\reentrant}
-    \o \l {18-qdoc-commands-relating.html#reimp}{\\reimp}
-    \o \l {18-qdoc-commands-relating.html#relates}{\\relates}
-    \o \l {10-qdoc-commands-container.html#row}{\\row}
-    \o \l {08-qdoc-commands-linking.html#sa}{\\sa}
-    \o \l {05-qdoc-commands-documentstructuring.html#sectionOne}{\\section1}
-    \o \l {05-qdoc-commands-documentstructuring.html#sectionTwo}{\\section2}
-    \o \l {05-qdoc-commands-documentstructuring.html#sectionThree}{\\section3}
-    \o \l {05-qdoc-commands-documentstructuring.html#sectionFour}{\\section4}
-    \o \l {13-qdoc-commands-topical.html#service}{\\service}
-    \o \l {16-qdoc-commands-status.html#since}{\\since}
-    \o \l {07-0-qdoc-commands-quoting.html#skipline}{\\skipline}
-    \o \l {07-0-qdoc-commands-quoting.html#skipto}{\\skipto}
-    \o \l {07-0-qdoc-commands-quoting.html#skipuntil}{\\skipuntil}
-    \o \l {07-0-qdoc-commands-quoting.html#snippet}{\\snippet},
-    \o \l {04-qdoc-commands-textformatting.html#span}{\\span} \span {class="newStuff"} {(new)}
-    \o \l {15-qdoc-commands-navigation.html#startpage}{\\startpage}
-    \o \l {04-qdoc-commands-textformatting.html#sub}{\\sub}
-    \o \l {20-qdoc-commands-title.html#subtitle}{\\subtitle}
-    \o \l {04-qdoc-commands-textformatting.html#sup}{\\sup}
-    \o \l {10-qdoc-commands-container.html#table}{\\table}
+    \o \l {04-qdoc-commands-textformatting.html#a} {\\a}
+    \o \l {11-qdoc-commands-documentcontents.html#abstract} {\\abstract}
+    \o \l {06-qdoc-commands-verbatimcode.html#badcode} {\\badcode}
+    \o \l {04-qdoc-commands-textformatting.html#bold} {\\bold}
+    \o \l {11-qdoc-commands-documentcontents.html#brief-command} {\\brief}
+    \o \l {04-qdoc-commands-textformatting.html#c} {\\c}
+    \o \l {09-qdoc-commands-graphic.html#caption} {\\caption}
+    \o \l {05-qdoc-commands-documentstructuring.html#chapter} {\\chapter}
+    \o \l {13-qdoc-commands-topical.html#class-command} {\\class}
+    \o \l {06-qdoc-commands-verbatimcode.html#code-command} {\\code}
+    \o \l {07-0-qdoc-commands-quoting.html#codeline} {\\codeline},
+    \o \l {16-qdoc-commands-status.html#compat} {\\compat}
+    \o \l {15-qdoc-commands-navigation.html#contentspage} {\\contentspage}
+    \o \l {04-qdoc-commands-textformatting.html#div} {\\div} \span {class="newStuff"} {(new)}
+    \o \l {07-0-qdoc-commands-quoting.html#dots} {\\dots}
+    \o \l {12-0-qdoc-commands-miscellaneous.html#else} {\\else}
+    \o \l {12-0-qdoc-commands-miscellaneous.html#endif} {\\endif}
+    \o \l {13-qdoc-commands-topical.html#enum-command} {\\enum}
+    \o \l {13-qdoc-commands-topical.html#example-command} {\\example}
+    \o \l {12-0-qdoc-commands-miscellaneous.html#expire} {\\expire}
+    \o \l {13-qdoc-commands-topical.html#externalpage} {\\externalpage}
+    \o \l {13-qdoc-commands-topical.html#fn} {\\fn}
+    \o \l {11-qdoc-commands-documentcontents.html#footnote} {\\footnote}
+    \o \l {12-0-qdoc-commands-miscellaneous.html#generatelist-command} {\\generatelist}
+    \o \l {13-qdoc-commands-topical.html#group-command} {\\group}
+    \o \l {10-qdoc-commands-container.html#header} {\\header}
+    \o \l {13-qdoc-commands-topical.html#headerfile} {\\headerfile}
+    \o \l {04-qdoc-commands-textformatting.html#i} {\\i}
+    \o \l {12-0-qdoc-commands-miscellaneous.html#if-command} {\\if}
+    \o \l {09-qdoc-commands-graphic.html#image} {\\image}
+    \o \l {12-0-qdoc-commands-miscellaneous.html#include} {\\include}
+    \o \l {15-qdoc-commands-navigation.html#indexpage} {\\indexpage}
+    \o \l {19-qdoc-commands-grouping.html#ingroup-command} {\\ingroup}
+    \o \l {19-qdoc-commands-grouping.html#inmodule} {\\inmodule}
+    \o \l {09-qdoc-commands-graphic.html#inlineimage-command} {\\inlineimage}
+    \o \l {16-qdoc-commands-status.html#internal} {\\internal}
+    \o \l {08-qdoc-commands-linking.html#keyword} {\\keyword}
+    \o \l {08-qdoc-commands-linking.html#l} {\\l}
+    \o \l {11-qdoc-commands-documentcontents.html#legalese} {\\legalese}
+    \o \l {10-qdoc-commands-container.html#list} {\\list}
+    \o \l {13-qdoc-commands-topical.html#macro} {\\macro}
+    \o \l {19-qdoc-commands-grouping.html#mainclass-command} {\\mainclass}
+    \o \l {12-0-qdoc-commands-miscellaneous.html#meta} {\\meta}
+    \o \l {13-qdoc-commands-topical.html#module} {\\module}
+    \o \l {13-qdoc-commands-topical.html#namespace} {\\namespace}
+    \o \l {15-qdoc-commands-navigation.html#nextpage} {\\nextpage}
+    \o \l {06-qdoc-commands-verbatimcode.html#newcode} {\\newcode}
+    \o \l {17-qdoc-commands-thread.html#nonreentrant} {\\nonreentrant}
+    \o \l {10-qdoc-commands-container.html#o} {\\o}
+    \o \l {16-qdoc-commands-status.html#obsolete} {\\obsolete}
+    \o \l {06-qdoc-commands-verbatimcode.html#oldcode} {\\oldcode}
+    \o \l {12-0-qdoc-commands-miscellaneous.html#omit} {\\omit}
+    \o \l {10-qdoc-commands-container.html#omitvalue-command} {\\omitvalue}
+    \o \l {18-qdoc-commands-relating.html#overload} {\\overload}
+    \o \l {13-qdoc-commands-topical.html#page} {\\page}
+    \o \l {05-qdoc-commands-documentstructuring.html#part} {\\part}
+    \o \l {16-qdoc-commands-status.html#preliminary} {\\preliminary}
+    \o \l {15-qdoc-commands-navigation.html#previouspage} {\\previouspage}
+    \o \l {07-0-qdoc-commands-quoting.html#printline} {\\printline}
+    \o \l {07-0-qdoc-commands-quoting.html#printto} {\\printto}
+    \o \l {07-0-qdoc-commands-quoting.html#printuntil} {\\printuntil}
+    \o \l {13-qdoc-commands-topical.html#property} {\\property}
+    \o \l {11-qdoc-commands-documentcontents.html#quotation} {\\quotation}
+    \o \l {07-0-qdoc-commands-quoting.html#quotefile-command} {\\quotefile}
+    \o \l {07-0-qdoc-commands-quoting.html#quotefromfile-command} {\\quotefromfile}
+    \o \l {12-0-qdoc-commands-miscellaneous.html#raw} {\\raw} \span {class="newStuff"} {(avoid)}
+    \o \l {17-qdoc-commands-thread.html#reentrant} {\\reentrant}
+    \o \l {18-qdoc-commands-relating.html#reimp} {\\reimp}
+    \o \l {18-qdoc-commands-relating.html#relates-command} {\\relates}
+    \o \l {10-qdoc-commands-container.html#row} {\\row}
+    \o \l {08-qdoc-commands-linking.html#sa} {\\sa}
+    \o \l {05-qdoc-commands-documentstructuring.html#sectionOne} {\\section1}
+    \o \l {05-qdoc-commands-documentstructuring.html#sectionTwo} {\\section2}
+    \o \l {05-qdoc-commands-documentstructuring.html#sectionThree} {\\section3}
+    \o \l {05-qdoc-commands-documentstructuring.html#sectionFour} {\\section4}
+    \o \l {13-qdoc-commands-topical.html#service} {\\service}
+    \o \l {16-qdoc-commands-status.html#since} {\\since}
+    \o \l {07-0-qdoc-commands-quoting.html#skipline} {\\skipline}
+    \o \l {07-0-qdoc-commands-quoting.html#skipto} {\\skipto}
+    \o \l {07-0-qdoc-commands-quoting.html#skipuntil} {\\skipuntil}
+    \o \l {07-0-qdoc-commands-quoting.html#snippet} {\\snippet},
+    \o \l {04-qdoc-commands-textformatting.html#span} {\\span} \span {class="newStuff"} {(new)}
+    \o \l {15-qdoc-commands-navigation.html#startpage} {\\startpage}
+    \o \l {04-qdoc-commands-textformatting.html#sub} {\\sub}
+    \o \l {20-qdoc-commands-title.html#subtitle} {\\subtitle}
+    \o \l {04-qdoc-commands-textformatting.html#sup} {\\sup}
+    \o \l {10-qdoc-commands-container.html#table} {\\table}
     \o \l {11-qdoc-commands-documentcontents.html#tableofcontents}
           {\\tableofcontents}
-    \o \l {08-qdoc-commands-linking.html#target}{\\target}
-    \o \l {17-qdoc-commands-thread.html#threadsafe}{\\threadsafe}
-    \o \l {20-qdoc-commands-title.html#title}{\\title}
-    \o \l {04-qdoc-commands-textformatting.html#tt}{\\tt}
-    \o \l {13-qdoc-commands-topical.html#typedef}{\\typedef}
-    \o \l {04-qdoc-commands-textformatting.html#underline}{\\underline}
-    \o \l {13-qdoc-commands-topical.html#variable}{\\variable}
-    \o \l {10-qdoc-commands-container.html#value}{\\value}
-    \o \l {11-qdoc-commands-documentcontents.html#warning}{\\warning}
+    \o \l {08-qdoc-commands-linking.html#target} {\\target}
+    \o \l {17-qdoc-commands-thread.html#threadsafe} {\\threadsafe}
+    \o \l {20-qdoc-commands-title.html#title} {\\title}
+    \o \l {04-qdoc-commands-textformatting.html#tt} {\\tt}
+    \o \l {13-qdoc-commands-topical.html#typedef} {\\typedef}
+    \o \l {04-qdoc-commands-textformatting.html#underline} {\\underline}
+    \o \l {13-qdoc-commands-topical.html#variable} {\\variable}
+    \o \l {10-qdoc-commands-container.html#value-command} {\\value}
+    \o \l {11-qdoc-commands-documentcontents.html#warning} {\\warning}
     \endlist
 */
 
