@@ -84,6 +84,7 @@ QT_BEGIN_NAMESPACE
 */
 
 class QScriptContextInfoPrivate
+        : public QScriptSharedData
 {
 public:
     QScriptContextInfoPrivate(const QScriptContext *context = 0);
@@ -102,9 +103,6 @@ public:
     int functionMetaIndex;
 
     QStringList parameterNames;
-
-    QBasicAtomicInt ref;
-
     bool null;
 };
 
@@ -113,7 +111,6 @@ public:
 */
 QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *context)
 {
-    ref = 0;
     functionType = QScriptContextInfo::NativeFunction;
     functionMetaIndex = -1;
     functionStartLineNumber = -1;
