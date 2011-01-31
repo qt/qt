@@ -788,6 +788,20 @@ qint64 QSymbianSocketEngine::pendingDatagramSize() const
     Q_D(const QSymbianSocketEngine);
     int nbytes;
     TInt err = d->nativeSocket.GetOpt(KSOReadBytesPending,KSOLSocket, nbytes);
+    if (nbytes > 0) {
+        //nbytes includes IP header, which is of variable length (IPv4 with or without options, IPv6...)
+        QByteArray next(nbytes,0);
+        TPtr8 buffer((TUint8*)next.data(), next.size());
+        TInetAddr addr;
+        TRequestStatus status;
+        //TODO: rather than peek, should we save this for next call to readDatagram?
+        //what if calls don't match though?
+        d->nativeSocket.RecvFrom(buffer, addr, KSockReadPeek, status);
+        User::WaitForRequest(status);
+        if (status.Int())
+            return 0;
+        return buffer.Length();
+    }
     return qint64(nbytes);
 }
 
