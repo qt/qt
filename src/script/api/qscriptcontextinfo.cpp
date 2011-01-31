@@ -131,6 +131,7 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
     v8::HandleScope handleScope;
     if (!context_p->frame.IsEmpty()) {
         v8::Handle<v8::StackFrame> frame = context_p->frame;
+        scriptId = qHash(QScriptConverter::toString(frame->GetScriptName()));
         columnNumber = frame->GetColumn();
         lineNumber = frame->GetLineNumber();
         functionType = QScriptContextInfo::ScriptFunction;
