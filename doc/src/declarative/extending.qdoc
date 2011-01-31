@@ -733,12 +733,14 @@ It is optional for a property to have a default value. The default value is a co
 behaviorally identical to doing it in two steps, like this:
 
 \qml
-// Use default value
-property int myProperty: 10
+Item {
+    // Use default value
+    property int myProperty: 10
 
-// Longer, but behaviorally identical
-property int myProperty
-myProperty: 10
+    // Longer, but behaviorally identical
+    property int myProperty
+    myProperty: 10
+}
 \endqml
 
 
@@ -769,9 +771,11 @@ QML object types can also be used as property types. This includes
 defined like this:
 
 \qml
-property Item itemProperty
-property QtObject objectProperty
-property MyCustomType customProperty
+Item {
+    property Item itemProperty
+    property QtObject objectProperty
+    property MyCustomType customProperty
+}
 \endqml
 
 Such object-type properties default to an \c undefined value.
@@ -784,7 +788,9 @@ see the \l {variant}{variant type documentation} for details.
 list:
 
 \qml
-property list<Item> listOfItems
+Item {
+    property list<Item> listOfItems
+}
 \endqml
 
 Note that list properties cannot be modified like ordinary JavaScript
@@ -825,7 +831,7 @@ If the \l{Item::children}{children} property was not the default property for
 \qml
 Item {
     children: [
-        Rectangle {}
+        Rectangle {},
         Rectangle {}
     ]
 }
@@ -1075,7 +1081,7 @@ code removes the connection created in \c application.qml above:
 \qml
 // application.qml
 Item {
-    ...
+    // ...
 
     function removeSignal() {
         button.clicked.disconnect(item.myMethod)
@@ -1100,5 +1106,4 @@ MouseArea {
 
 Whenever the \l MouseArea \c clicked signal is emitted, the \c rect.buttonClicked signal will
 automatically be emitted as well.
-
 */
