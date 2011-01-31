@@ -854,9 +854,6 @@ public:
     bool hasOwnContext;
 
     // Unified toolbar variables
-    CGContextRef cgContext;
-    QRegion ut_rg;
-    QPoint ut_pt;
     bool isInUnifiedToolbar;
     QWindowSurface *unifiedSurface;
     QPoint toolbar_offset;
