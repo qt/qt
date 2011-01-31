@@ -94,9 +94,11 @@ SOURCES += \
     $$PWD/shadereffectitem.cpp \
     $$PWD/shadereffectnode.cpp \
     $$PWD/shadereffectsource.cpp \
+    $$PWD/subtree.cpp \
 
 HEADERS += \
     $$PWD/shadereffectitem.h \
     $$PWD/shadereffectnode.h \
     $$PWD/shadereffectsource.h \
+    $$PWD/subtree.h \
 
