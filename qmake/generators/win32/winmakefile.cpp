@@ -57,14 +57,6 @@ Win32MakefileGenerator::Win32MakefileGenerator() : MakefileGenerator()
 {
 }
 
-void Win32MakefileGenerator::init()
-{
-    if (project->isEmpty("QMAKE_EXTENSION_STATICLIB"))
-        project->values("QMAKE_EXTENSION_STATICLIB").append("lib");
-    if (project->isEmpty("QMAKE_EXTENSION_SHLIB"))
-        project->values("QMAKE_EXTENSION_SHLIB").append("lib");
-}
-
 int
 Win32MakefileGenerator::findHighestVersion(const QString &d, const QString &stem, const QString &ext)
 {
@@ -362,6 +354,11 @@ void Win32MakefileGenerator::processVars()
 
 void Win32MakefileGenerator::fixTargetExt()
 {
+    if (project->isEmpty("QMAKE_EXTENSION_STATICLIB"))
+        project->values("QMAKE_EXTENSION_STATICLIB").append("lib");
+    if (project->isEmpty("QMAKE_EXTENSION_SHLIB"))
+        project->values("QMAKE_EXTENSION_SHLIB").append("dll");
+
     if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
         project->values("TARGET_EXT").append(".exe");
     } else if (project->isActiveConfig("shared")) {
