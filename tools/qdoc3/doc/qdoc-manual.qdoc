@@ -2207,7 +2207,7 @@
            \o \c {\l <QtGlobal>} - a defined \l {headerfile} {\\headerfile}
            \o \c {\l widgets/wiggly} - a defined
               \l {example-command} {\\example}
-           \o \c {\l {QWidget Class Reference}} - a defined \l {title} {\\title}
+           \o \c {\l {QWidget Class Reference}} - a defined \l {title-command} {\\title}
            \o \c {\l {Introduction}}- a defined \l{part} {\\part},
               \l{chapter} {\\chapter} or \l {sectionOne} {\\section...}
            \o \c {\l fontmatching} - a defined \l {target} {\\target}
@@ -3452,10 +3452,10 @@
 
            The \\brief command can be used in two significant
            different ways: \l {brief class} {One for classes,
-           namespaces and header files}, and \l {brief property} {one
+           namespaces and header files}, and \l {brief-property} {one
            for properties and variables}.
 
-           \target brief property
+           \target brief-property
 
            When the \\brief command is used to describe a property or
            a variable, the brief text must only be a sentence fragment
@@ -4042,7 +4042,7 @@
               determined by its location, i.e. its directory. However,
               for extensions, like ActiveQt and Qt Designer, a class
               is related to a module with the \l
-              {inmodule} {\\inmodule} command.
+              {inmodule-command} {\\inmodule} command.
 
            \o \c classesbyedition
 
@@ -4291,7 +4291,7 @@
 
            This QDoc comment will only be rendered if the \c
            opensourceedition preprocessor symbol is defined, and
-           specified in the \l {definesvariable} {defines} variable in
+           specified in the \l {defines-variable} {defines} variable in
            the configuration file to make QDoc process
            the code within #ifdef and #endif:
 
@@ -4301,10 +4301,11 @@
 
            You can also define the preprocessor symbol manually on the
            command line. For more information see the documentation of
-           the \l {definesvariable} {defines} variable.
+           the \l {defines-variable} {defines} variable.
 
            See also \l{endif} {\\endif}, \l{else} {\\else}, \l
-           {definesvariable} {defines} and \l falsehoods.
+           {defines-variable} {defines} and \l {falsehoods-variable}
+           {falsehoods}.
 
     \row
         \o \bold \\endif \target endif
@@ -4317,7 +4318,7 @@
            {if-command} {\\if} command.
 
            See also \l{if-command} {\\if}, \l{else} {\\else}, \l
-           {definesvariable} {defines} and \l falsehoods.
+           {defines-variable} {defines} and \l {falsehoods-variable} {falsehoods}.
 
     \row
         \o \bold \\else \target else
@@ -4414,7 +4415,8 @@
            \endquotation
 
            See also \l{if-command} {\\if}, \l{endif} {\\endif}, \l
-           {definesvariable} {defines} and \l falsehoods.
+           {defines-variable} {defines} and \l {falsehoods-variable}
+           {falsehoods}.
 
     \row
         \o \bold \\include \target include
@@ -5163,7 +5165,7 @@
 
            The command follows \l {topical argument} {the general
            topical command convention} for the argument. The \\group
-           command is typically followed by a \l {title} {\\title}
+           command is typically followed by a \l {title-command} {\\title}
            command and a short introduction to the group.  The
            generated HTML documentation for the specified group is put
            in <lower-case>\i{group}.html.
@@ -5436,7 +5438,7 @@
 
                ...
 
-               See also \l {Meta-Object System}, \l {Signals and
+               See also \l {Meta-Object System}, \l {Signals &
                Slots} and \l {Qt's Property System}.
            \endquotation
 
@@ -5452,13 +5454,13 @@
            topical command convention} for the argument.
 
            A class can be related to a module using the \l
-           {inmodule} {\\inmodule} command.
+           {inmodule-command} {\\inmodule} command.
 
            The \\module command is typically followed by the \l
-           {title} {\\title} and \l {brief-command} {\\brief} commands. Each
-           class is listed with a link to the class reference page and
-           a brief description based on the classes' \l
-           {brief-command} {\\brief} texts.
+           {title-command} {\\title} and \l {brief-command} {\\brief}
+           commands. Each class is listed with a link to the class
+           reference page and a brief description based on the
+           classes' \l {brief-command} {\\brief} texts.
 
            For example:
 
@@ -5545,7 +5547,7 @@
 
            in qtnetwork.html.
 
-           See also \l {inmodule} {\\inmodule}
+           See also \l {inmodule-command} {\\inmodule}
 
     \row
         \o \bold \\namespace \target namespace
@@ -5619,7 +5621,7 @@
            The command follows \l {topical argument} {the general
            topical command convention} for the argument.
 
-           The page's title can be set using the \l {title} {\\title}
+           The page's title can be set using the \l {title-command} {\\title}
            command. For example:
 
            \code
@@ -5729,9 +5731,9 @@
            property, the \l {brief-command} {\\brief} command's
            argument is a sentence fragment that will be included in a
            one-sentence description of the property generated by
-           QDoc. The command follows the same rules for the \l {brief
-           property} {description} as the \l {variable} {\\variable}
-           command.
+           QDoc. The command follows the same rules for the 
+	   \l {brief-property} {description} as the \l {variable} 
+	   {\\variable} command.
 
            For example:
 
@@ -5929,11 +5931,11 @@
            The command follows \l {topical argument} {the general
            topical command convention} for the argument.
 
-           The \\variable command is typically followed by a \l
-           {brief-command} {\\brief} command; QDoc will generate the
-           documentation for the variable based on the brief-command
-           description. The command follows the same rules for the \l
-           {brief property} {description} as the \l {property}
+           The \\variable command is typically followed by a 
+	   \l {brief-command} {\\brief} command; QDoc will generate the
+           documentation for the variable based on the brief command
+           description. The command follows the same rules for the 
+	   \l {brief-property} {description} as the \l {property}
            {\\property} command.
 
            The documentation will be located in the in the associated
@@ -6052,7 +6054,7 @@
     \l {15-qdoc-commands-navigation.html#contentspage} {\\contentspage},
     \l {15-qdoc-commands-navigation.html#indexpage} {\\indexpage},
     \l {19-qdoc-commands-grouping.html#ingroup-command} {\\ingroup},
-    \l {19-qdoc-commands-grouping.html#inmodule} {\\inmodule},
+    \l {19-qdoc-commands-grouping.html#inmodule-command} {\\inmodule},
     \l {16-qdoc-commands-status.html#internal} {\\internal},
     \l {19-qdoc-commands-grouping.html#mainclass-command} {\\mainclass},
     \l {15-qdoc-commands-navigation.html#nextpage} {\\nextpage},
@@ -6066,7 +6068,7 @@
     \l {18-qdoc-commands-relating.html#relates-command} {\\relates},
     \l {15-qdoc-commands-navigation.html#startpage} {\\startpage},
     \l {17-qdoc-commands-thread.html#threadsafe} {\\threadsafe},
-    \l {20-qdoc-commands-title.html#title} {\\title}
+    \l {20-qdoc-commands-title.html#title-command} {\\title}
 
     \section1 Categories
     \list
@@ -6991,7 +6993,7 @@
     \section1 Alphabetical List
 
     \l {19-qdoc-commands-grouping.html#ingroup-command} {\\ingroup},
-    \l {19-qdoc-commands-grouping.html#inmodule} {\\inmodule},
+    \l {19-qdoc-commands-grouping.html#inmodule-command} {\\inmodule},
     \l {19-qdoc-commands-grouping.html#mainclass-command} {\\mainclass},
 
     \section1 Command Descriptions
@@ -7069,7 +7071,7 @@
 
            See also \l {group-command} {\\group}.
     \row
-        \o \bold \\inmodule \target inmodule
+        \o \bold \\inmodule \target inmodule-command
         \o \bold {The \\inmodule command relates the documented class
            to the module specified by the command's argument.}
 
@@ -7116,7 +7118,7 @@
 
     \section1 Alphabetical List
 
-    \l {20-qdoc-commands-title.html#title} {\\title},
+    \l {20-qdoc-commands-title.html#title-command} {\\title},
     \l {20-qdoc-commands-title.html#subtitle} {\\subtitle}
 
     \section1 Command Descriptions
@@ -7127,7 +7129,7 @@
         \o Description
 
     \row
-        \o \bold \\title \target title
+        \o \bold \\title \target title-command
         \o \bold {The \\title command sets the title for a
            documentation page, or allows you to override it.}
 
@@ -7137,7 +7139,7 @@
            / *!
                \page signalandslots.html
 
-               \title Signals and Slots
+               \title Signals & Slots
 
                Signals and slots are used for communication between
                objects. The signals and slots mechanism is a central
@@ -7201,7 +7203,7 @@
                ...
            \endquotation
 
-           See also \l {title} {\\title}.
+           See also \l {title-command} {\\title}.
     \endtable
 */
 
@@ -7291,14 +7293,14 @@
        {Cpp.ignoredirectives},
     \l {23-qdoc-configuration-cppvariables.html#Cpp.ignoretoken}
        {Cpp.ignoretokens},
-    \l {22-qdoc-configuration-generalvariables.html#definesvariable} {defines},
+    \l {22-qdoc-configuration-generalvariables.html#defines-variable} {defines},
     \l {22-qdoc-configuration-generalvariables.html#edition} {edition},
     \l {22-qdoc-configuration-generalvariables.html#exampledirs} {exampledirs},
     \l {22-qdoc-configuration-generalvariables.html#examples} {examples},
     \l {22-qdoc-configuration-generalvariables.html#examples.fileextensions}
        {examples.fileextensions},
     \l {22-qdoc-configuration-generalvariables.html#extraimages} {extraimages},
-    \l {22-qdoc-configuration-generalvariables.html#falsehoods} {falsehoods},
+    \l {22-qdoc-configuration-generalvariables.html#falsehoods-variable} {falsehoods},
     \l {22-qdoc-configuration-generalvariables.html#headerdirs} {headerdirs},
     \l {22-qdoc-configuration-generalvariables.html#headers} {headers},
     \l {22-qdoc-configuration-generalvariables.html#headers.fileextensions}
@@ -7380,14 +7382,14 @@
 
     \l {22-qdoc-configuration-generalvariables.html#alias} {alias},
     \l {22-qdoc-configuration-generalvariables.html#codeindent} {codeindent},
-    \l {22-qdoc-configuration-generalvariables.html#definesvariable} {defines},
+    \l {22-qdoc-configuration-generalvariables.html#defines-variable} {defines},
     \l {22-qdoc-configuration-generalvariables.html#edition} {edition},
     \l {22-qdoc-configuration-generalvariables.html#exampledirs} {exampledirs},
     \l {22-qdoc-configuration-generalvariables.html#examples} {examples},
     \l {22-qdoc-configuration-generalvariables.html#examples.fileextensions}
        {examples.fileextensions},
     \l {22-qdoc-configuration-generalvariables.html#extraimages} {extraimages},
-    \l {22-qdoc-configuration-generalvariables.html#falsehoods} {falsehoods},
+    \l {22-qdoc-configuration-generalvariables.html#falsehoods-variable} {falsehoods},
     \l {22-qdoc-configuration-generalvariables.html#generateindex} {generateindex},
     \l {22-qdoc-configuration-generalvariables.html#headerdirs} {headerdirs},
     \l {22-qdoc-configuration-generalvariables.html#headers} {headers},
@@ -7455,7 +7457,7 @@
            level of indentation is not always required.
 
     \row
-        \o \bold defines \target definesvariable
+        \o \bold defines \target defines-variable
         \o \bold {The \c defines variable specifies the C++ preprocessor
            symbols that QDoc will recognize and respond to.}
 
@@ -7508,7 +7510,7 @@
            consoleedition preprocessor symbol is defined when QDoc
            processes the source files defined in the qt.qdocconf file.
 
-           See also \l falsehoods and \l {if-command} {\\if}.
+           See also \l {falsehoods-variable} {falsehoods} and \l {if-command} {\\if}.
 
     \row
         \o \bold edition \target edition
@@ -7672,7 +7674,7 @@
            See also \l images and \l imagedirs.
 
     \row
-        \o \bold falsehoods \target falsehoods
+        \o \bold falsehoods \target falsehoods-variable
         \o \bold {The \c falsehoods variable defines the truth value of
            specified preprocessor symbols as false.}
 
@@ -8949,7 +8951,7 @@
     \o \l {12-0-qdoc-commands-miscellaneous.html#include} {\\include}
     \o \l {15-qdoc-commands-navigation.html#indexpage} {\\indexpage}
     \o \l {19-qdoc-commands-grouping.html#ingroup-command} {\\ingroup}
-    \o \l {19-qdoc-commands-grouping.html#inmodule} {\\inmodule}
+    \o \l {19-qdoc-commands-grouping.html#inmodule-command} {\\inmodule}
     \o \l {09-qdoc-commands-graphic.html#inlineimage-command} {\\inlineimage}
     \o \l {16-qdoc-commands-status.html#internal} {\\internal}
     \o \l {08-qdoc-commands-linking.html#keyword} {\\keyword}
@@ -9007,7 +9009,7 @@
           {\\tableofcontents}
     \o \l {08-qdoc-commands-linking.html#target} {\\target}
     \o \l {17-qdoc-commands-thread.html#threadsafe} {\\threadsafe}
-    \o \l {20-qdoc-commands-title.html#title} {\\title}
+    \o \l {20-qdoc-commands-title.html#title-command} {\\title}
     \o \l {04-qdoc-commands-textformatting.html#tt} {\\tt}
     \o \l {13-qdoc-commands-topical.html#typedef} {\\typedef}
     \o \l {04-qdoc-commands-textformatting.html#underline} {\\underline}
