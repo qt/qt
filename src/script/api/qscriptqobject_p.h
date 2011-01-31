@@ -25,6 +25,7 @@
 #define QSCRIPTQOBJECT_P_H
 
 #include <QtCore/qmetaobject.h>
+#include <QtCore/qsharedpointer.h>
 #include "qscripttools_p.h"
 #include <v8.h>
 
@@ -80,7 +81,7 @@ public:
     inline QScriptable *toQScriptable();
 
 private:
-    QPointer<QObject> m_cppObject;
+    QWeakPointer<QObject> m_cppObject;
     QScriptEngine::ValueOwnership m_own;
     QScriptEngine::QObjectWrapOptions m_opt;
 };

@@ -97,10 +97,10 @@ inline QtInstanceData::~QtInstanceData()
     case QScriptEngine::QtOwnership:
         break;
     case QScriptEngine::AutoOwnership:
-        if (m_cppObject && m_cppObject->parent())
+        if (m_cppObject && m_cppObject.data()->parent())
             break;
     case QScriptEngine::ScriptOwnership:
-        delete m_cppObject;
+        delete m_cppObject.data();
         break;
     }
 }
@@ -123,13 +123,13 @@ inline QObject *QtInstanceData::cppObject(v8::Local<v8::Value> *error) const
             *error = err;
         }
     }
-    return m_cppObject;
+    return m_cppObject.data();
 }
 
 inline QObject *QtInstanceData::cppObject(const Mode mode) const
 {
     if (mode == IgnoreException)
-        return m_cppObject;
+        return m_cppObject.data();
     return cppObject();
 }
 
@@ -150,7 +150,7 @@ inline QScriptEngine::QObjectWrapOptions QtInstanceData::options() const
 inline QScriptable *QtInstanceData::toQScriptable()
 {
     Q_ASSERT(m_cppObject);
-    void *ptr = m_cppObject->qt_metacast("QScriptable");
+    void *ptr = m_cppObject.data()->qt_metacast("QScriptable");
     return reinterpret_cast<QScriptable*>(ptr);
 }
 
