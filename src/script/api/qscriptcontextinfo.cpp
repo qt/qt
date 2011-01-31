@@ -113,21 +113,20 @@ private:
   \internal
 */
 QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *context)
-    : m_null(!context)
+    : scriptId(-1)
+    , lineNumber(-1)
+    , columnNumber(-1)
+    , functionType(QScriptContextInfo::NativeFunction)
+    , functionStartLineNumber(-1)
+    , functionEndLineNumber(-1)
+    , functionMetaIndex(-1)
+    , m_null(!context)
 {
-    functionType = QScriptContextInfo::NativeFunction;
-    functionMetaIndex = -1;
-    functionStartLineNumber = -1;
-    functionEndLineNumber = -1;
-    scriptId = -1;
-    lineNumber = -1;
-    columnNumber = -1;
-
     if (!context)
         return;
 
     QScriptContextPrivate *context_p = QScriptContextPrivate::get(context);
-    QScriptIsolate api(context_p->engine);
+    QScriptIsolate api(context_p->engine, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     if (!context_p->frame.IsEmpty()) {
         v8::Handle<v8::StackFrame> frame = context_p->frame;
