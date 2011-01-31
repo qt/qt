@@ -38,7 +38,8 @@
 #include <QtCore/QVarLengthArray>
 #include <QtCore/QPair>
 #include "qscriptcontext.h"
-#include "qscriptvalue.h"
+#include "qscriptshareddata_p.h"
+#include "qscriptvalue_p.h"
 #include "v8.h"
 
 QT_BEGIN_NAMESPACE
