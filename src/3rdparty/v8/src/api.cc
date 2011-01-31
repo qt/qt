@@ -1426,6 +1426,36 @@ Local<Value> Script::Run() {
   return Utils::ToLocal(result);
 }
 
+#ifdef QT_BUILD_SCRIPT_LIB
+Local<Value> Script::Run(Handle<Object> receiver) {
+    i::Isolate* isolate = i::Isolate::Current();
+    ON_BAILOUT(isolate, "v8::Script::Run()", return Local<Value>());
+    LOG_API(isolate, "Script::Run");
+    ENTER_V8(isolate);
+    i::Object* raw_result = NULL;
+    {
+        i::HandleScope scope(isolate);
+        i::Handle<i::Object> obj = Utils::OpenHandle(this);
+        i::Handle<i::JSFunction> fun;
+        if (obj->IsSharedFunctionInfo()) {
+            i::Handle<i::SharedFunctionInfo>
+            function_info(i::SharedFunctionInfo::cast(*obj));
+            fun = isolate->factory()->NewFunctionFromSharedFunctionInfo(
+                function_info, isolate->global_context());
+        } else {
+            fun = i::Handle<i::JSFunction>(i::JSFunction::cast(*obj));
+        }
+        EXCEPTION_PREAMBLE(isolate);
+        i::Handle<i::Object> recv = Utils::OpenHandle(*receiver);
+        i::Handle<i::Object> result =
+        i::Execution::Call(fun, recv, 0, NULL, &has_pending_exception);
+        EXCEPTION_BAILOUT_CHECK(isolate, Local<Value>());
+        raw_result = *result;
+    }
+    i::Handle<i::Object> result(raw_result);
+    return Utils::ToLocal(result);
+}
+#endif
 
 static i::Handle<i::SharedFunctionInfo> OpenScript(Script* script) {
   i::Handle<i::Object> obj = Utils::OpenHandle(script);

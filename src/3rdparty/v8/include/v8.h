@@ -658,6 +658,13 @@ class V8EXPORT Script {
    */
   Local<Value> Run();
 
+#ifdef QT_BUILD_SCRIPT_LIB
+  /**
+   * Same as Run() but allow to give a different value for the 'this' variable
+   */
+  Local<Value> Run(Handle<Object> receiver);
+#endif
+
   /**
    * Returns the script id value.
    */
