@@ -193,7 +193,6 @@ public:
     inline QScriptContextPrivate *currentContext() { return m_currentQsContext; }
     QScriptContextPrivate *pushContext();
     void popContext();
-    v8::Handle<v8::Value> securityToken() { return m_v8Context->GetSecurityToken(); }
     void emitSignalHandlerException();
 
     inline bool hasInstance(v8::Handle<v8::FunctionTemplate> fun, v8::Handle<v8::Value> value) const;
