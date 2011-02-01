@@ -192,6 +192,9 @@ Rectangle {
 }
 \endqml
 
+\note Since Qt Quick 1.1 this information is accessible outside of the QML Viewer,
+through the \c active property of the \l {QML:Qt::application}{Qt.application} object.
+
 \row
 
 \o \c runtime.orientation

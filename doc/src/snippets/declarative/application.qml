@@ -42,12 +42,12 @@
 import QtQuick 1.1
 
 Rectangle {
-  width: 300; height: 55
-  color: Qt.application.active ? "white" : "lightgray"
-  Text {
-      text: "Application " + (Qt.application.active ? "active" : "inactive")
-      opacity: Qt.application.active ? 1.0 : 0.5
-      anchors.centerIn: parent
-  }
+    width: 300; height: 55
+    color: Qt.application.active ? "white" : "lightgray"
+    Text {
+        text: "Application " + (Qt.application.active ? "active" : "inactive")
+        opacity: Qt.application.active ? 1.0 : 0.5
+        anchors.centerIn: parent
+    }
 }
 //! [document]
