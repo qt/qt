@@ -410,6 +410,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
 
     switch (atom->type()) {
     case Atom::AbstractLeft:
+        if (relative)
+            relative->doc().location().warning(tr("\abstract is not implemented."));
+        else
+            Location::information(tr("\abstract is not implemented."));
         break;
     case Atom::AbstractRight:
         break;
