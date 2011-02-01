@@ -312,6 +312,7 @@ void QDeclarativePinchArea::updatePinch()
             pe.setPoint1(d->lastPoint1);
             pe.setPoint2(d->lastPoint2);
             emit pinchFinished(&pe);
+            d->pinchStartDist = 0;
             if (d->pinch && d->pinch->target())
                 d->pinch->setActive(false);
         }
@@ -363,7 +364,9 @@ void QDeclarativePinchArea::updatePinch()
                     if (pe.accepted()) {
                         d->inPinch = true;
                         d->stealMouse = true;
-                        grabMouse();
+                        QGraphicsScene *s = scene();
+                        if (s && s->mouseGrabberItem() != this)
+                            grabMouse();
                         setKeepMouseGrab(true);
                         if (d->pinch && d->pinch->target()) {
                             d->pinchStartPos = pinch()->target()->pos();

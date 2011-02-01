@@ -68,7 +68,7 @@ class QDeclarativePinchAreaPrivate : public QDeclarativeItemPrivate
 public:
     QDeclarativePinchAreaPrivate()
       : absorb(true), stealMouse(false), inPinch(false)
-      , pinchRejected(false), pinch(0)
+      , pinchRejected(false), pinch(0), pinchStartDist(0)
     {
     }
 
