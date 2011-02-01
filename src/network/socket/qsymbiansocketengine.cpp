@@ -538,10 +538,21 @@ void QSymbianSocketEngine::setSendBufferSize(qint64 size)
     setOption(SendBufferSocketOption, size);
 }
 
+/*!
+    Connects to the remote host name given by \a name on port \a
+    port. When this function is called, the upper-level will not
+    perform a hostname lookup.
+
+    The native socket engine does not support this operation,
+    but some other socket engines (notably proxy-based ones) do.
+*/
 bool QSymbianSocketEngine::connectToHostByName(const QString &name, quint16 port)
 {
-    // FIXME for engines that support hostnames.. not for us then i guess.
-
+    Q_UNUSED(name);
+    Q_UNUSED(port);
+    Q_D(QSymbianSocketEngine);
+    d->setError(QAbstractSocket::UnsupportedSocketOperationError,
+        QSymbianSocketEnginePrivate::OperationUnsupportedErrorString);
     return false;
 }
 
@@ -737,8 +748,6 @@ bool QSymbianSocketEngine::hasPendingDatagrams() const
     int nbytes;
     TInt err = d->nativeSocket.GetOpt(KSOReadBytesPending,KSOLSocket, nbytes);
     return err == KErrNone && nbytes > 0;
-    //TODO: this is pretty horrible too...
-    // FIXME why?
 }
 
 qint64 QSymbianSocketEngine::pendingDatagramSize() const
@@ -770,9 +779,9 @@ qint64 QSymbianSocketEngine::readDatagram(char *data, qint64 maxSize,
     Q_D(QSymbianSocketEngine);
     TPtr8 buffer((TUint8*)data, (int)maxSize);
     TInetAddr addr;
-    TRequestStatus status; //TODO: OMG sync receive!
+    TRequestStatus status;
     d->nativeSocket.RecvFrom(buffer, addr, 0, status);
-    User::WaitForRequest(status);
+    User::WaitForRequest(status); //Non blocking receive
 
     if (status.Int()) {
         d->setError(QAbstractSocket::NetworkError, d->ReceiveDatagramErrorString);
@@ -1036,7 +1045,6 @@ qint64 QSymbianSocketEngine::read(char *data, qint64 maxSize)
     return qint64(r);
 }
 
-// FIXME wait vs select
 int QSymbianSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) const
 {
     bool readyRead = false;
@@ -1062,8 +1070,6 @@ int QSymbianSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool 
     //cancel asynchronous notifier (only one IOCTL allowed at a time)
     if (asyncSelect)
         asyncSelect->Cancel();
-    //TODO: implement
-    //as above, but checking both read and write status at the same time
 
     TPckgBuf<TUint> selectFlags;
     selectFlags() = KSockSelectExcept;
@@ -1310,7 +1316,6 @@ void QSymbianSocketEnginePrivate::setError(QAbstractSocket::SocketError error, E
     }
 }
 
-//TODO: use QSystemError class when file engine is merged to master
 void QSymbianSocketEnginePrivate::setError(TInt symbianError)
 {
     switch (symbianError) {
@@ -1385,14 +1390,12 @@ bool QReadNotifier::event(QEvent *e)
 bool QSymbianSocketEngine::isReadNotificationEnabled() const
 {
     Q_D(const QSymbianSocketEngine);
-    // TODO
     return d->readNotifier && d->readNotifier->isEnabled();
 }
 
 void QSymbianSocketEngine::setReadNotificationEnabled(bool enable)
 {
     Q_D(QSymbianSocketEngine);
-    // TODO
     if (d->readNotifier) {
         d->readNotifier->setEnabled(enable);
     } else if (enable && d->threadData->eventDispatcher) {
@@ -1437,14 +1440,12 @@ bool QWriteNotifier::event(QEvent *e)
 bool QSymbianSocketEngine::isWriteNotificationEnabled() const
 {
     Q_D(const QSymbianSocketEngine);
-    // TODO
     return d->writeNotifier && d->writeNotifier->isEnabled();
 }
 
 void QSymbianSocketEngine::setWriteNotificationEnabled(bool enable)
 {
     Q_D(QSymbianSocketEngine);
-    // TODO
     if (d->writeNotifier) {
         d->writeNotifier->setEnabled(enable);
     } else if (enable && d->threadData->eventDispatcher) {
@@ -1488,7 +1489,6 @@ bool QExceptionNotifier::event(QEvent *e)
 bool QSymbianSocketEngine::isExceptionNotificationEnabled() const
 {
     Q_D(const QSymbianSocketEngine);
-    // TODO
     return d->exceptNotifier && d->exceptNotifier->isEnabled();
     return false;
 }
@@ -1497,7 +1497,6 @@ bool QSymbianSocketEngine::isExceptionNotificationEnabled() const
 void QSymbianSocketEngine::setExceptionNotificationEnabled(bool enable)
 {
     Q_D(QSymbianSocketEngine);
-    // TODO
     if (d->exceptNotifier) {
         d->exceptNotifier->setEnabled(enable);
     } else if (enable && d->threadData->eventDispatcher) {
@@ -1674,7 +1673,8 @@ void QAsyncSelect::run()
     //    return;
     m_inSocketEvent = true;
     m_selectBuf() &= m_selectFlags; //the select ioctl reports everything, so mask to only what we requested
-    //TODO: KSockSelectReadContinuation does what?
+    //KSockSelectReadContinuation is for reading datagrams in a mode that doesn't discard when the
+    //datagram is larger than the read buffer - Qt doesn't need to use this.
     if (iReadN && ((m_selectBuf() & KSockSelectRead) || iStatus != KErrNone)) {
         QEvent e(QEvent::SockAct);
         iReadN->event(&e);

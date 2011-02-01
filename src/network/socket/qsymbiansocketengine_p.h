@@ -60,8 +60,6 @@
 #include <unistd.h>
 #include <es_sock.h>
 #include <in_sock.h>
-// TODO
-
 
 QT_BEGIN_NAMESPACE
 
@@ -121,7 +119,6 @@ public:
     int option(SocketOption option) const;
     bool setOption(SocketOption option, int value);
 
-    // FIXME actually implement
     bool waitForRead(int msecs = 30000, bool *timedOut = 0);
     bool waitForWrite(int msecs = 30000, bool *timedOut = 0);
     bool waitForReadOrWrite(bool *readyToRead, bool *readyToWrite,
@@ -244,7 +241,6 @@ public:
     void setPortAndAddress(TInetAddr& nativeAddr, quint16 port, const QHostAddress &addr);
     void setError(TInt symbianError);
 
-    // FIXME
     int nativeSelect(int timeout, bool selectForRead) const;
     int nativeSelect(int timeout, bool checkRead, bool checkWrite,
                            bool *selectForRead, bool *selectForWrite) const;
