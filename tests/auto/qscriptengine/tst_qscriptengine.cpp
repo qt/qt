@@ -3177,7 +3177,7 @@ void tst_QScriptEngine::automaticSemicolonInsertion()
     {
         QScriptValue ret = eng.evaluate("{ 1 2 } 3");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("SyntaxError: Parse error"));
+        QVERIFY(ret.toString().contains("SyntaxError"));
     }
     {
         QScriptValue ret = eng.evaluate("{ 1\n2 } 3");
@@ -3187,7 +3187,7 @@ void tst_QScriptEngine::automaticSemicolonInsertion()
     {
         QScriptValue ret = eng.evaluate("for (a; b\n)");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("SyntaxError: Parse error"));
+        QVERIFY(ret.toString().contains("SyntaxError"));
     }
     {
         QScriptValue ret = eng.evaluate("(function() { return\n1 + 2 })()");
@@ -3202,7 +3202,7 @@ void tst_QScriptEngine::automaticSemicolonInsertion()
     {
         QScriptValue ret = eng.evaluate("if (a > b)\nelse c = d");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("SyntaxError: Parse error"));
+        QVERIFY(ret.toString().contains("SyntaxError"));
     }
     {
         eng.evaluate("function c() { return { foo: function() { return 5; } } }");
@@ -3214,7 +3214,7 @@ void tst_QScriptEngine::automaticSemicolonInsertion()
     {
         QScriptValue ret = eng.evaluate("throw\n1");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("SyntaxError: Parse error"));
+        QVERIFY(ret.toString().contains("SyntaxError"));
     }
     {
         QScriptValue ret = eng.evaluate("a = Number(1)\n++a");
