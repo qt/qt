@@ -51,18 +51,17 @@
 
 QT_BEGIN_NAMESPACE
 
-QSGImageTextureProvider::QSGImageTextureProvider(const QSGImagePrivate *image)
-    : image(image)
+QSGImageTextureProvider::QSGImageTextureProvider(QSGImage *parent)
+    : QSGTextureProvider(parent), image(parent)
 {
     Q_ASSERT(image);
 }
 
 QSGTextureRef QSGImageTextureProvider::texture() const
 {
-    TextureNodeInterface *node = static_cast<TextureNodeInterface *>(image->paintNode);
-    if (!node)
-        return QSGTextureRef();
-    node->texture();
+    const QSGItemPrivate *d = QSGItemPrivate::get(image);
+    TextureNodeInterface *node = static_cast<TextureNodeInterface *>(d->paintNode);
+    return node ? node->texture() : QSGTextureRef();
 }
 
 void QSGImageTextureProvider::emitTextureChanged()
@@ -75,7 +74,7 @@ QSGImagePrivate::QSGImagePrivate()
     : fillMode(QSGImage::Stretch)
     , paintedWidth(0)
     , paintedHeight(0)
-    , textureProvider(new QSGImageTextureProvider(this))
+    , textureProvider(0)
     , pixmapChanged(false)
 {
 }
@@ -83,11 +82,13 @@ QSGImagePrivate::QSGImagePrivate()
 QSGImage::QSGImage(QSGItem *parent)
     : QSGImageBase(*(new QSGImagePrivate), parent)
 {
+    d_func()->textureProvider = new QSGImageTextureProvider(this);
 }
 
 QSGImage::QSGImage(QSGImagePrivate &dd, QSGItem *parent)
     : QSGImageBase(dd, parent)
 {
+    d_func()->textureProvider = new QSGImageTextureProvider(this);
 }
 
 QSGImage::~QSGImage()

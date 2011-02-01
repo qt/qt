@@ -43,6 +43,7 @@
 #define SUBTREE_H
 
 #include "qsgitem.h"
+#include "qsgtexturemanager.h"
 
 QT_BEGIN_HEADER
 
@@ -51,14 +52,18 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QSGTextureProvider;
+class Renderer;
+class QGLFramebufferObject;
 class SubTree : public QSGItem
 {
     Q_OBJECT
     Q_PROPERTY(QSGItem *item READ item WRITE setItem NOTIFY itemChanged)
     Q_PROPERTY(QSizeF margins READ margins WRITE setMargins NOTIFY marginsChanged)
+    Q_PROPERTY(bool live READ live WRITE setLive NOTIFY liveChanged)
     Q_PROPERTY(QSGTextureProvider *texture READ textureProvider)
 public:
     SubTree(QSGItem *parent = 0);
+    ~SubTree();
 
     QSGItem *item() const;
     void setItem(QSGItem *item);
@@ -66,17 +71,34 @@ public:
     QSizeF margins() const;
     void setMargins(const QSizeF &margins);
 
+    bool live() const;
+    void setLive(bool live);
+
     QSGTextureProvider *textureProvider() const;
+    Renderer *renderer() const;
+
+Q_SIGNALS:
+    void itemChanged();
+    void marginsChanged();
+    void liveChanged();
+
+private Q_SLOTS:
+    void markDirtyTexture();
 
 protected:
-    virtual void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
     virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
 
 private:
     QSGItem *m_item;
     QSizeF m_margins;
-    QSGTextureProvider *m_texture;
+    QSGTextureProvider *m_textureProvider;
 
+    Renderer *m_renderer;
+    QGLFramebufferObject *m_fbo;
+    QSGTextureRef m_texture;
+
+    uint m_live : 1;
+    uint m_dirtyTexture : 1;
 };
 
 QT_END_NAMESPACE

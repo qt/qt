@@ -307,3 +307,24 @@ void QSGTextureUploadRequest::done()
     delete this;
 }
 
+
+QSGTextureProvider::QSGTextureProvider(QObject *parent)
+    : QObject(parent)
+{
+}
+
+void QSGTextureProvider::setMipmap(bool enabled)
+{
+    if (enabled == m_mipmap)
+        return;
+    m_mipmap = enabled;
+    emit mipmapChanged();
+}
+
+void QSGTextureProvider::setClampToEdge(bool enabled)
+{
+    if (enabled == m_clampToEdge)
+        return;
+    m_clampToEdge = enabled;
+    emit clampToEdgeChanged();
+}

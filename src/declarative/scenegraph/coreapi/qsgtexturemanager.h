@@ -208,11 +208,26 @@ protected:
 class Q_DECLARATIVE_EXPORT QSGTextureProvider : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool mipmap READ mipmap WRITE setMipmap NOTIFY mipmapChanged)
+    Q_PROPERTY(bool clampToEdge READ clampToEdge WRITE setClampToEdge NOTIFY clampToEdgeChanged)
 public:
+    QSGTextureProvider(QObject *parent = 0);
     virtual QSGTextureRef texture() const = 0;
+
+    bool mipmap() const { return m_mipmap; }
+    void setMipmap(bool enabled);
+
+    bool clampToEdge() const { return m_clampToEdge; }
+    void setClampToEdge(bool enabled);
 
 Q_SIGNALS:
     void textureChanged();
+    void mipmapChanged();
+    void clampToEdgeChanged();
+
+protected:
+    uint m_mipmap : 1;
+    uint m_clampToEdge : 1;
 };
 
 #endif // QSGTEXTUREMANAGER_H
