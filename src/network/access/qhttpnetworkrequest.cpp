@@ -158,8 +158,10 @@ QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request
     }
     if (request.d->operation == QHttpNetworkRequest::Post) {
         // add content type, if not set in the request
-        if (request.headerField("content-type").isEmpty())
-            ba += "Content-Type: application/x-www-form-urlencoded\r\n";
+        if (request.headerField("content-type").isEmpty()) {
+            qWarning("content-type missing in HTTP POST, defaulting to application/octet-stream");
+            ba += "Content-Type: application/octet-stream\r\n";
+        }
         if (!request.d->uploadByteDevice && request.d->url.hasQuery()) {
             QByteArray query = request.d->url.encodedQuery();
             ba += "Content-Length: ";
