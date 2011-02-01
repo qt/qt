@@ -88,7 +88,7 @@ void ShaderEffectSource::setSourceItem(QSGItem *item)
     if (m_sourceItem) {
         disconnect(m_sourceItem, SIGNAL(widthChanged()), this, SLOT(markSourceSizeDirty()));
         disconnect(m_sourceItem, SIGNAL(heightChanged()), this, SLOT(markSourceSizeDirty()));
-        if (m_refs && m_hideOriginal) {
+        if (m_refs) {
             QSGItemPrivate *d = QSGItemPrivate::get(m_sourceItem);
             d->derefFromEffectItem();
         }
@@ -97,7 +97,7 @@ void ShaderEffectSource::setSourceItem(QSGItem *item)
     m_sourceItem = item;
 
     if (m_sourceItem) {
-        if (m_refs && m_hideOriginal) {
+        if (m_refs) {
             QSGItemPrivate *d = QSGItemPrivate::get(m_sourceItem);
             d->refFromEffectItem();
         }
@@ -203,14 +203,14 @@ void ShaderEffectSource::setHideOriginal(bool hide)
     if (hide == m_hideOriginal)
         return;
 
-    if (m_refs && m_sourceItem && m_hideOriginal) {
+    if (m_refs && m_sourceItem) {
         QSGItemPrivate *d = QSGItemPrivate::get(m_sourceItem);
         d->derefFromEffectItem();
     }
 
     m_hideOriginal = hide;
 
-    if (m_refs && m_sourceItem && m_hideOriginal) {
+    if (m_refs && m_sourceItem) {
         QSGItemPrivate *d = QSGItemPrivate::get(m_sourceItem);
         d->refFromEffectItem();
     }
@@ -259,9 +259,11 @@ void ShaderEffectSource::bind() const
 void ShaderEffectSource::refFromEffectItem()
 {
     if (m_refs++ == 0) {
-        if (m_sourceItem && m_hideOriginal) {
+        if (m_sourceItem) {
             QSGItemPrivate *d = QSGItemPrivate::get(m_sourceItem);
             d->refFromEffectItem();
+            if (m_renderer)
+                m_renderer->setRootNode(d->rootNode);
         }
         emit activeChanged();
     }
@@ -270,7 +272,9 @@ void ShaderEffectSource::refFromEffectItem()
 void ShaderEffectSource::derefFromEffectItem()
 {
     if (--m_refs == 0) {
-        if (m_sourceItem && m_hideOriginal) {
+        if (m_sourceItem) {
+            if (m_renderer)
+                m_renderer->setRootNode(0);
             QSGItemPrivate *d = QSGItemPrivate::get(m_sourceItem);
             d->derefFromEffectItem();
         }
@@ -297,19 +301,10 @@ void ShaderEffectSource::update()
         if (!m_renderer) {
             m_renderer = m_context->createRenderer();
             connect(m_renderer, SIGNAL(sceneGraphChanged()), this, SLOT(markSceneGraphDirty()));
-            RootNode *root = new RootNode;
-            m_renderer->setRootNode(root);
+            m_renderer->setRootNode(src->rootNode);
         }
 
         RootNode *root = m_renderer->rootNode();
-        Node *childrenNode = src->childContainerNode();
-
-        // XXX todo - optimize
-        while (childrenNode->childCount()) {
-            Node *child = childrenNode->childAtIndex(0);
-            childrenNode->removeChildNode(child);
-            root->appendChildNode(child);
-        }
 
         const QGLContext *ctx = m_context->glContext();
 
@@ -364,12 +359,6 @@ void ShaderEffectSource::update()
             QGLFramebufferObject::bindDefault();
             glBindTexture(GL_TEXTURE_2D, m_fbo->texture());
             m_context->renderer()->glGenerateMipmap(GL_TEXTURE_2D);
-        }
-
-        while (root->childCount()) {
-            Node *child = root->childAtIndex(0);
-            root->removeChildNode(child);
-            childrenNode->appendChildNode(child);
         }
 
         // ### gunnar: If the source is hidden, the itemNode() will never be

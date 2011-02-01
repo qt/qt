@@ -867,19 +867,17 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
 
         QMatrix4x4 matrix;
 
-        if (!itemPriv->effectRefCount) {
-            if (itemPriv->x != 0. || itemPriv->y != 0.) 
-                matrix.translate(itemPriv->x, itemPriv->y);
+        if (itemPriv->x != 0. || itemPriv->y != 0.) 
+            matrix.translate(itemPriv->x, itemPriv->y);
 
-            if (itemPriv->scale != 1. || itemPriv->rotation != 0.) {
-                QPointF origin = itemPriv->computeTransformOrigin();
-                matrix.translate(origin.x(), origin.y());
-                if (itemPriv->scale != 1.)
-                    matrix.scale(itemPriv->scale, itemPriv->scale);
-                if (itemPriv->rotation != 0.)
-                    matrix.rotate(itemPriv->rotation, 0, 0, 1);
-                matrix.translate(-origin.x(), -origin.y());
-            }
+        if (itemPriv->scale != 1. || itemPriv->rotation != 0.) {
+            QPointF origin = itemPriv->computeTransformOrigin();
+            matrix.translate(origin.x(), origin.y());
+            if (itemPriv->scale != 1.)
+                matrix.scale(itemPriv->scale, itemPriv->scale);
+            if (itemPriv->rotation != 0.)
+                matrix.rotate(itemPriv->rotation, 0, 0, 1);
+            matrix.translate(-origin.x(), -origin.y());
         }
 
         if (dirty & QSGItemPrivate::ComplexTransformUpdateMask) {
@@ -892,24 +890,64 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
 
     bool clipEffectivelyChanged = dirty & QSGItemPrivate::Clip &&
                                   ((item->clip() == false) != (itemPriv->clipNode == 0));
+    bool effectRefEffectivelyChanged = dirty & QSGItemPrivate::EffectReference &&
+                                  ((itemPriv->effectRefCount == 0) != (itemPriv->rootNode == 0));
+    bool childrenChanged = dirty & QSGItemPrivate::ChildrenUpdateMask;
 
-    if (dirty & QSGItemPrivate::ChildrenUpdateMask || clipEffectivelyChanged) {
+    if (clipEffectivelyChanged || effectRefEffectivelyChanged || childrenChanged) {
+        Node *childContainerNode = itemPriv->childContainerNode();
+        for (int count = childContainerNode->childCount(); count; --count)
+            childContainerNode->removeChildNode(childContainerNode->childAtIndex(0));
+    }
 
-        while (itemPriv->childContainerNode()->childCount()) 
-            itemPriv->childContainerNode()->removeChildNode(itemPriv->childContainerNode()->childAtIndex(0));
+    if (clipEffectivelyChanged) {
+        if (item->clip()) {
+            // Insert clip node below transform node, and potentially above effect root node.
+            Q_ASSERT(itemPriv->clipNode == 0);
+            Q_ASSERT(itemPriv->itemNode()->childCount() == (itemPriv->rootNode ? 1 : 0));
 
-        if (clipEffectivelyChanged) {
-            if (item->clip()) {
-                Q_ASSERT(itemPriv->clipNode == 0);
-                itemPriv->clipNode = new QSGClipNode(QRectF(0, 0, itemPriv->width, itemPriv->height));
-                itemPriv->itemNode()->appendChildNode(itemPriv->clipNode);
-            } else {
-                Q_ASSERT(itemPriv->clipNode != 0);
-                delete itemPriv->clipNode;
-                itemPriv->clipNode = 0;
+            Node *itemNode = itemPriv->itemNode();
+            itemPriv->clipNode = new QSGClipNode(QRectF(0, 0, itemPriv->width, itemPriv->height));
+            if (itemNode->childCount()) {
+                Node *child = itemNode->childAtIndex(0);
+                itemNode->removeChildNode(child);
+                itemPriv->clipNode->appendChildNode(child);
             }
-        }
+            itemPriv->itemNode()->appendChildNode(itemPriv->clipNode);
+        } else {
+            // Remove clip node from below transform node, and potentially from above effect root node.
+            Q_ASSERT(itemPriv->clipNode != 0);
+            Q_ASSERT(itemPriv->clipNode->childCount() == (itemPriv->rootNode ? 1 : 0));
 
+            if (itemPriv->clipNode->childCount()) {
+                Node *child = itemPriv->clipNode->childAtIndex(0);
+                itemPriv->clipNode->removeChildNode(child);
+                itemPriv->itemNode()->appendChildNode(child);
+            }
+            delete itemPriv->clipNode;
+            itemPriv->clipNode = 0;
+        }
+    }
+
+    if (effectRefEffectivelyChanged) {
+        if (itemPriv->effectRefCount) {
+            // Insert effect root node below transform node or clip node, whichever is lower.
+            Q_ASSERT(itemPriv->rootNode == 0);
+
+            Node *childContainerNode = itemPriv->childContainerNode();
+            itemPriv->rootNode = new RootNode;
+            childContainerNode->appendChildNode(itemPriv->rootNode);
+        } else {
+            // remove effect root node from below transform node or clip node.
+            Q_ASSERT(itemPriv->rootNode != 0);
+            Node *rootNode = itemPriv->rootNode;
+            itemPriv->rootNode = 0;
+            itemPriv->childContainerNode()->removeChildNode(rootNode);
+            delete rootNode;
+        }
+    }
+
+    if (clipEffectivelyChanged || effectRefEffectivelyChanged || childrenChanged) {
         QList<QSGItem *> orderedChildren = itemPriv->paintOrderChildItems();
         int ii = 0;
 
@@ -919,10 +957,8 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
             if (childPrivate->itemNode()->parent())
                 childPrivate->itemNode()->parent()->removeChildNode(childPrivate->itemNode());
 
-            if (childPrivate->effectRefCount == 0) {
-                itemPriv->childContainerNode()->appendChildNode(childPrivate->itemNode());
-                itemPriv->paintNodeIndex++;
-            }
+            itemPriv->childContainerNode()->appendChildNode(childPrivate->itemNode());
+            itemPriv->paintNodeIndex++;
         }
 
         if (itemPriv->paintNode)
@@ -933,9 +969,7 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
             if (childPrivate->itemNode()->parent())
                 childPrivate->itemNode()->parent()->removeChildNode(childPrivate->itemNode());
 
-            if (childPrivate->effectRefCount == 0) {
-                itemPriv->childContainerNode()->appendChildNode(childPrivate->itemNode());
-            }
+            itemPriv->childContainerNode()->appendChildNode(childPrivate->itemNode());
         }
     }
 

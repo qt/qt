@@ -322,8 +322,8 @@ public:
         // When you add an attribute here, don't forget to update
         // dirtyToString()
 
-        TransformUpdateMask     = TransformOrigin | Transform | BasicTransform | Position | Size | EffectReference | Canvas,
-        ComplexTransformUpdateMask     = Transform | EffectReference | Canvas,
+        TransformUpdateMask     = TransformOrigin | Transform | BasicTransform | Position | Size | Canvas,
+        ComplexTransformUpdateMask     = Transform | Canvas,
         ContentUpdateMask       = Size | Content | Smooth | EffectiveOpacity | Canvas,
         ChildrenUpdateMask      = ChildrenChanged | ChildrenStackingChanged | Canvas,
 
@@ -340,13 +340,13 @@ public:
     inline Node *childContainerNode();
     TransformNode *itemNodeInstance;
     QSGClipNode *clipNode;
+    RootNode *rootNode;
     Node *paintNode;
     int paintNodeIndex;
     qreal effectiveOpacity;
 
-    // A reference from an effect item means that this item is hidden by the effect, so
-    // it shouldn't be included in the main scene.  The itemNodeInstance should contain
-    // the identity transform.
+    // A reference from an effect item means that this item is used by the effect, so
+    // it should insert a root node.
     void refFromEffectItem();
     void derefFromEffectItem();
     int effectRefCount;
@@ -607,7 +607,7 @@ TransformNode *QSGItemPrivate::itemNode()
 
 Node *QSGItemPrivate::childContainerNode()
 {
-    return clipNode?(Node *)clipNode:(Node *)itemNode();
+    return rootNode ? (Node *)rootNode : (clipNode ? (Node *)clipNode : (Node *)itemNode());
 }
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSGItemPrivate::ChangeTypes);

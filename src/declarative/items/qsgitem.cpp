@@ -981,6 +981,7 @@ void QSGItemPrivate::initCanvas(InitializationState *state, QSGCanvas *c)
     // XXX todo - why aren't these added to the destroy list?
     itemNodeInstance = 0;
     clipNode = 0;
+    rootNode = 0;
     paintNode = 0;
     paintNodeIndex = 0;
 
@@ -1083,7 +1084,7 @@ QSGItemPrivate::QSGItemPrivate()
 
   dirtyAttributes(0), nextDirtyItem(0), prevDirtyItem(0),
 
-  itemNodeInstance(0), clipNode(0), paintNode(0), paintNodeIndex(0), effectiveOpacity(1), effectRefCount(0)
+  itemNodeInstance(0), clipNode(0), rootNode(0), paintNode(0), paintNodeIndex(0), effectiveOpacity(1), effectRefCount(0)
 {
 }
 
