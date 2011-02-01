@@ -67,6 +67,7 @@
 
 #include <private/qthread_p.h>
 #include <private/qobject_p.h>
+#include <private/qsystemerror_p.h>
 
 #define QNATIVESOCKETENGINE_DEBUG
 
@@ -190,7 +191,6 @@ bool QSymbianSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType so
     else
         err = nativeSocket.Open(socketServer, family, type, protocol); //TODO: FIXME - deprecated API, make sure we always have a connection instead
 
-    //TODO: combine error handling with setError
     if (err != KErrNone) {
         switch (err) {
         case KErrNotSupported:
@@ -198,13 +198,8 @@ bool QSymbianSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType so
             setError(QAbstractSocket::UnsupportedSocketOperationError,
                 ProtocolUnsupportedErrorString);
             break;
-        case KErrNoMemory:
-            setError(QAbstractSocket::SocketResourceError, ResourceErrorString);
-            break;
-        case KErrPermissionDenied:
-            setError(QAbstractSocket::SocketAccessError, AccessErrorString);
-            break;
         default:
+            setError(err);
             break;
         }
 
@@ -588,7 +583,6 @@ bool QSymbianSocketEngine::connectToHost(const QHostAddress &addr, quint16 port)
     d->nativeSocket.Connect(nativeAddr, status);
     User::WaitForRequest(status);
     TInt err = status.Int();
-    //TODO: combine with setError(int)
     //For non blocking connect, KErrAlreadyExists is returned from the second Connect() to indicate
     //the connection is up. So treat this the same as KErrNone which would be returned from the first
     //call if it wouldn't block. (e.g. winsock wrapper in the emulator ignores the nonblocking flag)
@@ -597,36 +591,8 @@ bool QSymbianSocketEngine::connectToHost(const QHostAddress &addr, quint16 port)
         case KErrWouldBlock:
             d->socketState = QAbstractSocket::ConnectingState;
             break;
-        case KErrCouldNotConnect:
-            d->setError(QAbstractSocket::ConnectionRefusedError, d->ConnectionRefusedErrorString);
-            d->socketState = QAbstractSocket::UnconnectedState;
-            break;
-        case KErrTimedOut:
-            d->setError(QAbstractSocket::NetworkError, d->ConnectionTimeOutErrorString);
-            d->socketState = QAbstractSocket::UnconnectedState;
-            break;
-        case KErrHostUnreach:
-            d->setError(QAbstractSocket::NetworkError, d->HostUnreachableErrorString);
-            d->socketState = QAbstractSocket::UnconnectedState;
-            break;
-        case KErrNetUnreach:
-            d->setError(QAbstractSocket::NetworkError, d->NetworkUnreachableErrorString);
-            d->socketState = QAbstractSocket::UnconnectedState;
-            break;
-        case KErrInUse:
-            d->setError(QAbstractSocket::NetworkError, d->AddressInuseErrorString);
-            break;
-        case KErrPermissionDenied:
-            d->setError(QAbstractSocket::SocketAccessError, d->AccessErrorString);
-            d->socketState = QAbstractSocket::UnconnectedState;
-            break;
-        case KErrBadName:
-            d->setError(QAbstractSocket::NetworkError, d->InvalidAddressError);
-            d->socketState = QAbstractSocket::UnconnectedState;
-            break;
-        case KErrNotSupported:
-        case KErrBadDescriptor:
         default:
+            d->setError(err);
             d->socketState = QAbstractSocket::UnconnectedState;
             break;
         }
@@ -699,15 +665,7 @@ bool QSymbianSocketEngine::listen()
     // for a mobile platform
     TInt err = d->nativeSocket.Listen(50);
     if (err) {
-        //TODO: combine with setError(int)
-        switch (err) {
-        case KErrInUse:
-            d->setError(QAbstractSocket::AddressInUseError,
-                     d->PortInuseErrorString);
-            break;
-        default:
-            break;
-        }
+        d->setError(err);
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
         qDebug("QSymbianSocketEnginePrivate::nativeListen() == false (%s)",
@@ -846,9 +804,9 @@ qint64 QSymbianSocketEngine::writeDatagram(const char *data, qint64 len,
     TInetAddr addr;
     d->setPortAndAddress(addr, port, host);
     TSockXfrLength sentBytes;
-    TRequestStatus status; //TODO: OMG sync send!
+    TRequestStatus status;
     d->nativeSocket.SendTo(buffer, addr, 0, status, sentBytes);
-    User::WaitForRequest(status);
+    User::WaitForRequest(status); //Non blocking send
     TInt err = status.Int(); 
 
     if (err) {
@@ -882,8 +840,10 @@ bool QSymbianSocketEnginePrivate::fetchConnectionParameters()
         return false;
 
     if (!nativeSocket.SubSessionHandle()) {
-        if (!QSymbianSocketManager::instance().lookupSocket(socketDescriptor, nativeSocket))
+        if (!QSymbianSocketManager::instance().lookupSocket(socketDescriptor, nativeSocket)) {
+            setError(QAbstractSocket::UnsupportedSocketOperationError, InvalidSocketErrorString);
             return false;
+        }
     }
 
     // Determine local address
@@ -912,8 +872,8 @@ bool QSymbianSocketEnginePrivate::fetchConnectionParameters()
     TProtocolDesc protocol;
     TInt err = nativeSocket.Info(protocol);
     if (err) {
-        // ?
-        // QAbstractSocket::UnknownSocketType;
+        setError(err);
+        return false;
     } else {
         switch (protocol.iProtocol) {
         case KProtocolInetTcp:
@@ -1052,9 +1012,9 @@ qint64 QSymbianSocketEngine::read(char *data, qint64 maxSize)
 
     TPtr8 buffer((TUint8*)data, (int)maxSize);
     TSockXfrLength received = 0;
-    TRequestStatus status; //TODO: OMG sync receive!
+    TRequestStatus status;
     d->nativeSocket.RecvOneOrMore(buffer, 0, status, received);
-    User::WaitForRequest(status);
+    User::WaitForRequest(status); //Non blocking receive
     TInt err = status.Int();
     int r = received();
 
@@ -1375,7 +1335,7 @@ void QSymbianSocketEnginePrivate::setError(TInt symbianError)
         setError(QAbstractSocket::AddressInUseError, AddressInuseErrorString);
         break;
     case KErrPermissionDenied:
-        setError(QAbstractSocket::SocketAccessError, AddressProtectedErrorString);
+        setError(QAbstractSocket::SocketAccessError, AccessErrorString);
         break;
     case KErrNotSupported:
         setError(QAbstractSocket::UnsupportedSocketOperationError, OperationUnsupportedErrorString);
@@ -1383,9 +1343,18 @@ void QSymbianSocketEnginePrivate::setError(TInt symbianError)
     case KErrNoMemory:
         setError(QAbstractSocket::SocketResourceError, ResourceErrorString);
         break;
+    case KErrCouldNotConnect:
+        setError(QAbstractSocket::ConnectionRefusedError, ConnectionRefusedErrorString);
+        break;
+    case KErrTimedOut:
+        setError(QAbstractSocket::NetworkError, ConnectionTimeOutErrorString);
+        break;
+    case KErrBadName:
+        setError(QAbstractSocket::NetworkError, InvalidAddressError);
+        break;
     default:
         socketError = QAbstractSocket::NetworkError;
-        socketErrorString = QString::number(symbianError);
+        socketErrorString = QSystemError(symbianError, QSystemError::NativeError).toString();
         break;
     }
     hasSetSocketError = true;
