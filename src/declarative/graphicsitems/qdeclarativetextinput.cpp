@@ -613,6 +613,11 @@ void QDeclarativeTextInput::setAutoScroll(bool b)
     \ingroup qml-basic-visual-elements
 
     This element provides a validator for integer values.
+
+    IntValidator uses the \l {QLocale::setDefault()}{default locale} to interpret the number and
+    will accept locale specific digits, group separators, and positive and negative signs.  In
+    addition, IntValidator is always guaranteed to accept a number formatted according to the "C"
+    locale.
 */
 /*!
     \qmlproperty int IntValidator::top
