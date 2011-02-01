@@ -22,30 +22,24 @@
 ****************************************************************************/
 
 #include "qscriptclass_p.h"
-#include "qscriptclass_impl_p.h"
 #include "qscriptcontext.h"
 #include "qscriptcontext_p.h"
-#include "qscriptcontext_impl_p.h"
 #include "qscriptcontextinfo.h"
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
-#include "qscriptengine_impl_p.h"
 #include "qscriptengineagent.h"
 #include "qscriptengineagent_p.h"
-#include "qscriptengineagent_impl_p.h"
 #include "qscriptextensioninterface.h"
 #include "qscriptfunction_p.h"
 #include "qscriptstring.h"
 #include "qscriptstring_p.h"
-#include "qscriptstring_impl_p.h"
 #include "qscriptvalue.h"
 #include "qscriptvalue_p.h"
-#include "qscriptvalue_impl_p.h"
 #include "qscriptsyntaxcheckresult_p.h"
 #include "qscriptqobject_p.h"
-#include "qscriptqobject_impl_p.h"
 #include "qscriptisolate_p.h"
 #include "qscriptprogram_p.h"
+#include "qscript_impl_p.h"
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qmetaobject.h>

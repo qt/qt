@@ -21,36 +21,27 @@
 **
 ****************************************************************************/
 
-#include "qscriptoriginalglobalobject_p.h"
-#include "qscriptengine_p.h"
-#include "qscriptconverter_p.h"
-#include "qscript_impl_p.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_NAMESPACE
+#ifndef QSCRIPT_IMPL_P_H
+#define QSCRIPT_IMPL_P_H
 
-v8::Handle<v8::Value> functionPrint(const v8::Arguments& args)
-{
-    QString result;
-    for (int i = 0; i < args.Length(); ++i) {
-        if (i != 0)
-            result.append(QLatin1Char(' '));
-        QString s = QScriptConverter::toString(args[i]->ToString());
-        result.append(s);
-    }
-    qDebug("%s", qPrintable(result));
-    return v8::Handle<v8::Value>();
-}
+#include "qscriptable_impl_p.h"
+#include "qscriptclass_impl_p.h"
+#include "qscriptcontext_impl_p.h"
+#include "qscriptengineagent_impl_p.h"
+#include "qscriptengine_impl_p.h"
+#include "qscriptqobject_impl_p.h"
+#include "qscriptstring_impl_p.h"
+#include "qscriptvalue_impl_p.h"
 
-v8::Handle<v8::Value> functionGC(const v8::Arguments& args)
-{
-    QScriptEnginePrivate *engine = static_cast<QScriptEnginePrivate *>(v8::External::Unwrap(args.Data()));
-    engine->collectGarbage();
-    return v8::Handle<v8::Value>();
-}
-
-v8::Handle<v8::Value> functionVersion(const v8::Arguments& args)
-{
-    return v8::Number::New(1);
-}
-
-QT_END_NAMESPACE
+#endif //QSCRIPT_IMPL_P_H

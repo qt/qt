@@ -70,6 +70,7 @@ HEADERS += \
     $$PWD/qscriptshareddata_p.h \
     $$PWD/qscriptv8objectwrapper_p.h \
     $$PWD/qscripttools_p.h \
+    $$PWD/qscript_impl_p.h \
 
 SOURCES += \
     $$PWD/qscriptdeclarativeclass.cpp \

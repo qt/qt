@@ -21,18 +21,15 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qstringlist.h>
+#include "qscriptcontextinfo.h"
 #include "qscriptisolate_p.h"
 #include "qscriptcontext.h"
 #include "qscriptcontext_p.h"
-#include "qscriptcontext_impl_p.h"
 #include "qscriptengine.h"
-#include "qscriptengine_impl_p.h"
 #include "qscriptvalue_p.h"
-#include "qscriptvalue_impl_p.h"
-#include "qscriptstring_impl_p.h"
+#include "qscript_impl_p.h"
 
-#include <QtCore/qstringlist.h>
-#include "qscriptcontextinfo.h"
 
 QT_BEGIN_NAMESPACE
 

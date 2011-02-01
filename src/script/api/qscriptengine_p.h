@@ -48,7 +48,6 @@ Q_DECLARE_METATYPE(QList<int>)
 QT_BEGIN_NAMESPACE
 
 class QDateTime;
-class QScriptEngine;
 class QScriptContextPrivate;
 class QScriptClassPrivate;
 class QScriptablePrivate;

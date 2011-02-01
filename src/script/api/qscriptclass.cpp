@@ -24,18 +24,14 @@
 #include "qscriptisolate_p.h"
 #include "qscriptclass.h"
 #include "qscriptclass_p.h"
-#include "qscriptclass_impl_p.h"
 #include "qscriptclasspropertyiterator.h"
 #include "qscriptengine_p.h"
-#include "qscriptengine_impl_p.h"
 #include "qscriptstring_p.h"
-#include "qscriptstring_impl_p.h"
 #include "qscriptvalue_p.h"
-#include "qscriptvalue_impl_p.h"
 #include "qscriptcontext_p.h"
-#include "qscriptcontext_impl_p.h"
 #include <v8.h>
 #include "qscriptv8objectwrapper_p.h"
+#include "qscript_impl_p.h"
 
 QT_BEGIN_NAMESPACE
 

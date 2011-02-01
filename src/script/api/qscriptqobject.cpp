@@ -25,7 +25,6 @@
 #include "qscriptisolate_p.h"
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
-#include "qscriptengine_impl_p.h"
 #include "qscriptqobject_p.h"
 #include "qscriptv8objectwrapper_p.h"
 
@@ -34,14 +33,10 @@
 
 #include <QtCore/qdebug.h>
 #include "qscriptvalue_p.h"
-#include "qscriptvalue_impl_p.h"
 #include "qscriptcontext_p.h"
-#include "qscriptcontext_impl_p.h"
 #include "qscriptable_p.h"
-#include "qscriptable_impl_p.h"
-#include "qscriptqobject_impl_p.h"
-#include "qscriptstring_impl_p.h"
 
+#include "qscript_impl_p.h"
 #include <v8.h>
 
 QT_BEGIN_NAMESPACE

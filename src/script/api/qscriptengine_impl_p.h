@@ -25,10 +25,8 @@
 #define QSCRIPTENGINE_IMPL_P_H
 
 #include "qscriptengine_p.h"
-#include "qscriptvalue_impl_p.h"
-#include "qscriptqobject_impl_p.h"
-#include "qscriptable_impl_p.h"
 #include "qscriptengineagent_p.h"
+#include "qscriptqobject_p.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -28,7 +28,6 @@
 #include "qscriptvalue_p.h"
 #include "qscriptengine_p.h"
 #include "qscriptcontext_p.h"
-#include "qscriptcontext_impl_p.h"
 #include <v8.h>
 
 QT_BEGIN_NAMESPACE

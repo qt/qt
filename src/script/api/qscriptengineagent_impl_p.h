@@ -36,8 +36,9 @@
 //
 
 #include <QtCore/qobjectdefs.h>
-#include "qscriptengine_p.h"
+#include "qscriptengineagent.h"
 #include "qscriptengineagent_p.h"
+#include "qscriptengine_p.h"
 
 QT_BEGIN_NAMESPACE
 
