@@ -30,6 +30,9 @@
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
 #include "qscriptengine_impl_p.h"
+#include "qscriptengineagent.h"
+#include "qscriptengineagent_p.h"
+#include "qscriptengineagent_impl_p.h"
 #include "qscriptextensioninterface.h"
 #include "qscriptfunction_p.h"
 #include "qscriptstring.h"
@@ -671,6 +674,7 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
     , m_originalGlobalObject(this, m_v8Context)
     , m_currentQsContext(0)
     , m_state(Idle)
+    , m_currentAgent(0)
 {
     qMetaTypeId<QScriptValue>();
     qMetaTypeId<QList<int> >();
@@ -752,6 +756,7 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     m_isolate->Exit();
     m_isolate->Dispose();
     m_state = Destroyed;
+    invalidateAllAgents();
     deallocateAdditionalResources();
 }
 
@@ -2490,14 +2495,17 @@ int QScriptEngine::processEventsInterval() const
 
 void QScriptEngine::setAgent(QScriptEngineAgent *agent)
 {
-    Q_UNUSED(agent);
-    Q_UNIMPLEMENTED();
+    Q_D(QScriptEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
+    agent ? d->setAgent(QScriptEngineAgentPrivate::get(agent)) : d->setAgent(0);
 }
 
 QScriptEngineAgent *QScriptEngine::agent() const
 {
-    Q_UNIMPLEMENTED();
-    return 0;
+    Q_D(const QScriptEngine);
+    QScriptIsolate api(d_ptr, QScriptIsolate::NotNullEngine);
+    QScriptEngineAgentPrivate *agent = d->agent();
+    return agent ? QScriptEngineAgentPrivate::get(agent) : 0;
 }
 
 bool qScriptConnect(QObject *sender, const char *signal,

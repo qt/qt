@@ -22,7 +22,13 @@
 ****************************************************************************/
 
 #include "qscriptengineagent.h"
+#include "qscriptengineagent_p.h"
+#include "qscriptengineagent_impl_p.h"
 #include "qscriptengine.h"
+#include "qscriptengine_p.h"
+#include "qscriptengine_impl_p.h"
+#include "qscriptstring_impl_p.h"
+#include "qscriptcontext_impl_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -105,26 +111,6 @@ QT_BEGIN_NAMESPACE
   \sa extension()
 */
 
-class QScriptEnginePrivate;
-
-class QScriptEngineAgent;
-class Q_SCRIPT_EXPORT QScriptEngineAgentPrivate
-{
-    Q_DECLARE_PUBLIC(QScriptEngineAgent)
-public:
-    static QScriptEngineAgent* get(QScriptEngineAgentPrivate* p) { return p->q_func(); }
-    static QScriptEngineAgentPrivate* get(QScriptEngineAgent* p) { return p->d_func(); }
-
-    QScriptEngineAgentPrivate() {}
-    virtual ~QScriptEngineAgentPrivate() {}
-
-    void attach();
-    void detach();
-
-    QScriptEnginePrivate *engine;
-    QScriptEngineAgent *q_ptr;
-};
-
 /*!
     Constructs a QScriptEngineAgent object for the given \a engine.
 
@@ -134,20 +120,8 @@ public:
     agent.
 */
 QScriptEngineAgent::QScriptEngineAgent(QScriptEngine *engine)
-{
-    Q_UNUSED(engine);
-    Q_UNIMPLEMENTED();
-}
-
-/*!
-  \internal
-*/
-QScriptEngineAgent::QScriptEngineAgent(QScriptEngineAgentPrivate &dd, QScriptEngine *engine)
-{
-    Q_UNUSED(dd);
-    Q_UNUSED(engine);
-    Q_UNIMPLEMENTED();
-}
+    : d_ptr(new QScriptEngineAgentPrivate(this, QScriptEnginePrivate::get(engine)))
+{}
 
 /*!
   Destroys this QScriptEngineAgent.
@@ -394,8 +368,8 @@ QVariant QScriptEngineAgent::extension(Extension extension,
 */
 QScriptEngine *QScriptEngineAgent::engine() const
 {
-    Q_UNIMPLEMENTED();
-    return 0;
+    Q_D(const QScriptEngineAgent);
+    return QScriptEnginePrivate::get(d->engine());
 }
 
 QT_END_NAMESPACE

@@ -50,6 +50,7 @@ HEADERS += \
     $$PWD/qscriptengine_impl_p.h \
     $$PWD/qscriptengineagent.h \
     $$PWD/qscriptengineagent_p.h \
+    $$PWD/qscriptengineagent_impl_p.h \
     $$PWD/qscriptextensioninterface.h \
     $$PWD/qscriptextensionplugin.h \
     $$PWD/qscriptprogram.h \

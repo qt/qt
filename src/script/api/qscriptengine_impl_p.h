@@ -28,6 +28,7 @@
 #include "qscriptvalue_impl_p.h"
 #include "qscriptqobject_impl_p.h"
 #include "qscriptable_impl_p.h"
+#include "qscriptengineagent_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -403,15 +404,34 @@ inline void QScriptEnginePrivate::unregisterScriptable(QScriptablePrivate *data)
     m_scriptable.remove(data);
 }
 
+inline void QScriptEnginePrivate::registerAgent(QScriptEngineAgentPrivate *data)
+{
+    m_agents.insert(data);
+}
+
+inline void QScriptEnginePrivate::unregisterAgent(QScriptEngineAgentPrivate *data)
+{
+    m_agents.remove(data);
+    if (m_currentAgent == data)
+        m_currentAgent = 0;
+}
+
 class QtScriptInvalidator
 {
 public:
     template<class T>
-    void operator () (T* value)
+    void operator () (T* value) const
     {
         value->reinitialize();
     }
+
+    void operator() (QScriptEngineAgentPrivate *agent) const
+    {
+        agent->kill();
+    }
 };
+
+
 
 inline void QScriptEnginePrivate::invalidateAllValues()
 {
@@ -432,6 +452,12 @@ inline void QScriptEnginePrivate::invalidateAllScriptable()
     QtScriptInvalidator invalidator;
     m_scriptable.forEach(invalidator);
     m_scriptable.clear();
+}
+
+inline void QScriptEnginePrivate::invalidateAllAgents()
+{
+    QtScriptInvalidator killer;
+    m_agents.forEach(killer);
 }
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newQObject(QScriptValuePrivate *scriptObject,
@@ -498,6 +524,20 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newVariant(
     object->reinitialize(this, *obj);
     object->setPrototype(proto.data());
     return object;
+}
+
+inline void QScriptEnginePrivate::setAgent(QScriptEngineAgentPrivate *agent)
+{
+    if (agent && (agent->engine() != this)) {
+        qWarning("QScriptEngine::setAgent(): cannot set agent belonging to different engine");
+        return;
+    }
+    m_currentAgent = agent;
+}
+
+inline QScriptEngineAgentPrivate *QScriptEnginePrivate::agent() const
+{
+    return m_currentAgent;
 }
 
 QT_END_NAMESPACE

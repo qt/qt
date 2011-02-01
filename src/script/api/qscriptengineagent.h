@@ -76,7 +76,6 @@ public:
     QScriptEngine *engine() const;
 
 protected:
-    QScriptEngineAgent(QScriptEngineAgentPrivate &dd, QScriptEngine *engine);
     QScopedPointer<QScriptEngineAgentPrivate> d_ptr;
 
 private:

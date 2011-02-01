@@ -21,8 +21,8 @@
 **
 ****************************************************************************/
 
-#ifndef QSCRIPTENGINEAGENT_P_H
-#define QSCRIPTENGINEAGENT_P_H
+#ifndef QSCRIPTENGINEAGENT_IMPL_P_H
+#define QSCRIPTENGINEAGENT_IMPL_P_H
 
 //
 //  W A R N I N G
@@ -36,35 +36,60 @@
 //
 
 #include <QtCore/qobjectdefs.h>
-#include "qscripttools_p.h"
+#include "qscriptengine_p.h"
+#include "qscriptengineagent_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QScriptEnginePrivate;
-class QScriptEngineAgent;
-
-class QScriptEngineAgentPrivate
-        : public QScriptLinkedNode
+inline QScriptEngineAgent* QScriptEngineAgentPrivate::get(QScriptEngineAgentPrivate *p)
 {
-    Q_DECLARE_PUBLIC(QScriptEngineAgent)
-public:
-    inline static QScriptEngineAgent* get(QScriptEngineAgentPrivate *p);
-    inline static QScriptEngineAgentPrivate* get(QScriptEngineAgent *p);
+    return p->q_func();
+}
 
-    inline QScriptEngineAgentPrivate(QScriptEngineAgent *q, QScriptEnginePrivate *engine);
-    inline virtual ~QScriptEngineAgentPrivate();
+inline QScriptEngineAgentPrivate* QScriptEngineAgentPrivate::get(QScriptEngineAgent *p)
+{
+    return p->d_func();
+}
 
-    inline QScriptEngineAgent *userCallback();
+inline QScriptEngineAgentPrivate::QScriptEngineAgentPrivate(QScriptEngineAgent *q, QScriptEnginePrivate *engine)
+    : m_engine(engine)
+    , q_ptr(q)
+{
+    Q_ASSERT(q);
+    Q_ASSERT(engine);
+    engine->registerAgent(this);
+}
 
-    inline void attachTo(QScriptEnginePrivate *engine);
-    inline QScriptEnginePrivate *engine() const;
+inline QScriptEngineAgentPrivate::~QScriptEngineAgentPrivate()
+{
+    engine()->unregisterAgent(this);
+}
 
-    inline void kill();
-private:
-    QScriptEnginePrivate *m_engine;
-    QScriptEngineAgent *q_ptr;
-};
+inline QScriptEngineAgent *QScriptEngineAgentPrivate::userCallback()
+{
+    return q_ptr;
+}
+
+inline void QScriptEngineAgentPrivate::attachTo(QScriptEnginePrivate *engine)
+{
+    Q_ASSERT(engine);
+    m_engine = engine;
+}
+
+inline QScriptEnginePrivate *QScriptEngineAgentPrivate::engine() const
+{
+    return m_engine;
+}
+
+/*!
+  \internal
+  This function will delete public agent, which will delete this object
+*/
+inline void QScriptEngineAgentPrivate::kill()
+{
+    delete q_func();
+}
 
 QT_END_NAMESPACE
 
-#endif
+#endif //QSCRIPTENGINEAGENT_IMPL_P_H

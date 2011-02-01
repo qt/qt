@@ -53,6 +53,7 @@ class QScriptContextPrivate;
 class QScriptClassPrivate;
 class QScriptablePrivate;
 class QtDataBase;
+class QScriptEngineAgentPrivate;
 
 class QScriptEnginePrivate
     : public QScriptSharedData
@@ -90,6 +91,9 @@ public:
     inline void reportAdditionalMemoryCost(int cost);
     inline v8::Handle<v8::Object> globalObject() const;
     void setGlobalObject(QScriptValuePrivate* newGlobalObjectValue);
+
+    inline void setAgent(QScriptEngineAgentPrivate *agent);
+    inline QScriptEngineAgentPrivate *agent() const;
 
     QScriptPassPointer<QScriptValuePrivate> newArray(uint length);
     QScriptPassPointer<QScriptValuePrivate> newObject();
@@ -215,6 +219,10 @@ public:
     inline void unregisterScriptable(QScriptablePrivate *data);
     inline void invalidateAllScriptable();
 
+    inline void registerAgent(QScriptEngineAgentPrivate *data);
+    inline void unregisterAgent(QScriptEngineAgentPrivate *data);
+    inline void invalidateAllAgents();
+
     v8::Persistent<v8::FunctionTemplate> declarativeClassTemplate;
     v8::Persistent<v8::FunctionTemplate> scriptClassTemplate;
     v8::Persistent<v8::FunctionTemplate> metaMethodTemplate;
@@ -272,6 +280,9 @@ private:
     QScriptBagContainer<QScriptValuePrivate> m_values;
     QScriptBagContainer<QScriptStringPrivate> m_strings;
     QScriptBagContainer<QScriptablePrivate> m_scriptable;
+    QScriptBagContainer<QScriptEngineAgentPrivate> m_agents;
+
+    QScriptEngineAgentPrivate *m_currentAgent;
 };
 
 QT_END_NAMESPACE
