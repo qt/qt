@@ -3310,8 +3310,10 @@ bool QGLContext::create(const QGLContext* shareContext)
         QWidgetPrivate *wd = qt_widget_private(static_cast<QWidget *>(d->paintDevice));
         wd->usesDoubleBufferedGLContext = d->glFormat.doubleBuffer();
     }
+#ifndef Q_WS_QPA //We do this in choose context->setupSharing()
     if (d->sharing)  // ok, we managed to share
         QGLContextGroup::addShare(this, shareContext);
+#endif
     return d->valid;
 }
 
