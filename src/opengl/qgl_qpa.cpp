@@ -331,13 +331,14 @@ bool QGLWidget::event(QEvent *e)
 void QGLWidget::resizeEvent(QResizeEvent *e)
 {
     Q_D(QGLWidget);
+
+    QWidget::resizeEvent(e);
     if (!isValid())
         return;
     makeCurrent();
     if (!d->glcx->initialized())
         glInit();
     resizeGL(width(), height());
-    return QWidget::resizeEvent(e);
 }
 
 
