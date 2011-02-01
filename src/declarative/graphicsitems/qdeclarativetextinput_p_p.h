@@ -73,6 +73,7 @@ public:
     QDeclarativeTextInputPrivate() : control(new QLineControl(QString())),
                  color((QRgb)0), style(QDeclarativeText::Normal),
                  styleColor((QRgb)0), hAlign(QDeclarativeTextInput::AlignLeft),
+                 mouseSelectionMode(QDeclarativeTextInput::SelectCharacters),
                  hscroll(0), oldScroll(0), focused(false), focusOnPress(true),
                  showInputPanelOnFocus(true), clickCausedFocus(false), cursorVisible(false),
                  autoScroll(true), selectByMouse(false), canPaste(false)
@@ -114,6 +115,7 @@ public:
     QDeclarativeText::TextStyle style;
     QColor  styleColor;
     QDeclarativeTextInput::HAlignment hAlign;
+    QDeclarativeTextInput::SelectionMode mouseSelectionMode;
     QPointer<QDeclarativeComponent> cursorComponent;
     QPointer<QDeclarativeItem> cursorItem;
 

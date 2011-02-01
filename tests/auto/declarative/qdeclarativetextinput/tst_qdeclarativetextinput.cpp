@@ -91,7 +91,11 @@ private slots:
     void selection();
     void moveCursorSelection_data();
     void moveCursorSelection();
+    void moveCursorSelectionSequence_data();
+    void moveCursorSelectionSequence();
     void dragMouseSelection();
+    void mouseSelectionMode_data();
+    void mouseSelectionMode();
 
     void horizontalAlignment_data();
     void horizontalAlignment();
@@ -117,6 +121,9 @@ private slots:
 
     void echoMode();
     void geometrySignals();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
+
 private:
     void simulateKey(QDeclarativeView *, int key);
     QDeclarativeView *createView(const QString &filename);
@@ -459,91 +466,115 @@ void tst_qdeclarativetextinput::moveCursorSelection_data()
     QTest::newRow("jum()ped|characters")
             << standard[0] << 23 << 23 << QDeclarativeTextInput::SelectCharacters << 23 << 23 << true;
 
-    QTest::newRow("(t)he|words")
+    QTest::newRow("<(t)he>|words")
             << standard[0] << 0 << 1 << QDeclarativeTextInput::SelectWords << 0 << 3 << true;
-    QTest::newRow("do(g)|words")
+    QTest::newRow("<do(g)>|words")
             << standard[0] << 43 << 44 << QDeclarativeTextInput::SelectWords << 41 << 44 << true;
-    QTest::newRow("jum(p)ed|words")
+    QTest::newRow("<jum(p)ed>|words")
             << standard[0] << 23 << 24 << QDeclarativeTextInput::SelectWords << 20 << 26 << true;
-    QTest::newRow("jumped( )over|words")
-            << standard[0] << 26 << 27 << QDeclarativeTextInput::SelectWords << 27 << 27 << false;
-    QTest::newRow("jumped( )over|words,reversed")
-            << standard[0] << 27 << 26 << QDeclarativeTextInput::SelectWords << 26 << 26 << false;
-    QTest::newRow("(the )|words")
-            << standard[0] << 0 << 4 << QDeclarativeTextInput::SelectWords << 0 << 3 << true;
-    QTest::newRow("( dog)|words")
-            << standard[0] << 40 << 44 << QDeclarativeTextInput::SelectWords << 41 << 44 << true;
-    QTest::newRow("( jumped )|words")
-            << standard[0] << 19 << 27 << QDeclarativeTextInput::SelectWords << 20 << 26 << true;
-    QTest::newRow("th(e qu)ick|words")
+    QTest::newRow("<jumped( )>over|words,ltr")
+            << standard[0] << 26 << 27 << QDeclarativeTextInput::SelectWords << 20 << 27 << false;
+    QTest::newRow("jumped<( )over>|words,rtl")
+            << standard[0] << 27 << 26 << QDeclarativeTextInput::SelectWords << 26 << 31 << false;
+    QTest::newRow("<(the )>quick|words,ltr")
+            << standard[0] << 0 << 4 << QDeclarativeTextInput::SelectWords << 0 << 4 << false;
+    QTest::newRow("<(the )quick>|words,rtl")
+            << standard[0] << 4 << 0 << QDeclarativeTextInput::SelectWords << 0 << 9 << false;
+    QTest::newRow("<lazy( dog)>|words,ltr")
+            << standard[0] << 40 << 44 << QDeclarativeTextInput::SelectWords << 36 << 44 << false;
+    QTest::newRow("lazy<( dog)>|words,rtl")
+            << standard[0] << 44 << 40 << QDeclarativeTextInput::SelectWords << 40 << 44 << false;
+    QTest::newRow("<fox( jumped )>over|words,ltr")
+            << standard[0] << 19 << 27 << QDeclarativeTextInput::SelectWords << 16 << 27 << false;
+    QTest::newRow("fox<( jumped )over>|words,rtl")
+            << standard[0] << 27 << 19 << QDeclarativeTextInput::SelectWords << 19 << 31 << false;
+    QTest::newRow("<th(e qu)ick>|words")
             << standard[0] << 2 << 6 << QDeclarativeTextInput::SelectWords << 0 << 9 << true;
-    QTest::newRow("la(zy d)og|words")
+    QTest::newRow("<la(zy d)og|words>")
             << standard[0] << 38 << 42 << QDeclarativeTextInput::SelectWords << 36 << 44 << true;
-    QTest::newRow("jum(ped ov)er|words")
+    QTest::newRow("<jum(ped ov)er>|words")
             << standard[0] << 23 << 29 << QDeclarativeTextInput::SelectWords << 20 << 31 << true;
-    QTest::newRow("()the|words")
+    QTest::newRow("<()>the|words")
             << standard[0] << 0 << 0 << QDeclarativeTextInput::SelectWords << 0 << 0 << true;
-    QTest::newRow("dog()|words")
+    QTest::newRow("dog<()>|words")
             << standard[0] << 44 << 44 << QDeclarativeTextInput::SelectWords << 44 << 44 << true;
-    QTest::newRow("jum()ped|words")
+    QTest::newRow("jum<()>ped|words")
             << standard[0] << 23 << 23 << QDeclarativeTextInput::SelectWords << 23 << 23 << true;
 
-    QTest::newRow("Hello(,) |words")
+    QTest::newRow("Hello<(,)> |words")
             << standard[2] << 5 << 6 << QDeclarativeTextInput::SelectWords << 5 << 6 << true;
-    QTest::newRow("Hello(, )|words")
-            << standard[2] << 5 << 7 << QDeclarativeTextInput::SelectWords << 5 << 6 << true;
-    QTest::newRow("Hel(lo, )|words")
-            << standard[2] << 3 << 7 << QDeclarativeTextInput::SelectWords << 0 << 6 << true;
-    QTest::newRow("Hel(lo),|words")
+    QTest::newRow("Hello<(, )>world|words,ltr")
+            << standard[2] << 5 << 7 << QDeclarativeTextInput::SelectWords << 5 << 7 << false;
+    QTest::newRow("Hello<(, )world>|words,rtl")
+            << standard[2] << 7 << 5 << QDeclarativeTextInput::SelectWords << 5 << 12 << false;
+    QTest::newRow("<Hel(lo, )>world|words,ltr")
+            << standard[2] << 3 << 7 << QDeclarativeTextInput::SelectWords << 0 << 7 << false;
+    QTest::newRow("<Hel(lo, )world>|words,rtl")
+            << standard[2] << 7 << 3 << QDeclarativeTextInput::SelectWords << 0 << 12 << false;
+    QTest::newRow("<Hel(lo)>,|words")
             << standard[2] << 3 << 5 << QDeclarativeTextInput::SelectWords << 0 << 5 << true;
-    QTest::newRow("Hello(),|words")
+    QTest::newRow("Hello<()>,|words")
             << standard[2] << 5 << 5 << QDeclarativeTextInput::SelectWords << 5 << 5 << true;
-    QTest::newRow("Hello,()|words")
+    QTest::newRow("Hello,<()>|words")
             << standard[2] << 6 << 6 << QDeclarativeTextInput::SelectWords << 6 << 6 << true;
-    QTest::newRow("Hello,( )|words")
-            << standard[2] << 6 << 7 << QDeclarativeTextInput::SelectWords << 7 << 7 << false;
-    QTest::newRow("Hello,( )|words,reversed")
-            << standard[2] << 7 << 6 << QDeclarativeTextInput::SelectWords << 6 << 6 << false;
-    QTest::newRow("Hello,( world)|words")
-            << standard[2] << 6 << 12 << QDeclarativeTextInput::SelectWords << 7 << 12 << true;
-    QTest::newRow("Hello,( world!)|words")
-            << standard[2] << 6 << 13 << QDeclarativeTextInput::SelectWords << 7 << 13 << true;
-    QTest::newRow("Hello(, world!)|words")
+    QTest::newRow("Hello<,( )>world|words,ltr")
+            << standard[2] << 6 << 7 << QDeclarativeTextInput::SelectWords << 5 << 7 << false;
+    QTest::newRow("Hello,<( )world>|words,rtl")
+            << standard[2] << 7 << 6 << QDeclarativeTextInput::SelectWords << 6 << 12 << false;
+    QTest::newRow("Hello<,( world)>|words,ltr")
+            << standard[2] << 6 << 12 << QDeclarativeTextInput::SelectWords << 5 << 12 << false;
+    QTest::newRow("Hello,<( world)>|words,rtl")
+            << standard[2] << 12 << 6 << QDeclarativeTextInput::SelectWords << 6 << 12 << false;
+    QTest::newRow("Hello<,( world!)>|words,ltr")
+            << standard[2] << 6 << 13 << QDeclarativeTextInput::SelectWords << 5 << 13 << false;
+    QTest::newRow("Hello,<( world!)>|words,rtl")
+            << standard[2] << 13 << 6 << QDeclarativeTextInput::SelectWords << 6 << 13 << false;
+    QTest::newRow("Hello<(, world!)>|words")
             << standard[2] << 5 << 13 << QDeclarativeTextInput::SelectWords << 5 << 13 << true;
-    QTest::newRow("world(!)|words")
-            << standard[2] << 12 << 13 << QDeclarativeTextInput::SelectWords << 12 << 13 << true;
-    QTest::newRow("world!())|words")
+    // Fails due to an issue with QTextBoundaryFinder and punctuation at the end of strings.
+    // QTBUG-11365
+    // QTest::newRow("world<(!)>|words")
+    //         << standard[2] << 12 << 13 << QDeclarativeTextInput::SelectWords << 12 << 13 << true;
+    QTest::newRow("world!<()>)|words")
             << standard[2] << 13 << 13 << QDeclarativeTextInput::SelectWords << 13 << 13 << true;
-    QTest::newRow("world()!)|words")
+    QTest::newRow("world<()>!)|words")
             << standard[2] << 12 << 12 << QDeclarativeTextInput::SelectWords << 12 << 12 << true;
 
-    QTest::newRow("(,)olleH |words")
+    QTest::newRow("<(,)>olleH |words")
             << standard[3] << 7 << 8 << QDeclarativeTextInput::SelectWords << 7 << 8 << true;
-    QTest::newRow("( ,)olleH|words")
-            << standard[3] << 6 << 8 << QDeclarativeTextInput::SelectWords << 7 << 8 << true;
-    QTest::newRow("( ,ol)leH|words")
-            << standard[3] << 6 << 10 << QDeclarativeTextInput::SelectWords << 7 << 13 << true;
-    QTest::newRow(",(ol)leH,|words")
+    QTest::newRow("<dlrow( ,)>olleH|words,ltr")
+            << standard[3] << 6 << 8 << QDeclarativeTextInput::SelectWords << 1 << 8 << false;
+    QTest::newRow("dlrow<( ,)>olleH|words,rtl")
+            << standard[3] << 8 << 6 << QDeclarativeTextInput::SelectWords << 6 << 8 << false;
+    QTest::newRow("<dlrow( ,ol)leH>|words,ltr")
+            << standard[3] << 6 << 10 << QDeclarativeTextInput::SelectWords << 1 << 13 << false;
+    QTest::newRow("dlrow<( ,ol)leH>|words,rtl")
+            << standard[3] << 10 << 6 << QDeclarativeTextInput::SelectWords << 6 << 13 << false;
+    QTest::newRow(",<(ol)leH>,|words")
             << standard[3] << 8 << 10 << QDeclarativeTextInput::SelectWords << 8 << 13 << true;
-    QTest::newRow(",()olleH|words")
+    QTest::newRow(",<()>olleH|words")
             << standard[3] << 8 << 8 << QDeclarativeTextInput::SelectWords << 8 << 8 << true;
-    QTest::newRow("(),olleH|words")
+    QTest::newRow("<()>,olleH|words")
             << standard[3] << 7 << 7 << QDeclarativeTextInput::SelectWords << 7 << 7 << true;
-    QTest::newRow("( ),olleH|words")
-            << standard[3] << 6 << 7 << QDeclarativeTextInput::SelectWords << 7 << 7 << false;
-    QTest::newRow("( ),olleH|words,reversed")
-            << standard[3] << 7 << 6 << QDeclarativeTextInput::SelectWords << 6 << 6 << false;
-    QTest::newRow("(dlrow ),olleH|words")
-            << standard[3] << 1 << 7 << QDeclarativeTextInput::SelectWords << 1 << 6 << true;
-    QTest::newRow("(!dlrow ),olleH|words")
-            << standard[3] << 0 << 7 << QDeclarativeTextInput::SelectWords << 0 << 6 << true;
+    QTest::newRow("<dlrow( )>,olleH|words,ltr")
+            << standard[3] << 6 << 7 << QDeclarativeTextInput::SelectWords << 1 << 7 << false;
+    QTest::newRow("dlrow<( ),>olleH|words,rtl")
+            << standard[3] << 7 << 6 << QDeclarativeTextInput::SelectWords << 6 << 8 << false;
+    QTest::newRow("<(dlrow )>,olleH|words,ltr")
+            << standard[3] << 1 << 7 << QDeclarativeTextInput::SelectWords << 1 << 7 << false;
+    QTest::newRow("<(dlrow ),>olleH|words,rtl")
+            << standard[3] << 7 << 1 << QDeclarativeTextInput::SelectWords << 1 << 8 << false;
+    QTest::newRow("<(!dlrow )>,olleH|words,ltr")
+            << standard[3] << 0 << 7 << QDeclarativeTextInput::SelectWords << 0 << 7 << false;
+    QTest::newRow("<(!dlrow ),>olleH|words,rtl")
+            << standard[3] << 7 << 0 << QDeclarativeTextInput::SelectWords << 0 << 8 << false;
     QTest::newRow("(!dlrow ,)olleH|words")
             << standard[3] << 0 << 8 << QDeclarativeTextInput::SelectWords << 0 << 8 << true;
-    QTest::newRow("(!)dlrow|words")
+    QTest::newRow("<(!)>dlrow|words")
             << standard[3] << 0 << 1 << QDeclarativeTextInput::SelectWords << 0 << 1 << true;
-    QTest::newRow("()!dlrow|words")
+    QTest::newRow("<()>!dlrow|words")
             << standard[3] << 0 << 0 << QDeclarativeTextInput::SelectWords << 0 << 0 << true;
-    QTest::newRow("!()dlrow|words")
+    QTest::newRow("!<()>dlrow|words")
             << standard[3] << 1 << 1 << QDeclarativeTextInput::SelectWords << 1 << 1 << true;
 }
 
@@ -566,6 +597,7 @@ void tst_qdeclarativetextinput::moveCursorSelection()
     textinputObject->setCursorPosition(cursorPosition);
     textinputObject->moveCursorSelection(movePosition, mode);
 
+    QCOMPARE(textinputObject->selectedText(), testStr.mid(selectionStart, selectionEnd - selectionStart));
     QCOMPARE(textinputObject->selectionStart(), selectionStart);
     QCOMPARE(textinputObject->selectionEnd(), selectionEnd);
 
@@ -573,9 +605,165 @@ void tst_qdeclarativetextinput::moveCursorSelection()
         textinputObject->setCursorPosition(movePosition);
         textinputObject->moveCursorSelection(cursorPosition, mode);
 
+        QCOMPARE(textinputObject->selectedText(), testStr.mid(selectionStart, selectionEnd - selectionStart));
         QCOMPARE(textinputObject->selectionStart(), selectionStart);
         QCOMPARE(textinputObject->selectionEnd(), selectionEnd);
     }
+}
+
+void tst_qdeclarativetextinput::moveCursorSelectionSequence_data()
+{
+    QTest::addColumn<QString>("testStr");
+    QTest::addColumn<int>("cursorPosition");
+    QTest::addColumn<int>("movePosition1");
+    QTest::addColumn<int>("movePosition2");
+    QTest::addColumn<int>("selection1Start");
+    QTest::addColumn<int>("selection1End");
+    QTest::addColumn<int>("selection2Start");
+    QTest::addColumn<int>("selection2End");
+
+    QTest::newRow("the {<quick( bro)wn> f^ox} jumped|ltr")
+            << standard[0]
+            << 9 << 13 << 17
+            << 4 << 15
+            << 4 << 19;
+    QTest::newRow("the quick<( {bro)wn> f^ox} jumped|rtl")
+            << standard[0]
+            << 13 << 9 << 17
+            << 9 << 15
+            << 10 << 19;
+    QTest::newRow("the {<quick( bro)wn> ^}fox jumped|ltr")
+            << standard[0]
+            << 9 << 13 << 16
+            << 4 << 15
+            << 4 << 16;
+    QTest::newRow("the quick<( {bro)wn> ^}fox jumped|rtl")
+            << standard[0]
+            << 13 << 9 << 16
+            << 9 << 15
+            << 10 << 16;
+    QTest::newRow("the {<quick( bro)wn^>} fox jumped|ltr")
+            << standard[0]
+            << 9 << 13 << 15
+            << 4 << 15
+            << 4 << 15;
+    QTest::newRow("the quick<( {bro)wn^>} f^ox jumped|rtl")
+            << standard[0]
+            << 13 << 9 << 15
+            << 9 << 15
+            << 10 << 15;
+    QTest::newRow("the {<quick() ^}bro)wn> fox|ltr")
+            << standard[0]
+            << 9 << 13 << 10
+            << 4 << 15
+            << 4 << 10;
+    QTest::newRow("the quick<( {^bro)wn>} fox|rtl")
+            << standard[0]
+            << 13 << 9 << 10
+            << 9 << 15
+            << 10 << 15;
+    QTest::newRow("the {<quick^}( bro)wn> fox|ltr")
+            << standard[0]
+            << 9 << 13 << 9
+            << 4 << 15
+            << 4 << 9;
+    QTest::newRow("the quick{<(^ bro)wn>} fox|rtl")
+            << standard[0]
+            << 13 << 9 << 9
+            << 9 << 15
+            << 9 << 15;
+    QTest::newRow("the {<qui^ck}( bro)wn> fox|ltr")
+            << standard[0]
+            << 9 << 13 << 7
+            << 4 << 15
+            << 4 << 9;
+    QTest::newRow("the {<qui^ck}( bro)wn> fox|rtl")
+            << standard[0]
+            << 13 << 9 << 7
+            << 9 << 15
+            << 4 << 15;
+    QTest::newRow("the {<^quick}( bro)wn> fox|ltr")
+            << standard[0]
+            << 9 << 13 << 4
+            << 4 << 15
+            << 4 << 9;
+    QTest::newRow("the {<^quick}( bro)wn> fox|rtl")
+            << standard[0]
+            << 13 << 9 << 4
+            << 9 << 15
+            << 4 << 15;
+    QTest::newRow("the{^ <quick}( bro)wn> fox|ltr")
+            << standard[0]
+            << 9 << 13 << 3
+            << 4 << 15
+            << 3 << 9;
+    QTest::newRow("the{^ <quick}( bro)wn> fox|rtl")
+            << standard[0]
+            << 13 << 9 << 3
+            << 9 << 15
+            << 3 << 15;
+    QTest::newRow("{t^he <quick}( bro)wn> fox|ltr")
+            << standard[0]
+            << 9 << 13 << 1
+            << 4 << 15
+            << 0 << 9;
+    QTest::newRow("{t^he <quick}( bro)wn> fox|rtl")
+            << standard[0]
+            << 13 << 9 << 1
+            << 9 << 15
+            << 0 << 15;
+
+    QTest::newRow("{<He(ll)o>, w^orld}!|ltr")
+            << standard[2]
+            << 2 << 4 << 8
+            << 0 << 5
+            << 0 << 12;
+    QTest::newRow("{<He(ll)o>, w^orld}!|rtl")
+            << standard[2]
+            << 4 << 2 << 8
+            << 0 << 5
+            << 0 << 12;
+
+    QTest::newRow("!{dlro^w ,<o(ll)eH>}|ltr")
+            << standard[3]
+            << 9 << 11 << 5
+            << 8 << 13
+            << 1 << 13;
+    QTest::newRow("!{dlro^w ,<o(ll)eH>}|rtl")
+            << standard[3]
+            << 11 << 9 << 5
+            << 8 << 13
+            << 1 << 13;
+}
+
+void tst_qdeclarativetextinput::moveCursorSelectionSequence()
+{
+    QFETCH(QString, testStr);
+    QFETCH(int, cursorPosition);
+    QFETCH(int, movePosition1);
+    QFETCH(int, movePosition2);
+    QFETCH(int, selection1Start);
+    QFETCH(int, selection1End);
+    QFETCH(int, selection2Start);
+    QFETCH(int, selection2End);
+
+    QString componentStr = "import QtQuick 1.1\nTextInput {  text: \""+ testStr +"\"; }";
+    QDeclarativeComponent textinputComponent(&engine);
+    textinputComponent.setData(componentStr.toLatin1(), QUrl());
+    QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
+    QVERIFY(textinputObject != 0);
+
+    textinputObject->setCursorPosition(cursorPosition);
+
+    textinputObject->moveCursorSelection(movePosition1, QDeclarativeTextInput::SelectWords);
+    QCOMPARE(textinputObject->selectedText(), testStr.mid(selection1Start, selection1End - selection1Start));
+    QCOMPARE(textinputObject->selectionStart(), selection1Start);
+    QCOMPARE(textinputObject->selectionEnd(), selection1End);
+
+    textinputObject->moveCursorSelection(movePosition2, QDeclarativeTextInput::SelectWords);
+    QCOMPARE(textinputObject->selectedText(), testStr.mid(selection2Start, selection2End - selection2Start));
+    QCOMPARE(textinputObject->selectionStart(), selection2Start);
+    QCOMPARE(textinputObject->selectionEnd(), selection2End);
 }
 
 void tst_qdeclarativetextinput::dragMouseSelection()
@@ -620,6 +808,55 @@ void tst_qdeclarativetextinput::dragMouseSelection()
     QVERIFY(str2.length() > 3);
 
     QVERIFY(str1 != str2); // Verify the second press and drag is a new selection and doesn't not the first moved.
+    delete canvas;
+}
+
+void tst_qdeclarativetextinput::mouseSelectionMode_data()
+{
+    QTest::addColumn<QString>("qmlfile");
+    QTest::addColumn<bool>("selectWords");
+
+    // import installed
+    QTest::newRow("SelectWords") << SRCDIR "/data/mouseselectionmode_words.qml" << true;
+    QTest::newRow("SelectCharacters") << SRCDIR "/data/mouseselectionmode_characters.qml" << false;
+    QTest::newRow("default") << SRCDIR "/data/mouseselectionmode_default.qml" << false;
+}
+
+void tst_qdeclarativetextinput::mouseSelectionMode()
+{
+    QFETCH(QString, qmlfile);
+    QFETCH(bool, selectWords);
+
+    QString text = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    QDeclarativeView *canvas = createView(qmlfile);
+
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QVERIFY(canvas->rootObject() != 0);
+    QDeclarativeTextInput *textInputObject = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
+    QVERIFY(textInputObject != 0);
+
+    // press-and-drag-and-release from x1 to x2
+    int x1 = 10;
+    int x2 = 70;
+    int y = textInputObject->height()/2;
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x1,y)));
+    //QTest::mouseMove(canvas->viewport(), canvas->mapFromScene(QPoint(x2,y))); // doesn't work
+    QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(x2,y)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+    QApplication::sendEvent(canvas->viewport(), &mv);
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x2,y)));
+    QString str = textInputObject->selectedText();
+    if (selectWords) {
+        QCOMPARE(str, text);
+    } else {
+        QVERIFY(str.length() > 3);
+        QVERIFY(str != text);
+    }
+
     delete canvas;
 }
 
@@ -1432,6 +1669,49 @@ void tst_qdeclarativetextinput::geometrySignals()
     QCOMPARE(o->property("bindingWidth").toInt(), 400);
     QCOMPARE(o->property("bindingHeight").toInt(), 500);
     delete o;
+}
+
+void tst_qdeclarativetextinput::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; TextInput { " + code.toUtf8() + " }", QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; TextInput { " + code.toUtf8() + " }", QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+}
+
+void tst_qdeclarativetextinput::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("canPaste") << "property bool foo: canPaste"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: canPaste"
+        << "";
+
+    QTest::newRow("moveCursorSelection") << "Component.onCompleted: moveCursorSelection(0, TextEdit.SelectCharacters)"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: moveCursorSelection"
+        << "";
+
+    QTest::newRow("deselect") << "Component.onCompleted: deselect()"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: deselect"
+        << "";
 }
 
 QTEST_MAIN(tst_qdeclarativetextinput)
