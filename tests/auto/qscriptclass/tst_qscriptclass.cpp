@@ -68,6 +68,10 @@ private slots:
     void setScriptClassOfExistingObject();
     void setScriptClassOfNonQtScriptObject();
     void getAndSetPropertyFromCpp();
+    void getAndSetPropertyFromJS();
+    void deleteUndeletableProperty();
+    void writeReadOnlyProperty();
+    void writePropertyWithoutWriteAccess();
     void getProperty_invalidValue();
     void enumerate();
     void extension_None();
@@ -79,6 +83,9 @@ private slots:
     void originalProperties3();
     void originalProperties4();
     void defaultImplementations();
+    void scriptClassObjectInPrototype();
+    void scriptClassWithNullEngine();
+    void scriptClassInOtherEngine();
 };
 
 tst_QScriptClass::tst_QScriptClass()
@@ -311,7 +318,12 @@ void TestClass::setProperty(QScriptValue &object, const QScriptString &name,
     CustomProperty *prop = findCustomProperty(name);
     if (!prop)
         return;
-    prop->value = value;
+    if (prop->pflags & QScriptValue::ReadOnly)
+        return;
+    if (!value.isValid()) // deleteProperty() requested
+        removeCustomProperty(name);
+    else
+        prop->value = value;
 }
 
 QScriptValue::PropertyFlags TestClass::propertyFlags(
@@ -772,6 +784,80 @@ void tst_QScriptClass::getAndSetPropertyFromCpp()
     QVERIFY(!obj1.property(foo).isValid());
     obj1.setProperty(bar, QScriptValue());
     QVERIFY(!obj1.property(bar).isValid());
+}
+
+void tst_QScriptClass::getAndSetPropertyFromJS()
+{
+    QScriptEngine eng;
+    TestClass cls(&eng);
+    cls.addCustomProperty(eng.toStringHandle("x"),
+                          QScriptClass::HandlesReadAccess
+                          | QScriptClass::HandlesWriteAccess,
+                          /*id=*/1, /*flags=*/0, /*value=*/123);
+    eng.globalObject().setProperty("o", eng.newObject(&cls));
+
+    // Accessing a custom property
+    QCOMPARE(eng.evaluate("o.x").toInt32(), 123);
+    QCOMPARE(eng.evaluate("o.x = 456; o.x").toInt32(), 456);
+
+    // Accessing a new JS property
+    QVERIFY(eng.evaluate("o.y").isUndefined());
+    QCOMPARE(eng.evaluate("o.y = 789; o.y").toInt32(), 789);
+
+    // Deleting custom property
+    QVERIFY(eng.evaluate("delete o.x").toBool());
+    QVERIFY(eng.evaluate("o.x").isUndefined());
+
+    // Deleting JS property
+    QVERIFY(eng.evaluate("delete o.y").toBool());
+    QVERIFY(eng.evaluate("o.y").isUndefined());
+}
+
+void tst_QScriptClass::deleteUndeletableProperty()
+{
+    QScriptEngine eng;
+    TestClass cls(&eng);
+    cls.addCustomProperty(eng.toStringHandle("x"), QScriptClass::HandlesWriteAccess,
+                          /*id=*/0, QScriptValue::Undeletable, QScriptValue());
+    eng.globalObject().setProperty("o", eng.newObject(&cls));
+    QVERIFY(!eng.evaluate("delete o.x").toBool());
+}
+
+void tst_QScriptClass::writeReadOnlyProperty()
+{
+    QScriptEngine eng;
+    TestClass cls(&eng);
+    cls.addCustomProperty(eng.toStringHandle("x"),
+                          QScriptClass::HandlesReadAccess
+                          | QScriptClass::HandlesWriteAccess,
+                          /*id=*/0, QScriptValue::ReadOnly, 123);
+    eng.globalObject().setProperty("o", eng.newObject(&cls));
+    // Note that if a property is read-only, the setProperty()
+    // reimplementation will still get called; it's up to that
+    // function to respect the ReadOnly flag.
+    QCOMPARE(eng.evaluate("o.x = 456; o.x").toInt32(), 123);
+}
+
+void tst_QScriptClass::writePropertyWithoutWriteAccess()
+{
+    QScriptEngine eng;
+    TestClass cls(&eng);
+    cls.addCustomProperty(eng.toStringHandle("x"),
+                          QScriptClass::HandlesReadAccess,
+                          /*id=*/0, /*flags=*/0, 123);
+    eng.globalObject().setProperty("o", eng.newObject(&cls));
+    QCOMPARE(eng.evaluate("o.x").toInt32(), 123);
+
+    // This will create a JS property on the instance that
+    // shadows the custom property.
+    // This behavior is not documented. It might be more
+    // intuitive to treat a property that only handles read
+    // access as a read-only, non-shadowable property.
+    QCOMPARE(eng.evaluate("o.x = 456; o.x").toInt32(), 456);
+
+    QVERIFY(eng.evaluate("delete o.x").toBool());
+    // Now the custom property is seen again.
+    QCOMPARE(eng.evaluate("o.x").toInt32(), 123);
 }
 
 void tst_QScriptClass::getProperty_invalidValue()
@@ -1350,6 +1436,67 @@ void tst_QScriptClass::defaultImplementations()
     QVERIFY(!defaultClass.supportsExtension(QScriptClass::HasInstance));
     QVERIFY(!defaultClass.extension(QScriptClass::Callable).isValid());
     QVERIFY(!defaultClass.extension(QScriptClass::HasInstance).isValid());
+}
+
+void tst_QScriptClass::scriptClassObjectInPrototype()
+{
+    QScriptEngine eng;
+    TestClass cls(&eng);
+    QScriptValue plainObject = eng.newObject();
+    QScriptValue classObject = eng.newObject(&cls);
+    plainObject.setPrototype(classObject);
+    QVERIFY(plainObject.prototype().equals(classObject));
+    eng.globalObject().setProperty("plainObject", plainObject);
+    eng.globalObject().setProperty("classObject", classObject);
+
+    QScriptString name = eng.toStringHandle("x");
+    cls.addCustomProperty(name, QScriptClass::HandlesReadAccess, /*id=*/1, /*flags=*/0, /*value=*/123);
+    QVERIFY(plainObject.property(name).equals(classObject.property(name)));
+    QVERIFY(eng.evaluate("plainObject.x == classObject.x").toBool());
+
+    // Add a property that shadows the one in the script class.
+    plainObject.setProperty(name, 456);
+    QVERIFY(!plainObject.property(name).equals(classObject.property(name)));
+    QVERIFY(eng.evaluate("plainObject.x != classObject.x").toBool());
+
+    QVERIFY(eng.evaluate("delete plainObject.x").toBool());
+    QVERIFY(eng.evaluate("plainObject.x == classObject.x").toBool());
+}
+
+void tst_QScriptClass::scriptClassWithNullEngine()
+{
+    QScriptClass cls(0);
+    QCOMPARE(cls.engine(), (QScriptEngine*)0);
+    QScriptEngine eng;
+    QScriptValue obj = eng.newObject(&cls);
+    QVERIFY(obj.isObject());
+    QCOMPARE(obj.scriptClass(), &cls);
+    // The class could have been "bound" to the engine at this point,
+    // but it's currently not.
+    // This behavior is not documented and is subject to change.
+    QCOMPARE(cls.engine(), (QScriptEngine*)0);
+    // The engine pointer stored in the QScriptClass is not actually used
+    // during property access, so this still works.
+    obj.setProperty("x", 123);
+    QVERIFY(obj.property("x").isNumber());
+}
+
+void tst_QScriptClass::scriptClassInOtherEngine()
+{
+    QScriptEngine eng;
+    TestClass cls(&eng);
+    QScriptEngine eng2;
+    // We don't check that the class is associated with another engine, so
+    // we only get a warning when trying to set the prototype of the new
+    // instance.
+    // This behavior is not documented and is subject to change.
+    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setPrototype() failed: cannot set a prototype created in a different engine");
+    QScriptValue obj = eng2.newObject(&cls);
+    QVERIFY(obj.isObject());
+    QCOMPARE(obj.scriptClass(), &cls);
+
+    obj.setProperty("x", 123);
+    QVERIFY(obj.property("x").isNumber());
 }
 
 QTEST_MAIN(tst_QScriptClass)
