@@ -12143,4 +12143,6 @@ EXPORTS
 	_ZNK19QTextDocumentLayout9pageCountEv @ 12142 NONAME
 	_ZTI19QTextDocumentLayout @ 12143 NONAME
 	_ZTV19QTextDocumentLayout @ 12144 NONAME
+	_ZN12QTextControl23setWordSelectionEnabledEb @ 12145 NONAME
+	_ZNK12QTextControl22isWordSelectionEnabledEv @ 12146 NONAME
 
