@@ -64,7 +64,7 @@ class QSGImageTextureProvider : public QSGTextureProvider
 {
 public:
     QSGImageTextureProvider(QSGImage *parent);
-    virtual QSGTextureRef texture() const;
+    virtual QSGTextureRef texture();
     void emitTextureChanged();
 
 private:

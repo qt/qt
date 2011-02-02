@@ -57,7 +57,7 @@ QSGImageTextureProvider::QSGImageTextureProvider(QSGImage *parent)
     Q_ASSERT(image);
 }
 
-QSGTextureRef QSGImageTextureProvider::texture() const
+QSGTextureRef QSGImageTextureProvider::texture()
 {
     const QSGItemPrivate *d = QSGItemPrivate::get(image);
     TextureNodeInterface *node = static_cast<TextureNodeInterface *>(d->paintNode);

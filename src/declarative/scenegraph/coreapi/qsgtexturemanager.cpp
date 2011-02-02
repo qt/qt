@@ -310,7 +310,19 @@ void QSGTextureUploadRequest::done()
 
 QSGTextureProvider::QSGTextureProvider(QObject *parent)
     : QObject(parent)
+    , m_opaque(false)
+    , m_mipmap(false)
+    , m_clampToEdge(true)
+    , m_linearFiltering(false)
 {
+}
+
+void QSGTextureProvider::setOpaque(bool enabled)
+{
+    if (enabled == m_opaque)
+        return;
+    m_opaque = enabled;
+    emit opaqueChanged();
 }
 
 void QSGTextureProvider::setMipmap(bool enabled)
@@ -327,4 +339,12 @@ void QSGTextureProvider::setClampToEdge(bool enabled)
         return;
     m_clampToEdge = enabled;
     emit clampToEdgeChanged();
+}
+
+void QSGTextureProvider::setLinearFiltering(bool enabled)
+{
+    if (enabled == m_linearFiltering)
+        return;
+    m_linearFiltering= enabled;
+    emit linearFilteringChanged();
 }

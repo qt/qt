@@ -208,11 +208,16 @@ protected:
 class Q_DECLARATIVE_EXPORT QSGTextureProvider : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool opaque READ opaque WRITE setOpaque NOTIFY opaqueChanged)
     Q_PROPERTY(bool mipmap READ mipmap WRITE setMipmap NOTIFY mipmapChanged)
     Q_PROPERTY(bool clampToEdge READ clampToEdge WRITE setClampToEdge NOTIFY clampToEdgeChanged)
+    Q_PROPERTY(bool linearFiltering READ linearFiltering WRITE setLinearFiltering NOTIFY linearFilteringChanged)
 public:
     QSGTextureProvider(QObject *parent = 0);
-    virtual QSGTextureRef texture() const = 0;
+    virtual QSGTextureRef texture() = 0;
+
+    bool opaque() const { return m_opaque; }
+    void setOpaque(bool enabled);
 
     bool mipmap() const { return m_mipmap; }
     void setMipmap(bool enabled);
@@ -220,14 +225,21 @@ public:
     bool clampToEdge() const { return m_clampToEdge; }
     void setClampToEdge(bool enabled);
 
+    bool linearFiltering() const { return m_linearFiltering; }
+    void setLinearFiltering(bool enabled);
+
 Q_SIGNALS:
+    void opaqueChanged();
     void textureChanged();
     void mipmapChanged();
     void clampToEdgeChanged();
+    void linearFilteringChanged();
 
 protected:
+    uint m_opaque : 1;
     uint m_mipmap : 1;
     uint m_clampToEdge : 1;
+    uint m_linearFiltering : 1;
 };
 
 #endif // QSGTEXTUREMANAGER_H
