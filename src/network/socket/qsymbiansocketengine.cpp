@@ -78,6 +78,7 @@
 
 QT_BEGIN_NAMESPACE
 
+#define Q_VOID
 // Common constructs
 #define Q_CHECK_VALID_SOCKETLAYER(function, returnValue) do { \
     if (!isValid()) { \
@@ -186,9 +187,9 @@ bool QSymbianSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType so
     TUint type = (socketType == QAbstractSocket::UdpSocket) ? KSockDatagram : KSockStream;
     TUint protocol = (socketType == QAbstractSocket::UdpSocket) ? KProtocolInetUdp : KProtocolInetTcp;
     TInt err;
-    if (connection)
-        err = nativeSocket.Open(socketServer, family, type, protocol, *connection);
-    else
+//    if (connection)
+//        err = nativeSocket.Open(socketServer, family, type, protocol, *connection);
+//    else
         err = nativeSocket.Open(socketServer, family, type, protocol); //TODO: FIXME - deprecated API, make sure we always have a connection instead
 
     if (err != KErrNone) {
@@ -296,7 +297,7 @@ bool QSymbianSocketEngine::initialize(QAbstractSocket::SocketType socketType, QA
         QString protocolStr = QLatin1String("UnknownProtocol");
         if (protocol == QAbstractSocket::IPv4Protocol) protocolStr = QLatin1String("IPv4Protocol");
         else if (protocol == QAbstractSocket::IPv6Protocol) protocolStr = QLatin1String("IPv6Protocol");
-        qDebug("QNativeSocketEngine::initialize(type == %s, protocol == %s) failed: %s",
+        qDebug("QSymbianSocketEngine::initialize(type == %s, protocol == %s) failed: %s",
                typeStr.toLatin1().constData(), protocolStr.toLatin1().constData(), d->socketErrorString.toLatin1().constData());
 #endif
         return false;
@@ -323,7 +324,7 @@ bool QSymbianSocketEngine::initialize(QAbstractSocket::SocketType socketType, QA
     // Make sure we receive out-of-band data
     if (socketType == QAbstractSocket::TcpSocket
         && !setOption(ReceiveOutOfBandData, 1)) {
-        qWarning("QNativeSocketEngine::initialize unable to inline out-of-band data");
+        qWarning("QSymbianSocketEngine::initialize unable to inline out-of-band data");
     }
 
 
@@ -364,7 +365,7 @@ bool QSymbianSocketEngine::initialize(int socketDescriptor, QAbstractSocket::Soc
     // determine socket type and protocol
     if (!d->fetchConnectionParameters()) {
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-        qDebug("QNativeSocketEngine::initialize(socketDescriptor == %i) failed: %s",
+        qDebug("QSymbianSocketEngine::initialize(socketDescriptor == %i) failed: %s",
                socketDescriptor, d->socketErrorString.toLatin1().constData());
 #endif
         d->socketDescriptor = -1;
@@ -392,7 +393,7 @@ bool QSymbianSocketEngine::initialize(int socketDescriptor, QAbstractSocket::Soc
         // Make sure we receive out-of-band data
         if (d->socketType == QAbstractSocket::TcpSocket
             && !setOption(ReceiveOutOfBandData, 1)) {
-            qWarning("QNativeSocketEngine::initialize unable to inline out-of-band data");
+            qWarning("QSymbianSocketEngine::initialize unable to inline out-of-band data");
         }
     }
 
@@ -428,8 +429,7 @@ int QSymbianSocketEngine::socketDescriptor() const
 bool QSymbianSocketEngine::setOption(QAbstractSocketEngine::SocketOption opt, int v)
 {
     Q_D(QSymbianSocketEngine);
-    if (!isValid())
-        return false;
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::setOption(), false);
 
     TUint n = 0;
     TUint level = KSOLSocket; // default
@@ -449,8 +449,7 @@ bool QSymbianSocketEngine::setOption(QAbstractSocketEngine::SocketOption opt, in
 int QSymbianSocketEngine::option(QAbstractSocketEngine::SocketOption opt) const
 {
     Q_D(const QSymbianSocketEngine);
-    if (!isValid())
-        return -1;
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::option(), -1);
 
     TUint n;
     TUint level = KSOLSocket; // default
@@ -520,21 +519,25 @@ bool QSymbianSocketEnginePrivate::translateSocketOption(QAbstractSocketEngine::S
 
 qint64 QSymbianSocketEngine::receiveBufferSize() const
 {
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::receiveBufferSize(), -1);
     return option(ReceiveBufferSocketOption);
 }
 
 void QSymbianSocketEngine::setReceiveBufferSize(qint64 size)
 {
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::setReceiveBufferSize(), Q_VOID);
     setOption(ReceiveBufferSocketOption, size);
 }
 
 qint64 QSymbianSocketEngine::sendBufferSize() const
 {
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::setSendBufferSize(), -1);
     return option(SendBufferSocketOption);
 }
 
 void QSymbianSocketEngine::setSendBufferSize(qint64 size)
 {
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::setSendBufferSize(), Q_VOID);
     setOption(SendBufferSocketOption, size);
 }
 
@@ -577,6 +580,7 @@ void QSymbianSocketEngine::connectionNotification()
 bool QSymbianSocketEngine::connectToHost(const QHostAddress &addr, quint16 port)
 {
     Q_D(QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::connectToHost(), false);
 
 #ifdef QNATIVESOCKETENGINE_DEBUG
     qDebug("QSymbianSocketEngine::connectToHost() : %d ", d->socketDescriptor);
@@ -620,7 +624,7 @@ bool QSymbianSocketEngine::connectToHost(const QHostAddress &addr, quint16 port)
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    qDebug("QNativeSocketEnginePrivate::nativeConnect(%s, %i) == true",
+    qDebug("QSymbianSocketEngine::Connect(%s, %i) == true",
            addr.toString().toLatin1().constData(), port);
 #endif
 
@@ -632,12 +636,12 @@ bool QSymbianSocketEngine::connectToHost(const QHostAddress &addr, quint16 port)
 bool QSymbianSocketEngine::bind(const QHostAddress &address, quint16 port)
 {
     Q_D(QSymbianSocketEngine);
-    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::bind(), false);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::bind(), false);
 
     if (!d->checkProxy(address))
         return false;
 
-    Q_CHECK_STATE(QNativeSocketEngine::bind(), QAbstractSocket::UnconnectedState, false);
+    Q_CHECK_STATE(QSymbianSocketEngine::bind(), QAbstractSocket::UnconnectedState, false);
 
     TInetAddr nativeAddr;
     d->setPortAndAddress(nativeAddr, port, address);
@@ -652,7 +656,7 @@ bool QSymbianSocketEngine::bind(const QHostAddress &address, quint16 port)
         d->setError(err);
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-        qDebug("QSymbianSocketEnginePrivate::nativeBind(%s, %i) == false (%s)",
+        qDebug("QSymbianSocketEngine::bind(%s, %i) == false (%s)",
                address.toString().toLatin1().constData(), port, d->socketErrorString.toLatin1().constData());
 #endif
 
@@ -660,7 +664,7 @@ bool QSymbianSocketEngine::bind(const QHostAddress &address, quint16 port)
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    qDebug("QSymbianSocketEnginePrivate::nativeBind(%s, %i) == true",
+    qDebug("QSymbianSocketEngine::bind(%s, %i) == true",
            address.toString().toLatin1().constData(), port);
 #endif
     d->socketState = QAbstractSocket::BoundState;
@@ -672,21 +676,24 @@ bool QSymbianSocketEngine::bind(const QHostAddress &address, quint16 port)
 bool QSymbianSocketEngine::listen()
 {
     Q_D(QSymbianSocketEngine);
-    // TODO the value 50 is from the QNativeSocketEngine. Maybe it's a bit too much
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::listen(), false);
+    Q_CHECK_STATE(QSymbianSocketEngine::listen(), QAbstractSocket::BoundState, false);
+    Q_CHECK_TYPE(QSymbianSocketEngine::listen(), QAbstractSocket::TcpSocket, false);
+   // TODO the value 50 is from the QNativeSocketEngine. Maybe it's a bit too much
     // for a mobile platform
     TInt err = d->nativeSocket.Listen(50);
     if (err) {
         d->setError(err);
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-        qDebug("QSymbianSocketEnginePrivate::nativeListen() == false (%s)",
+        qDebug("QSymbianSocketEngine::listen() == false (%s)",
                d->socketErrorString.toLatin1().constData());
 #endif
         return false;
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    qDebug("QSymbianSocketEnginePrivate::nativeListen() == true");
+    qDebug("QSymbianSocketEngine::listen() == true");
 #endif
 
     d->socketState = QAbstractSocket::ListeningState;
@@ -707,7 +714,7 @@ int QSymbianSocketEngine::accept()
     if (status.Int()) {
         blankSocket.Close();
         if (status != KErrWouldBlock)
-            qWarning("QSymbianSocketEnginePrivate::nativeAccept() - error %d", status.Int());
+            qWarning("QSymbianSocketEngine::accept() - error %d", status.Int());
         return -1;
     }
 
@@ -724,8 +731,8 @@ int QSymbianSocketEngine::accept()
 qint64 QSymbianSocketEngine::bytesAvailable() const
 {
     Q_D(const QSymbianSocketEngine);
-    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::bytesAvailable(), -1);
-    Q_CHECK_NOT_STATE(QNativeSocketEngine::bytesAvailable(), QAbstractSocket::UnconnectedState, false);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::bytesAvailable(), -1);
+    Q_CHECK_NOT_STATE(QSymbianSocketEngine::bytesAvailable(), QAbstractSocket::UnconnectedState, false);
     int nbytes = 0;
     qint64 available = 0;
     TInt err = d->nativeSocket.GetOpt(KSOReadBytesPending, KSOLSocket, nbytes);
@@ -734,7 +741,7 @@ qint64 QSymbianSocketEngine::bytesAvailable() const
     available = (qint64) nbytes;
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    qDebug("QSymbianSocketEnginePrivate::nativeBytesAvailable() == %lli", available);
+    qDebug("QSymbianSocketEngine::bytesAvailable() == %lli", available);
 #endif
     return available;
 }
@@ -742,9 +749,9 @@ qint64 QSymbianSocketEngine::bytesAvailable() const
 bool QSymbianSocketEngine::hasPendingDatagrams() const
 {
     Q_D(const QSymbianSocketEngine);
-    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::hasPendingDatagrams(), false);
-    Q_CHECK_NOT_STATE(QNativeSocketEngine::hasPendingDatagrams(), QAbstractSocket::UnconnectedState, false);
-    Q_CHECK_TYPE(QNativeSocketEngine::hasPendingDatagrams(), QAbstractSocket::UdpSocket, false);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::hasPendingDatagrams(), false);
+    Q_CHECK_NOT_STATE(QSymbianSocketEngine::hasPendingDatagrams(), QAbstractSocket::UnconnectedState, false);
+    Q_CHECK_TYPE(QSymbianSocketEngine::hasPendingDatagrams(), QAbstractSocket::UdpSocket, false);
     int nbytes;
     TInt err = d->nativeSocket.GetOpt(KSOReadBytesPending,KSOLSocket, nbytes);
     return err == KErrNone && nbytes > 0;
@@ -753,6 +760,8 @@ bool QSymbianSocketEngine::hasPendingDatagrams() const
 qint64 QSymbianSocketEngine::pendingDatagramSize() const
 {
     Q_D(const QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::pendingDatagramSize(), false);
+    Q_CHECK_TYPE(QSymbianSocketEngine::hasPendingDatagrams(), QAbstractSocket::UdpSocket, false);
     int nbytes;
     TInt err = d->nativeSocket.GetOpt(KSOReadBytesPending,KSOLSocket, nbytes);
     if (nbytes > 0) {
@@ -777,6 +786,8 @@ qint64 QSymbianSocketEngine::readDatagram(char *data, qint64 maxSize,
                                                     QHostAddress *address, quint16 *port)
 {
     Q_D(QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::readDatagram(), -1);
+    Q_CHECK_TYPE(QSymbianSocketEngine::readDatagram(), QAbstractSocket::UdpSocket, false);
     TPtr8 buffer((TUint8*)data, (int)maxSize);
     TInetAddr addr;
     TRequestStatus status;
@@ -791,7 +802,7 @@ qint64 QSymbianSocketEngine::readDatagram(char *data, qint64 maxSize,
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     int len = buffer.Length();
-    qDebug("QSymbianSocketEnginePrivate::nativeReceiveDatagram(%p \"%s\", %lli, %s, %i) == %lli",
+    qDebug("QSymbianSocketEngine::receiveDatagram(%p \"%s\", %lli, %s, %i) == %lli",
            data, qt_prettyDebug(data, qMin(len, ssize_t(16)), len).data(), maxSize,
            address ? address->toString().toLatin1().constData() : "(nil)",
            port ? *port : 0, (qint64) len);
@@ -807,8 +818,8 @@ qint64 QSymbianSocketEngine::writeDatagram(const char *data, qint64 len,
                                                    const QHostAddress &host, quint16 port)
 {
     Q_D(QSymbianSocketEngine);
-    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::writeDatagram(), -1);
-    Q_CHECK_TYPE(QNativeSocketEngine::writeDatagram(), QAbstractSocket::UdpSocket, -1);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::writeDatagram(), -1);
+    Q_CHECK_TYPE(QSymbianSocketEngine::writeDatagram(), QAbstractSocket::UdpSocket, -1);
     TPtrC8 buffer((TUint8*)data, (int)len);
     TInetAddr addr;
     d->setPortAndAddress(addr, port, host);
@@ -920,7 +931,7 @@ void QSymbianSocketEngine::close()
         return;
     Q_D(QSymbianSocketEngine);
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    qDebug("QSymbianSocketEnginePrivate::nativeClose()");
+    qDebug("QSymbianSocketEngine::close()");
 #endif
 
     if (d->readNotifier)
@@ -973,6 +984,8 @@ void QSymbianSocketEngine::close()
 qint64 QSymbianSocketEngine::write(const char *data, qint64 len)
 {
     Q_D(QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::write(), -1);
+    Q_CHECK_STATE(QSymbianSocketEngine::write(), QAbstractSocket::ConnectedState, -1);
     TPtrC8 buffer((TUint8*)data, (int)len);
     TSockXfrLength sentBytes = 0;
     TRequestStatus status;
@@ -1002,7 +1015,7 @@ qint64 QSymbianSocketEngine::write(const char *data, qint64 len)
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    qDebug("QSymbianSocketEnginePrivate::nativeWrite(%p \"%s\", %llu) == %i",
+    qDebug("QSymbianSocketEngine::write(%p \"%s\", %llu) == %i",
            data, qt_prettyDebug(data, qMin((int) len, 16),
                                 (int) len).data(), len, (int) sentBytes());
 #endif
@@ -1014,10 +1027,8 @@ qint64 QSymbianSocketEngine::write(const char *data, qint64 len)
 qint64 QSymbianSocketEngine::read(char *data, qint64 maxSize)
 {
     Q_D(QSymbianSocketEngine);
-    if (!isValid()) {
-        qWarning("QSymbianSocketEnginePrivate::nativeRead: Invalid socket");
-        return -1;
-    }
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::read(), -1);
+    Q_CHECK_STATES(QSymbianSocketEngine::read(), QAbstractSocket::ConnectedState, QAbstractSocket::BoundState, -1);
 
     TPtr8 buffer((TUint8*)data, (int)maxSize);
     TSockXfrLength received = 0;
@@ -1037,7 +1048,7 @@ qint64 QSymbianSocketEngine::read(char *data, qint64 maxSize)
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    qDebug("QNativeSocketEnginePrivate::nativeRead(%p \"%s\", %llu) == %i",
+    qDebug("QSymbianSocketEngine::read(%p \"%s\", %llu) == %i",
            data, qt_prettyDebug(data, qMin(r, ssize_t(16)), r).data(),
            maxSize, r);
 #endif
@@ -1131,6 +1142,9 @@ bool QSymbianSocketEngine::joinMulticastGroup(const QHostAddress &groupAddress,
                               const QNetworkInterface &iface)
 {
     Q_D(QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::joinMulticastGroup(), false);
+    Q_CHECK_STATE(QSymbianSocketEngine::joinMulticastGroup(), QAbstractSocket::BoundState, false);
+    Q_CHECK_TYPE(QSymbianSocketEngine::joinMulticastGroup(), QAbstractSocket::UdpSocket, false);
     return d->multicastGroupMembershipHelper(groupAddress, iface, KSoIp6JoinGroup);
 }
 
@@ -1138,6 +1152,9 @@ bool QSymbianSocketEngine::leaveMulticastGroup(const QHostAddress &groupAddress,
                                const QNetworkInterface &iface)
 {
     Q_D(QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::leaveMulticastGroup(), false);
+    Q_CHECK_STATE(QSymbianSocketEngine::leaveMulticastGroup(), QAbstractSocket::BoundState, false);
+    Q_CHECK_TYPE(QSymbianSocketEngine::leaveMulticastGroup(), QAbstractSocket::UdpSocket, false);
     return d->multicastGroupMembershipHelper(groupAddress, iface, KSoIp6LeaveGroup);
 }
 
@@ -1166,12 +1183,18 @@ bool QSymbianSocketEnginePrivate::multicastGroupMembershipHelper(const QHostAddr
 QNetworkInterface QSymbianSocketEngine::multicastInterface() const
 {
     //TODO
+    const Q_D(QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::multicastInterface(), QNetworkInterface());
+    Q_CHECK_TYPE(QSymbianSocketEngine::multicastInterface(), QAbstractSocket::UdpSocket, QNetworkInterface());
     return QNetworkInterface();
 }
 
 bool QSymbianSocketEngine::setMulticastInterface(const QNetworkInterface &iface)
 {
     //TODO - this is possibly a unix'ism as the RConnection on which the socket was created is probably controlling this
+    Q_D(QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::setMulticastInterface(), false);
+    Q_CHECK_TYPE(QSymbianSocketEngine::setMulticastInterface(), QAbstractSocket::UdpSocket, false);
     return false;
 }
 
@@ -1197,7 +1220,7 @@ bool QSymbianSocketEnginePrivate::checkProxy(const QHostAddress &address)
 
     if (proxy.type() != QNetworkProxy::DefaultProxy &&
         proxy.type() != QNetworkProxy::NoProxy) {
-        // QNativeSocketEngine doesn't do proxies
+        // QSymbianSocketEngine doesn't do proxies
         setError(QAbstractSocket::UnsupportedSocketOperationError,
                  InvalidProxyTypeString);
         return false;
@@ -1390,12 +1413,14 @@ bool QReadNotifier::event(QEvent *e)
 bool QSymbianSocketEngine::isReadNotificationEnabled() const
 {
     Q_D(const QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::isReadNotificationEnabled(), false);
     return d->readNotifier && d->readNotifier->isEnabled();
 }
 
 void QSymbianSocketEngine::setReadNotificationEnabled(bool enable)
 {
     Q_D(QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::setReadNotificationEnabled(), Q_VOID);
     if (d->readNotifier) {
         d->readNotifier->setEnabled(enable);
     } else if (enable && d->threadData->eventDispatcher) {
@@ -1440,12 +1465,14 @@ bool QWriteNotifier::event(QEvent *e)
 bool QSymbianSocketEngine::isWriteNotificationEnabled() const
 {
     Q_D(const QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::isWriteNotificationEnabled(), false);
     return d->writeNotifier && d->writeNotifier->isEnabled();
 }
 
 void QSymbianSocketEngine::setWriteNotificationEnabled(bool enable)
 {
     Q_D(QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::setWriteNotificationEnabled(), Q_VOID);
     if (d->writeNotifier) {
         d->writeNotifier->setEnabled(enable);
     } else if (enable && d->threadData->eventDispatcher) {
@@ -1489,6 +1516,7 @@ bool QExceptionNotifier::event(QEvent *e)
 bool QSymbianSocketEngine::isExceptionNotificationEnabled() const
 {
     Q_D(const QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::isExceptionNotificationEnabled(), false);
     return d->exceptNotifier && d->exceptNotifier->isEnabled();
     return false;
 }
@@ -1497,6 +1525,7 @@ bool QSymbianSocketEngine::isExceptionNotificationEnabled() const
 void QSymbianSocketEngine::setExceptionNotificationEnabled(bool enable)
 {
     Q_D(QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::setExceptionNotificationEnabled(), Q_VOID);
     if (d->exceptNotifier) {
         d->exceptNotifier->setEnabled(enable);
     } else if (enable && d->threadData->eventDispatcher) {
@@ -1514,6 +1543,9 @@ void QSymbianSocketEngine::setExceptionNotificationEnabled(bool enable)
 bool QSymbianSocketEngine::waitForRead(int msecs, bool *timedOut)
 {
     Q_D(const QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::waitForRead(), false);
+    Q_CHECK_NOT_STATE(QSymbianSocketEngine::waitForRead(),
+                      QAbstractSocket::UnconnectedState, false);
 
     if (timedOut)
         *timedOut = false;
@@ -1536,6 +1568,9 @@ bool QSymbianSocketEngine::waitForRead(int msecs, bool *timedOut)
 bool QSymbianSocketEngine::waitForWrite(int msecs, bool *timedOut)
 {
     Q_D(QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::waitForWrite(), false);
+    Q_CHECK_NOT_STATE(QSymbianSocketEngine::waitForWrite(),
+                      QAbstractSocket::UnconnectedState, false);
 
     if (timedOut)
         *timedOut = false;
@@ -1561,6 +1596,9 @@ bool QSymbianSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWr
                                       int msecs, bool *timedOut)
 {
     Q_D(QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::waitForWrite(), false);
+    Q_CHECK_NOT_STATE(QSymbianSocketEngine::waitForReadOrWrite(),
+                      QAbstractSocket::UnconnectedState, false);
 
     int ret = d->nativeSelect(msecs, checkRead, checkWrite, readyToRead, readyToWrite);
 
