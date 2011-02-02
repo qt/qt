@@ -42,6 +42,7 @@
 #include <QtTest/QSignalSpy>
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
+#include <QtDeclarative/qdeclarativeview.h>
 #include <private/qdeclarativeflickable_p.h>
 #include <private/qdeclarativevaluetype_p.h>
 #include <QtGui/qgraphicswidget.h>
@@ -74,6 +75,7 @@ private slots:
     void returnToBounds();
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
+    void wheel();
 
 private:
     QDeclarativeEngine engine;
@@ -371,6 +373,43 @@ void tst_qdeclarativeflickable::testQtQuick11Attributes_data()
             << "<Unknown File>:1: ReferenceError: Can't find variable: returnToBounds"
             << "";
 
+}
+
+void tst_qdeclarativeflickable::wheel()
+{
+    QDeclarativeView *canvas = new QDeclarativeView;
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/wheel.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeFlickable *flick = canvas->rootObject()->findChild<QDeclarativeFlickable*>("flick");
+    QVERIFY(flick != 0);
+
+    QGraphicsScene *scene = canvas->scene();
+    QGraphicsSceneWheelEvent event(QEvent::GraphicsSceneWheel);
+    event.setScenePos(QPointF(200, 200));
+    event.setDelta(-120);
+    event.setOrientation(Qt::Vertical);
+    event.setAccepted(false);
+    QApplication::sendEvent(scene, &event);
+
+    QTRY_VERIFY(flick->contentY() > 0);
+    QVERIFY(flick->contentX() == 0);
+
+    flick->setContentY(0);
+    QVERIFY(flick->contentY() == 0);
+
+    event.setScenePos(QPointF(200, 200));
+    event.setDelta(-120);
+    event.setOrientation(Qt::Horizontal);
+    event.setAccepted(false);
+    QApplication::sendEvent(scene, &event);
+
+    QTRY_VERIFY(flick->contentX() > 0);
+    QVERIFY(flick->contentY() == 0);
+
+    delete canvas;
 }
 
 
