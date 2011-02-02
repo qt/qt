@@ -1617,7 +1617,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
 }
 
 #ifdef QT_NO_FREETYPE
-extern void qt_cleanup_symbianFontDatabaseExtras(); // qfontdatabase_s60.cpp
+extern void qt_cleanup_symbianFontDatabase(); // qfontdatabase_s60.cpp
 #endif
 
 /*****************************************************************************
@@ -1636,7 +1636,7 @@ void qt_cleanup()
     QPixmapCache::clear(); // Has to happen now, since QS60PixmapData has FBS handles
 
 #ifdef QT_NO_FREETYPE
-    qt_cleanup_symbianFontDatabaseExtras();
+    qt_cleanup_symbianFontDatabase();
 #endif
 // S60 structure and window server session are freed in eventdispatcher destructor as they are needed there
 
@@ -2022,6 +2022,9 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
 #endif
                 S60->wsSession().SetPointerCursorMode(EPointerCursorNormal);
         }
+#endif
+#ifdef QT_SOFTKEYS_ENABLED
+        QSoftKeyManager::updateSoftKeys();
 #endif
         break;
     case EEventFocusLost:
