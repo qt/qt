@@ -2232,6 +2232,9 @@ void QDeclarativeListView::setFooter(QDeclarativeComponent *footer)
     Q_D(QDeclarativeListView);
     if (d->footerComponent != footer) {
         if (d->footer) {
+            if (scene())
+                scene()->removeItem(d->footer->item);
+            d->footer->item->deleteLater();
             delete d->footer;
             d->footer = 0;
         }
@@ -2241,6 +2244,7 @@ void QDeclarativeListView::setFooter(QDeclarativeComponent *footer)
         if (isComponentComplete()) {
             d->updateFooter();
             d->updateViewport();
+            d->fixupPosition();
         }
         emit footerChanged();
     }
@@ -2266,6 +2270,9 @@ void QDeclarativeListView::setHeader(QDeclarativeComponent *header)
     Q_D(QDeclarativeListView);
     if (d->headerComponent != header) {
         if (d->header) {
+            if (scene())
+                scene()->removeItem(d->header->item);
+            d->header->item->deleteLater();
             delete d->header;
             d->header = 0;
         }
@@ -2276,6 +2283,7 @@ void QDeclarativeListView::setHeader(QDeclarativeComponent *header)
             d->updateHeader();
             d->updateFooter();
             d->updateViewport();
+            d->fixupPosition();
         }
         emit headerChanged();
     }

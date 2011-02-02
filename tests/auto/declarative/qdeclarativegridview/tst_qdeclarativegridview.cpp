@@ -1370,12 +1370,27 @@ void tst_QDeclarativeGridView::footer()
     QVERIFY(footer);
 
     QCOMPARE(footer->y(), 180.0);
+    QCOMPARE(footer->height(), 30.0);
 
     model.removeItem(2);
     QTRY_COMPARE(footer->y(), 120.0);
 
     model.clear();
     QTRY_COMPARE(footer->y(), 0.0);
+
+    for (int i = 0; i < 30; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QMetaObject::invokeMethod(canvas->rootObject(), "changeFooter");
+
+    footer = findItem<QDeclarativeText>(contentItem, "footer");
+    QVERIFY(!footer);
+    footer = findItem<QDeclarativeText>(contentItem, "footer2");
+    QVERIFY(footer);
+
+    QCOMPARE(footer->y(), 0.0);
+    QCOMPARE(footer->height(), 20.0);
+    QCOMPARE(gridview->contentY(), 0.0);
 }
 
 void tst_QDeclarativeGridView::header()
@@ -1402,6 +1417,7 @@ void tst_QDeclarativeGridView::header()
     QVERIFY(header);
 
     QCOMPARE(header->y(), 0.0);
+    QCOMPARE(header->height(), 30.0);
     QCOMPARE(gridview->contentY(), 0.0);
 
     QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", 0);
@@ -1410,6 +1426,20 @@ void tst_QDeclarativeGridView::header()
 
     model.clear();
     QTRY_COMPARE(header->y(), 0.0);
+
+    for (int i = 0; i < 30; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QMetaObject::invokeMethod(canvas->rootObject(), "changeHeader");
+
+    header = findItem<QDeclarativeText>(contentItem, "header");
+    QVERIFY(!header);
+    header = findItem<QDeclarativeText>(contentItem, "header2");
+    QVERIFY(header);
+
+    QCOMPARE(header->y(), 0.0);
+    QCOMPARE(header->height(), 20.0);
+    QCOMPARE(gridview->contentY(), 0.0);
 }
 
 void tst_QDeclarativeGridView::indexAt()

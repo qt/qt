@@ -1779,6 +1779,9 @@ void QDeclarativeGridView::setFooter(QDeclarativeComponent *footer)
     Q_D(QDeclarativeGridView);
     if (d->footerComponent != footer) {
         if (d->footer) {
+            if (scene())
+                scene()->removeItem(d->footer->item);
+            d->footer->item->deleteLater();
             delete d->footer;
             d->footer = 0;
         }
@@ -1786,6 +1789,7 @@ void QDeclarativeGridView::setFooter(QDeclarativeComponent *footer)
         if (isComponentComplete()) {
             d->updateFooter();
             d->updateGrid();
+            d->fixupPosition();
         }
         emit footerChanged();
     }
@@ -1811,6 +1815,9 @@ void QDeclarativeGridView::setHeader(QDeclarativeComponent *header)
     Q_D(QDeclarativeGridView);
     if (d->headerComponent != header) {
         if (d->header) {
+            if (scene())
+                scene()->removeItem(d->header->item);
+            d->header->item->deleteLater();
             delete d->header;
             d->header = 0;
         }
@@ -1819,6 +1826,7 @@ void QDeclarativeGridView::setHeader(QDeclarativeComponent *header)
             d->updateHeader();
             d->updateFooter();
             d->updateGrid();
+            d->fixupPosition();
         }
         emit headerChanged();
     }
