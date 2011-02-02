@@ -939,7 +939,7 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
                 if (i==0)
                     maxColWidth << 0;
 
-                if (childIndex == positionedItems.count())
+                if (childIndex == visibleItems.count())
                     break;
 
                 const PositionedItem &child = visibleItems.at(childIndex++);
