@@ -12948,4 +12948,6 @@ EXPORTS
 	?ensureLayouted@QTextDocumentLayout@@QAEXM@Z @ 12947 NONAME ; void QTextDocumentLayout::ensureLayouted(float)
 	?layoutFinished@QTextDocumentLayout@@AAEXXZ @ 12948 NONAME ; void QTextDocumentLayout::layoutFinished(void)
 	?dynamicPageCount@QTextDocumentLayout@@QBEHXZ @ 12949 NONAME ; int QTextDocumentLayout::dynamicPageCount(void) const
+	?setWordSelectionEnabled@QTextControl@@QAEX_N@Z @ 12950 NONAME ; void QTextControl::setWordSelectionEnabled(bool)
+	?isWordSelectionEnabled@QTextControl@@QBE_NXZ @ 12951 NONAME ; bool QTextControl::isWordSelectionEnabled(void) const
 

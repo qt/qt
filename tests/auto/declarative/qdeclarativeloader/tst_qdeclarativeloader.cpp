@@ -91,6 +91,7 @@ private slots:
     void creationContext();
     void QTBUG_16928();
     void implicitSize();
+    void QTBUG_17114();
 
 private:
     QDeclarativeEngine engine;
@@ -615,6 +616,18 @@ void tst_QDeclarativeLoader::implicitSize()
 
     QCOMPARE(item->property("implHeight").toReal(), 100.);
     QCOMPARE(item->property("implWidth").toReal(), 100.);
+
+    delete item;
+}
+
+void tst_QDeclarativeLoader::QTBUG_17114()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("QTBUG_17114.qml"));
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+
+    QCOMPARE(item->property("loaderWidth").toReal(), 32.);
+    QCOMPARE(item->property("loaderHeight").toReal(), 32.);
 
     delete item;
 }

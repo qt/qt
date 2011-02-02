@@ -204,8 +204,9 @@ void QDeclarativeEnginePrivate::defineModule()
 
 \brief The \c Qt object provides useful enums and functions from Qt, for use in all QML files. 
 
-The \c Qt object is not a QML element; it cannot be instantiated. It is a global object 
-with enums and functions.  To use it, call the members of the global \c Qt object directly. 
+The \c Qt object is a global object with utility functions, properties and enums.
+
+It is not instantiable; to use it, call the members of the global \c Qt object directly.
 For example:
 
 \qml
@@ -220,8 +221,8 @@ Text {
 
 \section1 Enums
 
-The Qt object contains enums that declared into Qt's Meta-Object System. For example, you can access
-the \c Leftbutton member of the \c Qt::MouseButton enum with \c Qt.LeftButton.
+The Qt object contains the enums available in the \l {Qt Namespace}. For example, you can access
+the \l Qt::LeftButton and \l Qt::RightButton enum values as \c Qt.LeftButton and \c Qt.RightButton.
 
 
 \section1 Types
@@ -262,6 +263,57 @@ of their use.
     \o \l{QML:Qt::createQmlObject()}{object Qt.createQmlObject(string qml, object parent, string filepath)}
 \endlist
 */
+
+
+/*!
+    \qmlproperty object QML:Qt::application
+    \since QtQuick 1.1
+
+    The \c application object provides access to global application state
+    properties shared by many QML components.
+
+    Its properties are:
+
+    \table
+    \row
+    \o \c application.active
+    \o
+    This read-only property indicates whether the application is the top-most and focused
+    application, and the user is able to interact with the application. The property
+    is false when the application is in the background, the device keylock or screen
+    saver is active, the screen backlight is turned off, or the global system dialog
+    is being displayed on top of the application. It can be used for stopping and
+    pausing animations, timers and active processing of data in order to save device
+    battery power and free device memory and processor load when the application is not
+    active.
+
+    \row
+    \o \c application.layoutDirection
+    \o
+    This read-only property can be used to query the default layout direction of the
+    application. On system start-up, the default layout direction depends on the
+    application's language. The property has a value of \c Qt.RightToLeft in locales
+    where text and graphic elements are read from right to left, and \c Qt.LeftToRight
+    where the reading direction flows from left to right. You can bind to this
+    property to customize your application layouts to support both layout directions.
+
+    Possible values are:
+
+    \list
+    \o Qt.LeftToRight - Text and graphics elements should be positioned
+                        from left to right.
+    \o Qt.RightToLeft - Text and graphics elements should be positioned
+                        from right to left.
+    \endlist
+    \endtable
+
+    The following example uses the \c application object to indicate
+    whether the application is currently active:
+
+    \snippet doc/src/snippets/declarative/application.qml document
+
+*/
+
 
 /*!
 \qmlmethod object Qt::include(string url, jsobject callback)
