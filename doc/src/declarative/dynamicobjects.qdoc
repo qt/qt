@@ -184,7 +184,9 @@ Note also that if a \c SelfDestroyingRect instance was created statically like t
 
 \qml
 Item {
-    SelfDestroyingRect { ... }
+    SelfDestroyingRect {
+        // ...
+    }
 }
 \endqml
 

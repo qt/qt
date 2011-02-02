@@ -60,8 +60,16 @@ It can be used to activate/disactivate the switch or to query its current state.
 In this example:
 
 \qml
-Switch { id: mySwitch; on: true }
-Text { text: "The switch is on"; visible: mySwitch.on == true }
+Item {
+    Switch {
+        id: mySwitch
+        on: true
+    }
+    Text {
+        text: "The switch is on"
+        visible: mySwitch.on == true
+    }
+}
 \endqml
 
 the text will only be visible when the switch is on.

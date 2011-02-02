@@ -95,7 +95,7 @@
 
     \o A single phrase may need to be translated into several
     different forms depending on context, e.g. \e open in English
-    might become \e{\ouml\c{}ffnen}, "open file", or \e aufbauen,
+    might become \e{\ouml}\e{ffnen}, "open file", or \e aufbauen,
     "open internet connection", in German.
 
     \o Keyboard accelerators may need to be changed but without
@@ -159,7 +159,7 @@
     \section1 Qt Project Files
 
     The easiest method to use \l{#lupdate} {lupdate} and \l{#lrelease}
-    {lrelease} is by specifing a \c .pro Qt project file. There must
+    {lrelease} is by specifying a \c .pro Qt project file. There must
     be an entry in the \c TRANSLATIONS section of the project file for
     each language that is additional to the native language. A typical
     entry looks like this:
@@ -342,8 +342,8 @@
     the bottom of the main window. The phrases and guesses window
     shows possible translations for the current string. These
     translation "guesses" have been read from phrase books
-    (\menu{Phrases|Open Phrase Book...}).  The current string's
-    current translation is also shown here. To select a guess, double
+    (\menu{Phrases|Open Phrase Book...}).  The current strings
+    translation is also shown here. To select a guess, double
     click it in the phrases and guesses window or use the keyboard
     shortcut shown to the right of the guess.
 
@@ -371,7 +371,7 @@
     subwindows are: \l{Context Window} {Context}, \l{Sources and Forms
     Window} {Sources and Forms}, \l{Strings Window} {Strings},
     \l{Phrases and Guesses Window} {Phrases and guesses}, and
-    \l{Warnings Window} {Warnings} (hidden in the UI snapsot). The
+    \l{Warnings Window} {Warnings} (hidden in the UI snapshot). The
     translation area is always visible, but the dockable subwindows
     can be activated or deactivated in the \menu{View|Views} menu, and
     dragged around by their title bars and dropped in the translation
@@ -513,7 +513,7 @@
     \o No Translation
     \o \inlineimage linguist-check-empty.png
     \o The string does not have a translation. Click the icon to 
-    accpet the empty translation anyway. The state is reset to  
+    accept the empty translation anyway. The state is reset to  
     \inlineimage linguist-check-on.png
     , and the number of accepted translations in the \e{Items} column 
     of the \l{Context Window} {context list} is incremented by 1.
@@ -567,7 +567,7 @@
 
     When \l{Translating Multiple Languages Simultaneously} {multiple
     languages} are being translated, this sequence of fields is
-    repeated for each language. See aso \l {Changing the Target
+    repeated for each language. See also \l {Changing the Target
     Locale}.
 
     \section2 Phrases and Guesses Window
@@ -585,7 +585,7 @@
     translation area, or you can use the translation's \e{Guess}
     hotkey on the right. You can also press \key{F10} to move the
     focus to the Phrases and Guesses Window, then use the up and down
-    arrow keys to find the desired translation, and and then press
+    arrow keys to find the desired translation, and then press
     \key{Enter} to copy it to the translation area.  If you decide
     that you don't want to copy a phrase after all, press \key{Esc} to
     return the focus to the translation area.
@@ -649,7 +649,7 @@
     {translation area} has text editing areas for both Polish and
     Japanese, and these are color-coded for easier separation.
     Second, the \l{Context Window} and the \l{Strings Window} both
-    have two clomuns labeled \inlineimage linguist-check-obsolete.png
+    have two columns labeled \inlineimage linguist-check-obsolete.png
     instead of one, and although it may be hard to tell, these columns
     are also color-coded with the same colors. The left-most column in
     either case applies to the top-most language area (Polish above)
@@ -793,7 +793,7 @@
     might reverse the phrases, e.g. \c{Datei %2 wird bearbeitet, wenn
     Datei %1 fertig ist}. Both numbered arguments appear in the
     translation, but in the reverse order. \c{%i} will always be
-    replaced by the same text in the translation stringss, regardless
+    replaced by the same text in the translation strings, regardless
     of where argument \e{i} appears in the argument sequence in the
     source string.
 
@@ -843,7 +843,7 @@
     are used to provide a common set of translations to help ensure consistency. 
     They can also be used to avoid duplication of effort since the translations 
     for a family of applications can be produced once in the phrase book.
-    If the translator reaches an untranslated phrase that is the same as a
+    If the translator reaches an non-translated phrase that is the same as a
     source phrase in a phrase book, \QL will show the
     phrase book entry in the \l {Phrases and Guesses Window}.
 
@@ -935,7 +935,7 @@
     List on the left hand. If the path to the files has changed, you can load
     the files manually via \menu{File|Open Form...}. Double-click on an entry
     in the Forms List to display the Form File. Select \e{<No Translation>} from
-    the toolbar to display the untranslated form.
+    the toolbar to display the non-translated form.
 
     \section1 Qt Linguist Reference
 
@@ -1027,7 +1027,7 @@
     \o \gui {Translation}
         \list
         \o \gui {Prev Unfinished Ctrl+K} \BR moves to the nearest previous
-        unfinished source phrase (unfinished means untranslated or
+        unfinished source phrase (unfinished means non-translated or
         translated but failed validation).
         \o \gui {Next Unfinished Ctrl+L} \BR moves to the next unfinished source
         phrase.
@@ -1406,7 +1406,7 @@
     If a French translation is loaded, this will expand to "0 item 
     remplac\unicode{233}", "1 item remplac\unicode{233}", "2 items 
     remplac\unicode{233}s", etc., depending on \c{n}'s value. 
-    And if no translation is loaded, the orignal string is used, with \c %n 
+    And if no translation is loaded, the original string is used, with \c %n 
     replaced with count's value (e.g., "6 item(s) replaced").
 
     To handle plural forms in the native language, you need to load a 

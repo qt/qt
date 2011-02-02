@@ -59,7 +59,7 @@
     \endlist
 
     Now, we need to ensure that the right macro is invoked -- whether we
-    compile a share library itself, or just the client using the shared
+    compile a shared library itself, or just the client using the shared
     library.
     Typically, this can be solved by adding a special header.
 
