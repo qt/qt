@@ -65,10 +65,15 @@ public:
 
 private slots:
     void newInstance();
-    void getAndSetProperty();
+    void setScriptClassOfExistingObject();
+    void setScriptClassOfNonQtScriptObject();
+    void getAndSetPropertyFromCpp();
     void getProperty_invalidValue();
     void enumerate();
-    void extension();
+    void extension_None();
+    void extension_Callable();
+    void extension_Callable_construct();
+    void extension_HasInstance();
     void originalProperties1();
     void originalProperties2();
     void originalProperties3();
@@ -611,7 +616,12 @@ void tst_QScriptClass::newInstance()
     QCOMPARE(obj2.scriptClass(), (QScriptClass*)&cls);
     QVERIFY(!obj2.equals(obj1));
     QVERIFY(!obj2.strictlyEquals(obj1));
+}
 
+void tst_QScriptClass::setScriptClassOfExistingObject()
+{
+    QScriptEngine eng;
+    TestClass cls(&eng);
     QScriptValue obj3 = eng.newObject();
     QCOMPARE(obj3.scriptClass(), (QScriptClass*)0);
     obj3.setScriptClass(&cls);
@@ -625,7 +635,12 @@ void tst_QScriptClass::newInstance()
     TestClass cls2(&eng);
     obj3.setScriptClass(&cls2);
     QCOMPARE(obj3.scriptClass(), (QScriptClass*)&cls2);
+}
 
+void tst_QScriptClass::setScriptClassOfNonQtScriptObject()
+{
+    QScriptEngine eng;
+    TestClass cls(&eng);
     // undefined behavior really, but shouldn't crash
     QScriptValue arr = eng.newArray();
     QVERIFY(arr.isArray());
@@ -639,7 +654,7 @@ void tst_QScriptClass::newInstance()
     QVERIFY(arr.isObject());
 }
 
-void tst_QScriptClass::getAndSetProperty()
+void tst_QScriptClass::getAndSetPropertyFromCpp()
 {
     QScriptEngine eng;
 
@@ -651,7 +666,9 @@ void tst_QScriptClass::getAndSetProperty()
     QScriptString bar = eng.toStringHandle("bar");
     QScriptValue num(&eng, 123);
 
-    // should behave just like normal
+    // Initially our TestClass instances have no custom properties,
+    // and queryProperty() will always return false.
+    // Hence, the properties will be created as normal JS properties.
     for (int x = 0; x < 2; ++x) {
         QScriptValue &o = (x == 0) ? obj1 : obj2;
         for (int y = 0; y < 2; ++y) {
@@ -828,229 +845,238 @@ void tst_QScriptClass::enumerate()
     }
 }
 
-void tst_QScriptClass::extension()
+void tst_QScriptClass::extension_None()
 {
     QScriptEngine eng;
+    TestClass cls(&eng);
+    cls.setCallableMode(TestClass::NotCallable);
+    QVERIFY(!cls.supportsExtension(QScriptClass::Callable));
+    QVERIFY(!cls.supportsExtension(QScriptClass::HasInstance));
+    QScriptValue obj = eng.newObject(&cls);
+    QVERIFY(!obj.call().isValid());
+    QCOMPARE((int)cls.lastExtensionType(), -1);
+    QVERIFY(!obj.instanceOf(obj));
+    QCOMPARE((int)cls.lastExtensionType(), -1);
+    QVERIFY(!obj.construct().isValid());
+}
+
+void tst_QScriptClass::extension_Callable()
+{
+    QScriptEngine eng;
+    TestClass cls(&eng);
+    cls.setCallableMode(TestClass::CallableReturnsSum);
+    QVERIFY(cls.supportsExtension(QScriptClass::Callable));
+
+    QScriptValue obj = eng.newObject(&cls);
+    eng.globalObject().setProperty("obj", obj);
+    obj.setProperty("one", QScriptValue(&eng, 1));
+    obj.setProperty("two", QScriptValue(&eng, 2));
+    obj.setProperty("three", QScriptValue(&eng, 3));
+    // From C++
+    cls.clearReceivedArgs();
     {
-        TestClass cls(&eng);
-        cls.setCallableMode(TestClass::NotCallable);
-        QVERIFY(!cls.supportsExtension(QScriptClass::Callable));
-        QVERIFY(!cls.supportsExtension(QScriptClass::HasInstance));
-        QScriptValue obj = eng.newObject(&cls);
-        QVERIFY(!obj.call().isValid());
-        QCOMPARE((int)cls.lastExtensionType(), -1);
-        QVERIFY(!obj.instanceOf(obj));
-        QCOMPARE((int)cls.lastExtensionType(), -1);
-        QVERIFY(!obj.construct().isValid());
+        QScriptValueList args;
+        args << QScriptValue(&eng, 4) << QScriptValue(&eng, 5);
+        QScriptValue ret = obj.call(obj, args);
+        QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
+        QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toNumber(), qsreal(1+2+3+4+5));
     }
-    // Callable
+    // From JS
+    cls.clearReceivedArgs();
     {
-        TestClass cls(&eng);
-        cls.setCallableMode(TestClass::CallableReturnsSum);
-        QVERIFY(cls.supportsExtension(QScriptClass::Callable));
-
-        QScriptValue obj = eng.newObject(&cls);
-        eng.globalObject().setProperty("obj", obj);
-        obj.setProperty("one", QScriptValue(&eng, 1));
-        obj.setProperty("two", QScriptValue(&eng, 2));
-        obj.setProperty("three", QScriptValue(&eng, 3));
-        // From C++
-        cls.clearReceivedArgs();
-        {
-            QScriptValueList args;
-            args << QScriptValue(&eng, 4) << QScriptValue(&eng, 5);
-            QScriptValue ret = obj.call(obj, args);
-            QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
-            QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
-            QVERIFY(ret.isNumber());
-            QCOMPARE(ret.toNumber(), qsreal(15));
-        }
-        // From JS
-        cls.clearReceivedArgs();
-        {
-            QScriptValue ret = eng.evaluate("obj(4, 5)");
-            QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
-            QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
-            QVERIFY(ret.isNumber());
-            QCOMPARE(ret.toNumber(), qsreal(15));
-        }
-
-        cls.setCallableMode(TestClass::CallableReturnsArgument);
-        // From C++
-        cls.clearReceivedArgs();
-        {
-            QScriptValue ret = obj.call(obj, QScriptValueList() << 123);
-            QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
-            QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
-            QVERIFY(ret.isNumber());
-            QCOMPARE(ret.toInt32(), 123);
-        }
-        cls.clearReceivedArgs();
-        {
-            QScriptValue ret = obj.call(obj, QScriptValueList() << true);
-            QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
-            QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
-            QVERIFY(ret.isBoolean());
-            QCOMPARE(ret.toBoolean(), true);
-        }
-        {
-            QScriptValue ret = obj.call(obj, QScriptValueList() << QString::fromLatin1("ciao"));
-            QVERIFY(ret.isString());
-            QCOMPARE(ret.toString(), QString::fromLatin1("ciao"));
-        }
-        {
-            QScriptValue objobj = eng.newObject();
-            QScriptValue ret = obj.call(obj, QScriptValueList() << objobj);
-            QVERIFY(ret.isObject());
-            QVERIFY(ret.strictlyEquals(objobj));
-        }
-        {
-            QScriptValue ret = obj.call(obj, QScriptValueList() << QScriptValue());
-            QVERIFY(ret.isUndefined());
-        }
-        // From JS
-        cls.clearReceivedArgs();
-        {
-            QScriptValue ret = eng.evaluate("obj(123)");
-            QVERIFY(ret.isNumber());
-            QCOMPARE(ret.toInt32(), 123);
-        }
-
-        cls.setCallableMode(TestClass::CallableReturnsInvalidVariant);
-        {
-            QScriptValue ret = obj.call(obj);
-            QVERIFY(ret.isUndefined());
-        }
-
-        cls.setCallableMode(TestClass::CallableReturnsThisObject);
-        // From C++
-        {
-            QScriptValue ret = obj.call(obj);
-            QVERIFY(ret.isObject());
-            QVERIFY(ret.strictlyEquals(obj));
-        }
-        // From JS
-        {
-            QScriptValue ret = eng.evaluate("obj()");
-            QVERIFY(ret.isObject());
-            QVERIFY(ret.strictlyEquals(eng.globalObject()));
-        }
-
-        cls.setCallableMode(TestClass::CallableReturnsCallee);
-        // From C++
-        {
-            QScriptValue ret = obj.call();
-            QVERIFY(ret.isObject());
-            QVERIFY(ret.strictlyEquals(obj));
-        }
-        // From JS
-        {
-            QScriptValue ret = eng.evaluate("obj()");
-            QVERIFY(ret.isObject());
-            QVERIFY(ret.strictlyEquals(obj));
-        }
-
-        cls.setCallableMode(TestClass::CallableReturnsArgumentsObject);
-        // From C++
-        {
-            QScriptValue ret = obj.call(obj, QScriptValueList() << 123);
-            QVERIFY(ret.isObject());
-            QVERIFY(ret.property("length").isNumber());
-            QCOMPARE(ret.property("length").toInt32(), 1);
-            QVERIFY(ret.property(0).isNumber());
-            QCOMPARE(ret.property(0).toInt32(), 123);
-        }
-        // From JS
-        {
-            QScriptValue ret = eng.evaluate("obj(123)");
-            QVERIFY(ret.isObject());
-            QVERIFY(ret.property("length").isNumber());
-            QCOMPARE(ret.property("length").toInt32(), 1);
-            QVERIFY(ret.property(0).isNumber());
-            QCOMPARE(ret.property(0).toInt32(), 123);
-        }
-
-        // construct()
-        // From C++
-        cls.clearReceivedArgs();
-        cls.setCallableMode(TestClass::CallableReturnsGlobalObject);
-        {
-            QScriptValue ret = obj.construct();
-            QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
-            QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
-            QVERIFY(ret.isObject());
-            QVERIFY(ret.strictlyEquals(eng.globalObject()));
-        }
-        // From JS
-        cls.clearReceivedArgs();
-        {
-            QScriptValue ret = eng.evaluate("new obj()");
-            QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
-            QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
-            QVERIFY(ret.isObject());
-            QVERIFY(ret.strictlyEquals(eng.globalObject()));
-        }
-        // From C++
-        cls.clearReceivedArgs();
-        cls.setCallableMode(TestClass::CallableInitializesThisObject);
-        {
-            QScriptValue ret = obj.construct();
-            QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
-            QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
-            QVERIFY(ret.isQObject());
-            QCOMPARE(ret.toQObject(), (QObject*)&eng);
-        }
-        // From JS
-        cls.clearReceivedArgs();
-        {
-            QScriptValue ret = eng.evaluate("new obj()");
-            QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
-            QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
-            QVERIFY(ret.isQObject());
-            QCOMPARE(ret.toQObject(), (QObject*)&eng);
-        }
+        QScriptValue ret = eng.evaluate("obj(4, 5)");
+        QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
+        QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toNumber(), qsreal(1+2+3+4+5));
     }
-    // HasInstance
+
+    cls.setCallableMode(TestClass::CallableReturnsArgument);
+    // From C++
+    cls.clearReceivedArgs();
     {
-        TestClass cls(&eng);
-        cls.setHasInstance(true);
-        QVERIFY(cls.supportsExtension(QScriptClass::HasInstance));
+        QScriptValue ret = obj.call(obj, QScriptValueList() << 123);
+        QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
+        QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toInt32(), 123);
+    }
+    cls.clearReceivedArgs();
+    {
+        QScriptValue ret = obj.call(obj, QScriptValueList() << true);
+        QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
+        QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
+        QVERIFY(ret.isBoolean());
+        QCOMPARE(ret.toBoolean(), true);
+    }
+    {
+        QScriptValue ret = obj.call(obj, QScriptValueList() << QString::fromLatin1("ciao"));
+        QVERIFY(ret.isString());
+        QCOMPARE(ret.toString(), QString::fromLatin1("ciao"));
+    }
+    {
+        QScriptValue objobj = eng.newObject();
+        QScriptValue ret = obj.call(obj, QScriptValueList() << objobj);
+        QVERIFY(ret.isObject());
+        QVERIFY(ret.strictlyEquals(objobj));
+    }
+    {
+        QScriptValue ret = obj.call(obj, QScriptValueList() << QScriptValue());
+        QVERIFY(ret.isUndefined());
+    }
+    // From JS
+    cls.clearReceivedArgs();
+    {
+        QScriptValue ret = eng.evaluate("obj(123)");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toInt32(), 123);
+    }
 
-        QScriptValue obj = eng.newObject(&cls);
-        obj.setProperty("foo", QScriptValue(&eng, 123));
-        QScriptValue plain = eng.newObject();
-        QVERIFY(!plain.instanceOf(obj));
+    cls.setCallableMode(TestClass::CallableReturnsInvalidVariant);
+    {
+        QScriptValue ret = obj.call(obj);
+        QVERIFY(ret.isUndefined());
+    }
 
-        eng.globalObject().setProperty("HasInstanceTester", obj);
-        eng.globalObject().setProperty("hasInstanceValue", plain);
-        cls.clearReceivedArgs();
-        {
-            QScriptValue ret = eng.evaluate("hasInstanceValue instanceof HasInstanceTester");
-            QCOMPARE(cls.lastExtensionType(), QScriptClass::HasInstance);
-            QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptValueList>());
-            QScriptValueList lst = qvariant_cast<QScriptValueList>(cls.lastExtensionArgument());
-            QCOMPARE(lst.size(), 2);
-            QVERIFY(lst.at(0).strictlyEquals(obj));
-            QVERIFY(lst.at(1).strictlyEquals(plain));
-            QVERIFY(ret.isBoolean());
-            QVERIFY(!ret.toBoolean());
-        }
+    cls.setCallableMode(TestClass::CallableReturnsThisObject);
+    // From C++
+    {
+        QScriptValue ret = obj.call(obj);
+        QVERIFY(ret.isObject());
+        QVERIFY(ret.strictlyEquals(obj));
+    }
+    // From JS
+    {
+        QScriptValue ret = eng.evaluate("obj()");
+        QVERIFY(ret.isObject());
+        QVERIFY(ret.strictlyEquals(eng.globalObject()));
+    }
 
-        plain.setProperty("foo", QScriptValue(&eng, 456));
-        QVERIFY(!plain.instanceOf(obj));
-        {
-            QScriptValue ret = eng.evaluate("hasInstanceValue instanceof HasInstanceTester");
-            QVERIFY(ret.isBoolean());
-            QVERIFY(!ret.toBoolean());
-        }
+    cls.setCallableMode(TestClass::CallableReturnsCallee);
+    // From C++
+    {
+        QScriptValue ret = obj.call();
+        QVERIFY(ret.isObject());
+        QVERIFY(ret.strictlyEquals(obj));
+    }
+    // From JS
+    {
+        QScriptValue ret = eng.evaluate("obj()");
+        QVERIFY(ret.isObject());
+        QVERIFY(ret.strictlyEquals(obj));
+    }
 
-        plain.setProperty("foo", obj.property("foo"));
-        QVERIFY(plain.instanceOf(obj));
-        {
-            QScriptValue ret = eng.evaluate("hasInstanceValue instanceof HasInstanceTester");
-            QVERIFY(ret.isBoolean());
-            QVERIFY(ret.toBoolean());
-        }
+    cls.setCallableMode(TestClass::CallableReturnsArgumentsObject);
+    // From C++
+    {
+        QScriptValue ret = obj.call(obj, QScriptValueList() << 123);
+        QVERIFY(ret.isObject());
+        QVERIFY(ret.property("length").isNumber());
+        QCOMPARE(ret.property("length").toInt32(), 1);
+        QVERIFY(ret.property(0).isNumber());
+        QCOMPARE(ret.property(0).toInt32(), 123);
+    }
+    // From JS
+    {
+        QScriptValue ret = eng.evaluate("obj(123)");
+        QVERIFY(ret.isObject());
+        QVERIFY(ret.property("length").isNumber());
+        QCOMPARE(ret.property("length").toInt32(), 1);
+        QVERIFY(ret.property(0).isNumber());
+        QCOMPARE(ret.property(0).toInt32(), 123);
+    }
+}
+
+void tst_QScriptClass::extension_Callable_construct()
+{
+    QScriptEngine eng;
+    TestClass cls(&eng);
+    QScriptValue obj = eng.newObject(&cls);
+    eng.globalObject().setProperty("obj", obj);
+
+    // From C++
+    cls.clearReceivedArgs();
+    cls.setCallableMode(TestClass::CallableReturnsGlobalObject);
+    {
+        QScriptValue ret = obj.construct();
+        QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
+        QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
+        QVERIFY(ret.isObject());
+        QVERIFY(ret.strictlyEquals(eng.globalObject()));
+    }
+    // From JS
+    cls.clearReceivedArgs();
+    {
+        QScriptValue ret = eng.evaluate("new obj()");
+        QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
+        QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
+        QVERIFY(ret.isObject());
+        QVERIFY(ret.strictlyEquals(eng.globalObject()));
+    }
+    // From C++
+    cls.clearReceivedArgs();
+    cls.setCallableMode(TestClass::CallableInitializesThisObject);
+    {
+        QScriptValue ret = obj.construct();
+        QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
+        QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
+        QVERIFY(ret.isQObject());
+        QCOMPARE(ret.toQObject(), (QObject*)&eng);
+    }
+    // From JS
+    cls.clearReceivedArgs();
+    {
+        QScriptValue ret = eng.evaluate("new obj()");
+        QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
+        QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
+        QVERIFY(ret.isQObject());
+        QCOMPARE(ret.toQObject(), (QObject*)&eng);
+    }
+}
+
+void tst_QScriptClass::extension_HasInstance()
+{
+    QScriptEngine eng;
+    TestClass cls(&eng);
+    cls.setHasInstance(true);
+    QVERIFY(cls.supportsExtension(QScriptClass::HasInstance));
+
+    QScriptValue obj = eng.newObject(&cls);
+    obj.setProperty("foo", QScriptValue(&eng, 123));
+    QScriptValue plain = eng.newObject();
+    QVERIFY(!plain.instanceOf(obj));
+
+    eng.globalObject().setProperty("HasInstanceTester", obj);
+    eng.globalObject().setProperty("hasInstanceValue", plain);
+    cls.clearReceivedArgs();
+    {
+        QScriptValue ret = eng.evaluate("hasInstanceValue instanceof HasInstanceTester");
+        QCOMPARE(cls.lastExtensionType(), QScriptClass::HasInstance);
+        QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptValueList>());
+        QScriptValueList lst = qvariant_cast<QScriptValueList>(cls.lastExtensionArgument());
+        QCOMPARE(lst.size(), 2);
+        QVERIFY(lst.at(0).strictlyEquals(obj));
+        QVERIFY(lst.at(1).strictlyEquals(plain));
+        QVERIFY(ret.isBoolean());
+        QVERIFY(!ret.toBoolean());
+    }
+
+    plain.setProperty("foo", QScriptValue(&eng, 456));
+    QVERIFY(!plain.instanceOf(obj));
+    {
+        QScriptValue ret = eng.evaluate("hasInstanceValue instanceof HasInstanceTester");
+        QVERIFY(ret.isBoolean());
+        QVERIFY(!ret.toBoolean());
+    }
+
+    plain.setProperty("foo", obj.property("foo"));
+    QVERIFY(plain.instanceOf(obj));
+    {
+        QScriptValue ret = eng.evaluate("hasInstanceValue instanceof HasInstanceTester");
+        QVERIFY(ret.isBoolean());
+        QVERIFY(ret.toBoolean());
     }
 }
 
