@@ -1921,4 +1921,13 @@ EXPORTS
 	_ZNK7QPacket4dataEv @ 1920 NONAME
 	_ZTI23QDeclarativeDebugServer @ 1921 NONAME
 	_ZTV23QDeclarativeDebugServer @ 1922 NONAME
+	_ZN20QDeclarativeRefCount6addrefEv @ 1923 NONAME
+	_ZN20QDeclarativeRefCount7releaseEv @ 1924 NONAME
+	_ZN20QDeclarativeRefCountC1Ev @ 1925 NONAME
+	_ZN20QDeclarativeRefCountC2Ev @ 1926 NONAME
+	_ZN20QDeclarativeRefCountD0Ev @ 1927 NONAME
+	_ZN20QDeclarativeRefCountD1Ev @ 1928 NONAME
+	_ZN20QDeclarativeRefCountD2Ev @ 1929 NONAME
+	_ZTI20QDeclarativeRefCount @ 1930 NONAME
+	_ZTV20QDeclarativeRefCount @ 1931 NONAME
 

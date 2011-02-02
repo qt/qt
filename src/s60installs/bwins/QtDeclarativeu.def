@@ -704,7 +704,7 @@ EXPORTS
 	??4QDeclarativeDomDocument@@QAEAAV0@ABV0@@Z @ 703 NONAME ABSENT ; class QDeclarativeDomDocument & QDeclarativeDomDocument::operator=(class QDeclarativeDomDocument const &)
 	??0QDeclarativeOpenMetaObject@@QAE@PAVQObject@@PAVQDeclarativeOpenMetaObjectType@@_N@Z @ 704 NONAME ABSENT ; QDeclarativeOpenMetaObject::QDeclarativeOpenMetaObject(class QObject *, class QDeclarativeOpenMetaObjectType *, bool)
 	?trUtf8@QDeclarativeExpression@@SA?AVQString@@PBD0@Z @ 705 NONAME ; class QString QDeclarativeExpression::trUtf8(char const *, char const *)
-	??0QPacketProtocol@@QAE@PAVQIODevice@@PAVQObject@@@Z @ 706 NONAME; QPacketProtocol::QPacketProtocol(class QIODevice *, class QObject *)
+	??0QPacketProtocol@@QAE@PAVQIODevice@@PAVQObject@@@Z @ 706 NONAME ; QPacketProtocol::QPacketProtocol(class QIODevice *, class QObject *)
 	??1QDeclarativeListReference@@QAE@XZ @ 707 NONAME ; QDeclarativeListReference::~QDeclarativeListReference(void)
 	?clearError@QDeclarativeExpression@@QAEXXZ @ 708 NONAME ; void QDeclarativeExpression::clearError(void)
 	?setLineNumber@QDeclarativeDebugFileReference@@QAEXH@Z @ 709 NONAME ABSENT ; void QDeclarativeDebugFileReference::setLineNumber(int)
@@ -1883,4 +1883,9 @@ EXPORTS
 	?d_func@QDeclarativeDebugServer@@AAEPAVQDeclarativeDebugServerPrivate@@XZ @ 1882 NONAME ; class QDeclarativeDebugServerPrivate * QDeclarativeDebugServer::d_func(void)
 	?tr@QDeclarativeDebugServer@@SA?AVQString@@PBD0H@Z @ 1883 NONAME ; class QString QDeclarativeDebugServer::tr(char const *, char const *, int)
 	?implicitWidth@QDeclarativeItemPrivate@@UBEMXZ @ 1884 NONAME ; float QDeclarativeItemPrivate::implicitWidth(void) const
+	??_EQDeclarativeRefCount@@UAE@I@Z @ 1885 NONAME ; QDeclarativeRefCount::~QDeclarativeRefCount(unsigned int)
+	??0QDeclarativeRefCount@@QAE@XZ @ 1886 NONAME ; QDeclarativeRefCount::QDeclarativeRefCount(void)
+	??1QDeclarativeRefCount@@UAE@XZ @ 1887 NONAME ; QDeclarativeRefCount::~QDeclarativeRefCount(void)
+	?addref@QDeclarativeRefCount@@QAEXXZ @ 1888 NONAME ; void QDeclarativeRefCount::addref(void)
+	?release@QDeclarativeRefCount@@QAEXXZ @ 1889 NONAME ; void QDeclarativeRefCount::release(void)
 
