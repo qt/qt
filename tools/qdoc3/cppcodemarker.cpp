@@ -1085,7 +1085,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 	}
 
         QString text;
-        if (tag.isEmpty() && i == code.length())
+        if ((tag.isEmpty() || second == 1) && i == code.length())
             text = code.mid(second - 1, i - second + 1);
         else
             text = code.mid(second - 1, i - second);
