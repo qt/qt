@@ -586,7 +586,6 @@ QNetworkAccessManager *NetworkAccessManagerFactory::create(QObject *parent)
     }
     connect(manager, SIGNAL(destroyed(QObject*)), this, SLOT(managerDestroyed(QObject*)));
     namList.append(manager);
-    qDebug() << "created new network access manager for" << parent;
     return manager;
 }
 
@@ -742,8 +741,10 @@ void QDeclarativeViewer::createMenu()
     connect(slowAction, SIGNAL(triggered(bool)), this, SLOT(setSlowMode(bool)));
 
     showWarningsWindow = new QAction(tr("Show Warnings"), this);
+#if !defined(Q_OS_SYMBIAN)
     showWarningsWindow->setCheckable((true));
     showWarningsWindow->setChecked(loggerWindow->isVisible());
+#endif
     connect(showWarningsWindow, SIGNAL(triggered(bool)), this, SLOT(showWarnings(bool)));
 
     QAction *proxyAction = new QAction(tr("HTTP &Proxy..."), this);
@@ -780,9 +781,11 @@ void QDeclarativeViewer::createMenu()
     aboutAction->setMenuRole(QAction::AboutQtRole);
     connect(aboutAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
+#if !defined(Q_OS_SYMBIAN)
     QAction *closeAction = new QAction(tr("&Close"), this);
     closeAction->setShortcuts(QKeySequence::Close);
     connect(closeAction, SIGNAL(triggered()), this, SLOT(close()));
+#endif
 
     QAction *quitAction = new QAction(tr("&Quit"), this);
     quitAction->setMenuRole(QAction::QuitRole);
@@ -818,19 +821,19 @@ void QDeclarativeViewer::createMenu()
     fileMenu->addAction(openAction);
     fileMenu->addAction(openUrlAction);
     fileMenu->addAction(reloadAction);
+#if !defined(Q_OS_SYMBIAN)
     fileMenu->addSeparator();
     fileMenu->addAction(closeAction);
-#if !defined(Q_OS_SYMBIAN)
     fileMenu->addAction(quitAction);
 
     QMenu *recordMenu = menu->addMenu(tr("&Recording"));
     recordMenu->addAction(snapshotAction);
     recordMenu->addAction(recordAction);
+#endif // ! Q_OS_SYMBIAN
 
     QMenu *debugMenu = menu->addMenu(tr("&Debugging"));
     debugMenu->addAction(slowAction);
     debugMenu->addAction(showWarningsWindow);
-#endif // ! Q_OS_SYMBIAN
 
     QMenu *settingsMenu = menu->addMenu(tr("&Settings"));
     settingsMenu->addAction(proxyAction);
@@ -914,7 +917,11 @@ void QDeclarativeViewer::toggleFullScreen()
 
 void QDeclarativeViewer::showWarnings(bool show)
 {
+#if defined(Q_OS_SYMBIAN)
+    loggerWindow->showMaximized();
+#else
     loggerWindow->setVisible(show);
+#endif
 }
 
 void QDeclarativeViewer::warningsWidgetOpened()
