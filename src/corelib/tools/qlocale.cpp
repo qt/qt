@@ -274,7 +274,7 @@ static bool splitLocaleName(const QString &name, QChar *lang_begin, QChar *cntry
         switch (state) {
             case 0:
                 // parsing language
-                if (uc->unicode() == '_') {
+                if (uc->unicode() == '_' || uc->unicode() == '-') {
                     state = 1;
                     break;
                 }
@@ -2201,13 +2201,15 @@ static quint16 localePrivateIndex(const QLocalePrivate *p)
 /*!
     Constructs a QLocale object with the specified \a name,
     which has the format
-    "language[_country][.codeset][@modifier]" or "C", where:
+    "language[_-country][.codeset][@modifier]" or "C", where:
 
     \list
     \i language is a lowercase, two-letter, ISO 639 language code,
     \i territory is an uppercase, two-letter, ISO 3166 country code,
     \i and codeset and modifier are ignored.
     \endlist
+
+    The separator can be either underscore or a minus sign.
 
     If the string violates the locale format, or language is not
     a valid ISO 369 code, the "C" locale is used instead. If country
