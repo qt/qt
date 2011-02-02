@@ -823,10 +823,12 @@ void tst_QScriptClass::enumerate()
 
     cls.setIterationEnabled(true);
     QScriptValueIterator it(obj);
+    // This test relies on the order in which properties are enumerated,
+    // which we don't guarantee. However, for compatibility's sake we prefer
+    // that normal JS properties come before QScriptClass properties.
     for (int x = 0; x < 2; ++x) {
         QVERIFY(it.hasNext());
         it.next();
-        QEXPECT_FAIL("", "", Abort);
         QVERIFY(it.scriptName() == foo);
         QVERIFY(it.hasNext());
         it.next();
