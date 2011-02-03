@@ -77,19 +77,13 @@ symbian: {
             "ENDIF" \
             "   \"$$bearerStubZ\" - \"c:$$replace(QT_PLUGINS_BASE_DIR,/,\\)\\bearer\\qsymbianbearer$${QT_LIBINFIX}.qtplugin\"
     } else {
-        # Restrict deployment to Symbian3 and later platforms
-        default_deployment.pkg_prerules -= pkg_platform_dependencies
-        platform_dependency_rules.pkg_prerules = \
-            "[0x20022E6D],0,0,0,{\"S60ProductID\"}" \
-            "[0x20032DE7],0,0,0,{\"S60ProductID\"}"
-
         # No need to deploy plugins for older platform versions when building on Symbian3 or later
         qts60plugindeployment = \
             "   \"$$pluginLocations/qts60plugin_5_0$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qts60plugin_5_0$${QT_LIBINFIX}.dll\""
 
         bearer_plugin.sources = $$QT_BUILD_TREE/plugins/bearer/qsymbianbearer$${QT_LIBINFIX}.dll
         bearer_plugin.path = c:$$QT_PLUGINS_BASE_DIR/bearer
-        DEPLOYMENT += bearer_plugin platform_dependency_rules
+        DEPLOYMENT += bearer_plugin
     }
 
     qtlibraries.pkg_postrules += qts60plugindeployment
