@@ -82,7 +82,6 @@ protected:
 
     QString removePathSeparators(QString &file);
     void removeSpecialCharacters(QString& str);
-    void removeEpocSpecialCharacters(QString& str);
     void generatePkgFile(const QString &iconFile,
                          bool epocBuild,
                          const SymbianLocalizationList &symbianLocalizationList);
