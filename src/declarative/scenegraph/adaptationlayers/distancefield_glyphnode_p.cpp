@@ -129,20 +129,27 @@ void DistanceFieldTextMaterialShader::updateState(Renderer *renderer, AbstractMa
     DistanceFieldTextMaterial *material = static_cast<DistanceFieldTextMaterial *>(newEffect);
     DistanceFieldTextMaterial *oldMaterial = static_cast<DistanceFieldTextMaterial *>(oldEffect);
 
-    QVector4D color(material->color().redF(), material->color().greenF(),
-                    material->color().blueF(), material->color().alphaF());
-    color *= material->opacity();
-
     if (oldMaterial == 0
            || material->color() != oldMaterial->color()
            || material->opacity() != oldMaterial->opacity()) {
+        QVector4D color(material->color().redF(), material->color().greenF(),
+                        material->color().blueF(), material->color().alphaF());
+        color *= material->opacity();
         m_program.setUniformValue(m_color_id, color);
     }
 
+    bool updateRange = false;
     if (oldMaterial == 0 || material->scale() != oldMaterial->scale()) {
         m_fontScale = material->scale();
-        updateAlphaRange();
+        updateRange = true;
     }
+    if (updates & Renderer::UpdateMatrices) {
+        m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
+        m_matrixScale = qSqrt(renderer->modelViewMatrix().top().determinant());
+        updateRange = true;
+    }
+    if (updateRange)
+        updateAlphaRange();
 
     Q_ASSERT(!material->texture().isNull());
 
@@ -157,11 +164,6 @@ void DistanceFieldTextMaterialShader::updateState(Renderer *renderer, AbstractMa
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         }
-    }
-    if (updates & Renderer::UpdateMatrices) {
-        m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
-        m_matrixScale = qSqrt(renderer->modelViewMatrix().top().determinant());
-        updateAlphaRange();
     }
 }
 
