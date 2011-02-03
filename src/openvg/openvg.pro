@@ -38,6 +38,13 @@ symbian {
     DEFINES += QVG_RECREATE_ON_SIZE_CHANGE QVG_BUFFER_SCROLLING QVG_SCISSOR_CLIP
     SOURCES += \
         qvg_symbian.cpp
+
+    contains(QT_CONFIG, freetype) {
+        DEFINES += QT_NO_FONTCONFIG
+        INCLUDEPATH += \
+            ../3rdparty/freetype/src \
+            ../3rdparty/freetype/include
+    }
 }
 
 include(../qbase.pri)
