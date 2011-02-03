@@ -1,5 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS = \
+        context2d \
         qscriptclass \
         qscriptengine \
         qscriptvalue \
