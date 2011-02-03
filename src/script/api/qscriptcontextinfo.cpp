@@ -181,7 +181,8 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
     JSC::JSObject *callee = frame->callee();
     if (callee && callee->inherits(&JSC::InternalFunction::info))
         functionName = JSC::asInternalFunction(callee)->name(frame);
-    if (callee && callee->inherits(&JSC::JSFunction::info)) {
+    if (callee && callee->inherits(&JSC::JSFunction::info)
+        && !JSC::asFunction(callee)->isHostFunction()) {
         functionType = QScriptContextInfo::ScriptFunction;
         JSC::FunctionExecutable *body = JSC::asFunction(callee)->jsExecutable();
         functionStartLineNumber = body->lineNo();
