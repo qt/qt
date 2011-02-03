@@ -250,6 +250,9 @@ QNetworkSession::QNetworkSession(const QNetworkConfiguration &connectionConfig, 
             }
         }
     }
+
+    qRegisterMetaType<QNetworkSession::State>();
+    qRegisterMetaType<QNetworkSession::SessionError>();
 }
 
 /*!
