@@ -810,7 +810,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
         m_interrupt = false;
 
 #ifdef QT_SYMBIAN_PRIORITY_DROP
-        QTime eventTimer;
+        QElapsedTimer eventTimer;
 #endif
 
         while (1) {
