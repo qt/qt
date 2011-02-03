@@ -195,7 +195,7 @@ QSGTextureRef DistanceFieldFontAtlas::texture()
     QHash<QFontEngine::FaceId, QSGTextureRef>::iterator tex = m_textures.find(m_faceId);
     if (tex == m_textures.end()) {
         QImage distFieldImage = distanceFieldAtlas();
-        tex = m_textures.insert(m_faceId, QSGContext::current->textureManager()->upload(distFieldImage));
+        tex = m_textures.insert(m_faceId, uploadDistanceField(distFieldImage));
     }
 
     return tex.value();
@@ -284,4 +284,39 @@ bool DistanceFieldFontAtlas::useDistanceFieldForFont(const QFont &font)
         return a.distanceFieldAvailable();
     }
     return false;
+}
+
+QSGTextureRef DistanceFieldFontAtlas::uploadDistanceField(const QImage &image)
+{
+    Q_ASSERT(!image.isNull());
+
+    GLuint id;
+    glGenTextures(1, &id);
+    glBindTexture(GL_TEXTURE_2D, id);
+
+    QImage i = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+
+    // We only need to store the alpha component
+#ifdef QT_OPENGL_ES
+    QSGTextureManager::swizzleBGRAToRGBA(&i);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA8, i.width(), i.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, i.constBits());
+#else
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA8, i.width(), i.height(), 0, GL_BGRA, GL_UNSIGNED_BYTE, i.constBits());
+#endif
+
+    GLuint error = glGetError();
+    if (error != GL_NO_ERROR) {
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glDeleteTextures(1, &id);
+        return QSGTextureRef();
+    }
+
+    QSGTexture *texture = new QSGTexture;
+    texture->setTextureId(id);
+    texture->setTextureSize(image.size());
+    texture->setAlphaChannel(image.hasAlphaChannel());
+    texture->setStatus(QSGTexture::Ready);
+
+    QSGTextureRef ref(texture);
+    return ref;
 }

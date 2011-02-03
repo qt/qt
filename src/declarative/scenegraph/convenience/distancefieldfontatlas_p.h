@@ -81,6 +81,7 @@ public:
 
 private:
     QImage distanceFieldAtlas() const;
+    QSGTextureRef uploadDistanceField(const QImage &image);
 
     QFont m_font;
     QFontEngine *m_fontEngine;
