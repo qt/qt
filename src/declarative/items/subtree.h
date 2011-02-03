@@ -122,6 +122,8 @@ private Q_SLOTS:
     void markDirtyTexture();
 
 private:
+    void renderToTexture();
+
     QPointer<QSGItem> m_item;
     QSizeF m_margins;
 

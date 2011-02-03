@@ -44,6 +44,7 @@
 #include "qsgitem_p.h"
 #include "adaptationlayer.h"
 #include "renderer.h"
+#include "qsgcanvas_p.h"
 
 #include "qglframebufferobject.h"
 #include "qmath.h"
@@ -186,7 +187,7 @@ SubTreeTextureProvider::~SubTreeTextureProvider()
 QSGTextureRef SubTreeTextureProvider::texture()
 {
     if (m_dirtyTexture)
-        grab();
+        renderToTexture();
     return m_texture;
 }
 
@@ -194,18 +195,11 @@ void SubTreeTextureProvider::setItem(QSGItem *item)
 {
     if (item == m_item)
         return;
-    if (m_item) {
-        if (m_renderer)
-            m_renderer->setRootNode(0);
+    if (m_item)
         QSGItemPrivate::get(m_item)->derefFromEffectItem();
-    }
     m_item = item;
-    if (m_item) {
+    if (m_item)
         QSGItemPrivate::get(m_item)->refFromEffectItem();
-        if (m_renderer)
-            m_renderer->setRootNode(QSGItemPrivate::get(m_item)->rootNode);
-    }
-
     emit itemChanged();
 }
 
@@ -235,6 +229,17 @@ void SubTreeTextureProvider::markDirtyTexture()
 
 void SubTreeTextureProvider::grab()
 {
+    if (!m_item)
+        return;
+    QSGCanvas *canvas = m_item->canvas();
+    QSGCanvasPrivate::get(canvas)->updateDirtyNodes();
+    QGLContext *glctx = const_cast<QGLContext *>(canvas->context());
+    glctx->makeCurrent();
+    renderToTexture();
+}
+
+void SubTreeTextureProvider::renderToTexture()
+{
     qreal w = 2 * m_margins.width();
     qreal h = 2 * m_margins.height();
     if (m_item) {
@@ -251,8 +256,8 @@ void SubTreeTextureProvider::grab()
     if (!m_renderer) {
         m_renderer = QSGContext::current->createRenderer();
         connect(m_renderer, SIGNAL(sceneGraphChanged()), this, SLOT(markDirtyTexture()));
-        m_renderer->setRootNode(QSGItemPrivate::get(m_item)->rootNode);
     }
+    m_renderer->setRootNode(QSGItemPrivate::get(m_item)->rootNode);
 
     if (!m_fbo || m_fbo->width() != qCeil(w) || m_fbo->height() != qCeil(h)) {
         delete m_fbo;
@@ -266,7 +271,11 @@ void SubTreeTextureProvider::grab()
     }
 
     // Render texture.
-    Node::DirtyFlags dirty = m_renderer->rootNode()->dirtyFlags();
+    RootNode *root = m_renderer->rootNode();
+    Node::DirtyFlags dirty = root->dirtyFlags();
+    m_renderer->rootNode()->markDirty(Node::DirtyNodeAdded); // Force matrix and clip update.
+    m_renderer->nodeChanged(root, Node::DirtyNodeAdded); // Force render list update.
+
     const QGLContext *ctx = QSGContext::current->glContext();
     QRectF r(0, 0, m_item->width(), m_item->height());
     r.adjust(-m_margins.width(), -m_margins.height(), m_margins.width(), m_margins.height());
@@ -274,8 +283,9 @@ void SubTreeTextureProvider::grab()
     m_renderer->setProjectMatrixToRect(r);
     m_renderer->setClearColor(Qt::transparent);
     m_renderer->renderScene(BindableFbo(const_cast<QGLContext *>(ctx), m_fbo));
+
     m_dirtyTexture = false;
-    m_renderer->rootNode()->markDirty(dirty);
+    m_renderer->rootNode()->markDirty(dirty | Node::DirtyNodeAdded); // Force matrix, clip and render list update.
 }
 
 
@@ -305,7 +315,7 @@ Node *TextureItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         node = new TextureNode;
 
     node->setTargetRect(QRectF(0, 0, width(), height()));
-    node->setSourceRect(QRectF(0, 0, 1, 1));
+    node->setSourceRect(QRectF(0, 1, 1, -1));
     node->setOpacity(data->opacity);
     node->setTexture(m_textureProvider);
 
@@ -377,7 +387,7 @@ Node *SubTree::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     m_textureProvider->setLinearFiltering(QSGItemPrivate::get(this)->smooth);
 
     node->setTargetRect(QRectF(0, 0, width(), height()));
-    node->setSourceRect(QRectF(0, 0, 1, 1));
+    node->setSourceRect(QRectF(0, 1, 1, -1));
     node->setOpacity(data->opacity);
     node->setTexture(m_textureProvider);
 
