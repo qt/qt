@@ -180,8 +180,11 @@ bool QMutexPrivate::wait(int timeout)
             errorCode = pthread_cond_timedwait(&cond, &mutex, &ti);
         }
         if (errorCode) {
-            if (errorCode == ETIMEDOUT)
+            if (errorCode == ETIMEDOUT) {
+                if (wakeup)
+                    errorCode = 0;
                 break;
+            }
             report_error(errorCode, "QMutex::lock()", "cv wait");
         }
     }
