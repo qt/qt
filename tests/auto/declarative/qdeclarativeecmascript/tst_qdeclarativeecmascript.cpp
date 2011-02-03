@@ -142,6 +142,7 @@ private slots:
     void compiled();
     void numberAssignment();
     void propertySplicing();
+    void signalWithUnknownTypes();
 
     void bug1();
     void bug2();
@@ -2336,6 +2337,26 @@ void tst_qdeclarativeecmascript::propertySplicing()
     QVERIFY(object != 0);
 
     QCOMPARE(object->property("test").toBool(), true);
+
+    delete object;
+}
+
+// QTBUG-16683
+void tst_qdeclarativeecmascript::signalWithUnknownTypes()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("signalWithUnknownTypes.qml"));
+
+    MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+    QVERIFY(object != 0);
+
+    MyQmlObject::MyType type;
+    type.value = 0x8971123;
+    emit object->signalWithUnknownType(type);
+
+    MyQmlObject::MyType result = qvariant_cast<MyQmlObject::MyType>(object->variant());
+
+    QCOMPARE(result.value, type.value);
+
 
     delete object;
 }
