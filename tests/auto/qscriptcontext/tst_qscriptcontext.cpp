@@ -860,6 +860,21 @@ void tst_QScriptContext::backtrace_data()
 
         QTest::newRow("js recursive") << source << expected;
     }
+
+    {
+        QString source = QString::fromLatin1(
+            "[0].forEach(\n"
+            "    function() {\n"
+            "        result = bt();\n"
+            "}); result");
+
+        QStringList expected;
+        expected << "<native>() at -1"
+                 << "<anonymous>(0, 0, 0) at testfile:3"
+                 << "forEach(0) at -1"
+                 << "<global>() at testfile:4";
+        QTest::newRow("js callback from built-in") << source << expected;
+    }
 }
 
 
