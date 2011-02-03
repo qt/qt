@@ -11,6 +11,7 @@ SUBDIRS += \
            qdeclarativeanchors \
            qdeclarativeanimatedimage \
            qdeclarativeanimations \
+           qdeclarativeapplication \
            qdeclarativebehaviors \
            qdeclarativebinding \
            qdeclarativeborderimage \
@@ -45,6 +46,7 @@ SUBDIRS += \
            qdeclarativemousearea \
            qdeclarativeparticles \
            qdeclarativepathview \
+           qdeclarativepincharea \
            qdeclarativepixmapcache \
            qdeclarativepositioners \
            qdeclarativeproperty \
