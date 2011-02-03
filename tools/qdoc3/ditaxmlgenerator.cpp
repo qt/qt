@@ -2285,7 +2285,7 @@ void DitaXmlGenerator::generateIncludes(const InnerNode* inner, CodeMarker* mark
 
 /*!
   zzz
-  Generates a table of contents begining at \a node.
+  Generates a table of contents beginning at \a node.
   Currently just returns without writing anything.
  */
 void DitaXmlGenerator::generateTableOfContents(const Node* node,
