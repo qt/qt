@@ -3414,13 +3414,13 @@ void v8::V8::GetHeapStatistics(HeapStatistics* heap_statistics) {
 bool v8::V8::IdleNotification() {
   // Returning true tells the caller that it need not
   // continue to call IdleNotification.
-  if (!i::V8::IsRunning()) return true;
+  if (IsDeadCheck("v8::V8::IdleNotification()")) return true;
   return i::V8::IdleNotification();
 }
 
 
 void v8::V8::LowMemoryNotification() {
-  if (!i::V8::IsRunning()) return;
+  if (IsDeadCheck("v8::V8::LowMemoryNotification()")) return;
   HEAP->CollectAllGarbage(true);
 }
 
@@ -4637,7 +4637,7 @@ bool Debug::SetDebugEventListener(v8::Handle<v8::Object> that,
 
 
 void Debug::DebugBreak() {
-  if (!i::V8::IsRunning()) return;
+  if (IsDeadCheck("v8::Debug::DebugBreak()")) return;
   i::Isolate::Current()->stack_guard()->DebugBreak();
 }
 
@@ -4648,7 +4648,7 @@ void Debug::CancelDebugBreak() {
 
 
 void Debug::DebugBreakForCommand(ClientData* data) {
-  if (!i::V8::IsRunning()) return;
+  if (IsDeadCheck("v8::Debug::DebugBreakForCommand()")) return;
   i::Isolate::Current()->debugger()->EnqueueDebugCommand(data);
 }
 
@@ -4690,7 +4690,7 @@ void Debug::SetMessageHandler2(v8::Debug::MessageHandler2 handler) {
 
 void Debug::SendCommand(const uint16_t* command, int length,
                         ClientData* client_data) {
-  if (!i::V8::IsRunning()) return;
+  if (IsDeadCheck("v8::Debug::SendCommand()")) return;
   i::Isolate::Current()->debugger()->ProcessCommand(
       i::Vector<const uint16_t>(command, length), client_data);
 }
@@ -4715,7 +4715,7 @@ void Debug::SetDebugMessageDispatchHandler(
 
 Local<Value> Debug::Call(v8::Handle<v8::Function> fun,
                          v8::Handle<v8::Value> data) {
-  if (!i::V8::IsRunning()) return Local<Value>();
+  if (IsDeadCheck("v8::Debug::Call()")) return Local<Value>();
   ON_BAILOUT("v8::Debug::Call()", return Local<Value>());
   ENTER_V8;
   i::Handle<i::Object> result;
@@ -4736,7 +4736,7 @@ Local<Value> Debug::Call(v8::Handle<v8::Function> fun,
 
 
 Local<Value> Debug::GetMirror(v8::Handle<v8::Value> obj) {
-  if (!i::V8::IsRunning()) return Local<Value>();
+  if (IsDeadCheck("v8::Debug::GetMirror()")) return Local<Value>();
   ON_BAILOUT("v8::Debug::GetMirror()", return Local<Value>());
   ENTER_V8;
   v8::HandleScope scope;
