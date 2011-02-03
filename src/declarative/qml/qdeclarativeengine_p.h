@@ -374,9 +374,8 @@ The returned cache is not referenced, so if it is to be stored, call addref().
 QDeclarativePropertyCache *QDeclarativeEnginePrivate::cache(QDeclarativeType *type, int minorVersion, QDeclarativeError &error)
 {
     Q_ASSERT(type);
-    Q_ASSERT(minorVersion >= 0);
 
-    if (!type->containsRevisionedAttributes())
+    if (minorVersion == -1 || !type->containsRevisionedAttributes())
         return cache(type->metaObject());
 
     QDeclarativePropertyCache *rv = typePropertyCache.value(qMakePair(type, minorVersion));
