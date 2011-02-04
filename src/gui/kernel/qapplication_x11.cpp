@@ -5227,14 +5227,15 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
         bool trust = isVisible()
                      && (d->topData()->parentWinId == XNone ||
                          d->topData()->parentWinId == QX11Info::appRootWindow());
+        bool isCPos = false;
 
         if (event->xconfigure.send_event || trust) {
             // if a ConfigureNotify comes from a real sendevent request, we can
             // trust its values.
             newCPos.rx() = event->xconfigure.x + event->xconfigure.border_width;
             newCPos.ry() = event->xconfigure.y + event->xconfigure.border_width;
+            isCPos = true;
         }
-
         if (isVisible())
             QApplication::syncX();
 
@@ -5260,6 +5261,7 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
                                    otherEvent.xconfigure.border_width;
                     newCPos.ry() = otherEvent.xconfigure.y +
                                    otherEvent.xconfigure.border_width;
+                    isCPos = true;
                 }
             }
 #ifndef QT_NO_XSYNC
@@ -5270,6 +5272,19 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
                     break;
             }
 #endif // QT_NO_XSYNC
+        }
+
+        if (!isCPos) {
+            // we didn't get an updated position of the toplevel.
+            // either we haven't moved or there is a bug in the window manager.
+            // anyway, let's query the position to be certain.
+            int x, y;
+            Window child;
+            XTranslateCoordinates(X11->display, internalWinId(),
+                                  QApplication::desktop()->screen(d->xinfo.screen())->internalWinId(),
+                                  0, 0, &x, &y, &child);
+            newCPos.rx() = x;
+            newCPos.ry() = y;
         }
 
         QRect cr (geometry());
