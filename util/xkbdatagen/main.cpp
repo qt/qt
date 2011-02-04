@@ -456,6 +456,7 @@ int main(int argc, char **argv)
            "****************************************************************************/\n"
            "\n"
            "// This file is auto-generated, do not edit!\n"
+           "// (Generated using util/xkbdatagen)\n"
            "\n");
 
     // data structure

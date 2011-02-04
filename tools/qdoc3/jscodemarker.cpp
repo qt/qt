@@ -101,6 +101,14 @@ bool JsCodeMarker::recognizeLanguage(const QString &language)
     return language == "JavaScript" || language == "ECMAScript";
 }
 
+/*!
+  Returns the type of atom used to represent JavaScript code in the documentation.
+*/
+Atom::Type JsCodeMarker::atomType() const
+{
+    return Atom::JavaScript;
+}
+
 QString JsCodeMarker::markedUpCode(const QString &code,
                                     const Node *relative,
                                     const Location &location)

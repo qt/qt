@@ -103,6 +103,14 @@ bool QmlCodeMarker::recognizeLanguage(const QString &language)
 }
 
 /*!
+  Returns the type of atom used to represent QML code in the documentation.
+*/
+Atom::Type QmlCodeMarker::atomType() const
+{
+    return Atom::Qml;
+}
+
+/*!
   Returns the name of the \a node. Method names include are returned with a
   trailing set of parentheses.
  */
@@ -175,7 +183,7 @@ QString QmlCodeMarker::markedUpIncludes(const QStringList& includes)
         ++inc;
     }
     Location location;
-    return protect(addMarkUp(code, 0, location));
+    return addMarkUp(code, 0, location);
 }
 
 QString QmlCodeMarker::functionBeginRegExp(const QString& funcName)
