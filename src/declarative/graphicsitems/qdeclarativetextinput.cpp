@@ -550,10 +550,10 @@ void QDeclarativeTextInput::select(int start, int end)
     It is equivalent to the following snippet, but is faster and easier
     to use.
 
-    \qml
+    \js
     myTextInput.text.toString().substring(myTextInput.selectionStart,
         myTextInput.selectionEnd);
-    \endqml
+    \endjs
 */
 QString QDeclarativeTextInput::selectedText() const
 {

@@ -646,10 +646,11 @@ const QString::Null QString::null = { };
     class.)
 
     \table 100 %
+    \header
+    \o Note for C Programmers
+
     \row
     \o
-    \section1 Note for C Programmers
-
     Due to C++'s type system and the fact that QString is
     \l{implicitly shared}, QStrings may be treated like \c{int}s or
     other basic types. For example:
