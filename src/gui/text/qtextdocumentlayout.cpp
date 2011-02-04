@@ -513,9 +513,6 @@ public:
 
     qreal scaleToDevice(qreal value) const;
     QFixed scaleToDevice(QFixed value) const;
-
-    qreal lineH;
-    QTextDocumentLayout::LineHeightMode lineHeightMode;
 };
 
 QTextDocumentLayoutPrivate::QTextDocumentLayoutPrivate()
@@ -523,9 +520,7 @@ QTextDocumentLayoutPrivate::QTextDocumentLayoutPrivate()
       cursorWidth(1),
       currentLazyLayoutPosition(-1),
       lazyLayoutStepSize(1000),
-      lastPageCount(-1),
-      lineH(1),
-      lineHeightMode(QTextDocumentLayout::MultiplyHeight)
+      lastPageCount(-1)
 {
     showLayoutProgress = true;
     insideDocumentChange = false;
@@ -2744,13 +2739,6 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
         else
             layoutStruct->maximumWidth = qMax(layoutStruct->maximumWidth, maxW);
     }
-}
-
-void QTextDocumentLayout::setLineHeight(qreal lineH, QTextDocumentLayout::LineHeightMode mode = QTextDocumentLayout::MultiplyHeight)
-{
-    Q_D(QTextDocumentLayout);
-    d->lineH = lineH;
-    d->lineHeightMode = mode;
 }
 
 void QTextDocumentLayoutPrivate::floatMargins(const QFixed &y, const QTextLayoutStruct *layoutStruct,

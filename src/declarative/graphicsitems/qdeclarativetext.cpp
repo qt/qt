@@ -41,7 +41,6 @@
 
 #include "private/qdeclarativetext_p.h"
 #include "private/qdeclarativetext_p_p.h"
-#include <private/qtextdocumentlayout_p.h>
 #include <qdeclarativestyledtext_p.h>
 #include <qdeclarativeinfo.h>
 #include <qdeclarativepixmapcache_p.h>
@@ -82,14 +81,6 @@ private:
 
     int outstanding;
     static QSet<QUrl> errors;
-};
-
-class QDeclarativeTextDocumentLayout : public QTextDocumentLayout
-{
-    Q_OBJECT
-public:
-    QDeclarativeTextDocumentLayout(QTextDocument *doc);
-    void setLineHeight(qreal lineHeight, QDeclarativeText::LineHeightMode mode);
 };
 
 DEFINE_BOOL_CONFIG_OPTION(enableImageCache, QML_ENABLE_TEXT_IMAGE_CACHE);
@@ -185,15 +176,6 @@ void QTextDocumentWithImageResources::setText(const QString &text)
 
 QSet<QUrl> QTextDocumentWithImageResources::errors;
 
-QDeclarativeTextDocumentLayout::QDeclarativeTextDocumentLayout(QTextDocument *doc)
-    : QTextDocumentLayout(doc) {
-}
-
-void QDeclarativeTextDocumentLayout::setLineHeight(qreal lineHeight, QDeclarativeText::LineHeightMode mode = QDeclarativeText::MultiplyHeight)
-{
-    QTextDocumentLayout::setLineHeight(lineHeight, QTextDocumentLayout::LineHeightMode(mode));
-}
-
 QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
 {
 }
@@ -239,11 +221,6 @@ void QDeclarativeTextPrivate::updateLayout()
             singleline = false;
             QDeclarativeStyledText::parse(text, layout);
         }
-    } else {
-        ensureDoc();
-        QDeclarativeTextDocumentLayout *layout = new QDeclarativeTextDocumentLayout(doc);
-        layout->setLineHeight(lineHeight, lineHeightMode);
-        doc->setDocumentLayout(layout);
     }
 
     updateSize();
