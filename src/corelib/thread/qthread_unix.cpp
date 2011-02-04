@@ -327,7 +327,10 @@ void *QThreadPrivate::start(void *arg)
     set_thread_data(data);
 
     data->ref();
-    data->quitNow = false;
+    {
+        QMutexLocker locker(&thr->d_func()->mutex);
+        data->quitNow = thr->d_func()->exited;
+    }
 
     // ### TODO: allow the user to create a custom event dispatcher
     createEventDispatcher(data);
