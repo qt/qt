@@ -96,38 +96,29 @@ private:
 class SubTreeTextureProvider : public QSGTextureProvider
 {
     Q_OBJECT
-    Q_PROPERTY(QSGItem *item READ item WRITE setItem NOTIFY itemChanged)
-    Q_PROPERTY(QSizeF margins READ margins WRITE setMargins NOTIFY marginsChanged)
-    Q_PROPERTY(bool live READ live WRITE setLive NOTIFY liveChanged)
 public:
     SubTreeTextureProvider(QObject *parent = 0);
     ~SubTreeTextureProvider();
     virtual QSGTextureRef texture();
 
-    QSGItem *item() const { return m_item; }
-    void setItem(QSGItem *item);
+    // The item's "paint node".
+    Node *item() const { return m_item; }
+    void setItem(Node *item);
 
-    QSizeF margins() const { return m_margins; }
-    void setMargins(const QSizeF &margins);
+    QRectF rect() const { return m_rect; }
+    void setRect(const QRectF &rect);
 
     bool live() const { return bool(m_live); }
     void setLive(bool live);
 
-    Q_INVOKABLE void grab();
-
-Q_SIGNALS:
-    void itemChanged();
-    void marginsChanged();
-    void liveChanged();
+    void grab();
 
 private Q_SLOTS:
     void markDirtyTexture();
 
 private:
-    void renderToTexture();
-
-    QPointer<QSGItem> m_item;
-    QSizeF m_margins;
+    Node *m_item;
+    QRectF m_rect;
 
     Renderer *m_renderer;
     QGLFramebufferObject *m_fbo;
@@ -145,33 +136,30 @@ private:
 class TextureItem : public QSGItem
 {
     Q_OBJECT
-    Q_PROPERTY(QSGTextureProvider *texture READ textureProvider WRITE setTextureProvider NOTIFY textureProviderChanged)
+    // TODO: property clampToEdge
+    // TODO: property mipmapFiltering
 public:
     TextureItem(QSGItem *parent = 0);
 
     QSGTextureProvider *textureProvider() const;
     void setTextureProvider(QSGTextureProvider *provider);
     
-Q_SIGNALS:
-    void textureProviderChanged();
-
 protected:
     virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
 
-private:
     QSGTextureProvider *m_textureProvider;
 };
 
 
-class SubTree : public QSGItem
+class SubTree : public TextureItem
 {
     Q_OBJECT
     Q_PROPERTY(QSGItem *item READ item WRITE setItem NOTIFY itemChanged)
     Q_PROPERTY(QSizeF margins READ margins WRITE setMargins NOTIFY marginsChanged)
     Q_PROPERTY(bool live READ live WRITE setLive NOTIFY liveChanged)
-    Q_PROPERTY(QSGTextureProvider *texture READ textureProvider)
 public:
     SubTree(QSGItem *parent = 0);
+    ~SubTree();
 
     QSGItem *item() const;
     void setItem(QSGItem *item);
@@ -182,7 +170,7 @@ public:
     bool live() const;
     void setLive(bool live);
 
-    QSGTextureProvider *textureProvider() const;
+    Q_INVOKABLE void grab();
 
 Q_SIGNALS:
     void itemChanged();
@@ -193,7 +181,9 @@ protected:
     virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
 
 private:
-    SubTreeTextureProvider *m_textureProvider;
+    QPointer<QSGItem> m_item;
+    QSizeF m_margins;
+    uint m_live : 1;
 };
 
 QT_END_NAMESPACE
