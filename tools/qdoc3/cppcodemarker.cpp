@@ -911,7 +911,7 @@ static QString untabified(const QString &in)
 
 QString CppCodeMarker::addMarkUp(const QString &in,
                                  const Node * /* relative */,
-                                 const Location /* &location */)
+                                 const Location & /* location */)
 {
 #define readChar() \
     ch = (i < (int)code.length()) ? code[i++].cell() : EOF
