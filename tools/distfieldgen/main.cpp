@@ -146,8 +146,8 @@ int main(int argc, char *argv[])
     DistanceFieldFontAtlas atlas(f);
 
     QMap<int, QImage> distfields;
-    for (int i = 0; i < 0x8A; ++i) {
-        DistFieldGenTask *task = new DistFieldGenTask(&atlas, i, 0x8A, &distfields);
+    for (int i = 0; i < 0xFF; ++i) {
+        DistFieldGenTask *task = new DistFieldGenTask(&atlas, i, 0xFF, &distfields);
         QThreadPool::globalInstance()->start(task);
     }
 

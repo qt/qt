@@ -89,7 +89,7 @@ void qt_disableFontHinting(QFont &font)
 #endif
 }
 
-#define DISTANCEFIELD_CHARRANGE 0x8A
+#define DISTANCEFIELD_CHARRANGE 0xFF
 #define DISTANCEFIELD_TEXTURESIZE 2048
 #define DISTANCEFIELD_BASEFONTSIZE 54
 #define DISTANCEFIELD_TILESIZE 64
@@ -160,15 +160,23 @@ QHash<QFontEngine::FaceId, QSGTextureRef> DistanceFieldFontAtlas::m_textures;
 DistanceFieldFontAtlas::DistanceFieldFontAtlas(const QFont &font)
 {
     m_font = font;
-    m_fontEngine = QFontPrivate::get(m_font)->engineForScript(QUnicodeTables::Common);\
+    m_fontEngine = QFontPrivate::get(m_font)->engineForScript(QUnicodeTables::Common);
     QFontEngine *realEngine = m_fontEngine;
     if (realEngine->type() == QFontEngine::Multi) {
         QFontEngineMulti *fem = static_cast<QFontEngineMulti *>(realEngine);
         realEngine = fem->engine(0);
     }
-
     m_faceId = realEngine->faceId();
     qt_disableFontHinting(m_font);
+
+    QFont referenceFont = m_font;
+    referenceFont.setPixelSize(DISTANCEFIELD_BASEFONTSIZE);
+    qt_disableFontHinting(referenceFont);
+    m_referenceFontEngine = QFontPrivate::get(referenceFont)->engineForScript(QUnicodeTables::Common);
+    if (m_referenceFontEngine->type() == QFontEngine::Multi) {
+        QFontEngineMulti *fem = static_cast<QFontEngineMulti *>(m_referenceFontEngine);
+        m_referenceFontEngine = fem->engine(0);
+    }
 }
 
 bool DistanceFieldFontAtlas::distanceFieldAvailable() const
@@ -217,11 +225,10 @@ DistanceFieldFontAtlas::Metrics DistanceFieldFontAtlas::glyphMetrics(glyph_t gly
     QFixedPoint p;
     m_fontEngine->addGlyphsToPath(&glyph, &p, 1, &path, 0);
 
-    m.width = DISTANCEFIELD_TILESIZE * scaleRatioFromRefSize();
-    m.height = m.width;
+    m.width = path.boundingRect().width();
+    m.height = path.boundingRect().height();
     m.baselineX = path.boundingRect().x();
     m.baselineY = -path.boundingRect().y();
-    m.margin = DISTANCEFIELD_RADIUS / qreal(DISTANCEFIELD_SCALE) * scaleRatioFromRefSize();
 
     return m;
 }
@@ -232,10 +239,17 @@ DistanceFieldFontAtlas::TexCoord DistanceFieldFontAtlas::glyphTexCoord(glyph_t g
 
     const QSize texSize = atlasSize();
 
+    //XXX yoann temporary (and slow) solution to get metrics in float
+    QPainterPath path;
+    QFixedPoint p;
+    m_referenceFontEngine->addGlyphsToPath(&glyph, &p, 1, &path, 0);
+
+    c.xMargin = DISTANCEFIELD_RADIUS / qreal(DISTANCEFIELD_SCALE) / texSize.width();
+    c.yMargin = DISTANCEFIELD_RADIUS / qreal(DISTANCEFIELD_SCALE) / texSize.height();
     c.x = ((glyph * DISTANCEFIELD_TILESIZE) % texSize.width()) / qreal(texSize.width());
     c.y = ((glyph * DISTANCEFIELD_TILESIZE) / texSize.width()) * DISTANCEFIELD_TILESIZE / qreal(texSize.height());
-    c.width = DISTANCEFIELD_TILESIZE / qreal(texSize.width());
-    c.height = DISTANCEFIELD_TILESIZE / qreal(texSize.height());
+    c.width = path.boundingRect().width() / qreal(texSize.width());
+    c.height = path.boundingRect().height() / qreal(texSize.height());
 
     return c;
 }

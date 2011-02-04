@@ -58,7 +58,6 @@ public:
     struct Metrics {
         qreal width;
         qreal height;
-        qreal margin;
         qreal baselineX;
         qreal baselineY;
     };
@@ -69,6 +68,8 @@ public:
         qreal y;
         qreal width;
         qreal height;
+        qreal xMargin;
+        qreal yMargin;
     };
     TexCoord glyphTexCoord(glyph_t glyph) const;
 
@@ -85,6 +86,7 @@ private:
 
     QFont m_font;
     QFontEngine *m_fontEngine;
+    QFontEngine *m_referenceFontEngine;
     QFontEngine::FaceId m_faceId;
 
     static QHash<QFontEngine::FaceId, QString> m_distfield_images;

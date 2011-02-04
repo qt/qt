@@ -122,8 +122,8 @@ void DistanceFieldGlyphNode::updateGeometry()
         DistanceFieldFontAtlas::TexCoord c = m_glyph_atlas->glyphTexCoord(glyphIndex);
 
         QPointF glyphPosition = m_glyphs.positions().at(i) + m_position;
-        qreal x = glyphPosition.x() + metrics.baselineX - metrics.margin;
-        qreal y = glyphPosition.y() - metrics.baselineY - metrics.margin;
+        qreal x = glyphPosition.x() + metrics.baselineX;
+        qreal y = glyphPosition.y() - metrics.baselineY;
 
         boundingRect |= QRectF(x, y, metrics.width, metrics.height);
 
@@ -132,10 +132,10 @@ void DistanceFieldGlyphNode::updateGeometry()
         float cy1 = y;
         float cy2 = y + metrics.height;
 
-        float tx1 = c.x;
-        float tx2 = c.x + c.width;
-        float ty1 = c.y;
-        float ty2 = c.y + c.height;
+        float tx1 = c.x + c.xMargin;
+        float tx2 = tx1 + c.width;
+        float ty1 = c.y + c.yMargin;
+        float ty2 = ty1 + c.height;
 
         if (m_baseLine.isNull())
             m_baseLine = glyphPosition;
