@@ -1676,6 +1676,16 @@ void tst_qdeclarativetextedit::openInputPanelOnFocus()
     QApplication::processEvents();
     QVERIFY(view.inputContext() == 0);
     QVERIFY(!view.testAttribute(Qt::WA_InputMethodEnabled));
+
+    // input method should not be enabled
+    // if TextEdit is read only.
+    edit.setReadOnly(true);
+    ic.openInputPanelReceived = false;
+    edit.setFocus(true);
+    QApplication::processEvents();
+    QCOMPARE(ic.openInputPanelReceived, false);
+    QVERIFY(view.inputContext() == 0);
+    QVERIFY(!view.testAttribute(Qt::WA_InputMethodEnabled));
 }
 
 void tst_qdeclarativetextedit::geometrySignals()

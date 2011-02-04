@@ -1023,6 +1023,7 @@ void QDeclarativeTextEdit::setReadOnly(bool r)
     if (r == isReadOnly())
         return;
 
+    setFlag(QGraphicsItem::ItemAcceptsInputMethod, !r);
 
     Qt::TextInteractionFlags flags = Qt::LinksAccessibleByMouse;
     if (r) {

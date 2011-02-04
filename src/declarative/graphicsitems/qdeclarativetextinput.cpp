@@ -377,6 +377,7 @@ void QDeclarativeTextInput::setReadOnly(bool ro)
     if (d->control->isReadOnly() == ro)
         return;
 
+    setFlag(QGraphicsItem::ItemAcceptsInputMethod, !ro);
     d->control->setReadOnly(ro);
 
     emit readOnlyChanged(ro);
