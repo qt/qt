@@ -66,7 +66,7 @@ QDeclarativeAction::QDeclarativeAction()
 QDeclarativeAction::QDeclarativeAction(QObject *target, const QString &propertyName,
                const QVariant &value)
 : restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false), 
-  property(target, propertyName), toValue(value), 
+  property(target, propertyName, qmlEngine(target)), toValue(value),
   fromBinding(0), event(0),
   specifiedObject(target), specifiedProperty(propertyName)
 {
@@ -373,7 +373,7 @@ void QDeclarativeAction::deleteFromBinding()
     }
 }
 
-bool QDeclarativeState::containsPropertyInRevertList(QObject *target, const QByteArray &name) const
+bool QDeclarativeState::containsPropertyInRevertList(QObject *target, const QString &name) const
 {
     Q_D(const QDeclarativeState);
 
@@ -382,7 +382,7 @@ bool QDeclarativeState::containsPropertyInRevertList(QObject *target, const QByt
 
         while (revertListIterator.hasNext()) {
             const QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
-            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty().toUtf8() == name)
+            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty() == name)
                 return true;
         }
     }
@@ -390,7 +390,7 @@ bool QDeclarativeState::containsPropertyInRevertList(QObject *target, const QByt
     return false;
 }
 
-bool QDeclarativeState::changeValueInRevertList(QObject *target, const QByteArray &name, const QVariant &revertValue)
+bool QDeclarativeState::changeValueInRevertList(QObject *target, const QString &name, const QVariant &revertValue)
 {
     Q_D(QDeclarativeState);
 
@@ -399,7 +399,7 @@ bool QDeclarativeState::changeValueInRevertList(QObject *target, const QByteArra
 
         while (revertListIterator.hasNext()) {
             QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
-            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty().toUtf8() == name) {
+            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty() == name) {
                     simpleAction.setValue(revertValue);
                     return true;
             }
@@ -409,7 +409,7 @@ bool QDeclarativeState::changeValueInRevertList(QObject *target, const QByteArra
     return false;
 }
 
-bool QDeclarativeState::changeBindingInRevertList(QObject *target, const QByteArray &name, QDeclarativeAbstractBinding *binding)
+bool QDeclarativeState::changeBindingInRevertList(QObject *target, const QString &name, QDeclarativeAbstractBinding *binding)
 {
     Q_D(QDeclarativeState);
 
@@ -418,7 +418,7 @@ bool QDeclarativeState::changeBindingInRevertList(QObject *target, const QByteAr
 
         while (revertListIterator.hasNext()) {
             QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
-            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty().toUtf8() == name) {
+            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty() == name) {
                 if (simpleAction.binding())
                     simpleAction.binding()->destroy();
 
@@ -431,7 +431,7 @@ bool QDeclarativeState::changeBindingInRevertList(QObject *target, const QByteAr
     return false;
 }
 
-bool QDeclarativeState::removeEntryFromRevertList(QObject *target, const QByteArray &name)
+bool QDeclarativeState::removeEntryFromRevertList(QObject *target, const QString &name)
 {
     Q_D(QDeclarativeState);
 
@@ -440,7 +440,7 @@ bool QDeclarativeState::removeEntryFromRevertList(QObject *target, const QByteAr
 
         while (revertListIterator.hasNext()) {
             QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
-            if (simpleAction.property().object() == target && simpleAction.property().name().toUtf8() == name) {
+            if (simpleAction.property().object() == target && simpleAction.property().name() == name) {
                 QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(simpleAction.property());
                 if (oldBinding) {
                     QDeclarativePropertyPrivate::setBinding(simpleAction.property(), 0);
@@ -520,7 +520,7 @@ void QDeclarativeState::addEntriesToRevertList(const QList<QDeclarativeAction> &
     }
 }
 
-QVariant QDeclarativeState::valueInRevertList(QObject *target, const QByteArray &name) const
+QVariant QDeclarativeState::valueInRevertList(QObject *target, const QString &name) const
 {
     Q_D(const QDeclarativeState);
 
@@ -529,7 +529,7 @@ QVariant QDeclarativeState::valueInRevertList(QObject *target, const QByteArray 
 
         while (revertListIterator.hasNext()) {
             const QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
-            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty().toUtf8() == name)
+            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty() == name)
                 return simpleAction.value();
         }
     }
@@ -537,7 +537,7 @@ QVariant QDeclarativeState::valueInRevertList(QObject *target, const QByteArray 
     return QVariant();
 }
 
-QDeclarativeAbstractBinding *QDeclarativeState::bindingInRevertList(QObject *target, const QByteArray &name) const
+QDeclarativeAbstractBinding *QDeclarativeState::bindingInRevertList(QObject *target, const QString &name) const
 {
     Q_D(const QDeclarativeState);
 
@@ -546,7 +546,7 @@ QDeclarativeAbstractBinding *QDeclarativeState::bindingInRevertList(QObject *tar
 
         while (revertListIterator.hasNext()) {
             const QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
-            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty().toUtf8() == name)
+            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty() == name)
                 return simpleAction.binding();
         }
     }

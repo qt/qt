@@ -140,11 +140,13 @@ static QString launchSymbianDialog(const QString dialogCaption, const QString st
                 CleanupStack::PushL(extensionFilter);
                 extensionFilter->setFilter(filter);
                 select = AknCommonDialogsDynMem::RunSelectDlgLD(types, target,
-                         startFolder, NULL, NULL, titlePtr, extensionFilter);
+                         startFolder, 0, 0, titlePtr, extensionFilter);
                 CleanupStack::Pop(extensionFilter);
             } else if (dialogMode == DialogSave) {
+                QString defaultFileName = QFileDialogPrivate::initialSelection(startDirectory);
+                target = qt_QString2TPtrC(defaultFileName);
                 select = AknCommonDialogsDynMem::RunSaveDlgLD(types, target,
-                         startFolder, NULL, NULL, titlePtr);
+                         startFolder, 0, 0, titlePtr);
             } else if (dialogMode == DialogFolder) {
                 select = AknCommonDialogsDynMem::RunFolderSelectDlgLD(types, target, startFolder,
                             0, 0, titlePtr, NULL, NULL);
@@ -160,8 +162,10 @@ static QString launchSymbianDialog(const QString dialogCaption, const QString st
             startFolder = qt_QString2TPtrC(dir);
         }
     }
-    if (select)
-        selection.append(qt_TDesC2QString(target));
+    if (select) {
+        QFileInfo fi(qt_TDesC2QString(target));
+        selection = fi.absoluteFilePath();
+    }
 #endif
     return selection;
 }

@@ -112,6 +112,75 @@ Person {
 \l {Extending QML - Adding Types Example} shows the complete code used to create
 the \c Person type.
 
+\section1 QML Type Versioning
+
+In C++ adding a new method or property cannot break old applications.
+In QML, however, new methods and properties can change what a name previously
+resolved to to within a scope chain.
+
+For example, consider these two QML files
+
+\code
+// main.qml
+import QtQuick 1.0
+Item {
+    id: root
+    MyComponent {}
+}
+\endcode
+
+\code
+// MyComponent.qml
+import MyModule 1.0
+CppItem {
+    value: root.x
+}
+\endcode
+
+where CppItem maps to the C++ class QCppItem.
+
+If the author of QCppItem adds a "root" property to QCppItem in a new version of the module, 
+it will break the above program as \c root.x now resolves to a different value.
+The solution is to allow the author of QCppItem to state that the new \c root property is 
+only available from a particular version of QCppItem onwards. This permits new properties
+and features to be added to existing elements without breaking existing programs. 
+
+QML enables this by allowing the properties, methods and signals of a class to be tagged with
+a particular \e revision, so that they are only accessible if the relevant module version
+is imported.  In this case, the author can tag the \c root property as being added in
+\e {revision 1} of the class, and register that revision in version 1.1 of the module.
+
+The REVISION tag is used to mark the \c root property as added in revision 1 of the class.
+Methods such as Q_INVOKABLE's, signals and slots can also be tagged for a
+revision using the \c Q_REVISION(x) macro:
+
+\code
+class CppItem : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int root READ root WRITE setRoot NOTIFY rootChanged REVISION 1)
+
+signals:
+    Q_REVISION(1) void rootChanged();
+};
+\endcode
+
+To register the new class revision to a particular version the following function is used:
+
+\code
+template<typename T, int metaObjectRevision>
+int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const char *qmlName)
+\endcode
+
+To register \c CppItem version 1 for \c {MyModule 1.1}:
+
+\code
+qmlRegisterType<QCppItem,1>("MyModule", 1, 1, "CppItem")
+\endcode
+
+\c root is only available when MyModule 1.1 is imported.
+
+
 \section1 Object and List Property Types
 
 \snippet examples/declarative/cppextensions/referenceexamples/properties/example.qml 0

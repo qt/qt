@@ -265,7 +265,7 @@ Rectangle {
                         anchors.fill: parent
                         onClicked: { 
                             edit.cursorPosition = edit.selectionEnd;
-                            edit.select(edit.cursorPosition, edit.cursorPosition);
+                            edit.deselect();
                             editor.state = "" 
                         } 
                     }

@@ -110,6 +110,7 @@ Q_SIGNALS:
 protected:
     QDeclarativeComponent(QDeclarativeComponentPrivate &dd, QObject* parent);
     Q_INVOKABLE QScriptValue createObject(QObject* parent);
+    Q_INVOKABLE Q_REVISION(1) QScriptValue createObject(QObject* parent, const QScriptValue& valuemap); //XXX Versioning
 
 private:
     QDeclarativeComponent(QDeclarativeEngine *, QDeclarativeCompiledData *, int, int, QObject *parent);
