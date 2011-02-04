@@ -1824,6 +1824,19 @@ Local<String> StackFrame::GetScriptName() const {
   return scope.Close(Local<String>::Cast(Utils::ToLocal(name)));
 }
 
+#ifdef QT_BUILD_SCRIPT_LIB
+Local<Value> StackFrame::GetScriptId() const {
+  if (IsDeadCheck("v8::StackFrame::GetScriptId()")) return Local<Value>();
+  ENTER_V8;
+  HandleScope scope;
+  i::Handle<i::JSObject> self = Utils::OpenHandle(this);
+  i::Handle<i::Object> id = GetProperty(self, "scriptId");
+  if (!id->IsNumber()) {
+    return Local<Value>();
+  }
+  return scope.Close(Utils::ToLocal(id));
+}
+#endif
 
 Local<String> StackFrame::GetScriptNameOrSourceURL() const {
   if (IsDeadCheck("v8::StackFrame::GetScriptNameOrSourceURL()")) {
