@@ -6,12 +6,13 @@ QT = core network
 wince*: {
     addFiles.sources = rfc3252.txt
     addFiles.path = .
-    DEPLOYMENT = addFiles
+    DEPLOYMENT += addFiles
     DEFINES += SRCDIR=\\\"\\\"
 } else:symbian {
     addFiles.sources = rfc3252.txt
     addFiles.path = .
-    DEPLOYMENT = addFiles
+    DEPLOYMENT += addFiles
+    TARGET.CAPABILITY = NetworkServices ReadUserData
 } else:vxworks*: {
     DEFINES += SRCDIR=\\\"\\\"
 } else {
