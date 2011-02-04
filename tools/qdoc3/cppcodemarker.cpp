@@ -911,7 +911,7 @@ static QString untabified(const QString &in)
 
 QString CppCodeMarker::addMarkUp(const QString &in,
                                  const Node * /* relative */,
-                                 const Location & /* location */)
+                                 const Location /* &location */)
 {
 #define readChar() \
     ch = (i < (int)code.length()) ? code[i++].cell() : EOF
@@ -935,6 +935,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
     int braceDepth = 0;
     int parenDepth = 0;
     int i = 0;
+    int start = 0;
     char ch;
     QRegExp classRegExp("Qt?(?:[A-Z3]+[a-z][A-Za-z]*|t)");
     QRegExp functionRegExp("q([A-Z][a-z]+)+");
@@ -942,7 +943,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
     readChar();
 
     while (ch != EOF) {
-	int second = i;
+        int finish = i;
 	QString tag;
         bool target = false;
 
@@ -950,6 +951,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 	    QString ident;
 	    do {
 		ident += ch;
+                finish = i;
 		readChar();
 	    } while (isalnum(ch) || ch == '_');
 
@@ -970,6 +972,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 	    }
 	} else if (isdigit(ch)) {
 	    do {
+                finish = i;
 		readChar();
 	    } while (isalnum(ch) || ch == '.');
 	    tag = QLatin1String("number");
@@ -992,10 +995,12 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 	    case ']':
 	    case '|':
 	    case '~':
+                finish = i;
 		readChar();
 		tag = QLatin1String("op");
 		break;
 	    case '"':
+                finish = i;
 		readChar();
 
 		while (ch != EOF && ch != '"') {
@@ -1003,19 +1008,23 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 			readChar();
 		    readChar();
 		}
+                finish = i;
 		readChar();
 		tag = QLatin1String("string");
 		break;
 	    case '#':
+                finish = i;
 		readChar();
 		while (ch != EOF && ch != '\n') {
 		    if (ch == '\\')
 			readChar();
+                    finish = i;
 		    readChar();
 		}
 		tag = QLatin1String("preprocessor");
 		break;
 	    case '\'':
+                finish = i;
 		readChar();
 
 		while (ch != EOF && ch != '\'') {
@@ -1023,28 +1032,35 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 			readChar();
 		    readChar();
 		}
+                finish = i;
 		readChar();
 		tag = QLatin1String("char");
 		break;
 	    case '(':
+                finish = i;
 		readChar();
 		parenDepth++;
 		break;
 	    case ')':
+                finish = i;
 		readChar();
 		parenDepth--;
 		break;
 	    case ':':
+                finish = i;
 		readChar();
 		if (ch == ':') {
+                    finish = i;
 		    readChar();
 		    tag = QLatin1String("op");
 		}
 		break;
 	    case '/':
+                finish = i;
 		readChar();
 		if (ch == '/') {
 		    do {
+                        finish = i;
 			readChar();
 		    } while (ch != EOF && ch != '\n');
 		    tag = QLatin1String("comment");
@@ -1052,6 +1068,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 		    bool metAster = false;
 		    bool metAsterSlash = false;
 
+                    finish = i;
 		    readChar();
 
 		    while (!metAsterSlash) {
@@ -1064,6 +1081,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 			    metAsterSlash = true;
 			else
 			    metAster = false;
+                        finish = i;
 			readChar();
 		    }
 		    tag = QLatin1String("comment");
@@ -1072,23 +1090,24 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 		}
 		break;
 	    case '{':
+                finish = i;
 		readChar();
 		braceDepth++;
 		break;
 	    case '}':
+                finish = i;
 		readChar();
 		braceDepth--;
 		break;
 	    default:
+                finish = i;
 		readChar();
 	    }
 	}
 
         QString text;
-        if ((tag.isEmpty() || second == 1) && i == code.length())
-            text = code.mid(second - 1, i - second + 1);
-        else
-            text = code.mid(second - 1, i - second);
+        text = code.mid(start, finish - start);
+        start = finish;
 
 	if (!tag.isEmpty()) {
 	    out += QLatin1String("<@") + tag;
