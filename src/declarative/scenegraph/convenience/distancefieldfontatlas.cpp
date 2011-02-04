@@ -299,7 +299,7 @@ QSGTextureRef DistanceFieldFontAtlas::uploadDistanceField(const QImage &image)
     // We only need to store the alpha component
 #ifdef QT_OPENGL_ES
     QSGTextureManager::swizzleBGRAToRGBA(&i);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA8, i.width(), i.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, i.constBits());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, i.width(), i.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, i.constBits());
 #else
     glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA8, i.width(), i.height(), 0, GL_BGRA, GL_UNSIGNED_BYTE, i.constBits());
 #endif
