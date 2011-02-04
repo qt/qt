@@ -49,6 +49,8 @@
 #include "qobject.h"
 #include "qpointer.h"
 
+//#define QML_SUBTREE_DEBUG
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -130,6 +132,10 @@ private:
     Renderer *m_renderer;
     QGLFramebufferObject *m_fbo;
     QSGTextureRef m_texture;
+
+#ifdef QML_SUBTREE_DEBUG
+    RectangleNodeInterface *m_debugOverlay;
+#endif
 
     uint m_live : 1;
     uint m_dirtyTexture : 1;
