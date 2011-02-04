@@ -1086,18 +1086,6 @@
 
     \tableofcontents{3}
 
-
-    \target BACKUP_REGISTRATION_FILE
-    \section1 BACKUP_REGISTRATION_FILE
-
-    \e {This is only used on the Symbian platform.}
-
-    This variable can be used to specify a custom backup registration file to use
-    with \c enable_backup \c CONFIG value. See Symbian documentation
-    (\l{http://library.forum.nokia.com/index.jsp?topic=/S60_5th_Edition_Cpp_Developers_Library/GUID-35228542-8C95-4849-A73F-2B4F082F0C44/sdk/doc_source/guide/Connectivity-subsystem-guide/Connectivity/PC_Connectivity_How-To_Write_Backup_Aware_Software.html}{How-To Write Backup-aware Software})
-    for more information about backup registration files and how backup
-    works in Symbian in general.
-
     \target BLD_INF_RULES
     \section1 BLD_INF_RULES
 
@@ -1314,12 +1302,6 @@
          to work. E.g. \c{myapp_en.ts}.
          \bold{Note:} All languages supported by Qt are not supported by Symbian,
          so some \c{.ts} files may be ignored by qmake.
-    \row \o enable_backup \o Generates deployment for backup registration file
-         to enable backing up the application during device backup. By default
-         application binaries, resources, and all files under application private
-         directory and \c{C:\Data} are backed up. If a custom backup rules are
-         needed, \l{#BACKUP_REGISTRATION_FILE}{BACKUP_REGISTRATION_FILE} variable
-         can be used to specify a custom backup registration file.
     \endtable
 
     These options have an effect on Linux/Unix platforms:
