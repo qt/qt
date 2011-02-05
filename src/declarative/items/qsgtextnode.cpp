@@ -61,7 +61,7 @@ QSGTextNode::QSGTextNode(QSGContext *context)
 : m_opacity(1.0), m_context(context)
 {
 #if defined(QML_RUNTIME_TESTING)
-    description = "text";
+    description = QLatin1String("text");
 #endif
 }
 
