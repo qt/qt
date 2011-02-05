@@ -893,7 +893,9 @@ Node *QSGText::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 
         } else {
             node->addTextLayout(QPoint(0, bounds.y()), &d->layout, d->color);
-            node->translate(0, QFontMetricsF(d->font).ascent());
+            QMatrix4x4 m;
+            m.translate(0, QFontMetricsF(d->font).ascent());
+            node->setMatrix(m);
         }
 
         return node;

@@ -61,7 +61,7 @@ public:
 
 
     QSGMatrix4x4Stack m_matrix_stack;
-    QStack<QMatrix4x4 *> m_combined_matrix_stack;
+    QStack<const QMatrix4x4 *> m_combined_matrix_stack;
     const ClipNode *m_current_clip;
     int m_disable_count;
 

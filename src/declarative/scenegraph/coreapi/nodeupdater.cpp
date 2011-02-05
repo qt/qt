@@ -61,13 +61,13 @@ void NodeUpdater::enterTransformNode(TransformNode *t)
 #endif
 
     if (!t->matrix().isIdentity()) {
-        m_combined_matrix_stack.push(&t->m_combined_matrix);
+        m_combined_matrix_stack.push(&t->combinedMatrix());
 
         m_matrix_stack.push();
         m_matrix_stack *= t->matrix();
     }
 
-    t->m_combined_matrix = m_matrix_stack.top();
+    t->setCombinedMatrix(m_matrix_stack.top());
 }
 
 

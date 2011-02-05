@@ -72,6 +72,7 @@ public:
         GeometryNodeType,
         TransformNodeType,
         ClipNodeType,
+        OpacityNode,
         UserNodeType = 1024
     };
 
@@ -85,6 +86,7 @@ public:
         DirtySubtreeEnabled         = 0x0040,
         DirtyBoundingRect           = 0x0080,
         DirtyMaterial               = 0x0100,
+        DirtyOpacity                = 0x0200,
         DirtyAll                    = 0xffff,
 
         DirtyPropagationMask        = DirtyMatrix | DirtyClipList | DirtyNodeAdded | DirtySubtreeEnabled | DirtyBoundingRect,
@@ -291,18 +293,12 @@ public:
     virtual QRectF subtreeBoundingRect() const;
 
     void setMatrix(const QMatrix4x4 &matrix);
-    const QMatrix4x4 matrix() const { return m_matrix; }
+    const QMatrix4x4 &matrix() const { return m_matrix; }
 
-    void translate(qreal dx, qreal dy, qreal dz=0);
-    void scale(qreal factor);
-    void scale(qreal x, qreal y, qreal z = 1);
-    void rotate(qreal angle, qreal x, qreal y, qreal z);
-
-    void setZ(qreal z);
+    void setCombinedMatrix(const QMatrix4x4 &matrix);
+    const QMatrix4x4 &combinedMatrix() const { return m_combined_matrix; }
 
 private:
-    friend class NodeUpdater;
-
     QMatrix4x4 m_matrix;
     QMatrix4x4 m_combined_matrix;
 };
@@ -326,6 +322,24 @@ private:
     QList<Renderer *> m_renderers;
 };
 
+
+class Q_DECLARATIVE_EXPORT OpacityNode : public Node
+{
+public:
+    OpacityNode();
+    ~OpacityNode();
+
+    void setOpacity(qreal opacity);
+    qreal opacity() const { return m_opacity; }
+
+    void setCombinedOpacity(qreal opacity);
+    qreal combinedOpacity() const { return m_combined_opacity; }
+
+private:
+    qreal m_opacity;
+    qreal m_combined_opacity;
+};
+
 class NodeVisitor {
 public:
     virtual ~NodeVisitor();
@@ -336,6 +350,8 @@ public:
     virtual void leaveClipNode(ClipNode *) {}
     virtual void enterGeometryNode(GeometryNode *) {}
     virtual void leaveGeometryNode(GeometryNode *) {}
+    virtual void enterOpacityNode(OpacityNode *) {}
+    virtual void leaveOpacityNode(OpacityNode *) {}
 
     virtual void visitNode(Node *n);
 
@@ -346,6 +362,7 @@ public:
 Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const Node *n);
 Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const GeometryNode *n);
 Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const TransformNode *n);
+Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const OpacityNode *n);
 
 class NodeDumper : public NodeVisitor {
 

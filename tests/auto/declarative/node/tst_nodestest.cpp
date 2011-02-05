@@ -60,11 +60,14 @@ private Q_SLOTS:
         delete widget;
     }
 
+    // Root nodes
     void propegate();
     void propegateWithMultipleRoots();
-
     void simulatedEffect_data();
     void simulatedEffect();
+
+    // Opacity nodes
+    void basicOpacityNode();
 
 private:
     QGLWidget *widget;
@@ -236,7 +239,8 @@ void NodesTest::simulatedEffect()
     if (connected)
         xform.appendChildNode(&source);
     source.appendChildNode(&geometry);
-    xform.translate(1, 2, 3);
+    QMatrix4x4 m; m.translate(1, 2, 3);
+    xform.setMatrix(m);
 
     // Clear all dirty states...
     root.updateDirtyStates();
@@ -250,6 +254,21 @@ void NodesTest::simulatedEffect()
     if (connected) // geometry is not rendered in this case, so skip it...
         QCOMPARE(rootRenderer.matrix, xform.matrix());
     QCOMPARE(sourceRenderer.matrix, QMatrix4x4());
+}
+
+void NodesTest::basicOpacityNode()
+{
+    OpacityNode *n = new OpacityNode;
+    QCOMPARE(n->opacity(), 1.);
+
+    n->setOpacity(0.5);
+    QCOMPARE(n->opacity(), 0.5);
+
+    n->setOpacity(-1);
+    QCOMPARE(n->opacity(), 0.);
+
+    n->setOpacity(2);
+    QCOMPARE(n->opacity(), 1.);
 }
 
 QTEST_MAIN(NodesTest);
