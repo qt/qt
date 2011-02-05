@@ -76,6 +76,7 @@ public:
     QSize size() const { return mSize; }
 
 private:
+    struct wl_egl_pixmap *mPixmap;
     EGLImageKHR mImage;
     QWaylandDisplay *mDisplay;
     QSize mSize;

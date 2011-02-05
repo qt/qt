@@ -50,10 +50,7 @@
 #include <QtGui/private/qpaintengine_p.h>
 
 #include <wayland-client.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <sys/mman.h>
+#include <wayland-egl.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,23 +63,6 @@ QWaylandDrmBuffer::QWaylandDrmBuffer(QWaylandDisplay *display,
     , mSize(size)
 {
     struct wl_visual *visual;
-    EGLint name, stride;
-    EGLint imageAttribs[] = {
-        EGL_WIDTH,			size.width(),
-        EGL_HEIGHT,			size.height(),
-	EGL_DRM_BUFFER_FORMAT_MESA,	EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
-        EGL_DRM_BUFFER_USE_MESA,	EGL_DRM_BUFFER_USE_SCANOUT_MESA,
-	EGL_NONE
-    };
-
-    mImage = eglCreateDRMImageMESA(mDisplay->eglDisplay(), imageAttribs);
-
-    glGenTextures(1, &mTexture);
-    glBindTexture(GL_TEXTURE_2D, mTexture);
-    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, mImage);
-
-    eglExportDRMImageMESA(mDisplay->eglDisplay(),
-                          mImage, &name, NULL, &stride);
 
     switch (format) {
     case QImage::Format_ARGB32:
@@ -97,14 +77,28 @@ QWaylandDrmBuffer::QWaylandDrmBuffer(QWaylandDisplay *display,
 	break;
     }
 
-    mBuffer = display->createDrmBuffer(name, size.width(), size.height(),
-				       stride, visual);
+    mPixmap = wl_egl_native_pixmap_create(display->nativeDisplay(),
+					  size.width(), size.height(),
+					  visual, 0);
+
+    mImage = eglCreateImageKHR(display->eglDisplay(),
+			       NULL, EGL_NATIVE_PIXMAP_KHR,
+			       (EGLClientBuffer) mPixmap, NULL);
+
+    glGenTextures(1, &mTexture);
+    qDebug() << "generating mTexture" << mTexture;
+    glBindTexture(GL_TEXTURE_2D, mTexture);
+    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, mImage);
+
+    mBuffer = wl_egl_native_pixmap_create_buffer(display->nativeDisplay(),
+						 mPixmap);
 }
 
 QWaylandDrmBuffer::~QWaylandDrmBuffer(void)
 {
     glDeleteTextures(1, &mTexture);
     eglDestroyImageKHR(mDisplay->eglDisplay(), mImage);
+    wl_egl_native_pixmap_destroy(mPixmap);
     wl_buffer_destroy(mBuffer);
 }
 

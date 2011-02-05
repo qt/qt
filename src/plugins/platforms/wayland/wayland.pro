@@ -27,7 +27,7 @@ HEADERS =   qwaylandintegration.h \
 contains(QT_CONFIG, opengl) {
     QT += opengl
 }
-LIBS += -lwayland-client -lxkbcommon -lEGL
+LIBS += -lwayland-client -lwayland-egl -lxkbcommon -lEGL
 unix {
 	CONFIG += link_pkgconfig
 	PKGCONFIG += libdrm
