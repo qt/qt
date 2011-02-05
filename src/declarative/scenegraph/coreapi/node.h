@@ -160,8 +160,11 @@ public:
 
     void updateDirtyStates();
 
+    // ### remove once block is in place...
     bool isSubtreeEnabled() const { return m_subtree_enabled; }
     void setSubtreeEnabled(bool enabled);
+
+    virtual bool isSubtreeBlocked() const { return false; }
 
     Flags flags() const { return m_nodeFlags; }
     void setFlag(Flag, bool = true);
@@ -173,8 +176,6 @@ public:
 #ifdef QML_RUNTIME_TESTING
     QString description;
 #endif
-
-    void moveChildren(Node *newParent);
 
 protected:
     // When a node is destroyed, it will detach from the scene graph and the renderer will be
@@ -343,6 +344,8 @@ public:
     qreal combinedOpacity() const { return m_combined_opacity; }
 
     virtual Node::NodeType type() const { return OpacityNodeType; }
+
+    bool isSubtreeBlocked() const;
 
 
 private:

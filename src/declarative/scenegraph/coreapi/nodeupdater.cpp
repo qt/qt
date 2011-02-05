@@ -142,7 +142,6 @@ void NodeUpdater::enterOpacityNode(OpacityNode *o)
 #ifdef QSG_UPDATER_DEBUG
     qDebug() << "enter opacity" << o;
 #endif
-
 }
 
 void NodeUpdater::leaveOpacityNode(OpacityNode *o)
@@ -156,7 +155,11 @@ void NodeUpdater::leaveOpacityNode(OpacityNode *o)
     m_opacity_stack.pop();
 }
 
-
+void NodeUpdater::visitChildren(Node *n)
+{
+    if (!n->isSubtreeBlocked())
+        NodeVisitor::visitChildren(n);
+}
 
 void NodeUpdater::visitNode(Node *n)
 {

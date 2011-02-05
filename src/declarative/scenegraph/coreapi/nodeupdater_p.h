@@ -60,6 +60,7 @@ public:
     void enterGeometryNode(GeometryNode *);
 
     void visitNode(Node *n);
+    void visitChildren(Node *n);
 
     QSGMatrix4x4Stack m_matrix_stack;
     QStack<const QMatrix4x4 *> m_combined_matrix_stack;

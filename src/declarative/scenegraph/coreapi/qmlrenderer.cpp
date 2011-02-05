@@ -278,7 +278,7 @@ bool QMLRenderer::isSortFrontToBackEnabled() const
 
 void QMLRenderer::buildLists(Node *node)
 {
-    if (!node->isSubtreeEnabled())
+    if (!node->isSubtreeEnabled() || node->isSubtreeBlocked())
         return;
 
     Geometry *g = 0;

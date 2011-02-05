@@ -313,8 +313,12 @@ void NodesTest::opacityPropegation()
     b->setOpacity(0);
     root->updateDirtyStates();
 
+    QVERIFY(b->isSubtreeBlocked());
 
-    QCOMPARE(geometry->inheritedOpacity(), 0.);
+    // Verify that geometry did not get updated as it is in a blocked
+    // subtree
+    QCOMPARE(c->combinedOpacity(), 0.9 * 0.1 * 0.7);
+    QCOMPARE(geometry->inheritedOpacity(), 0.9 * 0.1 * 0.7);
 }
 
 QTEST_MAIN(NodesTest);

@@ -61,19 +61,18 @@ Node::~Node()
 }
 
 
-/*
-   Moves all children from this node to the new node without notifications
-   or anything.
+/*!
+    \fn bool Node::isSubtreeBlocked() const
+
+    Returns wether this node and its subtree is available for use.
+
+    Blocked subtrees will not get their dirty states updated and they
+    will not be rendered.
+
+    The OpacityNode will return a blocked subtree when accumulated opacity
+    is 0, for instance.
  */
 
-void Node::moveChildren(Node *newParent)
-{
-    for (int i=0; i<m_children.size(); ++i) {
-        m_children[i]->m_parent = newParent;
-    }
-    newParent->m_children = m_children;
-    m_children.clear();
-}
 
 void Node::destroy()
 {
@@ -501,6 +500,10 @@ void OpacityNode::setCombinedOpacity(qreal opacity)
 }
 
 
+bool OpacityNode::isSubtreeBlocked() const
+{
+    return m_combined_opacity < 0.001;
+}
 
 
 NodeVisitor::~NodeVisitor()
@@ -622,7 +625,7 @@ QDebug operator<<(QDebug d, const ClipNode *n)
 #ifdef QML_RUNTIME_TESTING
     d << n->description;
 #endif
-    d << "dirty=" << hex << (int) n->dirtyFlags() << dec << (n->isSubtreeEnabled() ? "enabled" : "disabled");
+    d << "dirty=" << hex << (int) n->dirtyFlags() << dec << (n->isSubtreeBlocked() ? "*BLOCKED*" : "");
     return d;
 }
 
@@ -644,7 +647,7 @@ QDebug operator<<(QDebug d, const TransformNode *n)
 #ifdef QML_RUNTIME_TESTING
     d << n->description;
 #endif
-    d << "dirty=" << hex << (int) n->dirtyFlags() << dec << (n->isSubtreeEnabled() ? "enabled" : "disabled");
+    d << "dirty=" << hex << (int) n->dirtyFlags() << dec << (n->isSubtreeBlocked() ? "*BLOCKED*" : "");
     d << ")";
     return d;
 }
@@ -659,7 +662,7 @@ QDebug operator<<(QDebug d, const OpacityNode *n)
     d << hex << (void *) n << dec;
     d << "opacity=" << n->opacity()
       << "combined=" << n->combinedOpacity()
-      << (n->isSubtreeEnabled() ? "enabled" : "disabled");
+      << (n->isSubtreeBlocked() ? "*BLOCKED*" : "");
 #ifdef QML_RUNTIME_TESTING
     d << n->description;
 #endif
@@ -676,7 +679,7 @@ QDebug operator<<(QDebug d, const RootNode *n)
         return d;
     }
     d << "RootNode" << hex << (void *) n << "dirty=" << (int) n->dirtyFlags() << dec
-      << (n->isSubtreeEnabled() ? "enabled" : "disabled");
+      << (n->isSubtreeBlocked() ? "*BLOCKED*" : "");
 #ifdef QML_RUNTIME_TESTING
     d << n->description;
 #endif
@@ -711,7 +714,7 @@ QDebug operator<<(QDebug d, const Node *n)
     default:
         d << "Node(" << hex << (void *) n << dec
           << "dirty=" << hex << (int) n->dirtyFlags() << dec
-          << (n->isSubtreeEnabled() ? "enabled" : "disabled");
+          << (n->isSubtreeBlocked() ? "*BLOCKED*" : "");
 #ifdef QML_RUNTIME_TESTING
         d << n->description;
 #endif
