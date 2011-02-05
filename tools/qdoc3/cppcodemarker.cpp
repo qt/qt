@@ -936,6 +936,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
     int parenDepth = 0;
     int i = 0;
     int start = 0;
+    int finish = 0;
     char ch;
     QRegExp classRegExp("Qt?(?:[A-Z3]+[a-z][A-Za-z]*|t)");
     QRegExp functionRegExp("q([A-Z][a-z]+)+");
@@ -943,7 +944,6 @@ QString CppCodeMarker::addMarkUp(const QString &in,
     readChar();
 
     while (ch != EOF) {
-        int finish = i;
 	QString tag;
         bool target = false;
 
@@ -1120,7 +1120,10 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 
 	if (!tag.isEmpty())
 	    out += QLatin1String("</@") + tag + QLatin1String(">");
+    }
 
+    if (start < code.length()) {
+        out += protect(code.mid(start));
     }
 
     return out;
