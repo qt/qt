@@ -116,7 +116,7 @@ protected:
 };
 
 
-class GeometryHelper
+class Q_DECLARATIVE_EXPORT GeometryHelper
 {
 public:
     static Geometry *createRectGeometry(const QRectF &rect);
