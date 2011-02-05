@@ -1,6 +1,8 @@
 TEMPLATE = subdirs
 SUBDIRS = \
+        context2d \
         qscriptclass \
+        qscriptclass_bytearray \
         qscriptengine \
         qscriptvalue \
         sunspider \
