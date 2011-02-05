@@ -44,6 +44,7 @@
 
 #include <node.h>
 #include <renderer.h>
+#include <private/nodeupdater_p.h>
 
 #include <solidrectnode.h>
 
@@ -68,9 +69,12 @@ private Q_SLOTS:
 
     // Opacity nodes
     void basicOpacityNode();
+    void opacityPropegation();
 
 private:
     QGLWidget *widget;
+
+    NodeUpdater updater;
 };
 
 void NodesTest::initTestCase()
@@ -269,6 +273,48 @@ void NodesTest::basicOpacityNode()
 
     n->setOpacity(2);
     QCOMPARE(n->opacity(), 1.);
+}
+
+void NodesTest::opacityPropegation()
+{
+    RootNode *root = new RootNode();
+    OpacityNode *a = new OpacityNode;
+    OpacityNode *b = new OpacityNode;
+    OpacityNode *c = new OpacityNode;
+
+    GeometryNode *geometry = new GeometryNode;
+    geometry->setGeometry(GeometryHelper::createRectGeometry(QRectF(0, 0, 100, 100)));
+    geometry->setMaterial(new FlatColorMaterial);
+
+    root->appendChildNode(a);
+    a->appendChildNode(b);
+    b->appendChildNode(c);
+    c->appendChildNode(geometry);
+
+    a->setOpacity(0.9);
+    b->setOpacity(0.8);
+    c->setOpacity(0.7);
+
+    root->updateDirtyStates();
+
+    QCOMPARE(a->combinedOpacity(), 0.9);
+    QCOMPARE(b->combinedOpacity(), 0.9 * 0.8);
+    QCOMPARE(c->combinedOpacity(), 0.9 * 0.8 * 0.7);
+    QCOMPARE(geometry->inheritedOpacity(), 0.9 * 0.8 * 0.7);
+
+    b->setOpacity(0.1);
+    root->updateDirtyStates();
+
+    QCOMPARE(a->combinedOpacity(), 0.9);
+    QCOMPARE(b->combinedOpacity(), 0.9 * 0.1);
+    QCOMPARE(c->combinedOpacity(), 0.9 * 0.1 * 0.7);
+    QCOMPARE(geometry->inheritedOpacity(), 0.9 * 0.1 * 0.7);
+
+    b->setOpacity(0);
+    root->updateDirtyStates();
+
+
+    QCOMPARE(geometry->inheritedOpacity(), 0.);
 }
 
 QTEST_MAIN(NodesTest);

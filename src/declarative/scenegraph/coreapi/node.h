@@ -72,7 +72,7 @@ public:
         GeometryNodeType,
         TransformNodeType,
         ClipNodeType,
-        OpacityNode,
+        OpacityNodeType,
         UserNodeType = 1024
     };
 
@@ -89,7 +89,12 @@ public:
         DirtyOpacity                = 0x0200,
         DirtyAll                    = 0xffff,
 
-        DirtyPropagationMask        = DirtyMatrix | DirtyClipList | DirtyNodeAdded | DirtySubtreeEnabled | DirtyBoundingRect,
+        DirtyPropagationMask        = DirtyMatrix
+                                      | DirtyClipList
+                                      | DirtyNodeAdded
+                                      | DirtySubtreeEnabled
+                                      | DirtyBoundingRect
+                                      | DirtyOpacity,
 
 //        DirtyMatrixSubtree          = DirtyMatrix << 16,
 //        DirtyClipListSubtree        = DirtyClipList << 16,
@@ -260,14 +265,16 @@ public:
 
     virtual void setSubtreeRenderOrder(int order);
 
-    bool isEnabled() const { return m_enabled; }
+    void setInheritedOpacity(qreal opacity);
+    qreal inheritedOpacity() const { return m_opacity; }
 
 private:
     friend class NodeUpdater;
 
     int m_render_order;
     AbstractMaterial *m_material;
-    bool m_enabled;
+
+    qreal m_opacity;
 };
 
 class Q_DECLARATIVE_EXPORT ClipNode : public BasicGeometryNode
@@ -335,12 +342,15 @@ public:
     void setCombinedOpacity(qreal opacity);
     qreal combinedOpacity() const { return m_combined_opacity; }
 
+    virtual Node::NodeType type() const { return OpacityNodeType; }
+
+
 private:
     qreal m_opacity;
     qreal m_combined_opacity;
 };
 
-class NodeVisitor {
+class Q_AUTOTEST_EXPORT NodeVisitor {
 public:
     virtual ~NodeVisitor();
 
@@ -363,6 +373,7 @@ Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const Node *n);
 Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const GeometryNode *n);
 Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const TransformNode *n);
 Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const OpacityNode *n);
+Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const RootNode *n);
 
 class NodeDumper : public NodeVisitor {
 

@@ -309,6 +309,7 @@ void BasicGeometryNode::setBoundingRect(const QRectF &bounds)
 GeometryNode::GeometryNode()
     : m_render_order(0)
     , m_material(0)
+    , m_opacity(1)
 {
 }
 
@@ -352,6 +353,23 @@ QRectF GeometryNode::subtreeBoundingRect() const
 {
     return BasicGeometryNode::subtreeBoundingRect() | boundingRect();
 }
+
+/*!
+    Sets the inherited opacity of this geometry to \a opacity.
+
+    This function is meant to be called by the node preprocessing
+    prior to rendering the tree, so it will not mark the tree as
+    dirty.
+
+    \internal
+  */
+void GeometryNode::setInheritedOpacity(qreal opacity)
+{
+    Q_ASSERT(opacity >= 0 && opacity <= 1);
+    m_opacity = opacity;
+}
+
+
 
 ClipNode::ClipNode()
 {
@@ -512,7 +530,7 @@ void NodeVisitor::visitNode(Node *n)
         visitChildren(c);
         leaveClipNode(c);
         break; }
-    case Node::OpacityNode: {
+    case Node::OpacityNodeType: {
         OpacityNode *o = static_cast<OpacityNode *>(n);
         enterOpacityNode(o);
         visitChildren(o);
@@ -604,7 +622,7 @@ QDebug operator<<(QDebug d, const ClipNode *n)
 #ifdef QML_RUNTIME_TESTING
     d << n->description;
 #endif
-    d << "dirty=" << hex << (int) n->dirtyFlags() << dec;
+    d << "dirty=" << hex << (int) n->dirtyFlags() << dec << (n->isSubtreeEnabled() ? "enabled" : "disabled");
     return d;
 }
 
@@ -626,7 +644,7 @@ QDebug operator<<(QDebug d, const TransformNode *n)
 #ifdef QML_RUNTIME_TESTING
     d << n->description;
 #endif
-    d << "dirty=" << hex << (int) n->dirtyFlags() << dec;
+    d << "dirty=" << hex << (int) n->dirtyFlags() << dec << (n->isSubtreeEnabled() ? "enabled" : "disabled");
     d << ")";
     return d;
 }
@@ -639,7 +657,9 @@ QDebug operator<<(QDebug d, const OpacityNode *n)
     }
     d << "OpacityNode(";
     d << hex << (void *) n << dec;
-    d << "opacity=" << n->opacity() << "combined=" << n->combinedOpacity();
+    d << "opacity=" << n->opacity()
+      << "combined=" << n->combinedOpacity()
+      << (n->isSubtreeEnabled() ? "enabled" : "disabled");
 #ifdef QML_RUNTIME_TESTING
     d << n->description;
 #endif
@@ -655,7 +675,8 @@ QDebug operator<<(QDebug d, const RootNode *n)
         d << "RootNode(null)";
         return d;
     }
-    d << "RootNode" << hex << (void *) n << "dirty=" << (int) n->dirtyFlags() << dec;
+    d << "RootNode" << hex << (void *) n << "dirty=" << (int) n->dirtyFlags() << dec
+      << (n->isSubtreeEnabled() ? "enabled" : "disabled");
 #ifdef QML_RUNTIME_TESTING
     d << n->description;
 #endif
@@ -684,8 +705,13 @@ QDebug operator<<(QDebug d, const Node *n)
     case Node::RootNodeType:
         d << static_cast<const RootNode *>(n);
         break;
+    case Node::OpacityNodeType:
+        d << static_cast<const OpacityNode *>(n);
+        break;
     default:
-        d << "Node(" << hex << (void *) n << dec << "children=" << n->childCount() << "dirty=" << hex << (int) n->dirtyFlags() << dec;
+        d << "Node(" << hex << (void *) n << dec
+          << "dirty=" << hex << (int) n->dirtyFlags() << dec
+          << (n->isSubtreeEnabled() ? "enabled" : "disabled");
 #ifdef QML_RUNTIME_TESTING
         d << n->description;
 #endif

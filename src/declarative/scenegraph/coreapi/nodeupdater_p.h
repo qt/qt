@@ -46,7 +46,7 @@
 #include "qsgmatrix4x4stack.h"
 #include <qstack.h>
 
-class NodeUpdater : public NodeVisitor
+class Q_AUTOTEST_EXPORT NodeUpdater : public NodeVisitor
 {
 public:
     NodeUpdater();
@@ -55,13 +55,15 @@ public:
     void leaveTransformNode(TransformNode *);
     void enterClipNode(ClipNode *c);
     void leaveClipNode(ClipNode *c);
+    void enterOpacityNode(OpacityNode *);
+    void leaveOpacityNode(OpacityNode *);
     void enterGeometryNode(GeometryNode *);
 
     void visitNode(Node *n);
 
-
     QSGMatrix4x4Stack m_matrix_stack;
     QStack<const QMatrix4x4 *> m_combined_matrix_stack;
+    QStack<qreal> m_opacity_stack;
     const ClipNode *m_current_clip;
     int m_disable_count;
 

@@ -48,6 +48,7 @@ NodeUpdater::NodeUpdater()
     , m_disable_count(0)
     , m_force_update(0)
 {
+    m_opacity_stack.push(1);
 }
 
 
@@ -126,8 +127,35 @@ void NodeUpdater::enterGeometryNode(GeometryNode *g)
 
     g->m_matrix = m_combined_matrix_stack.isEmpty() ? 0 : m_combined_matrix_stack.top();
     g->m_clip_list = m_current_clip;
-    g->m_enabled = m_disable_count == 0;
+    g->setInheritedOpacity(m_opacity_stack.top());
 }
+
+void NodeUpdater::enterOpacityNode(OpacityNode *o)
+{
+    if (o->dirtyFlags() & Node::DirtyOpacity)
+        ++m_force_update;
+
+    qreal opacity = m_opacity_stack.top() * o->opacity();
+    o->setCombinedOpacity(opacity);
+    m_opacity_stack.push(opacity);
+
+#ifdef QSG_UPDATER_DEBUG
+    qDebug() << "enter opacity" << o;
+#endif
+
+}
+
+void NodeUpdater::leaveOpacityNode(OpacityNode *o)
+{
+#ifdef QSG_UPDATER_DEBUG
+    qDebug() << "leave opacity" << o;
+#endif
+    if (o->flags() & Node::DirtyOpacity)
+        --m_force_update;
+
+    m_opacity_stack.pop();
+}
+
 
 
 void NodeUpdater::visitNode(Node *n)
@@ -140,15 +168,11 @@ void NodeUpdater::visitNode(Node *n)
         bool forceUpdate = n->dirtyFlags() & (Node::DirtyNodeAdded | Node::DirtySubtreeEnabled);
         if (forceUpdate)
             ++m_force_update;
-        if (!n->isSubtreeEnabled())
-            ++m_disable_count;        
 
         NodeVisitor::visitNode(n);
 
         if (forceUpdate)
             --m_force_update;
-        if (!n->isSubtreeEnabled())
-            --m_disable_count;        
 
         n->clearDirty();
     }
