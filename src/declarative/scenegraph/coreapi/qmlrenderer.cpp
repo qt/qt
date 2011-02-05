@@ -52,6 +52,8 @@
 
 //#define FORCE_NO_REORDER
 
+
+
 static bool nodeLessThan(GeometryNode *a, GeometryNode *b)
 {
     // Sort by clip...
@@ -61,6 +63,35 @@ static bool nodeLessThan(GeometryNode *a, GeometryNode *b)
     // Sort by material definition
     AbstractMaterialType *aDef = a->material()->type();
     AbstractMaterialType *bDef = b->material()->type();
+
+    if (aDef != bDef)
+        return aDef < bDef;
+
+    // Sort by material state
+    int cmp = a->material()->compare(b->material());
+    if (cmp != 0)
+        return cmp < 0;
+
+    return a->matrix() < b->matrix();
+}
+
+static bool nodeLessThanWithRenderOrder(GeometryNode *a, GeometryNode *b)
+{
+    // Sort by clip...
+    if (a->clipList() != b->clipList())
+        return a->clipList() < b->clipList();
+
+    // Sort by material definition
+    AbstractMaterialType *aDef = a->material()->type();
+    AbstractMaterialType *bDef = b->material()->type();
+
+    if (!(a->material()->flags() & AbstractMaterial::Blending)) {
+        int aOrder = a->renderOrder();
+        int bOrder = b->renderOrder();
+        if (aOrder != bOrder)
+            return aOrder > bOrder;
+    }
+
     if (aDef != bDef)
         return aDef < bDef;
 
@@ -124,6 +155,7 @@ QMLRenderer::QMLRenderer()
     : Renderer()
     , m_rebuild_lists(false)
     , m_needs_sorting(false)
+    , m_sort_front_to_back(false)
     , m_currentRenderOrder(1)
 {
     QStringList args = qApp->arguments();
@@ -195,7 +227,10 @@ void QMLRenderer::render()
     }
 
     if (m_needs_sorting) {
-        qSort(m_opaqueNodes.begin(), m_opaqueNodes.end(), nodeLessThan);
+        qSort(m_opaqueNodes.begin(), m_opaqueNodes.end(),
+              m_sort_front_to_back
+              ? nodeLessThanWithRenderOrder
+              : nodeLessThan);
         m_needs_sorting = false;
     }
 
@@ -229,6 +264,17 @@ public:
     Foo(int i, GeometryNode *n) : QPair<int, GeometryNode *>(i, n) { }
     bool operator < (const Foo &other) const { return nodeLessThan(second, other.second); }
 };
+
+void QMLRenderer::setSortFrontToBackEnabled(bool sort)
+{
+    printf("setting sorting to... %d\n", sort);
+    m_sort_front_to_back = sort;
+}
+
+bool QMLRenderer::isSortFrontToBackEnabled() const
+{
+    return m_sort_front_to_back;
+}
 
 void QMLRenderer::buildLists(Node *node)
 {
@@ -316,6 +362,13 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
 
     for (int i = 0; i < count; ++i) {
         GeometryNode *geomNode = list.at(i);
+
+#if defined (QML_RUNTIME_TESTING)
+        static bool dumpTree = qApp->arguments().contains("--dump-tree");
+        if (dumpTree)
+            qDebug() << geomNode;
+#endif
+
         bool changeMatrix = m_currentMatrix != geomNode->matrix();
 
         if (changeMatrix) {

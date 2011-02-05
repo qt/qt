@@ -54,6 +54,9 @@ public:
 
     void nodeChanged(Node *node, Node::DirtyFlags flags);
 
+    void setSortFrontToBackEnabled(bool sort);
+    bool isSortFrontToBackEnabled() const;
+
 private:
     void buildLists(Node *node);
     void renderNodes(const QVector <GeometryNode *> &list);
@@ -69,7 +72,10 @@ private:
 
     bool m_rebuild_lists;
     bool m_needs_sorting;
+    bool m_sort_front_to_back;
     int m_currentRenderOrder;
+
+
 
 #ifdef QML_RUNTIME_TESTING
     bool m_render_opaque_nodes;
