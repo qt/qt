@@ -50,7 +50,6 @@ public:
     FlatColorMaterial();
     virtual AbstractMaterialType *type() const;
     virtual AbstractMaterialShader *createShader() const;
-    virtual int compare(const AbstractMaterial *other) const;
 
     void setColor(const QColor &color);
     const QColor &color() const { return m_color; }

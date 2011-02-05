@@ -141,15 +141,6 @@ AbstractMaterialShader *FlatColorMaterial::createShader() const
     return new FlatColorMaterialShader;
 }
 
-int FlatColorMaterial::compare(const AbstractMaterial *o) const
-{
-    Q_ASSERT(o && type() == o->type());
-    const FlatColorMaterial *other = static_cast<const FlatColorMaterial *>(o);
-    QRgb c1 = m_color.rgba();
-    QRgb c2 = other->m_color.rgba();
-    return int(c2 < c1) - int(c1 < c2);
-}
-
 bool FlatColorMaterial::is(const AbstractMaterial *effect)
 {
     return effect->type() == &FlatColorMaterialShader::type;
