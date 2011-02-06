@@ -43,11 +43,10 @@
 #include "flatcolormaterial.h"
 
 
-SolidRectNode::SolidRectNode(const QRectF &rect, const QColor &color, qreal opacity)
+SolidRectNode::SolidRectNode(const QRectF &rect, const QColor &color)
 {
     setRect(rect);
     m_material.setColor(color);
-    m_material.setOpacity(opacity);
     setMaterial(&m_material);
 
     QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()

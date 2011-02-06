@@ -126,7 +126,6 @@ void QSGTextNode::setOpacity(qreal opacity)
             glyphNode->setOpacity(opacity);
         } else if (node->subType() == SolidRectNodeSubType) {
             SolidRectNode *solidRectNode = static_cast<SolidRectNode *>(node);
-            solidRectNode->setOpacity(opacity);
         } else if (node->subType() == PixmapNodeSubType) {
             TextureNodeInterface *pixmapNode = static_cast<TextureNodeInterface *>(node);
             pixmapNode->setOpacity(opacity);
@@ -148,20 +147,20 @@ void QSGTextNode::addTextDecorations(const QPointF &position, const QFont &font,
         int underlinePosition = fontEngine->underlinePosition().ceil().toInt();
         QRectF underline(line);
         underline.translate(0.0, underlinePosition);
-        appendChildNode(new SolidRectNode(underline, color, m_opacity));
+        appendChildNode(new SolidRectNode(underline, color));
     }
 
     qreal ascent = fontEngine->ascent().toReal();
     if (font.overline()) {
         QRectF overline(line);
         overline.translate(0.0, -ascent);
-        appendChildNode(new SolidRectNode(overline, color, m_opacity));
+        appendChildNode(new SolidRectNode(overline, color));
     }
 
     if (font.strikeOut()) {
         QRectF strikeOut(line);
         strikeOut.translate(0.0, ascent / -3.0);
-        appendChildNode(new SolidRectNode(strikeOut, color, m_opacity));
+        appendChildNode(new SolidRectNode(strikeOut, color));
     }
 }
 

@@ -60,7 +60,6 @@ DefaultRectangleNode::DefaultRectangleNode(MaterialPreference preference, QSGCon
     , m_context(context)
 {
     m_border_material.setColor(m_pen_color);
-    m_border_material.setOpacity(m_opacity);
     m_border.setFlag(OwnedByParent, false);
     m_border.setMaterial(&m_border_material);
 
@@ -72,7 +71,6 @@ DefaultRectangleNode::DefaultRectangleNode(MaterialPreference preference, QSGCon
     // The scene-graph requires that there is a material and a geometry on the node.
     FlatColorMaterial *material = new FlatColorMaterial;
     material->setColor(m_color);
-    material->setOpacity(m_opacity);
     setMaterial(m_fill_material = material);
 
 #ifdef QML_RUNTIME_TESTING
@@ -141,12 +139,9 @@ void DefaultRectangleNode::setOpacity(qreal opacity)
         return;
     m_opacity = opacity;
 
-    m_border_material.setOpacity(opacity);
     m_border.setMaterial(&m_border_material); // Indicate that the material state has changed.
 
-    if (FlatColorMaterial::is(m_fill_material)) {
-        static_cast<FlatColorMaterial *>(m_fill_material)->setOpacity(m_opacity);
-    } else if (VertexColorMaterial::is(m_fill_material)) {
+    if (VertexColorMaterial::is(m_fill_material)) {
         static_cast<VertexColorMaterial *>(m_fill_material)->setOpacity(opacity);
     } else if (TextureMaterial::is(m_fill_material)) {
         if (opacity < 1) {
@@ -191,7 +186,6 @@ void DefaultRectangleNode::setGradientStops(const QGradientStops &stops)
             delete m_fill_material;
             FlatColorMaterial *material = new FlatColorMaterial;
             material->setColor(m_color);
-            material->setOpacity(m_opacity);
             m_fill_material = material;
             QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
                 << QSGAttributeDescription(0, 2, GL_FLOAT, 2 * sizeof(float));
