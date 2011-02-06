@@ -5659,7 +5659,18 @@ static void sm_performSaveYourself(QSessionManagerPrivate* smd)
 #if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
     QVarLengthArray<char, 1024> buf(qMax<long>(sysconf(_SC_GETPW_R_SIZE_MAX), 1024L));
     struct passwd entry;
-    getpwuid_r(geteuid(), &entry, buf.data(), buf.size(), &entryPtr);
+    while (getpwuid_r(geteuid(), &entry, buf.data(), buf.size(), &entryPtr) == ERANGE) {
+        if (buf.size() >= 32768) {
+            // too big already, fail
+            static char badusername[] = "";
+            entryPtr = &entry;
+            entry.pw_name = badusername;
+            break;
+        }
+
+        // retry with a bigger buffer
+        buf.resize(buf.size() * 2);
+    }
 #else
     entryPtr = getpwuid(geteuid());
 #endif
