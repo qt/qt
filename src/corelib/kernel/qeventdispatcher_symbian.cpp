@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -217,13 +217,13 @@ QTimerActiveObject::QTimerActiveObject(QEventDispatcherSymbian *dispatcher, Symb
 QTimerActiveObject::~QTimerActiveObject()
 {
     Cancel();
+    m_rTimer.Close(); //close of null handle is safe
 }
 
 void QTimerActiveObject::DoCancel()
 {
     if (m_timerInfo->interval > 0) {
         m_rTimer.Cancel();
-        m_rTimer.Close();
     } else {
         if (iStatus.Int() == KRequestPending) {
             TRequestStatus *status = &iStatus;
@@ -302,7 +302,9 @@ void QTimerActiveObject::Start()
     CActiveScheduler::Add(this);
     m_timerInfo->msLeft = m_timerInfo->interval;
     if (m_timerInfo->interval > 0) {
-        m_rTimer.CreateLocal();
+        if (!m_rTimer.Handle()) {
+            qt_symbian_throwIfError(m_rTimer.CreateLocal());
+        }
         StartTimer();
     } else {
         iStatus = KRequestPending;
@@ -655,7 +657,7 @@ public:
     : m_state(STATE_RUN), m_stop(false)
     {
         qt_symbian_throwIfError(m_lock.CreateLocal(0));
-        TInt err = m_idleDetectorThread.Create(KNullDesC(), &idleDetectorThreadFunc, 1024, NULL, this);
+        TInt err = m_idleDetectorThread.Create(KNullDesC(), &idleDetectorThreadFunc, 1024, &User::Allocator(), this);
         if (err != KErrNone)
             m_lock.Close();
         qt_symbian_throwIfError(err);
@@ -690,6 +692,7 @@ public:
 private:
     static TInt idleDetectorThreadFunc(TAny* self)
     {
+        User::RenameThread(_L("IdleDetectorThread"));
         static_cast<QIdleDetectorThread*>(self)->IdleLoop();
         return KErrNone;
     }
@@ -807,7 +810,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
         m_interrupt = false;
 
 #ifdef QT_SYMBIAN_PRIORITY_DROP
-        QTime eventTimer;
+        QElapsedTimer eventTimer;
 #endif
 
         while (1) {

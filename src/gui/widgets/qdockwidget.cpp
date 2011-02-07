@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1531,8 +1531,11 @@ QAction * QDockWidget::toggleViewAction() const
 
 /*!
     \since 4.3
+
     Sets an arbitrary \a widget as the dock widget's title bar. If \a widget
-    is 0, the title bar widget is removed, but not deleted.
+    is 0, any custom title bar widget previously set on the dock widget is
+    removed, but not deleted, and the default title bar will be used
+    instead.
 
     If a title bar widget is set, QDockWidget will not use native window
     decorations when it is floated.
@@ -1540,23 +1543,27 @@ QAction * QDockWidget::toggleViewAction() const
     Here are some tips for implementing custom title bars:
 
     \list
-    \i Mouse events that are not explicitly handled by the title bar widget
+    \o Mouse events that are not explicitly handled by the title bar widget
        must be ignored by calling QMouseEvent::ignore(). These events then
        propagate to the QDockWidget parent, which handles them in the usual
        manner, moving when the title bar is dragged, docking and undocking
        when it is double-clicked, etc.
 
-    \i When DockWidgetVerticalTitleBar is set on QDockWidget, the title
+    \o When DockWidgetVerticalTitleBar is set on QDockWidget, the title
        bar widget is repositioned accordingly. In resizeEvent(), the title
        bar should check what orientation it should assume:
        \snippet doc/src/snippets/code/src_gui_widgets_qdockwidget.cpp 0
 
-    \i The title bar widget must have a valid QWidget::sizeHint() and
+    \o The title bar widget must have a valid QWidget::sizeHint() and
        QWidget::minimumSizeHint(). These functions should take into account
        the current orientation of the title bar.
+
+    \o It is not possible to remove a title bar from a dock widget. However,
+       a similar effect can be achieved by setting a default constructed
+       QWidget as the title bar widget.
     \endlist
 
-    Using qobject_cast as shown above, the title bar widget has full access
+    Using qobject_cast() as shown above, the title bar widget has full access
     to its parent QDockWidget. Hence it can perform such operations as docking
     and hiding in response to user actions.
 

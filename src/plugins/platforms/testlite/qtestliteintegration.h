@@ -42,34 +42,17 @@
 #ifndef QGRAPHICSSYSTEM_TESTLITE_H
 #define QGRAPHICSSYSTEM_TESTLITE_H
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
-
 //make sure textstream is included before any X11 headers
 #include <QtCore/QTextStream>
 
+#include <QtGui/QPlatformIntegration>
+#include <QtGui/QPlatformScreen>
+
+#include "qtestlitestaticinfo.h"
+
 QT_BEGIN_NAMESPACE
 
-class MyDisplay;
-
-class QTestLiteScreen : public QPlatformScreen
-{
-public:
-    QTestLiteScreen()
-        : mDepth(16), mFormat(QImage::Format_RGB16) {}
-    ~QTestLiteScreen() {}
-
-    QRect geometry() const { return mGeometry; }
-    int depth() const { return mDepth; }
-    QImage::Format format() const { return mFormat; }
-    QSize physicalSize() const { return mPhysicalSize; }
-
-public:
-    QRect mGeometry;
-    int mDepth;
-    QImage::Format mFormat;
-    QSize mPhysicalSize;
-};
+class QTestLiteScreen;
 
 class QTestLiteIntegration : public QPlatformIntegration
 {
@@ -85,16 +68,16 @@ public:
     QList<QPlatformScreen *> screens() const { return mScreens; }
 
     QPlatformFontDatabase *fontDatabase() const;
+    QPlatformClipboard *clipboard() const;
 
     bool hasOpenGL() const;
-
-    MyDisplay *xd;
 
 private:
     bool mUseOpenGL;
     QTestLiteScreen *mPrimaryScreen;
     QList<QPlatformScreen *> mScreens;
     QPlatformFontDatabase *mFontDb;
+    QPlatformClipboard *mClipboard;
 };
 
 QT_END_NAMESPACE

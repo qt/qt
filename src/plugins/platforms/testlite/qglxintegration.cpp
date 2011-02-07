@@ -44,7 +44,9 @@
 #include <QGLFormat>
 
 #include "qtestlitewindow.h"
+#include "qtestlitescreen.h"
 
+#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <GL/glx.h>
@@ -57,9 +59,9 @@
 
 QT_BEGIN_NAMESPACE
 
-QMutex QGLXGLContext::m_defaultSharedContextMutex(QMutex::Recursive);
+QMutex QGLXContext::m_defaultSharedContextMutex(QMutex::Recursive);
 
-QVector<int> QGLXGLContext::buildSpec(const QPlatformWindowFormat &format)
+QVector<int> QGLXContext::buildSpec(const QPlatformWindowFormat &format)
 {
     QVector<int> spec(48);
     int i = 0;
@@ -111,7 +113,7 @@ QVector<int> QGLXGLContext::buildSpec(const QPlatformWindowFormat &format)
     return spec;
 }
 
-GLXFBConfig QGLXGLContext::findConfig(const MyDisplay *xd, const QPlatformWindowFormat &format)
+GLXFBConfig QGLXContext::findConfig(const QTestLiteScreen *screen, const QPlatformWindowFormat &format)
 {
     bool reduced = true;
     GLXFBConfig chosenConfig = 0;
@@ -120,7 +122,7 @@ GLXFBConfig QGLXGLContext::findConfig(const MyDisplay *xd, const QPlatformWindow
         QVector<int> spec = buildSpec(reducedFormat);
         int confcount = 0;
         GLXFBConfig *configs;
-        configs = glXChooseFBConfig(xd->display,xd->screen,spec.constData(),&confcount);
+        configs = glXChooseFBConfig(screen->display(),screen->xScreenNumber(),spec.constData(),&confcount);
         if (confcount)
         {
             for (int i = 0; i < confcount; i++) {
@@ -128,7 +130,7 @@ GLXFBConfig QGLXGLContext::findConfig(const MyDisplay *xd, const QPlatformWindow
                 // Make sure we try to get an ARGB visual if the format asked for an alpha:
                 if (reducedFormat.alpha()) {
                     int alphaSize;
-                    glXGetFBConfigAttrib(xd->display,configs[i],GLX_ALPHA_SIZE,&alphaSize);
+                    glXGetFBConfigAttrib(screen->display(),configs[i],GLX_ALPHA_SIZE,&alphaSize);
                     if (alphaSize > 0)
                         break;
                 } else {
@@ -147,14 +149,14 @@ GLXFBConfig QGLXGLContext::findConfig(const MyDisplay *xd, const QPlatformWindow
     return chosenConfig;
 }
 
-XVisualInfo *QGLXGLContext::findVisualInfo(const MyDisplay *xd, const QPlatformWindowFormat &format)
+XVisualInfo *QGLXContext::findVisualInfo(const QTestLiteScreen *screen, const QPlatformWindowFormat &format)
 {
-    GLXFBConfig config = QGLXGLContext::findConfig(xd,format);
-    XVisualInfo *visualInfo = glXGetVisualFromFBConfig(xd->display,config);
+    GLXFBConfig config = QGLXContext::findConfig(screen,format);
+    XVisualInfo *visualInfo = glXGetVisualFromFBConfig(screen->display(),config);
     return visualInfo;
 }
 
-QPlatformWindowFormat QGLXGLContext::platformWindowFromGLXFBConfig(Display *display, GLXFBConfig config, GLXContext ctx)
+QPlatformWindowFormat QGLXContext::platformWindowFromGLXFBConfig(Display *display, GLXFBConfig config, GLXContext ctx)
 {
     QPlatformWindowFormat format;
     int redSize     = 0;
@@ -210,7 +212,7 @@ QPlatformWindowFormat QGLXGLContext::platformWindowFromGLXFBConfig(Display *disp
     return format;
 }
 
-QPlatformWindowFormat QGLXGLContext::reducePlatformWindowFormat(const QPlatformWindowFormat &format, bool *reduced)
+QPlatformWindowFormat QGLXContext::reducePlatformWindowFormat(const QPlatformWindowFormat &format, bool *reduced)
 {
     QPlatformWindowFormat retFormat = format;
     *reduced = true;
@@ -235,9 +237,9 @@ QPlatformWindowFormat QGLXGLContext::reducePlatformWindowFormat(const QPlatformW
     return retFormat;
 }
 
-QGLXGLContext::QGLXGLContext(Window window, MyDisplay *xd, const QPlatformWindowFormat &format)
+QGLXContext::QGLXContext(Window window, QTestLiteScreen *screen, const QPlatformWindowFormat &format)
     : QPlatformGLContext()
-    , m_xd(xd)
+    , m_screen(screen)
     , m_drawable((Drawable)window)
     , m_context(0)
 {
@@ -246,7 +248,7 @@ QGLXGLContext::QGLXGLContext(Window window, MyDisplay *xd, const QPlatformWindow
     if (format.useDefaultSharedContext()) {
         if (!QPlatformGLContext::defaultSharedContext()) {
             if (m_defaultSharedContextMutex.tryLock()){
-                createDefaultSharedContex(xd);
+                createDefaultSharedContex(screen);
                 m_defaultSharedContextMutex.unlock();
             } else {
                 m_defaultSharedContextMutex.lock(); //wait to the the shared context is created
@@ -259,32 +261,32 @@ QGLXGLContext::QGLXGLContext(Window window, MyDisplay *xd, const QPlatformWindow
     }
     GLXContext shareGlxContext = 0;
     if (sharePlatformContext)
-        shareGlxContext = static_cast<const QGLXGLContext*>(sharePlatformContext)->glxContext();
+        shareGlxContext = static_cast<const QGLXContext*>(sharePlatformContext)->glxContext();
 
-    GLXFBConfig config = findConfig(xd,format);
-    m_context = glXCreateNewContext(xd->display,config,GLX_RGBA_TYPE,shareGlxContext,TRUE);
-    m_windowFormat = QGLXGLContext::platformWindowFromGLXFBConfig(xd->display,config,m_context);
+    GLXFBConfig config = findConfig(screen,format);
+    m_context = glXCreateNewContext(screen->display(),config,GLX_RGBA_TYPE,shareGlxContext,TRUE);
+    m_windowFormat = QGLXContext::platformWindowFromGLXFBConfig(screen->display(),config,m_context);
 
 #ifdef MYX11_DEBUG
     qDebug() << "QGLXGLContext::create context" << m_context;
 #endif
 }
 
-QGLXGLContext::QGLXGLContext(MyDisplay *display, Drawable drawable, GLXContext context)
-    : QPlatformGLContext(), m_xd(display), m_drawable(drawable), m_context(context)
+QGLXContext::QGLXContext(QTestLiteScreen *screen, Drawable drawable, GLXContext context)
+    : QPlatformGLContext(), m_screen(screen), m_drawable(drawable), m_context(context)
 {
 
 }
 
-QGLXGLContext::~QGLXGLContext()
+QGLXContext::~QGLXContext()
 {
     if (m_context) {
         qDebug("Destroying GLX context 0x%p", m_context);
-        glXDestroyContext(m_xd->display, m_context);
+        glXDestroyContext(m_screen->display(), m_context);
     }
 }
 
-void QGLXGLContext::createDefaultSharedContex(MyDisplay *xd)
+void QGLXContext::createDefaultSharedContex(QTestLiteScreen *screen)
 {
     int x = 0;
     int y = 0;
@@ -293,45 +295,45 @@ void QGLXGLContext::createDefaultSharedContex(MyDisplay *xd)
 
     QPlatformWindowFormat format = QPlatformWindowFormat::defaultFormat();
     GLXContext context;
-    GLXFBConfig config = findConfig(xd,format);
+    GLXFBConfig config = findConfig(screen,format);
     if (config) {
-        XVisualInfo *visualInfo = glXGetVisualFromFBConfig(xd->display,config);
-        Colormap cmap = XCreateColormap(xd->display,xd->rootWindow(),visualInfo->visual,AllocNone);
+        XVisualInfo *visualInfo = glXGetVisualFromFBConfig(screen->display(),config);
+        Colormap cmap = XCreateColormap(screen->display(),screen->rootWindow(),visualInfo->visual,AllocNone);
         XSetWindowAttributes a;
         a.colormap = cmap;
-        Window sharedWindow = XCreateWindow(xd->display, xd->rootWindow(),x, y, w, h,
+        Window sharedWindow = XCreateWindow(screen->display(), screen->rootWindow(),x, y, w, h,
                                   0, visualInfo->depth, InputOutput, visualInfo->visual,
                                   CWColormap, &a);
 
-        context = glXCreateNewContext(xd->display,config,GLX_RGBA_TYPE,0,TRUE);
-        QPlatformGLContext *sharedContext = new QGLXGLContext(xd,sharedWindow,context);
+        context = glXCreateNewContext(screen->display(),config,GLX_RGBA_TYPE,0,TRUE);
+        QPlatformGLContext *sharedContext = new QGLXContext(screen,sharedWindow,context);
         QPlatformGLContext::setDefaultSharedContext(sharedContext);
     } else {
         qWarning("Warning no shared context created");
     }
 }
 
-void QGLXGLContext::makeCurrent()
+void QGLXContext::makeCurrent()
 {
     QPlatformGLContext::makeCurrent();
 #ifdef MYX11_DEBUG
     qDebug("QGLXGLContext::makeCurrent(window=0x%x, ctx=0x%x)", m_drawable, m_context);
 #endif
-    glXMakeCurrent(m_xd->display, m_drawable, m_context);
+    glXMakeCurrent(m_screen->display(), m_drawable, m_context);
 }
 
-void QGLXGLContext::doneCurrent()
+void QGLXContext::doneCurrent()
 {
     QPlatformGLContext::doneCurrent();
-    glXMakeCurrent(m_xd->display, 0, 0);
+    glXMakeCurrent(m_screen->display(), 0, 0);
 }
 
-void QGLXGLContext::swapBuffers()
+void QGLXContext::swapBuffers()
 {
-    glXSwapBuffers(m_xd->display, m_drawable);
+    glXSwapBuffers(m_screen->display(), m_drawable);
 }
 
-void* QGLXGLContext::getProcAddress(const QString& procName)
+void* QGLXContext::getProcAddress(const QString& procName)
 {
     typedef void *(*qt_glXGetProcAddressARB)(const GLubyte *);
     static qt_glXGetProcAddressARB glXGetProcAddressARB = 0;
@@ -340,7 +342,7 @@ void* QGLXGLContext::getProcAddress(const QString& procName)
     if (resolved && !glXGetProcAddressARB)
         return 0;
     if (!glXGetProcAddressARB) {
-        QList<QByteArray> glxExt = QByteArray(glXGetClientString(m_xd->display, GLX_EXTENSIONS)).split(' ');
+        QList<QByteArray> glxExt = QByteArray(glXGetClientString(m_screen->display(), GLX_EXTENSIONS)).split(' ');
         if (glxExt.contains("GLX_ARB_get_proc_address")) {
 #if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
             void *handle = dlopen(NULL, RTLD_LAZY);
@@ -364,9 +366,11 @@ void* QGLXGLContext::getProcAddress(const QString& procName)
     return glXGetProcAddressARB(reinterpret_cast<const GLubyte *>(procName.toLatin1().data()));
 }
 
-QPlatformWindowFormat QGLXGLContext::platformWindowFormat() const
+QPlatformWindowFormat QGLXContext::platformWindowFormat() const
 {
     return m_windowFormat;
 }
 
 QT_END_NAMESPACE
+
+#endif //!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)

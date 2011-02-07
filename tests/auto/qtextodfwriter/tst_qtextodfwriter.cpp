@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -208,10 +208,10 @@ void tst_QTextOdfWriter::testWriteStyle2()
     QString xml = QString::fromLatin1(
         "<style:style style:name=\"p1\" style:family=\"paragraph\">"
             "<style:paragraph-properties>"
-                "<style:style-tab-stops>"
-                    "<style:style-tab-stop style:position=\"30pt\" style:type=\"right\"/>"
-                    "<style:style-tab-stop style:position=\"60pt\" style:type=\"char\" style:char=\"o\"/>"
-                "</style:style-tab-stops>"
+                "<style:tab-stops>"
+                    "<style:tab-stop style:position=\"30pt\" style:type=\"right\"/>"
+                    "<style:tab-stop style:position=\"60pt\" style:type=\"char\" style:char=\"o\"/>"
+                "</style:tab-stops>"
             "</style:paragraph-properties>"
         "</style:style>");
     QCOMPARE(getContentFromXml(), xml);

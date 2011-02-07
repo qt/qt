@@ -53,6 +53,7 @@ QVector<EGLint> q_createConfigAttributesFromFormat(const QPlatformWindowFormat &
 bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes);
 EGLConfig q_configFromQPlatformWindowFormat(EGLDisplay display, const QPlatformWindowFormat &format);
 QPlatformWindowFormat qt_qPlatformWindowFormatFromConfig(EGLDisplay display, const EGLConfig config);
+bool q_hasEglExtension(EGLDisplay display,const char* extensionName);
 
 QT_END_NAMESPACE
 

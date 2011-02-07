@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -230,6 +230,11 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode)
 */
 bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh)
 {
+    return open(openMode, fh, QFile::DontCloseHandle);
+}
+
+bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh, QFile::FileHandleFlags handleFlags)
+{
     Q_D(QFSFileEngine);
 
     // Append implies WriteOnly.
@@ -242,7 +247,7 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh)
 
     d->openMode = openMode;
     d->lastFlushFailed = false;
-    d->closeFileHandle = false;
+    d->closeFileHandle = (handleFlags & QFile::AutoCloseHandle);
     d->fileEntry.clear();
     d->tried_stat = 0;
     d->fd = -1;
@@ -286,6 +291,11 @@ bool QFSFileEnginePrivate::openFh(QIODevice::OpenMode openMode, FILE *fh)
 */
 bool QFSFileEngine::open(QIODevice::OpenMode openMode, int fd)
 {
+    return open(openMode, fd, QFile::DontCloseHandle);
+}
+
+bool QFSFileEngine::open(QIODevice::OpenMode openMode, int fd, QFile::FileHandleFlags handleFlags)
+{
     Q_D(QFSFileEngine);
 
     // Append implies WriteOnly.
@@ -298,7 +308,7 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, int fd)
 
     d->openMode = openMode;
     d->lastFlushFailed = false;
-    d->closeFileHandle = false;
+    d->closeFileHandle = (handleFlags & QFile::AutoCloseHandle);
     d->fileEntry.clear();
     d->fh = 0;
     d->fd = -1;

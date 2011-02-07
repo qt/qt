@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,6 +55,9 @@
 #define IO_REPARSE_TAG_MOUNT_POINT       (0xA0000003L)
 #endif
 #define REPARSE_MOUNTPOINT_HEADER_SIZE   8
+#ifndef FSCTL_SET_REPARSE_POINT
+#define FSCTL_SET_REPARSE_POINT CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 41, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
+#endif
 #endif
 
 struct FileSystem

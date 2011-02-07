@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,25 +54,24 @@ void BookmarkFilterModel::setSourceModel(QAbstractItemModel *_sourceModel)
 {
     beginResetModel();
 
-    disconnect(sourceModel, SIGNAL(dataChanged(QModelIndex, QModelIndex)), this,
-        SLOT(changed(QModelIndex, QModelIndex)));
-
-    disconnect(sourceModel, SIGNAL(rowsInserted(QModelIndex, int, int)),
-        this, SLOT(rowsInserted(QModelIndex, int, int)));
-
-    disconnect(sourceModel, SIGNAL(rowsAboutToBeRemoved(QModelIndex, int, int)),
-        this, SLOT(rowsAboutToBeRemoved(QModelIndex, int, int)));
-    disconnect(sourceModel, SIGNAL(rowsRemoved(QModelIndex, int, int)), this,
-        SLOT(rowsRemoved(QModelIndex, int, int)));
-
-    disconnect(sourceModel, SIGNAL(layoutAboutToBeChanged()), this,
-        SLOT(layoutAboutToBeChanged()));
-    disconnect(sourceModel, SIGNAL(layoutChanged()), this,
-        SLOT(layoutChanged()));
-
-    disconnect(sourceModel, SIGNAL(modelAboutToBeReset()), this,
-        SLOT(modelAboutToBeReset()));
-    disconnect(sourceModel, SIGNAL(modelReset()), this, SLOT(modelReset()));
+    if (sourceModel) {
+        disconnect(sourceModel, SIGNAL(dataChanged(QModelIndex, QModelIndex)),
+            this, SLOT(changed(QModelIndex, QModelIndex)));
+        disconnect(sourceModel, SIGNAL(rowsInserted(QModelIndex, int, int)),
+            this, SLOT(rowsInserted(QModelIndex, int, int)));
+        disconnect(sourceModel,
+            SIGNAL(rowsAboutToBeRemoved(QModelIndex, int, int)), this,
+            SLOT(rowsAboutToBeRemoved(QModelIndex, int, int)));
+        disconnect(sourceModel, SIGNAL(rowsRemoved(QModelIndex, int, int)),
+            this, SLOT(rowsRemoved(QModelIndex, int, int)));
+        disconnect(sourceModel, SIGNAL(layoutAboutToBeChanged()), this,
+            SLOT(layoutAboutToBeChanged()));
+        disconnect(sourceModel, SIGNAL(layoutChanged()), this,
+            SLOT(layoutChanged()));
+        disconnect(sourceModel, SIGNAL(modelAboutToBeReset()), this,
+            SLOT(modelAboutToBeReset()));
+        disconnect(sourceModel, SIGNAL(modelReset()), this, SLOT(modelReset()));
+    }
 
     QAbstractProxyModel::setSourceModel(sourceModel);
     sourceModel = qobject_cast<BookmarkModel*> (_sourceModel);

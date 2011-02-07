@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -717,7 +717,7 @@ bool QAbstractSliderPrivate::scrollByDelta(Qt::Orientation orientation, Qt::Keyb
 
         offset_accumulated += stepsToScrollF;
 #ifndef Q_WS_MAC
-        // Dont't scroll more than one page in any case:
+        // Don't scroll more than one page in any case:
         stepsToScroll = qBound(-pageStep, int(offset_accumulated), pageStep);
 #else
         // Native UI-elements on Mac can scroll hundreds of lines at a time as

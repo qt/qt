@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -102,7 +102,7 @@ extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 extern bool qt_applefontsmoothing_enabled;
 #endif
 
-Q_DECL_IMPORT extern QImage qt_imageForBrush(int brushStyle, bool invert);
+Q_GUI_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert);
 
 ////////////////////////////////// Private Methods //////////////////////////////////////////
 
@@ -337,7 +337,13 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
         matrix.translate(brushOrigin.x(), brushOrigin.y());
 
         QTransform translate(1, 0, 0, 1, -translationPoint.x(), -translationPoint.y());
-        QTransform gl_to_qt(1, 0, 0, -1, 0, height);
+        qreal m22 = -1;
+        qreal dy = height;
+        if (device->isFlipped()) {
+            m22 = 1;
+            dy = 0;
+        }
+        QTransform gl_to_qt(1, 0, 0, m22, 0, dy);
         QTransform inv_matrix;
         if (style == Qt::TexturePattern && textureInvertedY == -1)
             inv_matrix = gl_to_qt * (QTransform(1, 0, 0, -1, 0, currentBrush.texture().height()) * brushQTransform * matrix).inverted() * translate;
@@ -376,9 +382,15 @@ void QGL2PaintEngineExPrivate::updateMatrix()
     // NOTE: The resultant matrix is also transposed, as GL expects column-major matracies
 
     const GLfloat wfactor = 2.0f / width;
-    const GLfloat hfactor = -2.0f / height;
+    GLfloat hfactor = -2.0f / height;
+
     GLfloat dx = transform.dx();
     GLfloat dy = transform.dy();
+
+    if (device->isFlipped()) {
+        hfactor *= -1;
+        dy -= height;
+    }
 
     // Non-integer translates can have strange effects for some rendering operations such as
     // anti-aliased text rendering. In such cases, we snap the translate to the pixel grid.
@@ -1162,7 +1174,7 @@ void QGL2PaintEngineEx::fill(const QVectorPath &path, const QBrush &brush)
     d->fill(path);
 }
 
-extern Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
+Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
 
 
 void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
@@ -1592,7 +1604,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         }
     }
 
-
     if (recreateVertexArrays) {
         vertexCoordinates->clear();
         textureCoordinates->clear();
@@ -1605,7 +1616,10 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
             QTextureGlyphCache::GlyphAndSubPixelPosition glyph(staticTextItem->glyphs[i], subPixelPosition);
 
-            const QTextureGlyphCache::Coord &c = cache->coords.value(glyph);
+            const QTextureGlyphCache::Coord &c = cache->coords[glyph];
+            if (c.isNull())
+                continue;
+
             int x = staticTextItem->glyphPositions[i].x.toInt() + c.baseLineX - margin;
             int y = staticTextItem->glyphPositions[i].y.toInt() - c.baseLineY - margin;
 
@@ -1616,10 +1630,12 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         staticTextItem->userDataNeedsUpdate = false;
     }
 
-    if (elementIndices.size() < staticTextItem->numGlyphs*6) {
+    int numGlyphs = vertexCoordinates->vertexCount() / 4;
+
+    if (elementIndices.size() < numGlyphs*6) {
         Q_ASSERT(elementIndices.size() % 6 == 0);
         int j = elementIndices.size() / 6 * 4;
-        while (j < staticTextItem->numGlyphs*4) {
+        while (j < numGlyphs*4) {
             elementIndices.append(j + 0);
             elementIndices.append(j + 0);
             elementIndices.append(j + 1);
@@ -1708,9 +1724,9 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
             updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)
-            glDrawElements(GL_TRIANGLE_STRIP, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_SHORT, 0);
+            glDrawElements(GL_TRIANGLE_STRIP, 6 * numGlyphs, GL_UNSIGNED_SHORT, 0);
 #else
-            glDrawElements(GL_TRIANGLE_STRIP, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_SHORT, elementIndices.data());
+            glDrawElements(GL_TRIANGLE_STRIP, 6 * numGlyphs, GL_UNSIGNED_SHORT, elementIndices.data());
 #endif
 
             shaderManager->setMaskType(QGLEngineShaderManager::SubPixelMaskPass2);
@@ -1758,10 +1774,10 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     }
 
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)
-    glDrawElements(GL_TRIANGLE_STRIP, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_TRIANGLE_STRIP, 6 * numGlyphs, GL_UNSIGNED_SHORT, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 #else
-    glDrawElements(GL_TRIANGLE_STRIP, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_SHORT, elementIndices.data());
+    glDrawElements(GL_TRIANGLE_STRIP, 6 * numGlyphs, GL_UNSIGNED_SHORT, elementIndices.data());
 #endif
 }
 
@@ -2059,7 +2075,10 @@ void QGL2PaintEngineExPrivate::setScissor(const QRect &rect)
 {
     const int left = rect.left();
     const int width = rect.width();
-    const int bottom = height - (rect.top() + rect.height());
+    int bottom = height - (rect.top() + rect.height());
+    if (device->isFlipped()) {
+        bottom = rect.top();
+    }
     const int height = rect.height();
 
     glScissor(left, bottom, width, height);

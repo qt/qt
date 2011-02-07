@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -629,6 +629,7 @@ void SymbianCommonGenerator::writeRssFile(QString &numberOfIcons, QString &iconF
         t << "// * user." << endl;
         t << "// ============================================================================" << endl;
         t << endl;
+        t << "CHARACTER_SET UTF8" << endl;
         t << "#include <appinfo.rh>" << endl;
         t << "#include \"" << fixedTarget << ".loc\"" << endl;
         t << endl;
@@ -977,7 +978,7 @@ bool SymbianCommonGenerator::parseTsContent(const QString &tsFilename, SymbianLo
 
             QXmlStreamReader xml(&tsFile);
 
-            while (xml.name() != tsElement)
+            while (!xml.atEnd() && xml.name() != tsElement)
                 xml.readNextStartElement();
 
             while (xml.readNextStartElement()) {

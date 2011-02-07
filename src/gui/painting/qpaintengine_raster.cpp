@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -662,31 +662,23 @@ QRasterPaintEngineState::QRasterPaintEngineState()
 
 QRasterPaintEngineState::QRasterPaintEngineState(QRasterPaintEngineState &s)
     : QPainterState(s)
+    , stroker(s.stroker)
+    , lastBrush(s.lastBrush)
+    , brushData(s.brushData)
+    , lastPen(s.lastPen)
+    , penData(s.penData)
+    , fillFlags(s.fillFlags)
+    , strokeFlags(s.strokeFlags)
+    , pixmapFlags(s.pixmapFlags)
+    , intOpacity(s.intOpacity)
+    , txscale(s.txscale)
+    , flag_bits(s.flag_bits)
+    , clip(s.clip)
+    , dirty(s.dirty)
 {
-    stroker = s.stroker;
-
-    lastBrush = s.lastBrush;
-    brushData = s.brushData;
     brushData.tempImage = 0;
-
-    lastPen = s.lastPen;
-    penData = s.penData;
     penData.tempImage = 0;
-
-    fillFlags = s.fillFlags;
-    strokeFlags = s.strokeFlags;
-    pixmapFlags = s.pixmapFlags;
-
-    intOpacity = s.intOpacity;
-
-    txscale = s.txscale;
-
-    flag_bits = s.flag_bits;
-
-    clip = s.clip;
     flags.has_clip_ownership = false;
-
-    dirty = s.dirty;
 }
 
 /*!
@@ -1814,7 +1806,7 @@ void QRasterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
         ensureState();
         if (s->flags.tx_noshear) {
             d->initializeRasterizer(&s->brushData);
-            // ### Is normalizing really nessesary here?
+            // ### Is normalizing really necessary here?
             const qreal *p = path.points();
             QRectF r = QRectF(p[0], p[1], p[2] - p[0], p[7] - p[1]).normalized();
             if (!r.isEmpty()) {
@@ -3124,7 +3116,9 @@ void QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
         if (supportsSubPixelPositions)
             subPixelPosition = cache->subPixelPositionForX(positions[i].x);
         QTextureGlyphCache::GlyphAndSubPixelPosition glyph(glyphs[i], subPixelPosition);
-        const QTextureGlyphCache::Coord &c = cache->coords.value(glyph);
+        const QTextureGlyphCache::Coord &c = cache->coords[glyph];
+        if (c.isNull())
+            continue;
 
         int x = qFloor(positions[i].x) + c.baseLineX - margin;
         int y = qFloor(positions[i].y) - c.baseLineY - margin;
@@ -3183,7 +3177,7 @@ void QRasterPaintEngine::drawGlyphsS60(const QPointF &p, const QTextItemInt &ti)
 #endif // Q_OS_SYMBIAN && QT_NO_FREETYPE
 
 /*!
- * Returns true if the rectangle is completly within the current clip
+ * Returns true if the rectangle is completely within the current clip
  * state of the paint engine.
  */
 bool QRasterPaintEnginePrivate::isUnclipped_normalized(const QRect &r) const
@@ -5165,7 +5159,8 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
     case Qt::SolidPattern: {
         type = Solid;
         QColor c = qbrush_color(brush);
-        solid.color = PREMUL(ARGB_COMBINE_ALPHA(c.rgba(), alpha));
+        QRgb rgba = c.rgba();
+        solid.color = PREMUL(ARGB_COMBINE_ALPHA(rgba, alpha));
         if ((solid.color & 0xff000000) == 0
             && compositionMode == QPainter::CompositionMode_SourceOver) {
             type = None;

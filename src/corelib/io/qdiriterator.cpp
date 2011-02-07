@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -423,9 +423,6 @@ QDirIterator::QDirIterator(const QDir &dir, IteratorFlags flags)
     \note To list symlinks that point to non existing files, QDir::System must be
      passed to the flags.
 
-    \warning This constructor expects \a flags to be left at its default value. Use
-             the constructors that do not take the \a filters argument instead.
-
     \sa hasNext(), next(), IteratorFlags
 */
 QDirIterator::QDirIterator(const QString &path, QDir::Filters filters, IteratorFlags flags)
@@ -460,9 +457,6 @@ QDirIterator::QDirIterator(const QString &path, IteratorFlags flags)
 
     \note To list symlinks that point to non existing files, QDir::System must be
      passed to the flags.
-
-    \warning This constructor expects \c flags to be left at its default value. Use the
-             constructors that do not take the \a filters argument instead.
 
     \sa hasNext(), next(), IteratorFlags
 */

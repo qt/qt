@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -77,8 +77,8 @@ static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
 
 #if !defined(QVG_NO_DRAW_GLYPHS)
 
-Q_DECL_IMPORT extern int qt_defaultDpiX();
-Q_DECL_IMPORT extern int qt_defaultDpiY();
+Q_GUI_EXPORT int qt_defaultDpiX();
+Q_GUI_EXPORT int qt_defaultDpiY();
 
 class QVGPaintEnginePrivate;
 
@@ -526,7 +526,7 @@ void QVGPaintEnginePrivate::setTransform
     vgLoadMatrix(mat);
 }
 
-Q_DECL_IMPORT extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
+Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
 
 void QVGPaintEnginePrivate::updateTransform(QPaintDevice *pdev)
 {
@@ -994,7 +994,7 @@ VGPath QVGPaintEnginePrivate::roundedRectPath(const QRectF &rect, qreal xRadius,
     return vgpath;
 }
 
-Q_DECL_IMPORT extern QImage qt_imageForBrush(int style, bool invert);
+Q_GUI_EXPORT QImage qt_imageForBrush(int style, bool invert);
 
 static QImage colorizeBitmap(const QImage &image, const QColor &color)
 {
@@ -1472,7 +1472,7 @@ void QVGPaintEnginePrivate::draw
     (VGPath path, const QPen& pen, const QBrush& brush, VGint rule)
 {
     VGbitfield mode = 0;
-    if (pen.style() != Qt::NoPen) {
+    if (qpen_style(pen) != Qt::NoPen && qbrush_style(qpen_brush(pen)) != Qt::NoBrush) {
         ensurePen(pen);
         mode |= VG_STROKE_PATH;
     }
@@ -3539,8 +3539,8 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     QVarLengthArray<VGfloat> adjustments_x(numGlyphs);
     QVarLengthArray<VGfloat> adjustments_y(numGlyphs);
     for (int i = 1; i < numGlyphs; ++i) {
-        adjustments_x[i-1] = (positions[i].x - positions[i-1].x).toReal();
-        adjustments_y[i-1] = (positions[i].y - positions[i-1].y).toReal();
+        adjustments_x[i-1] = (positions[i].x - positions[i-1].x).round().toReal();
+        adjustments_y[i-1] = (positions[i].y - positions[i-1].y).round().toReal();
     }
 
     // Set the glyph drawing origin.

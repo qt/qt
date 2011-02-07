@@ -4,6 +4,8 @@ SUBDIRS = \
         qscriptengine \
         qscriptvalue \
         sunspider \
+        qscriptqobject \
+        qscriptvalueiterator \
         v8
 
 TRUSTED_BENCHMARKS += \

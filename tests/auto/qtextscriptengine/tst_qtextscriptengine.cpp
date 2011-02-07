@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -103,6 +103,7 @@ private slots:
 
     void khmer();
     void linearB();
+    void controlInSyllable_qtbug14204();
 };
 
 tst_QTextScriptEngine::tst_QTextScriptEngine()
@@ -1111,6 +1112,26 @@ void tst_QTextScriptEngine::greek()
 #endif
 }
 
+void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
+{
+#if defined(Q_WS_X11)
+    QString s;
+    s.append(QChar(0x0915));
+    s.append(QChar(0x094d));
+    s.append(QChar(0x200d));
+    s.append(QChar(0x0915));
+
+    QTextLayout layout(s);
+    QTextEngine *e = layout.d;
+    e->itemize();
+    e->shape(0);
+
+    QVERIFY(e->layoutData->items[0].num_glyphs == 2);
+    QVERIFY(e->layoutData->glyphLayout.advances_x[1] != 0);
+#else
+    QSKIP("X11 specific test", SkipAll);
+#endif
+}
 
 QTEST_MAIN(tst_QTextScriptEngine)
 #include "tst_qtextscriptengine.moc"
