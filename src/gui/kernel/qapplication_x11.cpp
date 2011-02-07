@@ -5314,18 +5314,6 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
     }
 
     if (wasResize) {
-        static bool slowResize = qgetenv("QT_SLOW_TOPLEVEL_RESIZE").toInt();
-        if (d->extra->compress_events && !slowResize && !data->in_show && isVisible()) {
-            QApplication::syncX();
-            XEvent otherEvent;
-            while (XCheckTypedWindowEvent(X11->display, internalWinId(), ConfigureNotify, &otherEvent)
-                   && !qt_x11EventFilter(&otherEvent) && !x11Event(&otherEvent)
-                   && otherEvent.xconfigure.event == otherEvent.xconfigure.window) {
-                data->crect.setWidth(otherEvent.xconfigure.width);
-                data->crect.setHeight(otherEvent.xconfigure.height);
-            }
-        }
-
         if (isVisible() && data->crect.size() != oldSize) {
             Q_ASSERT(d->extra->topextra);
             QWidgetBackingStore *bs = d->extra->topextra->backingStore.data();
@@ -5334,7 +5322,7 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
             // resize optimization in order to get invalidated regions for resized widgets.
             // The optimization discards all invalidateBuffer() calls since we're going to
             // repaint everything anyways, but that's not the case with static contents.
-            if (!slowResize && !hasStaticContents)
+            if (!hasStaticContents)
                 d->extra->topextra->inTopLevelResize = true;
             QResizeEvent e(data->crect.size(), oldSize);
             QApplication::sendSpontaneousEvent(this, &e);
