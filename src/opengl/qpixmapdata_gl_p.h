@@ -107,6 +107,8 @@ public:
     // Re-implemented from QPixmapData:
     void resize(int width, int height);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
+    void fromImageReader(QImageReader *imageReader,
+                          Qt::ImageConversionFlags flags);
     bool fromFile(const QString &filename, const char *format,
                   Qt::ImageConversionFlags flags);
     bool fromData(const uchar *buffer, uint len, const char *format,
@@ -148,6 +150,8 @@ private:
     bool useFramebufferObjects() const;
 
     QImage fillImage(const QColor &color) const;
+
+    void createPixmapForImage(QImage &image, Qt::ImageConversionFlags flags, bool inPlace);
 
     mutable QGLFramebufferObject *m_renderFbo;
     mutable QPaintEngine *m_engine;

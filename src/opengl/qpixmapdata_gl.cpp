@@ -55,6 +55,7 @@
 #include <qdesktopwidget.h>
 #include <qfile.h>
 #include <qimagereader.h>
+#include <qbuffer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -369,40 +370,18 @@ void QGLPixmapData::ensureCreated() const
 void QGLPixmapData::fromImage(const QImage &image,
                               Qt::ImageConversionFlags flags)
 {
-    if (image.size() == QSize(w, h))
-        setSerialNumber(++qt_gl_pixmap_serial);
-    resize(image.width(), image.height());
+    QImage img = image;
+    createPixmapForImage(img, flags, false);
+}
 
-    if (pixelType() == BitmapType) {
-        m_source = image.convertToFormat(QImage::Format_MonoLSB);
+void QGLPixmapData::fromImageReader(QImageReader *imageReader,
+                                 Qt::ImageConversionFlags flags)
+{
+    QImage image = imageReader->read();
+    if (image.isNull())
+        return;
 
-    } else {
-        QImage::Format format = QImage::Format_RGB32;
-        if (qApp->desktop()->depth() == 16)
-            format = QImage::Format_RGB16;
-
-        if (image.hasAlphaChannel()
-            && ((flags & Qt::NoOpaqueDetection)
-                || const_cast<QImage &>(image).data_ptr()->checkForAlphaPixels()))
-            format = QImage::Format_ARGB32_Premultiplied;;
-
-        m_source = image.convertToFormat(format);
-    }
-
-    m_dirty = true;
-    m_hasFillColor = false;
-
-    m_hasAlpha = m_source.hasAlphaChannel();
-    w = image.width();
-    h = image.height();
-    is_null = (w <= 0 || h <= 0);
-    d = m_source.depth();
-
-    if (m_texture.id) {
-        QGLShareContextScope ctx(qt_gl_share_widget()->context());
-        glDeleteTextures(1, &m_texture.id);
-        m_texture.id = 0;
-    }
+    createPixmapForImage(image, flags, true);
 }
 
 bool QGLPixmapData::fromFile(const QString &filename, const char *format,
@@ -435,7 +414,13 @@ bool QGLPixmapData::fromFile(const QString &filename, const char *format,
         }
         return false;
     }
-    fromImage(QImageReader(&file, format).read(), flags);
+
+    QImage image = QImageReader(filename, format).read();
+    if (image.isNull())
+        return false;
+
+    createPixmapForImage(image, flags, true);
+
     return !isNull();
 }
 
@@ -459,7 +444,67 @@ bool QGLPixmapData::fromData(const uchar *buffer, uint len, const char *format,
             return true;
         }
     }
-    return QPixmapData::fromData(buffer, len, format, flags);
+
+    QByteArray a = QByteArray::fromRawData(reinterpret_cast<const char *>(buffer), len);
+    QBuffer b(&a);
+    b.open(QIODevice::ReadOnly);
+    QImage image = QImageReader(&b, format).read();
+    if (image.isNull())
+        return false;
+
+    createPixmapForImage(image, flags, true);
+
+    return !isNull();
+}
+
+/*!
+    out-of-place conversion (inPlace == false) will always detach()
+ */
+void QGLPixmapData::createPixmapForImage(QImage &image, Qt::ImageConversionFlags flags, bool inPlace)
+{
+    if (image.size() == QSize(w, h))
+        setSerialNumber(++qt_gl_pixmap_serial);
+
+    resize(image.width(), image.height());
+
+    if (pixelType() == BitmapType) {
+        m_source = image.convertToFormat(QImage::Format_MonoLSB);
+
+    } else {
+        QImage::Format format = QImage::Format_RGB32;
+        if (qApp->desktop()->depth() == 16)
+            format = QImage::Format_RGB16;
+
+        if (image.hasAlphaChannel()
+            && ((flags & Qt::NoOpaqueDetection)
+                || const_cast<QImage &>(image).data_ptr()->checkForAlphaPixels()))
+            format = QImage::Format_ARGB32_Premultiplied;;
+
+        if (inPlace && image.data_ptr()->convertInPlace(format, flags)) {
+            m_source = image;
+        } else {
+            m_source = image.convertToFormat(format);
+
+            // convertToFormat won't detach the image if format stays the same.
+            if (image.format() == format)
+                m_source.detach();
+        }
+    }
+
+    m_dirty = true;
+    m_hasFillColor = false;
+
+    m_hasAlpha = m_source.hasAlphaChannel();
+    w = image.width();
+    h = image.height();
+    is_null = (w <= 0 || h <= 0);
+    d = m_source.depth();
+
+    if (m_texture.id) {
+        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+        glDeleteTextures(1, &m_texture.id);
+        m_texture.id = 0;
+    }
 }
 
 bool QGLPixmapData::scroll(int dx, int dy, const QRect &rect)
