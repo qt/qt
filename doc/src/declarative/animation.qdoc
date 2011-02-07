@@ -151,7 +151,7 @@ demonstration of behavioral animations.
 Animations can run \e {in parallel} or \e {in sequence}. Parallel animations
 will play a group of animations at the same time while sequential animations
 play a group of animations in order: one after the other. Grouping animations in
-\l{SequentialAnimation} and \{ParallelAnimation} will play the animations in
+\l{SequentialAnimation} and \l{ParallelAnimation} will play the animations in
 sequence or in parallel.
 
 A banner component may have several icons or slogans to display, one after the

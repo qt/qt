@@ -35,21 +35,8 @@
 
 \section1 Introduction
 
-Qt Quick contains a set of standard items that can be used to present data in a
-number of different ways. For simple user interfaces,
-\l{Using QML Positioner and Repeater Items#Repeaters}{Repeaters} can be used
-in combination with
-\l{Using QML Positioner and Repeater Items#Positioners}{Positioners}
-to obtain pieces of data and arrange them in a user interface. However, when
-large quantities of data are involved, it is often better to use models with
-the standard views since these contain many built-in display and navigation
-features.
-
-\section1 Views
-
-Views are scrolling containers for collections of items. They are feature-rich,
-supporting many of the use cases found in typical applications, and can be
-customized to meet requirements on style and behavior.
+Views are containers for collections of items. They are feature-rich and can be
+customizable to meet style or behavior requirements.
 
 A set of standard views are provided in the basic set of Qt Quick
 graphical elements:
@@ -58,13 +45,21 @@ graphical elements:
 \o \l{#ListView}{ListView} arranges items in a horizontal or vertical list
 \o \l{#GridView}{GridView} arranges items in a grid within the available space
 \o \l{#PathView}{PathView} arranges items on a path
+\o \l{WebView}{WebView} - available from the Qt WebKit module.
+
 \endlist
 
 Unlike these items, \l WebView is not a fully-featured view item, and needs
 to be combined with a \l Flickable item to create a view that performs like
 a Web browser.
 
-\section2 ListView
+\section1 Models
+
+Views display a \l{qml-data-models}{models} onto the screen. A model could be a simple list of \l{QML Data Models#An Integer}{integer} or a \l{qml-c++-models}{C++ models}.
+
+To assign a model to a view, bind the view's \c model property to a model.
+
+\section1 ListView
 
 \l ListView shows a classic list of items with horizontal or vertical placing
 of items.

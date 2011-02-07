@@ -35,9 +35,14 @@
 
 \section1 Properties
 
-A property is a value of a QML component that can be read and modified by other objects.
-In QML, properties serve many purpose. Their main function is to bind to values.
-Values may be a \l{QML Basic Types}{basic type}, or other QML elements.
+QML components have \e properties that can be read and modified by other objects.
+In QML, properties serve many purposes but their main function is to bind to
+values. Values may be a \l{QML Basic Types}{basic type}, or other QML elements.
+
+The syntax for properties is:
+\qml
+ [default] property <type> <name>[: defaultValue]
+\endqml
 
 Elements already possess useful properties but, to create custom properties,
 precede the property name with the keyword \c property.
@@ -48,7 +53,7 @@ precede the property name with the keyword \c property.
 \snippet doc/src/snippets/declarative/properties.qml parent end
 
 QML property rules coincide with many of JavaScript's property rules, for example,
-properti names must begin with a lowercase letter.
+property names must begin with a lowercase letter.
 \l {JavaScript Reserved Words}{JavaScript reserved words} are not valid property
 names.
 
@@ -229,7 +234,6 @@ Accessing the aliasing property is similar to accessing a regular property. In
 addition, the optional \c default keyword indicates that the aliasing property
 is a \l{Default Properties}{default property}.
 
-<<<<<<< HEAD
 \snippet doc/src/snippets/declarative/Button.qml property alias
 When importing the component as a \c Button, the \c buttonlabel is directly
 accessible through the \c label property.

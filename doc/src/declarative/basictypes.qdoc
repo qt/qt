@@ -29,8 +29,8 @@
     \page qdeclarativebasictypes.html
     \ingroup qml-features
     \contentspage QML Features
-    \previouspage {Property Binding}
-    \nextpage {QML Basic Elements}{Basic Elements}
+    \previouspage {QML Basic Elements}
+    \nextpage Property Binding
     \title QML Basic Types
 
     QML has a set of primitive types, as listed below, that are used throughout

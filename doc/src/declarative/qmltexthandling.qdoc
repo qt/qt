@@ -35,8 +35,6 @@
 
 \tableofcontents
 
-\section1 Introduction
-
 \section1 Text Elements
 
 \list
@@ -51,5 +49,26 @@
 \o \l{DoubleValidator}
 \o \l{RegExpValidator}
 \endlist
+
+\section1 Displaying Text in QML
+QML provides several elements to display text onto the screen. The \l Text
+element will display formatted text onto the screen, the \l TextEdit element
+will place a multiline line edit onto the screen, and the \l TextInput will
+place a single editable line field onto the screen.
+
+To learn more about their specific features and properties, visit their
+respective element documentation.
+
+\section1 Validating Input Text
+The \l {Validators}{validator} elements enforce the type and format of
+\l TextInput objects.
+
+\snippet doc/src/snippets/declarative/texthandling.qml int validator
+The validator elements bind to \c {TextInput}'s \c validator property.
+
+\snippet doc/src/snippets/declarative/texthandling.qml regexp validator
+The regular expression in the snippet will only allow the inputted text to be
+\c {fruit basket}. The \l {QRegExp} class has more information about Qt's
+regular expressions.
 
 */

@@ -91,6 +91,7 @@ The \l Text and \l TextEdit elements display formatted text onto the screen.
 \c TextEdit features multi-line editing while the \l TextInput element is for
 single line text input.
 
+\keyword qml-top-level-component
 \section1 Using Elements as the Top-Level Component
 
 For creating components (or displaying a simple scene), there are different

@@ -78,6 +78,7 @@ The use of positioner items to arrange items from a model is covered in
 \l{Using QML Positioner and Repeater Items}.
 
 
+\keyword qml-data-models
 \section1 QML Data Models
 
 \section2 ListModel
@@ -154,7 +155,7 @@ Note that in the above example there is no delegate required.
 The items of the model itself provide the visual elements that
 will be positioned by the view.
 
-
+\keyword qml-c++-models
 \section1 C++ Data Models
 
 Models can be defined in C++ and then made available to QML. This is useful
