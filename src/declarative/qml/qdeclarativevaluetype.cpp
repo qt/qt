@@ -71,6 +71,7 @@ int qmlRegisterValueTypeEnums(const char *uri, int versionMajor, int versionMino
 
         0, 0,
 
+        0,
         0
     };
 

@@ -555,7 +555,8 @@
         \c qmake output will be a Makefile.
     \o \c -project \BR
         \c qmake output will be a project file. \BR
-\bold{Note:} It is likely that the created file will need to be edited for example adding the \c QT variable to suit what modules are required for the project.
+    \bold{Note:} It is likely that the created file will need to be edited; for example,
+    adding the \c QT variable to suit what modules are required for the project.
     \endlist
 
     The following \c options are used to specify both general and mode-specific

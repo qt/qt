@@ -229,6 +229,7 @@ Accessing the aliasing property is similar to accessing a regular property. In
 addition, the optional \c default keyword indicates that the aliasing property
 is a \l{Default Properties}{default property}.
 
+<<<<<<< HEAD
 \snippet doc/src/snippets/declarative/Button.qml property alias
 When importing the component as a \c Button, the \c buttonlabel is directly
 accessible through the \c label property.
