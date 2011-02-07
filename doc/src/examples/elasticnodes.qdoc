@@ -77,12 +77,12 @@
     function is called to calculate the forces that push and pull on this node
     and its neighbors.
 
-   The \c Node class also reimplements
-   \l{QGraphicsItem::itemChange()}{itemChange()} to react to state changes (in
-   this case, position changes), and
-   \l{QGraphicsItem::mousePressEvent()}{mousePressEvent()} and
-   \l{QGraphicsItem::mouseReleaseEvent()}{mouseReleaseEvent()} to update the
-   item's visual appearance.
+    The \c Node class also reimplements
+    \l{QGraphicsItem::itemChange()}{itemChange()} to react to state changes (in
+    this case, position changes), and
+    \l{QGraphicsItem::mousePressEvent()}{mousePressEvent()} and
+    \l{QGraphicsItem::mouseReleaseEvent()}{mouseReleaseEvent()} to update the
+    item's visual appearance.
 
     We will start reviewing the \c Node implementation by looking at its
     constructor:
@@ -242,7 +242,7 @@
 
     The \c adjust() function repositions the edge, and the item also implements
     \l{QGraphicsItem::boundingRect()}{boundingRect()} and
-    \{QGraphicsItem::paint()}{paint()}.
+    \l{QGraphicsItem::paint()}{paint()}.
 
     We will now review its implementation.
 
