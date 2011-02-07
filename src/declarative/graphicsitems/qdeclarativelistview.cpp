@@ -936,6 +936,9 @@ void QDeclarativeListViewPrivate::createSection(FxListItem *listItem)
                 }
             }
             listItem->setPosition(pos);
+        } else {
+            QDeclarativeContext *context = QDeclarativeEngine::contextForObject(listItem->section)->parentContext();
+            context->setContextProperty(QLatin1String("section"), listItem->attached->m_section);
         }
     } else if (listItem->section) {
         qreal pos = listItem->position();
