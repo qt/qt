@@ -73,6 +73,7 @@ public:
     xcb_window_t window() const { return m_window; }
 
     void handleExposeEvent(xcb_expose_event_t *event);
+    void handleConfigureNotifyEvent(xcb_configure_notify_event_t *event);
     void handleButtonPressEvent(xcb_button_press_event_t *event);
     void handleButtonReleaseEvent(xcb_button_release_event_t *event);
     void handleMotionNotifyEvent(xcb_motion_notify_event_t *event);

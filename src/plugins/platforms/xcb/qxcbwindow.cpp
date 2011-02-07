@@ -61,6 +61,7 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
         XCB_NONE,
         // XCB_CW_EVENT_MASK
         XCB_EVENT_MASK_EXPOSURE
+        | XCB_EVENT_MASK_STRUCTURE_NOTIFY
         | XCB_EVENT_MASK_BUTTON_PRESS
         | XCB_EVENT_MASK_BUTTON_RELEASE
         | XCB_EVENT_MASK_BUTTON_MOTION
@@ -121,8 +122,17 @@ void QXcbWindow::setParent(const QPlatformWindow *)
 {
 }
 
-void QXcbWindow::setWindowTitle(const QString &)
+void QXcbWindow::setWindowTitle(const QString &title)
 {
+    QByteArray ba = title.toUtf8();
+    xcb_change_property (connection(),
+                         XCB_PROP_MODE_REPLACE,
+                         m_window,
+                         m_screen->connection()->atom(QXcbAtom::_NET_WM_NAME),
+                         m_screen->connection()->atom(QXcbAtom::UTF8_STRING),
+                         8,
+                         ba.length(),
+                         ba.constData());
 }
 
 void QXcbWindow::raise()
@@ -150,6 +160,19 @@ void QXcbWindow::handleExposeEvent(xcb_expose_event_t *event)
     QWindowSurface *surface = widget()->windowSurface();
     if (surface)
         surface->flush(widget(), widget()->geometry(), QPoint());
+}
+
+void QXcbWindow::handleConfigureNotifyEvent(xcb_configure_notify_event_t *event)
+{
+    int xpos = geometry().x();
+    int ypos = geometry().y();
+
+    if ((event->width == geometry().width() && event->height == geometry().height()) || event->x != 0 || event->y != 0) {
+        xpos = event->x;
+        ypos = event->y;
+    }
+
+    QWindowSystemInterface::handleGeometryChange(widget(), QRect(xpos, ypos, event->width, event->height));
 }
 
 static Qt::MouseButtons translateMouseButtons(int s)
