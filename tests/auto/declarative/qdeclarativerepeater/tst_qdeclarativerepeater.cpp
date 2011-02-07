@@ -593,12 +593,12 @@ void tst_QDeclarativeRepeater::modelChanged()
 
     repeater->setModel(4);
     QCOMPARE(repeater->count(), 4);
-    QCOMPARE(repeater->property("itemsCount"), 4);
+    QCOMPARE(repeater->property("itemsCount").toInt(), 4);
     QCOMPARE(repeater->property("itemsFound").toList().count(), 4);
 
     repeater->setModel(10);
     QCOMPARE(repeater->count(), 10);
-    QCOMPARE(repeater->property("itemsCount"), 10);
+    QCOMPARE(repeater->property("itemsCount").toInt(), 10);
     QCOMPARE(repeater->property("itemsFound").toList().count(), 10);
 
     delete rootObject;
