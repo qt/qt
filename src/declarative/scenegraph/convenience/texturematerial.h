@@ -78,7 +78,7 @@ protected:
     bool m_clamp_to_edge;
 };
 
-class TextureMaterialShader : public AbstractMaterialShader
+class Q_DECLARATIVE_EXPORT TextureMaterialShader : public AbstractMaterialShader
 {
 public:
     virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
