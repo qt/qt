@@ -69,6 +69,7 @@ QMacSwipeGestureRecognizer::recognize(QGesture *gesture, QObject *obj, QEvent *e
             case QNativeGestureEvent::Swipe: {
                 QSwipeGesture *g = static_cast<QSwipeGesture *>(gesture);
                 g->setSwipeAngle(ev->angle);
+                g->setHotSpot(ev->position);
                 return QGestureRecognizer::FinishGesture | QGestureRecognizer::ConsumeEventHint;
                 break; }
             default:
@@ -110,6 +111,7 @@ QMacPinchGestureRecognizer::recognize(QGesture *gesture, QObject *obj, QEvent *e
             g->setCenterPoint(g->startCenterPoint());
             g->setChangeFlags(QPinchGesture::CenterPointChanged);
             g->setTotalChangeFlags(g->totalChangeFlags() | g->changeFlags());
+            g->setHotSpot(ev->position);
             return QGestureRecognizer::MayBeGesture | QGestureRecognizer::ConsumeEventHint;
         case QNativeGestureEvent::Rotate: {
             g->setLastScaleFactor(g->scaleFactor());
@@ -117,6 +119,7 @@ QMacPinchGestureRecognizer::recognize(QGesture *gesture, QObject *obj, QEvent *e
             g->setRotationAngle(g->rotationAngle() + ev->percentage);
             g->setChangeFlags(QPinchGesture::RotationAngleChanged);
             g->setTotalChangeFlags(g->totalChangeFlags() | g->changeFlags());
+            g->setHotSpot(ev->position);
             return QGestureRecognizer::TriggerGesture | QGestureRecognizer::ConsumeEventHint;
         }
         case QNativeGestureEvent::Zoom:
@@ -125,6 +128,7 @@ QMacPinchGestureRecognizer::recognize(QGesture *gesture, QObject *obj, QEvent *e
             g->setScaleFactor(g->scaleFactor() * (1 + ev->percentage));
             g->setChangeFlags(QPinchGesture::ScaleFactorChanged);
             g->setTotalChangeFlags(g->totalChangeFlags() | g->changeFlags());
+            g->setHotSpot(ev->position);
             return QGestureRecognizer::TriggerGesture | QGestureRecognizer::ConsumeEventHint;
         case QNativeGestureEvent::GestureEnd:
             return QGestureRecognizer::FinishGesture | QGestureRecognizer::ConsumeEventHint;
@@ -221,6 +225,7 @@ QMacPanGestureRecognizer::recognize(QGesture *gesture, QObject *target, QEvent *
                 const QPointF posOffset = p - _startPos;
                 g->setLastOffset(g->offset());
                 g->setOffset(QPointF(posOffset.x(), posOffset.y()));
+                g->setHotSpot(_startPos);
                 return QGestureRecognizer::TriggerGesture;
             }
         } else if (_panTimer.isActive()) {
@@ -239,6 +244,7 @@ QMacPanGestureRecognizer::recognize(QGesture *gesture, QObject *target, QEvent *
                 break;
             // Begin new pan session!
             _startPos = QCursor::pos();
+            g->setHotSpot(_startPos);
             return QGestureRecognizer::TriggerGesture | QGestureRecognizer::ConsumeEventHint;
         }
         break; }

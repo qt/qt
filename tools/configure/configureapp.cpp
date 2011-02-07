@@ -437,6 +437,7 @@ void Configure::parseCmdLine()
 {
     int argCount = configCmdLine.size();
     int i = 0;
+    const QStringList imageFormats = QStringList() << "gif" << "png" << "mng" << "jpeg" << "tiff";
 
 #if !defined(EVAL)
     if (argCount < 1) // skip rest if no arguments
@@ -829,6 +830,17 @@ void Configure::parseCmdLine()
             dictionary[ "SQL_IBASE" ] = "plugin";
         else if (configCmdLine.at(i) == "-no-sql-ibase")
             dictionary[ "SQL_IBASE" ] = "no";
+
+        // Image formats --------------------------------------------
+        else if (configCmdLine.at(i).startsWith("-qt-imageformat-") &&
+                 imageFormats.contains(configCmdLine.at(i).section('-', 3)))
+            dictionary[ configCmdLine.at(i).section('-', 3).toUpper() ] = "yes";
+        else if (configCmdLine.at(i).startsWith("-plugin-imageformat-") &&
+                 imageFormats.contains(configCmdLine.at(i).section('-', 3)))
+            dictionary[ configCmdLine.at(i).section('-', 3).toUpper() ] = "plugin";
+        else if (configCmdLine.at(i).startsWith("-no-imageformat-") &&
+                 imageFormats.contains(configCmdLine.at(i).section('-', 3)))
+            dictionary[ configCmdLine.at(i).section('-', 3).toUpper() ] = "no";
 #endif
         // IDE project generation -----------------------------------
         else if (configCmdLine.at(i) == "-no-dsp")
