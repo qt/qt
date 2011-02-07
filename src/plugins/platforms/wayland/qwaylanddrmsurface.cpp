@@ -77,9 +77,9 @@ QWaylandDrmBuffer::QWaylandDrmBuffer(QWaylandDisplay *display,
 	break;
     }
 
-    mPixmap = wl_egl_native_pixmap_create(display->nativeDisplay(),
-					  size.width(), size.height(),
-					  visual, 0);
+    mPixmap = wl_egl_pixmap_create(display->nativeDisplay(),
+				   size.width(), size.height(),
+				   visual, 0);
 
     mImage = eglCreateImageKHR(display->eglDisplay(),
 			       NULL, EGL_NATIVE_PIXMAP_KHR,
@@ -90,15 +90,14 @@ QWaylandDrmBuffer::QWaylandDrmBuffer(QWaylandDisplay *display,
     glBindTexture(GL_TEXTURE_2D, mTexture);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, mImage);
 
-    mBuffer = wl_egl_native_pixmap_create_buffer(display->nativeDisplay(),
-						 mPixmap);
+    mBuffer = wl_egl_pixmap_create_buffer(display->nativeDisplay(), mPixmap);
 }
 
 QWaylandDrmBuffer::~QWaylandDrmBuffer(void)
 {
     glDeleteTextures(1, &mTexture);
     eglDestroyImageKHR(mDisplay->eglDisplay(), mImage);
-    wl_egl_native_pixmap_destroy(mPixmap);
+    wl_egl_pixmap_destroy(mPixmap);
     wl_buffer_destroy(mBuffer);
 }
 

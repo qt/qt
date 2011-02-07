@@ -184,7 +184,7 @@ QWaylandDisplay::QWaylandDisplay(void)
     wl_display_add_global_listener(mDisplay,
                                    QWaylandDisplay::displayHandleGlobal, this);
 
-    mNativeEglDisplay = wl_egl_native_display_create(mDisplay);
+    mNativeEglDisplay = wl_egl_display_create(mDisplay);
 
     mEglDisplay = eglGetDisplay(mNativeEglDisplay);
     if (mEglDisplay == NULL) {
