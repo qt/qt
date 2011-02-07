@@ -38,6 +38,8 @@
 #include <QtCore/qobjectdefs.h>
 #include "qscripttools_p.h"
 
+#include <v8.h>
+
 QT_BEGIN_NAMESPACE
 
 class QScriptEnginePrivate;
@@ -48,19 +50,39 @@ class QScriptEngineAgentPrivate
 {
     Q_DECLARE_PUBLIC(QScriptEngineAgent)
 public:
+    class UnloadData
+            : public QScriptLinkedNode
+    {
+    public:
+        inline UnloadData(QScriptEnginePrivate *engine, int64_t id);
+        inline ~UnloadData();
+
+        inline int64_t id() const;
+        inline QScriptEnginePrivate *engine() const;
+
+        static void UnloadHandler(v8::Persistent<v8::Value> object, void *dataPtr);
+    private:
+        QScriptEnginePrivate *m_engine;
+        const int64_t m_scriptId;
+    };
+
     inline static QScriptEngineAgent* get(QScriptEngineAgentPrivate *p);
     inline static QScriptEngineAgentPrivate* get(QScriptEngineAgent *p);
 
     inline QScriptEngineAgentPrivate(QScriptEngineAgent *q, QScriptEnginePrivate *engine);
     inline virtual ~QScriptEngineAgentPrivate();
 
-    inline QScriptEngineAgent *userCallback();
+    inline void scriptLoad(v8::Handle<v8::Script> script, const QString &program,
+                            const QString &fileName, int baseLineNumber);
+    inline void scriptUnload(int64_t id);
 
     inline void attachTo(QScriptEnginePrivate *engine);
     inline QScriptEnginePrivate *engine() const;
 
     inline void kill();
 private:
+    inline QScriptEngineAgent *userCallback();
+
     QScriptEnginePrivate *m_engine;
     QScriptEngineAgent *q_ptr;
 };

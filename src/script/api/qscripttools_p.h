@@ -61,10 +61,15 @@ protected:
 
     ~QScriptLinkedNode()
     {
-        Q_ASSERT_X(!m_next && !m_prev, Q_FUNC_INFO, "Destorying QScriptLinkedNode instance that still is in a container");
+        Q_ASSERT_X(!isUsed(), Q_FUNC_INFO, "Destorying QScriptLinkedNode instance that still is in a container");
     }
 
 private:
+    bool isUsed() const
+    {
+        return m_next || m_prev;
+    }
+
 #if defined(Q_NO_TEMPLATE_FRIENDS)
 public:
 #else
@@ -153,6 +158,7 @@ public:
     template<class Functor>
     void forEach(Functor fun)
     {
+        //dump(Q_FUNC_INFO);
         QScriptLinkedNode *i = m_first;
         QScriptLinkedNode *tmp;
         while (i) {
@@ -169,6 +175,15 @@ public:
     void clear()
     {
         m_first = 0;
+    }
+
+    /*!
+      \internal
+      Returns true if this container is empty; false otherwise.
+    */
+    bool isEmpty() const
+    {
+        return !m_first;
     }
 
 //    void dump(const char* msg, T* obj = 0) const

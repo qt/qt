@@ -728,6 +728,8 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
 {
     m_isolate->Enter();
 
+    Q_ASSERT_X(!m_currentAgent && m_agents.isEmpty(), Q_FUNC_INFO, "Destruction of QScriptEnginePrivate is not safe if an agent is active");
+    invalidateAllScripts();
     invalidateAllValues();
     invalidateAllString();
 
@@ -750,7 +752,7 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     m_isolate->Exit();
     m_isolate->Dispose();
     m_state = Destroyed;
-    invalidateAllAgents();
+
     deallocateAdditionalResources();
 }
 
@@ -917,6 +919,11 @@ QScriptEngine::QScriptEngine(QObject *parent)
 */
 QScriptEngine::~QScriptEngine()
 {
+    Q_D(QScriptEngine);
+    QScriptIsolate api(d);
+    // We need to delete all Agents here as they have virtual destructor which can use public engine
+    // pointer.
+    d->invalidateAllAgents();
 }
 
 /*!

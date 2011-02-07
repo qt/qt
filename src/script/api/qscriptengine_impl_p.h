@@ -117,6 +117,9 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(const QSt
         setException(error);
         return new QScriptValuePrivate(this, error);
     }
+    if (m_currentAgent)
+        m_currentAgent->scriptLoad(script, program, fileName, lineNumber);
+
     return evaluate(script, tryCatch);
 }
 
@@ -371,6 +374,11 @@ public:
     {
         delete data;
     }
+
+    void operator () (QScriptEngineAgentPrivate::UnloadData *data) const
+    {
+        delete data;
+    }
 };
 
 inline void QScriptEnginePrivate::deallocateAdditionalResources()
@@ -422,6 +430,16 @@ inline void QScriptEnginePrivate::unregisterAgent(QScriptEngineAgentPrivate *dat
         m_currentAgent = 0;
 }
 
+inline void QScriptEnginePrivate::registerScript(QScriptEngineAgentPrivate::UnloadData *data)
+{
+    m_scripts.insert(data);
+}
+
+inline void QScriptEnginePrivate::unregisterScript(QScriptEngineAgentPrivate::UnloadData *data)
+{
+    m_scripts.remove(data);
+}
+
 inline void QScriptEnginePrivate::invalidateAllValues()
 {
     QtScriptBagCleaner invalidator;
@@ -446,7 +464,16 @@ inline void QScriptEnginePrivate::invalidateAllScriptable()
 inline void QScriptEnginePrivate::invalidateAllAgents()
 {
     QtScriptBagCleaner killer;
-    m_agents.forEach(killer);
+    while (!m_agents.isEmpty()) {
+        // action of deleting agents potentially can add new agents.
+        m_agents.forEach(killer);
+    }
+}
+
+inline void QScriptEnginePrivate::invalidateAllScripts()
+{
+    QtScriptBagCleaner deleter;
+    m_scripts.forEach(deleter);
 }
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newQObject(QScriptValuePrivate *scriptObject,

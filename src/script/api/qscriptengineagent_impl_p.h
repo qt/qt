@@ -39,6 +39,7 @@
 #include "qscriptengineagent.h"
 #include "qscriptengineagent_p.h"
 #include "qscriptengine_p.h"
+#include "qscriptqobject_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -64,6 +65,47 @@ inline QScriptEngineAgentPrivate::QScriptEngineAgentPrivate(QScriptEngineAgent *
 inline QScriptEngineAgentPrivate::~QScriptEngineAgentPrivate()
 {
     engine()->unregisterAgent(this);
+}
+
+inline QScriptEngineAgentPrivate::UnloadData::UnloadData(QScriptEnginePrivate *engine, int64_t id)
+    : m_engine(engine)
+    , m_scriptId(id)
+{
+    Q_ASSERT(engine);
+    engine->registerScript(this);
+}
+
+inline QScriptEngineAgentPrivate::UnloadData::~UnloadData()
+{
+    QScriptEngineAgentPrivate* agent = engine()->agent();
+    engine()->unregisterScript(this);
+    if (agent)
+        agent->scriptUnload(m_scriptId);
+}
+
+inline QScriptEnginePrivate *QScriptEngineAgentPrivate::UnloadData::engine() const
+{
+    return m_engine;
+}
+
+inline int64_t QScriptEngineAgentPrivate::UnloadData::id() const
+{
+    return m_scriptId;
+}
+
+inline void QScriptEngineAgentPrivate::scriptLoad(v8::Handle<v8::Script> script, const QString &program,
+                        const QString &fileName, int baseLineNumber)
+{
+    UnloadData *data = new UnloadData(engine(), script->Id()->IntegerValue());
+    v8::Persistent<v8::String> p = v8::Persistent<v8::String>::New(v8::String::New("QScriptEngineAgentPrivate_data_"));
+    script->SetData(p);
+    p.MakeWeak(data, UnloadData::UnloadHandler);
+    userCallback()->scriptLoad(data->id(), program, fileName, baseLineNumber);
+}
+
+inline void QScriptEngineAgentPrivate::scriptUnload(int64_t id)
+{
+    userCallback()->scriptUnload(id);
 }
 
 inline QScriptEngineAgent *QScriptEngineAgentPrivate::userCallback()

@@ -39,6 +39,7 @@
 #include "qscriptvalue.h"
 #include "qscriptprogram_p.h"
 #include "qscripttools_p.h"
+#include "qscriptengineagent_p.h"
 #include <v8.h>
 
 Q_DECLARE_METATYPE(QScriptValue)
@@ -221,6 +222,10 @@ public:
     inline void unregisterAgent(QScriptEngineAgentPrivate *data);
     inline void invalidateAllAgents();
 
+    inline void registerScript(QScriptEngineAgentPrivate::UnloadData *data);
+    inline void unregisterScript(QScriptEngineAgentPrivate::UnloadData *data);
+    inline void invalidateAllScripts();
+
     v8::Persistent<v8::FunctionTemplate> declarativeClassTemplate;
     v8::Persistent<v8::FunctionTemplate> scriptClassTemplate;
     v8::Persistent<v8::FunctionTemplate> metaMethodTemplate;
@@ -279,6 +284,7 @@ private:
     QScriptBagContainer<QScriptStringPrivate> m_strings;
     QScriptBagContainer<QScriptablePrivate> m_scriptable;
     QScriptBagContainer<QScriptEngineAgentPrivate> m_agents;
+    QScriptBagContainer<QScriptEngineAgentPrivate::UnloadData> m_scripts;
 
     QScriptEngineAgentPrivate *m_currentAgent;
 };

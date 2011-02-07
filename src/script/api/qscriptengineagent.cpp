@@ -369,4 +369,18 @@ QScriptEngine *QScriptEngineAgent::engine() const
     return QScriptEnginePrivate::get(d->engine());
 }
 
+/*!
+    \internal
+    This function is called when v8:Script object is garbage collected.
+*/
+void QScriptEngineAgentPrivate::UnloadData::UnloadHandler(v8::Persistent<v8::Value> object, void *dataPtr)
+{
+    Q_ASSERT(dataPtr);
+    QScriptEngineAgentPrivate::UnloadData *data = static_cast<QScriptEngineAgentPrivate::UnloadData*>(dataPtr);
+    // data will call all callbacks if needed
+    delete data;
+    object.Dispose();
+}
+
+
 QT_END_NAMESPACE
