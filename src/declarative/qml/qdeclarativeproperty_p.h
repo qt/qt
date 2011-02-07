@@ -65,23 +65,15 @@ QT_BEGIN_NAMESPACE
 class QDeclarativeContext;
 class QDeclarativeEnginePrivate;
 class QDeclarativeExpression;
-class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativePropertyPrivate
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativePropertyPrivate : public QDeclarativeRefCount
 {
 public:
     enum WriteFlag { BypassInterceptor = 0x01, DontRemoveBinding = 0x02, RemoveBindingOnAliasWrite = 0x04 };
     Q_DECLARE_FLAGS(WriteFlags, WriteFlag)
 
     QDeclarativePropertyPrivate()
-        : q(0), context(0), engine(0), object(0), isNameCached(false) {}
-          
+        : context(0), engine(0), object(0), isNameCached(false) {}
 
-    QDeclarativePropertyPrivate(const QDeclarativePropertyPrivate &other)
-        : q(0), context(other.context), engine(other.engine), object(other.object), 
-          isNameCached(other.isNameCached),
-          core(other.core), nameCache(other.nameCache),
-          valueType(other.valueType) {}
-
-    QDeclarativeProperty *q;
     QDeclarativeContextData *context;
     QDeclarativeEngine *engine;
     QDeclarativeGuard<QObject> object;
@@ -98,6 +90,7 @@ public:
 
     bool isValueType() const;
     int propertyType() const;
+    QDeclarativeProperty::Type type() const;
     QDeclarativeProperty::PropertyTypeCategory propertyTypeCategory() const;
 
     QVariant readValueProperty();
@@ -119,7 +112,12 @@ public:
     static QByteArray saveValueType(const QMetaObject *, int, 
                                     const QMetaObject *, int);
     static QByteArray saveProperty(const QMetaObject *, int);
+
     static QDeclarativeProperty restore(const QByteArray &, QObject *, QDeclarativeContextData *);
+    static QDeclarativeProperty restore(const QDeclarativePropertyCache::Data &,
+                                        const QDeclarativePropertyCache::ValueTypeData &,
+                                        QObject *,
+                                        QDeclarativeContextData *);
 
     static bool equal(const QMetaObject *, const QMetaObject *);
     static bool canConvert(const QMetaObject *from, const QMetaObject *to);

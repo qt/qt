@@ -148,6 +148,7 @@ class Config
 #define CONFIG_OUTPUTENCODING           "outputencoding"
 #define CONFIG_OUTPUTLANGUAGE           "outputlanguage"
 #define CONFIG_OUTPUTFORMATS            "outputformats"
+#define CONFIG_OUTPUTPREFIXES           "outputprefixes"
 #define CONFIG_PROJECT                  "project"
 #define CONFIG_QHP                      "qhp"
 #define CONFIG_QUOTINGINFORMATION       "quotinginformation"

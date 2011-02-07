@@ -351,7 +351,7 @@ static QScriptValue qmlsqldatabase_read_transaction(QScriptContext *context, QSc
 }
 
 /*
-    Currently documented in doc/src/declarastive/globalobject.qdoc
+    Currently documented in doc/src/declarative/globalobject.qdoc
 */
 static QScriptValue qmlsqldatabase_open_sync(QScriptContext *context, QScriptEngine *engine)
 {
