@@ -157,7 +157,7 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
 
             JSC::Instruction *returnPC = rewindContext->returnPC();
             JSC::CodeBlock *codeBlock = frame->codeBlock();
-            if (returnPC && codeBlock) {
+            if (returnPC && codeBlock && QScriptEnginePrivate::hasValidCodeBlockRegister(frame)) {
 #if ENABLE(JIT)
                 unsigned bytecodeOffset = codeBlock->getBytecodeIndex(frame, JSC::ReturnAddressPtr(returnPC));
 #else
@@ -171,7 +171,7 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
 
     // Get the filename and the scriptId:
     JSC::CodeBlock *codeBlock = frame->codeBlock();
-    if (codeBlock) {
+    if (codeBlock && QScriptEnginePrivate::hasValidCodeBlockRegister(frame)) {
            JSC::SourceProvider *source = codeBlock->source();
            scriptId = source->asID();
            fileName = source->url();
