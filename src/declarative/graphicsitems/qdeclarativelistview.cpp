@@ -413,8 +413,10 @@ public:
             }
         }
         if ((header && header->item == item) || (footer && footer->item == item)) {
-            updateHeader();
-            updateFooter();
+            if (header)
+                updateHeader();
+            if (footer)
+                updateFooter();
         }
         if (currentItem && currentItem->item == item)
             updateHighlight();
