@@ -164,26 +164,65 @@ static Qt::MouseButtons translateMouseButtons(int s)
     return ret;
 }
 
+static Qt::MouseButton translateMouseButton(xcb_button_t s)
+{
+    switch (s) {
+    case 1:
+        return Qt::LeftButton;
+    case 2:
+        return Qt::MidButton;
+    case 3:
+        return Qt::RightButton;
+    default:
+        return Qt::NoButton;
+    }
+}
+
 void QXcbWindow::handleButtonPressEvent(xcb_button_press_event_t *event)
 {
-    handleMouseEvent(event->detail, event->state, event->time, QPoint(event->event_x, event->event_y), QPoint(event->root_x, event->root_y));
+    QPoint local(event->event_x, event->event_y);
+    QPoint global(event->root_x, event->root_y);
+
+    Qt::KeyboardModifiers modifiers = Qt::NoModifier;
+
+    if (event->detail >= 4 && event->detail <= 7) {
+        //logic borrowed from qapplication_x11.cpp
+        int delta = 120 * ((event->detail == 4 || event->detail == 6) ? 1 : -1);
+        bool hor = (((event->detail == 4 || event->detail == 5)
+                     && (modifiers & Qt::AltModifier))
+                    || (event->detail == 6 || event->detail == 7));
+
+        QWindowSystemInterface::handleWheelEvent(widget(), event->time,
+                                                 local, global, delta, hor ? Qt::Horizontal : Qt::Vertical);
+        return;
+    }
+
+    handleMouseEvent(event->detail, event->state, event->time, local, global);
 }
 
 void QXcbWindow::handleButtonReleaseEvent(xcb_button_release_event_t *event)
 {
-    handleMouseEvent(event->detail, event->state, event->time, QPoint(event->event_x, event->event_y), QPoint(event->root_x, event->root_y));
+    QPoint local(event->event_x, event->event_y);
+    QPoint global(event->root_x, event->root_y);
+
+    handleMouseEvent(event->detail, event->state, event->time, local, global);
+}
+
+void QXcbWindow::handleMotionNotifyEvent(xcb_motion_notify_event_t *event)
+{
+    QPoint local(event->event_x, event->event_y);
+    QPoint global(event->root_x, event->root_y);
+
+    handleMouseEvent(event->detail, event->state, event->time, local, global);
 }
 
 void QXcbWindow::handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_timestamp_t time, const QPoint &local, const QPoint &global)
 {
     Qt::MouseButtons buttons = translateMouseButtons(state);
-    Qt::MouseButtons button = translateMouseButtons(detail);
+    Qt::MouseButton button = translateMouseButton(detail);
+
     buttons ^= button; // X event uses state *before*, Qt uses state *after*
 
     QWindowSystemInterface::handleMouseEvent(widget(), time, local, global, buttons);
-}
-
-void QXcbWindow::handleMotionNotifyEvent(xcb_motion_notify_event_t *event)
-{
 }
 
