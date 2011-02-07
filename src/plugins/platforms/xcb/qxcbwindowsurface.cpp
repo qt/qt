@@ -99,8 +99,17 @@ void QXcbWindowSurface::resize(const QSize &size)
     m_image = QImage(size, QImage::Format_RGB32);
 }
 
+extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
+
 bool QXcbWindowSurface::scroll(const QRegion &area, int dx, int dy)
 {
-    return false;
+    if (m_image.isNull())
+        return false;
+
+    const QVector<QRect> rects = area.rects();
+    for (int i = 0; i < rects.size(); ++i)
+        qt_scrollRectInImage(m_image, rects.at(i), QPoint(dx, dy));
+
+    return true;
 }
 
