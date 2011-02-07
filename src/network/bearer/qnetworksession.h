@@ -139,14 +139,14 @@ private:
     friend class QNetworkSessionPrivate;
     };
 
-Q_DECLARE_METATYPE(QNetworkSession::State);
-Q_DECLARE_METATYPE(QNetworkSession::SessionError);
-
 #ifndef QT_MOBILITY_BEARER
 QT_END_NAMESPACE
 #else
 QTM_END_NAMESPACE
 #endif
+
+Q_DECLARE_METATYPE(QNetworkSession::State);
+Q_DECLARE_METATYPE(QNetworkSession::SessionError);
 
 QT_END_HEADER
 
