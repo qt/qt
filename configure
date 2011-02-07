@@ -6996,6 +6996,7 @@ fi
 if [ "$PLATFORM_QPA" = "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG qpa"
     QT_CONFIG="$QT_CONFIG qpa"
+    QTCONFIG_CONFIG="$QTCONFIG_CONFIG qpa"
     rm -f "src/.moc/$QMAKE_OUTDIR/allmoc.cpp" # needs remaking if config changes
 fi
 
