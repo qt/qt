@@ -516,7 +516,10 @@ QDeclarativeEnginePrivate::~QDeclarativeEnginePrivate()
         (*iter)->release();
     for(QHash<QPair<QDeclarativeType *, int>, QDeclarativePropertyCache *>::Iterator iter = typePropertyCache.begin(); iter != typePropertyCache.end(); ++iter)
         (*iter)->release();
-
+    for(QHash<QDeclarativeMetaType::ModuleApi, QDeclarativeMetaType::ModuleApiInstance *>::Iterator iter = moduleApiInstances.begin(); iter != moduleApiInstances.end(); ++iter) {
+        delete (*iter)->qobjectApi;
+        delete *iter;
+    }
 }
 
 void QDeclarativeEnginePrivate::clear(SimpleList<QDeclarativeAbstractBinding> &bvs)
@@ -649,6 +652,22 @@ QDeclarativeEngine::~QDeclarativeEngine()
     Q_D(QDeclarativeEngine);
     if (d->isDebugging)
         QDeclarativeEngineDebugServer::instance()->remEngine(this);
+
+    // if we are the parent of any of the qobject module api instances,
+    // we need to remove them from our internal list, in order to prevent
+    // a segfault in engine private dtor.
+    QList<QDeclarativeMetaType::ModuleApi> keys = d->moduleApiInstances.keys();
+    QObject *currQObjectApi = 0;
+    QDeclarativeMetaType::ModuleApiInstance *currInstance = 0;
+    foreach (const QDeclarativeMetaType::ModuleApi &key, keys) {
+        currInstance = d->moduleApiInstances.value(key);
+        currQObjectApi = currInstance->qobjectApi;
+        if (this->children().contains(currQObjectApi)) {
+            delete currQObjectApi;
+            delete currInstance;
+            d->moduleApiInstances.remove(key);
+        }
+    }
 }
 
 /*! \fn void QDeclarativeEngine::quit()

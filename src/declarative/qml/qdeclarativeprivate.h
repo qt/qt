@@ -74,6 +74,9 @@ public:
 };
 
 
+class QScriptValue;
+class QScriptEngine;
+class QDeclarativeEngine;
 class QDeclarativeCustomParser;
 namespace QDeclarativePrivate
 {
@@ -233,10 +236,22 @@ namespace QDeclarativePrivate
         AutoParentFunction function;
     };
 
+    struct RegisterModuleApi {
+        int version;
+
+        const char *uri;
+        int versionMajor;
+        int versionMinor;
+
+        QScriptValue (*scriptApi)(QDeclarativeEngine *, QScriptEngine *);
+        QObject *(*qobjectApi)(QDeclarativeEngine *, QScriptEngine *);
+    };
+
     enum RegistrationType {
         TypeRegistration       = 0, 
         InterfaceRegistration  = 1,
-        AutoParentRegistration = 2
+        AutoParentRegistration = 2,
+        ModuleApiRegistration  = 3,
     };
 
     int Q_DECLARATIVE_EXPORT qmlregister(RegistrationType, void *);

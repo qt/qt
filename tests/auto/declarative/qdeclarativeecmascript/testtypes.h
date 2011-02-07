@@ -908,6 +908,29 @@ QML_DECLARE_TYPE(MyRevisionedClass)
 QML_DECLARE_TYPE(MyRevisionedSubclass)
 Q_DECLARE_METATYPE(MyQmlObject::MyType)
 
+class testQObjectApi : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY (int qobjectTestProperty READ qobjectTestProperty NOTIFY qobjectTestPropertyChanged)
+
+public:
+    testQObjectApi(QObject* parent = 0)
+        : QObject(parent), m_testProperty(0)
+    {
+    }
+
+    ~testQObjectApi() {}
+
+    int qobjectTestProperty() const { return m_testProperty; }
+    void setQObjectTestProperty(int tp) { m_testProperty = tp; emit qobjectTestPropertyChanged(tp); }
+
+signals:
+    void qobjectTestPropertyChanged(int testProperty);
+
+private:
+    int m_testProperty;
+};
+
 void registerTypes();
 
 #endif // TESTTYPES_H

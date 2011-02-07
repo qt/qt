@@ -163,7 +163,7 @@ QUrl QDeclarativeImports::baseUrl() const
 
 static QDeclarativeTypeNameCache *
 cacheForNamespace(QDeclarativeEngine *engine, const QDeclarativeImportedNamespace &set, 
-                  QDeclarativeTypeNameCache *cache)
+                  QDeclarativeTypeNameCache *cache, bool importWasQualified)
 {
     if (!cache)
         cache = new QDeclarativeTypeNameCache(engine);
@@ -171,9 +171,26 @@ cacheForNamespace(QDeclarativeEngine *engine, const QDeclarativeImportedNamespac
     QList<QDeclarativeType *> types = QDeclarativeMetaType::qmlTypes();
 
     for (int ii = 0; ii < set.uris.count(); ++ii) {
-        QByteArray base = set.uris.at(ii).toUtf8() + '/';
+        QByteArray uri = set.uris.at(ii).toUtf8();
         int major = set.majversions.at(ii);
         int minor = set.minversions.at(ii);
+
+        if (importWasQualified) {
+            QDeclarativeMetaType::ModuleApi moduleApi = QDeclarativeMetaType::moduleApi(uri, major, minor);
+            if (moduleApi.script || moduleApi.qobject) {
+                QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
+                QDeclarativeMetaType::ModuleApiInstance *a = ep->moduleApiInstances.value(moduleApi);
+                if (!a) {
+                    a = new QDeclarativeMetaType::ModuleApiInstance;
+                    a->scriptCallback = moduleApi.script;
+                    a->qobjectCallback = moduleApi.qobject;
+                    ep->moduleApiInstances.insert(moduleApi, a);
+                }
+                cache->setModuleApi(a);
+            }
+        }
+
+        QByteArray base = uri + '/';
 
         foreach (QDeclarativeType *type, types) {
             if (type->qmlTypeName().startsWith(base) &&
@@ -200,15 +217,15 @@ void QDeclarativeImports::populateCache(QDeclarativeTypeNameCache *cache, QDecla
         QDeclarativeTypeNameCache::Data *d = cache->data(iter.key());
         if (d) {
             if (!d->typeNamespace)
-                cacheForNamespace(engine, *(*iter), d->typeNamespace);
+                cacheForNamespace(engine, *(*iter), d->typeNamespace, true);
         } else {
-            QDeclarativeTypeNameCache *nc = cacheForNamespace(engine, *(*iter), 0);
+            QDeclarativeTypeNameCache *nc = cacheForNamespace(engine, *(*iter), 0, true);
             cache->add(iter.key(), nc);
             nc->release();
         }
     }
 
-    cacheForNamespace(engine, set, cache);
+    cacheForNamespace(engine, set, cache, false);
 }
 
 /*!

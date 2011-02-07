@@ -88,6 +88,7 @@ QT_BEGIN_NAMESPACE
 
 struct QDeclarativeMetaTypeData
 {
+    QDeclarativeMetaTypeData();
     ~QDeclarativeMetaTypeData();
     QList<QDeclarativeType *> types;
     typedef QHash<int, QDeclarativeType *> Ids;
@@ -98,6 +99,14 @@ struct QDeclarativeMetaTypeData
     MetaObjects metaObjectToType;
     typedef QHash<int, QDeclarativeMetaType::StringConverter> StringConverters;
     StringConverters stringConverters;
+    struct ModuleApiList {
+        ModuleApiList() : sorted(true) {}
+        QList<QDeclarativeMetaType::ModuleApi> moduleApis;
+        bool sorted;
+    };
+    typedef QHash<QByteArray, ModuleApiList> ModuleApis;
+    ModuleApis moduleApis;
+    int moduleApiCount;
 
     struct ModuleInfo {
         ModuleInfo(int major, int minor)
@@ -118,6 +127,11 @@ struct QDeclarativeMetaTypeData
 };
 Q_GLOBAL_STATIC(QDeclarativeMetaTypeData, metaTypeData)
 Q_GLOBAL_STATIC(QReadWriteLock, metaTypeDataLock)
+
+QDeclarativeMetaTypeData::QDeclarativeMetaTypeData()
+: moduleApiCount(0)
+{
+}
 
 QDeclarativeMetaTypeData::~QDeclarativeMetaTypeData()
 {
@@ -664,6 +678,34 @@ int registerType(const QDeclarativePrivate::RegisterType &type)
     return index;
 }
 
+int registerModuleApi(const QDeclarativePrivate::RegisterModuleApi &api)
+{
+    QWriteLocker lock(metaTypeDataLock());
+
+    QDeclarativeMetaTypeData *data = metaTypeData();
+    QByteArray uri(api.uri);
+    QDeclarativeMetaType::ModuleApi import;
+    import.major = api.versionMajor;
+    import.minor = api.versionMinor;
+    import.script = api.scriptApi;
+    import.qobject = api.qobjectApi;
+
+    int index = data->moduleApiCount++;
+
+    QDeclarativeMetaTypeData::ModuleApis::Iterator iter = data->moduleApis.find(uri);
+    if (iter == data->moduleApis.end()) {
+        QDeclarativeMetaTypeData::ModuleApiList apis;
+        apis.moduleApis << import;
+        data->moduleApis.insert(uri, apis);
+    } else {
+        iter->moduleApis << import;
+        iter->sorted = false;
+    }
+
+    return index;
+}
+
+
 /*
 This method is "over generalized" to allow us to (potentially) register more types of things in
 the future without adding exported symbols.
@@ -676,13 +718,16 @@ int QDeclarativePrivate::qmlregister(RegistrationType type, void *data)
         return registerInterface(*reinterpret_cast<RegisterInterface *>(data));
     } else if (type == AutoParentRegistration) {
         return registerAutoParentFunction(*reinterpret_cast<RegisterAutoParent *>(data));
+    } else if (type == ModuleApiRegistration) {
+        return registerModuleApi(*reinterpret_cast<RegisterModuleApi *>(data));
     }
     return -1;
 }
 
 /*
-    Have any types been registered for \a module with at least versionMajor.versionMinor, and types
-    for \a module with at most versionMajor.versionMinor.
+    Returns true if any type or API has been registered for the given \a module with at least
+    versionMajor.versionMinor, or if types have been registered for \a module with at most
+    versionMajor.versionMinor.
 
     So if only 4.7 and 4.9 have been registered, 4.7,4.8, and 4.9 are valid, but not 4.6 nor 4.10.
 
@@ -691,13 +736,27 @@ int QDeclarativePrivate::qmlregister(RegistrationType type, void *data)
 bool QDeclarativeMetaType::isModule(const QByteArray &module, int versionMajor, int versionMinor)
 {
     QDeclarativeMetaTypeData *data = metaTypeData();
+
+    // first, check Types
     QDeclarativeMetaTypeData::ModuleInfoHash::Iterator it = data->modules.find(module);
-    return it != data->modules.end()
+    if (it != data->modules.end()
         && ((versionMajor<0 && versionMinor<0) ||
                 (((*it).vmajor_max > versionMajor ||
                     ((*it).vmajor_max == versionMajor && (*it).vminor_max >= versionMinor))
                 && ((*it).vmajor_min < versionMajor ||
-                    ((*it).vmajor_min == versionMajor && (*it).vminor_min <= versionMinor))));
+                    ((*it).vmajor_min == versionMajor && (*it).vminor_min <= versionMinor))))) {
+        return true;
+    }
+
+    // then, check ModuleApis
+    foreach (const QDeclarativeMetaType::ModuleApi &mApi, data->moduleApis.value(module).moduleApis) {
+        if ((versionMajor<0 && versionMinor<0)
+                || (mApi.major == versionMajor && mApi.minor == versionMinor)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 QList<QDeclarativePrivate::AutoParentFunction> QDeclarativeMetaType::parentFunctions()
@@ -705,6 +764,35 @@ QList<QDeclarativePrivate::AutoParentFunction> QDeclarativeMetaType::parentFunct
     QReadLocker lock(metaTypeDataLock());
     QDeclarativeMetaTypeData *data = metaTypeData();
     return data->parentFunctions;
+}
+
+static bool operator<(const QDeclarativeMetaType::ModuleApi &lhs, const QDeclarativeMetaType::ModuleApi &rhs)
+{
+    return lhs.major < rhs.major || (lhs.major == rhs.major && lhs.minor < rhs.minor);
+}
+
+QDeclarativeMetaType::ModuleApi
+QDeclarativeMetaType::moduleApi(const QByteArray &uri, int versionMajor, int versionMinor)
+{
+    QReadLocker lock(metaTypeDataLock());
+    QDeclarativeMetaTypeData *data = metaTypeData();
+
+    QDeclarativeMetaTypeData::ModuleApis::Iterator iter = data->moduleApis.find(uri);
+    if (iter == data->moduleApis.end())
+        return ModuleApi();
+
+    if (iter->sorted == false) {
+        qSort(iter->moduleApis.begin(), iter->moduleApis.end());
+        iter->sorted = true;
+    }
+
+    for (int ii = iter->moduleApis.count() - 1; ii >= 0; --ii) {
+        const ModuleApi &import = iter->moduleApis.at(ii);
+        if (import.major == versionMajor && import.minor <= versionMinor)
+            return import;
+    }
+
+    return ModuleApi();
 }
 
 QObject *QDeclarativeMetaType::toQObject(const QVariant &v, bool *ok)

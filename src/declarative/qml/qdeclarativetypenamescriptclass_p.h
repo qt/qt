@@ -83,6 +83,7 @@ private:
     QDeclarativeEngine *engine;
     QObject *object;
     QDeclarativeType *type;
+    QDeclarativeMetaType::ModuleApiInstance *api;
     quint32 enumValue;
 };
 

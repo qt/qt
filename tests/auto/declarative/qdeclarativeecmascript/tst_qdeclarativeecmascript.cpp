@@ -143,6 +143,7 @@ private slots:
     void numberAssignment();
     void propertySplicing();
     void signalWithUnknownTypes();
+    void moduleApi();
 
     void bug1();
     void bug2();
@@ -2359,6 +2360,37 @@ void tst_qdeclarativeecmascript::signalWithUnknownTypes()
 
 
     delete object;
+}
+
+void tst_qdeclarativeecmascript::moduleApi()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("moduleApi.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("existingUriTest").toInt(), 20);
+    QCOMPARE(object->property("scriptTest").toInt(), 13);
+    QCOMPARE(object->property("qobjectTest").toInt(), 20);
+    QCOMPARE(object->property("qobjectMinorVersionTest").toInt(), 20);
+    QCOMPARE(object->property("qobjectMajorVersionTest").toInt(), 20);
+    QCOMPARE(object->property("qobjectParentedTest").toInt(), 26);
+    delete object;
+
+    // test that caching of module apis works correcntly.
+    QDeclarativeComponent componentTwo(&engine, TEST_FILE("moduleApiCaching.qml"));
+    object = componentTwo.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("existingUriTest").toInt(), 20);
+    QCOMPARE(object->property("scriptTest").toInt(), 13);            // shouldn't have incremented.
+    QCOMPARE(object->property("qobjectParentedTest").toInt(), 26);   // shouldn't have incremented.
+    delete object;
+
+    QDeclarativeComponent failOne(&engine, TEST_FILE("moduleApiMajorVersionFail.qml"));
+    object = failOne.create();
+    QVERIFY(object == 0); // should have failed: invalid major version
+
+    QDeclarativeComponent failTwo(&engine, TEST_FILE("moduleApiMinorVersionFail.qml"));
+    object = failTwo.create();
+    QVERIFY(object == 0); // should have failed: invalid minor version
 }
 
 // Test that assigning a null object works 

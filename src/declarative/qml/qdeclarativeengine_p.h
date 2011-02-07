@@ -250,6 +250,8 @@ public:
 
     QDeclarativeValueTypeFactory valueTypes;
 
+    QHash<QDeclarativeMetaType::ModuleApi, QDeclarativeMetaType::ModuleApiInstance *> moduleApiInstances;
+
     QHash<const QMetaObject *, QDeclarativePropertyCache *> propertyCache;
     QHash<QPair<QDeclarativeType *, int>, QDeclarativePropertyCache *> typePropertyCache;
     inline QDeclarativePropertyCache *cache(QObject *obj);

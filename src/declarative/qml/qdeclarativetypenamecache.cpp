@@ -46,7 +46,7 @@
 QT_BEGIN_NAMESPACE
 
 QDeclarativeTypeNameCache::QDeclarativeTypeNameCache(QDeclarativeEngine *e)
-: QDeclarativeCleanup(e), engine(e)
+: QDeclarativeCleanup(e), engine(e), m_moduleApi(0)
 {
 }
 
@@ -60,6 +60,7 @@ void QDeclarativeTypeNameCache::clear()
     qDeleteAll(stringCache);
     stringCache.clear();
     identifierCache.clear();
+    m_moduleApi = 0;
     engine = 0;
 }
 
@@ -112,6 +113,11 @@ void QDeclarativeTypeNameCache::add(const QString &name, QDeclarativeTypeNameCac
 QDeclarativeTypeNameCache::Data *QDeclarativeTypeNameCache::data(const QString &id) const
 {
     return stringCache.value(id);
+}
+
+void QDeclarativeTypeNameCache::setModuleApi(QDeclarativeMetaType::ModuleApiInstance *api)
+{
+    m_moduleApi = api;
 }
 
 QT_END_NAMESPACE
