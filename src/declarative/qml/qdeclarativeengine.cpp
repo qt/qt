@@ -776,7 +776,7 @@ void QDeclarativeEngine::addImageProvider(const QString &providerId, QDeclarativ
 {
     Q_D(QDeclarativeEngine);
     QMutexLocker locker(&d->mutex);
-    d->imageProviders.insert(providerId, QSharedPointer<QDeclarativeImageProvider>(provider));
+    d->imageProviders.insert(providerId.toLower(), QSharedPointer<QDeclarativeImageProvider>(provider));
 }
 
 /*!

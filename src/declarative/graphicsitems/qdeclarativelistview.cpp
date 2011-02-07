@@ -413,8 +413,10 @@ public:
             }
         }
         if ((header && header->item == item) || (footer && footer->item == item)) {
-            updateHeader();
-            updateFooter();
+            if (header)
+                updateHeader();
+            if (footer)
+                updateFooter();
         }
         if (currentItem && currentItem->item == item)
             updateHighlight();
@@ -936,6 +938,9 @@ void QDeclarativeListViewPrivate::createSection(FxListItem *listItem)
                 }
             }
             listItem->setPosition(pos);
+        } else {
+            QDeclarativeContext *context = QDeclarativeEngine::contextForObject(listItem->section)->parentContext();
+            context->setContextProperty(QLatin1String("section"), listItem->attached->m_section);
         }
     } else if (listItem->section) {
         qreal pos = listItem->position();

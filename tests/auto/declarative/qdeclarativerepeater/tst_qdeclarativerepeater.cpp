@@ -74,6 +74,7 @@ private slots:
     void dataModel_changes();
     void itemModel();
     void resetModel();
+    void modelChanged();
     void properties();
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
@@ -534,7 +535,10 @@ void tst_QDeclarativeRepeater::resetModel()
     QVERIFY(container != 0);
 
     QCOMPARE(repeater->count(), dataA.count());
+    for (int i=0; i<repeater->count(); i++)
+        QCOMPARE(repeater->itemAt(i), container->childItems().at(i+1)); // +1 to skip first Text object
 
+    QSignalSpy modelChangedSpy(repeater, SIGNAL(modelChanged()));
     QSignalSpy countSpy(repeater, SIGNAL(countChanged()));
     QSignalSpy addedSpy(repeater, SIGNAL(itemAdded(int,QDeclarativeItem*)));
     QSignalSpy removedSpy(repeater, SIGNAL(itemRemoved(int,QDeclarativeItem*)));
@@ -547,6 +551,7 @@ void tst_QDeclarativeRepeater::resetModel()
     ctxt->setContextProperty("testData", dataB);
     QCOMPARE(repeater->count(), dataB.count());
 
+    QCOMPARE(modelChangedSpy.count(), 1);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(removedSpy.count(), dataA.count());
     QCOMPARE(addedSpy.count(), dataB.count());
@@ -554,6 +559,7 @@ void tst_QDeclarativeRepeater::resetModel()
         QCOMPARE(addedSpy.at(i).at(0).toInt(), i);
         QCOMPARE(addedSpy.at(i).at(1).value<QDeclarativeItem*>(), repeater->itemAt(i));
     }
+    modelChangedSpy.clear();
     countSpy.clear();
     removedSpy.clear();
     addedSpy.clear();
@@ -562,6 +568,7 @@ void tst_QDeclarativeRepeater::resetModel()
     repeater->setModel(dataA);
     QCOMPARE(repeater->count(), dataA.count());
 
+    QCOMPARE(modelChangedSpy.count(), 1);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(removedSpy.count(), dataB.count());
     QCOMPARE(addedSpy.count(), dataA.count());
@@ -569,6 +576,32 @@ void tst_QDeclarativeRepeater::resetModel()
         QCOMPARE(addedSpy.at(i).at(0).toInt(), i);
         QCOMPARE(addedSpy.at(i).at(1).value<QDeclarativeItem*>(), repeater->itemAt(i));
     }
+
+    delete canvas;
+}
+
+// QTBUG-17156
+void tst_QDeclarativeRepeater::modelChanged()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, TEST_FILE("/modelChanged.qml"));
+
+    QDeclarativeItem *rootObject = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(rootObject);
+    QDeclarativeRepeater *repeater = findItem<QDeclarativeRepeater>(rootObject, "repeater");
+    QVERIFY(repeater);
+
+    repeater->setModel(4);
+    QCOMPARE(repeater->count(), 4);
+    QCOMPARE(repeater->property("itemsCount").toInt(), 4);
+    QCOMPARE(repeater->property("itemsFound").toList().count(), 4);
+
+    repeater->setModel(10);
+    QCOMPARE(repeater->count(), 10);
+    QCOMPARE(repeater->property("itemsCount").toInt(), 10);
+    QCOMPARE(repeater->property("itemsFound").toList().count(), 10);
+
+    delete rootObject;
 }
 
 void tst_QDeclarativeRepeater::properties()

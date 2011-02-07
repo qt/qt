@@ -331,8 +331,10 @@ public:
                 }
             }
         } else if ((header && header->item == item) || (footer && footer->item == item)) {
-            updateHeader();
-            updateFooter();
+            if (header)
+                updateHeader();
+            if (footer)
+                updateFooter();
         }
     }
 
