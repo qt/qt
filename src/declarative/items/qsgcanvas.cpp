@@ -769,39 +769,6 @@ void QSGCanvas::showEvent(QShowEvent *e)
     d->initializeSceneGraph();
 }
 
-bool QSGCanvasPrivate::updateEffectiveOpacity(QSGItem *item)
-{
-    QSGItemPrivate *priv = QSGItemPrivate::get(item);
-    if (priv->parentItem && updateEffectiveOpacity(priv->parentItem))
-        return true;
-
-    if (priv->dirtyAttributes & QSGItemPrivate::OpacityValue) {
-        updateEffectiveOpacityRoot(item, priv->parentItem?QSGItemPrivate::get(priv->parentItem)->effectiveOpacity:1);
-        return true;
-    } else {
-        return false;
-    }
-}
-
-void QSGCanvasPrivate::updateEffectiveOpacityRoot(QSGItem *item, qreal parentOpacity)
-{
-    QSGItemPrivate *priv = QSGItemPrivate::get(item);
-    priv->dirtyAttributes &= ~QSGItemPrivate::OpacityValue;
-
-    qreal v = parentOpacity * priv->opacity;
-    if (qFuzzyCompare(v, priv->effectiveOpacity))
-        return;
-
-    priv->effectiveOpacity = v;
-    priv->dirtyAttributes |= QSGItemPrivate::EffectiveOpacity;
-
-    if (v != 0.)
-        priv->addToDirtyList();
-
-    for (int ii = 0; ii < priv->childItems.count(); ++ii)
-        updateEffectiveOpacityRoot(priv->childItems.at(ii), v);
-}
-
 void QSGCanvasPrivate::cleanupNodes()
 {
     for (int ii = 0; ii < cleanupNodeList.count(); ++ii)
@@ -816,28 +783,6 @@ void QSGCanvasPrivate::updateDirtyNodes()
 #endif
 
     cleanupNodes();
-
-    QSGItem *iter = dirtyItemList;
-    while (iter) {
-        QSGItemPrivate *priv = QSGItemPrivate::get(iter);
-
-        if (priv->dirtyAttributes & QSGItemPrivate::ParentChanged) {
-            priv->dirtyAttributes |= QSGItemPrivate::OpacityValue;
-        } else if (priv->dirtyAttributes & QSGItemPrivate::OpacityValue && 
-                   QSGItemPrivate::get(priv->parentItem)->effectiveOpacity == 0.) {
-            priv->dirtyAttributes &= ~QSGItemPrivate::OpacityValue;
-        }
-
-        iter = priv->nextDirtyItem;
-    }
-
-    iter = dirtyItemList;
-    while (iter) {
-        QSGItemPrivate *priv = QSGItemPrivate::get(iter);
-        if (priv->dirtyAttributes & QSGItemPrivate::OpacityValue) 
-            updateEffectiveOpacity(iter);
-        iter = priv->nextDirtyItem;
-    }
 
     QSGItem *updateList = dirtyItemList;
     dirtyItemList = 0;
@@ -946,10 +891,7 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
 
     if (dirty & QSGItemPrivate::ContentUpdateMask) {
 
-        itemPriv->itemNode()->setSubtreeEnabled(itemPriv->effectiveOpacity > 0);
-
         if (itemPriv->flags & QSGItem::ItemHasContents) {
-            updatePaintNodeData.opacity = itemPriv->effectiveOpacity; 
             itemPriv->paintNode = item->updatePaintNode(itemPriv->paintNode, &updatePaintNodeData);
 
             Q_ASSERT(itemPriv->paintNode == 0 || 
