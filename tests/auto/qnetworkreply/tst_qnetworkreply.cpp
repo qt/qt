@@ -5323,7 +5323,7 @@ void tst_QNetworkReply::qtbug13431replyThrottling()
     connect(&nam, SIGNAL(finished(QNetworkReply*)), &helper, SLOT(replyFinished(QNetworkReply*)));
 
     // Download a bigger file
-    QNetworkRequest netRequest(QUrl("http://qt-test-server/qtest/bigfile"));
+    QNetworkRequest netRequest(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile"));
     helper.m_reply = nam.get(netRequest);
     // Set the throttle
     helper.m_reply->setReadBufferSize(36000);
