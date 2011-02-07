@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -373,6 +373,8 @@ void tst_qdeclarativetextedit::alignments()
     QImage expect(expectfile);
 
     QCOMPARE(actual,expect);
+
+    delete canvas;
 }
 
 
@@ -652,6 +654,19 @@ void tst_qdeclarativetextedit::selection()
     QVERIFY(textEditObject->selectionEnd() == 0);
     QVERIFY(textEditObject->selectedText().isNull());
 
+    // Verify invalid positions are ignored.
+    textEditObject->setCursorPosition(-1);
+    QVERIFY(textEditObject->cursorPosition() == 0);
+    QVERIFY(textEditObject->selectionStart() == 0);
+    QVERIFY(textEditObject->selectionEnd() == 0);
+    QVERIFY(textEditObject->selectedText().isNull());
+
+    textEditObject->setCursorPosition(textEditObject->text().count()+1);
+    QVERIFY(textEditObject->cursorPosition() == 0);
+    QVERIFY(textEditObject->selectionStart() == 0);
+    QVERIFY(textEditObject->selectionEnd() == 0);
+    QVERIFY(textEditObject->selectedText().isNull());
+
     //Test selection
     for(int i=0; i<= testStr.size(); i++) {
         textEditObject->select(0,i);
@@ -732,6 +747,8 @@ void tst_qdeclarativetextedit::mouseSelection()
         QVERIFY(str.length() > 3); // don't reallly care *what* was selected (and it's too sensitive to platform)
     else
         QVERIFY(str.isEmpty());
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextedit::inputMethodHints()
@@ -746,6 +763,8 @@ void tst_qdeclarativetextedit::inputMethodHints()
     QVERIFY(textEditObject->inputMethodHints() & Qt::ImhNoPredictiveText);
     textEditObject->setInputMethodHints(Qt::ImhUppercaseOnly);
     QVERIFY(textEditObject->inputMethodHints() & Qt::ImhUppercaseOnly);
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextedit::cursorDelegate()
@@ -772,6 +791,8 @@ void tst_qdeclarativetextedit::cursorDelegate()
     //Test Delegate gets deleted
     textEditObject->setCursorDelegate(0);
     QVERIFY(!textEditObject->findChild<QDeclarativeItem*>("cursorInstance"));
+
+    delete view;
 }
 
 void tst_qdeclarativetextedit::delegateLoading_data()
@@ -854,6 +875,8 @@ void tst_qdeclarativetextedit::navigation()
     QVERIFY(input->hasActiveFocus() == false);
     simulateKey(canvas, Qt::Key_Left);
     QVERIFY(input->hasActiveFocus() == true);
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextedit::copyAndPaste() {
@@ -928,6 +951,8 @@ void tst_qdeclarativetextedit::readOnly()
     simulateKey(canvas, Qt::Key_Space);
     simulateKey(canvas, Qt::Key_Escape);
     QCOMPARE(edit->text(), initial);
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextedit::simulateKey(QDeclarativeView *view, int key)

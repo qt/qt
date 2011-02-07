@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -35,7 +35,7 @@ This page assumes that you are already familiar with the QML language.
 If you need an introduction to the language, please read \l {Introduction to the QML language}{the QML introduction} first.
 
 
-\section1 QML objects
+\section1 QML Objects
 
 Through our documentation and examples, QML objects are always structured in the following order:
 
@@ -58,7 +58,7 @@ For example, a hypothetical \e photo QML object would look like this:
 \snippet doc/src/snippets/declarative/codingconventions/photo.qml 0
 
 
-\section1 Grouped properties
+\section1 Grouped Properties
 
 If using multiple properties from a group of properties,
 we use the \e {group notation} rather than the \e {dot notation} to improve readability.
@@ -70,6 +70,18 @@ For example, this:
 can be written like this:
 
 \snippet doc/src/snippets/declarative/codingconventions/dotproperties.qml 1
+
+
+\section1 Private Properties
+
+QML and JavaScript do not enforce private properties like C++. There is a need
+to hide these private properties, for example, when the properties are part of
+the implementation. As a convention, private properties begin with two
+\e underscore characters. For example, \c __area, is a property that is
+accessible but is not meant for public use. Note that QML and JavaScript will
+grant the user access to these properties.
+
+\snippet doc/src/snippets/declarative/codingconventions/private.qml 0
 
 
 \section1 Lists
@@ -87,7 +99,7 @@ we will write this:
 \snippet doc/src/snippets/declarative/codingconventions/lists.qml 1
 
 
-\section1 JavaScript code
+\section1 JavaScript Code
 
 If the script is a single expression, we recommend writing it inline:
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -229,7 +229,7 @@ void IapMonitor::iapRemoved(const QString &iap_id)
 /******************************************************************************/
 
 QIcdEngine::QIcdEngine(QObject *parent)
-:   QBearerEngine(parent), iapMonitor(0), m_dbusInterface(0),
+:   QBearerEngine(parent), iapMonitor(0), m_dbusInterface(0), m_icdServiceWatcher(0),
     firstUpdate(true), m_scanGoingOn(false)
 {
 }
@@ -248,9 +248,10 @@ QNetworkConfigurationManager::Capabilities QIcdEngine::capabilities() const
            QNetworkConfigurationManager::NetworkSessionRequired;
 }
 
-void QIcdEngine::initialize()
+bool QIcdEngine::ensureDBusConnection()
 {
-    QMutexLocker locker(&mutex);
+    if (m_dbusInterface)
+        return true;
 
     // Setup DBus Interface for ICD
     m_dbusInterface = new QDBusInterface(ICD_DBUS_API_INTERFACE,
@@ -259,9 +260,22 @@ void QIcdEngine::initialize()
                                          QDBusConnection::systemBus(),
                                          this);
 
-    // abort if cannot connect to DBus.
-    if (!m_dbusInterface->isValid())
-        return;
+    if (!m_dbusInterface->isValid()) {
+        delete m_dbusInterface;
+        m_dbusInterface = 0;
+
+        if (!m_icdServiceWatcher) {
+            m_icdServiceWatcher = new QDBusServiceWatcher(ICD_DBUS_API_INTERFACE,
+                                                          QDBusConnection::systemBus(),
+                                                          QDBusServiceWatcher::WatchForOwnerChange,
+                                                          this);
+
+            connect(m_icdServiceWatcher, SIGNAL(serviceOwnerChanged(QString,QString,QString)),
+                    this, SLOT(icdServiceOwnerChanged(QString,QString,QString)));
+        }
+
+        return false;
+    }
 
     connect(&m_scanTimer, SIGNAL(timeout()), this, SLOT(finishAsyncConfigurationUpdate()));
     m_scanTimer.setSingleShot(true);
@@ -289,6 +303,19 @@ void QIcdEngine::initialize()
     doRequestUpdate();
 
     getIcdInitialState();
+
+    return true;
+}
+
+void QIcdEngine::initialize()
+{
+    QMutexLocker locker(&mutex);
+
+    if (!ensureDBusConnection()) {
+        locker.unlock();
+        emit updateCompleted();
+        locker.relock();
+    }
 }
 
 static inline QString network_attrs_to_security(uint network_attrs)
@@ -792,6 +819,9 @@ QNetworkConfigurationPrivatePointer QIcdEngine::defaultConfiguration()
 {
     QMutexLocker locker(&mutex);
 
+    if (!ensureDBusConnection())
+        return QNetworkConfigurationPrivatePointer();
+
     // Here we just return [ANY] request to icd and let the icd decide which IAP to connect.
     return userChoiceConfigurations.value(OSSO_IAP_ANY);
 }
@@ -933,13 +963,55 @@ void QIcdEngine::connectionStateSignalsSlot(QDBusMessage msg)
     locker.relock();
 }
 
+void QIcdEngine::icdServiceOwnerChanged(const QString &serviceName, const QString &oldOwner,
+                                        const QString &newOwner)
+{
+    Q_UNUSED(serviceName);
+    Q_UNUSED(oldOwner);
+
+    QMutexLocker locker(&mutex);
+
+    if (newOwner.isEmpty()) {
+        // Disconnected from ICD, remove all configurations
+        cleanup();
+        delete iapMonitor;
+        iapMonitor = 0;
+        delete m_dbusInterface;
+        m_dbusInterface = 0;
+
+        QMutableHashIterator<QString, QNetworkConfigurationPrivatePointer> i(accessPointConfigurations);
+        while (i.hasNext()) {
+            i.next();
+
+            QNetworkConfigurationPrivatePointer ptr = i.value();
+            i.remove();
+
+            locker.unlock();
+            emit configurationRemoved(ptr);
+            locker.relock();
+        }
+
+        userChoiceConfigurations.clear();
+    } else {
+        // Connected to ICD ensure connection.
+        ensureDBusConnection();
+    }
+}
+
 void QIcdEngine::requestUpdate()
 {
     QMutexLocker locker(&mutex);
 
-    if (m_scanGoingOn) {
+    if (!ensureDBusConnection()) {
+        locker.unlock();
+        emit updateCompleted();
+        locker.relock();
         return;
     }
+
+    if (m_scanGoingOn)
+        return;
+
     m_scanGoingOn = true;
 
     m_dbusInterface->connection().connect(ICD_DBUS_API_INTERFACE,
@@ -956,14 +1028,16 @@ void QIcdEngine::requestUpdate()
 
 void QIcdEngine::cancelAsyncConfigurationUpdate()
 {
-    if (!m_scanGoingOn) {
+    if (!ensureDBusConnection())
         return;
-    }
+
+    if (!m_scanGoingOn)
+        return;
+
     m_scanGoingOn = false;
 
-    if (m_scanTimer.isActive()) {
+    if (m_scanTimer.isActive())
         m_scanTimer.stop();
-    }
 
     m_dbusInterface->connection().disconnect(ICD_DBUS_API_INTERFACE,
                                              ICD_DBUS_API_PATH,

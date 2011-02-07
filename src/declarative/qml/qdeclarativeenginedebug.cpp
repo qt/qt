@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -146,7 +146,10 @@ QDeclarativeEngineDebugServer::propertyData(QObject *obj, int propIdx)
     if (binding)
         rv.binding = binding->expression();
 
-    QVariant value = prop.read(obj);
+    QVariant value;
+    if (prop.userType() != 0) {
+        value = prop.read(obj);
+    }
     rv.value = valueContents(value);
 
     if (QDeclarativeValueTypeFactory::isValueType(prop.userType())) {

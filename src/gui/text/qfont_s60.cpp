@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,13 +49,14 @@ QT_BEGIN_NAMESPACE
 
 #ifdef QT_NO_FREETYPE
 Q_GLOBAL_STATIC(QMutex, lastResortFamilyMutex);
+#endif // QT_NO_FREETYPE
+
 extern QStringList qt_symbian_fontFamiliesOnFontServer(); // qfontdatabase_s60.cpp
 Q_GLOBAL_STATIC_WITH_INITIALIZER(QStringList, fontFamiliesOnFontServer, {
     // We are only interested in the initial font families. No Application fonts.
     // Therefore, we are allowed to cache the list.
     x->append(qt_symbian_fontFamiliesOnFontServer());
 });
-#endif // QT_NO_FREETYPE
 
 QString QFont::lastResortFont() const
 {
@@ -95,7 +96,20 @@ QString QFont::lastResortFamily() const
     const bool isJapaneseOrChineseSystem =
         User::Language() == ELangJapanese || User::Language() == ELangPrcChinese;
 
-    return QLatin1String(isJapaneseOrChineseSystem?"Heisei Kaku Gothic S60":"Series 60 Sans");
+    static QString family;
+    if (family.isEmpty()) {
+        QStringList families = qt_symbian_fontFamiliesOnFontServer();
+        const char* const preferredFamilies[] = {"Nokia Sans S60", "Series 60 Sans"};
+        for (int i = 0; i < sizeof preferredFamilies / sizeof preferredFamilies[0]; ++i) {
+            const QString preferredFamily = QLatin1String(preferredFamilies[i]);
+            if (families.contains(preferredFamily)) {
+                family = preferredFamily;
+                break;
+            }
+        }
+    }
+
+    return QLatin1String(isJapaneseOrChineseSystem?"Heisei Kaku Gothic S60":family.toLatin1());
 #endif // QT_NO_FREETYPE
 }
 

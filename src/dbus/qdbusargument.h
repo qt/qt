@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -375,6 +375,21 @@ inline const QDBusArgument &operator>>(const QDBusArgument &arg, QHash<Key, T> &
     arg.endMap();
     return arg;
 }
+
+inline QDBusArgument &operator<<(QDBusArgument &arg, const QVariantHash &map)
+{
+    arg.beginMap(QVariant::String, qMetaTypeId<QDBusVariant>());
+    QVariantHash::ConstIterator it = map.constBegin();
+    QVariantHash::ConstIterator end = map.constEnd();
+    for ( ; it != end; ++it) {
+        arg.beginMapEntry();
+        arg << it.key() << QDBusVariant(it.value());
+        arg.endMapEntry();
+    }
+    arg.endMap();
+    return arg;
+}
+
 
 QT_END_NAMESPACE
 

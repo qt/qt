@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2941,6 +2941,9 @@ QStringRef QXmlStreamReader::documentEncoding() const
   By default, QXmlStreamWriter encodes XML in UTF-8. Different
   encodings can be enforced using setCodec().
 
+  If an error occurs while writing to the underlying device, hasError()
+  starts returning true and subsequent writes are ignored.
+
   The \l{QXmlStream Bookmarks Example} illustrates how to use a
   stream writer to write an XML bookmark file (XBEL) that
   was previously read in by a QXmlStreamReader.
@@ -2965,7 +2968,8 @@ public:
     void write(const QStringRef &);
     void write(const QString &);
     void writeEscaped(const QString &, bool escapeWhitespace = false);
-    void write(const char *s);
+    void write(const char *s, int len);
+    template <int N> void write(const char (&s)[N]) { write(s, N - 1); }
     bool finishStartElement(bool contents = true);
     void writeStartElement(const QString &namespaceUri, const QString &name);
     QIODevice *device;
@@ -2975,6 +2979,7 @@ public:
     uint inEmptyElement :1;
     uint lastWasStartElement :1;
     uint wroteSomething :1;
+    uint hasError :1;
     uint autoFormatting :1;
     QByteArray autoFormattingIndent;
     NamespaceDeclaration emptyNamespace;
@@ -3007,6 +3012,7 @@ QXmlStreamWriterPrivate::QXmlStreamWriterPrivate(QXmlStreamWriter *q)
 #endif
     inStartElement = inEmptyElement = false;
     wroteSomething = false;
+    hasError = false;
     lastWasStartElement = false;
     lastNamespaceDeclaration = 1;
     autoFormatting = false;
@@ -3016,11 +3022,15 @@ QXmlStreamWriterPrivate::QXmlStreamWriterPrivate(QXmlStreamWriter *q)
 void QXmlStreamWriterPrivate::write(const QStringRef &s)
 {
     if (device) {
+        if (hasError)
+            return;
 #ifdef QT_NO_TEXTCODEC
-        device->write(s.toString().toLatin1(), s.size());
+        QByteArray bytes = s.toLatin1();
 #else
-        device->write(encoder->fromUnicode(s.constData(), s.size()));
+        QByteArray bytes = encoder->fromUnicode(s.constData(), s.size());
 #endif
+        if (device->write(bytes) != bytes.size())
+            hasError = true;
     }
     else if (stringDevice)
         s.appendTo(stringDevice);
@@ -3031,11 +3041,15 @@ void QXmlStreamWriterPrivate::write(const QStringRef &s)
 void QXmlStreamWriterPrivate::write(const QString &s)
 {
     if (device) {
+        if (hasError)
+            return;
 #ifdef QT_NO_TEXTCODEC
-        device->write(s.toLatin1(), s.size());
+        QByteArray bytes = s.toLatin1();
 #else
-        device->write(encoder->fromUnicode(s));
+        QByteArray bytes = encoder->fromUnicode(s);
 #endif
+        if (device->write(bytes) != bytes.size())
+            hasError = true;
     }
     else if (stringDevice)
         stringDevice->append(s);
@@ -3070,31 +3084,19 @@ void QXmlStreamWriterPrivate::writeEscaped(const QString &s, bool escapeWhitespa
             escaped += QChar(c);
         }
     }
-    if (device) {
-#ifdef QT_NO_TEXTCODEC
-        device->write(escaped.toLatin1(), escaped.size());
-#else
-        device->write(encoder->fromUnicode(escaped));
-#endif
-    }
-    else if (stringDevice)
-        stringDevice->append(escaped);
-    else
-        qWarning("QXmlStreamWriter: No device");
+    write(escaped);
 }
 
-
-void QXmlStreamWriterPrivate::write(const char *s)
+// ASCII only!
+void QXmlStreamWriterPrivate::write(const char *s, int len)
 {
     if (device) {
-#ifndef QT_NO_TEXTCODEC
-        if (codec->mibEnum() != 106)
-            device->write(encoder->fromUnicode(QLatin1String(s)));
-        else
-#endif
-            device->write(s, strlen(s));
+        if (hasError)
+            return;
+        if (device->write(s, len) != len)
+            hasError = true;
     } else if (stringDevice) {
-        stringDevice->append(QLatin1String(s));
+        stringDevice->append(QString::fromLatin1(s, len));
     } else
         qWarning("QXmlStreamWriter: No device");
 }
@@ -3172,7 +3174,7 @@ void QXmlStreamWriterPrivate::indent(int level)
 {
     write("\n");
     for (int i = level; i > 0; --i)
-        write(autoFormattingIndent.constData());
+        write(autoFormattingIndent.constData(), autoFormattingIndent.length());
 }
 
 
@@ -3373,6 +3375,17 @@ int QXmlStreamWriter::autoFormattingIndent() const
     return d->autoFormattingIndent.count(' ') - d->autoFormattingIndent.count('\t');
 }
 
+/*!
+    Returns \c true if the stream failed to write to the underlying device.
+
+    The error status is never reset. Writes happening after the error
+    occurred are ignored, even if the error condition is cleared.
+ */
+bool QXmlStreamWriter::hasError() const
+{
+    Q_D(const QXmlStreamWriter);
+    return d->hasError;
+}
 
 /*!
   \overload
@@ -3759,7 +3772,7 @@ void QXmlStreamWriter::writeStartDocument(const QString &version)
 #ifdef QT_NO_TEXTCODEC
         d->write("iso-8859-1");
 #else
-        d->write(d->codec->name().constData());
+        d->write(d->codec->name().constData(), d->codec->name().length());
 #endif
     }
     d->write("\"?>");
@@ -3782,12 +3795,13 @@ void QXmlStreamWriter::writeStartDocument(const QString &version, bool standalon
 #ifdef QT_NO_TEXTCODEC
         d->write("iso-8859-1");
 #else
-        d->write(d->codec->name().constData());
+        d->write(d->codec->name().constData(), d->codec->name().length());
 #endif
     }
-    d->write("\" standalone=\"");
-    d->write(standalone ? "yes" : "no");
-    d->write("\"?>");
+    if (standalone)
+        d->write("\" standalone=\"yes\"?>");
+    else
+        d->write("\" standalone=\"no\"?>");
 }
 
 

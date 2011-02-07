@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -96,7 +96,8 @@ const layoutHeader QS60StylePrivate::m_layoutHeaders[] = {
 {320,240,1,19,"QVGA Portrait"},
 {360,640,1,19,"NHD Landscape"},
 {640,360,1,19,"NHD Portrait"},
-{352,800,1,12,"E90 Landscape"}
+{352,800,1,12,"E90 Landscape"},
+{480,640,1,19,"VGA Landscape"}
 // *** End of generated data ***
 };
 const int QS60StylePrivate::m_numberOfLayouts =
@@ -104,11 +105,12 @@ const int QS60StylePrivate::m_numberOfLayouts =
 
 const short QS60StylePrivate::data[][MAX_PIXELMETRICS] = {
 // *** generated pixel metrics ***
-{5,0,-909,0,0,2,0,0,-1,7,12,22,15,15,7,198,-909,-909,-909,20,13,2,0,0,21,7,18,30,3,3,1,-909,-909,0,1,0,0,12,20,15,15,18,18,1,115,18,0,-909,-909,-909,-909,0,0,16,2,-909,0,0,-909,16,-909,-909,-909,-909,32,18,55,24,55,4,4,4,9,13,-909,5,51,11,5,0,3,3,6,8,3,3,-909,2,-909,-909,-909,-909,5,5,3,1,106},
-{5,0,-909,0,0,1,0,0,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,8,27,28,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,3,3,5,10,15,-909,5,58,13,5,0,4,4,7,9,4,4,-909,2,-909,-909,-909,-909,6,6,3,1,106},
-{7,0,-909,0,0,2,0,0,-1,25,69,46,37,37,9,258,-909,-909,-909,23,19,26,0,0,32,25,72,44,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,13,3,6,8,19,-909,7,74,19,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1,135},
-{7,0,-909,0,0,2,0,0,-1,25,68,46,37,37,9,258,-909,-909,-909,31,19,6,0,0,32,25,60,52,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,96,35,96,12,3,6,8,19,-909,7,74,22,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1,135},
-{7,0,-909,0,0,2,0,0,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,7,32,30,5,5,2,-909,-909,0,2,8,0,16,28,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,6,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,19,7,0,5,6,8,11,6,5,-909,2,-909,-909,-909,-909,5,5,3,1,106}
+{5,0,-909,0,0,2,0,2,-1,7,12,22,15,15,7,198,-909,-909,-909,20,13,2,0,0,21,7,18,30,3,3,1,-909,-909,0,1,0,0,12,20,15,15,18,18,1,115,18,0,-909,-909,-909,-909,0,0,16,2,-909,0,0,-909,16,-909,-909,-909,-909,32,18,55,24,55,4,4,4,9,13,-909,5,51,11,5,0,3,3,6,8,3,3,-909,2,-909,-909,-909,-909,5,5,3,1,106},
+{5,0,-909,0,0,1,0,2,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,8,27,28,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,3,3,5,10,15,-909,5,58,13,5,0,4,4,7,9,4,4,-909,2,-909,-909,-909,-909,6,6,3,1,106},
+{7,0,-909,0,0,2,0,5,-1,25,69,46,37,37,9,258,-909,-909,-909,23,19,26,0,0,32,25,72,44,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,13,3,6,8,19,-909,7,74,19,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1,135},
+{7,0,-909,0,0,2,0,5,-1,25,68,46,37,37,9,258,-909,-909,-909,31,19,6,0,0,32,25,60,52,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,96,35,96,12,3,6,8,19,-909,7,74,22,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1,135},
+{7,0,-909,0,0,2,0,2,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,7,32,30,5,5,2,-909,-909,0,2,8,0,16,28,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,6,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,19,7,0,5,6,8,11,6,5,-909,2,-909,-909,-909,-909,5,5,3,1,106},
+{9,0,-909,0,0,2,0,5,-1,34,99,76,51,51,25,352,-909,-909,-909,29,25,7,0,0,43,34,42,76,7,7,2,-909,-909,0,9,14,0,23,39,30,30,37,37,9,391,40,0,-909,-909,-909,-909,0,0,29,2,-909,0,0,-909,29,-909,-909,-909,-909,115,37,96,48,96,19,19,9,1,25,-909,9,101,24,9,0,7,7,7,16,7,7,-909,3,-909,-909,-909,-909,9,9,3,1,184}
 // *** End of generated data ***
 };
 
@@ -1071,11 +1073,11 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             // Button frame
             QStyleOptionFrame  buttonOption;
             buttonOption.QStyleOption::operator=(*cmb);
-            const int maxHeight = cmbxFrame.height();
-            const int maxWidth = cmbxFrame.width() - cmbxEditField.width();
+            const int maxButtonSide = cmbxFrame.width() - cmbxEditField.width();
+            const int newTop = cmbxEditField.center().y() - maxButtonSide / 2;
             const int topLeftPoint = direction ?
-                (cmbxEditField.right() + 1) : (cmbxEditField.left() + 1 - maxWidth);
-            const QRect buttonRect(topLeftPoint, cmbxEditField.top(), maxWidth, maxHeight);
+                (cmbxEditField.right() + 1) : (cmbxEditField.left() + 1 - maxButtonSide);
+            const QRect buttonRect(topLeftPoint, newTop, maxButtonSide, maxButtonSide);
             buttonOption.rect = buttonRect;
             buttonOption.state = cmb->state;
             drawPrimitive(PE_PanelButtonCommand, &buttonOption, painter, widget);
@@ -2884,30 +2886,24 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             ret = cmb->rect;
             const int width = cmb->rect.width();
             const int height = cmb->rect.height();
-            const int buttonIconSize = QS60StylePrivate::pixelMetric(PM_ButtonIconSize);
             const int buttonMargin = cmb->frame ? 2 : 0;
             // lets use spinbox frame here as well, as no combobox specific value available.
             const int frameThickness = cmb->frame ? pixelMetric(PM_SpinBoxFrameWidth, cmb, widget) : 0;
-            const int buttonWidth = qMax(cmb->rect.height(), buttonIconSize);
-
+            const int buttonMinSize = QS60StylePrivate::pixelMetric(PM_ButtonIconSize) + 2 * buttonMargin;
             QSize buttonSize;
-            buttonSize.setWidth(buttonWidth + 2 * buttonMargin);
-            buttonSize.setHeight(qMax(8, (cmb->rect.height() >> 1) - frameThickness)); //buttons should be squares
+            //allow button to grow to one fourth of the frame height, if the frame is really tall
+            buttonSize.setHeight(qMin(height, qMax(width / 4, buttonMinSize)));
+            buttonSize.setWidth(buttonSize.height());
             buttonSize = buttonSize.expandedTo(QApplication::globalStrut());
             switch (scontrol) {
                 case SC_ComboBoxArrow: {
-                    const int xposMod = cmb->rect.x() + width - buttonMargin - buttonWidth;
+                    const int xposMod = cmb->rect.x() + width - buttonMargin - buttonSize.width();
                     const int ypos = cmb->rect.y();
-                    ret.setRect(xposMod, ypos + buttonMargin, buttonWidth, height - 2 * buttonMargin);
+                    ret.setRect(xposMod, ypos + buttonMargin, buttonSize.width(), height - 2 * buttonMargin);
                     }
                     break;
                 case SC_ComboBoxEditField: {
-                    const int withFrameX = cmb->rect.x() + width - frameThickness - buttonSize.width();
-                    ret = QRect(
-                        frameThickness,
-                        frameThickness,
-                        withFrameX - frameThickness,
-                        height - 2 * frameThickness);
+                    ret = QRect(0, 0, cmb->rect.x() + width - buttonSize.width(), height);
                     }
                 break;
                 case SC_ComboBoxListBoxPopup: {
@@ -3470,9 +3466,6 @@ bool QS60Style::eventFilter(QObject *object, QEvent *event)
 
                 if (d->m_pressedWidget)
                     d->m_pressedWidget->update();
-#ifdef Q_WS_S60
-                d->touchFeedback(event, w);
-#endif
             }
             break;
         }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,7 +51,7 @@
 #define EXISTING_SIZE 1024
 
 #ifdef Q_OS_SYMBIAN
-#define SRCDIR "c:/data/qsharedmemorytemp/"
+#define SRCDIR "c:/data/qsharedmemorytemp/lackey/"
 #define LACKEYDIR SRCDIR "lackey"
 #elif defined(Q_OS_WINCE)
 #define LACKEYDIR SRCDIR
@@ -348,6 +348,8 @@ void tst_QSharedMemory::attach()
         QVERIFY(sm.detach());
         // Make sure detach doesn't screw up something and we can't re-attach.
         QVERIFY(sm.attach());
+        QVERIFY(sm.data() != 0);
+        QVERIFY(sm.size() != 0);
         QVERIFY(sm.detach());
         QCOMPARE(sm.size(), 0);
         QVERIFY(sm.data() == 0);
@@ -374,7 +376,8 @@ void tst_QSharedMemory::lock()
     QVERIFY(shm.lock());
     QTest::ignoreMessage(QtWarningMsg, "QSharedMemory::lock: already locked");
     QVERIFY(shm.lock());
-    // don't lock forever
+    // we didn't unlock(), so ignore the warning from auto-detach in destructor
+    QTest::ignoreMessage(QtWarningMsg, "QSharedMemory::lock: already locked");
 }
 
 /*!
@@ -640,6 +643,10 @@ public:
         QVERIFY(producer.isAttached());
         char *memory = (char*)producer.data();
         memory[1] = '0';
+#if defined(Q_OS_SYMBIAN)
+        // Sleep a while to ensure that consumers start properly
+        QTest::qSleep(1000);
+#endif
         QTime timer;
         timer.start();
         int i = 0;
@@ -661,10 +668,6 @@ public:
         memory[0] = 'E';
         QVERIFY(producer.unlock());
 
-#if defined(Q_OS_SYMBIAN)
-        // Sleep a while to ensure that consumers start properly
-        QTest::qSleep(1000);
-#endif
     }
 private:
 

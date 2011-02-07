@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -169,7 +169,7 @@ private:
     QRect _titleArea;
 };
 
-/* The size hints of a QDockWidget will depend on wether it is docked or not.
+/* The size hints of a QDockWidget will depend on whether it is docked or not.
    This layout item always returns the size hints as if the dock widget was docked. */
 
 class QDockWidgetItem : public QWidgetItem

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -399,7 +399,7 @@ void QComboBoxPrivateContainer::leaveEvent(QEvent *)
 #ifdef Q_WS_MAC
     QStyleOptionComboBox opt = comboStyleOption();
     if (combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo))
-        view->clearSelection();
+        view->setCurrentIndex(QModelIndex());
 #endif
 }
 
@@ -2486,10 +2486,18 @@ void QComboBox::showPopup()
             listRect.setWidth(listRect.height());
             //by default popup is centered on screen in landscape
             listRect.moveCenter(screen.center());
-            if (staConTopRect.IsEmpty() && AknLayoutUtils::CbaLocation() != AknLayoutUtils::EAknCbaLocationBottom) {
-                // landscape without stacon, menu should be at the right
-                (opt.direction == Qt::LeftToRight) ? listRect.setRight(screen.right()) :
-                                                     listRect.setLeft(screen.left());
+            if (staConTopRect.IsEmpty()) {
+                TRect cbaRect = TRect();
+                AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EControlPane, cbaRect);
+                AknLayoutUtils::TAknCbaLocation cbaLocation = AknLayoutUtils::CbaLocation();
+                switch (cbaLocation) {
+                case AknLayoutUtils::EAknCbaLocationRight:
+                    listRect.setRight(screen.right());
+                    break;
+                case AknLayoutUtils::EAknCbaLocationLeft:
+                    listRect.setLeft(screen.left());
+                    break;
+                }
             }
         }
 #endif

@@ -16,8 +16,7 @@ symbian: {
         # It is also expected that devices newer than those based on S60 5.0 all have sqlite3.dll.
         contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {
             BLD_INF_RULES.prj_exports += \
-                "sqlite3.sis /epoc32/data/qt/sis/sqlite3.sis" \
-                "sqlite3_selfsigned.sis /epoc32/data/qt/sis/sqlite3_selfsigned.sis"
+                "sqlite3.sis /epoc32/data/qt/sis/sqlite3.sis"
             symbian-abld|symbian-sbsv2 {
                 sqlitedeployment = \
                     "; Deploy sqlite onto phone that does not have it already" \
@@ -87,12 +86,6 @@ symbian: {
         DEPLOYMENT += bearer_plugin
     }
 
-    !contains(S60_VERSION, 3.1):!contains(S60_VERSION, 3.2) {
-        feedback_plugin.files = $$QT_BUILD_TREE/plugins/s60/feedback/qtactilefeedback$${QT_LIBINFIX}.dll
-        feedback_plugin.path = c:$$QT_PLUGINS_BASE_DIR/feedback
-        DEPLOYMENT += feedback_plugin
-    }
-
     qtlibraries.pkg_postrules += qts60plugindeployment
 
     qtlibraries.path = c:/sys/bin
@@ -132,7 +125,7 @@ symbian: {
     codecs_plugins.path = c:$$QT_PLUGINS_BASE_DIR/codecs
 
     contains(QT_CONFIG, phonon-backend) {
-        phonon_backend_plugins.files += $$QMAKE_LIBDIR_QT/phonon_mmf$${QT_LIBINFIX}.dll
+        phonon_backend_plugins.files += $$QT_BUILD_TREE/plugins/phonon_backend/phonon_mmf$${QT_LIBINFIX}.dll
 
         phonon_backend_plugins.path = c:$$QT_PLUGINS_BASE_DIR/phonon_backend
         DEPLOYMENT += phonon_backend_plugins

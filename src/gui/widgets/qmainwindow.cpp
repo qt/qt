@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1515,11 +1515,6 @@ void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool set)
     Q_D(QMainWindow);
     if (!isWindow() || d->useHIToolBar == set || QSysInfo::MacintoshVersion < QSysInfo::MV_10_3)
         return;
-
-    // ### Disable when using alien widgets
-    if (testAttribute(Qt::WA_NativeWindow) == false) {
-        return;
-    }
 
     d->useHIToolBar = set;
     createWinId(); // We need the hiview for down below.

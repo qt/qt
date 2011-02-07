@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -285,6 +285,7 @@ struct QGLWindowSurfacePrivate
     int tried_pb : 1;
     int destructive_swap_buffers : 1;
     int geometry_updated : 1;
+    int did_paint : 1;
 
     QGLContext *ctx;
 
@@ -301,6 +302,7 @@ struct QGLWindowSurfacePrivate
 };
 
 QGLFormat QGLWindowSurface::surfaceFormat;
+QGLWindowSurface::SwapMode QGLWindowSurface::swapBehavior = QGLWindowSurface::AutomaticSwap;
 
 void QGLWindowSurfaceGLPaintDevice::endPaint()
 {
@@ -348,6 +350,7 @@ QGLWindowSurface::QGLWindowSurface(QWidget *window)
     d_ptr->glDevice.d = d_ptr;
     d_ptr->q_ptr = this;
     d_ptr->geometry_updated = false;
+    d_ptr->did_paint = false;
 }
 
 QGLWindowSurface::~QGLWindowSurface()
@@ -399,11 +402,6 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     if (widgetPrivate->extraData()->glContext)
         return;
 
-#ifdef Q_WS_QPA
-    QGLContext *ctx = QGLContext::fromPlatformGLContext(widget->platformWindow()->glContext());
-    if (!d_ptr->fbo && d_ptr->tried_fbo)
-        d_ptr->ctx = ctx;
-#else
     QGLContext *ctx = NULL;
 
     // For translucent top-level widgets we need alpha in the format.
@@ -416,8 +414,7 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     } else
         ctx = new QGLContext(surfaceFormat, widget);
 
-    ctx->create(qt_gl_share_widget()->context());
-#endif
+    ctx->create(qt_gl_share_context());
 
 #ifndef QT_NO_EGL
     static bool checkedForNOKSwapRegion = false;
@@ -477,6 +474,8 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
 
 void QGLWindowSurface::beginPaint(const QRegion &)
 {
+    d_ptr->did_paint = true;
+
     if (!context())
         return;
 
@@ -543,6 +542,14 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
     if (d_ptr->geometry_updated)
         return;
 
+    // did_paint is set to true in ::beginPaint. ::beginPaint means that we
+    // at least cleared the background (= painted something). In EGL API it's a
+    // mistake to call swapBuffers if nothing was painted unless
+    // EGL_BUFFER_PRESERVED is set. This check protects the flush func from
+    // being executed if it's for nothing.
+    if (!hasPartialUpdateSupport() && !d_ptr->did_paint)
+        return;
+
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
     Q_ASSERT(parent);
 
@@ -564,6 +571,9 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 
     const GLenum target = GL_TEXTURE_2D;
     Q_UNUSED(target);
+
+    if (QGLWindowSurface::swapBehavior == QGLWindowSurface::KillSwap)
+        return;
 
     if (context()) {
         context()->makeCurrent();
@@ -612,7 +622,14 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
                 }
             }
 #endif
-            bool doingPartialUpdate = hasPartialUpdateSupport() && br.width() * br.height() < parent->geometry().width() * parent->geometry().height() * 0.2;
+            bool doingPartialUpdate = false;
+            if (QGLWindowSurface::swapBehavior == QGLWindowSurface::AutomaticSwap)
+                doingPartialUpdate = hasPartialUpdateSupport() && br.width() * br.height() < parent->geometry().width() * parent->geometry().height() * 0.2;
+            else if (QGLWindowSurface::swapBehavior == QGLWindowSurface::AlwaysFullSwap)
+                doingPartialUpdate = false;
+            else if (QGLWindowSurface::swapBehavior == QGLWindowSurface::AlwaysPartialSwap)
+                doingPartialUpdate = hasPartialUpdateSupport();
+
             QGLContext *ctx = reinterpret_cast<QGLContext *>(parent->d_func()->extraData()->glContext);
             if (widget != window()) {
                 if (initializeOffscreenTexture(window()->size()))
@@ -771,6 +788,8 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         ctx->swapBuffers();
     else
         glFlush();
+
+    d_ptr->did_paint = false;
 }
 
 

@@ -48,12 +48,12 @@ int main(int argc, char *argv[])
     QString queryString(qgetenv("QUERY_STRING"));
     if (!queryString.isEmpty()) {
         // run as CGI script
-        HTMLPage::handleCGIQuery(queryString);
+        Report::handleCGIQuery(queryString);
         return 0;
     }
 
     if (a.arguments().contains(QLatin1String("-testmapping"))) {
-        BaselineHandler h;
+        BaselineHandler h(QLS("SomeRunId"));
         h.testPathMapping();
         return 0;
     }

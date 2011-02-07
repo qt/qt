@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -184,9 +184,7 @@ void tst_PlatformSocketEngine::simpleConnectToIMAP()
     QVERIFY(socketDevice.read(array.data(), array.size()) == available);
 
     // Check that the greeting is what we expect it to be
-    //QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());
-    QVERIFY(array.startsWith("* OK"));
-    QVERIFY(array.endsWith("server ready\r\n"));
+    QVERIFY2(QtNetworkSettings::compareReplyIMAP(array), array.constData());
 
     // Write a logout message
     QByteArray array2 = "ZZZ LOGOUT\r\n";

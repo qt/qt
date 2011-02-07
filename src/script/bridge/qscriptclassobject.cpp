@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -183,6 +183,10 @@ void ClassObjectDelegate::getOwnPropertyNames(QScriptObject* object, JSC::ExecSt
                                               JSC::PropertyNameArray &propertyNames,
                                               JSC::EnumerationMode mode)
 {
+    // For compatibility with the old back-end, normal JS properties
+    // are added first.
+    QScriptObjectDelegate::getOwnPropertyNames(object, exec, propertyNames, mode);
+
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScript::SaveFrameHelper saveFrame(engine, exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
@@ -195,7 +199,6 @@ void ClassObjectDelegate::getOwnPropertyNames(QScriptObject* object, JSC::ExecSt
         }
         delete it;
     }
-    QScriptObjectDelegate::getOwnPropertyNames(object, exec, propertyNames, mode);
 }
 
 JSC::CallType ClassObjectDelegate::getCallData(QScriptObject*, JSC::CallData &callData)

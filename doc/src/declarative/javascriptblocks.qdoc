@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -99,7 +99,9 @@ resource, the component's \l {QDeclarativeComponent::status()}{status} is set to
 
 Imported JavaScript files are always qualified using the "as" keyword.  The
 qualifier for JavaScript files must be unique, so there is always a one-to-one
-mapping between qualifiers and JavaScript files.
+mapping between qualifiers and JavaScript files. (This also means qualifiers cannot
+be named the same as built-in JavaScript objects such as \c Date and \c Math).
+
 
 \section2 Code-Behind Implementation Files
 

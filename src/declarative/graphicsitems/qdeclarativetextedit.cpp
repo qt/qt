@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -326,22 +326,35 @@ void QDeclarativeTextEdit::setTextFormat(TextFormat format)
 QFont QDeclarativeTextEdit::font() const
 {
     Q_D(const QDeclarativeTextEdit);
-    return d->font;
+    return d->sourceFont;
 }
 
 void QDeclarativeTextEdit::setFont(const QFont &font)
 {
     Q_D(QDeclarativeTextEdit);
-    d->font = font;
+    if (d->sourceFont == font)
+        return;
 
-    clearCache();
-    d->document->setDefaultFont(d->font);
-    if(d->cursor){
-        d->cursor->setHeight(QFontMetrics(d->font).height());
-        moveCursorDelegate();
+    d->sourceFont = font;
+    QFont oldFont = d->font;
+    d->font = font;
+    if (d->font.pointSizeF() != -1) {
+        // 0.5pt resolution
+        qreal size = qRound(d->font.pointSizeF()*2.0);
+        d->font.setPointSizeF(size/2.0);
     }
-    updateSize();
-    update();
+
+    if (oldFont != d->font) {
+        clearCache();
+        d->document->setDefaultFont(d->font);
+        if(d->cursor){
+            d->cursor->setHeight(QFontMetrics(d->font).height());
+            moveCursorDelegate();
+        }
+        updateSize();
+        update();
+    }
+    emit fontChanged(d->sourceFont);
 }
 
 /*!
@@ -643,6 +656,8 @@ int QDeclarativeTextEdit::cursorPosition() const
 void QDeclarativeTextEdit::setCursorPosition(int pos)
 {
     Q_D(QDeclarativeTextEdit);
+    if (pos < 0 || pos > d->text.length())
+        return;
     QTextCursor cursor = d->control->textCursor();
     if (cursor.position() == pos)
         return;
@@ -1350,8 +1365,12 @@ void QDeclarativeTextEdit::updateSize()
         int dy = height();
         // ### assumes that if the width is set, the text will fill to edges
         // ### (unless wrap is false, then clipping will occur)
-        if (widthValid() && d->document->textWidth() != width())
-            d->document->setTextWidth(width());
+        if (widthValid()) {
+            if (d->document->textWidth() != width())
+                d->document->setTextWidth(width());
+        } else {
+            d->document->setTextWidth(-1);
+        }
         dy -= (int)d->document->size().height();
 
         int nyoff;

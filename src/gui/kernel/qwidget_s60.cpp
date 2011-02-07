@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -508,7 +508,7 @@ void QWidgetPrivate::show_sys()
                     CEikButtonGroupContainer *cba = CEikButtonGroupContainer::NewL(CEikButtonGroupContainer::ECba,
                         CEikButtonGroupContainer::EHorizontal,ui,R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
 
-                    CEikButtonGroupContainer *oldCba = CEikonEnv::Static()->AppUiFactory()->SwapButtonGroup(cba);
+                    CEikButtonGroupContainer *oldCba = factory->SwapButtonGroup(cba);
                     Q_ASSERT(!oldCba);
                     S60->setButtonGroupContainer(cba);
 
@@ -517,7 +517,7 @@ void QWidgetPrivate::show_sys()
                     menuBar->SetMenuType(CEikMenuBar::EMenuOptions);
                     S60->appUi()->AddToStackL(menuBar,ECoeStackPriorityMenu,ECoeStackFlagRefusesFocus);
 
-                    CEikMenuBar *oldMenu = CEikonEnv::Static()->AppUiFactory()->SwapMenuBar(menuBar);
+                    CEikMenuBar *oldMenu = factory->SwapMenuBar(menuBar);
                     Q_ASSERT(!oldMenu);
                 )
 
@@ -784,6 +784,14 @@ void QWidgetPrivate::s60UpdateIsOpaque()
         if (window->SetTransparencyAlphaChannel() == KErrNone) {
             window->SetBackgroundColor(TRgb(255, 255, 255, 0));
             extra->topextra->nativeWindowTransparencyEnabled = 1;
+
+            if (extra->topextra->backingStore.data() &&
+                    QApplicationPrivate::graphics_system_name == QLatin1String("openvg")) {
+                // Semi-transparent EGL surfaces aren't supported. We need to
+                // recreate backing store to get translucent surface (raster surface).
+                extra->topextra->backingStore.create(q);
+                extra->topextra->backingStore.registerWidget(q);
+            }
         }
     } else if (extra->topextra->nativeWindowTransparencyEnabled) {
         window->SetTransparentRegion(TRegionFix<1>());

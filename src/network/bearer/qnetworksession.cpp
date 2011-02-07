@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -313,8 +313,9 @@ bool QNetworkSession::waitForOpened(int msecs)
     if (d->isOpen)
         return true;
 
-    if (d->state != Connecting && d->state != Connected) //state is connected when opening an already active interface
+    if (!(d->state == Connecting || d->state == Connected)) {
         return false;
+    }
 
     QEventLoop loop;
     QObject::connect(d, SIGNAL(quitPendingWaitsForOpened()), &loop, SLOT(quit()));

@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the FOO module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,29 +39,227 @@
 **
 ****************************************************************************/
 
-#include "qnetworkproxy.h"
+/**
+ * Some notes about the code:
+ *
+ * ** It is assumed that the system proxies are for url based requests
+ *  ie. HTTP/HTTPS based.
+ * ** It is assumed that proxies don't use authentication.
+ * ** It is assumed that there is no exceptions to proxy use (Symbian side
+ *  does have the field for it but it is not user modifiable by default).
+ * ** There is no checking for protocol name.
+ */
+
+#include <QtNetwork/qnetworkproxy.h>
 
 #ifndef QT_NO_NETWORKPROXY
 
+#include <metadatabase.h> // CMDBSession
+#include <commsdattypeinfov1_1.h> // CCDIAPRecord, CCDProxiesRecord
+#include <commsdattypesv1_1.h> // KCDTIdIAPRecord, KCDTIdProxiesRecord
+#include <QtNetwork/QNetworkConfigurationManager>
+#include <QFlags>
+
+using namespace CommsDat;
+
 QT_BEGIN_NAMESPACE
 
-QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkProxyQuery &)
+class SymbianIapId
 {
-    // TODO: Get the current QNetworkSession which has the Symbian RConnection we use
-    // I am wondering if we already have a connected QNetworkSession when the code
-    // is run that retrieves the proxy (for QNetworkAccessManager it's somewhere called
-    // from createRequest() which might be too early...)
+public:
+    enum State{
+        NotValid,
+        Valid
+    };
+    Q_DECLARE_FLAGS(States, State)
+    SymbianIapId() {}
+    ~SymbianIapId() {}
+    void setIapId(TUint32 iapId) { iapState |= Valid; id = iapId; }
+    bool isValid() { return iapState == Valid; }
+    TUint32 iapId() { return id; }
+private:
+    QFlags<States> iapState;
+    TUint32 id;
+};
 
-    // TODO: Get the proxy from that RConnection
+Q_DECLARE_OPERATORS_FOR_FLAGS(SymbianIapId::States)
 
-    // The QNetworkProxyQuery could have a QNetworkSession and then take the RConnection
-    // from there. If it does not have one, we have to use the "global RConnection".
+class SymbianProxyQuery
+{
+public:
+    static QNetworkConfiguration findCurrentConfiguration(QNetworkConfigurationManager& configurationManager);
+    static SymbianIapId getIapId(QNetworkConfigurationManager& configurationManager);
+    static CCDIAPRecord *getIapRecordLC(TUint32 aIAPId, CMDBSession &aDb);
+    static CMDBRecordSet<CCDProxiesRecord> *prepareQueryLC(TUint32 serviceId, TDesC& serviceType);
+    static QList<QNetworkProxy> proxyQueryL(TUint32 aIAPId, const QNetworkProxyQuery &query);
+};
 
-    // See http://bugreports.qt.nokia.com/browse/QTBUG-13857 and http://bugreports.qt.nokia.com/browse/QTBUG-11016
-    // and the mails we have received.
+QNetworkConfiguration SymbianProxyQuery::findCurrentConfiguration(QNetworkConfigurationManager& configurationManager)
+{
+    QList<QNetworkConfiguration> activeConfigurations = configurationManager.allConfigurations(
+        QNetworkConfiguration::Active);
+    QNetworkConfiguration currentConfig;
+    if (activeConfigurations.count() > 0) {
+        currentConfig = activeConfigurations.at(0);
+    } else {
+        // No active configurations, try default one
+        QNetworkConfiguration defaultConfiguration = configurationManager.defaultConfiguration();
+        if (defaultConfiguration.isValid()) {
+            switch (defaultConfiguration.type()) {
+            case QNetworkConfiguration::InternetAccessPoint:
+                currentConfig = defaultConfiguration;
+                break;
+            case QNetworkConfiguration::ServiceNetwork:
+            {
+                // Note: This code assumes that the only unambigious way to
+                // find current proxy config is if there is only one access point
+                // or if the found access point is immediately usable.
+                QList<QNetworkConfiguration> childConfigurations = defaultConfiguration.children();
+                if (childConfigurations.count() == 1) {
+                    currentConfig = childConfigurations.at(0);
+                } else {
+                    for (int index = 0; index < childConfigurations.count(); index++) {
+                        QNetworkConfiguration childConfig = childConfigurations.at(index);
+                        if (childConfig.isValid() && childConfig.state() == QNetworkConfiguration::Discovered) {
+                            currentConfig = childConfig;
+                            break;
+                        }
+                    }
+                }
+            }
+                break;
+            case QNetworkConfiguration::UserChoice:
+                // User choice is not a valid configuration for proxy discovery
+                break;
+            }
+        }
+    }
+    return currentConfig;
+}
 
-    // Default case: No network proxy found/needed
-    return QList<QNetworkProxy>() << QNetworkProxy::NoProxy;
+SymbianIapId SymbianProxyQuery::getIapId(QNetworkConfigurationManager& configurationManager)
+{
+    SymbianIapId iapId;
+
+    QNetworkConfiguration currentConfig = findCurrentConfiguration(configurationManager);
+    if (currentConfig.isValid()) {
+        // Note: the following code assumes that the identifier is in format
+        // I_xxxx where xxxx is the identifier of IAP. This is meant as a
+        // temporary solution until there is a support for returning
+        // implementation specific identifier.
+        const int generalPartLength = 2;
+        const int identifierNumberLength = currentConfig.identifier().length() - generalPartLength;
+        QString idString(currentConfig.identifier().right(identifierNumberLength));
+        bool success;
+        uint id = idString.toUInt(&success);
+        if (success)
+            iapId.setIapId(id);
+        else
+            qWarning() << "Failed to convert identifier to access point identifier: "
+                << currentConfig.identifier();
+    }
+
+    return iapId;
+}
+
+CCDIAPRecord *SymbianProxyQuery::getIapRecordLC(TUint32 aIAPId, CMDBSession &aDb)
+{
+    CCDIAPRecord *iap = static_cast<CCDIAPRecord*> (CCDRecordBase::RecordFactoryL(KCDTIdIAPRecord));
+    CleanupStack::PushL(iap);
+    iap->SetRecordId(aIAPId);
+    iap->LoadL(aDb);
+    return iap;
+}
+
+CMDBRecordSet<CCDProxiesRecord> *SymbianProxyQuery::prepareQueryLC(TUint32 serviceId, TDesC& serviceType)
+{
+    // Create a recordset of type CCDProxiesRecord
+    // for priming search.
+    // This will ultimately contain record(s)
+    // matching the priming record attributes
+    CMDBRecordSet<CCDProxiesRecord> *proxyRecords = new (ELeave) CMDBRecordSet<CCDProxiesRecord> (
+        KCDTIdProxiesRecord);
+    CleanupStack::PushL(proxyRecords);
+
+    CCDProxiesRecord *primingProxyRecord =
+        static_cast<CCDProxiesRecord *> (CCDRecordBase::RecordFactoryL(KCDTIdProxiesRecord));
+    CleanupStack::PushL(primingProxyRecord);
+
+    primingProxyRecord->iServiceType.SetMaxLengthL(serviceType.Length());
+    primingProxyRecord->iServiceType = serviceType;
+    primingProxyRecord->iService = serviceId;
+    primingProxyRecord->iUseProxyServer = ETrue;
+
+    proxyRecords->iRecords.AppendL(primingProxyRecord);
+    // Ownership of primingProxyRecord is transferred to
+    // proxyRecords, just remove it from the CleanupStack
+    CleanupStack::Pop(primingProxyRecord);
+    return proxyRecords;
+}
+
+QList<QNetworkProxy> SymbianProxyQuery::proxyQueryL(TUint32 aIAPId, const QNetworkProxyQuery &query)
+{
+    QList<QNetworkProxy> foundProxies;
+    if (query.queryType() != QNetworkProxyQuery::UrlRequest) {
+        return foundProxies;
+    }
+
+    CMDBSession *iDb = CMDBSession::NewLC(KCDVersion1_1);
+    CCDIAPRecord *iap = getIapRecordLC(aIAPId, *iDb);
+
+    // Read service table id and service type
+    // from the IAP record found
+    TUint32 serviceId = iap->iService;
+    RBuf serviceType;
+    serviceType.CreateL(iap->iServiceType);
+    CleanupStack::PopAndDestroy(iap);
+    CleanupClosePushL(serviceType);
+
+    CMDBRecordSet<CCDProxiesRecord> *proxyRecords = prepareQueryLC(serviceId, serviceType);
+
+    // Now to find a proxy table matching our criteria
+    if (proxyRecords->FindL(*iDb)) {
+        TInt count = proxyRecords->iRecords.Count();
+        for(TInt index = 0; index < count; index++) {
+            CCDProxiesRecord *proxyRecord = static_cast<CCDProxiesRecord *> (proxyRecords->iRecords[index]);
+            RBuf serverName;
+            serverName.CreateL(proxyRecord->iServerName);
+            CleanupClosePushL(serverName);
+            if (serverName.Length() == 0)
+                User::Leave(KErrNotFound);
+            QString serverNameQt((const QChar*)serverName.Ptr(), serverName.Length());
+            CleanupStack::Pop(); // serverName
+            TUint32 port = proxyRecord->iPortNumber;
+
+            QNetworkProxy proxy(QNetworkProxy::HttpProxy, serverNameQt, port);
+            foundProxies.append(proxy);
+        }
+    }
+
+    CleanupStack::PopAndDestroy(proxyRecords);
+    CleanupStack::Pop(); // serviceType
+    CleanupStack::PopAndDestroy(iDb);
+
+    return foundProxies;
+}
+
+QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkProxyQuery &query)
+{
+    QList<QNetworkProxy> proxies;
+    SymbianIapId iapId;
+    TInt error;
+    QNetworkConfigurationManager manager;
+    iapId = SymbianProxyQuery::getIapId(manager);
+    if (iapId.isValid()) {
+        TRAP(error, proxies = SymbianProxyQuery::proxyQueryL(iapId.iapId(), query))
+        if (error != KErrNone) {
+            qWarning() << "Error while retrieving proxies: '" << error << '"';
+            proxies.clear();
+        }
+    }
+    proxies << QNetworkProxy::NoProxy;
+
+    return proxies;
 }
 
 QT_END_NAMESPACE

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -87,6 +87,7 @@ class QScriptEngineAgent;
 class QScriptEnginePrivate;
 class QScriptSyntaxCheckResult;
 class QScriptEngine;
+class QScriptProgramPrivate;
 
 namespace QScript
 {
@@ -273,6 +274,10 @@ public:
     static QScriptSyntaxCheckResult checkSyntax(const QString &program);
     static bool canEvaluate(const QString &program);
 
+    inline void registerScriptProgram(QScriptProgramPrivate *program);
+    inline void unregisterScriptProgram(QScriptProgramPrivate *program);
+    void detachAllRegisteredScriptPrograms();
+
     inline QScriptValuePrivate *allocateScriptValuePrivate(size_t);
     inline void freeScriptValuePrivate(QScriptValuePrivate *p);
 
@@ -368,6 +373,7 @@ public:
     static const int maxFreeScriptValues = 256;
     int freeScriptValuesCount;
     QScriptStringPrivate *registeredScriptStrings;
+    QSet<QScriptProgramPrivate*> registeredScriptPrograms;
     QHash<int, QScriptTypeInfo*> m_typeInfos;
     int processEventsInterval;
     QScriptValue abortResult;
@@ -565,6 +571,18 @@ inline QByteArray convertToLatin1(const JSC::UString &str)
 }
 
 } // namespace QScript
+
+inline void QScriptEnginePrivate::registerScriptProgram(QScriptProgramPrivate *program)
+{
+    Q_ASSERT(!registeredScriptPrograms.contains(program));
+    registeredScriptPrograms.insert(program);
+}
+
+inline void QScriptEnginePrivate::unregisterScriptProgram(QScriptProgramPrivate *program)
+{
+    Q_ASSERT(registeredScriptPrograms.contains(program));
+    registeredScriptPrograms.remove(program);
+}
 
 inline QScriptValuePrivate *QScriptEnginePrivate::allocateScriptValuePrivate(size_t size)
 {

@@ -30,3 +30,4 @@ else:win32:SOURCES += kernel/qnetworkproxy_win.cpp
 else:symbian:SOURCES += kernel/qnetworkproxy_symbian.cpp
 else:SOURCES += kernel/qnetworkproxy_generic.cpp
 
+symbian: LIBS += -lcommsdat

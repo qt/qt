@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -632,10 +632,26 @@ bool QDBusConnection::connect(const QString &service, const QString &path, const
 
     if (!receiver || !slot || !d || !d->connection)
         return false;
-    if (!interface.isEmpty() && !QDBusUtil::isValidInterfaceName(interface))
-        return false;
     if (interface.isEmpty() && name.isEmpty())
         return false;
+    if (!interface.isEmpty() && !QDBusUtil::isValidInterfaceName(interface)) {
+#ifndef QT_NO_DEBUG
+        qWarning("QDBusConnection::connect: interface name '%s' is not valid", interface.toLatin1().constData());
+#endif
+        return false;
+    }
+    if (!service.isEmpty() && !QDBusUtil::isValidBusName(service)) {
+#ifndef QT_NO_DEBUG
+        qWarning("QDBusConnection::connect: service name '%s' is not valid", service.toLatin1().constData());
+#endif
+        return false;
+    }
+    if (!path.isEmpty() && !QDBusUtil::isValidObjectPath(path)) {
+#ifndef QT_NO_DEBUG
+        qWarning("QDBusConnection::connect: object path '%s' is not valid", path.toLatin1().constData());
+#endif
+        return false;
+    }
 
     QDBusWriteLocker locker(ConnectAction, d);
     return d->connectSignal(service, path, interface, name, argumentMatch, signature, receiver, slot);

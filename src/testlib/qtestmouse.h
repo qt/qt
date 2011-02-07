@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -107,7 +107,11 @@ namespace QTest
                 break;
             case MouseMove:
                 QCursor::setPos(widget->mapToGlobal(pos));
+#ifdef QT_MAC_USE_COCOA
+                QTest::qWait(20);
+#else
                 qApp->processEvents();
+#endif
                 return;
             default:
                 QTEST_ASSERT(false);
