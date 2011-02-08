@@ -1060,30 +1060,26 @@ QWidget *qt_mac_getTargetForMouseEvent(
     returnGlobalPoint = flipPoint([NSEvent mouseLocation]).toPoint();
     QWidget *mouseGrabber = QWidget::mouseGrabber();
     bool buttonDownNotBlockedByModal = qt_button_down && !QApplicationPrivate::isBlockedByModal(qt_button_down);
+    QWidget *popup = QApplication::activePopupWidget();
 
     // Resolve the widget under the mouse:
     QWidget *widgetUnderMouse = 0;
-    if (nativeWidget) {
+    if (popup || qt_button_down || !nativeWidget) {
+        // Using QApplication::widgetAt for finding the widget under the mouse
+        // is most safe, since it ignores cocoas own mouse down redirections (which
+        // we need to be prepared for when using nativeWidget as starting point).
+        // (the only exception is for QMacNativeWidget, where QApplication::widgetAt fails).
+        // But it is also slower (I guess), so we try to avoid it and use nativeWidget if we can:
+        widgetUnderMouse = QApplication::widgetAt(returnGlobalPoint);
+    }
+
+    if (!widgetUnderMouse && nativeWidget) {
+        // Entering here should be the common case. We
+        // also handle the QMacNativeWidget fallback case.
         QPoint p = nativeWidget->mapFromGlobal(returnGlobalPoint);
         widgetUnderMouse = nativeWidget->childAt(p);
-        if (!widgetUnderMouse){
-            // Cocoa will redirct mouse event to the current
-            // mouse down widget, which is not what we want for our
-            // widgetUnderMouse assignment. So we need to check
-            // if we are actually inside nativeView:
-            if (nativeWidget->rect().contains(p)) {
-                widgetUnderMouse = nativeWidget;
-            } else {
-                // Ok, fallback to find the widget under mouse ourselves.
-                widgetUnderMouse = QApplication::widgetAt(returnGlobalPoint);
-            }
-        }
-    } else {
-        // Calling QApplication::widgetAt is potentially slow, hence the
-        // reason we avoid it if we can. So supplying a nativeWidget to
-        // this function is mostly an optimization. But at the same time,
-        // calling QApplication::widgetAt fails for QMacNativeWidget...
-        widgetUnderMouse = QApplication::widgetAt(returnGlobalPoint);
+        if (!widgetUnderMouse && nativeWidget->rect().contains(p))
+            widgetUnderMouse = nativeWidget;
     }
 
     if (widgetUnderMouse) {
@@ -1109,7 +1105,6 @@ QWidget *qt_mac_getTargetForMouseEvent(
 
     // Resolve the target for the mouse event. Default will be widgetUnderMouse, except
     // if there is a popup-"grab", mousegrab, or button-down-"grab":
-    QWidget *popup = QApplication::activePopupWidget();
     if (popup && !mouseGrabber) {
         if (!popup->isAncestorOf(widgetUnderMouse)) {
             // The popup will always grab the mouse unless the
@@ -1192,16 +1187,14 @@ bool qt_mac_handleMouseEvent(NSEvent *event, QEvent::Type eventType, Qt::MouseBu
     if (!widgetToGetMouse)
         return false;
 
-    if (!nativeWidget) {
-        // Path typically taken for mouse moves (send
-        // directly from [QCocoaWindow sendEvent]
-        if (!widgetUnderMouse)
-            return false;
-        nativeWidget = widgetUnderMouse->internalWinId() ?
-            widgetUnderMouse : widgetUnderMouse->nativeParentWidget();
-        if (!nativeWidget)
-            return false;
-    }
+    // From here on, we let nativeWidget actually be the native widget under widgetUnderMouse. The reason
+    // for this, is that qt_mac_getTargetForMouseEvent will set cocoa's mouse event redirection aside when
+    // determining which widget is under the mouse (in other words, it will usually ignore nativeWidget).
+    // nativeWidget will be used in QApplicationPrivate::sendMouseEvent to correctly dispatch enter/leave events.
+    if (widgetUnderMouse)
+        nativeWidget = widgetUnderMouse->internalWinId() ? widgetUnderMouse : widgetUnderMouse->nativeParentWidget();
+    if (!nativeWidget)
+        return false;
     NSView *view = qt_mac_effectiveview_for(nativeWidget);
 
     // Handle tablet events (if any) first.
