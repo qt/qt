@@ -443,7 +443,7 @@ static void printAllServices(QDBusConnectionInterface *bus)
 
 int main(int argc, char **argv)
 {
-    qt_dbus_metaobject_skip_annotations = true;
+    QT_PREPEND_NAMESPACE(qt_dbus_metaobject_skip_annotations) = true;
     QCoreApplication app(argc, argv);
     QStringList args = app.arguments();
     args.takeFirst();
