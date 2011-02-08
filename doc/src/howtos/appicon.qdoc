@@ -62,7 +62,7 @@
     Finally, assuming you are using \c qmake to generate your
     makefiles, add this line to your \c myapp.pro file:
 
-    \snippet doc/src/snippets/code/doc_src_appicon.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_appicon.pro 1
 
     Regenerate your makefile and your application. The \c .exe file
     will now be represented with your icon in Explorer.
@@ -96,7 +96,7 @@
     if the name of your icon file is \c{myapp.icns}, and your project
     file is \c{myapp.pro}, add this line to \c{myapp.pro}:
 
-    \snippet doc/src/snippets/code/doc_src_appicon.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_appicon.pro 2
 
     This will ensure that \c qmake puts your icons in the proper
     place and creates an \c{Info.plist} entry for the icon.
@@ -213,6 +213,6 @@
     icon file is \c{myapp.svg}, and your project file is \c{myapp.pro},
     add this line to \c{myapp.pro}:
 
-    \snippet doc/src/snippets/code/doc_src_appicon.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_appicon.pro 5
     
 */

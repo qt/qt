@@ -44,7 +44,7 @@
     without removing it.
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_q3valuestack.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_q3valuestack.cpp 0
 
     Q3ValueStack is a specialized Q3ValueList provided for convenience.
     All of Q3ValueList's functionality also applies to Q3PtrStack, for
