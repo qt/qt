@@ -145,8 +145,8 @@ QT_END_NAMESPACE
 QTM_END_NAMESPACE
 #endif
 
-Q_DECLARE_METATYPE(QNetworkSession::State);
-Q_DECLARE_METATYPE(QNetworkSession::SessionError);
+Q_DECLARE_METATYPE(QNetworkSession::State)
+Q_DECLARE_METATYPE(QNetworkSession::SessionError)
 
 QT_END_HEADER
 
