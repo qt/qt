@@ -84,13 +84,8 @@ class Q_DECLARATIVE_EXPORT Renderer : public QObject, public QGLFunctions
 public:
     enum Update
     {
-        UpdateColor                 = 0x00000001,
-        UpdateModelViewMatrix       = 0x00000002,
-        UpdateProjectionMatrix      = 0x00000004,
-        UpdateMatrices              = 0x00000006,
-        UpdateLights                = 0x00000008,
-        UpdateMaterials             = 0x00000010,
-        UpdateAll                   = 0x7FFFFFFF
+        UpdateMatrices              = 0x0001,
+        UpdateOpacity               = 0x0002
     };
     Q_DECLARE_FLAGS(Updates, Update)
 
@@ -121,6 +116,9 @@ public:
 
     QMatrix4x4 combinedMatrix() const { return m_projectionMatrix.top() * m_modelViewMatrix.top(); }
 
+    // ### gunnar: move into RenderState along with combined matrix and update flags.
+    qreal renderOpacity() const { return m_render_opacity; }
+
     void setClearColor(const QColor &color);
 
     void setTexture(int unit, const QSGTextureRef &texture);
@@ -130,8 +128,6 @@ public:
     void renderScene(const Bindable &bindable);
     virtual void nodeChanged(Node *node, Node::DirtyFlags flags);
     virtual void materialChanged(GeometryNode *node, AbstractMaterial *from, AbstractMaterial *to);
-
-public slots:
 
 signals:
     void sceneGraphChanged(); // Add, remove, ChangeFlags changes...
@@ -150,6 +146,7 @@ protected:
     QColor m_clear_color;
     QSGMatrix4x4Stack m_projectionMatrix;
     QSGMatrix4x4Stack m_modelViewMatrix;
+    qreal m_render_opacity;
 
 private:
     RootNode *m_root_node;

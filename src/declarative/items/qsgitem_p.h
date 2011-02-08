@@ -315,7 +315,6 @@ public:
 
         Clip                    = 0x00001000,
         Canvas                  = 0x00002000,
-        EffectiveOpacity        = 0x00004000,
 
         EffectReference         = 0x00008000,
         Visible                 = 0x00010000,
@@ -324,7 +323,7 @@ public:
 
         TransformUpdateMask     = TransformOrigin | Transform | BasicTransform | Position | Size | EffectReference | Canvas,
         ComplexTransformUpdateMask     = Transform | EffectReference | Canvas,
-        ContentUpdateMask       = Size | Content | Smooth | EffectiveOpacity | Canvas,
+        ContentUpdateMask       = Size | Content | Smooth | Canvas,
         ChildrenUpdateMask      = ChildrenChanged | ChildrenStackingChanged | Canvas,
 
     };
@@ -339,10 +338,10 @@ public:
     inline TransformNode *itemNode();
     inline Node *childContainerNode();
     TransformNode *itemNodeInstance;
+    OpacityNode *opacityNode;
     QSGClipNode *clipNode;
     Node *paintNode;
     int paintNodeIndex;
-    qreal effectiveOpacity;
 
     // A reference from an effect item means that this item is hidden by the effect, so
     // it shouldn't be included in the main scene.  The itemNodeInstance should contain

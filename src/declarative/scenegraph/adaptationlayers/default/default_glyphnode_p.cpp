@@ -293,6 +293,7 @@ void TextMaskMaterial::updateGlyphCache(const QGLContext *context)
         bool success = qt_resolve_version_2_0_functions(ctx)
                        && qt_resolve_buffer_extensions(ctx);
         Q_ASSERT(success);
+        Q_UNUSED(success);
 #endif
 
         if (cache->context() == 0)

@@ -61,19 +61,18 @@ Node::~Node()
 }
 
 
-/*
-   Moves all children from this node to the new node without notifications
-   or anything.
+/*!
+    \fn bool Node::isSubtreeBlocked() const
+
+    Returns wether this node and its subtree is available for use.
+
+    Blocked subtrees will not get their dirty states updated and they
+    will not be rendered.
+
+    The OpacityNode will return a blocked subtree when accumulated opacity
+    is 0, for instance.
  */
 
-void Node::moveChildren(Node *newParent)
-{
-    for (int i=0; i<m_children.size(); ++i) {
-        m_children[i]->m_parent = newParent;
-    }
-    newParent->m_children = m_children;
-    m_children.clear();
-}
 
 void Node::destroy()
 {
@@ -309,6 +308,7 @@ void BasicGeometryNode::setBoundingRect(const QRectF &bounds)
 GeometryNode::GeometryNode()
     : m_render_order(0)
     , m_material(0)
+    , m_opacity(1)
 {
 }
 
@@ -353,6 +353,23 @@ QRectF GeometryNode::subtreeBoundingRect() const
     return BasicGeometryNode::subtreeBoundingRect() | boundingRect();
 }
 
+/*!
+    Sets the inherited opacity of this geometry to \a opacity.
+
+    This function is meant to be called by the node preprocessing
+    prior to rendering the tree, so it will not mark the tree as
+    dirty.
+
+    \internal
+  */
+void GeometryNode::setInheritedOpacity(qreal opacity)
+{
+    Q_ASSERT(opacity >= 0 && opacity <= 1);
+    m_opacity = opacity;
+}
+
+
+
 ClipNode::ClipNode()
 {
 }
@@ -383,36 +400,21 @@ void TransformNode::setMatrix(const QMatrix4x4 &matrix)
     markDirty(DirtyMatrix);
 }
 
-void TransformNode::setZ(qreal z)
+
+/*!
+    Sets the combined matrix of this matrix to \a transform.
+
+    This function is meant to be called by the node preprocessing
+    prior to rendering the tree, so it will not mark the tree as
+    dirty.
+
+    \internal
+  */
+void TransformNode::setCombinedMatrix(const QMatrix4x4 &matrix)
 {
-    QMatrix4x4 m;
-    m.translate(0, 0, z);
-    setMatrix(m);
+    m_combined_matrix = matrix;
 }
 
-void TransformNode::translate(qreal dx, qreal dy, qreal dz)
-{
-    m_matrix.translate(dx, dy, dz);
-    setMatrix(m_matrix);
-}
-
-void TransformNode::scale(qreal factor)
-{
-    m_matrix.scale(factor);
-    setMatrix(m_matrix);
-}
-
-void TransformNode::scale(qreal x, qreal y, qreal z)
-{
-    m_matrix.scale(x, y, z);
-    setMatrix(m_matrix);
-}
-
-void TransformNode::rotate(qreal angle, qreal x, qreal y, qreal z)
-{
-    m_matrix.rotate(angle, x, y, z);
-    setMatrix(m_matrix);
-}
 
 QRectF TransformNode::subtreeBoundingRect() const
 {
@@ -443,6 +445,67 @@ void RootNode::updateDirtyStates()
 }
 
 
+/*!
+    Constructs an opacity node with a default opacity of 1.
+
+    Opacity accumulate downwards in the scene graph so a node with two
+    OpacityNode instances above it, both with opacity of 0.5, will have
+    effective opacity of 0.25.
+
+    The default opacity of nodes is 1.
+  */
+OpacityNode::OpacityNode()
+    : m_opacity(1)
+    , m_combined_opacity(1)
+{
+}
+
+
+OpacityNode::~OpacityNode()
+{
+    destroy();
+}
+
+
+/*!
+    Sets the opacity of this node to \a opacity.
+
+    Before rendering the graph, the renderer will do an update pass
+    over the subtree to propegate the opacity to its children.
+
+    The value will be bounded to the range 0 to 1.
+ */
+void OpacityNode::setOpacity(qreal opacity)
+{
+    opacity = qBound<qreal>(0, opacity, 1);
+    if (m_opacity == opacity)
+        return;
+    m_opacity = opacity;
+    markDirty(DirtyOpacity);
+}
+
+
+/*!
+    Sets the combined opacity of this node to \a opacity.
+
+    This function is meant to be called by the node preprocessing
+    prior to rendering the tree, so it will not mark the tree as
+    dirty.
+
+    \internal
+ */
+void OpacityNode::setCombinedOpacity(qreal opacity)
+{
+    m_combined_opacity = opacity;
+}
+
+
+bool OpacityNode::isSubtreeBlocked() const
+{
+    return m_combined_opacity < 0.001;
+}
+
+
 NodeVisitor::~NodeVisitor()
 {
 
@@ -469,6 +532,12 @@ void NodeVisitor::visitNode(Node *n)
         enterClipNode(c);
         visitChildren(c);
         leaveClipNode(c);
+        break; }
+    case Node::OpacityNodeType: {
+        OpacityNode *o = static_cast<OpacityNode *>(n);
+        enterOpacityNode(o);
+        visitChildren(o);
+        leaveOpacityNode(o);
         break; }
     default:
         visitChildren(n);
@@ -556,7 +625,7 @@ QDebug operator<<(QDebug d, const ClipNode *n)
 #ifdef QML_RUNTIME_TESTING
     d << n->description;
 #endif
-    d << "dirty=" << hex << (int) n->dirtyFlags() << dec;
+    d << "dirty=" << hex << (int) n->dirtyFlags() << dec << (n->isSubtreeBlocked() ? "*BLOCKED*" : "");
     return d;
 }
 
@@ -578,10 +647,47 @@ QDebug operator<<(QDebug d, const TransformNode *n)
 #ifdef QML_RUNTIME_TESTING
     d << n->description;
 #endif
+    d << "dirty=" << hex << (int) n->dirtyFlags() << dec << (n->isSubtreeBlocked() ? "*BLOCKED*" : "");
+    d << ")";
+    return d;
+}
+
+QDebug operator<<(QDebug d, const OpacityNode *n)
+{
+    if (!n) {
+        d << "OpacityNode(null)";
+        return d;
+    }
+    d << "OpacityNode(";
+    d << hex << (void *) n << dec;
+    d << "opacity=" << n->opacity()
+      << "combined=" << n->combinedOpacity()
+      << (n->isSubtreeBlocked() ? "*BLOCKED*" : "");
+#ifdef QML_RUNTIME_TESTING
+    d << n->description;
+#endif
     d << "dirty=" << hex << (int) n->dirtyFlags() << dec;
     d << ")";
     return d;
 }
+
+
+QDebug operator<<(QDebug d, const RootNode *n)
+{
+    if (!n) {
+        d << "RootNode(null)";
+        return d;
+    }
+    d << "RootNode" << hex << (void *) n << "dirty=" << (int) n->dirtyFlags() << dec
+      << (n->isSubtreeBlocked() ? "*BLOCKED*" : "");
+#ifdef QML_RUNTIME_TESTING
+    d << n->description;
+#endif
+    d << ")";
+    return d;
+}
+
+
 
 QDebug operator<<(QDebug d, const Node *n)
 {
@@ -600,14 +706,15 @@ QDebug operator<<(QDebug d, const Node *n)
         d << static_cast<const ClipNode *>(n);
         break;
     case Node::RootNodeType:
-        d << "RootNode" << hex << (void *) n << dec << "children=" << n->childCount() << "dirty=" << hex << (int) n->dirtyFlags() << dec;
-#ifdef QML_RUNTIME_TESTING
-        d << n->description;
-#endif
-        d << ")";
+        d << static_cast<const RootNode *>(n);
+        break;
+    case Node::OpacityNodeType:
+        d << static_cast<const OpacityNode *>(n);
         break;
     default:
-        d << "Node(" << hex << (void *) n << dec << "children=" << n->childCount() << "dirty=" << hex << (int) n->dirtyFlags() << dec;
+        d << "Node(" << hex << (void *) n << dec
+          << "dirty=" << hex << (int) n->dirtyFlags() << dec
+          << (n->isSubtreeBlocked() ? "*BLOCKED*" : "");
 #ifdef QML_RUNTIME_TESTING
         d << n->description;
 #endif

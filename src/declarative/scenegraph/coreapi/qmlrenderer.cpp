@@ -278,7 +278,7 @@ bool QMLRenderer::isSortFrontToBackEnabled() const
 
 void QMLRenderer::buildLists(Node *node)
 {
-    if (!node->isSubtreeEnabled())
+    if (!node->isSubtreeEnabled() || node->isSubtreeBlocked())
         return;
 
     Geometry *g = 0;
@@ -291,7 +291,8 @@ void QMLRenderer::buildLists(Node *node)
 #ifdef FORCE_NO_REORDER
             if (true) {
 #else
-            if (geomNode->material()->flags() & AbstractMaterial::Blending) {
+            if ((geomNode->material()->flags() & AbstractMaterial::Blending)
+                    || geomNode->inheritedOpacity() < 1) {
 #endif
                 geomNode->setRenderOrder(m_currentRenderOrder - 1);
                 m_transparentNodes.append(geomNode);
@@ -360,8 +361,11 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
     //int programChangeCount = 0;
     //int materialChangeCount = 0;
 
+
     for (int i = 0; i < count; ++i) {
         GeometryNode *geomNode = list.at(i);
+
+        Updates updates(0);
 
 #if defined (QML_RUNTIME_TESTING)
         static bool dumpTree = qApp->arguments().contains("--dump-tree");
@@ -377,7 +381,15 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
                 m_modelViewMatrix = *m_currentMatrix;
             else
                 m_modelViewMatrix.setToIdentity();
+            updates |= UpdateMatrices;
         }
+
+        bool changeOpacity = m_render_opacity != geomNode->inheritedOpacity();
+        if (changeOpacity) {
+            updates |= UpdateOpacity;
+            m_render_opacity = geomNode->inheritedOpacity();
+        }
+
 
         Q_ASSERT(geomNode->material());
 
@@ -404,7 +416,7 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
             m_currentProgram = program;
             m_currentProgram->activate();
             //++programChangeCount;
-            changeMatrix = true;
+            updates |= UpdateMatrices;
         }
 
         bool changeRenderOrder = currentRenderOrder != geomNode->renderOrder();
@@ -414,12 +426,11 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
             m_projectionMatrix.pop();
             m_projectionMatrix.push();
             m_projectionMatrix *= m_renderOrderMatrix;
-            changeMatrix = true;
+            updates |= UpdateMatrices;
         }
 
         if (changeProgram || m_currentMaterial != material) {
-            program->updateState(this, material, changeProgram ? 0 : m_currentMaterial,
-                changeMatrix ? Renderer::UpdateMatrices : Renderer::Update(0));
+            program->updateState(this, material, changeProgram ? 0 : m_currentMaterial, updates);
             m_currentMaterial = material;
             //++materialChangeCount;
         }

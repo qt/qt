@@ -97,7 +97,7 @@ void DistanceFieldGlyphNode::setGlyphs(const QPointF &position, const QGlyphs &g
     updateGeometry();
 
 #ifdef QML_RUNTIME_TESTING
-    description = "glyphs";
+    description = QLatin1String("glyphs");
 #endif
 }
 
