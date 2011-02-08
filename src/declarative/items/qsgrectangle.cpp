@@ -271,8 +271,6 @@ Node *QSGRectangle::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     }
     rectangle->setGradientStops(stops);
 
-    rectangle->setOpacity(data->opacity);
-
     rectangle->update();
 
     return rectangle;

@@ -255,7 +255,6 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 
     node->setRect(targetRect);
     node->setSourceRect(nsrect);
-    node->setOpacity(data->opacity);
     node->setClampToEdge(clampToEdge);
     node->setLinearFiltering(d->smooth);
     node->update();

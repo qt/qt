@@ -61,7 +61,7 @@ class TextureReference;
 class Q_DECLARATIVE_EXPORT RectangleNodeInterface : public GeometryNode
 {
 public:
-    RectangleNodeInterface() : m_radius(0), m_opacity(1), m_pen_width(0) { }
+    RectangleNodeInterface() : m_radius(0), m_pen_width(0) { }
 
     virtual void setRect(const QRectF &rect) = 0;
     QRectF rect() const { return m_rect; }
@@ -74,9 +74,6 @@ public:
 
     virtual void setPenWidth(int width) = 0;
     int penWidth() const { return m_pen_width; }
-
-    virtual void setOpacity(qreal opacity) = 0;
-    qreal opacity() const { return m_opacity; }
 
     virtual void setGradientStops(const QGradientStops &stops) = 0;
     QGradientStops gradientStops() const { return m_gradient_stops; }
@@ -92,14 +89,13 @@ protected:
     QColor m_color;
     QColor m_pen_color;
     qreal m_radius;
-    qreal m_opacity;
     int m_pen_width;
 };
 
 class Q_DECLARATIVE_EXPORT TextureNodeInterface : public GeometryNode
 {
 public:
-    TextureNodeInterface() : m_texture(0), m_opacity(1), m_clamp_to_edge(true), m_linear_filtering(false) { }
+    TextureNodeInterface() : m_texture(0), m_clamp_to_edge(true), m_linear_filtering(false) { }
 
     virtual void setRect(const QRectF &rect) = 0;
     QRectF rect() const { return m_rect; }
@@ -107,9 +103,6 @@ public:
     // Normalized source coordinates..
     virtual void setSourceRect(const QRectF &rect) = 0;
     QRectF sourceRect() const { return m_source_rect; }
-
-    virtual void setOpacity(qreal opacity) = 0;
-    qreal opacity() const { return m_opacity; }
 
     virtual void setTexture(const QSGTextureRef &ref) = 0;
     const QSGTextureRef &texture() const;
@@ -128,7 +121,6 @@ protected:
     QSGTextureRef m_texture;
     QRectF m_rect;
     QRectF m_source_rect;
-    qreal m_opacity;
     bool m_clamp_to_edge;
     bool m_linear_filtering;
 

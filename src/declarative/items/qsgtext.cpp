@@ -866,7 +866,6 @@ Node *QSGText::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 
         node->setRect(QRectF(bounds.x(), bounds.y(), d->imageCache.width(), d->imageCache.height()));
         node->setSourceRect(QRectF(0, 0, 1., 1.));
-        node->setOpacity(data->opacity);
         node->setClampToEdge(true);
         node->setLinearFiltering(d->smooth);
         node->update();

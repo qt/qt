@@ -183,7 +183,6 @@ Node *QSGPaintedItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 
     node->setRect(image.rect());
     node->setSourceRect(QRectF(0, 0, 1, 1));
-    node->setOpacity(data->opacity);
     node->setClampToEdge(true);
     node->setLinearFiltering(false);
     QSGTextureManager *tm = QSGContext::current->textureManager();

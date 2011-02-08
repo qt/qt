@@ -259,7 +259,7 @@ public:
     AbstractMaterial *material() const { return m_material; }
 
     void setOpaqueMaterial(AbstractMaterial *material);
-    AbstractMaterial *opaqueMaterial() const;
+    AbstractMaterial *opaqueMaterial() const { return m_opaque_material; }
 
     AbstractMaterial *activeMaterial() const;
 

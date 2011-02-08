@@ -296,7 +296,7 @@ void QMLRenderer::buildLists(Node *node)
 #ifdef FORCE_NO_REORDER
             if (true) {
 #else
-            if ((m->flags() & AbstractMaterial::Blending) || geomNode->inheritedOpacity() < 1) {
+            if ((m->flags() & AbstractMaterial::Blending) || opacity < 1) {
 #endif
                 geomNode->setRenderOrder(m_currentRenderOrder - 1);
                 m_transparentNodes.append(geomNode);

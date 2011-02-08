@@ -126,9 +126,6 @@ void QSGTextNode::setOpacity(qreal opacity)
             glyphNode->setOpacity(opacity);
         } else if (node->subType() == SolidRectNodeSubType) {
             SolidRectNode *solidRectNode = static_cast<SolidRectNode *>(node);
-        } else if (node->subType() == PixmapNodeSubType) {
-            TextureNodeInterface *pixmapNode = static_cast<TextureNodeInterface *>(node);
-            pixmapNode->setOpacity(opacity);
         }
     }
 }

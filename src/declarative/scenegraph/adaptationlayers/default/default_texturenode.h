@@ -53,7 +53,6 @@ public:
     DefaultTextureNode ();
     virtual void setRect(const QRectF &rect);
     virtual void setSourceRect(const QRectF &rect);
-    virtual void setOpacity(qreal) { }
     virtual void setTexture(const QSGTextureRef &texture);
     virtual void setClampToEdge(bool clampToEdge);
     virtual void setLinearFiltering(bool linearFiltering);
