@@ -46,9 +46,11 @@
 
 #include <xcb/xcb.h>
 
+#include "qxcbobject.h"
+
 class QXcbScreen;
 
-class QXcbWindow : public QPlatformWindow
+class QXcbWindow : public QXcbObject, public QPlatformWindow
 {
 public:
     QXcbWindow(QWidget *tlw);
@@ -73,6 +75,7 @@ public:
     xcb_window_t window() const { return m_window; }
 
     void handleExposeEvent(xcb_expose_event_t *event);
+    void handleClientMessageEvent(xcb_client_message_event_t *event);
     void handleConfigureNotifyEvent(xcb_configure_notify_event_t *event);
     void handleButtonPressEvent(xcb_button_press_event_t *event);
     void handleButtonReleaseEvent(xcb_button_release_event_t *event);
@@ -81,8 +84,6 @@ public:
     void handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_timestamp_t time, const QPoint &local, const QPoint &global);
 
 private:
-    xcb_connection_t *connection() const;
-
     QXcbScreen *m_screen;
 
     xcb_window_t m_window;

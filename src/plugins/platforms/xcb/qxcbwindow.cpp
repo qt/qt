@@ -55,6 +55,8 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
 {
     m_screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(tlw));
 
+    setConnection(m_screen->connection());
+
     const quint32 mask = XCB_CW_BACK_PIXMAP | XCB_CW_EVENT_MASK;
     const quint32 values[] = {
         // XCB_CW_BACK_PIXMAP
@@ -67,8 +69,8 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
         | XCB_EVENT_MASK_BUTTON_MOTION
     };
 
-    m_window = xcb_generate_id(connection());
-    xcb_create_window(connection(),
+    m_window = xcb_generate_id(xcb_connection());
+    xcb_create_window(xcb_connection(),
                       XCB_COPY_FROM_PARENT,            // depth -- same as root
                       m_window,                        // window id
                       m_screen->root(),                // parent window id
@@ -82,12 +84,25 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
                       mask,                            // value mask
                       values);                         // value list
 
+    xcb_atom_t properties[] = {
+        atom(QXcbAtom::WM_DELETE_WINDOW)
+    };
+
+    xcb_change_property(xcb_connection(),
+                        XCB_PROP_MODE_REPLACE,
+                        m_window,
+                        atom(QXcbAtom::WM_PROTOCOLS),
+                        4,
+                        32,
+                        sizeof(properties) / sizeof(xcb_atom_t),
+                        properties);
+
     printf("m_window: %d\n", m_window);
 }
 
 QXcbWindow::~QXcbWindow()
 {
-    xcb_destroy_window(connection(), m_window);
+    xcb_destroy_window(xcb_connection(), m_window);
 }
 
 void QXcbWindow::setGeometry(const QRect &rect)
@@ -98,9 +113,9 @@ void QXcbWindow::setGeometry(const QRect &rect)
 void QXcbWindow::setVisible(bool visible)
 {
     if (visible)
-        xcb_map_window(connection(), m_window);
+        xcb_map_window(xcb_connection(), m_window);
     else
-        xcb_unmap_window(connection(), m_window);
+        xcb_unmap_window(xcb_connection(), m_window);
 }
 
 Qt::WindowFlags QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
@@ -125,11 +140,11 @@ void QXcbWindow::setParent(const QPlatformWindow *)
 void QXcbWindow::setWindowTitle(const QString &title)
 {
     QByteArray ba = title.toUtf8();
-    xcb_change_property (connection(),
+    xcb_change_property (xcb_connection(),
                          XCB_PROP_MODE_REPLACE,
                          m_window,
-                         m_screen->connection()->atom(QXcbAtom::_NET_WM_NAME),
-                         m_screen->connection()->atom(QXcbAtom::UTF8_STRING),
+                         atom(QXcbAtom::_NET_WM_NAME),
+                         atom(QXcbAtom::UTF8_STRING),
                          8,
                          ba.length(),
                          ba.constData());
@@ -147,11 +162,6 @@ void QXcbWindow::requestActivateWindow()
 {
 }
 
-xcb_connection_t *QXcbWindow::connection() const
-{
-    return m_screen->connection()->connection();
-}
-
 void QXcbWindow::handleExposeEvent(xcb_expose_event_t *event)
 {
     if (event->count != 0)
@@ -160,6 +170,15 @@ void QXcbWindow::handleExposeEvent(xcb_expose_event_t *event)
     QWindowSurface *surface = widget()->windowSurface();
     if (surface)
         surface->flush(widget(), widget()->geometry(), QPoint());
+}
+
+void QXcbWindow::handleClientMessageEvent(xcb_client_message_event_t *event)
+{
+    if (event->format == 32 && event->type == atom(QXcbAtom::WM_PROTOCOLS)) {
+        if (event->data.data32[0] == atom(QXcbAtom::WM_DELETE_WINDOW)) {
+            QWindowSystemInterface::handleCloseEvent(widget());
+        }
+    }
 }
 
 void QXcbWindow::handleConfigureNotifyEvent(xcb_configure_notify_event_t *event)

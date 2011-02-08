@@ -222,11 +222,11 @@ public:
     QList<QXcbScreen *> screens() const { return m_screens; }
     int primaryScreen() const { return m_primaryScreen; }
 
-    xcb_connection_t *connection() const { return m_connection; }
-
     xcb_atom_t atom(QXcbAtom::Atom atom);
 
     const char *displayName() const { return m_displayName.constData(); }
+
+    xcb_connection_t *xcb_connection() const { return m_connection; }
 
 private slots:
     void eventDispatcher();

@@ -46,7 +46,9 @@
 
 #include <xcb/xcb.h>
 
-class QXcbWindowSurface : public QWindowSurface
+#include "qxcbobject.h"
+
+class QXcbWindowSurface : public QXcbObject, public QWindowSurface
 {
 public:
     QXcbWindowSurface(QWidget *widget, bool setDefaultSurface = true);

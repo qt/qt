@@ -12,6 +12,7 @@ SOURCES = \
         qxcbwindowsurface.cpp
 
 HEADERS = \
+        qxcbobject.h \
         qxcbintegration.h \
         qxcbconnection.h \
         qxcbscreen.h \

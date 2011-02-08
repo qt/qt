@@ -55,7 +55,7 @@ QXcbConnection::QXcbConnection(const char *displayName)
 
     m_connection = xcb_connect(m_displayName.constData(), &primaryScreen);
 
-    m_setup = xcb_get_setup(m_connection);
+    m_setup = xcb_get_setup(xcb_connection());
 
     xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_setup);
 
@@ -64,7 +64,7 @@ QXcbConnection::QXcbConnection(const char *displayName)
         xcb_screen_next(&it);
     }
 
-    QSocketNotifier *socket = new QSocketNotifier(xcb_get_file_descriptor(m_connection), QSocketNotifier::Read, this);
+    QSocketNotifier *socket = new QSocketNotifier(xcb_get_file_descriptor(xcb_connection()), QSocketNotifier::Read, this);
     connect(socket, SIGNAL(activated(int)), this, SLOT(eventDispatcher()));
 
     initializeAllAtoms();
@@ -74,7 +74,7 @@ QXcbConnection::~QXcbConnection()
 {
     qDeleteAll(m_screens);
 
-    xcb_disconnect(m_connection);
+    xcb_disconnect(xcb_connection());
 }
 
 QXcbWindow *platformWindowFromId(xcb_window_t id)
@@ -95,7 +95,7 @@ break;
 
 void QXcbConnection::eventDispatcher()
 {
-    while (xcb_generic_event_t *event = xcb_poll_for_event(m_connection)) {
+    while (xcb_generic_event_t *event = xcb_poll_for_event(xcb_connection())) {
         switch (event->response_type & ~0x80) {
         case XCB_EXPOSE:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
@@ -107,6 +107,8 @@ void QXcbConnection::eventDispatcher()
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);
         case XCB_CONFIGURE_NOTIFY:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
+        case XCB_CLIENT_MESSAGE:
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_client_message_event_t, window, handleClientMessageEvent);
         default:
             break;
 
@@ -299,8 +301,8 @@ void QXcbConnection::initializeAllAtoms() {
 
     Q_ASSERT(i == QXcbAtom::NAtoms);
     for (i = 0; i < QXcbAtom::NAtoms; ++i)
-        cookies[i] = xcb_intern_atom(m_connection, false, strlen(names[i]), names[i]);
+        cookies[i] = xcb_intern_atom(xcb_connection(), false, strlen(names[i]), names[i]);
 
     for (i = 0; i < QXcbAtom::NAtoms; ++i)
-        m_allAtoms[i] = xcb_intern_atom_reply(m_connection, cookies[i], 0)->atom;
+        m_allAtoms[i] = xcb_intern_atom_reply(xcb_connection(), cookies[i], 0)->atom;
 }

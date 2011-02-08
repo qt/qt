@@ -39,39 +39,24 @@
 **
 ****************************************************************************/
 
-#include "qxcbscreen.h"
+#ifndef QXCBOBJECT_H
+#define QXCBOBJECT_H
 
-#include <stdio.h>
+#include "qxcbconnection.h"
 
-QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen)
-    : QXcbObject(connection)
-    , m_screen(screen)
+class QXcbObject
 {
-    printf ("\n");
-    printf ("Informations of screen %d:\n", screen->root);
-    printf ("  width.........: %d\n", screen->width_in_pixels);
-    printf ("  height........: %d\n", screen->height_in_pixels);
-    printf ("  depth.........: %d\n", screen->root_depth);
-    printf ("  white pixel...: %x\n", screen->white_pixel);
-    printf ("  black pixel...: %x\n", screen->black_pixel);
-    printf ("\n");
-}
+public:
+    QXcbObject(QXcbConnection *connection = 0) : m_connection(connection) {}
 
-QXcbScreen::~QXcbScreen()
-{
-}
+    void setConnection(QXcbConnection *connection) { m_connection = connection; }
+    QXcbConnection *connection() const { return m_connection; }
 
-QRect QXcbScreen::geometry() const
-{
-    return QRect(0, 0, m_screen->width_in_pixels, m_screen->height_in_pixels);
-}
+    xcb_atom_t atom(QXcbAtom::Atom atom) const { return m_connection->atom(atom); }
+    xcb_connection_t *xcb_connection() const { return m_connection->xcb_connection(); }
 
-int QXcbScreen::depth() const
-{
-    return m_screen->root_depth;
-}
+private:
+    QXcbConnection *m_connection;
+};
 
-QImage::Format QXcbScreen::format() const
-{
-    return QImage::Format_RGB32;
-}
+#endif

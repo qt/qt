@@ -46,9 +46,11 @@
 
 #include <xcb/xcb.h>
 
+#include "qxcbobject.h"
+
 class QXcbConnection;
 
-class QXcbScreen : public QPlatformScreen
+class QXcbScreen : public QXcbObject, public QPlatformScreen
 {
 public:
     QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen);
@@ -58,14 +60,10 @@ public:
     int depth() const;
     QImage::Format format() const;
 
-    QXcbConnection *connection() const { return m_connection; }
-
     xcb_screen_t *screen() const { return m_screen; }
     xcb_window_t root() const { return m_screen->root; }
 
 private:
-    QXcbConnection *m_connection;
-
     xcb_screen_t *m_screen;
 };
 

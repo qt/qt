@@ -52,6 +52,9 @@ QXcbWindowSurface::QXcbWindowSurface(QWidget *widget, bool setDefaultSurface)
 {
     setStaticContentsSupport(false);
     setPartialUpdateSupport(false);
+
+    QXcbScreen *screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(widget));
+    setConnection(screen->connection());
 }
 
 QXcbWindowSurface::~QXcbWindowSurface()
@@ -68,15 +71,12 @@ void QXcbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoi
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
-    QXcbScreen *screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(widget));
     QXcbWindow *window = static_cast<QXcbWindow *>(widget->window()->platformWindow());
 
-    xcb_connection_t *xcb_con = screen->connection()->connection();
+    m_gc = xcb_generate_id(xcb_connection());
+    xcb_create_gc(xcb_connection(), m_gc, window->window(), 0, 0);
 
-    m_gc = xcb_generate_id(xcb_con);
-    xcb_create_gc(xcb_con, m_gc, window->window(), 0, 0);
-
-    xcb_put_image(xcb_con,
+    xcb_put_image(xcb_connection(),
                   XCB_IMAGE_FORMAT_Z_PIXMAP,
                   window->window(),
                   m_gc,
@@ -89,8 +89,8 @@ void QXcbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoi
                   m_image.numBytes(),
                   m_image.bits());
 
-    xcb_free_gc(xcb_con, m_gc);
-    xcb_flush(xcb_con);
+    xcb_free_gc(xcb_connection(), m_gc);
+    xcb_flush(xcb_connection());
 }
 
 void QXcbWindowSurface::resize(const QSize &size)
