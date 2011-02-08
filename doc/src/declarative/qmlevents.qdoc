@@ -54,9 +54,7 @@ signal <name>[([<type> <parameter name>[, ...]])]
 \endqml
 
 Attempting to declare two signals or methods with the same name in the same type
-block is an error.  However, a new signal may reuse the name of an existing
-signal on the type. (This should be done with caution, as the existing signal
-may be hidden and become inaccessible.)
+block generates an error.  However, a new signal may reuse the name of an existing signal on the type. (This should be done with caution, as the existing signal may be hidden and become inaccessible.)
 
 Here are various examples of signal declarations:
 \snippet doc/src/snippets/declarative/events.qml parent begin
@@ -96,31 +94,29 @@ QML are created as \l{Signals & Slots}{Qt slots}.) This enables a signal
 to be received by a method instead of a \l {Signal Handlers}{signal handler}.
 
 \snippet doc/src/snippets/declarative/events.qml connect method
-The \c {connect()} method is appropriate when connecting a JavaScript method,
-such as the \c {callee}'s\c answer method, to QML signals.
+The \c {connect()} method is appropriate when connecting a JavaScript method to
+a signal.
 
-The corresponding \c disconnect() method is for removing connected
-signals. The following code removes the connection created in \c application.qml above:
-\snippet doc/src/snippets/declarative/events.qml disconnect method
+There is a corresponding \c disconnect() method for removing connected
+signals.
 
 \section3 Signal to Signal Connect
 
 By connecting signals to other signals, the \c connect() method can form different
 signal chains.
-\snippet doc/src/snippets/declarative/events.qml parent begin
 \snippet doc/src/snippets/declarative/events.qml forward signal
-\snippet doc/src/snippets/declarative/events.qml parent end
 
-Whenever the \l MouseArea \c clicked signal is emitted, the \c widgetClicked
+
+Whenever the \l MouseArea \c clicked signal is emitted, the \c send
 signal will automatically be emitted as well.
 
 \code
 output:
     MouseArea clicked
-    Widget clicked
+    Send clicked
 \endcode
 
-\section1 C++ additions
+\section1 C++ Additions
 
 Because QML uses Qt, a signal defined in C++ also works as a QML signal. The
 signal may be emitted in QML code or called as a method. In addition, the QML
