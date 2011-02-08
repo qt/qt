@@ -59,6 +59,7 @@ public:
     QRect geometry() const;
     int depth() const;
     QImage::Format format() const;
+    QSize physicalSize() const;
 
     xcb_screen_t *screen() const { return m_screen; }
     xcb_window_t root() const { return m_screen->root; }
