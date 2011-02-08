@@ -45,13 +45,119 @@
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
 
+#include <xcb/shm.h>
+#include <xcb/xcb_image.h>
+
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
 #include <stdio.h>
+
+class QXcbShmImage : public QXcbObject
+{
+public:
+    QXcbShmImage(QXcbScreen *connection, const QSize &size);
+    ~QXcbShmImage() { destroy(); }
+
+    QImage *image() { return &m_qimage; }
+
+    void put(xcb_window_t window, const QPoint &dst, const QRect &source);
+    void preparePaint(const QRegion &region);
+
+private:
+    void destroy();
+
+    xcb_shm_segment_info_t m_shm_info;
+
+    xcb_image_t *m_xcb_image;
+
+    QImage m_qimage;
+
+    xcb_gcontext_t m_gc;
+    xcb_window_t m_gc_window;
+
+    QRegion m_dirty;
+};
+
+QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size)
+    : QXcbObject(screen->connection())
+    , m_gc(0)
+    , m_gc_window(0)
+{
+    m_xcb_image = xcb_image_create_native(xcb_connection(),
+                                          size.width(),
+                                          size.height(),
+                                          XCB_IMAGE_FORMAT_Z_PIXMAP,
+                                          screen->depth(),
+                                          0,
+                                          ~0,
+                                          0);
+    m_shm_info.shmid = shmget (IPC_PRIVATE,
+          m_xcb_image->stride * m_xcb_image->height, IPC_CREAT|0777);
+
+    m_shm_info.shmaddr = m_xcb_image->data = (quint8 *)shmat (m_shm_info.shmid, 0, 0);
+    m_shm_info.shmseg = xcb_generate_id(xcb_connection());
+
+    xcb_shm_attach(xcb_connection(), m_shm_info.shmseg, m_shm_info.shmid, false);
+
+    m_qimage = QImage( (uchar*) m_xcb_image->data, m_xcb_image->width, m_xcb_image->height, m_xcb_image->stride, screen->format());
+}
+
+void QXcbShmImage::destroy()
+{
+    xcb_shm_detach(xcb_connection(), m_shm_info.shmseg);
+    xcb_image_destroy(m_xcb_image);
+    shmdt(m_shm_info.shmaddr);
+    shmctl(m_shm_info.shmid, IPC_RMID, 0);
+
+    xcb_free_gc(xcb_connection(), m_gc);
+}
+
+void QXcbShmImage::put(xcb_window_t window, const QPoint &target, const QRect &source)
+{
+    if (m_gc_window != window) {
+        xcb_free_gc(xcb_connection(), m_gc);
+
+        m_gc = xcb_generate_id(xcb_connection());
+        xcb_create_gc(xcb_connection(), m_gc, window, 0, 0);
+
+        m_gc_window = window;
+    }
+
+    xcb_image_shm_put(xcb_connection(),
+                      window,
+                      m_gc,
+                      m_xcb_image,
+                      m_shm_info,
+                      source.x(),
+                      source.y(),
+                      target.x(),
+                      target.y(),
+                      source.width(),
+                      source.height(),
+                      false);
+
+    m_dirty = m_dirty | source;
+
+    xcb_flush(xcb_connection());
+}
+
+void QXcbShmImage::preparePaint(const QRegion &region)
+{
+    // to prevent X from reading from the image region while we're writing to it
+    if (m_dirty.intersects(region)) {
+        // from xcb_aux_sync
+        free(xcb_get_input_focus_reply(xcb_connection(), xcb_get_input_focus(xcb_connection()), 0));
+        m_dirty = QRegion();
+    }
+}
 
 QXcbWindowSurface::QXcbWindowSurface(QWidget *widget, bool setDefaultSurface)
     : QWindowSurface(widget, setDefaultSurface)
+    , m_image(0)
 {
     setStaticContentsSupport(false);
-    setPartialUpdateSupport(false);
+    setPartialUpdateSupport(true);
 
     QXcbScreen *screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(widget));
     setConnection(screen->connection());
@@ -63,7 +169,12 @@ QXcbWindowSurface::~QXcbWindowSurface()
 
 QPaintDevice *QXcbWindowSurface::paintDevice()
 {
-    return &m_image;
+    return m_image->image();
+}
+
+void QXcbWindowSurface::beginPaint(const QRegion &region)
+{
+    m_image->preparePaint(region);
 }
 
 void QXcbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
@@ -73,42 +184,36 @@ void QXcbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoi
 
     QXcbWindow *window = static_cast<QXcbWindow *>(widget->window()->platformWindow());
 
-    m_gc = xcb_generate_id(xcb_connection());
-    xcb_create_gc(xcb_connection(), m_gc, window->window(), 0, 0);
+    extern QWidgetData* qt_widget_data(QWidget *);
+    QPoint widgetOffset = qt_qwidget_data(widget)->wrect.topLeft();
 
-    xcb_put_image(xcb_connection(),
-                  XCB_IMAGE_FORMAT_Z_PIXMAP,
-                  window->window(),
-                  m_gc,
-                  m_image.width(),
-                  m_image.height(),
-                  0,
-                  0,
-                  0,
-                  24,
-                  m_image.numBytes(),
-                  m_image.bits());
-
-    xcb_free_gc(xcb_connection(), m_gc);
-    xcb_flush(xcb_connection());
+    QVector<QRect> rects = region.rects();
+    for (int i = 0; i < rects.size(); ++i)
+        m_image->put(window->window(), rects.at(i).topLeft() - widgetOffset, rects.at(i).translated(offset));
 }
 
 void QXcbWindowSurface::resize(const QSize &size)
 {
     QWindowSurface::resize(size);
-    m_image = QImage(size, QImage::Format_RGB32);
+
+    QXcbScreen *screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(window()));
+
+    delete m_image;
+    m_image = new QXcbShmImage(screen, size);
 }
 
 extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
 
 bool QXcbWindowSurface::scroll(const QRegion &area, int dx, int dy)
 {
-    if (m_image.isNull())
+    if (m_image->image()->isNull())
         return false;
+
+    m_image->preparePaint(area);
 
     const QVector<QRect> rects = area.rects();
     for (int i = 0; i < rects.size(); ++i)
-        qt_scrollRectInImage(m_image, rects.at(i), QPoint(dx, dy));
+        qt_scrollRectInImage(*m_image->image(), rects.at(i), QPoint(dx, dy));
 
     return true;
 }

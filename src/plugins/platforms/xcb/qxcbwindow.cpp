@@ -96,8 +96,6 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
                         32,
                         sizeof(properties) / sizeof(xcb_atom_t),
                         properties);
-
-    printf("m_window: %d\n", m_window);
 }
 
 QXcbWindow::~QXcbWindow()
@@ -164,12 +162,12 @@ void QXcbWindow::requestActivateWindow()
 
 void QXcbWindow::handleExposeEvent(xcb_expose_event_t *event)
 {
-    if (event->count != 0)
-        return;
-
     QWindowSurface *surface = widget()->windowSurface();
-    if (surface)
-        surface->flush(widget(), widget()->geometry(), QPoint());
+    if (surface) {
+        QRect rect(event->x, event->y, event->width, event->height);
+
+        surface->flush(widget(), rect, QPoint());
+    }
 }
 
 void QXcbWindow::handleClientMessageEvent(xcb_client_message_event_t *event)

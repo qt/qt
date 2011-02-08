@@ -48,6 +48,8 @@
 
 #include "qxcbobject.h"
 
+class QXcbShmImage;
+
 class QXcbWindowSurface : public QXcbObject, public QWindowSurface
 {
 public:
@@ -59,10 +61,10 @@ public:
     void resize(const QSize &size);
     bool scroll(const QRegion &area, int dx, int dy);
 
-private:
-    QImage m_image;
+    void beginPaint(const QRegion &);
 
-    xcb_gcontext_t m_gc;
+private:
+    QXcbShmImage *m_image;
 };
 
 #endif

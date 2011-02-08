@@ -19,7 +19,7 @@ HEADERS = \
         qxcbwindow.h \
         qxcbwindowsurface.h
 
-LIBS += -lxcb
+LIBS += -lxcb -lxcb-image
 
 include (../fontdatabases/genericunix/genericunix.pri)
 

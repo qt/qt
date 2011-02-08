@@ -111,7 +111,6 @@ void QXcbConnection::eventDispatcher()
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_client_message_event_t, window, handleClientMessageEvent);
         default:
             break;
-
         }
     }
 }
