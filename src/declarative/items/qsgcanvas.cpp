@@ -838,22 +838,30 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
     bool clipEffectivelyChanged = dirty & QSGItemPrivate::Clip &&
                                   ((item->clip() == false) != (itemPriv->clipNode == 0));
 
-    if (dirty & QSGItemPrivate::ChildrenUpdateMask || clipEffectivelyChanged) {
+    if (clipEffectivelyChanged) {
+        Node *parent = itemPriv->opacityNode ? (Node *) itemPriv->opacityNode : (Node *)itemPriv->itemNode();
+        Node *child = itemPriv->groupNode;
 
-        while (itemPriv->childContainerNode()->childCount()) 
-            itemPriv->childContainerNode()->removeChildNode(itemPriv->childContainerNode()->childAtIndex(0));
+        if (item->clip()) {
+            Q_ASSERT(itemPriv->clipNode == 0);
+            itemPriv->clipNode = new QSGClipNode(QRectF(0, 0, itemPriv->width, itemPriv->height));
 
-        if (clipEffectivelyChanged) {
-            if (item->clip()) {
-                Q_ASSERT(itemPriv->clipNode == 0);
-                itemPriv->clipNode = new QSGClipNode(QRectF(0, 0, itemPriv->width, itemPriv->height));
-                itemPriv->itemNode()->appendChildNode(itemPriv->clipNode);
-            } else {
-                Q_ASSERT(itemPriv->clipNode != 0);
-                delete itemPriv->clipNode;
-                itemPriv->clipNode = 0;
-            }
+            parent->removeChildNode(child);
+            parent->appendChildNode(itemPriv->clipNode);
+            itemPriv->clipNode->appendChildNode(child);
+
+        } else {
+            Q_ASSERT(itemPriv->clipNode != 0);
+            delete itemPriv->clipNode;
+            itemPriv->clipNode = 0;
+            parent->appendChildNode(child);
         }
+    }
+
+    if (dirty & QSGItemPrivate::ChildrenUpdateMask) {
+
+        while (itemPriv->childContainerNode()->childCount())
+            itemPriv->childContainerNode()->removeChildNode(itemPriv->childContainerNode()->childAtIndex(0));
 
         QList<QSGItem *> orderedChildren = itemPriv->paintOrderChildItems();
         int ii = 0;
@@ -887,6 +895,20 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
     if ((dirty & QSGItemPrivate::Size || clipEffectivelyChanged) && itemPriv->clipNode) {
         itemPriv->clipNode->setRect(QRectF(0, 0, itemPriv->width, itemPriv->height));
         itemPriv->clipNode->update();
+    }
+
+    if (dirty & QSGItemPrivate::OpacityValue) {
+        if (!itemPriv->opacityNode) {
+            itemPriv->opacityNode = new OpacityNode;
+
+            Node *parent = itemPriv->itemNode();
+            Node *child = itemPriv->clipNode ? itemPriv->clipNode : itemPriv->childContainerNode();
+
+            parent->removeChildNode(child);
+            parent->appendChildNode(itemPriv->opacityNode);
+            itemPriv->opacityNode->appendChildNode(child);
+        }
+        itemPriv->opacityNode->setOpacity(itemPriv->opacity);
     }
 
     if (dirty & QSGItemPrivate::ContentUpdateMask) {

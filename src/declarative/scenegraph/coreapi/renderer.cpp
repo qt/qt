@@ -205,9 +205,23 @@ void Renderer::preprocess()
 {
     Q_ASSERT(m_root_node);
 
+    m_root_node->updateDirtyStates();
+
     for (QSet<Node *>::const_iterator it = m_nodes_to_preprocess.constBegin();
-         it != m_nodes_to_preprocess.constEnd(); ++it)
-        (*it)->preprocess();
+         it != m_nodes_to_preprocess.constEnd(); ++it) {
+        Node *n = *it;
+        Node *p = n;
+        while (p != m_root_node) {
+            if (p->isSubtreeBlocked()) {
+                n = 0;
+                break;
+            }
+            p = p->parent();
+        }
+        if (n) {
+            n->preprocess();
+        }
+    }
 
     m_root_node->updateDirtyStates();
 }

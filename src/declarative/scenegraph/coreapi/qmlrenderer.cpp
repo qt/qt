@@ -170,7 +170,7 @@ void QMLRenderer::nodeChanged(Node *node, Node::DirtyFlags flags)
 {
     Renderer::nodeChanged(node, flags);
 
-    quint32 rebuildFlags = Node::DirtyNodeAdded | Node::DirtyNodeRemoved | Node::DirtyMaterial | Node::DirtySubtreeEnabled;
+    quint32 rebuildFlags = Node::DirtyNodeAdded | Node::DirtyNodeRemoved | Node::DirtyMaterial | Node::DirtySubtreeEnabled | Node::DirtyOpacity;
 
     if (flags & rebuildFlags)
         m_rebuild_lists = true;

@@ -732,7 +732,7 @@ void NodeDumper::dump(Node *n)
 
 void NodeDumper::visitNode(Node *n)
 {
-    if (!n->isSubtreeEnabled())
+    if (n->isSubtreeBlocked())
         return;
     qDebug() << QString(m_indent * 2, QLatin1Char(' ')) << n;
     NodeVisitor::visitNode(n);

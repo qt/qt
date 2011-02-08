@@ -337,9 +337,20 @@ public:
 
     inline TransformNode *itemNode();
     inline Node *childContainerNode();
+
+    /*
+      Node order is:
+         - itemNode
+         - (opacityNode)
+         - (clipNode)
+         - (effectNode)
+         - groupNode
+     */
+
     TransformNode *itemNodeInstance;
     OpacityNode *opacityNode;
     QSGClipNode *clipNode;
+    Node *groupNode;
     Node *paintNode;
     int paintNodeIndex;
 
@@ -606,7 +617,14 @@ TransformNode *QSGItemPrivate::itemNode()
 
 Node *QSGItemPrivate::childContainerNode()
 {
-    return clipNode?(Node *)clipNode:(Node *)itemNode();
+    if (!groupNode) {
+        groupNode = new Node();
+        itemNode()->appendChildNode(groupNode);
+#ifdef QML_RUNTIME_TESTING
+        groupNode->description = QLatin1String("group");
+#endif
+    }
+    return groupNode;
 }
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSGItemPrivate::ChangeTypes);
