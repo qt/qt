@@ -223,6 +223,13 @@ class Locale:
         self.longDays = eltText(firstChildElt(elt, "longDays"))
         self.shortDays = eltText(firstChildElt(elt, "shortDays"))
         self.narrowDays = eltText(firstChildElt(elt, "narrowDays"))
+        self.currencyIsoCode = eltText(firstChildElt(elt, "currencyIsoCode"))
+        self.currencySymbol = eltText(firstChildElt(elt, "currencySymbol"))
+        self.currencyDisplayName = eltText(firstChildElt(elt, "currencyDisplayName"))
+        self.currencyDigits = int(eltText(firstChildElt(elt, "currencyDigits")))
+        self.currencyRounding = int(eltText(firstChildElt(elt, "currencyRounding")))
+        self.currencyFormat = eltText(firstChildElt(elt, "currencyFormat"))
+        self.currencyNegativeFormat = eltText(firstChildElt(elt, "currencyNegativeFormat"))
 
 def loadLocaleMap(doc, language_map, country_map):
     result = {}
@@ -336,6 +343,11 @@ def printEscapedString(s):
     print escapedString(s);
 
 
+def currencyIsoCodeData(s):
+    if s:
+        return ",".join(map(lambda x: str(ord(x)), s))
+    return "0,0,0"
+
 def main():
     doc = xml.dom.minidom.parse("locale.xml")
     language_map = loadLanguageMap(doc)
@@ -389,6 +401,9 @@ def main():
     days_data = StringData()
     am_data = StringData()
     pm_data = StringData()
+    currency_symbol_data = StringData()
+    currency_display_name_data = StringData()
+    currency_format_data = StringData()
 
     # Locale data
     print "static const QLocalePrivate locale_data[] = {"
@@ -402,7 +417,7 @@ def main():
     for key in locale_keys:
         l = locale_map[key]
 
-        print "    { %6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%6d }, // %s/%s" \
+        print "    { %6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, {%s}, %s,%s,%s,%s,%6d,%6d,%6d }, // %s/%s" \
                     % (key[0], key[1],
                         l.decimal,
                         l.group,
@@ -430,10 +445,17 @@ def main():
                         days_data.append(l.narrowDays),
                         am_data.append(l.am),
                         pm_data.append(l.pm),
+                        currencyIsoCodeData(l.currencyIsoCode),
+                        currency_symbol_data.append(l.currencySymbol),
+                        currency_display_name_data.append(l.currencyDisplayName),
+                        currency_format_data.append(l.currencyFormat),
+                        currency_format_data.append(l.currencyNegativeFormat),
+                        l.currencyDigits,
+                        l.currencyRounding,
                         l.firstDayOfWeek,
                         l.language,
                         l.country)
-    print "    {      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,    0,0,    0,0,    0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,     0 }  // trailing 0s"
+    print "    {      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,    0,0,    0,0,    0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0, {0,0,0}, 0,0, 0,0, 0,0, 0,0, 0, 0, 0 }  // trailing 0s"
     print "};"
 
     print
@@ -494,6 +516,29 @@ def main():
 
     print
 
+    # Currency symbol data
+    #check_static_char_array_length("currency_symbol", currency_symbol_data.data)
+    print "static const ushort currency_symbol_data[] = {"
+    print wrap_list(currency_symbol_data.data)
+    print "};"
+
+    print
+
+    # Currency display name data
+    #check_static_char_array_length("currency_display_name", currency_display_name_data.data)
+    print "static const ushort currency_display_name_data[] = {"
+    print wrap_list(currency_display_name_data.data)
+    print "};"
+
+    print
+
+    # Currency format data
+    #check_static_char_array_length("currency_format", currency_format_data.data)
+    print "static const ushort currency_format_data[] = {"
+    print wrap_list(currency_format_data.data)
+    print "};"
+
+    print
     # Language name list
     print "static const char language_name_list[] ="
     print "\"Default\\0\""

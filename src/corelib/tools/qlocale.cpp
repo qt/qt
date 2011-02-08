@@ -658,6 +658,80 @@ static quint8 winSystemFirstDayOfWeek()
     return 1;
 }
 
+QString winCurrencySymbol(QLocale::CurrencySymbolFormat format)
+{
+    LCID lcid = GetUserDefaultLCID();
+    wchar_t buf[13];
+    switch (format) {
+    case QLocale::CurrencySymbol:
+        if (GetLocaleInfo(lcid, LOCALE_SCURRENCY, buf, 13))
+            return QString::fromWCharArray(buf);
+        break;
+    case QLocale::CurrencyIsoCode:
+        if (GetLocaleInfo(lcid, LOCALE_SINTLSYMBOL, buf, 9))
+            return QString::fromWCharArray(buf);
+        break;
+    case QLocale::CurrencyDisplayName: {
+        QVarLengthArray<wchar_t, 64> buf(64);
+        if (!GetLocaleInfo(lcid, LOCALE_SNATIVECURRNAME, buf.data(), buf.size())) {
+            if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+                break;
+            buf.resize(255); // should be large enough, right?
+            if (!GetLocaleInfo(lcid, LOCALE_SNATIVECURRNAME, buf.data(), buf.size()))
+                break;
+        }
+        return QString::fromWCharArray(buf.data());
+    }
+    default:
+        break;
+    }
+    return QString();
+}
+
+static QString winFormatCurrency(const QVariant &in)
+{
+    QString value;
+    switch (in.type()) {
+    case QVariant::Int:
+        value = QLocalePrivate::longLongToString(QLatin1Char('0'), QLatin1Char(','), QLatin1Char('+'), QLatin1Char('-'),
+                                                 in.toInt(), -1, 10, -1, QLocale::OmitGroupSeparator);
+        break;
+    case QVariant::UInt:
+        value = QLocalePrivate::unsLongLongToString(QLatin1Char('0'), QLatin1Char(','), QLatin1Char('+'),
+                                                    in.toUInt(), -1, 10, -1, QLocale::OmitGroupSeparator);
+        break;
+    case QVariant::Double:
+        value = QLocalePrivate::doubleToString(QLatin1Char('0'), QLatin1Char('+'), QLatin1Char('-'),
+                                               QLatin1Char(' '), QLatin1Char(','), QLatin1Char('.'),
+                                               in.toDouble(), -1, QLocalePrivate::DFDecimal, -1, QLocale::OmitGroupSeparator);
+        break;
+    case QVariant::LongLong:
+        value = QLocalePrivate::longLongToString(QLatin1Char('0'), QLatin1Char(','), QLatin1Char('+'), QLatin1Char('-'),
+                                                 in.toLongLong(), -1, 10, -1, QLocale::OmitGroupSeparator);
+        break;
+    case QVariant::ULongLong:
+        value = QLocalePrivate::unsLongLongToString(QLatin1Char('0'), QLatin1Char(','), QLatin1Char('+'),
+                                                    in.toULongLong(), -1, 10, -1, QLocale::OmitGroupSeparator);
+        break;
+    default:
+        return QString();
+    }
+
+    QVarLengthArray<wchar_t, 64> out(64);
+    LCID lcid = GetUserDefaultLCID();
+    int ret = ::GetCurrencyFormat(lcid, 0, reinterpret_cast<const wchar_t *>(value.utf16()),
+                                  NULL, out.data(), out.size());
+    if (ret == 0 && GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+        ret = ::GetCurrencyFormat(lcid, 0, reinterpret_cast<const wchar_t *>(value.utf16()),
+                                  NULL, out.data(), 0);
+        out.resize(ret);
+        ::GetCurrencyFormat(lcid, 0, reinterpret_cast<const wchar_t *>(value.utf16()),
+                            NULL, out.data(), out.size());
+    }
+
+    return QString::fromWCharArray(out.data());
+}
+
 /*!
     \since 4.6
     Returns the fallback locale obtained from the system.
@@ -749,6 +823,10 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         return QVariant(winSystemPMText());
     case FirstDayOfWeek:
         return QVariant(winSystemFirstDayOfWeek());
+    case CurrencySymbol:
+        return QVariant(winCurrencySymbol(QLocale::CurrencySymbolFormat(in.toUInt())));
+    case FormatCurrency:
+        return QVariant(winFormatCurrency(in));
     default:
         break;
     }
@@ -1184,6 +1262,57 @@ static quint8 macFirstDayOfWeek()
     return day;
 }
 
+static QString macCurrencySymbol(QLocale::CurrencySymbolFormat format)
+{
+    QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
+    switch (format) {
+    case QLocale::CurrencyIsoCode:
+        return QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleCurrencyCode)));
+    case QLocale::CurrencySymbol:
+        return QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleCurrencySymbol)));
+    case QLocale::CurrencyDisplayName: {
+        CFStringRef code = static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleCurrencyCode));
+        QCFType<CFStringRef> value = CFLocaleCopyDisplayNameForPropertyValue(locale, kCFLocaleCurrencyCode, code);
+        return QCFString::toQString(value);
+    }
+    default:
+        break;
+    }
+    return QString();
+}
+
+static QString macFormatCurrency(const QVariant &in)
+{
+    QCFType<CFNumberRef> value;
+    switch (in.type()) {
+    case QVariant::Int:
+    case QVariant::UInt: {
+        int v = in.toInt();
+        value = CFNumberCreate(NULL, kCFNumberIntType, &v);
+        break;
+    }
+    case QVariant::Double: {
+        double v = in.toInt();
+        value = CFNumberCreate(NULL, kCFNumberDoubleType, &v);
+        break;
+    }
+    case QVariant::LongLong:
+    case QVariant::ULongLong: {
+        qint64 v = in.toLongLong();
+        value = CFNumberCreate(NULL, kCFNumberLongLongType, &v);
+        break;
+    }
+    default:
+        return QString();
+    }
+
+    QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
+    QCFType<CFNumberFormatterRef> currencyFormatter =
+            CFNumberFormatterCreate(NULL, locale, kCFNumberFormatterCurrencyStyle);
+    QCFType<CFStringRef> result = CFNumberFormatterCreateStringWithNumber(NULL, currencyFormatter, value);
+    return QCFString::toQString(result);
+}
+
 static void getMacPreferredLanguageAndCountry(QString *language, QString *country)
 {
     QCFType<CFArrayRef> languages = (CFArrayRef)CFPreferencesCopyValue(
@@ -1267,6 +1396,10 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         break;
     case FirstDayOfWeek:
         return QVariant(macFirstDayOfWeek());
+    case CurrencySymbol:
+        return QVariant(macCurrencySymbol(QLocale::CurrencySymbolFormat(in.toUInt())));
+    case FormatCurrency:
+        return macFormatCurrency(in);
     default:
         break;
     }
@@ -1406,6 +1539,8 @@ Q_GLOBAL_STATIC(QLocalePrivate, globalLocalePrivate)
   \value MeasurementSystem a QLocale::MeasurementSystem enum specifying the measurement system
   \value AMText a string that represents the system AM designator associated with a 12-hour clock.
   \value PMText a string that represents the system PM designator associated with a 12-hour clock.
+  \value CurrencySymbol a string that represents a currency in a format QLocale::CurrencyFormat.
+  \value FormatCurrency a localized string representation of a number with a currency symbol.
 */
 
 /*!
@@ -3638,11 +3773,10 @@ QString QLocale::pmText() const
 */
 
 
-static QString qulltoa(qulonglong l, int base, const QLocalePrivate &locale)
+static QString qulltoa(qulonglong l, int base, const QChar _zero)
 {
     ushort buff[65]; // length of MAX_ULLONG in base 2
     ushort *p = buff + 65;
-    const QChar _zero = locale.zero();
 
     if (base != 10 || _zero.unicode() == '0') {
         while (l != 0) {
@@ -3671,9 +3805,9 @@ static QString qulltoa(qulonglong l, int base, const QLocalePrivate &locale)
     return QString(reinterpret_cast<QChar *>(p), 65 - (p - buff));
 }
 
-static QString qlltoa(qlonglong l, int base, const QLocalePrivate &locale)
+static QString qlltoa(qlonglong l, int base, const QChar zero)
 {
-    return qulltoa(l < 0 ? -l : l, base, locale);
+    return qulltoa(l < 0 ? -l : l, base, zero);
 }
 
 enum PrecisionMode {
@@ -3682,72 +3816,73 @@ enum PrecisionMode {
     PMChopTrailingZeros =   0x03
 };
 
-static QString &decimalForm(QString &digits, int decpt, uint precision,
+static QString &decimalForm(QChar zero, QChar decimal, QChar group,
+                            QString &digits, int decpt, uint precision,
                             PrecisionMode pm,
                             bool always_show_decpt,
-                            bool thousands_group,
-                            const QLocalePrivate &locale)
+                            bool thousands_group)
 {
     if (decpt < 0) {
         for (int i = 0; i < -decpt; ++i)
-            digits.prepend(locale.zero());
+            digits.prepend(zero);
         decpt = 0;
     }
     else if (decpt > digits.length()) {
         for (int i = digits.length(); i < decpt; ++i)
-            digits.append(locale.zero());
+            digits.append(zero);
     }
 
     if (pm == PMDecimalDigits) {
         uint decimal_digits = digits.length() - decpt;
         for (uint i = decimal_digits; i < precision; ++i)
-            digits.append(locale.zero());
+            digits.append(zero);
     }
     else if (pm == PMSignificantDigits) {
         for (uint i = digits.length(); i < precision; ++i)
-            digits.append(locale.zero());
+            digits.append(zero);
     }
     else { // pm == PMChopTrailingZeros
     }
 
     if (always_show_decpt || decpt < digits.length())
-        digits.insert(decpt, locale.decimal());
+        digits.insert(decpt, decimal);
 
     if (thousands_group) {
         for (int i = decpt - 3; i > 0; i -= 3)
-            digits.insert(i, locale.group());
+            digits.insert(i, group);
     }
 
     if (decpt == 0)
-        digits.prepend(locale.zero());
+        digits.prepend(zero);
 
     return digits;
 }
 
-static QString &exponentForm(QString &digits, int decpt, uint precision,
-                                PrecisionMode pm,
-                                bool always_show_decpt,
-                                const QLocalePrivate &locale)
+static QString &exponentForm(QChar zero, QChar decimal, QChar exponential,
+                             QChar group, QChar plus, QChar minus,
+                             QString &digits, int decpt, uint precision,
+                             PrecisionMode pm,
+                             bool always_show_decpt)
 {
     int exp = decpt - 1;
 
     if (pm == PMDecimalDigits) {
         for (uint i = digits.length(); i < precision + 1; ++i)
-            digits.append(locale.zero());
+            digits.append(zero);
     }
     else if (pm == PMSignificantDigits) {
         for (uint i = digits.length(); i < precision; ++i)
-            digits.append(locale.zero());
+            digits.append(zero);
     }
     else { // pm == PMChopTrailingZeros
     }
 
     if (always_show_decpt || digits.length() > 1)
-        digits.insert(1, locale.decimal());
+        digits.insert(1, decimal);
 
-    digits.append(locale.exponential());
-    digits.append(locale.longLongToString(exp, 2, 10,
-                    -1, QLocalePrivate::AlwaysShowSign));
+    digits.append(exponential);
+    digits.append(QLocalePrivate::longLongToString(zero, group, plus, minus,
+                   exp, 2, 10, -1, QLocalePrivate::AlwaysShowSign));
 
     return digits;
 }
@@ -3985,6 +4120,19 @@ QString QLocalePrivate::doubleToString(double d,
                                        int width,
                                        unsigned flags) const
 {
+    return QLocalePrivate::doubleToString(zero(), plus(), minus(), exponential(),
+                                          group(), decimal(),
+                                          d, precision, form, width, flags);
+}
+
+QString QLocalePrivate::doubleToString(const QChar _zero, const QChar plus, const QChar minus,
+                                       const QChar exponential, const QChar group, const QChar decimal,
+                                       double d,
+                                       int precision,
+                                       DoubleForm form,
+                                       int width,
+                                       unsigned flags)
+{
     if (precision == -1)
         precision = 6;
     if (width == -1)
@@ -4062,8 +4210,6 @@ QString QLocalePrivate::doubleToString(double d,
             free(buff);
 #endif // QT_QLOCALE_USES_FCVT
 
-        const QChar _zero = zero();
-
         if (_zero.unicode() != '0') {
             ushort z = _zero.unicode() - '0';
             for (int i = 0; i < digits.length(); ++i)
@@ -4073,14 +4219,15 @@ QString QLocalePrivate::doubleToString(double d,
         bool always_show_decpt = (flags & Alternate || flags & ForcePoint);
         switch (form) {
             case DFExponent: {
-                num_str = exponentForm(digits, decpt, precision, PMDecimalDigits,
-                                                    always_show_decpt, *this);
+                num_str = exponentForm(_zero, decimal, exponential, group, plus, minus,
+                                       digits, decpt, precision, PMDecimalDigits,
+                                       always_show_decpt);
                 break;
             }
             case DFDecimal: {
-                num_str = decimalForm(digits, decpt, precision, PMDecimalDigits,
-                                        always_show_decpt, flags & ThousandsGroup,
-                                        *this);
+                num_str = decimalForm(_zero, decimal, group,
+                                      digits, decpt, precision, PMDecimalDigits,
+                                      always_show_decpt, flags & ThousandsGroup);
                 break;
             }
             case DFSignificantDigits: {
@@ -4088,12 +4235,13 @@ QString QLocalePrivate::doubleToString(double d,
                             PMSignificantDigits : PMChopTrailingZeros;
 
                 if (decpt != digits.length() && (decpt <= -4 || decpt > precision))
-                    num_str = exponentForm(digits, decpt, precision, mode,
-                                                    always_show_decpt, *this);
+                    num_str = exponentForm(_zero, decimal, exponential, group, plus, minus,
+                                           digits, decpt, precision, mode,
+                                           always_show_decpt);
                 else
-                    num_str = decimalForm(digits, decpt, precision, mode,
-                                            always_show_decpt, flags & ThousandsGroup,
-                                            *this);
+                    num_str = decimalForm(_zero, decimal, group,
+                                          digits, decpt, precision, mode,
+                                          always_show_decpt, flags & ThousandsGroup);
                 break;
             }
         }
@@ -4114,14 +4262,14 @@ QString QLocalePrivate::doubleToString(double d,
             --num_pad_chars;
 
         for (int i = 0; i < num_pad_chars; ++i)
-            num_str.prepend(zero());
+            num_str.prepend(_zero);
     }
 
     // add sign
     if (negative)
-        num_str.prepend(minus());
+        num_str.prepend(minus);
     else if (flags & QLocalePrivate::AlwaysShowSign)
-        num_str.prepend(plus());
+        num_str.prepend(plus);
     else if (flags & QLocalePrivate::BlankBeforePositive)
         num_str.prepend(QLatin1Char(' '));
 
@@ -4134,6 +4282,16 @@ QString QLocalePrivate::doubleToString(double d,
 QString QLocalePrivate::longLongToString(qlonglong l, int precision,
                                             int base, int width,
                                             unsigned flags) const
+{
+    return QLocalePrivate::longLongToString(zero(), group(), plus(), minus(),
+                                            l, precision, base, width, flags);
+}
+
+QString QLocalePrivate::longLongToString(const QChar zero, const QChar group,
+                                         const QChar plus, const QChar minus,
+                                         qlonglong l, int precision,
+                                         int base, int width,
+                                         unsigned flags)
 {
     bool precision_not_specified = false;
     if (precision == -1) {
@@ -4151,20 +4309,20 @@ QString QLocalePrivate::longLongToString(qlonglong l, int precision,
 
     QString num_str;
     if (base == 10)
-        num_str = qlltoa(l, base, *this);
+        num_str = qlltoa(l, base, zero);
     else
-        num_str = qulltoa(l, base, *this);
+        num_str = qulltoa(l, base, zero);
 
     uint cnt_thousand_sep = 0;
     if (flags & ThousandsGroup && base == 10) {
         for (int i = num_str.length() - 3; i > 0; i -= 3) {
-            num_str.insert(i, group());
+            num_str.insert(i, group);
             ++cnt_thousand_sep;
         }
     }
 
     for (int i = num_str.length()/* - cnt_thousand_sep*/; i < precision; ++i)
-        num_str.prepend(base == 10 ? zero() : QChar::fromLatin1('0'));
+        num_str.prepend(base == 10 ? zero : QChar::fromLatin1('0'));
 
     if ((flags & Alternate || flags & ShowBase)
             && base == 8
@@ -4194,7 +4352,7 @@ QString QLocalePrivate::longLongToString(qlonglong l, int precision,
             num_pad_chars -= 2;
 
         for (int i = 0; i < num_pad_chars; ++i)
-            num_str.prepend(base == 10 ? zero() : QChar::fromLatin1('0'));
+            num_str.prepend(base == 10 ? zero : QChar::fromLatin1('0'));
     }
 
     if (flags & CapitalEorX)
@@ -4207,9 +4365,9 @@ QString QLocalePrivate::longLongToString(qlonglong l, int precision,
 
     // add sign
     if (negative)
-        num_str.prepend(minus());
+        num_str.prepend(minus);
     else if (flags & AlwaysShowSign)
-        num_str.prepend(plus());
+        num_str.prepend(plus);
     else if (flags & BlankBeforePositive)
         num_str.prepend(QLatin1Char(' '));
 
@@ -4220,24 +4378,34 @@ QString QLocalePrivate::unsLongLongToString(qulonglong l, int precision,
                                             int base, int width,
                                             unsigned flags) const
 {
+    return QLocalePrivate::unsLongLongToString(zero(), group(), plus(),
+                                               l, precision, base, width, flags);
+}
+
+QString QLocalePrivate::unsLongLongToString(const QChar zero, const QChar group,
+                                            const QChar plus,
+                                            qulonglong l, int precision,
+                                            int base, int width,
+                                            unsigned flags)
+{
     bool precision_not_specified = false;
     if (precision == -1) {
         precision_not_specified = true;
         precision = 1;
     }
 
-    QString num_str = qulltoa(l, base, *this);
+    QString num_str = qulltoa(l, base, zero);
 
     uint cnt_thousand_sep = 0;
     if (flags & ThousandsGroup && base == 10) {
         for (int i = num_str.length() - 3; i > 0; i -=3) {
-            num_str.insert(i, group());
+            num_str.insert(i, group);
             ++cnt_thousand_sep;
         }
     }
 
     for (int i = num_str.length()/* - cnt_thousand_sep*/; i < precision; ++i)
-        num_str.prepend(base == 10 ? zero() : QChar::fromLatin1('0'));
+        num_str.prepend(base == 10 ? zero : QChar::fromLatin1('0'));
 
     if ((flags & Alternate || flags & ShowBase)
             && base == 8
@@ -4261,7 +4429,7 @@ QString QLocalePrivate::unsLongLongToString(qulonglong l, int precision,
             num_pad_chars -= 2;
 
         for (int i = 0; i < num_pad_chars; ++i)
-            num_str.prepend(base == 10 ? zero() : QChar::fromLatin1('0'));
+            num_str.prepend(base == 10 ? zero : QChar::fromLatin1('0'));
     }
 
     if (flags & CapitalEorX)
@@ -4274,7 +4442,7 @@ QString QLocalePrivate::unsLongLongToString(qulonglong l, int precision,
 
     // add sign
     if (flags & AlwaysShowSign)
-        num_str.prepend(plus());
+        num_str.prepend(plus);
     else if (flags & BlankBeforePositive)
         num_str.prepend(QLatin1Char(' '));
 
@@ -4663,6 +4831,162 @@ qulonglong QLocalePrivate::bytearrayToUnsLongLong(const char *num, int base, boo
     if (ok != 0)
         *ok = true;
     return l;
+}
+
+/*!
+    \since 4.8
+
+    \enum QLocale::CurrencyFormat
+
+    Specifies the format of the currency symbol.
+
+    \value CurrencyIsoCode a ISO-4217 code of the currency.
+    \value CurrencySymbol a currency symbol.
+    \value CurrencyDisplayName a user readable name of the currency.
+*/
+
+/*!
+    \since 4.8
+    Returns a currency symbol according to the \a format.
+*/
+QString QLocale::currencySymbol(QLocale::CurrencySymbolFormat format) const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::CurrencySymbol, format);
+        if (!res.isNull())
+            return res.toString();
+    }
+#endif
+    quint32 idx, size;
+    switch (format) {
+    case CurrencySymbol:
+        idx = d()->m_currency_symbol_idx;
+        size = d()->m_currency_symbol_size;
+        return getLocaleData(currency_symbol_data + idx, size);
+    case CurrencyDisplayName:
+        idx = d()->m_currency_display_name_idx;
+        size = d()->m_currency_display_name_size;
+        return getLocaleListData(currency_display_name_data + idx, size, 0);
+    case CurrencyIsoCode: {
+        int len = 0;
+        const QLocalePrivate *d = this->d();
+        for (; len < 3; ++len)
+            if (!d->m_currency_iso_code[len])
+                break;
+        return len ? QString::fromLatin1(d->m_currency_iso_code, len) : QString();
+    }
+    }
+    return QString();
+}
+
+/*!
+    \fn QString QLocale::toCurrencyString(short) const
+    \since 4.8
+    \overload
+*/
+
+/*!
+    \fn QString QLocale::toCurrencyString(ushort) const
+    \since 4.8
+    \overload
+*/
+
+/*!
+    \fn QString QLocale::toCurrencyString(int) const
+    \since 4.8
+    \overload
+*/
+
+/*!
+    \fn QString QLocale::toCurrencyString(uint) const
+    \since 4.8
+    \overload
+*/
+/*!
+    \fn QString QLocale::toCurrencyString(float) const
+    \since 4.8
+    \overload
+*/
+
+/*!
+    \since 4.8
+
+    Returns a localized string representation of \a value as a currency.
+*/
+QString QLocale::toCurrencyString(qlonglong value) const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::FormatCurrency, value);
+        if (!res.isNull())
+            return res.toString();
+    }
+#endif
+    const QLocalePrivate *d = this->d();
+    quint8 idx = d->m_currency_format_idx;
+    quint8 size = d->m_currency_format_size;
+    if (d->m_currency_negative_format_size && value < 0) {
+        idx = d->m_currency_negative_format_idx;
+        size = d->m_currency_negative_format_size;
+        value = -value;
+    }
+    QString str = d->longLongToString(value);
+    QString symbol = currencySymbol();
+    if (symbol.isEmpty())
+        symbol = currencySymbol(QLocale::CurrencyIsoCode);
+    QString format = getLocaleData(currency_format_data + idx, size);
+    return format.arg(str, symbol);
+}
+
+/*!
+    \since 4.8
+    \overload
+*/
+QString QLocale::toCurrencyString(qulonglong value) const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::FormatCurrency, value);
+        if (!res.isNull())
+            return res.toString();
+    }
+#endif
+    const QLocalePrivate *d = this->d();
+    quint8 idx = d->m_currency_format_idx;
+    quint8 size = d->m_currency_format_size;
+    QString str = d->unsLongLongToString(value);
+    QString symbol = currencySymbol();
+    if (symbol.isEmpty())
+        symbol = currencySymbol(QLocale::CurrencyIsoCode);
+    QString format = getLocaleData(currency_format_data + idx, size);
+    return format.arg(str, symbol);
+}
+
+QString QLocale::toCurrencyString(double value) const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::FormatCurrency, value);
+        if (!res.isNull())
+            return res.toString();
+    }
+#endif
+    const QLocalePrivate *d = this->d();
+    quint8 idx = d->m_currency_format_idx;
+    quint8 size = d->m_currency_format_size;
+    if (d->m_currency_negative_format_size && value < 0) {
+        idx = d->m_currency_negative_format_idx;
+        size = d->m_currency_negative_format_size;
+        value = -value;
+    }
+    QString str = d->doubleToString(value, d->m_currency_digits,
+                                    QLocalePrivate::DFDecimal);
+    QString symbol = currencySymbol();
+    if (symbol.isEmpty())
+        symbol = currencySymbol(QLocale::CurrencyIsoCode);
+    QString format = getLocaleData(currency_format_data + idx, size);
+    return format.arg(str, symbol);
 }
 
 /*-

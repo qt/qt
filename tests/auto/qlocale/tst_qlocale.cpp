@@ -140,6 +140,7 @@ private slots:
 #endif
 
     void ampm();
+    void currency();
 
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
@@ -1094,6 +1095,11 @@ void tst_QLocale::macDefaultLocale()
 
 	const QString timeString = locale.toString(QTime(1,2,3), QLocale::LongFormat);
     QVERIFY(timeString.contains(QString("1:02:03")));
+
+    QCOMPARE(locale.toCurrencyString(qulonglong(1234)), QString("$1,234"));
+    QCOMPARE(locale.toCurrencyString(qlonglong(-1234)), QString("$-1,234"));
+    QCOMPARE(locale.toCurrencyString(double(1234.56)), QString("$1,234.56"));
+    QCOMPARE(locale.toCurrencyString(double(-1234.56)), QString("$-1,234.56"));
 
     // Depending on the configured time zone, the time string might not
     // contain a GMT specifier. (Sometimes it just names the zone, like "CEST")
@@ -2122,6 +2128,27 @@ void tst_QLocale::symbianSystemLocale()
 # endif
 }
 #endif
+
+void tst_QLocale::currency()
+{
+    const QLocale c(QLocale::C);
+    QCOMPARE(c.toCurrencyString(qulonglong(1234)), QString("1234"));
+    QCOMPARE(c.toCurrencyString(qlonglong(-1234)), QString("-1234"));
+    QCOMPARE(c.toCurrencyString(double(1234.56)), QString("1234.56"));
+    QCOMPARE(c.toCurrencyString(double(-1234.56)), QString("-1234.56"));
+
+    const QLocale ru_RU("ru_RU");
+    QCOMPARE(ru_RU.toCurrencyString(qulonglong(1234)), QString::fromUtf8("1234\xc2\xa0\xd1\x80\xd1\x83\xd0\xb1."));
+    QCOMPARE(ru_RU.toCurrencyString(qlonglong(-1234)), QString::fromUtf8("-1234\xc2\xa0\xd1\x80\xd1\x83\xd0\xb1."));
+    QCOMPARE(ru_RU.toCurrencyString(double(1234.56)), QString::fromUtf8("1234,56\xc2\xa0\xd1\x80\xd1\x83\xd0\xb1."));
+    QCOMPARE(ru_RU.toCurrencyString(double(-1234.56)), QString::fromUtf8("-1234,56\xc2\xa0\xd1\x80\xd1\x83\xd0\xb1."));
+
+    const QLocale de_DE("de_DE");
+    QCOMPARE(de_DE.toCurrencyString(qulonglong(1234)), QString::fromUtf8("1234""\xc2\xa0\xe2\x82\xac"));
+    QCOMPARE(de_DE.toCurrencyString(qlonglong(-1234)), QString::fromUtf8("-1234""\xc2\xa0\xe2\x82\xac"));
+    QCOMPARE(de_DE.toCurrencyString(double(1234.56)), QString::fromUtf8("1234,56""\xc2\xa0\xe2\x82\xac"));
+    QCOMPARE(de_DE.toCurrencyString(double(-1234.56)), QString::fromUtf8("-1234,56""\xc2\xa0\xe2\x82\xac"));
+}
 
 QTEST_APPLESS_MAIN(tst_QLocale)
 #include "tst_qlocale.moc"

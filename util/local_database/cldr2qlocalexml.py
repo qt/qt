@@ -50,6 +50,37 @@ import re
 
 findEntry = xpathlite.findEntry
 findEntryInFile = xpathlite._findEntryInFile
+findTagsInFile = xpathlite.findTagsInFile
+
+def parse_number_format(patterns, data):
+    # this is a very limited parsing of the number format for currency only.
+    def skip_repeating_pattern(x):
+        p = x.replace('0', '#').replace(',', '').replace('.', '')
+        seen = False
+        result = ''
+        for c in p:
+            if c == '#':
+                if seen:
+                    continue
+                seen = True
+            else:
+                seen = False
+            result = result + c
+        return result
+    patterns = patterns.split(';')
+    result = []
+    for pattern in patterns:
+        pattern = skip_repeating_pattern(pattern)
+        pattern = pattern.replace('#', "%1")
+        # according to http://www.unicode.org/reports/tr35/#Number_Format_Patterns
+        # there can be doubled or trippled currency sign, however none of the
+        # locales use that.
+        pattern = pattern.replace(u'\xa4', "%2")
+        pattern = pattern.replace("''", "###").replace("'", '').replace("###", "'")
+        pattern = pattern.replace('-', data['minus'])
+        pattern = pattern.replace('+', data['plus'])
+        result.append(pattern)
+    return result
 
 def ordStr(c):
     if len(c) == 1:
@@ -123,11 +154,36 @@ def generateLocaleInfo(path):
     result['language_id'] = language_id
     result['country_id'] = country_id
 
+    supplementalPath = dir_name + "/../supplemental/supplementalData.xml"
+    currencies = findTagsInFile(supplementalPath, "currencyData/region[iso3166=%s]"%country_code);
+    result['currencyIsoCode'] = ''
+    result['currencyDigits'] = 2
+    result['currencyRounding'] = 1
+    if currencies:
+        for e in currencies:
+            if e[0] == 'currency':
+                tender = True
+                t = filter(lambda x: x[0] == 'tender', e[1])
+                if t and t[0][1] == 'false':
+                    tender = False;
+                if tender and not filter(lambda x: x[0] == 'to', e[1]):
+                    result['currencyIsoCode'] = filter(lambda x: x[0] == 'iso4217', e[1])[0][1]
+                    break
+        if result['currencyIsoCode']:
+            t = findTagsInFile(supplementalPath, "currencyData/fractions/info[iso4217=%s]"%result['currencyIsoCode']);
+            if t and t[0][0] == 'info':
+                result['currencyDigits'] = int(filter(lambda x: x[0] == 'digits', t[0][1])[0][1])
+                result['currencyRounding'] = int(filter(lambda x: x[0] == 'rounding', t[0][1])[0][1])
     numbering_system = None
     try:
         numbering_system = findEntry(path, "numbers/defaultNumberingSystem")
     except:
         pass
+    def findEntryDef(path, xpath, value=''):
+        try:
+            return findEntry(path, xpath)
+        except xpathlite.Error:
+            return value
     def get_number_in_system(path, xpath, numbering_system):
         if numbering_system:
             try:
@@ -149,6 +205,27 @@ def generateLocaleInfo(path):
     result['shortDateFormat'] = convert_date(findEntry(path, "dates/calendars/calendar[gregorian]/dateFormats/dateFormatLength[short]/dateFormat/pattern"))
     result['longTimeFormat'] = convert_date(findEntry(path, "dates/calendars/calendar[gregorian]/timeFormats/timeFormatLength[full]/timeFormat/pattern"))
     result['shortTimeFormat'] = convert_date(findEntry(path, "dates/calendars/calendar[gregorian]/timeFormats/timeFormatLength[short]/timeFormat/pattern"))
+
+    currency_format = get_number_in_system(path, "numbers/currencyFormats/currencyFormatLength/currencyFormat/pattern", numbering_system)
+    currency_format = parse_number_format(currency_format, result)
+    result['currencyFormat'] = currency_format[0]
+    result['currencyNegativeFormat'] = ''
+    if len(currency_format) > 1:
+        result['currencyNegativeFormat'] = currency_format[1]
+
+    result['currencySymbol'] = ''
+    result['currencyDisplayName'] = ''
+    if result['currencyIsoCode']:
+        result['currencySymbol'] = findEntryDef(path, "numbers/currencies/currency[%s]/symbol" % result['currencyIsoCode'])
+        display_name_path = "numbers/currencies/currency[%s]/displayName" % result['currencyIsoCode']
+        result['currencyDisplayName'] \
+            = findEntryDef(path, display_name_path) + ";" \
+            + findEntryDef(path, display_name_path + "[count=zero]")  + ";" \
+            + findEntryDef(path, display_name_path + "[count=one]")   + ";" \
+            + findEntryDef(path, display_name_path + "[count=two]")   + ";" \
+            + findEntryDef(path, display_name_path + "[count=few]")   + ";" \
+            + findEntryDef(path, display_name_path + "[count=many]")  + ";" \
+            + findEntryDef(path, display_name_path + "[count=other]") + ";"
 
     standalone_long_month_path = "dates/calendars/calendar[gregorian]/months/monthContext[stand-alone]/monthWidth[wide]/month"
     result['standaloneLongMonths'] \
@@ -299,7 +376,6 @@ def generateLocaleInfo(path):
         + findEntry(path, standalone_narrow_day_path + "[thu]") + ";" \
         + findEntry(path, standalone_narrow_day_path + "[fri]") + ";" \
         + findEntry(path, standalone_narrow_day_path + "[sat]") + ";"
-
 
     return result
 
@@ -536,6 +612,13 @@ print \
             <standaloneLongDays>Sunday;Monday;Tuesday;Wednesday;Thursday;Friday;Saturday;</standaloneLongDays>\n\
             <standaloneShortDays>Sun;Mon;Tue;Wed;Thu;Fri;Sat;</standaloneShortDays>\n\
             <standaloneNarrowDays>S;M;T;W;T;F;S;</standaloneNarrowDays>\n\
+            <currencyIsoCode></currencyIsoCode>\n\
+            <currencySymbol></currencySymbol>\n\
+            <currencyDisplayName>;;;;;;;</currencyDisplayName>\n\
+            <currencyDigits>2</currencyDigits>\n\
+            <currencyRounding>1</currencyRounding>\n\
+            <currencyFormat>%1%2</currencyFormat>\n\
+            <currencyNegativeFormat></currencyNegativeFormat>\n\
         </locale>"
 
 for key in locale_keys:
@@ -573,6 +656,13 @@ for key in locale_keys:
     print "            <standaloneLongDays>" + l['standaloneLongDays'].encode('utf-8')        + "</standaloneLongDays>"
     print "            <standaloneShortDays>" + l['standaloneShortDays'].encode('utf-8')       + "</standaloneShortDays>"
     print "            <standaloneNarrowDays>" + l['standaloneNarrowDays'].encode('utf-8')       + "</standaloneNarrowDays>"
+    print "            <currencyIsoCode>" + l['currencyIsoCode'].encode('utf-8') + "</currencyIsoCode>"
+    print "            <currencySymbol>" + l['currencySymbol'].encode('utf-8') + "</currencySymbol>"
+    print "            <currencyDisplayName>" + l['currencyDisplayName'].encode('utf-8') + "</currencyDisplayName>"
+    print "            <currencyDigits>" + str(l['currencyDigits']) + "</currencyDigits>"
+    print "            <currencyRounding>" + str(l['currencyRounding']) + "</currencyRounding>"
+    print "            <currencyFormat>" + l['currencyFormat'].encode('utf-8') + "</currencyFormat>"
+    print "            <currencyNegativeFormat>" + l['currencyNegativeFormat'].encode('utf-8') + "</currencyNegativeFormat>"
     print "        </locale>"
 print "    </localeList>"
 print "</localeDatabase>"

@@ -95,7 +95,9 @@ public:
         PositiveSign, // QString
         AMText, // QString
         PMText, // QString
-        FirstDayOfWeek // Qt::DayOfWeek
+        FirstDayOfWeek, // Qt::DayOfWeek
+        CurrencySymbol, // QString in: format
+        FormatCurrency // QString in: qlonglong, qulonglong or double
     };
     virtual QVariant query(QueryType type, QVariant in) const;
     virtual QLocale fallbackLocale() const;
@@ -600,6 +602,12 @@ public:
     };
     Q_DECLARE_FLAGS(NumberOptions, NumberOption)
 
+    enum CurrencySymbolFormat {
+        CurrencyIsoCode,
+        CurrencySymbol,
+        CurrencyDisplayName
+    };
+
     QLocale();
     QLocale(const QString &name);
     QLocale(Language language, Country country = AnyCountry);
@@ -671,6 +679,16 @@ public:
 
     Qt::LayoutDirection textDirection() const;
 
+    QString currencySymbol(CurrencySymbolFormat = CurrencySymbol) const;
+    QString toCurrencyString(qlonglong) const;
+    QString toCurrencyString(qulonglong) const;
+    inline QString toCurrencyString(short) const;
+    inline QString toCurrencyString(ushort) const;
+    inline QString toCurrencyString(int) const;
+    inline QString toCurrencyString(uint) const;
+    QString toCurrencyString(double) const;
+    inline QString toCurrencyString(float) const;
+
     inline bool operator==(const QLocale &other) const;
     inline bool operator!=(const QLocale &other) const;
 
@@ -718,6 +736,17 @@ inline bool QLocale::operator==(const QLocale &other) const
     { return d() == other.d() && numberOptions() == other.numberOptions(); }
 inline bool QLocale::operator!=(const QLocale &other) const
     { return d() != other.d() || numberOptions() != other.numberOptions(); }
+
+inline QString QLocale::toCurrencyString(short i) const
+    { return toCurrencyString(qlonglong(i)); }
+inline QString QLocale::toCurrencyString(ushort i) const
+    { return toCurrencyString(qulonglong(i)); }
+inline QString QLocale::toCurrencyString(int i) const
+{ return toCurrencyString(qlonglong(i)); }
+inline QString QLocale::toCurrencyString(uint i) const
+{ return toCurrencyString(qulonglong(i)); }
+inline QString QLocale::toCurrencyString(float i) const
+{ return toCurrencyString(double(i)); }
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QLocale &);

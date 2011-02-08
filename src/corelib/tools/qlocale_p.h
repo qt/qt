@@ -108,6 +108,22 @@ public:
         ParseGroupSeparators
     };
 
+    static QString doubleToString(const QChar zero, const QChar plus,
+                                  const QChar minus, const QChar exponent,
+                                  const QChar group, const QChar decimal,
+                                  double d, int precision,
+                                  DoubleForm form,
+                                  int width, unsigned flags);
+    static QString longLongToString(const QChar zero, const QChar group,
+                                    const QChar plus, const QChar minus,
+                                    qint64 l, int precision, int base,
+                                    int width, unsigned flags);
+    static QString unsLongLongToString(const QChar zero, const QChar group,
+                                       const QChar plus,
+                                       quint64 l, int precision,
+                                       int base, int width,
+                                       unsigned flags);
+
     QString doubleToString(double d,
                            int precision = -1,
                            DoubleForm form = DFSignificantDigits,
@@ -167,7 +183,14 @@ public:
     quint16 m_narrow_day_names_idx, m_narrow_day_names_size;
     quint16 m_am_idx, m_am_size;
     quint16 m_pm_idx, m_pm_size;
-    quint8  m_first_day_of_week : 3;
+    char m_currency_iso_code[3];
+    quint16 m_currency_symbol_idx, m_currency_symbol_size;
+    quint16 m_currency_display_name_idx, m_currency_display_name_size;
+    quint8 m_currency_format_idx, m_currency_format_size;
+    quint8 m_currency_negative_format_idx, m_currency_negative_format_size;
+    quint16 m_currency_digits : 2;
+    quint16 m_currency_rounding : 3;
+    quint16 m_first_day_of_week : 3;
 };
 
 inline char QLocalePrivate::digitToCLocale(const QChar &in) const
