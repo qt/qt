@@ -54,6 +54,8 @@ public:
 
 private slots:
     void importsPlugin();
+    void importsPlugin2();
+    void importsPlugin21();
     void incorrectPluginCase();
 };
 
@@ -114,6 +116,38 @@ void tst_qdeclarativemoduleplugin::importsPlugin()
     QDeclarativeComponent component(&engine, TEST_FILE("data/works.qml"));
     foreach (QDeclarativeError err, component.errors())
     	qWarning() << err;
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("value").toInt(),123);
+    delete object;
+}
+
+void tst_qdeclarativemoduleplugin::importsPlugin2()
+{
+    QDeclarativeEngine engine;
+    engine.addImportPath(QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("imports"));
+    QTest::ignoreMessage(QtWarningMsg, "plugin2 created");
+    QTest::ignoreMessage(QtWarningMsg, "import2 worked");
+    QDeclarativeComponent component(&engine, TEST_FILE("data/works2.qml"));
+    foreach (QDeclarativeError err, component.errors())
+        qWarning() << err;
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("value").toInt(),123);
+    delete object;
+}
+
+void tst_qdeclarativemoduleplugin::importsPlugin21()
+{
+    QDeclarativeEngine engine;
+    engine.addImportPath(QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("imports"));
+    QTest::ignoreMessage(QtWarningMsg, "plugin2.1 created");
+    QTest::ignoreMessage(QtWarningMsg, "import2.1 worked");
+    QDeclarativeComponent component(&engine, TEST_FILE("data/works21.qml"));
+    foreach (QDeclarativeError err, component.errors())
+        qWarning() << err;
     VERIFY_ERRORS(0);
     QObject *object = component.create();
     QVERIFY(object != 0);

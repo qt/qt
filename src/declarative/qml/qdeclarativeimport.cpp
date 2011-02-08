@@ -425,8 +425,18 @@ QString QDeclarativeImportsPrivate::resolvedUri(const QString &dir_arg, QDeclara
             break;
         }
     }
+
+    stableRelativePath.replace(QLatin1Char('\\'), QLatin1Char('/'));
+
+    // remove optional versioning in dot notation from uri
+    int lastSlash = stableRelativePath.lastIndexOf(QLatin1Char('/'));
+    if (lastSlash >= 0) {
+        int versionDot = stableRelativePath.indexOf(QLatin1Char('.'), lastSlash);
+        if (versionDot >= 0)
+            stableRelativePath = stableRelativePath.left(versionDot);
+    }
+
     stableRelativePath.replace(QLatin1Char('/'), QLatin1Char('.'));
-    stableRelativePath.replace(QLatin1Char('\\'), QLatin1Char('.'));
     return stableRelativePath;
 }
 
@@ -453,20 +463,62 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
         QString dir;
 
 
-        foreach (const QString &p, database->fileImportPath) {
-            dir = p+QLatin1Char('/')+url;
+        // step 1: search for extension with fully encoded version number
+        if (vmaj >= 0 && vmin >= 0) {
+            foreach (const QString &p, database->fileImportPath) {
+                dir = p+QLatin1Char('/')+url;
 
-            QFileInfo fi(dir+QLatin1String("/qmldir"));
-            const QString absoluteFilePath = fi.absoluteFilePath();
+                QFileInfo fi(dir+QString(QLatin1String(".%1.%2")).arg(vmaj).arg(vmin)+QLatin1String("/qmldir"));
+                const QString absoluteFilePath = fi.absoluteFilePath();
 
-            if (fi.isFile()) {
-                found = true;
+                if (fi.isFile()) {
+                    found = true;
 
-                url = QUrl::fromLocalFile(fi.absolutePath()).toString();
-                uri = resolvedUri(dir, database);
-                if (!importExtension(absoluteFilePath, uri, database, &qmldircomponents, errorString))
-                    return false;
-                break;
+                    url = QUrl::fromLocalFile(fi.absolutePath()).toString();
+                    uri = resolvedUri(dir, database);
+                    if (!importExtension(absoluteFilePath, uri, database, &qmldircomponents, errorString))
+                        return false;
+                    break;
+                }
+            }
+        }
+        // step 2: search for extension with encoded version major
+        if (vmaj >= 0 && vmin >= 0) {
+            foreach (const QString &p, database->fileImportPath) {
+                dir = p+QLatin1Char('/')+url;
+
+                QFileInfo fi(dir+QString(QLatin1String(".%1")).arg(vmaj)+QLatin1String("/qmldir"));
+                const QString absoluteFilePath = fi.absoluteFilePath();
+
+                if (fi.isFile()) {
+                    found = true;
+
+                    url = QUrl::fromLocalFile(fi.absolutePath()).toString();
+                    uri = resolvedUri(dir, database);
+                    if (!importExtension(absoluteFilePath, uri, database, &qmldircomponents, errorString))
+                        return false;
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            // step 3: search for extension without version number
+
+            foreach (const QString &p, database->fileImportPath) {
+                dir = p+QLatin1Char('/')+url;
+
+                QFileInfo fi(dir+QLatin1String("/qmldir"));
+                const QString absoluteFilePath = fi.absoluteFilePath();
+
+                if (fi.isFile()) {
+                    found = true;
+
+                    url = QUrl::fromLocalFile(fi.absolutePath()).toString();
+                    uri = resolvedUri(dir, database);
+                    if (!importExtension(absoluteFilePath, uri, database, &qmldircomponents, errorString))
+                        return false;
+                    break;
+                }
             }
         }
 
