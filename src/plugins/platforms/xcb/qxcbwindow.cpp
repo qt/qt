@@ -112,6 +112,11 @@ QXcbWindow::~QXcbWindow()
 void QXcbWindow::setGeometry(const QRect &rect)
 {
     QPlatformWindow::setGeometry(rect);
+
+    const quint32 mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
+    const quint32 values[] = { rect.x(), rect.y(), rect.width(), rect.height() };
+
+    xcb_configure_window(xcb_connection(), m_window, mask, values);
 }
 
 void QXcbWindow::setVisible(bool visible)
@@ -137,8 +142,10 @@ WId QXcbWindow::winId() const
     return m_window;
 }
 
-void QXcbWindow::setParent(const QPlatformWindow *)
+void QXcbWindow::setParent(const QPlatformWindow *parent)
 {
+    QPoint topLeft = geometry().topLeft();
+    xcb_reparent_window(xcb_connection(), window(), static_cast<const QXcbWindow *>(parent)->window(), topLeft.x(), topLeft.y());
 }
 
 void QXcbWindow::setWindowTitle(const QString &title)
@@ -156,10 +163,16 @@ void QXcbWindow::setWindowTitle(const QString &title)
 
 void QXcbWindow::raise()
 {
+    const quint32 mask = XCB_CONFIG_WINDOW_STACK_MODE;
+    const quint32 values[] = { XCB_STACK_MODE_ABOVE };
+    xcb_configure_window(xcb_connection(), m_window, mask, values);
 }
 
 void QXcbWindow::lower()
 {
+    const quint32 mask = XCB_CONFIG_WINDOW_STACK_MODE;
+    const quint32 values[] = { XCB_STACK_MODE_BELOW };
+    xcb_configure_window(xcb_connection(), m_window, mask, values);
 }
 
 void QXcbWindow::requestActivateWindow()
