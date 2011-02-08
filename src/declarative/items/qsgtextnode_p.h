@@ -59,9 +59,6 @@ public:
 
     QRectF boundingRect() const;
 
-    void setOpacity(qreal opacity);
-    inline qreal opacity() const { return m_opacity; }
-
     virtual NodeSubType subType() const { return TextNodeSubType; }
 
     static bool isComplexRichText(QTextDocument *);
@@ -77,7 +74,6 @@ private:
     void addTextDecorations(const QPointF &position, const QFont &font, const QColor &color,
                             qreal width);
 
-    qreal m_opacity;
     QSGContext *m_context;
 };
 

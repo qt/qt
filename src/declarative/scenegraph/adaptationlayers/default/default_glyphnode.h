@@ -55,7 +55,6 @@ public:
 
     virtual QPointF baseLine() const { return m_baseLine; }
     virtual void setGlyphs(const QPointF &position, const QGlyphs &glyphs);
-    virtual void setOpacity(qreal opacity);
     virtual void setColor(const QColor &color);
 
     virtual NodeSubType subType() const { return GlyphNodeSubType; }

@@ -63,7 +63,6 @@ private:
     int m_matrix_id;
     int m_color_id;
     int m_textureScale_id;
-    int m_opacity_id;
 };
 
 const char *TextMaskMaterialData::vertexShader() const {
@@ -112,13 +111,10 @@ void TextMaskMaterialData::updateState(Renderer *renderer, AbstractMaterial *new
     TextMaskMaterial *material = static_cast<TextMaskMaterial *>(newEffect);
     TextMaskMaterial *oldMaterial = static_cast<TextMaskMaterial *>(oldEffect);
 
-    QVector4D color(material->color().redF(), material->color().greenF(),
-                    material->color().blueF(), material->color().alphaF());
-    color *= material->opacity();
-
-    if (oldMaterial == 0
-           || material->color() != oldMaterial->color()
-           || material->opacity() != oldMaterial->opacity()) {
+    if (oldMaterial == 0 || material->color() != oldMaterial->color() || (updates & Renderer::UpdateOpacity)) {
+        QVector4D color(material->color().redF(), material->color().greenF(),
+                        material->color().blueF(), material->color().alphaF());
+        color *= renderer->renderOpacity();
         m_program.setUniformValue(m_color_id, color);
     }
 
@@ -146,7 +142,7 @@ void TextMaskMaterialData::updateState(Renderer *renderer, AbstractMaterial *new
 }
 
 TextMaskMaterial::TextMaskMaterial(QFontEngine *fontEngine)
-    : m_texture(0), m_glyphCache(), m_fontEngine(fontEngine), m_originalFontEngine(fontEngine), m_opacity(1.0)
+    : m_texture(0), m_glyphCache(), m_fontEngine(fontEngine), m_originalFontEngine(fontEngine)
 {
     Q_ASSERT(m_fontEngine != 0);
 
@@ -272,10 +268,6 @@ int TextMaskMaterial::compare(const AbstractMaterial *o) const
     const TextMaskMaterial *other = static_cast<const TextMaskMaterial *>(o);
     if (m_glyphCache != other->m_glyphCache)
         return m_glyphCache - other->m_glyphCache;
-    if (m_opacity != other->m_opacity) {
-        qreal o1 = m_opacity, o2 = other->m_opacity;
-        return int(o2 < o1) - int(o1 < o2);
-    }
     QRgb c1 = m_color.rgba();
     QRgb c2 = other->m_color.rgba();
     return int(c2 < c1) - int(c1 < c2);

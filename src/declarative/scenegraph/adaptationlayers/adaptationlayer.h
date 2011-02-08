@@ -154,16 +154,11 @@ protected:
 class Q_DECLARATIVE_EXPORT GlyphNodeInterface: public GeometryNode
 {
 public:
-    GlyphNodeInterface() : m_opacity(1.0) {}
-
     virtual NodeSubType subType() const { return GlyphNodeSubType; }
 
     virtual void setGlyphs(const QPointF &position, const QGlyphs &glyphs) = 0;
     QPointF position() const { return m_position; }
     QGlyphs glyphs() const { return m_glyphs; }
-
-    virtual void setOpacity(qreal opacity) = 0;
-    qreal opacity() const { return m_opacity; }
 
     virtual void setColor(const QColor &color) = 0;
     QColor color() const { return m_color; }
@@ -171,7 +166,6 @@ public:
     virtual QPointF baseLine() const = 0;
 
 protected:
-    qreal m_opacity;
     QGlyphs m_glyphs;
     QPointF m_position;
     QColor m_color;

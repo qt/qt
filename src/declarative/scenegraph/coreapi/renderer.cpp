@@ -205,6 +205,10 @@ void Renderer::preprocess()
 {
     Q_ASSERT(m_root_node);
 
+    // ### Because opacity is now in scene graph, we need to do an extra pass here before
+    // preprocess, which potentially means a second pass afterwards. The entire conecpt
+    // of preprocess does not work anymore, so it needs replacing, so live with the sub-optimal
+    // solution for now.
     m_root_node->updateDirtyStates();
 
     for (QSet<Node *>::const_iterator it = m_nodes_to_preprocess.constBegin();

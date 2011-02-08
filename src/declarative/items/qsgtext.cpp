@@ -882,7 +882,6 @@ Node *QSGText::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         }
 
         node->deleteContent();
-        node->setOpacity(data->opacity);
         node->setMatrix(QMatrix4x4());
 
         if (d->richText) {

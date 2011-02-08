@@ -58,7 +58,7 @@
   Creates an empty QSGTextNode
 */
 QSGTextNode::QSGTextNode(QSGContext *context)
-: m_opacity(1.0), m_context(context)
+: m_context(context)
 {
 #if defined(QML_RUNTIME_TESTING)
     description = QLatin1String("text");
@@ -115,21 +115,6 @@ void QSGTextNode::setStyleColor(const QColor &styleColor)
 }
 #endif
 
-void QSGTextNode::setOpacity(qreal opacity)
-{
-    m_opacity = opacity;
-
-    for (int i=0; i<childCount(); ++i) {
-        Node *node = childAtIndex(i);
-        if (node->subType() == GlyphNodeSubType) {
-            GlyphNodeInterface *glyphNode = static_cast<GlyphNodeInterface *>(node);
-            glyphNode->setOpacity(opacity);
-        } else if (node->subType() == SolidRectNodeSubType) {
-            SolidRectNode *solidRectNode = static_cast<SolidRectNode *>(node);
-        }
-    }
-}
-
 void QSGTextNode::addTextDecorations(const QPointF &position, const QFont &font, const QColor &color,
                                   qreal width)
 {
@@ -166,7 +151,6 @@ GlyphNodeInterface *QSGTextNode::addGlyphs(const QPointF &position, const QGlyph
     GlyphNodeInterface *node = m_context->createGlyphNode(glyphs.font());
     node->setGlyphs(position, glyphs);
     node->setColor(color);
-    node->setOpacity(m_opacity);
 
     appendChildNode(node);
 

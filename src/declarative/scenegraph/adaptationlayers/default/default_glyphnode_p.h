@@ -69,9 +69,6 @@ public:
     int cacheTextureWidth() const;
     int cacheTextureHeight() const;
 
-    void setOpacity(qreal opacity) { m_opacity = opacity; }
-    qreal opacity() const { return m_opacity; }
-
     bool ensureUpToDate();
 
     QGLTextureGlyphCache *glyphCache() const;
@@ -87,7 +84,6 @@ private:
     QFontEngine *m_fontEngine;
     QFontEngine *m_originalFontEngine;
     QColor m_color;
-    qreal m_opacity;
     QSize m_size;
 };
 

@@ -70,15 +70,6 @@ void DistanceFieldGlyphNode::setColor(const QColor &color)
     }
 }
 
-void DistanceFieldGlyphNode::setOpacity(qreal opacity)
-{
-    m_opacity = opacity;
-    if (m_material != 0) {
-        m_material->setOpacity(opacity);
-        setMaterial(m_material); // Indicate the material state has changed
-    }
-}
-
 void DistanceFieldGlyphNode::setGlyphs(const QPointF &position, const QGlyphs &glyphs)
 {
     if (m_material != 0)
@@ -90,7 +81,6 @@ void DistanceFieldGlyphNode::setGlyphs(const QPointF &position, const QGlyphs &g
 
     m_material = new DistanceFieldTextMaterial;
     m_material->setColor(m_color);
-    m_material->setOpacity(m_opacity);
     setMaterial(m_material);
 
     updateFont();
