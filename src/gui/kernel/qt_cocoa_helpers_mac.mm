@@ -1103,22 +1103,27 @@ QWidget *qt_mac_getTargetForMouseEvent(
     if (returnWidgetUnderMouse)
         *returnWidgetUnderMouse = widgetUnderMouse;
 
-    // Resolve the target for the mouse event. Default will be widgetUnderMouse, except
-    // if there is a popup-"grab", mousegrab, or button-down-"grab":
+    // Resolve the target for the mouse event. Default will be
+    // widgetUnderMouse, except if there is a grab (popup/mouse/button-down):
     if (popup && !mouseGrabber) {
-        if (!popup->isAncestorOf(widgetUnderMouse)) {
-            // The popup will always grab the mouse unless the
-            // mouse is over a child, or the user scrolls:
+        // We special case handling of popups, since they have an implicitt mouse grab.
+        QWidget *candidate = buttonDownNotBlockedByModal ? qt_button_down : widgetUnderMouse;
+        if (!popup->isAncestorOf(candidate)) {
+            // INVARIANT: we have a popup, but the candidate is not
+            // in it. But the popup will grab the mouse anyway,
+            // except if the user scrolls:
             if (eventType == QEvent::Wheel)
                 return 0;
             returnLocalPoint = popup->mapFromGlobal(returnGlobalPoint);
             return popup;
-        } else if (popup == widgetUnderMouse) {
+        } else if (popup == candidate) {
+            // INVARIANT: The candidate is the popup itself, and not a child:
             returnLocalPoint = popup->mapFromGlobal(returnGlobalPoint);
             return popup;
         } else {
-            returnLocalPoint = widgetUnderMouse->mapFromGlobal(returnGlobalPoint);
-            return widgetUnderMouse;
+            // INVARIANT: The candidate is a child inside the popup:
+            returnLocalPoint = candidate->mapFromGlobal(returnGlobalPoint);
+            return candidate;
         }
     }
 
