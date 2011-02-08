@@ -444,6 +444,7 @@ static QVector<Atom> getNetWmState(QWidget *w)
         && actualType == XA_ATOM && actualFormat == 32) {
         returnValue.resize(bytesLeft / 4);
         XFree((char*) propertyData);
+        propertyData = 0;
 
         // fetch all data
         if (XGetWindowProperty(X11->display, w->internalWinId(), ATOM(_NET_WM_STATE), 0,
@@ -458,7 +459,8 @@ static QVector<Atom> getNetWmState(QWidget *w)
         if (!returnValue.isEmpty()) {
             memcpy(returnValue.data(), propertyData, returnValue.size() * sizeof(Atom));
         }
-        XFree((char*) propertyData);
+        if (propertyData)
+            XFree((char*) propertyData);
     }
 
     return returnValue;

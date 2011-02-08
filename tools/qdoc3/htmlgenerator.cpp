@@ -4246,6 +4246,151 @@ void HtmlGenerator::generateExtractionMark(const Node *node, ExtractionMarkType 
     }
 }
 
+/*!
+  Returns the full document location for HTML-based documentation.
+ */
+QString HtmlGenerator::fullDocumentLocation(const Node *node)
+{
+    if (!node)
+        return "";
+    if (!node->url().isEmpty())
+        return node->url();
+
+    QString parentName;
+    QString anchorRef;
+
+    if (node->type() == Node::Namespace) {
+
+        // The root namespace has no name - check for this before creating
+        // an attribute containing the location of any documentation.
+
+        if (!node->fileBase().isEmpty())
+            parentName = node->fileBase() + ".html";
+        else
+            return "";
+    }
+    else if (node->type() == Node::Fake) {
+#ifdef QDOC_QML
+        if ((node->subType() == Node::QmlClass) ||
+            (node->subType() == Node::QmlBasicType)) {
+            QString fb = node->fileBase();
+            if (fb.startsWith(Generator::outputPrefix(QLatin1String("QML"))))
+                return fb + ".html";
+            else
+                return Generator::outputPrefix(QLatin1String("QML")) + node->fileBase() + QLatin1String(".html");
+        } else
+#endif
+        parentName = node->fileBase() + ".html";
+    }
+    else if (node->fileBase().isEmpty())
+        return "";
+
+    Node *parentNode = 0;
+
+    if ((parentNode = node->relates()))
+        parentName = fullDocumentLocation(node->relates());
+    else if ((parentNode = node->parent())) {
+        if (parentNode->subType() == Node::QmlPropertyGroup) {
+            parentNode = parentNode->parent();
+            parentName = fullDocumentLocation(parentNode);
+        }
+        else
+            parentName = fullDocumentLocation(node->parent());
+    }
+
+    switch (node->type()) {
+        case Node::Class:
+        case Node::Namespace:
+            if (parentNode && !parentNode->name().isEmpty())
+                parentName = parentName.replace(".html", "") + "-"
+                           + node->fileBase().toLower() + ".html";
+            else
+                parentName = node->fileBase() + ".html";
+            break;
+        case Node::Function:
+            {
+                /*
+                  Functions can be destructors, overloaded, or
+                  have associated properties.
+                */
+                const FunctionNode *functionNode =
+                    static_cast<const FunctionNode *>(node);
+
+                if (functionNode->metaness() == FunctionNode::Dtor)
+                    anchorRef = "#dtor." + functionNode->name().mid(1);
+
+                else if (functionNode->associatedProperty())
+                    return fullDocumentLocation(functionNode->associatedProperty());
+
+                else if (functionNode->overloadNumber() > 1)
+                    anchorRef = "#" + functionNode->name()
+                              + "-" + QString::number(functionNode->overloadNumber());
+                else
+                    anchorRef = "#" + functionNode->name();
+            }
+
+            /*
+              Use node->name() instead of node->fileBase() as
+              the latter returns the name in lower-case. For
+              HTML anchors, we need to preserve the case.
+            */
+            break;
+        case Node::Enum:
+            anchorRef = "#" + node->name() + "-enum";
+            break;
+        case Node::Typedef:
+            anchorRef = "#" + node->name() + "-typedef";
+            break;
+        case Node::Property:
+            anchorRef = "#" + node->name() + "-prop";
+            break;
+        case Node::QmlProperty:
+            anchorRef = "#" + node->name() + "-prop";
+            break;
+        case Node::QmlSignal:
+            anchorRef = "#" + node->name() + "-signal";
+            break;
+        case Node::QmlMethod:
+            anchorRef = "#" + node->name() + "-method";
+            break;
+        case Node::Variable:
+            anchorRef = "#" + node->name() + "-var";
+            break;
+        case Node::Target:
+            anchorRef = "#" + Doc::canonicalTitle(node->name());
+            break;
+        case Node::Fake:
+            {
+            /*
+              Use node->fileBase() for fake nodes because they are represented
+              by pages whose file names are lower-case.
+            */
+            parentName = node->fileBase();
+            parentName.replace("/", "-").replace(".", "-");
+            parentName += ".html";
+            }
+            break;
+        default:
+            break;
+    }
+
+    // Various objects can be compat (deprecated) or obsolete.
+    if (node->type() != Node::Class && node->type() != Node::Namespace) {
+        switch (node->status()) {
+        case Node::Compat:
+            parentName.replace(".html", "-qt3.html");
+            break;
+        case Node::Obsolete:
+            parentName.replace(".html", "-obsolete.html");
+            break;
+        default:
+            ;
+        }
+    }
+
+    return parentName.toLower() + anchorRef;
+}
+
 #endif
 
- QT_END_NAMESPACE
+QT_END_NAMESPACE

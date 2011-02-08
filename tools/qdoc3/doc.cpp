@@ -369,6 +369,7 @@ class DocParser
     void appendChar(QChar ch);
     void appendWord(const QString &word);
     void appendToCode(const QString &code);
+    void appendToCode(const QString &code, Atom::Type defaultType);
     void startNewPara();
     void enterPara(Atom::Type leftType = Atom::ParaLeft,
                     Atom::Type rightType = Atom::ParaRight,
@@ -1112,9 +1113,8 @@ void DocParser::parse(const QString& source,
                                 append(Atom::SnippetIdentifier, identifier);
                             }
                             else {
-                                Doc::quoteFromFile(location(),quoter,snippet);
-                                appendToCode(quoter.quoteSnippet(location(),
-                                                                 identifier));
+                                marker = Doc::quoteFromFile(location(),quoter,snippet);
+                                appendToCode(quoter.quoteSnippet(location(), identifier), marker->atomType());
                             }
                         }
                         break;
@@ -1855,13 +1855,22 @@ void DocParser::appendToCode(const QString& markedCode)
 {
     Atom::Type lastType = priv->text.lastAtom()->type();
 #ifdef QDOC_QML
-    if (lastType != Atom::Qml)
+    if (lastType != Atom::Qml && lastType != Atom::Code && lastType != Atom::JavaScript)
         append(Atom::Qml);
 #else
     if (lastType != Atom::Code)
         append(Atom::Code);
 #endif    
     priv->text.lastAtom()->appendString(markedCode);
+}
+
+void DocParser::appendToCode(const QString &markedCode, Atom::Type defaultType)
+{
+    Atom::Type lastType = priv->text.lastAtom()->type();
+    if (lastType != Atom::Qml && lastType != Atom::Code && lastType != Atom::JavaScript)
+        append(defaultType, markedCode);
+    else
+        priv->text.lastAtom()->appendString(markedCode);
 }
 
 void DocParser::startNewPara()

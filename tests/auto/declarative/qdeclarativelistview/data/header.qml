@@ -1,6 +1,9 @@
 import QtQuick 1.0
 
 Rectangle {
+    function changeHeader() {
+        list.header = header2
+    }
     width: 240
     height: 320
     color: "#ffffff"
@@ -26,6 +29,10 @@ Rectangle {
         snapMode: ListView.SnapToItem
         model: testModel
         delegate: myDelegate
-        header: Text { objectName: "header"; text: "Header"; height: 10 }
+        header: Text { objectName: "header"; text: "Header"; height: 20 }
+    }
+    Component {
+        id: header2
+        Text { objectName: "header2"; text: "Header 2"; height: 10 }
     }
 }

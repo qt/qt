@@ -12108,4 +12108,41 @@ EXPORTS
 	_ZN20QGraphicsItemPrivate11setSubFocusEP13QGraphicsItemS1_ @ 12107 NONAME
 	_ZN20QGraphicsItemPrivate13clearSubFocusEP13QGraphicsItemS1_ @ 12108 NONAME
 	_ZN12QLineControl21resetCursorBlinkTimerEv @ 12109 NONAME
+	_ZN12QTextControl14setDragEnabledEb @ 12110 NONAME
+	_ZN19QTextDocumentLayout10timerEventEP11QTimerEvent @ 12111 NONAME
+	_ZN19QTextDocumentLayout11qt_metacallEN11QMetaObject4CallEiPPv @ 12112 NONAME
+	_ZN19QTextDocumentLayout11qt_metacastEPKc @ 12113 NONAME
+	_ZN19QTextDocumentLayout11setViewportERK6QRectF @ 12114 NONAME
+	_ZN19QTextDocumentLayout13setLineHeightEfNS_14LineHeightModeE @ 12115 NONAME
+	_ZN19QTextDocumentLayout14ensureLayoutedEf @ 12116 NONAME
+	_ZN19QTextDocumentLayout14layoutFinishedEv @ 12117 NONAME
+	_ZN19QTextDocumentLayout14setCursorWidthEi @ 12118 NONAME
+	_ZN19QTextDocumentLayout15documentChangedEiii @ 12119 NONAME
+	_ZN19QTextDocumentLayout16drawInlineObjectEP8QPainterRK6QRectF17QTextInlineObjectiRK11QTextFormat @ 12120 NONAME
+	_ZN19QTextDocumentLayout16staticMetaObjectE @ 12121 NONAME DATA 16
+	_ZN19QTextDocumentLayout18resizeInlineObjectE17QTextInlineObjectiRK11QTextFormat @ 12122 NONAME
+	_ZN19QTextDocumentLayout19getStaticMetaObjectEv @ 12123 NONAME
+	_ZN19QTextDocumentLayout19setFixedColumnWidthEi @ 12124 NONAME
+	_ZN19QTextDocumentLayout20positionInlineObjectE17QTextInlineObjectiRK11QTextFormat @ 12125 NONAME
+	_ZN19QTextDocumentLayout4drawEP8QPainterRKN27QAbstractTextDocumentLayout12PaintContextE @ 12126 NONAME
+	_ZN19QTextDocumentLayout8doLayoutEiii @ 12127 NONAME
+	_ZN19QTextDocumentLayoutC1EP13QTextDocument @ 12128 NONAME
+	_ZN19QTextDocumentLayoutC2EP13QTextDocument @ 12129 NONAME
+	_ZNK12QTextControl13isDragEnabledEv @ 12130 NONAME
+	_ZNK19QTextDocumentLayout10idealWidthEv @ 12131 NONAME
+	_ZNK19QTextDocumentLayout10metaObjectEv @ 12132 NONAME
+	_ZNK19QTextDocumentLayout11cursorWidthEv @ 12133 NONAME
+	_ZNK19QTextDocumentLayout12documentSizeEv @ 12134 NONAME
+	_ZNK19QTextDocumentLayout12layoutStatusEv @ 12135 NONAME
+	_ZNK19QTextDocumentLayout16dynamicPageCountEv @ 12136 NONAME
+	_ZNK19QTextDocumentLayout17blockBoundingRectERK10QTextBlock @ 12137 NONAME
+	_ZNK19QTextDocumentLayout17frameBoundingRectEP10QTextFrame @ 12138 NONAME
+	_ZNK19QTextDocumentLayout19contentHasAlignmentEv @ 12139 NONAME
+	_ZNK19QTextDocumentLayout19dynamicDocumentSizeEv @ 12140 NONAME
+	_ZNK19QTextDocumentLayout7hitTestERK7QPointFN2Qt15HitTestAccuracyE @ 12141 NONAME
+	_ZNK19QTextDocumentLayout9pageCountEv @ 12142 NONAME
+	_ZTI19QTextDocumentLayout @ 12143 NONAME
+	_ZTV19QTextDocumentLayout @ 12144 NONAME
+	_ZN12QTextControl23setWordSelectionEnabledEb @ 12145 NONAME
+	_ZNK12QTextControl22isWordSelectionEnabledEv @ 12146 NONAME
 
