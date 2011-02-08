@@ -980,10 +980,10 @@ void QLayoutPrivate::reparentChildWidgets(QWidget *mw)
 
 /*!
     This function is called from \c addWidget() functions in
-    subclasses to add \a w as a child widget.
+    subclasses to add \a w as a managed widget of a layout.
 
-    If \a w is already in a layout, this function will give a warning
-    and remove \a w from the layout. This function must therefore be
+    If \a w is already managed by a layout, this function will give a warning
+    and remove \a w from that layout. This function must therefore be
     called before adding \a w to the layout's data structure.
 */
 void QLayout::addChildWidget(QWidget *w)

@@ -41,7 +41,6 @@
 
 #include <QHash>
 #include <QMap>
-//#include <qdebug.h>
 
 #include "atom.h"
 #include "helpprojectwriter.h"
@@ -49,7 +48,6 @@
 #include "config.h"
 #include "node.h"
 #include "tree.h"
-#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 

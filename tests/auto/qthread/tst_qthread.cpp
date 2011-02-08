@@ -86,7 +86,6 @@ private slots:
     void start();
     void terminate();
     void quit();
-    void execAfterQuit();
     void wait();
     void started();
     void finished();
@@ -266,34 +265,6 @@ public:
     }
 };
 
-class ExecAfterQuitThreadHelper: public QObject
-{
-    Q_OBJECT
-    QThread *thr;
-public:
-    ExecAfterQuitThreadHelper(QThread *thr) : thr(thr) {}
-public slots:
-    void doIt() { thr->exit(0); }
-};
-
-class ExecAfterQuitThread: public QThread
-{
-public:
-    int returnValue;
-    void run()
-    {
-        ExecAfterQuitThreadHelper obj(this);
-
-        QMetaObject::invokeMethod(&obj, "doIt", Qt::QueuedConnection);
-        exit(1);
-
-        // returnValue will be either 0 or 1, depending on which of the two
-        // above take effect. The correct value is 0, since exit(1) before
-        // exec() should have no effect
-        returnValue = exec();
-    }
-};
-
 tst_QThread::tst_QThread()
 
 {
@@ -453,52 +424,34 @@ void tst_QThread::stackSize()
 
 void tst_QThread::exit()
 {
-    {
-        Exit_Thread thread;
-        thread.object = new Exit_Object;
-        thread.object->moveToThread(&thread);
-        thread.code = 42;
-        thread.result = 0;
-        QVERIFY(!thread.isFinished());
-        QVERIFY(!thread.isRunning());
+    Exit_Thread thread;
+    thread.object = new Exit_Object;
+    thread.object->moveToThread(&thread);
+    thread.code = 42;
+    thread.result = 0;
+    QVERIFY(!thread.isFinished());
+    QVERIFY(!thread.isRunning());
+    QMutexLocker locker(&thread.mutex);
+    thread.start();
+    QVERIFY(thread.isRunning());
+    QVERIFY(!thread.isFinished());
+    thread.cond.wait(locker.mutex());
+    QVERIFY(thread.wait(five_minutes));
+    QVERIFY(thread.isFinished());
+    QVERIFY(!thread.isRunning());
+    QCOMPARE(thread.result, thread.code);
+    delete thread.object;
 
-        QMutexLocker locker(&thread.mutex);
-        thread.start();
-        QVERIFY(thread.isRunning());
-        QVERIFY(!thread.isFinished());
-        // but the thread is not running the event loop yet (the mutex is locked)
-
-        // start the event loop
-        thread.cond.wait(locker.mutex());
-
-        // the Exit_Object above will cause the thread to exit
-        QVERIFY(thread.wait(five_minutes));
-        QVERIFY(thread.isFinished());
-        QVERIFY(!thread.isRunning());
-        QCOMPARE(thread.result, thread.code);
-        delete thread.object;
-    }
-
-    {
-        Exit_Thread thread2;
-        thread2.object = 0;
-        thread2.code = 53;
-        thread2.result = 0;
-        QMutexLocker locker2(&thread2.mutex);
-        thread2.start();
-
-        // the mutex is locked, so the thread has *not* started running the event loop yet
-        // this will do nothing:
-        thread2.exit(thread2.code);
-
-        // the thread will now start running
-        thread2.cond.wait(locker2.mutex());
-
-        // this will cause it to exit now
-        thread2.exit(++thread2.code);
-        QVERIFY(thread2.wait(five_minutes));
-        QCOMPARE(thread2.result, thread2.code);
-    }
+    Exit_Thread thread2;
+    thread2.object = 0;
+    thread2.code = 53;
+    thread2.result = 0;
+    QMutexLocker locker2(&thread2.mutex);
+    thread2.start();
+    thread2.exit(thread2.code);
+    thread2.cond.wait(locker2.mutex());
+    QVERIFY(thread2.wait(five_minutes));
+    QCOMPARE(thread2.result, thread2.code);
 }
 
 void tst_QThread::start()
@@ -545,59 +498,32 @@ void tst_QThread::terminate()
 
 void tst_QThread::quit()
 {
-    // very similar to exit() above
-    {
-        Quit_Thread thread;
-        thread.object = new Quit_Object;
-        thread.object->moveToThread(&thread);
-        thread.result = -1;
-        QVERIFY(!thread.isFinished());
-        QVERIFY(!thread.isRunning());
-
-        // start the thread, but keep the event loop from starting
-        // (while the mutex is locked)
-        QMutexLocker locker(&thread.mutex);
-        thread.start();
-        QVERIFY(thread.isRunning());
-        QVERIFY(!thread.isFinished());
-
-        // unlock the mutex and let the event loop run
-        // the Quit_Object above will cause the thread to quit
-        thread.cond.wait(locker.mutex());
-        QVERIFY(thread.wait(five_minutes));
-        QVERIFY(thread.isFinished());
-        QVERIFY(!thread.isRunning());
-        QCOMPARE(thread.result, 0);
-        delete thread.object;
-    }
-
-    {
-        Quit_Thread thread2;
-        thread2.object = 0;
-        thread2.result = -1;
-
-        // start the thread, but keep the event loop from starting
-        // (while the mutex is locked)
-        QMutexLocker locker2(&thread2.mutex);
-        thread2.start();
-        thread2.quit(); // does nothing, the event loop is not running!
-
-        // unlock the mutex and let the event loop run
-        thread2.cond.wait(locker2.mutex());
-
-        // there's no Quit_Object so it won't quit on its own
-        thread2.quit();
-        QVERIFY(thread2.wait(five_minutes));
-        QCOMPARE(thread2.result, 0);
-    }
-}
-
-void tst_QThread::execAfterQuit()
-{
-    ExecAfterQuitThread thread;
+    Quit_Thread thread;
+    thread.object = new Quit_Object;
+    thread.object->moveToThread(&thread);
+    thread.result = -1;
+    QVERIFY(!thread.isFinished());
+    QVERIFY(!thread.isRunning());
+    QMutexLocker locker(&thread.mutex);
     thread.start();
-    QVERIFY(thread.wait());
-    QCOMPARE(thread.returnValue, 0);
+    QVERIFY(thread.isRunning());
+    QVERIFY(!thread.isFinished());
+    thread.cond.wait(locker.mutex());
+    QVERIFY(thread.wait(five_minutes));
+    QVERIFY(thread.isFinished());
+    QVERIFY(!thread.isRunning());
+    QCOMPARE(thread.result, 0);
+    delete thread.object;
+
+    Quit_Thread thread2;
+    thread2.object = 0;
+    thread2.result = -1;
+    QMutexLocker locker2(&thread2.mutex);
+    thread2.start();
+    thread2.quit();
+    thread2.cond.wait(locker2.mutex());
+    QVERIFY(thread2.wait(five_minutes));
+    QCOMPARE(thread2.result, 0);
 }
 
 void tst_QThread::wait()
@@ -1068,17 +994,8 @@ void tst_QThread::QTBUG15378_exitAndExec()
     Thread thread;
     thread.value = 0;
     thread.start();
-    thread.exit(42); // will do nothing, this value should not appear
-    thread.sem1.release(); //should enter the first loop
-
-    Exit_Object *exit_object = new Exit_Object;
-    exit_object->code = 556;
-    exit_object->thread = &thread;
-    QMetaObject::invokeMethod(exit_object, "slot", Qt::QueuedConnection);
-    exit_object->deleteLater();
-    exit_object->moveToThread(&thread); // should exit the first loop
-    exit_object = 0;
-
+    thread.exit(556);
+    thread.sem1.release(); //should exit the first loop
     thread.sem2.acquire();
     int v = thread.value;
     QCOMPARE(v, 556);
