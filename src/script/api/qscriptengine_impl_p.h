@@ -359,7 +359,6 @@ public:
     {}
     void operator () (QtDataBase* data) const
     {
-        m_bag->remove(data);
         delete data;
     }
 private:
