@@ -1245,9 +1245,7 @@ void QStateMachinePrivate::_q_process()
 #endif
     while (processing) {
         if (stop) {
-            stop = false;
             processing = false;
-            stopProcessingReason = Stopped;
             break;
         }
         QSet<QAbstractTransition*> enabledTransitions;
@@ -1299,6 +1297,11 @@ void QStateMachinePrivate::_q_process()
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q << ": finished the event processing loop";
 #endif
+    if (stop) {
+        stop = false;
+        stopProcessingReason = Stopped;
+    }
+
     switch (stopProcessingReason) {
     case EventQueueEmpty:
         break;

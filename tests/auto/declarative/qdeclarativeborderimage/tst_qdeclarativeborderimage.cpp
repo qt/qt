@@ -294,6 +294,7 @@ void tst_qdeclarativeborderimage::sciSource_data()
     QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/colors-round.sci").toString() << true;
     QTest::newRow("local not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file.sci").toString() << false;
     QTest::newRow("remote") << SERVER_ADDR "/colors-round.sci" << true;
+    QTest::newRow("remote image") << SERVER_ADDR "/colors-round-remote.sci" << true;
     QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.sci" << false;
 }
 

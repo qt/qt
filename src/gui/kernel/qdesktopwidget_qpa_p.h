@@ -59,7 +59,13 @@
 class QDesktopScreenWidget : public QWidget {
     Q_OBJECT
 public:
-    QDesktopScreenWidget(int screenNumber = -1) { setWindowFlags(Qt::Desktop); setVisible(false); d_func()->screenNumber = screenNumber; }
+    QDesktopScreenWidget(int screenNumber = -1)
+    {
+        setWindowFlags(Qt::Desktop);
+        setVisible(false);
+        QTLWExtra *topData = d_func()->topData();
+        topData->screenIndex = screenNumber;
+    }
 };
 
 class QDesktopWidgetPrivate : public QWidgetPrivate {

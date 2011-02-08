@@ -61,6 +61,7 @@ public:
 
     JSC::EvalExecutable *executable(JSC::ExecState *exec,
                                     QScriptEnginePrivate *engine);
+    void detachFromEngine();
 
     QBasicAtomicInt ref;
 

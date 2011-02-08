@@ -274,6 +274,25 @@ static const char *openType[] = {
     "nko " // N'Ko
 };
 
+static const char *getFcFamilyForStyleHint(const QFont::StyleHint style)
+{
+    const char *stylehint = 0;
+    switch (style) {
+    case QFont::SansSerif:
+        stylehint = "sans-serif";
+        break;
+    case QFont::Serif:
+        stylehint = "serif";
+        break;
+    case QFont::TypeWriter:
+        stylehint = "monospace";
+        break;
+    default:
+        break;
+    }
+    return stylehint;
+}
+
 void QFontconfigDatabase::populateFontDatabase()
 {
     FcFontSet  *fonts;
@@ -522,7 +541,7 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QUnicodeTables::
     return engine;
 }
 
-QStringList QFontconfigDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QUnicodeTables::Script &script) const
+QStringList QFontconfigDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const
 {
     QStringList fallbackFamilies;
     FcPattern *pattern = FcPatternCreate();
@@ -548,6 +567,12 @@ QStringList QFontconfigDatabase::fallbacksForFamily(const QString family, const 
         FcLangSetAdd(ls, (const FcChar8*)specialLanguages[script]);
         FcPatternAddLangSet(pattern, FC_LANG, ls);
         FcLangSetDestroy(ls);
+    }
+
+    const char *stylehint = getFcFamilyForStyleHint(styleHint);
+    if (stylehint) {
+        value.u.s = (const FcChar8 *)stylehint;
+        FcPatternAddWeak(pattern, FC_FAMILY, value, FcTrue);
     }
 
     FcConfigSubstitute(0, pattern, FcMatchPattern);
