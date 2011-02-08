@@ -206,15 +206,15 @@ QString PageGenerator::fileBase(const Node *node) const
 #ifdef QDOC_QML
         /*
           To avoid file name conflicts in the html directory,
-          we prepend "qml-" to the file name of QML element doc
-          files.
+          we prepend a prefix (by default, "qml-") to the file name of QML
+          element doc files.
          */
         if ((p->subType() == Node::QmlClass) ||
             (p->subType() == Node::QmlBasicType)) {
             if (!base.startsWith(QLatin1String("QML:")))
-                base.prepend("qml-");
+                base.prepend(outputPrefix(QLatin1String("QML")));
         }
-#endif        
+#endif
         if (!pp || pp->name().isEmpty() || pp->type() == Node::Fake)
             break;
         base.prepend(QLatin1Char('-'));

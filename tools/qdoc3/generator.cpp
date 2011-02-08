@@ -43,7 +43,9 @@
   generator.cpp
 */
 #include <qdir.h>
+#ifdef DEBUG_MULTIPLE_QDOCCONF_FILES
 #include <qdebug.h>
+#endif
 #include "codemarker.h"
 #include "config.h"
 #include "doc.h"
@@ -73,6 +75,7 @@ QStringList Generator::styleFiles;
 QStringList Generator::styleDirs;
 QString Generator::outDir;
 QString Generator::project;
+QHash<QString, QString> Generator::outputPrefixes;
 
 static void singularPlural(Text& text, const NodeList& nodes)
 {
@@ -272,6 +275,14 @@ void Generator::initialize(const Config &config)
     }
 
     project = config.getString(CONFIG_PROJECT);
+
+    QStringList prefixes = config.getStringList(CONFIG_OUTPUTPREFIXES);
+    if (!prefixes.isEmpty()) {
+        foreach (QString prefix, prefixes)
+            outputPrefixes[prefix] = config.getString(
+                CONFIG_OUTPUTPREFIXES + Config::dot + prefix);
+    } else
+        outputPrefixes[QLatin1String("QML")] = QLatin1String("qml-");
 }
 
 void Generator::terminate()
@@ -1257,6 +1268,11 @@ QString Generator::fullName(const Node *node,
         return (static_cast<const ClassNode *>(node))->serviceName();
     else
         return marker->plainFullName(node, relative);
+}
+
+QString Generator::outputPrefix(const QString &nodeType)
+{
+    return outputPrefixes[nodeType];
 }
 
 QT_END_NAMESPACE
