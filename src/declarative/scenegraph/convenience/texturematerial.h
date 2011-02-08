@@ -98,20 +98,13 @@ protected:
 class Q_DECLARATIVE_EXPORT TextureMaterialWithOpacity : public TextureMaterial
 {
 public:
-    TextureMaterialWithOpacity() : m_opacity(1) { }
-
     virtual AbstractMaterialType *type() const;
     virtual AbstractMaterialShader *createShader() const;
-    virtual int compare(const AbstractMaterial *other) const;
-    void setTexture(const QSGTextureRef &texture, bool opaque = false);
 
-    void setOpacity(qreal opacity);
-    qreal opacity() const { return m_opacity; }
+    void setOpacity(qreal) {}
+    qreal opacity() const { return 1; }
 
     static bool is(const AbstractMaterial *effect);
-
-private:
-    qreal m_opacity;
 };
 
 

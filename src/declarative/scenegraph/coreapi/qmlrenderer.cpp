@@ -276,6 +276,8 @@ bool QMLRenderer::isSortFrontToBackEnabled() const
     return m_sort_front_to_back;
 }
 
+#include "texturematerial.h"
+
 void QMLRenderer::buildLists(Node *node)
 {
     if (!node->isSubtreeEnabled() || node->isSubtreeBlocked())
@@ -288,11 +290,13 @@ void QMLRenderer::buildLists(Node *node)
         g = geomNode->geometry();
 
         if (g->vertexCount()) { //Sanity check
+            qreal opacity = geomNode->inheritedOpacity();
+            AbstractMaterial *m = geomNode->activeMaterial();
+
 #ifdef FORCE_NO_REORDER
             if (true) {
 #else
-            if ((geomNode->material()->flags() & AbstractMaterial::Blending)
-                    || geomNode->inheritedOpacity() < 1) {
+            if ((m->flags() & AbstractMaterial::Blending) || geomNode->inheritedOpacity() < 1) {
 #endif
                 geomNode->setRenderOrder(m_currentRenderOrder - 1);
                 m_transparentNodes.append(geomNode);
@@ -391,9 +395,9 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
         }
 
 
-        Q_ASSERT(geomNode->material());
+        Q_ASSERT(geomNode->activeMaterial());
 
-        AbstractMaterial *material = geomNode->material();
+        AbstractMaterial *material = geomNode->activeMaterial();
         AbstractMaterialShader *program = prepareMaterial(material);
 
         bool changeClip = geomNode->clipList() != m_currentClip;

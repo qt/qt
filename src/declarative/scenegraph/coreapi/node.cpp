@@ -308,6 +308,7 @@ void BasicGeometryNode::setBoundingRect(const QRectF &bounds)
 GeometryNode::GeometryNode()
     : m_render_order(0)
     , m_material(0)
+    , m_opaque_material(0)
     , m_opacity(1)
 {
 }
@@ -342,14 +343,69 @@ void GeometryNode::setSubtreeRenderOrder(int order)
     Node::setSubtreeRenderOrder(order);
 }
 
+
+
+/*!
+    Sets the material of this geometry node to \a material.
+
+    GeometryNodes must have a material before they can be added to the
+    scene graph.
+ */
 void GeometryNode::setMaterial(AbstractMaterial *material)
 {
     m_material = material;
     markDirty(DirtyMaterial);
 }
 
-QRectF GeometryNode::subtreeBoundingRect() const
+
+
+/*!
+    Sets the opaque material of this geometry to \a material.
+
+    The opaque material will be preferred by the renderer over the
+    default material, as returned by the material() function, if
+    it is not null and the geometry item has an inherited opacity of
+    1.
+
+    The opaqueness refers to scene graph opacity, the material is still
+    allowed to set AbstractMaterial::Blending to true and draw transparent
+    pixels.
+ */
+void GeometryNode::setOpaqueMaterial(AbstractMaterial *material)
 {
+    m_opaque_material = material;
+    markDirty(DirtyMaterial);
+}
+
+
+
+/*!
+    Returns the material which should currently be used for geometry node.
+
+    If the inherited opacity of the node is 1 and there is an opaque material
+    set on this node, it will be returned; otherwise, the default material
+    will be returned.
+
+    \warning This function requires the scene graph above this item to be
+    completely free of dirty states, so it can only be called shortly after
+    a clal to RootNode::updateDirtyStates();
+
+    \sa setMaterial, setOpaqueMaterial
+ */
+AbstractMaterial *GeometryNode::activeMaterial() const
+{
+    Q_ASSERT_X(dirtyFlags() == 0, "GeometryNode::activeMaterial()", "function assumes that all dirty states are cleaned up");
+    if (m_opaque_material && m_opacity > 0.999)
+        return m_opaque_material;
+    return m_material;
+}
+
+
+/*!
+    This function should be removed as soon as possible...
+ */
+QRectF GeometryNode::subtreeBoundingRect() const
+    {
     return BasicGeometryNode::subtreeBoundingRect() | boundingRect();
 }
 

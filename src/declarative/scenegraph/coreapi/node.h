@@ -258,6 +258,12 @@ public:
     void setMaterial(AbstractMaterial *material);
     AbstractMaterial *material() const { return m_material; }
 
+    void setOpaqueMaterial(AbstractMaterial *material);
+    AbstractMaterial *opaqueMaterial() const;
+
+    AbstractMaterial *activeMaterial() const;
+
+
     virtual NodeType type() const { return GeometryNodeType; }
     virtual QRectF subtreeBoundingRect() const;
 
@@ -274,6 +280,7 @@ private:
 
     int m_render_order;
     AbstractMaterial *m_material;
+    AbstractMaterial *m_opaque_material;
 
     qreal m_opacity;
 };
