@@ -2078,10 +2078,10 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun,
     JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue function = new (exec)QScript::FunctionWrapper(exec, length, JSC::Identifier(exec, ""), fun);
     QScriptValue result = d->scriptValueFromJSCValue(function);
-    result.setProperty(QLatin1String("prototype"), prototype, QScriptValue::Undeletable);
+    result.setProperty(QLatin1String("prototype"), prototype,
+                       QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
     const_cast<QScriptValue&>(prototype)
-        .setProperty(QLatin1String("constructor"), result,
-                     QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+        .setProperty(QLatin1String("constructor"), result, QScriptValue::SkipInEnumeration);
     return result;
 }
 
@@ -2347,9 +2347,9 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, in
     JSC::JSValue function = new (exec)QScript::FunctionWrapper(exec, length, JSC::Identifier(exec, ""), fun);
     QScriptValue result = d->scriptValueFromJSCValue(function);
     QScriptValue proto = newObject();
-    result.setProperty(QLatin1String("prototype"), proto, QScriptValue::Undeletable);
-    proto.setProperty(QLatin1String("constructor"), result,
-                      QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    result.setProperty(QLatin1String("prototype"), proto,
+                       QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    proto.setProperty(QLatin1String("constructor"), result, QScriptValue::SkipInEnumeration);
     return result;
 }
 
@@ -2365,9 +2365,9 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature 
     JSC::JSValue function = new (exec)QScript::FunctionWithArgWrapper(exec, /*length=*/0, JSC::Identifier(exec, ""), fun, arg);
     QScriptValue result = d->scriptValueFromJSCValue(function);
     QScriptValue proto = newObject();
-    result.setProperty(QLatin1String("prototype"), proto, QScriptValue::Undeletable);
-    proto.setProperty(QLatin1String("constructor"), result,
-                      QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    result.setProperty(QLatin1String("prototype"), proto,
+                       QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    proto.setProperty(QLatin1String("constructor"), result, QScriptValue::SkipInEnumeration);
     return result;
 }
 
