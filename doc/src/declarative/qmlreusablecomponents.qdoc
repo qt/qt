@@ -45,34 +45,70 @@ component could use a Text element for its label and other components to
 implement its functions. Compounding components to form new components
 (and effectively new interfaces) is the emphasis in QML.
 
+\keyword qml-define-components
 \section1 Defining New Components
 
 Any snippet of QML code may become a component, by placing the code in a QML
-file (extension is \c .qml). An inline component definition may also reside in a
-\l Component element.
-
+file (extension is \c .qml). A complete Button component that responds to user
+input may be in a Button.qml file.
 \snippet doc/src/snippets/declarative/reusablecomponents/Button.qml document
 
-For example, one of the simplest and most common components you can build in QML is a
-button-type component. Below, we implement this component as a \l Rectangle with a clickable
-\l MouseArea, in a file named \c Button.qml:
+Alternatively, a \l Component element may encapsulate a QML object to form a
+component.
+\snippet doc/src/snippets/declarative/reusablecomponents/component.qml parent begin
+\snippet doc/src/snippets/declarative/reusablecomponents/component.qml define inline component
+\snippet doc/src/snippets/declarative/reusablecomponents/component.qml parent end
 
-\snippet doc/src/snippets/declarative/qml-extending-types/components/Button.qml 0
+\keyword qml-loading-components
+\section1 Loading a Component
 
-Now this component can be reused by another file within the same directory. Since the file is
-named \c Button.qml, the component is referred to as \c Button:
+The initialization of inline components is different from loading a component
+from a \c .qml file.
 
-\table
-\row
-\o \snippet doc/src/snippets/declarative/qml-extending-types/components/application.qml 0
-\o \image qml-extending-types.png
-\endtable
+\section2 Importing a Component
+
+A component defined in a \c .qml file is directly usable by declaring the name
+of the component. For example, a button defined in \c Button.qml is created by
+declaring a \c Button. The button is defined in the
+\l {qml-define-components}{Defining New Components} section.
+\snippet doc/src/snippets/declarative/reusablecomponents/application.qml document
+
+Note that the component name, \c Button, matches the QML filename, \c Button.qml.
+Specifically, the first character is in upper case. Matching the names allow
+components in the same directory to be in the direct import path of the
+application.
+
+For flexibility, a \c qmldir file is for dictating which additional components,
+plugins, or directories should be imported. By using a \c qmldir file,
+component names do not need to match the filenames. The \c qmldir file should,
+however, in an imported path.
+\snippet doc/src/snippets/declarative/reusablecomponents/qmldir document
+
+\section2 Loading an Inline Component
+
+A consequence of inline components is that initialization may be deferred or
+delayed. A component may be created during a MouseArea event or by using a
+\l Loader element. The component can create an object, which is addressable in a
+similar way as an \l {qml-id-propert}{id property}. Thus, the created object may
+have its bindings set and read like a normal QML object.
+\snippet doc/src/snippets/declarative/reusablecomponents/component.qml define inline component
+\snippet doc/src/snippets/declarative/reusablecomponents/component.qml create inline component
+
+\keyword qml-component-properties
+\section1 Component Properties
+
+Initializing a component, either from a .qml file or initializing an inline
+component, have several properties to facilitate component execution.
+Specifically, there are \l{attached-properties}{attached properties} and
+\l{attached-signalhandlers}{attached signal handlers} for setting properties
+during the lifetime of a component.
+
+*/
 
 The root object in \c Button.qml defines the attributes that are available to users of the
 \c Button component. In this case, the root object is a \l Rectangle, so any properties, methods
 and signals of \l Rectangle are made available, allowing \c application.qml to
 customize the \c width, \c height, \c radius and \c color properties of \c Button objects.
-
 
 If \c Button.qml was not in the same directory, \c application.qml would need to load it as a
 \l {Modules}{module} from a specific filesystem path or \l{QDeclarativeExtensionPlugin}{plugin}.
@@ -81,6 +117,10 @@ filesystems. It is recommended the file name case matches the case of the QML co
 exactly - for example, \c Box.qml and not \c BoX.qml - regardless of the platform to which the
 QML component will be deployed.
 
-\section1 Loading a Component
+\snippet doc/src/snippets/declarative/qml-extending-types/components/Button.qml 0
+\table
+\row
+\o \snippet doc/src/snippets/declarative/qml-extending-types/components/application.qml 0
+\o \image qml-extending-types.png
+\endtable
 
-*/
