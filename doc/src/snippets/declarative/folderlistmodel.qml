@@ -43,15 +43,19 @@ import QtQuick 1.0
 import Qt.labs.folderlistmodel 1.0
 
 ListView {
+    width: 200; height: 400
+
     FolderListModel {
-        id: foldermodel
+        id: folderModel
         nameFilters: ["*.qml"]
     }
+
     Component {
-        id: filedelegate
+        id: fileDelegate
         Text { text: fileName }
     }
-    model: foldermodel
-    delegate: filedelegate
+
+    model: folderModel
+    delegate: fileDelegate
 }
 //![0]

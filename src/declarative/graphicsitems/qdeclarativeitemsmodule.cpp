@@ -78,6 +78,7 @@
 #include "private/qdeclarativewebview_p_p.h"
 #endif
 #include "private/qdeclarativeanchors_p.h"
+#include "private/qdeclarativepincharea_p.h"
 
 static QDeclarativePrivate::AutoParentResult qgraphicsobject_autoParent(QObject *obj, QObject *parent)
 {
@@ -173,6 +174,29 @@ void QDeclarativeItemModule::defineModule()
 
     qmlRegisterUncreatableType<QDeclarativeKeyNavigationAttached>("QtQuick",1,0,"KeyNavigation",QDeclarativeKeyNavigationAttached::tr("KeyNavigation is only available via attached properties"));
     qmlRegisterUncreatableType<QDeclarativeKeysAttached>("QtQuick",1,0,"Keys",QDeclarativeKeysAttached::tr("Keys is only available via attached properties"));
+
+    // QtQuick 1.1 items
+    qmlRegisterType<QDeclarativePinchArea>("QtQuick",1,1,"PinchArea");
+    qmlRegisterType<QDeclarativePinch>("QtQuick",1,1,"Pinch");
+    qmlRegisterType<QDeclarativePinchEvent>();
+    qmlRegisterType<QDeclarativeItem,1>("QtQuick",1,1,"Item");
+    qmlRegisterType<QDeclarativeFlickable,1>("QtQuick",1,1,"Flickable");
+    qmlRegisterType<QDeclarativeListView,1>("QtQuick",1,1,"ListView");
+    qmlRegisterType<QDeclarativeGridView,1>("QtQuick",1,1,"GridView");
+    qmlRegisterType<QDeclarativeRow,1>("QtQuick",1,1,"Row");
+    qmlRegisterType<QDeclarativeGrid,1>("QtQuick",1,1,"Grid");
+    qmlRegisterType<QDeclarativeFlow,1>("QtQuick",1,1,"Flow");
+    qmlRegisterType<QDeclarativeRepeater,1>("QtQuick",1,1,"Repeater");
+    qmlRegisterType<QDeclarativeText,1>("QtQuick",1,1,"Text");
+    qmlRegisterType<QDeclarativeTextEdit,1>("QtQuick",1,1,"TextEdit");
+#ifndef QT_NO_LINEEDIT
+    qmlRegisterType<QDeclarativeTextInput,1>("QtQuick",1,1,"TextInput");
+#endif
+    qmlRegisterRevision<QDeclarativeImageBase,1>("QtQuick",1,1);
+    qmlRegisterRevision<QDeclarativeImplicitSizeItem,0>("QtQuick",1,0);
+    qmlRegisterRevision<QDeclarativeImplicitSizeItem,1>("QtQuick",1,1);
+    qmlRegisterRevision<QDeclarativeImplicitSizePaintedItem,0>("QtQuick",1,0);
+    qmlRegisterRevision<QDeclarativeImplicitSizePaintedItem,1>("QtQuick",1,1);
 
 #ifndef QT_NO_IMPORT_QT47_QML
 #ifdef QT_NO_MOVIE

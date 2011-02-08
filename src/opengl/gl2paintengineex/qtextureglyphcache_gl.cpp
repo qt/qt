@@ -52,12 +52,15 @@ QT_BEGIN_NAMESPACE
 extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 #endif
 
+QBasicAtomicInt qgltextureglyphcache_serial_number = Q_BASIC_ATOMIC_INITIALIZER(1);
+
 QGLTextureGlyphCache::QGLTextureGlyphCache(QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix)
     : QImageTextureGlyphCache(type, matrix)
     , ctx(0)
     , m_width(0)
     , m_height(0)
     , m_filterMode(Nearest)
+    , m_serialNumber(qgltextureglyphcache_serial_number.fetchAndAddRelaxed(1))
 {
     setContext(context);
 }
