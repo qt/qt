@@ -147,6 +147,7 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
         LIBS += -ledllstub.lib -ledll.lib\\(uc_dll_.o\\)
     } else :linux-gcce {
         LIBS += \
+            -l:edllstub.lib \
             -l:edll.lib \
             -l:usrt2_2.lib \
             -l:dfpaeabi.dso \
