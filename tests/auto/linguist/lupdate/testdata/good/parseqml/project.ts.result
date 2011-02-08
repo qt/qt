@@ -27,6 +27,11 @@
         </translation>
         <extra-well-tested>True</extra-well-tested>
     </message>
+    <message id="qtn_baz_biz">
+        <location filename="main.qml" line="98"/>
+        <source>Source text</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>BarContext</name>

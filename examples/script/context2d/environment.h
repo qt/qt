@@ -78,6 +78,8 @@ public:
 //! [0]
 
     QScriptEngine *engine() const;
+    bool hasIntervalTimers() const;
+    void triggerTimers();
 
 //! [1]
 public slots:
