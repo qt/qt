@@ -1616,8 +1616,8 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newFunction(QScrip
     QScriptPassPointer<QScriptValuePrivate> result(new QScriptValuePrivate(this, function));
 
     if (prototype) {
-        result->setProperty(QString::fromAscii("prototype"), prototype, v8::DontDelete);
-        prototype->setProperty(QString::fromAscii("constructor"), result.data(), v8::PropertyAttribute(v8::DontDelete | v8::DontEnum));
+        result->setProperty(QString::fromAscii("prototype"), prototype, v8::PropertyAttribute(v8::DontDelete | v8::DontEnum));
+        prototype->setProperty(QString::fromAscii("constructor"), result.data(), v8::DontEnum);
     }
 
     return result;
