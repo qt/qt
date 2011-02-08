@@ -74,12 +74,17 @@ public:
 
     xcb_window_t window() const { return m_window; }
 
-    void handleExposeEvent(xcb_expose_event_t *event);
-    void handleClientMessageEvent(xcb_client_message_event_t *event);
-    void handleConfigureNotifyEvent(xcb_configure_notify_event_t *event);
-    void handleButtonPressEvent(xcb_button_press_event_t *event);
-    void handleButtonReleaseEvent(xcb_button_release_event_t *event);
-    void handleMotionNotifyEvent(xcb_motion_notify_event_t *event);
+    void handleExposeEvent(const xcb_expose_event_t *event);
+    void handleClientMessageEvent(const xcb_client_message_event_t *event);
+    void handleConfigureNotifyEvent(const xcb_configure_notify_event_t *event);
+    void handleButtonPressEvent(const xcb_button_press_event_t *event);
+    void handleButtonReleaseEvent(const xcb_button_release_event_t *event);
+    void handleMotionNotifyEvent(const xcb_motion_notify_event_t *event);
+
+    void handleEnterNotifyEvent(const xcb_enter_notify_event_t *event);
+    void handleLeaveNotifyEvent(const xcb_leave_notify_event_t *event);
+    void handleFocusInEvent(const xcb_focus_in_event_t *event);
+    void handleFocusOutEvent(const xcb_focus_out_event_t *event);
 
     void handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_timestamp_t time, const QPoint &local, const QPoint &global);
 

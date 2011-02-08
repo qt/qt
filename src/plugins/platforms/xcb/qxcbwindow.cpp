@@ -64,9 +64,15 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
         // XCB_CW_EVENT_MASK
         XCB_EVENT_MASK_EXPOSURE
         | XCB_EVENT_MASK_STRUCTURE_NOTIFY
+        | XCB_EVENT_MASK_KEY_PRESS
+        | XCB_EVENT_MASK_KEY_RELEASE
         | XCB_EVENT_MASK_BUTTON_PRESS
         | XCB_EVENT_MASK_BUTTON_RELEASE
         | XCB_EVENT_MASK_BUTTON_MOTION
+        | XCB_EVENT_MASK_ENTER_WINDOW
+        | XCB_EVENT_MASK_LEAVE_WINDOW
+        | XCB_EVENT_MASK_PROPERTY_CHANGE
+        | XCB_EVENT_MASK_FOCUS_CHANGE
     };
 
     m_window = xcb_generate_id(xcb_connection());
@@ -160,7 +166,7 @@ void QXcbWindow::requestActivateWindow()
 {
 }
 
-void QXcbWindow::handleExposeEvent(xcb_expose_event_t *event)
+void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
 {
     QWindowSurface *surface = widget()->windowSurface();
     if (surface) {
@@ -170,7 +176,7 @@ void QXcbWindow::handleExposeEvent(xcb_expose_event_t *event)
     }
 }
 
-void QXcbWindow::handleClientMessageEvent(xcb_client_message_event_t *event)
+void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *event)
 {
     if (event->format == 32 && event->type == atom(QXcbAtom::WM_PROTOCOLS)) {
         if (event->data.data32[0] == atom(QXcbAtom::WM_DELETE_WINDOW)) {
@@ -179,7 +185,7 @@ void QXcbWindow::handleClientMessageEvent(xcb_client_message_event_t *event)
     }
 }
 
-void QXcbWindow::handleConfigureNotifyEvent(xcb_configure_notify_event_t *event)
+void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *event)
 {
     int xpos = geometry().x();
     int ypos = geometry().y();
@@ -218,7 +224,7 @@ static Qt::MouseButton translateMouseButton(xcb_button_t s)
     }
 }
 
-void QXcbWindow::handleButtonPressEvent(xcb_button_press_event_t *event)
+void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
 {
     QPoint local(event->event_x, event->event_y);
     QPoint global(event->root_x, event->root_y);
@@ -240,7 +246,7 @@ void QXcbWindow::handleButtonPressEvent(xcb_button_press_event_t *event)
     handleMouseEvent(event->detail, event->state, event->time, local, global);
 }
 
-void QXcbWindow::handleButtonReleaseEvent(xcb_button_release_event_t *event)
+void QXcbWindow::handleButtonReleaseEvent(const xcb_button_release_event_t *event)
 {
     QPoint local(event->event_x, event->event_y);
     QPoint global(event->root_x, event->root_y);
@@ -248,7 +254,7 @@ void QXcbWindow::handleButtonReleaseEvent(xcb_button_release_event_t *event)
     handleMouseEvent(event->detail, event->state, event->time, local, global);
 }
 
-void QXcbWindow::handleMotionNotifyEvent(xcb_motion_notify_event_t *event)
+void QXcbWindow::handleMotionNotifyEvent(const xcb_motion_notify_event_t *event)
 {
     QPoint local(event->event_x, event->event_y);
     QPoint global(event->root_x, event->root_y);
@@ -264,5 +270,25 @@ void QXcbWindow::handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_times
     buttons ^= button; // X event uses state *before*, Qt uses state *after*
 
     QWindowSystemInterface::handleMouseEvent(widget(), time, local, global, buttons);
+}
+
+void QXcbWindow::handleEnterNotifyEvent(const xcb_enter_notify_event_t *)
+{
+    QWindowSystemInterface::handleEnterEvent(widget());
+}
+
+void QXcbWindow::handleLeaveNotifyEvent(const xcb_leave_notify_event_t *)
+{
+    QWindowSystemInterface::handleLeaveEvent(widget());
+}
+
+void QXcbWindow::handleFocusInEvent(const xcb_focus_in_event_t *)
+{
+    QWindowSystemInterface::handleWindowActivated(widget());
+}
+
+void QXcbWindow::handleFocusOutEvent(const xcb_focus_out_event_t *)
+{
+    QWindowSystemInterface::handleWindowActivated(0);
 }
 

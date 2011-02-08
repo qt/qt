@@ -39,55 +39,41 @@
 **
 ****************************************************************************/
 
-#include "qxcbscreen.h"
+#ifndef QXCBKEYBOARD_H
+#define QXCBKEYBOARD_H
 
-#include <stdio.h>
+#include "qxcbobject.h"
 
-QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen)
-    : QXcbObject(connection)
-    , m_screen(screen)
+#include "xcb/xcb_keysyms.h"
+
+class QXcbKeyboard : public QXcbObject
 {
-    printf ("\n");
-    printf ("Informations of screen %d:\n", screen->root);
-    printf ("  width.........: %d\n", screen->width_in_pixels);
-    printf ("  height........: %d\n", screen->height_in_pixels);
-    printf ("  depth.........: %d\n", screen->root_depth);
-    printf ("  white pixel...: %x\n", screen->white_pixel);
-    printf ("  black pixel...: %x\n", screen->black_pixel);
-    printf ("\n");
+public:
+    QXcbKeyboard(QXcbConnection *connection);
+    ~QXcbKeyboard();
 
-    const quint32 mask = XCB_CW_EVENT_MASK;
-    const quint32 values[] = {
-        // XCB_CW_EVENT_MASK
-        XCB_EVENT_MASK_KEYMAP_STATE
-        | XCB_EVENT_MASK_ENTER_WINDOW
-        | XCB_EVENT_MASK_LEAVE_WINDOW
-        | XCB_EVENT_MASK_PROPERTY_CHANGE
-    };
+    void handleKeyPressEvent(QWidget *widget, const xcb_key_press_event_t *event);
+    void handleKeyReleaseEvent(QWidget *widget, const xcb_key_release_event_t *event);
 
-    xcb_configure_window(xcb_connection(), screen->root, mask, values);
-}
+    void handleMappingNotifyEvent(const xcb_mapping_notify_event_t *event);
 
-QXcbScreen::~QXcbScreen()
-{
-}
+    Qt::KeyboardModifiers translateModifiers(int s);
 
-QRect QXcbScreen::geometry() const
-{
-    return QRect(0, 0, m_screen->width_in_pixels, m_screen->height_in_pixels);
-}
+private:
 
-int QXcbScreen::depth() const
-{
-    return m_screen->root_depth;
-}
+    int translateKeySym(uint key) const;
+    QString translateKeySym(xcb_keysym_t keysym, uint xmodifiers,
+                            int &code, Qt::KeyboardModifiers &modifiers,
+                            QByteArray &chars, int &count);
 
-QImage::Format QXcbScreen::format() const
-{
-    return QImage::Format_RGB32;
-}
+    uint m_alt_mask;
+    uint m_super_mask;
+    uint m_hyper_mask;
+    uint m_meta_mask;
+    uint m_mode_switch_mask;
+    uint m_num_lock_mask;
 
-QSize QXcbScreen::physicalSize() const
-{
-    return QSize(m_screen->width_in_millimeters, m_screen->height_in_millimeters);
-}
+    xcb_key_symbols_t *m_key_symbols;
+};
+
+#endif

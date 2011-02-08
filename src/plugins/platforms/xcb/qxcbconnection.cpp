@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qxcbconnection.h"
+#include "qxcbkeyboard.h"
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
 
@@ -67,6 +68,8 @@ QXcbConnection::QXcbConnection(const char *displayName)
     QSocketNotifier *socket = new QSocketNotifier(xcb_get_file_descriptor(xcb_connection()), QSocketNotifier::Read, this);
     connect(socket, SIGNAL(activated(int)), this, SLOT(eventDispatcher()));
 
+    m_keyboard = new QXcbKeyboard(this);
+
     initializeAllAtoms();
 }
 
@@ -75,6 +78,8 @@ QXcbConnection::~QXcbConnection()
     qDeleteAll(m_screens);
 
     xcb_disconnect(xcb_connection());
+
+    delete m_keyboard;
 }
 
 QXcbWindow *platformWindowFromId(xcb_window_t id)
@@ -90,6 +95,14 @@ QXcbWindow *platformWindowFromId(xcb_window_t id)
     event_t *e = (event_t *)event; \
     if (QXcbWindow *platformWindow = platformWindowFromId(e->window)) \
         platformWindow->handler(e); \
+} \
+break;
+
+#define HANDLE_KEYBOARD_EVENT(event_t, handler) \
+{ \
+    event_t *e = (event_t *)event; \
+    if (QXcbWindow *platformWindow = platformWindowFromId(e->event)) \
+        m_keyboard->handler(platformWindow->widget(), e); \
 } \
 break;
 
@@ -109,6 +122,21 @@ void QXcbConnection::eventDispatcher()
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
         case XCB_CLIENT_MESSAGE:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_client_message_event_t, window, handleClientMessageEvent);
+        case XCB_ENTER_NOTIFY:
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
+        case XCB_LEAVE_NOTIFY:
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_leave_notify_event_t, event, handleLeaveNotifyEvent);
+        case XCB_FOCUS_IN:
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_in_event_t, event, handleFocusInEvent);
+        case XCB_FOCUS_OUT:
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_out_event_t, event, handleFocusOutEvent);
+        case XCB_KEY_PRESS:
+            HANDLE_KEYBOARD_EVENT(xcb_key_press_event_t, handleKeyPressEvent);
+        case XCB_KEY_RELEASE:
+            HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);
+        case XCB_MAPPING_NOTIFY:
+            m_keyboard->handleMappingNotifyEvent((xcb_mapping_notify_event_t *)event);
+            break;
         default:
             break;
         }

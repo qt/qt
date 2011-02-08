@@ -212,6 +212,8 @@ namespace QXcbAtom {
     };
 }
 
+class QXcbKeyboard;
+
 class QXcbConnection : public QObject
 {
     Q_OBJECT
@@ -228,6 +230,8 @@ public:
 
     xcb_connection_t *xcb_connection() const { return m_connection; }
 
+    QXcbKeyboard *keyboard() const { return m_keyboard; }
+
 private slots:
     void eventDispatcher();
 
@@ -243,6 +247,8 @@ private:
     xcb_atom_t m_allAtoms[QXcbAtom::NAtoms];
 
     QByteArray m_displayName;
+
+    QXcbKeyboard *m_keyboard;
 };
 
 #endif
