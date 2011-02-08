@@ -300,7 +300,7 @@ unsigned int __stdcall QThreadPrivate::start(void *arg)
 
     {
         QMutexLocker locker(&thr->d_func()->mutex);
-        data->quitNow = !thr->d_func()->exited;
+        data->quitNow = thr->d_func()->exited;
     }
     // ### TODO: allow the user to create a custom event dispatcher
     createEventDispatcher(data);
