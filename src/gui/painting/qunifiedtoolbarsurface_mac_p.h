@@ -82,7 +82,6 @@ public:
     void setGeometry(const QRect &rect);
     void beginPaint(const QRegion &rgn);
     void insertToolbar(QWidget *toolbar, const QPoint &offset);
-    void updateRedirection(QWidget *widget);
     void updateToolbarOffset(QWidget *widget);
 
     QPaintDevice *paintDevice();

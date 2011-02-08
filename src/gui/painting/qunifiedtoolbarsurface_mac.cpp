@@ -92,11 +92,6 @@ void QUnifiedToolbarSurface::recursiveRedirect(QObject *object, const QPoint &of
     }
 }
 
-void QUnifiedToolbarSurface::updateRedirection(QWidget *widget)
-{
-    recursiveRedirect(widget, widget->d_func()->toolbar_offset);
-}
-
 void QUnifiedToolbarSurface::insertToolbar(QWidget *toolbar, const QPoint &offset)
 {
     setGeometry(QRect(QPoint(0, 0), QSize(offset.x() + toolbar->width(), 100))); // FIXME
