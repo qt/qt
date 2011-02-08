@@ -134,6 +134,15 @@ Installed modules that are installed into the import path or created
 as a \l{QDeclarativeExtensionPlugin}{QML C++ plugin} must define a
 \l{Writing a qmldir file}{qmldir file}.
 
+Modules that are installed into the import path translate the URI into
+directory names. For example, the qmldir file of the module \c com.nokia.qml.mymodule
+must be located in the subpath \c com/nokia/qml/mymodule/qmldir somewhere in the
+QML import path. In addition it is possible to store different versions of the
+module in subdirectories of its own. For example, a version 2.1 of the
+module could be located under \c com/nokia/qml/mymodule.2/qmldir or
+\c com/nokia/qml/mymodule.2.1/qmldir. The engine will automatically load
+the module which matches best.
+
 
 \section2 The QML import path
 
