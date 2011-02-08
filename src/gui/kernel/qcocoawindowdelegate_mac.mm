@@ -215,6 +215,11 @@ static void cleanupCocoaWindowDelegate()
         QWidgetPrivate::qt_mac_update_sizer(qwidget);
         [self syncSizeForWidget:qwidget toSize:newSize fromSize:oldSize];
     }
+
+    // We force the repaint to be synchronized with the resize of the window.
+    // Otherwise, the resize looks sluggish because we paint one event loop later.
+    if ([[window contentView] inLiveResize])
+        qwidget->repaint();
 }
 
 - (void)windowDidMove:(NSNotification *)notification
