@@ -99,6 +99,7 @@ class SubTreeTextureProvider : public QSGTextureProvider
 public:
     SubTreeTextureProvider(QObject *parent = 0);
     ~SubTreeTextureProvider();
+    virtual void updateTexture();
     virtual QSGTextureRef texture();
 
     // The item's "paint node".
@@ -133,15 +134,25 @@ private:
 };
 
 
-class TextureItem : public QSGItem
+// TODO: Find good name.
+class TextureProviderInterface
+{
+public:
+    virtual QSGTextureProvider *textureProvider() const = 0;
+};
+Q_DECLARE_INTERFACE(TextureProviderInterface, "TextureProviderInterface")
+
+
+class TextureItem : public QSGItem, public TextureProviderInterface
 {
     Q_OBJECT
+    Q_INTERFACES(TextureProviderInterface)
     // TODO: property clampToEdge
     // TODO: property mipmapFiltering
 public:
     TextureItem(QSGItem *parent = 0);
 
-    QSGTextureProvider *textureProvider() const;
+    virtual QSGTextureProvider *textureProvider() const;
     void setTextureProvider(QSGTextureProvider *provider);
     
 protected:

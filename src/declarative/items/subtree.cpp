@@ -114,6 +114,7 @@ void TextureNode::setTexture(QSGTextureProvider *texture)
 
 void TextureNode::preprocess()
 {
+    m_texture->updateTexture();
     if (m_dirtyGeometry)
         updateGeometry();
     if (m_dirtyTexture)
@@ -184,10 +185,14 @@ SubTreeTextureProvider::~SubTreeTextureProvider()
 #endif
 }
 
-QSGTextureRef SubTreeTextureProvider::texture()
+void SubTreeTextureProvider::updateTexture()
 {
     if (m_dirtyTexture)
         grab();
+}
+
+QSGTextureRef SubTreeTextureProvider::texture()
+{
     return m_texture;
 }
 
@@ -282,12 +287,12 @@ void SubTreeTextureProvider::grab()
     m_renderer->setClearColor(Qt::transparent);
     m_renderer->renderScene(BindableFbo(const_cast<QGLContext *>(ctx), m_fbo));
 
-    m_dirtyTexture = false;
     root->markDirty(dirty | Node::DirtyNodeAdded); // Force matrix, clip and render list update.
 
 #ifdef QML_SUBTREE_DEBUG
     root->removeChildNode(m_debugOverlay);
 #endif
+    m_dirtyTexture = false;
 }
 
 

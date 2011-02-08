@@ -48,7 +48,6 @@
 
 #include <QtCore/qsharedpointer.h>
 
-class ShaderEffectItem;
 class ShaderEffectMaterial : public AbstractMaterial // XXX todo - ugly hack
 {
 public:
@@ -73,12 +72,14 @@ protected:
 
 class CustomMaterialShader;
 
-class ShaderEffectNode : public GeometryNode,
+class ShaderEffectNode : public QObject,
+                         public GeometryNode,
                          public ShaderEffectMaterial
 
 {
+    Q_OBJECT
 public:
-    ShaderEffectNode(ShaderEffectItem *item);
+    ShaderEffectNode();
     virtual ~ShaderEffectNode();
 
     void setRect(const QRectF &rect);
@@ -97,9 +98,13 @@ public:
     void setOpacity(qreal o);
 
     void setProgramSource(const ShaderEffectProgram &);
-    void setData(const QList<QPair<QByteArray, QVariant> > &uniformValues);
+    void setData(const QVector<QPair<QByteArray, QVariant> > &uniformValues,
+                 const QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > &textures);
 
     void update();
+
+private Q_SLOTS:
+    void markDirtyTexture();
 
 private:
     friend class CustomMaterialShader;
@@ -113,13 +118,12 @@ private:
 
     qreal m_opacity;
     ShaderEffectProgram m_source;
-    QList<QPair<QByteArray, QVariant> > m_uniformValues;
+    QVector<QPair<QByteArray, QVariant> > m_uniformValues;
+    QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > m_textures;
 
     void updateShaderProgram();
 
     QVector<CustomMaterialShader *> m_shaders;
-    ShaderEffectItem *m_item;
-
 };
 
 #endif // SHADEREFFECTNODE_H

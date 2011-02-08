@@ -214,6 +214,7 @@ class Q_DECLARATIVE_EXPORT QSGTextureProvider : public QObject
     Q_PROPERTY(bool linearFiltering READ linearFiltering WRITE setLinearFiltering NOTIFY linearFilteringChanged)
 public:
     QSGTextureProvider(QObject *parent = 0);
+    virtual void updateTexture() { }
     virtual QSGTextureRef texture() = 0;
 
     bool opaque() const { return m_opaque; }

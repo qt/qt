@@ -160,11 +160,8 @@ static void qt_sgitems_defineModule(const char *uri, int major, int minor)
     qmlRegisterUncreatableType<QSGKeysAttached>(uri,major,minor,"Keys",QSGKeysAttached::tr("Keys is only available via attached properties"));
 
     qmlRegisterType<ShaderEffectItem>("QtQuick", 2, 0, "ShaderEffectItem");
-    qmlRegisterType<ShaderEffectSource>("QtQuick", 2, 0, "ShaderEffectSource");
     qmlRegisterType<SubTree>("QtQuick", 2, 0, "SubTree");
-    qmlRegisterType<SubTreeTextureProvider>("QtQuick", 2, 0, "SubTreeTextureProvider");
     qmlRegisterType<TextureItem>("QtQuick", 2, 0, "TextureItem");
-    qmlRegisterUncreatableType<QSGTextureProvider>("QtQuick", 2, 0, "TextureProvider", "TextureProvider is abstract");
 
     qmlRegisterType<QSGParentChange>(uri, major, minor,"ParentChange");
     qmlRegisterType<QSGAnchorChanges>(uri, major, minor,"AnchorChanges");

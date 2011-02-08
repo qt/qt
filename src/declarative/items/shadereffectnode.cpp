@@ -84,13 +84,13 @@ void CustomMaterialShader::updateState(Renderer *r, AbstractMaterial *newEffect,
     Q_UNUSED(oldEffect);
     Q_UNUSED(newEffect);
 
-    for (int i = m_node->m_item->m_sources.size() - 1; i >= 0; --i) {
-        const ShaderEffectItem::SourceData &source = m_node->m_item->m_sources.at(i);
-        if (!source.source)
+    for (int i = m_node->m_textures.size() - 1; i >= 0; --i) {
+        QPointer<QSGTextureProvider> source = m_node->m_textures.at(i).second;
+        if (!source)
             continue;
 
         r->glActiveTexture(GL_TEXTURE0 + i);
-        source.source->bind();
+        glBindTexture(GL_TEXTURE_2D, source->texture()->textureId());
     }
 
     if (m_node->m_source.respectsOpacity)
@@ -142,15 +142,17 @@ void CustomMaterialShader::updateState(Renderer *r, AbstractMaterial *newEffect,
 
 char const *const *CustomMaterialShader::attributeNames() const
 {
+    Q_ASSERT(m_node);
     return m_node->m_source.attributeNames.constData();
 }
 
 void CustomMaterialShader::initialize()
 {
+    Q_ASSERT(m_node);
     if (m_program.isLinked()) {
         m_program.bind();
-        for (int i = 0; i < m_node->m_item->m_sources.size(); ++i)
-            m_program.setUniformValue(m_node->m_item->m_sources.at(i).name.constData(), i);
+        for (int i = 0; i < m_node->m_textures.size(); ++i)
+            m_program.setUniformValue(m_node->m_textures.at(i).first.constData(), i);
     }
 }
 
@@ -171,8 +173,8 @@ ShaderEffectMaterial::ShaderEffectMaterial()
 }
 
 
-ShaderEffectNode::ShaderEffectNode(ShaderEffectItem *item)
-    : m_meshResolution(1, 1), m_opacity(1), m_item(item)
+ShaderEffectNode::ShaderEffectNode()
+    : m_meshResolution(1, 1), m_opacity(1)
 {
     Node::setFlag(UsePreprocess, true);
 
@@ -218,6 +220,11 @@ void ShaderEffectNode::update()
         updateGeometry();
         m_dirty_geometry = false;
     }
+}
+
+void ShaderEffectNode::markDirtyTexture()
+{
+    markDirty(DirtyMaterial);
 }
 
 void ShaderEffectNode::updateGeometry()
@@ -275,9 +282,11 @@ void ShaderEffectNode::invalidateShaders()
 
 void ShaderEffectNode::preprocess()
 {
-    // XXX todo
-    Q_ASSERT(m_item);
-    m_item->preprocess();
+    for (int i = 0; i < m_textures.size(); ++i) {
+        QSGTextureProvider *source = m_textures.at(i).second;
+        if (source)
+            source->updateTexture();
+    }
 }
 
 AbstractMaterialType *ShaderEffectMaterial::type() const
@@ -312,8 +321,14 @@ void ShaderEffectNode::setProgramSource(const ShaderEffectProgram &source)
     markDirty(DirtyMaterial);
 }
 
-void ShaderEffectNode::setData(const QList<QPair<QByteArray, QVariant> > &uniformValues)
+void ShaderEffectNode::setData(const QVector<QPair<QByteArray, QVariant> > &uniformValues,
+                               const QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > &textures)
 {
     m_uniformValues = uniformValues;
+    for (int i = 0; i < m_textures.size(); ++i)
+        disconnect(m_textures.at(i).second, SIGNAL(textureChanged()), this, SLOT(markDirtyTexture()));
+    m_textures = textures;
+    for (int i = 0; i < m_textures.size(); ++i)
+        connect(m_textures.at(i).second, SIGNAL(textureChanged()), this, SLOT(markDirtyTexture()));
     markDirty(DirtyMaterial);
 }
