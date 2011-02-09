@@ -51,7 +51,7 @@ class QSGNinePatchNode : public GeometryNode
 {
 public:
     QSGNinePatchNode(const QRectF &targetRect, const QSGTextureRef &texture, const QRect &innerRect, 
-                     qreal opacity = 1., bool linearFiltering = false);
+                     bool linearFiltering = false);
 
     void setRect(const QRectF &rect);
     QRectF rect() const { return m_targetRect; }

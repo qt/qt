@@ -53,8 +53,8 @@ QSGNinePatchNode::QSGNinePatchNode(const QRectF &targetRect, const QSGTextureRef
     m_materialO.setTexture(m_texture, !alpha);
     m_materialO.setLinearFiltering(linearFiltering);
 
-    setMaterial(&m_material);
-    setOpaqueMaterial(&m_materialO);
+    setOpaqueMaterial(&m_material);
+    setMaterial(&m_materialO);
 
     updateGeometry();
 }
