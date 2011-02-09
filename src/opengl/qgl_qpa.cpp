@@ -324,7 +324,6 @@ void QGLWidget::setMouseTracking(bool enable)
 
 bool QGLWidget::event(QEvent *e)
 {
-    Q_D(QGLWidget);
     return QWidget::event(e);
 }
 
