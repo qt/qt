@@ -241,7 +241,9 @@
     \section1 Build System
 
     Unlike previous Qt releases, Qt 4 is a collection of smaller
-    libraries:
+    libraries. A complete list of libraries in the current release
+    of Qt can be found on the \l{All Modules} page. The following
+    table describes the initial set of libraries released with Qt 4.
 
     \table
     \header \o Library          \o Description
