@@ -1103,7 +1103,6 @@ void tst_qdeclarativetext::lineHeight()
 
     qreal h = myText->height();
     myText->setLineHeight(1.5);
-    QEXPECT_FAIL("", "QTBUG-17325", Continue);
     QVERIFY(myText->height() == h * 1.5);
 
     myText->setLineHeightMode(QDeclarativeText::PixelHeight);
