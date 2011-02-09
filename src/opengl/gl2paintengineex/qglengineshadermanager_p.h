@@ -259,7 +259,7 @@ static const GLuint QT_PMV_MATRIX_3_ATTR = 5;
 
 class QGLEngineShaderProg;
 
-class QGLEngineSharedShaders
+class Q_OPENGL_EXPORT QGLEngineSharedShaders
 {
     Q_GADGET
 public:
