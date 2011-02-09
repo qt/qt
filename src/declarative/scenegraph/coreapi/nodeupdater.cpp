@@ -207,7 +207,7 @@ void NodeUpdater::visitNode(Node *n)
 #endif
 
     if (n->dirtyFlags() || m_force_update) {
-        bool forceUpdate = n->dirtyFlags() & (Node::DirtyNodeAdded | Node::DirtySubtreeEnabled);
+        bool forceUpdate = n->dirtyFlags() & (Node::DirtyNodeAdded);
         if (forceUpdate)
             ++m_force_update;
 

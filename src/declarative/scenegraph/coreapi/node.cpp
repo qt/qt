@@ -210,15 +210,6 @@ void Node::markDirty(DirtyFlags flags)
 
 }
 
-QRectF Node::subtreeBoundingRect() const
-{
-    QRectF bounds;
-    for (int i = 0; i < m_children.size(); ++i)
-        bounds |= m_children.at(i)->subtreeBoundingRect();
-    return bounds;
-}
-
-
 BasicGeometryNode::BasicGeometryNode()
     : m_first_index(0)
     , m_end_index(-1)
@@ -283,7 +274,6 @@ QPair<int, int> BasicGeometryNode::indexRange() const
 void BasicGeometryNode::setBoundingRect(const QRectF &bounds)
 {
     m_bounding_rect = bounds;
-    markDirty(DirtyBoundingRect);
 }
 
 
@@ -380,14 +370,6 @@ AbstractMaterial *GeometryNode::activeMaterial() const
 
 
 /*!
-    This function should be removed as soon as possible...
- */
-QRectF GeometryNode::subtreeBoundingRect() const
-    {
-    return BasicGeometryNode::subtreeBoundingRect() | boundingRect();
-}
-
-/*!
     Sets the inherited opacity of this geometry to \a opacity.
 
     This function is meant to be called by the node preprocessing
@@ -411,11 +393,6 @@ ClipNode::ClipNode()
 ClipNode::~ClipNode()
 {
     destroy();
-}
-
-QRectF ClipNode::subtreeBoundingRect() const
-{
-    return BasicGeometryNode::subtreeBoundingRect() & boundingRect();
 }
 
 
@@ -447,12 +424,6 @@ void TransformNode::setMatrix(const QMatrix4x4 &matrix)
 void TransformNode::setCombinedMatrix(const QMatrix4x4 &matrix)
 {
     m_combined_matrix = matrix;
-}
-
-
-QRectF TransformNode::subtreeBoundingRect() const
-{
-    return m_matrix.mapRect(Node::subtreeBoundingRect());
 }
 
 

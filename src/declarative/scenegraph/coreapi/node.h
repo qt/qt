@@ -77,8 +77,6 @@ public:
         DirtyNodeRemoved            = 0x0008,
         DirtyGeometry               = 0x0010,
         DirtyRenderOrder            = 0x0020,
-        DirtySubtreeEnabled         = 0x0040,
-        DirtyBoundingRect           = 0x0080,
         DirtyMaterial               = 0x0100,
         DirtyOpacity                = 0x0200,
         DirtyAll                    = 0xffff,
@@ -86,8 +84,6 @@ public:
         DirtyPropagationMask        = DirtyMatrix
                                       | DirtyClipList
                                       | DirtyNodeAdded
-                                      | DirtySubtreeEnabled
-                                      | DirtyBoundingRect
                                       | DirtyOpacity,
 
 //        DirtyMatrixSubtree          = DirtyMatrix << 16,
@@ -150,8 +146,6 @@ public:
     void setFlag(Flag, bool = true);
 
     virtual void preprocess() { }
-
-    virtual QRectF subtreeBoundingRect() const;
 
 #ifdef QML_RUNTIME_TESTING
     QString description;
@@ -243,7 +237,6 @@ public:
 
 
     virtual NodeType type() const { return GeometryNodeType; }
-    virtual QRectF subtreeBoundingRect() const;
 
     void setRenderOrder(int order);
     int renderOrder() const { return m_render_order; }
@@ -268,7 +261,6 @@ public:
     ~ClipNode();
 
     virtual NodeType type() const { return ClipNodeType; }
-    virtual QRectF subtreeBoundingRect() const;
 
 private:
 };
@@ -281,7 +273,6 @@ public:
     ~TransformNode();
 
     virtual NodeType type() const { return TransformNodeType; }
-    virtual QRectF subtreeBoundingRect() const;
 
     void setMatrix(const QMatrix4x4 &matrix);
     const QMatrix4x4 &matrix() const { return m_matrix; }
