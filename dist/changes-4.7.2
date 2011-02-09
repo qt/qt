@@ -47,10 +47,10 @@ QtGui
 
  - QWidget
     * [QTMOBILITY-645] Send WinIdChange event when winId is set to zero.
-	  The window handle of a native widget may be set to zero in two
-	  situations: (i) temporarily, during reparenting and (ii) during
-	  widget destruction.  Previously, no WinIdChange event was sent in
-	  either of these cases; now, it is sent in both cases.
+      The window handle of a native widget may be set to zero in two
+      situations: (i) temporarily, during reparenting and (ii) during
+      widget destruction.  Previously, no WinIdChange event was sent in
+      either of these cases; now, it is sent in both cases.
 
 QtDBus
 ------
@@ -136,6 +136,12 @@ Qt for Symbian
  - QNetworkProxyFactory
     * [QTBUG-13857] Added systemProxyForQuery() for Symbian, allowing
       network proxies configured on the device to be used by applications.
+
+ - QWidget
+    * [QT-4416, QTBUG-17288] On devices which lack support for transparency
+      in EGL surfaces, setting Qt::WA_TranslucentBackground on a widget
+      whose windowType() is Qt::Window causes that widget to be rendered
+      using the raster graphics system.
 
 Qt for Embedded Linux
 ---------------------
