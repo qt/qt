@@ -39,74 +39,66 @@
 **
 ****************************************************************************/
 
-#ifndef QMUTEX_P_H
-#define QMUTEX_P_H
+#include "qplatformdefs.h"
+#include "qmutex.h"
+#include <qdebug.h>
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of qmutex.cpp, qmutex_unix.cpp, and qmutex_win.cpp.  This header
-// file may change from version to version without notice, or even be
-// removed.
-//
-// We mean it.
-//
-
-#include <QtCore/qglobal.h>
-#include <QtCore/qnamespace.h>
-#include <QtCore/qmutex.h>
-
-#if defined(Q_OS_MAC)
-# include <mach/semaphore.h>
-#endif
-
-#if defined(Q_OS_SYMBIAN)
-# include <e32std.h>
-#undef QT_SYMBIAN_USE_RFASTLOCK
-#endif
+#ifndef QT_NO_THREAD
+#include "qatomic.h"
+#include "qelapsedtimer.h"
+#include "qthread.h"
+#include "qmutex_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QMutexPrivate : public QMutexData {
-public:
-    QMutexPrivate(QMutex::RecursionMode mode);
-    ~QMutexPrivate();
 
-    bool wait(int timeout = -1);
-    void wakeUp();
-
-    // 1ms = 1000000ns
-    enum { MaximumSpinTimeThreshold = 1000000 };
-    volatile qint64 maximumSpinTime;
-    volatile qint64 averageWaitTime;
-    Qt::HANDLE owner;
-    uint count;
-
-#if defined(Q_OS_MAC)
-    semaphore_t mach_semaphore;
-#elif defined(Q_OS_UNIX) && !defined(Q_OS_LINUX) && !defined(Q_OS_SYMBIAN)
-    volatile bool wakeup;
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
-#elif defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-    HANDLE event;
-#elif defined(Q_OS_SYMBIAN)
-# ifdef QT_SYMBIAN_USE_RFASTLOCK
-    RFastLock lock;
-# else
-    RSemaphore lock;
-# endif
+QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
+    : QMutexData(mode), maximumSpinTime(MaximumSpinTimeThreshold), averageWaitTime(0), owner(0), count(0)
+{
+#ifdef QT_SYMBIAN_USE_RFASTLOCK
+        int r = lock.CreateLocal();
+#else
+        int r = lock.CreateLocal(0);
 #endif
-};
+    if (r != KErrNone)
+        qWarning("QMutex: failed to create lock, error %d", r);
+}
 
-inline QMutexData::QMutexData(QMutex::RecursionMode mode)
-    : recursive(mode == QMutex::Recursive)
-{}
+QMutexPrivate::~QMutexPrivate()
+{
+    lock.Close();
+}
 
-inline QMutexData::~QMutexData() {}
+bool QMutexPrivate::wait(int timeout)
+{
+    if (contenders.fetchAndAddAcquire(1) == 0) {
+        // lock acquired without waiting
+        return true;
+    }
+    int r = KErrTimedOut;
+    if (timeout < 0) {
+        lock.Wait();
+        r = KErrNone;
+    } else {
+        // Symbian lock waits are specified in microseconds.
+        // The wait is therefore chunked.
+        // KErrNone indicates success, KErrGeneral and KErrArgument are real fails, anything else is a timeout
+        do {
+            int waitTime = qMin(KMaxTInt / 1000, timeout);
+            timeout -= waitTime;
+            r = lock.Wait(waitTime * 1000);
+        } while (r != KErrNone && r != KErrGeneral && r != KErrArgument && timeout > 0);
+    }
+    bool returnValue = (r == KErrNone);
+    contenders.deref();
+    return returnValue;
+}
+
+void QMutexPrivate::wakeUp()
+{
+    lock.Signal();
+}
 
 QT_END_NAMESPACE
 
-#endif // QMUTEX_P_H
+#endif // QT_NO_THREAD
