@@ -425,6 +425,7 @@ Q_SIGNALS:
     void textEdited(const QString &);
 
     void resetInputContext();
+    void updateMicroFocus();
 
     void accepted();
     void editingFinished();

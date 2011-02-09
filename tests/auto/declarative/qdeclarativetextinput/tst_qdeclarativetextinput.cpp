@@ -125,6 +125,7 @@ private slots:
     void testQtQuick11Attributes_data();
 
     void preeditAutoScroll();
+    void preeditMicroFocus();
 
 private:
     void simulateKey(QDeclarativeView *, int key);
@@ -1419,7 +1420,7 @@ QDeclarativeView *tst_qdeclarativetextinput::createView(const QString &filename)
 class MyInputContext : public QInputContext
 {
 public:
-    MyInputContext() : openInputPanelReceived(false), closeInputPanelReceived(false) {}
+    MyInputContext() : openInputPanelReceived(false), closeInputPanelReceived(false), updateReceived(false) {}
     ~MyInputContext() {}
 
     QString identifierName() { return QString(); }
@@ -1438,6 +1439,8 @@ public:
         return QInputContext::filterEvent(event);
     }
 
+    void update() { updateReceived = true; }
+
     void sendPreeditText(const QString &text, int cursor)
     {
         QList<QInputMethodEvent::Attribute> attributes;
@@ -1450,6 +1453,7 @@ public:
 
     bool openInputPanelReceived;
     bool closeInputPanelReceived;
+    bool updateReceived;
 };
 
 void tst_qdeclarativetextinput::openInputPanelOnClick()
@@ -1798,6 +1802,55 @@ void tst_qdeclarativetextinput::preeditAutoScroll()
     ic.sendPreeditText(preeditText.mid(0, 3), 1);
     QCOMPARE(input.positionAt(0), 0);
     QCOMPARE(input.positionAt(input.width()), 5);
+}
+
+void tst_qdeclarativetextinput::preeditMicroFocus()
+{
+    QString preeditText = "super";
+
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    MyInputContext ic;
+    view.setInputContext(&ic);
+    QDeclarativeTextInput input;
+    input.setPos(0, 0);
+    input.setFocus(true);
+    scene.addItem(&input);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+
+    QRect currentRect;
+    QRect previousRect = input.inputMethodQuery(Qt::ImMicroFocus).toRect();
+
+    // Verify that the micro focus rect is positioned the same for position 0 as
+    // it would be if there was no preedit text.
+    ic.updateReceived = false;
+    ic.sendPreeditText(preeditText, 0);
+    currentRect = input.inputMethodQuery(Qt::ImMicroFocus).toRect();
+    QCOMPARE(currentRect, previousRect);
+    QCOMPARE(ic.updateReceived, true);
+
+    // Verify that the micro focus rect moves to the left as the cursor position
+    // is incremented.
+    for (int i = 1; i <= 5; ++i) {
+        ic.updateReceived = false;
+        ic.sendPreeditText(preeditText, i);
+        currentRect = input.inputMethodQuery(Qt::ImMicroFocus).toRect();
+        QVERIFY(previousRect.left() < currentRect.left());
+        QCOMPARE(ic.updateReceived, true);
+        previousRect = currentRect;
+    }
+
+    // Verify that if there is no preedit cursor then the micro focus rect is the
+    // same as it would be if it were positioned at the end of the preedit text.
+    ic.sendPreeditText(preeditText, 0);
+    ic.updateReceived = false;
+    ic.sendEvent(QInputMethodEvent(preeditText, QList<QInputMethodEvent::Attribute>()));
+    currentRect = input.inputMethodQuery(Qt::ImMicroFocus).toRect();
+    QCOMPARE(currentRect, previousRect);
+    QCOMPARE(ic.updateReceived, true);
 }
 
 QTEST_MAIN(tst_qdeclarativetextinput)
