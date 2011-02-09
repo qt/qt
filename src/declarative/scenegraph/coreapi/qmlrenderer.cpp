@@ -432,7 +432,7 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
             m_currentProgram = program;
             m_currentProgram->activate();
             //++programChangeCount;
-            updates |= UpdateMatrices;
+            updates |= (UpdateMatrices | UpdateOpacity);
         }
 
         bool changeRenderOrder = currentRenderOrder != geomNode->renderOrder();
