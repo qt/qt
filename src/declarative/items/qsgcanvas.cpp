@@ -446,8 +446,26 @@ QSGCanvas::QSGCanvas(QWidget *parent, Qt::WindowFlags f)
     d->init(this);
 }
 
+QSGCanvas::QSGCanvas(const QGLFormat &format, QWidget *parent, Qt::WindowFlags f)
+: QGLWidget(format, parent /*, 0, f */), d_ptr(new QSGCanvasPrivate)
+{
+    Q_D(QSGCanvas);
+
+    if (f) QWidget::setWindowFlags(f);
+    d->init(this);
+}
+
 QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, QWidget *parent, Qt::WindowFlags f)
 : QGLWidget(getFormat(), parent /*, 0, f */), d_ptr(&dd)
+{
+    Q_D(QSGCanvas);
+
+    if (f) QWidget::setWindowFlags(f);
+    d->init(this);
+}
+
+QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, const QGLFormat &format, QWidget *parent, Qt::WindowFlags f)
+: QGLWidget(format, parent /*, 0, f */), d_ptr(&dd)
 {
     Q_D(QSGCanvas);
 
