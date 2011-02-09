@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 QVector<EGLint> q_createConfigAttributesFromFormat(const QPlatformWindowFormat &format);
 bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes);
-EGLConfig q_configFromQPlatformWindowFormat(EGLDisplay display, const QPlatformWindowFormat &format);
+EGLConfig q_configFromQPlatformWindowFormat(EGLDisplay display, const QPlatformWindowFormat &format, bool highestPixelFormat = false);
 QPlatformWindowFormat qt_qPlatformWindowFormatFromConfig(EGLDisplay display, const EGLConfig config);
 bool q_hasEglExtension(EGLDisplay display,const char* extensionName);
 
