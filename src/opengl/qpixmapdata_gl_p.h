@@ -129,6 +129,11 @@ public:
     GLuint bind(bool copyBack = true) const;
     QGLTexture *texture() const;
 
+#if defined(Q_OS_SYMBIAN)
+    void* toNativeType(NativeType type);
+    void fromNativeType(void* pixmap, NativeType type);
+#endif
+
 private:
     bool isValid() const;
 
