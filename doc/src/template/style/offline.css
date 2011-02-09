@@ -162,6 +162,7 @@
     span.comment
     {
         color: #008B00;
+        font-style: italic
     }
     span.string, span.char
     {
