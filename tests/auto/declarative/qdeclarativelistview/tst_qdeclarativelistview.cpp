@@ -90,6 +90,7 @@ private slots:
     void enforceRange();
     void spacing();
     void sections();
+    void sectionsDelegate();
     void cacheBuffer();
     void positionViewAtIndex();
     void resetModel();
@@ -1024,6 +1025,58 @@ void tst_QDeclarativeListView::sections()
     item = findItem<QDeclarativeItem>(contentItem, "wrapper", 1);
     QTRY_VERIFY(item);
     QTRY_COMPARE(item->height(), 40.0);
+
+    delete canvas;
+}
+
+void tst_QDeclarativeListView::sectionsDelegate()
+{
+    QDeclarativeView *canvas = createView();
+
+    TestModel model;
+    for (int i = 0; i < 30; i++)
+        model.addItem("Item" + QString::number(i), QString::number(i/5));
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview-sections_delegate.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
+    QTRY_VERIFY(listview != 0);
+
+    QDeclarativeItem *contentItem = listview->contentItem();
+    QTRY_VERIFY(contentItem != 0);
+
+    // Confirm items positioned correctly
+    int itemCount = findItems<QDeclarativeItem>(contentItem, "wrapper").count();
+    for (int i = 0; i < model.count() && i < itemCount; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
+        QTRY_VERIFY(item);
+        QTRY_COMPARE(item->y(), qreal(i*20 + ((i+5)/5) * 20));
+        QDeclarativeText *next = findItem<QDeclarativeText>(item, "nextSection");
+        QCOMPARE(next->text().toInt(), (i+1)/5);
+    }
+
+    for (int i = 0; i < 3; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "sect_" + QString::number(i));
+        QVERIFY(item);
+        QTRY_COMPARE(item->y(), qreal(i*20*6));
+    }
+
+    model.modifyItem(0, "One", "aaa");
+    model.modifyItem(1, "Two", "aaa");
+    model.modifyItem(2, "Three", "aaa");
+    model.modifyItem(3, "Four", "aaa");
+    model.modifyItem(4, "Five", "aaa");
+
+    for (int i = 0; i < 3; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem,
+                "sect_" + (i == 0 ? QString("aaa") : QString::number(i)));
+        QVERIFY(item);
+        QTRY_COMPARE(item->y(), qreal(i*20*6));
+    }
 
     delete canvas;
 }

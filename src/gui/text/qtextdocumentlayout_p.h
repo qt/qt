@@ -109,7 +109,9 @@ protected:
     void drawInlineObject(QPainter *p, const QRectF &rect, QTextInlineObject item,
                           int posInDocument, const QTextFormat &format);
     virtual void timerEvent(QTimerEvent *e);
-    enum LineHeightMode { MultiplyHeight, PixelHeight };
+
+    // TODO: remove when we support line height properly in 4.8
+    enum LineHeightMode { ProportionalHeight, FixedHeight };
     void setLineHeight(qreal lineHeight, QTextDocumentLayout::LineHeightMode mode);
 
 private:
