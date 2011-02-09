@@ -242,14 +242,26 @@ void QMLRenderer::render()
 #ifdef QML_RUNTIME_TESTING
     if (m_render_opaque_nodes)
 #endif
-    renderNodes(m_opaqueNodes);
+    {
+#if defined (QML_RUNTIME_TESTING)
+        if (dumpTree)
+            qDebug() << "Opaque Nodes:";
+#endif
+        renderNodes(m_opaqueNodes);
+    }
 
     glEnable(GL_BLEND);
     glDepthMask(false);
 #ifdef QML_RUNTIME_TESTING
     if (m_render_alpha_nodes)
 #endif
-    renderNodes(m_transparentNodes);
+    {
+#if defined (QML_RUNTIME_TESTING)
+        if (dumpTree)
+            qDebug() << "Alpha Nodes:";
+#endif
+        renderNodes(m_transparentNodes);
+    }
 
     if (m_currentProgram)
         m_currentProgram->deactivate();
