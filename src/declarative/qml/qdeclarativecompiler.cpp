@@ -668,34 +668,17 @@ void QDeclarativeCompiler::compileTree(Object *tree)
     output->bytecode << init;
 
     // Build global import scripts
-    QHash<QString, Object::ScriptBlock> importedScripts;
     QStringList importedScriptIndexes;
 
     foreach (const QDeclarativeTypeData::ScriptReference &script, unit->resolvedScripts()) {
-        QString scriptCode = script.script->scriptSource();
-        Object::ScriptBlock::Pragmas pragmas = script.script->pragmas();
-
-        Q_ASSERT(!importedScripts.contains(script.qualifier));
-
-        if (!scriptCode.isEmpty()) {
-            Object::ScriptBlock &scriptBlock = importedScripts[script.qualifier];
-
-            scriptBlock.code = scriptCode;
-            scriptBlock.file = script.script->finalUrl().toString();
-            scriptBlock.pragmas = pragmas;
-        }
-    }
-
-    for (QHash<QString, Object::ScriptBlock>::Iterator iter = importedScripts.begin(); 
-         iter != importedScripts.end(); ++iter) {
-
-        importedScriptIndexes.append(iter.key());
+        importedScriptIndexes.append(script.qualifier);
 
         QDeclarativeInstruction import;
         import.type = QDeclarativeInstruction::StoreImportedScript;
         import.line = 0;
         import.storeScript.value = output->scripts.count();
-        output->scripts << *iter;
+
+        output->scripts << script.script->scriptData();
         output->bytecode << import;
     }
 

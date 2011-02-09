@@ -607,7 +607,7 @@ void QDeclarativeDataLoader::setData(QDeclarativeDataBlob *blob, const QByteArra
     if (!blob->isError() && !blob->isWaiting())
         blob->allDependenciesDone();
 
-    if (blob->status() != QDeclarativeDataBlob::Error) 
+    if (blob->status() != QDeclarativeDataBlob::Error)
         blob->m_status = QDeclarativeDataBlob::WaitingForDependencies;
 
     blob->m_inCallback = false;
@@ -650,7 +650,7 @@ QDeclarativeTypeData *QDeclarativeTypeLoader::get(const QUrl &url)
 }
 
 /*!
-Return a QDeclarativeTypeData for \a data with the provided base \a url.  The 
+Return a QDeclarativeTypeData for \a data with the provided base \a url.  The
 QDeclarativeTypeData will not be cached.
 */
 QDeclarativeTypeData *QDeclarativeTypeLoader::get(const QByteArray &data, const QUrl &url, Options options)
@@ -661,24 +661,25 @@ QDeclarativeTypeData *QDeclarativeTypeLoader::get(const QByteArray &data, const 
 }
 
 /*!
-Return a QDeclarativeScriptData for \a url.  The QDeclarativeScriptData may be cached.
+Return a QDeclarativeScriptBlob for \a url.  The QDeclarativeScriptData may be cached.
 */
-QDeclarativeScriptData *QDeclarativeTypeLoader::getScript(const QUrl &url)
+QDeclarativeScriptBlob *QDeclarativeTypeLoader::getScript(const QUrl &url)
 {
     Q_ASSERT(!url.isRelative() && 
             (QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url).isEmpty() || 
              !QDir::isRelativePath(QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url))));
 
-    QDeclarativeScriptData *scriptData = m_scriptCache.value(url);
+    QDeclarativeScriptBlob *scriptBlob = m_scriptCache.value(url);
 
-    if (!scriptData) {
-        scriptData = new QDeclarativeScriptData(url);
-        m_scriptCache.insert(url, scriptData);
-        QDeclarativeDataLoader::load(scriptData);
+    if (!scriptBlob) {
+        scriptBlob = new QDeclarativeScriptBlob(url, this);
+        m_scriptCache.insert(url, scriptBlob);
+        QDeclarativeDataLoader::load(scriptBlob);
+    } else {
+        scriptBlob->scriptData()->addref();
     }
 
-    scriptData->addref();
-    return scriptData;
+    return scriptBlob;
 }
 
 /*!
@@ -855,13 +856,14 @@ void QDeclarativeTypeData::dataReceived(const QByteArray &data)
             }
         } else if (import.type == QDeclarativeScriptParser::Import::Script) {
             QUrl scriptUrl = finalUrl().resolved(QUrl(import.uri));
-            QDeclarativeScriptData *data = typeLoader()->getScript(scriptUrl);
-            addDependency(data);
+            QDeclarativeScriptBlob *blob = typeLoader()->getScript(scriptUrl);
+            addDependency(blob);
 
             ScriptReference ref;
             ref.location = import.location.start;
             ref.qualifier = import.qualifier;
-            ref.script = data;
+            ref.script = blob;
+            blob->addref();
             m_scripts << ref;
 
         }
@@ -937,23 +939,13 @@ void QDeclarativeTypeData::resolveTypes()
 
         if (import.type == QDeclarativeScriptParser::Import::File && import.qualifier.isEmpty()) {
             QUrl qmldirUrl = finalUrl().resolved(QUrl(import.uri + QLatin1String("/qmldir")));
-            if (QDeclarativeQmldirData *qmldir = qmldirForUrl(qmldirUrl)) 
+            if (QDeclarativeQmldirData *qmldir = qmldirForUrl(qmldirUrl))
                 qmldircomponentsnetwork = qmldir->dirComponents();
         }
 
         int vmaj = -1;
         int vmin = -1;
-
-        if (!import.version.isEmpty()) {
-            int dot = import.version.indexOf(QLatin1Char('.'));
-            if (dot < 0) {
-                vmaj = import.version.toInt();
-                vmin = 0;
-            } else {
-                vmaj = import.version.left(dot).toInt();
-                vmin = import.version.mid(dot+1).toInt();
-            }
-        }
+        import.extractVersion(&vmaj, &vmin);
 
         QString errorString;
         if (!m_imports.addImport(importDatabase, import.uri, import.qualifier,
@@ -1033,25 +1025,155 @@ QDeclarativeQmldirData *QDeclarativeTypeData::qmldirForUrl(const QUrl &url)
     return 0;
 }
 
-QDeclarativeScriptData::QDeclarativeScriptData(const QUrl &url)
-: QDeclarativeDataBlob(url, JavaScriptFile), m_pragmas(QDeclarativeParser::Object::ScriptBlock::None)
+QDeclarativeScriptData::QDeclarativeScriptData(QDeclarativeEngine *engine)
+: QDeclarativeCleanup(engine), importCache(0), pragmas(QDeclarativeParser::Object::ScriptBlock::None),
+  m_loaded(false)
 {
 }
 
-QDeclarativeParser::Object::ScriptBlock::Pragmas QDeclarativeScriptData::pragmas() const
+QDeclarativeScriptData::~QDeclarativeScriptData()
+{
+    clear();
+}
+
+void QDeclarativeScriptData::clear()
+{
+    if (importCache) {
+        importCache->release();
+        importCache = 0;
+    }
+
+    for (int ii = 0; ii < scripts.count(); ++ii)
+        scripts.at(ii)->release();
+    scripts.clear();
+}
+
+QDeclarativeScriptBlob::QDeclarativeScriptBlob(const QUrl &url, QDeclarativeTypeLoader *loader)
+: QDeclarativeDataBlob(url, JavaScriptFile), m_pragmas(QDeclarativeParser::Object::ScriptBlock::None),
+  m_scriptData(0), m_typeLoader(loader)
+{
+}
+
+QDeclarativeScriptBlob::~QDeclarativeScriptBlob()
+{
+    if (m_scriptData) {
+        m_scriptData->release();
+        m_scriptData = 0;
+    }
+}
+
+QDeclarativeParser::Object::ScriptBlock::Pragmas QDeclarativeScriptBlob::pragmas() const
 {
     return m_pragmas;
 }
 
-QString QDeclarativeScriptData::scriptSource() const
+QString QDeclarativeScriptBlob::scriptSource() const
 {
     return m_source;
 }
 
-void QDeclarativeScriptData::dataReceived(const QByteArray &data)
+QDeclarativeTypeLoader *QDeclarativeScriptBlob::typeLoader() const
 {
+    return m_typeLoader;
+}
+
+const QDeclarativeImports &QDeclarativeScriptBlob::imports() const
+{
+    return m_imports;
+}
+
+QDeclarativeScriptData *QDeclarativeScriptBlob::scriptData() const
+{
+    if (m_scriptData)
+        m_scriptData->addref();
+    return m_scriptData;
+}
+
+void QDeclarativeScriptBlob::dataReceived(const QByteArray &data)
+{
+    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(m_typeLoader->engine());
+    QDeclarativeImportDatabase *importDatabase = &ep->importDatabase;
+
     m_source = QString::fromUtf8(data);
-    m_pragmas = QDeclarativeScriptParser::extractPragmas(m_source);
+
+    QDeclarativeScriptParser::JavaScriptMetaData metadata =
+        QDeclarativeScriptParser::extractMetaData(m_source);
+
+    m_imports.setBaseUrl(finalUrl());
+
+    m_pragmas = metadata.pragmas;
+    foreach (const QDeclarativeScriptParser::Import &import, metadata.imports) {
+        Q_ASSERT(import.type != QDeclarativeScriptParser::Import::File);
+
+        if (import.type == QDeclarativeScriptParser::Import::Script) {
+            QUrl scriptUrl = finalUrl().resolved(QUrl(import.uri));
+            QDeclarativeScriptBlob *blob = typeLoader()->getScript(scriptUrl);
+            addDependency(blob);
+
+            ScriptReference ref;
+            ref.location = import.location.start;
+            ref.qualifier = import.qualifier;
+            ref.script = blob;
+            blob->addref();
+            m_scripts << ref;
+        } else {
+            Q_ASSERT(import.type == QDeclarativeScriptParser::Import::Library);
+            int vmaj = -1;
+            int vmin = -1;
+            import.extractVersion(&vmaj, &vmin);
+
+            QString errorString;
+            if (!m_imports.addImport(importDatabase, import.uri, import.qualifier, vmaj, vmin,
+                                     import.type, QDeclarativeDirComponents(), &errorString)) {
+                QDeclarativeError error;
+                error.setUrl(m_imports.baseUrl());
+                error.setDescription(errorString);
+                error.setLine(import.location.start.line);
+                error.setColumn(import.location.start.column);
+
+                setError(error);
+                return;
+            }
+        }
+    }
+}
+
+void QDeclarativeScriptBlob::done()
+{
+    // Check all script dependencies for errors
+    for (int ii = 0; !isError() && ii < m_scripts.count(); ++ii) {
+        const ScriptReference &script = m_scripts.at(ii);
+        Q_ASSERT(script.script->isCompleteOrError());
+        if (script.script->isError()) {
+            QList<QDeclarativeError> errors = script.script->errors();
+            QDeclarativeError error;
+            error.setUrl(finalUrl());
+            error.setLine(script.location.line);
+            error.setColumn(script.location.column);
+            error.setDescription(typeLoader()->tr("Script %1 unavailable").arg(script.script->url().toString()));
+            errors.prepend(error);
+            setError(errors);
+        }
+    }
+
+    if (isError())
+        return;
+
+    QDeclarativeEngine *engine = typeLoader()->engine();
+    m_scriptData = new QDeclarativeScriptData(engine);
+    m_scriptData->url = finalUrl();
+    m_scriptData->importCache = new QDeclarativeTypeNameCache(engine);
+
+    for (int ii = 0; !isError() && ii < m_scripts.count(); ++ii) {
+        const ScriptReference &script = m_scripts.at(ii);
+
+        m_scriptData->scripts.append(script.script);
+        m_scriptData->importCache->add(script.qualifier, ii);
+    }
+
+    m_imports.populateCache(m_scriptData->importCache, engine);
+
+    m_scriptData->m_program = QScriptProgram(m_source, finalUrl().toString());
 }
 
 QDeclarativeQmldirData::QDeclarativeQmldirData(const QUrl &url)

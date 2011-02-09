@@ -144,6 +144,7 @@ private slots:
     void propertySplicing();
     void signalWithUnknownTypes();
     void moduleApi();
+    void importScripts();
 
     void bug1();
     void bug2();
@@ -2391,6 +2392,41 @@ void tst_qdeclarativeecmascript::moduleApi()
     QDeclarativeComponent failTwo(&engine, TEST_FILE("moduleApiMinorVersionFail.qml"));
     object = failTwo.create();
     QVERIFY(object == 0); // should have failed: invalid minor version
+}
+
+void tst_qdeclarativeecmascript::importScripts()
+{
+    // first, ensure that the required behaviour works.
+    QDeclarativeComponent component(&engine, TEST_FILE("jsimport/testImport.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("importedScriptStringValue"), QVariant(QString(QLatin1String("Hello, World!"))));
+    QCOMPARE(object->property("importedScriptFunctionValue"), QVariant(20));
+    QCOMPARE(object->property("importedModuleAttachedPropertyValue"), QVariant(19));
+    QCOMPARE(object->property("importedModuleEnumValue"), QVariant(2));
+    delete object;
+
+    // then, ensure that unintended behaviour does not work.
+    QDeclarativeComponent failOneComponent(&engine, TEST_FILE("jsimportfail/failOne.qml"));
+    object = failOneComponent.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->property("importScriptFunctionValue").toString().isEmpty());
+    delete object;
+    QDeclarativeComponent failTwoComponent(&engine, TEST_FILE("jsimportfail/failTwo.qml"));
+    object = failTwoComponent.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->property("importScriptFunctionValue").toString().isEmpty());
+    delete object;
+    QDeclarativeComponent failThreeComponent(&engine, TEST_FILE("jsimportfail/failThree.qml"));
+    object = failThreeComponent.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("importedModuleAttachedPropertyValue"), QVariant(false));
+    delete object;
+    QDeclarativeComponent failFourComponent(&engine, TEST_FILE("jsimportfail/failFour.qml"));
+    object = failFourComponent.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("importedModuleEnumValue"), QVariant(0));
+    delete object;
 }
 
 // Test that assigning a null object works 
