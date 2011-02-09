@@ -45,10 +45,49 @@
 
 NodeUpdater::NodeUpdater()
     : m_current_clip(0)
-    , m_disable_count(0)
     , m_force_update(0)
 {
     m_opacity_stack.push(1);
+}
+
+void NodeUpdater::updateStates(Node *n)
+{
+    m_current_clip = 0;
+    m_force_update = 0;
+
+    Q_ASSERT(m_opacity_stack.size() == 1); // The one we added in the constructr...
+    // Q_ASSERT(m_matrix_stack.isEmpty()); ### no such function?
+    Q_ASSERT(m_combined_matrix_stack.isEmpty());
+
+    visitNode(n);
+}
+
+
+/*!
+    Returns true if \a node is has something that blocks it in the chain from
+    \a node to \a root doing a full state update pass.
+
+    This function does not process dirty states, simply does a simple traversion
+    up to the top.
+
+    The function assumes that \a root exists in the parent chain of \a node.
+ */
+
+bool NodeUpdater::isNodeBlocked(Node *node, Node *root) const
+{
+    qreal opacity = 1;
+    while (node != root) {
+        if (node->type() == Node::OpacityNodeType) {
+            opacity *= static_cast<OpacityNode *>(node)->opacity();
+            if (opacity < 0.001)
+                return true;
+        }
+        node = node->parent();
+
+        Q_ASSERT_X(node, "NodeUpdater::isNodeBlocked", "node is not in the subtree of root");
+    }
+
+    return false;
 }
 
 

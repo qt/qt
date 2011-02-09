@@ -71,6 +71,9 @@ private Q_SLOTS:
     void basicOpacityNode();
     void opacityPropegation();
 
+    // NodeUpdater
+    void isBlockedCheck();
+
 private:
     QGLWidget *widget;
 
@@ -247,7 +250,7 @@ void NodesTest::simulatedEffect()
     xform.setMatrix(m);
 
     // Clear all dirty states...
-    root.updateDirtyStates();
+    updater.updateStates(&root);
 
     rootRenderer.renderScene();
 
@@ -295,7 +298,7 @@ void NodesTest::opacityPropegation()
     b->setOpacity(0.8);
     c->setOpacity(0.7);
 
-    root->updateDirtyStates();
+    updater.updateStates(root);
 
     QCOMPARE(a->combinedOpacity(), 0.9);
     QCOMPARE(b->combinedOpacity(), 0.9 * 0.8);
@@ -303,7 +306,7 @@ void NodesTest::opacityPropegation()
     QCOMPARE(geometry->inheritedOpacity(), 0.9 * 0.8 * 0.7);
 
     b->setOpacity(0.1);
-    root->updateDirtyStates();
+    updater.updateStates(root);
 
     QCOMPARE(a->combinedOpacity(), 0.9);
     QCOMPARE(b->combinedOpacity(), 0.9 * 0.1);
@@ -311,7 +314,7 @@ void NodesTest::opacityPropegation()
     QCOMPARE(geometry->inheritedOpacity(), 0.9 * 0.1 * 0.7);
 
     b->setOpacity(0);
-    root->updateDirtyStates();
+    updater.updateStates(root);
 
     QVERIFY(b->isSubtreeBlocked());
 
@@ -319,6 +322,24 @@ void NodesTest::opacityPropegation()
     // subtree
     QCOMPARE(c->combinedOpacity(), 0.9 * 0.1 * 0.7);
     QCOMPARE(geometry->inheritedOpacity(), 0.9 * 0.1 * 0.7);
+}
+
+void NodesTest::isBlockedCheck()
+{
+    RootNode *root = new RootNode();
+    OpacityNode *opacity = new OpacityNode();
+    Node *node = new Node();
+
+    root->appendChildNode(opacity);
+    opacity->appendChildNode(node);
+
+    NodeUpdater updater;
+
+    opacity->setOpacity(0);
+    QVERIFY(updater.isNodeBlocked(node, root));
+
+    opacity->setOpacity(1);
+    QVERIFY(!updater.isNodeBlocked(node, root));
 }
 
 QTEST_MAIN(NodesTest);

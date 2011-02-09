@@ -325,8 +325,6 @@ public:
     ~RootNode();
     NodeType type() const { return RootNodeType; }
 
-    void updateDirtyStates();
-
 private:
     void notifyNodeChange(Node *node, DirtyFlags flags);
 
@@ -364,6 +362,7 @@ class Q_AUTOTEST_EXPORT NodeVisitor {
 public:
     virtual ~NodeVisitor();
 
+protected:
     virtual void enterTransformNode(TransformNode *) {}
     virtual void leaveTransformNode(TransformNode *) {}
     virtual void enterClipNode(ClipNode *) {}
@@ -372,9 +371,7 @@ public:
     virtual void leaveGeometryNode(GeometryNode *) {}
     virtual void enterOpacityNode(OpacityNode *) {}
     virtual void leaveOpacityNode(OpacityNode *) {}
-
     virtual void visitNode(Node *n);
-
     virtual void visitChildren(Node *n);
 };
 

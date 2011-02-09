@@ -77,6 +77,7 @@ private:
     QGLFramebufferObject *m_fbo;
 };
 
+class NodeUpdater;
 
 class Q_DECLARATIVE_EXPORT Renderer : public QObject, public QGLFunctions
 {
@@ -129,6 +130,9 @@ public:
     virtual void nodeChanged(Node *node, Node::DirtyFlags flags);
     virtual void materialChanged(GeometryNode *node, AbstractMaterial *from, AbstractMaterial *to);
 
+    NodeUpdater *nodeUpdater() const;
+    void setNodeUpdater(NodeUpdater *updater);
+
 signals:
     void sceneGraphChanged(); // Add, remove, ChangeFlags changes...
 
@@ -150,6 +154,8 @@ protected:
 
 private:
     RootNode *m_root_node;
+    NodeUpdater *m_node_updater;
+
     QRect m_device_rect;
 
     QHash<AbstractMaterialType *, AbstractMaterialShader *> m_materials;

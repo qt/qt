@@ -387,8 +387,9 @@ void GeometryNode::setOpaqueMaterial(AbstractMaterial *material)
     will be returned.
 
     \warning This function requires the scene graph above this item to be
-    completely free of dirty states, so it can only be called shortly after
-    a clal to RootNode::updateDirtyStates();
+    completely free of dirty states, so it can only be called during rendering
+
+    \internal
 
     \sa setMaterial, setOpaqueMaterial
  */
@@ -493,13 +494,6 @@ void RootNode::notifyNodeChange(Node *node, DirtyFlags flags)
         m_renderers.at(i)->nodeChanged(node, flags);
     }
 }
-
-void RootNode::updateDirtyStates()
-{
-    NodeUpdater updater;
-    updater.visitNode(this);
-}
-
 
 /*!
     Constructs an opacity node with a default opacity of 1.
