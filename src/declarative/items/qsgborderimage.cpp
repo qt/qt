@@ -327,9 +327,9 @@ Node *QSGBorderImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         QSGTextureManager *tm = QSGContext::current->textureManager();
         QSGTextureRef ref = tm->upload(d->pix.pixmap().toImage());
 
-        node = new QSGNinePatchNode(QRectF(0, 0, width(), height()), ref, inner, data->opacity, d->smooth);
+        node = new QSGNinePatchNode(QRectF(0, 0, width(), height()), ref, inner, d->smooth);
     } else {
-        node->setData(QRectF(0, 0, width(), height()), data->opacity);
+        node->setRect(QRectF(0, 0, width(), height()));
         node->setLinearFiltering(d->smooth);
     }
 

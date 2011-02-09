@@ -43,26 +43,20 @@
 #include "adaptationlayer.h"
 
 QSGNinePatchNode::QSGNinePatchNode(const QRectF &targetRect, const QSGTextureRef &texture,
-                                 const QRect &innerRect, qreal opacity, bool linearFiltering)
-: m_targetRect(targetRect), m_innerRect(innerRect), m_opacity(opacity), m_linearFiltering(linearFiltering)
+                                 const QRect &innerRect, bool linearFiltering)
+: m_targetRect(targetRect), m_innerRect(innerRect), m_linearFiltering(linearFiltering)
 {
     m_texture = texture;
     bool alpha = texture->hasAlphaChannel();
     m_material.setTexture(m_texture, !alpha);
     m_material.setLinearFiltering(linearFiltering);
     m_materialO.setTexture(m_texture, !alpha);
-    m_materialO.setOpacity(m_opacity);
     m_materialO.setLinearFiltering(linearFiltering);
 
-    setMaterial(m_opacity == 1 ? (AbstractMaterial *)&m_material : (AbstractMaterial *)&m_materialO);
+    setMaterial(&m_material);
+    setOpaqueMaterial(&m_materialO);
 
     updateGeometry();
-}
-
-void QSGNinePatchNode::setData(const QRectF &rect, qreal opacity)
-{
-    setRect(rect);
-    setOpacity(opacity);
 }
 
 void QSGNinePatchNode::setRect(const QRectF &rect)
@@ -74,20 +68,6 @@ void QSGNinePatchNode::setRect(const QRectF &rect)
     updateGeometry();
 }
 
-void QSGNinePatchNode::setOpacity(qreal o)
-{
-    if (o == m_opacity)
-        return;
-
-    if (o == 1) {
-        setMaterial(&m_material);
-    } else {
-        m_materialO.setOpacity(o);
-        setMaterial(&m_materialO); // Indicate that the material has changed.
-    }
-    m_opacity = o;
-}
-
 void QSGNinePatchNode::setLinearFiltering(bool linearFiltering)
 {
     if (m_linearFiltering == linearFiltering)
@@ -95,7 +75,7 @@ void QSGNinePatchNode::setLinearFiltering(bool linearFiltering)
 
     m_material.setLinearFiltering(linearFiltering);
     m_materialO.setLinearFiltering(linearFiltering);
-    setMaterial(m_opacity == 1 ? (AbstractMaterial *)&m_material : (AbstractMaterial *)&m_materialO);
+    markDirty(DirtyMaterial);
 }
 
 void QSGNinePatchNode::updateGeometry()
