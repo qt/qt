@@ -911,17 +911,28 @@ QXcbKeyboard::~QXcbKeyboard()
     xcb_key_symbols_free(m_key_symbols);
 }
 
-void QXcbKeyboard::handleKeyEvent(QWidget *widget, QEvent::Type type, xcb_keysym_t sym, quint16 state, xcb_timestamp_t time)
+void QXcbKeyboard::handleKeyEvent(QWidget *widget, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time)
 {
+    int col = state & XCB_MOD_MASK_SHIFT ? 1 : 0;
+
+    const int altGrOffset = 4;
+    if (state & 128)
+        col += altGrOffset;
+
+    xcb_keysym_t sym = xcb_key_symbols_get_keysym(m_key_symbols, code, col);
+
+    if (state & XCB_MOD_MASK_LOCK && sym <= 0x7f && isprint(sym)) {
+        if (isupper(sym))
+            sym = tolower(sym);
+        else
+            sym = toupper(sym);
+    }
+
     QByteArray chars;
-    chars.resize(513);
 
     Qt::KeyboardModifiers modifiers;
     int qtcode = 0;
     int count = 0;
-
-    if (state & XCB_MOD_MASK_SHIFT && sym <= 0x7f && isalpha(sym))
-        sym = toupper(sym);
 
     QString string = translateKeySym(sym, state, qtcode, modifiers, chars, count);
 
@@ -930,16 +941,12 @@ void QXcbKeyboard::handleKeyEvent(QWidget *widget, QEvent::Type type, xcb_keysym
 
 void QXcbKeyboard::handleKeyPressEvent(QWidget *widget, const xcb_key_press_event_t *event)
 {
-    xcb_keysym_t sym = xcb_key_press_lookup_keysym(m_key_symbols, const_cast<xcb_key_press_event_t *>(event), 0);
-
-    handleKeyEvent(widget, QEvent::KeyPress, sym, event->state, event->time);
+    handleKeyEvent(widget, QEvent::KeyPress, event->detail, event->state, event->time);
 }
 
 void QXcbKeyboard::handleKeyReleaseEvent(QWidget *widget, const xcb_key_release_event_t *event)
 {
-    xcb_keysym_t sym = xcb_key_release_lookup_keysym(m_key_symbols, const_cast<xcb_key_release_event_t *>(event), 0);
-
-    handleKeyEvent(widget, QEvent::KeyRelease, sym, event->state, event->time);
+    handleKeyEvent(widget, QEvent::KeyRelease, event->detail, event->state, event->time);
 }
 
 void QXcbKeyboard::handleMappingNotifyEvent(const xcb_mapping_notify_event_t *event)
