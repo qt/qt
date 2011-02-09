@@ -69,7 +69,9 @@ public:
     static bool detectExecutable(const QString &executable);
 
     static int execute(QStringList arguments, const QStringList &additionalEnv, const QStringList &removeEnv);
-    static bool cpdir(const QString &srcDir, const QString &destDir);
+    static bool cpdir(const QString &srcDir,
+                      const QString &destDir,
+                      const QString &includeSrcDir = QString());
     static bool rmdir(const QString &name);
 
     static QString symbianEpocRoot();
