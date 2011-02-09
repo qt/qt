@@ -353,22 +353,29 @@ inline void QScriptEnginePrivate::unregisterAdditionalResources(QtDataBase *data
     m_additionalResources.remove(data);
 }
 
-class QtDataBaseDeleter
+class QtScriptBagCleaner
 {
 public:
-    QtDataBaseDeleter(QScriptBagContainer<QtDataBase> *bag)
-        : m_bag(bag)
-    {}
-    void operator () (QtDataBase* data) const
+    template<class T>
+    void operator () (T* value) const
+    {
+        value->reinitialize();
+    }
+
+    void operator() (QScriptEngineAgentPrivate *agent) const
+    {
+        agent->kill();
+    }
+
+    void operator () (QtDataBase *data) const
     {
         delete data;
     }
-private:
-    QScriptBagContainer<QtDataBase> *m_bag;
 };
+
 inline void QScriptEnginePrivate::deallocateAdditionalResources()
 {
-    QtDataBaseDeleter deleter(&m_additionalResources);
+    QtScriptBagCleaner deleter;
     m_additionalResources.forEach(deleter);
     m_additionalResources.clear();
 }
@@ -415,47 +422,30 @@ inline void QScriptEnginePrivate::unregisterAgent(QScriptEngineAgentPrivate *dat
         m_currentAgent = 0;
 }
 
-class QtScriptInvalidator
-{
-public:
-    template<class T>
-    void operator () (T* value) const
-    {
-        value->reinitialize();
-    }
-
-    void operator() (QScriptEngineAgentPrivate *agent) const
-    {
-        agent->kill();
-    }
-};
-
-
-
 inline void QScriptEnginePrivate::invalidateAllValues()
 {
-    QtScriptInvalidator invalidator;
+    QtScriptBagCleaner invalidator;
     m_values.forEach(invalidator);
     m_values.clear();
 }
 
 inline void QScriptEnginePrivate::invalidateAllString()
 {
-    QtScriptInvalidator invalidator;
+    QtScriptBagCleaner invalidator;
     m_strings.forEach(invalidator);
     m_strings.clear();
 }
 
 inline void QScriptEnginePrivate::invalidateAllScriptable()
 {
-    QtScriptInvalidator invalidator;
+    QtScriptBagCleaner invalidator;
     m_scriptable.forEach(invalidator);
     m_scriptable.clear();
 }
 
 inline void QScriptEnginePrivate::invalidateAllAgents()
 {
-    QtScriptInvalidator killer;
+    QtScriptBagCleaner killer;
     m_agents.forEach(killer);
 }
 
