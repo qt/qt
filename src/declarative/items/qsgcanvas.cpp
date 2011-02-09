@@ -1014,7 +1014,7 @@ void QSGCanvasPrivate::initializeSceneGraph()
     Q_Q(QSGCanvas);
 
     if (!context) 
-        context = new QSGContext();
+        context = QSGContext::createDefaultContext();
 
     if (context->isReady())
         return;

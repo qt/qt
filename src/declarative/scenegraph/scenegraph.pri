@@ -11,6 +11,7 @@ HEADERS += $$PWD/coreapi/geometry.h \
     $$PWD/coreapi/renderer.h \
     $$PWD/coreapi/qmlrenderer.h \
     $$PWD/coreapi/qsgcontext.h \
+    $$PWD/coreapi/qsgcontextplugin.h \
     $$PWD/coreapi/qsgtexturemanager.h \
     $$PWD/coreapi/qsgtexturemanager_p.h \
     $$PWD/convenience/distancefieldfontatlas_p.h
@@ -22,6 +23,7 @@ SOURCES += $$PWD/coreapi/geometry.cpp \
     $$PWD/coreapi/renderer.cpp \
     $$PWD/coreapi/qmlrenderer.cpp \
     $$PWD/coreapi/qsgcontext.cpp \
+    $$PWD/coreapi/qsgcontextplugin.cpp \
     $$PWD/coreapi/qsgtexturemanager.cpp \
     $$PWD/convenience/distancefieldfontatlas.cpp
 
