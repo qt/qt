@@ -23,7 +23,10 @@ TEMPLATE        = subdirs
         unix:!mac:!embedded:!qpa:contains(QT_CONFIG, qt3support):SUBDIRS += qtconfig
         win32:!wince*:SUBDIRS += activeqt
     }
-    contains(QT_CONFIG, declarative):SUBDIRS += qml qmlscene
+    contains(QT_CONFIG, declarative) {
+        SUBDIRS += qml qmlscene
+        !symbian: SUBDIRS += qmlplugindump
+    }
 }
 
 !wince*:!symbian:SUBDIRS += linguist
