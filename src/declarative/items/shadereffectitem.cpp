@@ -47,6 +47,7 @@
 
 #include "qsgcontext.h"
 #include "subtree.h"
+#include "qsgcanvas.h"
 
 #include <QtCore/qsignalmapper.h>
 #include <QtOpenGL/qglframebufferobject.h>
@@ -157,7 +158,11 @@ void ShaderEffectItem::setSource(const QVariant &var, int index)
 
     SourceData &source = m_sources[index];
 
+    if (source.item && source.item->parentItem() == this)
+        source.item->setParentItem(0);
+
     source.source = 0;
+    source.item = 0;
     if (var.isNull()) {
         return;
     } else if (!qVariantCanConvert<QObject *>(var)) {
@@ -173,6 +178,15 @@ void ShaderEffectItem::setSource(const QVariant &var, int index)
     } else {
         qWarning("Could not assign property '%s', did not implement TextureProviderInterface.", source.name.constData());
     }
+
+    source.item = qobject_cast<QSGItem *>(obj);
+
+    // TODO: Find better solution.
+    // 'source.item' needs a canvas to get a scenegraph node.
+    // The easiest way to make sure it gets a canvas is to
+    // make it a part of the same item tree as 'this'.
+    if (source.item && source.item->parentItem() == 0)
+        source.item->setParentItem(this);
 }
 
 void ShaderEffectItem::disconnectPropertySignals()
@@ -304,6 +318,7 @@ void ShaderEffectItem::lookThroughShaderCode(const QByteArray &code)
                     d.mapper = new QSignalMapper;
                     d.source = 0;
                     d.name = name;
+                    d.item = 0;
                     m_sources.append(d);
                 }
             }
@@ -315,7 +330,7 @@ Node *ShaderEffectItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data
 {
     ShaderEffectNode *node = static_cast<ShaderEffectNode *>(oldNode);
     if (!node) {
-        node = new ShaderEffectNode(/*this*/);
+        node = new ShaderEffectNode;
         m_programDirty = true;
         m_dirtyData = true;
     }
@@ -350,8 +365,10 @@ Node *ShaderEffectItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data
              it != m_source.uniformNames.end(); ++it) {
             values.append(qMakePair(*it, property(*it)));
         }
-        for (int i = 0; i < m_sources.size(); ++i)
-            textures.append(qMakePair(m_sources.at(i).name, m_sources.at(i).source));
+        for (int i = 0; i < m_sources.size(); ++i) {
+            const SourceData &source = m_sources.at(i);
+            textures.append(qMakePair(source.name, source.source));
+        }
 
         node->setData(values, textures);
         m_dirtyData = false;

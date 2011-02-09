@@ -363,6 +363,10 @@ void SubTree::setItem(QSGItem *item)
     }
     m_item = item;
     if (m_item) {
+        // TODO: Find better solution.
+        // 'm_item' needs a canvas to get a scenegraph node.
+        // The easiest way to make sure it gets a canvas is to
+        // make it a part of the same item tree as 'this'.
         if (m_item->parentItem() == 0)
             m_item->setParentItem(this);
         QSGItemPrivate::get(m_item)->refFromEffectItem();

@@ -131,6 +131,7 @@ private:
     {
         QSignalMapper *mapper;
         QPointer<QSGTextureProvider> source;
+        QPointer<QSGItem> item;
         QByteArray name;
     };
     QVector<SourceData> m_sources;
