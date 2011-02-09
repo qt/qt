@@ -44,7 +44,7 @@
 #include <QtGui/private/qapplication_p.h>
 
 #include "qwaylanddisplay.h"
-#include "qwaylandwindow.h"
+#include "qwaylandshmwindow.h"
 #include "qwaylandscreen.h"
 
 #include <wayland-client.h>
@@ -111,23 +111,22 @@ void QWaylandShmWindowSurface::flush(QWidget *widget, const QRegion &region, con
 {
     Q_UNUSED(widget);
     Q_UNUSED(offset);
-    QWaylandWindow *ww = (QWaylandWindow *) window()->platformWindow();
-    QVector<QRect> rects = region.rects();
-    const QRect *r;
-    int i;
+    QWaylandShmWindow *waylandWindow = static_cast<QWaylandShmWindow *>(window()->platformWindow());
+    Q_ASSERT(waylandWindow->windowType() == QWaylandWindow::Shm);
 
-    for (i = 0; i < rects.size(); i++) {
-	r = &rects.at(i);
-	wl_surface_damage(ww->surface(),
-			  r->x(), r->y(), r->width(), r->height());
+    QVector<QRect> rects = region.rects();
+    for (int i = 0; i < rects.size(); i++) {
+        waylandWindow->damage(rects.at(i));
     }
 }
 
 void QWaylandShmWindowSurface::resize(const QSize &size)
 {
-    QWaylandWindow *ww = (QWaylandWindow *) window()->platformWindow();
+    QWaylandShmWindow *waylandWindow = static_cast<QWaylandShmWindow *>(window()->platformWindow());
+    Q_ASSERT(waylandWindow->windowType() == QWaylandWindow::Shm);
+
     QWindowSurface::resize(size);
-    QImage::Format format = QApplicationPrivate::platformIntegration()->screens().first()->format();
+    QImage::Format format = QPlatformScreen::platformScreenForWidget(window())->format();
 
     if (mBuffer != NULL && mBuffer->size() == size)
 	return;
@@ -137,7 +136,7 @@ void QWaylandShmWindowSurface::resize(const QSize &size)
 
     mBuffer = new QWaylandShmBuffer(mDisplay, size, format);
 
-    ww->attach(mBuffer);
+    waylandWindow->attach(mBuffer);
 }
 
 QT_END_NAMESPACE

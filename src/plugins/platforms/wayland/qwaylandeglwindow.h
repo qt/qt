@@ -39,45 +39,30 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDWINDOW_H
-#define QWAYLANDWINDOW_H
+#ifndef QWAYLANDEGLWINDOW_H
+#define QWAYLANDEGLWINDOW_H
 
-#include <QtGui/QPlatformWindow>
+#include "qwaylandwindow.h"
 
-#include <stdint.h>
-#include "qwaylanddisplay.h"
+class QWaylandGLContext;
 
-class QWaylandDisplay;
-class QWaylandBuffer;
-struct wl_egl_window;
-
-class QWaylandWindow : public QPlatformWindow
+class QWaylandEglWindow : public QWaylandWindow
 {
 public:
-    enum WindowType {
-        Shm,
-        Egl
-    };
-
-    QWaylandWindow(QWidget *window);
-    ~QWaylandWindow();
-
-    virtual WindowType windowType() const = 0;
-    WId winId() const;
-    void setVisible(bool visible);
+    QWaylandEglWindow(QWidget *window);
+    ~QWaylandEglWindow();
+    WindowType windowType() const;
+    void setGeometry(const QRect &rect);
     void setParent(const QPlatformWindow *parent);
-
-    void configure(uint32_t time, uint32_t edges,
-                   int32_t x, int32_t y, int32_t width, int32_t height);
-
+    QPlatformGLContext *glContext() const;
 protected:
-    struct wl_surface *mSurface;
-    virtual void newSurfaceCreated() = 0;
-    QWaylandDisplay *mDisplay;
-    WId mWindowId;
+    void newSurfaceCreated();
+private:
+    QWaylandGLContext *mGLContext;
+    struct wl_egl_window *mWaylandEglWindow;
+    EGLConfig mConfig;
 
-
+    const QWaylandWindow *mParentWindow;
 };
 
-
-#endif // QWAYLANDWINDOW_H
+#endif // QWAYLANDEGLWINDOW_H

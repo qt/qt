@@ -44,7 +44,8 @@
 #include "qwaylanddisplay.h"
 #include "qwaylandshmsurface.h"
 #include "qwaylanddrmsurface.h"
-#include "qwaylandwindow.h"
+#include "qwaylandshmwindow.h"
+#include "qwaylandeglwindow.h"
 
 #include "qfontconfigdatabase.h"
 
@@ -80,16 +81,21 @@ QPixmapData *QWaylandIntegration::createPixmapData(QPixmapData::PixelType type) 
 QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWidget *widget, WId winId) const
 {
     Q_UNUSED(winId);
-    return new QWaylandWindow(widget);
+    bool useOpenGL = mUseOpenGL || (widget->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL);
+    if (useOpenGL)
+        return new QWaylandEglWindow(widget);
+
+    return new QWaylandShmWindow(widget);
 }
 
 QWindowSurface *QWaylandIntegration::createWindowSurface(QWidget *widget, WId winId) const
 {
     Q_UNUSED(winId);
     Q_UNUSED(winId);
-
-    if (mUseOpenGL)
+    bool useOpenGL = mUseOpenGL || (widget->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL);
+    if (useOpenGL)
         return new QWaylandDrmWindowSurface(widget);
+
     return new QWaylandShmWindowSurface(widget);
 }
 

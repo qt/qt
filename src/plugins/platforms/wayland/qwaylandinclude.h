@@ -39,45 +39,34 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDWINDOW_H
-#define QWAYLANDWINDOW_H
+#ifndef QWAYLANDINCLUDE_H
+#define QWAYLANDINCLUDE_H
 
-#include <QtGui/QPlatformWindow>
+#include <wayland-client.h>
 
-#include <stdint.h>
-#include "qwaylanddisplay.h"
+#include <wayland-egl.h>
 
-class QWaylandDisplay;
-class QWaylandBuffer;
-struct wl_egl_window;
+#define GL_GLEXT_PROTOTYPES
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 
-class QWaylandWindow : public QPlatformWindow
-{
-public:
-    enum WindowType {
-        Shm,
-        Egl
-    };
+//#define MESA_EGL_NO_X11_HEADERS
+#define EGL_EGLEXT_PROTOTYPES
+ #include <EGL/egl.h>
+ #include <EGL/eglext.h>
 
-    QWaylandWindow(QWidget *window);
-    ~QWaylandWindow();
+#undef FocusOut
+#undef FocusIn
+#undef KeyPress
+#undef KeyRelease
+#undef None
+#undef RevertToParent
+#undef GrayScale
+#undef CursorShape
 
-    virtual WindowType windowType() const = 0;
-    WId winId() const;
-    void setVisible(bool visible);
-    void setParent(const QPlatformWindow *parent);
-
-    void configure(uint32_t time, uint32_t edges,
-                   int32_t x, int32_t y, int32_t width, int32_t height);
-
-protected:
-    struct wl_surface *mSurface;
-    virtual void newSurfaceCreated() = 0;
-    QWaylandDisplay *mDisplay;
-    WId mWindowId;
+#ifdef FontChange
+#undef FontChange
+#endif
 
 
-};
-
-
-#endif // QWAYLANDWINDOW_H
+#endif // QWAYLANDINCLUDE_H

@@ -42,17 +42,14 @@
 #ifndef QWAYLANDGLCONTEXT_H
 #define QWAYLANDGLCONTEXT_H
 
+#include "qwaylanddisplay.h"
+
 #include <QtGui/QPlatformGLContext>
 
-#include <QtCore/QMutex>
-class QWaylandDisplay;
 class QWaylandWindow;
 class QWaylandDrmWindowSurface;
 
-#define MESA_EGL_NO_X11_HEADERS
-#define EGL_EGLEXT_PROTOTYPES
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
+#include "qwaylandinclude.h"
 
 class QWaylandGLContext : public QPlatformGLContext {
 public:
@@ -62,14 +59,18 @@ public:
     void doneCurrent();
     void swapBuffers();
     void* getProcAddress(const QString&);
+
     QPlatformWindowFormat platformWindowFormat() const { return mFormat; }
 
+    void setEglSurface(EGLSurface surface);
+    EGLConfig eglConfig() const;
 private:
-    QPlatformWindowFormat mFormat;
     QWaylandDisplay *mDisplay;
 
-    static EGLint contextAttibutes[];
     EGLContext mContext;
+    EGLSurface mSurface;
+    EGLConfig mConfig;
+    QPlatformWindowFormat mFormat;
 
     void createDefaultSharedContex(QWaylandDisplay *display);
     QWaylandGLContext();

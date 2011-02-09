@@ -50,8 +50,6 @@
 #include <fcntl.h>
 #include <stdio.h>
 
-#include <wayland-egl.h>
-
 struct wl_surface *QWaylandDisplay::createSurface()
 {
     return wl_compositor_create_surface(mCompositor);
@@ -186,7 +184,7 @@ QWaylandDisplay::QWaylandDisplay(void)
 
     mNativeEglDisplay = wl_egl_display_create(mDisplay);
 
-    mEglDisplay = eglGetDisplay(mNativeEglDisplay);
+    mEglDisplay = eglGetDisplay((EGLNativeDisplayType)mNativeEglDisplay);
     if (mEglDisplay == NULL) {
         qWarning("EGL not available");
     } else {

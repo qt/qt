@@ -39,45 +39,51 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDWINDOW_H
-#define QWAYLANDWINDOW_H
+#include "qwaylandshmwindow.h"
 
-#include <QtGui/QPlatformWindow>
+#include "qwaylandbuffer.h"
 
-#include <stdint.h>
-#include "qwaylanddisplay.h"
-
-class QWaylandDisplay;
-class QWaylandBuffer;
-struct wl_egl_window;
-
-class QWaylandWindow : public QPlatformWindow
+QWaylandShmWindow::QWaylandShmWindow(QWidget *widget)
+    : QWaylandWindow(widget)
+    , mBuffer(0)
 {
-public:
-    enum WindowType {
-        Shm,
-        Egl
-    };
+    newSurfaceCreated();
+}
 
-    QWaylandWindow(QWidget *window);
-    ~QWaylandWindow();
+QWaylandShmWindow::~QWaylandShmWindow()
+{
 
-    virtual WindowType windowType() const = 0;
-    WId winId() const;
-    void setVisible(bool visible);
-    void setParent(const QPlatformWindow *parent);
+}
 
-    void configure(uint32_t time, uint32_t edges,
-                   int32_t x, int32_t y, int32_t width, int32_t height);
+QWaylandWindow::WindowType QWaylandShmWindow::windowType() const
+{
+    return QWaylandWindow::Shm;
+}
 
-protected:
-    struct wl_surface *mSurface;
-    virtual void newSurfaceCreated() = 0;
-    QWaylandDisplay *mDisplay;
-    WId mWindowId;
+QPlatformGLContext * QWaylandShmWindow::glContext() const
+{
+    qWarning("Trying to retrieve a glContext from a Raster window surface!");
+    return 0;
+}
+
+void QWaylandShmWindow::attach(QWaylandBuffer *buffer)
+{
+    mBuffer = buffer;
+    if (mSurface) {
+        wl_surface_attach(mSurface, buffer->buffer(),0,0);
+    }
+}
 
 
-};
+void QWaylandShmWindow::damage(const QRect &rect)
+{
+    wl_surface_damage(mSurface,
+                      rect.x(), rect.y(), rect.width(), rect.height());
+}
 
-
-#endif // QWAYLANDWINDOW_H
+void QWaylandShmWindow::newSurfaceCreated()
+{
+    if (mBuffer) {
+        wl_surface_attach(mSurface,mBuffer->buffer(),0,0);
+    }
+}

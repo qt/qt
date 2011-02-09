@@ -44,13 +44,12 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QRect>
+#include <QtCore/QDataStream>
+#include <QtCore/QTextStream>
+#include <QtCore/QMetaType>
+#include <QtGui>
 
-#include <wayland-client.h>
-
-#define MESA_EGL_NO_X11_HEADERS
-#define EGL_EGLEXT_PROTOTYPES
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
+#include "qwaylandinclude.h"
 
 class QWaylandInputDevice;
 class QSocketNotifier;

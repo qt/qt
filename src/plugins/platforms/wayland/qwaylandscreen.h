@@ -46,6 +46,7 @@
 
 class QWaylandDisplay;
 class QWaylandCursor;
+struct wl_visual;
 
 class QWaylandScreen : public QPlatformScreen
 {
@@ -58,6 +59,8 @@ public:
     QRect geometry() const;
     int depth() const;
     QImage::Format format() const;
+
+    wl_visual *visual() const;
 
     static QWaylandScreen *waylandScreenFromWidget(QWidget *widget);
 
