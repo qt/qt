@@ -46,6 +46,8 @@
 
 #include "xcb/xcb_keysyms.h"
 
+#include <QEvent>
+
 class QXcbKeyboard : public QXcbObject
 {
 public:
@@ -60,6 +62,7 @@ public:
     Qt::KeyboardModifiers translateModifiers(int s);
 
 private:
+    void handleKeyEvent(QWidget *widget, QEvent::Type type, xcb_keysym_t sym, quint16 state, xcb_timestamp_t time);
 
     int translateKeySym(uint key) const;
     QString translateKeySym(xcb_keysym_t keysym, uint xmodifiers,
