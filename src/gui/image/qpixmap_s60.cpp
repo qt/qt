@@ -1012,17 +1012,18 @@ void QS60PixmapData::fromNativeType(void* pixmap, NativeType nativeType)
     }
 }
 
-void QS60PixmapData::convertToDisplayMode(TDisplayMode mode)
+void QS60PixmapData::convertToDisplayMode(int mode)
 {
-    if (!cfbsBitmap || cfbsBitmap->DisplayMode() == mode)
+    const TDisplayMode displayMode = static_cast<TDisplayMode>(mode);
+    if (!cfbsBitmap || cfbsBitmap->DisplayMode() == displayMode)
         return;
-    if (image.depth() != TDisplayModeUtils::NumDisplayModeBitsPerPixel(mode)) {
+    if (image.depth() != TDisplayModeUtils::NumDisplayModeBitsPerPixel(displayMode)) {
         qWarning("Cannot convert display mode due to depth mismatch");
         return;
     }
 
     const TSize size = cfbsBitmap->SizeInPixels();
-    QScopedPointer<CFbsBitmap> newBitmap(createSymbianCFbsBitmap(size, mode));
+    QScopedPointer<CFbsBitmap> newBitmap(createSymbianCFbsBitmap(size, displayMode));
 
     const uchar *sptr = const_cast<const QImage &>(image).bits();
     symbianBitmapDataAccess->beginDataAccess(newBitmap.data());

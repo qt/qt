@@ -54,7 +54,6 @@
 //
 
 #include <QtGui/private/qpixmap_raster_p.h>
-#include <displaymode.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -108,7 +107,7 @@ public:
     void* toNativeType(NativeType type);
     void fromNativeType(void* pixmap, NativeType type);
 
-    void convertToDisplayMode(TDisplayMode mode);
+    void convertToDisplayMode(int mode);
 
 private:
     void release();
