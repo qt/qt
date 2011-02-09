@@ -367,7 +367,7 @@ void QGLWidgetPrivate::recreateEglSurface()
 static CFbsBitmap* createBlitCopy(CFbsBitmap* bitmap)
 {
     CFbsBitmap *copy = q_check_ptr(new CFbsBitmap);
-    if(!copy)
+    if (!copy)
         return 0;
 
     if (copy->Create(bitmap->SizeInPixels(), bitmap->DisplayMode()) != KErrNone) {
@@ -425,17 +425,17 @@ void QGLPixmapData::fromNativeType(void* pixmap, NativeType type)
         img = img.copy();
         bitmap->EndDataAccess();
 
-        if(displayMode == EGray2) {
+        if (displayMode == EGray2) {
             //Symbian thinks set pixels are white/transparent, Qt thinks they are foreground/solid
             //So invert mono bitmaps so that masks work correctly.
             img.invertPixels();
-        } else if(displayMode == EColor16M) {
+        } else if (displayMode == EColor16M) {
             img = img.rgbSwapped(); // EColor16M is BGR
         }
 
         fromImage(img, Qt::AutoColor);
 
-        if(deleteSourceBitmap)
+        if (deleteSourceBitmap)
             delete bitmap;
     }
 }
