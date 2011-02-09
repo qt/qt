@@ -132,9 +132,6 @@ void QSGCanvasPrivate::init(QSGCanvas *c)
 
     Q_Q(QSGCanvas);
 
-    // XXX todo 
-    QSGItemsModule::defineModule();
-
     q->setAttribute(Qt::WA_AcceptTouchEvents);
 
     rootItem = new QSGRootItem;
