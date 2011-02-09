@@ -90,9 +90,14 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
                       mask,                            // value mask
                       values);                         // value list
 
-    xcb_atom_t properties[] = {
-        atom(QXcbAtom::WM_DELETE_WINDOW)
-    };
+    xcb_atom_t properties[4];
+    int propertyCount = 0;
+    properties[propertyCount++] = atom(QXcbAtom::WM_DELETE_WINDOW);
+    properties[propertyCount++] = atom(QXcbAtom::WM_TAKE_FOCUS);
+    properties[propertyCount++] = atom(QXcbAtom::_NET_WM_PING);
+
+    if (tlw->windowFlags() & Qt::WindowContextHelpButtonHint)
+        properties[propertyCount++] = atom(QXcbAtom::_NET_WM_CONTEXT_HELP);
 
     xcb_change_property(xcb_connection(),
                         XCB_PROP_MODE_REPLACE,
@@ -100,7 +105,7 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
                         atom(QXcbAtom::WM_PROTOCOLS),
                         4,
                         32,
-                        sizeof(properties) / sizeof(xcb_atom_t),
+                        propertyCount,
                         properties);
 }
 
@@ -127,14 +132,144 @@ void QXcbWindow::setVisible(bool visible)
         xcb_unmap_window(xcb_connection(), m_window);
 }
 
+struct QtMWMHints {
+    quint32 flags, functions, decorations;
+    qint32 input_mode;
+    quint32 status;
+};
+
+enum {
+    MWM_HINTS_FUNCTIONS   = (1L << 0),
+
+    MWM_FUNC_ALL      = (1L << 0),
+    MWM_FUNC_RESIZE   = (1L << 1),
+    MWM_FUNC_MOVE     = (1L << 2),
+    MWM_FUNC_MINIMIZE = (1L << 3),
+    MWM_FUNC_MAXIMIZE = (1L << 4),
+    MWM_FUNC_CLOSE    = (1L << 5),
+
+    MWM_HINTS_DECORATIONS = (1L << 1),
+
+    MWM_DECOR_ALL      = (1L << 0),
+    MWM_DECOR_BORDER   = (1L << 1),
+    MWM_DECOR_RESIZEH  = (1L << 2),
+    MWM_DECOR_TITLE    = (1L << 3),
+    MWM_DECOR_MENU     = (1L << 4),
+    MWM_DECOR_MINIMIZE = (1L << 5),
+    MWM_DECOR_MAXIMIZE = (1L << 6),
+
+    MWM_HINTS_INPUT_MODE = (1L << 2),
+
+    MWM_INPUT_MODELESS                  = 0L,
+    MWM_INPUT_PRIMARY_APPLICATION_MODAL = 1L,
+    MWM_INPUT_FULL_APPLICATION_MODAL    = 3L
+};
+
 Qt::WindowFlags QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
 {
-    return flags;
-}
+    Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
 
-Qt::WindowFlags QXcbWindow::windowFlags() const
-{
-    return 0;
+    if (type == Qt::ToolTip)
+        flags |= Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint;
+    if (type == Qt::Popup)
+        flags |= Qt::X11BypassWindowManagerHint;
+
+    bool topLevel = (flags & Qt::Window);
+    bool popup = (type == Qt::Popup);
+    bool dialog = (type == Qt::Dialog
+                   || type == Qt::Sheet);
+    bool desktop = (type == Qt::Desktop);
+    bool tool = (type == Qt::Tool || type == Qt::SplashScreen
+                 || type == Qt::ToolTip || type == Qt::Drawer);
+
+    Q_UNUSED(topLevel);
+    Q_UNUSED(dialog);
+    Q_UNUSED(desktop);
+    Q_UNUSED(tool);
+
+    bool tooltip = (type == Qt::ToolTip);
+
+    QtMWMHints mwmhints;
+    mwmhints.flags = 0L;
+    mwmhints.functions = 0L;
+    mwmhints.decorations = 0;
+    mwmhints.input_mode = 0L;
+    mwmhints.status = 0L;
+
+    if (type != Qt::SplashScreen) {
+        mwmhints.flags |= MWM_HINTS_DECORATIONS;
+
+        bool customize = flags & Qt::CustomizeWindowHint;
+        if (!(flags & Qt::FramelessWindowHint) && !(customize && !(flags & Qt::WindowTitleHint))) {
+            mwmhints.decorations |= MWM_DECOR_BORDER;
+            mwmhints.decorations |= MWM_DECOR_RESIZEH;
+
+            if (flags & Qt::WindowTitleHint)
+                mwmhints.decorations |= MWM_DECOR_TITLE;
+
+            if (flags & Qt::WindowSystemMenuHint)
+                mwmhints.decorations |= MWM_DECOR_MENU;
+
+            if (flags & Qt::WindowMinimizeButtonHint) {
+                mwmhints.decorations |= MWM_DECOR_MINIMIZE;
+                mwmhints.functions |= MWM_FUNC_MINIMIZE;
+            }
+
+            if (flags & Qt::WindowMaximizeButtonHint) {
+                mwmhints.decorations |= MWM_DECOR_MAXIMIZE;
+                mwmhints.functions |= MWM_FUNC_MAXIMIZE;
+            }
+
+            if (flags & Qt::WindowCloseButtonHint)
+                mwmhints.functions |= MWM_FUNC_CLOSE;
+        }
+    } else {
+        // if type == Qt::SplashScreen
+        mwmhints.decorations = MWM_DECOR_ALL;
+    }
+
+    if (mwmhints.functions != 0) {
+        mwmhints.flags |= MWM_HINTS_FUNCTIONS;
+        mwmhints.functions |= MWM_FUNC_MOVE | MWM_FUNC_RESIZE;
+    } else {
+        mwmhints.functions = MWM_FUNC_ALL;
+    }
+
+    if (!(flags & Qt::FramelessWindowHint)
+        && flags & Qt::CustomizeWindowHint
+        && flags & Qt::WindowTitleHint
+        && !(flags &
+             (Qt::WindowMinimizeButtonHint
+              | Qt::WindowMaximizeButtonHint
+              | Qt::WindowCloseButtonHint)))
+    {
+        // a special case - only the titlebar without any button
+        mwmhints.flags = MWM_HINTS_FUNCTIONS;
+        mwmhints.functions = MWM_FUNC_MOVE | MWM_FUNC_RESIZE;
+        mwmhints.decorations = 0;
+    }
+
+    if (mwmhints.flags != 0l) {
+        xcb_change_property(xcb_connection(),
+                            XCB_PROP_MODE_REPLACE,
+                            m_window,
+                            atom(QXcbAtom::_MOTIF_WM_HINTS),
+                            atom(QXcbAtom::_MOTIF_WM_HINTS),
+                            32,
+                            5,
+                            &mwmhints);
+    } else {
+        xcb_delete_property(xcb_connection(), m_window, atom(QXcbAtom::_MOTIF_WM_HINTS));
+    }
+
+    if (popup || tooltip) {
+        const quint32 mask = XCB_CW_OVERRIDE_REDIRECT | XCB_CW_SAVE_UNDER;
+        const quint32 values[] = { true, true };
+
+        xcb_change_window_attributes(xcb_connection(), m_window, mask, values);
+    }
+
+    return QPlatformWindow::setWindowFlags(flags);
 }
 
 WId QXcbWindow::winId() const
@@ -177,6 +312,7 @@ void QXcbWindow::lower()
 
 void QXcbWindow::requestActivateWindow()
 {
+    xcb_set_input_focus(xcb_connection(), m_window, XCB_INPUT_FOCUS_PARENT, XCB_TIME_CURRENT_TIME);
 }
 
 void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)

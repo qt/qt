@@ -60,7 +60,6 @@ public:
 
     void setVisible(bool visible);
     Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
-    Qt::WindowFlags windowFlags() const;
     WId winId() const;
     void setParent(const QPlatformWindow *window);
 
