@@ -38,13 +38,20 @@
 **
 ****************************************************************************/
 
-#include <QtScript>
+Rectangle {
+    width: 200; height: 200
 
-int main(int argc, char *argv[])
-{
-    //! [0]
-    QScriptEngine engine;
-    qDebug() << "the magic number is:" << engine.evaluate("1 + 2").toNumber();
-    //! [0]
-    return 0;
+    //! [visual model and view]
+    VisualItemModel {
+        id: itemModel
+        Rectangle { height: 30; width: 80; color: "red" }
+        Rectangle { height: 30; width: 80; color: "green" }
+        Rectangle { height: 30; width: 80; color: "blue" }
+    }
+
+    ListView {
+        anchors.fill: parent
+        model: itemModel
+    }
+    //! [visual model and view]
 }

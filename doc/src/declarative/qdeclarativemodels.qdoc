@@ -108,7 +108,7 @@ XmlListModel allows construction of a model from an XML data source. The roles
 are specified via the \l XmlRole element.
 
 The following model has three roles, \e title, \e link and \e description:
-\code
+\qml
 XmlListModel {
      id: feedModel
      source: "http://rss.news.yahoo.com/rss/oceania"
@@ -117,7 +117,7 @@ XmlListModel {
      XmlRole { name: "link"; query: "link/string()" }
      XmlRole { name: "description"; query: "description/string()" }
 }
-\endcode
+\endqml
 
 The \l{demos/declarative/rssnews}{RSS News demo} shows how XmlListModel can
 be used to display an RSS feed.
@@ -131,19 +131,7 @@ This model contains both the data and delegate; the child items of a
 VisualItemModel provide the contents of the delegate. The model 
 does not provide any roles.
 
-\code
- VisualItemModel {
-     id: itemModel
-     Rectangle { height: 30; width: 80; color: "red" }
-     Rectangle { height: 30; width: 80; color: "green" }
-     Rectangle { height: 30; width: 80; color: "blue" }
- }
-
- ListView {
-     anchors.fill: parent
-     model: itemModel
- }
-\endcode
+\snippet doc/src/snippets/declarative/models/visual-model-and-view.qml visual model and view
 
 Note that in the above example there is no delegate required.
 The items of the model itself provide the visual elements that
@@ -339,7 +327,7 @@ An integer can be used to specify a model that contains a certain number
 of elements. In this case, the model does not have any data roles.
 
 The following example creates a ListView with five elements:
-\code
+\qml
 Item {
     width: 200; height: 250
 
@@ -355,7 +343,7 @@ Item {
     }
 
 }
-\endcode
+\endqml
 
 
 \section2 An Object Instance
@@ -367,7 +355,7 @@ The example below creates a list with one item, showing the color of the
 \e myText text.  Note the use of the fully qualified \e model.color property
 to avoid clashing with \e color property of the Text element in the delegate.
 
-\code
+\qml
 Rectangle {
     width: 200; height: 250
 
@@ -389,7 +377,7 @@ Rectangle {
         delegate: myDelegate
     }
 }
-\endcode
+\endqml
 
 \section1 Accessing Views and Models from Delegates
 
@@ -408,44 +396,7 @@ In the following example, the delegate shows the property \e{language}
 of the model, and the color of one of the fields depends on the
 property \e{fruit_color} of the view.
 
-\code
-Rectangle {
-     width: 200; height: 200
-
-    ListModel {
-        id: fruitModel
-        property string language: "en"
-        ListElement {
-            name: "Apple"
-            cost: 2.45
-        }
-        ListElement {
-            name: "Orange"
-            cost: 3.25
-        }
-        ListElement {
-            name: "Banana"
-            cost: 1.95
-        }
-    }
-
-    Component {
-        id: fruitDelegate
-        Row {
-                Text { text: " Fruit: " + name; color: ListView.view.fruit_color }
-                Text { text: " Cost: $" + cost }
-                Text { text: " Language: " + ListView.view.model.language }
-        }
-    }
-
-    ListView {
-        property color fruit_color: "green"
-        model: fruitModel
-        delegate: fruitDelegate
-        anchors.fill: parent
-    }
-}
-\endcode
+\snippet doc/src/snippets/declarative/models/views-models-delegates.qml rectangle
 
 Another important case is when some action (e.g. mouse click) in the
 delegate should update data in the model. In this case you can define
@@ -457,9 +408,9 @@ a function in the model, e.g.:
 
 ...and call it from the delegate using:
 
-\code
+\js
         ListView.view.model.setData(index, field, value)
-\endcode
+\endjs
 
 ...assuming that \e{field} holds the name of the field which should be
 updated, and that \e{value} holds the new value.

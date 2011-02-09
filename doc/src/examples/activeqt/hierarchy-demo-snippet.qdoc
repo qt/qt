@@ -1,4 +1,3 @@
-\raw HTML
 <script language="javascript">
 function createSubWidget( form )
 {
@@ -38,4 +37,3 @@ CODEBASE="http://qt.nokia.com/demos/hierarchy.cab">
 <input type="edit" ID="fontEdit" value="MS Sans Serif" />
 <input type="button" value = "Set Font" onClick="setFont(this.form)" />
 </form>
-\endraw
