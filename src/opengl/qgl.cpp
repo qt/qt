@@ -97,7 +97,7 @@
 #include "qlibrary.h"
 #include <qmutex.h>
 
-#ifdef QT_OPENGL_ES
+#if defined(QT_OPENGL_ES) && !defined(QT_NO_EGL)
 #include <EGL/egl.h>
 #endif
 
