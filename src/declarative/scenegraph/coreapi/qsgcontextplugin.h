@@ -39,62 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef QSGCONTEXT_H
-#define QSGCONTEXT_H
+#ifndef QSGCONTEXTPLUGIN_H
+#define QSGCONTEXTPLUGIN_H
 
-#include <QObject>
-#include <qabstractanimation.h>
+#include <QtCore/qplugin.h>
+#include <QtCore/qfactoryinterface.h>
 
-#include "node.h"
+class QSGContext;
 
-class QSGContextPrivate;
-class RectangleNodeInterface;
-class TextureNodeInterface;
-class GlyphNodeInterface;
-class Renderer;
-class QSGTextureManager;
-
-class QGLContext;
-
-class Q_DECLARATIVE_EXPORT QSGContext : public QObject
+struct Q_DECLARATIVE_EXPORT QSGContextFactoryInterface : public QFactoryInterface
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QSGContext)
-
-public:
-    explicit QSGContext(QObject *parent = 0);
-
-    void initialize(QGLContext *context);
-
-    Renderer *renderer() const;
-
-    QSGTextureManager *textureManager() const;
-
-    void setRootNode(RootNode *node);
-    RootNode *rootNode() const;
-
-    QGLContext *glContext() const;
-
-    static QSGContext *current; // Evil nasty hack!! Get rid of this!
-
-    bool isReady() const;
-
-    virtual void renderNextFrame();
-
-    virtual RectangleNodeInterface *createRectangleNode();
-    virtual TextureNodeInterface *createTextureNode();
-    virtual GlyphNodeInterface *createGlyphNode();
-    virtual GlyphNodeInterface *createGlyphNode(const QFont &font);
-    virtual Renderer *createRenderer();
-    virtual QSGTextureManager *createTextureManager();
-    virtual QAnimationDriver *createAnimationDriver(QWidget *window);
-
-    static QSGContext *createDefaultContext();
-
-signals:
-    void ready();
-
-    void aboutToRenderNextFrame();
+    virtual QSGContext *create(const QString &key) const = 0;
 };
 
-#endif // QSGCONTEXT_H
+#define QSGContextFactoryInterface_iid \
+        "com.trolltech.Qt.QSGContextFactoryInterface"
+Q_DECLARE_INTERFACE(QSGContextFactoryInterface, QSGContextFactoryInterface_iid)
+
+class Q_DECLARATIVE_EXPORT QSGContextPlugin : public QObject, public QSGContextFactoryInterface
+{
+    Q_OBJECT
+    Q_INTERFACES(QSGContextFactoryInterface:QFactoryInterface)
+public:
+    explicit QSGContextPlugin(QObject *parent = 0);
+    virtual ~QSGContextPlugin();
+
+    virtual QStringList keys() const = 0;
+    virtual QSGContext *create(const QString &key) const = 0;
+};
+
+#endif // QSGCONTEXTPLUGIN_H

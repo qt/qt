@@ -150,11 +150,15 @@ static QGLFormat getFormat()
     QGLFormat f = QGLFormat::defaultFormat();
     f.setSampleBuffers(!qApp->arguments().contains("--no-multisample"));
     f.setSwapInterval(qApp->arguments().contains("--nonblocking-swap") ? 0 : 1);
+    f.setStereo(qApp->arguments().contains("--stereo"));
     return f;
 }
 
 class MyQSGView : public QSGView
 {
+public:
+    MyQSGView() : QSGView(getFormat()) {}
+
 protected:
     void paintEvent(QPaintEvent *e) {
         QSGView::paintEvent(e);
@@ -380,6 +384,7 @@ static void usage()
     qWarning("  --no-multisample........................... Disable multisampling (anti-aliasing)");
     qWarning("  --continuous-update........................ Continuously render the scene");
     qWarning("  --nonblocking-swap......................... Do not wait for v-sync to swap buffers");
+    qWarning("  --stereo................................... Enable stereo on the GL context");
 #ifndef QT_NO_SCENEGRAPHITEM
     qWarning("  --sg-on-gv [--clip]........................ Scenegraph on graphicsview (and clip to item)");
 #endif

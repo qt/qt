@@ -134,8 +134,21 @@ QSGView::QSGView(QWidget *parent, Qt::WindowFlags f)
     setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
 }
 
+QSGView::QSGView(const QGLFormat &format, QWidget *parent, Qt::WindowFlags f)
+: QSGCanvas(*(new QSGViewPrivate), format, parent, f)
+{
+    setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+}
+
 QSGView::QSGView(const QUrl &source, QWidget *parent, Qt::WindowFlags f)
 : QSGCanvas(*(new QSGViewPrivate), parent, f)
+{
+    setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+    setSource(source);
+}
+
+QSGView::QSGView(const QUrl &source, const QGLFormat &format, QWidget *parent, Qt::WindowFlags f)
+: QSGCanvas(*(new QSGViewPrivate), format, parent, f)
 {
     setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
     setSource(source);

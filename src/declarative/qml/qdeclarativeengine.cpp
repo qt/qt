@@ -101,6 +101,7 @@
 
 #include <private/qdeclarativeitemsmodule_p.h>
 #include <private/qdeclarativeutilmodule_p.h>
+#include <private/qsgitemsmodule_p.h>
 
 #ifdef Q_OS_WIN // for %APPDATA%
 #include <qt_windows.h>
@@ -302,6 +303,7 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
         QDeclarativeItemModule::defineModule();
         QDeclarativeUtilModule::defineModule();
         QDeclarativeEnginePrivate::defineModule();
+        QSGItemsModule::defineModule();
         QDeclarativeValueTypeFactory::registerValueTypes();
     }
     globalClass = new QDeclarativeGlobalScriptClass(&scriptEngine);
