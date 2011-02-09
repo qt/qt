@@ -51,7 +51,6 @@ Node::Node()
     : m_parent(0)
     , m_nodeFlags(0)
     , m_flags(OwnedByParent)
-    , m_subtree_enabled(true)
 {
 }
 
@@ -88,8 +87,6 @@ void Node::destroy()
             delete child;
     }
     Q_ASSERT(m_children.isEmpty());
-    qDeleteAll(m_data.values());
-    m_data.clear();
 }
 
 void Node::prependChildNode(Node *node)
@@ -189,20 +186,6 @@ void Node::removeChildNode(Node *node)
     node->m_parent = 0;
 }
 
-
-void Node::setSubtreeEnabled(bool enabled)
-{
-    if (m_subtree_enabled == enabled)
-        return;
-    m_subtree_enabled = enabled;
-    markDirty(DirtySubtreeEnabled);
-}
-
-void Node::setSubtreeRenderOrder(int order)
-{
-    for (int i=0; i<m_children.size(); ++i)
-        m_children.at(i)->setSubtreeRenderOrder(order);
-}
 
 void Node::setFlag(Flag f, bool enabled)
 {
@@ -335,12 +318,6 @@ void GeometryNode::setRenderOrder(int order)
         m_render_order = order;
         markDirty(DirtyRenderOrder);
     }
-}
-
-void GeometryNode::setSubtreeRenderOrder(int order)
-{
-    setRenderOrder(order);
-    Node::setSubtreeRenderOrder(order);
 }
 
 

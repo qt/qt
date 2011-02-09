@@ -57,12 +57,6 @@ class GeometryNode;
 class TransformNode;
 class ClipNode;
 
-class NodeData
-{
-public:
-    virtual ~NodeData() { }
-};
-
 class Q_DECLARATIVE_EXPORT Node
 {
 public:
@@ -144,25 +138,11 @@ public:
 
     virtual NodeSubType subType() const { return DefaultNodeSubType; }
 
-    virtual void setSubtreeRenderOrder(int order);
-
-    void setNodeData(void *key, NodeData *data) {
-        m_data[key] = data;
-    }
-
-    NodeData *nodeData(void *key) const {
-        return m_data[key];
-    }
-
     void clearDirty() { m_flags = 0; }
     void markDirty(DirtyFlags flags);
     DirtyFlags dirtyFlags() const { return m_flags; }
 
     void updateDirtyStates();
-
-    // ### remove once block is in place...
-    bool isSubtreeEnabled() const { return m_subtree_enabled; }
-    void setSubtreeEnabled(bool enabled);
 
     virtual bool isSubtreeBlocked() const { return false; }
 
@@ -195,11 +175,9 @@ protected:
 private:
     Node *m_parent;
     QList<Node *> m_children;
-    QHash<void *, NodeData *> m_data;
 
     Flags m_nodeFlags;
     DirtyFlags m_flags;
-    bool m_subtree_enabled;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Node::DirtyFlags);
@@ -269,8 +247,6 @@ public:
 
     void setRenderOrder(int order);
     int renderOrder() const { return m_render_order; }
-
-    virtual void setSubtreeRenderOrder(int order);
 
     void setInheritedOpacity(qreal opacity);
     qreal inheritedOpacity() const { return m_opacity; }
