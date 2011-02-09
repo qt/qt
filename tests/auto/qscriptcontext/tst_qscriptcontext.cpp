@@ -92,7 +92,6 @@ private slots:
     void pushScopeCall();
     void popScopeSimple();
     void pushAndPopGlobalObjectSimple();
-    void pushAndPopGlobalObject();
     void pushAndPopIterative();
     void pushPopScope();
     void pushAndPopScope_globalContext();
@@ -1077,21 +1076,6 @@ void tst_QScriptContext::pushAndPopIterative()
             QVERIFY(object.property("x").equals(i + 10 * repeat));
         }
     }
-}
-
-void tst_QScriptContext::pushAndPopGlobalObject()
-{
-    // Mixing push of a scope and change a global object (white box test)
-    QScriptEngine engine;
-    QScriptValue object = engine.newObject();
-    QScriptValue newGlobalObject = engine.newObject();
-    QScriptValue newGlobalObjectBis = engine.newObject();
-    engine.currentContext()->pushScope(object);
-    engine.setGlobalObject(newGlobalObject);
-    QVERIFY(engine.currentContext()->popScope().strictlyEquals(object));
-    QEXPECT_FAIL("", "FIXME: calling setGlobalObject after pushScope will result in broken scope chain", Abort);
-    QVERIFY(engine.globalObject().strictlyEquals(newGlobalObjectBis));
-    QVERIFY(engine.globalObject().strictlyEquals(newGlobalObject));
 }
 
 void tst_QScriptContext::pushAndPopScope_globalContext()
