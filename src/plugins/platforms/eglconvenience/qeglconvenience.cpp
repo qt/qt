@@ -313,4 +313,12 @@ QPlatformWindowFormat qt_qPlatformWindowFormatFromConfig(EGLDisplay display, con
     return format;
 }
 
+bool q_hasEglExtension(EGLDisplay display, const char* extensionName)
+{
+    QList<QByteArray> extensions =
+        QByteArray(reinterpret_cast<const char *>
+            (eglQueryString(display, EGL_EXTENSIONS))).split(' ');
+    return extensions.contains(extensionName);
+}
+
 QT_END_NAMESPACE

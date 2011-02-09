@@ -66,7 +66,9 @@ public:
 
 private slots:
     void callee();
+    void callee_implicitCall();
     void arguments();
+    void argumentsInJS();
     void thisObject();
     void returnValue();
     void throwError_data();
@@ -77,23 +79,31 @@ private slots:
     void throwValue();
     void evaluateInFunction();
     void pushAndPopContext();
+    void pushAndPopContext_variablesInActivation();
+    void pushAndPopContext_setThisObject();
+    void pushAndPopContext_throwException();
     void lineNumber();
     void backtrace_data();
     void backtrace();
-    void scopeChain();
+    void scopeChain_globalContext();
+    void scopeChain_closure();
+    void scopeChain_withStatement();
     void pushScopeEvaluate();
     void pushScopeCall();
     void popScopeSimple();
     void pushAndPopGlobalObjectSimple();
     void pushAndPopGlobalObject();
     void pushAndPopIterative();
-    void pushAndPopScope();
     void pushPopScope();
-    void getSetActivationObject();
+    void pushAndPopScope_globalContext();
+    void pushAndPopScope_globalContext2();
+    void getSetActivationObject_globalContext();
     void getSetActivationObject_customContext();
     void inheritActivationAndThisObject();
     void toString();
-    void calledAsConstructor();
+    void calledAsConstructor_fromCpp();
+    void calledAsConstructor_fromJS();
+    void calledAsConstructor_parentContext();
     void argumentsObjectInNative();
     void jsActivationObject();
     void qobjectAsActivationObject();
@@ -128,33 +138,33 @@ void tst_QScriptContext::callee()
 {
     QScriptEngine eng;
 
-    {
-        QScriptValue fun = eng.newFunction(get_callee);
-        fun.setProperty("foo", QScriptValue(&eng, "bar"));
-        eng.globalObject().setProperty("get_callee", fun);
+    QScriptValue fun = eng.newFunction(get_callee);
+    fun.setProperty("foo", QScriptValue(&eng, "bar"));
+    eng.globalObject().setProperty("get_callee", fun);
 
-        QScriptValue result = eng.evaluate("get_callee()");
-        QCOMPARE(result.isFunction(), true);
-        QCOMPARE(result.property("foo").toString(), QString("bar"));
-    }
+    QScriptValue result = eng.evaluate("get_callee()");
+    QCOMPARE(result.isFunction(), true);
+    QCOMPARE(result.property("foo").toString(), QString("bar"));
+}
 
+void tst_QScriptContext::callee_implicitCall()
+{
+    QScriptEngine eng;
     // callee when toPrimitive() is called internally
-    {
-        QScriptValue fun = eng.newFunction(store_callee_and_return_primitive);
-        QScriptValue obj = eng.newObject();
-        obj.setProperty("toString", fun);
-        QVERIFY(!obj.property("callee").isValid());
-        (void)obj.toString();
-        QVERIFY(obj.property("callee").isFunction());
-        QVERIFY(obj.property("callee").strictlyEquals(fun));
+    QScriptValue fun = eng.newFunction(store_callee_and_return_primitive);
+    QScriptValue obj = eng.newObject();
+    obj.setProperty("toString", fun);
+    QVERIFY(!obj.property("callee").isValid());
+    (void)obj.toString();
+    QVERIFY(obj.property("callee").isFunction());
+    QVERIFY(obj.property("callee").strictlyEquals(fun));
 
-        obj.setProperty("callee", QScriptValue());
-        QVERIFY(!obj.property("callee").isValid());
-        obj.setProperty("valueOf", fun);
-        (void)obj.toNumber();
-        QVERIFY(obj.property("callee").isFunction());
-        QVERIFY(obj.property("callee").strictlyEquals(fun));
-    }
+    obj.setProperty("callee", QScriptValue());
+    QVERIFY(!obj.property("callee").isValid());
+    obj.setProperty("valueOf", fun);
+    (void)obj.toNumber();
+    QVERIFY(obj.property("callee").isFunction());
+    QVERIFY(obj.property("callee").strictlyEquals(fun));
 }
 
 static QScriptValue get_arguments(QScriptContext *ctx, QScriptEngine *eng)
@@ -174,6 +184,8 @@ void tst_QScriptContext::arguments()
 {
     QScriptEngine eng;
 
+    // See section 10.6 ("Arguments Object") of ECMA-262.
+
     {
         QScriptValue args = eng.currentContext()->argumentsObject();
         QVERIFY(args.isObject());
@@ -185,6 +197,8 @@ void tst_QScriptContext::arguments()
     }
 
     for (int x = 0; x < 2; ++x) {
+        // The expected arguments array should be the same regardless of
+        // whether get_arguments() is called as a constructor.
         QString prefix;
         if (x == 0)
             prefix = "";
@@ -231,11 +245,15 @@ void tst_QScriptContext::arguments()
             QCOMPARE(result.propertyFlags("length"), QScriptValue::SkipInEnumeration);
             QCOMPARE(result.property("callee").strictlyEquals(fun), true);
             QCOMPARE(result.propertyFlags("callee"), QScriptValue::SkipInEnumeration);
+
+            // callee and length properties should be writable.
             QScriptValue replacedCallee(&eng, 123);
             result.setProperty("callee", replacedCallee);
             QVERIFY(result.property("callee").equals(replacedCallee));
             QScriptValue replacedLength(&eng, 456);
             result.setProperty("length", replacedLength);
+
+            // callee and length properties should be deletable.
             QVERIFY(result.property("length").equals(replacedLength));
             result.setProperty("callee", QScriptValue());
             QVERIFY(!result.property("callee").isValid());
@@ -269,28 +287,31 @@ void tst_QScriptContext::arguments()
             QCOMPARE(result.property("2").toBoolean(), true);
             QCOMPARE(result.property("3").isUndefined(), true);
         }
+    }
+}
 
-        // arguments object returned from script
-        {
-            QScriptValue result = eng.evaluate("(function() { return arguments; })(123)");
-            QCOMPARE(result.isArray(), false);
-            QVERIFY(result.isObject());
-            QCOMPARE(result.property("length").toUInt32(), quint32(1));
-            QCOMPARE(result.property("0").isNumber(), true);
-            QCOMPARE(result.property("0").toNumber(), 123.0);
-        }
+void tst_QScriptContext::argumentsInJS()
+{
+    QScriptEngine eng;
+    {
+        QScriptValue result = eng.evaluate("(function() { return arguments; })(123)");
+        QCOMPARE(result.isArray(), false);
+        QVERIFY(result.isObject());
+        QCOMPARE(result.property("length").toUInt32(), quint32(1));
+        QCOMPARE(result.property("0").isNumber(), true);
+        QCOMPARE(result.property("0").toNumber(), 123.0);
+    }
 
-        {
-            QScriptValue result = eng.evaluate("(function() { return arguments; })('ciao', null, true, undefined)");
-            QCOMPARE(result.isArray(), false);
-            QCOMPARE(result.property("length").toUInt32(), quint32(4));
-            QCOMPARE(result.property("0").isString(), true);
-            QCOMPARE(result.property("0").toString(), QString("ciao"));
-            QCOMPARE(result.property("1").isNull(), true);
-            QCOMPARE(result.property("2").isBoolean(), true);
-            QCOMPARE(result.property("2").toBoolean(), true);
-            QCOMPARE(result.property("3").isUndefined(), true);
-        }
+    {
+        QScriptValue result = eng.evaluate("(function() { return arguments; })('ciao', null, true, undefined)");
+        QCOMPARE(result.isArray(), false);
+        QCOMPARE(result.property("length").toUInt32(), quint32(4));
+        QCOMPARE(result.property("0").isString(), true);
+        QCOMPARE(result.property("0").toString(), QString("ciao"));
+        QCOMPARE(result.property("1").isNull(), true);
+        QCOMPARE(result.property("2").isBoolean(), true);
+        QCOMPARE(result.property("2").toBoolean(), true);
+        QCOMPARE(result.property("3").isUndefined(), true);
     }
 }
 
@@ -526,58 +547,65 @@ void tst_QScriptContext::pushAndPopContext()
     QTest::ignoreMessage(QtWarningMsg, "QScriptEngine::popContext() doesn't match with pushContext()");
     eng.popContext();
     QCOMPARE(eng.currentContext(), topLevel);
+}
 
-    {
-        QScriptContext *ctx3 = eng.pushContext();
-        ctx3->activationObject().setProperty("foo", QScriptValue(&eng, 123));
-        QVERIFY(eng.evaluate("foo").strictlyEquals(QScriptValue(&eng, 123)));
-        QCOMPARE(ctx3->activationObject().propertyFlags("foo"), QScriptValue::PropertyFlags(0));
+void tst_QScriptContext::pushAndPopContext_variablesInActivation()
+{
+    QScriptEngine eng;
+    QScriptContext *ctx = eng.pushContext();
+    ctx->activationObject().setProperty("foo", QScriptValue(&eng, 123));
+    // evaluate() should use the current context.
+    QVERIFY(eng.evaluate("foo").strictlyEquals(QScriptValue(&eng, 123)));
+    QCOMPARE(ctx->activationObject().propertyFlags("foo"), QScriptValue::PropertyFlags(0));
 
-        ctx3->activationObject().setProperty(4, 456);
-        QVERIFY(ctx3->activationObject().property(4, QScriptValue::ResolveLocal).equals(456));
+    ctx->activationObject().setProperty(4, 456);
+    QVERIFY(ctx->activationObject().property(4, QScriptValue::ResolveLocal).equals(456));
 
-        eng.evaluate("var bar = 'ciao'");
-        QVERIFY(ctx3->activationObject().property("bar", QScriptValue::ResolveLocal).strictlyEquals(QScriptValue(&eng, "ciao")));
+    // New JS variables should become properties of the current context's activation.
+    eng.evaluate("var bar = 'ciao'");
+    QVERIFY(ctx->activationObject().property("bar", QScriptValue::ResolveLocal).strictlyEquals(QScriptValue(&eng, "ciao")));
 
-        ctx3->activationObject().setProperty("baz", 789, QScriptValue::ReadOnly);
-        QVERIFY(eng.evaluate("baz").equals(789));
-        QCOMPARE(ctx3->activationObject().propertyFlags("baz"), QScriptValue::ReadOnly);
+    ctx->activationObject().setProperty("baz", 789, QScriptValue::ReadOnly);
+    QVERIFY(eng.evaluate("baz").equals(789));
+    QCOMPARE(ctx->activationObject().propertyFlags("baz"), QScriptValue::ReadOnly);
 
-        QSet<QString> activationPropertyNames;
-        QScriptValueIterator it(ctx3->activationObject());
-        while (it.hasNext()) {
-            it.next();
-            activationPropertyNames.insert(it.name());
-        }
-        QCOMPARE(activationPropertyNames.size(), 4);
-        QVERIFY(activationPropertyNames.contains("foo"));
-        QVERIFY(activationPropertyNames.contains("4"));
-        QVERIFY(activationPropertyNames.contains("bar"));
-        QVERIFY(activationPropertyNames.contains("baz"));
-
-        eng.popContext();
+    QSet<QString> activationPropertyNames;
+    QScriptValueIterator it(ctx->activationObject());
+    while (it.hasNext()) {
+        it.next();
+        activationPropertyNames.insert(it.name());
     }
+    QCOMPARE(activationPropertyNames.size(), 4);
+    QVERIFY(activationPropertyNames.contains("foo"));
+    QVERIFY(activationPropertyNames.contains("4"));
+    QVERIFY(activationPropertyNames.contains("bar"));
+    QVERIFY(activationPropertyNames.contains("baz"));
 
-    {
-        QScriptContext *ctx4 = eng.pushContext();
-        QScriptValue obj = eng.newObject();
-        obj.setProperty("prop", QScriptValue(&eng, 456));
-        ctx4->setThisObject(obj);
-        QScriptValue ret = eng.evaluate("var tmp = this.prop; tmp + 1");
-        QCOMPARE(eng.currentContext(), ctx4);
-        QVERIFY(ret.strictlyEquals(QScriptValue(&eng, 457)));
-        eng.popContext();
-    }
+    eng.popContext();
+}
 
-    // throwing an exception
-    {
-        QScriptContext *ctx5 = eng.pushContext();
-        QScriptValue ret = eng.evaluate("throw new Error('oops')");
-        QVERIFY(ret.isError());
-        QVERIFY(eng.hasUncaughtException());
-        QCOMPARE(eng.currentContext(), ctx5);
-        eng.popContext();
-    }
+void tst_QScriptContext::pushAndPopContext_setThisObject()
+{
+    QScriptEngine eng;
+    QScriptContext *ctx = eng.pushContext();
+    QScriptValue obj = eng.newObject();
+    obj.setProperty("prop", QScriptValue(&eng, 456));
+    ctx->setThisObject(obj);
+    QScriptValue ret = eng.evaluate("var tmp = this.prop; tmp + 1");
+    QCOMPARE(eng.currentContext(), ctx);
+    QVERIFY(ret.strictlyEquals(QScriptValue(&eng, 457)));
+    eng.popContext();
+}
+
+void tst_QScriptContext::pushAndPopContext_throwException()
+{
+    QScriptEngine eng;
+    QScriptContext *ctx = eng.pushContext();
+    QScriptValue ret = eng.evaluate("throw new Error('oops')");
+    QVERIFY(ret.isError());
+    QVERIFY(eng.hasUncaughtException());
+    QCOMPARE(eng.currentContext(), ctx);
+    eng.popContext();
 }
 
 void tst_QScriptContext::popNativeContextScope()
@@ -606,7 +634,7 @@ void tst_QScriptContext::popNativeContextScope()
     QVERIFY(ctx->activationObject().strictlyEquals(customScope));
     QCOMPARE(ctx->scopeChain().size(), 2);
     QVERIFY(ctx->scopeChain().at(0).strictlyEquals(customScope));
-    QEXPECT_FAIL("", "QTBUG-11012", Continue);
+    QEXPECT_FAIL("", "QTBUG-11012: Global object is replaced in scope chain", Continue);
     QVERIFY(ctx->scopeChain().at(1).strictlyEquals(eng.globalObject()));
 
     QVERIFY(!eng.evaluate("baz = 456; var foo = 789; function barbar() {}").isError());
@@ -923,7 +951,7 @@ static QScriptValue getScopeChain(QScriptContext *ctx, QScriptEngine *eng)
     return qScriptValueFromValue(eng, ctx->parentContext()->scopeChain());
 }
 
-void tst_QScriptContext::scopeChain()
+void tst_QScriptContext::scopeChain_globalContext()
 {
     QScriptEngine eng;
     {
@@ -939,19 +967,35 @@ void tst_QScriptContext::scopeChain()
         QEXPECT_FAIL("", "The parentContext() does not allow to navigate up to the globalObject", Continue);
         QVERIFY(ret.value(0).strictlyEquals(eng.globalObject()));
     }
-    {
-        eng.evaluate("function foo() { function bar() { return getScopeChain(); } return bar() }");
-        QScriptValueList ret = qscriptvalue_cast<QScriptValueList>(eng.evaluate("foo()"));
-        QEXPECT_FAIL("", "Number of items in returned scope chain is incorrect", Abort);
-        QCOMPARE(ret.size(), 3);
-        QVERIFY(ret.at(2).strictlyEquals(eng.globalObject()));
-        QCOMPARE(ret.at(1).toString(), QString::fromLatin1("activation"));
-        QVERIFY(ret.at(1).property("arguments").isObject());
-        QCOMPARE(ret.at(0).toString(), QString::fromLatin1("activation"));
-        QVERIFY(ret.at(0).property("arguments").isObject());
-    }
+}
+
+void tst_QScriptContext::scopeChain_closure()
+{
+    QScriptEngine eng;
+    eng.globalObject().setProperty("getScopeChain", eng.newFunction(getScopeChain));
+
+    eng.evaluate("function foo() { function bar() { return getScopeChain(); } return bar() }");
+    QScriptValueList ret = qscriptvalue_cast<QScriptValueList>(eng.evaluate("foo()"));
+    // JSC will not create an activation for bar() unless we insert a call
+    // to eval() in the function body; JSC has no way of knowing that the
+    // native function will be asking for the activation, and we don't want
+    // to needlessly create it.
+    QEXPECT_FAIL("", "QTBUG-10313: JSC optimizes away the activation object", Abort);
+    QCOMPARE(ret.size(), 3);
+    QVERIFY(ret.at(2).strictlyEquals(eng.globalObject()));
+    QCOMPARE(ret.at(1).toString(), QString::fromLatin1("activation"));
+    QVERIFY(ret.at(1).property("arguments").isObject());
+    QCOMPARE(ret.at(0).toString(), QString::fromLatin1("activation"));
+    QVERIFY(ret.at(0).property("arguments").isObject());
+}
+
+void tst_QScriptContext::scopeChain_withStatement()
+{
+    QScriptEngine eng;
+    eng.globalObject().setProperty("getScopeChain", eng.newFunction(getScopeChain));
     {
         QScriptValueList ret = qscriptvalue_cast<QScriptValueList>(eng.evaluate("o = { x: 123 }; with(o) getScopeChain();"));
+        QEXPECT_FAIL("", "QTBUG-17131: with-scope isn't reflected by QScriptContext", Abort);
         QCOMPARE(ret.size(), 2);
         QVERIFY(ret.at(1).strictlyEquals(eng.globalObject()));
         QVERIFY(ret.at(0).isObject());
@@ -1055,7 +1099,7 @@ void tst_QScriptContext::pushAndPopGlobalObject()
     QVERIFY(engine.globalObject().strictlyEquals(newGlobalObject));
 }
 
-void tst_QScriptContext::pushAndPopScope()
+void tst_QScriptContext::pushAndPopScope_globalContext()
 {
     QScriptEngine eng;
     QScriptContext *ctx = eng.currentContext();
@@ -1114,15 +1158,20 @@ void tst_QScriptContext::pushAndPopScope()
 
     ctx->pushScope(QScriptValue());
     QCOMPARE(ctx->scopeChain().size(), 1);
+}
 
-    QEXPECT_FAIL("", "popScope if we have not pused scope does not pop the globalObject", Abort);
+void tst_QScriptContext::pushAndPopScope_globalContext2()
+{
+    QScriptEngine eng;
+    QScriptContext *ctx = eng.currentContext();
+    QEXPECT_FAIL("", "popScope if we have not pushed scope does not pop the globalObject", Abort);
     QVERIFY(ctx->popScope().strictlyEquals(eng.globalObject()));
     QVERIFY(ctx->scopeChain().isEmpty());
 
     // Used to work with old back-end, doesn't with new one because JSC requires that the last object in
     // a scope chain is the Global Object.
     QTest::ignoreMessage(QtWarningMsg, "QScriptContext::pushScope() failed: initial object in scope chain has to be the Global Object");
-    ctx->pushScope(obj);
+    ctx->pushScope(eng.newObject());
     QCOMPARE(ctx->scopeChain().size(), 0);
 
     QScriptEngine eng2;
@@ -1183,7 +1232,7 @@ static QScriptValue get_activationObject(QScriptContext *ctx, QScriptEngine *)
     return ctx->activationObject();
 }
 
-void tst_QScriptContext::getSetActivationObject()
+void tst_QScriptContext::getSetActivationObject_globalContext()
 {
     QScriptEngine eng;
     QScriptContext *ctx = eng.currentContext();
@@ -1238,6 +1287,8 @@ void tst_QScriptContext::getSetActivationObject_customContext()
     QCOMPARE(act.property("foo").toInt32(), 123);
 }
 
+// Helper function that's intended to have the same behavior
+// as the built-in eval() function.
 static QScriptValue myEval(QScriptContext *ctx, QScriptEngine *eng)
 {
      QString code = ctx->argument(0).toString();
@@ -1267,13 +1318,14 @@ void tst_QScriptContext::inheritActivationAndThisObject()
         QCOMPARE(ret.toInt32(), 123);
     }
 
-    // QT-2219
     {
         eng.globalObject().setProperty("a", 123);
         QScriptValue ret = eng.evaluate("(function() { myEval('var a = 456'); return a; })()");
         QVERIFY(ret.isNumber());
         QCOMPARE(ret.toInt32(), 456);
-        QEXPECT_FAIL("", "QT-2219: Wrong activation object is returned from native function's parent context", Continue);
+        // Since JSC doesn't create an activation object for the anonymous function call,
+        // myEval() will use the global object as the activation, which is wrong.
+        QEXPECT_FAIL("", "QTBUG-10313: Wrong activation object is returned from native function's parent context", Continue);
         QVERIFY(eng.globalObject().property("a").strictlyEquals(123));
     }
 }
@@ -1316,11 +1368,11 @@ static QScriptValue storeCalledAsConstructorV3(QScriptContext *ctx, QScriptEngin
     return eng->undefinedValue();
 }
 
-void tst_QScriptContext::calledAsConstructor()
+void tst_QScriptContext::calledAsConstructor_fromCpp()
 {
     QScriptEngine eng;
-    QScriptValue fun1 = eng.newFunction(storeCalledAsConstructor);
     {
+        QScriptValue fun1 = eng.newFunction(storeCalledAsConstructor);
         fun1.call();
         QVERIFY(!fun1.property("calledAsConstructor").toBool());
         fun1.construct();
@@ -1333,23 +1385,29 @@ void tst_QScriptContext::calledAsConstructor()
         fun.construct();
         QVERIFY(fun.property("calledAsConstructor").toBool());
     }
-    {
-        eng.globalObject().setProperty("fun1", fun1);
-        eng.evaluate("fun1();");
-        QVERIFY(!fun1.property("calledAsConstructor").toBool());
-        eng.evaluate("new fun1();");
-        QVERIFY(fun1.property("calledAsConstructor").toBool());
-    }
-    {
-        QScriptValue fun3 = eng.newFunction(storeCalledAsConstructorV3);
-        eng.globalObject().setProperty("fun3", fun3);
-        eng.evaluate("function test() { fun3() }");
-        eng.evaluate("test();");
-        QVERIFY(!fun3.property("calledAsConstructor").toBool());
-        eng.evaluate("new test();");
-        QVERIFY(fun3.property("calledAsConstructor").toBool());
-    }
+}
 
+void tst_QScriptContext::calledAsConstructor_fromJS()
+{
+    QScriptEngine eng;
+    QScriptValue fun1 = eng.newFunction(storeCalledAsConstructor);
+    eng.globalObject().setProperty("fun1", fun1);
+    eng.evaluate("fun1();");
+    QVERIFY(!fun1.property("calledAsConstructor").toBool());
+    eng.evaluate("new fun1();");
+    QVERIFY(fun1.property("calledAsConstructor").toBool());
+}
+
+void tst_QScriptContext::calledAsConstructor_parentContext()
+{
+    QScriptEngine eng;
+    QScriptValue fun3 = eng.newFunction(storeCalledAsConstructorV3);
+    eng.globalObject().setProperty("fun3", fun3);
+    eng.evaluate("function test() { fun3() }");
+    eng.evaluate("test();");
+    QVERIFY(!fun3.property("calledAsConstructor").toBool());
+    eng.evaluate("new test();");
+    QVERIFY(fun3.property("calledAsConstructor").toBool());
 }
 
 static QScriptValue argumentsObjectInNative_test1(QScriptContext *ctx, QScriptEngine *eng)
@@ -1412,7 +1470,7 @@ void tst_QScriptContext::jsActivationObject()
     QScriptValue result2 = eng.evaluate("f3()");
     QEXPECT_FAIL("", "No activation object for js frames in v8", Abort);
     QVERIFY(result1.isObject());
-    QEXPECT_FAIL("", "JSC optimize away the activation object", Abort);
+    QEXPECT_FAIL("", "QTBUG-10313: JSC optimizes away the activation object", Abort);
     QCOMPARE(result1.property("v1").toInt32() , 42);
     QCOMPARE(result1.property("arguments").property(1).toString() , QString::fromLatin1("useless"));
     QVERIFY(result2.isObject());

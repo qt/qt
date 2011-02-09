@@ -44,73 +44,16 @@
 #ifndef QT_NO_CLIPBOARD
 
 #include "qmimedata.h"
-#include "qapplication.h"
+#include "private/qapplication_p.h"
+#include "qplatformclipboard_qpa.h"
 
 QT_BEGIN_NAMESPACE
 
 QT_USE_NAMESPACE
 
-
-class QClipboardData
-{
-public:
-    QClipboardData();
-   ~QClipboardData();
-
-    void setSource(QMimeData* s)
-    {
-        if (s == src)
-            return;
-        delete src;
-        src = s;
-    }
-    QMimeData* source()
-        { return src; }
-
-    void clear();
-
-private:
-    QMimeData* src;
-};
-
-QClipboardData::QClipboardData()
-{
-    src = 0;
-}
-
-QClipboardData::~QClipboardData()
-{
-    delete src;
-}
-
-void QClipboardData::clear()
-{
-    delete src;
-    src = 0;
-}
-
-
-static QClipboardData *internalCbData = 0;
-
-static void cleanupClipboardData()
-{
-    delete internalCbData;
-    internalCbData = 0;
-}
-
-static QClipboardData *clipboardData()
-{
-    if (internalCbData == 0) {
-        internalCbData = new QClipboardData;
-        qAddPostRoutine(cleanupClipboardData);
-    }
-    return internalCbData;
-}
-
-
 void QClipboard::clear(Mode mode)
 {
-    setText(QString(), mode);
+    setMimeData(0,mode);
 }
 
 
@@ -121,26 +64,25 @@ bool QClipboard::event(QEvent *e)
 
 const QMimeData* QClipboard::mimeData(Mode mode) const
 {
-    if (mode != Clipboard) return 0;
-
-    QClipboardData *d = clipboardData();
-    return d->source();
+    QPlatformClipboard *clipboard = QApplicationPrivate::platformIntegration()->clipboard();
+    if (!clipboard->supportsMode(mode)) return 0;
+    return clipboard->mimeData(mode);
 }
 
 void QClipboard::setMimeData(QMimeData* src, Mode mode)
 {
-    if (mode != Clipboard) return;
+    QPlatformClipboard *clipboard = QApplicationPrivate::platformIntegration()->clipboard();
+    if (!clipboard->supportsMode(mode)) return;
 
-    QClipboardData *d = clipboardData();
+    clipboard->setMimeData(src,mode);
 
-    d->setSource(src);
-
-    emitChanged(QClipboard::Clipboard);
+    emitChanged(mode);
 }
 
 bool QClipboard::supportsMode(Mode mode) const
 {
-    return (mode == Clipboard);
+    QPlatformClipboard *clipboard = QApplicationPrivate::platformIntegration()->clipboard();
+    return clipboard->supportsMode(mode);
 }
 
 bool QClipboard::ownsMode(Mode mode) const

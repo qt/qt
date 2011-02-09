@@ -54,6 +54,7 @@ public:
         GeometryChange,
         Enter,
         Leave,
+        ActivatedWindow,
         Mouse,
         Wheel,
         Key,
@@ -100,6 +101,14 @@ public:
             : WindowSystemEvent(Leave), leave(leave)
         { }
         QWeakPointer<QWidget> leave;
+    };
+
+    class ActivatedWindowEvent : public WindowSystemEvent {
+    public:
+        ActivatedWindowEvent(QWidget *activatedWindow)
+            : WindowSystemEvent(ActivatedWindow), activated(activatedWindow)
+        { }
+        QWeakPointer<QWidget> activated;
     };
 
     class UserEvent : public WindowSystemEvent {
