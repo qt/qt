@@ -1,6 +1,12 @@
 #!/usr/bin/perl
-#Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies)
-
+#############################################################################
+##
+## Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+## All rights reserved.
+## Contact: Nokia Corporation (qt-info@nokia.com)
+##
+## This file is part of the translations module of the Qt Toolkit.
+##
 ## $QT_BEGIN_LICENSE:LGPL$
 ## No Commercial Usage
 ## This file contains pre-release code and may not be distributed.
@@ -31,6 +37,8 @@
 ##
 ##
 ## $QT_END_LICENSE$
+##
+#############################################################################
 
 scalar(@ARGV) == 2 or die "Usage: $0 INFILE OUTFILE";
 my $inFile = $ARGV[0];
