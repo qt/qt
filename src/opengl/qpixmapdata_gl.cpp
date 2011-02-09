@@ -390,29 +390,29 @@ bool QGLPixmapData::fromFile(const QString &filename, const char *format,
     if (pixelType() == QPixmapData::BitmapType)
         return QPixmapData::fromFile(filename, format, flags);
     QFile file(filename);
-    if (!file.open(QIODevice::ReadOnly))
-        return false;
-    QByteArray data = file.peek(64);
-    bool alpha;
-    if (m_texture.canBindCompressedTexture
-            (data.constData(), data.size(), format, &alpha)) {
-        resize(0, 0);
-        data = file.readAll();
-        file.close();
-        QGLShareContextScope ctx(qt_gl_share_widget()->context());
-        QSize size = m_texture.bindCompressedTexture
-            (data.constData(), data.size(), format);
-        if (!size.isEmpty()) {
-            w = size.width();
-            h = size.height();
-            is_null = false;
-            d = 32;
-            m_hasAlpha = alpha;
-            m_source = QImage();
-            m_dirty = isValid();
-            return true;
+    if (file.open(QIODevice::ReadOnly)) {
+        QByteArray data = file.peek(64);
+        bool alpha;
+        if (m_texture.canBindCompressedTexture
+                (data.constData(), data.size(), format, &alpha)) {
+            resize(0, 0);
+            data = file.readAll();
+            file.close();
+            QGLShareContextScope ctx(qt_gl_share_widget()->context());
+            QSize size = m_texture.bindCompressedTexture
+                (data.constData(), data.size(), format);
+            if (!size.isEmpty()) {
+                w = size.width();
+                h = size.height();
+                is_null = false;
+                d = 32;
+                m_hasAlpha = alpha;
+                m_source = QImage();
+                m_dirty = isValid();
+                return true;
+            }
+            return false;
         }
-        return false;
     }
 
     QImage image = QImageReader(filename, format).read();
