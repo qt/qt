@@ -86,7 +86,6 @@ have a scope focused item), and the other items will have their focus cleared.
 // #define DIRTY_DEBUG
 
 QSGItem::UpdatePaintNodeData::UpdatePaintNodeData()
-: opacity(1)
 {
 }
 
@@ -846,9 +845,11 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
             Q_ASSERT(itemPriv->clipNode == 0);
             itemPriv->clipNode = new QSGClipNode(QRectF(0, 0, itemPriv->width, itemPriv->height));
 
-            parent->removeChildNode(child);
+            if (child)
+                parent->removeChildNode(child);
             parent->appendChildNode(itemPriv->clipNode);
-            itemPriv->clipNode->appendChildNode(child);
+            if (child)
+                itemPriv->clipNode->appendChildNode(child);
 
         } else {
             Q_ASSERT(itemPriv->clipNode != 0);

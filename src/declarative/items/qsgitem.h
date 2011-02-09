@@ -280,7 +280,6 @@ public:
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
 
     struct UpdatePaintNodeData {
-       qreal opacity;
     private:
        friend class QSGCanvasPrivate;
        UpdatePaintNodeData();

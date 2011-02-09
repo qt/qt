@@ -438,7 +438,6 @@ Node *ShaderEffectItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data
         node->setResolution(m_mesh_resolution);
 
     node->setRect(QRectF(0, 0, width(), height()));
-    node->setOpacity(data->opacity);
 
     if (m_dirtyData) {
         QList<QPair<QByteArray, QVariant> > values;

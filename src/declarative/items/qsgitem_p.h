@@ -619,7 +619,14 @@ Node *QSGItemPrivate::childContainerNode()
 {
     if (!groupNode) {
         groupNode = new Node();
-        itemNode()->appendChildNode(groupNode);
+
+
+        if (clipNode)
+            clipNode->appendChildNode(groupNode);
+        else if (opacityNode)
+            opacityNode->appendChildNode(groupNode);
+        else
+            itemNode()->appendChildNode(groupNode);
 #ifdef QML_RUNTIME_TESTING
         groupNode->description = QLatin1String("group");
 #endif
