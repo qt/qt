@@ -1152,7 +1152,7 @@ void QDeclarativePathViewPrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent 
         moveReason = QDeclarativePathViewPrivate::Mouse;
         qreal diff = (newPc - startPc)*modelCount*mappedRange;
         if (diff) {
-            setOffset(offset + diff);
+            q->setOffset(offset + diff);
 
             if (diff > modelCount/2)
                 diff -= modelCount;

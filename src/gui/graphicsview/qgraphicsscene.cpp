@@ -806,28 +806,23 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
     }
 
     if (focusItem) {
-        QFocusEvent event(QEvent::FocusOut, focusReason);
         lastFocusItem = focusItem;
-        focusItem = 0;
-        sendEvent(lastFocusItem, &event);
 
 #ifndef QT_NO_IM
         if (lastFocusItem
             && (lastFocusItem->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
-            // Reset any visible preedit text
-            QInputMethodEvent imEvent;
-            sendEvent(lastFocusItem, &imEvent);
-
             // Close any external input method panel. This happens
             // automatically by removing WA_InputMethodEnabled on
             // the views, but if we are changing focus, we have to
             // do it ourselves.
-            if (item) {
-                for (int i = 0; i < views.size(); ++i)
-                    if (views.at(i)->inputContext())
-                        views.at(i)->inputContext()->reset();
-            }
+            for (int i = 0; i < views.size(); ++i)
+                if (views.at(i)->inputContext())
+                    views.at(i)->inputContext()->reset();
         }
+
+        focusItem = 0;
+        QFocusEvent event(QEvent::FocusOut, focusReason);
+        sendEvent(lastFocusItem, &event);
 #endif //QT_NO_IM
     }
 

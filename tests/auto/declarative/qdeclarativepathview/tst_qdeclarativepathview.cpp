@@ -89,6 +89,7 @@ private slots:
     void pathUpdate();
     void visualDataModel();
     void undefinedPath();
+    void mouseDrag();
 
 private:
     QDeclarativeView *createView();
@@ -865,6 +866,38 @@ void tst_QDeclarativePathView::undefinedPath()
     QCOMPARE(obj->count(), 3);
 
     delete obj;
+}
+
+void tst_QDeclarativePathView::mouseDrag()
+{
+    QDeclarativeView *canvas = createView();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/dragpath.qml"));
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QDeclarativePathView *pathview = qobject_cast<QDeclarativePathView*>(canvas->rootObject());
+    QVERIFY(pathview != 0);
+
+    int current = pathview->currentIndex();
+
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(10,100)));
+
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(30,100)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(90,100)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+
+    QVERIFY(pathview->currentIndex() != current);
+
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(40,100)));
+
+    delete canvas;
 }
 
 QDeclarativeView *tst_QDeclarativePathView::createView()
