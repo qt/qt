@@ -234,7 +234,9 @@ inline QScriptContextPrivate* QScriptEnginePrivate::setCurrentQSContext(QScriptC
 
 inline v8::Handle<v8::Object> QScriptEnginePrivate::globalObject() const
 {
-    return m_v8Context->Global();
+    //in V8, the Global object is a proxy to the prototype, which is the real global object.
+    // See http://code.google.com/p/v8/issues/detail?id=1078
+    return v8::Handle<v8::Object>::Cast(m_v8Context->Global()->GetPrototype());
 }
 
 inline QScriptEnginePrivate::Exception::Exception() {}
