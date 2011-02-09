@@ -292,7 +292,7 @@ bool QMLRenderer::isSortFrontToBackEnabled() const
 
 void QMLRenderer::buildLists(Node *node)
 {
-    if (!node->isSubtreeEnabled() || node->isSubtreeBlocked())
+    if (node->isSubtreeBlocked())
         return;
 
     Geometry *g = 0;
@@ -420,7 +420,7 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
 #ifdef FORCE_NO_REORDER
             glDepthMask(false);
 #else
-            glDepthMask((material->flags() & AbstractMaterial::Blending) == 0);
+            glDepthMask((material->flags() & AbstractMaterial::Blending) == 0 && m_render_opacity == 1);
 #endif
             //++clipChangeCount;
         }
