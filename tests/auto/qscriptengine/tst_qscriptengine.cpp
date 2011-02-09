@@ -344,8 +344,8 @@ void tst_QScriptEngine::newFunction()
             QScriptValue prot = fun.property("prototype", QScriptValue::ResolveLocal);
             QVERIFY(prot.isObject());
             QVERIFY(prot.property("constructor").strictlyEquals(fun));
-            QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable);
-            QCOMPARE(prot.propertyFlags("constructor"), QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+            QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+            QCOMPARE(prot.propertyFlags("constructor"), QScriptValue::SkipInEnumeration);
         }
         // prototype should be Function.prototype
         QCOMPARE(fun.prototype().isValid(), true);
@@ -369,8 +369,8 @@ void tst_QScriptEngine::newFunctionWithArg()
             QScriptValue prot = fun.property("prototype", QScriptValue::ResolveLocal);
             QVERIFY(prot.isObject());
             QVERIFY(prot.property("constructor").strictlyEquals(fun));
-            QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable);
-            QCOMPARE(prot.propertyFlags("constructor"), QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+            QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+            QCOMPARE(prot.propertyFlags("constructor"), QScriptValue::SkipInEnumeration);
         }
         // prototype should be Function.prototype
         QCOMPARE(fun.prototype().isValid(), true);
@@ -397,10 +397,9 @@ void tst_QScriptEngine::newFunctionWithProto()
         QCOMPARE(fun.prototype().strictlyEquals(eng.evaluate("Function.prototype")), true);
         // public prototype should be the one we passed
         QCOMPARE(fun.property("prototype").strictlyEquals(proto), true);
-        QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable);
+        QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
         QCOMPARE(proto.property("constructor").strictlyEquals(fun), true);
-        QCOMPARE(proto.propertyFlags("constructor"),
-                 QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+        QCOMPARE(proto.propertyFlags("constructor"), QScriptValue::SkipInEnumeration);
 
         QCOMPARE(fun.call().isNull(), true);
         QCOMPARE(fun.construct().isObject(), true);
