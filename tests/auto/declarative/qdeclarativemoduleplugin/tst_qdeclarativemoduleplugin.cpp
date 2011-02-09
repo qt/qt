@@ -55,6 +55,7 @@ public:
 private slots:
     void importsPlugin();
     void incorrectPluginCase();
+    void importPluginWithQmlFile();
 };
 
 #ifdef Q_OS_SYMBIAN
@@ -143,6 +144,19 @@ void tst_qdeclarativemoduleplugin::incorrectPluginCase()
 #endif
 
     QCOMPARE(errors.at(0).description(), expectedError);
+}
+
+void tst_qdeclarativemoduleplugin::importPluginWithQmlFile()
+{
+    QDeclarativeEngine engine;
+    engine.addImportPath(QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("imports"));
+    QDeclarativeComponent component(&engine, TEST_FILE("data/pluginWithQmlFile.qml"));
+    foreach (QDeclarativeError err, component.errors())
+        qWarning() << err;
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    delete object;
 }
 
 QTEST_MAIN(tst_qdeclarativemoduleplugin)

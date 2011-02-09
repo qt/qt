@@ -1,6 +1,6 @@
 QT = core
 TEMPLATE = subdirs
-SUBDIRS = plugin pluginWrongCase
+SUBDIRS = plugin pluginWithQmlFile pluginWrongCase
 tst_qdeclarativemoduleplugin_pro.depends += plugin
 SUBDIRS += tst_qdeclarativemoduleplugin.pro
 
