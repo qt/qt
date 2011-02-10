@@ -20,7 +20,10 @@ include(models/models.pri)
 symbian: {
     TARGET.UID3=0x2001E61D
 
-    # Workaroud for problems with paging this dll
-    MMP_RULES -= PAGED
-    MMP_RULES *= UNPAGED
+    # Problems using data exports from this DLL mean that we can't page it on releases that don't support
+    # data exports (currently that's any release before Symbian^3)
+    pagingBlock = "$${LITERAL_HASH}ifndef SYMBIAN_DLL_DATA_EXPORTS_SUPPORTED" \
+                  "UNPAGED" \
+                  "$${LITERAL_HASH}endif"
+    MMP_RULES += pagingBlock
 }

@@ -672,7 +672,9 @@ QDeclarativeColorAnimation::~QDeclarativeColorAnimation()
 
     \qml
     Item {
-        states: [ ... ]
+        states: [
+            // States are defined here...
+        ]
 
         transition: Transition {
             NumberAnimation { from: "#c0c0c0"; duration: 2000 }
@@ -725,40 +727,29 @@ void QDeclarativeColorAnimation::setTo(const QColor &t)
 
 /*!
     \qmlclass ScriptAction QDeclarativeScriptAction
-  \ingroup qml-animation-transition
+    \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The ScriptAction element allows scripts to be run during an animation.
 
-    ScriptAction can be used to run script at a specific point in an animation.
+    ScriptAction can be used to run a script at a specific point in an animation.
 
     \qml
     SequentialAnimation {
-        NumberAnimation { ... }
+        NumberAnimation {
+            // ...
+        }
         ScriptAction { script: doSomething(); }
-        NumberAnimation { ... }
+        NumberAnimation {
+            // ...
+        }
     }
     \endqml
 
     When used as part of a Transition, you can also target a specific
     StateChangeScript to run using the \c scriptName property.
 
-    \qml
-    State {
-        StateChangeScript {
-            name: "myScript"
-            script: doStateStuff();
-        }
-    }
-    ...
-    Transition {
-        SequentialAnimation {
-            NumberAnimation { ... }
-            ScriptAction { scriptName: "myScript" }
-            NumberAnimation { ... }
-        }
-    }
-    \endqml
+    \snippet doc/src/snippets/declarative/states/statechangescript.qml state and transition
 
     \sa StateChangeScript
 */
@@ -870,7 +861,7 @@ QAbstractAnimation *QDeclarativeScriptAction::qtAnimation()
 
 /*!
     \qmlclass PropertyAction QDeclarativePropertyAction
-  \ingroup qml-animation-transition
+    \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The PropertyAction element allows immediate property changes during animation.
@@ -896,21 +887,14 @@ QAbstractAnimation *QDeclarativeScriptAction::qtAnimation()
     However, with this code, the \c transformOrigin is not set until \e after
     the animation, as a \l State is taken to define the values at the \e end of
     a transition. The animation would rotate at the default \c transformOrigin,
-    then jump to \c Item.BottomRight. To fix this, insert a PropertyChanges 
+    then jump to \c Item.BottomRight. To fix this, insert a PropertyAction
     before the RotationAnimation begins:
 
-    \qml
-    transitions: Transition {
-        SequentialAnimation {
-            PropertyAction { target: rect; property: "transformOrigin" }
-            RotationAnimation { ... }
-        }
-    }
-    \endqml
+    \snippet doc/src/snippets/declarative/propertyaction-sequential.qml sequential
     
     This immediately sets the \c transformOrigin property to the value defined
     in the end state of the \l Transition (i.e. the value defined in the 
-    PropertyChanges object) so that the rotation animation begins with the
+    PropertyAction object) so that the rotation animation begins with the
     correct transform origin.
 
     \sa {QML Animation}, QtDeclarative
@@ -1195,7 +1179,9 @@ void QDeclarativeNumberAnimation::init()
 
     \qml
     Item {
-        states: [ ... ]
+        states: [
+            // ...
+        ]
 
         transition: Transition {
             NumberAnimation { properties: "x"; from: 100; duration: 200 }
@@ -1421,7 +1407,9 @@ QDeclarativeRotationAnimation::~QDeclarativeRotationAnimation()
 
     \qml
     Item {
-        states: [ ... ]
+        states: [
+            // ...
+        ]
 
         transition: Transition {
             RotationAnimation { properties: "angle"; from: 100; duration: 2000 }
@@ -2253,7 +2241,7 @@ void QDeclarativePropertyAnimation::setProperties(const QString &prop)
            width: 100; height: 100
            color: Qt.rgba(0,0,1)
            //need to explicitly specify target and property
-           NumberAnimation { id: theAnim; target: theRect; property: "x" to: 500 }
+           NumberAnimation { id: theAnim; target: theRect; property: "x"; to: 500 }
            MouseArea {
                anchors.fill: parent
                onClicked: theAnim.start()
@@ -2555,7 +2543,7 @@ void QDeclarativeParentAnimation::setNewParent(QDeclarativeItem *newParent)
     ParentAnimation {
         target: myItem
         via: topLevelItem
-        ...
+        // ...
     }
     \endqml
 */
