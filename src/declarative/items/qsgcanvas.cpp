@@ -856,9 +856,11 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
     bool childrenChanged = dirty & QSGItemPrivate::ChildrenUpdateMask;
 
     if (clipEffectivelyChanged || effectRefEffectivelyChanged || childrenChanged) {
-        Node *childContainerNode = itemPriv->childContainerNode();
-        for (int count = childContainerNode->childCount(); count; --count)
-            childContainerNode->removeChildNode(childContainerNode->childAtIndex(0));
+        Node *groupNode = itemPriv->groupNode;
+        if (groupNode) {
+            for (int count = groupNode->childCount(); count; --count)
+                groupNode->removeChildNode(groupNode->childAtIndex(0));
+        }
     }
 
     if (clipEffectivelyChanged) {
@@ -877,9 +879,13 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
 
         } else {
             Q_ASSERT(itemPriv->clipNode != 0);
+            parent->removeChildNode(itemPriv->clipNode);
+            if (child)
+                itemPriv->clipNode->removeChildNode(child);
             delete itemPriv->clipNode;
             itemPriv->clipNode = 0;
-            parent->appendChildNode(child);
+            if (child)
+                parent->appendChildNode(child);
         }
     }
 
@@ -904,12 +910,16 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
                 parent->removeChildNode(child);
             parent->appendChildNode(itemPriv->rootNode);
             if (child)
-                itemPriv->clipNode->appendChildNode(child);
+                itemPriv->rootNode->appendChildNode(child);
         } else {
             Q_ASSERT(itemPriv->rootNode != 0);
+            parent->removeChildNode(itemPriv->rootNode);
+            if (child)
+                itemPriv->rootNode->removeChildNode(child);
             delete itemPriv->rootNode;
             itemPriv->rootNode = 0;
-            parent->appendChildNode(child);
+            if (child)
+                parent->appendChildNode(child);
         }
     }
 

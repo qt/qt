@@ -509,7 +509,6 @@ Node *TextureItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 
     node->setTargetRect(QRectF(0, 0, width(), height()));
     node->setSourceRect(QRectF(0, 1, 1, -1));
-    node->setOpacity(data->opacity);
     node->update();
 
     return node;
