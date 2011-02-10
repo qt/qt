@@ -38,7 +38,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#define DBUS_API_SUBJECT_TO_CHANGE
 #include <QtCore/QtCore>
 #include <QtTest/QtTest>
 #include <QtDBus/QtDBus>
@@ -46,6 +45,8 @@
 
 #include "common.h"
 #include <limits>
+
+#include <dbus/dbus.h>
 
 static const char serviceName[] = "com.trolltech.autotests.qpong";
 static const char objectPath[] = "/com/trolltech/qpong";
@@ -87,6 +88,9 @@ private slots:
     void sendSignalErrors();
     void sendCallErrors_data();
     void sendCallErrors();
+
+    void receiveUnknownType_data();
+    void receiveUnknownType();
 
 private:
     QProcess proc;
@@ -936,6 +940,107 @@ void tst_QDBusMarshall::sendCallErrors()
     QCOMPARE(reply.type(), QDBusMessage::ErrorMessage);
     QTEST(reply.errorName(), "errorName");
     QCOMPARE(reply.errorMessage(), errorMsg);
+}
+
+void tst_QDBusMarshall::receiveUnknownType_data()
+{
+    QTest::newRow("in-call");
+    QTest::newRow("type-variant");
+    QTest::newRow("type-array");
+    QTest::newRow("type-struct");
+    QTest::newRow("type-naked");
+}
+
+void tst_QDBusMarshall::receiveUnknownType()
+{
+#ifndef DBUS_TYPE_UNIX_FD
+    QSKIP("Your system's D-Bus library is too old for this test", SkipAll);
+#else
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
+
+    // this needs to be implemented in raw
+    // open a new connection to the bus daemon
+    DBusError error;
+    dbus_error_init(&error);
+    DBusConnection *rawcon = dbus_bus_get_private(DBUS_BUS_SESSION, &error);
+    QVERIFY2(rawcon, error.name);
+
+    // check if this bus supports passing file descriptors
+    if (!dbus_connection_can_send_type(rawcon, DBUS_TYPE_UNIX_FD))
+        QSKIP("Your session bus does not allow sending Unix file descriptors", SkipAll);
+
+    if (qstrcmp(QTest::currentDataTag(), "in-call") == 0) {
+        // create a call back to us containing a file descriptor
+        DBusMessage *msg = dbus_message_new_method_call(con.baseService().toLatin1(), "/irrelevant/path", NULL, "irrelevantMethod");
+
+        int fd = fileno(stdout);
+        dbus_message_append_args(msg, DBUS_TYPE_UNIX_FD, &fd, DBUS_TYPE_INVALID);
+
+        // try to send to us
+        DBusPendingCall *pending;
+        dbus_connection_send_with_reply(rawcon, msg, &pending, 1000);
+        dbus_message_unref(msg);
+
+        // check that it got sent
+        while (dbus_connection_dispatch(rawcon) == DBUS_DISPATCH_DATA_REMAINS)
+            ;
+
+        // now spin our event loop. We don't catch this call, so let's get the reply
+        QEventLoop loop;
+        QTimer::singleShot(200, &loop, SLOT(quit()));
+        loop.exec();
+
+        // now try to receive the reply
+        dbus_pending_call_block(pending);
+        msg = dbus_pending_call_steal_reply(pending);
+        dbus_pending_call_unref(pending);
+        QVERIFY(msg);
+        QCOMPARE(dbus_message_get_type(msg), DBUS_MESSAGE_TYPE_ERROR);
+        QCOMPARE(dbus_message_get_error_name(msg), "org.freedesktop.DBus.Error.UnknownObject");
+        qDebug() << dbus_message_get_signature(msg);
+    } else {
+        // create a signal that we'll emit
+        static const char signalName[] = "signalName";
+        static const char interfaceName[] = "local.interface.name";
+        DBusMessage *msg = dbus_message_new_signal("/", interfaceName, signalName);
+        con.connect(dbus_bus_get_unique_name(rawcon), QString(), interfaceName, signalName, &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+        DBusMessageIter iter;
+        dbus_message_iter_init_append(msg, &iter);
+        int fd = fileno(stdout);
+
+        if (qstrcmp(QTest::currentDataTag(), "type-naked") == 0) {
+            // send naked
+            dbus_message_iter_append_basic(&iter, DBUS_TYPE_UNIX_FD, &fd);
+        } else {
+            DBusMessageIter subiter;
+            if (qstrcmp(QTest::currentDataTag(), "type-variant") == 0)
+                dbus_message_iter_open_container(&iter, DBUS_TYPE_VARIANT, DBUS_TYPE_UNIX_FD_AS_STRING, &subiter);
+            else if (qstrcmp(QTest::currentDataTag(), "type-array") == 0)
+                dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, DBUS_TYPE_UNIX_FD_AS_STRING, &subiter);
+            else if (qstrcmp(QTest::currentDataTag(), "type-struct") == 0)
+                dbus_message_iter_open_container(&iter, DBUS_TYPE_STRUCT, 0, &subiter);
+            dbus_message_iter_append_basic(&subiter, DBUS_TYPE_UNIX_FD, &fd);
+            dbus_message_iter_close_container(&iter, &subiter);
+        }
+
+        // send it
+        dbus_connection_send(rawcon, msg, 0);
+        dbus_message_unref(msg);
+
+        // check that it got sent
+        while (dbus_connection_dispatch(rawcon) == DBUS_DISPATCH_DATA_REMAINS)
+            ;
+
+        // now let's see what happens
+        QTestEventLoop::instance().enterLoop(1);
+        QVERIFY(!QTestEventLoop::instance().timeout());
+    }
+
+    dbus_connection_close(rawcon);
+    dbus_connection_unref(rawcon);
+#endif
 }
 
 QTEST_MAIN(tst_QDBusMarshall)

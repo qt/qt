@@ -235,7 +235,12 @@ QVariant QDBusDemarshaller::toVariantInternal()
 //        qWarning("QDBusDemarshaller: Found unknown D-Bus type %d '%c'",
 //                 q_dbus_message_iter_get_arg_type(&iterator),
 //                 q_dbus_message_iter_get_arg_type(&iterator));
-        return QVariant();
+        char *ptr = 0;
+        ptr += q_dbus_message_iter_get_arg_type(&iterator);
+        q_dbus_message_iter_next(&iterator);
+
+        // I hope you never dereference this pointer!
+        return QVariant::fromValue<void *>(ptr);
         break;
     };
 }
