@@ -911,6 +911,8 @@ QXcbKeyboard::~QXcbKeyboard()
     xcb_key_symbols_free(m_key_symbols);
 }
 
+// #define XCB_KEYBOARD_DEBUG
+
 void QXcbKeyboard::handleKeyEvent(QWidget *widget, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time)
 {
     int col = state & XCB_MOD_MASK_SHIFT ? 1 : 0;
@@ -919,7 +921,17 @@ void QXcbKeyboard::handleKeyEvent(QWidget *widget, QEvent::Type type, xcb_keycod
     if (state & 128)
         col += altGrOffset;
 
+#ifdef XCB_KEYBOARD_DEBUG
+    printf("key code: %d, state: %d, syms: ", code, state);
+    for (int i = 0; i <= 5; ++i) {
+        printf("%d ", xcb_key_symbols_get_keysym(m_key_symbols, code, i));
+    }
+    printf("\n");
+#endif
+
     xcb_keysym_t sym = xcb_key_symbols_get_keysym(m_key_symbols, code, col);
+    if (sym == XCB_NO_SYMBOL)
+        sym = xcb_key_symbols_get_keysym(m_key_symbols, code, col ^ 0x1);
 
     if (state & XCB_MOD_MASK_LOCK && sym <= 0x7f && isprint(sym)) {
         if (isupper(sym))
