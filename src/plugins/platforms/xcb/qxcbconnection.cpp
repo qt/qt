@@ -124,6 +124,51 @@ break;
 } \
 break;
 
+void unhandledXcbEventError(xcb_generic_event_t *event)
+{
+#define UNHANDLED_XCB_EVENT(event) \
+    case event: \
+        printf("Unhandled XCB event: %d - %s\n", event, #event); \
+        break;
+
+    switch (event->response_type & ~0x80) {
+    UNHANDLED_XCB_EVENT(XCB_KEY_PRESS);
+    UNHANDLED_XCB_EVENT(XCB_KEY_RELEASE);
+    UNHANDLED_XCB_EVENT(XCB_BUTTON_PRESS);
+    UNHANDLED_XCB_EVENT(XCB_BUTTON_RELEASE);
+    UNHANDLED_XCB_EVENT(XCB_MOTION_NOTIFY);
+    UNHANDLED_XCB_EVENT(XCB_ENTER_NOTIFY);
+    UNHANDLED_XCB_EVENT(XCB_LEAVE_NOTIFY);
+    UNHANDLED_XCB_EVENT(XCB_FOCUS_IN);
+    UNHANDLED_XCB_EVENT(XCB_FOCUS_OUT);
+    UNHANDLED_XCB_EVENT(XCB_KEYMAP_NOTIFY);
+    UNHANDLED_XCB_EVENT(XCB_EXPOSE);
+    UNHANDLED_XCB_EVENT(XCB_GRAPHICS_EXPOSURE);
+    UNHANDLED_XCB_EVENT(XCB_VISIBILITY_NOTIFY);
+    UNHANDLED_XCB_EVENT(XCB_CREATE_NOTIFY);
+    UNHANDLED_XCB_EVENT(XCB_DESTROY_NOTIFY);
+    UNHANDLED_XCB_EVENT(XCB_UNMAP_NOTIFY);
+    UNHANDLED_XCB_EVENT(XCB_MAP_NOTIFY);
+    UNHANDLED_XCB_EVENT(XCB_MAP_REQUEST);
+    UNHANDLED_XCB_EVENT(XCB_REPARENT_NOTIFY);
+    UNHANDLED_XCB_EVENT(XCB_CONFIGURE_NOTIFY);
+    UNHANDLED_XCB_EVENT(XCB_CONFIGURE_REQUEST);
+    UNHANDLED_XCB_EVENT(XCB_GRAVITY_NOTIFY);
+    UNHANDLED_XCB_EVENT(XCB_RESIZE_REQUEST);
+    UNHANDLED_XCB_EVENT(XCB_CIRCULATE_NOTIFY);
+    UNHANDLED_XCB_EVENT(XCB_CIRCULATE_REQUEST);
+    UNHANDLED_XCB_EVENT(XCB_PROPERTY_NOTIFY);
+    UNHANDLED_XCB_EVENT(XCB_SELECTION_CLEAR);
+    UNHANDLED_XCB_EVENT(XCB_SELECTION_REQUEST);
+    UNHANDLED_XCB_EVENT(XCB_SELECTION_NOTIFY);
+    UNHANDLED_XCB_EVENT(XCB_COLORMAP_NOTIFY);
+    UNHANDLED_XCB_EVENT(XCB_CLIENT_MESSAGE);
+    UNHANDLED_XCB_EVENT(XCB_MAPPING_NOTIFY);
+    default:
+        printf("Unhandled XCB event: %d - %s\n", event->response_type, "unknown");
+    }
+}
+
 void QXcbConnection::eventDispatcher()
 {
     while (xcb_generic_event_t *event = xcb_poll_for_event(xcb_connection())) {
@@ -156,6 +201,7 @@ void QXcbConnection::eventDispatcher()
             m_keyboard->handleMappingNotifyEvent((xcb_mapping_notify_event_t *)event);
             break;
         default:
+            unhandledXcbEventError(event);
             break;
         }
     }
