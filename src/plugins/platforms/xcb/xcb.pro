@@ -31,7 +31,7 @@ contains(DEFINES, XCB_USE_XLIB_FOR_GLX) {
     LIBS += -lX11 -lX11-xcb
 }
 
-LIBS += -lxcb -lxcb-image -lxcb-keysyms
+LIBS += -lxcb -lxcb-image -lxcb-keysyms -lxcb-icccm
 
 include (../fontdatabases/genericunix/genericunix.pri)
 

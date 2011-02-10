@@ -44,6 +44,8 @@
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
 
+#include <xcb/xcb_icccm.h>
+
 #include <private/qapplication_p.h>
 #include <private/qwindowsurface_p.h>
 
@@ -183,10 +185,27 @@ void QXcbWindow::setGeometry(const QRect &rect)
 
 void QXcbWindow::setVisible(bool visible)
 {
+    xcb_wm_hints_t hints;
     if (visible) {
+        if (widget()->isMinimized())
+            xcb_wm_hints_set_iconic(&hints);
+        else
+            xcb_wm_hints_set_normal(&hints);
+        xcb_set_wm_hints(xcb_connection(), m_window, &hints);
         xcb_map_window(xcb_connection(), m_window);
     } else {
         xcb_unmap_window(xcb_connection(), m_window);
+
+        // send synthetic UnmapNotify event according to icccm 4.1.4
+        xcb_unmap_notify_event_t event;
+        event.response_type = XCB_UNMAP_NOTIFY;
+        event.sequence = 0; // does this matter?
+        event.event = m_screen->root();
+        event.window = m_window;
+        event.from_configure = false;
+        xcb_send_event(xcb_connection(), false, m_screen->root(),
+                       XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&event);
+
         xcb_flush(xcb_connection());
     }
 }
