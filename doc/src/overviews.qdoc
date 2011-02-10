@@ -173,7 +173,7 @@
     \o \l{QML Basic Elements}{Basic Elements}
     \o \l{Using QML Positioner and Repeater Items}{Component Layouts}
     \o \l{Anchor-based Layout in QML}{Layouts using Anchors}
-    \o \l{Mouse Events}
+    \o \l{QML Mouse Events}{Mouse Events}
     \o \l{QML Text Handling and Validators}{Text Handling and Validators}
     \o \l{Keyboard Focus in QML}{Keyboard Focus}
     \o \l{Importing Reusable Components}
