@@ -57,6 +57,19 @@
 #include "qglxintegration.h"
 #endif
 
+// Returns true if we should set WM_TRANSIENT_FOR on \a w
+static inline bool isTransient(const QWidget *w)
+{
+    return ((w->windowType() == Qt::Dialog
+             || w->windowType() == Qt::Sheet
+             || w->windowType() == Qt::Tool
+             || w->windowType() == Qt::SplashScreen
+             || w->windowType() == Qt::ToolTip
+             || w->windowType() == Qt::Drawer
+             || w->windowType() == Qt::Popup)
+            && !w->testAttribute(Qt::WA_X11BypassTransientForHint));
+}
+
 QXcbWindow::QXcbWindow(QWidget *tlw)
     : QPlatformWindow(tlw)
 #ifdef XCB_USE_XLIB_FOR_GLX
@@ -141,6 +154,16 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
                         32,
                         propertyCount,
                         properties);
+
+    if (isTransient(tlw) && tlw->parentWidget()) {
+        // ICCCM 4.1.2.6
+        QWidget *p = tlw->parentWidget()->window();
+        xcb_window_t parentWindow = p->winId();
+        xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                            XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 32,
+                            1, &parentWindow);
+
+    }
 }
 
 QXcbWindow::~QXcbWindow()
