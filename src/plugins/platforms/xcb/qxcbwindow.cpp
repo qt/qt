@@ -130,6 +130,8 @@ void QXcbWindow::setVisible(bool visible)
         xcb_map_window(xcb_connection(), m_window);
     else
         xcb_unmap_window(xcb_connection(), m_window);
+
+    xcb_flush(xcb_connection());
 }
 
 struct QtMWMHints {
