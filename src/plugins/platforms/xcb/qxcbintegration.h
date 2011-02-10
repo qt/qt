@@ -65,6 +65,7 @@ public:
     QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 
     QPlatformFontDatabase *fontDatabase() const;
+    bool hasOpenGL() const;
 
 private:
     QList<QPlatformScreen *> m_screens;

@@ -49,19 +49,33 @@
 
 #include <stdio.h>
 
+#ifdef XCB_USE_XLIB_FOR_GLX
+#include <X11/Xlib.h>
+#include <X11/Xlib-xcb.h>
+#endif
+
 QXcbConnection::QXcbConnection(const char *displayName)
     : m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
 {
-    int primaryScreen;
+    int primaryScreen = 0;
 
+#ifdef XCB_USE_XLIB_FOR_GLX
+    Display *dpy = XOpenDisplay(m_displayName.constData());
+    primaryScreen = DefaultScreen(dpy);
+    m_connection = XGetXCBConnection(dpy);
+    XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
+    m_xlib_display = dpy;
+#else
     m_connection = xcb_connect(m_displayName.constData(), &primaryScreen);
+#endif
 
     m_setup = xcb_get_setup(xcb_connection());
 
     xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_setup);
 
+    int screenNumber = 0;
     while (it.rem) {
-        m_screens << new QXcbScreen(this, it.data);
+        m_screens << new QXcbScreen(this, it.data, screenNumber++);
         xcb_screen_next(&it);
     }
 
@@ -77,7 +91,11 @@ QXcbConnection::~QXcbConnection()
 {
     qDeleteAll(m_screens);
 
+#ifdef XCB_USE_XLIB_FOR_GLX
+    XCloseDisplay((Display *)m_xlib_display);
+#else
     xcb_disconnect(xcb_connection());
+#endif
 
     delete m_keyboard;
 }

@@ -21,6 +21,16 @@ HEADERS = \
         qxcbwindow.h \
         qxcbwindowsurface.h
 
+contains(QT_CONFIG, opengl):DEFINES += XCB_USE_XLIB_FOR_GLX
+
+contains(DEFINES, XCB_USE_XLIB_FOR_GLX) {
+    QT += opengl
+
+    HEADERS += qglxintegration.h
+    SOURCES += qglxintegration.cpp
+    LIBS += -lX11 -lX11-xcb
+}
+
 LIBS += -lxcb -lxcb-image -lxcb-keysyms
 
 include (../fontdatabases/genericunix/genericunix.pri)

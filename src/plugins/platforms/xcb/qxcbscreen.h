@@ -53,7 +53,7 @@ class QXcbConnection;
 class QXcbScreen : public QXcbObject, public QPlatformScreen
 {
 public:
-    QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen);
+    QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int number);
     ~QXcbScreen();
 
     QRect geometry() const;
@@ -61,11 +61,14 @@ public:
     QImage::Format format() const;
     QSize physicalSize() const;
 
+    int screenNumber() const;
+
     xcb_screen_t *screen() const { return m_screen; }
     xcb_window_t root() const { return m_screen->root; }
 
 private:
     xcb_screen_t *m_screen;
+    int m_number;
 };
 
 #endif

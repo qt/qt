@@ -48,6 +48,7 @@
 
 #include "qxcbobject.h"
 
+class QGLXContext;
 class QXcbScreen;
 
 class QXcbWindow : public QXcbObject, public QPlatformWindow
@@ -69,7 +70,7 @@ public:
 
     void requestActivateWindow();
 
-    QPlatformGLContext *glContext() const { return 0; }
+    QPlatformGLContext *glContext() const;
 
     xcb_window_t window() const { return m_window; }
 
@@ -91,6 +92,9 @@ private:
     QXcbScreen *m_screen;
 
     xcb_window_t m_window;
+#ifdef XCB_USE_XLIB_FOR_GLX
+    QGLXContext *m_glx_context;
+#endif
 };
 
 #endif

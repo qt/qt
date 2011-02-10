@@ -44,14 +44,24 @@
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
 
+#include <private/qapplication_p.h>
 #include <private/qwindowsurface_p.h>
 
 #include <QtGui/QWindowSystemInterface>
 
 #include <stdio.h>
 
+#ifdef XCB_USE_XLIB_FOR_GLX
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include "qglxintegration.h"
+#endif
+
 QXcbWindow::QXcbWindow(QWidget *tlw)
     : QPlatformWindow(tlw)
+#ifdef XCB_USE_XLIB_FOR_GLX
+    , m_glx_context(0)
+#endif
 {
     m_screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(tlw));
 
@@ -75,20 +85,44 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
         | XCB_EVENT_MASK_FOCUS_CHANGE
     };
 
-    m_window = xcb_generate_id(xcb_connection());
-    xcb_create_window(xcb_connection(),
-                      XCB_COPY_FROM_PARENT,            // depth -- same as root
-                      m_window,                        // window id
-                      m_screen->root(),                // parent window id
-                      tlw->x(),
-                      tlw->y(),
-                      tlw->width(),
-                      tlw->height(),
-                      0,                               // border width
-                      XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
-                      m_screen->screen()->root_visual, // visual
-                      mask,                            // value mask
-                      values);                         // value list
+#ifdef XCB_USE_XLIB_FOR_GLX
+    if (tlw->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
+       && QApplicationPrivate::platformIntegration()->hasOpenGL() ) {
+            XVisualInfo *visualInfo = QGLXContext::findVisualInfo(m_screen, tlw->platformWindowFormat());
+            if (visualInfo) {
+                Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(this), m_screen->root(), visualInfo->visual, AllocNone);
+
+                XSetWindowAttributes a;
+                a.colormap = cmap;
+                m_window = XCreateWindow(DISPLAY_FROM_XCB(this), m_screen->root(), tlw->x(), tlw->y(), tlw->width(), tlw->height(),
+                                          0, visualInfo->depth, InputOutput, visualInfo->visual,
+                                          CWColormap, &a);
+
+                printf("created GL window: %d\n", m_window);
+            } else {
+                qFatal("no window!");
+            }
+    } else
+#endif
+    {
+        m_window = xcb_generate_id(xcb_connection());
+
+        xcb_create_window(xcb_connection(),
+                          XCB_COPY_FROM_PARENT,            // depth -- same as root
+                          m_window,                        // window id
+                          m_screen->root(),                // parent window id
+                          tlw->x(),
+                          tlw->y(),
+                          tlw->width(),
+                          tlw->height(),
+                          0,                               // border width
+                          XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
+                          m_screen->screen()->root_visual, // visual
+                          mask,                            // value mask
+                          values);                         // value list
+
+        printf("created regular window: %d\n", m_window);
+    }
 
     xcb_atom_t properties[4];
     int propertyCount = 0;
@@ -126,12 +160,12 @@ void QXcbWindow::setGeometry(const QRect &rect)
 
 void QXcbWindow::setVisible(bool visible)
 {
-    if (visible)
+    if (visible) {
         xcb_map_window(xcb_connection(), m_window);
-    else
+    } else {
         xcb_unmap_window(xcb_connection(), m_window);
-
-    xcb_flush(xcb_connection());
+        xcb_flush(xcb_connection());
+    }
 }
 
 struct QtMWMHints {
@@ -315,6 +349,25 @@ void QXcbWindow::lower()
 void QXcbWindow::requestActivateWindow()
 {
     xcb_set_input_focus(xcb_connection(), m_window, XCB_INPUT_FOCUS_PARENT, XCB_TIME_CURRENT_TIME);
+}
+
+QPlatformGLContext *QXcbWindow::glContext() const
+{
+#ifdef XCB_USE_XLIB_FOR_GLX
+    if (!QApplicationPrivate::platformIntegration()->hasOpenGL()) {
+        printf("no opengl\n");
+        return 0;
+    }
+
+    if (!m_glx_context) {
+        QXcbWindow *that = const_cast<QXcbWindow *>(this);
+        that->m_glx_context = new QGLXContext(m_window, m_screen, widget()->platformWindowFormat());
+    }
+
+    return m_glx_context;
+#else
+    return 0;
+#endif
 }
 
 void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)

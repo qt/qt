@@ -232,6 +232,10 @@ public:
 
     QXcbKeyboard *keyboard() const { return m_keyboard; }
 
+#ifdef XCB_USE_XLIB_FOR_GLX
+    void *xlib_display() const { return m_xlib_display; }
+#endif
+
 private slots:
     void eventDispatcher();
 
@@ -249,6 +253,12 @@ private:
     QByteArray m_displayName;
 
     QXcbKeyboard *m_keyboard;
+
+#ifdef XCB_USE_XLIB_FOR_GLX
+    void *m_xlib_display;
+#endif
 };
+
+#define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))
 
 #endif

@@ -114,3 +114,13 @@ QPixmap QXcbIntegration::grabWindow(WId window, int x, int y, int width, int hei
     Q_UNUSED(height);
     return QPixmap();
 }
+
+
+bool QXcbIntegration::hasOpenGL() const
+{
+#ifdef XCB_USE_XLIB_FOR_GLX
+    return true;
+#else
+    return false;
+#endif
+}

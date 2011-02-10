@@ -39,61 +39,49 @@
 **
 ****************************************************************************/
 
-#include "qxcbscreen.h"
+#ifndef QGLXINTEGRATION_H
+#define QGLXINTEGRATION_H
 
-#include <stdio.h>
+#include "qxcbwindow.h"
 
-QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int number)
-    : QXcbObject(connection)
-    , m_screen(screen)
-    , m_number(number)
+#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformWindowFormat>
+
+#include <QtCore/QMutex>
+
+#include <GL/glx.h>
+
+class QGLXContext : public QPlatformGLContext
 {
-    printf ("\n");
-    printf ("Informations of screen %d:\n", screen->root);
-    printf ("  width.........: %d\n", screen->width_in_pixels);
-    printf ("  height........: %d\n", screen->height_in_pixels);
-    printf ("  depth.........: %d\n", screen->root_depth);
-    printf ("  white pixel...: %x\n", screen->white_pixel);
-    printf ("  black pixel...: %x\n", screen->black_pixel);
-    printf ("\n");
+public:
+    QGLXContext(Window window, QXcbScreen *xd, const QPlatformWindowFormat &format);
+    ~QGLXContext();
 
-    const quint32 mask = XCB_CW_EVENT_MASK;
-    const quint32 values[] = {
-        // XCB_CW_EVENT_MASK
-        XCB_EVENT_MASK_KEYMAP_STATE
-        | XCB_EVENT_MASK_ENTER_WINDOW
-        | XCB_EVENT_MASK_LEAVE_WINDOW
-        | XCB_EVENT_MASK_PROPERTY_CHANGE
-    };
+    virtual void makeCurrent();
+    virtual void doneCurrent();
+    virtual void swapBuffers();
+    virtual void* getProcAddress(const QString& procName);
 
-    xcb_configure_window(xcb_connection(), screen->root, mask, values);
-}
+    GLXContext glxContext() const { return m_context; }
 
-QXcbScreen::~QXcbScreen()
-{
-}
+    QPlatformWindowFormat platformWindowFormat() const;
 
-QRect QXcbScreen::geometry() const
-{
-    return QRect(0, 0, m_screen->width_in_pixels, m_screen->height_in_pixels);
-}
+    static XVisualInfo *findVisualInfo(const QXcbScreen *xd, const QPlatformWindowFormat &format);
 
-int QXcbScreen::depth() const
-{
-    return m_screen->root_depth;
-}
+private:
+    static GLXFBConfig findConfig(const QXcbScreen *xd,const QPlatformWindowFormat &format);
+    static QVector<int> buildSpec(const QPlatformWindowFormat &format);
+    static QPlatformWindowFormat platformWindowFromGLXFBConfig(Display *display, GLXFBConfig config, GLXContext context);
+    static QPlatformWindowFormat reducePlatformWindowFormat(const QPlatformWindowFormat &format, bool *reduced);
 
-QImage::Format QXcbScreen::format() const
-{
-    return QImage::Format_RGB32;
-}
+    QXcbScreen *m_screen;
+    Drawable m_drawable;
+    GLXContext m_context;
+    QPlatformWindowFormat m_windowFormat;
 
-QSize QXcbScreen::physicalSize() const
-{
-    return QSize(m_screen->width_in_millimeters, m_screen->height_in_millimeters);
-}
+    QGLXContext (QXcbScreen *screen, Drawable drawable, GLXContext context);
+    static QMutex m_defaultSharedContextMutex;
+    static void createDefaultSharedContex(QXcbScreen *xd);
+};
 
-int QXcbScreen::screenNumber() const
-{
-    return m_number;
-}
+#endif
