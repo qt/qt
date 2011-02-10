@@ -112,6 +112,7 @@ will get an error.
 
 Certain properties bind to more complex types such as other elements and objects.
 
+\keyword qml-basic-property-types
 \section2 Basic Property Types
 
 Basic types such as \l int, \l real, and other Qt structures may be bound to
