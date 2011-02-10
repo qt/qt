@@ -132,6 +132,7 @@ void QSGCanvasPrivate::init(QSGCanvas *c)
     Q_Q(QSGCanvas);
 
     q->setAttribute(Qt::WA_AcceptTouchEvents);
+    q->setFocusPolicy(Qt::StrongFocus);
 
     rootItem = new QSGRootItem;
     QSGItemPrivate *rootItemPrivate = QSGItemPrivate::get(rootItem);
