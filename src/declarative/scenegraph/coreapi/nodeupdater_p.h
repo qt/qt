@@ -46,7 +46,7 @@
 #include "qsgmatrix4x4stack.h"
 #include <qstack.h>
 
-class Q_AUTOTEST_EXPORT NodeUpdater : public NodeVisitor
+class Q_DECLARATIVE_EXPORT NodeUpdater : public NodeVisitor
 {
 public:
     NodeUpdater();

@@ -89,7 +89,9 @@ protected:
     virtual void mouseReleaseEvent(QMouseEvent *);
     virtual void mouseDoubleClickEvent(QMouseEvent *);
     virtual void mouseMoveEvent(QMouseEvent *);
+#ifndef QT_NO_WHEELEVENT
     virtual void wheelEvent(QWheelEvent *);
+#endif
 
 private Q_SLOTS:
     void maybeUpdate();

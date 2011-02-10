@@ -325,7 +325,7 @@ private:
     qreal m_combined_opacity;
 };
 
-class Q_AUTOTEST_EXPORT NodeVisitor {
+class Q_DECLARATIVE_EXPORT NodeVisitor {
 public:
     virtual ~NodeVisitor();
 

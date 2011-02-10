@@ -97,6 +97,7 @@ public:
     bool deliverInitialMousePressEvent(QSGItem *, QGraphicsSceneMouseEvent *);
     bool deliverMouseEvent(QGraphicsSceneMouseEvent *);
     bool sendFilteredMouseEvent(QSGItem *, QSGItem *, QGraphicsSceneMouseEvent *);
+    bool deliverWheelEvent(QSGItem *, QGraphicsSceneWheelEvent *);
 
     enum FocusOption {
         DontChangeFocusProperty = 0x01,

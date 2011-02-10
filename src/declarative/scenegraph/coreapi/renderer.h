@@ -60,11 +60,13 @@ struct AbstractMaterialType;
 class QGLFramebufferObject;
 class TextureReference;
 
-class Bindable
+class Q_DECLARATIVE_EXPORT Bindable
 {
 public:
     virtual ~Bindable() { }
     virtual void bind() const = 0;
+    virtual void clear() const;
+    virtual void reactivate() const;
 };
 
 class BindableFbo : public Bindable
@@ -140,6 +142,7 @@ protected:
     virtual void render() = 0;
     Renderer::ClipType updateStencilClip(const ClipNode *clip);
 
+    const Bindable *bindable() const { return m_bindable; }
 
     AbstractMaterialShader *prepareMaterial(AbstractMaterial *material);
     virtual void preprocess();
@@ -166,6 +169,8 @@ private:
     int m_clip_matrix_id;
 
     bool m_changed_emitted;
+
+    const Bindable *m_bindable;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Renderer::Updates)

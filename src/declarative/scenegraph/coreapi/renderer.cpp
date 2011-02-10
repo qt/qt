@@ -56,6 +56,17 @@
 //#define RENDERER_DEBUG
 //#define QT_GL_NO_SCISSOR_TEST
 
+void Bindable::clear() const
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+// Reactivate the color buffer after switching to the stencil.
+void Bindable::reactivate() const
+{
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+}
+
 BindableFbo::BindableFbo(QGLContext *ctx, QGLFramebufferObject *fbo) : m_ctx(ctx), m_fbo(fbo)
 {
 }
@@ -74,6 +85,7 @@ Renderer::Renderer()
     , m_root_node(0)
     , m_node_updater(0)
     , m_changed_emitted(false)
+    , m_bindable(0)
 {
     Q_ASSERT(QGLContext::currentContext());
     initializeGLFunctions();
@@ -154,6 +166,7 @@ void Renderer::renderScene(const Bindable &bindable)
 //    QTime time;
 //    time.start();
 
+    m_bindable = &bindable;
     preprocess();
     bindable.bind();
     GeometryDataUploader::bind();
@@ -161,6 +174,7 @@ void Renderer::renderScene(const Bindable &bindable)
     render();
     GeometryDataUploader::release();
     m_changed_emitted = false;
+    m_bindable = 0;
 
 //    printf("rendering time: %d\n", time.elapsed());
 }
@@ -383,7 +397,7 @@ Renderer::ClipType Renderer::updateStencilClip(const ClipNode *clip)
         glStencilFunc(GL_EQUAL, clipDepth, 0xff); // stencil test, ref, test mask
         glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // stencil fail, z fail, z pass
         glStencilMask(0); // write mask
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        bindable()->reactivate();
         //glDepthMask(GL_TRUE); // must be reset correctly by caller.
     } else {
         glDisable(GL_STENCIL_TEST);

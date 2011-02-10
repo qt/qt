@@ -1383,6 +1383,11 @@ Node *QSGItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
     return 0;
 }
 
+TransformNode *QSGItemPrivate::createTransformNode()
+{
+    return new TransformNode;
+}
+
 void QSGItem::updatePolish()
 {
 }
@@ -1443,8 +1448,7 @@ void QSGItem::mouseUngrabEvent()
 
 void QSGItem::wheelEvent(QGraphicsSceneWheelEvent *event)
 {
-    // XXX todo
-    Q_UNUSED(event);
+    event->ignore();
 }
 
 void QSGItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
@@ -1863,6 +1867,12 @@ void QSGItemPrivate::deliverMouseEvent(QGraphicsSceneMouseEvent *e)
         q->mouseDoubleClickEvent(e);
         break;
     }
+}
+
+void QSGItemPrivate::deliverWheelEvent(QGraphicsSceneWheelEvent *e)
+{
+    Q_Q(QSGItem);
+    q->wheelEvent(e);
 }
 
 void QSGItem::itemChange(GraphicsItemChange change, const QVariant &value)

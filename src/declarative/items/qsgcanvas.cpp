@@ -86,6 +86,7 @@ have a scope focused item), and the other items will have their focus cleared.
 // #define DIRTY_DEBUG
 
 QSGItem::UpdatePaintNodeData::UpdatePaintNodeData()
+: transformNode(0)
 {
 }
 
@@ -132,6 +133,7 @@ void QSGCanvasPrivate::init(QSGCanvas *c)
     Q_Q(QSGCanvas);
 
     q->setAttribute(Qt::WA_AcceptTouchEvents);
+    q->setFocusPolicy(Qt::StrongFocus);
 
     rootItem = new QSGRootItem;
     QSGItemPrivate *rootItemPrivate = QSGItemPrivate::get(rootItem);
@@ -699,13 +701,61 @@ void QSGCanvas::mouseMoveEvent(QMouseEvent *event)
     event->setAccepted(sceneEvent.isAccepted());
 }
 
-void QSGCanvas::wheelEvent(QWheelEvent *)
+bool QSGCanvasPrivate::deliverWheelEvent(QSGItem *item, QGraphicsSceneWheelEvent *event)
 {
-    // XXX todo
-#ifdef MOUSE_DEBUG
-    qWarning("wheelEvent");
-#endif
+    Q_Q(QSGCanvas);
+    QSGItemPrivate *itemPrivate = QSGItemPrivate::get(item);
+    if (itemPrivate->opacity == 0.0)
+        return false;
+
+    if (itemPrivate->flags & QSGItem::ItemClipsChildrenToShape) {
+        QPointF p = item->mapFromScene(event->scenePos());
+        if (!QRectF(0, 0, item->width(), item->height()).contains(p))
+            return false;
+    }
+
+    QList<QSGItem *> children = itemPrivate->paintOrderChildItems();
+    for (int ii = children.count() - 1; ii >= 0; --ii) {
+        QSGItem *child = children.at(ii);
+        if (!child->isEnabled())
+            continue;
+        if (deliverWheelEvent(child, event))
+            return true;
+    }
+
+    QPointF p = item->mapFromScene(event->scenePos());
+    if (QRectF(0, 0, item->width(), item->height()).contains(p)) {
+        event->setPos(itemPrivate->canvasToItemTransform().map(event->scenePos()));
+        event->accept();
+        q->sendEvent(item, event);
+        if (event->isAccepted())
+            return true;
+    }
+
+    return false;
 }
+
+#ifndef QT_NO_WHEELEVENT
+void QSGCanvas::wheelEvent(QWheelEvent *event)
+{
+    Q_D(QSGCanvas);
+#ifdef MOUSE_DEBUG
+    qWarning() << "QSGCanvas::wheelEvent()" << event->pos() << event->delta() << event->orientation();
+#endif
+    QGraphicsSceneWheelEvent wheelEvent(QEvent::GraphicsSceneWheel);
+    wheelEvent.setWidget(this);
+    wheelEvent.setScenePos(event->pos());
+    wheelEvent.setScreenPos(event->globalPos());
+    wheelEvent.setButtons(event->buttons());
+    wheelEvent.setModifiers(event->modifiers());
+    wheelEvent.setDelta(event->delta());
+    wheelEvent.setOrientation(event->orientation());
+    wheelEvent.setAccepted(false);
+
+    d->deliverWheelEvent(d->rootItem, &wheelEvent);
+    event->setAccepted(wheelEvent.isAccepted());
+}
+#endif // QT_NO_WHEELEVENT
 
 bool QSGCanvasPrivate::sendFilteredMouseEvent(QSGItem *target, QSGItem *item, QGraphicsSceneMouseEvent *event)
 {
@@ -766,6 +816,9 @@ bool QSGCanvas::sendEvent(QSGItem *item, QEvent *e)
                 QSGItemPrivate::get(item)->deliverMouseEvent(se);
             }
         }
+        break;
+    case QEvent::GraphicsSceneWheel:
+        QSGItemPrivate::get(item)->deliverWheelEvent(static_cast<QGraphicsSceneWheelEvent *>(e));
         break;
     default:
         break;
@@ -930,6 +983,7 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
     if (dirty & QSGItemPrivate::ContentUpdateMask) {
 
         if (itemPriv->flags & QSGItem::ItemHasContents) {
+            updatePaintNodeData.transformNode = itemPriv->itemNode(); 
             itemPriv->paintNode = item->updatePaintNode(itemPriv->paintNode, &updatePaintNodeData);
 
             Q_ASSERT(itemPriv->paintNode == 0 || 

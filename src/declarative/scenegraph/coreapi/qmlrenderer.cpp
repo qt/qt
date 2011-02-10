@@ -203,7 +203,7 @@ void QMLRenderer::render()
 
     glDisable(GL_SCISSOR_TEST);
     glClearColor(m_clear_color.redF(), m_clear_color.greenF(), m_clear_color.blueF(), m_clear_color.alphaF());
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    bindable()->clear();
 
     QRect r = deviceRect();
     glViewport(0, 0, r.width(), r.height());
