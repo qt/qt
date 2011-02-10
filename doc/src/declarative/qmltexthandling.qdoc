@@ -68,7 +68,9 @@ The validator elements bind to \c {TextInput}'s \c validator property.
 
 \snippet doc/src/snippets/declarative/texthandling.qml regexp validator
 The regular expression in the snippet will only allow the inputted text to be
-\c {fruit basket}. The \l {QRegExp} class has more information about Qt's
-regular expressions.
+\c {fruit basket}.
+
+Note that QML parses JavaScript regular expressions, while Qt's
+\l {QRegExp} class' regular expressions are based on Perl regular expressions.
 
 */
