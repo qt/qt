@@ -291,6 +291,7 @@ public:
     void deliverInputMethodEvent(QInputMethodEvent *);
     void deliverFocusEvent(QFocusEvent *);
     void deliverMouseEvent(QGraphicsSceneMouseEvent *);
+    void deliverWheelEvent(QGraphicsSceneWheelEvent *);
 
     bool calcEffectiveVisible() const;
     void setEffectiveVisibleRecur(bool);
