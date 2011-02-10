@@ -122,7 +122,9 @@ void QSGThreadedRendererAnimationDriver::stopped()
 }
 
 QSGRenderer::QSGRenderer(QSGCanvasPrivate *canvas, const QGLFormat &format, QWidget *p)
-: QGLWidget(format, p), context(0), canvas(canvas), threadedRendering(false), inUpdate(false), exitThread(false),
+    : QGLWidget(format, p), context(0), canvas(canvas)
+    , contextInThread(false)
+    , threadedRendering(false), inUpdate(false), exitThread(false),
   thread(new MyThread(this)), animationDriver(0)
 {
     threadedRendering = qmlThreadedRenderer();
@@ -169,10 +171,8 @@ void QSGRenderer::showEvent(QShowEvent *e)
 {
     QGLWidget::showEvent(e);
 
-    makeCurrent();
-    initializeSceneGraph();
-
     if (threadedRendering) {
+        contextInThread = true;
         doneCurrent();
         animationDriver = new QSGThreadedRendererAnimationDriver(this);
         animationDriver->install();
@@ -181,6 +181,8 @@ void QSGRenderer::showEvent(QShowEvent *e)
         wait.wait(&mutex);
         mutex.unlock();
     } else {
+        makeCurrent();
+        initializeSceneGraph();
         animationDriver = context->createAnimationDriver(this);
         if (animationDriver)
             animationDriver->install();
@@ -280,6 +282,7 @@ void QSGRenderer::runThread()
 #endif
 
     makeCurrent();
+    initializeSceneGraph();
 
     mutex.lock();
     wait.wakeOne(); // Wake the main thread waiting for us to start
@@ -701,7 +704,7 @@ void QSGCanvas::setSceneGraphContext(QSGContext *context)
 {
     Q_D(QSGCanvas);
 
-    if (d->renderer->context) {
+    if (d->renderer->contextInThread || d->renderer->context) {
         qWarning("QSGCanvas::setSceneGraphContext: Context already exists.");
         return;
     }

@@ -119,6 +119,7 @@ private:
     QSGContext *context;
     QSGCanvasPrivate *canvas;
 
+    bool contextInThread;
     bool threadedRendering;
     bool inUpdate;
     bool exitThread;
