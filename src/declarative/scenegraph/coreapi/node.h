@@ -99,8 +99,7 @@ public:
     enum Flag {
         OwnedByParent               = 0x0001,
         UsePreprocess               = 0x0002,
-        ChildrenDoNotOverloap       = 0x0004,
-        ClipIsRectangular           = 0x0008
+        ChildrenDoNotOverloap       = 0x0004
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -137,8 +136,6 @@ public:
     void clearDirty() { m_flags = 0; }
     void markDirty(DirtyFlags flags);
     DirtyFlags dirtyFlags() const { return m_flags; }
-
-    void updateDirtyStates();
 
     virtual bool isSubtreeBlocked() const { return false; }
 
@@ -235,7 +232,6 @@ public:
 
     AbstractMaterial *activeMaterial() const;
 
-
     virtual NodeType type() const { return GeometryNodeType; }
 
     void setRenderOrder(int order);
@@ -262,7 +258,11 @@ public:
 
     virtual NodeType type() const { return ClipNodeType; }
 
+    void setIsRectangular(bool rectHint);
+    bool isRectangular() const { return m_is_rectangular; }
+
 private:
+    uint m_is_rectangular : 1;
 };
 
 
