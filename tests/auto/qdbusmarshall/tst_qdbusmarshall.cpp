@@ -951,6 +951,29 @@ void tst_QDBusMarshall::receiveUnknownType_data()
     QTest::newRow("type-naked");
 }
 
+struct DisconnectRawDBus {
+    static void cleanup(DBusConnection *connection)
+    {
+        if (!connection)
+            return;
+        dbus_connection_close(connection);
+        dbus_connection_unref(connection);
+    }
+};
+template <typename T, void (*unref)(T *)> struct GenericUnref
+{
+    static void cleanup(T *type)
+    {
+        if (!type) return;
+        unref(type);
+    }
+};
+
+// use these scoped types to avoid memory leaks if QVERIFY or QCOMPARE fails
+typedef QScopedPointer<DBusConnection, DisconnectRawDBus> ScopedDBusConnection;
+typedef QScopedPointer<DBusMessage, GenericUnref<DBusMessage, dbus_message_unref> > ScopedDBusMessage;
+typedef QScopedPointer<DBusPendingCall, GenericUnref<DBusPendingCall, dbus_pending_call_unref> > ScopedDBusPendingCall;
+
 void tst_QDBusMarshall::receiveUnknownType()
 {
 #ifndef DBUS_TYPE_UNIX_FD
@@ -963,27 +986,27 @@ void tst_QDBusMarshall::receiveUnknownType()
     // open a new connection to the bus daemon
     DBusError error;
     dbus_error_init(&error);
-    DBusConnection *rawcon = dbus_bus_get_private(DBUS_BUS_SESSION, &error);
-    QVERIFY2(rawcon, error.name);
+    ScopedDBusConnection rawcon(dbus_bus_get_private(DBUS_BUS_SESSION, &error));
+    QVERIFY2(rawcon.data(), error.name);
 
     // check if this bus supports passing file descriptors
-    if (!dbus_connection_can_send_type(rawcon, DBUS_TYPE_UNIX_FD))
+    if (!dbus_connection_can_send_type(rawcon.data(), DBUS_TYPE_UNIX_FD))
         QSKIP("Your session bus does not allow sending Unix file descriptors", SkipAll);
 
     if (qstrcmp(QTest::currentDataTag(), "in-call") == 0) {
         // create a call back to us containing a file descriptor
-        DBusMessage *msg = dbus_message_new_method_call(con.baseService().toLatin1(), "/irrelevant/path", NULL, "irrelevantMethod");
+        ScopedDBusMessage msg(dbus_message_new_method_call(con.baseService().toLatin1(), "/irrelevant/path", NULL, "irrelevantMethod"));
 
         int fd = fileno(stdout);
-        dbus_message_append_args(msg, DBUS_TYPE_UNIX_FD, &fd, DBUS_TYPE_INVALID);
+        dbus_message_append_args(msg.data(), DBUS_TYPE_UNIX_FD, &fd, DBUS_TYPE_INVALID);
 
         // try to send to us
-        DBusPendingCall *pending;
-        dbus_connection_send_with_reply(rawcon, msg, &pending, 1000);
-        dbus_message_unref(msg);
+        DBusPendingCall *pending_ptr;
+        dbus_connection_send_with_reply(rawcon.data(), msg.data(), &pending_ptr, 1000);
+        ScopedDBusPendingCall pending(pending_ptr);
 
         // check that it got sent
-        while (dbus_connection_dispatch(rawcon) == DBUS_DISPATCH_DATA_REMAINS)
+        while (dbus_connection_dispatch(rawcon.data()) == DBUS_DISPATCH_DATA_REMAINS)
             ;
 
         // now spin our event loop. We don't catch this call, so let's get the reply
@@ -992,22 +1015,20 @@ void tst_QDBusMarshall::receiveUnknownType()
         loop.exec();
 
         // now try to receive the reply
-        dbus_pending_call_block(pending);
-        msg = dbus_pending_call_steal_reply(pending);
-        dbus_pending_call_unref(pending);
+        dbus_pending_call_block(pending.data());
+        msg.reset(dbus_pending_call_steal_reply(pending.data()));
         QVERIFY(msg);
-        QCOMPARE(dbus_message_get_type(msg), DBUS_MESSAGE_TYPE_ERROR);
-        QCOMPARE(dbus_message_get_error_name(msg), "org.freedesktop.DBus.Error.UnknownObject");
-        qDebug() << dbus_message_get_signature(msg);
+        QCOMPARE(dbus_message_get_type(msg.data()), DBUS_MESSAGE_TYPE_ERROR);
+        QCOMPARE(dbus_message_get_error_name(msg.data()), "org.freedesktop.DBus.Error.UnknownObject");
     } else {
         // create a signal that we'll emit
         static const char signalName[] = "signalName";
         static const char interfaceName[] = "local.interface.name";
-        DBusMessage *msg = dbus_message_new_signal("/", interfaceName, signalName);
-        con.connect(dbus_bus_get_unique_name(rawcon), QString(), interfaceName, signalName, &QTestEventLoop::instance(), SLOT(exitLoop()));
+        ScopedDBusMessage msg(dbus_message_new_signal("/", interfaceName, signalName));
+        con.connect(dbus_bus_get_unique_name(rawcon.data()), QString(), interfaceName, signalName, &QTestEventLoop::instance(), SLOT(exitLoop()));
 
         DBusMessageIter iter;
-        dbus_message_iter_init_append(msg, &iter);
+        dbus_message_iter_init_append(msg.data(), &iter);
         int fd = fileno(stdout);
 
         if (qstrcmp(QTest::currentDataTag(), "type-naked") == 0) {
@@ -1026,20 +1047,16 @@ void tst_QDBusMarshall::receiveUnknownType()
         }
 
         // send it
-        dbus_connection_send(rawcon, msg, 0);
-        dbus_message_unref(msg);
+        dbus_connection_send(rawcon.data(), msg.data(), 0);
 
         // check that it got sent
-        while (dbus_connection_dispatch(rawcon) == DBUS_DISPATCH_DATA_REMAINS)
+        while (dbus_connection_dispatch(rawcon.data()) == DBUS_DISPATCH_DATA_REMAINS)
             ;
 
         // now let's see what happens
         QTestEventLoop::instance().enterLoop(1);
         QVERIFY(!QTestEventLoop::instance().timeout());
     }
-
-    dbus_connection_close(rawcon);
-    dbus_connection_unref(rawcon);
 #endif
 }
 
