@@ -68,7 +68,7 @@
     \title Animation: States Example
     \example declarative/animation/states
 
-    These examples show how to use \l{States}{states} and \l{Transitions}{transitions}.
+    These examples show how to use \l{State}{states} and \l{Transition}{transitions}.
 
     The \c states.qml example shows how an item can change between states, and \c transitions.qml
     shows how these state changes can be animated.
@@ -674,7 +674,7 @@
 
     This example shows how to create a tab widget. It also demonstrates how
     \l {Property aliases}{property aliases} and
-    \l {Default Properties}{default properties} can be used to collect and
+    \l {Introduction to the QML Language#Default Properties}{default properties} can be used to collect and
     assemble the child items declared within an \l Item.
 
     \image qml-tabwidget-example.png

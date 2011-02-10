@@ -90,7 +90,8 @@ QString QDeclarativeTextPrivate::elideChar = QString(0x2026);
 QDeclarativeTextPrivate::QDeclarativeTextPrivate()
 : color((QRgb)0), style(QDeclarativeText::Normal), hAlign(QDeclarativeText::AlignLeft), 
   vAlign(QDeclarativeText::AlignTop), elideMode(QDeclarativeText::ElideNone),
-  format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap), lineHeight(1), lineHeightMode(QDeclarativeText::MultiplyHeight),
+  format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap), lineHeight(1),
+  lineHeightMode(QDeclarativeText::ProportionalHeight),
   lineCount(1), truncated(false), maximumLineCount(INT_MAX),
   maximumLineCountValid(false), imageCacheDirty(true), updateOnComponentComplete(true), richText(false), singleline(false),
   cacheAllTextAsImage(true), internalWidthUpdate(false), requireImplicitWidth(false), naturalWidth(0), doc(0)
@@ -445,7 +446,7 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
     for (int i = 0; i < layout.lineCount(); ++i) {
         QTextLine line = layout.lineAt(i);
         line.setPosition(QPointF(0, height));
-        height += (lineHeightMode == QDeclarativeText::PixelHeight) ? lineHeight : line.height() * lineHeight;
+        height += (lineHeightMode == QDeclarativeText::FixedHeight) ? lineHeight : line.height() * lineHeight;
 
         if (!cacheAllTextAsImage) {
             if ((hAlignment == QDeclarativeText::AlignLeft) || (hAlignment == QDeclarativeText::AlignJustify)) {
@@ -693,11 +694,24 @@ QPixmap QDeclarativeTextPrivate::drawOutline(const QPixmap &source, const QPixma
     \brief The Text item allows you to add formatted text to a scene.
     \inherits Item
 
-    A Text item can display both plain and rich text. For example:
+    Text items can display both plain and rich text. For example, red text with
+    a specific font and size can be defined like this:
 
     \qml
-    Text { text: "Hello World!"; font.family: "Helvetica"; font.pointSize: 24; color: "red" }
-    Text { text: "<b>Hello</b> <i>World!</i>" }
+    Text {
+        text: "Hello World!"
+        font.family: "Helvetica"
+        font.pointSize: 24
+        color: "red"
+    }
+    \endqml
+
+    Rich text is defined using HTML-style markup:
+
+    \qml
+    Text {
+        text: "<b>Hello</b> <i>World!</i>"
+    }
     \endqml
 
     \image declarative-text.png
@@ -933,12 +947,20 @@ void QDeclarativeText::setText(const QString &n)
 
     The text color.
 
+    An example of green text defined using hexadecimal notation:
     \qml
-    //green text using hexadecimal notation
-    Text { color: "#00FF00"; ... }
+    Text {
+        color: "#00FF00"
+        text: "green text"
+    }
+    \endqml
 
-    //steelblue text using SVG color name
-    Text { color: "steelblue"; ... }
+    An example of steel blue text defined using an SVG color name:
+    \qml
+    Text {
+        color: "steelblue"
+        text: "blue text"
+    }
     \endqml
 */
 QColor QDeclarativeText::color() const
@@ -1438,8 +1460,9 @@ void QDeclarativeText::setLineHeight(qreal lineHeight)
     The possible values are:
 
     \list
-    \o Text.MultiplyHeight (default) - specifies a line height multiplier,
-    \o Text.PixelHeight - specifies the line height in pixels.
+    \o Text.ProportionalHeight (default) - this sets the spacing proportional to the
+       line (as a multiplier). For example, set to 2 for double spacing.
+    \o Text.FixedHeight - this sets the line height to a fixed line height (in pixels).
     \endlist
 */
 QDeclarativeText::LineHeightMode QDeclarativeText::lineHeightMode() const

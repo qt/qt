@@ -75,6 +75,7 @@ private slots:
     void sourceSize();
     void sourceSizeReadOnly();
     void invalidSource();
+    void qtbug_16520();
 
 private:
     QPixmap grabScene(QGraphicsScene *scene, int width, int height);
@@ -307,6 +308,29 @@ void tst_qdeclarativeanimatedimage::invalidSource()
     QVERIFY(!anim->isPaused());
     QCOMPARE(anim->currentFrame(), 0);
     QCOMPARE(anim->frameCount(), 0);
+    QTRY_VERIFY(anim->status() == 3);
+}
+
+void tst_qdeclarativeanimatedimage::qtbug_16520()
+{
+    TestHTTPServer server(14449);
+    QVERIFY(server.isValid());
+    server.serveDirectory(SRCDIR "/data");
+
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/qtbug-16520.qml"));
+    QTRY_VERIFY(component.isReady());
+
+    QDeclarativeRectangle *root = qobject_cast<QDeclarativeRectangle *>(component.create());
+    QVERIFY(root);
+    QDeclarativeAnimatedImage *anim = root->findChild<QDeclarativeAnimatedImage*>("anim");
+
+    anim->setProperty("source", "http://127.0.0.1:14449/stickman.gif");
+
+    QTRY_VERIFY(anim->opacity() == 0);
+    QTRY_VERIFY(anim->opacity() == 1);
+
+    delete anim;
 }
 
 QTEST_MAIN(tst_qdeclarativeanimatedimage)

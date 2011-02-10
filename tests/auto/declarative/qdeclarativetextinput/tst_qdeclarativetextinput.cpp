@@ -124,6 +124,8 @@ private slots:
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
 
+    void preeditAutoScroll();
+
 private:
     void simulateKey(QDeclarativeView *, int key);
     QDeclarativeView *createView(const QString &filename);
@@ -1435,6 +1437,17 @@ public:
             closeInputPanelReceived = true;
         return QInputContext::filterEvent(event);
     }
+
+    void sendPreeditText(const QString &text, int cursor)
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        attributes.append(QInputMethodEvent::Attribute(
+                QInputMethodEvent::Cursor, cursor, text.length(), QVariant()));
+
+        QInputMethodEvent event(text, attributes);
+        sendEvent(event);
+    }
+
     bool openInputPanelReceived;
     bool closeInputPanelReceived;
 };
@@ -1722,6 +1735,69 @@ void tst_qdeclarativetextinput::testQtQuick11Attributes_data()
     QTest::newRow("deselect") << "Component.onCompleted: deselect()"
         << "<Unknown File>:1: ReferenceError: Can't find variable: deselect"
         << "";
+}
+
+void tst_qdeclarativetextinput::preeditAutoScroll()
+{
+    QString committedText = "super";
+    QString preeditText = "califragisiticexpialidocious!";
+
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    MyInputContext ic;
+    view.setInputContext(&ic);
+    QDeclarativeTextInput input;
+    input.setWidth(QFontMetricsF(input.font()).width(committedText));
+    input.setText(committedText);
+    input.setPos(0, 0);
+    input.setFocus(true);
+    scene.addItem(&input);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+
+    // test the text is scrolled so the preedit is visible.
+    ic.sendPreeditText(preeditText.mid(0, 3), 1);
+    QVERIFY(input.positionAt(0) != 0);
+    QCOMPARE(input.positionAt(input.width()), 8);
+
+    // test the text is scrolled back when the preedit is removed.
+    ic.sendEvent(QInputMethodEvent());
+    QCOMPARE(input.positionAt(0), 0);
+    QCOMPARE(input.positionAt(input.width()), 5);
+
+    // test if the preedit is larger than the text input that the
+    // character preceding the cursor is still visible.
+    for (int i = 0; i < 3; ++i) {
+        ic.sendPreeditText(preeditText, i + 1);
+        QCOMPARE(input.positionAt(0), 5 + i);
+    }
+    for (int i = 1; i >= 0; --i) {
+        ic.sendPreeditText(preeditText, i + 1);
+        QCOMPARE(input.positionAt(0), 5 + i);
+    }
+
+    // Test incrementing the preedit cursor doesn't cause further
+    // scrolling when right most text is visible.
+    ic.sendPreeditText(preeditText, preeditText.length() - 3);
+    int position = input.positionAt(0);
+    for (int i = 2; i >= 0; --i) {
+        ic.sendPreeditText(preeditText, preeditText.length() - i);
+        QCOMPARE(input.positionAt(0), position);
+    }
+    for (int i = 1; i <  3; ++i) {
+        ic.sendPreeditText(preeditText, preeditText.length() - i);
+        QCOMPARE(input.positionAt(0), position);
+    }
+
+    // Test disabling auto scroll.
+    ic.sendEvent(QInputMethodEvent());
+
+    input.setAutoScroll(false);
+    ic.sendPreeditText(preeditText.mid(0, 3), 1);
+    QCOMPARE(input.positionAt(0), 0);
+    QCOMPARE(input.positionAt(input.width()), 5);
 }
 
 QTEST_MAIN(tst_qdeclarativetextinput)

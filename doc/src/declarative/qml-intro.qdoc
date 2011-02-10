@@ -61,7 +61,7 @@ The basic syntax of an \l{QML Elements}{element} is
 \qml
 SomeElement {
     id: myObject
-    ... some other things here ...
+    // ... some other things here ...
 }
 \endqml
 
@@ -247,13 +247,17 @@ referencing these properties from another object we use the property
 directly, instead of saying:
 
 \qml
-myRectangle.anchors.top  // Wrong
+Item {
+    anchors.bottom: myRectangle.anchors.top  // Wrong
+}
 \endqml
 
 we use
 
 \qml
-myRectangle.top         // Correct
+Item {
+    anchors.bottom: myRectangle.top         // Correct
+}
 \endqml
 
 
@@ -275,11 +279,7 @@ about the z-axis by 90 degrees in a negative direction, anti-clockwise.
 Rotation of text was also suggested. It could also be useful to scale the
 text. We can do both. The \l {Item::transform}{transform} property is a
 \e list of \l Transform elements, so using the list syntax
-
-\qml
-myList: [ listElement1, listElement2, ... } ]
-\endqml
-
+\c{myList: [ listElement1, listElement2, ... } ]}
 we can produce a list of transformations.
 
 The text will be rotated by 45 degrees anti-clockwise and scaled 
