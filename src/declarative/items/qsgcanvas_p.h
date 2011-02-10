@@ -59,6 +59,9 @@
 
 #include "qsgcontext.h"
 
+#include <QtCore/qthread.h>
+#include <QtCore/qmutex.h>
+#include <QtCore/qwaitcondition.h>
 #include <private/qwidget_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -70,10 +73,68 @@ public:
     QSGRootItem();
 };
 
-class QSGCanvasPrivate 
+class QSGThreadedRendererAnimationDriver : public QAnimationDriver
 {
 public:
-    QSGCanvas *q_ptr;
+    QSGThreadedRendererAnimationDriver(QObject * = 0);
+
+protected:
+    virtual void started();
+    virtual void stopped();
+};
+
+class QSGCanvasPrivate;
+class QSGRenderer : public QGLWidget
+{
+    Q_OBJECT
+public:
+    QSGRenderer(QSGCanvasPrivate *canvas, const QGLFormat &format, QWidget *p);
+
+public slots:
+    void maybeUpdate();
+
+protected:
+    virtual void paintEvent(QPaintEvent *);
+    virtual void resizeEvent(QResizeEvent *);
+    virtual void showEvent(QShowEvent *);
+    virtual void hideEvent(QHideEvent *);
+
+    virtual bool event(QEvent *);
+
+private:
+    friend class QSGCanvas;
+
+    void initializeSceneGraph();
+    void polishItems();
+    void syncSceneGraph();
+    void renderSceneGraph();
+
+    void runThread();
+
+    struct MyThread : public QThread {
+        MyThread(QSGRenderer *r) : r(r) {}
+        virtual void run() { r->runThread(); }
+        QSGRenderer *r;
+    };
+    QSGContext *context;
+    QSGCanvasPrivate *canvas;
+
+    bool threadedRendering;
+    bool inUpdate;
+    bool exitThread;
+
+    MyThread *thread;
+    QMutex mutex;
+    QWaitCondition wait;
+    QSize widgetSize;
+    QSize viewportSize;
+
+    QAnimationDriver *animationDriver;
+};
+
+class QSGCanvasPrivate : public QWidgetPrivate
+{
+public:
     Q_DECLARE_PUBLIC(QSGCanvas)
 
     static inline QSGCanvasPrivate *get(QSGCanvas *c) { return c->d_func(); }
@@ -110,16 +171,13 @@ public:
     void dirtyItem(QSGItem *);
     void cleanup(Node *);
 
-    QSGContext *context;
-    QAnimationDriver *animationDriver;
+    QSGRenderer *renderer;
     QSGItem::UpdatePaintNodeData updatePaintNodeData;
 
     QSGItem *dirtyItemList;
     QList<Node *> cleanupNodeList;
 
     QSet<QSGItem *> polishItems;
-
-    void initializeSceneGraph();
 
     void updateDirtyNodes();
     void cleanupNodes();
