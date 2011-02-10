@@ -43,9 +43,7 @@
 
 #include "qwaylandscreen.h"
 #include "qwaylandglcontext.h"
-
-#include <wayland-egl.h>
-
+#include "qwaylandinclude.h"
 
 QWaylandEglWindow::QWaylandEglWindow(QWidget *window)
     : QWaylandWindow(window)
