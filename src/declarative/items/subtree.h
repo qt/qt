@@ -61,6 +61,66 @@ class QSGTextureProvider;
 class Renderer;
 class QGLFramebufferObject;
 
+class TextureProviderMaterial : public AbstractMaterial
+{
+public:
+    TextureProviderMaterial()
+        : m_texture(0)
+    {
+    }
+
+    virtual AbstractMaterialType *type() const;
+    virtual AbstractMaterialShader *createShader() const;
+    virtual int compare(const AbstractMaterial *other) const;
+
+    // ### gunnar: opaque -> alpha, as "hasAlphaChannel()" is what we normally use
+    void setTexture(QSGTextureProvider *texture);
+    QSGTextureProvider *texture() const { return m_texture; }
+
+    static bool is(const AbstractMaterial *effect);
+
+protected:
+    QSGTextureProvider *m_texture;
+};
+
+
+class TextureProviderMaterialShader : public AbstractMaterialShader
+{
+public:
+    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual char const *const *attributeNames() const;
+
+    static AbstractMaterialType type;
+
+protected:
+    virtual void initialize();
+    virtual const char *vertexShader() const;
+    virtual const char *fragmentShader() const;
+
+    int m_matrix_id;
+};
+
+
+class TextureProviderMaterialWithOpacity : public TextureProviderMaterial
+{
+public:
+    TextureProviderMaterialWithOpacity() : m_opacity(1) { }
+
+    virtual AbstractMaterialType *type() const;
+    virtual AbstractMaterialShader *createShader() const;
+    virtual int compare(const AbstractMaterial *other) const;
+    void setTexture(QSGTextureProvider *texture);
+
+    void setOpacity(qreal opacity);
+    qreal opacity() const { return m_opacity; }
+
+    static bool is(const AbstractMaterial *effect);
+
+private:
+    qreal m_opacity;
+};
+
+
 class TextureNode : public QObject, public GeometryNode
 {
     Q_OBJECT
@@ -70,6 +130,7 @@ public:
     void setSourceRect(const QRectF &rect);
     void setOpacity(qreal opacity);
     void setTexture(QSGTextureProvider *texture);
+    void update();
 
     virtual void preprocess();
 
@@ -80,8 +141,8 @@ private:
     void updateGeometry();
     void updateTexture();
 
-    TextureMaterial m_material;
-    TextureMaterialWithOpacity m_materialO;
+    TextureProviderMaterial m_material;
+    TextureProviderMaterialWithOpacity m_materialO;
 
     QSGTextureProvider *m_texture;
     QRectF m_targetRect;
@@ -153,12 +214,13 @@ public:
     TextureItem(QSGItem *parent = 0);
 
     virtual QSGTextureProvider *textureProvider() const;
-    void setTextureProvider(QSGTextureProvider *provider);
+    void setTextureProvider(QSGTextureProvider *provider, bool requiresPreprocess);
     
 protected:
     virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
 
     QSGTextureProvider *m_textureProvider;
+    uint m_requiresPreprocess : 1;
 };
 
 

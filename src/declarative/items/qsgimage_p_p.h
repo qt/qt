@@ -63,13 +63,14 @@ class QSGImagePrivate;
 class QSGImageTextureProvider : public QSGTextureProvider
 {
 public:
-    QSGImageTextureProvider(QSGImage *parent);
+    QSGImageTextureProvider(QObject *parent = 0);
+    void setImage(const QImage &image);
     virtual QSGTextureRef texture();
-    void emitTextureChanged();
 
 private:
-    QSGImage *image;
+    QSGTextureRef m_texture;
 };
+
 
 class QSGImagePrivate : public QSGImageBasePrivate
 {

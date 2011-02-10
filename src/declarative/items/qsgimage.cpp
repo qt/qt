@@ -46,27 +46,26 @@
 #include "qsgcontext.h"
 #include "adaptationlayer.h"
 #include "qsgtexturemanager.h"
+#include "subtree.h"
 
 #include <QtGui/qpainter.h>
 
 QT_BEGIN_NAMESPACE
 
-QSGImageTextureProvider::QSGImageTextureProvider(QSGImage *parent)
-    : QSGTextureProvider(parent), image(parent)
+QSGImageTextureProvider::QSGImageTextureProvider(QObject *parent)
+    : QSGTextureProvider(parent)
 {
-    Q_ASSERT(image);
+}
+
+void QSGImageTextureProvider::setImage(const QImage &image)
+{
+    QSGTextureManager *tm = QSGContext::current->textureManager();
+    m_texture = tm->upload(image);
 }
 
 QSGTextureRef QSGImageTextureProvider::texture()
 {
-    const QSGItemPrivate *d = QSGItemPrivate::get(image);
-    TextureNodeInterface *node = static_cast<TextureNodeInterface *>(d->paintNode);
-    return node ? node->texture() : QSGTextureRef();
-}
-
-void QSGImageTextureProvider::emitTextureChanged()
-{
-    emit textureChanged();
+    return m_texture;
 }
 
 
@@ -74,7 +73,6 @@ QSGImagePrivate::QSGImagePrivate()
     : fillMode(QSGImage::Stretch)
     , paintedWidth(0)
     , paintedHeight(0)
-    , textureProvider(0)
     , pixmapChanged(false)
 {
 }
@@ -120,7 +118,6 @@ void QSGImagePrivate::setPixmap(const QPixmap &pixmap)
 
     q->update();
     q->pixmapChange();
-    textureProvider->emitTextureChanged();
 }
 
 QSGImage::FillMode QSGImage::fillMode() const
@@ -221,16 +218,15 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         return 0;
     }
 
-    TextureNodeInterface *node = static_cast<TextureNodeInterface *>(oldNode);
+    TextureNode *node = static_cast<TextureNode *>(oldNode);
     if (!node) { 
         d->pixmapChanged = true;
-        node = QSGContext::current->createTextureNode();
+        node = new TextureNode;
+        node->setTexture(d->textureProvider);
     }
 
     if (d->pixmapChanged) {
-        QSGTextureManager *tm = QSGContext::current->textureManager();
-        QSGTextureRef ref = tm->upload(d->pix.pixmap().toImage());
-        node->setTexture(ref);
+        d->textureProvider->setImage(d->pix.pixmap().toImage());
         d->pixmapChanged = false;
     }
 
@@ -291,11 +287,12 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
                   sourceRect.width() / d->pix.width(),
                   sourceRect.height() / d->pix.height());
 
-    node->setRect(targetRect);
+    d->textureProvider->setClampToEdge(clampToEdge);
+    d->textureProvider->setLinearFiltering(d->smooth);
+
+    node->setTargetRect(targetRect);
     node->setSourceRect(nsrect);
     node->setOpacity(data->opacity);
-    node->setClampToEdge(clampToEdge);
-    node->setLinearFiltering(d->smooth);
     node->update();
 
     return node;

@@ -44,6 +44,7 @@
 #define QSGIMAGE_P_H
 
 #include "qsgimagebase_p.h"
+#include "subtree.h"
 
 QT_BEGIN_HEADER
 
@@ -53,7 +54,7 @@ QT_MODULE(Declarative)
 
 class QSGTextureProvider;
 class QSGImagePrivate;
-class Q_AUTOTEST_EXPORT QSGImage : public QSGImageBase
+class Q_AUTOTEST_EXPORT QSGImage : public QSGImageBase, public TextureProviderInterface
 {
     Q_OBJECT
     Q_ENUMS(FillMode)
@@ -62,6 +63,8 @@ class Q_AUTOTEST_EXPORT QSGImage : public QSGImageBase
     Q_PROPERTY(qreal paintedWidth READ paintedWidth NOTIFY paintedGeometryChanged)
     Q_PROPERTY(qreal paintedHeight READ paintedHeight NOTIFY paintedGeometryChanged)
     Q_PROPERTY(QSGTextureProvider *texture READ textureProvider)
+
+    Q_INTERFACES(TextureProviderInterface)
 
 public:
     QSGImage(QSGItem *parent=0);
@@ -79,7 +82,7 @@ public:
 
     QRectF boundingRect() const;
 
-    QSGTextureProvider *textureProvider() const;
+    virtual QSGTextureProvider *textureProvider() const;
 
 Q_SIGNALS:
     void fillModeChanged();

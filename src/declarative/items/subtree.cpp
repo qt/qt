@@ -51,6 +51,198 @@
 
 QT_BEGIN_NAMESPACE
 
+
+static const char qt_material_vertex_code[] =
+    "uniform highp mat4 qt_Matrix;                      \n"
+    "attribute highp vec4 qt_Vertex;                    \n"
+    "attribute highp vec2 qt_MultiTexCoord0;            \n"
+    "varying highp vec2 qt_TexCoord0;                   \n"
+    "void main() {                                      \n"
+    "    qt_TexCoord0 = qt_MultiTexCoord0;              \n"
+    "    gl_Position = qt_Matrix * qt_Vertex;           \n"
+    "}";
+
+static const char qt_material_fragment_code[] =
+    "varying highp vec2 qt_TexCoord0;                   \n"
+    "uniform sampler2D qt_Texture;                      \n"
+    "void main() {                                      \n"
+    "    gl_FragColor = texture2D(qt_Texture, qt_TexCoord0);\n"
+    "}";
+
+const char *TextureProviderMaterialShader::vertexShader() const
+{
+    return qt_material_vertex_code;
+}
+
+const char *TextureProviderMaterialShader::fragmentShader() const
+{
+    return qt_material_fragment_code;
+}
+
+AbstractMaterialType TextureProviderMaterialShader::type;
+
+char const *const *TextureProviderMaterialShader::attributeNames() const
+{
+    static char const *const attr[] = { "qt_Vertex", "qt_MultiTexCoord0", 0 };
+    return attr;
+}
+
+void TextureProviderMaterialShader::initialize()
+{
+    m_matrix_id = m_program.uniformLocation("qt_Matrix");
+    if (m_program.isLinked()) {
+        m_program.bind();
+        m_program.setUniformValue("qt_Texture", GLuint(0));
+    }
+}
+
+void TextureProviderMaterialShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+{
+    Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
+    QSGTextureProvider *tx = static_cast<TextureProviderMaterial *>(newEffect)->texture();
+	QSGTextureProvider *oldTx = oldEffect ? static_cast<TextureProviderMaterial *>(oldEffect)->texture() : 0;
+
+    if (oldEffect == 0 || tx->texture()->textureId() != oldTx->texture()->textureId()) {
+        renderer->setTexture(0, tx->texture());
+        oldEffect = 0; // Force filtering update.
+    }
+
+    if (oldEffect == 0 || tx->linearFiltering() != oldTx->linearFiltering()) {
+        int filtering = tx->linearFiltering() ? GL_LINEAR : GL_NEAREST;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtering);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtering);
+    }
+
+    if (oldEffect == 0 || tx->clampToEdge() != oldTx->clampToEdge()) {
+        int wrapMode = tx->clampToEdge() ? GL_CLAMP_TO_EDGE : GL_REPEAT;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
+    }
+
+    if (updates & Renderer::UpdateMatrices)
+        m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
+}
+
+
+void TextureProviderMaterial::setTexture(QSGTextureProvider *texture)
+{
+    m_texture = texture;
+    bool opaque = m_texture ? m_texture->opaque() : true;
+    setFlag(Blending, !opaque);
+}
+
+AbstractMaterialType *TextureProviderMaterial::type() const
+{
+    return &TextureProviderMaterialShader::type;
+}
+
+AbstractMaterialShader *TextureProviderMaterial::createShader() const
+{
+    return new TextureProviderMaterialShader;
+}
+
+int TextureProviderMaterial::compare(const AbstractMaterial *o) const
+{
+    Q_ASSERT(o && type() == o->type());
+    const TextureProviderMaterial *other = static_cast<const TextureProviderMaterial *>(o);
+    if (int diff = m_texture->texture()->textureId() - other->texture()->texture()->textureId())
+        return diff;
+    if (int diff = int(m_texture->linearFiltering()) - int(other->m_texture->linearFiltering()))
+        return diff;
+    if (int diff = int(m_texture->clampToEdge()) - int(other->m_texture->clampToEdge()))
+        return diff;
+    return int(m_texture->opaque()) - int(other->m_texture->opaque());
+}
+
+bool TextureProviderMaterial::is(const AbstractMaterial *effect)
+{
+    return effect->type() == &TextureProviderMaterialShader::type;
+}
+
+
+static const char qt_scenegraph_texture_material_opacity_fragment[] =
+    "varying highp vec2 qt_TexCoord0;                   \n"
+    "uniform sampler2D qt_Texture;                      \n"
+    "uniform lowp float opacity;                        \n"
+    "void main() {                                      \n"
+    "    gl_FragColor = texture2D(qt_Texture, qt_TexCoord0) * opacity; \n"
+    "}";
+
+class TextureProviderMaterialWithOpacityShader : public TextureProviderMaterialShader
+{
+public:
+    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual void initialize();
+
+    static AbstractMaterialType type;
+
+protected:
+    virtual const char *fragmentShader() const { return qt_scenegraph_texture_material_opacity_fragment; }
+
+    int m_opacity_id;
+};
+
+AbstractMaterialType TextureProviderMaterialWithOpacityShader::type;
+
+bool TextureProviderMaterialWithOpacity::is(const AbstractMaterial *effect)
+{
+    return effect->type() == &TextureProviderMaterialWithOpacityShader::type;
+}
+
+AbstractMaterialType *TextureProviderMaterialWithOpacity::type() const
+{
+    return &TextureProviderMaterialWithOpacityShader::type;
+}
+
+void TextureProviderMaterialWithOpacity::setOpacity(qreal opacity)
+{
+    m_opacity = opacity;
+    bool opaque = m_texture ? m_texture->opaque() : true;
+    setFlag(Blending, !opaque || opacity != 1);
+}
+
+int TextureProviderMaterialWithOpacity::compare(const AbstractMaterial *o) const
+{
+    Q_ASSERT(o && type() == o->type());
+    const TextureProviderMaterialWithOpacity *other = static_cast<const TextureProviderMaterialWithOpacity *>(o);
+    if (int diff = TextureProviderMaterial::compare(other))
+        return diff;
+    return int(other->m_opacity < m_opacity) - int(m_opacity < other->m_opacity);
+}
+
+void TextureProviderMaterialWithOpacity::setTexture(QSGTextureProvider *texture)
+{
+    m_texture = texture;
+    bool opaque = m_texture ? m_texture->opaque() : true;
+    setFlag(Blending, !opaque || m_opacity != 1);
+}
+
+AbstractMaterialShader *TextureProviderMaterialWithOpacity::createShader() const
+{
+    return new TextureProviderMaterialWithOpacityShader;
+}
+
+void TextureProviderMaterialWithOpacityShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+{
+    Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
+    TextureProviderMaterialWithOpacity *tx = static_cast<TextureProviderMaterialWithOpacity *>(newEffect);
+    TextureProviderMaterialWithOpacity *oldTx = static_cast<TextureProviderMaterialWithOpacity *>(oldEffect);
+
+    if (oldTx == 0 || tx->opacity() != oldTx->opacity())
+        m_program.setUniformValue(m_opacity_id, (GLfloat) tx->opacity());
+
+    TextureProviderMaterialShader::updateState(renderer, newEffect, oldEffect, updates);
+}
+
+void TextureProviderMaterialWithOpacityShader::initialize()
+{
+    TextureProviderMaterialShader::initialize();
+    m_opacity_id = m_program.uniformLocation("opacity");
+}
+
+
+
+
 TextureNode::TextureNode()
     : m_texture(0)
     , m_sourceRect(0, 0, 1, 1)
@@ -58,12 +250,6 @@ TextureNode::TextureNode()
     , m_dirtyTexture(false)
     , m_dirtyGeometry(false)
 {
-    setFlag(UsePreprocess, true);
-
-    m_material.setClampToEdge(true);
-    m_material.setLinearFiltering(false);
-    m_materialO.setClampToEdge(true);
-    m_materialO.setLinearFiltering(false);
     m_materialO.setOpacity(m_opacity);
     setMaterial(&m_material);
 
@@ -112,13 +298,17 @@ void TextureNode::setTexture(QSGTextureProvider *texture)
     markDirtyTexture();
 }
 
-void TextureNode::preprocess()
+void TextureNode::update()
 {
-    m_texture->updateTexture();
     if (m_dirtyGeometry)
         updateGeometry();
     if (m_dirtyTexture)
         updateTexture();
+}
+
+void TextureNode::preprocess()
+{
+    m_texture->updateTexture();
 }
 
 void TextureNode::markDirtyTexture()
@@ -147,18 +337,8 @@ void TextureNode::updateGeometry()
 
 void TextureNode::updateTexture()
 {
-    if (m_texture) {
-        QSGTextureRef tex = m_texture->texture();
-        m_material.setTexture(tex, m_texture->opaque());
-        m_material.setClampToEdge(m_texture->clampToEdge());
-        m_material.setLinearFiltering(m_texture->linearFiltering());
-        m_materialO.setTexture(tex, m_texture->opaque());
-        m_materialO.setClampToEdge(m_texture->clampToEdge());
-        m_materialO.setLinearFiltering(m_texture->linearFiltering());
-    } else {
-        m_material.setTexture(QSGTextureRef());
-        m_materialO.setTexture(QSGTextureRef());
-    }
+    m_material.setTexture(m_texture);
+    m_materialO.setTexture(m_texture);
     m_dirtyTexture = false;
 }
 
@@ -308,17 +488,21 @@ QSGTextureProvider *TextureItem::textureProvider() const
     return m_textureProvider;
 }
 
-void TextureItem::setTextureProvider(QSGTextureProvider *provider)
+void TextureItem::setTextureProvider(QSGTextureProvider *provider, bool requiresPreprocess)
 {
     Q_ASSERT(m_textureProvider == 0); // Can only be set once.
     m_textureProvider = provider;
+    m_requiresPreprocess = requiresPreprocess;
 }
 
 Node *TextureItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 {
     TextureNode *node = static_cast<TextureNode *>(oldNode);
-    if (!node)
+    if (!node) {
         node = new TextureNode;
+        node->setFlag(Node::UsePreprocess, m_requiresPreprocess);
+	    node->setTexture(m_textureProvider);
+    }
 
     m_textureProvider->setClampToEdge(true);
     m_textureProvider->setLinearFiltering(QSGItemPrivate::get(this)->smooth);
@@ -326,7 +510,7 @@ Node *TextureItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     node->setTargetRect(QRectF(0, 0, width(), height()));
     node->setSourceRect(QRectF(0, 1, 1, -1));
     node->setOpacity(data->opacity);
-    node->setTexture(m_textureProvider);
+	node->update();
 
     return node;
 }
@@ -338,7 +522,7 @@ SubTree::SubTree(QSGItem *parent)
     , m_margins(0, 0)
     , m_live(true)
 {
-    setTextureProvider(new SubTreeTextureProvider(this));
+    setTextureProvider(new SubTreeTextureProvider(this), true);
 }
 
 SubTree::~SubTree()
