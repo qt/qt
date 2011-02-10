@@ -1679,7 +1679,6 @@ void tst_QScriptEngine::globalObjectWithCustomPrototype()
     {
         QScriptValue ret = engine.evaluate("this.__proto__ = { 'a': 123 }; a");
         QVERIFY(ret.isNumber());
-        QEXPECT_FAIL("", "QTBUG-9737: Prototype change in JS not reflected on C++ side", Continue);
         QVERIFY(ret.strictlyEquals(global.property("a")));
     }
 }
