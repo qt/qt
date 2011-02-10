@@ -60,7 +60,6 @@ DefaultRectangleNode::DefaultRectangleNode(MaterialPreference preference, QSGCon
     , m_context(context)
 {
     m_border_material.setColor(m_pen_color);
-    m_border_material.setOpacity(m_opacity);
     m_border.setFlag(OwnedByParent, false);
     m_border.setMaterial(&m_border_material);
 
@@ -69,11 +68,7 @@ DefaultRectangleNode::DefaultRectangleNode(MaterialPreference preference, QSGCon
     m_border.updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
     updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
 
-    // The scene-graph requires that there is a material and a geometry on the node.
-    FlatColorMaterial *material = new FlatColorMaterial;
-    material->setColor(m_color);
-    material->setOpacity(m_opacity);
-    setMaterial(m_fill_material = material);
+    m_material_type = TypeFlat;
 
 #ifdef QML_RUNTIME_TESTING
     description = QLatin1String("rectangle");
@@ -82,7 +77,15 @@ DefaultRectangleNode::DefaultRectangleNode(MaterialPreference preference, QSGCon
 
 DefaultRectangleNode::~DefaultRectangleNode()
 {
-    delete m_fill_material;
+    switch (m_material_type) {
+    case TypeFlat:
+        break;
+    case TypeTextureGradient:
+        delete opaqueMaterial();
+    case TypeVertexGradient:
+        delete material();
+        break;
+    }
 }
 
 void DefaultRectangleNode::setRect(const QRectF &rect)
@@ -102,9 +105,9 @@ void DefaultRectangleNode::setColor(const QColor &color)
         return;
     m_color = color;
     if (m_gradient_stops.isEmpty()) {
-        Q_ASSERT(FlatColorMaterial::is(m_fill_material));
-        static_cast<FlatColorMaterial *>(m_fill_material)->setColor(color);
-        setMaterial(m_fill_material); // Indicate that the material state has changed.
+        Q_ASSERT(m_material_type == TypeFlat);
+        m_fill_material.setColor(color);
+        setMaterial(&m_fill_material); // Indicate that the material state has changed.
     }
 }
 
@@ -135,49 +138,12 @@ void DefaultRectangleNode::setPenWidth(int width)
     m_dirty_geometry = true;
 }
 
-void DefaultRectangleNode::setOpacity(qreal opacity)
-{
-    if (opacity == m_opacity)
-        return;
-    m_opacity = opacity;
-
-    m_border_material.setOpacity(opacity);
-    m_border.setMaterial(&m_border_material); // Indicate that the material state has changed.
-
-    if (FlatColorMaterial::is(m_fill_material)) {
-        static_cast<FlatColorMaterial *>(m_fill_material)->setOpacity(m_opacity);
-    } else if (VertexColorMaterial::is(m_fill_material)) {
-        static_cast<VertexColorMaterial *>(m_fill_material)->setOpacity(opacity);
-    } else if (TextureMaterial::is(m_fill_material)) {
-        if (opacity < 1) {
-            delete m_fill_material;
-            TextureMaterialWithOpacity *material = new TextureMaterialWithOpacity;
-            if (!m_gradient_texture.isNull())
-                material->setTexture(m_gradient_texture, m_gradient_is_opaque);
-            material->setLinearFiltering(true);
-            material->setOpacity(opacity);
-            m_fill_material = material;
-        }
-    } else {
-        Q_ASSERT(TextureMaterialWithOpacity::is(m_fill_material));
-        if (opacity >= 1) {
-            delete m_fill_material;
-            TextureMaterial *material = new TextureMaterial;
-            if (!m_gradient_texture.isNull())
-                material->setTexture(m_gradient_texture, m_gradient_is_opaque);
-            material->setLinearFiltering(true);
-            m_fill_material = material;
-        } else {
-            static_cast<TextureMaterialWithOpacity *>(m_fill_material)->setOpacity(opacity);
-        }
-    }
-    setMaterial(m_fill_material);
-}
 
 void DefaultRectangleNode::setGradientStops(const QGradientStops &stops)
 {
-    if (stops.constData() == m_gradient_stops.constData())
+    if (stops.constData() == m_gradient_stops.constData()) {
         return;
+    }
 
     m_gradient_stops = stops;
 
@@ -187,29 +153,32 @@ void DefaultRectangleNode::setGradientStops(const QGradientStops &stops)
 
     if (stops.isEmpty()) {
         // No gradient specified, use flat color.
-        if (!FlatColorMaterial::is(m_fill_material)) {
-            delete m_fill_material;
-            FlatColorMaterial *material = new FlatColorMaterial;
-            material->setColor(m_color);
-            material->setOpacity(m_opacity);
-            m_fill_material = material;
+        if (m_material_type != TypeFlat) {
+
+            delete material();
+            delete opaqueMaterial();
+            setOpaqueMaterial(0);
+
+            m_fill_material.setColor(m_color);
+            setMaterial(&m_fill_material);
+            m_material_type = TypeFlat;
+
             QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
                 << QSGAttributeDescription(0, 2, GL_FLOAT, 2 * sizeof(float));
             updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
         }
     } else if (m_material_preference == PreferTextureMaterial) {
-        if (FlatColorMaterial::is(m_fill_material)) {
-            delete m_fill_material;
-            if (m_opacity < 1) {
-                TextureMaterialWithOpacity *material = new TextureMaterialWithOpacity;
-                material->setLinearFiltering(true);
-                material->setOpacity(m_opacity);
-                m_fill_material = material;
-            } else {
-                TextureMaterial *material = new TextureMaterial;
-                material->setLinearFiltering(true);
-                m_fill_material = material;
-            }
+        if (m_material_type == TypeFlat) {
+            TextureMaterialWithOpacity *txo = new TextureMaterialWithOpacity;
+            setMaterial(txo);
+            txo->setLinearFiltering(true);
+
+            TextureMaterial *tx = new TextureMaterial;
+            tx->setLinearFiltering(true);
+            setOpaqueMaterial(tx);
+
+            m_material_type = TypeTextureGradient;
+
             QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
                 << QSGAttributeDescription(0, 2, GL_FLOAT, 4 * sizeof(float))
                 << QSGAttributeDescription(1, 2, GL_FLOAT, 4 * sizeof(float));
@@ -218,22 +187,18 @@ void DefaultRectangleNode::setGradientStops(const QGradientStops &stops)
         m_dirty_gradienttexture = true;
     } else {
         Q_ASSERT(m_material_preference == PreferVertexColorMaterial);
-        if (!VertexColorMaterial::is(m_fill_material)) {
-            delete m_fill_material;
+        if (m_material_type == TypeFlat) {
             VertexColorMaterial *material = new VertexColorMaterial;
-            material->setOpacity(m_opacity);
-            m_fill_material = material;
+            setMaterial(material);
+            m_material_type = TypeVertexGradient;
             QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
                 << QSGAttributeDescription(0, 2, GL_FLOAT, 6 * sizeof(float))
                 << QSGAttributeDescription(1, 4, GL_FLOAT, 6 * sizeof(float));
             updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
         }
-
-        Q_ASSERT(VertexColorMaterial::is(m_fill_material));
-        static_cast<VertexColorMaterial *>(m_fill_material)->setOpaque(m_gradient_is_opaque);
+        static_cast<VertexColorMaterial *>(material())->setOpaque(m_gradient_is_opaque);
     }
 
-    setMaterial(m_fill_material);
     m_dirty_geometry = true;
 }
 
@@ -286,9 +251,9 @@ void DefaultRectangleNode::updateGeometry()
     Geometry *border = m_border.geometry();
 
     // Check that the vertex type matches the material.
-    Q_ASSERT((fill->stride() == sizeof(Vertex)) == FlatColorMaterial::is(m_fill_material));
-    Q_ASSERT((fill->stride() == sizeof(ColorVertex)) == VertexColorMaterial::is(m_fill_material));
-    Q_ASSERT((fill->stride() == sizeof(TextureVertex)) == (TextureMaterial::is(m_fill_material) || TextureMaterialWithOpacity::is(m_fill_material)));
+    Q_ASSERT(m_material_type != TypeFlat || fill->stride() == sizeof(Vertex));
+    Q_ASSERT(m_material_type != TypeVertexGradient || fill->stride() == sizeof(ColorVertex));
+    Q_ASSERT(m_material_type != TypeTextureGradient || fill->stride() == sizeof(TextureVertex));
     Q_ASSERT(border->stride() == sizeof(Vertex));
 
     int fillIndexCount = 0;
@@ -399,7 +364,7 @@ void DefaultRectangleNode::updateGeometry()
                     }
 
                     if (m_material_preference == PreferVertexColorMaterial) {
-                        Q_ASSERT(VertexColorMaterial::is(m_fill_material));
+                        Q_ASSERT(VertexColorMaterial::is(material()));
                         ColorVertex *vertices = (ColorVertex *)fillVertices;
 
                         fillColor = colorToVector(stops.at(nextGradientStop).second);
@@ -411,7 +376,7 @@ void DefaultRectangleNode::updateGeometry()
                         ++fillVertexCount;
                     } else {
                         Q_ASSERT(m_material_preference == PreferTextureMaterial);
-                        Q_ASSERT(TextureMaterial::is(m_fill_material) || TextureMaterialWithOpacity::is(m_fill_material));
+                        Q_ASSERT(TextureMaterial::is(opaqueMaterial()) && TextureMaterialWithOpacity::is(material()));
 
                         TextureVertex *vertices = (TextureVertex *)fillVertices;
                         QVector2D texCoord(gradientSourceX0 + gradientSourceDX * nextGradientStop, gradientSourceY);
@@ -440,12 +405,12 @@ void DefaultRectangleNode::updateGeometry()
                 }
 
                 if (stops.isEmpty()) {
-                    Q_ASSERT(FlatColorMaterial::is(m_fill_material));
+                    Q_ASSERT(m_material_type == TypeFlat);
                     Vertex *vertices = (Vertex *)fillVertices;
                     vertices[fillVertexCount++].position = QVector2D(rx, y);
                     vertices[fillVertexCount++].position = QVector2D(lx, y);
                 } else if (m_material_preference == PreferVertexColorMaterial) {
-                    Q_ASSERT(VertexColorMaterial::is(m_fill_material));
+                    Q_ASSERT(m_material_type == TypeVertexGradient);
 
                     if (nextGradientStop == 0) {
                         fillColor = colorToVector(stops.at(0).second);
@@ -467,7 +432,6 @@ void DefaultRectangleNode::updateGeometry()
                     ++fillVertexCount;
                 } else {
                     Q_ASSERT(m_material_preference == PreferTextureMaterial);
-                    Q_ASSERT(TextureMaterial::is(m_fill_material) || TextureMaterialWithOpacity::is(m_fill_material));
 
                     qreal x = gradientSourceX0;
                     if (nextGradientStop == 0) {
@@ -554,7 +518,7 @@ void DefaultRectangleNode::updateGeometry()
                 Q_ASSERT(fillVertexCount >= 2);
 
                 if (m_material_preference == PreferVertexColorMaterial) {
-                    Q_ASSERT(VertexColorMaterial::is(m_fill_material));
+                    Q_ASSERT(VertexColorMaterial::is(material()));
                     ColorVertex *vertices = (ColorVertex *)fillVertices;
 
                     fillColor = colorToVector(stops.at(nextGradientStop).second);
@@ -566,7 +530,7 @@ void DefaultRectangleNode::updateGeometry()
                     ++fillVertexCount;
                 } else {
                     Q_ASSERT(m_material_preference == PreferTextureMaterial);
-                    Q_ASSERT(TextureMaterial::is(m_fill_material) || TextureMaterialWithOpacity::is(m_fill_material));
+                    Q_ASSERT(TextureMaterial::is(opaqueMaterial()) || TextureMaterialWithOpacity::is(material()));
 
                     TextureVertex *vertices = (TextureVertex *)fillVertices;
                     QVector2D texCoord(gradientSourceX0 + gradientSourceDX * nextGradientStop, gradientSourceY);
@@ -588,12 +552,12 @@ void DefaultRectangleNode::updateGeometry()
             }
 
             if (stops.isEmpty()) {
-                Q_ASSERT(FlatColorMaterial::is(m_fill_material));
+                Q_ASSERT(m_material_type == TypeFlat);
                 Vertex *vertices = (Vertex *)fillVertices;
                 vertices[fillVertexCount++].position = QVector2D(innerRect.right(), y);
                 vertices[fillVertexCount++].position = QVector2D(innerRect.left(), y);
             } else if (m_material_preference == PreferVertexColorMaterial) {
-                Q_ASSERT(VertexColorMaterial::is(m_fill_material));
+                Q_ASSERT(VertexColorMaterial::is(material()));
 
                 if (nextGradientStop == 0) {
                     fillColor = colorToVector(stops.at(0).second);
@@ -615,7 +579,7 @@ void DefaultRectangleNode::updateGeometry()
                 ++fillVertexCount;
             } else {
                 Q_ASSERT(m_material_preference == PreferTextureMaterial);
-                Q_ASSERT(TextureMaterial::is(m_fill_material) || TextureMaterialWithOpacity::is(m_fill_material));
+                Q_ASSERT(TextureMaterial::is(opaqueMaterial()) || TextureMaterialWithOpacity::is(material()));
 
                 qreal x = gradientSourceX0;
                 if (nextGradientStop == 0) {
@@ -698,13 +662,10 @@ void DefaultRectangleNode::updateGradientTexture()
 
     m_gradient_texture = m_context->textureManager()->upload(image);
 
-    Q_ASSERT(TextureMaterial::is(m_fill_material) || TextureMaterialWithOpacity::is(m_fill_material));
+    Q_ASSERT(TextureMaterial::is(opaqueMaterial()) || TextureMaterialWithOpacity::is(material()));
 
-    // TextureMaterial and TextureMaterialWithOpacity have different (non-virtual) setTexture() implementations.
-    if (TextureMaterial::is(m_fill_material))
-        static_cast<TextureMaterial *>(m_fill_material)->setTexture(m_gradient_texture, m_gradient_is_opaque);
-    else
-        static_cast<TextureMaterialWithOpacity *>(m_fill_material)->setTexture(m_gradient_texture, m_gradient_is_opaque);
+    static_cast<TextureMaterial *>(opaqueMaterial())->setTexture(m_gradient_texture, m_gradient_is_opaque);
+    static_cast<TextureMaterialWithOpacity *>(material())->setTexture(m_gradient_texture, m_gradient_is_opaque);
 }
 
 QRectF DefaultRectangleNode::calculateBoundingRect()

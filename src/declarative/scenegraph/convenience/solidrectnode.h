@@ -48,13 +48,10 @@
 class Q_AUTOTEST_EXPORT SolidRectNode : public GeometryNode
 {
 public:
-    SolidRectNode(const QRectF &rect, const QColor &color, qreal opacity = 1.0);
+    SolidRectNode(const QRectF &rect, const QColor &color);
 
     QRectF rect() const { return m_rect; }
     void setRect(const QRectF &rect);
-
-    qreal opacity() const { return m_material.opacity(); }
-    void setOpacity(qreal opacity) { m_material.setOpacity(opacity); }
 
     virtual NodeSubType subType() const { return SolidRectNodeSubType; }
 

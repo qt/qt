@@ -1516,11 +1516,6 @@ void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool set)
     if (!isWindow() || d->useHIToolBar == set || QSysInfo::MacintoshVersion < QSysInfo::MV_10_3)
         return;
 
-    // ### Disable when using alien widgets
-    if (testAttribute(Qt::WA_NativeWindow) == false) {
-        return;
-    }
-
     d->useHIToolBar = set;
     createWinId(); // We need the hiview for down below.
 

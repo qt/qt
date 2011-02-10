@@ -70,9 +70,9 @@ void printProgress(int p)
 class DistFieldGenTask : public QRunnable
 {
 public:
-    DistFieldGenTask(const QFont &f, int c, int nbGlyph, QMap<int, QImage> *outList)
+    DistFieldGenTask(DistanceFieldFontAtlas *atlas, int c, int nbGlyph, QMap<int, QImage> *outList)
         : QRunnable()
-        , m_font(f)
+        , m_atlas(atlas)
         , m_char(c)
         , m_nbGlyph(nbGlyph)
         , m_outList(outList)
@@ -80,15 +80,14 @@ public:
 
     void run()
     {
-        DistanceFieldFontAtlas atlas(m_font);
-        QImage df = atlas.renderDistanceFieldGlyph(m_char);
+        QImage df = m_atlas->renderDistanceFieldGlyph(m_char);
         QMutexLocker lock(&m_mutex);
         m_outList->insert(m_char, df);
         printProgress(float(m_outList->count()) / m_nbGlyph * 100);
     }
 
     static QMutex m_mutex;
-    QFont m_font;
+    DistanceFieldFontAtlas *m_atlas;
     int m_char;
     int m_nbGlyph;
     QMap<int, QImage> *m_outList;
@@ -147,10 +146,12 @@ int main(int argc, char *argv[])
     DistanceFieldFontAtlas atlas(f);
 
     QMap<int, QImage> distfields;
-    for (int i = 0; i < 0x8A; ++i) {
-        distfields.insert(i, atlas.renderDistanceFieldGlyph(i));
-        printProgress(float(i) / 0x8A * 100);
+    for (int i = 0; i < 0xFF; ++i) {
+        DistFieldGenTask *task = new DistFieldGenTask(&atlas, i, 0xFF, &distfields);
+        QThreadPool::globalInstance()->start(task);
     }
+
+    QThreadPool::globalInstance()->waitForDone();
 
     // Combine dist fields in one image
     QImage output(atlas.atlasSize(), QImage::Format_ARGB32_Premultiplied);

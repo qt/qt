@@ -53,7 +53,6 @@ public:
     DefaultTextureNode ();
     virtual void setRect(const QRectF &rect);
     virtual void setSourceRect(const QRectF &rect);
-    virtual void setOpacity(qreal opacity);
     virtual void setTexture(const QSGTextureRef &texture);
     virtual void setClampToEdge(bool clampToEdge);
     virtual void setLinearFiltering(bool linearFiltering);
@@ -66,6 +65,7 @@ private:
     TextureMaterial m_material;
     TextureMaterialWithOpacity m_materialO;
 
+    uint m_dirty_material : 1;
     uint m_dirty_texture : 1;
     uint m_dirty_geometry : 1;
 };

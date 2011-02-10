@@ -315,16 +315,15 @@ public:
 
         Clip                    = 0x00001000,
         Canvas                  = 0x00002000,
-        EffectiveOpacity        = 0x00004000,
 
         EffectReference         = 0x00008000,
         Visible                 = 0x00010000,
         // When you add an attribute here, don't forget to update
         // dirtyToString()
 
-        TransformUpdateMask     = TransformOrigin | Transform | BasicTransform | Position | Size | Canvas,
-        ComplexTransformUpdateMask     = Transform | Canvas,
-        ContentUpdateMask       = Size | Content | Smooth | EffectiveOpacity | Canvas,
+        TransformUpdateMask     = TransformOrigin | Transform | BasicTransform | Position | Size | EffectReference | Canvas,
+        ComplexTransformUpdateMask     = Transform | EffectReference | Canvas,
+        ContentUpdateMask       = Size | Content | Smooth | Canvas,
         ChildrenUpdateMask      = ChildrenChanged | ChildrenStackingChanged | Canvas,
 
     };
@@ -338,12 +337,25 @@ public:
 
     inline TransformNode *itemNode();
     inline Node *childContainerNode();
+
+    /*
+      Node order is:
+         - itemNode
+         - (opacityNode)
+         - (clipNode)
+         - (effectNode)
+         - groupNode
+     */
+
     TransformNode *itemNodeInstance;
+    OpacityNode *opacityNode;
     QSGClipNode *clipNode;
     RootNode *rootNode;
+    Node *groupNode;
     Node *paintNode;
     int paintNodeIndex;
-    qreal effectiveOpacity;
+
+    virtual TransformNode *createTransformNode();
 
     // A reference from an effect item means that this item is used by the effect, so
     // it should insert a root node.
@@ -596,7 +608,7 @@ private:
 TransformNode *QSGItemPrivate::itemNode() 
 { 
     if (!itemNodeInstance) {
-        itemNodeInstance = new TransformNode;
+        itemNodeInstance = createTransformNode();
 #ifdef QML_RUNTIME_TESTING
         Q_Q(QSGItem);
         itemNodeInstance->description = QString::fromLatin1("QSGItem(%1)").arg(q->metaObject()->className());
@@ -607,7 +619,21 @@ TransformNode *QSGItemPrivate::itemNode()
 
 Node *QSGItemPrivate::childContainerNode()
 {
-    return rootNode ? (Node *)rootNode : (clipNode ? (Node *)clipNode : (Node *)itemNode());
+    if (!groupNode) {
+        groupNode = new Node();
+        if (rootNode)
+            rootNode->appendChildNode(groupNode);
+        else if (clipNode)
+            clipNode->appendChildNode(groupNode);
+        else if (opacityNode)
+            opacityNode->appendChildNode(groupNode);
+        else
+            itemNode()->appendChildNode(groupNode);
+#ifdef QML_RUNTIME_TESTING
+        groupNode->description = QLatin1String("group");
+#endif
+    }
+    return groupNode;
 }
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSGItemPrivate::ChangeTypes);

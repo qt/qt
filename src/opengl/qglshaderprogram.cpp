@@ -261,14 +261,14 @@ bool QGLShaderPrivate::compile(QGLShader *q)
         log = QString::fromLatin1(logbuf);
         QString name = q->objectName();
 
-        char *types[] = {
+        const char *types[] = {
             "Fragment",
             "Vertex",
             "Geometry",
             ""
         };
 
-        char *type = types[3];
+        const char *type = types[3];
         if (shaderType == QGLShader::Fragment)
             type = types[0];
         else if (shaderType == QGLShader::Vertex)

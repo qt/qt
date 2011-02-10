@@ -44,6 +44,7 @@
 
 #include <node.h>
 #include <renderer.h>
+#include <private/nodeupdater_p.h>
 
 #include <solidrectnode.h>
 
@@ -60,14 +61,23 @@ private Q_SLOTS:
         delete widget;
     }
 
+    // Root nodes
     void propegate();
     void propegateWithMultipleRoots();
-
     void simulatedEffect_data();
     void simulatedEffect();
 
+    // Opacity nodes
+    void basicOpacityNode();
+    void opacityPropegation();
+
+    // NodeUpdater
+    void isBlockedCheck();
+
 private:
     QGLWidget *widget;
+
+    NodeUpdater updater;
 };
 
 void NodesTest::initTestCase()
@@ -236,10 +246,11 @@ void NodesTest::simulatedEffect()
     if (connected)
         xform.appendChildNode(&source);
     source.appendChildNode(&geometry);
-    xform.translate(1, 2, 3);
+    QMatrix4x4 m; m.translate(1, 2, 3);
+    xform.setMatrix(m);
 
     // Clear all dirty states...
-    root.updateDirtyStates();
+    updater.updateStates(&root);
 
     rootRenderer.renderScene();
 
@@ -250,6 +261,85 @@ void NodesTest::simulatedEffect()
     if (connected) // geometry is not rendered in this case, so skip it...
         QCOMPARE(rootRenderer.matrix, xform.matrix());
     QCOMPARE(sourceRenderer.matrix, QMatrix4x4());
+}
+
+void NodesTest::basicOpacityNode()
+{
+    OpacityNode *n = new OpacityNode;
+    QCOMPARE(n->opacity(), 1.);
+
+    n->setOpacity(0.5);
+    QCOMPARE(n->opacity(), 0.5);
+
+    n->setOpacity(-1);
+    QCOMPARE(n->opacity(), 0.);
+
+    n->setOpacity(2);
+    QCOMPARE(n->opacity(), 1.);
+}
+
+void NodesTest::opacityPropegation()
+{
+    RootNode *root = new RootNode();
+    OpacityNode *a = new OpacityNode;
+    OpacityNode *b = new OpacityNode;
+    OpacityNode *c = new OpacityNode;
+
+    GeometryNode *geometry = new GeometryNode;
+    geometry->setGeometry(GeometryHelper::createRectGeometry(QRectF(0, 0, 100, 100)));
+    geometry->setMaterial(new FlatColorMaterial);
+
+    root->appendChildNode(a);
+    a->appendChildNode(b);
+    b->appendChildNode(c);
+    c->appendChildNode(geometry);
+
+    a->setOpacity(0.9);
+    b->setOpacity(0.8);
+    c->setOpacity(0.7);
+
+    updater.updateStates(root);
+
+    QCOMPARE(a->combinedOpacity(), 0.9);
+    QCOMPARE(b->combinedOpacity(), 0.9 * 0.8);
+    QCOMPARE(c->combinedOpacity(), 0.9 * 0.8 * 0.7);
+    QCOMPARE(geometry->inheritedOpacity(), 0.9 * 0.8 * 0.7);
+
+    b->setOpacity(0.1);
+    updater.updateStates(root);
+
+    QCOMPARE(a->combinedOpacity(), 0.9);
+    QCOMPARE(b->combinedOpacity(), 0.9 * 0.1);
+    QCOMPARE(c->combinedOpacity(), 0.9 * 0.1 * 0.7);
+    QCOMPARE(geometry->inheritedOpacity(), 0.9 * 0.1 * 0.7);
+
+    b->setOpacity(0);
+    updater.updateStates(root);
+
+    QVERIFY(b->isSubtreeBlocked());
+
+    // Verify that geometry did not get updated as it is in a blocked
+    // subtree
+    QCOMPARE(c->combinedOpacity(), 0.9 * 0.1 * 0.7);
+    QCOMPARE(geometry->inheritedOpacity(), 0.9 * 0.1 * 0.7);
+}
+
+void NodesTest::isBlockedCheck()
+{
+    RootNode *root = new RootNode();
+    OpacityNode *opacity = new OpacityNode();
+    Node *node = new Node();
+
+    root->appendChildNode(opacity);
+    opacity->appendChildNode(node);
+
+    NodeUpdater updater;
+
+    opacity->setOpacity(0);
+    QVERIFY(updater.isNodeBlocked(node, root));
+
+    opacity->setOpacity(1);
+    QVERIFY(!updater.isNodeBlocked(node, root));
 }
 
 QTEST_MAIN(NodesTest);

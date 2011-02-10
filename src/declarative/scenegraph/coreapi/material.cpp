@@ -155,3 +155,9 @@ void AbstractMaterial::setFlag(Flags flags, bool set)
     else
         m_flags &= ~flags;
 }
+
+int AbstractMaterial::compare(const AbstractMaterial *other) const
+{
+    Q_ASSERT(other && type() == other->type());
+    return qint64(this) - qint64(other);
+}

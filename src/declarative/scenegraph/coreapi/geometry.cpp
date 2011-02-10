@@ -275,3 +275,123 @@ const void *GeometryDataUploader::indexData(const Geometry *g)
     else
         return g->constIndexData();
 }
+
+
+/*!
+    Creates a geometry object with coordinates from \a rect.
+
+    The returned geometry is a triangle strip of 4 vertices with 2
+    floats for each vertex for attribute position 0.
+
+    \sa updateRectGeometry
+ */
+Geometry *GeometryHelper::createRectGeometry(const QRectF &rect)
+{
+    QVector<QSGAttributeDescription> desc;
+    desc << QSGAttributeDescription(0, 2, GL_FLOAT, 2 * sizeof(float));
+    Geometry *g = new Geometry(desc);
+    g->setDrawingMode(QSG::TriangleStrip);
+    g->setVertexCount(4);
+
+    updateRectGeometry(g, rect);
+
+    return g;
+}
+
+/*!
+    Updates the rectangle geometry \a g with the coordinates in \a rect.
+
+    The function assumes the geometry object contains a single triangle strip
+    of four vertices of 2 floats each.
+
+    \sa createRectGeometry
+ */
+void GeometryHelper::updateRectGeometry(Geometry *g, const QRectF &rect)
+{
+    Q_ASSERT(!g->isNull());
+    Q_ASSERT(g->vertexCount() == 4);
+    Q_ASSERT(g->stride() == 2 * sizeof(float));
+    Q_ASSERT(!g->attributeValue(0).isNull());
+
+    float *v = (float *) g->vertexData();
+    v[0] = rect.left();
+    v[1] = rect.top();
+
+    v[2] = rect.right();
+    v[3] = rect.top();
+
+    v[4] = rect.left();
+    v[5] = rect.bottom();
+
+    v[6] = rect.right();
+    v[7] = rect.bottom();
+}
+
+/*!
+    Creates a geometry object with coordinates from \a rect and texture coordinates
+    from \a source.
+
+    \a textureRect should be in normalized coordinates.
+
+    The returned geometry is a triangle strip of four vertices with four floats for
+    each vertex, two floats for x and y for attribute position 0 and two floats
+    for tx and ty for attribute position 1.
+
+    \sa updateTexturedRectGeometry
+ */
+Geometry *GeometryHelper::createTexturedRectGeometry(const QRectF &rect, const QRectF &textureRect)
+{
+    QVector<QSGAttributeDescription> desc;
+    desc << QSGAttributeDescription(0, 2, GL_FLOAT, 2 * sizeof(float));
+    desc << QSGAttributeDescription(1, 2, GL_FLOAT, 2 * sizeof(float));
+
+    Geometry *g = new Geometry(desc);
+    g->setDrawingMode(QSG::TriangleStrip);
+    g->setVertexCount(4);
+
+    updateTexturedRectGeometry(g, rect, textureRect);
+
+    return g;
+}
+
+/*!
+    Updates the rectangle geometry \a g with the coordinates in \a rect and texture
+    coordinates from \a textureRect.
+
+    \a textureRect should be in normalized coordinates.
+
+    \a g is assumed to be a triangle strip of four vertices with four floats for
+    each vertex, two floats for x and y for attribute position 0 and two floats
+    for tx and ty for attribute position 1.
+
+    \sa createTexturedRectGeometry
+ */
+void GeometryHelper::updateTexturedRectGeometry(Geometry *g, const QRectF &rect, const QRectF &textureRect)
+{
+    Q_ASSERT(!g->isNull());
+    Q_ASSERT(g->vertexCount() == 4);
+    Q_ASSERT(g->stride() == 4 * sizeof(float));
+    Q_ASSERT(!g->attributeValue(0).isNull());
+    Q_ASSERT(!g->attributeValue(1).isNull());
+
+    float *v = (float *) g->vertexData();
+    v[0] = rect.left();
+    v[1] = rect.top();
+    v[2] = textureRect.left();
+    v[3] = textureRect.top();
+
+    v[4] = rect.right();
+    v[5] = rect.top();
+    v[6] = textureRect.right();
+    v[7] = textureRect.top();
+
+    v[8] = rect.left();
+    v[9] = rect.bottom();
+    v[10] = textureRect.left();
+    v[11] = textureRect.bottom();
+
+    v[12] = rect.right();
+    v[13] = rect.bottom();
+    v[14] = textureRect.right();
+    v[15] = textureRect.bottom();
+}

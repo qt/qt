@@ -292,7 +292,6 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 
     node->setTargetRect(targetRect);
     node->setSourceRect(nsrect);
-    node->setOpacity(data->opacity);
     node->update();
 
     return node;

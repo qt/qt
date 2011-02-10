@@ -52,6 +52,8 @@
 
 //#define FORCE_NO_REORDER
 
+
+
 static bool nodeLessThan(GeometryNode *a, GeometryNode *b)
 {
     // Sort by clip...
@@ -61,6 +63,35 @@ static bool nodeLessThan(GeometryNode *a, GeometryNode *b)
     // Sort by material definition
     AbstractMaterialType *aDef = a->material()->type();
     AbstractMaterialType *bDef = b->material()->type();
+
+    if (aDef != bDef)
+        return aDef < bDef;
+
+    // Sort by material state
+    int cmp = a->material()->compare(b->material());
+    if (cmp != 0)
+        return cmp < 0;
+
+    return a->matrix() < b->matrix();
+}
+
+static bool nodeLessThanWithRenderOrder(GeometryNode *a, GeometryNode *b)
+{
+    // Sort by clip...
+    if (a->clipList() != b->clipList())
+        return a->clipList() < b->clipList();
+
+    // Sort by material definition
+    AbstractMaterialType *aDef = a->material()->type();
+    AbstractMaterialType *bDef = b->material()->type();
+
+    if (!(a->material()->flags() & AbstractMaterial::Blending)) {
+        int aOrder = a->renderOrder();
+        int bOrder = b->renderOrder();
+        if (aOrder != bOrder)
+            return aOrder > bOrder;
+    }
+
     if (aDef != bDef)
         return aDef < bDef;
 
@@ -124,6 +155,7 @@ QMLRenderer::QMLRenderer()
     : Renderer()
     , m_rebuild_lists(false)
     , m_needs_sorting(false)
+    , m_sort_front_to_back(false)
     , m_currentRenderOrder(1)
 {
     QStringList args = qApp->arguments();
@@ -138,7 +170,7 @@ void QMLRenderer::nodeChanged(Node *node, Node::DirtyFlags flags)
 {
     Renderer::nodeChanged(node, flags);
 
-    quint32 rebuildFlags = Node::DirtyNodeAdded | Node::DirtyNodeRemoved | Node::DirtyMaterial | Node::DirtySubtreeEnabled;
+    quint32 rebuildFlags = Node::DirtyNodeAdded | Node::DirtyNodeRemoved | Node::DirtyMaterial | Node::DirtyOpacity;
 
     if (flags & rebuildFlags)
         m_rebuild_lists = true;
@@ -172,7 +204,7 @@ void QMLRenderer::render()
 
     glDisable(GL_SCISSOR_TEST);
     glClearColor(m_clear_color.redF(), m_clear_color.greenF(), m_clear_color.blueF(), m_clear_color.alphaF());
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    bindable()->clear();
 
     QRect r = deviceRect();
     glViewport(0, 0, r.width(), r.height());
@@ -196,7 +228,10 @@ void QMLRenderer::render()
     }
 
     if (m_needs_sorting) {
-        qSort(m_opaqueNodes.begin(), m_opaqueNodes.end(), nodeLessThan);
+        qSort(m_opaqueNodes.begin(), m_opaqueNodes.end(),
+              m_sort_front_to_back
+              ? nodeLessThanWithRenderOrder
+              : nodeLessThan);
         m_needs_sorting = false;
     }
 
@@ -208,14 +243,26 @@ void QMLRenderer::render()
 #ifdef QML_RUNTIME_TESTING
     if (m_render_opaque_nodes)
 #endif
-    renderNodes(m_opaqueNodes);
+    {
+#if defined (QML_RUNTIME_TESTING)
+        if (dumpTree)
+            qDebug() << "Opaque Nodes:";
+#endif
+        renderNodes(m_opaqueNodes);
+    }
 
     glEnable(GL_BLEND);
     glDepthMask(false);
 #ifdef QML_RUNTIME_TESTING
     if (m_render_alpha_nodes)
 #endif
-    renderNodes(m_transparentNodes);
+    {
+#if defined (QML_RUNTIME_TESTING)
+        if (dumpTree)
+            qDebug() << "Alpha Nodes:";
+#endif
+        renderNodes(m_transparentNodes);
+    }
 
     if (m_currentProgram)
         m_currentProgram->deactivate();
@@ -231,9 +278,22 @@ public:
     bool operator < (const Foo &other) const { return nodeLessThan(second, other.second); }
 };
 
+void QMLRenderer::setSortFrontToBackEnabled(bool sort)
+{
+    printf("setting sorting to... %d\n", sort);
+    m_sort_front_to_back = sort;
+}
+
+bool QMLRenderer::isSortFrontToBackEnabled() const
+{
+    return m_sort_front_to_back;
+}
+
+#include "texturematerial.h"
+
 void QMLRenderer::buildLists(Node *node)
 {
-    if (!node->isSubtreeEnabled())
+    if (node->isSubtreeBlocked())
         return;
 
     Geometry *g = 0;
@@ -243,10 +303,13 @@ void QMLRenderer::buildLists(Node *node)
         g = geomNode->geometry();
 
         if (g->vertexCount()) { //Sanity check
+            qreal opacity = geomNode->inheritedOpacity();
+            AbstractMaterial *m = geomNode->activeMaterial();
+
 #ifdef FORCE_NO_REORDER
             if (true) {
 #else
-            if (geomNode->material()->flags() & AbstractMaterial::Blending) {
+            if ((m->flags() & AbstractMaterial::Blending) || opacity < 1) {
 #endif
                 geomNode->setRenderOrder(m_currentRenderOrder - 1);
                 m_transparentNodes.append(geomNode);
@@ -315,8 +378,18 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
     //int programChangeCount = 0;
     //int materialChangeCount = 0;
 
+
     for (int i = 0; i < count; ++i) {
         GeometryNode *geomNode = list.at(i);
+
+        Updates updates(0);
+
+#if defined (QML_RUNTIME_TESTING)
+        static bool dumpTree = qApp->arguments().contains("--dump-tree");
+        if (dumpTree)
+            qDebug() << geomNode;
+#endif
+
         bool changeMatrix = m_currentMatrix != geomNode->matrix();
 
         if (changeMatrix) {
@@ -325,11 +398,19 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
                 m_modelViewMatrix = *m_currentMatrix;
             else
                 m_modelViewMatrix.setToIdentity();
+            updates |= UpdateMatrices;
         }
 
-        Q_ASSERT(geomNode->material());
+        bool changeOpacity = m_render_opacity != geomNode->inheritedOpacity();
+        if (changeOpacity) {
+            updates |= UpdateOpacity;
+            m_render_opacity = geomNode->inheritedOpacity();
+        }
 
-        AbstractMaterial *material = geomNode->material();
+
+        Q_ASSERT(geomNode->activeMaterial());
+
+        AbstractMaterial *material = geomNode->activeMaterial();
         AbstractMaterialShader *program = prepareMaterial(material);
 
         bool changeClip = geomNode->clipList() != m_currentClip;
@@ -340,7 +421,7 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
 #ifdef FORCE_NO_REORDER
             glDepthMask(false);
 #else
-            glDepthMask((material->flags() & AbstractMaterial::Blending) == 0);
+            glDepthMask((material->flags() & AbstractMaterial::Blending) == 0 && m_render_opacity == 1);
 #endif
             //++clipChangeCount;
         }
@@ -352,7 +433,7 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
             m_currentProgram = program;
             m_currentProgram->activate();
             //++programChangeCount;
-            changeMatrix = true;
+            updates |= (UpdateMatrices | UpdateOpacity);
         }
 
         bool changeRenderOrder = currentRenderOrder != geomNode->renderOrder();
@@ -362,12 +443,11 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
             m_projectionMatrix.pop();
             m_projectionMatrix.push();
             m_projectionMatrix *= m_renderOrderMatrix;
-            changeMatrix = true;
+            updates |= UpdateMatrices;
         }
 
         if (changeProgram || m_currentMaterial != material) {
-            program->updateState(this, material, changeProgram ? 0 : m_currentMaterial,
-                changeMatrix ? Renderer::UpdateMatrices : Renderer::Update(0));
+            program->updateState(this, material, changeProgram ? 0 : m_currentMaterial, updates);
             m_currentMaterial = material;
             //++materialChangeCount;
         }

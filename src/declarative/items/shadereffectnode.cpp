@@ -94,7 +94,7 @@ void CustomMaterialShader::updateState(Renderer *r, AbstractMaterial *newEffect,
     }
 
     if (m_node->m_source.respectsOpacity)
-        m_program.setUniformValue("qt_Opacity", (float) m_node->opacity());
+        m_program.setUniformValue("qt_Opacity", (float) r->renderOpacity());
 
     for (int i = 0; i < m_node->m_uniformValues.count(); ++i) {
         const QByteArray &name = m_node->m_uniformValues.at(i).first;
@@ -174,7 +174,7 @@ ShaderEffectMaterial::ShaderEffectMaterial()
 
 
 ShaderEffectNode::ShaderEffectNode()
-    : m_meshResolution(1, 1), m_opacity(1)
+    : m_meshResolution(1, 1)
 {
     Node::setFlag(UsePreprocess, true);
 
@@ -303,15 +303,6 @@ int ShaderEffectMaterial::compare(const AbstractMaterial *other) const
 AbstractMaterialShader *ShaderEffectNode::createShader() const
 {
     return new CustomMaterialShader(const_cast<ShaderEffectNode *>(this));
-}
-
-void ShaderEffectNode::setOpacity(qreal o)
-{
-    if (o == m_opacity)
-        return;
-
-    m_opacity = o;
-    markDirty(DirtyMaterial);
 }
 
 void ShaderEffectNode::setProgramSource(const ShaderEffectProgram &source)

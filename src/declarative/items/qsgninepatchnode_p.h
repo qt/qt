@@ -51,15 +51,10 @@ class QSGNinePatchNode : public GeometryNode
 {
 public:
     QSGNinePatchNode(const QRectF &targetRect, const QSGTextureRef &texture, const QRect &innerRect, 
-                     qreal opacity = 1., bool linearFiltering = false);
-
-    void setData(const QRectF &rect, qreal opacity);
+                     bool linearFiltering = false);
 
     void setRect(const QRectF &rect);
     QRectF rect() const { return m_targetRect; }
-
-    qreal opacity() const { return m_opacity; }
-    void setOpacity(qreal);
 
     bool linearFiltering() const { return m_linearFiltering; }
     void setLinearFiltering(bool);
@@ -68,7 +63,6 @@ private:
     void updateGeometry();
     QRectF m_targetRect;
     QRect m_innerRect;
-    qreal m_opacity;
     bool m_linearFiltering;
     TextureMaterial m_material;
     TextureMaterialWithOpacity m_materialO;

@@ -67,7 +67,9 @@ class Q_DECLARATIVE_EXPORT QSGView : public QSGCanvas
     Q_ENUMS(ResizeMode Status)
 public:
     explicit QSGView(QWidget *parent = 0, Qt::WindowFlags f = 0);
+    explicit QSGView(const QGLFormat &format, QWidget *parent = 0, Qt::WindowFlags f = 0);
     QSGView(const QUrl &source, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    QSGView(const QUrl &source, const QGLFormat &format, QWidget *parent = 0, Qt::WindowFlags f = 0);
     virtual ~QSGView();
 
     QUrl source() const;

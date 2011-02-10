@@ -50,19 +50,14 @@ public:
     FlatColorMaterial();
     virtual AbstractMaterialType *type() const;
     virtual AbstractMaterialShader *createShader() const;
-    virtual int compare(const AbstractMaterial *other) const;
 
     void setColor(const QColor &color);
     const QColor &color() const { return m_color; }
-
-    void setOpacity(qreal opacity);
-    qreal opacity() const { return m_opacity; }
 
     static bool is(const AbstractMaterial *effect);
 
 private:
     QColor m_color;
-    qreal m_opacity;
 };
 
 #endif // FLATCOLORMATERIAL_H

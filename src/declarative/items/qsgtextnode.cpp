@@ -58,10 +58,10 @@
   Creates an empty QSGTextNode
 */
 QSGTextNode::QSGTextNode(QSGContext *context)
-: m_opacity(1.0), m_context(context)
+: m_context(context)
 {
 #if defined(QML_RUNTIME_TESTING)
-    description = "text";
+    description = QLatin1String("text");
 #endif
 }
 
@@ -115,25 +115,6 @@ void QSGTextNode::setStyleColor(const QColor &styleColor)
 }
 #endif
 
-void QSGTextNode::setOpacity(qreal opacity)
-{
-    m_opacity = opacity;
-
-    for (int i=0; i<childCount(); ++i) {
-        Node *node = childAtIndex(i);
-        if (node->subType() == GlyphNodeSubType) {
-            GlyphNodeInterface *glyphNode = static_cast<GlyphNodeInterface *>(node);
-            glyphNode->setOpacity(opacity);
-        } else if (node->subType() == SolidRectNodeSubType) {
-            SolidRectNode *solidRectNode = static_cast<SolidRectNode *>(node);
-            solidRectNode->setOpacity(opacity);
-        } else if (node->subType() == PixmapNodeSubType) {
-            TextureNodeInterface *pixmapNode = static_cast<TextureNodeInterface *>(node);
-            pixmapNode->setOpacity(opacity);
-        }
-    }
-}
-
 void QSGTextNode::addTextDecorations(const QPointF &position, const QFont &font, const QColor &color,
                                   qreal width)
 {
@@ -148,20 +129,20 @@ void QSGTextNode::addTextDecorations(const QPointF &position, const QFont &font,
         int underlinePosition = fontEngine->underlinePosition().ceil().toInt();
         QRectF underline(line);
         underline.translate(0.0, underlinePosition);
-        appendChildNode(new SolidRectNode(underline, color, m_opacity));
+        appendChildNode(new SolidRectNode(underline, color));
     }
 
     qreal ascent = fontEngine->ascent().toReal();
     if (font.overline()) {
         QRectF overline(line);
         overline.translate(0.0, -ascent);
-        appendChildNode(new SolidRectNode(overline, color, m_opacity));
+        appendChildNode(new SolidRectNode(overline, color));
     }
 
     if (font.strikeOut()) {
         QRectF strikeOut(line);
         strikeOut.translate(0.0, ascent / -3.0);
-        appendChildNode(new SolidRectNode(strikeOut, color, m_opacity));
+        appendChildNode(new SolidRectNode(strikeOut, color));
     }
 }
 
@@ -170,7 +151,6 @@ GlyphNodeInterface *QSGTextNode::addGlyphs(const QPointF &position, const QGlyph
     GlyphNodeInterface *node = m_context->createGlyphNode(glyphs.font());
     node->setGlyphs(position, glyphs);
     node->setColor(color);
-    node->setOpacity(m_opacity);
 
     appendChildNode(node);
 

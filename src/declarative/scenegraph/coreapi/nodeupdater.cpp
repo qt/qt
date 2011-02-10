@@ -45,9 +45,49 @@
 
 NodeUpdater::NodeUpdater()
     : m_current_clip(0)
-    , m_disable_count(0)
     , m_force_update(0)
 {
+    m_opacity_stack.push(1);
+}
+
+void NodeUpdater::updateStates(Node *n)
+{
+    m_current_clip = 0;
+    m_force_update = 0;
+
+    Q_ASSERT(m_opacity_stack.size() == 1); // The one we added in the constructr...
+    // Q_ASSERT(m_matrix_stack.isEmpty()); ### no such function?
+    Q_ASSERT(m_combined_matrix_stack.isEmpty());
+
+    visitNode(n);
+}
+
+
+/*!
+    Returns true if \a node is has something that blocks it in the chain from
+    \a node to \a root doing a full state update pass.
+
+    This function does not process dirty states, simply does a simple traversion
+    up to the top.
+
+    The function assumes that \a root exists in the parent chain of \a node.
+ */
+
+bool NodeUpdater::isNodeBlocked(Node *node, Node *root) const
+{
+    qreal opacity = 1;
+    while (node != root) {
+        if (node->type() == Node::OpacityNodeType) {
+            opacity *= static_cast<OpacityNode *>(node)->opacity();
+            if (opacity < 0.001)
+                return true;
+        }
+        node = node->parent();
+
+        Q_ASSERT_X(node, "NodeUpdater::isNodeBlocked", "node is not in the subtree of root");
+    }
+
+    return false;
 }
 
 
@@ -61,13 +101,13 @@ void NodeUpdater::enterTransformNode(TransformNode *t)
 #endif
 
     if (!t->matrix().isIdentity()) {
-        m_combined_matrix_stack.push(&t->m_combined_matrix);
+        m_combined_matrix_stack.push(&t->combinedMatrix());
 
         m_matrix_stack.push();
         m_matrix_stack *= t->matrix();
     }
 
-    t->m_combined_matrix = m_matrix_stack.top();
+    t->setCombinedMatrix(m_matrix_stack.top());
 }
 
 
@@ -126,9 +166,39 @@ void NodeUpdater::enterGeometryNode(GeometryNode *g)
 
     g->m_matrix = m_combined_matrix_stack.isEmpty() ? 0 : m_combined_matrix_stack.top();
     g->m_clip_list = m_current_clip;
-    g->m_enabled = m_disable_count == 0;
+    g->setInheritedOpacity(m_opacity_stack.top());
 }
 
+void NodeUpdater::enterOpacityNode(OpacityNode *o)
+{
+    if (o->dirtyFlags() & Node::DirtyOpacity)
+        ++m_force_update;
+
+    qreal opacity = m_opacity_stack.top() * o->opacity();
+    o->setCombinedOpacity(opacity);
+    m_opacity_stack.push(opacity);
+
+#ifdef QSG_UPDATER_DEBUG
+    qDebug() << "enter opacity" << o;
+#endif
+}
+
+void NodeUpdater::leaveOpacityNode(OpacityNode *o)
+{
+#ifdef QSG_UPDATER_DEBUG
+    qDebug() << "leave opacity" << o;
+#endif
+    if (o->flags() & Node::DirtyOpacity)
+        --m_force_update;
+
+    m_opacity_stack.pop();
+}
+
+void NodeUpdater::visitChildren(Node *n)
+{
+    if (!n->isSubtreeBlocked())
+        NodeVisitor::visitChildren(n);
+}
 
 void NodeUpdater::visitNode(Node *n)
 {
@@ -137,18 +207,14 @@ void NodeUpdater::visitNode(Node *n)
 #endif
 
     if (n->dirtyFlags() || m_force_update) {
-        bool forceUpdate = n->dirtyFlags() & (Node::DirtyNodeAdded | Node::DirtySubtreeEnabled);
+        bool forceUpdate = n->dirtyFlags() & (Node::DirtyNodeAdded);
         if (forceUpdate)
             ++m_force_update;
-        if (!n->isSubtreeEnabled())
-            ++m_disable_count;        
 
         NodeVisitor::visitNode(n);
 
         if (forceUpdate)
             --m_force_update;
-        if (!n->isSubtreeEnabled())
-            --m_disable_count;        
 
         n->clearDirty();
     }

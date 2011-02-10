@@ -61,6 +61,7 @@ Q_OBJECT
 Q_DECLARE_PRIVATE(QSGCanvas)
 public:
     QSGCanvas(QWidget *parent = 0, Qt::WindowFlags f = 0);
+    QSGCanvas(const QGLFormat &format, QWidget *parent = 0, Qt::WindowFlags f = 0);
     virtual ~QSGCanvas();
 
     QSGItem *rootItem() const;
@@ -75,6 +76,7 @@ public:
 
 protected:
     QSGCanvas(QSGCanvasPrivate &dd, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    QSGCanvas(QSGCanvasPrivate &dd, const QGLFormat &format, QWidget *parent = 0, Qt::WindowFlags f = 0);
 
     virtual void paintEvent(QPaintEvent *);
     virtual void showEvent(QShowEvent *);

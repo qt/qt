@@ -89,6 +89,8 @@ public:
     virtual QSGTextureManager *createTextureManager();
     virtual QAnimationDriver *createAnimationDriver(QWidget *window);
 
+    static QSGContext *createDefaultContext();
+
 signals:
     void ready();
 

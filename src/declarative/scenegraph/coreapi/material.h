@@ -85,7 +85,7 @@ public:
 
     virtual AbstractMaterialType *type() const = 0;
     virtual AbstractMaterialShader *createShader() const = 0;
-    virtual int compare(const AbstractMaterial *other) const = 0;
+    virtual int compare(const AbstractMaterial *other) const;
 
     AbstractMaterial::Flags flags() const { return m_flags; }
 

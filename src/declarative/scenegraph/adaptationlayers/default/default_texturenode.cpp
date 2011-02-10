@@ -48,15 +48,12 @@ DefaultTextureNode::DefaultTextureNode()
     : m_dirty_texture(false)
     , m_dirty_geometry(false)
 {
-    m_material.setLinearFiltering(m_linear_filtering);
-    m_materialO.setLinearFiltering(m_linear_filtering);
-    m_materialO.setOpacity(m_opacity);
-    setMaterial(&m_material);
-
     QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
         << QSGAttributeDescription(0, 2, GL_FLOAT, 4 * sizeof(float))
         << QSGAttributeDescription(1, 2, GL_FLOAT, 4 * sizeof(float));
     updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
+    setMaterial(&m_materialO);
+    setOpaqueMaterial(&m_material);
 
 #ifdef QML_RUNTIME_TESTING
     description = QLatin1String("pixmap");
@@ -80,15 +77,6 @@ void DefaultTextureNode::setSourceRect(const QRectF &rect)
     m_dirty_geometry = true;
 }
 
-void DefaultTextureNode::setOpacity(qreal opacity)
-{
-    if (m_opacity == opacity)
-        return;
-    m_materialO.setOpacity(opacity);
-    m_opacity = opacity;
-    setMaterial(opacity == 1 ? &m_material : &m_materialO); // Indicate that the material state has changed.
-}
-
 void DefaultTextureNode::setTexture(const QSGTextureRef &texture)
 {
     if (texture.texture() == m_texture.texture()
@@ -104,18 +92,17 @@ void DefaultTextureNode::setClampToEdge(bool clampToEdge)
     if (m_clamp_to_edge == clampToEdge)
         return;
     m_clamp_to_edge = clampToEdge;
-    m_dirty_texture = true;
+    m_dirty_material = true;
 }
 
 void DefaultTextureNode::setLinearFiltering(bool linearFiltering)
 {
     if (m_linear_filtering == linearFiltering)
         return;
-    m_material.setLinearFiltering(linearFiltering);
-    m_materialO.setLinearFiltering(linearFiltering);
     m_linear_filtering = linearFiltering;
-    setMaterial(m_opacity == 1 ? &m_material : &m_materialO); // Indicate that the material state has changed.
+    m_dirty_material = true;
 }
+
 
 void DefaultTextureNode::update()
 {
@@ -125,6 +112,14 @@ void DefaultTextureNode::update()
     // A texture update causes the source rectangle to change, so update geometry too.
     if (m_dirty_geometry || m_dirty_texture)
         updateGeometry();
+
+    if (m_dirty_material) {
+        m_material.setLinearFiltering(m_linear_filtering);
+        m_materialO.setLinearFiltering(m_linear_filtering);
+        m_material.setClampToEdge(m_clamp_to_edge);
+        m_materialO.setClampToEdge(m_clamp_to_edge);
+        markDirty(DirtyMaterial);
+    }
 
     m_dirty_geometry = false;
     m_dirty_texture = false;
@@ -234,8 +229,4 @@ void DefaultTextureNode::updateTexture()
     bool opaque = !m_texture->hasAlphaChannel();
     m_material.setTexture(m_texture, opaque);
     m_materialO.setTexture(m_texture, opaque);
-    setMaterial(m_opacity == 1 ? &m_material : &m_materialO); // Indicate that the material state has changed.
-
-    m_material.setClampToEdge(m_clamp_to_edge);
-    m_materialO.setClampToEdge(m_clamp_to_edge);
 }

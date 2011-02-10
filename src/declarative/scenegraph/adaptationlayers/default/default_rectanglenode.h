@@ -66,25 +66,32 @@ public:
     virtual void setColor(const QColor &color);
     virtual void setPenColor(const QColor &color);
     virtual void setPenWidth(int width);
-    virtual void setOpacity(qreal opacity);
     virtual void setGradientStops(const QGradientStops &stops);
     virtual void setRadius(qreal radius);
     virtual void update();
 
 private:
+    enum {
+        TypeFlat,
+        TypeVertexGradient,
+        TypeTextureGradient
+    };
+
     QRectF calculateBoundingRect();
     void updateGeometry();
     void updateGradientTexture();
 
     MaterialPreference m_material_preference;
     GeometryNode m_border;
-    AbstractMaterial *m_fill_material; // Can be FlatColorMaterial, VertexColorMaterial, TextureMaterial or TextureMaterialWithOpacity.
     FlatColorMaterial m_border_material;
+    FlatColorMaterial m_fill_material;
     QSGTextureRef m_gradient_texture;
 
     uint m_gradient_is_opaque : 1;
     uint m_dirty_geometry : 1;
     uint m_dirty_gradienttexture : 1;
+
+    int m_material_type; // Only goes up to 3
 
     QSGContext *m_context;
 };

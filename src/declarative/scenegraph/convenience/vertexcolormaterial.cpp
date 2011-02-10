@@ -64,12 +64,8 @@ AbstractMaterialType VertexColorMaterialShader::type;
 
 void VertexColorMaterialShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
 {
-    Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
-    VertexColorMaterial *material = static_cast<VertexColorMaterial *>(newEffect);
-    VertexColorMaterial *oldMaterial = static_cast<VertexColorMaterial *>(oldEffect);
-
-    if (oldMaterial == 0 || oldMaterial->opacity() != material->opacity())
-        m_program.setUniformValue(m_opacity_id, GLfloat(material->opacity()));
+    if (!(newEffect->flags() & AbstractMaterial::Blending) || updates & Renderer::UpdateOpacity)
+        m_program.setUniformValue(m_opacity_id, GLfloat(renderer->renderOpacity()));
 
     if (updates & Renderer::UpdateMatrices)
         m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
@@ -109,21 +105,15 @@ const char *VertexColorMaterialShader::fragmentShader() const {
 }
 
 
-VertexColorMaterial::VertexColorMaterial(bool opaque) : m_opacity(1), m_opaque(opaque)
+VertexColorMaterial::VertexColorMaterial(bool opaque) : m_opaque(opaque)
 {
     setFlag(Blending, !opaque);
 }
 
 void VertexColorMaterial::setOpaque(bool opaque)
 {
-    setFlag(Blending, m_opacity != 1 || !opaque);
+    setFlag(Blending, !opaque);
     m_opaque = opaque;
-}
-
-void VertexColorMaterial::setOpacity(qreal opacity)
-{
-    setFlag(Blending, opacity != 1 || !m_opaque);
-    m_opacity = opacity;
 }
 
 AbstractMaterialType *VertexColorMaterial::type() const
@@ -134,14 +124,6 @@ AbstractMaterialType *VertexColorMaterial::type() const
 AbstractMaterialShader *VertexColorMaterial::createShader() const
 {
     return new VertexColorMaterialShader;
-}
-
-int VertexColorMaterial::compare(const AbstractMaterial *o) const
-{
-    Q_ASSERT(o && type() == o->type());
-    const VertexColorMaterial *other = static_cast<const VertexColorMaterial *>(o);
-    qreal o1 = m_opacity, o2 = other->m_opacity;
-    return int(o2 < o1) - int(o1 < o2);
 }
 
 bool VertexColorMaterial::is(const AbstractMaterial *effect)

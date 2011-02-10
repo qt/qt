@@ -57,12 +57,6 @@ class GeometryNode;
 class TransformNode;
 class ClipNode;
 
-class NodeData
-{
-public:
-    virtual ~NodeData() { }
-};
-
 class Q_DECLARATIVE_EXPORT Node
 {
 public:
@@ -72,6 +66,7 @@ public:
         GeometryNodeType,
         TransformNodeType,
         ClipNodeType,
+        OpacityNodeType,
         UserNodeType = 1024
     };
 
@@ -82,12 +77,14 @@ public:
         DirtyNodeRemoved            = 0x0008,
         DirtyGeometry               = 0x0010,
         DirtyRenderOrder            = 0x0020,
-        DirtySubtreeEnabled         = 0x0040,
-        DirtyBoundingRect           = 0x0080,
         DirtyMaterial               = 0x0100,
+        DirtyOpacity                = 0x0200,
         DirtyAll                    = 0xffff,
 
-        DirtyPropagationMask        = DirtyMatrix | DirtyClipList | DirtyNodeAdded | DirtySubtreeEnabled | DirtyBoundingRect,
+        DirtyPropagationMask        = DirtyMatrix
+                                      | DirtyClipList
+                                      | DirtyNodeAdded
+                                      | DirtyOpacity,
 
 //        DirtyMatrixSubtree          = DirtyMatrix << 16,
 //        DirtyClipListSubtree        = DirtyClipList << 16,
@@ -137,37 +134,22 @@ public:
 
     virtual NodeSubType subType() const { return DefaultNodeSubType; }
 
-    virtual void setSubtreeRenderOrder(int order);
-
-    void setNodeData(void *key, NodeData *data) {
-        m_data[key] = data;
-    }
-
-    NodeData *nodeData(void *key) const {
-        return m_data[key];
-    }
-
     void clearDirty() { m_flags = 0; }
     void markDirty(DirtyFlags flags);
     DirtyFlags dirtyFlags() const { return m_flags; }
 
     void updateDirtyStates();
 
-    bool isSubtreeEnabled() const { return m_subtree_enabled; }
-    void setSubtreeEnabled(bool enabled);
+    virtual bool isSubtreeBlocked() const { return false; }
 
     Flags flags() const { return m_nodeFlags; }
     void setFlag(Flag, bool = true);
 
     virtual void preprocess() { }
 
-    virtual QRectF subtreeBoundingRect() const;
-
 #ifdef QML_RUNTIME_TESTING
     QString description;
 #endif
-
-    void moveChildren(Node *newParent);
 
 protected:
     // When a node is destroyed, it will detach from the scene graph and the renderer will be
@@ -187,11 +169,9 @@ protected:
 private:
     Node *m_parent;
     QList<Node *> m_children;
-    QHash<void *, NodeData *> m_data;
 
     Flags m_nodeFlags;
     DirtyFlags m_flags;
-    bool m_subtree_enabled;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Node::DirtyFlags);
@@ -250,22 +230,28 @@ public:
     void setMaterial(AbstractMaterial *material);
     AbstractMaterial *material() const { return m_material; }
 
+    void setOpaqueMaterial(AbstractMaterial *material);
+    AbstractMaterial *opaqueMaterial() const { return m_opaque_material; }
+
+    AbstractMaterial *activeMaterial() const;
+
+
     virtual NodeType type() const { return GeometryNodeType; }
-    virtual QRectF subtreeBoundingRect() const;
 
     void setRenderOrder(int order);
     int renderOrder() const { return m_render_order; }
 
-    virtual void setSubtreeRenderOrder(int order);
-
-    bool isEnabled() const { return m_enabled; }
+    void setInheritedOpacity(qreal opacity);
+    qreal inheritedOpacity() const { return m_opacity; }
 
 private:
     friend class NodeUpdater;
 
     int m_render_order;
     AbstractMaterial *m_material;
-    bool m_enabled;
+    AbstractMaterial *m_opaque_material;
+
+    qreal m_opacity;
 };
 
 class Q_DECLARATIVE_EXPORT ClipNode : public BasicGeometryNode
@@ -275,7 +261,6 @@ public:
     ~ClipNode();
 
     virtual NodeType type() const { return ClipNodeType; }
-    virtual QRectF subtreeBoundingRect() const;
 
 private:
 };
@@ -288,21 +273,14 @@ public:
     ~TransformNode();
 
     virtual NodeType type() const { return TransformNodeType; }
-    virtual QRectF subtreeBoundingRect() const;
 
     void setMatrix(const QMatrix4x4 &matrix);
-    const QMatrix4x4 matrix() const { return m_matrix; }
+    const QMatrix4x4 &matrix() const { return m_matrix; }
 
-    void translate(qreal dx, qreal dy, qreal dz=0);
-    void scale(qreal factor);
-    void scale(qreal x, qreal y, qreal z = 1);
-    void rotate(qreal angle, qreal x, qreal y, qreal z);
-
-    void setZ(qreal z);
+    void setCombinedMatrix(const QMatrix4x4 &matrix);
+    const QMatrix4x4 &combinedMatrix() const { return m_combined_matrix; }
 
 private:
-    friend class NodeUpdater;
-
     QMatrix4x4 m_matrix;
     QMatrix4x4 m_combined_matrix;
 };
@@ -314,8 +292,6 @@ public:
     ~RootNode();
     NodeType type() const { return RootNodeType; }
 
-    void updateDirtyStates();
-
 private:
     void notifyNodeChange(Node *node, DirtyFlags flags);
 
@@ -326,19 +302,43 @@ private:
     QList<Renderer *> m_renderers;
 };
 
-class NodeVisitor {
+
+class Q_DECLARATIVE_EXPORT OpacityNode : public Node
+{
+public:
+    OpacityNode();
+    ~OpacityNode();
+
+    void setOpacity(qreal opacity);
+    qreal opacity() const { return m_opacity; }
+
+    void setCombinedOpacity(qreal opacity);
+    qreal combinedOpacity() const { return m_combined_opacity; }
+
+    virtual Node::NodeType type() const { return OpacityNodeType; }
+
+    bool isSubtreeBlocked() const;
+
+
+private:
+    qreal m_opacity;
+    qreal m_combined_opacity;
+};
+
+class Q_DECLARATIVE_EXPORT NodeVisitor {
 public:
     virtual ~NodeVisitor();
 
+protected:
     virtual void enterTransformNode(TransformNode *) {}
     virtual void leaveTransformNode(TransformNode *) {}
     virtual void enterClipNode(ClipNode *) {}
     virtual void leaveClipNode(ClipNode *) {}
     virtual void enterGeometryNode(GeometryNode *) {}
     virtual void leaveGeometryNode(GeometryNode *) {}
-
+    virtual void enterOpacityNode(OpacityNode *) {}
+    virtual void leaveOpacityNode(OpacityNode *) {}
     virtual void visitNode(Node *n);
-
     virtual void visitChildren(Node *n);
 };
 
@@ -346,6 +346,8 @@ public:
 Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const Node *n);
 Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const GeometryNode *n);
 Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const TransformNode *n);
+Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const OpacityNode *n);
+Q_DECLARATIVE_EXPORT QDebug operator<<(QDebug, const RootNode *n);
 
 class NodeDumper : public NodeVisitor {
 

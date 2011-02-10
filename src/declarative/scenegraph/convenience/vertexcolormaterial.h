@@ -50,18 +50,13 @@ public:
     VertexColorMaterial(bool opaque = false);
     virtual AbstractMaterialType *type() const;
     virtual AbstractMaterialShader *createShader() const;
-    virtual int compare(const AbstractMaterial *other) const;
 
     void setOpaque(bool opaque);
     bool opaque() const { return m_opaque; }
 
-    void setOpacity(qreal opacity);
-    qreal opacity() const { return m_opacity; }
-
     static bool is(const AbstractMaterial *effect);
 
 private:
-    qreal m_opacity;
     bool m_opaque;
 };
 

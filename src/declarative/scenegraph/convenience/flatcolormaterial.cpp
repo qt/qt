@@ -70,13 +70,12 @@ void FlatColorMaterialShader::updateState(Renderer *renderer, AbstractMaterial *
     FlatColorMaterial *newMaterial = static_cast<FlatColorMaterial *>(newEffect);
 
     const QColor &c = newMaterial->color();
-    if (oldMaterial == 0 || c != oldMaterial->color()
-        || newMaterial->opacity() != oldMaterial->opacity())
-    {
-        QVector4D v(c.redF() * c.alphaF() * newMaterial->opacity(),
-                    c.greenF() * c.alphaF() * newMaterial->opacity(),
-                    c.blueF() * c.alphaF() * newMaterial->opacity(),
-                    c.alphaF() * newMaterial->opacity());
+    if (oldMaterial == 0 || c != oldMaterial->color() || (updates & Renderer::UpdateOpacity)) {
+        qreal opacity = renderer->renderOpacity();
+        QVector4D v(c.redF() * c.alphaF() * opacity,
+                    c.greenF() * c.alphaF() * opacity,
+                    c.blueF() * c.alphaF() * opacity,
+                    c.alphaF() * opacity);
         m_program.setUniformValue(m_color_id, v);
     }
 
@@ -114,20 +113,14 @@ const char *FlatColorMaterialShader::fragmentShader() const {
 }
 
 
-FlatColorMaterial::FlatColorMaterial() : m_color(Qt::white), m_opacity(1.0)
+FlatColorMaterial::FlatColorMaterial() : m_color(Qt::white)
 {
-}
-
-void FlatColorMaterial::setOpacity(qreal opacity)
-{
-    m_opacity = opacity;
-    setFlag(Blending, m_color.alpha() != 0xff || m_opacity < 1.0);
 }
 
 void FlatColorMaterial::setColor(const QColor &color)
 {
     m_color = color;
-    setFlag(Blending, m_color.alpha() != 0xff || m_opacity < 1.0);
+    setFlag(Blending, m_color.alpha() != 0xff);
 }
 
 
@@ -139,15 +132,6 @@ AbstractMaterialType *FlatColorMaterial::type() const
 AbstractMaterialShader *FlatColorMaterial::createShader() const
 {
     return new FlatColorMaterialShader;
-}
-
-int FlatColorMaterial::compare(const AbstractMaterial *o) const
-{
-    Q_ASSERT(o && type() == o->type());
-    const FlatColorMaterial *other = static_cast<const FlatColorMaterial *>(o);
-    QRgb c1 = m_color.rgba();
-    QRgb c2 = other->m_color.rgba();
-    return int(c2 < c1) - int(c1 < c2);
 }
 
 bool FlatColorMaterial::is(const AbstractMaterial *effect)

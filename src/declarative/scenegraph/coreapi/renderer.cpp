@@ -42,6 +42,7 @@
 #include "renderer.h"
 #include "node.h"
 #include "material.h"
+#include "nodeupdater_p.h"
 
 #include "adaptationlayer.h"
 
@@ -55,9 +56,21 @@
 //#define RENDERER_DEBUG
 //#define QT_GL_NO_SCISSOR_TEST
 
+void Bindable::clear() const
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+// Reactivate the color buffer after switching to the stencil.
+void Bindable::reactivate() const
+{
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+}
+
 BindableFbo::BindableFbo(QGLContext *ctx, QGLFramebufferObject *fbo) : m_ctx(ctx), m_fbo(fbo)
 {
 }
+
 
 void BindableFbo::bind() const
 {
@@ -70,16 +83,50 @@ Renderer::Renderer()
     : QObject()
     , m_clear_color(Qt::transparent)
     , m_root_node(0)
+    , m_node_updater(0)
     , m_changed_emitted(false)
+    , m_bindable(0)
 {
     Q_ASSERT(QGLContext::currentContext());
     initializeGLFunctions();
 }
 
+
 Renderer::~Renderer()
 {
     setRootNode(0);
+    delete m_node_updater;
 }
+
+
+/*!
+    Returns the node updater that this renderer uses to update states in the
+    scene graph.
+
+    If no updater is specified a default one is constructed.
+ */
+
+NodeUpdater *Renderer::nodeUpdater() const
+{
+    if (!m_node_updater)
+        const_cast<Renderer *>(this)->m_node_updater = new NodeUpdater();
+    return m_node_updater;
+}
+
+
+/*!
+    Sets the node updater that this renderer uses to update states in the
+    scene graph.
+
+    This will delete and override any existing node updater
+  */
+void Renderer::setNodeUpdater(NodeUpdater *updater)
+{
+    if (m_node_updater)
+        delete m_node_updater;
+    m_node_updater = updater;
+}
+
 
 void Renderer::setRootNode(RootNode *node)
 {
@@ -96,6 +143,7 @@ void Renderer::setRootNode(RootNode *node)
         nodeChanged(m_root_node, Node::DirtyNodeAdded);
     }
 }
+
 
 void Renderer::renderScene()
 {
@@ -118,6 +166,7 @@ void Renderer::renderScene(const Bindable &bindable)
 //    QTime time;
 //    time.start();
 
+    m_bindable = &bindable;
     preprocess();
     bindable.bind();
     GeometryDataUploader::bind();
@@ -125,6 +174,7 @@ void Renderer::renderScene(const Bindable &bindable)
     render();
     GeometryDataUploader::release();
     m_changed_emitted = false;
+    m_bindable = 0;
 
 //    printf("rendering time: %d\n", time.elapsed());
 }
@@ -206,10 +256,14 @@ void Renderer::preprocess()
     Q_ASSERT(m_root_node);
 
     for (QSet<Node *>::const_iterator it = m_nodes_to_preprocess.constBegin();
-         it != m_nodes_to_preprocess.constEnd(); ++it)
-        (*it)->preprocess();
+         it != m_nodes_to_preprocess.constEnd(); ++it) {
+        Node *n = *it;
+        if (!nodeUpdater()->isNodeBlocked(n, m_root_node)) {
+            n->preprocess();
+        }
+    }
 
-    m_root_node->updateDirtyStates();
+    nodeUpdater()->updateStates(m_root_node);
 }
 
 void Renderer::addNodesToPreprocess(Node *node)
@@ -343,7 +397,7 @@ Renderer::ClipType Renderer::updateStencilClip(const ClipNode *clip)
         glStencilFunc(GL_EQUAL, clipDepth, 0xff); // stencil test, ref, test mask
         glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // stencil fail, z fail, z pass
         glStencilMask(0); // write mask
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        bindable()->reactivate();
         //glDepthMask(GL_TRUE); // must be reset correctly by caller.
     } else {
         glDisable(GL_STENCIL_TEST);

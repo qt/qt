@@ -65,6 +65,7 @@ HEADERS  = configureapp.h environment.h tools.h\
            $$QT_SOURCE_TREE/src/corelib/tools/qstringlist.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qstringmatcher.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qunicodetables_p.h \
+           $$QT_SOURCE_TREE/src/corelib/kernel/qsystemerror_p.h \
            $$QT_SOURCE_TREE/src/corelib/xml/qxmlstream.h \
            $$QT_SOURCE_TREE/src/corelib/xml/qxmlutils_p.h \
            $$QT_SOURCE_TREE/tools/shared/symbian/epocroot_p.h \
@@ -111,6 +112,7 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qunicodetables.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qvsnprintf.cpp \
            $$QT_SOURCE_TREE/src/corelib/kernel/qvariant.cpp \
+           $$QT_SOURCE_TREE/src/corelib/kernel/qsystemerror.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qurl.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qline.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qsize.cpp \

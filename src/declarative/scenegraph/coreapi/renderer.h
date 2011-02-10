@@ -60,11 +60,13 @@ struct AbstractMaterialType;
 class QGLFramebufferObject;
 class TextureReference;
 
-class Bindable
+class Q_DECLARATIVE_EXPORT Bindable
 {
 public:
     virtual ~Bindable() { }
     virtual void bind() const = 0;
+    virtual void clear() const;
+    virtual void reactivate() const;
 };
 
 class BindableFbo : public Bindable
@@ -77,6 +79,7 @@ private:
     QGLFramebufferObject *m_fbo;
 };
 
+class NodeUpdater;
 
 class Q_DECLARATIVE_EXPORT Renderer : public QObject, public QGLFunctions
 {
@@ -84,13 +87,8 @@ class Q_DECLARATIVE_EXPORT Renderer : public QObject, public QGLFunctions
 public:
     enum Update
     {
-        UpdateColor                 = 0x00000001,
-        UpdateModelViewMatrix       = 0x00000002,
-        UpdateProjectionMatrix      = 0x00000004,
-        UpdateMatrices              = 0x00000006,
-        UpdateLights                = 0x00000008,
-        UpdateMaterials             = 0x00000010,
-        UpdateAll                   = 0x7FFFFFFF
+        UpdateMatrices              = 0x0001,
+        UpdateOpacity               = 0x0002
     };
     Q_DECLARE_FLAGS(Updates, Update)
 
@@ -121,6 +119,9 @@ public:
 
     QMatrix4x4 combinedMatrix() const { return m_projectionMatrix.top() * m_modelViewMatrix.top(); }
 
+    // ### gunnar: move into RenderState along with combined matrix and update flags.
+    qreal renderOpacity() const { return m_render_opacity; }
+
     void setClearColor(const QColor &color);
 
     void setTexture(int unit, const QSGTextureRef &texture);
@@ -131,7 +132,8 @@ public:
     virtual void nodeChanged(Node *node, Node::DirtyFlags flags);
     virtual void materialChanged(GeometryNode *node, AbstractMaterial *from, AbstractMaterial *to);
 
-public slots:
+    NodeUpdater *nodeUpdater() const;
+    void setNodeUpdater(NodeUpdater *updater);
 
 signals:
     void sceneGraphChanged(); // Add, remove, ChangeFlags changes...
@@ -140,6 +142,7 @@ protected:
     virtual void render() = 0;
     Renderer::ClipType updateStencilClip(const ClipNode *clip);
 
+    const Bindable *bindable() const { return m_bindable; }
 
     AbstractMaterialShader *prepareMaterial(AbstractMaterial *material);
     virtual void preprocess();
@@ -150,9 +153,12 @@ protected:
     QColor m_clear_color;
     QSGMatrix4x4Stack m_projectionMatrix;
     QSGMatrix4x4Stack m_modelViewMatrix;
+    qreal m_render_opacity;
 
 private:
     RootNode *m_root_node;
+    NodeUpdater *m_node_updater;
+
     QRect m_device_rect;
 
     QHash<AbstractMaterialType *, AbstractMaterialShader *> m_materials;
@@ -163,6 +169,8 @@ private:
     int m_clip_matrix_id;
 
     bool m_changed_emitted;
+
+    const Bindable *m_bindable;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Renderer::Updates)

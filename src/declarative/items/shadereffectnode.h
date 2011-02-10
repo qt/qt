@@ -94,9 +94,6 @@ public:
     // Inherited from AbstractMaterial
     virtual AbstractMaterialShader *createShader() const;
 
-    qreal opacity() const { return m_opacity; }
-    void setOpacity(qreal o);
-
     void setProgramSource(const ShaderEffectProgram &);
     void setData(const QVector<QPair<QByteArray, QVariant> > &uniformValues,
                  const QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > &textures);
@@ -116,7 +113,6 @@ private:
 
     QSize m_meshResolution;
 
-    qreal m_opacity;
     ShaderEffectProgram m_source;
     QVector<QPair<QByteArray, QVariant> > m_uniformValues;
     QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > m_textures;

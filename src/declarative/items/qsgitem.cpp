@@ -1084,7 +1084,7 @@ QSGItemPrivate::QSGItemPrivate()
 
   dirtyAttributes(0), nextDirtyItem(0), prevDirtyItem(0),
 
-  itemNodeInstance(0), clipNode(0), rootNode(0), paintNode(0), paintNodeIndex(0), effectiveOpacity(1), effectRefCount(0)
+  itemNodeInstance(0), clipNode(0), rootNode(0), paintNode(0), paintNodeIndex(0), effectRefCount(0)
 {
 }
 
@@ -1382,6 +1382,11 @@ Node *QSGItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
 {
     delete oldNode;
     return 0;
+}
+
+TransformNode *QSGItemPrivate::createTransformNode()
+{
+    return new TransformNode;
 }
 
 void QSGItem::updatePolish()
@@ -2113,7 +2118,6 @@ QString QSGItemPrivate::dirtyToString() const
     DIRTY_TO_STRING(ParentChanged);
     DIRTY_TO_STRING(Clip);
     DIRTY_TO_STRING(Canvas);
-    DIRTY_TO_STRING(EffectiveOpacity);
     DIRTY_TO_STRING(EffectReference);
     DIRTY_TO_STRING(Visible);
 

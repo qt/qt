@@ -115,6 +115,18 @@ protected:
     int m_index_stride;
 };
 
+
+class Q_DECLARATIVE_EXPORT GeometryHelper
+{
+public:
+    static Geometry *createRectGeometry(const QRectF &rect);
+    static void updateRectGeometry(Geometry *g, const QRectF &rect);
+
+    static Geometry *createTexturedRectGeometry(const QRectF &rect, const QRectF &sourceRect);
+    static void updateTexturedRectGeometry(Geometry *g, const QRectF &rect, const QRectF &sourceRect);
+};
+
+
 class GeometryDataUploader
 {
 public:

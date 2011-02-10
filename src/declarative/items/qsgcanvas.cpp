@@ -86,7 +86,7 @@ have a scope focused item), and the other items will have their focus cleared.
 // #define DIRTY_DEBUG
 
 QSGItem::UpdatePaintNodeData::UpdatePaintNodeData()
-: opacity(1)
+: transformNode(0)
 {
 }
 
@@ -132,10 +132,8 @@ void QSGCanvasPrivate::init(QSGCanvas *c)
 
     Q_Q(QSGCanvas);
 
-    // XXX todo 
-    QSGItemsModule::defineModule();
-
     q->setAttribute(Qt::WA_AcceptTouchEvents);
+    q->setFocusPolicy(Qt::StrongFocus);
 
     rootItem = new QSGRootItem;
     QSGItemPrivate *rootItemPrivate = QSGItemPrivate::get(rootItem);
@@ -446,8 +444,26 @@ QSGCanvas::QSGCanvas(QWidget *parent, Qt::WindowFlags f)
     d->init(this);
 }
 
+QSGCanvas::QSGCanvas(const QGLFormat &format, QWidget *parent, Qt::WindowFlags f)
+: QGLWidget(format, parent /*, 0, f */), d_ptr(new QSGCanvasPrivate)
+{
+    Q_D(QSGCanvas);
+
+    if (f) QWidget::setWindowFlags(f);
+    d->init(this);
+}
+
 QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, QWidget *parent, Qt::WindowFlags f)
 : QGLWidget(getFormat(), parent /*, 0, f */), d_ptr(&dd)
+{
+    Q_D(QSGCanvas);
+
+    if (f) QWidget::setWindowFlags(f);
+    d->init(this);
+}
+
+QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, const QGLFormat &format, QWidget *parent, Qt::WindowFlags f)
+: QGLWidget(format, parent /*, 0, f */), d_ptr(&dd)
 {
     Q_D(QSGCanvas);
 
@@ -769,39 +785,6 @@ void QSGCanvas::showEvent(QShowEvent *e)
     d->initializeSceneGraph();
 }
 
-bool QSGCanvasPrivate::updateEffectiveOpacity(QSGItem *item)
-{
-    QSGItemPrivate *priv = QSGItemPrivate::get(item);
-    if (priv->parentItem && updateEffectiveOpacity(priv->parentItem))
-        return true;
-
-    if (priv->dirtyAttributes & QSGItemPrivate::OpacityValue) {
-        updateEffectiveOpacityRoot(item, priv->parentItem?QSGItemPrivate::get(priv->parentItem)->effectiveOpacity:1);
-        return true;
-    } else {
-        return false;
-    }
-}
-
-void QSGCanvasPrivate::updateEffectiveOpacityRoot(QSGItem *item, qreal parentOpacity)
-{
-    QSGItemPrivate *priv = QSGItemPrivate::get(item);
-    priv->dirtyAttributes &= ~QSGItemPrivate::OpacityValue;
-
-    qreal v = parentOpacity * priv->opacity;
-    if (qFuzzyCompare(v, priv->effectiveOpacity))
-        return;
-
-    priv->effectiveOpacity = v;
-    priv->dirtyAttributes |= QSGItemPrivate::EffectiveOpacity;
-
-    if (v != 0.)
-        priv->addToDirtyList();
-
-    for (int ii = 0; ii < priv->childItems.count(); ++ii)
-        updateEffectiveOpacityRoot(priv->childItems.at(ii), v);
-}
-
 void QSGCanvasPrivate::cleanupNodes()
 {
     for (int ii = 0; ii < cleanupNodeList.count(); ++ii)
@@ -816,28 +799,6 @@ void QSGCanvasPrivate::updateDirtyNodes()
 #endif
 
     cleanupNodes();
-
-    QSGItem *iter = dirtyItemList;
-    while (iter) {
-        QSGItemPrivate *priv = QSGItemPrivate::get(iter);
-
-        if (priv->dirtyAttributes & QSGItemPrivate::ParentChanged) {
-            priv->dirtyAttributes |= QSGItemPrivate::OpacityValue;
-        } else if (priv->dirtyAttributes & QSGItemPrivate::OpacityValue && 
-                   QSGItemPrivate::get(priv->parentItem)->effectiveOpacity == 0.) {
-            priv->dirtyAttributes &= ~QSGItemPrivate::OpacityValue;
-        }
-
-        iter = priv->nextDirtyItem;
-    }
-
-    iter = dirtyItemList;
-    while (iter) {
-        QSGItemPrivate *priv = QSGItemPrivate::get(iter);
-        if (priv->dirtyAttributes & QSGItemPrivate::OpacityValue) 
-            updateEffectiveOpacity(iter);
-        iter = priv->nextDirtyItem;
-    }
 
     QSGItem *updateList = dirtyItemList;
     dirtyItemList = 0;
@@ -901,49 +862,54 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
     }
 
     if (clipEffectivelyChanged) {
+        Node *parent = itemPriv->opacityNode ? (Node *) itemPriv->opacityNode : (Node *)itemPriv->itemNode();
+        Node *child = itemPriv->rootNode ? (Node *)itemPriv->rootNode : (Node *)itemPriv->groupNode;
+
         if (item->clip()) {
-            // Insert clip node below transform node, and potentially above effect root node.
             Q_ASSERT(itemPriv->clipNode == 0);
-            Q_ASSERT(itemPriv->itemNode()->childCount() == (itemPriv->rootNode ? 1 : 0));
-
-            Node *itemNode = itemPriv->itemNode();
             itemPriv->clipNode = new QSGClipNode(QRectF(0, 0, itemPriv->width, itemPriv->height));
-            if (itemNode->childCount()) {
-                Node *child = itemNode->childAtIndex(0);
-                itemNode->removeChildNode(child);
-                itemPriv->clipNode->appendChildNode(child);
-            }
-            itemPriv->itemNode()->appendChildNode(itemPriv->clipNode);
-        } else {
-            // Remove clip node from below transform node, and potentially from above effect root node.
-            Q_ASSERT(itemPriv->clipNode != 0);
-            Q_ASSERT(itemPriv->clipNode->childCount() == (itemPriv->rootNode ? 1 : 0));
 
-            if (itemPriv->clipNode->childCount()) {
-                Node *child = itemPriv->clipNode->childAtIndex(0);
-                itemPriv->clipNode->removeChildNode(child);
-                itemPriv->itemNode()->appendChildNode(child);
-            }
+            if (child)
+                parent->removeChildNode(child);
+            parent->appendChildNode(itemPriv->clipNode);
+            if (child)
+                itemPriv->clipNode->appendChildNode(child);
+
+        } else {
+            Q_ASSERT(itemPriv->clipNode != 0);
             delete itemPriv->clipNode;
             itemPriv->clipNode = 0;
+            parent->appendChildNode(child);
         }
     }
 
-    if (effectRefEffectivelyChanged) {
-        if (itemPriv->effectRefCount) {
-            // Insert effect root node below transform node or clip node, whichever is lower.
-            Q_ASSERT(itemPriv->rootNode == 0);
+    if (dirty & QSGItemPrivate::ChildrenUpdateMask) {
+        while (itemPriv->childContainerNode()->childCount())
+            itemPriv->childContainerNode()->removeChildNode(itemPriv->childContainerNode()->childAtIndex(0));
+    }
 
-            Node *childContainerNode = itemPriv->childContainerNode();
+    if (effectRefEffectivelyChanged) {
+        Node *parent = itemPriv->clipNode;
+        if (!parent)
+            parent = itemPriv->opacityNode;
+        if (!parent)
+            parent = itemPriv->itemNode();
+        Node *child = itemPriv->groupNode;
+
+        if (itemPriv->effectRefCount) {
+            Q_ASSERT(itemPriv->rootNode == 0);
             itemPriv->rootNode = new RootNode;
-            childContainerNode->appendChildNode(itemPriv->rootNode);
+
+            if (child)
+                parent->removeChildNode(child);
+            parent->appendChildNode(itemPriv->rootNode);
+            if (child)
+                itemPriv->clipNode->appendChildNode(child);
         } else {
-            // remove effect root node from below transform node or clip node.
             Q_ASSERT(itemPriv->rootNode != 0);
-            Node *rootNode = itemPriv->rootNode;
+            delete itemPriv->rootNode;
             itemPriv->rootNode = 0;
-            itemPriv->childContainerNode()->removeChildNode(rootNode);
-            delete rootNode;
+            parent->appendChildNode(child);
         }
     }
 
@@ -978,12 +944,24 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
         itemPriv->clipNode->update();
     }
 
+    if (dirty & QSGItemPrivate::OpacityValue) {
+        if (!itemPriv->opacityNode) {
+            itemPriv->opacityNode = new OpacityNode;
+
+            Node *parent = itemPriv->itemNode();
+            Node *child = itemPriv->clipNode ? itemPriv->clipNode : itemPriv->childContainerNode();
+
+            parent->removeChildNode(child);
+            parent->appendChildNode(itemPriv->opacityNode);
+            itemPriv->opacityNode->appendChildNode(child);
+        }
+        itemPriv->opacityNode->setOpacity(itemPriv->opacity);
+    }
+
     if (dirty & QSGItemPrivate::ContentUpdateMask) {
 
-        itemPriv->itemNode()->setSubtreeEnabled(itemPriv->effectiveOpacity > 0);
-
         if (itemPriv->flags & QSGItem::ItemHasContents) {
-            updatePaintNodeData.opacity = itemPriv->effectiveOpacity; 
+            updatePaintNodeData.transformNode = itemPriv->itemNode(); 
             itemPriv->paintNode = item->updatePaintNode(itemPriv->paintNode, &updatePaintNodeData);
 
             Q_ASSERT(itemPriv->paintNode == 0 || 
@@ -1048,7 +1026,7 @@ void QSGCanvasPrivate::initializeSceneGraph()
     Q_Q(QSGCanvas);
 
     if (!context) 
-        context = new QSGContext();
+        context = QSGContext::createDefaultContext();
 
     if (context->isReady())
         return;
