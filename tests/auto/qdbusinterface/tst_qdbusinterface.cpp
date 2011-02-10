@@ -350,7 +350,16 @@ void tst_QDBusInterface::introspectUnknownTypes()
                          "com.trolltech.QtDBus.MyObjectUnknownTypes");
 
     const QMetaObject *mo = iface.metaObject();
-    QVERIFY(mo->indexOfMethod("regularMethod()") != -1);
+    QVERIFY(mo->indexOfMethod("regularMethod()") != -1); // this is the control
+    QVERIFY(mo->indexOfMethod("somethingHappened(QDBusRawType<0x7e>*)") != -1);
+
+    QVERIFY(mo->indexOfMethod("ping(QDBusRawType<0x7e>*)") != -1);
+    int midx = mo->indexOfMethod("ping(QDBusRawType<0x7e>*)");
+    QCOMPARE(mo->method(midx).typeName(), "QDBusRawType<0x7e>*");
+
+    QVERIFY(mo->indexOfProperty("prop1") != -1);
+    int pidx = mo->indexOfProperty("prop1");
+    QCOMPARE(mo->property(pidx).typeName(), "QDBusRawType<0x7e>*");
 }
 
 void tst_QDBusInterface::callMethod()

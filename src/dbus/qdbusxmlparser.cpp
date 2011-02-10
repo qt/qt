@@ -240,7 +240,6 @@ QDBusXmlParser::interfaces() const
                 qDBusParserError("Invalid D-BUS type signature '%s' found in property '%s.%s' while parsing introspection",
                                  qPrintable(propertyData.type), qPrintable(ifaceName),
                                  qPrintable(propertyName));
-                continue;
             }
 
             QString access = property.attribute(QLatin1String("access"));
