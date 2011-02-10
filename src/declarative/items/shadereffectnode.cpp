@@ -260,12 +260,12 @@ void ShaderEffectNode::updateGeometry()
     quint16 *indices = (quint16 *)g->ushortIndexData();
     int i = 0;
     for (int iy = 0; iy < vmesh; ++iy) {
-        *(indices++) = i;
-        for (int ix = 0; ix <= hmesh; ++ix) {
-            *(indices++) = i++;
-            *(indices++) = i + hmesh;
+        *(indices++) = i + hmesh + 1;
+        for (int ix = 0; ix <= hmesh; ++ix, ++i) {
+            *(indices++) = i + hmesh + 1;
+            *(indices++) = i;
         }
-        *(indices++) = i + hmesh;
+        *(indices++) = i - 1;
     }
     Q_ASSERT(indices == g->ushortIndexData() + g->indexCount());
 

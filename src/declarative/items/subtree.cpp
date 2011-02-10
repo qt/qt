@@ -245,7 +245,7 @@ void TextureProviderMaterialWithOpacityShader::initialize()
 
 TextureNode::TextureNode()
     : m_texture(0)
-    , m_sourceRect(0, 0, 1, 1)
+    , m_sourceRect(0, 1, 1, -1)
     , m_opacity(1)
     , m_dirtyTexture(false)
     , m_dirtyGeometry(false)
@@ -410,7 +410,7 @@ void SubTreeTextureProvider::markDirtyTexture()
 
 void SubTreeTextureProvider::grab()
 {
-    Q_ASSERT(m_item);
+	Q_ASSERT(m_item);
     Node *root = m_item;
     while (root->childCount() && root->type() != Node::RootNodeType)
         root = root->childAtIndex(0);
@@ -606,7 +606,7 @@ Node *SubTree::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     }
 
     SubTreeTextureProvider *tp = static_cast<SubTreeTextureProvider *>(textureProvider());
-    tp->setItem(QSGItemPrivate::get(m_item)->itemNodeInstance);
+    tp->setItem(QSGItemPrivate::get(m_item)->itemNode());
     QRectF rect(0, 0, m_item->width(), m_item->height());
     rect.adjust(-m_margins.width(), -m_margins.height(), m_margins.width(), m_margins.height());
     tp->setRect(rect);

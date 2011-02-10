@@ -60,7 +60,7 @@ QSGImageTextureProvider::QSGImageTextureProvider(QObject *parent)
 void QSGImageTextureProvider::setImage(const QImage &image)
 {
     QSGTextureManager *tm = QSGContext::current->textureManager();
-    m_texture = tm->upload(image);
+    m_texture = tm->upload(image.mirrored());
 }
 
 QSGTextureRef QSGImageTextureProvider::texture()
@@ -283,9 +283,9 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     };
 
     QRectF nsrect(sourceRect.x() / d->pix.width(),
-                  sourceRect.y() / d->pix.height(),
+                  1 - sourceRect.y() / d->pix.height(),
                   sourceRect.width() / d->pix.width(),
-                  sourceRect.height() / d->pix.height());
+                  -sourceRect.height() / d->pix.height());
 
     d->textureProvider->setClampToEdge(clampToEdge);
     d->textureProvider->setLinearFiltering(d->smooth);
