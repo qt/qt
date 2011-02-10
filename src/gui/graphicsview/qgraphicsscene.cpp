@@ -5936,6 +5936,8 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
         }
         if (item->isPanel())
             break;
+        if (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation)
+            break;
     }
 
     // If nobody could take focus, clear it.
@@ -5967,6 +5969,8 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
             break;
         }
         if (item && item->isPanel())
+            break;
+        if (item && (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation))
             break;
     }
 
