@@ -154,8 +154,11 @@ QScriptValue QScriptContext::throwValue(const QScriptValue &value)
     Q_D(QScriptContext);
     QScriptIsolate api(d->engine);
     v8::HandleScope handleScope;
-    v8::Handle< v8::Value > exception = QScriptValuePrivate::get(value)->asV8Value(d->engine);
-    return d->engine->scriptValueFromInternal(d->engine->throwException(exception));
+    v8::Handle<v8::Value> exception = QScriptValuePrivate::get(value)->asV8Value(d->engine);
+    if (exception.IsEmpty())
+        exception = v8::Undefined();
+    d->engine->throwException(exception);
+    return value;
 }
 
 /*!

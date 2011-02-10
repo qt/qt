@@ -27,6 +27,7 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qset.h>
+#include <QtCore/qstack.h>
 #include <QtCore/qstringlist.h>
 
 #include <private/qobject_p.h>
@@ -60,8 +61,12 @@ class QScriptEnginePrivate
 {
     class Exception
     {
+        typedef QPair<v8::Persistent<v8::Value>, v8::Persistent<v8::Message> > ValueMessagePair;
+
         v8::Persistent<v8::Value> m_value;
         v8::Persistent<v8::Message> m_message;
+        QStack<ValueMessagePair> m_stack;
+
         Q_DISABLE_COPY(Exception)
     public:
         inline Exception();
@@ -72,6 +77,9 @@ class QScriptEnginePrivate
         inline operator v8::Handle<v8::Value>() const;
         inline int lineNumber() const;
         inline QStringList backtrace() const;
+
+        inline void push();
+        inline void pop();
     };
 
     Q_DECLARE_PUBLIC(QScriptEngine)
@@ -176,6 +184,8 @@ public:
     inline int uncaughtExceptionLineNumber() const;
     inline QStringList uncaughtExceptionBacktrace() const;
     QScriptPassPointer<QScriptValuePrivate> uncaughtException() const;
+    inline void saveException();
+    inline void restoreException();
 
     v8::Handle<v8::String> qtDataId();
 

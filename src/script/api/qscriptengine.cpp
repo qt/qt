@@ -1037,7 +1037,6 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::uncaughtException(
     return new QScriptValuePrivate(const_cast<QScriptEnginePrivate*>(this), static_cast<v8::Handle<v8::Value> >(m_exception));
 }
 
-
 /*!
     Clears any uncaught exceptions in this engine.
 

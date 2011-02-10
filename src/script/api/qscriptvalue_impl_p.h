@@ -566,15 +566,18 @@ inline bool QScriptValuePrivate::equals(QScriptValuePrivate* other)
     // The next line does not work because it fails to compare the global object
     // http://code.google.com/p/v8/issues/detail?id=1078 and http://code.google.com/p/v8/issues/detail?id=1082
     //return m_value->Equals(other->m_value);
-    QScriptEnginePrivate *eng = m_engine ? engine() : other->engine();
-    Q_ASSERT(eng);
-    QScriptSharedDataPointer<QScriptValuePrivate> cmp(eng->evaluate(
+
+    // FIXME: equal can throw an exception which will be dropped by this code:
+    m_engine->saveException();
+    QScriptSharedDataPointer<QScriptValuePrivate> cmp(m_engine->evaluate(
         QString::fromLatin1("(function(a,b, global){"
             "return (a == b) || (a == global && b == this) || (b == global && a == this);})")));
     Q_ASSERT(cmp->isFunction());
     v8::Handle<v8::Value> args[3] = { m_value, other->m_value, m_engine->globalObject() };
-    QScriptSharedDataPointer<QScriptValuePrivate> result(cmp->call(0, 3, args));
-    return result->toBool();
+    QScriptSharedDataPointer<QScriptValuePrivate> resultValue(cmp->call(0, 3, args));
+    bool result = resultValue->toBool();
+    m_engine->restoreException();
+    return result;
 }
 
 inline bool QScriptValuePrivate::strictlyEquals(QScriptValuePrivate* other)
@@ -595,15 +598,16 @@ inline bool QScriptValuePrivate::strictlyEquals(QScriptValuePrivate* other)
         // http://code.google.com/p/v8/issues/detail?id=1078 and http://code.google.com/p/v8/issues/detail?id=1082
         //return m_value->StrictEquals(other->m_value);
         v8::HandleScope handleScope;
-        QScriptEnginePrivate *eng = engine();
-        Q_ASSERT(eng);
-        QScriptSharedDataPointer<QScriptValuePrivate> cmp(eng->evaluate(
+        m_engine->saveException();
+        QScriptSharedDataPointer<QScriptValuePrivate> cmp(m_engine->evaluate(
             QString::fromLatin1("(function(a,b, global){"
             "return (a === b) || (a === global && b === this) || (b === global && a == this);})")));
         Q_ASSERT(cmp->isFunction());
         v8::Handle<v8::Value> args[3] = { m_value, other->m_value, m_engine->globalObject() };
-        QScriptSharedDataPointer<QScriptValuePrivate> result(cmp->call(0, 3, args));
-        return result->toBool();
+        QScriptSharedDataPointer<QScriptValuePrivate> resultValue(cmp->call(0, 3, args));
+        bool result = resultValue->toBool();
+        m_engine->restoreException();
+        return result;
     }
     if (isStringBased()) {
         if (other->isStringBased())
@@ -648,13 +652,17 @@ inline bool QScriptValuePrivate::lessThan(QScriptValuePrivate *other) const
     if (isObject() || other->isObject()) {
         v8::HandleScope handleScope;
         QScriptEnginePrivate *eng = m_engine ? engine() : other->engine();
+        // FIXME: lessThan can throw an exception which will be dropped by this code:
         Q_ASSERT(eng);
+        eng->saveException();
         QScriptSharedDataPointer<QScriptValuePrivate> cmp(eng->evaluate(QString::fromLatin1("(function(a,b){return a<b})")));
         Q_ASSERT(cmp->isFunction());
         v8::Handle<v8::Value> args[2];
         cmp->prepareArgumentsForCall(args, QScriptValueList() << QScriptValuePrivate::get(this) << QScriptValuePrivate::get(other));
-        QScriptSharedDataPointer<QScriptValuePrivate> result(cmp->call(0, 2, args));
-        return result->toBool();
+        QScriptSharedDataPointer<QScriptValuePrivate> resultValue(cmp->call(0, 2, args));
+        bool result = resultValue->toBool();
+        eng->restoreException();
+        return result;
     }
 
     qsreal nthis = toNumber();

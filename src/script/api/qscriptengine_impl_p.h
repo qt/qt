@@ -208,6 +208,27 @@ inline QStringList QScriptEnginePrivate::uncaughtExceptionBacktrace() const
     return m_exception.backtrace();
 }
 
+/*!
+  \internal
+  Save the current exception on stack so it can be set again later.
+  \sa QScriptEnginePrivate::restoreException
+*/
+inline void QScriptEnginePrivate::saveException()
+{
+    m_exception.push();
+}
+
+/*!
+  \internal
+  Load a saved exception from stack. Current exception, if exists will be dropped
+  \sa QScriptEnginePrivate::saveException
+*/
+inline void QScriptEnginePrivate::restoreException()
+{
+    m_exception.pop();
+}
+
+
 inline void QScriptEnginePrivate::enterIsolate() const
 {
     m_isolate->Enter();
@@ -244,10 +265,15 @@ inline v8::Handle<v8::Object> QScriptEnginePrivate::globalObject() const
 
 inline QScriptEnginePrivate::Exception::Exception() {}
 
-inline QScriptEnginePrivate::Exception::~Exception() { clear(); }
+inline QScriptEnginePrivate::Exception::~Exception()
+{
+    Q_ASSERT_X(m_stack.isEmpty(), Q_FUNC_INFO, "Some saved exceptions left. Asymetric pop/push found.");
+    clear();
+}
 
 inline void QScriptEnginePrivate::Exception::set(v8::Handle<v8::Value> value, v8::Handle<v8::Message> message)
 {
+    Q_ASSERT_X(!value.IsEmpty(), Q_FUNC_INFO, "Throwing an empty value handle is highly suspected");
     clear();
     m_value = v8::Persistent<v8::Value>::New(value);
     m_message = v8::Persistent<v8::Message>::New(message);
@@ -300,6 +326,22 @@ inline QStringList QScriptEnginePrivate::Exception::backtrace() const
         backtrace.append(QString::number(frame->GetLineNumber()));
     }
     return backtrace;
+}
+
+inline void QScriptEnginePrivate::Exception::push()
+{
+    m_stack.push(qMakePair(m_value, m_message));
+    m_value.Clear();
+    m_message.Clear();
+}
+
+inline void QScriptEnginePrivate::Exception::pop()
+{
+    Q_ASSERT_X(!m_stack.empty(), Q_FUNC_INFO, "Attempt to load unsaved exception found");
+    ValueMessagePair pair = m_stack.pop();
+    clear();
+    m_value = pair.first;
+    m_message = pair.second;
 }
 
 inline QScriptEnginePrivate::TypeInfos::~TypeInfos()
