@@ -74,14 +74,14 @@ declaring a \c Button. The button is defined in the
 \snippet doc/src/snippets/declarative/reusablecomponents/application.qml document
 
 Note that the component name, \c Button, matches the QML filename, \c Button.qml.
-Specifically, the first character is in upper case. Matching the names allow
+Also, the first character is in upper case. Matching the names allow
 components in the same directory to be in the direct import path of the
 application.
 
 For flexibility, a \c qmldir file is for dictating which additional components,
 plugins, or directories should be imported. By using a \c qmldir file,
 component names do not need to match the filenames. The \c qmldir file should,
-however, in an imported path.
+however, be in an imported path.
 \snippet doc/src/snippets/declarative/reusablecomponents/qmldir document
 
 \section2 Loading an Inline Component
@@ -103,6 +103,42 @@ Specifically, there are \l{attached-properties}{attached properties} and
 \l{attached-signalhandlers}{attached signal handlers} for setting properties
 during the lifetime of a component.
 
+The \c{Component.onCompleted} attached signal handler is called when the
+component completes initialization. It is useful for executing any commands
+after component initialization. Similarly, the \c{Component.onDestruction}
+signal handler executes when the component finishes destruction.
+
+\keyword qml-top-level
+\section1 Top-Level Component
+
+Choosing the \e{top-level} or the \e{root} object of components is an important
+design aspect because the top-level object dictates which properties are
+accessible outside the component. Some elements are not visual elements and
+will not have visual properties exposed outside the component. Likewise, some
+elements add functionality that are not available to visual elements.
+
+Consider the Button component from the
+\l{qml-define-components}{Defining New Components} section; it's top-level
+object is a \l Rectangle. When imported, the Button component will possess the
+Rectangle's properties, methods, signals, and any custom properties.
+
+\snippet doc/src/snippets/declarative/reusablecomponents/Button.qml parent begin
+\snippet doc/src/snippets/declarative/reusablecomponents/Button.qml ellipses
+\snippet doc/src/snippets/declarative/reusablecomponents/Button.qml properties
+\snippet doc/src/snippets/declarative/reusablecomponents/Button.qml ellipses
+\snippet doc/src/snippets/declarative/reusablecomponents/Button.qml parent end
+
+The Button's \c text alias is accessible from outside the component as well as
+the Rectangle's visual properties and signals such as \c x, \c y, \c anchors,
+and \c states.
+
+Alternatively, we may choose a \l {Keyboard Focus in QML}{FocusScope} as our
+top-level object. The \l FocusScope element manage keyboard focus for its
+children which is beneficial for certain types of interfaces. However, since
+\c FocusScopes are not visual elements, the visual properties of its child need
+to be exposed.
+
+\snippet doc/src/snippets/declarative/reusablecomponents/focusbutton.qml document
 */
 
 The root object in \c Button.qml defines the attributes that are available to users of the

@@ -61,11 +61,11 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         onClicked: {
-            inlinecomponent.createObject(screen)
+            inlinecomponent.createObject(parent)
 
-            var second = inlinecomponent.createObject(screen)
+            var second = inlinecomponent.createObject(parent)
 
-            var third = inlinecomponent.createObject(screen)
+            var third = inlinecomponent.createObject(parent)
             third.x = second.width + 10
             third.color = "red"
         }

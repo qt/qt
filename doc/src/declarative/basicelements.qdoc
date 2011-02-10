@@ -109,15 +109,6 @@ the component will retain the top-level component's properties. If a non-visual
 component is the top-level component, the visual properties should be aliased to
 the top-level to display the component properly.
 
-A component implemented using a \c Rectangle as the top-level component:
-\snippet doc/src/snippets/declarative/focus/mywidget.qml document
-
-A component that uses a \c FocusScope as the top-level component:
-\snippet doc/src/snippets/declarative/focus/myfocusscopewidget.qml document
-Note that the visual properties need to be passed to the parent. The
-\l {Keyboard Focus in QML}{focus} article provides more details about the
-\c FocusScope element.
-
 For more information on how to build upon QML elements, see the
 \l{Importing Reusable Components} document.
 */

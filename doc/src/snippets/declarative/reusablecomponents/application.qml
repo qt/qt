@@ -45,11 +45,11 @@ Rectangle {
     color: "lightgrey"
 
     Column {
-    anchors.centerIn: parent
-    spacing: 15
+        anchors.centerIn: parent
+        spacing: 15
         Button {}
-        Button {text: "Click Me Too!"}
-        Button {text: "Click Me Three!"}
+        Button {text: "Me Too!"}
+        Button {text: "Me Three!"}
     }
 }
 //! [document]
