@@ -270,13 +270,23 @@
 */
 
 /*!
-    \title Positioners Example
-    \example declarative/positioners
+    \title Positioners: Adding and Removing Items Example
+    \example declarative/positioners/addandremove
 
-    This example shows how to use positioner elements such as \l Row, \l Column,
-    \l Grid and \l Flow.
+    This example shows how to use the positioner elements such as \l Row, \l Column,
+    \l Grid and \l Flow, in particular how to add and remove items with appropriate transitions.
 
     \image qml-positioners-example.png
+*/
+
+/*!
+    \title Positioners: Layout Direction Example
+    \example declarative/positioners/layoutdirection
+
+    This example shows how to control the horizontal layout direction of 
+    \l Row, \l Grid and \l Flow positioners.
+
+    \image qml-positioners-layoutdirection-example.png
 */
 
 /*!
