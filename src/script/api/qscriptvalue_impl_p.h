@@ -601,7 +601,7 @@ inline bool QScriptValuePrivate::strictlyEquals(QScriptValuePrivate* other)
         m_engine->saveException();
         QScriptSharedDataPointer<QScriptValuePrivate> cmp(m_engine->evaluate(
             QString::fromLatin1("(function(a,b, global){"
-            "return (a === b) || (a === global && b === this) || (b === global && a == this);})")));
+            "return (a === b) || (a === global && b === this) || (b === global && a === this);})")));
         Q_ASSERT(cmp->isFunction());
         v8::Handle<v8::Value> args[3] = { m_value, other->m_value, m_engine->globalObject() };
         QScriptSharedDataPointer<QScriptValuePrivate> resultValue(cmp->call(0, 3, args));
