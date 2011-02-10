@@ -1022,6 +1022,7 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     while (!ownedAgents.isEmpty())
         delete ownedAgents.takeFirst();
 
+    detachAllRegisteredScriptPrograms();
     detachAllRegisteredScriptValues();
     detachAllRegisteredScriptStrings();
     qDeleteAll(m_qobjectData);
@@ -1575,6 +1576,14 @@ bool QScriptEnginePrivate::scriptDisconnect(JSC::JSValue signal, JSC::JSValue re
 }
 
 #endif
+
+void QScriptEnginePrivate::detachAllRegisteredScriptPrograms()
+{
+    QSet<QScriptProgramPrivate*>::const_iterator it;
+    for (it = registeredScriptPrograms.constBegin(); it != registeredScriptPrograms.constEnd(); ++it)
+        (*it)->detachFromEngine();
+    registeredScriptPrograms.clear();
+}
 
 void QScriptEnginePrivate::detachAllRegisteredScriptValues()
 {

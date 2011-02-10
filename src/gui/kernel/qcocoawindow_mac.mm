@@ -47,6 +47,8 @@
 #import <private/qt_cocoa_helpers_mac_p.h>
 #import <private/qcocoawindowcustomthemeframe_mac_p.h>
 #import <private/qcocoaapplication_mac_p.h>
+#import <private/qdnd_p.h>
+#import <private/qmultitouch_mac_p.h>
 
 #include <QtGui/QWidget>
 

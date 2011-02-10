@@ -65,6 +65,8 @@ class Q_GUI_EXPORT QMdiArea : public QAbstractScrollArea
     Q_PROPERTY(ViewMode viewMode READ viewMode WRITE setViewMode)
 #ifndef QT_NO_TABBAR
     Q_PROPERTY(bool documentMode READ documentMode WRITE setDocumentMode)
+    Q_PROPERTY(bool tabsClosable READ tabsClosable WRITE setTabsClosable)
+    Q_PROPERTY(bool tabsMovable READ tabsMovable WRITE setTabsMovable)
 #endif
 #ifndef QT_NO_TABWIDGET
     Q_PROPERTY(QTabWidget::TabShape tabShape READ tabShape WRITE setTabShape)
@@ -116,6 +118,12 @@ public:
 #ifndef QT_NO_TABBAR
     bool documentMode() const;
     void setDocumentMode(bool enabled);
+
+    void setTabsClosable(bool closable);
+    bool tabsClosable() const;
+
+    void setTabsMovable(bool movable);
+    bool tabsMovable() const;
 #endif
 #ifndef QT_NO_TABWIDGET
     void setTabShape(QTabWidget::TabShape shape);
@@ -156,7 +164,9 @@ private:
     Q_DECLARE_PRIVATE(QMdiArea)
     Q_PRIVATE_SLOT(d_func(), void _q_deactivateAllWindows())
     Q_PRIVATE_SLOT(d_func(), void _q_processWindowStateChanged(Qt::WindowStates, Qt::WindowStates))
-    Q_PRIVATE_SLOT(d_func(), void _q_currentTabChanged(int index))
+    Q_PRIVATE_SLOT(d_func(), void _q_currentTabChanged(int))
+    Q_PRIVATE_SLOT(d_func(), void _q_closeTab(int))
+    Q_PRIVATE_SLOT(d_func(), void _q_moveTab(int, int))
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMdiArea::AreaOptions)

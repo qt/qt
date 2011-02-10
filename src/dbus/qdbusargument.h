@@ -376,6 +376,21 @@ inline const QDBusArgument &operator>>(const QDBusArgument &arg, QHash<Key, T> &
     return arg;
 }
 
+inline QDBusArgument &operator<<(QDBusArgument &arg, const QVariantHash &map)
+{
+    arg.beginMap(QVariant::String, qMetaTypeId<QDBusVariant>());
+    QVariantHash::ConstIterator it = map.constBegin();
+    QVariantHash::ConstIterator end = map.constEnd();
+    for ( ; it != end; ++it) {
+        arg.beginMapEntry();
+        arg << it.key() << QDBusVariant(it.value());
+        arg.endMapEntry();
+    }
+    arg.endMap();
+    return arg;
+}
+
+
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QDBusArgument)

@@ -7,11 +7,13 @@ HEADERS += bearer/qnetworkconfiguration.h \
            bearer/qnetworkconfiguration_p.h \
            bearer/qnetworksession_p.h \
            bearer/qbearerengine_p.h \
-           bearer/qbearerplugin_p.h
+           bearer/qbearerplugin_p.h \
+           bearer/qsharednetworksession_p.h
 
 SOURCES += bearer/qnetworksession.cpp \
            bearer/qnetworkconfigmanager.cpp \
            bearer/qnetworkconfiguration.cpp \
            bearer/qnetworkconfigmanager_p.cpp \
            bearer/qbearerengine.cpp \
-           bearer/qbearerplugin.cpp
+           bearer/qbearerplugin.cpp \
+           bearer/qsharednetworksession.cpp

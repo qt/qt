@@ -211,6 +211,9 @@ private slots:
     void postEventFromOtherThread();
     void eventFilterForApplication();
     void eventClassesExported();
+    void stopInTransitionToFinalState();
+    void stopInEventTest_data();
+    void stopInEventTest();
 };
 
 tst_QStateMachine::tst_QStateMachine()
@@ -4372,6 +4375,71 @@ void tst_QStateMachine::eventClassesExported()
     // make sure this links
     QStateMachine::WrappedEvent *wrappedEvent = new QStateMachine::WrappedEvent(0, 0);
     QStateMachine::SignalEvent *signalEvent = new QStateMachine::SignalEvent(0, 0, QList<QVariant>());
+}
+
+void tst_QStateMachine::stopInTransitionToFinalState()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    QFinalState *s2 = new QFinalState(&machine);
+    QAbstractTransition *t1 = s1->addTransition(s2);
+    machine.setInitialState(s1);
+
+    QObject::connect(t1, SIGNAL(triggered()), &machine, SLOT(stop()));
+    QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
+    QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    QSignalSpy s2EnteredSpy(s2, SIGNAL(entered()));
+    machine.start();
+
+    // Stopping should take precedence over finished.
+    QTRY_COMPARE(stoppedSpy.count(), 1);
+    QCOMPARE(finishedSpy.count(), 0);
+    QCOMPARE(s2EnteredSpy.count(), 1);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s2));
+}
+
+class StopInEventTestTransition : public QAbstractTransition
+{
+public:
+    bool eventTest(QEvent *e)
+    {
+        if (e->type() == QEvent::User)
+            machine()->stop();
+        return false;
+    }
+    void onTransition(QEvent *)
+    { }
+};
+
+void tst_QStateMachine::stopInEventTest_data()
+{
+    QTest::addColumn<int>("eventPriority");
+    QTest::newRow("NormalPriority") << int(QStateMachine::NormalPriority);
+    QTest::newRow("HighPriority") << int(QStateMachine::HighPriority);
+}
+
+void tst_QStateMachine::stopInEventTest()
+{
+    QFETCH(int, eventPriority);
+
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    s1->addTransition(new StopInEventTestTransition());
+    machine.setInitialState(s1);
+
+    QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 1);
+
+    QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
+    QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    machine.postEvent(new QEvent(QEvent::User), QStateMachine::EventPriority(eventPriority));
+
+    QTRY_COMPARE(stoppedSpy.count(), 1);
+    QCOMPARE(finishedSpy.count(), 0);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
 }
 
 QTEST_MAIN(tst_QStateMachine)

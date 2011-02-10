@@ -79,6 +79,7 @@ public:
 
     QString text;
     QFont font;
+    QFont sourceFont;
     QColor  color;
     QDeclarativeText::TextStyle style;
     QColor  styleColor;

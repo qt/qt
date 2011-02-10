@@ -2967,7 +2967,7 @@ protected:
 void tst_QGraphicsView::task186827_deleteReplayedItem()
 {
     // make sure the mouse is not over the window, causing spontaneous mouse moves
-    QCursor::setPos(0, 0);
+    QCursor::setPos(1, 1);
 
     QGraphicsScene scene;
     scene.addRect(0, 0, 50, 50);
@@ -3357,6 +3357,10 @@ void tst_QGraphicsView::moveItemWhileScrolling()
     int a = adjustForAntialiasing ? 2 : 1;
     expectedRegion += QRect(40, 50, 10, 10).adjusted(-a, -a, a, a);
     expectedRegion += QRect(40, 60, 10, 10).adjusted(-a, -a, a, a);
+#ifdef QT_MAC_USE_COCOA
+    if (QApplicationPrivate::graphicsSystem() == 0)
+        QEXPECT_FAIL("", "This will fail with Cocoa because paint events are not send in the order expected by graphicsview", Continue);
+#endif
     COMPARE_REGIONS(view.lastPaintedRegion, expectedRegion);
 }
 
@@ -4500,7 +4504,7 @@ void tst_QGraphicsView::hoverLeave()
     QVERIFY(item->receivedEnterEvent);
     QCOMPARE(item->enterWidget, view.viewport());
 
-    QCursor::setPos(0,0);
+    QCursor::setPos(1,1);
     QTest::qWait(200);
     QVERIFY(item->receivedLeaveEvent);
     QCOMPARE(item->leaveWidget, view.viewport());

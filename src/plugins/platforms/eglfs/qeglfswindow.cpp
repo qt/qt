@@ -62,6 +62,9 @@ void QEglFSWindow::setGeometry(const QRect &)
     QRect rect(m_screen->availableGeometry());
     QWindowSystemInterface::handleGeometryChange(this->widget(), rect);
 
+    // Since toplevels are fullscreen, propegate the screen size back to the widget
+    widget()->setGeometry(rect);
+
     QPlatformWindow::setGeometry(rect);
 }
 

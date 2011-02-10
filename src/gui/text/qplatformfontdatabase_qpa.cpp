@@ -221,10 +221,11 @@ QFontEngine *QPlatformFontDatabase::fontEngine(const QFontDef &fontDef, QUnicode
 /*!
 
 */
-QStringList QPlatformFontDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QUnicodeTables::Script &script) const
+QStringList QPlatformFontDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const
 {
     Q_UNUSED(family);
     Q_UNUSED(style);
+    Q_UNUSED(styleHint);
     Q_UNUSED(script);
     return QStringList();
 }

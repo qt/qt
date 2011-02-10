@@ -558,8 +558,9 @@ bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
     switch (amsg.type()) {
     case QDBusMessage::SignalMessage:
         handleSignal(amsg);
-        return true;
-        break;
+        // if there are any other filters in this DBusConnection,
+        // let them see the signal too
+        return false;
     case QDBusMessage::MethodCallMessage:
         handleObjectCall(amsg);
         return true;

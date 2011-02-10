@@ -42,77 +42,67 @@
 #ifndef QTESTLITEWINDOW_H
 #define QTESTLITEWINDOW_H
 
+#include "qtestliteintegration.h"
+
 #include <QPlatformWindow>
-#include <qevent.h>
+#include <QEvent>
 
 #include <QObject>
 #include <QImage>
-#include <qtimer.h>
-#include <QDateTime>
 
-#include <private/qt_x11_p.h>
-
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-
-
-
-class QTestLiteIntegration;
-class QTestLiteScreen;
-class QTestLiteWindowSurface;
-class MyX11Cursors;
-class QTestLiteWindow;
-
-class MyDisplay : public QObject
-{
-    Q_OBJECT;
-public:
-    MyDisplay();
-    ~MyDisplay();
-
-    Window rootWindow() { return RootWindow(display, screen); }
-    unsigned long blackPixel() { return BlackPixel(display, screen); }
-    unsigned long whitePixel() { return WhitePixel(display, screen); }
-
-    bool handleEvent(XEvent *xe);
-    QImage grabWindow(Window window, int x, int y, int w, int h);
-
-public slots:
-    void eventDispatcher();
-
-public: //###
-    Display * display;
-    int screen;
-    int width, height;
-    int physicalWidth;
-    int physicalHeight;
-
-    QList<QTestLiteWindow*> windowList;
-
-    MyX11Cursors * cursors;
+struct QtMWMHints {
+    ulong flags, functions, decorations;
+    long input_mode;
+    ulong status;
 };
 
-struct MyShmImageInfo;
+enum {
+    MWM_HINTS_FUNCTIONS   = (1L << 0),
+
+    MWM_FUNC_ALL      = (1L << 0),
+    MWM_FUNC_RESIZE   = (1L << 1),
+    MWM_FUNC_MOVE     = (1L << 2),
+    MWM_FUNC_MINIMIZE = (1L << 3),
+    MWM_FUNC_MAXIMIZE = (1L << 4),
+    MWM_FUNC_CLOSE    = (1L << 5),
+
+    MWM_HINTS_DECORATIONS = (1L << 1),
+
+    MWM_DECOR_ALL      = (1L << 0),
+    MWM_DECOR_BORDER   = (1L << 1),
+    MWM_DECOR_RESIZEH  = (1L << 2),
+    MWM_DECOR_TITLE    = (1L << 3),
+    MWM_DECOR_MENU     = (1L << 4),
+    MWM_DECOR_MINIMIZE = (1L << 5),
+    MWM_DECOR_MAXIMIZE = (1L << 6),
+
+    MWM_HINTS_INPUT_MODE = (1L << 2),
+
+    MWM_INPUT_MODELESS                  = 0L,
+    MWM_INPUT_PRIMARY_APPLICATION_MODAL = 1L,
+    MWM_INPUT_FULL_APPLICATION_MODAL    = 3L
+};
 
 class QTestLiteWindow : public QPlatformWindow
 {
 public:
-    QTestLiteWindow(const QTestLiteIntegration *platformIntegration,
-         QTestLiteScreen *screen, QWidget *window);
+    QTestLiteWindow(QWidget *window);
     ~QTestLiteWindow();
 
 
     void mousePressEvent(XButtonEvent*);
     void handleMouseEvent(QEvent::Type, XButtonEvent *ev);
 
-    void handleKeyEvent(QEvent::Type, void *);
     void handleCloseEvent();
     void handleEnterEvent();
     void handleLeaveEvent();
+    void handleFocusInEvent();
+    void handleFocusOutEvent();
 
     void resizeEvent(XConfigureEvent *configure_event);
     void paintEvent();
 
+    void requestActivateWindow();
 
     void setGeometry(const QRect &rect);
 
@@ -125,33 +115,30 @@ public:
     void lower();
     void setWindowTitle(const QString &title);
 
-    void setCursor(QCursor * cursor);
+    void setCursor(const Cursor &cursor);
 
     QPlatformGLContext *glContext() const;
 
+    Window xWindow() const;
+    GC graphicsContext() const;
+
+protected:
+    void setMWMHints(const QtMWMHints &mwmhints);
+    QtMWMHints getMWMHints() const;
+
+    void doSizeHints();
+
 private:
-    int xpos, ypos;
-    int width, height;
+    QPlatformWindowFormat correctColorBuffers(const QPlatformWindowFormat &windowFormat)const;
+
     Window x_window;
     GC gc;
 
     GC createGC();
-    Cursor createCursorShape(int cshape);
-    Cursor createCursorBitmap(QCursor * cursor);
 
-    int currentCursor;
-
-    MyDisplay *xd;
-
+    QPlatformGLContext *mGLContext;
     QTestLiteScreen *mScreen;
     Qt::WindowFlags window_flags;
-    QPlatformGLContext *mGLContext;
-
-    friend class QTestLiteWindowSurface; // x_window, gc and windowSurface
 };
-
-
-
-
 
 #endif
