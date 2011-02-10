@@ -1317,8 +1317,10 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
 
     // Set focus on the topmost enabled item that can take focus.
     bool setFocus = false;
+
     foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
-        if (item->isBlockedByModalPanel()) {
+        if (item->isBlockedByModalPanel()
+            || (item->d_ptr->flags & QGraphicsItem::ItemStopsFocusHandling)) {
             // Make sure we don't clear focus.
             setFocus = true;
             break;
@@ -1331,9 +1333,9 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
                 break;
             }
         }
-        if (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation)
-            break;
         if (item->isPanel())
+            break;
+        if (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation)
             break;
     }
 
@@ -5925,6 +5927,7 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
 
     // Set focus on the topmost enabled item that can take focus.
     bool setFocus = false;
+
     foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
         if (item->isEnabled() && ((item->flags() & QGraphicsItem::ItemIsFocusable) && item->d_ptr->mouseSetsFocus)) {
             if (!item->isWidget() || ((QGraphicsWidget *)item)->focusPolicy() & Qt::ClickFocus) {
@@ -5938,6 +5941,11 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
             break;
         if (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation)
             break;
+        if (item->d_ptr->flags & QGraphicsItem::ItemStopsFocusHandling) {
+            // Make sure we don't clear focus.
+            setFocus = true;
+            break;
+        }
     }
 
     // If nobody could take focus, clear it.
@@ -5970,7 +5978,8 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
         }
         if (item && item->isPanel())
             break;
-        if (item && (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation))
+        if (item && (item->d_ptr->flags
+                     & (QGraphicsItem::ItemStopsClickFocusPropagation | QGraphicsItem::ItemStopsFocusHandling)))
             break;
     }
 
