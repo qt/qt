@@ -1377,6 +1377,19 @@ void QSGItem::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeomet
         emit heightChanged();
 }
 
+/*!
+    Called by the rendering thread when it is time to sync the state of the QML objects with the
+    scene graph objects. The function should return the root of the scene graph subtree for
+    this item. \a oldNode is the node that was returned the last time the function was called.
+
+    The main thread is blocked while this function is executed so it is safe to read
+    values from the QSGItem instance and other objects in the main thread.
+
+    \warning This is the only function in which it is allowed to make use of scene graph
+    objects from the main thread. Use of scene graph objects outside this function will
+    result in race conditions and potential crashes.
+ */
+
 Node *QSGItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
 {
     delete oldNode;
