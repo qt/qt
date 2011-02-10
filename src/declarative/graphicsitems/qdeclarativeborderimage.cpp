@@ -225,11 +225,13 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
     image \c picture.png:
 
     \qml
-    border.left: 10
-    border.top: 10
-    border.bottom: 10
-    border.right: 10
-    source: picture.png
+    BorderImage {
+        border.left: 10
+        border.top: 10
+        border.bottom: 10
+        border.right: 10
+        source: "picture.png"
+    }
     \endqml
 
     The URL may be absolute, or relative to the URL of the component.
@@ -363,7 +365,10 @@ void QDeclarativeBorderImage::load()
     the bottom of the image:
 
     \qml
-    border.bottom: 10
+    BorderImage {
+        border.bottom: 10
+        // ...
+    }
     \endqml
 
     The border lines can also be specified using a

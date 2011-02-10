@@ -550,10 +550,10 @@ void QDeclarativeTextInput::select(int start, int end)
     It is equivalent to the following snippet, but is faster and easier
     to use.
 
-    \qml
+    \js
     myTextInput.text.toString().substring(myTextInput.selectionStart,
         myTextInput.selectionEnd);
-    \endqml
+    \endjs
 */
 QString QDeclarativeTextInput::selectedText() const
 {
@@ -980,6 +980,7 @@ void QDeclarativeTextInput::inputMethodEvent(QInputMethodEvent *ev)
     } else {
         d->control->processInputMethodEvent(ev);
         updateSize();
+        d->updateHorizontalScroll();
     }
     if (!ev->isAccepted())
         QDeclarativePaintedItem::inputMethodEvent(ev);
@@ -1098,7 +1099,8 @@ int QDeclarativeTextInputPrivate::calculateTextWidth()
 void QDeclarativeTextInputPrivate::updateHorizontalScroll()
 {
     Q_Q(QDeclarativeTextInput);
-    int cix = qRound(control->cursorToX());
+    const int preeditLength = control->preeditAreaText().length();
+    int cix = qRound(control->cursorToX(control->cursor() + preeditLength));
     QRect br(q->boundingRect().toRect());
     int widthUsed = calculateTextWidth();
     Qt::Alignment va = QStyle::visualAlignment(control->layoutDirection(), QFlag(Qt::Alignment(hAlign)));
@@ -1127,6 +1129,14 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
             // text doesn't fit, text document is to the left of br; align
             // right
             hscroll = widthUsed - br.width() + 1;
+        }
+        if (preeditLength > 0) {
+            // check to ensure long pre-edit text doesn't push the cursor
+            // off to the left
+             cix = qRound(control->cursorToX(
+                     control->cursor() + qMax(0, control->preeditCursor() - 1)));
+             if (cix < hscroll)
+                 hscroll = cix;
         }
     } else {
         switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {

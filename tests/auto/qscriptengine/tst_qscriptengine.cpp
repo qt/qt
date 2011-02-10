@@ -225,6 +225,7 @@ private slots:
     void translateScriptUnicode();
     void translateScriptUnicodeIdBased_data();
     void translateScriptUnicodeIdBased();
+    void translateFromBuiltinCallback();
     void functionScopes();
     void nativeFunctionScopes();
     void evaluateProgram();
@@ -5307,6 +5308,21 @@ void tst_QScriptEngine::translateScriptUnicodeIdBased()
 
     QCOMPARE(engine.evaluate(expression).toString(), expectedTranslation);
     QVERIFY(!engine.hasUncaughtException());
+}
+
+void tst_QScriptEngine::translateFromBuiltinCallback()
+{
+    QScriptEngine eng;
+    eng.installTranslatorFunctions();
+
+    // Callback has no translation context.
+    eng.evaluate("function foo() { qsTr('foo'); }");
+
+    // Stack at translation time will be:
+    // qsTr, foo, forEach, global
+    // qsTr() needs to walk to the outer-most (global) frame before it finds
+    // a translation context, and this should not crash.
+    eng.evaluate("[10,20].forEach(foo)", "script.js");
 }
 
 void tst_QScriptEngine::functionScopes()

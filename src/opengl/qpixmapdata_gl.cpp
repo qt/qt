@@ -586,6 +586,12 @@ QImage QGLPixmapData::toImage() const
     if (m_renderFbo) {
         copyBackFromRenderFbo(true);
     } else if (!m_source.isNull()) {
+        QImageData *data = const_cast<QImage &>(m_source).data_ptr();
+        if (data->paintEngine && data->paintEngine->isActive()
+            && data->paintEngine->paintDevice() == &m_source)
+        {
+            return m_source.copy();
+        }
         return m_source;
     } else if (m_dirty || m_hasFillColor) {
         return fillImage(m_fillColor);
