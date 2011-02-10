@@ -100,7 +100,7 @@ void TextureProviderMaterialShader::updateState(Renderer *renderer, AbstractMate
 {
     Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
     QSGTextureProvider *tx = static_cast<TextureProviderMaterial *>(newEffect)->texture();
-	QSGTextureProvider *oldTx = oldEffect ? static_cast<TextureProviderMaterial *>(oldEffect)->texture() : 0;
+    QSGTextureProvider *oldTx = oldEffect ? static_cast<TextureProviderMaterial *>(oldEffect)->texture() : 0;
 
     if (oldEffect == 0 || tx->texture()->textureId() != oldTx->texture()->textureId()) {
         renderer->setTexture(0, tx->texture());
@@ -410,7 +410,7 @@ void SubTreeTextureProvider::markDirtyTexture()
 
 void SubTreeTextureProvider::grab()
 {
-	Q_ASSERT(m_item);
+    Q_ASSERT(m_item);
     Node *root = m_item;
     while (root->childCount() && root->type() != Node::RootNodeType)
         root = root->childAtIndex(0);
@@ -501,7 +501,7 @@ Node *TextureItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     if (!node) {
         node = new TextureNode;
         node->setFlag(Node::UsePreprocess, m_requiresPreprocess);
-	    node->setTexture(m_textureProvider);
+        node->setTexture(m_textureProvider);
     }
 
     m_textureProvider->setClampToEdge(true);
@@ -510,7 +510,7 @@ Node *TextureItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     node->setTargetRect(QRectF(0, 0, width(), height()));
     node->setSourceRect(QRectF(0, 1, 1, -1));
     node->setOpacity(data->opacity);
-	node->update();
+    node->update();
 
     return node;
 }
