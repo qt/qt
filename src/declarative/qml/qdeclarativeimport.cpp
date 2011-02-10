@@ -712,6 +712,7 @@ bool QDeclarativeImportedNamespace::find(const QByteArray& type, int *vmajor, in
 /*!
 \class QDeclarativeImportDatabase
 \brief The QDeclarativeImportDatabase class manages the QML imports for a QDeclarativeEngine.
+\internal
 */
 QDeclarativeImportDatabase::QDeclarativeImportDatabase(QDeclarativeEngine *e)
 : engine(e)
@@ -926,16 +927,25 @@ QString QDeclarativeImportDatabase::resolvePlugin(const QDir &qmldirPath, const 
 #endif
 }
 
+/*!
+    \internal
+*/
 QStringList QDeclarativeImportDatabase::pluginPathList() const
 {
     return filePluginPath;
 }
 
+/*!
+    \internal
+*/
 void QDeclarativeImportDatabase::setPluginPathList(const QStringList &paths)
 {
     filePluginPath = paths;
 }
 
+/*!
+    \internal
+*/
 void QDeclarativeImportDatabase::addPluginPath(const QString& path)
 {
     if (qmlImportTrace())
@@ -950,6 +960,9 @@ void QDeclarativeImportDatabase::addPluginPath(const QString& path)
     }
 }
 
+/*!
+    \internal
+*/
 void QDeclarativeImportDatabase::addImportPath(const QString& path)
 {
     if (qmlImportTrace())
@@ -974,17 +987,25 @@ void QDeclarativeImportDatabase::addImportPath(const QString& path)
         fileImportPath.prepend(cPath);
 }
 
+/*!
+    \internal
+*/
 QStringList QDeclarativeImportDatabase::importPathList() const
 {
     return fileImportPath;
 }
 
+/*!
+    \internal
+*/
 void QDeclarativeImportDatabase::setImportPathList(const QStringList &paths)
 {
     fileImportPath = paths;
 }
 
-
+/*!
+    \internal
+*/
 bool QDeclarativeImportDatabase::importPlugin(const QString &filePath, const QString &uri, QString *errorString)
 {
     if (qmlImportTrace())

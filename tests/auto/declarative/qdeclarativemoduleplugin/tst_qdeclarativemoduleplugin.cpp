@@ -44,6 +44,13 @@
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QDebug>
 
+#include "../shared/testhttpserver.h"
+#include "../../../shared/util.h"
+
+#define SERVER_ADDR "http://127.0.0.1:14450"
+#define SERVER_PORT 14450
+
+
 class tst_qdeclarativemoduleplugin : public QObject
 {
     Q_OBJECT
@@ -58,6 +65,8 @@ private slots:
     void importsPlugin21();
     void incorrectPluginCase();
     void importPluginWithQmlFile();
+    void remoteImportWithQuotedUrl();
+    void remoteImportWithUnquotedUri();
 };
 
 #ifdef Q_OS_SYMBIAN
@@ -191,6 +200,50 @@ void tst_qdeclarativemoduleplugin::importPluginWithQmlFile()
     QObject *object = component.create();
     QVERIFY(object != 0);
     delete object;
+}
+
+void tst_qdeclarativemoduleplugin::remoteImportWithQuotedUrl()
+{
+    TestHTTPServer server(SERVER_PORT);
+    QVERIFY(server.isValid());
+    server.serveDirectory(SRCDIR "/imports");
+
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine);
+    component.setData("import \"http://127.0.0.1:14450/com/nokia/PureQmlModule\" \nComponentA { width: 300; ComponentB{} }", QUrl());
+
+    QTRY_COMPARE(component.status(), QDeclarativeComponent::Ready);
+    QObject *object = component.create();
+    QCOMPARE(object->property("width").toInt(), 300);
+    QVERIFY(object != 0);
+    delete object;
+
+    foreach (QDeclarativeError err, component.errors())
+        qWarning() << err;
+    VERIFY_ERRORS(0);
+}
+
+void tst_qdeclarativemoduleplugin::remoteImportWithUnquotedUri()
+{
+    TestHTTPServer server(SERVER_PORT);
+    QVERIFY(server.isValid());
+    server.serveDirectory(SRCDIR "/imports");
+
+    QDeclarativeEngine engine;
+    engine.addImportPath(QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("imports"));
+    QDeclarativeComponent component(&engine);
+    component.setData("import com.nokia.PureQmlModule 1.0 \nComponentA { width: 300; ComponentB{} }", QUrl());
+
+
+    QTRY_COMPARE(component.status(), QDeclarativeComponent::Ready);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("width").toInt(), 300);
+    delete object;
+
+    foreach (QDeclarativeError err, component.errors())
+        qWarning() << err;
+    VERIFY_ERRORS(0);
 }
 
 QTEST_MAIN(tst_qdeclarativemoduleplugin)
