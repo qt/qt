@@ -50,23 +50,8 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
-//#define MESA_EGL_NO_X11_HEADERS
 #define EGL_EGLEXT_PROTOTYPES
  #include <EGL/egl.h>
  #include <EGL/eglext.h>
-
-#undef FocusOut
-#undef FocusIn
-#undef KeyPress
-#undef KeyRelease
-#undef None
-#undef RevertToParent
-#undef GrayScale
-#undef CursorShape
-
-#ifdef FontChange
-#undef FontChange
-#endif
-
 
 #endif // QWAYLANDINCLUDE_H

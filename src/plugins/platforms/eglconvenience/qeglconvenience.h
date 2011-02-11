@@ -46,7 +46,11 @@
 #include <QtGui/QPlatformWindowFormat>
 #include <QtCore/QVector>
 
+#ifdef Q_PLATFORM_WAYLAND
+#include "qwaylandinclude.h"
+#else
 #include <EGL/egl.h>
+#endif
 QT_BEGIN_NAMESPACE
 
 QVector<EGLint> q_createConfigAttributesFromFormat(const QPlatformWindowFormat &format);

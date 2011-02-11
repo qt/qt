@@ -3,6 +3,8 @@ include(../../qpluginbase.pri)
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
+DEFINES += Q_PLATFORM_WAYLAND
+
 SOURCES =   main.cpp \
             qwaylandintegration.cpp \
             qwaylandshmsurface.cpp \
