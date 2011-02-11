@@ -191,8 +191,18 @@ void tst_qdeclarativemoduleplugin::incorrectPluginCase()
 
 void tst_qdeclarativemoduleplugin::importPluginWithQmlFile()
 {
+    QString path = QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("imports");
+
+    // QTBUG-16885: adding an import path with a lower-case "c:" causes assert failure
+    // (this only happens if the plugin includes pure QML files)
+    #ifdef Q_OS_WIN
+        QVERIFY(path.at(0).isUpper() && path.at(1) == QLatin1Char(':'));
+        path = path.at(0).toLower() + path.mid(1);
+    #endif
+
     QDeclarativeEngine engine;
-    engine.addImportPath(QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("imports"));
+    engine.addImportPath(path);
+
     QDeclarativeComponent component(&engine, TEST_FILE("data/pluginWithQmlFile.qml"));
     foreach (QDeclarativeError err, component.errors())
         qWarning() << err;
