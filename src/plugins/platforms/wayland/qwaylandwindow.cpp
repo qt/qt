@@ -98,5 +98,7 @@ void QWaylandWindow::configure(uint32_t time, uint32_t edges,
     Q_UNUSED(edges);
     QRect geometry = QRect(x, y, width, height);
 
+    setGeometry(geometry);
+
     QWindowSystemInterface::handleGeometryChange(widget(), geometry);
 }
