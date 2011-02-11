@@ -324,7 +324,7 @@ public:
         TransformUpdateMask     = TransformOrigin | Transform | BasicTransform | Position | Size | EffectReference | Canvas,
         ComplexTransformUpdateMask     = Transform | EffectReference | Canvas,
         ContentUpdateMask       = Size | Content | Smooth | Canvas,
-        ChildrenUpdateMask      = ChildrenChanged | ChildrenStackingChanged | Canvas,
+        ChildrenUpdateMask      = ChildrenChanged | ChildrenStackingChanged | EffectReference | Canvas,
 
     };
     quint32 dirtyAttributes;

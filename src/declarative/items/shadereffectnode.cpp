@@ -91,6 +91,14 @@ void CustomMaterialShader::updateState(Renderer *r, AbstractMaterial *newEffect,
 
         r->glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, source->texture()->textureId());
+
+        int filtering = source->linearFiltering() ? GL_LINEAR : GL_NEAREST;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtering);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtering);
+
+        int wrapMode = source->clampToEdge() ? GL_CLAMP_TO_EDGE : GL_REPEAT;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
     }
 
     if (m_node->m_source.respectsOpacity)

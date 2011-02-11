@@ -194,27 +194,10 @@ AbstractMaterialType *TextureProviderMaterialWithOpacity::type() const
     return &TextureProviderMaterialWithOpacityShader::type;
 }
 
-void TextureProviderMaterialWithOpacity::setOpacity(qreal opacity)
-{
-    m_opacity = opacity;
-    bool opaque = m_texture ? m_texture->opaque() : true;
-    setFlag(Blending, !opaque || opacity != 1);
-}
-
-int TextureProviderMaterialWithOpacity::compare(const AbstractMaterial *o) const
-{
-    Q_ASSERT(o && type() == o->type());
-    const TextureProviderMaterialWithOpacity *other = static_cast<const TextureProviderMaterialWithOpacity *>(o);
-    if (int diff = TextureProviderMaterial::compare(other))
-        return diff;
-    return int(other->m_opacity < m_opacity) - int(m_opacity < other->m_opacity);
-}
-
 void TextureProviderMaterialWithOpacity::setTexture(QSGTextureProvider *texture)
 {
     m_texture = texture;
-    bool opaque = m_texture ? m_texture->opaque() : true;
-    setFlag(Blending, !opaque || m_opacity != 1);
+    setFlag(Blending, true);
 }
 
 AbstractMaterialShader *TextureProviderMaterialWithOpacity::createShader() const
@@ -225,11 +208,9 @@ AbstractMaterialShader *TextureProviderMaterialWithOpacity::createShader() const
 void TextureProviderMaterialWithOpacityShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
 {
     Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
-    TextureProviderMaterialWithOpacity *tx = static_cast<TextureProviderMaterialWithOpacity *>(newEffect);
-    TextureProviderMaterialWithOpacity *oldTx = static_cast<TextureProviderMaterialWithOpacity *>(oldEffect);
 
-    if (oldTx == 0 || tx->opacity() != oldTx->opacity())
-        m_program.setUniformValue(m_opacity_id, (GLfloat) tx->opacity());
+    if (updates & Renderer::UpdateOpacity)
+        m_program.setUniformValue(m_opacity_id, GLfloat(renderer->renderOpacity()));
 
     TextureProviderMaterialShader::updateState(renderer, newEffect, oldEffect, updates);
 }
@@ -246,12 +227,11 @@ void TextureProviderMaterialWithOpacityShader::initialize()
 TextureNode::TextureNode()
     : m_texture(0)
     , m_sourceRect(0, 1, 1, -1)
-    , m_opacity(1)
     , m_dirtyTexture(false)
     , m_dirtyGeometry(false)
 {
-    m_materialO.setOpacity(m_opacity);
-    setMaterial(&m_material);
+    setMaterial(&m_materialO);
+    setOpaqueMaterial(&m_material);
 
     QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
         << QSGAttributeDescription(0, 2, GL_FLOAT, 4 * sizeof(float))
@@ -275,15 +255,6 @@ void TextureNode::setSourceRect(const QRectF &rect)
     m_sourceRect = rect;
     m_dirtyGeometry = true;
     markDirty(DirtyGeometry);
-}
-
-void TextureNode::setOpacity(qreal opacity)
-{
-    if (m_opacity == opacity)
-        return;
-    m_opacity = opacity;
-    m_materialO.setOpacity(m_opacity);
-    setMaterial(m_opacity < 1 ? (AbstractMaterial *)&m_materialO : (AbstractMaterial *)&m_material);
 }
 
 void TextureNode::setTexture(QSGTextureProvider *texture)

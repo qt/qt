@@ -104,20 +104,13 @@ protected:
 class TextureProviderMaterialWithOpacity : public TextureProviderMaterial
 {
 public:
-    TextureProviderMaterialWithOpacity() : m_opacity(1) { }
+    TextureProviderMaterialWithOpacity() { }
 
     virtual AbstractMaterialType *type() const;
     virtual AbstractMaterialShader *createShader() const;
-    virtual int compare(const AbstractMaterial *other) const;
     void setTexture(QSGTextureProvider *texture);
 
-    void setOpacity(qreal opacity);
-    qreal opacity() const { return m_opacity; }
-
     static bool is(const AbstractMaterial *effect);
-
-private:
-    qreal m_opacity;
 };
 
 
@@ -128,7 +121,6 @@ public:
     TextureNode();
     void setTargetRect(const QRectF &rect);
     void setSourceRect(const QRectF &rect);
-    void setOpacity(qreal opacity);
     void setTexture(QSGTextureProvider *texture);
     void update();
 
@@ -147,7 +139,6 @@ private:
     QSGTextureProvider *m_texture;
     QRectF m_targetRect;
     QRectF m_sourceRect;
-    qreal m_opacity;
 
     uint m_dirtyTexture : 1;
     uint m_dirtyGeometry : 1;

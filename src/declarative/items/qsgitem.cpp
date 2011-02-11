@@ -900,16 +900,9 @@ static bool itemZOrder_sort(QSGItem *lhs, QSGItem *rhs)
 
 QList<QSGItem *> QSGItemPrivate::paintOrderChildItems() const
 {
-    // XXX todo - optimize
+    // XXX todo - optimize, don't sort and return items that are
+    // ignored anyway, like invisible or disabled items.
     QList<QSGItem *> items = childItems;
-    for (QList<QSGItem *>::Iterator iter = items.begin(); iter != items.end(); ) {
-        if (!(*iter)->isVisible()) {
-            iter = items.erase(iter);
-        } else {
-            ++iter;
-        }
-    }
-
     qStableSort(items.begin(), items.end(), itemZOrder_sort);
     return items;
 }

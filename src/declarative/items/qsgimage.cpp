@@ -61,6 +61,7 @@ void QSGImageTextureProvider::setImage(const QImage &image)
 {
     QSGTextureManager *tm = QSGContext::current->textureManager();
     m_texture = tm->upload(image.mirrored());
+    emit textureChanged();
 }
 
 QSGTextureRef QSGImageTextureProvider::texture()

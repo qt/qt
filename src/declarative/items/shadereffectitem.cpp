@@ -243,6 +243,8 @@ void ShaderEffectItem::reset()
     for (int i = 0; i < m_sources.size(); ++i) {
         const SourceData &source = m_sources.at(i);
         delete source.mapper;
+        if (source.item && source.item->parentItem() == this)
+            source.item->setParentItem(0);
     }
     m_sources.clear();
 

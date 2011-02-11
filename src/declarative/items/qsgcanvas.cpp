@@ -580,7 +580,7 @@ bool QSGCanvasPrivate::deliverInitialMousePressEvent(QSGItem *item, QGraphicsSce
     QList<QSGItem *> children = itemPrivate->paintOrderChildItems();
     for (int ii = children.count() - 1; ii >= 0; --ii) {
         QSGItem *child = children.at(ii);
-        if (!child->isEnabled())
+        if (!child->isVisible() || !child->isEnabled())
             continue;
         if (deliverInitialMousePressEvent(child, event))
             return true;
@@ -853,15 +853,6 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
                                   ((item->clip() == false) != (itemPriv->clipNode == 0));
     bool effectRefEffectivelyChanged = dirty & QSGItemPrivate::EffectReference &&
                                   ((itemPriv->effectRefCount == 0) != (itemPriv->rootNode == 0));
-    bool childrenChanged = dirty & QSGItemPrivate::ChildrenUpdateMask;
-
-    if (clipEffectivelyChanged || effectRefEffectivelyChanged || childrenChanged) {
-        Node *groupNode = itemPriv->groupNode;
-        if (groupNode) {
-            for (int count = groupNode->childCount(); count; --count)
-                groupNode->removeChildNode(groupNode->childAtIndex(0));
-        }
-    }
 
     if (clipEffectivelyChanged) {
         Node *parent = itemPriv->opacityNode ? (Node *) itemPriv->opacityNode : (Node *)itemPriv->itemNode();
@@ -923,13 +914,21 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
         }
     }
 
-    if (clipEffectivelyChanged || effectRefEffectivelyChanged || childrenChanged) {
+    if (dirty & QSGItemPrivate::ChildrenUpdateMask) {
+        Node *groupNode = itemPriv->groupNode;
+        if (groupNode) {
+            for (int count = groupNode->childCount(); count; --count)
+                groupNode->removeChildNode(groupNode->childAtIndex(0));
+        }
+
         QList<QSGItem *> orderedChildren = itemPriv->paintOrderChildItems();
         int ii = 0;
 
         itemPriv->paintNodeIndex = 0;
         for (; ii < orderedChildren.count() && orderedChildren.at(ii)->z() < 0; ++ii) {
             QSGItemPrivate *childPrivate = QSGItemPrivate::get(orderedChildren.at(ii));
+            if (!childPrivate->explicitVisible && !itemPriv->effectRefCount)
+                continue;
             if (childPrivate->itemNode()->parent())
                 childPrivate->itemNode()->parent()->removeChildNode(childPrivate->itemNode());
 
@@ -942,6 +941,8 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
 
         for (; ii < orderedChildren.count(); ++ii) {
             QSGItemPrivate *childPrivate = QSGItemPrivate::get(orderedChildren.at(ii));
+            if (!childPrivate->explicitVisible && !itemPriv->effectRefCount)
+                continue;
             if (childPrivate->itemNode()->parent())
                 childPrivate->itemNode()->parent()->removeChildNode(childPrivate->itemNode());
 
@@ -954,18 +955,27 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
         itemPriv->clipNode->update();
     }
 
-    if (dirty & QSGItemPrivate::OpacityValue) {
-        if (!itemPriv->opacityNode) {
+    if (dirty & (QSGItemPrivate::OpacityValue | QSGItemPrivate::Visible)) {
+        qreal opacity = itemPriv->explicitVisible ? itemPriv->opacity : qreal(0);
+
+        if (opacity != 1 && !itemPriv->opacityNode) {
             itemPriv->opacityNode = new OpacityNode;
 
             Node *parent = itemPriv->itemNode();
-            Node *child = itemPriv->clipNode ? itemPriv->clipNode : itemPriv->childContainerNode();
+            Node *child = itemPriv->clipNode;
+            if (!child)
+                child = itemPriv->rootNode;
+            if (!child)
+                child = itemPriv->groupNode;
 
-            parent->removeChildNode(child);
+            if (child)
+                parent->removeChildNode(child);
             parent->appendChildNode(itemPriv->opacityNode);
-            itemPriv->opacityNode->appendChildNode(child);
+            if (child)
+                itemPriv->opacityNode->appendChildNode(child);
         }
-        itemPriv->opacityNode->setOpacity(itemPriv->opacity);
+        if (itemPriv->opacityNode)
+            itemPriv->opacityNode->setOpacity(opacity);
     }
 
     if (dirty & QSGItemPrivate::ContentUpdateMask) {
