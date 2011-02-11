@@ -952,7 +952,8 @@ void QDeclarativeImportDatabase::addPluginPath(const QString& path)
         qDebug().nospace() << "QDeclarativeImportDatabase::addPluginPath: " << path;
 
     QUrl url = QUrl(path);
-    if (url.isRelative() || url.scheme() == QLatin1String("file")) {
+    if (url.isRelative() || url.scheme() == QLatin1String("file")
+            || (url.scheme().length() == 1 && QFile::exists(path)) ) {  // windows path
         QDir dir = QDir(path);
         filePluginPath.prepend(dir.canonicalPath());
     } else {
@@ -974,7 +975,8 @@ void QDeclarativeImportDatabase::addImportPath(const QString& path)
     QUrl url = QUrl(path);
     QString cPath;
 
-    if (url.isRelative() || url.scheme() == QLatin1String("file")) {
+    if (url.isRelative() || url.scheme() == QLatin1String("file")
+            || (url.scheme().length() == 1 && QFile::exists(path)) ) {  // windows path
         QDir dir = QDir(path);
         cPath = dir.canonicalPath();
     } else {
