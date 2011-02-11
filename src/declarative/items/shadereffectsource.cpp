@@ -350,6 +350,7 @@ void ShaderEffectSource::update()
         QRectF r(0, 0, m_sourceItem->width(), m_sourceItem->height());
         r.adjust(-m_margins.width(), -m_margins.height(), m_margins.width(), m_margins.height());
         m_renderer->setDeviceRect(m_size);
+        m_renderer->setViewportRect(m_size);
         m_renderer->setProjectMatrixToRect(r);
         m_renderer->setClearColor(Qt::transparent);
 

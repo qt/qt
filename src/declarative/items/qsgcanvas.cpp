@@ -1026,6 +1026,7 @@ void QSGCanvas::paintEvent(QPaintEvent *)
     QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Painting);
 
     d->context->renderer()->setDeviceRect(rect());
+    d->context->renderer()->setViewportRect(rect());
     d->context->renderer()->setProjectMatrixToDeviceRect();
 
     d->context->renderNextFrame();
