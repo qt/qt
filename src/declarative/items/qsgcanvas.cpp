@@ -108,23 +108,41 @@ QSGRootItem::QSGRootItem()
 {
 }
 
-QSGThreadedRendererAnimationDriver::QSGThreadedRendererAnimationDriver(QObject *parent)
-: QAnimationDriver(parent)
+QSGThreadedRendererAnimationDriver::QSGThreadedRendererAnimationDriver(QSGRenderer *r)
+    : QAnimationDriver(r)
+    , renderer(r)
 {
 }
 
 void QSGThreadedRendererAnimationDriver::started()
 {
+#ifdef THREAD_DEBUG
+    qWarning("AnimationDriver: Main Thread: started");
+#endif
+    renderer->mutex.lock();
+    renderer->animationRunning = true;
+    if (renderer->idle)
+        renderer->wait.wakeOne();
+    renderer->mutex.unlock();
+
+
 }
 
 void QSGThreadedRendererAnimationDriver::stopped()
 {
+#ifdef THREAD_DEBUG
+    qWarning("AnimationDriver: Main Thread: stopped");
+#endif
+    renderer->mutex.lock();
+    renderer->animationRunning = false;
+    renderer->mutex.unlock();
 }
 
 QSGRenderer::QSGRenderer(QSGCanvasPrivate *canvas, const QGLFormat &format, QWidget *p)
     : QGLWidget(format, p), context(0), canvas(canvas)
     , contextInThread(false)
-    , threadedRendering(false), inUpdate(false), exitThread(false),
+    , threadedRendering(false), inUpdate(false), exitThread(false), needsRepaint(true)
+    , renderThreadAwakened(false),
   thread(new MyThread(this)), animationDriver(0)
 {
     threadedRendering = qmlThreadedRenderer();
@@ -216,6 +234,8 @@ bool QSGRenderer::event(QEvent *e)
 
         polishItems();
 
+        renderThreadAwakened = false;
+
         wait.wakeOne();
         wait.wait(&mutex);
 #ifdef THREAD_DEBUG
@@ -223,7 +243,8 @@ bool QSGRenderer::event(QEvent *e)
 #endif
         mutex.unlock();
 
-        animationDriver->advance();
+        if (animationRunning)
+            animationDriver->advance();
     }
 
     return QGLWidget::event(e);
@@ -240,8 +261,10 @@ void QSGRenderer::initializeSceneGraph()
     QGLContext *glctx = const_cast<QGLContext *>(QGLWidget::context());
     context->initialize(glctx);
 
-    QObject::connect(context->renderer(), SIGNAL(sceneGraphChanged()), this, SLOT(maybeUpdate()),
-                     Qt::DirectConnection);
+    if (!threadedRendering) {
+        QObject::connect(context->renderer(), SIGNAL(sceneGraphChanged()), this, SLOT(maybeUpdate()),
+                         Qt::DirectConnection);
+    }
 
     if (!QSGItemPrivate::get(canvas->rootItem)->itemNode()->parent()) 
         context->rootNode()->appendChildNode(QSGItemPrivate::get(canvas->rootItem)->itemNode());
@@ -275,6 +298,11 @@ void QSGRenderer::renderSceneGraph()
     glctx->swapBuffers();
 }
 
+void QSGRenderer::sceneGraphChanged()
+{
+    needsRepaint = true;
+}
+
 void QSGRenderer::runThread()
 {
 #ifdef THREAD_DEBUG
@@ -283,6 +311,10 @@ void QSGRenderer::runThread()
 
     makeCurrent();
     initializeSceneGraph();
+
+    connect(context->renderer(), SIGNAL(sceneGraphChanged()),
+            this, SLOT(sceneGraphChanged()),
+            Qt::DirectConnection);
 
     mutex.lock();
     wait.wakeOne(); // Wake the main thread waiting for us to start
@@ -309,7 +341,7 @@ void QSGRenderer::runThread()
             break;
 
 #ifdef THREAD_DEBUG
-        qWarning("QSGRenderer: Render Thread: Main thread has stopped");
+        qWarning("QSGRenderer: Render Thread: Main thread has stopped, syncing scene");
 #endif
 
         // Do processing while main thread is frozen
@@ -318,12 +350,43 @@ void QSGRenderer::runThread()
 #ifdef THREAD_DEBUG
         qWarning("QSGRenderer: Render Thread: Resuming main thread");
 #endif
+
+        // Read animationRunning while inside the locked section
+        bool continous = animationRunning;
+
         wait.wakeOne();
         mutex.unlock();
 
-        renderSceneGraph();
+        bool enterIdle = false;
+        if (needsRepaint) {
+#ifdef THREAD_DEBUG
+            qWarning("QSGRenderer: Render Thread: rendering scene");
+#endif
+            renderSceneGraph();
+            needsRepaint = false;
+        } else if (continous) {
+#ifdef THREAD_DEBUG
+            qWarning("QSGRenderer: Render Thread: waiting a while...");
+#endif
+            MyThread::doWait();
+        } else {
+            enterIdle = true;
+        }
 
         mutex.lock();
+
+        if (enterIdle) {
+#ifdef THREAD_DEBUG
+            qWarning("QSGRenderer: Render Thread: Nothing has changed, going idle...");
+#endif
+            idle = true;
+            wait.wait(&mutex);
+            idle = false;
+#ifdef THREAD_DEBUG
+            qWarning("QSGRenderer: Render Thread: waking up from idle");
+#endif
+        }
+
     }
 
     wait.wakeOne();
@@ -735,6 +798,8 @@ QSGItem *QSGCanvas::mouseGrabberItem() const
 
 bool QSGCanvas::event(QEvent *e)
 {
+    Q_D(QSGCanvas);
+
     // XXX todo
     switch (e->type()) {
     case QEvent::TouchBegin:
@@ -1167,6 +1232,20 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
 
 void QSGRenderer::maybeUpdate()
 {
+    if (threadedRendering) {
+        if (!renderThreadAwakened) {
+            renderThreadAwakened = true;
+            mutex.lock();
+            if (idle) {
+#ifdef THREAD_DEBUG
+                qWarning("QSGRenderer: now maybe I should update...\n");
+#endif
+                wait.wakeOne();
+            }
+            mutex.unlock();
+        }
+    }
+
     if (!threadedRendering && !inUpdate && (!animationDriver || !animationDriver->isRunning())) 
         update();
 }

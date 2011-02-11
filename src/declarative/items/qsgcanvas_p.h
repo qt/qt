@@ -73,15 +73,20 @@ public:
     QSGRootItem();
 };
 
+class QSGRenderer;
 class QSGThreadedRendererAnimationDriver : public QAnimationDriver
 {
 public:
-    QSGThreadedRendererAnimationDriver(QObject * = 0);
+    QSGThreadedRendererAnimationDriver(QSGRenderer *r);
 
 protected:
     virtual void started();
     virtual void stopped();
+
+private:
+    QSGRenderer *renderer;
 };
+
 
 class QSGCanvasPrivate;
 class QSGRenderer : public QGLWidget
@@ -91,6 +96,7 @@ public:
     QSGRenderer(QSGCanvasPrivate *canvas, const QGLFormat &format, QWidget *p);
 
 public slots:
+    void sceneGraphChanged();
     void maybeUpdate();
 
 protected:
@@ -103,26 +109,36 @@ protected:
 
 private:
     friend class QSGCanvas;
+    friend class QSGThreadedRendererAnimationDriver;
+    friend class QSGRendererNotificationReceiver;
 
     void initializeSceneGraph();
     void polishItems();
     void syncSceneGraph();
     void renderSceneGraph();
 
+
     void runThread();
 
     struct MyThread : public QThread {
         MyThread(QSGRenderer *r) : r(r) {}
         virtual void run() { r->runThread(); }
+
+        static void doWait() { QThread::msleep(16); }
+
         QSGRenderer *r;
     };
     QSGContext *context;
     QSGCanvasPrivate *canvas;
 
-    bool contextInThread;
-    bool threadedRendering;
-    bool inUpdate;
-    bool exitThread;
+    uint contextInThread : 1;
+    uint threadedRendering : 1;
+    uint inUpdate : 1;
+    uint exitThread : 1;
+    uint animationRunning: 1;
+    uint idle : 1;              // Set to true when render thread sees no change and enters a wait()
+    uint needsRepaint : 1;      // Set by callback from render if scene needs repainting.
+    uint renderThreadAwakened : 1;
 
     MyThread *thread;
     QMutex mutex;
