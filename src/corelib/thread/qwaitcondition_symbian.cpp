@@ -46,7 +46,6 @@
 #include "qatomic.h"
 #include "qstring.h"
 #include "qelapsedtimer"
-#include "qdebug.h"
 
 #include "qmutex_p.h"
 #include "qreadwritelock_p.h"
@@ -69,10 +68,9 @@ public:
     RCondVar cond;
     int waiters;
     int wakeups;
-    int count;
 
     QWaitConditionPrivate()
-    : waiters(0), wakeups(0), count(0)
+    : waiters(0), wakeups(0)
     {
         qt_symbian_throwIfError(mutex.CreateLocal());
         int err = cond.CreateLocal();
@@ -94,9 +92,7 @@ public:
         if (time == ULONG_MAX) {
             // untimed wait, loop because RCondVar::Wait may return before the condition is triggered
             do {
- //               qDebug() << "about to wait forever";
                 err = cond.Wait(mutex);
-   //             qDebug() << "cond.Wait(mutex) returned";
             } while (err == KErrNone && wakeups == 0);
         } else {
             unsigned long maxWait = KMaxTInt / 1000;
@@ -105,11 +101,9 @@ public:
                 waitTimer.start();
                 unsigned long waitTime = qMin(maxWait, time);
                 // wait at least 1ms, as 0 means no wait
-  //              qDebug() << "about to wait " << qMax(1ul, waitTime) * 1000;
                 err = cond.TimedWait(mutex, qMax(1ul, waitTime) * 1000);
                 // RCondVar::TimedWait may return before the condition is triggered, update the timeout with actual wait time
                 time -= qMin((unsigned long)waitTimer.elapsed(), waitTime);
-    //            qDebug() << "err=" << err << " time=" << time << " wakeups=" << wakeups;
             } while ((err == KErrNone && wakeups == 0) || (err == KErrTimedOut && time > 0));
         }
 
@@ -143,10 +137,7 @@ void QWaitCondition::wakeOne()
     d->mutex.Wait();
     d->wakeups = qMin(d->wakeups + 1, d->waiters);
     d->cond.Signal();
-    d->count++;
     d->mutex.Signal();
-    if ((d->count%1000) == 999)
-        User::After(1);
 }
 
 void QWaitCondition::wakeAll()
@@ -154,10 +145,7 @@ void QWaitCondition::wakeAll()
     d->mutex.Wait();
     d->wakeups = d->waiters;
     d->cond.Broadcast();
-    d->count++;
     d->mutex.Signal();
-    if ((d->count%1000) == 999)
-        User::After(1);
 }
 
 bool QWaitCondition::wait(QMutex *mutex, unsigned long time)

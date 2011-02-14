@@ -40,20 +40,11 @@
 ****************************************************************************/
 
 #include "qthread.h"
-
 #include "qplatformdefs.h"
-
 #include <private/qcoreapplication_p.h>
-#if !defined(QT_NO_GLIB)
-#  include "../kernel/qeventdispatcher_glib_p.h"
-#endif
-
 #include <private/qeventdispatcher_symbian_p.h>
-
 #include "qthreadstorage.h"
-
 #include "qthread_p.h"
-
 #include "qdebug.h"
 
 #include <sched.h>
@@ -281,11 +272,6 @@ Qt::HANDLE QThread::currentThreadId()
     return (Qt::HANDLE) (TUint) RThread().Id();
 }
 
-#if defined(QT_LINUXBASE) && !defined(_SC_NPROCESSORS_ONLN)
-// LSB doesn't define _SC_NPROCESSORS_ONLN.
-#  define _SC_NPROCESSORS_ONLN 84
-#endif
-
 int QThread::idealThreadCount()
 {
     int cores = -1;
@@ -351,8 +337,11 @@ TThreadPriority calculateSymbianPriority(QThread::Priority priority)
             break;
         case QThread::HighestPriority:
         case QThread::TimeCriticalPriority:
-        default:
             symPriority = EPriorityMuchMore;
+            break;
+        case QThread::InheritPriority:
+        default:
+            symPriority = RThread().Priority();
             break;
     }
     return symPriority;
