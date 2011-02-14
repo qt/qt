@@ -80,7 +80,7 @@
 
     \snippet examples/uitools/textfinder/textfinder.h 0
 
-    The slot \c{on_find_Button_clicked()} is a slot named according to the
+    The slot \c{on_findButton_clicked()} is a slot named according to the
     \l{Using a Designer UI File in Your Application#Automatic Connections}
     {Automatic Connection} naming convention required
     by \c uic.

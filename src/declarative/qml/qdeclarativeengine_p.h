@@ -251,8 +251,12 @@ public:
     QDeclarativeValueTypeFactory valueTypes;
 
     QHash<const QMetaObject *, QDeclarativePropertyCache *> propertyCache;
+    QHash<QPair<QDeclarativeType *, int>, QDeclarativePropertyCache *> typePropertyCache;
     inline QDeclarativePropertyCache *cache(QObject *obj);
     inline QDeclarativePropertyCache *cache(const QMetaObject *);
+    inline QDeclarativePropertyCache *cache(QDeclarativeType *, int, QDeclarativeError &error);
+    QDeclarativePropertyCache *createCache(const QMetaObject *);
+    QDeclarativePropertyCache *createCache(QDeclarativeType *, int, QDeclarativeError &error);
 
     void registerCompositeType(QDeclarativeCompiledData *);
 
@@ -330,19 +334,17 @@ Returns a QDeclarativePropertyCache for \a obj if one is available.
 
 If \a obj is null, being deleted or contains a dynamic meta object 0 
 is returned.
+
+The returned cache is not referenced, so if it is to be stored, call addref().
 */
 QDeclarativePropertyCache *QDeclarativeEnginePrivate::cache(QObject *obj) 
 {
-    Q_Q(QDeclarativeEngine);
     if (!obj || QObjectPrivate::get(obj)->metaObject || QObjectPrivate::get(obj)->wasDeleted) 
         return 0;
 
     const QMetaObject *mo = obj->metaObject();
     QDeclarativePropertyCache *rv = propertyCache.value(mo);
-    if (!rv) {
-        rv = new QDeclarativePropertyCache(q, mo);
-        propertyCache.insert(mo, rv);
-    }
+    if (!rv) rv = createCache(mo);
     return rv;
 }
 
@@ -352,18 +354,32 @@ Returns a QDeclarativePropertyCache for \a metaObject.
 As the cache is persisted for the life of the engine, \a metaObject must be
 a static "compile time" meta-object, or a meta-object that is otherwise known to 
 exist for the lifetime of the QDeclarativeEngine.
+
+The returned cache is not referenced, so if it is to be stored, call addref().
 */
 QDeclarativePropertyCache *QDeclarativeEnginePrivate::cache(const QMetaObject *metaObject)
 {
-    Q_Q(QDeclarativeEngine);
     Q_ASSERT(metaObject);
 
     QDeclarativePropertyCache *rv = propertyCache.value(metaObject);
-    if (!rv) {
-        rv = new QDeclarativePropertyCache(q, metaObject);
-        propertyCache.insert(metaObject, rv);
-    }
+    if (!rv) rv = createCache(metaObject);
+    return rv;
+}
 
+/*!
+Returns a QDeclarativePropertyCache for \a type with \a minorVersion.
+
+The returned cache is not referenced, so if it is to be stored, call addref().
+*/
+QDeclarativePropertyCache *QDeclarativeEnginePrivate::cache(QDeclarativeType *type, int minorVersion, QDeclarativeError &error)
+{
+    Q_ASSERT(type);
+
+    if (minorVersion == -1 || !type->containsRevisionedAttributes())
+        return cache(type->metaObject());
+
+    QDeclarativePropertyCache *rv = typePropertyCache.value(qMakePair(type, minorVersion));
+    if (!rv) rv = createCache(type, minorVersion, error);
     return rv;
 }
 

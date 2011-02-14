@@ -118,7 +118,7 @@
     using CSS. 
 
     \snippet examples/webkit/fancybrowser/mainwindow.cpp 8
-    
+
     The \c rotateImages() function rotates the images on the current
     web page. Webkit supports CSS transforms and this JavaScript code 
     looks up all \e {img} elements and rotates the images 180 degrees
@@ -127,7 +127,7 @@
     \snippet examples/webkit/fancybrowser/mainwindow.cpp 9
 
     The remaining four methods remove different elements from the current web 
-    page. \c removeGifImages() removes all Gif images on the page by looking up 
+    page. \c removeGifImages() removes all GIF images on the page by looking up 
     the \e {src} attribute of all the elements on the web page. Any element with 
     a \e {gif} file as its source is removed. \c removeInlineFrames() removes all 
     \e {iframe} or inline elements. \c removeObjectElements() removes all 
