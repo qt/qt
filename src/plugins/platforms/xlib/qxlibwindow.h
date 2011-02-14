@@ -42,7 +42,7 @@
 #ifndef QTESTLITEWINDOW_H
 #define QTESTLITEWINDOW_H
 
-#include "qtestliteintegration.h"
+#include "qxlibintegration.h"
 
 #include <QPlatformWindow>
 #include <QEvent>

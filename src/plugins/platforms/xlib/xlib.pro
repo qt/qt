@@ -1,30 +1,30 @@
-TARGET = qtestlite
+TARGET = qxlib
 
 include(../../qpluginbase.pri)
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
 SOURCES = \
         main.cpp \
-        qtestliteintegration.cpp \
-        qtestlitewindowsurface.cpp \
-        qtestlitewindow.cpp \
-        qtestlitecursor.cpp \
-        qtestlitescreen.cpp \
-        qtestlitekeyboard.cpp \
-        qtestliteclipboard.cpp \
-        qtestlitemime.cpp \
-        qtestlitestaticinfo.cpp
+        qxlibintegration.cpp \
+        qxlibwindowsurface.cpp \
+        qxlibwindow.cpp \
+        qxlibcursor.cpp \
+        qxlibscreen.cpp \
+        qxlibkeyboard.cpp \
+        qxlibclipboard.cpp \
+        qxlibmime.cpp \
+        qxlibstatic.cpp
 
 HEADERS = \
-        qtestliteintegration.h \
-        qtestlitewindowsurface.h \
-        qtestlitewindow.h \
-        qtestlitecursor.h \
-        qtestlitescreen.h \
-        qtestlitekeyboard.h \
-        qtestliteclipboard.h \
-        qtestlitemime.h \
-        qtestlitestaticinfo.h
+        qxlibintegration.h \
+        qxlibwindowsurface.h \
+        qxlibwindow.h \
+        qxlibcursor.h \
+        qxlibscreen.h \
+        qxlibkeyboard.h \
+        qxlibclipboard.h \
+        qxlibmime.h \
+        qxlibstatic.h
 
 LIBS += -lX11 -lXext
 
@@ -43,12 +43,12 @@ contains(QT_CONFIG, opengl) {
         HEADERS += \
             ../eglconvenience/qeglplatformcontext.h \
             ../eglconvenience/qeglconvenience.h \
-            qtestliteeglintegration.h
+            qxlibeglintegration.h
 
         SOURCES += \
             ../eglconvenience/qeglplatformcontext.cpp \
             ../eglconvenience/qeglconvenience.cpp \
-            qtestliteeglintegration.cpp
+            qxlibeglintegration.cpp
         LIBS += -lEGL
     }
 }

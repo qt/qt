@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qtestliteclipboard.h"
+#include "qxlibclipboard.h"
 
-#include "qtestlitescreen.h"
-#include "qtestlitemime.h"
+#include "qxlibscreen.h"
+#include "qxlibmime.h"
 
 #include <private/qapplication_p.h>
 
@@ -673,4 +673,4 @@ QByteArray QXlibClipboard::getDataInFormat(Atom modeAtom, Atom fmtatom)
     return buf;
 }
 
-#include "qtestliteclipboard.moc"
+#include "qxlibclipboard.moc"

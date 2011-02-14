@@ -44,7 +44,7 @@
 
 #include <QtGui/QPlatformCursor>
 
-#include "qtestliteintegration.h"
+#include "qxlibintegration.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -39,15 +39,15 @@
 **
 ****************************************************************************/
 
-#include "qtestliteintegration.h"
-#include "qtestlitewindowsurface.h"
+#include "qxlibintegration.h"
+#include "qxlibwindowsurface.h"
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtCore/qdebug.h>
 
-#include "qtestlitewindow.h"
+#include "qxlibwindow.h"
 #include "qgenericunixfontdatabase.h"
-#include "qtestlitescreen.h"
-#include "qtestliteclipboard.h"
+#include "qxlibscreen.h"
+#include "qxlibclipboard.h"
 
 #if !defined(QT_NO_OPENGL)
 #if !defined(QT_OPENGL_ES_2)

@@ -39,13 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qtestlitescreen.h"
+#include "qxlibscreen.h"
 
-#include "qtestlitecursor.h"
-#include "qtestlitewindow.h"
-#include "qtestlitekeyboard.h"
-#include "qtestlitestaticinfo.h"
-#include "qtestliteclipboard.h"
+#include "qxlibcursor.h"
+#include "qxlibwindow.h"
+#include "qxlibkeyboard.h"
+#include "qxlibstatic.h"
+#include "qxlibclipboard.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QSocketNotifier>

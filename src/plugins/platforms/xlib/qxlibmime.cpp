@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qtestlitemime.h"
+#include "qxlibmime.h"
 
-#include "qtestlitestaticinfo.h"
-#include "qtestlitescreen.h"
+#include "qxlibstatic.h"
+#include "qxlibscreen.h"
 
 #include <QtCore/QTextCodec>
 #include <QtGui/QImageWriter>

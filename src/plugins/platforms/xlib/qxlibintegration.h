@@ -48,7 +48,7 @@
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
 
-#include "qtestlitestaticinfo.h"
+#include "qxlibstatic.h"
 
 QT_BEGIN_NAMESPACE
 

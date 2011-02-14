@@ -42,7 +42,7 @@
 #ifndef Q_GLX_CONTEXT_H
 #define Q_GLX_CONTEXT_H
 
-#include "qtestlitewindow.h"
+#include "qxlibwindow.h"
 
 #include <QtGui/QPlatformGLContext>
 #include <QtGui/QPlatformWindowFormat>

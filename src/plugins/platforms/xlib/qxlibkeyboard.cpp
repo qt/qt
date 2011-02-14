@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qtestlitekeyboard.h"
+#include "qxlibkeyboard.h"
 
-#include "qtestlitescreen.h"
+#include "qxlibscreen.h"
 
 #include <QtGui/QWindowSystemInterface>
 

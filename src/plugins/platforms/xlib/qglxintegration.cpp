@@ -43,8 +43,8 @@
 #include <QLibrary>
 #include <QGLFormat>
 
-#include "qtestlitewindow.h"
-#include "qtestlitescreen.h"
+#include "qxlibwindow.h"
+#include "qxlibscreen.h"
 
 #if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
 #include <X11/Xlib.h>

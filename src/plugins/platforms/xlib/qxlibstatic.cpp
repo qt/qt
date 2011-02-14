@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qtestlitestaticinfo.h"
-#include "qtestlitescreen.h"
+#include "qxlibstatic.h"
+#include "qxlibscreen.h"
 
 #include <qplatformdefs.h>
 

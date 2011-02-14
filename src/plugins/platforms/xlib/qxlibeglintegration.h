@@ -42,7 +42,7 @@
 #ifndef QTESTLITEEGLINTEGRATION_H
 #define QTESTLITEEGLINTEGRATION_H
 
-#include "qtestlitestaticinfo.h"
+#include "qxlibstatic.h"
 #include "../eglconvenience/qeglconvenience.h"
 
 class QXlibEglIntegration

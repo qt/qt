@@ -46,8 +46,8 @@
 
 #include <QtGui/QClipboard>
 
-#include "qtestliteintegration.h"
-#include "qtestliteclipboard.h"
+#include "qxlibintegration.h"
+#include "qxlibclipboard.h"
 
 class QXlibMime : public QInternalMimeData {
     Q_OBJECT

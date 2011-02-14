@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qtestlitecursor.h"
+#include "qxlibcursor.h"
 
-#include "qtestliteintegration.h"
-#include "qtestlitescreen.h"
-#include "qtestlitewindow.h"
+#include "qxlibintegration.h"
+#include "qxlibscreen.h"
+#include "qxlibwindow.h"
 
 #include <QtGui/QBitmap>
 

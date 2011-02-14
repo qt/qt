@@ -43,7 +43,7 @@
 #define QTESTLITECLIPBOARD_H
 
 #include <QPlatformClipboard>
-#include "qtestlitestaticinfo.h"
+#include "qxlibstatic.h"
 
 class QXlibScreen;
 class QXlibClipboard : public QPlatformClipboard

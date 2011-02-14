@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qtestlitewindow.h"
+#include "qxlibwindow.h"
 
-#include "qtestliteintegration.h"
-#include "qtestlitescreen.h"
-#include "qtestlitekeyboard.h"
-#include "qtestlitestaticinfo.h"
+#include "qxlibintegration.h"
+#include "qxlibscreen.h"
+#include "qxlibkeyboard.h"
+#include "qxlibstatic.h"
 
 #include <QtGui/QWindowSystemInterface>
 #include <QSocketNotifier>
@@ -60,7 +60,7 @@
 #else
 #include "../eglconvenience/qeglconvenience.h"
 #include "../eglconvenience/qeglplatformcontext.h"
-#include "qtestliteeglintegration.h"
+#include "qxlibeglintegration.h"
 #endif  //QT_OPENGL_ES_2
 #endif //QT_NO_OPENGL
 

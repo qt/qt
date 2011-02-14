@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qtestliteeglintegration.h"
+#include "qxlibeglintegration.h"
 
 static int countBits(unsigned long mask)
 {

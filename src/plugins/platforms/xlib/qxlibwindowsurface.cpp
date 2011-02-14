@@ -39,14 +39,14 @@
 **
 ****************************************************************************/
 
-#include "qtestlitewindowsurface.h"
-#include "qtestliteintegration.h"
+#include "qxlibwindowsurface.h"
+#include "qxlibintegration.h"
 
 #include <QtCore/qdebug.h>
 #include <QWindowSystemInterface>
 
-#include "qtestlitewindow.h"
-#include "qtestlitescreen.h"
+#include "qxlibwindow.h"
+#include "qxlibscreen.h"
 
 # include <sys/ipc.h>
 # include <sys/shm.h>

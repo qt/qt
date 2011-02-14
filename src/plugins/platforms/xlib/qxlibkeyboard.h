@@ -42,7 +42,7 @@
 #ifndef QTESTLITEKEYBOARD_H
 #define QTESTLITEKEYBOARD_H
 
-#include "qtestliteintegration.h"
+#include "qxlibintegration.h"
 
 class QXlibKeyboard
 {

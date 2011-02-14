@@ -43,7 +43,7 @@
 #define QTESTLITESCREEN_H
 
 #include <QtGui/QPlatformScreen>
-#include "qtestliteintegration.h"
+#include "qxlibintegration.h"
 
 QT_BEGIN_NAMESPACE
 
