@@ -116,6 +116,7 @@ int qmlRegisterType()
 
         0, 0,
 
+        0,
         0
     };
 
@@ -151,6 +152,7 @@ int qmlRegisterUncreatableType(const char *uri, int versionMajor, int versionMin
 
         0, 0,
 
+        0,
         0
     };
 
@@ -184,11 +186,81 @@ int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const c
 
         0, 0,
 
+        0,
         0
     };
 
     return QDeclarativePrivate::qmlregister(QDeclarativePrivate::TypeRegistration, &type);
 }
+
+template<typename T, int metaObjectRevision>
+int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const char *qmlName)
+{
+    QByteArray name(T::staticMetaObject.className());
+
+    QByteArray pointerName(name + '*');
+    QByteArray listName("QDeclarativeListProperty<" + name + ">");
+
+    QDeclarativePrivate::RegisterType type = {
+        1,
+
+        qRegisterMetaType<T *>(pointerName.constData()),
+        qRegisterMetaType<QDeclarativeListProperty<T> >(listName.constData()),
+        sizeof(T), QDeclarativePrivate::createInto<T>,
+        QString(),
+
+        uri, versionMajor, versionMinor, qmlName, &T::staticMetaObject,
+
+        QDeclarativePrivate::attachedPropertiesFunc<T>(),
+        QDeclarativePrivate::attachedPropertiesMetaObject<T>(),
+
+        QDeclarativePrivate::StaticCastSelector<T,QDeclarativeParserStatus>::cast(),
+        QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueSource>::cast(),
+        QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueInterceptor>::cast(),
+
+        0, 0,
+
+        0,
+        metaObjectRevision
+    };
+
+    return QDeclarativePrivate::qmlregister(QDeclarativePrivate::TypeRegistration, &type);
+}
+
+template<typename T, int metaObjectRevision>
+int qmlRegisterRevision(const char *uri, int versionMajor, int versionMinor)
+{
+    QByteArray name(T::staticMetaObject.className());
+
+    QByteArray pointerName(name + '*');
+    QByteArray listName("QDeclarativeListProperty<" + name + ">");
+
+    QDeclarativePrivate::RegisterType type = {
+        1,
+
+        qRegisterMetaType<T *>(pointerName.constData()),
+        qRegisterMetaType<QDeclarativeListProperty<T> >(listName.constData()),
+        sizeof(T), QDeclarativePrivate::createInto<T>,
+        QString(),
+
+        uri, versionMajor, versionMinor, 0, &T::staticMetaObject,
+
+        QDeclarativePrivate::attachedPropertiesFunc<T>(),
+        QDeclarativePrivate::attachedPropertiesMetaObject<T>(),
+
+        QDeclarativePrivate::StaticCastSelector<T,QDeclarativeParserStatus>::cast(),
+        QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueSource>::cast(),
+        QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueInterceptor>::cast(),
+
+        0, 0,
+
+        0,
+        metaObjectRevision
+    };
+
+    return QDeclarativePrivate::qmlregister(QDeclarativePrivate::TypeRegistration, &type);
+}
+
 
 template<typename T, typename E>
 int qmlRegisterExtendedType()
@@ -217,6 +289,7 @@ int qmlRegisterExtendedType()
 
         QDeclarativePrivate::createParent<E>, &E::staticMetaObject,
 
+        0,
         0
     };
 
@@ -258,6 +331,7 @@ int qmlRegisterExtendedType(const char *uri, int versionMajor, int versionMinor,
 
         QDeclarativePrivate::createParent<E>, &E::staticMetaObject,
 
+        0,
         0
     };
 
@@ -312,7 +386,8 @@ int qmlRegisterCustomType(const char *uri, int versionMajor, int versionMinor,
 
         0, 0,
 
-        parser
+        parser,
+        0
     };
 
     return QDeclarativePrivate::qmlregister(QDeclarativePrivate::TypeRegistration, &type);
@@ -320,6 +395,8 @@ int qmlRegisterCustomType(const char *uri, int versionMajor, int versionMinor,
 
 class QDeclarativeContext;
 class QDeclarativeEngine;
+class QScriptValue;
+class QScriptEngine;
 Q_DECLARATIVE_EXPORT void qmlExecuteDeferred(QObject *);
 Q_DECLARATIVE_EXPORT QDeclarativeContext *qmlContext(const QObject *);
 Q_DECLARATIVE_EXPORT QDeclarativeEngine *qmlEngine(const QObject *);
@@ -331,6 +408,34 @@ QObject *qmlAttachedPropertiesObject(const QObject *obj, bool create = true)
 {
     static int idx = -1;
     return qmlAttachedPropertiesObject(&idx, obj, &T::staticMetaObject, create);
+}
+
+inline int qmlRegisterModuleApi(const char *uri, int versionMajor, int versionMinor,
+                                QScriptValue (*callback)(QDeclarativeEngine *, QScriptEngine *))
+{
+    QDeclarativePrivate::RegisterModuleApi api = {
+        0,
+
+        uri, versionMajor, versionMinor,
+
+        callback, 0
+    };
+
+    return QDeclarativePrivate::qmlregister(QDeclarativePrivate::ModuleApiRegistration, &api);
+}
+
+inline int qmlRegisterModuleApi(const char *uri, int versionMajor, int versionMinor,
+                                QObject *(*callback)(QDeclarativeEngine *, QScriptEngine *))
+{
+    QDeclarativePrivate::RegisterModuleApi api = {
+        0,
+
+        uri, versionMajor, versionMinor,
+
+        0, callback
+    };
+
+    return QDeclarativePrivate::qmlregister(QDeclarativePrivate::ModuleApiRegistration, &api);
 }
 
 QT_END_NAMESPACE

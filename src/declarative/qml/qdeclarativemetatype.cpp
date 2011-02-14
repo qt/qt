@@ -88,6 +88,7 @@ QT_BEGIN_NAMESPACE
 
 struct QDeclarativeMetaTypeData
 {
+    QDeclarativeMetaTypeData();
     ~QDeclarativeMetaTypeData();
     QList<QDeclarativeType *> types;
     typedef QHash<int, QDeclarativeType *> Ids;
@@ -98,6 +99,14 @@ struct QDeclarativeMetaTypeData
     MetaObjects metaObjectToType;
     typedef QHash<int, QDeclarativeMetaType::StringConverter> StringConverters;
     StringConverters stringConverters;
+    struct ModuleApiList {
+        ModuleApiList() : sorted(true) {}
+        QList<QDeclarativeMetaType::ModuleApi> moduleApis;
+        bool sorted;
+    };
+    typedef QHash<QByteArray, ModuleApiList> ModuleApis;
+    ModuleApis moduleApis;
+    int moduleApiCount;
 
     struct ModuleInfo {
         ModuleInfo(int major, int minor)
@@ -119,6 +128,11 @@ struct QDeclarativeMetaTypeData
 Q_GLOBAL_STATIC(QDeclarativeMetaTypeData, metaTypeData)
 Q_GLOBAL_STATIC(QReadWriteLock, metaTypeDataLock)
 
+QDeclarativeMetaTypeData::QDeclarativeMetaTypeData()
+: moduleApiCount(0)
+{
+}
+
 QDeclarativeMetaTypeData::~QDeclarativeMetaTypeData()
 {
     for (int i = 0; i < types.count(); ++i)
@@ -134,10 +148,14 @@ public:
 
     bool m_isInterface : 1;
     const char *m_iid;
+    QByteArray m_module;
     QByteArray m_name;
     int m_version_maj;
     int m_version_min;
     int m_typeId; int m_listId; 
+    int m_revision;
+    mutable bool m_containsRevisionedAttributes;
+    mutable QDeclarativeType *m_superType;
 
     int m_allocationSize;
     void (*m_newFunc)(void *);
@@ -155,6 +173,7 @@ public:
     int m_index;
     QDeclarativeCustomParser *m_customParser;
     mutable volatile bool m_isSetup:1;
+    mutable bool m_haveSuperType : 1;
     mutable QList<QDeclarativeProxyMetaObject::ProxyData> m_metaObjects;
 
     static QHash<const QMetaObject *, int> m_attachedPropertyIds;
@@ -163,10 +182,11 @@ public:
 QHash<const QMetaObject *, int> QDeclarativeTypePrivate::m_attachedPropertyIds;
 
 QDeclarativeTypePrivate::QDeclarativeTypePrivate()
-: m_isInterface(false), m_iid(0), m_typeId(0), m_listId(0), 
-  m_allocationSize(0), m_newFunc(0), m_baseMetaObject(0), m_attachedPropertiesFunc(0), m_attachedPropertiesType(0),
-  m_parserStatusCast(-1), m_propertyValueSourceCast(-1), m_propertyValueInterceptorCast(-1),
-  m_extFunc(0), m_extMetaObject(0), m_index(-1), m_customParser(0), m_isSetup(false)
+: m_isInterface(false), m_iid(0), m_typeId(0), m_listId(0), m_revision(0), m_containsRevisionedAttributes(false),
+  m_superType(0), m_allocationSize(0), m_newFunc(0), m_baseMetaObject(0), m_attachedPropertiesFunc(0), 
+  m_attachedPropertiesType(0), m_parserStatusCast(-1), m_propertyValueSourceCast(-1), 
+  m_propertyValueInterceptorCast(-1), m_extFunc(0), m_extMetaObject(0), m_index(-1), m_customParser(0), 
+  m_isSetup(false), m_haveSuperType(false)
 {
 }
 
@@ -192,9 +212,12 @@ QDeclarativeType::QDeclarativeType(int index, const QDeclarativePrivate::Registe
     if (type.uri) name += '/';
     name += type.elementName;
 
+    d->m_module = type.uri;
     d->m_name = name;
     d->m_version_maj = type.versionMajor;
     d->m_version_min = type.versionMinor;
+    if (type.version >= 1) // revisions added in version 1
+        d->m_revision = type.revision;
     d->m_typeId = type.typeId;
     d->m_listId = type.listId;
     d->m_allocationSize = type.objectSize;
@@ -228,6 +251,11 @@ QDeclarativeType::~QDeclarativeType()
     delete d;
 }
 
+QByteArray QDeclarativeType::module() const
+{
+    return d->m_module;
+}
+
 int QDeclarativeType::majorVersion() const
 {
     return d->m_version_maj;
@@ -241,6 +269,26 @@ int QDeclarativeType::minorVersion() const
 bool QDeclarativeType::availableInVersion(int vmajor, int vminor) const
 {
     return vmajor > d->m_version_maj || (vmajor == d->m_version_maj && vminor >= d->m_version_min);
+}
+
+bool QDeclarativeType::availableInVersion(const QByteArray &module, int vmajor, int vminor) const
+{
+    return module == d->m_module && (vmajor > d->m_version_maj || (vmajor == d->m_version_maj && vminor >= d->m_version_min));
+}
+
+// returns the nearest _registered_ super class
+QDeclarativeType *QDeclarativeType::superType() const
+{
+    if (!d->m_haveSuperType) {
+        const QMetaObject *mo = d->m_baseMetaObject->superClass();
+        while (mo && !d->m_superType) {
+            d->m_superType = QDeclarativeMetaType::qmlType(mo, d->m_module, d->m_version_maj, d->m_version_min);
+            mo = mo->superClass();
+        }
+        d->m_haveSuperType = true;
+    }
+
+    return d->m_superType;
 }
 
 static void clone(QMetaObjectBuilder &builder, const QMetaObject *mo, 
@@ -356,6 +404,25 @@ void QDeclarativeTypePrivate::init() const
         m_metaObjects[ii].methodOffset =
             m_metaObjects.at(ii).metaObject->methodOffset();
     }
+    
+    // Check for revisioned details
+    {
+        const QMetaObject *mo = 0;
+        if (m_metaObjects.isEmpty())
+            mo = m_baseMetaObject;
+        else
+            mo = m_metaObjects.first().metaObject;
+
+        for (int ii = 0; !m_containsRevisionedAttributes && ii < mo->propertyCount(); ++ii) {
+            if (mo->property(ii).revision() != 0)
+                m_containsRevisionedAttributes = true;
+        }
+
+        for (int ii = 0; !m_containsRevisionedAttributes && ii < mo->methodCount(); ++ii) {
+            if (mo->method(ii).revision() != 0)
+                m_containsRevisionedAttributes = true;
+        }
+    }
 
     m_isSetup = true;
     lock.unlock();
@@ -462,6 +529,18 @@ const QMetaObject *QDeclarativeType::metaObject() const
 const QMetaObject *QDeclarativeType::baseMetaObject() const
 {
     return d->m_baseMetaObject;
+}
+
+bool QDeclarativeType::containsRevisionedAttributes() const
+{
+    d->init();
+
+    return d->m_containsRevisionedAttributes;
+}
+
+int QDeclarativeType::metaObjectRevision() const
+{
+    return d->m_revision;
 }
 
 QDeclarativeAttachedPropertiesFunc QDeclarativeType::attachedPropertiesFunction() const
@@ -572,7 +651,7 @@ int registerType(const QDeclarativePrivate::RegisterType &type)
     if (!dtype->qmlTypeName().isEmpty())
         data->nameToType.insertMulti(dtype->qmlTypeName(), dtype);
 
-    data->metaObjectToType.insert(dtype->baseMetaObject(), dtype);
+    data->metaObjectToType.insertMulti(dtype->baseMetaObject(), dtype);
 
     if (data->objects.size() <= type.typeId)
         data->objects.resize(type.typeId + 16);
@@ -599,6 +678,34 @@ int registerType(const QDeclarativePrivate::RegisterType &type)
     return index;
 }
 
+int registerModuleApi(const QDeclarativePrivate::RegisterModuleApi &api)
+{
+    QWriteLocker lock(metaTypeDataLock());
+
+    QDeclarativeMetaTypeData *data = metaTypeData();
+    QByteArray uri(api.uri);
+    QDeclarativeMetaType::ModuleApi import;
+    import.major = api.versionMajor;
+    import.minor = api.versionMinor;
+    import.script = api.scriptApi;
+    import.qobject = api.qobjectApi;
+
+    int index = data->moduleApiCount++;
+
+    QDeclarativeMetaTypeData::ModuleApis::Iterator iter = data->moduleApis.find(uri);
+    if (iter == data->moduleApis.end()) {
+        QDeclarativeMetaTypeData::ModuleApiList apis;
+        apis.moduleApis << import;
+        data->moduleApis.insert(uri, apis);
+    } else {
+        iter->moduleApis << import;
+        iter->sorted = false;
+    }
+
+    return index;
+}
+
+
 /*
 This method is "over generalized" to allow us to (potentially) register more types of things in
 the future without adding exported symbols.
@@ -611,13 +718,16 @@ int QDeclarativePrivate::qmlregister(RegistrationType type, void *data)
         return registerInterface(*reinterpret_cast<RegisterInterface *>(data));
     } else if (type == AutoParentRegistration) {
         return registerAutoParentFunction(*reinterpret_cast<RegisterAutoParent *>(data));
+    } else if (type == ModuleApiRegistration) {
+        return registerModuleApi(*reinterpret_cast<RegisterModuleApi *>(data));
     }
     return -1;
 }
 
 /*
-    Have any types been registered for \a module with at least versionMajor.versionMinor, and types
-    for \a module with at most versionMajor.versionMinor.
+    Returns true if any type or API has been registered for the given \a module with at least
+    versionMajor.versionMinor, or if types have been registered for \a module with at most
+    versionMajor.versionMinor.
 
     So if only 4.7 and 4.9 have been registered, 4.7,4.8, and 4.9 are valid, but not 4.6 nor 4.10.
 
@@ -626,13 +736,27 @@ int QDeclarativePrivate::qmlregister(RegistrationType type, void *data)
 bool QDeclarativeMetaType::isModule(const QByteArray &module, int versionMajor, int versionMinor)
 {
     QDeclarativeMetaTypeData *data = metaTypeData();
+
+    // first, check Types
     QDeclarativeMetaTypeData::ModuleInfoHash::Iterator it = data->modules.find(module);
-    return it != data->modules.end()
+    if (it != data->modules.end()
         && ((versionMajor<0 && versionMinor<0) ||
                 (((*it).vmajor_max > versionMajor ||
                     ((*it).vmajor_max == versionMajor && (*it).vminor_max >= versionMinor))
                 && ((*it).vmajor_min < versionMajor ||
-                    ((*it).vmajor_min == versionMajor && (*it).vminor_min <= versionMinor))));
+                    ((*it).vmajor_min == versionMajor && (*it).vminor_min <= versionMinor))))) {
+        return true;
+    }
+
+    // then, check ModuleApis
+    foreach (const QDeclarativeMetaType::ModuleApi &mApi, data->moduleApis.value(module).moduleApis) {
+        if ((versionMajor<0 && versionMinor<0)
+                || (mApi.major == versionMajor && mApi.minor == versionMinor)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 QList<QDeclarativePrivate::AutoParentFunction> QDeclarativeMetaType::parentFunctions()
@@ -640,6 +764,35 @@ QList<QDeclarativePrivate::AutoParentFunction> QDeclarativeMetaType::parentFunct
     QReadLocker lock(metaTypeDataLock());
     QDeclarativeMetaTypeData *data = metaTypeData();
     return data->parentFunctions;
+}
+
+static bool operator<(const QDeclarativeMetaType::ModuleApi &lhs, const QDeclarativeMetaType::ModuleApi &rhs)
+{
+    return lhs.major < rhs.major || (lhs.major == rhs.major && lhs.minor < rhs.minor);
+}
+
+QDeclarativeMetaType::ModuleApi
+QDeclarativeMetaType::moduleApi(const QByteArray &uri, int versionMajor, int versionMinor)
+{
+    QReadLocker lock(metaTypeDataLock());
+    QDeclarativeMetaTypeData *data = metaTypeData();
+
+    QDeclarativeMetaTypeData::ModuleApis::Iterator iter = data->moduleApis.find(uri);
+    if (iter == data->moduleApis.end())
+        return ModuleApi();
+
+    if (iter->sorted == false) {
+        qSort(iter->moduleApis.begin(), iter->moduleApis.end());
+        iter->sorted = true;
+    }
+
+    for (int ii = iter->moduleApis.count() - 1; ii >= 0; --ii) {
+        const ModuleApi &import = iter->moduleApis.at(ii);
+        if (import.major == versionMajor && import.minor <= versionMinor)
+            return import;
+    }
+
+    return ModuleApi();
 }
 
 QObject *QDeclarativeMetaType::toQObject(const QVariant &v, bool *ok)
@@ -862,6 +1015,27 @@ QDeclarativeType *QDeclarativeMetaType::qmlType(const QMetaObject *metaObject)
 }
 
 /*!
+    Returns the type (if any) that corresponds to the \a metaObject in version specified
+    by \a version_major and \a version_minor in module specified by \a uri.  Returns null if no
+    type is registered.
+*/
+QDeclarativeType *QDeclarativeMetaType::qmlType(const QMetaObject *metaObject, const QByteArray &module, int version_major, int version_minor)
+{
+    QReadLocker lock(metaTypeDataLock());
+    QDeclarativeMetaTypeData *data = metaTypeData();
+
+    QDeclarativeMetaTypeData::MetaObjects::const_iterator it = data->metaObjectToType.find(metaObject);
+    while (it != data->metaObjectToType.end() && it.key() == metaObject) {
+        QDeclarativeType *t = *it;
+        if (version_major < 0 || t->availableInVersion(module, version_major,version_minor))
+            return t;
+        ++it;
+    }
+
+    return 0;
+}
+
+/*!
     Returns the type (if any) that corresponds to the QVariant::Type \a userType.  
     Returns null if no type is registered.
 */
@@ -929,6 +1103,93 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QScriptValue);
 
 QT_BEGIN_NAMESPACE
+
+bool QDeclarativeMetaType::canCopy(int type)
+{
+    switch(type) {
+    case QMetaType::VoidStar:
+    case QMetaType::QObjectStar:
+    case QMetaType::QWidgetStar:
+    case QMetaType::Long:
+    case QMetaType::Int:
+    case QMetaType::Short:
+    case QMetaType::Char:
+    case QMetaType::ULong:
+    case QMetaType::UInt:
+    case QMetaType::LongLong:
+    case QMetaType::ULongLong:
+    case QMetaType::UShort:
+    case QMetaType::UChar:
+    case QMetaType::Bool:
+    case QMetaType::Float:
+    case QMetaType::Double:
+    case QMetaType::QChar:
+    case QMetaType::QVariantMap:
+    case QMetaType::QVariantHash:
+    case QMetaType::QVariantList:
+    case QMetaType::QByteArray:
+    case QMetaType::QString:
+    case QMetaType::QStringList:
+    case QMetaType::QBitArray:
+    case QMetaType::QDate:
+    case QMetaType::QTime:
+    case QMetaType::QDateTime:
+    case QMetaType::QUrl:
+    case QMetaType::QLocale:
+    case QMetaType::QRect:
+    case QMetaType::QRectF:
+    case QMetaType::QSize:
+    case QMetaType::QSizeF:
+    case QMetaType::QLine:
+    case QMetaType::QLineF:
+    case QMetaType::QPoint:
+    case QMetaType::QPointF:
+    case QMetaType::QVector3D:
+#ifndef QT_NO_REGEXP
+    case QMetaType::QRegExp:
+#endif
+    case QMetaType::Void:
+#ifdef QT3_SUPPORT
+    case QMetaType::QColorGroup:
+#endif
+    case QMetaType::QFont:
+    case QMetaType::QPixmap:
+    case QMetaType::QBrush:
+    case QMetaType::QColor:
+    case QMetaType::QPalette:
+    case QMetaType::QIcon:
+    case QMetaType::QImage:
+    case QMetaType::QPolygon:
+    case QMetaType::QRegion:
+    case QMetaType::QBitmap:
+#ifndef QT_NO_CURSOR
+    case QMetaType::QCursor:
+#endif
+    case QMetaType::QSizePolicy:
+    case QMetaType::QKeySequence:
+    case QMetaType::QPen:
+    case QMetaType::QTextLength:
+    case QMetaType::QTextFormat:
+    case QMetaType::QMatrix:
+    case QMetaType::QTransform:
+    case QMetaType::QMatrix4x4:
+    case QMetaType::QVector2D:
+    case QMetaType::QVector4D:
+    case QMetaType::QQuaternion:
+        return true;
+
+    default:
+        if (type == qMetaTypeId<QVariant>() ||
+            type == qMetaTypeId<QScriptValue>() ||
+            typeCategory(type) != Unknown) {
+            return true;
+        }
+        break;
+    }
+
+    return false;
+}
+
 /*!
     Copies \a copy into \a data, assuming they both are of type \a type.  If
     \a copy is zero, a default type is copied.  Returns true if the copy was

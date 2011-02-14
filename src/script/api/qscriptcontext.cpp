@@ -299,6 +299,12 @@ QScriptValue QScriptContext::argumentsObject() const
 
     //for a js function
     if (frame->codeBlock() && frame->callee()) {
+        if (!QScriptEnginePrivate::hasValidCodeBlockRegister(frame)) {
+            // We have a built-in JS host call.
+            // codeBlock is needed by retrieveArguments(), but since it
+            // contains junk, we would crash. Return an invalid value for now.
+            return QScriptValue();
+        }
         JSC::JSValue result = frame->interpreter()->retrieveArguments(frame, JSC::asFunction(frame->callee()));
         return QScript::scriptEngineFromExec(frame)->scriptValueFromJSCValue(result);
     }
@@ -309,7 +315,8 @@ QScriptValue QScriptContext::argumentsObject() const
     }
 
     //for a native function
-    if (!frame->optionalCalleeArguments()) {
+    if (!frame->optionalCalleeArguments()
+        && QScriptEnginePrivate::hasValidCodeBlockRegister(frame)) { // Make sure we don't go here for host JSFunctions
         Q_ASSERT(frame->argumentCount() > 0); //we need at least 'this' otherwise we'll crash later
         JSC::Arguments* arguments = new (&frame->globalData())JSC::Arguments(frame, JSC::Arguments::NoParameters);
         frame->setCalleeArguments(arguments);

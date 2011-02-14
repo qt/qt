@@ -44,7 +44,7 @@
 
 #include "private/qdeclarativetextinput_p.h"
 
-#include "private/qdeclarativepainteditem_p_p.h"
+#include "private/qdeclarativeimplicitsizeitem_p_p.h"
 
 #include <qdeclarative.h>
 
@@ -66,16 +66,17 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeTextInputPrivate : public QDeclarativePaintedItemPrivate
+class Q_AUTOTEST_EXPORT QDeclarativeTextInputPrivate : public QDeclarativeImplicitSizePaintedItemPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeTextInput)
 public:
     QDeclarativeTextInputPrivate() : control(new QLineControl(QString())),
                  color((QRgb)0), style(QDeclarativeText::Normal),
                  styleColor((QRgb)0), hAlign(QDeclarativeTextInput::AlignLeft),
+                 mouseSelectionMode(QDeclarativeTextInput::SelectCharacters),
                  hscroll(0), oldScroll(0), focused(false), focusOnPress(true),
                  showInputPanelOnFocus(true), clickCausedFocus(false), cursorVisible(false),
-                 autoScroll(true), selectByMouse(false)
+                 autoScroll(true), selectByMouse(false), canPaste(false)
     {
 #ifdef Q_OS_SYMBIAN
         if (QSysInfo::symbianVersion() == QSysInfo::SV_SF_1 || QSysInfo::symbianVersion() == QSysInfo::SV_SF_3) {
@@ -114,8 +115,10 @@ public:
     QDeclarativeText::TextStyle style;
     QColor  styleColor;
     QDeclarativeTextInput::HAlignment hAlign;
+    QDeclarativeTextInput::SelectionMode mouseSelectionMode;
     QPointer<QDeclarativeComponent> cursorComponent;
     QPointer<QDeclarativeItem> cursorItem;
+    QPointF pressPos;
 
     int lastSelectionStart;
     int lastSelectionEnd;
@@ -131,6 +134,11 @@ public:
     bool cursorVisible;
     bool autoScroll;
     bool selectByMouse;
+    bool canPaste;
+
+    static inline QDeclarativeTextInputPrivate *get(QDeclarativeTextInput *t) {
+        return t->d_func();
+    }
 };
 
 QT_END_NAMESPACE

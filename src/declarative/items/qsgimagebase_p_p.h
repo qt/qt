@@ -70,7 +70,9 @@ public:
       : status(QSGImageBase::Null),
         progress(0.0),
         explicitSourceSize(false),
-        async(false)
+        async(false),
+        cache(true),
+        mirror(false)
     {
     }
 
@@ -81,6 +83,8 @@ public:
     QSize sourcesize;
     bool explicitSourceSize : 1;
     bool async : 1;
+    bool cache : 1;
+    bool mirror: 1;
 };
 
 QT_END_NAMESPACE

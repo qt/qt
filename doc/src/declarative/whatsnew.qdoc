@@ -29,7 +29,113 @@
 \title What's new in Qt Quick
 \page qtquick-whatsnew.html
 
-\section1 4.7.1
+\section1 Qt 4.7.3 includes QtQuick 1.1
+
+QtQuick 1.1 is a minor feature update.
+
+\section2 PinchArea
+
+PinchArea provides support for the common two finger pinch gesture.
+
+\section2 Text
+
+Added the following properties:
+\list
+\o lineSpacing
+\o lineCount
+\o maximumLineCount
+\o truncated
+\endlist
+
+horizontalAlignment now accepts Text.AlignJustify alignment mode.
+
+\section2 TextEdit
+
+Added the following properties, methods and signal handlers:
+\list
+\o canPaste
+\o lineCount
+\o deselect()
+\o moveCursorSelection(int pos, SelectionMode mode) to enable selection by word
+\o onLinkActivated(string link) 
+\endlist
+
+\section2 TextInput
+
+Added the following properties and methods:
+\list
+\o canPaste
+\o deselect()
+\o moveCursorSelection(int pos, SelectionMode mode) to enable selection by word
+\endlist
+
+\section2 Image, BorderImage and AnimatedImage
+
+Added the following properties:
+\list
+\o cache
+\o mirror
+\endlist
+
+\section2 Item
+
+Added the following properties:
+\list
+\o implicitWidth and implicitHeight
+\endlist
+
+\section2 Flickable
+
+Added the following methods:
+\list
+\o resizeContent(qreal w, qreal h, QPointF center)
+\o returnToBounds() 
+\endlist
+
+\section2 ListView and GridView
+
+Added the following methods:
+\list
+\o positionViewAtBeginning()
+\o positionViewAtEnd() 
+\endlist
+
+\section2 Flow, Grid, Row
+
+Added the following properties:
+\list
+\o layoutDirection
+\endlist
+
+\section2 Repeater
+
+Added the following methods and signal handlers:
+\list
+\o onItemAdded()
+\o onItemRemoved()
+\o itemAt(int index)
+\endlist
+
+\section2 Component
+
+The createObject() method now accepts a map of initial property values for the created object.
+
+\section2 Qt
+
+Added the following properties and methods:
+\list
+\o application.layoutDirection
+\o application.active
+\endlist
+
+\section2 Other changes
+
+\list
+\o Functions can be assigned to properties from JavaScript to create property bindings
+\endlist
+
+
+\section1 Qt 4.7.1
 
 \section2 QtQuick namespace
 

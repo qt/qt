@@ -858,7 +858,8 @@ JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JS
     {
         JSC::ExecState *frame = exec->callerFrame()->removeHostCallFrameFlag();
         while (frame) {
-            if (frame->codeBlock() && frame->codeBlock()->source()
+            if (frame->codeBlock() && QScriptEnginePrivate::hasValidCodeBlockRegister(frame)
+                && frame->codeBlock()->source()
                 && !frame->codeBlock()->source()->url().isEmpty()) {
                 context = engine->translationContextFromUrl(frame->codeBlock()->source()->url());
                 break;
@@ -2087,10 +2088,10 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun,
     JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue function = new (exec)QScript::FunctionWrapper(exec, length, JSC::Identifier(exec, ""), fun);
     QScriptValue result = d->scriptValueFromJSCValue(function);
-    result.setProperty(QLatin1String("prototype"), prototype, QScriptValue::Undeletable);
+    result.setProperty(QLatin1String("prototype"), prototype,
+                       QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
     const_cast<QScriptValue&>(prototype)
-        .setProperty(QLatin1String("constructor"), result,
-                     QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+        .setProperty(QLatin1String("constructor"), result, QScriptValue::SkipInEnumeration);
     return result;
 }
 
@@ -2356,9 +2357,9 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, in
     JSC::JSValue function = new (exec)QScript::FunctionWrapper(exec, length, JSC::Identifier(exec, ""), fun);
     QScriptValue result = d->scriptValueFromJSCValue(function);
     QScriptValue proto = newObject();
-    result.setProperty(QLatin1String("prototype"), proto, QScriptValue::Undeletable);
-    proto.setProperty(QLatin1String("constructor"), result,
-                      QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    result.setProperty(QLatin1String("prototype"), proto,
+                       QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    proto.setProperty(QLatin1String("constructor"), result, QScriptValue::SkipInEnumeration);
     return result;
 }
 
@@ -2374,9 +2375,9 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature 
     JSC::JSValue function = new (exec)QScript::FunctionWithArgWrapper(exec, /*length=*/0, JSC::Identifier(exec, ""), fun, arg);
     QScriptValue result = d->scriptValueFromJSCValue(function);
     QScriptValue proto = newObject();
-    result.setProperty(QLatin1String("prototype"), proto, QScriptValue::Undeletable);
-    proto.setProperty(QLatin1String("constructor"), result,
-                      QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    result.setProperty(QLatin1String("prototype"), proto,
+                       QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    proto.setProperty(QLatin1String("constructor"), result, QScriptValue::SkipInEnumeration);
     return result;
 }
 
