@@ -359,10 +359,7 @@ void tst_QTemporaryFile::stressTest()
     for (int i = 0; i < iterations; ++i) {
         QTemporaryFile file;
         file.setAutoRemove(false);
-        if (!file.open()) {
-            qDebug() << "Could not open File:" << file.fileName();
-            continue;
-        }
+        QVERIFY2(file.open(), qPrintable(file.errorString()));
         QVERIFY(!names.contains(file.fileName()));
         names.insert(file.fileName());
     }
