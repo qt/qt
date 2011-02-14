@@ -59,46 +59,6 @@
 #include <sched.h>
 #include <errno.h>
 
-#ifdef Q_OS_BSD4
-#include <sys/sysctl.h>
-#endif
-#ifdef Q_OS_VXWORKS
-#  if (_WRS_VXWORKS_MAJOR > 6) || ((_WRS_VXWORKS_MAJOR == 6) && (_WRS_VXWORKS_MINOR >= 6))
-#    include <vxCpuLib.h>
-#    include <cpuset.h>
-#    define QT_VXWORKS_HAS_CPUSET
-#  endif
-#endif
-
-#ifdef Q_OS_HPUX
-#include <sys/pstat.h>
-#endif
-
-#if defined(Q_OS_MAC)
-# ifdef qDebug
-#   define old_qDebug qDebug
-#   undef qDebug
-# endif
-#ifndef QT_NO_CORESERVICES
-# include <CoreServices/CoreServices.h>
-#endif //QT_NO_CORESERVICES
-
-# ifdef old_qDebug
-#   undef qDebug
-#   define qDebug QT_NO_QDEBUG_MACRO
-#   undef old_qDebug
-# endif
-#endif
-
-#if defined(Q_OS_LINUX) && !defined(SCHED_IDLE)
-// from linux/sched.h
-# define SCHED_IDLE    5
-#endif
-
-#if defined(Q_OS_DARWIN) || !defined(Q_OS_OPENBSD) && defined(_POSIX_THREAD_PRIORITY_SCHEDULING) && (_POSIX_THREAD_PRIORITY_SCHEDULING-0 >= 0)
-#define QT_HAS_THREAD_PRIORITY_SCHEDULING
-#endif
-
 
 QT_BEGIN_NAMESPACE
 
@@ -106,39 +66,7 @@ QT_BEGIN_NAMESPACE
 
 enum { ThreadPriorityResetFlag = 0x80000000 };
 
-static pthread_once_t current_thread_data_once = PTHREAD_ONCE_INIT;
-static pthread_key_t current_thread_data_key;
-
-static void destroy_current_thread_data(void *p)
-{
-    // POSIX says the value in our key is set to zero before calling
-    // this destructor function, so we need to set it back to the
-    // right value...
-    pthread_setspecific(current_thread_data_key, p);
-    reinterpret_cast<QThreadData *>(p)->deref();
-    // ... but we must reset it to zero before returning so we aren't
-    // called again (POSIX allows implementations to call destructor
-    // functions repeatedly until all values are zero)
-    pthread_setspecific(current_thread_data_key, 0);
-}
-
-static void create_current_thread_data_key()
-{
-    pthread_key_create(&current_thread_data_key, destroy_current_thread_data);
-}
-
-static void destroy_current_thread_data_key()
-{
-    pthread_once(&current_thread_data_once, create_current_thread_data_key);
-    pthread_key_delete(current_thread_data_key);
-}
-Q_DESTRUCTOR_FUNCTION(destroy_current_thread_data_key)
-
-
 // Utility functions for getting, setting and clearing thread specific data.
-// In Symbian, TLS access is significantly faster than pthread_getspecific.
-// However Symbian does not have the thread destruction cleanup functionality
-// that pthread has, so pthread_setspecific is also used.
 static QThreadData *get_thread_data()
 {
     return reinterpret_cast<QThreadData *>(Dll::Tls());
@@ -147,14 +75,11 @@ static QThreadData *get_thread_data()
 static void set_thread_data(QThreadData *data)
 {
     qt_symbian_throwIfError(Dll::SetTls(data));
-//    pthread_once(&current_thread_data_once, create_current_thread_data_key);
-//    pthread_setspecific(current_thread_data_key, data);
 }
 
 static void clear_thread_data()
 {
     Dll::FreeTls();
-//    pthread_setspecific(current_thread_data_key, 0);
 }
 
 
@@ -202,12 +127,42 @@ QThreadData *QThreadData::current()
     return data;
 }
 
+class AdoptedThreadLifetimeMonitor : public QThread
+    {
+public:
+    QMutex mutex;
+    QThreadData* adoptedData;
+    AdoptedThreadLifetimeMonitor(QThreadData* pData)
+    : adoptedData(pData)
+        {
+        mutex.lock();
+        }
+    void run()
+        {
+        mutex.unlock();
+        TRequestStatus wait = KRequestPending;
+        adoptedData->symbian_thread_handle.Logon(wait);
+        User::WaitForRequest(wait);
+        deleteLater();
+        adoptedData->deref();
+        }
+    };
+
+void createAdoptedThreadLifetimeMonitor(QThreadData* data)
+    {
+    AdoptedThreadLifetimeMonitor* monitor = new AdoptedThreadLifetimeMonitor(data);
+    monitor->start();
+    monitor->mutex.lock();
+    monitor->mutex.unlock();
+    data->deref();
+    }
 
 void QAdoptedThread::init()
 {
     Q_D(QThread);
     d->thread_id = RThread().Id();  // type operator to TUint
     init_symbian_thread_handle(d->data->symbian_thread_handle);
+    createAdoptedThreadLifetimeMonitor(d->data);
 }
 
 /*
