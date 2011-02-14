@@ -831,7 +831,7 @@
     \snippet tutorials/addressbook/part6/addressbook.cpp tooltip 2
 
     Although it is not shown here, just like the other features we implemented,
-    we add the push buttons to the layout panel on the right, \c button1Layout,
+    we add the push buttons to the layout panel on the right, \c buttonLayout1,
     and we connect the push buttons' \l{QPushButton::clicked()}{clicked()}
     signals to their respective slots.
 

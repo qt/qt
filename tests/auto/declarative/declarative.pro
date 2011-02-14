@@ -35,6 +35,7 @@ contains(QT_CONFIG, private_tests) {
            qdeclarativeanchors \
            qdeclarativeanimatedimage \
            qdeclarativeanimations \
+           qdeclarativeapplication \
            qdeclarativebehaviors \
            qdeclarativebinding \
            qdeclarativeborderimage \
@@ -59,6 +60,7 @@ contains(QT_CONFIG, private_tests) {
            qdeclarativeloader \
            qdeclarativemousearea \
            qdeclarativepathview \
+           qdeclarativepincharea \
            qdeclarativepositioners \
            qdeclarativeproperty \
            qdeclarativepropertymap \

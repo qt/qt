@@ -70,6 +70,7 @@ public:
     enum Attributes { Compatibility = 0x1, Cloned = 0x2, Scriptable = 0x4 };
     int attributes() const;
     int methodIndex() const;
+    int revision() const;
 
     inline const QMetaObject *enclosingMetaObject() const { return mobj; }
 
@@ -201,6 +202,8 @@ public:
     bool hasNotifySignal() const;
     QMetaMethod notifySignal() const;
     int notifySignalIndex() const;
+
+    int revision() const;
 
     QVariant read(const QObject *obj) const;
     bool write(QObject *obj, const QVariant &value) const;

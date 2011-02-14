@@ -477,12 +477,12 @@ bool QImageData::checkForAlphaPixels() const
     function. For example:
 
     \table
+    \header
+    \o {2,1}32-bit
     \row
     \o \inlineimage qimage-32bit_scaled.png
     \o
     \snippet doc/src/snippets/code/src_gui_image_qimage.cpp 0
-    \header
-    \o {2,1}32-bit
     \endtable
 
     In case of a 8-bit and monchrome images, the pixel value is only
@@ -498,12 +498,12 @@ bool QImageData::checkForAlphaPixels() const
     example:
 
     \table
+    \header
+    \o {2,1} 8-bit
     \row
     \o \inlineimage qimage-8bit_scaled.png
     \o
     \snippet doc/src/snippets/code/src_gui_image_qimage.cpp 1
-    \header
-    \o {2,1} 8-bit
     \endtable
 
     QImage also provide the scanLine() function which returns a
