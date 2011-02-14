@@ -1548,19 +1548,6 @@ QString VcprojGenerator::findTemplate(QString file)
     return ret;
 }
 
-void VcprojGenerator::processPrlVariable(const QString &var, const QStringList &l)
-{
-    if(var == "QMAKE_PRL_DEFINES") {
-        QStringList &out = project->values("MSVCPROJ_DEFINES");
-        for(QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
-            if(out.indexOf((*it)) == -1)
-                out.append((" /D " + *it));
-        }
-    } else {
-        MakefileGenerator::processPrlVariable(var, l);
-    }
-}
-
 void VcprojGenerator::outputVariables()
 {
 #if 0
