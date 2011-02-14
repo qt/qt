@@ -1,4 +1,3 @@
-// Commit: 4a247ed5e37d3b4a17c965c725b81f6ef835c191
 /****************************************************************************
 **
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
@@ -40,21 +39,47 @@
 **
 ****************************************************************************/
 
-#ifndef QSGPAINTEDITEM_P_P_H
-#define QSGPAINTEDITEM_P_P_H
+#ifndef TEXTUREITEM_H
+#define TEXTUREITEM_H
 
-#include "qsgitem_p.h"
+#include "qsgitem.h"
+#include "qsgtextureprovider_p.h"
+#include "texturematerial.h"
+#include "node.h"
+#include "qobject.h"
+#include "qpointer.h"
 
-class QSGImageTextureProvider;
-class QSGPaintedItemPrivate : public QSGItemPrivate
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+class QSGTextureProvider;
+class Renderer;
+class QGLFramebufferObject;
+
+class TextureItem : public QSGItem, public QSGTextureProviderInterface
 {
+    Q_OBJECT
+    Q_INTERFACES(QSGTextureProviderInterface)
+    // TODO: property clampToEdge
+    // TODO: property mipmapFiltering
 public:
-    QSGPaintedItemPrivate();
+    TextureItem(QSGItem *parent = 0);
 
-    QSGImageTextureProvider *textureProvider;
-    bool geometryDirty : 1;
-    bool contentsDirty : 1;
-    bool opaquePainting: 1;
+    virtual QSGTextureProvider *textureProvider() const;
+    void setTextureProvider(QSGTextureProvider *provider, bool requiresPreprocess);
+    
+protected:
+    virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
+
+    QSGTextureProvider *m_textureProvider;
+    uint m_requiresPreprocess : 1;
 };
 
-#endif // QSGPAINTEDITEM_P_P_H
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif

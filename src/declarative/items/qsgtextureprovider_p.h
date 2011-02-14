@@ -1,4 +1,3 @@
-// Commit: d2c204a93f30238c705209e65e2e8bce148825cd
 /****************************************************************************
 **
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
@@ -40,11 +39,11 @@
 **
 ****************************************************************************/
 
-#ifndef QSGIMAGE_P_H
-#define QSGIMAGE_P_H
+#ifndef QSGTEXTUREPROVIDER_P_H
+#define QSGTEXTUREPROVIDER_P_H
 
-#include "qsgimagebase_p.h"
-#include "qsgtextureprovider_p.h"
+#include "qsgtexturemanager.h"
+#include "qobject.h"
 
 QT_BEGIN_HEADER
 
@@ -52,57 +51,56 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QSGTextureProvider;
-class QSGImagePrivate;
-class Q_AUTOTEST_EXPORT QSGImage : public QSGImageBase, public QSGTextureProviderInterface
+class QSGTextureProvider : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(FillMode)
-
-    Q_PROPERTY(FillMode fillMode READ fillMode WRITE setFillMode NOTIFY fillModeChanged)
-    Q_PROPERTY(qreal paintedWidth READ paintedWidth NOTIFY paintedGeometryChanged)
-    Q_PROPERTY(qreal paintedHeight READ paintedHeight NOTIFY paintedGeometryChanged)
-    Q_PROPERTY(QSGTextureProvider *texture READ textureProvider)
-
-    Q_INTERFACES(QSGTextureProviderInterface)
-
+    Q_PROPERTY(bool opaque READ opaque WRITE setOpaque NOTIFY opaqueChanged)
+    Q_PROPERTY(bool mipmap READ mipmap WRITE setMipmap NOTIFY mipmapChanged)
+    Q_PROPERTY(bool clampToEdge READ clampToEdge WRITE setClampToEdge NOTIFY clampToEdgeChanged)
+    Q_PROPERTY(bool linearFiltering READ linearFiltering WRITE setLinearFiltering NOTIFY linearFilteringChanged)
 public:
-    QSGImage(QSGItem *parent=0);
-    ~QSGImage();
+    QSGTextureProvider(QObject *parent = 0);
+    virtual void updateTexture() { }
+    virtual QSGTextureRef texture() = 0;
 
-    enum FillMode { Stretch, PreserveAspectFit, PreserveAspectCrop, Tile, TileVertically, TileHorizontally };
-    FillMode fillMode() const;
-    void setFillMode(FillMode);
+    bool opaque() const { return m_opaque; }
+    void setOpaque(bool enabled);
 
-    QPixmap pixmap() const;
-    void setPixmap(const QPixmap &);
+    bool mipmap() const { return m_mipmap; }
+    void setMipmap(bool enabled);
 
-    qreal paintedWidth() const;
-    qreal paintedHeight() const;
+    bool clampToEdge() const { return m_clampToEdge; }
+    void setClampToEdge(bool enabled);
 
-    QRectF boundingRect() const;
-
-    virtual QSGTextureProvider *textureProvider() const;
+    bool linearFiltering() const { return m_linearFiltering; }
+    void setLinearFiltering(bool enabled);
 
 Q_SIGNALS:
-    void fillModeChanged();
-    void paintedGeometryChanged();
+    void opaqueChanged();
+    void textureChanged();
+    void mipmapChanged();
+    void clampToEdgeChanged();
+    void linearFilteringChanged();
 
 protected:
-    QSGImage(QSGImagePrivate &dd, QSGItem *parent);
-    void pixmapChange();
-    void updatePaintedGeometry();
-
-    virtual void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
-    virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
-
-private:
-    Q_DISABLE_COPY(QSGImage)
-    Q_DECLARE_PRIVATE(QSGImage)
+    uint m_opaque : 1;
+    uint m_mipmap : 1;
+    uint m_clampToEdge : 1;
+    uint m_linearFiltering : 1;
 };
 
+
+// TODO: Find good name.
+class QSGTextureProviderInterface
+{
+public:
+    virtual QSGTextureProvider *textureProvider() const = 0;
+};
+Q_DECLARE_INTERFACE(QSGTextureProviderInterface, "QSGTextureProviderInterface")
+
+
 QT_END_NAMESPACE
-QML_DECLARE_TYPE(QSGImage)
+
 QT_END_HEADER
 
-#endif // QSGIMAGE_P_H
+#endif

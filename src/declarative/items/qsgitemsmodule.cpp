@@ -70,7 +70,8 @@
 #include "qsgstateoperations_p.h"
 #include "qsganimation_p.h"
 #include "shadereffectitem.h"
-#include "subtree.h"
+#include "shadereffectsource.h"
+#include "qsgtextureprovider_p.h"
 
 static QDeclarativePrivate::AutoParentResult qsgitem_autoParent(QObject *obj, QObject *parent)
 {
@@ -160,8 +161,7 @@ static void qt_sgitems_defineModule(const char *uri, int major, int minor)
     qmlRegisterUncreatableType<QSGKeysAttached>(uri,major,minor,"Keys",QSGKeysAttached::tr("Keys is only available via attached properties"));
 
     qmlRegisterType<ShaderEffectItem>("QtQuick", 2, 0, "ShaderEffectItem");
-    qmlRegisterType<SubTree>("QtQuick", 2, 0, "SubTree");
-    qmlRegisterType<TextureItem>("QtQuick", 2, 0, "TextureItem");
+    qmlRegisterType<ShaderEffectSource>("QtQuick", 2, 0, "ShaderEffectSource");
 
     qmlRegisterType<QSGParentChange>(uri, major, minor,"ParentChange");
     qmlRegisterType<QSGAnchorChanges>(uri, major, minor,"AnchorChanges");

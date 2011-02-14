@@ -46,7 +46,7 @@
 #include "qsgitem_p.h"
 
 #include "qsgcontext.h"
-#include "subtree.h"
+#include "qsgtextureprovider_p.h"
 #include "qsgcanvas.h"
 
 #include <QtCore/qsignalmapper.h>
@@ -172,11 +172,11 @@ void ShaderEffectItem::setSource(const QVariant &var, int index)
 
     QObject *obj = qVariantValue<QObject *>(var);
 
-    TextureProviderInterface *int3rface = static_cast<TextureProviderInterface *>(obj->qt_metacast("TextureProviderInterface"));
+    QSGTextureProviderInterface *int3rface = static_cast<QSGTextureProviderInterface *>(obj->qt_metacast("QSGTextureProviderInterface"));
     if (int3rface) {
         source.source = int3rface->textureProvider();
     } else {
-        qWarning("Could not assign property '%s', did not implement TextureProviderInterface.", source.name.constData());
+        qWarning("Could not assign property '%s', did not implement QSGTextureProviderInterface.", source.name.constData());
     }
 
     source.item = qobject_cast<QSGItem *>(obj);

@@ -46,7 +46,8 @@
 #include "qsgcontext.h"
 #include "adaptationlayer.h"
 #include "qsgtexturemanager.h"
-#include "subtree.h"
+#include "qsgtextureprovider_p.h"
+#include "textureitem.h"
 
 #include <QtGui/qpainter.h>
 
@@ -82,12 +83,14 @@ QSGImage::QSGImage(QSGItem *parent)
     : QSGImageBase(*(new QSGImagePrivate), parent)
 {
     d_func()->textureProvider = new QSGImageTextureProvider(this);
+    connect(d_func()->textureProvider, SIGNAL(textureChanged()), this, SLOT(update()));
 }
 
 QSGImage::QSGImage(QSGImagePrivate &dd, QSGItem *parent)
     : QSGImageBase(dd, parent)
 {
     d_func()->textureProvider = new QSGImageTextureProvider(this);
+    connect(d_func()->textureProvider, SIGNAL(textureChanged()), this, SLOT(update()));
 }
 
 QSGImage::~QSGImage()
@@ -219,10 +222,10 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         return 0;
     }
 
-    TextureNode *node = static_cast<TextureNode *>(oldNode);
+    TextureNodeInterface *node = static_cast<TextureNodeInterface *>(oldNode);
     if (!node) { 
         d->pixmapChanged = true;
-        node = new TextureNode;
+        node = QSGContext::current->createTextureNode();
         node->setTexture(d->textureProvider);
     }
 

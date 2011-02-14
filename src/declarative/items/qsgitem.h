@@ -270,7 +270,6 @@ public:
     QRectF mapRectFromItem(const QSGItem *item, const QRectF &rect) const;
     QRectF mapRectFromScene(const QRectF &rect) const;
 
-    void update();
     void polish();
 
     Q_INVOKABLE QScriptValue mapFromItem(const QScriptValue &item, qreal x, qreal y) const;
@@ -287,6 +286,8 @@ public:
        UpdatePaintNodeData();
     };
 
+public Q_SLOTS:
+    void update();
 Q_SIGNALS:
     void childrenRectChanged(const QRectF &);
     void baselineOffsetChanged(qreal);

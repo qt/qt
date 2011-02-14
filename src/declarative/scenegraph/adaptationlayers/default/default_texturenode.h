@@ -47,27 +47,59 @@
 
 #include "texturematerial.h"
 
+class TextureProviderMaterial : public AbstractMaterial
+{
+public:
+    TextureProviderMaterial()
+        : m_texture(0)
+    {
+    }
+
+    virtual AbstractMaterialType *type() const;
+    virtual AbstractMaterialShader *createShader() const;
+    virtual int compare(const AbstractMaterial *other) const;
+
+    void setTexture(QSGTextureProvider *texture);
+    QSGTextureProvider *texture() const { return m_texture; }
+
+    static bool is(const AbstractMaterial *effect);
+
+protected:
+    QSGTextureProvider *m_texture;
+};
+
+
+class TextureProviderMaterialWithOpacity : public TextureProviderMaterial
+{
+public:
+    TextureProviderMaterialWithOpacity() { }
+
+    virtual AbstractMaterialType *type() const;
+    virtual AbstractMaterialShader *createShader() const;
+    void setTexture(QSGTextureProvider *texture);
+
+    static bool is(const AbstractMaterial *effect);
+};
+
+
 class DefaultTextureNode : public TextureNodeInterface
 {
 public:
-    DefaultTextureNode ();
-    virtual void setRect(const QRectF &rect);
+    DefaultTextureNode();
+    virtual void setTargetRect(const QRectF &rect);
     virtual void setSourceRect(const QRectF &rect);
-    virtual void setTexture(const QSGTextureRef &texture);
-    virtual void setClampToEdge(bool clampToEdge);
-    virtual void setLinearFiltering(bool linearFiltering);
+    virtual void setTexture(QSGTextureProvider *texture);
     virtual void update();
+
+    virtual void preprocess();
 
 private:
     void updateGeometry();
-    void updateTexture();
 
-    TextureMaterial m_material;
-    TextureMaterialWithOpacity m_materialO;
+    TextureProviderMaterial m_material;
+    TextureProviderMaterialWithOpacity m_materialO;
 
-    uint m_dirty_material : 1;
-    uint m_dirty_texture : 1;
-    uint m_dirty_geometry : 1;
+    uint m_dirtyGeometry : 1;
 };
 
 #endif

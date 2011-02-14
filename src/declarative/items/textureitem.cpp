@@ -1,4 +1,3 @@
-// Commit: 4a247ed5e37d3b4a17c965c725b81f6ef835c191
 /****************************************************************************
 **
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
@@ -40,21 +39,54 @@
 **
 ****************************************************************************/
 
-#ifndef QSGPAINTEDITEM_P_P_H
-#define QSGPAINTEDITEM_P_P_H
-
+#include "textureitem.h"
+#include "qsgtexturemanager.h"
 #include "qsgitem_p.h"
+#include "adaptationlayer.h"
+#include "renderer.h"
+#include "qsgcanvas_p.h"
 
-class QSGImageTextureProvider;
-class QSGPaintedItemPrivate : public QSGItemPrivate
+#include "qglframebufferobject.h"
+#include "qmath.h"
+
+QT_BEGIN_NAMESPACE
+
+TextureItem::TextureItem(QSGItem *parent)
+    : QSGItem(parent)
+    , m_textureProvider(0)
 {
-public:
-    QSGPaintedItemPrivate();
+    setFlag(ItemHasContents);
+}
 
-    QSGImageTextureProvider *textureProvider;
-    bool geometryDirty : 1;
-    bool contentsDirty : 1;
-    bool opaquePainting: 1;
-};
+QSGTextureProvider *TextureItem::textureProvider() const
+{
+    return m_textureProvider;
+}
 
-#endif // QSGPAINTEDITEM_P_P_H
+void TextureItem::setTextureProvider(QSGTextureProvider *provider, bool requiresPreprocess)
+{
+    Q_ASSERT(m_textureProvider == 0); // Can only be set once.
+    m_textureProvider = provider;
+    m_requiresPreprocess = requiresPreprocess;
+}
+
+Node *TextureItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
+{
+    TextureNodeInterface *node = static_cast<TextureNodeInterface *>(oldNode);
+    if (!node) {
+        node = QSGContext::current->createTextureNode();
+        node->setFlag(Node::UsePreprocess, m_requiresPreprocess);
+        node->setTexture(m_textureProvider);
+    }
+
+    m_textureProvider->setClampToEdge(true);
+    m_textureProvider->setLinearFiltering(QSGItemPrivate::get(this)->smooth);
+
+    node->setTargetRect(QRectF(0, 0, width(), height()));
+    node->setSourceRect(QRectF(0, 1, 1, -1));
+    node->update();
+
+    return node;
+}
+
+QT_END_NAMESPACE

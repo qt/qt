@@ -66,6 +66,7 @@ QT_BEGIN_NAMESPACE
 
 class QTextLayout;
 class QSGTextDocumentWithImageResources;
+class QSGImageTextureProvider;
 
 class QSGTextPrivate : public QSGItemPrivate
 {
@@ -93,6 +94,7 @@ public:
     void invalidateImageCache();
     void checkImageCache();
     QPixmap imageCache;
+    QSGImageTextureProvider *textureProvider;
 
     bool imageCacheDirty:1;
     bool updateOnComponentComplete:1;

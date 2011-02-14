@@ -44,7 +44,7 @@
 
 #include "qsgitem.h"
 
-#include "subtree.h"
+#include "qsgtextureprovider_p.h"
 
 #include "effectnode.h"
 #include "material.h"

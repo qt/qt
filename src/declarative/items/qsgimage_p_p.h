@@ -55,7 +55,8 @@
 //
 
 #include "qsgimagebase_p_p.h"
-#include "qsgtexturemanager.h"
+#include "qsgimage_p.h"
+#include "qsgtextureprovider_p.h"
 
 QT_BEGIN_NAMESPACE
 

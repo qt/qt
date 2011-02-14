@@ -1,4 +1,3 @@
-// Commit: 4a247ed5e37d3b4a17c965c725b81f6ef835c191
 /****************************************************************************
 **
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
@@ -40,21 +39,49 @@
 **
 ****************************************************************************/
 
-#ifndef QSGPAINTEDITEM_P_P_H
-#define QSGPAINTEDITEM_P_P_H
+#include "qsgtextureprovider_p.h"
 
-#include "qsgitem_p.h"
+QT_BEGIN_NAMESPACE
 
-class QSGImageTextureProvider;
-class QSGPaintedItemPrivate : public QSGItemPrivate
+QSGTextureProvider::QSGTextureProvider(QObject *parent)
+    : QObject(parent)
+    , m_opaque(false)
+    , m_mipmap(false)
+    , m_clampToEdge(true)
+    , m_linearFiltering(false)
 {
-public:
-    QSGPaintedItemPrivate();
+}
 
-    QSGImageTextureProvider *textureProvider;
-    bool geometryDirty : 1;
-    bool contentsDirty : 1;
-    bool opaquePainting: 1;
-};
+void QSGTextureProvider::setOpaque(bool enabled)
+{
+    if (enabled == m_opaque)
+        return;
+    m_opaque = enabled;
+    emit opaqueChanged();
+}
 
-#endif // QSGPAINTEDITEM_P_P_H
+void QSGTextureProvider::setMipmap(bool enabled)
+{
+    if (enabled == m_mipmap)
+        return;
+    m_mipmap = enabled;
+    emit mipmapChanged();
+}
+
+void QSGTextureProvider::setClampToEdge(bool enabled)
+{
+    if (enabled == m_clampToEdge)
+        return;
+    m_clampToEdge = enabled;
+    emit clampToEdgeChanged();
+}
+
+void QSGTextureProvider::setLinearFiltering(bool enabled)
+{
+    if (enabled == m_linearFiltering)
+        return;
+    m_linearFiltering= enabled;
+    emit linearFilteringChanged();
+}
+
+QT_END_NAMESPACE
