@@ -54,7 +54,6 @@
 
 #ifdef Q_WS_S60
 #include <aknappui.h>
-#include <akntoolbar.h>
 #include <eikbtgpc.h>
 #endif
 
@@ -63,6 +62,19 @@
 // QWidgetPrivate::_q_delayedDestroy, which is used to delay destruction of
 // CCoeControl objects until after the CONE event handler has finished running.
 Q_DECLARE_METATYPE(WId)
+
+// Workaround for the fact that S60 SDKs 3.x do not contain the akntoolbar.h
+// header, even though the documentation says that it should be there, and indeed
+// it is present in the library.
+class CAknToolbar : public CAknControl,
+                    public MCoeControlObserver,
+                    public MCoeControlBackground,
+                    public MEikCommandObserver,
+                    public MAknFadedComponent
+{
+public:
+    IMPORT_C void SetToolbarVisibility(const TBool visible);
+};
 
 QT_BEGIN_NAMESPACE
 
