@@ -658,10 +658,11 @@ const QString::Null QString::null = { };
     class.)
 
     \table 100 %
+    \header
+    \o Note for C Programmers
+
     \row
     \o
-    \section1 Note for C Programmers
-
     Due to C++'s type system and the fact that QString is
     \l{implicitly shared}, QStrings may be treated like \c{int}s or
     other basic types. For example:
@@ -3890,8 +3891,7 @@ const char *QString::latin1_helper() const
     If \a size is -1 (default), it is taken to be qstrlen(\a
     str).
 
-    QTextCodec::codecForLocale() is used to perform the conversion
-    from Unicode.
+    QTextCodec::codecForLocale() is used to perform the conversion.
 
     \sa toLocal8Bit(), fromAscii(), fromLatin1(), fromUtf8()
 */

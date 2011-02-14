@@ -55,6 +55,7 @@
 
 #include "private/qdeclarativerefcount_p.h"
 #include "private/qdeclarativecleanup_p.h"
+#include "private/qdeclarativemetatype_p.h"
 
 #include <private/qscriptdeclarativeclass_p.h>
 
@@ -83,6 +84,8 @@ public:
     Data *data(const QString &) const;
     inline Data *data(const QScriptDeclarativeClass::Identifier &id) const;
 
+    inline QDeclarativeMetaType::ModuleApiInstance *moduleApi() const;
+    void setModuleApi(QDeclarativeMetaType::ModuleApiInstance *);
 protected:
     virtual void clear();
 
@@ -96,6 +99,7 @@ private:
     StringCache stringCache;
     IdentifierCache identifierCache;
     QDeclarativeEngine *engine;
+    QDeclarativeMetaType::ModuleApiInstance *m_moduleApi;
 };
 
 QDeclarativeTypeNameCache::Data::Data()
@@ -111,6 +115,11 @@ QDeclarativeTypeNameCache::Data::~Data()
 QDeclarativeTypeNameCache::Data *QDeclarativeTypeNameCache::data(const QScriptDeclarativeClass::Identifier &id) const
 {
     return identifierCache.value(id);
+}
+
+QDeclarativeMetaType::ModuleApiInstance *QDeclarativeTypeNameCache::moduleApi() const
+{
+    return m_moduleApi;
 }
 
 QT_END_NAMESPACE

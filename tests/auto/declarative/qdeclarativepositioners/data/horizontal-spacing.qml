@@ -1,11 +1,14 @@
-import QtQuick 1.0
+import QtQuick 1.1
 
 Item {
     width: 640
     height: 480
+    property bool testRightToLeft: false
+
     Row {
         objectName: "row"
         spacing: 10
+        layoutDirection: testRightToLeft ? Qt.RightToLeft : Qt.LeftToRight
         Rectangle {
             objectName: "one"
             color: "red"

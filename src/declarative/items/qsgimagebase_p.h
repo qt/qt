@@ -59,7 +59,9 @@ class Q_AUTOTEST_EXPORT QSGImageBase : public QSGItem
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(bool asynchronous READ asynchronous WRITE setAsynchronous NOTIFY asynchronousChanged)
+    Q_PROPERTY(bool cache READ cache WRITE setCache NOTIFY cacheChanged REVISION 1)
     Q_PROPERTY(QSize sourceSize READ sourceSize WRITE setSourceSize NOTIFY sourceSizeChanged)
+    Q_PROPERTY(bool mirror READ mirror WRITE setMirror NOTIFY mirrorChanged REVISION 1)
 
 public:
     ~QSGImageBase();
@@ -73,8 +75,14 @@ public:
     bool asynchronous() const;
     void setAsynchronous(bool);
 
+    bool cache() const;
+    void setCache(bool);
+
     virtual void setSourceSize(const QSize&);
     QSize sourceSize() const;
+
+    virtual void setMirror(bool mirror);
+    bool mirror() const;
 
 Q_SIGNALS:
     void sourceChanged(const QUrl &);
@@ -82,6 +90,8 @@ Q_SIGNALS:
     void statusChanged(QSGImageBase::Status);
     void progressChanged(qreal progress);
     void asynchronousChanged();
+    Q_REVISION(1) void cacheChanged();
+    Q_REVISION(1) void mirrorChanged();
 
 protected:
     virtual void load();
