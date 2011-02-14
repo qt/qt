@@ -456,6 +456,10 @@ void Win32MakefileGenerator::processRcFileVar()
         ts << "\t\t\t\tVALUE \"ProductName\", \"" << productName << "\\0\"" << endl;
         ts << "\t\t\tEND" << endl;
         ts << "\t\tEND" << endl;
+        ts << "\t\tBLOCK \"VarFileInfo\"" << endl;
+        ts << "\t\tBEGIN" << endl;
+        ts << "\t\t\tVALUE \"Translation\", 0x409, 1200" << endl;
+        ts << "\t\tEND" << endl;
         ts << "\tEND" << endl;
         ts << "/* End of Version info */" << endl;
         ts << endl;
