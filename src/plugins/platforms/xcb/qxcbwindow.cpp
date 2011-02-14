@@ -441,7 +441,10 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
         ypos = event->y;
     }
 
-    QWindowSystemInterface::handleGeometryChange(widget(), QRect(xpos, ypos, event->width, event->height));
+    QRect rect(xpos, ypos, event->width, event->height);
+    QPlatformWindow::setGeometry(rect);
+
+    QWindowSystemInterface::handleGeometryChange(widget(), rect);
 }
 
 static Qt::MouseButtons translateMouseButtons(int s)
