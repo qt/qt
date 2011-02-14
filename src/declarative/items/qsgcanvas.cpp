@@ -408,7 +408,7 @@ QSGCanvasPrivate::~QSGCanvasPrivate()
 {
 }
 
-void QSGCanvasPrivate::init(QSGCanvas *c)
+void QSGCanvasPrivate::init(QSGCanvas *c, const QGLFormat &format)
 {
     q_ptr = c;
 
@@ -424,7 +424,7 @@ void QSGCanvasPrivate::init(QSGCanvas *c)
     rootItemPrivate->activeFocus = true;
     activeFocusItem = rootItem;
 
-    renderer = new QSGRenderer(this, getFormat(), q);
+    renderer = new QSGRenderer(this, format, q);
 }
 
 void QSGCanvasPrivate::sceneMouseEventForTransform(QGraphicsSceneMouseEvent &sceneEvent,
@@ -722,7 +722,7 @@ QSGCanvas::QSGCanvas(QWidget *parent, Qt::WindowFlags f)
 {
     Q_D(QSGCanvas);
 
-    d->init(this);
+    d->init(this, getFormat());
 }
 
 QSGCanvas::QSGCanvas(const QGLFormat &format, QWidget *parent, Qt::WindowFlags f)
@@ -730,10 +730,7 @@ QSGCanvas::QSGCanvas(const QGLFormat &format, QWidget *parent, Qt::WindowFlags f
 {
     Q_D(QSGCanvas);
 
-    // XXX todo
-    Q_UNUSED(format);
-
-    d->init(this);
+    d->init(this, format);
 }
 
 QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, QWidget *parent, Qt::WindowFlags f)
@@ -741,7 +738,7 @@ QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, QWidget *parent, Qt::WindowFlags f)
 {
     Q_D(QSGCanvas);
 
-    d->init(this);
+    d->init(this, getFormat());
 }
 
 QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, const QGLFormat &format, QWidget *parent, Qt::WindowFlags f)
@@ -749,10 +746,7 @@ QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, const QGLFormat &format, QWidget *par
 {
     Q_D(QSGCanvas);
 
-    // XXX todo
-    Q_UNUSED(format);
-    
-    d->init(this);
+    d->init(this, format);
 }
 
 QSGCanvas::~QSGCanvas()

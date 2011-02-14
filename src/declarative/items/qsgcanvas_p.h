@@ -159,7 +159,7 @@ public:
     QSGCanvasPrivate();
     virtual ~QSGCanvasPrivate();
 
-    void init(QSGCanvas *);
+    void init(QSGCanvas *, const QGLFormat &);
 
     QSGRootItem *rootItem;
 
