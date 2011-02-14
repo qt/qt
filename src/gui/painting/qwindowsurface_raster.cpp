@@ -256,8 +256,6 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
 
 #ifdef Q_WS_MAC
 
-    Q_UNUSED(offset);
-
     // This is mainly done for native components like native "open file" dialog.
     if (widget->testAttribute(Qt::WA_DontShowOnScreen)) {
         return;

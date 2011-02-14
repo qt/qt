@@ -1587,14 +1587,12 @@ void qt_mac_display(QWidget *widget)
 {
     NSView *theNSView = qt_mac_nativeview_for(widget);
     [theNSView display];
-    return;
 }
 
 void qt_mac_setNeedsDisplay(QWidget *widget)
 {
     NSView *theNSView = qt_mac_nativeview_for(widget);
     [theNSView setNeedsDisplay:YES];
-    return;
 }
 
 void qt_mac_setNeedsDisplayInRect(QWidget *widget, QRegion region)
