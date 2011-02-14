@@ -248,6 +248,17 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
 */
 
 /*!
+    \since 4.8
+    \enum QDBusConnection::ConnectionCapabilities
+    The available capabilities for a D-Bus connection.
+
+    \value UnixFileDescriptorPassing        passing of Unix file descriptors to other processes
+                                            (see QDBusUnixFileDescriptor)
+
+    \sa connectionCapabilities()
+*/
+
+/*!
     Creates a QDBusConnection object attached to the connection with name \a name.
 
     This does not open the connection. You have to call connectToBus() to open it.
@@ -945,6 +956,18 @@ QString QDBusConnection::baseService() const
 QString QDBusConnection::name() const
 {
     return d ? d->name : QString();
+}
+
+/*!
+    \since 4.8
+
+    Returns the capabilities of this connection as negotiated with the bus
+    server or peer. If this QDBusConnection is not connected, this function
+    returns no capabilities.
+*/
+QDBusConnection::ConnectionCapabilities QDBusConnection::connectionCapabilities() const
+{
+    return d ? d->capabilities : ConnectionCapabilities(0);
 }
 
 /*!

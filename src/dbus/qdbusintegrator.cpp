@@ -967,7 +967,7 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
 extern bool qDBusInitThreads();
 
 QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
-    : QObject(p), ref(1), mode(InvalidMode), connection(0), server(0), busService(0),
+    : QObject(p), ref(1), capabilities(0), mode(InvalidMode), connection(0), server(0), busService(0),
       watchAndTimeoutLock(QMutex::Recursive),
       rootNode(QString(QLatin1Char('/')))
 {
