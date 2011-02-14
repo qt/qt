@@ -457,6 +457,7 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
     }
 
     QString url = uri;
+    bool versionFound = false;
     if (importType == QDeclarativeScriptParser::Import::Library) {
         url.replace(QLatin1Char('.'), QLatin1Char('/'));
         bool found = false;
@@ -522,18 +523,18 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
             }
         }
 
-        if (!found) {
-            found = QDeclarativeMetaType::isModule(uri.toUtf8(), vmaj, vmin);
-            if (!found) {
-                if (errorString) {
-                    bool anyversion = QDeclarativeMetaType::isModule(uri.toUtf8(), -1, -1);
-                    if (anyversion)
-                        *errorString = QDeclarativeImportDatabase::tr("module \"%1\" version %2.%3 is not installed").arg(uri_arg).arg(vmaj).arg(vmin);
-                    else
-                        *errorString = QDeclarativeImportDatabase::tr("module \"%1\" is not installed").arg(uri_arg);
-                }
-                return false;
+        if (QDeclarativeMetaType::isModule(uri.toUtf8(), vmaj, vmin))
+            versionFound = true;
+
+        if (!versionFound && qmldircomponents.isEmpty()) {
+            if (errorString) {
+                bool anyversion = QDeclarativeMetaType::isModule(uri.toUtf8(), -1, -1);
+                if (anyversion)
+                    *errorString = QDeclarativeImportDatabase::tr("module \"%1\" version %2.%3 is not installed").arg(uri_arg).arg(vmaj).arg(vmin);
+                else
+                    *errorString = QDeclarativeImportDatabase::tr("module \"%1\" is not installed").arg(uri_arg);
             }
+            return false;
         }
     } else {
 
@@ -578,7 +579,7 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
             url.chop(1);
     }
 
-    if (vmaj > -1 && vmin > -1 && !qmldircomponents.isEmpty()) {
+    if (!versionFound && vmaj > -1 && vmin > -1 && !qmldircomponents.isEmpty()) {
         QList<QDeclarativeDirParser::Component>::ConstIterator it = qmldircomponents.begin();
         int lowest_maj = INT_MAX;
         int lowest_min = INT_MAX;
@@ -952,7 +953,8 @@ void QDeclarativeImportDatabase::addPluginPath(const QString& path)
         qDebug().nospace() << "QDeclarativeImportDatabase::addPluginPath: " << path;
 
     QUrl url = QUrl(path);
-    if (url.isRelative() || url.scheme() == QLatin1String("file")) {
+    if (url.isRelative() || url.scheme() == QLatin1String("file")
+            || (url.scheme().length() == 1 && QFile::exists(path)) ) {  // windows path
         QDir dir = QDir(path);
         filePluginPath.prepend(dir.canonicalPath());
     } else {
@@ -974,7 +976,8 @@ void QDeclarativeImportDatabase::addImportPath(const QString& path)
     QUrl url = QUrl(path);
     QString cPath;
 
-    if (url.isRelative() || url.scheme() == QLatin1String("file")) {
+    if (url.isRelative() || url.scheme() == QLatin1String("file")
+            || (url.scheme().length() == 1 && QFile::exists(path)) ) {  // windows path
         QDir dir = QDir(path);
         cPath = dir.canonicalPath();
     } else {
