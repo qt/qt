@@ -411,7 +411,12 @@ void QScriptContext::setThisObject(const QScriptValue &thisObject)
 */
 QScriptContext::ExecutionState QScriptContext::state() const
 {
-    Q_UNIMPLEMENTED();
+    Q_D(const QScriptContext);
+    QScriptEnginePrivate *engine = d->engine;
+    if (engine) {
+        QScriptIsolate api(engine, QScriptIsolate::NotNullEngine);
+        return engine->hasUncaughtException() ? QScriptContext::ExceptionState : QScriptContext::NormalState;
+    }
     return QScriptContext::NormalState;
 }
 
