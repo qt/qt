@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/spritefragment.shader</file>
+        <file>resources/spritevertex.shader</file>
+    </qresource>
+</RCC>
