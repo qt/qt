@@ -78,46 +78,46 @@ QTestLiteWindow::QTestLiteWindow(QWidget *window)
     int w = window->width();
     int h = window->height();
 
-        if(window->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
-           && QApplicationPrivate::platformIntegration()->hasOpenGL() ) {
-        #if !defined(QT_NO_OPENGL)
+    if(window->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
+            && QApplicationPrivate::platformIntegration()->hasOpenGL() ) {
+#if !defined(QT_NO_OPENGL)
 #if !defined(QT_OPENGL_ES_2)
-            XVisualInfo *visualInfo = QGLXContext::findVisualInfo(mScreen,window->platformWindowFormat());
+        XVisualInfo *visualInfo = QGLXContext::findVisualInfo(mScreen,window->platformWindowFormat());
 #else
-            QPlatformWindowFormat windowFormat = correctColorBuffers(window->platformWindowFormat());
+        QPlatformWindowFormat windowFormat = correctColorBuffers(window->platformWindowFormat());
 
-            EGLDisplay eglDisplay = eglGetDisplay(mScreen->display());
-            EGLConfig eglConfig = q_configFromQPlatformWindowFormat(eglDisplay,windowFormat);
-            VisualID id = QTestLiteEglIntegration::getCompatibleVisualId(mScreen->display(),eglConfig);
+        EGLDisplay eglDisplay = eglGetDisplay(mScreen->display());
+        EGLConfig eglConfig = q_configFromQPlatformWindowFormat(eglDisplay,windowFormat);
+        VisualID id = QTestLiteEglIntegration::getCompatibleVisualId(mScreen->display(),eglConfig);
 
-            XVisualInfo visualInfoTemplate;
-            memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
-            visualInfoTemplate.visualid = id;
+        XVisualInfo visualInfoTemplate;
+        memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
+        visualInfoTemplate.visualid = id;
 
-            XVisualInfo *visualInfo;
-            int matchingCount = 0;
-            visualInfo = XGetVisualInfo(mScreen->display(), VisualIDMask, &visualInfoTemplate, &matchingCount);
+        XVisualInfo *visualInfo;
+        int matchingCount = 0;
+        visualInfo = XGetVisualInfo(mScreen->display(), VisualIDMask, &visualInfoTemplate, &matchingCount);
 #endif //!defined(QT_OPENGL_ES_2)
-            if (visualInfo) {
-                Colormap cmap = XCreateColormap(mScreen->display(),mScreen->rootWindow(),visualInfo->visual,AllocNone);
+        if (visualInfo) {
+            Colormap cmap = XCreateColormap(mScreen->display(),mScreen->rootWindow(),visualInfo->visual,AllocNone);
 
-                XSetWindowAttributes a;
-                a.colormap = cmap;
-                x_window = XCreateWindow(mScreen->display(), mScreen->rootWindow(),x, y, w, h,
-                                          0, visualInfo->depth, InputOutput, visualInfo->visual,
-                                          CWColormap, &a);
-            } else {
-                qFatal("no window!");
-            }
-#endif //!defined(QT_NO_OPENGL)
+            XSetWindowAttributes a;
+            a.colormap = cmap;
+            x_window = XCreateWindow(mScreen->display(), mScreen->rootWindow(),x, y, w, h,
+                                     0, visualInfo->depth, InputOutput, visualInfo->visual,
+                                     CWColormap, &a);
         } else {
-            x_window = XCreateSimpleWindow(mScreen->display(), mScreen->rootWindow(),
-                                           x, y, w, h, 0 /*border_width*/,
-                                           mScreen->blackPixel(), mScreen->whitePixel());
+            qFatal("no window!");
         }
+#endif //!defined(QT_NO_OPENGL)
+    } else {
+        x_window = XCreateSimpleWindow(mScreen->display(), mScreen->rootWindow(),
+                                       x, y, w, h, 0 /*border_width*/,
+                                       mScreen->blackPixel(), mScreen->whitePixel());
+    }
 
 #ifdef MYX11_DEBUG
-        qDebug() << "QTestLiteWindow::QTestLiteWindow creating" << hex << x_window << window;
+    qDebug() << "QTestLiteWindow::QTestLiteWindow creating" << hex << x_window << window;
 #endif
 
     XSetWindowBackgroundPixmap(mScreen->display(), x_window, XNone);
@@ -252,7 +252,7 @@ void QTestLiteWindow::setGeometry(const QRect &rect)
 
 Qt::WindowFlags QTestLiteWindow::windowFlags() const
 {
-    return window_flags;
+    return mWindowFlags;
 }
 
 WId QTestLiteWindow::winId() const
@@ -411,10 +411,46 @@ static inline bool isTransient(const QWidget *w)
             && !w->testAttribute(Qt::WA_X11BypassTransientForHint));
 }
 
+QVector<Atom> QTestLiteWindow::getNetWmState() const
+{
+    QVector<Atom> returnValue;
+
+    // Don't read anything, just get the size of the property data
+    Atom actualType;
+    int actualFormat;
+    ulong propertyLength;
+    ulong bytesLeft;
+    uchar *propertyData = 0;
+    if (XGetWindowProperty(mScreen->display(), x_window, QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_STATE), 0, 0,
+                           False, XA_ATOM, &actualType, &actualFormat,
+                           &propertyLength, &bytesLeft, &propertyData) == Success
+        && actualType == XA_ATOM && actualFormat == 32) {
+        returnValue.resize(bytesLeft / 4);
+        XFree((char*) propertyData);
+
+        // fetch all data
+        if (XGetWindowProperty(mScreen->display(), x_window, QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_STATE), 0,
+                               returnValue.size(), False, XA_ATOM, &actualType, &actualFormat,
+                               &propertyLength, &bytesLeft, &propertyData) != Success) {
+            returnValue.clear();
+        } else if (propertyLength != (ulong)returnValue.size()) {
+            returnValue.resize(propertyLength);
+        }
+
+        // put it into netWmState
+        if (!returnValue.isEmpty()) {
+            memcpy(returnValue.data(), propertyData, returnValue.size() * sizeof(Atom));
+        }
+        XFree((char*) propertyData);
+    }
+
+    return returnValue;
+}
+
 Qt::WindowFlags QTestLiteWindow::setWindowFlags(Qt::WindowFlags flags)
 {
 //    Q_ASSERT(flags & Qt::Window);
-    window_flags = flags;
+    mWindowFlags = flags;
 
 #ifdef MYX11_DEBUG
     qDebug() << "QTestLiteWindow::setWindowFlags" << hex << x_window << "flags" << flags;
@@ -518,7 +554,49 @@ Qt::WindowFlags QTestLiteWindow::setWindowFlags(Qt::WindowFlags flags)
         mwmhints.decorations = 0;
     }
 
+    if (widget()->windowModality() == Qt::WindowModal) {
+        mwmhints.input_mode = MWM_INPUT_PRIMARY_APPLICATION_MODAL;
+    } else if (widget()->windowModality() == Qt::ApplicationModal) {
+        mwmhints.input_mode = MWM_INPUT_FULL_APPLICATION_MODAL;
+    }
+
     setMWMHints(mwmhints);
+
+    QVector<Atom> netWmState = getNetWmState();
+
+    if (flags & Qt::WindowStaysOnTopHint) {
+        if (flags & Qt::WindowStaysOnBottomHint)
+            qWarning() << "QWidget: Incompatible window flags: the window can't be on top and on bottom at the same time";
+        if (!netWmState.contains(QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_STATE_ABOVE)))
+            netWmState.append(QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_STATE_ABOVE));
+        if (!netWmState.contains(QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_STATE_STAYS_ON_TOP)))
+            netWmState.append(QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_STATE_STAYS_ON_TOP));
+    } else if (flags & Qt::WindowStaysOnBottomHint) {
+        if (!netWmState.contains(QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_STATE_BELOW)))
+            netWmState.append(QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_STATE_BELOW));
+    }
+    if (widget()->isFullScreen()) {
+        if (!netWmState.contains(QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_STATE_FULLSCREEN)))
+            netWmState.append(QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_STATE_FULLSCREEN));
+    }
+    if (widget()->isMaximized()) {
+        if (!netWmState.contains(QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_STATE_MAXIMIZED_HORZ)))
+            netWmState.append(QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_STATE_MAXIMIZED_HORZ));
+        if (!netWmState.contains(QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_STATE_MAXIMIZED_VERT)))
+            netWmState.append(QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_STATE_MAXIMIZED_VERT));
+    }
+    if (widget()->windowModality() != Qt::NonModal) {
+        if (!netWmState.contains(QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_STATE_MODAL)))
+            netWmState.append(QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_STATE_MODAL));
+    }
+
+    if (!netWmState.isEmpty()) {
+        XChangeProperty(mScreen->display(), x_window,
+                        QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_STATE), XA_ATOM, 32, PropModeReplace,
+                        (unsigned char *) netWmState.data(), netWmState.size());
+    } else {
+        XDeleteProperty(mScreen->display(), x_window, QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_STATE));
+    }
 
 //##### only if initializeWindow???
 
@@ -547,6 +625,18 @@ void QTestLiteWindow::setVisible(bool visible)
 #ifdef MYX11_DEBUG
     qDebug() << "QTestLiteWindow::setVisible" << visible << hex << x_window;
 #endif
+    if (isTransient(widget())) {
+        Window parentXWindow = x_window;
+        if (widget()->parentWidget()) {
+            QWidget *widgetParent = widget()->parentWidget()->window();
+            if (widgetParent && widgetParent->platformWindow()) {
+                QTestLiteWindow *parentWidnow = static_cast<QTestLiteWindow *>(widgetParent->platformWindow());
+                parentXWindow = parentWidnow->x_window;
+            }
+        }
+        XSetTransientForHint(mScreen->display(),x_window,parentXWindow);
+    }
+
     if (visible) {
         //ensure that the window is viewed in correct position.
         doSizeHints();

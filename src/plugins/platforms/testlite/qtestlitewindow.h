@@ -123,6 +123,7 @@ public:
     GC graphicsContext() const;
 
 protected:
+    QVector<Atom> getNetWmState() const;
     void setMWMHints(const QtMWMHints &mwmhints);
     QtMWMHints getMWMHints() const;
 
@@ -138,7 +139,7 @@ private:
 
     QPlatformGLContext *mGLContext;
     QTestLiteScreen *mScreen;
-    Qt::WindowFlags window_flags;
+    Qt::WindowFlags mWindowFlags;
 };
 
 #endif
