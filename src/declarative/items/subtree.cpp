@@ -432,6 +432,8 @@ void SubTreeTextureProvider::grab()
     root->appendChildNode(m_debugOverlay);
 #endif
 
+    m_dirtyTexture = false;
+
     const QGLContext *ctx = QSGContext::current->glContext();
     m_renderer->setDeviceRect(m_fbo->size());
     m_renderer->setProjectMatrixToRect(m_rect);
@@ -443,7 +445,6 @@ void SubTreeTextureProvider::grab()
 #ifdef QML_SUBTREE_DEBUG
     root->removeChildNode(m_debugOverlay);
 #endif
-    m_dirtyTexture = false;
 }
 
 
@@ -521,8 +522,10 @@ void SubTree::setItem(QSGItem *item)
         // 'm_item' needs a canvas to get a scenegraph node.
         // The easiest way to make sure it gets a canvas is to
         // make it a part of the same item tree as 'this'.
-        if (m_item->parentItem() == 0)
+        if (m_item->parentItem() == 0) {
             m_item->setParentItem(this);
+            m_item->setVisible(false);
+        }
         QSGItemPrivate::get(m_item)->refFromEffectItem();
     }
     update();

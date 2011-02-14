@@ -185,8 +185,10 @@ void ShaderEffectItem::setSource(const QVariant &var, int index)
     // 'source.item' needs a canvas to get a scenegraph node.
     // The easiest way to make sure it gets a canvas is to
     // make it a part of the same item tree as 'this'.
-    if (source.item && source.item->parentItem() == 0)
+    if (source.item && source.item->parentItem() == 0) {
         source.item->setParentItem(this);
+        source.item->setVisible(false);
+    }
 }
 
 void ShaderEffectItem::disconnectPropertySignals()
