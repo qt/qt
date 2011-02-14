@@ -52,7 +52,7 @@ static int countBits(unsigned long mask)
     return count;
 }
 
-VisualID QTestLiteEglIntegration::getCompatibleVisualId(Display *display, EGLConfig config)
+VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLConfig config)
 {
     VisualID    visualId = 0;
     EGLint      eglValue = 0;

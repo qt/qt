@@ -47,21 +47,19 @@
 
 QT_BEGIN_NAMESPACE
 
-class QTestLiteWindow;
-class QTestLiteIntegration;
-class QTestLiteScreen;
-class MyShmImageInfo;
+class QXlibWindow;
+class QXlibIntegration;
+class QXlibScreen;
+class QXlibShmImageInfo;
 
-class QTestLiteWindowSurface : public QWindowSurface
+class QXlibWindowSurface : public QWindowSurface
 {
 public:
-    QTestLiteWindowSurface (QWidget *window);
-    ~QTestLiteWindowSurface();
+    QXlibWindowSurface (QWidget *window);
+    ~QXlibWindowSurface();
 
     QPaintDevice *paintDevice();
-//    void flush();
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-//    void resize(const QSize &size);
     bool scroll(const QRegion &area, int dx, int dy);
 
     void beginPaint(const QRegion &region);
@@ -76,9 +74,9 @@ private:
     void resizeShmImage(int width, int height);
 
     QImage shm_img;
-    MyShmImageInfo *image_info;
+    QXlibShmImageInfo *image_info;
 
-    QTestLiteWindow *xw;
+    QXlibWindow *xw;
 
 };
 

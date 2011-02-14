@@ -48,10 +48,10 @@
 
 QT_BEGIN_NAMESPACE
 
-class QTestLiteCursor : QPlatformCursor
+class QXlibCursor : QPlatformCursor
 {
 public:
-    QTestLiteCursor(QTestLiteScreen *screen);
+    QXlibCursor(QXlibScreen *screen);
 
     void changeCursor(QCursor * cursor, QWidget * widget);
 private:
@@ -59,7 +59,7 @@ private:
     Cursor createCursorBitmap(QCursor * cursor);
     Cursor createCursorShape(int cshape);
 
-    QTestLiteScreen *testLiteScreen() const;
+    QXlibScreen *testLiteScreen() const;
     QMap<int, Cursor> cursorMap;
 };
 

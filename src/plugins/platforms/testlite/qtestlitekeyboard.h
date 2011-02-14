@@ -44,10 +44,10 @@
 
 #include "qtestliteintegration.h"
 
-class QTestLiteKeyboard
+class QXlibKeyboard
 {
 public:
-    QTestLiteKeyboard(QTestLiteScreen *screen);
+    QXlibKeyboard(QXlibScreen *screen);
 
     void changeLayout();
 
@@ -63,7 +63,7 @@ private:
                                    int &code, Qt::KeyboardModifiers &modifiers,
                                    QByteArray &chars, int &count);
 
-    QTestLiteScreen *m_screen;
+    QXlibScreen *m_screen;
 
     uint m_alt_mask;
     uint m_super_mask;

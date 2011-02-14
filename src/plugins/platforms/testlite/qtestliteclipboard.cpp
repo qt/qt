@@ -48,12 +48,12 @@
 
 #include <QtCore/QDebug>
 
-class QTestLiteClipboardMime : public QTestLiteMime
+class QXlibClipboardMime : public QXlibMime
 {
     Q_OBJECT
 public:
-    QTestLiteClipboardMime(QClipboard::Mode mode, QTestLiteClipboard *clipboard)
-        : QTestLiteMime()
+    QXlibClipboardMime(QClipboard::Mode mode, QXlibClipboard *clipboard)
+        : QXlibMime()
         , m_clipboard(clipboard)
     {
         switch (mode) {
@@ -62,7 +62,7 @@ public:
             break;
 
         case QClipboard::Clipboard:
-            modeAtom = QTestLiteStatic::atom(QTestLiteStatic::CLIPBOARD);
+            modeAtom = QXlibStatic::atom(QXlibStatic::CLIPBOARD);
             break;
 
         default:
@@ -78,11 +78,11 @@ protected:
             return QStringList();
 
         if (!formatList.count()) {
-            QTestLiteClipboardMime *that = const_cast<QTestLiteClipboardMime *>(this);
+            QXlibClipboardMime *that = const_cast<QXlibClipboardMime *>(this);
             // get the list of targets from the current clipboard owner - we do this
             // once so that multiple calls to this function don't require multiple
             // server round trips...
-            that->format_atoms = m_clipboard->getDataInFormat(modeAtom,QTestLiteStatic::atom(QTestLiteStatic::TARGETS));
+            that->format_atoms = m_clipboard->getDataInFormat(modeAtom,QXlibStatic::atom(QXlibStatic::TARGETS));
 
             if (format_atoms.size() > 0) {
                 Atom *targets = (Atom *) format_atoms.data();
@@ -141,14 +141,14 @@ private:
 
 
     Atom modeAtom;
-    QTestLiteClipboard *m_clipboard;
+    QXlibClipboard *m_clipboard;
     QStringList formatList;
     QByteArray format_atoms;
 };
 
-const int QTestLiteClipboard::clipboard_timeout = 5000;
+const int QXlibClipboard::clipboard_timeout = 5000;
 
-QTestLiteClipboard::QTestLiteClipboard(QTestLiteScreen *screen)
+QXlibClipboard::QXlibClipboard(QXlibScreen *screen)
     : QPlatformClipboard()
     , m_screen(screen)
     , m_xClipboard(0)
@@ -160,14 +160,14 @@ QTestLiteClipboard::QTestLiteClipboard(QTestLiteScreen *screen)
 {
 }
 
-const QMimeData * QTestLiteClipboard::mimeData(QClipboard::Mode mode) const
+const QMimeData * QXlibClipboard::mimeData(QClipboard::Mode mode) const
 {
     if (mode == QClipboard::Clipboard) {
         if (!m_xClipboard) {
-            QTestLiteClipboard *that = const_cast<QTestLiteClipboard *>(this);
-            that->m_xClipboard = new QTestLiteClipboardMime(mode,that);
+            QXlibClipboard *that = const_cast<QXlibClipboard *>(this);
+            that->m_xClipboard = new QXlibClipboardMime(mode,that);
         }
-        Window clipboardOwner = XGetSelectionOwner(screen()->display(),QTestLiteStatic::atom(QTestLiteStatic::CLIPBOARD));
+        Window clipboardOwner = XGetSelectionOwner(screen()->display(),QXlibStatic::atom(QXlibStatic::CLIPBOARD));
         if (clipboardOwner == owner()) {
             return m_clientClipboard;
         } else {
@@ -175,8 +175,8 @@ const QMimeData * QTestLiteClipboard::mimeData(QClipboard::Mode mode) const
         }
     } else if (mode == QClipboard::Selection) {
         if (!m_xSelection) {
-            QTestLiteClipboard *that = const_cast<QTestLiteClipboard *>(this);
-            that->m_xSelection = new QTestLiteClipboardMime(mode,that);
+            QXlibClipboard *that = const_cast<QXlibClipboard *>(this);
+            that->m_xSelection = new QXlibClipboardMime(mode,that);
         }
         Window clipboardOwner = XGetSelectionOwner(screen()->display(),XA_PRIMARY);
         if (clipboardOwner == owner()) {
@@ -188,7 +188,7 @@ const QMimeData * QTestLiteClipboard::mimeData(QClipboard::Mode mode) const
     return 0;
 }
 
-void QTestLiteClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
+void QXlibClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
 {
     Atom modeAtom;
     QMimeData **d;
@@ -199,7 +199,7 @@ void QTestLiteClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
         break;
 
     case QClipboard::Clipboard:
-        modeAtom = QTestLiteStatic::atom(QTestLiteStatic::CLIPBOARD);
+        modeAtom = QXlibStatic::atom(QXlibStatic::CLIPBOARD);
         d = &m_clientClipboard;
         break;
 
@@ -226,7 +226,7 @@ void QTestLiteClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
 
 }
 
-bool QTestLiteClipboard::supportsMode(QClipboard::Mode mode) const
+bool QXlibClipboard::supportsMode(QClipboard::Mode mode) const
 {
     if (mode == QClipboard::Clipboard || mode == QClipboard::Selection)
         return true;
@@ -234,16 +234,16 @@ bool QTestLiteClipboard::supportsMode(QClipboard::Mode mode) const
 }
 
 
-QTestLiteScreen * QTestLiteClipboard::screen() const
+QXlibScreen * QXlibClipboard::screen() const
 {
     return m_screen;
 }
 
-Window QTestLiteClipboard::requestor() const
+Window QXlibClipboard::requestor() const
 {
     if (!m_requestor) {
         int x = 0, y = 0, w = 3, h = 3;
-        QTestLiteClipboard *that = const_cast<QTestLiteClipboard *>(this);
+        QXlibClipboard *that = const_cast<QXlibClipboard *>(this);
         Window window  = XCreateSimpleWindow(m_screen->display(), m_screen->rootWindow(),
                                        x, y, w, h, 0 /*border_width*/,
                                        m_screen->blackPixel(), m_screen->whitePixel());
@@ -252,7 +252,7 @@ Window QTestLiteClipboard::requestor() const
     return m_requestor;
 }
 
-void QTestLiteClipboard::setRequestor(Window window)
+void QXlibClipboard::setRequestor(Window window)
 {
     if (m_requestor != XNone) {
         XDestroyWindow(m_screen->display(),m_requestor);
@@ -260,11 +260,11 @@ void QTestLiteClipboard::setRequestor(Window window)
     m_requestor = window;
 }
 
-Window QTestLiteClipboard::owner() const
+Window QXlibClipboard::owner() const
 {
     if (!m_owner) {
         int x = 0, y = 0, w = 3, h = 3;
-        QTestLiteClipboard *that = const_cast<QTestLiteClipboard *>(this);
+        QXlibClipboard *that = const_cast<QXlibClipboard *>(this);
         Window window  = XCreateSimpleWindow(m_screen->display(), m_screen->rootWindow(),
                                        x, y, w, h, 0 /*border_width*/,
                                        m_screen->blackPixel(), m_screen->whitePixel());
@@ -273,7 +273,7 @@ Window QTestLiteClipboard::owner() const
     return m_owner;
 }
 
-void QTestLiteClipboard::setOwner(Window window)
+void QXlibClipboard::setOwner(Window window)
 {
     if (m_owner != XNone){
         XDestroyWindow(m_screen->display(),m_owner);
@@ -281,45 +281,45 @@ void QTestLiteClipboard::setOwner(Window window)
     m_owner = window;
 }
 
-Atom QTestLiteClipboard::sendTargetsSelection(QMimeData *d, Window window, Atom property)
+Atom QXlibClipboard::sendTargetsSelection(QMimeData *d, Window window, Atom property)
 {
     QVector<Atom> types;
     QStringList formats = QInternalMimeData::formatsHelper(d);
     for (int i = 0; i < formats.size(); ++i) {
-        QList<Atom> atoms = QTestLiteMime::mimeAtomsForFormat(screen()->display(),formats.at(i));
+        QList<Atom> atoms = QXlibMime::mimeAtomsForFormat(screen()->display(),formats.at(i));
         for (int j = 0; j < atoms.size(); ++j) {
             if (!types.contains(atoms.at(j)))
                 types.append(atoms.at(j));
         }
     }
-    types.append(QTestLiteStatic::atom(QTestLiteStatic::TARGETS));
-    types.append(QTestLiteStatic::atom(QTestLiteStatic::MULTIPLE));
-    types.append(QTestLiteStatic::atom(QTestLiteStatic::TIMESTAMP));
-    types.append(QTestLiteStatic::atom(QTestLiteStatic::SAVE_TARGETS));
+    types.append(QXlibStatic::atom(QXlibStatic::TARGETS));
+    types.append(QXlibStatic::atom(QXlibStatic::MULTIPLE));
+    types.append(QXlibStatic::atom(QXlibStatic::TIMESTAMP));
+    types.append(QXlibStatic::atom(QXlibStatic::SAVE_TARGETS));
 
     XChangeProperty(screen()->display(), window, property, XA_ATOM, 32,
                     PropModeReplace, (uchar *) types.data(), types.size());
     return property;
 }
 
-Atom QTestLiteClipboard::sendSelection(QMimeData *d, Atom target, Window window, Atom property)
+Atom QXlibClipboard::sendSelection(QMimeData *d, Atom target, Window window, Atom property)
 {
     Atom atomFormat = target;
     int dataFormat = 0;
     QByteArray data;
 
-    QString fmt = QTestLiteMime::mimeAtomToString(screen()->display(), target);
+    QString fmt = QXlibMime::mimeAtomToString(screen()->display(), target);
     if (fmt.isEmpty()) { // Not a MIME type we have
         qDebug() << "QClipboard: send_selection(): converting to type '%s' is not supported" << fmt.data();
         return XNone;
     }
     qDebug() << "QClipboard: send_selection(): converting to type '%s'" << fmt.data();
 
-    if (QTestLiteMime::mimeDataForAtom(screen()->display(),target, d, &data, &atomFormat, &dataFormat)) {
+    if (QXlibMime::mimeDataForAtom(screen()->display(),target, d, &data, &atomFormat, &dataFormat)) {
 
          // don't allow INCR transfers when using MULTIPLE or to
         // Motif clients (since Motif doesn't support INCR)
-        static Atom motif_clip_temporary = QTestLiteStatic::atom(QTestLiteStatic::CLIP_TEMPORARY);
+        static Atom motif_clip_temporary = QXlibStatic::atom(QXlibStatic::CLIP_TEMPORARY);
         bool allow_incr = property != motif_clip_temporary;
 
         // X_ChangeProperty protocol request is 24 bytes
@@ -327,7 +327,7 @@ Atom QTestLiteClipboard::sendSelection(QMimeData *d, Atom target, Window window,
         if (data.size() > increment && allow_incr) {
             long bytes = data.size();
             XChangeProperty(screen()->display(), window, property,
-                            QTestLiteStatic::atom(QTestLiteStatic::INCR), 32, PropModeReplace, (uchar *) &bytes, 1);
+                            QXlibStatic::atom(QXlibStatic::INCR), 32, PropModeReplace, (uchar *) &bytes, 1);
 
 //            (void)new QClipboardINCRTransaction(window, property, atomFormat, dataFormat, data, increment);
             qDebug() << "not implemented INCRT just YET!";
@@ -346,7 +346,7 @@ Atom QTestLiteClipboard::sendSelection(QMimeData *d, Atom target, Window window,
     return property;
 }
 
-void QTestLiteClipboard::handleSelectionRequest(XEvent *xevent)
+void QXlibClipboard::handleSelectionRequest(XEvent *xevent)
 {
     XSelectionRequestEvent *req = &xevent->xselectionrequest;
 
@@ -367,7 +367,7 @@ void QTestLiteClipboard::handleSelectionRequest(XEvent *xevent)
     QMimeData *d;
     if (req->selection == XA_PRIMARY) {
         d = m_clientSelection;
-    } else if (req->selection == QTestLiteStatic::atom(QTestLiteStatic::CLIPBOARD)) {
+    } else if (req->selection == QXlibStatic::atom(QXlibStatic::CLIPBOARD)) {
         d = m_clientClipboard;
     } else {
         qWarning("QClipboard: Unknown selection '%lx'", req->selection);
@@ -381,9 +381,9 @@ void QTestLiteClipboard::handleSelectionRequest(XEvent *xevent)
         return;
     }
 
-    Atom xa_targets = QTestLiteStatic::atom(QTestLiteStatic::TARGETS);
-    Atom xa_multiple = QTestLiteStatic::atom(QTestLiteStatic::MULTIPLE);
-    Atom xa_timestamp = QTestLiteStatic::atom(QTestLiteStatic::TIMESTAMP);
+    Atom xa_targets = QXlibStatic::atom(QXlibStatic::TARGETS);
+    Atom xa_multiple = QXlibStatic::atom(QXlibStatic::MULTIPLE);
+    Atom xa_timestamp = QXlibStatic::atom(QXlibStatic::TIMESTAMP);
 
     struct AtomPair { Atom target; Atom property; } *multi = 0;
     Atom multi_type = XNone;
@@ -469,7 +469,7 @@ void QTestLiteClipboard::handleSelectionRequest(XEvent *xevent)
 static inline int maxSelectionIncr(Display *dpy)
 { return XMaxRequestSize(dpy) > 65536 ? 65536*4 : XMaxRequestSize(dpy)*4 - 100; }
 
-bool QTestLiteClipboard::clipboardReadProperty(Window win, Atom property, bool deleteProperty, QByteArray *buffer, int *size, Atom *type, int *format) const
+bool QXlibClipboard::clipboardReadProperty(Window win, Atom property, bool deleteProperty, QByteArray *buffer, int *size, Atom *type, int *format) const
 {
     int    maxsize = maxSelectionIncr(screen()->display());
     ulong  bytes_left; // bytes_after
@@ -549,7 +549,7 @@ bool QTestLiteClipboard::clipboardReadProperty(Window win, Atom property, bool d
             XFree((char*)data);
         }
 
-        if (*format == 8 && *type == QTestLiteStatic::atom(QTestLiteStatic::COMPOUND_TEXT)) {
+        if (*format == 8 && *type == QXlibStatic::atom(QXlibStatic::COMPOUND_TEXT)) {
             // convert COMPOUND_TEXT to a multibyte string
             XTextProperty textprop;
             textprop.encoding = *type;
@@ -581,7 +581,7 @@ bool QTestLiteClipboard::clipboardReadProperty(Window win, Atom property, bool d
     return ok;
 }
 
-QByteArray QTestLiteClipboard::clipboardReadIncrementalProperty(Window win, Atom property, int nbytes, bool nullterm)
+QByteArray QXlibClipboard::clipboardReadIncrementalProperty(Window win, Atom property, int nbytes, bool nullterm)
 {
     XEvent event;
 
@@ -639,7 +639,7 @@ QByteArray QTestLiteClipboard::clipboardReadIncrementalProperty(Window win, Atom
     return QByteArray();
 }
 
-QByteArray QTestLiteClipboard::getDataInFormat(Atom modeAtom, Atom fmtatom)
+QByteArray QXlibClipboard::getDataInFormat(Atom modeAtom, Atom fmtatom)
 {
     QByteArray buf;
 
@@ -647,8 +647,8 @@ QByteArray QTestLiteClipboard::getDataInFormat(Atom modeAtom, Atom fmtatom)
 
     XSelectInput(screen()->display(), win, NoEventMask); // don't listen for any events
 
-    XDeleteProperty(screen()->display(), win, QTestLiteStatic::atom(QTestLiteStatic::_QT_SELECTION));
-    XConvertSelection(screen()->display(), modeAtom, fmtatom, QTestLiteStatic::atom(QTestLiteStatic::_QT_SELECTION), win, CurrentTime);
+    XDeleteProperty(screen()->display(), win, QXlibStatic::atom(QXlibStatic::_QT_SELECTION));
+    XConvertSelection(screen()->display(), modeAtom, fmtatom, QXlibStatic::atom(QXlibStatic::_QT_SELECTION), win, CurrentTime);
     XSync(screen()->display(), false);
 
     XEvent xevent;
@@ -660,10 +660,10 @@ QByteArray QTestLiteClipboard::getDataInFormat(Atom modeAtom, Atom fmtatom)
     Atom   type;
     XSelectInput(screen()->display(), win, PropertyChangeMask);
 
-    if (clipboardReadProperty(win, QTestLiteStatic::atom(QTestLiteStatic::_QT_SELECTION), true, &buf, 0, &type, 0)) {
-        if (type == QTestLiteStatic::atom(QTestLiteStatic::INCR)) {
+    if (clipboardReadProperty(win, QXlibStatic::atom(QXlibStatic::_QT_SELECTION), true, &buf, 0, &type, 0)) {
+        if (type == QXlibStatic::atom(QXlibStatic::INCR)) {
             int nbytes = buf.size() >= 4 ? *((int*)buf.data()) : 0;
-            buf = clipboardReadIncrementalProperty(win, QTestLiteStatic::atom(QTestLiteStatic::_QT_SELECTION), nbytes, false);
+            buf = clipboardReadIncrementalProperty(win, QXlibStatic::atom(QXlibStatic::_QT_SELECTION), nbytes, false);
         }
     }
 

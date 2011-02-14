@@ -45,7 +45,7 @@
 #include "qtestlitestaticinfo.h"
 #include "../eglconvenience/qeglconvenience.h"
 
-class QTestLiteEglIntegration
+class QXlibEglIntegration
 {
 public:
     static VisualID getCompatibleVisualId(Display *display, EGLConfig config);

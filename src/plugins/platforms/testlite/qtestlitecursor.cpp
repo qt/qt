@@ -51,17 +51,17 @@
 
 QT_BEGIN_NAMESPACE
 
-QTestLiteCursor::QTestLiteCursor(QTestLiteScreen *screen)
+QXlibCursor::QXlibCursor(QXlibScreen *screen)
     : QPlatformCursor(screen)
 {
 }
 
-void QTestLiteCursor::changeCursor(QCursor *cursor, QWidget *widget)
+void QXlibCursor::changeCursor(QCursor *cursor, QWidget *widget)
 {
-    QTestLiteWindow *w = 0;
+    QXlibWindow *w = 0;
     if (widget) {
         QWidget *window = widget->window();
-        w = static_cast<QTestLiteWindow*>(window->platformWindow());
+        w = static_cast<QXlibWindow*>(window->platformWindow());
     } else {
         // No X11 cursor control when there is no widget under the cursor
         return;
@@ -89,7 +89,7 @@ void QTestLiteCursor::changeCursor(QCursor *cursor, QWidget *widget)
     w->setCursor(c);
 }
 
-Cursor QTestLiteCursor::createCursorBitmap(QCursor * cursor)
+Cursor QXlibCursor::createCursorBitmap(QCursor * cursor)
 {
     XColor bg, fg;
     bg.red   = 255 << 8;
@@ -132,7 +132,7 @@ Cursor QTestLiteCursor::createCursorBitmap(QCursor * cursor)
     return c;
 }
 
-Cursor QTestLiteCursor::createCursorShape(int cshape)
+Cursor QXlibCursor::createCursorShape(int cshape)
 {
     Cursor cursor = 0;
 
@@ -191,9 +191,9 @@ Cursor QTestLiteCursor::createCursorShape(int cshape)
     return cursor;
 }
 
-QTestLiteScreen * QTestLiteCursor::testLiteScreen() const
+QXlibScreen * QXlibCursor::testLiteScreen() const
 {
-    return static_cast<QTestLiteScreen *>(screen);
+    return static_cast<QXlibScreen *>(screen);
 }
 
 QT_END_NAMESPACE

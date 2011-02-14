@@ -188,7 +188,7 @@ qDebug() << "qt_x_errhandler" << err->error_code;
     return 0;
 }
 
-QTestLiteScreen::QTestLiteScreen()
+QXlibScreen::QXlibScreen()
         : mFormat(QImage::Format_RGB32)
 {
     char *display_name = getenv("DISPLAY");
@@ -228,11 +228,11 @@ QTestLiteScreen::QTestLiteScreen()
     QSocketNotifier *sock = new QSocketNotifier(xSocketNumber, QSocketNotifier::Read, this);
     connect(sock, SIGNAL(activated(int)), this, SLOT(eventDispatcher()));
 
-    mCursor = new QTestLiteCursor(this);
-    mKeyboard = new QTestLiteKeyboard(this);
+    mCursor = new QXlibCursor(this);
+    mKeyboard = new QXlibKeyboard(this);
 }
 
-QTestLiteScreen::~QTestLiteScreen()
+QXlibScreen::~QXlibScreen()
 {
     delete mCursor;
     XCloseDisplay(mDisplay);
@@ -245,17 +245,17 @@ QTestLiteScreen::~QTestLiteScreen()
 #undef KeyRelease
 #endif
 
-bool QTestLiteScreen::handleEvent(XEvent *xe)
+bool QXlibScreen::handleEvent(XEvent *xe)
 {
     int quit = false;
-    QTestLiteWindow *platformWindow = 0;
+    QXlibWindow *platformWindow = 0;
     QWidget *widget = QWidget::find(xe->xany.window);
     if (widget) {
-        platformWindow = static_cast<QTestLiteWindow *>(widget->platformWindow());
+        platformWindow = static_cast<QXlibWindow *>(widget->platformWindow());
     }
 
-    Atom wmProtocolsAtom = QTestLiteStatic::atom(QTestLiteStatic::WM_PROTOCOLS);
-    Atom wmDeleteWindowAtom = QTestLiteStatic::atom(QTestLiteStatic::WM_DELETE_WINDOW);
+    Atom wmProtocolsAtom = QXlibStatic::atom(QXlibStatic::WM_PROTOCOLS);
+    Atom wmDeleteWindowAtom = QXlibStatic::atom(QXlibStatic::WM_DELETE_WINDOW);
     switch (xe->type) {
 
     case ClientMessage:
@@ -346,14 +346,14 @@ bool QTestLiteScreen::handleEvent(XEvent *xe)
 
 static Bool checkForClipboardEvents(Display *, XEvent *e, XPointer)
 {
-    Atom clipboard = QTestLiteStatic::atom(QTestLiteStatic::CLIPBOARD);
+    Atom clipboard = QXlibStatic::atom(QXlibStatic::CLIPBOARD);
     return ((e->type == SelectionRequest && (e->xselectionrequest.selection == XA_PRIMARY
                                              || e->xselectionrequest.selection == clipboard))
             || (e->type == SelectionClear && (e->xselectionclear.selection == XA_PRIMARY
                                               || e->xselectionclear.selection == clipboard)));
 }
 
-bool QTestLiteScreen::waitForClipboardEvent(Window win, int type, XEvent *event, int timeout)
+bool QXlibScreen::waitForClipboardEvent(Window win, int type, XEvent *event, int timeout)
 {
     QElapsedTimer timer;
     timer.start();
@@ -377,7 +377,7 @@ bool QTestLiteScreen::waitForClipboardEvent(Window win, int type, XEvent *event,
     return false;
 }
 
-void QTestLiteScreen::eventDispatcher()
+void QXlibScreen::eventDispatcher()
 {
         ulong marker = XNextRequest(mDisplay);
     //    int i = 0;
@@ -402,7 +402,7 @@ void QTestLiteScreen::eventDispatcher()
         }
 }
 
-QImage QTestLiteScreen::grabWindow(Window window, int x, int y, int w, int h)
+QImage QXlibScreen::grabWindow(Window window, int x, int y, int w, int h)
 {
     if (w == 0 || h ==0)
         return QImage();
@@ -437,31 +437,31 @@ QImage QTestLiteScreen::grabWindow(Window window, int x, int y, int w, int h)
     return result;
 }
 
-QTestLiteScreen * QTestLiteScreen::testLiteScreenForWidget(QWidget *widget)
+QXlibScreen * QXlibScreen::testLiteScreenForWidget(QWidget *widget)
 {
     QPlatformScreen *platformScreen = platformScreenForWidget(widget);
-    return static_cast<QTestLiteScreen *>(platformScreen);
+    return static_cast<QXlibScreen *>(platformScreen);
 }
 
-Display * QTestLiteScreen::display() const
+Display * QXlibScreen::display() const
 {
     return mDisplay;
 }
 
-int QTestLiteScreen::xScreenNumber() const
+int QXlibScreen::xScreenNumber() const
 {
     return mScreen;
 }
 
-QTestLiteKeyboard * QTestLiteScreen::keyboard() const
+QXlibKeyboard * QXlibScreen::keyboard() const
 {
     return mKeyboard;
 }
 
-void QTestLiteScreen::handleSelectionRequest(XEvent *event)
+void QXlibScreen::handleSelectionRequest(XEvent *event)
 {
     QPlatformIntegration *integration = QApplicationPrivate::platformIntegration();
-    QTestLiteClipboard *clipboard = static_cast<QTestLiteClipboard *>(integration->clipboard());
+    QXlibClipboard *clipboard = static_cast<QXlibClipboard *>(integration->clipboard());
     clipboard->handleSelectionRequest(event);
 }
 

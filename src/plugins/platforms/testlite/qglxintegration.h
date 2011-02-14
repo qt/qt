@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 class QGLXContext : public QPlatformGLContext
 {
 public:
-    QGLXContext(Window window, QTestLiteScreen *xd, const QPlatformWindowFormat &format);
+    QGLXContext(Window window, QXlibScreen *xd, const QPlatformWindowFormat &format);
     ~QGLXContext();
 
     virtual void makeCurrent();
@@ -69,22 +69,22 @@ public:
 
     QPlatformWindowFormat platformWindowFormat() const;
 
-    static XVisualInfo *findVisualInfo(const QTestLiteScreen *xd, const QPlatformWindowFormat &format);
+    static XVisualInfo *findVisualInfo(const QXlibScreen *xd, const QPlatformWindowFormat &format);
 private:
-    static GLXFBConfig findConfig(const QTestLiteScreen *xd,const QPlatformWindowFormat &format);
+    static GLXFBConfig findConfig(const QXlibScreen *xd,const QPlatformWindowFormat &format);
     static QVector<int> buildSpec(const QPlatformWindowFormat &format);
     static QPlatformWindowFormat platformWindowFromGLXFBConfig(Display *display, GLXFBConfig config, GLXContext context);
     static QPlatformWindowFormat reducePlatformWindowFormat(const QPlatformWindowFormat &format, bool *reduced);
 
 
-    QTestLiteScreen  *m_screen;
+    QXlibScreen  *m_screen;
     Drawable    m_drawable;
     GLXContext  m_context;
     QPlatformWindowFormat m_windowFormat;
 
-    QGLXContext (QTestLiteScreen *screen, Drawable drawable, GLXContext context);
+    QGLXContext (QXlibScreen *screen, Drawable drawable, GLXContext context);
     static QMutex m_defaultSharedContextMutex;
-    static void createDefaultSharedContex(QTestLiteScreen *xd);
+    static void createDefaultSharedContex(QXlibScreen *xd);
 };
 
 QT_END_NAMESPACE

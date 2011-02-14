@@ -231,7 +231,7 @@ enum {
 #endif
 
 
-class QTestLiteStatic
+class QXlibStatic
 {
 public:
     enum X11Atom {

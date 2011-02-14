@@ -49,11 +49,11 @@
 #include "qtestliteintegration.h"
 #include "qtestliteclipboard.h"
 
-class QTestLiteMime : public QInternalMimeData {
+class QXlibMime : public QInternalMimeData {
     Q_OBJECT
 public:
-    QTestLiteMime();
-    ~QTestLiteMime();
+    QXlibMime();
+    ~QXlibMime();
 
     static QList<Atom> mimeAtomsForFormat(Display *display, const QString &format);
     static QString mimeAtomToString(Display *display, Atom a);

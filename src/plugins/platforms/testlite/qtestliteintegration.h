@@ -52,12 +52,12 @@
 
 QT_BEGIN_NAMESPACE
 
-class QTestLiteScreen;
+class QXlibScreen;
 
-class QTestLiteIntegration : public QPlatformIntegration
+class QXlibIntegration : public QPlatformIntegration
 {
 public:
-    QTestLiteIntegration(bool useOpenGL = false);
+    QXlibIntegration(bool useOpenGL = false);
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
@@ -74,7 +74,7 @@ public:
 
 private:
     bool mUseOpenGL;
-    QTestLiteScreen *mPrimaryScreen;
+    QXlibScreen *mPrimaryScreen;
     QList<QPlatformScreen *> mScreens;
     QPlatformFontDatabase *mFontDb;
     QPlatformClipboard *mClipboard;

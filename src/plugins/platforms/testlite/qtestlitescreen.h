@@ -47,16 +47,16 @@
 
 QT_BEGIN_NAMESPACE
 
-class QTestLiteCursor;
-class QTestLiteKeyboard;
+class QXlibCursor;
+class QXlibKeyboard;
 
-class QTestLiteScreen : public QPlatformScreen
+class QXlibScreen : public QPlatformScreen
 {
     Q_OBJECT
 public:
-    QTestLiteScreen();
+    QXlibScreen();
 
-    ~QTestLiteScreen();
+    ~QXlibScreen();
 
     QString displayName() const { return mDisplayName; }
 
@@ -74,12 +74,12 @@ public:
 
     QImage grabWindow(Window window, int x, int y, int w, int h);
 
-    static QTestLiteScreen *testLiteScreenForWidget(QWidget *widget);
+    static QXlibScreen *testLiteScreenForWidget(QWidget *widget);
 
     Display *display() const;
     int xScreenNumber() const;
 
-    QTestLiteKeyboard *keyboard() const;
+    QXlibKeyboard *keyboard() const;
 
 public slots:
     void eventDispatcher();
@@ -92,8 +92,8 @@ private:
     QSize mPhysicalSize;
     int mDepth;
     QImage::Format mFormat;
-    QTestLiteCursor *mCursor;
-    QTestLiteKeyboard *mKeyboard;
+    QXlibCursor *mCursor;
+    QXlibKeyboard *mKeyboard;
 
     Display * mDisplay;
     int mScreen;

@@ -113,7 +113,7 @@ QVector<int> QGLXContext::buildSpec(const QPlatformWindowFormat &format)
     return spec;
 }
 
-GLXFBConfig QGLXContext::findConfig(const QTestLiteScreen *screen, const QPlatformWindowFormat &format)
+GLXFBConfig QGLXContext::findConfig(const QXlibScreen *screen, const QPlatformWindowFormat &format)
 {
     bool reduced = true;
     GLXFBConfig chosenConfig = 0;
@@ -149,7 +149,7 @@ GLXFBConfig QGLXContext::findConfig(const QTestLiteScreen *screen, const QPlatfo
     return chosenConfig;
 }
 
-XVisualInfo *QGLXContext::findVisualInfo(const QTestLiteScreen *screen, const QPlatformWindowFormat &format)
+XVisualInfo *QGLXContext::findVisualInfo(const QXlibScreen *screen, const QPlatformWindowFormat &format)
 {
     GLXFBConfig config = QGLXContext::findConfig(screen,format);
     XVisualInfo *visualInfo = glXGetVisualFromFBConfig(screen->display(),config);
@@ -237,7 +237,7 @@ QPlatformWindowFormat QGLXContext::reducePlatformWindowFormat(const QPlatformWin
     return retFormat;
 }
 
-QGLXContext::QGLXContext(Window window, QTestLiteScreen *screen, const QPlatformWindowFormat &format)
+QGLXContext::QGLXContext(Window window, QXlibScreen *screen, const QPlatformWindowFormat &format)
     : QPlatformGLContext()
     , m_screen(screen)
     , m_drawable((Drawable)window)
@@ -272,7 +272,7 @@ QGLXContext::QGLXContext(Window window, QTestLiteScreen *screen, const QPlatform
 #endif
 }
 
-QGLXContext::QGLXContext(QTestLiteScreen *screen, Drawable drawable, GLXContext context)
+QGLXContext::QGLXContext(QXlibScreen *screen, Drawable drawable, GLXContext context)
     : QPlatformGLContext(), m_screen(screen), m_drawable(drawable), m_context(context)
 {
 
@@ -286,7 +286,7 @@ QGLXContext::~QGLXContext()
     }
 }
 
-void QGLXContext::createDefaultSharedContex(QTestLiteScreen *screen)
+void QGLXContext::createDefaultSharedContex(QXlibScreen *screen)
 {
     int x = 0;
     int y = 0;

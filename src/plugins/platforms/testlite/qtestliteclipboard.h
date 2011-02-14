@@ -45,18 +45,18 @@
 #include <QPlatformClipboard>
 #include "qtestlitestaticinfo.h"
 
-class QTestLiteScreen;
-class QTestLiteClipboard : public QPlatformClipboard
+class QXlibScreen;
+class QXlibClipboard : public QPlatformClipboard
 {
 public:
-    QTestLiteClipboard(QTestLiteScreen *screen);
+    QXlibClipboard(QXlibScreen *screen);
 
     const QMimeData *mimeData(QClipboard::Mode mode) const;
     void setMimeData(QMimeData *data, QClipboard::Mode mode);
 
     bool supportsMode(QClipboard::Mode mode) const;
 
-    QTestLiteScreen *screen() const;
+    QXlibScreen *screen() const;
 
     Window requestor() const;
     void setRequestor(Window window);
@@ -76,7 +76,7 @@ private:
     Atom sendTargetsSelection(QMimeData *d, Window window, Atom property);
     Atom sendSelection(QMimeData *d, Atom target, Window window, Atom property);
 
-    QTestLiteScreen *m_screen;
+    QXlibScreen *m_screen;
 
     QMimeData *m_xClipboard;
     QMimeData *m_clientClipboard;

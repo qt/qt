@@ -261,7 +261,7 @@ public:
         , xfixes_eventbase(0)
         , xfixes_errorbase(0)
     {
-        QTestLiteScreen *screen = qobject_cast<QTestLiteScreen *> (QApplicationPrivate::platformIntegration()->screens().at(0));
+        QXlibScreen *screen = qobject_cast<QXlibScreen *> (QApplicationPrivate::platformIntegration()->screens().at(0));
         Q_ASSERT(screen);
 
         initializeAllAtoms(screen);
@@ -287,7 +287,7 @@ public:
         return supported;
     }
 
-    Atom atom(QTestLiteStatic::X11Atom atom)
+    Atom atom(QXlibStatic::X11Atom atom)
     {
         return m_allAtoms[atom];
     }
@@ -351,8 +351,8 @@ public:
 
 private:
 
-    void initializeAllAtoms(QTestLiteScreen *screen) {
-        const char *names[QTestLiteStatic::NAtoms];
+    void initializeAllAtoms(QXlibScreen *screen) {
+        const char *names[QXlibStatic::NAtoms];
         const char *ptr = x11_atomnames;
 
         int i = 0;
@@ -363,22 +363,22 @@ private:
             ++ptr;
         }
 
-        Q_ASSERT(i == QTestLiteStatic::NPredefinedAtoms);
+        Q_ASSERT(i == QXlibStatic::NPredefinedAtoms);
 
         QByteArray settings_atom_name("_QT_SETTINGS_TIMESTAMP_");
         settings_atom_name += XDisplayName(qPrintable(screen->displayName()));
         names[i++] = settings_atom_name;
 
-        Q_ASSERT(i == QTestLiteStatic::NAtoms);
+        Q_ASSERT(i == QXlibStatic::NAtoms);
     #if 0//defined(XlibSpecificationRelease) && (XlibSpecificationRelease >= 6)
         XInternAtoms(screen->display(), (char **)names, i, False, m_allAtoms);
     #else
-        for (i = 0; i < QTestLiteStatic::NAtoms; ++i)
+        for (i = 0; i < QXlibStatic::NAtoms; ++i)
             m_allAtoms[i] = XInternAtom(screen->display(), (char *)names[i], False);
     #endif
     }
 
-    void initializeSupportedAtoms(QTestLiteScreen *screen)
+    void initializeSupportedAtoms(QXlibScreen *screen)
     {
         Atom type;
         int format;
@@ -387,7 +387,7 @@ private:
         unsigned char *data = 0;
 
         int e = XGetWindowProperty(screen->display(), screen->rootWindow(),
-                                   this->atom(QTestLiteStatic::_NET_SUPPORTED), 0, 0,
+                                   this->atom(QXlibStatic::_NET_SUPPORTED), 0, 0,
                                    False, XA_ATOM, &type, &format, &nitems, &after, &data);
         if (data)
             XFree(data);
@@ -398,7 +398,7 @@ private:
 
             while (after > 0) {
                 XGetWindowProperty(screen->display(), screen->rootWindow(),
-                                   this->atom(QTestLiteStatic::_NET_SUPPORTED), offset, 1024,
+                                   this->atom(QXlibStatic::_NET_SUPPORTED), offset, 1024,
                                    False, XA_ATOM, &type, &format, &nitems, &after, &data);
 
                 if (type == XA_ATOM && format == 32) {
@@ -423,7 +423,7 @@ private:
         }
     }
 
-    void resolveXFixes(QTestLiteScreen *screen)
+    void resolveXFixes(QXlibScreen *screen)
     {
 #ifndef QT_NO_XFIXES
         // See if Xfixes is supported on the connected display
@@ -456,7 +456,7 @@ private:
     }
 
     Atom *m_supportedAtoms;
-    Atom m_allAtoms[QTestLiteStatic::NAtoms];
+    Atom m_allAtoms[QXlibStatic::NAtoms];
 
 #ifndef QT_NO_XFIXES
     PtrXFixesQueryExtension ptrXFixesQueryExtension;
@@ -474,28 +474,28 @@ private:
 Q_GLOBAL_STATIC(QTestLiteStaticInfoPrivate, qTestLiteStaticInfoPrivate);
 
 
-Atom QTestLiteStatic::atom(QTestLiteStatic::X11Atom atom)
+Atom QXlibStatic::atom(QXlibStatic::X11Atom atom)
 {
     return qTestLiteStaticInfoPrivate()->atom(atom);
 }
 
-bool QTestLiteStatic::isSupportedByWM(Atom atom)
+bool QXlibStatic::isSupportedByWM(Atom atom)
 {
     return qTestLiteStaticInfoPrivate()->isSupportedByWM(atom);
 }
 
-bool QTestLiteStatic::useXFixes()
+bool QXlibStatic::useXFixes()
 {
     return qTestLiteStaticInfoPrivate()->useXFixes();
 }
 
-int QTestLiteStatic::xFixesEventBase()
+int QXlibStatic::xFixesEventBase()
 {
     return qTestLiteStaticInfoPrivate()->xFixesEventBase();
 }
 
 #ifndef QT_NO_XFIXES
-PtrXFixesSelectSelectionInput QTestLiteStatic::xFixesSelectSelectionInput()
+PtrXFixesSelectSelectionInput QXlibStatic::xFixesSelectSelectionInput()
 {
     qDebug() << qTestLiteStaticInfoPrivate()->useXFixes();
     if (!qTestLiteStaticInfoPrivate()->useXFixes())
@@ -504,7 +504,7 @@ PtrXFixesSelectSelectionInput QTestLiteStatic::xFixesSelectSelectionInput()
     return qTestLiteStaticInfoPrivate()->xFixesSelectSelectionInput();
 }
 
-QImage QTestLiteStatic::qimageFromXImage(XImage *xi)
+QImage QXlibStatic::qimageFromXImage(XImage *xi)
 {
     return qTestLiteStaticInfoPrivate()->qimageFromXImage(xi);
 }

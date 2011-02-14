@@ -50,7 +50,7 @@
 #include <QObject>
 #include <QImage>
 
-struct QtMWMHints {
+struct QXlibMWMHints {
     ulong flags, functions, decorations;
     long input_mode;
     ulong status;
@@ -83,11 +83,11 @@ enum {
     MWM_INPUT_FULL_APPLICATION_MODAL    = 3L
 };
 
-class QTestLiteWindow : public QPlatformWindow
+class QXlibWindow : public QPlatformWindow
 {
 public:
-    QTestLiteWindow(QWidget *window);
-    ~QTestLiteWindow();
+    QXlibWindow(QWidget *window);
+    ~QXlibWindow();
 
 
     void mousePressEvent(XButtonEvent*);
@@ -124,8 +124,8 @@ public:
 
 protected:
     QVector<Atom> getNetWmState() const;
-    void setMWMHints(const QtMWMHints &mwmhints);
-    QtMWMHints getMWMHints() const;
+    void setMWMHints(const QXlibMWMHints &mwmhints);
+    QXlibMWMHints getMWMHints() const;
 
     void doSizeHints();
 
@@ -138,7 +138,7 @@ private:
     GC createGC();
 
     QPlatformGLContext *mGLContext;
-    QTestLiteScreen *mScreen;
+    QXlibScreen *mScreen;
     Qt::WindowFlags mWindowFlags;
 };
 

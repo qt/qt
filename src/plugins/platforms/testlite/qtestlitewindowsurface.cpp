@@ -55,9 +55,9 @@
 QT_BEGIN_NAMESPACE
 
 
-struct MyShmImageInfo {
-    MyShmImageInfo(Display *xdisplay) :  image(0), display(xdisplay) {}
-    ~MyShmImageInfo() { destroy(); }
+struct QXlibShmImageInfo {
+    QXlibShmImageInfo(Display *xdisplay) :  image(0), display(xdisplay) {}
+    ~QXlibShmImageInfo() { destroy(); }
 
     void destroy();
 
@@ -68,7 +68,7 @@ struct MyShmImageInfo {
 
 
 #ifndef DONT_USE_MIT_SHM
-void MyShmImageInfo::destroy()
+void QXlibShmImageInfo::destroy()
 {
     XShmDetach (display, &shminfo);
     XDestroyImage (image);
@@ -77,18 +77,18 @@ void MyShmImageInfo::destroy()
 }
 #endif
 
-void QTestLiteWindowSurface::resizeShmImage(int width, int height)
+void QXlibWindowSurface::resizeShmImage(int width, int height)
 {
 
 #ifdef DONT_USE_MIT_SHM
     shm_img = QImage(width, height, QImage::Format_RGB32);
 #else
 
-    QTestLiteScreen *screen = QTestLiteScreen::testLiteScreenForWidget(window());
+    QXlibScreen *screen = QXlibScreen::testLiteScreenForWidget(window());
     if (image_info)
         image_info->destroy();
     else
-        image_info = new MyShmImageInfo(screen->display());
+        image_info = new QXlibShmImageInfo(screen->display());
 
     Visual *visual = DefaultVisual(screen->display(), screen->xScreenNumber());
 
@@ -115,37 +115,37 @@ void QTestLiteWindowSurface::resizeShmImage(int width, int height)
 }
 
 
-void QTestLiteWindowSurface::resizeBuffer(QSize s)
+void QXlibWindowSurface::resizeBuffer(QSize s)
 {
     if (shm_img.size() != s)
         resizeShmImage(s.width(), s.height());
 }
 
-QSize QTestLiteWindowSurface::bufferSize() const
+QSize QXlibWindowSurface::bufferSize() const
 {
     return shm_img.size();
 }
 
-QTestLiteWindowSurface::QTestLiteWindowSurface (QWidget *window)
+QXlibWindowSurface::QXlibWindowSurface (QWidget *window)
     : QWindowSurface(window),
       painted(false), image_info(0)
 {
-    xw = static_cast<QTestLiteWindow*>(window->platformWindow());
+    xw = static_cast<QXlibWindow*>(window->platformWindow());
 //    qDebug() << "QTestLiteWindowSurface::QTestLiteWindowSurface:" << xw->window;
 }
 
-QTestLiteWindowSurface::~QTestLiteWindowSurface()
+QXlibWindowSurface::~QXlibWindowSurface()
 {
     delete image_info;
 }
 
-QPaintDevice *QTestLiteWindowSurface::paintDevice()
+QPaintDevice *QXlibWindowSurface::paintDevice()
 {
     return &shm_img;
 }
 
 
-void QTestLiteWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
+void QXlibWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(widget);
     Q_UNUSED(region);
@@ -154,7 +154,7 @@ void QTestLiteWindowSurface::flush(QWidget *widget, const QRegion &region, const
     if (!painted)
         return;
 
-    QTestLiteScreen *screen = QTestLiteScreen::testLiteScreenForWidget(widget);
+    QXlibScreen *screen = QXlibScreen::testLiteScreenForWidget(widget);
     GC gc = xw->graphicsContext();
     Window window = xw->xWindow();
 #ifdef DONT_USE_MIT_SHM
@@ -197,7 +197,7 @@ void QTestLiteWindowSurface::flush(QWidget *widget, const QRegion &region, const
 // from qwindowsurface.cpp
 extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
 
-bool QTestLiteWindowSurface::scroll(const QRegion &area, int dx, int dy)
+bool QXlibWindowSurface::scroll(const QRegion &area, int dx, int dy)
 {
     if (shm_img.isNull())
         return false;
@@ -210,13 +210,13 @@ bool QTestLiteWindowSurface::scroll(const QRegion &area, int dx, int dy)
 }
 
 
-void QTestLiteWindowSurface::beginPaint(const QRegion &region)
+void QXlibWindowSurface::beginPaint(const QRegion &region)
 {
     Q_UNUSED(region);
     resizeBuffer(size());
 }
 
-void QTestLiteWindowSurface::endPaint(const QRegion &region)
+void QXlibWindowSurface::endPaint(const QRegion &region)
 {
     Q_UNUSED(region);
     painted = true; //there is content in the buffer

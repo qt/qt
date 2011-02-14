@@ -740,7 +740,7 @@ static QChar keysymToUnicode(unsigned char byte3, unsigned char byte4)
     return QChar(0x0);
 }
 
-Qt::KeyboardModifiers QTestLiteKeyboard::translateModifiers(int s)
+Qt::KeyboardModifiers QXlibKeyboard::translateModifiers(int s)
 {
     Qt::KeyboardModifiers ret = 0;
     if (s & ShiftMask)
@@ -756,7 +756,7 @@ Qt::KeyboardModifiers QTestLiteKeyboard::translateModifiers(int s)
     return ret;
 }
 
-void QTestLiteKeyboard::setMask(KeySym sym, uint mask)
+void QXlibKeyboard::setMask(KeySym sym, uint mask)
 {
         if (m_alt_mask == 0
             && m_meta_mask != mask
@@ -800,7 +800,7 @@ void QTestLiteKeyboard::setMask(KeySym sym, uint mask)
         }
 }
 
-int QTestLiteKeyboard::translateKeySym(uint key) const
+int QXlibKeyboard::translateKeySym(uint key) const
 {
     int code = -1;
     int i = 0;                                // any other keys
@@ -822,7 +822,7 @@ int QTestLiteKeyboard::translateKeySym(uint key) const
     return code;
 }
 
-QString QTestLiteKeyboard::translateKeySym(KeySym keysym, uint xmodifiers,
+QString QXlibKeyboard::translateKeySym(KeySym keysym, uint xmodifiers,
                                int &code, Qt::KeyboardModifiers &modifiers,
                                QByteArray &chars, int &count)
 {
@@ -939,7 +939,7 @@ QString QTestLiteKeyboard::translateKeySym(KeySym keysym, uint xmodifiers,
     return text;
 }
 
-QTestLiteKeyboard::QTestLiteKeyboard(QTestLiteScreen *screen)
+QXlibKeyboard::QXlibKeyboard(QXlibScreen *screen)
     : m_screen(screen)
     , m_alt_mask(0)
     , m_super_mask(0)
@@ -949,7 +949,7 @@ QTestLiteKeyboard::QTestLiteKeyboard(QTestLiteScreen *screen)
     changeLayout();
 }
 
-void QTestLiteKeyboard::changeLayout()
+void QXlibKeyboard::changeLayout()
 {
     XkbDescPtr xkbDesc = XkbGetMap(m_screen->display(), XkbAllClientInfoMask, XkbUseCoreKbd);
     for (int i = xkbDesc->min_key_code; i < xkbDesc->max_key_code; ++i) {
@@ -986,7 +986,7 @@ static Qt::KeyboardModifiers modifierFromKeyCode(int qtcode)
     }
 }
 
-void QTestLiteKeyboard::handleKeyEvent(QWidget *widget, QEvent::Type type, XKeyEvent *ev)
+void QXlibKeyboard::handleKeyEvent(QWidget *widget, QEvent::Type type, XKeyEvent *ev)
 {
     int qtcode = 0;
     Qt::KeyboardModifiers modifiers = translateModifiers(ev->state);

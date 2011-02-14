@@ -44,36 +44,36 @@
 
 QT_BEGIN_NAMESPACE
 
-class QTestLiteIntegrationPlugin : public QPlatformIntegrationPlugin
+class QXlibIntegrationPlugin : public QPlatformIntegrationPlugin
 {
 public:
     QStringList keys() const;
     QPlatformIntegration *create(const QString&, const QStringList&);
 };
 
-QStringList QTestLiteIntegrationPlugin::keys() const
+QStringList QXlibIntegrationPlugin::keys() const
 {
     QStringList list;
-    list << "TestLite";
+    list << "Xlib";
 #ifndef QT_NO_OPENGL
-    list << "TestLiteGL";
+    list << "XlibGL";
 #endif
     return list;
 }
 
-QPlatformIntegration* QTestLiteIntegrationPlugin::create(const QString& system, const QStringList& paramList)
+QPlatformIntegration* QXlibIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
-    if (system.toLower() == "testlite")
-        return new QTestLiteIntegration;
+    if (system.toLower() == "xlib")
+        return new QXlibIntegration;
 #ifndef QT_NO_OPENGL
-    if (system.toLower() == "testlitegl")
-        return new QTestLiteIntegration(true);
+    if (system.toLower() == "xlibgl")
+        return new QXlibIntegration(true);
 #endif
 
     return 0;
 }
 
-Q_EXPORT_PLUGIN2(testlite, QTestLiteIntegrationPlugin)
+Q_EXPORT_PLUGIN2(xlib, QXlibIntegrationPlugin)
 
 QT_END_NAMESPACE
