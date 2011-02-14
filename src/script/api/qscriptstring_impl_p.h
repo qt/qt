@@ -41,6 +41,7 @@
 #include <QtCore/qnumeric.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qhash.h>
+#include "qscriptisolate_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -58,6 +59,7 @@ QScriptStringPrivate::QScriptStringPrivate(QScriptEnginePrivate *engine, v8::Han
 QScriptStringPrivate::~QScriptStringPrivate()
 {
     if (isValid()) {
+        QScriptIsolate api(m_engine);
         m_engine->unregisterString(this);
         m_string.Dispose();
     }

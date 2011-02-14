@@ -404,6 +404,7 @@ void QScriptValueIterator::toBack()
 */
 QString QScriptValueIterator::name() const
 {
+    QScriptIsolate api(d_ptr->engine());
     return d_ptr->name();
 }
 
@@ -413,6 +414,7 @@ QString QScriptValueIterator::name() const
 */
 QScriptString QScriptValueIterator::scriptName() const
 {
+    QScriptIsolate api(d_ptr->engine());
     return QScriptStringPrivate::get(d_ptr->scriptName());
 }
 

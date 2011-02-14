@@ -50,7 +50,7 @@ public:
         init();
     }
     inline QScriptIsolate(const QScriptSharedDataPointer<QScriptEnginePrivate>& engine, const OperationMode mode = Default)
-        : m_engine(engine)
+        : m_engine(engine.data())
         , m_mode(mode)
     {
         init();
