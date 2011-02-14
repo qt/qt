@@ -75,6 +75,10 @@ public:
 public slots:
     void init();
     void cleanup();
+
+    void initTestCase();
+    void cleanupTestCase();
+
 private slots:
     void construction();
     void fileTemplate();
@@ -97,8 +101,23 @@ private slots:
     void setTemplateAfterOpen();
     void autoRemoveAfterFailedRename();
 
+    void QTBUG_4796_data();
+    void QTBUG_4796();
+
 public:
 };
+
+void tst_QTemporaryFile::initTestCase()
+{
+    // For QTBUG_4796
+    QVERIFY(QDir("test-XXXXXX").exists() || QDir().mkdir("test-XXXXXX"));
+}
+
+void tst_QTemporaryFile::cleanupTestCase()
+{
+    // From QTBUG_4796
+    QVERIFY(QDir().rmdir("test-XXXXXX"));
+}
 
 void tst_QTemporaryFile::construction()
 {
@@ -588,6 +607,109 @@ void tst_QTemporaryFile::autoRemoveAfterFailedRename()
     }
 
     QVERIFY( !QFile::exists(cleaner.tempName) );
+    cleaner.reset();
+}
+
+void tst_QTemporaryFile::QTBUG_4796_data()
+{
+    QTest::addColumn<QString>("prefix");
+    QTest::addColumn<QString>("suffix");
+    QTest::addColumn<bool>("openResult");
+
+    QString unicode = QString::fromUtf8("\xc3\xa5\xc3\xa6\xc3\xb8");
+
+    QTest::newRow("<empty>") << QString() << QString() << true;
+    QTest::newRow("blaXXXXXX") << QString("bla") << QString() << true;
+    QTest::newRow("XXXXXXbla") << QString() << QString("bla") << true;
+    QTest::newRow("does-not-exist/qt_temp.XXXXXX") << QString("does-not-exist/qt_temp") << QString() << false;
+    QTest::newRow("XXXXXX<unicode>") << QString() << unicode << true;
+    QTest::newRow("<unicode>XXXXXX") << unicode << QString() << true;
+    QTest::newRow("<unicode>XXXXXX<unicode>") << unicode << unicode << true;
+}
+
+void tst_QTemporaryFile::QTBUG_4796()
+{
+    QVERIFY(QDir("test-XXXXXX").exists());
+
+    struct CleanOnReturn
+    {
+        ~CleanOnReturn()
+        {
+            Q_FOREACH(QString tempName, tempNames)
+                QFile::remove(tempName);
+        }
+
+        void reset()
+        {
+            tempNames.clear();
+        }
+
+        QStringList tempNames;
+    };
+
+    CleanOnReturn cleaner;
+
+    QFETCH(QString, prefix);
+    QFETCH(QString, suffix);
+    QFETCH(bool, openResult);
+
+    {
+        QString fileTemplate1 = prefix + QString("XX") + suffix;
+        QString fileTemplate2 = prefix + QString("XXXX") + suffix;
+        QString fileTemplate3 = prefix + QString("XXXXXX") + suffix;
+        QString fileTemplate4 = prefix + QString("XXXXXXXX") + suffix;
+
+        QTemporaryFile file1(fileTemplate1);
+        QTemporaryFile file2(fileTemplate2);
+        QTemporaryFile file3(fileTemplate3);
+        QTemporaryFile file4(fileTemplate4);
+        QTemporaryFile file5("test-XXXXXX/" + fileTemplate1);
+        QTemporaryFile file6("test-XXXXXX/" + fileTemplate3);
+
+        QCOMPARE(file1.open(), openResult);
+        QCOMPARE(file2.open(), openResult);
+        QCOMPARE(file3.open(), openResult);
+        QCOMPARE(file4.open(), openResult);
+        QCOMPARE(file5.open(), openResult);
+        QCOMPARE(file6.open(), openResult);
+
+        QCOMPARE(file1.exists(), openResult);
+        QCOMPARE(file2.exists(), openResult);
+        QCOMPARE(file3.exists(), openResult);
+        QCOMPARE(file4.exists(), openResult);
+        QCOMPARE(file5.exists(), openResult);
+        QCOMPARE(file6.exists(), openResult);
+
+        // make sure the file exists under the *correct* name
+        if (openResult) {
+            cleaner.tempNames << file1.fileName()
+                << file2.fileName()
+                << file3.fileName()
+                << file4.fileName()
+                << file5.fileName()
+                << file6.fileName();
+
+            QVERIFY(file1.fileName().startsWith(fileTemplate1 + QLatin1Char('.')));
+            QVERIFY(file2.fileName().startsWith(fileTemplate2 + QLatin1Char('.')));
+            QVERIFY(file5.fileName().startsWith("test-XXXXXX/" + fileTemplate1 + QLatin1Char('.')));
+            QVERIFY(file6.fileName().startsWith("test-XXXXXX/" + prefix));
+
+            if (!prefix.isEmpty()) {
+                QVERIFY(file3.fileName().startsWith(prefix));
+                QVERIFY(file4.fileName().startsWith(prefix));
+            }
+
+            if (!suffix.isEmpty()) {
+                QVERIFY(file3.fileName().endsWith(suffix));
+                QVERIFY(file4.fileName().endsWith(suffix));
+                QVERIFY(file6.fileName().endsWith(suffix));
+            }
+        }
+    }
+
+    Q_FOREACH(QString const &tempName, cleaner.tempNames)
+        QVERIFY( !QFile::exists(tempName) );
+
     cleaner.reset();
 }
 
