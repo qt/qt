@@ -581,19 +581,11 @@ static int qCocoaViewCount = 0;
 
             } else {
 
-                QUnifiedToolbarSurface *unifiedSurface = dynamic_cast<QUnifiedToolbarSurface *>(qwidgetprivate->unifiedSurface);
+                QUnifiedToolbarSurface *unifiedSurface = qwidgetprivate->unifiedSurface;
                 if (!unifiedSurface || !qwidgetprivate->flushRequested) {
                     qt_mac_release_graphics_context(context);
                     return;
                 }
-
-                // We render the content of the toolbar in the surface.
-                unifiedSurface->updateToolbarOffset(qwidget);
-                QRect beginPaintRect(qwidgetprivate->toolbar_offset.x(), qwidgetprivate->toolbar_offset.y(), qwidget->geometry().width(), qwidget->geometry().height());
-                QRegion beginPaintRegion(beginPaintRect);
-
-                unifiedSurface->beginPaint(beginPaintRegion);
-                qwidget->render(unifiedSurface->paintDevice(), qwidgetprivate->toolbar_offset, QRegion(), QWidget::DrawChildren);
 
                 int areaX = qwidgetprivate->toolbar_offset.x();
                 int areaY = qwidgetprivate->toolbar_offset.y();

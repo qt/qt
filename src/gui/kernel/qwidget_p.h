@@ -79,6 +79,7 @@
 
 #ifdef Q_WS_MAC
 #include <private/qt_mac_p.h>
+#include <private/qunifiedtoolbarsurface_mac_p.h>
 #endif
 
 #if defined(Q_WS_QWS)
@@ -855,8 +856,9 @@ public:
 
     // Unified toolbar variables
     bool isInUnifiedToolbar;
-    QWindowSurface *unifiedSurface;
+    QUnifiedToolbarSurface *unifiedSurface;
     QPoint toolbar_offset;
+    QWidget *toolbar_ancestor;
     bool flushRequested;
 #endif // QT_MAC_USE_COCOA
     void determineWindowClass();

@@ -324,6 +324,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
     hasOwnContext = false;
     isInUnifiedToolbar = false;
     unifiedSurface = 0;
+    toolbar_ancestor = 0;
     flushRequested = false;
 #endif // QT_MAC_USE_COCOA
 #ifdef QWIDGET_EXTRA_DEBUG
@@ -10360,6 +10361,10 @@ void QWidget::repaint(const QRect &rect)
         return;
 
     if (hasBackingStoreSupport()) {
+        if (qt_widget_private(this)->isInUnifiedToolbar) {
+            qt_widget_private(this)->unifiedSurface->renderToolbar(this, true);
+            return;
+        }
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
             tlwExtra->inRepaint = true;
@@ -10389,6 +10394,10 @@ void QWidget::repaint(const QRegion &rgn)
         return;
 
     if (hasBackingStoreSupport()) {
+        if (qt_widget_private(this)->isInUnifiedToolbar) {
+            qt_widget_private(this)->unifiedSurface->renderToolbar(this, true);
+            return;
+        }
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
             tlwExtra->inRepaint = true;
@@ -10446,6 +10455,10 @@ void QWidget::update(const QRect &rect)
     }
 
     if (hasBackingStoreSupport()) {
+        if (qt_widget_private(this)->isInUnifiedToolbar) {
+            qt_widget_private(this)->unifiedSurface->renderToolbar(this);
+            return;
+        }
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
             tlwExtra->backingStore->markDirty(rect, this);
@@ -10470,6 +10483,10 @@ void QWidget::update(const QRegion &rgn)
     }
 
     if (hasBackingStoreSupport()) {
+        if (qt_widget_private(this)->isInUnifiedToolbar) {
+            qt_widget_private(this)->unifiedSurface->renderToolbar(this);
+            return;
+        }
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
             tlwExtra->backingStore->markDirty(rgn, this);

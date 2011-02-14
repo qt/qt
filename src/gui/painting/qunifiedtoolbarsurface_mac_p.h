@@ -86,10 +86,11 @@ public:
 
     QPaintDevice *paintDevice();
     CGContextRef imageContext();
+    void renderToolbar(QWidget *widget, bool forceFlush = false);
 
 private:
     void prepareBuffer(QImage::Format format, QWidget *widget);
-    void recursiveRedirect(QObject *widget, const QPoint &offset);
+    void recursiveRedirect(QObject *widget, QWidget *parent_toolbar, const QPoint &offset);
 
     Q_DECLARE_PRIVATE(QUnifiedToolbarSurface)
     QScopedPointer<QUnifiedToolbarSurfacePrivate> d_ptr;
