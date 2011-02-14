@@ -76,6 +76,9 @@ public:
                             const QString &fileName, int baseLineNumber);
     inline void scriptUnload(int64_t id);
 
+    inline void pushContext();
+    inline void popContext();
+
     inline void attachTo(QScriptEnginePrivate *engine);
     inline QScriptEnginePrivate *engine() const;
 

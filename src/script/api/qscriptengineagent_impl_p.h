@@ -108,6 +108,16 @@ inline void QScriptEngineAgentPrivate::scriptUnload(int64_t id)
     userCallback()->scriptUnload(id);
 }
 
+inline void QScriptEngineAgentPrivate::pushContext()
+{
+    userCallback()->contextPush();
+}
+
+inline void QScriptEngineAgentPrivate::popContext()
+{
+    userCallback()->contextPop();
+}
+
 inline QScriptEngineAgent *QScriptEngineAgentPrivate::userCallback()
 {
     return q_ptr;

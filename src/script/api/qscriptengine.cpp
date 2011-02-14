@@ -830,6 +830,8 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
 
 QScriptContextPrivate *QScriptEnginePrivate::pushContext()
 {
+    if (m_currentAgent)
+        m_currentAgent->pushContext();
     return new QScriptContextPrivate(this, v8::Context::NewFunctionContext());
 }
 
@@ -841,6 +843,8 @@ void QScriptEnginePrivate::popContext()
     } else {
         delete ctx;
     }
+    if (m_currentAgent)
+        m_currentAgent->popContext();
 }
 
 QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch)
