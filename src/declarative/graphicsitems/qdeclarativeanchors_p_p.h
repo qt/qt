@@ -94,7 +94,7 @@ public:
       : componentComplete(true), updatingMe(false), updatingHorizontalAnchor(0),
         updatingVerticalAnchor(0), updatingFill(0), updatingCenterIn(0), item(i), usedAnchors(0), fill(0),
         centerIn(0), leftMargin(0), rightMargin(0), topMargin(0), bottomMargin(0),
-        margins(0), vCenterOffset(0), hCenterOffset(0), baselineOffset(0)
+        margins(0), vCenterOffset(0), hCenterOffset(0), baselineOffset(0), layoutDirection(Qt::LeftToRight)
     {
     }
 
@@ -133,6 +133,7 @@ public:
     bool checkVAnchorValid(QDeclarativeAnchorLine anchor) const;
     bool calcStretch(const QDeclarativeAnchorLine &edge1, const QDeclarativeAnchorLine &edge2, qreal offset1, qreal offset2, QDeclarativeAnchorLine::AnchorLine line, qreal &stretch);
 
+    bool isMirrored() const;
     void updateHorizontalAnchors();
     void updateVerticalAnchors();
     void fillChanged();
@@ -160,6 +161,8 @@ public:
     qreal vCenterOffset;
     qreal hCenterOffset;
     qreal baselineOffset;
+
+    Qt::LayoutDirection layoutDirection;
 };
 
 QT_END_NAMESPACE

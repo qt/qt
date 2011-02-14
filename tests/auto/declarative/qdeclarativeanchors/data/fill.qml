@@ -6,9 +6,9 @@ Rectangle {
         objectName: "filler"
         width: 50; height: 50; color: "blue"
         anchors.fill: parent;
-	anchors.leftMargin: 10;
-	anchors.rightMargin: 20;
-	anchors.topMargin: 30;
-	anchors.bottomMargin: 40;
+        anchors.leftMargin: 10;
+        anchors.rightMargin: 20;
+        anchors.topMargin: 30;
+        anchors.bottomMargin: 40;
     }
 }
