@@ -1522,12 +1522,14 @@ static QString getLocaleListData(const ushort *data, int size, int index)
     const ushort *end = data;
     while (size > 0 && *end != separator)
         ++end, --size;
+    if (end-data == 0)
+        return QString();
     return QString::fromRawData(reinterpret_cast<const QChar*>(data), end-data);
 }
 
 static inline QString getLocaleData(const ushort *data, int size)
 {
-    return QString::fromRawData(reinterpret_cast<const QChar*>(data), size);
+    return size ? QString::fromRawData(reinterpret_cast<const QChar*>(data), size) : QString();
 }
 
 
