@@ -117,16 +117,14 @@ void tst_QScriptEngine::newFunction()
         QCOMPARE(fun.isValid(), true);
         QCOMPARE(fun.isFunction(), true);
         QCOMPARE(fun.isObject(), true);
-        // QCOMPARE(fun.scriptClass(), (QScriptClass*)0);
+        QCOMPARE(fun.scriptClass(), (QScriptClass*)0);
         // a prototype property is automatically constructed
         {
             QScriptValue prot = fun.property("prototype", QScriptValue::ResolveLocal);
             QVERIFY(prot.isObject());
             QVERIFY(prot.property("constructor").strictlyEquals(fun));
-            QEXPECT_FAIL("", "JSCallbackObject::getOwnPropertyDescriptor() doesn't return correct information yet", Continue);
-            QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable);
-            QEXPECT_FAIL("", "WebKit bug: 40613 (The JSObjectSetProperty doesn't overwrite property flags)", Continue);
-            QCOMPARE(prot.propertyFlags("constructor"), QScriptValue::PropertyFlags(QScriptValue::Undeletable | QScriptValue::SkipInEnumeration));
+            QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::PropertyFlags(QScriptValue::Undeletable | QScriptValue::SkipInEnumeration));
+            QCOMPARE(prot.propertyFlags("constructor"), QScriptValue::SkipInEnumeration);
         }
         // prototype should be Function.prototype
         QCOMPARE(fun.prototype().isValid(), true);
@@ -134,23 +132,21 @@ void tst_QScriptEngine::newFunction()
         QCOMPARE(fun.prototype().strictlyEquals(eng.evaluate("Function.prototype")), true);
 
         QCOMPARE(fun.call().isNull(), true);
-        // QCOMPARE(fun.construct().isObject(), true);
+        QCOMPARE(fun.construct().isObject(), true);
     }
     // the overload that takes an extra argument
     {
         int expectedResult = 42;
         QScriptValue fun = eng.newFunction(myFunctionWithArg, reinterpret_cast<void*>(&expectedResult));
         QVERIFY(fun.isFunction());
-        // QCOMPARE(fun.scriptClass(), (QScriptClass*)0);
+        QCOMPARE(fun.scriptClass(), (QScriptClass*)0);
         // a prototype property is automatically constructed
         {
             QScriptValue prot = fun.property("prototype", QScriptValue::ResolveLocal);
             QVERIFY(prot.isObject());
             QVERIFY(prot.property("constructor").strictlyEquals(fun));
-            QEXPECT_FAIL("", "JSCallbackObject::getOwnPropertyDescriptor() doesn't return correct information yet", Continue);
-            QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable);
-            QEXPECT_FAIL("", "WebKit bug: 40613 (The JSObjectSetProperty doesn't overwrite property flags)", Continue);
-            QCOMPARE(prot.propertyFlags("constructor"), QScriptValue::PropertyFlags(QScriptValue::Undeletable | QScriptValue::SkipInEnumeration));
+            QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::PropertyFlags(QScriptValue::Undeletable | QScriptValue::SkipInEnumeration));
+            QCOMPARE(prot.propertyFlags("constructor"), QScriptValue::SkipInEnumeration);
         }
         // prototype should be Function.prototype
         QCOMPARE(fun.prototype().isValid(), true);
@@ -174,13 +170,12 @@ void tst_QScriptEngine::newFunction()
         QCOMPARE(fun.prototype().strictlyEquals(eng.evaluate("Function.prototype")), true);
         // public prototype should be the one we passed
         QCOMPARE(fun.property("prototype").strictlyEquals(proto), true);
-        QEXPECT_FAIL("", "JSCallbackObject::getOwnPropertyDescriptor() doesn't return correct information yet", Continue);
-        QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable);
+        QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::PropertyFlags(QScriptValue::Undeletable | QScriptValue::SkipInEnumeration));
         QCOMPARE(proto.property("constructor").strictlyEquals(fun), true);
-        QCOMPARE(proto.propertyFlags("constructor"), QScriptValue::PropertyFlags(QScriptValue::Undeletable | QScriptValue::SkipInEnumeration));
+        QCOMPARE(proto.propertyFlags("constructor"), QScriptValue::SkipInEnumeration);
 
         QCOMPARE(fun.call().isNull(), true);
-        // QCOMPARE(fun.construct().isObject(), true);
+        QCOMPARE(fun.construct().isObject(), true);
     }
     // whether the return value is correct
     {
