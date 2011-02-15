@@ -189,10 +189,10 @@ Node *QSGPaintedItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     paint(&p);
 
     node->setTargetRect(image.rect());
-    node->setSourceRect(QRectF(0, 1, 1, -1));
+    node->setSourceRect(QRectF(0, 0, 1, 1));
     d->textureProvider->setClampToEdge(true);
     d->textureProvider->setLinearFiltering(d->smooth);
-    d->textureProvider->setImage(image.mirrored());
+    d->textureProvider->setImage(image);
     node->update();
 
     return node;

@@ -863,11 +863,11 @@ Node *QSGText::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         }
 
         if (wasDirty) {
-            d->textureProvider->setImage(d->imageCache.toImage().mirrored());
+            d->textureProvider->setImage(d->imageCache.toImage());
         }
 
         node->setTargetRect(QRectF(bounds.x(), bounds.y(), d->imageCache.width(), d->imageCache.height()));
-        node->setSourceRect(QRectF(0, 1, 1, -1));
+        node->setSourceRect(QRectF(0, 0, 1, 1));
         d->textureProvider->setClampToEdge(true);
         d->textureProvider->setLinearFiltering(d->smooth);
         node->update();

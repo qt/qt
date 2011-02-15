@@ -171,7 +171,8 @@ void ShaderEffectTextureProvider::grab()
 
     const QGLContext *ctx = QSGContext::current->glContext();
     m_renderer->setDeviceRect(m_fbo->size());
-    m_renderer->setProjectMatrixToRect(m_rect);
+    QRectF mirrored(m_rect.left(), m_rect.bottom(), m_rect.width(), -m_rect.height());
+    m_renderer->setProjectMatrixToRect(mirrored);
     m_renderer->setClearColor(Qt::transparent);
     m_renderer->renderScene(BindableFbo(const_cast<QGLContext *>(ctx), m_fbo));
 

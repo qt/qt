@@ -83,7 +83,7 @@ Node *TextureItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     m_textureProvider->setLinearFiltering(QSGItemPrivate::get(this)->smooth);
 
     node->setTargetRect(QRectF(0, 0, width(), height()));
-    node->setSourceRect(QRectF(0, 1, 1, -1));
+    node->setSourceRect(QRectF(0, 0, 1, 1));
     node->update();
 
     return node;

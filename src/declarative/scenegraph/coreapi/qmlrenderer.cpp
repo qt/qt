@@ -193,6 +193,7 @@ void QMLRenderer::render()
     glDisable(GL_BLEND);
 
     glEnable(GL_CULL_FACE);
+    glFrontFace(isMirrored() ? GL_CW : GL_CCW);
     glEnable(GL_DEPTH_TEST);
     glDepthMask(true);
     glDepthFunc(GL_GREATER);

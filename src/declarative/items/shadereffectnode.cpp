@@ -250,7 +250,7 @@ void ShaderEffectNode::updateGeometry()
     V *vdata = (V *) g->vertexData();
 
     QRectF dstRect = boundingRect();
-    QRectF srcRect(0, 1, 1, -1);
+    QRectF srcRect(0, 0, 1, 1);
     for (int iy = 0; iy <= vmesh; ++iy) {
         float fy = iy / float(vmesh);
         float y = float(dstRect.top()) + fy * float(dstRect.height());
