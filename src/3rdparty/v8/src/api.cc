@@ -4390,7 +4390,7 @@ void V8::ExecuteUserCallback(UserCallback callback, void *data) {
 #endif
 
 void V8::TerminateExecution() {
-  if (!i::V8::IsRunning()) return;
+  if (IsDeadCheck("V8::TerminateExecution()")) return;
   i::Isolate::Current()->stack_guard()->TerminateExecution();
 }
 
