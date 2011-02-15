@@ -45,22 +45,6 @@ language for describing user interfaces and a language runtime. A collection
 of C++ APIs is used to integrate these high level features with classic
 Qt applications.
 
-\section2 QML
-
-User interfaces and their behavior are described using QML, an extension to
-\l{About JavaScript}{JavaScript} that lets developers and designers
-use a declarative syntax to specify each user interface in terms of
-\l{QML Elements}{QML elements}. These elements are a sophisticated set of
-graphical and behavioral building blocks that can be combined together in
-\l{QML Documents}{QML documents} to build components ranging in complexity
-from simple buttons and sliders, to complete Internet-enabled applications.
-
-\section2 Qt Declarative Module
-
-The Qt Declarative module provides a C++ API that is for interacting with QML files from within Qt applications. The module allows the programmer to build applications' backend logic using Qt.
-
-QML and the Qt Declarative Module separate the frontend UI logic from the backend logic.
-
 \section1 Getting Started
 
 \list
