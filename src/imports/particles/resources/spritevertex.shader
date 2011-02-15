@@ -42,4 +42,8 @@ void main() {
 
     gl_Position = matrix * vec4(pos.x, pos.y, 0, 1);
 
+    highp float fadeIn = min(t * 10., 1.);
+    highp float fadeOut = 1. - max(0., min((t - 0.75) * 4., 1.));
+
+    fColor = vColor * fadeIn * fadeOut * opacity;
 }

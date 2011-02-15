@@ -644,8 +644,17 @@ void SpriteParticles::prepareNextFrame()
         p.v1.size = p.v2.size = p.v3.size = p.v4.size = size * float(m_emitting);
         p.v1.endSize = p.v2.endSize = p.v3.endSize = p.v4.endSize = endSize * float(m_emitting);
 
+        // Color (for opacity only)
+        Color4ub color;
+        color.r = 255;
+        color.g = 255;
+        color.b = 255;
+        color.a = 255;
+        p.v1.color = p.v2.color = p.v3.color = p.v4.color = color;
+
         ++m_last_particle;
         pt = m_last_particle * particleRatio;
+
     }
 
     m_last_last_last_emitter = m_last_last_emitter;
