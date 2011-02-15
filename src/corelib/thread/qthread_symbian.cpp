@@ -118,34 +118,138 @@ QThreadData *QThreadData::current()
     return data;
 }
 
-class AdoptedThreadLifetimeMonitor : public QThread
-    {
-public:
-    QMutex mutex;
-    QThreadData* adoptedData;
-    AdoptedThreadLifetimeMonitor(QThreadData* pData)
-    : adoptedData(pData)
-        {
-        mutex.lock();
-        }
-    void run()
-        {
-        mutex.unlock();
-        TRequestStatus wait = KRequestPending;
-        adoptedData->symbian_thread_handle.Logon(wait);
-        User::WaitForRequest(wait);
-        deleteLater();
-        adoptedData->deref();
-        }
-    };
+QMutex adoptedThreadMonitorMutex;
+class QCAddAdoptedThread;
+QCAddAdoptedThread* adoptedThreadAdder = 0;
+QWaitCondition adoptedThreadAcceptWait;
 
-void createAdoptedThreadLifetimeMonitor(QThreadData* data)
+class QCAdoptedThreadMonitor : public CActive
+{
+public:
+    QCAdoptedThreadMonitor(QThreadData *data)
+    : CActive(EPriorityStandard), adoptedData(data)
     {
-    AdoptedThreadLifetimeMonitor* monitor = new AdoptedThreadLifetimeMonitor(data);
-    monitor->start();
-    monitor->mutex.lock();
-    monitor->mutex.unlock();
-    data->deref();
+        CActiveScheduler::Add(this);
+        adoptedData->symbian_thread_handle.Logon(iStatus);
+    }
+    ~QCAdoptedThreadMonitor();
+    void DoCancel()
+    {
+        adoptedData->symbian_thread_handle.LogonCancel(iStatus);
+    }
+    void RunL()
+    {
+        adoptedData->deref();
+        delete this;
+    }
+private:
+    QThreadData *adoptedData;
+};
+
+class QCAddAdoptedThread : public CActive
+{
+public:
+    QCAddAdoptedThread()
+    : CActive(EPriorityStandard), count(0), dataToAdd(0)
+    {
+        CActiveScheduler::Add(this);
+        start();
+    }
+    ~QCAddAdoptedThread()
+    {
+        Cancel();
+    }
+    void RunL()
+    {
+        if (iStatus.Int() != KErrNone)
+            return;
+
+        // Create an active object to monitor the thread
+        new (ELeave) QCAdoptedThreadMonitor(dataToAdd);
+        count++;
+        dataToAdd = 0;
+        start();
+
+        adoptedThreadAcceptWait.wakeAll();
+    }
+    void add(QThreadData* data)
+    {
+        dataToAdd = data;
+        TRequestStatus *stat = &iStatus;
+        User::RequestComplete(stat, KErrNone);
+    }
+    void start()
+    {
+        iStatus = KRequestPending;
+        SetActive();
+    }
+    void DoCancel()
+    {
+        TRequestStatus *stat = &iStatus;
+        User::RequestComplete(stat, KErrCancel);
+    }
+    void adoptedTheadClosed()
+    {
+        QMutexLocker adoptedThreadMonitorMutexlock(&adoptedThreadMonitorMutex);
+        count--;
+        if (!count)
+        {
+            adoptedThreadAdder = 0;
+            CActiveScheduler::Stop();
+        }
+    }
+private:
+    int count;
+    QThreadData* dataToAdd;
+};
+
+QCAdoptedThreadMonitor::~QCAdoptedThreadMonitor()
+{
+    Cancel();
+    adoptedThreadAdder->adoptedTheadClosed();
+}
+
+void monitorThreadFuncL()
+{
+    CActiveScheduler* scheduler = new (ELeave) CActiveScheduler();
+    CleanupStack::PushL(scheduler);
+    CActiveScheduler::Install(scheduler);
+
+    adoptedThreadAdder =  new(ELeave) QCAddAdoptedThread();
+    RThread::Rendezvous(KErrNone);
+    CActiveScheduler::Start();
+
+    CleanupStack::PopAndDestroy(scheduler);
+}
+
+int monitorThreadFunc(void *)
+{
+    _LIT(KMonitorThreadName, "adoptedMonitorThread");
+    RThread::RenameMe(KMonitorThreadName());
+    CTrapCleanup* cleanup = CTrapCleanup::New();
+    TRAPD(ret, monitorThreadFuncL());
+    delete cleanup;
+    return ret;
+}
+
+void monitorThreadLifetime(QThreadData* data)
+    {
+    QMutexLocker adoptedThreadMonitorMutexlock(&adoptedThreadMonitorMutex);
+    if (!adoptedThreadAdder)
+    {
+        RThread monitorThread;
+        qt_symbian_throwIfError(monitorThread.Create(KNullDesC(), &monitorThreadFunc, 1024, &User::Allocator(), 0));
+        TRequestStatus started;
+        monitorThread.Rendezvous(started);
+        monitorThread.Resume();
+        User::WaitForRequest(started);
+        monitorThread.Close();
+    }
+    adoptedThreadAdder->add(data);
+    QMutex waitLock;
+    waitLock.lock();
+    adoptedThreadAcceptWait.wait(&waitLock);
+    waitLock.unlock();
     }
 
 void QAdoptedThread::init()
@@ -153,7 +257,7 @@ void QAdoptedThread::init()
     Q_D(QThread);
     d->thread_id = RThread().Id();  // type operator to TUint
     init_symbian_thread_handle(d->data->symbian_thread_handle);
-    createAdoptedThreadLifetimeMonitor(d->data);
+    monitorThreadLifetime(d->data);
 }
 
 /*
