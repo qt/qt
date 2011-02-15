@@ -97,6 +97,7 @@ public:
     inline bool isDestroyed() const;
     inline void collectGarbage();
     inline void reportAdditionalMemoryCost(int cost);
+    inline void abortEvaluation(v8::Handle<v8::Value> result);
     inline v8::Handle<v8::Object> globalObject() const;
     void setGlobalObject(QScriptValuePrivate* newGlobalObjectValue);
 
@@ -300,6 +301,8 @@ private:
     class ProcessEventTimeoutThread;
     ProcessEventTimeoutThread *m_processEventTimeoutThread;
     int m_processEventInterval;
+    bool m_shouldAbort;
+    v8::Persistent<v8::Value> m_abortResult;
 };
 
 QT_END_NAMESPACE

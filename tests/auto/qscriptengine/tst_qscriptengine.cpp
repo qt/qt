@@ -3101,7 +3101,6 @@ public:
 
 void tst_QScriptEngine::throwErrorFromProcessEvents()
 {
-    QSKIP("It hangs", SkipAll);
     QScriptEngine eng;
 
     EventReceiver2 receiver(&eng);
@@ -3530,7 +3529,6 @@ void tst_QScriptEngine::abortEvaluation()
     QScriptEngine eng;
     EventReceiver3 receiver(&eng);
 
-    QSKIP("It hangs", SkipAll);
     eng.setProcessEventsInterval(100);
     for (int x = 0; x < 4; ++x) {
         QCoreApplication::postEvent(&receiver, new QEvent(QEvent::Type(QEvent::User+1)));
@@ -3563,7 +3561,6 @@ void tst_QScriptEngine::abortEvaluation()
 
 void tst_QScriptEngine::abortEvaluation_tryCatch()
 {
-    QSKIP("Hangs on V8 back-end", SkipAll);
     QScriptEngine eng;
     EventReceiver3 receiver(&eng);
     eng.setProcessEventsInterval(100);
@@ -3714,7 +3711,6 @@ void tst_QScriptEngine::isEvaluating_fromEvent()
 
     eng.setProcessEventsInterval(100);
     eng.evaluate(script);
-    QEXPECT_FAIL("", "setProcessEventsInterval has not beens implemented yet", Continue);
     QVERIFY(receiver.wasEvaluating);
 }
 

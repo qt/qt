@@ -674,6 +674,7 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
     , m_currentAgent(0)
     , m_processEventTimeoutThread(0)
     , m_processEventInterval(-1)
+    , m_shouldAbort(false)
 {
     qMetaTypeId<QScriptValue>();
     qMetaTypeId<QList<int> >();
@@ -731,10 +732,13 @@ v8::Handle<v8::String> QScriptEnginePrivate::qtDataId()
 
 /* Thread used by setProcessEventInterval */
 class QScriptEnginePrivate::ProcessEventTimeoutThread : public QThread {
-    static void callback(void *engine) {
+    static void callback(void *data) {
+        QScriptEnginePrivate *engine = static_cast<QScriptEnginePrivate *>(data);
         //executed in the JS thread
-        if (static_cast<QScriptEnginePrivate *>(engine)->isEvaluating())
+        if (engine->isEvaluating()) {
+            QScriptContextPrivate qScriptContext(engine);
             qApp->processEvents();
+        }
     }
     void run() {
         QScriptIsolate api(engine);
@@ -777,6 +781,7 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     // FIXME Do we really need to dispose all persistent handlers before context destruction?
     m_variantTemplate.Dispose();
     m_metaObjectTemplate.Dispose();
+    m_abortResult.Dispose();
 
     QHash<const QMetaObject *, v8::Persistent<v8::FunctionTemplate> >::iterator i = m_qtClassTemplates.begin();
     for (; i != m_qtClassTemplates.end(); ++i) {
@@ -818,6 +823,7 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handl
     struct EvaluateScope {
         QScriptEnginePrivate *engine;
         EvaluateScope(QScriptEnginePrivate *engine) : engine(engine) {
+            engine->m_shouldAbort = false;
             engine->m_state = Evaluating;
             if (engine->m_processEventTimeoutThread)
                 engine->m_processEventTimeoutThread->resetTime(engine->m_processEventInterval);
@@ -851,6 +857,14 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handl
             m_currentQsContext->initializeArgumentsProperty();
 
         result = script->Run(thisObj);
+    }
+    if (m_shouldAbort) {
+        v8::Local<v8::Value> abortResult = v8::Local<v8::Value>::New(m_abortResult);
+        m_abortResult.Dispose();
+        m_shouldAbort = false;
+        if (abortResult.IsEmpty())
+            return InvalidValue();
+        return new QScriptValuePrivate(this, abortResult);
     }
     if (result.IsEmpty()) {
         v8::Handle<v8::Value> exception = tryCatch.Exception();
@@ -1245,8 +1259,10 @@ bool QScriptEngine::isEvaluating() const
 */
 void QScriptEngine::abortEvaluation(const QScriptValue &result)
 {
-    Q_UNUSED(result);
-    Q_UNIMPLEMENTED();
+    Q_D(QScriptEngine);
+    QScriptIsolate api(d);
+    v8::HandleScope handleScope;
+    d->abortEvaluation(QScriptValuePrivate::get(result)->asV8Value(d));
 }
 
 
