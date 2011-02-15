@@ -2979,7 +2979,6 @@ void tst_QScriptEngine::collectGarbage()
     QVERIFY(ptr != 0);
     (void)eng.newQObject(ptr, QScriptEngine::ScriptOwnership);
     collectGarbage_helper(eng);
-    QEXPECT_FAIL("", "collectGarbage not working?", Continue);
     QVERIFY(ptr == 0);
 }
 
@@ -5773,7 +5772,6 @@ void tst_QScriptEngine::collectGarbageAfterConnect()
     engine.evaluate("widget = null;");
     // The connection should not keep the widget alive.
     collectGarbage_helper(engine);
-    QEXPECT_FAIL("", "collectGarbage not working?", Continue);
     QVERIFY(widget == 0);
 }
 

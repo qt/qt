@@ -161,6 +161,7 @@ inline bool QScriptEnginePrivate::isDestroyed() const
 void QScriptEnginePrivate::collectGarbage()
 {
     v8::V8::LowMemoryNotification();
+    while (!v8::V8::IdleNotification()) {}
 }
 
 void QScriptEnginePrivate::reportAdditionalMemoryCost(int cost)
