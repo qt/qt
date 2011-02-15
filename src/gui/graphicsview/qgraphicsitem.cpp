@@ -7689,11 +7689,13 @@ void QGraphicsObject::updateMicroFocus()
 
 void QGraphicsItemPrivate::children_append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item)
 {
-    QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(list->object);
-    if (QGraphicsItemPrivate::get(graphicsObject)->sendParentChangeNotification) {
-        item->setParentItem(graphicsObject);
-    } else {
-        QGraphicsItemPrivate::get(item)->setParentItemHelper(graphicsObject, 0, 0);
+    if (item) {
+        QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(list->object);
+        if (QGraphicsItemPrivate::get(graphicsObject)->sendParentChangeNotification) {
+            item->setParentItem(graphicsObject);
+        } else {
+            QGraphicsItemPrivate::get(item)->setParentItemHelper(graphicsObject, 0, 0);
+        }
     }
 }
 

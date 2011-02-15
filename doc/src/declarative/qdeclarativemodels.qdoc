@@ -161,7 +161,7 @@ while QAbstractItemModel provides a more flexible solution for more complex
 models.
 
 
-\section2 QStringList
+\section2 QStringList-based model
 
 A model may be a simple QStringList, which provides the contents of the list via the \e modelData role.
 
@@ -182,7 +182,7 @@ have changed.  If the QStringList changes, it will be necessary to reset
 the model by calling QDeclarativeContext::setContextProperty() again.
 
 
-\section2 QList<QObject*>
+\section2 QObjectList-based model
 
 A list of QObject* values can also be used as a model. A QList<QObject*> provides 
 the properties of the objects in the list as roles.
@@ -281,7 +281,7 @@ with models of type QAbstractItemModel:
 \endlist
 
 
-\section2 Exposing C++ data models to QML
+\section2 Exposing C++ Data Models to QML
 
 The above examples use QDeclarativeContext::setContextProperty() to set 
 model values directly in QML components. An alternative to this is to 
@@ -313,7 +313,9 @@ MyModel {
     id: myModel
     ListElement { someProperty: "some value" }
 }
+\endqml
 
+\qml
 ListView {
     width: 200; height: 250
     model: myModel
@@ -504,9 +506,9 @@ a Web browser.
 \l ListView shows a classic list of items with horizontal or vertical placing
 of items.
 
-\beginfloatright
+\div{float-right}
 \inlineimage qml-listview-snippet.png
-\endfloat
+\enddiv
 
 The following example shows a minimal ListView displaying a sequence of
 numbers (using an \l{QML Data Models#An Integer}{integer as a model}).

@@ -1,6 +1,7 @@
 INCLUDEPATH += $$PWD
 
 SOURCES += \
+    $$PWD/qdeclarativeapplication.cpp \
     $$PWD/qdeclarativeutilmodule.cpp\
     $$PWD/qdeclarativeview.cpp \
     $$PWD/qdeclarativeconnections.cpp \
@@ -30,6 +31,7 @@ SOURCES += \
     $$PWD/qlistmodelinterface.cpp
 
 HEADERS += \
+    $$PWD/qdeclarativeapplication_p.h \
     $$PWD/qdeclarativeutilmodule_p.h\
     $$PWD/qdeclarativeview.h \
     $$PWD/qdeclarativeconnections_p.h \
