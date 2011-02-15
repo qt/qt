@@ -53,12 +53,14 @@ Rectangle {
         PropertyChanges { target: rect; color: "yellow"; x: 50 }
     }
 
+    //! [sequential animations]
     transitions: Transition { 
         SequentialAnimation {
             PropertyAnimation { property: "x"; duration: 1000 }
             ColorAnimation { duration: 1000 }
         }
     }
+    //! [sequential animations]
 }
 //![0]
 

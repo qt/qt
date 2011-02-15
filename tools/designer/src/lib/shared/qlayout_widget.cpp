@@ -1189,8 +1189,7 @@ QRect LayoutHelper::itemInfo(QLayout *lt, const QWidget *widget) const
             } else {
                 for (int c = 0; c < FormLayoutColumns; c++) {
                     const QFormLayout::ItemRole role = c == 0 ? QFormLayout::LabelRole : QFormLayout::FieldRole;
-                    if (widgets[c]) {
-                        Q_ASSERT(BoxLayoutHelper::findItemOfWidget(items, widgets[c]));
+                    if (widgets[c] && BoxLayoutHelper::findItemOfWidget(items, widgets[c])) {
                         formLayout->setWidget(r, role, widgets[c]);
                     } else {
                         formLayout->setItem(r, role, createFormSpacer());

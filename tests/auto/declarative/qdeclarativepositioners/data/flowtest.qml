@@ -1,11 +1,14 @@
-import QtQuick 1.0
+import QtQuick 1.1
 
 Item {
     width: 90
     height: 480
+    property bool testRightToLeft: false
+
     Flow {
         objectName: "flow"
         width: parent.width
+        layoutDirection: testRightToLeft ? Qt.RightToLeft : Qt.LeftToRight
         Rectangle {
             objectName: "one"
             color: "red"

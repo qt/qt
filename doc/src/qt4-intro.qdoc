@@ -328,7 +328,7 @@
 
     With Qt 4, the Qt class has become the Qt namespace. If you want
     to access a constant that is part of the Qt namespace, prefix it
-    with \c Qt:: (e.g., \c{Qt::yellow}), or add the directive
+    with \c{Qt::} (e.g., \c{Qt::yellow}), or add the directive
 
     \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 7
 
@@ -341,7 +341,7 @@
     in Qt 3, it was legal to write \c QWidget::yellow instead of \c
     Qt::yellow, because QWidget inherited from Qt. This won't work in
     Qt 4; you must write \c Qt::yellow or add the "using namespace"
-    directive and drop the \c Qt:: prefix.
+    directive and drop the \c{Qt::} prefix.
 
     The \l{qt3to4 - The Qt 3 to 4 Porting Tool}{qt3to4} porting tool
     automates this conversion.

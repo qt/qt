@@ -49,9 +49,7 @@
 #include <QTemporaryFile>
 #include <QTextStream>
 
-#include "archiveextractor.h"
 #include "config.h"
-#include "uncompressor.h"
 #include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
@@ -150,7 +148,6 @@ QStringList MetaStack::getExpanded(const Location& location)
 }
 
 QT_STATIC_CONST_IMPL QString Config::dot = QLatin1String(".");
-QMap<QString, QString> Config::uncompressedFiles;
 QMap<QString, QString> Config::extractedDirs;
 int Config::numInstances;
 
@@ -178,30 +175,9 @@ Config::Config(const QString& programName)
 }
 
 /*!
-  The destructor deletes all the temporary files and
-  directories it built.
  */
 Config::~Config()
 {
-    if (--numInstances == 0) {
-	QMap<QString, QString>::ConstIterator f = uncompressedFiles.begin();
-	while (f != uncompressedFiles.end()) {
-	    QDir().remove(*f);
-	    ++f;
-	}
-	uncompressedFiles.clear();
-
-	QMap<QString, QString>::ConstIterator d = extractedDirs.begin();
-	while (d != extractedDirs.end()) {
-	    removeDirContents(*d);
-	    QDir dir(*d);
-	    QString name = dir.dirName();
-	    dir.cdUp();
-	    dir.rmdir(name);
-	    ++d;
-	}
-	extractedDirs.clear();
-    }
 }
 
 /*!
@@ -383,16 +359,12 @@ QSet<QString> Config::subVars(const QString& var) const
  */
 QStringList Config::getAllFiles(const QString &filesVar,
                                 const QString &dirsVar,
-				const QString &defaultNameFilter,
                                 const QSet<QString> &excludedDirs)
 {
     QStringList result = getStringList(filesVar);
     QStringList dirs = getStringList(dirsVar);
 
-    QString nameFilter = getString(filesVar + dot +
-        QLatin1String(CONFIG_FILEEXTENSIONS));
-    if (nameFilter.isEmpty())
-        nameFilter = defaultNameFilter;
+    QString nameFilter = getString(filesVar + dot + QLatin1String(CONFIG_FILEEXTENSIONS));
 
     QStringList::ConstIterator d = dirs.begin();
     while (d != dirs.end()) {
@@ -456,62 +428,18 @@ QString Config::findFile(const Location& location,
     QStringList::ConstIterator c = components.begin();
     for (;;) {
 	bool isArchive = (c != components.end() - 1);
-	ArchiveExtractor *extractor = 0;
 	QString userFriendly = *c;
 
-	if (isArchive) {
-	    extractor = ArchiveExtractor::extractorForFileName(userFriendly);
-        }
-
-	if (extractor == 0) {
-	    Uncompressor *uncompressor =
-		    Uncompressor::uncompressorForFileName(userFriendly);
-	    if (uncompressor != 0) {
-		QString fileNameWithCorrectExtension =
-			uncompressor->uncompressedFilePath(
-				fileInfo.filePath());
-		QString uncompressed = uncompressedFiles[fileInfo.filePath()];
-		if (uncompressed.isEmpty()) {
-		    uncompressed =
-                        QTemporaryFile(fileInfo.filePath()).fileName();
-		    uncompressor->uncompressFile(location,
-                                                 fileInfo.filePath(),
-                                                 uncompressed);
-		    uncompressedFiles[fileInfo.filePath()] = uncompressed;
-		}
-		fileInfo.setFile(uncompressed);
-
-		if (isArchive) {
-		    extractor = ArchiveExtractor::extractorForFileName(
-					fileNameWithCorrectExtension);
-		}
-                else {
-		    userFriendly = fileNameWithCorrectExtension;
-		}
-	    }
-	}
 	userFriendlyFilePath += userFriendly;
 
 	if (isArchive) {
-	    if (extractor == 0)
-		location.fatal(tr("Unknown archive type '%1'")
-				.arg(userFriendlyFilePath));
 	    QString extracted = extractedDirs[fileInfo.filePath()];
-	    if (extracted.isEmpty()) {
-		extracted = QTemporaryFile(fileInfo.filePath()).fileName();
-		if (!QDir().mkdir(extracted))
-		    location.fatal(tr("Cannot create temporary directory '%1'")
-				    .arg(extracted));
-		extractor->extractArchive(location, fileInfo.filePath(),
-					   extracted);
-		extractedDirs[fileInfo.filePath()] = extracted;
-	    }
 	    ++c;
 	    fileInfo.setFile(QDir(extracted), *c);
 	}
-        else {
+        else
 	    break;
-	}
+
 	userFriendlyFilePath += "?";
     }
     return fileInfo.filePath();

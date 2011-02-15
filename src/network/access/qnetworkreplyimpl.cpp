@@ -115,7 +115,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
     }
 #endif
 
-    if (backend->isSynchronous()) {
+    if (backend && backend->isSynchronous()) {
         state = Finished;
         q_func()->setFinished(true);
     } else {
@@ -307,7 +307,7 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
     // in QtWebKit.
     QVariant synchronousHttpAttribute = req.attribute(
             static_cast<QNetworkRequest::Attribute>(QNetworkRequest::DownloadBufferAttribute + 1));
-    if (synchronousHttpAttribute.toBool()) {
+    if (backend && synchronousHttpAttribute.toBool()) {
         backend->setSynchronous(true);
         if (outgoingData && outgoingData->isSequential()) {
             outgoingDataBuffer = new QRingBuffer();
@@ -362,7 +362,7 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
             QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
         }
 #else
-        if (backend->isSynchronous())
+        if (backend && backend->isSynchronous())
             _q_startOperation();
         else
             QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
