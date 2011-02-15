@@ -647,6 +647,17 @@ static QString winSystemPMText()
     return QString();
 }
 
+static quint8 winSystemFirstDayOfWeek()
+{
+    LCID id = GetUserDefaultLCID();
+    wchar_t output[4]; // maximum length including  terminating zero character for Win2003+
+
+    if (GetLocaleInfo(id, LOCALE_IFIRSTDAYOFWEEK, output, 4))
+        return QString::fromWCharArray(output).toUInt()+1;
+
+    return 1;
+}
+
 /*!
     \since 4.6
     Returns the fallback locale obtained from the system.
@@ -736,6 +747,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         return QVariant(winSystemAMText());
     case PMText:
         return QVariant(winSystemPMText());
+    case FirstDayOfWeek:
+        return QVariant(winSystemFirstDayOfWeek());
     default:
         break;
     }
@@ -1162,6 +1175,15 @@ static QLocale::MeasurementSystem macMeasurementSystem()
     }
 }
 
+static quint8 macFirstDayOfWeek()
+{
+    QCFType<CFCalendarRef> calendar = CFCalendarCopyCurrent();
+    quint8 day = static_cast<quint8>(CFCalendarGetFirstWeekday(calendar))-1;
+    if (day == 0)
+        day = 7;
+    return day;
+}
+
 static void getMacPreferredLanguageAndCountry(QString *language, QString *country)
 {
     QCFType<CFArrayRef> languages = (CFArrayRef)CFPreferencesCopyValue(
@@ -1243,6 +1265,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     case AMText:
     case PMText:
         break;
+    case FirstDayOfWeek:
+        return QVariant(macFirstDayOfWeek());
     default:
         break;
     }
@@ -3446,6 +3470,23 @@ QString QLocale::standaloneDayName(int day, FormatType type) const
     if (name.isEmpty())
         return dayName(day == 0 ? 7 : day, type);
     return name;
+}
+
+/*!
+    \since 4.8
+
+    Returns the first day of the week according to the current locale.
+*/
+Qt::DayOfWeek QLocale::firstDayOfWeek() const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::FirstDayOfWeek, QVariant());
+        if (!res.isNull())
+            return static_cast<Qt::DayOfWeek>(res.toUInt());
+    }
+#endif
+    return static_cast<Qt::DayOfWeek>(d()->m_first_day_of_week);
 }
 
 /*!

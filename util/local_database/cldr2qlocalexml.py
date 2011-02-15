@@ -322,6 +322,40 @@ def usage():
     print "Usage: cldr2qlocalexml.py <path-to-cldr-main>"
     sys.exit()
 
+def integrateWeekData(filePath):
+    if not filePath.endswith(".xml"):
+        return {}
+    monFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=mon]", attribute="territories")[0].split(" ")
+    tueFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=tue]", attribute="territories")[0].split(" ")
+    wedFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=wed]", attribute="territories")[0].split(" ")
+    thuFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=thu]", attribute="territories")[0].split(" ")
+    friFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=fri]", attribute="territories")[0].split(" ")
+    satFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=sat]", attribute="territories")[0].split(" ")
+    sunFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=sun]", attribute="territories")[0].split(" ")
+
+    firstDayByCountryCode = {}
+    for countryCode in monFirstDayIn:
+        firstDayByCountryCode[countryCode] = "mon"
+    for countryCode in tueFirstDayIn:
+        firstDayByCountryCode[countryCode] = "tue"
+    for countryCode in wedFirstDayIn:
+        firstDayByCountryCode[countryCode] = "wed"
+    for countryCode in thuFirstDayIn:
+        firstDayByCountryCode[countryCode] = "thu"
+    for countryCode in friFirstDayIn:
+        firstDayByCountryCode[countryCode] = "fri"
+    for countryCode in satFirstDayIn:
+        firstDayByCountryCode[countryCode] = "sat"
+    for countryCode in sunFirstDayIn:
+        firstDayByCountryCode[countryCode] = "sun"
+
+    for (key,locale) in locale_database.iteritems():
+        countryCode = locale['country_code']
+        if countryCode in firstDayByCountryCode:
+            locale_database[key]['firstDayOfWeek'] = firstDayByCountryCode[countryCode]
+        else:
+            locale_database[key]['firstDayOfWeek'] = firstDayByCountryCode["001"]
+
 if len(sys.argv) != 2:
     usage()
 
@@ -341,6 +375,7 @@ for file in cldr_files:
 
     locale_database[(l['language_id'], l['country_id'], l['script_code'], l['variant_code'])] = l
 
+integrateWeekData(cldr_dir+"/../supplemental/supplementalData.xml")
 locale_keys = locale_database.keys()
 locale_keys.sort()
 
@@ -484,6 +519,7 @@ print \
             <exp>101</exp>\n\
             <am>AM</am>\n\
             <pm>PM</pm>\n\
+            <firstDayOfWeek>mon</firstDayOfWeek>\n\
             <longDateFormat>EEEE, d MMMM yyyy</longDateFormat>\n\
             <shortDateFormat>d MMM yyyy</shortDateFormat>\n\
             <longTimeFormat>HH:mm:ss z</longTimeFormat>\n\
@@ -520,6 +556,7 @@ for key in locale_keys:
     print "            <exp>"      + fixOrdStrExp(l['exp'])     + "</exp>"
     print "            <am>"       + l['am'].encode('utf-8') + "</am>"
     print "            <pm>"       + l['pm'].encode('utf-8') + "</pm>"
+    print "            <firstDayOfWeek>"  + l['firstDayOfWeek'].encode('utf-8') + "</firstDayOfWeek>"
     print "            <longDateFormat>"  + l['longDateFormat'].encode('utf-8')  + "</longDateFormat>"
     print "            <shortDateFormat>" + l['shortDateFormat'].encode('utf-8') + "</shortDateFormat>"
     print "            <longTimeFormat>"  + l['longTimeFormat'].encode('utf-8')  + "</longTimeFormat>"

@@ -188,6 +188,10 @@ def convertFormat(format):
 
     return result
 
+def convertToQtDayOfWeek(firstDay):
+    qtDayOfWeek = {"mon":1, "tue":2, "wed":3, "thu":4, "fri":5, "sat":6, "sun":7}
+    return qtDayOfWeek[firstDay]
+
 class Locale:
     def __init__(self, elt):
         self.language = eltText(firstChildElt(elt, "language"))
@@ -202,6 +206,7 @@ class Locale:
         self.exp = int(eltText(firstChildElt(elt, "exp")))
         self.am = eltText(firstChildElt(elt, "am"))
         self.pm = eltText(firstChildElt(elt, "pm"))
+        self.firstDayOfWeek = convertToQtDayOfWeek(eltText(firstChildElt(elt, "firstDayOfWeek")))
         self.longDateFormat = convertFormat(eltText(firstChildElt(elt, "longDateFormat")))
         self.shortDateFormat = convertFormat(eltText(firstChildElt(elt, "shortDateFormat")))
         self.longTimeFormat = convertFormat(eltText(firstChildElt(elt, "longTimeFormat")))
@@ -397,7 +402,7 @@ def main():
     for key in locale_keys:
         l = locale_map[key]
 
-        print "    { %6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s }, // %s/%s" \
+        print "    { %6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%6d }, // %s/%s" \
                     % (key[0], key[1],
                         l.decimal,
                         l.group,
@@ -425,9 +430,10 @@ def main():
                         days_data.append(l.narrowDays),
                         am_data.append(l.am),
                         pm_data.append(l.pm),
+                        l.firstDayOfWeek,
                         l.language,
                         l.country)
-    print "    {      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,    0,0,    0,0,    0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0 }  // trailing 0s"
+    print "    {      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,    0,0,    0,0,    0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,     0 }  // trailing 0s"
     print "};"
 
     print

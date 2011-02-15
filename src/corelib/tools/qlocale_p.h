@@ -167,6 +167,7 @@ public:
     quint16 m_narrow_day_names_idx, m_narrow_day_names_size;
     quint16 m_am_idx, m_am_size;
     quint16 m_pm_idx, m_pm_size;
+    quint8  m_first_day_of_week : 3;
 };
 
 inline char QLocalePrivate::digitToCLocale(const QChar &in) const

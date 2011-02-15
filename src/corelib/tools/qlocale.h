@@ -94,7 +94,8 @@ public:
         MeasurementSystem, // uint
         PositiveSign, // QString
         AMText, // QString
-        PMText // QString
+        PMText, // QString
+        FirstDayOfWeek // Qt::DayOfWeek
     };
     virtual QVariant query(QueryType type, QVariant in) const;
     virtual QLocale fallbackLocale() const;
@@ -660,6 +661,8 @@ public:
     QString standaloneMonthName(int, FormatType format = LongFormat) const;
     QString dayName(int, FormatType format = LongFormat) const;
     QString standaloneDayName(int, FormatType format = LongFormat) const;
+
+    Qt::DayOfWeek firstDayOfWeek() const;
 
     QString amText() const;
     QString pmText() const;
