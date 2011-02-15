@@ -59,6 +59,7 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qbitarray.h>
 #include <private/qdeclarativeglobal_p.h>
+#include <QtScript/qscriptvalue.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,6 +70,7 @@ class QDeclarativeTypePrivate;
 class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeMetaType
 {
 public:
+    static bool canCopy(int type);
     static bool copy(int type, void *data, const void *copy = 0);
 
     static QList<QByteArray> qmlTypeNames();
@@ -76,6 +78,7 @@ public:
 
     static QDeclarativeType *qmlType(const QByteArray &, int, int);
     static QDeclarativeType *qmlType(const QMetaObject *);
+    static QDeclarativeType *qmlType(const QMetaObject *metaObject, const QByteArray &module, int version_major, int version_minor);
     static QDeclarativeType *qmlType(int);
 
     static QMetaProperty defaultProperty(const QMetaObject *);
@@ -104,6 +107,25 @@ public:
     static bool isModule(const QByteArray &module, int versionMajor, int versionMinor);
 
     static QList<QDeclarativePrivate::AutoParentFunction> parentFunctions();
+
+    struct ModuleApiInstance {
+        ModuleApiInstance()
+            : scriptCallback(0), qobjectCallback(0), qobjectApi(0) {}
+
+        QScriptValue (*scriptCallback)(QDeclarativeEngine *, QScriptEngine *);
+        QObject *(*qobjectCallback)(QDeclarativeEngine *, QScriptEngine *);
+        QScriptValue scriptApi;
+        QObject *qobjectApi;
+    };
+    struct ModuleApi {
+        inline ModuleApi();
+        inline bool operator==(const ModuleApi &) const;
+        int major;
+        int minor;
+        QScriptValue (*script)(QDeclarativeEngine *, QScriptEngine *);
+        QObject *(*qobject)(QDeclarativeEngine *, QScriptEngine *);
+    };
+    static ModuleApi moduleApi(const QByteArray &, int, int);
 };
 
 class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeType
@@ -112,9 +134,12 @@ public:
     QByteArray typeName() const;
     QByteArray qmlTypeName() const;
 
+    QByteArray module() const;
     int majorVersion() const;
     int minorVersion() const;
+
     bool availableInVersion(int vmajor, int vminor) const;
+    bool availableInVersion(const QByteArray &module, int vmajor, int vminor) const;
 
     QObject *create() const;
     void create(QObject **, void **, size_t) const;
@@ -135,6 +160,8 @@ public:
 
     const QMetaObject *metaObject() const;
     const QMetaObject *baseMetaObject() const;
+    int metaObjectRevision() const;
+    bool containsRevisionedAttributes() const;
 
     QDeclarativeAttachedPropertiesFunc attachedPropertiesFunction() const;
     const QMetaObject *attachedPropertiesType() const;
@@ -149,6 +176,7 @@ public:
     int index() const;
 
 private:
+    QDeclarativeType *superType() const;
     friend class QDeclarativeTypePrivate;
     friend struct QDeclarativeMetaTypeData;
     friend int registerType(const QDeclarativePrivate::RegisterType &);
@@ -159,6 +187,25 @@ private:
 
     QDeclarativeTypePrivate *d;
 };
+
+QDeclarativeMetaType::ModuleApi::ModuleApi()
+//    : major(0), minor(0), script(0), qobject(0)
+{
+    major = 0;
+    minor = 0;
+    script = 0;
+    qobject = 0;
+}
+
+bool QDeclarativeMetaType::ModuleApi::operator==(const ModuleApi &other) const
+{
+    return major == other.major && minor == other.minor && script == other.script && qobject == other.qobject;
+}
+
+inline uint qHash(const QDeclarativeMetaType::ModuleApi &import)
+{
+    return import.major ^ import.minor ^ quintptr(import.script) ^ quintptr(import.qobject);
+}
 
 QT_END_NAMESPACE
 

@@ -116,6 +116,7 @@ QSGCanvasPrivate::QSGCanvasPrivate()
     , rootItem(0)
     , activeFocusItem(0)
     , mouseGrabberItem(0)
+    , hoverItem(0)
     , context(0)
     , animationDriver(0)
     , dirtyItemList(0)
@@ -227,6 +228,25 @@ void QSGCanvasPrivate::sceneMouseEventFromMouseEvent(QGraphicsSceneMouseEvent &s
     lastMousePosition = event->pos();
 }
 
+/*!
+Fill in the data in \a hoverEvent based on \a mouseEvent.  This method leaves the item local positions in
+\a hoverEvent untouched (these are filled in later).
+*/
+void QSGCanvasPrivate::sceneHoverEventFromMouseEvent(QGraphicsSceneHoverEvent &hoverEvent, QMouseEvent *mouseEvent)
+{
+    Q_Q(QSGCanvas);
+    hoverEvent.setWidget(q);
+    hoverEvent.setScenePos(mouseEvent->pos());
+    hoverEvent.setScreenPos(mouseEvent->globalPos());
+    if (lastMousePosition.isNull()) lastMousePosition = mouseEvent->pos();
+    hoverEvent.setLastScenePos(lastMousePosition);
+    hoverEvent.setLastScreenPos(q->mapToGlobal(lastMousePosition));
+    hoverEvent.setModifiers(mouseEvent->modifiers());
+    hoverEvent.setAccepted(mouseEvent->isAccepted());
+
+    lastMousePosition = mouseEvent->pos();
+}
+
 void QSGCanvasPrivate::setFocusInScope(QSGItem *scope, QSGItem *item, FocusOptions options)
 {
     Q_Q(QSGCanvas);
@@ -320,6 +340,8 @@ void QSGCanvasPrivate::setFocusInScope(QSGItem *scope, QSGItem *item, FocusOptio
         q->sendEvent(newActiveFocusItem, &event); 
     }
 
+    updateInputMethodData();
+
     if (!changed.isEmpty()) 
         notifyFocusChangesRecur(changed.data(), changed.count() - 1);
 }
@@ -392,6 +414,8 @@ void QSGCanvasPrivate::clearFocusInScope(QSGItem *scope, QSGItem *item, FocusOpt
         q->sendEvent(newActiveFocusItem, &event); 
     }
 
+    updateInputMethodData();
+
     if (!changed.isEmpty()) 
         notifyFocusChangesRecur(changed.data(), changed.count() - 1);
 }
@@ -417,6 +441,34 @@ void QSGCanvasPrivate::notifyFocusChangesRecur(QSGItem **items, int remaining)
             emit item->activeFocusChanged(itemPrivate->activeFocus);
         }
     } 
+}
+
+void QSGCanvasPrivate::updateInputMethodData()
+{
+    Q_Q(QSGCanvas);
+    bool enabled = activeFocusItem
+                   && (QSGItemPrivate::get(activeFocusItem)->flags & QSGItem::ItemAcceptsInputMethod);
+    q->setAttribute(Qt::WA_InputMethodEnabled, enabled);
+    q->setInputMethodHints(enabled ? activeFocusItem->inputMethodHints() : Qt::ImhNone);
+}
+
+QVariant QSGCanvas::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    Q_D(const QSGCanvas);
+    if (!d->activeFocusItem || !(QSGItemPrivate::get(d->activeFocusItem)->flags & QSGItem::ItemAcceptsInputMethod))
+        return QVariant();
+    QVariant value = d->activeFocusItem->inputMethodQuery(query);
+
+    //map geometry types
+    QVariant::Type type = value.type();
+    if (type == QVariant::RectF || type == QVariant::Rect) {
+        const QTransform transform = QSGItemPrivate::get(d->activeFocusItem)->itemToCanvasTransform();
+        value = transform.mapRect(value.toRectF());
+    } else if (type == QVariant::PointF || type == QVariant::Point) {
+        const QTransform transform = QSGItemPrivate::get(d->activeFocusItem)->itemToCanvasTransform();
+        value = transform.map(value.toPointF());
+    }
+    return value;
 }
 
 void QSGCanvasPrivate::dirtyItem(QSGItem *)
@@ -518,8 +570,29 @@ QSGItem *QSGCanvas::mouseGrabberItem() const
     return d->mouseGrabberItem;
 }
 
+void QSGCanvasPrivate::clearHover()
+{
+    Q_Q(QSGCanvas);
+    if (!hoverItem)
+        return;
+
+    QGraphicsSceneHoverEvent hoverEvent;
+    hoverEvent.setWidget(q);
+
+    QPoint cursorPos = QCursor::pos();
+    hoverEvent.setScenePos(q->mapFromGlobal(cursorPos));
+    hoverEvent.setLastScenePos(hoverEvent.scenePos());
+    hoverEvent.setScreenPos(cursorPos);
+    hoverEvent.setLastScreenPos(hoverEvent.screenPos());
+
+    QSGItem *item = hoverItem;
+    hoverItem = 0;
+    sendHoverEvent(QEvent::GraphicsSceneHoverLeave, item, &hoverEvent);
+}
+
 bool QSGCanvas::event(QEvent *e)
 {
+    Q_D(QSGCanvas);
     // XXX todo
     switch (e->type()) {
     case QEvent::TouchBegin:
@@ -537,9 +610,15 @@ bool QSGCanvas::event(QEvent *e)
         qWarning("touchEndEvent");
 #endif
         return true;
+    case QEvent::Leave:
+        d->clearHover();
+        d->lastMousePosition = QPoint();
+        break;
     default:
         return QGLWidget::event(e);
     }
+
+    return QGLWidget::event(e);
 }
 
 void QSGCanvas::keyPressEvent(QKeyEvent *e)
@@ -686,6 +765,27 @@ void QSGCanvas::mouseDoubleClickEvent(QMouseEvent *event)
     event->setAccepted(sceneEvent.isAccepted());
 }
 
+void QSGCanvasPrivate::sendHoverEvent(QEvent::Type type, QSGItem *item,
+                                      QGraphicsSceneHoverEvent *event)
+{
+    Q_Q(QSGCanvas);
+    const QTransform transform = QSGItemPrivate::get(item)->canvasToItemTransform();
+
+    //create copy of event
+    QGraphicsSceneHoverEvent hoverEvent(type);
+    hoverEvent.setWidget(event->widget());
+    event->setPos(transform.map(event->scenePos()));
+    hoverEvent.setScenePos(event->scenePos());
+    hoverEvent.setScreenPos(event->screenPos());
+    event->setLastPos(transform.map(event->lastScenePos()));
+    hoverEvent.setLastScenePos(event->lastScenePos());
+    hoverEvent.setLastScreenPos(event->lastScreenPos());
+    hoverEvent.setModifiers(event->modifiers());
+    hoverEvent.setAccepted(event->isAccepted());
+
+    q->sendEvent(item, &hoverEvent);
+}
+
 void QSGCanvas::mouseMoveEvent(QMouseEvent *event)
 {
     Q_D(QSGCanvas);
@@ -694,6 +794,23 @@ void QSGCanvas::mouseMoveEvent(QMouseEvent *event)
     qWarning() << "QSGCanvas::mouseMoveEvent()" << event->pos() << event->button() << event->buttons();
 #endif
 
+    if (!d->mouseGrabberItem) {
+        QGraphicsSceneHoverEvent hoverEvent;
+        d->sceneHoverEventFromMouseEvent(hoverEvent, event);
+
+        bool delivered = d->deliverHoverEvent(d->rootItem, &hoverEvent);
+        if (!delivered) {
+            //take care of any exits
+            if (d->hoverItem) {
+                QSGItem *item = d->hoverItem;
+                d->hoverItem = 0;
+                d->sendHoverEvent(QEvent::GraphicsSceneHoverLeave, item, &hoverEvent);
+            }
+        }
+        event->setAccepted(hoverEvent.isAccepted());
+        return;
+    }
+
     QGraphicsSceneMouseEvent sceneEvent(d->sceneMouseEventTypeFromMouseEvent(event));
     d->sceneMouseEventFromMouseEvent(sceneEvent, event);
 
@@ -701,13 +818,107 @@ void QSGCanvas::mouseMoveEvent(QMouseEvent *event)
     event->setAccepted(sceneEvent.isAccepted());
 }
 
-void QSGCanvas::wheelEvent(QWheelEvent *)
+bool QSGCanvasPrivate::deliverHoverEvent(QSGItem *item, QGraphicsSceneHoverEvent *event)
 {
-    // XXX todo
-#ifdef MOUSE_DEBUG
-    qWarning("wheelEvent");
-#endif
+    QSGItemPrivate *itemPrivate = QSGItemPrivate::get(item);
+    if (itemPrivate->opacity == 0.0)
+        return false;
+
+    if (itemPrivate->flags & QSGItem::ItemClipsChildrenToShape) {
+        QPointF p = item->mapFromScene(event->scenePos());
+        if (!QRectF(0, 0, item->width(), item->height()).contains(p))
+            return false;
+    }
+
+    QList<QSGItem *> children = itemPrivate->paintOrderChildItems();
+    for (int ii = children.count() - 1; ii >= 0; --ii) {
+        QSGItem *child = children.at(ii);
+        if (!child->isEnabled())
+            continue;
+        if (deliverHoverEvent(child, event))
+            return true;
+    }
+
+    if (itemPrivate->hoverEnabled) {
+        QPointF p = item->mapFromScene(event->scenePos());
+        if (QRectF(0, 0, item->width(), item->height()).contains(p)) {
+            if (hoverItem == item) {
+                //move
+                sendHoverEvent(QEvent::GraphicsSceneHoverMove, item, event);
+            } else {
+                //exit from previous
+                if (hoverItem) {
+                    QSGItem *item = hoverItem;
+                    hoverItem = 0;
+                    sendHoverEvent(QEvent::GraphicsSceneHoverLeave, item, event);
+                }
+
+                //enter new item
+                hoverItem = item;
+                sendHoverEvent(QEvent::GraphicsSceneHoverEnter, item, event);
+            }
+            return true;
+        }
+    }
+
+    return false;
 }
+
+bool QSGCanvasPrivate::deliverWheelEvent(QSGItem *item, QGraphicsSceneWheelEvent *event)
+{
+    Q_Q(QSGCanvas);
+    QSGItemPrivate *itemPrivate = QSGItemPrivate::get(item);
+    if (itemPrivate->opacity == 0.0)
+        return false;
+
+    if (itemPrivate->flags & QSGItem::ItemClipsChildrenToShape) {
+        QPointF p = item->mapFromScene(event->scenePos());
+        if (!QRectF(0, 0, item->width(), item->height()).contains(p))
+            return false;
+    }
+
+    QList<QSGItem *> children = itemPrivate->paintOrderChildItems();
+    for (int ii = children.count() - 1; ii >= 0; --ii) {
+        QSGItem *child = children.at(ii);
+        if (!child->isEnabled())
+            continue;
+        if (deliverWheelEvent(child, event))
+            return true;
+    }
+
+    QPointF p = item->mapFromScene(event->scenePos());
+    if (QRectF(0, 0, item->width(), item->height()).contains(p)) {
+        event->setPos(itemPrivate->canvasToItemTransform().map(event->scenePos()));
+        event->accept();
+        q->sendEvent(item, event);
+        if (event->isAccepted())
+            return true;
+    }
+
+    return false;
+}
+
+#ifndef QT_NO_WHEELEVENT
+void QSGCanvas::wheelEvent(QWheelEvent *event)
+{
+    Q_D(QSGCanvas);
+#ifdef MOUSE_DEBUG
+    qWarning() << "QSGCanvas::wheelEvent()" << event->pos() << event->delta() << event->orientation();
+#endif
+    QGraphicsSceneWheelEvent wheelEvent(QEvent::GraphicsSceneWheel);
+    wheelEvent.setWidget(this);
+    wheelEvent.setScenePos(event->pos());
+    wheelEvent.setScreenPos(event->globalPos());
+    wheelEvent.setButtons(event->buttons());
+    wheelEvent.setModifiers(event->modifiers());
+    wheelEvent.setDelta(event->delta());
+    wheelEvent.setOrientation(event->orientation());
+    wheelEvent.setAccepted(false);
+
+    d->deliverWheelEvent(d->rootItem, &wheelEvent);
+    event->setAccepted(wheelEvent.isAccepted());
+}
+#endif // QT_NO_WHEELEVENT
 
 bool QSGCanvasPrivate::sendFilteredMouseEvent(QSGItem *target, QSGItem *item, QGraphicsSceneMouseEvent *event)
 {
@@ -768,6 +979,14 @@ bool QSGCanvas::sendEvent(QSGItem *item, QEvent *e)
                 QSGItemPrivate::get(item)->deliverMouseEvent(se);
             }
         }
+        break;
+    case QEvent::GraphicsSceneWheel:
+        QSGItemPrivate::get(item)->deliverWheelEvent(static_cast<QGraphicsSceneWheelEvent *>(e));
+        break;
+    case QEvent::GraphicsSceneHoverEnter:
+    case QEvent::GraphicsSceneHoverLeave:
+    case QEvent::GraphicsSceneHoverMove:
+        QSGItemPrivate::get(item)->deliverHoverEvent(static_cast<QGraphicsSceneHoverEvent *>(e));
         break;
     default:
         break;
@@ -1024,6 +1243,7 @@ void QSGCanvas::paintEvent(QPaintEvent *)
     QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Painting);
 
     d->context->renderer()->setDeviceRect(rect());
+    d->context->renderer()->setViewportRect(rect());
     d->context->renderer()->setProjectMatrixToDeviceRect();
 
     d->context->renderNextFrame();

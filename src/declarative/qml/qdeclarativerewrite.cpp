@@ -62,12 +62,17 @@ bool SharedBindingTester::isSharable(const QString &code)
     if (!parser.statement()) 
         return false;
 
+    return isSharable(parser.statement());
+}
+
+bool SharedBindingTester::isSharable(AST::Node *node)
+{
     _sharable = true;
-    AST::Node::acceptChild(parser.statement(), this);
+    AST::Node::acceptChild(node, this);
     return _sharable;
 }
 
-QString RewriteBinding::operator()(const QString &code, bool *ok)
+QString RewriteBinding::operator()(const QString &code, bool *ok, bool *sharable)
 {
     Engine engine;
     NodePool pool(QString(), &engine);
@@ -80,8 +85,61 @@ QString RewriteBinding::operator()(const QString &code, bool *ok)
         return QString();
     } else {
         if (ok) *ok = true;
+        if (sharable) {
+            SharedBindingTester tester;
+            *sharable = tester.isSharable(parser.statement());
+        }
     }
     return rewrite(code, 0, parser.statement());
+}
+
+QString RewriteBinding::operator()(QDeclarativeJS::AST::Node *node, const QString &code, bool *sharable)
+{
+    if (!node)
+        return code;
+
+    if (sharable) {
+        SharedBindingTester tester;
+        *sharable = tester.isSharable(node);
+    }
+
+    QDeclarativeJS::AST::ExpressionNode *expression = node->expressionCast();
+    QDeclarativeJS::AST::Statement *statement = node->statementCast();
+    if(!expression && !statement)
+        return code;
+
+    TextWriter w;
+    _writer = &w;
+    _position = expression ? expression->firstSourceLocation().begin() : statement->firstSourceLocation().begin();
+    _inLoop = 0;
+
+    accept(node);
+
+    unsigned startOfStatement = 0;
+    unsigned endOfStatement = (expression ? expression->lastSourceLocation().end() : statement->lastSourceLocation().end()) - _position;
+
+    QString startString = QLatin1String("(function ") + QString::fromUtf8(_name) + QLatin1String("() { ");
+    if (expression)
+        startString += QLatin1String("return ");
+    _writer->replace(startOfStatement, 0, startString);
+    _writer->replace(endOfStatement, 0, QLatin1String(" })"));
+
+    if (rewriteDump()) {
+        qWarning() << "=============================================================";
+        qWarning() << "Rewrote:";
+        qWarning() << qPrintable(code);
+    }
+
+    QString codeCopy = code;
+    w.write(&codeCopy);
+
+    if (rewriteDump()) {
+        qWarning() << "To:";
+        qWarning() << qPrintable(code);
+        qWarning() << "=============================================================";
+    }
+
+    return codeCopy;
 }
 
 void RewriteBinding::accept(AST::Node *node)

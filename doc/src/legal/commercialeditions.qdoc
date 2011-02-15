@@ -37,23 +37,46 @@
     If you want to develop Free or Open Source software for release using a recognized
     Open Source license, you can use the \l{Open Source Versions of Qt}.
 
-    The table below summarizes the differences between the two commercial editions:
+    The following table is a summary of the licenses under which Qt is made available.
+
+    \table
+    \row \o \bold{Qt Commercial Developer License}
+    \o The Qt Commercial Developer License is the appropriate version to use for the
+    development of proprietary and/or commercial software where the developer does not
+    wish to share or distribute any source code of the Qt libraries or otherwise comply
+    with the terms of the \l{GNU Lesser General Public License (LGPL)}{GNU Lesser General
+    Public License version 2.1} or \l{GNU General Public License (GPL)}{GNU GPL version
+    3.0}.
+    \row \o \bold{Qt GNU LGPL v. 2.1}
+    \o This version of Qt is appropriate for the development of Qt applications
+    (proprietary or open source) provided you can comply with the terms and conditions
+    contained in the \l{GNU Lesser General Public License (LGPL)}{GNU LGPL version 2.1}.
+    \row \o \bold{Qt GNU GPL v. 3.0}
+    \o This version of Qt is appropriate for the development of Qt applications where
+    you wish to use such applications in combination with software subject to the terms
+    of the GNU General Public License version 3.0 or where you are otherwise willing to
+    comply with the terms of the
+    \l{GNU General Public License (GPL)}{GNU General Public License version 3.0}.
+    \endtable
 
     Please see the \l{Supported Platforms}{list of supported
     platforms} for up-to-date information about the various platforms
     and compilers that Qt supports.
 
-    On the Qt web site, you can find a
+    On the Qt Web site, you can find a
     \l{Qt Licensing Overview} and information on \l{Qt License Pricing}
     for commercial editions of Qt and other Qt-related products.
 
+    \section1 Purchasing and Sales Information
+
     To purchase, please visit the \l{How to Order}{online order form}.
 
-    For further information and assistance, please contact Qt sales.
+    For further information and assistance, please contact the Qt sales team
+    via one of the following channels:
 
-    Web: http://qt.nokia.com/contact.
-
-    Phone, U.S. office (for North America): \bold{1-650-813-1676}.
-
-    Phone, Norway office (for the rest of the world): \bold{+47 21 60 48 00}.
+    \table
+    \row \o Web: \o \bold{http://qt.nokia.com/contact}
+    \row \o Phone, U.S. office (for sales in North America): \o \bold{1-408-220-9020}
+    \row \o Phone, Norway office (for sales in the rest of the world): \o \bold{+47 21 60 48 00}
+    \endtable
 */

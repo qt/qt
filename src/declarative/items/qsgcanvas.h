@@ -74,6 +74,8 @@ public:
     QSGContext *sceneGraphContext() const;
     void setSceneGraphContext(QSGContext *context);
 
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
+
 protected:
     QSGCanvas(QSGCanvasPrivate &dd, QWidget *parent = 0, Qt::WindowFlags f = 0);
     QSGCanvas(QSGCanvasPrivate &dd, const QGLFormat &format, QWidget *parent = 0, Qt::WindowFlags f = 0);
@@ -89,7 +91,9 @@ protected:
     virtual void mouseReleaseEvent(QMouseEvent *);
     virtual void mouseDoubleClickEvent(QMouseEvent *);
     virtual void mouseMoveEvent(QMouseEvent *);
+#ifndef QT_NO_WHEELEVENT
     virtual void wheelEvent(QWheelEvent *);
+#endif
 
 private Q_SLOTS:
     void maybeUpdate();

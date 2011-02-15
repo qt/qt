@@ -43,16 +43,40 @@
 #define QDECLARATIVEDEBUGTRACE_P_H
 
 #include <private/qdeclarativedebugservice_p.h>
-#include <QtCore/qelapsedtimer.h>
+#include <private/qperformancetimer_p.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+struct QDeclarativeDebugData
+{
+    qint64 time;
+    int messageType;
+    int detailType;
+
+    //###
+    QString detailData; //used by RangeData and RangeLocation
+    int line;           //used by RangeLocation
+
+    QByteArray toByteArray() const;
+};
+
 class QUrl;
 class Q_AUTOTEST_EXPORT QDeclarativeDebugTrace : public QDeclarativeDebugService
 {
 public:
+    enum Message {
+        Event,
+        RangeStart,
+        RangeData,
+        RangeLocation,
+        RangeEnd,
+        Complete,
+
+        MaximumMessage
+    };
+
     enum EventType {
         FramePaint,
         Mouse,
@@ -61,19 +85,12 @@ public:
         MaximumEventType
     };
 
-    enum Message {
-        Event,
-        RangeStart,
-        RangeData,
-        RangeEnd,
-
-        MaximumMessage
-    };
-
     enum RangeType {
         Painting,
         Compiling,
         Creating,
+        Binding,            //running a binding
+        HandlingSignal,     //running a signal handler
 
         MaximumRangeType
     };
@@ -81,16 +98,29 @@ public:
     static void addEvent(EventType);
 
     static void startRange(RangeType);
+    static void rangeData(RangeType, const QString &);
     static void rangeData(RangeType, const QUrl &);
+    static void rangeLocation(RangeType, const QString &, int);
+    static void rangeLocation(RangeType, const QUrl &, int);
     static void endRange(RangeType);
 
     QDeclarativeDebugTrace();
+protected:
+    virtual void messageReceived(const QByteArray &);
 private:
     void addEventImpl(EventType);
     void startRangeImpl(RangeType);
+    void rangeDataImpl(RangeType, const QString &);
     void rangeDataImpl(RangeType, const QUrl &);
+    void rangeLocationImpl(RangeType, const QString &, int);
+    void rangeLocationImpl(RangeType, const QUrl &, int);
     void endRangeImpl(RangeType);
-    QElapsedTimer m_timer;
+    void processMessage(const QDeclarativeDebugData &);
+    void sendMessages();
+    QPerformanceTimer m_timer;
+    bool m_enabled;
+    bool m_deferredSend;
+    QList<QDeclarativeDebugData> m_data;
 };
 
 QT_END_NAMESPACE

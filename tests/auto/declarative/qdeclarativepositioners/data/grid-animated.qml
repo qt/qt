@@ -1,11 +1,14 @@
-import QtQuick 1.0
+import QtQuick 1.1
 
 Item {
     width: 640
     height: 480
+    property bool testRightToLeft: true
+
     Grid {
         objectName: "grid"
         columns: 3
+        layoutDirection: testRightToLeft ? Qt.RightToLeft : Qt.LeftToRight
         add: Transition {
             NumberAnimation {
                 properties: "x,y";

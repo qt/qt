@@ -130,7 +130,7 @@
     item on the scene gains focus, the scene automatically gains focus. If the
     scene has focus, hasFocus() will return true, and key events will be
     forwarded to the focus item, if any. If the scene loses focus, (i.e.,
-    someone calls clearFocus(),) while an item has focus, the scene will
+    someone calls clearFocus()) while an item has focus, the scene will
     maintain its item focus information, and once the scene regains focus, it
     will make sure the last focus item regains focus.
 
@@ -806,28 +806,23 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
     }
 
     if (focusItem) {
-        QFocusEvent event(QEvent::FocusOut, focusReason);
         lastFocusItem = focusItem;
-        focusItem = 0;
-        sendEvent(lastFocusItem, &event);
 
 #ifndef QT_NO_IM
         if (lastFocusItem
             && (lastFocusItem->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
-            // Reset any visible preedit text
-            QInputMethodEvent imEvent;
-            sendEvent(lastFocusItem, &imEvent);
-
             // Close any external input method panel. This happens
             // automatically by removing WA_InputMethodEnabled on
             // the views, but if we are changing focus, we have to
             // do it ourselves.
-            if (item) {
-                for (int i = 0; i < views.size(); ++i)
-                    if (views.at(i)->inputContext())
-                        views.at(i)->inputContext()->reset();
-            }
+            for (int i = 0; i < views.size(); ++i)
+                if (views.at(i)->inputContext())
+                    views.at(i)->inputContext()->reset();
         }
+
+        focusItem = 0;
+        QFocusEvent event(QEvent::FocusOut, focusReason);
+        sendEvent(lastFocusItem, &event);
 #endif //QT_NO_IM
     }
 
@@ -3104,8 +3099,8 @@ bool QGraphicsScene::stickyFocus() const
     \list
     \o If the item receives a mouse release event when there are no other
     buttons pressed, it loses the mouse grab.
-    \o If the item becomes invisible (i.e., someone calls \c {item->setVisible(false))},
-    or if it becomes disabled (i.e., someone calls \c {item->setEnabled(false))},
+    \o If the item becomes invisible (i.e., someone calls \c {item->setVisible(false)}),
+    or if it becomes disabled (i.e., someone calls \c {item->setEnabled(false)}),
     it loses the mouse grab.
     \o If the item is removed from the scene, it loses the mouse grab.
     \endlist
@@ -5924,6 +5919,8 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
         }
         if (item->isPanel())
             break;
+        if (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation)
+            break;
     }
 
     // If nobody could take focus, clear it.
@@ -5955,6 +5952,8 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
             break;
         }
         if (item && item->isPanel())
+            break;
+        if (item && (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation))
             break;
     }
 

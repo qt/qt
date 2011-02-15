@@ -176,6 +176,7 @@ void EffectSubtreeNode::preprocess()
         }
 
         subtree.renderer->setDeviceRect(texSize);
+        subtree.renderer->setViewportRect(texSize);
         subtree.renderer->setProjectMatrixToDeviceRect();
         QMatrix4x4 m = subtree.renderer->projectMatrix();
         m.translate(m_margins.width(), m_margins.height());

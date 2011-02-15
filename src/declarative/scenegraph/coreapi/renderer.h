@@ -109,6 +109,10 @@ public:
     inline void setDeviceRect(const QSize &size) { setDeviceRect(QRect(QPoint(), size)); }
     QRect deviceRect() const { return m_device_rect; }
 
+    void setViewportRect(const QRect &rect) { m_viewport_rect = rect; }
+    inline void setViewportRect(const QSize &size) { setViewportRect(QRect(QPoint(), size)); }
+    QRect viewportRect() const { return m_viewport_rect; }
+
     QSGMatrix4x4Stack &projectionMatrix() { return m_projectionMatrix; }
     QSGMatrix4x4Stack &modelViewMatrix() { return m_modelViewMatrix; }
 
@@ -161,6 +165,7 @@ private:
     NodeUpdater *m_node_updater;
 
     QRect m_device_rect;
+    QRect m_viewport_rect;
 
     QHash<AbstractMaterialType *, AbstractMaterialShader *> m_materials;
     QSet<Node *> m_nodes_to_preprocess;

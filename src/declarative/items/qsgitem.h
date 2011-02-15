@@ -161,11 +161,6 @@ public:
         ItemActiveFocusHasChanged, // TextEdit, TextInput
     };
 
-    // XXX todo - from QGraphicsObject
-    Qt::InputMethodHints inputMethodHints() const { return 0; }
-    void setInputMethodHints(Qt::InputMethodHints hints) { Q_UNUSED(hints); }
-    void updateMicroFocus() {}
-
     enum TransformOrigin {
         TopLeft, Top, TopRight,
         Left, Center, Right,
@@ -277,6 +272,9 @@ public:
     Q_INVOKABLE void forceActiveFocus();
     Q_INVOKABLE QSGItem *childAt(qreal x, qreal y) const;
 
+    Qt::InputMethodHints inputMethodHints() const;
+    void setInputMethodHints(Qt::InputMethodHints hints);
+    void updateMicroFocus();
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
 
     struct UpdatePaintNodeData {

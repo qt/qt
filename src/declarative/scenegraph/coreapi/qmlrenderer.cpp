@@ -207,8 +207,8 @@ void QMLRenderer::render()
     glClearColor(m_clear_color.redF(), m_clear_color.greenF(), m_clear_color.blueF(), m_clear_color.alphaF());
     bindable()->clear();
 
-    QRect r = deviceRect();
-    glViewport(0, 0, r.width(), r.height());
+    QRect r = viewportRect();
+    glViewport(r.x(), deviceRect().bottom() - r.bottom(), r.width(), r.height());
     m_projectionMatrix = projectMatrix();
     m_projectionMatrix.push();
     m_modelViewMatrix.setToIdentity();

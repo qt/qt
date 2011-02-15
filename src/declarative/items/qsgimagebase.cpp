@@ -128,6 +128,44 @@ QSize QSGImageBase::sourceSize() const
     return QSize(width != -1 ? width : implicitWidth(), height != -1 ? height : implicitHeight());
 }
 
+bool QSGImageBase::cache() const
+{
+    Q_D(const QSGImageBase);
+    return d->cache;
+}
+
+void QSGImageBase::setCache(bool cache)
+{
+    Q_D(QSGImageBase);
+    if (d->cache == cache)
+        return;
+
+    d->cache = cache;
+    emit cacheChanged();
+    if (isComponentComplete())
+        load();
+}
+
+void QSGImageBase::setMirror(bool mirror)
+{
+    Q_D(QSGImageBase);
+    if (mirror == d->mirror)
+        return;
+
+    d->mirror = mirror;
+
+    if (isComponentComplete())
+        update();
+
+    emit mirrorChanged();
+}
+
+bool QSGImageBase::mirror() const
+{
+    Q_D(const QSGImageBase);
+    return d->mirror;
+}
+
 void QSGImageBase::load()
 {
     Q_D(QSGImageBase);
@@ -143,7 +181,12 @@ void QSGImageBase::load()
         pixmapChange();
         update();
     } else {
-        d->pix.load(qmlEngine(this), d->url, d->explicitSourceSize ? sourceSize() : QSize(), d->async);
+        QDeclarativePixmap::Options options;
+        if (d->async)
+            options |= QDeclarativePixmap::Asynchronous;
+        if (d->cache)
+            options |= QDeclarativePixmap::Cache;
+        d->pix.load(qmlEngine(this), d->url, d->explicitSourceSize ? sourceSize() : QSize(), options);
 
         if (d->pix.isLoading()) {
             d->progress = 0.0;
