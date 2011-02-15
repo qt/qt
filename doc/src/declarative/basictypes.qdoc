@@ -36,11 +36,10 @@
     QML has a set of primitive types, as listed below, that are used throughout
     the \l {QML Elements}.
 
-    Some of these types can also be used for defining
-    \c property values in QML. See \l{Importing Reusable Components} for the
-    list of types that can be used for \c property values.
-
     \annotatedlist qmlbasictypes
+
+    To create additional types, such as data types created in C++, read the
+    \l{Extending QML Functionalities using C++} article.
 */
 
 /*!

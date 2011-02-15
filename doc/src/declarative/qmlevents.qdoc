@@ -29,12 +29,10 @@
 \page qmlevents.html
 \ingroup qml-features
 \contentspage QML Features
-\previouspage {Integrating QML Code with Existing Qt UI Code}
-\nextpage {Dynamic Object Management in QML}{Dynamic Object Management}
+\previouspage {Keyboard Focus in QML}{Keyboard Focus}
+\nextpage Importing Reusable Components
 
 \title QML Signal and Handler Event System
-
-\section1 Overview, structural information
 
 QML utilizes Qt's \l{The Meta-Object System}{meta-object} and
 \l{Signals & Slots}{signals} systems. Signals and slots created using Qt in C++
@@ -123,5 +121,8 @@ signal may be emitted in QML code or called as a method. In addition, the QML
 runtime automatically creates signal handlers for the C++ signals. For more
 signal control, the \c connect() method and the \l Connect element may connect a
 C++ to another signal or method.
+
+For complete information on how to call C++ functions in QML, read the \l {Extending QML - Signal Support Example}.
+
 
 */
