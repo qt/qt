@@ -73,7 +73,7 @@ private:
     }
 
     Q_DISABLE_COPY(QScriptIsolate);
-    const QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
+    const QScriptEnginePrivate *m_engine;
     const OperationMode m_mode;
 };
 
