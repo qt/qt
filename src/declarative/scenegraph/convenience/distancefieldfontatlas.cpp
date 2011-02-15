@@ -67,6 +67,10 @@
 #  include <private/qfontengine_qpa_p.h>
 #endif
 
+#ifndef GL_BGRA
+#define GL_BGRA 0x80E1
+#endif
+
 void qt_disableFontHinting(QFont &font)
 {
     QFontEngine *fontEngine = QFontPrivate::get(font)->engineForScript(QUnicodeTables::Common);

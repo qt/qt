@@ -281,6 +281,7 @@ public:
     qreal opacity;
 
     Qt::MouseButtons acceptedMouseButtons;
+    Qt::InputMethodHints imHints;
 
     QPointF computeTransformOrigin() const;
     QList<QSGTransform *> transforms;

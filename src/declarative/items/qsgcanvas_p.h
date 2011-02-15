@@ -108,6 +108,8 @@ public:
     void clearFocusInScope(QSGItem *scope, QSGItem *item, FocusOptions = 0);
     void notifyFocusChangesRecur(QSGItem **item, int remaining);
 
+    void updateInputMethodData();
+
     void dirtyItem(QSGItem *);
     void cleanup(Node *);
 

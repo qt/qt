@@ -56,6 +56,7 @@
 #include <QtScript/qscriptengine.h>
 #include <QtGui/qgraphicstransform.h>
 #include <QtGui/qpen.h>
+#include <QtGui/qinputcontext.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qnumeric.h>
@@ -1078,6 +1079,7 @@ QSGItemPrivate::QSGItemPrivate()
   z(0), scale(1), rotation(0), opacity(1),
 
   acceptedMouseButtons(0),
+  imHints(Qt::ImhNone),
   
   keyHandler(0),
 
@@ -1472,6 +1474,38 @@ void QSGItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 bool QSGItem::childMouseEventFilter(QSGItem *, QEvent *)
 {
     return false;
+}
+
+Qt::InputMethodHints QSGItem::inputMethodHints() const
+{
+    Q_D(const QSGItem);
+    return d->imHints;
+}
+
+void QSGItem::setInputMethodHints(Qt::InputMethodHints hints)
+{
+    Q_D(QSGItem);
+    d->imHints = hints;
+
+    if (!d->canvas || d->canvas->activeFocusItem() != this)
+        return;
+
+    QSGCanvasPrivate::get(d->canvas)->updateInputMethodData();
+#ifndef QT_NO_IM
+    if (d->canvas->hasFocus())
+        if (QInputContext *inputContext = d->canvas->inputContext())
+            inputContext->update();
+#endif
+}
+
+void QSGItem::updateMicroFocus()
+{
+#ifndef QT_NO_IM
+    Q_D(QSGItem);
+    if (d->canvas && d->canvas->hasFocus())
+        if (QInputContext *inputContext = d->canvas->inputContext())
+            inputContext->update();
+#endif
 }
 
 QVariant QSGItem::inputMethodQuery(Qt::InputMethodQuery query) const

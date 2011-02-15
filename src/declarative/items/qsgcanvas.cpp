@@ -320,6 +320,8 @@ void QSGCanvasPrivate::setFocusInScope(QSGItem *scope, QSGItem *item, FocusOptio
         q->sendEvent(newActiveFocusItem, &event); 
     }
 
+    updateInputMethodData();
+
     if (!changed.isEmpty()) 
         notifyFocusChangesRecur(changed.data(), changed.count() - 1);
 }
@@ -392,6 +394,8 @@ void QSGCanvasPrivate::clearFocusInScope(QSGItem *scope, QSGItem *item, FocusOpt
         q->sendEvent(newActiveFocusItem, &event); 
     }
 
+    updateInputMethodData();
+
     if (!changed.isEmpty()) 
         notifyFocusChangesRecur(changed.data(), changed.count() - 1);
 }
@@ -417,6 +421,34 @@ void QSGCanvasPrivate::notifyFocusChangesRecur(QSGItem **items, int remaining)
             emit item->activeFocusChanged(itemPrivate->activeFocus);
         }
     } 
+}
+
+void QSGCanvasPrivate::updateInputMethodData()
+{
+    Q_Q(QSGCanvas);
+    bool enabled = activeFocusItem
+                   && (QSGItemPrivate::get(activeFocusItem)->flags & QSGItem::ItemAcceptsInputMethod);
+    q->setAttribute(Qt::WA_InputMethodEnabled, enabled);
+    q->setInputMethodHints(enabled ? activeFocusItem->inputMethodHints() : Qt::ImhNone);
+}
+
+QVariant QSGCanvas::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    Q_D(const QSGCanvas);
+    if (!d->activeFocusItem || !(QSGItemPrivate::get(d->activeFocusItem)->flags & QSGItem::ItemAcceptsInputMethod))
+        return QVariant();
+    QVariant value = d->activeFocusItem->inputMethodQuery(query);
+
+    //map geometry types
+    QVariant::Type type = value.type();
+    if (type == QVariant::RectF || type == QVariant::Rect) {
+        const QTransform transform = QSGItemPrivate::get(d->activeFocusItem)->itemToCanvasTransform();
+        value = transform.mapRect(value.toRectF());
+    } else if (type == QVariant::PointF || type == QVariant::Point) {
+        const QTransform transform = QSGItemPrivate::get(d->activeFocusItem)->itemToCanvasTransform();
+        value = transform.map(value.toPointF());
+    }
+    return value;
 }
 
 void QSGCanvasPrivate::dirtyItem(QSGItem *)
