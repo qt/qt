@@ -535,7 +535,7 @@ qDBusSignalFilter(DBusConnection *connection, DBusMessage *message, void *data)
     if (d->mode == QDBusConnectionPrivate::InvalidMode)
         return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 
-    QDBusMessage amsg = QDBusMessagePrivate::fromDBusMessage(message);
+    QDBusMessage amsg = QDBusMessagePrivate::fromDBusMessage(message, d->capabilities);
     qDBusDebug() << d << "got message (signal):" << amsg;
 
     return d->handleMessage(amsg) ?
@@ -1204,7 +1204,7 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
     QDBusMessagePrivate::setParametersValidated(message, true);
     message.setArguments(args);
     QDBusError error;
-    DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message, &error);
+    DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message, capabilities, &error);
     if (!msg) {
         qWarning("QDBusConnection: Could not emit signal %s.%s: %s", qPrintable(interface), memberName.constData(),
                  qPrintable(error.message()));
@@ -1754,7 +1754,7 @@ void QDBusConnectionPrivate::processFinishedCall(QDBusPendingCallPrivate *call)
     if (call->pending) {
         // decode the message
         DBusMessage *reply = q_dbus_pending_call_steal_reply(call->pending);
-        msg = QDBusMessagePrivate::fromDBusMessage(reply);
+        msg = QDBusMessagePrivate::fromDBusMessage(reply, connection->capabilities);
         q_dbus_message_unref(reply);
     }
     qDBusDebug() << connection << "got message reply (async):" << msg;
@@ -1805,7 +1805,7 @@ int QDBusConnectionPrivate::send(const QDBusMessage& message)
                                 // through the d_ptr->localReply link
 
     QDBusError error;
-    DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message, &error);
+    DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message, capabilities, &error);
     if (!msg) {
         if (message.type() == QDBusMessage::MethodCallMessage)
             qWarning("QDBusConnection: error: could not send message to service \"%s\" path \"%s\" interface \"%s\" member \"%s\": %s",
@@ -1851,7 +1851,7 @@ QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
 
     if (!QCoreApplication::instance() || sendMode == QDBus::Block) {
         QDBusError err;
-        DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message, &err);
+        DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message, capabilities, &err);
         if (!msg) {
             qWarning("QDBusConnection: error: could not send message to service \"%s\" path \"%s\" interface \"%s\" member \"%s\": %s",
                      qPrintable(message.service()), qPrintable(message.path()),
@@ -1872,7 +1872,7 @@ QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
             return QDBusMessage::createError(err);
         }
 
-        QDBusMessage amsg = QDBusMessagePrivate::fromDBusMessage(reply);
+        QDBusMessage amsg = QDBusMessagePrivate::fromDBusMessage(reply, capabilities);
         q_dbus_message_unref(reply);
         qDBusDebug() << this << "got message reply (blocking):" << amsg;
 
@@ -1948,7 +1948,7 @@ QDBusPendingCallPrivate *QDBusConnectionPrivate::sendWithReplyAsync(const QDBusM
     pcall->ref = 0;
 
     QDBusError error;
-    DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message, &error);
+    DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message, capabilities, &error);
     if (!msg) {
         qWarning("QDBusConnection: error: could not send message to service \"%s\" path \"%s\" interface \"%s\" member \"%s\": %s",
                  qPrintable(message.service()), qPrintable(message.path()),
