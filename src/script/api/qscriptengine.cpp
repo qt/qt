@@ -52,6 +52,9 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qpluginloader.h>
+#include <qthread.h>
+#include <qmutex.h>
+#include <qwaitcondition.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -669,6 +672,8 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
     , m_currentQsContext(0)
     , m_state(Idle)
     , m_currentAgent(0)
+    , m_processEventTimeoutThread(0)
+    , m_processEventInterval(-1)
 {
     qMetaTypeId<QScriptValue>();
     qMetaTypeId<QList<int> >();
@@ -724,9 +729,45 @@ v8::Handle<v8::String> QScriptEnginePrivate::qtDataId()
     return m_qtDataId;
 }
 
+/* Thread used by setProcessEventInterval */
+class QScriptEnginePrivate::ProcessEventTimeoutThread : public QThread {
+    static void callback(void *engine) {
+        //executed in the JS thread
+        if (static_cast<QScriptEnginePrivate *>(engine)->isEvaluating())
+            qApp->processEvents();
+    }
+    void run() {
+        QScriptIsolate api(engine);
+        QMutexLocker locker(&mutex);
+        while(waitTime >= 0) {
+            if (!cond.wait(&mutex, waitTime))
+                v8::V8::ExecuteUserCallback(callback, engine);
+        }
+    }
+public:
+    int processEventInterval;
+    int waitTime;
+    QWaitCondition cond;
+    QMutex mutex;
+    QScriptEnginePrivate *engine;
+    void destroy() {
+        resetTime(-1);
+        wait();
+        delete this;
+    }
+    void resetTime(int newTime) {
+        QMutexLocker locker (&mutex);
+        waitTime = newTime;
+        cond.wakeOne();
+    }
+};
+
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
     m_isolate->Enter();
+
+    if (m_processEventTimeoutThread)
+        m_processEventTimeoutThread->destroy();
 
     Q_ASSERT_X(!m_currentAgent && m_agents.isEmpty(), Q_FUNC_INFO, "Destruction of QScriptEnginePrivate is not safe if an agent is active");
     invalidateAllScripts();
@@ -774,11 +815,23 @@ void QScriptEnginePrivate::popContext()
 QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch)
 {
     v8::HandleScope handleScope;
-    m_state = Evaluating;
+    struct EvaluateScope {
+        QScriptEnginePrivate *engine;
+        EvaluateScope(QScriptEnginePrivate *engine) : engine(engine) {
+            engine->m_state = Evaluating;
+            if (engine->m_processEventTimeoutThread)
+                engine->m_processEventTimeoutThread->resetTime(engine->m_processEventInterval);
+        }
+        ~EvaluateScope() {
+            if (engine->m_processEventTimeoutThread)
+                engine->m_processEventTimeoutThread->resetTime(INT_MAX);
+            engine->m_state = Idle;
+        }
+    } evaluateScope(this);
+
     clearExceptions();
     if (script.IsEmpty()) {
         v8::Handle<v8::Value> exception = tryCatch.Exception();
-        m_state = Idle;
         if (exception.IsEmpty()) {
             // This is possible on syntax errors like { a:12, b:21 } <- missing "(", ")" around expression.
             return InvalidValue();
@@ -806,10 +859,8 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handl
         if (exception.IsEmpty())
             exception = v8::Exception::Error(v8::String::New("missing exception value"));
         setException(exception, tryCatch.Message());
-        m_state = Idle;
         return new QScriptValuePrivate(this, exception);
     }
-    m_state = Idle;
     return new QScriptValuePrivate(this, result);
 }
 
@@ -2355,14 +2406,28 @@ QStringList QScriptEngine::importedExtensions() const
 
 void QScriptEngine::setProcessEventsInterval(int interval)
 {
-    Q_UNUSED(interval);
-    Q_UNIMPLEMENTED();
+    Q_D(QScriptEngine);
+    d->m_processEventInterval = interval;
+    if (d->m_processEventTimeoutThread) {
+        if (interval < 0) {
+            d->m_processEventTimeoutThread->destroy();
+            d->m_processEventTimeoutThread = 0;
+        } else {
+            if(d->isEvaluating())
+                d->m_processEventTimeoutThread->resetTime(interval);
+        }
+    } else if (interval >= 0) {
+        d->m_processEventTimeoutThread = new QScriptEnginePrivate::ProcessEventTimeoutThread;
+        d->m_processEventTimeoutThread->waitTime = d->isEvaluating() ? interval : INT_MAX;
+        d->m_processEventTimeoutThread->engine = d;
+        d->m_processEventTimeoutThread->start();
+    }
 }
 
 int QScriptEngine::processEventsInterval() const
 {
-    Q_UNIMPLEMENTED();
-    return 0;
+    Q_D(const QScriptEngine);
+    return d->m_processEventInterval;
 }
 
 void QScriptEngine::setAgent(QScriptEngineAgent *agent)

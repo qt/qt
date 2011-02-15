@@ -297,6 +297,9 @@ private:
     QScriptBagContainer<QScriptEngineAgentPrivate::UnloadData> m_scripts;
 
     QScriptEngineAgentPrivate *m_currentAgent;
+    class ProcessEventTimeoutThread;
+    ProcessEventTimeoutThread *m_processEventTimeoutThread;
+    int m_processEventInterval;
 };
 
 QT_END_NAMESPACE
