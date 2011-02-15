@@ -29,7 +29,7 @@
 \page qml-integration.html
 \ingroup qml-features
 \previouspage {Using QML Bindings in C++ Applications}
-\nextpage {QML Signal and Handler Event System}
+\nextpage {Dynamic Object Management in QML}{Dynamic Object Management}
 \contentspage QML Features
 \title Integrating QML Code with Existing Qt UI Code
 

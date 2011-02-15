@@ -28,7 +28,7 @@
 /*!
 \page qmlreusablecomponents.html
 \ingroup qml-features
-\previouspage {Keyboard Focus in QML}{Keyboard Focus}
+\previouspage {QML Signal and Handler Event System}{Signal and Handler Event System}
 \nextpage {QML States}{States}
 \contentspage QML Features
 
@@ -140,23 +140,4 @@ to be exposed.
 
 \snippet doc/src/snippets/declarative/reusablecomponents/focusbutton.qml document
 */
-
-The root object in \c Button.qml defines the attributes that are available to users of the
-\c Button component. In this case, the root object is a \l Rectangle, so any properties, methods
-and signals of \l Rectangle are made available, allowing \c application.qml to
-customize the \c width, \c height, \c radius and \c color properties of \c Button objects.
-
-If \c Button.qml was not in the same directory, \c application.qml would need to load it as a
-\l {Modules}{module} from a specific filesystem path or \l{QDeclarativeExtensionPlugin}{plugin}.
-Also, note the letter case of the component file name is significant on some (notably UNIX)
-filesystems. It is recommended the file name case matches the case of the QML component name
-exactly - for example, \c Box.qml and not \c BoX.qml - regardless of the platform to which the
-QML component will be deployed.
-
-\snippet doc/src/snippets/declarative/qml-extending-types/components/Button.qml 0
-\table
-\row
-\o \snippet doc/src/snippets/declarative/qml-extending-types/components/application.qml 0
-\o \image qml-extending-types.png
-\endtable
 

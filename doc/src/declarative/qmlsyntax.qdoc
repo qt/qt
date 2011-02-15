@@ -28,10 +28,8 @@
 /*!
 \page qmlsyntax.html
 \title QML Syntax
-\ingroup QML Features
-\previouspage QML Features
-\nextpage QML Basic Elements
-\contentspage QML Features
+\ingroup QML Reference
+\contentspage QML Reference
 
 \tableofcontents
 
@@ -67,7 +65,7 @@ types always begin with a capital letter. In the above example, there are
 two objects, a \l Rectangle, and an \l Image. Between the braces, we can specify
 information about the object, such as its properties.
 
-Properties are specified as \c {property: value}. In the above example, we
+Properties are specified as \c {propertyname: value}. In the above example, we
 can see the Image has a property named \c source, which has been assigned the
 value \c "pics/logo.png". The property and its value are separated by a colon.
 

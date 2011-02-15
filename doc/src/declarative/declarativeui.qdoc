@@ -75,15 +75,15 @@ QML and the Qt Declarative Module separate the frontend UI logic from the backen
 \section1 QML Features
 
 \list
-\o \l{QML Syntax}
-\o \l{Property Binding}
-\o \l{QML Basic Types}{Data Types}
 \o \l{QML Basic Elements}{Basic Elements}
+\o \l{QML Basic Types}{Data Types}
+\o \l{Property Binding}
 \o \l{Using QML Positioner and Repeater Items}{Component Layouts}
 \o \l{Anchor-based Layout in QML}{Layouts using Anchors}
 \o \l{QML Mouse Events}{Mouse Events}
 \o \l{QML Text Handling and Validators}{Text Handling and Validators}
 \o \l{Keyboard Focus in QML}{Keyboard Focus}
+\o \l{QML Signal and Handler Event System}{Signal and Handler Event System}
 \o \l{Importing Reusable Components}
 \o \l{QML States}{States}
 \o \l{QML Animation and Transitions}{Animation and Transitions}
@@ -92,11 +92,9 @@ QML and the Qt Declarative Module separate the frontend UI logic from the backen
 \o \l{Extending QML Functionalities using C++}
 \o \l{Using QML Bindings in C++ Applications}
 \o \l{Integrating QML Code with Existing Qt UI Code}
-\o \l{QML Signal and Handler Event System}{Signal and Handler Event System}
 \o \l{Dynamic Object Management in QML}{Dynamic Object Management}
 \o \l{Network Transparency}{Loading Resources in QML}
 \o \l{QML Internationalization}{Internationalization}
-\o \l{QML Graphical Effects}{Graphical Effects}
 \endlist
 
 \section1 QML Add-Ons
