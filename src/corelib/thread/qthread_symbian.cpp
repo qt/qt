@@ -207,7 +207,6 @@ void *QThreadPrivate::start(void *arg)
 
     set_thread_data(data);
 
-    data->ref();
     data->quitNow = false;
 
     // ### TODO: allow the user to create a custom event dispatcher
