@@ -33,7 +33,7 @@
 	\section1
 	Creating applications using Qt and QML is easy enough once you get started.
 	To get you started we have created two tutorials creating two similar applications,
-	but using diiferent approaches. One tutorial implements the user interface using
+	but using different approaches. One tutorial implements the user interface using
 	QML, while the other implements the whole application using traditional Qt.
 	
 	Please click on the links below to start the ride.

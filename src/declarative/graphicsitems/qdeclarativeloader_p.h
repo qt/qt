@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVELOADER_H
 #define QDECLARATIVELOADER_H
 
-#include "qdeclarativeitem.h"
+#include "qdeclarativeimplicitsizeitem_p.h"
 
 QT_BEGIN_HEADER
 
@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeLoaderPrivate;
-class Q_AUTOTEST_EXPORT QDeclarativeLoader : public QDeclarativeItem
+class Q_AUTOTEST_EXPORT QDeclarativeLoader : public QDeclarativeImplicitSizeItem
 {
     Q_OBJECT
     Q_ENUMS(Status)

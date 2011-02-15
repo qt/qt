@@ -13142,4 +13142,8 @@ EXPORTS
 	?viewportSize@QScrollPrepareEvent@@QBE?AVQSizeF@@XZ @ 13141 NONAME ; class QSizeF QScrollPrepareEvent::viewportSize(void) const
 	?staticMetaObject@QScroller@@2UQMetaObject@@B @ 13142 NONAME ; struct QMetaObject const QScroller::staticMetaObject
 	?staticMetaObject@QFlickGesture@@2UQMetaObject@@B @ 13143 NONAME ; struct QMetaObject const QFlickGesture::staticMetaObject
+	?isDragEnabled@QTextControl@@QBE_NXZ @ 13144 NONAME ; bool QTextControl::isDragEnabled(void) const
+	?setWordSelectionEnabled@QTextControl@@QAEX_N@Z @ 13145 NONAME ; void QTextControl::setWordSelectionEnabled(bool)
+	?setDragEnabled@QTextControl@@QAEX_N@Z @ 13146 NONAME ; void QTextControl::setDragEnabled(bool)
+	?isWordSelectionEnabled@QTextControl@@QBE_NXZ @ 13147 NONAME ; bool QTextControl::isWordSelectionEnabled(void) const
 

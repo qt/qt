@@ -407,6 +407,7 @@ QPacket::QPacket()
     buf = new QBuffer(&b);
     buf->open(QIODevice::WriteOnly);
     setDevice(buf);
+    setVersion(QDataStream::Qt_4_7);
 }
 
 /*!
@@ -449,6 +450,14 @@ QPacket::QPacket(const QByteArray & ba)
 bool QPacket::isEmpty() const
 {
     return b.isEmpty();
+}
+
+/*!
+  Returns raw packet data.
+  */
+QByteArray QPacket::data() const
+{
+    return b;
 }
 
 /*!

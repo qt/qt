@@ -147,13 +147,20 @@ class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeBinding : public QDeclarativeExpr
 {
 Q_OBJECT
 public:
+    enum EvaluateFlag { RequiresThisObject = 0x01 };
+    Q_DECLARE_FLAGS(EvaluateFlags, EvaluateFlag)
+
     QDeclarativeBinding(const QString &, QObject *, QDeclarativeContext *, QObject *parent=0);
     QDeclarativeBinding(const QString &, QObject *, QDeclarativeContextData *, QObject *parent=0);
     QDeclarativeBinding(void *, QDeclarativeRefCount *, QObject *, QDeclarativeContextData *, 
                         const QString &, int, QObject *parent);
+    QDeclarativeBinding(const QScriptValue &, QObject *, QDeclarativeContextData *, QObject *parent=0);
 
     void setTarget(const QDeclarativeProperty &);
     QDeclarativeProperty property() const;
+
+    void setEvaluateFlags(EvaluateFlags flags);
+    EvaluateFlags evaluateFlags() const;
 
     bool enabled() const;
 
@@ -161,6 +168,10 @@ public:
     virtual void setEnabled(bool, QDeclarativePropertyPrivate::WriteFlags flags);
     virtual void update(QDeclarativePropertyPrivate::WriteFlags flags);
     virtual QString expression() const;
+
+    typedef int Identifier;
+    static Identifier Invalid;
+    static QDeclarativeBinding *createBinding(Identifier, QObject *, QDeclarativeContext *, const QString &, int, QObject *parent=0);
 
 public Q_SLOTS:
     void update() { update(QDeclarativePropertyPrivate::DontRemoveBinding); }
@@ -172,6 +183,8 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QDeclarativeBinding)
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeBinding::EvaluateFlags)
 
 QT_END_NAMESPACE
 

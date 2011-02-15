@@ -54,7 +54,6 @@
 #include "tree.h"
 
 #include <limits.h>
-#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -591,12 +590,6 @@ void Tree::resolveGroups()
         if (fake && fake->subType() == Node::Group) {
             fake->addGroupMember(i.value());
         }
-#if 0        
-        else {
-            if (prevGroup != i.key())
-                i.value()->doc().location().warning(tr("No such group '%1'").arg(i.key()));
-        }
-#endif        
 
         prevGroup = i.key();
     }
@@ -812,6 +805,12 @@ void Tree::readIndexSection(const QDomElement &element,
             subtype = Node::Page;
         else if (element.attribute("subtype") == "externalpage")
             subtype = Node::ExternalPage;
+        else if (element.attribute("subtype") == "qmlclass")
+            subtype = Node::QmlClass;
+        else if (element.attribute("subtype") == "qmlpropertygroup")
+            subtype = Node::QmlPropertyGroup;
+        else if (element.attribute("subtype") == "qmlbasictype")
+            subtype = Node::QmlBasicType;
         else
             return;
 
@@ -1227,7 +1226,7 @@ bool Tree::generateIndexSection(QXmlStreamWriter &writer,
     QString fullName = fullDocumentName(node);
     if (fullName != objName)
         writer.writeAttribute("fullname", fullName);
-    writer.writeAttribute("href", fullDocumentLocation(node));
+    writer.writeAttribute("href", HtmlGenerator::fullDocumentLocation(node));
     if ((node->type() != Node::Fake) && (!node->isQmlNode()))
         writer.writeAttribute("location", node->location().fileName());
 
@@ -1365,6 +1364,8 @@ bool Tree::generateIndexSection(QXmlStreamWriter &writer,
         {
             const QmlPropertyNode *qpn = static_cast<const QmlPropertyNode*>(node);
             writer.writeAttribute("type", qpn->dataType());
+            writer.writeAttribute("attached", qpn->isAttached() ? "true" : "false");
+            writer.writeAttribute("writable", qpn->isWritable(this) ? "true" : "false");
         }
         break;
     case Node::Property:
@@ -1735,7 +1736,7 @@ void Tree::generateTagFileCompounds(QXmlStreamWriter &writer,
 
         if (node->type() == Node::Class) {
             writer.writeTextElement("name", fullDocumentName(node));
-            writer.writeTextElement("filename", fullDocumentLocation(node));
+            writer.writeTextElement("filename", HtmlGenerator::fullDocumentLocation(node));
 
             // Classes contain information about their base classes.
             const ClassNode *classNode = static_cast<const ClassNode*>(node);
@@ -1753,7 +1754,7 @@ void Tree::generateTagFileCompounds(QXmlStreamWriter &writer,
             generateTagFileCompounds(writer, static_cast<const InnerNode *>(node));
         } else {
             writer.writeTextElement("name", fullDocumentName(node));
-            writer.writeTextElement("filename", fullDocumentLocation(node));
+            writer.writeTextElement("filename", HtmlGenerator::fullDocumentLocation(node));
 
             // Recurse to write all members.
             generateTagFileMembers(writer, static_cast<const InnerNode *>(node));
@@ -1874,7 +1875,7 @@ void Tree::generateTagFileMembers(QXmlStreamWriter &writer,
                                             "virtual " + functionNode->returnType());
 
                 writer.writeTextElement("name", objName);
-                QStringList pieces = fullDocumentLocation(node).split("#");
+                QStringList pieces = HtmlGenerator::fullDocumentLocation(node).split("#");
                 writer.writeTextElement("anchorfile", pieces[0]);
                 writer.writeTextElement("anchor", pieces[1]);
 
@@ -1914,7 +1915,7 @@ void Tree::generateTagFileMembers(QXmlStreamWriter &writer,
                 const PropertyNode *propertyNode = static_cast<const PropertyNode*>(node);
                 writer.writeAttribute("type", propertyNode->dataType());
                 writer.writeTextElement("name", objName);
-                QStringList pieces = fullDocumentLocation(node).split("#");
+                QStringList pieces = HtmlGenerator::fullDocumentLocation(node).split("#");
                 writer.writeTextElement("anchorfile", pieces[0]);
                 writer.writeTextElement("anchor", pieces[1]);
                 writer.writeTextElement("arglist", "");
@@ -1926,7 +1927,7 @@ void Tree::generateTagFileMembers(QXmlStreamWriter &writer,
             {
                 const EnumNode *enumNode = static_cast<const EnumNode*>(node);
                 writer.writeTextElement("name", objName);
-                QStringList pieces = fullDocumentLocation(node).split("#");
+                QStringList pieces = HtmlGenerator::fullDocumentLocation(node).split("#");
                 writer.writeTextElement("anchor", pieces[1]);
                 writer.writeTextElement("arglist", "");
                 writer.writeEndElement(); // member
@@ -1950,7 +1951,7 @@ void Tree::generateTagFileMembers(QXmlStreamWriter &writer,
                 else
                     writer.writeAttribute("type", "");
                 writer.writeTextElement("name", objName);
-                QStringList pieces = fullDocumentLocation(node).split("#");
+                QStringList pieces = HtmlGenerator::fullDocumentLocation(node).split("#");
                 writer.writeTextElement("anchorfile", pieces[0]);
                 writer.writeTextElement("anchor", pieces[1]);
                 writer.writeTextElement("arglist", "");
@@ -1999,160 +2000,6 @@ void Tree::addExternalLink(const QString &url, const Node *relative)
     Location location(relative->doc().location());
     Doc doc(location, location, " ", emptySet); // placeholder
     fakeNode->setDoc(doc);
-}
-
-/*!
-  Returns the full document location for HTML-based documentation.
-  This should be moved into the HTML generator.
- */
-QString Tree::fullDocumentLocation(const Node *node) const
-{
-    if (!node)
-        return "";
-    if (!node->url().isEmpty())
-        return node->url();
-
-    QString parentName;
-    QString anchorRef;
-
-    if (node->type() == Node::Namespace) {
-
-        // The root namespace has no name - check for this before creating
-        // an attribute containing the location of any documentation.
-
-        if (!node->fileBase().isEmpty())
-            parentName = node->fileBase() + ".html";
-        else
-            return "";
-    }
-    else if (node->type() == Node::Fake) {
-#ifdef QDOC_QML
-        if ((node->subType() == Node::QmlClass) ||
-            (node->subType() == Node::QmlBasicType)) {
-            QString fb = node->fileBase();
-            if (fb.startsWith(QLatin1String("qml-")))
-                return fb + ".html";
-            else
-                return "qml-" + node->fileBase() + ".html";
-        } else
-#endif
-        parentName = node->fileBase() + ".html";
-    }
-    else if (node->fileBase().isEmpty())
-        return "";
-
-    Node *parentNode = 0;
-
-    if ((parentNode = node->relates()))
-        parentName = fullDocumentLocation(node->relates());
-    else if ((parentNode = node->parent())) {
-        if (parentNode->subType() == Node::QmlPropertyGroup) {
-            parentNode = parentNode->parent();
-            parentName = fullDocumentLocation(parentNode);
-        }
-        else
-            parentName = fullDocumentLocation(node->parent());
-    }
-#if 0
-    if (node->type() == Node::QmlProperty) {
-        qDebug() << "Node::QmlProperty:" << node->name()
-                 << "parentName:" << parentName;
-        if (parentNode)
-            qDebug() << "PARENT NODE" << parentNode->type()
-                     << parentNode->subType() << parentNode->name();
-    }
-#endif
-    switch (node->type()) {
-        case Node::Class:
-        case Node::Namespace:
-            if (parentNode && !parentNode->name().isEmpty())
-                parentName = parentName.replace(".html", "") + "-"
-                           + node->fileBase().toLower() + ".html";
-            else
-                parentName = node->fileBase() + ".html";
-            break;
-        case Node::Function:
-            {
-                /*
-                  Functions can be destructors, overloaded, or
-                  have associated properties.
-                */
-                const FunctionNode *functionNode =
-                    static_cast<const FunctionNode *>(node);
-
-                if (functionNode->metaness() == FunctionNode::Dtor)
-                    anchorRef = "#dtor." + functionNode->name().mid(1);
-
-                else if (functionNode->associatedProperty())
-                    return fullDocumentLocation(functionNode->associatedProperty());
-
-                else if (functionNode->overloadNumber() > 1)
-                    anchorRef = "#" + functionNode->name()
-                              + "-" + QString::number(functionNode->overloadNumber());
-                else
-                    anchorRef = "#" + functionNode->name();
-            }
-
-            /*
-              Use node->name() instead of node->fileBase() as
-              the latter returns the name in lower-case. For
-              HTML anchors, we need to preserve the case.
-            */
-            break;
-        case Node::Enum:
-            anchorRef = "#" + node->name() + "-enum";
-            break;
-        case Node::Typedef:
-            anchorRef = "#" + node->name() + "-typedef";
-            break;
-        case Node::Property:
-            anchorRef = "#" + node->name() + "-prop";
-            break;
-        case Node::QmlProperty:
-            anchorRef = "#" + node->name() + "-prop";
-            break;
-        case Node::QmlSignal:
-            anchorRef = "#" + node->name() + "-signal";
-            break;
-        case Node::QmlMethod:
-            anchorRef = "#" + node->name() + "-method";
-            break;
-        case Node::Variable:
-            anchorRef = "#" + node->name() + "-var";
-            break;
-        case Node::Target:
-            anchorRef = "#" + Doc::canonicalTitle(node->name());
-            break;
-        case Node::Fake:
-            {
-            /*
-              Use node->fileBase() for fake nodes because they are represented
-              by pages whose file names are lower-case.
-            */
-            parentName = node->fileBase();
-            parentName.replace("/", "-").replace(".", "-");
-            parentName += ".html";
-            }
-            break;
-        default:
-            break;
-    }
-
-    // Various objects can be compat (deprecated) or obsolete.
-    if (node->type() != Node::Class && node->type() != Node::Namespace) {
-        switch (node->status()) {
-        case Node::Compat:
-            parentName.replace(".html", "-qt3.html");
-            break;
-        case Node::Obsolete:
-            parentName.replace(".html", "-obsolete.html");
-            break;
-        default:
-            ;
-        }
-    }
-
-    return parentName.toLower() + anchorRef;
 }
 
 /*!
