@@ -46,7 +46,7 @@
 #include "qsgitem_p.h"
 
 #include "qsgcontext.h"
-#include "qsgtextureprovider_p.h"
+#include "qsgtextureprovider.h"
 #include "qsgcanvas.h"
 
 #include <QtCore/qsignalmapper.h>

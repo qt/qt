@@ -42,6 +42,7 @@
 #include "shadereffectnode.h"
 
 #include "shadereffectitem.h" // XXX todo
+#include "qsgtextureprovider.h"
 
 class CustomMaterialShader : public AbstractMaterialShader
 {

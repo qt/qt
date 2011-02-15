@@ -44,8 +44,6 @@
 
 #include "qsgitem.h"
 
-#include "qsgtextureprovider_p.h"
-
 #include "effectnode.h"
 #include "material.h"
 #include "adaptationlayer.h"

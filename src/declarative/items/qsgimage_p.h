@@ -44,7 +44,7 @@
 #define QSGIMAGE_P_H
 
 #include "qsgimagebase_p.h"
-#include "qsgtextureprovider_p.h"
+#include "qsgtextureprovider.h"
 
 QT_BEGIN_HEADER
 
@@ -52,7 +52,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QSGTextureProvider;
 class QSGImagePrivate;
 class Q_AUTOTEST_EXPORT QSGImage : public QSGImageBase, public QSGTextureProviderInterface
 {

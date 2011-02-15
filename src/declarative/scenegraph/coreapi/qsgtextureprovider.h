@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QSGTEXTUREPROVIDER_P_H
-#define QSGTEXTUREPROVIDER_P_H
+#ifndef QSGTEXTUREPROVIDER_H
+#define QSGTEXTUREPROVIDER_H
 
 #include "qsgtexturemanager.h"
 #include "qobject.h"
@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QSGTextureProvider : public QObject
+class Q_DECLARATIVE_EXPORT QSGTextureProvider : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool opaque READ opaque WRITE setOpaque NOTIFY opaqueChanged)

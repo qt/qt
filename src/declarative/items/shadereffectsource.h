@@ -43,7 +43,7 @@
 #define SHADEREFFECTSOURCE_H
 
 #include "qsgitem.h"
-#include "qsgtextureprovider_p.h"
+#include "qsgtextureprovider.h"
 #include "textureitem.h"
 
 #include "qpointer.h"

@@ -43,7 +43,7 @@
 #define TEXTUREITEM_H
 
 #include "qsgitem.h"
-#include "qsgtextureprovider_p.h"
+#include "qsgtextureprovider.h"
 #include "texturematerial.h"
 #include "node.h"
 #include "qobject.h"

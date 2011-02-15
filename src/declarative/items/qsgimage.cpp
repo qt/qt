@@ -46,7 +46,6 @@
 #include "qsgcontext.h"
 #include "adaptationlayer.h"
 #include "qsgtexturemanager.h"
-#include "qsgtextureprovider_p.h"
 #include "textureitem.h"
 
 #include <QtGui/qpainter.h>

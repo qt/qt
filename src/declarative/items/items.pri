@@ -54,7 +54,6 @@ HEADERS += \
     $$PWD/qsganimation_p.h \
     $$PWD/qsganimation_p_p.h \
     $$PWD/qsgstateoperations_p.h \
-    $$PWD/qsgtextureprovider_p.h \
 
 SOURCES += \
     $$PWD/qsgevents.cpp \
@@ -90,7 +89,6 @@ SOURCES += \
     $$PWD/qsgview.cpp \
     $$PWD/qsganimation.cpp \
     $$PWD/qsgstateoperations.cpp \
-    $$PWD/qsgtextureprovider.cpp \
 
 SOURCES += \
     $$PWD/shadereffectitem.cpp \
