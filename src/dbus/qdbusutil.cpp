@@ -46,6 +46,7 @@
 #include <QtCore/qstringlist.h>
 
 #include "qdbusargument.h"
+#include "qdbusunixfiledescriptor.h"
 
 #ifndef QT_NO_DBUS
 
@@ -129,6 +130,10 @@ static bool variantToString(const QVariant &arg, QString &out)
         out += QLatin1Char(']');
     } else if (argType == qMetaTypeId<QDBusSignature>()) {
         out += QLatin1String("[Signature: ") + qvariant_cast<QDBusSignature>(arg).signature();
+        out += QLatin1Char(']');
+    } else if (argType == qMetaTypeId<QDBusUnixFileDescriptor>()) {
+        out += QLatin1String("[Unix FD: ");
+        out += QLatin1String(qvariant_cast<QDBusUnixFileDescriptor>(arg).isValid() ? "valid" : "not valid");
         out += QLatin1Char(']');
     } else if (argType == qMetaTypeId<QDBusVariant>()) {
         const QVariant v = qvariant_cast<QDBusVariant>(arg).variant();
