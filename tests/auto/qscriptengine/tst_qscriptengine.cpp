@@ -772,13 +772,17 @@ void tst_QScriptEngine::jsRegExp()
     QEXPECT_FAIL("", "V8 creates new RegExp object when copy-constructing", Continue);
     QVERIFY(r5.strictlyEquals(r));
 
+    QEXPECT_FAIL("", "V8 and jsc ignores invalid flags", Continue); //https://bugs.webkit.org/show_bug.cgi?id=41614
     QScriptValue r6 = rxCtor.construct(QScriptValueList() << "foo" << "bar");
     QVERIFY(r6.isError());
-    QVERIFY(r6.toString().contains(QString::fromLatin1("SyntaxError"))); // Invalid regular expression flag
+    // QVERIFY(r6.toString().contains(QString::fromLatin1("SyntaxError"))); // Invalid regular expression flag
+
 
     QScriptValue r7 = eng.evaluate("/foo/gimp");
+    /*  v8 and jsc ignores invalid flags
     QVERIFY(r7.isError());
     QVERIFY(r7.toString().contains(QString::fromLatin1("SyntaxError"))); // Invalid regular expression flag
+    */
 
     // JSC doesn't complain about duplicate flags.
     QScriptValue r8 = eng.evaluate("/foo/migmigmig");
