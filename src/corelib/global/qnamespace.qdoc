@@ -2861,7 +2861,7 @@
     INT_MIN, inclusive. For example, you can define custom priorities
     as being relative to each other:
 
-    \snippet doc/src/snippets/code/doc_src_qnamespace.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qnamespace.cpp 1
 
     \sa QCoreApplication::postEvent()
 */

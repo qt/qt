@@ -130,7 +130,7 @@
 
     In the application, this resource would be registered with code like this:
 
-    \snippet doc/src/snippets/code/doc_src_resources.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_resources.cpp 4
 
     \section2 Compiled-In Resources
 
@@ -205,7 +205,7 @@
     Q_INIT_RESOURCE() with the base name of the \c .qrc file. For
     example:
 
-    \snippet doc/src/snippets/code/doc_src_resources.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_resources.cpp 5
 
     Similarly, if you must unload a set of resources explicitly
     (because a plugin is being unloaded or the resources are not valid

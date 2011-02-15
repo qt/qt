@@ -89,7 +89,7 @@
     target path for the project and adding it to the list of items to
     install:
 
-    \snippet doc/src/snippets/code/doc_src_examples_customwidgetplugin.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_examples_customwidgetplugin.pro 0
 
     The custom widget is created as a library, and will be installed
     alongside the other \QD plugins when the project is installed

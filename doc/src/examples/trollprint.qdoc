@@ -132,12 +132,12 @@
     second argument "two-sided" in the appropriate \c tr() calls to the
     first pair of radio buttons:
 
-    \snippet doc/src/snippets/code/doc_src_examples_trollprint.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_examples_trollprint.cpp 0
 
     and add the second argument "colors" in the appropriate \c tr() calls
     for the second pair of radio buttons:
 
-    \snippet doc/src/snippets/code/doc_src_examples_trollprint.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_examples_trollprint.cpp 1
 
     Now run \c lupdate and open \c trollprint_pt.ts with \e {Qt Linguist}. You
     should now see two changes.
@@ -177,7 +177,7 @@
     the translations. This can be achieved by using a \c TRANSLATOR comment
     in the source code:
 
-    \snippet doc/src/snippets/code/doc_src_examples_trollprint.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_examples_trollprint.cpp 2
 
     Try adding these comments to some source files, particularly to
     dialog classes, describing the navigation necessary to reach the
@@ -192,7 +192,7 @@
     correct. Comments that provide good navigation information can save
     them time:
 
-    \snippet doc/src/snippets/code/doc_src_examples_trollprint.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_examples_trollprint.cpp 3
 
     \section1 Troll Print 1.1
 

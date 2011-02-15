@@ -73,7 +73,7 @@
     class called \c MyCustomWidget, we can export it by adding the
     following line to the file containing the plugin implementation:
 
-    \snippet doc/src/snippets/code/doc_src_qtdesigner.qdoc 14
+    \snippet doc/src/snippets/code/doc_src_qtdesigner.cpp 14
 
     This macro ensures that \QD can access and construct the custom widget.
     Without this macro, there is no way for \QD to use it.
@@ -264,13 +264,13 @@
     several custom widgets \c CustomWidgetOne, \c CustomWidgetTwo and
     \c CustomWidgetThree, the class definition may look like this:
 
-    \snippet doc/src/snippets/code/doc_src_qtdesigner.qdoc 12
+    \snippet doc/src/snippets/code/doc_src_qtdesigner.cpp 12
 
     In the class constructor you add the interfaces to your custom
     widgets to the list which you return in the customWidgets()
     function:
 
-    \snippet doc/src/snippets/code/doc_src_qtdesigner.qdoc 13
+    \snippet doc/src/snippets/code/doc_src_qtdesigner.cpp 13
 
     Note that instead of exporting each custom widget plugin using the
     Q_EXPORT_PLUGIN2() macro, you export the entire collection. The

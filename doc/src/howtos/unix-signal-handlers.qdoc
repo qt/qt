@@ -59,7 +59,7 @@
     sigaction(2) man pages before plowing through the following code
     snippets.
     
-    \snippet doc/src/snippets/code/doc_src_unix-signal-handlers.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_unix-signal-handlers.cpp 0
 
     In the MyDaemon constructor, use the socketpair(2) function to
     initialize each file descriptor pair, and then create the
@@ -68,24 +68,24 @@
     appropriate slot function, which effectively converts the Unix
     signal to the QSocketNotifier::activated() signal.
 
-    \snippet doc/src/snippets/code/doc_src_unix-signal-handlers.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_unix-signal-handlers.cpp 1
 
     Somewhere else in your startup code, you install your Unix signal
     handlers with sigaction(2).
 
-    \snippet doc/src/snippets/code/doc_src_unix-signal-handlers.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_unix-signal-handlers.cpp 2
 
     In your Unix signal handlers, you write a byte to the \e write end
     of a socket pair and return. This will cause the corresponding
     QSocketNotifier to emit its activated() signal, which will in turn
     cause the appropriate Qt slot function to run.
 
-    \snippet doc/src/snippets/code/doc_src_unix-signal-handlers.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_unix-signal-handlers.cpp 3
 
     In the slot functions connected to the
     QSocketNotifier::activated() signals, you \e read the byte. Now
     you are safely back in Qt with your signal, and you can do all the
     Qt stuff you weren'tr allowed to do in the Unix signal handler.
 
-    \snippet doc/src/snippets/code/doc_src_unix-signal-handlers.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_unix-signal-handlers.cpp 4
 */

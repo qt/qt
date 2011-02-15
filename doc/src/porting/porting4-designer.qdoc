@@ -104,7 +104,7 @@
     For example, here's the \c uic output for a simple \c
     helloworld.ui form (some details were removed for simplicity):
 
-    \snippet doc/src/snippets/code/doc_src_porting4-designer.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_porting4-designer.cpp 0
 
     In this case, the main container was specified to be a QWidget
     (or any subclass of QWidget). Had we started with a QMainWindow
@@ -116,7 +116,7 @@
     an instance of the main container (a plain QWidget), and call \c
     setupUi():
 
-    \snippet doc/src/snippets/code/doc_src_porting4-designer.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_porting4-designer.cpp 1
 
     The second approach is to inherit from both the \c Ui::HelloWorld
     class and the main container, and to call \c setupUi() in the
@@ -124,7 +124,7 @@
     its subclasses, e.g. QDialog) must appear first in the base class
     list so that \l{moc} picks it up correctly. For example:
 
-    \snippet doc/src/snippets/code/doc_src_porting4-designer.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_porting4-designer.cpp 2
 
     This second method is useful when porting Qt 3 forms to Qt 4. \c
     HelloWorldWidget is a class whose instance is the actual form
@@ -212,7 +212,7 @@
     them to the widgets in the form after calling \c setupUi(). For
     example:
 
-    \snippet doc/src/snippets/code/doc_src_porting4-designer.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_porting4-designer.cpp 5
 
     A quick and dirty way to port forms containing custom signals and
     slots is to generate the code using \c uic3, rather than \c uic. Since
@@ -233,7 +233,7 @@
     \tt{\e{signalName}}, then this signal will be connected to the
     main container's slot. For example:
 
-    \snippet doc/src/snippets/code/doc_src_porting4-designer.qdoc 6
+    \snippet doc/src/snippets/code/doc_src_porting4-designer.cpp 6
 
     Because of the naming convention, \c setupUi() automatically
     connects \c pushButton's \c clicked() signal to \c
@@ -257,14 +257,14 @@
 
     Next, we add the resource file to our \c .pro file:
 
-    \snippet doc/src/snippets/code/doc_src_porting4-designer.qdoc 8
+    \snippet doc/src/snippets/code/doc_src_porting4-designer.pro 8
 
     When \c qmake is run, it will create the appropriate Makefile
     rules to call \c rcc on the resource file, and compile and link
     the result into the application. The icons may be accessed as
     follows:
 
-    \snippet doc/src/snippets/code/doc_src_porting4-designer.qdoc 9
+    \snippet doc/src/snippets/code/doc_src_porting4-designer.cpp 9
 
     In each case, the leading colon tells Qt to look for the file in
     the virtual file tree defined by the set of resource files

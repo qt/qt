@@ -122,7 +122,7 @@
     In some cases, you might get compiler errors because of identifiers
     in the global namespace (e.g., \c CTRL). Adding
 
-    \snippet doc/src/snippets/code/doc_src_qt3to4.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_qt3to4.cpp 2
 
     at the beginning of the source file that contains
     the indentifier solves the problem.
