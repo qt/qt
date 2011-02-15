@@ -1354,7 +1354,11 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
             Q_ASSERT(obj->type != -1);
             const QList<QDeclarativeTypeData::TypeReference>  &resolvedTypes = unit->resolvedTypes();
             const QDeclarativeTypeData::TypeReference &type = resolvedTypes.at(obj->type);
-            COMPILE_EXCEPTION(prop, tr("\"%1.%2\" is not available in %3 %4.%5.").arg(QString::fromUtf8(obj->className)).arg(QString::fromUtf8(prop->name)).arg(QString::fromUtf8(type.type->module())).arg(type.majorVersion).arg(type.minorVersion));
+            if (type.type) {
+                COMPILE_EXCEPTION(prop, tr("\"%1.%2\" is not available in %3 %4.%5.").arg(QString::fromUtf8(obj->className)).arg(QString::fromUtf8(prop->name)).arg(QString::fromUtf8(type.type->module())).arg(type.majorVersion).arg(type.minorVersion));
+            } else {
+                COMPILE_EXCEPTION(prop, tr("\"%1.%2\" is not available due to component versioning.").arg(QString::fromUtf8(obj->className)).arg(QString::fromUtf8(prop->name)));
+            }
         }
 
         // If the "on<Signal>" name doesn't resolve into a signal, try it as a
@@ -1471,7 +1475,11 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
             if (prop->index == -1 && notInRevision) {
                 const QList<QDeclarativeTypeData::TypeReference>  &resolvedTypes = unit->resolvedTypes();
                 const QDeclarativeTypeData::TypeReference &type = resolvedTypes.at(obj->type);
-                COMPILE_EXCEPTION(prop, tr("\"%1.%2\" is not available in %3 %4.%5.").arg(QString::fromUtf8(obj->className)).arg(QString::fromUtf8(prop->name)).arg(QString::fromUtf8(type.type->module())).arg(type.majorVersion).arg(type.minorVersion));
+                if (type.type) {
+                    COMPILE_EXCEPTION(prop, tr("\"%1.%2\" is not available in %3 %4.%5.").arg(QString::fromUtf8(obj->className)).arg(QString::fromUtf8(prop->name)).arg(QString::fromUtf8(type.type->module())).arg(type.majorVersion).arg(type.minorVersion));
+                } else {
+                    COMPILE_EXCEPTION(prop, tr("\"%1.%2\" is not available due to component versioning.").arg(QString::fromUtf8(obj->className)).arg(QString::fromUtf8(prop->name)));
+                }
             }
 
             if (prop->index != -1) {

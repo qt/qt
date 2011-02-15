@@ -59,8 +59,13 @@ QDeclarativeLoaderPrivate::~QDeclarativeLoaderPrivate()
 
 void QDeclarativeLoaderPrivate::itemGeometryChanged(QDeclarativeItem *resizeItem, const QRectF &newGeometry, const QRectF &oldGeometry)
 {
-    if (resizeItem == item)
+    if (resizeItem == item) {
+        if (!updatingSize && newGeometry.width() != oldGeometry.width())
+            itemWidthValid = true;
+        if (!updatingSize && newGeometry.height() != oldGeometry.height())
+            itemHeightValid = true;
         _q_updateSize(false);
+    }
     QDeclarativeItemChangeListener::itemGeometryChanged(resizeItem, newGeometry, oldGeometry);
 }
 

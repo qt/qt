@@ -95,6 +95,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeTextInput : public QDeclarativeImplicitSizeP
     Q_PROPERTY(QString displayText READ displayText NOTIFY displayTextChanged)
     Q_PROPERTY(bool autoScroll READ autoScroll WRITE setAutoScroll NOTIFY autoScrollChanged)
     Q_PROPERTY(bool selectByMouse READ selectByMouse WRITE setSelectByMouse NOTIFY selectByMouseChanged)
+    Q_PROPERTY(SelectionMode mouseSelectionMode READ mouseSelectionMode WRITE setMouseSelectionMode NOTIFY mouseSelectionModeChanged REVISION 1)
     Q_PROPERTY(bool canPaste READ canPaste NOTIFY canPasteChanged REVISION 1)
 
 public:
@@ -192,6 +193,9 @@ public:
     bool selectByMouse() const;
     void setSelectByMouse(bool);
 
+    SelectionMode mouseSelectionMode() const;
+    void setMouseSelectionMode(SelectionMode mode);
+
     bool hasAcceptableInput() const;
 
     void drawContents(QPainter *p,const QRect &r);
@@ -225,6 +229,7 @@ Q_SIGNALS:
     void activeFocusOnPressChanged(bool activeFocusOnPress);
     void autoScrollChanged(bool autoScroll);
     void selectByMouseChanged(bool selectByMouse);
+    Q_REVISION(1) void mouseSelectionModeChanged(SelectionMode mode);
     Q_REVISION(1) void canPasteChanged();
 
 protected:
@@ -235,6 +240,7 @@ protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
+    bool sceneEvent(QEvent *event);
     void keyPressEvent(QKeyEvent* ev);
     void inputMethodEvent(QInputMethodEvent *);
     bool event(QEvent *e);

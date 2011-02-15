@@ -207,7 +207,7 @@ class Q_AUTOTEST_EXPORT QDeclarativePinchEvent : public QObject
 
 public:
     QDeclarativePinchEvent(QPointF c, qreal s, qreal a, qreal r)
-        : QObject(), m_center(c), m_scale(s), m_angle(a), m_rotation(r) {}
+        : QObject(), m_center(c), m_scale(s), m_angle(a), m_rotation(r), m_accepted(true) {}
 
     QPointF center() const { return m_center; }
     QPointF startCenter() const { return m_startCenter; }

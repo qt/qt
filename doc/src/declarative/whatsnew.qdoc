@@ -69,7 +69,7 @@ Added the following properties and methods:
 \o moveCursorSelection(int pos, SelectionMode mode) to enable selection by word
 \endlist
 
-\section2 Image and BorderImage
+\section2 Image, BorderImage and AnimatedImage
 
 Added the following properties:
 \list
@@ -109,19 +109,29 @@ Added the following properties:
 
 \section2 Repeater
 
-Added the following methods:
+Added the following methods and signal handlers:
 \list
 \o onItemAdded()
 \o onItemRemoved()
-\o itemAt()
+\o itemAt(int index)
 \endlist
+
+\section2 Component
+
+The createObject() method now accepts a map of initial property values for the created object.
 
 \section2 Qt
 
-Added the following properties:
+Added the following properties and methods:
 \list
 \o application.layoutDirection
 \o application.active
+\endlist
+
+\section2 Other changes
+
+\list
+\o Functions can be assigned to properties from JavaScript to create property bindings
 \endlist
 
 

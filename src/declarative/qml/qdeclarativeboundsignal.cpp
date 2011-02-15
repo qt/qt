@@ -197,13 +197,12 @@ int QDeclarativeBoundSignal::qt_metacall(QMetaObject::Call c, int id, void **a)
 }
 
 QDeclarativeBoundSignalParameters::QDeclarativeBoundSignalParameters(const QMetaMethod &method, 
-                                                   QObject *parent)
+                                                                     QObject *parent)
 : QObject(parent), types(0), values(0)
 {
     MetaObject *mo = new MetaObject(this);
 
     // ### Optimize!
-    // ### Ensure only supported types are allowed, otherwise it might crash
     QMetaObjectBuilder mob;
     mob.setSuperClass(&QDeclarativeBoundSignalParameters::staticMetaObject);
     mob.setClassName("QDeclarativeBoundSignalParameters");
@@ -226,9 +225,15 @@ QDeclarativeBoundSignalParameters::QDeclarativeBoundSignalParameters(const QMeta
             QMetaPropertyBuilder prop = mob.addProperty(name, "QObject*");
             prop.setWritable(false);
         } else {
-            types[ii] = t;
-            QMetaPropertyBuilder prop = mob.addProperty(name, type);
-            prop.setWritable(false);
+            if (QDeclarativeMetaType::canCopy(t)) {
+                types[ii] = t;
+                QMetaPropertyBuilder prop = mob.addProperty(name, type);
+                prop.setWritable(false);
+            } else {
+                types[ii] = 0x80000000 | t;
+                QMetaPropertyBuilder prop = mob.addProperty(name, "QVariant");
+                prop.setWritable(false);
+            }
         }
     }
     myMetaObject = mob.toMetaObject();
@@ -259,7 +264,11 @@ int QDeclarativeBoundSignalParameters::metaCall(QMetaObject::Call c, int id, voi
         return -1;
 
     if (c == QMetaObject::ReadProperty && id >= 1) {
-        QDeclarativeMetaType::copy(types[id - 1], a[0], values[id]);
+        if (types[id - 1] & 0x80000000) {
+            *((QVariant *)a[0]) = QVariant(types[id - 1] & 0x7FFFFFFF, values[id]);
+        } else {
+            QDeclarativeMetaType::copy(types[id - 1], a[0], values[id]);
+        }
         return -1;
     } else {
         return qt_metacall(c, id, a);

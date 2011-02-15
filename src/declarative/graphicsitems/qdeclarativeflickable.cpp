@@ -53,6 +53,10 @@ QT_BEGIN_NAMESPACE
 // before we perform a flick.
 static const int FlickThreshold = 20;
 
+// RetainGrabVelocity is the maxmimum instantaneous velocity that
+// will ensure the  Flickable retains the grab on consecutive flicks.
+static const int RetainGrabVelocity = 15;
+
 QDeclarativeFlickableVisibleArea::QDeclarativeFlickableVisibleArea(QDeclarativeFlickable *parent)
     : QObject(parent), flickable(parent), m_xPosition(0.), m_widthRatio(0.)
     , m_yPosition(0.), m_heightRatio(0.)
@@ -672,7 +676,8 @@ void QDeclarativeFlickable::setFlickableDirection(FlickableDirection direction)
 void QDeclarativeFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_Q(QDeclarativeFlickable);
-    if (interactive && timeline.isActive() && (qAbs(hData.velocity) > 10 || qAbs(vData.velocity) > 10))
+    if (interactive && timeline.isActive()
+            && (qAbs(hData.smoothVelocity.value()) > RetainGrabVelocity || qAbs(vData.smoothVelocity.value()) > RetainGrabVelocity))
         stealMouse = true; // If we've been flicked then steal the click.
     else
         stealMouse = false;
@@ -876,7 +881,7 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
     Q_D(QDeclarativeFlickable);
     if (!d->interactive) {
         QDeclarativeItem::wheelEvent(event);
-    } else if (yflick()) {
+    } else if (yflick() && event->orientation() == Qt::Vertical) {
         if (event->delta() > 0)
             d->vData.velocity = qMax(event->delta() - d->vData.smoothVelocity.value(), qreal(250.0));
         else
@@ -888,7 +893,7 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
             movementStarting();
         }
         event->accept();
-    } else if (xflick()) {
+    } else if (xflick() && event->orientation() == Qt::Horizontal) {
         if (event->delta() > 0)
             d->hData.velocity = qMax(event->delta() - d->hData.smoothVelocity.value(), qreal(250.0));
         else

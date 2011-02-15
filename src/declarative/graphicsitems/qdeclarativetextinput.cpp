@@ -377,6 +377,7 @@ void QDeclarativeTextInput::setReadOnly(bool ro)
     if (d->control->isReadOnly() == ro)
         return;
 
+    setFlag(QGraphicsItem::ItemAcceptsInputMethod, !ro);
     d->control->setReadOnly(ro);
 
     emit readOnlyChanged(ro);
@@ -613,6 +614,11 @@ void QDeclarativeTextInput::setAutoScroll(bool b)
     \ingroup qml-basic-visual-elements
 
     This element provides a validator for integer values.
+
+    IntValidator uses the \l {QLocale::setDefault()}{default locale} to interpret the number and
+    will accept locale specific digits, group separators, and positive and negative signs.  In
+    addition, IntValidator is always guaranteed to accept a number formatted according to the "C"
+    locale.
 */
 /*!
     \qmlproperty int IntValidator::top
@@ -974,6 +980,7 @@ void QDeclarativeTextInput::inputMethodEvent(QInputMethodEvent *ev)
     } else {
         d->control->processInputMethodEvent(ev);
         updateSize();
+        d->updateHorizontalScroll();
     }
     if (!ev->isAccepted())
         QDeclarativePaintedItem::inputMethodEvent(ev);
@@ -1012,6 +1019,10 @@ void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
             }
         }
     }
+    if (d->selectByMouse) {
+        setKeepMouseGrab(false);
+        d->pressPos = event->pos();
+    }
     bool mark = event->modifiers() & Qt::ShiftModifier;
     int cursor = d->xToPos(event->pos().x());
     d->control->moveCursor(cursor, mark);
@@ -1022,7 +1033,9 @@ void QDeclarativeTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
     if (d->selectByMouse) {
-        d->control->moveCursor(d->xToPos(event->pos().x()), true);
+        if (qAbs(int(event->pos().x() - d->pressPos.x())) > QApplication::startDragDistance())
+            setKeepMouseGrab(true);
+        moveCursorSelection(d->xToPos(event->pos().x()), d->mouseSelectionMode);
         event->setAccepted(true);
     } else {
         QDeclarativePaintedItem::mouseMoveEvent(event);
@@ -1036,6 +1049,8 @@ Handles the given mouse \a event.
 void QDeclarativeTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
+    if (d->selectByMouse)
+        setKeepMouseGrab(false);
     if (!d->showInputPanelOnFocus) { // input panel on click
         if (d->focusOnPress && !isReadOnly() && boundingRect().contains(event->pos())) {
             if (QGraphicsView * view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
@@ -1049,6 +1064,15 @@ void QDeclarativeTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     d->control->processEvent(event);
     if (!event->isAccepted())
         QDeclarativePaintedItem::mouseReleaseEvent(event);
+}
+
+bool QDeclarativeTextInput::sceneEvent(QEvent *event)
+{
+    bool rv = QDeclarativeItem::sceneEvent(event);
+    if (event->type() == QEvent::UngrabMouse) {
+        setKeepMouseGrab(false);
+    }
+    return rv;
 }
 
 bool QDeclarativeTextInput::event(QEvent* ev)
@@ -1092,7 +1116,8 @@ int QDeclarativeTextInputPrivate::calculateTextWidth()
 void QDeclarativeTextInputPrivate::updateHorizontalScroll()
 {
     Q_Q(QDeclarativeTextInput);
-    int cix = qRound(control->cursorToX());
+    const int preeditLength = control->preeditAreaText().length();
+    int cix = qRound(control->cursorToX(control->cursor() + preeditLength));
     QRect br(q->boundingRect().toRect());
     int widthUsed = calculateTextWidth();
     Qt::Alignment va = QStyle::visualAlignment(control->layoutDirection(), QFlag(Qt::Alignment(hAlign)));
@@ -1121,6 +1146,14 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
             // text doesn't fit, text document is to the left of br; align
             // right
             hscroll = widthUsed - br.width() + 1;
+        }
+        if (preeditLength > 0) {
+            // check to ensure long pre-edit text doesn't push the cursor
+            // off to the left
+             cix = qRound(control->cursorToX(
+                     control->cursor() + qMax(0, control->preeditCursor() - 1)));
+             if (cix < hscroll)
+                 hscroll = cix;
         }
     } else {
         switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
@@ -1348,6 +1381,35 @@ void QDeclarativeTextInput::setSelectByMouse(bool on)
     }
 }
 
+/*!
+    \qmlproperty enum TextInput::mouseSelectionMode
+    \since Quick 1.1
+
+    Specifies how text should be selected using a mouse.
+
+    \list
+    \o TextInput.SelectCharacters - The selection is updated with individual characters. (Default)
+    \o TextInput.SelectWords - The selection is updated with whole words.
+    \endlist
+
+    This property only applies when \l selectByMouse is true.
+*/
+
+QDeclarativeTextInput::SelectionMode QDeclarativeTextInput::mouseSelectionMode() const
+{
+    Q_D(const QDeclarativeTextInput);
+    return d->mouseSelectionMode;
+}
+
+void QDeclarativeTextInput::setMouseSelectionMode(SelectionMode mode)
+{
+    Q_D(QDeclarativeTextInput);
+    if (d->mouseSelectionMode != mode) {
+        d->mouseSelectionMode = mode;
+        emit mouseSelectionModeChanged(mode);
+    }
+}
+
 bool QDeclarativeTextInput::canPaste() const
 {
     Q_D(const QDeclarativeTextInput);
@@ -1397,9 +1459,7 @@ void QDeclarativeTextInput::moveCursorSelection(int position)
     selected (the 6th and 7th characters).
 
     The same sequence with TextInput.SelectWords will extend the selection start to a word boundary
-    before or on position 5 and extend the selection end to a word boundary past position 9, and
-    then if there is a word boundary between position 7 and 8 retract the selection end to that
-    boundary.  If there is whitespace at position 7 the selection will be retracted further.
+    before or on position 5 and extend the selection end to a word boundary on or past position 9.
 */
 void QDeclarativeTextInput::moveCursorSelection(int pos, SelectionMode mode)
 {
@@ -1408,6 +1468,7 @@ void QDeclarativeTextInput::moveCursorSelection(int pos, SelectionMode mode)
     if (mode == SelectCharacters) {
         d->control->moveCursor(pos, true);
     } else if (pos != d->control->cursor()){
+        const int cursor = d->control->cursor();
         int anchor;
         if (!d->control->hasSelectedText())
             anchor = d->control->cursor();
@@ -1416,55 +1477,39 @@ void QDeclarativeTextInput::moveCursorSelection(int pos, SelectionMode mode)
         else
             anchor = d->control->selectionStart();
 
-        if (anchor < pos) {
+        if (anchor < pos || (anchor == pos && cursor < pos)) {
             QTextBoundaryFinder finder(QTextBoundaryFinder::Word, d->control->text());
             finder.setPosition(anchor);
 
-            if (!(finder.boundaryReasons() & QTextBoundaryFinder::StartWord)) {
-                 finder.toNextBoundary();
-                 if (finder.boundaryReasons() != QTextBoundaryFinder::StartWord)
-                    finder.toPreviousBoundary();
+            const QTextBoundaryFinder::BoundaryReasons reasons = finder.boundaryReasons();
+            if (!(reasons & QTextBoundaryFinder::StartWord)
+                    || ((reasons & QTextBoundaryFinder::EndWord) && anchor > cursor)) {
+                finder.toPreviousBoundary();
             }
             anchor = finder.position();
 
             finder.setPosition(pos);
-            if (!(finder.boundaryReasons() & QTextBoundaryFinder::EndWord)) {
-                finder.toPreviousBoundary();
-                if (finder.boundaryReasons() != QTextBoundaryFinder::EndWord)
-                    finder.toNextBoundary();
-            }
-            int cursor = finder.position();
+            if (!finder.isAtBoundary())
+                finder.toNextBoundary();
 
-            if (anchor < cursor)
-                d->control->setSelection(anchor, cursor - anchor);
-            else
-                d->control->moveCursor(pos, false);
-
-        } else if (anchor > pos) {
+            d->control->setSelection(anchor, finder.position() - anchor);
+        } else if (anchor > pos || (anchor == pos && cursor > pos)) {
             QTextBoundaryFinder finder(QTextBoundaryFinder::Word, d->control->text());
-
             finder.setPosition(anchor);
-            if (!(finder.boundaryReasons() & QTextBoundaryFinder::EndWord)) {
-                finder.toPreviousBoundary();
-                if (finder.boundaryReasons() != QTextBoundaryFinder::EndWord)
-                    finder.toNextBoundary();
+
+            const QTextBoundaryFinder::BoundaryReasons reasons = finder.boundaryReasons();
+            if (!(reasons & QTextBoundaryFinder::EndWord)
+                    || ((reasons & QTextBoundaryFinder::StartWord) && anchor < cursor)) {
+                finder.toNextBoundary();
             }
+
             anchor = finder.position();
 
             finder.setPosition(pos);
-            if (!(finder.boundaryReasons() & QTextBoundaryFinder::StartWord)) {
-                 finder.toNextBoundary();
-                 if (finder.boundaryReasons() != QTextBoundaryFinder::StartWord)
-                    finder.toPreviousBoundary();
-            }
-            int cursor = finder.position();
+            if (!finder.isAtBoundary())
+                 finder.toPreviousBoundary();
 
-            if (anchor > cursor)
-                d->control->setSelection(anchor, cursor - anchor);
-            else
-                d->control->moveCursor(pos, false);
-        } else {
-            d->control->moveCursor(pos, false);
+            d->control->setSelection(anchor, finder.position() - anchor);
         }
     }
 }

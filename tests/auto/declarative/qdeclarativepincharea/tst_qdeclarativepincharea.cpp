@@ -228,14 +228,8 @@ void tst_QDeclarativePinchArea::scale()
     p2 += QPoint(10,10);
     QTest::touchEvent(vp).move(0, p1).move(1, p2);
 
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "todo on mac", Continue);
-#endif
     QCOMPARE(root->property("scale").toReal(), 1.5);
     QCOMPARE(root->property("center").toPointF(), QPointF(40, 40)); // blackrect is at 50,50
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "todo on mac", Continue);
-#endif
     QCOMPARE(blackRect->scale(), 1.5);
 
     // scale beyond bound
@@ -243,9 +237,6 @@ void tst_QDeclarativePinchArea::scale()
     p2 += QPoint(50,50);
     QTest::touchEvent(vp).move(0, p1).move(1, p2);
 
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "todo on mac", Continue);
-#endif
     QCOMPARE(blackRect->scale(), 2.0);
 
     QTest::touchEvent(vp).release(0, p1).release(1, p2);
@@ -292,18 +283,9 @@ void tst_QDeclarativePinchArea::pan()
     p2 += QPoint(10,10);
     QTest::touchEvent(vp).move(0, p1).move(1, p2);
 
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "todo mac", Continue);
-#endif
     QCOMPARE(root->property("center").toPointF(), QPointF(60, 60)); // blackrect is at 50,50
 
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "todo mac", Continue);
-#endif
     QCOMPARE(blackRect->x(), 60.0);
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "todo mac", Continue);
-#endif
     QCOMPARE(blackRect->y(), 60.0);
 
     // pan x beyond bound
@@ -311,13 +293,7 @@ void tst_QDeclarativePinchArea::pan()
     p2 += QPoint(100,100);
     QTest::touchEvent(vp).move(0, p1).move(1, p2);
 
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "todo mac", Continue);
-#endif
     QCOMPARE(blackRect->x(), 140.0);
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "todo mac", Continue);
-#endif
     QCOMPARE(blackRect->y(), 160.0);
 
     QTest::touchEvent(vp).release(0, p1).release(1, p2);

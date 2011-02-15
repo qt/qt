@@ -50,6 +50,7 @@
 #include <QtCore/qnumeric.h>
 #include <private/qdeclarativeengine_p.h>
 #include <private/qdeclarativeglobalscriptclass_p.h>
+#include <private/qscriptdeclarativeclass_p.h>
 #include "testtypes.h"
 #include "testhttpserver.h"
 #include "../../../shared/util.h"
@@ -142,6 +143,7 @@ private slots:
     void compiled();
     void numberAssignment();
     void propertySplicing();
+    void signalWithUnknownTypes();
 
     void bug1();
     void bug2();
@@ -173,6 +175,7 @@ private slots:
     void aliasBindingsAssignCorrectly();
     void aliasBindingsOverrideTarget();
     void aliasWritesOverrideBindings();
+    void pushCleanContext();
 
     void include();
 
@@ -2340,6 +2343,26 @@ void tst_qdeclarativeecmascript::propertySplicing()
     delete object;
 }
 
+// QTBUG-16683
+void tst_qdeclarativeecmascript::signalWithUnknownTypes()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("signalWithUnknownTypes.qml"));
+
+    MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+    QVERIFY(object != 0);
+
+    MyQmlObject::MyType type;
+    type.value = 0x8971123;
+    emit object->signalWithUnknownType(type);
+
+    MyQmlObject::MyType result = qvariant_cast<MyQmlObject::MyType>(object->variant());
+
+    QCOMPARE(result.value, type.value);
+
+
+    delete object;
+}
+
 // Test that assigning a null object works 
 // Regressed with: df1788b4dbbb2826ae63f26bdf166342595343f4
 void tst_qdeclarativeecmascript::nullObjectBinding()
@@ -2992,6 +3015,44 @@ void tst_qdeclarativeecmascript::revision()
         QCOMPARE(object->property("test").toReal(), 11.);
         delete object;
     }
+}
+
+// Test for QScriptDeclarativeClass::pushCleanContext()
+void tst_qdeclarativeecmascript::pushCleanContext()
+{
+    QScriptEngine engine;
+    engine.globalObject().setProperty("a", 6);
+    QCOMPARE(engine.evaluate("a").toInt32(), 6);
+
+    // First confirm pushContext() behaves as we expect
+    QScriptValue object = engine.newObject();
+    object.setProperty("a", 15);
+    QScriptContext *context1 = engine.pushContext();
+    context1->pushScope(object);
+    QCOMPARE(engine.evaluate("a").toInt32(), 15);
+
+    QScriptContext *context2 = engine.pushContext();
+    Q_UNUSED(context2);
+    QCOMPARE(engine.evaluate("a").toInt32(), 15);
+    QScriptValue func1 = engine.evaluate("(function() { return a; })");
+
+    // Now check that pushCleanContext() works
+    QScriptDeclarativeClass::pushCleanContext(&engine);
+    QCOMPARE(engine.evaluate("a").toInt32(), 6);
+    QScriptValue func2 = engine.evaluate("(function() { return a; })");
+
+    engine.popContext();
+    QCOMPARE(engine.evaluate("a").toInt32(), 15);
+
+    engine.popContext();
+    QCOMPARE(engine.evaluate("a").toInt32(), 15);
+
+    engine.popContext();
+    QCOMPARE(engine.evaluate("a").toInt32(), 6);
+
+    // Check that function objects created in these contexts work
+    QCOMPARE(func1.call().toInt32(), 15);
+    QCOMPARE(func2.call().toInt32(), 6);
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)

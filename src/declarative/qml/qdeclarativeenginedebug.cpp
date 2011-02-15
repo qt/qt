@@ -327,7 +327,7 @@ void QDeclarativeEngineDebugServer::buildStatesList(QDeclarativeContext *ctxt, b
 
 void QDeclarativeEngineDebugServer::buildStatesList(QObject *obj)
 {
-    if (QDeclarativeState *state = dynamic_cast<QDeclarativeState *>(obj)) {
+    if (QDeclarativeState *state = qobject_cast<QDeclarativeState *>(obj)) {
             m_allStates.append(state);
     }
 
@@ -589,7 +589,7 @@ void QDeclarativeEngineDebugServer::setBinding(int objectId,
 
         } else {
             // not a valid property
-            if (QDeclarativePropertyChanges *propertyChanges = dynamic_cast<QDeclarativePropertyChanges *>(object)) {
+            if (QDeclarativePropertyChanges *propertyChanges = qobject_cast<QDeclarativePropertyChanges *>(object)) {
                 if (isLiteralValue) {
                     propertyChanges->changeValue(propertyName, expression);
                 } else {
@@ -637,7 +637,7 @@ void QDeclarativeEngineDebugServer::resetBinding(int objectId, const QString &pr
                 }
             }
         } else {
-            if (QDeclarativePropertyChanges *propertyChanges = dynamic_cast<QDeclarativePropertyChanges *>(object)) {
+            if (QDeclarativePropertyChanges *propertyChanges = qobject_cast<QDeclarativePropertyChanges *>(object)) {
                 propertyChanges->removeProperty(propertyName);
             }
         }

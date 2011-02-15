@@ -413,8 +413,10 @@ public:
             }
         }
         if ((header && header->item == item) || (footer && footer->item == item)) {
-            updateHeader();
-            updateFooter();
+            if (header)
+                updateHeader();
+            if (footer)
+                updateFooter();
         }
         if (currentItem && currentItem->item == item)
             updateHighlight();
@@ -936,6 +938,9 @@ void QDeclarativeListViewPrivate::createSection(FxListItem *listItem)
                 }
             }
             listItem->setPosition(pos);
+        } else {
+            QDeclarativeContext *context = QDeclarativeEngine::contextForObject(listItem->section)->parentContext();
+            context->setContextProperty(QLatin1String("section"), listItem->attached->m_section);
         }
     } else if (listItem->section) {
         qreal pos = listItem->position();
@@ -2232,6 +2237,9 @@ void QDeclarativeListView::setFooter(QDeclarativeComponent *footer)
     Q_D(QDeclarativeListView);
     if (d->footerComponent != footer) {
         if (d->footer) {
+            if (scene())
+                scene()->removeItem(d->footer->item);
+            d->footer->item->deleteLater();
             delete d->footer;
             d->footer = 0;
         }
@@ -2241,6 +2249,7 @@ void QDeclarativeListView::setFooter(QDeclarativeComponent *footer)
         if (isComponentComplete()) {
             d->updateFooter();
             d->updateViewport();
+            d->fixupPosition();
         }
         emit footerChanged();
     }
@@ -2266,6 +2275,9 @@ void QDeclarativeListView::setHeader(QDeclarativeComponent *header)
     Q_D(QDeclarativeListView);
     if (d->headerComponent != header) {
         if (d->header) {
+            if (scene())
+                scene()->removeItem(d->header->item);
+            d->header->item->deleteLater();
             delete d->header;
             d->header = 0;
         }
@@ -2276,6 +2288,7 @@ void QDeclarativeListView::setHeader(QDeclarativeComponent *header)
             d->updateHeader();
             d->updateFooter();
             d->updateViewport();
+            d->fixupPosition();
         }
         emit headerChanged();
     }
@@ -2840,23 +2853,8 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
         return;
     d->updateUnrequestedIndexes();
     d->moveReason = QDeclarativeListViewPrivate::Other;
-    if (!d->visibleItems.count() || d->model->count() <= 1) {
-        d->scheduleLayout();
-        if (d->itemCount && d->currentIndex >= modelIndex) {
-            // adjust current item index
-            d->currentIndex += count;
-            if (d->currentItem)
-                d->currentItem->index = d->currentIndex;
-            emit currentIndexChanged();
-        } else if (!d->currentIndex || (d->currentIndex < 0 && !d->currentIndexCleared)) {
-            d->updateCurrent(0);
-        }
-        d->itemCount += count;
-        emit countChanged();
-        return;
-    }
 
-    int index = d->mapFromModel(modelIndex);
+    int index = d->visibleItems.count() ? d->mapFromModel(modelIndex) : 0;
     if (index < 0) {
         int i = d->visibleItems.count() - 1;
         while (i > 0 && d->visibleItems.at(i)->index == -1)
@@ -2892,11 +2890,15 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
         }
     }
 
-    // At least some of the added items will be visible
-
     // index can be the next item past the end of the visible items list (i.e. appended)
-    int pos = index < d->visibleItems.count() ? d->visibleItems.at(index)->position()
+    int pos = 0;
+    if (d->visibleItems.count()) {
+        pos = index < d->visibleItems.count() ? d->visibleItems.at(index)->position()
                                                 : d->visibleItems.last()->endPosition()+d->spacing+1;
+    } else if (d->itemCount == 0 && d->header) {
+        pos = d->header->size();
+    }
+
     int initialPos = pos;
     int diff = 0;
     QList<FxListItem*> added;
@@ -2963,6 +2965,8 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
         if (d->currentItem) {
             d->currentItem->index = d->currentIndex;
             d->currentItem->setPosition(d->currentItem->position() + diff);
+        } else if (!d->currentIndex || (d->currentIndex < 0 && !d->currentIndexCleared)) {
+            d->updateCurrent(0);
         }
         emit currentIndexChanged();
     }

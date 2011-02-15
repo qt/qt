@@ -331,8 +331,10 @@ public:
                 }
             }
         } else if ((header && header->item == item) || (footer && footer->item == item)) {
-            updateHeader();
-            updateFooter();
+            if (header)
+                updateHeader();
+            if (footer)
+                updateFooter();
         }
     }
 
@@ -1779,6 +1781,9 @@ void QDeclarativeGridView::setFooter(QDeclarativeComponent *footer)
     Q_D(QDeclarativeGridView);
     if (d->footerComponent != footer) {
         if (d->footer) {
+            if (scene())
+                scene()->removeItem(d->footer->item);
+            d->footer->item->deleteLater();
             delete d->footer;
             d->footer = 0;
         }
@@ -1786,6 +1791,7 @@ void QDeclarativeGridView::setFooter(QDeclarativeComponent *footer)
         if (isComponentComplete()) {
             d->updateFooter();
             d->updateGrid();
+            d->fixupPosition();
         }
         emit footerChanged();
     }
@@ -1811,6 +1817,9 @@ void QDeclarativeGridView::setHeader(QDeclarativeComponent *header)
     Q_D(QDeclarativeGridView);
     if (d->headerComponent != header) {
         if (d->header) {
+            if (scene())
+                scene()->removeItem(d->header->item);
+            d->header->item->deleteLater();
             delete d->header;
             d->header = 0;
         }
@@ -1819,6 +1828,7 @@ void QDeclarativeGridView::setHeader(QDeclarativeComponent *header)
             d->updateHeader();
             d->updateFooter();
             d->updateGrid();
+            d->fixupPosition();
         }
         emit headerChanged();
     }
@@ -2380,24 +2390,9 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
     Q_D(QDeclarativeGridView);
     if (!isComponentComplete())
         return;
-    if (!d->visibleItems.count() || d->model->count() <= 1) {
-        d->scheduleLayout();
-        if (d->itemCount && d->currentIndex >= modelIndex) {
-            // adjust current item index
-            d->currentIndex += count;
-            if (d->currentItem)
-                d->currentItem->index = d->currentIndex;
-            emit currentIndexChanged();
-        } else if (!d->currentIndex || (d->currentIndex < 0 && !d->currentIndexCleared)) {
-            d->updateCurrent(0);
-        }
-        d->itemCount += count;
-        emit countChanged();
-        return;
-    }
 
-    int index = d->mapFromModel(modelIndex);
-    if (index == -1) {
+    int index = d->visibleItems.count() ? d->mapFromModel(modelIndex) : 0;
+    if (index < 0) {
         int i = d->visibleItems.count() - 1;
         while (i > 0 && d->visibleItems.at(i)->index == -1)
             --i;
@@ -2428,28 +2423,35 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
         }
     }
 
-    // At least some of the added items will be visible
     int insertCount = count;
-    if (index < d->visibleIndex) {
+    if (index < d->visibleIndex && d->visibleItems.count()) {
         insertCount -= d->visibleIndex - index;
         index = d->visibleIndex;
         modelIndex = d->visibleIndex;
     }
 
-    index -= d->visibleIndex;
     int to = d->buffer+d->position()+d->size()-1;
-    int colPos, rowPos;
-    if (index < d->visibleItems.count()) {
-        colPos = d->visibleItems.at(index)->colPos();
-        rowPos = d->visibleItems.at(index)->rowPos();
-    } else {
-        // appending items to visible list
-        colPos = d->visibleItems.at(index-1)->colPos() + d->colSize();
-        rowPos = d->visibleItems.at(index-1)->rowPos();
-        if (colPos > d->colSize() * (d->columns-1)) {
-            colPos = 0;
-            rowPos += d->rowSize();
+    int colPos = 0;
+    int rowPos = 0;
+    if (d->visibleItems.count()) {
+        index -= d->visibleIndex;
+        if (index < d->visibleItems.count()) {
+            colPos = d->visibleItems.at(index)->colPos();
+            rowPos = d->visibleItems.at(index)->rowPos();
+        } else {
+            // appending items to visible list
+            colPos = d->visibleItems.at(index-1)->colPos() + d->colSize();
+            rowPos = d->visibleItems.at(index-1)->rowPos();
+            if (colPos > d->colSize() * (d->columns-1)) {
+                colPos = 0;
+                rowPos += d->rowSize();
+            }
         }
+    } else if (d->itemCount == 0 && d->header) {
+        if (d->flow == QDeclarativeGridView::LeftToRight)
+            rowPos = d->headerSize();
+        else
+            colPos = d->headerSize();
     }
 
     // Update the indexes of the following visible items.
@@ -2502,6 +2504,8 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
         if (d->currentItem) {
             d->currentItem->index = d->currentIndex;
             d->currentItem->setPosition(d->colPosAt(d->currentIndex), d->rowPosAt(d->currentIndex));
+        } else if (!d->currentIndex || (d->currentIndex < 0 && !d->currentIndexCleared)) {
+            d->updateCurrent(0);
         }
         emit currentIndexChanged();
     }

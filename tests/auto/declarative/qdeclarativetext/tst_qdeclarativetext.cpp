@@ -470,6 +470,8 @@ void tst_qdeclarativetext::alignments()
         QCOMPARE(actual,expect);
     }
 #endif
+
+    delete canvas;
 }
 
 //the alignment tests may be trivial o.oa
@@ -962,6 +964,8 @@ void tst_qdeclarativetext::QTBUG_12291()
     QDeclarativeText *text = ob->findChild<QDeclarativeText*>("text");
     QVERIFY(text);
     QVERIFY(text->boundingRect().isValid());
+
+    delete canvas;
 }
 
 class EventSender : public QGraphicsItem
@@ -1054,6 +1058,8 @@ void tst_qdeclarativetext::embeddedImages()
         QCOMPARE(textObject->width(), 16.0); // default size of QTextDocument broken image icon
         QCOMPARE(textObject->height(), 16.0);
     }
+
+    delete textObject;
 }
 
 void tst_qdeclarativetext::lineCount()
@@ -1081,6 +1087,8 @@ void tst_qdeclarativetext::lineCount()
     QCOMPARE(myText->lineCount(), 2);
     QCOMPARE(myText->truncated(), true);
     QCOMPARE(myText->maximumLineCount(), 2);
+
+    delete canvas;
 }
 
 void tst_qdeclarativetext::lineHeight()
@@ -1091,27 +1099,29 @@ void tst_qdeclarativetext::lineHeight()
     QVERIFY(myText != 0);
 
     QVERIFY(myText->lineHeight() == 1);
-    QVERIFY(myText->lineHeightMode() == QDeclarativeText::MultiplyHeight);
+    QVERIFY(myText->lineHeightMode() == QDeclarativeText::ProportionalHeight);
 
     qreal h = myText->height();
     myText->setLineHeight(1.5);
     QVERIFY(myText->height() == h * 1.5);
 
-    myText->setLineHeightMode(QDeclarativeText::PixelHeight);
+    myText->setLineHeightMode(QDeclarativeText::FixedHeight);
     myText->setLineHeight(20);
     QCOMPARE(myText->height(), myText->lineCount() * 20.0);
 
     myText->setText("Lorem ipsum sit <b>amet</b>, consectetur adipiscing elit. Integer felis nisl, varius in pretium nec, venenatis non erat. Proin lobortis interdum dictum.");
-    myText->setLineHeightMode(QDeclarativeText::MultiplyHeight);
-    myText->setLineHeight(1);
+    myText->setLineHeightMode(QDeclarativeText::ProportionalHeight);
+    myText->setLineHeight(1.0);
 
-    qreal h2 = myText->height();
+    //qreal h2 = myText->height();
     myText->setLineHeight(2.0);
-    QVERIFY(myText->height() == h2 * 2.0);
+    //QVERIFY(myText->height() == h2 * 2.0);
 
-    myText->setLineHeightMode(QDeclarativeText::PixelHeight);
+    myText->setLineHeightMode(QDeclarativeText::FixedHeight);
     myText->setLineHeight(10);
-    QCOMPARE(myText->height(), myText->lineCount() * 10.0);
+    //QCOMPARE(myText->height(), myText->lineCount() * 10.0);
+
+    delete canvas;
 }
 
 void tst_qdeclarativetext::implicitSize_data()
@@ -1175,8 +1185,20 @@ void tst_qdeclarativetext::testQtQuick11Attributes_data()
         << "QDeclarativeComponent: Component is not ready"
         << ":1 \"Text.maximumLineCount\" is not available in QtQuick 1.0.\n";
 
-    QTest::newRow("truncated") << "property int foo: lineCount"
+    QTest::newRow("lineHeight") << "lineHeight: 2"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Text.lineHeight\" is not available in QtQuick 1.0.\n";
+
+    QTest::newRow("lineHeightMode") << "lineHeightMode: Text.ProportionalHeight"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Text.lineHeightMode\" is not available in QtQuick 1.0.\n";
+
+    QTest::newRow("lineCount") << "property int foo: lineCount"
         << "<Unknown File>:1: ReferenceError: Can't find variable: lineCount"
+        << "";
+
+    QTest::newRow("truncated") << "property bool foo: truncated"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: truncated"
         << "";
 }
 

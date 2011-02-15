@@ -1152,7 +1152,7 @@ void QDeclarativePathViewPrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent 
         moveReason = QDeclarativePathViewPrivate::Mouse;
         qreal diff = (newPc - startPc)*modelCount*mappedRange;
         if (diff) {
-            setOffset(offset + diff);
+            q->setOffset(offset + diff);
 
             if (diff > modelCount/2)
                 diff -= modelCount;
@@ -1455,17 +1455,18 @@ void QDeclarativePathView::itemsInserted(int modelIndex, int count)
     if (!d->isValid() || !isComponentComplete())
         return;
 
-    d->itemCache += d->items;
-    d->items.clear();
-    if (modelIndex <= d->currentIndex) {
-        d->currentIndex += count;
-        emit currentIndexChanged();
-    } else if (d->offset != 0) {
-        d->offset += count;
-        d->offsetAdj += count;
+    if (d->modelCount) {
+        d->itemCache += d->items;
+        d->items.clear();
+        if (modelIndex <= d->currentIndex) {
+            d->currentIndex += count;
+            emit currentIndexChanged();
+        } else if (d->offset != 0) {
+            d->offset += count;
+            d->offsetAdj += count;
+        }
     }
-
-    d->modelCount = d->model->count();
+    d->modelCount += count;
     if (d->flicking || d->moving) {
         d->regenerate();
         d->updateCurrent();
@@ -1502,18 +1503,29 @@ void QDeclarativePathView::itemsRemoved(int modelIndex, int count)
     d->itemCache += d->items;
     d->items.clear();
 
+    bool changedOffset = false;
     if (modelIndex > d->currentIndex) {
         if (d->offset >= count) {
+            changedOffset = true;
             d->offset -= count;
             d->offsetAdj -= count;
         }
     }
 
-    d->modelCount = d->model->count();
-    d->regenerate();
-    d->updateCurrent();
-    if (!d->modelCount)
+    d->modelCount -= count;
+    if (!d->modelCount) {
+        while (d->itemCache.count())
+            d->releaseItem(d->itemCache.takeLast());
+        d->offset = 0;
+        changedOffset = true;
+        d->tl.reset(d->moveOffset);
         update();
+    } else {
+        d->regenerate();
+        d->updateCurrent();
+    }
+    if (changedOffset)
+        emit offsetChanged();
     if (currentChanged)
         emit currentIndexChanged();
     emit countChanged();
@@ -1601,7 +1613,7 @@ void QDeclarativePathView::movementEnding()
 int QDeclarativePathViewPrivate::calcCurrentIndex()
 {
     int current = -1;
-    if (model && items.count()) {
+    if (modelCount && model && items.count()) {
         offset = qmlMod(offset, modelCount);
         if (offset < 0)
             offset += modelCount;
@@ -1617,7 +1629,7 @@ void QDeclarativePathViewPrivate::updateCurrent()
     Q_Q(QDeclarativePathView);
     if (moveReason != Mouse)
         return;
-    if (!haveHighlightRange || highlightRangeMode != QDeclarativePathView::StrictlyEnforceRange)
+    if (!modelCount || !haveHighlightRange || highlightRangeMode != QDeclarativePathView::StrictlyEnforceRange)
         return;
 
     int idx = calcCurrentIndex();

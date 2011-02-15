@@ -653,9 +653,7 @@ void QDeclarativeTextEdit::moveCursorSelection(int pos)
     selected (the 6th and 7th characters).
 
     The same sequence with TextEdit.SelectWords will extend the selection start to a word boundary
-    before or on position 5 and extend the selection end to a word boundary past position 9, and
-    then if there is a word boundary between position 7 and 8 retract the selection end to that
-    boundary.  If there is whitespace at position 7 the selection will be retracted further.
+    before or on position 5 and extend the selection end to a word boundary on or past position 9.
 */
 void QDeclarativeTextEdit::moveCursorSelection(int pos, SelectionMode mode)
 {
@@ -665,48 +663,43 @@ void QDeclarativeTextEdit::moveCursorSelection(int pos, SelectionMode mode)
         return;
     if (mode == SelectCharacters) {
         cursor.setPosition(pos, QTextCursor::KeepAnchor);
-    } else if (cursor.anchor() < pos) {
-        cursor.setPosition(cursor.anchor(), QTextCursor::MoveAnchor);
-        cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
-        if (cursor.position() == cursor.anchor()) {
-            cursor.movePosition(QTextCursor::NextWord, QTextCursor::MoveAnchor);
+    } else if (cursor.anchor() < pos || (cursor.anchor() == pos && cursor.position() < pos)) {
+        if (cursor.anchor() > cursor.position()) {
+            cursor.setPosition(cursor.anchor(), QTextCursor::MoveAnchor);
+            cursor.movePosition(QTextCursor::StartOfWord, QTextCursor::KeepAnchor);
+            if (cursor.position() == cursor.anchor())
+                cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::MoveAnchor);
+            else
+                cursor.setPosition(cursor.position(), QTextCursor::MoveAnchor);
         } else {
-            cursor.movePosition(QTextCursor::PreviousCharacter, QTextCursor::MoveAnchor);
+            cursor.setPosition(cursor.anchor(), QTextCursor::MoveAnchor);
             cursor.movePosition(QTextCursor::StartOfWord, QTextCursor::MoveAnchor);
         }
+
         cursor.setPosition(pos, QTextCursor::KeepAnchor);
         cursor.movePosition(QTextCursor::StartOfWord, QTextCursor::KeepAnchor);
-        if (cursor.position() == pos) {
-            cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
+        if (cursor.position() != pos)
             cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+    } else if (cursor.anchor() > pos || (cursor.anchor() == pos && cursor.position() > pos)) {
+        if (cursor.anchor() < cursor.position()) {
+            cursor.setPosition(cursor.anchor(), QTextCursor::MoveAnchor);
+            cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::MoveAnchor);
+        } else {
+            cursor.setPosition(cursor.anchor(), QTextCursor::MoveAnchor);
+            cursor.movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor);
+            cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+            if (cursor.position() != cursor.anchor()) {
+                cursor.setPosition(cursor.anchor(), QTextCursor::MoveAnchor);
+                cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::MoveAnchor);
+            }
+        }
 
-            if (cursor.anchor() > cursor.position())
-                cursor.setPosition(pos, QTextCursor::MoveAnchor);
-        } else {
-            cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
-        }
-    } else if (cursor.anchor() > pos) {
-        cursor.setPosition(cursor.anchor(), QTextCursor::MoveAnchor);
-        cursor.movePosition(QTextCursor::StartOfWord, QTextCursor::KeepAnchor);
-        if (cursor.position() == cursor.anchor()) {
-            cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::MoveAnchor);
-            cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::MoveAnchor);
-        } else {
-            cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::MoveAnchor);
-        }
         cursor.setPosition(pos, QTextCursor::KeepAnchor);
         cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
-        if (cursor.position() == pos) {
-            cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor);
-
-            if (cursor.anchor() < cursor.position())
-                cursor.setPosition(pos, QTextCursor::MoveAnchor);
-        } else {
+        if (cursor.position() != pos) {
             cursor.movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor);
             cursor.movePosition(QTextCursor::StartOfWord, QTextCursor::KeepAnchor);
         }
-    } else {
-        cursor.setPosition(pos, QTextCursor::MoveAnchor);
     }
     d->control->setTextCursor(cursor);
 }
@@ -981,11 +974,41 @@ void QDeclarativeTextEdit::setSelectByMouse(bool on)
     Q_D(QDeclarativeTextEdit);
     if (d->selectByMouse != on) {
         d->selectByMouse = on;
+        setKeepMouseGrab(on);
         emit selectByMouseChanged(on);
     }
 }
 
 
+/*!
+    \qmlproperty enum TextEdit::mouseSelectionMode
+    \since Quick 1.1
+
+    Specifies how text should be selected using a mouse.
+
+    \list
+    \o TextEdit.SelectCharacters - The selection is updated with individual characters. (Default)
+    \o TextEdit.SelectWords - The selection is updated with whole words.
+    \endlist
+
+    This property only applies when \l selectByMouse is true.
+*/
+
+QDeclarativeTextEdit::SelectionMode QDeclarativeTextEdit::mouseSelectionMode() const
+{
+    Q_D(const QDeclarativeTextEdit);
+    return d->mouseSelectionMode;
+}
+
+void QDeclarativeTextEdit::setMouseSelectionMode(SelectionMode mode)
+{
+    Q_D(QDeclarativeTextEdit);
+    if (d->mouseSelectionMode != mode) {
+        d->mouseSelectionMode = mode;
+        d->control->setWordSelectionEnabled(mode == SelectWords);
+        emit mouseSelectionModeChanged(mode);
+    }
+}
 
 /*!
     \qmlproperty bool TextEdit::readOnly
@@ -1001,6 +1024,7 @@ void QDeclarativeTextEdit::setReadOnly(bool r)
     if (r == isReadOnly())
         return;
 
+    setFlag(QGraphicsItem::ItemAcceptsInputMethod, !r);
 
     Qt::TextInteractionFlags flags = Qt::LinksAccessibleByMouse;
     if (r) {

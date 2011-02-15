@@ -55,22 +55,9 @@ public:
     Qt::LayoutDirection layoutDirection;
 };
 
-/*!
-    \qmlclass Application QDeclarativeApplication
-    \since QtQuick 1.1
-    \ingroup qml-utility-elements
-    \brief The Application element provides access to global application
-    state properties shared by many QML components.
-
-    These properties include application activity property \c active,
-    and default layout direction property \c layoutDirection.
-
-    \section1 Example Usage
-
-    The following example shows the simplest usage of the Application element.
-
-    \snippet doc/src/snippets/declarative/application.qml document
-
+/*
+    This object and its properties are documented as part of the Qt object,
+    in qdeclarativengine.cpp
 */
 
 QDeclarativeApplication::QDeclarativeApplication(QObject *parent) : QObject(*new QDeclarativeApplicationPrivate(), parent)
@@ -83,46 +70,12 @@ QDeclarativeApplication::~QDeclarativeApplication()
 {
 }
 
-/*!
-    \qmlproperty bool Application::active
-
-    This property indicates whether the application is the top-most and focused
-    application, and user is able to interact with the application. The property
-    is false when the application is on the background, device keylock or screen
-    saver is active, the screen backlight is turned off, or global system dialog
-    is being displayed on top of the application. It can be used for stopping and
-    pausing animations, timers, active processing of data to save device battery
-    and free device memory and processor load when the application is not active.
-    This property is readonly.
-
-*/
 bool QDeclarativeApplication::active() const
 {
     Q_D(const QDeclarativeApplication);
     return d->active;
 }
 
-/*!
-    \qmlproperty enumeration Application::layoutDirection
-
-    This property can be used to query the default layout direction of the
-    application. On system start-up, the default layout direction depends on the
-    application's language. The property has a value Qt.RightToLeft in locales
-    where text and graphic elements are read from right to left, and Qt.LeftToRight
-    where the reading direction flows from left to right. You can bind to the
-    property to customize your application layouts to support both layout
-    directions. This property is readonly.
-
-    Possible values are:
-
-    \list
-    \o Qt.LeftToRight - Text and graphics elements should be positioned
-                        from left to right.
-    \o Qt.RightToLeft - Text and graphics elements should be positioned
-                        from right to left.
-    \endlist
-
-*/
 Qt::LayoutDirection QDeclarativeApplication::layoutDirection() const
 {
     Q_D(const QDeclarativeApplication);
