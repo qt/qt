@@ -2388,6 +2388,7 @@ QStringList QScriptEngine::availableExtensions() const
                 for (int k = 0; k < keys.count(); ++k)
                     result << keys.at(k);
             }
+            loader.unload();
         }
 
         // look for scripts
