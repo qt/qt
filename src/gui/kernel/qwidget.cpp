@@ -393,11 +393,24 @@ void QWidgetPrivate::scrollChildren(int dx, int dy)
     }
 }
 
+QInputContext *QWidgetPrivate::assignedInputContext() const
+{
+#ifndef QT_NO_IM
+    const QWidget *widget = q_func();
+    while (widget) {
+        if (QInputContext *qic = widget->d_func()->ic)
+            return qic;
+        widget = widget->parentWidget();
+    }
+#endif
+    return 0;
+}
+
 QInputContext *QWidgetPrivate::inputContext() const
 {
 #ifndef QT_NO_IM
-    if (ic)
-        return ic;
+    if (QInputContext *qic = assignedInputContext())
+        return qic;
     return qApp->inputContext();
 #else
     return 0;
@@ -10721,7 +10734,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     case Qt::WA_InputMethodEnabled: {
 #ifndef QT_NO_IM
         QWidget *focusWidget = d->effectiveFocusWidget();
-        QInputContext *ic = focusWidget->d_func()->ic;
+        QInputContext *ic = focusWidget->d_func()->assignedInputContext();
         if (!ic && (!on || hasFocus()))
             ic = focusWidget->d_func()->inputContext();
         if (ic) {
@@ -11208,7 +11221,7 @@ void QWidget::updateMicroFocus()
 #if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN))
     Q_D(QWidget);
     // and optimization to update input context only it has already been created.
-    if (d->ic || qApp->d_func()->inputContext) {
+    if (d->assignedInputContext() || qApp->d_func()->inputContext) {
         QInputContext *ic = inputContext();
         if (ic)
             ic->update();

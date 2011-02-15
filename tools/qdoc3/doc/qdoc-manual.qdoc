@@ -7069,6 +7069,8 @@
     \l {22-qdoc-configuration-generalvariables.html#outputdir}{outputdir},
     \l {22-qdoc-configuration-generalvariables.html#outputformats}
        {outputformats},
+    \l {22-qdoc-configuration-generalvariables.html#outputprefixes}
+       {outputprefixes},
     \l {22-qdoc-configuration-generalvariables.html#slow}{slow},
     \l {22-qdoc-configuration-generalvariables.html#sourcedirs}{sourcedirs},
     \l {22-qdoc-configuration-generalvariables.html#sources}{sources},
@@ -7155,6 +7157,8 @@
     \l {22-qdoc-configuration-generalvariables.html#outputdir}{outputdir},
     \l {22-qdoc-configuration-generalvariables.html#outputformats}
        {outputformats},
+    \l {22-qdoc-configuration-generalvariables.html#outputprefixes}
+       {outputprefixes},
     \l {22-qdoc-configuration-generalvariables.html#slow}{slow},
     \l {22-qdoc-configuration-generalvariables.html#sourcedirs}{sourcedirs},
     \l {22-qdoc-configuration-generalvariables.html#sources}{sources},
@@ -7794,6 +7798,23 @@
 
            Currently, QDoc only supports the HTML format. It is also
            the default format, and doesn't need to be specified.
+
+    \row
+        \o \bold outputprefixes \target outputprefixes
+        \o \bold {The \c outputprefixes variable specifies a mapping between
+           types of files and the prefixes to prepend to the HTML file names
+           in the generated documentation.}
+
+           For example:
+
+           \code
+           outputprefixes = QML
+           outputprefixes.QML = qt-components-
+           \endcode
+
+           Be default, files containing the API documentation for QML elements
+           or components are prefixed with "qml-". In the above example, the
+           prefix "qt-components-" is used instead.
 
     \row
         \o \bold qhp \target qhp

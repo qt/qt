@@ -60,8 +60,6 @@ QT_USE_NAMESPACE
 
 Q_DECLARE_METATYPE(QNetworkConfiguration)
 Q_DECLARE_METATYPE(QNetworkConfiguration::Type);
-Q_DECLARE_METATYPE(QNetworkSession::State);
-Q_DECLARE_METATYPE(QNetworkSession::SessionError);
 
 class tst_QNetworkSession : public QObject
 {
@@ -126,8 +124,6 @@ QNetworkConfiguration suitableConfiguration(QString bearerType, QNetworkConfigur
 
 void tst_QNetworkSession::initTestCase()
 {
-    qRegisterMetaType<QNetworkSession::State>("QNetworkSession::State");
-    qRegisterMetaType<QNetworkSession::SessionError>("QNetworkSession::SessionError");
     qRegisterMetaType<QNetworkConfiguration>("QNetworkConfiguration");
     qRegisterMetaType<QNetworkConfiguration::Type>("QNetworkConfiguration::Type");
 	

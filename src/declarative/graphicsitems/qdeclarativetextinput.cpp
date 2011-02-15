@@ -776,6 +776,15 @@ bool QDeclarativeTextInput::hasAcceptableInput() const
 }
 
 /*!
+    \qmlsignal TextInput::onAccepted()
+
+    This handler is called when the Return or Enter key is pressed.
+    Note that if there is a \l validator or \l inputMask set on the text
+    input, the handler will only be emitted if the input is in an acceptable
+    state.
+*/
+
+/*!
     \qmlproperty enumeration TextInput::echoMode
 
     Specifies how the text should be displayed in the TextInput.
@@ -1019,6 +1028,10 @@ void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
             }
         }
     }
+    if (d->selectByMouse) {
+        setKeepMouseGrab(false);
+        d->pressPos = event->pos();
+    }
     bool mark = event->modifiers() & Qt::ShiftModifier;
     int cursor = d->xToPos(event->pos().x());
     d->control->moveCursor(cursor, mark);
@@ -1029,6 +1042,8 @@ void QDeclarativeTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
     if (d->selectByMouse) {
+        if (qAbs(int(event->pos().x() - d->pressPos.x())) > QApplication::startDragDistance())
+            setKeepMouseGrab(true);
         moveCursorSelection(d->xToPos(event->pos().x()), d->mouseSelectionMode);
         event->setAccepted(true);
     } else {
@@ -1043,6 +1058,8 @@ Handles the given mouse \a event.
 void QDeclarativeTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
+    if (d->selectByMouse)
+        setKeepMouseGrab(false);
     if (!d->showInputPanelOnFocus) { // input panel on click
         if (d->focusOnPress && !isReadOnly() && boundingRect().contains(event->pos())) {
             if (QGraphicsView * view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
@@ -1056,6 +1073,15 @@ void QDeclarativeTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     d->control->processEvent(event);
     if (!event->isAccepted())
         QDeclarativePaintedItem::mouseReleaseEvent(event);
+}
+
+bool QDeclarativeTextInput::sceneEvent(QEvent *event)
+{
+    bool rv = QDeclarativeItem::sceneEvent(event);
+    if (event->type() == QEvent::UngrabMouse) {
+        setKeepMouseGrab(false);
+    }
+    return rv;
 }
 
 bool QDeclarativeTextInput::event(QEvent* ev)

@@ -43,6 +43,7 @@
 #include "private/qdeclarativelistmodel_p.h"
 #include "private/qdeclarativelistmodelworkeragent_p.h"
 #include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativeexpression_p.h"
 
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qcoreapplication.h>
@@ -104,6 +105,19 @@ private:
     int m_id;
 };
 
+class WorkerErrorEvent : public QEvent
+{
+public:
+    enum Type { WorkerError = WorkerRemoveEvent::WorkerRemove + 1 };
+
+    WorkerErrorEvent(const QDeclarativeError &error);
+
+    QDeclarativeError error() const;
+
+private:
+    QDeclarativeError m_error;
+};
+
 class QDeclarativeWorkerScriptEnginePrivate : public QObject
 {
     Q_OBJECT
@@ -146,6 +160,7 @@ public:
         WorkerScript();
 
         int id;
+        QUrl source;
         bool initialized;
         QDeclarativeWorkerScript *owner;
         QScriptValue object;
@@ -173,6 +188,7 @@ protected:
 private:
     void processMessage(int, const QVariant &);
     void processLoad(int, const QUrl &);
+    void reportScriptException(WorkerScript *);
 };
 
 QDeclarativeWorkerScriptEnginePrivate::QDeclarativeWorkerScriptEnginePrivate(QDeclarativeEngine *engine)
@@ -273,6 +289,11 @@ void QDeclarativeWorkerScriptEnginePrivate::processMessage(int id, const QVarian
         args.setProperty(0, variantToScriptValue(data, workerEngine));
 
         script->callback.call(script->object, args);
+
+        if (workerEngine->hasUncaughtException()) {
+            reportScriptException(script);
+            workerEngine->clearExceptions();
+        }
     }
 }
 
@@ -286,7 +307,7 @@ void QDeclarativeWorkerScriptEnginePrivate::processLoad(int id, const QUrl &url)
     QFile f(fileName);
     if (f.open(QIODevice::ReadOnly)) {
         QByteArray data = f.readAll();
-        QString script = QString::fromUtf8(data);
+        QString sourceCode = QString::fromUtf8(data);
 
         QScriptValue activation = getWorker(id);
 
@@ -296,15 +317,40 @@ void QDeclarativeWorkerScriptEnginePrivate::processLoad(int id, const QUrl &url)
         ctxt->pushScope(urlContext);
         ctxt->pushScope(activation);
         ctxt->setActivationObject(activation);
-        QDeclarativeScriptParser::extractPragmas(script);
+        QDeclarativeScriptParser::extractPragmas(sourceCode);
 
         workerEngine->baseUrl = url;
-        workerEngine->evaluate(script);
+        workerEngine->evaluate(sourceCode);
+
+        WorkerScript *script = workers.value(id);
+        if (script) {
+            script->source = url;
+            if (workerEngine->hasUncaughtException()) {
+                reportScriptException(script);
+                workerEngine->clearExceptions();
+            }
+        }
 
         workerEngine->popContext();
     } else {
         qWarning().nospace() << "WorkerScript: Cannot find source file " << url.toString();
     }
+}
+
+void QDeclarativeWorkerScriptEnginePrivate::reportScriptException(WorkerScript *script)
+{
+    if (!script || !workerEngine->hasUncaughtException())
+        return;
+
+    QDeclarativeError error;
+    QDeclarativeExpressionPrivate::exceptionToError(workerEngine, error);
+    error.setUrl(script->source);
+
+    QDeclarativeWorkerScriptEnginePrivate *p = QDeclarativeWorkerScriptEnginePrivate::get(workerEngine);
+
+    QMutexLocker(&p->m_lock);
+    if (script->owner)
+        QCoreApplication::postEvent(script->owner, new WorkerErrorEvent(error));
 }
 
 QVariant QDeclarativeWorkerScriptEnginePrivate::scriptValueToVariant(const QScriptValue &value)
@@ -451,6 +497,16 @@ WorkerRemoveEvent::WorkerRemoveEvent(int workerId)
 int WorkerRemoveEvent::workerId() const
 {
     return m_id;
+}
+
+WorkerErrorEvent::WorkerErrorEvent(const QDeclarativeError &error)
+: QEvent((QEvent::Type)WorkerError), m_error(error)
+{
+}
+
+QDeclarativeError WorkerErrorEvent::error() const
+{
+    return m_error;
 }
 
 QDeclarativeWorkerScriptEngine::QDeclarativeWorkerScriptEngine(QDeclarativeEngine *parent)
@@ -681,6 +737,10 @@ bool QDeclarativeWorkerScript::event(QEvent *event)
                 QDeclarativeWorkerScriptEnginePrivate::variantToScriptValue(workerEvent->data(), scriptEngine);
             emit message(value);
         }
+        return true;
+    } else if (event->type() == (QEvent::Type)WorkerErrorEvent::WorkerError) {
+        WorkerErrorEvent *workerEvent = static_cast<WorkerErrorEvent *>(event);
+        QDeclarativeEnginePrivate::warning(qmlEngine(this), workerEvent->error());
         return true;
     } else {
         return QObject::event(event);

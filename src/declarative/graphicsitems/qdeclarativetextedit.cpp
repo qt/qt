@@ -976,6 +976,7 @@ void QDeclarativeTextEdit::setSelectByMouse(bool on)
     Q_D(QDeclarativeTextEdit);
     if (d->selectByMouse != on) {
         d->selectByMouse = on;
+        setKeepMouseGrab(on);
         emit selectByMouseChanged(on);
     }
 }

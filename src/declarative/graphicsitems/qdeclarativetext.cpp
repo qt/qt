@@ -99,7 +99,8 @@ QString QDeclarativeTextPrivate::elideChar = QString(0x2026);
 QDeclarativeTextPrivate::QDeclarativeTextPrivate()
 : color((QRgb)0), style(QDeclarativeText::Normal), hAlign(QDeclarativeText::AlignLeft), 
   vAlign(QDeclarativeText::AlignTop), elideMode(QDeclarativeText::ElideNone),
-  format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap), lineHeight(1), lineHeightMode(QDeclarativeText::MultiplyHeight),
+  format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap), lineHeight(1),
+  lineHeightMode(QDeclarativeText::ProportionalHeight),
   lineCount(1), truncated(false), maximumLineCount(INT_MAX),
   maximumLineCountValid(false), imageCacheDirty(true), updateOnComponentComplete(true), richText(false), singleline(false),
   cacheAllTextAsImage(true), internalWidthUpdate(false), requireImplicitWidth(false), naturalWidth(0), doc(0)
@@ -189,7 +190,7 @@ QDeclarativeTextDocumentLayout::QDeclarativeTextDocumentLayout(QTextDocument *do
     : QTextDocumentLayout(doc) {
 }
 
-void QDeclarativeTextDocumentLayout::setLineHeight(qreal lineHeight, QDeclarativeText::LineHeightMode mode = QDeclarativeText::MultiplyHeight)
+void QDeclarativeTextDocumentLayout::setLineHeight(qreal lineHeight, QDeclarativeText::LineHeightMode mode = QDeclarativeText::ProportionalHeight)
 {
     QTextDocumentLayout::setLineHeight(lineHeight, QTextDocumentLayout::LineHeightMode(mode));
 }
@@ -468,7 +469,7 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
     for (int i = 0; i < layout.lineCount(); ++i) {
         QTextLine line = layout.lineAt(i);
         line.setPosition(QPointF(0, height));
-        height += (lineHeightMode == QDeclarativeText::PixelHeight) ? lineHeight : line.height() * lineHeight;
+        height += (lineHeightMode == QDeclarativeText::FixedHeight) ? lineHeight : line.height() * lineHeight;
 
         if (!cacheAllTextAsImage) {
             if ((hAlignment == QDeclarativeText::AlignLeft) || (hAlignment == QDeclarativeText::AlignJustify)) {
@@ -1482,8 +1483,9 @@ void QDeclarativeText::setLineHeight(qreal lineHeight)
     The possible values are:
 
     \list
-    \o Text.MultiplyHeight (default) - specifies a line height multiplier,
-    \o Text.PixelHeight - specifies the line height in pixels.
+    \o Text.ProportionalHeight (default) - this sets the spacing proportional to the
+       line (as a multiplier). For example, set to 2 for double spacing.
+    \o Text.FixedHeight - this sets the line height to a fixed line height (in pixels).
     \endlist
 */
 QDeclarativeText::LineHeightMode QDeclarativeText::lineHeightMode() const
