@@ -88,6 +88,7 @@ private slots:
     void closeSoftwareInputPanel();
     void selections();
     void focusProxy();
+    void contextInheritance();
     void symbianTestCoeFepInputContext_data();
     void symbianTestCoeFepInputContext();
     void symbianTestCoeFepAutoCommit_data();
@@ -471,6 +472,37 @@ void tst_QInputContext::focusProxy()
     QVERIFY(proxy.hasFocus());
     QVERIFY(!proxy2.hasFocus());
     QCOMPARE(gic->focusWidget(), &proxy);
+}
+
+void tst_QInputContext::contextInheritance()
+{
+    QWidget parent;
+    QWidget child(&parent);
+
+    parent.setAttribute(Qt::WA_InputMethodEnabled, true);
+    child.setAttribute(Qt::WA_InputMethodEnabled, true);
+
+    QCOMPARE(parent.inputContext(), qApp->inputContext());
+    QCOMPARE(child.inputContext(), qApp->inputContext());
+
+    QInputContext *qic = new QFilterInputContext;
+    parent.setInputContext(qic);
+    QCOMPARE(parent.inputContext(), qic);
+    QCOMPARE(child.inputContext(), qic);
+
+    parent.setAttribute(Qt::WA_InputMethodEnabled, false);
+    QVERIFY(!parent.inputContext());
+    QCOMPARE(child.inputContext(), qic);
+    parent.setAttribute(Qt::WA_InputMethodEnabled, true);
+
+    parent.setInputContext(0);
+    QCOMPARE(parent.inputContext(), qApp->inputContext());
+    QCOMPARE(child.inputContext(), qApp->inputContext());
+
+    qic = new QFilterInputContext;
+    qApp->setInputContext(qic);
+    QCOMPARE(parent.inputContext(), qic);
+    QCOMPARE(child.inputContext(), qic);
 }
 
 #ifdef QT_WEBKIT_LIB
