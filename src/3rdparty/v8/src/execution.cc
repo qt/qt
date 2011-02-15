@@ -311,12 +311,44 @@ bool StackGuard::IsTerminateExecution() {
   return thread_local_.interrupt_flags_ & TERMINATE;
 }
 
+#ifdef QT_BUILD_SCRIPT_LIB
+bool StackGuard::IsUserCallback()
+{
+    ExecutionAccess access;
+    return thread_local_.interrupt_flags_ & USERCALLBACK;
+}
+
+void StackGuard::RunUserCallbackNow()
+{
+    UserCallback cb;
+    void *data;
+    {
+        ExecutionAccess access;
+        cb = thread_local_.user_callback_;
+        data = thread_local_.user_data_;
+    }
+    if (cb)
+        cb(data);
+}
+#endif
 
 void StackGuard::TerminateExecution() {
   ExecutionAccess access;
   thread_local_.interrupt_flags_ |= TERMINATE;
   set_interrupt_limits(access);
 }
+
+#ifdef QT_BUILD_SCRIPT_LIB
+void StackGuard::ExecuteUserCallback(UserCallback callback, void *data)
+{
+    ExecutionAccess access;
+    thread_local_.user_callback_ = callback;
+    thread_local_.user_data_ = data;
+    thread_local_.interrupt_flags_ |= USERCALLBACK;
+    set_interrupt_limits(access);
+}
+#endif
+
 
 
 #ifdef ENABLE_DEBUGGER_SUPPORT
@@ -396,6 +428,10 @@ void StackGuard::ThreadLocal::Clear() {
   nesting_ = 0;
   postpone_interrupts_nesting_ = 0;
   interrupt_flags_ = 0;
+#ifdef QT_BUILD_SCRIPT_LIB
+  user_callback_ = 0;
+  user_data_ = 0;
+#endif
 }
 
 
@@ -726,6 +762,14 @@ MaybeObject* Execution::HandleStackGuardInterrupt() {
   if (isolate->stack_guard()->IsDebugBreak() ||
       isolate->stack_guard()->IsDebugCommand()) {
     DebugBreakHelper();
+  }
+#endif
+#ifdef QT_BUILD_SCRIPT_LIB
+  if (isolate->stack_guard()->IsUserCallback()) {
+    isolate->stack_guard()->Continue(USERCALLBACK);
+    isolate->stack_guard()->RunUserCallbackNow();
+    if (isolate->has_scheduled_exception() && !isolate->stack_guard()->IsTerminateExecution())
+        return isolate->PromoteScheduledException();
   }
 #endif
   if (isolate->stack_guard()->IsPreempted()) RuntimePreempt();

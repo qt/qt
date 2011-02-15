@@ -4381,6 +4381,13 @@ void V8::TerminateExecution(int thread_id) {
   }
 }
 
+#ifdef QT_BUILD_SCRIPT_LIB
+void V8::ExecuteUserCallback(UserCallback callback, void *data) {
+    if (IsDeadCheck("v8::ExecuteUserCallback()")) return;
+    i::Isolate* isolate = i::Isolate::Current();
+    isolate->stack_guard()->ExecuteUserCallback(callback, data);
+}
+#endif
 
 void V8::TerminateExecution() {
   if (!i::V8::IsRunning()) return;

@@ -39,6 +39,9 @@ enum InterruptFlag {
   DEBUGCOMMAND = 1 << 2,
   PREEMPT = 1 << 3,
   TERMINATE = 1 << 4
+#ifdef QT_BUILD_SCRIPT_LIB
+  , USERCALLBACK = 1 << 5
+#endif
 };
 
 class Execution : public AllStatic {
@@ -176,6 +179,11 @@ class StackGuard {
   void Interrupt();
   bool IsTerminateExecution();
   void TerminateExecution();
+#ifdef QT_BUILD_SCRIPT_LIB
+  bool IsUserCallback();
+  void ExecuteUserCallback(UserCallback callback, void *data);
+  void RunUserCallbackNow();
+#endif
 #ifdef ENABLE_DEBUGGER_SUPPORT
   bool IsDebugBreak();
   void DebugBreak();
@@ -270,6 +278,10 @@ class StackGuard {
     int nesting_;
     int postpone_interrupts_nesting_;
     int interrupt_flags_;
+#ifdef QT_BUILD_SCRIPT_LIB
+    UserCallback user_callback_;
+    void *user_data_;
+#endif
   };
 
   // TODO(isolates): Technically this could be calculated directly from a
