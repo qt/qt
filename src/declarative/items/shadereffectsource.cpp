@@ -43,6 +43,7 @@
 
 #include "qsgitem_p.h"
 #include "qsgcanvas_p.h"
+#include "adaptationlayer.h"
 
 #include "qglframebufferobject.h"
 #include "qmath.h"
@@ -171,6 +172,7 @@ void ShaderEffectTextureProvider::grab()
 
     const QGLContext *ctx = QSGContext::current->glContext();
     m_renderer->setDeviceRect(m_fbo->size());
+    m_renderer->setViewportRect(m_fbo->size());
     QRectF mirrored(m_rect.left(), m_rect.bottom(), m_rect.width(), -m_rect.height());
     m_renderer->setProjectMatrixToRect(mirrored);
     m_renderer->setClearColor(Qt::transparent);
