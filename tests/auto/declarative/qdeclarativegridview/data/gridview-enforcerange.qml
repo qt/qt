@@ -48,6 +48,8 @@ Rectangle {
         model: testModel
         delegate: myDelegate
         highlight: myHighlight
+        flow: (testTopToBottom == true) ? GridView.TopToBottom : GridView.LeftToRight
+        layoutDirection: (testRightToLeft == true) ? Qt.RightToLeft : Qt.LeftToRight
         preferredHighlightBegin: 100
         preferredHighlightEnd: 100
         highlightRangeMode: "StrictlyEnforceRange"

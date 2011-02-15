@@ -115,6 +115,7 @@ private slots:
     void onRemove_data();
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
+    void rightToLeft();
 
 private:
     template <class T> void items();
@@ -2297,6 +2298,47 @@ void tst_QDeclarativeListView::testQtQuick11Attributes_data()
     QTest::newRow("positionViewAtEnd") << "Component.onCompleted: positionViewAtEnd()"
         << "<Unknown File>:1: ReferenceError: Can't find variable: positionViewAtEnd"
         << "";
+}
+
+void tst_QDeclarativeListView::rightToLeft()
+{
+    QDeclarativeView *canvas = createView();
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/rightToLeft.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "view");
+    QTRY_VERIFY(listview != 0);
+
+    QDeclarativeItem *contentItem = listview->contentItem();
+    QTRY_VERIFY(contentItem != 0);
+
+    QDeclarativeVisualItemModel *model = canvas->rootObject()->findChild<QDeclarativeVisualItemModel*>("itemModel");
+    QTRY_VERIFY(model != 0);
+
+    QTRY_VERIFY(model->count() == 3);
+    QTRY_COMPARE(listview->currentIndex(), 0);
+
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "item1");
+    QTRY_VERIFY(item);
+    QTRY_COMPARE(item->x(), -100.0);
+    QCOMPARE(item->height(), listview->height());
+
+    QDeclarativeText *text = findItem<QDeclarativeText>(contentItem, "text1");
+    QTRY_VERIFY(text);
+    QTRY_COMPARE(text->text(), QLatin1String("index: 0"));
+
+    listview->setCurrentIndex(2);
+
+    item = findItem<QDeclarativeItem>(contentItem, "item3");
+    QTRY_VERIFY(item);
+    QTRY_COMPARE(item->x(), -600.0);
+
+    text = findItem<QDeclarativeText>(contentItem, "text3");
+    QTRY_VERIFY(text);
+    QTRY_COMPARE(text->text(), QLatin1String("index: 2"));
+
+    delete canvas;
 }
 
 void tst_QDeclarativeListView::qListModelInterface_items()
