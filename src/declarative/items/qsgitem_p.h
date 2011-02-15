@@ -231,6 +231,7 @@ public:
     bool heightValid:1;
     bool componentComplete:1;
     bool keepMouse:1;
+    bool hoverEnabled:1;
     bool smooth:1;
     bool focus:1;
     bool activeFocus:1;
@@ -242,7 +243,7 @@ public:
     bool explicitEnable:1;
     bool effectiveEnable:1;
     bool polishScheduled:1;
-    quint32 dummy:8;
+    quint32 dummy:7;
 
     QSGCanvas *canvas;
     QSGItem *parentItem;
@@ -293,6 +294,7 @@ public:
     void deliverFocusEvent(QFocusEvent *);
     void deliverMouseEvent(QGraphicsSceneMouseEvent *);
     void deliverWheelEvent(QGraphicsSceneWheelEvent *);
+    void deliverHoverEvent(QGraphicsSceneHoverEvent *);
 
     bool calcEffectiveVisible() const;
     void setEffectiveVisibleRecur(bool);

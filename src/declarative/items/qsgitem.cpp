@@ -979,6 +979,9 @@ void QSGItemPrivate::initCanvas(InitializationState *state, QSGCanvas *c)
     if (canvas && polishScheduled) 
         QSGCanvasPrivate::get(canvas)->polishItems.insert(q);
 
+    if (canvas && hoverEnabled && !canvas->hasMouseTracking())
+        canvas->setMouseTracking(true);
+
     // XXX todo - why aren't these added to the destroy list?
     itemNodeInstance = 0;
     clipNode = 0;
@@ -1067,7 +1070,7 @@ QSGItemPrivate::QSGItemPrivate()
 : _anchors(0), _contents(0), baselineOffset(0), _anchorLines(0), _stateGroup(0), origin(QSGItem::Center), 
     
   flags(0), widthValid(false), heightValid(false), componentComplete(true), 
-  keepMouse(false), smooth(false), focus(false), activeFocus(false), notifiedFocus(false),
+  keepMouse(false), hoverEnabled(false), smooth(false), focus(false), activeFocus(false), notifiedFocus(false),
   notifiedActiveFocus(false), filtersChildMouseEvents(false), explicitVisible(true), 
   effectiveVisible(true), explicitEnable(true), effectiveEnable(true), polishScheduled(false),
 
@@ -1455,19 +1458,16 @@ void QSGItem::wheelEvent(QGraphicsSceneWheelEvent *event)
 
 void QSGItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
-    // XXX todo
     Q_UNUSED(event);
 }
 
 void QSGItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
-    // XXX todo
     Q_UNUSED(event);
 }
 
 void QSGItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
-    // XXX todo
     Q_UNUSED(event);
 }
 
@@ -1907,6 +1907,24 @@ void QSGItemPrivate::deliverWheelEvent(QGraphicsSceneWheelEvent *e)
 {
     Q_Q(QSGItem);
     q->wheelEvent(e);
+}
+
+void QSGItemPrivate::deliverHoverEvent(QGraphicsSceneHoverEvent *e)
+{
+    Q_Q(QSGItem);
+    switch(e->type()) {
+    default:
+        Q_ASSERT(!"Unknown event type");
+    case QEvent::GraphicsSceneHoverEnter:
+        q->hoverEnterEvent(e);
+        break;
+    case QEvent::GraphicsSceneHoverLeave:
+        q->hoverLeaveEvent(e);
+        break;
+    case QEvent::GraphicsSceneHoverMove:
+        q->hoverMoveEvent(e);
+        break;
+    }
 }
 
 void QSGItem::itemChange(GraphicsItemChange change, const QVariant &value)
@@ -2602,21 +2620,30 @@ void QSGItem::setFiltersChildMouseEvents(bool filter)
 }
 
 bool QSGItem::isUnderMouse() const 
-{ 
-    // XXX todo
+{
+    Q_D(const QSGItem);
+    if (!d->canvas)
+        return false;
+
+    QPoint cursorPos = QCursor::pos();
+    if (QRectF(0, 0, width(), height()).contains(mapFromScene(d->canvas->mapFromGlobal(cursorPos))))
+        return true;
     return false; 
 }
 
 bool QSGItem::acceptHoverEvents() const 
 { 
-    // XXX todo
-    return false; 
+    Q_D(const QSGItem);
+    return d->hoverEnabled;
 }
 
 void QSGItem::setAcceptHoverEvents(bool enabled) 
 { 
-    // XXX todo
-    Q_UNUSED(enabled); 
+    Q_D(QSGItem);
+    d->hoverEnabled = enabled;
+
+    if (d->canvas && d->hoverEnabled && !d->canvas->hasMouseTracking())
+        d->canvas->setMouseTracking(true);
 }
 
 void QSGItem::grabMouse() 
