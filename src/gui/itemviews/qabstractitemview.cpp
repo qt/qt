@@ -657,9 +657,9 @@ QAbstractItemView::~QAbstractItemView()
     deleteLater() functions to explicitly delete them.
 
     The view \e{does not} take ownership of the model unless it is the model's
-    parent object because the view may be shared between many different views.
+    parent object because the model may be shared between many different views.
 
-  \sa selectionModel(), setSelectionModel()
+    \sa selectionModel(), setSelectionModel()
 */
 void QAbstractItemView::setModel(QAbstractItemModel *model)
 {

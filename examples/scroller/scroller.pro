@@ -1,7 +1,7 @@
 TEMPLATE      = subdirs
-SUBDIRS       = graphicsview \
-                plot \
-                wheel
+SUBDIRS       = graphicsview
+
+contains(QT_CONFIG, webkit):SUBDIRS += plot wheel
 
 # install
 sources.files = *.pro

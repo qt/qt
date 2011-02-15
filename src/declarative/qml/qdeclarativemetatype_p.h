@@ -69,6 +69,7 @@ class QDeclarativeTypePrivate;
 class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeMetaType
 {
 public:
+    static bool canCopy(int type);
     static bool copy(int type, void *data, const void *copy = 0);
 
     static QList<QByteArray> qmlTypeNames();
@@ -76,6 +77,7 @@ public:
 
     static QDeclarativeType *qmlType(const QByteArray &, int, int);
     static QDeclarativeType *qmlType(const QMetaObject *);
+    static QDeclarativeType *qmlType(const QMetaObject *metaObject, const QByteArray &module, int version_major, int version_minor);
     static QDeclarativeType *qmlType(int);
 
     static QMetaProperty defaultProperty(const QMetaObject *);
@@ -112,9 +114,12 @@ public:
     QByteArray typeName() const;
     QByteArray qmlTypeName() const;
 
+    QByteArray module() const;
     int majorVersion() const;
     int minorVersion() const;
+
     bool availableInVersion(int vmajor, int vminor) const;
+    bool availableInVersion(const QByteArray &module, int vmajor, int vminor) const;
 
     QObject *create() const;
     void create(QObject **, void **, size_t) const;
@@ -135,6 +140,8 @@ public:
 
     const QMetaObject *metaObject() const;
     const QMetaObject *baseMetaObject() const;
+    int metaObjectRevision() const;
+    bool containsRevisionedAttributes() const;
 
     QDeclarativeAttachedPropertiesFunc attachedPropertiesFunction() const;
     const QMetaObject *attachedPropertiesType() const;
@@ -149,6 +156,7 @@ public:
     int index() const;
 
 private:
+    QDeclarativeType *superType() const;
     friend class QDeclarativeTypePrivate;
     friend struct QDeclarativeMetaTypeData;
     friend int registerType(const QDeclarativePrivate::RegisterType &);
