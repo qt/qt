@@ -776,12 +776,12 @@ bool QDeclarativeTextInput::hasAcceptableInput() const
 }
 
 /*!
-    \qmlsignal TextInput::accepted()
+    \qmlsignal TextInput::onAccepted()
 
-    This signal is emitted when the Return or Enter key is pressed.
+    This handler is called when the Return or Enter key is pressed.
     Note that if there is a \l validator or \l inputMask set on the text
-    input, the accepted signal will only be emitted if the input
-    is in an acceptable state.
+    input, the handler will only be emitted if the input is in an acceptable
+    state.
 */
 
 /*!
