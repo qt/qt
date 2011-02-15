@@ -2113,10 +2113,11 @@ QVariant QDeclarativeEnginePrivate::scriptValueToVariant(const QScriptValue &val
 /*!
   Adds \a path as a directory where the engine searches for
   installed modules in a URL-based directory structure.
+  The \a path may be a local filesystem directory or a URL.
 
   The newly added \a path will be first in the importPathList().
 
-  \sa setImportPathList()
+  \sa setImportPathList(), \l {QML Modules}
 */
 void QDeclarativeEngine::addImportPath(const QString& path)
 {

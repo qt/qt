@@ -109,6 +109,10 @@ private slots:
     void QTBUG_16037();
     void indexAt();
     void incrementalModel();
+    void onAdd();
+    void onAdd_data();
+    void onRemove();
+    void onRemove_data();
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
 
@@ -294,6 +298,13 @@ public:
     void addItem(const QString &name, const QString &number) {
         emit beginInsertRows(QModelIndex(), list.count(), list.count());
         list.append(QPair<QString,QString>(name, number));
+        emit endInsertRows();
+    }
+
+    void addItems(const QList<QPair<QString, QString> > &items) {
+        emit beginInsertRows(QModelIndex(), list.count(), list.count()+items.count()-1);
+        for (int i=0; i<items.count(); i++)
+            list.append(QPair<QString,QString>(items[i].first, items[i].second));
         emit endInsertRows();
     }
 
@@ -1665,7 +1676,7 @@ void tst_QDeclarativeListView::QTBUG_9791()
 
     // Confirm items positioned correctly
     int itemCount = findItems<QDeclarativeItem>(contentItem, "wrapper").count();
-    QVERIFY(itemCount == 3);
+    QCOMPARE(itemCount, 3);
 
     for (int i = 0; i < itemCount; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
@@ -1806,9 +1817,9 @@ void tst_QDeclarativeListView::header()
         header = findItem<QDeclarativeText>(contentItem, "header2");
         QVERIFY(header);
 
-        QCOMPARE(header->y(), 0.0);
+        QCOMPARE(header->y(), 10.0);
         QCOMPARE(header->height(), 10.0);
-        QCOMPARE(listview->contentY(), 0.0);
+        QCOMPARE(listview->contentY(), 10.0);
 
         delete canvas;
     }
@@ -1882,7 +1893,7 @@ void tst_QDeclarativeListView::footer()
     footer = findItem<QDeclarativeText>(contentItem, "footer2");
     QVERIFY(footer);
 
-    QCOMPARE(footer->y(), 0.0);
+    QCOMPARE(footer->y(), 600.0);
     QCOMPARE(footer->height(), 20.0);
     QCOMPARE(listview->contentY(), 0.0);
 
@@ -2140,6 +2151,113 @@ void tst_QDeclarativeListView::incrementalModel()
     QTRY_COMPARE(listview->count(), 25);
 
     delete canvas;
+}
+
+void tst_QDeclarativeListView::onAdd()
+{
+    QFETCH(int, initialItemCount);
+    QFETCH(int, itemsToAdd);
+
+    const int delegateHeight = 10;
+    TestModel2 model;
+
+    // these initial items should not trigger ListView.onAdd
+    for (int i=0; i<initialItemCount; i++)
+        model.addItem("dummy value", "dummy value");
+
+    QDeclarativeView *canvas = createView();
+    canvas->setFixedSize(200, delegateHeight * (initialItemCount + itemsToAdd));
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("delegateHeight", delegateHeight);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/attachedSignals.qml"));
+
+    QObject *object = canvas->rootObject();
+    object->setProperty("width", canvas->width());
+    object->setProperty("height", canvas->height());
+    qApp->processEvents();
+
+    QList<QPair<QString, QString> > items;
+    for (int i=0; i<itemsToAdd; i++)
+        items << qMakePair(QString("value %1").arg(i), QString::number(i));
+    model.addItems(items);
+
+    qApp->processEvents();
+
+    QVariantList result = object->property("addedDelegates").toList();
+    QCOMPARE(result.count(), items.count());
+    for (int i=0; i<items.count(); i++)
+        QCOMPARE(result[i].toString(), items[i].first);
+
+    delete canvas;
+}
+
+void tst_QDeclarativeListView::onAdd_data()
+{
+    QTest::addColumn<int>("initialItemCount");
+    QTest::addColumn<int>("itemsToAdd");
+
+    QTest::newRow("0, add 1") << 0 << 1;
+    QTest::newRow("0, add 2") << 0 << 2;
+    QTest::newRow("0, add 10") << 0 << 10;
+
+    QTest::newRow("1, add 1") << 1 << 1;
+    QTest::newRow("1, add 2") << 1 << 2;
+    QTest::newRow("1, add 10") << 1 << 10;
+
+    QTest::newRow("5, add 1") << 5 << 1;
+    QTest::newRow("5, add 2") << 5 << 2;
+    QTest::newRow("5, add 10") << 5 << 10;
+}
+
+void tst_QDeclarativeListView::onRemove()
+{
+    QFETCH(int, initialItemCount);
+    QFETCH(int, indexToRemove);
+    QFETCH(int, removeCount);
+
+    const int delegateHeight = 10;
+    TestModel2 model;
+    for (int i=0; i<initialItemCount; i++)
+        model.addItem(QString("value %1").arg(i), "dummy value");
+
+    QDeclarativeView *canvas = createView();
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("delegateHeight", delegateHeight);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/attachedSignals.qml"));
+    QObject *object = canvas->rootObject();
+
+    qApp->processEvents();
+
+    model.removeItems(indexToRemove, removeCount);
+    qApp->processEvents();
+    QCOMPARE(object->property("removedDelegateCount"), QVariant(removeCount));
+
+    delete canvas;
+}
+
+void tst_QDeclarativeListView::onRemove_data()
+{
+    QTest::addColumn<int>("initialItemCount");
+    QTest::addColumn<int>("indexToRemove");
+    QTest::addColumn<int>("removeCount");
+
+    QTest::newRow("remove first") << 1 << 0 << 1;
+    QTest::newRow("two items, remove first") << 2 << 0 << 1;
+    QTest::newRow("two items, remove last") << 2 << 1 << 1;
+    QTest::newRow("two items, remove all") << 2 << 0 << 2;
+
+    QTest::newRow("four items, remove first") << 4 << 0 << 1;
+    QTest::newRow("four items, remove 0-2") << 4 << 0 << 2;
+    QTest::newRow("four items, remove 1-3") << 4 << 1 << 2;
+    QTest::newRow("four items, remove 2-4") << 4 << 2 << 2;
+    QTest::newRow("four items, remove last") << 4 << 3 << 1;
+    QTest::newRow("four items, remove all") << 4 << 0 << 4;
+
+    QTest::newRow("ten items, remove 1-8") << 10 << 0 << 8;
+    QTest::newRow("ten items, remove 2-7") << 10 << 2 << 5;
+    QTest::newRow("ten items, remove 4-10") << 10 << 4 << 6;
 }
 
 void tst_QDeclarativeListView::testQtQuick11Attributes()

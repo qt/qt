@@ -100,6 +100,7 @@ private slots:
     void task188195_baseBackground();
     void task232085_spinBoxLineEditBg();
     void changeStyleInChangeEvent();
+    void QTBUG15910_crashNullWidget();
 
     //at the end because it mess with the style.
     void widgetStyle();
@@ -1625,6 +1626,24 @@ void tst_QStyleSheetStyle::changeStyleInChangeEvent()
     wid.setStyleSheet(" /* ** */ ");
     wid.ensurePolished();
 }
+
+void tst_QStyleSheetStyle::QTBUG15910_crashNullWidget()
+{
+    struct : QWidget {
+        virtual void paintEvent(QPaintEvent* ) {
+            QStyleOption opt;
+            opt.init(this);
+            QPainter p(this);
+            style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, 0);
+            style()->drawPrimitive(QStyle::PE_Frame, &opt, &p, 0);
+            style()->drawControl(QStyle::CE_PushButton, &opt, &p, 0);
+        }
+    } w;
+    w.setStyleSheet("* { background-color: white; color:black; border 3px solid yellow }");
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+}
+
 
 QTEST_MAIN(tst_QStyleSheetStyle)
 #include "tst_qstylesheetstyle.moc"

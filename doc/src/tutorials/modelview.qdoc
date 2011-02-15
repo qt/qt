@@ -348,7 +348,7 @@
     \section2 2.4 Setting up Headers for Columns and Rows
 
     Headers can be hidden via a view method: \c{tableView->verticalHeader()->hide();}
-    \image header.png
+    \image modelview-header.png
 
     The header content, however, is set via the model, so we reimplement the
     \l{QAbstractItemModel::headerData()}{headerData()} method:

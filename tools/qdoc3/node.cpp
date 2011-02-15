@@ -1693,7 +1693,7 @@ static QString valueType(const QString& n)
   read-only. The algorithm for figuring this out is long
   amd tedious and almost certainly will break. It currently
   doesn't work for qmlproperty bool PropertyChanges::explicit,
-  because the tokenized gets confused on "explicit" .
+  because the tokenizer gets confused on "explicit".
  */
 bool QmlPropertyNode::isWritable(const Tree* tree) const
 {

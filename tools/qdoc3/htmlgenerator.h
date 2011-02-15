@@ -98,6 +98,7 @@ class HtmlGenerator : public PageGenerator
     static QString protect(const QString &string, const QString &encoding = "ISO-8859-1");
     static QString cleanRef(const QString& ref);
     static QString sinceTitle(int i) { return sinceTitles[i]; }
+    static QString fullDocumentLocation(const Node *node);
 
  protected:
     virtual void startText(const Node *relative, CodeMarker *marker);
