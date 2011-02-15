@@ -284,6 +284,9 @@ void tst_qfileopenevent::sendAndReceive()
     QCoreApplication::instance()->postEvent(this, event.take());
     QCoreApplication::instance()->processEvents();
 
+    // QTBUG-17468: On Mac, processEvents doesn't always process posted events
+    QCoreApplication::instance()->sendPostedEvents();
+
     // check the content
     QFile check("testSendAndReceive");
     QCOMPARE(check.open(QFile::ReadOnly), true);
