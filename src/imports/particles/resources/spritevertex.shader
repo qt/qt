@@ -1,4 +1,3 @@
-#extension GL_EXT_gpu_shader4 : enable
 attribute highp vec2 vPos;
 attribute highp vec2 vTex;                              
 attribute highp vec3 vData; //  x = time,  y = size,  z = endSize
@@ -22,7 +21,10 @@ void main() {
     highp float t = (timestamp - vData.x) / timelength; 
 
     //Calculate frame location in texture
-    highp float frameIndex = float(uint(floor(((timestamp - vAnimData.w)*1000.)/float(vAnimData.y)))%uint(vAnimData.z));
+    highp float frameIndex = fract((((timestamp - vAnimData.w)*1000.)/vAnimData.y)/vAnimData.z) * vAnimData.z;
+    //fract(x/z)*z used to avoid uints and % (GLSL chokes on them?)
+
+    frameIndex = floor(frameIndex);
     highp vec2 frameTex = vTex;
     if(vTex.x == 0.)
         frameTex.x = (frameIndex/framecount);
