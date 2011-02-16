@@ -818,6 +818,14 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
                 CActiveScheduler::Current()->WaitForAnyRequest();
             } else {
                 if (thread.RequestCount() == 0) {
+#ifdef QT_SYMBIAN_PRIORITY_DROP
+                    if (idleDetectorThread()->hasRun()) {
+                        m_lastIdleRequestTimer.start();
+                        idleDetectorThread()->kick();
+                    } else if (m_lastIdleRequestTimer.elapsed() > maxBusyTime) {
+                        User::AfterHighRes(m_delay);
+                    }
+#endif
                     break;
                 }
                 // This one should return without delay.
