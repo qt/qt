@@ -548,15 +548,15 @@ bool SpriteParticles::buildParticleTexture(QSGContext *sg)
         if(state->frames() > m_maxFrames)
             m_maxFrames = state->frames();
 
-        QImage img(state->source());
+        QImage img(state->source().toLocalFile());
         if (img.isNull()) {
-            qWarning() << "SpriteParticles: loading image failed..." << state->source();
+            qWarning() << "SpriteParticles: loading image failed..." << state->source().toLocalFile();
             return false;
         }
 
         if(frameWidth){
             if(img.width() / state->frames() != frameWidth){
-                qWarning() << "SpriteParticles: Irregular frame width..." << state->source();
+                qWarning() << "SpriteParticles: Irregular frame width..." << state->source().toLocalFile();
                 return false;
             }
         }else{
@@ -565,7 +565,7 @@ bool SpriteParticles::buildParticleTexture(QSGContext *sg)
 
         if(frameHeight){
             if(img.height()!=frameHeight){
-                qWarning() << "SpriteParticles: Irregular frame height..." << state->source();
+                qWarning() << "SpriteParticles: Irregular frame height..." << state->source().toLocalFile();
                 return false;
             }
         }else{
@@ -578,7 +578,7 @@ bool SpriteParticles::buildParticleTexture(QSGContext *sg)
     QPainter p(&image);
     int y = 0;
     foreach(SpriteState* state, m_states){
-        QImage img(state->source());
+        QImage img(state->source().toLocalFile());
         p.drawImage(0,y,img);
         y += frameHeight;
     }

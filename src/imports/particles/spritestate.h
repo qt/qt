@@ -2,13 +2,14 @@
 #define SPRITESTATE_H
 
 #include <QObject>
+#include <QUrl>
 #include <QVariantMap>
 
 class SpriteState : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
-    Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(int frames READ frames WRITE setFrames NOTIFY framesChanged)
     Q_PROPERTY(int duration READ duration WRITE setDuration NOTIFY durationChanged)
     Q_PROPERTY(QVariantMap to READ to WRITE setTo NOTIFY toChanged)
@@ -16,7 +17,7 @@ class SpriteState : public QObject
 public:
     explicit SpriteState(QObject *parent = 0);
 
-    QString source() const
+    QUrl source() const
     {
         return m_source;
     }
@@ -43,7 +44,7 @@ public:
 
 signals:
 
-    void sourceChanged(QString arg);
+    void sourceChanged(QUrl arg);
 
     void framesChanged(int arg);
 
@@ -55,7 +56,7 @@ signals:
 
 public slots:
 
-    void setSource(QString arg)
+    void setSource(QUrl arg)
     {
         if (m_source != arg) {
             m_source = arg;
@@ -97,7 +98,7 @@ public slots:
 
 private:
     friend class SpriteParticles;
-    QString m_source;
+    QUrl m_source;
     int m_frames;
     int m_duration;
     QString m_name;
