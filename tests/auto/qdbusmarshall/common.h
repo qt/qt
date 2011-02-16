@@ -475,6 +475,8 @@ bool compareToArgument(const QDBusArgument &arg, const QVariant &v2)
             return compare<QList<QDBusObjectPath> >(arg, v2);
         else if (id == qMetaTypeId<QList<QDBusSignature> >())
             return compare<QList<QDBusSignature> >(arg, v2);
+        else if (id == qMetaTypeId<QList<QDBusUnixFileDescriptor> >())
+            return compare<QList<QDBusUnixFileDescriptor> >(arg, v2);
         else if (id == qMetaTypeId<QList<QDateTime> >())
             return compare<QList<QDateTime> >(arg, v2);
 

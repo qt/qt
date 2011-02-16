@@ -95,6 +95,7 @@ private slots:
 
 private:
     QProcess proc;
+    bool fileDescriptorPassing;
 };
 
 class QDBusMessageSpy: public QObject
@@ -117,6 +118,7 @@ void tst_QDBusMarshall::initTestCase()
 {
     commonInit();
     QDBusConnection con = QDBusConnection::sessionBus();
+    fileDescriptorPassing = con.connectionCapabilities() & QDBusConnection::UnixFileDescriptorPassing;
 #ifdef Q_OS_WIN
     proc.start("qpong");
 #else
@@ -169,7 +171,7 @@ void tst_QDBusMarshall::sendBasic_data()
     QTest::newRow("emptystring") << QVariant("") << "s" << "\"\"";
     QTest::newRow("nullstring") << QVariant(QString()) << "s" << "\"\"";
 
-    if (QDBusConnection::sessionBus().connectionCapabilities() & QDBusConnection::UnixFileDescriptorPassing)
+    if (fileDescriptorPassing)
         QTest::newRow("file-descriptor") << qVariantFromValue(QDBusUnixFileDescriptor(0)) << "h" << "[Unix FD: valid]";
 #endif
 }
@@ -258,6 +260,18 @@ void tst_QDBusMarshall::sendArrays_data()
             << std::numeric_limits<double>::infinity()
             << std::numeric_limits<double>::quiet_NaN();
     QTest::newRow("doublelist") << qVariantFromValue(doubles) << "ad" << "[Argument: ad {1.2, 2.2, 4.4, -inf, inf, nan}]";
+
+    QList<QDBusObjectPath> objectPaths;
+    QTest::newRow("emptyobjectpathlist") << qVariantFromValue(objectPaths) << "ao" << "[Argument: ao {}]";
+    objectPaths << QDBusObjectPath("/") << QDBusObjectPath("/foo");
+    QTest::newRow("objectpathlist") << qVariantFromValue(objectPaths) << "ao" << "[Argument: ao {[ObjectPath: /], [ObjectPath: /foo]}]";
+
+    if (fileDescriptorPassing) {
+        QList<QDBusUnixFileDescriptor> fileDescriptors;
+        QTest::newRow("emptyfiledescriptorlist") << qVariantFromValue(fileDescriptors) << "ah" << "[Argument: ah {}]";
+        fileDescriptors << QDBusUnixFileDescriptor(0) << QDBusUnixFileDescriptor(1);
+        QTest::newRow("filedescriptorlist") << qVariantFromValue(fileDescriptors) << "ah" << "[Argument: ah {[Unix FD: valid], [Unix FD: valid]}]";
+    }
 
     QVariantList variants;
     QTest::newRow("emptyvariantlist") << QVariant(variants) << "av" << "[Argument: av {}]";
