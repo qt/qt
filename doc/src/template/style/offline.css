@@ -26,13 +26,13 @@
     {
         text-decoration: none;
     }
-    li
-    {
-        list-style: none;
-    }
     ol li
     {
         list-style: decimal;
+    }
+    ul li
+    {
+        list-style: none;
     }
     caption, th
     {
@@ -76,6 +76,8 @@
     {
         margin-left: 0.5em;
         margin-right: 0.5em;
+        font-family: sans-serif;
+        line-height: normal
     }
     a
     {
@@ -162,7 +164,6 @@
     span.comment
     {
         color: #008B00;
-        font-style: italic
     }
     span.string, span.char
     {
@@ -240,10 +241,6 @@
         margin-bottom: 0.5em
     }
 
-    .naviNextPrevious
-    {
-        display: none
-    }
     .header .breadcrumb
     {
         font-size: 90%;
@@ -310,19 +307,19 @@
     .content h1
     {
         font-weight: bold;
-        font-size: 150%
+        font-size: 130%
     }
 
     .content h2
     {
         font-weight: bold;
-        font-size: 135%;
+        font-size: 120%;
         width: 100%;
     }
     .content h3
     {
         font-weight: bold;
-        font-size: 120%;
+        font-size: 110%;
         width: 100%;
     }
     .content table p
@@ -470,6 +467,11 @@
     }
     .annotated td {
         padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+
+    .toc
+    {
+        font-size: 80%
     }
 
     .header .content .toc ul
