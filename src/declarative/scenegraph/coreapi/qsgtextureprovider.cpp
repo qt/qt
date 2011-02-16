@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qsgtextureprovider_p.h"
+#include "qsgtextureprovider.h"
 
 QT_BEGIN_NAMESPACE
 

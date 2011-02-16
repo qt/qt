@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "default_texturenode.h"
-#include "qsgtextureprovider_p.h"
+#include "qsgtextureprovider.h"
 
 static const char qt_material_vertex_code[] =
     "uniform highp mat4 qt_Matrix;                      \n"
