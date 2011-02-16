@@ -1286,8 +1286,8 @@ void QScriptValuePrivate::setScriptClass(QScriptClassPrivate *scriptclass)
         return;
 
     v8::Handle<v8::Object> self = v8::Handle<v8::Object>::Cast(m_value);
-    v8::Handle<v8::Value> newObject = QScriptClassObject::newInstance(scriptclass, self);
-    reinitialize(scriptclass->engine(), newObject);
+    v8::Handle<v8::Value> newObject = QScriptClassObject::newInstance(scriptclass, self, engine());
+    reinitialize(engine(), newObject);
 }
 
 

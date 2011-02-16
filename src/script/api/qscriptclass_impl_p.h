@@ -71,7 +71,6 @@ inline QScriptClassPrivate::QScriptClassPrivate(QScriptEnginePrivate* engine, QS
     , m_engine(engine)
 {
     Q_ASSERT(q_ptr);
-    Q_ASSERT(engine);
 }
 
 inline QScriptEnginePrivate* QScriptClassPrivate::engine() const

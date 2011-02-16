@@ -82,7 +82,7 @@ public:
     v8::Handle<v8::Boolean> removeProperty(v8::Handle<v8::String> property);
 
     static v8::Handle<v8::FunctionTemplate> createFunctionTemplate(QScriptEnginePrivate *engine);
-    static v8::Handle<v8::Value> newInstance(QScriptClassPrivate* m_scriptclass, v8::Handle<v8::Object> previousValue);
+    static v8::Handle<v8::Value> newInstance(QScriptClassPrivate* m_scriptclass, v8::Handle<v8::Object> previousValue, QScriptEnginePrivate *engine);
 
     void setOriginal(v8::Handle<v8::Object> o)
     {

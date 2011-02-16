@@ -1488,7 +1488,6 @@ void tst_QScriptClass::scriptClassObjectInPrototype()
 
 void tst_QScriptClass::scriptClassWithNullEngine()
 {
-    QSKIP("Asserts on V8 back-end", SkipAll);
     QScriptClass cls(0);
     QCOMPARE(cls.engine(), (QScriptEngine*)0);
     QScriptEngine eng;

@@ -235,10 +235,10 @@ v8::Handle<v8::FunctionTemplate> QScriptClassObject::createFunctionTemplate(QScr
 }
 
 
-v8::Handle<v8::Value> QScriptClassObject::newInstance(QScriptClassPrivate* scriptclass, v8::Handle<v8::Object> previousValue)
+v8::Handle<v8::Value> QScriptClassObject::newInstance(QScriptClassPrivate* scriptclass, v8::Handle<v8::Object> previousValue, QScriptEnginePrivate* engine)
 {
     QScriptClassObject *data = new QScriptClassObject;
-    data->engine = scriptclass->engine();
+    data->engine = engine;
     data->m_scriptclass = scriptclass;
     if (!previousValue.IsEmpty() && !previousValue->IsUndefined())
         data->setOriginal(previousValue);
@@ -247,7 +247,7 @@ v8::Handle<v8::Value> QScriptClassObject::newInstance(QScriptClassPrivate* scrip
 
     QScriptSharedDataPointer<QScriptValuePrivate> prototype(QScriptValuePrivate::get(QScriptClassPrivate::get(scriptclass)->prototype()));
     if (prototype->isValid() && (prototype->isObject() || prototype->isNull()))
-        instance->SetPrototype(prototype->asV8Value(data->engine));
+        instance->SetPrototype(prototype->asV8Value(engine));
     return instance;
 }
 
@@ -344,7 +344,7 @@ v8::Handle<v8::Value> QScriptClassObject::newInstance(QScriptClassPrivate* scrip
   The engine does not take ownership of the QScriptClass object.
 */
 QScriptClass::QScriptClass(QScriptEngine *engine)
-    : d_ptr(new QScriptClassPrivate(QScriptEnginePrivate::get(engine), this))
+    : d_ptr(new QScriptClassPrivate(engine ? QScriptEnginePrivate::get(engine) : 0, this))
 {
 }
 
@@ -364,7 +364,7 @@ QScriptClass::~QScriptClass()
 */
 QScriptEngine *QScriptClass::engine() const
 {
-    return QScriptEnginePrivate::get(d_ptr->engine());
+    return d_ptr->engine() ? QScriptEnginePrivate::get(d_ptr->engine()) : 0;
 }
 
 /*!
