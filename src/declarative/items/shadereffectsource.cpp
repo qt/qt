@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 ShaderEffectTextureProvider::ShaderEffectTextureProvider(QObject *parent)
     : QSGTextureProvider(parent)
     , m_item(0)
+    , m_format(GL_RGBA)
     , m_renderer(0)
     , m_fbo(0)
 #ifdef QML_SUBTREE_DEBUG
@@ -204,6 +205,7 @@ ShaderEffectSource::ShaderEffectSource(QSGItem *parent)
     : TextureItem(parent)
     , m_sourceItem(0)
     , m_textureSize(0, 0)
+    , m_format(RGBA)
     , m_live(true)
 {
     setTextureProvider(new ShaderEffectTextureProvider(this), true);
