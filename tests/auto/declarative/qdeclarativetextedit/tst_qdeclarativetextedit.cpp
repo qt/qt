@@ -1839,7 +1839,9 @@ void tst_qdeclarativetextedit::preeditMicroFocus()
     ic.sendPreeditText(preeditText, 0);
     currentRect = edit.inputMethodQuery(Qt::ImMicroFocus).toRect();
     QCOMPARE(currentRect, previousRect);
+#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
     QCOMPARE(ic.updateReceived, true);
+#endif
 
     // Verify that the micro focus rect moves to the left as the cursor position
     // is incremented.
@@ -1848,7 +1850,9 @@ void tst_qdeclarativetextedit::preeditMicroFocus()
         ic.sendPreeditText(preeditText, i);
         currentRect = edit.inputMethodQuery(Qt::ImMicroFocus).toRect();
         QVERIFY(previousRect.left() < currentRect.left());
+#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
         QCOMPARE(ic.updateReceived, true);
+#endif
         previousRect = currentRect;
     }
 
@@ -1859,7 +1863,9 @@ void tst_qdeclarativetextedit::preeditMicroFocus()
     ic.sendEvent(QInputMethodEvent(preeditText, QList<QInputMethodEvent::Attribute>()));
     currentRect = edit.inputMethodQuery(Qt::ImMicroFocus).toRect();
     QCOMPARE(currentRect, previousRect);
+#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
     QCOMPARE(ic.updateReceived, true);
+#endif
 }
 
 QTEST_MAIN(tst_qdeclarativetextedit)
