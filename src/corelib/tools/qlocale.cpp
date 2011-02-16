@@ -59,6 +59,7 @@ QT_END_NAMESPACE
 #include "qdatetime.h"
 #include "qstringlist.h"
 #include "qvariant.h"
+#include "qstringbuilder.h"
 #if defined(Q_WS_WIN)
 #   include "qt_windows.h"
 #   include <time.h>
@@ -1313,6 +1314,33 @@ static QString macFormatCurrency(const QVariant &in)
     return QCFString::toQString(result);
 }
 
+static QVariant macQuotationSymbol(QSystemLocale::QueryType type, const QVariant &in)
+{
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+    if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_6)
+        return QVariant();
+
+    QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
+    switch (type) {
+    case  QSystemLocale::QuotationBegin:
+        if (in.toInt() == QLocale::StandardQuotation)
+            return QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleQuotationBeginDelimiterKey)));
+        else
+            return QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleAlternateQuotationBeginDelimiterKey)));
+        break;
+    case QSystemLocale::QuotationEnd:
+        if (in.toInt() == QLocale::StandardQuotation)
+            return QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleQuotationEndDelimiterKey)));
+        else
+            return QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleAlternateQuotationEndDelimiterKey)));
+        break;
+     default:
+        break;
+    }
+#endif
+    return QVariant();
+}
+
 static void getMacPreferredLanguageAndCountry(QString *language, QString *country)
 {
     QCFType<CFArrayRef> languages = (CFArrayRef)CFPreferencesCopyValue(
@@ -1400,6 +1428,10 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         return QVariant(macCurrencySymbol(QLocale::CurrencySymbolFormat(in.toUInt())));
     case FormatCurrency:
         return macFormatCurrency(in);
+    case QuotationBegin:
+    case QuotationEnd: {
+        return macQuotationSymbol(type,in);
+    }
     default:
         break;
     }
@@ -1541,6 +1573,8 @@ Q_GLOBAL_STATIC(QLocalePrivate, globalLocalePrivate)
   \value PMText a string that represents the system PM designator associated with a 12-hour clock.
   \value CurrencySymbol a string that represents a currency in a format QLocale::CurrencyFormat.
   \value FormatCurrency a localized string representation of a number with a currency symbol.
+  \value QuotationBegin a QString specifying the start of a quotation. the in variant contains a QLocale::QuotationStyle
+  \value QuotationEnd a QString specifying the end of a quotation. the in variant contains a QLocale::QuotationStyle
 */
 
 /*!
@@ -2328,6 +2362,21 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
     locale specified; otherwise returns false.
 */
 
+/*!
+    \enum QLocale::QuotationStyle
+
+    This enum defines a set of possible styles for locale specific quotation.
+
+    \value StandardQuotation If this option is set, the standard quotation marks
+            will be used to quote strings.
+    \value AlternateQuotation If this option is set, the alternate quotation marks
+            will be used to quote strings.
+
+    \since 4.8
+
+    \sa quoteString()
+*/
+
 static const int locale_data_size = sizeof(locale_data)/sizeof(QLocalePrivate) - 1;
 
 static const QLocalePrivate *dataPointerHelper(quint16 index)
@@ -2488,6 +2537,43 @@ void QLocale::setNumberOptions(NumberOptions options)
 QLocale::NumberOptions QLocale::numberOptions() const
 {
     return static_cast<NumberOption>(p.numberOptions);
+}
+
+/*!
+    \since 4.8
+
+    Returns \a str quoted according to the current locale.
+
+    If \a AlternateQuotation is used for \a QuoatationStyle
+    but the locale does not provide an alternate quotation,
+    we will fallback to the parent locale.
+*/
+QString QLocale::quoteString(const QString &str, QuotationStyle qs) const
+{
+
+    return quoteString(&str, qs);
+}
+
+/*!
+    \since 4.8
+
+    \overload
+*/
+QString QLocale::quoteString(const QStringRef &str, QuotationStyle qs) const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant quotationBegin = systemLocale()->query(QSystemLocale::QuotationBegin, QVariant(qs));
+        QVariant quotationEnd = systemLocale()->query(QSystemLocale::QuotationEnd, QVariant(qs));
+        if (!quotationBegin.isNull() && !quotationEnd.isNull())
+            return quotationBegin.toString() % str % quotationEnd.toString();
+    }
+#endif
+
+    if (qs == StandardQuotation)
+        return QChar(d()->m_quotation_start) % str % QChar(d()->m_quotation_end);
+    else
+        return QChar(d()->m_alternate_quotation_start) % str % QChar(d()->m_alternate_quotation_end);
 }
 
 /*!

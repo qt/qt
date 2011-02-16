@@ -97,7 +97,9 @@ public:
         PMText, // QString
         FirstDayOfWeek, // Qt::DayOfWeek
         CurrencySymbol, // QString in: format
-        FormatCurrency // QString in: qlonglong, qulonglong or double
+        FormatCurrency, // QString in: qlonglong, qulonglong or double
+        QuotationBegin, // QString in: StandardQuotation or AlternateQuotation
+        QuotationEnd // QString in: StandardQuotation or AlternateQuotation
     };
     virtual QVariant query(QueryType type, QVariant in) const;
     virtual QLocale fallbackLocale() const;
@@ -706,6 +708,10 @@ public:
 
     void setNumberOptions(NumberOptions options);
     NumberOptions numberOptions() const;
+
+    enum QuotationStyle { StandardQuotation, AlternateQuotation };
+    QString quoteString(const QString &str, QuotationStyle qs = StandardQuotation) const;
+    QString quoteString(const QStringRef &str, QuotationStyle qs = StandardQuotation) const;
 
 //private:                        // this should be private, but can't be
     struct Data {

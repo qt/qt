@@ -199,6 +199,10 @@ def generateLocaleInfo(path):
     result['minus'] = get_number_in_system(path, "numbers/symbols/minusSign", numbering_system)
     result['plus'] = get_number_in_system(path, "numbers/symbols/plusSign", numbering_system)
     result['exp'] = get_number_in_system(path, "numbers/symbols/exponential", numbering_system).lower()
+    result['quotationStart'] = findEntry(path, "delimiters/quotationStart")
+    result['quotationEnd'] = findEntry(path, "delimiters/quotationEnd")
+    result['alternateQuotationStart'] = findEntry(path, "delimiters/alternateQuotationStart")
+    result['alternateQuotationEnd'] = findEntry(path, "delimiters/alternateQuotationEnd")
     result['am'] = findEntry(path, "dates/calendars/calendar[gregorian]/dayPeriods/dayPeriodContext[format]/dayPeriodWidth[wide]/dayPeriod[am]", draft)
     result['pm'] = findEntry(path, "dates/calendars/calendar[gregorian]/dayPeriods/dayPeriodContext[format]/dayPeriodWidth[wide]/dayPeriod[pm]", draft)
     result['longDateFormat'] = convert_date(findEntry(path, "dates/calendars/calendar[gregorian]/dateFormats/dateFormatLength[full]/dateFormat/pattern"))
@@ -600,6 +604,10 @@ print \
             <minus>45</minus>\n\
             <plus>43</plus>\n\
             <exp>101</exp>\n\
+            <quotationStart>\"</quotationStart>\n\
+            <quotationEnd>\"</quotationEnd>\n\
+            <alternateQuotationStart>\'</alternateQuotationStart>\n\
+            <alternateQuotationEnd>\'</alternateQuotationEnd>\n\
             <am>AM</am>\n\
             <pm>PM</pm>\n\
             <firstDayOfWeek>mon</firstDayOfWeek>\n\
@@ -644,6 +652,10 @@ for key in locale_keys:
     print "            <minus>"    + ordStr(l['minus'])   + "</minus>"
     print "            <plus>"     + ordStr(l['plus'])   + "</plus>"
     print "            <exp>"      + fixOrdStrExp(l['exp'])     + "</exp>"
+    print "            <quotationStart>" + l['quotationStart'].encode('utf-8') + "</quotationStart>"
+    print "            <quotationEnd>" + l['quotationEnd'].encode('utf-8')   + "</quotationEnd>"
+    print "            <alternateQuotationStart>" + l['alternateQuotationStart'].encode('utf-8') + "</alternateQuotationStart>"
+    print "            <alternateQuotationEnd>" + l['alternateQuotationEnd'].encode('utf-8')   + "</alternateQuotationEnd>"
     print "            <am>"       + l['am'].encode('utf-8') + "</am>"
     print "            <pm>"       + l['pm'].encode('utf-8') + "</pm>"
     print "            <firstDayOfWeek>"  + l['firstDayOfWeek'].encode('utf-8') + "</firstDayOfWeek>"

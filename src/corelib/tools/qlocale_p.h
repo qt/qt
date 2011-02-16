@@ -164,6 +164,8 @@ public:
 
     quint16 m_decimal, m_group, m_list, m_percent,
         m_zero, m_minus, m_plus, m_exponential;
+    quint16 m_quotation_start, m_quotation_end;
+    quint16 m_alternate_quotation_start, m_alternate_quotation_end;
 
     quint16 m_short_date_format_idx, m_short_date_format_size;
     quint16 m_long_date_format_idx, m_long_date_format_size;

@@ -195,6 +195,10 @@ def convertToQtDayOfWeek(firstDay):
     qtDayOfWeek = {"mon":1, "tue":2, "wed":3, "thu":4, "fri":5, "sat":6, "sun":7}
     return qtDayOfWeek[firstDay]
 
+def assertSingleChar(string):
+    assert len(string) == 1, "This string is not allowed to be longer than 1 character"
+    return string
+
 class Locale:
     def __init__(self, elt):
         self.language = eltText(firstChildElt(elt, "language"))
@@ -207,6 +211,10 @@ class Locale:
         self.minus = int(eltText(firstChildElt(elt, "minus")))
         self.plus = int(eltText(firstChildElt(elt, "plus")))
         self.exp = int(eltText(firstChildElt(elt, "exp")))
+        self.quotationStart = ord(assertSingleChar(eltText(firstChildElt(elt, "quotationStart"))))
+        self.quotationEnd = ord(assertSingleChar(eltText(firstChildElt(elt, "quotationEnd"))))
+        self.alternateQuotationStart = ord(assertSingleChar(eltText(firstChildElt(elt, "alternateQuotationStart"))))
+        self.alternateQuotationEnd = ord(assertSingleChar(eltText(firstChildElt(elt, "alternateQuotationEnd"))))
         self.am = eltText(firstChildElt(elt, "am"))
         self.pm = eltText(firstChildElt(elt, "pm"))
         self.firstDayOfWeek = convertToQtDayOfWeek(eltText(firstChildElt(elt, "firstDayOfWeek")))
@@ -433,7 +441,7 @@ def main():
 
     # Locale data
     data_temp_file.write("static const QLocalePrivate locale_data[] = {\n")
-    data_temp_file.write("//      lang   terr    dec  group   list  prcnt   zero  minus  plus    exp sDtFmt lDtFmt sTmFmt lTmFmt ssMonth slMonth  sMonth lMonth  sDays  lDays  am,len      pm,len\n")
+    data_temp_file.write("//      lang   terr    dec  group   list  prcnt   zero  minus  plus    exp quotStart quotEnd altQuotStart altQuotEnd sDtFmt lDtFmt sTmFmt lTmFmt ssMonth slMonth  sMonth lMonth  sDays  lDays  am,len      pm,len\n")
 
     locale_keys = locale_map.keys()
     compareLocaleKeys.default_map = default_map
@@ -443,7 +451,7 @@ def main():
     for key in locale_keys:
         l = locale_map[key]
 
-        data_temp_file.write("    { %6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, {%s}, %s,%s,%s,%s,%6d,%6d,%6d }, // %s/%s\n" \
+        data_temp_file.write("    { %6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, {%s}, %s,%s,%s,%s,%6d,%6d,%6d }, // %s/%s\n" \
                     % (key[0], key[1],
                         l.decimal,
                         l.group,
@@ -453,6 +461,10 @@ def main():
                         l.minus,
                         l.plus,
                         l.exp,
+                        l.quotationStart,
+                        l.quotationEnd,
+                        l.alternateQuotationStart,
+                        l.alternateQuotationEnd,
                         date_format_data.append(l.shortDateFormat),
                         date_format_data.append(l.longDateFormat),
                         time_format_data.append(l.shortTimeFormat),
@@ -481,7 +493,7 @@ def main():
                         l.firstDayOfWeek,
                         l.language,
                         l.country))
-    data_temp_file.write("    {      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,    0,0,    0,0,    0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0, {0,0,0}, 0,0, 0,0, 0,0, 0,0, 0, 0, 0 }  // trailing 0s\n")
+    data_temp_file.write("    {      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,    0,0,    0,0,    0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0, {0,0,0}, 0,0, 0,0, 0,0, 0,0, 0, 0, 0 }  // trailing 0s\n")
     data_temp_file.write("};\n")
 
     data_temp_file.write("\n")
