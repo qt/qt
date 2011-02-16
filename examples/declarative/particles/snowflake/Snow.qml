@@ -18,8 +18,8 @@ Rectangle{
         particleDuration: 8000
         emitting: true
         xSpeed: 0
-        ySpeed: 100
-        xSpeedVariation: 10
+        ySpeed: 200
+        xSpeedVariation: 20
         ySpeedVariation: 100
         xAccel: 0
         yAccel: 4
