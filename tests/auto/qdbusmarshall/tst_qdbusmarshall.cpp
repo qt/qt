@@ -99,53 +99,29 @@ private:
 struct UnregisteredType { };
 Q_DECLARE_METATYPE(UnregisteredType)
 
-class WaitForQPong: public QObject
-{
-    Q_OBJECT
-public:
-    WaitForQPong();
-    bool ok();
-public Q_SLOTS:
-    void ownerChange(const QString &name)
-    {
-        if (name == serviceName)
-            loop.quit();
-    }
-
-private:
-    QEventLoop loop;
-};
-
-WaitForQPong::WaitForQPong()
-{
-    QDBusConnection con = QDBusConnection::sessionBus();
-    if (!ok()) {
-        connect(con.interface(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
-                SLOT(ownerChange(QString)));
-        QTimer::singleShot(2000, &loop, SLOT(quit()));
-        loop.exec();
-    }
-}
-
-bool WaitForQPong::ok()
-{
-    return QDBusConnection::sessionBus().isConnected() &&
-        QDBusConnection::sessionBus().interface()->isServiceRegistered(serviceName);
-}
-
 void tst_QDBusMarshall::initTestCase()
 {
     commonInit();
+    QDBusConnection con = QDBusConnection::sessionBus();
 #ifdef Q_OS_WIN
     proc.start("qpong");
 #else
     proc.start("./qpong/qpong");
 #endif
-    QVERIFY(proc.waitForStarted());
+    if (!QDBusConnection::sessionBus().interface()->isServiceRegistered(serviceName)) {
+        QVERIFY(proc.waitForStarted());
 
-    WaitForQPong w;
-    QVERIFY(w.ok());
-    //QTest::qWait(2000);
+        QVERIFY(con.isConnected());
+        con.connect("org.freedesktop.DBus", QString(), "org.freedesktop.DBus", "NameOwnerChanged",
+                    QStringList() << serviceName << QString(""), QString(),
+                    &QTestEventLoop::instance(), SLOT(exitLoop()));
+        QTestEventLoop::instance().enterLoop(2);
+        QVERIFY(!QTestEventLoop::instance().timeout());
+        QVERIFY(QDBusConnection::sessionBus().interface()->isServiceRegistered(serviceName));
+        con.disconnect("org.freedesktop.DBus", QString(), "org.freedesktop.DBus", "NameOwnerChanged",
+                       QStringList() << serviceName << QString(""), QString(),
+                       &QTestEventLoop::instance(), SLOT(exitLoop()));
+    }
 }
 
 void tst_QDBusMarshall::cleanupTestCase()
@@ -705,6 +681,8 @@ void tst_QDBusMarshall::sendBasic()
     msg << value;
 
     QDBusMessage reply = con.call(msg);
+    QVERIFY2(reply.type() == QDBusMessage::ReplyMessage,
+             qPrintable(reply.errorName() + ": " + reply.errorMessage()));
     //qDebug() << reply;
 
     QCOMPARE(reply.arguments().count(), msg.arguments().count());
