@@ -107,6 +107,14 @@ void ShaderEffectTextureProvider::setSize(const QSize &size)
     markDirtyTexture();
 }
 
+void ShaderEffectTextureProvider::setFormat(GLenum format)
+{
+    if (format == m_format)
+        return;
+    m_format = format;
+    markDirtyTexture();
+}
+
 void ShaderEffectTextureProvider::setLive(bool live)
 {
     if (live == m_live)
@@ -145,10 +153,11 @@ void ShaderEffectTextureProvider::grab()
     }
     m_renderer->setRootNode(static_cast<RootNode *>(root));
 
-    if (!m_fbo || m_fbo->size() != m_size) {
+    if (!m_fbo || m_fbo->size() != m_size || m_fbo->format().internalTextureFormat() != m_format) {
         delete m_fbo;
         QGLFramebufferObjectFormat format;
         format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+        format.setInternalTextureFormat(m_format);
         m_fbo = new QGLFramebufferObject(m_size, format);
         QSGTexture *tex = new QSGTexture;
         tex->setTextureId(m_fbo->texture());
@@ -261,6 +270,20 @@ void ShaderEffectSource::setTextureSize(const QSize &size)
     emit textureSizeChanged();
 }
 
+ShaderEffectSource::Format ShaderEffectSource::format() const
+{
+    return m_format;
+}
+
+void ShaderEffectSource::setFormat(ShaderEffectSource::Format format)
+{
+    if (format == m_format)
+        return;
+    m_format = format;
+    update();
+    emit formatChanged();
+}
+
 bool ShaderEffectSource::live() const
 {
     return m_live;
@@ -304,6 +327,7 @@ Node *ShaderEffectSource::updatePaintNode(Node *oldNode, UpdatePaintNodeData *da
                       : m_textureSize;
     tp->setSize(textureSize);
     tp->setLive(m_live);
+    tp->setFormat(GLenum(m_format));
 
     return TextureItem::updatePaintNode(oldNode, data);
 }

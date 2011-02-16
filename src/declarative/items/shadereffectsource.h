@@ -80,6 +80,9 @@ public:
     QSize size() const { return m_size; }
     void setSize(const QSize &size);
 
+    GLenum format() const { return m_format; }
+    void setFormat(GLenum format);
+
     bool live() const { return bool(m_live); }
     void setLive(bool live);
 
@@ -92,6 +95,7 @@ private:
     Node *m_item;
     QRectF m_rect;
     QSize m_size;
+    GLenum m_format;
 
     Renderer *m_renderer;
     QGLFramebufferObject *m_fbo;
@@ -111,8 +115,16 @@ class ShaderEffectSource : public TextureItem
     Q_PROPERTY(QSGItem *sourceItem READ sourceItem WRITE setSourceItem NOTIFY sourceItemChanged)
     Q_PROPERTY(QRectF sourceRect READ sourceRect WRITE setSourceRect NOTIFY sourceRectChanged)
     Q_PROPERTY(QSize textureSize READ textureSize WRITE setTextureSize NOTIFY textureSizeChanged)
+    Q_PROPERTY(Format format READ format WRITE setFormat NOTIFY formatChanged)
     Q_PROPERTY(bool live READ live WRITE setLive NOTIFY liveChanged)
+    Q_ENUMS(Format)
 public:
+    enum Format {
+        Alpha = GL_ALPHA,
+        RGB = GL_RGB,
+        RGBA = GL_RGBA
+    };
+
     ShaderEffectSource(QSGItem *parent = 0);
     ~ShaderEffectSource();
 
@@ -125,6 +137,9 @@ public:
     QSize textureSize() const;
     void setTextureSize(const QSize &size);
 
+    Format format() const;
+    void setFormat(Format format);
+
     bool live() const;
     void setLive(bool live);
 
@@ -134,6 +149,7 @@ Q_SIGNALS:
     void sourceItemChanged();
     void sourceRectChanged();
     void textureSizeChanged();
+    void formatChanged();
     void liveChanged();
 
 protected:
@@ -143,6 +159,7 @@ private:
     QPointer<QSGItem> m_sourceItem;
     QRectF m_sourceRect;
     QSize m_textureSize;
+    Format m_format;
     uint m_live : 1;
 };
 
