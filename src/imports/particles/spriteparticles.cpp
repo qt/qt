@@ -810,6 +810,11 @@ void SpriteParticles::prepareNextFrame()
             int goalPath = -1;
             if(m_goalState.isEmpty() || (goalPath = goalSeek(stateIdx)) == -1){//Random
                 qreal r =(qreal) qrand() / (qreal) RAND_MAX;
+                qreal total = 0.0;
+                for(QVariantMap::const_iterator iter=m_states[stateIdx]->m_to.constBegin();
+                    iter!=m_states[stateIdx]->m_to.constEnd(); iter++)
+                    total += (*iter).toReal();
+                r*=total;
                 for(QVariantMap::const_iterator iter= m_states[stateIdx]->m_to.constBegin();
                         iter!=m_states[stateIdx]->m_to.constEnd(); iter++){
                     if(r < (*iter).toReal()){
@@ -829,7 +834,7 @@ void SpriteParticles::prepareNextFrame()
             }else{//Random out of shortest paths to goal
                 nextIdx = goalPath;
             }
-            if(nextIdx == -1)
+            if(nextIdx == -1)//No to states means stay here
                 nextIdx = stateIdx;
 
             p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = pt;

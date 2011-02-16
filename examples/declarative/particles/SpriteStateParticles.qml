@@ -32,7 +32,7 @@ Rectangle{
             source: "squarefacesprite4.png"
             frames: 6
             duration: 120
-            to: {"love": 0.1, "evil": 0.1, "silly":0.1, "boggled":0.1}
+            to: {"love": 0.1, "evil": 0.1, "silly":0.1, "boggled":0.1, "cyclops" : 1.0}
         }, SpriteState{
             name: "evil"
             source: "squarefacesprite5.png"
@@ -44,13 +44,13 @@ Rectangle{
             source: "squarefacesprite6.png"
             frames: 6
             duration: 120
-            to: {"sad": 0.6, "evil":0.2, "boggled":0.2}
+            to: {"sad": 0.6, "evil":0.4, "boggled":0.2}
         }, SpriteState{
             name: "boggled"
             source: "squarefacesprite7.png"
             frames: 6
             duration: 120
-            to: {"love" : 0.2, "evil": 0.2, "silly": 0.2, "cyclops":0.2, "sad":0.2}
+            to: {"love" : 0.2, "evil": 0.2, "silly": 0.2, "cyclops":0.1, "sad":0.2}
         }, SpriteState{
             name: "dying"
             source: "squarefacespriteX.png"
