@@ -149,6 +149,9 @@ void registerTypes()
     qmlRegisterType<MyRevisionedClass>("Qt.test",1,0,"MyRevisionedClass");
     qmlRegisterType<MyRevisionedClass,1>("Qt.test",1,1,"MyRevisionedClass");
 
+    // test scarce resource property binding post-evaluation optimisation
+    qmlRegisterType<ScarceResourceObject>("Qt.test", 1,0, "MyScarceResourceObject");
+
     // Register the uncreatable base class
     qmlRegisterRevision<MyRevisionedBaseClassRegistered,1>("Qt.test",1,1);
     // MyRevisionedSubclass 1.0 uses MyRevisionedClass revision 0

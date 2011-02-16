@@ -43,6 +43,7 @@ SOURCES += \
     $$PWD/qdeclarativetypenamecache.cpp \
     $$PWD/qdeclarativescriptstring.cpp \
     $$PWD/qdeclarativeobjectscriptclass.cpp \
+    $$PWD/qdeclarativescarceresourcescriptclass.cpp \
     $$PWD/qdeclarativecontextscriptclass.cpp \
     $$PWD/qdeclarativeglobalscriptclass.cpp \
     $$PWD/qdeclarativevaluetypescriptclass.cpp \
@@ -116,6 +117,7 @@ HEADERS += \
     $$PWD/qdeclarativetypenamecache_p.h \
     $$PWD/qdeclarativescriptstring.h \
     $$PWD/qdeclarativeobjectscriptclass_p.h \
+    $$PWD/qdeclarativescarceresourcescriptclass_p.h \
     $$PWD/qdeclarativecontextscriptclass_p.h \
     $$PWD/qdeclarativeglobalscriptclass_p.h \
     $$PWD/qdeclarativevaluetypescriptclass_p.h \
