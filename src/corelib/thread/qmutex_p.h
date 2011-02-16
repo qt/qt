@@ -64,7 +64,11 @@
 
 #if defined(Q_OS_SYMBIAN)
 # include <e32std.h>
-#undef QT_SYMBIAN_USE_RFASTLOCK
+# ifdef __SYMBIAN_KERNEL_HYBRID_HEAP__
+#  define QT_SYMBIAN_USE_RFASTLOCK
+# else
+#  undef QT_SYMBIAN_USE_RFASTLOCK
+# endif
 #endif
 
 QT_BEGIN_NAMESPACE
