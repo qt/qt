@@ -5,9 +5,11 @@
 #include <QtGui>
 
 #include <qsgitem.h>
+#include "spritestate.h"
 
 class SpriteParticlesMaterial;
 class GeometryNode;
+class QSGContext;
 
 class SpriteParticles : public QSGItem
 {
@@ -41,6 +43,9 @@ class SpriteParticles : public QSGItem
     Q_PROPERTY(qreal yAccel READ yAccel WRITE setYAccel NOTIFY yAccelChanged)
     Q_PROPERTY(qreal xAccelVariation READ xAccelVariation WRITE setXAccelVariation NOTIFY xAccelVariationChanged)
     Q_PROPERTY(qreal yAccelVariation READ yAccelVariation WRITE setYAccelVariation NOTIFY yAccelVariationChanged)
+
+    Q_PROPERTY(QDeclarativeListProperty<SpriteState> states READ states)
+    Q_PROPERTY(QString goalState READ goalState WRITE goalState NOTIFY goalStateChanged)
 
     Q_PROPERTY(int frameCount READ frames WRITE setFrames NOTIFY framesChanged)
     Q_PROPERTY(int frameDuration READ frameDuration WRITE setFrameDuration NOTIFY frameDurationChanged)
@@ -140,6 +145,16 @@ public:
         return m_frameDuration;
     }
 
+    QDeclarativeListProperty<SpriteState> states()
+    {
+        return QDeclarativeListProperty<SpriteState>(this, m_states);
+    }
+
+    QString goalState() const
+    {
+        return m_goalState;
+    }
+
 signals:
     void runningChanged();
 
@@ -178,6 +193,8 @@ signals:
 
     void frameDurationChanged(int arg);
 
+    void goalStateChanged(QString arg);
+
 public slots:
 void prepareNextFrame();
 
@@ -197,11 +214,20 @@ void setFrameDuration(int arg)
     }
 }
 
+void goalState(QString arg)
+{
+    if (m_goalState != arg) {
+        m_goalState = arg;
+        emit goalStateChanged(arg);
+    }
+}
+
 protected:
     Node *updatePaintNode(Node *, UpdatePaintNodeData *);
 
 private:
     void buildParticleNode();
+    bool buildParticleTexture(QSGContext *sg);
     void reset();
 
     bool m_running;
@@ -237,6 +263,10 @@ private:
     qreal m_color_variation;
     qreal m_additive;
 
+    int m_frames;
+    int m_frameDuration;
+    QList<SpriteState*> m_states;
+
     GeometryNode *m_node;
     SpriteParticlesMaterial *m_material;
 
@@ -244,6 +274,7 @@ private:
     int m_particle_count;
     int m_last_particle;
     QTime m_timestamp;
+    int m_maxFrames;
 
     QPointF m_last_emitter;
     QPointF m_last_last_emitter;
@@ -254,8 +285,11 @@ private:
     qreal m_last_timestamp;
 
     qreal m_render_opacity;
-    int m_frames;
-    int m_frameDuration;
+
+    void addToUpdateList(uint t, int idx);
+    int goalSeek(int curState, int dist=-1);
+    QList<QPair<uint, QList<int> > > m_stateUpdates;
+    QString m_goalState;
 };
 
 #endif // PARTICLETRAILS_H

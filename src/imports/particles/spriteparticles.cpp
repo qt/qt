@@ -13,8 +13,8 @@ public:
     SpriteParticlesMaterial()
         : timestamp(0)
         , timelength(1)
-        , frameduration(1)
         , framecount(1)
+        , animcount(1)
     {
         setFlag(Blending, true);
     }
@@ -30,8 +30,8 @@ public:
 
     qreal timestamp;
     qreal timelength;
-    int frameduration;
     int framecount;
+    int animcount;
 };
 
 
@@ -74,7 +74,7 @@ public:
         m_program.setUniformValue(m_timestamp_id, (float) m->timestamp);
         m_program.setUniformValue(m_timelength_id, (float) m->timelength);
         m_program.setUniformValue(m_framecount_id, (float) m->framecount);
-        m_program.setUniformValue(m_frameduration_id, (float) m->frameduration);
+        m_program.setUniformValue(m_animcount_id, (float) m->animcount);
 
         if (updates & Renderer::UpdateMatrices)
             m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
@@ -86,7 +86,7 @@ public:
         m_timestamp_id = m_program.uniformLocation("timestamp");
         m_timelength_id = m_program.uniformLocation("timelength");
         m_framecount_id = m_program.uniformLocation("framecount");
-        m_frameduration_id = m_program.uniformLocation("frameduration");
+        m_animcount_id = m_program.uniformLocation("animcount");
     }
 
     virtual const char *vertexShader() const { return m_vertex_code.constData(); }
@@ -98,7 +98,7 @@ public:
             "vTex",
             "vData",
             "vVec",
-            "vColor",
+            "vAnimData",
             0
         };
         return attr;
@@ -111,7 +111,7 @@ public:
     int m_timestamp_id;
     int m_timelength_id;
     int m_framecount_id;
-    int m_frameduration_id;
+    int m_animcount_id;
 
     QByteArray m_vertex_code;
     QByteArray m_fragment_code;
@@ -126,13 +126,6 @@ AbstractMaterialShader *SpriteParticlesMaterial::createShader() const
     return new SpriteParticlesMaterialData;
 }
 
-struct Color4ub {
-    uchar r;
-    uchar g;
-    uchar b;
-    uchar a;
-};
-
 struct ParticleVertex {
     float x;
     float y;
@@ -145,7 +138,10 @@ struct ParticleVertex {
     float sy;
     float ax;
     float ay;
-    Color4ub color;
+    float animIdx;
+    float frameDuration;
+    float frameCount;
+    float animT;
 };
 
 struct ParticleVertices {
@@ -454,6 +450,142 @@ void SpriteParticles::reset()
     m_particle_count = 0;
 }
 
+int SpriteParticles::goalSeek(int curIdx, int dist)
+{
+    //TODO: caching instead of excessively redoing iterative deepening (which was chosen arbitarily anyways)
+    // Paraphrased - implement in an *efficient* manner
+    if(m_goalState.isEmpty())
+        return curIdx;
+    for(int i=0; i<m_states.count(); i++)
+        if(m_states[curIdx]->name() == m_goalState)
+            return curIdx;
+    if(dist < 0)
+        dist = m_states.count();
+    SpriteState* curState = m_states[curIdx];
+    for(QVariantMap::const_iterator iter = curState->m_to.constBegin();
+        iter!=curState->m_to.constEnd(); iter++){
+        if(iter.key() == m_goalState)
+            for(int i=0; i<m_states.count(); i++)
+                if(m_states[i]->name() == m_goalState)
+                    return i;
+    }
+    QSet<int> options;
+    for(int i=1; i<dist; i++){
+        for(QVariantMap::const_iterator iter = curState->m_to.constBegin();
+            iter!=curState->m_to.constEnd(); iter++){
+            int option = -1;
+            for(int j=0; j<m_states.count(); j++)//One place that could be a lot more efficient...
+                if(m_states[j]->name() == iter.key())
+                    if(goalSeek(j, i) != -1)
+                        option = j;
+            if(option != -1)
+                options << option;
+        }
+        if(!options.isEmpty()){
+            if(options.count()==1)
+                return *(options.begin());
+            int option = -1;
+            qreal r =(qreal) qrand() / (qreal) RAND_MAX;
+            qreal total;
+            for(QSet<int>::const_iterator iter=options.constBegin();
+                iter!=options.constEnd(); iter++)
+                total += curState->m_to.value(m_states[(*iter)]->name()).toReal();
+            r *= total;
+            for(QVariantMap::const_iterator iter = curState->m_to.constBegin();
+                iter!=curState->m_to.constEnd(); iter++){
+                bool superContinue = true;
+                for(int j=0; j<m_states.count(); j++)
+                    if(m_states[j]->name() == iter.key())
+                        if(options.contains(j))
+                            superContinue = false;
+                if(superContinue)
+                    continue;
+                if(r < (*iter).toReal()){
+                    bool superBreak = false;
+                    for(int j=0; j<m_states.count(); j++){
+                        if(m_states[j]->name() == iter.key()){
+                            option = j;
+                            superBreak = true;
+                            break;
+                        }
+                    }
+                    if(superBreak)
+                        break;
+                }
+                r-=(*iter).toReal();
+            }
+            return option;
+        }
+    }
+    return -1;
+}
+
+void SpriteParticles::addToUpdateList(uint t, int idx)
+{
+    for(int i=0; i<m_stateUpdates.count(); i++){
+        if(m_stateUpdates[i].first==t){
+            m_stateUpdates[i].second << idx;
+            return;
+        }else if(m_stateUpdates[i].first > t){
+            QList<int> tmpList;
+            tmpList << idx;
+            m_stateUpdates.insert(i, qMakePair(t, tmpList));
+            return;
+        }
+    }
+    QList<int> tmpList;
+    tmpList << idx;
+    m_stateUpdates << qMakePair(t, tmpList);
+}
+
+bool SpriteParticles::buildParticleTexture(QSGContext *sg)
+{
+    int frameHeight = 0;
+    int frameWidth = 0;
+    m_maxFrames = 0;
+
+    foreach(SpriteState* state, m_states){
+        if(state->frames() > m_maxFrames)
+            m_maxFrames = state->frames();
+
+        QImage img(state->source());
+        if (img.isNull()) {
+            qWarning() << "SpriteParticles: loading image failed..." << state->source();
+            return false;
+        }
+
+        if(frameWidth){
+            if(img.width() / state->frames() != frameWidth){
+                qWarning() << "SpriteParticles: Irregular frame width..." << state->source();
+                return false;
+            }
+        }else{
+            frameWidth = img.width() / state->frames();
+        }
+
+        if(frameHeight){
+            if(img.height()!=frameHeight){
+                qWarning() << "SpriteParticles: Irregular frame height..." << state->source();
+                return false;
+            }
+        }else{
+            frameHeight = img.height();
+        }
+    }
+
+    QImage image(frameWidth * m_maxFrames, frameHeight * m_states.count(), QImage::Format_ARGB32);
+    image.fill(0);
+    QPainter p(&image);
+    int y = 0;
+    foreach(SpriteState* state, m_states){
+        QImage img(state->source());
+        p.drawImage(0,y,img);
+        y += frameHeight;
+    }
+    m_material->texture = sg->textureManager()->upload(image);
+    return true;
+}
+
 void SpriteParticles::buildParticleNode()
 {
     QSGContext *sg = QSGContext::current;
@@ -461,22 +593,31 @@ void SpriteParticles::buildParticleNode()
     m_particle_count = m_particle_duration * m_particles_per_second / 1000.;
 
     if (m_particle_count * 4 > 0xffff) {
-        printf("SpriteParticles: too many particles...");
+        qWarning() << "SpriteParticles: too many particles...";
         return;
     }
 
-    QImage image(m_image_name.toLocalFile());
-    if (image.isNull()) {
-        printf("SpriteParticles: loading image failed... '%s'\n", qPrintable(m_image_name.toLocalFile()));
+    if (m_states.isEmpty()) {
+        qWarning() << "SpriteParticles: No sprite states...";
         return;
     }
+
+    if (m_material) {
+        delete m_material;
+        m_material = 0;
+    }
+
+    m_material = new SpriteParticlesMaterial();
+
+    if(!buildParticleTexture(sg))//problem loading image files
+        return;
 
     QVector<QSGAttributeDescription> attr;
     attr << QSGAttributeDescription(0, 2, GL_FLOAT, 0); // Position
     attr << QSGAttributeDescription(1, 2, GL_FLOAT, 0); // TexCoord
     attr << QSGAttributeDescription(2, 3, GL_FLOAT, 0); // Data
     attr << QSGAttributeDescription(3, 4, GL_FLOAT, 0); // Vectors..
-    attr << QSGAttributeDescription(4, 4, GL_UNSIGNED_BYTE, 0); // Colors
+    attr << QSGAttributeDescription(4, 4, GL_FLOAT, 0); // AnimData
 
     Geometry *g = new Geometry(attr);
     g->setDrawingMode(QSG::Triangles);
@@ -496,6 +637,10 @@ void SpriteParticles::buildParticleNode()
             vertices[i].sy = 0;
             vertices[i].ax = 0;
             vertices[i].ay = 0;
+            vertices[i].animIdx = 0;
+            vertices[i].frameDuration = 1;
+            vertices[i].frameCount = 1;
+            vertices[i].animT = -1;
         }
 
         vertices[0].tx = 0;
@@ -527,15 +672,6 @@ void SpriteParticles::buildParticleNode()
         indices += 6;
     }
 
-    if (m_material) {
-        delete m_material;
-        m_material = 0;
-    }
-
-    if (!m_material)
-        m_material = new SpriteParticlesMaterial();
-
-    m_material->texture = sg->textureManager()->upload(image);
 
     m_node = new GeometryNode();
     m_node->setGeometry(g);
@@ -560,16 +696,21 @@ void SpriteParticles::prepareNextFrame()
     if (m_node == 0)
         buildParticleNode();
 
+    if (m_node == 0) //error creating node
+        return;
+
     if (m_reset_last) {
         m_last_emitter = m_last_last_emitter = QPointF(m_emitter_x, m_emitter_y);
         m_reset_last = false;
     }
 
-    qreal time = m_timestamp.elapsed() / 1000.;
+    //### Elapsed time never shrinks - may cause problems if left emitting for weeks at a time.
+    uint timeInt = m_timestamp.elapsed();
+    qreal time =  timeInt / 1000.;
     m_material->timelength = m_particle_duration / 1000.;
     m_material->timestamp = time;
-    m_material->framecount = m_frames;
-    m_material->frameduration = m_frameDuration;
+    m_material->framecount = m_maxFrames;
+    m_material->animcount = m_states.count();
 
     ParticleVertices *particles = (ParticleVertices *) m_node->geometry()->vertexData();
 
@@ -609,6 +750,7 @@ void SpriteParticles::prepareNextFrame()
 
         // Particle timestamp
         p.v1.t = p.v2.t = p.v3.t = p.v4.t = pt;
+        p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = pt;
 
         // Particle position
         p.v1.x = p.v2.x = p.v3.x = p.v4.x =
@@ -644,17 +786,59 @@ void SpriteParticles::prepareNextFrame()
         p.v1.size = p.v2.size = p.v3.size = p.v4.size = size * float(m_emitting);
         p.v1.endSize = p.v2.endSize = p.v3.endSize = p.v4.endSize = endSize * float(m_emitting);
 
-        // Color (for opacity only)
-        Color4ub color;
-        color.r = 255;
-        color.g = 255;
-        color.b = 255;
-        color.a = 255;
-        p.v1.color = p.v2.color = p.v3.color = p.v4.color = color;
+        // Initial Sprite State
+        p.v1.animIdx = p.v2.animIdx = p.v3.animIdx = p.v4.animIdx = 0;
+        p.v1.frameCount = p.v2.frameCount = p.v3.frameCount = p.v4.frameCount = m_states[0]->frames();
+        p.v1.frameDuration = p.v2.frameDuration = p.v3.frameDuration = p.v4.frameDuration = m_states[0]->duration();
+        for(int i=0; i<m_stateUpdates.count(); i++)
+            m_stateUpdates[i].second.removeAll(pos);
+
+        if(m_states[0]->m_to.count() > 1)//Optimizes the single animation case
+            addToUpdateList(timeInt + (m_states[0]->duration() * m_states[0]->frames()), pos);
 
         ++m_last_particle;
         pt = m_last_particle * particleRatio;
 
+    }
+
+    //Sprite State Update
+    while(!m_stateUpdates.isEmpty() && timeInt >= m_stateUpdates.first().first){
+        foreach(int idx, m_stateUpdates.first().second){
+            ParticleVertices &p = particles[idx];
+            int stateIdx = p.v1.animIdx;
+            int nextIdx = -1;
+            int goalPath = -1;
+            if(m_goalState.isEmpty() || (goalPath = goalSeek(stateIdx)) == -1){//Random
+                qreal r =(qreal) qrand() / (qreal) RAND_MAX;
+                for(QVariantMap::const_iterator iter= m_states[stateIdx]->m_to.constBegin();
+                        iter!=m_states[stateIdx]->m_to.constEnd(); iter++){
+                    if(r < (*iter).toReal()){
+                        bool superBreak = false;
+                        for(int i=0; i<m_states.count(); i++){
+                            if(m_states[i]->name() == iter.key()){
+                                nextIdx = i;
+                                superBreak = true;
+                                break;
+                            }
+                        }
+                        if(superBreak)
+                            break;
+                    }
+                    r -= (*iter).toReal();
+                }
+            }else{//Random out of shortest paths to goal
+                nextIdx = goalPath;
+            }
+            if(nextIdx == -1)
+                nextIdx = stateIdx;
+
+            p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = pt;
+            p.v1.animIdx = p.v2.animIdx = p.v3.animIdx = p.v4.animIdx = nextIdx;
+            p.v1.frameCount = p.v2.frameCount = p.v3.frameCount = p.v4.frameCount = m_states[nextIdx]->frames();
+            p.v1.frameDuration = p.v2.frameDuration = p.v3.frameDuration = p.v4.frameDuration = m_states[nextIdx]->duration();
+            addToUpdateList(timeInt + (m_states[nextIdx]->duration() * m_states[nextIdx]->frames()), idx);
+        }
+        m_stateUpdates.pop_front();//TODO: Something was using up CPU over time - was it this list?
     }
 
     m_last_last_last_emitter = m_last_last_emitter;

@@ -4,10 +4,12 @@ include(../qimportbase.pri)
 
 HEADERS += \
     spriteparticles.h \
+    spritestate.h \
     pluginmain.h
 
 SOURCES += \
     spriteparticles.cpp \
+    spritestate.cpp \
     main.cpp
 
 QT += declarative opengl

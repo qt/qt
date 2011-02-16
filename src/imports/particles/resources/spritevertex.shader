@@ -3,14 +3,14 @@ attribute highp vec2 vPos;
 attribute highp vec2 vTex;                              
 attribute highp vec3 vData; //  x = time,  y = size,  z = endSize
 attribute highp vec4 vVec; // x,y = constant speed,  z,w = acceleration
-attribute lowp vec4 vColor;
+attribute highp vec4 vAnimData;// idx, duration, frameCount (this anim), timestamp (this anim)
 
 uniform highp mat4 matrix;                              
 uniform highp float timestamp;                          
 uniform highp float timelength;
 uniform lowp float opacity;
-uniform highp float framecount;
-uniform highp float frameduration;
+uniform highp float framecount; //maximum of all anims
+uniform highp float animcount;
 
 varying highp vec2 fTex;                                
 varying lowp vec4 fColor;
@@ -21,15 +21,22 @@ void main() {
 
     highp float t = (timestamp - vData.x) / timelength; 
 
-    highp int frameIndex = int(uint(floor((timestamp * 1000.0)/float(frameduration)))%uint(framecount));
+    //Calculate frame location in texture
+    highp float frameIndex = float(uint(floor(((timestamp - vAnimData.w)*1000.)/float(vAnimData.y)))%uint(vAnimData.z));
     highp vec2 frameTex = vTex;
     if(vTex.x == 0.)
-        frameTex.x = (float(frameIndex)/float(framecount));
+        frameTex.x = (frameIndex/framecount);
     else
-        frameTex.x = 1. * (float(frameIndex + int(1))/float(framecount));
+        frameTex.x = 1. * ((frameIndex + 1.)/framecount);
+
+    if(vTex.y == 0.)
+        frameTex.y = (vAnimData.x/animcount);
+    else
+        frameTex.y = 1. * ((vAnimData.x + 1.)/animcount);
 
     fTex = frameTex;
 
+    // calculate size/pos
     highp float currentSize = mix(size, endSize, t * t);
 
     if (t < 0. || t > 1.)
@@ -42,8 +49,10 @@ void main() {
 
     gl_Position = matrix * vec4(pos.x, pos.y, 0, 1);
 
+    // calculate opacity
     highp float fadeIn = min(t * 10., 1.);
     highp float fadeOut = 1. - max(0., min((t - 0.75) * 4., 1.));
 
-    fColor = vColor * fadeIn * fadeOut * opacity;
+    lowp vec4 white = vec4(1.);
+    fColor = white * fadeIn * fadeOut * opacity;
 }

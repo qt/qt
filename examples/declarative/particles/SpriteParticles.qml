@@ -8,9 +8,11 @@ Rectangle{
     SpriteParticles{
         id: particles
         anchors.fill: parent
-        image: "squarefacesprite.png"
-        frameCount: 6
-        frameDuration: 120
+        states: SpriteState{
+            source: "squarefacesprite.png"
+            frames: 6
+            duration: 120
+        }
 
         particlesPerSecond: 6
         particleDuration: 5000
