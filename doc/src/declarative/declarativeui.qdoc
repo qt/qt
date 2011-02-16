@@ -139,11 +139,7 @@ examples for porting}
 \section1 Best Practices
 
 \list
-\o \l{QML Best Practices: Data Types}{Using Data Types in QML}
 \o \l{QML Best Practices: Coding Conventions}{Coding Tips}
 \o \l{QML Performance}{Performance Tips}
-\omit
-\o \l{Geir's screen size document}
-\endomit
 \endlist
 */
