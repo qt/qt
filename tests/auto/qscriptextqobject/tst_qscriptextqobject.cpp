@@ -2703,21 +2703,25 @@ void tst_QScriptExtQObject::findChildren()
         QCOMPARE(result.property(QLatin1String("0")).toQObject(), anotherChild);
     }
 
+    // ### http://code.google.com/p/v8/issues/detail?id=1037 but still not
+    QEXPECT_FAIL("", "FIXME: commented block causes crash in x64, already fixed in upstream but not in our v8 copy yet", Continue);
+    QVERIFY(false);
+
     anotherChild->setObjectName(QLatin1String("myChildObject"));
-    {
-        QScriptValue result = m_engine->evaluate("myObject.findChildren('myChildObject')");
-        QCOMPARE(result.isArray(), true);
-        QCOMPARE(result.property(QLatin1String("length")).toNumber(), 2.0);
-        QObject *o1 = result.property(QLatin1String("0")).toQObject();
-        QObject *o2 = result.property(QLatin1String("1")).toQObject();
-        if (o1 != child) {
-            QCOMPARE(o1, anotherChild);
-            QCOMPARE(o2, child);
-        } else {
-            QCOMPARE(o1, child);
-            QCOMPARE(o2, anotherChild);
-        }
-    }
+    // {
+    //     QScriptValue result = m_engine->evaluate("myObject.findChildren('myChildObject')");
+    //     QCOMPARE(result.isArray(), true);
+    //     QCOMPARE(result.property(QLatin1String("length")).toNumber(), 2.0);
+    //     QObject *o1 = result.property(QLatin1String("0")).toQObject();
+    //     QObject *o2 = result.property(QLatin1String("1")).toQObject();
+    //     if (o1 != child) {
+    //         QCOMPARE(o1, anotherChild);
+    //         QCOMPARE(o2, child);
+    //     } else {
+    //         QCOMPARE(o1, child);
+    //         QCOMPARE(o2, anotherChild);
+    //     }
+    // }
 
     // find all
     {
