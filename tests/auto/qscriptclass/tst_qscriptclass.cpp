@@ -1506,7 +1506,6 @@ void tst_QScriptClass::scriptClassWithNullEngine()
 
 void tst_QScriptClass::scriptClassInOtherEngine()
 {
-    QSKIP("Asserts on V8 back-end", SkipAll);
     QScriptEngine eng;
     TestClass cls(&eng);
     QScriptEngine eng2;

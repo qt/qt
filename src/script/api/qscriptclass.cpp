@@ -246,8 +246,13 @@ v8::Handle<v8::Value> QScriptClassObject::newInstance(QScriptClassPrivate* scrip
     v8::Handle<v8::Object> instance = createInstance(data);
 
     QScriptSharedDataPointer<QScriptValuePrivate> prototype(QScriptValuePrivate::get(QScriptClassPrivate::get(scriptclass)->prototype()));
-    if (prototype->isValid() && (prototype->isObject() || prototype->isNull()))
-        instance->SetPrototype(prototype->asV8Value(engine));
+    if (prototype->isValid() && (prototype->isObject() || prototype->isNull())) {
+        if (!prototype->engine() || prototype->engine() == engine) {
+            instance->SetPrototype(prototype->asV8Value(engine));
+        } else {
+            qWarning("QScriptValue::setPrototype() failed: cannot set a prototype created in a different engine");
+        }
+    }
     return instance;
 }
 
