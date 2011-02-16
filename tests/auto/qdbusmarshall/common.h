@@ -77,6 +77,14 @@ Q_DECLARE_METATYPE(ObjectPathStringMap)
 Q_DECLARE_METATYPE(LLDateTimeMap)
 Q_DECLARE_METATYPE(SignatureStringMap)
 
+static bool compare(const QDBusUnixFileDescriptor &t1, const QDBusUnixFileDescriptor &t2)
+{
+    int fd1 = t1.fileDescriptor();
+    int fd2 = t2.fileDescriptor();
+
+    return (fd1 == -1) == (fd2 == -1);
+}
+
 struct MyStruct
 {
     int i;
@@ -130,6 +138,32 @@ const QDBusArgument &operator>>(const QDBusArgument &arg, MyVariantMapStruct &ms
     return arg;
 }
 
+struct MyFileDescriptorStruct
+{
+    QDBusUnixFileDescriptor fd;
+
+    inline bool operator==(const MyFileDescriptorStruct &other) const
+    { return compare(fd, other.fd); }
+};
+Q_DECLARE_METATYPE(MyFileDescriptorStruct)
+Q_DECLARE_METATYPE(QList<MyFileDescriptorStruct>)
+
+QDBusArgument &operator<<(QDBusArgument &arg, const MyFileDescriptorStruct &ms)
+{
+    arg.beginStructure();
+    arg << ms.fd;
+    arg.endStructure();
+    return arg;
+}
+
+const QDBusArgument &operator>>(const QDBusArgument &arg, MyFileDescriptorStruct &ms)
+{
+    arg.beginStructure();
+    arg >> ms.fd;
+    arg.endStructure();
+    return arg;
+}
+
 
 void commonInit()
 {
@@ -157,6 +191,8 @@ void commonInit()
     qDBusRegisterMetaType<MyStruct>();
     qDBusRegisterMetaType<MyVariantMapStruct>();
     qDBusRegisterMetaType<QList<MyVariantMapStruct> >();
+    qDBusRegisterMetaType<MyFileDescriptorStruct>();
+    qDBusRegisterMetaType<QList<MyFileDescriptorStruct> >();
 }
 #ifdef USE_PRIVATE_CODE
 #include "private/qdbusintrospection_p.h"
@@ -377,14 +413,6 @@ bool compare(const QHash<Key, T> &m1, const QHash<Key, T> &m2)
     return true;
 }
 
-bool compare(const QDBusUnixFileDescriptor &t1, const QDBusUnixFileDescriptor &t2)
-{
-    int fd1 = t1.fileDescriptor();
-    int fd2 = t2.fileDescriptor();
-
-    return (fd1 == -1) == (fd2 == -1);
-}
-
 template<typename T>
 inline bool compare(const QDBusArgument &arg, const QVariant &v2, T * = 0)
 {
@@ -521,6 +549,10 @@ bool compareToArgument(const QDBusArgument &arg, const QVariant &v2)
             return compare<MyVariantMapStruct>(arg, v2);
         else if (id == qMetaTypeId<QList<MyVariantMapStruct> >())
             return compare<QList<MyVariantMapStruct> >(arg, v2);
+        else if (id == qMetaTypeId<MyFileDescriptorStruct>())
+            return compare<MyFileDescriptorStruct>(arg, v2);
+        else if (id == qMetaTypeId<QList<MyFileDescriptorStruct> >())
+            return compare<QList<MyFileDescriptorStruct> >(arg, v2);
     }
 
     qWarning() << "Unexpected QVariant type" << v2.userType()

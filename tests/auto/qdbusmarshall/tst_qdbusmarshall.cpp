@@ -474,6 +474,12 @@ void tst_QDBusMarshall::sendMaps_data()
     QTest::newRow("gs-map") << qVariantFromValue(gsmap) << "a{gs}"
             << "[Argument: a{gs} {[Signature: a{gs}] = \"array of dict_entry of (signature, string)\", [Signature: i] = \"int32\", [Signature: s] = \"string\"}]";
 
+    if (fileDescriptorPassing) {
+        svmap["zzfiledescriptor"] = qVariantFromValue(QDBusUnixFileDescriptor(0));
+        QTest::newRow("sv-map1-fd") << qVariantFromValue(svmap) << "a{sv}"
+                                    << "[Argument: a{sv} {\"a\" = [Variant(int): 1], \"b\" = [Variant(QByteArray): {99}], \"c\" = [Variant(QString): \"b\"], \"d\" = [Variant(uint): 42], \"e\" = [Variant(short): -47], \"f\" = [Variant: [Variant(int): 0]], \"zzfiledescriptor\" = [Variant(QDBusUnixFileDescriptor): [Unix FD: valid]]}]";
+    }
+
     svmap.clear();
     svmap["ismap"] = qVariantFromValue(ismap);
     svmap["ssmap"] = qVariantFromValue(ssmap);
@@ -527,6 +533,18 @@ void tst_QDBusMarshall::sendStructs_data()
     QTest::newRow("empty-list-of-string-variantmap") << qVariantFromValue(list) << "a(sa{sv})" << "[Argument: a(sa{sv}) {}]";
     list << mvms;
     QTest::newRow("list-of-string-variantmap") << qVariantFromValue(list) << "a(sa{sv})" << "[Argument: a(sa{sv}) {[Argument: (sa{sv}) \"Hello, World\", [Argument: a{sv} {\"bytearray\" = [Variant(QByteArray): {72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100}], \"int\" = [Variant(int): 42], \"short\" = [Variant(short): -47], \"uint\" = [Variant(uint): 42]}]]}]";
+
+    if (fileDescriptorPassing) {
+        MyFileDescriptorStruct fds;
+        fds.fd = QDBusUnixFileDescriptor(0);
+        QTest::newRow("fdstruct") << qVariantFromValue(fds) << "(h)" << "[Argument: (h) [Unix FD: valid]]";
+
+        QList<MyFileDescriptorStruct> fdlist;
+        QTest::newRow("empty-list-of-fdstruct") << qVariantFromValue(fdlist) << "a(h)" << "[Argument: a(h) {}]";
+
+        fdlist << fds;
+        QTest::newRow("list-of-fdstruct") << qVariantFromValue(fdlist) << "a(h)" << "[Argument: a(h) {[Argument: (h) [Unix FD: valid]]}]";
+    }
 }
 
 void tst_QDBusMarshall::sendComplex_data()
@@ -659,6 +677,12 @@ void tst_QDBusMarshall::sendArgument_data()
     arg = QDBusArgument();
     arg << QString();
     QTest::newRow("nullstring") << qVariantFromValue(arg) << "s" << int(QDBusArgument::BasicType);
+
+    if (fileDescriptorPassing) {
+        arg = QDBusArgument();
+        arg << QDBusUnixFileDescriptor(0);
+        QTest::newRow("filedescriptor") << qVariantFromValue(arg) << "h" << int(QDBusArgument::BasicType);
+    }
 
     arg = QDBusArgument();
     arg << QDBusVariant(1);
@@ -920,6 +944,27 @@ void tst_QDBusMarshall::sendCallErrors_data()
             << "Marshalling failed: Unregistered type UnregisteredType passed in arguments"
             << QString("QDBusMarshaller: type `UnregisteredType' (%1) is not registered with D-BUS. Use qDBusRegisterMetaType to register it")
             .arg(qMetaTypeId<UnregisteredType>());
+
+    QTest::newRow("invalid-object-path-arg") << serviceName << objectPath << interfaceName << "ping"
+            << (QVariantList() << qVariantFromValue(QDBusObjectPath()))
+            << "org.freedesktop.DBus.Error.Failed"
+            << "Marshalling failed: Invalid object path passed in arguments"
+            << "";
+
+    QTest::newRow("invalid-signature-arg") << serviceName << objectPath << interfaceName << "ping"
+            << (QVariantList() << qVariantFromValue(QDBusSignature()))
+            << "org.freedesktop.DBus.Error.Failed"
+            << "Marshalling failed: Invalid signature passed in arguments"
+            << "";
+
+    // invalid file descriptor
+    if (fileDescriptorPassing) {
+        QTest::newRow("invalid-file-descriptor") << serviceName << objectPath << interfaceName << "ping"
+                << (QVariantList() << qVariantFromValue(QDBusUnixFileDescriptor(-1)))
+                << "org.freedesktop.DBus.Error.Failed"
+                << "Marshalling failed: Invalid file descriptor passed in arguments"
+                << "";
+    }
 }
 
 void tst_QDBusMarshall::sendCallErrors()
