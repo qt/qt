@@ -57,7 +57,7 @@ class QtDataBase;
 class QScriptEngineAgentPrivate;
 
 class QScriptEnginePrivate
-    : public QScriptSharedData
+    : public QObjectPrivate
 {
     class Exception
     {
@@ -87,7 +87,7 @@ public:
     static QScriptEnginePrivate* get(QScriptEngine* q) { Q_ASSERT(q); return q->d_func(); }
     static QScriptEngine* get(QScriptEnginePrivate* d) { Q_ASSERT(d); return d->q_func(); }
 
-    QScriptEnginePrivate(QScriptEngine*, QScriptEngine::ContextOwnership ownership = QScriptEngine::CreateNewContext);
+    QScriptEnginePrivate(QScriptEngine::ContextOwnership ownership = QScriptEngine::CreateNewContext);
     ~QScriptEnginePrivate();
 
     inline QScriptPassPointer<QScriptValuePrivate> evaluate(const QString &program, const QString &fileName = QString(), int lineNumber = 1);
@@ -175,7 +175,7 @@ public:
     void installTranslatorFunctions(QScriptValuePrivate* object);
     void installTranslatorFunctions(v8::Handle<v8::Value> object);
 
-    QScriptValue scriptValueFromInternal(v8::Handle<v8::Value>);
+    QScriptValue scriptValueFromInternal(v8::Handle<v8::Value>) const;
 
     inline operator v8::Handle<v8::Context>();
     inline void clearExceptions();
@@ -202,7 +202,7 @@ public:
     v8::Handle<v8::Object> defaultPrototype(const char* metaTypeName);
 
     inline QScriptContextPrivate *setCurrentQSContext(QScriptContextPrivate *ctx);
-    inline QScriptContextPrivate *currentContext() { return m_currentQsContext; }
+    inline QScriptContextPrivate *currentContext() const { return m_currentQsContext; }
     QScriptContextPrivate *pushContext();
     void popContext();
     void emitSignalHandlerException();
@@ -271,7 +271,6 @@ private:
     v8::Handle<v8::FunctionTemplate> metaObjectTemplate();
     v8::Handle<v8::FunctionTemplate> variantTemplate();
 
-    QScriptEngine* q_ptr;
     v8::Isolate *m_isolate;
     v8::Persistent<v8::Context> m_v8Context;
     Exception m_exception;

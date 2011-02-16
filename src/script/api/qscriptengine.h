@@ -216,8 +216,6 @@ private:
     friend inline bool qscriptvalue_cast_helper(const QScriptValue &, int, void *);
 
 private:
-    // FIXME check if it is BC and if we can reuse QObject::d_ptr
-    QScriptSharedDataPointer<QScriptEnginePrivate> d_ptr;
     Q_DECLARE_PRIVATE(QScriptEngine)
     Q_DISABLE_COPY(QScriptEngine)
 };

@@ -504,11 +504,11 @@ bool QScriptEnginePrivate::metaTypeFromJS(v8::Handle<v8::Value> value, int type,
     }
     // lazy registration of some common list types
     else if (type == qMetaTypeId<QObjectList>()) {
-        qScriptRegisterSequenceMetaType<QObjectList>(q_ptr);
+        qScriptRegisterSequenceMetaType<QObjectList>(q_func());
         return metaTypeFromJS(value, type, data);
     }
     else if (type == qMetaTypeId<QList<int> >()) {
-        qScriptRegisterSequenceMetaType<QList<int> >(q_ptr);
+        qScriptRegisterSequenceMetaType<QList<int> >(q_func());
         return metaTypeFromJS(value, type, data);
     }
 
@@ -663,9 +663,8 @@ static inline v8::Isolate *createEnterIsolate()
     return isolate;
 }
 
-QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine::ContextOwnership ownership)
-    : q_ptr(engine)
-    , m_isolate(createEnterIsolate())
+QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine::ContextOwnership ownership)
+    : m_isolate(createEnterIsolate())
     , m_v8Context(ownership == QScriptEngine::AdoptCurrentContext ?
             v8::Persistent<v8::Context>::New(v8::Context::GetCurrent()) : v8::Context::New())
     , m_originalGlobalObject(this, m_v8Context)
@@ -942,9 +941,9 @@ v8::Handle<v8::Value> QScriptEnginePrivate::makeQtObject(QObject *object,
     return handleScope.Close(instance);
 }
 
-QScriptValue QScriptEnginePrivate::scriptValueFromInternal(v8::Handle<v8::Value> value)
+QScriptValue QScriptEnginePrivate::scriptValueFromInternal(v8::Handle<v8::Value> value) const 
 {
-    return QScriptValuePrivate::get(new QScriptValuePrivate(this, value));
+    return QScriptValuePrivate::get(new QScriptValuePrivate(const_cast<QScriptEnginePrivate *>(this), value));
 }
 
 /*!
@@ -954,7 +953,7 @@ QScriptValue QScriptEnginePrivate::scriptValueFromInternal(v8::Handle<v8::Value>
     \l{ECMA-262}, Section 15.1.
 */
 QScriptEngine::QScriptEngine()
-    : d_ptr(new QScriptEnginePrivate(const_cast<QScriptEngine*>(this)))
+    : QObject(*new QScriptEnginePrivate)
 {
 }
 
@@ -962,7 +961,7 @@ QScriptEngine::QScriptEngine()
     \internal
 */
 QScriptEngine::QScriptEngine(QScriptEngine::ContextOwnership ownership)
-    : d_ptr(new QScriptEnginePrivate(const_cast<QScriptEngine*>(this), ownership))
+    : QObject(*new QScriptEnginePrivate(ownership))
 {
 }
 
@@ -974,8 +973,7 @@ QScriptEngine::QScriptEngine(QScriptEngine::ContextOwnership ownership)
 */
 
 QScriptEngine::QScriptEngine(QObject *parent)
-    : QObject(parent)
-    , d_ptr(new QScriptEnginePrivate(const_cast<QScriptEngine*>(this)))
+    : QObject(*new QScriptEnginePrivate, parent)
 {
 }
 
@@ -1073,7 +1071,7 @@ bool QScriptEngine::canEvaluate(const QString &program) const
 bool QScriptEngine::hasUncaughtException() const
 {
     Q_D(const QScriptEngine);
-    QScriptIsolate api(d_ptr);
+    QScriptIsolate api(d);
     return d->hasUncaughtException();
 }
 
@@ -1091,7 +1089,7 @@ bool QScriptEngine::hasUncaughtException() const
 QScriptValue QScriptEngine::uncaughtException() const
 {
     Q_D(const QScriptEngine);
-    QScriptIsolate api(d_ptr);
+    QScriptIsolate api(d);
     return QScriptValuePrivate::get(d->uncaughtException());
 }
 
@@ -1125,7 +1123,7 @@ void QScriptEngine::clearExceptions()
 int QScriptEngine::uncaughtExceptionLineNumber() const
 {
     Q_D(const QScriptEngine);
-    QScriptIsolate api(d_ptr, QScriptIsolate::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     return d->uncaughtExceptionLineNumber();
 }
@@ -1140,7 +1138,7 @@ int QScriptEngine::uncaughtExceptionLineNumber() const
 QStringList QScriptEngine::uncaughtExceptionBacktrace() const
 {
     Q_D(const QScriptEngine);
-    QScriptIsolate api(d_ptr, QScriptIsolate::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     return d->uncaughtExceptionBacktrace();
 }
 
@@ -1518,9 +1516,9 @@ QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
 QScriptValue QScriptEngine::globalObject() const
 {
     Q_D(const QScriptEngine);
-    QScriptIsolate api(d_ptr, QScriptIsolate::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
-    return QScriptValuePrivate::get(new QScriptValuePrivate(d_ptr.data(), d->globalObject()));
+    return d->scriptValueFromInternal(d->globalObject());
 }
 
 void QScriptEnginePrivate::setGlobalObject(QScriptValuePrivate* newGlobalObjectValue)
@@ -1567,8 +1565,9 @@ void QScriptEngine::setGlobalObject(const QScriptValue &object)
 */
 QScriptValue QScriptEngine::defaultPrototype(int metaTypeId) const
 {
-    QScriptIsolate api(d_ptr, QScriptIsolate::NotNullEngine);
-    return QScriptValuePrivate::get(d_ptr->defaultPrototype(metaTypeId));
+    Q_D(const QScriptEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
+    return QScriptValuePrivate::get(const_cast<QScriptEnginePrivate *>(d)->defaultPrototype(metaTypeId));
 }
 
 /*!
@@ -1729,7 +1728,7 @@ QScriptValue QScriptEngine::newDate(const QDateTime &dt)
     Q_D(QScriptEngine);
     QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
-    return d->scriptValueFromInternal(v8::Handle<v8::Value>(d_ptr->qtDateTimeToJS(dt)));
+    return d->scriptValueFromInternal(v8::Handle<v8::Value>(d->qtDateTimeToJS(dt)));
 }
 
 /*!
@@ -1847,13 +1846,14 @@ QScriptValue QScriptEngine::newActivationObject()
 */
 QScriptValue QScriptEngine::objectById(qint64 id) const
 {
+    Q_D(const QScriptEngine);
     if(id == -1)
         return QScriptValue();
     quintptr ptr = id;
     quintptr *ptrptr = &ptr;
-    QScriptIsolate api(d_ptr);
+    QScriptIsolate api(d);
     v8::HandleScope handleScope;
-    return const_cast<QScriptEnginePrivate *>(d_ptr.data())->scriptValueFromInternal(v8::Handle<v8::Value>(*reinterpret_cast<v8::Value **>(&ptrptr)));
+    return const_cast<QScriptEnginePrivate *>(d)->scriptValueFromInternal(v8::Handle<v8::Value>(*reinterpret_cast<v8::Value **>(&ptrptr)));
 }
 
 /*!
@@ -1954,7 +1954,8 @@ void QScriptEnginePrivate::registerCustomType(int type, QScriptEngine::MarshalFu
 
 QScriptContext *QScriptEngine::currentContext() const
 {
-    return d_ptr->currentContext();
+    Q_D(const QScriptEngine);
+    return d->currentContext();
 }
 
 QScriptContext *QScriptEngine::pushContext()
@@ -2457,7 +2458,7 @@ void QScriptEngine::setAgent(QScriptEngineAgent *agent)
 QScriptEngineAgent *QScriptEngine::agent() const
 {
     Q_D(const QScriptEngine);
-    QScriptIsolate api(d_ptr, QScriptIsolate::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     QScriptEngineAgentPrivate *agent = d->agent();
     return agent ? QScriptEngineAgentPrivate::get(agent) : 0;
 }

@@ -43,14 +43,8 @@ public:
     // know that given pointer is not null than we should pass NotNullEngine as constructor argument
     // that would nicely remove checking on compilation time.
     enum OperationMode {Default, NotNullEngine};
-    inline QScriptIsolate(QScriptEnginePrivate* engine, const OperationMode mode = Default)
+    inline QScriptIsolate(const QScriptEnginePrivate *engine, const OperationMode mode = Default)
         : m_engine(engine)
-        , m_mode(mode)
-    {
-        init();
-    }
-    inline QScriptIsolate(const QScriptSharedDataPointer<QScriptEnginePrivate>& engine, const OperationMode mode = Default)
-        : m_engine(engine.data())
         , m_mode(mode)
     {
         init();
