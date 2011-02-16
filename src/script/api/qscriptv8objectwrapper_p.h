@@ -56,7 +56,7 @@ T *getDataPointer(v8::Handle<v8::Object> self)
 template <typename T>
 T *getDataPointer(const v8::AccessorInfo &info)
 {
-    return getDataPointer<T>(info.This());
+    return getDataPointer<T>(info.Holder());
 }
 
 template <typename T>

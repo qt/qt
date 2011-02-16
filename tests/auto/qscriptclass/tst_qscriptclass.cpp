@@ -1463,7 +1463,6 @@ void tst_QScriptClass::defaultImplementations()
 
 void tst_QScriptClass::scriptClassObjectInPrototype()
 {
-    QSKIP("Asserts on V8 back-end", SkipAll);
     QScriptEngine eng;
     TestClass cls(&eng);
     QScriptValue plainObject = eng.newObject();
