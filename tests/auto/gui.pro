@@ -82,11 +82,6 @@ SUBDIRS=\
     qgroupbox \
     qguivariant \
     qheaderview \
-    qhelpcontentmodel \
-    qhelpenginecore \
-    qhelpgenerator \
-    qhelpindexmodel \
-    qhelpprojectdata \
     qicoimageformat \
     qicon \
     qimageiohandler \
@@ -224,10 +219,5 @@ win32:SUBDIRS -= qtextpiecetable
            qtextpiecetable \
 
 symbian:SUBDIRS -= \
-    qhelpcontentmodel \
-    qhelpenginecore \
-    qhelpgenerator \
-    qhelpindexmodel \
-    qhelpprojectdata \
     qsystemtrayicon \
 

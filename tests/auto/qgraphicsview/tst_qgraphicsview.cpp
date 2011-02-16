@@ -4146,11 +4146,14 @@ void tst_QGraphicsView::inputContextReset()
 
     inputContext.resets = 0;
     scene.setFocusItem(0);
-    QCOMPARE(inputContext.resets, 1);
+    // the input context is reset twice, once because an item has lost focus and again because
+    // the Qt::WA_InputMethodEnabled flag is cleared because no item has focus.
+    QCOMPARE(inputContext.resets, 2);
 
     // introduce another item that is focusable but does not accept input methods
     QGraphicsItem *item2 = new QGraphicsRectItem;
-    item1->setFlags(QGraphicsItem::ItemIsFocusable);
+    item2->setFlags(QGraphicsItem::ItemIsFocusable);
+    scene.addItem(item2);
 
     inputContext.resets = 0;
     scene.setFocusItem(item2);
@@ -4159,6 +4162,11 @@ void tst_QGraphicsView::inputContextReset()
     inputContext.resets = 0;
     scene.setFocusItem(item1);
     QCOMPARE(inputContext.resets, 0);
+
+    // test changing between between items that accept input methods.
+    item2->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemAcceptsInputMethod);
+    scene.setFocusItem(item2);
+    QCOMPARE(inputContext.resets, 1);
 }
 
 void tst_QGraphicsView::indirectPainting()

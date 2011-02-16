@@ -372,11 +372,13 @@ void QDeclarativeTextEdit::setFont(const QFont &font)
     The text color.
 
     \qml
-// green text using hexadecimal notation
-TextEdit { color: "#00FF00"; ...  }
+    // green text using hexadecimal notation
+    TextEdit { color: "#00FF00" }
+    \endqml
 
-// steelblue text using SVG color name
-TextEdit { color: "steelblue"; ...  }
+    \qml
+    // steelblue text using SVG color name
+    TextEdit { color: "steelblue" }
     \endqml
 */
 QColor QDeclarativeTextEdit::color() const
@@ -974,6 +976,7 @@ void QDeclarativeTextEdit::setSelectByMouse(bool on)
     Q_D(QDeclarativeTextEdit);
     if (d->selectByMouse != on) {
         d->selectByMouse = on;
+        setKeepMouseGrab(on);
         emit selectByMouseChanged(on);
     }
 }

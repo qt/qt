@@ -41,7 +41,7 @@ included in the declarative \c demos directory, which looks like this:
 \image declarative-samegame.png
 
 We will cover concepts for producing a fully functioning application, including
-JavaScript integration, using QML  \l States and \l {Behavior}{Behaviors} to 
+JavaScript integration, using QML  \l{State}{States} and \l{Behavior}{Behaviors} to 
 manage components and enhance your interface, and storing persistent application data.
 
 An understanding of JavaScript is helpful to understand parts of this tutorial, but if you don't
@@ -462,5 +462,4 @@ By following this tutorial you've seen how you can write a fully functional appl
 
 There is so much more to learn about QML that we haven't been able to cover in this tutorial. Check out all the
 demos and examples and the \l {Qt Quick}{documentation} to see all the things you can do with QML!
-
 */

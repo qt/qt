@@ -118,6 +118,7 @@ public:
     QDeclarativeTextInput::SelectionMode mouseSelectionMode;
     QPointer<QDeclarativeComponent> cursorComponent;
     QPointer<QDeclarativeItem> cursorItem;
+    QPointF pressPos;
 
     int lastSelectionStart;
     int lastSelectionEnd;

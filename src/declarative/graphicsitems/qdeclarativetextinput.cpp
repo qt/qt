@@ -550,10 +550,10 @@ void QDeclarativeTextInput::select(int start, int end)
     It is equivalent to the following snippet, but is faster and easier
     to use.
 
-    \qml
+    \js
     myTextInput.text.toString().substring(myTextInput.selectionStart,
         myTextInput.selectionEnd);
-    \endqml
+    \endjs
 */
 QString QDeclarativeTextInput::selectedText() const
 {
@@ -980,6 +980,7 @@ void QDeclarativeTextInput::inputMethodEvent(QInputMethodEvent *ev)
     } else {
         d->control->processInputMethodEvent(ev);
         updateSize();
+        d->updateHorizontalScroll();
     }
     if (!ev->isAccepted())
         QDeclarativePaintedItem::inputMethodEvent(ev);
@@ -1018,6 +1019,10 @@ void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
             }
         }
     }
+    if (d->selectByMouse) {
+        setKeepMouseGrab(false);
+        d->pressPos = event->pos();
+    }
     bool mark = event->modifiers() & Qt::ShiftModifier;
     int cursor = d->xToPos(event->pos().x());
     d->control->moveCursor(cursor, mark);
@@ -1028,6 +1033,8 @@ void QDeclarativeTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
     if (d->selectByMouse) {
+        if (qAbs(int(event->pos().x() - d->pressPos.x())) > QApplication::startDragDistance())
+            setKeepMouseGrab(true);
         moveCursorSelection(d->xToPos(event->pos().x()), d->mouseSelectionMode);
         event->setAccepted(true);
     } else {
@@ -1042,6 +1049,8 @@ Handles the given mouse \a event.
 void QDeclarativeTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
+    if (d->selectByMouse)
+        setKeepMouseGrab(false);
     if (!d->showInputPanelOnFocus) { // input panel on click
         if (d->focusOnPress && !isReadOnly() && boundingRect().contains(event->pos())) {
             if (QGraphicsView * view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
@@ -1055,6 +1064,15 @@ void QDeclarativeTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     d->control->processEvent(event);
     if (!event->isAccepted())
         QDeclarativePaintedItem::mouseReleaseEvent(event);
+}
+
+bool QDeclarativeTextInput::sceneEvent(QEvent *event)
+{
+    bool rv = QDeclarativeItem::sceneEvent(event);
+    if (event->type() == QEvent::UngrabMouse) {
+        setKeepMouseGrab(false);
+    }
+    return rv;
 }
 
 bool QDeclarativeTextInput::event(QEvent* ev)
@@ -1098,7 +1116,8 @@ int QDeclarativeTextInputPrivate::calculateTextWidth()
 void QDeclarativeTextInputPrivate::updateHorizontalScroll()
 {
     Q_Q(QDeclarativeTextInput);
-    int cix = qRound(control->cursorToX());
+    const int preeditLength = control->preeditAreaText().length();
+    int cix = qRound(control->cursorToX(control->cursor() + preeditLength));
     QRect br(q->boundingRect().toRect());
     int widthUsed = calculateTextWidth();
     Qt::Alignment va = QStyle::visualAlignment(control->layoutDirection(), QFlag(Qt::Alignment(hAlign)));
@@ -1127,6 +1146,14 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
             // text doesn't fit, text document is to the left of br; align
             // right
             hscroll = widthUsed - br.width() + 1;
+        }
+        if (preeditLength > 0) {
+            // check to ensure long pre-edit text doesn't push the cursor
+            // off to the left
+             cix = qRound(control->cursorToX(
+                     control->cursor() + qMax(0, control->preeditCursor() - 1)));
+             if (cix < hscroll)
+                 hscroll = cix;
         }
     } else {
         switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {

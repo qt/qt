@@ -92,13 +92,8 @@
 
     \section1 HarfBuzz (\c harfbuzz)
 
-    \e{This is HarfBuzz, an OpenType Layout engine.}
-
-    \e{It was derived originally from the OpenType code in FreeType-1.x, ported to
-    FreeType2.  (This code has been abandoned for FreeType2, but until something
-    better comes along, should serve our purposes.) In addition to porting to
-    FreeType-2, it has been modified in various other ways.} -- quoted from
-    \c src/3rdparty/harfbuzz/README.
+    \e{This is HarfBuzz, an OpenType Layout engine library.}
+    -- quoted from \c src/3rdparty/harfbuzz/README.
 
     \hr
 
@@ -129,8 +124,7 @@
 
     \hr
 
-    See \c src/3rdparty/harfbuzz/COPYING.FTL and src/3rdparty/harfbuzz/COPYING.GPL
-    for license details.
+    See \c src/3rdparty/harfbuzz/COPYING for license details.
 
     \section1 The Independent JPEG Group's JPEG Software (\c libjpeg) version 8
 

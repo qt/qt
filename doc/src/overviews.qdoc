@@ -42,7 +42,7 @@
     Qt is a cross-platform application and UI framework for writing
     web-enabled applications for desktop, mobile, and embedded
     operating systems. This page contains links to articles and overviews
-	explaining key components and techniuqes used in Qt development.
+	explaining key components and techniques used in Qt development.
 	
     \generatelist {related}
  */
@@ -51,7 +51,7 @@
     \group qt-gui-concepts
     \title UI Design with Qt
 
-    \brief The Qt components for constructing native look & feel desktop UI's.
+    \brief The Qt components for constructing native look and feel desktop UI's.
 
     These pages are about Qt's traditional set of GUI components for
     building both native look & feel and custom UI's for the desktop
@@ -122,9 +122,9 @@
 
 /*!
     \group best-practices
-    \title Best Practices Guides
+    \title Best Practice Guides
 
-    \brief How-To Guides and Best Practices
+    \brief How-To and Best Practice Guides
 
     These documents provide guidelines and best practices for using Qt
     to solve specific technical problems. They are listed

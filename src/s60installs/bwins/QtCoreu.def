@@ -4603,4 +4603,6 @@ EXPORTS
 	??XQPoint@@QAEAAV0@N@Z @ 4602 NONAME ; class QPoint & QPoint::operator*=(double)
 	??XQPoint@@QAEAAV0@H@Z @ 4603 NONAME ; class QPoint & QPoint::operator*=(int)
 	?hasError@QXmlStreamWriter@@QBE_NXZ @ 4604 NONAME ; bool QXmlStreamWriter::hasError(void) const
+	?revision@QMetaProperty@@QBEHXZ @ 4605 NONAME ; int QMetaProperty::revision(void) const
+	?revision@QMetaMethod@@QBEHXZ @ 4606 NONAME ; int QMetaMethod::revision(void) const
 
