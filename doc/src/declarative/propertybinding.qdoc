@@ -204,8 +204,8 @@ The snippet code simply prints the name of the first state, \c FETCH.
  See the \l{list}{list type} documentation
 for more details about list properties and their available operations.
 
+\keyword qml-grouped-properties
 \section2 Grouped Properties
-\target dot properties
 
 In some cases properties form a logical group and use either the \e dot notation
 or \e group notation.
