@@ -42,6 +42,7 @@
 #include <QtTest/QtTest>
 #include <QtDBus/QtDBus>
 #include <QtDBus/private/qdbusutil_p.h>
+#include <QtDBus/private/qdbusconnection_p.h>
 
 #include "common.h"
 #include <limits>
@@ -167,6 +168,9 @@ void tst_QDBusMarshall::sendBasic_data()
     QTest::newRow("signature") << qVariantFromValue(QDBusSignature("g")) << "g" << "[Signature: g]";
     QTest::newRow("emptystring") << QVariant("") << "s" << "\"\"";
     QTest::newRow("nullstring") << QVariant(QString()) << "s" << "\"\"";
+
+    if (QDBusConnection::sessionBus().connectionCapabilities() & QDBusConnection::UnixFileDescriptorPassing)
+        QTest::newRow("file-descriptor") << qVariantFromValue(QDBusUnixFileDescriptor(0)) << "h" << "[Unix FD: valid]";
 #endif
 }
 
@@ -967,6 +971,21 @@ typedef QScopedPointer<DBusConnection, DisconnectRawDBus> ScopedDBusConnection;
 typedef QScopedPointer<DBusMessage, GenericUnref<DBusMessage, dbus_message_unref> > ScopedDBusMessage;
 typedef QScopedPointer<DBusPendingCall, GenericUnref<DBusPendingCall, dbus_pending_call_unref> > ScopedDBusPendingCall;
 
+template <typename T> struct SetResetValue
+{
+    const T oldValue;
+    T &value;
+public:
+    SetResetValue(T &v, T newValue) : oldValue(v), value(v)
+    {
+        value = newValue;
+    }
+    ~SetResetValue()
+    {
+        value = oldValue;
+    }
+};
+
 void tst_QDBusMarshall::receiveUnknownType()
 {
 #ifndef DBUS_TYPE_UNIX_FD
@@ -985,6 +1004,10 @@ void tst_QDBusMarshall::receiveUnknownType()
     // check if this bus supports passing file descriptors
     if (!dbus_connection_can_send_type(rawcon.data(), DBUS_TYPE_UNIX_FD))
         QSKIP("Your session bus does not allow sending Unix file descriptors", SkipAll);
+
+    // make sure this QDBusConnection won't handle Unix file descriptors
+    QDBusConnection::ConnectionCapabilities &capabRef = QDBusConnectionPrivate::d(con)->capabilities;
+    SetResetValue<QDBusConnection::ConnectionCapabilities> resetter(capabRef, capabRef & ~QDBusConnection::UnixFileDescriptorPassing);
 
     if (qstrcmp(QTest::currentDataTag(), "in-call") == 0) {
         // create a call back to us containing a file descriptor

@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qdbusargument_p.h"
+#include "qdbusconnection.h"
 #include "qdbusmetatype_p.h"
 #include "qdbusutil_p.h"
 
@@ -136,6 +137,16 @@ inline void QDBusMarshaller::append(const QDBusSignature &arg)
         error(QLatin1String("Invalid signature passed in arguments"));
     const char *cdata = data.constData();
     qIterAppend(&iterator, ba, DBUS_TYPE_SIGNATURE, &cdata);
+}
+
+inline void QDBusMarshaller::append(const QDBusUnixFileDescriptor &arg)
+{
+    int fd = arg.fileDescriptor();
+    if (!ba && fd == -1) {
+        error(QLatin1String("Invalid file descriptor passed in arguments"));
+    } else {
+        qIterAppend(&iterator, ba, DBUS_TYPE_UNIX_FD, &fd);
+    }
 }
 
 inline void QDBusMarshaller::append(const QByteArray &arg)
@@ -474,6 +485,13 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
         qFatal("QDBusMarshaller::appendVariantInternal got a DICT_ENTRY!");
         return false;
 
+    case DBUS_TYPE_UNIX_FD:
+        if (capabilities & QDBusConnection::UnixFileDescriptorPassing || ba) {
+            append(qvariant_cast<QDBusUnixFileDescriptor>(arg));
+            return true;
+        }
+        // fall through
+
     default:
         qWarning("QDBusMarshaller::appendVariantInternal: Found unknown D-BUS type '%s'",
                  signature);
@@ -507,7 +525,7 @@ bool QDBusMarshaller::appendCrossMarshalling(QDBusDemarshaller *demarshaller)
 
     if (code == DBUS_TYPE_ARRAY) {
         int element = q_dbus_message_iter_get_element_type(&demarshaller->iterator);
-        if (q_dbus_type_is_fixed(element)) {
+        if (q_dbus_type_is_fixed(element) && element != DBUS_TYPE_UNIX_FD) {
             // another optimization: fixed size arrays
             // code is exactly like QDBusDemarshaller::toByteArray
             DBusMessageIter sub;

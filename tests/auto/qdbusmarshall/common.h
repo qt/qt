@@ -377,6 +377,14 @@ bool compare(const QHash<Key, T> &m1, const QHash<Key, T> &m2)
     return true;
 }
 
+bool compare(const QDBusUnixFileDescriptor &t1, const QDBusUnixFileDescriptor &t2)
+{
+    int fd1 = t1.fileDescriptor();
+    int fd2 = t2.fileDescriptor();
+
+    return (fd1 == -1) == (fd2 == -1);
+}
+
 template<typename T>
 inline bool compare(const QDBusArgument &arg, const QVariant &v2, T * = 0)
 {
@@ -562,6 +570,9 @@ template<> bool compare(const QVariant &v1, const QVariant &v2)
 
     else if (id == qMetaTypeId<QDBusSignature>())
         return qvariant_cast<QDBusSignature>(v1).signature() == qvariant_cast<QDBusSignature>(v2).signature();
+
+    else if (id == qMetaTypeId<QDBusUnixFileDescriptor>())
+        return compare(qvariant_cast<QDBusUnixFileDescriptor>(v1), qvariant_cast<QDBusUnixFileDescriptor>(v2));
 
     else if (id == qMetaTypeId<QDBusVariant>())
         return compare(qvariant_cast<QDBusVariant>(v1).variant(), qvariant_cast<QDBusVariant>(v2).variant());

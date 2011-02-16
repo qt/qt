@@ -147,6 +147,7 @@ void QDBusMetaTypeId::init()
         qDBusRegisterMetaType<QList<double> >();
         qDBusRegisterMetaType<QList<QDBusObjectPath> >();
         qDBusRegisterMetaType<QList<QDBusSignature> >();
+        qDBusRegisterMetaType<QList<QDBusUnixFileDescriptor> >();
 #endif
 
         initialized = true;
