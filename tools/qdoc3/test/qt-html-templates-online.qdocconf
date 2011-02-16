@@ -40,8 +40,7 @@ HTML.postheader = \
     "                        <li><a href=\"qt-basic-concepts.html\">Programming with Qt</a></li>  \n" \
     "                        <li><a href=\"qtquick.html\">Device UIs &amp; Qt Quick</a></li>  \n" \
     "                        <li><a href=\"qt-gui-concepts.html\">UI Design with Qt</a></li>  \n" \
-    "                        <li><a href=\"developing-with-qt.html\">Cross-platform and Platform-specific</a></li>  \n" \
-    "                        <li><a href=\"platform-specific.html\">Platform-specific info</a></li>  \n" \
+    "                        <li><a href=\"supported-platforms.html\">Supported Platforms</a></li>  \n" \
     "                        <li><a href=\"technology-apis.html\">Qt and Key Technologies</a></li>  \n" \
     "                        <li><a href=\"best-practices.html\">How-To's and Best Practices</a></li>  \n" \
     "              </ul> \n" \
@@ -101,8 +100,7 @@ HTML.postheader = \
     "               <li class=\"defaultLink\"><a href=\"qt-basic-concepts.html\">Programming with Qt</a></li> \n" \
     "               <li class=\"defaultLink\"><a href=\"qtquick.html\">Device UIs &amp; Qt Quick</a></li> \n" \
     "               <li class=\"defaultLink\"><a href=\"qt-gui-concepts.html\">UI Design with Qt</a></li> \n" \
-    "               <li class=\"defaultLink\"><a href=\"developing-with-qt.html\">Cross-platform and Platform-specific</a></li> \n" \
-    "               <li class=\"defaultLink\"><a href=\"platform-specific.html\">Platform-specific info</a></li> \n" \
+    "               <li class=\"defaultLink\"><a href=\"supported-platforms.html\">Supported Platforms</a></li>  \n" \
     "               <li class=\"defaultLink\"><a href=\"technology-apis.html\">Qt and Key Technologies</a></li> \n" \
     "               <li class=\"defaultLink\"><a href=\"best-practices.html\">How-To's and Best Practices</a></li> \n" \
     "            </ul>  \n" \

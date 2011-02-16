@@ -1141,7 +1141,7 @@ We hope you will enjoy using Qt.
     \brief Setting up the Windows CE environment for Qt.
     \previouspage General Qt Requirements
 
-    Qt is known to work with Visual Studio 2005/2008 and the following SDKs for
+    Qt is known to work with Visual Studio 2005/2008/2010 and the following SDKs for
     Windows CE development on Windows XP and Windows Vista:
 
     \list
@@ -1179,14 +1179,37 @@ We hope you will enjoy using Qt.
             \endlist
     \endtable
 
-
     Device manufacturers may prefer to make their own customized version of
     Windows CE using Platform Builder. In order for Qt for Windows CE to
     support a custom SDK, a build specification needs to be created. More
     information on Windows CE Customization can be found
     \l{Windows CE - Working with Custom SDKs}{here}.
 
-    \sa {Known Issues}
+	\section3 Requirements
+	\list
+		\o Development environment: 
+		\list
+			\o Microsoft® Visual Studio® 2005 (Standard Edition) or higher
+			\o ActivePerl
+		\endlist
+		\o Footprint
+		\list
+			\o Lean configuration - 4.8 MB
+			\o Full configuration - 8.4 MB
+		\endlist
+		\o Operating Systems
+		\list
+			\o Windows CE 5 or higher
+			\o Windows Mobile 5 or higher
+		\endlist
+		\o Hardware Platform
+		\list
+			\o Supported on ARM®, x86®
+			\o (Compiles on SH4® and MIPS®)
+		\endlist
+	\endlist
+
+		\sa {Known Issues}
 */
 
 /*!
@@ -1419,7 +1442,7 @@ We hope you will enjoy using Qt.
 		succeeds, the feature is included.
 		\row   \o \c {-qt-libmng} \o Use the libmng bundled with Qt. \o
 		\row   \o \c {-system-libmng} \o Use libmng from the operating system.
-		\o See See http://www.libmng.com
+		\o See http://www.libmng.com
 		\row   \o \c {-no-libtiff} \o Do not compile TIFF support. \o This option
 		denotes a default value and needs to be evaluated. If the evaluation
 		succeeds, the feature is included.
