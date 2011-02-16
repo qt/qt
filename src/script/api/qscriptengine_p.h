@@ -247,6 +247,7 @@ public:
     public:
         struct TypeInfo
         {
+            TypeInfo() : marshal(0), demarshal(0) { }
             QScriptEngine::MarshalFunction marshal;
             QScriptEngine::DemarshalFunction demarshal;
             // This is a persistent and it should be deleted in ~TypeInfos
