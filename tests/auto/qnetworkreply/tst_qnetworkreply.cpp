@@ -340,7 +340,9 @@ private Q_SLOTS:
 
     void synchronousRequest_data();
     void synchronousRequest();
+#ifndef QT_NO_OPENSSL
     void synchronousRequestSslFailure();
+#endif
 
     void httpAbort();
 
@@ -961,7 +963,9 @@ tst_QNetworkReply::tst_QNetworkReply()
     qRegisterMetaType<QNetworkReply *>(); // for QSignalSpy
     qRegisterMetaType<QAuthenticator *>();
     qRegisterMetaType<QNetworkProxy>();
+#ifndef QT_NO_OPENSSL
     qRegisterMetaType<QList<QSslError> >();
+#endif
 
     Q_SET_DEFAULT_IAP
 
@@ -5485,6 +5489,7 @@ void tst_QNetworkReply::synchronousRequest()
     reply->deleteLater();
 }
 
+#ifndef QT_NO_OPENSSL
 void tst_QNetworkReply::synchronousRequestSslFailure()
 {
     // test that SSL won't be accepted with self-signed certificate,
@@ -5503,6 +5508,7 @@ void tst_QNetworkReply::synchronousRequestSslFailure()
     QCOMPARE(reply->error(), QNetworkReply::SslHandshakeFailedError);
     QCOMPARE(sslErrorsSpy.count(), 0);
 }
+#endif
 
 void tst_QNetworkReply::httpAbort()
 {
