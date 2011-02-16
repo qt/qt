@@ -231,8 +231,8 @@
     The text formatting commands indicate how the regular text in the
     documentation is rendered.
 
-    \section1 \\a (parameter marker)
     \target a-command
+    \section1 \\a (parameter marker)
 
     The \\a command indicates that the next word is a formal parameter name.
 
@@ -274,8 +274,8 @@
            necessary. And for the same reason, parentheses seldom
            occur.
 
-    \section1 \\c (code font)
     \target c-command
+    \section1 \\c (code font)
     
     The \\c command is used for rendering variable names, user-defined
            class  names, and C++ keywords, like \c int and \c for in a
@@ -310,9 +310,9 @@
            {tt-command} {teletype (\\tt)} command instead.
 
            See also \l {tt-command} {\\tt} and \l {code-command} {\\code}.
-
-    \section1 \\div \span {class="newStuff"} {(new)}  
+ 
     \target div-command
+    \section1 \\div \span {class="newStuff"} {(new)}  
  
     The \\div command and the corresponding \\enddiv
     command delimit a large or small block of text and qdoc
@@ -483,8 +483,8 @@
            
 	   See also \l {span-command} {\\span}.
 
-    \section1 \\span \span {class="newStuff"} {(new)} 
     \target span -command
+    \section1 \\span \span {class="newStuff"} {(new)} 
     
     The \\span command is for applying special formatting
     attributes to a small block of text.
@@ -536,8 +536,8 @@
 
 	  See also \l {div-command} {\\div}.
            
-    \section1 \\tt 
     \target tt-command
+    \section1 \\tt 
 
     The \\tt command can be used to render variables,
     user-defined classes and C++ keywords like \c int, \c
@@ -576,8 +576,8 @@
 
            See also \l {c-command} {\\c}.
 
-    \section1 \\bold 
     \target bold-command
+    \section1 \\bold 
 
     The \\bold command renders its argument using
     a bold font.
@@ -602,8 +602,8 @@
            command for \l {argument} {punctuation, parentheses and use
            of braces} for the argument.
 
-    \section1 \\i 
     \target i-command
+    \section1 \\i 
     The \\i command renders its argument in italic.
 
            \warning This is preliminary functionality. For
@@ -699,8 +699,8 @@
                </table>
            \endraw
 
-    \section1 \\sub 
     \target sub-command
+    \section1 \\sub 
 
     The \\sub command renders its argument lower
     than the baseline of the regular text, using a smaller font.
@@ -733,8 +733,8 @@
            {i-command} {\\i} command for \l {argument} {punctuation, parentheses
            and use of braces} for the argument.
 
-    \section1 \\sup 
     \target sup-command
+    \section1 \\sup 
 
     The \\sup command renders its argument higher than
     the baseline of the regular text, using a smaller font.
@@ -765,8 +765,8 @@
            {i-command} {\\i} command for \l {argument} {punctuation, parentheses
            and use of braces} for the argument.
 
-    \section1 \\underline
     \target underline-command
+    \section1 \\underline
 
     The \\underline command renders its argument underlined.
 
@@ -792,8 +792,8 @@
            \l {i-command} {\\i} command for \l {argument} {punctuation,
            parentheses and use of braces} for the argument.  
 
-    \section1 \\\\ (double backslash) 
     \target backslash-command
+    \section1 \\\\ (double backslash) 
 
     The \\\\ command expands to a single backslash.
 
@@ -858,8 +858,8 @@
     traditional section, subsection, subsubsection and
     subsubsubsection.
 
-    \section1 \\part 
     \target part-command
+    \section1 \\part 
 
     The \\part command is intended for use in
     larger documents, and divides the document into parts.
@@ -1027,8 +1027,8 @@
 	   righthand corner of the page.
 
 
-    \section1 \\chapter 
     \target chapter-command	
+    \section1 \\chapter 
     
     The \\chapter command is intended for use in
     larger documents, and divides the document into chapters.
@@ -1036,35 +1036,32 @@
     See \l{part} {\\part} for an explanation of the various
     section units, command argument and rendering.
 
-
-    \section1 \\section1 
     \target sectionOne-command
+    \section1 \\section1 
 
     The \\section1 command starts a new section.
 
     See \l{part} {\\part} for an explanation of the various
     section units, command argument and rendering.
 
-    \section1 \\section2 
     \target sectionTwo-command
+    \section1 \\section2 
 
     The \\section2 command starts a new section.
 
     See \l{part} {\\part} for an explanation of the various
     section units, command argument and rendering.
 
-
-    \section1 \\section3 
     \target sectionThree-command
+    \section1 \\section3 
 
     The \\section3 command starts a new section.
 
     See \l{part} {\\part} for an explanation of the various
     section units, command argument and rendering.
 
-
-    \section1 \\section4 
     \target sectionFour-command
+    \section1 \\section4 
 
     The \\section4 command starts a new section.
 
@@ -1095,8 +1092,8 @@
     language bindings to substitute the relevant code snippets in
     place of the C++ ones.
 
-    \section1 \\code 
     \target code-command
+    \section1 \\code 
 
     The \\code command and the corresponding
     \\endcode command delimit a piece of verbatim code.
@@ -1162,8 +1159,8 @@
            {oldcode-command} {\\oldcode}.
 
 
-    \section1 \\badcode 
     \target badcode-command
+    \section1 \\badcode 
 
     The \\badcode command and the corresponding
     \\endcode command delimit a piece of code that doesn't
@@ -1221,8 +1218,8 @@
            {oldcode-command} {\\oldcode}.
 
 
-    \section1 \\newcode 
     \target newcode-command
+    \section1 \\newcode 
 
     The \\newcode command, and the associated \\oldcode
     and \\endcode commands, indicate how to port a piece of
@@ -1271,8 +1268,8 @@
            to be escaped.
 
 
-    \section1 \\oldcode 
     \target oldcode-command
+    \section1 \\oldcode 
 
     The \\oldcode command requires a corresponding
     \\newcode statement; otherwise QDoc fails to parse the command
@@ -1302,8 +1299,8 @@
     for Qt language bindings to substitute the relevant code snippets in
     place of the C++ ones.
 
-    \section1 \\quotefile 
     \target quotefile-command
+    \section1 \\quotefile 
 
     The \\quotefile command expands to the complete
     contents of the file given as argument.
@@ -1347,8 +1344,8 @@
            \l {code-command} {\\code}.
 
 
-    \section1 \\quotefromfile 
     \target quotefromfile-command
+    \section1 \\quotefromfile 
 
     The \\quotefromfile command opens the file
     given as argument for quoting.
@@ -1426,8 +1423,8 @@
            {code-command} {\\code} and \l {dots} {\\dots}.
 
 
-    \section1 \\printline 
     \target printline-command
+    \section1 \\printline 
 
     The \\printline command expands to the line
     from the current position to the next non-blank line of
@@ -1563,8 +1560,8 @@
            {printuntil-command} {\\printuntil}.
 
 
-    \section1 \\printto 
     \target printto-command
+    \section1 \\printto 
 
     The \\printto command expands to all the lines
     from the current position up to and \e excluding the
@@ -1615,8 +1612,8 @@
            {printuntil-command} {\\printuntil}.
 
 
-    \section1 \\printuntil 
     \target printuntil-command
+    \section1 \\printuntil 
 
     The \\printuntil command expands to all the lines
     from the current position up to and \e including the next line
@@ -1672,8 +1669,8 @@
            {printto-command} {\\printto}.
 
 
-    \section1 \\skipline 
     \target skipline-command
+    \section1 \\skipline 
 
     The \\skipline command ignores the next non-blank
     line in the current source file.
@@ -1730,8 +1727,8 @@
            {skipuntil-command} {\\skipuntil} and \l {dots} {\\dots}.
 
 
-    \section1 \\skipto 
     \target skipto-command
+    \section1 \\skipto 
 
     The \\skipto command ignores all the lines from the
     current position up to and \e excluding the next line
@@ -1790,8 +1787,8 @@
            {skipuntil-command} {\\skipuntil} and \l {dots} {\\dots}.
 
 
-    \section1 \\skipuntil 
     \target skipuntil-command
+    \section1 \\skipuntil 
 
     The \\skipuntil command ignores all the lines from
     the current position up to and \e including the next line
@@ -1849,8 +1846,8 @@
            and \l {dots} {\\dots}.
 
 
-    \section1 \\dots 
     \target dots-command
+    \section1 \\dots 
 
     The \\dots command indicates that parts of the
     source file have been omitted when quoting a file.
@@ -1909,8 +1906,8 @@
            {\\skipuntil}.
 
 
-    \section1 \\snippet 
     \target snippet-command
+    \section1 \\snippet 
     
     The \\snippet command causes a code snippet to be included
     verbatim as preformatted text, which may be syntax highlighted.
@@ -1944,8 +1941,8 @@
            \endcode
            \dots
 
-    \section1 \\codeline 
     \target codeline-command
+    \section1 \\codeline 
 
     The \\codeline command inserts a blank line of preformatted
     text. It is used to insert gaps between snippets without closing
@@ -1976,8 +1973,8 @@
     possible to link to targets within a document, as well as to other
     documents and URLs.
 
-    \section1 \\l 
     \target l-command
+    \section1 \\l 
 
     The \\l command is used to create hyperlinks.
 
@@ -2098,8 +2095,8 @@
 	   and \l {keyword-command} {\\keyword}.
 
 
-    \section1 \\sa 
     \target sa-command
+    \section1 \\sa 
 
     The \\sa command defines a list of links that will
     be rendered in a separate "See also" section at the bottom
@@ -2163,8 +2160,8 @@
            {keyword-command} {\\keyword}.
 
 
-    \section1 \\target 
     \target target-command
+    \section1 \\target 
 
     The \\target command defines an explicit point in the
     documentation that you can later link to using the \l {l-command} {\\l}
@@ -2212,8 +2209,8 @@
            {keyword-command} {\\keyword}.
 
 
-    \section1 \\keyword 
     \target keyword-command
+    \section1 \\keyword 
 
     The \\keyword command defines an explicit point in the
     documentation that you can later link to using the \l {l-command} {\\l}
@@ -2284,8 +2281,8 @@
     documentation. The images can be rendered as separate paragraphs,
     or within running text.
 
-    \section1 \\image 
     \target image-command
+    \section1 \\image 
 
     The \\image command expands to the image specified by its
     argument, and renders it centered as a separate paragraph.
@@ -2339,8 +2336,8 @@
            {caption-command} {\\caption}.
 
 
-    \section1 \\inlineimage 
     \target inlineimage-command
+    \section1 \\inlineimage 
 
     The \\inlineimage command expands to the image
     specified by its argument; the image is rendered inline
@@ -2449,8 +2446,8 @@
            See also \l {image-command} {\\image} and \l {caption-command} {\\caption}.
 
 
-    \section1 \\caption 
     \target caption-command
+    \section1 \\caption 
 
     The \\caption command provides a caption for an image.
 
@@ -2479,8 +2476,8 @@
     paragraph. A table is rendered centered as a separate paragraph,
     and its width depends on its content.
 
-    \section1 \\table 
     \target table-command
+    \section1 \\table 
 
     The \\table command and the corresponding \\endtable
     command delimit the contents of a table.
@@ -2625,8 +2622,8 @@
            See also \l {header-command} {\\header}, \l {row-command} {\\row} and \l {o-command} {\\o}.
 
 
-    \section1 \\header 
     \target header-command
+    \section1 \\header 
 
     The \\header command indicates that the following
     table cells are the current table's column headers.
@@ -2677,8 +2674,8 @@
            See also \l {table-command} {\\table}, \l {row-command} {\\row} and \l {o-command} {\\o}.
 
 
-    \section1 \\row 
     \target row-command
+    \section1 \\row 
 
     The \\row command indicates that the following table
     cells belong to the same row in the current table.
@@ -2762,8 +2759,8 @@
            {o-command} {\\o}.
 
 
-    \section1 \\value 
     \target value-command
+    \section1 \\value 
 
     The \\value command starts the documentation of a C++ enum
     item.
@@ -2780,8 +2777,8 @@
            See also \l {enum-command} {\\enum} and \l {omitvalue-command} {\\omitvalue}.
 
 
-    \section1 \\omitvalue 
     \target omitvalue-command
+    \section1 \\omitvalue 
 
     The \\omitvalue command excludes a C++ enum item
     from the documentation.
@@ -2793,8 +2790,8 @@
            See also \l {enum-command} {\\enum} and \l {value-command} {\\value}.
 
 
-    \section1 \\list 
     \target list-command
+    \section1 \\list 
 
     The \\list command and the corresponding \\endlist
     command delimit a list of items.
@@ -2924,8 +2921,8 @@
            See also \l {o-command} {\\o}.
 
 
-    \section1 \\o 
     \target o-command
+    \section1 \\o 
 
     The \\o command announce a table or list item.
 
@@ -3014,8 +3011,8 @@
     i.e. parts with a special rendering, conceptual meaning or
     function.
 
-    \section1 \\abstract 
     \target abstract-command
+    \section1 \\abstract 
 
     The \\abstract and \\endabstract commands delimit a
     document's abstract section.
@@ -3028,8 +3025,8 @@
 	   regular HTML paragraph.
 
 
-    \section1 \\quotation 
     \target quotation-command
+    \section1 \\quotation 
 
     The \\quotation and \\endquotation commands delimit a long quotation.
 
@@ -3080,8 +3077,8 @@
         {compatibility} section.
 
 
-    \section1 \\footnote 
     \target footnote-command
+    \section1 \\footnote 
 
     The \\footnote command and the corresponding
     \\endfootnote command delimit a footnote.
@@ -3093,8 +3090,8 @@
 	   rendered as a regular HTML paragraph.
 
 
-    \section1 \\tableofcontents 
     \target tableofcontents-command
+    \section1 \\tableofcontents 
 
     The \\tableofcontents command has been disabled because QDoc 
     now generates a table of contents automatically.
@@ -3103,8 +3100,8 @@
 	righthand corner of the page.
 
 
-    \section1 \\brief 
     \target brief-command
+    \section1 \\brief 
 
     The \\brief command introduces a one-sentence
     description of a class, namespace, header file, property
@@ -3356,8 +3353,8 @@
            \l{namespace-command} {\\namespace} and  \l{headerfile-command} {\\headerfile}.
 
 
-    \section1 \\legalese 
     \target legalese-command
+    \section1 \\legalese 
 
     The \\legalese and \\endlegalese commands delimit a licence agreement.
 
@@ -3425,8 +3422,8 @@
         associated with the source code.
 
 
-    \section1 \\warning 
     \target warning-command
+    \section1 \\warning 
 
     The \\warning command renders a "Warning:" prefix to
     the command's argument.
@@ -3469,8 +3466,8 @@
     connected to the visual appearance of the documentation, and to the
     process of generating the documentation.
 
-    \section1 \\expire 
     \target expire-command
+    \section1 \\expire 
 
     The \\expire command allows you to define an expiration
     date for your documentation.
@@ -3504,8 +3501,8 @@
            \endquotation
 
 
-    \section1 \\generatelist
     \target generatelist-command
+    \section1 \\generatelist
 
     The \\generatelist command expands to a list of
     various documentation or links to documentation.
@@ -3905,8 +3902,8 @@
               \l {service-command} {\\service} command.
 
 
-    \section1 \\if 
     \target if-command
+    \section1 \\if 
 
     The \\if command and the corresponding \\endif command
     enclose parts of a QDoc comment that only will be included if
@@ -3946,8 +3943,8 @@
            {falsehoods-variable} {falsehoods}.
 
 
-    \section1 \\endif 
     \target endif-command
+    \section1 \\endif 
 
     The \\endif command and the corresponding \\if command
     enclose parts of a QDoc comment that will be included if
@@ -3962,8 +3959,8 @@
            {falsehoods-variable} {falsehoods}.
 
 
-    \section1 \\else 
     \target else-command
+    \section1 \\else 
 
     The \\else command specifies an alternative if the
     condition in the \l {if-command} {\\if} command is false.
@@ -4062,8 +4059,8 @@
            {falsehoods}.
 
 
-    \section1 \\include 
     \target include-command
+    \section1 \\include 
 
     The \\include command  expands to the contents of the
     file specified by the command's argument.
@@ -4115,8 +4112,8 @@
             layoutmanagement.qdocinc
 
 
-    \section1 \\meta 
     \target meta-command
+    \section1 \\meta 
 
     The \\meta command is the QDoc equivalent to the HTML
     \c meta tag.
@@ -4161,8 +4158,8 @@
            \endcode
 
 
-    \section1 \\omit 
     \target omit-command
+    \section1 \\omit 
 
     The \\omit command and the correspondning \\endomit
     command delimit parts of the documentation that
@@ -4213,8 +4210,8 @@
 
 
 
-    \section1 \\raw \span {class="newStuff"} {(avoid)} 
     \target raw-command
+    \section1 \\raw \span {class="newStuff"} {(avoid)} 
 
     The \\raw command and the corresponding
     \\endraw command delimit a block of raw mark-up language code.
@@ -4289,8 +4286,8 @@
            \tt {\span {id="color-cyan"} {cyan(#00ffff)}}.
 
 
-    \section1 \\unicode 
     \target unicode-command
+    \section1 \\unicode 
 
     The \\unicode command allows you to insert an
     arbitrary Unicode character in the document.
@@ -4358,40 +4355,43 @@
 
     \title Topic Commands
 
-    The topic commands tell QDoc what is being documented
-    (i.e. existing units like classes, functions and examples), and
-    some of the commands allows you to create extra pages.
+    A topic command tells QDoc which source code element is being
+    documented. Some topic commands allow you to create documentation
+    pages that aren't tied to any underlying source code element.
 
     \section1 General Description
 
-    When QDoc is processing a comment, it will try to connect the
-    documentation to the source code. For that reason it will first
-    look for the topic commands. If there is no such command, it
-    will try to tie the documentation to the immediately following
-    code. If there is no topic command, and the documentation cannot
-    be tied to following code, the documentation is simply lost.
+    When QDoc processes a QDoc comment, it tries to connect the
+    comment to an element in the source code by first looking for a
+    topic command that names the source code element. If there is no
+    topic command, QDoc tries to connect the comment to the source
+    code element that immediately follows the comment. If it can't do
+    either of these and if there is no topic command that indicates
+    the comment does not have an underlying source code element (e.g.
+    \l{page-command} {\\page}), then the comment is discarded.
 
     \target topic argument
 
-    The documented unit's name is passed as the unique argument for
-    all the topic commands. The argument's naming convention is the
-    documented unit's complete name. For example:
+    The name of the thing being documented is the unique argument for
+    each topic command. The naming convention is to use the complete
+    name. For example:
 
     \code
         \enum QComboBox::InsertPolicy
     \endcode
 
-    Functions is a special case, the argument's naming convention for
-    the \l {fn-command} {\\fn} command is that of the function's
-    definition outside the class definition. For example:
+    The \l {fn-command} {\\fn} command is a special case. For the \l
+    {fn-command} {\\fn} command, use the function's signature
+    including the class qualifier. For example:
 
     \code
-        \fn void PreviewWindow::setWindowFlags()
+        \fn void QGraphicsWidget::setWindowFlags(Qt::WindowFlags wFlags)
     \endcode
 
-    A topic command can appear anywhere in a comment, but must stand
-    alone on its own line. If the argument spans several lines, make
-    sure that each line (except the last one) is ended with a
+    A topic command can appear anywhere in a comment but must stand
+    alone on its own line. Best practice is to put the topic commend
+    at the top of the comment. If the argument spans several lines,
+    make sure that each line (except the last one) is ended with a
     backslash. In addition QDoc counts parentheses, which means that
     if it encounters a '(' it considers everything until the closing
     ')' as its argument.
@@ -4417,8 +4417,8 @@
     ControllerWindow::setWindowFlags() functions will get the same
     documentation.
 
-    \section1 \\class 
     \target class-command
+    \section1 \\class 
 
     The \\class command tells QDoc that a class is
     part of the public API, and lets you enter a detailed
@@ -4581,8 +4581,8 @@
            \endquotation
 
 
-    \section1 \\enum 
     \target enum-command
+    \section1 \\enum 
 
     The \\enum command allows you to document a C++ enum.
 
@@ -4686,8 +4686,8 @@
            See also \l {value-command} {\\value} and \l {omitvalue-command} {\\omitvalue}.
 
 
-    \section1 \\example 
     \target example-command
+    \section1 \\example 
 
     The \\example command allows you to document an example.
 
@@ -4743,8 +4743,8 @@
            in widgets-imageviewer.html.
 
 
-    \section1 \\fn 
     \target fn-command
+    \section1 \\fn 
 
     The \\fn command allows you to document a function.
 
@@ -4793,8 +4793,8 @@
            See also \l {overload-command} {\\overload}.
 
 
-    \section1 \\group 
     \target group-command
+    \section1 \\group 
 
     The \\group command creates a separate page that
     lists the classes belonging to the group specified by the
@@ -4894,8 +4894,8 @@
            {generatelist-command} {\\generatelist}.
 
 
-    \section1 \\headerfile 
     \target headerfile-command
+    \section1 \\headerfile 
 
     The \\headerfile command allows you to document
     global functions, types and macros declared in a header file.
@@ -4968,8 +4968,8 @@
            in qtalgorithms.html.
 
 
-    \section1 \\macro 
     \target macro-command
+    \section1 \\macro 
 
     The \\macro command allows you to document a C++ macro.
 
@@ -5086,8 +5086,8 @@
            in qobject.html.
 
 
-    \section1 \\module 
     \target module-command
+    \section1 \\module 
 
     The \\module creates a separate page that lists the
     classes belonging to the module specified by the command's
@@ -5193,8 +5193,8 @@
            See also \l {inmodule-command} {\\inmodule}
 
 
-    \section1 \\namespace 
     \target namespace-command
+    \section1 \\namespace 
 
     The \\namespace command allows you to document a C++ namespace.
 
@@ -5258,8 +5258,8 @@
            in qt.html.
 
 
-    \section1 \\page 
     \target page-command
+    \section1 \\page 
 
     The \\page command allows you to create a stand-alone documentation page.
 
@@ -5295,8 +5295,8 @@
            will be rendered in its own HTML file: \l{About Qt}.
 
 
-    \section1 \\externalpage 
     \target externalpage-command
+    \section1 \\externalpage 
 
     The \\externalpage command gives a title to an external URL.
 
@@ -5350,8 +5350,8 @@
            argument of the \\externalpage command.
 
 
-    \section1 \\property 
     \target property-command
+    \section1 \\property 
 
     The \\property command allows you to document a Qt property.
 
@@ -5453,8 +5453,8 @@
            in qwidget.html.
 
 
-    \section1 \\service 
     \target service-command
+    \section1 \\service 
 
     The \\service command tells QDoc that a class is a
     service class and specifies its alias, i.e. the associated
@@ -5478,8 +5478,8 @@
             {generatelist-command} {\\generatelist}.
 
 
-    \section1 \\typedef 
     \target typedef-command
+    \section1 \\typedef 
 
     The \\typedef command allows you to document a C++ type definition.
 
@@ -5573,8 +5573,8 @@
            in qlinkedlist.html.
 
 
-    \section1 \\variable 
     \target variable-command
+    \section1 \\variable 
 
     The \\variable command allows you to document a
     member variable or a constant.
@@ -5880,8 +5880,8 @@
     </head>
     \endcode
 
-    \section1 \\previouspage 
     \target previouspage-command
+    \section1 \\previouspage 
 
     The \\previouspage command links the current page
     to the previous one in an ordered series of documents.
@@ -5899,8 +5899,8 @@
            Description} section.
 
 
-    \section1 \\nextpage 
     \target nextpage-command
+    \section1 \\nextpage 
 
     The \\nextpage command links the current
     page to the next page in an ordered series of documents.
@@ -5911,8 +5911,8 @@
            For an example, see the \l {General Description} section.
 
 
-    \section1 \\startpage 
     \target startpage-command
+    \section1 \\startpage 
 
     The \\startpage command specifies the first document
     in a collection of documents.
@@ -5929,8 +5929,8 @@
            For an example, see the \l {General Description} section.
 
 
-    \section1 \\contentspage
     \target contentspage-command
+    \section1 \\contentspage
 
     The \\contentspage command links the current
     page to a contents page.
@@ -5941,8 +5941,8 @@
            For an example, see the \l {General Description} section.
 
 
-    \section1 \\indexpage 
     \target indexpage-command
+    \section1 \\indexpage 
 
     The \\indexpage command specifies a document providing
     an index for the current document.
@@ -5975,8 +5975,8 @@
     describe the history of minor versions. And they can also describe
     a documented object's ability to handle multithreaded programming.
 
-    \section1 \\preliminary 
     \target preliminary-command
+    \section1 \\preliminary 
 
     The \\preliminary command indicates that the
     referenced function is under development.
@@ -6033,8 +6033,8 @@
          \endquotation
 
 
-    \section1 \\obsolete 
     \target obsolete-command
+    \section1 \\obsolete 
 
     The \\obsolete command indicates that the referenced
     function no longer should be used in new code;
@@ -6091,8 +6091,8 @@
 
 
 
-    \section1 \\compat 
     \target compat-command
+    \section1 \\compat 
 
     The \\compat command indicates that the referenced class
     or function is part of the support library provided to keep
@@ -6175,8 +6175,8 @@
 
 
 
-    \section1 \\internal 
     \target internal-command
+    \section1 \\internal 
 
     The \\internal command indicates that the referenced
     function is not part of the public interface.
@@ -6208,8 +6208,8 @@
            in qspinbox.cpp, will not be rendered at all.
 
 
-    \section1 \\since 
     \target since-command
+    \section1 \\since 
 
     The \\since command tells in which minor release
     the associated functionality was added.
@@ -6399,8 +6399,8 @@
     For more information see the general documentation on \l
     {threads.html#reentrant} {reentrancy and thread-safety}.
 
-    \section1 \\threadsafe 
     \target threadsafe-command
+    \section1 \\threadsafe 
 
     The \\threadsafe command indicates that the
     associated class or function can be called simultaneously by
@@ -6418,8 +6418,8 @@
            \l{nonreentrant-command} {\\nonreentrant}.
 
 
-    \section1 \\reentrant 
     \target reentrant-command
+    \section1 \\reentrant 
 
     The \\reentrant command indicates that the associated
     class or function  can be called simultaneously
@@ -6434,8 +6434,8 @@
             \l{threadsafe-command} {\\threadsafe}.
 
 
-    \section1 \\nonreentrant 
     \target nonreentrant-command
+    \section1 \\nonreentrant 
 
     The \\nonreentrant command indicates that the
     associated class or function cannot be called by
@@ -6464,8 +6464,8 @@
     reimplemented function or a global function related to a specified
     class or header file.
 
-    \section1 \\overload 
     \target overload-command
+    \section1 \\overload 
 
     The \\overload command indicates that the 
     function is a secondary overload of its name.
@@ -6540,8 +6540,8 @@
 	   \endquotation.
 
 
-    \section1 \\reimp 
     \target reimp-command
+    \section1 \\reimp 
 
     The \\reimp command indicates that the
     referenced function is a reimplementation of a virtual function,
@@ -6571,8 +6571,8 @@
            documentation.
 
 
-    \section1 \\relates 
     \target relates-command
+    \section1 \\relates 
 
     The \\relates command attaches the documentation of
     a global function to that of a related class or header file.
@@ -6615,8 +6615,8 @@
     classes in the documentation, while the modules are elements of
     Qt's structure.
 
-    \section1 \\mainclass 
     \target mainclass-command
+    \section1 \\mainclass 
 
     The \\mainclass command relates the documented class to
     a group called mainclasses.
@@ -6648,8 +6648,8 @@
            See also \l {generatelist-command} {\\generatelist}.
 
 
-    \section1 \\ingroup 
     \target ingroup-command
+    \section1 \\ingroup 
 
     The \\ingroup command indicates that the given
     overview or documented class belongs to a certain group of
@@ -6685,8 +6685,8 @@
 
            See also \l {group-command} {\\group}.
 
-    \section1 \\inmodule 
     \target inmodule-command
+    \section1 \\inmodule 
 
     The \\inmodule command relates the documented class
     to the module specified by the command's argument.
@@ -6732,8 +6732,8 @@
     be spanned over several lines, make sure to end each line (except
     the last one) with a backslash.
 
-    \section1 \\title 
     \target title-command
+    \section1 \\title 
 
     The \\title command sets the title for a
     documentation page, or allows you to override it.
@@ -6772,8 +6772,8 @@
            See also \l {subtitle-command} {\\subtitle}.
 
 
-    \section1 \\subtitle 
     \target subtitle-command
+    \section1 \\subtitle 
 
     The \\subtitle command sets a subtitle for a
     documentation page.
@@ -6813,37 +6813,6 @@
            See also \l {title-command} {\\title}.
 
 */
-
-
-    \list II
-    \o \section2 \l {The QDoc Configuration File}
-
-       The configuration file is a list of entries of entries of the
-       form "variable = value".
-
-       \list
-       \o \l {Configuration Variables}
-       \o \l {Configuration File Examples}
-       \endlist
-
-       Some particular configuration variables allow you to use QDoc
-       to support Qt-based projects; i.e to make projects, such as Qt
-       Solutions, contain references to the online Qt documentation.
-
-       \list
-       \o \l {Supporting Derived Projects}
-       \endlist
-
-       QDoc is a tool that constantly evolves to suit our needs, for
-       that reason there are some compatibility issues between old and
-       new practices.
-
-       \list
-       \o \l {Compatibility Issues}
-       \endlist
-    \endlist
-
-
 
 /*!
     \page 21-0-qdoc-configuration.html
@@ -7010,8 +6979,8 @@
     documentation. You can also do some minor manipulation of QDoc
     itself, controlling its output and processing behavior.
 
-    \section1 alias 
     \target alias-variable
+    \section1 alias 
 
     The \c alias variable renames a QDoc command.
 
@@ -7033,8 +7002,8 @@
            See also \l {macro-command} {macro}.
 
 
-    \section1 codeindent 
     \target codeindent-variable
+    \section1 codeindent 
 
     The \c codeindent variable specifies the level of
     indentation that QDoc uses when writing code snippets.
@@ -7047,8 +7016,8 @@
            level of indentation is not always required.
 
 
-    \section1 defines 
     \target defines-variable
+    \section1 defines 
 
     The \c defines variable specifies the C++ preprocessor
     symbols that QDoc will recognize and respond to.
@@ -7105,8 +7074,8 @@
            See also \l {falsehoods-variable} {falsehoods} and \l {if-command} {\\if}.
 
 
-    \section1 edition 
     \target edition-variable
+    \section1 edition 
 
     The \c edition variable specifies which modules are
     included in each edition of a package, and provides QDoc
@@ -7137,8 +7106,8 @@
            \endcode
 
 
-    \section1 exampledirs 
     \target exampledirs-variable
+    \section1 exampledirs 
 
     The \c exampledirs variable specifies the directories
     containing the source code of the example files.
@@ -7197,8 +7166,8 @@
            See also \l examples.
 
 
-    \section1 examples 
     \target examples-variable
+    \section1 examples 
 
     The \c examples variable allows you to specify individual
     example files in addition to those located in the directories
@@ -7227,8 +7196,8 @@
            See also \l {exampledirs-variable} {exampledirs}.
 
 
-    \section1 examples.fileextensions 
     \target examples.fileextensions-variable
+    \section1 examples.fileextensions 
 
     The \c examples.fileextensions variable specifies the
     file extensions that qdoc will look for when collecting example
@@ -7248,8 +7217,8 @@
            See also \l{headers.fileextensions}.
 
 
-    \section1 extraimages 
     \target extraimages-variable
+    \section1 extraimages 
 
     The \c extraimages variable tells QDoc to incorporate
     specific images in the generated documentation.
@@ -7276,8 +7245,8 @@
            See also \l images and \l imagedirs.
 
 
-    \section1 falsehoods 
     \target falsehoods-variable
+    \section1 falsehoods 
 
     The \c falsehoods variable defines the truth value of
     specified preprocessor symbols as false.
@@ -7318,8 +7287,8 @@
            See also \l defines.
 
 
-    \section1 generateindex 
     \target generateindex-variable
+    \section1 generateindex 
 
     The \c generateindex variable contains a boolean value that
     specifies whether to generate an index file when HTML documentation
@@ -7330,8 +7299,8 @@
            (by setting the value to \c false) or when enabling index generation
            for the WebXML output (by setting the value to \c true).
 
-    \section1 headerdirs 
     \target headerdirs-variable
+    \section1 headerdirs 
 
     The \c headerdirs variable specifies the directories
     containing the header files associated with the \c .cpp source
@@ -7378,8 +7347,8 @@
            See also \l headers and \l headers.fileextensions.
 
 
-    \section1 headers 
     \target headers-variable
+    \section1 headers 
 
     The \c headers variable allows you to specify individual
     header files in addition to those located in the directories
@@ -7400,8 +7369,8 @@
            See also \l headerdirs.
 
 
-    \section1 headers.fileextensions 
     \target headers.fileextensions-variable
+    \section1 headers.fileextensions 
 
     The \c headers.fileextensions variable specify the
     extension used by the headers.
@@ -7428,8 +7397,8 @@
            See also \l headerdirs.
 
 
-    \section1 imagedirs 
     \target imagedirs-variable
+    \section1 imagedirs 
 
     The \c imagedirs variable specifies the directories
     containing the images used in the documentation.
@@ -7490,8 +7459,8 @@
            See also \l images and \l images.fileextensions.
 
 
-    \section1 images 
     \target images-variable
+    \section1 images 
 
     The \c images variable allows you to specify individual
     image files in addition to those located in the directories
@@ -7511,8 +7480,8 @@
            See also \l imagedirs and \l images.fileextensions.
 
 
-    \section1 images.fileextensions 
     \target images.fileextensions-variable
+    \section1 images.fileextensions 
 
     The images.fileextensions variable filters the files within
     an image directory.
@@ -7550,8 +7519,8 @@
            See also \l imagedirs and \l images.
 
 
-    \section1 language 
     \target language-variable
+    \section1 language 
 
     The \c language variable specifies the language of the
     source code that is used in the documentation.
@@ -7568,8 +7537,8 @@
            identifies the language of the Qt source code as C++.
 
 
-    \section1 macro 
     \target macro-variable
+    \section1 macro 
 
     The \c macro variable can be used to create your
     own QDoc commands.
@@ -7590,8 +7559,8 @@
            bold font, and that \\raisedaster renders a '*'.
 
 
-    \section1 naturallanguage 
     \target naturallanguage-variable
+    \section1 naturallanguage 
 
     The \c naturallanguage variable specifies the natural
     language used for the documentation generated by qdoc.
@@ -7614,8 +7583,8 @@
            \l{http://www.w3.org/TR/i18n-html-tech-lang/#ri20040429.113217290} {Best Practice 13: Using Hans and Hant codes}.
 
 
-    \section1 outputdir 
     \target outputdir-variable
+    \section1 outputdir 
 
     The \c outputdir variable specifies the directory
     where QDoc will put the generated documentation.
@@ -7640,8 +7609,8 @@
            directory, all files from the previous run will be lost.
 
 
-    \section1 outputencoding 
     \target outputencoding-variable
+    \section1 outputencoding 
 
     The \c outputencoding variable specifies the encoding
     used for the documentation generated by qdoc.
@@ -7667,8 +7636,8 @@
            See also \l outputencoding and \l naturallanguage.
 
 
-    \section1 outputformats 
     \target outputformats-variable
+    \section1 outputformats 
 
     The \c outputformats variable specifies the format of
     the generated documentation.
@@ -7677,8 +7646,8 @@
            the default format, and doesn't need to be specified.
 
 
-    \section1 qhp 
     \target qhp-variable
+    \section1 qhp 
 
     The \c qhp variable is used to define the information to be
     written out to Qt Help Project (\c{qhp}) files.
@@ -7687,8 +7656,8 @@
     about this process.
 
 
-    \section1 slow 
     \target slow-variable
+    \section1 slow 
 
     The \c slow variable specifies whether QDoc should do
     time-consuming processing, such as syntax highlighting.
@@ -7705,8 +7674,8 @@
            \c -slow command-line option.
 
 
-    \section1 sourcedirs 
     \target sourcedirs-variable
+    \section1 sourcedirs 
 
     The \c sourcedirs variable specifies the directories
     containing the \c .cpp or \c .qdoc files used in
@@ -7753,8 +7722,8 @@
 	   \l {sources.fileextensions-variable} {sources.fileextensions}.
 
 
-    \section1 sourceencoding 
     \target sourceencoding-variable
+    \section1 sourceencoding 
 
     The \c sourceencoding variable specifies the encoding
     used for the source code and documentation.
@@ -7780,8 +7749,8 @@
 	   \l {outputencoding-variable} {outputencoding}.
 
 
-    \section1 sources 
     \target sources-variable
+    \section1 sources 
 
     The \c sources variable allows you to specify individual source
     files in addition to those located in the directories specified by
@@ -7802,8 +7771,8 @@
            See also \l {sourcedirs-variable} {sourcedirs}.
 
 
-    \section1 sources.fileextensions 
     \target sources.fileextensions-variable
+    \section1 sources.fileextensions 
 
     The \c sources.fileextensions variable filters the
     files within a source directory.
@@ -7830,8 +7799,8 @@
 	   \l (sources-variable} {sources}.
 
 
-    \section1 spurious 
     \target spurious-variable
+    \section1 spurious 
 
     The \c spurious variable excludes specified
     QDoc warnings from the output.
@@ -7854,8 +7823,8 @@
            \endcode
 
 
-    \section1 tabsize 
     \target tabsize-variable
+    \section1 tabsize 
 
     The \c tabsize variable defines the size of a tab character.
 
@@ -7871,14 +7840,14 @@
            be specified.
 
 
-    \section1 tagfile 
     \target tagfile-variable
+    \section1 tagfile 
         
     The \c tagfile variable specifies the Doxygen tag file to be written
     when HTML is generated.
 
-    \section1 version 
     \target version-variable
+    \section1 version 
 
     The \c version variable specifies the version number of the
     documented software.
@@ -7901,8 +7870,8 @@
            See also \l versionsym.
 
 
-    \section1 versionsym 
     \target versionsym-variable
+    \section1 versionsym 
 
     The \c versionsym variable specifies a C++
     preprocessor symbol that defines the version number
@@ -8013,8 +7982,8 @@
     The C++ specific configuration variables are provided to avoid
     erroneous documentation due to non-standard C++ constructs.
 
-    \section1  Cpp.ignoredirectives 
     \target Cpp.ignoredirectives-variable
+    \section1  Cpp.ignoredirectives 
 
     The \c Cpp.ignoredirectives variable makes QDoc ignore
     the specified non-standard constructs, within C++ source code.
@@ -8071,8 +8040,8 @@
            See also \l Cpp.ignoretokens.
 
 
-    \section1  Cpp.ignoretokens 
     \target Cpp.ignoretokens-variable
+    \section1  Cpp.ignoretokens 
 
     The \c Cpp.ignoretokens variable makes QDoc ignore
     the specified non-standard constructs, within C++ source code.
@@ -8141,8 +8110,8 @@
     documentation's footer or postheader. The format of the variable
     values are raw HTML.
 
-    \section1 HTML.footer 
     \target HTML.footer-variable
+    \section1 HTML.footer 
 
     The \c HTML.footer variable defines the content
     of the generated HTML documentation's footer.
@@ -8168,8 +8137,8 @@
            Documentation}.
 
 
-    \section1 HTML.postheader 
     \target HTML.postheader-variable
+    \section1 HTML.postheader 
 
     The \c HTML.postheader variable defines the content
     of the generated HTML documentation's postheader.
@@ -8199,8 +8168,8 @@
            Documentation}.
 
 
-    \section1 HTML.style 
     \target HTML.style-variable
+    \section1 HTML.style 
 
     The HTML.style variable defines the style for
     the generated HTML documentation.
@@ -8227,8 +8196,8 @@
            Documentation}.
 
 
-    \section1 HTML.stylesheets 
     \target HTML.stylesheets-variable
+    \section1 HTML.stylesheets 
 
     The HTML.stylesheets variable defines a list of stylesheets
     to use for the generated HTML documentation.
@@ -8262,8 +8231,8 @@
     means that QDoc will be able to create links to the class reference
     documentation, without any explicit linking command.
 
-    \section1 description 
     \target description-variable
+    \section1 description 
 
     The description variable holds a short description of
     the associated project.
@@ -8271,8 +8240,8 @@
            See also \l project.
 
 
-    \section1 indexes 
     \target indexes-variable
+    \section1 indexes 
 
     The \c indexes variable lists the index files
     that will be used to generate references.
@@ -8288,8 +8257,8 @@
            See also \l project and \l url.
 
 
-    \section1 project 
     \target project-variable
+    \section1 project 
 
     The \c project variable provides a name for the project
     associated with the \c .qdocconf file.
@@ -8306,8 +8275,8 @@
 
            See also \l description and \l indexes.
 
-    \section1 url 
     \target url-variable
+    \section1 url 
 
     The \c url variable holds the base URL for the
     reference documentation associated with the current project.
