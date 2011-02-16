@@ -1204,6 +1204,26 @@ static v8::Handle<v8::Value> findChildCallback(const v8::Arguments& args)
     return handleScope.Close(engine->makeQtObject(child, QScriptEngine::QtOwnership, opt));
 }
 
+static v8::Handle<v8::Value> findChildrenWithRegExp(QScriptEnginePrivate *engine, QObject *qobject, v8::Handle<v8::Object> regExp)
+{
+    const QList<QObject *> children = qobject->findChildren<QObject *>();
+    v8::Handle<v8::Object> testFunction = v8::Handle<v8::Object>::Cast(regExp->Get(v8::String::New("test")));
+
+    v8::Local<v8::Array> result = v8::Array::New(children.length());
+    v8::Handle<v8::Value> argv[1];
+
+    for (int i = 0, resultIndex = 0; i < children.length(); i++) {
+        argv[0] = QScriptConverter::toString(children.at(i)->objectName());
+        if (testFunction->Call(regExp, 1, argv)->IsTrue()) {
+            result->Set(resultIndex, engine->makeQtObject(children.at(i), QScriptEngine::QtOwnership,
+                                                          QScriptEngine::PreferExistingWrapperObject));
+            resultIndex++;
+        }
+    }
+
+    return result;
+}
+
 static v8::Handle<v8::Value> findChildrenCallback(const v8::Arguments& args)
 {
     v8::HandleScope handleScope;
@@ -1224,7 +1244,8 @@ static v8::Handle<v8::Value> findChildrenCallback(const v8::Arguments& args)
     QString name;
     if (args.Length() != 0) {
         if (args[0]->IsRegExp()) {
-            Q_UNIMPLEMENTED();
+            v8::Handle<v8::Object> regExp = v8::Handle<v8::Object>::Cast(args[0]);
+            return handleScope.Close(findChildrenWithRegExp(engine, qobject, regExp));
         }
         name = QScriptConverter::toString(args[0]->ToString());
     }
