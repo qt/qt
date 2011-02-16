@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the mkspecs of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,46 +39,20 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKACCESSDATABACKEND_P_H
-#define QNETWORKACCESSDATABACKEND_P_H
+#ifndef __PRODUCT_INCLUDE__
+#  ifdef __QT_PRODUCT_INCLUDE_IS_LOWERCASE__
+#    define __PRODUCT_INCLUDE__ <variant/symbian_os.hrh>
+#  else
+#    define __PRODUCT_INCLUDE__ <variant/Symbian_OS.hrh>
+#  endif
+#endif
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of the Network Access API.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qnetworkaccessbackend_p.h"
-
-QT_BEGIN_NAMESPACE
-
-class QNetworkAccessDataBackend: public QNetworkAccessBackend
-{
-public:
-    QNetworkAccessDataBackend();
-    virtual ~QNetworkAccessDataBackend();
-
-    virtual void open();
-    virtual void closeDownstreamChannel();
-    virtual void closeUpstreamChannel();
-    virtual bool waitForDownstreamReadyRead(int msecs);
-    virtual bool waitForUpstreamBytesWritten(int msecs);
-
-    virtual bool processRequestSynchronously();
-};
-
-class QNetworkAccessDataBackendFactory: public QNetworkAccessBackendFactory
-{
-public:
-    virtual QNetworkAccessBackend *create(QNetworkAccessManager::Operation op,
-                                          const QNetworkRequest &request) const;
-};
-
-QT_END_NAMESPACE
-
+#ifndef __QT_SYMBIAN_RESOURCE__
+#  if defined(__ARMCC__) || defined(__CC_ARM)
+#    ifdef __QT_RVCT_HEADER_IS_2_2__
+#      include <rvct2_2.h>
+#    else
+#      include <rvct.h>
+#    endif
+#  endif
 #endif

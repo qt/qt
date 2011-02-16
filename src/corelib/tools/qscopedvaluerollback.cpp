@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the qmake application of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,50 +39,46 @@
 **
 ****************************************************************************/
 
-#ifndef MINGW_MAKE_H
-#define MINGW_MAKE_H
-
-#include "winmakefile.h"
+#include "qscopedvaluerollback.h"
 
 QT_BEGIN_NAMESPACE
 
-class MingwMakefileGenerator : public Win32MakefileGenerator
-{
-public:
-    MingwMakefileGenerator();
-    ~MingwMakefileGenerator();
-protected:
-    QString escapeDependencyPath(const QString &path) const;
-    QString getLibTarget();
-    bool writeMakefile(QTextStream &);
-    void init();
-private:
-    bool isWindowsShell() const;
-    void writeMingwParts(QTextStream &);
-    void writeIncPart(QTextStream &t);
-    void writeLibsPart(QTextStream &t);
-    void writeLibDirPart(QTextStream &t);
-    void writeObjectsPart(QTextStream &t);
-    void writeBuildRulesPart(QTextStream &t);
-    void writeRcFilePart(QTextStream &t);
-    void processPrlVariable(const QString &var, const QStringList &l);
+/*!
+    \class QScopedValueRollback
+    \brief The QScopedValueRollback resets a variable to its previous value on destruction
+    \since 4.8
+    \ingroup misc
 
-    QStringList &findDependencies(const QString &file);
-    
-    QString preCompHeaderOut;
+    The QScopedAssignment class can be used to revert state when an
+    exception is thrown without needing to write try-catch blocks.
 
-    virtual bool findLibraries();
-    bool findLibraries(const QString &where);
-    void fixTargetExt();
+    It can also be used to manage variables that are temporarily set,
+    such as reentrancy guards. By using this class, the variable will
+    be reset whether the function is exited normally, exited early by
+    a return statement, or exited by an exception.
 
-    bool init_flag;
-    QString objectsLinkLine;
-    QString quote;
-};
+    The template can only be instantiated with a type that supports assignment.
 
-inline MingwMakefileGenerator::~MingwMakefileGenerator()
-{ }
+    \sa QScopedPointer
+*/
+
+/*!
+    \fn QScopedValueRollback::QScopedValueRollback(T &var)
+
+    Stores the previous value of var internally, for revert on destruction.
+*/
+
+/*!
+    \fn QScopedValueRollback::~QScopedValueRollback()
+
+    Assigns the previous value to the managed variable.
+    This is the value at construction time, or at the last call to commit()
+*/
+
+/*!
+    \fn void QScopedValueRollback::commit()
+
+    Updates the previous value of the managed variable to its current value.
+*/
 
 QT_END_NAMESPACE
-
-#endif // MINGW_MAKE_H
