@@ -163,7 +163,7 @@ QUrl QDeclarativeImports::baseUrl() const
 
 static QDeclarativeTypeNameCache *
 cacheForNamespace(QDeclarativeEngine *engine, const QDeclarativeImportedNamespace &set, 
-                  QDeclarativeTypeNameCache *cache)
+                  QDeclarativeTypeNameCache *cache, bool importWasQualified)
 {
     if (!cache)
         cache = new QDeclarativeTypeNameCache(engine);
@@ -171,9 +171,26 @@ cacheForNamespace(QDeclarativeEngine *engine, const QDeclarativeImportedNamespac
     QList<QDeclarativeType *> types = QDeclarativeMetaType::qmlTypes();
 
     for (int ii = 0; ii < set.uris.count(); ++ii) {
-        QByteArray base = set.uris.at(ii).toUtf8() + '/';
+        QByteArray uri = set.uris.at(ii).toUtf8();
         int major = set.majversions.at(ii);
         int minor = set.minversions.at(ii);
+
+        if (importWasQualified) {
+            QDeclarativeMetaType::ModuleApi moduleApi = QDeclarativeMetaType::moduleApi(uri, major, minor);
+            if (moduleApi.script || moduleApi.qobject) {
+                QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
+                QDeclarativeMetaType::ModuleApiInstance *a = ep->moduleApiInstances.value(moduleApi);
+                if (!a) {
+                    a = new QDeclarativeMetaType::ModuleApiInstance;
+                    a->scriptCallback = moduleApi.script;
+                    a->qobjectCallback = moduleApi.qobject;
+                    ep->moduleApiInstances.insert(moduleApi, a);
+                }
+                cache->setModuleApi(a);
+            }
+        }
+
+        QByteArray base = uri + '/';
 
         foreach (QDeclarativeType *type, types) {
             if (type->qmlTypeName().startsWith(base) &&
@@ -200,15 +217,15 @@ void QDeclarativeImports::populateCache(QDeclarativeTypeNameCache *cache, QDecla
         QDeclarativeTypeNameCache::Data *d = cache->data(iter.key());
         if (d) {
             if (!d->typeNamespace)
-                cacheForNamespace(engine, *(*iter), d->typeNamespace);
+                cacheForNamespace(engine, *(*iter), d->typeNamespace, true);
         } else {
-            QDeclarativeTypeNameCache *nc = cacheForNamespace(engine, *(*iter), 0);
+            QDeclarativeTypeNameCache *nc = cacheForNamespace(engine, *(*iter), 0, true);
             cache->add(iter.key(), nc);
             nc->release();
         }
     }
 
-    cacheForNamespace(engine, set, cache);
+    cacheForNamespace(engine, set, cache, false);
 }
 
 /*!
@@ -425,8 +442,18 @@ QString QDeclarativeImportsPrivate::resolvedUri(const QString &dir_arg, QDeclara
             break;
         }
     }
+
+    stableRelativePath.replace(QLatin1Char('\\'), QLatin1Char('/'));
+
+    // remove optional versioning in dot notation from uri
+    int lastSlash = stableRelativePath.lastIndexOf(QLatin1Char('/'));
+    if (lastSlash >= 0) {
+        int versionDot = stableRelativePath.indexOf(QLatin1Char('.'), lastSlash);
+        if (versionDot >= 0)
+            stableRelativePath = stableRelativePath.left(versionDot);
+    }
+
     stableRelativePath.replace(QLatin1Char('/'), QLatin1Char('.'));
-    stableRelativePath.replace(QLatin1Char('\\'), QLatin1Char('.'));
     return stableRelativePath;
 }
 
@@ -453,20 +480,62 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
         QString dir;
 
 
-        foreach (const QString &p, database->fileImportPath) {
-            dir = p+QLatin1Char('/')+url;
+        // step 1: search for extension with fully encoded version number
+        if (vmaj >= 0 && vmin >= 0) {
+            foreach (const QString &p, database->fileImportPath) {
+                dir = p+QLatin1Char('/')+url;
 
-            QFileInfo fi(dir+QLatin1String("/qmldir"));
-            const QString absoluteFilePath = fi.absoluteFilePath();
+                QFileInfo fi(dir+QString(QLatin1String(".%1.%2")).arg(vmaj).arg(vmin)+QLatin1String("/qmldir"));
+                const QString absoluteFilePath = fi.absoluteFilePath();
 
-            if (fi.isFile()) {
-                found = true;
+                if (fi.isFile()) {
+                    found = true;
 
-                url = QUrl::fromLocalFile(fi.absolutePath()).toString();
-                uri = resolvedUri(dir, database);
-                if (!importExtension(absoluteFilePath, uri, database, &qmldircomponents, errorString))
-                    return false;
-                break;
+                    url = QUrl::fromLocalFile(fi.absolutePath()).toString();
+                    uri = resolvedUri(dir, database);
+                    if (!importExtension(absoluteFilePath, uri, database, &qmldircomponents, errorString))
+                        return false;
+                    break;
+                }
+            }
+        }
+        // step 2: search for extension with encoded version major
+        if (vmaj >= 0 && vmin >= 0) {
+            foreach (const QString &p, database->fileImportPath) {
+                dir = p+QLatin1Char('/')+url;
+
+                QFileInfo fi(dir+QString(QLatin1String(".%1")).arg(vmaj)+QLatin1String("/qmldir"));
+                const QString absoluteFilePath = fi.absoluteFilePath();
+
+                if (fi.isFile()) {
+                    found = true;
+
+                    url = QUrl::fromLocalFile(fi.absolutePath()).toString();
+                    uri = resolvedUri(dir, database);
+                    if (!importExtension(absoluteFilePath, uri, database, &qmldircomponents, errorString))
+                        return false;
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            // step 3: search for extension without version number
+
+            foreach (const QString &p, database->fileImportPath) {
+                dir = p+QLatin1Char('/')+url;
+
+                QFileInfo fi(dir+QLatin1String("/qmldir"));
+                const QString absoluteFilePath = fi.absoluteFilePath();
+
+                if (fi.isFile()) {
+                    found = true;
+
+                    url = QUrl::fromLocalFile(fi.absolutePath()).toString();
+                    uri = resolvedUri(dir, database);
+                    if (!importExtension(absoluteFilePath, uri, database, &qmldircomponents, errorString))
+                        return false;
+                    break;
+                }
             }
         }
 
@@ -660,6 +729,7 @@ bool QDeclarativeImportedNamespace::find(const QByteArray& type, int *vmajor, in
 /*!
 \class QDeclarativeImportDatabase
 \brief The QDeclarativeImportDatabase class manages the QML imports for a QDeclarativeEngine.
+\internal
 */
 QDeclarativeImportDatabase::QDeclarativeImportDatabase(QDeclarativeEngine *e)
 : engine(e)
@@ -874,16 +944,25 @@ QString QDeclarativeImportDatabase::resolvePlugin(const QDir &qmldirPath, const 
 #endif
 }
 
+/*!
+    \internal
+*/
 QStringList QDeclarativeImportDatabase::pluginPathList() const
 {
     return filePluginPath;
 }
 
+/*!
+    \internal
+*/
 void QDeclarativeImportDatabase::setPluginPathList(const QStringList &paths)
 {
     filePluginPath = paths;
 }
 
+/*!
+    \internal
+*/
 void QDeclarativeImportDatabase::addPluginPath(const QString& path)
 {
     if (qmlImportTrace())
@@ -898,6 +977,9 @@ void QDeclarativeImportDatabase::addPluginPath(const QString& path)
     }
 }
 
+/*!
+    \internal
+*/
 void QDeclarativeImportDatabase::addImportPath(const QString& path)
 {
     if (qmlImportTrace())
@@ -922,17 +1004,25 @@ void QDeclarativeImportDatabase::addImportPath(const QString& path)
         fileImportPath.prepend(cPath);
 }
 
+/*!
+    \internal
+*/
 QStringList QDeclarativeImportDatabase::importPathList() const
 {
     return fileImportPath;
 }
 
+/*!
+    \internal
+*/
 void QDeclarativeImportDatabase::setImportPathList(const QStringList &paths)
 {
     fileImportPath = paths;
 }
 
-
+/*!
+    \internal
+*/
 bool QDeclarativeImportDatabase::importPlugin(const QString &filePath, const QString &uri, QString *errorString)
 {
     if (qmlImportTrace())

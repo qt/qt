@@ -1,7 +1,7 @@
-// Commit: 3eafb8d13a51d72af053e19fa4bc66b83f81a923
+// Commit: 7ddec9f3179bfd854ae53e23ab292de1f9a26377
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -135,12 +135,13 @@ QSGGridScaledImage::QSGGridScaledImage(QIODevice *data)
         if (line.isEmpty() || line.startsWith(QLatin1Char('#')))
             continue;
 
-        QStringList list = line.split(QLatin1Char(':'));
-        if (list.count() != 2)
+        int colonId = line.indexOf(QLatin1Char(':'));
+        if (colonId <= 0)
             return;
 
-        list[0] = list[0].trimmed();
-        list[1] = list[1].trimmed();
+        QStringList list;
+        list.append(line.left(colonId).trimmed());
+        list.append(line.mid(colonId+1).trimmed());
 
         if (list[0] == QLatin1String("border.left"))
             l = list[1].toInt();

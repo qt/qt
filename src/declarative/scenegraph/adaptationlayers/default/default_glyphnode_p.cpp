@@ -162,8 +162,7 @@ TextMaskMaterial::TextMaskMaterial(QFontEngine *fontEngine)
 TextMaskMaterial::~TextMaskMaterial()
 {
     Q_ASSERT(m_originalFontEngine != 0);
-    if (!m_originalFontEngine->ref.deref())
-        delete m_originalFontEngine;
+    m_originalFontEngine->ref.deref();
 }
 
 void TextMaskMaterial::init()

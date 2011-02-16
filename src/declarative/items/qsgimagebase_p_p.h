@@ -1,7 +1,7 @@
-// Commit: e17a5398bf20b89834d4d6c7f4d9203f192b101f
+// Commit: 6f78a6080b84cc3ef96b73a4ff58d1b5a72f08f4
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,14 +54,14 @@
 // We mean it.
 //
 
-#include "qsgitem_p.h"
+#include "qsgimplicitsizeitem_p_p.h"
 
 #include <private/qdeclarativepixmapcache_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QNetworkReply;
-class QSGImageBasePrivate : public QSGItemPrivate
+class QSGImageBasePrivate : public QSGImplicitSizeItemPrivate
 {
     Q_DECLARE_PUBLIC(QSGImageBase)
 
@@ -70,7 +70,9 @@ public:
       : status(QSGImageBase::Null),
         progress(0.0),
         explicitSourceSize(false),
-        async(false)
+        async(false),
+        cache(true),
+        mirror(false)
     {
     }
 
@@ -81,6 +83,8 @@ public:
     QSize sourcesize;
     bool explicitSourceSize : 1;
     bool async : 1;
+    bool cache : 1;
+    bool mirror: 1;
 };
 
 QT_END_NAMESPACE

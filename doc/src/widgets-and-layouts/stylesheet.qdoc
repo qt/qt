@@ -32,6 +32,7 @@
 
     \ingroup frameworks-technologies
     \ingroup qt-basic-concepts
+	\ingroup qt-gui-concepts
 
     \previouspage {Styles and Style Aware Widgets}{Styles}
     \contentspage Widgets and Layouts
@@ -1995,7 +1996,7 @@
            \l{#bottom-prop}{bottom}.
 
     \row
-        \o \bold{\c lineedit-password- \BR \c character}* \target lineedit-password-character-prop
+        \o \bold{\c lineedit-password-character*} \target lineedit-password-character-prop
         \o \l{#Number}{Number}
         \o The QLineEdit password character as a Unicode number.
 
@@ -2091,8 +2092,7 @@
 
 
     \row
-        \o \bold{\c messagebox-text- \target messagebox-text-interaction-flags-prop
-           \BR \c interaction-flags}*
+        \o \bold{\c messagebox-text-interaction-flags*} \target messagebox-text-interaction-flags-prop
         \o \l{#Number}{Number}
         \o The interaction behavior for text in a message box.
            Possible values are based on Qt::TextInteractionFlags.
@@ -2153,7 +2153,7 @@
            See also \l{#min-height-prop}{min-height}.
 
     \row
-        \o \bold{\c opacity}* \target opacity-prop
+        \o \bold{\c opacity*} \target opacity-prop
         \o \l{#Number}{Number}
         \o The opacity for a widget. Possible values are from 0
            (transparent) to 255 (opaque). For the moment, this is
@@ -2249,7 +2249,7 @@
            \l{#bottom-prop}{bottom}.
 
     \row
-        \o \bold{\c selection-background-color}* \target selection-background-color-prop
+        \o \bold{\c selection-background-color*} \target selection-background-color-prop
         \o \l{#Brush}{Brush} \BR
         \o The background of selected text or items.
 
@@ -2268,7 +2268,7 @@
            \l{Qt Style Sheets Reference#background-prop}{background}.
 
     \row
-        \o \bold{\c selection-color}* \target selection-color-prop
+        \o \bold{\c selection-color*} \target selection-color-prop
         \o \l{#Brush}{Brush} \BR
         \o The foreground of selected text or items.
 
@@ -2288,8 +2288,7 @@
            and \l{#color-prop}{color}.
 
     \row
-        \o \bold{\c show-decoration- \target show-decoration-selected-prop
-           \BR \c selected}*
+        \o \bold{\c show-decoration-selected*} \target show-decoration-selected-prop
         \o \l{#Boolean}{Boolean}
         \o Controls whether selections in a QListView cover the
            entire row or just the extent of the text.
@@ -2304,7 +2303,7 @@
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 73
 
     \row
-        \o \bold{\c spacing}* \target spacing-prop
+        \o \bold{\c spacing*} \target spacing-prop
         \o \l{#Length}{Length}
         \o Internal spacing in the widget.
 
@@ -2322,7 +2321,7 @@
            \l{#margin-prop}{margin}.
 
     \row
-        \o \bold{\c subcontrol-origin}* \target subcontrol-origin-prop
+        \o \bold{\c subcontrol-origin*} \target subcontrol-origin-prop
         \o \l{#Origin}{Origin}
         \o The origin rectangle of the \l subcontrol within the
            parent element.
@@ -2338,7 +2337,7 @@
            \l{Qt Style Sheets Reference#subcontrol-position-prop}{subcontrol-position}.
 
     \row
-        \o \bold{\c subcontrol-position}* \target subcontrol-position-prop
+        \o \bold{\c subcontrol-position*} \target subcontrol-position-prop
         \o \l{#Alignment}{Alignment}
         \o The alignment of the \l subcontrol within the origin
            rectangle specified by \l{Qt Style Sheets Reference#subcontrol-origin-prop}
@@ -2706,8 +2705,7 @@
         \o Shorthand border property.
 
     \row
-        \o \bold{Border \target Border Image
-           Image}
+        \o \bold{Border Image} \target Border Image
         \o \c none \BR
            | \l{Url} \l{Number}\{4\} \BR (\c stretch | \c repeat){0,2}
         \o A border image is an image that is composed of nine parts
@@ -2723,8 +2721,7 @@
            {CSS3 Draft Specification} for details.
 
     \row
-        \o \bold{Border \target Border Style
-           Style}
+        \o \bold{Border Style} \target Border Style
         \o \c dashed \BR
            | \c dot-dash \BR
            | \c dot-dot-dash \BR
@@ -2741,8 +2738,7 @@
            {CSS3 Draft Specification} for details.
 
     \row
-        \o \bold{Box \target Box Colors
-        Colors}
+        \o \bold{Box Colors} \target Box Colors
         \o \l{#Brush}{Brush}\{1,4\}
         \o One to four occurrences of \l{#Brush}{Brush}, specifying the top,
            right, bottom, and left edges of a box, respectively. If
@@ -2757,8 +2753,7 @@
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 82
 
     \row
-        \o \bold{Box \target Box Lengths
-           Lengths}
+        \o \bold{Box Lengths} \target Box Lengths
         \o \l{#Length}{Length}\{1,4\}
         \o One to four occurrences of \l{#Length}{Length}, specifying the
            top, right, bottom, and left edges of a box,
@@ -2773,14 +2768,14 @@
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 83
 
     \row
-        \o \bold Brush \target Brush
+        \o \bold{Brush} \target Brush
         \o \l{#Color}{Color} \BR
            | \l{Gradient} \BR
            | \l{PaletteRole}
         \o Specifies a Color or a Gradient or an entry in the Palette.
 
     \row
-        \o \bold Color \target Color
+        \o \bold{Color} \target Color
         \o \tt{rgb(\e{r}, \e{g}, \e{b})} \BR
            | \tt{rgba(\e{r}, \e{g}, \e{b}, \e{a})} \BR
            | \tt{hsv(\e{h}, \e{s}, \e{v})} \BR
@@ -2803,27 +2798,24 @@
             \l{http://www.w3.org/TR/CSS21/syndata.html#color-units}{here}.
 
     \row
-        \o \bold Font \target Font
+        \o \bold{Font} \target Font
         \o (\l{#Font Style}{Font Style} | \l{#Font Weight}{Font Weight}){0,2} \l{#Font Size}{Font Size} String
         \o Shorthand font property.
 
     \row
-        \o \bold{Font \target Font Size
-           Size}
+        \o \bold{Font Size} \target Font Size
         \o \l{Length}
         \o The size of a font.
 
     \row
-        \o \bold{Font \target Font Style
-           Style}
+        \o \bold{Font Style} \target Font Style
         \o \c normal \BR
            | \c italic \BR
            | \c oblique
         \o The style of a font.
 
     \row
-        \o \bold{Font \target Font Weight
-           Weight}
+        \o \bold{Font Weight} \target Font Weight
         \o \c normal \BR
            | \c bold \BR
            | \c 100 \BR
@@ -2833,7 +2825,7 @@
         \o The weight of a font.
 
     \row
-        \o \bold Gradient \target Gradient
+        \o \bold{Gradient} \target Gradient
         \o \c qlineargradient \BR
            | \c qradialgradient \BR
            | \c qconicalgradient
@@ -2863,7 +2855,7 @@
         \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 85
 
     \row
-        \o \bold Icon \target Icon
+        \o \bold{Icon} \target Icon
         \o (\l{#Url}{Url} (\c disabled | \c active | \c normal | \c selected)?
             (\c on | \c off)? )*
         \o A list of url, QIcon::Mode and QIcon::State.
@@ -2872,7 +2864,7 @@
             \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 86
 
     \row
-        \o \bold Length \target Length
+        \o \bold{Length} \target Length
         \o \l{#Number}{Number} (\c px | \c pt | \c em | \c ex)?
         \o A number followed by a measurement unit. The CSS standard recommends
            that user agents must
@@ -2890,13 +2882,13 @@
            \endlist
 
     \row
-        \o \bold Number \target Number
+        \o \bold{Number} \target Number
         \o A decimal integer or a real number
         \o Examples: \c 0, \c 18, \c +127, \c -255, \c 12.34, \c -.5,
            \c 0009.
 
     \row
-        \o \bold Origin \target Origin
+        \o \bold{Origin} \target Origin
         \o \c margin \BR
            | \c border \BR
            | \c padding \BR
@@ -2916,7 +2908,7 @@
            See also \l{The Box Model}.
 
     \row
-        \o \bold PaletteRole \target PaletteRole
+        \o \bold{PaletteRole} \target PaletteRole
         \o \c alternate-base \BR
               | \c base \BR
               | \c bright-text \BR
@@ -2941,7 +2933,7 @@
             \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 87
 
     \row
-        \o \bold Radius \target Radius
+        \o \bold{Radius} \target Radius
         \o \l{#Length}{Length}\{1, 2\}
         \o One or two occurrences of \l{#Length}{Length}. If only one length is
            specified, it is used as the radius of the quarter circle
@@ -2950,7 +2942,7 @@
            ellipse, whereas the second length is the vertical radius.
 
     \row
-        \o \bold Repeat \target Repeat
+        \o \bold{Repeat} \target Repeat
         \o \c repeat-x \BR
            | \c repeat-y \BR
            | \c repeat \BR
@@ -2965,7 +2957,7 @@
            \endlist
 
     \row
-        \o \bold Url \target Url
+        \o \bold{Url} \target Url
         \o \tt{url(\e{filename})}
         \o \tt{\e{filename}} is the name of a file on the local disk
            or stored using \l{the Qt Resource System}. Setting an

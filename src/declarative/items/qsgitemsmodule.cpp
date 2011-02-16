@@ -1,4 +1,4 @@
-// Commit: 4fcf055f66cc23c9e60a7add489e394420e71914
+// Commit: ab71df83ba4eb9d749efc0f3a2d4a0fe5486023f
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
@@ -70,6 +70,7 @@
 #include "qsgstateoperations_p.h"
 #include "qsganimation_p.h"
 #include "shadereffectitem.h"
+//#include "private/qsgpincharea_p.h"
 
 static QDeclarativePrivate::AutoParentResult qsgitem_autoParent(QObject *obj, QObject *parent)
 {
@@ -157,6 +158,11 @@ static void qt_sgitems_defineModule(const char *uri, int major, int minor)
 
     qmlRegisterUncreatableType<QSGKeyNavigationAttached>(uri,major,minor,"KeyNavigation",QSGKeyNavigationAttached::tr("KeyNavigation is only available via attached properties"));
     qmlRegisterUncreatableType<QSGKeysAttached>(uri,major,minor,"Keys",QSGKeysAttached::tr("Keys is only available via attached properties"));
+
+//XXX fix PinchArea
+//    qmlRegisterType<QDeclarativePinchArea>(uri,major,minor,"PinchArea");
+//    qmlRegisterType<QDeclarativePinch>(uri,major,minor"Pinch");
+//    qmlRegisterType<QDeclarativePinchEvent>();
 
     qmlRegisterType<ShaderEffectItem>("QtQuick", 2, 0, "ShaderEffectItem");
     qmlRegisterType<ShaderEffectSource>("QtQuick", 2, 0, "ShaderEffectSource");

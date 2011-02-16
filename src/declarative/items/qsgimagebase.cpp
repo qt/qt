@@ -1,7 +1,7 @@
-// Commit: e17a5398bf20b89834d4d6c7f4d9203f192b101f
+// Commit: ab71df83ba4eb9d749efc0f3a2d4a0fe5486023f
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,8 +47,14 @@
 
 QT_BEGIN_NAMESPACE
 
+QSGImageBase::QSGImageBase(QSGItem *parent)
+: QSGImplicitSizeItem(*(new QSGImageBasePrivate), parent)
+{
+    setFlag(ItemHasContents);
+}
+
 QSGImageBase::QSGImageBase(QSGImageBasePrivate &dd, QSGItem *parent)
-: QSGItem(dd, parent)
+: QSGImplicitSizeItem(dd, parent)
 {
     setFlag(ItemHasContents);
 }
@@ -128,6 +134,44 @@ QSize QSGImageBase::sourceSize() const
     return QSize(width != -1 ? width : implicitWidth(), height != -1 ? height : implicitHeight());
 }
 
+bool QSGImageBase::cache() const
+{
+    Q_D(const QSGImageBase);
+    return d->cache;
+}
+
+void QSGImageBase::setCache(bool cache)
+{
+    Q_D(QSGImageBase);
+    if (d->cache == cache)
+        return;
+
+    d->cache = cache;
+    emit cacheChanged();
+    if (isComponentComplete())
+        load();
+}
+
+void QSGImageBase::setMirror(bool mirror)
+{
+    Q_D(QSGImageBase);
+    if (mirror == d->mirror)
+        return;
+
+    d->mirror = mirror;
+
+    if (isComponentComplete())
+        update();
+
+    emit mirrorChanged();
+}
+
+bool QSGImageBase::mirror() const
+{
+    Q_D(const QSGImageBase);
+    return d->mirror;
+}
+
 void QSGImageBase::load()
 {
     Q_D(QSGImageBase);
@@ -143,7 +187,12 @@ void QSGImageBase::load()
         pixmapChange();
         update();
     } else {
-        d->pix.load(qmlEngine(this), d->url, d->explicitSourceSize ? sourceSize() : QSize(), d->async);
+        QDeclarativePixmap::Options options;
+        if (d->async)
+            options |= QDeclarativePixmap::Asynchronous;
+        if (d->cache)
+            options |= QDeclarativePixmap::Cache;
+        d->pix.load(qmlEngine(this), d->url, d->explicitSourceSize ? sourceSize() : QSize(), options);
 
         if (d->pix.isLoading()) {
             d->progress = 0.0;

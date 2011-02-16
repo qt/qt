@@ -169,6 +169,8 @@ QDBusMetaObjectGenerator::QDBusMetaObjectGenerator(const QString &interfaceName,
     }
 }
 
+Q_DBUS_EXPORT bool qt_dbus_metaobject_skip_annotations = false;
+
 QDBusMetaObjectGenerator::Type
 QDBusMetaObjectGenerator::findType(const QByteArray &signature,
                                    const QDBusIntrospection::Annotations &annotations,
@@ -178,7 +180,7 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
     result.id = QVariant::Invalid;
 
     int type = QDBusMetaType::signatureToType(signature);
-    if (type == QVariant::Invalid) {
+    if (type == QVariant::Invalid && !qt_dbus_metaobject_skip_annotations) {
         // it's not a type normally handled by our meta type system
         // it must contain an annotation
         QString annotationName = QString::fromLatin1("com.trolltech.QtDBus.QtTypeName");
@@ -201,6 +203,20 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
             return result;      // unknown type is invalid too
 
         result.name = typeName;
+    } else if (type == QVariant::Invalid) {
+        // this case is used only by the qdbus command-line tool
+        // invalid, let's create an impossible type that contains the signature
+
+        if (signature == "av") {
+            result.name = "QVariantList";
+            type = QVariant::List;
+        } else if (signature == "a{sv}") {
+            result.name = "QVariantMap";
+            type = QVariant::Map;
+        } else {
+            result.name = "QDBusRawType::" + signature;
+            type = -1;
+        }
     } else {
         result.name = QVariant::typeToName( QVariant::Type(type) );
     }

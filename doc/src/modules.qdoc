@@ -30,7 +30,7 @@
     \title All Modules
     \startpage index.html Qt Reference Documentation
     \nextpage QtCore
-    
+
     \ingroup classlists
 
     \brief Qt 4 comprises several modules. Each module is a separate
@@ -40,7 +40,7 @@
     \header \o {2,1} \bold{Modules for general software development}
     \row \o \l{QtCore} \o Core non-graphical classes used by other modules
     \row \o \l{QtGui} \o Graphical user interface (GUI) components
-    \row \o \l{qtmultimedia-module.html}{QtMultimedia} \o Classes for low-level multimedia functionality
+    \row \o \l{QtMultimedia Module}{QtMultimedia} \o Classes for low-level multimedia functionality
     \row \o \l{QtNetwork} \o Classes for network programming
     \row \o \l{QtOpenGL} \o OpenGL support classes
     \row \o \l{QtOpenVG} \o OpenVG support classes

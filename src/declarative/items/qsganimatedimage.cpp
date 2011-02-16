@@ -1,7 +1,7 @@
-// Commit: 61403e81d411b82e8a9ac5e3228267bf9ae0e8e1
+// Commit: 80d0fe9cbd92288a08d5ced8767f1edb651dae37
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -147,13 +147,22 @@ void QSGAnimatedImage::setSource(const QUrl &url)
     }
 
     d->url = url;
+    emit sourceChanged(d->url);
 
-    if (url.isEmpty()) {
+    if (isComponentComplete())
+        load();
+}
+
+void QSGAnimatedImage::load()
+{
+    Q_D(QSGAnimatedImage);
+
+    if (d->url.isEmpty()) {
         delete d->_movie;
         d->status = Null;
     } else {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
-        QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
+        QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(d->url);
         if (!lf.isEmpty()) {
             //### should be unified with movieRequestFinished
             d->_movie = new QMovie(lf);
@@ -161,6 +170,8 @@ void QSGAnimatedImage::setSource(const QUrl &url)
                 qmlInfo(this) << "Error Reading Animated Image File " << d->url.toString();
                 delete d->_movie;
                 d->_movie = 0;
+                d->status = Error;
+                emit statusChanged(d->status);
                 return;
             }
             connect(d->_movie, SIGNAL(stateChanged(QMovie::MovieState)),
@@ -220,6 +231,8 @@ void QSGAnimatedImage::movieRequestFinished()
 #endif
         delete d->_movie;
         d->_movie = 0;
+        d->status = Error;
+        emit statusChanged(d->status);
         return;
     }
     connect(d->_movie, SIGNAL(stateChanged(QMovie::MovieState)),
@@ -236,6 +249,8 @@ void QSGAnimatedImage::movieRequestFinished()
     if(d->paused)
         d->_movie->setPaused(true);
     d->setPixmap(d->_movie->currentPixmap());
+    d->status = Ready;
+    emit statusChanged(d->status);
 }
 
 void QSGAnimatedImage::movieUpdate()
@@ -262,6 +277,8 @@ void QSGAnimatedImage::componentComplete()
 {
     Q_D(QSGAnimatedImage);
     QSGItem::componentComplete(); // NOT QSGImage
+    if (d->url.isValid())
+        load();
     if (!d->reply) {
         setCurrentFrame(d->preset_currentframe);
         d->preset_currentframe = 0;

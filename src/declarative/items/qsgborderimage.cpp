@@ -1,7 +1,7 @@
-// Commit: 6f18ee7ce50bc9b2688079e923a34c08117b3eb8
+// Commit: f018d9236647b687e03dd9d2e1867944b4f4058b
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -127,7 +127,12 @@ void QSGBorderImage::load()
             }
         } else {
 
-            d->pix.load(qmlEngine(this), d->url, d->async);
+            QDeclarativePixmap::Options options;
+            if (d->async)
+                options |= QDeclarativePixmap::Asynchronous;
+            if (d->cache)
+                options |= QDeclarativePixmap::Cache;
+            d->pix.load(qmlEngine(this), d->url, options);
 
             if (d->pix.isLoading()) {
                 d->pix.connectFinished(this, SLOT(requestFinished()));
@@ -210,7 +215,12 @@ void QSGBorderImage::setGridScaledImage(const QSGGridScaledImage& sci)
 
         d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
 
-        d->pix.load(qmlEngine(this), d->sciurl, d->async);
+        QDeclarativePixmap::Options options;
+        if (d->async)
+            options |= QDeclarativePixmap::Asynchronous;
+        if (d->cache)
+            options |= QDeclarativePixmap::Cache;
+        d->pix.load(qmlEngine(this), d->sciurl, options);
 
         if (d->pix.isLoading()) {
             static int thisRequestProgress = -1;
@@ -261,6 +271,9 @@ void QSGBorderImage::requestFinished()
 
     setImplicitWidth(impsize.width());
     setImplicitHeight(impsize.height());
+
+    if (d->sourcesize.width() != d->pix.width() || d->sourcesize.height() != d->pix.height())
+        emit sourceSizeChanged();
 
     d->progress = 1.0;
     emit statusChanged(d->status);
@@ -318,6 +331,8 @@ Node *QSGBorderImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         node = 0;
     }
     d->pixmapChanged = false;
+
+    // XXX Does not support mirror property
 
     if (!node) {
         // XXX akennedy - Doesn't support all the tiling modes

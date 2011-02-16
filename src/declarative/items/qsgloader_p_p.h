@@ -1,7 +1,7 @@
-// Commit: e0c8fc977738ca4ac6d31e45bdd2aa1b32828f54
+// Commit: 5d2817cd668a705729df1727de49adf00713ac97
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,13 +55,13 @@
 //
 
 #include "qsgloader_p.h"
-#include "qsgitem_p.h"
+#include "qsgimplicitsizeitem_p_p.h"
 #include "qsgitemchangelistener_p.h"
 
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeContext;
-class QSGLoaderPrivate : public QSGItemPrivate, public QSGItemChangeListener
+class QSGLoaderPrivate : public QSGImplicitSizeItemPrivate, public QSGItemChangeListener
 {
     Q_DECLARE_PUBLIC(QSGLoader)
 
@@ -72,11 +72,15 @@ public:
     void itemGeometryChanged(QSGItem *item, const QRectF &newGeometry, const QRectF &oldGeometry);
     void clear();
     void initResize();
+    void load();
 
     QUrl source;
     QSGItem *item;
     QDeclarativeComponent *component;
     bool ownComponent : 1;
+    bool updatingSize: 1;
+    bool itemWidthValid : 1;
+    bool itemHeightValid : 1;
 
     void _q_sourceLoaded();
     void _q_updateSize(bool loaderGeometryChanged = true);

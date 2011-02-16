@@ -1,7 +1,7 @@
-// Commit: ddb5e1eef379c7f32a594d91b00ff3514c46b62a
+// Commit: 6f78a6080b84cc3ef96b73a4ff58d1b5a72f08f4
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -138,6 +138,9 @@ class Q_DECLARATIVE_EXPORT QSGItem : public QObject, public QDeclarativeParserSt
     Q_PROPERTY(QDeclarativeListProperty<QSGTransform> transform READ transform DESIGNABLE false FINAL)
 
     Q_PROPERTY(bool smooth READ smooth WRITE setSmooth NOTIFY smoothChanged)
+    Q_PROPERTY(qreal implicitWidth READ implicitWidth WRITE setImplicitWidth NOTIFY implicitWidthChanged)
+    Q_PROPERTY(qreal implicitHeight READ implicitHeight WRITE setImplicitHeight NOTIFY implicitHeightChanged)
+
     Q_ENUMS(TransformOrigin)
     Q_CLASSINFO("DefaultProperty", "data")
 
@@ -160,11 +163,6 @@ public:
         ItemOpacityHasChanged,     // Item
         ItemActiveFocusHasChanged, // TextEdit, TextInput
     };
-
-    // XXX todo - from QGraphicsObject
-    Qt::InputMethodHints inputMethodHints() const { return 0; }
-    void setInputMethodHints(Qt::InputMethodHints hints) { Q_UNUSED(hints); }
-    void updateMicroFocus() {}
 
     enum TransformOrigin {
         TopLeft, Top, TopRight,
@@ -278,6 +276,9 @@ public:
     Q_INVOKABLE void forceActiveFocus();
     Q_INVOKABLE QSGItem *childAt(qreal x, qreal y) const;
 
+    Qt::InputMethodHints inputMethodHints() const;
+    void setInputMethodHints(Qt::InputMethodHints hints);
+    void updateMicroFocus();
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
 
     struct UpdatePaintNodeData {
@@ -311,6 +312,8 @@ Q_SIGNALS:
     void widthChanged();
     void heightChanged();
     void zChanged();
+    void implicitWidthChanged();
+    void implicitHeightChanged();
 
 protected:
     virtual bool event(QEvent *);

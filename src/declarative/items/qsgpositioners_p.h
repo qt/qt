@@ -1,7 +1,7 @@
-// Commit: e39a2e39451bf106a9845f8a60fc571faaa4dde5
+// Commit: ab71df83ba4eb9d749efc0f3a2d4a0fe5486023f
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,7 +43,7 @@
 #ifndef QSGPOSITIONERS_P_H
 #define QSGPOSITIONERS_P_H
 
-#include "qsgitem.h"
+#include "qsgimplicitsizeitem_p.h"
 
 #include <private/qdeclarativestate_p.h>
 #include <private/qpodvector_p.h>
@@ -59,7 +59,7 @@ QT_MODULE(Declarative)
 
 class QSGBasePositionerPrivate;
 
-class Q_DECLARATIVE_PRIVATE_EXPORT QSGBasePositioner : public QSGItem
+class Q_DECLARATIVE_PRIVATE_EXPORT QSGBasePositioner : public QSGImplicitSizeItem
 {
     Q_OBJECT
 
@@ -130,12 +130,21 @@ private:
 class Q_AUTOTEST_EXPORT QSGRow: public QSGBasePositioner
 {
     Q_OBJECT
+    Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection NOTIFY layoutDirectionChanged)
 public:
     QSGRow(QSGItem *parent=0);
+
+    Qt::LayoutDirection layoutDirection() const;
+    void setLayoutDirection (Qt::LayoutDirection);
+
+Q_SIGNALS:
+    void layoutDirectionChanged();
+
 protected:
     virtual void doPositioning(QSizeF *contentSize);
     virtual void reportConflictingAnchors();
 private:
+    Qt::LayoutDirection m_layoutDirection;
     Q_DISABLE_COPY(QSGRow)
 };
 
@@ -145,6 +154,7 @@ class Q_AUTOTEST_EXPORT QSGGrid : public QSGBasePositioner
     Q_PROPERTY(int rows READ rows WRITE setRows NOTIFY rowsChanged)
     Q_PROPERTY(int columns READ columns WRITE setColumns NOTIFY columnsChanged)
     Q_PROPERTY(Flow flow READ flow WRITE setFlow NOTIFY flowChanged)
+    Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection NOTIFY layoutDirectionChanged)
 
 public:
     QSGGrid(QSGItem *parent=0);
@@ -160,10 +170,14 @@ public:
     Flow flow() const;
     void setFlow(Flow);
 
+    Qt::LayoutDirection layoutDirection() const;
+    void setLayoutDirection (Qt::LayoutDirection);
+
 Q_SIGNALS:
     void rowsChanged();
     void columnsChanged();
     void flowChanged();
+    void layoutDirectionChanged();
 
 protected:
     virtual void doPositioning(QSizeF *contentSize);
@@ -173,6 +187,7 @@ private:
     int m_rows;
     int m_columns;
     Flow m_flow;
+    Qt::LayoutDirection m_layoutDirection;
     Q_DISABLE_COPY(QSGGrid)
 };
 
@@ -180,6 +195,7 @@ class QSGFlowPrivate;
 class Q_AUTOTEST_EXPORT QSGFlow: public QSGBasePositioner
 {
     Q_OBJECT
+    Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection NOTIFY layoutDirectionChanged)
     Q_PROPERTY(Flow flow READ flow WRITE setFlow NOTIFY flowChanged)
 public:
     QSGFlow(QSGItem *parent=0);
@@ -189,8 +205,12 @@ public:
     Flow flow() const;
     void setFlow(Flow);
 
+    Qt::LayoutDirection layoutDirection() const;
+    void setLayoutDirection (Qt::LayoutDirection);
+
 Q_SIGNALS:
     void flowChanged();
+    void layoutDirectionChanged();
 
 protected:
     virtual void doPositioning(QSizeF *contentSize);

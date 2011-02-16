@@ -1,7 +1,7 @@
-// Commit: 91506374f23e3ba533396ec10aae285e4cd7caf4
+// Commit: ebd4bc73c46c2962742a682b6a391fb68c482aec
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,10 +73,16 @@ public:
 
     int count() const;
 
+    Q_INVOKABLE QSGItem *itemAt(int index) const;
+
 Q_SIGNALS:
     void modelChanged();
     void delegateChanged();
     void countChanged();
+
+    void itemAdded(int index, QSGItem *item);
+    void itemRemoved(int index, QSGItem *item);
+
 private:
     void clear();
     void regenerate();

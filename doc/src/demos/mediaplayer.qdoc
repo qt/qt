@@ -32,5 +32,5 @@
     The Media Player demonstration shows how \l{Phonon Module}{Phonon}
     can be used in Qt applications to handle audio and video playback.
 
-    \image mediaplayer-demo.png
+    \image qmediaplayer-demo.png
 */
