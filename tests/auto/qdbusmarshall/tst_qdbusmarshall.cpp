@@ -96,6 +96,19 @@ private:
     QProcess proc;
 };
 
+class QDBusMessageSpy: public QObject
+{
+    Q_OBJECT
+public slots:
+    Q_SCRIPTABLE int theSlot(const QDBusMessage &msg)
+    {
+        list << msg;
+        return 42;
+    }
+public:
+    QList<QDBusMessage> list;
+};
+
 struct UnregisteredType { };
 Q_DECLARE_METATYPE(UnregisteredType)
 
@@ -923,11 +936,12 @@ void tst_QDBusMarshall::sendCallErrors()
 
 void tst_QDBusMarshall::receiveUnknownType_data()
 {
-    QTest::newRow("in-call");
-    QTest::newRow("type-variant");
-    QTest::newRow("type-array");
-    QTest::newRow("type-struct");
-    QTest::newRow("type-naked");
+    QTest::addColumn<int>("receivedTypeId");
+    QTest::newRow("in-call") << qMetaTypeId<void*>();
+    QTest::newRow("type-variant") << qMetaTypeId<QDBusVariant>();
+    QTest::newRow("type-array") << qMetaTypeId<QDBusArgument>();
+    QTest::newRow("type-struct") << qMetaTypeId<QDBusArgument>();
+    QTest::newRow("type-naked") << qMetaTypeId<void *>();
 }
 
 struct DisconnectRawDBus {
@@ -974,7 +988,9 @@ void tst_QDBusMarshall::receiveUnknownType()
 
     if (qstrcmp(QTest::currentDataTag(), "in-call") == 0) {
         // create a call back to us containing a file descriptor
-        ScopedDBusMessage msg(dbus_message_new_method_call(con.baseService().toLatin1(), "/irrelevant/path", NULL, "irrelevantMethod"));
+        QDBusMessageSpy spy;
+        con.registerObject("/spyObject", &spy, QDBusConnection::ExportAllSlots);
+        ScopedDBusMessage msg(dbus_message_new_method_call(con.baseService().toLatin1(), "/spyObject", NULL, "theSlot"));
 
         int fd = fileno(stdout);
         dbus_message_append_args(msg.data(), DBUS_TYPE_UNIX_FD, &fd, DBUS_TYPE_INVALID);
@@ -995,16 +1011,30 @@ void tst_QDBusMarshall::receiveUnknownType()
 
         // now try to receive the reply
         dbus_pending_call_block(pending.data());
+
+        // check that the spy received what it was supposed to receive
+        QCOMPARE(spy.list.size(), 1);
+        QCOMPARE(spy.list.at(0).arguments().size(), 1);
+        QFETCH(int, receivedTypeId);
+        QCOMPARE(spy.list.at(0).arguments().at(0).userType(), receivedTypeId);
+
         msg.reset(dbus_pending_call_steal_reply(pending.data()));
         QVERIFY(msg);
-        QCOMPARE(dbus_message_get_type(msg.data()), DBUS_MESSAGE_TYPE_ERROR);
-        QCOMPARE(dbus_message_get_error_name(msg.data()), "org.freedesktop.DBus.Error.UnknownObject");
+        QCOMPARE(dbus_message_get_type(msg.data()), DBUS_MESSAGE_TYPE_METHOD_RETURN);
+        QCOMPARE(dbus_message_get_signature(msg.data()), DBUS_TYPE_INT32_AS_STRING);
+
+        int retval;
+        QVERIFY(dbus_message_get_args(msg.data(), &error, DBUS_TYPE_INT32, &retval, DBUS_TYPE_INVALID));
+        QCOMPARE(retval, 42);
     } else {
         // create a signal that we'll emit
         static const char signalName[] = "signalName";
         static const char interfaceName[] = "local.interface.name";
         ScopedDBusMessage msg(dbus_message_new_signal("/", interfaceName, signalName));
         con.connect(dbus_bus_get_unique_name(rawcon.data()), QString(), interfaceName, signalName, &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+        QDBusMessageSpy spy;
+        con.connect(dbus_bus_get_unique_name(rawcon.data()), QString(), interfaceName, signalName, &spy, SLOT(theSlot(QDBusMessage)));
 
         DBusMessageIter iter;
         dbus_message_iter_init_append(msg.data(), &iter);
@@ -1035,6 +1065,11 @@ void tst_QDBusMarshall::receiveUnknownType()
         // now let's see what happens
         QTestEventLoop::instance().enterLoop(1);
         QVERIFY(!QTestEventLoop::instance().timeout());
+        QCOMPARE(spy.list.size(), 1);
+        QCOMPARE(spy.list.at(0).arguments().count(), 1);
+        QFETCH(int, receivedTypeId);
+        //qDebug() << spy.list.at(0).arguments().at(0).typeName();
+        QCOMPARE(spy.list.at(0).arguments().at(0).userType(), receivedTypeId);
     }
 #endif
 }
