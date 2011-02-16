@@ -13146,4 +13146,6 @@ EXPORTS
 	?setWordSelectionEnabled@QTextControl@@QAEX_N@Z @ 13145 NONAME ; void QTextControl::setWordSelectionEnabled(bool)
 	?setDragEnabled@QTextControl@@QAEX_N@Z @ 13146 NONAME ; void QTextControl::setDragEnabled(bool)
 	?isWordSelectionEnabled@QTextControl@@QBE_NXZ @ 13147 NONAME ; bool QTextControl::isWordSelectionEnabled(void) const
-
+	?ProcessCommandParametersL@QS60MainAppUi@@UAEHW4TApaCommand@@AAV?$TBuf@$0BAA@@@ABVTDesC8@@@Z @ 13148 NONAME ; int QS60MainAppUi::ProcessCommandParametersL(enum TApaCommand, class TBuf<256> &, class TDesC8 const &)
+	?openFile@QFileOpenEvent@@QBE_NAAVQFile@@V?$QFlags@W4OpenModeFlag@QIODevice@@@@@Z @ 13149 NONAME ; bool QFileOpenEvent::openFile(class QFile &, class QFlags<enum QIODevice::OpenModeFlag>) const
+	??0QFileOpenEvent@@QAE@ABVRFile@@@Z @ 13150 NONAME ; QFileOpenEvent::QFileOpenEvent(class RFile const &)
