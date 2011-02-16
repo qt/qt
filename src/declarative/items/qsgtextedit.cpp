@@ -49,6 +49,7 @@
 #include <QtGui/qapplication.h>
 #include <QtGui/qgraphicssceneevent.h>
 #include <QtGui/qpainter.h>
+#include <QtGui/qtextobject.h>
 #include <QtCore/qmath.h>
 
 #include <private/qdeclarativeglobal_p.h>
