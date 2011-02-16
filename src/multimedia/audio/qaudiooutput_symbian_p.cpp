@@ -436,8 +436,8 @@ void QAudioOutputPrivate::writePaddingData()
         unsigned char *ptr = const_cast<unsigned char*>(outputBuffer.Ptr());
         Mem::FillZ(ptr, paddingBytes);
         outputBuffer.SetLength(outputBuffer.Length() + paddingBytes);
+        Q_ASSERT(m_bytesPadding >= paddingBytes);
         m_bytesPadding -= paddingBytes;
-        Q_ASSERT(m_bytesPadding >= 0);
 
         if (m_pullMode && m_source->atEnd())
             lastBufferFilled();
