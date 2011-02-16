@@ -33,74 +33,82 @@
 \nextpage {Extending QML Functionalities using C++}
 \title Presenting Data with Views
 
-\section1 Introduction
-
 Views are containers for collections of items. They are feature-rich and can be
 customizable to meet style or behavior requirements.
 
+\keyword qml-view-elements
 A set of standard views are provided in the basic set of Qt Quick
 graphical elements:
 
 \list
-\o \l{#ListView}{ListView} arranges items in a horizontal or vertical list
-\o \l{#GridView}{GridView} arranges items in a grid within the available space
-\o \l{#PathView}{PathView} arranges items on a path
-\o \l{WebView}{WebView} - available from the Qt WebKit module.
-
+\o \l{ListView} arranges items in a horizontal or vertical list
+\o \l{GridView} arranges items in a grid within the available space
+\o \l{PathView} arranges items on a path
+\o \l{WebView}{WebView} - available from the \l {QtWebKit QML Module}.
 \endlist
-
-Unlike these items, \l WebView is not a fully-featured view item, and needs
+Unlike other views, \l WebView is not a fully-featured view item, and needs
 to be combined with a \l Flickable item to create a view that performs like
 a Web browser.
 
+These elements have properties and behaviors exclusive to each element. Visit
+their respective documentation for more information.
+
 \section1 Models
 
-Views display a \l{qml-data-models}{models} onto the screen. A model could be a simple list of \l{QML Data Models#An Integer}{integer} or a \l{qml-c++-models}{C++ models}.
+Views display \l{qml-data-models}{models} onto the screen. A model could be a simple list of \l{QML Data Models#An Integer}{integer} or a \l{qml-c++-models}{C++ model}.
 
 To assign a model to a view, bind the view's \c model property to a model.
+\snippet doc/src/snippets/declarative/listview.qml model
+\snippet doc/src/snippets/declarative/listview.qml model
 
-\section1 ListView
+For more information, consult the \l {QML Data Models} article.
 
-\l ListView shows a classic list of items with horizontal or vertical placing
-of items.
+\keyword qml-view-delegate
+\section1 View Delegates
 
-\beginfloatright
-\inlineimage qml-listview-snippet.png
-\endfloat
-
-The following example shows a minimal ListView displaying a sequence of
-numbers (using an \l{QML Data Models#An Integer}{integer as a model}).
-A simple delegate is used to define an items for each piece of data in the
-model.
-
-\clearfloat
-\snippet doc/src/snippets/declarative/listview/listview-snippet.qml document
-
-
-
-\section2 GridView
-
-\l GridView displays items in a grid like an file manager's icon view.
-
-\section2 PathView
-
-\l PathView displays items on a path, where the selection remains in
-the same place and the items move around it.
+Views need a \e delegate to visually represent an item in a list. A view will
+visual each item list according to the template defined by the delegate.
+Properties of the model are accessible as well as an \c index property.
+\snippet doc/src/snippets/declarative/listview.qml delegate
+\image listview-setup.png
 
 \section1 Decorating Views
 
-\section2 Headers and Footers
+Views allow visual customization through \e decoration properties such as the \c header, \c footer, and \c section properties. By binding an object, usually
+another visual object, to these properties, the views are decoratable. A footer
+may include a \l Rectangle element showcasing borders or a header that displays
+a logo on top of the list.
 
-\section2 Sections
+Suppose that a specific club wants to decorate its members list with its brand
+colors. A member list is in a \c model and the \c delegate will display the
+model's content.
+\snippet doc/src/snippets/declarative/listview-decorations.qml model
+\snippet doc/src/snippets/declarative/listview-decorations.qml delegate
 
-\section2 Navigation
+The club may decorate the members list by binding visual objects to the
+\c header and \c footer properties. The visual object may be defined inline, in another file, or in a
+\l {Component} element.
+\snippet doc/src/snippets/declarative/listview-decorations.qml decorations
+\image listview-decorations.png
 
-In traditional user interfaces, views can be scrolled using standard
-controls, such as scroll bars and arrow buttons. In some situations, it
-is also possible to drag the view directly by pressing and holding a
-mouse button while moving the cursor. In touch-based user interfaces,
-this dragging action is often complemented with a flicking action, where
-scrolling continues after the user has stopped touching the view.
+\section1 ListView Sections
 
-\section1 Further Reading
+\l {ListView} contents may be grouped into \e sections, where related list items
+are labelled according to their sections. Further, the sections may be decorated
+with \l{qml-view-delegate}{delegates}.
+
+A list may contain a list indicating people's names and the team on which team
+the person belongs.
+\snippet doc/src/snippets/declarative/listview-sections.qml model
+\snippet doc/src/snippets/declarative/listview-sections.qml delegate
+
+The ListView element has the \c section
+\l{qml-attached-properties}{attached property} that can combine adjacent
+and related elements into a section. The section's \c property property is for
+selecting which list element property to use as sections. The \c criteria
+can dictate how the section names are displayed and the \c delegate is similar
+to the views' \l {qml-view-delegate}{delegate} property.
+\snippet doc/src/snippets/declarative/listview-sections.qml section
+\image listview-section.png
+
 */

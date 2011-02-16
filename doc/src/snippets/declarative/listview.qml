@@ -13,15 +13,15 @@
 ** modification, are permitted provided that the following conditions are
 ** met:
 **   * Redistributions of source code must retain the above copyright
-**     notice, this list of conditions and the following disclaimer.
+** notice, this list of conditions and the following disclaimer.
 **   * Redistributions in binary form must reproduce the above copyright
-**     notice, this list of conditions and the following disclaimer in
-**     the documentation and/or other materials provided with the
-**     distribution.
+** notice, this list of conditions and the following disclaimer in
+** the documentation and/or other materials provided with the
+** distribution.
 **   * Neither the name of Nokia Corporation and its Subsidiary(-ies) nor
-**     the names of its contributors may be used to endorse or promote
-**     products derived from this software without specific prior written
-**     permission.
+** the names of its contributors may be used to endorse or promote
+** products derived from this software without specific prior written
+** permission.
 **
 ** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 ** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -41,12 +41,47 @@
 //! [document]
 import QtQuick 1.0
 
-ListView {
-    width: 50; height: 200
-    model: 4
-    delegate: Text {
-        text: index;
-        font.pixelSize: 40
+//! [parent begin]
+Rectangle {
+//! [parent begin]
+    width: 175; height: 175; color: "white"
+
+//! [model]
+ListModel {
+    id: petlist
+    ListElement { type: "Cat" }
+    ListElement { type: "Dog" }
+    ListElement { type: "Mouse" }
+    ListElement { type: "Rabbit" }
+    ListElement { type: "Horse" }
+}
+//! [model]
+
+//! [delegate]
+Component {
+    id: petdelegate
+    Text {
+        id: label
+        font.pixelSize: 24
+        text: if (index == 0)
+            label.text = type + " (default)"
+        else
+            text: type
     }
 }
+//! [delegate]
+
+//! [view]
+ListView {
+    id: view
+    anchors.fill: parent
+
+    model: petlist
+    delegate: petdelegate
+}
+//! [view]
+
+//! [parent end]
+}
+//! [parent end]
 //! [document]
