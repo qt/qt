@@ -1667,6 +1667,28 @@ void QDBusConnectionPrivate::setPeer(DBusConnection *c, const QDBusErrorInternal
     QMetaObject::invokeMethod(this, "doDispatch", Qt::QueuedConnection);
 }
 
+static QDBusConnection::ConnectionCapabilities connectionCapabilies(DBusConnection *connection)
+{
+    QDBusConnection::ConnectionCapabilities result = 0;
+
+#if defined(QT_LINKED_LIBDBUS) && DBUS_VERSION < 0x010400
+    // no capabilities are possible
+#else
+# if !defined(QT_LINKED_LIBDBUS)
+    // run-time check if the next functions are available
+    int major, minor, micro;
+    q_dbus_get_version(&major, &minor, &micro);
+    if (major == 1 && minor < 4)
+        return result;
+# endif
+
+    if (q_dbus_connection_can_send_type(connection, DBUS_TYPE_UNIX_FD))
+        result |= QDBusConnection::UnixFileDescriptorPassing;
+#endif
+
+    return result;
+}
+
 void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusErrorInternal &error)
 {
     if (!dbc) {
@@ -1680,6 +1702,7 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
     const char *service = q_dbus_bus_get_unique_name(connection);
     Q_ASSERT(service);
     baseService = QString::fromUtf8(service);
+    capabilities = connectionCapabilies(connection);
 
     q_dbus_connection_set_exit_on_disconnect(connection, false);
     q_dbus_connection_set_watch_functions(connection, qDBusAddWatch, qDBusRemoveWatch,
