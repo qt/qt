@@ -1126,7 +1126,7 @@ void QDeclarativeTextEdit::keyReleaseEvent(QKeyEvent *event)
 void QDeclarativeTextEditPrivate::focusChanged(bool hasFocus)
 {
     Q_Q(QDeclarativeTextEdit);
-    q->setCursorVisible(hasFocus);
+    q->setCursorVisible(hasFocus && scene && scene->hasFocus());
     QDeclarativeItemPrivate::focusChanged(hasFocus);
 }
 

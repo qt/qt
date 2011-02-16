@@ -948,7 +948,7 @@ void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
 {
     Q_Q(QDeclarativeTextInput);
     focused = hasFocus;
-    q->setCursorVisible(hasFocus);
+    q->setCursorVisible(hasFocus && scene && scene->hasFocus());
     if(q->echoMode() == QDeclarativeTextInput::PasswordEchoOnEdit && !hasFocus)
         control->updatePasswordEchoEditing(false);//QLineControl sets it on key events, but doesn't deal with focus events
     if (!hasFocus)

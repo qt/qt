@@ -110,6 +110,7 @@ private slots:
 
     void passwordCharacter();
     void cursorDelegate();
+    void cursorVisible();
     void navigation();
     void copyAndPaste();
     void readOnly();
@@ -1314,6 +1315,75 @@ void tst_qdeclarativetextinput::cursorDelegate()
     QVERIFY(!textInputObject->findChild<QDeclarativeItem*>("cursorInstance"));
 
     delete view;
+}
+
+void tst_qdeclarativetextinput::cursorVisible()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+
+    QDeclarativeTextInput input;
+    QSignalSpy spy(&input, SIGNAL(cursorVisibleChanged(bool)));
+
+    QCOMPARE(input.isCursorVisible(), false);
+
+    input.setCursorVisible(true);
+    QCOMPARE(input.isCursorVisible(), true);
+    QCOMPARE(spy.count(), 1);
+
+    input.setCursorVisible(false);
+    QCOMPARE(input.isCursorVisible(), false);
+    QCOMPARE(spy.count(), 2);
+
+    input.setFocus(true);
+    QCOMPARE(input.isCursorVisible(), false);
+    QCOMPARE(spy.count(), 2);
+
+    scene.addItem(&input);
+    QCOMPARE(input.isCursorVisible(), true);
+    QCOMPARE(spy.count(), 3);
+
+    input.setFocus(false);
+    QCOMPARE(input.isCursorVisible(), false);
+    QCOMPARE(spy.count(), 4);
+
+    input.setFocus(true);
+    QCOMPARE(input.isCursorVisible(), true);
+    QCOMPARE(spy.count(), 5);
+
+    scene.clearFocus();
+    QCOMPARE(input.isCursorVisible(), false);
+    QCOMPARE(spy.count(), 6);
+
+    scene.setFocus();
+    QCOMPARE(input.isCursorVisible(), true);
+    QCOMPARE(spy.count(), 7);
+
+    view.clearFocus();
+    QCOMPARE(input.isCursorVisible(), false);
+    QCOMPARE(spy.count(), 8);
+
+    view.setFocus();
+    QCOMPARE(input.isCursorVisible(), true);
+    QCOMPARE(spy.count(), 9);
+
+    // on mac, setActiveWindow(0) on mac does not deactivate the current application
+    // (you have to switch to a different app or hide the current app to trigger this)
+#if !defined(Q_WS_MAC)
+    QApplication::setActiveWindow(0);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(0));
+    QCOMPARE(input.isCursorVisible(), false);
+    QCOMPARE(spy.count(), 10);
+
+    QApplication::setActiveWindow(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+    QCOMPARE(input.isCursorVisible(), true);
+    QCOMPARE(spy.count(), 11);
+#endif
 }
 
 void tst_qdeclarativetextinput::readOnly()
