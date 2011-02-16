@@ -1,4 +1,6 @@
 TEMPLATE = app
+macx:CONFIG -= app_bundle
+
 QT =
 TARGET =
 DEPENDPATH += .

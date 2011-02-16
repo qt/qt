@@ -167,7 +167,8 @@ V8SOURCES += \
     $$V8DIR/src/ia32/virtual-frame-ia32.cc
 }
 
-arch_x86_64 {
+# FIXME Should we use QT_CONFIG instead? What about 32 bit Macs?
+arch_x86_64|equals(QMAKE_HOST.arch, x86_64) {
 DEFINES += V8_TARGET_ARCH_X64
 V8SOURCES += \
     $$V8DIR/src/jump-target-heavy.cc \
@@ -190,7 +191,7 @@ V8SOURCES += \
     $$V8DIR/src/x64/virtual-frame-x64.cc
 }
 
-unix:!symbian {
+unix:!symbian:!macx {
 V8SOURCES += \
     $$V8DIR/src/platform-linux.cc \
     $$V8DIR/src/platform-posix.cc

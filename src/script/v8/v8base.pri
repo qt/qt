@@ -5,4 +5,5 @@ isEmpty(V8DIR) {
     message(using external V8 from $$V8DIR)
 }
 
-QMAKE_CXXFLAGS += -Wno-unused-parameter
+QMAKE_CFLAGS_WARN_ON += -Wno-unused-parameter
+QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
