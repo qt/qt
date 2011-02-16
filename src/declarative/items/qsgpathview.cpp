@@ -1,7 +1,7 @@
-// Commit: 07b9a2f2f74a42c83ac95f144392437001a455bb
+// Commit: d446a0ec464556ede91225b14e75f2f8f5a748d5
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -834,15 +834,17 @@ void QSGPathViewPrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
     QPointF pathPoint = pointNear(event->pos(), &newPc);
     if (!stealMouse) {
         QPointF delta = pathPoint - startPoint;
-        if (qAbs(delta.x()) > QApplication::startDragDistance() || qAbs(delta.y()) > QApplication::startDragDistance())
+        if (qAbs(delta.x()) > QApplication::startDragDistance() || qAbs(delta.y()) > QApplication::startDragDistance()) {
             stealMouse = true;
+            startPc = newPc;
+        }
     }
 
     if (stealMouse) {
         moveReason = QSGPathViewPrivate::Mouse;
         qreal diff = (newPc - startPc)*modelCount*mappedRange;
         if (diff) {
-            setOffset(offset + diff);
+            q->setOffset(offset + diff);
 
             if (diff > modelCount/2)
                 diff -= modelCount;
@@ -1004,8 +1006,10 @@ void QSGPathView::componentComplete()
     // It is possible that a refill has already happended to to Path
     // bindings being handled in the componentComplete().  If so
     // don't do it again.
-    if (d->items.count() == 0)
+    if (d->items.count() == 0 && d->model) {
+        d->modelCount = d->model->count();
         d->regenerate();
+    }
     d->updateHighlight();
 }
 
@@ -1139,17 +1143,19 @@ void QSGPathView::itemsInserted(int modelIndex, int count)
     if (!d->isValid() || !isComponentComplete())
         return;
 
-    d->itemCache += d->items;
-    d->items.clear();
-    if (modelIndex <= d->currentIndex) {
-        d->currentIndex += count;
-        emit currentIndexChanged();
-    } else if (d->offset != 0) {
-        d->offset += count;
-        d->offsetAdj += count;
+    if (d->modelCount) {
+        d->itemCache += d->items;
+        d->items.clear();
+        if (modelIndex <= d->currentIndex) {
+            d->currentIndex += count;
+            emit currentIndexChanged();
+        } else if (d->offset != 0) {
+            d->offset += count;
+            d->offsetAdj += count;
+        }
     }
 
-    d->modelCount = d->model->count();
+    d->modelCount += count;
     if (d->flicking || d->moving) {
         d->regenerate();
         d->updateCurrent();
@@ -1175,7 +1181,7 @@ void QSGPathView::itemsRemoved(int modelIndex, int count)
         currentChanged = true;
     } else if (d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count) {
         // current item has been removed.
-        d->currentIndex = qMin(modelIndex, d->modelCount-1);
+        d->currentIndex = qMin(modelIndex, d->modelCount-count-1);
         if (d->currentItem) {
             if (QSGPathViewAttached *att = d->attached(d->currentItem))
                 att->setIsCurrentItem(true);
@@ -1186,18 +1192,29 @@ void QSGPathView::itemsRemoved(int modelIndex, int count)
     d->itemCache += d->items;
     d->items.clear();
 
+    bool changedOffset = false;
     if (modelIndex > d->currentIndex) {
         if (d->offset >= count) {
+            changedOffset = true;
             d->offset -= count;
             d->offsetAdj -= count;
         }
     }
 
-    d->modelCount = d->model->count();
-    d->regenerate();
-    d->updateCurrent();
-    if (!d->modelCount)
+    d->modelCount -= count;
+    if (!d->modelCount) {
+        while (d->itemCache.count())
+            d->releaseItem(d->itemCache.takeLast());
+        d->offset = 0;
+        changedOffset = true;
+        d->tl.reset(d->moveOffset);
         update();
+    } else {
+        d->regenerate();
+        d->updateCurrent();
+    }
+    if (changedOffset)
+        emit offsetChanged();
     if (currentChanged)
         emit currentIndexChanged();
     emit countChanged();
@@ -1285,7 +1302,7 @@ void QSGPathView::movementEnding()
 int QSGPathViewPrivate::calcCurrentIndex()
 {
     int current = -1;
-    if (model && items.count()) {
+    if (modelCount && model && items.count()) {
         offset = qmlMod(offset, modelCount);
         if (offset < 0)
             offset += modelCount;
@@ -1301,7 +1318,7 @@ void QSGPathViewPrivate::updateCurrent()
     Q_Q(QSGPathView);
     if (moveReason != Mouse)
         return;
-    if (!haveHighlightRange || highlightRangeMode != QSGPathView::StrictlyEnforceRange)
+    if (!modelCount || !haveHighlightRange || highlightRangeMode != QSGPathView::StrictlyEnforceRange)
         return;
 
     int idx = calcCurrentIndex();

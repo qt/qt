@@ -1,7 +1,7 @@
-// Commit: fe3cfced940f41d078380ef7bdebe40d85aa49a2
+// Commit: 6f78a6080b84cc3ef96b73a4ff58d1b5a72f08f4
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -284,6 +284,11 @@ public:
     Qt::MouseButtons acceptedMouseButtons;
     Qt::InputMethodHints imHints;
 
+    virtual qreal getImplicitWidth() const;
+    virtual qreal getImplicitHeight() const;
+    virtual void implicitWidthChanged();
+    virtual void implicitHeightChanged();
+
     QPointF computeTransformOrigin() const;
     QList<QSGTransform *> transforms;
     virtual void transformChanged();
@@ -474,6 +479,7 @@ Q_SIGNALS:
 private:
     virtual void keyPressed(QKeyEvent *event, bool post);
     virtual void keyReleased(QKeyEvent *event, bool post);
+    void setFocusNavigation(QSGItem *currentItem, const char *dir);
 };
 
 class QSGKeysAttachedPrivate : public QObjectPrivate

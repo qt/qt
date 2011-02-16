@@ -1,7 +1,7 @@
-// Commit: 91506374f23e3ba533396ec10aae285e4cd7caf4
+// Commit: ebd4bc73c46c2962742a682b6a391fb68c482aec
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,6 +61,8 @@ class Q_AUTOTEST_EXPORT QSGBorderImage : public QSGImageBase
     Q_PROPERTY(QSGScaleGrid *border READ border CONSTANT)
     Q_PROPERTY(TileMode horizontalTileMode READ horizontalTileMode WRITE setHorizontalTileMode NOTIFY horizontalTileModeChanged)
     Q_PROPERTY(TileMode verticalTileMode READ verticalTileMode WRITE setVerticalTileMode NOTIFY verticalTileModeChanged)
+    // read-only for BorderImage
+    Q_PROPERTY(QSize sourceSize READ sourceSize NOTIFY sourceSizeChanged)
 
 public:
     QSGBorderImage(QSGItem *parent=0);
@@ -81,6 +83,7 @@ public:
 Q_SIGNALS:
     void horizontalTileModeChanged();
     void verticalTileModeChanged();
+    void sourceSizeChanged();
 
 protected:
     virtual void load();

@@ -1,7 +1,7 @@
-// Commit: 58a76965e20c4c66ab2dc9cf73aa72b1cfddfbeb
+// Commit: ebd4bc73c46c2962742a682b6a391fb68c482aec
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -161,6 +161,8 @@ public:
 
     Q_INVOKABLE void positionViewAtIndex(int index, int mode);
     Q_INVOKABLE int indexAt(int x, int y) const;
+    Q_INVOKABLE void positionViewAtBeginning();
+    Q_INVOKABLE void positionViewAtEnd();
 
     static QSGGridViewAttached *qmlAttachedProperties(QObject *);
 

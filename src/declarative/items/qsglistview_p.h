@@ -1,7 +1,7 @@
-// Commit: 650a0078e2cef43eff107fe8d2505f64a0bfedf0
+// Commit: ebd4bc73c46c2962742a682b6a391fb68c482aec
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -211,6 +211,8 @@ public:
 
     Q_INVOKABLE void positionViewAtIndex(int index, int mode);
     Q_INVOKABLE int indexAt(int x, int y) const;
+    Q_INVOKABLE void positionViewAtBeginning();
+    Q_INVOKABLE void positionViewAtEnd();
 
 public Q_SLOTS:
     void incrementCurrentIndex();

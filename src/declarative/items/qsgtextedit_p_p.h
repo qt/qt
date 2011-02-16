@@ -1,7 +1,7 @@
-// Commit: e891abddfe42699a8c2c9a583b91269237e17008
+// Commit: ba63becc13221ca6538fb40c790275465dd47703
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,7 +55,7 @@
 //
 
 #include "qsgtextedit_p.h"
-#include "qsgpainteditem_p_p.h"
+#include "qsgimplicitsizeitem_p_p.h"
 
 #include <QtDeclarative/qdeclarative.h>
 
@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 class QTextLayout;
 class QTextDocument;
 class QTextControl;
-class QSGTextEditPrivate : public QSGPaintedItemPrivate
+class QSGTextEditPrivate : public QSGImplicitSizePaintedItemPrivate
 {
     Q_DECLARE_PUBLIC(QSGTextEdit)
 
@@ -71,10 +71,11 @@ public:
     QSGTextEditPrivate()
       : color("black"), hAlign(QSGTextEdit::AlignLeft), vAlign(QSGTextEdit::AlignTop),
       imgDirty(true), dirty(false), richText(false), cursorVisible(false), focusOnPress(true),
-      showInputPanelOnFocus(true), clickCausedFocus(false), persistentSelection(true), textMargin(0.0),
-      lastSelectionStart(0), lastSelectionEnd(0), cursorComponent(0), cursor(0),
+      showInputPanelOnFocus(true), clickCausedFocus(false), persistentSelection(true),
+      requireImplicitWidth(false), selectByMouse(false), canPaste(false),
+      textMargin(0.0), lastSelectionStart(0), lastSelectionEnd(0), cursorComponent(0), cursor(0),
       format(QSGTextEdit::AutoText), document(0), wrapMode(QSGTextEdit::NoWrap),
-      selectByMouse(false),
+      mouseSelectionMode(QSGTextEdit::SelectCharacters),
       yoff(0)
     {
 #ifdef Q_OS_SYMBIAN
@@ -89,9 +90,11 @@ public:
     void updateDefaultTextOption();
     void relayoutDocument();
     void updateSelection();
+    qreal getImplicitWidth() const;
 
     QString text;
     QFont font;
+    QFont sourceFont;
     QColor  color;
     QColor  selectionColor;
     QColor  selectedTextColor;
@@ -109,6 +112,9 @@ public:
     bool showInputPanelOnFocus : 1;
     bool clickCausedFocus : 1;
     bool persistentSelection : 1;
+    bool requireImplicitWidth:1;
+    bool selectByMouse:1;
+    bool canPaste:1;
     qreal textMargin;
     int lastSelectionStart;
     int lastSelectionEnd;
@@ -118,8 +124,10 @@ public:
     QTextDocument *document;
     QTextControl *control;
     QSGTextEdit::WrapMode wrapMode;
-    bool selectByMouse;
+    QSGTextEdit::SelectionMode mouseSelectionMode;
+    int lineCount;
     int yoff;
+    QSize paintedSize;
 };
 
 QT_END_NAMESPACE

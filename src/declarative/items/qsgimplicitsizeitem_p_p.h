@@ -1,4 +1,4 @@
-// Commit: ebd4bc73c46c2962742a682b6a391fb68c482aec
+// Commit: 6f78a6080b84cc3ef96b73a4ff58d1b5a72f08f4
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -40,65 +40,52 @@
 **
 ****************************************************************************/
 
-#ifndef QSGFLIPABLE_P_H
-#define QSGFLIPABLE_P_H
+#ifndef QSGIMPLICITSIZEITEM_P_H
+#define QSGIMPLICITSIZEITEM_P_H
 
-#include "qsgitem.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include <QtGui/qtransform.h>
-#include <QtGui/qvector3d.h>
-#include <QtCore/qobject.h>
-
-QT_BEGIN_HEADER
+#include "private/qsgitem_p.h"
+#include "private/qsgpainteditem_p_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QSGFlipablePrivate;
-class Q_AUTOTEST_EXPORT QSGFlipable : public QSGItem
+class QSGImplicitSizeItemPrivate : public QSGItemPrivate
 {
-    Q_OBJECT
+    Q_DECLARE_PUBLIC(QSGImplicitSizeItem)
 
-    Q_ENUMS(Side)
-    Q_PROPERTY(QSGItem *front READ front WRITE setFront NOTIFY frontChanged)
-    Q_PROPERTY(QSGItem *back READ back WRITE setBack NOTIFY backChanged)
-    Q_PROPERTY(Side side READ side NOTIFY sideChanged)
-    //### flipAxis
-    //### flipRotation
 public:
-    QSGFlipable(QSGItem *parent=0);
-    ~QSGFlipable();
+    QSGImplicitSizeItemPrivate()
+    {
+    }
 
-    QSGItem *front();
-    void setFront(QSGItem *);
+    virtual void implicitWidthChanged();
+    virtual void implicitHeightChanged();
+};
 
-    QSGItem *back();
-    void setBack(QSGItem *);
 
-    enum Side { Front, Back };
-    Side side() const;
+class QSGImplicitSizePaintedItemPrivate : public QSGPaintedItemPrivate
+{
+    Q_DECLARE_PUBLIC(QSGImplicitSizePaintedItem)
 
-Q_SIGNALS:
-    void frontChanged();
-    void backChanged();
-    void sideChanged();
+public:
+    QSGImplicitSizePaintedItemPrivate()
+    {
+    }
 
-protected:
-    virtual void updatePolish();
-
-private Q_SLOTS:
-    void retransformBack();
-
-private:
-    Q_DISABLE_COPY(QSGFlipable)
-    Q_DECLARE_PRIVATE(QSGFlipable)
+    virtual void implicitWidthChanged();
+    virtual void implicitHeightChanged();
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QSGFlipable)
-
-QT_END_HEADER
-
-#endif // QSGFLIPABLE_P_H
+#endif // QSGIMPLICITSIZEITEM_P_H
