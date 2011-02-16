@@ -329,6 +329,7 @@ public:
                 else
                     idx = visibleItems.at(idx)->index;
                 int count = modelIndex - idx - 1;
+
                 return (*(--visibleItems.constEnd()))->endPosition() + spacing + count * (averageSize + spacing) + 1;
             }
         }
@@ -1316,10 +1317,8 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     if (velocity > 0) {
         if (data.move.value() < minExtent) {
             if (snapMode == QDeclarativeListView::SnapOneItem) {
-                if (FxListItem *item = isRightToLeft() ? nextVisibleItem() : firstVisibleItem()) {
+                if (FxListItem *item = isRightToLeft() ? nextVisibleItem() : firstVisibleItem())
                     maxDistance = qAbs(item->position() + dataValue);
-//                    qDebug() << "maxDist" << maxDistance << item->position() << dataValue;
-                }
             } else {
                 maxDistance = qAbs(minExtent - data.move.value());
             }
@@ -1329,10 +1328,8 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     } else {
         if (data.move.value() > maxExtent) {
             if (snapMode == QDeclarativeListView::SnapOneItem) {
-                if (FxListItem *item = isRightToLeft() ? firstVisibleItem() : nextVisibleItem()) {
+                if (FxListItem *item = isRightToLeft() ? firstVisibleItem() : nextVisibleItem())
                     maxDistance = qAbs(item->position() + dataValue);
-//                    qDebug() << "maxDist2" << maxDistance << item->position() << dataValue;
-                }
             } else {
                 maxDistance = qAbs(maxExtent - data.move.value());
             }
@@ -2595,7 +2592,8 @@ qreal QDeclarativeListView::minXExtent() const
         qreal highlightEnd;
         qreal endPositionFirstItem;
         if (d->isRightToLeft()) {
-            endPositionFirstItem = d->positionAt(d->model->count()-1);
+            if (d->model && d->model->count())
+                endPositionFirstItem = d->positionAt(d->model->count()-1);
             highlightStart = d->highlightRangeStartValid
                     ? d->highlightRangeStart - (d->lastPosition()-endPositionFirstItem)
                     : d->size() - (d->lastPosition()-endPositionFirstItem);
@@ -2635,7 +2633,8 @@ qreal QDeclarativeListView::maxXExtent() const
         } else {
             highlightStart = d->highlightRangeStart;
             highlightEnd = d->highlightRangeEnd;
-            lastItemPosition = d->positionAt(d->model->count()-1);
+            if (d->model && d->model->count())
+                lastItemPosition = d->positionAt(d->model->count()-1);
         }
         if (!d->model || !d->model->count()) {
             d->maxExtent = 0;
@@ -3058,6 +3057,7 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
 
     qreal tempPos = d->isRightToLeft() ? -d->position()-d->size() : d->position();
     int index = d->visibleItems.count() ? d->mapFromModel(modelIndex) : 0;
+
     if (index < 0) {
         int i = d->visibleItems.count() - 1;
         while (i > 0 && d->visibleItems.at(i)->index == -1)

@@ -1317,6 +1317,7 @@ void tst_QDeclarativeGridView::snapping()
     QDeclarativeContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
+    ctxt->setContextProperty("testRightToLeft", QVariant(false));
 
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
@@ -1343,6 +1344,7 @@ void tst_QDeclarativeGridView::snapping()
     QCOMPARE(gridview->contentY(), 120.);
 
     delete canvas;
+
 }
 
 void tst_QDeclarativeGridView::positionViewAtIndex_rightToLeft()

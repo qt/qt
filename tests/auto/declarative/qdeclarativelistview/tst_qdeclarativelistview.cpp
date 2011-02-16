@@ -2332,7 +2332,7 @@ void tst_QDeclarativeListView::rightToLeft()
 
     item = findItem<QDeclarativeItem>(contentItem, "item3");
     QTRY_VERIFY(item);
-    QTRY_COMPARE(item->x(), -600.0);
+    QTRY_COMPARE(item->x(), -540.0);
 
     text = findItem<QDeclarativeText>(contentItem, "text3");
     QTRY_VERIFY(text);
