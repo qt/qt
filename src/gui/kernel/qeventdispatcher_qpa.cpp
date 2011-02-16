@@ -172,7 +172,6 @@ public:
     {
         if (qApp && (qApp->thread() == QThread::currentThread())) {
             m_isEventLoopIntegrationRunning = true;
-            QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
             eventLoopIntegration->startEventLoop();
         }
     }
