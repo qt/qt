@@ -1,7 +1,7 @@
-// Commit: ad653d169aaecf6273787a01797c7647a13eec04
+// Commit: 72e0778c9b5bdae58596090b114d5d0e7092f911
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -301,7 +301,7 @@ void QSGFlickablePrivate::fixup(AxisData &data, qreal minExtent, qreal maxExtent
             timeline.move(data.move, maxExtent - dist/2, QEasingCurve(QEasingCurve::InQuad), fixupDuration/4);
             timeline.move(data.move, maxExtent, QEasingCurve(QEasingCurve::OutExpo), 3*fixupDuration/4);
         } else {
-            timeline.set(data.move, minExtent);
+            timeline.set(data.move, maxExtent);
         }
     }
     vTime = timeline.time();
@@ -500,10 +500,12 @@ void QSGFlickable::setFlickableDirection(FlickableDirection direction)
 
 void QSGFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
 {
+    Q_Q(QSGFlickable);
     if (interactive && timeline.isActive() && (qAbs(hData.velocity) > 10 || qAbs(vData.velocity) > 10))
         stealMouse = true; // If we've been flicked then steal the click.
     else
         stealMouse = false;
+    q->setKeepMouseGrab(stealMouse);
     pressed = true;
     timeline.clear();
     hData.velocity = 0;
@@ -598,6 +600,8 @@ void QSGFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
 
     stealMouse = stealX || stealY;
+    if (stealMouse)
+        q->setKeepMouseGrab(true);
 
     if (!lastPos.isNull()) {
         qreal elapsed = qreal(QSGItemPrivate::restart(lastPosTime)) / 1000.;
@@ -677,8 +681,6 @@ void QSGFlickable::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     Q_D(QSGFlickable);
     if (d->interactive) {
         d->handleMouseMoveEvent(event);
-        if (d->stealMouse)
-            setKeepMouseGrab(true);
         event->accept();
     } else {
         QSGItem::mouseMoveEvent(event);
@@ -703,7 +705,7 @@ void QSGFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
     Q_D(QSGFlickable);
     if (!d->interactive) {
         QSGItem::wheelEvent(event);
-    } else if (yflick()) {
+    } else if (yflick() && event->orientation() == Qt::Vertical) {
         if (event->delta() > 0)
             d->vData.velocity = qMax(event->delta() - d->vData.smoothVelocity.value(), qreal(250.0));
         else
@@ -715,7 +717,7 @@ void QSGFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
             movementStarting();
         }
         event->accept();
-    } else if (xflick()) {
+    } else if (xflick() && event->orientation() == Qt::Horizontal) {
         if (event->delta() > 0)
             d->hData.velocity = qMax(event->delta() - d->hData.smoothVelocity.value(), qreal(250.0));
         else
@@ -1012,6 +1014,34 @@ void QSGFlickable::setContentHeight(qreal h)
     }
     emit contentHeightChanged();
     d->updateBeginningEnd();
+}
+
+void QSGFlickable::resizeContent(qreal w, qreal h, QPointF center)
+{
+    Q_D(QSGFlickable);
+    if (w != d->hData.viewSize) {
+        qreal oldSize = d->hData.viewSize;
+        setContentWidth(w);
+        if (center.x() != 0) {
+            qreal pos = center.x() * w / oldSize;
+            setContentX(contentX() + pos - center.x());
+        }
+    }
+    if (h != d->vData.viewSize) {
+        qreal oldSize = d->vData.viewSize;
+        setContentHeight(h);
+        if (center.y() != 0) {
+            qreal pos = center.y() * h / oldSize;
+            setContentY(contentY() + pos - center.y());
+        }
+    }
+}
+
+void QSGFlickable::returnToBounds()
+{
+    Q_D(QSGFlickable);
+    d->fixupX();
+    d->fixupY();
 }
 
 qreal QSGFlickable::vWidth() const

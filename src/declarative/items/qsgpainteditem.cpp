@@ -1,7 +1,7 @@
-// Commit: e38185424bda5b97bca4c381abbb6f4c577d55cf
+// Commit: ac5c099cc3c5b8c7eec7a49fdeb8a21037230350
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **

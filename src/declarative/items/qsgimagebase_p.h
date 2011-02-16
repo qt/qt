@@ -1,7 +1,7 @@
-// Commit: 4c62387c530787b0db8b159b8a535401a5bb7310
+// Commit: ab71df83ba4eb9d749efc0f3a2d4a0fe5486023f
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,14 +43,14 @@
 #ifndef QSGIMAGEBASE_P_H
 #define QSGIMAGEBASE_P_H
 
-#include "qsgitem.h"
+#include "qsgimplicitsizeitem_p.h"
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 class QSGImageBasePrivate;
-class Q_AUTOTEST_EXPORT QSGImageBase : public QSGItem
+class Q_AUTOTEST_EXPORT QSGImageBase : public QSGImplicitSizeItem
 {
     Q_OBJECT
     Q_ENUMS(Status)
@@ -59,11 +59,12 @@ class Q_AUTOTEST_EXPORT QSGImageBase : public QSGItem
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(bool asynchronous READ asynchronous WRITE setAsynchronous NOTIFY asynchronousChanged)
-    Q_PROPERTY(bool cache READ cache WRITE setCache NOTIFY cacheChanged REVISION 1)
+    Q_PROPERTY(bool cache READ cache WRITE setCache NOTIFY cacheChanged)
     Q_PROPERTY(QSize sourceSize READ sourceSize WRITE setSourceSize NOTIFY sourceSizeChanged)
-    Q_PROPERTY(bool mirror READ mirror WRITE setMirror NOTIFY mirrorChanged REVISION 1)
+    Q_PROPERTY(bool mirror READ mirror WRITE setMirror NOTIFY mirrorChanged)
 
 public:
+    QSGImageBase(QSGItem *parent=0);
     ~QSGImageBase();
     enum Status { Null, Ready, Loading, Error };
     Status status() const;
@@ -90,8 +91,8 @@ Q_SIGNALS:
     void statusChanged(QSGImageBase::Status);
     void progressChanged(qreal progress);
     void asynchronousChanged();
-    Q_REVISION(1) void cacheChanged();
-    Q_REVISION(1) void mirrorChanged();
+    void cacheChanged();
+    void mirrorChanged();
 
 protected:
     virtual void load();

@@ -1,7 +1,7 @@
-// Commit: db506f31cf98d050aef10534fb5dad7058f64caf
+// Commit: f018d9236647b687e03dd9d2e1867944b4f4058b
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -414,37 +414,37 @@ void QSGKeyNavigationAttached::keyPressed(QKeyEvent *event, bool post)
     switch(event->key()) {
     case Qt::Key_Left:
         if (d->left) {
-            d->left->setFocus(true);
+            setFocusNavigation(d->left, "left");
             event->accept();
         }
         break;
     case Qt::Key_Right:
         if (d->right) {
-            d->right->setFocus(true);
+            setFocusNavigation(d->right, "right");
             event->accept();
         }
         break;
     case Qt::Key_Up:
         if (d->up) {
-            d->up->setFocus(true);
+            setFocusNavigation(d->up, "up");
             event->accept();
         }
         break;
     case Qt::Key_Down:
         if (d->down) {
-            d->down->setFocus(true);
+            setFocusNavigation(d->down, "down");
             event->accept();
         }
         break;
     case Qt::Key_Tab:
         if (d->tab) {
-            d->tab->setFocus(true);
+            setFocusNavigation(d->tab, "tab");
             event->accept();
         }
         break;
     case Qt::Key_Backtab:
         if (d->backtab) {
-            d->backtab->setFocus(true);
+            setFocusNavigation(d->backtab, "backtab");
             event->accept();
         }
         break;
@@ -501,6 +501,29 @@ void QSGKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
     }
 
     if (!event->isAccepted()) QSGItemKeyFilter::keyReleased(event, post);
+}
+
+void QSGKeyNavigationAttached::setFocusNavigation(QSGItem *currentItem, const char *dir)
+{
+    QSGItem *initialItem = currentItem;
+    bool isNextItem = false;
+    do {
+        isNextItem = false;
+        if (currentItem->isVisible() && currentItem->isEnabled()) {
+            currentItem->setFocus(true);
+        } else {
+            QObject *attached =
+                qmlAttachedPropertiesObject<QSGKeyNavigationAttached>(currentItem, false);
+            if (attached) {
+                QSGItem *tempItem = qvariant_cast<QSGItem*>(attached->property(dir));
+                if (tempItem) {
+                    currentItem = tempItem;
+                    isNextItem = true;
+                }
+            }
+        }
+    }
+    while (currentItem != initialItem && isNextItem);
 }
 
 const QSGKeysAttached::SigMap QSGKeysAttached::sigMap[] = {
@@ -979,6 +1002,9 @@ void QSGItemPrivate::initCanvas(InitializationState *state, QSGCanvas *c)
     if (canvas && polishScheduled) 
         QSGCanvasPrivate::get(canvas)->polishItems.insert(q);
 
+    if (canvas && hoverEnabled && !canvas->hasMouseTracking())
+        canvas->setMouseTracking(true);
+
     // XXX todo - why aren't these added to the destroy list?
     itemNodeInstance = 0;
     clipNode = 0;
@@ -1067,7 +1093,7 @@ QSGItemPrivate::QSGItemPrivate()
 : _anchors(0), _contents(0), baselineOffset(0), _anchorLines(0), _stateGroup(0), origin(QSGItem::Center), 
     
   flags(0), widthValid(false), heightValid(false), componentComplete(true), 
-  keepMouse(false), smooth(false), focus(false), activeFocus(false), notifiedFocus(false),
+  keepMouse(false), hoverEnabled(false), smooth(false), focus(false), activeFocus(false), notifiedFocus(false),
   notifiedActiveFocus(false), filtersChildMouseEvents(false), explicitVisible(true), 
   effectiveVisible(true), explicitEnable(true), effectiveEnable(true), polishScheduled(false),
 
@@ -1455,19 +1481,16 @@ void QSGItem::wheelEvent(QGraphicsSceneWheelEvent *event)
 
 void QSGItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
-    // XXX todo
     Q_UNUSED(event);
 }
 
 void QSGItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
-    // XXX todo
     Q_UNUSED(event);
 }
 
 void QSGItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
-    // XXX todo
     Q_UNUSED(event);
 }
 
@@ -1907,6 +1930,24 @@ void QSGItemPrivate::deliverWheelEvent(QGraphicsSceneWheelEvent *e)
 {
     Q_Q(QSGItem);
     q->wheelEvent(e);
+}
+
+void QSGItemPrivate::deliverHoverEvent(QGraphicsSceneHoverEvent *e)
+{
+    Q_Q(QSGItem);
+    switch(e->type()) {
+    default:
+        Q_ASSERT(!"Unknown event type");
+    case QEvent::GraphicsSceneHoverEnter:
+        q->hoverEnterEvent(e);
+        break;
+    case QEvent::GraphicsSceneHoverLeave:
+        q->hoverLeaveEvent(e);
+        break;
+    case QEvent::GraphicsSceneHoverMove:
+        q->hoverMoveEvent(e);
+        break;
+    }
 }
 
 void QSGItem::itemChange(GraphicsItemChange change, const QVariant &value)
@@ -2421,18 +2462,33 @@ void QSGItem::resetWidth()
     setImplicitWidth(implicitWidth());
 }
 
+void QSGItemPrivate::implicitWidthChanged()
+{
+    Q_Q(QSGItem);
+    emit q->implicitWidthChanged();
+}
+
+qreal QSGItemPrivate::getImplicitWidth() const
+{
+    return implicitWidth;
+}
+
 qreal QSGItem::implicitWidth() const
 {
     Q_D(const QSGItem);
-    return d->implicitWidth;
+    return d->getImplicitWidth();
 }
 
 void QSGItem::setImplicitWidth(qreal w)
 {
     Q_D(QSGItem);
+    bool changed = w != d->implicitWidth;
     d->implicitWidth = w;
-    if (d->width == w || widthValid())
+    if (d->width == w || widthValid()) {
+        if (changed)
+            d->implicitWidthChanged();
         return;
+    }   
 
     qreal oldWidth = d->width;
     d->width = w;
@@ -2441,6 +2497,9 @@ void QSGItem::setImplicitWidth(qreal w)
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), oldWidth, height()));
+
+    if (changed)
+        d->implicitWidthChanged();
 }
 
 bool QSGItem::widthValid() const
@@ -2481,18 +2540,33 @@ void QSGItem::resetHeight()
     setImplicitHeight(implicitHeight());
 }
 
+void QSGItemPrivate::implicitHeightChanged()
+{
+    Q_Q(QSGItem);
+    emit q->implicitHeightChanged();
+}
+
+qreal QSGItemPrivate::getImplicitHeight() const
+{
+    return implicitHeight;
+}
+
 qreal QSGItem::implicitHeight() const
 {
     Q_D(const QSGItem);
-    return d->implicitHeight;
+    return d->getImplicitHeight();
 }
 
 void QSGItem::setImplicitHeight(qreal h)
 {
     Q_D(QSGItem);
+    bool changed = h != d->implicitHeight;
     d->implicitHeight = h;
-    if (d->height == h || heightValid())
+    if (d->height == h || heightValid()) {
+        if (changed)
+            d->implicitHeightChanged();
         return;
+    }
 
     qreal oldHeight = d->height;
     d->height = h;
@@ -2501,6 +2575,9 @@ void QSGItem::setImplicitHeight(qreal h)
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), width(), oldHeight));
+
+    if (changed)
+        d->implicitHeightChanged();
 }
 
 bool QSGItem::heightValid() const
@@ -2602,21 +2679,30 @@ void QSGItem::setFiltersChildMouseEvents(bool filter)
 }
 
 bool QSGItem::isUnderMouse() const 
-{ 
-    // XXX todo
+{
+    Q_D(const QSGItem);
+    if (!d->canvas)
+        return false;
+
+    QPoint cursorPos = QCursor::pos();
+    if (QRectF(0, 0, width(), height()).contains(mapFromScene(d->canvas->mapFromGlobal(cursorPos))))
+        return true;
     return false; 
 }
 
 bool QSGItem::acceptHoverEvents() const 
 { 
-    // XXX todo
-    return false; 
+    Q_D(const QSGItem);
+    return d->hoverEnabled;
 }
 
 void QSGItem::setAcceptHoverEvents(bool enabled) 
 { 
-    // XXX todo
-    Q_UNUSED(enabled); 
+    Q_D(QSGItem);
+    d->hoverEnabled = enabled;
+
+    if (d->canvas && d->hoverEnabled && !d->canvas->hasMouseTracking())
+        d->canvas->setMouseTracking(true);
 }
 
 void QSGItem::grabMouse() 

@@ -1,7 +1,7 @@
-// Commit: fe3cfced940f41d078380ef7bdebe40d85aa49a2
+// Commit: 6f78a6080b84cc3ef96b73a4ff58d1b5a72f08f4
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -231,6 +231,7 @@ public:
     bool heightValid:1;
     bool componentComplete:1;
     bool keepMouse:1;
+    bool hoverEnabled:1;
     bool smooth:1;
     bool focus:1;
     bool activeFocus:1;
@@ -242,7 +243,7 @@ public:
     bool explicitEnable:1;
     bool effectiveEnable:1;
     bool polishScheduled:1;
-    quint32 dummy:8;
+    quint32 dummy:7;
 
     QSGCanvas *canvas;
     QSGItem *parentItem;
@@ -283,6 +284,11 @@ public:
     Qt::MouseButtons acceptedMouseButtons;
     Qt::InputMethodHints imHints;
 
+    virtual qreal getImplicitWidth() const;
+    virtual qreal getImplicitHeight() const;
+    virtual void implicitWidthChanged();
+    virtual void implicitHeightChanged();
+
     QPointF computeTransformOrigin() const;
     QList<QSGTransform *> transforms;
     virtual void transformChanged();
@@ -293,6 +299,7 @@ public:
     void deliverFocusEvent(QFocusEvent *);
     void deliverMouseEvent(QGraphicsSceneMouseEvent *);
     void deliverWheelEvent(QGraphicsSceneWheelEvent *);
+    void deliverHoverEvent(QGraphicsSceneHoverEvent *);
 
     bool calcEffectiveVisible() const;
     void setEffectiveVisibleRecur(bool);
@@ -472,6 +479,7 @@ Q_SIGNALS:
 private:
     virtual void keyPressed(QKeyEvent *event, bool post);
     virtual void keyReleased(QKeyEvent *event, bool post);
+    void setFocusNavigation(QSGItem *currentItem, const char *dir);
 };
 
 class QSGKeysAttachedPrivate : public QObjectPrivate

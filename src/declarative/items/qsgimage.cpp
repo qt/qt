@@ -1,7 +1,7 @@
-// Commit: 282441f72a7704aadc5525a360430d0c3d49aea6
+// Commit: 5ddfe819e93462eff396c24d10c0446c4cd9b0ac
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -177,6 +177,7 @@ QRectF QSGImage::boundingRect() const
 Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 {
     Q_D(QSGImage);
+    //XXX Support mirror property
 
     if (d->pix.pixmap().isNull() || width() <= 0 || height() <= 0) {
         delete oldNode;

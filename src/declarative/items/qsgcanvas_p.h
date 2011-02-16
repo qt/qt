@@ -56,6 +56,7 @@
 #include "qsgitem.h"
 #include "qsgcanvas.h"
 #include "qvsyncanimationdriver_p.h"
+#include "qdeclarativeguard_p.h"
 
 #include "qsgcontext.h"
 
@@ -63,6 +64,7 @@
 
 QT_BEGIN_NAMESPACE
 
+//Make it easy to identify and customize the root item if needed
 class QSGRootItem : public QSGItem
 {
     Q_OBJECT
@@ -98,6 +100,12 @@ public:
     bool deliverMouseEvent(QGraphicsSceneMouseEvent *);
     bool sendFilteredMouseEvent(QSGItem *, QSGItem *, QGraphicsSceneMouseEvent *);
     bool deliverWheelEvent(QSGItem *, QGraphicsSceneWheelEvent *);
+    void sceneHoverEventFromMouseEvent(QGraphicsSceneHoverEvent &, QMouseEvent *);
+    bool deliverHoverEvent(QSGItem *, QGraphicsSceneHoverEvent *);
+    void sendHoverEvent(QEvent::Type, QSGItem *, QGraphicsSceneHoverEvent *);
+    void clearHover();
+
+    QDeclarativeGuard<QSGItem> hoverItem;
 
     enum FocusOption {
         DontChangeFocusProperty = 0x01,

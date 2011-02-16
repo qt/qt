@@ -1,7 +1,7 @@
-// Commit: a542b798e468f775ab09a7846c8fe185eece6ab3
+// Commit: 32b68e009da38a2c85ceacce72c919606331522c
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,7 +45,7 @@
 
 #include "qsgtextinput_p.h"
 #include "qsgtext_p.h"
-#include "qsgpainteditem_p_p.h"
+#include "qsgimplicitsizeitem_p_p.h"
 
 #include <private/qlinecontrol_p.h>
 
@@ -65,16 +65,17 @@
 
 QT_BEGIN_NAMESPACE
 
-class QSGTextInputPrivate : public QSGPaintedItemPrivate
+class Q_AUTOTEST_EXPORT QSGTextInputPrivate : public QSGImplicitSizePaintedItemPrivate
 {
     Q_DECLARE_PUBLIC(QSGTextInput)
 public:
     QSGTextInputPrivate() : control(new QLineControl(QString())),
                  color((QRgb)0), style(QSGText::Normal),
                  styleColor((QRgb)0), hAlign(QSGTextInput::AlignLeft),
+                 mouseSelectionMode(QSGTextInput::SelectCharacters),
                  hscroll(0), oldScroll(0), focused(false), focusOnPress(true),
                  showInputPanelOnFocus(true), clickCausedFocus(false), cursorVisible(false),
-                 autoScroll(true), selectByMouse(false)
+                 autoScroll(true), selectByMouse(false), canPaste(false)
     {
 #ifdef Q_OS_SYMBIAN
         if (QSysInfo::symbianVersion() == QSysInfo::SV_SF_1 || QSysInfo::symbianVersion() == QSysInfo::SV_SF_3) {
@@ -105,29 +106,38 @@ public:
     QLineControl* control;
 
     QFont font;
+    QFont sourceFont;
     QColor  color;
     QColor  selectionColor;
     QColor  selectedTextColor;
     QSGText::TextStyle style;
     QColor  styleColor;
     QSGTextInput::HAlignment hAlign;
+    QSGTextInput::SelectionMode mouseSelectionMode;
     QPointer<QDeclarativeComponent> cursorComponent;
     QPointer<QSGItem> cursorItem;
+    QPointF pressPos;
 
     int lastSelectionStart;
     int lastSelectionEnd;
     int oldHeight;
     int oldWidth;
-    bool oldValidity;
     int hscroll;
     int oldScroll;
-    bool focused;
-    bool focusOnPress;
-    bool showInputPanelOnFocus;
-    bool clickCausedFocus;
-    bool cursorVisible;
-    bool autoScroll;
-    bool selectByMouse;
+
+    bool oldValidity:1;
+    bool focused:1;
+    bool focusOnPress:1;
+    bool showInputPanelOnFocus:1;
+    bool clickCausedFocus:1;
+    bool cursorVisible:1;
+    bool autoScroll:1;
+    bool selectByMouse:1;
+    bool canPaste:1;
+
+    static inline QSGTextInputPrivate *get(QSGTextInput *t) {
+        return t->d_func();
+    }
 };
 
 QT_END_NAMESPACE

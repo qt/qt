@@ -1,4 +1,4 @@
-// Commit: ebd4bc73c46c2962742a682b6a391fb68c482aec
+// Commit: 6f78a6080b84cc3ef96b73a4ff58d1b5a72f08f4
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -40,65 +40,62 @@
 **
 ****************************************************************************/
 
-#ifndef QSGFLIPABLE_P_H
-#define QSGFLIPABLE_P_H
+#ifndef QSGIMPLICITSIZEITEM_H
+#define QSGIMPLICITSIZEITEM_H
 
-#include "qsgitem.h"
-
-#include <QtGui/qtransform.h>
-#include <QtGui/qvector3d.h>
-#include <QtCore/qobject.h>
+#include "qsgpainteditem_p.h"
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QSGFlipablePrivate;
-class Q_AUTOTEST_EXPORT QSGFlipable : public QSGItem
+class QSGImplicitSizeItemPrivate;
+class Q_AUTOTEST_EXPORT QSGImplicitSizeItem : public QSGItem
 {
     Q_OBJECT
+    Q_PROPERTY(qreal implicitWidth READ implicitWidth NOTIFY implicitWidthChanged)
+    Q_PROPERTY(qreal implicitHeight READ implicitHeight NOTIFY implicitHeightChanged)
 
-    Q_ENUMS(Side)
-    Q_PROPERTY(QSGItem *front READ front WRITE setFront NOTIFY frontChanged)
-    Q_PROPERTY(QSGItem *back READ back WRITE setBack NOTIFY backChanged)
-    Q_PROPERTY(Side side READ side NOTIFY sideChanged)
-    //### flipAxis
-    //### flipRotation
 public:
-    QSGFlipable(QSGItem *parent=0);
-    ~QSGFlipable();
-
-    QSGItem *front();
-    void setFront(QSGItem *);
-
-    QSGItem *back();
-    void setBack(QSGItem *);
-
-    enum Side { Front, Back };
-    Side side() const;
-
-Q_SIGNALS:
-    void frontChanged();
-    void backChanged();
-    void sideChanged();
+    QSGImplicitSizeItem(QSGItem *parent = 0);
 
 protected:
-    virtual void updatePolish();
+    QSGImplicitSizeItem(QSGImplicitSizeItemPrivate &dd, QSGItem *parent);
 
-private Q_SLOTS:
-    void retransformBack();
+Q_SIGNALS:
+    void implicitWidthChanged();
+    void implicitHeightChanged();
 
 private:
-    Q_DISABLE_COPY(QSGFlipable)
-    Q_DECLARE_PRIVATE(QSGFlipable)
+    Q_DISABLE_COPY(QSGImplicitSizeItem)
+    Q_DECLARE_PRIVATE(QSGImplicitSizeItem)
+};
+
+class QSGImplicitSizePaintedItemPrivate;
+class Q_AUTOTEST_EXPORT QSGImplicitSizePaintedItem : public QSGPaintedItem
+{
+    Q_OBJECT
+    Q_PROPERTY(qreal implicitWidth READ implicitWidth NOTIFY implicitWidthChanged)
+    Q_PROPERTY(qreal implicitHeight READ implicitHeight NOTIFY implicitHeightChanged)
+
+public:
+    QSGImplicitSizePaintedItem(QSGItem *parent = 0);
+
+protected:
+    QSGImplicitSizePaintedItem(QSGImplicitSizePaintedItemPrivate &dd, QSGItem *parent);
+    virtual void drawContents(QPainter *, const QRect &) {};
+
+Q_SIGNALS:
+    void implicitWidthChanged();
+    void implicitHeightChanged();
+
+private:
+    Q_DISABLE_COPY(QSGImplicitSizePaintedItem)
+    Q_DECLARE_PRIVATE(QSGImplicitSizePaintedItem)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QSGFlipable)
-
 QT_END_HEADER
 
-#endif // QSGFLIPABLE_P_H
+#endif // QSGIMPLICITSIZEITEM_H

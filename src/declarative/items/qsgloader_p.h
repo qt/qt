@@ -1,7 +1,7 @@
-// Commit: 91506374f23e3ba533396ec10aae285e4cd7caf4
+// Commit: 6f78a6080b84cc3ef96b73a4ff58d1b5a72f08f4
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,7 +43,7 @@
 #ifndef QSGLOADER_P_H
 #define QSGLOADER_P_H
 
-#include "qsgitem.h"
+#include "qsgimplicitsizeitem_p.h"
 
 QT_BEGIN_HEADER
 
@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QSGLoaderPrivate;
-class Q_AUTOTEST_EXPORT QSGLoader : public QSGItem
+class Q_AUTOTEST_EXPORT QSGLoader : public QSGImplicitSizeItem
 {
     Q_OBJECT
     Q_ENUMS(Status)
