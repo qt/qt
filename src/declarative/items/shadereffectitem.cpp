@@ -158,9 +158,6 @@ void ShaderEffectItem::setSource(const QVariant &var, int index)
 
     SourceData &source = m_sources[index];
 
-    if (source.item && source.item->parentItem() == this)
-        source.item->setParentItem(0);
-
     source.source = 0;
     source.item = 0;
     if (var.isNull()) {

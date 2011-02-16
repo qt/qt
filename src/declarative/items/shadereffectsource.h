@@ -77,6 +77,9 @@ public:
     QRectF rect() const { return m_rect; }
     void setRect(const QRectF &rect);
 
+    QSize size() const { return m_size; }
+    void setSize(const QSize &size);
+
     bool live() const { return bool(m_live); }
     void setLive(bool live);
 
@@ -88,6 +91,7 @@ private Q_SLOTS:
 private:
     Node *m_item;
     QRectF m_rect;
+    QSize m_size;
 
     Renderer *m_renderer;
     QGLFramebufferObject *m_fbo;
@@ -104,18 +108,22 @@ private:
 class ShaderEffectSource : public TextureItem
 {
     Q_OBJECT
-    Q_PROPERTY(QSGItem *item READ item WRITE setItem NOTIFY itemChanged)
-    Q_PROPERTY(QSizeF margins READ margins WRITE setMargins NOTIFY marginsChanged)
+    Q_PROPERTY(QSGItem *sourceItem READ sourceItem WRITE setSourceItem NOTIFY sourceItemChanged)
+    Q_PROPERTY(QRectF sourceRect READ sourceRect WRITE setSourceRect NOTIFY sourceRectChanged)
+    Q_PROPERTY(QSize textureSize READ textureSize WRITE setTextureSize NOTIFY textureSizeChanged)
     Q_PROPERTY(bool live READ live WRITE setLive NOTIFY liveChanged)
 public:
     ShaderEffectSource(QSGItem *parent = 0);
     ~ShaderEffectSource();
 
-    QSGItem *item() const;
-    void setItem(QSGItem *item);
+    QSGItem *sourceItem() const;
+    void setSourceItem(QSGItem *item);
 
-    QSizeF margins() const;
-    void setMargins(const QSizeF &margins);
+    QRectF sourceRect() const;
+    void setSourceRect(const QRectF &rect);
+
+    QSize textureSize() const;
+    void setTextureSize(const QSize &size);
 
     bool live() const;
     void setLive(bool live);
@@ -123,16 +131,18 @@ public:
     Q_INVOKABLE void grab();
 
 Q_SIGNALS:
-    void itemChanged();
-    void marginsChanged();
+    void sourceItemChanged();
+    void sourceRectChanged();
+    void textureSizeChanged();
     void liveChanged();
 
 protected:
     virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
 
 private:
-    QPointer<QSGItem> m_item;
-    QSizeF m_margins;
+    QPointer<QSGItem> m_sourceItem;
+    QRectF m_sourceRect;
+    QSize m_textureSize;
     uint m_live : 1;
 };
 

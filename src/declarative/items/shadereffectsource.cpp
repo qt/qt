@@ -99,6 +99,14 @@ void ShaderEffectTextureProvider::setRect(const QRectF &rect)
     markDirtyTexture();
 }
 
+void ShaderEffectTextureProvider::setSize(const QSize &size)
+{
+    if (size == m_size)
+        return;
+    m_size = size;
+    markDirtyTexture();
+}
+
 void ShaderEffectTextureProvider::setLive(bool live)
 {
     if (live == m_live)
@@ -124,10 +132,7 @@ void ShaderEffectTextureProvider::grab()
     if (root->type() != Node::RootNodeType)
         return;
 
-    qreal w = m_rect.width();
-    qreal h = m_rect.height();
-
-    if (w <= 0 || h <= 0) {
+    if (m_size.isEmpty()) {
         m_texture = QSGTextureRef();
         delete m_fbo;
         m_fbo = 0;
@@ -140,11 +145,11 @@ void ShaderEffectTextureProvider::grab()
     }
     m_renderer->setRootNode(static_cast<RootNode *>(root));
 
-    if (!m_fbo || m_fbo->width() != qCeil(w) || m_fbo->height() != qCeil(h)) {
+    if (!m_fbo || m_fbo->size() != m_size) {
         delete m_fbo;
         QGLFramebufferObjectFormat format;
         format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
-        m_fbo = new QGLFramebufferObject(qCeil(w), qCeil(h), format);
+        m_fbo = new QGLFramebufferObject(m_size, format);
         QSGTexture *tex = new QSGTexture;
         tex->setTextureId(m_fbo->texture());
         tex->setOwnsTexture(false);
@@ -159,7 +164,7 @@ void ShaderEffectTextureProvider::grab()
 #ifdef QML_SUBTREE_DEBUG
     if (!m_debugOverlay)
         m_debugOverlay = QSGContext::current->createRectangleNode();
-    m_debugOverlay->setRect(QRectF(0, 0, m_fbo->width(), m_fbo->height()));
+    m_debugOverlay->setRect(QRectF(0, 0, m_size->width(), m_size->height()));
     m_debugOverlay->setColor(QColor(0xff, 0x00, 0x80, 0x40));
     m_debugOverlay->setPenColor(QColor());
     m_debugOverlay->setPenWidth(0);
@@ -171,8 +176,8 @@ void ShaderEffectTextureProvider::grab()
     m_dirtyTexture = false;
 
     const QGLContext *ctx = QSGContext::current->glContext();
-    m_renderer->setDeviceRect(m_fbo->size());
-    m_renderer->setViewportRect(m_fbo->size());
+    m_renderer->setDeviceRect(m_size);
+    m_renderer->setViewportRect(m_size);
     QRectF mirrored(m_rect.left(), m_rect.bottom(), m_rect.width(), -m_rect.height());
     m_renderer->setProjectMatrixToRect(mirrored);
     m_renderer->setClearColor(Qt::transparent);
@@ -188,8 +193,8 @@ void ShaderEffectTextureProvider::grab()
 
 ShaderEffectSource::ShaderEffectSource(QSGItem *parent)
     : TextureItem(parent)
-    , m_item(0)
-    , m_margins(0, 0)
+    , m_sourceItem(0)
+    , m_textureSize(0, 0)
     , m_live(true)
 {
     setTextureProvider(new ShaderEffectTextureProvider(this), true);
@@ -197,52 +202,63 @@ ShaderEffectSource::ShaderEffectSource(QSGItem *parent)
 
 ShaderEffectSource::~ShaderEffectSource()
 {
-    if (m_item)
-        QSGItemPrivate::get(m_item)->derefFromEffectItem();
+    if (m_sourceItem)
+        QSGItemPrivate::get(m_sourceItem)->derefFromEffectItem();
 }
 
-QSGItem *ShaderEffectSource::item() const
+QSGItem *ShaderEffectSource::sourceItem() const
 {
-    return m_item;
+    return m_sourceItem;
 }
 
-void ShaderEffectSource::setItem(QSGItem *item)
+void ShaderEffectSource::setSourceItem(QSGItem *item)
 {
-    if (item == m_item)
+    if (item == m_sourceItem)
         return;
-    if (m_item) {
-        QSGItemPrivate::get(m_item)->derefFromEffectItem();
-        if (m_item->parentItem() == this)
-            m_item->setParentItem(0);
-    }
-    m_item = item;
-    if (m_item) {
+    if (m_sourceItem)
+        QSGItemPrivate::get(m_sourceItem)->derefFromEffectItem();
+    m_sourceItem = item;
+    if (m_sourceItem) {
         // TODO: Find better solution.
-        // 'm_item' needs a canvas to get a scenegraph node.
+        // 'm_sourceItem' needs a canvas to get a scenegraph node.
         // The easiest way to make sure it gets a canvas is to
         // make it a part of the same item tree as 'this'.
-        if (m_item->parentItem() == 0) {
-            m_item->setParentItem(this);
-            m_item->setVisible(false);
+        if (m_sourceItem->parentItem() == 0) {
+            m_sourceItem->setParentItem(this);
+            m_sourceItem->setVisible(false);
         }
-        QSGItemPrivate::get(m_item)->refFromEffectItem();
+        QSGItemPrivate::get(m_sourceItem)->refFromEffectItem();
     }
     update();
-    emit itemChanged();
+    emit sourceItemChanged();
 }
 
-QSizeF ShaderEffectSource::margins() const
+QRectF ShaderEffectSource::sourceRect() const
 {
-    return m_margins;
+    return m_sourceRect;
 }
 
-void ShaderEffectSource::setMargins(const QSizeF &margins)
+void ShaderEffectSource::setSourceRect(const QRectF &rect)
 {
-    if (margins == m_margins)
+    if (rect == m_sourceRect)
         return;
-    m_margins = margins;
+    m_sourceRect = rect;
     update();
-    emit marginsChanged();
+    emit sourceRectChanged();
+}
+
+QSize ShaderEffectSource::textureSize() const
+{
+    return m_textureSize;
+}
+
+void ShaderEffectSource::setTextureSize(const QSize &size)
+{
+    if (size == m_textureSize)
+        return;
+    m_textureSize = size;
+    update();
+    emit textureSizeChanged();
 }
 
 bool ShaderEffectSource::live() const
@@ -261,9 +277,9 @@ void ShaderEffectSource::setLive(bool live)
 
 void ShaderEffectSource::grab()
 {
-    if (!m_item)
+    if (!m_sourceItem)
         return;
-    QSGCanvas *canvas = m_item->canvas();
+    QSGCanvas *canvas = m_sourceItem->canvas();
     QSGCanvasPrivate::get(canvas)->updateDirtyNodes();
     QGLContext *glctx = const_cast<QGLContext *>(canvas->context());
     glctx->makeCurrent();
@@ -272,16 +288,21 @@ void ShaderEffectSource::grab()
 
 Node *ShaderEffectSource::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 {
-    if (!m_item) {
+    if (!m_sourceItem) {
         delete oldNode;
         return 0;
     }
 
     ShaderEffectTextureProvider *tp = static_cast<ShaderEffectTextureProvider *>(textureProvider());
-    tp->setItem(QSGItemPrivate::get(m_item)->itemNode());
-    QRectF rect(0, 0, m_item->width(), m_item->height());
-    rect.adjust(-m_margins.width(), -m_margins.height(), m_margins.width(), m_margins.height());
-    tp->setRect(rect);
+    tp->setItem(QSGItemPrivate::get(m_sourceItem)->itemNode());
+    QRectF sourceRect = m_sourceRect.isEmpty() 
+                      ? QRectF(0, 0, m_sourceItem->width(), m_sourceItem->height())
+                      : m_sourceRect;
+    tp->setRect(sourceRect);
+    QSize textureSize = m_textureSize.isEmpty()
+                      ? QSize(qCeil(sourceRect.width()), qCeil(sourceRect.height()))
+                      : m_textureSize;
+    tp->setSize(textureSize);
     tp->setLive(m_live);
 
     return TextureItem::updatePaintNode(oldNode, data);
