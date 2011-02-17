@@ -350,6 +350,14 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
             }
             break;
 
+        case Node::Variable:
+            {
+                QString location = HtmlGenerator::fullDocumentLocation(node);
+                project.files.insert(location.left(location.lastIndexOf(QLatin1Char('#'))));
+                project.keywords.append(keywordDetails(node));
+            }
+            break;
+
         // Fake nodes (such as manual pages) contain subtypes, titles and other
         // attributes.
         case Node::Fake: {

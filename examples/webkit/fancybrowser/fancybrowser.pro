@@ -12,5 +12,7 @@ INSTALLS += target sources
 
 symbian {
     TARGET.UID3 = 0xA000CF6C
+    TARGET.EPOCHEAPSIZE = 0×020000 0×4000000
+    TARGET.CAPABILITY += Location NetworkServices
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 }
