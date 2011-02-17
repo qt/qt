@@ -115,10 +115,10 @@ void tst_V8::benchmark()
 {
     QFETCH(QString, testName);
 
-    QString baseDotJsContents = readFile(testsDir.absoluteFilePath("base.js"));
+    QString baseDotJsContents = readFile(testsDir.filePath("base.js"));
     QVERIFY(!baseDotJsContents.isEmpty());
 
-    QString testContents = readFile(testsDir.absoluteFilePath(testName + ".js"));
+    QString testContents = readFile(testsDir.filePath(testName + ".js"));
     QVERIFY(!testContents.isEmpty());
 
     QScriptEngine engine;
