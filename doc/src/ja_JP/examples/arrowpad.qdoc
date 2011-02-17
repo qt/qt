@@ -71,7 +71,7 @@
     \c Q_OBJECT のマクロは、以下の内容で
     \c ArrowPad に \c tr(x) を定義します:
 
-    \snippet doc/src/snippets/code/doc_src_examples_arrowpad.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_examples_arrowpad.cpp 0
 
     各ソーステキストが表示されるクラスを把握しておくと、
     \e {Qt Linguist} で論理的に関連のある文字列をグループ化することが出来ます。

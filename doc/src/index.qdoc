@@ -48,8 +48,8 @@
                   \o \l{Getting Started Guides}{Getting started}
                   \o \l{Installation}{Installation}
                   \o \l{how-to-learn-qt.html}{How to learn Qt}
-                  \o \l{tutorials.html}{Tutorials}
-                  \o \l{Qt Examples}{Examples}
+                  \o \l{Supported Platforms}{Platform Support}
+                  \o \l{tutorials.html}{Tutorials} and \l{Qt Examples}{Examples}
                   \o \l{qt4-7-intro.html}{What's new in Qt 4.7}
                 \endlist
              \enddiv

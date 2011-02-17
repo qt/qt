@@ -676,13 +676,13 @@
 
     The following example shows how this can be done:
 
-    \snippet doc/src/snippets/code/doc_src_assistant-manual.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_assistant-manual.cpp 2
 
     Once \QA is running, you can send commands by using the stdin channel of
     the process. The code snippet below shows how to tell \QA to show a certain
     page in the documentation.
 
-    \snippet doc/src/snippets/code/doc_src_assistant-manual.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_assistant-manual.cpp 3
 
     Note that the trailing newline character is required to mark the end
     of the input.
@@ -745,7 +745,7 @@
     instead of one line for every command. The commands have to be separated by
     a semicolon, as shown in the following example:
 
-    \snippet doc/src/snippets/code/doc_src_assistant-manual.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_assistant-manual.cpp 4
 
     \section1 Compatibility with Old Formats
 

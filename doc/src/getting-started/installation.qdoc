@@ -1141,7 +1141,7 @@ We hope you will enjoy using Qt.
     \brief Setting up the Windows CE environment for Qt.
     \previouspage General Qt Requirements
 
-    Qt is known to work with Visual Studio 2005/2008 and the following SDKs for
+    Qt is known to work with Visual Studio 2005/2008/2010 and the following SDKs for
     Windows CE development on Windows XP and Windows Vista:
 
     \list
@@ -1179,14 +1179,37 @@ We hope you will enjoy using Qt.
             \endlist
     \endtable
 
-
     Device manufacturers may prefer to make their own customized version of
     Windows CE using Platform Builder. In order for Qt for Windows CE to
     support a custom SDK, a build specification needs to be created. More
     information on Windows CE Customization can be found
     \l{Windows CE - Working with Custom SDKs}{here}.
 
-    \sa {Known Issues}
+	\section3 Requirements
+	\list
+		\o Development environment: 
+		\list
+			\o Microsoft® Visual Studio® 2005 (Standard Edition) or higher
+			\o ActivePerl
+		\endlist
+		\o Footprint
+		\list
+			\o Lean configuration - 4.8 MB
+			\o Full configuration - 8.4 MB
+		\endlist
+		\o Operating Systems
+		\list
+			\o Windows CE 5 or higher
+			\o Windows Mobile 5 or higher
+		\endlist
+		\o Hardware Platform
+		\list
+			\o Supported on ARM®, x86®
+			\o (Compiles on SH4® and MIPS®)
+		\endlist
+	\endlist
+
+		\sa {Known Issues}
 */
 
 /*!
@@ -1323,7 +1346,7 @@ We hope you will enjoy using Qt.
    load those that have a matching <key>. \o
    \row   \o \c {-release } \o Compile and link Qt with debugging turned off. \o
    \row   \o \c {-debug } \o Compile and link Qt with debugging turned on.
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-debug-and-release} \o Compile and link two Qt libraries,
    with and without debugging turned on. \o This option denotes a default
    value and needs to be evaluated. If the evaluation succeeds, the
@@ -1334,28 +1357,28 @@ We hope you will enjoy using Qt.
    of Qt. \o
    \row   \o \c {-developer-build} \o Compile and link Qt with Qt developer
    options including auto-tests exporting) \o
-   \row   \o \c {-shared} \o Create and use shared Qt libraries. \o Defualt
+   \row   \o \c {-shared} \o Create and use shared Qt libraries. \o Default
    value.
    \row   \o \c {-static} \o Create and use static Qt libraries. \o
    \row   \o \c {-ltcg} \o Use Link Time Code Generation. \o Apply to release
    builds only.
-   \row   \o \c {-no-ltcg} \o Do not use Link Time Code Generation. \o Defualt
+   \row   \o \c {-no-ltcg} \o Do not use Link Time Code Generation. \o Default
    value.
    \row   \o \c {-no-fast} \o Configure Qt normally by generating Makefiles for
-   all project files. \o Defualt value.
+   all project files. \o Default value.
    \row   \o \c {-fast} \o Configure Qt quickly by generating Makefiles only for
    library and subdirectory targets. \o All other Makefiles are created as
    wrappers which will in turn run qmake.
    \row   \o \c {-no-exceptions} \o Disable exceptions on platforms that support
    it. \o 
    \row   \o \c {-exceptions} \o Enable exceptions on platforms that support it.
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-no-accessibility} \o Do not compile Windows Active
    Accessibility support. \o
    \row   \o \c {-accessibility} \o Compile Windows Active Accessibility
-   support. \o Defualt value.
+   support. \o Default value.
    \row   \o \c {-no-stl} \o Do not compile STL support. \o
-   \row   \o \c {-stl} \o Compile STL support. \o Defualt value.
+   \row   \o \c {-stl} \o Compile STL support. \o Default value.
    \row   \o \c {-no-sql-<driver>} \o Disable SQL <driver> entirely, by default
    none are turned on. \o
    \row   \o \c {-qt-sql-<driver>} \o Enable a SQL <driver> in the Qt Library.
@@ -1371,14 +1394,14 @@ We hope you will enjoy using Qt.
    version. \o Available values for <api>: desktop - Enable support for
    Desktop OpenGL (Default), es1 - Enable support for OpenGL ES Common
    Profile, es2 - Enable support for OpenGL ES 2.0. 
-   \row   \o \c {-no-openvg} \o Disables OpenVG functionality \o Defualt value.
+   \row   \o \c {-no-openvg} \o Disables OpenVG functionality \o Default value.
    \row   \o \c {-openvg} \o Enables OpenVG functionality \o Requires EGL
    support, typically supplied by an OpenGL or other graphics
    implementation. 
    \row   \o \c {-platform <spec> } \o The operating system and compiler you
    are building on. \o The default value is %QMAKESPEC%.
    \row   \o \c {-xplatform <spec> } \o The operating system and compiler you
-   are cross compiling to. \o See the README file for a list of supported
+   are cross compiling for. \o See the README file for a list of supported
    operating systems and compilers.
    \row   \o \c {-qtnamespace <namespace>} \o Wraps all Qt library code in
    'namespace name {..} \o
@@ -1390,7 +1413,7 @@ We hope you will enjoy using Qt.
    \row   \o \c {-L <librarypath>} \o Add an explicit library path. \o
    \row   \o \c {-l <libraryname>} \o Add an explicit library name, residing
    in a librarypath. \o
-   \row   \o \c {-graphicssystem <sys>} \o Specify which graphicssystem should
+   \row   \o \c {-graphicssystem <sys>} \o Specify which graphics system should
    be used. \o Available values for <sys>: * raster - Software rasterizer,
    opengl - Using OpenGL acceleration, experimental!, openvg - Using
    OpenVG acceleration, experimental! 
@@ -1419,7 +1442,7 @@ We hope you will enjoy using Qt.
 		succeeds, the feature is included.
 		\row   \o \c {-qt-libmng} \o Use the libmng bundled with Qt. \o
 		\row   \o \c {-system-libmng} \o Use libmng from the operating system.
-		\o See See http://www.libmng.com
+		\o See http://www.libmng.com
 		\row   \o \c {-no-libtiff} \o Do not compile TIFF support. \o This option
 		denotes a default value and needs to be evaluated. If the evaluation
 		succeeds, the feature is included.
@@ -1441,10 +1464,10 @@ We hope you will enjoy using Qt.
    \header \o Option  \o Description \o Note
    \row   \o \c {-no-dsp} \o Do not generate VC++ .dsp files. \o
    \row   \o \c {-dsp} \o Generate VC++ .dsp files, only if spec "win32-msvc".
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-no-vcproj} \o Do not generate VC++ .vcproj files. \o
    \row   \o \c {-vcproj} \o Generate VC++ .vcproj files, only if platform
-   "win32-msvc.net". \o Defualt value.
+   "win32-msvc.net". \o Default value.
    \row   \o \c {-no-incredibuild-xge} \o Do not add IncrediBuild XGE distribution
    commands to custom build steps. \o
    \row   \o \c {-incredibuild-xge} \o Add IncrediBuild XGE distribution commands
@@ -1455,14 +1478,14 @@ We hope you will enjoy using Qt.
    If the evaluation succeeds, the feature is included.
    \row   \o \c {-no-plugin-manifests} \o Do not embed manifests in plugins. \o
    \row   \o \c {-plugin-manifests} \o Embed manifests in plugins. 
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-no-qmake} \o Do not compile qmake. \o
-   \row   \o \c {-qmake} \o Compile qmake. \o Defualt value
+   \row   \o \c {-qmake} \o Compile qmake. \o Default value
    \row   \o \c {-dont-process} \o Do not generate Makefiles/Project files. This
    will override -no-fast if specified. \o
-   \row   \o \c {-process} \o Generate Makefiles/Project files. \o Defualt value.
+   \row   \o \c {-process} \o Generate Makefiles/Project files. \o Default value.
    \row   \o \c {-no-rtti} \o Do not compile runtime type information. \o
-   \row   \o \c {-rtti} \o Compile runtime type information. \o Defualt value.
+   \row   \o \c {-rtti} \o Compile runtime type information. \o Default value.
    \row   \o \c {-no-mmx} \o Do not compile with use of MMX instructions \o
    \row   \o \c {-mmx} \o Compile with use of MMX instructions \o This option
    denotes a default value and needs to be evaluated. If the evaluation
@@ -1497,9 +1520,9 @@ We hope you will enjoy using Qt.
    \row   \o \c {-no-phonon-backend} \o Do not compile the platform-specific
    Phonon backend-plugin \o
    \row   \o \c {-phonon-backend} \o Compile in the platform-specific Phonon
-   backend-plugin \o Defualt value.
+   backend-plugin \o Default value.
    \row   \o \c {-no-multimedia} \o Do not compile the multimedia module \o
-   \row   \o \c {-multimedia} \o Compile in multimedia module \o Defualt value.
+   \row   \o \c {-multimedia} \o Compile in multimedia module \o Default value.
    \row   \o \c {-no-audio-backend} \o Do not compile in the platform audio
    backend into QtMultimedia \o
    \row   \o \c {-audio-backend} \o Compile in the platform audio backend into
@@ -1527,7 +1550,7 @@ We hope you will enjoy using Qt.
    \row   \o \c {-no-declarative-debug} \o Do not build the declarative debugging
    support \o
    \row   \o \c {-declarative-debug} \o Build the declarative debugging support 
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-arch <arch>} \o Specify an architecture. \o Available values for
    <arch>:  * windows, windowsce, symbian, boundschecker, generic.
    \row   \o \c {-no-style-<style>} \o Disable <style> entirely. \o
@@ -1538,9 +1561,9 @@ We hope you will enjoy using Qt.
    \row   \o \c {-no-native-gestures} \o Do not use native gestures on Windows 7.
    \o 
    \row   \o \c {-native-gestures} \o Use native gestures on Windows 7.
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-no-mp} \o Do not use multiple processors for compiling with MSVC
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-mp} \o Use multiple processors for compiling with MSVC (-MP) \o
    \row   \o \c {-loadconfig <config>} \o Run configure with the parameters from file 
    configure_<config>.cache. \o
@@ -1557,7 +1580,7 @@ We hope you will enjoy using Qt.
    for Qt for Windows CE on Arm only. This option denotes a default value and
    needs to be evaluated. If the evaluation succeeds, the feature is included.
    \row   \o \c {-no-crt} \o Do not add the C runtime to default deployment rules.
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-qt-crt} \o Qt identifies C runtime during project generation \o
    \row   \o \c {-crt <path>} \o Specify path to C runtime used for project
    generation. \o
@@ -1567,20 +1590,20 @@ We hope you will enjoy using Qt.
    succeeds, the feature is included.
    \row   \o \c {-signature <file>} \o Use file for signing the target project \o
    \row   \o \c {-phonon-wince-ds9} \o Enable Phonon Direct Show 9 backend for
-   Windows CE \o Defualt value
+   Windows CE \o Default value
    \endtable
 	
  \section2 Qt for Symbian OS only:
    \table
    \header \o Option  \o Description \o Note
    \row   \o \c {-no-freetype} \o Do not compile in Freetype2 support.
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-qt-freetype} \o Use the libfreetype bundled with Qt. \o
    \row   \o \c {-fpu <flags>} \o VFP type on ARM, supported options:
    softvfp(default) |vfpv2 | softvfp+vfpv2 \o
    \row   \o \c {-no-s60} \o Do not compile in S60 support. \o
    \row   \o \c {-s60} \o Compile with support for the S60 UI Framework 
-   \o Defualt value.
+   \o Default value.
    \row   \o \c {-no-usedeffiles} \o Disable the usage of DEF files. \o
    \row   \o \c {-usedeffiles} \o Enable the usage of DEF files. \o
  \endtable	
