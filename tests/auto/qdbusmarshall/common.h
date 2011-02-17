@@ -39,6 +39,22 @@
 **
 ****************************************************************************/
 #include <math.h>               // isnan
+#include <qvariant.h>
+
+#ifdef Q_OS_UNIX
+# include <private/qcore_unix_p.h>
+
+static bool compareFileDescriptors(int fd1, int fd2)
+{
+    QT_STATBUF st1, st2;
+    if (QT_FSTAT(fd1, &st1) == -1 || QT_FSTAT(fd2, &st2) == -1) {
+        perror("fstat");
+        return false;
+    }
+
+    return (st1.st_dev == st2.st_dev) && (st1.st_ino == st2.st_ino);
+}
+#endif
 
 Q_DECLARE_METATYPE(QVariant)
 Q_DECLARE_METATYPE(QList<bool>)
@@ -81,8 +97,16 @@ static bool compare(const QDBusUnixFileDescriptor &t1, const QDBusUnixFileDescri
 {
     int fd1 = t1.fileDescriptor();
     int fd2 = t2.fileDescriptor();
+    if ((fd1 == -1 || fd2 == -1) && fd1 != fd2) {
+        // one is valid, the other isn't
+        return false;
+    }
 
-    return (fd1 == -1) == (fd2 == -1);
+#ifdef Q_OS_UNIX
+    return compareFileDescriptors(fd1, fd2);
+#else
+    return true;
+#endif
 }
 
 struct MyStruct

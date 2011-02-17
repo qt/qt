@@ -94,7 +94,10 @@ private slots:
     void receiveUnknownType();
 
 private:
+    int fileDescriptorForTest();
+
     QProcess proc;
+    QTemporaryFile tempFile;
     bool fileDescriptorPassing;
 };
 
@@ -147,6 +150,15 @@ void tst_QDBusMarshall::cleanupTestCase()
     proc.waitForFinished(200);
 }
 
+int tst_QDBusMarshall::fileDescriptorForTest()
+{
+    if (!tempFile.isOpen()) {
+        tempFile.setFileTemplate(QDir::tempPath() + "/qdbusmarshalltestXXXXXX.tmp");
+        tempFile.open();
+    }
+    return tempFile.handle();
+}
+
 void tst_QDBusMarshall::sendBasic_data()
 {
     QTest::addColumn<QVariant>("value");
@@ -172,7 +184,7 @@ void tst_QDBusMarshall::sendBasic_data()
     QTest::newRow("nullstring") << QVariant(QString()) << "s" << "\"\"";
 
     if (fileDescriptorPassing)
-        QTest::newRow("file-descriptor") << qVariantFromValue(QDBusUnixFileDescriptor(0)) << "h" << "[Unix FD: valid]";
+        QTest::newRow("file-descriptor") << qVariantFromValue(QDBusUnixFileDescriptor(fileDescriptorForTest())) << "h" << "[Unix FD: valid]";
 #endif
 }
 
@@ -269,7 +281,7 @@ void tst_QDBusMarshall::sendArrays_data()
     if (fileDescriptorPassing) {
         QList<QDBusUnixFileDescriptor> fileDescriptors;
         QTest::newRow("emptyfiledescriptorlist") << qVariantFromValue(fileDescriptors) << "ah" << "[Argument: ah {}]";
-        fileDescriptors << QDBusUnixFileDescriptor(0) << QDBusUnixFileDescriptor(1);
+        fileDescriptors << QDBusUnixFileDescriptor(fileDescriptorForTest()) << QDBusUnixFileDescriptor(1);
         QTest::newRow("filedescriptorlist") << qVariantFromValue(fileDescriptors) << "ah" << "[Argument: ah {[Unix FD: valid], [Unix FD: valid]}]";
     }
 
@@ -475,7 +487,7 @@ void tst_QDBusMarshall::sendMaps_data()
             << "[Argument: a{gs} {[Signature: a{gs}] = \"array of dict_entry of (signature, string)\", [Signature: i] = \"int32\", [Signature: s] = \"string\"}]";
 
     if (fileDescriptorPassing) {
-        svmap["zzfiledescriptor"] = qVariantFromValue(QDBusUnixFileDescriptor(0));
+        svmap["zzfiledescriptor"] = qVariantFromValue(QDBusUnixFileDescriptor(fileDescriptorForTest()));
         QTest::newRow("sv-map1-fd") << qVariantFromValue(svmap) << "a{sv}"
                                     << "[Argument: a{sv} {\"a\" = [Variant(int): 1], \"b\" = [Variant(QByteArray): {99}], \"c\" = [Variant(QString): \"b\"], \"d\" = [Variant(uint): 42], \"e\" = [Variant(short): -47], \"f\" = [Variant: [Variant(int): 0]], \"zzfiledescriptor\" = [Variant(QDBusUnixFileDescriptor): [Unix FD: valid]]}]";
     }
@@ -536,7 +548,7 @@ void tst_QDBusMarshall::sendStructs_data()
 
     if (fileDescriptorPassing) {
         MyFileDescriptorStruct fds;
-        fds.fd = QDBusUnixFileDescriptor(0);
+        fds.fd = QDBusUnixFileDescriptor(fileDescriptorForTest());
         QTest::newRow("fdstruct") << qVariantFromValue(fds) << "(h)" << "[Argument: (h) [Unix FD: valid]]";
 
         QList<MyFileDescriptorStruct> fdlist;
@@ -680,7 +692,7 @@ void tst_QDBusMarshall::sendArgument_data()
 
     if (fileDescriptorPassing) {
         arg = QDBusArgument();
-        arg << QDBusUnixFileDescriptor(0);
+        arg << QDBusUnixFileDescriptor(fileDescriptorForTest());
         QTest::newRow("filedescriptor") << qVariantFromValue(arg) << "h" << int(QDBusArgument::BasicType);
     }
 
