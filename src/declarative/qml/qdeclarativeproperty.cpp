@@ -427,7 +427,7 @@ bool QDeclarativeProperty::operator==(const QDeclarativeProperty &other) const
 */
 int QDeclarativeProperty::propertyType() const
 {
-    return d ? d->propertyType() : QVariant::Invalid;
+    return d ? d->propertyType() : int(QVariant::Invalid);
 }
 
 bool QDeclarativePropertyPrivate::isValueType() const
