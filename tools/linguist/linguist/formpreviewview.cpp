@@ -463,6 +463,8 @@ FormPreviewView::FormPreviewView(QWidget *parent, MultiDataModel *dataModel)
     m_mdiArea = new QMdiArea(this);
     m_mdiArea->addSubWindow(m_mdiSubWindow);
     setCentralWidget(m_mdiArea);
+    m_mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    m_mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 }
 
 void FormPreviewView::setSourceContext(int model, MessageItem *messageItem)

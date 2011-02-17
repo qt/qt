@@ -2967,7 +2967,7 @@ protected:
 void tst_QGraphicsView::task186827_deleteReplayedItem()
 {
     // make sure the mouse is not over the window, causing spontaneous mouse moves
-    QCursor::setPos(0, 0);
+    QCursor::setPos(1, 1);
 
     QGraphicsScene scene;
     scene.addRect(0, 0, 50, 50);
@@ -3357,6 +3357,10 @@ void tst_QGraphicsView::moveItemWhileScrolling()
     int a = adjustForAntialiasing ? 2 : 1;
     expectedRegion += QRect(40, 50, 10, 10).adjusted(-a, -a, a, a);
     expectedRegion += QRect(40, 60, 10, 10).adjusted(-a, -a, a, a);
+#ifdef QT_MAC_USE_COCOA
+    if (QApplicationPrivate::graphicsSystem() == 0)
+        QEXPECT_FAIL("", "This will fail with Cocoa because paint events are not send in the order expected by graphicsview", Continue);
+#endif
     COMPARE_REGIONS(view.lastPaintedRegion, expectedRegion);
 }
 
@@ -4142,11 +4146,14 @@ void tst_QGraphicsView::inputContextReset()
 
     inputContext.resets = 0;
     scene.setFocusItem(0);
-    QCOMPARE(inputContext.resets, 1);
+    // the input context is reset twice, once because an item has lost focus and again because
+    // the Qt::WA_InputMethodEnabled flag is cleared because no item has focus.
+    QCOMPARE(inputContext.resets, 2);
 
     // introduce another item that is focusable but does not accept input methods
     QGraphicsItem *item2 = new QGraphicsRectItem;
-    item1->setFlags(QGraphicsItem::ItemIsFocusable);
+    item2->setFlags(QGraphicsItem::ItemIsFocusable);
+    scene.addItem(item2);
 
     inputContext.resets = 0;
     scene.setFocusItem(item2);
@@ -4155,6 +4162,11 @@ void tst_QGraphicsView::inputContextReset()
     inputContext.resets = 0;
     scene.setFocusItem(item1);
     QCOMPARE(inputContext.resets, 0);
+
+    // test changing between between items that accept input methods.
+    item2->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemAcceptsInputMethod);
+    scene.setFocusItem(item2);
+    QCOMPARE(inputContext.resets, 1);
 }
 
 void tst_QGraphicsView::indirectPainting()
@@ -4500,7 +4512,7 @@ void tst_QGraphicsView::hoverLeave()
     QVERIFY(item->receivedEnterEvent);
     QCOMPARE(item->enterWidget, view.viewport());
 
-    QCursor::setPos(0,0);
+    QCursor::setPos(1,1);
     QTest::qWait(200);
     QVERIFY(item->receivedLeaveEvent);
     QCOMPARE(item->leaveWidget, view.viewport());

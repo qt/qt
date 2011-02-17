@@ -116,6 +116,8 @@ public:
                               ConstructionState *state);
     static void complete(QDeclarativeEnginePrivate *enginePriv, ConstructionState *state);
 
+    QScriptValue createObject(QObject *publicParent, const QScriptValue valuemap);
+
     QDeclarativeEngine *engine;
     QDeclarativeGuardedContextData creationContext;
 

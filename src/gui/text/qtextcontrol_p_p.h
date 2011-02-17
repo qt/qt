@@ -174,6 +174,8 @@ public:
     QBasicTimer trippleClickTimer;
     QPointF trippleClickPoint;
 
+    bool dragEnabled;
+
     bool mousePressed;
 
     bool mightStartDrag;
@@ -208,6 +210,8 @@ public:
 
     bool ignoreUnusedNavigationEvents;
     bool openExternalLinks;
+
+    bool wordSelectionEnabled;
 
     QString linkToCopy;
     void _q_copyLink();

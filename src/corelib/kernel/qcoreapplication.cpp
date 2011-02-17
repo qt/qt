@@ -392,16 +392,6 @@ void QCoreApplicationPrivate::createEventDispatcher()
 #endif
 }
 
-void QCoreApplicationPrivate::_q_initializeProcessManager()
-{
-#ifndef QT_NO_PROCESS
-#  ifdef Q_OS_UNIX
-    QProcessPrivate::initializeProcessManager();
-#  endif
-#endif
-}
-
-
 QThread *QCoreApplicationPrivate::theMainThread = 0;
 QThread *QCoreApplicationPrivate::mainThread()
 {
@@ -482,10 +472,10 @@ QString qAppName()
     operations can call processEvents() to keep the application
     responsive.
 
-    In general, we recommend that you create a QCoreApplication or
-    a QApplication object in your \c main() function as early as
-    possible. exit() will not return until the event loop exits;
-    e.g., when quit() is called.
+    In general, we recommend that you create a QCoreApplication or a
+    QApplication object in your \c main() function as early as
+    possible. exec() will not return until the event loop exits; e.g.,
+    when quit() is called.
 
     Several static convenience functions are also provided. The
     QCoreApplication object is available from instance(). Events can
@@ -664,6 +654,12 @@ void QCoreApplication::init()
     } else {
         d->appendApplicationPathToLibraryPaths();
     }
+#endif
+
+#if defined(Q_OS_UNIX) && !(defined(QT_NO_PROCESS))
+    // Make sure the process manager thread object is created in the main
+    // thread.
+    QProcessPrivate::initializeProcessManager();
 #endif
 
 #ifdef QT_EVAL
@@ -2732,5 +2728,3 @@ int QCoreApplication::loopLevel()
 */
 
 QT_END_NAMESPACE
-
-#include "moc_qcoreapplication.cpp"

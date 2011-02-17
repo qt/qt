@@ -33,7 +33,7 @@ symbian {
 
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
 
-	LIBS += -lCommDb
+	LIBS += -lcommdb
 
     TARGET.CAPABILITY="NetworkServices"
 }

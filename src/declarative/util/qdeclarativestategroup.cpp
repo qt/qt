@@ -102,10 +102,10 @@ public:
            id: myStateGroup
            states: State {
                name: "state1"
-               ...
+               // ...
            }
            transitions: Transition {
-               ...
+               // ...
            }
        }
 
@@ -140,11 +140,15 @@ QList<QDeclarativeState *> QDeclarativeStateGroup::states() const
 
   \qml
   StateGroup {
-    states: [
-      State { ... },
-      State { ... }
-      ...
-    ]
+      states: [
+          State {
+              // State definition...
+          },
+          State {
+              // ...
+          }
+          // Other states...
+      ]
   }
   \endqml
 
@@ -197,11 +201,15 @@ void QDeclarativeStateGroupPrivate::clear_states(QDeclarativeListProperty<QDecla
 
   \qml
   StateGroup {
-    transitions: [
-      Transition { ... },
-      Transition { ... }
-      ...
-    ]
+      transitions: [
+          Transition {
+            // ...
+          },
+          Transition {
+            // ...
+          }
+          // ...
+      ]
   }
   \endqml
 
@@ -221,14 +229,14 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeStateGroup::transit
   This property is often used in scripts to change between states. For
   example:
 
-  \qml
-    function toggle() {
-        if (button.state == 'On')
-            button.state = 'Off';
-        else
-            button.state = 'On';
-    }
-  \endqml
+  \js
+  function toggle() {
+      if (button.state == 'On')
+          button.state = 'Off';
+      else
+          button.state = 'On';
+  }
+  \endjs
 
   If the state group is in its base state (i.e. no explicit state has been
   set), \c state will be a blank string. Likewise, you can return a

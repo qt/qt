@@ -70,11 +70,13 @@ public:
     QString quoteSnippet(const Location &docLocation, const QString &identifier);
 
 private:
-    QString getLine();
+    QString getLine(int unindent = 0);
     void failedAtEnd( const Location& docLocation, const QString& command );
     bool match( const Location& docLocation, const QString& pattern,
     		const QString& line );
     QString commentForCode() const;
+    QString removeSpecialLines(const QString &line, const QString &comment,
+                               int unindent = 0);
 
     bool silent; 
     bool validRegExp;
