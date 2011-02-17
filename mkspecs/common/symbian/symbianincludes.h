@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the mkspecs of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,31 +39,20 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/qdeclarativeextensionplugin.h>
-#include <QtDeclarative/qdeclarative.h>
+#ifndef __PRODUCT_INCLUDE__
+#  ifdef __QT_PRODUCT_INCLUDE_IS_LOWERCASE__
+#    define __PRODUCT_INCLUDE__ <variant/symbian_os.hrh>
+#  else
+#    define __PRODUCT_INCLUDE__ <variant/Symbian_OS.hrh>
+#  endif
+#endif
 
-#include "qdeclarativeparticles_p.h"
-
-QT_BEGIN_NAMESPACE
-
-class QParticlesQmlModule : public QDeclarativeExtensionPlugin
-{
-    Q_OBJECT
-public:
-    virtual void registerTypes(const char *uri)
-    {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.labs.particles"));
-        qmlRegisterType<QDeclarativeParticleMotion>(uri,1,0,"ParticleMotion");
-        qmlRegisterType<QDeclarativeParticleMotionGravity>(uri,1,0,"ParticleMotionGravity");
-        qmlRegisterType<QDeclarativeParticleMotionLinear>(uri,1,0,"ParticleMotionLinear");
-        qmlRegisterType<QDeclarativeParticleMotionWander>(uri,1,0,"ParticleMotionWander");
-        qmlRegisterType<QDeclarativeParticles>(uri,1,0,"Particles");
-    }
-};
-
-QT_END_NAMESPACE
-
-#include "particles.moc"
-
-Q_EXPORT_PLUGIN2(qmlparticlesplugin, QT_PREPEND_NAMESPACE(QParticlesQmlModule));
-
+#ifndef __QT_SYMBIAN_RESOURCE__
+#  if defined(__ARMCC__) || defined(__CC_ARM)
+#    ifdef __QT_RVCT_HEADER_IS_2_2__
+#      include <rvct2_2.h>
+#    else
+#      include <rvct.h>
+#    endif
+#  endif
+#endif

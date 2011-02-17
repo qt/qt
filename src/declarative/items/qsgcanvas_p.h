@@ -60,7 +60,11 @@
 
 #include "qsgcontext.h"
 
+#include <QtCore/qthread.h>
+#include <QtCore/qmutex.h>
+#include <QtCore/qwaitcondition.h>
 #include <private/qwidget_p.h>
+#include <private/qgl_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -72,10 +76,25 @@ public:
     QSGRootItem();
 };
 
-class QSGCanvasPrivate 
+class QSGCanvasPrivate;
+
+class QSGThreadedRendererAnimationDriver : public QAnimationDriver
 {
 public:
-    QSGCanvas *q_ptr;
+    QSGThreadedRendererAnimationDriver(QSGCanvasPrivate *r);
+
+protected:
+    virtual void started();
+    virtual void stopped();
+
+    QSGCanvasPrivate *renderer;
+};
+
+
+
+class QSGCanvasPrivate : public QGLWidgetPrivate
+{
+public:
     Q_DECLARE_PUBLIC(QSGCanvas)
 
     static inline QSGCanvasPrivate *get(QSGCanvas *c) { return c->d_func(); }
@@ -106,7 +125,6 @@ public:
     void clearHover();
 
     QDeclarativeGuard<QSGItem> hoverItem;
-
     enum FocusOption {
         DontChangeFocusProperty = 0x01,
     };
@@ -120,23 +138,53 @@ public:
 
     void dirtyItem(QSGItem *);
     void cleanup(Node *);
+    void maybeUpdate();
 
-    QSGContext *context;
-    QAnimationDriver *animationDriver;
+    void initializeSceneGraph();
+    void polishItems();
+    void syncSceneGraph();
+    void renderSceneGraph();
+    void runThread();
+
     QSGItem::UpdatePaintNodeData updatePaintNodeData;
 
     QSGItem *dirtyItemList;
     QList<Node *> cleanupNodeList;
 
-    QSet<QSGItem *> polishItems;
-
-    void initializeSceneGraph();
+    QSet<QSGItem *> itemsToPolish;
 
     void updateDirtyNodes();
     void cleanupNodes();
     bool updateEffectiveOpacity(QSGItem *);
     void updateEffectiveOpacityRoot(QSGItem *, qreal);
     void updateDirtyNode(QSGItem *);
+
+    QSGContext *context;
+
+    uint contextInThread : 1;
+    uint threadedRendering : 1;
+    uint inUpdate : 1;
+    uint exitThread : 1;
+    uint animationRunning: 1;
+    uint idle : 1;              // Set to true when render thread sees no change and enters a wait()
+    uint needsRepaint : 1;      // Set by callback from render if scene needs repainting.
+    uint renderThreadAwakened : 1;
+
+    struct MyThread : public QThread {
+        MyThread(QSGCanvasPrivate *r) : renderer(r) {}
+        virtual void run() { renderer->runThread(); }
+        static void doWait() { QThread::msleep(16); }
+        QSGCanvasPrivate *renderer;
+    };
+    MyThread *thread;
+    QMutex mutex;
+    QWaitCondition wait;
+    QSize widgetSize;
+    QSize viewportSize;
+
+    QAnimationDriver *animationDriver;
+
+
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSGCanvasPrivate::FocusOptions)

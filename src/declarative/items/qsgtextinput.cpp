@@ -1,7 +1,7 @@
-// Commit: b74ec2156b2a1f1acd38443047da5bb26cb082b1
+// Commit: d446a0ec464556ede91225b14e75f2f8f5a748d5
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,13 +49,15 @@
 
 #include <QtDeclarative/qdeclarativeinfo.h>
 #include <QtGui/qgraphicssceneevent.h>
+#include <QTextBoundaryFinder>
+#include <qstyle.h>
 
 QT_BEGIN_NAMESPACE
 
 QWidgetPrivate *qt_widget_private(QWidget *widget);
 
 QSGTextInput::QSGTextInput(QSGItem* parent)
-: QSGPaintedItem(*(new QSGTextInputPrivate), parent)
+: QSGImplicitSizePaintedItem(*(new QSGTextInputPrivate), parent)
 {
     Q_D(QSGTextInput);
     d->init();
@@ -82,24 +84,32 @@ void QSGTextInput::setText(const QString &s)
 QFont QSGTextInput::font() const
 {
     Q_D(const QSGTextInput);
-    return d->font;
+    return d->sourceFont;
 }
 
 void QSGTextInput::setFont(const QFont &font)
 {
     Q_D(QSGTextInput);
-    if (d->font == font)
+    if (d->sourceFont == font)
         return;
 
+    d->sourceFont = font;
+    QFont oldFont = d->font;
     d->font = font;
-
-    d->control->setFont(d->font);
-    if(d->cursorItem){
-        d->cursorItem->setHeight(QFontMetrics(d->font).height());
-        moveCursor();
+    if (d->font.pointSizeF() != -1) {
+        // 0.5pt resolution
+        qreal size = qRound(d->font.pointSizeF()*2.0);
+        d->font.setPointSizeF(size/2.0);
     }
-    updateSize();
-    emit fontChanged(d->font);
+    if (oldFont != d->font) {
+        d->control->setFont(d->font);
+        if(d->cursorItem){
+            d->cursorItem->setHeight(QFontMetrics(d->font).height());
+            moveCursor();
+        }
+        updateSize();
+    }
+    emit fontChanged(d->sourceFont);
 }
 
 QColor QSGTextInput::color() const
@@ -189,6 +199,7 @@ void QSGTextInput::setReadOnly(bool ro)
     if (d->control->isReadOnly() == ro)
         return;
 
+    setFlag(QSGItem::ItemAcceptsInputMethod, !ro);
     d->control->setReadOnly(ro);
 
     emit readOnlyChanged(ro);
@@ -240,6 +251,8 @@ int QSGTextInput::cursorPosition() const
 void QSGTextInput::setCursorPosition(int cp)
 {
     Q_D(QSGTextInput);
+    if (cp < 0 || cp > d->control->text().length())
+        return;
     d->control->moveCursor(cp);
 }
 
@@ -502,6 +515,7 @@ void QSGTextInput::inputMethodEvent(QInputMethodEvent *ev)
     } else {
         d->control->processInputMethodEvent(ev);
         updateSize();
+        d->updateHorizontalScroll();
     }
     if (!ev->isAccepted())
         QSGPaintedItem::inputMethodEvent(ev);
@@ -536,6 +550,10 @@ void QSGTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
             }
         }
     }
+    if (d->selectByMouse) {
+        setKeepMouseGrab(false);
+        d->pressPos = event->pos();
+    }
     bool mark = event->modifiers() & Qt::ShiftModifier;
     int cursor = d->xToPos(event->pos().x());
     d->control->moveCursor(cursor, mark);
@@ -546,7 +564,9 @@ void QSGTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QSGTextInput);
     if (d->selectByMouse) {
-        d->control->moveCursor(d->xToPos(event->pos().x()), true);
+        if (qAbs(int(event->pos().x() - d->pressPos.x())) > QApplication::startDragDistance())
+            setKeepMouseGrab(true);
+        moveCursorSelection(d->xToPos(event->pos().x()), d->mouseSelectionMode);
         event->setAccepted(true);
     } else {
         QSGPaintedItem::mouseMoveEvent(event);
@@ -556,6 +576,8 @@ void QSGTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void QSGTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QSGTextInput);
+    if (d->selectByMouse)
+        setKeepMouseGrab(false);
     if (!d->showInputPanelOnFocus) { // input panel on click
         if (d->focusOnPress && !isReadOnly() && boundingRect().contains(event->pos())) {
             if (canvas() && canvas() == qApp->focusWidget()) {
@@ -567,6 +589,11 @@ void QSGTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     d->control->processEvent(event);
     if (!event->isAccepted())
         QSGPaintedItem::mouseReleaseEvent(event);
+}
+
+void QSGTextInput::mouseUngrabEvent()
+{
+    setKeepMouseGrab(false);
 }
 
 bool QSGTextInput::event(QEvent* ev)
@@ -610,13 +637,15 @@ int QSGTextInputPrivate::calculateTextWidth()
 void QSGTextInputPrivate::updateHorizontalScroll()
 {
     Q_Q(QSGTextInput);
-    int cix = qRound(control->cursorToX());
+    const int preeditLength = control->preeditAreaText().length();
+    int cix = qRound(control->cursorToX(control->cursor() + preeditLength));
     QRect br(q->boundingRect().toRect());
     int widthUsed = calculateTextWidth();
+    Qt::Alignment va = QStyle::visualAlignment(control->layoutDirection(), QFlag(Qt::Alignment(hAlign)));
     if (autoScroll) {
         if (widthUsed <=  br.width()) {
             // text fits in br; use hscroll for alignment
-            switch (hAlign & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
+            switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
             case Qt::AlignRight:
                 hscroll = widthUsed - br.width() - 1;
                 break;
@@ -639,13 +668,26 @@ void QSGTextInputPrivate::updateHorizontalScroll()
             // right
             hscroll = widthUsed - br.width() + 1;
         }
+        if (preeditLength > 0) {
+            // check to ensure long pre-edit text doesn't push the cursor
+            // off to the left
+             cix = qRound(control->cursorToX(
+                     control->cursor() + qMax(0, control->preeditCursor() - 1)));
+             if (cix < hscroll)
+                 hscroll = cix;
+        }
     } else {
-        if(hAlign == QSGTextInput::AlignRight){
+        switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
+        case Qt::AlignRight:
             hscroll = q->width() - widthUsed;
-        }else if(hAlign == QSGTextInput::AlignHCenter){
+            break;
+        case Qt::AlignHCenter:
             hscroll = (q->width() - widthUsed) / 2;
-        } else {
+            break;
+        default:
+            // Left
             hscroll = 0;
+            break;
         }
     }
 }
@@ -705,6 +747,12 @@ QVariant QSGTextInput::inputMethodQuery(Qt::InputMethodQuery property) const
     }
 }
 
+void QSGTextInput::deselect()
+{
+    Q_D(QSGTextInput);
+    d->control->deselect();
+}
+
 void QSGTextInput::selectAll()
 {
     Q_D(QSGTextInput);
@@ -728,7 +776,8 @@ void QSGTextInput::copy()
 void QSGTextInput::paste()
 {
     Q_D(QSGTextInput);
-    d->control->paste();
+    if (!d->control->isReadOnly())
+        d->control->paste();
 }
 #endif // QT_NO_CLIPBOARD
 
@@ -778,11 +827,85 @@ void QSGTextInput::setSelectByMouse(bool on)
     }
 }
 
+QSGTextInput::SelectionMode QSGTextInput::mouseSelectionMode() const
+{
+    Q_D(const QSGTextInput);
+    return d->mouseSelectionMode;
+}
+
+void QSGTextInput::setMouseSelectionMode(SelectionMode mode)
+{
+    Q_D(QSGTextInput);
+    if (d->mouseSelectionMode != mode) {
+        d->mouseSelectionMode = mode;
+        emit mouseSelectionModeChanged(mode);
+    }
+}
+
+bool QSGTextInput::canPaste() const
+{
+    Q_D(const QSGTextInput);
+    return d->canPaste;
+}
+
 void QSGTextInput::moveCursorSelection(int position)
 {
     Q_D(QSGTextInput);
     d->control->moveCursor(position, true);
     d->updateHorizontalScroll();
+}
+
+void QSGTextInput::moveCursorSelection(int pos, SelectionMode mode)
+{
+    Q_D(QSGTextInput);
+
+    if (mode == SelectCharacters) {
+        d->control->moveCursor(pos, true);
+    } else if (pos != d->control->cursor()){
+        const int cursor = d->control->cursor();
+        int anchor;
+        if (!d->control->hasSelectedText())
+            anchor = d->control->cursor();
+        else if (d->control->selectionStart() == d->control->cursor())
+            anchor = d->control->selectionEnd();
+        else
+            anchor = d->control->selectionStart();
+
+        if (anchor < pos || (anchor == pos && cursor < pos)) {
+            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, d->control->text());
+            finder.setPosition(anchor);
+
+            const QTextBoundaryFinder::BoundaryReasons reasons = finder.boundaryReasons();
+            if (!(reasons & QTextBoundaryFinder::StartWord)
+                    || ((reasons & QTextBoundaryFinder::EndWord) && anchor > cursor)) {
+                finder.toPreviousBoundary();
+            }
+            anchor = finder.position();
+
+            finder.setPosition(pos);
+            if (!finder.isAtBoundary())
+                finder.toNextBoundary();
+
+            d->control->setSelection(anchor, finder.position() - anchor);
+        } else if (anchor > pos || (anchor == pos && cursor > pos)) {
+            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, d->control->text());
+            finder.setPosition(anchor);
+
+            const QTextBoundaryFinder::BoundaryReasons reasons = finder.boundaryReasons();
+            if (!(reasons & QTextBoundaryFinder::EndWord)
+                    || ((reasons & QTextBoundaryFinder::StartWord) && anchor < cursor)) {
+                finder.toNextBoundary();
+            }
+
+            anchor = finder.position();
+
+            finder.setPosition(pos);
+            if (!finder.isAtBoundary())
+                 finder.toPreviousBoundary();
+
+            d->control->setSelection(anchor, finder.position() - anchor);
+        }
+    }
 }
 
 void QSGTextInput::openSoftwareInputPanel()
@@ -850,6 +973,12 @@ void QSGTextInputPrivate::init()
                q, SIGNAL(accepted()));
     q->connect(control, SIGNAL(updateNeeded(QRect)),
                q, SLOT(updateRect(QRect)));
+#ifndef QT_NO_CLIPBOARD
+    q->connect(q, SIGNAL(readOnlyChanged(bool)),
+            q, SLOT(q_canPasteChanged()));
+    q->connect(QApplication::clipboard(), SIGNAL(dataChanged()),
+            q, SLOT(q_canPasteChanged()));
+#endif // QT_NO_CLIPBOARD
     q->updateSize();
     oldValidity = control->hasAcceptableInput();
     lastSelectionStart = 0;
@@ -948,6 +1077,17 @@ void QSGTextInput::updateSize(bool needsRedraw)
     setImplicitWidth(d->calculateTextWidth());
     if(w==width() && h==height() && needsRedraw)
         update();
+}
+
+void QSGTextInput::q_canPasteChanged()
+{
+    Q_D(QSGTextInput);
+    bool old = d->canPaste;
+#ifndef QT_NO_CLIPBOARD
+    d->canPaste = !d->control->isReadOnly() && QApplication::clipboard()->text().length() != 0;
+#endif
+    if(d->canPaste != old)
+        emit canPasteChanged();
 }
 
 QT_END_NAMESPACE

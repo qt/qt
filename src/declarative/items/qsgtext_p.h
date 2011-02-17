@@ -1,7 +1,7 @@
-// Commit: e39a2e39451bf106a9845f8a60fc571faaa4dde5
+// Commit: ccd1b7dd5c8e6b1c4bf5b21354f7b9acaf881b00
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,7 +43,7 @@
 #ifndef QSGTEXT_P_H
 #define QSGTEXT_P_H
 
-#include "qsgitem.h"
+#include "qsgimplicitsizeitem_p.h"
 
 #include <private/qdeclarativeglobal_p.h>
 
@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 class QSGTextPrivate;
-class Q_DECLARATIVE_PRIVATE_EXPORT QSGText : public QSGItem
+class Q_DECLARATIVE_PRIVATE_EXPORT QSGText : public QSGImplicitSizeItem
 {
     Q_OBJECT
     Q_ENUMS(HAlignment)
@@ -64,6 +64,7 @@ class Q_DECLARATIVE_PRIVATE_EXPORT QSGText : public QSGItem
     Q_ENUMS(TextFormat)
     Q_ENUMS(TextElideMode)
     Q_ENUMS(WrapMode)
+    Q_ENUMS(LineHeightMode)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY fontChanged)
@@ -73,10 +74,16 @@ class Q_DECLARATIVE_PRIVATE_EXPORT QSGText : public QSGItem
     Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign NOTIFY horizontalAlignmentChanged)
     Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign NOTIFY verticalAlignmentChanged)
     Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
+    Q_PROPERTY(int lineCount READ lineCount NOTIFY lineCountChanged)
+    Q_PROPERTY(bool truncated READ truncated NOTIFY truncatedChanged)
+    Q_PROPERTY(int maximumLineCount READ maximumLineCount WRITE setMaximumLineCount NOTIFY maximumLineCountChanged RESET resetMaximumLineCount)
+
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat NOTIFY textFormatChanged)
     Q_PROPERTY(TextElideMode elide READ elideMode WRITE setElideMode NOTIFY elideModeChanged) //### elideMode?
     Q_PROPERTY(qreal paintedWidth READ paintedWidth NOTIFY paintedSizeChanged)
     Q_PROPERTY(qreal paintedHeight READ paintedHeight NOTIFY paintedSizeChanged)
+    Q_PROPERTY(qreal lineHeight READ lineHeight WRITE setLineHeight NOTIFY lineHeightChanged)
+    Q_PROPERTY(LineHeightMode lineHeightMode READ lineHeightMode WRITE setLineHeightMode NOTIFY lineHeightModeChanged)
 
 public:
     QSGText(QSGItem *parent=0);
@@ -84,7 +91,8 @@ public:
 
     enum HAlignment { AlignLeft = Qt::AlignLeft,
                        AlignRight = Qt::AlignRight,
-                       AlignHCenter = Qt::AlignHCenter };
+                       AlignHCenter = Qt::AlignHCenter,
+                       AlignJustify = Qt::AlignJustify };
     enum VAlignment { AlignTop = Qt::AlignTop,
                        AlignBottom = Qt::AlignBottom,
                        AlignVCenter = Qt::AlignVCenter };
@@ -107,6 +115,8 @@ public:
                     WrapAtWordBoundaryOrAnywhere = QTextOption::WrapAtWordBoundaryOrAnywhere, // COMPAT
                     Wrap = QTextOption::WrapAtWordBoundaryOrAnywhere
                   };
+
+    enum LineHeightMode { ProportionalHeight, FixedHeight };
 
     QString text() const;
     void setText(const QString &);
@@ -132,11 +142,24 @@ public:
     WrapMode wrapMode() const;
     void setWrapMode(WrapMode w);
 
+    int lineCount() const;
+    bool truncated() const;
+
+    int maximumLineCount() const;
+    void setMaximumLineCount(int lines);
+    void resetMaximumLineCount();
+
     TextFormat textFormat() const;
     void setTextFormat(TextFormat format);
 
     TextElideMode elideMode() const;
     void setElideMode(TextElideMode);
+
+    qreal lineHeight() const;
+    void setLineHeight(qreal lineHeight);
+
+    LineHeightMode lineHeightMode() const;
+    void setLineHeightMode(LineHeightMode);
 
     virtual void componentComplete();
 
@@ -157,9 +180,14 @@ Q_SIGNALS:
     void horizontalAlignmentChanged(HAlignment alignment);
     void verticalAlignmentChanged(VAlignment alignment);
     void wrapModeChanged();
+    void lineCountChanged();
+    void truncatedChanged();
+    void maximumLineCountChanged();
     void textFormatChanged(TextFormat textFormat);
     void elideModeChanged(TextElideMode mode);
     void paintedSizeChanged();
+    void lineHeightChanged(qreal lineHeight);
+    void lineHeightModeChanged(LineHeightMode mode);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);

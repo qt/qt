@@ -1,7 +1,7 @@
-// Commit: e17a5398bf20b89834d4d6c7f4d9203f192b101f
+// Commit: ab71df83ba4eb9d749efc0f3a2d4a0fe5486023f
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,8 +47,14 @@
 
 QT_BEGIN_NAMESPACE
 
+QSGImageBase::QSGImageBase(QSGItem *parent)
+: QSGImplicitSizeItem(*(new QSGImageBasePrivate), parent)
+{
+    setFlag(ItemHasContents);
+}
+
 QSGImageBase::QSGImageBase(QSGImageBasePrivate &dd, QSGItem *parent)
-: QSGItem(dd, parent)
+: QSGImplicitSizeItem(dd, parent)
 {
     setFlag(ItemHasContents);
 }

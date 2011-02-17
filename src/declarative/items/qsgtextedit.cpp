@@ -1,7 +1,7 @@
-// Commit: e4dbf0c82b46e7a32e21185c8f633506229be944
+// Commit: d446a0ec464556ede91225b14e75f2f8f5a748d5
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,6 +49,7 @@
 #include <QtGui/qapplication.h>
 #include <QtGui/qgraphicssceneevent.h>
 #include <QtGui/qpainter.h>
+#include <QtGui/qtextobject.h>
 #include <QtCore/qmath.h>
 
 #include <private/qdeclarativeglobal_p.h>
@@ -60,7 +61,7 @@ QT_BEGIN_NAMESPACE
 QWidgetPrivate *qt_widget_private(QWidget *widget);
 
 QSGTextEdit::QSGTextEdit(QSGItem *parent)
-: QSGPaintedItem(*(new QSGTextEditPrivate), parent)
+: QSGImplicitSizePaintedItem(*(new QSGTextEditPrivate), parent)
 {
     Q_D(QSGTextEdit);
     d->init();
@@ -129,21 +130,34 @@ void QSGTextEdit::setTextFormat(TextFormat format)
 QFont QSGTextEdit::font() const
 {
     Q_D(const QSGTextEdit);
-    return d->font;
+    return d->sourceFont;
 }
 
 void QSGTextEdit::setFont(const QFont &font)
 {
     Q_D(QSGTextEdit);
-    d->font = font;
+    if (d->sourceFont == font)
+        return;
 
-    d->document->setDefaultFont(d->font);
-    if(d->cursor){
-        d->cursor->setHeight(QFontMetrics(d->font).height());
-        moveCursorDelegate();
+    d->sourceFont = font;
+    QFont oldFont = d->font;
+    d->font = font;
+    if (d->font.pointSizeF() != -1) {
+        // 0.5pt resolution
+        qreal size = qRound(d->font.pointSizeF()*2.0);
+        d->font.setPointSizeF(size/2.0);
     }
-    updateSize();
-    update();
+
+    if (oldFont != d->font) {
+        d->document->setDefaultFont(d->font);
+        if(d->cursor){
+            d->cursor->setHeight(QFontMetrics(d->font).height());
+            moveCursorDelegate();
+        }
+        updateSize();
+        update();
+    }
+    emit fontChanged(d->sourceFont);
 }
 
 QColor QSGTextEdit::color() const
@@ -257,14 +271,22 @@ void QSGTextEdit::setWrapMode(WrapMode mode)
     emit wrapModeChanged();
 }
 
+int QSGTextEdit::lineCount() const
+{
+    Q_D(const QSGTextEdit);
+    return d->lineCount;
+}
+
 qreal QSGTextEdit::paintedWidth() const
 {
-    return implicitWidth();
+    Q_D(const QSGTextEdit);
+    return d->paintedSize.width();
 }
 
 qreal QSGTextEdit::paintedHeight() const
 {
-    return implicitHeight();
+    Q_D(const QSGTextEdit);
+    return d->paintedSize.height();
 }
 
 QRectF QSGTextEdit::positionToRectangle(int pos) const
@@ -291,6 +313,55 @@ void QSGTextEdit::moveCursorSelection(int pos)
     if (cursor.position() == pos)
         return;
     cursor.setPosition(pos, QTextCursor::KeepAnchor);
+    d->control->setTextCursor(cursor);
+}
+
+void QSGTextEdit::moveCursorSelection(int pos, SelectionMode mode)
+{
+    Q_D(QSGTextEdit);
+    QTextCursor cursor = d->control->textCursor();
+    if (cursor.position() == pos)
+        return;
+    if (mode == SelectCharacters) {
+        cursor.setPosition(pos, QTextCursor::KeepAnchor);
+    } else if (cursor.anchor() < pos || (cursor.anchor() == pos && cursor.position() < pos)) {
+        if (cursor.anchor() > cursor.position()) {
+            cursor.setPosition(cursor.anchor(), QTextCursor::MoveAnchor);
+            cursor.movePosition(QTextCursor::StartOfWord, QTextCursor::KeepAnchor);
+            if (cursor.position() == cursor.anchor())
+                cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::MoveAnchor);
+            else
+                cursor.setPosition(cursor.position(), QTextCursor::MoveAnchor);
+        } else {
+            cursor.setPosition(cursor.anchor(), QTextCursor::MoveAnchor);
+            cursor.movePosition(QTextCursor::StartOfWord, QTextCursor::MoveAnchor);
+        }
+
+        cursor.setPosition(pos, QTextCursor::KeepAnchor);
+        cursor.movePosition(QTextCursor::StartOfWord, QTextCursor::KeepAnchor);
+        if (cursor.position() != pos)
+            cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+    } else if (cursor.anchor() > pos || (cursor.anchor() == pos && cursor.position() > pos)) {
+        if (cursor.anchor() < cursor.position()) {
+            cursor.setPosition(cursor.anchor(), QTextCursor::MoveAnchor);
+            cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::MoveAnchor);
+        } else {
+            cursor.setPosition(cursor.anchor(), QTextCursor::MoveAnchor);
+            cursor.movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor);
+            cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+            if (cursor.position() != cursor.anchor()) {
+                cursor.setPosition(cursor.anchor(), QTextCursor::MoveAnchor);
+                cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::MoveAnchor);
+            }
+        }
+
+        cursor.setPosition(pos, QTextCursor::KeepAnchor);
+        cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+        if (cursor.position() != pos) {
+            cursor.movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor);
+            cursor.movePosition(QTextCursor::StartOfWord, QTextCursor::KeepAnchor);
+        }
+    }
     d->control->setTextCursor(cursor);
 }
 
@@ -322,8 +393,10 @@ int QSGTextEdit::cursorPosition() const
 void QSGTextEdit::setCursorPosition(int pos)
 {
     Q_D(QSGTextEdit);
+    if (pos < 0 || pos > d->text.length())
+        return;
     QTextCursor cursor = d->control->textCursor();
-    if (cursor.position() == pos)
+    if (cursor.position() == pos && cursor.anchor() == pos)
         return;
     cursor.setPosition(pos);
     d->control->setTextCursor(cursor);
@@ -473,7 +546,24 @@ void QSGTextEdit::setSelectByMouse(bool on)
     Q_D(QSGTextEdit);
     if (d->selectByMouse != on) {
         d->selectByMouse = on;
+        setKeepMouseGrab(on);
         emit selectByMouseChanged(on);
+    }
+}
+
+QSGTextEdit::SelectionMode QSGTextEdit::mouseSelectionMode() const
+{
+    Q_D(const QSGTextEdit);
+    return d->mouseSelectionMode;
+}
+
+void QSGTextEdit::setMouseSelectionMode(SelectionMode mode)
+{
+    Q_D(QSGTextEdit);
+    if (d->mouseSelectionMode != mode) {
+        d->mouseSelectionMode = mode;
+        d->control->setWordSelectionEnabled(mode == SelectWords);
+        emit mouseSelectionModeChanged(mode);
     }
 }
 
@@ -483,12 +573,12 @@ void QSGTextEdit::setReadOnly(bool r)
     if (r == isReadOnly())
         return;
 
-
-    Qt::TextInteractionFlags flags = Qt::NoTextInteraction;
+    setFlag(QSGItem::ItemAcceptsInputMethod, !r);
+    Qt::TextInteractionFlags flags = Qt::LinksAccessibleByMouse;
     if (r) {
-        flags = Qt::TextSelectableByMouse;
+        flags = flags | Qt::TextSelectableByMouse;
     } else {
-        flags = Qt::TextEditorInteraction;
+        flags = flags | Qt::TextEditorInteraction;
     }
     d->control->setTextInteractionFlags(flags);
     if (!r)
@@ -553,6 +643,14 @@ void QSGTextEdit::keyReleaseEvent(QKeyEvent *event)
     d->control->processEvent(event, QPointF(0, -d->yoff));
     if (!event->isAccepted())
         QSGPaintedItem::keyReleaseEvent(event);
+}
+
+void QSGTextEdit::deselect()
+{
+    Q_D(QSGTextEdit);
+    QTextCursor c = d->control->textCursor();
+    c.clearSelection();
+    d->control->setTextCursor(c);
 }
 
 void QSGTextEdit::selectAll()
@@ -751,6 +849,12 @@ void QSGTextEdit::updateImgCache(const QRectF &rf)
     update(r);
 }
 
+bool QSGTextEdit::canPaste() const
+{
+    Q_D(const QSGTextEdit);
+    return d->canPaste;
+}
+
 void QSGTextEditPrivate::init()
 {
     Q_Q(QSGTextEdit);
@@ -761,6 +865,8 @@ void QSGTextEditPrivate::init()
 
     control = new QTextControl(q);
     control->setIgnoreUnusedNavigationEvents(true);
+    control->setTextInteractionFlags(control->textInteractionFlags() | Qt::LinksAccessibleByMouse);
+    control->setDragEnabled(false);
 
     // QTextControl follows the default text color
     // defined by the platform, declarative text
@@ -779,6 +885,11 @@ void QSGTextEditPrivate::init()
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SLOT(updateSelectionMarkers()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorPositionChanged()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorRectangleChanged()));
+    QObject::connect(control, SIGNAL(linkActivated(QString)), q, SIGNAL(linkActivated(QString)));
+#ifndef QT_NO_CLIPBOARD
+    QObject::connect(q, SIGNAL(readOnlyChanged(bool)), q, SLOT(q_canPasteChanged()));
+    QObject::connect(QApplication::clipboard(), SIGNAL(dataChanged()), q, SLOT(q_canPasteChanged()));
+#endif
 
     document = control->document();
     document->setDefaultFont(font);
@@ -793,6 +904,7 @@ void QSGTextEdit::q_textChanged()
     Q_D(QSGTextEdit);
     d->text = text();
     updateSize();
+    updateTotalLines();
     updateMicroFocus();
     emit textChanged(d->text);
 }
@@ -854,6 +966,17 @@ QRectF QSGTextEdit::boundingRect() const
     return r.translated(0,d->yoff);
 }
 
+qreal QSGTextEditPrivate::getImplicitWidth() const
+{
+    Q_Q(const QSGTextEdit);
+    if (!requireImplicitWidth) {
+        // We don't calculate implicitWidth unless it is required.
+        // We need to force a size update now to ensure implicitWidth is calculated
+        const_cast<QSGTextEditPrivate*>(this)->requireImplicitWidth = true;
+        const_cast<QSGTextEdit*>(q)->updateSize();
+    }
+    return implicitWidth;
+}
 
 //### we should perhaps be a bit smarter here -- depending on what has changed, we shouldn't
 //    need to do all the calculations each time
@@ -861,12 +984,27 @@ void QSGTextEdit::updateSize()
 {
     Q_D(QSGTextEdit);
     if (isComponentComplete()) {
-        QFontMetrics fm = QFontMetrics(d->font);
-        int dy = height();
+        qreal naturalWidth = d->implicitWidth;
         // ### assumes that if the width is set, the text will fill to edges
         // ### (unless wrap is false, then clipping will occur)
-        if (widthValid() && d->document->textWidth() != width())
-            d->document->setTextWidth(width());
+        if (widthValid()) {
+            if (!d->requireImplicitWidth) {
+                emit implicitWidthChanged();
+                // if the implicitWidth is used, then updateSize() has already been called (recursively)
+                if (d->requireImplicitWidth)
+                    return;
+            }
+            if (d->requireImplicitWidth) {
+                d->document->setTextWidth(-1);
+                naturalWidth = d->document->idealWidth();
+            }
+            if (d->document->textWidth() != width())
+                d->document->setTextWidth(width());
+        } else {
+            d->document->setTextWidth(-1);
+        }
+        QFontMetrics fm = QFontMetrics(d->font);
+        int dy = height();
         dy -= (int)d->document->size().height();
 
         int nyoff;
@@ -889,17 +1027,40 @@ void QSGTextEdit::updateSize()
         if (!widthValid() && d->document->textWidth() != newWidth)
             d->document->setTextWidth(newWidth); // ### Text does not align if width is not set (QTextDoc bug)
         // ### Setting the implicitWidth triggers another updateSize(), and unless there are bindings nothing has changed.
-        setImplicitWidth(newWidth);
+        if (!widthValid())
+            setImplicitWidth(newWidth);
+        else if (d->requireImplicitWidth)
+            setImplicitWidth(naturalWidth);
         qreal newHeight = d->document->isEmpty() ? fm.height() : (int)d->document->size().height();
         setImplicitHeight(newHeight);
 
-        setContentsSize(QSize(newWidth, newHeight));
-
+        d->paintedSize = QSize(newWidth, newHeight);
+        setContentsSize(d->paintedSize);
         emit paintedSizeChanged();
     } else {
         d->dirty = true;
     }
     update();
+}
+
+void QSGTextEdit::updateTotalLines()
+{
+    Q_D(QSGTextEdit);
+
+    int subLines = 0;
+
+    for (QTextBlock it = d->document->begin(); it != d->document->end(); it = it.next()) {
+        QTextLayout *layout = it.layout();
+        if (!layout)
+            continue;
+        subLines += layout->lineCount()-1;
+    }
+
+    int newTotalLines = d->document->lineCount() + subLines;
+    if (d->lineCount != newTotalLines) {
+        d->lineCount = newTotalLines;
+        emit lineCountChanged();
+    }
 }
 
 void QSGTextEditPrivate::updateDefaultTextOption()
@@ -946,6 +1107,15 @@ void QSGTextEdit::focusInEvent(QFocusEvent *event)
         }
     }
     QSGPaintedItem::focusInEvent(event);
+}
+
+void QSGTextEdit::q_canPasteChanged()
+{
+    Q_D(QSGTextEdit);
+    bool old = d->canPaste;
+    d->canPaste = d->control->canPaste();
+    if(old!=d->canPaste)
+        emit canPasteChanged();
 }
 
 QT_END_NAMESPACE

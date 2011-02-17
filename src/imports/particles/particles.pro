@@ -2,14 +2,30 @@ TARGET  = qmlparticlesplugin
 TARGETPATH = Qt/labs/particles
 include(../qimportbase.pri)
 
-QT += declarative
+HEADERS += \
+    spriteparticles.h \
+    spritestate.h \
+    V1/qdeclarativeparticles_p.h \
+    pluginmain.h \
+    particleaffector.h \
+    wanderaffector.h
 
 SOURCES += \
-    qdeclarativeparticles.cpp \
-    particles.cpp
+    spriteparticles.cpp \
+    spritestate.cpp \
+    V1/qdeclarativeparticles.cpp \
+    main.cpp \
+    particleaffector.cpp \
+    wanderaffector.cpp
 
-HEADERS += \
-    qdeclarativeparticles_p.h
+QT += declarative opengl
+
+
+OTHER_FILES += \
+    qmldir
+
+RESOURCES += \
+    spriteparticles.qrc
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/imports/$$TARGETPATH
 target.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH

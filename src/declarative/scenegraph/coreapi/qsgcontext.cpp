@@ -285,7 +285,7 @@ QSGTextureManager *QSGContext::createTextureManager()
 #ifdef Q_WS_MAC
         manager = new QSGMacTextureManager;
 #else
-        manager = new QSGPartialUploadTextureManager;
+        manager = new QSGTextureManager;
 #endif
     }
 

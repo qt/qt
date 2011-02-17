@@ -1,7 +1,7 @@
-// Commit: cdcc5bc1a82b70d27752370d83b4b21c912f6153
+// Commit: 7c1ab9b6a8e1b3d64c08a4f5067448884b068945
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,7 +55,7 @@
 //
 
 #include "qsgitem.h"
-#include "qsgitem_p.h"
+#include "qsgimplicitsizeitem_p_p.h"
 
 #include <QtDeclarative/qdeclarative.h>
 #include <QtGui/qtextlayout.h>
@@ -68,7 +68,7 @@ class QTextLayout;
 class QSGTextDocumentWithImageResources;
 class QSGImageTextureProvider;
 
-class QSGTextPrivate : public QSGItemPrivate
+class Q_AUTOTEST_EXPORT QSGTextPrivate : public QSGImplicitSizeItemPrivate
 {
     Q_DECLARE_PUBLIC(QSGText)
 public:
@@ -81,6 +81,7 @@ public:
 
     QString text;
     QFont font;
+    QFont sourceFont;
     QColor  color;
     QSGText::TextStyle style;
     QColor  styleColor;
@@ -90,6 +91,14 @@ public:
     QSGText::TextElideMode elideMode;
     QSGText::TextFormat format;
     QSGText::WrapMode wrapMode;
+    qreal lineHeight;
+    QSGText::LineHeightMode lineHeightMode;
+    int lineCount;
+    int maximumLineCount;
+    int maximumLineCountValid;
+    QPointF elidePos;
+
+    static QString elideChar;
 
     void invalidateImageCache();
     void checkImageCache();
@@ -102,8 +111,13 @@ public:
     bool singleline:1;
     bool cacheAllTextAsImage:1;
     bool internalWidthUpdate:1;
+    bool requireImplicitWidth:1;
+    bool truncated:1;
 
     QSize layedOutTextSize;
+    QSize paintedSize;
+    qreal naturalWidth;
+    virtual qreal getImplicitWidth() const;
     
     void ensureDoc();
     QPixmap textDocumentImage(bool drawStyle);

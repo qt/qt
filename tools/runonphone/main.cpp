@@ -56,12 +56,13 @@
 void printUsage(QTextStream& outstream, QString exeName)
 {
     outstream << exeName << " [options] [program] [program arguments]" << endl
-            << "-s, --sis <file>                         specify sis file to install" << endl
+            << "-s, --sis <local file>                   specify sis file to install" << endl
             << "-p, --portname <COMx>                    specify COM port to use by device name" << endl
             << "-f, --portfriendlyname <substring>       specify COM port to use by friendly name" << endl
             << "-t, --timeout <milliseconds>             terminate test if timeout occurs" << endl
             << "-v, --verbose                            show debugging output" << endl
             << "-q, --quiet                              hide progress messages" << endl
+            << "-u, --upload <local file>                upload executable file to phone" << endl
             << "-d, --download <remote file> <local file> copy file from phone to PC after running test" << endl
             << "--nocrashlog                             Don't capture call stack if test crashes" << endl
             << "--crashlogpath <dir>                     Path to save crash logs (default=working dir)" << endl
@@ -84,6 +85,7 @@ int main(int argc, char *argv[])
     QStringList args = QCoreApplication::arguments();
     QTextStream outstream(stdout);
     QTextStream errstream(stderr);
+    QString uploadLocalFile;
     QString downloadRemoteFile;
     QString downloadLocalFile;
     int loglevel=1;
@@ -109,6 +111,18 @@ int main(int argc, char *argv[])
                 sisFile = it.next();
                 if (!QFileInfo(sisFile).exists()) {
                     errstream << "Sis file (" << sisFile << ") doesn't exist" << endl;
+                    return 1;
+                }
+            }
+            else if (arg == "--upload" || arg == "-u") {
+                CHECK_PARAMETER_EXISTS
+                uploadLocalFile = it.next();
+                if (!QFileInfo(uploadLocalFile).exists()) {
+                    errstream << "Executable file (" << uploadLocalFile << ") doesn't exist" << endl;
+                    return 1;
+                }
+                if (!(QFileInfo(uploadLocalFile).suffix() == "exe")) {
+                    errstream << "File (" << uploadLocalFile << ") must be an executable" << endl;
                     return 1;
                 }
             }
@@ -147,8 +161,14 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (exeFile.isEmpty() && sisFile.isEmpty() && 
+    if (exeFile.isEmpty() && sisFile.isEmpty() && uploadLocalFile.isEmpty() &&
         (downloadLocalFile.isEmpty() || downloadRemoteFile.isEmpty())) {
+        printUsage(outstream, args[0]);
+        return 1;
+    }
+
+    if (!uploadLocalFile.isEmpty() && (!downloadLocalFile.isEmpty() || !downloadRemoteFile.isEmpty())) {
+        errstream << "Upload option can't be used together with download" << endl;
         printUsage(outstream, args[0]);
         return 1;
     }
@@ -182,19 +202,20 @@ int main(int argc, char *argv[])
 
     QScopedPointer<trk::Launcher> launcher;
     launcher.reset(new trk::Launcher(trk::Launcher::ActionPingOnly));
-    QFileInfo info(exeFile);
+    QFileInfo exeInfo(exeFile);
+    QFileInfo uploadInfo(uploadLocalFile);
     if (!sisFile.isEmpty()) {
         launcher->addStartupActions(trk::Launcher::ActionCopyInstall);
         launcher->setCopyFileName(sisFile, "c:\\data\\testtemp.sis");
         launcher->setInstallFileName("c:\\data\\testtemp.sis");
     }
-    else if (info.exists()) {
+    else if (!uploadLocalFile.isEmpty() && uploadInfo.exists()) {
         launcher->addStartupActions(trk::Launcher::ActionCopy);
-        launcher->setCopyFileName(exeFile, QString("c:\\sys\\bin\\") + info.fileName());
+        launcher->setCopyFileName(uploadLocalFile, QString("c:\\sys\\bin\\") + uploadInfo.fileName());
     }
     if (!exeFile.isEmpty()) {
         launcher->addStartupActions(trk::Launcher::ActionRun);
-        launcher->setFileName(QString("c:\\sys\\bin\\") + info.fileName());
+        launcher->setFileName(QString("c:\\sys\\bin\\") + exeInfo.fileName());
         launcher->setCommandLineArgs(cmdLine);
     }
     if (!downloadRemoteFile.isEmpty() && !downloadLocalFile.isEmpty()) {

@@ -122,7 +122,7 @@ public:
     QList<QScriptValue *> cachedClosures;
     QList<QDeclarativePropertyCache *> propertyCaches;
     QList<QDeclarativeIntegerCache *> contextCaches;
-    QList<QDeclarativeParser::Object::ScriptBlock> scripts;
+    QList<QDeclarativeScriptData *> scripts;
     QList<QUrl> urls;
 
     void dumpInstructions();

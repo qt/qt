@@ -1,7 +1,7 @@
-// Commit: 1f74d3220335d67b6b751be0a72eefd58145fea9
+// Commit: ebd4bc73c46c2962742a682b6a391fb68c482aec
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -114,6 +114,7 @@ void QSGFlipable::setFront(QSGItem *front)
     d->front->setParentItem(this);
     if (Back == d->current)
         d->front->setOpacity(0.);
+    emit frontChanged();
 }
 
 QSGItem *QSGFlipable::back()
@@ -143,6 +144,7 @@ void QSGFlipable::setBack(QSGItem *back)
             this, SLOT(retransformBack()));
     connect(back, SIGNAL(heightChanged()),
             this, SLOT(retransformBack()));
+    emit backChanged();
 }
 
 void QSGFlipable::retransformBack()

@@ -54,6 +54,8 @@ HEADERS += \
     $$PWD/qsganimation_p.h \
     $$PWD/qsganimation_p_p.h \
     $$PWD/qsgstateoperations_p.h \
+    $$PWD/qsgimplicitsizeitem_p.h \
+    $$PWD/qsgimplicitsizeitem_p_p.h \
 
 SOURCES += \
     $$PWD/qsgevents.cpp \
@@ -89,6 +91,7 @@ SOURCES += \
     $$PWD/qsgview.cpp \
     $$PWD/qsganimation.cpp \
     $$PWD/qsgstateoperations.cpp \
+    $$PWD/qsgimplicitsizeitem.cpp \
 
 SOURCES += \
     $$PWD/shadereffectitem.cpp \
