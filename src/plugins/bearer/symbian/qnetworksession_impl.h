@@ -111,7 +111,8 @@ public:
     quint64 bytesWritten() const;
     quint64 bytesReceived() const;
     quint64 activeTime() const;
-    
+
+    RConnection* nativeSession();
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE    
 public: // From MMobilityProtocolResp
     void PreferredCarrierAvailable(TAccessPointInfo aOldAPInfo,

@@ -47,6 +47,7 @@
 #include "qelapsedtimer.h"
 #include "qvarlengtharray.h"
 #include "qnetworkinterface.h"
+#include "qnetworksession_p.h"
 #include <es_sock.h>
 #include <in_sock.h>
 #include <net/if.h>
@@ -186,10 +187,26 @@ bool QSymbianSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType so
     TUint family = KAfInet; // KAfInet6 is only used as an address family, not as a protocol family
     TUint type = (socketType == QAbstractSocket::UdpSocket) ? KSockDatagram : KSockStream;
     TUint protocol = (socketType == QAbstractSocket::UdpSocket) ? KProtocolInetUdp : KProtocolInetTcp;
+
+    //Check if there is a user specified session
+    RConnection *connection = 0;
+    QVariant v(q->property("_q_networksession"));
+    if (v.isValid()) {
+        QSharedPointer<QNetworkSession> s = qvariant_cast<QSharedPointer<QNetworkSession> >(v);
+        connection = QNetworkSessionPrivate::nativeSession(*s);
+#ifdef QNATIVESOCKETENGINE_DEBUG
+        qDebug() << "QSymbianSocketEnginePrivate::createNewSocket - _q_networksession was set" << connection;
+#endif
+    }
     TInt err;
-//    if (connection)
-//        err = nativeSocket.Open(socketServer, family, type, protocol, *connection);
-//    else
+    if (connection) {
+        if (connection->SubSessionHandle())
+            err = nativeSocket.Open(socketServer, family, type, protocol, *connection);
+        else {
+            setError(QAbstractSocket::NetworkError, SessionNotOpenErrorString);
+            return false;
+        }
+    } else
         err = nativeSocket.Open(socketServer, family, type, protocol); //TODO: FIXME - deprecated API, make sure we always have a connection instead
 
     if (err != KErrNone) {
@@ -246,7 +263,6 @@ void QSymbianSocketEnginePrivate::setPortAndAddress(TInetAddr& nativeAddr, quint
 QSymbianSocketEnginePrivate::QSymbianSocketEnginePrivate() :
     socketDescriptor(-1),
     socketServer(QSymbianSocketManager::instance().getSocketServer()),
-    connection(QSymbianSocketManager::instance().defaultConnection()),
     readNotifier(0),
     writeNotifier(0),
     exceptNotifier(0),
@@ -1330,8 +1346,11 @@ void QSymbianSocketEnginePrivate::setError(QAbstractSocket::SocketError error, E
     case InvalidProxyTypeString:
         socketErrorString = QSymbianSocketEngine::tr("The proxy type is invalid for this operation");
         break;
-    case InvalidAddressError:
+    case InvalidAddressErrorString:
         socketErrorString = QSymbianSocketEngine::tr("The address is invalid for this operation");
+        break;
+    case SessionNotOpenErrorString:
+        socketErrorString = QSymbianSocketEngine::tr("The specified network session is not opened");
         break;
     case UnknownSocketErrorString:
         socketErrorString = QSymbianSocketEngine::tr("Unknown error");
@@ -1378,7 +1397,7 @@ void QSymbianSocketEnginePrivate::setError(TInt symbianError)
         setError(QAbstractSocket::NetworkError, ConnectionTimeOutErrorString);
         break;
     case KErrBadName:
-        setError(QAbstractSocket::NetworkError, InvalidAddressError);
+        setError(QAbstractSocket::NetworkError, InvalidAddressErrorString);
         break;
     default:
         socketError = QAbstractSocket::NetworkError;

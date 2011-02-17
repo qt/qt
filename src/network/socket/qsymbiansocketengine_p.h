@@ -196,8 +196,6 @@ public:
     mutable RSocket nativeSocket;
     // From QtCore:
     RSocketServ& socketServer;
-    // From QtCore, check lifetime issues, also should be pulling this out of a QNetworkSession somehow:
-    RConnection *connection;
     mutable RTimer selectTimer;
 
     QSocketNotifier *readNotifier, *writeNotifier, *exceptNotifier;
@@ -231,7 +229,8 @@ public:
         NotSocketErrorString,
         InvalidProxyTypeString,
         //symbian specific
-        InvalidAddressError,
+        InvalidAddressErrorString,
+        SessionNotOpenErrorString,
 
         UnknownSocketErrorString = -1
     };

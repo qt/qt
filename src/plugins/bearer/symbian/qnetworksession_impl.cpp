@@ -1535,6 +1535,11 @@ bool QNetworkSessionPrivateImpl::easyWlanTrueIapId(TUint32 &trueIapId) const
 }
 #endif
 
+RConnection* QNetworkSessionPrivateImpl::nativeSession()
+{
+    return &iConnection;
+}
+
 ConnectionProgressNotifier::ConnectionProgressNotifier(QNetworkSessionPrivateImpl& owner, RConnection& connection)
     : CActive(CActive::EPriorityUserInput), iOwner(owner), iConnection(connection)
 {

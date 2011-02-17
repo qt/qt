@@ -55,8 +55,13 @@
 
 #include "qnetworksession.h"
 #include "qnetworkconfiguration_p.h"
+#include "QtCore/qsharedpointer.h"
 
 #ifndef QT_NO_BEARERMANAGEMENT
+
+#ifdef Q_OS_SYMBIAN
+class RConnection;
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -102,6 +107,10 @@ public:
     virtual quint64 bytesReceived() const = 0;
     virtual quint64 activeTime() const = 0;
 
+#ifdef Q_OS_SYMBIAN
+    static RConnection* nativeSession(QNetworkSession&);
+    virtual RConnection* nativeSession() = 0;
+#endif
 protected:
     inline QNetworkConfigurationPrivatePointer privateConfiguration(const QNetworkConfiguration &config) const
     {
@@ -144,6 +153,8 @@ protected:
 };
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QSharedPointer<QNetworkSession>)
 
 #endif // QT_NO_BEARERMANAGEMENT
 

@@ -546,6 +546,10 @@ bool QAbstractSocketPrivate::initSocketLayer(QAbstractSocket::NetworkLayerProtoc
 
     resetSocketLayer();
     socketEngine = QAbstractSocketEngine::createSocketEngine(q->socketType(), proxyInUse, q);
+#ifndef QT_NO_BEARERMANAGEMENT
+    //copy network session down to the socket engine (if it has been set)
+    socketEngine->setProperty("_q_networksession", q->property("_q_networksession"));
+#endif
     if (!socketEngine) {
         socketError = QAbstractSocket::UnsupportedSocketOperationError;
         q->setErrorString(QAbstractSocket::tr("Operation on socket is not supported"));
@@ -1600,6 +1604,10 @@ bool QAbstractSocket::setSocketDescriptor(int socketDescriptor, SocketState sock
 
     d->resetSocketLayer();
     d->socketEngine = QAbstractSocketEngine::createSocketEngine(socketDescriptor, this);
+#ifndef QT_NO_BEARERMANAGEMENT
+    //copy network session down to the socket engine (if it has been set)
+    d->socketEngine->setProperty("_q_networksession", property("_q_networksession"));
+#endif
     if (!d->socketEngine) {
         d->socketError = UnsupportedSocketOperationError;
         setErrorString(tr("Operation on socket is not supported"));
