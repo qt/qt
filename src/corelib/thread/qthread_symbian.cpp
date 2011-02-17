@@ -46,6 +46,7 @@
 #include "qthreadstorage.h"
 #include "qthread_p.h"
 #include "qdebug.h"
+#include "qsystemerror_p.h"
 
 #include <sched.h>
 #include <errno.h>
@@ -279,12 +280,6 @@ void *QThreadPrivate::start(void *arg)
         thr->setPriority(QThread::Priority(thr->d_func()->priority & ~ThreadPriorityResetFlag));
     }
 
-    // Because Symbian Open C does not provide a way to convert between
-    // RThread and pthread_t, we must delay initialization of the RThread
-    // handle when creating a thread, until we are running in the new thread.
-    // Here, we pick up the current thread and assign that to the handle.
-    init_symbian_thread_handle(data->symbian_thread_handle);
-
     // On symbian, threads other than the main thread are non critical by default
     // This means a worker thread can crash without crashing the application - to
     // use this feature, we would need to use RThread::Logon in the main thread
@@ -459,19 +454,14 @@ void QThread::start(Priority priority)
         // operations like file I/O fail, so we increase it by default.
         d->stackSize = 0x14000; // Maximum stack size on Symbian.
 
-    int code = 0;
-    if (d->data->symbian_thread_handle.Create(KNullDesC, (TThreadFunction) QThreadPrivate::start, d->stackSize, NULL, this) == KErrNone)
-        {
+    int code = d->data->symbian_thread_handle.Create(KNullDesC, (TThreadFunction) QThreadPrivate::start, d->stackSize, NULL, this);
+    if (code == KErrNone) {
         d->thread_id = d->data->symbian_thread_handle.Id();
         TThreadPriority symPriority = calculateSymbianPriority(priority);
         d->data->symbian_thread_handle.SetPriority(symPriority);
         d->data->symbian_thread_handle.Resume();
-        }
-    else
-        code = ENOMEM;  // probably the problem
-
-    if (code) {
-        qWarning("QThread::start: Thread creation error: %s", qPrintable(qt_error_string(code)));
+    } else {
+        qWarning("QThread::start: Thread creation error: %s", QSystemError(code, QSystemError::NativeError).toString());
 
         d->running = false;
         d->finished = false;
