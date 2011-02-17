@@ -2163,109 +2163,105 @@
     \target target-command
     \section1 \\target 
 
-    The \\target command defines an explicit point in the
-    documentation that you can later link to using the \l {l-command} {\\l}
-    and \l {sa-command} {\\sa} commands.
+    The \\target command names a place in the documentation that you
+    can link to using the \l {l-command} {\\l (link)} and \l
+    {sa-command} {\\sa (see also)} commands.
 
-           The command considers the rest of the line as part of its
-           argument, make sure to follow the target name with a line
-           break.
+    The text up to the line break becomes the target name. Be sure to
+    follow the target name with a line break. Curly brackets are not
+    required around the target name, but they may be required when the
+    target name is used in a link cammand. See below.
 
-           For example:
+    For example:
 
-           \code
-           / *!
-               \target capturing parentheses
-               \section1 Capturing Text
+    \code
+    / *!
+        \target capturing parentheses
+        \section1 Capturing Text
 
-               Parentheses allow us to group elements together so that
-               we can quantify and capture them.
+        Parentheses allow us to group elements together so that
+        we can quantify and capture them.
 
-               ...
-           * /
-           \endcode
+        ...
+    * /
+    \endcode
 
-           can be referenced with
+    The target name \e{capturing parentheses} can be linked from
+    within the same document containing the target in two ways:
 
-           \list
-           \o \c {\l {capturing parentheses}}
-              (from elsewhere in the same comment)
-           \o \c {\l qregexp.html#capturing-parentheses}
-              (from anywhere else)
-           \endlist
+    \list
+      \o \c {\l {capturing parentheses}} (from within the same qdoc comment)
+      \o \c {\l qregexp.html#capturing-parentheses} (from elsewhere in the same document)
+    \endlist
 
-           within a documentation unit, and with
+    \note The brackets in the link example are required because the
+    target name contains spaces.
 
-           \list
-           \o \c {\l http://www.trolltech.com/4.0/doc/html/qregexp.html#capturing-parentheses}
-           \endlist
+    From other documents, the target name can be linked this way:
 
-           on a more global scale.
+    \list
+      \o \c {\l http://www.trolltech.com/4.0/doc/html/qregexp.html#capturing-parentheses}
+    \endlist
 
-           If the target name does't contain any spaces, the brackets can
-           be omitted as well.
-
-           See also \l {l-command} {\\l}, \l {sa-command} {\\sa} and \l
-           {keyword-command} {\\keyword}.
-
+    See also \l {l-command} {\\l}, \l {sa-command} {\\sa} and \l
+    {keyword-command} {\\keyword}.
 
     \target keyword-command
     \section1 \\keyword 
 
-    The \\keyword command defines an explicit point in the
-    documentation that you can later link to using the \l {l-command} {\\l}
-    and \l {sa-command} {\\sa} commands.
+    The \\keyword command names a place in the documentation that you
+    can link to using the \l {l-command} {\\l (link)} and \l
+    {sa-command} {\\sa (see also)} commands.
 
-           Keywords must be unique within the entire set of
-           documentation processed in on QDoc run.  The command
-           considers the rest of the line as part of its argument,
-           make sure to follow the keyword with a line break.
+    The \\keyword command is like the \l {target-command} {\\target}
+    command, but stronger. A keyword can be linked from anywhere using
+    a simple syntax. For example:
 
-           The \\keyword command is similar to \l {target-command} {\\target},
-           but stronger.  A keyword can be referenced from anywhere
-           using a simple syntax. For example:
+    Keywords must be unique over all the documents processed during
+    the QDoc run. The command uses the rest of the line as its
+    argument. Be sure to follow the keyword with a line break.
 
-           \code
-           / *!
-               \class QRegExp
-               \reentrant
-               \brief The QRegExp class provides pattern
-                      matching using regular expressions.
-               \ingroup tools
-               \ingroup misc
-               \ingroup shared
-               \mainclass
 
-               \keyword regular expression
+    \code
+    / *!
+        \class QRegExp
+        \reentrant
+        \brief The QRegExp class provides pattern
+               matching using regular expressions.
+        \ingroup tools
+        \ingroup misc
+        \ingroup shared
+        \mainclass
 
-               Regular expressions, or "regexps", provide a way to
-               find patterns within text.
+        \keyword regular expression
 
-               ...
-           * /
-           \endcode
+        Regular expressions, or "regexps", provide a way to
+        find patterns within text.
 
-           The location of the keyword can be linked to like this:
+        ...
+    * /
+    \endcode
 
-           \code
-           / *!
-               When a string is surrounded by slashes, it's
-               interpreted as a \l regular expression.
-           * /
-           \endcode
+    The location marked with the keyword can be linked with:
 
-           QDoc renders this as:
+    \code
+    / *!
+        When a string is surrounded by slashes, it is
+        interpreted as a \l {regular expression}.
+    * /
+    \endcode
 
-           \quotation
-               When a string is surrounded by slashes, it's
-               interpreted as a \l {regular expression}.
-           \endquotation
+    QDoc renders this as:
 
-           If the keyword does't contain any spaces, the brackets can
-           be omitted as well.
+    \quotation
+        When a string is surrounded by slashes, it's
+        interpreted as a \l {regular expression}.
+    \endquotation
 
-           See also \l {l-command} {\\l}, \l {sa-command} {\\sa} and \l
-           {target-command} {\\target}.
+    If the keyword text contains spaces, the brackets are required.
+
+    See also \l {l-command} {\\l (link)}, \l {sa-command} {\\sa (see
+    also)} and \l {target-command} {\\target}.
 
 */
 
