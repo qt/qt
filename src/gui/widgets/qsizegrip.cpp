@@ -309,6 +309,7 @@ void QSizeGrip::mousePressEvent(QMouseEvent * e)
 #ifdef Q_WS_X11
     // Use a native X11 sizegrip for "real" top-level windows if supported.
     if (tlw->isWindow() && X11->isSupportedByWM(ATOM(_NET_WM_MOVERESIZE))
+        && !(tlw->windowFlags() & Qt::X11BypassWindowManagerHint)
         && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !qt_widget_private(tlw)->hasHeightForWidth()) {
         XEvent xev;
         xev.xclient.type = ClientMessage;
@@ -420,7 +421,8 @@ void QSizeGrip::mouseMoveEvent(QMouseEvent * e)
 
 #ifdef Q_WS_X11
     if (tlw->isWindow() && X11->isSupportedByWM(ATOM(_NET_WM_MOVERESIZE))
-        && tlw->isTopLevel() && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !qt_widget_private(tlw)->hasHeightForWidth())
+        && tlw->isTopLevel() && !(tlw->windowFlags() & Qt::X11BypassWindowManagerHint)
+        && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !qt_widget_private(tlw)->hasHeightForWidth())
         return;
 #endif
 #ifdef Q_WS_WIN

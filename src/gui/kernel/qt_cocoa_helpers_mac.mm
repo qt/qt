@@ -1064,7 +1064,7 @@ QWidget *qt_mac_getTargetForMouseEvent(
 
     // Resolve the widget under the mouse:
     QWidget *widgetUnderMouse = 0;
-    if (popup || qt_button_down || !nativeWidget) {
+    if (popup || qt_button_down || !nativeWidget || !nativeWidget->isVisible()) {
         // Using QApplication::widgetAt for finding the widget under the mouse
         // is most safe, since it ignores cocoas own mouse down redirections (which
         // we need to be prepared for when using nativeWidget as starting point).
@@ -1139,6 +1139,8 @@ QWidget *qt_mac_getTargetForMouseEvent(
     return target;
 }
 
+QPointer<QWidget> qt_last_native_mouse_receiver = 0;
+
 static inline void qt_mac_checkEnterLeaveForNativeWidgets(QWidget *maybeEnterWidget)
 {
     // Dispatch enter/leave for the cases where QApplicationPrivate::sendMouseEvent do
@@ -1149,29 +1151,25 @@ static inline void qt_mac_checkEnterLeaveForNativeWidgets(QWidget *maybeEnterWid
 
     if (qt_button_down || QWidget::mouseGrabber())
         return;
-    if ((maybeEnterWidget == qt_last_mouse_receiver) && qt_last_mouse_receiver)
-        return;
 
+    if ((maybeEnterWidget == qt_last_native_mouse_receiver) && qt_last_native_mouse_receiver)
+        return;
     if (maybeEnterWidget) {
-        if (!qt_last_mouse_receiver) {
+        if (!qt_last_native_mouse_receiver) {
             // case 3
             QApplicationPrivate::dispatchEnterLeave(maybeEnterWidget, 0);
-            qt_last_mouse_receiver = maybeEnterWidget;
-        } else if (qt_last_mouse_receiver->internalWinId() && maybeEnterWidget->internalWinId()) {
+            qt_last_native_mouse_receiver = maybeEnterWidget->internalWinId() ? maybeEnterWidget : maybeEnterWidget->nativeParentWidget();
+        } else if (maybeEnterWidget->internalWinId()) {
             // case 1
-            if (qt_last_mouse_receiver->isVisible()) {
-                QApplicationPrivate::dispatchEnterLeave(maybeEnterWidget, qt_last_mouse_receiver);
-                qt_last_mouse_receiver = maybeEnterWidget;
-            }
+            QApplicationPrivate::dispatchEnterLeave(maybeEnterWidget, qt_last_native_mouse_receiver);
+            qt_last_native_mouse_receiver = maybeEnterWidget->internalWinId() ? maybeEnterWidget : maybeEnterWidget->nativeParentWidget();
         } // else at lest one of the widgets are alien, so enter/leave will be handled in QApplicationPrivate
     } else {
-        if (qt_last_mouse_receiver && qt_last_mouse_receiver->internalWinId()) {
+        if (qt_last_native_mouse_receiver) {
             // case 2
-            QApplicationPrivate::dispatchEnterLeave(0, qt_last_mouse_receiver);
-            // This seems to be the only case where we need to update qt_last_mouse_receiver
-            // from the mac specific code. Otherwise, QApplicationPrivate::sendMouseEvent
-            // will handle it:
+            QApplicationPrivate::dispatchEnterLeave(0, qt_last_native_mouse_receiver);
             qt_last_mouse_receiver = 0;
+            qt_last_native_mouse_receiver = 0;
         }
     }
 }
@@ -1276,8 +1274,9 @@ bool qt_mac_handleMouseEvent(NSEvent *event, QEvent::Type eventType, Qt::MouseBu
     if (eventType == QEvent::MouseButtonRelease) {
         // A mouse button was released, which means that the implicit grab was
         // released. We therefore need to re-check if should send (delayed) enter leave events:
-        // qt_button_down has now become NULL since the call at the top of the function.
-        widgetToGetMouse = qt_mac_getTargetForMouseEvent(0, QEvent::None, localPoint, globalPoint, nativeWidget, &widgetUnderMouse);
+        // qt_button_down has now become NULL since the call at the top of the function. Also, since
+        // the relase might have closed a window, we dont give the nativeWidget hint
+        qt_mac_getTargetForMouseEvent(0, QEvent::None, localPoint, globalPoint, nativeWidget, &widgetUnderMouse);
         qt_mac_checkEnterLeaveForNativeWidgets(widgetUnderMouse);
     }
 

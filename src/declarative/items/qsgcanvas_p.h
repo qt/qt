@@ -60,6 +60,9 @@
 
 #include "qsgcontext.h"
 
+#include <QtCore/qthread.h>
+#include <QtCore/qmutex.h>
+#include <QtCore/qwaitcondition.h>
 #include <private/qwidget_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -72,10 +75,85 @@ public:
     QSGRootItem();
 };
 
-class QSGCanvasPrivate 
+class QSGRenderer;
+class QSGThreadedRendererAnimationDriver : public QAnimationDriver
 {
 public:
-    QSGCanvas *q_ptr;
+    QSGThreadedRendererAnimationDriver(QSGRenderer *r);
+
+protected:
+    virtual void started();
+    virtual void stopped();
+
+private:
+    QSGRenderer *renderer;
+};
+
+
+class QSGCanvasPrivate;
+class QSGRenderer : public QGLWidget
+{
+    Q_OBJECT
+public:
+    QSGRenderer(QSGCanvasPrivate *canvas, const QGLFormat &format, QWidget *p);
+
+public slots:
+    void sceneGraphChanged();
+    void maybeUpdate();
+
+protected:
+    virtual void paintEvent(QPaintEvent *);
+    virtual void resizeEvent(QResizeEvent *);
+    virtual void showEvent(QShowEvent *);
+    virtual void hideEvent(QHideEvent *);
+
+    virtual bool event(QEvent *);
+
+private:
+    friend class QSGCanvas;
+    friend class QSGThreadedRendererAnimationDriver;
+    friend class QSGRendererNotificationReceiver;
+
+    void initializeSceneGraph();
+    void polishItems();
+    void syncSceneGraph();
+    void renderSceneGraph();
+
+
+    void runThread();
+
+    struct MyThread : public QThread {
+        MyThread(QSGRenderer *r) : r(r) {}
+        virtual void run() { r->runThread(); }
+
+        static void doWait() { QThread::msleep(16); }
+
+        QSGRenderer *r;
+    };
+    QSGContext *context;
+    QSGCanvasPrivate *canvas;
+
+    uint contextInThread : 1;
+    uint threadedRendering : 1;
+    uint inUpdate : 1;
+    uint exitThread : 1;
+    uint animationRunning: 1;
+    uint idle : 1;              // Set to true when render thread sees no change and enters a wait()
+    uint needsRepaint : 1;      // Set by callback from render if scene needs repainting.
+    uint renderThreadAwakened : 1;
+
+    MyThread *thread;
+    QMutex mutex;
+    QWaitCondition wait;
+    QSize widgetSize;
+    QSize viewportSize;
+
+    QAnimationDriver *animationDriver;
+};
+
+class QSGCanvasPrivate : public QWidgetPrivate
+{
+public:
     Q_DECLARE_PUBLIC(QSGCanvas)
 
     static inline QSGCanvasPrivate *get(QSGCanvas *c) { return c->d_func(); }
@@ -83,7 +161,7 @@ public:
     QSGCanvasPrivate();
     virtual ~QSGCanvasPrivate();
 
-    void init(QSGCanvas *);
+    void init(QSGCanvas *, const QGLFormat &);
 
     QSGRootItem *rootItem;
 
@@ -121,16 +199,13 @@ public:
     void dirtyItem(QSGItem *);
     void cleanup(Node *);
 
-    QSGContext *context;
-    QAnimationDriver *animationDriver;
+    QSGRenderer *renderer;
     QSGItem::UpdatePaintNodeData updatePaintNodeData;
 
     QSGItem *dirtyItemList;
     QList<Node *> cleanupNodeList;
 
     QSet<QSGItem *> polishItems;
-
-    void initializeSceneGraph();
 
     void updateDirtyNodes();
     void cleanupNodes();
