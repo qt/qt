@@ -54,16 +54,23 @@ public:
 protected:
     friend class ShaderEffectNode;
 
+    virtual void initialize();
     virtual const char *vertexShader() const;
     virtual const char *fragmentShader() const;
 
     ShaderEffectMaterialKey m_key;
     QVector<const char *> m_attributes;
+
+    QVector<int> m_uniformLocs;
+    int m_opacityLoc;
+    int m_matrixLoc;
+    uint m_textureIndicesSet;
 };
 
 CustomMaterialShader::CustomMaterialShader(const ShaderEffectMaterialKey &key, const QVector<const char *> &attributes)
     : m_key(key)
     , m_attributes(attributes)
+    , m_textureIndicesSet(false)
 {
 }
 
@@ -75,12 +82,24 @@ void CustomMaterialShader::updateState(Renderer *r, AbstractMaterial *newEffect,
 
     const ShaderEffectMaterial *material = static_cast<const ShaderEffectMaterial *>(newEffect);
 
+    if (!m_textureIndicesSet) {
+        for (int i = 0; i < material->m_textures.size(); ++i)
+            m_program.setUniformValue(material->m_textures.at(i).first.constData(), i);
+        m_textureIndicesSet = true;
+    }
+
+    if (m_uniformLocs.size() != material->m_uniformValues.size()) {
+        m_uniformLocs.reserve(material->m_uniformValues.size());
+        for (int i = 0; i < material->m_uniformValues.size(); ++i) {
+            const QByteArray &name = material->m_uniformValues.at(i).first;
+            m_uniformLocs.append(m_program.uniformLocation(name.constData()));
+        }
+    }
+
     for (int i = material->m_textures.size() - 1; i >= 0; --i) {
         QPointer<QSGTextureProvider> source = material->m_textures.at(i).second;
         if (!source)
             continue;
-
-        m_program.setUniformValue(material->m_textures.at(i).first.constData(), i);
 
         r->glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, source->texture()->textureId());
@@ -95,42 +114,41 @@ void CustomMaterialShader::updateState(Renderer *r, AbstractMaterial *newEffect,
     }
 
     if (material->m_source.respectsOpacity)
-        m_program.setUniformValue("qt_Opacity", (float) r->renderOpacity());
+        m_program.setUniformValue(m_opacityLoc, (float) r->renderOpacity());
 
     for (int i = 0; i < material->m_uniformValues.count(); ++i) {
-        const QByteArray &name = material->m_uniformValues.at(i).first;
         const QVariant &v = material->m_uniformValues.at(i).second;
 
         switch (v.type()) {
         case QVariant::Color:
-            m_program.setUniformValue(name.constData(), qvariant_cast<QColor>(v));
+            m_program.setUniformValue(m_uniformLocs.at(i), qvariant_cast<QColor>(v));
             break;
         case QVariant::Double:
-            m_program.setUniformValue(name.constData(), (float) qvariant_cast<double>(v));
+            m_program.setUniformValue(m_uniformLocs.at(i), (float) qvariant_cast<double>(v));
             break;
         case QVariant::Transform:
-            m_program.setUniformValue(name.constData(), qvariant_cast<QTransform>(v));
+            m_program.setUniformValue(m_uniformLocs.at(i), qvariant_cast<QTransform>(v));
             break;
         case QVariant::Int:
-            m_program.setUniformValue(name.constData(), v.toInt());
+            m_program.setUniformValue(m_uniformLocs.at(i), v.toInt());
             break;
         case QVariant::Size:
         case QVariant::SizeF:
-            m_program.setUniformValue(name.constData(), v.toSizeF());
+            m_program.setUniformValue(m_uniformLocs.at(i), v.toSizeF());
             break;
         case QVariant::Point:
         case QVariant::PointF:
-            m_program.setUniformValue(name.constData(), v.toPointF());
+            m_program.setUniformValue(m_uniformLocs.at(i), v.toPointF());
             break;
         case QVariant::Rect:
         case QVariant::RectF:
             {
                 QRectF r = v.toRectF();
-                m_program.setUniformValue(name.constData(), r.x(), r.y(), r.width(), r.height());
+                m_program.setUniformValue(m_uniformLocs.at(i), r.x(), r.y(), r.width(), r.height());
             }
             break;
         case QVariant::Vector3D:
-            m_program.setUniformValue(name.constData(), qvariant_cast<QVector3D>(v));
+            m_program.setUniformValue(m_uniformLocs.at(i), qvariant_cast<QVector3D>(v));
             break;
         default:
             break;
@@ -138,12 +156,18 @@ void CustomMaterialShader::updateState(Renderer *r, AbstractMaterial *newEffect,
     }
 
     if ((updates & Renderer::UpdateMatrices) && material->m_source.respectsMatrix)
-        m_program.setUniformValue("qt_ModelViewProjectionMatrix", r->combinedMatrix());
+        m_program.setUniformValue(m_matrixLoc, r->combinedMatrix());
 }
 
 char const *const *CustomMaterialShader::attributeNames() const
 {
     return m_attributes.constData();
+}
+
+void CustomMaterialShader::initialize()
+{
+    m_opacityLoc = m_program.uniformLocation("qt_Opacity");
+    m_matrixLoc = m_program.uniformLocation("qt_ModelViewProjectionMatrix");
 }
 
 const char *CustomMaterialShader::vertexShader() const
