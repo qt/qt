@@ -155,7 +155,7 @@ sequence or in parallel.
 A banner component may have several icons or slogans to display, one after the
 other. The \c opacity property could transform to \c 1.0 denoting an opaque
 object. Using the \l{SequentialAnimation} element, the opacity animations will
-play after the preceding animation finishes. The \l{ParallelAnimation} element
+play after the preceding animation finishes. The \l{ParallelAnimation} element
 will play the animations at the same time.
 
 \snippet doc/src/snippets/declarative/animation.qml sequential animation

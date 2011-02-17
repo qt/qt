@@ -29,7 +29,7 @@
 \page qmlreusablecomponents.html
 \ingroup qml-features
 \previouspage {QML Signal and Handler Event System}{Signal and Handler Event System}
-\nextpage {QML States}{States}
+\nextpage {QML States}{States}
 \contentspage QML Features
 
 \title Importing Reusable Components
@@ -89,7 +89,7 @@ however, be in an imported path.
 A consequence of inline components is that initialization may be deferred or
 delayed. A component may be created during a MouseArea event or by using a
 \l Loader element. The component can create an object, which is addressable in a
-similar way as an \l {qml-id-propert}{id property}. Thus, the created object may
+similar way as an \l {qml-id-property}{id property}. Thus, the created object may
 have its bindings set and read like a normal QML object.
 \snippet doc/src/snippets/declarative/reusablecomponents/component.qml define inline component
 \snippet doc/src/snippets/declarative/reusablecomponents/component.qml create inline component
@@ -103,7 +103,7 @@ Specifically, there are \l{attached-properties}{attached properties} and
 \l{attached-signalhandlers}{attached signal handlers} for setting properties
 during the lifetime of a component.
 
-The \c{Component.onCompleted} attached signal handler is called when the
+The \c{Component.onCompleted} attached signal handler is called when the
 component completes initialization. It is useful for executing any commands
 after component initialization. Similarly, the \c{Component.onDestruction}
 signal handler executes when the component finishes destruction.

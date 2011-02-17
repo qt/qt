@@ -40,9 +40,8 @@ In QML, properties serve many purposes but their main function is to bind to
 values. Values may be a \l{QML Basic Types}{basic type}, or other QML elements.
 
 The syntax for properties is:
-\qml
- [default] property <type> <name>[: defaultValue]
-\endqml
+
+\tt{[default] property <type> <name>[: defaultValue]}
 
 Elements already possess useful properties but, to create custom properties,
 precede the property name with the keyword \c property.
@@ -58,6 +57,7 @@ property names must begin with a lowercase letter.
 names.
 
 \section1 Property Binding
+
 Property binding is a declarative way of specifying the value of a property. Binding allows
 a property's value to be expressed as an JavaScript expression that defines the value relative
 to other property values or data accessible in the application. The property value is
@@ -87,7 +87,7 @@ binding is created using the colon "\c {:}".
 The property binding causes the width of the \c Rectangle to update whenever the
 \c {parent}'s width changes.
 
-Assigning a property value (using the equals sign "\c {=}") does not create a
+Assigning a property value (using the equals sign "\c {=}") does not create a
 property binding.
 \snippet doc/src/snippets/declarative/properties.qml property assignment
 
@@ -102,13 +102,15 @@ There is no way to create a property binding directly from imperative JavaScript
 although it is possible to use the \l {Using the Binding Element}{Binding} element.
 
 \section1 Types of Properties
+
 Properties may bind to different types, but they are are \e type-safe. That is,
 properties only allow you to assign a value that matches the property type. For
 example, if a property is a real, and if you try to assign a string to it you
 will get an error.
-\qml
-    property real volume: "four"  //generates an error
-\endqml
+
+\badcode
+property real volume: "four"  //generates an error
+\endcode
 
 Certain properties bind to more complex types such as other elements and objects.
 
@@ -150,7 +152,7 @@ The code snippet has a \l Gradient element that attempts to print its parent's
 \c width value. However, the \c Gradient element is bound to the \c gradient
 property, not the \c children property of the \c Rectangle. As a result, the
 \c Gradient does not have the \c Rectangle as its parent. Printing the value
-of \c{parent.width} generates an error. Printing the \c Rectangle object's
+of \c{parent.width} generates an error. Printing the \c Rectangle object's
 first child's \c name will print \c {childrectangle} because the second
 \c Rectangle is bound to the \c children property.
 
@@ -224,9 +226,8 @@ the property, a property alias connects the newly declared property, called the
 in a read or write operations on the aliased property, respectively.
 
 A property alias declaration is similar to an ordinary property definition:
-\code
-    [default] property alias <name>: <alias reference>
-\endcode
+
+\tt{[default] property alias <name>: <alias reference>}
 
 As the aliasing property has the same type as the aliased property, an explicit
 type is omitted, and the special \c alias keyword is before the property name.
@@ -319,6 +320,4 @@ The \l PropertyChanges element is for setting property bindings within a
 \snippet doc/src/snippets/declarative/properties.qml PropertyChanges element
 The rectangle's \c color property will bind to the \c warning component's
 \c color property when its \c state is set to the \c WARNING state.
-
 */
-

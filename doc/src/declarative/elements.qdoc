@@ -55,7 +55,7 @@ To see the QML elements listed by functional area, see the
 \o \l {BorderImage} - Allows the use of images as borders
 \o \l {AnimatedImage} - For playing animations stored in a series of frames
 \o \l {Gradient} - For defining a color gradient
-\o \l {GradientStop} - Used to define a color within a \l {Gradient}
+\o \l {GradientStop} - Used to define a color within a \l {Gradient}
 \o \l {SystemPalette} - Provides access to the Qt palettes
 \endlist
 
@@ -75,7 +75,7 @@ To see the QML elements listed by functional area, see the
 \o \l {MouseArea} - Sets up an area for mouse interaction
 \o \l {Keys} - Provides components with attached properties to handle key input.
 \o \l {FocusScope} - Element that mediate keyboard focus changes
-\o \l {Flickable} - Provides a surface that can be "flicked"
+\o \l {Flickable} - Provides a surface that can be "flicked"
 \o \l {Flipable} - Provides a surface that produces "flipping" effects
 \o \l {GestureArea} - Enables simple gesture handling
 \endlist

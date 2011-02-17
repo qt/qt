@@ -44,7 +44,7 @@ graphical elements:
 \o \l{ListView} arranges items in a horizontal or vertical list
 \o \l{GridView} arranges items in a grid within the available space
 \o \l{PathView} arranges items on a path
-\o \l{WebView}{WebView} - available from the \l {QtWebKit QML Module}.
+\o \l{WebView}{WebView} - available from the \l {QtWebKit QML Module}.
 \endlist
 Unlike other views, \l WebView is not a fully-featured view item, and needs
 to be combined with a \l Flickable item to create a view that performs like
@@ -103,12 +103,11 @@ the person belongs.
 \snippet doc/src/snippets/declarative/listview-sections.qml delegate
 
 The ListView element has the \c section
-\l{qml-attached-properties}{attached property} that can combine adjacent
-and related elements into a section. The section's \c property property is for
-selecting which list element property to use as sections. The \c criteria
-can dictate how the section names are displayed and the \c delegate is similar
-to the views' \l {qml-view-delegate}{delegate} property.
+\l{Property Binding#Attached Properties}{attached property} that can combine
+adjacent and related elements into a section. The section's \c property
+property is for selecting which list element property to use as sections.
+The \c criteria can dictate how the section names are displayed and the
+\c delegate is similar to the views' \l {qml-view-delegate}{delegate} property.
 \snippet doc/src/snippets/declarative/listview-sections.qml section
 \image listview-section.png
-
 */
