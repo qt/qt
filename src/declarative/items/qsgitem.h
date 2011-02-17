@@ -358,6 +358,7 @@ protected:
 private:
     friend class QSGCanvas;
     friend class QSGCanvasPrivate;
+    friend class QSGRenderer;
     Q_DISABLE_COPY(QSGItem)
     Q_DECLARE_PRIVATE(QSGItem)
 };
