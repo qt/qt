@@ -263,6 +263,12 @@ public:
         Q_DISABLE_COPY(TypeInfos)
         QHash<int, TypeInfo> m_infos;
     };
+    struct EvaluateScope {
+        QScriptEnginePrivate *engine;
+        bool wasEvaluating;
+        EvaluateScope(QScriptEnginePrivate *engine);
+        ~EvaluateScope();
+    };
 private:
     Q_DISABLE_COPY(QScriptEnginePrivate)
     v8::Local<v8::Value> getOwnPropertyFromScriptClassInstance(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const;

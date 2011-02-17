@@ -1058,6 +1058,7 @@ QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScriptValuePr
         return new QScriptValuePrivate(e, exeption);
     }
 
+    QScriptEnginePrivate::EvaluateScope evaluateScope(e);
     v8::TryCatch tryCatch;
 
     v8::Handle<v8::Value> result = v8::Object::Cast(*m_value)->Call(recv, argc, argv);
@@ -1084,6 +1085,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::construct(in
         return new QScriptValuePrivate(e, exeption);
     }
 
+    QScriptEnginePrivate::EvaluateScope evaluateScope(e);
     v8::TryCatch tryCatch;
     v8::Handle<v8::Value> result = v8::Handle<v8::Function>::Cast(m_value)->NewInstance(argc, argv);
 

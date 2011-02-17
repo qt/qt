@@ -765,6 +765,25 @@ public:
     }
 };
 
+QScriptEnginePrivate::EvaluateScope::EvaluateScope(QScriptEnginePrivate *engine)
+    : engine(engine), wasEvaluating(engine->m_state == Evaluating)
+{
+    if (!wasEvaluating) {
+        engine->m_shouldAbort = false;
+        engine->m_state = Evaluating;
+        if (engine->m_processEventTimeoutThread)
+            engine->m_processEventTimeoutThread->resetTime(engine->m_processEventInterval);
+    }
+}
+QScriptEnginePrivate::EvaluateScope::~EvaluateScope()
+{
+    if (!wasEvaluating) {
+        if (engine->m_processEventTimeoutThread)
+            engine->m_processEventTimeoutThread->resetTime(INT_MAX);
+        engine->m_state = Idle;
+    }
+}
+
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
     m_isolate->Enter();
@@ -819,20 +838,7 @@ void QScriptEnginePrivate::popContext()
 QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch)
 {
     v8::HandleScope handleScope;
-    struct EvaluateScope {
-        QScriptEnginePrivate *engine;
-        EvaluateScope(QScriptEnginePrivate *engine) : engine(engine) {
-            engine->m_shouldAbort = false;
-            engine->m_state = Evaluating;
-            if (engine->m_processEventTimeoutThread)
-                engine->m_processEventTimeoutThread->resetTime(engine->m_processEventInterval);
-        }
-        ~EvaluateScope() {
-            if (engine->m_processEventTimeoutThread)
-                engine->m_processEventTimeoutThread->resetTime(INT_MAX);
-            engine->m_state = Idle;
-        }
-    } evaluateScope(this);
+    EvaluateScope evaluateScope(this);
 
     clearExceptions();
     if (script.IsEmpty()) {

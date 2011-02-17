@@ -158,6 +158,7 @@ private slots:
     void reportAdditionalMemoryCost();
     void gcWithNestedDataStructure();
     void processEventsWhileRunning();
+    void processEventsWhileRunning_function();
     void throwErrorFromProcessEvents();
     void disableProcessEventsInterval();
     void stacktrace();
@@ -3085,6 +3086,34 @@ void tst_QScriptEngine::processEventsWhileRunning()
     }
 }
 
+void tst_QScriptEngine::processEventsWhileRunning_function()
+{
+    QScriptEngine eng;
+    QScriptValue script = eng.evaluate(QString::fromLatin1(
+        "(function() { var end = Number(new Date()) + 2000;"
+        "var x = 0;"
+        "while (Number(new Date()) < end) {"
+        "    ++x;"
+        "} })"));
+
+    eng.setProcessEventsInterval(100);
+
+    for (int x = 0; x < 2; ++x) {
+        EventReceiver receiver;
+        QCoreApplication::postEvent(&receiver, new QEvent(QEvent::Type(QEvent::User+1)));
+        QVERIFY(!eng.hasUncaughtException());
+        QVERIFY(!receiver.received);
+        QCOMPARE(eng.processEventsInterval(), 100);
+
+        if (x) script.call();
+        else script.construct();
+
+        QVERIFY(!eng.hasUncaughtException());
+        QVERIFY(receiver.received);
+    }
+}
+
+
 class EventReceiver2 : public QObject
 {
 public:
@@ -3697,6 +3726,12 @@ void tst_QScriptEngine::isEvaluating_fromNative()
     QScriptValue ret = eng.evaluate("myFunctionReturningIsEvaluating()");
     QVERIFY(ret.isBoolean());
     QVERIFY(ret.toBoolean());
+    ret = fun.call();
+    QVERIFY(ret.isBoolean());
+    QVERIFY(ret.toBoolean());
+    ret = myFunctionReturningIsEvaluating(eng.currentContext(), &eng);
+    QVERIFY(ret.isBoolean());
+    QVERIFY(!ret.toBoolean());
 }
 
 void tst_QScriptEngine::isEvaluating_fromEvent()

@@ -609,7 +609,6 @@ void QScriptEnginePrivate::abortEvaluation(v8::Handle< v8::Value > result)
     v8::V8::TerminateExecution();
 }
 
-
 QT_END_NAMESPACE
 
 #endif
