@@ -38,37 +38,46 @@
 **
 ****************************************************************************/
 
-#ifndef WINDOW_H
-#define WINDOW_H
-
-#include <QtGui>
-
-#include "calendar.h"
-#include "currency.h"
 #include "miscellaneous.h"
 
-class Window : public QWidget
+MiscWidget::MiscWidget()
 {
-    Q_OBJECT
-public:
-    Window();
+    QGridLayout *l = new QGridLayout(this);
 
-    QLabel *localeName;
-    QComboBox *localeCombo;
-    QTabWidget *tabWidget;
-    CalendarWidget *calendar;
-    CurrencyWidget *currency;
-    MiscWidget *miscellaneous;
+    textToQuoteLabel = new QLabel("Text to quote:");
+    standardQuotedTextLabel = new QLabel("Standard quotes:");
+    alternateQuotedTextLabel = new QLabel("Alternate quotes:");
+    textToQuote = new QLineEdit("some text");
+    standardQuotedText = new QLineEdit;
+    alternateQuotedText = new QLineEdit;
 
-private:
-    bool event(QEvent *);
-    void systemLocaleChanged();
+    l->addWidget(textToQuoteLabel, 0, 0);
+    l->addWidget(textToQuote, 0, 1);
+    l->addWidget(standardQuotedTextLabel, 0, 2);
+    l->addWidget(standardQuotedText, 0, 3);
+    l->addWidget(alternateQuotedTextLabel, 1, 2);
+    l->addWidget(alternateQuotedText, 1, 3);
 
-signals:
-    void localeChanged(QLocale);
+    connect(textToQuote, SIGNAL(textChanged(QString)), this, SLOT(updateQuotedText(QString)));
 
-private slots:
-    void localeChanged(int);
-};
+    update(QLocale());
+}
 
-#endif
+void MiscWidget::update(const QLocale locale)
+{
+    currentLocale = locale;
+    updateQuotedText(textToQuote->text());
+}
+
+void MiscWidget::updateQuotedText(QString str)
+{
+    standardQuotedText->setText(currentLocale.quoteString(str));
+    alternateQuotedText->setText(currentLocale.quoteString(str, QLocale::AlternateQuotation));
+}
+
+void MiscWidget::localeChanged(QLocale locale)
+{
+    update(locale);
+}
+
+

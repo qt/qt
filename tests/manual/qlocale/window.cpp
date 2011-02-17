@@ -67,6 +67,8 @@ Window::Window()
     connect(this, SIGNAL(localeChanged(QLocale)), calendar, SLOT(localeChanged(QLocale)));
     currency = new CurrencyWidget;
     connect(this, SIGNAL(localeChanged(QLocale)), currency, SLOT(localeChanged(QLocale)));
+    miscellaneous = new MiscWidget;
+    connect(this, SIGNAL(localeChanged(QLocale)), miscellaneous, SLOT(localeChanged(QLocale)));
 
     localeName = new QLabel("Locale: foo_BAR");
 
@@ -81,6 +83,7 @@ Window::Window()
 
     tabWidget->addTab(calendar, "Calendar");
     tabWidget->addTab(currency, "Currency");
+    tabWidget->addTab(miscellaneous, "Misc");
     localeCombo->setCurrentIndex(0);
     systemLocaleChanged();
 }
