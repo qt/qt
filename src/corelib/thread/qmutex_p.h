@@ -98,8 +98,11 @@ public:
     HANDLE event;
 #elif defined(Q_OS_SYMBIAN)
 # ifdef QT_SYMBIAN_USE_RFASTLOCK
+    // RFastLock is a fast semaphone which only calls into the kernel side if there is contention
     RFastLock lock;
 # else
+    // RSemaphore is used on Symbian OS versions that do not have a timed RFastLock wait.
+    // There is no timed wait on RMutex itself, so RSemaphore has to be used instead.
     RSemaphore lock;
 # endif
 #endif

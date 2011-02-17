@@ -62,6 +62,7 @@ QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
 #endif
     if (r != KErrNone)
         qWarning("QMutex: failed to create lock, error %d", r);
+    qt_symbian_throwIfError(r);
 }
 
 QMutexPrivate::~QMutexPrivate()
@@ -86,7 +87,8 @@ bool QMutexPrivate::wait(int timeout)
         do {
             int waitTime = qMin(KMaxTInt / 1000, timeout);
             timeout -= waitTime;
-            r = lock.Wait(waitTime * 1000);
+            // Symbian undocumented feature - 0us means no timeout! Use a minimum of 1
+            r = lock.Wait(qMax(1, waitTime * 1000));
         } while (r != KErrNone && r != KErrGeneral && r != KErrArgument && timeout > 0);
     }
     bool returnValue = (r == KErrNone);
