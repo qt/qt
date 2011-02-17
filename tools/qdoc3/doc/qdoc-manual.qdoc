@@ -140,20 +140,6 @@
     The markup commands indicate the generated documentation's visual
     appearance and logical structure.
 
-    \section2 Categories
-    \list
-    \o \l {Text Markup}
-    \o \l {Document Structure}
-    \o \l {Including Code Inline}
-    \o \l {Including External Code}
-    \o \l {Creating Links}
-    \o \l {Including Images}
-    \o \l {Tables and Lists}
-    \o \l {Special Content}
-    \o \l {Miscellaneous}
-    \endlist
-
-    \section2 Command list
     \list
     \o \l {04-qdoc-commands-textmarkup.html#backslash-command} {\\\\}
     \o \l {04-qdoc-commands-textmarkup.html#a-command} {\\a}
@@ -1968,196 +1954,194 @@
 
     \title Creating Links
 
-    The linking commands make it possible to create hyperlinks to
-    classes, functions, header files and examples. They also make it
-    possible to link to targets within a document, as well as to other
-    documents and URLs.
+    These commands are for creating hyperlinks to classes, functions,
+    examples, and other targets. 
 
     \target l-command
-    \section1 \\l 
+    \section1 \\l (link)
 
-    The \\l command is used to create hyperlinks.
+    The \\l link command is used to create a hyperlink to many
+    different kinds of targets. The command's general syntax is
 
-           The command's general syntax is
+    \code
+      \l {link target} {link text}
+    \endcode
 
-           \code
-           \l {link target} {link text}
-           \endcode
+    For example:
 
-           For example:
+    \code
+       / *!
+          Read the \l {http://qt.nokia.com/doc/4.0/}
+          {Qt's Reference Documentation} carefully.
+       * /
+    \endcode
 
-           \code
-           / *!
-               Read the \l {http://qt.nokia.com/doc/4.0/}
-               {Qt's Reference Documentation} carefully.
-           * /
-           \endcode
+    QDoc renders this as:
 
-           QDoc renders this as:
+    \quotation
+       Read the \l {http://qt.nokia.com/doc/4.0/}
+       {Qt's Reference Documentation} carefully.
+    \endquotation
 
-           \quotation
-              Read the \l {http://qt.nokia.com/doc/4.0/}
-              {Qt's Reference Documentation} carefully.
-           \endquotation
+    If the link target is equivalent to the link text, the second
+    argument can be omitted.
 
-           If the link target is equivalent to the link text, the
-           second argument can be omitted.
+    For example, if you have documentation like:
 
-           For example, if you have documentation like:
+    \code
+      / *!
+         \target assertions
 
-           \code
-           / *!
-               \target assertions
+         Assertions make some statement about the text at the
+         point where they occur in the regexp but they do not
+         match any characters.
 
-               Assertions make some statement about the text at the
-               point where they occur in the regexp but they do not
-               match any characters.
+         ...
 
-               ...
+         Regexps are built up from expressions, quantifiers, and
+         \l {assertions} {assertions}.
+      * /
+    \endcode
 
-               Regexps are built up from expressions, quantifiers, and
-               \l {assertions} {assertions}.
-           * /
-           \endcode
+    You can simplify this as follows:
 
-           you can rewrite it as
+    \code
+      / *!
+        \target assertions
 
-           \code
-           / *!
-               \target assertions
+        Assertions make some statement about the text at the
+        point where they occur in the regexp but they do not
+        match any characters.
 
-               Assertions make some statement about the text at the
-               point where they occur in the regexp but they do not
-               match any characters.
+        ...
 
-               ...
+        Regexps are built up from expressions, quantifiers, and
+        \l assertions.
+      * /
+    \endcode
 
-               Regexps are built up from expressions, quantifiers, and
-               \l assertions.
-           * /
-           \endcode
+    For the one-parameter version the braces can often be omitted.
+    The \\l command supports several kinds of links:
 
-           For the one-parameter version the braces can often
-           be omitted. See the \l {i-command} {\\i} command for the \l
-           {argument} {argument conventions}.
+    \list
 
-           The \\l command supports several kinds of links:
+    \o \c {\l QWidget} - The name of a class documented with the \l
+    {class-command} {\\class} command.
 
-           \list
+    \o \c {\l QWidget::sizeHint()} - The name of a member function,
+    documented with or without an \l {fn-command} {\\fn} command.
 
-           \o \c {\l QWidget} - The name of a class documented with
-           the \l {class-command} {\\class} command.
+    \o \c {\l <QtGlobal>} - The subject of a \l {headerfile-command}
+    {\\headerfile} command.
 
-           \o \c {\l QWidget::sizeHint()} - The name of a documented
-           member function (documented with or without the \l
-           {fn-command} {\\fn} command).
+    \o \c {\l widgets/wiggly} - The relative path used in an \l
+    {example-command} {\\example} command.
 
-           \o \c {\l <QtGlobal>} - The subject of a \l
-           {headerfile-command} {\\headerfile} command.
+    \o \c {\l {QWidget Class Reference}} - The title used in a
+    \l {title-command} {\\title} command.
 
-           \o \c {\l widgets/wiggly} - The relative path used in an \l
-           {example-command} {\\example} command.
+    \o \c {\l {Introduction to QDoc}}- The text from one of the
+    \l{part-command} {\\part}, \l{chapter} {\\chapter} or \l
+    {sectionOne-command} {\\section} commands.
 
-           \o \c {\l {QWidget Class Reference}} - The title used in a
-           \l {title-command} {\\title} command.
+    \o \c {\l fontmatching} - The argument of a \l {target-command}
+    {\\target} command.
 
-           \o \c {\l {Introduction to QDoc}}- The text from one of the
-           \l{part-command} {\\part}, \l{chapter} {\\chapter}
-           or \l {sectionOne-command} {\\section} commands.
+    \o \c {\l {Shared Classes}} - A keyword named in a \l
+    {keyword-command} {\\keyword} command.
 
-           \o \c {\l fontmatching} - The argument of a \l
-           {target-command} {\\target} command.
+    \o \c {\l network.html} - The file name used in a \l
+    {page-command} {\\page} command.
 
-           \o \c {\l {Shared Classes}} - A keyword used in a \l
-           {keyword-command} {\\keyword} command.
+    \o \c {\l http://www.trolltech.com/} - A URL.
 
-           \o \c {\l network.html} - The file name used in a \l
-           {page-command} {\\page} command.
+    \endlist
 
-           \o \c {\l http://www.trolltech.com/} - A URL.
+    QDoc also tries to make a link out of any words that don't
+    resemble any normal English words, for example Qt class names or
+    functions, like QWidget or QWidget::sizeHint(). In these cases,
+    the \\l command can actually be omitted, but by using the command,
+    you ensure that QDoc will emit a warning if it cannot find the
+    link target. In addition, if you only want the function name to
+    appear in the link, you can use the following syntax:
 
-           \endlist
+    \list
+        \o \c {\l {QWidget::} {sizeHint()}}
+    \endlist
 
-           QDoc also tries to make a link out of any words that don't
-           resemble any normal English words, for example Qt class
-           names or functions, like QWidget or QWidget::sizeHint(). In
-           these cases, the \\l command can actually be omitted, but
-           by using the command, you ensure that QDoc will emit a
-           warning if it cannot find the link target. In addition, if
-           you only want the function name to appear in the link, you
-           can use the following syntax:
+    QDoc renders this as:
 
-           \list
-               \o \c {\l {QWidget::} {sizeHint()}}
-           \endlist
+    \quotation
+    \l {QWidget::} {sizeHint()}   
+    \endquotation
 
-           See also \l {sa-command} {\\sa}, \l {target-command} {\\target} 
-	   and \l {keyword-command} {\\keyword}.
+    See also \l {sa-command} {\\sa}, \l {target-command} {\\target}
+    and \l {keyword-command} {\\keyword}.
 
 
     \target sa-command
-    \section1 \\sa 
+    \section1 \\sa (see also)
 
-    The \\sa command defines a list of links that will
-    be rendered in a separate "See also" section at the bottom
-    of the documentation.
+    The \\sa command defines a list of links that will be rendered in
+    a separate "See also" section at the bottom of the documentation
+    unit.
 
-           The command takes a comma-separated list of links as its
-           argument. If the line ends with a comma, you can continue
-           on a second line.  The general syntax is:
+    The command takes a comma-separated list of links as its
+    argument. If the line ends with a comma, you can continue
+    on a second line.  The general syntax is:
 
-           \code
-           \sa {the first link}, {the second link},
-               {the third link}, ...
-           \endcode
+    \code
+    \sa {the first link}, {the second link},
+        {the third link}, ...
+    \endcode
 
-           QDoc will automatically try to generate "See also" links
-           interconnecting a property's various functions. For
-           example, an setVisible() function will automatically get a
-           link to visible() and vice versa.
+    QDoc will automatically try to generate "See also" links
+    interconnecting a property's various functions. For example, an
+    setVisible() function will automatically get a link to visible()
+    and vice versa.
 
-           In general, QDoc will generate "See also" links that
-           interconnect the functions that access the same
-           property. It recognizes four different syntax versions:
+    In general, QDoc will generate "See also" links that interconnect
+    the functions that access the same property. It recognizes four
+    different syntax versions:
 
-           \list
-           \o \c property()
-           \o \c setProperty()
-           \o \c isProperty()
-           \o \c hasProperty()
-           \endlist
+    \list
+      \o \c property()
+      \o \c setProperty()
+      \o \c isProperty()
+      \o \c hasProperty()
+    \endlist
 
-           The \\sa command supports the same kind
-           of links as the \l {l-command} {\\l} command. For example:
+    The \\sa command supports the same kind of links as the \l
+    {l-command} {\\l} command. For example:
 
-           \code
-           / *!
-               Appends the actions \a actions to this widget's
-               list of actions.
+    \code
+      / *!
+         Appends the actions \a actions to this widget's
+         list of actions.
 
-               \sa removeAction(), QMenu, addAction()
-           * /
-           void QWidget::addActions(QList<QAction *> actions)
-           {
-           ...
-           }
-           \endcode
+         \sa removeAction(), QMenu, addAction()
+      * /
+      void QWidget::addActions(QList<QAction *> actions)
+      {
+      ...
+      }
+    \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
-           \quotation
-               \bold {void QWidget::addActions ( QList<QAction*>
-               \e actions )}
+    \quotation
+        \bold {void QWidget::addActions ( QList<QAction*>
+        \e actions )}
 
-               Appends the actions \e actions to this widget's
-               list of actions.
+        Appends the actions \e actions to this widget's list of
+        actions.
 
-               See also \l {QWidget::removeAction()} {removeAction()},
-               \l QMenu, and \l {QWidget::addAction()} {addAction()}.
-           \endquotation
+        See also \l {QWidget::removeAction()} {removeAction()},
+        \l QMenu, and \l {QWidget::addAction()} {addAction()}.
+    \endquotation
 
-           See also \l {l-command} {\\l}, \l {target-command} {\\target} and \l
-           {keyword-command} {\\keyword}.
+    See also \l {l-command} {\\l}, \l {target-command} {\\target} and
+    \l {keyword-command} {\\keyword}.
 
 
     \target target-command
