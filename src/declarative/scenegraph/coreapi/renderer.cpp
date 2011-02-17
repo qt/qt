@@ -305,7 +305,7 @@ Renderer::ClipType Renderer::updateStencilClip(const ClipNode *clip)
         const QMatrix4x4 &m = matrix;
 
         // TODO: Check for multisampling and pixel grid alignment.
-        bool canUseScissor = (clip->flags() & Node::ClipIsRectangular)
+        bool canUseScissor = clip->isRectangular()
                            && qFuzzyIsNull(m(0, 1)) && qFuzzyIsNull(m(0, 2))
                            && qFuzzyIsNull(m(1, 0)) && qFuzzyIsNull(m(1, 2));
 

@@ -2565,7 +2565,6 @@ void QSGListView::itemsRemoved(int modelIndex, int count)
             d->setPosition(0);
             d->updateHeader();
             d->updateFooter();
-            update();
         } else {
             if (modelIndex < d->visibleIndex)
                 d->visibleIndex = modelIndex+1;
