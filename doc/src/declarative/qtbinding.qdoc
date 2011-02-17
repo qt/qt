@@ -27,10 +27,13 @@
 
 /*!
 \page qtbinding.html
-\target qtbinding
-\title Using QML in C++ Applications
+\ingroup qml-features
+\previouspage {Extending QML Functionalities using C++}
+\nextpage {Integrating QML Code with Existing Qt UI Code}
+\contentspage QML Features
+\title Using QML Bindings in C++ Applications
 
-QML is designed to be easily extensible from C++. The classes in the
+QML is designed to be easily extensible to and from C++. The classes in the
 Qt Declarative module allow QML components to be loaded and manipulated from C++, and through
 Qt's \l{The Meta-Object System}{meta-object system}, QML and C++ objects can easily
 communicate through Qt signals and slots. In addition, QML plugins can be written to create
@@ -85,7 +88,7 @@ delete rectangleInstance;
 
 QML documents can also be loaded using QDeclarativeView. This class provides a convenient
 QWidget-based view for embedding QML components into QGraphicsView-based applications. (For other
-methods of integrating QML into QWidget-based applications, see \l {Integrating QML with existing Qt
+methods of integrating QML into QWidget-based applications, see \l {Integrating QML Code with existing Qt
 UI code}.)
 
 
@@ -262,8 +265,8 @@ Note that custom C++ types do not have to inherit from QDeclarativeItem; this is
 a displayable item. If the item is not displayable, it can simply inherit from QObject.
 
 For more information on defining new QML elements, see the \l {Tutorial: Writing QML extensions with C++}
-{Writing QML extensions with C++} tutorial and the \l {Extending QML in C++} reference
-documentation.
+{Writing QML extensions with C++} tutorial and the
+\l {Extending QML Functionalities using C++} reference documentation.
 
 
 
@@ -496,7 +499,8 @@ can be registered using qmlRegisterUncreatableType().  To be accessible from QML
 must begin with a capital letter.
 
 See the \l {Tutorial: Writing QML extensions with C++}{Writing QML extensions with C++} tutorial and
-the \l {Extending QML in C++} reference documentation for more information.
+the \l {Extending QML Functionalities using C++} reference documentation for
+more information.
 
 
 \section2 Automatic type conversion from strings

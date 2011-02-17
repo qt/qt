@@ -27,6 +27,10 @@
 
 /*!
 \page qdeclarativei18n.html
+\ingroup qml-features
+\contentspage QML Features
+\previouspage {Network Transparency}{Loading Resources in QML}
+\nextpage {QML Graphical Effects}{Graphical Effects}
 \title QML Internationalization
 
 \section1 Overview

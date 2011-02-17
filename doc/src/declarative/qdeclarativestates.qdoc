@@ -27,6 +27,10 @@
 
 /*!
 \page qdeclarativestates.html
+\ingroup qml-features
+\contentspage QML Features
+\previouspage {Importing Reusable Components}
+\nextpage {QML Animation and Transitions}{Animation and Transitions}
 \target qmlstates
 \title QML States
 
@@ -36,9 +40,9 @@ User interfaces are designed to present different interface configurations in
 different scenarios, or to modify their appearances in response to user
 interaction. Often, there are a set of changes that are made concurrently, such
 that the interface could be seen to be internally changing from one \e state to
-another. 
+another.
 
-This applies generally to interface elements regardless of their complexity. 
+This applies generally to interface elements regardless of their complexity.
 A photo viewer may initially present images in a grid, and when an image is
 clicked, change to a "detailed" state where the individual image is expanded
 and the interface is changed to present new options for image editing. On the
@@ -47,7 +51,7 @@ other end of the scale, when a simple button is pressed, it may change to a
 appearance.
 
 In QML, any object can change between different \e states to apply sets of
-changes that modify the properties of relevant items. Each \e state could 
+changes that modify the properties of relevant items. Each \e state could
 present a different configuration that could, for example:
 
 \list
@@ -83,10 +87,10 @@ within the MouseArea changes the state to the "moved" state, thus moving the \l
 Rectangle.
 
 \snippet doc/src/snippets/declarative/states.qml 0
- 
+
 The \l State item defines all the changes to be made in the new state. It
-could specify additional properties to be changed, or create additional 
-PropertyChanges for other objects. It can also modify the properties of other 
+could specify additional properties to be changed, or create additional
+PropertyChanges for other objects. It can also modify the properties of other
 objects, not just the object that owns the state. For example:
 
 \qml
@@ -96,19 +100,19 @@ Rectangle {
         State {
             name: "moved"
             PropertyChanges { target: myRect; x: 50; y: 50; color: "blue" }
-            PropertyChanges { target: someOtherItem; width: 1000 }            
+            PropertyChanges { target: someOtherItem; width: 1000 }
         }
     ]
 }
 \endqml
 
-As a convenience, if an item only has one state, its \l {Item::}{states} 
+As a convenience, if an item only has one state, its \l {Item::}{states}
 property can be defined as a single \l State, without the square-brace list
 syntax:
 
 \snippet doc/src/snippets/declarative/propertyanimation.qml single state
 
-A \l State is not limited to performing modifications on property values. It 
+A \l State is not limited to performing modifications on property values. It
 can also:
 
 \list
@@ -118,8 +122,8 @@ can also:
 \o Modify anchor values using AnchorChanges
 \endlist
 
-The \l {declarative/animation/states}{States and Transitions example} 
-demonstrates how to declare a basic set of states and apply animated 
+The \l {declarative/animation/states}{States and Transitions example}
+demonstrates how to declare a basic set of states and apply animated
 transitions between them.
 
 
@@ -129,15 +133,15 @@ Of course, the \l Rectangle in the example above could have simply been moved
 by setting its position to (50, 50) in the mouse area's \c onClicked handler.
 However, aside from enabling batched property changes, one of the features of
 QML states is the ability of an item to revert to its \e {default state}.
-The default state contains all of an item's initial property values before 
+The default state contains all of an item's initial property values before
 they were modified in a state change.
 
 For example, suppose the \l Rectangle should move to (50,50) when the mouse is
-pressed, and then move back to its original position when the mouse is 
+pressed, and then move back to its original position when the mouse is
 released. This can be achieved by using the \l {State::}{when} property,
 like this:
 
-\qml 
+\qml
 Rectangle {
     // ...
 
@@ -152,7 +156,7 @@ Rectangle {
         // ...
     }
 }
-\endqml 
+\endqml
 
 The \l {State::}{when} property is set to an expression that evaluates to
 \c true when the item should be set to that state. When the mouse is pressed,
@@ -163,7 +167,7 @@ Alternatively, an item can be explicitly set to its default state by setting its
 \l {Item::}{state} property to an empty string (""). For example, instead of
 using the \l {State::}{when} property, the above code could be changed to:
 
-\qml 
+\qml
 Rectangle {
     // ...
 
@@ -178,10 +182,10 @@ Rectangle {
         // ...
     }
 }
-\endqml 
+\endqml
 
 Obviously it makes sense to use the \l {State::}{when} property when possible
-as it provides a simpler (and a better, more declarative) solution than 
+as it provides a simpler (and a better, more declarative) solution than
 assigning the state from signal handlers.
 
 
@@ -206,14 +210,14 @@ Rectangle {
     states: [
        // States are defined here...
     ]
-     
+
     transitions: [
         Transition {
             NumberAnimation { properties: "x,y"; duration: 500 }
         }
     ]
  }
-\endqml  
+\endqml
 
 This \l Transition defines that if any \c x or \c y properties have changed
 during a state change within this item, their values should be animated over 500

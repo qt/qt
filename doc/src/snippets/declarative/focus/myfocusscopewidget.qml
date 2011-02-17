@@ -37,12 +37,13 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+//! [document]
 import QtQuick 1.0
 
 //! [widget in focusscope]
 FocusScope {
 
-    //FocusScope needs to bind to visual properties of the children
+    //FocusScope needs to bind to visual properties of the Rectangle
     property alias color: rectangle.color
     x: rectangle.x; y: rectangle.y
     width: rectangle.width; height: rectangle.height
@@ -64,3 +65,4 @@ FocusScope {
     }
 }
 //! [widget in focusscope]
+//! [document]

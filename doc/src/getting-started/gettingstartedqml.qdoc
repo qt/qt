@@ -631,7 +631,7 @@
     Now that we have our text editor layout, we may now implement the text editor
     functionalities in C++. Using QML with C++ enables us to create our application
     logic using Qt. We can create a QML context in a C++ application using the
-    \l {Using QML in C++ Applications}{Qt's Declarative} classes and display the QML
+    \l {Using QML Bindings in C++ Applications}{Qt's Declarative} classes and display the QML
     elements using a Graphics Scene. Alternatively, we can export our C++ code into
     a plugin that the \l {QML Viewer}{qmlviewer} tool can read. For our application,
     we shall implement the load and save functions in C++ and export it as a plugin.
