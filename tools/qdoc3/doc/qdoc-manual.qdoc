@@ -214,153 +214,178 @@
 
     \title Text Markup
 
-    The text formatting commands indicate how the regular text in the
-    documentation is rendered.
+    The text formatting commands indicate how text is to be rendered.
 
     \target a-command
     \section1 \\a (parameter marker)
 
-    The \\a command indicates that the next word is a formal parameter name.
+    The \\a command tells QDoc the next word is a formal parameter name.
 
-    A warning is emitted when a function parameter is not documented
-    or is misspelled, so when you document a function you should
-    mention each formal parameter name in the function description,
-    preceded by the \\a command. The parameter is then rendered in 
-    italics. For example:
+    A warning is emitted when a formal parameter is not documented or
+    is misspelled, so when you document a function you should mention
+    each formal parameter by name in the function description,
+    preceded by the \\a command. The parameter name is then rendered
+    in italics. For example:
 
-           \code
-           / *!
-               Constructs a line edit containing the text
-               \a contents. The \a parent parameter is sent 
-	       to the QWidget constructor.
-           * /
+    \code
+      / *!
+         Constructs a line edit containing the text
+         \a contents. The \a parent parameter is sent 
+         to the QWidget constructor.
+      * /
 
-           QLineEdit::QLineEdit(const QString &contents, QWidget *parent)
-               :QWidget(parent)
-           {
-               ...
-           }
+      QLineEdit::QLineEdit(const QString &contents, QWidget *parent) :QWidget(parent)
+      {
+         ...
+      }
 
-           \endcode
+    \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
-           \quotation
-               \bold {QLineEdit::QLineEdit ( const QString &
-               contents, QWidget *parent )}
+    \quotation
+        \bold {QLineEdit::QLineEdit ( const QString &
+        contents, QWidget *parent )}
 
-           Constructs a line edit containing the text \a contents.
-           The \a parent parameter is sent to the QWidget constructor.
-           \endquotation
+        Constructs a line edit containing the text \a contents.
+        The \a parent parameter is sent to the QWidget constructor.
+    \endquotation
 
-           The \\a command follows the same conventions as the \l
-           {i-command} {\\i} command for \l {argument} {punctuation, parentheses
-           and use of braces} for the argument. However, a parameter
-           is always a single word, so braces are rarely
-           necessary. And for the same reason, parentheses seldom
-           occur.
+    The \\a command follows the same conventions as the \l {i-command}
+    {\\i} command for \l {argument} {punctuation, parentheses and use
+    of braces} for the argument. However, a parameter is always a
+    single word, so braces are rarely necessary. And for the same
+    reason, parentheses seldom occur.
 
     \target c-command
     \section1 \\c (code font)
     
     The \\c command is used for rendering variable names, user-defined
-           class  names, and C++ keywords, like \c int and \c for in a
-	   code font.
+    class names, and C++ keywords (e.g. \c int and \c for) in the code
+    font.
 
-           The command renders its argument using a typewriter font. For
-           example:
+    The command renders its argument using a typewriter font. For
+    example:
 
-           \code
-           / *!
-               The \c AnalogClock class provides a clock widget with hour
-               and minute hands that is automatically updated every
-               few seconds.
-           * /
-           \endcode
+    \code
+      / *!
+        The \c AnalogClock class provides a clock widget with hour
+        and minute hands that is automatically updated every
+        few seconds.
+      * /
+    \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
-           \quotation
-               The \c AnalogClock class provides a clock widget with hour
-               and minute hands that is automatically updated every
-               few seconds.
-           \endquotation
+    \quotation
+        The \c AnalogClock class provides a clock widget with hour
+        and minute hands that is automatically updated every
+        few seconds.
+    \endquotation
 
-           The \\c command follows the same conventions as the \l
-           {i-command} {\\i} command for \l {argument} {punctuation, parentheses
-           and use of braces} for the argument.
+    The \\c command follows the same conventions as the \l {i-command}
+    {\\i} command for \l {argument} {punctuation, parentheses and use
+    of braces} for the argument.
 
-           The \\c command accepts the special character \c \ within
-           its argument, i.e. it renders it as a normal character. So
-           if you want to use nested commands, you must use the \l
-           {tt-command} {teletype (\\tt)} command instead.
+    The \\c command accepts the special character \c \ within its
+    argument, i.e. it renders it as a normal character. So if you want
+    to use nested commands, you must use the \l {tt-command} {teletype
+    (\\tt)} command instead.
 
-           See also \l {tt-command} {\\tt} and \l {code-command} {\\code}.
+    See also \l {tt-command} {\\tt} and \l {code-command} {\\code}.
  
     \target div-command
     \section1 \\div \span {class="newStuff"} {(new)}  
  
-    The \\div command and the corresponding \\enddiv
-    command delimit a large or small block of text and qdoc
-    commands for which special formatting attributes apply.
+    The \\div and \\enddiv commands delimit a large or small block of
+    text (which may include other QDoc commands) to which special
+    formatting attributes should be applied.
 
-	   An argument must be provided in curly braces, as in the
-	   qdoc comment shown below. The argument is not interpreted
-	   but is used as attribute(s) of the tag that is ultimately
-	   output by qdoc.
+    An argument must be provided in curly braces, as in the qdoc
+    comment shown below. The argument is not interpreted but is used
+    as attribute(s) of the tag that is ultimately output by qdoc.
 
-           For example, we might want to render an inline image so
-	   that it floats to the right of the current block of text:
+    For example, we might want to render an inline image so that it
+    floats to the right of the current block of text:
 
-	   \code
-           / *!
+    \code
+      / *!
+         \div {class="float-right"}
+           \inlineimage qml-column.png
+         \enddiv
 
-             \div {class="float-right"}
-             \inlineimage qml-column.png
-             \enddiv
+      * /
+    \endcode
 
-	    * /
-	   \endcode
+    If qdoc is generating HTML, it will translate these commands to:
 
-           If qdoc is generating HTML, it will translate these
-           commands to:
+    \code
+      <div class="float-right"><p><img src="images/qml-column.png" /></p></div>
+    \endcode
 
-	   \code
-	   <div class="float-right"><p><img src="images/qml-column.png" /></p></div>
-	   \endcode
+    For HTML, the attribute value \e {float-right} then will refer to
+    a clause in the style.css file. which in this case could be:
 
-	   For HTML, the attribute value \e {float-right} then will
-	   refer to a clause in the style.css file. which in this case
-	   could be:
+    \code	   
+       div.float-right
+       {
+          float: right; margin-left: 2em
+       }
+    \endcode
 
-	   \code	   
-           div.float-right
-	   {
-             float: right; margin-left: 2em
-           }
-	   \endcode
+    If qdoc is generating DITA XML, it will translate the commands to:
 
-	   If qdoc is generating DITA XML, it will translate the commands to:
+    \code
+        <sectiondiv outputclass="float-right">
+            <p>
+                <fig>
+                    <image href="images/qml-column.png" placement="inline"/>
+                </fig>
+            </p>
+        </sectiondiv>
+    \endcode
 
-	   \code
-            <sectiondiv outputclass="float-right">
-                <p>
-                    <fig>
-                        <image href="images/qml-column.png" placement="inline"/>
-                    </fig>
-                </p>
-            </sectiondiv>
-	   \endcode
+    Your DITA XML publishing program must then recognize the \e
+    {outputclass} attribute value.
 
-	   Your DITA XML publishing program must then recognize the 
-	   \e {outputclass} attribute value.
-
-	   \note The \bold {\\div} command can be nested. 
+    \note The \bold {\\div} command can be nested. 
 	   
-	   Below is an example taken from the index.qdoc file used to
-	   generate index.html for Qt 4.7:
+    Below is an example taken from the index.qdoc file used to
+    generate index.html for Qt 4.7:
 
-	   \code
+    \code
+        \div {class="indexbox guide"}
+            \div {class="heading"}
+                Qt Developer Guide 
+	    \enddiv
+            \div {class="indexboxcont indexboxbar"}
+                \div {class="section indexIcon"} \emptyspan
+                \enddiv
+                \div {class="section"}
+                    Qt is a cross-platform application and UI
+                    framework. Using Qt, you can write web-enabled
+                    applications once and deploy them across desktop,
+                    mobile and embedded operating systems without
+                    rewriting the source code.
+                \enddiv
+                \div {class="section sectionlist"}
+                    \list
+                       \o \l{Getting Started Guides} {Getting started}
+                       \o \l{Installation} {Installation}
+                       \o \l{how-to-learn-qt.html} {How to learn Qt}
+                       \o \l{tutorials.html} {Tutorials}
+                       \o \l{Qt Examples} {Examples}
+                       \o \l{qt4-7-intro.html} {What's new in Qt 4.7}
+                    \endlist
+                \enddiv
+            \enddiv
+        \enddiv
+    \endcode
+
+    When all the class attribute values are defined as they are in the
+    style.css file that is used for rendering the Qt 4.7 documentation, 
+    the above example is rendered as:
+
           \div {class="indexbox guide"}
             \div {class="heading"}
               Qt Developer Guide 
@@ -387,40 +412,8 @@
              \enddiv
             \enddiv
           \enddiv
-	   \endcode
 
-	   When all the class attribute values are defined as they are
-	   in the style.css file that is used for rendering the Qt 4.7
-	   documentation, the above example is rendered as:
-
-          \div {class="indexbox guide"}
-            \div {class="heading"}
-              Qt Developer Guide 
-	    \enddiv
-            \div {class="indexboxcont indexboxbar"}
-              \div {class="section indexIcon"} \emptyspan
-              \enddiv
-              \div {class="section"}
-                Qt is a cross-platform application and UI
-                framework. Using Qt, you can write web-enabled
-                applications once and deploy them across desktop,
-                mobile and embedded operating systems without
-                rewriting the source code.
-              \enddiv
-              \div {class="section sectionlist"}
-                \list
-                  \o \l{Getting Started Guides} {Getting started}
-                  \o \l{Installation} {Installation}
-                  \o \l{how-to-learn-qt.html} {How to learn Qt}
-                  \o \l{tutorials.html} {Tutorials}
-                  \o \l{Qt Examples} {Examples}
-                  \o \l{qt4-7-intro.html} {What's new in Qt 4.7}
-                \endlist
-             \enddiv
-            \enddiv
-          \enddiv
-
-	   When generating DITA XML, qdoc outputs the nested \e {div} commands as:
+    When generating DITA XML, qdoc outputs the nested \e {div} commands as:
 
 	   \code
             <sectiondiv outputclass="indexbox guide">
@@ -2088,7 +2081,7 @@
 
     The command takes a comma-separated list of links as its
     argument. If the line ends with a comma, you can continue
-    on a second line.  The general syntax is:
+    the list on the next line.  The general syntax is:
 
     \code
     \sa {the first link}, {the second link},
@@ -2096,7 +2089,7 @@
     \endcode
 
     QDoc will automatically try to generate "See also" links
-    interconnecting a property's various functions. For example, an
+    interconnecting a property's various functions. For example, a
     setVisible() function will automatically get a link to visible()
     and vice versa.
 
