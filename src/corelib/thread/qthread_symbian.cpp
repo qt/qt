@@ -78,12 +78,7 @@ static void init_symbian_thread_handle(RThread &thread)
 {
     thread = RThread();
     TThreadId threadId = thread.Id();
-    thread.Open(threadId);
-
-    // Make thread handle accessible process wide
-    RThread originalCloser = thread;
-    thread.Duplicate(thread, EOwnerProcess);
-    originalCloser.Close();
+    qt_symbian_throwIfError(thread.Open(threadId, EOwnerProcess));
 }
 
 QThreadData *QThreadData::current()
