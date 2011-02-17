@@ -63,10 +63,13 @@ private slots:
 
 public:
     static QWaitCondition local, remote;
+    enum Turn {LocalTurn, RemoteTurn};
+    static Turn turn;
 };
 
 QWaitCondition tst_QWaitCondition::local;
 QWaitCondition tst_QWaitCondition::remote;
+tst_QWaitCondition::Turn tst_QWaitCondition::turn = tst_QWaitCondition::LocalTurn;
 
 class OscillateThread : public QThread
 {
@@ -89,19 +92,22 @@ public:
         forever {
             if (m_done)
                 break;
+            if (m_useMutex) {
+                mtx.lock();
+                while (tst_QWaitCondition::turn == tst_QWaitCondition::LocalTurn)
+                    tst_QWaitCondition::remote.wait(&mtx, m_timeout);
+                mtx.unlock();
+            } else {
+                rwl.lockForWrite();
+                while (tst_QWaitCondition::turn == tst_QWaitCondition::LocalTurn)
+                    tst_QWaitCondition::remote.wait(&rwl, m_timeout);
+                rwl.unlock();
+            }
+            tst_QWaitCondition::turn = tst_QWaitCondition::LocalTurn;
             if (m_wakeOne)
                 tst_QWaitCondition::local.wakeOne();
             else
                 tst_QWaitCondition::local.wakeAll();
-            if (m_useMutex) {
-                mtx.lock();
-                tst_QWaitCondition::remote.wait(&mtx, m_timeout);
-                mtx.unlock();
-            } else {
-                rwl.lockForWrite();
-                tst_QWaitCondition::remote.wait(&rwl, m_timeout);
-                rwl.unlock();
-            }
             count++;
         }
     }
@@ -132,6 +138,7 @@ void tst_QWaitCondition::oscillate()
     QFETCH(unsigned long, timeout);
     QFETCH(bool, wakeOne);
 
+    turn = LocalTurn;
     OscillateThread thrd(useMutex, timeout, wakeOne);
     thrd.start();
 
@@ -140,15 +147,18 @@ void tst_QWaitCondition::oscillate()
             mtx.lock();
         else
             rwl.lockForWrite();
+        turn = RemoteTurn;
         if (wakeOne)
             remote.wakeOne();
         else
             remote.wakeAll();
         if (useMutex) {
-            local.wait(&mtx, timeout);
+            while (turn == RemoteTurn)
+                local.wait(&mtx, timeout);
             mtx.unlock();
         } else {
-            local.wait(&rwl, timeout);
+            while (turn == RemoteTurn)
+                local.wait(&rwl, timeout);
             rwl.unlock();
         }
     }
@@ -174,12 +184,14 @@ void tst_QWaitCondition::thrash()
     QFETCH(unsigned long, timeout);
     QFETCH(bool, wakeOne);
 
+    turn = LocalTurn;
     OscillateThread thrd(useMutex, timeout, wakeOne);
     thrd.start();
     local.wait(&mtx, 1000ul);
     mtx.unlock();
 
     QBENCHMARK {
+        turn = RemoteTurn;
         if (wakeOne)
             remote.wakeOne();
         else
@@ -187,6 +199,7 @@ void tst_QWaitCondition::thrash()
     }
 
     thrd.m_done = true;
+    turn = RemoteTurn;
     remote.wakeAll();
     thrd.wait();
 
