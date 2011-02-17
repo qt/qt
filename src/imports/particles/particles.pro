@@ -6,13 +6,19 @@ HEADERS += \
     spriteparticles.h \
     spritestate.h \
     V1/qdeclarativeparticles_p.h \
-    pluginmain.h
+    pluginmain.h \
+    particleemitter.h \
+    particleaffector.h \
+    wanderaffector.h
 
 SOURCES += \
     spriteparticles.cpp \
     spritestate.cpp \
     V1/qdeclarativeparticles.cpp \
-    main.cpp
+    main.cpp \
+    particleemitter.cpp \
+    particleaffector.cpp \
+    wanderaffector.cpp
 
 QT += declarative opengl
 

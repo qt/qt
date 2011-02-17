@@ -1,11 +1,12 @@
-#ifndef PARTICLETRAILS_H
-#define PARTICLETRAILS_H
+#ifndef SPRITEPARTICLES_H
+#define SPRITEPARTICLES_H
 
 #include <QtCore>
 #include <QtGui>
 
 #include <qsgitem.h>
 #include "spritestate.h"
+#include "particleaffector.h"
 
 class SpriteParticlesMaterial;
 class GeometryNode;
@@ -46,6 +47,7 @@ class SpriteParticles : public QSGItem
 
     Q_PROPERTY(QDeclarativeListProperty<SpriteState> states READ states)
     Q_PROPERTY(QString goalState READ goalState WRITE goalState NOTIFY goalStateChanged)
+    Q_PROPERTY(QDeclarativeListProperty<ParticleAffector> affectors READ affectors)
 
     Q_PROPERTY(int frameCount READ frames WRITE setFrames NOTIFY framesChanged)
     Q_PROPERTY(int frameDuration READ frameDuration WRITE setFrameDuration NOTIFY frameDurationChanged)
@@ -148,6 +150,11 @@ public:
     QDeclarativeListProperty<SpriteState> states()
     {
         return QDeclarativeListProperty<SpriteState>(this, m_states);
+    }
+
+    QDeclarativeListProperty<ParticleAffector> affectors()
+    {
+        return QDeclarativeListProperty<ParticleAffector>(this, m_affectors);
     }
 
     QString goalState() const
@@ -266,6 +273,7 @@ private:
     int m_frames;
     int m_frameDuration;
     QList<SpriteState*> m_states;
+    QList<ParticleAffector*> m_affectors;
 
     GeometryNode *m_node;
     SpriteParticlesMaterial *m_material;
@@ -292,4 +300,31 @@ private:
     QString m_goalState;
 };
 
-#endif // PARTICLETRAILS_H
+
+struct ParticleVertex {
+    float x;
+    float y;
+    float tx;
+    float ty;
+    float t;
+    float size;
+    float endSize;
+    float dt;
+    float sx;
+    float sy;
+    float ax;
+    float ay;
+    float animIdx;
+    float frameDuration;
+    float frameCount;
+    float animT;
+};
+
+struct ParticleVertices {
+    ParticleVertex v1;
+    ParticleVertex v2;
+    ParticleVertex v3;
+    ParticleVertex v4;
+};
+
+#endif // SPRITEPARTICLES_H

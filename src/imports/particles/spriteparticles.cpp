@@ -126,33 +126,6 @@ AbstractMaterialShader *SpriteParticlesMaterial::createShader() const
     return new SpriteParticlesMaterialData;
 }
 
-struct ParticleVertex {
-    float x;
-    float y;
-    float tx;
-    float ty;
-    float t;
-    float size;
-    float endSize;
-    float sx;
-    float sy;
-    float ax;
-    float ay;
-    float animIdx;
-    float frameDuration;
-    float frameCount;
-    float animT;
-};
-
-struct ParticleVertices {
-    ParticleVertex v1;
-    ParticleVertex v2;
-    ParticleVertex v3;
-    ParticleVertex v4;
-};
-
-
-
 SpriteParticles::SpriteParticles()
     : m_running(true)
     , m_particles_per_second(10)
@@ -615,7 +588,7 @@ void SpriteParticles::buildParticleNode()
     QVector<QSGAttributeDescription> attr;
     attr << QSGAttributeDescription(0, 2, GL_FLOAT, 0); // Position
     attr << QSGAttributeDescription(1, 2, GL_FLOAT, 0); // TexCoord
-    attr << QSGAttributeDescription(2, 3, GL_FLOAT, 0); // Data
+    attr << QSGAttributeDescription(2, 4, GL_FLOAT, 0); // Data
     attr << QSGAttributeDescription(3, 4, GL_FLOAT, 0); // Vectors..
     attr << QSGAttributeDescription(4, 4, GL_FLOAT, 0); // AnimData
 
@@ -633,6 +606,7 @@ void SpriteParticles::buildParticleNode()
             vertices[i].t = -1;
             vertices[i].size = 0;
             vertices[i].endSize = 0;
+            vertices[i].dt = -1;
             vertices[i].sx = 0;
             vertices[i].sy = 0;
             vertices[i].ax = 0;
@@ -750,6 +724,7 @@ void SpriteParticles::prepareNextFrame()
 
         // Particle timestamp
         p.v1.t = p.v2.t = p.v3.t = p.v4.t = pt;
+        p.v1.dt = p.v2.dt = p.v3.dt = p.v4.dt = pt;
         p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = pt;
 
         // Particle position
@@ -854,7 +829,16 @@ void SpriteParticles::prepareNextFrame()
             p.v1.frameDuration = p.v2.frameDuration = p.v3.frameDuration = p.v4.frameDuration = m_states[nextIdx]->duration() + durVar;
             addToUpdateList(timeInt + ((m_states[nextIdx]->duration() + durVar)* m_states[nextIdx]->frames()), idx);
         }
-        m_stateUpdates.pop_front();//TODO: Something was using up CPU over time - was it this list?
+        m_stateUpdates.pop_front();
+    }
+
+    foreach(ParticleAffector* a, m_affectors){
+        for(int i=0; i < m_particle_count; i++){
+            ParticleVertices* p = &particles[i];
+            qreal dt = time - p->v1.dt;
+            p->v1.dt = p->v2.dt = p->v3.dt = p->v4.dt = time;
+            a->affect(p, i, dt);
+        }
     }
 
     m_last_last_last_emitter = m_last_last_emitter;
