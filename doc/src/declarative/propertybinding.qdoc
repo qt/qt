@@ -35,9 +35,14 @@
 
 \section1 Properties
 
-A property is a value of a QML component that can be read and modified by other objects.
-In QML, properties serve many purpose. Their main function is to bind to values.
-Values may be a \l{QML Basic Types}{basic type}, or other QML elements.
+QML components have \e properties that can be read and modified by other objects.
+In QML, properties serve many purposes but their main function is to bind to
+values. Values may be a \l{QML Basic Types}{basic type}, or other QML elements.
+
+The syntax for properties is:
+\qml
+ [default] property <type> <name>[: defaultValue]
+\endqml
 
 Elements already possess useful properties but, to create custom properties,
 precede the property name with the keyword \c property.
@@ -48,7 +53,7 @@ precede the property name with the keyword \c property.
 \snippet doc/src/snippets/declarative/properties.qml parent end
 
 QML property rules coincide with many of JavaScript's property rules, for example,
-properti names must begin with a lowercase letter.
+property names must begin with a lowercase letter.
 \l {JavaScript Reserved Words}{JavaScript reserved words} are not valid property
 names.
 
@@ -107,6 +112,7 @@ will get an error.
 
 Certain properties bind to more complex types such as other elements and objects.
 
+\keyword qml-basic-property-types
 \section2 Basic Property Types
 
 Basic types such as \l int, \l real, and other Qt structures may be bound to
@@ -198,8 +204,8 @@ The snippet code simply prints the name of the first state, \c FETCH.
  See the \l{list}{list type} documentation
 for more details about list properties and their available operations.
 
+\keyword qml-grouped-properties
 \section2 Grouped Properties
-\target dot properties
 
 In some cases properties form a logical group and use either the \e dot notation
 or \e group notation.

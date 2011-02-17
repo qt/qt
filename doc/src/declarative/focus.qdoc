@@ -31,7 +31,7 @@
 \ingroup qml-features
 \contentspage QML Features
 \previouspage {QML Text Handling and Validators}{Text Handling and Validators}
-\nextpage {Importing Reusable Components}
+\nextpage {QML Signal and Handler Event System}{Signal and Handler Event System}
 
 \title Keyboard Focus in QML
 

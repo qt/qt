@@ -37,27 +37,62 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-//![0]
+//! [document]
+//contents of focusbutton.qml
 import QtQuick 1.0
 
-Rectangle {
-    id: rect
-    width: 100; height: 100
-    color: "red"
-    
-    PropertyAnimation { 
-        id: animation
-        target: rect
-        properties: "x,y"
-        duration: 1000
-    }
-    
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            animation.to = 50;
-            animation.running = true;
+//! [parent begin]
+FocusScope {
+//! [parent begin]
+
+    //! [expose visuals]
+    //FocusScope needs to bind to visual properties of the children
+    property alias color: button.color
+    x: button.x; y: button.y
+    width: button.width; height: button.height
+    //! [expose visuals]
+
+    //! [rectangle begin]
+    Rectangle {
+    //! [rectangle begin]
+        id: button
+    //! [properties]
+        width: 145; height: 60
+        color: "blue"
+        smooth: true; radius: 9
+        property alias text: label.text
+    //! [properties]
+        border {color: "#B9C5D0"; width: 1}
+
+        gradient: Gradient {
+            GradientStop {color: "#CFF7FF"; position: 0.0}
+            GradientStop {color: "#99C0E5"; position: 0.57}
+            GradientStop {color: "#719FCB"; position: 0.9}
         }
-    }		
+
+        Text {
+            id: label
+            anchors.centerIn: parent
+            text: "Click Me!"
+            font.pointSize: 12
+            color: "blue"
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: console.log(text + " clicked")
+        }
+    //! [rectangle end]
+    }
+    //! [rectangle end]
+//! [parent end]
 }
-//![0]
+//! [parent end]
+
+//! [document]
+
+//! [ellipses]
+    //...
+//! [ellipses]
+
+

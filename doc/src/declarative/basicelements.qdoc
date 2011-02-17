@@ -29,7 +29,7 @@
 \page qmlbasicelements.html
 \ingroup qml-features
 \contentspage QML Features
-\previouspage QML Syntax
+\previouspage QML Features
 \nextpage {QML Basic Types}{Data Types}
 
 \title QML Basic Elements
@@ -91,6 +91,7 @@ The \l Text and \l TextEdit elements display formatted text onto the screen.
 \c TextEdit features multi-line editing while the \l TextInput element is for
 single line text input.
 
+\keyword qml-top-level-component
 \section1 Using Elements as the Top-Level Component
 
 For creating components (or displaying a simple scene), there are different
@@ -107,15 +108,6 @@ its top-level component. When this component is loaded into another QML scene,
 the component will retain the top-level component's properties. If a non-visual
 component is the top-level component, the visual properties should be aliased to
 the top-level to display the component properly.
-
-A component implemented using a \c Rectangle as the top-level component:
-\snippet doc/src/snippets/declarative/focus/mywidget.qml document
-
-A component that uses a \c FocusScope as the top-level component:
-\snippet doc/src/snippets/declarative/focus/myfocusscopewidget.qml document
-Note that the visual properties need to be passed to the parent. The
-\l {Keyboard Focus in QML}{focus} article provides more details about the
-\c FocusScope element.
 
 For more information on how to build upon QML elements, see the
 \l{Importing Reusable Components} document.

@@ -37,22 +37,41 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+//! [document]
 import QtQuick 1.0
 
+//! [parent begin]
 Rectangle {
-    width: 112; height: 112
-    color: "#303030"
+//! [parent begin]
+    id: screen
+    width: 175; height: 175
+    color: "lightgrey"
 
-    Grid {
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.verticalCenter: parent.verticalCenter
-        columns: 2
-        spacing: 6
-
-        Rectangle { color: "#aa6666"; width: 50; height: 50 }
-        Rectangle { color: "#aaaa66"; width: 50; height: 50 }
-        Rectangle { color: "#9999aa"; width: 50; height: 50 }
-        Rectangle { color: "#6666aa"; width: 50; height: 50 }
+//! [define inline component]
+    Component {
+        id: inlinecomponent
+        Rectangle {
+            id: display
+            width: 50; height: 50
+            color: "blue"
+        }
     }
+//! [define inline component]
+//! [create inline component]
+    MouseArea {
+        anchors.fill: parent
+        onClicked: {
+            inlinecomponent.createObject(parent)
+
+            var second = inlinecomponent.createObject(parent)
+
+            var third = inlinecomponent.createObject(parent)
+            third.x = second.width + 10
+            third.color = "red"
+        }
+    }
+//! [create inline component]
+//! [parent end]
 }
+//! [parent end]
+//! [document]

@@ -37,29 +37,53 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+//! [document]
 import QtQuick 1.0
 
+
+//! [parent begin]
 Rectangle {
-    id: myWin
-    width: 500
-    height: 400
+//! [parent begin]
+    width: 300; height: 300
+    id: screen
 
-    Image {
-        id: image1
-        source: "images/qt-logo.svg"
-        width: 150; height: 150
-        anchors.bottom: myWin.bottom
-        anchors.horizontalCenter: myWin.horizontalCenter
-        anchors.bottomMargin: 10
-    }
+Column {
+    anchors.centerIn:parent
 
-//! [adding some text]
+//! [int validator]
+Column {
+    spacing: 10
+
     Text {
-        text: "<h2>The Qt Logo</h2>"
-        anchors.bottom: image1.top
-        anchors.horizontalCenter: myWin.horizontalCenter
-        anchors.bottomMargin: 15
+        text: "Enter a value from 0 to 2000"
     }
-//! [adding some text]
+    TextInput {
+        focus: true
+        validator: IntValidator { bottom:0; top: 2000}
+    }
 }
+//! [int validator]
+
+//! [regexp validator]
+Column {
+    spacing: 10
+
+    Text {
+        text: "Which basket?"
+    }
+    TextInput {
+        focus: true
+        validator: RegExpValidator { regExp: /fruit basket/ }
+    }
+}
+//! [regexp validator]
+
+//end of column
+}
+
+//! [parent end]
+}
+//! [parent end]
+
+//! [document]
+

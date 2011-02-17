@@ -891,9 +891,9 @@ QAbstractAnimation *QDeclarativeScriptAction::qtAnimation()
     before the RotationAnimation begins:
 
     \snippet doc/src/snippets/declarative/propertyaction-sequential.qml sequential
-    
+
     This immediately sets the \c transformOrigin property to the value defined
-    in the end state of the \l Transition (i.e. the value defined in the 
+    in the end state of the \l Transition (i.e. the value defined in the
     PropertyAction object) so that the rotation animation begins with the
     correct transform origin.
 

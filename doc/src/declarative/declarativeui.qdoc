@@ -33,8 +33,6 @@
 \brief Qt Quick provides a declarative framework for building highly
 dynamic user interfaces.
 
-\section1 Introduction
-
 Qt Quick is a collection of technologies that are designed to help
 developers create the kind of intuitive, modern, fluid user
 interfaces that are increasingly used on mobile phones, media players,
@@ -44,22 +42,6 @@ Qt Quick consists of a rich set of user interface elements, a declarative
 language for describing user interfaces and a language runtime. A collection
 of C++ APIs is used to integrate these high level features with classic
 Qt applications.
-
-\section2 QML
-
-User interfaces and their behavior are described using QML, an extension to
-\l{About JavaScript}{JavaScript} that lets developers and designers
-use a declarative syntax to specify each user interface in terms of
-\l{QML Elements}{QML elements}. These elements are a sophisticated set of
-graphical and behavioral building blocks that can be combined together in
-\l{QML Documents}{QML documents} to build components ranging in complexity
-from simple buttons and sliders, to complete Internet-enabled applications.
-
-\section2 Qt Declarative Module
-
-The Qt Declarative module provides a C++ API that is for interacting with QML files from within Qt applications. The module allows the programmer to build applications' backend logic using Qt.
-
-QML and the Qt Declarative Module separate the frontend UI logic from the backend logic.
 
 \section1 Getting Started
 
@@ -75,15 +57,15 @@ QML and the Qt Declarative Module separate the frontend UI logic from the backen
 \section1 QML Features
 
 \list
-\o \l{QML Syntax}
-\o \l{Property Binding}
-\o \l{QML Basic Types}{Data Types}
 \o \l{QML Basic Elements}{Basic Elements}
+\o \l{QML Basic Types}{Data Types}
+\o \l{Property Binding}
 \o \l{Using QML Positioner and Repeater Items}{Component Layouts}
 \o \l{Anchor-based Layout in QML}{Layouts using Anchors}
-\o \l{Mouse Events}
+\o \l{QML Mouse Events}{Mouse Events}
 \o \l{QML Text Handling and Validators}{Text Handling and Validators}
 \o \l{Keyboard Focus in QML}{Keyboard Focus}
+\o \l{QML Signal and Handler Event System}{Signal and Handler Event System}
 \o \l{Importing Reusable Components}
 \o \l{QML States}{States}
 \o \l{QML Animation and Transitions}{Animation and Transitions}
@@ -92,11 +74,9 @@ QML and the Qt Declarative Module separate the frontend UI logic from the backen
 \o \l{Extending QML Functionalities using C++}
 \o \l{Using QML Bindings in C++ Applications}
 \o \l{Integrating QML Code with Existing Qt UI Code}
-\o \l{QML Signal and Handler Event System}{Signal and Handler Event System}
 \o \l{Dynamic Object Management in QML}{Dynamic Object Management}
 \o \l{Network Transparency}{Loading Resources in QML}
 \o \l{QML Internationalization}{Internationalization}
-\o \l{QML Graphical Effects}{Graphical Effects}
 \endlist
 
 \section1 QML Add-Ons
@@ -157,11 +137,7 @@ examples for porting}
 \section1 Best Practices
 
 \list
-\o \l{QML Best Practices: Data Types}{Using Data Types in QML}
 \o \l{QML Best Practices: Coding Conventions}{Coding Tips}
 \o \l{QML Performance}{Performance Tips}
-\omit
-\o \l{Geir's screen size document}
-\endomit
 \endlist
 */

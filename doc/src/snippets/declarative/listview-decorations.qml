@@ -13,15 +13,15 @@
 ** modification, are permitted provided that the following conditions are
 ** met:
 **   * Redistributions of source code must retain the above copyright
-**     notice, this list of conditions and the following disclaimer.
+** notice, this list of conditions and the following disclaimer.
 **   * Redistributions in binary form must reproduce the above copyright
-**     notice, this list of conditions and the following disclaimer in
-**     the documentation and/or other materials provided with the
-**     distribution.
+** notice, this list of conditions and the following disclaimer in
+** the documentation and/or other materials provided with the
+** distribution.
 **   * Neither the name of Nokia Corporation and its Subsidiary(-ies) nor
-**     the names of its contributors may be used to endorse or promote
-**     products derived from this software without specific prior written
-**     permission.
+** the names of its contributors may be used to endorse or promote
+** products derived from this software without specific prior written
+** permission.
 **
 ** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 ** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -41,18 +41,71 @@
 //! [document]
 import QtQuick 1.0
 
+//! [parent begin]
 Rectangle {
-    id: myWin
-    width: 500
-    height: 400
+//! [parent begin]
+    width: 550; height: 220; color: "white"
 
-    Image {
-        id: image1
-        source: "images/qt-logo.svg"
-        width: 150; height: 150
-        anchors.bottom: myWin.bottom
-        anchors.horizontalCenter: myWin.horizontalCenter
-        anchors.bottomMargin: 10
+//! [model]
+ListModel {
+    id: nameModel
+    ListElement { name: "Alice" }
+    ListElement { name: "Bob" }
+    ListElement { name: "Jane" }
+    ListElement { name: "Harry" }
+    ListElement { name: "Wendy" }
+}
+//! [model]
+
+//! [delegate]
+Component {
+    id: nameDelegate
+    Text {
+        text: name;
+        font.pixelSize: 24
     }
 }
+//! [delegate]
+
+//! [decorations]
+ListView {
+    anchors.fill: parent
+    clip: true
+    model: nameModel
+    delegate: nameDelegate
+    header: bannercomponent
+    footer: Rectangle {
+        width: parent.width; height: 30;
+        gradient: clubcolors
+    }
+    highlight: Rectangle {
+        width: parent.width
+        color: "lightgray"
+    }
+}
+
+Component {     //instantiated when header is processed
+    id: bannercomponent
+    Rectangle {
+        id: banner
+        width: parent.width; height: 50
+        gradient: clubcolors
+        border {color: "#9EDDF2"; width: 2}
+        Text {
+            anchors.centerIn: parent
+            text: "Club Members"
+            font.pixelSize: 32
+        }
+    }
+}
+Gradient {
+    id: clubcolors
+    GradientStop { position: 0.0; color: "#8EE2FE"}
+    GradientStop { position: 0.66; color: "#7ED2EE"}
+}
+//! [decorations]
+
+//! [parent end]
+}
+//! [parent end]
 //! [document]

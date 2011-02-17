@@ -37,20 +37,48 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+//! [document]
+//contents of Button.qml
 import QtQuick 1.0
 
+//! [parent begin]
 Rectangle {
-    id: myRectangle
-    width: 500
-    height: 400
+//! [parent begin]
+    id: button
+//! [properties]
+    width: 145; height: 60
+    color: "blue"
+    smooth: true; radius: 9
+    property alias text: label.text
+//! [properties]
+    border {color: "#B9C5D0"; width: 1}
 
-//! [updated text]
-    Text {
-        text: "<h2>Hello World</h2>"; color: "darkgreen"
-        x: 100; y:100
+    gradient: Gradient {
+        GradientStop {color: "#CFF7FF"; position: 0.0}
+        GradientStop {color: "#99C0E5"; position: 0.57}
+        GradientStop {color: "#719FCB"; position: 0.9}
     }
-//! [updated text]
 
-    color: "lightgray"
+    Text {
+        id: label
+        anchors.centerIn: parent
+        text: "Click Me!"
+        font.pointSize: 12
+        color: "blue"
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: console.log(text + " clicked")
+    }
+//! [parent end]
 }
+//! [parent end]
+
+//! [document]
+
+//! [ellipses]
+    //...
+//! [ellipses]
+
+

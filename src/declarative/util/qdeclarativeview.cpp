@@ -233,7 +233,10 @@ void QDeclarativeViewPrivate::itemGeometryChanged(QDeclarativeItem *resizeItem, 
     you can connect to the statusChanged() signal and monitor for QDeclarativeView::Error.
     The errors are available via QDeclarativeView::errors().
 
-    \sa {Integrating QML Code with Existing Qt UI Code}, {Using QML Bindings in C++ Applications}
+    If you're using your own QGraphicsScene-based scene with QDeclarativeView, remember to
+    enable scene's sticky focus mode and to set itemIndexMethod to QGraphicsScene::NoIndex.
+
+    \sa {Integrating QML with existing Qt UI code}, {Using QML in C++ Applications}
 */
 
 

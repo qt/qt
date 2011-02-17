@@ -37,26 +37,19 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-//![0]
+//! [document]
 import QtQuick 1.0
 
 Rectangle {
-    id: rect
-    width: 100; height: 100
-    color: "red"
-    
-    MouseArea {
-        anchors.fill: parent
-        onClicked: rect.state = "moved"
-    }
-    
-    states: State {
-        name: "moved"
-        PropertyChanges { target: rect; x: 50; y: 50 }
-    }
-    
-    transitions: Transition {
-        PropertyAnimation { properties: "x,y"; duration: 1000 }
+    width: 175; height: 350
+    color: "lightgrey"
+
+    Column {
+        anchors.centerIn: parent
+        spacing: 15
+        Button {}
+        Button {text: "Me Too!"}
+        Button {text: "Me Three!"}
     }
 }
-//![0]
+//! [document]

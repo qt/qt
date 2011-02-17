@@ -13,15 +13,15 @@
 ** modification, are permitted provided that the following conditions are
 ** met:
 **   * Redistributions of source code must retain the above copyright
-**     notice, this list of conditions and the following disclaimer.
+** notice, this list of conditions and the following disclaimer.
 **   * Redistributions in binary form must reproduce the above copyright
-**     notice, this list of conditions and the following disclaimer in
-**     the documentation and/or other materials provided with the
-**     distribution.
+** notice, this list of conditions and the following disclaimer in
+** the documentation and/or other materials provided with the
+** distribution.
 **   * Neither the name of Nokia Corporation and its Subsidiary(-ies) nor
-**     the names of its contributors may be used to endorse or promote
-**     products derived from this software without specific prior written
-**     permission.
+** the names of its contributors may be used to endorse or promote
+** products derived from this software without specific prior written
+** permission.
 **
 ** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 ** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -37,15 +37,65 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-//![0]
+//! [document]
 import QtQuick 1.0
 
+//! [parent begin]
 Rectangle {
-    width: 100; height: 100
-    color: "red"
-    
-    PropertyAnimation on x { to: 50; duration: 1000; easing.type: Easing.OutBounce }
-    PropertyAnimation on y { to: 50; duration: 1000; easing.type: Easing.OutBounce }
-}
-//![0]
+//! [parent begin]
+    width: 150; height: 300; color: "white"
 
+//! [model]
+ListModel {
+    id: nameModel
+    ListElement { name: "Alice"; team: "Crypto" }
+    ListElement { name: "Bob"; team: "Crypto" }
+    ListElement { name: "Jane"; team: "QA" }
+    ListElement { name: "Victor"; team: "QA" }
+    ListElement { name: "Wendy"; team: "Graphics" }
+}
+//! [model]
+
+//! [delegate]
+Component {
+    id: nameDelegate
+    Text {
+        text: name;
+        font.pixelSize: 24
+        anchors.left: parent.left
+        anchors.leftMargin: 2
+    }
+}
+//! [delegate]
+
+//! [section]
+ListView {
+    anchors.fill: parent
+    model: nameModel
+    delegate: nameDelegate
+    focus: true
+    highlight: Rectangle {
+        color: "lightblue"
+        width: parent.width
+    }
+    section {
+        property: "team"
+        criteria: ViewSection.FullString
+        delegate: Rectangle {
+            color: "#b0dfb0"
+            width: parent.width
+            height: childrenRect.height + 4
+            Text { anchors.horizontalCenter: parent.horizontalCenter
+                font.pixelSize: 16
+                font.bold: true
+                text: section
+            }
+        }
+    }
+}
+//! [section]
+
+//! [parent end]
+}
+//! [parent end]
+//! [document]
