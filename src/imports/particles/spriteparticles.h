@@ -288,7 +288,7 @@ private:
 
     void addToUpdateList(uint t, int idx);
     int goalSeek(int curState, int dist=-1);
-    QList<QPair<uint, QList<int> > > m_stateUpdates;
+    QList<QPair<uint, QList<int> > > m_stateUpdates;//### This could be done faster
     QString m_goalState;
 };
 

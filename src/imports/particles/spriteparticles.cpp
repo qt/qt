@@ -789,12 +789,18 @@ void SpriteParticles::prepareNextFrame()
         // Initial Sprite State
         p.v1.animIdx = p.v2.animIdx = p.v3.animIdx = p.v4.animIdx = 0;
         p.v1.frameCount = p.v2.frameCount = p.v3.frameCount = p.v4.frameCount = m_states[0]->frames();
-        p.v1.frameDuration = p.v2.frameDuration = p.v3.frameDuration = p.v4.frameDuration = m_states[0]->duration();
+        int durVar = 0;
+        if(m_states[0]->durationVariance())//TODO: Move to shader, and thus include acceleration over time
+            durVar += qrand() % m_states[0]->durationVariance();
+        if(m_states[0]->speedModifer())
+            durVar += qFloor(m_states[0]->speedModifer() *  sqrt(pow(p.v1.sx, 2.0) + pow(p.v1.sy, 2.0)));//Arithmetic mean is faster, right?
+        p.v1.frameDuration = p.v2.frameDuration = p.v3.frameDuration = p.v4.frameDuration = m_states[0]->duration() + durVar;
+
         for(int i=0; i<m_stateUpdates.count(); i++)
             m_stateUpdates[i].second.removeAll(pos);
 
         if(m_states[0]->m_to.count() > 1)//Optimizes the single animation case
-            addToUpdateList(timeInt + (m_states[0]->duration() * m_states[0]->frames()), pos);
+            addToUpdateList(timeInt + ((m_states[0]->duration()+durVar) * m_states[0]->frames()), pos);
 
         ++m_last_particle;
         pt = m_last_particle * particleRatio;
@@ -840,8 +846,13 @@ void SpriteParticles::prepareNextFrame()
             p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = pt;
             p.v1.animIdx = p.v2.animIdx = p.v3.animIdx = p.v4.animIdx = nextIdx;
             p.v1.frameCount = p.v2.frameCount = p.v3.frameCount = p.v4.frameCount = m_states[nextIdx]->frames();
-            p.v1.frameDuration = p.v2.frameDuration = p.v3.frameDuration = p.v4.frameDuration = m_states[nextIdx]->duration();
-            addToUpdateList(timeInt + (m_states[nextIdx]->duration() * m_states[nextIdx]->frames()), idx);
+            int durVar = 0;
+            if(m_states[nextIdx]->durationVariance())
+                durVar += (qrand() % (2*m_states[nextIdx]->durationVariance()))-m_states[nextIdx]->durationVariance();
+            if(m_states[nextIdx]->speedModifer())
+                durVar += qFloor(m_states[nextIdx]->speedModifer() * sqrt(pow(p.v1.sx, 2.0) + pow(p.v1.sy, 2.0)));//Arithmetic mean is faster, right?
+            p.v1.frameDuration = p.v2.frameDuration = p.v3.frameDuration = p.v4.frameDuration = m_states[nextIdx]->duration() + durVar;
+            addToUpdateList(timeInt + ((m_states[nextIdx]->duration() + durVar)* m_states[nextIdx]->frames()), idx);
         }
         m_stateUpdates.pop_front();//TODO: Something was using up CPU over time - was it this list?
     }
