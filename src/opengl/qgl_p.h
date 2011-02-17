@@ -159,7 +159,7 @@ public:
     QGLFormat::OpenGLContextProfile profile;
 };
 
-class QGLWidgetPrivate : public QWidgetPrivate
+class Q_OPENGL_EXPORT QGLWidgetPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QGLWidget)
 public:

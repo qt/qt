@@ -995,12 +995,12 @@ void QSGItemPrivate::initCanvas(InitializationState *state, QSGCanvas *c)
     Q_Q(QSGItem);
 
     if (canvas && polishScheduled) 
-        QSGCanvasPrivate::get(canvas)->polishItems.remove(q);
+        QSGCanvasPrivate::get(canvas)->itemsToPolish.remove(q);
 
     canvas = c;
 
     if (canvas && polishScheduled) 
-        QSGCanvasPrivate::get(canvas)->polishItems.insert(q);
+        QSGCanvasPrivate::get(canvas)->itemsToPolish.insert(q);
 
     if (canvas && hoverEnabled && !canvas->hasMouseTracking())
         canvas->setMouseTracking(true);
@@ -1631,7 +1631,7 @@ void QSGItem::polish()
     if (!d->polishScheduled) {
         d->polishScheduled = true;
         if (d->canvas)
-            QSGCanvasPrivate::get(d->canvas)->polishItems.insert(this);
+            QSGCanvasPrivate::get(d->canvas)->itemsToPolish.insert(this);
     }
 }
 

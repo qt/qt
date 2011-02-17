@@ -3775,6 +3775,20 @@ QGLWidget::QGLWidget(QWidget *parent, const QGLWidget* shareWidget, Qt::WindowFl
     d->init(new QGLContext(QGLFormat::defaultFormat(), this), shareWidget);
 }
 
+/*!
+  \internal
+ */
+QGLWidget::QGLWidget(QGLWidgetPrivate &dd, const QGLFormat &format, QWidget *parent, const QGLWidget *shareWidget, Qt::WindowFlags f)
+    : QWidget(dd, parent, f | Qt::MSWindowsOwnDC)
+{
+    Q_D(QGLWidget);
+    setAttribute(Qt::WA_PaintOnScreen);
+    setAttribute(Qt::WA_NoSystemBackground);
+    setAutoFillBackground(true); // for compatibility
+    d->init(new QGLContext(QGLFormat::defaultFormat(), this), shareWidget);
+
+}
+
 
 /*!
     Constructs an OpenGL widget with parent \a parent.

@@ -64,6 +64,7 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/qwaitcondition.h>
 #include <private/qwidget_p.h>
+#include <private/qgl_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -75,83 +76,23 @@ public:
     QSGRootItem();
 };
 
-class QSGRenderer;
+class QSGCanvasPrivate;
+
 class QSGThreadedRendererAnimationDriver : public QAnimationDriver
 {
 public:
-    QSGThreadedRendererAnimationDriver(QSGRenderer *r);
+    QSGThreadedRendererAnimationDriver(QSGCanvasPrivate *r);
 
 protected:
     virtual void started();
     virtual void stopped();
 
-private:
-    QSGRenderer *renderer;
+    QSGCanvasPrivate *renderer;
 };
 
 
-class QSGCanvasPrivate;
-class QSGRenderer : public QGLWidget
-{
-    Q_OBJECT
-public:
-    QSGRenderer(QSGCanvasPrivate *canvas, const QGLFormat &format, QWidget *p);
 
-public slots:
-    void sceneGraphChanged();
-    void maybeUpdate();
-
-protected:
-    virtual void paintEvent(QPaintEvent *);
-    virtual void resizeEvent(QResizeEvent *);
-    virtual void showEvent(QShowEvent *);
-    virtual void hideEvent(QHideEvent *);
-
-    virtual bool event(QEvent *);
-
-private:
-    friend class QSGCanvas;
-    friend class QSGThreadedRendererAnimationDriver;
-    friend class QSGRendererNotificationReceiver;
-
-    void initializeSceneGraph();
-    void polishItems();
-    void syncSceneGraph();
-    void renderSceneGraph();
-
-
-    void runThread();
-
-    struct MyThread : public QThread {
-        MyThread(QSGRenderer *r) : r(r) {}
-        virtual void run() { r->runThread(); }
-
-        static void doWait() { QThread::msleep(16); }
-
-        QSGRenderer *r;
-    };
-    QSGContext *context;
-    QSGCanvasPrivate *canvas;
-
-    uint contextInThread : 1;
-    uint threadedRendering : 1;
-    uint inUpdate : 1;
-    uint exitThread : 1;
-    uint animationRunning: 1;
-    uint idle : 1;              // Set to true when render thread sees no change and enters a wait()
-    uint needsRepaint : 1;      // Set by callback from render if scene needs repainting.
-    uint renderThreadAwakened : 1;
-
-    MyThread *thread;
-    QMutex mutex;
-    QWaitCondition wait;
-    QSize widgetSize;
-    QSize viewportSize;
-
-    QAnimationDriver *animationDriver;
-};
-
-class QSGCanvasPrivate : public QWidgetPrivate
+class QSGCanvasPrivate : public QGLWidgetPrivate
 {
 public:
     Q_DECLARE_PUBLIC(QSGCanvas)
@@ -161,7 +102,7 @@ public:
     QSGCanvasPrivate();
     virtual ~QSGCanvasPrivate();
 
-    void init(QSGCanvas *, const QGLFormat &);
+    void init(QSGCanvas *);
 
     QSGRootItem *rootItem;
 
@@ -184,7 +125,6 @@ public:
     void clearHover();
 
     QDeclarativeGuard<QSGItem> hoverItem;
-
     enum FocusOption {
         DontChangeFocusProperty = 0x01,
     };
@@ -198,20 +138,53 @@ public:
 
     void dirtyItem(QSGItem *);
     void cleanup(Node *);
+    void maybeUpdate();
 
-    QSGRenderer *renderer;
+    void initializeSceneGraph();
+    void polishItems();
+    void syncSceneGraph();
+    void renderSceneGraph();
+    void runThread();
+
     QSGItem::UpdatePaintNodeData updatePaintNodeData;
 
     QSGItem *dirtyItemList;
     QList<Node *> cleanupNodeList;
 
-    QSet<QSGItem *> polishItems;
+    QSet<QSGItem *> itemsToPolish;
 
     void updateDirtyNodes();
     void cleanupNodes();
     bool updateEffectiveOpacity(QSGItem *);
     void updateEffectiveOpacityRoot(QSGItem *, qreal);
     void updateDirtyNode(QSGItem *);
+
+    QSGContext *context;
+
+    uint contextInThread : 1;
+    uint threadedRendering : 1;
+    uint inUpdate : 1;
+    uint exitThread : 1;
+    uint animationRunning: 1;
+    uint idle : 1;              // Set to true when render thread sees no change and enters a wait()
+    uint needsRepaint : 1;      // Set by callback from render if scene needs repainting.
+    uint renderThreadAwakened : 1;
+
+    struct MyThread : public QThread {
+        MyThread(QSGCanvasPrivate *r) : renderer(r) {}
+        virtual void run() { renderer->runThread(); }
+        static void doWait() { QThread::msleep(16); }
+        QSGCanvasPrivate *renderer;
+    };
+    MyThread *thread;
+    QMutex mutex;
+    QWaitCondition wait;
+    QSize widgetSize;
+    QSize viewportSize;
+
+    QAnimationDriver *animationDriver;
+
+
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSGCanvasPrivate::FocusOptions)

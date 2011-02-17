@@ -55,7 +55,7 @@ QT_MODULE(Declarative)
 class QSGItem;
 class QSGContext;
 class QSGCanvasPrivate;
-class Q_DECLARATIVE_EXPORT QSGCanvas : public QWidget
+class Q_DECLARATIVE_EXPORT QSGCanvas : public QGLWidget
 {
 Q_OBJECT
 Q_DECLARE_PRIVATE(QSGCanvas)
@@ -71,6 +71,7 @@ public:
 
     bool sendEvent(QSGItem *, QEvent *);
 
+
     void setSceneGraphContext(QSGContext *context);
 
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
@@ -79,7 +80,11 @@ protected:
     QSGCanvas(QSGCanvasPrivate &dd, QWidget *parent = 0, Qt::WindowFlags f = 0);
     QSGCanvas(QSGCanvasPrivate &dd, const QGLFormat &format, QWidget *parent = 0, Qt::WindowFlags f = 0);
 
+    virtual void paintEvent(QPaintEvent *);
     virtual void resizeEvent(QResizeEvent *);
+
+    virtual void showEvent(QShowEvent *);
+    virtual void hideEvent(QHideEvent *);
 
     virtual bool event(QEvent *);
     virtual void keyPressEvent(QKeyEvent *);
@@ -92,6 +97,10 @@ protected:
 #ifndef QT_NO_WHEELEVENT
     virtual void wheelEvent(QWheelEvent *);
 #endif
+
+private slots:
+    void sceneGraphChanged();
+    void maybeUpdate();
 
 private:
     Q_DISABLE_COPY(QSGCanvas);

@@ -88,29 +88,12 @@ QSGItem::UpdatePaintNodeData::UpdatePaintNodeData()
 {
 }
 
-// ### Multisample should always be on and nonblocking swap should always be off
-// ### in the final version...
-static QGLFormat getFormat()
-{
-    QGLFormat format;
-    format.setSwapInterval(1);
-
-    const QStringList args = qApp->arguments();
-    if (!args.contains("--no-multisample")) {
-        format.setSampleBuffers(true);
-    } else if (args.contains("--nonblocking-swap")) {
-        format.setSwapInterval(0);
-    }
-
-    return format;
-}
-
 QSGRootItem::QSGRootItem()
 {
 }
 
-QSGThreadedRendererAnimationDriver::QSGThreadedRendererAnimationDriver(QSGRenderer *r)
-    : QAnimationDriver(r)
+QSGThreadedRendererAnimationDriver::QSGThreadedRendererAnimationDriver(QSGCanvasPrivate *r)
+    : QAnimationDriver(0)
     , renderer(r)
 {
 }
@@ -139,156 +122,132 @@ void QSGThreadedRendererAnimationDriver::stopped()
     renderer->mutex.unlock();
 }
 
-QSGRenderer::QSGRenderer(QSGCanvasPrivate *canvas, const QGLFormat &format, QWidget *p)
-    : QGLWidget(format, p), context(0), canvas(canvas)
-    , contextInThread(false)
-    , threadedRendering(false), inUpdate(false), exitThread(false), needsRepaint(true)
-    , renderThreadAwakened(false), thread(new MyThread(this)), animationDriver(0)
+
+void QSGCanvas::paintEvent(QPaintEvent *)
 {
-    threadedRendering = qmlThreadedRenderer();
-}
+    Q_D(QSGCanvas);
 
-void QSGRenderer::paintEvent(QPaintEvent *)
-{
-    if (!threadedRendering) {
-        Q_ASSERT(context);
+    if (!d->threadedRendering) {
+        Q_ASSERT(d->context);
 
-        inUpdate = true;
+        d->inUpdate = true;
 
-        polishItems();
+        d->polishItems();
 
         QDeclarativeDebugTrace::addEvent(QDeclarativeDebugTrace::FramePaint);
         QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Painting);
 
         makeCurrent();
-
-        syncSceneGraph();
-
-        renderSceneGraph();
+        d->syncSceneGraph();
+        d->renderSceneGraph();
 
         QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Painting);
 
-        inUpdate = false;
+        d->inUpdate = false;
     }
 }
 
-void QSGRenderer::resizeEvent(QResizeEvent *e)
+void QSGCanvas::resizeEvent(QResizeEvent *e)
 {
-    if (threadedRendering) {
-        mutex.lock();
-        widgetSize = e->size();
-        mutex.unlock();
+    Q_D(QSGCanvas);
+    if (d->threadedRendering) {
+        d->mutex.lock();
+        QGLWidget::resizeEvent(e);
+        d->widgetSize = e->size();
+        d->mutex.unlock();
     } else {
-        widgetSize = e->size();
-        viewportSize = widgetSize;
+        d->widgetSize = e->size();
+        d->viewportSize = d->widgetSize;
         QGLWidget::resizeEvent(e);
     }
 }
 
-void QSGRenderer::showEvent(QShowEvent *e)
+void QSGCanvas::showEvent(QShowEvent *e)
 {
+    Q_D(QSGCanvas);
+
     QGLWidget::showEvent(e);
 
-    if (threadedRendering) {
-        contextInThread = true;
+    if (d->threadedRendering) {
+        d->contextInThread = true;
         doneCurrent();
-        animationDriver = new QSGThreadedRendererAnimationDriver(this);
-        animationDriver->install();
-        mutex.lock();
-        thread->start();
-        wait.wait(&mutex);
-        mutex.unlock();
+        d->animationDriver = new QSGThreadedRendererAnimationDriver(d);
+        d->animationDriver->install();
+        d->mutex.lock();
+        d->thread->start();
+        d->wait.wait(&d->mutex);
+        d->mutex.unlock();
     } else {
         makeCurrent();
-        initializeSceneGraph();
-        animationDriver = context->createAnimationDriver(this);
-        if (animationDriver)
-            animationDriver->install();
+        d->initializeSceneGraph();
+        d->animationDriver = d->context->createAnimationDriver(this);
+        if (d->animationDriver)
+            d->animationDriver->install();
     }
 }
 
-void QSGRenderer::hideEvent(QHideEvent *e)
+void QSGCanvas::hideEvent(QHideEvent *e)
 {
-    if (threadedRendering) {
-        mutex.lock();
-        exitThread = true;
-        wait.wakeOne();
-        wait.wait(&mutex);
-        exitThread = false;
-        mutex.unlock();
-        thread->wait();
+    Q_D(QSGCanvas);
+
+    if (d->threadedRendering) {
+        d->mutex.lock();
+        d->exitThread = true;
+        d->wait.wakeOne();
+        d->wait.wait(&d->mutex);
+        d->exitThread = false;
+        d->mutex.unlock();
+        d->thread->wait();
     }
 
     QGLWidget::hideEvent(e);
 }
 
-bool QSGRenderer::event(QEvent *e)
+
+void QSGCanvasPrivate::initializeSceneGraph()
 {
-    if (e->type() == QEvent::User) {
-        Q_ASSERT(threadedRendering);
-
-        mutex.lock();
-#ifdef THREAD_DEBUG
-        qWarning("QSGRenderer: Main Thread: Stopped");
-#endif
-
-        polishItems();
-
-        renderThreadAwakened = false;
-
-        wait.wakeOne();
-        wait.wait(&mutex);
-#ifdef THREAD_DEBUG
-        qWarning("QSGRenderer: Main Thread: Resumed");
-#endif
-        mutex.unlock();
-
-        if (animationRunning)
-            animationDriver->advance();
-    }
-
-    return QGLWidget::event(e);
-}
-
-void QSGRenderer::initializeSceneGraph()
-{
-    if (!context) 
+    if (!context)
         context = QSGContext::createDefaultContext();
 
     if (context->isReady())
         return;
 
-    QGLContext *glctx = const_cast<QGLContext *>(QGLWidget::context());
+    QGLContext *glctx = const_cast<QGLContext *>(QGLContext::currentContext());
+
     context->initialize(glctx);
 
     if (!threadedRendering) {
-        QObject::connect(context->renderer(), SIGNAL(sceneGraphChanged()), this, SLOT(maybeUpdate()),
+        Q_Q(QSGCanvas);
+        QObject::connect(context->renderer(), SIGNAL(sceneGraphChanged()), q, SLOT(maybeUpdate()),
                          Qt::DirectConnection);
     }
 
-    if (!QSGItemPrivate::get(canvas->rootItem)->itemNode()->parent()) 
-        context->rootNode()->appendChildNode(QSGItemPrivate::get(canvas->rootItem)->itemNode());
+    if (!QSGItemPrivate::get(rootItem)->itemNode()->parent()) {
+        context->rootNode()->appendChildNode(QSGItemPrivate::get(rootItem)->itemNode());
+    }
 }
 
-void QSGRenderer::polishItems()
+void QSGCanvasPrivate::polishItems()
 {
-    while (!canvas->polishItems.isEmpty()) {
-        QSet<QSGItem *>::Iterator iter = canvas->polishItems.begin();
+    while (!itemsToPolish.isEmpty()) {
+        QSet<QSGItem *>::Iterator iter = itemsToPolish.begin();
         QSGItem *item = *iter;
-        canvas->polishItems.erase(iter);
+        itemsToPolish.erase(iter);
         QSGItemPrivate::get(item)->polishScheduled = false;
         item->updatePolish();
     }
 }
 
-void QSGRenderer::syncSceneGraph()
+
+void QSGCanvasPrivate::syncSceneGraph()
 {
-    canvas->updateDirtyNodes();
+    updateDirtyNodes();
 }
 
-void QSGRenderer::renderSceneGraph()
+
+void QSGCanvasPrivate::renderSceneGraph()
 {
-    QGLContext *glctx = const_cast<QGLContext *>(QGLWidget::context());
+    QGLContext *glctx = const_cast<QGLContext *>(QGLContext::currentContext());
 
     context->renderer()->setDeviceRect(QRect(QPoint(0, 0), viewportSize));
     context->renderer()->setViewportRect(QRect(QPoint(0, 0), viewportSize));
@@ -299,23 +258,27 @@ void QSGRenderer::renderSceneGraph()
     glctx->swapBuffers();
 }
 
-void QSGRenderer::sceneGraphChanged()
+
+void QSGCanvas::sceneGraphChanged()
 {
-    needsRepaint = true;
+    Q_D(QSGCanvas);
+    d->needsRepaint = true;
 }
 
-void QSGRenderer::runThread()
+
+void QSGCanvasPrivate::runThread()
 {
 #ifdef THREAD_DEBUG
     qWarning("QSGRenderer: Render thread running");
 #endif
+    Q_Q(QSGCanvas);
 
-    makeCurrent();
+    q->makeCurrent();
     initializeSceneGraph();
 
-    connect(context->renderer(), SIGNAL(sceneGraphChanged()),
-            this, SLOT(sceneGraphChanged()),
-            Qt::DirectConnection);
+    QObject::connect(context->renderer(), SIGNAL(sceneGraphChanged()),
+                      q, SLOT(sceneGraphChanged()),
+                      Qt::DirectConnection);
 
     mutex.lock();
     wait.wakeOne(); // Wake the main thread waiting for us to start
@@ -335,7 +298,7 @@ void QSGRenderer::runThread()
 #ifdef THREAD_DEBUG
         qWarning("QSGRenderer: Render Thread: Waiting for main thread to stop");
 #endif
-        QCoreApplication::postEvent(this, new QEvent(QEvent::User));
+        QCoreApplication::postEvent(q, new QEvent(QEvent::User));
         wait.wait(&mutex);
 
         if (exitThread)
@@ -393,7 +356,7 @@ void QSGRenderer::runThread()
     wait.wakeOne();
     mutex.unlock();
 
-    doneCurrent();
+    q->doneCurrent();
 }
 
 QSGCanvasPrivate::QSGCanvasPrivate()
@@ -401,16 +364,25 @@ QSGCanvasPrivate::QSGCanvasPrivate()
     , activeFocusItem(0)
     , mouseGrabberItem(0)
     , hoverItem(0)
-    , renderer(0)
     , dirtyItemList(0)
+    , context(0)
+    , contextInThread(false)
+    , threadedRendering(false)
+    , inUpdate(false)
+    , exitThread(false)
+    , needsRepaint(true)
+    , renderThreadAwakened(false)
+    , thread(new MyThread(this))
+    , animationDriver(0)
 {
+    threadedRendering = qmlThreadedRenderer();
 }
 
 QSGCanvasPrivate::~QSGCanvasPrivate()
 {
 }
 
-void QSGCanvasPrivate::init(QSGCanvas *c, const QGLFormat &format)
+void QSGCanvasPrivate::init(QSGCanvas *c)
 {
     q_ptr = c;
 
@@ -426,8 +398,6 @@ void QSGCanvasPrivate::init(QSGCanvas *c, const QGLFormat &format)
     rootItemPrivate->focus = true;
     rootItemPrivate->activeFocus = true;
     activeFocusItem = rootItem;
-
-    renderer = new QSGRenderer(this, format, q);
 }
 
 void QSGCanvasPrivate::sceneMouseEventForTransform(QGraphicsSceneMouseEvent &sceneEvent,
@@ -759,7 +729,7 @@ QVariant QSGCanvas::inputMethodQuery(Qt::InputMethodQuery query) const
 void QSGCanvasPrivate::dirtyItem(QSGItem *)
 {
     Q_Q(QSGCanvas);
-    renderer->maybeUpdate();
+    q->maybeUpdate();
 }
 
 void QSGCanvasPrivate::cleanup(Node *n)
@@ -768,39 +738,39 @@ void QSGCanvasPrivate::cleanup(Node *n)
 
     Q_ASSERT(!cleanupNodeList.contains(n));
     cleanupNodeList.append(n);
-    renderer->maybeUpdate();
+    q->maybeUpdate();
 }
 
 QSGCanvas::QSGCanvas(QWidget *parent, Qt::WindowFlags f)
-: QWidget(*(new QSGCanvasPrivate), parent, f)
+    : QGLWidget(*(new QSGCanvasPrivate), QGLFormat(), parent, (QGLWidget *) 0, f)
 {
     Q_D(QSGCanvas);
 
-    d->init(this, getFormat());
+    d->init(this);
 }
 
 QSGCanvas::QSGCanvas(const QGLFormat &format, QWidget *parent, Qt::WindowFlags f)
-: QWidget(*(new QSGCanvasPrivate), parent, f)
+    : QGLWidget(*(new QSGCanvasPrivate), format, parent, (QGLWidget *) 0, f)
 {
     Q_D(QSGCanvas);
 
-    d->init(this, format);
+    d->init(this);
 }
 
 QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, QWidget *parent, Qt::WindowFlags f)
-: QWidget(dd, parent, f)
+: QGLWidget(dd, QGLFormat(), parent, 0, f)
 {
     Q_D(QSGCanvas);
 
-    d->init(this, getFormat());
+    d->init(this);
 }
 
 QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, const QGLFormat &format, QWidget *parent, Qt::WindowFlags f)
-: QWidget(dd, parent, f)
+: QGLWidget(dd, format, parent, 0, f)
 {
     Q_D(QSGCanvas);
 
-    d->init(this, format);
+    d->init(this);
 }
 
 QSGCanvas::~QSGCanvas()
@@ -815,12 +785,12 @@ void QSGCanvas::setSceneGraphContext(QSGContext *context)
 {
     Q_D(QSGCanvas);
 
-    if (d->renderer->contextInThread || d->renderer->context) {
+    if (d->contextInThread || d->context) {
         qWarning("QSGCanvas::setSceneGraphContext: Context already exists.");
         return;
     }
 
-    d->renderer->context = context;
+    d->context = context;
 }
 
 QSGItem *QSGCanvas::rootItem() const
@@ -844,6 +814,7 @@ QSGItem *QSGCanvas::mouseGrabberItem() const
     return d->mouseGrabberItem;
 }
 
+
 void QSGCanvasPrivate::clearHover()
 {
     Q_Q(QSGCanvas);
@@ -864,12 +835,36 @@ void QSGCanvasPrivate::clearHover()
     sendHoverEvent(QEvent::GraphicsSceneHoverLeave, item, &hoverEvent);
 }
 
+
 bool QSGCanvas::event(QEvent *e)
 {
     Q_D(QSGCanvas);
 
-    // XXX todo
+    if (e->type() == QEvent::User) {
+        Q_ASSERT(d->threadedRendering);
+
+        d->mutex.lock();
+#ifdef THREAD_DEBUG
+        qWarning("QSGRenderer: Main Thread: Stopped");
+#endif
+
+        d->polishItems();
+
+        d->renderThreadAwakened = false;
+
+        d->wait.wakeOne();
+        d->wait.wait(&d->mutex);
+#ifdef THREAD_DEBUG
+        qWarning("QSGRenderer: Main Thread: Resumed");
+#endif
+        d->mutex.unlock();
+
+        if (d->animationRunning)
+            d->animationDriver->advance();
+    }
+
     switch (e->type()) {
+
     case QEvent::TouchBegin:
 #ifdef TOUCH_DEBUG
         qWarning("touchBeginEvent");
@@ -1270,15 +1265,6 @@ bool QSGCanvas::sendEvent(QSGItem *item, QEvent *e)
     return false; 
 }
 
-void QSGCanvas::resizeEvent(QResizeEvent *e)
-{
-    Q_D(QSGCanvas);
-
-    d->renderer->resize(e->size());
-
-    QWidget::resizeEvent(e);
-}
-
 void QSGCanvasPrivate::cleanupNodes()
 {
     for (int ii = 0; ii < cleanupNodeList.count(); ++ii)
@@ -1445,23 +1431,25 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
     } 
 }
 
-void QSGRenderer::maybeUpdate()
+void QSGCanvas::maybeUpdate()
 {
-    if (threadedRendering) {
-        if (!renderThreadAwakened) {
-            renderThreadAwakened = true;
-            mutex.lock();
-            if (idle) {
+    Q_D(QSGCanvas);
+
+    if (d->threadedRendering) {
+        if (!d->renderThreadAwakened) {
+            d->renderThreadAwakened = true;
+            d->mutex.lock();
+            if (d->idle) {
 #ifdef THREAD_DEBUG
                 qWarning("QSGRenderer: now maybe I should update...\n");
 #endif
-                wait.wakeOne();
+                d->wait.wakeOne();
             }
-            mutex.unlock();
+            d->mutex.unlock();
         }
     }
 
-    if (!threadedRendering && !inUpdate && (!animationDriver || !animationDriver->isRunning())) 
+    if (!d->threadedRendering && !d->inUpdate && (!d->animationDriver || !d->animationDriver->isRunning()))
         update();
 }
 
