@@ -2280,183 +2280,194 @@
     \target image-command
     \section1 \\image 
 
-    The \\image command expands to the image specified by its
+    The \\image command expands to the image specified by its first
     argument, and renders it centered as a separate paragraph.
 
-           The \\image command replaces the old \\img command. For more
-           information, see the \l
-           {26-qdoc-commands-compatibility.html#image-versus-img}
-           {compatibility} section.
+    The \\image command replaces the old \\img command. For more
+    information, see the \l
+    {26-qdoc-commands-compatibility.html#image-versus-img}
+    {compatibility} section.
 
-           The command takes two arguments. The first is the name of
-           the image file. The second argument is optional and is a
-           simple description of the image equivalent to the HTML
-           alt="" in an image tag. The description is used for
-           tooltips, and when a browser doesn't support images like
-           the Lynx text browser.
+    The command takes two arguments. The first argument is the name of
+    the image file. The second argument is optional and is a simple
+    description of the image, equivalent to the HTML alt="" in an image
+    tag. The description is used for tooltips, and for when a browser
+    doesn't support images, like the Lynx text browser.
 
-           The command considers the rest of the line after the file
-           name its second argument, make sure that you follow the
-           filename or description with a line break. Braces are only
-           necessary if the description spans several lines.
+    The remaining text \e{after} the file name is the optional,
+    description argument. Be sure to follow the file name or the
+    description with a line break. Curly brackets are required if the
+    description argument spans multiple lines.
 
-           For example:
+    For example:
 
-           \code
-           / *!
-               Qt by Trolltech is a C++ toolkit for cross-platform GUI
-               application development.
+    \code
+    / *!
+        Qt by Trolltech is a C++ toolkit for cross-platform GUI
+        application development.
 
-               \image happyguy.jpg "Happy guy"
+        \image happyguy.jpg "Happy guy"
 
-               Qt provides single-source portability across Microsoft
-               Windows, Mac OS X, Linux, and all major commercial Unix
-               variants. It is also available for embedded devices.
-           * /
-           \endcode
+        Qt provides single-source portability across Microsoft
+        Windows, Mac OS X, Linux, and all major commercial Unix
+        variants. It is also available for embedded devices.
+    * /
+    \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
-           \quotation
-               Qt by Trolltech is a C++ toolkit for cross-platform GUI
-               application development.
+    \quotation
+        Qt by Trolltech is a C++ toolkit for cross-platform GUI
+        application development.
 
-               \image happyguy.jpg image "Happy guy"
+        \image happyguy.jpg image "Happy guy"
 
-               Qt provides single-source portability across Microsoft
-               Windows, Mac OS X, Linux, and all major commercial Unix
-               variants. It is also available for embedded devices.
-           \endquotation
+        Qt provides single-source portability across Microsoft
+        Windows, Mac OS X, Linux, and all major commercial Unix
+        variants. It is also available for embedded devices.
+        \endquotation
 
-           See also \l {inlineimage-command} {\\inlineimage} and \l
-           {caption-command} {\\caption}.
-
+    See also \l {inlineimage-command} {\\inlineimage} and \l
+    {caption-command} {\\caption}.
 
     \target inlineimage-command
     \section1 \\inlineimage 
 
-    The \\inlineimage command expands to the image
-    specified by its argument; the image is rendered inline
-    with the rest of the text.
+    The \\inlineimage command expands to the image specified by its
+    argument. The image is rendered inline with the rest of the text.
 
-           The command takes two arguments. The first is the name of
-           the image file. The second argument is optional and is a
-           simple description of the image equivalent to the HTML
-           alt="" in an image tag. The description is used for
-           tooltips, and when a browser doesn't support images like
-           the Lynx text browser.
+    The command takes two arguments. The first argument is the name of
+    the image file. The second argument is optional and is a simple
+    description of the image, equivalent to the HTML alt="" in an image
+    tag. The description is used for tooltips, and for when a browser
+    doesn't support images, like the Lynx text browser.
 
-           The most common use of the \\inlineimage command is in
-           lists and tables. For example:
+    The most common use of the \\inlineimage command is in lists and
+    tables. Here is an example of including inline images in a list:
 
-           \code
-           / *!
-               \list 1
-               \o \inlineimage happy.gif Oh so happy!
-               \o \inlineimage happy.gif Oh so happy!
-               \o \inlineimage happy.gif Oh so happy!
-               \endlist
-           * /
-           \endcode
+    \code
+    / *!
+        \list 1
+          \o \inlineimage happy.gif Oh so happy!
+          \o \inlineimage happy.gif Oh so happy!
+          \o \inlineimage happy.gif Oh so happy!
+        \endlist
+    * /
+    \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
-           \list 1
-           \o \inlineimage happy.gif Oh so happy!
-           \o \inlineimage happy.gif Oh so happy!
-           \o \inlineimage happy.gif Oh so happy!
-           \endlist
+    \list 1
+      \o \inlineimage happy.gif Oh so happy!
+      \o \inlineimage happy.gif Oh so happy!
+      \o \inlineimage happy.gif Oh so happy!
+    \endlist
 
-           And
+    Her eis an example of including inline images in a table:
 
-           \code
-           / *!
-               \table
-               \header
-                   \o Trolltech
-                   \o Trolltech
-               \row
-                   \o \inlineimage happy.gif Oh so happy!
-                   \o \inlineimage happy.gif Oh so happy!
-               \row
-                   \o \inlineimage happy.gif Oh so happy!
-                   \o \inlineimage happy.gif Oh so happy!
-               \endtable
-           * /
-           \endcode
+    \code
+    / *!
+        \table
+        \header
+            \o Trolltech
+            \o Trolltech
+        \row
+            \o \inlineimage happy.gif Oh so happy!
+            \o \inlineimage happy.gif Oh so happy!
+        \row
+            \o \inlineimage happy.gif Oh so happy!
+            \o \inlineimage happy.gif Oh so happy!
+        \endtable
+    * /
+    \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
-           \raw HTML
-               <table align="center" cellpadding="2"
-                   cellspacing="1" border="0">
-               <tr valign="top" bgcolor="#a2c511">
-                   <th>Trolltech</th>
-                   <th>Trolltech</th>
-               </tr>
+    \raw HTML
+        <table align="center" cellpadding="2"
+            cellspacing="1" border="0">
+        <tr valign="top" bgcolor="#a2c511">
+            <th>Trolltech</th>
+            <th>Trolltech</th>
+        </tr>
+        <tr valign="top" bgcolor="#f0f0f0">
+            <td><img src="images/happy.gif" alt="Oh so happy!" />
+            </td>
+            <td><img src="images/happy.gif" alt="Oh so happy!" />
+            </td>
+        </tr>
+        <tr valign="top" bgcolor="#f0f0f0">
+            <td><img src="images/happy.gif" alt="Oh so happy!"/>
+            </td>
+            <td><img src="images/happy.gif" alt="Oh so happy!" />
+            </td>
+        </tr>
+        </table>
+    \endraw
 
-               <tr valign="top" bgcolor="#f0f0f0">
-                   <td><img src="images/happy.gif" alt="Oh so happy!" />
-                   </td>
-                   <td><img src="images/happy.gif" alt="Oh so happy!" />
-                   </td>
-               </tr>
+    The command can also be used to insert an image inline with the
+    text. For example:
 
-               <tr valign="top" bgcolor="#f0f0f0">
-                   <td><img src="images/happy.gif" alt="Oh so happy!"/>
-                   </td>
-                   <td><img src="images/happy.gif" alt="Oh so happy!" />
-                   </td>
-               </tr>
+    \code
+    / *!
+        \inlineimage training.jpg Training by Trolltech
+        The Qt Programming course is offered as a
+        five day Open Enrollment Course. The classes
+        are open to the public.While the course is open
+        to anyone who wants to learn, attendees should
+        have significant experience in C++ development
+        to derive maximum benefit from the course.
+    * /
+    \endcode
 
-               </table>
-           \endraw
+    QDoc renders this as:
 
-           The command can also be used to insert an image
-           inline with the regular text. For example:
+    \quotation
+       \inlineimage training.jpg Training by Trolltech
+        The Qt Programming course is offered as a
+        five day Open Enrollment Course. The classes
+        are open to the public.While the course is open
+        to anyone who wants to learn, attendees should
+        have significant experience in C++ development
+        to derive maximum benefit from the course.
+    \endquotation
 
-           \code
-           / *!
-               \inlineimage training.jpg Training by Trolltech
-               The Qt Programming course is offered as a
-               five day Open Enrollment Course. The classes
-               are open to the public.While the course is open
-               to anyone who wants to learn, attendees should
-               have significant experience in C++ development
-               to derive maximum benefit from the course.
-           * /
-           \endcode
-
-           QDoc renders this as:
-
-           \quotation
-               \inlineimage training.jpg Training by Trolltech
-               The Qt Programming course is offered as a
-               five day Open Enrollment Course. The classes
-               are open to the public.While the course is open
-               to anyone who wants to learn, attendees should
-               have significant experience in C++ development
-               to derive maximum benefit from the course.
-           \endquotation
-
-           See also \l {image-command} {\\image} and \l {caption-command} {\\caption}.
-
+    See also \l {image-command} {\\image} and \l {caption-command} {\\caption}.
 
     \target caption-command
     \section1 \\caption 
 
     The \\caption command provides a caption for an image.
 
-           The command follows the same conventions for parentheses and use
-           of braces for its \l argument as the \l {i-command} {\\i} command.
+    The command takes all the text up to the end of the paragraph to
+    be the caption. Experiment until you get the effect you want.
 
-           \warning This is preliminary functionality. The
-           command is not fully implemented.
+    \code
+    / *!
+      \table 100%
+        \row
+          \o \image windowsvista-pushbutton.png 
+             \caption The QPushButton widget provides a command button.
+          \o \image windowsvista-toolbutton.png
+             \caption The QToolButton class provides a quick-access button to commands
+             or options, usually used inside a QToolBar.
+       \endtable
+    * /
+    \endcode
 
-           See also \l {image-command} {\\image} and \l
-           {inlineimage-command} {\\inlineimage}
+    QDoc renders this as:
 
+    \table 100%
+      \row
+        \o \image windowsvista-pushbutton.png 
+           \caption The QPushButton widget provides a command button.
+        \o \image windowsvista-toolbutton.png
+           \caption The QToolButton class provides a quick-access button to commands
+           or options, usually used inside a QToolBar.
+    \endtable
 
+    See also \l {image-command} {\\image} and \l {inlineimage-command}
+    {\\inlineimage} 
 */
 
 /*!
