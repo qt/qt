@@ -5,12 +5,18 @@ include(../qimportbase.pri)
 HEADERS += \
     spriteparticles.h \
     spritestate.h \
-    pluginmain.h
+    V1/qdeclarativeparticles_p.h \
+    pluginmain.h \
+    particleaffector.h \
+    wanderaffector.h
 
 SOURCES += \
     spriteparticles.cpp \
     spritestate.cpp \
-    main.cpp
+    V1/qdeclarativeparticles.cpp \
+    main.cpp \
+    particleaffector.cpp \
+    wanderaffector.cpp
 
 QT += declarative opengl
 

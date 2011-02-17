@@ -43,8 +43,8 @@ file=ABI_DIR\BUILD_DIR\qsvgicon.dll          SHARED_LIB_DIR\qsvgicon.dll
 // This is commented out by default, as normally Helix backend will be used.
 // If the Helix backend is present, it will override MMF backend, so make sure to remove it from
 // image creation in addition to uncommenting the following lines if you want to use MMF backend.
-//file=ABI_DIR\BUILD_DIR\phonon_mmf.dll        SHARED_LIB_DIR\phonon_mmf.dll
-//data=\epoc32\data\z\resource\qt\plugins\phonon_backend\phonon_mmf.qtplugin resource\qt\plugins\phonon_backend\phonon_mmf.qtplugin
+file=ABI_DIR\BUILD_DIR\phonon_mmf.dll        SHARED_LIB_DIR\phonon_mmf.dll
+data=\epoc32\data\z\resource\qt\plugins\phonon_backend\phonon_mmf.qtplugin resource\qt\plugins\phonon_backend\phonon_mmf.qtplugin
 
 // QtMultimedia audio backend
 file=ABI_DIR\BUILD_DIR\qaudio.dll            SHARED_LIB_DIR\qaudio.dll

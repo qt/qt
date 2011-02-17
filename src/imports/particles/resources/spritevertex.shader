@@ -18,7 +18,7 @@ void main() {
     highp float size = vData.y;
     highp float endSize = vData.z;
 
-    highp float t = (timestamp - vData.x) / timelength; 
+    highp float t = (timestamp - vData.x) / timelength;
 
     //Calculate frame location in texture
     highp float frameIndex = fract((((timestamp - vAnimData.w)*1000.)/vAnimData.y)/vAnimData.z) * vAnimData.z;
@@ -38,18 +38,21 @@ void main() {
 
     fTex = frameTex;
 
-    // calculate size/pos
+
     highp float currentSize = mix(size, endSize, t * t);
 
     if (t < 0. || t > 1.)
         currentSize = 0.;
 
+    //If affector is mananging pos, they don't set speed?
     highp vec2 pos = vPos
                    - currentSize / 2. + currentSize * vTex          // adjust size
                    + vVec.xy * t * timelength         // apply speed vector..
                    + vVec.zw * pow(t * timelength, 2.);
 
     gl_Position = matrix * vec4(pos.x, pos.y, 0, 1);
+
+    //gl_Position = matrix * vec4(vPos.x, vPos.y, 0, 1);
 
     // calculate opacity
     highp float fadeIn = min(t * 10., 1.);

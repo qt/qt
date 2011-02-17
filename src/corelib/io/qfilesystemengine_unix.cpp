@@ -174,8 +174,9 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
     if (entry.isEmpty() || entry.isRoot())
         return entry;
 
-#ifdef __UCLIBC__
-    return QFileSystemEntry::slowCanonicalName(entry);
+#if !defined(Q_OS_MAC) && _POSIX_VERSION < 200809L
+    // realpath(X,0) is not supported
+    return QFileSystemEntry(slowCanonicalized(absoluteName(entry).filePath()));
 #else
     char *ret = 0;
 # if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
@@ -533,8 +534,7 @@ bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSyst
 {
     Q_UNUSED(source);
     Q_UNUSED(target);
-    // # we can implement this using sendfile(2)
-    //when this function returns false, block copy is used in QFile which sets the error code.
+    error = QSystemError(ENOSYS, QSystemError::StandardLibraryError); //Function not implemented
     return false;
 }
 

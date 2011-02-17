@@ -12,6 +12,8 @@ class SpriteState : public QObject
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(int frames READ frames WRITE setFrames NOTIFY framesChanged)
     Q_PROPERTY(int duration READ duration WRITE setDuration NOTIFY durationChanged)
+    Q_PROPERTY(int durationVariance READ durationVariance WRITE setDurationVariance NOTIFY durationVarianceChanged)
+    Q_PROPERTY(qreal speedModifiesDuration READ speedModifer WRITE setSpeedModifier NOTIFY speedModifierChanged)
     Q_PROPERTY(QVariantMap to READ to WRITE setTo NOTIFY toChanged)
 
 public:
@@ -42,6 +44,16 @@ public:
         return m_to;
     }
 
+    qreal speedModifer() const
+    {
+        return m_speedModifier;
+    }
+
+    int durationVariance() const
+    {
+        return m_durationVariance;
+    }
+
 signals:
 
     void sourceChanged(QUrl arg);
@@ -53,6 +65,10 @@ signals:
     void nameChanged(QString arg);
 
     void toChanged(QVariantMap arg);
+
+    void speedModifierChanged(qreal arg);
+
+    void durationVarianceChanged(int arg);
 
 public slots:
 
@@ -96,6 +112,22 @@ public slots:
         }
     }
 
+    void setSpeedModifier(qreal arg)
+    {
+        if (m_speedModifier != arg) {
+            m_speedModifier = arg;
+            emit speedModifierChanged(arg);
+        }
+    }
+
+    void setDurationVariance(int arg)
+    {
+        if (m_durationVariance != arg) {
+            m_durationVariance = arg;
+            emit durationVarianceChanged(arg);
+        }
+    }
+
 private:
     friend class SpriteParticles;
     QUrl m_source;
@@ -103,6 +135,8 @@ private:
     int m_duration;
     QString m_name;
     QVariantMap m_to;
+    qreal m_speedModifier;
+    int m_durationVariance;
 };
 
 #endif // SPRITESTATE_H

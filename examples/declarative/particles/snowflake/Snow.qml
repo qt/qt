@@ -14,6 +14,7 @@ Rectangle{
             frames: 20
             duration: 100
         }
+        affectors: WanderAffector{ xVariance:30; pace:100 }
         particlesPerSecond: 100
         particleDuration: 8000
         emitting: true

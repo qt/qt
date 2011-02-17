@@ -64,7 +64,7 @@
 NetworkAccessManager::NetworkAccessManager(QObject *parent)
     : QNetworkAccessManager(parent),
     requestFinishedCount(0), requestFinishedFromCacheCount(0), requestFinishedPipelinedCount(0),
-    requestFinishedSecureCount(0)
+    requestFinishedSecureCount(0), requestFinishedDownloadBufferCount(0)
 {
     connect(this, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
             SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
@@ -106,14 +106,19 @@ void NetworkAccessManager::requestFinished(QNetworkReply *reply)
     if (reply->attribute(QNetworkRequest::ConnectionEncryptedAttribute).toBool() == true)
         requestFinishedSecureCount++;
 
+    if (reply->attribute(QNetworkRequest::DownloadBufferAttribute).isValid() == true)
+        requestFinishedDownloadBufferCount++;
+
     if (requestFinishedCount % 10)
         return;
 
     double pctCached = (double(requestFinishedFromCacheCount) * 100.0/ double(requestFinishedCount));
     double pctPipelined = (double(requestFinishedPipelinedCount) * 100.0/ double(requestFinishedCount));
     double pctSecure = (double(requestFinishedSecureCount) * 100.0/ double(requestFinishedCount));
+    double pctDownloadBuffer = (double(requestFinishedDownloadBufferCount) * 100.0/ double(requestFinishedCount));
+
 #ifdef QT_DEBUG
-    qDebug("STATS [%lli requests total] [%3.2f%% from cache] [%3.2f%% pipelined] [%3.2f%% SSL/TLS]", requestFinishedCount, pctCached, pctPipelined, pctSecure);
+    qDebug("STATS [%lli requests total] [%3.2f%% from cache] [%3.2f%% pipelined] [%3.2f%% SSL/TLS] [%3.2f%% Zerocopy]", requestFinishedCount, pctCached, pctPipelined, pctSecure, pctDownloadBuffer);
 #endif
 }
 

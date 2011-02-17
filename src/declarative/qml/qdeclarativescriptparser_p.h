@@ -82,6 +82,8 @@ public:
         QString qualifier;
         QString version;
 
+        void extractVersion(int *maj, int *min) const;
+
         QDeclarativeParser::LocationSpan location;
     };
 

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,46 +39,34 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKACCESSDATABACKEND_P_H
-#define QNETWORKACCESSDATABACKEND_P_H
+#include <QtGui>
+#include <QApplication>
+#include <QEvent>
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of the Network Access API.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qnetworkaccessbackend_p.h"
-
-QT_BEGIN_NAMESPACE
-
-class QNetworkAccessDataBackend: public QNetworkAccessBackend
+struct MyApplication : public QApplication
 {
-public:
-    QNetworkAccessDataBackend();
-    virtual ~QNetworkAccessDataBackend();
+    MyApplication(int& argc, char** argv)
+    : QApplication(argc, argv)
+    {}
 
-    virtual void open();
-    virtual void closeDownstreamChannel();
-    virtual void closeUpstreamChannel();
-    virtual bool waitForDownstreamReadyRead(int msecs);
-    virtual bool waitForUpstreamBytesWritten(int msecs);
-
-    virtual bool processRequestSynchronously();
+    bool event(QEvent * event)
+    {
+        if (event->type() == QEvent::FileOpen) {
+            QFileOpenEvent* ev = static_cast<QFileOpenEvent *>(event);
+            QFile file;
+            bool ok = ev->openFile(file, QFile::Append | QFile::Unbuffered);
+            if (ok)
+                file.write(QByteArray("+external"));
+            return true;
+        } else {
+            return QApplication::event(event);
+        }
+    }
 };
 
-class QNetworkAccessDataBackendFactory: public QNetworkAccessBackendFactory
+int main(int argc, char *argv[])
 {
-public:
-    virtual QNetworkAccessBackend *create(QNetworkAccessManager::Operation op,
-                                          const QNetworkRequest &request) const;
-};
-
-QT_END_NAMESPACE
-
-#endif
+    MyApplication a(argc, argv);
+    a.sendPostedEvents(&a, QEvent::FileOpen);
+    return 0;
+}
