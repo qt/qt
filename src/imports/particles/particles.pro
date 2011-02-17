@@ -7,7 +7,6 @@ HEADERS += \
     spritestate.h \
     V1/qdeclarativeparticles_p.h \
     pluginmain.h \
-    particleemitter.h \
     particleaffector.h \
     wanderaffector.h
 
@@ -16,7 +15,6 @@ SOURCES += \
     spritestate.cpp \
     V1/qdeclarativeparticles.cpp \
     main.cpp \
-    particleemitter.cpp \
     particleaffector.cpp \
     wanderaffector.cpp
 
