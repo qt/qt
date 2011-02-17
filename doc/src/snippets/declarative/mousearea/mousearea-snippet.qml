@@ -47,7 +47,7 @@ Rectangle {
     width: 500; height: 500
     color: "green"
 
-Column {
+Column {
 //! [anchor fill]
 Rectangle {
     id: button
@@ -68,21 +68,21 @@ Rectangle {
     id: button
     width: 100; height: 100
 
-//! [enable handlers]
+//! [enable handlers]
     MouseArea {
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onEntered: console.log("mouse entered the area")
         onExited: console.log("mouse left the area")
     }
-//! [enable handlers]
+//! [enable handlers]
 }
 
 Rectangle {
     id: button
     width: 100; height: 100
 
-//! [mouse handlers]
+//! [mouse handlers]
     MouseArea {
         anchors.fill: parent
         onClicked: console.log("area clicked")
@@ -90,7 +90,7 @@ Rectangle {
         onEntered: console.log("mouse entered the area")
         onExited: console.log("mouse left the area")
     }
-//! [mouse handlers]
+//! [mouse handlers]
 }
 
 } //end of column

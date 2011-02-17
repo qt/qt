@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Animation QDeclarativeAbstractAnimation
-  \ingroup qml-animation-transition
+    \ingroup qml-animation-transition
     \since 4.7
     \brief The Animation element is the base of all QML animations.
 

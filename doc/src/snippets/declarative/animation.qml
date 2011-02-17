@@ -179,7 +179,7 @@ Rectangle {
 }
 //! [behavior animation]
 
-//! [sequential animation]
+//! [sequential animation]
 Rectangle {
     id: banner
     width: 150; height: 100; border.color: "black"
@@ -216,7 +216,7 @@ Rectangle {
         NumberAnimation { target: deploy; property: "opacity"; to: 1.0; duration: 200}
     }
 }
-//! [sequential animation]
+//! [sequential animation]
 
 }//end of col
 //! [parent end]
@@ -224,4 +224,3 @@ Rectangle {
 //! [parent end]
 
 //! [document]
-

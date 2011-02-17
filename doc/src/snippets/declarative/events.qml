@@ -63,7 +63,7 @@ onSend: {
 onPerform: console.log("perform signal emitted")
 //! [signal handler declaration]
 
-//! [automatic signals]
+//! [automatic signals]
 Rectangle {
     id: sprite
     width: 25; height: 25
@@ -72,7 +72,7 @@ Rectangle {
     onXChanged: console.log("x property changed, emitted xChanged signal")
     onYChanged: console.log("y property changed, emitted yChanged signal")
 }
-//! [automatic signals]
+//! [automatic signals]
 
 //! [signal emit]
 Rectangle {
@@ -88,7 +88,7 @@ Rectangle {
 }
 //! [signal emit]
 
-//! [connect method]
+//! [connect method]
 Rectangle {
     id: relay
 
@@ -112,9 +112,9 @@ Rectangle {
         console.log("Sending to email: " + person + ", " + notice)
     }
 }
-//! [connect method]
+//! [connect method]
 
-//! [forward signal]
+//! [forward signal]
 Rectangle {
     id: forwarder
     width: 100; height: 100
@@ -131,9 +131,9 @@ Rectangle {
         mousearea.clicked.connect(send)
     }
 }
-//! [forward signal]
+//! [forward signal]
 
-//! [connect method]
+//! [connect method]
 //![parent end]
 }
 //![parent end]
