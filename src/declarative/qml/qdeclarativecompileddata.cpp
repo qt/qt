@@ -171,6 +171,8 @@ QDeclarativeCompiledData::~QDeclarativeCompiledData()
     for (int ii = 0; ii < types.count(); ++ii) {
         if (types.at(ii).component)
             types.at(ii).component->release();
+        if (types.at(ii).typePropertyCache)
+            types.at(ii).typePropertyCache->release();
     }
 
     for (int ii = 0; ii < propertyCaches.count(); ++ii) 
@@ -208,6 +210,34 @@ const QMetaObject *QDeclarativeCompiledData::TypeReference::metaObject() const
         return component->root;
     }
 }
+
+/*!
+Returns the property cache, if one alread exists.  The cache is not referenced.
+*/
+QDeclarativePropertyCache *QDeclarativeCompiledData::TypeReference::propertyCache() const
+{
+    if (type)
+        return typePropertyCache;
+    else
+        return component->rootPropertyCache;
+}
+
+/*!
+Returns the property cache, creating one if it doesn't already exist.  The cache is not referenced.
+*/
+QDeclarativePropertyCache *QDeclarativeCompiledData::TypeReference::createPropertyCache(QDeclarativeEngine *engine) 
+{
+    if (typePropertyCache) {
+        return typePropertyCache;
+    } else if (type) {
+        typePropertyCache = QDeclarativeEnginePrivate::get(engine)->cache(type->metaObject());
+        typePropertyCache->addref();
+        return typePropertyCache;
+    } else {
+        return component->rootPropertyCache;
+    }
+}
+
 
 void QDeclarativeCompiledData::dumpInstructions()
 {

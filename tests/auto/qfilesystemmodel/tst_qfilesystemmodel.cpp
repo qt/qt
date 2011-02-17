@@ -980,8 +980,12 @@ void tst_QFileSystemModel::drives()
     model.setRootPath(path);
     model.fetchMore(QModelIndex());
     QFileInfoList drives = QDir::drives();
+    int driveCount = 0;
+    foreach(const QFileInfo& driveRoot, drives)
+        if (driveRoot.exists())
+            driveCount++;
     QTest::qWait(5000);
-    QTRY_COMPARE(model.rowCount(), drives.count());
+    QTRY_COMPARE(model.rowCount(), driveCount);
 }
 
 void tst_QFileSystemModel::dirsBeforeFiles()

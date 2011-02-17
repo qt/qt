@@ -1950,7 +1950,7 @@ to
         <translation>Незакрытый текст в конце строки</translation>
     </message>
     <message>
-        <source>Illegal escape squence</source>
+        <source>Illegal escape sequence</source>
         <translation>Недопустимая esc-последовательность</translation>
     </message>
     <message>

@@ -125,9 +125,6 @@ static QString get_network_interface();
 
 void QNetworkSessionPrivateImpl::iapStateChanged(const QString& iapid, uint icd_connection_state)
 {
-    if ((publicConfig.type() == QNetworkConfiguration::UserChoice) && opened) {
-        updateIdentifier(iapid);
-    }
 
     if (((publicConfig.type() == QNetworkConfiguration::UserChoice) &&
          (activeConfig.identifier() == iapid)) ||
@@ -148,6 +145,9 @@ void QNetworkSessionPrivateImpl::iapStateChanged(const QString& iapid, uint icd_
         default:
             break;
         }
+    }
+    if (publicConfig.type() == QNetworkConfiguration::UserChoice) {
+        updateIdentifier(iapid);
     }
 }
 

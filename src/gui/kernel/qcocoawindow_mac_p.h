@@ -50,17 +50,20 @@
 // We mean it.
 //
 
+#ifndef QCOCOAWINDOW_MAC_P
+#define QCOCOAWINDOW_MAC_P
+
 #ifdef QT_MAC_USE_COCOA
 #include "qmacdefines_mac.h"
 #import <Cocoa/Cocoa.h>
 #include <private/qapplication_p.h>
 #include <private/qbackingstore_p.h>
 
-
 enum { QtMacCustomizeWindow = 1 << 21 }; // This will one day be run over by
 
 QT_FORWARD_DECLARE_CLASS(QWidget);
 QT_FORWARD_DECLARE_CLASS(QStringList);
+QT_FORWARD_DECLARE_CLASS(QCocoaDropData);
 
 @interface NSWindow (QtCoverForHackWithCategory)
 + (Class)frameViewClassForStyleMask:(NSUInteger)styleMask;
@@ -72,13 +75,16 @@ QT_FORWARD_DECLARE_CLASS(QStringList);
 @end
 
 @interface QT_MANGLE_NAMESPACE(QCocoaWindow) : NSWindow {
-    bool leftButtonIsRightButton;
     QStringList *currentCustomDragTypes;
+    QCocoaDropData *dropData;
+    NSInteger dragEnterSequence;
 }
 
 + (Class)frameViewClassForStyleMask:(NSUInteger)styleMask;
 - (void)registerDragTypes;
+- (void)drawRectOriginal:(NSRect)rect;
 
 @end
 #endif
 
+#endif

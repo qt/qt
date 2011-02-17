@@ -66,13 +66,14 @@ using namespace QDeclarativeJS;
 using namespace QDeclarativeParser;
 
 QDeclarativeParser::Object::Object()
-: type(-1), majorVersion(-1), minorVersion(-1), idIndex(-1), metatype(0), defaultProperty(0), parserStatusCast(-1)
+: type(-1), majorVersion(-1), minorVersion(-1), idIndex(-1), metatype(0), synthCache(0), defaultProperty(0), parserStatusCast(-1)
 {
 }
 
 QDeclarativeParser::Object::~Object() 
 { 
     if (defaultProperty) defaultProperty->release();
+    if (synthCache) synthCache->release();
     foreach(Property *prop, properties)
         prop->release();
     foreach(Property *prop, valueProperties)

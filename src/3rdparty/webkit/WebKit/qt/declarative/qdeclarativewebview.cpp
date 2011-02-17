@@ -742,11 +742,11 @@ QWebPage* QDeclarativeWebView::page() const
     See QWebSettings for details of these properties.
 
     \qml
-        WebView {
-            settings.pluginsEnabled: true
-            settings.standardFontFamily: "Arial"
-            ...
-        }
+    WebView {
+        settings.pluginsEnabled: true
+        settings.standardFontFamily: "Arial"
+        // ...
+    }
     \endqml
 */
 QDeclarativeWebSettings* QDeclarativeWebView::settingsObject() const

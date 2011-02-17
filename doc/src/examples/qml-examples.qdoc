@@ -68,7 +68,7 @@
     \title Animation: States Example
     \example declarative/animation/states
 
-    These examples show how to use \l{States}{states} and \l{Transitions}{transitions}.
+    These examples show how to use \l{State}{states} and \l{Transition}{transitions}.
 
     The \c states.qml example shows how an item can change between states, and \c transitions.qml
     shows how these state changes can be animated.
@@ -270,13 +270,23 @@
 */
 
 /*!
-    \title Positioners Example
-    \example declarative/positioners
+    \title Positioners: Adding and Removing Items Example
+    \example declarative/positioners/addandremove
 
-    This example shows how to use positioner elements such as \l Row, \l Column,
-    \l Grid and \l Flow.
+    This example shows how to use the positioner elements such as \l Row, \l Column,
+    \l Grid and \l Flow, in particular how to add and remove items with appropriate transitions.
 
     \image qml-positioners-example.png
+*/
+
+/*!
+    \title Positioners: Layout Direction Example
+    \example declarative/positioners/layoutdirection
+
+    This example shows how to control the horizontal layout direction of 
+    \l Row, \l Grid and \l Flow positioners.
+
+    \image qml-positioners-layoutdirection-example.png
 */
 
 /*!
@@ -664,7 +674,7 @@
 
     This example shows how to create a tab widget. It also demonstrates how
     \l {Property aliases}{property aliases} and
-    \l {Default Properties}{default properties} can be used to collect and
+    \l {Introduction to the QML Language#Default Properties}{default properties} can be used to collect and
     assemble the child items declared within an \l Item.
 
     \image qml-tabwidget-example.png

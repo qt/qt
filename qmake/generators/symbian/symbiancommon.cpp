@@ -79,11 +79,7 @@ void SymbianCommonGenerator::init()
         fixedTarget = project->first("TARGET");
     fixedTarget = generator->unescapeFilePath(fixedTarget);
     fixedTarget = removePathSeparators(fixedTarget);
-    if (project->first("MAKEFILE_GENERATOR") == "SYMBIAN_ABLD"
-        || project->first("MAKEFILE_GENERATOR") == "SYMBIAN_SBSV2")
-        removeEpocSpecialCharacters(fixedTarget);
-    else
-        removeSpecialCharacters(fixedTarget);
+    removeSpecialCharacters(fixedTarget);
 
     // This should not be empty since the mkspecs are supposed to set it if missing.
     uid3 = project->first("TARGET.UID3").trimmed();
@@ -131,18 +127,11 @@ bool SymbianCommonGenerator::containsStartWithItem(const QChar &c, const QString
 void SymbianCommonGenerator::removeSpecialCharacters(QString& str)
 {
     // When modifying this method check also symbianRemoveSpecialCharacters in symbian.conf
-    str.replace(QString("/"), QString("_"));
-    str.replace(QString("\\"), QString("_"));
-    str.replace(QString(" "), QString("_"));
-}
-
-void SymbianCommonGenerator::removeEpocSpecialCharacters(QString& str)
-{
-    // When modifying this method check also symbianRemoveSpecialCharacters in symbian.conf
-    str.replace(QString("-"), QString("_"));
-    str.replace(QString(":"), QString("_"));
-    str.replace(QString("."), QString("_"));
-    removeSpecialCharacters(str);
+    QString underscore = QLatin1String("_");
+    str.replace(QLatin1String("/"), underscore);
+    str.replace(QLatin1String("\\"), underscore);
+    str.replace(QLatin1String(" "), underscore);
+    str.replace(QLatin1String(":"), underscore);
 }
 
 QString romPath(const QString& path)
@@ -405,8 +394,7 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile,
         t << manufacturerStr << endl;
     }
 
-    // ### FIXME: remove epocBuild check once makefile based mkspecs support localized resource generation
-    if (epocBuild && symbianLocalizationList.size()) {
+    if (symbianLocalizationList.size()) {
         // Add localized resources to DEPLOYMENT if default resource deployment is done
         addLocalizedResourcesToDeployment("default_resource_deployment.files", symbianLocalizationList);
         addLocalizedResourcesToDeployment("default_reg_deployment.files", symbianLocalizationList);
@@ -629,6 +617,7 @@ void SymbianCommonGenerator::writeRssFile(QString &numberOfIcons, QString &iconF
         t << "// * user." << endl;
         t << "// ============================================================================" << endl;
         t << endl;
+        t << "CHARACTER_SET UTF8" << endl;
         t << "#include <appinfo.rh>" << endl;
         t << "#include \"" << fixedTarget << ".loc\"" << endl;
         t << endl;

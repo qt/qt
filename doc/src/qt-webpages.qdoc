@@ -244,3 +244,8 @@
     \externalpage http://labs.qt.nokia.com
     \title Qt Labs
 */
+
+/*!
+    \externalpage http://qt.gitorious.org/qt/pages/QtCodingStyle
+    \title Qt Coding Style
+*/

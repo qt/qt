@@ -200,6 +200,9 @@ bool QVGPixmapData::fromData(const uchar *buffer, uint len, const char *format,
     return !isNull();
 }
 
+/*!
+    out-of-place conversion (inPlace == false) will always detach()
+ */
 void QVGPixmapData::createPixmapForImage(QImage &image, Qt::ImageConversionFlags flags, bool inPlace)
 {
     if (image.size() == QSize(w, h))
@@ -216,10 +219,15 @@ void QVGPixmapData::createPixmapForImage(QImage &image, Qt::ImageConversionFlags
     else
         format = image.hasAlphaChannel() ? sourceFormat() : QImage::Format_RGB32;
 
-    if (inPlace && image.data_ptr()->convertInPlace(format, flags))
+    if (inPlace && image.data_ptr()->convertInPlace(format, flags)) {
         source = image;
-    else
+    } else {
         source = image.convertToFormat(format);
+
+        // convertToFormat won't detach the image if format stays the same.
+        if (image.format() == format)
+            source.detach();
+    }
 
     recreate = true;
 }
@@ -404,8 +412,8 @@ void QVGPixmapData::reclaimImages()
     destroyImages();
 }
 
-Q_DECL_IMPORT extern int qt_defaultDpiX();
-Q_DECL_IMPORT extern int qt_defaultDpiY();
+Q_GUI_EXPORT int qt_defaultDpiX();
+Q_GUI_EXPORT int qt_defaultDpiY();
 
 int QVGPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {

@@ -98,7 +98,8 @@ public:
         qreal startPos;
         qreal deltaPos;
         QEasingCurve curve;
-        qreal maxProgress;
+        qreal stopProgress; // whatever is..
+        qreal stopPos;      // ..reached first
         ScrollType type;
     };
 
@@ -122,7 +123,7 @@ public:
     void setDpiFromWidget(QWidget *widget);
 
     void updateVelocity(const QPointF &deltaPixelRaw, qint64 deltaTime);
-    void pushSegment(ScrollType type, qreal deltaTime, qreal startPos, qreal endPos, QEasingCurve::Type curve, Qt::Orientation orientation, qreal maxProgress = 1.0);
+    void pushSegment(ScrollType type, qreal deltaTime, qreal stopProgress, qreal startPos, qreal deltaPos, qreal stopPos, QEasingCurve::Type curve, Qt::Orientation orientation);
     void recalcScrollingSegments(bool forceRecalc = false);
     qreal scrollingSegmentsEndPos(Qt::Orientation orientation) const;
     bool scrollingSegmentsValid(Qt::Orientation orientation);

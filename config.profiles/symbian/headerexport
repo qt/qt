@@ -3,7 +3,7 @@
 #
 # Synchronizes Qt header files - internal development tool.
 #
-# Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+# Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 # Contact: Nokia Corporation (qt-info@nokia.com)
 #
 ######################################################################
@@ -315,17 +315,16 @@ sub classNames {
 }
 
 ######################################################################
-# Syntax:  syncHeader(header, iheader, copy, timestamp)
+# Syntax:  syncHeader(header, iheader, copy)
 # Params:  header, string, filename to create "symlink" for
 #          iheader, string, destination name of symlink
 #          copy, forces header to be a copy of iheader
-#          timestamp, the requested modification time if copying
 #
 # Purpose: Syncronizes header to iheader
 # Returns: 1 if successful, else 0.
 ######################################################################
 sub syncHeader {
-    my ($header, $iheader, $copy, $ts) = @_;
+    my ($header, $iheader, $copy) = @_;
     $iheader =~ s=\\=/=g;
     $header =~ s=\\=/=g;
     return copyFile($iheader, $header) if($copy);
@@ -339,7 +338,6 @@ sub syncHeader {
         open HEADER, ">$header" || die "Could not open $header for writing!\n";
         print HEADER "#include \"$iheader_out\"\n";
         close HEADER;
-        utime(time, $ts, $header) or die "$iheader, $header";
         return 1;
     }
     return 0;
@@ -453,48 +451,21 @@ sub fileCompare {
 sub copyFile
 {
     my ($file,$ifile, $copy,$knowdiff,$filecontents,$ifilecontents) = @_;
-    # Bi-directional synchronization
+
     open( I, "< " . $file ) || die "Could not open $file for reading";
     local $/;
     binmode I;
     $filecontents = <I>;
     close I;
-    if ( open(I, "< " . $ifile) ) {
-        local $/;
-        binmode I;
-        $ifilecontents = <I>;
-        close I;
-        $copy = fileCompare($file, $ifile);
-        $knowdiff = 0,
-    } else {
-        $copy = -1;
-        $knowdiff = 1;
-    }
 
-    if ( $knowdiff || ($filecontents ne $ifilecontents) ) {
-    if ( $copy > 0 && !$oneway) {
-            my $file_dir = dirname($file);
-            mkpath $file_dir, !$quiet unless(-e $file_dir);
-            open(O, "> " . $file) || die "Could not open $file for writing (no write permission?)";
-            local $/;
-            binmode O;
-            print O $ifilecontents;
-            close O;
-            utime time, (stat($ifile))[9], $file;
-            return 1;
-        } elsif ( $copy < 0 ) {
-            my $ifile_dir = dirname($ifile);
-            mkpath $ifile_dir, !$quiet unless(-e $ifile_dir);
-            open(O, "> " . $ifile) || die "Could not open $ifile for writing (no write permission?)";
-            local $/;
-            binmode O;
-            print O $filecontents;
-            close O;
-            utime time, (stat($file))[9], $ifile;
-            return 1;
-        }
-    }
-    return 0;
+    my $ifile_dir = dirname($ifile);
+    mkpath $ifile_dir, !$quiet unless(-e $ifile_dir);
+    open(O, "> " . $ifile) || die "Could not open $ifile for writing (no write permission?)";
+    local $/;
+    binmode O;
+    print O $filecontents;
+    close O;
+    return 1;
 }
 
 ######################################################################
@@ -848,7 +819,6 @@ foreach my $lib (@modules_to_sync) {
                             print "SYMBOL: $_\n";
                         }
                     } else {
-                        my $ts = (stat($iheader))[9];
                         #find out all the places it goes..
                         my @headers;
                         if ($public_header) {
@@ -887,18 +857,18 @@ foreach my $lib (@modules_to_sync) {
 #                                  class =~ s,::,/,g;
 #                               }
                                 $class_lib_map_contents .= "QT_CLASS_LIB($full_class, $lib, $header_base)\n";
-                                $header_copies++ if(syncHeader("$out_basedir/$out_subdir/$lib/$class", "$out_basedir/$out_subdir/$lib/$header", 0, $ts));
+                                $header_copies++ if(syncHeader("$out_basedir/$out_subdir/$lib/$class", "$out_basedir/$out_subdir/$lib/$header", 0));
 
                                 # KDE-Compat headers for Phonon
                                 if ($lib eq "phonon") {
-                                    $header_copies++ if (syncHeader("$out_basedir/$out_subdir/phonon_compat/Phonon/$class", "$out_basedir/$out_subdir/$lib/$header", 0, $ts));
+                                    $header_copies++ if (syncHeader("$out_basedir/$out_subdir/phonon_compat/Phonon/$class", "$out_basedir/$out_subdir/$lib/$header", 0));
                                 }
                             }
                         } elsif ($create_private_headers) {
                             @headers = ( "$out_basedir/$out_subdir/$lib/private/$header" );
                         }
                         foreach(@headers) { #sync them
-                            $header_copies++ if(syncHeader($_, $iheader, $copy_headers, $ts));
+                            $header_copies++ if(syncHeader($_, $iheader, $copy_headers));
                         }
 
                         if($public_header) {
@@ -1132,7 +1102,7 @@ if($check_includes) {
                     }
                 }
             }
-        }
     }
+}
 
 exit 0;
