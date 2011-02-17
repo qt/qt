@@ -2,7 +2,7 @@
 #define PARTICLEAFFECTOR_H
 
 #include <QObject>
-class ParticleVertices;
+struct ParticleVertices;
 
 class ParticleAffector : public QObject
 {
