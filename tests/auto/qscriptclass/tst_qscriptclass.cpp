@@ -86,6 +86,7 @@ private slots:
     void scriptClassObjectInPrototype();
     void scriptClassWithNullEngine();
     void scriptClassInOtherEngine();
+    void toStringCustomization();
 };
 
 tst_QScriptClass::tst_QScriptClass()
@@ -1519,6 +1520,97 @@ void tst_QScriptClass::scriptClassInOtherEngine()
 
     obj.setProperty("x", 123);
     QVERIFY(obj.property("x").isNumber());
+}
+
+class TestToStringClass : public QScriptClass
+{
+public:
+    TestToStringClass(QScriptEngine *engine)
+    : QScriptClass(engine), m_nameMethod(false), m_inProperty(false), m_inPrototype(false),
+      m_inPropertyFunction(engine->newFunction(TestToStringClass::ToStringInPropertyCallback)),
+      m_prototype(engine->newObject()) {
+        m_prototype.setProperty("toString", engine->newFunction(TestToStringClass::ToStringInPrototypeCallback));
+    }
+
+    void setNameEnabled(bool nameMethod) { m_nameMethod = nameMethod; }
+    void setToStringInProperty(bool inProperty) { m_inProperty = inProperty; }
+    void setToStringInPrototype(bool inPrototype) { m_inPrototype = inPrototype; }
+
+    virtual QString name() const {
+        if (m_nameMethod)
+            return QString::fromLatin1("InName");
+        return QString();
+    }
+
+    virtual QueryFlags queryProperty(const QScriptValue &, const QScriptString &name, QueryFlags, uint *) {
+        if (m_inProperty && name.toString() == "toString")
+            return HandlesReadAccess;
+        return 0;
+    }
+
+    virtual QScriptValue property(const QScriptValue &, const QScriptString &name, uint) {
+        if (m_inProperty && name.toString() == "toString")
+            return m_inPropertyFunction;
+        return QScriptValue();
+    }
+
+    virtual QScriptValue prototype() const {
+        if (m_inPrototype)
+            return m_prototype;
+        return QScriptValue();
+    }
+
+    static QScriptValue ToStringInPropertyCallback(QScriptContext *, QScriptEngine *engine) {
+        return QScriptValue(engine, "InProperty");
+    }
+
+    static QScriptValue ToStringInPrototypeCallback(QScriptContext *, QScriptEngine *engine) {
+        return QScriptValue(engine, "InPrototype");
+    }
+
+private:
+    bool m_nameMethod;
+    bool m_inProperty;
+    bool m_inPrototype;
+
+    QScriptValue m_inPropertyFunction;
+    QScriptValue m_prototype;
+};
+
+void tst_QScriptClass::toStringCustomization()
+{
+    QScriptEngine eng;
+    TestToStringClass cls(&eng);
+
+    // No customization
+    QScriptValue obj1 = eng.newObject(&cls);
+    QCOMPARE(obj1.toString(), QString::fromLatin1("[object ]"));
+
+    // name() method
+    cls.setNameEnabled(true);
+    QCOMPARE(obj1.toString(), QString::fromLatin1("[object InName]"));
+
+    // Object property JS
+    QScriptValue obj2 = eng.newObject(&cls);
+    eng.globalObject().setProperty("obj2", obj2);
+    eng.evaluate("obj2.toString = function() { return 'InJS'; };");
+    QCOMPARE(obj2.toString(), QString::fromLatin1("InJS"));
+
+    // Object property C++
+    QScriptValue obj3 = eng.newObject(&cls);
+    obj3.setProperty("toString", eng.evaluate("(function() { return 'InC++'; })"));
+    QCOMPARE(obj3.toString(), QString::fromLatin1("InC++"));
+
+    // ScriptClass prototype
+    cls.setToStringInPrototype(true);
+    QScriptValue obj4 = eng.newObject(&cls);
+    QCOMPARE(obj4.toString(), QString::fromLatin1("InPrototype"));
+
+    // ScriptClass property
+    cls.setToStringInProperty(true);
+    QScriptValue obj5 = eng.newObject(&cls);
+    QCOMPARE(obj5.toString(), QString::fromLatin1("InProperty"));
+
 }
 
 QTEST_MAIN(tst_QScriptClass)
