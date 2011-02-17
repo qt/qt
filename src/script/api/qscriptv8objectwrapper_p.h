@@ -156,6 +156,7 @@ struct QScriptV8ObjectWrapper
     QScriptEnginePrivate *engine;
 
     static T *safeGet(const QScriptValuePrivate *p);
+    static T *safeGet(v8::Handle<v8::Object> object, QScriptEnginePrivate *engine);
     static T *get(v8::Handle<v8::Object> object);
 
     static v8::Handle<v8::Object> createInstance(T *data)
@@ -202,6 +203,18 @@ T* QScriptV8ObjectWrapper<T, functionTemplate>::safeGet(const QScriptValuePrivat
     if (!engine->hasInstance(funcTmpl, value))
         return 0;
     v8::Local<v8::Object> object = v8::Object::Cast(*value);
+    return get(object);
+}
+
+template <typename T, v8::Persistent<v8::FunctionTemplate> QScriptEnginePrivate::*functionTemplate>
+T* QScriptV8ObjectWrapper<T, functionTemplate>::safeGet(v8::Handle<v8::Object> object, QScriptEnginePrivate *engine)
+{
+    if (!engine || object.IsEmpty())
+        return 0;
+    v8::HandleScope handleScope;
+    v8::Handle<v8::FunctionTemplate> funcTmpl = engine->*functionTemplate;
+    if (!engine->hasInstance(funcTmpl, object))
+        return 0;
     return get(object);
 }
 

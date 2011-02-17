@@ -407,6 +407,13 @@ public:
         : Base(engine, object, index, mode, overload, voidvoid)
     { }
 
+    ~QtSignalData()
+    {
+        foreach (QtConnection *connection, m_connections) {
+            delete connection;
+        }
+    }
+
     static v8::Handle<v8::FunctionTemplate> createFunctionTemplate(QScriptEnginePrivate *engine);
 
     v8::Handle<v8::Value> connect(v8::Handle<v8::Object> receiver,
@@ -468,6 +475,18 @@ v8::Handle<v8::FunctionTemplate> QtMetaMethodData::createFunctionTemplate(QScrip
 v8::Handle<v8::Value> QtSignalData::connect(v8::Handle<v8::Object> receiver,
                                             v8::Handle<v8::Object> slot, Qt::ConnectionType type)
 {
+     if (QtMetaMethodData *cppSlot = QtMetaMethodData::safeGet(slot, engine)) {
+         if (receiver.IsEmpty())
+             receiver = cppSlot->object();
+         QObject *recv = QtInstanceData::get(receiver)->cppObject(QtInstanceData::IgnoreException);
+         if (recv) {
+             QObject *sender = QtInstanceData::get(object())->cppObject();
+             if (QMetaObject::connect(sender, index(), recv, cppSlot->index(), type))
+                 return v8::Undefined();
+             else
+                 return v8::ThrowException(v8::Exception::Error(v8::String::New("QtSignal.connect(): failed to connect")));
+         }
+     }
      QtConnection *connection = new QtConnection(this);
      if (!connection->connect(receiver, slot, type)) {
          delete connection;
