@@ -888,10 +888,10 @@ bool QSGCanvas::event(QEvent *e)
         d->lastMousePosition = QPoint();
         break;
     default:
-        return QWidget::event(e);
+        break;
     }
 
-    return QWidget::event(e);
+    return QGLWidget::event(e);
 }
 
 void QSGCanvas::keyPressEvent(QKeyEvent *e)
@@ -1002,7 +1002,7 @@ void QSGCanvas::mouseReleaseEvent(QMouseEvent *event)
 #endif
 
     if (!d->mouseGrabberItem) {
-        QWidget::mouseReleaseEvent(event);
+        QGLWidget::mouseReleaseEvent(event);
         return;
     }
 
