@@ -160,9 +160,6 @@ private: // data
 
     QDateTime startTime;
 
-    RLibrary iOpenCLibrary;
-    TOpenCUnSetdefaultifFunction iDynamicUnSetdefaultif;
-
     mutable RSocketServ &iSocketServ; //not owned, shared from QtCore
     mutable RConnection iConnection;
     mutable RConnectionMonitor iConnectionMonitor;

@@ -45,8 +45,6 @@
 #include <es_enum.h>
 #include <es_sock.h>
 #include <in_sock.h>
-#include <stdapis/sys/socket.h>
-#include <stdapis/net/if.h>
 #include <private/qcore_symbian_p.h>
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
@@ -63,28 +61,15 @@ QT_BEGIN_NAMESPACE
 
 QNetworkSessionPrivateImpl::QNetworkSessionPrivateImpl(SymbianEngine *engine)
 :   CActive(CActive::EPriorityUserInput), engine(engine),
-    iDynamicUnSetdefaultif(0), ipConnectionNotifier(0),
+    iSocketServ(qt_symbianGetSocketServer()), ipConnectionNotifier(0),
     iHandleStateNotificationsFromManager(false), iFirstSync(true), iStoppedByUser(false),
     iClosedByUser(false), iError(QNetworkSession::UnknownSessionError), iALREnabled(0),
-    iConnectInBackground(false), isOpening(false), iSocketServ(qt_symbianGetSocketServer())
+    iConnectInBackground(false), isOpening(false)
 {
     CActiveScheduler::Add(this);
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     iMobility = NULL;
-#endif
-    // Try to load "Open C" dll dynamically and
-    // try to attach to unsetdefaultif function dynamically.
-    // This is to avoid build breaks with old OpenC versions.
-    if (iOpenCLibrary.Load(_L("libc")) == KErrNone) {
-        iDynamicUnSetdefaultif = (TOpenCUnSetdefaultifFunction)iOpenCLibrary.Lookup(597);
-    }
-#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
-    qDebug() << "QNS this : " << QString::number((uint)this) << " - ";
-    if (iDynamicUnSetdefaultif)
-        qDebug() << "dynamic unsetdefaultif() is present in PIPS library. ";
-    else
-        qDebug() << "dynamic unsetdefaultif() not present in PIPS library. ";
 #endif
 
     TRAP_IGNORE(iConnectionMonitor.ConnectL());
@@ -111,16 +96,12 @@ QNetworkSessionPrivateImpl::~QNetworkSessionPrivateImpl()
     // Cancel possible RConnection::Start()
     Cancel();
 
-    // Close global 'Open C' RConnection
-    // Clears also possible unsetdefaultif() flags.
-    setdefaultif(0);
     QSymbianSocketManager::instance().setDefaultConnection(0);
 
     iConnectionMonitor.Close();
-    iOpenCLibrary.Close();
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
     qDebug() << "QNS this : " << QString::number((uint)this)
-             << " - destroyed (and setdefaultif(0))";
+             << " - destroyed";
 #endif
 }
 
@@ -524,16 +505,6 @@ void QNetworkSessionPrivateImpl::close(bool allowSignals)
     
     Cancel(); // closes iConnection
 
-    // Close global 'Open C' RConnection. If OpenC supports,
-    // close the defaultif for good to avoid difficult timing
-    // and bouncing issues of network going immediately back up
-    //  because of e.g. select() thread etc.
-    if (iDynamicUnSetdefaultif) {
-        iDynamicUnSetdefaultif();
-    } else {
-        setdefaultif(0);
-    }
-
     QSymbianSocketManager::instance().setDefaultConnection(0);
     // If UserChoice, go down immediately. If some other configuration,
     // go down immediately if there is no reports expected from the platform;
@@ -629,13 +600,6 @@ void QNetworkSessionPrivateImpl::migrate()
 {
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     if (iMobility) {
-        // Close global 'Open C' RConnection. If openC supports, use the 'heavy'
-        // version to block all subsequent requests.
-        if (iDynamicUnSetdefaultif) {
-            iDynamicUnSetdefaultif();
-        } else {
-            setdefaultif(0);
-        }
         QSymbianSocketManager::instance().setDefaultConnection(0);
         // Start migrating to new IAP
         iMobility->MigrateToPreferredCarrier();
@@ -666,13 +630,6 @@ void QNetworkSessionPrivateImpl::accept()
 
         QNetworkConfiguration newActiveConfig = activeConfiguration(iNewRoamingIap);
 
-        // Use name of the new IAP to open global 'Open C' RConnection
-        QByteArray nameAsByteArray = newActiveConfig.name().toUtf8();
-        ifreq ifr;
-        memset(&ifr, 0, sizeof(struct ifreq));
-        strcpy(ifr.ifr_name, nameAsByteArray.constData());
-        setdefaultif(&ifr);
-
         QSymbianSocketManager::instance().setDefaultConnection(&iConnection);
 
         newState(QNetworkSession::Connected, iNewRoamingIap);
@@ -690,13 +647,6 @@ void QNetworkSessionPrivateImpl::reject()
             newState(QNetworkSession::Disconnected);
         } else {
             QNetworkConfiguration newActiveConfig = activeConfiguration(iOldRoamingIap);
-
-            // Use name of the old IAP to open global 'Open C' RConnection
-            QByteArray nameAsByteArray = newActiveConfig.name().toUtf8();
-            ifreq ifr;
-            memset(&ifr, 0, sizeof(struct ifreq));
-            strcpy(ifr.ifr_name, nameAsByteArray.constData());
-            setdefaultif(&ifr);
 
             QSymbianSocketManager::instance().setDefaultConnection(&iConnection);
 
@@ -1080,12 +1030,6 @@ void QNetworkSessionPrivateImpl::RunL()
                 // Connectivity Test, ICT, failed).
                 error = KErrGeneral;
             } else {
-                // Use name of the IAP to open global 'Open C' RConnection
-                ifreq ifr;
-                memset(&ifr, 0, sizeof(struct ifreq));
-                QByteArray nameAsByteArray = newActiveConfig.name().toUtf8();
-                strcpy(ifr.ifr_name, nameAsByteArray.constData());
-                error = setdefaultif(&ifr);
                 QSymbianSocketManager::instance().setDefaultConnection(&iConnection);
             }
             if (error != KErrNone) {
@@ -1208,12 +1152,6 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
 #endif
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
-        // Use name of the IAP to set default IAP
-        QByteArray nameAsByteArray = activeConfig.name().toUtf8();
-        ifreq ifr;
-        strcpy(ifr.ifr_name, nameAsByteArray.constData());
-
-        setdefaultif(&ifr);
         QSymbianSocketManager::instance().setDefaultConnection(&iConnection);
 #endif
     }
