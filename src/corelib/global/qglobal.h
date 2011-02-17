@@ -448,6 +448,9 @@ namespace QT_NAMESPACE {}
 #  if __TARGET_ARCH_ARM >= 6
 #    define QT_HAVE_ARMV6
 #  endif
+/* work-around for missing compiler intrinsics */
+#  define __is_empty(X) false
+#  define __is_pod(X) false
 #elif defined(__GNUC__)
 #  define Q_CC_GNU
 #  define Q_C_CALLBACKS
@@ -1198,6 +1201,11 @@ class QDataStream;
 # include <QtCore/qfeatures.h>
 
 #define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
+
+#if defined(Q_OS_LINUX) && defined(Q_CC_RVCT)
+#  define Q_DECL_EXPORT     __attribute__((visibility("default")))
+#  define Q_DECL_IMPORT     __attribute__((visibility("default")))
+#endif
 
 #ifndef Q_DECL_EXPORT
 #  if defined(Q_OS_WIN) || defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)

@@ -24,97 +24,71 @@ build_all:!build_pass {
 }
 
 CONFIG -= app_bundle
-HEADERS += apigenerator.h \
-           archiveextractor.h \
-	   atom.h \
-	   bookgenerator.h \
-	   ccodeparser.h \
+HEADERS += atom.h \
            codechunk.h \
            codemarker.h \
 	   codeparser.h \
-	   command.h \
            config.h \
 	   cppcodemarker.h \
 	   cppcodeparser.h \
-	   cpptoqsconverter.h \
-	   dcfsection.h \
 	   ditaxmlgenerator.h \
            doc.h \
 	   editdistance.h \
 	   generator.h \
            helpprojectwriter.h \
 	   htmlgenerator.h \
-           jambiapiparser.h \
-	   javacodemarker.h \
-           javadocgenerator.h \
-           linguistgenerator.h \
+           jscodemarker.h \
            location.h \
-	   loutgenerator.h \
-	   mangenerator.h \
            node.h \
            openedlist.h \
 	   pagegenerator.h \
 	   plaincodemarker.h \
-	   polyarchiveextractor.h \
-	   polyuncompressor.h \
-	   qsakernelparser.h \
-	   qscodemarker.h \
-	   qscodeparser.h \
+           puredocparser.h \
+           qmlcodemarker.h \
+           qmlcodeparser.h \
+           qmlmarkupvisitor.h \
+           qmlvisitor.h \
            quoter.h \
 	   separator.h \
-	   sgmlgenerator.h \
 	   text.h \
 	   tokenizer.h \
 	   tr.h \
-	   tree.h \
-	   uncompressor.h \
-           webxmlgenerator.h
-SOURCES += apigenerator.cpp \
-           archiveextractor.cpp \
-	   atom.cpp \
-	   bookgenerator.cpp \
-	   ccodeparser.cpp \
+	   tree.h
+SOURCES += atom.cpp \
            codechunk.cpp \
            codemarker.cpp \
 	   codeparser.cpp \
-	   command.cpp \
            config.cpp \
 	   cppcodemarker.cpp \
 	   cppcodeparser.cpp \
-	   cpptoqsconverter.cpp \
-	   dcfsection.cpp \
 	   ditaxmlgenerator.cpp \
            doc.cpp \
 	   editdistance.cpp \
 	   generator.cpp \
            helpprojectwriter.cpp \
 	   htmlgenerator.cpp \
-           jambiapiparser.cpp \
-	   javacodemarker.cpp \
-           javadocgenerator.cpp \
-           linguistgenerator.cpp \
+           jscodemarker.cpp \
            location.cpp \
-	   loutgenerator.cpp \
-	   mangenerator.cpp \
            main.cpp \
            node.cpp \
            openedlist.cpp \
 	   pagegenerator.cpp \
 	   plaincodemarker.cpp \
-	   polyarchiveextractor.cpp \
-	   polyuncompressor.cpp \
-	   qsakernelparser.cpp \
-	   qscodemarker.cpp \
-	   qscodeparser.cpp \
+           puredocparser.cpp \
+           qmlcodemarker.cpp \
+           qmlcodeparser.cpp \
+           qmlmarkupvisitor.cpp \
+           qmlvisitor.cpp \
            quoter.cpp \
 	   separator.cpp \
-	   sgmlgenerator.cpp \
 	   text.cpp \
 	   tokenizer.cpp \
 	   tree.cpp \
-	   uncompressor.cpp \
-           webxmlgenerator.cpp \
 	   yyindent.cpp
+
+INCLUDEPATH += $$QT_BUILD_TREE/include/QtDeclarative
+
+include($$QT_SOURCE_TREE/src/declarative/qml/parser/parser.pri)
 
 ### Documentation for qdoc3 ###
 

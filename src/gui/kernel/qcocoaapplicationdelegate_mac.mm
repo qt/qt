@@ -91,6 +91,7 @@ QT_BEGIN_NAMESPACE
 extern void onApplicationChangedActivation(bool); // qapplication_mac.mm
 extern void qt_release_apple_event_handler(); //qapplication_mac.mm
 extern QPointer<QWidget> qt_last_mouse_receiver; // qapplication_mac.cpp
+extern QPointer<QWidget> qt_last_native_mouse_receiver; // qt_cocoa_helpers_mac.mm
 extern QPointer<QWidget> qt_button_down; // qapplication_mac.cpp
 
 QT_END_NAMESPACE
@@ -268,6 +269,8 @@ static void cleanupCocoaApplicationDelegate()
         qt_mac_getTargetForMouseEvent(0, QEvent::Enter, qlocal, qglobal, 0, &widgetUnderMouse);
         QApplicationPrivate::dispatchEnterLeave(widgetUnderMouse, 0);
         qt_last_mouse_receiver = widgetUnderMouse;
+        qt_last_native_mouse_receiver = widgetUnderMouse ?
+            (widgetUnderMouse->internalWinId() ? widgetUnderMouse : widgetUnderMouse->nativeParentWidget()) : 0;
     }
 }
 
@@ -282,6 +285,7 @@ static void cleanupCocoaApplicationDelegate()
     if (!QWidget::mouseGrabber())
         QApplicationPrivate::dispatchEnterLeave(0, qt_last_mouse_receiver);
     qt_last_mouse_receiver = 0;
+    qt_last_native_mouse_receiver = 0;
     qt_button_down = 0;
 }
 

@@ -1021,6 +1021,9 @@ QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
             stmt = stmt.arg(QString::fromLatin1("pg_class.relnamespace = (select oid from "
                    "pg_namespace where pg_namespace.nspname = '%1') AND ").arg(schema));
         break;
+    case QPSQLDriver::VersionUnknown:
+        qFatal("PSQL version is unknown");
+        break;
     }
 
     i.exec(stmt.arg(tbl));
@@ -1109,6 +1112,9 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
         else
             stmt = stmt.arg(QString::fromLatin1("pg_class.relnamespace = (select oid from "
                    "pg_namespace where pg_namespace.nspname = '%1')").arg(schema));
+        break;
+    case QPSQLDriver::VersionUnknown:
+        qFatal("PSQL version is unknown");
         break;
     }
 

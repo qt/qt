@@ -60,7 +60,10 @@ QT_BEGIN_NAMESPACE
 
     Example:
     \qml
-    Rectangle { border.width: 2; border.color: "red" ... }
+    Rectangle {
+        border.width: 2
+        border.color: "red"
+    }
     \endqml
 */
 
@@ -131,9 +134,9 @@ void QDeclarativeGradientStop::updateGradient()
 
     \section1 Example Usage
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage qml-gradient.png
-    \endfloat
+    \enddiv
 
     The following example declares a \l Rectangle item with a gradient starting
     with red, blending to yellow at one third of the height of the rectangle,
@@ -217,9 +220,9 @@ void QDeclarativeGradient::doUpdate()
 
     \section1 Example Usage
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage declarative-rect.png
-    \endfloat
+    \enddiv
 
     The following example shows the effects of some of the common properties on a
     Rectangle item, which in this case is used to create a square:
@@ -269,9 +272,9 @@ void QDeclarativeRectangle::doUpdate()
     rectangle (as documented for QRect rendering). This can cause unintended effects if
     \c border.width is 1 and the rectangle is \l{Item::clip}{clipped} by a parent item:
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage rect-border-width.png
-    \endfloat
+    \enddiv
 
     \snippet doc/src/snippets/declarative/rectangle/rect-border-width.qml 0
 
@@ -293,9 +296,9 @@ QDeclarativePen *QDeclarativeRectangle::border()
     This property allows for the construction of simple vertical gradients.
     Other gradients may by formed by adding rotation to the rectangle.
 
-    \beginfloatleft
+    \div {float-left}
     \inlineimage declarative-rect_gradient.png
-    \endfloat
+    \enddiv
 
     \snippet doc/src/snippets/declarative/rectangle/rectangle-gradient.qml rectangles
     \clearfloat
@@ -361,9 +364,9 @@ void QDeclarativeRectangle::setRadius(qreal radius)
 
     The default color is white.
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage rect-color.png
-    \endfloat
+    \enddiv
 
     The following example shows rectangles with colors specified
     using hexadecimal and named color notation:
