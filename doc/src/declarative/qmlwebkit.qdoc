@@ -26,22 +26,30 @@
 ****************************************************************************/
 
 /*!
-    \page qmlwebkit.html
+\page qmlwebkit.html
 
-    \title QtWebKit QML Module
+\title QtWebKit QML Module
 
-    Qt WebKit QML
+Qt WebKit QML
 
-    \section1 WebKit QML Elements
-    \list
-    \o \l WebView
-    \o \l FlickableWebView
-    \endlist
+\section1 WebKit QML Elements
+\list
+\o \l WebView
+\endlist
 
-    \section1 Content
+\section1 QtWebKit Module
+The QtWebKit Module has a QML element, \l{WebView} for displaying web content
+from a \c URL.
 
-    \section1 Usage Ideas
+Import the QtWebKit module before declaring a \c WebView element:
+\qml
+import QtWebKit 1.0
+\endqml
 
-    \section1 Other Suggestions
+\section1 Simple Usage
+\snippet doc/src/snippets/declarative/webview/webview.qml document
+\image webview.png
+
+\sa {Models and Views: WebView Example}{WebView Example}, {QML Web Browser}
 
 */
