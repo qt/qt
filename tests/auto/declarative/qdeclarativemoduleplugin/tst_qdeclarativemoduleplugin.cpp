@@ -63,10 +63,13 @@ private slots:
     void importsPlugin();
     void importsPlugin2();
     void importsPlugin21();
+    void importsMixedQmlCppPlugin();
     void incorrectPluginCase();
     void importPluginWithQmlFile();
     void remoteImportWithQuotedUrl();
     void remoteImportWithUnquotedUri();
+    void versionNotInstalled();
+    void versionNotInstalled_data();
 };
 
 #ifdef Q_OS_SYMBIAN
@@ -191,8 +194,18 @@ void tst_qdeclarativemoduleplugin::incorrectPluginCase()
 
 void tst_qdeclarativemoduleplugin::importPluginWithQmlFile()
 {
+    QString path = QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("imports");
+
+    // QTBUG-16885: adding an import path with a lower-case "c:" causes assert failure
+    // (this only happens if the plugin includes pure QML files)
+    #ifdef Q_OS_WIN
+        QVERIFY(path.at(0).isUpper() && path.at(1) == QLatin1Char(':'));
+        path = path.at(0).toLower() + path.mid(1);
+    #endif
+
     QDeclarativeEngine engine;
-    engine.addImportPath(QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("imports"));
+    engine.addImportPath(path);
+
     QDeclarativeComponent component(&engine, TEST_FILE("data/pluginWithQmlFile.qml"));
     foreach (QDeclarativeError err, component.errors())
         qWarning() << err;
@@ -244,6 +257,55 @@ void tst_qdeclarativemoduleplugin::remoteImportWithUnquotedUri()
     foreach (QDeclarativeError err, component.errors())
         qWarning() << err;
     VERIFY_ERRORS(0);
+}
+
+// QTBUG-17324
+void tst_qdeclarativemoduleplugin::importsMixedQmlCppPlugin()
+{
+    QDeclarativeEngine engine;
+    engine.addImportPath(QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("imports"));
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("data/importsMixedQmlCppPlugin.qml"));
+
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("test").toBool(), true);
+    delete o;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("data/importsMixedQmlCppPlugin.2.qml"));
+
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("test").toBool(), true);
+    QCOMPARE(o->property("test2").toBool(), true);
+    delete o;
+    }
+
+
+}
+
+void tst_qdeclarativemoduleplugin::versionNotInstalled_data()
+{
+    QTest::addColumn<QString>("file");
+    QTest::addColumn<QString>("errorFile");
+
+    QTest::newRow("versionNotInstalled") << "data/versionNotInstalled.qml" << "versionNotInstalled.errors.txt";
+    QTest::newRow("versionNotInstalled") << "data/versionNotInstalled.2.qml" << "versionNotInstalled.2.errors.txt";
+}
+
+void tst_qdeclarativemoduleplugin::versionNotInstalled()
+{
+    QFETCH(QString, file);
+    QFETCH(QString, errorFile);
+
+    QDeclarativeEngine engine;
+    engine.addImportPath(QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("imports"));
+
+    QDeclarativeComponent component(&engine, TEST_FILE(file));
+    VERIFY_ERRORS(errorFile.toLatin1().constData());
 }
 
 QTEST_MAIN(tst_qdeclarativemoduleplugin)

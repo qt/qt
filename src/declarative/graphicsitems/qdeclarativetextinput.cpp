@@ -776,6 +776,15 @@ bool QDeclarativeTextInput::hasAcceptableInput() const
 }
 
 /*!
+    \qmlsignal TextInput::onAccepted()
+
+    This handler is called when the Return or Enter key is pressed.
+    Note that if there is a \l validator or \l inputMask set on the text
+    input, the handler will only be emitted if the input is in an acceptable
+    state.
+*/
+
+/*!
     \qmlproperty enumeration TextInput::echoMode
 
     Specifies how the text should be displayed in the TextInput.

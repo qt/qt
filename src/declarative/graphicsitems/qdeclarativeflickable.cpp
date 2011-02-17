@@ -53,6 +53,10 @@ QT_BEGIN_NAMESPACE
 // before we perform a flick.
 static const int FlickThreshold = 20;
 
+// RetainGrabVelocity is the maxmimum instantaneous velocity that
+// will ensure the  Flickable retains the grab on consecutive flicks.
+static const int RetainGrabVelocity = 15;
+
 QDeclarativeFlickableVisibleArea::QDeclarativeFlickableVisibleArea(QDeclarativeFlickable *parent)
     : QObject(parent), flickable(parent), m_xPosition(0.), m_widthRatio(0.)
     , m_yPosition(0.), m_heightRatio(0.)
@@ -672,7 +676,8 @@ void QDeclarativeFlickable::setFlickableDirection(FlickableDirection direction)
 void QDeclarativeFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_Q(QDeclarativeFlickable);
-    if (interactive && timeline.isActive() && (qAbs(hData.velocity) > 10 || qAbs(vData.velocity) > 10))
+    if (interactive && timeline.isActive()
+            && (qAbs(hData.smoothVelocity.value()) > RetainGrabVelocity || qAbs(vData.smoothVelocity.value()) > RetainGrabVelocity))
         stealMouse = true; // If we've been flicked then steal the click.
     else
         stealMouse = false;

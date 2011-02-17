@@ -543,7 +543,8 @@ public:
         AA_DontUseNativeMenuBar = 6,
         AA_MacDontSwapCtrlAndMeta = 7,
         AA_S60DontConstructApplicationPanes = 8,
-        AA_X11InitThreads = 9,
+        AA_S60DisablePartialScreenInputMode = 9,
+        AA_X11InitThreads = 10,
 
         // Add new attributes before this line
         AA_AttributeCount
