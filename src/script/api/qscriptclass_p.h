@@ -56,6 +56,9 @@ public:
     inline QScriptEnginePrivate* engine() const;
 
     inline QScriptClass* userCallback() const;
+
+    static v8::Handle<v8::FunctionTemplate> createToStringTemplate();
+
 private:
     QScriptClass* q_ptr;
     // FIXME that should shared data pointer but we need to avoid circular references too

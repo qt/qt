@@ -123,6 +123,7 @@ public:
 
     v8::Handle<v8::FunctionTemplate> qtClassTemplate(const QMetaObject *);
     v8::Handle<v8::FunctionTemplate> qobjectTemplate();
+    v8::Handle<v8::FunctionTemplate> scriptClassToStringTemplate();
 
     inline v8::Handle<v8::Value> makeJSValue(bool value);
     inline v8::Handle<v8::Value> makeJSValue(int value);
@@ -291,6 +292,8 @@ private:
     QScopedPointer<QScriptContextPrivate> m_baseQsContext;
     QSet<int> visitedConversionObjects;
     TypeInfos m_typeInfos;
+
+    v8::Persistent<v8::FunctionTemplate> m_scriptClassToStringTemplate;
 
     QSet<QString> importedExtensions;
     QSet<QString> extensionsBeingImported;

@@ -635,6 +635,14 @@ v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::qobjectTemplate()
     return qtClassTemplate(&QObject::staticMetaObject);
 }
 
+// We need a custom version of the 'toString' for dealing with objects created from QScriptClasses
+v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::scriptClassToStringTemplate()
+{
+    if (m_scriptClassToStringTemplate.IsEmpty())
+        m_scriptClassToStringTemplate = v8::Persistent<v8::FunctionTemplate>::New(QScriptClassPrivate::createToStringTemplate());
+    return m_scriptClassToStringTemplate;
+}
+
 // Creates a QVariant wrapper object.
 v8::Handle<v8::Object> QScriptEnginePrivate::makeVariant(const QVariant &value)
 {

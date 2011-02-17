@@ -35,6 +35,18 @@
 
 QT_BEGIN_NAMESPACE
 
+static v8::Handle<v8::Value> QtScriptClassToStringCallback(const v8::Arguments& args)
+{
+    QScriptClassObject *data = QScriptV8ObjectWrapperHelper::getDataPointer<QScriptClassObject>(args);
+    QString result = QString::fromAscii("[object %1]").arg(data->scriptClass()->userCallback()->name());
+    return QScriptConverter::toString(result);
+}
+
+v8::Handle<v8::FunctionTemplate> QScriptClassPrivate::createToStringTemplate()
+{
+    return v8::FunctionTemplate::New(QtScriptClassToStringCallback);
+}
+
 v8::Handle<v8::Value> QScriptClassObject::property(v8::Handle<v8::String> property)
 {
     v8::HandleScope handleScope;
@@ -57,8 +69,17 @@ v8::Handle<v8::Value> QScriptClassObject::property(v8::Handle<v8::String> proper
     QScriptClass::QueryFlags userFlags =
             m_scriptclass->userCallback()->queryProperty(that, str, QScriptClass::HandlesReadAccess, &id);
 
-    if (!(userFlags & QScriptClass::HandlesReadAccess))
+    if (!(userFlags & QScriptClass::HandlesReadAccess)) {
+        v8::Handle<v8::String> toStringProp = v8::String::New("toString");
+        if (property->Equals(toStringProp)) {
+            v8::Handle<v8::Object> proto = v8::Handle<v8::Object>::Cast(engine->currentContext()->thisObject()->GetPrototype());
+            if (engine->getOwnProperty(proto, toStringProp).IsEmpty()) {
+                return handleScope.Close(engine->scriptClassToStringTemplate()->GetFunction());
+            }
+        }
         return handleScope.Close(v8::Handle<v8::Value>());
+    }
+
     QScriptValue userResult = m_scriptclass->userCallback()->property(that, str, id);
     QScriptValuePrivate* result = QScriptValuePrivate::get(userResult);
     return handleScope.Close(static_cast<v8::Handle<v8::Value> >(result->asV8Value(m_scriptclass->engine())));
