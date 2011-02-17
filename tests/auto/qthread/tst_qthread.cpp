@@ -104,6 +104,7 @@ private slots:
     void adoptedThreadExec();
     void adoptedThreadFinished();
     void adoptMultipleThreads();
+    void adoptMultipleThreadsOverlap();
 
     void QTBUG13810_exitAndStart();
     void QTBUG15378_exitAndExec();
@@ -947,6 +948,49 @@ void tst_QThread::adoptMultipleThreads()
     QCOMPARE(int(recorder.activationCount), numThreads);
 }
 
+void tst_QThread::adoptMultipleThreadsOverlap()
+{
+#if defined(Q_OS_WIN)
+    // Windows CE is not capable of handling that many threads. On the emulator it is dead with 26 threads already.
+#  if defined(Q_OS_WINCE)
+    const int numThreads = 20;
+#  else
+    // need to test lots of threads, so that we exceed MAXIMUM_WAIT_OBJECTS in qt_adopted_thread_watcher()
+    const int numThreads = 200;
+#  endif
+#elif defined(Q_OS_SYMBIAN)
+    // stress the monitoring thread's add function
+    const int numThreads = 100;
+#else
+    const int numThreads = 5;
+#endif
+    QVector<NativeThreadWrapper*> nativeThreads;
+
+    SignalRecorder recorder;
+
+    for (int i = 0; i < numThreads; ++i) {
+        nativeThreads.append(new NativeThreadWrapper());
+        nativeThreads.at(i)->setWaitForStop();
+        nativeThreads.at(i)->mutex.lock();
+        nativeThreads.at(i)->start();
+    }
+    for (int i = 0; i < numThreads; ++i) {
+        nativeThreads.at(i)->startCondition.wait(&nativeThreads.at(i)->mutex);
+        QObject::connect(nativeThreads.at(i)->qthread, SIGNAL(finished()), &recorder, SLOT(slot()));
+        nativeThreads.at(i)->mutex.unlock();
+    }
+
+    QObject::connect(nativeThreads.at(numThreads - 1)->qthread, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+    for (int i = 0; i < numThreads; ++i) {
+        nativeThreads.at(i)->stop();
+        nativeThreads.at(i)->join();
+    }
+
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(int(recorder.activationCount), numThreads);
+}
 void tst_QThread::stressTest()
 {
 #if defined(Q_OS_WINCE)

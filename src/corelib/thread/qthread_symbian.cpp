@@ -161,13 +161,13 @@ public:
     }
     void DoCancel()
     {
-        TRequestStatus *stat = &iStatus;
         User::RequestComplete(stat, KErrCancel);
     }
     void start()
     {
         iStatus = KRequestPending;
         SetActive();
+        stat = &iStatus;
     }
     void RunL()
     {
@@ -195,9 +195,8 @@ public:
             monitorThread.Close();
         }
         adoptedThreadAdder->threadsToAdd.push_back(thread);
-        if (adoptedThreadAdder->IsActive()) {
-            TRequestStatus *stat = &adoptedThreadAdder->iStatus;
-            adoptedThreadAdder->monitorThread.RequestComplete(stat, KErrNone);
+        if (adoptedThreadAdder->stat) {
+            adoptedThreadAdder->monitorThread.RequestComplete(adoptedThreadAdder->stat, KErrNone);
         }
     }
     static void monitorThreadFuncL()
@@ -232,6 +231,7 @@ private:
     RThread monitorThread;
     static QMutex adoptedThreadMonitorMutex;
     static QCAddAdoptedThread* adoptedThreadAdder;
+    TRequestStatus *stat;
 };
 
 QMutex QCAddAdoptedThread::adoptedThreadMonitorMutex;
