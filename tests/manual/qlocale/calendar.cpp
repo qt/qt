@@ -66,6 +66,7 @@ CalendarWidget::CalendarWidget()
 void CalendarWidget::localeChanged(QLocale locale)
 {
     calendar->setLocale(locale);
+    firstDayCombo->setCurrentIndex(locale.firstDayOfWeek()-1);
 }
 
 void CalendarWidget::firstDayChanged(int index)
@@ -189,13 +190,13 @@ void CalendarWidget::createGeneralOptionsGroupBox()
     generalOptionsGroupBox = new QGroupBox(tr("General Options"));
 
     firstDayCombo = new QComboBox;
-    firstDayCombo->addItem(tr("Sunday"), Qt::Sunday);
     firstDayCombo->addItem(tr("Monday"), Qt::Monday);
     firstDayCombo->addItem(tr("Tuesday"), Qt::Tuesday);
     firstDayCombo->addItem(tr("Wednesday"), Qt::Wednesday);
     firstDayCombo->addItem(tr("Thursday"), Qt::Thursday);
     firstDayCombo->addItem(tr("Friday"), Qt::Friday);
     firstDayCombo->addItem(tr("Saturday"), Qt::Saturday);
+    firstDayCombo->addItem(tr("Sunday"), Qt::Sunday);
 
     firstDayLabel = new QLabel(tr("Wee&k starts on:"));
     firstDayLabel->setBuddy(firstDayCombo);
