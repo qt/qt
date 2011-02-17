@@ -59,8 +59,6 @@ Elements that animate properties based on data types
 \o \l {AnchorAnimation} - Animates anchor changes
 \endlist
 
-\section1 Overview
-
 In QML, animations are created by applying animation elements to property
 values. Animation elements will interpolate property values to create smooth
 transitions. As well, state transitions may assign animations to state changes.

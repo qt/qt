@@ -31,7 +31,8 @@
   \title QML Elements
   \brief A listing of standard QML elements.
 
-These are the functionally grouped lists of QML elements.
+These are the functionally grouped lists of QML elements as part of
+\l{Qt Quick}.
 
 Elements are declared with the their name and two curly braces. Elements may
 be nested in elements, thereby creating a parent-child relationship between the
@@ -44,7 +45,7 @@ To see the QML elements listed by functional area, see the
 \list
 \o \l {Item} - Basic item element inherited by QML elements
 \o \l {Component} - Encapsulates QML elements during importing
-\o \l {QML:QtObject} {QtObject} - Basic element containing only the objectName property
+\o \l {QML:QtObject} {QtObject} - Basic element containing only the \c {objectName} property
 \endlist
 
 \section1 Graphics

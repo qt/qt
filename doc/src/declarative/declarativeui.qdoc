@@ -33,8 +33,6 @@
 \brief Qt Quick provides a declarative framework for building highly
 dynamic user interfaces.
 
-\section1 Introduction
-
 Qt Quick is a collection of technologies that are designed to help
 developers create the kind of intuitive, modern, fluid user
 interfaces that are increasingly used on mobile phones, media players,

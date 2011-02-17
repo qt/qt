@@ -33,7 +33,6 @@
 \nextpage {QML Features}
 \title QML Internationalization
 
-\section1 Overview
 
 Strings in QML can be marked for translation using the qsTr(), qsTranslate(),
 QT_TR_NOOP(), and QT_TRANSLATE_NOOP() functions.

@@ -34,8 +34,6 @@
 \title Using QML Positioner and Repeater Items
 
 
-\section1 Introduction
-
 Positioner items are container items that manage the positions and sizes of
 items in a declarative user interface. Positioners behave in a similar way to
 the \l{Widgets and Layouts}{layout managers} used with standard Qt widgets,

@@ -44,8 +44,6 @@
 \o \l AnchorChanges
 \endlist
 
-\section1 Overview
-
 Many user interface designs are \e state driven; interfaces have configurations
 that differ depending on the current state. For example, a traffic signal will
 configure its flags or lights depending on its state. While in the signal's

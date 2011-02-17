@@ -30,8 +30,6 @@
 \target qtprogrammers
 \title QML for Qt Programmers
 
-\section1 Overview
-
 While QML does not require Qt knowledge to use, if you \e are already familiar with Qt,
 much of your knowledge is directly relevant to learning and using QML. Of course,
 an application with a UI defined in QML also uses Qt for all the non-UI logic.
