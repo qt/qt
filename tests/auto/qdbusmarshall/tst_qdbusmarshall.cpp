@@ -151,7 +151,8 @@ void tst_QDBusMarshall::initTestCase()
 void tst_QDBusMarshall::cleanupTestCase()
 {
     proc.close();
-    proc.kill();
+    proc.terminate();
+    proc.waitForFinished(200);
 }
 
 void tst_QDBusMarshall::sendBasic_data()
