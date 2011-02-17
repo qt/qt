@@ -126,7 +126,7 @@ EXPORTS
 	?addToObject@QDeclarativeAbstractBinding@@QAEXPAVQObject@@@Z @ 125 NONAME ABSENT ; void QDeclarativeAbstractBinding::addToObject(class QObject *)
 	?trUtf8@QDeclarativeView@@SA?AVQString@@PBD0H@Z @ 126 NONAME ; class QString QDeclarativeView::trUtf8(char const *, char const *, int)
 	?d_func@QDeclarativeAnchors@@AAEPAVQDeclarativeAnchorsPrivate@@XZ @ 127 NONAME ABSENT ; class QDeclarativeAnchorsPrivate * QDeclarativeAnchors::d_func(void)
-	??1QPacket@@UAE@XZ @ 128 NONAME ABSENT ; QPacket::~QPacket(void)
+	??1QPacket@@UAE@XZ @ 128 NONAME ; QPacket::~QPacket(void)
 	?top@QDeclarativeScaleGrid@@QBEHXZ @ 129 NONAME ABSENT ; int QDeclarativeScaleGrid::top(void) const
 	?setExpression@QDeclarativeExpression@@QAEXABVQString@@@Z @ 130 NONAME ; void QDeclarativeExpression::setExpression(class QString const &)
 	??1QDeclarativeDebugEngineReference@@QAE@XZ @ 131 NONAME ABSENT ; QDeclarativeDebugEngineReference::~QDeclarativeDebugEngineReference(void)
@@ -428,7 +428,7 @@ EXPORTS
 	?line@QDeclarativeError@@QBEHXZ @ 427 NONAME ; int QDeclarativeError::line(void) const
 	?heightValid@QDeclarativeItem@@IBE_NXZ @ 428 NONAME ; bool QDeclarativeItem::heightValid(void) const
 	??1QDeclarativeOpenMetaObject@@UAE@XZ @ 429 NONAME ABSENT ; QDeclarativeOpenMetaObject::~QDeclarativeOpenMetaObject(void)
-	??0QPacket@@QAE@XZ @ 430 NONAME ABSENT ; QPacket::QPacket(void)
+	??0QPacket@@QAE@XZ @ 430 NONAME ; QPacket::QPacket(void)
 	?trUtf8@QDeclarativePropertyMap@@SA?AVQString@@PBD0H@Z @ 431 NONAME ; class QString QDeclarativePropertyMap::trUtf8(char const *, char const *, int)
 	?trUtf8@QDeclarativeEngine@@SA?AVQString@@PBD0H@Z @ 432 NONAME ; class QString QDeclarativeEngine::trUtf8(char const *, char const *, int)
 	??0QDeclarativeDebugEngineReference@@QAE@XZ @ 433 NONAME ABSENT ; QDeclarativeDebugEngineReference::QDeclarativeDebugEngineReference(void)
@@ -704,7 +704,7 @@ EXPORTS
 	??4QDeclarativeDomDocument@@QAEAAV0@ABV0@@Z @ 703 NONAME ABSENT ; class QDeclarativeDomDocument & QDeclarativeDomDocument::operator=(class QDeclarativeDomDocument const &)
 	??0QDeclarativeOpenMetaObject@@QAE@PAVQObject@@PAVQDeclarativeOpenMetaObjectType@@_N@Z @ 704 NONAME ABSENT ; QDeclarativeOpenMetaObject::QDeclarativeOpenMetaObject(class QObject *, class QDeclarativeOpenMetaObjectType *, bool)
 	?trUtf8@QDeclarativeExpression@@SA?AVQString@@PBD0@Z @ 705 NONAME ; class QString QDeclarativeExpression::trUtf8(char const *, char const *)
-	??0QPacketProtocol@@QAE@PAVQIODevice@@PAVQObject@@@Z @ 706 NONAME ABSENT ; QPacketProtocol::QPacketProtocol(class QIODevice *, class QObject *)
+	??0QPacketProtocol@@QAE@PAVQIODevice@@PAVQObject@@@Z @ 706 NONAME ; QPacketProtocol::QPacketProtocol(class QIODevice *, class QObject *)
 	??1QDeclarativeListReference@@QAE@XZ @ 707 NONAME ; QDeclarativeListReference::~QDeclarativeListReference(void)
 	?clearError@QDeclarativeExpression@@QAEXXZ @ 708 NONAME ; void QDeclarativeExpression::clearError(void)
 	?setLineNumber@QDeclarativeDebugFileReference@@QAEXH@Z @ 709 NONAME ABSENT ; void QDeclarativeDebugFileReference::setLineNumber(int)
@@ -813,7 +813,7 @@ EXPORTS
 	??_EQDeclarativeDebugQuery@@UAE@I@Z @ 812 NONAME ABSENT ; QDeclarativeDebugQuery::~QDeclarativeDebugQuery(unsigned int)
 	?update@QDeclarativeAbstractBinding@@QAEXXZ @ 813 NONAME ABSENT ; void QDeclarativeAbstractBinding::update(void)
 	?tr@QDeclarativeBehavior@@SA?AVQString@@PBD0H@Z @ 814 NONAME ABSENT ; class QString QDeclarativeBehavior::tr(char const *, char const *, int)
-	?read@QPacketProtocol@@QAE?AVQPacket@@XZ @ 815 NONAME ABSENT ; class QPacket QPacketProtocol::read(void)
+	?read@QPacketProtocol@@QAE?AVQPacket@@XZ @ 815 NONAME ; class QPacket QPacketProtocol::read(void)
 	?setParentItem@QDeclarativeItem@@QAEXPAV1@@Z @ 816 NONAME ; void QDeclarativeItem::setParentItem(class QDeclarativeItem *)
 	?qmlAttachedProperties@QDeclarativeComponent@@SAPAVQDeclarativeComponentAttached@@PAVQObject@@@Z @ 817 NONAME ; class QDeclarativeComponentAttached * QDeclarativeComponent::qmlAttachedProperties(class QObject *)
 	??0QDeclarativeView@@QAE@ABVQUrl@@PAVQWidget@@@Z @ 818 NONAME ; QDeclarativeView::QDeclarativeView(class QUrl const &, class QWidget *)
@@ -1029,7 +1029,7 @@ EXPORTS
 	?staticMetaObject@QDeclarativeText@@2UQMetaObject@@B @ 1028 NONAME ABSENT ; struct QMetaObject const QDeclarativeText::staticMetaObject
 	?color@QDeclarativeRectangle@@QBE?AVQColor@@XZ @ 1029 NONAME ABSENT ; class QColor QDeclarativeRectangle::color(void) const
 	?isEnabled@QDeclarativeDebugClient@@QBE_NXZ @ 1030 NONAME ABSENT ; bool QDeclarativeDebugClient::isEnabled(void) const
-	?send@QPacketProtocol@@QAEXABVQPacket@@@Z @ 1031 NONAME ABSENT ; void QPacketProtocol::send(class QPacket const &)
+	?send@QPacketProtocol@@QAEXABVQPacket@@@Z @ 1031 NONAME ; void QPacketProtocol::send(class QPacket const &)
 	?width@QDeclarativePixmap@@QBEHXZ @ 1032 NONAME ; int QDeclarativePixmap::width(void) const
 	?error@QDeclarativeCustomParser@@IAEXABVQDeclarativeCustomParserNode@@ABVQString@@@Z @ 1033 NONAME ; void QDeclarativeCustomParser::error(class QDeclarativeCustomParserNode const &, class QString const &)
 	?defaultProperty@QDeclarativeMetaType@@SA?AVQMetaProperty@@PBUQMetaObject@@@Z @ 1034 NONAME ABSENT ; class QMetaProperty QDeclarativeMetaType::defaultProperty(struct QMetaObject const *)
@@ -1840,4 +1840,30 @@ EXPORTS
 	?qt_metacall@QDeclarativeAbstractAnimation@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 1839 NONAME ABSENT ; int QDeclarativeAbstractAnimation::qt_metacall(enum QMetaObject::Call, int, void * *)
 	?enableDebugging@QDeclarativeDebugHelper@@SAXXZ @ 1840 NONAME ; void QDeclarativeDebugHelper::enableDebugging(void)
 	?connect@QDeclarativePropertyPrivate@@SA_NPBVQObject@@H0HHPAH@Z @ 1841 NONAME ABSENT ; bool QDeclarativePropertyPrivate::connect(class QObject const *, int, class QObject const *, int, int, int *)
+	?qt_metacall@QDeclarativeDebugServer@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 1842 NONAME ; int QDeclarativeDebugServer::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?instance@QDeclarativeDebugServer@@SAPAV1@XZ @ 1843 NONAME ; class QDeclarativeDebugServer * QDeclarativeDebugServer::instance(void)
+	?addService@QDeclarativeDebugServer@@QAE_NPAVQDeclarativeDebugService@@@Z @ 1844 NONAME ; bool QDeclarativeDebugServer::addService(class QDeclarativeDebugService *)
+	?data@QPacket@@QBE?AVQByteArray@@XZ @ 1845 NONAME ; class QByteArray QPacket::data(void) const
+	?removeService@QDeclarativeDebugServer@@QAE_NPAVQDeclarativeDebugService@@@Z @ 1846 NONAME ; bool QDeclarativeDebugServer::removeService(class QDeclarativeDebugService *)
+	?serviceNames@QDeclarativeDebugServer@@QBE?AVQStringList@@XZ @ 1847 NONAME ; class QStringList QDeclarativeDebugServer::serviceNames(void) const
+	??_EQDeclarativeDebugServer@@UAE@I@Z @ 1848 NONAME ; QDeclarativeDebugServer::~QDeclarativeDebugServer(unsigned int)
+	?staticMetaObject@QDeclarativeDebugServer@@2UQMetaObject@@B @ 1849 NONAME ; struct QMetaObject const QDeclarativeDebugServer::staticMetaObject
+	?services@QDeclarativeDebugServer@@QBE?AV?$QList@PAVQDeclarativeDebugService@@@@XZ @ 1850 NONAME ; class QList<class QDeclarativeDebugService *> QDeclarativeDebugServer::services(void) const
+	?trUtf8@QDeclarativeDebugServer@@SA?AVQString@@PBD0H@Z @ 1851 NONAME ; class QString QDeclarativeDebugServer::trUtf8(char const *, char const *, int)
+	?trUtf8@QDeclarativeDebugServer@@SA?AVQString@@PBD0@Z @ 1852 NONAME ; class QString QDeclarativeDebugServer::trUtf8(char const *, char const *)
+	??_EQDeclarativeDebugServerConnection@@UAE@I@Z @ 1853 NONAME ; QDeclarativeDebugServerConnection::~QDeclarativeDebugServerConnection(unsigned int)
+	?receiveMessage@QDeclarativeDebugServer@@QAEXABVQByteArray@@@Z @ 1854 NONAME ; void QDeclarativeDebugServer::receiveMessage(class QByteArray const &)
+	??0QDeclarativeDebugServer@@AAE@XZ @ 1855 NONAME ; QDeclarativeDebugServer::QDeclarativeDebugServer(void)
+	?tr@QDeclarativeDebugServer@@SA?AVQString@@PBD0@Z @ 1856 NONAME ; class QString QDeclarativeDebugServer::tr(char const *, char const *)
+	??1QDeclarativeDebugServer@@UAE@XZ @ 1857 NONAME ; QDeclarativeDebugServer::~QDeclarativeDebugServer(void)
+	?sendMessage@QDeclarativeDebugServer@@QAEXPAVQDeclarativeDebugService@@ABVQByteArray@@@Z @ 1858 NONAME ; void QDeclarativeDebugServer::sendMessage(class QDeclarativeDebugService *, class QByteArray const &)
+	??1QDeclarativeDebugServerConnection@@UAE@XZ @ 1859 NONAME ; QDeclarativeDebugServerConnection::~QDeclarativeDebugServerConnection(void)
+	?qt_metacast@QDeclarativeDebugServer@@UAEPAXPBD@Z @ 1860 NONAME ; void * QDeclarativeDebugServer::qt_metacast(char const *)
+	?hasDebuggingClient@QDeclarativeDebugServer@@QBE_NXZ @ 1861 NONAME ; bool QDeclarativeDebugServer::hasDebuggingClient(void) const
+	?getStaticMetaObject@QDeclarativeDebugServer@@SAABUQMetaObject@@XZ @ 1862 NONAME ; struct QMetaObject const & QDeclarativeDebugServer::getStaticMetaObject(void)
+	?metaObject@QDeclarativeDebugServer@@UBEPBUQMetaObject@@XZ @ 1863 NONAME ; struct QMetaObject const * QDeclarativeDebugServer::metaObject(void) const
+	?d_func@QDeclarativeDebugServer@@ABEPBVQDeclarativeDebugServerPrivate@@XZ @ 1864 NONAME ; class QDeclarativeDebugServerPrivate const * QDeclarativeDebugServer::d_func(void) const
+	??0QDeclarativeDebugServerConnection@@QAE@XZ @ 1865 NONAME ; QDeclarativeDebugServerConnection::QDeclarativeDebugServerConnection(void)
+	?d_func@QDeclarativeDebugServer@@AAEPAVQDeclarativeDebugServerPrivate@@XZ @ 1866 NONAME ; class QDeclarativeDebugServerPrivate * QDeclarativeDebugServer::d_func(void)
+	?tr@QDeclarativeDebugServer@@SA?AVQString@@PBD0H@Z @ 1867 NONAME ; class QString QDeclarativeDebugServer::tr(char const *, char const *, int)
 
