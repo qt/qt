@@ -47,48 +47,40 @@
 class CustomMaterialShader : public AbstractMaterialShader
 {
 public:
-    CustomMaterialShader(ShaderEffectNode *n);
-    virtual ~CustomMaterialShader();
+    CustomMaterialShader(const ShaderEffectMaterialKey &key, const QVector<const char *> &attributes);
     virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
     virtual char const *const *attributeNames() const;
 
 protected:
     friend class ShaderEffectNode;
 
-    virtual void initialize();
     virtual const char *vertexShader() const;
     virtual const char *fragmentShader() const;
 
-    ShaderEffectNode *m_node;
-    QSharedPointer<AbstractMaterialType> m_type_obj;
+    ShaderEffectMaterialKey m_key;
+    QVector<const char *> m_attributes;
 };
 
-CustomMaterialShader::CustomMaterialShader(ShaderEffectNode *n)
-    : m_node(n)
+CustomMaterialShader::CustomMaterialShader(const ShaderEffectMaterialKey &key, const QVector<const char *> &attributes)
+    : m_key(key)
+    , m_attributes(attributes)
 {
-    Q_ASSERT(m_node);
-    m_node->m_shaders.append(this);
-    m_type_obj = m_node->m_type_obj;
-}
-
-CustomMaterialShader::~CustomMaterialShader()
-{
-    if (m_node)
-        m_node->m_shaders.remove(m_node->m_shaders.indexOf(this));
 }
 
 void CustomMaterialShader::updateState(Renderer *r, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
 {
-    Q_ASSERT(oldEffect == 0);
     Q_ASSERT(newEffect != 0);
-    Q_ASSERT(static_cast<ShaderEffectNode *>(newEffect) == m_node);
     Q_UNUSED(oldEffect);
     Q_UNUSED(newEffect);
 
-    for (int i = m_node->m_textures.size() - 1; i >= 0; --i) {
-        QPointer<QSGTextureProvider> source = m_node->m_textures.at(i).second;
+    const ShaderEffectMaterial *material = static_cast<const ShaderEffectMaterial *>(newEffect);
+
+    for (int i = material->m_textures.size() - 1; i >= 0; --i) {
+        QPointer<QSGTextureProvider> source = material->m_textures.at(i).second;
         if (!source)
             continue;
+
+        m_program.setUniformValue(material->m_textures.at(i).first.constData(), i);
 
         r->glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, source->texture()->textureId());
@@ -102,12 +94,12 @@ void CustomMaterialShader::updateState(Renderer *r, AbstractMaterial *newEffect,
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
     }
 
-    if (m_node->m_source.respectsOpacity)
+    if (material->m_source.respectsOpacity)
         m_program.setUniformValue("qt_Opacity", (float) r->renderOpacity());
 
-    for (int i = 0; i < m_node->m_uniformValues.count(); ++i) {
-        const QByteArray &name = m_node->m_uniformValues.at(i).first;
-        const QVariant &v = m_node->m_uniformValues.at(i).second;
+    for (int i = 0; i < material->m_uniformValues.count(); ++i) {
+        const QByteArray &name = material->m_uniformValues.at(i).first;
+        const QVariant &v = material->m_uniformValues.at(i).second;
 
         switch (v.type()) {
         case QVariant::Color:
@@ -145,40 +137,91 @@ void CustomMaterialShader::updateState(Renderer *r, AbstractMaterial *newEffect,
         }
     }
 
-    if ((updates & Renderer::UpdateMatrices) && m_node->m_source.respectsMatrix)
+    if ((updates & Renderer::UpdateMatrices) && material->m_source.respectsMatrix)
         m_program.setUniformValue("qt_ModelViewProjectionMatrix", r->combinedMatrix());
 }
 
 char const *const *CustomMaterialShader::attributeNames() const
 {
-    Q_ASSERT(m_node);
-    return m_node->m_source.attributeNames.constData();
-}
-
-void CustomMaterialShader::initialize()
-{
-    Q_ASSERT(m_node);
-    if (m_program.isLinked()) {
-        m_program.bind();
-        for (int i = 0; i < m_node->m_textures.size(); ++i)
-            m_program.setUniformValue(m_node->m_textures.at(i).first.constData(), i);
-    }
+    return m_attributes.constData();
 }
 
 const char *CustomMaterialShader::vertexShader() const
 {
-    return m_node->m_source.vertexCode.constData();
+    return m_key.vertexCode.constData();
 }
 
 const char *CustomMaterialShader::fragmentShader() const
 {
-    return m_node->m_source.fragmentCode.constData();
+    return m_key.fragmentCode.constData();
 }
 
 
-ShaderEffectMaterial::ShaderEffectMaterial()
-    : m_type_obj(new AbstractMaterialType)
+bool ShaderEffectMaterialKey::operator == (const ShaderEffectMaterialKey &other) const
 {
+    return vertexCode == other.vertexCode && fragmentCode == other.fragmentCode && className == other.className;
+}
+
+uint qHash(const ShaderEffectMaterialKey &key)
+{
+    return qHash(qMakePair(qMakePair(key.vertexCode, key.fragmentCode), key.className));
+}
+
+
+QHash<ShaderEffectMaterialKey, QSharedPointer<AbstractMaterialType> > ShaderEffectMaterial::materialMap;
+
+ShaderEffectMaterial::ShaderEffectMaterial()
+{
+    setFlag(Blending, true);
+}
+
+AbstractMaterialType *ShaderEffectMaterial::type() const
+{
+    return m_type.data();
+}
+
+AbstractMaterialShader *ShaderEffectMaterial::createShader() const
+{
+    return new CustomMaterialShader(m_source, m_source.attributeNames);
+}
+
+int ShaderEffectMaterial::compare(const AbstractMaterial *other) const
+{
+    return this - static_cast<const ShaderEffectMaterial *>(other);
+}
+
+void ShaderEffectMaterial::setProgramSource(const ShaderEffectProgram &source)
+{
+    m_source = source;
+    m_type = materialMap.value(m_source);
+    if (m_type.isNull()) {
+        m_type = QSharedPointer<AbstractMaterialType>(new AbstractMaterialType);
+        materialMap.insert(m_source, m_type);
+    }
+}
+
+void ShaderEffectMaterial::setUniforms(const QVector<QPair<QByteArray, QVariant> > &uniformValues)
+{
+    m_uniformValues = uniformValues;
+}
+
+void ShaderEffectMaterial::setTextures(const QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > &textures)
+{
+    m_textures = textures;
+}
+
+const QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > &ShaderEffectMaterial::textures() const
+{
+    return m_textures;
+}
+
+void ShaderEffectMaterial::updateTextures() const
+{
+    for (int i = 0; i < m_textures.size(); ++i) {
+        QSGTextureProvider *source = m_textures.at(i).second;
+        if (source)
+            source->updateTexture();
+    }
 }
 
 
@@ -191,14 +234,10 @@ ShaderEffectNode::ShaderEffectNode()
         << QSGAttributeDescription(0, 2, GL_FLOAT, 4 * sizeof(float))
         << QSGAttributeDescription(1, 2, GL_FLOAT, 4 * sizeof(float));
     updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
-    AbstractMaterial::setFlag(Blending, true);
-    setMaterial(this);
 }
 
 ShaderEffectNode::~ShaderEffectNode()
 {
-    for (int i = 0; i < m_shaders.size(); ++i)
-        m_shaders.at(i)->m_node = 0;
 }
 
 void ShaderEffectNode::setRect(const QRectF &rect)
@@ -281,54 +320,8 @@ void ShaderEffectNode::updateGeometry()
     markDirty(Node::DirtyGeometry);
 }
 
-void ShaderEffectNode::invalidateShaders()
-{
-    for (int i = 0; i < m_shaders.size(); ++i) {
-        m_shaders.at(i)->m_program.removeAllShaders();
-        m_shaders.at(i)->m_compiled = false;
-    }
-}
-
 void ShaderEffectNode::preprocess()
 {
-    for (int i = 0; i < m_textures.size(); ++i) {
-        QSGTextureProvider *source = m_textures.at(i).second;
-        if (source)
-            source->updateTexture();
-    }
-}
-
-AbstractMaterialType *ShaderEffectMaterial::type() const
-{
-    return m_type_obj.data();
-}
-
-int ShaderEffectMaterial::compare(const AbstractMaterial *other) const
-{
-    return this - static_cast<const ShaderEffectMaterial *>(other);
-}
-
-
-AbstractMaterialShader *ShaderEffectNode::createShader() const
-{
-    return new CustomMaterialShader(const_cast<ShaderEffectNode *>(this));
-}
-
-void ShaderEffectNode::setProgramSource(const ShaderEffectProgram &source)
-{
-    m_source = source;
-    invalidateShaders();
-    markDirty(DirtyMaterial);
-}
-
-void ShaderEffectNode::setData(const QVector<QPair<QByteArray, QVariant> > &uniformValues,
-                               const QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > &textures)
-{
-    m_uniformValues = uniformValues;
-    for (int i = 0; i < m_textures.size(); ++i)
-        disconnect(m_textures.at(i).second, SIGNAL(textureChanged()), this, SLOT(markDirtyTexture()));
-    m_textures = textures;
-    for (int i = 0; i < m_textures.size(); ++i)
-        connect(m_textures.at(i).second, SIGNAL(textureChanged()), this, SLOT(markDirtyTexture()));
-    markDirty(DirtyMaterial);
+    Q_ASSERT(material());
+    static_cast<ShaderEffectMaterial *>(material())->updateTextures();
 }

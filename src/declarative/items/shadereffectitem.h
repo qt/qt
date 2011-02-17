@@ -44,32 +44,15 @@
 
 #include "qsgitem.h"
 
-#include "effectnode.h"
 #include "material.h"
 #include "adaptationlayer.h"
+#include "shadereffectnode.h"
 
 #include <QtCore/qpointer.h>
 
 class QSGContext;
 class QSignalMapper;
 class CustomMaterialShader;
-
-// TODO: Implement async loading and loading over network.
-// TODO: Implement support for multisampling.
-struct ShaderEffectProgram
-{
-    ShaderEffectProgram() 
-    : respectsOpacity(false), respectsMatrix(false) {}
-
-    QByteArray vertexCode;
-    QByteArray fragmentCode;
-
-    QVector<const char *> attributeNames;
-    QSet<QByteArray> uniformNames;
-
-    uint respectsOpacity : 1;
-    uint respectsMatrix : 1;
-};
 
 class ShaderEffectItem : public QSGItem
 {
@@ -133,6 +116,7 @@ private:
         QByteArray name;
     };
     QVector<SourceData> m_sources;
+    ShaderEffectMaterial m_material;
 
     uint m_blending : 1;
     uint m_dirtyData : 1;

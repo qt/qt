@@ -238,6 +238,7 @@ void ShaderEffectItem::reset()
     m_source.uniformNames.clear();
     m_source.respectsOpacity = false;
     m_source.respectsMatrix = false;
+    m_source.className = metaObject()->className();
 
     for (int i = 0; i < m_sources.size(); ++i) {
         const SourceData &source = m_sources.at(i);
@@ -327,11 +328,12 @@ void ShaderEffectItem::lookThroughShaderCode(const QByteArray &code)
     }
 }
 
-Node *ShaderEffectItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
+Node *ShaderEffectItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
 {
     ShaderEffectNode *node = static_cast<ShaderEffectNode *>(oldNode);
     if (!node) {
         node = new ShaderEffectNode;
+        node->setMaterial(&m_material);
         m_programDirty = true;
         m_dirtyData = true;
     }
@@ -343,13 +345,14 @@ Node *ShaderEffectItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data
         if (s.vertexCode.isEmpty())
             s.vertexCode = qt_default_vertex_code;
 
-        node->setProgramSource(s);
+        m_material.setProgramSource(s);
+        node->markDirty(Node::DirtyMaterial);
         m_programDirty = false;
     }
 
     // Update blending
-    if (((node->AbstractMaterial::flags() & AbstractMaterial::Blending) != 0) != m_blending) {
-        node->ShaderEffectMaterial::setFlag(AbstractMaterial::Blending, m_blending);
+    if (bool(m_material.flags() & AbstractMaterial::Blending) != m_blending) {
+        m_material.setFlag(AbstractMaterial::Blending, m_blending);
         node->markDirty(Node::DirtyMaterial);
     }
 
@@ -361,16 +364,26 @@ Node *ShaderEffectItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data
     if (m_dirtyData) {
         QVector<QPair<QByteArray, QVariant> > values;
         QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > textures;
+        const QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > &oldTextures = m_material.textures();
+
         for (QSet<QByteArray>::const_iterator it = m_source.uniformNames.begin(); 
              it != m_source.uniformNames.end(); ++it) {
             values.append(qMakePair(*it, property(*it)));
         }
+        for (int i = 0; i < oldTextures.size(); ++i) {
+            QPointer<QSGTextureProvider> oldSource = oldTextures.at(i).second;
+            if (oldSource)
+                disconnect(oldSource, SIGNAL(textureChanged()), node, SLOT(markDirtyTexture()));
+        }
         for (int i = 0; i < m_sources.size(); ++i) {
             const SourceData &source = m_sources.at(i);
             textures.append(qMakePair(source.name, source.source));
+            if (source.source)
+                connect(source.source, SIGNAL(textureChanged()), node, SLOT(markDirtyTexture()));
         }
-
-        node->setData(values, textures);
+        m_material.setUniforms(values);
+        m_material.setTextures(textures);
+        node->markDirty(Node::DirtyMaterial);
         m_dirtyData = false;
     }
 
