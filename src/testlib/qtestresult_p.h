@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 class QTestResultPrivate;
 class QTestData;
 
-class QTestResult
+class Q_TESTLIB_EXPORT QTestResult
 {
 public:
     enum TestLocation { NoWhere = 0, DataFunc = 1, InitFunc = 2, Func = 3, CleanupFunc = 4 };
