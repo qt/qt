@@ -337,15 +337,17 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
     }
 
 #if !defined(Q_OS_WINCE)
-    // enable new behavior using
-    // SIO_UDP_CONNRESET
-    DWORD dwBytesReturned = 0;
-    int bNewBehavior = 1;
-    if (::WSAIoctl(socket, SIO_UDP_CONNRESET, &bNewBehavior, sizeof(bNewBehavior),
-                   NULL, 0, &dwBytesReturned, NULL, NULL) == SOCKET_ERROR) {
-        // not to worry isBogusUdpReadNotification() should handle this otherwise
-        int err = WSAGetLastError();
-        WS_ERROR_DEBUG(err);
+    if (socketType == QAbstractSocket::UdpSocket) {
+        // enable new behavior using
+        // SIO_UDP_CONNRESET
+        DWORD dwBytesReturned = 0;
+        int bNewBehavior = 1;
+        if (::WSAIoctl(socket, SIO_UDP_CONNRESET, &bNewBehavior, sizeof(bNewBehavior),
+                       NULL, 0, &dwBytesReturned, NULL, NULL) == SOCKET_ERROR) {
+            // not to worry isBogusUdpReadNotification() should handle this otherwise
+            int err = WSAGetLastError();
+            WS_ERROR_DEBUG(err);
+        }
     }
 #endif
 
