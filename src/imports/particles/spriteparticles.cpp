@@ -128,6 +128,7 @@ AbstractMaterialShader *SpriteParticlesMaterial::createShader() const
 
 SpriteParticles::SpriteParticles()
     : m_running(true)
+    , m_do_reset(false)
     , m_particles_per_second(10)
     , m_particle_duration(1000)
     , m_particle_size(16)
@@ -415,12 +416,7 @@ void SpriteParticles::setAdditive(qreal additive)
 void SpriteParticles::reset()
 {
     update();
-    delete m_node;
-    delete m_material;
-
-    m_node = 0;
-    m_material = 0;
-    m_particle_count = 0;
+    m_do_reset = true;
 }
 
 int SpriteParticles::goalSeek(int curIdx, int dist)
@@ -657,8 +653,20 @@ void SpriteParticles::buildParticleNode()
 
 Node *SpriteParticles::updatePaintNode(Node *, UpdatePaintNodeData *data)
 {
+    if(m_do_reset){
+        delete m_node;
+        delete m_material;
+
+        m_node = 0;
+        m_material = 0;
+        m_particle_count = 0;
+        m_do_reset = false;
+    }
+
     prepareNextFrame();
-    update();
+
+    if(m_running)
+        update();
     return m_node;
 }
 
@@ -846,6 +854,4 @@ void SpriteParticles::prepareNextFrame()
     m_last_emitter = QPointF(m_emitter_x, m_emitter_y);
     m_last_timestamp = time;
 
-    if (m_running)
-      update();
 }
