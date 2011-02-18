@@ -26,94 +26,113 @@
 ****************************************************************************/
 
 /*!
-    \page index.html
-    \keyword Qt Reference Documentation
+\page index.html
+\keyword Qt Reference Documentation
 
-          \div {indexbox guide}
+\div {indexbox guide}
+    \div {heading}
+        Qt Developer Guide
+    \enddiv
+\enddiv
+\div {indexbox tools}
+    \div {indexboxcont indexboxbar }
+        \div {sectionlist normallist}
             \div {heading}
-              Qt Developer Guide 
-	    \enddiv
-            \div {indexboxcont indexboxbar}
-              \div {section indexIcon} \emptyspan
-              \enddiv
-              \div {section}
-                Qt is a cross-platform application and UI
-                framework. Using Qt, you can write web-enabled
-                applications once and deploy them across desktop,
-                mobile and embedded operating systems without
-                rewriting the source code.
-              \enddiv
-              \div {section sectionlist}
-                \list
-                  \o \l{Getting Started Guides}{Getting started}
-                  \o \l{Installation}{Installation}
-                  \o \l{how-to-learn-qt.html}{How to learn Qt}
-                  \o \l{Supported Platforms}{Platform Support}
-                  \o \l{tutorials.html}{Tutorials} and \l{Qt Examples}{Examples}
-                  \o \l{qt4-7-intro.html}{What's new in Qt 4.7}
-                \endlist
-             \enddiv
+                \l What is Qt
             \enddiv
-          \enddiv
-          \div {indexbox api}
+            \image qt-logo.png
+            \list
+            \o \l{http://doc.qt.nokia.com/nokia-qtsdk-1.0/index.html}{Nokia Qt SDK}
+            \o \l{What's New in Qt 4.7} - latest release
+            \endlist
+            \list
+            \o \l{http://developer.qt.nokia.com/wiki/QtWhitepaper}{Qt C++ Framework}
+            \o \l{http://developer.qt.nokia.com/wiki/QtCreatorWhitepaper}{Qt Creator}
+            \o \l{Qt Quick}
+            \o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/index.html}{Qt Mobility}
+            \o \l{http://doc.qt.nokia.com/qtsimulator-1.1/index.html}{Qt Simulator}
+            \o \l{Supported Platforms}{Platform Support}
+            \o \l{http://qt.nokia.com/products}{see more}
+            \endlist
+        \enddiv
+        \div {sectionlist normallist}
             \div {heading}
-              Qt API 
-	    \enddiv
-            \div {indexboxcont indexboxbar }
-              \div {sectionlist tricol}
-                \list
-                    \o \l{All Classes}{All Classes}
-                    \o \l{All Functions}{All Functions}
-                    \o \l{All Modules}{All Modules}
-                    \o \l{All Namespaces}{All Namespaces}
-                    \o \l{Global Qt Declarations}{Global Declarations}
-                    \o \l{Qt Licenses and Credits}{Licenses and Credits}
-                \endlist
-              \enddiv
-              \div {sectionlist  tricol}
-                \list
-                    \o \l{Programming with Qt}
-                    \o \l{UI Design with Qt}
-                    \o \l{Cross-Platform and Platform-Specific Development}
-                    \o \l{Qt and Key Technologies}
-                    \o \l{Best Practice Guides}
-                \endlist
-              \enddiv
-              \div {sectionlist}
-                \list
-                    \o \l{qtquick.html}{Qt Quick}
-                    \o \l{qdeclarativeintroduction.html}{Introduction to QML}
-                    \o \l{qdeclarativeelements.html}{QML Elements}
-                    \o \l{qdeclarativeexamples.html}{QML Examples and Demos}
-                \endlist
-              \enddiv
+                \l Develop with Qt
             \enddiv
-          \enddiv
-          \div {indexbox tools}
+            \image qml.png
+            \list
+            \o \l{Develop with Qt}{Steps to Programming Qt Applications}
+            \o \l{qt-creator-configure-target}{Configure Qt and Creator for Platforms}
+            \o \l{qt-technologies}{Qt Features and Technologies}
+            \o \l{qt-ui-creation}{Create UI with Qt}
+            \o \l{qt-utilities}{Utilities and Testing}
+            \o \l{qt-deployment}{Deploying Applications and Publish to Ovi Store}
+            \endlist
+
+            \list
+            \o \l Kevin's ABC
+            \endlist
+
+        \enddiv
+        \div {sectionlist normallist}
             \div {heading}
-              Qt Tools 
-	    \enddiv
-            \div {indexboxcont}
-              \div {section indexIcon} \emptyspan
-	      \enddiv
-              \div {section}
-                Qt offers a selection of development tools for
-                different tasks. Use Qt Creator for project and code
-                management as well as building powerfull UIs.
-              \enddiv
-              \div {section sectionlist}
-                \list
-                  \o \l{http://doc.qt.nokia.com/qtcreator-2.0/index.html}{Qt Creator}
-                  \o \l{designer-manual.html}{Qt Designer}
-                  \o \l{linguist-manual.html}{Qt Linguist}
-                  \o \l{assistant-manual.html}{Qt Assistant}
-                  \o \l{qmake-manual.html}{Qt qmake}
-                  \o \l{http://doc.qt.nokia.com/qtsimulator-1.0/index.html}{Qt Simulator}
-                  \o \l{http://qt.nokia.com/developer/eclipse-integration}{Eclipse Integration}
-                  \o \l{http://qt.nokia.com/products/appdev}{Add-On Products and Services}
-                  \o \l{qvfb.html}{Virtual Framebuffer}
-                \endlist
-              \enddiv
+                \l See Qt
             \enddiv
-          \enddiv
+            \image mobile.png
+            \list
+            \o \l{Qt Demonstrations}{Application Gallery}
+            \o \l{Tutorials}
+            \o \l{Qt Examples}{Examples}
+            \o \l{QML Examples and Demos}
+            \endlist
+        \enddiv
+    \enddiv
+\enddiv
+\div {indexbox tools}
+    \div {heading}
+        Reference
+    \enddiv
+    \div {indexboxcont indexboxbar}
+        \div {sectionlist normallist}
+            \div {heading}
+                Qt API
+            \enddiv
+            \list
+            \o \l{All Classes}{All Classes}
+            \o \l{All Functions}{All Functions}
+            \o \l{All Modules}{All Modules}
+            \o \l{All Namespaces}{All Namespaces}
+            \o \l{Global Qt Declarations}{Global Declarations}
+            \o \l{Qt Licenses and Credits}{Licenses and Credits}
+            \endlist
+        \enddiv
+        \div {sectionlist normallist}
+            \div {heading}
+                Qt Quick and Mobility
+            \enddiv
+            \list
+            \o \l{Intro to Qt Quick}{Introduction to Qt Quick}
+            \o \l{QML Elements}
+            \o \l{QML Examples and Demos}
+            \o \l{Qt Quick}{see more}
+            \endlist
+            \list
+            \o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/index.html}{Qt Mobility APIs}
+            \o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/qml-plugins.html}{Mobility QML Plugins}
+            \endlist
+        \enddiv
+        \div {sectionlist normallist}
+            \div {heading}
+                Qt Tools
+            \enddiv
+            \list
+            \o \l{http://doc.qt.nokia.com/qtcreator-2.0/index.html}{Qt Creator}
+            \o \l{http://doc.qt.nokia.com/qtsimulator/index.html}{Qt Simulator}
+            \o \l{linguist-manual.html}{Qt Linguist}
+            \o \l{assistant-manual.html}{Qt Assistant}
+            \o \l{http://qt.nokia.com/products/appdev}{Add-On Products and Services}
+            \endlist
+        \enddiv
+    \enddiv
+\enddiv
 */

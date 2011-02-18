@@ -1382,6 +1382,10 @@
         font: normal bold 13px/1 Verdana;
     }
 
+    .content .normallist li
+    {
+        font: normal 13px/1 Verdana;
+    }
     .indexbox a:hover, .indexbox a:visited:hover
     {
         color: #4c0033;
@@ -1412,6 +1416,13 @@
     }
 
     .indexbox.tools .indexIcon span
+    {
+        width: 115px;
+        height: 137px;
+        background: url(../images/sprites-combined.png) no-repeat -111px -376px;
+        padding: 0;
+    }
+    .indexbox.tools .indexIcon2
     {
         width: 115px;
         height: 137px;
