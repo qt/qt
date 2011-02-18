@@ -1179,6 +1179,8 @@ void tst_qdeclarativetextedit::dragMouseSelection()
     QVERIFY(str2.length() > 3);
 
     QVERIFY(str1 != str2); // Verify the second press and drag is a new selection and doesn't not the first moved.
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextedit::mouseSelectionMode_data()
