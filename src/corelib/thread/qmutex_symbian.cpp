@@ -55,13 +55,7 @@ QT_BEGIN_NAMESPACE
 QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
     : QMutexData(mode), maximumSpinTime(MaximumSpinTimeThreshold), averageWaitTime(0), owner(0), count(0)
 {
-#ifdef QT_SYMBIAN_USE_RFASTLOCK
-        int r = lock.CreateLocal();
-        if (r == KErrNone)
-            lock.Wait();
-#else
-        int r = lock.CreateLocal(0);
-#endif
+    int r = lock.CreateLocal(0);
     if (r != KErrNone)
         qWarning("QMutex: failed to create lock, error %d", r);
     qt_symbian_throwIfError(r);
