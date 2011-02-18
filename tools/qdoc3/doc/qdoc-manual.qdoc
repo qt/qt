@@ -1855,22 +1855,22 @@
     The \\snippet command causes a code snippet to be included
     verbatim as preformatted text, which may be syntax highlighted.
 
-           Each code snippet are referenced by the file that holds it and by
-           a unique identifier for that file. Snippet files are typically
-           stored in a \c{snippets} directory inside the documentation
-           directory (e.g., \c{$QTDIR/doc/src/snippets}).
+    Each code snippet are referenced by the file that holds it and by
+    a unique identifier for that file. Snippet files are typically
+    stored in a \c{snippets} directory inside the documentation
+    directory (e.g., \c{$QTDIR/doc/src/snippets}).
 
-           For example, the following documentation references a snippet in
-           a file residing in a subdirectory of the documentation directory:
+    For example, the following documentation references a snippet in a
+    file residing in a subdirectory of the documentation directory:
            
            \code
            \snippet snippets/textdocument-resources/main.cpp Adding a resource
            \endcode
            
-           The text following the file name is the unique identifier for the
-           snippet. This is used to delimit the quoted code in the relevant
-           snippet file as shown in the following example that corresponds to
-           the above \c{\\snippet} command:
+    The text following the file name is the unique identifier for the
+    snippet. This is used to delimit the quoted code in the relevant
+    snippet file as shown in the following example that corresponds to
+    the above \c{\\snippet} command:
            
            \dots
            \code
@@ -2419,19 +2419,19 @@
 
     \title Tables and Lists
 
-    The container commands create tables and lists with associated
-    items and contents. A list is rendered left aligned as a separate
-    paragraph. A table is rendered centered as a separate paragraph,
-    and its width depends on its content.
+    These commands enable creating lists and tables. A list is
+    rendered left aligned as a separate paragraph. A table is rendered
+    centered as a separate paragraph. The table width depends on the
+    width of its contents.
 
     \target table-command
     \section1 \\table 
 
-    The \\table command and the corresponding \\endtable
-    command delimit the contents of a table.
+    The \\table and \\endtable commands delimit the contents of a
+    table.
 
-           The command accepts a single argument specifying the
-           table's width in percentage:
+    The command accepts a single argument specifying the table's width
+    as a percentage of the page width:
 
            \code
            / *!
@@ -2443,15 +2443,15 @@
            * /
            \endcode
 
-           The code above ensures that the table will fill all
-           available space. If the table's width is smaller than 100 %,
-           the table will be centered in the generated documentation.
+    The code above ensures that the table will fill all available
+    space. If the table's width is smaller than 100 %, the table will
+    be centered in the generated documentation.
 
-           A table can contain headers, rows and columns. A row starts
-           with a \l {row-command} {\\row} command and consists of cells, which
-           starts with a \l {o-command} {\\o} command. There is also a \l
-           {header-command} {\\header} command which is a special kind of row
-           with a special formatting. For example:
+    A table can contain headers, rows and columns. A row starts with a
+    \l {row-command} {\\row} command and consists of cells, which
+    starts with a \l {o-command} {\\o} command. There is also a \l
+    {header-command} {\\header} command which is a special kind of row
+    with a special formatting. For example:
 
            \code
            / *!
@@ -2477,7 +2477,7 @@
            * /
            \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
            \raw HTML
                <table align="center" cellpadding="2"
@@ -2517,8 +2517,8 @@
                </table>
            \endraw
 
-           You can also make cells span several rows and columns. For
-           example:
+    You can also make cells span several rows and columns. For
+    example:
 
            \code
            / *!
@@ -2538,7 +2538,7 @@
            * /
            \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
            \raw HTML
                <table align="center" cellpadding="2" cellspacing="1"
@@ -2567,22 +2567,20 @@
                </table>
            \endraw
 
-           See also \l {header-command} {\\header}, \l {row-command} {\\row} and \l {o-command} {\\o}.
-
+    See also \l {header-command} {\\header}, \l {row-command} {\\row} and \l {o-command} {\\o}.
 
     \target header-command
     \section1 \\header 
 
-    The \\header command indicates that the following
-    table cells are the current table's column headers.
+    The \\header command indicates that the following table cells are
+    the current table's column headers.
 
-           The command can only be used within the \l{table-command}
-           {\\table...\\endtable} commands. A header can contain
-           several cells. A cell is created with the \l {o-command} {\\o}
-           command.
+    The command can only be used within the \l{table-command}
+    {\\table...\\endtable} commands. A header can contain several
+    cells. A cell is created with the \l {o-command} {\\o} command.
 
-           A header cell's text is centered within the table cell and
-           rendered using a bold font. For example:
+    A header cell's text is centered within the table cell and
+    rendered using a bold font. For example:
 
            \code
            / *!
@@ -2598,7 +2596,7 @@
            * /
            \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
            \raw HTML
                <table align="center" cellpadding="2"
@@ -2619,25 +2617,22 @@
                </table>
            \endraw
 
-           See also \l {table-command} {\\table}, \l {row-command} {\\row} and \l {o-command} {\\o}.
-
+    See also \l {table-command} {\\table}, \l {row-command} {\\row} and \l {o-command} {\\o}.
 
     \target row-command
     \section1 \\row 
 
-    The \\row command indicates that the following table
-    cells belong to the same row in the current table.
+    The \\row command begins a new row in a table. The \l {o-command}
+    {\\o items} that belong in the new row will immediately follow the
+    \\row.
 
-           The command can only be used within the \l{table-command}
-           {\\table...\\endtable} commands. A row can contain
-           several cells. A cell is created with the \l {o-command} {\\o}
-           command.
+    The command can only be used within the \l{table-command}
+    {\\table...\\endtable} commands. A row can contain several
+    cells. A cell is created with the \l {o-command} {\\o} command.
 
-           The background cell color of each row alternate between two
-           shades of grey, making it easier to distinguish the rows
-           from each other. The cells' contents is left aligned.
-
-           For example:
+    The background cell color of each row alternates between two
+    shades of grey, making it easier to distinguish the rows from each
+    other. The cells' contents is left aligned. For example:
 
            \code
            / *!
@@ -2663,7 +2658,7 @@
            * /
            \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
            \raw HTML
                <table align="center" cellpadding="2"
@@ -2703,50 +2698,45 @@
                </table>
            \endraw
 
-           See also \l {table-command} {\\table}, \l {header-command} {\\header} and \l
-           {o-command} {\\o}.
-
+    See also \l {table-command} {\\table}, \l {header-command}
+    {\\header} and \l {o-command} {\\o}.
 
     \target value-command
     \section1 \\value 
 
-    The \\value command starts the documentation of a C++ enum
-    item.
+    The \\value command starts the documentation of a C++ enum item.
 
-           The command's first argument is the enum item. Then follows
-           its associated description. The description argument ends
-           at the next blank line or \\value. The arguments are
-           rendered within a table.
+    The command's first argument is the enum item. Then follows its
+    associated description. The description argument ends at the next
+    blank line or \\value. The arguments are rendered within a table.
 
-           The documentation will be located in the associated class,
-           header file or namespace documentation. See the \l {enum-command}
-           {\\enum} documentation for an example.
+    The documentation will be located in the associated class, header
+    file or namespace documentation. See the \l {enum-command}
+    {\\enum} documentation for an example.
 
-           See also \l {enum-command} {\\enum} and \l {omitvalue-command} {\\omitvalue}.
-
+    See also \l {enum-command} {\\enum} and \l {omitvalue-command} {\\omitvalue}.
 
     \target omitvalue-command
     \section1 \\omitvalue 
 
-    The \\omitvalue command excludes a C++ enum item
-    from the documentation.
+    The \\omitvalue command excludes a C++ enum item from the
+    documentation.
 
-           The command's only argument is the name of the enum item
-           that will be omitted. See the \l {enum-command} {\\enum}
-           documentation for an example.
+    The command's only argument is the name of the enum item that will
+    be omitted. See the \l {enum-command} {\\enum} documentation for
+    an example.
 
-           See also \l {enum-command} {\\enum} and \l {value-command} {\\value}.
-
+    See also \l {enum-command} {\\enum} and \l {value-command}
+    {\\value}.
 
     \target list-command
     \section1 \\list 
 
-    The \\list command and the corresponding \\endlist
-    command delimit a list of items.
+    The \\list and \\endlist commands delimit a list of items.
 
-           You need to create each list item explicitly using the \l
-           {o-command} {\\o} command. A list can contain one or more items; it
-           can also be nested. For example:
+    Create each list item with the \l {o-command} {\\o} command. A
+    list always contains one or more items. Lists can be nested. For
+    example:
 
            \code
            / *!
@@ -2767,7 +2757,7 @@
            * /
            \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
            \list
            \o Qt Reference Documentation: Getting Started
@@ -2784,8 +2774,8 @@
                \endlist
            \endlist
 
-           The \\list command takes an optional argument providing
-           alternative appearances for the list items. For example:
+    The \\list command takes an optional argument providing
+    alternative appearances for the list items. For example:
 
            \code
            / *!
@@ -2797,7 +2787,7 @@
            * /
            \endcode
 
-           will render the list items with bullets (the default):
+     QDoc renders the list items with bullets (the default):
 
            \list
                \o How to Learn Qt
@@ -2805,9 +2795,12 @@
                \o Tutorial and Examples
            \endlist
 
-           If you provide 'A' as an argument to the \\list command,
-           the bullets are replaced with characters following in
-           alphabetical order:
+    \warning There appears to be a bug in qdoc3 here. If you include
+    any of the argument types, you get a numeric list. We're looking
+    into it.
+
+    If you provide 'A' as an argument to the \\list command, the
+    bullets are replaced with characters in alphabetical order:
 
            \list A
                \o How to Learn Qt
@@ -2815,8 +2808,8 @@
                \o Tutorial and Examples
            \endlist
 
-           If you replace 'A' with '1', the list items are rendered
-           with numbers following in ascending order:
+     If you replace 'A' with '1', the list items are numbered in
+     ascending order:
 
            \list 1
                \o How to Learn Qt
@@ -2825,8 +2818,8 @@
 
            \endlist
 
-           If you provide 'i' as the argument, the default bullets are
-           replaced with roman numerals:
+    If you provide 'i' as the argument, the bullets are replaced with
+    roman numerals:
 
            \list i
                \o How to Learn Qt
@@ -2834,9 +2827,9 @@
                \o Tutorial and Examples
            \endlist
 
-           Or finally, you can make the list items appear with roman
-           numbers following in ascending order if you provide 'I' as
-           the optional argument:
+    Finally, you can make the list items appear with roman numbers
+    following in ascending order if you provide 'I' as the optional
+    argument:
 
            \list I
                \o How to Learn Qt
@@ -2844,9 +2837,9 @@
                \o Tutorial and Examples
            \endlist
 
-           You can also make the listing start at any character or
-           number by simply provide the number or character you want
-           to start at. For example:
+    You can also make the listing start at any character or number by
+    simply provide the number or character you want to start at. For
+    example:
 
            \code
            / *!
@@ -2858,7 +2851,7 @@
            * /
            \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
            \list G
                \o How to Learn Qt
@@ -2866,32 +2859,30 @@
                \o Tutorial and Examples
            \endlist
 
-           See also \l {o-command} {\\o}.
-
+    See also \l {o-command} {\\o}.
 
     \target o-command
-    \section1 \\o 
+    \section1 \\o (cell, item)
 
     The \\o command announce a table or list item.
 
-           Earlier we used the \l {i-command} {\\i} command for this purpose. For more
-           information see the \l
-           {26-qdoc-commands-compatibility.html#o-versus-i} {compatibility}
-           section.
+    Earlier we used the \l {i-command} {\\i} command for this
+    purpose. For more information see the \l
+    {26-qdoc-commands-compatibility.html#o-versus-i} {compatibility}
+    section.
 
-           The command can only be used within the \l{table-command}
-           {\\table...\\endtable} or \l{list-command} {\\list... \\endlist}
-           commands.
+    The command can only be used within the \l{table-command}
+    {\\table...\\endtable} or \l{list-command} {\\list... \\endlist}
+    commands.
 
-           It considers everything until the next occurrence
-           of the \\o command, or the currently applicable \l
-           {table-command} {\\endtable} or \l {list-command} {\\endlist} command, as its
-           argument. For examples, see \l {table-command} {\\table} and \l
-           {list-command} {\\list}.
+    It considers everything until the next occurrence of the \\o
+    command, or the currently applicable \l {table-command}
+    {\\endtable} or \l {list-command} {\\endlist} command, as its
+    argument. For examples, see \l {table-command} {\\table} and \l
+    {list-command} {\\list}.
 
-           If the command is used within a table, you can in addition
-           specify how many rows or columns the item should span. For
-           example:
+    If the command is used within a table, you can in addition specify
+    how many rows or columns the item should span. For example:
 
            \code
            / *!
@@ -2911,7 +2902,7 @@
            * /
            \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
            \raw HTML
                <table align="center" cellpadding="2" cellspacing="1"
@@ -2940,10 +2931,10 @@
                </table>
            \endraw
 
-           If not specified, the item will span one column and one row.
+    If not specified, the item will span one column and one row.
 
-           See also \l {table-command} {\\table}, \l {header-command} {\\header},
-           \l {list-command} {\\list} and \l {o-command} {\\o}.
+    See also \l {table-command} {\\table}, \l {header-command}
+    {\\header}, \l {list-command} {\\list} and \l {o-command} {\\o}.
 
 */
 
