@@ -2956,21 +2956,21 @@
     The \\abstract and \\endabstract commands delimit a
     document's abstract section.
 
-           The abstract section is rendered as an indented italicized
-           paragraph.
+    The abstract section is rendered as an indented italicized
+    paragraph.
 
-           \warning The \bold{\\abstract} and \bold{\\endabstract} commands 
-	   have not been implemented. The abstract section is rendered as a 
-	   regular HTML paragraph.
-
+    \warning The \bold{\\abstract} and \bold{\\endabstract} commands
+    have not been implemented. The abstract section is rendered as a
+    regular HTML paragraph.
 
     \target quotation-command
     \section1 \\quotation 
 
     The \\quotation and \\endquotation commands delimit a long quotation.
 
-        The text in the delimited block is surrounded by \bold{<blockquote>}
-	and \bold{</blockquote>} in the html output, e.g.:
+    The text in the delimited block is surrounded by
+    \bold{<blockquote>} and \bold{</blockquote>} in the html output,
+    e.g.:
 
         \code
         / *!
@@ -2988,7 +2988,7 @@
         * /
         \endcode
 
-	The text in the \bold{\\quotation} block will appear in the generated HTML as:
+    The text in the \bold{\\quotation} block will appear in the generated HTML as:
 
 	\code
 	<blockquote>
@@ -2998,9 +2998,9 @@
         </blockquote> 
 	\endcode
 
-	The built-in style sheet for most browsers will render the
-	contents of the <blockquote> tag with left and right
-	indentations. The example above would be rendered as:
+    The built-in style sheet for most browsers will render the
+    contents of the <blockquote> tag with left and right
+    indentations. The example above would be rendered as:
 
           \quotation
              As our solutions were being adopted into new
@@ -3009,25 +3009,23 @@
              applications.
           \endquotation
 
-	But you can redefine the \bold{<blockquote>} tag in your style.css file.
+    But you can redefine the \bold{<blockquote>} tag in your style.css file.
 
-        This command replaces the old \\quote command. For more information 
-	see the \l {26-qdoc-commands-compatibility.html#quotation-versus-quote}
-        {compatibility} section.
-
+    This command replaces the old \\quote command. For more
+    information see the \l
+    {26-qdoc-commands-compatibility.html#quotation-versus-quote}
+    {compatibility} section.
 
     \target footnote-command
     \section1 \\footnote 
 
-    The \\footnote command and the corresponding
-    \\endfootnote command delimit a footnote.
+    The \\footnote and \\endfootnote commands delimit a footnote.
 
-           The footnote is rendered at the bottom of the page.
+    The footnote is rendered at the bottom of the page.
 
-           \warning The \bold{\\footnote} and \bold{\\endfootnote} 
-	   commands have not been implemented. The footnote is 
-	   rendered as a regular HTML paragraph.
-
+    \warning The \bold{\\footnote} and \bold{\\endfootnote} commands
+    have not been implemented. The footnote is rendered as a regular
+    HTML paragraph.
 
     \target tableofcontents-command
     \section1 \\tableofcontents 
@@ -3035,35 +3033,31 @@
     The \\tableofcontents command has been disabled because QDoc 
     now generates a table of contents automatically.
 
-        The automatically generated table of contents appears in the upper
-	righthand corner of the page.
-
+    The automatically generated table of contents appears in the upper
+    righthand corner of the page.
 
     \target brief-command
     \section1 \\brief 
 
-    The \\brief command introduces a one-sentence
-    description of a class, namespace, header file, property
-    or variable.
+    The \\brief command introduces a one-sentence description of a
+    class, namespace, header file, property or variable.
 
-           The brief text is used to introduce the documentation of
-           the associated object, and in lists generated using the \l
-           {generatelist-command} {\\generatelist} command.
+    The brief text is used to introduce the documentation of the
+    associated object, and in lists generated using the \l
+    {generatelist-command} {\\generatelist} command.
 
-           The \\brief command can be used in two significant
-           different ways: \l {brief class} {One for classes,
-           namespaces and header files}, and \l {brief-property} {one
-           for properties and variables}.
+    The \\brief command can be used in two significant different ways:
+    \l {brief class} {One for classes, namespaces and header files},
+    and \l {brief-property} {one for properties and variables}.
 
-           \target brief-property
+    \target brief-property
 
-           When the \\brief command is used to describe a property or
-           a variable, the brief text must be a sentence fragment
-           starting with "whether" (for a boolean property or
-           variable) or starting with "the" (for any other property
-	   or variable).
+    When the \\brief command is used to describe a property or a
+    variable, the brief text must be a sentence fragment starting with
+    "whether" (for a boolean property or variable) or starting with
+    "the" (for any other property or variable).
 
-           For example the boolean QWidget::isWindow property:
+    For example the boolean QWidget::isWindow property:
 
            \code
            / *!
@@ -3098,7 +3092,7 @@
            * /
            \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
            \quotation
                \raw HTML
@@ -3124,24 +3118,17 @@
                {QWidget::rect()} {rect()}, ...
            \endquotation
 
-           \target brief class
+    \target brief class
 
-           When the \\brief command is used to describe a class, the
-           brief text should be a complete sentence and must start
-           like this:
+    When the \\brief command is used to describe a class, the brief
+    text should be a complete sentence and must start like this:
 
            \code
            The <classname> class is|provides|contains|specifies...
            \endcode
 
-           and likewise when the command is used for namespaces or
-           header files.
-
-           \warning The brief statement is used as the first
-           paragraph of the detailed description. Do not repeat the
-           sentence.
-
-           For example:
+    \warning The brief statement is used as the first paragraph of the
+    detailed description. Do not repeat the sentence. For example:
 
            \code
            / *!
@@ -3161,7 +3148,7 @@
            * /
            \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
            \quotation
                \raw HTML
@@ -3223,6 +3210,7 @@
                    <hr />
                    <h2>Detailed Description</h2>
                \endraw
+       
                The PreviewWindow class is a custom widget displaying
                the names of its currently set window flags in a
                read-only text editor.
@@ -3262,7 +3250,7 @@
                the text in the widgets text editor.
            \endquotation
 
-           Using \\brief with a namespace can for example look like this:
+    Using \\brief in a \l{namespace-command}{\\namespace}:
 
            \code
            / *!
@@ -3273,8 +3261,7 @@
            * /
            \endcode
 
-           and finally using \\brief with a header file can look
-           something like this:
+    Using \\brief in a \l{headerfile-command}{\\headerfile}:
 
            \code
            / *!
@@ -3288,9 +3275,9 @@
            * /
            \endcode
 
-           See also \l{property-command} {\\property}, \l{class-command} {\\class},
-           \l{namespace-command} {\\namespace} and  \l{headerfile-command} {\\headerfile}.
-
+    See also \l{property-command} {\\property}, \l{class-command}
+    {\\class}, \l{namespace-command} {\\namespace} and
+    \l{headerfile-command} {\\headerfile}.
 
     \target legalese-command
     \section1 \\legalese 
