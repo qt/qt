@@ -98,6 +98,7 @@ public:
         FirstDayOfWeek, // Qt::DayOfWeek
         CurrencySymbol, // QString in: format
         FormatCurrency, // QString in: qlonglong, qulonglong or double
+        UILanguages, // QStringList
         QuotationBegin, // QString in: StandardQuotation or AlternateQuotation
         QuotationEnd // QString in: StandardQuotation or AlternateQuotation
     };
@@ -693,6 +694,8 @@ public:
     inline QString toCurrencyString(uint) const;
     QString toCurrencyString(double) const;
     inline QString toCurrencyString(float) const;
+
+    QStringList uiLanguages() const;
 
     inline bool operator==(const QLocale &other) const;
     inline bool operator!=(const QLocale &other) const;

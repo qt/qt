@@ -142,6 +142,7 @@ private slots:
     void ampm();
     void currency();
     void quoteString();
+    void uiLanguages();
 
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
@@ -2167,6 +2168,21 @@ void tst_QLocale::quoteString()
     QCOMPARE(de_CH.quoteString(someText), QString::fromUtf8("\xc2\xab" "text" "\xc2\xbb"));
     QCOMPARE(de_CH.quoteString(someText, QLocale::AlternateQuotation), QString::fromUtf8("\xe2\x80\xb9" "text" "\xe2\x80\xba"));
 
+}
+
+void tst_QLocale::uiLanguages()
+{
+    const QLocale c(QLocale::C);
+    QCOMPARE(c.uiLanguages().size(), 1);
+    QCOMPARE(c.uiLanguages().at(0), QLatin1String("C"));
+
+    const QLocale en_US("en_US");
+    QCOMPARE(en_US.uiLanguages().size(), 1);
+    QCOMPARE(en_US.uiLanguages().at(0), QLatin1String("en_US"));
+
+    const QLocale ru_RU("ru_RU");
+    QCOMPARE(ru_RU.uiLanguages().size(), 1);
+    QCOMPARE(ru_RU.uiLanguages().at(0), QLatin1String("ru_RU"));
 }
 
 QTEST_APPLESS_MAIN(tst_QLocale)

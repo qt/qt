@@ -69,6 +69,7 @@ QT_END_NAMESPACE
 #   include <CoreFoundation/CoreFoundation.h>
 #endif
 #include "private/qnumeric_p.h"
+#include "private/qsystemlibrary_p.h"
 
 #include <ctype.h>
 #include <float.h>
@@ -254,12 +255,18 @@ static const QLocalePrivate *findLocale(QLocale::Language language, QLocale::Cou
     return locale_data + idx;
 }
 
-static bool splitLocaleName(const QString &name, QChar *lang_begin, QChar *cntry_begin)
+static bool splitLocaleName(const QString &name,
+                            QChar *lang_begin, QChar *cntry_begin,
+                            int *lang_len = 0, int *cntry_len = 0)
 {
     for (int i = 0; i < 3; ++i)
         lang_begin[i] = 0;
     for (int i = 0; i < 3; ++i)
         cntry_begin[i] = 0;
+    if (lang_len)
+        *lang_len = 0;
+    if (cntry_len)
+        *cntry_len = 0;
 
     int l = name.length();
 
@@ -302,9 +309,13 @@ static bool splitLocaleName(const QString &name, QChar *lang_begin, QChar *cntry
         ++uc;
     }
 
-    int lang_len = lang - lang_begin;
+    if (lang_len)
+        *lang_len = lang - lang_begin;
+    if (cntry_len)
+        *cntry_len = cntry - cntry_begin;
 
-    return lang_len == 2 || lang_len == 3;
+    int lang_length = lang - lang_begin;
+    return lang_length == 2 || lang_length == 3;
 }
 
 void getLangAndCountry(const QString &name, QLocale::Language &lang, QLocale::Country &cntry)
@@ -733,6 +744,51 @@ static QString winFormatCurrency(const QVariant &in)
     return QString::fromWCharArray(out.data());
 }
 
+QStringList winUILanguages()
+{
+    if (QSysInfo::windowsVersion() >= QSysInfo::WV_VISTA) {
+        typedef BOOL (*GetUserPreferredUILanguagesFunc) (
+                    DWORD dwFlags,
+                    PULONG pulNumLanguages,
+                    PWSTR pwszLanguagesBuffer,
+                    PULONG pcchLanguagesBuffer);
+        static GetUserPreferredUILanguagesFunc GetUserPreferredUILanguages_ptr = 0;
+        if (!GetUserPreferredUILanguages_ptr) {
+            QSystemLibrary lib(QLatin1String("kernel32"));
+            if (lib.load())
+                GetUserPreferredUILanguages_ptr = (GetUserPreferredUILanguagesFunc)lib.resolve("GetUserPreferredUILanguages");
+        }
+        if (GetUserPreferredUILanguages_ptr) {
+            unsigned long cnt = 0;
+            QVarLengthArray<wchar_t, 64> buf(64);
+            unsigned long size = buf.size();
+            if (!GetUserPreferredUILanguages_ptr(MUI_LANGUAGE_NAME, &cnt, buf.data(), &size)) {
+                size = 0;
+                if (GetLastError() == ERROR_INSUFFICIENT_BUFFER &&
+                    GetUserPreferredUILanguages_ptr(MUI_LANGUAGE_NAME, &cnt, NULL, &size)) {
+                    buf.resize(size);
+                    if (!GetUserPreferredUILanguages_ptr(MUI_LANGUAGE_NAME, &cnt, buf.data(), &size))
+                        return QStringList();
+                }
+            }
+            QStringList result;
+            result.reserve(cnt);
+            const wchar_t *str = buf.constData();
+            for (; cnt > 0; --cnt) {
+                QString s = QString::fromWCharArray(str);
+                if (s.isEmpty())
+                    break; // something is wrong
+                result.append(s);
+                str += s.size()+1;
+            }
+            return result;
+        }
+    }
+
+    // old Windows before Vista
+    return QStringList(QString::fromLatin1(winLangCodeToIsoName(GetUserDefaultUILanguage())));
+}
+
 /*!
     \since 4.6
     Returns the fallback locale obtained from the system.
@@ -828,6 +884,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         return QVariant(winCurrencySymbol(QLocale::CurrencySymbolFormat(in.toUInt())));
     case FormatCurrency:
         return QVariant(winFormatCurrency(in));
+    case UILanguages:
+        return QVariant(winUILanguages());
     default:
         break;
     }
@@ -1428,6 +1486,21 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         return QVariant(macCurrencySymbol(QLocale::CurrencySymbolFormat(in.toUInt())));
     case FormatCurrency:
         return macFormatCurrency(in);
+    case UILanguages: {
+        QCFType<CFArrayRef> languages = (CFArrayRef)CFPreferencesCopyValue(
+                 CFSTR("AppleLanguages"),
+                 kCFPreferencesAnyApplication,
+                 kCFPreferencesCurrentUser,
+                 kCFPreferencesAnyHost);
+        const int cnt = CFArrayGetCount(languages);
+        QStringList result;
+        result.reserve(cnt);
+        for (int i = 0; i < cnt; ++i) {
+            const QString lang = QCFString::toQString(
+                        static_cast<CFStringRef>(CFArrayGetValueAtIndex(languages, i)));
+            result.append(lang);
+        }
+        return QVariant(result);
     case QuotationBegin:
     case QuotationEnd: {
         return macQuotationSymbol(type,in);
@@ -1477,9 +1550,37 @@ QVariant QSystemLocale::query(QueryType type, QVariant /* in */) const
 {
     if (type == MeasurementSystem) {
         return QVariant(unixGetSystemMeasurementSystem());
-    } else {
+    } else if (type == UILanguages) {
+        QString languages = QString::fromLocal8Bit(qgetenv("LANGUAGE"));
+        if (!languages.isEmpty()) {
+            QStringList lst = languages.split(QLatin1Char(':'));
+            for (int i = 0; i < lst.size();) {
+                const QString &name = lst.at(i);
+                QChar lang[3];
+                QChar cntry[3];
+                if (name.isEmpty() || !splitLocaleName(name, lang, cntry))
+                    lst.removeAt(i);
+                else
+                    ++i;
+            }
+            return lst;
+        }
+        QString name = QString::fromLocal8Bit(qgetenv("LC_ALL"));
+        if (name.isEmpty()) {
+            name = QString::fromLocal8Bit(qgetenv("LC_MESSAGES"));
+            if (name.isEmpty())
+                name = QString::fromLocal8Bit(qgetenv("LANG"));
+        }
+        if (!name.isEmpty()) {
+            QChar lang[3];
+            QChar cntry[3];
+            int lang_len, cntry_len;
+            if (splitLocaleName(name, lang, cntry, &lang_len, &cntry_len))
+                return QStringList(QString::fromRawData(lang, lang_len) % QLatin1Char('-') % QString::fromRawData(cntry, cntry_len));
+        }
         return QVariant();
     }
+    return QVariant();
 }
 
 #elif !defined(Q_OS_SYMBIAN)
@@ -1574,6 +1675,7 @@ Q_GLOBAL_STATIC(QLocalePrivate, globalLocalePrivate)
   \value FirstDayOfWeek a Qt::DayOfWeek enum specifiying the first day of the week
   \value CurrencySymbol a string that represents a currency in a format QLocale::CurrencyFormat.
   \value FormatCurrency a localized string representation of a number with a currency symbol.
+  \value UILanguages a list of strings representing locale names that could be used for UI translation.
   \value QuotationBegin a QString specifying the start of a quotation. the in variant contains a QLocale::QuotationStyle
   \value QuotationEnd a QString specifying the end of a quotation. the in variant contains a QLocale::QuotationStyle
 */
@@ -5076,6 +5178,29 @@ QString QLocale::toCurrencyString(double value) const
         symbol = currencySymbol(QLocale::CurrencyIsoCode);
     QString format = getLocaleData(currency_format_data + idx, size);
     return format.arg(str, symbol);
+}
+
+/*!
+    \since 4.8
+
+    Returns a sorted list of locale names that could be used for translation
+    of messages presented to the user.
+
+    \sa QTranslator
+*/
+QStringList QLocale::uiLanguages() const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::UILanguages, QVariant());
+        if (!res.isNull()) {
+            QStringList result = res.toStringList();
+            if (!result.isEmpty())
+                return result;
+        }
+    }
+#endif
+    return QStringList(name());
 }
 
 /*-

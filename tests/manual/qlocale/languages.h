@@ -38,39 +38,25 @@
 **
 ****************************************************************************/
 
-#ifndef WINDOW_H
-#define WINDOW_H
+#ifndef LANGUAGES_H
+#define LANGUAGES_H
 
 #include <QtGui>
 
-#include "calendar.h"
-#include "currency.h"
-#include "languages.h"
-#include "miscellaneous.h"
-
-class Window : public QWidget
+class LanguagesWidget : public QWidget
 {
     Q_OBJECT
 public:
-    Window();
-
-    QLabel *localeName;
-    QComboBox *localeCombo;
-    QTabWidget *tabWidget;
-    CalendarWidget *calendar;
-    CurrencyWidget *currency;
-    LanguagesWidget *languages;
-    MiscWidget *miscellaneous;
+    LanguagesWidget();
 
 private:
-    bool event(QEvent *);
-    void systemLocaleChanged();
+    QLocale currentLocale;
 
-signals:
-    void localeChanged(QLocale);
+    QLabel *languagesLabel;
+    QListWidget *languagesList;
 
 private slots:
-    void localeChanged(int);
+    void localeChanged(QLocale locale);
 };
 
 #endif
