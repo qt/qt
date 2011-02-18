@@ -122,6 +122,8 @@ class Q_CORE_EXPORT QLocale
     friend class QTextStreamPrivate;
 
 public:
+// GENERATED PART STARTS HERE
+// see qlocale_data_p.h for more info on generated data
     enum Language {
         C = 1,
         Abkhazian = 2,
@@ -208,7 +210,6 @@ public:
         NauruLanguage = 83,
         Nepali = 84,
         Norwegian = 85,
-        NorwegianBokmal = Norwegian,
         Occitan = 86,
         Oriya = 87,
         Pashto = 88,
@@ -264,8 +265,7 @@ public:
         Yoruba = 138,
         Zhuang = 139,
         Zulu = 140,
-        NorwegianNynorsk = 141,
-        Nynorsk = NorwegianNynorsk, // ### obsolete
+        Nynorsk = 141,
         Bosnian = 142,
         Divehi = 143,
         Manx = 144,
@@ -339,6 +339,8 @@ public:
         CentralMoroccoTamazight = 212,
         KoyraboroSenni = 213,
         Shambala = 214,
+        NorwegianBokmal = Norwegian,
+        NorwegianNynorsk = Nynorsk,
         LastLanguage = Shambala
     };
 
@@ -592,6 +594,7 @@ public:
         LatinAmericaAndTheCaribbean = 246,
         LastCountry = LatinAmericaAndTheCaribbean
     };
+// GENERATED PART ENDS HERE
 
     enum MeasurementSystem { MetricSystem, ImperialSystem };
 

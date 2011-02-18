@@ -40,7 +40,10 @@
 ##
 #############################################################################
 
+import os
 import sys
+import tempfile
+import datetime
 import xml.dom.minidom
 
 def check_static_char_array_length(name, array):
@@ -348,39 +351,59 @@ def currencyIsoCodeData(s):
         return ",".join(map(lambda x: str(ord(x)), s))
     return "0,0,0"
 
+def usage():
+    print "Usage: qlocalexml2cpp.py <path-to-locale.xml> <path-to-qt-src-tree>"
+    sys.exit(1)
+
+GENERATED_BLOCK_START = "// GENERATED PART STARTS HERE\n"
+GENERATED_BLOCK_END = "// GENERATED PART ENDS HERE\n"
+
 def main():
-    doc = xml.dom.minidom.parse("locale.xml")
+    if len(sys.argv) != 3:
+        usage()
+
+    localexml = sys.argv[1]
+    qtsrcdir = sys.argv[2]
+
+    if not os.path.exists(qtsrcdir) or not os.path.exists(qtsrcdir):
+        usage()
+    if not os.path.isfile(qtsrcdir + "/src/corelib/tools/qlocale_data_p.h"):
+        usage()
+    if not os.path.isfile(qtsrcdir + "/src/corelib/tools/qlocale.h"):
+        usage()
+
+    (data_temp_file, data_temp_file_path) = tempfile.mkstemp("qlocale_data_p")
+    data_temp_file = os.fdopen(data_temp_file, "w")
+    qlocaledata_file = open(qtsrcdir + "/src/corelib/tools/qlocale_data_p.h", "r")
+    s = qlocaledata_file.readline()
+    while s and s != GENERATED_BLOCK_START:
+        data_temp_file.write(s)
+        s = qlocaledata_file.readline()
+    data_temp_file.write(GENERATED_BLOCK_START)
+
+    doc = xml.dom.minidom.parse(localexml)
     language_map = loadLanguageMap(doc)
     country_map = loadCountryMap(doc)
     default_map = loadDefaultMap(doc)
     locale_map = loadLocaleMap(doc, language_map, country_map)
     dupes = findDupes(language_map, country_map)
 
-    # Language enum
-    print "enum Language {"
-    language = ""
-    for key in language_map.keys():
-        language = fixedLanguageName(language_map[key][0], dupes)
-        print "    " + language + " = " + str(key) + ","
-    print "    LastLanguage = " + language
-    print "};"
-
-    print
-
-    # Country enum
-    print "enum Country {"
-    country = ""
-    for key in country_map.keys():
-        country = fixedCountryName(country_map[key][0], dupes)
-        print "    " + country + " = " + str(key) + ","
-    print "    LastCountry = " + country
-    print "};"
-
-    print
+    cldr_version = "1.8.1"
+    data_temp_file.write("\n\
+/*\n\
+    This part of the file was generated on %s from the\n\
+    Common Locale Data Repository v%s\n\
+\n\
+    http://www.unicode.org/cldr/\n\
+\n\
+    Do not change it, instead edit CLDR data and regenerate this file using\n\
+    cldr2qlocalexml.py and qlocalexml2cpp.py.\n\
+*/\n\n\n\
+" % (str(datetime.date.today()), cldr_version) )
 
     # Locale index
-    print "static const quint16 locale_index[] = {"
-    print "     0, // unused"
+    data_temp_file.write("static const quint16 locale_index[] = {\n")
+    data_temp_file.write("     0, // unused\n")
     index = 0
     for key in language_map.keys():
         i = 0
@@ -388,11 +411,11 @@ def main():
         if count > 0:
             i = index
             index += count
-        print "%6d, // %s" % (i, language_map[key][0])
-    print "     0 // trailing 0"
-    print "};"
+        data_temp_file.write("%6d, // %s\n" % (i, language_map[key][0]))
+    data_temp_file.write("     0 // trailing 0\n")
+    data_temp_file.write("};\n")
 
-    print
+    data_temp_file.write("\n")
 
     date_format_data = StringData()
     time_format_data = StringData()
@@ -406,8 +429,8 @@ def main():
     currency_format_data = StringData()
 
     # Locale data
-    print "static const QLocalePrivate locale_data[] = {"
-    print "//      lang   terr    dec  group   list  prcnt   zero  minus  plus    exp sDtFmt lDtFmt sTmFmt lTmFmt ssMonth slMonth  sMonth lMonth  sDays  lDays  am,len      pm,len"
+    data_temp_file.write("static const QLocalePrivate locale_data[] = {\n")
+    data_temp_file.write("//      lang   terr    dec  group   list  prcnt   zero  minus  plus    exp sDtFmt lDtFmt sTmFmt lTmFmt ssMonth slMonth  sMonth lMonth  sDays  lDays  am,len      pm,len\n")
 
     locale_keys = locale_map.keys()
     compareLocaleKeys.default_map = default_map
@@ -417,7 +440,7 @@ def main():
     for key in locale_keys:
         l = locale_map[key]
 
-        print "    { %6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, {%s}, %s,%s,%s,%s,%6d,%6d,%6d }, // %s/%s" \
+        data_temp_file.write("    { %6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, {%s}, %s,%s,%s,%s,%6d,%6d,%6d }, // %s/%s\n" \
                     % (key[0], key[1],
                         l.decimal,
                         l.group,
@@ -454,157 +477,224 @@ def main():
                         l.currencyRounding,
                         l.firstDayOfWeek,
                         l.language,
-                        l.country)
-    print "    {      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,    0,0,    0,0,    0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0, {0,0,0}, 0,0, 0,0, 0,0, 0,0, 0, 0, 0 }  // trailing 0s"
-    print "};"
+                        l.country))
+    data_temp_file.write("    {      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,    0,0,    0,0,    0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0, {0,0,0}, 0,0, 0,0, 0,0, 0,0, 0, 0, 0 }  // trailing 0s\n")
+    data_temp_file.write("};\n")
 
-    print
+    data_temp_file.write("\n")
 
     # Date format data
     #check_static_char_array_length("date_format", date_format_data.data)
-    print "static const ushort date_format_data[] = {"
-    print wrap_list(date_format_data.data)
-    print "};"
+    data_temp_file.write("static const ushort date_format_data[] = {\n")
+    data_temp_file.write(wrap_list(date_format_data.data))
+    data_temp_file.write("\n};\n")
 
-    print
+    data_temp_file.write("\n")
 
     # Time format data
     #check_static_char_array_length("time_format", time_format_data.data)
-    print "static const ushort time_format_data[] = {"
-    print wrap_list(time_format_data.data)
-    print "};"
+    data_temp_file.write("static const ushort time_format_data[] = {\n")
+    data_temp_file.write(wrap_list(time_format_data.data))
+    data_temp_file.write("\n};\n")
 
-    print
+    data_temp_file.write("\n")
 
     # Months data
     #check_static_char_array_length("months", months_data.data)
-    print "static const ushort months_data[] = {"
-    print wrap_list(months_data.data)
-    print "};"
+    data_temp_file.write("static const ushort months_data[] = {\n")
+    data_temp_file.write(wrap_list(months_data.data))
+    data_temp_file.write("\n};\n")
 
-    print
+    data_temp_file.write("\n")
 
     # Standalone months data
     #check_static_char_array_length("standalone_months", standalone_months_data.data)
-    print "static const ushort standalone_months_data[] = {"
-    print wrap_list(standalone_months_data.data)
-    print "};"
+    data_temp_file.write("static const ushort standalone_months_data[] = {\n")
+    data_temp_file.write(wrap_list(standalone_months_data.data))
+    data_temp_file.write("\n};\n")
 
-    print
+    data_temp_file.write("\n")
 
     # Days data
     #check_static_char_array_length("days", days_data.data)
-    print "static const ushort days_data[] = {"
-    print wrap_list(days_data.data)
-    print "};"
+    data_temp_file.write("static const ushort days_data[] = {\n")
+    data_temp_file.write(wrap_list(days_data.data))
+    data_temp_file.write("\n};\n")
 
-    print
+    data_temp_file.write("\n")
 
     # AM data
     #check_static_char_array_length("am", am_data.data)
-    print "static const ushort am_data[] = {"
-    print wrap_list(am_data.data)
-    print "};"
+    data_temp_file.write("static const ushort am_data[] = {\n")
+    data_temp_file.write(wrap_list(am_data.data))
+    data_temp_file.write("\n};\n")
 
-    print
+    data_temp_file.write("\n")
 
     # PM data
     #check_static_char_array_length("pm", am_data.data)
-    print "static const ushort pm_data[] = {"
-    print wrap_list(pm_data.data)
-    print "};"
+    data_temp_file.write("static const ushort pm_data[] = {\n")
+    data_temp_file.write(wrap_list(pm_data.data))
+    data_temp_file.write("\n};\n")
 
-    print
+    data_temp_file.write("\n")
 
     # Currency symbol data
     #check_static_char_array_length("currency_symbol", currency_symbol_data.data)
-    print "static const ushort currency_symbol_data[] = {"
-    print wrap_list(currency_symbol_data.data)
-    print "};"
+    data_temp_file.write("static const ushort currency_symbol_data[] = {\n")
+    data_temp_file.write(wrap_list(currency_symbol_data.data))
+    data_temp_file.write("\n};\n")
 
-    print
+    data_temp_file.write("\n")
 
     # Currency display name data
     #check_static_char_array_length("currency_display_name", currency_display_name_data.data)
-    print "static const ushort currency_display_name_data[] = {"
-    print wrap_list(currency_display_name_data.data)
-    print "};"
+    data_temp_file.write("static const ushort currency_display_name_data[] = {\n")
+    data_temp_file.write(wrap_list(currency_display_name_data.data))
+    data_temp_file.write("\n};\n")
 
-    print
+    data_temp_file.write("\n")
 
     # Currency format data
     #check_static_char_array_length("currency_format", currency_format_data.data)
-    print "static const ushort currency_format_data[] = {"
-    print wrap_list(currency_format_data.data)
-    print "};"
+    data_temp_file.write("static const ushort currency_format_data[] = {\n")
+    data_temp_file.write(wrap_list(currency_format_data.data))
+    data_temp_file.write("\n};\n")
 
-    print
+    data_temp_file.write("\n")
+
     # Language name list
-    print "static const char language_name_list[] ="
-    print "\"Default\\0\""
+    data_temp_file.write("static const char language_name_list[] =\n")
+    data_temp_file.write("\"Default\\0\"\n")
     for key in language_map.keys():
-        print "\"" + language_map[key][0] + "\\0\""
-    print ";"
+        data_temp_file.write("\"" + language_map[key][0] + "\\0\"\n")
+    data_temp_file.write(";\n")
 
-    print
+    data_temp_file.write("\n")
 
     # Language name index
-    print "static const quint16 language_name_index[] = {"
-    print "     0, // Unused"
+    data_temp_file.write("static const quint16 language_name_index[] = {\n")
+    data_temp_file.write("     0, // Unused\n")
     index = 8
     for key in language_map.keys():
         language = language_map[key][0]
-        print "%6d, // %s" % (index, language)
+        data_temp_file.write("%6d, // %s\n" % (index, language))
         index += len(language) + 1
-    print "};"
+    data_temp_file.write("};\n")
 
-    print
+    data_temp_file.write("\n")
 
     # Country name list
-    print "static const char country_name_list[] ="
-    print "\"Default\\0\""
+    data_temp_file.write("static const char country_name_list[] =\n")
+    data_temp_file.write("\"Default\\0\"\n")
     for key in country_map.keys():
         if key == 0:
             continue
-        print "\"" + country_map[key][0] + "\\0\""
-    print ";"
+        data_temp_file.write("\"" + country_map[key][0] + "\\0\"\n")
+    data_temp_file.write(";\n")
 
-    print
+    data_temp_file.write("\n")
 
     # Country name index
-    print "static const quint16 country_name_index[] = {"
-    print "     0, // AnyCountry"
+    data_temp_file.write("static const quint16 country_name_index[] = {\n")
+    data_temp_file.write("     0, // AnyCountry\n")
     index = 8
     for key in country_map.keys():
         if key == 0:
             continue
         country = country_map[key][0]
-        print "%6d, // %s" % (index, country)
+        data_temp_file.write("%6d, // %s\n" % (index, country))
         index += len(country) + 1
-    print "};"
+    data_temp_file.write("};\n")
 
-    print
+    data_temp_file.write("\n")
 
     # Language code list
-    print "static const unsigned char language_code_list[] ="
-    print "\"  \\0\" // Unused"
+    data_temp_file.write("static const unsigned char language_code_list[] =\n")
+    data_temp_file.write("\"  \\0\" // Unused\n")
     for key in language_map.keys():
         code = language_map[key][1]
         if len(code) == 2:
             code += r"\0"
-        print "\"%2s\" // %s" % (code, language_map[key][0])
-    print ";"
+        data_temp_file.write("\"%2s\" // %s\n" % (code, language_map[key][0]))
+    data_temp_file.write(";\n")
 
-    print
+    data_temp_file.write("\n")
 
     # Country code list
-    print "static const unsigned char country_code_list[] ="
+    data_temp_file.write("static const unsigned char country_code_list[] =\n")
     for key in country_map.keys():
         code = country_map[key][1]
         if len(code) == 2:
             code += "\\0"
-        print "\"%2s\" // %s" % (code, country_map[key][0])
-    print ";"
+        data_temp_file.write("\"%2s\" // %s\n" % (code, country_map[key][0]))
+    data_temp_file.write(";\n")
+
+    data_temp_file.write("\n")
+    data_temp_file.write(GENERATED_BLOCK_END)
+    s = qlocaledata_file.readline()
+    # skip until end of the block
+    while s and s != GENERATED_BLOCK_END:
+        s = qlocaledata_file.readline()
+
+    s = qlocaledata_file.readline()
+    while s:
+        data_temp_file.write(s)
+        s = qlocaledata_file.readline()
+    data_temp_file.close()
+    qlocaledata_file.close()
+
+    os.rename(data_temp_file_path, qtsrcdir + "/src/corelib/tools/qlocale_data_p.h")
+
+    # qlocale.h
+
+    (qlocale_temp_file, qlocale_temp_file_path) = tempfile.mkstemp("qlocale.h")
+    qlocale_temp_file = os.fdopen(qlocale_temp_file, "w")
+    qlocale_file = open(qtsrcdir + "/src/corelib/tools/qlocale.h", "r")
+    s = qlocale_file.readline()
+    while s and s != GENERATED_BLOCK_START:
+        qlocale_temp_file.write(s)
+        s = qlocale_file.readline()
+    qlocale_temp_file.write(GENERATED_BLOCK_START)
+    qlocale_temp_file.write("// see qlocale_data_p.h for more info on generated data\n")
+
+    # Language enum
+    qlocale_temp_file.write("    enum Language {\n")
+    language = ""
+    for key in language_map.keys():
+        language = fixedLanguageName(language_map[key][0], dupes)
+        qlocale_temp_file.write("        " + language + " = " + str(key) + ",\n")
+    # special cases for norwegian. we really need to make it right at some point.
+    qlocale_temp_file.write("        NorwegianBokmal = Norwegian,\n")
+    qlocale_temp_file.write("        NorwegianNynorsk = Nynorsk,\n")
+    qlocale_temp_file.write("        LastLanguage = " + language + "\n")
+    qlocale_temp_file.write("    };\n")
+
+    qlocale_temp_file.write("\n")
+
+    # Country enum
+    qlocale_temp_file.write("    enum Country {\n")
+    country = ""
+    for key in country_map.keys():
+        country = fixedCountryName(country_map[key][0], dupes)
+        qlocale_temp_file.write("        " + country + " = " + str(key) + ",\n")
+    qlocale_temp_file.write("        LastCountry = " + country + "\n")
+    qlocale_temp_file.write("    };\n")
+
+    qlocale_temp_file.write(GENERATED_BLOCK_END)
+    s = qlocale_file.readline()
+    # skip until end of the block
+    while s and s != GENERATED_BLOCK_END:
+        s = qlocale_file.readline()
+
+    s = qlocale_file.readline()
+    while s:
+        qlocale_temp_file.write(s)
+        s = qlocale_file.readline()
+    qlocale_temp_file.close()
+    qlocale_file.close()
+
+    os.rename(qlocale_temp_file_path, qtsrcdir + "/src/corelib/tools/qlocale.h")
 
 
 if __name__ == "__main__":

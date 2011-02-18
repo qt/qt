@@ -72,8 +72,10 @@ static const CountryLanguage ImperialMeasurementSystems[] = {
 static const int ImperialMeasurementSystemsCount =
     sizeof(ImperialMeasurementSystems)/sizeof(ImperialMeasurementSystems[0]);
 
+// GENERATED PART STARTS HERE
+
 /*
-    This part of the file was generated on 2010-05-19 from the
+    This part of the file was generated on 2011-02-18 from the
     Common Locale Data Repository v1.8.1
 
     http://www.unicode.org/cldr/
@@ -6123,6 +6125,8 @@ static const unsigned char country_code_list[] =
 "MF\0" // Saint Martin
 "419" // LatinAmericaAndTheCaribbean
 ;
+
+// GENERATED PART ENDS HERE
 
 QT_END_NAMESPACE
 
