@@ -874,9 +874,10 @@ If the installation fails, please make sure that there is
 no previously installed version of Qt on the phone.
 
 Qt requires some dependent packages to be installed on the device,
-they are shipped in the Symbian SDK and can be installed using the
-runonphone tool as well.
-The packages can be found in the EPOCROOT at the following locations;
+which can be installed using the runonphone tool as well. One is
+the \c{sqlite3.sis}, which is included in the Qt distribution, while
+the others are shipped with the Symbian SDK. The required packages
+can be found from the following locations:
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 50
 
@@ -1274,10 +1275,18 @@ We hope you will enjoy using Qt.
            in this release.
     \endlist
 
-    Running Qt on real device requires the Open C to be installed on the device.
-    The Open C installation packages are embedded into \c{qt_installer.sis}, which is included in
-    Qt for Symbian binary package. If you are building Qt from scratch, you can find the
-    required packages in the Symbian SDK where you installed Open C/C++:
+    Running Qt on real device requires the Open C and sqlite3 to be installed on the device.
+    These installation packages are embedded into \c{qt_installer.sis}, which is included in
+    Qt for Symbian binary package.
+
+    If you are building Qt from scratch, you can find the sqlite3 package from
+    under your Qt installation:
+
+    \list
+        \o \c{src\s60installs\sqlite3.sis}
+    \endlist
+
+    The Open C packages you can find in the Symbian SDK where you installed Open C/C++:
     \list
         \o \c{nokia_plugin\openc\s60opencsis\pips_s60_<version>.sis}
         \o \c{nokia_plugin\openc\s60opencsis\openc_ssl_s60_<version>.sis}
