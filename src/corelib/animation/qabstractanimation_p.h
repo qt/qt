@@ -184,6 +184,9 @@ public:
     void restartAnimationTimer();
     void updateAnimationsTime();
 
+    //useful for profiling/debugging
+    int runningAnimationCount() { return animations.count(); }
+
 protected:
     void timerEvent(QTimerEvent *);
 
