@@ -641,6 +641,11 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
                         socketState = QAbstractSocket::UnconnectedState;
                         break;
                     }
+                    if (value == WSAEADDRNOTAVAIL) {
+                        setError(QAbstractSocket::NetworkError, AddressNotAvailableErrorString);
+                        socketState = QAbstractSocket::UnconnectedState;
+                        break;
+                    }
                 }
                 // fall through
             }
