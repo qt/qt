@@ -769,6 +769,12 @@ void SpriteParticles::prepareNextFrame()
         p.v1.size = p.v2.size = p.v3.size = p.v4.size = size * float(m_emitting);
         p.v1.endSize = p.v2.endSize = p.v3.endSize = p.v4.endSize = endSize * float(m_emitting);
 
+        //TODO: use endSize too,but I currently think the Vs should be split, to allow for size/rot affectors
+        p.v2.x += p.v1.size;
+        p.v3.y += p.v1.size;
+        p.v4.x += p.v1.size;
+        p.v4.y += p.v1.size;
+
         // Initial Sprite State
         p.v1.animIdx = p.v2.animIdx = p.v3.animIdx = p.v4.animIdx = 0;
         p.v1.frameCount = p.v2.frameCount = p.v3.frameCount = p.v4.frameCount = m_states[0]->frames();
@@ -845,7 +851,7 @@ void SpriteParticles::prepareNextFrame()
             ParticleVertices* p = &particles[i];
             qreal dt = time - p->v1.dt;
             p->v1.dt = p->v2.dt = p->v3.dt = p->v4.dt = time;
-            a->affect(p, i, dt);
+            a->affect(p, i, dt);//TODO: indicate when an index is reset (and associated data should be too)
         }
     }
 
