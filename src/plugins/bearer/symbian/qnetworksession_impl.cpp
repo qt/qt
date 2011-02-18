@@ -61,13 +61,12 @@
 QT_BEGIN_NAMESPACE
 
 QNetworkSessionPrivateImpl::QNetworkSessionPrivateImpl(SymbianEngine *engine)
-:   CActive(CActive::EPriorityUserInput), engine(engine),
-    iDynamicUnSetdefaultif(0), ipConnectionNotifier(0),
+:   engine(engine),
+    ipConnectionNotifier(0), ipConnectionStarter(0),
     iHandleStateNotificationsFromManager(false), iFirstSync(true), iStoppedByUser(false),
     iClosedByUser(false), iError(QNetworkSession::UnknownSessionError), iALREnabled(0),
     iConnectInBackground(false), isOpening(false)
 {
-    CActiveScheduler::Add(this);
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     iMobility = NULL;
@@ -104,7 +103,8 @@ void QNetworkSessionPrivateImpl::closeHandles()
 #endif
 
     // Cancel possible RConnection::Start() - may call RConnection::Close if Start was in progress
-    Cancel();
+    delete ipConnectionStarter;
+    ipConnectionStarter = 0;
     //close any open connection (note Close twice is safe in case Cancel did it above)
     iConnection.Close();
 
@@ -425,9 +425,9 @@ void QNetworkSessionPrivateImpl::open()
 
             pref.SetIapId(symbianConfig->numericIdentifier());
 #endif
-            if (!IsActive()) {
-                iConnection.Start(pref, iStatus);
-                SetActive();
+            if (!ipConnectionStarter) {
+                ipConnectionStarter = new ConnectionStarter(*this, iConnection);
+                ipConnectionStarter->Start(pref);
             }
             // Avoid flip flop of states if the configuration is already
             // active. IsOpen/opened() will indicate when ready.
@@ -453,9 +453,9 @@ void QNetworkSessionPrivateImpl::open()
 #else
         TConnSnapPref snapPref(symbianConfig->numericIdentifier());
 #endif
-        if (!IsActive()) {
-            iConnection.Start(snapPref, iStatus);
-            SetActive();
+        if (!ipConnectionStarter) {
+            ipConnectionStarter = new ConnectionStarter(*this, iConnection);
+            ipConnectionStarter->Start(snapPref);
         }
         // Avoid flip flop of states if the configuration is already
         // active. IsOpen/opened() will indicate when ready.
@@ -464,9 +464,9 @@ void QNetworkSessionPrivateImpl::open()
         }
     } else if (publicConfig.type() == QNetworkConfiguration::UserChoice) {
         iKnownConfigsBeforeConnectionStart = engine->accessPointConfigurationIdentifiers();
-        if (!IsActive()) {
-            iConnection.Start(iStatus);
-            SetActive();
+        if (!ipConnectionStarter) {
+            ipConnectionStarter = new ConnectionStarter(*this, iConnection);
+            ipConnectionStarter->Start();
         }
         newState(QNetworkSession::Connecting);
     }
@@ -1066,13 +1066,14 @@ QNetworkConfiguration QNetworkSessionPrivateImpl::activeConfiguration(TUint32 ia
     return publicConfig;
 }
 
-void QNetworkSessionPrivateImpl::RunL()
+void QNetworkSessionPrivateImpl::ConnectionStartComplete(TInt statusCode)
 {
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
     qDebug() << "QNS this : " << QString::number((uint)this) << " - "
-            << "RConnection::RunL with status code: " << iStatus.Int();
+            << "RConnection::Start completed with status code: " << statusCode;
 #endif
-    TInt statusCode = iStatus.Int();
+    delete ipConnectionStarter;
+    ipConnectionStarter = 0;
 
     switch (statusCode) {
         case KErrNone: // Connection created successfully
@@ -1171,11 +1172,6 @@ void QNetworkSessionPrivateImpl::RunL()
             QT_TRYCATCH_LEAVING(syncStateWithInterface());
             break;
     }
-}
-
-void QNetworkSessionPrivateImpl::DoCancel()
-{
-    iConnection.Close();
 }
 
 // Enters newState if feasible according to current state.
@@ -1564,6 +1560,50 @@ void ConnectionProgressNotifier::RunL()
         // warning, this object may be deleted in the callback - do nothing after handleSymbianConnectionStatusChange
         QT_TRYCATCH_LEAVING(iOwner.handleSymbianConnectionStatusChange(iProgress().iStage, iProgress().iError));
     }
+}
+
+ConnectionStarter::ConnectionStarter(QNetworkSessionPrivateImpl &owner, RConnection &connection)
+    : CActive(CActive::EPriorityUserInput), iOwner(owner), iConnection(connection)
+{
+    CActiveScheduler::Add(this);
+}
+
+ConnectionStarter::~ConnectionStarter()
+{
+    Cancel();
+}
+
+void ConnectionStarter::Start()
+{
+    if (!IsActive()) {
+        iConnection.Start(iStatus);
+        SetActive();
+    }
+}
+
+void ConnectionStarter::Start(TConnPref &pref)
+{
+    if (!IsActive()) {
+        iConnection.Start(pref, iStatus);
+        SetActive();
+    }
+}
+
+void ConnectionStarter::RunL()
+{
+    iOwner.ConnectionStartComplete(iStatus.Int());
+    //note owner deletes on callback
+}
+
+TInt ConnectionStarter::RunError(TInt err)
+{
+    qWarning() << "ConnectionStarter::RunError" << err;
+    return KErrNone;
+}
+
+void ConnectionStarter::DoCancel()
+{
+    iConnection.Close();
 }
 
 QT_END_NAMESPACE
