@@ -846,11 +846,11 @@ void SpriteParticles::prepareNextFrame()
         m_stateUpdates.pop_front();
     }
 
-    foreach(ParticleAffector* a, m_affectors){
-        for(int i=0; i < m_particle_count; i++){
+    for(int i=0; i < m_particle_count; i++){
             ParticleVertices* p = &particles[i];
             qreal dt = time - p->v1.dt;
             p->v1.dt = p->v2.dt = p->v3.dt = p->v4.dt = time;
+        foreach(ParticleAffector* a, m_affectors){
             a->affect(p, i, dt);//TODO: indicate when an index is reset (and associated data should be too)
         }
     }
