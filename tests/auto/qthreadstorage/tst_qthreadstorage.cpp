@@ -385,19 +385,18 @@ void tst_QThreadStorage::QTBUG14579_leakInDestructor()
     QCOMPARE(int(SPointer::count), c);
 }
 
-
-class QTBUG14579_reset;
-Q_GLOBAL_STATIC(QThreadStorage<QTBUG14579_reset *>, QTBUG14579_resetTls)
-
 class QTBUG14579_reset {
 public:
     SPointer member;
-    ~QTBUG14579_reset() {
-        //Quite stupid, but WTF::ThreadSpecific<T>::destroy does it.
-        QTBUG14579_resetTls()->setLocalData(this);
-    }
+    ~QTBUG14579_reset();
 };
 
+Q_GLOBAL_STATIC(QThreadStorage<QTBUG14579_reset *>, QTBUG14579_resetTls)
+
+QTBUG14579_reset::~QTBUG14579_reset() {
+    //Quite stupid, but WTF::ThreadSpecific<T>::destroy does it.
+    QTBUG14579_resetTls()->setLocalData(this);
+}
 
 void tst_QThreadStorage::QTBUG14579_resetInDestructor()
 {
