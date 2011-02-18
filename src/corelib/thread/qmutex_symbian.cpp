@@ -57,6 +57,8 @@ QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
 {
 #ifdef QT_SYMBIAN_USE_RFASTLOCK
         int r = lock.CreateLocal();
+        if (r == KErrNone)
+            lock.Wait();
 #else
         int r = lock.CreateLocal(0);
 #endif
