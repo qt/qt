@@ -455,7 +455,14 @@ integrateWeekData(cldr_dir+"/../supplemental/supplementalData.xml")
 locale_keys = locale_database.keys()
 locale_keys.sort()
 
+cldr_version = 'unknown'
+ldml = open(cldr_dir+"/../dtd/ldml.dtd", "r")
+for line in ldml:
+    if 'version cldrVersion CDATA #FIXED' in line:
+        cldr_version = line.split('"')[1]
+
 print "<localeDatabase>"
+print "    <version>" + cldr_version + "</version>"
 print "    <languageList>"
 for id in enumdata.language_list:
     l = enumdata.language_list[id]

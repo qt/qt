@@ -388,7 +388,8 @@ def main():
     locale_map = loadLocaleMap(doc, language_map, country_map)
     dupes = findDupes(language_map, country_map)
 
-    cldr_version = "1.8.1"
+    cldr_version = eltText(firstChildElt(doc.documentElement, "version"))
+
     data_temp_file.write("\n\
 /*\n\
     This part of the file was generated on %s from the\n\
