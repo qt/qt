@@ -14,7 +14,12 @@ Rectangle{
             duration: 120
         }
 
-        affectors: Rocking{pace: 5}
+        affectors: Rocking{
+            pace: 5
+            angle: 70
+            angleVariance: 20
+            minSpeed: 20
+        }
 
         particlesPerSecond: 6
         particleDuration: 5000
