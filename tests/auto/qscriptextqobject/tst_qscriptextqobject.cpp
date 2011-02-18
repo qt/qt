@@ -557,6 +557,7 @@ private slots:
     void callQtInvokable7();
     void connectAndDisconnect();
     void connectAndDisconnect_emitFromJS();
+    void connectAndDisconnect_senderWrapperCollected_data();
     void connectAndDisconnect_senderWrapperCollected();
     void connectAndDisconnectWithBadArgs();
     void connectAndDisconnect_senderDeleted();
@@ -2052,10 +2053,31 @@ void tst_QScriptExtQObject::connectAndDisconnect_emitFromJS()
     QVERIFY(m_engine->evaluate("myObject.mySignalWithIntArg.disconnect(myObject['myOverloadedSlot(int)'])").isUndefined());
 }
 
+void tst_QScriptExtQObject::connectAndDisconnect_senderWrapperCollected_data()
+{
+    QTest::addColumn<QString>("prefix");
+    QTest::addColumn<QString>("connectStatement");
+    QTest::addColumn<bool>("shouldPersist");
+
+    QTest::newRow("object-object") << QString() << QString("myObject.mySignal.connect(myObject.mySlot)") << true;
+    QTest::newRow("object-js") << QString("myObject.foo = function() { myObject.mySlot() }")
+                               << QString("myObject.mySignal.connect(myObject.foo)") << false;
+    QTest::newRow("object-js2") << QString("function foo() { myObject.mySlot() }")
+                                << QString("myObject.mySignal.connect(foo)") << false;
+    QTest::newRow("object-js3") << QString("myObject.foo = function() { this.mySlot() }")
+                                << QString("myObject.mySignal.connect(myObject, myObject.foo)") << true;
+    QTest::newRow("object-object2") << QString() << QString("myObject.mySignal.connect(myObject, myObject.mySlot)") << true;
+}
+
 void tst_QScriptExtQObject::connectAndDisconnect_senderWrapperCollected()
 {
+    QFETCH( QString, prefix );
+    QFETCH( QString, connectStatement );
+    QFETCH( bool, shouldPersist );
     // when the wrapper dies, the connection stays alive
-    QVERIFY(m_engine->evaluate("myObject.mySignal.connect(myObject.mySlot)").isUndefined());
+    if (!prefix.isEmpty())
+        m_engine->evaluate(prefix);
+    QVERIFY(m_engine->evaluate(connectStatement).isUndefined());
     m_myObject->resetQtFunctionInvoked();
     m_myObject->emitMySignal();
     QCOMPARE(m_myObject->qtFunctionInvoked(), 20);
@@ -2063,7 +2085,8 @@ void tst_QScriptExtQObject::connectAndDisconnect_senderWrapperCollected()
     m_engine->collectGarbage();
     m_myObject->resetQtFunctionInvoked();
     m_myObject->emitMySignal();
-    QCOMPARE(m_myObject->qtFunctionInvoked(), 20);
+    QEXPECT_FAIL("object-js3", "The connection is garbage collected in v8 and was not in jsc", Continue);  //Investigate if this is because the garbage collection in JSC was not complete.
+    QCOMPARE(m_myObject->qtFunctionInvoked(), (shouldPersist ? 20 : -1));
 }
 
 void tst_QScriptExtQObject::connectAndDisconnectWithBadArgs()
