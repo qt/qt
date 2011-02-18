@@ -149,6 +149,7 @@ private:
     bool easyWlanTrueIapId(TUint32 &trueIapId) const;
 #endif
 
+    void closeHandles();
 
 private: // data
     SymbianEngine *engine;
