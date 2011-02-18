@@ -251,11 +251,8 @@
         The \a parent parameter is sent to the QWidget constructor.
     \endquotation
 
-    The \\a command follows the same conventions as the \l {i-command}
-    {\\i} command for \l {argument} {punctuation, parentheses and use
-    of braces} for the argument. However, a parameter is always a
-    single word, so braces are rarely necessary. And for the same
-    reason, parentheses seldom occur.
+    You can enclose the formal parameter name in curly brackets, if
+    you want to, but it isn't necessary.
 
     \target c-command
     \section1 \\c (code font)
@@ -283,9 +280,18 @@
         few seconds.
     \endquotation
 
-    The \\c command follows the same conventions as the \l {i-command}
-    {\\i} command for \l {argument} {punctuation, parentheses and use
-    of braces} for the argument.
+    If the text to be rendered in the code font contains spaces, enclose the
+    entire text in curly brackets.
+
+    \code
+      \c {QLineEdit::QLineEdit(const QString &contents, QWidget *parent) :QWidget(parent)}
+    \endcode
+
+    QDoc renders this as:
+
+    \quotation
+      \c {QLineEdit::QLineEdit(const QString &contents, QWidget *parent) :QWidget(parent)}
+    \endquotation
 
     The \\c command accepts the special character \c \ within its
     argument, i.e. it renders it as a normal character. So if you want
@@ -415,52 +421,52 @@
 
     When generating DITA XML, qdoc outputs the nested \e {div} commands as:
 
-	   \code
-            <sectiondiv outputclass="indexbox guide">
-                <sectiondiv outputclass="heading">
-                    <p>Qt Developer Guide</p>
-                </sectiondiv>
-                <sectiondiv outputclass="indexboxcont indexboxbar">
-                    <sectiondiv outputclass="section indexIcon"/>
-                    <sectiondiv outputclass="section">
-			<p>Qt is a cross-platform application and UI
-			   framework. Using Qt, you can write
-			   web-enabled applications once and deploy
-			   them across desktop, mobile and embedded
-			   operating systems without rewriting the
-			   source code.
-                        </p>
-                    </sectiondiv>
-                    <sectiondiv outputclass="section sectionlist">
-                        <ul>
-                            <li>
-                                <xref href="gettingstarted.xml#id-606ee7a8-219b-47b7-8f94-91bc8c76e54c">Getting started</xref>
-			    </li>
-                            <li>
-                                <xref href="installation.xml#id-075c20e2-aa1e-4f88-a316-a46517e50443">Installation</xref>
-			    </li>
-                            <li>
-                                <xref href="how-to-learn-qt.xml#id-49f509b5-52f9-4cd9-9921-74217b9a5182">How to learn Qt</xref>
-			    </li>
-                            <li>
-                                <xref href="tutorials.xml#id-a737f955-a904-455f-b4aa-0dc69ed5a64f">Tutorials</xref>
-                            </li>
-                            <li>
-                                <xref href="all-examples.xml#id-98d95159-d65b-4706-b08f-13d80080448d">Examples</xref>
-                            </li>
-                            <li>
-                                <xref href="qt4-7-intro.xml#id-519ae0e3-4242-4c2a-b2be-e05d1e95f177">What's new in Qt 4.7</xref>
-                            </li>
-                        </ul>
-                    </sectiondiv>
-                </sectiondiv>
-            </sectiondiv>
-	   \endcode
+    \code
+      <sectiondiv outputclass="indexbox guide">
+          <sectiondiv outputclass="heading">
+              <p>Qt Developer Guide</p>
+          </sectiondiv>
+          <sectiondiv outputclass="indexboxcont indexboxbar">
+              <sectiondiv outputclass="section indexIcon"/>
+              <sectiondiv outputclass="section">
+                  <p>Qt is a cross-platform application and UI
+                     framework. Using Qt, you can write
+                     web-enabled applications once and deploy
+                     them across desktop, mobile and embedded
+                     operating systems without rewriting the
+                     source code.
+                  </p>
+              </sectiondiv>
+              <sectiondiv outputclass="section sectionlist">
+                  <ul>
+                      <li>
+                          <xref href="gettingstarted.xml#id-606ee7a8-219b-47b7-8f94-91bc8c76e54c">Getting started</xref>
+                      </li>
+                      <li>
+                          <xref href="installation.xml#id-075c20e2-aa1e-4f88-a316-a46517e50443">Installation</xref>
+                      </li>
+                      <li>
+                          <xref href="how-to-learn-qt.xml#id-49f509b5-52f9-4cd9-9921-74217b9a5182">How to learn Qt</xref>
+                      </li>
+                      <li>
+                          <xref href="tutorials.xml#id-a737f955-a904-455f-b4aa-0dc69ed5a64f">Tutorials</xref>
+                      </li>
+                      <li>
+                          <xref href="all-examples.xml#id-98d95159-d65b-4706-b08f-13d80080448d">Examples</xref>
+                      </li>
+                      <li>
+                          <xref href="qt4-7-intro.xml#id-519ae0e3-4242-4c2a-b2be-e05d1e95f177">What's new in Qt 4.7</xref>
+                      </li>
+                  </ul>
+              </sectiondiv>
+          </sectiondiv>
+      </sectiondiv>
+    \endcode
 
-	   Your DITA XML publishing program must recognize the values
-	   of the \e {outputclass} attribute.
+    Your DITA XML publishing program must recognize the values of the
+    \e {outputclass} attribute.
            
-	   See also \l {span-command} {\\span}.
+    See also \l {span-command} {\\span}.
 
     \target span -command
     \section1 \\span \span {class="newStuff"} {(new)} 
@@ -468,249 +474,246 @@
     The \\span command is for applying special formatting
     attributes to a small block of text.
 
-	   Two arguments must be provided, each argument in curly
-	   braces, as shown in the qdoc comment below. The first
-	   argument is not interpreted but is used as the formatting
-	   attribute(s) of the tag that is ultimately output by
-	   qdoc. The second argument is the text to be rendered with
-	   the special formatting attributes.
+    Two arguments must be provided, each argument in curly braces, as
+    shown in the qdoc comment below. The first argument is not
+    interpreted but is used as the formatting attribute(s) of the tag
+    that is ultimately output by qdoc. The second argument is the text
+    to be rendered with the special formatting attributes.
 	   
-           For example, we might want to render the first word of each
-           element in a numeric list in blue.
+    For example, we might want to render the first word of each
+    element in a numeric list in blue.
 
-	   \code
-	   / *!
-	       Global variables with complex types:
-	       \list 1
-		  \o \span {class="variableName"} {mutableComplex1} in globals.cpp at line 14
-    		  \o \span {class="variableName"} {mutableComplex2} in globals.cpp at line 15
-    		  \o \span {class="variableName"} {constComplex1} in globals.cpp at line 16
-    		  \o \span {class="variableName"} {constComplex2} in globals.cpp at line 17
-    	       \endlist
-	  * /
-	  \endcode
+    \code
+        / *!
+            Global variables with complex types:
+	    \list 1
+                \o \span {class="variableName"} {mutableComplex1} in globals.cpp at line 14
+                \o \span {class="variableName"} {mutableComplex2} in globals.cpp at line 15
+                \o \span {class="variableName"} {constComplex1} in globals.cpp at line 16
+                \o \span {class="variableName"} {constComplex2} in globals.cpp at line 17
+            \endlist
+        * /
+    \endcode
 
-	  Class \e {variableName} refers to a clause in your style.css. 
+    Class \e {variableName} refers to a clause in your style.css. 
 
-	  \code
-	     .variableName
-             {
-                 font-family: courier;
-	         color: blue
-             }
-	  \endcode
+    \code
+        .variableName
+        {
+            font-family: courier;
+	    color: blue
+        }
+    \endcode
 
-	  Using the \e {variableName} clause shown above, the example is rendered as:
+    Using the \e {variableName} clause shown above, the example is rendered as:
 
-	  Global variables with complex types:
-	  \list 1
-	    \o \span {class="variableName"} {mutableComplex1} in globals.cpp at line 14
-    	    \o \span {class="variableName"} {mutableComplex2} in globals.cpp at line 15
-    	    \o \span {class="variableName"} {constComplex1} in globals.cpp at line 16
-    	    \o \span {class="variableName"} {constComplex2} in globals.cpp at line 17
-	  \endlist
+    Global variables with complex types:
+    \list 1
+        \o \span {class="variableName"} {mutableComplex1} in globals.cpp at line 14
+        \o \span {class="variableName"} {mutableComplex2} in globals.cpp at line 15
+        \o \span {class="variableName"} {constComplex1} in globals.cpp at line 16
+        \o \span {class="variableName"} {constComplex2} in globals.cpp at line 17
+    \endlist
 
-	  \note The \bold span command does not cause a new paragraph to
-	  be started.
+    \note The \bold span command does not cause a new paragraph to be
+    started.
 
-	  See also \l {div-command} {\\div}.
+    See also \l {div-command} {\\div}.
            
     \target tt-command
-    \section1 \\tt 
+    \section1 \\tt (teletype font)
 
-    The \\tt command can be used to render variables,
-    user-defined classes and C++ keywords like \c int, \c
-    for, etc.
+    The \\tt command renders its argument in a monospace font. This
+    command behaves just like the \l {c-command} {\\c} command, except
+    that \\tt allows you to nest QDoc commands within the argument
+    (e.g. \l {i-command} {\\i}, \l {bold-command} {\\bold} and \l
+    {underline-command} {\\underline}).
 
-           The \\tt command behaves just like the \l {c-command} {\\c}
-           command, except that \\tt parses QDoc commands (like \l
-           {i-command} {\\i}, \l {bold-command} {\\bold} and \l
-           {underline-command} {\\underline}) contained within its
-           argument.
+    \code
+       / *!
+           After \c setupUi() populates the main container with
+           child widgets it scans the main container's list of
+           slots for names with the form
+           \tt{on_\e{objectName}_\e{signalName}().}
+       * /
+    \endcode
 
-           The command renders its argument using a monospace
-           font. For example:
+    QDoc renders this as:
 
-           \code
-           / *!
-               After \c setupUi() populates the main container with
-               child widgets it scans the main container's list of
-               slots for names with the form
-               \tt{on_\e{objectName}_\e{signalName}().}
-           * /
-           \endcode
+    \quotation
+        After \c setupUi() populates the main container with
+        child widgets it scans the main container's list of
+        slots for names with the form
+        \tt{on_\e{objectName}_\e{signalName}().}
+    \endquotation
 
-           QDoc renders this as:
+    If the text to be rendered in the code font contains spaces, enclose the
+    entire text in curly brackets.
 
-           \quotation
-               After \c setupUi() populates the main container with
-               child widgets it scans the main container's list of
-               slots for names with the form
-               \tt{on_\e{objectName}_\e{signalName}().}
-           \endquotation
+    \code
+      \tt {QLineEdit::QLineEdit(const QString &contents, QWidget *parent) :QWidget(parent)}
+    \endcode
 
-           The \\tt command follows the same conventions as the \l
-           {i-command} {\\i} command for \l {argument} {punctuation, parentheses
-           and use of braces} for the argument.
+    QDoc renders this as:
 
-           See also \l {c-command} {\\c}.
+    \quotation
+      \tt {QLineEdit::QLineEdit(const QString &contents, QWidget *parent) :QWidget(parent)}
+    \endquotation
+
+    See also \l {c-command} {\\c}.
 
     \target bold-command
     \section1 \\bold 
 
-    The \\bold command renders its argument using
-    a bold font.
+    The \\bold command renders its argument in bold font.
 
-           For example:
+    For example:
 
-           \code
-           / *!
-               This is regular text; \bold {this text is
-               rendered using the \\bold command}.
-           * /
-           \endcode
+    \code
+    / *!
+        This is regular text; \bold {this text is
+        rendered using the \\bold command}.
+    * /
+    \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
-           \quotation
-           This is regular text; \bold {this text is rendered using
-           the \\bold command}.
-           \endquotation
-
-           The command follows the same conventions as the \l {i-command} {\\i}
-           command for \l {argument} {punctuation, parentheses and use
-           of braces} for the argument.
+    \quotation
+    This is regular text; \bold {this text is rendered using
+    the \\bold command}.
+    \endquotation
 
     \target i-command
-    \section1 \\i 
-    The \\i command renders its argument in italic.
+    \section1 \\i (italics)
 
-           \warning This is preliminary functionality. For
-           more information, see the \l
-           {26-qdoc-commands-compatibility.html#i-versus-e} {compatibility}
-           section.
+    The \\i command renders its argument in italics.
 
-           \target argument
-           Normally, a command argument ends at the next whitespace [1],
-           but braces can be used to group words [2]. For example:
+    \warning If \\i doesn't work and you get some strange error
+    meesages from qdoc3 about using \\o outside of tables and lists,
+    use \bold{\\e} for italics instead of \\i. For more information,
+    see the relevant explanation in the section on \l
+    {26-qdoc-commands-compatibility.html#i-versus-e} {compatibility
+    issues}.
 
-           \code
-           / *!
-               Here, we render \i {a few words} in italic.
-           * /
-           \endcode
+    If the argument contains spaces or other punctuation, enclose the
+    argument in curly brackets.
 
-           QDoc renders this as:
+    \code
+    / *!
+        Here, we render \i {a few words} in italic.
+    * /
+    \endcode
 
-           \quotation
-               Here, we render \e {a few words} in italic.
-           \endquotation
+    QDoc renders this as:
 
-           If you want to use other QDoc commands within an argument
-           that contains spaces, you always need to enclose the
-           argument with braces. But QDoc is smart enough to count
-           parentheses [3], so you don't need braces in cases like this:
+    \quotation
+        Here, we render \e {a few words} in italic.
+    \endquotation
 
-           \code
-           / *!
-               An argument can sometimes contain whitespaces,
-               for example: \i QPushButton(tr("A Brand New Button"))
-           * /
-           \endcode
+    If you want to use other QDoc commands within an argument that
+    contains spaces, you always need to enclose the argument with
+    braces. But QDoc is smart enough to count parentheses [3], so you
+    don't need braces in cases like this:
 
-           QDoc renders this as:
+    \code
+    / *!
+        An argument can sometimes contain whitespaces,
+        for example: \i QPushButton(tr("A Brand New Button"))
+    * /
+    \endcode
 
-           \quotation
-               An argument can sometimes contain whitespaces,
-               for example: \e QPushButton(tr("A Brand New Button"))
-           \endquotation
+    QDoc renders this as:
 
-           Finally, trailing punctuation is not included in an
-           argument [4], nor is 's [5]
+    \quotation
+       An argument can sometimes contain whitespaces,
+       for example: \e QPushButton(tr("A Brand New Button"))
+    \endquotation
 
-           \raw HTML
-               <table align="center" cellpadding="2"
-                   cellspacing="1" border="0">
-               <tr valign="top" bgcolor="#a2c511">
-                   <th></th>
-                   <th>QDoc Syntax</th>
-                   <th>Generated Documentation</th>
-               </tr>
+    Finally, trailing punctuation is not included in an argument [4],
+    nor is 's [5]
 
-               <tr valign="top" bgcolor="#d0d0d0">
-                   <td>1</td>
-                   <td>A variation of a command button is a \e menu
-                       button.</td>
-                   <td>A variation of a command button is a <i>menu</i>
-                       button.</td>
-               </tr>
+    \raw HTML
+        <table align="center" cellpadding="2"
+           cellspacing="1" border="0">
+        <tr valign="top" bgcolor="#a2c511">
+            <th></th>
+            <th>QDoc Syntax</th>
+            <th>Generated Documentation</th>
+        </tr>
 
-               <tr valign="top" bgcolor="#c0c0c0">
-                   <td>2</td>
-                   <td>The QPushButton widget provides a
-                       \e {command button}.</td>
-                   <td>The QPushButton widget provides a
-                       <i>command button</i>.</td>
-               </tr>
+        <tr valign="top" bgcolor="#d0d0d0">
+           <td>1</td>
+            <td>A variation of a command button is a \e menu
+                button.</td>
+            <td>A variation of a command button is a <i>menu</i>
+                button.</td>
+        </tr>
 
-               <tr valign="top" bgcolor="#d0d0d0">
-                   <td>3</td>
-                   <td>Another class of buttons are option buttons
-                       \e (see QRadioButton).</td>
-                   <td>Another class of buttons are option buttons
-                       <i> (see QRadioButton)</i>.</td>
-               </tr>
+        <tr valign="top" bgcolor="#c0c0c0">
+            <td>2</td>
+            <td>The QPushButton widget provides a
+                \e {command button}.</td>
+            <td>The QPushButton widget provides a
+                <i>command button</i>.</td>
+        </tr>
 
-               <tr valign="top" bgcolor="#c0c0c0">
-                   <td>4</td>
-                   <td>A push button emits the signal \e clicked().</td>
-                   <td>A push button emits the signal <i>clicked</i>().</td>
-               </tr>
+        <tr valign="top" bgcolor="#d0d0d0">
+            <td>3</td>
+            <td>Another class of buttons are option buttons
+                \e (see QRadioButton).</td>
+            <td>Another class of buttons are option buttons
+                <i> (see QRadioButton)</i>.</td>
+        </tr>
 
-               <tr valign="top" bgcolor="#d0d0d0">
-                   <td>5</td>
-                   <td>The \e QPushButton's checked property is
-                       false by default.</td>
-                   <td>The <i>QPushButton</i>'s checked property is
-                       false by default.</td>
-               </tr>
+        <tr valign="top" bgcolor="#c0c0c0">
+            <td>4</td>
+            <td>A push button emits the signal \e clicked().</td>
+            <td>A push button emits the signal <i>clicked</i>().</td>
+        </tr>
 
-               </table>
-           \endraw
+        <tr valign="top" bgcolor="#d0d0d0">
+            <td>5</td>
+            <td>The \e QPushButton's checked property is
+                false by default.</td>
+            <td>The <i>QPushButton</i>'s checked property is
+                false by default.</td>
+        </tr>
+
+        </table>
+    \endraw
 
     \target sub-command
     \section1 \\sub 
 
-    The \\sub command renders its argument lower
-    than the baseline of the regular text, using a smaller font.
+    The \\sub command renders its argument lower than the baseline of
+    the regular text, using a smaller font.
 
-           For example:
+    For example:
 
-           \code
-           / *!
-               Definition (Range): Consider the sequence
-               {x\sub n}\sub {n > 1} . The set
+    \code
+    / *!
+        Definition (Range): Consider the sequence
+        {x\sub n}\sub {n > 1} . The set
 
-               {x\sub 2, x\sub 3, x\sub 4, ...} = {x\sub n ; n = 2, 3, 4, ...}
+        {x\sub 2, x\sub 3, x\sub 4, ...} = {x\sub n ; n = 2, 3, 4, ...}
 
-               is called the range of the sequence.
-           * /
-           \endcode
+        is called the range of the sequence.
+    * /
+    \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
-           \quotation
-               Definition (Range): Consider the sequence
-               {x\sub n}\sub {n > 1} . The set
+    \quotation
+        Definition (Range): Consider the sequence
+        {x\sub n}\sub {n > 1} . The set
 
-               {x\sub 2, x\sub 3, x\sub 4, ...} = {x\sub n ; n = 2, 3, 4, ...}
+        {x\sub 2, x\sub 3, x\sub 4, ...} = {x\sub n ; n = 2, 3, 4, ...}
 
-               is called the range of the sequence.
-           \endquotation
+        is called the range of the sequence.
+    \endquotation
 
-           The \\sub command follows the same conventions as the \l
-           {i-command} {\\i} command for \l {argument} {punctuation, parentheses
-           and use of braces} for the argument.
+    If the argument contains spaces or other punctuation, enclose the
+    argument in curly brackets.
 
     \target sup-command
     \section1 \\sup 
@@ -718,107 +721,105 @@
     The \\sup command renders its argument higher than
     the baseline of the regular text, using a smaller font.
 
-           For example:
+    For example:
 
-           \code
-           / *!
-               The series
+    \code
+    / *!
+        The series
 
-               1 + a + a\sup 2 + a\sup 3 + a\sup 4 + ...
+        1 + a + a\sup 2 + a\sup 3 + a\sup 4 + ...
 
-               is called the \i {geometric series}.
-           * /
-           \endcode
+        is called the \i {geometric series}.
+    * /
+    \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
-           \quotation
-               The series
+    \quotation
+        The series
 
-               1 + a + a\sup 2 + a\sup 3 + a\sup 4 + ...
+        1 + a + a\sup 2 + a\sup 3 + a\sup 4 + ...
 
-               is called the \e {geometric series}.
-           \endquotation
+        is called the \e {geometric series}.
+    \endquotation
 
-           The \\sup command follows the same conventions as the \l
-           {i-command} {\\i} command for \l {argument} {punctuation, parentheses
-           and use of braces} for the argument.
+    If the argument contains spaces or other punctuation, enclose the
+    argument in curly brackets.
 
     \target underline-command
     \section1 \\underline
 
     The \\underline command renders its argument underlined.
 
-           For example:
+    For example:
 
-           \code
-           / *!
-               The \underline {F}ile menu gives the users the possibility
-               to open, and edit, an existing file, save a new or modified
-               file, and exit the application.
-           * /
-           \endcode
+    \code
+    / *!
+        The \underline {F}ile menu gives the users the possibility
+        to open, and edit, an existing file, save a new or modified
+        file, and exit the application.
+    * /
+    \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
-           \quotation
-               The \underline {F}ile menu gives the users the possibility
-               to open, and edit, an existing file, save a new or modified
-               file, and exit the application.
-           \endquotation
+    \quotation
+        The \underline {F}ile menu gives the users the possibility
+        to open, and edit, an existing file, save a new or modified
+        file, and exit the application.
+    \endquotation
 
-           The \\underline command follows the same conventions as the
-           \l {i-command} {\\i} command for \l {argument} {punctuation,
-           parentheses and use of braces} for the argument.  
+    If the argument contains spaces or other punctuation, enclose the
+    argument in curly brackets.
 
     \target backslash-command
     \section1 \\\\ (double backslash) 
 
     The \\\\ command expands to a single backslash.
 
-           QDoc commands always start with a backslash alone. To
-           display an actual backslash in the text you need to type
-           two of the kind. If you want to display two backslashes,
-           you need to type four, and so forth. For example:
+    QDoc commands always start with a backslash alone. To display an
+    actual backslash in the text you need to type two of the kind. If
+    you want to display two backslashes, you need to type four, and so
+    forth. For example:
 
-           \code
-           / *!
-               The \\\\ command is useful if you want a
-               backslash to appear verbatim, for example,
-               writing C:\\windows\\home\\.
-           * /
-           \endcode
+    \code
+    / *!
+        The \\\\ command is useful if you want a
+        backslash to appear verbatim, for example,
+        writing C:\\windows\\home\\.
+    * /
+    \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
-           \quotation
-               The \\\\ command is useful if you want a
-               backslash to appear verbatim, for example,
-               writing C:\\windows\\home\\.
-           \endquotation
+    \quotation
+        The \\\\ command is useful if you want a
+        backslash to appear verbatim, for example,
+        writing C:\\windows\\home\\.
+    \endquotation
 
-           However, if you want your text to appear in a typewriter
-           font as well, you can use the \l {c-command} {\\c} command instead,
-           which accepts and renders the backslash as any other
-           character. For example:
+    However, if you want your text to appear in a typewriter font as
+    well, you can use the \l {c-command} {\\c} command instead, which
+    accepts and renders the backslash as any other character. For
+    example:
 
-           \code
-           / *!
-               The \\c command is useful if you want a
-               backslash to appear verbatim, and the word
-               that contains it written in a typewriter font,
-               like this: \c {C:\windows\home\}.
-           * /
-           \endcode
+    \code
+    / *!
+        The \\c command is useful if you want a
+        backslash to appear verbatim, and the word
+        that contains it written in a typewriter font,
+        like this: \c {C:\windows\home\}.
+    * /
+    \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
-           \quotation
-               The \\c command is useful if you want a
-               backslash to appear verbatim, and the word
-               that contains it written in a typewriter font,
-               like this: \c {C:\windows\home\}.
-           \endquotation
+    \quotation
+        The \\c command is useful if you want a
+        backslash to appear verbatim, and the word
+        that contains it written in a typewriter font,
+        like this: \c {C:\windows\home\}.
+    \endquotation
 
 */
 
