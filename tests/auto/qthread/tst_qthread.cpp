@@ -941,6 +941,7 @@ void tst_QThread::adoptMultipleThreads()
     for (int i = 0; i < numThreads; ++i) {
         nativeThreads.at(i)->stop();
         nativeThreads.at(i)->join();
+        delete nativeThreads.at(i);
     }
 
     QTestEventLoop::instance().enterLoop(5);
@@ -985,6 +986,7 @@ void tst_QThread::adoptMultipleThreadsOverlap()
     for (int i = 0; i < numThreads; ++i) {
         nativeThreads.at(i)->stop();
         nativeThreads.at(i)->join();
+        delete nativeThreads.at(i);
     }
 
     QTestEventLoop::instance().enterLoop(5);
