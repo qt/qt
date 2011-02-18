@@ -41,6 +41,8 @@
 #include <qtest.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qtimer.h>
+#include <QtCore/qdir.h>
+#include <QtCore/qfileinfo.h>
 #include <QtScript/qscriptengine.h>
 
 #include <QtDeclarative/qdeclarativecomponent.h>
@@ -58,6 +60,13 @@ Q_DECLARE_METATYPE(QScriptValue)
 #define SRCDIR "."
 #endif
 
+inline QUrl TEST_FILE(const QString &filename)
+{
+    QFileInfo fileInfo(__FILE__);
+    return QUrl::fromLocalFile(fileInfo.absoluteDir().filePath(filename));
+}
+
+
 class tst_QDeclarativeWorkerScript : public QObject
 {
     Q_OBJECT
@@ -70,6 +79,8 @@ private slots:
     void messaging_sendQObjectList();
     void messaging_sendJsObject();
     void script_with_pragma();
+    void scriptError_onLoad();
+    void scriptError_onCall();
 
 private:
     void waitForEchoMessage(QDeclarativeWorkerScript *worker) {
@@ -211,6 +222,47 @@ void tst_QDeclarativeWorkerScript::script_with_pragma()
     const QMetaObject *mo = worker->metaObject();
     QCOMPARE(mo->property(mo->indexOfProperty("response")).read(worker).value<QVariant>(), value);
 
+    qApp->processEvents();
+    delete worker;
+}
+
+static QString qdeclarativeworkerscript_lastWarning;
+static void qdeclarativeworkerscript_warningsHandler(QtMsgType type, const char *msg)
+{
+    if (type == QtWarningMsg)
+         qdeclarativeworkerscript_lastWarning = QString::fromUtf8(msg);
+}
+
+void tst_QDeclarativeWorkerScript::scriptError_onLoad()
+{
+    QDeclarativeComponent component(&m_engine, SRCDIR "/data/worker_error_onLoad.qml");
+
+    QtMsgHandler previousMsgHandler = qInstallMsgHandler(qdeclarativeworkerscript_warningsHandler);
+    QDeclarativeWorkerScript *worker = qobject_cast<QDeclarativeWorkerScript*>(component.create());
+    QVERIFY(worker != 0);
+
+    QTRY_COMPARE(qdeclarativeworkerscript_lastWarning,
+            TEST_FILE("data/script_error_onLoad.js").toString() + QLatin1String(":3: SyntaxError: Parse error"));
+
+    qInstallMsgHandler(previousMsgHandler);
+    qApp->processEvents();
+    delete worker;
+}
+
+void tst_QDeclarativeWorkerScript::scriptError_onCall()
+{
+    QDeclarativeComponent component(&m_engine, SRCDIR "/data/worker_error_onCall.qml");
+    QDeclarativeWorkerScript *worker = qobject_cast<QDeclarativeWorkerScript*>(component.create());
+    QVERIFY(worker != 0);
+
+    QtMsgHandler previousMsgHandler = qInstallMsgHandler(qdeclarativeworkerscript_warningsHandler);
+    QVariant value;
+    QVERIFY(QMetaObject::invokeMethod(worker, "testSend", Q_ARG(QVariant, value)));
+
+    QTRY_COMPARE(qdeclarativeworkerscript_lastWarning,
+            TEST_FILE("data/script_error_onCall.js").toString() + QLatin1String(":4: ReferenceError: Can't find variable: getData"));
+
+    qInstallMsgHandler(previousMsgHandler);
     qApp->processEvents();
     delete worker;
 }

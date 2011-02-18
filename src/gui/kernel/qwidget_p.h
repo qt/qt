@@ -568,6 +568,7 @@ public:
     // sub-classes that their internals are about to be released.
     virtual void aboutToDestroy() {}
 
+    QInputContext *assignedInputContext() const;
     QInputContext *inputContext() const;
     inline QWidget *effectiveFocusWidget() {
         QWidget *w = q_func();
