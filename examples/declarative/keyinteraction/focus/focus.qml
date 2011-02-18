@@ -91,7 +91,7 @@ Rectangle {
 
         MouseArea {
             anchors.fill: parent; anchors.margins: -10
-            onClicked: window.state = "contextMenuOpen"
+            onClicked: contextMenu.focus = true
         }
     }
 

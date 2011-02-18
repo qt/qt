@@ -1662,6 +1662,8 @@ void QDeclarativeTextInputPrivate::init()
     q->connect(QApplication::clipboard(), SIGNAL(dataChanged()),
             q, SLOT(q_canPasteChanged()));
 #endif // QT_NO_CLIPBOARD
+    q->connect(control, SIGNAL(updateMicroFocus()),
+               q, SLOT(updateMicroFocus()));
     q->updateSize();
     oldValidity = control->hasAcceptableInput();
     lastSelectionStart = 0;

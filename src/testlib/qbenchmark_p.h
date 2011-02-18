@@ -130,7 +130,7 @@ public:
     QBenchmarkGlobalData:current is created at the beginning of qExec()
     and cleared at the end.
 */
-class QBenchmarkGlobalData
+class Q_TESTLIB_EXPORT QBenchmarkGlobalData
 {
 public:
     static QBenchmarkGlobalData *current;
@@ -161,7 +161,7 @@ private:
     created at the beginning of qInvokeTestMethod() and cleared at
     the end.
 */
-class QBenchmarkTestMethodData
+class Q_TESTLIB_EXPORT QBenchmarkTestMethodData
 {
 public:
     static QBenchmarkTestMethodData *current;

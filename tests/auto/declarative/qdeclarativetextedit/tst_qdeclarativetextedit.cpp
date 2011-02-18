@@ -137,6 +137,8 @@ private slots:
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
 
+    void preeditMicroFocus();
+
 private:
     void simulateKey(QDeclarativeView *, int key);
     QDeclarativeView *createView(const QString &filename);
@@ -1177,6 +1179,8 @@ void tst_qdeclarativetextedit::dragMouseSelection()
     QVERIFY(str2.length() > 3);
 
     QVERIFY(str1 != str2); // Verify the second press and drag is a new selection and doesn't not the first moved.
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextedit::mouseSelectionMode_data()
@@ -1460,7 +1464,7 @@ QDeclarativeView *tst_qdeclarativetextedit::createView(const QString &filename)
 class MyInputContext : public QInputContext
 {
 public:
-    MyInputContext() : openInputPanelReceived(false), closeInputPanelReceived(false) {}
+    MyInputContext() : openInputPanelReceived(false), closeInputPanelReceived(false), updateReceived(false) {}
     ~MyInputContext() {}
 
     QString identifierName() { return QString(); }
@@ -1478,8 +1482,22 @@ public:
             closeInputPanelReceived = true;
         return QInputContext::filterEvent(event);
     }
+
+    void update() { updateReceived = true; }
+
+    void sendPreeditText(const QString &text, int cursor)
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        attributes.append(QInputMethodEvent::Attribute(
+                QInputMethodEvent::Cursor, cursor, text.length(), QVariant()));
+
+        QInputMethodEvent event(text, attributes);
+        sendEvent(event);
+    }
+
     bool openInputPanelReceived;
     bool closeInputPanelReceived;
+    bool updateReceived;
 };
 
 void tst_qdeclarativetextedit::textInput()
@@ -1795,6 +1813,61 @@ void tst_qdeclarativetextedit::testQtQuick11Attributes_data()
     QTest::newRow("onLinkActivated") << "onLinkActivated: {}"
         << "QDeclarativeComponent: Component is not ready"
         << ":1 \"TextEdit.onLinkActivated\" is not available in QtQuick 1.0.\n";
+}
+
+void tst_qdeclarativetextedit::preeditMicroFocus()
+{
+    QString preeditText = "super";
+
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    MyInputContext ic;
+    view.setInputContext(&ic);
+    QDeclarativeTextEdit edit;
+    edit.setPos(0, 0);
+    edit.setFocus(true);
+    scene.addItem(&edit);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+
+    QRect currentRect;
+    QRect previousRect = edit.inputMethodQuery(Qt::ImMicroFocus).toRect();
+
+    // Verify that the micro focus rect is positioned the same for position 0 as
+    // it would be if there was no preedit text.
+    ic.updateReceived = false;
+    ic.sendPreeditText(preeditText, 0);
+    currentRect = edit.inputMethodQuery(Qt::ImMicroFocus).toRect();
+    QCOMPARE(currentRect, previousRect);
+#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
+    QCOMPARE(ic.updateReceived, true);
+#endif
+
+    // Verify that the micro focus rect moves to the left as the cursor position
+    // is incremented.
+    for (int i = 1; i <= 5; ++i) {
+        ic.updateReceived = false;
+        ic.sendPreeditText(preeditText, i);
+        currentRect = edit.inputMethodQuery(Qt::ImMicroFocus).toRect();
+        QVERIFY(previousRect.left() < currentRect.left());
+#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
+        QCOMPARE(ic.updateReceived, true);
+#endif
+        previousRect = currentRect;
+    }
+
+    // Verify that if there is no preedit cursor then the micro focus rect is the
+    // same as it would be if it were positioned at the end of the preedit text.
+    ic.sendPreeditText(preeditText, 0);
+    ic.updateReceived = false;
+    ic.sendEvent(QInputMethodEvent(preeditText, QList<QInputMethodEvent::Attribute>()));
+    currentRect = edit.inputMethodQuery(Qt::ImMicroFocus).toRect();
+    QCOMPARE(currentRect, previousRect);
+#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
+    QCOMPARE(ic.updateReceived, true);
+#endif
 }
 
 QTEST_MAIN(tst_qdeclarativetextedit)
