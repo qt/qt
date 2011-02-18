@@ -1157,8 +1157,28 @@ void tst_QTextScriptEngine::combiningMarks_qtbug15675()
 
     QVERIFY(e->layoutData->items[0].num_glyphs == 4);
     QVERIFY(e->layoutData->glyphLayout.advances_y[2] > 0);
+#elif defined(Q_WS_X11)
+    QFontDatabase db;
+
+    if (!db.families().contains("DejaVu Sans Mono")) {
+        QSKIP("Required font (DejaVu Sans Mono) doesn't exist, skip test.", SkipAll);
+        return;
+    }
+
+    QString s;
+    s.append(QChar(0x0062));
+    s.append(QChar(0x0332));
+    s.append(QChar(0x0063));
+
+    QTextLayout layout(s, QFont("DejaVu Sans Mono"));
+    QTextEngine *e = layout.d;
+    e->itemize();
+    e->shape(0);
+
+    QVERIFY(e->layoutData->items[0].num_glyphs == 3);
+    QVERIFY(e->layoutData->glyphLayout.advances_x[1] == 0);
 #else
-    QSKIP("Mac specific test", SkipAll);
+    QSKIP("X11/Mac specific test", SkipAll);
 #endif
 }
 
