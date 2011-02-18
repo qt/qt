@@ -1469,7 +1469,7 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
                      itemPriv->paintNode->parent() == itemPriv->childContainerNode());
 
             if (itemPriv->paintNode && itemPriv->paintNode->parent() == 0) {
-                if (itemPriv->childContainerNode()->childCount() == 0)
+                if (itemPriv->childContainerNode()->childCount() == itemPriv->paintNodeIndex)
                     itemPriv->childContainerNode()->appendChildNode(itemPriv->paintNode);
                 else 
                     itemPriv->childContainerNode()->insertChildNodeBefore(itemPriv->paintNode, itemPriv->childContainerNode()->childAtIndex(itemPriv->paintNodeIndex));
