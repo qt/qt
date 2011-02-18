@@ -2624,7 +2624,7 @@ void QAbstractSocket::setReadBufferSize(qint64 size)
         // ensure that the read notification is enabled if we've now got
         // room in the read buffer
         // but only if we're not inside canReadNotification -- that will take care on its own
-        if ((size == 0 || d->readBuffer.size() < size) && d->state == Connected) // Do not change the notifier unless we are connected.
+        if ((size == 0 || d->readBuffer.size() < size) && d->state == QAbstractSocket::ConnectedState) // Do not change the notifier unless we are connected.
             d->socketEngine->setReadNotificationEnabled(true);
     }
 }
