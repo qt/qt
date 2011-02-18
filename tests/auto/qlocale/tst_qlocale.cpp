@@ -2144,10 +2144,10 @@ void tst_QLocale::currency()
     QCOMPARE(ru_RU.toCurrencyString(double(-1234.56)), QString::fromUtf8("-1234,56\xc2\xa0\xd1\x80\xd1\x83\xd0\xb1."));
 
     const QLocale de_DE("de_DE");
-    QCOMPARE(de_DE.toCurrencyString(qulonglong(1234)), QString::fromUtf8("1234""\xc2\xa0\xe2\x82\xac"));
-    QCOMPARE(de_DE.toCurrencyString(qlonglong(-1234)), QString::fromUtf8("-1234""\xc2\xa0\xe2\x82\xac"));
-    QCOMPARE(de_DE.toCurrencyString(double(1234.56)), QString::fromUtf8("1234,56""\xc2\xa0\xe2\x82\xac"));
-    QCOMPARE(de_DE.toCurrencyString(double(-1234.56)), QString::fromUtf8("-1234,56""\xc2\xa0\xe2\x82\xac"));
+    QCOMPARE(de_DE.toCurrencyString(qulonglong(1234)), QString::fromUtf8("1234\xc2\xa0\xe2\x82\xac"));
+    QCOMPARE(de_DE.toCurrencyString(qlonglong(-1234)), QString::fromUtf8("-1234\xc2\xa0\xe2\x82\xac"));
+    QCOMPARE(de_DE.toCurrencyString(double(1234.56)), QString::fromUtf8("1234,56\xc2\xa0\xe2\x82\xac"));
+    QCOMPARE(de_DE.toCurrencyString(double(-1234.56)), QString::fromUtf8("-1234,56\xc2\xa0\xe2\x82\xac"));
 }
 
 QTEST_APPLESS_MAIN(tst_QLocale)
