@@ -551,7 +551,7 @@ void DocParser::parse(const QString& source,
                         break;
                     case CMD_CODE:
                         leavePara();
-                        append(Atom::Code, getCode(CMD_CODE, marker));
+                        append(Atom::Code, getCode(CMD_CODE, 0));
                         break;
 #ifdef QDOC_QML
                     case CMD_QML:

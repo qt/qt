@@ -39,7 +39,7 @@
     pointer. Dictionaries provide very fast insertion and lookup.
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_q3intdict.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_q3intdict.cpp 0
 
     See Q3Dict for full details, including the choice of dictionary
     size, and how deletions are handled. 
@@ -145,7 +145,7 @@
     \a item may not be 0.
 
     Equivalent to:
-    \snippet doc/src/snippets/code/doc_src_q3intdict.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_q3intdict.cpp 1
 
     If there are two or more items with equal keys, then the most
     recently inserted item will be replaced.
@@ -270,7 +270,7 @@
     iterator that operates on Q3IntDict\<X\> (dictionary of X*).
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_q3intdict.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_q3intdict.cpp 2
 
     Note that the traversal order is arbitrary; you are not guaranteed the
     order shown above.

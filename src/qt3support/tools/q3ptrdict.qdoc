@@ -39,7 +39,7 @@
     pointer. Dictionaries provide very fast insertion and lookup.
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_q3ptrdict.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_q3ptrdict.cpp 0
     In this example we use a dictionary to add an extra property (a
     char*) to the line edits we're using. 
 
@@ -147,7 +147,7 @@
     \a item may not be 0.
 
     Equivalent to
-    \snippet doc/src/snippets/code/doc_src_q3ptrdict.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_q3ptrdict.cpp 1
 
     If there are two or more items with equal keys, then the most
     recently inserted item will be replaced.
@@ -272,7 +272,7 @@
     iterator that operates on Q3PtrDict\<X\> (dictionary of X*).
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_q3ptrdict.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_q3ptrdict.cpp 2
     In the example we insert some line edits into a dictionary,
     associating a string with each. We then iterate over the
     dictionary printing the associated strings.

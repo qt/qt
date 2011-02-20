@@ -99,7 +99,7 @@
 
     If you use \c qmake and Makefiles, use the \c QMAKE_LFLAGS_SONAME setting:
 
-    \snippet doc/src/snippets/code/doc_src_mac-differences.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_mac-differences.pro 0
 
     Alternatively, you can modify the install name using the
     install_name_tool(1) on the command line. See its manpage for more
@@ -165,7 +165,7 @@
     the bundle resides on the disk. The following code returns the
     path of the application bundle:
 
-    \snippet doc/src/snippets/code/doc_src_mac-differences.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_mac-differences.cpp 1
 
     Note: When OS X is set to use Japanese, a bug causes this sequence
     to fail and return an empty string. Therefore, always test the

@@ -25,7 +25,7 @@
 **
 ****************************************************************************/
 
-/*! 
+/*!
     \page qaxserver-demo-hierarchy.html
     \title Qt Widget Hierarchy
 
@@ -84,5 +84,5 @@
     your WebBrowser to support ActiveX controls, and scripting to be
     enabled.
 
-    \snippet examples/activeqt/hierarchy-demo.qdocinc 0
+    \snippet examples/activeqt/hierarchy-demo-snippet.qdoc script
 */

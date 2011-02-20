@@ -96,18 +96,8 @@ dirname=$PWD/$dirname
 fi
 LD_LIBRARY_PATH=$dirname
 export LD_LIBRARY_PATH
-$dirname/$appname $*
+$dirname/$appname "$@"
 //! [7]
-
-
-//! [8]
-DESTDIR = /path/to/Qt/plugandpaint/plugins
-//! [8]
-
-
-//! [9]
-qApp->addLibraryPath("/some/other/path");
-//! [9]
 
 
 //! [10]
@@ -162,11 +152,6 @@ nmake
 plugins\pnp_basictools.dll
 plugins\pnp_extrafilters.dll
 //! [18]
-
-
-//! [19]
-qApp->addLibraryPath("C:\some\other\path");
-//! [19]
 
 
 //! [20]
@@ -409,14 +394,6 @@ install_name_tool -change /path/to/Qt/lib/QtCore.framework/Versions/4.0/QtCore
         @executable_path/../Frameworks/QtCore.framework/Versions/4.0/QtCore
         plugandpaint.app/Contents/plugins/imageformats/libqjpeg.dylib
 //! [48]
-
-
-//! [49]
-QDir dir(QApplication::applicationDirPath());
-dir.cdUp();
-dir.cd("plugins");
-QApplication::setLibraryPaths(QStringList(dir.absolutePath()));
-//! [49]
 
 
 //! [50]

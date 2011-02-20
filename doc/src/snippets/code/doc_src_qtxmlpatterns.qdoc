@@ -42,15 +42,6 @@
 void wrapInFunction()
 {
 
-//! [0]
-#include <QtXmlPatterns>
-//! [0]
-
-
-//! [1]
-QT += xmlpatterns
-//! [1]
-
 //! [2]
 xmlpatterns myQuery.xq
 //! [2]

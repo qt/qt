@@ -68,7 +68,7 @@
     variable set to 1. For example, this is set in the following way with
     the bash shell:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-accessibility.qdoc environment
+    \snippet doc/src/snippets/code/doc_src_qt4-accessibility.cpp environment
 
     Accessibility features are built into Qt by default when the libraries
     are configured and built.
@@ -132,17 +132,17 @@
     information for a custom widget. We can use QAccessibleWidget as
     a base class and reimplement various functions:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-accessibility.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qt4-accessibility.cpp 0
 
     Here's how we would implement the
     \l{QAccessibleInterface::doAction()}{doAction()} function to call
     a function named click() on the wrapped MyWidget object when the
     user invokes the object's default action or "presses" it.
 
-    \snippet doc/src/snippets/code/doc_src_qt4-accessibility.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qt4-accessibility.cpp 1
 
     To export the widget interface as a plugin, we must subclass
     QAccessibleFactory:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-accessibility.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_qt4-accessibility.cpp 2
 */

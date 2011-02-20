@@ -119,7 +119,7 @@
     testfunction.
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qtestlib.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qtestlib.cpp 0
 
     For more examples, refer to the \l{QTestLib Tutorial}.
 
@@ -128,7 +128,7 @@
     If you are using \c qmake as your build tool, just add the
     following to your project file:
 
-    \snippet doc/src/snippets/code/doc_src_qtestlib.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qtestlib.pro 1
 
     If you are using other build tools, make sure that you add the location
     of the QTestLib header files to your include path (usually \c{include/QtTest}
@@ -217,7 +217,7 @@
     To create a benchmark, follow the instructions for creating a test and then add a
     QBENCHMARK macro to the test function that you want to benchmark.
 
-    \snippet doc/src/snippets/code/doc_src_qtestlib.qdoc 12
+    \snippet doc/src/snippets/code/doc_src_qtestlib.cpp 12
 
     The code inside the QBENCHMARK macro will be measured, and possibly also repeated
     several times in order to get an accurate measurement. This depends on the selected
@@ -410,7 +410,7 @@
     Then you need to implement the test function itself. The
     implementation could look like this:
 
-    \snippet doc/src/snippets/code/doc_src_qtestlib.qdoc 8
+    \snippet doc/src/snippets/code/doc_src_qtestlib.cpp 8
 
     The \l QVERIFY() macro evaluates the expression passed as its
     argument. If the expression evaluates to true, the execution of
@@ -475,7 +475,7 @@
     test function. If we add more test data, the function might look like
     this:
 
-    \snippet doc/src/snippets/code/doc_src_qtestlib.qdoc 11
+    \snippet doc/src/snippets/code/doc_src_qtestlib.cpp 11
 
     To prevent that the function ends up being cluttered by repetitive
     code, QTestLib supports adding test data to a test function. All

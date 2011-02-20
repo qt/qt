@@ -146,13 +146,13 @@
     }
     th
     {
-        padding: 5px 15px 5px 15px;
+        padding: 5px 15px 5px 10px;
         background-color: #E1E1E1;
         border-left: 1px solid #E6E6E6;
     }
     td
     {
-        padding: 3px 15px 3px 20px;
+        padding: 3px 15px 3px 10px;
     }
     tr.odd td:hover,  tr.even td:hover    {}
 
@@ -189,6 +189,7 @@
     span.comment
     {
         color: #008B00;
+        font-style: italic
     }
     span.string, span.char
     {
