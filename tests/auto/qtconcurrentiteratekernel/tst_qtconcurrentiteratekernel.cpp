@@ -201,6 +201,7 @@ void tst_QtConcurrentIterateKernel::noIterations()
         startThreadEngine(new IterateKernel<TestIterator, void>(0, 0)).startBlocking();
 }
 
+QMutex threadsMutex;
 QSet<QThread *> threads;
 class ThrottleFor : public IterateKernel<TestIterator, void>
 {
@@ -219,8 +220,10 @@ public:
 
         QThread *thread = QThread::currentThread();
 
-        if (begin > 140 && end < 160)
+        if (begin > 140 && end < 160) {
+            QMutexLocker locker(&threadsMutex);
             threads.insert(thread);
+        }
 
         if (100 >= begin && 100 < end) {
             throttling = true;

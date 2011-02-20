@@ -193,14 +193,19 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
         QByteArray typeName = annotations.value(annotationName).toLatin1();
 
         // verify that it's a valid one
-        if (typeName.isEmpty())
-            return result;      // invalid
+        if (!typeName.isEmpty()) {
+            // type name found
+            type = QVariant::nameToType(typeName);
+            if (type == QVariant::UserType)
+                type = QMetaType::type(typeName);
+        }
 
-        type = QVariant::nameToType(typeName);
-        if (type == QVariant::UserType)
-            type = QMetaType::type(typeName);
-        if (type == QVariant::Invalid || signature != QDBusMetaType::typeToSignature(type))
-            return result;      // unknown type is invalid too
+        if (type == QVariant::Invalid || signature != QDBusMetaType::typeToSignature(type)) {
+            // type is still unknown or doesn't match back to the signature that it
+            // was expected to, so synthesize a fake type
+            type = QMetaType::VoidStar;
+            typeName = "QDBusRawType<0x" + signature.toHex() + ">*";
+        }
 
         result.name = typeName;
     } else if (type == QVariant::Invalid) {
