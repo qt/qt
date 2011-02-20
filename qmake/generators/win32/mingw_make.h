@@ -54,17 +54,17 @@ public:
 protected:
     QString escapeDependencyPath(const QString &path) const;
     QString getLibTarget();
+    bool writeMakefile(QTextStream &);
+    void init();
 private:
     bool isWindowsShell() const;
     void writeMingwParts(QTextStream &);
     void writeIncPart(QTextStream &t);
     void writeLibsPart(QTextStream &t);
     void writeLibDirPart(QTextStream &t);
-    bool writeMakefile(QTextStream &);
     void writeObjectsPart(QTextStream &t);
     void writeBuildRulesPart(QTextStream &t);
     void writeRcFilePart(QTextStream &t);
-    void init();
     void processPrlVariable(const QString &var, const QStringList &l);
 
     QStringList &findDependencies(const QString &file);

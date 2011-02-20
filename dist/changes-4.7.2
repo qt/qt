@@ -39,8 +39,8 @@ Optimizations
 QtCore
 ------
 
- - foo
-    * bar
+ - QStateMachine
+    * [QTBUG-14491] Fix compilation on AIX 5.3 with gcc.
 
 QtGui
 -----
@@ -73,8 +73,23 @@ QtOpenGL
 QtScript
 --------
 
- - foo
-    * bar
+ - QScriptContext
+    * [QTBUG-17137] Fix crash when generating backtrace involving a
+      built-in (ECMA) function.
+ - QScriptEngine
+    * [QTBUG-16987] Ensure QScriptProgram objects are invalidated
+      when engine is destroyed.
+    * [QTBUG-16828] Fix alignment issue causing crashes on platforms
+      with only 4-byte-aligned malloc'ed memory (e.g. Symbian debug
+      builds).
+    * [QTBUG-15144] Fix GC-related crash in QScriptValue::setData().
+    * [QTBUG-15079] Fix crash when QScriptClass property getter
+      returns an invalid value.
+    * [QTBUG-13440] Fix bug that caused Math.random() not to
+      produce random values.
+  - QScriptValue
+    * [QTBUG-14801] Fix crash in QScriptValue::construct() when
+      the function throws a non-Object value.
 
 QtSql
 -----
@@ -170,6 +185,11 @@ Qt for Symbian
 
  - QLineEdit
    * [QTBUG-16238] Fix one character displacement for cursor in line edits.
+
+ - QtScript
+    * [QTBUG-16685] Fix crash in JavaScript stack allocator.
+    * [QTBUG-15847] Add compiler optimizations.
+    * [QTBUG-14293] Enhanced JavaScript heap allocator.
 
  - qmake & mkspecs
    * [QT-4193] Only add ICON for application projects in symbianpkgrules.pri

@@ -12227,10 +12227,10 @@ EXPORTS
 	_ZTV19QBlitterPaintEngine @ 12226 NONAME
 	_ZTV20QBlittablePixmapData @ 12227 NONAME
 	_Zls6QDebugPK13QSymbianEvent @ 12228 NONAME
-	_ZN13QS60MainAppUi25ProcessCommandParametersLE11TApaCommandR4TBufILi256EERK6TDesC8 @ 12229 NONAME ABSENT
-	_ZN14QFileOpenEventC1ERK5RFile @ 12230 NONAME ABSENT
-	_ZN14QFileOpenEventC2ERK5RFile @ 12231 NONAME ABSENT
-	_ZNK14QFileOpenEvent8openFileER5QFile6QFlagsIN9QIODevice12OpenModeFlagEE @ 12232 NONAME ABSENT
+	_ZN13QS60MainAppUi25ProcessCommandParametersLE11TApaCommandR4TBufILi256EERK6TDesC8 @ 12229 NONAME
+	_ZN14QFileOpenEventC1ERK5RFile @ 12230 NONAME
+	_ZN14QFileOpenEventC2ERK5RFile @ 12231 NONAME
+	_ZNK14QFileOpenEvent8openFileER5QFile6QFlagsIN9QIODevice12OpenModeFlagEE @ 12232 NONAME
 	_ZN11QFontEngine16alphaMapForGlyphEj6QFixed @ 12233 NONAME
 	_ZN11QFontEngine16alphaMapForGlyphEj6QFixedRK10QTransform @ 12234 NONAME
 	_Z32qGamma_correct_back_to_linear_csP6QImage @ 12235 NONAME
@@ -12333,4 +12333,8 @@ EXPORTS
 	_ZTV19QScrollPrepareEvent @ 12332 NONAME
 	_ZTV19QScrollerProperties @ 12333 NONAME
 	_ZTV9QScroller @ 12334 NONAME
+	_ZN12QTextControl14setDragEnabledEb @ 12335 NONAME
+	_ZN12QTextControl23setWordSelectionEnabledEb @ 12336 NONAME
+	_ZNK12QTextControl13isDragEnabledEv @ 12337 NONAME
+	_ZNK12QTextControl22isWordSelectionEnabledEv @ 12338 NONAME
 
