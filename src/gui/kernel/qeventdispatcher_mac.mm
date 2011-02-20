@@ -586,12 +586,13 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
         // application, we should not run or stop NSApplication; This will be
         // done from the application itself. And if processEvents is called
         // manually (rather than from a QEventLoop), we cannot enter a tight
-        // loop and block this call, but instead we need to return after one flush:
+        // loop and block this call, but instead we need to return after one flush.
+        // Finally, if we are to exclude user input events, we cannot call [NSApp run]
+        // as we then loose control over which events gets dispatched:
         const bool canExec_3rdParty = d->nsAppRunCalledByQt || ![NSApp isRunning];
         const bool canExec_Qt =
                 (flags & QEventLoop::DialogExec || flags & QEventLoop::EventLoopExec)
                 && !(flags & QEventLoop::ExcludeUserInputEvents);
-
 
         if (canExec_Qt && canExec_3rdParty) {
             // We can use exec-mode, meaning that we can stay in a tight loop until
@@ -647,6 +648,11 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
                         retVal = true;
                 }
             } while (!d->interrupt && event != nil);
+
+            // Be sure to flush the Qt posted events when not using mode
+            // (exec mode will always do this call from the event loop source):
+            if (!d->interrupt)
+                QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
 
             // Since the window that holds modality might have changed while processing
             // events, we we need to interrupt when we return back the previous process
