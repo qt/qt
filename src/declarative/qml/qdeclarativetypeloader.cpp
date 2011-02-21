@@ -1102,6 +1102,7 @@ void QDeclarativeScriptBlob::dataReceived(const QByteArray &data)
     m_imports.setBaseUrl(finalUrl());
 
     m_pragmas = metadata.pragmas;
+
     foreach (const QDeclarativeScriptParser::Import &import, metadata.imports) {
         Q_ASSERT(import.type != QDeclarativeScriptParser::Import::File);
 
@@ -1173,6 +1174,7 @@ void QDeclarativeScriptBlob::done()
 
     m_imports.populateCache(m_scriptData->importCache, engine);
 
+    m_scriptData->pragmas = m_pragmas;
     m_scriptData->m_program = QScriptProgram(m_source, finalUrl().toString());
 }
 

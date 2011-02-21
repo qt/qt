@@ -966,7 +966,7 @@ QDeclarativeParser::Object::ScriptBlock::Pragmas QDeclarativeScriptParser::extra
         if (l.currentLineNo() == startLine)
             return rv;
 
-        if (pragmaValue == QLatin1String("library")) {
+        if (pragmaValue == library) {
             rv |= QDeclarativeParser::Object::ScriptBlock::Shared;
             replaceWithSpace(script, startOffset, endOffset - startOffset);
         } else {
