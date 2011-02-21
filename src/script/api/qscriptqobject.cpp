@@ -873,18 +873,7 @@ static void QtMetaPropertySetter(v8::Local<v8::String> /*property*/,
         cppValue = qtStringFromJS(value->ToString());
     } else
 #endif
-    {
-        if (prop.userType() == -1)
-            // -1 is a QVariant.
-            cppValue = engine->variantFromJS(value);
-        else  {
-            cppValue = QVariant(prop.userType(), (void *)0);
-            if (!engine->metaTypeFromJS(value, cppValue.userType(), cppValue.data())) {
-                // Needs more magic.
-                Q_UNIMPLEMENTED();
-            }
-        }
-    }
+    cppValue = engine->variantFromJS(value);
 
     QScriptEnginePrivate *oldEngine = 0;
     QScriptable *scriptable = data->toQScriptable();
