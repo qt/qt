@@ -3477,131 +3477,107 @@
 
     The \c classes argument provides a complete alphabetical list of
     the classes. Each class name is a link to the class's reference
-    documentation.
+    documentation. This command is uded to generate the \l
+    {classes.html} {All Classes} page this way:
 
-    For example:
+    \code
+    / *!
+        \page classes.html
+        \title All Classes
+        \ingroup classlists
 
-    \quotation
-      \raw HTML
-        <p>
-          <table width="100%">
-            <tr>
-              <td align="right"><b>A&nbsp;</b></td>
-              <td><a href="http://qt.nokia.com/doc/4.0/qabstractbutton.html">QAbstractButton</a></td>
+        \brief If you know the name of the class you want, find it here.
 
-              <td align="right"></td>
-              <td><a href="http://qt.nokia.com/doc/4.0/qabstractextensionmanager.html">QAbstractExtensionManager</a></td>
+        This is a list of all Qt classes. For a list of the classes
+        provided for compatibility with Qt3, see \l{Qt3 Support
+        Classes}. For classes that have been deprecated, see the
+        \l{Obsolete Classes} list.
 
-              <td align="right"></td>
-              <td><a href="http://qt.nokia.com/doc/4.0/qabstractitemmodel.html">QAbstractItemModel</a></td>
-            </tr>
+        \generatelist classes
+    * /
+    \endcode
 
-            <tr>
-              <td align="right"></td>
-              <td><a href="http://qt.nokia.com/doc/4.0/qabstracteventdispatcher.html">QAbstractEventDispatcher</a></td>
+    A C++ class is documented with the \l {class-command} {\\class}
+    command.
 
-              <td align="right"></td>
-              <td><a href="http://qt.nokia.com/doc/4.0/qabstractformbuilder.html">QAbstractFormBuilder</a></td>
+    \section2 \c classesbymodule
 
-              <td align="right"></td>
-              <td><a href="http://qt.nokia.com/doc/4.0/qabstractitemview.html">QAbstractItemView</a></td>
-            </tr>
+    When this argument is used, a second argument is required, which
+    specifies the module whose classes are to be listed. QDoc
+    generates a table containing those classes. Each class is listed
+    with the text of its \l{brief-command} {\\brief} command.
 
-            <tr>
-              <td align="right"></td>
-              <td><a href="http://qt.nokia.com/doc/4.0/qabstractextensionfactory.html">QAbstractExtensionFactory</a></td>
+    This command is used to generate the \l {phonon-module.html}
+    {Phonon Module} page this way.
 
-              <td align="right"></td>
-              <td><a href="http://qt.nokia.com/doc/4.0/qabstractitemdelegate.html">QAbstractItemDelegate</a></td>
-
-              <td align="right"></td>
-              <td><a href="http://qt.nokia.com/doc/4.0/qabstractlistmodel.html">QAbstractListModel</a></td>
-            </tr>
-          </table></p>
-        \endraw
-      \endquotation
-
-      A C++ class is documented with the \l {class-command} {\\class}
-      command.
-
-      \section2 \c classesbymodule
-
-      When this argument is used, a second argument is required, which
-      specifies the module whose classes are to be listed. QDoc
-      generates a table containing those classes. Each class is listed
-      with the text of its \l{brief-command} {\\brief} command. 
-
-      This command is used to generate the \l {phonon-module.html}
-      {Phonon Module} page this way.
-
-      \code
-        / *!
-            \page phonon-module.html
-            \module Phonon
-            \title Phonon Module
-            \ingroup modules
-
-            \brief The Phonon module contains namespaces and classes for multimedia functionality.
-
-            \generatelist{classesbymodule Phonon}
-
-	    ...
-
-        * /
-      \endcode
-
-      Each class that is a member of the specified module must be
-      marked with the \l {inmodule-command} {\\inmodule} command in
-      its \\class comment.
-
-      \section2 \c compatclasses
-
-      The \c compatclasses argument generates a list in alphabetical
-      order of the support classes.  It is normally used only to
-      generate the \l {compatclasses.html} {Qt3 Support Classes} page
-      this way:
-
-      \code
+    \code
       / *!
-          \page compatclasses.html
-          \title Qt3 Support Classes
-          \ingroup classlists
+          \page phonon-module.html
+          \module Phonon
+          \title Phonon Module
+          \ingroup modules
 
-          \brief These classes ease the porting of code from Qt 3 to Qt 4.
+          \brief The Phonon module contains namespaces and classes for multimedia functionality.
 
-          These are the classes that Qt provides for compatibility with Qt
-          3. Most of these are provided by the Qt3Support module.
+          \generatelist{classesbymodule Phonon}
 
-          \generatelist compatclasses
+	  ...
+
       * /
-      \endcode
+    \endcode
 
-      A support class is identified in the \\class comment with the \l
-      {compat-command} {\\compat} command.
+    Each class that is a member of the specified module must be marked
+    with the \l {inmodule-command} {\\inmodule} command in its \\class
+    comment.
 
-      \section2 \c functionindex
+    \section2 \c compatclasses
 
-      The \c functionindex argument provides a complete alphabetical
-      list of all the documented member functions. It is normally used
-      only to generate the \l {functions.html} {Qt function index}
-      page this way:
+    The \c compatclasses argument generates a list in alphabetical
+    order of the support classes.  It is normally used only to
+    generate the \l {compatclasses.html} {Qt3 Support Classes} page
+    this way:
 
-      \code
-      / *!
-          \page functions.html
-          \title All Functions
-          \ingroup funclists
+    \code
+    / *!
+        \page compatclasses.html
+        \title Qt3 Support Classes
+        \ingroup classlists
 
-          \brief All documented Qt functions listed alphabetically with a
-          link to where each one is declared.
+        \brief These classes ease the porting of code from Qt 3 to Qt 4.
 
-          This is the list of all documented member functions and global
-          functions in the Qt API.  Each function has a link to the class or
-          header file where it is declared and documented.
+        These are the classes that Qt provides for compatibility with Qt
+        3. Most of these are provided by the Qt3Support module.
 
-          \generatelist functionindex
-      * /
-      \endcode
+        \generatelist compatclasses
+    * /
+    \endcode
+
+    A support class is identified in the \\class comment with the \l
+    {compat-command} {\\compat} command.
+
+    \section2 \c functionindex
+
+    The \c functionindex argument provides a complete alphabetical
+    list of all the documented member functions. It is normally used
+    only to generate the \l {functions.html} {Qt function index} page
+    this way:
+
+    \code
+    / *!
+        \page functions.html
+        \title All Functions
+        \ingroup funclists
+
+        \brief All documented Qt functions listed alphabetically with a
+        link to where each one is declared.
+
+        This is the list of all documented member functions and global
+        functions in the Qt API.  Each function has a link to the
+        class or header file where it is declared and documented.
+
+        \generatelist functionindex
+    * /
+    \endcode
 
            \section2 \c legalese
 
