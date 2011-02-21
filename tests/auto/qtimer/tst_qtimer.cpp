@@ -50,6 +50,8 @@
 #include <unistd.h>
 #endif
 
+#include "../../shared/util.h"
+
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -272,9 +274,9 @@ void tst_QTimer::livelock()
     QFETCH(int, interval);
     LiveLockTester tester(interval);
     QTest::qWait(180); // we have to use wait here, since we're testing timers with a non-zero timeout
-    QCOMPARE(tester.timeoutsForFirst, 1);
+    QTRY_COMPARE(tester.timeoutsForFirst, 1);
     QCOMPARE(tester.timeoutsForExtra, 0);
-    QCOMPARE(tester.timeoutsForSecond, 1);
+    QTRY_COMPARE(tester.timeoutsForSecond, 1);
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 	if (QSysInfo::WindowsVersion < QSysInfo::WV_XP)
 		QEXPECT_FAIL("non-zero timer", "Multimedia timers are not available on Windows 2000", Continue);
@@ -724,7 +726,7 @@ void tst_QTimer::QTBUG13633_dontBlockEvents()
 {
     DontBlockEvents t;
     QTest::qWait(60);
-    QVERIFY(t.total > 2);
+    QTRY_VERIFY(t.total > 2);
 }
 
 class SlotRepeater : public QObject {
