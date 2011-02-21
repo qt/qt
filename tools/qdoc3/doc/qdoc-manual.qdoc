@@ -3284,11 +3284,11 @@
 
     The \\legalese and \\endlegalese commands delimit a licence agreement.
 
-	In the generated HTML, the delimited text is surrounded by a
-	\bold {<div class="LegaleseLeft">} and \bold {</div>} tags.
+    In the generated HTML, the delimited text is surrounded by a \bold
+    {<div class="LegaleseLeft">} and \bold {</div>} tags.
 
-        For example, here is a license agreement enclosed in \\legalese and 
-	\\endlegalese:
+    For example, here is a license agreement enclosed in \\legalese
+    and \\endlegalese:
 
         \code
 	/ *!
@@ -3335,26 +3335,23 @@
 	 </div>
        \endcode
 
-        If the \\endlegalese command is omitted, QDoc will still
-        process the \\legalese command but considers the rest of the
-        documentation page as the license agreement.
+    If the \\endlegalese command is omitted, QDoc will process the
+    \\legalese command but considers the rest of the documentation
+    page as the license agreement.
 
-        Ideally, the license text is located with the licensed code.
+    Ideally, the license text is located with the licensed code.
 
-        Elsewhere, the documentation identified as \e{\\legalese}
-        command can be accumulated using \l {generatelist-command}
-        {\\generatelist} with \c {legalese-command} as the argument. This is
-        useful for generating an overview of the license agreements
-        associated with the source code.
-
+   Elsewhere, the documentation identified as \e{\\legalese} command
+   can be accumulated using \l {generatelist-command} {\\generatelist}
+   with \c {legalese-command} as the argument. This is useful for
+   generating an overview of the license agreements associated with
+   the source code.
 
     \target warning-command
     \section1 \\warning 
 
-    The \\warning command renders a "Warning:" prefix to
-    the command's argument.
-
-           For example:
+    The \\warning command prepends "Warning:" to the command's
+    argument, in bold font. For example:
 
            \code
            / *!
@@ -3367,7 +3364,7 @@
            * /
            \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
            \quotation
                Qt::HANDLE is a platform-specific handle type
@@ -3388,9 +3385,9 @@
 
     \title Miscellaneous
 
-    These commands provide miscellaneous functions
-    connected to the visual appearance of the documentation, and to the
-    process of generating the documentation.
+    These commands provide miscellaneous functions connected to the
+    visual appearance of the documentation, and to the process of
+    generating the documentation.
 
     \target expire-command
     \section1 \\expire 
@@ -3398,10 +3395,10 @@
     The \\expire command allows you to define an expiration
     date for your documentation.
 
-           When using the \\expire command, QDoc will emit a warning
-           when the current date is larger than the specified
-           date. The command accepts one argument; the argument's
-           format is yyyy-mm-dd. For example:
+    When using the \\expire command, QDoc will emit a warning when the
+    current date is larger than the specified date. The command
+    accepts one argument; the argument's format is yyyy-mm-dd. For
+    example:
 
            \code
            / *!
@@ -3420,7 +3417,7 @@
            * /
            \endcode
 
-           If you run QDoc on 4 July 2005, it will emit the warning
+    If you run QDoc on 4 July 2005, it will emit the warning
 
            \quotation
                porting.qdoc:6: Documentation expired 185 days ago
@@ -3430,10 +3427,9 @@
     \target generatelist-command
     \section1 \\generatelist
 
-    The \\generatelist command expands to a list of
-    various documentation or links to documentation.
-
-           For example in the Qt Reference Documentation:
+    The \\generatelist command expands to a list of various
+    documentation or links to documentation. Below is an example from
+    the Qt Reference Documentation:
 
            \code
            / *!
@@ -3449,225 +3445,163 @@
            * /
            \endcode
 
-           is used to generate \l {All Classes}.
+    This generates the \l {All Classes} page. The command accepts the
+    following arguments:
 
-           The command accepts the following arguments:
+    \target table example
+    \section2 \c annotatedclasses
 
-           \target table example
+    The \c annotatedclasses argument provides a table containing the
+    names of all the classes, and a description of each class. Each
+    class name is a link to the class's reference documentation. For
+    example:
 
-           \section2 \c annotatedclasses
+    \table
+      \row
+        \o QDial
+	\o Rounded range control (like a speedometer or potentiometer)
+      \row
+        \o QDialog
+	\o The base class of dialog windows
+      \row
+        \o QDir
+        \o Access to directory structures and their contents
+    \endtable
 
-              The \c annotatedclasses argument provides a table
-              containing the names of all the classes, and a
-              description of each class. Each class name is a link to
-              the class's reference documentation.
+    A C++ class is documented with the \l {class-command} {\\class}
+    command. The annotation for the class is taken from the argument
+    of the class comment's \l {brief-command} {\\brief} command.
 
-              For example:
+    \target list example
+    \section2 \c classes
 
-	      \table
-	      \row
-	      \o QDial
-	      \o Rounded range control (like a speedometer or potentiometer)
-	      \row
-	      \o QDialog
-	      \o The base class of dialog windows
-	      \row
-	      \o QDir
-	      \o Access to directory structures and their contents
-	      \endtable
+    The \c classes argument provides a complete alphabetical list of
+    the classes. Each class name is a link to the class's reference
+    documentation.
 
-              \quotation
-                  \raw HTML
-                  <table align="center" cellpadding="2"
-                      cellspacing="1" border="0">
+    For example:
 
-                  <tr valign="top" bgcolor="#d0d0d0">
-                      <td>
-                      <a href="http://qt.nokia.com/doc/4.0/qdial.html">
-                          QDial</a>
-                      </td>
-                      <td>Rounded range control (like a speedometer
-                          or potentiometer)</td>
-                  </tr>
+    \quotation
+      \raw HTML
+        <p>
+          <table width="100%">
+            <tr>
+              <td align="right"><b>A&nbsp;</b></td>
+              <td><a href="http://qt.nokia.com/doc/4.0/qabstractbutton.html">QAbstractButton</a></td>
 
-                  <tr valign="top" bgcolor="#d0d0d0">
-                      <td>
-                      <a href="http://qt.nokia.com/doc/4.0/qdialog.html">
-                          QDialog</a>
-                      </td>
-                      <td>The base class of dialog windows</td>
-                  </tr>
+              <td align="right"></td>
+              <td><a href="http://qt.nokia.com/doc/4.0/qabstractextensionmanager.html">QAbstractExtensionManager</a></td>
 
-                  <tr valign="top" bgcolor="#d0d0d0">
-                      <td>
-                      <a href="http://qt.nokia.com/doc/4.0/qdir.html">
-                          QDir</a>
-                      </td>
-                      <td>Access to directory structures and their
-                          contents</td>
-                  </tr>
-                  </table>
-                  \endraw
-              \endquotation
+              <td align="right"></td>
+              <td><a href="http://qt.nokia.com/doc/4.0/qabstractitemmodel.html">QAbstractItemModel</a></td>
+            </tr>
 
-              A class is identified within the documentation by the
-              the \l {class-command} {\\class} command, and the descriptions
-              are based on the argument of the \l {brief-command} {\\brief}
-              commands in the class documentation.
+            <tr>
+              <td align="right"></td>
+              <td><a href="http://qt.nokia.com/doc/4.0/qabstracteventdispatcher.html">QAbstractEventDispatcher</a></td>
 
-           \target list example
+              <td align="right"></td>
+              <td><a href="http://qt.nokia.com/doc/4.0/qabstractformbuilder.html">QAbstractFormBuilder</a></td>
 
-           \section2 \c classes
+              <td align="right"></td>
+              <td><a href="http://qt.nokia.com/doc/4.0/qabstractitemview.html">QAbstractItemView</a></td>
+            </tr>
 
-              The \c classes argument provides a complete alphabetical
-              list of the classes. Each class name is a link to the
-              class's reference documentation.
+            <tr>
+              <td align="right"></td>
+              <td><a href="http://qt.nokia.com/doc/4.0/qabstractextensionfactory.html">QAbstractExtensionFactory</a></td>
 
-              For example:
+              <td align="right"></td>
+              <td><a href="http://qt.nokia.com/doc/4.0/qabstractitemdelegate.html">QAbstractItemDelegate</a></td>
 
-              \quotation
-                  \raw HTML
-                      <p><table width="100%">
+              <td align="right"></td>
+              <td><a href="http://qt.nokia.com/doc/4.0/qabstractlistmodel.html">QAbstractListModel</a></td>
+            </tr>
+          </table></p>
+        \endraw
+      \endquotation
 
-                      <tr>
-                      <td align="right"><b>A&nbsp;</b></td>
-                      <td><a href="http://qt.nokia.com/doc/4.0/qabstractbutton.html">QAbstractButton</a></td>
+      A C++ class is documented with the \l {class-command} {\\class}
+      command.
 
-                      <td align="right"></td>
-                      <td><a href="http://qt.nokia.com/doc/4.0/qabstractextensionmanager.html">QAbstractExtensionManager</a></td>
+      \section2 \c classesbymodule
 
-                      <td align="right"></td>
-                      <td><a href="http://qt.nokia.com/doc/4.0/qabstractitemmodel.html">QAbstractItemModel</a></td>
-                      </tr>
+      When this argument is used, a second argument is required, which
+      specifies the module whose classes are to be listed. QDoc
+      generates a table containing those classes. Each class is listed
+      with the text of its \l{brief-command} {\\brief} command. 
 
-                      <tr>
-                      <td align="right"></td>
-                      <td><a href="http://qt.nokia.com/doc/4.0/qabstracteventdispatcher.html">QAbstractEventDispatcher</a></td>
+      This command is used to generate the \l {phonon-module.html}
+      {Phonon Module} page this way.
 
-                      <td align="right"></td>
-                      <td><a href="http://qt.nokia.com/doc/4.0/qabstractformbuilder.html">QAbstractFormBuilder</a></td>
+      \code
+        / *!
+            \page phonon-module.html
+            \module Phonon
+            \title Phonon Module
+            \ingroup modules
 
-                      <td align="right"></td>
-                      <td><a href="http://qt.nokia.com/doc/4.0/qabstractitemview.html">QAbstractItemView</a></td>
-                      </tr>
+            \brief The Phonon module contains namespaces and classes for multimedia functionality.
 
-                      <tr>
-                      <td align="right"></td>
-                      <td><a href="http://qt.nokia.com/doc/4.0/qabstractextensionfactory.html">QAbstractExtensionFactory</a></td>
+            \generatelist{classesbymodule Phonon}
 
-                      <td align="right"></td>
-                      <td><a href="http://qt.nokia.com/doc/4.0/qabstractitemdelegate.html">QAbstractItemDelegate</a></td>
+	    ...
 
-                      <td align="right"></td>
-                      <td><a href="http://qt.nokia.com/doc/4.0/qabstractlistmodel.html">QAbstractListModel</a></td>
-                      </tr>
-                      </table></p>
-                  \endraw
-              \endquotation
+        * /
+      \endcode
 
-              A class is identified within the documentation by the
-              the \l {class-command} {\\class} command.
+      Each class that is a member of the specified module must be
+      marked with the \l {inmodule-command} {\\inmodule} command in
+      its \\class comment.
 
-           \section2 \c classesbymodule
+      \section2 \c compatclasses
 
-              This particular argument requests an additional argument,
-              i.e. a specification of the module.
+      The \c compatclasses argument generates a list in alphabetical
+      order of the support classes.  It is normally used only to
+      generate the \l {compatclasses.html} {Qt3 Support Classes} page
+      this way:
 
-              For example:
+      \code
+      / *!
+          \page compatclasses.html
+          \title Qt3 Support Classes
+          \ingroup classlists
 
-              \code
-              / *!
-                  \page qtgui.html
-                  \contentspage Qt Classes by Module
-                  \previouspage QtCore Classes
-                  \nextpage QtNetwork Classes
+          \brief These classes ease the porting of code from Qt 3 to Qt 4.
 
-                  \title QtGui Classes
+          These are the classes that Qt provides for compatibility with Qt
+          3. Most of these are provided by the Qt3Support module.
 
-                  \keyword QtGui
+          \generatelist compatclasses
+      * /
+      \endcode
 
-                  \generatelist {classesbymodule QtGui}
-              * /
-              \endcode
+      A support class is identified in the \\class comment with the \l
+      {compat-command} {\\compat} command.
 
-              Together, these arguments provide a table containing the
-              classes considered members of the specified module,
-              accompanied with a brief description. Each class name is
-              a link to the class's reference documentation.
+      \section2 \c functionindex
 
-              The generated table is rendered similarily to the one
-              generated when using the \l {table example} {\c
-              annotatedclasses} argument.
+      The \c functionindex argument provides a complete alphabetical
+      list of all the documented member functions. It is normally used
+      only to generate the \l {functions.html} {Qt function index}
+      page this way:
 
-              For the basic classes in Qt, a class's module is
-              determined by its location, i.e. its directory. However,
-              for extensions, like ActiveQt and Qt Designer, a class
-              is related to a module with the \l
-              {inmodule-command} {\\inmodule} command.
+      \code
+      / *!
+          \page functions.html
+          \title All Functions
+          \ingroup funclists
 
-           \section2 \c classesbyedition
+          \brief All documented Qt functions listed alphabetically with a
+          link to where each one is declared.
 
-              This particular argument requests an additional argument,
-              i.e. a specification of the edition.
+          This is the list of all documented member functions and global
+          functions in the Qt API.  Each function has a link to the class or
+          header file where it is declared and documented.
 
-              For example:
-
-              \code
-              / *!
-                  \page console-edition-classes.html
-                  \title Qt Console Edition Classes
-
-                  \generatelist{classesbyedition Console}
-              * /
-              \endcode
-
-              Together, these arguments provide a table containing the
-              classes considered members of the specified edition,
-              accompanied with a brief description. Each class name is
-              a link to the class's reference documentation.
-
-              The edition a given class can be found in is determined by
-              the module it belongs to.
-
-           \section2 \c compatclasses
-
-              The \c compatclasses argument provides a complete and
-              alphabetical list of the support classes.  A support
-              class is identified within the documentation by the \l
-              {compat-command} {\\compat} command. Each class name is
-              a link to the class's reference documentation. The list
-              is rendered similarily to the list generated by the \l
-              {list example} {\c classes} argument.
-
-              \warning The \c classesbymodule argument will at some
-              point replace the this argument.
-
-           \section2 \c functionindex
-
-              The \c functionindex argument provides a complete
-              alphabetical list of all the documented member
-              functions.
-
-              For example:
-
-              \quotation
-                  \raw HTML
-                      <p><center><font size="+1"><b><a href="#a">A</a>&nbsp;<a href="#b">B</a>&nbsp;<a href="#c">C</a>&nbsp;<a href="#d">D</a>&nbsp;<a href="#e">E</a>&nbsp;<a href="#f">F</a>&nbsp;<a href="#g">G</a>&nbsp;<a href="#h">H</a>&nbsp;<a href="#i">I</a>&nbsp;<a href="#j">J</a>&nbsp;<a href="#k">K</a>&nbsp;<a href="#l">L</a>&nbsp;<a href="#m">M</a>&nbsp;<a href="#n">N</a>&nbsp;<a href="#o">O</a>&nbsp;<a href="#p">P</a>&nbsp;<a href="#q">Q</a>&nbsp;<a href="#r">R</a>&nbsp;<a href="#s">S</a>&nbsp;<a href="#t">T</a>&nbsp;<a href="#u">U</a>&nbsp;<a href="#v">V</a>&nbsp;<a href="#w">W</a>&nbsp;<a href="#x">X</a>&nbsp;<a href="#y">Y</a>&nbsp;<a href="#z">Z</a>&nbsp;</b></font></center></p>
-
-                      <p>DTDHandler: <a href="http://qt.nokia.com/doc/4.0/qxmlreader.html#DTDHandler">QXmlReader</a></p>
-
-                      <p>QAXCLASS: <a href="http://qt.nokia.com/doc/4.0/qaxfactory.html#QAXCLASS">global</a></p>
-
-                      <p>QAXFACTORY_BEGIN: <a href="http://qt.nokia.com/doc/4.0/qaxfactory.html#QAXFACTORY_BEGIN">global</a></p>
-
-                      <p>QAXFACTORY_DEFAULT: <a href="http://qt.nokia.com/doc/4.0/qaxfactory.html#QAXFACTORY_DEFAULT">global</a></p>
-
-                      <p>QAXFACTORY_END: <a href="http://qt.nokia.com/doc/4.0/qaxfactory.html#QAXFACTORY_END">global</a></p>
-
-                  \endraw
-
-                  ...
-              \endquotation
+          \generatelist functionindex
+      * /
+      \endcode
 
            \section2 \c legalese
 
