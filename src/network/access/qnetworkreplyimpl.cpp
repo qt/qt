@@ -306,7 +306,7 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
     // Internal code that does a HTTP reply for the synchronous Ajax
     // in QtWebKit.
     QVariant synchronousHttpAttribute = req.attribute(
-            static_cast<QNetworkRequest::Attribute>(QNetworkRequest::DownloadBufferAttribute + 1));
+            static_cast<QNetworkRequest::Attribute>(QNetworkRequest::SynchronousRequestAttribute));
     // The synchronous HTTP is a corner case, we will put all upload data in one big QByteArray in the outgoingDataBuffer.
     // Yes, this is not the most efficient thing to do, but on the other hand synchronous XHR needs to die anyway.
     if (synchronousHttpAttribute.toBool() && outgoingData) {

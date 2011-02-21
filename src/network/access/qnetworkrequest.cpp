@@ -226,6 +226,8 @@ QT_BEGIN_NAMESPACE
 
     \omitvalue DownloadBufferAttribute
 
+    \omitvalue SynchronousRequestAttribute
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default

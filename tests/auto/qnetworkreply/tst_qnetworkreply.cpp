@@ -84,8 +84,6 @@ Q_DECLARE_METATYPE(QList<QNetworkProxy>)
 Q_DECLARE_METATYPE(QNetworkReply::NetworkError)
 Q_DECLARE_METATYPE(QBuffer*)
 
-const int SynchronousRequestAttribute = QNetworkRequest::DownloadBufferAttribute + 1;
-
 class QNetworkReplyPtr: public QSharedPointer<QNetworkReply>
 {
 public:
@@ -1061,7 +1059,7 @@ QString tst_QNetworkReply::runSimpleRequest(QNetworkAccessManager::Operation op,
     returnCode = Timeout;
     int code = Success;
 
-    if (request.attribute(static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute)).toBool()) {
+    if (request.attribute(QNetworkRequest::SynchronousRequestAttribute).toBool()) {
         if (reply->isFinished())
             code = reply->error() != QNetworkReply::NoError ? Failure : Success;
         else
@@ -1684,7 +1682,7 @@ void tst_QNetworkReply::putToHttpSynchronous()
     QFETCH(QByteArray, data);
 
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     RUN_REQUEST(runSimpleRequest(QNetworkAccessManager::PutOperation, request, reply, data));
@@ -1744,7 +1742,7 @@ void tst_QNetworkReply::postToHttpSynchronous()
     QNetworkRequest request(url);
 
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     QNetworkReplyPtr reply;
@@ -2259,7 +2257,7 @@ void tst_QNetworkReply::ioGetFromHttpWithAuth()
     // now check with synchronous calls:
     {
         request.setAttribute(
-                static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+                QNetworkRequest::SynchronousRequestAttribute,
                 true);
 
         QSignalSpy authspy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
@@ -2283,7 +2281,7 @@ void tst_QNetworkReply::ioGetFromHttpWithAuthSynchronous()
 
     QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfcs-auth/rfc3252.txt"));
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     QSignalSpy authspy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
@@ -2368,7 +2366,7 @@ void tst_QNetworkReply::ioGetFromHttpWithProxyAuth()
     reference.seek(0);
     {
         request.setAttribute(
-                static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+                QNetworkRequest::SynchronousRequestAttribute,
                 true);
 
         QSignalSpy authspy(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
@@ -2394,7 +2392,7 @@ void tst_QNetworkReply::ioGetFromHttpWithProxyAuthSynchronous()
     QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt"));
     manager.setProxy(proxy);
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     QSignalSpy authspy(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
@@ -3507,7 +3505,7 @@ void tst_QNetworkReply::ioPostToHttpFromSocketSynchronous()
     QUrl url("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/md5sum.cgi");
     QNetworkRequest request(url);
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     QNetworkReplyPtr reply = manager.post(request, socketpair.endPoints[1]);
@@ -4278,7 +4276,7 @@ void tst_QNetworkReply::receiveCookiesFromHttpSynchronous()
     QNetworkRequest request(url);
 
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     QNetworkReplyPtr reply;
@@ -4370,7 +4368,7 @@ void tst_QNetworkReply::sendCookiesSynchronous()
     QNetworkRequest request(url);
 
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     QNetworkReplyPtr reply;
@@ -4512,7 +4510,7 @@ void tst_QNetworkReply::httpProxyCommandsSynchronous()
 
     // send synchronous request
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     QNetworkReplyPtr reply = manager.get(request);
@@ -5458,7 +5456,7 @@ void tst_QNetworkReply::synchronousRequest()
 #endif
 
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     QNetworkReplyPtr reply;
@@ -5499,7 +5497,7 @@ void tst_QNetworkReply::synchronousRequestSslFailure()
     QUrl url("https://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
     QNetworkRequest request(url);
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
     QNetworkReplyPtr reply;
     QSignalSpy sslErrorsSpy(&manager, SIGNAL(sslErrors(QNetworkReply *, const QList<QSslError> &)));
