@@ -193,15 +193,12 @@ void Renderer::renderScene(const Bindable &bindable)
     m_bindable = 0;
 
 #ifdef QSG_RENDERER_TIMING
-    printf("Breakdown of frametime:\n"
-           " - preprocess:      %d, self=%d\n"
-           " - graph update:    %d, self=%d\n"
-           " - surface bind:    %d, self=%d\n"
-           " - render:          %d, self=%d\n",
-           preprocessTime, preprocessTime,
-           updatePassTime, updatePassTime - preprocessTime,
-           bindTime, bindTime - updatePassTime,
-           renderTime, renderTime - bindTime);
+    printf("Breakdown of frametime: preprocess=%d, updates=%d, binding=%d, render=%d, total=%d\n",
+           preprocessTime,
+           updatePassTime - preprocessTime,
+           bindTime - updatePassTime,
+           renderTime - bindTime,
+           renderTime);
 #endif
 
 
