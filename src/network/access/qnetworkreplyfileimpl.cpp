@@ -49,13 +49,8 @@
 QT_BEGIN_NAMESPACE
 
 QNetworkReplyFileImplPrivate::QNetworkReplyFileImplPrivate()
-    : QNetworkReplyPrivate(), fileEngine(0), fileSize(0), filePos(0)
+    : QNetworkReplyPrivate(), realFileSize(0)
 {
-}
-
-QNetworkReplyFileImplPrivate::~QNetworkReplyFileImplPrivate()
-{
-    delete fileEngine;
 }
 
 QNetworkReplyFileImpl::~QNetworkReplyFileImpl()
@@ -112,15 +107,15 @@ QNetworkReplyFileImpl::QNetworkReplyFileImpl(QObject *parent, const QNetworkRequ
         return;
     }
 
-    d->fileEngine = QAbstractFileEngine::create(fileName);
-    bool opened = d->fileEngine->open(QIODevice::ReadOnly | QIODevice::Unbuffered);
+    d->realFile.setFileName(fileName);
+    bool opened = d->realFile.open(QIODevice::ReadOnly | QIODevice::Unbuffered);
 
     // could we open the file?
     if (!opened) {
         QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Error opening %1: %2")
-                      .arg(fileName, d->fileEngine->errorString());
+                .arg(d->realFile.fileName(), d->realFile.errorString());
 
-        if (fi.exists()) {
+        if (d->realFile.exists()) {
             setError(QNetworkReply::ContentAccessDenied, msg);
             QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
                 Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ContentAccessDenied));
@@ -133,13 +128,13 @@ QNetworkReplyFileImpl::QNetworkReplyFileImpl(QObject *parent, const QNetworkRequ
         return;
     }
 
-    d->fileSize = fi.size();
     setHeader(QNetworkRequest::LastModifiedHeader, fi.lastModified());
-    setHeader(QNetworkRequest::ContentLengthHeader, d->fileSize);
+    d->realFileSize = fi.size();
+    setHeader(QNetworkRequest::ContentLengthHeader, d->realFileSize);
 
     QMetaObject::invokeMethod(this, "metaDataChanged", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "downloadProgress", Qt::QueuedConnection,
-        Q_ARG(qint64, d->fileSize), Q_ARG(qint64, d->fileSize));
+        Q_ARG(qint64, d->realFileSize), Q_ARG(qint64, d->realFileSize));
     QMetaObject::invokeMethod(this, "readyRead", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
 }
@@ -147,25 +142,20 @@ void QNetworkReplyFileImpl::close()
 {
     Q_D(QNetworkReplyFileImpl);
     QNetworkReply::close();
-    if (d->fileEngine)
-        d->fileEngine->close();
+    d->realFile.close();
 }
 
 void QNetworkReplyFileImpl::abort()
 {
     Q_D(QNetworkReplyFileImpl);
     QNetworkReply::close();
-    if (d->fileEngine)
-        d->fileEngine->close();
+    d->realFile.close();
 }
 
 qint64 QNetworkReplyFileImpl::bytesAvailable() const
 {
     Q_D(const QNetworkReplyFileImpl);
-    if (!d->fileEngine)
-        return 0;
-
-    return QNetworkReply::bytesAvailable() + d->fileSize - d->filePos;
+    return QNetworkReply::bytesAvailable() + d->realFile.bytesAvailable();
 }
 
 bool QNetworkReplyFileImpl::isSequential () const
@@ -176,7 +166,7 @@ bool QNetworkReplyFileImpl::isSequential () const
 qint64 QNetworkReplyFileImpl::size() const
 {
     Q_D(const QNetworkReplyFileImpl);
-    return d->fileSize;
+    return d->realFileSize;
 }
 
 /*!
@@ -185,17 +175,11 @@ qint64 QNetworkReplyFileImpl::size() const
 qint64 QNetworkReplyFileImpl::readData(char *data, qint64 maxlen)
 {
     Q_D(QNetworkReplyFileImpl);
-    if (!d->fileEngine)
+    qint64 ret = d->realFile.read(data, maxlen);
+    if (ret == 0 && bytesAvailable() == 0)
         return -1;
-
-    qint64 ret = d->fileEngine->read(data, maxlen);
-    if (ret == 0 && bytesAvailable() == 0) {
-        return -1; // everything had been read
-    } else if (ret > 0) {
-        d->filePos += ret;
-    }
-
-    return ret;
+    else
+        return ret;
 }
 
 
