@@ -63,7 +63,7 @@ class TextureItem : public QSGItem, public QSGTextureProviderInterface
 {
     Q_OBJECT
     Q_INTERFACES(QSGTextureProviderInterface)
-    // TODO: property clampToEdge
+    Q_PROPERTY(bool clampToEdge READ clampToEdge WRITE setClampToEdge NOTIFY clampToEdgeChanged)
     // TODO: property mipmapFiltering
 public:
     TextureItem(QSGItem *parent = 0);
@@ -71,11 +71,18 @@ public:
     virtual QSGTextureProvider *textureProvider() const;
     void setTextureProvider(QSGTextureProvider *provider, bool requiresPreprocess);
     
+    bool clampToEdge() const;
+    void setClampToEdge(bool clamp);
+
+Q_SIGNALS:
+    void clampToEdgeChanged();
+
 protected:
     virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
 
     QSGTextureProvider *m_textureProvider;
     uint m_requiresPreprocess : 1;
+    uint m_clampToEdge : 1;
 };
 
 QT_END_NAMESPACE

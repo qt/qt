@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 TextureItem::TextureItem(QSGItem *parent)
     : QSGItem(parent)
     , m_textureProvider(0)
+    , m_clampToEdge(true)
 {
     setFlag(ItemHasContents);
 }
@@ -70,6 +71,20 @@ void TextureItem::setTextureProvider(QSGTextureProvider *provider, bool requires
     m_requiresPreprocess = requiresPreprocess;
 }
 
+bool TextureItem::clampToEdge() const
+{
+    return m_clampToEdge;
+}
+
+void TextureItem::setClampToEdge(bool clamp)
+{
+    if (clamp == m_clampToEdge)
+        return;
+    m_clampToEdge = clamp;
+    update();
+    emit clampToEdgeChanged();
+}
+
 Node *TextureItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 {
     TextureNodeInterface *node = static_cast<TextureNodeInterface *>(oldNode);
@@ -79,7 +94,7 @@ Node *TextureItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         node->setTexture(m_textureProvider);
     }
 
-    m_textureProvider->setClampToEdge(true);
+    m_textureProvider->setClampToEdge(m_clampToEdge);
     m_textureProvider->setLinearFiltering(QSGItemPrivate::get(this)->smooth);
 
     node->setTargetRect(QRectF(0, 0, width(), height()));
