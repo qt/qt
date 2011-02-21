@@ -4,6 +4,7 @@
 #include "particleaffector.h"
 #include "wanderaffector.h"
 #include "rockingaffector.h"
+#include "scalingaffector.h"
 #include "V1/qdeclarativeparticles_p.h"
 
 void ParticlesPlugin::registerTypes(const char *uri)
@@ -17,8 +18,10 @@ void ParticlesPlugin::registerTypes(const char *uri)
     qmlRegisterType<QDeclarativeParticleMotionWander>(uri,1,0,"ParticleMotionWander");
     qmlRegisterType<SpriteParticles>(uri, 2, 0, "SpriteParticles");
     qmlRegisterType<SpriteState>(uri, 2, 0, "SpriteState");
-    qmlRegisterType<ParticleAffector>(uri, 2, 0, "NullAffector");//###Should this be default? Or Null?
+
+    qmlRegisterType<ParticleAffector>(uri, 2, 0, "ParticleAffector");
     qmlRegisterType<WanderAffector>(uri, 2, 0, "Wander");
+    qmlRegisterType<ScalingAffector>(uri, 2, 0, "Scale");
     qmlRegisterType<RockingAffector>(uri, 2, 0, "Rocking");
 }
 

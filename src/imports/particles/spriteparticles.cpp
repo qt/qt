@@ -717,6 +717,9 @@ void SpriteParticles::prepareNextFrame()
     while (pt < time) {
         int pos = m_last_particle % m_particle_count;
 
+        foreach(ParticleAffector* a, m_affectors)
+            a->reset(pos);
+
         qreal t = 1 - (pt - opt) / dt;
 
         qreal vx =
@@ -851,7 +854,7 @@ void SpriteParticles::prepareNextFrame()
             qreal dt = time - p->v1.dt;
             p->v1.dt = p->v2.dt = p->v3.dt = p->v4.dt = time;
         foreach(ParticleAffector* a, m_affectors){
-            a->affect(p, i, dt);//TODO: indicate when an index is reset (and associated data should be too)
+            a->affect(p, i, dt, this);//TODO: indicate when an index is reset (and associated data should be too)
         }
     }
 

@@ -9,7 +9,8 @@ HEADERS += \
     pluginmain.h \
     particleaffector.h \
     wanderaffector.h \
-    rockingaffector.h
+    rockingaffector.h \
+    scalingaffector.h
 
 SOURCES += \
     spriteparticles.cpp \
@@ -18,7 +19,8 @@ SOURCES += \
     main.cpp \
     particleaffector.cpp \
     wanderaffector.cpp \
-    rockingaffector.cpp
+    rockingaffector.cpp \
+    scalingaffector.cpp
 
 QT += declarative opengl
 
