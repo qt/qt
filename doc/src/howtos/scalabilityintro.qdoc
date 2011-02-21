@@ -28,6 +28,7 @@
 /*!
     \title Scalability
     \page scalability.html
+    \preliminary
 
     \omit preliminary docs for next SDK release \endomit
     \omit Somewhere I need to mention applications with more than
@@ -69,15 +70,19 @@
     Using small top-level layouts makes your codebase smaller and
     easier to maintain. Also, components that scales relative to their
     parent are more reusable. The layouts should be children of the
-    applications root item. You can change between them by, for
+    application's root item. You can change between them by, for
     instance, using the opacity property of Item; that is, if your
-    application has more tham one top-level layout.
+    application has more tham one top-level layout. Such a top-level
+    layout is also often referred to as a page, i.e., a layout that
+    uses the entire screen. For instance, an organizer application
+    will typically have separate pages for showing the calender and
+    editing todo items.
 
     You should define the measurements separate from the UI, for
     instance by using a JavaScript object that you fill in with a
     script on application start up.
 
-    QML's provides several ways of laying out components, e.g, using
+    QML provides several ways of laying out components, e.g, using
     anchor based layout, the more classic Grid; Column; and Row
     elements, and by setting the dimensions of Items directly. When
     laying out components in scalable applications, you should
@@ -101,10 +106,10 @@
     common components and attributes, and will most likely connect to
     the same data model.
 
-    Therefore, the top level definitions should be quite
+    Therefore, the top-level definitions should be quite
     straightforward and short, with the majority of the functionality
     refactored into contained Components. It is important to try to
-    avoid unnecessary duplication between these top level definitions,
+    avoid unnecessary duplication between these top-level definitions,
     in order to improve maintainability.
 
     There are some patterns that you might consider when designing
@@ -127,11 +132,12 @@
      definition, if defined appropriately using anchors.
     \endlist
 
-    The Loader component can be used to load separate QML files based
-    on some criteria, such as Device Profile resolution. In the case
-    of form factor, this information will not change during the
-    application's lifetime, therefore there is no issue with memory
-    usage or performance.
+    The \l{Loader} component can be used to load separate QML files
+    based on some criteria, such as Device Profile (configuration of
+    screen pixel resolution and DPI density). In the case of form
+    factor, this information will not change during the application's
+    lifetime, therefore there is no issue with memory usage or
+    performance.
 
     \section1 Defining Measurements
 
@@ -139,14 +145,11 @@
     component layout, there are a number aspects to consider:
 
     \list
-    \o The layout structure, the high level relationship between
+    \o The layout structure, the high-level relationship between
      items. Which item is the parent? How are the items arranged
      relatively on the screen? Are they in a grid or column?
     \o The layout measurements. How big is an item, or a margin
      inside the edge of an item, or an anchor between items?
-    \o The constraints imposed by the container. This might be
-     ApplicationWindow contents in the case of a Page, or it may
-     be some other container in the case of a Button.
     \o The implicit size of contained items. Some child items will
      require a certain amount of space, such as a button
      containing a text. That may also depend on the current
@@ -188,7 +191,7 @@
 
     \section1 Using QML's Layout Features
 
-    For a given form factor, top level Layouts structure definitions,
+    For a given form factor, top-level Layouts structure definitions,
     or component layout structure definitions, should in general be
     defined in a proportional way using a combination of
 
@@ -232,7 +235,7 @@
 
     \section1 Orientation Switches
 
-    Application top level page definitions, and reusable component
+    Application top-level page definitions, and reusable component
     definitions, should use one QML layout definition for the layout
     structure. This single definition should include the layout design
     for separate Device Orientations and Aspect Ratios. The reason for
@@ -242,13 +245,13 @@
     orientation changes.
 
     On the contrary, you should perform thorough tests if you choose
-    to use a Loader to load additional QML that is needed in separate
+    to use a \l{Loader} to load additional QML that is needed in separate
     orientations, as this will affect the performance of the
     orientation change.
 
     In order to enable layout animations between the orientations, the
     anchor definitions must reside within the same containing
-    component. Therefore the structure of an page or a component
+    component. Therefore the structure of a page or a component
     should consist of a common set of child components, a common set
     of anchor definitions, and a collection of states (defined in a
     StateGroup) representing the different aspect ratios supported by
@@ -256,7 +259,7 @@
     are not possible on Symbian due to compatibility support for S60
     applications).
 
-    If a component, contained within a Page element, needs to be
+    If a component contained within a page needs to be
     hosted in numerous different form factor definitions, then the
     layout states of the view should depend on the aspect ratio of the
     page (its immediate container). Similarly, different instances of
@@ -264,11 +267,9 @@
     in a UI, and so its layout states should be determined by the
     aspect ratio of its parent. The conclusion is that layout states
     should always follow the aspect ratio of the direct container (not
-    the "orientation" of the current device screen). The only
-    exception to this is of course the top level Window definition,
-    which is handled by the framework.
+    the "orientation" of the current device screen).
 
-    Within each layout State, you should define the relationships
+    Within each layout \l{State}, you should define the relationships
     between items using native QML layout definitions. See below for
     more information. During transitions between the states (triggered
     by the top level orientation change), in the case of anchor
@@ -284,7 +285,7 @@
     \list
     \o What if you have a single page that looks completely
      different between landscape and portrait, i.e. all of the
-     child items are different? For each Page, have two child
+     child items are different? For each page, have two child
      components, with separate layout definitions, and make one
      or other of the items have zero opacity in each state. You
      can use a cross-fade animation by simply applying a
@@ -309,15 +310,15 @@
      handler in this case, to ensure that the list item delegate
      has been constructed before the value is set.
     \o What if the two orientations take up too much memory to have
-     them both in memory at once? Use a Loader if necessary, if
+     them both in memory at once? Use a \l{Loader} if necessary, if
      you cannot keep both versions of the view in memory at once,
      but beware performance on the cross-fade animation during
      layout switch. One solution could be to have two "splash
      screen" items that are children of the Page, then you cross
      fade between those during rotation. Then you can use a
-     Loader to load another child component that loads the actual
+     \l{Loader} to load another child component that loads the actual
      model data to another child Item, and cross-fade to that
-     when the Loader has completed.
+     when the \l{Loader} has completed.
     \endlist
    */
 
