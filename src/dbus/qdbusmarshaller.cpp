@@ -254,7 +254,7 @@ inline QDBusMarshaller *QDBusMarshaller::beginMap(int kid, int vid)
               .arg(QLatin1String(QVariant::typeToName(QVariant::Type(kid)))));
         return this;
     }
-    if (ksignature[1] != 0 || !q_dbus_type_is_basic(*ksignature)) {
+    if (ksignature[1] != 0 || !QDBusUtil::isValidBasicType(*ksignature)) {
         qWarning("QDBusMarshaller: type '%s' (%d) cannot be used as the key type in a D-BUS map.",
                  QVariant::typeToName( QVariant::Type(kid) ), kid);
         error(QString::fromLatin1("Type %1 passed in arguments cannot be used as a key in a map")
@@ -511,7 +511,7 @@ bool QDBusMarshaller::appendRegisteredType(const QVariant &arg)
 bool QDBusMarshaller::appendCrossMarshalling(QDBusDemarshaller *demarshaller)
 {
     int code = q_dbus_message_iter_get_arg_type(&demarshaller->iterator);
-    if (q_dbus_type_is_basic(code)) {
+    if (QDBusUtil::isValidBasicType(code)) {
         // easy: just append
         // do exactly like the D-BUS docs suggest
         // (see apidocs for q_dbus_message_iter_get_basic)
@@ -525,7 +525,7 @@ bool QDBusMarshaller::appendCrossMarshalling(QDBusDemarshaller *demarshaller)
 
     if (code == DBUS_TYPE_ARRAY) {
         int element = q_dbus_message_iter_get_element_type(&demarshaller->iterator);
-        if (q_dbus_type_is_fixed(element) && element != DBUS_TYPE_UNIX_FD) {
+        if (QDBusUtil::isValidFixedType(element) && element != DBUS_TYPE_UNIX_FD) {
             // another optimization: fixed size arrays
             // code is exactly like QDBusDemarshaller::toByteArray
             DBusMessageIter sub;

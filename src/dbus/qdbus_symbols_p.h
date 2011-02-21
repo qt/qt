@@ -358,18 +358,6 @@ DEFINEFUNC(dbus_bool_t , dbus_server_set_watch_functions, (DBusServer           
 DEFINEFUNC(void        , dbus_server_unref, (DBusServer     *server),
            (server), )
 
-/* dbus-signature.h */
-DEFINEFUNC(dbus_bool_t     , dbus_signature_validate, (const char       *signature,
-                                                       DBusError        *error),
-           (signature, error), return)
-DEFINEFUNC(dbus_bool_t     , dbus_signature_validate_single, (const char       *signature,
-                                                              DBusError        *error),
-           (signature, error), return)
-DEFINEFUNC(dbus_bool_t     , dbus_type_is_basic, (int            typecode),
-           (typecode), return)
-DEFINEFUNC(dbus_bool_t     , dbus_type_is_fixed, (int            typecode),
-           (typecode), return)
-
 /* dbus-thread.h */
 DEFINEFUNC(dbus_bool_t     , dbus_threads_init_default, (), (), return)
 
