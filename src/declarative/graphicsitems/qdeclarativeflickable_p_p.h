@@ -118,6 +118,7 @@ public:
 
     void updateBeginningEnd();
 
+    bool isOutermostPressDelay() const;
     void captureDelayedPress(QGraphicsSceneMouseEvent *event);
     void clearDelayedPress();
 
