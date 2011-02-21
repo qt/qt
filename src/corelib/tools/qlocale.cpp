@@ -43,8 +43,8 @@
 
 #ifndef QT_NO_SYSTEMLOCALE
 QT_BEGIN_NAMESPACE
-class QSystemLocale;
-static QSystemLocale *QSystemLocale_globalSystemLocale();
+class QSystemLocaleData;
+static QSystemLocaleData *QSystemLocale_globalSystemLocale();
 QT_END_NAMESPACE
 #endif
 
@@ -134,6 +134,53 @@ inline bool isascii(int c)
 #if defined(Q_OS_SYMBIAN)
 void qt_symbianUpdateSystemPrivate();
 void qt_symbianInitSystemLocale();
+#endif
+
+#ifndef QT_NO_SYSTEMLOCALE
+static QSystemLocale *_systemLocale = 0;
+
+struct QSystemLocaleData
+{
+    QSystemLocaleData()
+        : locale(true)
+    #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+        ,lc_numeric(QLocale::C)
+        ,lc_time(QLocale::C)
+        ,lc_monetary(QLocale::C)
+        ,lc_messages(QLocale::C)
+    #endif
+    {
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+        QByteArray all = qgetenv("LC_ALL");
+        QByteArray numeric  = all.isEmpty() ? qgetenv("LC_NUMERIC") : all;
+        QByteArray time     = all.isEmpty() ? qgetenv("LC_TIME") : all;
+        QByteArray monetary = all.isEmpty() ? qgetenv("LC_MONETARY") : all;
+        QByteArray messages = all.isEmpty() ? qgetenv("LC_MESSAGES") : all;
+        QByteArray lang = qgetenv("LANG");
+        if (numeric.isEmpty())
+            numeric = lang;
+        if (monetary.isEmpty())
+            monetary = lang;
+        if (messages.isEmpty())
+            messages = lang;
+        lc_numeric = QLocale(QString::fromAscii(numeric));
+        lc_time = QLocale(QString::fromAscii(time));
+        lc_monetary = QLocale(QString::fromAscii(monetary));
+        lc_messages = QLocale(QString::fromAscii(messages));
+#endif
+    }
+    QSystemLocale locale;
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+    QLocale lc_numeric;
+    QLocale lc_time;
+    QLocale lc_monetary;
+    QLocale lc_messages;
+#endif
+};
+
+Q_GLOBAL_STATIC(QSystemLocaleData, QSystemLocale_globalSystemLocale)
+static QLocalePrivate *system_lp = 0;
+Q_GLOBAL_STATIC(QLocalePrivate, globalLocalePrivate)
 #endif
 
 /******************************************************************************
@@ -1546,11 +1593,84 @@ QLocale QSystemLocale::fallbackLocale() const
 /*!
     \internal
 */
-QVariant QSystemLocale::query(QueryType type, QVariant /* in */) const
+QVariant QSystemLocale::query(QueryType type, QVariant in) const
 {
-    if (type == MeasurementSystem) {
+    QSystemLocaleData *d = QSystemLocale_globalSystemLocale();
+    const QLocale &lc_numeric = d->lc_numeric;
+    const QLocale &lc_time = d->lc_time;
+    const QLocale &lc_monetary = d->lc_monetary;
+
+    switch (type) {
+    case DecimalPoint:
+        return lc_numeric.decimalPoint();
+    case GroupSeparator:
+        return lc_numeric.groupSeparator();
+    case ZeroDigit:
+        return lc_numeric.zeroDigit();
+    case NegativeSign:
+        return lc_numeric.negativeSign();
+    case DateFormatLong:
+        return lc_time.dateFormat(QLocale::LongFormat);
+    case DateFormatShort:
+        return lc_time.dateFormat(QLocale::ShortFormat);
+    case TimeFormatLong:
+        return lc_time.timeFormat(QLocale::LongFormat);
+    case TimeFormatShort:
+        return lc_time.timeFormat(QLocale::ShortFormat);
+    case DayNameLong:
+        return lc_time.dayName(in.toInt(), QLocale::LongFormat);
+    case DayNameShort:
+        return lc_time.dayName(in.toInt(), QLocale::ShortFormat);
+    case MonthNameLong:
+        return lc_time.monthName(in.toInt(), QLocale::LongFormat);
+    case MonthNameShort:
+        return lc_time.monthName(in.toInt(), QLocale::ShortFormat);
+    case DateToStringLong:
+        return lc_time.toString(in.toDate(), QLocale::LongFormat);
+    case DateToStringShort:
+        return lc_time.toString(in.toDate(), QLocale::ShortFormat);
+    case TimeToStringLong:
+        return lc_time.toString(in.toTime(), QLocale::LongFormat);
+    case TimeToStringShort:
+        return lc_time.toString(in.toTime(), QLocale::ShortFormat);
+    case DateTimeFormatLong:
+        return lc_time.dateTimeFormat(QLocale::LongFormat);
+    case DateTimeFormatShort:
+        return lc_time.dateTimeFormat(QLocale::ShortFormat);
+    case DateTimeToStringLong:
+        return lc_time.toString(in.toDateTime(), QLocale::LongFormat);
+    case DateTimeToStringShort:
+        return lc_time.toString(in.toDateTime(), QLocale::ShortFormat);
+    case PositiveSign:
+        return lc_numeric.positiveSign();
+    case AMText:
+        return lc_time.amText();
+    case PMText:
+        return lc_time.pmText();
+    case FirstDayOfWeek:
+        return lc_time.firstDayOfWeek();
+    case CurrencySymbol:
+        return lc_monetary.currencySymbol(QLocale::CurrencySymbolFormat(in.toUInt()));
+    case FormatCurrency: {
+        switch (in.type()) {
+        case QVariant::Int:
+            return lc_monetary.toCurrencyString(in.toInt());
+        case QVariant::UInt:
+            return lc_monetary.toCurrencyString(in.toUInt());
+        case QVariant::Double:
+            return lc_monetary.toCurrencyString(in.toDouble());
+        case QVariant::LongLong:
+            return lc_monetary.toCurrencyString(in.toLongLong());
+        case QVariant::ULongLong:
+            return lc_monetary.toCurrencyString(in.toULongLong());
+        default:
+            break;
+        }
+        return QString();
+    }
+    case MeasurementSystem:
         return QVariant(unixGetSystemMeasurementSystem());
-    } else if (type == UILanguages) {
+    case UILanguages: {
         QString languages = QString::fromLocal8Bit(qgetenv("LANGUAGE"));
         if (!languages.isEmpty()) {
             QStringList lst = languages.split(QLatin1Char(':'));
@@ -1579,6 +1699,12 @@ QVariant QSystemLocale::query(QueryType type, QVariant /* in */) const
                 return QStringList(QString::fromRawData(lang, lang_len) % QLatin1Char('-') % QString::fromRawData(cntry, cntry_len));
         }
         return QVariant();
+    }
+    case QuotationBegin:
+    case QuotationEnd:
+        break; // TODO
+    default:
+        break;
     }
     return QVariant();
 }
@@ -1610,13 +1736,6 @@ QVariant QSystemLocale::query(QueryType /* type */, QVariant /* in */) const
     return QVariant();
 }
 
-#endif
-
-#ifndef QT_NO_SYSTEMLOCALE
-static QSystemLocale *_systemLocale = 0;
-Q_GLOBAL_STATIC_WITH_ARGS(QSystemLocale, QSystemLocale_globalSystemLocale, (true))
-static QLocalePrivate *system_lp = 0;
-Q_GLOBAL_STATIC(QLocalePrivate, globalLocalePrivate)
 #endif
 
 /******************************************************************************
@@ -1718,7 +1837,7 @@ static const QSystemLocale *systemLocale()
 #if defined(Q_OS_SYMBIAN)
     qt_symbianInitSystemLocale();
 #endif
-    return QSystemLocale_globalSystemLocale();
+    return &QSystemLocale_globalSystemLocale()->locale;
 }
 
 void QLocalePrivate::updateSystemPrivate()
