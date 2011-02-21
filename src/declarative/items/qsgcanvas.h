@@ -71,15 +71,20 @@ public:
 
     bool sendEvent(QSGItem *, QEvent *);
 
-    QSGContext *sceneGraphContext() const;
+
     void setSceneGraphContext(QSGContext *context);
+
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
 
 protected:
     QSGCanvas(QSGCanvasPrivate &dd, QWidget *parent = 0, Qt::WindowFlags f = 0);
     QSGCanvas(QSGCanvasPrivate &dd, const QGLFormat &format, QWidget *parent = 0, Qt::WindowFlags f = 0);
 
     virtual void paintEvent(QPaintEvent *);
+    virtual void resizeEvent(QResizeEvent *);
+
     virtual void showEvent(QShowEvent *);
+    virtual void hideEvent(QHideEvent *);
 
     virtual bool event(QEvent *);
     virtual void keyPressEvent(QKeyEvent *);
@@ -93,11 +98,9 @@ protected:
     virtual void wheelEvent(QWheelEvent *);
 #endif
 
-private Q_SLOTS:
+private slots:
+    void sceneGraphChanged();
     void maybeUpdate();
-
-protected:
-    QSGCanvasPrivate *d_ptr; // XXX todo
 
 private:
     Q_DISABLE_COPY(QSGCanvas);

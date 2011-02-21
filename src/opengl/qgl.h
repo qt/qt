@@ -580,6 +580,11 @@ protected:
     virtual void glDraw();
     int fontDisplayListBase(const QFont & fnt, int listBase = 2000); // ### Qt 5: remove
 
+    QGLWidget(QGLWidgetPrivate &dd,
+              const QGLFormat &format = QGLFormat(),
+              QWidget *parent = 0,
+              const QGLWidget* shareWidget = 0,
+              Qt::WindowFlags f = 0);
 private:
     Q_DISABLE_COPY(QGLWidget)
 

@@ -1,7 +1,7 @@
-// Commit: ddeae91ab54bb92b813304778ab8dc4037937274
+// Commit: 6129a16a74620916d3e8bff29a3788374ca21c94
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -265,6 +265,8 @@ public:
                 }
             }
             pos = (*(--visibleItems.constEnd()))->endPosition() + invisibleCount * (averageSize + spacing);
+        } else if (model && model->count()) {
+            pos = model->count() * averageSize + (model->count()-1) * spacing;
         }
         return pos;
     }
@@ -411,8 +413,10 @@ public:
             }
         }
         if ((header && header->item == item) || (footer && footer->item == item)) {
-            updateHeader();
-            updateFooter();
+            if (header)
+                updateHeader();
+            if (footer)
+                updateFooter();
         }
         if (currentItem && currentItem->item == item)
             updateHighlight();
@@ -449,6 +453,7 @@ public:
     void updateHeader();
     void updateFooter();
     void fixupPosition();
+    void positionViewAtIndex(int index, int mode);
     virtual void fixup(AxisData &data, qreal minExtent, qreal maxExtent);
     virtual void flick(QSGFlickablePrivate::AxisData &data, qreal minExtent, qreal maxExtent, qreal vSize,
                         QDeclarativeTimeLineCallback::Callback fixupCallback, qreal velocity);
@@ -641,7 +646,8 @@ void QSGListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         int i = visibleItems.count() - 1;
         while (i > 0 && visibleItems.at(i)->index == -1)
             --i;
-        modelIndex = visibleItems.at(i)->index + 1;
+        if (visibleItems.at(i)->index != -1)
+            modelIndex = visibleItems.at(i)->index + 1;
     }
 
     bool changed = false;
@@ -932,6 +938,9 @@ void QSGListViewPrivate::createSection(FxListItemSG *listItem)
                 }
             }
             listItem->setPosition(pos);
+        } else {
+            QDeclarativeContext *context = QDeclarativeEngine::contextForObject(listItem->section)->parentContext();
+            context->setContextProperty(QLatin1String("section"), listItem->attached->m_section);
         }
     } else if (listItem->section) {
         qreal pos = listItem->position();
@@ -1050,6 +1059,8 @@ void QSGListViewPrivate::updateCurrent(int modelIndex)
         // This is slightly sub-optimal, but section heading caching minimizes the impact.
         if (currentItem->section)
             currentItem->section->setVisible(false);
+        if (visibleItems.isEmpty())
+            averageSize = currentItem->size();
     }
     updateHighlight();
     emit q->currentIndexChanged();
@@ -1434,10 +1445,12 @@ void QSGListView::setModel(const QVariant &model)
                 d->moveReason = QSGListViewPrivate::SetIndex;
                 d->updateCurrent(d->currentIndex);
                 if (d->highlight && d->currentItem) {
-                    d->highlight->setPosition(d->currentItem->position());
+                    if (d->autoHighlight)
+                        d->highlight->setPosition(d->currentItem->position());
                     d->updateTrackedItem();
                 }
             }
+            d->updateViewport();
         }
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
@@ -1484,9 +1497,11 @@ void QSGListView::setDelegate(QDeclarativeComponent *delegate)
             d->moveReason = QSGListViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
             if (d->highlight && d->currentItem) {
-                d->highlight->setPosition(d->currentItem->position());
+                if (d->autoHighlight)
+                    d->highlight->setPosition(d->currentItem->position());
                 d->updateTrackedItem();
             }
+            d->updateViewport();
         }
     }
     emit delegateChanged();
@@ -1815,6 +1830,9 @@ void QSGListView::setFooter(QDeclarativeComponent *footer)
     Q_D(QSGListView);
     if (d->footerComponent != footer) {
         if (d->footer) {
+            // XXX todo - the original did scene()->removeItem().  Why?
+            d->footer->item->setParentItem(0);
+            d->footer->item->deleteLater();
             delete d->footer;
             d->footer = 0;
         }
@@ -1824,6 +1842,7 @@ void QSGListView::setFooter(QDeclarativeComponent *footer)
         if (isComponentComplete()) {
             d->updateFooter();
             d->updateViewport();
+            d->fixupPosition();
         }
         emit footerChanged();
     }
@@ -1840,6 +1859,9 @@ void QSGListView::setHeader(QDeclarativeComponent *header)
     Q_D(QSGListView);
     if (d->headerComponent != header) {
         if (d->header) {
+            // XXX todo - the original did scene()->removeItem().  Why?
+            d->header->item->setParentItem(0);
+            d->header->item->deleteLater();
             delete d->header;
             d->header = 0;
         }
@@ -1850,6 +1872,7 @@ void QSGListView::setHeader(QDeclarativeComponent *header)
             d->updateHeader();
             d->updateFooter();
             d->updateViewport();
+            d->fixupPosition();
         }
         emit headerChanged();
     }
@@ -2107,69 +2130,100 @@ void QSGListView::decrementCurrentIndex()
     }
 }
 
+void QSGListViewPrivate::positionViewAtIndex(int index, int mode)
+{
+    Q_Q(QSGListView);
+    if (!isValid())
+        return;
+    if (mode < QSGListView::Beginning || mode > QSGListView::Contain)
+        return;
+    int idx = qMax(qMin(index, model->count()-1), 0);
+
+    if (layoutScheduled)
+        layout();
+    qreal pos = position();
+    FxListItemSG *item = visibleItem(idx);
+    qreal maxExtent = orient == QSGListView::Vertical ? -q->maxYExtent() : -q->maxXExtent();
+    if (!item) {
+        int itemPos = positionAt(idx);
+        // save the currently visible items in case any of them end up visible again
+        QList<FxListItemSG*> oldVisible = visibleItems;
+        visibleItems.clear();
+        visiblePos = itemPos;
+        visibleIndex = idx;
+        setPosition(qMin(qreal(itemPos), maxExtent));
+        // now release the reference to all the old visible items.
+        for (int i = 0; i < oldVisible.count(); ++i)
+            releaseItem(oldVisible.at(i));
+        item = visibleItem(idx);
+    }
+    if (item) {
+        const qreal itemPos = item->position();
+        switch (mode) {
+        case QSGListView::Beginning:
+            pos = itemPos;
+            if (index < 0 && header)
+                pos -= header->size();
+            break;
+        case QSGListView::Center:
+            pos = itemPos - (size() - item->size())/2;
+            break;
+        case QSGListView::End:
+            pos = itemPos - size() + item->size();
+            if (index >= model->count() && footer)
+                pos += footer->size();
+            break;
+        case QSGListView::Visible:
+            if (itemPos > pos + size())
+                pos = itemPos - size() + item->size();
+            else if (item->endPosition() < pos)
+                pos = itemPos;
+            break;
+        case QSGListView::Contain:
+            if (item->endPosition() > pos + size())
+                pos = itemPos - size() + item->size();
+            if (itemPos < pos)
+                pos = itemPos;
+        }
+        pos = qMin(pos, maxExtent);
+        qreal minExtent = orient == QSGListView::Vertical ? -q->minYExtent() : -q->minXExtent();
+        pos = qMax(pos, minExtent);
+        moveReason = QSGListViewPrivate::Other;
+        q->cancelFlick();
+        setPosition(pos);
+        if (highlight) {
+            if (autoHighlight) {
+                highlight->setPosition(currentItem->itemPosition());
+                highlight->setSize(currentItem->itemSize());
+            }
+            updateHighlight();
+        }
+    }
+    fixupPosition();
+}
+
 void QSGListView::positionViewAtIndex(int index, int mode)
 {
     Q_D(QSGListView);
     if (!d->isValid() || index < 0 || index >= d->model->count())
         return;
-    if (mode < Beginning || mode > Contain)
-        return;
+    d->positionViewAtIndex(index, mode);
+}
 
-    if (d->layoutScheduled)
-        d->layout();
-    qreal pos = d->position();
-    FxListItemSG *item = d->visibleItem(index);
-    if (!item) {
-        int itemPos = d->positionAt(index);
-        // save the currently visible items in case any of them end up visible again
-        QList<FxListItemSG*> oldVisible = d->visibleItems;
-        d->visibleItems.clear();
-        d->visiblePos = itemPos;
-        d->visibleIndex = index;
-        d->setPosition(itemPos);
-        // now release the reference to all the old visible items.
-        for (int i = 0; i < oldVisible.count(); ++i)
-            d->releaseItem(oldVisible.at(i));
-        item = d->visibleItem(index);
-    }
-    if (item) {
-        const qreal itemPos = item->position();
-        switch (mode) {
-        case Beginning:
-            pos = itemPos;
-            break;
-        case Center:
-            pos = itemPos - (d->size() - item->size())/2;
-            break;
-        case End:
-            pos = itemPos - d->size() + item->size();
-            break;
-        case Visible:
-            if (itemPos > pos + d->size())
-                pos = itemPos - d->size() + item->size();
-            else if (item->endPosition() < pos)
-                pos = itemPos;
-            break;
-        case Contain:
-            if (item->endPosition() > pos + d->size())
-                pos = itemPos - d->size() + item->size();
-            if (itemPos < pos)
-                pos = itemPos;
-        }
-        qreal maxExtent = d->orient == QSGListView::Vertical ? -maxYExtent() : -maxXExtent();
-        pos = qMin(pos, maxExtent);
-        qreal minExtent = d->orient == QSGListView::Vertical ? -minYExtent() : -minXExtent();
-        pos = qMax(pos, minExtent);
-        d->moveReason = QSGListViewPrivate::Other;
-        cancelFlick();
-        d->setPosition(pos);
-        if (d->highlight) {
-            d->highlight->setPosition(d->currentItem->itemPosition());
-            d->highlight->setSize(d->currentItem->itemSize());
-            d->updateHighlight();
-        }
-    }
-    d->fixupPosition();
+void QSGListView::positionViewAtBeginning()
+{
+    Q_D(QSGListView);
+    if (!d->isValid())
+        return;
+    d->positionViewAtIndex(-1, Beginning);
+}
+
+void QSGListView::positionViewAtEnd()
+{
+    Q_D(QSGListView);
+    if (!d->isValid())
+        return;
+    d->positionViewAtIndex(d->model->count(), End);
 }
 
 int QSGListView::indexAt(int x, int y) const
@@ -2199,7 +2253,8 @@ void QSGListView::componentComplete()
         else
             d->updateCurrent(d->currentIndex);
         if (d->highlight && d->currentItem) {
-            d->highlight->setPosition(d->currentItem->position());
+            if (d->autoHighlight)
+                d->highlight->setPosition(d->currentItem->position());
             d->updateTrackedItem();
         }
         d->moveReason = QSGListViewPrivate::Other;
@@ -2292,28 +2347,16 @@ void QSGListView::itemsInserted(int modelIndex, int count)
         return;
     d->updateUnrequestedIndexes();
     d->moveReason = QSGListViewPrivate::Other;
-    if (!d->visibleItems.count() || d->model->count() <= 1) {
-        d->scheduleLayout();
-        if (d->itemCount && d->currentIndex >= modelIndex) {
-            // adjust current item index
-            d->currentIndex += count;
-            if (d->currentItem)
-                d->currentItem->index = d->currentIndex;
-            emit currentIndexChanged();
-        } else if (!d->currentIndex || (d->currentIndex < 0 && !d->currentIndexCleared)) {
-            d->updateCurrent(0);
-        }
-        d->itemCount += count;
-        emit countChanged();
-        return;
-    }
 
-    int index = d->mapFromModel(modelIndex);
+    int index = d->visibleItems.count() ? d->mapFromModel(modelIndex) : 0;
     if (index < 0) {
         int i = d->visibleItems.count() - 1;
         while (i > 0 && d->visibleItems.at(i)->index == -1)
             --i;
-        if (d->visibleItems.at(i)->index + 1 == modelIndex
+        if (i == 0 && d->visibleItems.first()->index == -1) {
+            // there are no visible items except items marked for removal
+            index = d->visibleItems.count();
+        } else if (d->visibleItems.at(i)->index + 1 == modelIndex
             && d->visibleItems.at(i)->endPosition() < d->buffer+d->position()+d->size()-1) {
             // Special case of appending an item to the model.
             index = d->visibleItems.count();
@@ -2341,11 +2384,15 @@ void QSGListView::itemsInserted(int modelIndex, int count)
         }
     }
 
-    // At least some of the added items will be visible
-
     // index can be the next item past the end of the visible items list (i.e. appended)
-    int pos = index < d->visibleItems.count() ? d->visibleItems.at(index)->position()
-                                                : d->visibleItems.at(index-1)->endPosition()+d->spacing+1;
+    int pos = 0;
+    if (d->visibleItems.count()) {
+        pos = index < d->visibleItems.count() ? d->visibleItems.at(index)->position()
+                                                : d->visibleItems.last()->endPosition()+d->spacing+1;
+    } else if (d->itemCount == 0 && d->header) {
+        pos = d->header->size();
+    }
+
     int initialPos = pos;
     int diff = 0;
     QList<FxListItemSG*> added;
@@ -2412,6 +2459,8 @@ void QSGListView::itemsInserted(int modelIndex, int count)
         if (d->currentItem) {
             d->currentItem->index = d->currentIndex;
             d->currentItem->setPosition(d->currentItem->position() + diff);
+        } else if (!d->currentIndex || (d->currentIndex < 0 && !d->currentIndexCleared)) {
+            d->updateCurrent(0);
         }
         emit currentIndexChanged();
     }
@@ -2499,14 +2548,16 @@ void QSGListView::itemsRemoved(int modelIndex, int count)
     }
 
     // update visibleIndex
+    bool haveVisibleIndex = false;
     for (it = d->visibleItems.begin(); it != d->visibleItems.end(); ++it) {
         if ((*it)->index != -1) {
             d->visibleIndex = (*it)->index;
+            haveVisibleIndex = true;
             break;
         }
     }
 
-    if (removedVisible && d->visibleItems.isEmpty()) {
+    if (removedVisible && !haveVisibleIndex) {
         d->timeline.clear();
         if (d->itemCount == 0) {
             d->visibleIndex = 0;
@@ -2514,7 +2565,6 @@ void QSGListView::itemsRemoved(int modelIndex, int count)
             d->setPosition(0);
             d->updateHeader();
             d->updateFooter();
-            update();
         } else {
             if (modelIndex < d->visibleIndex)
                 d->visibleIndex = modelIndex+1;
@@ -2664,7 +2714,8 @@ void QSGListView::modelReset()
     d->moveReason = QSGListViewPrivate::SetIndex;
     d->updateCurrent(d->currentIndex);
     if (d->highlight && d->currentItem) {
-        d->highlight->setPosition(d->currentItem->position());
+        if (d->autoHighlight)
+            d->highlight->setPosition(d->currentItem->position());
         d->updateTrackedItem();
     }
     d->moveReason = QSGListViewPrivate::Other;

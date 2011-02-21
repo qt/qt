@@ -1,7 +1,7 @@
-// Commit: 1337a3e031477aa4d628d01252557dee622629ff
+// Commit: f4d385cec1f09971163d7e5d9e9b09b19f1873c4
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -329,11 +329,14 @@ public:
                 }
             }
         } else if ((header && header->item == item) || (footer && footer->item == item)) {
-            updateHeader();
-            updateFooter();
+            if (header)
+                updateHeader();
+            if (footer)
+                updateFooter();
         }
     }
 
+    void positionViewAtIndex(int index, int mode);
     virtual void fixup(AxisData &data, qreal minExtent, qreal maxExtent);
     virtual void flick(AxisData &data, qreal minExtent, qreal maxExtent, qreal vSize,
                 QDeclarativeTimeLineCallback::Callback fixupCallback, qreal velocity);
@@ -733,7 +736,7 @@ void QSGGridViewPrivate::createHighlight()
             QDeclarative_setParent_noEvent(item, q->contentItem());
             item->setParentItem(q->contentItem());
             highlight = new FxGridItemSG(item, q);
-            if (currentItem)
+            if (currentItem && autoHighlight)
                 highlight->setPosition(currentItem->colPos(), currentItem->rowPos());
             highlightXAnimator = new QSmoothedAnimation(q);
             highlightXAnimator->target = QDeclarativeProperty(highlight->item, QLatin1String("x"));
@@ -1133,7 +1136,8 @@ void QSGGridView::setModel(const QVariant &model)
                 d->moveReason = QSGGridViewPrivate::SetIndex;
                 d->updateCurrent(d->currentIndex);
                 if (d->highlight && d->currentItem) {
-                    d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+                    if (d->autoHighlight)
+                        d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
                     d->updateTrackedItem();
                 }
                 d->moveReason = QSGGridViewPrivate::Other;
@@ -1183,7 +1187,8 @@ void QSGGridView::setDelegate(QDeclarativeComponent *delegate)
             d->moveReason = QSGGridViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
             if (d->highlight && d->currentItem) {
-                d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+                if (d->autoHighlight)
+                    d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
                 d->updateTrackedItem();
             }
             d->moveReason = QSGGridViewPrivate::Other;
@@ -1360,6 +1365,8 @@ void QSGGridView::setFlow(Flow flow)
             setContentHeight(-1);
             setFlickableDirection(QSGFlickable::HorizontalFlick);
         }
+        setContentX(0);
+        setContentY(0);
         d->clear();
         d->updateGrid();
         refill();
@@ -1460,6 +1467,9 @@ void QSGGridView::setFooter(QDeclarativeComponent *footer)
     Q_D(QSGGridView);
     if (d->footerComponent != footer) {
         if (d->footer) {
+            // XXX todo - the original did scene()->removeItem().  Why?
+            d->footer->item->setParentItem(0);
+            d->footer->item->deleteLater();
             delete d->footer;
             d->footer = 0;
         }
@@ -1467,6 +1477,7 @@ void QSGGridView::setFooter(QDeclarativeComponent *footer)
         if (isComponentComplete()) {
             d->updateFooter();
             d->updateGrid();
+            d->fixupPosition();
         }
         emit footerChanged();
     }
@@ -1483,6 +1494,9 @@ void QSGGridView::setHeader(QDeclarativeComponent *header)
     Q_D(QSGGridView);
     if (d->headerComponent != header) {
         if (d->header) {
+            // XXX todo - the original did scene()->removeItem().  Why?
+            d->header->item->setParentItem(0);
+            d->header->item->deleteLater();
             delete d->header;
             d->header = 0;
         }
@@ -1491,6 +1505,7 @@ void QSGGridView::setHeader(QDeclarativeComponent *header)
             d->updateHeader();
             d->updateFooter();
             d->updateGrid();
+            d->fixupPosition();
         }
         emit headerChanged();
     }
@@ -1754,63 +1769,100 @@ void QSGGridView::moveCurrentIndexRight()
     }
 }
 
+void QSGGridViewPrivate::positionViewAtIndex(int index, int mode)
+{
+    Q_Q(QSGGridView);
+    if (!isValid())
+        return;
+    if (mode < QSGGridView::Beginning || mode > QSGGridView::Contain)
+        return;
+
+    int idx = qMax(qMin(index, model->count()-1), 0);
+
+    if (layoutScheduled)
+        layout();
+    qreal pos = position();
+    FxGridItemSG *item = visibleItem(idx);
+    qreal maxExtent = flow == QSGGridView::LeftToRight ? -q->maxYExtent() : -q->maxXExtent();
+    if (!item) {
+        int itemPos = rowPosAt(idx);
+        // save the currently visible items in case any of them end up visible again
+        QList<FxGridItemSG*> oldVisible = visibleItems;
+        visibleItems.clear();
+        visibleIndex = idx - idx % columns;
+        maxExtent = flow == QSGGridView::LeftToRight ? -q->maxYExtent() : -q->maxXExtent();
+        setPosition(qMin(qreal(itemPos), maxExtent));
+        // now release the reference to all the old visible items.
+        for (int i = 0; i < oldVisible.count(); ++i)
+            releaseItem(oldVisible.at(i));
+        item = visibleItem(idx);
+    }
+    if (item) {
+        qreal itemPos = item->rowPos();
+        switch (mode) {
+        case QSGGridView::Beginning:
+            pos = itemPos;
+            if (index < 0 && header) {
+                pos -= flow == QSGGridView::LeftToRight
+                            ? header->item->height()
+                            : header->item->width();
+            }
+            break;
+        case QSGGridView::Center:
+            pos = itemPos - (size() - rowSize())/2;
+            break;
+        case QSGGridView::End:
+            pos = itemPos - size() + rowSize();
+            if (index >= model->count() && footer) {
+                pos += flow == QSGGridView::LeftToRight
+                            ? footer->item->height()
+                            : footer->item->width();
+            }
+            break;
+        case QSGGridView::Visible:
+            if (itemPos > pos + size())
+                pos = itemPos - size() + rowSize();
+            else if (item->endRowPos() < pos)
+                pos = itemPos;
+            break;
+        case QSGGridView::Contain:
+            if (item->endRowPos() > pos + size())
+                pos = itemPos - size() + rowSize();
+            if (itemPos < pos)
+                pos = itemPos;
+        }
+        pos = qMin(pos, maxExtent);
+        qreal minExtent = flow == QSGGridView::LeftToRight ? -q->minYExtent() : -q->minXExtent();
+        pos = qMax(pos, minExtent);
+        moveReason = QSGGridViewPrivate::Other;
+        q->cancelFlick();
+        setPosition(pos);
+    }
+    fixupPosition();
+}
+
 void QSGGridView::positionViewAtIndex(int index, int mode)
 {
     Q_D(QSGGridView);
     if (!d->isValid() || index < 0 || index >= d->model->count())
         return;
-    if (mode < Beginning || mode > Contain)
-        return;
+    d->positionViewAtIndex(index, mode);
+}
 
-    if (d->layoutScheduled)
-        d->layout();
-    qreal pos = d->position();
-    FxGridItemSG *item = d->visibleItem(index);
-    if (!item) {
-        int itemPos = d->rowPosAt(index);
-        // save the currently visible items in case any of them end up visible again
-        QList<FxGridItemSG*> oldVisible = d->visibleItems;
-        d->visibleItems.clear();
-        d->visibleIndex = index - index % d->columns;
-        d->setPosition(itemPos);
-        // now release the reference to all the old visible items.
-        for (int i = 0; i < oldVisible.count(); ++i)
-            d->releaseItem(oldVisible.at(i));
-        item = d->visibleItem(index);
-    }
-    if (item) {
-        qreal itemPos = item->rowPos();
-        switch (mode) {
-        case Beginning:
-            pos = itemPos;
-            break;
-        case Center:
-            pos = itemPos - (d->size() - d->rowSize())/2;
-            break;
-        case End:
-            pos = itemPos - d->size() + d->rowSize();
-            break;
-        case Visible:
-            if (itemPos > pos + d->size())
-                pos = itemPos - d->size() + d->rowSize();
-            else if (item->endRowPos() < pos)
-                pos = itemPos;
-            break;
-        case Contain:
-            if (item->endRowPos() > pos + d->size())
-                pos = itemPos - d->size() + d->rowSize();
-            if (itemPos < pos)
-                pos = itemPos;
-        }
-        qreal maxExtent = d->flow == QSGGridView::LeftToRight ? -maxYExtent() : -maxXExtent();
-        pos = qMin(pos, maxExtent);
-        qreal minExtent = d->flow == QSGGridView::LeftToRight ? -minYExtent() : -minXExtent();
-        pos = qMax(pos, minExtent);
-        d->moveReason = QSGGridViewPrivate::Other;
-        cancelFlick();
-        d->setPosition(pos);
-    }
-    d->fixupPosition();
+void QSGGridView::positionViewAtBeginning()
+{
+    Q_D(QSGGridView);
+    if (!d->isValid())
+        return;
+    d->positionViewAtIndex(-1, Beginning);
+}
+
+void QSGGridView::positionViewAtEnd()
+{
+    Q_D(QSGGridView);
+    if (!d->isValid())
+        return;
+    d->positionViewAtIndex(d->model->count(), End);
 }
 
 int QSGGridView::indexAt(int x, int y) const
@@ -1840,7 +1892,8 @@ void QSGGridView::componentComplete()
         else
             d->updateCurrent(d->currentIndex);
         if (d->highlight && d->currentItem) {
-            d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+            if (d->autoHighlight)
+                d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
             d->updateTrackedItem();
         }
         d->moveReason = QSGGridViewPrivate::Other;
@@ -1908,24 +1961,9 @@ void QSGGridView::itemsInserted(int modelIndex, int count)
     Q_D(QSGGridView);
     if (!isComponentComplete())
         return;
-    if (!d->visibleItems.count() || d->model->count() <= 1) {
-        d->scheduleLayout();
-        if (d->itemCount && d->currentIndex >= modelIndex) {
-            // adjust current item index
-            d->currentIndex += count;
-            if (d->currentItem)
-                d->currentItem->index = d->currentIndex;
-            emit currentIndexChanged();
-        } else if (!d->currentIndex || (d->currentIndex < 0 && !d->currentIndexCleared)) {
-            d->updateCurrent(0);
-        }
-        d->itemCount += count;
-        emit countChanged();
-        return;
-    }
 
-    int index = d->mapFromModel(modelIndex);
-    if (index == -1) {
+    int index = d->visibleItems.count() ? d->mapFromModel(modelIndex) : 0;
+    if (index < 0) {
         int i = d->visibleItems.count() - 1;
         while (i > 0 && d->visibleItems.at(i)->index == -1)
             --i;
@@ -1956,28 +1994,35 @@ void QSGGridView::itemsInserted(int modelIndex, int count)
         }
     }
 
-    // At least some of the added items will be visible
     int insertCount = count;
-    if (index < d->visibleIndex) {
+    if (index < d->visibleIndex && d->visibleItems.count()) {
         insertCount -= d->visibleIndex - index;
         index = d->visibleIndex;
         modelIndex = d->visibleIndex;
     }
 
-    index -= d->visibleIndex;
     int to = d->buffer+d->position()+d->size()-1;
-    int colPos, rowPos;
-    if (index < d->visibleItems.count()) {
-        colPos = d->visibleItems.at(index)->colPos();
-        rowPos = d->visibleItems.at(index)->rowPos();
-    } else {
-        // appending items to visible list
-        colPos = d->visibleItems.at(index-1)->colPos() + d->colSize();
-        rowPos = d->visibleItems.at(index-1)->rowPos();
-        if (colPos > d->colSize() * (d->columns-1)) {
-            colPos = 0;
-            rowPos += d->rowSize();
+    int colPos = 0;
+    int rowPos = 0;
+    if (d->visibleItems.count()) {
+        index -= d->visibleIndex;
+        if (index < d->visibleItems.count()) {
+            colPos = d->visibleItems.at(index)->colPos();
+            rowPos = d->visibleItems.at(index)->rowPos();
+        } else {
+            // appending items to visible list
+            colPos = d->visibleItems.at(index-1)->colPos() + d->colSize();
+            rowPos = d->visibleItems.at(index-1)->rowPos();
+            if (colPos > d->colSize() * (d->columns-1)) {
+                colPos = 0;
+                rowPos += d->rowSize();
+            }
         }
+    } else if (d->itemCount == 0 && d->header) {
+        if (d->flow == QSGGridView::LeftToRight)
+            rowPos = d->headerSize();
+        else
+            colPos = d->headerSize();
     }
 
     // Update the indexes of the following visible items.
@@ -2030,6 +2075,8 @@ void QSGGridView::itemsInserted(int modelIndex, int count)
         if (d->currentItem) {
             d->currentItem->index = d->currentIndex;
             d->currentItem->setPosition(d->colPosAt(d->currentIndex), d->rowPosAt(d->currentIndex));
+        } else if (!d->currentIndex || (d->currentIndex < 0 && !d->currentIndexCleared)) {
+            d->updateCurrent(0);
         }
         emit currentIndexChanged();
     }
@@ -2147,11 +2194,7 @@ void QSGGridView::itemsMoved(int from, int to, int count)
         return;
     QHash<int,FxGridItemSG*> moved;
 
-    bool removedBeforeVisible = false;
     FxGridItemSG *firstItem = d->firstVisibleItem();
-
-    if (from < to && from < d->visibleIndex && to > d->visibleIndex)
-        removedBeforeVisible = true;
 
     QList<FxGridItemSG*>::Iterator it = d->visibleItems.begin();
     while (it != d->visibleItems.end()) {
@@ -2161,16 +2204,12 @@ void QSGGridView::itemsMoved(int from, int to, int count)
             item->index += (to-from);
             moved.insert(item->index, item);
             it = d->visibleItems.erase(it);
-            if (item->rowPos() < firstItem->rowPos())
-                removedBeforeVisible = true;
         } else {
             if (item->index > from && item->index != -1) {
                 // move everything after the moved items.
                 item->index -= count;
                 if (item->index < d->visibleIndex)
                     d->visibleIndex = item->index;
-            } else if (item->index != -1) {
-                removedBeforeVisible = true;
             }
             ++it;
         }
@@ -2248,7 +2287,8 @@ void QSGGridView::modelReset()
     d->moveReason = QSGGridViewPrivate::SetIndex;
     d->updateCurrent(d->currentIndex);
     if (d->highlight && d->currentItem) {
-        d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+        if (d->autoHighlight)
+            d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
         d->updateTrackedItem();
     }
     d->moveReason = QSGGridViewPrivate::Other;

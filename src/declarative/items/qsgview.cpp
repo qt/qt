@@ -397,17 +397,11 @@ void QSGView::resizeEvent(QResizeEvent *e)
 void QSGView::paintEvent(QPaintEvent *event)
 {
     Q_D(QSGView);
-
-    QDeclarativeDebugTrace::addEvent(QDeclarativeDebugTrace::FramePaint);
-    QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Painting);
-
     int time = 0;
     if (frameRateDebug()) 
         time = d->frameTimer.restart();
 
     QSGCanvas::paintEvent(event);
-
-    QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Painting);
 
     if (frameRateDebug())
         qDebug() << "paintEvent:" << d->frameTimer.elapsed() << "time since last frame:" << time;

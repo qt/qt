@@ -34,6 +34,12 @@
         silent:symbian_sqlite3_dso.commands = @echo unzipping $@ && $$symbian_sqlite3_dso.commands
         QMAKE_EXTRA_COMPILERS += symbian_sqlite3_dso
 
+        # Workaround for the fact that make doesn't understand that sqlite3.dso
+        # is the same as $OBJECTS_DIR/sqlite3.dso
+        symbian_sqlite3_dso_standalone.target = sqlite3.dso
+        symbian_sqlite3_dso_standalone.depends = $$symbian_sqlite3_dso.output
+        QMAKE_EXTRA_TARGETS += symbian_sqlite3_dso_standalone
+
         symbian_sqlite3_ver_dso.input = symbian_sqlite3_zip_file
         symbian_sqlite3_ver_dso.output = sqlite3{00060003}.dso
         !isEmpty(OBJECTS_DIR):symbian_sqlite3_ver_dso.output = $$OBJECTS_DIR/$$symbian_sqlite3_ver_dso.output

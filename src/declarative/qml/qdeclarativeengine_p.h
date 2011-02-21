@@ -272,8 +272,6 @@ public:
     QHash<int, int> m_qmlLists;
     QHash<int, QDeclarativeCompiledData *> m_compositeTypes;
 
-    QHash<QString, QScriptValue> m_sharedScriptImports;
-
     QScriptValue scriptValueFromVariant(const QVariant &);
     QVariant scriptValueToVariant(const QScriptValue &, int hint = QVariant::Invalid);
 

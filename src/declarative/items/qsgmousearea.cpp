@@ -1,7 +1,7 @@
-// Commit: 810e21d9e404aa2fcb602cb68bfd892387b234e7
+// Commit: f018d9236647b687e03dd9d2e1867944b4f4058b
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -403,20 +403,24 @@ void QSGMouseArea::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 void QSGMouseArea::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_D(QSGMouseArea);
-    if (!d->absorb)
+    if (!d->absorb) {
         QSGItem::hoverEnterEvent(event);
-    else
+    } else {
+        d->lastPos = event->pos();
         setHovered(true);
+        QSGMouseEvent me(d->lastPos.x(), d->lastPos.y(), Qt::NoButton, Qt::NoButton, event->modifiers(), false, false);
+        emit mousePositionChanged(&me);
+    }
 }
 
 void QSGMouseArea::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_D(QSGMouseArea);
     if (!d->absorb) {
-        QSGItem::hoverEnterEvent(event);
+        QSGItem::hoverMoveEvent(event);
     } else {
         d->lastPos = event->pos();
-        QSGMouseEvent me(d->lastPos.x(), d->lastPos.y(), Qt::NoButton, d->lastButtons, d->lastModifiers, false, d->longPress);
+        QSGMouseEvent me(d->lastPos.x(), d->lastPos.y(), Qt::NoButton, Qt::NoButton, event->modifiers(), false, false);
         emit mousePositionChanged(&me);
         me.setX(d->lastPos.x());
         me.setY(d->lastPos.y());
@@ -635,15 +639,16 @@ bool QSGMouseArea::setPressed(bool p)
             me.setX(d->lastPos.x());
             me.setY(d->lastPos.y());
             emit mousePositionChanged(&me);
+            emit pressedChanged();
         } else {
             emit released(&me);
             me.setX(d->lastPos.x());
             me.setY(d->lastPos.y());
+            emit pressedChanged();
             if (isclick && !d->longPress && !d->doubleClick)
                 emit clicked(&me);
         }
 
-        emit pressedChanged();
         return me.isAccepted();
     }
     return false;

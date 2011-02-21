@@ -1,7 +1,7 @@
-// Commit: 8ae7f9508a94e37ceddd4c2b1b94dc43ff039cf3
+// Commit: 6f78a6080b84cc3ef96b73a4ff58d1b5a72f08f4
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,7 +55,7 @@
 //
 
 #include "qsgpositioners_p.h"
-#include "qsgitem_p.h"
+#include "qsgimplicitsizeitem_p_p.h"
 
 #include <private/qdeclarativestate_p.h>
 #include <private/qdeclarativetransitionmanager_p_p.h>
@@ -67,7 +67,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QSGBasePositionerPrivate : public QSGItemPrivate, public QSGItemChangeListener
+class QSGBasePositionerPrivate : public QSGImplicitSizeItemPrivate, public QSGItemChangeListener
 {
     Q_DECLARE_PUBLIC(QSGBasePositioner)
 

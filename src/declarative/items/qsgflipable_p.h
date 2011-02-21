@@ -1,7 +1,7 @@
-// Commit: 91506374f23e3ba533396ec10aae285e4cd7caf4
+// Commit: ebd4bc73c46c2962742a682b6a391fb68c482aec
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,8 +61,8 @@ class Q_AUTOTEST_EXPORT QSGFlipable : public QSGItem
     Q_OBJECT
 
     Q_ENUMS(Side)
-    Q_PROPERTY(QSGItem *front READ front WRITE setFront)
-    Q_PROPERTY(QSGItem *back READ back WRITE setBack)
+    Q_PROPERTY(QSGItem *front READ front WRITE setFront NOTIFY frontChanged)
+    Q_PROPERTY(QSGItem *back READ back WRITE setBack NOTIFY backChanged)
     Q_PROPERTY(Side side READ side NOTIFY sideChanged)
     //### flipAxis
     //### flipRotation
@@ -80,6 +80,8 @@ public:
     Side side() const;
 
 Q_SIGNALS:
+    void frontChanged();
+    void backChanged();
     void sideChanged();
 
 protected:

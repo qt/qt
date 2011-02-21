@@ -56,6 +56,13 @@
 //#define RENDERER_DEBUG
 //#define QT_GL_NO_SCISSOR_TEST
 
+// #define QSG_RENDERER_TIMING
+#ifdef QSG_RENDERER_TIMING
+QTime frameTimer;
+int preprocessTime;
+int updatePassTime;
+#endif
+
 void Bindable::clear() const
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -163,20 +170,41 @@ void Renderer::renderScene(const Bindable &bindable)
     if (!m_root_node)
         return;
 
-//    QTime time;
-//    time.start();
+#ifdef QSG_RENDERER_TIMING
+    frameTimer.start();
+#endif
 
     m_bindable = &bindable;
     preprocess();
+
     bindable.bind();
+#ifdef QSG_RENDERER_TIMING
+    int bindTime = frameTimer.elapsed();
+#endif
     GeometryDataUploader::bind();
     GeometryDataUploader::upload();
+
     render();
+#ifdef QSG_RENDERER_TIMING
+    int renderTime = frameTimer.elapsed();
+#endif
     GeometryDataUploader::release();
     m_changed_emitted = false;
     m_bindable = 0;
 
-//    printf("rendering time: %d\n", time.elapsed());
+#ifdef QSG_RENDERER_TIMING
+    printf("Breakdown of frametime:\n"
+           " - preprocess:      %d, self=%d\n"
+           " - graph update:    %d, self=%d\n"
+           " - surface bind:    %d, self=%d\n"
+           " - render:          %d, self=%d\n",
+           preprocessTime, preprocessTime,
+           updatePassTime, updatePassTime - preprocessTime,
+           bindTime, bindTime - updatePassTime,
+           renderTime, renderTime - bindTime);
+#endif
+
+
 }
 
 void Renderer::setProjectMatrixToDeviceRect()
@@ -263,7 +291,16 @@ void Renderer::preprocess()
         }
     }
 
+#ifdef QSG_RENDERER_TIMING
+    preprocessTime = frameTimer.elapsed();
+#endif
+
     nodeUpdater()->updateStates(m_root_node);
+
+#ifdef QSG_RENDERER_TIMING
+    updatePassTime = frameTimer.elapsed();
+#endif
+
 }
 
 void Renderer::addNodesToPreprocess(Node *node)
@@ -305,7 +342,7 @@ Renderer::ClipType Renderer::updateStencilClip(const ClipNode *clip)
         const QMatrix4x4 &m = matrix;
 
         // TODO: Check for multisampling and pixel grid alignment.
-        bool canUseScissor = (clip->flags() & Node::ClipIsRectangular)
+        bool canUseScissor = clip->isRectangular()
                            && qFuzzyIsNull(m(0, 1)) && qFuzzyIsNull(m(0, 2))
                            && qFuzzyIsNull(m(1, 0)) && qFuzzyIsNull(m(1, 2));
 

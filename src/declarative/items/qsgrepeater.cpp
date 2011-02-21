@@ -1,7 +1,7 @@
-// Commit: 812945652783f289e6d94fa837184875dd76115a
+// Commit: a9f1eaa6a368bf7a72b52c428728a3e3e0a76209
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -94,7 +94,6 @@ void QSGRepeater::setModel(const QVariant &model)
     */
     }
     d->dataSource = model;
-    emit modelChanged();
     QObject *object = qvariant_cast<QObject*>(model);
     QSGVisualModel *vim = 0;
     if (object && (vim = qobject_cast<QSGVisualModel *>(object))) {
@@ -122,6 +121,7 @@ void QSGRepeater::setModel(const QVariant &model)
         */
         regenerate();
     }
+    emit modelChanged();
     emit countChanged();
 }
 
@@ -162,6 +162,13 @@ int QSGRepeater::count() const
     return 0;
 }
 
+QSGItem *QSGRepeater::itemAt(int index) const
+{
+    Q_D(const QSGRepeater);
+    if (index >= 0 && index < d->deletables.count())
+        return d->deletables[index];
+    return 0;
+}
 
 void QSGRepeater::componentComplete()
 {
@@ -180,8 +187,13 @@ void QSGRepeater::itemChange(GraphicsItemChange change, const QVariant &value)
 void QSGRepeater::clear()
 {
     Q_D(QSGRepeater);
+    bool complete = isComponentComplete();
+
     if (d->model) {
-        foreach (QSGItem *item, d->deletables) {
+        while (d->deletables.count() > 0) {
+            QSGItem *item = d->deletables.takeLast();
+            if (complete)
+                emit itemRemoved(d->deletables.count()-1, item);
             d->model->release(item);
         }
     }
@@ -206,6 +218,7 @@ void QSGRepeater::regenerate()
             item->setParentItem(parentItem());
             item->stackBefore(this);
             d->deletables << item;
+            emit itemAdded(ii, item);
         }
     }
 }
@@ -226,6 +239,7 @@ void QSGRepeater::itemsInserted(int index, int count)
             else
                 item->stackBefore(this);
             d->deletables.insert(modelIndex, item);
+            emit itemAdded(modelIndex, item);
         }
     }
     emit countChanged();
@@ -238,6 +252,7 @@ void QSGRepeater::itemsRemoved(int index, int count)
         return;
     while (count--) {
         QSGItem *item = d->deletables.takeAt(index);
+        emit itemRemoved(index, item);
         if (item)
             d->model->release(item);
         else

@@ -1,7 +1,7 @@
-// Commit: a542b798e468f775ab09a7846c8fe185eece6ab3
+// Commit: 32b68e009da38a2c85ceacce72c919606331522c
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,7 +43,7 @@
 #ifndef QSGTEXTINPUT_P_H
 #define QSGTEXTINPUT_P_H
 
-#include "qsgpainteditem_p.h"
+#include "qsgimplicitsizeitem_p.h"
 #include <QtGui/qvalidator.h>
 
 QT_BEGIN_HEADER
@@ -54,11 +54,12 @@ QT_MODULE(Declarative)
 
 class QSGTextInputPrivate;
 class QValidator;
-class Q_AUTOTEST_EXPORT QSGTextInput : public QSGPaintedItem
+class Q_AUTOTEST_EXPORT QSGTextInput : public QSGImplicitSizePaintedItem
 {
     Q_OBJECT
     Q_ENUMS(HAlignment)
     Q_ENUMS(EchoMode)
+    Q_ENUMS(SelectionMode)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
@@ -90,6 +91,8 @@ class Q_AUTOTEST_EXPORT QSGTextInput : public QSGPaintedItem
     Q_PROPERTY(QString displayText READ displayText NOTIFY displayTextChanged)
     Q_PROPERTY(bool autoScroll READ autoScroll WRITE setAutoScroll NOTIFY autoScrollChanged)
     Q_PROPERTY(bool selectByMouse READ selectByMouse WRITE setSelectByMouse NOTIFY selectByMouseChanged)
+    Q_PROPERTY(SelectionMode mouseSelectionMode READ mouseSelectionMode WRITE setMouseSelectionMode NOTIFY mouseSelectionModeChanged)
+    Q_PROPERTY(bool canPaste READ canPaste NOTIFY canPasteChanged)
 
 public:
     QSGTextInput(QSGItem * parent=0);
@@ -108,10 +111,16 @@ public:
         AlignHCenter = Qt::AlignHCenter
     };
 
+    enum SelectionMode {
+        SelectCharacters,
+        SelectWords
+    };
+
     //Auxilliary functions needed to control the TextInput from QML
     Q_INVOKABLE int positionAt(int x) const;
     Q_INVOKABLE QRectF positionToRectangle(int pos) const;
     Q_INVOKABLE void moveCursorSelection(int pos);
+    Q_INVOKABLE void moveCursorSelection(int pos, SelectionMode mode);
 
     Q_INVOKABLE void openSoftwareInputPanel();
     Q_INVOKABLE void closeSoftwareInputPanel();
@@ -180,12 +189,16 @@ public:
     bool selectByMouse() const;
     void setSelectByMouse(bool);
 
+    SelectionMode mouseSelectionMode() const;
+    void setMouseSelectionMode(SelectionMode mode);
+
     bool hasAcceptableInput() const;
 
     void paint(QPainter *p);
     QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
 
     QRectF boundingRect() const;
+    bool canPaste() const;
 
 Q_SIGNALS:
     void textChanged();
@@ -212,6 +225,8 @@ Q_SIGNALS:
     void activeFocusOnPressChanged(bool activeFocusOnPress);
     void autoScrollChanged(bool autoScroll);
     void selectByMouseChanged(bool selectByMouse);
+    void mouseSelectionModeChanged(SelectionMode mode);
+    void canPasteChanged();
 
 protected:
     virtual void geometryChanged(const QRectF &newGeometry,
@@ -221,8 +236,10 @@ protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
+    bool sceneEvent(QEvent *event);
     void keyPressEvent(QKeyEvent* ev);
     void inputMethodEvent(QInputMethodEvent *);
+    void mouseUngrabEvent();
     bool event(QEvent *e);
     void focusInEvent(QFocusEvent *event);
     virtual void itemChange(GraphicsItemChange, const QVariant &);
@@ -231,6 +248,7 @@ public Q_SLOTS:
     void selectAll();
     void selectWord();
     void select(int start, int end);
+    void deselect();
 #ifndef QT_NO_CLIPBOARD
     void cut();
     void copy();
@@ -245,6 +263,7 @@ private Q_SLOTS:
     void moveCursor();
     void cursorPosChanged();
     void updateRect(const QRect &r = QRect());
+    void q_canPasteChanged();
 
 private:
     Q_DECLARE_PRIVATE(QSGTextInput)

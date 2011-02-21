@@ -395,6 +395,14 @@ ClipNode::~ClipNode()
     destroy();
 }
 
+/*!
+
+ */
+void ClipNode::setIsRectangular(bool rectHint)
+{
+    m_is_rectangular = rectHint;
+}
+
 
 TransformNode::TransformNode()
 {
@@ -617,7 +625,7 @@ QDebug operator<<(QDebug d, const ClipNode *n)
         d << "children=" << n->childCount();
 
     d << "bbox=" << n->boundingRect();
-    d << "is rect?" << (n->flags() & Node::ClipIsRectangular ? "yes" : "no");
+    d << "is rect?" << (n->isRectangular() ? "yes" : "no");
 
     d << ")";
 #ifdef QML_RUNTIME_TESTING

@@ -55,9 +55,7 @@ QSGClipNode::QSGClipNode(const QRectF &rect)
         << QSGAttributeDescription(0, 2, GL_FLOAT, 2 * sizeof(float));
     updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
 
-    // ### gunnar: Clip nodes should not register for preprocess
-    // but rather have an update mechanism similar to updatePaintNode();
-    setFlag(ClipIsRectangular, true);
+    setIsRectangular(true);
 }
 
 void QSGClipNode::setRect(const QRectF &rect)
@@ -70,7 +68,7 @@ void QSGClipNode::setRadius(qreal radius)
 {
     m_radius = radius;
     m_dirty_geometry = true;
-    setFlag(ClipIsRectangular, radius == 0);
+    setIsRectangular(radius == 0);
 }
 
 void QSGClipNode::update()

@@ -1,7 +1,7 @@
-// Commit: 0b175f5f224e33f4e51873607fe78a4c203ab896
+// Commit: 501180c6fbed0857126da2bb0ff1f17ee35472c6
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -50,7 +50,8 @@
 QT_BEGIN_NAMESPACE
 
 QSGLoaderPrivate::QSGLoaderPrivate()
-    : item(0), component(0), ownComponent(false)
+    : item(0), component(0), ownComponent(false), updatingSize(false),
+      itemWidthValid(false), itemHeightValid(false)
 {
 }
 
@@ -60,8 +61,13 @@ QSGLoaderPrivate::~QSGLoaderPrivate()
 
 void QSGLoaderPrivate::itemGeometryChanged(QSGItem *resizeItem, const QRectF &newGeometry, const QRectF &oldGeometry)
 {
-    if (resizeItem == item)
+    if (resizeItem == item) {
+        if (!updatingSize && newGeometry.width() != oldGeometry.width())
+            itemWidthValid = true;
+        if (!updatingSize && newGeometry.height() != oldGeometry.height())
+            itemHeightValid = true;
         _q_updateSize(false);
+    }
     QSGItemChangeListener::itemGeometryChanged(resizeItem, newGeometry, oldGeometry);
 }
 
@@ -91,11 +97,15 @@ void QSGLoaderPrivate::initResize()
 {
     QSGItemPrivate *p = QSGItemPrivate::get(item);
     p->addItemChangeListener(this, QSGItemPrivate::Geometry);
+    // We may override the item's size, so we need to remember
+    // whether the item provided its own valid size.
+    itemWidthValid = p->widthValid;
+    itemHeightValid = p->heightValid;
     _q_updateSize();
 }
 
 QSGLoader::QSGLoader(QSGItem *parent)
-  : QSGItem(*(new QSGLoaderPrivate), parent)
+  : QSGImplicitSizeItem(*(new QSGLoaderPrivate), parent)
 {
     setFlag(ItemIsFocusScope);
 }
@@ -134,18 +144,9 @@ void QSGLoader::setSource(const QUrl &url)
 
     d->component = new QDeclarativeComponent(qmlEngine(this), d->source, this);
     d->ownComponent = true;
-    if (!d->component->isLoading()) {
-        d->_q_sourceLoaded();
-    } else {
-        connect(d->component, SIGNAL(statusChanged(QDeclarativeComponent::Status)),
-                this, SLOT(_q_sourceLoaded()));
-        connect(d->component, SIGNAL(progressChanged(qreal)),
-                this, SIGNAL(progressChanged()));
-        emit statusChanged();
-        emit progressChanged();
-        emit sourceChanged();
-        emit itemChanged();
-    }
+
+    if (isComponentComplete())
+        d->load();
 }
 
 QDeclarativeComponent *QSGLoader::sourceComponent() const
@@ -172,23 +173,34 @@ void QSGLoader::setSourceComponent(QDeclarativeComponent *comp)
         return;
     }
 
-    if (!d->component->isLoading()) {
-        d->_q_sourceLoaded();
-    } else {
-        connect(d->component, SIGNAL(statusChanged(QDeclarativeComponent::Status)),
-                this, SLOT(_q_sourceLoaded()));
-        connect(d->component, SIGNAL(progressChanged(qreal)),
-                this, SIGNAL(progressChanged()));
-        emit progressChanged();
-        emit sourceChanged();
-        emit statusChanged();
-        emit itemChanged();
-    }
+    if (isComponentComplete())
+        d->load();
 }
 
 void QSGLoader::resetSourceComponent()
 {
     setSourceComponent(0);
+}
+
+void QSGLoaderPrivate::load()
+{
+    Q_Q(QSGLoader);
+
+    if (!q->isComponentComplete() || !component)
+        return;
+
+    if (!component->isLoading()) {
+        _q_sourceLoaded();
+    } else {
+        QObject::connect(component, SIGNAL(statusChanged(QDeclarativeComponent::Status)),
+                q, SLOT(_q_sourceLoaded()));
+        QObject::connect(component, SIGNAL(progressChanged(qreal)),
+                q, SIGNAL(progressChanged()));
+        emit q->statusChanged();
+        emit q->progressChanged();
+        emit q->sourceChanged();
+        emit q->itemChanged();
+    }
 }
 
 void QSGLoaderPrivate::_q_sourceLoaded()
@@ -265,9 +277,9 @@ QSGLoader::Status QSGLoader::status() const
 
 void QSGLoader::componentComplete()
 {
+    Q_D(QSGLoader);
     QSGItem::componentComplete();
-    if (status() == Ready)
-        emit loaded();
+    d->load();
 }
 
 qreal QSGLoader::progress() const
@@ -286,15 +298,26 @@ qreal QSGLoader::progress() const
 void QSGLoaderPrivate::_q_updateSize(bool loaderGeometryChanged)
 {
     Q_Q(QSGLoader);
-    if (!item)
+    if (!item || updatingSize)
         return;
 
-    q->setImplicitWidth(item->width());
+    updatingSize = true;
+
+    if (!itemWidthValid)
+        q->setImplicitWidth(item->implicitWidth());
+    else
+        q->setImplicitWidth(item->width());
     if (loaderGeometryChanged && q->widthValid())
         item->setWidth(q->width());
-    q->setImplicitHeight(item->height());
+
+    if (!itemHeightValid)
+        q->setImplicitHeight(item->implicitHeight());
+    else
+        q->setImplicitHeight(item->height());
     if (loaderGeometryChanged && q->heightValid())
         item->setHeight(q->height());
+
+    updatingSize = false;
 }
 
 QSGItem *QSGLoader::item() const
