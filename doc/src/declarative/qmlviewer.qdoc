@@ -31,34 +31,34 @@
 \title QML Viewer
 \ingroup qttools
 
-The Declarative UI package includes \QQV, a tool for loading QML documents that 
-makes it easy to quickly develop and debug QML applications. It invokes the QML 
-runtime to load QML documents and also includes additional features useful for 
+The Declarative UI package includes \QQV, a tool for loading QML documents that
+makes it easy to quickly develop and debug QML applications. It invokes the QML
+runtime to load QML documents and also includes additional features useful for
 the development of QML-based applications.
 
-The QML Viewer is a tool for testing and developing QML applications. It is 
-\e not intended for use in a production environment and should not be used for the 
+The QML Viewer is a tool for testing and developing QML applications. It is
+\e not intended for use in a production environment and should not be used for the
 deployment of QML applications. In those cases, the QML runtime should be invoked
 from a Qt application instead; see \l {Qt Declarative UI Runtime} for more
 information.
 
 The viewer is located at \c QTDIR/bin/qmlviewer. To load a \c .qml file
-with the viewer, run the viewer and select the file to be opened, or provide the 
+with the viewer, run the viewer and select the file to be opened, or provide the
 file path on the command line:
 
 \code
     qmlviewer myqmlfile.qml
 \endcode
-    
+
 On Mac OS X, the QML Viewer application is named "QMLViewer" instead. You
-can launch the viewer by opening the QMLViewer application from the Finder, or 
+can launch the viewer by opening the QMLViewer application from the Finder, or
 from the command line:
 
 \code
     QMLViewer.app/Contents/MacOS/QMLViewer myqmlfile.qml
 \endcode
 
-The QML Viewer has a number of configuration options involving features such as 
+The QML Viewer has a number of configuration options involving features such as
 fullscreen display, module import path configurations, video recording of QML
 animations, and OpenGL support.
 
@@ -68,7 +68,7 @@ To see the configuration options, run \c qmlviewer with the \c -help argument.
 \section1 Adding module import paths
 
 Additional module import paths can be provided using the \c -I flag.
-For example, the \l{declarative/cppextensions/plugins}{QML plugins example} creates 
+For example, the \l{declarative/cppextensions/plugins}{QML plugins example} creates
 a C++ plugin identified as \c com.nokia.TimeExample. Since this has a namespaced
 identifier, the viewer has to be run with the \c -I flag from the example's
 base directory:
@@ -87,16 +87,16 @@ the path is explicitly added.
 
 \section1 Loading translation files
 
-When the QML Viewer loads a QML file, it installs a translation file from a 
-"i18n" subdirectory relative to that initial file. This directory should contain 
+When the QML Viewer loads a QML file, it installs a translation file from a
+"i18n" subdirectory relative to that initial file. This directory should contain
 translation files named "qml_<language>.qm", where <language> is a two-letter
 ISO 639 language, such as "qml_fr.qm", optionally followed by an underscore and
 an uppercase two-letter ISO 3166 country code, such as "qml_fr_FR.qm" or
-"qml_fr_CA.qm". 
+"qml_fr_CA.qm".
 
 Such files can be created using \l {Qt Linguist}.
 
-The actual translation file that is loaded depends on the system locale. 
+The actual translation file that is loaded depends on the system locale.
 Additionally, the viewer will load any translation files specified on the command
 line via the \c -translation option.
 
@@ -110,7 +110,7 @@ shows how JavaScript code in QML files can be made to use translatable strings.
 Often, QML applications are prototyped with fake data that is later replaced
 by real data sources from C++ plugins. QML Viewer assists in this aspect by
 loading fake data into the application context: it looks for a directory named
-"dummydata" in the same directory as the target QML file, and any \c .qml 
+"dummydata" in the same directory as the target QML file, and any \c .qml
 files in that directory are loaded as QML objects and bound to the root context
 as properties named after the files.
 
@@ -124,7 +124,7 @@ ListView {
     width: 200; height: 300
     model: lottoNumbers
     delegate: Text { text: number }
-}        
+}
 \endqml
 
 If within the document's directory, there is a "dummydata" directory which
@@ -146,30 +146,30 @@ Child properties are included when loaded from dummy data. The following documen
 refers to a \c clock.time property:
 
 \qml
-import QtQuick 1.0    
+import QtQuick 1.0
 Text { text: clock.time }
 \endqml
-    
+
 The text value could be filled by a \c dummydata/clock.qml file with a \c time
 property in the root context:
 
 \qml
-import QtQuick 1.0    
+import QtQuick 1.0
 QtObject { property int time: 54321 }
 \endqml
 
 To replace this with real data, you can simply bind the real data object to
 the root context in C++ using QDeclarativeContext::setContextProperty(). This
-is detailed in \l {Using QML in C++ Applications}.
+is detailed in \l {Using QML Bindings in C++ Applications}.
 
 \section1 Using the \c runtime object
 
 QML applications that are loaded with the QML Viewer have access to a special
-\c runtime property on the root context. This property provides additional 
+\c runtime property on the root context. This property provides additional
 information about the application's runtime environment through the following properties:
 
 \table
-\row 
+\row
 
 \o \c runtime.isActiveWindow
 
@@ -177,9 +177,9 @@ information about the application's runtime environment through the following pr
 window on the system. It is useful for "pausing" an application, particularly
 animations, when the QML Viewer loses focus or moves to the background.
 
-For example, the following animation is only played when the QML Viewer is 
+For example, the following animation is only played when the QML Viewer is
 the active window:
-    
+
 \qml
 Rectangle {
     width: 200; height: 200
@@ -200,9 +200,9 @@ through the \c active property of the \l {QML:Qt::application}{Qt.application} o
 \o \c runtime.orientation
 
 \o This property indicates the current orientation of the QML Viewer. On the
-N900 platform and most S60 5.0-based or newer Symbian devices, this property 
-automatically updates to reflect the device's actual orientation; on other platforms, 
-this indicates the orientation currently selected in the QML Viewer's 
+N900 platform and most S60 5.0-based or newer Symbian devices, this property
+automatically updates to reflect the device's actual orientation; on other platforms,
+this indicates the orientation currently selected in the QML Viewer's
 \e {Settings -> Properties} menu. The \c orientation value can be one of the following:
 
 \list
@@ -213,7 +213,7 @@ this indicates the orientation currently selected in the QML Viewer's
 \endlist
 
 When the viewer's orientation changes, the appearance of the loaded QML document
-does not change unless it has been set to respond to changes in 
+does not change unless it has been set to respond to changes in
 \c runtime.orientation. For example, the following Rectangle changes its
 aspect ratio depending on the orientation of the QML Viewer:
 
@@ -221,12 +221,12 @@ aspect ratio depending on the orientation of the QML Viewer:
 Rectangle {
     id: window
     width: 640; height: 480
-            
+
     states: State {
         name: "landscape"
         PropertyChanges { target: window; width: 480; height: 640 }
     }
-    state: (runtime.orientation == Orientation.Landscape 
+    state: (runtime.orientation == Orientation.Landscape
             || runtime.orientation == Orientation.LandscapeInverted) ? 'landscape' : ''
 }
 \endqml

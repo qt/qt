@@ -30,8 +30,6 @@
 \target qtprogrammers
 \title QML for Qt Programmers
 
-\section1 Overview
-
 While QML does not require Qt knowledge to use, if you \e are already familiar with Qt,
 much of your knowledge is directly relevant to learning and using QML. Of course,
 an application with a UI defined in QML also uses Qt for all the non-UI logic.
@@ -48,7 +46,8 @@ QML provides direct access to the following concepts from Qt:
  \o Qt models - used directly in data binding (QAbstractItemModel)
 \endlist
 
-Qt knowledge is \e required for \l {Extending QML in C++}, and also for \l{Integrating QML with existing Qt UI code}.
+Qt knowledge is \e required for \l {Extending QML Functionalities using C++},
+and also for \l{Integrating QML Code with existing Qt UI code}.
 
 \section1 QML Items compared with QWidgets
 

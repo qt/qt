@@ -137,7 +137,7 @@ class QByteArray;
     }
     \endcode
 
-    \sa {Using QML in C++ Applications}, {Integrating QML with existing Qt UI code}
+    \sa {Using QML Bindings in C++ Applications}, {Integrating QML Code with Existing Qt UI Code}
 */
 
 /*!

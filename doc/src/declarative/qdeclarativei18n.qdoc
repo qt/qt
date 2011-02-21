@@ -27,9 +27,12 @@
 
 /*!
 \page qdeclarativei18n.html
+\ingroup qml-features
+\contentspage QML Features
+\previouspage {Network Transparency}{Loading Resources in QML}
+\nextpage {QML Features}
 \title QML Internationalization
 
-\section1 Overview
 
 Strings in QML can be marked for translation using the qsTr(), qsTranslate(),
 QT_TR_NOOP(), and QT_TRANSLATE_NOOP() functions.
