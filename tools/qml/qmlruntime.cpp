@@ -50,7 +50,7 @@
 #  include <QWidgetAction>
 #  include <QStringListModel>
 #  include "ui_recopts_maemo5.h"
-#elif !defined(__SERIES60_31__) && !defined(__S60_32__)
+#else
 #  include "ui_recopts.h"
 #endif
 
