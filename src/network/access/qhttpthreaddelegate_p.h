@@ -56,24 +56,26 @@
 
 #include <QObject>
 #include <QThreadStorage>
-#include <QAuthenticator>
 #include <QNetworkProxy>
 #include <QSslConfiguration>
 #include <QSslError>
 #include <QList>
 #include <QNetworkReply>
-#include "qnetworkaccesscache_p.h"
 #include "qhttpnetworkrequest_p.h"
 #include "qhttpnetworkconnection_p.h"
-#include "qhttpnetworkreply_p.h"
-#include "QSharedPointer"
+#include <QSharedPointer>
 #include "qsslconfiguration.h"
 #include "private/qnoncontiguousbytedevice_p.h"
 #include "qnetworkaccessauthenticationmanager_p.h"
 
 QT_BEGIN_NAMESPACE
 
+class QAuthenticator;
+class QHttpNetworkReply;
+class QEventLoop;
+class QNetworkAccessCache;
 class QNetworkAccessCachedHttpConnection;
+
 class QHttpThreadDelegate : public QObject
 {
     Q_OBJECT
