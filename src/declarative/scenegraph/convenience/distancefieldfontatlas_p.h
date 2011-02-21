@@ -78,6 +78,9 @@ public:
     qreal scaleRatioFromRefSize() const;
     QImage renderDistanceFieldGlyph(glyph_t glyph) const;
 
+    QString distanceFieldDir() const;
+    QString distanceFieldFileName() const;
+
     static bool useDistanceFieldForFont(const QFont &font);
 
 private:
@@ -87,10 +90,10 @@ private:
     QFont m_font;
     QFontEngine *m_fontEngine;
     QFontEngine *m_referenceFontEngine;
-    QFontEngine::FaceId m_faceId;
+    QString m_distanceFieldFileName;
 
-    static QHash<QFontEngine::FaceId, QString> m_distfield_images;
-    static QHash<QFontEngine::FaceId, QSGTextureRef> m_textures;
+    static QHash<QString, bool> m_distfield_availability;
+    static QHash<QString, QSGTextureRef> m_textures;
 };
 
 #endif // DISTANCEFIELDFONTATLAS_H

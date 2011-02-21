@@ -100,8 +100,11 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     QStringList args = QApplication::arguments();
 
-    if (argc < 2 ||
-        args.contains("--help") || args.contains("-help") || args.contains("--h") || args.contains("-h"))
+    if (argc < 2
+            || args.contains(QLatin1String("--help"))
+            || args.contains(QLatin1String("-help"))
+            || args.contains(QLatin1String("--h"))
+            || args.contains(QLatin1String("-h")))
         usage();
 
     QString fontFile;
@@ -123,21 +126,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    QFileInfo fi(fontFile);
-    if (destDir.isEmpty()) {
-        destDir = fi.canonicalPath();
-    } else {
-        QFileInfo dfi(destDir);
-        if (!dfi.isDir()) {
-            qWarning("Error: '%s' is not a directory.", destDir.toLatin1().constData());
-            qWarning(" ");
-            exit(1);
-        }
-        destDir = dfi.canonicalFilePath();
-    }
-
-    bool bold = args.contains("-b");
-    bool italic = args.contains("-i");
+    bool bold = args.contains(QLatin1String("-b"));
+    bool italic = args.contains(QLatin1String("-i"));
 
     QStringList families = QFontDatabase::applicationFontFamilies(fontID);
     QFont f(families.at(0));
@@ -168,7 +158,23 @@ int main(int argc, char *argv[])
     printf("\n");
 
     // Save output
-    output.save(QString("%1/%2.png").arg(destDir).arg(fi.baseName()));
+    if (destDir.isEmpty()) {
+        destDir = atlas.distanceFieldDir();
+        QDir dir;
+        dir.mkpath(destDir);
+    } else {
+        QFileInfo dfi(destDir);
+        if (!dfi.isDir()) {
+            qWarning("Error: '%s' is not a directory.", destDir.toLatin1().constData());
+            qWarning(" ");
+            exit(1);
+        }
+        destDir = dfi.canonicalFilePath();
+    }
+
+    QString out = QString(QLatin1String("%1/%2")).arg(destDir).arg(atlas.distanceFieldFileName());
+    output.save(out);
+    qWarning("Distance-field saved to '%s'", out.toLatin1().constData());
 
     return 0;
 }
