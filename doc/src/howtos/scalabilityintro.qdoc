@@ -87,7 +87,7 @@
 
     The following sections describe in more detail the different
     aspects of scalability that should be considered in order to
-    achieve the desired level of flexibility within your application. 
+    achieve the desired level of flexibility within your application.
 
     \section1 Implementing the Top-Level Layouts
 
@@ -124,7 +124,7 @@
     \o In some cases, the contents of a view might be quite similar
      on all screen sizes, but with an expanded content area. In
      this case, it may be possible to re-use the same layout
-     definition, if defined appropriately using anchors. 
+     definition, if defined appropriately using anchors.
     \endlist
 
     The Loader component can be used to load separate QML files based
@@ -151,7 +151,7 @@
      require a certain amount of space, such as a button
      containing a text. That may also depend on the current
      platform and style. How do you ensure that you leave enough
-     space, and what happens if your children change size? 
+     space, and what happens if your children change size?
     \endlist
 
     These aspects combine together to resolve the final layout for a
@@ -183,7 +183,7 @@
      all of the layout measurements would remain unchanged.
     \o It becomes much easier to add support for additional Device
      Profiles, simply by adding another measurement definition
-     file. 
+     file.
     \endlist
 
     \section1 Using QML's Layout Features
@@ -195,7 +195,7 @@
     \list
     \o \l{Item::}{anchors} within an Item
     \o \l{Row} / \l{Column} / \l{Grid}
-    \o simple javascript expressions such as width: Math.round(parent.width / 3.0). 
+    \o simple javascript expressions such as width: Math.round(parent.width / 3.0).
     \endlist
 
     These basic building blocks, along with the powerful evaluation
@@ -227,7 +227,7 @@
      way).
     \o Don't make assumptions about the container size, or about
      the size of child items. Try to make flexible layout
-     definitions that can absorb changes in the available space. 
+     definitions that can absorb changes in the available space.
     \endlist
 
     \section1 Orientation Switches
@@ -317,7 +317,7 @@
      fade between those during rotation. Then you can use a
      Loader to load another child component that loads the actual
      model data to another child Item, and cross-fade to that
-     when the Loader has completed. 
+     when the Loader has completed.
     \endlist
    */
 
