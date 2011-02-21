@@ -91,7 +91,7 @@
         file reader providing the complete Qt documentation offline.
     \endlist
 
-    \section2 Cross-platform development using Qt Creator
+    \section2 Cross-Platform Development using Qt Creator
 
     \l{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}{Qt Creator} is
     a complete Cross-platform IDE included in the Qt SDK. The IDE allows
@@ -159,7 +159,7 @@
         and KDevelop IDEs are also available.
     \endlist
 
-    \section2 Cross-platform development using Qt Creator
+    \section2 Cross-Platform Development using Qt Creator
 
     \l{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}{Qt Creator} is
     a complete Cross-platform IDE included in the Qt SDK. The IDE allows
@@ -244,7 +244,7 @@
         file reader providing the complete Qt documentation offline.
     \endlist
 
-    \section2 Cross-platform development using Qt Creator
+    \section2 Cross-Platform Development using Qt Creator
 
     \l{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}{Qt Creator} is
     a complete Cross-platform IDE included in the Qt SDK. The IDE allows
@@ -303,7 +303,7 @@
     hardware dependencies, Qt is easy to build even for custom hardware
     configurations. Unused components and features can even be compiled out.
 
-     \section1 Getting Started on Windows CE/Mobile
+    \section1 Getting Started on Windows CE/Mobile
 
     \list
         \o \l{Supported Platforms}{Supported Windows CE/Mobile platforms}
@@ -495,14 +495,12 @@
     support for swiching between landscape and portrait mode, different
     screen resolutions as well as touch screen and key pad input.
 
-    \section2 Cross-platform development using Qt Creator
+    \section2 Cross-Platform Development using Qt Creator
 
     \l{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}{Qt Creator} is
     a complete Cross-platform IDE included in the Qt SDK. The IDE allows
     programmers to create, build, debug and run Qt applications accross all
     supported platforms.
-
-\omit
 
     \section3 Licensing
 
@@ -516,46 +514,44 @@
     communication and data exchange. Therefore, most Symbian developers
     can use Qt for Symbian under the LGPL.
 
-\endomit
-
     Additional \l{Cross-Platform and Platform-Specific Development}
     information.
 
 */
 /*!
-\omit
     \page maemo-support.html
-    \title Support for Maemo/MeeGo
-    \brief Platform support for Maemo/MeeGo.
+    \title Support for Maemo
+    \brief Platform support for Maemo.
     \ingroup platform-specific
     \ingroup platform-details
 
-    \section1 Qt on Maemo/MeeGo
+    \section2 Qt on Maemo
 
     Qt is a comprehensive application and UI framework for developing
-    Maemo and MeeGo applications that can also be deployed across major
+    Maemo applications that can also be deployed across major
     device and desktop operating systems without rewriting the source code.
-    If you are developing apps for the Symbian, Mameo or MeeGo platforms
+    If you are developing apps for the Symbian, Mameo platforms
     in most cases, you can use Qt under the free LGPL licensing option.
     Qt is cross-platform, and that means that you can use the code from
     one single code-base and rebuild for all \l{Supported Platforms}
-    {supported platforms}.
+    {supported platforms}. Maemo 6 is now MeeGo.
 
-     \section1 Getting Started on Maemo/MeeGo
-
+    \section1 Getting Started on Maemo
     \list
-        \o \l{Supported Platforms}{Supported Maemo/MeeGo platforms}
-        - Qt support for Maemo/MeeGo versions.
-        \o \l{Qt for Maemo Requirements}{Qt for Maemo/MeeGo
-        Requirements} - Software required to run Qt on Maemo/MeeGo.
+        \o \l{Supported Platforms}{Supported Maemo platforms}
+        - Qt support for Maemo versions.
+        \omit
+        \o \l{Qt for Maemo Requirements}{Qt for Maemo
+        Requirements} - Software required to run Qt on Maemo.
         \o \l{Installing Qt for Maemo}{Installing Qt for
-        Maemo/MeeGo} - Build Qt for Maemo/MeeGo    development.
+        Maemo} - Build Qt for Maemo	development.
         \o \l{Platform and Compiler Notes - Maemo}{Platform and
-        Compiler Notes - Maemo/MeeGo} - Platform specific notes.
+        Compiler Notes - Maemo} - Platform specific notes.
+        \endomit
         \o \l{Getting Started Guides}{Getting started}
     \endlist
 
-    \section1 Key Features for Maemo/MeeGo Development
+    \section1 Key Features for Maemo Development
 
     \section2 Native Look and Feel
 
@@ -565,16 +561,16 @@
 
     \section2 Graphics Features
 
-    Qt for Maemo/MeeGo provides a powerful paint engine that cotain
+    Qt for Maemo provides a powerful paint engine that cotain
     features such as anti aliasing, gradients, curves and transparency.
     It also has animation support with timelines and easing curves. Qt
-    for Maemo/MeeGo also supports hardware acceleration using ARM NEON
+    for Maemo also supports hardware acceleration using ARM NEON
     and OpenGL ES 2.0.
 
     \section2 Device Configurations
 
-    Applications developed with Qt for Maemo/MeeGo will across all
-    supported Maemo/MeeGo devices provide automatic support for switching
+    Applications developed with Qt for Maemo will across all
+    supported Maemo devices provide automatic support for switching
     between landscape and portrait mode. They will support input methods,
     including predictive text input and on-screen keyboard. The
     applications will also have support for one finger touch events and
@@ -586,7 +582,7 @@
     AIX, HP-UX, Maemo 5 and MeeGo. Qt for Maemo contains all Qt modules
     and features the same functionality as the Qt on X11 version.
 
-    \section2 Cross-platform development using Qt Creator
+    \section2 Cross-Platform Development using Qt Creator
 
     \l{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}{Qt Creator} is
     a complete Cross-platform IDE included in the Qt SDK. The IDE allows
@@ -595,8 +591,85 @@
 
     Additional \l{Cross-Platform and Platform-Specific Development}
     information.
+*/
 
-    \endomit
+/*!
+
+    \page meego-support.html
+    \title Support for MeeGo
+    \brief Platform support for MeeGo.
+    \ingroup platform-specific
+    \ingroup platform-details
+
+    \section2 Qt on MeeGo
+
+    Qt is a comprehensive application and UI framework for developing
+    MeeGo applications that can also be deployed across major
+    device and desktop operating systems without rewriting the source code.
+    If you are developing apps for the Symbian, MeeGo platforms
+    in most cases, you can use Qt under the free LGPL licensing option.
+    Qt is cross-platform, and that means that you can use the code from
+    one single code-base and rebuild for all \l{Supported Platforms}
+    {supported platforms}.
+
+    \section1 Getting Started on MeeGo
+
+    \list
+        \o \l{Supported Platforms}{Supported MeeGo platforms}
+        - Qt support for MeeGo versions.
+        \omit
+        \o \l{Qt for MeeGo Requirements}{Qt for MeeGo
+        Requirements} - Software required to run Qt on MeeGo.
+        \o \l{Installing Qt for MeeGo}{Installing Qt for
+        MeeGo} - Build Qt for MeeGo	development.
+        \o \l{Platform and Compiler Notes - MeeGo}{Platform and
+        Compiler Notes - MeeGo} - Platform specific notes.
+        \endomit
+        \o \l{Getting Started Guides}{Getting started}
+    \endlist
+
+    \section1 Key Features for MeeGo Development
+
+    \section2 Native Look and Feel
+
+    Qt will detect which theme the device is running and applies the
+    style at runtime to your Qt application. Widgets are optimized
+    for touch screen usage.
+
+    \section2 Graphics Features
+
+    Qt for MeeGo provides a powerful paint engine that cotain
+    features such as anti aliasing, gradients, curves and transparency.
+    It also has animation support with timelines and easing curves. Qt
+    for MeeGo also supports hardware acceleration using ARM NEON, x86,
+    and OpenGL ES 2.0.
+
+    \section2 Device Configurations
+
+    Qt is the foundation of MeeGo UI and application development and
+    therefore Qt will be present in all upcoming MeeGo devices. Qt
+    can provide automatic support for:
+    \list
+    \o Switching between landscape and portrait mode
+    \o Input Methods, including predictive text input and on-screen
+    keyboard
+    \o Configurable kinetic scrolling
+
+    \section2 Maemo - Linux/X11
+
+    Qt supports a wide range of X11 platform variants, such as: Solaris,
+    AIX, HP-UX, Maemo 5 and MeeGo. Qt for MeeGo contains all Qt modules
+    and features the same functionality as the Qt on X11 version.
+
+    \section2 Cross-Platform Development using Qt Creator
+
+    \l{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}{Qt Creator} is
+    a complete Cross-platform IDE included in the Qt SDK. The IDE allows
+    programmers to create, build, debug and run Qt applications accross all
+    supported platforms.
+
+    Additional \l{Cross-Platform and Platform-Specific Development}
+    information.
 */
 
 /*!
@@ -614,25 +687,24 @@
     \section1 Qt is available for the following platforms:
 
     \table
-        \header
-        \o {2,1} Qt Cross Platform Support
-        \header
-        \o {1,1} Desktop
-        \o {1,1} Mobile/Embedded
-        \row
-        \o \l{Support for Windows}{Windows}
-        \o \l{Support for Windows CE and Windows Mobile.}{Windows CE and Windows Mobile.}
-        \row
-        \o \l{Support for Linux/X11}{Linux/X11}
-        \o \l{Support for Embedded Linux}{Embedded Linux}
-        \row
-        \o \l{Support for Mac}{Mac OS X}
-        \o \l{Support for Symbian}{Symbian}
-        \row
-        \o
-        \omit
-        \o\l{Support for Maemo/MeeGo}{Maemo/MeeGo}
-        \endomit
+    \header
+    \o {2,1} Qt Cross Platform Support
+    \header
+    \o {1,1} Desktop
+    \o {1,1} Mobile/Embedded
+    \row
+    \o \l{Support for Windows}{Windows}
+    \o \l{Support for Windows CE and Windows Mobile}{Windows CE and Windows Mobile}
+    \row
+    \o \l{Support for Linux/X11}{Linux/X11}
+    \o \l{Support for Embedded Linux}{Embedded Linux}
+    \row
+    \o \l{Support for Mac OS X}{Mac OS X}
+    \o \l{Support for Symbian}{Symbian}
+    \row
+    \o
+    \o\l{Support for MeeGo}{MeeGo}
+    \o\l{Support for Maemo}{Maemo}
     \endtable
 
     \section1 Supported platform details
@@ -684,6 +756,10 @@
                                      \o gcc (\l{http://www.codesourcery.com/}{Codesourcery version)}
     \row    \o Windows CE 5.0 (ARMv4i, x86, MIPS)
                                      \o MSVC 2005 WinCE 5.0 Standard (x86, pocket, smart, mipsii)
+    \row    \o Maemo 5(Linux, ARM, X11)
+                                     \o gcc (\l{http://www.scratchbox.org/}{Scratchbox)}
+    \row    \o MeeGo (Linux, ARM, X11)
+                                     \o gcc (\l{http://www.scratchbox.org/}{Scratchbox)}
     \row    \o Symbian (Symbian/S60 5.0)
                                      \o RVCT 2.2 [build 686 or later], WINSCW 3.2.5 [build 482 or later], GCCE (for applications)
     \endtable
@@ -722,8 +798,6 @@
                                      \o MSVC 2005 WinCE 5.0 Standard (x86, pocket, smart, mipsii)
     \row    \o Windows Embedded CE 6.0 (ARMv4i, x86, MIPS)
                                      \o MSVC 2008 WinCE Embedded 6.0 Professional
-    \row    \o Maemo 5(Linux, ARM, X11)
-                                     \o gcc (\l{http://www.scratchbox.org/}{Scratchbox)}
     \row    \o Symbian (Symbian/S60 3.1, 3.2)
                                      \o RVCT 2.2 [build 686 or later], WINSCW 3.2.5 [build 482 or later], GCCE (for applications)
     \endtable
