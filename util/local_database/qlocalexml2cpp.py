@@ -371,6 +371,8 @@ def main():
         usage()
     if not os.path.isfile(qtsrcdir + "/src/corelib/tools/qlocale.h"):
         usage()
+    if not os.path.isfile(qtsrcdir + "/src/corelib/tools/qlocale.cpp"):
+        usage()
 
     (data_temp_file, data_temp_file_path) = tempfile.mkstemp("qlocale_data_p")
     data_temp_file = os.fdopen(data_temp_file, "w")
@@ -649,54 +651,71 @@ def main():
 
     # qlocale.h
 
-    (qlocale_temp_file, qlocale_temp_file_path) = tempfile.mkstemp("qlocale.h")
-    qlocale_temp_file = os.fdopen(qlocale_temp_file, "w")
-    qlocale_file = open(qtsrcdir + "/src/corelib/tools/qlocale.h", "r")
-    s = qlocale_file.readline()
+    (qlocaleh_temp_file, qlocaleh_temp_file_path) = tempfile.mkstemp("qlocale.h")
+    qlocaleh_temp_file = os.fdopen(qlocaleh_temp_file, "w")
+    qlocaleh_file = open(qtsrcdir + "/src/corelib/tools/qlocale.h", "r")
+    s = qlocaleh_file.readline()
     while s and s != GENERATED_BLOCK_START:
-        qlocale_temp_file.write(s)
-        s = qlocale_file.readline()
-    qlocale_temp_file.write(GENERATED_BLOCK_START)
-    qlocale_temp_file.write("// see qlocale_data_p.h for more info on generated data\n")
+        qlocaleh_temp_file.write(s)
+        s = qlocaleh_file.readline()
+    qlocaleh_temp_file.write(GENERATED_BLOCK_START)
+    qlocaleh_temp_file.write("// see qlocale_data_p.h for more info on generated data\n")
 
     # Language enum
-    qlocale_temp_file.write("    enum Language {\n")
+    qlocaleh_temp_file.write("    enum Language {\n")
     language = ""
     for key in language_map.keys():
         language = fixedLanguageName(language_map[key][0], dupes)
-        qlocale_temp_file.write("        " + language + " = " + str(key) + ",\n")
+        qlocaleh_temp_file.write("        " + language + " = " + str(key) + ",\n")
     # special cases for norwegian. we really need to make it right at some point.
-    qlocale_temp_file.write("        NorwegianBokmal = Norwegian,\n")
-    qlocale_temp_file.write("        NorwegianNynorsk = Nynorsk,\n")
-    qlocale_temp_file.write("        LastLanguage = " + language + "\n")
-    qlocale_temp_file.write("    };\n")
+    qlocaleh_temp_file.write("        NorwegianBokmal = Norwegian,\n")
+    qlocaleh_temp_file.write("        NorwegianNynorsk = Nynorsk,\n")
+    qlocaleh_temp_file.write("        LastLanguage = " + language + "\n")
+    qlocaleh_temp_file.write("    };\n")
 
-    qlocale_temp_file.write("\n")
+    qlocaleh_temp_file.write("\n")
 
     # Country enum
-    qlocale_temp_file.write("    enum Country {\n")
+    qlocaleh_temp_file.write("    enum Country {\n")
     country = ""
     for key in country_map.keys():
         country = fixedCountryName(country_map[key][0], dupes)
-        qlocale_temp_file.write("        " + country + " = " + str(key) + ",\n")
-    qlocale_temp_file.write("        LastCountry = " + country + "\n")
-    qlocale_temp_file.write("    };\n")
+        qlocaleh_temp_file.write("        " + country + " = " + str(key) + ",\n")
+    qlocaleh_temp_file.write("        LastCountry = " + country + "\n")
+    qlocaleh_temp_file.write("    };\n")
 
-    qlocale_temp_file.write(GENERATED_BLOCK_END)
-    s = qlocale_file.readline()
+    qlocaleh_temp_file.write(GENERATED_BLOCK_END)
+    s = qlocaleh_file.readline()
     # skip until end of the block
     while s and s != GENERATED_BLOCK_END:
-        s = qlocale_file.readline()
+        s = qlocaleh_file.readline()
 
-    s = qlocale_file.readline()
+    s = qlocaleh_file.readline()
     while s:
-        qlocale_temp_file.write(s)
-        s = qlocale_file.readline()
-    qlocale_temp_file.close()
-    qlocale_file.close()
+        qlocaleh_temp_file.write(s)
+        s = qlocaleh_file.readline()
+    qlocaleh_temp_file.close()
+    qlocaleh_file.close()
 
-    os.rename(qlocale_temp_file_path, qtsrcdir + "/src/corelib/tools/qlocale.h")
+    os.rename(qlocaleh_temp_file_path, qtsrcdir + "/src/corelib/tools/qlocale.h")
 
+    # qlocale.cpp
+
+    (qlocalecpp_temp_file, qlocalecpp_temp_file_path) = tempfile.mkstemp("qlocale.cpp")
+    qlocalecpp_temp_file = os.fdopen(qlocalecpp_temp_file, "w")
+    qlocalecpp_file = open(qtsrcdir + "/src/corelib/tools/qlocale.cpp", "r")
+    s = qlocalecpp_file.readline()
+    DOCSTRING="    QLocale's data is based on Common Locale Data Repository "
+    while s:
+        if DOCSTRING in s:
+            qlocalecpp_temp_file.write(DOCSTRING + "v" + cldr_version + ".\n")
+        else:
+            qlocalecpp_temp_file.write(s)
+        s = qlocalecpp_file.readline()
+    qlocalecpp_temp_file.close()
+    qlocalecpp_file.close()
+
+    os.rename(qlocalecpp_temp_file_path, qtsrcdir + "/src/corelib/tools/qlocale.cpp")
 
 if __name__ == "__main__":
     main()
