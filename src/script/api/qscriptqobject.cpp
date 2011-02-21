@@ -863,6 +863,7 @@ static void QtMetaPropertySetter(v8::Local<v8::String> /*property*/,
     int propertyIndex = v8::Int32::Cast(*info.Data())->Value();
 
     QMetaProperty prop = meta->property(propertyIndex);
+    Q_ASSERT(prop.isWritable());
 
     QVariant cppValue;
 #if 0
@@ -1375,9 +1376,15 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
             getter = QtMetaPropertyGetter;
             setter = QtMetaPropertySetter;
         }
+
+        v8::PropertyAttribute attribute = v8::DontDelete;
+        if (!prop.isWritable()) {
+            setter = 0;
+            attribute = v8::PropertyAttribute(v8::DontDelete | v8::ReadOnly);
+        }
         instTempl->SetAccessor(v8::String::New(prop.name()),
                                getter, setter, v8::Int32::New(i),
-                               v8::DEFAULT, v8::DontDelete);
+                               v8::DEFAULT, attribute);
     }
 
     return handleScope.Close(funcTempl);
