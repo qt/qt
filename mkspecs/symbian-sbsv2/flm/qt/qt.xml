@@ -38,4 +38,9 @@
     <interface name="qt.qmake_store_build" extends="Symbian.UserFLM"
                 flm="qmake_store_build.flm">
     </interface>    
+
+    <interface name="qt.qmake_clean" extends="Symbian.UserFLM"
+                flm="qmake_clean.flm">
+        <param name='CLEAN_FILES' />
+    </interface>
 </build>
