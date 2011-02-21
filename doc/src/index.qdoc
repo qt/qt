@@ -38,7 +38,7 @@
     \div {indexboxcont indexboxbar }
         \div {sectionlist normallist}
             \div {heading}
-                \l What is Qt
+                \bold{What is Qt}
             \enddiv
             \image qt-logo.png
             \list
@@ -57,7 +57,7 @@
         \enddiv
         \div {sectionlist normallist}
             \div {heading}
-                \l Develop with Qt
+                \bold{Develop with Qt}
             \enddiv
             \image qml.png
             \list
@@ -69,14 +69,10 @@
             \o \l{qt-deployment}{Deploying Applications and Publish to Ovi Store}
             \endlist
 
-            \list
-            \o \l Kevin's ABC
-            \endlist
-
         \enddiv
         \div {sectionlist normallist}
             \div {heading}
-                \l See Qt
+                \bold{See Qt}
             \enddiv
             \image mobile.png
             \list
