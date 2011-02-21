@@ -42,7 +42,7 @@
     Qt is a cross-platform application and UI framework for writing
     web-enabled applications for desktop, mobile, and embedded
     operating systems. This page contains links to articles and overviews
-	explaining key components and techniques used in Qt development.
+    explaining key components and techniques used in Qt development.
 
     \generatelist {related}
  */

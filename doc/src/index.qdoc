@@ -38,7 +38,7 @@
     \div {indexboxcont indexboxbar }
         \div {sectionlist normallist}
         \div {heading}
-            \l What is Qt
+            What is Qt
         \enddiv
         \image qt-logo_large.png
         Qt is a cross-platform application and UI framework. Using Qt, you can
@@ -46,9 +46,6 @@
         embedded operating systems without rewriting the source code.
         \enddiv
         \div {sectionlist normallist}
-            \div {heading}
-                \emptyspan
-            \enddiv
             \list
             \o \l{http://doc.qt.nokia.com/nokia-qtsdk-1.0/index.html}{Qt SDK}
             \o \l{http://developer.qt.nokia.com/wiki/QtCreatorWhitepaper}{Qt Creator}
@@ -67,7 +64,7 @@
         \enddiv
         \div {sectionlist normallist}
             \div {heading}
-                \l See Qt
+                See Qt
             \enddiv
             \image mobile.png
             \list
@@ -83,7 +80,7 @@
     \div {indexboxcont indexboxbar }
         \div {sectionlist normallist}
             \div {heading}
-                \l Develop with Qt
+                Develop with Qt
             \enddiv
             \image tools.png
             \list
@@ -96,7 +93,7 @@
         \enddiv
         \div {sectionlist normallist}
             \div {heading}
-                \l Featured Articles
+                Featured Articles
             \enddiv
             \image guide.png
             \list
@@ -113,7 +110,7 @@ innovative solutions using Qt.
         \enddiv
         \div {sectionlist normallist}
             \div {heading}
-                \l UI Creation with Qt
+                UI Creation with Qt
             \enddiv
             \image qml.png
             \list

@@ -41,60 +41,13 @@
 //! [document]
 import QtQuick 1.0
 
-//! [parent begin]
-Rectangle {
-//! [parent begin]
-    width: 500; height: 500
-    color: "green"
-
-Column {
-//! [anchor fill]
-Rectangle {
-    id: button
-    width: 100; height: 100
-
-    MouseArea {
-        anchors.fill: parent
-        onClicked: console.log("button clicked")
-    }
-    MouseArea {
-        width:150; height: 75
-        onClicked: console.log("irregular area clicked")
-    }
+Grid {
+    columns: 3
+    spacing: 2
+    Rectangle { color: "red"; width: 50; height: 50 }
+    Rectangle { color: "green"; width: 20; height: 50 }
+    Rectangle { color: "blue"; width: 50; height: 20 }
+    Rectangle { color: "cyan"; width: 50; height: 50 }
+    Rectangle { color: "magenta"; width: 10; height: 10 }
 }
-//! [anchor fill]
-
-Rectangle {
-    id: button
-    width: 100; height: 100
-
-//! [enable handlers]
-    MouseArea {
-        hoverEnabled: true
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-        onEntered: console.log("mouse entered the area")
-        onExited: console.log("mouse left the area")
-    }
-//! [enable handlers]
-}
-
-Rectangle {
-    id: button
-    width: 100; height: 100
-
-//! [mouse handlers]
-    MouseArea {
-        anchors.fill: parent
-        onClicked: console.log("area clicked")
-        onDoubleClicked: console.log("area double clicked")
-        onEntered: console.log("mouse entered the area")
-        onExited: console.log("mouse left the area")
-    }
-//! [mouse handlers]
-}
-
-} //end of column
-//! [parent end]
-}
-//! [parent end]
 //! [document]

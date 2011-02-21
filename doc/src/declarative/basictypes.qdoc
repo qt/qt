@@ -402,7 +402,7 @@
     \c child1, \c child2 and \c child3 will be added to the children list
     in the order in which they appear.
 
-    List \l {Adding Properties}{properties} can be created as a
+    List \l {Property Binding}{properties} can be created as a
     \c variant type, or as a \c list<Type> type, where \c Type is the
     type of the object in the list:
 

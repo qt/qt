@@ -27,7 +27,7 @@
 
 /*!
 \page qml-extending-tutorial-index.html
-\title Tutorial: Writing QML extensions with C++
+\title Tutorial: Writing QML Extensions with C++
 
 The Qt Declarative module provides a set of APIs for extending QML through
 C++ extensions. You can write extensions to add your own QML types, extend existing
@@ -45,7 +45,7 @@ Tutorial chapters:
 \list 1
 \o \l{declarative/tutorials/extending/chapter1-basics}{Creating a New Type}
 \o \l{declarative/tutorials/extending/chapter2-methods}{Connecting to C++ Methods and Signals}
-\o \l{declarative/tutorials/extending/chapter3-bindings}{Adding Property Bindings}
+\o \l{declarative/tutorials/extending/chapter3-bindings}{Property Binding}
 \o \l{declarative/tutorials/extending/chapter4-customPropertyTypes}{Using Custom Property Types}
 \o \l{declarative/tutorials/extending/chapter5-listproperties}{Using List Property Types}
 \o \l{declarative/tutorials/extending/chapter6-plugins}{Writing an Extension Plugin}
@@ -286,7 +286,7 @@ int-type property to store an identifier for each chart:
 \endcode
 
 We can also use various other property types. QML has built-in support for the types
-listed in the \l{Adding Properties} documentation, which includes the following:
+listed in the \l{QML Basic Types} documentation, which includes the following:
 
 \list
 \o bool, unsigned int, int, float, double, qreal

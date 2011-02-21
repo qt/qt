@@ -1628,10 +1628,11 @@ QString QIODevice::errorString() const
     \fn qint64 QIODevice::readData(char *data, qint64 maxSize)
 
     Reads up to \a maxSize bytes from the device into \a data, and
-    returns the number of bytes read or -1 if an error occurred. If
-    there are no bytes to be read, this function should return -1 if
-    there can never be more bytes available (for example: socket
-    closed, pipe closed, sub-process finished).
+    returns the number of bytes read or -1 if an error occurred.
+
+    If there are no bytes to be read and there can never be more bytes
+    available (examples include socket closed, pipe closed, sub-process
+    finished), this function returns -1.
 
     This function is called by QIODevice. Reimplement this function
     when creating a subclass of QIODevice.

@@ -236,7 +236,7 @@ void QDeclarativeViewPrivate::itemGeometryChanged(QDeclarativeItem *resizeItem, 
     If you're using your own QGraphicsScene-based scene with QDeclarativeView, remember to
     enable scene's sticky focus mode and to set itemIndexMethod to QGraphicsScene::NoIndex.
 
-    \sa {Integrating QML with existing Qt UI code}, {Using QML in C++ Applications}
+    \sa {Integrating QML Code with Existing Qt UI Code}, {Using QML Bindings in C++ Applications}
 */
 
 

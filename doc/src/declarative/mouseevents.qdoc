@@ -64,9 +64,9 @@ definable.
 The MouseArea element provides
 \l{QML Signal and Handler Event System}{signals and handlers} to detect different
 mouse events. The \l MouseArea element documentation describes these
-gestures in greater detail.
+gestures in greater detail:
 
-\list Mouse Gestures
+\list
 \o canceled
 \o clicked
 \o doubleClicked
@@ -117,5 +117,4 @@ such as double clicking. To facilitate the classification of mouse clicks, the
 MouseEvent object has an \c accepted property to disable the event propagation.
 
 To learn more about QML's event system, please read the \l {QML Signal and Handler Event System} document.
-
 */

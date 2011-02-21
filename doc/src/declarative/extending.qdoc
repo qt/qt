@@ -86,7 +86,7 @@ Types can be registered by libraries, application code, or by plugins
 
 Once registered, all \l {Qt's Property System}{properties} of the
 supported types are available in QML.  QML has intrinsic support for
-properties of the types listed in the \l{Adding Properties}
+properties of the types listed in the \l{QML Basic Types}
 document, which includes the following:
 
 \list
@@ -481,7 +481,7 @@ but different parameters cannot be distinguished.
 Signal parameters become accessible by name to the assigned script.  An
 unnamed parameter cannot be accessed, so care should be taken to name all the
 signal parameters in the C++ class declaration.  The intrinsic types
-listed in \l {Adding Types}, as well registered object types are permitted as
+listed in \l{Adding Types}, as well registered object types are permitted as
 signal parameter types.  Using other types is not an error, but the parameter
 value will not be accessible from script.
 
@@ -705,6 +705,4 @@ public:
     }
 };
 \endcode
-
 */
-

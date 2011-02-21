@@ -47,9 +47,7 @@ has been clicked within the area.
 
 The syntax for defining a new signal is:
 
-\qml
-signal <name>[([<type> <parameter name>[, ...]])]
-\endqml
+\tt{signal <name>[([<type> <parameter name>[, ...]])]}
 
 Attempting to declare two signals or methods with the same name in the same type
 block generates an error.  However, a new signal may reuse the name of an existing signal on the type. (This should be done with caution, as the existing signal may be hidden and become inaccessible.)
@@ -119,10 +117,11 @@ output:
 Because QML uses Qt, a signal defined in C++ also works as a QML signal. The
 signal may be emitted in QML code or called as a method. In addition, the QML
 runtime automatically creates signal handlers for the C++ signals. For more
-signal control, the \c connect() method and the \l Connect element may connect a
-C++ to another signal or method.
+signal control, the \c connect() method and the \l Connections element may connect
+a C++ signal to another signal or method.
 
-For complete information on how to call C++ functions in QML, read the \l {Extending QML - Signal Support Example}.
+For complete information on how to call C++ functions in QML, read the
+\l{Extending QML - Signal Support Example}.
 
 
 */

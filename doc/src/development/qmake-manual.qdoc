@@ -908,13 +908,13 @@
     {deployment guide for Windows}.
 
 
-    \section1 Symbian platform
+    \section1 Symbian Platform
 
     Features specific to this platform include handling of static data,
     capabilities, stack and heap size, compiler specific options, and unique
     identifiers for the application or library.
 
-    \section2 Handling of static data
+    \section2 Handling of Static Data
 
     If the application uses any static data, the build system needs to be
     informed about it. This is because Symbian tries to save memory if no
@@ -926,7 +926,7 @@
 
     The default value is zero.
 
-    \section2 Stack and heap size
+    \section2 Stack and Heap Size
 
     The Symbian platform uses predefined sizes for stacks and heaps. If an
     application exceeds either limit, it may crash or fail to complete its
@@ -941,10 +941,10 @@
     \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 130
 
     The default values depend on the version of the Symbian SDK you're using,
-	however, the Qt toolchain sets this to the maximum possible value and this
-	should not be changed.
+    however, the Qt toolchain sets this to the maximum possible value and this
+    should not be changed.
 
-    \section2 Compiler specific options
+    \section2 Compiler-Specific Options
 
     General compiler options can as usual be set using \c QMAKE_CFLAGS and \c QMAKE_CXXFLAGS.
     In order to set specific compiler options, \c QMAKE_CFLAGS.<compiler> and
@@ -956,7 +956,7 @@
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 131
 
-    \section2 Unique identifiers
+    \section2 Unique Identifiers
 
     Symbian applications may have unique identifiers attached to them.
     Here is how to define them in a project file:
@@ -969,19 +969,22 @@
     If \c SID is not specified, it defaults to the same value as \c UID3.
     If \c UID3 is not specified, qmake will automatically generate a \c UID3
     suitable for development and debugging. This value should be manually
-    specified for applications that are to be released. In order to obtain
-    an official UID, please contact \l{Symbian}{http:\\www.symbiansigned.com}.
-	Both \c SID and \c VID default to empty values.
+    specified for applications that are to be released. See the
+    \l{Symbian Signed} Web site for information about obtaining an official
+    UID.
+
+    Both \c SID and \c VID default to empty values.
 
     There exists one UID1 too, but this should not be touched by any application.
-	
-	The UID2 has a specific value for different types of files - e.g. apps/exes
-	are always 0x100039CE. The toolchain will set this for value for the most common file types like,
-	EXE/APP and shared library DLL. 
-	
-	For more information about unique identifiers and their meaning for Symbian applications,
-	please refer to the \l{Symbian SDK documentation}{http://developer.symbian.org/main/documentation/reference/s3/pdk/GUID-380A8C4F-3EB6-5E1C-BCFB-ED5B866136D9.html}
-	
+    
+    The UID2 has a specific value for different types of files - e.g. apps/exes
+    are always 0x100039CE. The toolchain will set this for value for the most common file types like,
+    EXE/APP and shared library DLL. 
+
+    For more information about unique identifiers and their meaning for
+    Symbian applications, please refer to the \l{UID Q&As (Symbian Signed)}
+    page in the \l{Forum Nokia Wiki} for more information.
+    
     \section2 Capabilities
 
     Capabilities define extra privileges for the application, such as the
@@ -3122,8 +3125,34 @@
 
     \e {This is only used on the Symbian platform.}
 
-    Specifies which platform capabilities the application should have. For more
-    information, please refer to the Symbian SDK documentation.
+    Specifies which platform capabilities the application should have. These
+    include the following basic capabilities, but others are also available
+    for signed applications.
+
+    \table
+    \header \o Capability   \o Description
+    \row \o LocalServices   \o The ability to use local services running on the
+                               phone or device, including those which provide
+                               local connectivity to other devices.
+    \row \o Location        \o Access to the service that provides information
+                               about the user's location, from GPS, phone
+                               network, or other sources.
+    \row \o NetworkServices \o Use of services that access the phone network,
+                               such as dialling a phone number, sending an SMS,
+                               or other operations that result in network
+                               traffic.
+    \row \o ReadUserData    \o Access to the user's private data, such as
+                               contact information.
+    \row \o UserEnvironment \o The ability to use services that provide from the
+                               user's physical environment, such as the camera or
+                               microphone.
+    \row \o WriteUserData   \o The ability to write or modify the user's private
+                               data.
+    \endtable
+
+    For more information, and a comprehensive list of capabilities, please refer
+    to the Symbian SDK documentation or the \l{Symbian Capabilities} page of
+    the \l{Forum Nokia Wiki}.
 
     \target TARGET.EPOCALLOWDLLDATA
     \section1 TARGET.EPOCALLOWDLLDATA
@@ -4004,65 +4033,65 @@
 
     \table
     \header
-		\o Member
-		\o Description
-	\row
-		\o commands
-		\o The commands used for for generating the output from the input.
-	\row
-		\o CONFIG
-		\o Specific configuration options for the custom compiler.  See the CONFIG table for details.
-	\row
-		\o depend_command
-		\o Specifies a command used to generate the list of dependencies for the output.
-	\row
-		\o dependency_type
-		\o Specifies the type of file the output is, if it is a known type (such as TYPE_C, 
-		   TYPE_UI, TYPE_QRC) then it is handled as one of those type of files.
-	\row
-		\o depends
-		\o Specifies the dependencies of the output file.
-	\row 
-		\o input
-		\o The variable that contains the files that should be processed with the custom compiler.
-	\row 
-		\o name
-		\o A description of what the custom compiler is doing.  This is only used in some backends.
-	\row
-		\o output
-		\o The filename that is created from the custom compiler.
-	\row
-		\o output_function
-		\o Specifies a custom qmake function that is used to specify the filename to be created.
-	\row
-		\o variables
-		\o Indicates that the variables specified here are replaced with $(QMAKE_COMP_VARNAME) when refered to
-		   in the pro file as $(VARNAME).
-	\row
-		\o variable_out
-		\o The variable that the files created from the output should be added to. 
-	\endtable
+        \o Member
+        \o Description
+    \row
+        \o commands
+        \o The commands used for for generating the output from the input.
+    \row
+        \o CONFIG
+        \o Specific configuration options for the custom compiler.  See the CONFIG table for details.
+    \row
+        \o depend_command
+        \o Specifies a command used to generate the list of dependencies for the output.
+    \row
+        \o dependency_type
+        \o Specifies the type of file the output is, if it is a known type (such as TYPE_C, 
+           TYPE_UI, TYPE_QRC) then it is handled as one of those type of files.
+    \row
+        \o depends
+        \o Specifies the dependencies of the output file.
+    \row 
+        \o input
+        \o The variable that contains the files that should be processed with the custom compiler.
+    \row 
+        \o name
+        \o A description of what the custom compiler is doing.  This is only used in some backends.
+    \row
+        \o output
+        \o The filename that is created from the custom compiler.
+    \row
+        \o output_function
+        \o Specifies a custom qmake function that is used to specify the filename to be created.
+    \row
+        \o variables
+        \o Indicates that the variables specified here are replaced with $(QMAKE_COMP_VARNAME) when refered to
+           in the pro file as $(VARNAME).
+    \row
+        \o variable_out
+        \o The variable that the files created from the output should be added to. 
+    \endtable
 
-	List of members specific to the CONFIG option:
+    List of members specific to the CONFIG option:
 
-	\table
-	\header
-		\o Member
-		\o Description
-	\row
-		\o combine
-		\o Indicates that all of the input files are combined into a single output file.
-	\row
-		\o target_predeps
-		\o Indicates that the output should be added to the list of PRE_TARGETDEPS.
-	\row
-		\o explicit_dependencies
-		\o The dependencies for the output only get generated from the depends member and from 
-		   nowhere else.
-	\row
-		\o no_link
-		\o Indicates that the output should not be added to the list of objects to be linked in.
-	\endtable
+    \table
+    \header
+        \o Member
+        \o Description
+    \row
+        \o combine
+        \o Indicates that all of the input files are combined into a single output file.
+    \row
+        \o target_predeps
+        \o Indicates that the output should be added to the list of PRE_TARGETDEPS.
+    \row
+        \o explicit_dependencies
+        \o The dependencies for the output only get generated from the depends member and from 
+           nowhere else.
+    \row
+        \o no_link
+        \o Indicates that the output should not be added to the list of objects to be linked in.
+    \endtable
 
     \note Symbian platform specific: Generating objects to be linked in is
     not supported on the Symbian platform, so either the \c CONFIG option
@@ -4202,10 +4231,10 @@
     Generally, the \c : operator behaves like a logical AND operator, joining
     together a number of conditions, and requiring all of them to be true.
 
-	There is also the \c | operator to act like a logical OR operator, joining 
-	together a number of conditions, and requiring only one of them to be true.
+    There is also the \c | operator to act like a logical OR operator, joining 
+    together a number of conditions, and requiring only one of them to be true.
 
-	\snippet doc/src/snippets/qmake/scopes.pro 4
+    \snippet doc/src/snippets/qmake/scopes.pro 4
 
     You can also provide alternative declarations to those within a scope by
     using an \c else scope. Each \c else scope is processed if the conditions

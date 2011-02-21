@@ -90,8 +90,8 @@ Similar to JavaScript or C++, there are two ways of commenting QML code:
 
 \section1 Group Properties
 
-Many QML properties are \l{attached-properties}{attached} or
-\l {qml-grouped-properties}{group} properties. For convenience, you may treat
+Many QML properties are \l{attached-properties}{attached} or
+\l {qml-grouped-properties}{group} properties. For convenience, you may treat
 them as another element when dealing with multiple properties belonging to the
 same group.
 

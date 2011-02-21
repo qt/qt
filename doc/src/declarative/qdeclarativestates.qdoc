@@ -123,7 +123,7 @@ The \c bell component will change to the \c RINGING state whenever the
 
 \section1 Animating State Changes
 
-State changes induce abrupt value changes. The \l Transitions element allow
+State changes induce abrupt value changes. The \l Transition element allow
 smoother changes during state changes. In transitions, animations and
 interpolation behaviors are definable. The
 \l {QML Animation and Transitions}{Animation and Transitions} article has more
