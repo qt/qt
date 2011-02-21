@@ -684,7 +684,7 @@
     across desktop, mobile and embedded operating systems without
     rewriting the source code.
 
-    \section1 Qt is available for the following platforms:
+    \section1 Qt is Available for the Following Platforms
 
     \table
     \header
@@ -707,7 +707,7 @@
     \o\l{Support for Maemo}{Maemo}
     \endtable
 
-    \section1 Supported platform details
+    \section1 Supported Platform Details
 
     The Qt team strives to provide support for the platforms most
     frequently used by Qt users. We have designed our internal testing procedure to
@@ -804,7 +804,7 @@
 
     \note The PPC architecture on Mac has been downgraded from tier 1 to tier 2 for 4.7.
 
-    \section1 Tier 3 Platforms (Not supported by Nokia)
+    \section1 Tier 3 Platforms (Not Supported by Nokia)
 
     All platforms not specifically listed above are not supported by Nokia. Nokia does
     not run its unit test suite or perform any other internal tests on platforms not
