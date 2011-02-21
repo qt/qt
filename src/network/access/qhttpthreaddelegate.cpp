@@ -40,9 +40,15 @@
 ****************************************************************************/
 
 #include "qhttpthreaddelegate_p.h"
-#include "qthread.h"
-#include "private/qnoncontiguousbytedevice_p.h"
+
+#include <QThread>
 #include <QTimer>
+#include <QAuthenticator>
+#include <QEventLoop>
+
+#include "private/qhttpnetworkreply_p.h"
+#include "private/qnetworkaccesscache_p.h"
+#include "private/qnoncontiguousbytedevice_p.h"
 
 
 QT_BEGIN_NAMESPACE
