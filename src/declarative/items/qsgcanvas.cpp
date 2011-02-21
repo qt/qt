@@ -1477,7 +1477,44 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
         } else if (itemPriv->paintNode) {
             delete itemPriv->paintNode;
         }
-    } 
+    }
+
+#ifndef QT_NO_DEBUG
+    // Check consistency.
+    const Node *nodeChain[] = {
+        itemPriv->itemNodeInstance,
+        itemPriv->opacityNode,
+        itemPriv->clipNode,
+        itemPriv->rootNode,
+        itemPriv->groupNode,
+        itemPriv->paintNode,
+    };
+
+    int ip = 0;
+    for (;;) {
+        while (ip < 5 && nodeChain[ip] == 0)
+            ++ip;
+        if (ip == 5)
+            break;
+        int ic = ip + 1;
+        while (ic < 5 && nodeChain[ic] == 0)
+            ++ic;
+        const Node *parent = nodeChain[ip];
+        const Node *child = nodeChain[ic];
+        if (child == 0) {
+            Q_ASSERT(parent == itemPriv->groupNode || parent->childCount() == 0);
+        } else {
+            Q_ASSERT(parent == itemPriv->groupNode || parent->childCount() == 1);
+            Q_ASSERT(child->parent() == parent);
+            bool containsChild = false;
+            for (int i = 0; i < parent->childCount(); ++i)
+                containsChild |= (parent->childAtIndex(i) == child);
+            Q_ASSERT(containsChild);
+        }
+        ip = ic;
+    }
+#endif
+
 }
 
 void QSGCanvas::maybeUpdate()

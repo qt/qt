@@ -98,7 +98,7 @@ void CustomMaterialShader::updateState(Renderer *r, AbstractMaterial *newEffect,
 
     for (int i = material->m_textures.size() - 1; i >= 0; --i) {
         QPointer<QSGTextureProvider> source = material->m_textures.at(i).second;
-        if (!source)
+        if (!source || !source->texture().texture())
             continue;
 
         r->glActiveTexture(GL_TEXTURE0 + i);

@@ -118,7 +118,7 @@ void TextureProviderMaterialShader::updateState(Renderer *renderer, AbstractMate
     QSGTextureProvider *tx = static_cast<TextureProviderMaterial *>(newEffect)->texture();
     QSGTextureProvider *oldTx = oldEffect ? static_cast<TextureProviderMaterial *>(oldEffect)->texture() : 0;
 
-    if (oldEffect == 0 || tx->texture()->textureId() != oldTx->texture()->textureId()) {
+    if (oldEffect == 0 || tx->texture().texture() != oldTx->texture().texture()) {
         renderer->setTexture(0, tx->texture());
         oldEffect = 0; // Force filtering update.
     }
