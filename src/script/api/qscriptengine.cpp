@@ -2403,7 +2403,9 @@ QStringList QScriptEngine::availableExtensions() const
                 for (int k = 0; k < keys.count(); ++k)
                     result << keys.at(k);
             }
-            loader.unload();
+            // ### Because of compatibility with plugins that do not support
+            // being unloaded, we let QPluginLoader go out of scope without
+            // calling unload(), and this will "leak" the plugin.
         }
 
         // look for scripts
