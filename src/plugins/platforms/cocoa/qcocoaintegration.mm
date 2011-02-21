@@ -94,9 +94,19 @@ QCocoaIntegration::~QCocoaIntegration()
     delete mPool;
 }
 
+bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+    case ThreadedPixmaps: return true;
+    default: return QPlatformIntegration::hasCapability(cap);
+    }
+}
+
+
+
 QPixmapData *QCocoaIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
-        return new QRasterPixmapData(type);
+    return new QRasterPixmapData(type);
 }
 
 QPlatformWindow *QCocoaIntegration::createPlatformWindow(QWidget *widget, WId winId) const

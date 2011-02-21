@@ -216,4 +216,14 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
     QRect(x,y,width,height).
 */
 
+
+bool QPlatformIntegration::hasCapability(Capability cap) const
+{
+    return false;
+}
+
+
+
+
+
 QT_END_NAMESPACE

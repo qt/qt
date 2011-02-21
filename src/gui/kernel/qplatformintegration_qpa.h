@@ -65,7 +65,13 @@ class QPlatformNativeInterface;
 class Q_GUI_EXPORT QPlatformIntegration
 {
 public:
+    enum Capability {
+        ThreadedPixmaps = 1,
+    };
+
     virtual ~QPlatformIntegration() { }
+
+    virtual bool hasCapability(Capability cap) const;
 
 // GraphicsSystem functions
     virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;

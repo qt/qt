@@ -77,6 +77,8 @@ public:
     QLinuxFbIntegration();
     ~QLinuxFbIntegration();
 
+    bool hasCapability(QPlatformIntegration::Capability cap) const;
+
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId WinId) const;
     QWindowSurface *createWindowSurface(QWidget *widget, WId WinId) const;

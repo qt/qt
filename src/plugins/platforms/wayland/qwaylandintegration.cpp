@@ -71,6 +71,14 @@ QWaylandIntegration::screens() const
     return mDisplay->screens();
 }
 
+bool QWaylandIntegration::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+    case ThreadedPixmaps: return true;
+    default: return QPlatformIntegration::hasCapability(cap);
+    }
+}
+
 QPixmapData *QWaylandIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
 #ifdef QT_WAYLAND_GL_SUPPORT
@@ -79,8 +87,6 @@ QPixmapData *QWaylandIntegration::createPixmapData(QPixmapData::PixelType type) 
 #endif
     return new QRasterPixmapData(type);
 }
-
-
 
 QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWidget *widget, WId winId) const
 {
