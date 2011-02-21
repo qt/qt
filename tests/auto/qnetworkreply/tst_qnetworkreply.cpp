@@ -3812,6 +3812,8 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
     if (reader.data.size() < testData.size()) { // oops?
         QCOMPARE(reader.data, testData.mid(0, reader.data.size()));
         qDebug() << "The data is incomplete, the last" << testData.size() - reader.data.size() << "bytes are missing";
+        QEXPECT_FAIL("http+limited", "Limiting is broken right now, check QTBUG-15065", Abort);
+        QEXPECT_FAIL("https+limited", "Limiting is broken right now, check QTBUG-15065", Abort);
     }
     QCOMPARE(reader.data.size(), testData.size());
     QCOMPARE(reader.data, testData);
@@ -3824,8 +3826,8 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
         const int maxRate = rate * 1024 * (100+allowedDeviation) / 100;
         qDebug() << minRate << "<="<< server.transferRate << "<=" << maxRate << "?";
         QVERIFY(server.transferRate >= minRate);
-        QEXPECT_FAIL("http+limited", "Limiting is broken right now", Continue);
-        QEXPECT_FAIL("https+limited", "Limiting is broken right now", Continue);
+        QEXPECT_FAIL("http+limited", "Limiting is broken right now, check QTBUG-15065", Continue);
+        QEXPECT_FAIL("https+limited", "Limiting is broken right now, check QTBUG-15065", Continue);
         QVERIFY(server.transferRate <= maxRate);
     }
 }
