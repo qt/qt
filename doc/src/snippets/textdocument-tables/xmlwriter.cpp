@@ -98,6 +98,8 @@ void XmlWriter::processFrame(QDomElement &parent, QTextFrame *frame)
     parent.appendChild(frameElement);
 
 //! [0]
+    QDomElement frameElement = ...
+
     QTextFrame::iterator it;
     for (it = frame->begin(); !(it.atEnd()); ++it) {
 
