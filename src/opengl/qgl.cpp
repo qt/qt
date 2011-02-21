@@ -3785,7 +3785,7 @@ QGLWidget::QGLWidget(QGLWidgetPrivate &dd, const QGLFormat &format, QWidget *par
     setAttribute(Qt::WA_PaintOnScreen);
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoFillBackground(true); // for compatibility
-    d->init(new QGLContext(QGLFormat::defaultFormat(), this), shareWidget);
+    d->init(new QGLContext(format, this), shareWidget);
 
 }
 

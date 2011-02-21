@@ -128,6 +128,7 @@ AbstractMaterialShader *SpriteParticlesMaterial::createShader() const
 
 SpriteParticles::SpriteParticles()
     : m_running(true)
+    , m_do_reset(false)
     , m_particles_per_second(10)
     , m_particle_duration(1000)
     , m_particle_size(16)
@@ -415,12 +416,7 @@ void SpriteParticles::setAdditive(qreal additive)
 void SpriteParticles::reset()
 {
     update();
-    delete m_node;
-    delete m_material;
-
-    m_node = 0;
-    m_material = 0;
-    m_particle_count = 0;
+    m_do_reset = true;
 }
 
 int SpriteParticles::goalSeek(int curIdx, int dist)
@@ -657,8 +653,20 @@ void SpriteParticles::buildParticleNode()
 
 Node *SpriteParticles::updatePaintNode(Node *, UpdatePaintNodeData *data)
 {
+    if(m_do_reset){
+        delete m_node;
+        delete m_material;
+
+        m_node = 0;
+        m_material = 0;
+        m_particle_count = 0;
+        m_do_reset = false;
+    }
+
     prepareNextFrame();
-    update();
+
+    if(m_running)
+        update();
     return m_node;
 }
 
@@ -708,6 +716,9 @@ void SpriteParticles::prepareNextFrame()
     float sizeAtEnd = m_particle_end_size >= 0 ? m_particle_end_size : m_particle_size;
     while (pt < time) {
         int pos = m_last_particle % m_particle_count;
+
+        foreach(ParticleAffector* a, m_affectors)
+            a->reset(pos);
 
         qreal t = 1 - (pt - opt) / dt;
 
@@ -760,6 +771,12 @@ void SpriteParticles::prepareNextFrame()
 
         p.v1.size = p.v2.size = p.v3.size = p.v4.size = size * float(m_emitting);
         p.v1.endSize = p.v2.endSize = p.v3.endSize = p.v4.endSize = endSize * float(m_emitting);
+
+        //TODO: use endSize too,but I currently think the Vs should be split, to allow for size/rot affectors
+        p.v2.x += p.v1.size;
+        p.v3.y += p.v1.size;
+        p.v4.x += p.v1.size;
+        p.v4.y += p.v1.size;
 
         // Initial Sprite State
         p.v1.animIdx = p.v2.animIdx = p.v3.animIdx = p.v4.animIdx = 0;
@@ -832,12 +849,12 @@ void SpriteParticles::prepareNextFrame()
         m_stateUpdates.pop_front();
     }
 
-    foreach(ParticleAffector* a, m_affectors){
-        for(int i=0; i < m_particle_count; i++){
+    for(int i=0; i < m_particle_count; i++){
             ParticleVertices* p = &particles[i];
             qreal dt = time - p->v1.dt;
             p->v1.dt = p->v2.dt = p->v3.dt = p->v4.dt = time;
-            a->affect(p, i, dt);
+        foreach(ParticleAffector* a, m_affectors){
+            a->affect(p, i, dt, this);//TODO: indicate when an index is reset (and associated data should be too)
         }
     }
 
@@ -846,6 +863,4 @@ void SpriteParticles::prepareNextFrame()
     m_last_emitter = QPointF(m_emitter_x, m_emitter_y);
     m_last_timestamp = time;
 
-    if (m_running)
-      update();
 }

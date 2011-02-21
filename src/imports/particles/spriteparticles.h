@@ -238,6 +238,7 @@ private:
     void reset();
 
     bool m_running;
+    bool m_do_reset;
 
     QUrl m_image_name;
     QUrl m_colortable_name;
