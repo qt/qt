@@ -874,7 +874,7 @@ void QPainterPath::arcTo(const QRectF &rect, qreal startAngle, qreal sweepLength
            rect.x(), rect.y(), rect.width(), rect.height(), startAngle, sweepLength);
 #endif
 
-    if (!qt_is_finite(rect.x()) && !qt_is_finite(rect.y()) || !qt_is_finite(rect.width()) || !qt_is_finite(rect.height())
+    if ((!qt_is_finite(rect.x()) && !qt_is_finite(rect.y())) || !qt_is_finite(rect.width()) || !qt_is_finite(rect.height())
         || !qt_is_finite(startAngle) || !qt_is_finite(sweepLength)) {
 #ifndef QT_NO_DEBUG
         qWarning("QPainterPath::arcTo: Adding arc where a parameter is NaN or Inf, ignoring call");

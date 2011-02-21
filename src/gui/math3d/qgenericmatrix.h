@@ -79,9 +79,9 @@ public:
 
     void copyDataTo(T *values) const;
 
-    T *data() { return m[0]; }
-    const T *data() const { return m[0]; }
-    const T *constData() const { return m[0]; }
+    T *data() { return *m; }
+    const T *data() const { return *m; }
+    const T *constData() const { return *m; }
 
 #if !defined(Q_NO_TEMPLATE_FRIENDS)
     template<int NN, int MM, typename TT>

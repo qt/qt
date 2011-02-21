@@ -379,7 +379,7 @@ bool HelpViewer::findText(const QString &text, FindFlags flags, bool incremental
     bool fromSearch)
 {
     TRACE_OBJ
-    Q_UNUSED((incremental && fromSearch))
+    Q_UNUSED(incremental); Q_UNUSED(fromSearch);
     QWebPage::FindFlags options = QWebPage::FindWrapsAroundDocument;
     if (flags & FindBackward)
         options |= QWebPage::FindBackward;
