@@ -3644,26 +3644,45 @@
     \section2 \c related
 
     The \c related argument is used in combination with the \l
-    {group-command} {\\group} command to list all the overviews
-    related to the given group. Each list entry is a link to the
-    respective documentation page.
+    {group-command} {\\group} and \l {ingroup-command} {\\ingroup}
+    commands to list all the overviews related to a specified
+    group. For example, the page for the \l {Programming with Qt}
+    {Programming with Qt} page is generated this way:
 
-    \section2 \c relatedinline
+    \code
+    / *!
+        \group qt-basic-concepts
+        \title Programming with Qt
 
-    The \c related argument is used in combination with the \l
-    {group-command} {\\group} command to collect all documentation
-    related to the given group. The various documentation snippets are
-    copied directly into the group page.
+        \brief The basic architecture of the Qt cross-platform application and UI framework.
+
+        Qt is a cross-platform application and UI framework for
+        writing web-enabled applications for desktop, mobile, and
+        embedded operating systems. This page contains links to
+        articles and overviews explaining key components and
+        techniuqes used in Qt development.
+
+        \generatelist {related}
+    * /
+    \endcode
+
+    Each page listed on this group page contains the command:
+
+    \code
+        \ingroup qt-basic-concepts
+    \endcode
 
     \section2 \c service
 
-    The \c service argument provides a complete alphabetical list of
-    the services. Each service name is a link to the service's
+    The \c service argument tells QDoc to generate an alphabetical
+    list of the services. Each service name is a link to the service's
     reference documentation.
 
-    A service is identified within the documentation by the \l
-    {service-command} {\\service} command.
+    A service is identified with the \l {service-command} {\\service}
+    command.
 
+    \note This command and the \l {service-command} {\\service}
+    command are not used in the Qt documentation.
 
     \target if-command
     \section1 \\if 
@@ -3672,8 +3691,8 @@
     enclose parts of a QDoc comment that only will be included if
     the condition specified by the command's argument is true.
 
-           The command reads the rest of the line and parses it as an
-           C++ #if statement. For example:
+    The command reads the rest of the line and parses it as an C++ #if
+    statement. For example:
 
            \code
            / *!
@@ -3687,24 +3706,22 @@
            * /
            \endcode
 
-           This QDoc comment will only be rendered if the \c
-           opensourceedition preprocessor symbol is defined, and
-           specified in the \l {defines-variable} {defines} variable in
-           the configuration file to make QDoc process
-           the code within #ifdef and #endif:
+    This QDoc comment will only be rendered if the \c
+    opensourceedition preprocessor symbol is defined, and specified in
+    the \l {defines-variable} {defines} variable in the configuration
+    file to make QDoc process the code within #ifdef and #endif:
 
            \code
                defines = opensourceedition
            \endcode
 
-           You can also define the preprocessor symbol manually on the
-           command line. For more information see the documentation of
-           the \l {defines-variable} {defines} variable.
+    You can also define the preprocessor symbol manually on the
+    command line. For more information see the documentation of the \l
+    {defines-variable} {defines} variable.
 
-           See also \l{endif-command} {\\endif}, \l{else-command}
-           {\\else}, \l {defines-variable} {defines} and \l
-           {falsehoods-variable} {falsehoods}.
-
+    See also \l{endif-command} {\\endif}, \l{else-command} {\\else},
+    \l {defines-variable} {defines} and \l {falsehoods-variable}
+    {falsehoods}.
 
     \target endif-command
     \section1 \\endif 
@@ -3714,13 +3731,12 @@
     the condition specified by the \l {if-command} {\\if} command's
     argument is true.
 
-           For more information, see the documentation of the \l
-           {if-command} {\\if} command.
+    For more information, see the documentation of the \l {if-command}
+    {\\if} command.
 
-           See also \l{if-command} {\\if}, \l{else-command} {\\else},
-           \l {defines-variable} {defines} and \l
-           {falsehoods-variable} {falsehoods}.
-
+    See also \l{if-command} {\\if}, \l{else-command} {\\else}, \l
+    {defines-variable} {defines} and \l {falsehoods-variable}
+    {falsehoods}.
 
     \target else-command
     \section1 \\else 
@@ -3728,9 +3744,9 @@
     The \\else command specifies an alternative if the
     condition in the \l {if-command} {\\if} command is false.
 
-           The \\else command can only be used within \l
-           {if-command} {\\if...\\endif} commands, but is useful when there is
-           only two alternatives. For example:
+    The \\else command can only be used within \l {if-command}
+    {\\if...\\endif} commands, but is useful when there is only two
+    alternatives. For example:
 
            \code
            / *!
@@ -3765,8 +3781,8 @@
            * /
            \endcode
 
-           If the \c QT3_SUPPORT is defined, the comment will be rendered
-           as
+    If the \c QT3_SUPPORT is defined, the comment will be rendered
+    like this:
 
            \quotation
                The Qt 3 support library is provided to keep old source
@@ -3777,8 +3793,8 @@
                API to cohabit with the new one.
            \endquotation
 
-           If \c QT3_SUPPORT isn't defined but \c QT3_SUPPORT_WARNINGS
-           is, the comment QDoc renders this as:
+    If \c QT3_SUPPORT is not defined but \c QT3_SUPPORT_WARNINGS is
+    defined, the comment will be rendered like this:
 
            \quotation
                The Qt 3 support library is provided to keep old source
@@ -3821,31 +3837,27 @@
            {defines-variable} {defines} and \l {falsehoods-variable}
            {falsehoods}.
 
-
     \target include-command
     \section1 \\include 
 
     The \\include command  expands to the contents of the
     file specified by the command's argument.
 
-            \warning This is preliminary functionality. For more
-            information, see the \l
-            {26-qdoc-commands-compatibility.html#include-versus-input}
-            {compatibility} section.
+    \warning This is preliminary functionality. For more information,
+    see the \l
+    {26-qdoc-commands-compatibility.html#include-versus-input}
+    {compatibility} section.
 
-            The command takes a file name as an argument, and is
-            useful when some piece of the documentation is used
-            repeatedly: Move the repetetive text into a separate file,
-            and use the \\include command whenever you want to insert
-            the separate documentation.
+    The command takes a file name as an argument, and is useful when
+    some piece of the documentation is used repeatedly: Move the
+    repetetive text into a separate file, and use the \\include
+    command whenever you want to insert the separate documentation.
 
-            The contents of such a file should follow QDoc syntax,
-            excluding the enclosing \c{/}\c{*!} ... \c{*}\c{/} marks.
-            To ensure that QDoc won't attempt to read the file as a
-            stand-alone piece of documentation, we recommend that you
-            use the \c .qdocinc extension.
-
-            For example:
+    The contents of such a file should follow QDoc syntax, excluding
+    the enclosing \c{/}\c{*!} ... \c{*}\c{/} marks.  To ensure that
+    QDoc won't attempt to read the file as a stand-alone piece of
+    documentation, we recommend that you use the \c .qdocinc
+    extension. For example:
 
             \code
             / *!
@@ -3858,7 +3870,7 @@
             * /
             \endcode
 
-            QDoc renders this as:
+    QDoc renders this as:
 
             \quotation
                 \raw HTML
@@ -3870,10 +3882,8 @@
                 \input examples/layoutmanagement.qdocinc
             \endquotation
 
-            Here is the actual \c .qdocinc files: \l
-            signalandslots.qdocinc, \l objectmodel.qdocinc, \l
-            layoutmanagement.qdocinc
-
+    Here is the actual \c .qdocinc files: \l signalandslots.qdocinc,
+    \l objectmodel.qdocinc, \l layoutmanagement.qdocinc
 
     \target meta-command
     \section1 \\meta 
@@ -3881,12 +3891,10 @@
     The \\meta command is the QDoc equivalent to the HTML
     \c meta tag.
 
-           The command accepts two arguments: The first argument (the
-           following word) is equivalent to the HTML meta tag's \e
-           name variable, and the second argument (the rest of the
-           line) is equivalent to the tag's \e contents variable.
-
-           For example:
+    The command accepts two arguments: The first argument (the
+    following word) is equivalent to the HTML meta tag's \e name
+    variable, and the second argument (the rest of the line) is
+    equivalent to the tag's \e contents variable. For example:
 
            \code
            / *!
@@ -3910,7 +3918,7 @@
            * /
            \endcode
 
-           will be included in the generated HTML page as
+    QDoc renders this as:
 
            \code
            <head>
@@ -3920,15 +3928,12 @@
            </head>
            \endcode
 
-
     \target omit-command
     \section1 \\omit 
 
-    The \\omit command and the correspondning \\endomit
-    command delimit parts of the documentation that
-    you want QDoc to skip.
-
-           For example:
+    The \\omit command and the correspondning \\endomit command
+    delimit parts of the documentation that you want QDoc to skip. For
+    example:
 
             \code
             / *!
@@ -3952,7 +3957,7 @@
             * /
             \endcode
 
-            QDoc renders this as:
+    QDoc renders this as:
 
             \raw HTML
                 <table align="center" cellpadding="2"
@@ -3971,26 +3976,24 @@
                 </table>
             \endraw
 
-
-
     \target raw-command
     \section1 \\raw \span {class="newStuff"} {(avoid)} 
 
     The \\raw command and the corresponding
     \\endraw command delimit a block of raw mark-up language code.
 
-	   \note Avoid using this command if possible, because it generates
-	   DITA XML code that causes problems. If you are trying to generate
-	   special table or list behavior, try to get the behavior you want
-	   using the \l {span-command} {\\span} and \l {div-command} {\\div} 
-	   commands in your \l {table-command} {\\table} or \l {list-command}
-	   {\\list}.
+    \note Avoid using this command if possible, because it generates
+    DITA XML code that causes problems. If you are trying to generate
+    special table or list behavior, try to get the behavior you want
+    using the \l {span-command} {\\span} and \l {div-command} {\\div}
+    commands in your \l {table-command} {\\table} or \l {list-command}
+    {\\list}.
  
-           The command takes an argument specifying the code's format;
-           currently the only supported format is HTML.
+    The command takes an argument specifying the code's format;
+    currently the only supported format is HTML.
 
-           The \\raw command is useful if you want some special HTML
-           effects in your documentation. For example:
+    The \\raw command is useful if you want some special HTML effects
+    in your documentation. For example:
 
            \code
            / *!
@@ -4012,7 +4015,7 @@
            * /
            \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
            \quotation
                Qt has some predefined QColor objects. For example:
@@ -4032,9 +4035,9 @@
                \endraw
            \endquotation
 
-	   \note But you can achieve the exact same thing using qdoc
-	   commands. In this case, all you have to do is include the
-	   color styles in your style.css file. Then you can write:
+    \note But you can achieve the exact same thing using qdoc
+    commands. In this case, all you have to do is include the color
+    styles in your style.css file. Then you can write:
 
 	   \code
            \tt {\span {id="color-blue"} {Blue(#0000ff)}},
@@ -4048,17 +4051,16 @@
            \tt {\span {id="color-darkBlue"} {dark blue(#000080)}} and
            \tt {\span {id="color-cyan"} {cyan(#00ffff)}}.
 
-
     \target unicode-command
     \section1 \\unicode 
 
-    The \\unicode command allows you to insert an
-    arbitrary Unicode character in the document.
+    The \\unicode command allows you to insert an arbitrary Unicode
+    character in the document.
 
-           The command takes an argument specifying the character as
-           an integer. By default, base 10 is assumed, unless a '0x'
-           or '0' prefix is specified (for base 16 and 8,
-           respectively). For example:
+    The command takes an argument specifying the character as an
+    integer. By default, base 10 is assumed, unless a '0x' or '0'
+    prefix is specified (for base 16 and 8, respectively). For
+    example:
 
            \code
                 O G\unicode{0xEA}nio e as Rosas
@@ -4068,7 +4070,7 @@
                 \unicode 0x3A3 \e{a}\sub{\e{i}}
            \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
            \quotation
                 O G\unicode{0xEA}nio e as Rosas
@@ -4077,7 +4079,6 @@
 
                 \unicode 0x3A3 \e{a}\sub{\e{i}}
            \endquotation
-
 */
 
 /*!
