@@ -518,11 +518,6 @@ void tst_QSslSocket::sslErrors_data()
         << 993
         << (SslErrorList() << QSslError::HostNameMismatch
                            << QSslError::SelfSignedCertificate);
-
-    QTest::newRow("imap.trolltech.com")
-        << "imap.trolltech.com"
-        << 993
-        << (SslErrorList() << QSslError::SelfSignedCertificateInChain);
 }
 
 void tst_QSslSocket::sslErrors()
