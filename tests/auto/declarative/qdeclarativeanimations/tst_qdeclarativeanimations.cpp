@@ -86,6 +86,7 @@ private slots:
     void runningTrueBug();
     void nonTransitionBug();
     void registrationBug();
+    void doubleRegistrationBug();
 };
 
 #define QTIMED_COMPARE(lhs, rhs) do { \
@@ -803,6 +804,19 @@ void tst_qdeclarativeanimations::registrationBug()
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
     QVERIFY(rect != 0);
     QTRY_COMPARE(rect->property("value"), QVariant(int(100)));
+}
+
+void tst_qdeclarativeanimations::doubleRegistrationBug()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/doubleRegistrationBug.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeAbstractAnimation *anim = rect->findChild<QDeclarativeAbstractAnimation*>("animation");
+    QVERIFY(anim != 0);
+    QTRY_COMPARE(anim->qtAnimation()->state(), QAbstractAnimation::Stopped);
 }
 
 QTEST_MAIN(tst_qdeclarativeanimations)
