@@ -317,6 +317,8 @@ void tst_QLocale::ctor()
     TEST_CTOR("en_GB.bla", English, UnitedKingdom)
     TEST_CTOR("en_GB@.bla", English, UnitedKingdom)
     TEST_CTOR("en_GB@bla", English, UnitedKingdom)
+    TEST_CTOR("en-GB", English, UnitedKingdom)
+    TEST_CTOR("en-GB@bla", English, UnitedKingdom)
 
     Q_ASSERT(QLocale::Norwegian == QLocale::NorwegianBokmal);
     TEST_CTOR("no", Norwegian, Norway)
@@ -327,6 +329,7 @@ void tst_QLocale::ctor()
     TEST_CTOR("nn_NO", NorwegianNynorsk, Norway)
     TEST_CTOR("es_ES", Spanish, Spain)
     TEST_CTOR("es_419", Spanish, LatinAmericaAndTheCaribbean)
+    TEST_CTOR("es-419", Spanish, LatinAmericaAndTheCaribbean)
 
     // test default countries for languages
     TEST_CTOR("mn", Mongolian, Mongolia)
