@@ -65,6 +65,14 @@ QEglFSIntegration::QEglFSIntegration()
 #endif
 }
 
+bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+    case ThreadedPixmaps: return true;
+    default: return QPlatformIntegration::hasCapability(cap);
+    }
+}
+
 QPixmapData *QEglFSIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
 #ifdef QEGL_EXTRA_DEBUG

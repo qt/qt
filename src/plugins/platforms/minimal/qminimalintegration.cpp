@@ -56,6 +56,14 @@ QMinimalIntegration::QMinimalIntegration()
     mScreens.append(mPrimaryScreen);
 }
 
+bool QMinimalIntegration::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+    case ThreadedPixmaps: return true;
+    default: return QPlatformIntegration::hasCapability(cap);
+    }
+}
+
 QPixmapData *QMinimalIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
     return new QRasterPixmapData(type);
