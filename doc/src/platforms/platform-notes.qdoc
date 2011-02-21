@@ -735,9 +735,9 @@
     \row    \o QtCore
             \o \c AllFiles when \l{http://developer.symbian.org/wiki/index.php/Capabilities_%28Symbian_Signed%29/AllFiles_Capability}{accessing specific areas.}
     \row    \o QtDeclarative
-            \o \c NetworkServices is automatically added for this module.
+            \o \c NetworkServices is automatically added for this module if no capabilities are explicitly specified.
     \row    \o QtNetwork
-            \o \c NetworkServices is automatically added for this module.
+            \o \c NetworkServices is automatically added for this module if no capabilities are explicitly specified.
     \row    \o QtNetwork
             \o \c ReadUserData is required to include all the phone's SSL certificates in the system's default CA certificate list
                   (for example those added by the user or stored in the SIM card),
@@ -745,7 +745,7 @@
     \row    \o QtMultiMedia
             \o \c UserEnvironment if QAudioInput is used.
     \row    \o QtWebkit
-            \o \c NetworkServices is automatically added for this module.
+            \o \c NetworkServices is automatically added for this module if no capabilities are explicitly specified.
     \endtable
 
     \note Some modules rely on other modules. E.g. QtWebkit and QtDeclarative
