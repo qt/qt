@@ -48,10 +48,14 @@ static void usage()
 {
     qWarning("Usage: distfieldgen [options] <font_filename>");
     qWarning(" ");
+    qWarning("Distfieldgen generates distance-field renderings of the provided font file,");
+    qWarning("one for each font family/style it contains.");
+    qWarning("Unless the QT_QML_DISTFIELDDIR environment variable is set, the renderings are");
+    qWarning("saved in the fonts/distancefields directory where the Qt libraries are located.");
+    qWarning("You can also override the output directory with the -d option.");
+    qWarning(" ");
     qWarning(" options:");
     qWarning("  -d <directory>................................ output directory");
-    qWarning("  -b............................................ set bold");
-    qWarning("  -i............................................ set italic");
 
     qWarning(" ");
     exit(1);
