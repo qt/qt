@@ -203,6 +203,7 @@ void QDeclarativeAbstractAnimation::setRunning(bool r)
 
     d->running = r;
     if (d->running) {
+        bool supressStart = false;
         if (d->alwaysRunToEnd && d->loopCount != 1
             && qtAnimation()->state() == QAbstractAnimation::Running) {
             //we've restarted before the final loop finished; restore proper loop count
@@ -210,6 +211,7 @@ void QDeclarativeAbstractAnimation::setRunning(bool r)
                 qtAnimation()->setLoopCount(d->loopCount);
             else
                 qtAnimation()->setLoopCount(qtAnimation()->currentLoop() + d->loopCount);
+            supressStart = true;    //we want the animation to continue, rather than restart
         }
 
         if (!d->connectedTimeLine) {
@@ -217,7 +219,8 @@ void QDeclarativeAbstractAnimation::setRunning(bool r)
                              this, SLOT(timelineComplete()));
             d->connectedTimeLine = true;
         }
-        d->commence();
+        if (!supressStart)
+            d->commence();
         emit started();
     } else {
         if (d->alwaysRunToEnd) {
