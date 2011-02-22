@@ -131,7 +131,7 @@ QDeclarativeCustomParserNodePrivate::fromProperty(QDeclarativeParser::Property *
             prop.d->values << QVariant::fromValue(props.at(ii));
     } else {
         for(int ii = 0; ii < p->values.count(); ++ii) {
-            Value *v = p->values.at(ii);
+            QDeclarativeParser::Value *v = p->values.at(ii);
             v->type = QDeclarativeParser::Value::Literal;
 
             if(v->object) {
