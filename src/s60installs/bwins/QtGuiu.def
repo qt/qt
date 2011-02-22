@@ -12950,4 +12950,6 @@ EXPORTS
 	?dynamicPageCount@QTextDocumentLayout@@QBEHXZ @ 12949 NONAME ; int QTextDocumentLayout::dynamicPageCount(void) const
 	?setWordSelectionEnabled@QTextControl@@QAEX_N@Z @ 12950 NONAME ; void QTextControl::setWordSelectionEnabled(bool)
 	?isWordSelectionEnabled@QTextControl@@QBE_NXZ @ 12951 NONAME ; bool QTextControl::isWordSelectionEnabled(void) const
+	?assignedInputContext@QWidgetPrivate@@QBEPAVQInputContext@@XZ @ 12952 NONAME ; class QInputContext * QWidgetPrivate::assignedInputContext(void) const
+	?updateMicroFocus@QLineControl@@IAEXXZ @ 12953 NONAME ; void QLineControl::updateMicroFocus(void)
 

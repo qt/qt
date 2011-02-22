@@ -12145,4 +12145,6 @@ EXPORTS
 	_ZTV19QTextDocumentLayout @ 12144 NONAME
 	_ZN12QTextControl23setWordSelectionEnabledEb @ 12145 NONAME
 	_ZNK12QTextControl22isWordSelectionEnabledEv @ 12146 NONAME
+	_ZN12QLineControl16updateMicroFocusEv @ 12147 NONAME
+	_ZNK14QWidgetPrivate20assignedInputContextEv @ 12148 NONAME
 
