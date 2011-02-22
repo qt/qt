@@ -75,7 +75,7 @@ public:
     QSqlRecord record(const QVector<QVariant> &values) const;
 
     bool exec(const QString &stmt, bool prepStatement,
-              const QSqlRecord &rec, const QSqlRecord &whereValues = QSqlRecord());
+              const QSqlRecord &rec, const QSqlRecord &whereValues);
     virtual void revertCachedRow(int row);
     void revertInsertedRow();
     bool setRecord(int row, const QSqlRecord &record);

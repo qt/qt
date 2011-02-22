@@ -38,7 +38,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#define DBUS_API_SUBJECT_TO_CHANGE
 #include <QtCore/QtCore>
 #include <QtTest/QtTest>
 #include <QtDBus/QtDBus>
@@ -46,6 +45,8 @@
 
 #include "common.h"
 #include <limits>
+
+#include <dbus/dbus.h>
 
 static const char serviceName[] = "com.trolltech.autotests.qpong";
 static const char objectPath[] = "/com/trolltech/qpong";
@@ -88,66 +89,59 @@ private slots:
     void sendCallErrors_data();
     void sendCallErrors();
 
+    void receiveUnknownType_data();
+    void receiveUnknownType();
+
 private:
     QProcess proc;
+};
+
+class QDBusMessageSpy: public QObject
+{
+    Q_OBJECT
+public slots:
+    Q_SCRIPTABLE int theSlot(const QDBusMessage &msg)
+    {
+        list << msg;
+        return 42;
+    }
+public:
+    QList<QDBusMessage> list;
 };
 
 struct UnregisteredType { };
 Q_DECLARE_METATYPE(UnregisteredType)
 
-class WaitForQPong: public QObject
-{
-    Q_OBJECT
-public:
-    WaitForQPong();
-    bool ok();
-public Q_SLOTS:
-    void ownerChange(const QString &name)
-    {
-        if (name == serviceName)
-            loop.quit();
-    }
-
-private:
-    QEventLoop loop;
-};
-
-WaitForQPong::WaitForQPong()
-{
-    QDBusConnection con = QDBusConnection::sessionBus();
-    if (!ok()) {
-        connect(con.interface(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
-                SLOT(ownerChange(QString)));
-        QTimer::singleShot(2000, &loop, SLOT(quit()));
-        loop.exec();
-    }
-}
-
-bool WaitForQPong::ok()
-{
-    return QDBusConnection::sessionBus().isConnected() &&
-        QDBusConnection::sessionBus().interface()->isServiceRegistered(serviceName);
-}
-
 void tst_QDBusMarshall::initTestCase()
 {
     commonInit();
+    QDBusConnection con = QDBusConnection::sessionBus();
 #ifdef Q_OS_WIN
     proc.start("qpong");
 #else
     proc.start("./qpong/qpong");
 #endif
-    QVERIFY(proc.waitForStarted());
+    if (!QDBusConnection::sessionBus().interface()->isServiceRegistered(serviceName)) {
+        QVERIFY(proc.waitForStarted());
 
-    WaitForQPong w;
-    QVERIFY(w.ok());
-    //QTest::qWait(2000);
+        QVERIFY(con.isConnected());
+        con.connect("org.freedesktop.DBus", QString(), "org.freedesktop.DBus", "NameOwnerChanged",
+                    QStringList() << serviceName << QString(""), QString(),
+                    &QTestEventLoop::instance(), SLOT(exitLoop()));
+        QTestEventLoop::instance().enterLoop(2);
+        QVERIFY(!QTestEventLoop::instance().timeout());
+        QVERIFY(QDBusConnection::sessionBus().interface()->isServiceRegistered(serviceName));
+        con.disconnect("org.freedesktop.DBus", QString(), "org.freedesktop.DBus", "NameOwnerChanged",
+                       QStringList() << serviceName << QString(""), QString(),
+                       &QTestEventLoop::instance(), SLOT(exitLoop()));
+    }
 }
 
 void tst_QDBusMarshall::cleanupTestCase()
 {
     proc.close();
-    proc.kill();
+    proc.terminate();
+    proc.waitForFinished(200);
 }
 
 void tst_QDBusMarshall::sendBasic_data()
@@ -700,6 +694,8 @@ void tst_QDBusMarshall::sendBasic()
     msg << value;
 
     QDBusMessage reply = con.call(msg);
+    QVERIFY2(reply.type() == QDBusMessage::ReplyMessage,
+             qPrintable(reply.errorName() + ": " + reply.errorMessage()));
     //qDebug() << reply;
 
     QCOMPARE(reply.arguments().count(), msg.arguments().count());
@@ -936,6 +932,146 @@ void tst_QDBusMarshall::sendCallErrors()
     QCOMPARE(reply.type(), QDBusMessage::ErrorMessage);
     QTEST(reply.errorName(), "errorName");
     QCOMPARE(reply.errorMessage(), errorMsg);
+}
+
+void tst_QDBusMarshall::receiveUnknownType_data()
+{
+    QTest::addColumn<int>("receivedTypeId");
+    QTest::newRow("in-call") << qMetaTypeId<void*>();
+    QTest::newRow("type-variant") << qMetaTypeId<QDBusVariant>();
+    QTest::newRow("type-array") << qMetaTypeId<QDBusArgument>();
+    QTest::newRow("type-struct") << qMetaTypeId<QDBusArgument>();
+    QTest::newRow("type-naked") << qMetaTypeId<void *>();
+}
+
+struct DisconnectRawDBus {
+    static void cleanup(DBusConnection *connection)
+    {
+        if (!connection)
+            return;
+        dbus_connection_close(connection);
+        dbus_connection_unref(connection);
+    }
+};
+template <typename T, void (*unref)(T *)> struct GenericUnref
+{
+    static void cleanup(T *type)
+    {
+        if (!type) return;
+        unref(type);
+    }
+};
+
+// use these scoped types to avoid memory leaks if QVERIFY or QCOMPARE fails
+typedef QScopedPointer<DBusConnection, DisconnectRawDBus> ScopedDBusConnection;
+typedef QScopedPointer<DBusMessage, GenericUnref<DBusMessage, dbus_message_unref> > ScopedDBusMessage;
+typedef QScopedPointer<DBusPendingCall, GenericUnref<DBusPendingCall, dbus_pending_call_unref> > ScopedDBusPendingCall;
+
+void tst_QDBusMarshall::receiveUnknownType()
+{
+#ifndef DBUS_TYPE_UNIX_FD
+    QSKIP("Your system's D-Bus library is too old for this test", SkipAll);
+#else
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
+
+    // this needs to be implemented in raw
+    // open a new connection to the bus daemon
+    DBusError error;
+    dbus_error_init(&error);
+    ScopedDBusConnection rawcon(dbus_bus_get_private(DBUS_BUS_SESSION, &error));
+    QVERIFY2(rawcon.data(), error.name);
+
+    // check if this bus supports passing file descriptors
+    if (!dbus_connection_can_send_type(rawcon.data(), DBUS_TYPE_UNIX_FD))
+        QSKIP("Your session bus does not allow sending Unix file descriptors", SkipAll);
+
+    if (qstrcmp(QTest::currentDataTag(), "in-call") == 0) {
+        // create a call back to us containing a file descriptor
+        QDBusMessageSpy spy;
+        con.registerObject("/spyObject", &spy, QDBusConnection::ExportAllSlots);
+        ScopedDBusMessage msg(dbus_message_new_method_call(con.baseService().toLatin1(), "/spyObject", NULL, "theSlot"));
+
+        int fd = fileno(stdout);
+        dbus_message_append_args(msg.data(), DBUS_TYPE_UNIX_FD, &fd, DBUS_TYPE_INVALID);
+
+        // try to send to us
+        DBusPendingCall *pending_ptr;
+        dbus_connection_send_with_reply(rawcon.data(), msg.data(), &pending_ptr, 1000);
+        ScopedDBusPendingCall pending(pending_ptr);
+
+        // check that it got sent
+        while (dbus_connection_dispatch(rawcon.data()) == DBUS_DISPATCH_DATA_REMAINS)
+            ;
+
+        // now spin our event loop. We don't catch this call, so let's get the reply
+        QEventLoop loop;
+        QTimer::singleShot(200, &loop, SLOT(quit()));
+        loop.exec();
+
+        // now try to receive the reply
+        dbus_pending_call_block(pending.data());
+
+        // check that the spy received what it was supposed to receive
+        QCOMPARE(spy.list.size(), 1);
+        QCOMPARE(spy.list.at(0).arguments().size(), 1);
+        QFETCH(int, receivedTypeId);
+        QCOMPARE(spy.list.at(0).arguments().at(0).userType(), receivedTypeId);
+
+        msg.reset(dbus_pending_call_steal_reply(pending.data()));
+        QVERIFY(msg);
+        QCOMPARE(dbus_message_get_type(msg.data()), DBUS_MESSAGE_TYPE_METHOD_RETURN);
+        QCOMPARE(dbus_message_get_signature(msg.data()), DBUS_TYPE_INT32_AS_STRING);
+
+        int retval;
+        QVERIFY(dbus_message_get_args(msg.data(), &error, DBUS_TYPE_INT32, &retval, DBUS_TYPE_INVALID));
+        QCOMPARE(retval, 42);
+    } else {
+        // create a signal that we'll emit
+        static const char signalName[] = "signalName";
+        static const char interfaceName[] = "local.interface.name";
+        ScopedDBusMessage msg(dbus_message_new_signal("/", interfaceName, signalName));
+        con.connect(dbus_bus_get_unique_name(rawcon.data()), QString(), interfaceName, signalName, &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+        QDBusMessageSpy spy;
+        con.connect(dbus_bus_get_unique_name(rawcon.data()), QString(), interfaceName, signalName, &spy, SLOT(theSlot(QDBusMessage)));
+
+        DBusMessageIter iter;
+        dbus_message_iter_init_append(msg.data(), &iter);
+        int fd = fileno(stdout);
+
+        if (qstrcmp(QTest::currentDataTag(), "type-naked") == 0) {
+            // send naked
+            dbus_message_iter_append_basic(&iter, DBUS_TYPE_UNIX_FD, &fd);
+        } else {
+            DBusMessageIter subiter;
+            if (qstrcmp(QTest::currentDataTag(), "type-variant") == 0)
+                dbus_message_iter_open_container(&iter, DBUS_TYPE_VARIANT, DBUS_TYPE_UNIX_FD_AS_STRING, &subiter);
+            else if (qstrcmp(QTest::currentDataTag(), "type-array") == 0)
+                dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, DBUS_TYPE_UNIX_FD_AS_STRING, &subiter);
+            else if (qstrcmp(QTest::currentDataTag(), "type-struct") == 0)
+                dbus_message_iter_open_container(&iter, DBUS_TYPE_STRUCT, 0, &subiter);
+            dbus_message_iter_append_basic(&subiter, DBUS_TYPE_UNIX_FD, &fd);
+            dbus_message_iter_close_container(&iter, &subiter);
+        }
+
+        // send it
+        dbus_connection_send(rawcon.data(), msg.data(), 0);
+
+        // check that it got sent
+        while (dbus_connection_dispatch(rawcon.data()) == DBUS_DISPATCH_DATA_REMAINS)
+            ;
+
+        // now let's see what happens
+        QTestEventLoop::instance().enterLoop(1);
+        QVERIFY(!QTestEventLoop::instance().timeout());
+        QCOMPARE(spy.list.size(), 1);
+        QCOMPARE(spy.list.at(0).arguments().count(), 1);
+        QFETCH(int, receivedTypeId);
+        //qDebug() << spy.list.at(0).arguments().at(0).typeName();
+        QCOMPARE(spy.list.at(0).arguments().at(0).userType(), receivedTypeId);
+    }
+#endif
 }
 
 QTEST_MAIN(tst_QDBusMarshall)

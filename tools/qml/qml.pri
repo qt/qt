@@ -19,15 +19,15 @@ SOURCES += $$PWD/qmlruntime.cpp \
 RESOURCES = $$PWD/browser/browser.qrc \
             $$PWD/startup/startup.qrc
 
-symbian: {
-    contains(QT_CONFIG, s60): {
+symbian {
+    contains(QT_CONFIG, s60) {
         LIBS += -lavkon -lcone
     }
     !contains(S60_VERSION, 3.1):!contains(S60_VERSION, 3.2) {
         LIBS += -lsensrvclient -lsensrvutil
         SOURCES += $$PWD/deviceorientation_symbian.cpp
     }
-    FORMS += $$PWD/recopts.ui \
+    FORMS = $$PWD/recopts.ui \
              $$PWD/proxysettings.ui
 } else:maemo5 {
     QT += dbus

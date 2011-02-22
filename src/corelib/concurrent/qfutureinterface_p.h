@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include <QtCore/qdatetime.h>
+#include <QtCore/qelapsedtimer.h>
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qwaitcondition.h>
@@ -137,8 +137,7 @@ public:
     int m_progressMinimum;
     int m_progressMaximum;
     QFutureInterfaceBase::State state;
-    QTime progressTime;
-    bool progressTimeStarted;
+    QElapsedTimer progressTime;
     QWaitCondition pausedWaitCondition;
     int pendingResults;
     QtConcurrent::ResultStoreBase m_results;

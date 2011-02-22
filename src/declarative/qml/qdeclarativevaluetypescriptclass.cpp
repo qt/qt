@@ -184,7 +184,7 @@ void QDeclarativeValueTypeScriptClass::setProperty(Object *obj, const Identifier
             newBinding->setSourceLocation(ctxtInfo.fileName(), ctxtInfo.functionStartLineNumber());
             QDeclarativeProperty prop = QDeclarativePropertyPrivate::restore(cacheData, valueTypeData, ref->object, ctxt);
             newBinding->setTarget(prop);
-            if (newBinding->expression().contains("this"))
+            if (newBinding->expression().contains(QLatin1String("this")))
                 newBinding->setEvaluateFlags(newBinding->evaluateFlags() | QDeclarativeBinding::RequiresThisObject);
         }
 

@@ -780,6 +780,7 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
                     systemCerts.append(QSslCertificate::fromData(rawCert, QSsl::Der));
                 }
             }
+            CFRelease(cfCerts);
         }
         else {
            // no detailed error handling here
