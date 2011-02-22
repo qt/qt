@@ -55,7 +55,7 @@ public:
     static QScriptContext *get(QScriptContextPrivate *d) { return d->q_func(); }
 
     inline QScriptContextPrivate(QScriptEnginePrivate *engine); // the global context (member of QScriptEnginePrivate)
-    inline QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args); // native function context (on the stack)
+    inline QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args, v8::Handle<v8::Value> callee = v8::Handle<v8::Value>()); // native function context (on the stack)
     inline QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::AccessorInfo *accessor); // native acessors (on the stack)
     inline QScriptContextPrivate(QScriptEnginePrivate *engine, v8::Handle<v8::Context> context); // from QScriptEngine::pushContext
     inline QScriptContextPrivate(QScriptContextPrivate *parent, v8::Handle<v8::StackFrame> frame); // internal, for js frame (allocated in parentContext())
@@ -91,6 +91,7 @@ public:
     v8::Persistent<v8::StackFrame> frame; //only for js frames
     QScriptSharedDataPointer<QScriptValuePrivate> argsObject;
     v8::Persistent<v8::Object> m_thisObject;
+    v8::Persistent<v8::Value> m_callee;
     bool hasArgumentGetter;
 
     static const int stackTraceLimit = 100;

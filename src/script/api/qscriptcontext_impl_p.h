@@ -49,10 +49,11 @@ inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine
     Q_ASSERT(engine);
 }
 
-inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args)
+inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args, v8::Handle<v8::Value> callee)
     : q_ptr(this), engine(engine), arguments(args), accessorInfo(0),
       context(v8::Persistent<v8::Context>::New(v8::Context::NewFunctionContext())),
-      parent(engine->setCurrentQSContext(this)), previous(0), hasArgumentGetter(false)
+      parent(engine->setCurrentQSContext(this)), previous(0),
+      m_callee(v8::Persistent<v8::Value>::New(callee)), hasArgumentGetter(false)
 {
     Q_ASSERT(engine);
     context->Enter();
@@ -91,6 +92,7 @@ inline QScriptContextPrivate::~QScriptContextPrivate()
         delete previous;
 
     m_thisObject.Dispose();
+    m_callee.Dispose();
 
     if (!parent)
         return;
@@ -191,6 +193,8 @@ inline void QScriptContextPrivate::setThisObject(QScriptValuePrivate *newThis)
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::callee() const
 {
+    if (!m_callee.IsEmpty())
+        return new QScriptValuePrivate(engine, m_callee);
     if (arguments)
         return new QScriptValuePrivate(engine, arguments->Callee());
 
