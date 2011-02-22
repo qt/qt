@@ -512,10 +512,6 @@ bool QScriptEnginePrivate::metaTypeFromJS(v8::Handle<v8::Value> value, int type,
         return metaTypeFromJS(value, type, data);
     }
 
-    if (!name.isEmpty()) {
-        qWarning("QScriptEngine::convert: unable to convert value to type `%s'",
-                 name.constData());
-    }
     return false;
 }
 
