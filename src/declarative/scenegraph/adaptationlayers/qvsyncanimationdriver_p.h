@@ -21,7 +21,6 @@ public:
     void stopped();
 
 protected:
-    bool event(QEvent *e);
     bool eventFilter(QObject *object, QEvent *event);
 };
 
