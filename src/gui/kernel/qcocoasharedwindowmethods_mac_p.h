@@ -89,6 +89,8 @@ QT_END_NAMESPACE
     QWidget *widget = [self QT_MANGLE_NAMESPACE(qt_qwidget)];
     if (!widget)
         return NO; // This should happen only for qt_root_win
+    if (QApplicationPrivate::isBlockedByModal(widget))
+        return NO;
 
     bool isToolTip = (widget->windowType() == Qt::ToolTip);
     bool isPopup = (widget->windowType() == Qt::Popup);
@@ -100,6 +102,8 @@ QT_END_NAMESPACE
     QWidget *widget = [self QT_MANGLE_NAMESPACE(qt_qwidget)];
     if (!widget)
         return NO; // This should happen only for qt_root_win
+    if ([self isSheet])
+        return NO;
 
     bool isToolTip = (widget->windowType() == Qt::ToolTip);
     bool isPopup = (widget->windowType() == Qt::Popup);
