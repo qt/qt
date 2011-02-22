@@ -44,6 +44,7 @@
 #include <qapplication.h>
 #include <qfileinfo.h>
 #include <qmath.h>
+#include <qlibraryinfo.h>
 
 #if defined(Q_WS_X11) || defined(Q_WS_QWS) || (defined(Q_WS_S60) && !defined(QT_NO_FREETYPE))
 #  define USE_FREETYPE_ENGINE
@@ -158,19 +159,13 @@ static QImage renderDistanceField(const QImage &in)
     return df;
 }
 
-QHash<QFontEngine::FaceId, QString> DistanceFieldFontAtlas::m_distfield_images;
-QHash<QFontEngine::FaceId, QSGTextureRef> DistanceFieldFontAtlas::m_textures;
+QHash<QString, bool> DistanceFieldFontAtlas::m_distfield_availability;
+QHash<QString, QSGTextureRef> DistanceFieldFontAtlas::m_textures;
 
 DistanceFieldFontAtlas::DistanceFieldFontAtlas(const QFont &font)
 {
     m_font = font;
     m_fontEngine = QFontPrivate::get(m_font)->engineForScript(QUnicodeTables::Common);
-    QFontEngine *realEngine = m_fontEngine;
-    if (realEngine->type() == QFontEngine::Multi) {
-        QFontEngineMulti *fem = static_cast<QFontEngineMulti *>(realEngine);
-        realEngine = fem->engine(0);
-    }
-    m_faceId = realEngine->faceId();
     qt_disableFontHinting(m_font);
 
     QFont referenceFont = m_font;
@@ -181,22 +176,26 @@ DistanceFieldFontAtlas::DistanceFieldFontAtlas(const QFont &font)
         QFontEngineMulti *fem = static_cast<QFontEngineMulti *>(m_referenceFontEngine);
         m_referenceFontEngine = fem->engine(0);
     }
+
+    QString basename = m_fontEngine->fontDef.family;
+    basename.remove(QLatin1String(" "));
+    QString italic = m_fontEngine->fontDef.style == QFont::StyleNormal ? QLatin1String("") : QLatin1String("i");
+    QString bold = m_fontEngine->fontDef.weight > QFont::Normal ? QLatin1String("b") : QLatin1String("");
+    m_distanceFieldFileName = basename + bold + italic + QLatin1String(".png");
 }
 
 bool DistanceFieldFontAtlas::distanceFieldAvailable() const
 {
-    QHash<QFontEngine::FaceId, QString>::iterator available = m_distfield_images.find(m_faceId);
-    if (available == m_distfield_images.end()) {
-        QFileInfo fontInfo(m_faceId.filename);
-        QString distFieldFile = QString("%1/%2.png").arg(fontInfo.absolutePath()).arg(fontInfo.baseName());
+    QHash<QString, bool>::iterator available = m_distfield_availability.find(m_distanceFieldFileName);
+    if (available == m_distfield_availability.end()) {
+        QString distFieldFile = QString(QLatin1String("%1/%2")).arg(distanceFieldDir()).arg(m_distanceFieldFileName);
         QFileInfo distFieldInfo(distFieldFile);
-        if (!distFieldInfo.exists()) {
-            distFieldFile.clear();
-            qWarning("Warning: distance-field rendering of font '%s' is not available", m_faceId.filename.constData());
-        }
-        available = m_distfield_images.insert(m_faceId, distFieldFile);
+        bool exists = distFieldInfo.exists();
+        if (!exists)
+            qWarning("Warning: distance-field rendering '%s' does not exist", distFieldFile.toLatin1().constData());
+        available = m_distfield_availability.insert(m_distanceFieldFileName, exists);
     }
-    return !available.value().isEmpty();
+    return available.value();
 }
 
 QSGTextureRef DistanceFieldFontAtlas::texture()
@@ -204,10 +203,10 @@ QSGTextureRef DistanceFieldFontAtlas::texture()
     if (!distanceFieldAvailable())
         return QSGTextureRef();
 
-    QHash<QFontEngine::FaceId, QSGTextureRef>::iterator tex = m_textures.find(m_faceId);
+    QHash<QString, QSGTextureRef>::iterator tex = m_textures.find(m_distanceFieldFileName);
     if (tex == m_textures.end()) {
         QImage distFieldImage = distanceFieldAtlas();
-        tex = m_textures.insert(m_faceId, uploadDistanceField(distFieldImage));
+        tex = m_textures.insert(m_distanceFieldFileName, uploadDistanceField(distFieldImage));
     }
 
     return tex.value();
@@ -291,7 +290,7 @@ QImage DistanceFieldFontAtlas::distanceFieldAtlas() const
     if (!distanceFieldAvailable())
         return QImage();
 
-    return QImage(m_distfield_images.value(m_faceId));
+    return QImage(QString(QLatin1String("%1/%2")).arg(distanceFieldDir()).arg(m_distanceFieldFileName));
 }
 
 bool DistanceFieldFontAtlas::useDistanceFieldForFont(const QFont &font)
@@ -337,4 +336,22 @@ QSGTextureRef DistanceFieldFontAtlas::uploadDistanceField(const QImage &image)
 
     QSGTextureRef ref(texture);
     return ref;
+}
+
+QString DistanceFieldFontAtlas::distanceFieldDir() const
+{
+    QString distfieldpath = QString::fromLocal8Bit(qgetenv("QT_QML_DISTFIELDDIR"));
+    if (distfieldpath.isEmpty()) {
+#ifndef QT_NO_SETTINGS
+        distfieldpath = QLibraryInfo::location(QLibraryInfo::LibrariesPath);
+        distfieldpath += QLatin1String("/fonts/distancefields");
+#endif
+    }
+
+    return distfieldpath;
+}
+
+QString DistanceFieldFontAtlas::distanceFieldFileName() const
+{
+    return m_distanceFieldFileName;
 }
