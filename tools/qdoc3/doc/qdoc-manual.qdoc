@@ -4702,120 +4702,102 @@
     \target macro-command
     \section1 \\macro 
 
-    The \\macro command allows you to document a C++ macro.
+    The \\macro command is for documententin a C++ macro. The argument
+    is the macro in one of three styles: function-like macros like
+    Q_ASSERT(), declaration-style macros like Q_PROPERTY(), and macros
+    without parentheses like Q_OBJECT.
 
-           The command follows \l {topic argument} {the general
-           topic command convention} for the argument.
+    The \\macro comment must contain a \l {relates-command}
+    {\\relates} command that attaches the macro comment to a class,
+    header file, or namespace. Otherwise, the documentation will be
+    lost. Here are three example macro comments followed by what they
+    might look like in \c {qtglobal.html} or \c {qobject.html}:
 
-           QDoc recognizes three different macro syntax: function-like
-           macros like Q_ASSERT(), declaration-style macros like
-           Q_PROPERTY() and macros without parentheses like Q_OBJECT.
+    \code
+    / *!
+        \macro void Q_ASSERT(bool test)
+        \relates <QtGlobal>
 
-           The \\macro command must be followed by a \l
-           {relates-command} {\\relates} command which attaches the
-           documentation to that of a related class, header file. or
-           namespace. Otherwise the documentation will be lost.
+        Prints a warning message containing the source code
+        file name and line number if \a test is false.
 
-           For example:
+        ...
 
-           \code
-           / *!
-               \macro void Q_ASSERT(bool test)
-               \relates <QtGlobal>
+        \sa Q_ASSERT_X(), qFatal(), {Debugging Techniques}
+    * /
+    \endcode
 
-               Prints a warning message containing the source code
-               file name and line number if \a test is false.
+    \quotation
+        \raw HTML
+        <h3>void Q_ASSERT ( bool <i>test</i> )</h3>
+        \endraw
 
-               ...
+        Prints a warning message containing the source code
+        file name and line number if \a test is false.
 
-               \sa Q_ASSERT_X(), qFatal(), {Debugging Techniques}
-           * /
-           \endcode
+        ...
 
-           QDoc renders this as:
+        See also Q_ASSERT_X(), qFatal() and \l {Debugging Techniques}.
+ 
+   \endquotation
 
-           \quotation
-               \raw HTML
-               <h3>void Q_ASSERT ( bool <i>test</i> )</h3>
-               \endraw
+    \code
+    / *!
+        \macro Q_PROPERTY(...)
+        \relates QObject
 
-               Prints a warning message containing the source code
-               file name and line number if \a test is false.
+        This macro declares a QObject property. The syntax is:
 
-               ...
+        ...
 
-               See also Q_ASSERT_X(), qFatal() and \l {Debugging
-               Techniques}.
-           \endquotation
+        \sa {Qt's Property System}
+    * /
+    \endcode
 
-           in qtglobal.html. And
+    \quotation
+        \raw HTML
+        <h3>Q_PROPERTY ( ... )</h3>
+        \endraw
 
-           \code
-           / *!
-               \macro Q_PROPERTY(...)
-               \relates QObject
+        This macro declares a QObject property. The syntax is:
 
-               This macro declares a QObject property. The syntax is:
+        ...
 
-               ...
+        See also \l {Qt's Property System}.
+    \endquotation
 
-               \sa {Qt's Property System}
-           * /
-           \endcode
+    \code
+    / *!
+        \macro Q_OBJECT
+        \relates QObject
 
-           QDoc renders this as:
+        The Q_OBJECT macro must appear in the private section
+        of a class definition that declares its own signals and
+        slots or that uses other services provided by Qt's
+        meta-object system.
 
-           \quotation
-               \raw HTML
-               <h3>Q_PROPERTY ( ... )</h3>
-               \endraw
+        ...
 
-               This macro declares a QObject property. The syntax is:
+        \sa {Meta-Object System}, {Signals and Slots}, {Qt's
+        Property System}
+    * /
+    \endcode
 
-               ...
+    \quotation
+        \raw HTML
+        <h3>Q_OBJECT</h3>
+        \endraw
 
-               See also \l {Qt's Property System}.
-           \endquotation
+        The Q_OBJECT macro must appear in the private section
+        of a class definition that declares its own signals and
+        slots or that uses other services provided by Qt's
+        meta-object system.
 
-           in qobject.html. And
+        ...
 
-           \code
-           / *!
-               \macro Q_OBJECT
-               \relates QObject
-
-               The Q_OBJECT macro must appear in the private section
-               of a class definition that declares its own signals and
-               slots or that uses other services provided by Qt's
-               meta-object system.
-
-               ...
-
-               \sa {Meta-Object System}, {Signals and Slots}, {Qt's
-               Property System}
-           * /
-           \endcode
-
-           QDoc renders this as:
-
-           \quotation
-               \raw HTML
-               <h3>Q_OBJECT</h3>
-               \endraw
-
-               The Q_OBJECT macro must appear in the private section
-               of a class definition that declares its own signals and
-               slots or that uses other services provided by Qt's
-               meta-object system.
-
-               ...
-
-               See also \l {Meta-Object System}, \l {Signals &
-               Slots} and \l {Qt's Property System}.
-           \endquotation
-
-           in qobject.html.
-
+        See also \l {Meta-Object System}, \l {Signals &
+        Slots} and \l {Qt's Property System}.
+    \endquotation
 
     \target module-command
     \section1 \\module 
