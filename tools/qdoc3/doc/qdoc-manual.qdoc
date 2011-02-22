@@ -4397,7 +4397,8 @@
     * /
     \endcode
 
-    QDoc renders this enum type in \c {qt.html} something like this:
+    Note the inclusion of the namespace qualifier. QDoc will render
+    this enum type in \c {qt.html} something like this:
 
            \quotation
            \raw HTML
@@ -4445,109 +4446,94 @@
     \target example-command
     \section1 \\example 
 
-    The \\example command allows you to document an example.
+    The \\example command is for documenting an example. The argument
+    is the example's path relative to omne of the paths listed in the
+    \l {exampledirs-variable} {exampledirs} variable in the QDoc
+    configuration file.
 
-           The command follows \l {topic argument} {the general
-           topic command convention} for the argument. In particular
-           the command's argument is the example's path relative to
-           the paths listed in the \l {exampledirs-variable}
-           {exampledirs} configuration variable.
+    The documentation page will be output to \c {path-to-example}.html.  
+    QDoc will add a list of all the example's source files at the top 
+    of the page.
 
-           The documentation will be located in \e
-           {path-to-example}.html, and QDoc will add a list of all the
-           example files at the top of this documentation page.
+    For example, if \l {exampledirs-variable} {exampledirs} contains
+    \c $QTDIR/examples/widgets/imageviewer, then
 
-           For example, if \l {exampledirs-variable} {exampledirs}
-           contains \c $QTDIR/examples/widgets/imageviewer, then
+    \code
+    / *!
+        \example widgets/imageviewer
+        \title ImageViewer Example
+        \subtitle
 
-           \code
-           / *!
-               \example widgets/imageviewer
-               \title ImageViewer Example
-               \subtitle
+        The example shows how to combine QLabel and QScrollArea
+        to display an image.
 
-               The example shows how to combine QLabel and QScrollArea
-               to display an image.
+        ...
+    * /
+    \endcode
 
-               ...
-           * /
-           \endcode
+    QDoc renders this example in widgets-imageviewer.html:
 
-           QDoc renders this as:
+    \quotation
+        \raw HTML
+        <center><h1>Image Viewer Example</h1></center>
+        \endraw
 
-           \quotation
-               \raw HTML
-               <center><h1>Image Viewer Example</h1></center>
-               \endraw
+        Files:
+        \list
+        \o \l{http://qt.nokia.com/doc/4.0/widgets-imageviewer-imageviewer-cpp.html}
+           {widgets/imageviewer/imageviewer.cpp}
+        \o \l{http://qt.nokia.com/doc/4.0/widgets-imageviewer-imageviewer-h.html}
+           {widgets/imageviewer/imageviewer.h}
+        \o \l{http://qt.nokia.com/doc/4.0/widgets-imageviewer-main-cpp.html}
+           {widgets/imageviewer/main.cpp}
+        \endlist
 
-               Files:
-               \list
-               \o \l{http://qt.nokia.com/doc/4.0/widgets-imageviewer-imageviewer-cpp.html}
-                  {widgets/imageviewer/imageviewer.cpp}
-               \o \l{http://qt.nokia.com/doc/4.0/widgets-imageviewer-imageviewer-h.html}
-                  {widgets/imageviewer/imageviewer.h}
-               \o \l{http://qt.nokia.com/doc/4.0/widgets-imageviewer-main-cpp.html}
-                  {widgets/imageviewer/main.cpp}
-               \endlist
+        The example shows how to combine QLabel and QScrollArea
+        to display an image.
 
-               The example shows how to combine QLabel and QScrollArea
-               to display an image.
-
-               ...
-           \endquotation
-
-           in widgets-imageviewer.html.
-
+        ...
+    \endquotation
 
     \target fn-command
-    \section1 \\fn 
+    \section1 \\fn (function)
 
-    The \\fn command allows you to document a function.
+    The \\fn command is for documenting a function. The argument is
+    the function's signature, including its return type, const-ness,
+    and list of formal arguments with types. If the named function
+    doesn't exist, QDoc emits a warning.
 
-           The command follows \l {topic argument} {the general
-           topic command convention} for the argument. In particular
-           it is important that the return type of the function,
-           whether it is \c const or not and the complete set of
-           arguments with type are included in the argument.  If the
-           referenced function doesn't exist, QDoc will emit a
-           warning.
+    \note The \\fn command is QDoc's default command, i.e. when no
+    topic command can be found in a QDoc comment, QDoc tries to tie
+    the documentation to the following code as if it is the
+    documentation for a function. Hence, it is normally not necessary
+    to include this command when documenting a function, if the
+    function's QDoc comment is written immediately above the function
+    implementation in the \c .cpp file. But it must be present when
+    documenting an inline function in the \c .cpp file that is
+    implemented in the \c .h file. For example:
 
-           Also, the \\fn command is QDoc's default command, i.e. when
-           no topic command can be found within a QDoc comment, QDoc
-           tries to tie the documentation to the following code as if
-           it was function documentation.
+    \code
+    / *!
+        \fn bool QToolBar::isAreaAllowed(Qt::ToolBarArea area) const
 
-           This means that the command normally isn't necessary since
-           the recommended style is to write the function
-           documentation directly before the function implementation
-           in the \c .cpp file. In fact, it should only be used for
-           inline functions implemented in the \c .h file.
+        Returns true if this toolbar is dockable in the given
+        \a area; otherwise returns false.
+    * /
+    \endcode
 
-           For example:
+    QDoc renders this as:
 
-           \code
-           / *!
-               \fn bool QToolBar::isAreaAllowed(Qt::ToolBarArea area) const
+    \quotation
+        \raw HTML
+           <h3>bool QToolBar::isAreaAllowed(Qt::ToolBarArea area) const
+           </h3>
+        \endraw
 
-               Returns true if this toolbar is dockable in the given
-               \a area; otherwise returns false.
-           * /
-           \endcode
+        Returns true if this toolbar is dockable in the given
+        \a area; otherwise returns false.
+    \endquotation
 
-           QDoc renders this as:
-
-           \quotation
-               \raw HTML
-               <h3>bool QToolBar::isAreaAllowed(Qt::ToolBarArea area) const
-               </h3>
-               \endraw
-
-               Returns true if this toolbar is dockable in the given
-               \a area; otherwise returns false.
-           \endquotation
-
-           See also \l {overload-command} {\\overload}.
-
+    See also \l {overload-command} {\\overload}.
 
     \target group-command
     \section1 \\group 
