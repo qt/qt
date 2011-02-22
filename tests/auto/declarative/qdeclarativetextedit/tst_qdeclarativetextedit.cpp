@@ -1970,9 +1970,9 @@ void tst_qdeclarativetextedit::inputContextMouseHandler()
     QDeclarativeTextEdit edit;
     edit.setPos(0, 0);
     edit.setWidth(200);
-    edit.setText(text.mid(0, 5));
+    edit.setText(text.mid(0, 12));
     edit.setPos(0, 0);
-    edit.setCursorPosition(5);
+    edit.setCursorPosition(12);
     edit.setFocus(true);
     scene.addItem(&edit);
     view.show();
@@ -1985,15 +1985,15 @@ void tst_qdeclarativetextedit::inputContextMouseHandler()
     const qreal y = fm.height() / 2;
 
     QPoint position2 = view.mapFromScene(edit.mapToScene(QPointF(fm.width(text.mid(0, 2)), y)));
-    QPoint position4 = view.mapFromScene(edit.mapToScene(QPointF(fm.width(text.mid(0, 4)), y)));
-    QPoint position7 = view.mapFromScene(edit.mapToScene(QPointF(fm.width(text.mid(0, 7)), y)));
-    QPoint position12 = view.mapFromScene(edit.mapToScene(QPointF(fm.width(text.mid(0, 12)), y)));
+    QPoint position8 = view.mapFromScene(edit.mapToScene(QPointF(fm.width(text.mid(0, 8)), y)));
+    QPoint position20 = view.mapFromScene(edit.mapToScene(QPointF(fm.width(text.mid(0, 20)), y)));
+    QPoint position27 = view.mapFromScene(edit.mapToScene(QPointF(fm.width(text.mid(0, 27)), y)));
     QPoint globalPosition2 = view.viewport()->mapToGlobal(position2);
-    QPoint globalPosition4 = view.viewport()->mapToGlobal(position4);
-    QPoint globalPosition7 = view.viewport()->mapToGlobal(position7);
-    QPoint globalPosition12 = view.viewport()->mapToGlobal(position12);
+    QPoint globalposition8 = view.viewport()->mapToGlobal(position8);
+    QPoint globalposition20 = view.viewport()->mapToGlobal(position20);
+    QPoint globalposition27 = view.viewport()->mapToGlobal(position27);
 
-    ic.sendEvent(QInputMethodEvent(text.mid(5), QList<QInputMethodEvent::Attribute>()));
+    ic.sendEvent(QInputMethodEvent(text.mid(12), QList<QInputMethodEvent::Attribute>()));
 
     QTest::mouseDClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, position2);
     QCOMPARE(ic.eventType, QEvent::MouseButtonDblClick);
@@ -2013,56 +2013,56 @@ void tst_qdeclarativetextedit::inputContextMouseHandler()
     QVERIFY(ic.cursor < 0);
     ic.eventType = QEvent::None;
 
-    {   QMouseEvent mv(QEvent::MouseMove, position4, globalPosition4, Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+    {   QMouseEvent mv(QEvent::MouseMove, position8, globalposition8, Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
         QApplication::sendEvent(view.viewport(), &mv); }
     QCOMPARE(ic.eventType, QEvent::None);
 
-    {   QMouseEvent mv(QEvent::MouseMove, position12, globalPosition12, Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+    {   QMouseEvent mv(QEvent::MouseMove, position27, globalposition27, Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
         QApplication::sendEvent(view.viewport(), &mv); }
     QCOMPARE(ic.eventType, QEvent::MouseMove);
-    QCOMPARE(ic.eventPosition, position12);
-    QCOMPARE(ic.eventGlobalPosition, globalPosition12);
+    QCOMPARE(ic.eventPosition, position27);
+        QCOMPARE(ic.eventGlobalPosition, globalposition27);
     QCOMPARE(ic.eventButton, Qt::LeftButton);
     QCOMPARE(ic.eventModifiers, Qt::NoModifier);
-    QCOMPARE(ic.cursor, 7);
+    QVERIFY(ic.cursor >= 14 && ic.cursor <= 16);    // 15 is expected but some platforms may be off by one.
     ic.eventType = QEvent::None;
 
-    QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::NoModifier, position12);
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::NoModifier, position27);
     QCOMPARE(ic.eventType, QEvent::MouseButtonRelease);
-    QCOMPARE(ic.eventPosition, position12);
-    QCOMPARE(ic.eventGlobalPosition, globalPosition12);
+    QCOMPARE(ic.eventPosition, position27);
+    QCOMPARE(ic.eventGlobalPosition, globalposition27);
     QCOMPARE(ic.eventButton, Qt::LeftButton);
     QCOMPARE(ic.eventModifiers, Qt::NoModifier);
-    QCOMPARE(ic.cursor, 7);
+    QVERIFY(ic.cursor >= 14 && ic.cursor <= 16);
     ic.eventType = QEvent::None;
 
     // And in the other direction.
-    QTest::mouseDClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, position12);
+    QTest::mouseDClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, position27);
     QCOMPARE(ic.eventType, QEvent::MouseButtonDblClick);
-    QCOMPARE(ic.eventPosition, position12);
-    QCOMPARE(ic.eventGlobalPosition, globalPosition12);
+    QCOMPARE(ic.eventPosition, position27);
+    QCOMPARE(ic.eventGlobalPosition, globalposition27);
     QCOMPARE(ic.eventButton, Qt::LeftButton);
     QCOMPARE(ic.eventModifiers, Qt::ControlModifier);
-    QCOMPARE(ic.cursor, 7);
+    QVERIFY(ic.cursor >= 14 && ic.cursor <= 16);
     ic.eventType = QEvent::None;
 
-    QTest::mousePress(view.viewport(), Qt::RightButton, Qt::ControlModifier, position12);
+    QTest::mousePress(view.viewport(), Qt::RightButton, Qt::ControlModifier, position27);
     QCOMPARE(ic.eventType, QEvent::MouseButtonPress);
-    QCOMPARE(ic.eventPosition, position12);
-    QCOMPARE(ic.eventGlobalPosition, globalPosition12);
+    QCOMPARE(ic.eventPosition, position27);
+    QCOMPARE(ic.eventGlobalPosition, globalposition27);
     QCOMPARE(ic.eventButton, Qt::RightButton);
     QCOMPARE(ic.eventModifiers, Qt::ControlModifier);
-    QCOMPARE(ic.cursor, 7);
+    QVERIFY(ic.cursor >= 14 && ic.cursor <= 16);
     ic.eventType = QEvent::None;
 
-    {   QMouseEvent mv(QEvent::MouseMove, position7, globalPosition7, Qt::RightButton, Qt::RightButton,Qt::ControlModifier);
+    {   QMouseEvent mv(QEvent::MouseMove, position20, globalposition20, Qt::RightButton, Qt::RightButton,Qt::ControlModifier);
         QApplication::sendEvent(view.viewport(), &mv); }
     QCOMPARE(ic.eventType, QEvent::MouseMove);
-    QCOMPARE(ic.eventPosition, position7);
-    QCOMPARE(ic.eventGlobalPosition, globalPosition7);
+    QCOMPARE(ic.eventPosition, position20);
+    QCOMPARE(ic.eventGlobalPosition, globalposition20);
     QCOMPARE(ic.eventButton, Qt::RightButton);
     QCOMPARE(ic.eventModifiers, Qt::ControlModifier);
-    QCOMPARE(ic.cursor, 2);
+    QVERIFY(ic.cursor >= 7 && ic.cursor <= 9);
     ic.eventType = QEvent::None;
 
     {   QMouseEvent mv(QEvent::MouseMove, position2, globalPosition2, Qt::RightButton, Qt::RightButton,Qt::ControlModifier);
