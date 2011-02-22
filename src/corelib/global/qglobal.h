@@ -460,7 +460,6 @@ namespace QT_NAMESPACE {}
 #  if defined(__INTEL_COMPILER)
 /* Intel C++ also masquerades as GCC 3.2.0 */
 #    define Q_CC_INTEL
-#    define Q_NO_TEMPLATE_FRIENDS
 #  endif
 #  if defined(__clang__)
 /* Clang also masquerades as GCC 4.2.1 */
@@ -761,6 +760,24 @@ namespace QT_NAMESPACE {}
 
 #else
 #  error "Qt has not been tested with this compiler - talk to qt-bugs@trolltech.com"
+#endif
+
+#ifdef Q_CC_INTEL
+#  if __INTEL_COMPILER < 1200
+#    define Q_NO_TEMPLATE_FRIENDS
+#  endif
+#  if defined(__GXX_EXPERIMENTAL_CXX0X__) || defined(__GXX_EXPERIMENTAL_CPP0X__)
+#    if __INTEL_COMPILER >= 1100
+#      define Q_COMPILER_RVALUE_REFS
+#      define Q_COMPILER_EXTERN_TEMPLATES
+#    elif __INTEL_COMPILER >= 1200
+#      define Q_COMPILER_VARIADIC_TEMPLATES
+#      define Q_COMPILER_AUTO_TYPE
+#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
+#      define Q_COMPILER_CLASS_ENUM
+#      define Q_COMPILER_LAMBDA
+#    endif
+#  endif
 #endif
 
 #ifndef Q_PACKED

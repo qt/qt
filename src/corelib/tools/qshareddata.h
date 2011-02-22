@@ -201,8 +201,6 @@ public:
     inline QExplicitlySharedDataPointer(QExplicitlySharedDataPointer &&o) : d(o.d) { o.d = 0; }
     inline QExplicitlySharedDataPointer<T> &operator=(QExplicitlySharedDataPointer<T> &&other)
     { qSwap(d, other.d); return *this; }
-    inline QExplicitlySharedDataPointer &operator=(QSharedDataPointer<T> &&other)
-    { qSwap(d, other.d); return *this; }
 #endif
 
     inline bool operator!() const { return !d; }
