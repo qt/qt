@@ -4,7 +4,7 @@ SOURCES       = main.cpp \
                 mandelbrotwidget.cpp \
                 renderthread.cpp
 
-unix:!mac:!symbian:!vxworks:LIBS += -lm
+unix:!mac:!symbian:!vxworks:!integrity:LIBS += -lm
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/threads/mandelbrot
