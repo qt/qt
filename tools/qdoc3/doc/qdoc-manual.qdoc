@@ -4802,43 +4802,36 @@
     \target module-command
     \section1 \\module 
 
-    The \\module creates a separate page that lists the
-    classes belonging to the module specified by the command's
-    argument.
+    The \\module creates a page that lists the classes belonging to
+    the module specified by the command's argument.  A class included
+    in the module by including the \l {inmodule-command} {\\inmodule}
+    command in the \\class comment.
 
-           The command follows \l {topic argument} {the general
-           topic command convention} for the argument.
+    The \\module command is typically followed by a \l {title-command}
+    {\\title} and a \l {brief-command} {\\brief} command. Each class
+    is listed as a link to the class reference page followed by the
+    text from the class's \l {brief-command} {\\brief} command. For
+    example:
 
-           A class can be related to a module using the \l
-           {inmodule-command} {\\inmodule} command.
+    \code
+    / *!
+        \module QtNetwork
 
-           The \\module command is typically followed by the \l
-           {title-command} {\\title} and \l {brief-command} {\\brief}
-           commands. Each class is listed with a link to the class
-           reference page and a brief description based on the
-           classes' \l {brief-command} {\\brief} texts.
+        \title QtNetwork Module
 
-           For example:
+        \brief The QtNetwork module offers classes that allow
+        you to write TCP/IP clients and servers.
 
-           \code
-           / *!
-               \module QtNetwork
+        The network module provides classes to make network
+        programming easier and portable. It offers both
+        high-level classes such as QHttp and QFtp that
+        implement specific application-level protocols, and
+        lower-level classes such as QTcpSocket, QTcpServer, and
+        QUdpSocket.
+    * /
+    \endcode
 
-               \title QtNetwork Module
-
-               \brief The QtNetwork module offers classes that allow
-               you to write TCP/IP clients and servers.
-
-               The network module provides classes to make network
-               programming easier and portable. It offers both
-               high-level classes such as QHttp and QFtp that
-               implement specific application-level protocols, and
-               lower-level classes such as QTcpSocket, QTcpServer, and
-               QUdpSocket.
-           * /
-           \endcode
-
-           QDoc renders this as:
+    QDoc renders this in \c {qtnetwork.html} something like this:
 
            \quotation
                \raw HTML
@@ -4901,37 +4894,26 @@
 
            \endquotation
 
-           in qtnetwork.html.
-
-           See also \l {inmodule-command} {\\inmodule}
-
+    See also \l {inmodule-command} {\\inmodule}
 
     \target namespace-command
     \section1 \\namespace 
 
-    The \\namespace command allows you to document a C++ namespace.
+    The \\namespace command is for documenting the contents of the C++
+    namespace named as its argument. The documentation outline QDoc
+    generates for a namespace is similar to the outline it generates
+    for a C++ class. For example:
 
-           The command follows \l {topic argument} {the general
-           topic command convention} for the argument.
+    \code
+    / *!
+        \namespace Qt
 
-           QDoc will generate the same additional links and
-           documentation for all the members of the namespace as it
-           does for \l {framework} {classes}. The documentation for
-           the specified namespace is put in <lower-case>\e
-           {namespace}.html.
+        \brief The Qt namespace contains miscellaneous
+        identifiers used throughout the Qt library.
+    * /
+    \endcode
 
-           For example:
-
-           \code
-           / *!
-               \namespace Qt
-
-               \brief The Qt namespace contains miscellaneous
-               identifiers used throughout the Qt library.
-           * /
-           \endcode
-
-           QDoc renders this as:
+    QDoc renders this in \c{qt.html} something like this:
 
            \quotation
                \raw HTML
@@ -4968,19 +4950,13 @@
                ...
            \endquotation
 
-           in qt.html.
-
-
     \target page-command
     \section1 \\page 
 
-    The \\page command allows you to create a stand-alone documentation page.
-
-           The command follows \l {topic argument} {the general
-           topic command convention} for the argument.
-
-           The page's title can be set using the \l {title-command} {\\title}
-           command. For example:
+    The \\page command is for creating a stand-alone documentation
+    page.  The argument is the name of the file where QDoc should
+    store the page. The page title is set using the \l {title-command}
+    {\\title} command. For example:
 
            \code
            / *!
@@ -5005,63 +4981,56 @@
             * /
             \endcode
 
-           will be rendered in its own HTML file: \l{About Qt}.
-
+    QDoc renders this page in \c {aboutqt.html}.
 
     \target externalpage-command
     \section1 \\externalpage 
 
-    The \\externalpage command gives a title to an external URL.
+    The \\externalpage command assigns a title to an external URL.
+    For example:
 
-           The command follows \l {topic argument} {the general
-           topic command convention} for the argument.
+    \code
+    / *!
+        \externalpage http://doc.trolltech.com/4.3/qtopiacore.html
+        \title Qtopia Core
+    * /
+    \endcode
 
-           For example:
+    This allows you to include a link to the external page in your
+    documentation this way:
 
-           \code
-           / *!
-               \externalpage http://www.trolltech.com/products/embedded/index.html
-               \title Qtopia Core
-           * /
-           \endcode
+    \code
+    / *!
+        The broad scope of the \l {Qtopia Core} API enables it to
+        be used across a wide variety of development projects.
+    * /
+    \endcode
 
-           The QDoc comment above allows you to link to the Qtopia
-           Core webpage by simply linking to the given title. For
-           example:
+    QDoc renders this as:
 
-           \code
-           / *!
-               The broad scope of the \l {Qtopia Core} API enables it to
-               be used across a wide variety of development projects.
-           * /
-           \endcode
+    \quotation
+        The broad scope of the \l
+        {http://doc.trolltech.com/4.3/qtopiacore.html} {Qtopia
+        Core} API enables it to be used across a wide variety
+        of development projects.
+    \endquotation
 
-           QDoc renders this as:
+    To achieve the same result without using the \\externalpage
+    command, you would have to hard code the adress into your
+    documentation:
 
-           \quotation
-               The broad scope of the \l
-               {http://www.trolltech.com/products/embedded/index.html} {Qtopia
-               Core} API enables it to be used across a wide variety
-               of development projects.
-           \endquotation
+    \code
+    / *!
+        The broad scope of the \l
+        {http://doc.trolltech.com/4.3/qtopiacore.html} {Qtopia
+        Core} API enables it to be used across a wide variety
+        of development projects.
+    * /
+    \endcode
 
-           To achieve the same result without using the
-           \\externalpage command, you would have to hard code the
-           adress into your documentation:
-
-           \code
-           / *!
-               The broad scope of the \l
-               {http://www.trolltech.com/products/embedded/index.html} {Qtopia
-               Core} API enables it to be used across a wide variety
-               of development projects.
-           * /
-           \endcode
-
-           The \\externalpage command makes it easier to maintain the
-           documentation. If the adress changes, you only need to change the
-           argument of the \\externalpage command.
-
+    The \\externalpage command makes it easier to maintain the
+    documentation. If the adress changes, you only need to change the
+    argument of the \\externalpage command.
 
     \target property-command
     \section1 \\property 
