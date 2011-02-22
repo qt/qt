@@ -36,6 +36,8 @@
 #define QSCRIPTVALUE_IMPL_P_H
 
 #include "qscriptvalue_p.h"
+#include "qscriptclass_p.h"
+#include "qscriptdeclarativeclassobject_p.h"
 #include "qscriptengine_p.h"
 #include "qscriptqobject_p.h"
 #include "qscriptisolate_p.h"
@@ -421,7 +423,19 @@ inline bool QScriptValuePrivate::isBool() const
 
 inline bool QScriptValuePrivate::isCallable() const
 {
-    return isFunction() || (isObject() && v8::Object::Cast(*m_value)->IsCallable());
+    if (isFunction())
+        return true;
+    if (isObject()) {
+        // Our C++ wrappers register function handlers but not always act as callables.
+        QScriptDeclarativeClass *declarativeClass = QScriptDeclarativeClassObject::declarativeClass(this);
+        if (declarativeClass)
+            return declarativeClass->supportsCall();
+        QScriptClassObject *scriptClassObject = QScriptClassObject::safeGet(this);
+        if (scriptClassObject && scriptClassObject->scriptClass())
+            return scriptClassObject->scriptClass()->userCallback()->supportsExtension(QScriptClass::Callable);
+        return v8::Object::Cast(*m_value)->IsCallable();
+    }
+    return false;
 }
 
 inline bool QScriptValuePrivate::isError() const
