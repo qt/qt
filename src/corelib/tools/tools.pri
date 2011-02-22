@@ -88,6 +88,7 @@ symbian:SOURCES+=tools/qlocale_symbian.cpp
 else:symbian:SOURCES += tools/qelapsedtimer_symbian.cpp
 else:unix:SOURCES += tools/qelapsedtimer_unix.cpp
 else:win32:SOURCES += tools/qelapsedtimer_win.cpp
+else:integrity:SOURCES += tools/qelapsedtimer_unix.cpp
 else:SOURCES += tools/qelapsedtimer_generic.cpp
 
 contains(QT_CONFIG, zlib):include($$PWD/../../3rdparty/zlib.pri)

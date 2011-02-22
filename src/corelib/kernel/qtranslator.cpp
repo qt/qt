@@ -56,7 +56,7 @@
 #include "qhash.h"
 #include "qtranslator_p.h"
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(Q_OS_INTEGRITY)
 #define QT_USE_MMAP
 #include "private/qcore_unix_p.h"
 #endif

@@ -113,3 +113,7 @@ win32 {
             LIBS += -lplatformenv
         }
 }
+integrity {
+	SOURCES += io/qfsfileengine_unix.cpp \
+	           io/qfsfileengine_iterator_unix.cpp
+}
