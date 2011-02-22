@@ -4633,22 +4633,19 @@
     \target headerfile-command
     \section1 \\headerfile 
 
-    The \\headerfile command allows you to document
-    global functions, types and macros declared in a header file.
+    The \\headerfile command is for documenting the global functions,
+    types and macros that are declared in a header file but not in a
+    namespace. The argument is the name of the header file.  The HTML
+    page is written to a \c {.html} file constructed from the header 
+    file aregument.
 
-           The command follows \l {topic argument} {the general
-           topic command convention} for the argument, and the
-           generated HTML documentation for the specified header file
-           is put in <lower-case>\e{headerfilename}.html.
+    The documentation for a function, type, or macro that is declared
+    in the header file being documented is included in the header file
+    page using the \l {relates-command} {\\relates} command.
 
-           A function, type or macro can be associated with a
-           headerfile using the \l {relates-command} {\\relates} command.
-
-           If the referenced header file doesn't exist, the
-           \\headerfile command will still create a documentation page
-           for a header file with the referenced file's name.
-
-           For example:
+    If the argument doesn't exist as a header file, the \\headerfile
+    command creates a documentation page for the header file anyway.
+    For example:
 
            \code
            / *!
@@ -4665,7 +4662,8 @@
            * /
            \endcode
 
-           QDoc renders this as:
+    QDoc generates a header file page \c{qtalgorithms.html} that looks
+    something like this:
 
            \quotation
                \raw HTML
@@ -4700,9 +4698,6 @@
 
                ...
            \endquotation
-
-           in qtalgorithms.html.
-
 
     \target macro-command
     \section1 \\macro 
