@@ -3706,6 +3706,13 @@ void QRasterPaintEnginePrivate::rasterizeLine_dashed(QLineF line,
     const bool squareCap = (pen.capStyle() == Qt::SquareCap);
     const QVector<qreal> pattern = pen.dashPattern();
 
+    qreal patternLength = 0;
+    for (int i = 0; i < pattern.size(); ++i)
+        patternLength += pattern.at(i);
+
+    if (patternLength <= 0)
+        return;
+
     qreal length = line.length();
     Q_ASSERT(length > 0);
     while (length > 0) {
