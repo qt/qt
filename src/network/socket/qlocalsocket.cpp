@@ -346,7 +346,7 @@ QLocalSocket::QLocalSocket(QObject * parent)
 QLocalSocket::~QLocalSocket()
 {
     close();
-#ifndef Q_OS_WIN
+#if !defined(Q_OS_WIN) && !defined(QT_LOCALSOCKET_TCP)
     Q_D(QLocalSocket);
     d->unixSocket.setParent(0);
 #endif
