@@ -169,17 +169,27 @@ private:
 
 Q_GLOBAL_STATIC(QMutex, processManagerGlobalMutex)
 
-static QProcessManager *processManager() {
+static QProcessManager *processManagerInstance = 0;
+
+static QProcessManager *processManager()
+{
     // The constructor of QProcessManager should be called only once
     // so we cannot use Q_GLOBAL_STATIC directly for QProcessManager
     QMutex *mutex = processManagerGlobalMutex();
     QMutexLocker locker(mutex);
-    static QProcessManager processManager;
-    return &processManager;
+
+    if (!processManagerInstance)
+        QProcessPrivate::initializeProcessManager();
+
+    Q_ASSERT(processManagerInstance);
+    return processManagerInstance;
 }
 
 QProcessManager::QProcessManager()
 {
+    // can only be called from main thread
+    Q_ASSERT(!qApp || qApp->thread() == QThread::currentThread());
+
 #if defined (QPROCESS_DEBUG)
     qDebug() << "QProcessManager::QProcessManager()";
 #endif
@@ -198,6 +208,8 @@ QProcessManager::QProcessManager()
     ::sigaction(SIGCHLD, &action, &oldAction);
     if (oldAction.sa_handler != qt_sa_sigchld_handler)
 	qt_sa_old_sigchld_handler = oldAction.sa_handler;
+
+    processManagerInstance = this;
 }
 
 QProcessManager::~QProcessManager()
@@ -226,6 +238,8 @@ QProcessManager::~QProcessManager()
     if (oldAction.sa_handler != qt_sa_sigchld_handler) {
         ::sigaction(SIGCHLD, &oldAction, 0);
     }
+
+    processManagerInstance = 0;
 }
 
 void QProcessManager::run()
@@ -1292,7 +1306,15 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
 
 void QProcessPrivate::initializeProcessManager()
 {
-    (void) processManager();
+    if (qApp && qApp->thread() != QThread::currentThread()) {
+        // The process manager must be initialized in the main thread
+        // Note: The call below will re-enter this function, but in the right thread,
+        // so the else statement below will be executed.
+        QMetaObject::invokeMethod(qApp, "_q_initializeProcessManager", Qt::BlockingQueuedConnection);
+    } else {
+        static QProcessManager processManager;
+        Q_UNUSED(processManager);
+    }
 }
 
 QT_END_NAMESPACE

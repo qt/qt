@@ -13,6 +13,9 @@
 
 #include <qdebug.h>
 
+// #define VSYNC_TIME_DEBUG
+
+
 class QVSyncAnimationDriverPrivate : public QAnimationDriverPrivate
 {
 public:
@@ -69,11 +72,49 @@ bool QVSyncAnimationDriver::event(QEvent *e)
     Q_D(QVSyncAnimationDriver);
 
     if (e->type() == QEvent::User + 1) {
+
+#ifdef VSYNC_TIME_DEBUG
+        QTime time;
+        time.start();
+#endif
+
         while (isRunning() && !d->aborted && !d->threadData->quitNow) {
+
+#ifdef VSYNC_TIME_DEBUG
+            time.start();
+#endif
+
             QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+
+#ifdef VSYNC_TIME_DEBUG
+            int t1 = time.elapsed();
+#endif
+
             QApplication::processEvents(QEventLoop::AllEvents, 1);
+
+#ifdef VSYNC_TIME_DEBUG
+            int t2 = time.elapsed();
+#endif
+
             advance();
+
+#ifdef VSYNC_TIME_DEBUG
+            int t3 = time.elapsed();
+#endif
+
             ((WidgetAccessor *) d->window)->paint();
+
+#ifdef VSYNC_TIME_DEBUG
+            int t4 = time.elapsed();
+            printf("VSync breakdown: deletes=%d, events=%d, animations=%d, painting=%d, totoal=%d %s\n",
+                   t1,
+                   t2 - t1,
+                   t3 - t2,
+                   t4 - t3,
+                   t4,
+                   t4 > 19 || t4 < 12 ? "** BAD **" : "");
+#endif
+
         }
     }
 

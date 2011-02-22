@@ -782,6 +782,15 @@ void QLinuxFbIntegration::blank(bool on)
     d_ptr->blank = on;
 }
 
+bool QLinuxFbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+    case ThreadedPixmaps: return true;
+    default: return QPlatformIntegration::hasCapability(cap);
+    }
+}
+
+
 QPixmapData *QLinuxFbIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
     return new QRasterPixmapData(type);
