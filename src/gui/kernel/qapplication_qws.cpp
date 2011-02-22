@@ -204,6 +204,11 @@ QString qws_dataDir()
     result = QT_VFB_DATADIR(qws_display_id);
     QByteArray dataDir = result.toLocal8Bit();
 
+#if defined(Q_OS_INTEGRITY)
+    /* ensure filesystem is ready before starting requests */
+    WaitForFileSystemInitialization();
+#endif
+
     if (QT_MKDIR(dataDir, 0700)) {
         if (errno != EEXIST) {
             qFatal("Cannot create Qt for Embedded Linux data directory: %s", dataDir.constData());
