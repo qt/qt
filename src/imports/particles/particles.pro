@@ -8,7 +8,9 @@ HEADERS += \
     V1/qdeclarativeparticles_p.h \
     pluginmain.h \
     particleaffector.h \
-    wanderaffector.h
+    wanderaffector.h \
+    rockingaffector.h \
+    scalingaffector.h
 
 SOURCES += \
     spriteparticles.cpp \
@@ -16,7 +18,9 @@ SOURCES += \
     V1/qdeclarativeparticles.cpp \
     main.cpp \
     particleaffector.cpp \
-    wanderaffector.cpp
+    wanderaffector.cpp \
+    rockingaffector.cpp \
+    scalingaffector.cpp
 
 QT += declarative opengl
 

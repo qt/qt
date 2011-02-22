@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,44 +39,62 @@
 **
 ****************************************************************************/
 
-#include "qminimalintegration.h"
-#include "qminimalwindowsurface.h"
+#include <qtest.h>
+#include <QDebug>
 
-#include <QtGui/private/qpixmap_raster_p.h>
-#include <QtGui/QPlatformWindow>
+#include "qsgitem.h"
+#include "qsgcanvas.h"
+#include "../../../shared/util.h"
 
-QMinimalIntegration::QMinimalIntegration()
+class ConstantUpdateItem : public QSGItem
 {
-    QMinimalScreen *mPrimaryScreen = new QMinimalScreen();
+Q_OBJECT
+public:
+    ConstantUpdateItem(QSGItem *parent = 0) : QSGItem(parent), iterations(0) {setFlag(ItemHasContents);}
 
-    mPrimaryScreen->mGeometry = QRect(0, 0, 240, 320);
-    mPrimaryScreen->mDepth = 16;
-    mPrimaryScreen->mFormat = QImage::Format_RGB16;
-
-    mScreens.append(mPrimaryScreen);
-}
-
-bool QMinimalIntegration::hasCapability(QPlatformIntegration::Capability cap) const
-{
-    switch (cap) {
-    case ThreadedPixmaps: return true;
-    default: return QPlatformIntegration::hasCapability(cap);
+    int iterations;
+protected:
+    Node* updatePaintNode(Node *, UpdatePaintNodeData *){
+        iterations++;
+        update();
+        return 0;
     }
+};
+
+class tst_qsgcanvas : public QObject
+{
+    Q_OBJECT
+public:
+    tst_qsgcanvas();
+
+private slots:
+    void initTestCase();
+    void cleanupTestCase();
+
+    void constantUpdates();
+};
+
+tst_qsgcanvas::tst_qsgcanvas()
+{
 }
 
-QPixmapData *QMinimalIntegration::createPixmapData(QPixmapData::PixelType type) const
+void tst_qsgcanvas::initTestCase()
 {
-    return new QRasterPixmapData(type);
 }
 
-QPlatformWindow *QMinimalIntegration::createPlatformWindow(QWidget *widget, WId winId) const
+void tst_qsgcanvas::cleanupTestCase()
 {
-    Q_UNUSED(winId);
-    return new QPlatformWindow(widget);
 }
 
-QWindowSurface *QMinimalIntegration::createWindowSurface(QWidget *widget, WId winId) const
+//If the item calls update inside updatePaintNode, it should schedule another update
+void tst_qsgcanvas::constantUpdates()
 {
-    Q_UNUSED(winId);
-    return new QMinimalWindowSurface(widget);
+    QSGCanvas canvas;
+    ConstantUpdateItem item(canvas.rootItem());
+    canvas.show();
+    QTRY_VERIFY(item.iterations > 60);
 }
+
+QTEST_MAIN(tst_qsgcanvas)
+
+#include "tst_qsgcanvas.moc"

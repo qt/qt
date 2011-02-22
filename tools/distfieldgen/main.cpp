@@ -48,10 +48,14 @@ static void usage()
 {
     qWarning("Usage: distfieldgen [options] <font_filename>");
     qWarning(" ");
+    qWarning("Distfieldgen generates distance-field renderings of the provided font file,");
+    qWarning("one for each font family/style it contains.");
+    qWarning("Unless the QT_QML_DISTFIELDDIR environment variable is set, the renderings are");
+    qWarning("saved in the fonts/distancefields directory where the Qt libraries are located.");
+    qWarning("You can also override the output directory with the -d option.");
+    qWarning(" ");
     qWarning(" options:");
     qWarning("  -d <directory>................................ output directory");
-    qWarning("  -b............................................ set bold");
-    qWarning("  -i............................................ set italic");
 
     qWarning(" ");
     exit(1);
@@ -59,7 +63,7 @@ static void usage()
 
 void printProgress(int p)
 {
-    printf("\r[");
+    printf("\r  [");
     for (int i = 0; i < 50; ++i)
         printf(i < p / 2 ? "=" : " ");
     printf("]");
@@ -95,55 +99,13 @@ public:
 
 QMutex DistFieldGenTask::m_mutex;
 
-int main(int argc, char *argv[])
+static void generateDistanceFieldForFont(const QFont &font, const QString &destinationDir)
 {
-    QApplication app(argc, argv);
-    QStringList args = QApplication::arguments();
+    QFontDatabase db;
+    QString fontString = font.family() + QLatin1String(" ") + db.styleString(font);
+    qWarning("> Generating distance-field for font '%s'", fontString.toLatin1().constData());
 
-    if (argc < 2 ||
-        args.contains("--help") || args.contains("-help") || args.contains("--h") || args.contains("-h"))
-        usage();
-
-    QString fontFile;
-    QString destDir;
-    for (int i = 0; i < args.count(); ++i) {
-        QString a = args.at(i);
-        if (!a.startsWith('-') && QFileInfo(a).exists())
-            fontFile = a;
-        if (a == QLatin1String("-d"))
-            destDir = args.at(++i);
-    }
-
-    // Load the font
-    int fontID = QFontDatabase::addApplicationFont(fontFile);
-
-    if (fontID == -1) {
-        qWarning("Error: Invalid font file.");
-        qWarning(" ");
-        exit(1);
-    }
-
-    QFileInfo fi(fontFile);
-    if (destDir.isEmpty()) {
-        destDir = fi.canonicalPath();
-    } else {
-        QFileInfo dfi(destDir);
-        if (!dfi.isDir()) {
-            qWarning("Error: '%s' is not a directory.", destDir.toLatin1().constData());
-            qWarning(" ");
-            exit(1);
-        }
-        destDir = dfi.canonicalFilePath();
-    }
-
-    bool bold = args.contains("-b");
-    bool italic = args.contains("-i");
-
-    QStringList families = QFontDatabase::applicationFontFamilies(fontID);
-    QFont f(families.at(0));
-    f.setBold(bold);
-    f.setItalic(italic);
-    DistanceFieldFontAtlas atlas(f);
+    DistanceFieldFontAtlas atlas(font);
 
     QMap<int, QImage> distfields;
     for (int i = 0; i < 0xFF; ++i) {
@@ -168,7 +130,68 @@ int main(int argc, char *argv[])
     printf("\n");
 
     // Save output
-    output.save(QString("%1/%2.png").arg(destDir).arg(fi.baseName()));
+    QString destDir = destinationDir;
+    if (destDir.isEmpty()) {
+        destDir = atlas.distanceFieldDir();
+        QDir dir;
+        dir.mkpath(destDir);
+    } else {
+        QFileInfo dfi(destDir);
+        if (!dfi.isDir()) {
+            qWarning("Error: '%s' is not a directory.", destDir.toLatin1().constData());
+            qWarning(" ");
+            exit(1);
+        }
+        destDir = dfi.canonicalFilePath();
+    }
+
+    QString out = QString(QLatin1String("%1/%2")).arg(destDir).arg(atlas.distanceFieldFileName());
+    output.save(out);
+    qWarning("  Distance-field saved to '%s'\n", out.toLatin1().constData());
+}
+
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
+    QStringList args = QApplication::arguments();
+
+    if (argc < 2
+            || args.contains(QLatin1String("--help"))
+            || args.contains(QLatin1String("-help"))
+            || args.contains(QLatin1String("--h"))
+            || args.contains(QLatin1String("-h")))
+        usage();
+
+    QString fontFile;
+    QString destDir;
+    for (int i = 0; i < args.count(); ++i) {
+        QString a = args.at(i);
+        if (!a.startsWith('-') && QFileInfo(a).exists())
+            fontFile = a;
+        if (a == QLatin1String("-d"))
+            destDir = args.at(++i);
+    }
+
+    // Load the font
+    int fontID = QFontDatabase::addApplicationFont(fontFile);
+    if (fontID == -1) {
+        qWarning("Error: Invalid font file.");
+        qWarning(" ");
+        exit(1);
+    }
+
+    // Generate distance-fields for all families and all styles provided by the font file
+    QFontDatabase fontDatabase;
+    QStringList families = QFontDatabase::applicationFontFamilies(fontID);
+    int famCount = families.count();
+    for (int i = 0; i < famCount; ++i) {
+        QStringList styles = fontDatabase.styles(families.at(i));
+        int styleCount = styles.count();
+        for (int j = 0; j < styleCount; ++j) {
+            QFont font = fontDatabase.font(families.at(i), styles.at(j), 10); // point size is ignored
+            generateDistanceFieldForFont(font, destDir);
+        }
+    }
 
     return 0;
 }

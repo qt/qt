@@ -213,7 +213,6 @@ void QSGCanvasPrivate::initializeSceneGraph()
         return;
 
     QGLContext *glctx = const_cast<QGLContext *>(QGLContext::currentContext());
-
     context->initialize(glctx);
 
     if (!threadedRendering) {
@@ -272,6 +271,8 @@ void QSGCanvasPrivate::runThread()
     qWarning("QSGRenderer: Render thread running");
 #endif
     Q_Q(QSGCanvas);
+
+    printf("QSGCanvas::runThread(), rendering in a thread...\n");
 
     q->makeCurrent();
     initializeSceneGraph();
@@ -370,6 +371,8 @@ QSGCanvasPrivate::QSGCanvasPrivate()
     , threadedRendering(false)
     , inUpdate(false)
     , exitThread(false)
+    , animationRunning(false)
+    , idle(false)
     , needsRepaint(true)
     , renderThreadAwakened(false)
     , thread(new MyThread(this))
@@ -885,10 +888,10 @@ bool QSGCanvas::event(QEvent *e)
         d->lastMousePosition = QPoint();
         break;
     default:
-        return QWidget::event(e);
+        break;
     }
 
-    return QWidget::event(e);
+    return QGLWidget::event(e);
 }
 
 void QSGCanvas::keyPressEvent(QKeyEvent *e)
@@ -999,7 +1002,7 @@ void QSGCanvas::mouseReleaseEvent(QMouseEvent *event)
 #endif
 
     if (!d->mouseGrabberItem) {
-        QWidget::mouseReleaseEvent(event);
+        QGLWidget::mouseReleaseEvent(event);
         return;
     }
 
@@ -1527,7 +1530,7 @@ void QSGCanvas::maybeUpdate()
             d->mutex.lock();
             if (d->idle) {
 #ifdef THREAD_DEBUG
-                qWarning("QSGRenderer: now maybe I should update...\n");
+                qWarning("QSGRenderer: now maybe I should update...");
 #endif
                 d->wait.wakeOne();
             }
