@@ -240,9 +240,7 @@ void QSGCanvasPrivate::polishItems()
 
 void QSGCanvasPrivate::syncSceneGraph()
 {
-    inSync = true;
     updateDirtyNodes();
-    inSync = false;
 }
 
 
@@ -377,7 +375,6 @@ QSGCanvasPrivate::QSGCanvasPrivate()
     , idle(false)
     , needsRepaint(true)
     , renderThreadAwakened(false)
-    , inSync(false)
     , thread(new MyThread(this))
     , animationDriver(0)
 {
@@ -735,8 +732,6 @@ QVariant QSGCanvas::inputMethodQuery(Qt::InputMethodQuery query) const
 void QSGCanvasPrivate::dirtyItem(QSGItem *)
 {
     Q_Q(QSGCanvas);
-    if (inSync)
-        return;
     q->maybeUpdate();
 }
 

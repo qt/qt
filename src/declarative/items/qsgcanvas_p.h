@@ -169,7 +169,6 @@ public:
     uint idle : 1;              // Set to true when render thread sees no change and enters a wait()
     uint needsRepaint : 1;      // Set by callback from render if scene needs repainting.
     uint renderThreadAwakened : 1;
-    uint inSync : 1;
 
     struct MyThread : public QThread {
         MyThread(QSGCanvasPrivate *r) : renderer(r) {}
