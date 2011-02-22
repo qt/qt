@@ -1571,6 +1571,7 @@ Q_GLOBAL_STATIC(QLocalePrivate, globalLocalePrivate)
   \value MeasurementSystem a QLocale::MeasurementSystem enum specifying the measurement system
   \value AMText a string that represents the system AM designator associated with a 12-hour clock.
   \value PMText a string that represents the system PM designator associated with a 12-hour clock.
+  \value FirstDayOfWeek a Qt::DayOfWeek enum specifiying the first day of the week
   \value CurrencySymbol a string that represents a currency in a format QLocale::CurrencyFormat.
   \value FormatCurrency a localized string representation of a number with a currency symbol.
   \value QuotationBegin a QString specifying the start of a quotation. the in variant contains a QLocale::QuotationStyle
