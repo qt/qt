@@ -72,7 +72,7 @@ struct QFontDef
         : pointSize(-1.0), pixelSize(-1),
           styleStrategy(QFont::PreferDefault), styleHint(QFont::AnyStyle),
           weight(50), fixedPitch(false), style(QFont::StyleNormal), stretch(100),
-          ignorePitch(true)
+          ignorePitch(true), hintingPreference(QFont::PreferDefaultHinting)
 #ifdef Q_WS_MAC
           ,fixedPitchComputed(false)
 #endif
@@ -98,7 +98,8 @@ struct QFontDef
 
     uint ignorePitch : 1;
     uint fixedPitchComputed : 1; // for Mac OS X only
-    int reserved   : 16; // for future extensions
+    uint hintingPreference : 2;
+    int reserved   : 14; // for future extensions
 
     bool exactMatch(const QFontDef &other) const;
     bool operator==(const QFontDef &other) const
@@ -111,6 +112,7 @@ struct QFontDef
                     && styleStrategy == other.styleStrategy
                     && ignorePitch == other.ignorePitch && fixedPitch == other.fixedPitch
                     && family == other.family
+                    && hintingPreference == other.hintingPreference
 #ifdef Q_WS_X11
                     && addStyle == other.addStyle
 #endif
@@ -125,6 +127,7 @@ struct QFontDef
         if (styleHint != other.styleHint) return styleHint < other.styleHint;
         if (styleStrategy != other.styleStrategy) return styleStrategy < other.styleStrategy;
         if (family != other.family) return family < other.family;
+        if (hintingPreference != other.hintingPreference) return hintingPreference < other.hintingPreference;
 
 #ifdef Q_WS_X11
         if (addStyle != other.addStyle) return addStyle < other.addStyle;

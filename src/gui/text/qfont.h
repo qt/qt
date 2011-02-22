@@ -90,7 +90,14 @@ public:
         NoAntialias         = 0x0100,
         OpenGLCompatible    = 0x0200,
         ForceIntegerMetrics = 0x0400,
-        NoFontMerging       = 0x8000
+        NoFontMerging       = 0x8000,
+    };
+
+    enum HintingPreference {
+        PreferDefaultHinting        = 0,
+        PreferNoHinting             = 1,
+        PreferVerticalHinting       = 2,
+        PreferFullHinting           = 3
     };
 
     enum Weight {
@@ -133,22 +140,23 @@ public:
     };
 
     enum ResolveProperties {
-        FamilyResolved         = 0x0001,
-        SizeResolved           = 0x0002,
-        StyleHintResolved      = 0x0004,
-        StyleStrategyResolved  = 0x0008,
-        WeightResolved         = 0x0010,
-        StyleResolved          = 0x0020,
-        UnderlineResolved      = 0x0040,
-        OverlineResolved       = 0x0080,
-        StrikeOutResolved      = 0x0100,
-        FixedPitchResolved     = 0x0200,
-        StretchResolved        = 0x0400,
-        KerningResolved        = 0x0800,
-        CapitalizationResolved = 0x1000,
-        LetterSpacingResolved  = 0x2000,
-        WordSpacingResolved    = 0x4000,
-        AllPropertiesResolved  = 0x7fff
+        FamilyResolved              = 0x0001,
+        SizeResolved                = 0x0002,
+        StyleHintResolved           = 0x0004,
+        StyleStrategyResolved       = 0x0008,
+        WeightResolved              = 0x0010,
+        StyleResolved               = 0x0020,
+        UnderlineResolved           = 0x0040,
+        OverlineResolved            = 0x0080,
+        StrikeOutResolved           = 0x0100,
+        FixedPitchResolved          = 0x0200,
+        StretchResolved             = 0x0400,
+        KerningResolved             = 0x0800,
+        CapitalizationResolved      = 0x1000,
+        LetterSpacingResolved       = 0x2000,
+        WordSpacingResolved         = 0x4000,
+        HintingPreferenceResolved   = 0x8000,
+        AllPropertiesResolved       = 0xffff
     };
 
     QFont();
@@ -212,6 +220,9 @@ public:
 
     void setCapitalization(Capitalization);
     Capitalization capitalization() const;
+
+    void setHintingPreference(HintingPreference hintingPreference);
+    HintingPreference hintingPreference() const;
 
     // is raw mode still needed?
     bool rawMode() const;
