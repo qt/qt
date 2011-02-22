@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
             else {                                                      \
                 qAddPostRoutine(NAME##_cleanup);                        \
                 this_##NAME.pointer->updateConfigurations();            \
-            }								\
+            }                                                           \
         }                                                               \
         return this_##NAME.pointer;                                     \
     }
