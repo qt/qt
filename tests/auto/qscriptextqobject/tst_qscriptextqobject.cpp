@@ -704,7 +704,7 @@ void tst_QScriptExtQObject::getSetStaticProperty_propertyFlags()
 
         QVERIFY(!(mobj.propertyFlags("mySlot") & QScriptValue::ReadOnly));
         QVERIFY(!(mobj.propertyFlags("mySlot") & QScriptValue::Undeletable));
-        QVERIFY(!(mobj.propertyFlags("mySlot") & QScriptValue::SkipInEnumeration));
+        QVERIFY((mobj.propertyFlags("mySlot") & QScriptValue::SkipInEnumeration));
         QEXPECT_FAIL("", "QObjectMember not implemented in v8", Continue);
         QVERIFY(mobj.propertyFlags("mySlot") & QScriptValue::QObjectMember);
 
@@ -3058,7 +3058,7 @@ void tst_QScriptExtQObject::enumerate()
         QStringList result = qscriptvalue_cast<QStringList>(eng.evaluate("enumeratedProperties"));
         QCOMPARE(result.size(), expectedNames.size());
         for (int i = 0; i < expectedNames.size(); ++i)
-            QCOMPARE(result.at(i), expectedNames.at(i));
+            QVERIFY(expectedNames.contains(result.at(i)));
     }
     // enumerate in C++
     {
@@ -3071,7 +3071,7 @@ void tst_QScriptExtQObject::enumerate()
         }
         QCOMPARE(result.size(), expectedNames.size());
         for (int i = 0; i < expectedNames.size(); ++i)
-            QCOMPARE(result.at(i), expectedNames.at(i));
+            QVERIFY(expectedNames.contains(result.at(i)));
     }
 }
 

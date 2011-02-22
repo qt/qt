@@ -1360,7 +1360,7 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
             v8::Local<v8::Array> dataArray = v8::Array::New(2);
             dataArray->Set(0, v8::External::Wrap(engine));
             dataArray->Set(1, v8::Uint32::New(data));
-            protoTempl->SetAccessor(v8::String::New(name), QtGetMetaMethod, 0, dataArray);
+            protoTempl->SetAccessor(v8::String::New(name), QtGetMetaMethod, 0, dataArray, v8::DEFAULT, v8::DontEnum);
 
         }
     }
@@ -1368,8 +1368,8 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
     if (mo == &QObject::staticMetaObject) {
 
         v8::Local<v8::Value> wEngine = v8::External::Wrap(engine);
-        protoTempl->Set(v8::String::New("findChild"), v8::FunctionTemplate::New(findChildCallback, wEngine)->GetFunction());
-        protoTempl->Set(v8::String::New("findChildren"), v8::FunctionTemplate::New(findChildrenCallback, wEngine)->GetFunction());
+        protoTempl->Set(v8::String::New("findChild"), v8::FunctionTemplate::New(findChildCallback, wEngine)->GetFunction(), v8::DontEnum);
+        protoTempl->Set(v8::String::New("findChildren"), v8::FunctionTemplate::New(findChildrenCallback, wEngine)->GetFunction(), v8::DontEnum);
 
         // Install QObject interceptor.
         // This interceptor will only get called if the access is not handled by the instance
