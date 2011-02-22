@@ -33,6 +33,8 @@
 #include "qscriptv8objectwrapper_p.h"
 #include "qscript_impl_p.h"
 
+Q_DECLARE_METATYPE(QScriptContext *)
+
 QT_BEGIN_NAMESPACE
 
 static v8::Handle<v8::Value> QtScriptClassToStringCallback(const v8::Arguments& args)
@@ -232,6 +234,28 @@ v8::Handle<v8::Array> QScriptClassObject::enumerate()
     return handleScope.Close(names);
 }
 
+v8::Handle<v8::Value> QScriptClassObject::call(const v8::Arguments& args)
+{
+    QScriptClassObject *data = QScriptV8ObjectWrapperHelper::getDataPointer<QScriptClassObject>(args.Holder());
+    QScriptContextPrivate qScriptContext(data->engine, &args, args.Holder());
+
+    // ### Does it make sense to consider call the original object when there's no scriptclass?
+    if (!data->scriptClass()) {
+        Q_UNIMPLEMENTED();
+        return v8::Handle<v8::Value>();
+    }
+
+    v8::HandleScope handleScope;
+    if (!data->scriptClass()->userCallback()->supportsExtension(QScriptClass::Callable))
+        return handleScope.Close(v8::ThrowException(v8::Exception::TypeError(v8::String::New("QScriptClass for object doesn't support Callable extension"))));
+
+    QScriptContext *ctx = data->engine->currentContext();
+    Q_ASSERT(ctx);
+    QVariant result = data->scriptClass()->userCallback()->extension(QScriptClass::Callable,
+                                                                     qVariantFromValue(ctx));
+    return handleScope.Close(data->engine->variantToJS(result));
+}
+
 v8::Handle<v8::FunctionTemplate> QScriptClassObject::createFunctionTemplate(QScriptEnginePrivate *engine)
 {
     v8::HandleScope handleScope;
@@ -251,6 +275,8 @@ v8::Handle<v8::FunctionTemplate> QScriptClassObject::createFunctionTemplate(QScr
                                         QScriptV8ObjectWrapperHelper::indexedPropertyQuery<QScriptClassObject>,
                                         QScriptV8ObjectWrapperHelper::indexedPropertyDeleter<QScriptClassObject>,
                                         QScriptV8ObjectWrapperHelper::indexedPropertyEnumerator<QScriptClassObject>);
+
+    instTempl->SetCallAsFunctionHandler(QScriptClassObject::call);
 
     return handleScope.Close(funcTempl);
 }

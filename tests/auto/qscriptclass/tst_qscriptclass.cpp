@@ -978,7 +978,6 @@ void tst_QScriptClass::extension_Callable()
         QScriptValueList args;
         args << QScriptValue(&eng, 4) << QScriptValue(&eng, 5);
         QScriptValue ret = obj.call(obj, args);
-        QEXPECT_FAIL("", "Callable extension hasn't been implemented yet", Abort);
         QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
         QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
         QVERIFY(ret.isNumber());
@@ -1052,6 +1051,7 @@ void tst_QScriptClass::extension_Callable()
     {
         QScriptValue ret = eng.evaluate("obj()");
         QVERIFY(ret.isObject());
+        QEXPECT_FAIL("", "'Wrong' ThisObject in callback of function handler. See V8 issue 1038.", Continue);
         QVERIFY(ret.strictlyEquals(eng.globalObject()));
     }
 
