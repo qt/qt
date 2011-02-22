@@ -1441,14 +1441,15 @@ void QSGCanvas::maybeUpdate()
     if (d->threadedRendering) {
         if (!d->renderThreadAwakened) {
             d->renderThreadAwakened = true;
-            d->mutex.lock();
-            if (d->idle) {
+            bool locked = d->mutex.tryLock();
+            if (d->idle && locked) {
 #ifdef THREAD_DEBUG
                 qWarning("QSGRenderer: now maybe I should update...");
 #endif
                 d->wait.wakeOne();
             }
-            d->mutex.unlock();
+            if (locked)
+                d->mutex.unlock();
         }
     }
 
