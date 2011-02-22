@@ -249,3 +249,13 @@ src/network/lib
 src/xml/lib/
 
 .pc/
+
+# INTEGRITY generated files
+*.gpj
+*.int
+*.ael
+*.dla
+*.dnm
+*.dep
+*.map
+work
