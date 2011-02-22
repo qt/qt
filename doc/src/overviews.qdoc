@@ -62,7 +62,7 @@
 
 /*!
     \group qt-graphics
-	\ingroup qt-basic-concepts
+    \ingroup qt-basic-concepts
     \title Qt Graphics and Printing
 
     \brief The Qt components for doing graphics.

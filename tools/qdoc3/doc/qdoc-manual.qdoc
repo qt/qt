@@ -4184,225 +4184,220 @@
     \target class-command
     \section1 \\class 
 
-    The \\class command tells QDoc that a class is
-    part of the public API, and lets you enter a detailed
+    The \\class command is for documenting a C++ class. The argument
+    is the complete name of the class. The command tells QDoc that a
+    class is part of the public API, and lets you enter a detailed
     description.
 
-           The command follows \l {topic argument} {the general
-           topic command convention} for the argument, and supports
-           nested classes, for example:
+    \code
+    / *!
+        \class QMap::iterator
 
-           \code
-           / *!
-               \class QMap::iterator
+        \brief The QMap::iterator class provides an STL-style
+        non-const iterator for QMap and QMultiMap.
 
-               \brief The QMap::iterator class provides an STL-style
-               non-const iterator for QMap and QMultiMap.
+        QMap features both \l{STL-style iterators} and
+        \l{Java-style iterators}. The STL-style iterators ...
+    * /
+    \endcode
 
-               QMap features both \l{STL-style iterators} and
-               \l{Java-style iterators}. The STL-style iterators ...
-           * /
-           \endcode
+    The HTML documentation for the named class is written to a
+    \c{.html} file named from the class name, in lower case, and with
+    the double colon qulifier(s) replaced with '-'. For example, the
+    documentation for the \c QMap::Iterator class is written to \c
+    qmap-iterator.html.
 
-           The generated HTML documentation for the specified class is
-           put in \c <lower-case>classname.html. For example, the
-           documentation for the \c PreviewWindow class is located in
-           \c previewwindow.html.
+    \target framework
 
-           \target framework
+    The file contains the class description from the \\class comment,
+    plus the documentation generated from QDoc comments for all the
+    class members, i.e. a list of the class's types, properties,
+    functions, signals, and slots.
 
-           In addition to render the detailed description, the \\class
-           comand will generate the documentation framework, i.e. a
-           list of the class's types, properties, functions, signals
-           and slots with empty documentation.
+    In addition to the detailed description of the class, the \\class
+    comment typically contains a \l {brief-command} {\\brief} command
+    and one or more \l{Markup Commands}. See the \\class command for
+    any of the Qt class for examples. Here is a very simple example:
 
-           The command is typically accompanied with a \l
-           {brief-command} {\\brief} command, a \l {mainclass-command} {\\mainclass}
-           command, an \l {ingroup-command} {\\ingroup} command and a \l
-           {sa-command} {\\sa} command. For example:
+    \code
+    / *!
+        \class PreviewWindow
+        \brief The PreviewWindow class is a custom widget
+               displaying the names of its currently set
+               window flags in a read-only text editor.
 
-           \code
-           / *!
-               \class PreviewWindow
-               \brief The PreviewWindow class is a custom widget
-                      displaying the names of its currently set
-                      window flags in a read-only text editor.
+        \ingroup miscellaneous
 
-               \mainclass
-               \ingroup miscellaneous
+        The PreviewWindow class inherits QWidget. The widget
+        displays the names of its window flags set with the \l
+        {function} {setWindowFlags()} function. It is also
+        provided with a QPushButton that closes the window.
 
-               The PreviewWindow class inherits QWidget. The widget
-               displays the names of its window flags set with the \l
-               {function} {setWindowFlags()} function. It is also
-               provided with a QPushButton that closes the window.
+        ...
 
-               ...
+        \sa QWidget
+    * /
+    \endcode
 
-              \sa QWidget
-           * /
-           \endcode
+    The way QDoc renders this \\class will depend a lot on your \c
+    {style.css} file, but the general outline of the class reference
+    page will look like this:
 
-           QDoc renders this as:
+    \quotation
+        \raw HTML
+            <h1>PreviewWindow Class Reference</h1>
+        \endraw
 
-           \quotation
-               \raw HTML
-                   <h1>PreviewWindow Class Reference</h1>
-               \endraw
+        The PreviewWindow class is a custom widget displaying
+        the names of its currently set window flags in a
+        read-only text editor. \l {preview window} {More...}
 
-               The PreviewWindow class is a custom widget displaying
-               the names of its currently set window flags in a
-               read-only text editor. \l {preview window} {More...}
+        \raw HTML
+            <h3>Properties</h3>
+        \endraw
 
-               \raw HTML
-                   <h3>Properties</h3>
-               \endraw
+        \list
+            \o 52 properties inherited from QWidget
+            \o 1 property inherited from QObject
+        \endlist
 
-               \list
-                   \o 52 properties inherited from QWidget
-                   \o 1 property inherited from QObject
-               \endlist
+        \raw HTML
+            <h3>Public Functions</h3>
+        \endraw
 
-               \raw HTML
-                   <h3>Public Functions</h3>
-               \endraw
+        \list
+            \o \l {constructor} {PreviewWindow}(QWidget *parent = 0)
+            \o void \l {function} {setWindowFlags}(Qt::WindowFlags flags)
+        \endlist
 
-               \list
-                   \o \l {constructor} {PreviewWindow}(QWidget *parent = 0)
-                   \o void \l {function} {setWindowFlags}(Qt::WindowFlags flags)
-               \endlist
+        \list
+            \o 183 public functions inherited from QWidget
+            \o 28 public functions inherited from QObject
+        \endlist
 
-               \list
-                   \o 183 public functions inherited from QWidget
-                   \o 28 public functions inherited from QObject
-               \endlist
+        \raw HTML
+           <h3>Public Slots</h3>
+        \endraw
 
-               \raw HTML
-                   <h3>Public Slots</h3>
-               \endraw
+        \list
+            \o 17 public slots inherited from QWidget
+            \o 1 public slot inherited from QObject
+        \endlist
 
-               \list
-                   \o 17 public slots inherited from QWidget
-                   \o 1 public slot inherited from QObject
-               \endlist
+        \raw HTML
+            <h3>Additional Inherited Members</h3>
+        \endraw
 
-               \raw HTML
-                   <h3>Additional Inherited Members</h3>
-               \endraw
+        \list
+            \o 1 signal inherited from QWidget
+            \o 1 signal inherited from QObject
+            \o 4 static public members inherited from QWidget
+            \o 4 static public members inherited from QObject
+            \o 39 protected functions inherited from QWidget
+            \o 7 protected functions inherited from QObject
+        \endlist
 
-               \list
-                   \o 1 signal inherited from QWidget
-                   \o 1 signal inherited from QObject
-                   \o 4 static public members inherited from QWidget
-                   \o 4 static public members inherited from QObject
-                   \o 39 protected functions inherited from QWidget
-                   \o 7 protected functions inherited from QObject
-               \endlist
+        \target preview window
 
-               \target preview window
+        \raw HTML
+            <hr />
+            <h2>Detailed Description</h2>
+        \endraw
 
-               \raw HTML
-                   <hr />
-                   <h2>Detailed Description</h2>
-               \endraw
+        The PreviewWindow class is a custom widget displaying
+        the names of its currently set window flags in a
+        read-only text editor.
 
-               The PreviewWindow class is a custom widget displaying
-               the names of its currently set window flags in a
-               read-only text editor.
+        The PreviewWindow class inherits QWidget. The widget
+        displays the names of its window flags set with the \l
+        {function} {setWindowFlags()} function. It is also
+        provided with a QPushButton that closes the window.
 
-               The PreviewWindow class inherits QWidget. The widget
-               displays the names of its window flags set with the \l
-               {function} {setWindowFlags()} function. It is also
-               provided with a QPushButton that closes the window.
+        ...
 
-               ...
+        See also QWidget.
 
-               See also QWidget.
+        \raw HTML
+            <hr />
+            <h2>Member Function Documentation</h2>
+        \endraw
 
-               \raw HTML
-                   <hr />
-                   <h2>Member Function Documentation</h2>
-               \endraw
+        \target constructor
+        \raw HTML
+           <h3>PreviewWindow(QWidget *parent = 0)</h3>
+        \endraw
 
-               \target constructor
-               \raw HTML
-                   <h3>PreviewWindow(QWidget *parent = 0)</h3>
-               \endraw
+        Constructs a preview window widget with \e parent.
 
-               Constructs a preview window widget with \e parent.
+        \target function
+        \raw HTML
+            <h3>setWindowFlags(Qt::WindowFlags flags)</h3>
+        \endraw
 
-               \target function
-               \raw HTML
-                   <h3>setWindowFlags(Qt::WindowFlags flags)</h3>
-               \endraw
+        Sets the widgets flags using the
+        QWidget::setWindowFlags() function.
 
-               Sets the widgets flags using the
-               QWidget::setWindowFlags() function.
-
-               Then runs through the available window flags,
-               creating a text that contains the names of the flags
-               that matches the flags parameter, displaying
-               the text in the widgets text editor.
-           \endquotation
-
+        Then runs through the available window flags,
+        creating a text that contains the names of the flags
+        that matches the flags parameter, displaying
+        the text in the widgets text editor.
+    \endquotation
 
     \target enum-command
     \section1 \\enum 
 
-    The \\enum command allows you to document a C++ enum.
+    The \\enum command is for documenting a C++ enum type. The
+    argument is the full name of the enum type.
 
-           The command follows \l {topic argument} {the general
-           topic command convention} for the argument.
+    The enum values are documented in the \\enum comment using the \l
+    {value-command} {\\value} command. If an enum value is not
+    documented with \\value, QDoc emits a warning. These warnings can
+    be avoided using the \l {omitvalue-command} {\\omitvalue} command
+    to tell QDoc that an enum value should not be documented. The enum
+    documentation will be included on the class reference page, header
+    file page, or namespace page where the enum type is defined. For
+    example, consider the enum type \c {Corner} in the Qt namespace:
 
-           The enum items are documented using the \l {value-command} {\\value}
-           command. If an item isn't documented, QDoc will emit a
-           warning. This can be avoided using the \l
-           {omitvalue-command} {\\omitvalue} command excluding an item from the
-           documentation. The enum documentation will be located in
-           the associated class, header file or namespace
-           documentation.
+    \code
+        enum Corner {
+            TopLeftCorner = 0x00000,
+            TopRightCorner = 0x00001,
+            BottomLeftCorner = 0x00002,
+            BottomRightCorner = 0x00003
+        #if defined(QT3_SUPPORT) && !defined(Q_MOC_RUN)
+            ,TopLeft = TopLeftCorner,
+            TopRight = TopRightCorner,
+            BottomLeft = BottomLeftCorner,
+            BottomRight = BottomRightCorner
+        #endif
+        };
+    \endcode
 
-           For example:
+    This enum can be cocumented this way:
 
-           \code
-               enum Corner {
-                   TopLeftCorner = 0x00000,
-                   TopRightCorner = 0x00001,
-                   BottomLeftCorner = 0x00002,
-                   BottomRightCorner = 0x00003
-           #if defined(QT3_SUPPORT) && !defined(Q_MOC_RUN)
-                   ,TopLeft = TopLeftCorner,
-                   TopRight = TopRightCorner,
-                   BottomLeft = BottomLeftCorner,
-                   BottomRight = BottomRightCorner
-           #endif
-               };
-           \endcode
+    \code
+    / *!
+        \enum Qt::Corner
 
-           In case of the Qt::Corner enum,
+        This enum type specifies a corner in a rectangle:
 
-           \code
-           / *!
-               \enum Qt::Corner
+        \value TopLeftCorner
+               The top-left corner of the rectangle.
+        \value TopRightCorner
+               The top-right corner of the rectangle.
+        \value BottomLeftCorner
+               The bottom-left corner of the rectangle.
+        \value BottomRightCorner
+               The bottom-right corner of the rectangle.
 
-               This enum type specifies a corner in a rectangle:
+        \omitvalue TopLeft
+        \omitvalue TopRight
+        \omitvalue BottomLeft
+        \omitvalue BottomRight
+    * /
+    \endcode
 
-               \value TopLeftCorner
-                      The top-left corner of the rectangle.
-               \value TopRightCorner
-                      The top-right corner of the rectangle.
-               \value BottomLeftCorner
-                      The bottom-left corner of the rectangle.
-               \value BottomRightCorner
-                      The bottom-right corner of the rectangle.
-
-               \omitvalue TopLeft
-               \omitvalue TopRight
-               \omitvalue BottomLeft
-               \omitvalue BottomRight
-           * /
-           \endcode
-
-           this associated QDoc comment QDoc renders this as:
+    QDoc renders this enum type in \c {qt.html} something like this:
 
            \quotation
            \raw HTML
@@ -4445,10 +4440,7 @@
            \endraw
            \endquotation
 
-           in qt.html.
-
-           See also \l {value-command} {\\value} and \l {omitvalue-command} {\\omitvalue}.
-
+    See also \l {value-command} {\\value} and \l {omitvalue-command} {\\omitvalue}.
 
     \target example-command
     \section1 \\example 
