@@ -283,7 +283,7 @@
     \title Positioners: Layout Direction Example
     \example declarative/positioners/layoutdirection
 
-    This example shows how to control the horizontal layout direction of 
+    This example shows how to control the horizontal layout direction of
     \l Row, \l Grid and \l Flow positioners.
 
     \image qml-positioners-layoutdirection-example.png
@@ -580,13 +580,6 @@
     \l SequentialAnimation and \l PropertyAction to create a game of TV tennis.
 
     \image qml-tvtennis-example.png
-*/
-
-/*!
-    \title Touch Interaction: Gestures Example
-    \example declarative/touchinteraction/gestures
-
-    This example shows how to use the GestureArea element.
 */
 
 /*!

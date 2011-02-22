@@ -37,42 +37,34 @@
 \div {indexbox tools}
     \div {indexboxcont indexboxbar }
         \div {sectionlist normallist}
-            \div {heading}
-                \bold{What is Qt}
-            \enddiv
-            \image qt-logo.png
+        \div {heading}
+            What is Qt
+        \enddiv
+        \image qt-logo_large.png
+        Qt is a cross-platform application and UI framework. Using Qt, you can
+        write applications once and deploy them across desktop, mobile, and
+        embedded operating systems without rewriting the source code.
+        \enddiv
+        \div {sectionlist normallist}
             \list
-            \o \l{http://doc.qt.nokia.com/nokia-qtsdk-1.0/index.html}{Nokia Qt SDK}
-            \o \l{What's New in Qt 4.7} - latest release
+            \o \l{http://doc.qt.nokia.com/nokia-qtsdk-1.0/index.html}{Qt SDK}
+            \o \l{http://developer.qt.nokia.com/wiki/QtCreatorWhitepaper}{Qt Creator}
+            \o \l{http://doc.qt.nokia.com/qtsimulator-1.1/index.html}{Qt Simulator}
             \endlist
             \list
             \o \l{http://developer.qt.nokia.com/wiki/QtWhitepaper}{Qt C++ Framework}
-            \o \l{http://developer.qt.nokia.com/wiki/QtCreatorWhitepaper}{Qt Creator}
             \o \l{Qt Quick}
             \o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/index.html}{Qt Mobility}
-            \o \l{http://doc.qt.nokia.com/qtsimulator-1.1/index.html}{Qt Simulator}
-            \o \l{Supported Platforms}{Platform Support}
-            \o \l{http://qt.nokia.com/products}{see more}
+            \o \l{Qt WebKit}
             \endlist
-        \enddiv
-        \div {sectionlist normallist}
-            \div {heading}
-                \bold{Develop with Qt}
-            \enddiv
-            \image qml.png
             \list
-            \o \l{Develop with Qt}{Steps to Programming Qt Applications}
-            \o \l{qt-creator-configure-target}{Configure Qt and Creator for Platforms}
-            \o \l{qt-technologies}{Qt Features and Technologies}
-            \o \l{qt-ui-creation}{Create UI with Qt}
-            \o \l{qt-utilities}{Utilities and Testing}
-            \o \l{qt-deployment}{Deploying Applications and Publish to Ovi Store}
+            \o \l{Supported Platforms}{Platform Support}
+            \o \l{What's New in Qt 4.7} - latest release
             \endlist
-
         \enddiv
         \div {sectionlist normallist}
             \div {heading}
-                \bold{See Qt}
+                See Qt
             \enddiv
             \image mobile.png
             \list
@@ -80,6 +72,52 @@
             \o \l{Tutorials}
             \o \l{Qt Examples}{Examples}
             \o \l{QML Examples and Demos}
+            \endlist
+        \enddiv
+    \enddiv
+\enddiv
+\div {indexbox tools}
+    \div {indexboxcont indexboxbar }
+        \div {sectionlist normallist}
+            \div {heading}
+                Develop with Qt
+            \enddiv
+            \image tools.png
+            \list
+            \o \l{Develop with Qt}{Steps to Programming Qt Applications}
+            \o \l{qt-creator-configure-target}{Configure Qt and Creator for Platforms}
+            \o \l{qt-technologies}{Qt Features and Technologies}
+            \o \l{qt-utilities}{Utilities and Testing}
+            \o \l{qt-deployment}{Deploying Applications and Publish to Ovi Store}
+            \endlist
+        \enddiv
+        \div {sectionlist normallist}
+            \div {heading}
+                Featured Articles
+            \enddiv
+            \image guide.png
+            \list
+            \o \l{Scalability}{How to Create Scalable Applications}
+            \o \l{http://doc.qt.nokia.com/nokia-qtsdk-1.0/creator-developing-symbian.html}{Setting Up Development Environment for Symbian}
+            \o \l{http://doc.qt.nokia.com/nokia-qtsdk-1.0/creator-developing-maemo.html}{Setting Up Development Environment for Maemo}
+            \o \l{http://doc.qt.nokia.com/qtcreator-snapshot/creator-publish-ovi.html}{Publishing Qt Applications to Ovi Store}
+            \endlist
+            \list
+            \o \l{Qt Development: The Steps from Challenge to Achievement}{The Steps from Challenge to Achievement}
+            A case analysis of a business development problem and a search for
+innovative solutions using Qt.
+            \endlist
+        \enddiv
+        \div {sectionlist normallist}
+            \div {heading}
+                UI Creation with Qt
+            \enddiv
+            \image qml.png
+            \list
+            \o \l{qt-ui-creation}{Create UI with Qt}
+            \o \l{qt-rendering-painting-system}{Qt's Rendering and Painting Systems}
+            \o \l{Qt Quick} - develop fluid UIs with QML
+            \o \l{Widgets and Layouts} - elements for C++ interfaces
             \endlist
         \enddiv
     \enddiv
@@ -99,18 +137,13 @@
             \o \l{All Modules}{All Modules}
             \o \l{All Namespaces}{All Namespaces}
             \o \l{Global Qt Declarations}{Global Declarations}
-            \o \l{Qt Licenses and Credits}{Licenses and Credits}
+
             \endlist
         \enddiv
         \div {sectionlist normallist}
-            \div {heading}
-                Qt Quick and Mobility
-            \enddiv
             \list
-            \o \l{Intro to Qt Quick}{Introduction to Qt Quick}
+            \o \l{Qt Quick}
             \o \l{QML Elements}
-            \o \l{QML Examples and Demos}
-            \o \l{Qt Quick}{see more}
             \endlist
             \list
             \o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/index.html}{Qt Mobility APIs}
@@ -119,14 +152,13 @@
         \enddiv
         \div {sectionlist normallist}
             \div {heading}
-                Qt Tools
+                Qt Manuals
             \enddiv
             \list
             \o \l{http://doc.qt.nokia.com/qtcreator-2.0/index.html}{Qt Creator}
             \o \l{http://doc.qt.nokia.com/qtsimulator/index.html}{Qt Simulator}
             \o \l{linguist-manual.html}{Qt Linguist}
             \o \l{assistant-manual.html}{Qt Assistant}
-            \o \l{http://qt.nokia.com/products/appdev}{Add-On Products and Services}
             \endlist
         \enddiv
     \enddiv

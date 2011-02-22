@@ -55,7 +55,11 @@ to application testing and deployment.
     \o \l{http://doc.qt.nokia.com/qtcreator-snapshot/creator-build-settings.html}{Build Settings} - edit and set build configurations
     \o \l{http://doc.qt.nokia.com/qtcreator-snapshot/creator-run-settings.html}{Run Settings} - edit and set application run settings
     \endlist
+\o \l{http://doc.qt.nokia.com/nokia-qtsdk-1.0/creator-developing-symbian.html}{Setting Up Development Environment for Symbian}
+\o \l{http://doc.qt.nokia.com/nokia-qtsdk-1.0/creator-developing-maemo.html}{Setting Up Development Environment for Maemo}
 \endlist
+
+\keyword qt-platform-support
 \section2 Qt Platform Support
 Alternatively, Qt may be installed on its own without the Nokia Qt SDK.
 
@@ -124,6 +128,7 @@ that deal with inter-process communication.
 \o \l{Thread Support in Qt}{Thread Support} - overview of threading APIs and concurrent programming topics
 \endlist
 
+\keyword qt-rendering-painting-system
 \section2 Rendering and Paint System
 Qt has various support for different rendering and painting methods.
 \list
@@ -157,7 +162,10 @@ Qt supports many utilities that work on multiple platforms.
 \o \l{Making Applications Scriptable} - provides Qt applications with ECMAScript processor.
 \o \l{Qt Linguist Manual}{Qt Linguist} - for translating applications into local languages.
 \endlist
-For more information, visit the \l{Qt's Tools}{Qt Tools} page.
+For more information, visit the \l{Qt's Tools}{Qt Tools} page.
+\enddiv
+\div {indexboxcont indexboxbar normallist}
+\keyword qt-testing
 \section1 Testing Qt Applications
 Testing and debugging are part of the development process and Qt offers the
 developer multiple methods of testing their code.
@@ -217,8 +225,8 @@ Qt Information
 \o \l{Cross-platform and Platform-specific Development}
 \o \l{Qt and Key Technologies}
 \o \l{Best Practice Guides}
+\o \l{Qt Licenses and Credits}{Licenses and Credits}
 \endlist
 \enddiv
 */
-
 
