@@ -3067,6 +3067,8 @@ void tst_QScriptExtQObject::enumerate()
         while (it.hasNext()) {
             it.next();
             QCOMPARE(it.flags(), obj.propertyFlags(it.name()));
+            if (it.flags() & QScriptValue::SkipInEnumeration)
+                continue;
             result.append(it.name());
         }
         QCOMPARE(result.size(), expectedNames.size());

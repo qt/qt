@@ -1290,7 +1290,6 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
         funcTempl->Inherit(engine->qtClassTemplate(superMo));
 
     v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
-    v8::Handle<v8::ObjectTemplate> protoTempl = funcTempl->PrototypeTemplate();
     // Internal field is used to hold QtInstanceData*.
     instTempl->SetInternalFieldCount(1);
 
@@ -1353,20 +1352,20 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
                 v8::Local<v8::Array> dataArray = v8::Array::New(2);
                 dataArray->Set(0, v8::External::Wrap(engine));
                 dataArray->Set(1, v8::Uint32::New(data));
-                protoTempl->SetAccessor(v8::String::New(method.signature()), QtGetMetaMethod, 0, dataArray);
+                instTempl->SetAccessor(v8::String::New(method.signature()), QtGetMetaMethod, 0, dataArray);
             }
             int methodIndex = indexes.last(); // The largest index by that name.
             quint32 data = (methodIndex & 0x3ffffff) | (voidvoid << 31) | (overloaded << 30);
             v8::Local<v8::Array> dataArray = v8::Array::New(2);
             dataArray->Set(0, v8::External::Wrap(engine));
             dataArray->Set(1, v8::Uint32::New(data));
-            protoTempl->SetAccessor(v8::String::New(name), QtGetMetaMethod, 0, dataArray, v8::DEFAULT, v8::DontEnum);
+            instTempl->SetAccessor(v8::String::New(name), QtGetMetaMethod, 0, dataArray, v8::DEFAULT, v8::DontEnum);
 
         }
     }
 
     if (mo == &QObject::staticMetaObject) {
-
+        v8::Handle<v8::ObjectTemplate> protoTempl = funcTempl->PrototypeTemplate();
         v8::Local<v8::Value> wEngine = v8::External::Wrap(engine);
         protoTempl->Set(v8::String::New("findChild"), v8::FunctionTemplate::New(findChildCallback, wEngine)->GetFunction(), v8::DontEnum);
         protoTempl->Set(v8::String::New("findChildren"), v8::FunctionTemplate::New(findChildrenCallback, wEngine)->GetFunction(), v8::DontEnum);
