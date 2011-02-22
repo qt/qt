@@ -38,55 +38,41 @@
 **
 ****************************************************************************/
 
-#include "miscellaneous.h"
+#ifndef DATEFORMATS_H
+#define DATEFORMATS_H
 
-MiscWidget::MiscWidget()
+#include <QtGui>
+
+class DateFormatsWidget : public QWidget
 {
-    QGridLayout *l = new QGridLayout;
+    Q_OBJECT
+public:
+    DateFormatsWidget();
 
-    createLineEdit("Text to quote:", &textToQuoteLabel, &textToQuote);
-    createLineEdit("Standard quotes:", &standardQuotedTextLabel, &standardQuotedText);
-    createLineEdit("Alternate quotes:", &alternateQuotedTextLabel, &alternateQuotedText);
-    textToQuote->setText("some text");
-    createLineEdit("Text direction:", &textDirectionLabel, &textDirection);
+private:
+    void addItem(const QString &label, QWidget *);
+    QLineEdit *addItem(const QString &label);
 
-    l->addWidget(textToQuoteLabel, 0, 0);
-    l->addWidget(textToQuote, 0, 1);
-    l->addWidget(standardQuotedTextLabel, 0, 2);
-    l->addWidget(standardQuotedText, 0, 3);
-    l->addWidget(alternateQuotedTextLabel, 1, 2);
-    l->addWidget(alternateQuotedText, 1, 3);
-    l->addWidget(textDirectionLabel, 2, 0);
-    l->addWidget(textDirection, 2, 1, 1, 3);
+    QScrollArea *scrollArea;
+    QWidget *scrollAreaWidget;
+    QGridLayout *layout;
 
-    connect(textToQuote, SIGNAL(textChanged(QString)), this, SLOT(updateQuotedText(QString)));
+    QLineEdit *shortDateFormat;
+    QLineEdit *longDateFormat;
+    QLineEdit *shortTimeFormat;
+    QLineEdit *longTimeFormat;
+    QLineEdit *shortDateTimeFormat;
+    QLineEdit *longDateTimeFormat;
+    QLineEdit *amText;
+    QLineEdit *pmText;
+    QLineEdit *firstDayOfWeek;
+    QComboBox *monthNamesShort, *monthNamesLong;
+    QComboBox *standaloneMonthNamesShort, *standaloneMonthNamesLong;
+    QComboBox *dayNamesShort, *dayNamesLong;
+    QComboBox *standaloneDayNamesShort, *standaloneDayNamesLong;
 
-    QVBoxLayout *v = new QVBoxLayout(this);
-    v->addLayout(l);
-    v->addStretch();
-}
+private slots:
+    void localeChanged(QLocale locale);
+};
 
-void MiscWidget::updateQuotedText(QString str)
-{
-    standardQuotedText->setText(locale().quoteString(str));
-    alternateQuotedText->setText(locale().quoteString(str, QLocale::AlternateQuotation));
-}
-
-void MiscWidget::localeChanged(QLocale locale)
-{
-    setLocale(locale);
-    updateQuotedText(textToQuote->text());
-    textDirection->setText(locale.textDirection() == Qt::LeftToRight ? "Left To Right" : "Right To Left");
-}
-
-void MiscWidget::createLineEdit(const QString &label, QLabel **labelWidget, QLineEdit **lineEditWidget)
-{
-    QLabel *lbl = new QLabel(label);
-    QLineEdit *le = new QLineEdit;
-    le->setReadOnly(true);
-    lbl->setBuddy(le);
-    if (labelWidget)
-        *labelWidget = lbl;
-    if (lineEditWidget)
-        *lineEditWidget = le;
-}
+#endif

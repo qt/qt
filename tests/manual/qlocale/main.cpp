@@ -40,8 +40,6 @@
 
 #include <QtGui>
 
-#include "calendar.h"
-#include "currency.h"
 #include "window.h"
 
 int main(int argv, char *args[])

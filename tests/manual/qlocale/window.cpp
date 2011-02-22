@@ -69,6 +69,10 @@ Window::Window()
     connect(this, SIGNAL(localeChanged(QLocale)), currency, SLOT(localeChanged(QLocale)));
     languages = new LanguagesWidget;
     connect(this, SIGNAL(localeChanged(QLocale)), languages, SLOT(localeChanged(QLocale)));
+    dateFormats = new DateFormatsWidget;
+    connect(this, SIGNAL(localeChanged(QLocale)), dateFormats, SLOT(localeChanged(QLocale)));
+    numberFormats = new NumberFormatsWidget;
+    connect(this, SIGNAL(localeChanged(QLocale)), numberFormats, SLOT(localeChanged(QLocale)));
     miscellaneous = new MiscWidget;
     connect(this, SIGNAL(localeChanged(QLocale)), miscellaneous, SLOT(localeChanged(QLocale)));
 
@@ -86,7 +90,10 @@ Window::Window()
     tabWidget->addTab(calendar, "Calendar");
     tabWidget->addTab(currency, "Currency");
     tabWidget->addTab(languages, "Languages");
-    tabWidget->addTab(miscellaneous, "Misc");
+    tabWidget->addTab(dateFormats, "Date Formats");
+    tabWidget->addTab(numberFormats, "Number Formats");
+    tabWidget->addTab(miscellaneous, "Text");
+
     localeCombo->setCurrentIndex(0);
     systemLocaleChanged();
 }

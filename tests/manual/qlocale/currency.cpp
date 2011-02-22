@@ -42,7 +42,7 @@
 
 CurrencyWidget::CurrencyWidget()
 {
-    QGridLayout *l = new QGridLayout(this);
+    QGridLayout *l = new QGridLayout;
 
     currencySymbolLabel = new QLabel("Symbol:");
     currencySymbol = new QLineEdit;
@@ -54,7 +54,6 @@ CurrencyWidget::CurrencyWidget()
     currencyFormattingValue = new QLineEdit(QString::number(1234.56, 'f', 2));
     currencyFormatting = new QLineEdit;
 
-
     l->addWidget(currencySymbolLabel, 0, 0);
     l->addWidget(currencySymbol, 0, 1, 1, 2);
     l->addWidget(currencyISOLabel, 1, 0);
@@ -65,19 +64,12 @@ CurrencyWidget::CurrencyWidget()
     l->addWidget(currencyFormattingValue, 3, 1);
     l->addWidget(currencyFormatting, 3, 2);
 
+    QVBoxLayout *v = new QVBoxLayout(this);
+    v->addLayout(l);
+    v->addStretch();
+
     connect(currencyFormattingValue, SIGNAL(textChanged(QString)),
             this, SLOT(updateCurrencyFormatting(QString)));
-
-    update(QLocale());
-}
-
-void CurrencyWidget::update(const QLocale locale)
-{
-    currentLocale = locale;
-    currencySymbol->setText(locale.currencySymbol());
-    currencyISO->setText(locale.currencySymbol(QLocale::CurrencyIsoCode));
-    currencyName->setText(locale.currencySymbol(QLocale::CurrencyDisplayName));
-    updateCurrencyFormatting(currencyFormattingValue->text());
 }
 
 void CurrencyWidget::updateCurrencyFormatting(QString value)
@@ -86,17 +78,21 @@ void CurrencyWidget::updateCurrencyFormatting(QString value)
     bool ok;
     int i = value.toInt(&ok);
     if (ok) {
-        result = currentLocale.toCurrencyString(i);
+        result = locale().toCurrencyString(i);
     } else {
         double d = value.toDouble(&ok);
         if (ok)
-            result = currentLocale.toCurrencyString(d);
+            result = locale().toCurrencyString(d);
     }
     currencyFormatting->setText(result);
 }
 
 void CurrencyWidget::localeChanged(QLocale locale)
 {
-    update(locale);
+    setLocale(locale);
+    currencySymbol->setText(locale.currencySymbol());
+    currencyISO->setText(locale.currencySymbol(QLocale::CurrencyIsoCode));
+    currencyName->setText(locale.currencySymbol(QLocale::CurrencyDisplayName));
+    updateCurrencyFormatting(currencyFormattingValue->text());
 }
 

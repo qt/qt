@@ -56,7 +56,16 @@ LanguagesWidget::LanguagesWidget()
 void LanguagesWidget::localeChanged(QLocale locale)
 {
     languagesList->clear();
-    languagesList->addItems(locale.uiLanguages());
+    foreach (const QString &lang, locale.uiLanguages()) {
+        QListWidgetItem *item = new QListWidgetItem(lang, languagesList);
+        QLocale l(lang);
+        if (l.language() != QLocale::C) {
+            QString language = QLocale::languageToString(l.language());
+            QString country = QLocale::countryToString(l.country());
+            QString tooltip = QString(QLatin1String("%1: %2/%3")).arg(l.name(), language, country);
+            item->setToolTip(tooltip);
+        }
+    }
 }
 
 

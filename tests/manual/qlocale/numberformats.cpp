@@ -38,55 +38,46 @@
 **
 ****************************************************************************/
 
-#include "miscellaneous.h"
+#include "numberformats.h"
 
-MiscWidget::MiscWidget()
+NumberFormatsWidget::NumberFormatsWidget()
 {
     QGridLayout *l = new QGridLayout;
 
-    createLineEdit("Text to quote:", &textToQuoteLabel, &textToQuote);
-    createLineEdit("Standard quotes:", &standardQuotedTextLabel, &standardQuotedText);
-    createLineEdit("Alternate quotes:", &alternateQuotedTextLabel, &alternateQuotedText);
-    textToQuote->setText("some text");
-    createLineEdit("Text direction:", &textDirectionLabel, &textDirection);
+    QLabel *numbersLabel = new QLabel("Numbers:");
+    number1 = createLineEdit();
+    number2 = createLineEdit();
+    number3 = createLineEdit();
 
-    l->addWidget(textToQuoteLabel, 0, 0);
-    l->addWidget(textToQuote, 0, 1);
-    l->addWidget(standardQuotedTextLabel, 0, 2);
-    l->addWidget(standardQuotedText, 0, 3);
-    l->addWidget(alternateQuotedTextLabel, 1, 2);
-    l->addWidget(alternateQuotedText, 1, 3);
-    l->addWidget(textDirectionLabel, 2, 0);
-    l->addWidget(textDirection, 2, 1, 1, 3);
+    measurementLabel = new QLabel("Measurement units:");
+    measurementSystem = createLineEdit();
 
-    connect(textToQuote, SIGNAL(textChanged(QString)), this, SLOT(updateQuotedText(QString)));
+    l->addWidget(numbersLabel, 0, 0);
+    l->addWidget(number1, 0, 1);
+    l->addWidget(number2, 0, 2);
+    l->addWidget(number3, 0, 3);
+
+    l->addWidget(measurementLabel, 1, 0);
+    l->addWidget(measurementSystem, 1, 1, 1, 3);
 
     QVBoxLayout *v = new QVBoxLayout(this);
     v->addLayout(l);
     v->addStretch();
 }
 
-void MiscWidget::updateQuotedText(QString str)
+void NumberFormatsWidget::localeChanged(QLocale locale)
 {
-    standardQuotedText->setText(locale().quoteString(str));
-    alternateQuotedText->setText(locale().quoteString(str, QLocale::AlternateQuotation));
+    number1->setText(locale.toString(-123456));
+    number2->setText(locale.toString(1234.56, 'f', 2));
+    number3->setText(locale.toString(1234.56, 'e', 4));
+
+    measurementSystem->setText(
+                locale.measurementSystem() == QLocale::ImperialSystem ? "US" : "Metric");
 }
 
-void MiscWidget::localeChanged(QLocale locale)
+QLineEdit *NumberFormatsWidget::createLineEdit()
 {
-    setLocale(locale);
-    updateQuotedText(textToQuote->text());
-    textDirection->setText(locale.textDirection() == Qt::LeftToRight ? "Left To Right" : "Right To Left");
-}
-
-void MiscWidget::createLineEdit(const QString &label, QLabel **labelWidget, QLineEdit **lineEditWidget)
-{
-    QLabel *lbl = new QLabel(label);
     QLineEdit *le = new QLineEdit;
     le->setReadOnly(true);
-    lbl->setBuddy(le);
-    if (labelWidget)
-        *labelWidget = lbl;
-    if (lineEditWidget)
-        *lineEditWidget = le;
+    return le;
 }

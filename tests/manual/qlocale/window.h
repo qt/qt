@@ -46,6 +46,8 @@
 #include "calendar.h"
 #include "currency.h"
 #include "languages.h"
+#include "dateformats.h"
+#include "numberformats.h"
 #include "miscellaneous.h"
 
 class Window : public QWidget
@@ -60,6 +62,8 @@ public:
     CalendarWidget *calendar;
     CurrencyWidget *currency;
     LanguagesWidget *languages;
+    DateFormatsWidget *dateFormats;
+    NumberFormatsWidget *numberFormats;
     MiscWidget *miscellaneous;
 
 private:

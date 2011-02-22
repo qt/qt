@@ -50,8 +50,6 @@ public:
     CurrencyWidget();
 
 private:
-    QLocale currentLocale;
-
     QLabel *currencySymbolLabel;
     QLineEdit *currencySymbol;
     QLabel *currencyISOLabel;
@@ -64,7 +62,6 @@ private:
 
 private slots:
     void localeChanged(QLocale locale);
-    void update(const QLocale locale);
     void updateCurrencyFormatting(QString);
 };
 

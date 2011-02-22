@@ -50,18 +50,19 @@ public:
     MiscWidget();
 
 private:
-    QLocale currentLocale;
+    void createLineEdit(const QString &label, QLabel **labelWidget = 0, QLineEdit **lineEditWidget = 0);
 
     QLabel *textToQuoteLabel;
     QLabel *standardQuotedTextLabel;
     QLabel *alternateQuotedTextLabel;
+    QLabel *textDirectionLabel;
     QLineEdit *textToQuote;
     QLineEdit *standardQuotedText;
     QLineEdit *alternateQuotedText;
+    QLineEdit *textDirection;
 
 private slots:
     void localeChanged(QLocale locale);
-    void update(const QLocale locale);
     void updateQuotedText(QString str);
 };
 
