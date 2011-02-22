@@ -3469,7 +3469,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     }
 
     if (!gset || gset->outline_drawing
-        || !fe->loadGlyphs(gset, glyphs.data(), glyphs.size(), neededFormat))
+        || !fe->loadGlyphs(gset, glyphs.data(), glyphs.size(), positions, neededFormat))
     {
         QPaintEngine::drawTextItem(p, ti);
         return;
@@ -3494,12 +3494,13 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     };
 
     for(int i = 0; i < glyphs.size(); i++) {
-        QFontEngineFT::Glyph *glyph = gset->getGlyph(glyphs[i]);
+        QFixed spp = fe->subPixelPositionForX(positions[i].x);
+        QFontEngineFT::Glyph *glyph = gset->getGlyph(glyphs[i], spp);
 
         if (!glyph || glyph->format != neededFormat) {
             if (!lockedFace)
                 lockedFace = fe->lockFace();
-            glyph = fe->loadGlyph(gset, glyphs[i], neededFormat);
+            glyph = fe->loadGlyph(gset, glyphs[i], spp, neededFormat);
         }
 
         if (!glyph || !glyph->data)

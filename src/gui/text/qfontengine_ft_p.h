@@ -166,6 +166,19 @@ public:
     };
 #endif
 
+    struct GlyphAndSubPixelPosition
+    {
+        GlyphAndSubPixelPosition(glyph_t g, QFixed spp) : glyph(g), subPixelPosition(spp) {}
+
+        bool operator==(const GlyphAndSubPixelPosition &other) const
+        {
+            return glyph == other.glyph && subPixelPosition == other.subPixelPosition;
+        }
+
+        glyph_t glyph;
+        QFixed subPixelPosition;
+    };
+
     struct QGlyphSet
     {
         QGlyphSet();
@@ -174,18 +187,21 @@ public:
         unsigned long id; // server sided id, GlyphSet for X11
         bool outline_drawing;
 
-        void removeGlyphFromCache(int index);
+        void removeGlyphFromCache(glyph_t index, QFixed subPixelPosition);
         void clear();
-        inline Glyph *getGlyph(int index) const
-        {
-            if (index < 256)
-                return fast_glyph_data[index];
-            return glyph_data.value(index);
+        inline bool useFastGlyphData(glyph_t index, QFixed subPixelPosition) const {
+            return (index < 256 && subPixelPosition == 0);
         }
-        void setGlyph(int index, Glyph *glyph);
+        inline Glyph *getGlyph(glyph_t index, QFixed subPixelPosition = 0) const
+        {
+            if (useFastGlyphData(index, subPixelPosition))
+                return fast_glyph_data[index];
+            return glyph_data.value(GlyphAndSubPixelPosition(index, subPixelPosition));
+        }
+        void setGlyph(glyph_t index, QFixed spp, Glyph *glyph);
 
 private:
-        mutable QHash<int, Glyph *> glyph_data; // maps from glyph index to glyph data
+        mutable QHash<GlyphAndSubPixelPosition, Glyph *> glyph_data; // maps from glyph index to glyph data
         mutable Glyph *fast_glyph_data[256]; // for fast lookup of glyphs < 256
         mutable int fast_glyph_count;
     };
@@ -193,6 +209,11 @@ private:
     virtual QFontEngine::FaceId faceId() const;
     virtual QFontEngine::Properties properties() const;
     virtual QFixed emSquareSize() const;
+    virtual bool supportsSubPixelPositions() const
+    {
+        return default_hint_style == HintLight ||
+               default_hint_style == HintNone;
+    }
 
     virtual bool getSfntTableData(uint tag, uchar *buffer, uint *length) const;
     virtual int synthesized() const;
@@ -254,17 +275,20 @@ private:
     inline bool invalid() const { return xsize == 0 && ysize == 0; }
     inline bool isBitmapFont() const { return defaultFormat == Format_Mono; }
 
-    inline Glyph *loadGlyph(uint glyph, GlyphFormat format = Format_None, bool fetchMetricsOnly = false) const
-    { return loadGlyph(&defaultGlyphSet, glyph, format, fetchMetricsOnly); }
-    Glyph *loadGlyph(QGlyphSet *set, uint glyph, GlyphFormat = Format_None, bool fetchMetricsOnly = false) const;
+    inline Glyph *loadGlyph(uint glyph, QFixed subPixelPosition, GlyphFormat format = Format_None, bool fetchMetricsOnly = false) const
+    { return loadGlyph(&defaultGlyphSet, glyph, subPixelPosition, format, fetchMetricsOnly); }
+    Glyph *loadGlyph(QGlyphSet *set, uint glyph, QFixed subPixelPosition, GlyphFormat = Format_None, bool fetchMetricsOnly = false) const;
 
     QGlyphSet *defaultGlyphs() { return &defaultGlyphSet; }
     GlyphFormat defaultGlyphFormat() const { return defaultFormat; }
 
-    inline Glyph *cachedGlyph(glyph_t g) const { return defaultGlyphSet.getGlyph(g); }
+    inline Glyph *cachedGlyph(glyph_t g) const { return defaultGlyphSet.getGlyph(g, 0); }
 
     QGlyphSet *loadTransformedGlyphSet(const QTransform &matrix);
-    bool loadGlyphs(QGlyphSet *gs, glyph_t *glyphs, int num_glyphs, GlyphFormat format = Format_Render);
+    QFixed subPixelPositionForX(QFixed x);
+    bool loadGlyphs(QGlyphSet *gs, glyph_t *glyphs, int num_glyphs,
+                    QVarLengthArray<QFixedPoint> &positions,
+                    GlyphFormat format = Format_Render);
 
 #if defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
     virtual void draw(QPaintEngine * /*p*/, qreal /*x*/, qreal /*y*/, const QTextItemInt & /*si*/) {}
@@ -309,6 +333,7 @@ protected:
 
 private:
     QFontEngineFT::Glyph *loadGlyphMetrics(QGlyphSet *set, uint glyph, GlyphFormat format) const;
+    int loadFlags(QGlyphSet *set, GlyphFormat format, int flags, bool &hsubpixel, int &vfactor) const;
 
     GlyphFormat defaultFormat;
     FT_Matrix matrix;
@@ -329,6 +354,11 @@ private:
     FT_Size_Metrics metrics;
     mutable bool kerning_pairs_loaded;
 };
+
+inline uint qHash(const QFontEngineFT::GlyphAndSubPixelPosition &g)
+{
+    return (g.glyph << 8)  | (g.subPixelPosition * 10).round().toInt();
+}
 
 QT_END_NAMESPACE
 

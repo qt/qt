@@ -1012,8 +1012,22 @@ QFontEngineX11FT::QFontEngineX11FT(FcPattern *pattern, const QFontDef &fd, int s
         }
     }
 
+    if (fd.hintingPreference != QFont::PreferDefaultHinting) {
+        switch (fd.hintingPreference) {
+        case QFont::PreferNoHinting:
+            default_hint_style = HintNone;
+            break;
+        case QFont::PreferVerticalHinting:
+            default_hint_style = HintLight;
+            break;
+        case QFont::PreferFullHinting:
+        default:
+            default_hint_style = HintFull;
+            break;
+        }
+    }
 #ifdef FC_HINT_STYLE
-    {
+    else {
         int hint_style = 0;
         if (FcPatternGetInteger (pattern, FC_HINT_STYLE, 0, &hint_style) == FcResultNoMatch)
             hint_style = X11->fc_hint_style;
