@@ -525,7 +525,7 @@
     \ingroup platform-specific
     \ingroup platform-details
 
-    \section2 Qt on Maemo
+    \section1 Qt on Maemo
 
     Qt is a comprehensive application and UI framework for developing
     Maemo applications that can also be deployed across major
@@ -601,7 +601,7 @@
     \ingroup platform-specific
     \ingroup platform-details
 
-    \section2 Qt on MeeGo
+    \section1 Qt on MeeGo
 
     Qt is a comprehensive application and UI framework for developing
     MeeGo applications that can also be deployed across major
@@ -654,6 +654,7 @@
     \o Input Methods, including predictive text input and on-screen
     keyboard
     \o Configurable kinetic scrolling
+    \endlist
 
     \section2 Maemo - Linux/X11
 
