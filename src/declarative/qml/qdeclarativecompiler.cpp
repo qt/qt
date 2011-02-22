@@ -684,7 +684,9 @@ void QDeclarativeCompiler::compileTree(QDeclarativeParser::Object *tree)
         import.line = 0;
         import.storeScript.value = output->scripts.count();
 
-        output->scripts << script.script->scriptData();
+        QDeclarativeScriptData *scriptData = script.script->scriptData();
+        scriptData->addref();
+        output->scripts << scriptData;
         output->bytecode << import;
     }
 

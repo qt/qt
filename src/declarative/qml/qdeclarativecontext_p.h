@@ -124,7 +124,7 @@ public:
     QDeclarativeContextData *parent;
     QDeclarativeEngine *engine;
 
-    void setParent(QDeclarativeContextData *);
+    void setParent(QDeclarativeContextData *, bool parentTakesOwnership = false);
     void refreshExpressions();
 
     void addObject(QObject *);
@@ -135,7 +135,9 @@ public:
     // If internal is false publicContext owns this.
     QDeclarativeContext *asQDeclarativeContext();
     QDeclarativeContextPrivate *asQDeclarativeContextPrivate();
-    bool isInternal;
+    quint32 isInternal:1;
+    quint32 ownedByParent:1; // unrelated to isInternal; parent context deletes children if true.
+    quint32 dummy:30;
     QDeclarativeContext *publicContext;
 
     // Property name cache

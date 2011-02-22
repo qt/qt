@@ -498,7 +498,7 @@ QObject *QDeclarativeContextPrivate::context_at(QDeclarativeListProperty<QObject
 
 
 QDeclarativeContextData::QDeclarativeContextData()
-: parent(0), engine(0), isInternal(false), publicContext(0), propertyNames(0), contextObject(0),
+: parent(0), engine(0), isInternal(false), ownedByParent(false), publicContext(0), propertyNames(0), contextObject(0),
   imports(0), childContexts(0), nextChild(0), prevChild(0), expressions(0), contextObjects(0),
   contextGuards(0), idValues(0), idValueCount(0), optimizedBindings(0), linkedContext(0),
   componentAttached(0)
@@ -506,7 +506,7 @@ QDeclarativeContextData::QDeclarativeContextData()
 }
 
 QDeclarativeContextData::QDeclarativeContextData(QDeclarativeContext *ctxt)
-: parent(0), engine(0), isInternal(false), publicContext(ctxt), propertyNames(0), contextObject(0),
+: parent(0), engine(0), isInternal(false), ownedByParent(false), publicContext(ctxt), propertyNames(0), contextObject(0),
   imports(0), childContexts(0), nextChild(0), prevChild(0), expressions(0), contextObjects(0),
   contextGuards(0), idValues(0), idValueCount(0), optimizedBindings(0), linkedContext(0),
   componentAttached(0)
@@ -515,8 +515,13 @@ QDeclarativeContextData::QDeclarativeContextData(QDeclarativeContext *ctxt)
 
 void QDeclarativeContextData::invalidate()
 {
-    while (childContexts) 
-        childContexts->invalidate();
+    while (childContexts) {
+        if (childContexts->ownedByParent) {
+            childContexts->destroy();
+        } else {
+            childContexts->invalidate();
+        }
+    }
 
     while (componentAttached) {
         QDeclarativeComponentAttached *a = componentAttached;
@@ -614,7 +619,7 @@ void QDeclarativeContextData::destroy()
     delete this;
 }
 
-void QDeclarativeContextData::setParent(QDeclarativeContextData *p)
+void QDeclarativeContextData::setParent(QDeclarativeContextData *p, bool parentTakesOwnership)
 {
     if (p) {
         parent = p;
@@ -623,6 +628,7 @@ void QDeclarativeContextData::setParent(QDeclarativeContextData *p)
         if (nextChild) nextChild->prevChild = &nextChild;
         prevChild = &p->childContexts;
         p->childContexts = this;
+        ownedByParent = parentTakesOwnership;
     }
 }
 

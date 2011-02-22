@@ -1031,7 +1031,7 @@ QScriptValue QDeclarativeVME::run(QDeclarativeContextData *parentCtxt, QDeclarat
             ctxt->imports->addref();
         }
 
-        ctxt->setParent(parentCtxt);
+        ctxt->setParent(parentCtxt, true);
 
         for (int ii = 0; ii < script->scripts.count(); ++ii)
             ctxt->importedScripts << run(ctxt, script->scripts.at(ii)->scriptData());
