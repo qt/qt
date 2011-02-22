@@ -781,8 +781,6 @@ void QSGItem::setParentItem(QSGItem *parentItem)
     QSGItem *oldParentItem = d->parentItem;
     QSGItem *scopeFocusedItem = 0;
 
-    // XXX todo - fixup visible and enabled?
-
     if (oldParentItem) {
         QSGItemPrivate *op = QSGItemPrivate::get(oldParentItem);
 
@@ -821,6 +819,9 @@ void QSGItem::setParentItem(QSGItem *parentItem)
     
     if (d->parentItem)
         QSGItemPrivate::get(d->parentItem)->addChild(this);
+
+    d->setEffectiveVisibleRecur(d->calcEffectiveVisible());
+    d->setEffectiveEnableRecur(d->calcEffectiveEnable());
 
     if (scopeFocusedItem && d->parentItem && d->canvas) {
         // We need to test whether this item becomes scope focused

@@ -87,6 +87,9 @@ private slots:
 
     void constructor();
     void setParentItem();
+
+    void visible();
+    void enabled();
 };
 
 tst_qsgitem::tst_qsgitem()
@@ -626,6 +629,82 @@ void tst_qsgitem::setParentItem()
     QVERIFY(child2->parent() == 0);
     QVERIFY(child2->parentItem() == 0);
 
+    delete child1;
+    delete child2;
+}
+
+void tst_qsgitem::visible()
+{
+    QSGItem *root = new QSGItem;
+
+    QSGItem *child1 = new QSGItem;
+    child1->setParentItem(root);
+
+    QSGItem *child2 = new QSGItem;
+    child2->setParentItem(root);
+
+    QVERIFY(child1->isVisible());
+    QVERIFY(child2->isVisible());
+
+    root->setVisible(false);
+    QVERIFY(!child1->isVisible());
+    QVERIFY(!child2->isVisible());
+
+    root->setVisible(true);
+    QVERIFY(child1->isVisible());
+    QVERIFY(child2->isVisible());
+
+    child1->setVisible(false);
+    QVERIFY(!child1->isVisible());
+    QVERIFY(child2->isVisible());
+
+    child2->setParentItem(child1);
+    QVERIFY(!child1->isVisible());
+    QVERIFY(!child2->isVisible());
+
+    child2->setParentItem(root);
+    QVERIFY(!child1->isVisible());
+    QVERIFY(child2->isVisible());
+
+    delete root;
+    delete child1;
+    delete child2;
+}
+
+void tst_qsgitem::enabled()
+{
+    QSGItem *root = new QSGItem;
+
+    QSGItem *child1 = new QSGItem;
+    child1->setParentItem(root);
+
+    QSGItem *child2 = new QSGItem;
+    child2->setParentItem(root);
+
+    QVERIFY(child1->isEnabled());
+    QVERIFY(child2->isEnabled());
+
+    root->setEnabled(false);
+    QVERIFY(!child1->isEnabled());
+    QVERIFY(!child2->isEnabled());
+
+    root->setEnabled(true);
+    QVERIFY(child1->isEnabled());
+    QVERIFY(child2->isEnabled());
+
+    child1->setEnabled(false);
+    QVERIFY(!child1->isEnabled());
+    QVERIFY(child2->isEnabled());
+
+    child2->setParentItem(child1);
+    QVERIFY(!child1->isEnabled());
+    QVERIFY(!child2->isEnabled());
+
+    child2->setParentItem(root);
+    QVERIFY(!child1->isEnabled());
+    QVERIFY(child2->isEnabled());
+
+    delete root;
     delete child1;
     delete child2;
 }
