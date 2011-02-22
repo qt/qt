@@ -48,6 +48,7 @@
 #include "qscreenvfb_qws.h"
 #include "qscreenmulti_qws_p.h"
 #include "qscreenqnx_qws.h"
+#include "qscreenintegrityfb_qws.h"
 #include <stdlib.h>
 #include "private/qfactoryloader_p.h"
 #include "qscreendriverplugin_qws.h"
@@ -112,6 +113,10 @@ QScreen *QScreenDriverFactory::create(const QString& key, int displayId)
     if (driver == QLatin1String("qnx") || driver.isEmpty())
         return new QQnxScreen(displayId);
 #endif
+#if defined(Q_OS_INTEGRITY) && !defined(QT_NO_QWS_INTEGRITY)
+    if (driver == QLatin1String("integrityfb") || driver.isEmpty())
+        return new QIntfbScreen(displayId);
+#endif
 #ifndef QT_NO_QWS_QVFB
     if (driver == QLatin1String("qvfb") || driver.isEmpty())
         return new QVFbScreen(displayId);
@@ -158,6 +163,9 @@ QStringList QScreenDriverFactory::keys()
 
 #if defined(Q_OS_QNX) && !defined(QT_NO_QWS_QNX)
     list << QLatin1String("QNX");
+#endif
+#if defined(Q_OS_INTEGRITY) && !defined(QT_NO_QWS_INTEGRITY)
+    list << QLatin1String("INTEGRITYFB");
 #endif
 #ifndef QT_NO_QWS_QVFB
     list << QLatin1String("QVFb");

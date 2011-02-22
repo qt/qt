@@ -193,7 +193,7 @@ class Q_GUI_EXPORT QScreen {
 public:
     enum ClassId { LinuxFBClass, TransformedClass, VNCClass, MultiClass,
                    VFbClass, DirectFBClass, SvgalibClass, ProxyClass,
-                   GLClass, CustomClass = 1024 };
+                   GLClass, IntfbClass, CustomClass = 1024 };
 
     QScreen(int display_id, ClassId classId);
     explicit QScreen(int display_id);
@@ -358,6 +358,7 @@ private:
     friend class QLinuxFbScreen;
     friend class QVFbScreen;
     friend class QProxyScreen;
+    friend class QIntfbScreen;
 #endif
     friend void qt_solidFill_setup(QScreen*, const QColor&, const QRegion&);
     friend void qt_blit_setup(QScreen *screen, const QImage &image,
