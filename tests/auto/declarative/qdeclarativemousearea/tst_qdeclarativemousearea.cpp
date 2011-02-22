@@ -541,15 +541,11 @@ void tst_QDeclarativeMouseArea::preventStealing()
 
     QSignalSpy mousePositionSpy(mouseArea, SIGNAL(positionChanged(QDeclarativeMouseEvent*)));
 
-    QGraphicsScene *scene = canvas->scene();
-    QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
-    pressEvent.setScenePos(QPointF(80, 80));
-    pressEvent.setButton(Qt::LeftButton);
-    pressEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &pressEvent);
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(80, 80)));
 
     // Without preventStealing, mouse movement over MouseArea would
     // cause the Flickable to steal mouse and trigger content movement.
+    QGraphicsScene *scene = canvas->scene();
     QGraphicsSceneMouseEvent moveEvent(QEvent::GraphicsSceneMouseMove);
     moveEvent.setScenePos(QPointF(70, 70));
     moveEvent.setButton(Qt::LeftButton);
@@ -574,17 +570,12 @@ void tst_QDeclarativeMouseArea::preventStealing()
     QCOMPARE(flickable->contentX(), 0.);
     QCOMPARE(flickable->contentY(), 0.);
 
-    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
-    releaseEvent.setScenePos(QPointF(50, 50));
-    releaseEvent.setButton(Qt::LeftButton);
-    releaseEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &releaseEvent);
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(50, 50)));
 
     // Now allow stealing and confirm Flickable does its thing.
     canvas->rootObject()->setProperty("stealing", false);
 
-    pressEvent.setScenePos(QPointF(80, 80));
-    QApplication::sendEvent(scene, &pressEvent);
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(80, 80)));
 
     // Without preventStealing, mouse movement over MouseArea would
     // cause the Flickable to steal mouse and trigger content movement.
@@ -606,8 +597,7 @@ void tst_QDeclarativeMouseArea::preventStealing()
     QCOMPARE(flickable->contentX(), 10.);
     QCOMPARE(flickable->contentY(), 10.);
 
-    releaseEvent.setScenePos(QPointF(50, 50));
-    QApplication::sendEvent(scene, &releaseEvent);
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(50, 50)));
 
     delete canvas;
 }

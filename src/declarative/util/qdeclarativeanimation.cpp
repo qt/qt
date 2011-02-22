@@ -182,12 +182,11 @@ void QDeclarativeAbstractAnimation::setRunning(bool r)
 {
     Q_D(QDeclarativeAbstractAnimation);
     if (!d->componentComplete) {
-        if (d->running && r == d->running)    //don't re-register
-            return;
         d->running = r;
         if (r == false)
             d->avoidPropertyValueSourceStart = true;
-        else {
+        else if (!d->registered) {
+            d->registered = true;
             QDeclarativeEnginePrivate *engPriv = QDeclarativeEnginePrivate::get(qmlEngine(this));
             engPriv->registerFinalizedParserStatusObject(this, this->metaObject()->indexOfSlot("componentFinalized()"));
         }
@@ -204,6 +203,7 @@ void QDeclarativeAbstractAnimation::setRunning(bool r)
 
     d->running = r;
     if (d->running) {
+        bool supressStart = false;
         if (d->alwaysRunToEnd && d->loopCount != 1
             && qtAnimation()->state() == QAbstractAnimation::Running) {
             //we've restarted before the final loop finished; restore proper loop count
@@ -211,6 +211,7 @@ void QDeclarativeAbstractAnimation::setRunning(bool r)
                 qtAnimation()->setLoopCount(d->loopCount);
             else
                 qtAnimation()->setLoopCount(qtAnimation()->currentLoop() + d->loopCount);
+            supressStart = true;    //we want the animation to continue, rather than restart
         }
 
         if (!d->connectedTimeLine) {
@@ -218,7 +219,8 @@ void QDeclarativeAbstractAnimation::setRunning(bool r)
                              this, SLOT(timelineComplete()));
             d->connectedTimeLine = true;
         }
-        d->commence();
+        if (!supressStart)
+            d->commence();
         emit started();
     } else {
         if (d->alwaysRunToEnd) {

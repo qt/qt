@@ -932,15 +932,18 @@ void QTextControl::processEvent(QEvent *e, const QMatrix &matrix, QWidget *conte
             break; }
         case QEvent::MouseMove: {
             QMouseEvent *ev = static_cast<QMouseEvent *>(e);
-            d->mouseMoveEvent(ev->buttons(), matrix.map(ev->pos()));
+            d->mouseMoveEvent(ev, ev->button(), matrix.map(ev->pos()), ev->modifiers(),
+                              ev->buttons(), ev->globalPos());
             break; }
         case QEvent::MouseButtonRelease: {
             QMouseEvent *ev = static_cast<QMouseEvent *>(e);
-            d->mouseReleaseEvent(ev->button(), matrix.map(ev->pos()));
+            d->mouseReleaseEvent(ev, ev->button(), matrix.map(ev->pos()), ev->modifiers(),
+                                 ev->buttons(), ev->globalPos());
             break; }
         case QEvent::MouseButtonDblClick: {
             QMouseEvent *ev = static_cast<QMouseEvent *>(e);
-            d->mouseDoubleClickEvent(e, ev->button(), matrix.map(ev->pos()));
+            d->mouseDoubleClickEvent(ev, ev->button(), matrix.map(ev->pos()), ev->modifiers(),
+                                     ev->buttons(), ev->globalPos());
             break; }
         case QEvent::InputMethod:
             d->inputMethodEvent(static_cast<QInputMethodEvent *>(e));
@@ -1000,15 +1003,18 @@ void QTextControl::processEvent(QEvent *e, const QMatrix &matrix, QWidget *conte
             break; }
         case QEvent::GraphicsSceneMouseMove: {
             QGraphicsSceneMouseEvent *ev = static_cast<QGraphicsSceneMouseEvent *>(e);
-            d->mouseMoveEvent(ev->buttons(), matrix.map(ev->pos()));
+            d->mouseMoveEvent(ev, ev->button(), matrix.map(ev->pos()), ev->modifiers(), ev->buttons(),
+                              ev->screenPos());
             break; }
         case QEvent::GraphicsSceneMouseRelease: {
             QGraphicsSceneMouseEvent *ev = static_cast<QGraphicsSceneMouseEvent *>(e);
-            d->mouseReleaseEvent(ev->button(), matrix.map(ev->pos()));
+            d->mouseReleaseEvent(ev, ev->button(), matrix.map(ev->pos()), ev->modifiers(), ev->buttons(),
+                                 ev->screenPos());
             break; }
         case QEvent::GraphicsSceneMouseDoubleClick: {
             QGraphicsSceneMouseEvent *ev = static_cast<QGraphicsSceneMouseEvent *>(e);
-            d->mouseDoubleClickEvent(e, ev->button(), matrix.map(ev->pos()));
+            d->mouseDoubleClickEvent(ev, ev->button(), matrix.map(ev->pos()), ev->modifiers(), ev->buttons(),
+                                     ev->screenPos());
             break; }
         case QEvent::GraphicsSceneContextMenu: {
             QGraphicsSceneContextMenuEvent *ev = static_cast<QGraphicsSceneContextMenuEvent *>(e);
@@ -1017,7 +1023,8 @@ void QTextControl::processEvent(QEvent *e, const QMatrix &matrix, QWidget *conte
 
         case QEvent::GraphicsSceneHoverMove: {
             QGraphicsSceneHoverEvent *ev = static_cast<QGraphicsSceneHoverEvent *>(e);
-            d->mouseMoveEvent(Qt::NoButton, matrix.map(ev->pos()));
+            d->mouseMoveEvent(ev, Qt::NoButton, matrix.map(ev->pos()), ev->modifiers(),Qt::NoButton,
+                              ev->screenPos());
             break; }
 
         case QEvent::GraphicsSceneDragEnter: {
@@ -1487,6 +1494,11 @@ void QTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton button, con
 {
     Q_Q(QTextControl);
 
+    if (sendMouseEventToInputContext(
+            e, QEvent::MouseButtonPress, button, pos, modifiers, buttons, globalPos)) {
+        return;
+    }
+
     if (interactionFlags & Qt::LinksAccessibleByMouse) {
         anchorOnMousePress = q->anchorAt(pos);
 
@@ -1529,22 +1541,7 @@ void QTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton button, con
             return;
         }
 
-#if !defined(QT_NO_IM)
-        QTextLayout *layout = cursor.block().layout();
-        if (contextWidget && layout && !layout->preeditAreaText().isEmpty()) {
-            QInputContext *ctx = inputContext();
-            if (ctx) {
-                QMouseEvent ev(QEvent::MouseButtonPress, contextWidget->mapFromGlobal(globalPos), globalPos,
-                               button, buttons, modifiers);
-                ctx->mouseHandler(cursorPos - cursor.position(), &ev);
-            }
-            if (!layout->preeditAreaText().isEmpty()) {
-                e->ignore();
-                return;
-            }
-        }
-#endif
-        if (modifiers == Qt::ShiftModifier) {
+        if (modifiers == Qt::ShiftModifier && (interactionFlags & Qt::TextSelectableByMouse)) {
             if (wordSelectionEnabled && !selectedWordOnDoubleClick.hasSelection()) {
                 selectedWordOnDoubleClick = cursor;
                 selectedWordOnDoubleClick.select(QTextCursor::WordUnderCursor);
@@ -1589,9 +1586,15 @@ void QTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton button, con
     hadSelectionOnMousePress = cursor.hasSelection();
 }
 
-void QTextControlPrivate::mouseMoveEvent(Qt::MouseButtons buttons, const QPointF &mousePos)
+void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, const QPointF &mousePos, Qt::KeyboardModifiers modifiers,
+                                         Qt::MouseButtons buttons, const QPoint &globalPos)
 {
     Q_Q(QTextControl);
+
+    if (sendMouseEventToInputContext(
+            e, QEvent::MouseMove, button, mousePos, modifiers, buttons, globalPos)) {
+        return;
+    }
 
     if (interactionFlags & Qt::LinksAccessibleByMouse) {
         QString anchor = q->anchorAt(mousePos);
@@ -1622,12 +1625,6 @@ void QTextControlPrivate::mouseMoveEvent(Qt::MouseButtons buttons, const QPointF
     }
     const qreal mouseX = qreal(mousePos.x());
 
-#if !defined(QT_NO_IM)
-    QTextLayout *layout = cursor.block().layout();
-    if (layout && !layout->preeditAreaText().isEmpty())
-        return;
-#endif
-
     int newCursorPos = q->hitTest(mousePos, Qt::FuzzyHit);
     if (newCursorPos == -1)
         return;
@@ -1641,7 +1638,7 @@ void QTextControlPrivate::mouseMoveEvent(Qt::MouseButtons buttons, const QPointF
         extendBlockwiseSelection(newCursorPos);
     else if (selectedWordOnDoubleClick.hasSelection())
         extendWordwiseSelection(newCursorPos, mouseX);
-    else
+    else if (interactionFlags & Qt::TextSelectableByMouse)
         setCursorPosition(newCursorPos, QTextCursor::KeepAnchor);
 
     if (interactionFlags & Qt::TextEditable) {
@@ -1665,9 +1662,15 @@ void QTextControlPrivate::mouseMoveEvent(Qt::MouseButtons buttons, const QPointF
     repaintOldAndNewSelection(oldSelection);
 }
 
-void QTextControlPrivate::mouseReleaseEvent(Qt::MouseButton button, const QPointF &pos)
+void QTextControlPrivate::mouseReleaseEvent(QEvent *e, Qt::MouseButton button, const QPointF &pos, Qt::KeyboardModifiers modifiers,
+                                            Qt::MouseButtons buttons, const QPoint &globalPos)
 {
     Q_Q(QTextControl);
+
+    if (sendMouseEventToInputContext(
+            e, QEvent::MouseButtonRelease, button, pos, modifiers, buttons, globalPos)) {
+        return;
+    }
 
     const QTextCursor oldSelection = cursor;
     const int oldCursorPos = cursor.position();
@@ -1726,19 +1729,21 @@ void QTextControlPrivate::mouseReleaseEvent(Qt::MouseButton button, const QPoint
     }
 }
 
-void QTextControlPrivate::mouseDoubleClickEvent(QEvent *e, Qt::MouseButton button, const QPointF &pos)
+void QTextControlPrivate::mouseDoubleClickEvent(QEvent *e, Qt::MouseButton button, const QPointF &pos, Qt::KeyboardModifiers modifiers,
+                                                Qt::MouseButtons buttons, const QPoint &globalPos)
 {
     Q_Q(QTextControl);
+
+    if (sendMouseEventToInputContext(
+            e, QEvent::MouseButtonDblClick, button, pos, modifiers, buttons, globalPos)) {
+        return;
+    }
+
     if (button != Qt::LeftButton
         || !(interactionFlags & Qt::TextSelectableByMouse)) {
         e->ignore();
         return;
     }
-#if !defined(QT_NO_IM)
-    QTextLayout *layout = cursor.block().layout();
-    if (layout && !layout->preeditAreaText().isEmpty())
-        return;
-#endif
 
 #ifndef QT_NO_DRAGANDDROP
     mightStartDrag = false;
@@ -1765,6 +1770,45 @@ void QTextControlPrivate::mouseDoubleClickEvent(QEvent *e, Qt::MouseButton butto
 #endif
         emit q->cursorPositionChanged();
     }
+}
+
+bool QTextControlPrivate::sendMouseEventToInputContext(
+        QEvent *e, QEvent::Type eventType, Qt::MouseButton button, const QPointF &pos,
+        Qt::KeyboardModifiers modifiers, Qt::MouseButtons buttons, const QPoint &globalPos)
+{
+#if !defined(QT_NO_IM)
+    Q_Q(QTextControl);
+
+    QTextLayout *layout = cursor.block().layout();
+    if (contextWidget && layout && !layout->preeditAreaText().isEmpty()) {
+        QInputContext *ctx = inputContext();
+        int cursorPos = q->hitTest(pos, Qt::FuzzyHit) - cursor.position();
+
+        if (cursorPos < 0 || cursorPos > layout->preeditAreaText().length()) {
+            cursorPos = -1;
+            // don't send move events outside the preedit area
+            if (eventType == QEvent::MouseMove)
+                return true;
+        }
+        if (ctx) {
+            QMouseEvent ev(eventType, contextWidget->mapFromGlobal(globalPos), globalPos,
+                           button, buttons, modifiers);
+            ctx->mouseHandler(cursorPos, &ev);
+            e->setAccepted(ev.isAccepted());
+        }
+        if (!layout->preeditAreaText().isEmpty())
+            return true;
+    }
+#else
+    Q_UNUSED(e);
+    Q_UNUSED(eventType);
+    Q_UNUSED(button);
+    Q_UNUSED(pos);
+    Q_UNUSED(modifiers);
+    Q_UNUSED(buttons);
+    Q_UNUSED(globalPos);
+#endif
+    return false;
 }
 
 void QTextControlPrivate::contextMenuEvent(const QPoint &screenPos, const QPointF &docPos, QWidget *contextWidget)
