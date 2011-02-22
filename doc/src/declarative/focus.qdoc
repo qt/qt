@@ -28,11 +28,16 @@
 /*!
 \target qmlfocus
 \page qdeclarativefocus.html
+\ingroup qml-features
+\contentspage QML Features
+\previouspage {QML Text Handling and Validators}{Text Handling and Validators}
+\nextpage {QML Signal and Handler Event System}{Signal and Handler Event System}
+
 \title Keyboard Focus in QML
 
 When a key is pressed or released, a key event is generated and delivered to the
 focused QML \l Item. To facilitate the construction of reusable components
-and to address some of the cases unique to fluid user interfaces, the QML items add a
+and to address some of the cases unique to fluid user interfaces, the QML items add aged
 \e scope based extension to Qt's traditional keyboard focus model.
 
 \tableofcontents

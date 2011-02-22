@@ -224,7 +224,8 @@ in \c script.js:
 
 The \c jsFunction() will now be called whenever MouseArea's \c clicked signal is emitted.
 
-See \l {Connecting signals to methods and other signals} for more information.
+See \l{QML Signal and Handler Event System#Connecting Signals to Methods and Signals}
+{Connecting Signals to Methods and Signals} for more information.
 
 
 \section1 QML JavaScript Restrictions

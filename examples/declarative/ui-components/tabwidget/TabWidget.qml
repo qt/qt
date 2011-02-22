@@ -45,7 +45,7 @@ Item {
 
     // Setting the default property to stack.children means any child items
     // of the TabWidget are actually added to the 'stack' item's children.
-    // See the "Writing QML Components: Properties, Methods and Signals"
+    // See the "Property Binding"
     // documentation for details on default properties.
     default property alias content: stack.children
 

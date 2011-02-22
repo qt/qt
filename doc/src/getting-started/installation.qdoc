@@ -1189,7 +1189,7 @@ We hope you will enjoy using Qt.
 	\list
 		\o Development environment: 
 		\list
-			\o Microsoft® Visual Studio® 2005 (Standard Edition) or higher
+			\o Microsoft Visual Studio 2005 (Standard Edition) or higher
 			\o ActivePerl
 		\endlist
 		\o Footprint
@@ -1204,8 +1204,8 @@ We hope you will enjoy using Qt.
 		\endlist
 		\o Hardware Platform
 		\list
-			\o Supported on ARM®, x86®
-			\o (Compiles on SH4® and MIPS®)
+			\o Supported on ARM, x86
+			\o (Compiles on SH4 and MIPS)
 		\endlist
 	\endlist
 

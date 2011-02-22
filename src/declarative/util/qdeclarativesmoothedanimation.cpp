@@ -257,8 +257,8 @@ void QSmoothedAnimation::init()
 
     A SmoothedAnimation animates a property's value to a set target value
     using an ease in/out quad easing curve.  When the target value changes,
-    the easing curves used to animate between the old and new target values 
-    are smoothly spliced together to create a smooth movement to the new 
+    the easing curves used to animate between the old and new target values
+    are smoothly spliced together to create a smooth movement to the new
     target value that maintains the current velocity.
 
     The follow example shows one \l Rectangle tracking the position of another
@@ -288,11 +288,11 @@ void QSmoothedAnimation::init()
     of 0.5 will take 2000 ms to complete.
 
     Like any other animation element, a SmoothedAnimation can be applied in a
-    number of ways, including transitions, behaviors and property value 
-    sources. The \l {QML Animation} documentation shows a variety of methods
-    for creating animations.
+    number of ways, including transitions, behaviors and property value
+    sources. The \l {QML Animation and Transitions} documentation shows a
+    variety of methods for creating animations.
 
-    \sa SpringAnimation, NumberAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}
+    \sa SpringAnimation, NumberAnimation, {QML Animation and Transitions}, {declarative/animation/basics}{Animation basics example}
 */
 
 QDeclarativeSmoothedAnimation::QDeclarativeSmoothedAnimation(QObject *parent)
