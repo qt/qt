@@ -1297,6 +1297,8 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
     // Add accessors for meta-properties.
     for (int i = mo->propertyOffset(); i < mo->propertyCount(); ++i) {
         QMetaProperty prop = mo->property(i);
+        if (!prop.isScriptable())
+            continue;
         // Choose suitable callbacks for type.
         v8::AccessorGetter getter;
         v8::AccessorSetter setter;
