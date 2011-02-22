@@ -1795,7 +1795,9 @@ QVariant QSystemLocale::query(QueryType /* type */, QVariant /* in */) const
   \value MeasurementSystem a QLocale::MeasurementSystem enum specifying the measurement system
   \value AMText a string that represents the system AM designator associated with a 12-hour clock.
   \value PMText a string that represents the system PM designator associated with a 12-hour clock.
-  \value FirstDayOfWeek a Qt::DayOfWeek enum specifiying the first day of the week
+  \value FirstDayOfWeek a Qt::DayOfWeek enum specifying the first day of the week
+  \value WeekendStart a Qt::DayOfWeek enum specifying the first day of the weekend
+  \value WeekendEnd a Qt::DayOfWeek enum specifying the last day of the weekend
   \value CurrencySymbol a string that represents a currency in a format QLocale::CurrencyFormat.
   \value FormatCurrency a localized string representation of a number with a currency symbol.
   \value UILanguages a list of strings representing locale names that could be used for UI translation.
@@ -3938,6 +3940,40 @@ Qt::DayOfWeek QLocale::firstDayOfWeek() const
     }
 #endif
     return static_cast<Qt::DayOfWeek>(d()->m_first_day_of_week);
+}
+
+/*!
+    \since 4.8
+
+    Returns the first day of the weekend according to the current locale.
+*/
+Qt::DayOfWeek QLocale::weekendStart() const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::WeekendStart, QVariant());
+        if (!res.isNull())
+            return static_cast<Qt::DayOfWeek>(res.toUInt());
+    }
+#endif
+    return static_cast<Qt::DayOfWeek>(d()->m_weekend_start);
+}
+
+/*!
+    \since 4.8
+
+    Returns the last day of the weekend according to the current locale.
+*/
+Qt::DayOfWeek QLocale::weekendEnd() const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::WeekendEnd, QVariant());
+        if (!res.isNull())
+            return static_cast<Qt::DayOfWeek>(res.toUInt());
+    }
+#endif
+    return static_cast<Qt::DayOfWeek>(d()->m_weekend_end);
 }
 
 /*!
