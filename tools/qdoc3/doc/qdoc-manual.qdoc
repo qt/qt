@@ -4538,103 +4538,97 @@
     \target group-command
     \section1 \\group 
 
-    The \\group command creates a separate page that
-    lists the classes belonging to the group specified by the
-    command's argument.
+    The \\group command creates a separate page that lists the classes
+    belonging to the group. The argument is the group name. 
 
-           The command follows \l {topic argument} {the general
-           topic command convention} for the argument. The \\group
-           command is typically followed by a \l {title-command} {\\title}
-           command and a short introduction to the group.  The
-           generated HTML documentation for the specified group is put
-           in <lower-case>\e{group}.html.
+    A class is included in a group by using the \l {ingroup-command}
+    {\\ingroup} command. Overview pages can also be related to a group
+    using the same command, but the list of overview pages must be
+    requested explicitly using the \l {generatelist-command}
+    {\\generatelist} command (see example below).
 
-           A class can be related to a group by using the \l
-           {ingroup-command} {\\ingroup} command. In addition, overviews can be
-           related to a group using the same command, but these must
-           be listed explicitly using the \l
-           {generatelist-command} {\\generatelist} command (see example below).
+    The \\group command is typically followed by a \l {title-command}
+    {\\title} command and a short introduction to the group.  The
+    HTML page for the group is written to a \c {.html} file put in
+    <lower-case>\e{group}.html.
 
-           Each class is listed with a link to the class reference
-           page and a brief description based on the classes' \l
-           {brief-command} {\\brief} texts. For example:
+    Each class name is listed as a link to the class reference page
+    followed by the text from the class's \l {brief-command} {\\brief}
+    texts. For example:
 
-           \code
-           / *!
-               \group io
+    \code
+    / *!
+        \group io
 
-               \title Input/Output and Networking
+        \title Input/Output and Networking
 
-               These classes are used to handle input and output to
-               and from external devices, processes, files etc. as
-               well as manipulating files and directories.
-           * /
-           \endcode
+        These classes are used to handle input and output to
+        and from external devices, processes, files etc. as
+        well as manipulating files and directories.
+    * /
+    \endcode
 
-           QDoc renders this as:
+    QDoc generates a group page in \c{io.html} that will look
+    something like this:
 
-           \quotation
-                \raw HTML
+    \quotation
+         \raw HTML
 
-                <h1>Input/Output and Networking</h1>
+         <h1>Input/Output and Networking</h1>
 
-                <p>These classes are used to handle input and output
-                to and from external devices, processes, files etc. as
-                well as manipulating files and directories.</p>
+         <p>These classes are used to handle input and output
+         to and from external devices, processes, files etc. as
+         well as manipulating files and directories.</p>
 
-                <p>
-                <table width="100%">
-                    <tr valign="top" bgcolor="#e0e0e0">
-                    <td><b>
-                    <a href="http://qt.nokia.com/doc/4.0/qabstractsocket.html">QAbstractSocket</a>
-                    </b></td>
-                    <td>
-                    The base functionality common to all socket types
-                    </td></tr>
+         <p>
+         <table width="100%">
+             <tr valign="top" bgcolor="#e0e0e0">
+             <td><b>
+             <a href="http://qt.nokia.com/doc/4.0/qabstractsocket.html">QAbstractSocket</a>
+             </b></td>
+             <td>
+             The base functionality common to all socket types
+             </td></tr>
 
-                    <tr valign="top" bgcolor="#e0e0e0">
-                    <td><b>
-                    <a href="http://qt.nokia.com/doc/4.0/qbuffer.html">QBuffer</a>
-                    </b></td>
-                    <td>
-                    QIODevice interface for a QByteArray
-                    </td></tr>
+             <tr valign="top" bgcolor="#e0e0e0">
+             <td><b>
+             <a href="http://qt.nokia.com/doc/4.0/qbuffer.html">QBuffer</a>
+             </b></td>
+             <td>
+             QIODevice interface for a QByteArray
+             </td></tr>
 
-                    <tr valign="top" bgcolor="#e0e0e0">
-                    <td><b>
-                    <a href="http://qt.nokia.com/doc/4.0/qclipboard.html">QClipboard</a>
-                    </b></td>
-                    <td>
-                    Access to the window system clipboard
-                    </td></tr>
-                </table>
-                \endraw
-           \endquotation
+             <tr valign="top" bgcolor="#e0e0e0">
+             <td><b>
+             <a href="http://qt.nokia.com/doc/4.0/qclipboard.html">QClipboard</a>
+             </b></td>
+             <td>
+             Access to the window system clipboard
+             </td></tr>
+         </table>
+         \endraw
+    \endquotation
 
-           in io.html.
+    Note that overview pages related to the group, must be listed
+    explicitly using the \l {generatelist-command} {\\generatelist}
+    command with the \c related argument. For example:
 
-           Note that overviews related to the given group, must be
-           listed explicitly using the \l
-           {generatelist-command} {\\generatelist} command with the \c related
-           argument. For example:
+    \code
+    / *!
+        \group architecture
 
-           \code
-           / *!
-               \group architecture
+        \title Architecture
 
-               \title Architecture
+        These documents describe aspects of Qt's architecture
+        and design, including overviews of core Qt features and
+        technologies.
 
-               These documents describe aspects of Qt's architecture
-               and design, including overviews of core Qt features and
-               technologies.
+        \generatelist{related}
+    * /
+    \endcode
 
-               \generatelist{related}
-           * /
-           \endcode
-
-           See also \l {ingroup-command} {\\ingroup} and \l
-           {generatelist-command} {\\generatelist}.
-
+    See also \l {ingroup-command} {\\ingroup} and \l
+    {generatelist-command} {\\generatelist}.
 
     \target headerfile-command
     \section1 \\headerfile 
