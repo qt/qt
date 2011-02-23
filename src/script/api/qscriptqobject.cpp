@@ -1293,29 +1293,6 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
     // Internal field is used to hold QtInstanceData*.
     instTempl->SetInternalFieldCount(1);
 
-    // Add accessors for meta-properties.
-    for (int i = mo->propertyOffset(); i < mo->propertyCount(); ++i) {
-        QMetaProperty prop = mo->property(i);
-        if (!prop.isScriptable())
-            continue;
-        // Choose suitable callbacks for type.
-        v8::AccessorGetter getter;
-        v8::AccessorSetter setter;
-#if 0
-        if (prop.userType() == QMetaType::QString) {
-            getter = QtMetaPropertyFastGetter<StringType>;
-            setter = QtMetaPropertyFastSetter<StringType>;
-        } else
-#endif
-        {
-            getter = QtMetaPropertyGetter;
-            setter = QtMetaPropertySetter;
-        }
-        instTempl->SetAccessor(v8::String::New(prop.name()),
-                               getter, setter, v8::Int32::New(i),
-                               v8::DEFAULT, v8::DontDelete);
-    }
-
     // Figure out method names (own and inherited).
     QHash<QByteArray, QList<int> > ownMethodNameToIndexes;
     QHash<QByteArray, QList<int> > methodNameToIndexes;
@@ -1362,6 +1339,29 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
             instTempl->SetAccessor(v8::String::New(name), QtGetMetaMethod, 0, dataArray, v8::DEFAULT, v8::DontEnum);
 
         }
+    }
+
+    // Add accessors for meta-properties.
+    for (int i = mo->propertyOffset(); i < mo->propertyCount(); ++i) {
+        QMetaProperty prop = mo->property(i);
+        if (!prop.isScriptable())
+            continue;
+        // Choose suitable callbacks for type.
+        v8::AccessorGetter getter;
+        v8::AccessorSetter setter;
+#if 0
+        if (prop.userType() == QMetaType::QString) {
+            getter = QtMetaPropertyFastGetter<StringType>;
+            setter = QtMetaPropertyFastSetter<StringType>;
+        } else
+#endif
+        {
+            getter = QtMetaPropertyGetter;
+            setter = QtMetaPropertySetter;
+        }
+        instTempl->SetAccessor(v8::String::New(prop.name()),
+                               getter, setter, v8::Int32::New(i),
+                               v8::DEFAULT, v8::DontDelete);
     }
 
     if (mo == &QObject::staticMetaObject) {
