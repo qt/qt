@@ -245,6 +245,16 @@ private:
 };
 #endif
 
+const QLocalePrivate *findLocale(QLocale::Language language, QLocale::Country country);
+const QLocalePrivate *findLocale(const QString &name);
+QString readEscapedFormatString(const QString &format, int *idx);
+bool splitLocaleName(const QString &name, QChar *lang_begin, QChar *cntry_begin,
+                     int *lang_len = 0, int *cntry_len = 0);
+int repeatCount(const QString &s, int i);
+QLocale::Language codeToLanguage(const QChar *code);
+QLocale::Country codeToCountry(const QChar *code);
+void getLangAndCountry(const QString &name, QLocale::Language &lang, QLocale::Country &cntry);
+
 QT_END_NAMESPACE
 
 #endif // QLOCALE_P_H

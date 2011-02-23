@@ -19,6 +19,7 @@ HEADERS +=  \
         tools/qlist.h \
         tools/qlocale.h \
         tools/qlocale_p.h \
+        tools/qlocale_tools_p.h \
         tools/qlocale_data_p.h \
         tools/qmap.h \
         tools/qmargins.h \
@@ -64,6 +65,7 @@ SOURCES += \
         tools/qlinkedlist.cpp \
         tools/qlist.cpp \
         tools/qlocale.cpp \
+        tools/qlocale_tools.cpp \
         tools/qpoint.cpp \
         tools/qmap.cpp \
         tools/qmargins.cpp \
@@ -82,12 +84,13 @@ SOURCES += \
         tools/qvector.cpp \
         tools/qvsnprintf.cpp
 
-symbian:SOURCES+=tools/qlocale_symbian.cpp
-
-!nacl:mac:SOURCES += tools/qelapsedtimer_mac.cpp
-else:symbian:SOURCES += tools/qelapsedtimer_symbian.cpp
-else:unix:SOURCES += tools/qelapsedtimer_unix.cpp
-else:win32:SOURCES += tools/qelapsedtimer_win.cpp
+!nacl:mac: {
+    SOURCES += tools/qelapsedtimer_mac.cpp
+    OBJECTIVE_SOURCES += tools/qlocale_mac.mm
+}
+else:symbian:SOURCES += tools/qelapsedtimer_symbian.cpp tools/qlocale_symbian.cpp
+else:unix:SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp
+else:win32:SOURCES += tools/qelapsedtimer_win.cpp tools/qlocale_win.cpp
 else:SOURCES += tools/qelapsedtimer_generic.cpp
 
 contains(QT_CONFIG, zlib):include($$PWD/../../3rdparty/zlib.pri)

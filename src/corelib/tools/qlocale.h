@@ -107,7 +107,7 @@ public:
 
 private:
     QSystemLocale(bool);
-    friend class QSystemLocaleData;
+    friend QSystemLocale *QSystemLocale_globalSystemLocale();
 };
 #endif
 

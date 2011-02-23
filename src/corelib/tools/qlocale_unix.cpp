@@ -1,0 +1,256 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the QtCore module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include "qlocale_p.h"
+
+#include "qdatetime.h"
+#include "qstringlist.h"
+#include "qvariant.h"
+
+QT_BEGIN_NAMESPACE
+
+#ifndef QT_NO_SYSTEMLOCALE
+struct QSystemLocaleData
+{
+    QSystemLocaleData()
+        : lc_numeric(QLocale::C)
+         ,lc_time(QLocale::C)
+         ,lc_monetary(QLocale::C)
+         ,lc_messages(QLocale::C)
+    {
+        QByteArray all = qgetenv("LC_ALL");
+        QByteArray numeric  = all.isEmpty() ? qgetenv("LC_NUMERIC") : all;
+        QByteArray time     = all.isEmpty() ? qgetenv("LC_TIME") : all;
+        QByteArray monetary = all.isEmpty() ? qgetenv("LC_MONETARY") : all;
+        QByteArray messages = all.isEmpty() ? qgetenv("LC_MESSAGES") : all;
+        QByteArray lang = qgetenv("LANG");
+        if (numeric.isEmpty())
+            numeric = lang;
+        if (monetary.isEmpty())
+            monetary = lang;
+        if (messages.isEmpty())
+            messages = lang;
+        lc_numeric = QLocale(QString::fromAscii(numeric));
+        lc_time = QLocale(QString::fromAscii(time));
+        lc_monetary = QLocale(QString::fromAscii(monetary));
+        lc_messages = QLocale(QString::fromAscii(messages));
+    }
+
+    QLocale lc_numeric;
+    QLocale lc_time;
+    QLocale lc_monetary;
+    QLocale lc_messages;
+};
+Q_GLOBAL_STATIC(QSystemLocaleData, qSystemLocaleData)
+#endif
+
+
+static uint unixGetSystemMeasurementSystem()
+{
+    QString meas_locale = QString::fromLocal8Bit(qgetenv("LC_ALL"));
+    if (meas_locale.isEmpty()) {
+        meas_locale = QString::fromLocal8Bit(qgetenv("LC_MEASUREMENT"));
+    }
+    if (meas_locale.isEmpty()) {
+        meas_locale = QString::fromLocal8Bit(qgetenv("LANG"));
+    }
+    if (meas_locale.isEmpty()) {
+        meas_locale = QString::fromLocal8Bit("C");
+    }
+
+    if (meas_locale.compare(QString::fromLocal8Bit("Metric"), Qt::CaseInsensitive) == 0)
+        return 0;
+    if (meas_locale.compare(QString::fromLocal8Bit("Other"), Qt::CaseInsensitive) == 0)
+        return 0;
+
+    const QLocalePrivate* locale = findLocale(meas_locale);
+    return locale->measurementSystem();
+}
+
+static QByteArray envVarLocale()
+{
+    static QByteArray lang = 0;
+#ifdef Q_OS_UNIX
+    lang = qgetenv("LC_ALL");
+    if (lang.isNull())
+        lang = qgetenv("LC_NUMERIC");
+    if (lang.isNull())
+#endif
+        lang = qgetenv("LANG");
+    return lang;
+}
+
+#ifndef QT_NO_SYSTEMLOCALE
+/*!
+    \internal
+*/
+QLocale QSystemLocale::fallbackLocale() const
+{
+    return QLocale(QLatin1String(envVarLocale()));
+}
+
+/*!
+    \internal
+*/
+QVariant QSystemLocale::query(QueryType type, QVariant in) const
+{
+    QSystemLocaleData *d = qSystemLocaleData();
+    const QLocale &lc_numeric = d->lc_numeric;
+    const QLocale &lc_time = d->lc_time;
+    const QLocale &lc_monetary = d->lc_monetary;
+
+    switch (type) {
+    case DecimalPoint:
+        return lc_numeric.decimalPoint();
+    case GroupSeparator:
+        return lc_numeric.groupSeparator();
+    case ZeroDigit:
+        return lc_numeric.zeroDigit();
+    case NegativeSign:
+        return lc_numeric.negativeSign();
+    case DateFormatLong:
+        return lc_time.dateFormat(QLocale::LongFormat);
+    case DateFormatShort:
+        return lc_time.dateFormat(QLocale::ShortFormat);
+    case TimeFormatLong:
+        return lc_time.timeFormat(QLocale::LongFormat);
+    case TimeFormatShort:
+        return lc_time.timeFormat(QLocale::ShortFormat);
+    case DayNameLong:
+        return lc_time.dayName(in.toInt(), QLocale::LongFormat);
+    case DayNameShort:
+        return lc_time.dayName(in.toInt(), QLocale::ShortFormat);
+    case MonthNameLong:
+        return lc_time.monthName(in.toInt(), QLocale::LongFormat);
+    case MonthNameShort:
+        return lc_time.monthName(in.toInt(), QLocale::ShortFormat);
+    case DateToStringLong:
+        return lc_time.toString(in.toDate(), QLocale::LongFormat);
+    case DateToStringShort:
+        return lc_time.toString(in.toDate(), QLocale::ShortFormat);
+    case TimeToStringLong:
+        return lc_time.toString(in.toTime(), QLocale::LongFormat);
+    case TimeToStringShort:
+        return lc_time.toString(in.toTime(), QLocale::ShortFormat);
+    case DateTimeFormatLong:
+        return lc_time.dateTimeFormat(QLocale::LongFormat);
+    case DateTimeFormatShort:
+        return lc_time.dateTimeFormat(QLocale::ShortFormat);
+    case DateTimeToStringLong:
+        return lc_time.toString(in.toDateTime(), QLocale::LongFormat);
+    case DateTimeToStringShort:
+        return lc_time.toString(in.toDateTime(), QLocale::ShortFormat);
+    case PositiveSign:
+        return lc_numeric.positiveSign();
+    case AMText:
+        return lc_time.amText();
+    case PMText:
+        return lc_time.pmText();
+    case FirstDayOfWeek:
+        return lc_time.firstDayOfWeek();
+    case CurrencySymbol:
+        return lc_monetary.currencySymbol(QLocale::CurrencySymbolFormat(in.toUInt()));
+    case FormatCurrency: {
+        switch (in.type()) {
+        case QVariant::Int:
+            return lc_monetary.toCurrencyString(in.toInt());
+        case QVariant::UInt:
+            return lc_monetary.toCurrencyString(in.toUInt());
+        case QVariant::Double:
+            return lc_monetary.toCurrencyString(in.toDouble());
+        case QVariant::LongLong:
+            return lc_monetary.toCurrencyString(in.toLongLong());
+        case QVariant::ULongLong:
+            return lc_monetary.toCurrencyString(in.toULongLong());
+        default:
+            break;
+        }
+        return QString();
+    }
+    case MeasurementSystem:
+        return QVariant(unixGetSystemMeasurementSystem());
+    case UILanguages: {
+        QString languages = QString::fromLocal8Bit(qgetenv("LANGUAGE"));
+        if (!languages.isEmpty()) {
+            QStringList lst = languages.split(QLatin1Char(':'));
+            for (int i = 0; i < lst.size();) {
+                const QString &name = lst.at(i);
+                QChar lang[3];
+                QChar cntry[3];
+                if (name.isEmpty() || !splitLocaleName(name, lang, cntry))
+                    lst.removeAt(i);
+                else
+                    ++i;
+            }
+            return lst;
+        }
+        QString name = QString::fromLocal8Bit(qgetenv("LC_ALL"));
+        if (name.isEmpty()) {
+            name = QString::fromLocal8Bit(qgetenv("LC_MESSAGES"));
+            if (name.isEmpty())
+                name = QString::fromLocal8Bit(qgetenv("LANG"));
+        }
+        if (!name.isEmpty()) {
+            QChar lang[3];
+            QChar cntry[3];
+            int lang_len, cntry_len;
+            if (splitLocaleName(name, lang, cntry, &lang_len, &cntry_len))
+                return QStringList(QString::fromRawData(lang, lang_len) % QLatin1Char('-') % QString::fromRawData(cntry, cntry_len));
+        }
+        return QVariant();
+    }
+    case QuotationBegin:
+    case QuotationEnd:
+        break; // TODO
+    default:
+        break;
+    }
+    return QVariant();
+}
+#endif // QT_NO_SYSTEMLOCALE
+
+QString timeZone()
+{
+    tzset();
+    return QString::fromLocal8Bit(tzname[1]);
+}
+
+QT_END_NAMESPACE
