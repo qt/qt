@@ -29,15 +29,15 @@
 \page index.html
 \keyword Qt Reference Documentation
 
-\div {indexbox guide}
-    \div {heading}
+\div {class="indexbox guide"}
+    \div {class="heading"}
         Qt Developer Guide
     \enddiv
 \enddiv
-\div {indexbox tools}
-    \div {indexboxcont indexboxbar }
-        \div {sectionlist normallist}
-        \div {heading}
+\div {class="indexbox tools"}
+    \div {class="indexboxcont indexboxbar"}
+        \div {class="sectionlist normallist"}
+        \div {class="heading"}
             What is Qt
         \enddiv
         \image qt-logo_large.png
@@ -45,7 +45,7 @@
         write applications once and deploy them across desktop, mobile, and
         embedded operating systems without rewriting the source code.
         \enddiv
-        \div {sectionlist normallist}
+        \div {class="sectionlist normallist"}
             \list
             \o \l{http://doc.qt.nokia.com/nokia-qtsdk-1.0/index.html}{Qt SDK}
             \o \l{http://developer.qt.nokia.com/wiki/QtCreatorWhitepaper}{Qt Creator}
@@ -62,8 +62,8 @@
             \o \l{What's New in Qt 4.7} - latest release
             \endlist
         \enddiv
-        \div {sectionlist normallist}
-            \div {heading}
+        \div {class="sectionlist normallist"}
+            \div {class="heading"}
                 See Qt
             \enddiv
             \image mobile.png
@@ -76,10 +76,10 @@
         \enddiv
     \enddiv
 \enddiv
-\div {indexbox tools}
-    \div {indexboxcont indexboxbar }
-        \div {sectionlist normallist}
-            \div {heading}
+\div {class="indexbox tools"}
+    \div {class="indexboxcont indexboxbar"}
+        \div {class="sectionlist normallist"}
+            \div {class="heading"}
                 Develop with Qt
             \enddiv
             \image tools.png
@@ -91,8 +91,8 @@
             \o \l{qt-deployment}{Deploying Applications and Publish to Ovi Store}
             \endlist
         \enddiv
-        \div {sectionlist normallist}
-            \div {heading}
+        \div {class="sectionlist normallist"}
+            \div {class="heading"}
                 Featured Articles
             \enddiv
             \image guide.png
@@ -108,8 +108,8 @@
 innovative solutions using Qt.
             \endlist
         \enddiv
-        \div {sectionlist normallist}
-            \div {heading}
+        \div {class="sectionlist normallist"}
+            \div {class="heading"}
                 UI Creation with Qt
             \enddiv
             \image qml.png
@@ -122,13 +122,13 @@ innovative solutions using Qt.
         \enddiv
     \enddiv
 \enddiv
-\div {indexbox tools}
-    \div {heading}
+\div {class="indexbox tools"}
+    \div {class="heading"}
         Reference
     \enddiv
-    \div {indexboxcont indexboxbar}
-        \div {sectionlist normallist}
-            \div {heading}
+    \div {class="indexboxcont indexboxbar"}
+        \div {class="sectionlist normallist"}
+            \div {class="heading"}
                 Qt API
             \enddiv
             \list
@@ -140,7 +140,7 @@ innovative solutions using Qt.
 
             \endlist
         \enddiv
-        \div {sectionlist normallist}
+        \div {class="sectionlist normallist"}
             \list
             \o \l{Qt Quick}
             \o \l{QML Elements}
@@ -150,8 +150,8 @@ innovative solutions using Qt.
             \o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/qml-plugins.html}{Mobility QML Plugins}
             \endlist
         \enddiv
-        \div {sectionlist normallist}
-            \div {heading}
+        \div {class="sectionlist normallist"}
+            \div {class="heading"}
                 Qt Manuals
             \enddiv
             \list
