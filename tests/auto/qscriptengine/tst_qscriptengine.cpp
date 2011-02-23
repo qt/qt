@@ -5826,7 +5826,6 @@ void tst_QScriptEngine::promoteThisObjectToQObjectInConstructor()
     QVERIFY(object.isQObject());
     QVERIFY(object.toQObject() != 0);
     QVERIFY(object.property("objectName").isString());
-    QEXPECT_FAIL("", "FIXME: not working", Continue);
     QVERIFY(object.property("deleteLater").isFunction());
 }
 
