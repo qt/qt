@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -161,8 +161,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_replySslErrors(QList<QSslError>))
 #if !defined(QT_NO_BEARERMANAGEMENT) && !defined(QT_MOBILITY_BEARER)
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionClosed())
-    Q_PRIVATE_SLOT(d_func(), void _q_networkSessionNewConfigurationActivated())
-    Q_PRIVATE_SLOT(d_func(), void _q_networkSessionPreferredConfigurationChanged(QNetworkConfiguration,bool))
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionStateChanged(QNetworkSession::State))
 #endif
 };

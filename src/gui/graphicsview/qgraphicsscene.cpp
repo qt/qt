@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -130,7 +130,7 @@
     item on the scene gains focus, the scene automatically gains focus. If the
     scene has focus, hasFocus() will return true, and key events will be
     forwarded to the focus item, if any. If the scene loses focus, (i.e.,
-    someone calls clearFocus(),) while an item has focus, the scene will
+    someone calls clearFocus()) while an item has focus, the scene will
     maintain its item focus information, and once the scene regains focus, it
     will make sure the last focus item regains focus.
 
@@ -3104,8 +3104,8 @@ bool QGraphicsScene::stickyFocus() const
     \list
     \o If the item receives a mouse release event when there are no other
     buttons pressed, it loses the mouse grab.
-    \o If the item becomes invisible (i.e., someone calls \c {item->setVisible(false))},
-    or if it becomes disabled (i.e., someone calls \c {item->setEnabled(false))},
+    \o If the item becomes invisible (i.e., someone calls \c {item->setVisible(false)}),
+    or if it becomes disabled (i.e., someone calls \c {item->setEnabled(false)}),
     it loses the mouse grab.
     \o If the item is removed from the scene, it loses the mouse grab.
     \endlist

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -97,6 +97,7 @@ enum {
 #ifdef QDOC_QML    
     CMD_QML, CMD_ENDQML, CMD_CPP, CMD_ENDCPP, CMD_QMLTEXT,
     CMD_ENDQMLTEXT, CMD_CPPTEXT, CMD_ENDCPPTEXT,
+    CMD_JS, CMD_ENDJS,
 #endif    
     NOT_A_CMD
 };
@@ -204,6 +205,8 @@ static struct {
     { "endqmltext", CMD_ENDQMLTEXT, 0 },
     { "cpptext", CMD_CPPTEXT, 0 },
     { "endcpptext", CMD_ENDCPPTEXT, 0 },
+    { "js", CMD_JS, 0 },
+    { "endjs", CMD_ENDJS, 0 },
 #endif
     { 0, 0, 0 }
 };
@@ -369,6 +372,8 @@ class DocParser
     void appendChar(QChar ch);
     void appendWord(const QString &word);
     void appendToCode(const QString &code);
+    void appendToCode(const QString &code, Atom::Type defaultType);
+    void startNewPara();
     void enterPara(Atom::Type leftType = Atom::ParaLeft,
                    Atom::Type rightType = Atom::ParaRight,
                    const QString& string = "");
@@ -542,7 +547,7 @@ void DocParser::parse(const QString& source,
                         enterPara();
                         p1 = untabifyEtc(getArgument(true));
                         marker = CodeMarker::markerForCode(p1);
-                        append(Atom::C, marker->markedUpCode(p1, 0, ""));
+                        append(Atom::C, marker->markedUpCode(p1, 0, location()));
                         break;
                     case CMD_CAPTION:
                         leavePara();
@@ -553,7 +558,7 @@ void DocParser::parse(const QString& source,
                         break;
                     case CMD_CODE:
                         leavePara();
-                        append(Atom::Code, getCode(CMD_CODE, marker));
+                        append(Atom::Code, getCode(CMD_CODE, 0));
                         break;
 #ifdef QDOC_QML
                     case CMD_QML:
@@ -562,6 +567,10 @@ void DocParser::parse(const QString& source,
                         break;
                     case CMD_QMLTEXT:
                         append(Atom::QmlText);
+                        break;
+                    case CMD_JS:
+                        leavePara();
+                        append(Atom::JavaScript, getCode(CMD_JS, CodeMarker::markerForLanguage(QLatin1String("JavaScript"))));
                         break;
 #endif
                     case CMD_DIV:
@@ -648,6 +657,9 @@ void DocParser::parse(const QString& source,
                         break;
                     case CMD_ENDQMLTEXT:
                         append(Atom::EndQmlText);
+                        break;
+                    case CMD_ENDJS:
+                        closeCommand(cmd);
                         break;
 #endif                        
                     case CMD_ENDFOOTNOTE:
@@ -1118,9 +1130,8 @@ void DocParser::parse(const QString& source,
                                 append(Atom::SnippetIdentifier, identifier);
                             }
                             else {
-                                Doc::quoteFromFile(location(),quoter,snippet);
-                                appendToCode(quoter.quoteSnippet(location(),
-                                                                 identifier));
+                                marker = Doc::quoteFromFile(location(),quoter,snippet);
+                                appendToCode(quoter.quoteSnippet(location(), identifier), marker->atomType());
                             }
                         }
                         break;
@@ -1873,13 +1884,28 @@ void DocParser::appendToCode(const QString& markedCode)
 {
     Atom::Type lastType = priv->text.lastAtom()->type();
 #ifdef QDOC_QML
-    if (lastType != Atom::Qml)
+    if (lastType != Atom::Qml && lastType != Atom::Code && lastType != Atom::JavaScript)
         append(Atom::Qml);
 #else
     if (lastType != Atom::Code)
         append(Atom::Code);
 #endif    
     priv->text.lastAtom()->appendString(markedCode);
+}
+
+void DocParser::appendToCode(const QString &markedCode, Atom::Type defaultType)
+{
+    Atom::Type lastType = priv->text.lastAtom()->type();
+    if (lastType != Atom::Qml && lastType != Atom::Code && lastType != Atom::JavaScript)
+        append(defaultType, markedCode);
+    else
+        priv->text.lastAtom()->appendString(markedCode);
+}
+
+void DocParser::startNewPara()
+{
+    leavePara();
+    enterPara();
 }
 
 void DocParser::enterPara(Atom::Type leftType,
@@ -2328,7 +2354,7 @@ QString DocParser::getCode(int cmd, CodeMarker *marker)
     code = unindent(minIndent, code);
     if (!marker)
         marker = CodeMarker::markerForCode(code);
-    return marker->markedUpCode(code, 0, "");
+    return marker->markedUpCode(code, 0, location());
 }
 
 /*!
@@ -2435,6 +2461,8 @@ int DocParser::endCmdFor(int cmd)
         return CMD_ENDQML;
     case CMD_QMLTEXT:
         return CMD_ENDQMLTEXT;
+    case CMD_JS:
+        return CMD_ENDJS;
 #endif        
     case CMD_FOOTNOTE:
         return CMD_ENDFOOTNOTE;
@@ -3072,7 +3100,7 @@ CodeMarker *Doc::quoteFromFile(const Location &location,
     CodeMarker *marker = CodeMarker::markerForFileName(fileName);
     quoter.quoteFromFile(userFriendlyFilePath,
                          code,
-                         marker->markedUpCode(code, 0, dirPath));
+                         marker->markedUpCode(code, 0, location));
     return marker;
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -219,7 +219,6 @@ HtmlGenerator::HtmlGenerator()
       threeColumnEnumValueTable(true),
       funcLeftParen("\\S(\\()"),
       myTree(0),
-      slow(false),
       obsoleteLinks(false)
 {
 }
@@ -270,12 +269,6 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     postPostHeader = config.getString(HtmlGenerator::format() +
                                       Config::dot +
                                       HTMLGENERATOR_POSTPOSTHEADER);
-    creatorPostHeader = config.getString(HtmlGenerator::format() +
-                                  Config::dot +
-                                  HTMLGENERATOR_CREATORPOSTHEADER);
-    creatorPostPostHeader = config.getString(HtmlGenerator::format() +
-                                      Config::dot +
-                                      HTMLGENERATOR_CREATORPOSTPOSTHEADER);
     footer = config.getString(HtmlGenerator::format() +
                               Config::dot +
                               HTMLGENERATOR_FOOTER);
@@ -325,8 +318,6 @@ void HtmlGenerator::initializeGenerator(const Config &config)
 
         ++edition;
     }
-
-    slow = config.getBool(CONFIG_SLOW);
 
     codeIndent = config.getInt(CONFIG_CODEINDENT);
 
@@ -477,12 +468,15 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             out() << "</p>\n";
         break;
     case Atom::C:
+        // This may at one time have been used to mark up C++ code but it is
+        // now widely used to write teletype text. As a result, text marked
+        // with the \c command is not passed to a code marker.
         out() << formattingLeftMap()[ATOM_FORMATTING_TELETYPE];
         if (inLink) {
             out() << protectEnc(plainCode(atom->string()));
         }
         else {
-            out() << highlightedCode(atom->string(), marker, relative);
+            out() << protectEnc(plainCode(atom->string()));
         }
         out() << formattingRightMap()[ATOM_FORMATTING_TELETYPE];
         break;
@@ -498,7 +492,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         break;
     case Atom::Code:
-        out() << "<pre class=\"highlightedCode brush: cpp\">"
+        out() << "<pre class=\"cpp\">"
               << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),
                                                  marker,relative))
               << "</pre>\n";
@@ -510,10 +504,16 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                                                  marker,relative))
               << "</pre>\n";
         break;
+    case Atom::JavaScript:
+        out() << "<pre class=\"js\">"
+              << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),
+                                                 marker,relative))
+              << "</pre>\n";
+        break;
 #endif
     case Atom::CodeNew:
         out() << "<p>you can rewrite it as</p>\n"
-              << "<pre class=\"highlightedCode brush: cpp\">"
+              << "<pre class=\"cpp\">"
               << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),
                                                  marker,relative))
               << "</pre>\n";
@@ -522,7 +522,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         out() << "<p>For example, if you have code like</p>\n";
         // fallthrough
     case Atom::CodeBad:
-        out() << "<pre class=\"highlightedCode brush: cpp\">"
+        out() << "<pre class=\"cpp\">"
               << trimmedTrailing(protectEnc(plainCode(indent(codeIndent,atom->string()))))
               << "</pre>\n";
         break;
@@ -1681,12 +1681,10 @@ void HtmlGenerator::generateHeader(const QString& title,
     QString shortVersion = myTree->version();
     if (shortVersion.count(QChar('.')) == 2)
         shortVersion.truncate(shortVersion.lastIndexOf(QChar('.')));
-    if (!shortVersion.isEmpty()) {
-        if (project == "QSA")
-            shortVersion = "QSA " + shortVersion + ": ";
-        else
-            shortVersion = "Qt " + shortVersion + ": ";
-    }
+    if (!project.isEmpty())
+        shortVersion = project + QLatin1String(" ") + shortVersion + QLatin1String(": ");
+    else
+        shortVersion = QLatin1String("Qt ") + shortVersion + QLatin1String(": ");
 
     // Generating page title
     out() << "  <title>" << shortVersion << protectEnc(title) << "</title>\n";
@@ -1818,7 +1816,7 @@ void HtmlGenerator::generateBrief(const Node *node, CodeMarker *marker,
 void HtmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *marker)
 {
     if (!inner->includes().isEmpty()) {
-        out() << "<pre class=\"highlightedCode brush: cpp\">"
+        out() << "<pre class=\"cpp\">"
               << trimmedTrailing(highlightedCode(indent(codeIndent,
                                                         marker->markedUpIncludes(inner->includes())),
                                                  marker,inner))
@@ -2802,8 +2800,8 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
     // replace all <@link> tags: "(<@link node=\"([^\"]+)\">).*(</@link>)"
     bool done = false;
     for (int i = 0, srcSize = src.size(); i < srcSize;) {
-        if (src.at(i) == charLangle && src.at(i + 1).unicode() == '@') {
-            if (alignNames && !done) {// && (i != 0)) Why was this here?
+        if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
+            if (alignNames && !done) {
                 html += "</td><td class=\"memItemRight bottomAlign\">";
                 done = true;
             }
@@ -2826,30 +2824,27 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
     }
 
 
-    if (slow) {
-        // is this block ever used at all?
-        // replace all <@func> tags: "(<@func target=\"([^\"]*)\">)(.*)(</@func>)"
-        src = html;
-        html = QString();
-        for (int i = 0, srcSize = src.size(); i < srcSize;) {
-            if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
-                i += 2;
-                if (parseArg(src, funcTag, &i, srcSize, &arg, &par1)) {
-                    const Node* n = marker->resolveTarget(par1.toString(),
-                                                          myTree,
-                                                          relative);
-                    QString link = linkForNode(n, relative);
-                    addLink(link, arg, &html);
-                    par1 = QStringRef();
-                }
-                else {
-                    html += charLangle;
-                    html += charAt;
-                }
+    // replace all <@func> tags: "(<@func target=\"([^\"]*)\">)(.*)(</@func>)"
+    src = html;
+    html = QString();
+    for (int i = 0, srcSize = src.size(); i < srcSize;) {
+        if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
+            i += 2;
+            if (parseArg(src, funcTag, &i, srcSize, &arg, &par1)) {
+                const Node* n = marker->resolveTarget(par1.toString(),
+                                                      myTree,
+                                                      relative);
+                QString link = linkForNode(n, relative);
+                addLink(link, arg, &html);
+                par1 = QStringRef();
             }
             else {
-                html += src.at(i++);
+                html += charLangle;
+                html += charAt;
             }
+        }
+        else {
+            html += src.at(i++);
         }
     }
 
@@ -2864,6 +2859,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
             if (parseArg(src, typeTag, &i, srcSize, &arg, &par1)) {
                 par1 = QStringRef();
                 const Node* n = marker->resolveTarget(arg.toString(), myTree, relative, self);
+                html += QLatin1String("<span class=\"type\">");
                 if (n && n->subType() == Node::QmlBasicType) {
                     if (relative && relative->subType() == Node::QmlClass)
                         addLink(linkForNode(n,relative), arg, &html);
@@ -2872,6 +2868,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
                 }
                 else
                     addLink(linkForNode(n,relative), arg, &html);
+                html += QLatin1String("</span>");
                 handled = true;
             }
             else if (parseArg(src, headerTag, &i, srcSize, &arg, &par1)) {
@@ -4288,6 +4285,151 @@ void HtmlGenerator::generateExtractionMark(const Node *node, ExtractionMarkType 
     }
 }
 
+/*!
+  Returns the full document location for HTML-based documentation.
+ */
+QString HtmlGenerator::fullDocumentLocation(const Node *node)
+{
+    if (!node)
+        return "";
+    if (!node->url().isEmpty())
+        return node->url();
+
+    QString parentName;
+    QString anchorRef;
+
+    if (node->type() == Node::Namespace) {
+
+        // The root namespace has no name - check for this before creating
+        // an attribute containing the location of any documentation.
+
+        if (!node->fileBase().isEmpty())
+            parentName = node->fileBase() + ".html";
+        else
+            return "";
+    }
+    else if (node->type() == Node::Fake) {
+#ifdef QDOC_QML
+        if ((node->subType() == Node::QmlClass) ||
+            (node->subType() == Node::QmlBasicType)) {
+            QString fb = node->fileBase();
+            if (fb.startsWith(Generator::outputPrefix(QLatin1String("QML"))))
+                return fb + ".html";
+            else
+                return Generator::outputPrefix(QLatin1String("QML")) + node->fileBase() + QLatin1String(".html");
+        } else
+#endif
+        parentName = node->fileBase() + ".html";
+    }
+    else if (node->fileBase().isEmpty())
+        return "";
+
+    Node *parentNode = 0;
+
+    if ((parentNode = node->relates()))
+        parentName = fullDocumentLocation(node->relates());
+    else if ((parentNode = node->parent())) {
+        if (parentNode->subType() == Node::QmlPropertyGroup) {
+            parentNode = parentNode->parent();
+            parentName = fullDocumentLocation(parentNode);
+        }
+        else
+            parentName = fullDocumentLocation(node->parent());
+    }
+
+    switch (node->type()) {
+        case Node::Class:
+        case Node::Namespace:
+            if (parentNode && !parentNode->name().isEmpty())
+                parentName = parentName.replace(".html", "") + "-"
+                           + node->fileBase().toLower() + ".html";
+            else
+                parentName = node->fileBase() + ".html";
+            break;
+        case Node::Function:
+            {
+                /*
+                  Functions can be destructors, overloaded, or
+                  have associated properties.
+                */
+                const FunctionNode *functionNode =
+                    static_cast<const FunctionNode *>(node);
+
+                if (functionNode->metaness() == FunctionNode::Dtor)
+                    anchorRef = "#dtor." + functionNode->name().mid(1);
+
+                else if (functionNode->associatedProperty())
+                    return fullDocumentLocation(functionNode->associatedProperty());
+
+                else if (functionNode->overloadNumber() > 1)
+                    anchorRef = "#" + functionNode->name()
+                              + "-" + QString::number(functionNode->overloadNumber());
+                else
+                    anchorRef = "#" + functionNode->name();
+            }
+
+            /*
+              Use node->name() instead of node->fileBase() as
+              the latter returns the name in lower-case. For
+              HTML anchors, we need to preserve the case.
+            */
+            break;
+        case Node::Enum:
+            anchorRef = "#" + node->name() + "-enum";
+            break;
+        case Node::Typedef:
+            anchorRef = "#" + node->name() + "-typedef";
+            break;
+        case Node::Property:
+            anchorRef = "#" + node->name() + "-prop";
+            break;
+        case Node::QmlProperty:
+            anchorRef = "#" + node->name() + "-prop";
+            break;
+        case Node::QmlSignal:
+            anchorRef = "#" + node->name() + "-signal";
+            break;
+        case Node::QmlMethod:
+            anchorRef = "#" + node->name() + "-method";
+            break;
+        case Node::Variable:
+            anchorRef = "#" + node->name() + "-var";
+            break;
+        case Node::Target:
+            anchorRef = "#" + Doc::canonicalTitle(node->name());
+            break;
+        case Node::Fake:
+            {
+            /*
+              Use node->fileBase() for fake nodes because they are represented
+              by pages whose file names are lower-case.
+            */
+            parentName = node->fileBase();
+            parentName.replace("/", "-").replace(".", "-");
+            parentName += ".html";
+            }
+            break;
+        default:
+            break;
+    }
+
+    // Various objects can be compat (deprecated) or obsolete.
+    if (node->type() != Node::Class && node->type() != Node::Namespace) {
+        switch (node->status()) {
+        case Node::Compat:
+            parentName.replace(".html", "-qt3.html");
+            break;
+        case Node::Obsolete:
+            parentName.replace(".html", "-obsolete.html");
+            break;
+        default:
+            ;
+        }
+    }
+
+    return parentName.toLower() + anchorRef;
+}
+
 #endif
 
- QT_END_NAMESPACE
+QT_END_NAMESPACE

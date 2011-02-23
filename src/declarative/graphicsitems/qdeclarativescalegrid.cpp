@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -136,12 +136,12 @@ QDeclarativeGridScaledImage::QDeclarativeGridScaledImage(QIODevice *data)
         if (line.isEmpty() || line.startsWith(QLatin1Char('#')))
             continue;
 
-        QStringList list = line.split(QLatin1Char(':'));
-        if (list.count() != 2)
+        int colonId = line.indexOf(QLatin1Char(':'));
+        if (colonId <= 0)
             return;
-
-        list[0] = list[0].trimmed();
-        list[1] = list[1].trimmed();
+        QStringList list;
+        list.append(line.left(colonId).trimmed());
+        list.append(line.mid(colonId+1).trimmed());
 
         if (list[0] == QLatin1String("border.left"))
             l = list[1].toInt();

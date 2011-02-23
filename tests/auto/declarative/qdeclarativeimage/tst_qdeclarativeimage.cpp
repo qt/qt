@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -79,6 +79,8 @@ private slots:
     void resized();
     void preserveAspectRatio();
     void smooth();
+    void mirror();
+    void mirror_data();
     void svg();
     void geometry();
     void geometry_data();
@@ -88,6 +90,8 @@ private slots:
     void paintedWidthHeight();
     void sourceSize_QTBUG_14303();
     void nullPixmapPaint();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
 
 private:
     template<typename T>
@@ -124,19 +128,21 @@ void tst_qdeclarativeimage::imageSource_data()
     QTest::addColumn<double>("height");
     QTest::addColumn<bool>("remote");
     QTest::addColumn<bool>("async");
+    QTest::addColumn<bool>("cache");
     QTest::addColumn<QString>("error");
 
-    QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() << 120.0 << 120.0 << false << false << "";
-    QTest::newRow("local async") << QUrl::fromLocalFile(SRCDIR "/data/colors1.png").toString() << 120.0 << 120.0 << false << true << "";
+    QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() << 120.0 << 120.0 << false << false << true << "";
+    QTest::newRow("local no cache") << QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() << 120.0 << 120.0 << false << false << false << "";
+    QTest::newRow("local async") << QUrl::fromLocalFile(SRCDIR "/data/colors1.png").toString() << 120.0 << 120.0 << false << true << true << "";
     QTest::newRow("local not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() << 0.0 << 0.0 << false
-        << false << "file::2:1: QML Image: Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString();
+        << false << true << "file::2:1: QML Image: Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString();
     QTest::newRow("local async not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file-1.png").toString() << 0.0 << 0.0 << false
-        << true << "file::2:1: QML Image: Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file-1.png").toString();
-    QTest::newRow("remote") << SERVER_ADDR "/colors.png" << 120.0 << 120.0 << true << false << "";
-    QTest::newRow("remote redirected") << SERVER_ADDR "/oldcolors.png" << 120.0 << 120.0 << true << false << "";
-    QTest::newRow("remote svg") << SERVER_ADDR "/heart.svg" << 550.0 << 500.0 << true << false << "";
+        << true << true << "file::2:1: QML Image: Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file-1.png").toString();
+    QTest::newRow("remote") << SERVER_ADDR "/colors.png" << 120.0 << 120.0 << true << false << true << "";
+    QTest::newRow("remote redirected") << SERVER_ADDR "/oldcolors.png" << 120.0 << 120.0 << true << false << false << "";
+    QTest::newRow("remote svg") << SERVER_ADDR "/heart.svg" << 550.0 << 500.0 << true << false << false << "";
     QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << 0.0 << 0.0 << true
-        << false << "file::2:1: QML Image: Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found";
+        << false << true << "file::2:1: QML Image: Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found";
 
 }
 
@@ -147,6 +153,7 @@ void tst_qdeclarativeimage::imageSource()
     QFETCH(double, height);
     QFETCH(bool, remote);
     QFETCH(bool, async);
+    QFETCH(bool, cache);
     QFETCH(QString, error);
 
     TestHTTPServer server(SERVER_PORT);
@@ -159,8 +166,9 @@ void tst_qdeclarativeimage::imageSource()
     if (!error.isEmpty())
         QTest::ignoreMessage(QtWarningMsg, error.toUtf8());
 
-    QString componentStr = "import QtQuick 1.0\nImage { source: \"" + source + "\"; asynchronous: "
-        + (async ? QLatin1String("true") : QLatin1String("false")) + " }";
+    QString componentStr = "import QtQuick 1.1\nImage { source: \"" + source + "\"; asynchronous: "
+        + (async ? QLatin1String("true") : QLatin1String("false")) + "; cache: "
+        + (cache ? QLatin1String("true") : QLatin1String("false")) + " }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -168,6 +176,13 @@ void tst_qdeclarativeimage::imageSource()
 
     if (async)
         QVERIFY(obj->asynchronous() == true);
+    else
+        QVERIFY(obj->asynchronous() == false);
+
+    if (cache)
+        QVERIFY(obj->cache() == true);
+    else
+        QVERIFY(obj->cache() == false);
 
     if (remote || async)
         QTRY_VERIFY(obj->status() == QDeclarativeImage::Loading);
@@ -257,6 +272,90 @@ void tst_qdeclarativeimage::smooth()
     QCOMPARE(obj->fillMode(), QDeclarativeImage::Stretch);
 
     delete obj;
+}
+
+void tst_qdeclarativeimage::mirror()
+{
+    QFETCH(int, fillMode);
+
+    qreal width = 300;
+    qreal height = 250;
+
+    QString src = QUrl::fromLocalFile(SRCDIR "/data/heart200.png").toString();
+    QString componentStr = "import QtQuick 1.1\nImage { source: \"" + src + "\"; }";
+
+    QDeclarativeComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
+    QVERIFY(obj != 0);
+
+    obj->setProperty("width", width);
+    obj->setProperty("height", height);
+    obj->setFillMode((QDeclarativeImage::FillMode)fillMode);
+    obj->setProperty("mirror", true);
+
+    QGraphicsScene scene;
+    scene.addItem(qobject_cast<QGraphicsObject *>(obj));
+    QPixmap screenshot(width, height);
+    screenshot.fill();
+    QPainter p_screenshot(&screenshot);
+    scene.render(&p_screenshot, QRect(0, 0, width, height), QRect(0, 0, width, height));
+
+    QPixmap srcPixmap;
+    QVERIFY(srcPixmap.load(SRCDIR "/data/heart200.png"));
+
+    QPixmap expected(width, height);
+    expected.fill();
+    QPainter p_e(&expected);
+    QTransform transform;
+    transform.translate(width, 0).scale(-1, 1.0);
+    p_e.setTransform(transform);
+
+    switch (fillMode) {
+        case QDeclarativeImage::Stretch:
+            p_e.drawPixmap(QRect(0, 0, width, height), srcPixmap, QRect(0, 0, srcPixmap.width(), srcPixmap.height()));
+            break;
+        case QDeclarativeImage::PreserveAspectFit:
+            p_e.drawPixmap(QRect(25, 0, width / (width/height), height), srcPixmap, QRect(0, 0, srcPixmap.width(), srcPixmap.height()));
+            break;
+        case QDeclarativeImage::PreserveAspectCrop:
+        {
+            qreal ratio = width/srcPixmap.width(); // width is the longer side
+            QRect rect(0, 0, srcPixmap.width()*ratio, srcPixmap.height()*ratio);
+            rect.moveCenter(QRect(0, 0, width, height).center());
+            p_e.drawPixmap(rect, srcPixmap, QRect(0, 0, srcPixmap.width(), srcPixmap.height()));
+            break;
+        }
+        case QDeclarativeImage::Tile:
+            p_e.drawTiledPixmap(QRect(0, 0, width, height), srcPixmap);
+            break;
+        case QDeclarativeImage::TileVertically:
+            transform.scale(width / srcPixmap.width(), 1.0);
+            p_e.setTransform(transform);
+            p_e.drawTiledPixmap(QRect(0, 0, width, height), srcPixmap);
+            break;
+        case QDeclarativeImage::TileHorizontally:
+            transform.scale(1.0, height / srcPixmap.height());
+            p_e.setTransform(transform);
+            p_e.drawTiledPixmap(QRect(0, 0, width, height), srcPixmap);
+            break;
+    }
+
+    QCOMPARE(screenshot, expected);
+
+    delete obj;
+}
+
+void tst_qdeclarativeimage::mirror_data()
+{
+    QTest::addColumn<int>("fillMode");
+
+    QTest::newRow("Stretch") << int(QDeclarativeImage::Stretch);
+    QTest::newRow("PreserveAspectFit") << int(QDeclarativeImage::PreserveAspectFit);
+    QTest::newRow("PreserveAspectCrop") << int(QDeclarativeImage::PreserveAspectCrop);
+    QTest::newRow("Tile") << int(QDeclarativeImage::Tile);
+    QTest::newRow("TileVertically") << int(QDeclarativeImage::TileVertically);
+    QTest::newRow("TileHorizontally") << int(QDeclarativeImage::TileHorizontally);
 }
 
 void tst_qdeclarativeimage::svg()
@@ -568,6 +667,45 @@ void tst_qdeclarativeimage::nullPixmapPaint()
     qInstallMsgHandler(previousMsgHandler);
     QVERIFY(numberOfWarnings == 0);
     delete image;
+}
+
+void tst_qdeclarativeimage::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; Image { " + code.toUtf8() + " }", QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; Image { " + code.toUtf8() + " }", QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+}
+
+void tst_qdeclarativeimage::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("mirror") << "mirror: true"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Image.mirror\" is not available in QtQuick 1.0.\n";
+
+    QTest::newRow("cache") << "cache: true"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Image.cache\" is not available in QtQuick 1.0.\n";
 }
 
 /*

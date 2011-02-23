@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -107,6 +107,7 @@ private slots:
     void operators();
 
     void connectPathDuplicatePoint();
+    void connectPathMoveTo();
 
     void translate();
 };
@@ -1167,6 +1168,31 @@ void tst_QPainterPath::connectPathDuplicatePoint()
     c.lineTo(30, 10);
 
     QCOMPARE(c, a);
+}
+
+void tst_QPainterPath::connectPathMoveTo()
+{
+    QPainterPath path1;
+    QPainterPath path2;
+    QPainterPath path3;
+    QPainterPath path4;
+
+    path1.moveTo(1,1);
+
+    path2.moveTo(4,4);
+    path2.lineTo(5,6);
+    path2.lineTo(6,7);
+
+    path3.connectPath(path2);
+
+    path4.lineTo(5,5);
+
+    path1.connectPath(path2);
+
+    QVERIFY(path1.elementAt(0).type == QPainterPath::MoveToElement);
+    QVERIFY(path2.elementAt(0).type == QPainterPath::MoveToElement);
+    QVERIFY(path3.elementAt(0).type == QPainterPath::MoveToElement);
+    QVERIFY(path4.elementAt(0).type == QPainterPath::MoveToElement);
 }
 
 void tst_QPainterPath::translate()

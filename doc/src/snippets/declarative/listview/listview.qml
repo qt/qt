@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -127,10 +127,16 @@ ListView {
 
     Component {
         id: contactsDelegate
-        Text {
-            id: contactInfo
-            text: name + ": " + number
-            color: contactInfo.ListView.isCurrentItem ? "red" : "black"
+        Rectangle {
+            id: wrapper
+            width: 180
+            height: contactInfo.height
+            color: ListView.isCurrentItem ? "black" : "red"
+            Text {
+                id: contactInfo
+                text: name + ": " + number
+                color: wrapper.ListView.isCurrentItem ? "red" : "black"
+            }
         }
     }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -103,7 +103,7 @@
     operators. Improved memory allocation and performance may be
     gained by re-implementing these functions:
 
-    \snippet doc/src/snippets/code/doc_src_emb-performance.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_emb-performance.cpp 1
 
     The example above shows the necessary code to switch to the plain
     C memory allocators.

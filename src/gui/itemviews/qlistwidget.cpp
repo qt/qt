@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1500,7 +1500,9 @@ void QListWidget::setCurrentRow(int row, QItemSelectionModel::SelectionFlags com
 }
 
 /*!
-    Returns a pointer to the item at the coordinates \a p.
+    Returns a pointer to the item at the coordinates \a p. The coordinates
+    are relative to the list widget's \l{QAbstractScrollArea::}{viewport()}.
+
 */
 QListWidgetItem *QListWidget::itemAt(const QPoint &p) const
 {
@@ -1514,6 +1516,9 @@ QListWidgetItem *QListWidget::itemAt(const QPoint &p) const
     \overload
 
     Returns a pointer to the item at the coordinates (\a x, \a y).
+    The coordinates are relative to the list widget's
+    \l{QAbstractScrollArea::}{viewport()}.
+
 */
 
 

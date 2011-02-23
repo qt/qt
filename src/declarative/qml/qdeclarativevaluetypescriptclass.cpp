@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,6 +45,8 @@
 #include "private/qdeclarativeproperty_p.h"
 #include "private/qdeclarativeengine_p.h"
 #include "private/qdeclarativeguard_p.h"
+
+#include <QtScript/qscriptcontextinfo.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -161,17 +163,41 @@ void QDeclarativeValueTypeScriptClass::setProperty(Object *obj, const Identifier
     if (o->objectType == QDeclarativeValueTypeObject::Reference) {
         QDeclarativeValueTypeReference *ref = static_cast<QDeclarativeValueTypeReference *>(obj);
 
+        ref->type->read(ref->object, ref->property);
+        QMetaProperty p = ref->type->metaObject()->property(m_lastIndex);
+
+        QDeclarativeBinding *newBinding = 0;
+        if (value.isFunction() && !value.isRegExp()) {
+            QDeclarativeContextData *ctxt = QDeclarativeEnginePrivate::get(engine)->getContext(context());
+
+            QDeclarativePropertyCache::Data cacheData;
+            cacheData.flags = QDeclarativePropertyCache::Data::IsWritable;
+            cacheData.propType = ref->object->metaObject()->property(ref->property).userType();
+            cacheData.coreIndex = ref->property;
+
+            QDeclarativePropertyCache::ValueTypeData valueTypeData;
+            valueTypeData.valueTypeCoreIdx = m_lastIndex;
+            valueTypeData.valueTypePropType = p.userType();
+
+            newBinding = new QDeclarativeBinding(value, ref->object, ctxt);
+            QScriptContextInfo ctxtInfo(context());
+            newBinding->setSourceLocation(ctxtInfo.fileName(), ctxtInfo.functionStartLineNumber());
+            QDeclarativeProperty prop = QDeclarativePropertyPrivate::restore(cacheData, valueTypeData, ref->object, ctxt);
+            newBinding->setTarget(prop);
+            if (newBinding->expression().contains("this"))
+                newBinding->setEvaluateFlags(newBinding->evaluateFlags() | QDeclarativeBinding::RequiresThisObject);
+        }
+
         QDeclarativeAbstractBinding *delBinding = 
-            QDeclarativePropertyPrivate::setBinding(ref->object, ref->property, m_lastIndex, 0);
+            QDeclarativePropertyPrivate::setBinding(ref->object, ref->property, m_lastIndex, newBinding);
         if (delBinding) 
             delBinding->destroy();
 
-        ref->type->read(ref->object, ref->property);
-        QMetaProperty p = ref->type->metaObject()->property(m_lastIndex);
         if (p.isEnumType() && (QMetaType::Type)v.type() == QMetaType::Double) 
             v = v.toInt();
         p.write(ref->type, v);
         ref->type->write(ref->object, ref->property, 0);
+
     } else {
         QDeclarativeValueTypeCopy *copy = static_cast<QDeclarativeValueTypeCopy *>(obj);
         copy->type->setValue(copy->value);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,7 +51,7 @@
     and less copying of data.
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_q3memarray.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_q3memarray.cpp 0
 
     Program output:
     \snippet doc/src/snippets/code/doc_src_q3memarray.qdoc 1
@@ -63,7 +63,7 @@
     the remaining bytes will typically be uninitialized, this can
     cause find() etc. to fail to find the element. Example:
 
-    \snippet doc/src/snippets/code/doc_src_q3memarray.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_q3memarray.cpp 2
 
     To work around this, make sure that you use a struct where
     sizeof() returns the same as the sum of the sizes of the members
@@ -352,10 +352,10 @@
     allocating memory or copying data.
 
     Example I (intended use):
-    \snippet doc/src/snippets/code/doc_src_q3memarray.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_q3memarray.cpp 3
 
     Example II (you don't want to do this):
-    \snippet doc/src/snippets/code/doc_src_q3memarray.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_q3memarray.cpp 4
 
     \warning If you do not call resetRawData(), Q3MemArray will attempt
     to deallocate or reallocate the raw data, which might not be too

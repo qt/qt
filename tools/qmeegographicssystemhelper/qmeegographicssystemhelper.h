@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -186,6 +186,24 @@ public:
      on the top-level widget *before* you show it instead.
     */
     static void setTranslucent(bool translucent);
+
+    //! Used to specify the mode for swapping buffers in double-buffered GL rendering.
+    enum SwapMode {
+        AutomaticSwap,      /**< Automatically choose netween full and partial updates (25% threshold) */
+        AlwaysFullSwap,     /**< Always do a full swap even if partial updates support present */
+        AlwaysPartialSwap,  /**< Always do a partial swap (if support present) no matter what threshold */
+        KillSwap            /**< Do not perform buffer swapping at all (no picture) */
+    };
+
+    //! Sets the buffer swapping mode.
+    /*!
+     This can be only called when running with the meego graphics system.
+     The KillSwap mode can be specififed to effectively block painting.
+
+     This functionality should be used only by applications counting on a specific behavior.
+     Most applications should use the default automatic behavior.
+    */
+    static void setSwapBehavior(SwapMode mode);
 };
 
 #endif

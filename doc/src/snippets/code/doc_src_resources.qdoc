@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -63,19 +63,3 @@
 //! [3]
 rcc -binary myresource.qrc -o myresource.rcc
 //! [3]
-
-
-//! [4]
-QResource::registerResource("/path/to/myresource.rcc");
-//! [4]
-
-
-//! [5]
-int main(int argc, char *argv[])
-{
-    QApplication app(argc, argv);
-    Q_INIT_RESOURCE(graphlib);
-    ...
-    return app.exec();
-}
-//! [5]

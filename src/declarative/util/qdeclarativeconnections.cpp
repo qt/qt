@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,6 +45,7 @@
 #include <qdeclarativeproperty_p.h>
 #include <qdeclarativeboundsignal_p.h>
 #include <qdeclarativecontext.h>
+#include <qdeclarativecontext_p.h>
 #include <qdeclarativeinfo.h>
 
 #include <QtCore/qdebug.h>
@@ -71,8 +72,8 @@ public:
 
 /*!
     \qmlclass Connections QDeclarativeConnections
-  \ingroup qml-utility-elements
-  \since 4.7
+    \ingroup qml-utility-elements
+    \since 4.7
     \brief A Connections element describes generalized connections to signals.
 
     A Connections object creates a connection to a QML signal.
@@ -82,7 +83,7 @@ public:
 
     \qml
     MouseArea {
-        onClicked: { foo(...) }
+        onClicked: { foo(parameters) }
     }
     \endqml
 
@@ -103,7 +104,7 @@ public:
     \qml
     MouseArea {
         Connections {
-            onClicked: foo(...)
+            onClicked: foo(parameters)
         }
     }
     \endqml
@@ -115,10 +116,12 @@ public:
     MouseArea {
         id: area
     }
-    ...
+    // ...
+    \endqml
+    \qml
     Connections {
         target: area
-        onClicked: foo(...)
+        onClicked: foo(parameters)
     }
     \endqml
 
@@ -257,7 +260,11 @@ void QDeclarativeConnections::connectSignals()
         if (prop.isValid() && (prop.type() & QDeclarativeProperty::SignalProperty)) {
             QDeclarativeBoundSignal *signal =
                 new QDeclarativeBoundSignal(target(), prop.method(), this);
-            signal->setExpression(new QDeclarativeExpression(qmlContext(this), 0, script));
+            QDeclarativeExpression *expression = new QDeclarativeExpression(qmlContext(this), 0, script);
+            QDeclarativeData *ddata = QDeclarativeData::get(this);
+            if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
+                expression->setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
+            signal->setExpression(expression);
             d->boundsignals += signal;
         } else {
             if (!d->ignoreUnknownSignals)

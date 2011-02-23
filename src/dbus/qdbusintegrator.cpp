@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -558,17 +558,16 @@ bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
     switch (amsg.type()) {
     case QDBusMessage::SignalMessage:
         handleSignal(amsg);
-        return true;
-        break;
+        // if there are any other filters in this DBusConnection,
+        // let them see the signal too
+        return false;
     case QDBusMessage::MethodCallMessage:
         handleObjectCall(amsg);
         return true;
     case QDBusMessage::ReplyMessage:
     case QDBusMessage::ErrorMessage:
-        return false;           // we don't handle those here
     case QDBusMessage::InvalidMessage:
-        Q_ASSERT_X(false, "QDBusConnection", "Invalid message found when processing");
-        break;
+        return false;           // we don't handle those here
     }
 
     return false;

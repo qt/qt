@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -327,7 +327,7 @@ static inline bool isLineSeparatorBlockAfterTable(const QTextBlock &block, const
 
 /*
 
-Optimisation strategies:
+Optimization strategies:
 
 HTML layout:
 
@@ -513,6 +513,9 @@ public:
 
     qreal scaleToDevice(qreal value) const;
     QFixed scaleToDevice(QFixed value) const;
+
+    qreal lineH;
+    QTextDocumentLayout::LineHeightMode lineHeightMode;
 };
 
 QTextDocumentLayoutPrivate::QTextDocumentLayoutPrivate()
@@ -520,7 +523,9 @@ QTextDocumentLayoutPrivate::QTextDocumentLayoutPrivate()
       cursorWidth(1),
       currentLazyLayoutPosition(-1),
       lazyLayoutStepSize(1000),
-      lastPageCount(-1)
+      lastPageCount(-1),
+      lineH(1),
+      lineHeightMode(QTextDocumentLayout::MultiplyHeight)
 {
     showLayoutProgress = true;
     insideDocumentChange = false;
@@ -2639,7 +2644,8 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
 
             }
 
-            QFixed lineHeight = QFixed::fromReal(line.height());
+            QFixed lineHeight = (lineHeightMode == QTextDocumentLayout::PixelHeight) ? QFixed::fromReal(lineH) : QFixed::fromReal(line.height() * lineH);
+
             if (layoutStruct->pageHeight > 0 && layoutStruct->absoluteY() + lineHeight > layoutStruct->pageBottom) {
                 layoutStruct->newPage();
 
@@ -2712,6 +2718,13 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
         else
             layoutStruct->maximumWidth = qMax(layoutStruct->maximumWidth, maxW);
     }
+}
+
+void QTextDocumentLayout::setLineHeight(qreal lineH, QTextDocumentLayout::LineHeightMode mode = QTextDocumentLayout::MultiplyHeight)
+{
+    Q_D(QTextDocumentLayout);
+    d->lineH = lineH;
+    d->lineHeightMode = mode;
 }
 
 void QTextDocumentLayoutPrivate::floatMargins(const QFixed &y, const QTextLayoutStruct *layoutStruct,

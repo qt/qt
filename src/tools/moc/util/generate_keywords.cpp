@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -249,6 +249,7 @@ static const Keyword keywords[] = {
     { "Q_SLOT", "Q_SLOT_TOKEN" },
     { "Q_SCRIPTABLE", "Q_SCRIPTABLE_TOKEN" },
     { "Q_PRIVATE_PROPERTY", "Q_PRIVATE_PROPERTY_TOKEN" },
+    { "Q_REVISION", "Q_REVISION_TOKEN" },
     { "\n", "NEWLINE" },
     { "\"", "QUOTE" },
     { "\'", "SINGLEQUOTE" },

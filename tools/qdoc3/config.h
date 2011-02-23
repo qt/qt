@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -148,6 +148,7 @@ class Config
 #define CONFIG_OUTPUTENCODING           "outputencoding"
 #define CONFIG_OUTPUTLANGUAGE           "outputlanguage"
 #define CONFIG_OUTPUTFORMATS            "outputformats"
+#define CONFIG_OUTPUTPREFIXES           "outputprefixes"
 #define CONFIG_PROJECT                  "project"
 #define CONFIG_QHP                      "qhp"
 #define CONFIG_QUOTINGINFORMATION       "quotinginformation"
@@ -163,6 +164,7 @@ class Config
 #define CONFIG_STYLE                    "style"
 #define CONFIG_STYLES                   "styles"
 #define CONFIG_STYLESHEETS              "stylesheets"
+#define CONFIG_SYNTAXHIGHLIGHTING       "syntaxhighlighting"
 #define CONFIG_TEMPLATEDIR              "templatedir"
 #define CONFIG_TABSIZE                  "tabsize"
 #define CONFIG_TAGFILE                  "tagfile"

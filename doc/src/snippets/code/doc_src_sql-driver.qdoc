@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,15 +59,6 @@ END
 //! [1]
 
 
-//! [2]
-QSqlQuery q;
-q.exec("call qtestproc (@outval1, @outval2)");
-q.exec("select @outval1, @outval2");
-q.next();
-qDebug() << q.value(0) << q.value(1); // outputs "42" and "43"
-//! [2]
-
-
 //! [3]
 cd $QTDIR/src/plugins/sqldrivers/mysql
 qmake "INCLUDEPATH+=/usr/local/include" "LIBS+=-L/usr/local/lib -lmysqlclient_r" mysql.pro
@@ -114,14 +105,6 @@ nmake
 //! [9]
 set PATH=%PATH%;c:\oracle\bin
 //! [9]
-
-
-//! [10]
-\\ STORED_PROC uses the return statement or returns multiple result sets
-QSqlQuery query;
-query.setForwardOnly(true);
-query.exec("{call STORED_PROC}");
-//! [10]
 
 
 //! [11]
@@ -212,27 +195,6 @@ nmake
 //! [23]
 
 
-//! [24]
-db.setHostName("MyServer");
-db.setDatabaseName("C:\\test.gdb");
-//! [24]
-
-
-//! [25]
-// connect to database using the Latin-1 character set 
-db.setConnectOptions("ISC_DPB_LC_CTYPE=Latin1");
-db.open();
-//! [25]
-
-
-//! [26]
-QSqlQuery q;
-q.exec("execute procedure my_procedure");
-q.next();
-qDebug() << q.value(0); // outputs the first RETURN/OUT value
-//! [26]
-
-
 //! [27]
 cd $QTDIR/src/plugins/sqldrivers/ibase
 qmake "INCLUDEPATH+=/opt/interbase/include" "LIBS+=-L/opt/interbase/lib" ibase.pro
@@ -261,11 +223,6 @@ nmake
 //! [30]
 
 
-//! [31]
-QSqlDatabase: QMYSQL driver not loaded
-QSqlDatabase: available drivers: QMYSQL
-//! [31]
-
 //! [32]
 configure -I /usr/include/oracle/10.1.0.3/client -L /usr/lib/oracle/10.1.0.3/client/lib -R /usr/lib/oracle/10.1.0.3/client/lib -lclntsh -lnnz10
 make
@@ -276,4 +233,3 @@ cd $QTDIR/src/plugins/sqldrivers/oci
 qmake "INCLUDEPATH+=/usr/include/oracle/10.1.0.3/client" "LIBS+=-L/usr/lib/oracle/10.1.0.3/client/lib -Wl,-rpath,/usr/lib/oracle/10.1.0.3/client/lib -lclntsh -lnnz10" oci.pro
 make
 //! [33]
-

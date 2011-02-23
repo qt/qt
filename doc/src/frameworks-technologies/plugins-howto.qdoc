@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,7 +48,7 @@
 
     \ingroup frameworks-technologies
     \ingroup qt-basic-concepts
-	
+
 
     \keyword QT_DEBUG_PLUGINS
     \keyword QT_NO_PLUGIN_CHECK
@@ -87,7 +87,7 @@
     directory.
 
     \table
-    \header \o Base Class              \o Directory Name                \o Key Case Sensitivity
+    \header \o Base Class              \o Directory Name      \o Key Case Sensitivity
     \row    \o QAccessibleBridgePlugin \o \c accessiblebridge \o Case Sensitive
     \row    \o QAccessiblePlugin       \o \c accessible       \o Case Sensitive
     \row    \o QDecorationPlugin       \o \c decorations      \o Case Insensitive
@@ -109,12 +109,12 @@
     straightforward, here is the class definition (\c
     mystyleplugin.h):
 
-    \snippet doc/src/snippets/code/doc_src_plugins-howto.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_plugins-howto.cpp 0
 
     Ensure that the class implementation is located in a \c .cpp file
     (including the class definition):
 
-    \snippet doc/src/snippets/code/doc_src_plugins-howto.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_plugins-howto.cpp 1
 
     (Note that QStylePlugin is case insensitive, and the lower-case
     version of the key is used in our
@@ -127,7 +127,7 @@
     you might want to set a style explicitly in code. To apply a
     style, use code like this:
 
-    \snippet doc/src/snippets/code/doc_src_plugins-howto.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_plugins-howto.cpp 2
 
     Some plugin classes require additional functions to be
     implemented. See the class documentation for details of the
@@ -284,12 +284,12 @@
     the required plugins to your build using \c QTPLUGIN.
     For example, in your \c main.cpp:
 
-    \snippet doc/src/snippets/code/doc_src_plugins-howto.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_plugins-howto.cpp 4
 
     In the \c .pro file for your application, you need the following
     entry:
 
-    \snippet doc/src/snippets/code/doc_src_plugins-howto.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_plugins-howto.pro 5
 
     It is also possible to create your own static plugins, by
     following these steps:
@@ -308,6 +308,11 @@
     \note If you are not using qmake to build your application you need
     to make sure that the \c{QT_STATICPLUGIN} preprocessor macro is
     defined.
+
+    \section1 Deploying and Debugging Plugins
+
+    The \l{Deploying Plugins} document covers the process of deploying
+    plugins with applications and debugging them when problems arise.
 
     \sa QPluginLoader, QLibrary, {Plug & Paint Example}
 */

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,6 +54,7 @@
 #include <private/qdeclarativeanchors_p_p.h>
 #include <private/qdeclarativeglobal_p.h>
 #include <private/qdeclarativefastproperties_p.h>
+#include <private/qdeclarativedebugtrace_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -302,7 +303,9 @@ void QDeclarativeCompiledBindingsPrivate::Binding::setEnabled(bool e, QDeclarati
 
 void QDeclarativeCompiledBindingsPrivate::Binding::update(QDeclarativePropertyPrivate::WriteFlags flags)
 {
+    QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Binding);
     parent->run(this, flags);
+    QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Binding);
 }
 
 void QDeclarativeCompiledBindingsPrivate::Binding::destroy()
@@ -2523,6 +2526,10 @@ bool QDeclarativeBindingCompilerPrivate::fetch(Result &rv, const QMetaObject *mo
     QMetaProperty prop = mo->property(idx);
     rv.metaObject = 0;
     rv.type = 0;
+
+    //XXX binding optimizer doesn't handle properties with a revision
+    if (prop.revision() > 0)
+        return false;
 
     int fastFetchIndex = fastProperties()->accessorIndexForProperty(mo, idx);
 

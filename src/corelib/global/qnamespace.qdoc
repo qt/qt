@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1195,6 +1195,13 @@
     \value WA_X11DoNotAcceptFocus Asks the window manager to not give focus
     to this top level window. This attribute has no effect on non-X11
     platforms.
+
+    \value WA_LockPortraitOrientation Locks the widget to a portrait orientation,
+    ignoring changes to the display's orientation with respect to the user.
+    \value WA_LockLandscapeOrientation Locks the widget to a landscape orientation,
+    ignoring changes to the display's orientation with respect to the user.
+    \value WA_AutoOrientation Causes the widget to change orientation whenever the
+    display changes orientation with respect to the user.
 
     \omitvalue WA_SetLayoutDirection
     \omitvalue WA_InputMethodTransparent
@@ -2798,7 +2805,7 @@
     INT_MIN, inclusive. For example, you can define custom priorities
     as being relative to each other:
 
-    \snippet doc/src/snippets/code/doc_src_qnamespace.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qnamespace.cpp 1
 
     \sa QCoreApplication::postEvent()
 */

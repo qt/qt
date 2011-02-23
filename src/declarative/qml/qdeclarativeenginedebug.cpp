@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,6 +52,7 @@
 #include "private/qdeclarativevaluetype_p.h"
 #include "private/qdeclarativevmemetaobject_p.h"
 #include "private/qdeclarativeexpression_p.h"
+#include "private/qdeclarativepropertychanges_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qmetaobject.h>
@@ -146,7 +147,10 @@ QDeclarativeEngineDebugServer::propertyData(QObject *obj, int propIdx)
     if (binding)
         rv.binding = binding->expression();
 
-    QVariant value = prop.read(obj);
+    QVariant value;
+    if (prop.userType() != 0) {
+        value = prop.read(obj);
+    }
     rv.value = valueContents(value);
 
     if (QDeclarativeValueTypeFactory::isValueType(prop.userType())) {
@@ -191,11 +195,6 @@ void QDeclarativeEngineDebugServer::buildObjectDump(QDataStream &message,
                                            QObject *object, bool recur, bool dumpProperties)
 {
     message << objectData(object);
-
-    // Some children aren't added to an object until particular properties are read
-    // - e.g. child state objects aren't added until the 'states' property is read -
-    // but this should only affect internal objects that aren't shown by the
-    // debugger anyway.
 
     QObjectList children = object->children();
     
@@ -257,6 +256,18 @@ void QDeclarativeEngineDebugServer::buildObjectDump(QDataStream &message,
         message << fakeProperties[ii];
 }
 
+void QDeclarativeEngineDebugServer::prepareDeferredObjects(QObject *obj)
+{
+    qmlExecuteDeferred(obj);
+
+    QObjectList children = obj->children();
+    for (int ii = 0; ii < children.count(); ++ii) {
+        QObject *child = children.at(ii);
+        prepareDeferredObjects(child);
+    }
+
+}
+
 void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message, QDeclarativeContext *ctxt)
 {
     QDeclarativeContextData *p = QDeclarativeContextData::get(ctxt);
@@ -294,6 +305,35 @@ void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message, QDecla
     message << ctxtPriv->instances.count();
     for (int ii = 0; ii < ctxtPriv->instances.count(); ++ii) {
         message << objectData(ctxtPriv->instances.at(ii));
+    }
+}
+
+void QDeclarativeEngineDebugServer::buildStatesList(QDeclarativeContext *ctxt, bool cleanList=false)
+{
+    if (cleanList)
+        m_allStates.clear();
+
+    QDeclarativeContextPrivate *ctxtPriv = QDeclarativeContextPrivate::get(ctxt);
+    for (int ii = 0; ii < ctxtPriv->instances.count(); ++ii) {
+        buildStatesList(ctxtPriv->instances.at(ii));
+    }
+
+    QDeclarativeContextData *child = QDeclarativeContextData::get(ctxt)->childContexts;
+    while (child) {
+        buildStatesList(child->asQDeclarativeContext());
+        child = child->nextChild;
+    }
+}
+
+void QDeclarativeEngineDebugServer::buildStatesList(QObject *obj)
+{
+    if (QDeclarativeState *state = qobject_cast<QDeclarativeState *>(obj)) {
+            m_allStates.append(state);
+    }
+
+    QObjectList children = obj->children();
+    for (int ii = 0; ii < children.count(); ++ii) {
+        buildStatesList(children.at(ii));
     }
 }
 
@@ -375,8 +415,10 @@ void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
         QDataStream rs(&reply, QIODevice::WriteOnly);
         rs << QByteArray("LIST_OBJECTS_R") << queryId;
 
-        if (engine)
+        if (engine) {
             buildObjectList(rs, engine->rootContext());
+            buildStatesList(engine->rootContext(), true);
+        }
 
         sendMessage(reply);
     } else if (type == "FETCH_OBJECT") {
@@ -393,8 +435,11 @@ void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
         QDataStream rs(&reply, QIODevice::WriteOnly);
         rs << QByteArray("FETCH_OBJECT_R") << queryId;
 
-        if (object) 
+        if (object) {
+            if (recurse)
+                prepareDeferredObjects(object);
             buildObjectDump(rs, object, recurse, dumpProperties);
+        }
 
         sendMessage(reply);
     } else if (type == "WATCH_OBJECT") {
@@ -496,24 +541,63 @@ void QDeclarativeEngineDebugServer::setBinding(int objectId,
     QDeclarativeContext *context = qmlContext(object);
 
     if (object && context) {
-
         QDeclarativeProperty property(object, propertyName, context);
-        if (isLiteralValue) {
-            property.write(expression);
-        } else if (hasValidSignal(object, propertyName)) {
-            QDeclarativeExpression *declarativeExpression = new QDeclarativeExpression(context, object, expression.toString());
-            QDeclarativeExpression *oldExpression = QDeclarativePropertyPrivate::setSignalExpression(property, declarativeExpression);
-            declarativeExpression->setSourceLocation(oldExpression->sourceFile(), oldExpression->lineNumber());
-        } else if (property.isProperty()) {
-            QDeclarativeBinding *binding = new QDeclarativeBinding(expression.toString(), object, context);
-            binding->setTarget(property);
-            binding->setNotifyOnValueChanged(true);
-            QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::setBinding(property, binding);
-            if (oldBinding)
-                oldBinding->destroy();
-            binding->update();
+        if (property.isValid()) {
+
+            bool inBaseState = true;
+
+            foreach(QWeakPointer<QDeclarativeState> statePointer, m_allStates) {
+                if (QDeclarativeState *state = statePointer.data()) {
+                    // here we assume that the revert list on itself defines the base state
+                    if (state->isStateActive() && state->containsPropertyInRevertList(object, propertyName)) {
+                        inBaseState = false;
+
+                        QDeclarativeBinding *newBinding = 0;
+                        if (!isLiteralValue) {
+                            newBinding = new QDeclarativeBinding(expression.toString(), object, context);
+                            newBinding->setTarget(property);
+                            newBinding->setNotifyOnValueChanged(true);
+                        }
+
+                        state->changeBindingInRevertList(object, propertyName, newBinding);
+
+                        if (isLiteralValue)
+                            state->changeValueInRevertList(object, propertyName, expression);
+                    }
+                }
+            }
+
+            if (inBaseState) {
+                if (isLiteralValue) {
+                    property.write(expression);
+                } else if (hasValidSignal(object, propertyName)) {
+                    QDeclarativeExpression *declarativeExpression = new QDeclarativeExpression(context, object, expression.toString());
+                    QDeclarativeExpression *oldExpression = QDeclarativePropertyPrivate::setSignalExpression(property, declarativeExpression);
+                    declarativeExpression->setSourceLocation(oldExpression->sourceFile(), oldExpression->lineNumber());
+                } else if (property.isProperty()) {
+                    QDeclarativeBinding *binding = new QDeclarativeBinding(expression.toString(), object, context);
+                    binding->setTarget(property);
+                    binding->setNotifyOnValueChanged(true);
+                    QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::setBinding(property, binding);
+                    if (oldBinding)
+                        oldBinding->destroy();
+                    binding->update();
+                } else {
+                    qWarning() << "QDeclarativeEngineDebugServer::setBinding: unable to set property" << propertyName << "on object" << object;
+                }
+            }
+
         } else {
-            qWarning() << "QDeclarativeEngineDebugServer::setBinding: unable to set property" << propertyName << "on object" << object;
+            // not a valid property
+            if (QDeclarativePropertyChanges *propertyChanges = qobject_cast<QDeclarativePropertyChanges *>(object)) {
+                if (isLiteralValue) {
+                    propertyChanges->changeValue(propertyName, expression);
+                } else {
+                    propertyChanges->changeExpression(propertyName, expression.toString());
+                }
+            } else {
+                qWarning() << "QDeclarativeEngineDebugServer::setBinding: unable to set property" << propertyName << "on object" << object;
+            }
         }
     }
 }
@@ -531,10 +615,30 @@ void QDeclarativeEngineDebugServer::resetBinding(int objectId, const QString &pr
                 QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::setBinding(property, 0);
                 if (oldBinding)
                     oldBinding->destroy();
+            }
+            if (property.isResettable()) {
+                // Note: this will reset the property in any case, without regard to states
+                // Right now almost no QDeclarativeItem has reset methods for its properties (with the
+                // notable exception of QDeclarativeAnchors), so this is not a big issue
+                // later on, setBinding does take states into account
+                property.reset();
             } else {
-                if (property.isResettable()) {
-                    property.reset();
+                // overwrite with default value
+                if (QDeclarativeType *objType = QDeclarativeMetaType::qmlType(object->metaObject())) {
+                    if (QObject *emptyObject = objType->create()) {
+                        if (emptyObject->property(propertyName.toLatin1()).isValid()) {
+                            QVariant defaultValue = QDeclarativeProperty(emptyObject, propertyName).read();
+                            if (defaultValue.isValid()) {
+                                setBinding(objectId, propertyName, defaultValue, true);
+                            }
+                        }
+                        delete emptyObject;
+                    }
                 }
+            }
+        } else {
+            if (QDeclarativePropertyChanges *propertyChanges = qobject_cast<QDeclarativePropertyChanges *>(object)) {
+                propertyChanges->removeProperty(propertyName);
             }
         }
     }

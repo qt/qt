@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -124,8 +124,8 @@ bool QSharedMemoryPrivate::cleanHandle()
 {
     if (hand != 0 && !CloseHandle(hand)) {
         hand = 0;
-        return false;
         setErrorString(QLatin1String("QSharedMemory::cleanHandle"));
+        return false;
     }
     hand = 0;
     return true;
@@ -186,6 +186,7 @@ bool QSharedMemoryPrivate::detach()
         return false;
     }
     memory = 0;
+    size = 0;
 
     // close handle
     return cleanHandle();

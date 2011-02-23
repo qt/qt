@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,11 +58,13 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "QtCore/qvector.h"
-#include "qt_windows.h"
+#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
+#  include "qt_windows.h"
+#endif
 QT_END_INCLUDE_NAMESPACE
 
 // template implementation of the parsing algorithm
@@ -130,6 +132,7 @@ static QVector<Char*> qWinCmdLine(Char *cmdParam, int length, int &argc)
     return argv;
 }
 
+#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
 static inline QStringList qWinCmdArgs(QString cmdLine) // not const-ref: this might be modified
 {
     QStringList args;
@@ -150,8 +153,8 @@ static inline QStringList qCmdLineArgs(int argc, char *argv[])
     QString cmdLine = QString::fromWCharArray(GetCommandLine());
     return qWinCmdArgs(cmdLine);
 }
-
-#else  // !Q_OS_WIN
+#endif
+#else  // !Q_OS_WIN || !Q_OS_SYMBIAN
 
 static inline QStringList qCmdLineArgs(int argc, char *argv[])
 {
@@ -161,7 +164,7 @@ static inline QStringList qCmdLineArgs(int argc, char *argv[])
     return args;
 }
 
-#endif // Q_OS_WIN
+#endif // Q_OS_WIN || Q_OS_SYMBIAN
 
 QT_END_NAMESPACE
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -30,7 +30,7 @@
     \title All Modules
     \startpage index.html Qt Reference Documentation
     \nextpage QtCore
-    
+
     \ingroup classlists
 
     \brief Qt 4 comprises several modules. Each module is a separate
@@ -40,7 +40,7 @@
     \header \o {2,1} \bold{Modules for general software development}
     \row \o \l{QtCore} \o Core non-graphical classes used by other modules
     \row \o \l{QtGui} \o Graphical user interface (GUI) components
-    \row \o \l{qtmultimedia-module.html}{QtMultimedia} \o Classes for low-level multimedia functionality
+    \row \o \l{QtMultimedia Module}{QtMultimedia} \o Classes for low-level multimedia functionality
     \row \o \l{QtNetwork} \o Classes for network programming
     \row \o \l{QtOpenGL} \o OpenGL support classes
     \row \o \l{QtOpenVG} \o OpenVG support classes
@@ -70,7 +70,7 @@
     modules are included by default. To link only against QtCore, add
     the following line to your \c .pro file:
 
-    \snippet doc/src/snippets/code/doc_src_modules.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_modules.pro 0
 
     On Windows, if you do not use \l qmake
     or other build tools such as CMake, you also need to link against
@@ -91,7 +91,7 @@
     All other Qt modules rely on this module. To include the
     definitions of the module's classes, use the following directive:
 
-    \snippet doc/src/snippets/code/doc_src_qtcore.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qtcore.cpp 0
 */
 
 
@@ -105,7 +105,7 @@
     To include the definitions of both modules' classes, use the
     following directive:
 
-    \snippet doc/src/snippets/code/doc_src_qtgui.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qtgui.pro 0
 */
 
 /*!
@@ -118,12 +118,12 @@
     To include the definitions of the module's classes, use the
     following directive:
 
-    \snippet doc/src/snippets/code/doc_src_qtmultimedia.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qtmultimedia.cpp 1
 
     To link against the module, add this line to your \l qmake \c
     .pro file:
 
-    \snippet doc/src/snippets/code/doc_src_qtmultimedia.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qtmultimedia.pro 0
 
     The functionality provided by the \l{Phonon Module} is on a higher level
     and in many cases more suitable for application developers.
@@ -140,12 +140,12 @@
     To include the definitions of the module's classes, use the
     following directive:
 
-    \snippet doc/src/snippets/code/doc_src_qtnetwork.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qtnetwork.cpp 1
 
     To link against the module, add this line to your \l qmake \c
     .pro file:
 
-    \snippet doc/src/snippets/code/doc_src_qtnetwork.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qtnetwork.pro 0
 */
 
 /*!
@@ -175,12 +175,12 @@
     To include the definitions of the module's classes, use the
     following directive:
 
-    \snippet doc/src/snippets/code/doc_src_qtopengl.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qtopengl.cpp 0
 
     To link against the module, add this line to your \l qmake \c
     .pro file:
 
-    \snippet doc/src/snippets/code/doc_src_qtopengl.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qtopengl.pro 1
 
     The Qt OpenGL module is implemented as a platform-independent Qt/C++
     wrapper around the platform-dependent GLX (version 1.3 or later),
@@ -266,11 +266,11 @@
 	To include the definitions of the module's classes, use the
 	following directive:
 
-	\snippet doc/src/snippets/code/doc_src_qtscript.qdoc 0
+	\snippet doc/src/snippets/code/doc_src_qtscript.cpp 0
 
 	To link against the module, add this line to your \l qmake \c .pro file:
 
-	\snippet doc/src/snippets/code/doc_src_qtscript.qdoc 1
+	\snippet doc/src/snippets/code/doc_src_qtscript.pro 1
 
         For detailed information on how to make your application
         scriptable with QtScript, see \l{Making Applications
@@ -323,11 +323,11 @@
   To include the definitions of the module's classes, use the
   following directive:
 
-  \snippet doc/src/snippets/code/doc.src.qtscripttools.qdoc 0
+  \snippet doc/src/snippets/code/doc_src_qtscripttools.cpp 0
 
   To link against the module, add this line to your \l qmake \c .pro file:
 
-  \snippet doc/src/snippets/code/doc.src.qtscripttools.qdoc 1
+  \snippet doc/src/snippets/code/doc_src_qtscripttools.pro 1
 */
 
 /*!
@@ -338,12 +338,12 @@
     To include the definitions of the module's classes, use the
     following directive:
 
-    \snippet doc/src/snippets/code/doc_src_qtsql.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qtsql.cpp 0
 
     To link against the module, add this line to your \l qmake \c
     .pro file:
 
-    \snippet doc/src/snippets/code/doc_src_qtsql.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qtsql.pro 1
 
     See the \l{SQL Programming} guide for information about using this
     module in your applications.
@@ -362,12 +362,12 @@
         To include the definitions of the module's classes, use the
         following directive:
 
-        \snippet doc/src/snippets/code/doc_src_qtsvg.qdoc 0
+        \snippet doc/src/snippets/code/doc_src_qtsvg.cpp 0
 
         To link against the module, add this line to your \l qmake \c
         .pro file:
 
-        \snippet doc/src/snippets/code/doc_src_qtsvg.qdoc 1
+        \snippet doc/src/snippets/code/doc_src_qtsvg.pro 1
 
         \section1 License Information
 
@@ -412,12 +412,12 @@
     To include the definitions of the module's classes, use the
     following directive:
 
-    \snippet doc/src/snippets/code/doc_src_qtxml.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qtxml.cpp 0
 
     To link against the module, add this line to your \l qmake \c
     .pro file:
 
-    \snippet doc/src/snippets/code/doc_src_qtxml.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qtxml.pro 1
 
     Further XML support is provided by the \l{Qt Solutions} group who
     provide, for example, classes that support SOAP and MML with the
@@ -437,12 +437,12 @@
     To include the definitions of the module's classes, use the
     following directive:
 
-    \snippet doc/src/snippets/code/doc_src_qtxmlpatterns.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qtxmlpatterns.cpp 0
 
     To link against the module, add this line to your \l qmake \c
     .pro file:
 
-    \snippet doc/src/snippets/code/doc_src_qtxmlpatterns.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qtxmlpatterns.pro 1
 
     \section1 Further Reading
 
@@ -523,7 +523,7 @@
     The following declaration in a \c qmake project file ensures that
     an application is compiled and linked appropriately:
 
-    \snippet doc/src/snippets/code/doc_src_phonon.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_phonon.pro 0
 
     \section1 Qt Backends
 
@@ -551,7 +551,7 @@
     Copyright (C) 2004-2009 Matthias Kretz <kretz@kde.org> \BR
     Copyright (C) 2008 Ian Monroe <ian@monroe.nu> \BR
     Copyright (C) 2007-2008 Trolltech ASA \BR
-    Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies). \BR
+    Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies). \BR
     Contact: Nokia Corporation (qt-info@nokia.com)
 
     This library is free software; you can redistribute it and/or
@@ -586,12 +586,12 @@
     To include the definitions of the module's classes, use the
     following directive:
 
-    \snippet doc/src/snippets/code/doc_src_qt3support.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qt3support.cpp 0
 
     To link against the module, add this line to your \l qmake \c
     .pro file:
 
-    \snippet doc/src/snippets/code/doc_src_qt3support.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qt3support.pro 1
 
     \note Since this module provides compatibility classes for
     diverse parts of the Qt 3 API, it has dependencies on the QtCore,
@@ -615,12 +615,12 @@
     To include the definitions of the module's classes, use the
     following directive:
 
-    \snippet doc/src/snippets/code/doc_src_qtdesigner.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qtdesigner.cpp 0
 
     To link against the module, add this line to your \c qmake .pro
     file:
 
-    \snippet doc/src/snippets/code/doc_src_qtdesigner.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qtdesigner.pro 1
 */
 
 /*!
@@ -640,7 +640,7 @@
     in a \c qmake project file to ensure that the application is compiled
     and linked appropriately.
 
-    \snippet doc/src/snippets/code/doc_src_qtuiloader.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qtuiloader.pro 0
 
     A form loader object, provided by the QUiLoader class, is used to
     construct the user interface. This user interface can
@@ -652,7 +652,7 @@
     To include the definitions of the module's classes, use the following
     directive:
 
-    \snippet doc/src/snippets/code/doc_src_qtuiloader.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qtuiloader.cpp 1
 
     \sa{Calculator Builder Example}, {World Time Clock Builder Example}
 */
@@ -672,7 +672,7 @@
     To include the definitions of the module's classes, use the
     following directive:
 
-    \snippet doc/src/snippets/code/doc_src_qthelp.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qthelp.cpp 0
 
     To link against the module, add this line to your \l qmake \c
     .pro file:
@@ -697,7 +697,7 @@
 
     \legalese
     Copyright (C) 2003-2006 Ben van Klinken and the CLucene Team \BR
-    Changes are Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+    Changes are Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -731,12 +731,12 @@
     To include the definitions of the module's classes, use the
     following directive:
 
-    \snippet doc/src/snippets/code/doc_src_qttest.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qttest.cpp 0
 
     To link against the module, add this line to your \l qmake \c
     .pro file:
 
-    \snippet doc/src/snippets/code/doc_src_qttest.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qttest.pro 1
 
     See the \l{QTestLib Manual} for a detailed introduction on how to use
     Qt's unit testing features with your applications.
@@ -762,7 +762,7 @@
     the following license.
 
     \legalese
-    Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).\br
+    Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).\br
     All rights reserved.
 
     Contact:  Nokia Corporation (qt-info@nokia.com)\br
@@ -811,7 +811,7 @@
     the following license.
 
     \legalese
-    Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).\br
+    Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).\br
     All rights reserved.
 
     Contact:  Nokia Corporation (qt-info@nokia.com)\br
@@ -865,13 +865,13 @@
 
     To use this module, use the following code in your application:
 
-    \snippet doc/src/snippets/code/doc_src_qtdbus.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qtdbus.cpp 0
 
     If you're using qmake to build your application, you can add this
     line to your .pro file to make it link against the QtDBus
     libraries:
 
-    \snippet doc/src/snippets/code/doc_src_qtdbus.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qtdbus.pro 1
 
     \note The source code for this module is located in the \c{src/qdbus}
     directory. When installing Qt from source, this module is built when Qt's
@@ -903,7 +903,7 @@
     the following license.
     
     \legalese
-    Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).\br
+    Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).\br
     All rights reserved.
 
     Contact:  Nokia Corporation (qt-info@nokia.com)
@@ -941,7 +941,7 @@
     distributed under the following license.
     
     \legalese
-    Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).\br
+    Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).\br
     All rights reserved.\br
     Contact: Nokia Corporation (qt-info@nokia.com)
 

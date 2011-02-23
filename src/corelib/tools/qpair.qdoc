@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,12 +40,12 @@
     Here's an example of a QPair that stores one QString and one \c
     double value:
 
-    \snippet doc/src/snippets/code/doc_src_qpair.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qpair.cpp 0
 
     The components are accessible as public data members called \l
     first and \l second. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qpair.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qpair.cpp 1
 
     QPair's template data types (T1 and T2) must be \l{assignable
     data types}. You cannot, for example, store a QWidget as a value;
@@ -186,7 +186,7 @@
     Returns a QPair\<T1, T2\> that contains \a value1 and \a value2.
     Example:
 
-    \snippet doc/src/snippets/code/doc_src_qpair.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_qpair.cpp 2
 
     This is equivalent to QPair<T1, T2>(\a value1, \a value2), but
     usually requires less typing.

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -142,7 +142,7 @@
     If you include the <QtDebug> header file, the \c qDebug() function
     can also be used as an output stream. For example:
 
-    \snippet doc/src/snippets/code/doc_src_debug.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_debug.cpp 0
 
     The Qt implementation of these functions prints the text to the
     \c stderr output under Unix/X11 and Mac OS X. With Windows, if it
@@ -199,14 +199,14 @@
 
     These macros are useful for detecting program errors, e.g. like this:
 
-    \snippet doc/src/snippets/code/doc_src_debug.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_debug.cpp 1
 
     Q_ASSERT(), Q_ASSERT_X(), and Q_CHECK_PTR() expand to nothing if
     \c QT_NO_DEBUG is defined during compilation. For this reason,
     the arguments to these macro should not have any side-effects.
     Here is an incorrect usage of Q_CHECK_PTR():
 
-    \snippet doc/src/snippets/code/doc_src_debug.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_debug.cpp 2
 
     If this code is compiled with \c QT_NO_DEBUG defined, the code in
     the Q_CHECK_PTR() expression is not executed and \e alloc returns

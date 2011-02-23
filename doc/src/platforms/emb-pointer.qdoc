@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -144,7 +144,7 @@
     its headers using -L and -I options in the \c qmake.conf file in 
     your \c mkspec. Also it can be helpful to add a -rpath-link:
 
-    \snippet doc/src/snippets/code/doc_src_emb-pointer.qdoc 7
+    \snippet doc/src/snippets/code/doc_src_emb-pointer.pro 7
 
     In order to use this mouse driver, tslib must also be correctly
     installed on the target machine. This includes providing a \c

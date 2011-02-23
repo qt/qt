@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,6 +45,7 @@
 #include <private/qdeclarativecompiler_p.h>
 #include <private/qdeclarativecomponent_p.h>
 #include <private/qdeclarativeglobal_p.h>
+#include <private/qdeclarativedebugtrace_p.h>
 
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QtCore/qdebug.h>
@@ -628,7 +629,18 @@ QDeclarativeTypeLoader::~QDeclarativeTypeLoader()
 }
 
 /*!
-Return a QDeclarativeTypeData for \a url.  The QDeclarativeTypeData may be cached.
+\enum QDeclarativeTypeLoader::Option
+
+This enum defines the options that control the way type data is handled.
+
+\value None             The default value, indicating that no other options
+                        are enabled.
+\value PreserveParser   The parser used to handle the type data is preserved
+                        after the data has been parsed.
+*/
+
+/*!
+Returns a QDeclarativeTypeData for the specified \a url.  The QDeclarativeTypeData may be cached.
 */
 QDeclarativeTypeData *QDeclarativeTypeLoader::get(const QUrl &url)
 {
@@ -649,8 +661,10 @@ QDeclarativeTypeData *QDeclarativeTypeLoader::get(const QUrl &url)
 }
 
 /*!
-Return a QDeclarativeTypeData for \a data with the provided base \a url.  The 
+Returns a QDeclarativeTypeData for the given \a data with the provided base \a url.  The 
 QDeclarativeTypeData will not be cached.
+
+The specified \a options control how the loader handles type data.
 */
 QDeclarativeTypeData *QDeclarativeTypeLoader::get(const QByteArray &data, const QUrl &url, Options options)
 {
@@ -895,10 +909,12 @@ void QDeclarativeTypeData::downloadProgressChanged(qreal p)
 void QDeclarativeTypeData::compile()
 {
     Q_ASSERT(m_compiledData == 0);
+    QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Compiling);
 
     m_compiledData = new QDeclarativeCompiledData(typeLoader()->engine());
     m_compiledData->url = m_imports.baseUrl();
     m_compiledData->name = m_compiledData->url.toString();
+    QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::Compiling, m_compiledData->name);
 
     QDeclarativeCompiler compiler;
     if (!compiler.compile(typeLoader()->engine(), this, m_compiledData)) {
@@ -906,6 +922,7 @@ void QDeclarativeTypeData::compile()
         m_compiledData->release();
         m_compiledData = 0;
     }
+    QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Compiling);
 }
 
 void QDeclarativeTypeData::resolveTypes()
@@ -1001,6 +1018,8 @@ void QDeclarativeTypeData::resolveTypes()
         }
 
         if (ref.type) {
+            ref.majorVersion = majorVersion;
+            ref.minorVersion = minorVersion;
             foreach (QDeclarativeParser::Object *obj, parserRef->refObjects) {
                // store namespace for DOM
                obj->majorVersion = majorVersion;

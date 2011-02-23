@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -125,12 +125,12 @@
     QString provides implicit casting from \c{const char *}
     so that things like
 
-    \snippet doc/src/snippets/code/doc_src_unicode.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_unicode.cpp 0
 
     will work. There is also a function, QObject::tr(), that provides
     translation support, like this:
 
-    \snippet doc/src/snippets/code/doc_src_unicode.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_unicode.cpp 1
 
     QObject::tr() maps from \c{const char *} to a Unicode string, and
     uses installable QTranslator objects to do the mapping.
@@ -151,11 +151,11 @@
     fast functions for mapping to and from them. For example, to open an
     application's icon one might do this:
 
-    \snippet doc/src/snippets/code/doc_src_unicode.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_unicode.cpp 2
 
     or
 
-    \snippet doc/src/snippets/code/doc_src_unicode.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_unicode.cpp 3
 
     Regarding output, Qt will do a best-effort conversion from
     Unicode to whatever encoding the system and fonts provide.

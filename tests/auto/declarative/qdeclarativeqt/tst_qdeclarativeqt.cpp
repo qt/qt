@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <private/qdeclarativeengine_p.h>
 
 #include <qtest.h>
 #include <QDebug>
@@ -81,7 +82,8 @@ private slots:
     void createComponent_pragmaLibrary();
     void createQmlObject();
     void consoleLog();
-    void formatting();
+    void dateTimeFormatting();
+    void dateTimeFormatting_data();
     void isQtObject();
     void btoa();
     void atob();
@@ -446,47 +448,86 @@ void tst_qdeclarativeqt::consoleLog()
     delete object;
 }
 
-void tst_qdeclarativeqt::formatting()
+void tst_qdeclarativeqt::dateTimeFormatting()
 {
-    QDeclarativeComponent component(&engine, TEST_FILE("formatting.qml"));
+    QFETCH(QString, method);
+    QFETCH(QStringList, inputProperties);
+    QFETCH(QStringList, expectedResults);
 
-    QString warning1 = component.url().toString() + ":22: Error: Qt.formatDate(): Invalid date format";
-    QString warning2 = component.url().toString() + ":21: Error: Qt.formatDate(): Invalid arguments";
-    QString warning3 = component.url().toString() + ":28: Error: Qt.formatDateTime(): Invalid datetime format";
-    QString warning4 = component.url().toString() + ":27: Error: Qt.formatDateTime(): Invalid arguments";
-    QString warning5 = component.url().toString() + ":25: Error: Qt.formatTime(): Invalid time format";
-    QString warning6 = component.url().toString() + ":24: Error: Qt.formatTime(): Invalid arguments";
+    QDate date(2008,12,24);
+    QTime time(14,15,38,200);
+    QDateTime dateTime(date, time);
 
-    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
-    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
-    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning3));
-    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning4));
-    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning5));
-    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning6));
+    QDeclarativeEngine eng;
+
+    eng.rootContext()->setContextProperty("qdate", date);
+    eng.rootContext()->setContextProperty("qtime", time);
+    eng.rootContext()->setContextProperty("qdatetime", dateTime);
+
+    QDeclarativeComponent component(&eng, TEST_FILE("formatting.qml"));
+
+    QStringList warnings;
+    warnings << component.url().toString() + ":37: Error: Qt.formatDate(): Invalid date format"
+        << component.url().toString() + ":36: Error: Qt.formatDate(): Invalid arguments"
+        << component.url().toString() + ":40: Error: Qt.formatTime(): Invalid time format"
+        << component.url().toString() + ":39: Error: Qt.formatTime(): Invalid arguments"
+        << component.url().toString() + ":43: Error: Qt.formatDateTime(): Invalid datetime format"
+        << component.url().toString() + ":42: Error: Qt.formatDateTime(): Invalid arguments";
+
+    foreach (const QString &warning, warnings)
+        QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
 
     QObject *object = component.create();
+    QVERIFY2(component.errorString().isEmpty(), qPrintable(component.errorString()));
     QVERIFY(object != 0);
 
-    QDate date1(2008,12,24);
-    QCOMPARE(object->property("date1").toDate(), date1);
-    QCOMPARE(object->property("test1").toString(), date1.toString(Qt::DefaultLocaleShortDate));
-    QCOMPARE(object->property("test2").toString(), date1.toString(Qt::DefaultLocaleLongDate));
-    QCOMPARE(object->property("test3").toString(), date1.toString("ddd MMMM d yy"));
+    QVERIFY(inputProperties.count() > 0);
 
-    QTime time1(14,15,38,200);
-    QCOMPARE(object->property("time1").toTime(), time1);
-    QCOMPARE(object->property("test4").toString(), time1.toString(Qt::DefaultLocaleShortDate));
-    QCOMPARE(object->property("test5").toString(), time1.toString(Qt::DefaultLocaleLongDate));
-    QCOMPARE(object->property("test6").toString(), time1.toString("H:m:s a"));
-    QCOMPARE(object->property("test7").toString(), time1.toString("hh:mm:ss.zzz"));
+    QVariant result;
+    foreach(const QString &prop, inputProperties) {
+        QVERIFY(QMetaObject::invokeMethod(object, method.toUtf8().constData(),
+                Q_RETURN_ARG(QVariant, result),
+                Q_ARG(QVariant, prop)));
 
-    QDateTime dateTime1(QDate(1978,03,04),QTime(9,13,54));
-    QCOMPARE(object->property("dateTime1").toDateTime(),dateTime1);
-    QCOMPARE(object->property("test8").toString(), dateTime1.toString(Qt::DefaultLocaleShortDate));
-    QCOMPARE(object->property("test9").toString(), dateTime1.toString(Qt::DefaultLocaleLongDate));
-    QCOMPARE(object->property("test10").toString(), dateTime1.toString("M/d/yy H:m:s a"));
+        QStringList output = result.toStringList();
+        for (int i=0; i<output.count(); i++)
+            QCOMPARE(output[i], expectedResults[i]);
+    }
 
     delete object;
+}
+
+void tst_qdeclarativeqt::dateTimeFormatting_data()
+{
+    QTest::addColumn<QString>("method");
+    QTest::addColumn<QStringList>("inputProperties");
+    QTest::addColumn<QStringList>("expectedResults");
+
+    QDate date(2008,12,24);
+    QTime time(14,15,38,200);
+    QDateTime dateTime(date, time);
+
+    QTest::newRow("formatDate")
+        << "formatDate"
+        << (QStringList() << "dateFromString" << "jsdate" << "qdate" << "qdatetime")
+        << (QStringList() << date.toString(Qt::DefaultLocaleShortDate)
+                          << date.toString(Qt::DefaultLocaleLongDate)
+                          << date.toString("ddd MMMM d yy"));
+
+    QTest::newRow("formatTime")
+        << "formatTime"
+        << (QStringList() << "jsdate" << "qtime" << "qdatetime")
+        << (QStringList() << time.toString(Qt::DefaultLocaleShortDate)
+                          << time.toString(Qt::DefaultLocaleLongDate)
+                          << time.toString("H:m:s a")
+                          << time.toString("hh:mm:ss.zzz"));
+
+    QTest::newRow("formatDateTime")
+        << "formatDateTime"
+        << (QStringList() << "jsdate" << "qdatetime")
+        << (QStringList() << dateTime.toString(Qt::DefaultLocaleShortDate)
+                          << dateTime.toString(Qt::DefaultLocaleLongDate)
+                          << dateTime.toString("M/d/yy H:m:s a"));
 }
 
 void tst_qdeclarativeqt::isQtObject()

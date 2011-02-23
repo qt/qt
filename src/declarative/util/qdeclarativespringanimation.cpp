@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -246,19 +246,19 @@ void QDeclarativeSpringAnimationPrivate::updateMode()
 
     You can also limit the maximum \l velocity of the animation.
 
-    The following \l Rectangle moves to the position of the mouse using a 
+    The following \l Rectangle moves to the position of the mouse using a
     SpringAnimation when the mouse is clicked. The use of the \l Behavior
-    on the \c x and \c y values indicates that whenever these values are 
+    on the \c x and \c y values indicates that whenever these values are
     changed, a SpringAnimation should be applied.
 
     \snippet doc/src/snippets/declarative/springanimation.qml 0
 
     Like any other animation element, a SpringAnimation can be applied in a
-    number of ways, including transitions, behaviors and property value 
-    sources. The \l {QML Animation} documentation shows a variety of methods
-    for creating animations.
+    number of ways, including transitions, behaviors and property value
+    sources. The \l {QML Animation and Transitions} documentation shows a
+    variety of methods for creating animations.
 
-    \sa SmoothedAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}, {declarative/toys/clocks}{Clocks example}
+    \sa SmoothedAnimation, {QML Animation and Transitions}, {declarative/animation/basics}{Animation basics example}, {declarative/toys/clocks}{Clocks example}
 */
 
 QDeclarativeSpringAnimation::QDeclarativeSpringAnimation(QObject *parent)
@@ -299,7 +299,7 @@ void QDeclarativeSpringAnimation::setVelocity(qreal velocity)
 
     This property describes how strongly the target is pulled towards the
     source. The default value is 0 (that is, the spring-like motion is disabled).
-    
+
     The useful value range is 0 - 5.0.
 
     When this property is set and the \l velocity value is greater than 0,
@@ -394,9 +394,9 @@ void QDeclarativeSpringAnimation::setModulus(qreal modulus)
     \qmlproperty real SpringAnimation::mass
     This property holds the "mass" of the property being moved.
 
-    The value is 1.0 by default. 
-    
-    A greater mass causes slower movement and a greater spring-like 
+    The value is 1.0 by default.
+
+    A greater mass causes slower movement and a greater spring-like
     motion when an item comes to rest.
 */
 qreal QDeclarativeSpringAnimation::mass() const

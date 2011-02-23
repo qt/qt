@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -920,7 +920,7 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     // normalize the request to get better caching
     QFontDef req = d->request;
     if (req.pixelSize <= 0)
-        req.pixelSize = qreal((req.pointSize * d->dpi) / 72.);
+        req.pixelSize = floor((100.0 * req.pointSize * d->dpi) / 72. + 0.5) / 100;
     if (req.pixelSize < 1)
         req.pixelSize = 1;
     if (req.weight == 0)

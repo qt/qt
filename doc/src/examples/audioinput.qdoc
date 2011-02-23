@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -31,6 +31,8 @@
 
     The Audio Input example demonstrates the basic use of QAudioInput class
     provided with Qt.
+
+    \image audioinput-example.png
 
     Qt provides the QAudioInput class to enable audio functionality within
     a standard application user interface.

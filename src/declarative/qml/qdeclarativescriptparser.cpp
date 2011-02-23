@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -170,12 +170,6 @@ private:
     StateStack _stateStack;
     QStringList _scope;
     QString _contents;
-
-    inline bool isSignalProperty(const QByteArray &propertyName) const {
-        return (propertyName.length() >= 3 && propertyName.startsWith("on") &&
-                ('A' <= propertyName.at(2) && 'Z' >= propertyName.at(2)));
-    }
-
 };
 
 ProcessAST::ProcessAST(QDeclarativeScriptParser *parser)
@@ -307,7 +301,6 @@ ProcessAST::defineObjectBinding(AST::UiQualifiedId *propertyName,
         obj->location = location;
 
         if (propertyCount) {
-
             Property *prop = currentProperty();
             Value *v = new Value;
             v->object = obj;

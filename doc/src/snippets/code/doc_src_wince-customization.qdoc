@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -89,22 +89,3 @@ if(equals(TEMPLATE_PREFIX, "vc") | equals(TEMPLATE, "vc*")) {
     DEFINES -= _M_ARM
 }
 //! [8]
-
-//! [9]
-wchar_t* libraries[] = {
-    L"QtCore4.dll",
-    L"QtGui4.dll",
-    0
-};
-
-for (int i = 0; libraries[i] != 0; ++i) {
-    HINSTANCE instance = LoadLibraryW(libraries[i]);
-    OutputDebugStringW(libraries[i]);
-    if (instance != NULL) {
-        OutputDebugStringW(L" : Successfully instantiated\n");
-        FreeLibrary(instance);
-    } else {
-        OutputDebugStringW(L" : Could not be loaded\n");
-    }
-}
-//! [9]

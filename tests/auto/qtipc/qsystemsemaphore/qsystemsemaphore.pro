@@ -1,4 +1,4 @@
-CONFIG += qttest_p4
+load(qttest_p4)
 #QT = core
 
 include(../qsharedmemory/src/src.pri)
@@ -31,5 +31,8 @@ QT += script
 lackey.sources = ../lackey/lackey.exe
 lackey.path = /sys/bin
 DEPLOYMENT += lackey
+
+# PowerMgmt capability needed to kill lackey process
+TARGET.CAPABILITY = PowerMgmt
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,16 +43,6 @@ IDI_ICON1               ICON    DISCARDABLE     "myappico.ico"
 //! [0]
 
 
-//! [1]
-RC_FILE = myapp.rc
-//! [1]
-
-
-//! [2]
-ICON = myapp.icns
-//! [2]
-
-
 //! [3]
 kde-config --path icon
 //! [3]
@@ -61,7 +51,3 @@ kde-config --path icon
 //! [4]
 gnome-config --datadir
 //! [4]
-
-//! [5]
-ICON = myapp.svg
-//! [5]

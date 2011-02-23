@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -159,6 +159,8 @@ public:
 
     Q_INVOKABLE void positionViewAtIndex(int index, int mode);
     Q_INVOKABLE int indexAt(int x, int y) const;
+    Q_INVOKABLE Q_REVISION(1) void positionViewAtBeginning();
+    Q_INVOKABLE Q_REVISION(1) void positionViewAtEnd();
 
     static QDeclarativeGridViewAttached *qmlAttachedProperties(QObject *);
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -70,10 +70,10 @@
     objects it contains.
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_q3valuevector.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_q3valuevector.cpp 0
 
     Program output:
-    \snippet doc/src/snippets/code/doc_src_q3valuevector.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_q3valuevector.cpp 1
 
     As you can see, the most recent change to Joe's salary did not
     affect the value in the vector because the vector created a copy
@@ -102,13 +102,13 @@
     an element that does not exist (your application will probably
     crash). For example:
 
-    \snippet doc/src/snippets/code/doc_src_q3valuevector.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_q3valuevector.cpp 2
 
     Whenever inserting, removing or referencing elements in a vector,
     always make sure you are referring to valid positions. For
     example:
 
-    \snippet doc/src/snippets/code/doc_src_q3valuevector.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_q3valuevector.cpp 3
 
     The iterators provided by vector are random access iterators,
     therefore you can use them with many generic algorithms, for
@@ -127,7 +127,7 @@
     application will crash or do unpredictable things). Use back() and
     front() with caution, for example:
 
-    \snippet doc/src/snippets/code/doc_src_q3valuevector.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_q3valuevector.cpp 4
 
     Because Q3ValueVector manages memory dynamically, it is recommended
     that you contruct a vector with an initial size. Inserting and

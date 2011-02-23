@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -387,7 +387,6 @@ private: //data members
 class QFocusFrame;
 class QProgressBar;
 class QS60StyleAnimation;
-class TactileFeedbackInterface;
 
 // Private class
 #ifdef Q_OS_SYMBIAN
@@ -576,8 +575,6 @@ public:
     void stopAnimation(QS60StyleEnums::SkinParts animation);
     static QS60StyleAnimation* animationDefinition(QS60StyleEnums::SkinParts part);
     static void removeAnimations();
-    //No support for tactile feedback in emulated style
-    void touchFeedback(QEvent *event, const QWidget *widget);
 
 #endif
 
@@ -632,7 +629,6 @@ private:
 #ifdef Q_WS_S60
     //list of progress bars having animation running
     QList<QProgressBar *> m_bars;
-    TactileFeedbackInterface *m_feedbackPlugin;
 #endif
 
 };

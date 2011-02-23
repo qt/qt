@@ -127,6 +127,9 @@ symbian {
 	# These are for effects.
 	LIBS += -lAudioEqualizerEffect -lBassBoostEffect -lDistanceAttenuationEffect -lDopplerbase -lEffectBase -lEnvironmentalReverbEffect -lListenerDopplerEffect -lListenerLocationEffect -lListenerOrientationEffect -lLocationBase -lLoudnessEffect -lOrientationBase -lSourceDopplerEffect -lSourceLocationEffect -lSourceOrientationEffect -lStereoWideningEffect
 
+	# This is to allow IAP to be specified
+	LIBS += -lcommdb
+
 	# This is needed for having the .qtplugin file properly created on Symbian.
 	QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/phonon_backend
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -148,6 +148,7 @@ class Generator
     static QString trimmedTrailing(const QString &string);
     static bool matchAhead(const Atom *atom, Atom::Type expectedAtomType);
     static void supplementAlsoList(const Node *node, QList<Text> &alsoList);
+    static QString outputPrefix(const QString &nodeType);
 
  private:
     void generateReimplementedFrom(const FunctionNode *func,
@@ -198,6 +199,7 @@ class Generator
     static QStringList styleDirs;
     static QString outDir;
     static QString project;
+    static QHash<QString, QString> outputPrefixes;
 };
 
 QT_END_NAMESPACE

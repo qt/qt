@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -90,10 +90,15 @@ typedef QPair<int, int> QDeclarativeXmlListRange;
     \qml
     XmlListModel {
         id: xmlModel
-        ...
-        XmlRole { name: "title"; query: "title/string()" }
+        // ...
+        XmlRole {
+            name: "title"
+            query: "title/string()"
+        }
     }
+    \endqml
 
+    \qml
     ListView {
         model: xmlModel
         delegate: Text { text: title }
@@ -382,7 +387,7 @@ void QDeclarativeXmlQuery::doSubQueryJob()
     for (int i = 0; i < queries.size(); ++i) {
         QList<QVariant> resultList;
         if (!queries[i].isEmpty()) {
-            subquery.setQuery(m_prefix + QLatin1String("(let $v := ") + queries[i] + QLatin1String(" return if ($v) then ") + queries[i] + QLatin1String(" else \"\")"));
+            subquery.setQuery(m_prefix + QLatin1String("(let $v := string(") + queries[i] + QLatin1String(") return if ($v) then ") + queries[i] + QLatin1String(" else \"\")"));
             if (subquery.isValid()) {
                 QXmlResultItems resultItems;
                 subquery.evaluateTo(&resultItems);
@@ -792,9 +797,9 @@ void QDeclarativeXmlListModel::setNamespaceDeclarations(const QString &declarati
 
     This will access the \c title value for the first item in the model:
 
-    \qml
-        var title = model.get(0).title;
-    \endqml
+    \js
+    var title = model.get(0).title;
+    \endjs
 */
 QScriptValue QDeclarativeXmlListModel::get(int index) const
 {
@@ -924,6 +929,7 @@ void QDeclarativeXmlListModel::reload()
     } else {
         d->notifyQueryStarted(true);
         QNetworkRequest req(d->src);
+        req.setRawHeader("Accept", "application/xml");
         d->reply = qmlContext(this)->engine()->networkAccessManager()->get(req);
         QObject::connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));
         QObject::connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),

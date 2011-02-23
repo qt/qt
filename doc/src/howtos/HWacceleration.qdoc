@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -27,7 +27,7 @@
 
 /*!
     \page HWAcc_rendering.html
-    \title Hardware Acceleration &amp Embedded Platforms.
+    \title Hardware Acceleration and Embedded Platforms.
     \brief How to use hardware acceleration for fast rendering.
 
     \ingroup best-practices
@@ -45,11 +45,11 @@
     \input platforms/emb-hardwareacceleration.qdocinc
 
     \section1 Supported platforms
-	Since there might be differences to how the APIs are being used on
-	the different embedded platforms, this table provides you with links to
-	pages dedicated to platform specific documentation for each
-	supported hardware acceleration API. Click the API link for the
-	platform to go the correct documentation.
+        Since there might be differences to how the APIs are being used on
+        the different embedded platforms, this table provides you with links to
+        pages dedicated to platform specific documentation for each
+        supported hardware acceleration API. Click the API link for the
+        platform to go the correct documentation.
 
     \table
         \header

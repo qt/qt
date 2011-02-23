@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -262,8 +262,18 @@ void QDeclarativeFontLoader::updateFontInfo(const QString& name, QDeclarativeFon
 
     Example:
     \qml
-    FontLoader { id: webFont; source: "http://www.mysite.com/myfont.ttf" }
-    Text { text: "Fancy font"; font.family: webFont.name }
+    Item {
+        width: 200; height: 50
+
+        FontLoader {
+            id: webFont
+            source: "http://www.mysite.com/myfont.ttf"
+        }
+        Text {
+            text: "Fancy font"
+            font.family: webFont.name
+        }
+    }
     \endqml
 */
 QString QDeclarativeFontLoader::name() const

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -337,7 +337,7 @@ QHostAddress tst_NetworkSelfTest::serverIpAddress()
         // need resolving
         QHostInfo resolved = QHostInfo::fromName(QtNetworkSettings::serverName());
         if(resolved.error() != QHostInfo::NoError ||
-            !resolved.addresses().isEmpty()) {
+            resolved.addresses().isEmpty()) {
             qWarning("QHostInfo::fromName failed (%d).", resolved.error());
             return QHostAddress(QHostAddress::Null);
         }
@@ -398,6 +398,8 @@ void tst_NetworkSelfTest::serverReachability()
 void tst_NetworkSelfTest::remotePortsOpen_data()
 {
     QTest::addColumn<int>("portNumber");
+    QTest::newRow("echo") << 7;
+    QTest::newRow("daytime") << 13;
     QTest::newRow("ftp") << 21;
     QTest::newRow("ssh") << 22;
     QTest::newRow("imap") << 143;

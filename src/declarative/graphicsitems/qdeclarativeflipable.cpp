@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -86,13 +86,13 @@ public:
     The following example shows a Flipable item that flips whenever it is
     clicked, rotating about the y-axis.
 
-    This flipable item has a \c flipped boolean property that is toggled 
-    whenever the MouseArea within the flipable is clicked. When 
-    \c flipped is true, the item changes to the "back" state; in this 
+    This flipable item has a \c flipped boolean property that is toggled
+    whenever the MouseArea within the flipable is clicked. When
+    \c flipped is true, the item changes to the "back" state; in this
     state, the \c angle of the \l Rotation item is changed to 180
     degrees to produce the flipping effect. When \c flipped is false, the
-    item reverts to the default state, in which the \c angle value is 0. 
-   
+    item reverts to the default state, in which the \c angle value is 0.
+
     \snippet doc/src/snippets/declarative/flipable/flipable.qml 0
 
     \image flipable.gif
@@ -103,8 +103,8 @@ public:
     its old and new values.
 
     See \l {QML States} for details on state changes and the default
-    state, and \l {QML Animation} for more information on how animations
-    work within transitions.
+    state, and \l {QML Animation and Transitions} for more information on how
+    animations work within transitions.
 
     \sa {declarative/ui-components/flipable}{Flipable example}
 */
@@ -142,6 +142,7 @@ void QDeclarativeFlipable::setFront(QGraphicsObject *front)
     d->front->setParentItem(this);
     if (Back == d->current)
         d->front->setOpacity(0.);
+    emit frontChanged();
 }
 
 QGraphicsObject *QDeclarativeFlipable::back()
@@ -165,6 +166,7 @@ void QDeclarativeFlipable::setBack(QGraphicsObject *back)
             this, SLOT(retransformBack()));
     connect(back, SIGNAL(heightChanged()),
             this, SLOT(retransformBack()));
+    emit backChanged();
 }
 
 void QDeclarativeFlipable::retransformBack()
@@ -177,8 +179,8 @@ void QDeclarativeFlipable::retransformBack()
 /*!
   \qmlproperty enumeration Flipable::side
 
-  The side of the Flippable currently visible. Possible values are \c
-  Flippable.Front and \c Flippable.Back.
+  The side of the Flipable currently visible. Possible values are \c
+  Flipable.Front and \c Flipable.Back.
 */
 QDeclarativeFlipable::Side QDeclarativeFlipable::side() const
 {

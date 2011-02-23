@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -63,7 +63,7 @@ class QTextListFormat;
 
 class QTextDocumentLayoutPrivate;
 
-class Q_AUTOTEST_EXPORT QTextDocumentLayout : public QAbstractTextDocumentLayout
+class Q_GUI_EXPORT QTextDocumentLayout : public QAbstractTextDocumentLayout
 {
     Q_DECLARE_PRIVATE(QTextDocumentLayout)
     Q_OBJECT
@@ -109,6 +109,9 @@ protected:
     void drawInlineObject(QPainter *p, const QRectF &rect, QTextInlineObject item,
                           int posInDocument, const QTextFormat &format);
     virtual void timerEvent(QTimerEvent *e);
+    enum LineHeightMode { MultiplyHeight, PixelHeight };
+    void setLineHeight(qreal lineHeight, QTextDocumentLayout::LineHeightMode mode);
+
 private:
     QRectF doLayout(int from, int oldLength, int length);
     void layoutFinished();

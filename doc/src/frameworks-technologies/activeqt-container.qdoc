@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -67,7 +67,7 @@
     To build Qt applications that can host COM objects and ActiveX controls
     link the application against the QAxContainer module by adding
 
-    \snippet doc/src/snippets/code/doc_src_qaxcontainer.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qaxcontainer.pro 0
 
     to your application's \c .pro file.
 
@@ -128,7 +128,7 @@
     want to use, or integrate it into the build system by adding the type
     libraries to the \c TYPELIBS variable in your application's \c .pro file:
 
-    \snippet doc/src/snippets/code/doc_src_qaxcontainer.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qaxcontainer.pro 1
 
     Note that \l dumpcpp might not be able to expose all APIs in the type
     library.

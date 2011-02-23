@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -27,9 +27,12 @@
 
 /*!
 \page qml-positioners.html
+\ingroup qml-features
+\previouspage Property Binding
+\nextpage Anchor-based Layout in QML
+\contentspage QML Features
 \title Using QML Positioner and Repeater Items
 
-\section1 Introduction
 
 Positioner items are container items that manage the positions and sizes of
 items in a declarative user interface. Positioners behave in a similar way to
@@ -97,7 +100,7 @@ in a 2-by-2 grid. As with the other positioners, the spacing between items
 can be specified using the \l{Grid::spacing}{spacing} property.
 
 \clearfloat
-\snippet doc/src/snippets/declarative/grid/grid-spacing.qml document
+\snippet doc/src/snippets/declarative/grid-spacing.qml document
 
 There is no difference between horizontal and vertical spacing inserted
 between items, so any additional space must be added within the items

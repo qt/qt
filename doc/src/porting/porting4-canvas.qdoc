@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -152,7 +152,7 @@
         \row \o Q3Canvas::onCanvas() \o The is no equivalent to this
         function in Graphics View. However, you can combine
         QGraphicsScene::sceneRect() and QRectF::intersects():
-        \snippet doc/src/snippets/code/doc_src_porting4-canvas.qdoc 0
+        \snippet doc/src/snippets/code/doc_src_porting4-canvas.cpp 0
 
         \row \o Q3Canvas::rect() \o The equivalent,
         QGraphicsScene::sceneRect(), returns a QRectF (double
@@ -251,7 +251,7 @@
         out the public tile API can then be declared as new members of
         this class. Here is one example of how to implement tile support:
 
-        \snippet doc/src/snippets/code/doc_src_porting4-canvas.qdoc 1
+        \snippet doc/src/snippets/code/doc_src_porting4-canvas.cpp 1
 
         Depending on how your scene uses tiles, you may be able to
         simplify this approach. In this example, we will try to mimic the behavior
@@ -264,30 +264,30 @@
         two-dimensional vector of ints to keep track of what tiles should
         be used at what parts of the scene.
 
-        \snippet doc/src/snippets/code/doc_src_porting4-canvas.qdoc 2
+        \snippet doc/src/snippets/code/doc_src_porting4-canvas.cpp 2
 
         In setTiles(), we store the pixmap and tile properties as
         members of the class. Then we resize the tiles vector
         to match the width and height of our tile grid.
 
-        \snippet doc/src/snippets/code/doc_src_porting4-canvas.qdoc 3
+        \snippet doc/src/snippets/code/doc_src_porting4-canvas.cpp 3
 
         The setTile() function updates the tiles index, and then
         updates the corresponding rect in the scene by calling
         tileRect().
 
-        \snippet doc/src/snippets/code/doc_src_porting4-canvas.qdoc 4
+        \snippet doc/src/snippets/code/doc_src_porting4-canvas.cpp 4
 
         The first tileRect() function returns a QRect for the tile at
         position (x, y).
 
-        \snippet doc/src/snippets/code/doc_src_porting4-canvas.qdoc 5
+        \snippet doc/src/snippets/code/doc_src_porting4-canvas.cpp 5
 
         The second tileRect() function returns a QRect for a tile number.
         With these functions in place, we can implement the drawBackground()
         function.
 
-        \snippet doc/src/snippets/code/doc_src_porting4-canvas.qdoc 6
+        \snippet doc/src/snippets/code/doc_src_porting4-canvas.cpp 6
 
         In drawBackground(), we redraw all tiles that have been
         exposed by intersecting each tile rect with the exposed background
@@ -522,7 +522,7 @@
             For compatibility, you may want to shift the ellipse up and to the
             left to keep the ellipse centered. Example:
 
-            \snippet doc/src/snippets/code/doc_src_porting4-canvas.qdoc 7
+            \snippet doc/src/snippets/code/doc_src_porting4-canvas.cpp 7
 
             Note: QGraphicsEllipseItem uses QAbstractGraphicsShapeItem::pen()
             for outlines, whereas Q3CanvasEllipse did not use
@@ -588,7 +588,7 @@
             QPainterPath::moveTo() and QPainterPath::cubicTo(). Here is how
             you can convert a bezier curve Q3PointArray to a QPainterPath:
 
-            \snippet doc/src/snippets/code/doc_src_porting4-canvas.qdoc 8
+            \snippet doc/src/snippets/code/doc_src_porting4-canvas.cpp 8
 
             Note: QGraphicsPathItem uses QAbstractGraphicsShapeItem::pen() for
             outlines, whereas Q3CanvasSpline did not use
@@ -653,7 +653,7 @@
                 functionality using Graphics View, you can load the images by
                 using QDir:
 
-                \snippet doc/src/snippets/code/doc_src_porting4-canvas.qdoc 9
+                \snippet doc/src/snippets/code/doc_src_porting4-canvas.cpp 9
 
         \section2 Q3CanvasText
 

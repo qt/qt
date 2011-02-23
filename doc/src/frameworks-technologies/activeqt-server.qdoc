@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,10 +60,10 @@
     An out-of-process executable server is generated from a \c .pro
     file like this:
 
-    \snippet doc/src/snippets/code/doc_src_qaxserver.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qaxserver.pro 0
 
     To build an in-process server, use a \c .pro file like this:
-    \snippet doc/src/snippets/code/doc_src_qaxserver.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qaxserver.pro 1
 
     The files \c qaxserver.rc and \c qaxserver.def are part of the
     framework and can be used from their usual location (specify a
@@ -91,7 +91,7 @@
     Additionally you can specify a version number using the \c VERSION
     variable, e.g.
 
-    \snippet doc/src/snippets/code/doc_src_qaxserver.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_qaxserver.pro 2
 
     The version number specified will be used as the version of the type
     library and of the server when registering.
@@ -186,12 +186,12 @@
     or any existing QObject subclass. If the class is a subclass of QWidget,
     the COM object will be an ActiveX control.
 
-    \snippet doc/src/snippets/code/doc_src_qaxserver.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_qaxserver.cpp 3
 
     The Q_OBJECT macro is required to provide the meta object information
     about the widget to the ActiveQt framework.
 
-    \snippet doc/src/snippets/code/doc_src_qaxserver.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_qaxserver.cpp 4
 
     Use the Q_CLASSINFO() macro to specify the COM identifiers for the COM
     object. \c ClassID and \c InterfaceID are required, while \c EventsID is
@@ -201,7 +201,7 @@
     You can specify additional attributes for each of your classes; see 
     \l{Class Information and Tuning} for details.
 
-    \snippet doc/src/snippets/code/doc_src_qaxserver.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_qaxserver.cpp 5
 
     Use the Q_PROPERTY() macro to declare properties for the ActiveX control.
 
@@ -216,7 +216,7 @@
     your implementation of QAxFactory::create.
     \endfootnote
 
-    \snippet doc/src/snippets/code/doc_src_qaxserver.qdoc 6
+    \snippet doc/src/snippets/code/doc_src_qaxserver.cpp 6
 
     The ActiveQt framework will expose properties and public slots as ActiveX 
     properties and methods, and signals as ActiveX events, and convert between
@@ -428,7 +428,7 @@
     To make the properties bindable for the ActiveX client, use multiple
     inheritance from the QAxBindable class:
 
-    \snippet doc/src/snippets/code/doc_src_qaxserver.qdoc 7
+    \snippet doc/src/snippets/code/doc_src_qaxserver.cpp 7
 
     When implementing the property write functions, use the
     QAxBindable class's requestPropertyChange() and propertyChanged()
@@ -453,7 +453,7 @@
     an implementation of a QAxFactory. The easist way to do this is to use a set
     of macros:
 
-    \snippet doc/src/snippets/code/doc_src_qaxserver.qdoc 8
+    \snippet doc/src/snippets/code/doc_src_qaxserver.cpp 8
 
     This will export \c MyWidget and \c MyWidget2 as COM objects that can be
     created by COM clients, and will register \c MySubType as a type that can
@@ -470,7 +470,7 @@
     server. Use QAxFactory::isServer() to create and run a standard
     application interface, or to prevent a stand-alone execution:
 
-    \snippet doc/src/snippets/code/doc_src_qaxserver.qdoc 9
+    \snippet doc/src/snippets/code/doc_src_qaxserver.cpp 9
 
     This is however not necessary as ActiveQt provides a default implementation
     of a main function. The default implemenation calls QAxFactory::startServer(),
@@ -512,7 +512,7 @@
     macro, the QAxFactory subclass had no appropriate constructor.
     Provide a public class constructor like
 
-    \snippet doc/src/snippets/code/doc_src_qaxserver.qdoc 10
+    \snippet doc/src/snippets/code/doc_src_qaxserver.cpp 10
 
     for your factory class.
 
@@ -560,7 +560,7 @@
     your installer process, resolve the \c DllRegisterServer symbol and
     call the function:
 
-    \snippet doc/src/snippets/code/doc_src_qaxserver.qdoc 11
+    \snippet doc/src/snippets/code/doc_src_qaxserver.cpp 11
 
     \section3 Distributing Servers over the Internet
 
@@ -766,7 +766,7 @@
     own API, and is available in the "Insert Objects" dialog of Microsoft
     Office applications.
 
-    \snippet doc/src/snippets/code/doc_src_qaxserver.qdoc 15
+    \snippet doc/src/snippets/code/doc_src_qaxserver.cpp 15
 
     \section2 Developing Licensed Components
 
@@ -782,7 +782,7 @@
     To mark a Qt class as licensed specify a "LicenseKey" using the
     Q_CLASSINFO() macro.
 
-    \snippet doc/src/snippets/code/doc_src_qaxserver.qdoc 16
+    \snippet doc/src/snippets/code/doc_src_qaxserver.cpp 16
 
     The key is required to be able to create an instance of \c MyLicensedControl
     on a machine that is not licensed itself. The licensed developer can now 
@@ -805,12 +805,12 @@
     Create a new subclass of QAxAggregated and use multiple inheritance
     to subclass additional COM interface classes. 
 
-    \snippet doc/src/snippets/code/doc_src_qaxserver.qdoc 17
+    \snippet doc/src/snippets/code/doc_src_qaxserver.cpp 17
 
     Reimplement the QAxAggregated::queryInterface() function to
     support the additional COM interfaces.
 
-    \snippet doc/src/snippets/code/doc_src_qaxserver.qdoc 18
+    \snippet doc/src/snippets/code/doc_src_qaxserver.cpp 18
 
     Since \c ISomeCOMInterface is a subclass of \c IUnknown you will
     have to implement the \c QueryInterface(), \c AddRef(), and \c
@@ -820,7 +820,7 @@
     returned by the QAxAggregated::controllingUnknown() function,
     e.g.
 
-    \snippet doc/src/snippets/code/doc_src_qaxserver.qdoc 19
+    \snippet doc/src/snippets/code/doc_src_qaxserver.cpp 19
 
     Do not support the \c IUnknown interface itself in your
     \l{QAxAggregated::queryInterface()}{queryInterface()}
@@ -833,5 +833,5 @@
     QAxBindable::createAggregate() to return a new object of the
     QAxAggregated subclass.
 
-    \snippet doc/src/snippets/code/doc_src_qaxserver.qdoc 20
+    \snippet doc/src/snippets/code/doc_src_qaxserver.cpp 20
 */

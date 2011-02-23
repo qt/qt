@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -71,6 +71,7 @@
 #  include <e32ldr.h>
 #  include "qeventdispatcher_symbian_p.h"
 #  include "private/qcore_symbian_p.h"
+#  include <apacmdln.h>
 #elif defined(Q_OS_UNIX)
 #  if !defined(QT_NO_GLIB)
 #    include "qeventdispatcher_glib_p.h"
@@ -115,7 +116,58 @@ private:
 
 #ifdef Q_OS_SYMBIAN
 typedef TDriveNumber (*SystemDriveFunc)(RFs&);
-static SystemDriveFunc PtrGetSystemDrive=0;
+static SystemDriveFunc PtrGetSystemDrive = 0;
+static CApaCommandLine* apaCommandLine = 0;
+static char *apaTail = 0;
+static QVector<char *> *apaArgv = 0;
+
+static void qt_cleanup_apa_cmd_line()
+{
+    delete apaCommandLine;
+    apaCommandLine = 0;
+    delete apaArgv;
+    apaArgv = 0;
+    delete apaTail;
+    apaTail = 0;
+}
+
+static inline void qt_init_symbian_apa_arguments(int &argc, char **&argv)
+{
+    // If app is launched via CApaCommandLine::StartApp(), normal arguments only contain
+    // application name.
+    if (argc == 1) {
+        CApaCommandLine* commandLine = QCoreApplicationPrivate::symbianCommandLine();
+        if(commandLine) {
+            TPtrC8 apaCmdLine = commandLine->TailEnd();
+            int tailLen = apaCmdLine.Length();
+            if (tailLen) {
+                apaTail = reinterpret_cast<char *>(qMalloc(tailLen + 1));
+                qMemCopy(apaTail, reinterpret_cast<const char *>(apaCmdLine.Ptr()), tailLen);
+                apaTail[tailLen] = '\0';
+                apaArgv = new QVector<char *>(8);
+                // Reuse windows command line parsing
+                *apaArgv = qWinCmdLine<char>(apaTail, tailLen, argc);
+                apaArgv->insert(0, argv[0]);
+                argc++;
+                argv = apaArgv->data();
+            }
+        }
+    }
+}
+
+CApaCommandLine* QCoreApplicationPrivate::symbianCommandLine()
+{
+    // Getting of Apa command line needs to be static as it can only be called successfully
+	// once per process.
+    if (!apaCommandLine) {
+        TInt err = CApaCommandLine::GetCommandLineFromProcessEnvironment(apaCommandLine);
+        if (err == KErrNone) {
+            qAddPostRoutine(qt_cleanup_apa_cmd_line);
+        }
+    }
+    return apaCommandLine;
+}
+
 #endif
 
 #if defined(Q_WS_WIN) || defined(Q_WS_MAC)
@@ -274,6 +326,10 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv)
     }
     QCoreApplicationPrivate::is_app_closing = false;
 
+#ifdef Q_OS_SYMBIAN
+    qt_init_symbian_apa_arguments(argc, argv);
+#endif
+
 #ifdef Q_OS_UNIX
     qt_application_thread_id = QThread::currentThreadId();
 #endif
@@ -406,10 +462,10 @@ QString qAppName()
     operations can call processEvents() to keep the application
     responsive.
 
-    In general, we recommend that you create a QCoreApplication or
-    a QApplication object in your \c main() function as early as
-    possible. exit() will not return until the event loop exits;
-    e.g., when quit() is called.
+    In general, we recommend that you create a QCoreApplication or a
+    QApplication object in your \c main() function as early as
+    possible. exec() will not return until the event loop exits; e.g.,
+    when quit() is called.
 
     Several static convenience functions are also provided. The
     QCoreApplication object is available from instance(). Events can
@@ -2055,6 +2111,12 @@ char **QCoreApplication::argv()
     \l{http://msdn2.microsoft.com/en-us/library/ms683156(VS.85).aspx}{GetCommandLine()}.
     As a result of this, the string given by arguments().at(0) might not be
     the program name on Windows, depending on how the application was started.
+
+    For Symbian applications started with \c RApaLsSession::StartApp one can specify
+    arguments using \c CApaCommandLine::SetTailEndL function. Such arguments are only
+    available via this method; they will not be passed to \c main function. Also note
+    that only 8-bit string data set with \c CApaCommandLine::SetTailEndL is supported
+    by this function.
 
     \sa applicationFilePath()
 */

@@ -128,7 +128,7 @@ Bitte überprüfen Sie Ihre GStreamer-Installation und stellen Sie sicher, dass 
     </message>
     <message>
         <source>Plugin codec installation failed for codec: %0</source>
-        <translation>Die Installation des Codec-Plugins schlug fehl für: %0</translation>
+        <translation>Die Installation des Codec-Plugins ist fehlgeschlagen für: %0</translation>
     </message>
     <message>
         <source>A required codec is missing. You need to install the following codec(s) to play this content: %0</source>
@@ -314,7 +314,7 @@ Bitte überprüfen Sie Ihre GStreamer-Installation und stellen Sie sicher, dass 
     </message>
     <message>
         <source>Loading clip failed</source>
-        <translation>Das Laden des Clips schlug fehl</translation>
+        <translation>Das Laden des Clips ist fehlgeschlagen</translation>
     </message>
     <message>
         <source>Playback complete</source>
@@ -1196,7 +1196,7 @@ nach
     <message>
         <source>%1: ftok failed</source>
         <comment>QSystemSemaphore</comment>
-        <translation>%1: ftok-Aufruf schlug fehl</translation>
+        <translation>%1: ftok-Aufruf ist fehlgeschlagen</translation>
     </message>
     <message>
         <source>%1: already exists</source>
@@ -1288,11 +1288,11 @@ nach
     <name>QDeclarativeAbstractAnimation</name>
     <message>
         <source>Cannot animate non-existent property &quot;%1&quot;</source>
-        <translation>Die Eigenschaft &apos;%1&quot; existiert nicht und kann daher nicht animiert werden</translation>
+        <translation>Die Eigenschaft &quot;%1&quot; existiert nicht und kann daher nicht animiert werden</translation>
     </message>
     <message>
         <source>Cannot animate read-only property &quot;%1&quot;</source>
-        <translation>Die Eigenschaft &apos;%1&quot; ist schreibgeschützt und kann daher nicht animiert werden</translation>
+        <translation>Die Eigenschaft &quot;%1&quot; ist schreibgeschützt und kann daher nicht animiert werden</translation>
     </message>
     <message>
         <source>Animation is an abstract class</source>
@@ -1350,7 +1350,7 @@ nach
     </message>
     <message>
         <source>Baseline anchor cannot be used in conjunction with top, bottom, or vcenter anchors.</source>
-        <translation>Ein Baseline-Anker darf nicht mit zusammen mit weiteren Ankerangaben für oben, unten und vertikal zentriert verwendet werden.</translation>
+        <translation>Ein Baseline-Anker darf nicht zusammen mit weiteren Ankerangaben für oben, unten und vertikal zentriert verwendet werden.</translation>
     </message>
     <message>
         <source>Cannot anchor a vertical edge to a horizontal edge.</source>
@@ -1375,14 +1375,14 @@ nach
     <name>QDeclarativeBinding</name>
     <message>
         <source>Binding loop detected for property &quot;%1&quot;</source>
-        <translation>Bei der für die Eigenschaft &quot;%1&quot; angegebenen Bindung  wurde eine Endlosschleife festgestellt</translation>
+        <translation>Bei der für die Eigenschaft &quot;%1&quot; angegebenen Bindung wurde eine Endlosschleife festgestellt</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeCompiledBindings</name>
     <message>
         <source>Binding loop detected for property &quot;%1&quot;</source>
-        <translation>Bei der für die Eigenschaft &quot;%1&quot; angegebenen Bindung  wurde eine Endlosschleife festgestellt</translation>
+        <translation>Bei der für die Eigenschaft &quot;%1&quot; angegebenen Bindung wurde eine Endlosschleife festgestellt</translation>
     </message>
 </context>
 <context>
@@ -1393,7 +1393,7 @@ nach
     </message>
     <message>
         <source>Invalid property assignment: unknown enumeration</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: Ungültiger Aufzählungswert</translation>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Unbekannter Aufzählungswert</translation>
     </message>
     <message>
         <source>Invalid property assignment: string expected</source>
@@ -1449,7 +1449,7 @@ nach
     </message>
     <message>
         <source>Invalid property assignment: boolean expected</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird ein Boolescher Wert erwartet</translation>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird ein boolescher Wert erwartet</translation>
     </message>
     <message>
         <source>Invalid property assignment: 3D vector expected</source>
@@ -1465,7 +1465,7 @@ nach
     </message>
     <message>
         <source>Component elements may not contain properties other than id</source>
-        <translation>Komponenten dürfen außer id keine weiteren Eigenschaften enthalten.</translation>
+        <translation>Komponenten dürfen außer id keine weiteren Eigenschaften enthalten</translation>
     </message>
     <message>
         <source>Invalid component id specification</source>
@@ -1525,7 +1525,7 @@ nach
     </message>
     <message>
         <source>Incorrectly specified signal assignment</source>
-        <translation></translation>
+        <translation>Angegebene Signalzuweisung ist nicht korrekt</translation>
     </message>
     <message>
         <source>Invalid property assignment: number expected</source>
@@ -1573,7 +1573,7 @@ nach
     </message>
     <message>
         <source>Unexpected object assignment</source>
-        <translation>Zuweisung des Objekts nicht zulässig</translation>
+        <translation>Unerwartete Zuweisung des Objekts</translation>
     </message>
     <message>
         <source>Cannot assign object to list</source>
@@ -1669,7 +1669,7 @@ nach
     </message>
     <message>
         <source>IDs must start with a letter or underscore</source>
-        <translation>Id-Werte müssen mit einem Buchstaben oder dem Zeichen &apos;_&apos; beginnen</translation>
+        <translation>Id-Werte müssen mit einem Buchstaben oder Unterstrich beginnen</translation>
     </message>
     <message>
         <source>IDs must contain only letters, numbers, and underscores</source>
@@ -1726,7 +1726,7 @@ nach
     <name>QDeclarativeConnections</name>
     <message>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
-        <translation>Es kann keine Zuweisung erfolgen, da keine Eigenschaft des Namens &apos;%1&quot; existiert</translation>
+        <translation>Es kann keine Zuweisung erfolgen, da keine Eigenschaft des Namens &quot;%1&quot; existiert</translation>
     </message>
     <message>
         <source>Connections: nested objects not allowed</source>
@@ -1757,7 +1757,7 @@ nach
     </message>
     <message>
         <source>SQL transaction failed</source>
-        <translation>Die SQL-Transaktion schlug fehl</translation>
+        <translation>Die SQL-Transaktion ist fehlgeschlagen</translation>
     </message>
     <message>
         <source>transaction: missing callback</source>
@@ -1787,7 +1787,7 @@ nach
     </message>
     <message>
         <source>plugin cannot be loaded for module &quot;%1&quot;: %2</source>
-        <translation>Das Plugin des Moduls &quot;%1&quot; konnte nicht geladen werden: %2</translation>
+        <translation>Das Plugin des Moduls &quot;%1&quot; kann nicht geladen werden: %2</translation>
     </message>
     <message>
         <source>module &quot;%1&quot; plugin &quot;%2&quot; not found</source>
@@ -1819,7 +1819,7 @@ nach
     </message>
     <message>
         <source>local directory</source>
-        <translation>Lokales Verzeichnis&apos;</translation>
+        <translation>Lokales Verzeichnis</translation>
     </message>
     <message>
         <source>is ambiguous. Found in %1 and in %2</source>
@@ -1947,8 +1947,8 @@ nach
         <translation>Zeichenkette am Zeilenende nicht abgeschlossen</translation>
     </message>
     <message>
-        <source>Illegal escape squence</source>
-        <translation>Ungültiges Escape-Sequenz</translation>
+        <source>Illegal escape sequence</source>
+        <translation>Ungültige Escape-Sequenz</translation>
     </message>
     <message>
         <source>Illegal unicode escape sequence</source>
@@ -1976,7 +1976,7 @@ nach
     </message>
     <message>
         <source>Unterminated regular expression backslash sequence</source>
-        <translation>Regulärer Ausdruck nicht abgeschlossen</translation>
+        <translation>Backslash-Sequenz in regulärem Ausdruck nicht abgeschlossen</translation>
     </message>
     <message>
         <source>Unterminated regular expression class</source>
@@ -2058,7 +2058,7 @@ nach
     <name>QDeclarativePixmap</name>
     <message>
         <source>Error decoding: %1: %2</source>
-        <translation>Fehler beim Decodieren: %1: %2</translation>
+        <translation>Fehler beim Dekodieren: %1: %2</translation>
     </message>
     <message>
         <source>Failed to get image from provider: %1</source>
@@ -2107,7 +2107,7 @@ nach
     </message>
     <message>
         <source>Cannot assign to read-only property &quot;%1&quot;</source>
-        <translation>Die Eigenschaft &apos;%1&quot; ist schreibgeschützt und kann daher nicht zugewiesen werden</translation>
+        <translation>Die Eigenschaft &quot;%1&quot; ist schreibgeschützt und kann daher nicht zugewiesen werden</translation>
     </message>
 </context>
 <context>
@@ -2118,7 +2118,7 @@ nach
     </message>
     <message>
         <source>Could not instantiate cursor delegate</source>
-        <translation>Cursor-Delegate konnte angelegt werden</translation>
+        <translation>Cursor-Delegate konnte nicht instanziiert werden</translation>
     </message>
 </context>
 <context>
@@ -2163,7 +2163,7 @@ nach
     </message>
     <message>
         <source>Cannot assign value %1 to property %2</source>
-        <translation>Der Wert &apos;%1&apos; kann nicht der Eigenschaft %2 zugewiesen werden</translation>
+        <translation>Der Wert &apos;%1&apos; kann der Eigenschaft %2 nicht zugewiesen werden</translation>
     </message>
     <message>
         <source>Cannot assign object type %1 with no default method</source>
@@ -2979,13 +2979,13 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     <message>
         <source>Connecting to host failed:
 %1</source>
-        <translation>Verbindung mit Rechner schlug fehl:
+        <translation>Verbindung mit Rechner ist fehlgeschlagen:
 %1</translation>
     </message>
     <message>
         <source>Login failed:
 %1</source>
-        <translation>Anmeldung schlug fehl:
+        <translation>Anmeldung ist fehlgeschlagen:
 %1</translation>
     </message>
     <message>
@@ -2997,37 +2997,37 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     <message>
         <source>Changing directory failed:
 %1</source>
-        <translation>Ändern des Verzeichnisses schlug fehl:
+        <translation>Ändern des Verzeichnisses ist fehlgeschlagen:
 %1</translation>
     </message>
     <message>
         <source>Downloading file failed:
 %1</source>
-        <translation>Herunterladen der Datei schlug fehl:
+        <translation>Herunterladen der Datei ist fehlgeschlagen:
 %1</translation>
     </message>
     <message>
         <source>Uploading file failed:
 %1</source>
-        <translation>Hochladen der Datei schlug fehl:
+        <translation>Hochladen der Datei ist fehlgeschlagen:
 %1</translation>
     </message>
     <message>
         <source>Removing file failed:
 %1</source>
-        <translation>Löschen der Datei schlug fehl:
+        <translation>Löschen der Datei ist fehlgeschlagen:
 %1</translation>
     </message>
     <message>
         <source>Creating directory failed:
 %1</source>
-        <translation>Erstellen des Verzeichnisses schlug fehl:
+        <translation>Erstellen des Verzeichnisses ist fehlgeschlagen:
 %1</translation>
     </message>
     <message>
         <source>Removing directory failed:
 %1</source>
-        <translation>Löschen des Verzeichnisses schlug fehl:
+        <translation>Löschen des Verzeichnisses ist fehlgeschlagen:
 %1</translation>
     </message>
     <message>
@@ -3282,7 +3282,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     </message>
     <message>
         <source>Could not allocate statement</source>
-        <translation>Die Allokation des Befehls schlug fehl</translation>
+        <translation>Die Allokation des Befehls ist fehlgeschlagen</translation>
     </message>
     <message>
         <source>Could not prepare statement</source>
@@ -3703,7 +3703,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>&lt;h3&gt;Über Qt&lt;/h3&gt;&lt;p&gt;Dieses Programm verwendet Qt Version %1.&lt;/p&gt;</translation>
     </message>
     <message>
-        <source>&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;&lt;p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
+        <source>&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;&lt;p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3916,7 +3916,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     </message>
     <message>
         <source>Logging in to %1 failed: authentication required</source>
-        <translation>Die Anmeldung bei %1 schlug fehl: Es ist eine Authentifizierung erforderlich</translation>
+        <translation>Die Anmeldung bei %1 ist fehlgeschlagen: Es ist eine Authentifizierung erforderlich</translation>
     </message>
     <message>
         <source>Error while downloading %1: %2</source>
@@ -3957,7 +3957,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     </message>
     <message>
         <source>Temporary network failure.</source>
-        <translation>Das Netzwerk ist zur Zeit ausgefallen.</translation>
+        <translation>Das Netzwerk ist zurzeit ausgefallen.</translation>
     </message>
 </context>
 <context>
@@ -3982,7 +3982,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     </message>
     <message>
         <source>The session was aborted by the user or system.</source>
-        <translation>Die Verbindung wurde vom Nutzer oder vom Betriebssystem unterbrochen.</translation>
+        <translation>Die Verbindung wurde vom Benutzer oder vom Betriebssystem unterbrochen.</translation>
     </message>
     <message>
         <source>The requested operation is not supported by the system.</source>
@@ -4002,7 +4002,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     </message>
     <message>
         <source>Session aborted by user or system</source>
-        <translation>Die Verbindung wurde vom Nutzer oder vom Betriebssystem unterbrochen</translation>
+        <translation>Die Verbindung wurde vom Benutzer oder vom Betriebssystem unterbrochen</translation>
     </message>
     <message>
         <source>Unidentified Error</source>
@@ -4049,7 +4049,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     </message>
     <message>
         <source>Unable to alloc statement</source>
-        <translation>Die Allokation des Befehls schlug fehl</translation>
+        <translation>Die Allokation des Befehls ist fehlgeschlagen</translation>
     </message>
     <message>
         <source>Unable to prepare statement</source>
@@ -4131,7 +4131,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     </message>
     <message>
         <source>Unable to fetch previous</source>
-        <translation>Der vorangegangene Datensatz kann nicht abgeholt werden</translation>
+        <translation>Der vorherige Datensatz konnte nicht abgeholt werden</translation>
     </message>
 </context>
 <context>
@@ -4146,7 +4146,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     </message>
     <message>
         <source>PulseAudio Sound Server</source>
-        <translation>PulseAudio Sound Server</translation>
+        <translation>PulseAudio-Sound-Server</translation>
     </message>
 </context>
 <context>
@@ -4180,7 +4180,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     </message>
     <message>
         <source>Unable to subscribe</source>
-        <translation>Die Registrierung schlug fehl</translation>
+        <translation>Die Registrierung ist fehlgeschlagen</translation>
     </message>
     <message>
         <source>Unable to unsubscribe</source>
@@ -4881,11 +4881,11 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>Error reading from process</source>
-        <translation>Das Lesen vom Prozess schlug fehl</translation>
+        <translation>Das Lesen vom Prozess ist fehlgeschlagen</translation>
     </message>
     <message>
         <source>Error writing to process</source>
-        <translation>Das Schreiben zum Prozess schlug fehl</translation>
+        <translation>Das Schreiben zum Prozess ist fehlgeschlagen</translation>
     </message>
     <message>
         <source>Process crashed</source>
@@ -4897,7 +4897,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>Process failed to start: %1</source>
-        <translation>Das Starten des Prozesses schlug fehl: %1</translation>
+        <translation>Das Starten des Prozesses ist fehlgeschlagen: %1</translation>
     </message>
 </context>
 <context>
@@ -5430,7 +5430,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>%1: ftok failed</source>
-        <translation>%1: ftok-Aufruf schlug fehl</translation>
+        <translation>%1: ftok-Aufruf ist fehlgeschlagen</translation>
     </message>
     <message>
         <source>%1: unable to make key</source>
@@ -5462,7 +5462,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>%1: size query failed</source>
-        <translation>%1: Die Abfrage der Größe schlug fehl</translation>
+        <translation>%1: Die Abfrage der Größe ist fehlgeschlagen</translation>
     </message>
     <message>
         <source>%1: unable to set key on lock</source>
@@ -5648,7 +5648,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <source>Toggle Media Play/Pause</source>
         <extracomment>Media player button to toggle between playing and paused</extracomment>
-        <translation>Pause</translation>
+        <translation>Wiedergabe/Pause</translation>
     </message>
     <message>
         <source>Favorites</source>
@@ -6279,51 +6279,51 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>Previous Candidate</source>
-        <translation>Vorangegangener Vorschlag</translation>
+        <translation>Vorheriger Vorschlag</translation>
     </message>
     <message>
         <source>Hangul</source>
-        <translation>Hangul</translation>
+        <translation>Hangeul</translation>
     </message>
     <message>
         <source>Hangul Start</source>
-        <translation>Hangul Anfang</translation>
+        <translation>Hangeul Anfang</translation>
     </message>
     <message>
         <source>Hangul End</source>
-        <translation>Hangul Ende</translation>
+        <translation>Hangeul Ende</translation>
     </message>
     <message>
         <source>Hangul Hanja</source>
-        <translation>Hangul Hanja</translation>
+        <translation>Hangeul-Hanja</translation>
     </message>
     <message>
         <source>Hangul Jamo</source>
-        <translation>Hangul Jamo</translation>
+        <translation>Hangeul-Jamo</translation>
     </message>
     <message>
         <source>Hangul Romaja</source>
-        <translation>Hangul Romaja</translation>
+        <translation>Hangeul-Romaja</translation>
     </message>
     <message>
         <source>Hangul Jeonja</source>
-        <translation>Hangul Jeonja</translation>
+        <translation>Hangeul-Jeonja</translation>
     </message>
     <message>
         <source>Hangul Banja</source>
-        <translation>Hangul Banja</translation>
+        <translation>Hangeul-Banja</translation>
     </message>
     <message>
         <source>Hangul PreHanja</source>
-        <translation>Hangul PreHanja</translation>
+        <translation>Hangeul-PreHanja</translation>
     </message>
     <message>
         <source>Hangul PostHanja</source>
-        <translation>Hangul PostHanja</translation>
+        <translation>Hangeul-PostHanja</translation>
     </message>
     <message>
         <source>Hangul Special</source>
-        <translation>Hangul Special</translation>
+        <translation>Hangeul Special</translation>
     </message>
     <message>
         <source>Ctrl</source>
@@ -6397,15 +6397,15 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>Proxy authentication failed</source>
-        <translation>Die Authentifizierung beim Proxy-Server schlug fehl</translation>
+        <translation>Die Authentifizierung beim Proxy-Server ist fehlgeschlagen</translation>
     </message>
     <message>
         <source>Proxy authentication failed: %1</source>
-        <translation>Die Authentifizierung beim Proxy-Server schlug fehl: %1</translation>
+        <translation>Die Authentifizierung beim Proxy-Server ist fehlgeschlagen: %1</translation>
     </message>
     <message>
         <source>SOCKS version 5 protocol error</source>
-        <translation>Protokoll-Fehler (SOCKS version 5)</translation>
+        <translation>Protokoll-Fehler (SOCKS Version 5)</translation>
     </message>
     <message>
         <source>General SOCKSv5 server failure</source>
@@ -7428,27 +7428,27 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>Move the cursor to the next character</source>
-        <translation>Positionsmarke auf folgendes Zeichen setzen</translation>
+        <translation>Positionsmarke auf nächstes Zeichen setzen</translation>
     </message>
     <message>
         <source>Move the cursor to the previous character</source>
-        <translation>Positionsmarke auf vorangehendes Zeichen setzen</translation>
+        <translation>Positionsmarke auf vorheriges Zeichen setzen</translation>
     </message>
     <message>
         <source>Move the cursor to the next word</source>
-        <translation>Positionsmarke auf folgendes Wort setzen</translation>
+        <translation>Positionsmarke auf nächstes Wort setzen</translation>
     </message>
     <message>
         <source>Move the cursor to the previous word</source>
-        <translation>Positionsmarke auf vorangehendes Wort setzen</translation>
+        <translation>Positionsmarke auf vorherige Wort setzen</translation>
     </message>
     <message>
         <source>Move the cursor to the next line</source>
-        <translation>Positionsmarke auf folgende Zeile setzen</translation>
+        <translation>Positionsmarke auf nächste Zeile setzen</translation>
     </message>
     <message>
         <source>Move the cursor to the previous line</source>
-        <translation>Positionsmarke auf vorangehende Zeile setzen</translation>
+        <translation>Positionsmarke auf vorherige Zeile setzen</translation>
     </message>
     <message>
         <source>Move the cursor to the start of the line</source>
@@ -7468,11 +7468,11 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>Move the cursor to the start of the document</source>
-        <translation>Positionsmarke auf Anfang des Dokumentes setzen</translation>
+        <translation>Positionsmarke auf Anfang des Dokuments setzen</translation>
     </message>
     <message>
         <source>Move the cursor to the end of the document</source>
-        <translation>Positionsmarke auf Ende des Dokumentes setzen</translation>
+        <translation>Positionsmarke auf Ende des Dokuments setzen</translation>
     </message>
     <message>
         <source>Select all</source>
@@ -7799,7 +7799,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>encoding declaration or standalone declaration expected while reading the XML declaration</source>
-        <translation>fehlende Encoding-Deklaration oder Standalone-Deklaration beim Parsen der XML-Deklaration</translation>
+        <translation>fehlende Kodierung-Deklaration oder Standalone-Deklaration beim Parsen der XML-Deklaration</translation>
     </message>
     <message>
         <source>standalone declaration expected while reading the XML declaration</source>
@@ -7818,7 +7818,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>Unknown location</source>
-        <translation>unbekannt</translation>
+        <translation>Unbekannter Ort</translation>
     </message>
     <message>
         <source>Error %1 in %2, at line %3, column %4: %5</source>
@@ -7833,7 +7833,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <name>QXmlStream</name>
     <message>
         <source>Extra content at end of document.</source>
-        <translation>Überzähliger Inhalt nach Ende des Dokumentes.</translation>
+        <translation>Überzähliger Inhalt nach Ende des Dokuments.</translation>
     </message>
     <message>
         <source>Invalid entity value.</source>
@@ -7869,11 +7869,11 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>%1 is an invalid encoding name.</source>
-        <translation>%1 ist kein gültiger Name für das Encoding.</translation>
+        <translation>%1 ist kein gültiger Name für die Kodierung.</translation>
     </message>
     <message>
         <source>Encoding %1 is unsupported</source>
-        <translation>Das Encoding %1 wird nicht unterstützt</translation>
+        <translation>Die Kodierung %1 wird nicht unterstützt</translation>
     </message>
     <message>
         <source>Standalone accepts only yes or no.</source>
@@ -7965,7 +7965,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>The standalone pseudo attribute must appear after the encoding.</source>
-        <translation>Das Standalone-Pseudoattribut muss dem Encoding unmittelbar folgen.</translation>
+        <translation>Das Standalone-Pseudoattribut muss der Kodierung unmittelbar folgen.</translation>
     </message>
     <message>
         <source>%1 is an invalid PUBLIC identifier.</source>
@@ -7988,7 +7988,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>Effective Boolean Value cannot be calculated for a sequence containing two or more atomic values.</source>
-        <translation>Der effektive Boolesche Wert einer Sequenz aus zwei oder mehreren atomaren Werten kann nicht berechnet werden.</translation>
+        <translation>Der effektive boolesche Wert einer Sequenz aus zwei oder mehreren atomaren Werten kann nicht berechnet werden.</translation>
     </message>
     <message>
         <source>The data of a processing instruction cannot contain the string %1</source>
@@ -8000,7 +8000,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>%1 is not a valid XML 1.0 character.</source>
-        <translation>%1 ist kein gültiges XML 1.0 Zeichen.</translation>
+        <translation>%1 ist kein gültiges XML-1.0-Zeichen.</translation>
     </message>
     <message>
         <source>%1 was called.</source>
@@ -8220,7 +8220,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>A value of type %1 cannot have an Effective Boolean Value.</source>
-        <translation>Ein Wert des Typs %1 kann keinen effektiven Booleschen Wert haben.</translation>
+        <translation>Ein Wert des Typs %1 kann keinen effektiven booleschen Wert haben.</translation>
     </message>
     <message>
         <source>Value %1 of type %2 exceeds maximum (%3).</source>
@@ -8264,7 +8264,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>A comment cannot contain %1</source>
-        <translation>Ein Kommentar darf nicht&apos;%1 enthalten</translation>
+        <translation>Ein Kommentar darf %1 nicht enthalten</translation>
     </message>
     <message>
         <source>A comment cannot end with a %1.</source>
@@ -8284,7 +8284,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>A value of type %1 cannot be a predicate. A predicate must have either a numeric type or an Effective Boolean Value type.</source>
-        <translation>Werte des Typs %1 dürfen keine Prädikate sein. Für Prädikate sind nur numerische oder effektiv Boolesche Typen zulässig.</translation>
+        <translation>Werte des Typs %1 dürfen keine Prädikate sein. Für Prädikate sind nur numerische oder effektive boolesche Typen zulässig.</translation>
     </message>
     <message>
         <source>A positional predicate must evaluate to a single numeric value.</source>
@@ -8292,7 +8292,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>The target name in a processing instruction cannot be %1 in any combination of upper and lower case. Therefore, %2 is invalid.</source>
-        <translation>Der Zielname einer Processing-Anweisung kann nicht %1 (unabhängig von Groß/Kleinschreibung sein). %2 ist daher ungültig.</translation>
+        <translation>Der Zielname einer Processing-Anweisung kann nicht %1 (unabhängig von Groß/Kleinschreibung) sein. %2 ist daher ungültig.</translation>
     </message>
     <message>
         <source>%1 is not a valid target name in a processing instruction. It must be a %2 value, e.g. %3.</source>
@@ -8570,15 +8570,15 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>%1 is an unsupported encoding.</source>
-        <translation>Das Encoding %1 wird nicht unterstützt.</translation>
+        <translation>Die Kodierung %1 wird nicht unterstützt.</translation>
     </message>
     <message>
         <source>%1 contains octets which are disallowed in the requested encoding %2.</source>
-        <translation>%1 enthält Oktette, die im Encoding %2 nicht zulässig sind.</translation>
+        <translation>%1 enthält Oktette, die in der Kodierung %2 nicht zulässig sind.</translation>
     </message>
     <message>
         <source>The codepoint %1, occurring in %2 using encoding %3, is an invalid XML character.</source>
-        <translation>Der Code-Punkt %1 aus %2 mit Encoding %3 ist kein gültiges XML-Zeichen.</translation>
+        <translation>Der Code-Punkt %1 aus %2 mit der Kodierung %3 ist kein gültiges XML-Zeichen.</translation>
     </message>
     <message>
         <source>Ambiguous rule match.</source>
@@ -9562,7 +9562,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <source>Boolean content does not match pattern facet.</source>
-        <translation>Der Boolesche Wert entspricht nicht der Suchmusterfacette.</translation>
+        <translation>Der boolesche Wert entspricht nicht der Suchmusterfacette.</translation>
     </message>
     <message>
         <source>Binary content does not match the length facet.</source>

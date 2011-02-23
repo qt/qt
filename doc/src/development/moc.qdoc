@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -136,7 +136,7 @@
     This guarantees that make will run the moc before it compiles
     \c foo.cpp. You can then put
 
-    \snippet doc/src/snippets/code/doc_src_moc.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_moc.cpp 3
 
     at the end of \c foo.cpp, where all the classes declared in that
     file are fully known.
@@ -223,7 +223,7 @@
     file. \c moc defines the preprocessor symbol \c Q_MOC_RUN. Any
     code surrounded by
 
-    \snippet doc/src/snippets/code/doc_src_moc.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_moc.cpp 4
 
     is skipped by the \c moc.
 
@@ -245,7 +245,7 @@
     \c moc does not handle all of C++. The main problem is that class
     templates cannot have signals or slots. Here is an example:
 
-    \snippet doc/src/snippets/code/doc_src_moc.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_moc.cpp 5
 
     Another limitation is that moc does not expand macros, so you
     for example cannot use a macro to declare a signal/slot
@@ -261,7 +261,7 @@
     first inherited class is a subclass of QObject. Also, be sure
     that only the first inherited class is a QObject.
 
-    \snippet doc/src/snippets/code/doc_src_moc.qdoc 6
+    \snippet doc/src/snippets/code/doc_src_moc.cpp 6
 
     Virtual inheritance with QObject is \e not supported.
 
@@ -271,11 +271,11 @@
     signal or slot parameters, we think inheritance is a better
     alternative. Here is an example of illegal syntax:
 
-    \snippet doc/src/snippets/code/doc_src_moc.qdoc 7
+    \snippet doc/src/snippets/code/doc_src_moc.cpp 7
 
     You can work around this restriction like this:
 
-    \snippet doc/src/snippets/code/doc_src_moc.qdoc 8
+    \snippet doc/src/snippets/code/doc_src_moc.cpp 8
 
     It may sometimes be even better to replace the function pointer
     with inheritance and virtual functions.
@@ -289,7 +289,7 @@
     fully qualify the data types when declaring signals and slots,
     and when establishing connections. For example:
 
-    \snippet doc/src/snippets/code/doc_src_moc.qdoc 9
+    \snippet doc/src/snippets/code/doc_src_moc.cpp 9
 
     \section2 Type Macros Cannot Be Used for Signal and Slot Parameters
 
@@ -297,7 +297,7 @@
     an argument will not work in signals and slots. Here is an
     illegal example:
 
-    \snippet doc/src/snippets/code/doc_src_moc.qdoc 10
+    \snippet doc/src/snippets/code/doc_src_moc.cpp 10
 
     A macro without parameters will work.
 
@@ -305,7 +305,7 @@
 
     Here's an example of the offending construct:
 
-    \snippet doc/src/snippets/code/doc_src_moc.qdoc 11
+    \snippet doc/src/snippets/code/doc_src_moc.cpp 11
 
     \section2 Signal/Slot return types cannot be references
 

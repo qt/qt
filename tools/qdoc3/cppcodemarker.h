@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,11 +59,12 @@ class CppCodeMarker : public CodeMarker
     virtual bool recognizeCode(const QString& code);
     virtual bool recognizeExtension(const QString& ext);
     virtual bool recognizeLanguage(const QString& lang);
+    virtual Atom::Type atomType() const;
     virtual QString plainName(const Node *node);
     virtual QString plainFullName(const Node *node, const Node *relative);
     virtual QString markedUpCode(const QString& code, 
                                  const Node *relative, 
-                                 const QString& dirPath);
+                                 const Location &location);
     virtual QString markedUpSynopsis(const Node *node, 
                                      const Node *relative,
                                      SynopsisStyle style);
@@ -90,7 +91,7 @@ class CppCodeMarker : public CodeMarker
 private:
     QString addMarkUp(const QString& protectedCode, 
                       const Node *relative, 
-                      const QString& dirPath);
+                      const Location &location);
 };
 
 QT_END_NAMESPACE

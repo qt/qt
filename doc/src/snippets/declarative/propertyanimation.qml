@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,10 +48,12 @@ Rectangle {
     width: 100; height: 100
     color: "red"
 
+    //! [single state]
     states: State {
         name: "moved"
         PropertyChanges { target: rect; x: 50 }
     }
+    //! [single state]
 
     transitions: Transition { 
         PropertyAnimation { properties: "x,y"; easing.type: Easing.InOutQuad } 
@@ -83,18 +85,16 @@ Rectangle {
 }
 //![propertyvaluesource]
 
-//![standalone]
-Rectangle {
-    id: theRect
-    width: 100; height: 100
-    color: "red"
+    //![standalone]
+    Rectangle {
+        id: theRect
+        width: 100; height: 100
+        color: "red"
 
-    // this is a standalone animation, it's not running by default
-    PropertyAnimation { id: animation; target: theRect; property: "width"; to: 30; duration: 500 }
+        // this is a standalone animation, it's not running by default
+        PropertyAnimation { id: animation; target: theRect; property: "width"; to: 30; duration: 500 }
 
-    MouseArea { anchors.fill: parent; onClicked: animation.running = true }
-}
-//![standalone]
-
-
+        MouseArea { anchors.fill: parent; onClicked: animation.running = true }
+    }
+    //![standalone]
 }

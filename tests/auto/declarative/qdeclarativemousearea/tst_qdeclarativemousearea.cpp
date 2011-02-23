@@ -64,6 +64,7 @@ private slots:
     void onMousePressRejected();
     void doubleClick();
     void clickTwice();
+    void pressedOrdering();
 
 private:
     QDeclarativeView *createView();
@@ -475,6 +476,40 @@ void tst_QDeclarativeMouseArea::clickTwice()
     QCOMPARE(canvas->rootObject()->property("pressed").toInt(), 2);
     QCOMPARE(canvas->rootObject()->property("released").toInt(), 2);
     QCOMPARE(canvas->rootObject()->property("clicked").toInt(), 2);
+}
+
+void tst_QDeclarativeMouseArea::pressedOrdering()
+{
+    QDeclarativeView *canvas = createView();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/pressedOrdering.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QCOMPARE(canvas->rootObject()->property("value").toString(), QLatin1String("base"));
+
+    QGraphicsScene *scene = canvas->scene();
+    QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
+    pressEvent.setScenePos(QPointF(100, 100));
+    pressEvent.setButton(Qt::LeftButton);
+    pressEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &pressEvent);
+
+    QCOMPARE(canvas->rootObject()->property("value").toString(), QLatin1String("pressed"));
+
+    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
+    releaseEvent.setScenePos(QPointF(100, 100));
+    releaseEvent.setButton(Qt::LeftButton);
+    releaseEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &releaseEvent);
+
+    QCOMPARE(canvas->rootObject()->property("value").toString(), QLatin1String("toggled"));
+
+    QApplication::sendEvent(scene, &pressEvent);
+
+    QCOMPARE(canvas->rootObject()->property("value").toString(), QLatin1String("pressed"));
+
+    delete canvas;
 }
 
 QTEST_MAIN(tst_QDeclarativeMouseArea)

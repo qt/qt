@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -102,6 +102,9 @@ private:
 
     // Constructs a flat list model for a worker agent
     QDeclarativeListModel(const QDeclarativeListModel *orig, QDeclarativeListModelWorkerAgent *parent);
+
+    void set(int index, const QScriptValue&, QList<int> *roles);
+    void setProperty(int index, const QString& property, const QVariant& value, QList<int> *roles);
 
     bool flatten();
     bool inWorkerThread() const;

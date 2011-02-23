@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -190,6 +190,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << "QMAKE             = " << var("QMAKE_QMAKE") << endl;
     t << "DEL_FILE          = " << var("QMAKE_DEL_FILE") << endl;
     t << "DEL_DIR           = " << var("QMAKE_DEL_DIR") << endl;
+    t << "DEL_TREE          = " << var("QMAKE_DEL_TREE") << endl;
     t << "MOVE              = " << var("QMAKE_MOVE") << endl;
     t << "CHK_DIR_EXISTS    = " << var("QMAKE_CHK_DIR_EXISTS") << endl;
     t << "MKDIR             = " << var("QMAKE_MKDIR") << endl;
@@ -329,7 +330,8 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         // Note: EXTENSION_CLEAN will get called many times when doing reallyclean
         //       This is why the "2> NUL" gets appended to generated clean targets in makefile.cpp.
         t << EXTENSION_CLEAN ": " COMPILER_CLEAN_TARGET << endl;
-        generateCleanCommands(t, dirsToClean, var("QMAKE_DEL_TREE"), "", "", "");
+        generateCleanCommands(t, dirsToClean, "$(DEL_TREE)", "", "", "");
+        generateCleanCommands(t, project->values("QMAKE_CLEAN"), "$(DEL_FILE)", "", "", "");
         t << endl;
 
         t << PRE_TARGETDEPS_TARGET ":"
@@ -405,6 +407,27 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         t << "clean-release-" << item << ": $(ABLD)" << endl;
         t << "\t$(ABLD)" << testClause << " reallyclean " << item << " urel" << endl;
     }
+    t << endl;
+
+    t << "freeze: $(ABLD)" << endl;
+    t << "\t$(ABLD)" << testClause << " freeze" << endl;
+    t << endl;
+
+    // Abld toolchain doesn't differentiate between freezing release or debug
+    t << "freeze-debug: freeze" << endl << endl;
+    t << "freeze-release: freeze" << endl << endl;
+
+    // For more specific builds, targets are in this form: freeze-build-platform, e.g. freeze-release-armv5,
+    // though note that debug and release targets of each platform are identical in symbian-abld.
+    foreach(QString item, debugPlatforms) {
+        t << "freeze-debug-" << item << ": $(ABLD)" << endl;
+        t << "\t$(ABLD)" << testClause << " freeze " << item << endl;
+    }
+    foreach(QString item, releasePlatforms) {
+        t << "freeze-release-" << item << ": $(ABLD)" << endl;
+        t << "\t$(ABLD)" << testClause << " freeze " << item << endl;
+    }
+
     t << endl;
 }
 

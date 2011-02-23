@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -76,7 +76,7 @@ void tst_QDeclarativeDebugClient::initTestCase()
     QTest::ignoreMessage(QtWarningMsg, "Qml debugging is enabled. Only use this in a safe environment!");
     QDeclarativeDebugHelper::enableDebugging();
 
-    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Waiting for connection on port 3770...");
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Waiting for connection on port 13770...");
     new QDeclarativeEngine(this);
 
     m_conn = new QDeclarativeDebugConnection(this);
@@ -84,7 +84,7 @@ void tst_QDeclarativeDebugClient::initTestCase()
     QDeclarativeDebugTestClient client("tst_QDeclarativeDebugClient::handshake()", m_conn);
     QDeclarativeDebugTestService service("tst_QDeclarativeDebugClient::handshake()");
 
-    m_conn->connectToHost("127.0.0.1", 3770);
+    m_conn->connectToHost("127.0.0.1", 13770);
 
     QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Connection established");
     bool ok = m_conn->waitForConnected();
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
     char **_argv = new char*[_argc];
     for (int i = 0; i < argc; ++i)
         _argv[i] = argv[i];
-    _argv[_argc - 1] = "-qmljsdebugger=port:3770";
+    _argv[_argc - 1] = "-qmljsdebugger=port:13770";
 
     QApplication app(_argc, _argv);
     tst_QDeclarativeDebugClient tc;

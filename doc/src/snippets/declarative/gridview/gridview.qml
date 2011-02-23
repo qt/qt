@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -131,6 +131,32 @@ GridView {
     focus: true
 }
 //![highlightFollowsCurrentItem]
+
+//![isCurrentItem]
+GridView {
+    width: 300; height: 200
+    cellWidth: 80; cellHeight: 80
+
+    Component {
+        id: contactsDelegate
+        Rectangle {
+            id: wrapper
+            width: 80
+            height: 80
+            color: GridView.isCurrentItem ? "black" : "red"
+            Text {
+                id: contactInfo
+                text: name + ": " + number
+                color: wrapper.GridView.isCurrentItem ? "red" : "black"
+            }
+        }
+    }
+
+    model: ContactModel {}
+    delegate: contactsDelegate
+    focus: true
+}
+//![isCurrentItem]
 
 }
 

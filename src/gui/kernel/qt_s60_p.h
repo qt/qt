@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -141,6 +141,7 @@ public:
     int supportsPremultipliedAlpha : 1;
     int avkonComponentsSupportTransparency : 1;
     int menuBeingConstructed : 1;
+    int orientationSet : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
     static CEikButtonGroupContainer *cba;
 
@@ -295,6 +296,7 @@ inline QS60Data::QS60Data()
   supportsPremultipliedAlpha(0),
   avkonComponentsSupportTransparency(0),
   menuBeingConstructed(0),
+  orientationSet(0),
   s60ApplicationFactory(0)
 #ifdef Q_OS_SYMBIAN
   ,s60InstalledTrapHandler(0)

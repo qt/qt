@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -144,6 +144,10 @@ SymbianEngine::~SymbianEngine()
 {
     Cancel();
 
+    //The scanner may be using the connection monitor so it needs to be
+    //deleted first while the handle is still valid.
+    delete ipAccessPointsAvailabilityScanner;
+
     iConnectionMonitor.CancelNotifications();
     iConnectionMonitor.Close();
     
@@ -151,8 +155,6 @@ SymbianEngine::~SymbianEngine()
     iCmManager.Close();
 #endif
     
-    delete ipAccessPointsAvailabilityScanner;
-
     // CCommsDatabase destructor uses cleanup stack. Since QNetworkConfigurationManager
     // is a global static, but the time we are here, E32Main() has been exited already and
     // the thread's default cleanup stack has been deleted. Without this line, a

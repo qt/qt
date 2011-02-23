@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,7 +43,9 @@
   generator.cpp
 */
 #include <qdir.h>
+#ifdef DEBUG_MULTIPLE_QDOCCONF_FILES
 #include <qdebug.h>
+#endif
 #include "codemarker.h"
 #include "config.h"
 #include "doc.h"
@@ -73,6 +75,7 @@ QStringList Generator::styleFiles;
 QStringList Generator::styleDirs;
 QString Generator::outDir;
 QString Generator::project;
+QHash<QString, QString> Generator::outputPrefixes;
 
 static void singularPlural(Text& text, const NodeList& nodes)
 {
@@ -262,7 +265,6 @@ void Generator::initialize(const Config &config)
                 }
                 else {
                     int paramPos = def.indexOf("\1");
-                    qDebug() << "ZZZZZ:" << *n << def.left(paramPos) << def.mid(paramPos + 1);
                     fmtLeftMaps[*f].insert(*n, def.left(paramPos));
                     fmtRightMaps[*f].insert(*n, def.mid(paramPos + 1));
                 }
@@ -273,6 +275,14 @@ void Generator::initialize(const Config &config)
     }
 
     project = config.getString(CONFIG_PROJECT);
+
+    QStringList prefixes = config.getStringList(CONFIG_OUTPUTPREFIXES);
+    if (!prefixes.isEmpty()) {
+        foreach (QString prefix, prefixes)
+            outputPrefixes[prefix] = config.getString(
+                CONFIG_OUTPUTPREFIXES + Config::dot + prefix);
+    } else
+        outputPrefixes[QLatin1String("QML")] = QLatin1String("qml-");
 }
 
 void Generator::terminate()
@@ -525,8 +535,9 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
             Quoter quoter;
             Doc::quoteFromFile(fake->doc().location(), quoter, fake->name());
             QString code = quoter.quoteTo(fake->location(), "", "");
-            text << Atom(Atom::Code, code);
-            generateText(text, fake, CodeMarker::markerForFileName(fake->name()));
+            CodeMarker *codeMarker = CodeMarker::markerForFileName(fake->name());
+            text << Atom(codeMarker->atomType(), code);
+            generateText(text, fake, codeMarker);
         }
     }
 }
@@ -684,26 +695,17 @@ QString Generator::indent(int level, const QString& markedCode)
 
     int i = 0;
     while (i < (int) markedCode.length()) {
-        if (markedCode.at(i) == QLatin1Char('<')) {
-            while (i < (int) markedCode.length()) {
-                t += markedCode.at(i++);
-                if (markedCode.at(i - 1) == QLatin1Char('>'))
-                    break;
-            }
+        if (markedCode.at(i) == QLatin1Char('\n')) {
+            column = 0;
         }
         else {
-            if (markedCode.at(i) == QLatin1Char('\n')) {
-                column = 0;
+            if (column == 0) {
+                for (int j = 0; j < level; j++)
+                    t += QLatin1Char(' ');
             }
-            else {
-                if (column == 0) {
-                    for (int j = 0; j < level; j++)
-                        t += QLatin1Char(' ');
-                }
-                column++;
-            }
-            t += markedCode.at(i++);
+            column++;
         }
+        t += markedCode.at(i++);
     }
     return t;
 }
@@ -1266,6 +1268,11 @@ QString Generator::fullName(const Node *node,
         return (static_cast<const ClassNode *>(node))->serviceName();
     else
         return marker->plainFullName(node, relative);
+}
+
+QString Generator::outputPrefix(const QString &nodeType)
+{
+    return outputPrefixes[nodeType];
 }
 
 QT_END_NAMESPACE

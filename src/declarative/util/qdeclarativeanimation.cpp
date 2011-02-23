@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Animation QDeclarativeAbstractAnimation
-  \ingroup qml-animation-transition
+    \ingroup qml-animation-transition
     \since 4.7
     \brief The Animation element is the base of all QML animations.
 
@@ -569,7 +569,7 @@ void QDeclarativeAbstractAnimation::timelineComplete()
     }
     \endcode
 
-    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
+    \sa {QML Animation and Transitions}, {declarative/animation/basics}{Animation basics example}
 */
 QDeclarativePauseAnimation::QDeclarativePauseAnimation(QObject *parent)
 : QDeclarativeAbstractAnimation(*(new QDeclarativePauseAnimationPrivate), parent)
@@ -628,27 +628,27 @@ QAbstractAnimation *QDeclarativePauseAnimation::qtAnimation()
     \inherits PropertyAnimation
     \brief The ColorAnimation element animates changes in color values.
 
-    ColorAnimation is a specialized PropertyAnimation that defines an 
+    ColorAnimation is a specialized PropertyAnimation that defines an
     animation to be applied when a color value changes.
 
-    Here is a ColorAnimation applied to the \c color property of a \l Rectangle 
-    as a property value source. It animates the \c color property's value from 
+    Here is a ColorAnimation applied to the \c color property of a \l Rectangle
+    as a property value source. It animates the \c color property's value from
     its current value to a value of "red", over 1000 milliseconds:
 
     \snippet doc/src/snippets/declarative/coloranimation.qml 0
 
     Like any other animation element, a ColorAnimation can be applied in a
-    number of ways, including transitions, behaviors and property value 
-    sources. The \l {QML Animation} documentation shows a variety of methods
-    for creating animations.
+    number of ways, including transitions, behaviors and property value
+    sources. The \l {QML Animation and Transitions} documentation shows a
+    variety of methods for creating animations.
 
-    For convenience, when a ColorAnimation is used in a \l Transition, it will 
-    animate any \c color properties that have been modified during the state 
-    change. If a \l{PropertyAnimation::}{property} or 
-    \l{PropertyAnimation::}{properties} are explicitly set for the animation, 
+    For convenience, when a ColorAnimation is used in a \l Transition, it will
+    animate any \c color properties that have been modified during the state
+    change. If a \l{PropertyAnimation::}{property} or
+    \l{PropertyAnimation::}{properties} are explicitly set for the animation,
     then those are used instead.
 
-    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
+    \sa {QML Animation and Transitions}, {declarative/animation/basics}{Animation basics example}
 */
 QDeclarativeColorAnimation::QDeclarativeColorAnimation(QObject *parent)
 : QDeclarativePropertyAnimation(parent)
@@ -672,7 +672,9 @@ QDeclarativeColorAnimation::~QDeclarativeColorAnimation()
 
     \qml
     Item {
-        states: [ ... ]
+        states: [
+            // States are defined here...
+        ]
 
         transition: Transition {
             NumberAnimation { from: "#c0c0c0"; duration: 2000 }
@@ -682,10 +684,10 @@ QDeclarativeColorAnimation::~QDeclarativeColorAnimation()
 
     If the ColorAnimation is defined within a \l Transition or \l Behavior,
     this value defaults to the value defined in the starting state of the
-    \l Transition, or the current value of the property at the moment the 
+    \l Transition, or the current value of the property at the moment the
     \l Behavior is triggered.
 
-    \sa {QML Animation}
+    \sa {QML Animation and Transitions}
 */
 QColor QDeclarativeColorAnimation::from() const
 {
@@ -708,7 +710,7 @@ void QDeclarativeColorAnimation::setFrom(const QColor &f)
     \l Transition, or the value of the property change that triggered the
     \l Behavior.
 
-    \sa {QML Animation}
+    \sa {QML Animation and Transitions}
 */
 QColor QDeclarativeColorAnimation::to() const
 {
@@ -725,40 +727,29 @@ void QDeclarativeColorAnimation::setTo(const QColor &t)
 
 /*!
     \qmlclass ScriptAction QDeclarativeScriptAction
-  \ingroup qml-animation-transition
+    \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The ScriptAction element allows scripts to be run during an animation.
 
-    ScriptAction can be used to run script at a specific point in an animation.
+    ScriptAction can be used to run a script at a specific point in an animation.
 
     \qml
     SequentialAnimation {
-        NumberAnimation { ... }
+        NumberAnimation {
+            // ...
+        }
         ScriptAction { script: doSomething(); }
-        NumberAnimation { ... }
+        NumberAnimation {
+            // ...
+        }
     }
     \endqml
 
     When used as part of a Transition, you can also target a specific
     StateChangeScript to run using the \c scriptName property.
 
-    \qml
-    State {
-        StateChangeScript {
-            name: "myScript"
-            script: doStateStuff();
-        }
-    }
-    ...
-    Transition {
-        SequentialAnimation {
-            NumberAnimation { ... }
-            ScriptAction { scriptName: "myScript" }
-            NumberAnimation { ... }
-        }
-    }
-    \endqml
+    \snippet doc/src/snippets/declarative/states/statechangescript.qml state and transition
 
     \sa StateChangeScript
 */
@@ -870,12 +861,12 @@ QAbstractAnimation *QDeclarativeScriptAction::qtAnimation()
 
 /*!
     \qmlclass PropertyAction QDeclarativePropertyAction
-  \ingroup qml-animation-transition
+    \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The PropertyAction element allows immediate property changes during animation.
 
-    PropertyAction is used to specify an immediate property change during an 
+    PropertyAction is used to specify an immediate property change during an
     animation. The property change is not animated.
 
     It is useful for setting non-animated property values during an animation.
@@ -886,9 +877,9 @@ QAbstractAnimation *QDeclarativeScriptAction::qtAnimation()
 
     \snippet doc/src/snippets/declarative/propertyaction.qml standalone
 
-    PropertyAction is also useful for setting the exact point at which a property 
-    change should occur during a \l Transition. For example, if PropertyChanges 
-    was used in a \l State to rotate an item around a particular 
+    PropertyAction is also useful for setting the exact point at which a property
+    change should occur during a \l Transition. For example, if PropertyChanges
+    was used in a \l State to rotate an item around a particular
     \l {Item::}{transformOrigin}, it might be implemented like this:
 
     \snippet doc/src/snippets/declarative/propertyaction.qml transition
@@ -896,24 +887,17 @@ QAbstractAnimation *QDeclarativeScriptAction::qtAnimation()
     However, with this code, the \c transformOrigin is not set until \e after
     the animation, as a \l State is taken to define the values at the \e end of
     a transition. The animation would rotate at the default \c transformOrigin,
-    then jump to \c Item.BottomRight. To fix this, insert a PropertyChanges 
+    then jump to \c Item.BottomRight. To fix this, insert a PropertyAction
     before the RotationAnimation begins:
 
-    \qml
-    transitions: Transition {
-        SequentialAnimation {
-            PropertyAction { target: rect; property: "transformOrigin" }
-            RotationAnimation { ... }
-        }
-    }
-    \endqml
-    
+    \snippet doc/src/snippets/declarative/propertyaction-sequential.qml sequential
+
     This immediately sets the \c transformOrigin property to the value defined
-    in the end state of the \l Transition (i.e. the value defined in the 
-    PropertyChanges object) so that the rotation animation begins with the
+    in the end state of the \l Transition (i.e. the value defined in the
+    PropertyAction object) so that the rotation animation begins with the
     correct transform origin.
 
-    \sa {QML Animation}, QtDeclarative
+    \sa {QML Animation and Transitions}, QtDeclarative
 */
 QDeclarativePropertyAction::QDeclarativePropertyAction(QObject *parent)
 : QDeclarativeAbstractAnimation(*(new QDeclarativePropertyActionPrivate), parent)
@@ -1143,25 +1127,25 @@ void QDeclarativePropertyAction::transition(QDeclarativeStateActions &actions,
     \inherits PropertyAnimation
     \brief The NumberAnimation element animates changes in qreal-type values.
 
-    NumberAnimation is a specialized PropertyAnimation that defines an 
+    NumberAnimation is a specialized PropertyAnimation that defines an
     animation to be applied when a numerical value changes.
 
-    Here is a NumberAnimation applied to the \c x property of a \l Rectangle 
-    as a property value source. It animates the \c x value from its current 
+    Here is a NumberAnimation applied to the \c x property of a \l Rectangle
+    as a property value source. It animates the \c x value from its current
     value to a value of 50, over 1000 milliseconds:
 
     \snippet doc/src/snippets/declarative/numberanimation.qml 0
 
     Like any other animation element, a NumberAnimation can be applied in a
-    number of ways, including transitions, behaviors and property value 
-    sources. The \l {QML Animation} documentation shows a variety of methods
-    for creating animations.
+    number of ways, including transitions, behaviors and property value
+    sources. The \l {QML Animation and Transitions} documentation shows a
+    variety of methods for creating animations.
 
     Note that NumberAnimation may not animate smoothly if there are irregular
     changes in the number value that it is tracking. If this is the case, use
     SmoothedAnimation instead.
 
-    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
+    \sa {QML Animation and Transitions}, {declarative/animation/basics}{Animation basics example}
 */
 QDeclarativeNumberAnimation::QDeclarativeNumberAnimation(QObject *parent)
 : QDeclarativePropertyAnimation(parent)
@@ -1195,7 +1179,9 @@ void QDeclarativeNumberAnimation::init()
 
     \qml
     Item {
-        states: [ ... ]
+        states: [
+            // ...
+        ]
 
         transition: Transition {
             NumberAnimation { properties: "x"; from: 100; duration: 200 }
@@ -1205,10 +1191,10 @@ void QDeclarativeNumberAnimation::init()
 
     If the NumberAnimation is defined within a \l Transition or \l Behavior,
     this value defaults to the value defined in the starting state of the
-    \l Transition, or the current value of the property at the moment the 
+    \l Transition, or the current value of the property at the moment the
     \l Behavior is triggered.
 
-    \sa {QML Animation}
+    \sa {QML Animation and Transitions}
 */
 
 qreal QDeclarativeNumberAnimation::from() const
@@ -1231,7 +1217,7 @@ void QDeclarativeNumberAnimation::setFrom(qreal f)
     \l Transition, or the value of the property change that triggered the
     \l Behavior.
 
-    \sa {QML Animation}
+    \sa {QML Animation and Transitions}
 */
 qreal QDeclarativeNumberAnimation::to() const
 {
@@ -1253,15 +1239,15 @@ void QDeclarativeNumberAnimation::setTo(qreal t)
     \inherits PropertyAnimation
     \brief The Vector3dAnimation element animates changes in QVector3d values.
 
-    Vector3dAnimation is a specialized PropertyAnimation that defines an 
+    Vector3dAnimation is a specialized PropertyAnimation that defines an
     animation to be applied when a Vector3d value changes.
 
     Like any other animation element, a Vector3dAnimation can be applied in a
-    number of ways, including transitions, behaviors and property value 
-    sources. The \l {QML Animation} documentation shows a variety of methods
-    for creating animations.
+    number of ways, including transitions, behaviors and property value
+    sources. The \l {QML Animation and Transitions} documentation shows a
+    variety of methods for creating animations.
 
-    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
+    \sa {QML Animation and Transitions}, {declarative/animation/basics}{Animation basics example}
 */
 QDeclarativeVector3dAnimation::QDeclarativeVector3dAnimation(QObject *parent)
 : QDeclarativePropertyAnimation(parent)
@@ -1282,10 +1268,10 @@ QDeclarativeVector3dAnimation::~QDeclarativeVector3dAnimation()
 
     If the Vector3dAnimation is defined within a \l Transition or \l Behavior,
     this value defaults to the value defined in the starting state of the
-    \l Transition, or the current value of the property at the moment the 
+    \l Transition, or the current value of the property at the moment the
     \l Behavior is triggered.
 
-    \sa {QML Animation}
+    \sa {QML Animation and Transitions}
 */
 QVector3D QDeclarativeVector3dAnimation::from() const
 {
@@ -1307,7 +1293,7 @@ void QDeclarativeVector3dAnimation::setFrom(QVector3D f)
     \l Transition, or the value of the property change that triggered the
     \l Behavior.
 
-    \sa {QML Animation}
+    \sa {QML Animation and Transitions}
 */
 QVector3D QDeclarativeVector3dAnimation::to() const
 {
@@ -1330,7 +1316,7 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
     \brief The RotationAnimation element animates changes in rotation values.
 
     RotationAnimation is a specialized PropertyAnimation that gives control
-    over the direction of rotation during an animation. 
+    over the direction of rotation during an animation.
 
     By default, it rotates in the direction
     of the numerical change; a rotation from 0 to 240 will rotate 240 degrees
@@ -1346,7 +1332,7 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
     Notice the RotationAnimation did not need to set a \l target
     value. As a convenience, when used in a transition, RotationAnimation will rotate all
     properties named "rotation" or "angle". You can override this by providing
-    your own properties via \l {PropertyAnimation::properties}{properties} or 
+    your own properties via \l {PropertyAnimation::properties}{properties} or
     \l {PropertyAnimation::property}{property}.
 
     Also, note the \l Rectangle will be rotated around its default
@@ -1356,11 +1342,11 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
     PropertyAction documentation for more details.
 
     Like any other animation element, a RotationAnimation can be applied in a
-    number of ways, including transitions, behaviors and property value 
-    sources. The \l {QML Animation} documentation shows a variety of methods
-    for creating animations.
+    number of ways, including transitions, behaviors and property value
+    sources. The \l {QML Animation and Transitions} documentation shows a
+    variety of methods for creating animations.
 
-    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
+    \sa {QML Animation and Transitions}, {declarative/animation/basics}{Animation basics example}
 */
 QVariant _q_interpolateShortestRotation(qreal &f, qreal &t, qreal progress)
 {
@@ -1421,7 +1407,9 @@ QDeclarativeRotationAnimation::~QDeclarativeRotationAnimation()
 
     \qml
     Item {
-        states: [ ... ]
+        states: [
+            // ...
+        ]
 
         transition: Transition {
             RotationAnimation { properties: "angle"; from: 100; duration: 2000 }
@@ -1431,10 +1419,10 @@ QDeclarativeRotationAnimation::~QDeclarativeRotationAnimation()
 
     If the RotationAnimation is defined within a \l Transition or \l Behavior,
     this value defaults to the value defined in the starting state of the
-    \l Transition, or the current value of the property at the moment the 
+    \l Transition, or the current value of the property at the moment the
     \l Behavior is triggered.
 
-    \sa {QML Animation}
+    \sa {QML Animation and Transitions}
 */
 qreal QDeclarativeRotationAnimation::from() const
 {
@@ -1456,7 +1444,7 @@ void QDeclarativeRotationAnimation::setFrom(qreal f)
     \l Transition, or the value of the property change that triggered the
     \l Behavior.
 
-    \sa {QML Animation}
+    \sa {QML Animation and Transitions}
 */
 qreal QDeclarativeRotationAnimation::to() const
 {
@@ -1582,15 +1570,15 @@ QDeclarativeListProperty<QDeclarativeAbstractAnimation> QDeclarativeAnimationGro
     if this is the preferred behavior.
 
     Like any other animation element, a SequentialAnimation can be applied in a
-    number of ways, including transitions, behaviors and property value 
-    sources. The \l {QML Animation} documentation shows a variety of methods
-    for creating animations.
+    number of ways, including transitions, behaviors and property value
+    sources. The \l {QML Animation and Transitions} documentation shows a
+    variety of methods for creating animations.
 
-    \note Once an animation has been grouped into a SequentialAnimation or 
+    \note Once an animation has been grouped into a SequentialAnimation or
     ParallelAnimation, it cannot be individually started and stopped; the
     SequentialAnimation or ParallelAnimation must be started and stopped as a group.
-    
-    \sa ParallelAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}
+
+    \sa ParallelAnimation, {QML Animation and Transitions}, {declarative/animation/basics}{Animation basics example}
 */
 
 QDeclarativeSequentialAnimation::QDeclarativeSequentialAnimation(QObject *parent) :
@@ -1652,15 +1640,15 @@ void QDeclarativeSequentialAnimation::transition(QDeclarativeStateActions &actio
     \snippet doc/src/snippets/declarative/parallelanimation.qml 0
 
     Like any other animation element, a ParallelAnimation can be applied in a
-    number of ways, including transitions, behaviors and property value 
-    sources. The \l {QML Animation} documentation shows a variety of methods
-    for creating animations.
+    number of ways, including transitions, behaviors and property value
+    sources. The \l {QML Animation and Transitions} documentation shows a
+    variety of methods for creating animations.
 
-    \note Once an animation has been grouped into a SequentialAnimation or 
+    \note Once an animation has been grouped into a SequentialAnimation or
     ParallelAnimation, it cannot be individually started and stopped; the
     SequentialAnimation or ParallelAnimation must be started and stopped as a group.
 
-    \sa SequentialAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}
+    \sa SequentialAnimation, {QML Animation and Transitions}, {declarative/animation/basics}{Animation basics example}
 */
 QDeclarativeParallelAnimation::QDeclarativeParallelAnimation(QObject *parent) :
     QDeclarativeAnimationGroup(parent)
@@ -1755,14 +1743,14 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
     \inherits Animation
     \brief The PropertyAnimation element animates changes in property values.
 
-    PropertyAnimation provides a way to animate changes to a property's value. 
+    PropertyAnimation provides a way to animate changes to a property's value.
 
     It can be used to define animations in a number of ways:
-   
+
     \list
     \o In a \l Transition
 
-    For example, to animate any objects that have changed their \c x or \c y properties 
+    For example, to animate any objects that have changed their \c x or \c y properties
     as a result of a state change, using an \c InOutQuad easing curve:
 
     \snippet doc/src/snippets/declarative/propertyanimation.qml transition
@@ -1802,12 +1790,12 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
 
     Depending on how the animation is used, the set of properties normally used will be
     different. For more information see the individual property documentation, as well
-    as the \l{QML Animation} introduction.
+    as the \l{QML Animation and Transitions} introduction.
 
     Note that PropertyAnimation inherits the abstract \l Animation element.
     This includes additional properties and methods for controlling the animation.
 
-    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
+    \sa {QML Animation and Transitions}, {declarative/animation/basics}{Animation basics example}
 */
 
 QDeclarativePropertyAnimation::QDeclarativePropertyAnimation(QObject *parent)
@@ -1867,10 +1855,10 @@ void QDeclarativePropertyAnimation::setDuration(int duration)
 
     If the PropertyAnimation is defined within a \l Transition or \l Behavior,
     this value defaults to the value defined in the starting state of the
-    \l Transition, or the current value of the property at the moment the 
+    \l Transition, or the current value of the property at the moment the
     \l Behavior is triggered.
 
-    \sa {QML Animation}
+    \sa {QML Animation and Transitions}
 */
 QVariant QDeclarativePropertyAnimation::from() const
 {
@@ -1897,7 +1885,7 @@ void QDeclarativePropertyAnimation::setFrom(const QVariant &f)
     \l Transition, or the value of the property change that triggered the
     \l Behavior.
 
-    \sa {QML Animation}
+    \sa {QML Animation and Transitions}
 */
 QVariant QDeclarativePropertyAnimation::to() const
 {
@@ -2253,7 +2241,7 @@ void QDeclarativePropertyAnimation::setProperties(const QString &prop)
            width: 100; height: 100
            color: Qt.rgba(0,0,1)
            //need to explicitly specify target and property
-           NumberAnimation { id: theAnim; target: theRect; property: "x" to: 500 }
+           NumberAnimation { id: theAnim; target: theRect; property: "x"; to: 500 }
            MouseArea {
                anchors.fill: parent
                onClicked: theAnim.start()
@@ -2264,7 +2252,7 @@ void QDeclarativePropertyAnimation::setProperties(const QString &prop)
 
     As seen in the above example, properties is specified as a comma-separated string of property names to animate.
 
-    \sa exclude, {QML Animation}
+    \sa exclude, {QML Animation and Transitions}
 */
 QDeclarativeListProperty<QObject> QDeclarativePropertyAnimation::targets()
 {
@@ -2447,7 +2435,7 @@ void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions
     ParentAnimation is used to animate a parent change for an \l Item.
 
     For example, the following ParentChange changes \c blueRect to become
-    a child of \c redRect when it is clicked. The inclusion of the 
+    a child of \c redRect when it is clicked. The inclusion of the
     ParentAnimation, which defines a NumberAnimation to be applied during
     the transition, ensures the item animates smoothly as it moves to
     its new parent:
@@ -2462,17 +2450,17 @@ void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions
     to animate the parent change via another item that does not have clipping
     enabled. Such an item can be set using the \l via property.
 
-    For convenience, when a ParentAnimation is used in a \l Transition, it will 
-    animate any ParentChange that has occurred during the state change. 
+    For convenience, when a ParentAnimation is used in a \l Transition, it will
+    animate any ParentChange that has occurred during the state change.
     This can be overridden by setting a specific target item using the
     \l target property.
 
     Like any other animation element, a ParentAnimation can be applied in a
-    number of ways, including transitions, behaviors and property value 
-    sources. The \l {QML Animation} documentation shows a variety of methods
-    for creating animations.
+    number of ways, including transitions, behaviors and property value
+    sources. The \l {QML Animation and Transitions} documentation shows a
+    variety of methods for creating animations.
 
-    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
+    \sa {QML Animation and Transitions}, {declarative/animation/basics}{Animation basics example}
 */
 QDeclarativeParentAnimation::QDeclarativeParentAnimation(QObject *parent)
     : QDeclarativeAnimationGroup(*(new QDeclarativeParentAnimationPrivate), parent)
@@ -2555,7 +2543,7 @@ void QDeclarativeParentAnimation::setNewParent(QDeclarativeItem *newParent)
     ParentAnimation {
         target: myItem
         via: topLevelItem
-        ...
+        // ...
     }
     \endqml
 */
@@ -2803,23 +2791,23 @@ QAbstractAnimation *QDeclarativeParentAnimation::qtAnimation()
     \inherits Animation
     \brief The AnchorAnimation element animates changes in anchor values.
 
-    AnchorAnimation is used to animate an anchor change. 
+    AnchorAnimation is used to animate an anchor change.
 
     In the following snippet we animate the addition of a right anchor to a \l Rectangle:
 
     \snippet doc/src/snippets/declarative/anchoranimation.qml 0
 
-    For convenience, when an AnchorAnimation is used in a \l Transition, it will 
-    animate any AnchorChanges that have occurred during the state change. 
+    For convenience, when an AnchorAnimation is used in a \l Transition, it will
+    animate any AnchorChanges that have occurred during the state change.
     This can be overridden by setting a specific target item using the
     \l target property.
 
     Like any other animation element, an AnchorAnimation can be applied in a
-    number of ways, including transitions, behaviors and property value 
-    sources. The \l {QML Animation} documentation shows a variety of methods
-    for creating animations.
+    number of ways, including transitions, behaviors and property value
+    sources. The \l {QML Animation and Transitions} documentation shows a
+    variety of methods for creating animations.
 
-    \sa {QML Animation}, AnchorChanges
+    \sa {QML Animation and Transitions}, AnchorChanges
 */
 
 QDeclarativeAnchorAnimation::QDeclarativeAnchorAnimation(QObject *parent)

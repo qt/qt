@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -109,7 +109,7 @@
     data in all member functions that change the internal data.
 
     Code fragment:
-    \snippet doc/src/snippets/code/doc_src_groups.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_groups.cpp 0
 
 
     \section1 List of Classes
@@ -124,7 +124,7 @@
     concern for the copying overhead.
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_groups.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_groups.cpp 1
 
     In this example, \c p1 and \c p2 share data until QPainter::begin()
     is called for \c p2, because painting a pixmap will modify it.

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -215,10 +215,12 @@ class Q_AUTOTEST_EXPORT QDeclarativeTypeData : public QDeclarativeDataBlob
 public:
     struct TypeReference
     {
-        TypeReference() : type(0), typeData(0) {}
+        TypeReference() : type(0), majorVersion(0), minorVersion(0), typeData(0) {}
 
         QDeclarativeParser::Location location;
         QDeclarativeType *type;
+        int majorVersion;
+        int minorVersion;
         QDeclarativeTypeData *typeData;
     };
 

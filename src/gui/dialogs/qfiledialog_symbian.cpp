@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -64,7 +64,7 @@ public:
         filterList.clear();
         if (filter.left(2) == QLatin1String("*.")) {
             //Filter has only extensions
-            filterList << filter.split(" ");
+            filterList << filter.split(QLatin1String(" "));
             return;
         } else {
             //Extensions are in parenthesis and there may be several filters
@@ -75,7 +75,7 @@ public:
                     return;
                 }
             }
-            QRegExp rx("\\(([^\\)]*)\\)");
+            QRegExp rx(QLatin1String("\\(([^\\)]*)\\)"));
             int pos = 0;
             while ((pos = rx.indexIn(filter, pos)) != -1) {
                 filterList << rx.cap(1).split(QLatin1String(" "));
@@ -119,36 +119,53 @@ static QString launchSymbianDialog(const QString dialogCaption, const QString st
 {
     QString selection;
 #if defined(Q_WS_S60) && defined(SYMBIAN_VERSION_SYMBIAN3)
-    QT_TRAP_THROWING(
-        TFileName startFolder;
-        if (!startDirectory.isEmpty()) {
-            QString dir = QDir::toNativeSeparators(startDirectory);
+    TFileName startFolder;
+    if (!startDirectory.isEmpty()) {
+        QString dir = QDir::toNativeSeparators(QFileDialogPrivate::workingDirectory(startDirectory));
+        startFolder = qt_QString2TPtrC(dir);
+    }
+    TInt types = AknCommonDialogsDynMem::EMemoryTypeMMCExternal|
+                 AknCommonDialogsDynMem::EMemoryTypeInternalMassStorage|
+                 AknCommonDialogsDynMem::EMemoryTypePhone;
+
+    TPtrC titlePtr(qt_QString2TPtrC(dialogCaption));
+    TFileName target;
+    bool select = false;
+    int tryCount = 2;
+    while (tryCount--) {
+        TInt err(KErrNone);
+        TRAP(err,
+            if (dialogMode == DialogOpen) {
+                CExtensionFilter* extensionFilter = new (ELeave) CExtensionFilter;
+                CleanupStack::PushL(extensionFilter);
+                extensionFilter->setFilter(filter);
+                select = AknCommonDialogsDynMem::RunSelectDlgLD(types, target,
+                         startFolder, 0, 0, titlePtr, extensionFilter);
+                CleanupStack::Pop(extensionFilter);
+            } else if (dialogMode == DialogSave) {
+                QString defaultFileName = QFileDialogPrivate::initialSelection(startDirectory);
+                target = qt_QString2TPtrC(defaultFileName);
+                select = AknCommonDialogsDynMem::RunSaveDlgLD(types, target,
+                         startFolder, 0, 0, titlePtr);
+            } else if (dialogMode == DialogFolder) {
+                select = AknCommonDialogsDynMem::RunFolderSelectDlgLD(types, target, startFolder,
+                            0, 0, titlePtr, NULL, NULL);
+            }
+        );
+
+        if (err == KErrNone) {
+            tryCount = 0;
+        } else {
+            // Symbian native file dialog doesn't allow accessing files outside C:/Data
+            // It will always leave in that case, so default into QDir::rootPath() in error cases.
+            QString dir = QDir::toNativeSeparators(QDir::rootPath());
             startFolder = qt_QString2TPtrC(dir);
         }
-        TInt types = AknCommonDialogsDynMem::EMemoryTypeMMCExternal|
-                     AknCommonDialogsDynMem::EMemoryTypeInternalMassStorage|
-                     AknCommonDialogsDynMem::EMemoryTypePhone;
-
-        TPtrC titlePtr(qt_QString2TPtrC(dialogCaption));
-        TFileName target;
-        bool select = false;
-        if (dialogMode == DialogOpen) {
-            CExtensionFilter* extensionFilter = new (ELeave) CExtensionFilter;
-            CleanupStack::PushL(extensionFilter);
-            extensionFilter->setFilter(filter);
-            select = AknCommonDialogsDynMem::RunSelectDlgLD(types, target,
-                     startFolder, NULL, NULL, titlePtr, extensionFilter);
-            CleanupStack::Pop(extensionFilter);
-        } else if (dialogMode == DialogSave) {
-            select = AknCommonDialogsDynMem::RunSaveDlgLD(types, target,
-                     startFolder, NULL, NULL, titlePtr);
-        } else if (dialogMode == DialogFolder) {
-            select = AknCommonDialogsDynMem::RunFolderSelectDlgLD(types, target, startFolder,
-                        0, 0, titlePtr, NULL, NULL);
-        }
-        if (select)
-            selection.append(qt_TDesC2QString(target));
-    );
+    }
+    if (select) {
+        QFileInfo fi(qt_TDesC2QString(target));
+        selection = fi.absoluteFilePath();
+    }
 #endif
     return selection;
 }

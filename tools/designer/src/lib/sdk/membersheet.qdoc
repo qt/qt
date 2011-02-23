@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,7 +40,7 @@
     manipulate the member functions' appearance in \QD's signals and
     slots editing mode. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qtdesigner.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_qtdesigner.cpp 2
 
     When implementing a custom widget plugin, a pointer to \QD's
     current QDesignerFormEditorInterface object (\c formEditor in the
@@ -69,7 +69,7 @@
     made known to the meta object system using the Q_INTERFACES()
     macro:
 
-    \snippet doc/src/snippets/code/doc_src_qtdesigner.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_qtdesigner.cpp 3
 
     This enables \QD to use qobject_cast() to query for
     supported interfaces using nothing but a QObject pointer.
@@ -101,13 +101,13 @@
     QExtensionFactory and reimplement the
     QExtensionFactory::createExtension() function. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qtdesigner.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_qtdesigner.cpp 4
 
     Or you can use an existing factory, expanding the
     QExtensionFactory::createExtension() function to make the factory
     able to create a member sheet extension as well. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qtdesigner.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_qtdesigner.cpp 5
 
     For a complete example using an extension class, see \l
     {designer/taskmenuextension}{Task Menu Extension example}. The

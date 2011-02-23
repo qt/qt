@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -767,6 +767,8 @@ public:
     void x11UpdateIsOpaque();
     bool isBackgroundInherited() const;
     void updateX11AcceptFocus();
+    QPoint mapToGlobal(const QPoint &pos) const;
+    QPoint mapFromGlobal(const QPoint &pos) const;
 #elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
     uint noPaintOnScreen : 1; // see qwidget_win.cpp ::paintEngine()
 #ifndef QT_NO_GESTURES

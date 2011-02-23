@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -283,12 +283,12 @@
     pointer type is correct. If the object isn't of the right type,
     qstyleoption_cast() returns 0. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-styles.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qt4-styles.cpp 0
 
     The following code snippet illustrates how to use QStyle to
     draw the focus rectangle from a custom widget's paintEvent():
 
-    \snippet doc/src/snippets/code/doc_src_qt4-styles.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qt4-styles.cpp 1
 
     The next example shows how to derive from an existing style to
     customize the look of a graphical element:
@@ -542,7 +542,7 @@
     We start with a look at how QCheckBox builds it style option,
     which is QStyleOptionButton for checkboxes:
 
-    \snippet doc/src/snippets/code/doc_src_styles.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_styles.cpp 0
 
     First we let QStyleOption set up the option with the information
     that is common for all widgets with \c initFrom().  We will look at
@@ -561,7 +561,7 @@
     attributes that are common for all widgets. We print its
     implementation here:
 
-    \snippet doc/src/snippets/code/doc_src_styles.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_styles.cpp 1
 
     The State_Enabled is set when the widget is enabled. When the
     widget has focus the State_HasFocus flag is set. Equally, the
@@ -625,7 +625,7 @@
     notably, it wraps the methods in QStyle used for painting. The
     QCheckBox draws itself as follows:
 
-    \snippet doc/src/snippets/code/doc_src_styles.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_styles.cpp 2
 
     QCommonStyle handles the CE_CheckBox element. The QCheckBox
     has two sub elements: SE_CheckBoxIndicator (the checked indicator)
@@ -633,7 +633,7 @@
     checkbox label). QCommonStyle also implements these sub element
     bounding rectangles. We have a look at the QCommonStyle code:
 
-    \snippet doc/src/snippets/code/doc_src_styles.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_styles.cpp 3
 
     As can be seen from the code extract, the common style gets
     the bounding rectangles of the two sub elements of
@@ -644,7 +644,7 @@
     handles CE_CheckboxLabel. We will examine each implementation and
     start with CE_CheckBoxLabel:
 
-    \snippet doc/src/snippets/code/doc_src_styles.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_styles.cpp 4
 
     \l{QStyle::}{visualAlignment()} adjusts the alignment of text
     according to the layout direction. We then draw an icon if it

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,12 +49,20 @@ Rectangle {
 
     signal clicked                                          // signal declarations
 
-    function doSomething(x) {                               // javascript functions
+    function doSomething(x)                                 // javascript functions
+    {                               
         return x + photoImage.width
     }
 
-    x: 20; y: 20; width: 200; height: 150                   // object properties
-    color: "gray"                                           // try to group related properties together
+    color: "gray"                                           // object properties
+    x: 20; y: 20; height: 150                               // try to group related properties together
+    width: {                                                // large bindings
+        if(photoImage.width > 200){
+	    photoImage.width;
+	}else{
+	    200;
+	}
+    }
 
     Rectangle {                                             // child objects
         id: border

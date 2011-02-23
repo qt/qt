@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -33,8 +33,6 @@ This example shows how to create a reusable switch component in QML.
 
 The code for this example can be found in the \c $QTDIR/examples/declarative/ui-components/slideswitch directory.
 
-\section1 Overview
-
 The elements that composed the switch are:
 
 \list
@@ -60,8 +58,16 @@ It can be used to activate/disactivate the switch or to query its current state.
 In this example:
 
 \qml
-Switch { id: mySwitch; on: true }
-Text { text: "The switch is on"; visible: mySwitch.on == true }
+Item {
+    Switch {
+        id: mySwitch
+        on: true
+    }
+    Text {
+        text: "The switch is on"
+        visible: mySwitch.on == true
+    }
+}
 \endqml
 
 the text will only be visible when the switch is on.
@@ -115,7 +121,7 @@ For more information on scripts see \l{Integrating JavaScript}.
 At this point, when the switch toggles between the two states the knob will instantly change its \c x position between 1 and 78.
 In order for the the knob to move smoothly we add a transition that will animate the \c x property with an easing curve for a duration of 200ms.
 
-For more information on transitions see \l{qdeclarativeanimation.html#transitions}{QML Transitions}.
+For more information on transitions see \l{QML Animation and Transitions}.
 
 \section1 Usage
 The switch can be used in a QML file, like this:

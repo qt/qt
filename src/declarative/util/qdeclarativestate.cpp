@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,7 +66,7 @@ QDeclarativeAction::QDeclarativeAction()
 QDeclarativeAction::QDeclarativeAction(QObject *target, const QString &propertyName,
                const QVariant &value)
 : restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false), 
-  property(target, propertyName), toValue(value), 
+  property(target, propertyName, qmlEngine(target)), toValue(value),
   fromBinding(0), event(0),
   specifiedObject(target), specifiedProperty(propertyName)
 {
@@ -152,14 +152,14 @@ QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObje
 
     Notice the default state is referred to using an empty string ("").
 
-    States are commonly used together with \l {Transitions} to provide
+    States are commonly used together with \l{QML Animation and Transitions}{Transitions} to provide
     animations when state changes occur.
 
     \note Setting the state of an object from within another state of the same object is
     not allowed.
 
     \sa {declarative/animation/states}{states example}, {qmlstates}{States},
-    {qdeclarativeanimation.html#transitions}{QML Transitions}, QtDeclarative
+    {QML Animation and Transitions}{Transitions}, QtDeclarative
 */
 QDeclarativeState::QDeclarativeState(QObject *parent)
 : QObject(*(new QDeclarativeStatePrivate), parent)
@@ -216,15 +216,18 @@ bool QDeclarativeState::isWhenKnown() const
 
     \snippet doc/src/snippets/declarative/state-when.qml 0
 
-    If multiple states in a group have \c when clauses that evaluate to \c true at the same time,
-    the first matching state will be applied. For example, in the following snippet
-    \c state1 will always be selected rather than \c state2 when sharedCondition becomes
-    \c true.
+    If multiple states in a group have \c when clauses that evaluate to \c true
+    at the same time, the first matching state will be applied. For example, in
+    the following snippet \c state1 will always be selected rather than
+    \c state2 when sharedCondition becomes \c true.
     \qml
-    states: [
-        State { name: "state1"; when: sharedCondition },
-        State { name: "state2"; when: sharedCondition }
-    ]
+    Item {
+        states: [
+            State { name: "state1"; when: sharedCondition },
+            State { name: "state2"; when: sharedCondition }
+        ]
+        // ...
+    }
     \endqml
 */
 QDeclarativeBinding *QDeclarativeState::when() const
@@ -370,7 +373,7 @@ void QDeclarativeAction::deleteFromBinding()
     }
 }
 
-bool QDeclarativeState::containsPropertyInRevertList(QObject *target, const QByteArray &name) const
+bool QDeclarativeState::containsPropertyInRevertList(QObject *target, const QString &name) const
 {
     Q_D(const QDeclarativeState);
 
@@ -379,7 +382,7 @@ bool QDeclarativeState::containsPropertyInRevertList(QObject *target, const QByt
 
         while (revertListIterator.hasNext()) {
             const QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
-            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty().toUtf8() == name)
+            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty() == name)
                 return true;
         }
     }
@@ -387,7 +390,7 @@ bool QDeclarativeState::containsPropertyInRevertList(QObject *target, const QByt
     return false;
 }
 
-bool QDeclarativeState::changeValueInRevertList(QObject *target, const QByteArray &name, const QVariant &revertValue)
+bool QDeclarativeState::changeValueInRevertList(QObject *target, const QString &name, const QVariant &revertValue)
 {
     Q_D(QDeclarativeState);
 
@@ -396,7 +399,7 @@ bool QDeclarativeState::changeValueInRevertList(QObject *target, const QByteArra
 
         while (revertListIterator.hasNext()) {
             QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
-            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty().toUtf8() == name) {
+            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty() == name) {
                     simpleAction.setValue(revertValue);
                     return true;
             }
@@ -406,7 +409,7 @@ bool QDeclarativeState::changeValueInRevertList(QObject *target, const QByteArra
     return false;
 }
 
-bool QDeclarativeState::changeBindingInRevertList(QObject *target, const QByteArray &name, QDeclarativeAbstractBinding *binding)
+bool QDeclarativeState::changeBindingInRevertList(QObject *target, const QString &name, QDeclarativeAbstractBinding *binding)
 {
     Q_D(QDeclarativeState);
 
@@ -415,7 +418,7 @@ bool QDeclarativeState::changeBindingInRevertList(QObject *target, const QByteAr
 
         while (revertListIterator.hasNext()) {
             QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
-            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty().toUtf8() == name) {
+            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty() == name) {
                 if (simpleAction.binding())
                     simpleAction.binding()->destroy();
 
@@ -428,7 +431,7 @@ bool QDeclarativeState::changeBindingInRevertList(QObject *target, const QByteAr
     return false;
 }
 
-bool QDeclarativeState::removeEntryFromRevertList(QObject *target, const QByteArray &name)
+bool QDeclarativeState::removeEntryFromRevertList(QObject *target, const QString &name)
 {
     Q_D(QDeclarativeState);
 
@@ -437,7 +440,7 @@ bool QDeclarativeState::removeEntryFromRevertList(QObject *target, const QByteAr
 
         while (revertListIterator.hasNext()) {
             QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
-            if (simpleAction.property().object() == target && simpleAction.property().name().toUtf8() == name) {
+            if (simpleAction.property().object() == target && simpleAction.property().name() == name) {
                 QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(simpleAction.property());
                 if (oldBinding) {
                     QDeclarativePropertyPrivate::setBinding(simpleAction.property(), 0);
@@ -517,7 +520,7 @@ void QDeclarativeState::addEntriesToRevertList(const QList<QDeclarativeAction> &
     }
 }
 
-QVariant QDeclarativeState::valueInRevertList(QObject *target, const QByteArray &name) const
+QVariant QDeclarativeState::valueInRevertList(QObject *target, const QString &name) const
 {
     Q_D(const QDeclarativeState);
 
@@ -526,7 +529,7 @@ QVariant QDeclarativeState::valueInRevertList(QObject *target, const QByteArray 
 
         while (revertListIterator.hasNext()) {
             const QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
-            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty().toUtf8() == name)
+            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty() == name)
                 return simpleAction.value();
         }
     }
@@ -534,7 +537,7 @@ QVariant QDeclarativeState::valueInRevertList(QObject *target, const QByteArray 
     return QVariant();
 }
 
-QDeclarativeAbstractBinding *QDeclarativeState::bindingInRevertList(QObject *target, const QByteArray &name) const
+QDeclarativeAbstractBinding *QDeclarativeState::bindingInRevertList(QObject *target, const QString &name) const
 {
     Q_D(const QDeclarativeState);
 
@@ -543,7 +546,7 @@ QDeclarativeAbstractBinding *QDeclarativeState::bindingInRevertList(QObject *tar
 
         while (revertListIterator.hasNext()) {
             const QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
-            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty().toUtf8() == name)
+            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty() == name)
                 return simpleAction.binding();
         }
     }

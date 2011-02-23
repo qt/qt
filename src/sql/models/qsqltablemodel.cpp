@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -265,7 +265,7 @@ QSqlRecord QSqlTableModelPrivate::primaryValues(int row)
     QSqlTableModel can also be used to access a database
     programmatically, without binding it to a view:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 25
+    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 21
 
     The code snippet above extracts the \c salary field from record 4 in
     the result set of the query \c{SELECT * from employee}.

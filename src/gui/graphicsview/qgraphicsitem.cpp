@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -574,19 +574,21 @@
     QGraphicsItem pointer). The return value is unused; you cannot adjust
     anything in this notification.
 
-    \value ItemSceneChange The item is moved to a new scene. This notification
-    is also sent when the item is added to its initial scene, and when it is
-    removed. The value argument is the new scene (i.e., a QGraphicsScene
+    \value ItemSceneChange The item is moved to a new scene. This notification is
+    also sent when the item is added to its initial scene, and when it is removed.
+    The item's scene() is the old scene (or 0 if the item has not been added to a
+    scene yet). The value argument is the new scene (i.e., a QGraphicsScene
     pointer), or a null pointer if the item is removed from a scene. Do not
-    override this change by passing this item to QGraphicsScene::addItem() as
-    this notification is delivered; instead, you can return the new scene from
+    override this change by passing this item to QGraphicsScene::addItem() as this
+    notification is delivered; instead, you can return the new scene from
     itemChange(). Use this feature with caution; objecting to a scene change can
     quickly lead to unwanted recursion.
 
-    \value ItemSceneHasChanged The item's scene has changed. The value
-    argument is the new scene (i.e., a pointer to a QGraphicsScene). Do not
-    call setScene() in itemChange() as this notification is delivered. The
-    return value is ignored.
+    \value ItemSceneHasChanged The item's scene has changed. The item's scene() is
+    the new scene. This notification is also sent when the item is added to its
+    initial scene, and when it is removed.The value argument is the new scene
+    (i.e., a pointer to a QGraphicsScene). Do not call setScene() in itemChange()
+    as this notification is delivered. The return value is ignored.
 
     \value ItemCursorChange The item's cursor changes. The value argument is
     the new cursor (i.e., a QCursor). Do not call setCursor() in itemChange()
@@ -5589,10 +5591,11 @@ void QGraphicsItemPrivate::clearSubFocus(QGraphicsItem *rootItem, QGraphicsItem 
     // Reset sub focus chain.
     QGraphicsItem *parent = rootItem ? rootItem : q_ptr;
     do {
-        if (parent->d_ptr->subFocusItem != q_ptr || parent == stopItem)
+        if (parent->d_ptr->subFocusItem != q_ptr)
             break;
         parent->d_ptr->subFocusItem = 0;
-        parent->d_ptr->subFocusItemChange();
+        if (parent != stopItem && !parent->isAncestorOf(stopItem))
+            parent->d_ptr->subFocusItemChange();
     } while (!parent->isPanel() && (parent = parent->d_ptr->parent));
 }
 
@@ -7688,11 +7691,13 @@ void QGraphicsObject::updateMicroFocus()
 
 void QGraphicsItemPrivate::children_append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item)
 {
-    QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(list->object);
-    if (QGraphicsItemPrivate::get(graphicsObject)->sendParentChangeNotification) {
-        item->setParentItem(graphicsObject);
-    } else {
-        QGraphicsItemPrivate::get(item)->setParentItemHelper(graphicsObject, 0, 0);
+    if (item) {
+        QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(list->object);
+        if (QGraphicsItemPrivate::get(graphicsObject)->sendParentChangeNotification) {
+            item->setParentItem(graphicsObject);
+        } else {
+            QGraphicsItemPrivate::get(item)->setParentItemHelper(graphicsObject, 0, 0);
+        }
     }
 }
 

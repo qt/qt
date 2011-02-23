@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,12 +44,12 @@
 
 int main(int argc, char *argv[])
 {
-//! [0]
+    //! [0]
     QScriptEngine engine;
     QObject *someObject = new MyObject;
     QScriptValue objectValue = engine.newQObject(someObject);
     engine.globalObject().setProperty("myObject", objectValue);
-//! [0]
+    //! [0]
     qDebug() << "myObject's calculate() function returns"
              << engine.evaluate("myObject.calculate(10)").toNumber();
     return 0;
