@@ -1548,10 +1548,10 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
             result.append(lang);
         }
         return QVariant(result);
-    case QuotationBegin:
-    case QuotationEnd: {
-        return macQuotationSymbol(type,in);
     }
+    case QuotationBegin:
+    case QuotationEnd:
+        return macQuotationSymbol(type,in);
     default:
         break;
     }
