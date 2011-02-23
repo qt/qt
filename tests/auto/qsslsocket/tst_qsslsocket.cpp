@@ -541,7 +541,7 @@ void tst_QSslSocket::sslErrors()
     }
 
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
-    if (output.last() == QSslError::CertificateUntrusted)
+    if (output.count() && output.last() == QSslError::CertificateUntrusted)
         output.takeLast();
 #endif
     QCOMPARE(output, expected);
@@ -1417,8 +1417,8 @@ protected:
         // delayed start of encryption
         QTest::qSleep(100);
         QSslSocket *socket = server.socket;
-        Q_ASSERT(socket);
-        Q_ASSERT(socket->isValid());
+        QVERIFY(socket);
+        QVERIFY(socket->isValid());
         socket->ignoreSslErrors();
         socket->startServerEncryption();
         if (!socket->waitForEncrypted(2000))
