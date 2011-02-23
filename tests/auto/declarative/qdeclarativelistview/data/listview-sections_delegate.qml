@@ -41,6 +41,11 @@ Rectangle {
                         text: wrapper.y
                     }
                 }
+                ListView.onRemove: SequentialAnimation {
+                    PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: true }
+                    NumberAnimation { target: wrapper; property: "height"; to: 0; duration: 100; easing.type: Easing.InOutQuad }
+                    PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: false }
+                }
             }
         }
     ]
