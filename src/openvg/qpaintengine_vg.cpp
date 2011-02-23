@@ -2201,6 +2201,12 @@ void QVGPaintEngine::updateScissor()
 #if defined(QVG_SCISSOR_CLIP)
     // Using the scissor to do clipping, so combine the systemClip
     // with the current painting clipRegion.
+
+    if (d->maskValid) {
+        vgSeti(VG_MASKING, VG_FALSE);
+        d->maskValid = false;
+    }
+
     QVGPainterState *s = state();
     if (s->clipEnabled) {
         if (region.isEmpty())
@@ -2250,8 +2256,33 @@ void QVGPaintEngine::updateScissor()
 
     QVector<QRect> rects = region.rects();
     int count = rects.count();
-    if (count > d->maxScissorRects)
-        count = d->maxScissorRects;
+    if (count > d->maxScissorRects) {
+#if !defined(QVG_SCISSOR_CLIP)
+         count = d->maxScissorRects;
+#else
+        // Use masking
+        int width = paintDevice()->width();
+        int height = paintDevice()->height();
+        vgMask(VG_INVALID_HANDLE, VG_CLEAR_MASK,
+                   0, 0, width, height);
+        for (int i = 0; i < rects.size(); ++i) {
+            vgMask(VG_INVALID_HANDLE, VG_FILL_MASK,
+                   rects[i].x(), height - rects[i].y() - rects[i].height(),
+                   rects[i].width(), rects[i].height());
+        }
+
+        vgSeti(VG_SCISSORING, VG_FALSE);
+        vgSeti(VG_MASKING, VG_TRUE);
+        d->maskValid = true;
+        d->maskIsSet = false;
+        d->scissorMask = false;
+        d->scissorActive = false;
+        d->scissorDirty = false;
+        d->scissorRegion = region;
+        return;
+#endif
+    }
+
     QVarLengthArray<VGint> params(count * 4);
     int height = paintDevice()->height();
     for (int i = 0; i < count; ++i) {

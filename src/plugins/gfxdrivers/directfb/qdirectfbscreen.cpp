@@ -1285,7 +1285,7 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
         result = d_ptr->primarySurface->GetSize(d_ptr->primarySurface, &w, &h);
 #elif (Q_DIRECTFB_VERSION >= 0x010000)
         IDirectFBSurface *layerSurface;
-        if (d_ptr->dfbLayer->GetSurface(d_ptr->dfbLayer, &layerSurface) != DFB_OK) {
+        if (d_ptr->dfbLayer->GetSurface(d_ptr->dfbLayer, &layerSurface) == DFB_OK) {
             result = layerSurface->GetSize(layerSurface, &w, &h);
             layerSurface->Release(layerSurface);
         }

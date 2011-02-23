@@ -54,15 +54,15 @@
 
 QT_BEGIN_HEADER
 
+typedef struct OCIEnv OCIEnv;
+typedef struct OCISvcCtx OCISvcCtx;
+
 QT_BEGIN_NAMESPACE
 
 class QOCIDriver;
 class QOCICols;
 struct QOCIDriverPrivate;
 struct QOCIResultPrivate;
-
-typedef struct OCIEnv OCIEnv;
-typedef struct OCISvcCtx OCISvcCtx;
 
 class Q_EXPORT_SQLDRIVER_OCI QOCIResult : public QSqlCachedResult
 {

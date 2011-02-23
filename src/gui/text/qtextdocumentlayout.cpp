@@ -525,7 +525,7 @@ QTextDocumentLayoutPrivate::QTextDocumentLayoutPrivate()
       lazyLayoutStepSize(1000),
       lastPageCount(-1),
       lineH(1),
-      lineHeightMode(QTextDocumentLayout::MultiplyHeight)
+      lineHeightMode(QTextDocumentLayout::ProportionalHeight)
 {
     showLayoutProgress = true;
     insideDocumentChange = false;
@@ -2644,7 +2644,9 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
 
             }
 
-            QFixed lineHeight = (lineHeightMode == QTextDocumentLayout::PixelHeight) ? QFixed::fromReal(lineH) : QFixed::fromReal(line.height() * lineH);
+            // TODO: replace with proper line height support in 4.8
+            QFixed lineHeight = (lineHeightMode == QTextDocumentLayout::FixedHeight)
+                    ? QFixed::fromReal(lineH) : QFixed::fromReal(line.height() * lineH);
 
             if (layoutStruct->pageHeight > 0 && layoutStruct->absoluteY() + lineHeight > layoutStruct->pageBottom) {
                 layoutStruct->newPage();
@@ -2720,7 +2722,7 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
     }
 }
 
-void QTextDocumentLayout::setLineHeight(qreal lineH, QTextDocumentLayout::LineHeightMode mode = QTextDocumentLayout::MultiplyHeight)
+void QTextDocumentLayout::setLineHeight(qreal lineH, QTextDocumentLayout::LineHeightMode mode = QTextDocumentLayout::ProportionalHeight)
 {
     Q_D(QTextDocumentLayout);
     d->lineH = lineH;
