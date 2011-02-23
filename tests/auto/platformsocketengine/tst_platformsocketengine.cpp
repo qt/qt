@@ -68,10 +68,12 @@
 #include <QNetworkSession>
 #include <QScopedPointer>
 #define PLATFORMSOCKETENGINE QSymbianSocketEngine
+#define PLATFORMSOCKETENGINESTRING "QSymbianSocketEngine"
 #include <private/qsymbiansocketengine_p.h>
 #include <private/qcore_symbian_p.h>
 #else
 #define PLATFORMSOCKETENGINE QNativeSocketEngine
+#define PLATFORMSOCKETENGINESTRING "QNativeSocketEngine"
 #include <private/qnativesocketengine_p.h>
 #endif
 
@@ -148,10 +150,10 @@ void tst_PlatformSocketEngine::construction()
     QVERIFY(socketDevice.peerPort() == 0);
     QVERIFY(socketDevice.error() == QAbstractSocket::UnknownSocketError);
 
-    QTest::ignoreMessage(QtWarningMsg, "QNativeSocketEngine::bytesAvailable() was called in QAbstractSocket::UnconnectedState");
+    QTest::ignoreMessage(QtWarningMsg, PLATFORMSOCKETENGINESTRING "::bytesAvailable() was called in QAbstractSocket::UnconnectedState");
     QVERIFY(socketDevice.bytesAvailable() == 0);
 
-    QTest::ignoreMessage(QtWarningMsg, "QNativeSocketEngine::hasPendingDatagrams() was called in QAbstractSocket::UnconnectedState");
+    QTest::ignoreMessage(QtWarningMsg, PLATFORMSOCKETENGINESTRING "::hasPendingDatagrams() was called in QAbstractSocket::UnconnectedState");
     QVERIFY(!socketDevice.hasPendingDatagrams());
 }
 
@@ -664,7 +666,7 @@ void tst_PlatformSocketEngine::invalidSend()
     PLATFORMSOCKETENGINE socket;
     QVERIFY(socket.initialize(QAbstractSocket::TcpSocket));
 
-    QTest::ignoreMessage(QtWarningMsg, "QNativeSocketEngine::writeDatagram() was"
+    QTest::ignoreMessage(QtWarningMsg, PLATFORMSOCKETENGINESTRING "::writeDatagram() was"
                                " called by a socket other than QAbstractSocket::UdpSocket");
     QCOMPARE(socket.writeDatagram("hei", 3, QHostAddress::LocalHost, 143),
             (qlonglong) -1);
