@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1552,8 +1552,8 @@ void ConnectionProgressNotifier::StartNotifications()
 {
     if (!IsActive()) {
         SetActive();
+        iConnection.ProgressNotification(iProgress, iStatus);
     }
-    iConnection.ProgressNotification(iProgress, iStatus);
 }
 
 void ConnectionProgressNotifier::StopNotifications()
@@ -1569,10 +1569,10 @@ void ConnectionProgressNotifier::DoCancel()
 void ConnectionProgressNotifier::RunL()
 {
     if (iStatus == KErrNone) {
-        QT_TRYCATCH_LEAVING(iOwner.handleSymbianConnectionStatusChange(iProgress().iStage, iProgress().iError));
-    
         SetActive();
         iConnection.ProgressNotification(iProgress, iStatus);
+        // warning, this object may be deleted in the callback - do nothing after handleSymbianConnectionStatusChange
+        QT_TRYCATCH_LEAVING(iOwner.handleSymbianConnectionStatusChange(iProgress().iStage, iProgress().iError));
     }
 }
 

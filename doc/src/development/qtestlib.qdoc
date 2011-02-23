@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -130,7 +130,7 @@
 
     \snippet doc/src/snippets/code/doc_src_qtestlib.qdoc 1
 
-    If you are using other buildtools, make sure that you add the location
+    If you are using other build tools, make sure that you add the location
     of the QTestLib header files to your include path (usually \c{include/QtTest}
     under your Qt installation directory). If you are using a release build
     of Qt, link your test to the \c QtTest library. For debug builds, use
@@ -370,7 +370,7 @@
     \title QTestLib Tutorial
 
     This tutorial gives a short introduction to how to use some of the
-    features of the QTestLib framework. It is divided into four
+    features of the QTestLib framework. It is divided into five
     chapters:
 
     \list 1

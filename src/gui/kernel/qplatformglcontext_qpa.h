@@ -69,7 +69,7 @@ public:
     virtual QPlatformWindowFormat platformWindowFormat() const = 0;
 
     const static QPlatformGLContext *currentContext();
-    const static QPlatformGLContext *defaultSharedContext();
+    static QPlatformGLContext *defaultSharedContext();
 
 protected:
 

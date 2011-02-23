@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -93,7 +93,8 @@
     also holds pointers to the next and previous list items. The
     functions currentNode(), removeNode(), and takeNode() operate
     directly on the Q3LNode, but they should be used with care. The
-    data component of the node is available through Q3LNode::getData().
+    data component of the node is available through Q3LNode's getData()
+    function.
 
     The Q3StrList class is a list of \c char*.
     It reimplements newItem(), deleteItem() and compareItems(). (But

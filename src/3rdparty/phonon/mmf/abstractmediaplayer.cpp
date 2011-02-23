@@ -23,6 +23,9 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "defs.h"
 #include "mediaobject.h"
 #include "utils.h"
+#include <cdbcols.h>
+#include <cdblen.h>
+#include <commdb.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -267,11 +270,15 @@ void MMF::AbstractMediaPlayer::open()
                     this, SLOT(downloadLengthChanged(qint64)));
             connect(m_download, SIGNAL(stateChanged(Download::State)),
                     this, SLOT(downloadStateChanged(Download::State)));
-            m_download->start();
+            int iap = m_parent->currentIAP();
+            TRACE("HTTP Url: Using IAP %d", iap);
+            m_download->start(iap);
         }
 #endif
         else {
-            symbianErr = openUrl(url.toString());
+            int iap = m_parent->currentIAP();
+            TRACE("Using IAP %d", iap);
+            symbianErr = openUrl(url.toString(), iap);
             if (KErrNone != symbianErr)
                 errorMessage = tr("Error opening URL");
         }

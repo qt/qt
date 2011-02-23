@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,7 +45,7 @@
 #include <qdeclarative.h>
 #include <qdeclarativeproperty.h>
 #include <QtCore/qobject.h>
-#include <private/qdeclarativebinding_p.h>
+#include <QtCore/qsharedpointer.h>
 #include <private/qdeclarativeglobal_p.h>
 
 QT_BEGIN_HEADER
@@ -76,7 +76,7 @@ public:
     QVariant toValue;
 
     QDeclarativeAbstractBinding *fromBinding;
-    QDeclarativeAbstractBinding::Pointer toBinding;
+    QWeakPointer<QDeclarativeAbstractBinding> toBinding;
     QDeclarativeActionEvent *event;
 
     //strictly for matching
@@ -180,15 +180,15 @@ public:
     QDeclarativeStateGroup *stateGroup() const;
     void setStateGroup(QDeclarativeStateGroup *);
 
-    bool containsPropertyInRevertList(QObject *target, const QByteArray &name) const;
-    bool changeValueInRevertList(QObject *target, const QByteArray &name, const QVariant &revertValue);
-    bool changeBindingInRevertList(QObject *target, const QByteArray &name, QDeclarativeAbstractBinding *binding);
-    bool removeEntryFromRevertList(QObject *target, const QByteArray &name);
+    bool containsPropertyInRevertList(QObject *target, const QString &name) const;
+    bool changeValueInRevertList(QObject *target, const QString &name, const QVariant &revertValue);
+    bool changeBindingInRevertList(QObject *target, const QString &name, QDeclarativeAbstractBinding *binding);
+    bool removeEntryFromRevertList(QObject *target, const QString &name);
     void addEntryToRevertList(const QDeclarativeAction &action);
     void removeAllEntriesFromRevertList(QObject *target);
     void addEntriesToRevertList(const QList<QDeclarativeAction> &actions);
-    QVariant valueInRevertList(QObject *target, const QByteArray &name) const;
-    QDeclarativeAbstractBinding *bindingInRevertList(QObject *target, const QByteArray &name) const;
+    QVariant valueInRevertList(QObject *target, const QString &name) const;
+    QDeclarativeAbstractBinding *bindingInRevertList(QObject *target, const QString &name) const;
 
     bool isStateActive() const;
 

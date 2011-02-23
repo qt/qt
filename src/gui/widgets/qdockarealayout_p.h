@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -83,7 +83,7 @@ class QTabBar;
 // which then has one QDockAreaLayoutInfo as a child. (QDockAreaLayoutItem::subInfo) or
 // a widgetItem if this is a node of the tree (QDockAreaLayoutItem::widgetItem)
 //
-// A path indetifies uniquely one object in this tree, the first number beeing the side and all the following
+// A path indetifies uniquely one object in this tree, the first number being the side and all the following
 // indexes into the QDockAreaLayoutInfo::item_list.
 
 struct QDockAreaLayoutItem

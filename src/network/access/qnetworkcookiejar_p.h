@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -62,6 +62,9 @@ class QNetworkCookieJarPrivate: public QObjectPrivate
 {
 public:
     QList<QNetworkCookie> allCookies;
+
+    static bool Q_AUTOTEST_EXPORT isEffectiveTLD(const QString &domain);
+    static bool containsTLDEntry(const QString &entry);
 
     Q_DECLARE_PUBLIC(QNetworkCookieJar)
 };

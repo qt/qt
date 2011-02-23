@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -62,23 +62,33 @@ public:
 
 private slots:
     void test_horizontal();
+    void test_horizontal_rtl();
     void test_horizontal_spacing();
+    void test_horizontal_spacing_rightToLeft();
     void test_horizontal_animated();
+    void test_horizontal_animated_rightToLeft();
     void test_vertical();
     void test_vertical_spacing();
     void test_vertical_animated();
     void test_grid();
     void test_grid_topToBottom();
+    void test_grid_rightToLeft();
     void test_grid_spacing();
     void test_grid_animated();
+    void test_grid_animated_rightToLeft();
     void test_grid_zero_columns();
     void test_propertychanges();
     void test_repeater();
     void test_flow();
+    void test_flow_rightToLeft();
+    void test_flow_topToBottom();
     void test_flow_resize();
+    void test_flow_resize_rightToLeft();
     void test_flow_implicit_resize();
     void test_conflictinganchors();
     void test_vertical_qgraphicswidget();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
 private:
     QDeclarativeView *createView(const QString &filename);
 };
@@ -90,6 +100,8 @@ tst_QDeclarativePositioners::tst_QDeclarativePositioners()
 void tst_QDeclarativePositioners::test_horizontal()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/horizontal.qml");
+
+    canvas->rootObject()->setProperty("testRightToLeft", false);
 
     QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
     QVERIFY(one != 0);
@@ -114,9 +126,40 @@ void tst_QDeclarativePositioners::test_horizontal()
     delete canvas;
 }
 
+void tst_QDeclarativePositioners::test_horizontal_rtl()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/horizontal.qml");
+
+    canvas->rootObject()->setProperty("testRightToLeft", true);
+
+    QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
+    QVERIFY(one != 0);
+
+    QDeclarativeRectangle *two = canvas->rootObject()->findChild<QDeclarativeRectangle*>("two");
+    QVERIFY(two != 0);
+
+    QDeclarativeRectangle *three = canvas->rootObject()->findChild<QDeclarativeRectangle*>("three");
+    QVERIFY(three != 0);
+
+    QCOMPARE(one->x(), 60.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 40.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 0.0);
+    QCOMPARE(three->y(), 0.0);
+
+    QDeclarativeItem *row = canvas->rootObject()->findChild<QDeclarativeItem*>("row");
+    QCOMPARE(row->width(), 110.0);
+    QCOMPARE(row->height(), 50.0);
+
+    delete canvas;
+}
+
 void tst_QDeclarativePositioners::test_horizontal_spacing()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/horizontal-spacing.qml");
+
+    canvas->rootObject()->setProperty("testRightToLeft", false);
 
     QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
     QVERIFY(one != 0);
@@ -141,9 +184,40 @@ void tst_QDeclarativePositioners::test_horizontal_spacing()
     delete canvas;
 }
 
+void tst_QDeclarativePositioners::test_horizontal_spacing_rightToLeft()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/horizontal-spacing.qml");
+
+    canvas->rootObject()->setProperty("testRightToLeft", true);
+
+    QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
+    QVERIFY(one != 0);
+
+    QDeclarativeRectangle *two = canvas->rootObject()->findChild<QDeclarativeRectangle*>("two");
+    QVERIFY(two != 0);
+
+    QDeclarativeRectangle *three = canvas->rootObject()->findChild<QDeclarativeRectangle*>("three");
+    QVERIFY(three != 0);
+
+    QCOMPARE(one->x(), 80.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 50.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 00.0);
+    QCOMPARE(three->y(), 0.0);
+
+    QDeclarativeItem *row = canvas->rootObject()->findChild<QDeclarativeItem*>("row");
+    QCOMPARE(row->width(), 130.0);
+    QCOMPARE(row->height(), 50.0);
+
+    delete canvas;
+}
+
 void tst_QDeclarativePositioners::test_horizontal_animated()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/horizontal-animated.qml");
+
+    canvas->rootObject()->setProperty("testRightToLeft", false);
 
     QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
     QVERIFY(one != 0);
@@ -189,6 +263,60 @@ void tst_QDeclarativePositioners::test_horizontal_animated()
 
     QTRY_COMPARE(two->x(), 50.0);
     QTRY_COMPARE(three->x(), 100.0);
+
+    delete canvas;
+}
+
+void tst_QDeclarativePositioners::test_horizontal_animated_rightToLeft()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/horizontal-animated.qml");
+
+    canvas->rootObject()->setProperty("testRightToLeft", true);
+
+    QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
+    QVERIFY(one != 0);
+
+    QDeclarativeRectangle *two = canvas->rootObject()->findChild<QDeclarativeRectangle*>("two");
+    QVERIFY(two != 0);
+
+    QDeclarativeRectangle *three = canvas->rootObject()->findChild<QDeclarativeRectangle*>("three");
+    QVERIFY(three != 0);
+
+    //Note that they animate in
+    QCOMPARE(one->x(), -100.0);
+    QCOMPARE(two->x(), -100.0);
+    QCOMPARE(three->x(), -100.0);
+
+    QDeclarativeItem *row = canvas->rootObject()->findChild<QDeclarativeItem*>("row");
+    QVERIFY(row);
+    QCOMPARE(row->width(), 100.0);
+    QCOMPARE(row->height(), 50.0);
+
+    //QTRY_COMPARE used instead of waiting for the expected time of animation completion
+    //Note that this means the duration of the animation is NOT tested
+
+    QTRY_COMPARE(one->x(), 50.0);
+    QTRY_COMPARE(one->y(), 0.0);
+    QTRY_COMPARE(two->opacity(), 0.0);
+    QTRY_COMPARE(two->x(), -100.0);//Not 'in' yet
+    QTRY_COMPARE(two->y(), 0.0);
+    QTRY_COMPARE(three->x(), 0.0);
+    QTRY_COMPARE(three->y(), 0.0);
+
+    //Add 'two'
+    two->setOpacity(1.0);
+    QCOMPARE(two->opacity(), 1.0);
+
+    // New size should be immediate
+    QCOMPARE(row->width(), 150.0);
+    QCOMPARE(row->height(), 50.0);
+
+    QTest::qWait(0);//Let the animation start
+    QCOMPARE(one->x(), 50.0);
+    QCOMPARE(two->x(), -100.0);
+
+    QTRY_COMPARE(one->x(), 100.0);
+    QTRY_COMPARE(two->x(), 50.0);
 
     delete canvas;
 }
@@ -364,6 +492,40 @@ void tst_QDeclarativePositioners::test_grid_topToBottom()
     delete canvas;
 }
 
+void tst_QDeclarativePositioners::test_grid_rightToLeft()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/grid-righttoleft.qml");
+
+    QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
+    QVERIFY(one != 0);
+    QDeclarativeRectangle *two = canvas->rootObject()->findChild<QDeclarativeRectangle*>("two");
+    QVERIFY(two != 0);
+    QDeclarativeRectangle *three = canvas->rootObject()->findChild<QDeclarativeRectangle*>("three");
+    QVERIFY(three != 0);
+    QDeclarativeRectangle *four = canvas->rootObject()->findChild<QDeclarativeRectangle*>("four");
+    QVERIFY(four != 0);
+    QDeclarativeRectangle *five = canvas->rootObject()->findChild<QDeclarativeRectangle*>("five");
+    QVERIFY(five != 0);
+
+    QCOMPARE(one->x(), 70.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 50.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 0.0);
+    QCOMPARE(three->y(), 0.0);
+    QCOMPARE(four->x(), 70.0);
+    QCOMPARE(four->y(), 50.0);
+    QCOMPARE(five->x(), 60.0);
+    QCOMPARE(five->y(), 50.0);
+
+    QDeclarativeGrid *grid = canvas->rootObject()->findChild<QDeclarativeGrid*>("grid");
+    QCOMPARE(grid->layoutDirection(), Qt::RightToLeft);
+    QCOMPARE(grid->width(), 120.0);
+    QCOMPARE(grid->height(), 100.0);
+
+    delete canvas;
+}
+
 void tst_QDeclarativePositioners::test_grid_spacing()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/grid-spacing.qml");
@@ -400,6 +562,8 @@ void tst_QDeclarativePositioners::test_grid_spacing()
 void tst_QDeclarativePositioners::test_grid_animated()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/grid-animated.qml");
+
+    canvas->rootObject()->setProperty("testRightToLeft", false);
 
     //Note that all animate in
     QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
@@ -471,6 +635,89 @@ void tst_QDeclarativePositioners::test_grid_animated()
     QTRY_COMPARE(three->x(), 100.0);
     QTRY_COMPARE(three->y(), 0.0);
     QTRY_COMPARE(four->x(), 0.0);
+    QTRY_COMPARE(four->y(), 50.0);
+    QTRY_COMPARE(five->x(), 50.0);
+    QTRY_COMPARE(five->y(), 50.0);
+
+    delete canvas;
+}
+
+void tst_QDeclarativePositioners::test_grid_animated_rightToLeft()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/grid-animated.qml");
+
+    canvas->rootObject()->setProperty("testRightToLeft", true);
+
+    //Note that all animate in
+    QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
+    QVERIFY(one != 0);
+    QCOMPARE(one->x(), -100.0);
+    QCOMPARE(one->y(), -100.0);
+
+    QDeclarativeRectangle *two = canvas->rootObject()->findChild<QDeclarativeRectangle*>("two");
+    QVERIFY(two != 0);
+    QCOMPARE(two->x(), -100.0);
+    QCOMPARE(two->y(), -100.0);
+
+    QDeclarativeRectangle *three = canvas->rootObject()->findChild<QDeclarativeRectangle*>("three");
+    QVERIFY(three != 0);
+    QCOMPARE(three->x(), -100.0);
+    QCOMPARE(three->y(), -100.0);
+
+    QDeclarativeRectangle *four = canvas->rootObject()->findChild<QDeclarativeRectangle*>("four");
+    QVERIFY(four != 0);
+    QCOMPARE(four->x(), -100.0);
+    QCOMPARE(four->y(), -100.0);
+
+    QDeclarativeRectangle *five = canvas->rootObject()->findChild<QDeclarativeRectangle*>("five");
+    QVERIFY(five != 0);
+    QCOMPARE(five->x(), -100.0);
+    QCOMPARE(five->y(), -100.0);
+
+    QDeclarativeItem *grid = canvas->rootObject()->findChild<QDeclarativeItem*>("grid");
+    QVERIFY(grid);
+    QCOMPARE(grid->width(), 150.0);
+    QCOMPARE(grid->height(), 100.0);
+
+    //QTRY_COMPARE used instead of waiting for the expected time of animation completion
+    //Note that this means the duration of the animation is NOT tested
+
+    QTRY_COMPARE(one->y(), 0.0);
+    QTRY_COMPARE(one->x(), 100.0);
+    QTRY_COMPARE(two->opacity(), 0.0);
+    QTRY_COMPARE(two->y(), -100.0);
+    QTRY_COMPARE(two->x(), -100.0);
+    QTRY_COMPARE(three->y(), 0.0);
+    QTRY_COMPARE(three->x(), 50.0);
+    QTRY_COMPARE(four->y(), 0.0);
+    QTRY_COMPARE(four->x(), 0.0);
+    QTRY_COMPARE(five->y(), 50.0);
+    QTRY_COMPARE(five->x(), 100.0);
+
+    //Add 'two'
+    two->setOpacity(1.0);
+    QCOMPARE(two->opacity(), 1.0);
+    QCOMPARE(grid->width(), 150.0);
+    QCOMPARE(grid->height(), 100.0);
+    QTest::qWait(0);//Let the animation start
+    QCOMPARE(two->x(), -100.0);
+    QCOMPARE(two->y(), -100.0);
+    QCOMPARE(one->x(), 100.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(three->x(), 50.0);
+    QCOMPARE(three->y(), 0.0);
+    QCOMPARE(four->x(), 0.0);
+    QCOMPARE(four->y(), 0.0);
+    QCOMPARE(five->x(), 100.0);
+    QCOMPARE(five->y(), 50.0);
+    //Let the animation complete
+    QTRY_COMPARE(two->x(), 50.0);
+    QTRY_COMPARE(two->y(), 0.0);
+    QTRY_COMPARE(one->x(), 100.0);
+    QTRY_COMPARE(one->y(), 0.0);
+    QTRY_COMPARE(three->x(), 0.0);
+    QTRY_COMPARE(three->y(), 0.0);
+    QTRY_COMPARE(four->x(), 100.0);
     QTRY_COMPARE(four->y(), 50.0);
     QTRY_COMPARE(five->x(), 50.0);
     QTRY_COMPARE(five->y(), 50.0);
@@ -597,6 +844,8 @@ void tst_QDeclarativePositioners::test_flow()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/flowtest.qml");
 
+    canvas->rootObject()->setProperty("testRightToLeft", false);
+
     QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
     QVERIFY(one != 0);
     QDeclarativeRectangle *two = canvas->rootObject()->findChild<QDeclarativeRectangle*>("two");
@@ -627,6 +876,95 @@ void tst_QDeclarativePositioners::test_flow()
     delete canvas;
 }
 
+void tst_QDeclarativePositioners::test_flow_rightToLeft()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/flowtest.qml");
+
+    canvas->rootObject()->setProperty("testRightToLeft", true);
+
+    QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
+    QVERIFY(one != 0);
+    QDeclarativeRectangle *two = canvas->rootObject()->findChild<QDeclarativeRectangle*>("two");
+    QVERIFY(two != 0);
+    QDeclarativeRectangle *three = canvas->rootObject()->findChild<QDeclarativeRectangle*>("three");
+    QVERIFY(three != 0);
+    QDeclarativeRectangle *four = canvas->rootObject()->findChild<QDeclarativeRectangle*>("four");
+    QVERIFY(four != 0);
+    QDeclarativeRectangle *five = canvas->rootObject()->findChild<QDeclarativeRectangle*>("five");
+    QVERIFY(five != 0);
+
+    QCOMPARE(one->x(), 40.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 20.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 40.0);
+    QCOMPARE(three->y(), 50.0);
+    QCOMPARE(four->x(), 40.0);
+    QCOMPARE(four->y(), 70.0);
+    QCOMPARE(five->x(), 30.0);
+    QCOMPARE(five->y(), 70.0);
+
+    QDeclarativeItem *flow = canvas->rootObject()->findChild<QDeclarativeItem*>("flow");
+    QVERIFY(flow);
+    QCOMPARE(flow->width(), 90.0);
+    QCOMPARE(flow->height(), 120.0);
+
+    delete canvas;
+}
+
+void tst_QDeclarativePositioners::test_flow_topToBottom()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/flowtest-toptobottom.qml");
+
+    canvas->rootObject()->setProperty("testRightToLeft", false);
+
+    QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
+    QVERIFY(one != 0);
+    QDeclarativeRectangle *two = canvas->rootObject()->findChild<QDeclarativeRectangle*>("two");
+    QVERIFY(two != 0);
+    QDeclarativeRectangle *three = canvas->rootObject()->findChild<QDeclarativeRectangle*>("three");
+    QVERIFY(three != 0);
+    QDeclarativeRectangle *four = canvas->rootObject()->findChild<QDeclarativeRectangle*>("four");
+    QVERIFY(four != 0);
+    QDeclarativeRectangle *five = canvas->rootObject()->findChild<QDeclarativeRectangle*>("five");
+    QVERIFY(five != 0);
+
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 50.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 50.0);
+    QCOMPARE(three->y(), 50.0);
+    QCOMPARE(four->x(), 100.0);
+    QCOMPARE(four->y(), 00.0);
+    QCOMPARE(five->x(), 100.0);
+    QCOMPARE(five->y(), 50.0);
+
+    QDeclarativeItem *flow = canvas->rootObject()->findChild<QDeclarativeItem*>("flow");
+    QVERIFY(flow);
+    QCOMPARE(flow->height(), 90.0);
+    QCOMPARE(flow->width(), 150.0);
+
+    canvas->rootObject()->setProperty("testRightToLeft", true);
+
+    QVERIFY(flow);
+    QCOMPARE(flow->height(), 90.0);
+    QCOMPARE(flow->width(), 150.0);
+
+    QCOMPARE(one->x(), 100.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 80.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 50.0);
+    QCOMPARE(three->y(), 50.0);
+    QCOMPARE(four->x(), 0.0);
+    QCOMPARE(four->y(), 0.0);
+    QCOMPARE(five->x(), 40.0);
+    QCOMPARE(five->y(), 50.0);
+
+    delete canvas;
+}
+
 void tst_QDeclarativePositioners::test_flow_resize()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/flowtest.qml");
@@ -634,6 +972,7 @@ void tst_QDeclarativePositioners::test_flow_resize()
     QDeclarativeItem *root = qobject_cast<QDeclarativeItem*>(canvas->rootObject());
     QVERIFY(root);
     root->setWidth(125);
+    root->setProperty("testRightToLeft", false);
 
     QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
     QVERIFY(one != 0);
@@ -660,6 +999,40 @@ void tst_QDeclarativePositioners::test_flow_resize()
     delete canvas;
 }
 
+void tst_QDeclarativePositioners::test_flow_resize_rightToLeft()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/flowtest.qml");
+
+    QDeclarativeItem *root = qobject_cast<QDeclarativeItem*>(canvas->rootObject());
+    QVERIFY(root);
+    root->setWidth(125);
+    root->setProperty("testRightToLeft", true);
+
+    QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
+    QVERIFY(one != 0);
+    QDeclarativeRectangle *two = canvas->rootObject()->findChild<QDeclarativeRectangle*>("two");
+    QVERIFY(two != 0);
+    QDeclarativeRectangle *three = canvas->rootObject()->findChild<QDeclarativeRectangle*>("three");
+    QVERIFY(three != 0);
+    QDeclarativeRectangle *four = canvas->rootObject()->findChild<QDeclarativeRectangle*>("four");
+    QVERIFY(four != 0);
+    QDeclarativeRectangle *five = canvas->rootObject()->findChild<QDeclarativeRectangle*>("five");
+    QVERIFY(five != 0);
+
+    QCOMPARE(one->x(), 75.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 55.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 5.0);
+    QCOMPARE(three->y(), 0.0);
+    QCOMPARE(four->x(), 75.0);
+    QCOMPARE(four->y(), 50.0);
+    QCOMPARE(five->x(), 65.0);
+    QCOMPARE(five->y(), 50.0);
+
+    delete canvas;
+}
+
 void tst_QDeclarativePositioners::test_flow_implicit_resize()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/flow-testimplicitsize.qml");
@@ -671,15 +1044,20 @@ void tst_QDeclarativePositioners::test_flow_implicit_resize()
     QCOMPARE(flow->width(), 100.0);
     QCOMPARE(flow->height(), 120.0);
 
-    canvas->rootObject()->setProperty("leftToRight", true);
+    canvas->rootObject()->setProperty("flowLayout", 0);
     QCOMPARE(flow->flow(), QDeclarativeFlow::LeftToRight);
     QCOMPARE(flow->width(), 220.0);
     QCOMPARE(flow->height(), 50.0);
 
-    canvas->rootObject()->setProperty("leftToRight", false);
+    canvas->rootObject()->setProperty("flowLayout", 1);
     QCOMPARE(flow->flow(), QDeclarativeFlow::TopToBottom);
     QCOMPARE(flow->width(), 100.0);
     QCOMPARE(flow->height(), 120.0);
+
+    canvas->rootObject()->setProperty("flowLayout", 2);
+    QCOMPARE(flow->layoutDirection(), Qt::RightToLeft);
+    QCOMPARE(flow->width(), 220.0);
+    QCOMPARE(flow->height(), 50.0);
 
     delete canvas;
 }
@@ -694,7 +1072,7 @@ void interceptWarnings(QtMsgType type, const char *msg)
 
 void tst_QDeclarativePositioners::test_conflictinganchors()
 {
-    qInstallMsgHandler(interceptWarnings);
+    QtMsgHandler oldMsgHandler = qInstallMsgHandler(interceptWarnings);
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
 
@@ -775,6 +1153,7 @@ void tst_QDeclarativePositioners::test_conflictinganchors()
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Flow: Cannot specify anchors for items inside Flow"));
+    qInstallMsgHandler(oldMsgHandler);
 }
 
 void tst_QDeclarativePositioners::test_vertical_qgraphicswidget()
@@ -817,6 +1196,49 @@ void tst_QDeclarativePositioners::test_vertical_qgraphicswidget()
     QCOMPARE(three->y(), 0.0);
 
     delete canvas;
+}
+
+void tst_QDeclarativePositioners::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; " + code.toUtf8(), QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; " + code.toUtf8(), QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+}
+
+void tst_QDeclarativePositioners::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("Flow.layoutDirection") << "Flow { layoutDirection: Qt.LeftToRight }"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Flow.layoutDirection\" is not available in QtQuick 1.0.\n";
+
+    QTest::newRow("Row.layoutDirection") << "Row { layoutDirection: Qt.LeftToRight }"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Row.layoutDirection\" is not available in QtQuick 1.0.\n";
+
+    QTest::newRow("Grid.layoutDirection") << "Grid { layoutDirection: Qt.LeftToRight }"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Grid.layoutDirection\" is not available in QtQuick 1.0.\n";
 }
 
 QDeclarativeView *tst_QDeclarativePositioners::createView(const QString &filename)

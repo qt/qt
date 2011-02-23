@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -228,7 +228,7 @@ static QString varMap(const QString &x)
     return ret;
 }
 
-static QStringList split_arg_list(QString params)
+static QStringList split_arg_list(const QString &params)
 {
     int quote = 0;
     QStringList args;
@@ -237,57 +237,57 @@ static QStringList split_arg_list(QString params)
     const ushort RPAREN = ')';
     const ushort SINGLEQUOTE = '\'';
     const ushort DOUBLEQUOTE = '"';
+    const ushort BACKSLASH = '\\';
     const ushort COMMA = ',';
     const ushort SPACE = ' ';
     //const ushort TAB = '\t';
 
-    ushort unicode;
     const QChar *params_data = params.data();
     const int params_len = params.length();
-    int last = 0;
-    while(last < params_len && (params_data[last].unicode() == SPACE
-                                /*|| params_data[last].unicode() == TAB*/))
-        ++last;
-    for(int x = last, parens = 0; x <= params_len; x++) {
-        unicode = params_data[x].unicode();
-        if(x == params_len) {
-            while(x && params_data[x-1].unicode() == SPACE)
-                --x;
-            QString mid(params_data+last, x-last);
-            if(quote) {
-                if(mid[0] == quote && mid[(int)mid.length()-1] == quote)
-                    mid = mid.mid(1, mid.length()-2);
-                quote = 0;
+    for(int last = 0; ;) {
+        while(last < params_len && (params_data[last].unicode() == SPACE
+                                    /*|| params_data[last].unicode() == TAB*/))
+            ++last;
+        for(int x = last, parens = 0; ; x++) {
+            if(x == params_len) {
+                while(x > last && params_data[x-1].unicode() == SPACE)
+                    --x;
+                args << params.mid(last, x - last);
+                // Could do a check for unmatched parens here, but split_value_list()
+                // is called on all our output, so mistakes will be caught anyway.
+                return args;
             }
-            args << mid;
-            break;
-        }
-        if(unicode == LPAREN) {
-            --parens;
-        } else if(unicode == RPAREN) {
-            ++parens;
-        } else if(quote && unicode == quote) {
-            quote = 0;
-        } else if(!quote && (unicode == SINGLEQUOTE || unicode == DOUBLEQUOTE)) {
-            quote = unicode;
-        }
-        if(!parens && !quote && unicode == COMMA) {
-            QString mid = params.mid(last, x - last).trimmed();
-            args << mid;
-            last = x+1;
-            while(last < params_len && (params_data[last].unicode() == SPACE
-                                        /*|| params_data[last].unicode() == TAB*/))
-                ++last;
+            ushort unicode = params_data[x].unicode();
+            if(x != (int)params_len-1 && unicode == BACKSLASH &&
+                (params_data[x+1].unicode() == SINGLEQUOTE || params_data[x+1].unicode() == DOUBLEQUOTE)) {
+                x++; //get that 'escape'
+            } else if(quote && unicode == quote) {
+                quote = 0;
+            } else if(!quote && (unicode == SINGLEQUOTE || unicode == DOUBLEQUOTE)) {
+                quote = unicode;
+            } else if(unicode == RPAREN) {
+                --parens;
+            } else if(unicode == LPAREN) {
+                ++parens;
+            }
+            if(!parens && !quote && unicode == COMMA) {
+                int prev = last;
+                last = x+1;
+                while(x > prev && params_data[x-1].unicode() == SPACE)
+                    --x;
+                args << params.mid(prev, x - prev);
+                break;
+            }
         }
     }
-    return args;
 }
 
 static QStringList split_value_list(const QString &vals)
 {
     QString build;
     QStringList ret;
-    QStack<char> quote;
+    ushort quote = 0;
+    int parens = 0;
 
     const ushort LPAREN = '(';
     const ushort RPAREN = ')';
@@ -298,22 +298,22 @@ static QStringList split_value_list(const QString &vals)
     ushort unicode;
     const QChar *vals_data = vals.data();
     const int vals_len = vals.length();
-    for(int x = 0, parens = 0; x < vals_len; x++) {
+    for(int x = 0; x < vals_len; x++) {
         unicode = vals_data[x].unicode();
         if(x != (int)vals_len-1 && unicode == BACKSLASH &&
             (vals_data[x+1].unicode() == SINGLEQUOTE || vals_data[x+1].unicode() == DOUBLEQUOTE)) {
             build += vals_data[x++]; //get that 'escape'
-        } else if(!quote.isEmpty() && unicode == quote.top()) {
-            quote.pop();
-        } else if(unicode == SINGLEQUOTE || unicode == DOUBLEQUOTE) {
-            quote.push(unicode);
+        } else if(quote && unicode == quote) {
+            quote = 0;
+        } else if(!quote && (unicode == SINGLEQUOTE || unicode == DOUBLEQUOTE)) {
+            quote = unicode;
         } else if(unicode == RPAREN) {
             --parens;
         } else if(unicode == LPAREN) {
             ++parens;
         }
 
-        if(!parens && quote.isEmpty() && (vals_data[x] == Option::field_sep)) {
+        if(!parens && !quote && (vals_data[x] == Option::field_sep)) {
             ret << build;
             build.clear();
         } else {
@@ -322,6 +322,11 @@ static QStringList split_value_list(const QString &vals)
     }
     if(!build.isEmpty())
         ret << build;
+    if (parens)
+        warn_msg(WarnDeprecated, "%s:%d: Unmatched parentheses are deprecated.",
+                 parser.file.toLatin1().constData(), parser.line_no);
+    // Could do a check for unmatched quotes here, but doVariableReplaceExpand()
+    // is called on all our output, so mistakes will be caught anyway.
     return ret;
 }
 
@@ -1642,6 +1647,7 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
     if(flags & IncludeFlagFeature) {
         if(!file.endsWith(Option::prf_ext))
             file += Option::prf_ext;
+        validateModes(); // init dir_sep
         if(file.indexOf(Option::dir_sep) == -1 || !QFile::exists(file)) {
             static QStringList *feature_roots = 0;
             if(!feature_roots) {
@@ -1680,10 +1686,10 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
             }
             if(format == UnknownFormat)
                 return IncludeNoExist;
-            if(place["QMAKE_INTERNAL_INCLUDED_FEATURES"].indexOf(file) != -1)
-                return IncludeFeatureAlreadyLoaded;
-            place["QMAKE_INTERNAL_INCLUDED_FEATURES"].append(file);
         }
+        if(place["QMAKE_INTERNAL_INCLUDED_FEATURES"].indexOf(file) != -1)
+            return IncludeFeatureAlreadyLoaded;
+        place["QMAKE_INTERNAL_INCLUDED_FEATURES"].append(file);
     }
     if(QDir::isRelativePath(file)) {
         QStringList include_roots;
@@ -2965,6 +2971,9 @@ QMakeProject::doVariableReplaceExpand(const QString &str, QMap<QString, QStringL
     else if(!current.isEmpty())
         ret.append(current);
     //qDebug() << "REPLACE" << str << ret;
+    if (quote)
+        warn_msg(WarnDeprecated, "%s:%d: Unmatched quotes are deprecated.",
+                 parser.file.toLatin1().constData(), parser.line_no);
     return ret;
 }
 
@@ -2988,6 +2997,7 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
         var = ".BUILTIN." + var;
         place[var] = QStringList(qmake_getpwd());
     } else if(var == QLatin1String("DIR_SEPARATOR")) {
+        validateModes();
         var = ".BUILTIN." + var;
         place[var] =  QStringList(Option::dir_sep);
     } else if(var == QLatin1String("DIRLIST_SEPARATOR")) {

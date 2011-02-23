@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -335,7 +335,7 @@ class QMutableSetIterator
     typedef typename QSet<T>::iterator iterator;
     QSet<T> *c;
     iterator i, n;
-    inline bool item_exists() const { return n != c->constEnd(); }
+    inline bool item_exists() const { return c->constEnd() != n; }
 
 public:
     inline QMutableSetIterator(QSet<T> &container)

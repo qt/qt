@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -118,6 +118,9 @@ public:
 #endif // QT_MAC_USE_COCOA
 
 private:
+#if defined(Q_WS_X11) && !defined(QT_NO_MITSHM)
+    void syncX();
+#endif
     void prepareBuffer(QImage::Format format, QWidget *widget);
     Q_DECLARE_PRIVATE(QRasterWindowSurface)
     QScopedPointer<QRasterWindowSurfacePrivate> d_ptr;

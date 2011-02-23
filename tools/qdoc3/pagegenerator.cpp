@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,6 +46,7 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qdebug.h>
+#include "codemarker.h"
 #include "pagegenerator.h"
 #include "tree.h"
 
@@ -55,6 +56,7 @@ QT_BEGIN_NAMESPACE
   Nothing to do in the constructor.
  */
 PageGenerator::PageGenerator()
+    : outputCodec(0)
 {
     // nothing.
 }
@@ -175,9 +177,9 @@ bool PageGenerator::parseArg(const QString& src,
 /*!
   This function is recursive.
  */
-void PageGenerator::generateTree(const Tree *tree, CodeMarker *marker)
+void PageGenerator::generateTree(const Tree *tree)
 {
-    generateInnerNode(tree->root(), marker);
+    generateInnerNode(tree->root());
 }
 
 QString PageGenerator::fileBase(const Node *node) const
@@ -204,15 +206,15 @@ QString PageGenerator::fileBase(const Node *node) const
 #ifdef QDOC_QML
         /*
           To avoid file name conflicts in the html directory,
-          we prepend "qml-" to the file name of QML element doc
-          files.
+          we prepend a prefix (by default, "qml-") to the file name of QML
+          element doc files.
          */
         if ((p->subType() == Node::QmlClass) ||
             (p->subType() == Node::QmlBasicType)) {
             if (!base.startsWith(QLatin1String("QML:")))
-                base.prepend("qml-");
+                base.prepend(outputPrefix(QLatin1String("QML")));
         }
-#endif        
+#endif
         if (!pp || pp->name().isEmpty() || pp->type() == Node::Fake)
             break;
         base.prepend(QLatin1Char('-'));
@@ -257,7 +259,12 @@ QString PageGenerator::fileBase(const Node *node) const
     return res;
 }
 
-QString PageGenerator::fileName(const Node *node) const
+/*!
+  If the \a node has a URL, return the URL as the file name.
+  Otherwise, construct the file name from the fileBase() and
+  the fileExtension(), and return the constructed name.
+ */
+QString PageGenerator::fileName(const Node* node) const
 {
     if (!node->url().isEmpty())
         return node->url();
@@ -268,23 +275,37 @@ QString PageGenerator::fileName(const Node *node) const
     return name;
 }
 
+/*!
+  Return the current output file name.
+ */
 QString PageGenerator::outFileName()
 {
-    return QFileInfo(static_cast<QFile *>(out().device())->fileName()).fileName();
+    return QFileInfo(static_cast<QFile*>(out().device())->fileName()).fileName();
 }
 
+/*!
+  Creates the file named \a fileName in the output directory.
+  Attaches a QTextStream to the created file, which is written
+  to all over the place using out().
+ */
 void PageGenerator::beginSubPage(const Location& location,
                                  const QString& fileName)
 {
-    QFile *outFile = new QFile(outputDir() + "/" + fileName);
+    QFile* outFile = new QFile(outputDir() + "/" + fileName);
     if (!outFile->open(QFile::WriteOnly))
-	location.fatal(tr("Cannot open output file '%1'")
-			.arg(outFile->fileName()));
-    QTextStream *out = new QTextStream(outFile);
-    out->setCodec(outputCodec);
+	location.fatal(tr("Cannot open output file '%1'").arg(outFile->fileName()));
+    QTextStream* out = new QTextStream(outFile);
+
+    if (outputCodec)
+        out->setCodec(outputCodec);
     outStreamStack.push(out);
 }
 
+/*!
+  Flush the text stream associated with the subpage, and
+  then pop it off the text stream stack and delete it.
+  This terminates output of the subpage.
+ */
 void PageGenerator::endSubPage()
 {
     outStreamStack.top()->flush();
@@ -292,16 +313,21 @@ void PageGenerator::endSubPage()
     delete outStreamStack.pop();
 }
 
+/*!
+  Used for writing to the current output stream. Returns a
+  reference to the crrent output stream, which is then used
+  with the \c {<<} operator for writing.
+ */
 QTextStream &PageGenerator::out()
 {
     return *outStreamStack.top();
 }
 
 /*!
-  Recursive writing of html files from the root \a node.
+  Recursive writing of HTML files from the root \a node.
  */
 void
-PageGenerator::generateInnerNode(const InnerNode* node, CodeMarker* marker)
+PageGenerator::generateInnerNode(const InnerNode* node)
 {
     if (!node->url().isNull())
         return;
@@ -320,6 +346,11 @@ PageGenerator::generateInnerNode(const InnerNode* node, CodeMarker* marker)
         }
     }
 
+    /*
+      Obtain a code marker for the source file.
+     */
+    CodeMarker *marker = CodeMarker::markerForFileName(node->location().filePath());
+
     if (node->parent() != 0) {
 	beginSubPage(node->location(), fileName(node));
 	if (node->type() == Node::Namespace || node->type() == Node::Class) {
@@ -334,7 +365,7 @@ PageGenerator::generateInnerNode(const InnerNode* node, CodeMarker* marker)
     NodeList::ConstIterator c = node->childNodes().begin();
     while (c != node->childNodes().end()) {
 	if ((*c)->isInnerNode() && (*c)->access() != Node::Private)
-	    generateInnerNode((const InnerNode *) *c, marker);
+	    generateInnerNode((const InnerNode *) *c);
 	++c;
     }
 }

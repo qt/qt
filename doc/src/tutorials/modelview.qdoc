@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -104,7 +104,7 @@
     array of the data elements that the user can change. The table widget can be
     integrated into a program flow by reading and writing the data elements that
     the table widget provides. 
-    
+
     This method is very intuitive and useful in many applications, but displaying 
     and editing a database table with a standard table widget can be problematic.
     Two copies of the data have to be coordinated: one outside the
@@ -156,7 +156,7 @@
             \o
             \o  \l QColumnView shows a tree as a hierarchy of lists
         \row
-            \o  \inlineimage combobox.png
+            \o  \inlineimage modelview-combobox.png
             \o {2, 1} \l QComboBox can work as both a view class and also
                       as a traditional widget
     \endtable
@@ -348,7 +348,7 @@
     \section2 2.4 Setting up Headers for Columns and Rows
 
     Headers can be hidden via a view method: \c{tableView->verticalHeader()->hide();}
-    \image header.png
+    \image modelview-header.png
 
     The header content, however, is set via the model, so we reimplement the
     \l{QAbstractItemModel::headerData()}{headerData()} method:

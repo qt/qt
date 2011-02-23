@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -272,7 +272,7 @@ static void qInit(QSqlQuery *q, const QString& query, QSqlDatabase db)
 
 /*!
     Constructs a QSqlQuery object using the SQL \a query and the
-    database \a db. If \a db is not specified, the application's
+    database \a db. If \a db is not specified, or is invalid, the application's
     default database is used. If \a query is not an empty string, it
     will be executed.
 
@@ -286,6 +286,7 @@ QSqlQuery::QSqlQuery(const QString& query, QSqlDatabase db)
 
 /*!
     Constructs a QSqlQuery object using the database \a db.
+    If \a db is invalid, the application's default database will be used.
 
     \sa QSqlDatabase
 */

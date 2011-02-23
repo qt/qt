@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -541,10 +541,13 @@ void QLineControl::draw(QPainter *painter, const QPoint &offset, const QRect &cl
 */
 void QLineControl::selectWordAtPos(int cursor)
 {
-    int c = m_textLayout.previousCursorPosition(cursor, QTextLayout::SkipWords);
+    int next = cursor + 1;
+    if(next > end())
+        --next;
+    int c = m_textLayout.previousCursorPosition(next, QTextLayout::SkipWords);
     moveCursor(c, false);
     // ## text layout should support end of words.
-    int end = m_textLayout.nextCursorPosition(cursor, QTextLayout::SkipWords);
+    int end = m_textLayout.nextCursorPosition(c, QTextLayout::SkipWords);
     while (end > cursor && m_text[end-1].isSpace())
         --end;
     moveCursor(end, true);

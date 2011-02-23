@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,6 +66,12 @@ public:
 
     enum Status { Null, Ready, Error, Loading };
 
+    enum Option {
+        Asynchronous = 0x00000001,
+        Cache        = 0x00000002
+    };
+    Q_DECLARE_FLAGS(Options, Option)
+
     bool isNull() const;
     bool isReady() const;
     bool isError() const;
@@ -85,9 +91,9 @@ public:
     inline operator const QPixmap &() const;
 
     void load(QDeclarativeEngine *, const QUrl &);
-    void load(QDeclarativeEngine *, const QUrl &, bool);
+    void load(QDeclarativeEngine *, const QUrl &, QDeclarativePixmap::Options options);
     void load(QDeclarativeEngine *, const QUrl &, const QSize &);
-    void load(QDeclarativeEngine *, const QUrl &, const QSize &, bool);
+    void load(QDeclarativeEngine *, const QUrl &, const QSize &, QDeclarativePixmap::Options options);
 
     void clear();
     void clear(QObject *);
@@ -106,6 +112,8 @@ inline QDeclarativePixmap::operator const QPixmap &() const
 {
     return pixmap();
 }
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativePixmap::Options)
 
 QT_END_NAMESPACE
 

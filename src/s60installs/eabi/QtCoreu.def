@@ -3801,4 +3801,9 @@ EXPORTS
 	_ZN5QFile4openEP7__sFILE6QFlagsIN9QIODevice12OpenModeFlagEES2_INS_14FileHandleFlagEE @ 3800 NONAME
 	_ZN5QFile4openERK5RFile6QFlagsIN9QIODevice12OpenModeFlagEES3_INS_14FileHandleFlagEE @ 3801 NONAME
 	_ZN5QFile4openEi6QFlagsIN9QIODevice12OpenModeFlagEES0_INS_14FileHandleFlagEE @ 3802 NONAME
+	_ZN23QCoreApplicationPrivate18symbianCommandLineEv @ 3803 NONAME
+	_ZNK16QXmlStreamWriter8hasErrorEv @ 3804 NONAME
+	_ZNK13QElapsedTimer12nsecsElapsedEv @ 3805 NONAME
+	_ZNK11QMetaMethod8revisionEv @ 3806 NONAME
+	_ZNK13QMetaProperty8revisionEv @ 3807 NONAME
 

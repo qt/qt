@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -136,7 +136,7 @@ QVariant QDeclarativeStringConverters::variantFromString(const QString &s, int p
 
 QColor QDeclarativeStringConverters::colorFromString(const QString &s, bool *ok)
 {
-    if (s.startsWith(QLatin1Char('#')) && s.length() == 9) {
+    if (s.length() == 9 && s.startsWith(QLatin1Char('#'))) {
         uchar a = fromHex(s, 1);
         uchar r = fromHex(s, 3);
         uchar g = fromHex(s, 5);
@@ -144,9 +144,7 @@ QColor QDeclarativeStringConverters::colorFromString(const QString &s, bool *ok)
         if (ok) *ok = true;
         return QColor(r, g, b, a);
     } else {
-        QColor rv;
-        if (s.startsWith(QLatin1Char('#')) || QColor::colorNames().contains(s.toLower()))
-            rv = QColor(s);
+        QColor rv(s);
         if (ok) *ok = rv.isValid();
         return rv;
     }

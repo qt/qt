@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,6 +59,7 @@ class QDeclarativeEngine;
 class QDeclarativeContext;
 class QDeclarativeExpressionPrivate;
 class QDeclarativeContextData;
+class QScriptValue;
 class Q_DECLARATIVE_EXPORT QDeclarativeExpression : public QObject
 {
     Q_OBJECT
@@ -93,6 +94,8 @@ Q_SIGNALS:
 
 protected:
     QDeclarativeExpression(QDeclarativeContextData *, QObject *, const QString &,
+                           QDeclarativeExpressionPrivate &dd);
+    QDeclarativeExpression(QDeclarativeContextData *, QObject *, const QScriptValue &,
                            QDeclarativeExpressionPrivate &dd);
     QDeclarativeExpression(QDeclarativeContextData *, void *, QDeclarativeRefCount *rc, 
                            QObject *me, const QString &, int, QDeclarativeExpressionPrivate &dd);

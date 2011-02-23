@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,6 +42,7 @@
 #include <QDebug>
 #include <private/qpixmap_raster_p.h>
 #include <private/qwindowsurface_gl_p.h>
+#include <private/qwindowsurface_raster_p.h>
 #include <private/qegl_p.h>
 #include <private/qglextensions_p.h>
 #include <private/qgl_p.h>
@@ -75,7 +76,12 @@ QMeeGoGraphicsSystem::~QMeeGoGraphicsSystem()
 
 QWindowSurface* QMeeGoGraphicsSystem::createWindowSurface(QWidget *widget) const
 {
-    QGLShareContextScope ctx(qt_gl_share_widget()->context());
+    QGLWidget *shareWidget = qt_gl_share_widget();
+
+    if (!shareWidget)
+        return new QRasterWindowSurface(widget);
+
+    QGLShareContextScope ctx(shareWidget->context());
 
     QMeeGoGraphicsSystem::surfaceWasCreated = true;
     QWindowSurface *surface = new QGLWindowSurface(widget);

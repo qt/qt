@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -444,6 +444,7 @@ static QVector<Atom> getNetWmState(QWidget *w)
         && actualType == XA_ATOM && actualFormat == 32) {
         returnValue.resize(bytesLeft / 4);
         XFree((char*) propertyData);
+        propertyData = 0;
 
         // fetch all data
         if (XGetWindowProperty(X11->display, w->internalWinId(), ATOM(_NET_WM_STATE), 0,
@@ -458,7 +459,8 @@ static QVector<Atom> getNetWmState(QWidget *w)
         if (!returnValue.isEmpty()) {
             memcpy(returnValue.data(), propertyData, returnValue.size() * sizeof(Atom));
         }
-        XFree((char*) propertyData);
+        if (propertyData)
+            XFree((char*) propertyData);
     }
 
     return returnValue;
@@ -1289,39 +1291,49 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
 #endif
 }
 
-
-QPoint QWidget::mapToGlobal(const QPoint &pos) const
+QPoint QWidgetPrivate::mapToGlobal(const QPoint &pos) const
 {
-    Q_D(const QWidget);
-    if (!testAttribute(Qt::WA_WState_Created) || !internalWinId()) {
-        QPoint p = pos + data->crect.topLeft();
+    Q_Q(const QWidget);
+    if (!q->testAttribute(Qt::WA_WState_Created) || !q->internalWinId()) {
+        QPoint p = pos + q->data->crect.topLeft();
         //cannot trust that !isWindow() implies parentWidget() before create
-        return (isWindow() || !parentWidget()) ?  p : parentWidget()->mapToGlobal(p);
+        return (q->isWindow() || !q->parentWidget()) ?  p : q->parentWidget()->d_func()->mapToGlobal(p);
     }
-    int           x, y;
+    int x, y;
     Window child;
-    QPoint p = d->mapToWS(pos);
-    XTranslateCoordinates(X11->display, internalWinId(),
-                          QApplication::desktop()->screen(d->xinfo.screen())->internalWinId(),
+    QPoint p = mapToWS(pos);
+    XTranslateCoordinates(X11->display, q->internalWinId(),
+                          QApplication::desktop()->screen(xinfo.screen())->internalWinId(),
                           p.x(), p.y(), &x, &y, &child);
     return QPoint(x, y);
 }
 
+QPoint QWidgetPrivate::mapFromGlobal(const QPoint &pos) const
+{
+    Q_Q(const QWidget);
+    if (!q->testAttribute(Qt::WA_WState_Created) || !q->internalWinId()) {
+        //cannot trust that !isWindow() implies parentWidget() before create
+        QPoint p = (q->isWindow() || !q->parentWidget()) ?  pos : q->parentWidget()->d_func()->mapFromGlobal(pos);
+        return p - q->data->crect.topLeft();
+    }
+    int x, y;
+    Window child;
+    XTranslateCoordinates(X11->display,
+                          QApplication::desktop()->screen(xinfo.screen())->internalWinId(),
+                          q->internalWinId(), pos.x(), pos.y(), &x, &y, &child);
+    return mapFromWS(QPoint(x, y));
+}
+
+QPoint QWidget::mapToGlobal(const QPoint &pos) const
+{
+    Q_D(const QWidget);
+    return d->mapToGlobal(pos);
+}
 
 QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 {
     Q_D(const QWidget);
-    if (!testAttribute(Qt::WA_WState_Created) || !internalWinId()) {
-        //cannot trust that !isWindow() implies parentWidget() before create
-        QPoint p = (isWindow() || !parentWidget()) ?  pos : parentWidget()->mapFromGlobal(pos);
-        return p - data->crect.topLeft();
-    }
-    int           x, y;
-    Window child;
-    XTranslateCoordinates(X11->display,
-                          QApplication::desktop()->screen(d->xinfo.screen())->internalWinId(),
-                          internalWinId(), pos.x(), pos.y(), &x, &y, &child);
-    return d->mapFromWS(QPoint(x, y));
+    return d->mapFromGlobal(pos);
 }
 
 void QWidgetPrivate::updateSystemBackground()

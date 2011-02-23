@@ -1,6 +1,6 @@
 # /****************************************************************************
 # **
-# ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+# ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 # ** Contact: Nokia Corporation (qt-info@nokia.com)
 # **
 # ** This file is part of symbian-sbsv2 mkspec.
@@ -17,6 +17,8 @@ POST_LINK_DEP:=$(EPOCROOT)/epoc32/release/$(PLATFORM_PATH)/$(CFG_PATH)/$(LINK_TA
 define command_fixer
 	THE_COMMAND:=$(POST_LINK_CMD)
 endef
+
+all_qmake_emulator_deployment_dependencies:: $(POST_LINK_TARGET)
 
 define qmake_post_link
 $(ALLTARGET):: $(POST_LINK_TARGET)

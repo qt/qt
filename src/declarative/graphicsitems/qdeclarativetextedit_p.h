@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,7 +43,7 @@
 #define QDECLARATIVETEXTEDIT_H
 
 #include "private/qdeclarativetext_p.h"
-#include "private/qdeclarativepainteditem_p.h"
+#include "private/qdeclarativeimplicitsizeitem_p.h"
 
 #include <QtGui/qtextdocument.h>
 #include <QtGui/qtextoption.h>
@@ -58,13 +58,14 @@ QT_MODULE(Declarative)
 
 
 class QDeclarativeTextEditPrivate;
-class Q_AUTOTEST_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
+class Q_AUTOTEST_EXPORT QDeclarativeTextEdit : public QDeclarativeImplicitSizePaintedItem
 {
     Q_OBJECT
     Q_ENUMS(VAlignment)
     Q_ENUMS(HAlignment)
     Q_ENUMS(TextFormat)
     Q_ENUMS(WrapMode)
+    Q_ENUMS(SelectionMode)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
@@ -74,6 +75,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
     Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign NOTIFY horizontalAlignmentChanged)
     Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign NOTIFY verticalAlignmentChanged)
     Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
+    Q_PROPERTY(int lineCount READ lineCount NOTIFY lineCountChanged REVISION 1)
     Q_PROPERTY(qreal paintedWidth READ paintedWidth NOTIFY paintedSizeChanged)
     Q_PROPERTY(qreal paintedHeight READ paintedHeight NOTIFY paintedSizeChanged)
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat NOTIFY textFormatChanged)
@@ -90,6 +92,8 @@ class Q_AUTOTEST_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
     Q_PROPERTY(qreal textMargin READ textMargin WRITE setTextMargin NOTIFY textMarginChanged)
     Q_PROPERTY(Qt::InputMethodHints inputMethodHints READ inputMethodHints WRITE setInputMethodHints)
     Q_PROPERTY(bool selectByMouse READ selectByMouse WRITE setSelectByMouse NOTIFY selectByMouseChanged)
+    Q_PROPERTY(SelectionMode mouseSelectionMode READ mouseSelectionMode WRITE setMouseSelectionMode NOTIFY mouseSelectionModeChanged REVISION 1)
+    Q_PROPERTY(bool canPaste READ canPaste NOTIFY canPasteChanged REVISION 1)
 
 public:
     QDeclarativeTextEdit(QDeclarativeItem *parent=0);
@@ -97,7 +101,8 @@ public:
     enum HAlignment {
         AlignLeft = Qt::AlignLeft,
         AlignRight = Qt::AlignRight,
-        AlignHCenter = Qt::AlignHCenter
+        AlignHCenter = Qt::AlignHCenter,
+        AlignJustify = Qt::AlignJustify // ### VERSIONING: Only in QtQuick 1.1
     };
 
     enum VAlignment {
@@ -118,6 +123,11 @@ public:
                     WrapAtWordBoundaryOrAnywhere = QTextOption::WrapAtWordBoundaryOrAnywhere, // COMPAT
                     Wrap = QTextOption::WrapAtWordBoundaryOrAnywhere
                   };
+
+    enum SelectionMode {
+        SelectCharacters,
+        SelectWords
+    };
 
     Q_INVOKABLE void openSoftwareInputPanel();
     Q_INVOKABLE void closeSoftwareInputPanel();
@@ -149,6 +159,8 @@ public:
     WrapMode wrapMode() const;
     void setWrapMode(WrapMode w);
 
+    int lineCount() const;
+
     bool isCursorVisible() const;
     void setCursorVisible(bool on);
 
@@ -175,6 +187,11 @@ public:
     bool selectByMouse() const;
     void setSelectByMouse(bool);
 
+    SelectionMode mouseSelectionMode() const;
+    void setMouseSelectionMode(SelectionMode mode);
+
+    bool canPaste() const;
+
     virtual void componentComplete();
 
     /* FROM EDIT */
@@ -194,6 +211,7 @@ public:
     Q_INVOKABLE QRectF positionToRectangle(int) const;
     Q_INVOKABLE int positionAt(int x, int y) const;
     Q_INVOKABLE void moveCursorSelection(int pos);
+    Q_INVOKABLE Q_REVISION(1) void moveCursorSelection(int pos, SelectionMode mode);
 
     QRectF boundingRect() const;
 
@@ -212,6 +230,7 @@ Q_SIGNALS:
     void horizontalAlignmentChanged(HAlignment alignment);
     void verticalAlignmentChanged(VAlignment alignment);
     void wrapModeChanged();
+    void lineCountChanged();
     void textFormatChanged(TextFormat textFormat);
     void readOnlyChanged(bool isReadOnly);
     void cursorVisibleChanged(bool isCursorVisible);
@@ -220,11 +239,15 @@ Q_SIGNALS:
     void persistentSelectionChanged(bool isPersistentSelection);
     void textMarginChanged(qreal textMargin);
     void selectByMouseChanged(bool selectByMouse);
+    Q_REVISION(1) void mouseSelectionModeChanged(SelectionMode mode);
+    Q_REVISION(1) void linkActivated(const QString &link);
+    Q_REVISION(1) void canPasteChanged();
 
 public Q_SLOTS:
     void selectAll();
     void selectWord();
     void select(int start, int end);
+    Q_REVISION(1) void deselect();
 #ifndef QT_NO_CLIPBOARD
     void cut();
     void copy();
@@ -237,9 +260,11 @@ private Q_SLOTS:
     void updateSelectionMarkers();
     void moveCursorDelegate();
     void loadCursorDelegate();
+    void q_canPasteChanged();
 
 private:
     void updateSize();
+    void updateTotalLines();
 
 protected:
     virtual void geometryChanged(const QRectF &newGeometry, 

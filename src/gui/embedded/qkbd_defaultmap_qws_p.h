@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -649,6 +649,7 @@ const QWSKeyboard::Mapping QWSKbPrivate::s_keymap_default[] = {
     { 119, 0xffff, 0x01000008, 0x00, 0x00, 0x0000 },
     { 138, 0xffff, 0x01000058, 0x00, 0x00, 0x0000 },
     { 139, 0xffff, 0x01000055, 0x00, 0x00, 0x0000 },
+    { 152, 0xffff, 0x010000ba, 0x00, 0x00, 0x0000 },
 
 };
 

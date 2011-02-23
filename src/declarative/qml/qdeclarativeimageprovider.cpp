@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -75,6 +75,16 @@ public:
     invokes the appropriate image provider according to the providers that have
     been registered through QDeclarativeEngine::addImageProvider().
 
+    Note that the identifiers are case-insensitive, but the rest of the URL will be passed on with
+    preserved case. For example, the below snippet would still specify that the image is loaded by the
+    image provider named "myimageprovider", but it would request a different image than the above snippet
+    ("Image.png" instead of "image.png").
+    \qml
+    Image { source: "image://MyImageProvider/Image.png" }
+    \endqml
+
+    If you want the rest of the URL to be case insensitive, you will have to take care
+    of that yourself inside your image provider.
 
     \section2 An example
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,19 +52,9 @@
 
 #include "codemarker.h"
 #include "config.h"
-#include "dcfsection.h"
 #include "pagegenerator.h"
 
 QT_BEGIN_NAMESPACE
-
-#if 0
-struct NavigationBar
-{
-    SectionIterator prev;
-    SectionIterator current;
-    SectionIterator next;
-};
-#endif
 
 typedef QMultiMap<QString, Node*> NodeMultiMap;
 typedef QMap<QString, NodeMultiMap> NewSinceMaps;
@@ -95,10 +85,6 @@ class HtmlGenerator : public PageGenerator
         LastSinceType
     };
 
-    enum Application {
-        Online,
-        Creator};
-
  public:
     HtmlGenerator();
     ~HtmlGenerator();
@@ -106,12 +92,13 @@ class HtmlGenerator : public PageGenerator
     virtual void initializeGenerator(const Config& config);
     virtual void terminateGenerator();
     virtual QString format();
-    virtual void generateTree(const Tree *tree, CodeMarker *marker);
+    virtual void generateTree(const Tree *tree);
 
     QString protectEnc(const QString &string);
     static QString protect(const QString &string, const QString &encoding = "ISO-8859-1");
     static QString cleanRef(const QString& ref);
     static QString sinceTitle(int i) { return sinceTitles[i]; }
+    static QString fullDocumentLocation(const Node *node);
 
  protected:
     virtual void startText(const Node *relative, CodeMarker *marker);
@@ -155,16 +142,6 @@ class HtmlGenerator : public PageGenerator
                        CodeMarker *marker,
                        const Node *relative = 0);
     void generateIncludes(const InnerNode *inner, CodeMarker *marker);
-#if 0
-    void generateNavigationBar(const NavigationBar& bar, 
-                               const Node *node,
-                               CodeMarker *marker);
-#endif
-    void generateTableOfContents(const Node *node, 
-                                 CodeMarker *marker,
-                                 Doc::SectioningUnit sectioningUnit,
-                                 int numColumns, 
-                                 const Node *relative = 0);
     void generateTableOfContents(const Node *node, 
                                  CodeMarker *marker, 
                                  QList<Section>* sections = 0);
@@ -242,9 +219,6 @@ class HtmlGenerator : public PageGenerator
     
     QString registerRef(const QString& ref);
     virtual QString fileBase(const Node *node) const;
-#if 0
-    QString fileBase(const Node *node, const SectionIterator& section);
-#endif
     QString fileName(const Node *node);
     void findAllClasses(const InnerNode *node);
     void findAllFunctions(const InnerNode *node);
@@ -257,9 +231,6 @@ class HtmlGenerator : public PageGenerator
                             const Node *relative, 
                             CodeMarker *marker, 
                             const Node** node);
-    virtual void generateDcf(const QString &fileBase, 
-                             const QString &startPage,
-                             const QString &title, DcfSection &dcfRoot);
     virtual void generateIndex(const QString &fileBase, 
                                const QString &url,
                                const QString &title);
@@ -277,22 +248,11 @@ class HtmlGenerator : public PageGenerator
     void generatePageElements(QXmlStreamWriter& writer, 
                               const Node* node, 
                               CodeMarker* marker) const;
-    void generatePageIndex(const QString& fileName, 
-                           CodeMarker* marker) const;
+    void generatePageIndex(const QString& fileName) const;
     void generateExtractionMark(const Node *node, ExtractionMarkType markType);
 
-#if 0
-    NavigationBar currentNavigationBar;
-#endif
     QMap<QString, QString> refMap;
     int codeIndent;
-    DcfSection dcfClassesRoot;
-    DcfSection dcfOverviewsRoot;
-    DcfSection dcfExamplesRoot;
-    DcfSection dcfDesignerRoot;
-    DcfSection dcfLinguistRoot;
-    DcfSection dcfAssistantRoot;
-    DcfSection dcfQmakeRoot;
     HelpProjectWriter *helpProjectWriter;
     bool inLink;
     bool inObsoleteLink;
@@ -301,15 +261,15 @@ class HtmlGenerator : public PageGenerator
     bool inTableHeader;
     int numTableRows;
     bool threeColumnEnumValueTable;
-    Application application;
     QString link;
     QStringList sectionNumber;
     QRegExp funcLeftParen;
     QString style;
+    QString headerScripts;
+    QString headerStyles;
+    QString endHeader;
     QString postHeader;
     QString postPostHeader;
-    QString creatorPostHeader;
-    QString creatorPostPostHeader;
     QString footer;
     QString address;
     bool pleaseGenerateMacRef;
@@ -320,7 +280,6 @@ class HtmlGenerator : public PageGenerator
     QStringList stylesheets;
     QStringList customHeadElements;
     const Tree *myTree;
-    bool slow;
     bool obsoleteLinks;
     QMap<QString, NodeMap > moduleClassMap;
     QMap<QString, NodeMap > moduleNamespaceMap;
@@ -348,11 +307,6 @@ class HtmlGenerator : public PageGenerator
 #define HTMLGENERATOR_GENERATEMACREFS   "generatemacrefs" // ### document me
 #define HTMLGENERATOR_POSTHEADER        "postheader"
 #define HTMLGENERATOR_POSTPOSTHEADER    "postpostheader"
-#define HTMLGENERATOR_CREATORPOSTHEADER        "postheader"
-#define HTMLGENERATOR_CREATORPOSTPOSTHEADER    "postpostheader"
-#define HTMLGENERATOR_STYLE             "style"
-#define HTMLGENERATOR_STYLESHEETS       "stylesheets"
-#define HTMLGENERATOR_CUSTOMHEADELEMENTS "customheadelements"
 
 QT_END_NAMESPACE
 

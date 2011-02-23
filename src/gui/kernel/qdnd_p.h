@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -76,7 +76,7 @@ class QEventLoop;
 
 #if !(defined(QT_NO_DRAGANDDROP) && defined(QT_NO_CLIPBOARD))
 
-class QInternalMimeData : public QMimeData
+class Q_GUI_EXPORT QInternalMimeData : public QMimeData
 {
     Q_OBJECT
 public:

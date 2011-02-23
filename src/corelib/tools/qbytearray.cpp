@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -492,7 +492,7 @@ QByteArray qCompress(const uchar* data, int nbytes, int compressionLevel)
 #endif
 
 /*!
-    \fn QByteArray qUncompress(const QByteArray& data)
+    \fn QByteArray qUncompress(const QByteArray &data)
 
     \relates QByteArray
 
@@ -506,10 +506,10 @@ QByteArray qCompress(const uchar* data, int nbytes, int compressionLevel)
     feature was added.
 
     \bold{Note:} If you want to use this function to uncompress external
-    data compressed using zlib, you first need to prepend four bytes to the
-    byte array that contain the expected length (as an unsigned integer)
-    of the uncompressed data encoded in big-endian order (most significant
-    byte first).
+    data that was compressed using zlib, you first need to prepend a four
+    byte header to the byte array containing the data. The header must
+    contain the expected length (in bytes) of the uncompressed data,
+    expressed as an unsigned, big-endian, 32-bit integer.
 
     \sa qCompress()
 */

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,9 +46,11 @@
 #include "qdeclarativecontext.h"
 #include "qdeclarativeinfo.h"
 #include "private/qdeclarativecontext_p.h"
+#include "private/qdeclarativecompiler_p.h"
 #include "private/qdeclarativedata_p.h"
 #include "private/qdeclarativestringconverters_p.h"
 #include "private/qdeclarativestate_p_p.h"
+#include "private/qdeclarativedebugtrace_p.h"
 
 #include <QVariant>
 #include <QtCore/qdebug.h>
@@ -207,6 +209,8 @@ void QDeclarativeAbstractBinding::setEnabled(bool enabled, QDeclarativePropertyP
     if (enabled) update(flags);
 }
 
+QDeclarativeBinding::Identifier QDeclarativeBinding::Invalid = -1;
+
 void QDeclarativeBindingPrivate::refresh()
 {
     Q_Q(QDeclarativeBinding);
@@ -232,6 +236,28 @@ QDeclarativeBinding::QDeclarativeBinding(void *data, QDeclarativeRefCount *rc, Q
     setNotifyOnValueChanged(true);
 }
 
+QDeclarativeBinding *
+QDeclarativeBinding::createBinding(Identifier id, QObject *obj, QDeclarativeContext *ctxt,
+                                   const QString &url, int lineNumber, QObject *parent)
+{
+    if (id < 0)
+        return 0;
+
+    QDeclarativeContextData *ctxtdata = QDeclarativeContextData::get(ctxt);
+
+    QDeclarativeEnginePrivate *engine = QDeclarativeEnginePrivate::get(qmlEngine(obj));
+    QDeclarativeCompiledData *cdata = 0;
+    QDeclarativeTypeData *typeData = 0;
+    if (engine && ctxtdata && !ctxtdata->url.isEmpty()) {
+        typeData = engine->typeLoader.get(ctxtdata->url);
+        cdata = typeData->compiledData();
+    }
+    QDeclarativeBinding *rv = cdata ? new QDeclarativeBinding((void*)cdata->datas.at(id).constData(), cdata, obj, ctxtdata, url, lineNumber, parent) : 0;
+    if (typeData)
+        typeData->release();
+    return rv;
+}
+
 QDeclarativeBinding::QDeclarativeBinding(const QString &str, QObject *obj, QDeclarativeContext *ctxt, 
                                          QObject *parent)
 : QDeclarativeExpression(QDeclarativeContextData::get(ctxt), obj, str, *new QDeclarativeBindingPrivate)
@@ -243,6 +269,13 @@ QDeclarativeBinding::QDeclarativeBinding(const QString &str, QObject *obj, QDecl
 QDeclarativeBinding::QDeclarativeBinding(const QString &str, QObject *obj, QDeclarativeContextData *ctxt, 
                                          QObject *parent)
 : QDeclarativeExpression(ctxt, obj, str, *new QDeclarativeBindingPrivate)
+{
+    setParent(parent);
+    setNotifyOnValueChanged(true);
+}
+
+QDeclarativeBinding::QDeclarativeBinding(const QScriptValue &func, QObject *obj, QDeclarativeContextData *ctxt, QObject *parent)
+: QDeclarativeExpression(ctxt, obj, func, *new QDeclarativeBindingPrivate)
 {
     setParent(parent);
     setNotifyOnValueChanged(true);
@@ -266,6 +299,34 @@ QDeclarativeProperty QDeclarativeBinding::property() const
    return d->property; 
 }
 
+void QDeclarativeBinding::setEvaluateFlags(EvaluateFlags flags)
+{
+    Q_D(QDeclarativeBinding);
+    d->setEvaluateFlags(QDeclarativeQtScriptExpression::EvaluateFlags(static_cast<int>(flags)));
+}
+
+QDeclarativeBinding::EvaluateFlags QDeclarativeBinding::evaluateFlags() const
+{
+    Q_D(const QDeclarativeBinding);
+    return QDeclarativeBinding::EvaluateFlags(static_cast<int>(d->evaluateFlags()));
+}
+
+
+class QDeclarativeBindingProfiler {
+public:
+    QDeclarativeBindingProfiler(QDeclarativeBinding *bind)
+    {
+        QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Binding);
+        QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::Binding, bind->expression());
+        QDeclarativeDebugTrace::rangeLocation(QDeclarativeDebugTrace::Binding, bind->sourceFile(), bind->lineNumber());
+    }
+
+    ~QDeclarativeBindingProfiler()
+    {
+        QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Binding);
+    }
+};
+
 void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
 {
     Q_D(QDeclarativeBinding);
@@ -274,6 +335,7 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
         return;
 
     if (!d->updating) {
+        QDeclarativeBindingProfiler prof(this);
         d->updating = true;
         bool wasDeleted = false;
         d->deleted = &wasDeleted;

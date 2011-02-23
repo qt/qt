@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -65,6 +65,7 @@ private slots:
     void keys();
     void keysProcessingOrder();
     void keyNavigation();
+    void keyNavigation_skipNotVisible();
     void smooth();
     void clip();
     void mapCoordinates();
@@ -82,6 +83,10 @@ private slots:
     void mouseFocus();
 
     void transformCrash();
+    void implicitSize();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
+    void qtbug_16871();
 
 private:
     template<typename T>
@@ -440,6 +445,84 @@ void tst_QDeclarativeItem::keyNavigation()
     QVERIFY(key.isAccepted());
 
     item = findItem<QDeclarativeItem>(canvas->rootObject(), "item2");
+    QVERIFY(item);
+    QVERIFY(item->hasActiveFocus());
+
+    // backtab
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Backtab, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+
+    item = findItem<QDeclarativeItem>(canvas->rootObject(), "item1");
+    QVERIFY(item);
+    QVERIFY(item->hasActiveFocus());
+
+    delete canvas;
+}
+
+void tst_QDeclarativeItem::keyNavigation_skipNotVisible()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setFixedSize(240,320);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keynavigationtest.qml"));
+    canvas->show();
+    qApp->processEvents();
+
+    QEvent wa(QEvent::WindowActivate);
+    QApplication::sendEvent(canvas, &wa);
+    QFocusEvent fe(QEvent::FocusIn);
+    QApplication::sendEvent(canvas, &fe);
+
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(canvas->rootObject(), "item1");
+    QVERIFY(item);
+    QVERIFY(item->hasActiveFocus());
+
+    // Set item 2 to not visible
+    item = findItem<QDeclarativeItem>(canvas->rootObject(), "item2");
+    QVERIFY(item);
+    item->setVisible(false);
+    QVERIFY(!item->isVisible());
+
+    // right
+    QKeyEvent key(QEvent::KeyPress, Qt::Key_Right, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+
+    item = findItem<QDeclarativeItem>(canvas->rootObject(), "item1");
+    QVERIFY(item);
+    QVERIFY(item->hasActiveFocus());
+
+    // tab
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Tab, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+
+    item = findItem<QDeclarativeItem>(canvas->rootObject(), "item3");
+    QVERIFY(item);
+    QVERIFY(item->hasActiveFocus());
+
+    // backtab
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Backtab, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+
+    item = findItem<QDeclarativeItem>(canvas->rootObject(), "item1");
+    QVERIFY(item);
+    QVERIFY(item->hasActiveFocus());
+
+    //Set item 3 to not visible
+    item = findItem<QDeclarativeItem>(canvas->rootObject(), "item3");
+    QVERIFY(item);
+    item->setVisible(false);
+    QVERIFY(!item->isVisible());
+
+    // tab
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Tab, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+
+    item = findItem<QDeclarativeItem>(canvas->rootObject(), "item4");
     QVERIFY(item);
     QVERIFY(item->hasActiveFocus());
 
@@ -835,6 +918,91 @@ void tst_QDeclarativeItem::transformCrash()
 
     delete canvas;
 }
+
+void tst_QDeclarativeItem::implicitSize()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/implicitsize.qml"));
+    canvas->show();
+
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(canvas->rootObject());
+    QVERIFY(item);
+    QCOMPARE(item->width(), qreal(80));
+    QCOMPARE(item->height(), qreal(60));
+
+    QCOMPARE(item->implicitWidth(), qreal(200));
+    QCOMPARE(item->implicitHeight(), qreal(100));
+
+    QMetaObject::invokeMethod(item, "resetSize");
+
+    QCOMPARE(item->width(), qreal(200));
+    QCOMPARE(item->height(), qreal(100));
+
+    QMetaObject::invokeMethod(item, "changeImplicit");
+
+    QCOMPARE(item->implicitWidth(), qreal(150));
+    QCOMPARE(item->implicitHeight(), qreal(80));
+    QCOMPARE(item->width(), qreal(150));
+    QCOMPARE(item->height(), qreal(80));
+
+    delete canvas;
+}
+
+void tst_QDeclarativeItem::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; Item { " + code.toUtf8() + " }", QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; Item { " + code.toUtf8() + " }", QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+}
+
+void tst_QDeclarativeItem::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("implicitWidth") << "implicitWidth: 100"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Item.implicitWidth\" is not available in QtQuick 1.0.\n";
+
+    QTest::newRow("implicitHeight") << "implicitHeight: 100"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Item.implicitHeight\" is not available in QtQuick 1.0.\n";
+
+    QTest::newRow("onImplicitWidthChanged") << "onImplicitWidthChanged: x"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Item.onImplicitWidthChanged\" is not available in QtQuick 1.0.\n";
+
+    QTest::newRow("onImplicitHeightChanged") << "onImplicitHeightChanged: x"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Item.onImplicitHeightChanged\" is not available in QtQuick 1.0.\n";
+}
+
+void tst_QDeclarativeItem::qtbug_16871()
+{
+    QDeclarativeComponent component(&engine, SRCDIR "/data/qtbug_16871.qml");
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    delete o;
+}
+
 
 template<typename T>
 T *tst_QDeclarativeItem::findItem(QGraphicsObject *parent, const QString &objectName)

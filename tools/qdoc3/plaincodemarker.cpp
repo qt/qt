@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,6 +66,11 @@ bool PlainCodeMarker::recognizeLanguage( const QString& /* lang */ )
     return false;
 }
 
+Atom::Type PlainCodeMarker::atomType() const
+{
+    return Atom::Code;
+}
+
 QString PlainCodeMarker::plainName( const Node * /* node */ )
 {
     return "";
@@ -78,7 +83,7 @@ QString PlainCodeMarker::plainFullName(const Node * /* node */, const Node * /* 
 
 QString PlainCodeMarker::markedUpCode( const QString& code,
 				       const Node * /* relative */,
-				       const QString& /* dirPath */ )
+				       const Location & /* location */ )
 {
     return protect( code );
 }

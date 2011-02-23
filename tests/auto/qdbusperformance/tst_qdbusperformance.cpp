@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -125,7 +125,7 @@ void tst_QDBusPerformance::init()
 
 void tst_QDBusPerformance::callSpeed()
 {
-    QTime timer;
+    QElapsedTimer timer;
 
     int callCount = 0;
     timer.start();
@@ -141,7 +141,7 @@ void tst_QDBusPerformance::callSpeed()
 
 bool tst_QDBusPerformance::executeTest(const char *funcname, int size, const QVariant &data)
 {
-    QTime timer;
+    QElapsedTimer timer;
 
     int callCount = 0;
     qint64 transferred = 0;

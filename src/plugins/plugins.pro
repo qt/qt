@@ -15,4 +15,4 @@ symbian:SUBDIRS += s60
 contains(QT_CONFIG, phonon): SUBDIRS *= phonon
 contains(QT_CONFIG, multimedia): SUBDIRS *= audio
 qpa:SUBDIRS += platforms
-
+contains(QT_CONFIG, declarative): SUBDIRS *= qmldebugging

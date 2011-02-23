@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -79,7 +79,6 @@
 
 #ifdef Q_WS_MAC
 #include <private/qt_mac_p.h>
-#include <private/qunifiedtoolbarsurface_mac_p.h>
 #endif
 
 #if defined(Q_WS_QWS)
@@ -113,6 +112,8 @@ class QGraphicsProxyWidget;
 class QWidgetItemV2;
 
 class QStyle;
+
+class QUnifiedToolbarSurface;
 
 class Q_AUTOTEST_EXPORT QWidgetBackingStoreTracker
 {
@@ -234,6 +235,7 @@ struct QTLWExtra {
 #elif defined(Q_WS_QPA)
     QPlatformWindow *platformWindow;
     QPlatformWindowFormat platformWindowFormat;
+    quint32 screenIndex; // index in qplatformscreenlist
 #endif
 };
 
@@ -361,7 +363,8 @@ public:
         DrawInvisible = 0x08,
         DontSubtractOpaqueChildren = 0x10,
         DontSetCompositionMode = 0x20,
-        DontDrawOpaqueChildren = 0x40
+        DontDrawOpaqueChildren = 0x40,
+        DontDrawNativeChildren = 0x80
     };
 
     enum CloseMode {
@@ -775,6 +778,8 @@ public:
     void x11UpdateIsOpaque();
     bool isBackgroundInherited() const;
     void updateX11AcceptFocus();
+    QPoint mapToGlobal(const QPoint &pos) const;
+    QPoint mapFromGlobal(const QPoint &pos) const;
 #elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
     uint noPaintOnScreen : 1; // see qwidget_win.cpp ::paintEngine()
 #ifndef QT_NO_GESTURES
@@ -793,7 +798,6 @@ public:
 #elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC
     // This is new stuff
     uint needWindowChange : 1;
-    uint hasAlienChildren : 1;
 
     // Each wiget keeps a list of all its child and grandchild OpenGL widgets.
     // This list is used to update the gl context whenever a parent and a granparent
@@ -824,6 +828,7 @@ public:
     void macUpdateIgnoreMouseEvents();
     void macUpdateMetalAttribute();
     void macUpdateIsOpaque();
+    void macSetNeedsDisplay(QRegion region);
     void setEnabled_helper_sys(bool enable);
     bool isRealWindow() const;
     void adjustWithinMaxAndMinSize(int &w, int &h);
@@ -860,6 +865,7 @@ public:
     QPoint toolbar_offset;
     QWidget *toolbar_ancestor;
     bool flushRequested;
+    bool touchEventsEnabled;
 #endif // QT_MAC_USE_COCOA
     void determineWindowClass();
     void transferChildren();
@@ -872,7 +878,7 @@ public:
     static OSStatus qt_window_event(EventHandlerCallRef er, EventRef event, void *);
     static OSStatus qt_widget_event(EventHandlerCallRef er, EventRef event, void *);
     static bool qt_widget_rgn(QWidget *, short, RgnHandle, bool);
-    void registerTouchWindow();
+    void registerTouchWindow(bool enable = true);
 #elif defined(Q_WS_QWS) // <--------------------------------------------------------- QWS
     void setMaxWindowState_helper();
     void setFullScreenSize_helper();
@@ -887,11 +893,9 @@ public:
     void updateCursor() const;
 #endif
     QScreen* getScreen() const;
-#elif defined(Q_WS_QPA)
+#elif defined(Q_WS_QPA) // <--------------------------------------------------------- QPA
     void setMaxWindowState_helper();
     void setFullScreenSize_helper();
-
-    int screenNumber; // screen the widget should be displayed on
 #ifndef QT_NO_CURSOR
     void updateCursor() const;
 #endif

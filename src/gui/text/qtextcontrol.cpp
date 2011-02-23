@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -115,6 +115,7 @@ static QTextLine currentTextLine(const QTextCursor &cursor)
 QTextControlPrivate::QTextControlPrivate()
     : doc(0), cursorOn(false), cursorIsFocusIndicator(false),
       interactionFlags(Qt::TextEditorInteraction),
+      dragEnabled(true),
 #ifndef QT_NO_DRAGANDDROP
       mousePressed(false), mightStartDrag(false),
 #endif
@@ -129,7 +130,8 @@ QTextControlPrivate::QTextControlPrivate()
       isEnabled(true),
       hadSelectionOnMousePress(false),
       ignoreUnusedNavigationEvents(false),
-      openExternalLinks(false)
+      openExternalLinks(false),
+      wordSelectionEnabled(false)
 {}
 
 bool QTextControlPrivate::cursorMoveKeyEvent(QKeyEvent *e)
@@ -1544,15 +1546,21 @@ void QTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton button, con
         }
 #endif
         if (modifiers == Qt::ShiftModifier) {
+            if (wordSelectionEnabled && !selectedWordOnDoubleClick.hasSelection()) {
+                selectedWordOnDoubleClick = cursor;
+                selectedWordOnDoubleClick.select(QTextCursor::WordUnderCursor);
+            }
+
             if (selectedBlockOnTrippleClick.hasSelection())
                 extendBlockwiseSelection(cursorPos);
             else if (selectedWordOnDoubleClick.hasSelection())
                 extendWordwiseSelection(cursorPos, pos.x());
-            else
+            else if (wordSelectionEnabled)
                 setCursorPosition(cursorPos, QTextCursor::KeepAnchor);
         } else {
 
-            if (cursor.hasSelection()
+            if (dragEnabled
+                && cursor.hasSelection()
                 && !cursorIsFocusIndicator
                 && cursorPos >= cursor.selectionStart()
                 && cursorPos <= cursor.selectionEnd()
@@ -1624,6 +1632,11 @@ void QTextControlPrivate::mouseMoveEvent(Qt::MouseButtons buttons, const QPointF
     int newCursorPos = q->hitTest(mousePos, Qt::FuzzyHit);
     if (newCursorPos == -1)
         return;
+
+    if (wordSelectionEnabled && !selectedWordOnDoubleClick.hasSelection()) {
+        selectedWordOnDoubleClick = cursor;
+        selectedWordOnDoubleClick.select(QTextCursor::WordUnderCursor);
+    }
 
     if (selectedBlockOnTrippleClick.hasSelection())
         extendBlockwiseSelection(newCursorPos);
@@ -2329,6 +2342,31 @@ bool QTextControl::cursorIsFocusIndicator() const
 {
     Q_D(const QTextControl);
     return d->cursorIsFocusIndicator;
+}
+
+
+void QTextControl::setDragEnabled(bool enabled)
+{
+    Q_D(QTextControl);
+    d->dragEnabled = enabled;
+}
+
+bool QTextControl::isDragEnabled() const
+{
+    Q_D(const QTextControl);
+    return d->dragEnabled;
+}
+
+void QTextControl::setWordSelectionEnabled(bool enabled)
+{
+    Q_D(QTextControl);
+    d->wordSelectionEnabled = enabled;
+}
+
+bool QTextControl::isWordSelectionEnabled() const
+{
+    Q_D(const QTextControl);
+    return d->wordSelectionEnabled;
 }
 
 #ifndef QT_NO_PRINTER

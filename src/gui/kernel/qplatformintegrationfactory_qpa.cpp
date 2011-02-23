@@ -52,15 +52,27 @@ QT_BEGIN_NAMESPACE
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QPlatformIntegrationFactoryInterface_iid, QLatin1String("/platforms"), Qt::CaseInsensitive))
+Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
+                          (QPlatformIntegrationFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
 #endif
 
-QPlatformIntegration *QPlatformIntegrationFactory::create(const QString& key)
+QPlatformIntegration *QPlatformIntegrationFactory::create(const QString& key, const QString &platformPluginPath)
 {
     QPlatformIntegration *ret = 0;
     QStringList paramList = key.split(QLatin1Char(':'));
     QString platform = paramList.takeFirst().toLower();
 
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+    // Try loading the plugin from platformPluginPath first:
+    if (!platformPluginPath.isEmpty()) {
+        QCoreApplication::addLibraryPath(platformPluginPath);
+        if (QPlatformIntegrationFactoryInterface *factory =
+            qobject_cast<QPlatformIntegrationFactoryInterface*>(directLoader()->instance(platform)))
+            ret = factory->create(key, paramList);
+
+        if (ret)
+            return ret;
+    }
     if (QPlatformIntegrationFactoryInterface *factory = qobject_cast<QPlatformIntegrationFactoryInterface*>(loader()->instance(platform)))
         ret = factory->create(platform, paramList);
 #endif
@@ -74,10 +86,19 @@ QPlatformIntegration *QPlatformIntegrationFactory::create(const QString& key)
 
     \sa create()
 */
-QStringList QPlatformIntegrationFactory::keys()
+QStringList QPlatformIntegrationFactory::keys(const QString &platformPluginPath)
 {
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-    QStringList list = loader()->keys();
+    QStringList list;
+
+    if (!platformPluginPath.isEmpty()) {
+        QCoreApplication::addLibraryPath(platformPluginPath);
+        foreach (const QString &key, directLoader()->keys()) {
+            list += key + QString(QLatin1String(" (from %1)")).arg(platformPluginPath);
+        }
+    }
+
+    list += loader()->keys();
 #else
     QStringList list;
 #endif

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -107,6 +107,8 @@ public:
     // Re-implemented from QPixmapData:
     void resize(int width, int height);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
+    void fromImageReader(QImageReader *imageReader,
+                          Qt::ImageConversionFlags flags);
     bool fromFile(const QString &filename, const char *format,
                   Qt::ImageConversionFlags flags);
     bool fromData(const uchar *buffer, uint len, const char *format,
@@ -126,6 +128,11 @@ public:
     bool isValidContext(const QGLContext *ctx) const;
     GLuint bind(bool copyBack = true) const;
     QGLTexture *texture() const;
+
+#if defined(Q_OS_SYMBIAN)
+    void* toNativeType(NativeType type);
+    void fromNativeType(void* pixmap, NativeType type);
+#endif
 
 private:
     bool isValid() const;
@@ -148,6 +155,8 @@ private:
     bool useFramebufferObjects() const;
 
     QImage fillImage(const QColor &color) const;
+
+    void createPixmapForImage(QImage &image, Qt::ImageConversionFlags flags, bool inPlace);
 
     mutable QGLFramebufferObject *m_renderFbo;
     mutable QPaintEngine *m_engine;

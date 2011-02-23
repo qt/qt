@@ -612,10 +612,14 @@ QString QFileSystemEngine::rootPath()
 
 QString QFileSystemEngine::tempPath()
 {
+#ifdef QT_UNIX_TEMP_PATH_OVERRIDE
+    return QLatin1String(QT_UNIX_TEMP_PATH_OVERRIDE);
+#else
     QString temp = QFile::decodeName(qgetenv("TMPDIR"));
     if (temp.isEmpty())
         temp = QLatin1String("/tmp/");
     return QDir::cleanPath(temp);
+#endif
 }
 
 bool QFileSystemEngine::setCurrentPath(const QFileSystemEntry &path)

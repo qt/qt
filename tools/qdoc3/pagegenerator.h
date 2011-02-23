@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,14 +48,12 @@
 
 #include <QStack>
 #include <qtextstream.h>
-
 #include "generator.h"
 #include "location.h"
 
 QT_BEGIN_NAMESPACE
 
 class QTextCodec;
-
 class ClassNode;
 class InnerNode;
 class NamespaceNode;
@@ -66,16 +64,16 @@ class PageGenerator : public Generator
     PageGenerator();
     ~PageGenerator();
 
-    virtual void generateTree(const Tree *tree, CodeMarker *marker);
+    virtual void generateTree(const Tree *tree);
 
  protected:
-    virtual QString fileBase(const Node *node) const;
-    virtual QString fileExtension(const Node *node) const = 0;
-    QString fileName(const Node *node) const;
+    virtual QString fileBase(const Node* node) const;
+    virtual QString fileExtension(const Node* node) const = 0;
+    QString fileName(const Node* node) const;
     QString outFileName();
-    void beginSubPage(const Location& location, const QString& fileName);
-    void endSubPage();
-    virtual void generateInnerNode(const InnerNode *node, CodeMarker *marker);
+    virtual void beginSubPage(const Location& location, const QString& fileName);
+    virtual void endSubPage();
+    virtual void generateInnerNode(const InnerNode *node);
     QTextStream& out();
 
     QString naturalLanguage;
@@ -89,7 +87,7 @@ class PageGenerator : public Generator
                   QStringRef* par1 = 0,
                   bool debug = false);
 
- private:
+ protected:
     QStack<QTextStream*> outStreamStack;
 };
 

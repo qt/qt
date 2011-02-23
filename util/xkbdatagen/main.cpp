@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -416,7 +416,7 @@ int main(int argc, char **argv)
     // copyright and stuff
     printf("/****************************************************************************\n"
            "**\n"
-           "** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).\n"
+           "** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).\n"
            "** All rights reserved.\n"
            "** Contact: Nokia Corporation (qt-info@nokia.com)\n"
            "**\n"
@@ -456,6 +456,7 @@ int main(int argc, char **argv)
            "****************************************************************************/\n"
            "\n"
            "// This file is auto-generated, do not edit!\n"
+           "// (Generated using util/xkbdatagen)\n"
            "\n");
 
     // data structure

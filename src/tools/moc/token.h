@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -186,6 +186,7 @@ enum Token {
     Q_INVOKABLE_TOKEN,
     Q_SCRIPTABLE_TOKEN,
     Q_PRIVATE_PROPERTY_TOKEN,
+    Q_REVISION_TOKEN,
     Q_META_TOKEN_END,
     SPECIAL_TREATMENT_MARK = Q_META_TOKEN_END,
     MOC_INCLUDE_BEGIN,

@@ -4598,4 +4598,11 @@ EXPORTS
 	?open@QFile@@QAE_NABVRFile@@V?$QFlags@W4OpenModeFlag@QIODevice@@@@V?$QFlags@W4FileHandleFlag@QFile@@@@@Z @ 4597 NONAME ; bool QFile::open(class RFile const &, class QFlags<enum QIODevice::OpenModeFlag>, class QFlags<enum QFile::FileHandleFlag>)
 	?open@QFile@@QAE_NHV?$QFlags@W4OpenModeFlag@QIODevice@@@@V?$QFlags@W4FileHandleFlag@QFile@@@@@Z @ 4598 NONAME ; bool QFile::open(int, class QFlags<enum QIODevice::OpenModeFlag>, class QFlags<enum QFile::FileHandleFlag>)
 	?open@QFile@@QAE_NPAU__sFILE@@V?$QFlags@W4OpenModeFlag@QIODevice@@@@V?$QFlags@W4FileHandleFlag@QFile@@@@@Z @ 4599 NONAME ; bool QFile::open(struct __sFILE *, class QFlags<enum QIODevice::OpenModeFlag>, class QFlags<enum QFile::FileHandleFlag>)
+	?symbianCommandLine@QCoreApplicationPrivate@@SAPAVCApaCommandLine@@XZ @ 4600 NONAME ; class CApaCommandLine * QCoreApplicationPrivate::symbianCommandLine(void)
+	?nsecsElapsed@QElapsedTimer@@QBE_JXZ @ 4601 NONAME ; long long QElapsedTimer::nsecsElapsed(void) const
+	??XQPoint@@QAEAAV0@N@Z @ 4602 NONAME ; class QPoint & QPoint::operator*=(double)
+	??XQPoint@@QAEAAV0@H@Z @ 4603 NONAME ; class QPoint & QPoint::operator*=(int)
+	?hasError@QXmlStreamWriter@@QBE_NXZ @ 4604 NONAME ; bool QXmlStreamWriter::hasError(void) const
+	?revision@QMetaProperty@@QBEHXZ @ 4605 NONAME ; int QMetaProperty::revision(void) const
+	?revision@QMetaMethod@@QBEHXZ @ 4606 NONAME ; int QMetaMethod::revision(void) const
 

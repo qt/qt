@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -214,7 +214,7 @@ static QString qWarnODBCHandle(int handleType, SQLHANDLE handle, int *nativeCode
                           state_,
                           &nativeCode_,
                           0,
-                          NULL,
+                          0,
                           &msgLen);
         if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && msgLen > 0)
             description_.resize(msgLen+1);

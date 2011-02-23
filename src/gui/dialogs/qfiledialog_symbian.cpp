@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,6 +54,9 @@
 
 QT_BEGIN_NAMESPACE
 
+extern QStringList qt_make_filter_list(const QString &filter); // defined in qfiledialog.cpp
+extern QStringList qt_clean_filter_list(const QString &filter); // defined in qfiledialog.cpp
+
 enum DialogMode { DialogOpen, DialogSave, DialogFolder };
 #if defined(Q_WS_S60) && defined(SYMBIAN_VERSION_SYMBIAN3)
 class CExtensionFilter : public MAknFileFilter
@@ -61,56 +64,39 @@ class CExtensionFilter : public MAknFileFilter
 public:
     void setFilter(const QString filter)
     {
-        filterList.clear();
-        if (filter.left(2) == QLatin1String("*.")) {
-            //Filter has only extensions
-            filterList << filter.split(QLatin1String(" "));
-            return;
-        } else {
-            //Extensions are in parenthesis and there may be several filters
-            QStringList separatedFilters(filter.split(QLatin1String(";;")));
-            for (int i = 0; i < separatedFilters.size(); i++) {
-                if (separatedFilters.at(i).contains(QLatin1String("(*)"))) {
-                    filterList << QLatin1String("(*)");
-                    return;
-                }
-            }
-            QRegExp rx(QLatin1String("\\(([^\\)]*)\\)"));
-            int pos = 0;
-            while ((pos = rx.indexIn(filter, pos)) != -1) {
-                filterList << rx.cap(1).split(QLatin1String(" "));
-                pos += rx.matchedLength();
-            }
+        QStringList unparsedFiltersList = qt_make_filter_list(filter);
+        QStringList filterList;
+        filterRxList.clear();
+
+        foreach (QString unparsedFilter, unparsedFiltersList) {
+            filterList << qt_clean_filter_list(unparsedFilter);
+        }
+        foreach (QString currentFilter, filterList) {
+            QRegExp filterRx(currentFilter, Qt::CaseInsensitive, QRegExp::Wildcard);
+            filterRxList << filterRx;
         }
     }
 
     TBool Accept(const TDesC &/*aDriveAndPath*/, const TEntry &aEntry) const
     {
+        //If no filter for files, all can be accepted
+        if (filterRxList.isEmpty())
+            return ETrue;
+
         if (aEntry.IsDir())
             return ETrue;
 
-        //If no filter for files, all can be accepted
-        if (filterList.isEmpty())
-            return ETrue;
-
-        if (filterList == QStringList(QLatin1String("(*)")))
-            return ETrue;
-
-        for (int i = 0; i < filterList.size(); ++i) {
-            QString extension = filterList.at(i);
-            //remove '*' from the beginning of the extension
-            if (extension.at(0) == QLatin1Char('*'))
-                extension = extension.mid(1);
-
+        foreach (QRegExp rx, filterRxList) {
             QString fileName = qt_TDesC2QString(aEntry.iName);
-            if (fileName.endsWith(extension))
+            if (rx.exactMatch(fileName))
                 return ETrue;
         }
+
         return EFalse;
     }
 
 private:
-    QStringList filterList;
+    QList<QRegExp> filterRxList;
 };
 #endif
 
@@ -140,11 +126,13 @@ static QString launchSymbianDialog(const QString dialogCaption, const QString st
                 CleanupStack::PushL(extensionFilter);
                 extensionFilter->setFilter(filter);
                 select = AknCommonDialogsDynMem::RunSelectDlgLD(types, target,
-                         startFolder, NULL, NULL, titlePtr, extensionFilter);
+                         startFolder, 0, 0, titlePtr, extensionFilter);
                 CleanupStack::Pop(extensionFilter);
             } else if (dialogMode == DialogSave) {
+                QString defaultFileName = QFileDialogPrivate::initialSelection(startDirectory);
+                target = qt_QString2TPtrC(defaultFileName);
                 select = AknCommonDialogsDynMem::RunSaveDlgLD(types, target,
-                         startFolder, NULL, NULL, titlePtr);
+                         startFolder, 0, 0, titlePtr);
             } else if (dialogMode == DialogFolder) {
                 select = AknCommonDialogsDynMem::RunFolderSelectDlgLD(types, target, startFolder,
                             0, 0, titlePtr, NULL, NULL);
@@ -160,8 +148,10 @@ static QString launchSymbianDialog(const QString dialogCaption, const QString st
             startFolder = qt_QString2TPtrC(dir);
         }
     }
-    if (select)
-        selection.append(qt_TDesC2QString(target));
+    if (select) {
+        QFileInfo fi(qt_TDesC2QString(target));
+        selection = fi.absoluteFilePath();
+    }
 #endif
     return selection;
 }

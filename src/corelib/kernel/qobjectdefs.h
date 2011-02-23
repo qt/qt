@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -79,6 +79,7 @@ class QString;
 #define Q_INTERFACES(x)
 #define Q_PROPERTY(text)
 #define Q_PRIVATE_PROPERTY(d, text)
+#define Q_REVISION(v)
 #define Q_OVERRIDE(text)
 #define Q_ENUMS(x)
 #define Q_FLAGS(x)
@@ -180,6 +181,7 @@ private:
 #define Q_INTERFACES(x) Q_INTERFACES(x)
 #define Q_PROPERTY(text) Q_PROPERTY(text)
 #define Q_PRIVATE_PROPERTY(d, text) Q_PRIVATE_PROPERTY(d, text)
+#define Q_REVISION(v) Q_REVISION(v)
 #define Q_OVERRIDE(text) Q_OVERRIDE(text)
 #define Q_ENUMS(x) Q_ENUMS(x)
 #define Q_FLAGS(x) Q_FLAGS(x)

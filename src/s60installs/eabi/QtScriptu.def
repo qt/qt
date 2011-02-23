@@ -441,4 +441,6 @@ EXPORTS
 	_ZN25QScriptEngineAgentPrivate18didReachBreakpointERKN5QTJSC17DebuggerCallFrameEii @ 440 NONAME
 	_ZNK23QScriptDeclarativeClass12supportsCallEv @ 441 NONAME
 	_ZNK23QScriptDeclarativeClass5Value13toScriptValueEP13QScriptEngine @ 442 NONAME
+	_ZN23QScriptDeclarativeClass15startsWithUpperERKPv @ 443 NONAME
+	_ZNK23QScriptDeclarativeClass20PersistentIdentifier8toStringEv @ 444 NONAME
 

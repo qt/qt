@@ -59,6 +59,7 @@ class QBlittable;
 class QWidget;
 class QPlatformEventLoopIntegration;
 class QPlatformFontDatabase;
+class QPlatformClipboard;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
@@ -76,8 +77,9 @@ public:
     virtual bool isVirtualDesktop() { return false; }
     virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 
-//Fontdatabase integration.
+//Deeper window system integrations
     virtual QPlatformFontDatabase *fontDatabase() const;
+    virtual QPlatformClipboard *clipboard() const;
 
 // Experimental in mainthread eventloop integration
 // This should only be used if it is only possible to do window system event processing in

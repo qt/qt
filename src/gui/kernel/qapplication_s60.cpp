@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1245,12 +1245,14 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
 #ifdef Q_WS_S60
         // If widget is fullscreen/minimized, hide status pane and button container otherwise show them.
         QWidget *const window = qwidget->window();
-        const bool visible = !(window->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
-        const bool statusPaneVisibility = visible;
-        const bool isFullscreen = window->windowState() & Qt::WindowFullScreen;
-        const bool cbaVisibilityHint = window->windowFlags() & Qt::WindowSoftkeysVisibleHint;
-        const bool buttonGroupVisibility = (visible || (isFullscreen && cbaVisibilityHint));
-        S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
+        if (!window->parentWidget()) { // Only top level native windows have control over cba/status pane
+            const bool decorationsVisible = !(window->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
+            const bool statusPaneVisibility = decorationsVisible;
+            const bool isFullscreen = window->windowState() & Qt::WindowFullScreen;
+            const bool cbaVisibilityHint = window->windowFlags() & Qt::WindowSoftkeysVisibleHint;
+            const bool buttonGroupVisibility = (decorationsVisible || (isFullscreen && cbaVisibilityHint));
+            S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
+        }
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
         bool focusedControlFound = false;
@@ -1431,21 +1433,20 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         // The S60 framework has not been initialized. We need to do it.
         TApaApplicationFactory factory(S60->s60ApplicationFactory ?
                 S60->s60ApplicationFactory : newS60Application);
-        CApaCommandLine* commandLine = 0;
-        TInt err = CApaCommandLine::GetCommandLineFromProcessEnvironment(commandLine);
-        // After this construction, CEikonEnv will be available from CEikonEnv::Static().
-        // (much like our qApp).
-        QtEikonEnv* coe = new QtEikonEnv;
-        //not using QT_TRAP_THROWING, because coe owns the cleanupstack so it can't be pushed there.
-        if(err == KErrNone)
-            TRAP(err, coe->ConstructAppFromCommandLineL(factory,*commandLine));
-        delete commandLine;
-        if(err != KErrNone) {
-            qWarning() << "qt_init: Eikon application construct failed ("
-                       << err
-                       << "), maybe missing resource file on S60 3.1?";
-            delete coe;
-            qt_symbian_throwIfError(err);
+        CApaCommandLine* commandLine = q_check_ptr(QCoreApplicationPrivate::symbianCommandLine());
+        if (commandLine) {
+            // After this construction, CEikonEnv will be available from CEikonEnv::Static().
+            // (much like our qApp).
+            QtEikonEnv* coe = new QtEikonEnv;
+            //not using QT_TRAP_THROWING, because coe owns the cleanupstack so it can't be pushed there.
+            TRAPD(err, coe->ConstructAppFromCommandLineL(factory, *commandLine));
+            if(err != KErrNone) {
+                qWarning() << "qt_init: Eikon application construct failed ("
+                           << err
+                           << "), maybe missing resource file on S60 3.1?";
+                delete coe;
+                qt_symbian_throwIfError(err);
+            }
         }
 
         S60->s60InstalledTrapHandler = User::SetTrapHandler(origTrapHandler);
@@ -1617,7 +1618,9 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     qRegisterMetaType<WId>("WId");
 }
 
-extern void qt_cleanup_symbianFontDatabaseExtras(); // qfontdatabase_s60.cpp
+#ifdef QT_NO_FREETYPE
+extern void qt_cleanup_symbianFontDatabase(); // qfontdatabase_s60.cpp
+#endif
 
 /*****************************************************************************
   qt_cleanup() - cleans up when the application is finished
@@ -1634,7 +1637,9 @@ void qt_cleanup()
     QFontCache::cleanup(); // Has to happen now, since QFontEngineS60 has FBS handles
     QPixmapCache::clear(); // Has to happen now, since QS60PixmapData has FBS handles
 
-    qt_cleanup_symbianFontDatabaseExtras();
+#ifdef QT_NO_FREETYPE
+    qt_cleanup_symbianFontDatabase();
+#endif
 // S60 structure and window server session are freed in eventdispatcher destructor as they are needed there
 
     // It's important that this happens here, before the event dispatcher gets
@@ -2019,6 +2024,9 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
 #endif
                 S60->wsSession().SetPointerCursorMode(EPointerCursorNormal);
         }
+#endif
+#ifdef QT_SOFTKEYS_ENABLED
+        QSoftKeyManager::updateSoftKeys();
 #endif
         break;
     case EEventFocusLost:

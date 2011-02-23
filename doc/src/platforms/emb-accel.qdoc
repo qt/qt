@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -117,8 +117,8 @@
 
     \section1 Step 4: Make the Window Surface Aware of Your Paint Device
 
-    Derive from the QWSWindowSurface class and reimplement its \l
-    {QWSWindowSurface::}{paintDevice()} function. Make this function
+    Derive from the QWSWindowSurface class and reimplement its 
+    paintDevice() function. Make this function
     return a pointer to your custom raster paint device.
 
     \section1 Step 5: Enable Creation of an Instance of Your Window Surface

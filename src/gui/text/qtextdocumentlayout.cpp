@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -327,7 +327,7 @@ static inline bool isLineSeparatorBlockAfterTable(const QTextBlock &block, const
 
 /*
 
-Optimisation strategies:
+Optimization strategies:
 
 HTML layout:
 
@@ -2510,6 +2510,7 @@ static inline void getLineHeightParams(const QTextBlockFormat &blockFormat, cons
                                        QFixed *lineAdjustment, QFixed *lineBreakHeight, QFixed *lineHeight)
 {
     *lineHeight = QFixed::fromReal(blockFormat.lineHeight(line.height(), scaling));
+
     if (blockFormat.lineHeightType() == QTextBlockFormat::FixedHeight || blockFormat.lineHeightType() == QTextBlockFormat::MinimumHeight) {
         *lineBreakHeight = *lineHeight;
         if (blockFormat.lineHeightType() == QTextBlockFormat::FixedHeight)

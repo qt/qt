@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -205,7 +205,6 @@ protected:
     QCoreApplication(QCoreApplicationPrivate &p);
 
 private:
-    Q_PRIVATE_SLOT(d_func(), void _q_initializeProcessManager())
     static bool sendSpontaneousEvent(QObject *receiver, QEvent *event);
     bool notifyInternal(QObject *receiver, QEvent *event);
 

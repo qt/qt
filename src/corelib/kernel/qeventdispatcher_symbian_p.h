@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -63,6 +63,7 @@
 #include <qwaitcondition.h>
 #include <qsocketnotifier.h>
 #include <qdatetime.h>
+#include <qelapsedtimer.h>
 
 #include <e32base.h>
 
@@ -284,7 +285,7 @@ private:
 
     int m_delay;
     int m_avgEventTime;
-    QTime m_lastIdleRequestTimer;
+    QElapsedTimer m_lastIdleRequestTimer;
 };
 
 #ifdef QT_DEBUG

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -72,33 +72,15 @@ void exitApp(int i)
     exit(i);
 }
 
+QWeakPointer<LoggerWidget> logger;
+static QAtomicInt recursiveLock(0);
+
 #if defined (Q_OS_SYMBIAN)
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
-void myMessageOutput(QtMsgType type, const char *msg)
-{
-    static int fd = -1;
-    if (fd == -1)
-        fd = ::open("E:\\qml.log", O_WRONLY | O_CREAT);
-
-    ::write(fd, msg, strlen(msg));
-    ::write(fd, "\n", 1);
-    ::fsync(fd);
-
-    switch (type) {
-    case QtFatalMsg:
-        abort();
-    }
-}
-
-#else // !defined (Q_OS_SYMBIAN)
-
-QWeakPointer<LoggerWidget> logger;
-
-static QAtomicInt recursiveLock(0);
+#endif
 
 void myMessageOutput(QtMsgType type, const char *msg)
 {
@@ -115,15 +97,27 @@ void myMessageOutput(QtMsgType type, const char *msg)
             warnings += QLatin1Char('\n');
         }
     }
-    if (systemMsgOutput) { // Windows
+#if defined (Q_OS_SYMBIAN)
+    static int fd = -1;
+    if (fd == -1)
+        fd = ::open("E:\\qml.log", O_WRONLY | O_CREAT);
+
+    ::write(fd, msg, strlen(msg));
+    ::write(fd, "\n", 1);
+    ::fsync(fd);
+    switch (type) {
+    case QtFatalMsg:
+        abort();
+    }
+#endif
+
+    if (systemMsgOutput) {
         systemMsgOutput(type, msg);
     } else { // Unix
         fprintf(stderr, "%s\n", msg);
         fflush(stderr);
     }
 }
-
-#endif
 
 static QDeclarativeViewer* globalViewer = 0;
 
@@ -469,7 +463,6 @@ static QDeclarativeViewer *createViewer()
         viewer->setScript(opts.script);
     }
 
-#if !defined(Q_OS_SYMBIAN)
     logger = viewer->warningsWidget();
     if (opts.warningsConfig == ShowWarnings) {
         logger.data()->setDefaultVisibility(LoggerWidget::ShowWarnings);
@@ -477,7 +470,6 @@ static QDeclarativeViewer *createViewer()
     } else if (opts.warningsConfig == HideWarnings){
         logger.data()->setDefaultVisibility(LoggerWidget::HideWarnings);
     }
-#endif
 
     if (opts.experimentalGestures)
         viewer->enableExperimentalGestures();
@@ -529,11 +521,7 @@ QDeclarativeViewer *openFile(const QString &fileName)
 
 int main(int argc, char ** argv)
 {
-#if defined (Q_OS_SYMBIAN)
-    qInstallMsgHandler(myMessageOutput);
-#else
     systemMsgOutput = qInstallMsgHandler(myMessageOutput);
-#endif
 
 #if defined (Q_WS_X11) || defined (Q_WS_MAC)
     //### default to using raster graphics backend for now
@@ -562,8 +550,11 @@ int main(int argc, char ** argv)
 
     QTranslator qmlTranslator;
     if (!opts.translationFile.isEmpty()) {
-        qmlTranslator.load(opts.translationFile);
-        app.installTranslator(&qmlTranslator);
+        if (qmlTranslator.load(opts.translationFile)) {
+            app.installTranslator(&qmlTranslator);
+        } else {
+            qWarning() << "Could not load the translation file" << opts.translationFile;
+        }
     }
 
     if (opts.fullScreen && opts.maximized)

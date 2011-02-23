@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -88,6 +88,7 @@ void QDeclarativePropertyCache::Data::load(const QMetaProperty &p, QDeclarativeE
     coreIndex = p.propertyIndex();
     notifyIndex = p.notifySignalIndex();
     flags = flagsForProperty(p, engine);
+    revision = p.revision();
 }
 
 void QDeclarativePropertyCache::Data::load(const QMetaMethod &m)
@@ -106,6 +107,7 @@ void QDeclarativePropertyCache::Data::load(const QMetaMethod &m)
     QList<QByteArray> params = m.parameterTypes();
     if (!params.isEmpty())
         flags |= Data::HasArguments;
+    revision = m.revision();
 }
 
 
@@ -216,6 +218,7 @@ QDeclarativePropertyCache *QDeclarativePropertyCache::copy() const
     cache->methodIndexCache = methodIndexCache;
     cache->stringCache = stringCache;
     cache->identifierCache = identifierCache;
+    cache->allowedRevisionCache = allowedRevisionCache;
 
     for (int ii = 0; ii < indexCache.count(); ++ii) {
         if (indexCache.at(ii)) indexCache.at(ii)->addref();
@@ -234,8 +237,18 @@ QDeclarativePropertyCache *QDeclarativePropertyCache::copy() const
 void QDeclarativePropertyCache::append(QDeclarativeEngine *engine, const QMetaObject *metaObject, 
                                        Data::Flag propertyFlags, Data::Flag methodFlags, Data::Flag signalFlags)
 {
-    QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
+    append(engine, metaObject, -1, propertyFlags, methodFlags, signalFlags);
+}
 
+void QDeclarativePropertyCache::append(QDeclarativeEngine *engine, const QMetaObject *metaObject, 
+                                       int revision, 
+                                       Data::Flag propertyFlags, Data::Flag methodFlags, Data::Flag signalFlags)
+{
+    Q_UNUSED(revision);
+
+    allowedRevisionCache.append(0);
+
+    QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
     int methodCount = metaObject->methodCount();
     // 3 to block the destroyed signal and the deleteLater() slot
     int methodOffset = qMax(3, metaObject->methodOffset()); 
@@ -261,11 +274,15 @@ void QDeclarativePropertyCache::append(QDeclarativeEngine *engine, const QMetaOb
         else if (m.methodType() == QMetaMethod::Signal)
             data->flags |= signalFlags;
 
+        data->metaObjectOffset = allowedRevisionCache.count() - 1;
+
         if (stringCache.contains(methodName)) {
             RData *old = stringCache[methodName];
             // We only overload methods in the same class, exactly like C++
             if (old->flags & Data::IsFunction && old->coreIndex >= methodOffset)
                 data->relatedIndex = old->coreIndex;
+            data->overrideIndexIsProperty = !bool(old->flags & Data::IsFunction);
+            data->overrideIndex = old->coreIndex;
             stringCache[methodName]->release();
             identifierCache[data->identifier.identifier]->release();
         }
@@ -294,7 +311,12 @@ void QDeclarativePropertyCache::append(QDeclarativeEngine *engine, const QMetaOb
         data->load(p, engine);
         data->flags |= propertyFlags;
 
+        data->metaObjectOffset = allowedRevisionCache.count() - 1;
+
         if (stringCache.contains(propName)) {
+            RData *old = stringCache[propName];
+            data->overrideIndexIsProperty = !bool(old->flags & Data::IsFunction);
+            data->overrideIndex = old->coreIndex;
             stringCache[propName]->release();
             identifierCache[data->identifier.identifier]->release();
         }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -299,7 +299,7 @@ void QDeclarativeFlickablePrivate::fixup(AxisData &data, qreal minExtent, qreal 
             timeline.move(data.move, maxExtent - dist/2, QEasingCurve(QEasingCurve::InQuad), fixupDuration/4);
             timeline.move(data.move, maxExtent, QEasingCurve(QEasingCurve::OutExpo), 3*fixupDuration/4);
         } else {
-            timeline.set(data.move, minExtent);
+            timeline.set(data.move, maxExtent);
         }
     }
     vTime = timeline.time();
@@ -373,9 +373,9 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
 
     \section1 Example Usage
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage flickable.gif
-    \endfloat
+    \enddiv
 
     The following example shows a small view onto a large image in which the
     user can drag or flick the image in order to view different parts of it.
@@ -876,7 +876,7 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
     Q_D(QDeclarativeFlickable);
     if (!d->interactive) {
         QDeclarativeItem::wheelEvent(event);
-    } else if (yflick()) {
+    } else if (yflick() && event->orientation() == Qt::Vertical) {
         if (event->delta() > 0)
             d->vData.velocity = qMax(event->delta() - d->vData.smoothVelocity.value(), qreal(250.0));
         else
@@ -888,7 +888,7 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
             movementStarting();
         }
         event->accept();
-    } else if (xflick()) {
+    } else if (xflick() && event->orientation() == Qt::Horizontal) {
         if (event->delta() > 0)
             d->hData.velocity = qMax(event->delta() - d->hData.smoothVelocity.value(), qreal(250.0));
         else
@@ -1248,6 +1248,60 @@ void QDeclarativeFlickable::setContentHeight(qreal h)
     }
     emit contentHeightChanged();
     d->updateBeginningEnd();
+}
+
+/*!
+    \qmlmethod Flickable::resizeContent(real width, real height, QPointF center)
+    \preliminary
+
+    Resizes the content to \a width x \a height about \a center.
+
+    \bold {This method was added in QtQuick 1.1.}
+
+    This does not scale the contents of the Flickable - it only resizes the \l contentWidth
+    and \l contentHeight.
+
+    Resizing the content may result in the content being positioned outside
+    the bounds of the Flickable.  Calling \l returnToBounds() will
+    move the content back within legal bounds.
+*/
+void QDeclarativeFlickable::resizeContent(qreal w, qreal h, QPointF center)
+{
+    Q_D(QDeclarativeFlickable);
+    if (w != d->hData.viewSize) {
+        qreal oldSize = d->hData.viewSize;
+        setContentWidth(w);
+        if (center.x() != 0) {
+            qreal pos = center.x() * w / oldSize;
+            setContentX(contentX() + pos - center.x());
+        }
+    }
+    if (h != d->vData.viewSize) {
+        qreal oldSize = d->vData.viewSize;
+        setContentHeight(h);
+        if (center.y() != 0) {
+            qreal pos = center.y() * h / oldSize;
+            setContentY(contentY() + pos - center.y());
+        }
+    }
+}
+
+/*!
+    \qmlmethod Flickable::returnToBounds()
+    \preliminary
+
+    Ensures the content is within legal bounds.
+
+    \bold {This method was added in QtQuick 1.1.}
+
+    This may be called to ensure that the content is within legal bounds
+    after manually positioning the content.
+*/
+void QDeclarativeFlickable::returnToBounds()
+{
+    Q_D(QDeclarativeFlickable);
+    d->fixupX();
+    d->fixupY();
 }
 
 qreal QDeclarativeFlickable::vWidth() const

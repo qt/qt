@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -444,7 +444,7 @@
     Finally, we store the location ID that this particular record is
     associated with as well as a z-value. In the \l {Graphics View
     Framework}, an item's z-value determines its position in the item
-    stack. An item of high Z-value will be drawn on top of an item
+    stack. An item of high z-value will be drawn on top of an item
     with a lower z-value if they share the same parent item. We also
     provide an \c updateItemPosition() function to refresh the view
     when required.

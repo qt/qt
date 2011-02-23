@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -193,7 +193,7 @@ public:
     void addBitmapFontToPath(qreal x, qreal y, const QGlyphLayout &, QPainterPath *, QTextItem::RenderFlags);
     /**
      * Create a qimage with the alpha values for the glyph.
-     * Returns an image indexed_8 with index values ranging from 0=fully transparant to 255=opaque
+     * Returns an image indexed_8 with index values ranging from 0=fully transparent to 255=opaque
      */
     virtual QImage alphaMapForGlyph(glyph_t);
     virtual QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition);

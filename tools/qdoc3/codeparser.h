@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,8 +66,8 @@ class CodeParser
     virtual void initializeParser(const Config& config);
     virtual void terminateParser();
     virtual QString language() = 0;
-    virtual QString headerFileNameFilter();
-    virtual QString sourceFileNameFilter() = 0;
+    virtual QStringList headerFileNameFilter();
+    virtual QStringList sourceFileNameFilter() = 0;
     virtual void parseHeaderFile(const Location& location,
                                  const QString& filePath, Tree *tree);
     virtual void parseSourceFile(const Location& location,
@@ -78,6 +78,8 @@ class CodeParser
     static void initialize(const Config& config);
     static void terminate();
     static CodeParser *parserForLanguage(const QString& language);
+    static CodeParser *parserForHeaderFile(const QString &filePath);
+    static CodeParser *parserForSourceFile(const QString &filePath);
     static const QString titleFromName(const QString& name);
 
  protected:

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,6 +73,7 @@ signals:
     void testSignal(double arg);
 
 private slots:
+    void unloadRecursion();
     void scriptLoadAndUnload_statement();
     void scriptLoadAndUnload();
     void scriptLoadAndUnload_eval();
@@ -345,6 +346,46 @@ QVariant ScriptEngineSpy::extension(Extension ext, const QVariant &arg)
     return QVariant();
 }
 
+static void collectScriptObjects(QScriptEngine *engine)
+{
+    // We call garbage collection few times to collect objects that
+    // are unreferenced after first gc. We try to force full gc.
+    engine->collectGarbage();
+    engine->collectGarbage();
+    engine->collectGarbage();
+}
+
+class EvaluatingAgent : public QScriptEngineAgent {
+public:
+    EvaluatingAgent(QScriptEngine *engine)
+        : QScriptEngineAgent(engine)
+        , count(0)
+    {}
+
+    virtual void scriptUnload(qint64)
+    {
+        if (++count > 10) // recursion breaker.
+            return;
+        // check if recursive evaluation works
+        engine()->evaluate(";");
+        collectScriptObjects(engine());
+    }
+
+    bool isOk() const { return count > 10; }
+private:
+    int count;
+};
+
+void tst_QScriptEngineAgent::unloadRecursion()
+{
+    QScriptEngine engine;
+    EvaluatingAgent *agent = new EvaluatingAgent(&engine);
+    engine.setAgent(agent);
+    engine.evaluate(";");
+    collectScriptObjects(&engine);
+    QVERIFY(agent->isOk());
+}
+
 void tst_QScriptEngineAgent::scriptLoadAndUnload_statement()
 {
     QScriptEngine eng;
@@ -358,6 +399,8 @@ void tst_QScriptEngineAgent::scriptLoadAndUnload_statement()
         int lineNumber = 123;
         eng.evaluate(code, fileName, lineNumber);
 
+        // Script object have to be garbage collected first.
+        collectScriptObjects(&eng);
         QCOMPARE(spy->count(), 2);
 
         QCOMPARE(spy->at(0).type, ScriptEngineEvent::ScriptLoad);
@@ -377,6 +420,8 @@ void tst_QScriptEngineAgent::scriptLoadAndUnload_statement()
         int lineNumber = 456;
         eng.evaluate(code, fileName, lineNumber);
 
+        // Script object have to be garbage collected first.
+        collectScriptObjects(&eng);
         QCOMPARE(spy->count(), 2);
 
         QCOMPARE(spy->at(0).type, ScriptEngineEvent::ScriptLoad);
@@ -414,7 +459,8 @@ void tst_QScriptEngineAgent::scriptLoadAndUnload()
 
         code = "foo = null";
         eng.evaluate(code);
-        QCOMPARE(spy->count(), 3);
+        collectScriptObjects(&eng); // foo() is GC'ed
+        QCOMPARE(spy->count(), 4);
 
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::ScriptLoad);
         QVERIFY(spy->at(1).scriptId != -1);
@@ -425,8 +471,6 @@ void tst_QScriptEngineAgent::scriptLoadAndUnload()
         QCOMPARE(spy->at(2).type, ScriptEngineEvent::ScriptUnload);
         QCOMPARE(spy->at(2).scriptId, spy->at(1).scriptId);
 
-        eng.collectGarbage(); // foo() is GC'ed
-        QCOMPARE(spy->count(), 4);
         QCOMPARE(spy->at(3).type, ScriptEngineEvent::ScriptUnload);
         QCOMPARE(spy->at(3).scriptId, spy->at(0).scriptId);
     }
@@ -448,6 +492,7 @@ void tst_QScriptEngineAgent::scriptLoadAndUnload()
 
         code = "bar = foo(); foo = null";
         eng.evaluate(code);
+        collectScriptObjects(&eng);
         QCOMPARE(spy->count(), 3);
 
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::ScriptLoad);
@@ -458,14 +503,12 @@ void tst_QScriptEngineAgent::scriptLoadAndUnload()
         QCOMPARE(spy->at(2).type, ScriptEngineEvent::ScriptUnload);
         QCOMPARE(spy->at(2).scriptId, spy->at(1).scriptId);
 
-        eng.collectGarbage(); // foo() is not GC'ed
+        collectScriptObjects(&eng); // foo() is not GC'ed
         QCOMPARE(spy->count(), 3);
 
         code = "bar = null";
         eng.evaluate(code);
-        QCOMPARE(spy->count(), 5);
-
-        eng.collectGarbage(); // foo() is GC'ed
+        collectScriptObjects(&eng); // foo() is GC'ed
         QCOMPARE(spy->count(), 6);
     }
     delete spy;

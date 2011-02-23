@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -103,7 +103,7 @@ So, to implement your reusable button, you would simply build a QML component.
 
 Parent widgets each provide a generic way to interface to one or more arbitrary other widgets.
 A QTabWidget provides an interface to multiple "pages", one of which is visible at any time,
-and a mechanism for selecting among them (the QTabBar). A QScollArea provides scrollbars around
+and a mechanism for selecting among them (the QTabBar). A QScrollArea provides scrollbars around
 a widget that is otherwise too large to fit in available space.
 
 Nearly all such components can be created directly in QML. Only a few cases

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -3609,7 +3609,7 @@
     \row \o \c PE_WindowFrame               \o QStyle::PE_FrameWindow
     \row \o \c PE_CheckListController       \o QStyle::PE_Q3CheckListController
     \row \o \c PE_CheckListIndicator        \o QStyle::PE_Q3CheckListIndicator
-    \row \o \c PE_CheckListExclusiveIndicato\o QStyle::PE_Q3CheckListExclusiveIndicator
+    \row \o \c PE_CheckListExclusiveIndicator \o QStyle::PE_Q3CheckListExclusiveIndicator
     \row \o \c PE_PanelGroupBox             \o QStyle::PE_FrameGroupBox
     \row \o \c PE_TreeBranch                \o QStyle::PE_IndicatorBranch
     \row \o \c PE_RubberBand                \o QStyle::CE_RubberBand \o uses QStyle::drawControl()

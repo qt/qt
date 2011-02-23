@@ -39,18 +39,18 @@ Optimizations
 QtCore
 ------
 
- - foo
-    * bar
+ - QStateMachine
+    * [QTBUG-14491] Fix compilation on AIX 5.3 with gcc.
 
 QtGui
 -----
 
  - QWidget
     * [QTMOBILITY-645] Send WinIdChange event when winId is set to zero.
-	  The window handle of a native widget may be set to zero in two
-	  situations: (i) temporarily, during reparenting and (ii) during
-	  widget destruction.  Previously, no WinIdChange event was sent in
-	  either of these cases; now, it is sent in both cases.
+      The window handle of a native widget may be set to zero in two
+      situations: (i) temporarily, during reparenting and (ii) during
+      widget destruction.  Previously, no WinIdChange event was sent in
+      either of these cases; now, it is sent in both cases.
 
 QtDBus
 ------
@@ -73,8 +73,23 @@ QtOpenGL
 QtScript
 --------
 
- - foo
-    * bar
+ - QScriptContext
+    * [QTBUG-17137] Fix crash when generating backtrace involving a
+      built-in (ECMA) function.
+ - QScriptEngine
+    * [QTBUG-16987] Ensure QScriptProgram objects are invalidated
+      when engine is destroyed.
+    * [QTBUG-16828] Fix alignment issue causing crashes on platforms
+      with only 4-byte-aligned malloc'ed memory (e.g. Symbian debug
+      builds).
+    * [QTBUG-15144] Fix GC-related crash in QScriptValue::setData().
+    * [QTBUG-15079] Fix crash when QScriptClass property getter
+      returns an invalid value.
+    * [QTBUG-13440] Fix bug that caused Math.random() not to
+      produce random values.
+  - QScriptValue
+    * [QTBUG-14801] Fix crash in QScriptValue::construct() when
+      the function throws a non-Object value.
 
 QtSql
 -----
@@ -126,6 +141,99 @@ Qt for Mac OS X
 
  -
 
+Qt for Symbian
+--------------
+
+ - Paging changes
+    * [QT-3503] Remove PAGED keyword from all Qt-based binaries for
+      MMP-based build systems (abld, SBSv2 (a.k.a. Raptor)).
+      This changes the code paging field in the Symbian (E32Image) header
+      from "paged" to "default".  Thus it is left to the configuration
+      of the particular device whether paging is used for the binary or
+      not.  All devices that support code paging should have it turned
+      on (the value is stored in the HAL, so can be checked using eg.
+      fshell); data paging may or may not be turned on depending on the
+      device characteristics.  Leaving both code and data paging as
+      "default" means that any limitations in the device (eg. around
+      flash wear) can be controlled by that device by disabling the
+      appropriate types of paging rather than being forced by the binary
+      (which may be deployed to several different devices with different
+      characteristics).
+
+ - Phonon MMF backend
+   * [QTBUG-11436] Added a MediaObject property which allows the client to
+     specify which Internet Access Point should be used for streaming.
+
+ - QNetworkProxyFactory
+   * [QTBUG-13857] Added systemProxyForQuery() for Symbian, allowing
+     network proxies configured on the device to be used by applications.
+
+ - QApplication
+   * [QTBUG-15915] Fix crash when creating more than one QApplication in single test case.
+
+ - QDesktopWidget
+   * [QTBUG-16095] Resize event for QDesktopWidget was sent too early.
+
+ - QFileDialog
+   * [QTBUG-16204] Fix using QFileDialog statics in Symbian.
+
+ - QDialog
+   * [QTBUG-16277] Fix fullscreen/Maximized dialog misplacement in Symbian.
+
+ - QSystemSemaphore
+   * [QTBUG-16615] Fix QSystemSemaphore handle management issues in Symbian.
+
+ - QLineEdit
+   * [QTBUG-16238] Fix one character displacement for cursor in line edits.
+
+ - QtScript
+    * [QTBUG-16685] Fix crash in JavaScript stack allocator.
+    * [QTBUG-15847] Add compiler optimizations.
+    * [QTBUG-14293] Enhanced JavaScript heap allocator.
+
+ - qmake & mkspecs
+   * [QT-4193] Only add ICON for application projects in symbianpkgrules.pri
+   * [QTBUG-13159] Allow pkg_prerules and pkg_postrules to be targeted to separate files.
+   * [QTBUG-13367] Make default application deployment removable & added .flags modifier
+      support for DEPLOYMENT items in Symbian.
+   * [QTBUG-14280] Implement support for DEPLOYMENT.display_name in Symbian.
+   * [QTBUG-13917] Localize .loc and .pkg content based on TRANSLATIONS.
+   * [QTBUG-15159] Use include(original mkspec) instead of copying of mkspec to default.
+   * [QTBUG-15393] Resolve EPOCROOT in qt.conf using same logic as in .pro.
+   * [QTBUG-15501] Fix symbian-mmp.conf include path.
+   * [QTBUG-15539] Use parent class function to generate Makefile headers in Symbian.
+   * [QTBUG-14472] Add NetworkServices capability automatically for network apps
+   * [QTBUG-14736] Add libinfix support for QML plugins in Symbian.
+   * [QT-4375] Fix incorrect file name case for OpenGL libraries in symbian.conf.
+   * [QTBUG-16172] Use relative include instead of absolute in default qmake.conf.
+   * [QTBUG-16221] Fix libinfixed usage in Symbian when def files are used.
+   * [QTBUG-16261] Fix infinite loop in qmake when reading malformed .ts files.
+   * [QTBUG-16298] Ignore static_and_shared in Symbian builds.
+   * [QTBUG-13769] Generate freeze targets in Symbian.
+   * [QTBUG-16691] Remove toolcheck from generic clean targets for symbian-sbsv2.
+   * [QT-4476] Fixed UTF-8 application names in device application menu in Symbian.
+   * [QTBUG-16753] Improved QMAKE_POST_LINK support in symbian-sbsv2.
+   * [QTBUG-16881] Fix QMAKE_POST_LINK in Symbian for targets with special characters.
+   * [QTBUG-16888] No longer replace dash and dot in TARGET with underscore in Symbian.
+   * Fix partial upgrade package UID for libinfixed Qt.
+   * Cleaned up sis_targets.prf.
+
+ - Tool scripts
+   * [QTBUG-13886] Disallow patching capabilities of executables.
+   * [QTBUG-13891] Add Location as self signable capability in patch_capabilities.pl.
+   * [QTBUG-15561] Only patch package content that is necessary for self-signing.
+   * Fix epocroot handling in createpackage.pl script.
+   * Unify epocroot usage in createpackage and patch_capabilities scripts.
+
+ - qtmain.lib
+   * [QTBUG-14735] Use qtmain.lib to provide entry point for all Symbian applications.
+
+ - QWidget
+    * [QT-4416, QTBUG-17288] On devices which lack support for transparency
+      in EGL surfaces, setting Qt::WA_TranslucentBackground on a widget
+      whose windowType() is Qt::Window causes that widget to be rendered
+      using the raster graphics system.
+
 Qt for Embedded Linux
 ---------------------
 
@@ -153,6 +261,9 @@ Qt for Windows CE
 
  - Linguist
    * baz
+
+ - qmake
+   * [QTBUG-14357] Make qmake to pass all UTF-8 characters unchanged through parser.
 
 ****************************************************************************
 * Important Behavior Changes *

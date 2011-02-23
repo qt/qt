@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,6 +46,11 @@
 #include <QNetworkReply>
 #include "testhttpserver.h"
 #include "../../../shared/util.h"
+
+#ifndef QT_NO_CONCURRENT
+#include <qtconcurrentrun.h>
+#include <qfuture.h>
+#endif
 
 // These don't let normal people run tests!
 //#include "../network-settings.h"
@@ -356,6 +361,8 @@ void tst_qdeclarativepixmapcache::shrinkcache()
     }
 }
 
+#ifndef QT_NO_CONCURRENT
+
 void createNetworkServer()
 {
    QEventLoop eventLoop;
@@ -380,6 +387,8 @@ void tst_qdeclarativepixmapcache::networkCrash()
     }
     future.cancel();
 }
+#endif
+
 #endif
 
 QTEST_MAIN(tst_qdeclarativepixmapcache)

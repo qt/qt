@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -62,7 +62,7 @@ Item {
 
             GridView {
                 id: photoGridView; model: rssModel; delegate: Mobile.GridDelegate {}
-                cacheBuffer: 100
+                cacheBuffer: 1000
                 cellWidth: (parent.width-2)/4; cellHeight: cellWidth; width: parent.width; height: parent.height
             }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,13 +61,11 @@ struct QS60WindowSurfacePrivate
     QList<QImage*> bufferImages;
 };
 
-QS60WindowSurface::QS60WindowSurface(QWidget* widget)
-    : QWindowSurface(widget), d_ptr(new QS60WindowSurfacePrivate)
+TDisplayMode displayMode(bool opaque)
 {
 
     TDisplayMode mode = S60->screenDevice()->DisplayMode();
-    bool isOpaque = qt_widget_private(widget)->isOpaque;
-    if (isOpaque) {
+    if (opaque) {
         mode = EColor16MU;
     } else  {
         if (QSysInfo::symbianVersion() >= QSysInfo::SV_SF_3)
@@ -75,7 +73,13 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
         else
             mode = EColor16MA; // Symbian prior to Symbian^3 sw accelerates EColor16MA
     }
+    return mode;
+}
 
+QS60WindowSurface::QS60WindowSurface(QWidget* widget)
+    : QWindowSurface(widget), d_ptr(new QS60WindowSurfacePrivate)
+{
+    TDisplayMode mode = displayMode(qt_widget_private(widget)->isOpaque);
     // We create empty CFbsBitmap here -> it will be resized in setGeometry
     CFbsBitmap *bitmap = new CFbsBitmap;	// CBase derived object needs check on new
     Q_CHECK_PTR(bitmap);
@@ -122,6 +126,11 @@ void QS60WindowSurface::beginPaint(const QRegion &rgn)
 
     if (!qt_widget_private(window())->isOpaque) {
         QS60PixmapData *pixmapData = static_cast<QS60PixmapData *>(d_ptr->device.data_ptr().data());
+
+        TDisplayMode mode = displayMode(false);
+        if (pixmapData->cfbsBitmap->DisplayMode() != mode)
+            pixmapData->convertToDisplayMode(mode);
+
         pixmapData->beginDataAccess();
 
         QPainter p(&pixmapData->image);

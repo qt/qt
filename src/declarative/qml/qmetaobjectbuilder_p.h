@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -258,7 +258,6 @@ public:
     bool isUser() const;
     bool hasStdCppSet() const;
     bool isEnumOrFlag() const;
-    bool isDynamic() const;
 
     void setReadable(bool value);
     void setWritable(bool value);
@@ -270,7 +269,6 @@ public:
     void setUser(bool value);
     void setStdCppSet(bool value);
     void setEnumOrFlag(bool value);
-    void setDynamic(bool value);
 
 private:
     const QMetaObjectBuilder *_mobj;

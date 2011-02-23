@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -28,7 +28,7 @@
 /*!
 \page qml-anchor-layout.html
 \target anchor-layout
-\title Anchor-based Layout in QML
+\title Anchor-Based Layout in QML
 
 \section1 Overview
 
@@ -78,6 +78,9 @@ Rectangle { id: rect3; x: 150; ... }
 
 \image edge4.png
 
+There are also some convenience anchors. anchors.fill is a convenience that is the same as setting the left,right,top and bottom anchors
+to the left,right,top and bottom of the target item. anchors.centerIn is another convenience anchor, and is the same as setting the verticalCenter
+and horizontalCenter anchors to the verticalCenter and horizontalCenter of the target item.
 
 \section1 Anchor Margins and Offsets
 

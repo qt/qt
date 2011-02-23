@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,6 +44,13 @@
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QDebug>
 
+#include "../shared/testhttpserver.h"
+#include "../../../shared/util.h"
+
+#define SERVER_ADDR "http://127.0.0.1:14450"
+#define SERVER_PORT 14450
+
+
 class tst_qdeclarativemoduleplugin : public QObject
 {
     Q_OBJECT
@@ -54,7 +61,12 @@ public:
 
 private slots:
     void importsPlugin();
+    void importsPlugin2();
+    void importsPlugin21();
     void incorrectPluginCase();
+    void importPluginWithQmlFile();
+    void remoteImportWithQuotedUrl();
+    void remoteImportWithUnquotedUri();
 };
 
 #ifdef Q_OS_SYMBIAN
@@ -121,6 +133,38 @@ void tst_qdeclarativemoduleplugin::importsPlugin()
     delete object;
 }
 
+void tst_qdeclarativemoduleplugin::importsPlugin2()
+{
+    QDeclarativeEngine engine;
+    engine.addImportPath(QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("imports"));
+    QTest::ignoreMessage(QtWarningMsg, "plugin2 created");
+    QTest::ignoreMessage(QtWarningMsg, "import2 worked");
+    QDeclarativeComponent component(&engine, TEST_FILE("data/works2.qml"));
+    foreach (QDeclarativeError err, component.errors())
+        qWarning() << err;
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("value").toInt(),123);
+    delete object;
+}
+
+void tst_qdeclarativemoduleplugin::importsPlugin21()
+{
+    QDeclarativeEngine engine;
+    engine.addImportPath(QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("imports"));
+    QTest::ignoreMessage(QtWarningMsg, "plugin2.1 created");
+    QTest::ignoreMessage(QtWarningMsg, "import2.1 worked");
+    QDeclarativeComponent component(&engine, TEST_FILE("data/works21.qml"));
+    foreach (QDeclarativeError err, component.errors())
+        qWarning() << err;
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("value").toInt(),123);
+    delete object;
+}
+
 void tst_qdeclarativemoduleplugin::incorrectPluginCase()
 {
     QDeclarativeEngine engine;
@@ -143,6 +187,63 @@ void tst_qdeclarativemoduleplugin::incorrectPluginCase()
 #endif
 
     QCOMPARE(errors.at(0).description(), expectedError);
+}
+
+void tst_qdeclarativemoduleplugin::importPluginWithQmlFile()
+{
+    QDeclarativeEngine engine;
+    engine.addImportPath(QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("imports"));
+    QDeclarativeComponent component(&engine, TEST_FILE("data/pluginWithQmlFile.qml"));
+    foreach (QDeclarativeError err, component.errors())
+        qWarning() << err;
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    delete object;
+}
+
+void tst_qdeclarativemoduleplugin::remoteImportWithQuotedUrl()
+{
+    TestHTTPServer server(SERVER_PORT);
+    QVERIFY(server.isValid());
+    server.serveDirectory(SRCDIR "/imports");
+
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine);
+    component.setData("import \"http://127.0.0.1:14450/com/nokia/PureQmlModule\" \nComponentA { width: 300; ComponentB{} }", QUrl());
+
+    QTRY_COMPARE(component.status(), QDeclarativeComponent::Ready);
+    QObject *object = component.create();
+    QCOMPARE(object->property("width").toInt(), 300);
+    QVERIFY(object != 0);
+    delete object;
+
+    foreach (QDeclarativeError err, component.errors())
+        qWarning() << err;
+    VERIFY_ERRORS(0);
+}
+
+void tst_qdeclarativemoduleplugin::remoteImportWithUnquotedUri()
+{
+    TestHTTPServer server(SERVER_PORT);
+    QVERIFY(server.isValid());
+    server.serveDirectory(SRCDIR "/imports");
+
+    QDeclarativeEngine engine;
+    engine.addImportPath(QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("imports"));
+    QDeclarativeComponent component(&engine);
+    component.setData("import com.nokia.PureQmlModule 1.0 \nComponentA { width: 300; ComponentB{} }", QUrl());
+
+
+    QTRY_COMPARE(component.status(), QDeclarativeComponent::Ready);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("width").toInt(), 300);
+    delete object;
+
+    foreach (QDeclarativeError err, component.errors())
+        qWarning() << err;
+    VERIFY_ERRORS(0);
 }
 
 QTEST_MAIN(tst_qdeclarativemoduleplugin)

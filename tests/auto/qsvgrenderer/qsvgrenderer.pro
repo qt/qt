@@ -18,3 +18,6 @@ wince*|symbian {
    }
 }
 
+!symbian: {
+    DEFINES += SRCDIR=\\\"$$PWD/\\\"
+}

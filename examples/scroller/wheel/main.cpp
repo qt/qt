@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -107,12 +107,16 @@ private:
 int main(int argc, char **argv)
 {
     QApplication a(argc, argv);
-
     bool touch = a.arguments().contains(QLatin1String("--touch"));
-
-    MainWindow *mw = new MainWindow(touch);
-    mw->show();
-
+    MainWindow mw(touch);
+#ifdef Q_WS_S60
+    mw.showMaximized();
+#else
+    mw.show();
+#endif
+#ifdef Q_WS_MAC
+    mw.raise();
+#endif
     return a.exec();
 }
 

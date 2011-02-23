@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -104,7 +104,7 @@ Item {
         anchors.centerIn: parent; width: parent.width - 20
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.WordWrap
-        text: "Minehunt will not run properly if the C++ plugin is not compiled.\n\nPlease see README."
+        text: "Minehunt demo has to be compiled to run.\n\nPlease see README."
         color: "white"; font.bold: true; font.pixelSize: 14
         visible: tiles == undefined
     }

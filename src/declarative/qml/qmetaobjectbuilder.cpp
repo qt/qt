@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -122,7 +122,7 @@ enum PropertyFlags  {
     User = 0x00100000,
     ResolveUser = 0x00200000,
     Notify = 0x00400000,
-    Dynamic = 0x00800000
+    Revisioned = 0x00800000
 };
 
 enum MethodFlags  {
@@ -139,7 +139,8 @@ enum MethodFlags  {
 
     MethodCompatibility = 0x10,
     MethodCloned = 0x20,
-    MethodScriptable = 0x40
+    MethodScriptable = 0x40,
+    MethodRevisioned = 0x80
 };
 
 struct QMetaObjectPrivate
@@ -2277,21 +2278,6 @@ bool QMetaPropertyBuilder::isEnumOrFlag() const
 }
 
 /*!
-    Returns true if the property has the dynamic flag set;
-    otherwise returns false.  The default value is false.
-
-    \sa setDynamic()
-*/
-bool QMetaPropertyBuilder::isDynamic() const
-{
-    QMetaPropertyBuilderPrivate *d = d_func();
-    if (d)
-        return d->flag(Dynamic);
-    else
-        return false;
-}
-
-/*!
     Sets this property to readable if \a value is true.
 
     \sa isReadable(), setWritable()
@@ -2412,19 +2398,6 @@ void QMetaPropertyBuilder::setEnumOrFlag(bool value)
     QMetaPropertyBuilderPrivate *d = d_func();
     if (d)
         d->setFlag(EnumOrFlag, value);
-}
-
-/*!
-    Sets this property to have the dynamic flag if \a value is
-    true.
-
-    \sa isDynamic()
-*/
-void QMetaPropertyBuilder::setDynamic(bool value)
-{
-    QMetaPropertyBuilderPrivate *d = d_func();
-    if (d)
-        d->setFlag(Dynamic, value);
 }
 
 /*!

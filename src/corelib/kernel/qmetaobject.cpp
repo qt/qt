@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1387,6 +1387,25 @@ int QMetaMethod::methodIndex() const
 }
 
 /*!
+    \internal
+
+    Returns the method revision if one was
+    specified by Q_REVISION, otherwise returns 0.
+ */
+int QMetaMethod::revision() const
+{
+    if (!mobj)
+        return 0;
+    if ((QMetaMethod::Access)(mobj->d.data[handle + 4] & MethodRevisioned)) {
+        int offset = priv(mobj->d.data)->methodData
+                     + priv(mobj->d.data)->methodCount * 5
+                     + (handle - priv(mobj->d.data)->methodData) / 5;
+        return mobj->d.data[offset];
+    }
+    return 0;
+}
+
+/*!
     Returns the access specification of this method (private,
     protected, or public).
 
@@ -2390,6 +2409,35 @@ int QMetaProperty::notifySignalIndex() const
         return mobj->d.data[offset] + mobj->methodOffset();
     } else {
         return -1;
+    }
+}
+
+/*!
+    \internal
+
+    Returns the property revision if one was
+    specified by REVISION, otherwise returns 0.
+ */
+int QMetaProperty::revision() const
+{
+    if (!mobj)
+        return 0;
+    int flags = mobj->d.data[handle + 2];
+    if (flags & Revisioned) {
+        int offset = priv(mobj->d.data)->propertyData +
+                     priv(mobj->d.data)->propertyCount * 3 + idx;
+        // Revision data is placed after NOTIFY data, if present.
+        // Iterate through properties to discover whether we have NOTIFY signals.
+        for (int i = 0; i < priv(mobj->d.data)->propertyCount; ++i) {
+            int handle = priv(mobj->d.data)->propertyData + 3*i;
+            if (mobj->d.data[handle + 2] & Notify) {
+                offset += priv(mobj->d.data)->propertyCount;
+                break;
+            }
+        }
+        return mobj->d.data[offset];
+    } else {
+        return 0;
     }
 }
 

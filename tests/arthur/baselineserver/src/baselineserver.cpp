@@ -53,11 +53,16 @@
 #include <QProcess>
 #include <QDirIterator>
 
-QString BaselineServer::storage;
+// extra fields, for use in image metadata storage
+const QString PI_ImageChecksum(QLS("ImageChecksum"));
+const QString PI_RunId(QLS("RunId"));
+const QString PI_CreationDate(QLS("CreationDate"));
 
+QString BaselineServer::storage;
+QString BaselineServer::url;
 
 BaselineServer::BaselineServer(QObject *parent)
-    : QTcpServer(parent)
+    : QTcpServer(parent), lastRunIdIdx(0)
 {
     QFileInfo me(QCoreApplication::applicationFilePath());
     meLastMod = me.lastModified();
@@ -71,22 +76,32 @@ QString BaselineServer::storagePath()
     if (storage.isEmpty()) {
         storage = QLS(qgetenv("QT_LANCELOT_DIR"));
         if (storage.isEmpty())
-            storage =  QLS("/var/www");
+            storage = QLS("/var/www");
     }
     return storage;
 }
 
 QString BaselineServer::baseUrl()
 {
-    return QLS("http://")
-            + QHostInfo::localHostName().toLatin1() + '.'
-            + QHostInfo::localDomainName().toLatin1() + '/';
+    if (url.isEmpty()) {
+        url = QLS("http://")
+                + QHostInfo::localHostName().toLatin1() + '.'
+                + QHostInfo::localDomainName().toLatin1() + '/';
+    }
+    return url;
 }
 
 void BaselineServer::incomingConnection(int socketDescriptor)
 {
-    qDebug() << "Server: New connection!";
-    BaselineThread *thread = new BaselineThread(socketDescriptor, this);
+    QString runId = QDateTime::currentDateTime().toString(QLS("MMMdd-hhmmss"));
+    if (runId == lastRunId) {
+        runId += QLC('-') + QString::number(++lastRunIdIdx);
+    } else {
+        lastRunId = runId;
+        lastRunIdIdx = 0;
+    }
+    qDebug() << "Server: New connection! RunId:" << runId;
+    BaselineThread *thread = new BaselineThread(runId, socketDescriptor, this);
     connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
     thread->start();
 }
@@ -114,23 +129,21 @@ void BaselineServer::heartbeat()
         QCoreApplication::exit();
 }
 
-BaselineThread::BaselineThread(int socketDescriptor, QObject *parent)
-    : QThread(parent), socketDescriptor(socketDescriptor)
+BaselineThread::BaselineThread(const QString &runId, int socketDescriptor, QObject *parent)
+    : QThread(parent), runId(runId), socketDescriptor(socketDescriptor)
 {
 }
 
 void BaselineThread::run()
 {
-    BaselineHandler handler(socketDescriptor);
+    BaselineHandler handler(runId, socketDescriptor);
     exec();
 }
 
 
-BaselineHandler::BaselineHandler(int socketDescriptor)
-    : QObject(), connectionEstablished(false)
+BaselineHandler::BaselineHandler(const QString &runId, int socketDescriptor)
+    : QObject(), runId(runId), connectionEstablished(false)
 {
-    runId = QDateTime::currentDateTime().toString(QLS("MMMdd-hhmmss"));
-
     if (socketDescriptor == -1)
         return;
 
@@ -220,16 +233,17 @@ void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
 
     for (ImageItemList::iterator i = itemList.begin(); i != itemList.end(); ++i) {
         i->imageChecksums.clear();
+        i->status = ImageItem::BaselineNotFound;
         QString prefix = pathForItem(*i, true);
-        QFile file(prefix + QLS("metadata"));
-        if (file.open(QIODevice::ReadOnly)) {
-            QDataStream checkSums(&file);
-            checkSums >> i->imageChecksums;
-            file.close();
-            i->status = ImageItem::Ok;
+        PlatformInfo itemData = fetchItemMetadata(prefix);
+        if (itemData.contains(PI_ImageChecksum)) {
+            bool ok = false;
+            quint64 checksum = itemData.value(PI_ImageChecksum).toULongLong(&ok, 16);
+            if (ok) {
+                i->imageChecksums.prepend(checksum);
+                i->status = ImageItem::Ok;
+            }
         }
-        if (!i->imageChecksums.count())
-            i->status = ImageItem::BaselineNotFound;
     }
 
     // Find and mark blacklisted items
@@ -280,15 +294,48 @@ void BaselineHandler::storeImage(const QByteArray &itemBlock, bool isBaseline)
         cwd.mkpath(dir);
     item.image.save(prefix + QLS(FileFormat), FileFormat);
 
-    //# Could use QSettings or XML or even DB, could use common file for whole dir or even whole storage - but for now, keep it simple
-    QFile file(prefix + QLS("metadata"));
-    file.open(QIODevice::WriteOnly | QIODevice::Truncate);
-    QDataStream checkSums(&file);
-    checkSums << item.imageChecksums;
-    file.close();
+    PlatformInfo itemData = plat;
+    itemData.insert(PI_ImageChecksum, QString::number(item.imageChecksums.at(0), 16));  //# Only the first is stored. TBD: get rid of list
+    itemData.insert(PI_RunId, runId);
+    itemData.insert(PI_CreationDate, QDateTime::currentDateTime().toString());
+    storeItemMetadata(itemData, prefix);
 
     if (!isBaseline)
         report.addMismatch(item);
+}
+
+
+void BaselineHandler::storeItemMetadata(const PlatformInfo &metadata, const QString &path)
+{
+    QFile file(path + QLS(MetadataFileExt));
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        qWarning() << runId << logtime() << "ERROR: could not write to file" << file.fileName();
+        return;
+    }
+    QTextStream out(&file);
+    PlatformInfo::const_iterator it = metadata.constBegin();
+    while (it != metadata.constEnd()) {
+        out << it.key()  << ": " << it.value() << endl;
+        ++it;
+    }
+    file.close();
+}
+
+
+PlatformInfo BaselineHandler::fetchItemMetadata(const QString &path)
+{
+    PlatformInfo res;
+    QFile file(path + QLS(MetadataFileExt));
+    if (!file.open(QIODevice::ReadOnly))
+        return res;
+    QTextStream in(&file);
+    do {
+        QString line = in.readLine();
+        int idx = line.indexOf(QLS(": "));
+        if (idx > 0)
+            res.insert(line.left(idx), line.mid(idx+2));
+    } while (!in.atEnd());
+    return res;
 }
 
 
@@ -309,9 +356,8 @@ void BaselineHandler::mapPlatformInfo() const
     if (host.isEmpty() || host == QLS("localhost")) {
         host = plat.value(PI_HostAddress);
     } else {
-        //# Site specific, should be in a config file
-        if (!host.startsWith(QLS("oldhcp"))) {
-            // remove index postfix typical of vm hostnames
+        if (!plat.value(PI_PulseGitBranch).isEmpty()) {
+            // i.e. pulse run, so remove index postfix typical of vm hostnames
             host.remove(QRegExp(QLS("\\d+$")));
             if (host.endsWith(QLC('-')))
                 host.chop(1);
@@ -327,7 +373,7 @@ void BaselineHandler::mapPlatformInfo() const
 
     // Map Qt version
     QString ver = plat.value(PI_QtVersion);
-    mapped.insert(PI_QtVersion, ver.prepend(QLS("Qt-")));   //### TBD: remove patch version
+    mapped.insert(PI_QtVersion, ver.prepend(QLS("Qt-")));
 }
 
 QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline, bool absolute) const
@@ -371,7 +417,7 @@ QString BaselineHandler::clearAllBaselines(const QString &context)
     int tot = 0;
     int failed = 0;
     QDirIterator it(BaselineServer::storagePath() + QLC('/') + context,
-                    QStringList() << QLS("*.png") << QLS("*.metadata"));
+                    QStringList() << QLS("*.") + QLS(FileFormat) << QLS("*.") + QLS(MetadataFileExt));
     while (it.hasNext()) {
         tot++;
         if (!QFile::remove(it.next()))
@@ -389,10 +435,10 @@ QString BaselineHandler::updateSingleBaseline(const QString &oldBaseline, const 
 
     QProcess proc;
     proc.setProcessChannelMode(QProcess::MergedChannels);
-    proc.start(QLS("cp"), QStringList() << QLS("-f") << srcBase + QLS("png") << srcBase + QLS("metadata") << dstDir);
+    proc.start(QLS("cp"), QStringList() << QLS("-f") << srcBase + QLS(FileFormat) << srcBase + QLS(MetadataFileExt) << dstDir);
     proc.waitForFinished();
     if (proc.exitCode() == 0)
-        res = QString("Successfully updated '%1'").arg(oldBaseline + QLS("/metadata"));
+        res = QString("Successfully updated '%1'").arg(oldBaseline);
     else
         res = QString("Error updating baseline: %1<br>"
                       "Command output: <pre>%2</pre>").arg(proc.errorString(), proc.readAll().constData());
@@ -440,7 +486,8 @@ void BaselineHandler::testPathMapping()
           << QLS("macbuilder-02.test.troll.no")
           << QLS("bqvm1164")
           << QLS("chimera")
-          << QLS("localhost");
+          << QLS("localhost")
+          << QLS("");
 
     ImageItem item;
     item.testFunction = QLS("testPathMapping");
@@ -450,7 +497,8 @@ void BaselineHandler::testPathMapping()
 
     plat.insert(PI_QtVersion, QLS("4.8.0"));
     plat.insert(PI_BuildKey, QLS("(nobuildkey)"));
-    plat.insert(PI_QMakeSpec, "linux-g++");
+    plat.insert(PI_QMakeSpec, QLS("linux-g++"));
+    plat.insert(PI_PulseGitBranch, QLS("somebranch"));
     foreach(const QString& host, hosts) {
         mapped.clear();
         plat.insert(PI_HostName, host);

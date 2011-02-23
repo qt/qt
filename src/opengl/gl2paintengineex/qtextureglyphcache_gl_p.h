@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -133,6 +133,8 @@ public:
     void setContext(const QGLContext *context);
     inline const QGLContext *context() const { return ctx; }
 
+    inline int serialNumber() const { return m_serialNumber; }
+
     enum FilterMode {
         Nearest,
         Linear
@@ -152,6 +154,8 @@ private:
 
     GLfloat m_vertexCoordinateArray[8];
     GLfloat m_textureCoordinateArray[8];
+
+    int m_serialNumber;
 };
 
 QT_END_NAMESPACE

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -76,7 +76,6 @@ class Config
     QSet<QString> subVars(const QString& var) const;
     QStringList getAllFiles(const QString& filesVar, 
                             const QString& dirsVar,
-                            const QString& defaultNameFilter,
                             const QSet<QString> &excludedDirs = QSet<QString>());
 
     static QStringList getFilesHere(const QString& dir,
@@ -119,12 +118,12 @@ class Config
 };
 
 #define CONFIG_ALIAS                    "alias"
-#define CONFIG_APPLICATION		"application"
 #define CONFIG_BASE                     "base"      // ### don't document for now
 #define CONFIG_CODEINDENT               "codeindent"
 #define CONFIG_DEFINES                  "defines"
 #define CONFIG_DESCRIPTION              "description"
 #define CONFIG_EDITION                  "edition"
+#define CONFIG_ENDHEADER                "endheader"
 #define CONFIG_EXAMPLEDIRS              "exampledirs"
 #define CONFIG_EXAMPLES                 "examples"
 #define CONFIG_EXCLUDEDIRS              "excludedirs"
@@ -134,6 +133,8 @@ class Config
 #define CONFIG_GENERATEINDEX            "generateindex"
 #define CONFIG_HEADERDIRS               "headerdirs"
 #define CONFIG_HEADERS                  "headers"
+#define CONFIG_HEADERSCRIPTS            "headerscripts"
+#define CONFIG_HEADERSTYLES             "headerstyles"
 #define CONFIG_IGNOREDIRECTIVES         "ignoredirectives"
 #define CONFIG_IGNORETOKENS             "ignoretokens"
 #define CONFIG_IMAGEDIRS                "imagedirs"
@@ -143,11 +144,11 @@ class Config
 #define CONFIG_MACRO                    "macro"
 #define CONFIG_NATURALLANGUAGE          "naturallanguage"
 #define CONFIG_OBSOLETELINKS            "obsoletelinks"
-#define CONFIG_APPLICATION              "application"
 #define CONFIG_OUTPUTDIR                "outputdir"
 #define CONFIG_OUTPUTENCODING           "outputencoding"
 #define CONFIG_OUTPUTLANGUAGE           "outputlanguage"
 #define CONFIG_OUTPUTFORMATS            "outputformats"
+#define CONFIG_OUTPUTPREFIXES           "outputprefixes"
 #define CONFIG_PROJECT                  "project"
 #define CONFIG_QHP                      "qhp"
 #define CONFIG_QUOTINGINFORMATION       "quotinginformation"
@@ -160,8 +161,11 @@ class Config
 #define CONFIG_SOURCES                  "sources"
 #define CONFIG_SPURIOUS                 "spurious"
 #define CONFIG_STYLEDIRS                "styledirs"
+#define CONFIG_STYLE                    "style"
 #define CONFIG_STYLES                   "styles"
 #define CONFIG_STYLESHEETS              "stylesheets"
+#define CONFIG_SYNTAXHIGHLIGHTING       "syntaxhighlighting"
+#define CONFIG_TEMPLATEDIR              "templatedir"
 #define CONFIG_TABSIZE                  "tabsize"
 #define CONFIG_TAGFILE                  "tagfile"
 #define CONFIG_TRANSLATORS              "translators" // ### don't document for now

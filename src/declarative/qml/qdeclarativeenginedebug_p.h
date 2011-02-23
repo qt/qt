@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -57,6 +57,7 @@
 
 #include <QtCore/qurl.h>
 #include <QtCore/qvariant.h>
+#include <QWeakPointer>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,6 +65,7 @@ class QDeclarativeEngine;
 class QDeclarativeContext;
 class QDeclarativeWatcher;
 class QDataStream;
+class QDeclarativeState;
 
 class QDeclarativeEngineDebugServer : public QDeclarativeDebugService
 {
@@ -105,8 +107,11 @@ private Q_SLOTS:
     void propertyChanged(int id, int objectId, const QMetaProperty &property, const QVariant &value);
 
 private:
+    void prepareDeferredObjects(QObject *);
     void buildObjectList(QDataStream &, QDeclarativeContext *);
     void buildObjectDump(QDataStream &, QObject *, bool, bool);
+    void buildStatesList(QDeclarativeContext *, bool);
+    void buildStatesList(QObject *obj);
     QDeclarativeObjectData objectData(QObject *);
     QDeclarativeObjectProperty propertyData(QObject *, int);
     QVariant valueContents(const QVariant &defaultValue) const;
@@ -116,6 +121,7 @@ private:
 
     QList<QDeclarativeEngine *> m_engines;
     QDeclarativeWatcher *m_watch;
+    QList<QWeakPointer<QDeclarativeState> > m_allStates;
 };
 Q_DECLARATIVE_PRIVATE_EXPORT QDataStream &operator<<(QDataStream &, const QDeclarativeEngineDebugServer::QDeclarativeObjectData &);
 Q_DECLARATIVE_PRIVATE_EXPORT QDataStream &operator>>(QDataStream &, QDeclarativeEngineDebugServer::QDeclarativeObjectData &);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,9 +47,13 @@
 
 #ifdef Q_OS_SYMBIAN
 #include <unistd.h> // for usleep
+#define RUNNING_TIME 2000 // save GPU mem by running shorter time.
+#else
+#define RUNNING_TIME 5000
 #endif
 
-#define RUNNING_TIME 5000
+
+
 
 tst_QGLThreads::tst_QGLThreads(QObject *parent)
     : QObject(parent)
@@ -199,7 +203,15 @@ public:
         QTime time;
         time.start();
         while (time.elapsed() < RUNNING_TIME) {
-            QImage image(400, 300, QImage::Format_RGB32);
+            int width = 400;
+            int height = 300;
+#ifdef Q_OS_SYMBIAN
+            // GPU mem is very scarce resource on Symbian currently.
+            // That's why we create only small textures.
+            width = 50;
+            height = 20;
+#endif
+            QImage image(width, height, QImage::Format_RGB32);
             QPainter p(&image);
             p.fillRect(image.rect(), QColor(rand() % 256, rand() % 256, rand() % 256));
             p.setPen(Qt::red);
@@ -427,6 +439,10 @@ void tst_QGLThreads::renderInThread()
 {
 #ifdef Q_OS_MAC
     QSKIP("OpenGL threading tests are currently disabled on Mac as they were causing reboots", SkipAll);
+#endif
+
+#ifdef Q_OS_SYMBIAN
+    QSKIP("OpenGL threading tests are disabled on Symbian as accessing RWindow from a secondary thread is not supported", SkipAll);
 #endif
 
     QFETCH(bool, resize);

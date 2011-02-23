@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -117,6 +117,7 @@ const int StyleMask = NSTitledWindowMask | NSClosableWindowMask | NSResizableWin
 - (void)showModelessPanel;
 - (void)showWindowModalSheet:(QWidget *)docWidget;
 - (void)runApplicationModalPanel;
+- (BOOL)isAppModal;
 - (void)changeFont:(id)sender;
 - (void)changeAttributes:(id)sender;
 - (BOOL)windowShouldClose:(id)window;
@@ -227,6 +228,7 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
     QBoolBlocker nativeDialogOnTop(QApplicationPrivate::native_modal_dialog_active);
     mAppModal = true;
     NSWindow *ourPanel = [mStolenContentView window];
+    [ourPanel setReleasedWhenClosed:NO];
     [NSApp runModalForWindow:ourPanel];
     QAbstractEventDispatcher::instance()->interrupt();
 
@@ -234,6 +236,11 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
         mPriv->fontDialog()->accept();
     else
         mPriv->fontDialog()->reject();
+}
+
+- (BOOL)isAppModal
+{
+    return mAppModal;
 }
 
 - (void)showWindowModalSheet:(QWidget *)docWidget
@@ -486,6 +493,8 @@ void QFontDialogPrivate::closeCocoaFontPanel()
     QT_MANGLE_NAMESPACE(QCocoaFontPanelDelegate) *theDelegate = static_cast<QT_MANGLE_NAMESPACE(QCocoaFontPanelDelegate) *>(delegate);
     NSWindow *ourPanel = [theDelegate actualPanel];
     [ourPanel close];
+    if ([theDelegate isAppModal])
+        [ourPanel release];
     [theDelegate cleanUpAfterMyself];
     [theDelegate release];
     this->delegate = 0;

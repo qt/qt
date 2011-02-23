@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1806,7 +1806,7 @@ void QRasterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
         ensureState();
         if (s->flags.tx_noshear) {
             d->initializeRasterizer(&s->brushData);
-            // ### Is normalizing really nessesary here?
+            // ### Is normalizing really necessary here?
             const qreal *p = path.points();
             QRectF r = QRectF(p[0], p[1], p[2] - p[0], p[7] - p[1]).normalized();
             if (!r.isEmpty()) {
@@ -3177,7 +3177,7 @@ void QRasterPaintEngine::drawGlyphsS60(const QPointF &p, const QTextItemInt &ti)
 #endif // Q_OS_SYMBIAN && QT_NO_FREETYPE
 
 /*!
- * Returns true if the rectangle is completly within the current clip
+ * Returns true if the rectangle is completely within the current clip
  * state of the paint engine.
  */
 bool QRasterPaintEnginePrivate::isUnclipped_normalized(const QRect &r) const

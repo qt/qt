@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,6 +54,7 @@
 
 #ifdef Q_WS_S60
 #include <aknappui.h>
+#include <akntoolbar.h>
 #include <eikbtgpc.h>
 #endif
 
@@ -488,6 +489,7 @@ void QWidgetPrivate::show_sys()
 
          QSymbianControl *id = static_cast<QSymbianControl *>(q->internalWinId());
          const bool isFullscreen = q->windowState() & Qt::WindowFullScreen;
+         const TBool cbaRequested = q->windowFlags() & Qt::WindowSoftkeysVisibleHint;
 
 #ifdef Q_WS_S60
         // Lazily initialize the S60 screen furniture when the first window is shown.
@@ -507,10 +509,24 @@ void QWidgetPrivate::show_sys()
 
                     CEikButtonGroupContainer *cba = CEikButtonGroupContainer::NewL(CEikButtonGroupContainer::ECba,
                         CEikButtonGroupContainer::EHorizontal,ui,R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+                    if (isFullscreen && !cbaRequested)
+                        cba->MakeVisible(false);
 
                     CEikButtonGroupContainer *oldCba = factory->SwapButtonGroup(cba);
                     Q_ASSERT(!oldCba);
                     S60->setButtonGroupContainer(cba);
+
+                    // If the creation of the first widget is delayed, for example by doing it
+                    // inside the event loop, S60 somehow "forgets" to set the visibility of the
+                    // toolbar (the three middle softkeys) when you flip the phone over, so we
+                    // need to do it ourselves to avoid a "hole" in the application, even though
+                    // Qt itself does not use the toolbar directly..
+                    CAknAppUi *appui = dynamic_cast<CAknAppUi *>(CEikonEnv::Static()->AppUi());
+                    if (appui) {
+                        CAknToolbar *toolbar = appui->PopupToolbar();
+                        if (toolbar && !toolbar->IsVisible())
+                            toolbar->SetToolbarVisibility(ETrue);
+                    }
 
                     CEikMenuBar *menuBar = new(ELeave) CEikMenuBar;
                     menuBar->ConstructL(ui, 0, R_AVKON_MENUPANE_EMPTY);
@@ -784,6 +800,14 @@ void QWidgetPrivate::s60UpdateIsOpaque()
         if (window->SetTransparencyAlphaChannel() == KErrNone) {
             window->SetBackgroundColor(TRgb(255, 255, 255, 0));
             extra->topextra->nativeWindowTransparencyEnabled = 1;
+
+            if (extra->topextra->backingStore.data() &&
+                    QApplicationPrivate::graphics_system_name == QLatin1String("openvg")) {
+                // Semi-transparent EGL surfaces aren't supported. We need to
+                // recreate backing store to get translucent surface (raster surface).
+                extra->topextra->backingStore.create(q);
+                extra->topextra->backingStore.registerWidget(q);
+            }
         }
     } else if (extra->topextra->nativeWindowTransparencyEnabled) {
         window->SetTransparentRegion(TRegionFix<1>());
@@ -1152,14 +1176,17 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         }
 
 #ifdef Q_WS_S60
-        // Hide window decoration when switching to fullsccreen / minimized otherwise show decoration.
-        // The window decoration visibility has to be changed before doing actual window state
-        // change since in that order the availableGeometry will return directly the right size and
-        // we will avoid unnecessarty redraws
-        const bool visible = !(newstate & (Qt::WindowFullScreen | Qt::WindowMinimized));
-        const bool statusPaneVisibility = visible;
-        const bool buttonGroupVisibility = (visible || (isFullscreen && cbaRequested));
-        S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
+        bool decorationsVisible(false);
+        if (!parentWidget()) { // Only top level native windows have control over cba/status pane
+            // Hide window decoration when switching to fullscreen / minimized otherwise show decoration.
+            // The window decoration visibility has to be changed before doing actual window state
+            // change since in that order the availableGeometry will return directly the right size and
+            // we will avoid unnecessary redraws
+            decorationsVisible = !(newstate & (Qt::WindowFullScreen | Qt::WindowMinimized));
+            const bool statusPaneVisibility = decorationsVisible;
+            const bool buttonGroupVisibility = (decorationsVisible || (isFullscreen && cbaRequested));
+            S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
+        }
 #endif // Q_WS_S60
 
         // Ensure the initial size is valid, since we store it as normalGeometry below.
@@ -1183,7 +1210,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             // accurate because it did not consider the status pane. This means that when returning
             // normal mode after showing the status pane, the geometry would overlap so we should
             // move it if it never had an explicit position.
-            if (!wasMoved && S60->statusPane() && visible) {
+            if (!wasMoved && S60->statusPane() && decorationsVisible) {
                 TPoint tl = static_cast<CEikAppUi*>(S60->appUi())->ClientRect().iTl;
                 normalGeometry.setTopLeft(QPoint(tl.iX, tl.iY));
             }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -557,8 +557,9 @@ QDeclarativeVisualDataModelData::~QDeclarativeVisualDataModelData()
 void QDeclarativeVisualDataModelData::ensureProperties()
 {
     QDeclarativeVisualDataModelPrivate *modelPriv = QDeclarativeVisualDataModelPrivate::get(m_model);
-    if (modelPriv->m_metaDataCacheable && !modelPriv->m_metaDataCreated) {
-        modelPriv->createMetaData();
+    if (modelPriv->m_metaDataCacheable) {
+        if (!modelPriv->m_metaDataCreated)
+            modelPriv->createMetaData();
         if (modelPriv->m_metaDataCreated)
             m_meta->setCached(true);
     }
@@ -1076,7 +1077,7 @@ QDeclarativeItem *QDeclarativeVisualDataModel::item(int index, const QByteArray 
         } else {
             delete data;
             delete ctxt;
-            qmlInfo(this, d->m_delegate->errors()) << "Error creating delgate";
+            qmlInfo(this, d->m_delegate->errors()) << "Error creating delegate";
         }
     }
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(nobj);

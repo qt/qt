@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -93,6 +93,7 @@ private slots:
     void qtPropertyFunction();
     void nullContext();
     void streaming();
+    void comparison_null();
     void assignmentAndComparison();
 };
 
@@ -364,6 +365,13 @@ void tst_QScriptContextInfo::streaming()
             QCOMPARE(info.functionMetaIndex(), info2.functionMetaIndex());
         }
     }
+}
+
+void tst_QScriptContextInfo::comparison_null()
+{
+    QScriptContextInfo info1, info2, info3(0);
+    QCOMPARE(info1, info2);
+    QCOMPARE(info1, info3);
 }
 
 void tst_QScriptContextInfo::assignmentAndComparison()

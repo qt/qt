@@ -1,10 +1,13 @@
 import QtQuick 1.0
 
 Rectangle {
+    id: root
     width: 240
     height: 320
     color: "#ffffff"
 
+    property bool showHeader: false
+    property bool showFooter: false
     property real hr: list.visibleArea.heightRatio
     function heightRatio() {
         return list.visibleArea.heightRatio
@@ -105,6 +108,10 @@ Rectangle {
         Component {
             id: invalidHl
             SmoothedAnimation {}
+        },
+        Component {
+            id: headerFooter
+            Rectangle { height: 30; width: 240; color: "blue" }
         }
     ]
     ListView {
@@ -119,5 +126,7 @@ Rectangle {
         highlightMoveSpeed: 1000
         highlightResizeSpeed: 1000
         cacheBuffer: testObject.cacheBuffer
+        header: root.showHeader ? headerFooter : null
+        footer: root.showFooter ? headerFooter : null
     }
 }

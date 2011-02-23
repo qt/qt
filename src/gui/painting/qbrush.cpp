@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1217,14 +1217,14 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
     Each of the types is represented by a subclass of QGradient:
 
     \table
-    \row
-    \o \inlineimage qgradient-linear.png
-    \o \inlineimage qgradient-radial.png
-    \o \inlineimage qgradient-conical.png
     \header
     \o QLinearGradient
     \o QRadialGradient
     \o QConicalGradient
+    \row
+    \o \inlineimage qgradient-linear.png
+    \o \inlineimage qgradient-radial.png
+    \o \inlineimage qgradient-conical.png
     \endtable
 
     The colors in a gradient are defined using stop points of the

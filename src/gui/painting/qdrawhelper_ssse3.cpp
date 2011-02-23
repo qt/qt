@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -80,7 +80,7 @@ inline static void blend_pixel(quint32 &dst, const quint32 src)
 
 
 // Basically blend src over dst with the const alpha defined as constAlphaVector.
-// nullVector, half, one, colorMask are constant accross the whole image/texture, and should be defined as:
+// nullVector, half, one, colorMask are constant across the whole image/texture, and should be defined as:
 //const __m128i nullVector = _mm_set1_epi32(0);
 //const __m128i half = _mm_set1_epi16(0x80);
 //const __m128i one = _mm_set1_epi16(0xff);

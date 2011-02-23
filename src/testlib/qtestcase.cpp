@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -298,9 +298,13 @@ QT_BEGIN_NAMESPACE
 
     \relates QTest
 
-    Implements a main() function that instantiates a QApplication object and
+    Implements a main() function that instantiates an application object and
     the \a TestClass, and executes all tests in the order they were defined.
     Use this macro to build stand-alone executables.
+
+    If \c QT_GUI_LIB is defined, the application object will be a QApplication,
+    otherwise it will be a QCoreApplication.  If qmake is used and the configuration
+    includes \c{QT += gui}, then \c QT_GUI_LIB will be defined automatically.
 
     \bold {Note:} On platforms that have keypad navigation enabled by default (eg: Symbian),
     this macro will forcfully disable it to simplify the usage of key events when writing
