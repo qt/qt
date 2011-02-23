@@ -325,6 +325,11 @@ void QHttpThreadDelegate::readyReadSlot()
 
 void QHttpThreadDelegate::finishedSlot()
 {
+    if (!httpReply) {
+        qWarning() << "QHttpThreadDelegate::finishedSlot: HTTP reply had already been deleted, internal problem. Please report.";
+        return;
+    }
+
     // If there is still some data left emit that now
     while (httpReply->readAnyAvailable()) {
         pendingDownloadData->fetchAndAddRelease(1);
@@ -370,6 +375,11 @@ void QHttpThreadDelegate::synchronousFinishedSlot()
 
 void QHttpThreadDelegate::finishedWithErrorSlot(QNetworkReply::NetworkError errorCode, const QString &detail)
 {
+    if (!httpReply) {
+        qWarning() << "QHttpThreadDelegate::finishedWithErrorSlot: HTTP reply had already been deleted, internal problem. Please report.";
+        return;
+    }
+
 #ifndef QT_NO_OPENSSL
     if (ssl)
         emit sslConfigurationChanged(httpReply->sslConfiguration());
