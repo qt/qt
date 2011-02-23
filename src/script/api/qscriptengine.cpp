@@ -612,23 +612,26 @@ QVariant &QScriptEnginePrivate::variantValue(v8::Handle<v8::Value> value)
   Returns the template for the given meta-object, \a mo; creates a template if one
   doesn't already exist.
 */
-v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::qtClassTemplate(const QMetaObject *mo)
+v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::qtClassTemplate(const QMetaObject *mo, const QScriptEngine::QObjectWrapOptions &options)
 {
     Q_ASSERT(mo != 0);
-    QHash<const QMetaObject *, v8::Persistent<v8::FunctionTemplate> >::const_iterator it;
-    it = m_qtClassTemplates.constFind(mo);
+    QScriptEngine::QObjectWrapOptions mask =
+        QScriptEngine::ExcludeSuperClassMethods |
+        QScriptEngine::ExcludeSuperClassProperties |
+        QScriptEngine::ExcludeSuperClassContents |
+        QScriptEngine::SkipMethodsInEnumeration |
+        QScriptEngine::ExcludeDeleteLater |
+        QScriptEngine::ExcludeSlots;
+    mask &= options;
+    ClassTemplateHash::const_iterator it;
+    QPair<const QMetaObject *, QScriptEngine::QObjectWrapOptions> key = qMakePair(mo, mask);
+    it = m_qtClassTemplates.constFind(key);
     if (it != m_qtClassTemplates.constEnd())
         return *it;
 
-    v8::Persistent<v8::FunctionTemplate> persistent = v8::Persistent<v8::FunctionTemplate>::New(createQtClassTemplate(this, mo));
-    m_qtClassTemplates.insert(mo, persistent);
+    v8::Persistent<v8::FunctionTemplate> persistent = v8::Persistent<v8::FunctionTemplate>::New(createQtClassTemplate(this, mo, mask));
+    m_qtClassTemplates.insert(key, persistent);
     return persistent;
-}
-
-// Returns the template for the almighty QObject class.
-v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::qobjectTemplate()
-{
-    return qtClassTemplate(&QObject::staticMetaObject);
 }
 
 // We need a custom version of the 'toString' for dealing with objects created from QScriptClasses
@@ -805,10 +808,11 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     m_metaObjectTemplate.Dispose();
     m_abortResult.Dispose();
 
-    QHash<const QMetaObject *, v8::Persistent<v8::FunctionTemplate> >::iterator i = m_qtClassTemplates.begin();
+    ClassTemplateHash::iterator i = m_qtClassTemplates.begin();
     for (; i != m_qtClassTemplates.end(); ++i) {
         (*i).Dispose();
     }
+    m_qobjectBaseTemplate.Dispose();
 
     m_typeInfos.clear();
     clearExceptions();
@@ -902,7 +906,7 @@ v8::Handle<v8::Value> QScriptEnginePrivate::newQObject(QObject *object,
     if (!object)
         return makeJSValue(QScriptValue::NullValue);
     v8::HandleScope handleScope;
-    v8::Handle<v8::FunctionTemplate> templ = this->qtClassTemplate(object->metaObject());
+    v8::Handle<v8::FunctionTemplate> templ = this->qtClassTemplate(object->metaObject(), opt);
     Q_ASSERT(!templ.IsEmpty());
     v8::Handle<v8::ObjectTemplate> instanceTempl = templ->InstanceTemplate();
     Q_ASSERT(!instanceTempl.IsEmpty());

@@ -122,7 +122,7 @@ private:
     QVariant m_value;
 };
 
-v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *, const QMetaObject *);
+v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *, const QMetaObject *, const QScriptEngine::QObjectWrapOptions &options);
 
 v8::Handle<v8::Value> QtDynamicPropertyGetter(v8::Local<v8::String> property,
                                                      const v8::AccessorInfo& info);

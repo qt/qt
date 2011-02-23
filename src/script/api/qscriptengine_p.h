@@ -121,7 +121,7 @@ public:
     v8::Handle<v8::Object> newQMetaObject(const QMetaObject* mo, const QScriptValue &ctor);
 
 
-    v8::Handle<v8::FunctionTemplate> qtClassTemplate(const QMetaObject *);
+    v8::Handle<v8::FunctionTemplate> qtClassTemplate(const QMetaObject *, const QScriptEngine::QObjectWrapOptions &);
     v8::Handle<v8::FunctionTemplate> qobjectTemplate();
     v8::Handle<v8::FunctionTemplate> scriptClassToStringTemplate();
 
@@ -281,7 +281,9 @@ private:
     QScriptOriginalGlobalObject m_originalGlobalObject;
     v8::Persistent<v8::String> m_qtDataId;
 
-    QHash<const QMetaObject *, v8::Persistent<v8::FunctionTemplate> > m_qtClassTemplates;
+    typedef QHash<QPair<const QMetaObject *, QScriptEngine::QObjectWrapOptions>, v8::Persistent<v8::FunctionTemplate> > ClassTemplateHash;
+    ClassTemplateHash m_qtClassTemplates;
+    v8::Persistent<v8::FunctionTemplate> m_qobjectBaseTemplate;
     v8::Persistent<v8::FunctionTemplate> m_variantTemplate;
     v8::Persistent<v8::FunctionTemplate> m_metaObjectTemplate;
     QScriptContextPrivate *m_currentQsContext;

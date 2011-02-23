@@ -967,7 +967,7 @@ static v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property
     QScriptEnginePrivate *engine = reinterpret_cast<QScriptEnginePrivate *>(v8::External::Unwrap(info.Data()));
     Q_ASSERT(engine);
     v8::Local<v8::Object> self = info.This();
-    if (!engine->qtClassTemplate(&QObject::staticMetaObject)->HasInstance(self))
+    if (!engine->qobjectTemplate()->HasInstance(self))
         return v8::Handle<v8::Value>(); //the QObject prototype is being used on another object.
     QScriptQObjectData *data = QScriptQObjectData::get(self);
     Q_ASSERT(engine == data->engine());
@@ -1203,7 +1203,7 @@ static v8::Handle<v8::Value> findChildCallback(const v8::Arguments& args)
     QScriptEnginePrivate *engine = reinterpret_cast<QScriptEnginePrivate *>(v8::External::Unwrap(args.Data()));
     Q_ASSERT(engine);
     v8::Local<v8::Object> self = args.This();
-    if (!engine->qtClassTemplate(&QObject::staticMetaObject)->HasInstance(self))
+    if (!engine->qobjectTemplate()->HasInstance(self))
         return v8::Handle<v8::Value>(); //the QObject prototype is being used on another object.
         QScriptQObjectData *data = QScriptQObjectData::get(self);
     Q_ASSERT(engine == data->engine());
@@ -1248,7 +1248,7 @@ static v8::Handle<v8::Value> findChildrenCallback(const v8::Arguments& args)
     QScriptEnginePrivate *engine = reinterpret_cast<QScriptEnginePrivate *>(v8::External::Unwrap(args.Data()));
     Q_ASSERT(engine);
     v8::Local<v8::Object> self = args.This();
-    if (!engine->qtClassTemplate(&QObject::staticMetaObject)->HasInstance(self))
+    if (!engine->qobjectTemplate()->HasInstance(self))
         return v8::Handle<v8::Value>(); //the QObject prototype is being used on another object.
         QScriptQObjectData *data = QScriptQObjectData::get(self);
     Q_ASSERT(engine == data->engine());
@@ -1276,7 +1276,7 @@ static v8::Handle<v8::Value> findChildrenCallback(const v8::Arguments& args)
     return handleScope.Close(array);
 }
 
-v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *engine, const QMetaObject *mo)
+v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *engine, const QMetaObject *mo, const QScriptEngine::QObjectWrapOptions &options)
 {
     v8::HandleScope handleScope;
     v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
@@ -1286,8 +1286,10 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
     // This is different from the old back-end, where every wrapped
     // object exposed everything as own properties.
     const QMetaObject *superMo = mo->superClass();
-    if (superMo)
-        funcTempl->Inherit(engine->qtClassTemplate(superMo));
+    if (superMo && !(options & QScriptEngine::ExcludeSuperClassContents))
+        funcTempl->Inherit(engine->qtClassTemplate(superMo, options));
+    else
+        funcTempl->Inherit(engine->qobjectTemplate());
 
     v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
     // Internal field is used to hold QScriptQObjectData*.
@@ -1297,11 +1299,21 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
     QHash<QByteArray, QList<int> > ownMethodNameToIndexes;
     QHash<QByteArray, QList<int> > methodNameToIndexes;
     int methodOffset = mo->methodOffset();
+    if ((options & QScriptEngine::ExcludeSuperClassContents) == QScriptEngine::ExcludeSuperClassProperties)
+        methodOffset = 0;  //if we excluded the superclass for the properties, we need to include the superclass methods
     for (int i = 0; i < mo->methodCount(); ++i) {
         QMetaMethod method = mo->method(i);
         // Ignore private methods.
         if (method.access() == QMetaMethod::Private)
             continue;
+
+        if (options & QScriptEngine::ExcludeSlots && method.methodType() == QMetaMethod::Slot)
+            continue;
+
+        if (i == 2 && options & QScriptEngine::ExcludeDeleteLater) {
+            Q_ASSERT(!qstrcmp(method.signature(), "deleteLater()"));
+            continue;
+        }
 
         QByteArray signature = method.signature();
         QByteArray name = signature.left(signature.indexOf('('));
@@ -1312,6 +1324,7 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
 
     // Add accessors for own meta-methods.
     {
+        v8::PropertyAttribute methodAttributes = (options & QScriptEngine::SkipMethodsInEnumeration) ? v8::DontEnum : v8::None ;
         QHash<QByteArray, QList<int> >::const_iterator it;
         v8::Handle<v8::Signature> sig = v8::Signature::New(funcTempl);
         for (it = ownMethodNameToIndexes.constBegin(); it != ownMethodNameToIndexes.constEnd(); ++it) {
@@ -1329,7 +1342,7 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
                 v8::Local<v8::Array> dataArray = v8::Array::New(2);
                 dataArray->Set(0, v8::External::Wrap(engine));
                 dataArray->Set(1, v8::Uint32::New(data));
-                instTempl->SetAccessor(v8::String::New(method.signature()), QtGetMetaMethod, 0, dataArray);
+                instTempl->SetAccessor(v8::String::New(method.signature()), QtGetMetaMethod, 0, dataArray, v8::DEFAULT, methodAttributes);
             }
             int methodIndex = indexes.last(); // The largest index by that name.
             quint32 data = (methodIndex & 0x3ffffff) | (voidvoid << 31) | (overloaded << 30);
@@ -1342,7 +1355,10 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
     }
 
     // Add accessors for meta-properties.
-    for (int i = mo->propertyOffset(); i < mo->propertyCount(); ++i) {
+    int propertyOffset = mo->propertyOffset();
+    if ((options & QScriptEngine::ExcludeSuperClassContents) == QScriptEngine::ExcludeSuperClassMethods)
+        propertyOffset = 0;  //if we excluded the superclass for the methods, we need to include the superclass properties
+    for (int i = propertyOffset; i < mo->propertyCount(); ++i) {
         QMetaProperty prop = mo->property(i);
         if (!prop.isScriptable())
             continue;
@@ -1364,9 +1380,19 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
                                v8::DEFAULT, v8::DontDelete);
     }
 
-    if (mo == &QObject::staticMetaObject) {
+    return handleScope.Close(funcTempl);
+}
+
+// Returns the template for the almighty QObject class.
+v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::qobjectTemplate()
+{
+    if (m_qobjectBaseTemplate.IsEmpty()) {
+        v8::HandleScope handleScope;
+        v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
+        funcTempl->SetClassName(v8::String::New("QObject"));
+
         v8::Handle<v8::ObjectTemplate> protoTempl = funcTempl->PrototypeTemplate();
-        v8::Local<v8::Value> wEngine = v8::External::Wrap(engine);
+        v8::Local<v8::Value> wEngine = v8::External::Wrap(this);
         protoTempl->Set(v8::String::New("findChild"), v8::FunctionTemplate::New(findChildCallback, wEngine)->GetFunction(), v8::DontEnum);
         protoTempl->Set(v8::String::New("findChildren"), v8::FunctionTemplate::New(findChildrenCallback, wEngine)->GetFunction(), v8::DontEnum);
 
@@ -1381,10 +1407,12 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
                                             QtLazyPropertySetter,
                                             0, 0, 0,
                                             /*data=*/wEngine);
-    }
 
-    return handleScope.Close(funcTempl);
+        m_qobjectBaseTemplate = v8::Persistent<v8::FunctionTemplate>::New(funcTempl);
+    }
+    return m_qobjectBaseTemplate;
 }
+
 
 v8::Handle<v8::Object> QScriptEnginePrivate::newQMetaObject(const QMetaObject *mo, const QScriptValue &ctor)
 {
