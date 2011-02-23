@@ -1,3 +1,4 @@
 TEMPLATE = subdirs
 SUBDIRS = \
-        qdbusperformance
+        qdbusperformance \
+        qdbustype
