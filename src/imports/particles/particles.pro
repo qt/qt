@@ -14,7 +14,8 @@ HEADERS += \
     particleemitter.h \
     particlesystem.h \
     trailsemitter.h \
-    spriteemitter.h
+    spriteemitter.h \
+    driftaffector.h
 
 SOURCES += \
     spriteparticles.cpp \
@@ -28,7 +29,8 @@ SOURCES += \
     particleemitter.cpp \
     particlesystem.cpp \
     trailsemitter.cpp \
-    spriteemitter.cpp
+    spriteemitter.cpp \
+    driftaffector.cpp
 
 QT += declarative opengl
 

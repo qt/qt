@@ -5,6 +5,7 @@
 #include "wanderaffector.h"
 #include "rockingaffector.h"
 #include "scalingaffector.h"
+#include "driftaffector.h"
 #include "particlesystem.h"
 #include "particleemitter.h"
 #include "spriteemitter.h"
@@ -32,6 +33,7 @@ void ParticlesPlugin::registerTypes(const char *uri)
     qmlRegisterType<WanderAffector>(uri, 2, 0, "Wander");
     qmlRegisterType<ScalingAffector>(uri, 2, 0, "Scale");
     qmlRegisterType<RockingAffector>(uri, 2, 0, "Rocking");
+    qmlRegisterType<DriftAffector>(uri, 2, 0, "Drift");
 }
 
 Q_EXPORT_PLUGIN2(Particles, ParticlesPlugin);
