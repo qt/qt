@@ -147,7 +147,6 @@ The examples can be found in Qt's \c examples/declarative directory.
 
 \section2 Touch Interaction
 \list
-\o \l{declarative/touchinteraction/gestures}{Gestures}
 \o \l{declarative/touchinteraction/mousearea}{MouseArea}
 \endlist
 
