@@ -967,7 +967,7 @@ void QPlainTextEditPrivate::_q_adjustScrollbars()
                     ++lineNumber;
                 }
                 if (lineNumber < layoutLineCount)
-                    visibleFromBottom += (layoutLineCount - lineNumber - 1);
+                    visibleFromBottom += (layoutLineCount - lineNumber);
                 break;
 
             }
