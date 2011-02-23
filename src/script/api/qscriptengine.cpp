@@ -288,7 +288,7 @@ v8::Handle<v8::Value> QScriptEnginePrivate::metaTypeToJS(int type, const void *d
 #endif
         case QMetaType::QObjectStar:
         case QMetaType::QWidgetStar:
-            result = makeQtObject(*reinterpret_cast<QObject* const *>(data));
+            result = newQObject(*reinterpret_cast<QObject* const *>(data));
             break;
         case QMetaType::QVariant:
             result = variantToJS(*reinterpret_cast<const QVariant*>(data));
@@ -311,7 +311,7 @@ v8::Handle<v8::Value> QScriptEnginePrivate::metaTypeToJS(int type, const void *d
                     return v8::Null();
                 } else {
                     // Fall back to wrapping in a QVariant.
-                    result = makeVariant(QVariant(type, data));
+                    result = newVariant(QVariant(type, data));
                 }
             }
         }
@@ -567,7 +567,7 @@ bool QScriptEnginePrivate::isQtObject(v8::Handle<v8::Value> value)
 QObject *QScriptEnginePrivate::qtObjectFromJS(v8::Handle<v8::Value> value)
 {
     if (isQtObject(value)) {
-        QtInstanceData *data = QtInstanceData::get(v8::Handle<v8::Object>::Cast(value));
+        QScriptQObjectData *data = QScriptQObjectData::get(v8::Handle<v8::Object>::Cast(value));
         Q_ASSERT(data);
         Q_ASSERT(this == data->engine());
         QObject *result = data->cppObject();
@@ -640,7 +640,7 @@ v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::scriptClassToStringTempla
 }
 
 // Creates a QVariant wrapper object.
-v8::Handle<v8::Object> QScriptEnginePrivate::makeVariant(const QVariant &value)
+v8::Handle<v8::Object> QScriptEnginePrivate::newVariant(const QVariant &value)
 {
     v8::Handle<v8::ObjectTemplate> instanceTempl = variantTemplate()->InstanceTemplate();
     v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
@@ -895,7 +895,7 @@ QScriptValue QScriptEngine::evaluate(const QScriptProgram& program)
     return QScriptValuePrivate::get(d->evaluate(QScriptProgramPrivate::get(program)));
 }
 
-v8::Handle<v8::Value> QScriptEnginePrivate::makeQtObject(QObject *object,
+v8::Handle<v8::Value> QScriptEnginePrivate::newQObject(QObject *object,
                                    QScriptEngine::ValueOwnership own,
                                    const QScriptEngine::QObjectWrapOptions &opt)
 {
@@ -910,7 +910,7 @@ v8::Handle<v8::Value> QScriptEnginePrivate::makeQtObject(QObject *object,
     Q_ASSERT(instance->InternalFieldCount() == 1);
 
     /* FIXME according to valgrind this can leak tst_QScriptValue::getSetData_objects test */
-    QtInstanceData *data = new QtInstanceData(this, object, own, opt);
+    QScriptQObjectData *data = new QScriptQObjectData(this, object, own, opt);
     instance->SetPointerInInternalField(0, data);
 
     // Add accessors for current dynamic properties.
@@ -947,7 +947,7 @@ v8::Handle<v8::Value> QScriptEnginePrivate::makeQtObject(QObject *object,
     }
 
     v8::Persistent<v8::Object> persistent = v8::Persistent<v8::Object>::New(instance);
-    persistent.MakeWeak(data, QScriptV8ObjectWrapperHelper::weakCallback<QtInstanceData>);
+    persistent.MakeWeak(data, QScriptV8ObjectWrapperHelper::weakCallback<QScriptQObjectData>);
     return handleScope.Close(instance);
 }
 
@@ -1334,7 +1334,7 @@ QScriptValue QScriptEngine::newQObject(QObject *object, ValueOwnership ownership
     Q_D(QScriptEngine);
     QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
-    return QScriptValuePrivate::get(d->newQObject(object, ownership, options));
+    return d->scriptValueFromInternal(d->newQObject(object, ownership, options));
 }
 
 /*!
@@ -1484,7 +1484,7 @@ QScriptValue QScriptEngine::newVariant(const QVariant &value)
     Q_D(QScriptEngine);
     QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
-    return QScriptValuePrivate::get(d->newVariant(value));
+    return d->scriptValueFromInternal(d->newVariant(value));
 }
 
 /*!

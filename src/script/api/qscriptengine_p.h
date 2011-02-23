@@ -109,11 +109,11 @@ public:
     QScriptPassPointer<QScriptValuePrivate> newObject(QScriptClassPrivate* scriptclass, QScriptValuePrivate* data);
     QScriptPassPointer<QScriptValuePrivate> newFunction(QScriptEngine::FunctionSignature fun, QScriptValuePrivate *prototype, int length);
     QScriptPassPointer<QScriptValuePrivate> newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg);
-    QScriptPassPointer<QScriptValuePrivate> newVariant(const QVariant &variant);
+    v8::Handle<v8::Object> newVariant(const QVariant &variant);
     QScriptPassPointer<QScriptValuePrivate> newVariant(QScriptValuePrivate* value, const QVariant &variant);
-    QScriptPassPointer<QScriptValuePrivate> newQObject(
-        QObject *object, QScriptEngine::ValueOwnership own = QScriptEngine::QtOwnership,
-        const QScriptEngine::QObjectWrapOptions &opt = 0);
+    v8::Handle<v8::Value> newQObject(QObject *object,
+                                       QScriptEngine::ValueOwnership own = QScriptEngine::QtOwnership,
+                                       const QScriptEngine::QObjectWrapOptions &opt = 0);
     QScriptPassPointer<QScriptValuePrivate> newQObject(QScriptValuePrivate *scriptObject,
                                                        QObject *qtObject,
                                                        QScriptEngine::ValueOwnership ownership,
@@ -131,10 +131,6 @@ public:
     inline v8::Handle<v8::Value> makeJSValue(qsreal value);
     inline v8::Handle<v8::Value> makeJSValue(QScriptValue::SpecialValue value);
     inline v8::Handle<v8::Value> makeJSValue(const QString& value);
-    v8::Handle<v8::Object> makeVariant(const QVariant &value);
-    v8::Handle<v8::Value> makeQtObject(QObject *object,
-                                       QScriptEngine::ValueOwnership own = QScriptEngine::QtOwnership,
-                                       const QScriptEngine::QObjectWrapOptions &opt = 0);
     inline v8::Local<v8::Array> getOwnPropertyNames(v8::Handle<v8::Object> object) const;
     inline QScriptValue::PropertyFlags getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode);
     inline v8::Local<v8::Value> getOwnProperty(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const;

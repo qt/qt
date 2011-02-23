@@ -80,19 +80,19 @@ void QtData<T>::set(v8::Handle<v8::Object> object, T* data)
     object->SetPointerInInternalField(0, data);
 }
 
-inline QtInstanceData::QtInstanceData(QScriptEnginePrivate *engine, QObject *object,
+inline QScriptQObjectData::QScriptQObjectData(QScriptEnginePrivate *engine, QObject *object,
                                QScriptEngine::ValueOwnership own,
                                const QScriptEngine::QObjectWrapOptions &opt)
-    : QtData<QtInstanceData>(engine)
+    : QtData<QScriptQObjectData>(engine)
     , m_cppObject(object)
     , m_own(own)
     , m_opt(opt)
 {
 }
 
-inline QtInstanceData::~QtInstanceData()
+inline QScriptQObjectData::~QScriptQObjectData()
 {
-//    qDebug("~QtInstanceData()");
+//    qDebug("~QScriptQObjectData()");
     switch (m_own) {
     case QScriptEngine::QtOwnership:
         break;
@@ -105,7 +105,7 @@ inline QtInstanceData::~QtInstanceData()
     }
 }
 
-inline QObject *QtInstanceData::cppObject(v8::Local<v8::Value> *error) const
+inline QObject *QScriptQObjectData::cppObject(v8::Local<v8::Value> *error) const
 {
     if (!m_cppObject) {
         v8::Local<v8::String> msg = v8::String::New("cannot access member of deleted QObject");
@@ -126,19 +126,19 @@ inline QObject *QtInstanceData::cppObject(v8::Local<v8::Value> *error) const
     return m_cppObject.data();
 }
 
-inline QObject *QtInstanceData::cppObject(const Mode mode) const
+inline QObject *QScriptQObjectData::cppObject(const Mode mode) const
 {
     if (mode == IgnoreException)
         return m_cppObject.data();
     return cppObject();
 }
 
-inline QScriptEngine::ValueOwnership QtInstanceData::ownership() const
+inline QScriptEngine::ValueOwnership QScriptQObjectData::ownership() const
 {
     return m_own;
 }
 
-inline QScriptEngine::QObjectWrapOptions QtInstanceData::options() const
+inline QScriptEngine::QObjectWrapOptions QScriptQObjectData::options() const
 {
     return m_opt;
 }
@@ -147,7 +147,7 @@ inline QScriptEngine::QObjectWrapOptions QtInstanceData::options() const
   Returns a QScriptable if the object is a QScriptable, else, return 0
   \internal
 */
-inline QScriptable *QtInstanceData::toQScriptable()
+inline QScriptable *QScriptQObjectData::toQScriptable()
 {
     Q_ASSERT(m_cppObject);
     void *ptr = m_cppObject.data()->qt_metacast("QScriptable");

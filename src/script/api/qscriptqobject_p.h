@@ -67,13 +67,13 @@ public:
 // - options: Flags that configure the binding
 //   (e.g. exclude super-class contents, skip methods in enumeration)
 //
-class QtInstanceData : public QtData<QtInstanceData>
+class QScriptQObjectData : public QtData<QScriptQObjectData>
 {
 public:
     enum Mode {RaiseException, IgnoreException};
 
-    inline QtInstanceData(QScriptEnginePrivate *, QObject *, QScriptEngine::ValueOwnership, const QScriptEngine::QObjectWrapOptions &);
-    inline ~QtInstanceData();
+    inline QScriptQObjectData(QScriptEnginePrivate *, QObject *, QScriptEngine::ValueOwnership, const QScriptEngine::QObjectWrapOptions &);
+    inline ~QScriptQObjectData();
     inline QObject *cppObject(v8::Local<v8::Value> *error = 0) const;
     inline QObject *cppObject(const Mode mode) const;
     inline QScriptEngine::ValueOwnership ownership() const;

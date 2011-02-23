@@ -382,13 +382,6 @@ inline bool QScriptEnginePrivate::hasInstance(v8::Handle<v8::FunctionTemplate> f
     return !fun.IsEmpty() && fun->HasInstance(value);
 }
 
-inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newQObject(
-        QObject *object, QScriptEngine::ValueOwnership own,
-        const QScriptEngine::QObjectWrapOptions &opt)
-{
-    return new QScriptValuePrivate(this, makeQtObject(object, own, opt));
-}
-
 inline void QScriptEnginePrivate::registerAdditionalResources(QtDataBase *data)
 {
     m_additionalResources.insert(data);
@@ -525,19 +518,19 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newQObject(
                                                                          const QScriptEngine::QObjectWrapOptions &options)
 {
     if (!scriptObject->isObject())
-        return newQObject(qtobject, ownership, options);
+        return new QScriptValuePrivate(this, newQObject(qtobject, ownership, options));
 
-    v8::Handle<v8::Object> jsobject = *scriptObject;
     if (scriptObject->isQObject()) {
+        v8::Handle<v8::Object> jsobject = *scriptObject;
         // scriptObject is a wrapper of an qt object.
-        QtInstanceData::set(jsobject, new QtInstanceData(this, qtobject, ownership, options));
+        QScriptQObjectData::set(jsobject, new QScriptQObjectData(this, qtobject, ownership, options));
         return scriptObject;
     }
 
     // FIXME it create a new instance instead of reusing this one. It doesn't replace existing references in JS.
     // Similar problem is in QSV::setScriptClass.
     // Q_UNIMPLEMENTED();
-    QScriptSharedDataPointer<QScriptValuePrivate> obj(newQObject(qtobject, ownership, options));
+    QScriptSharedDataPointer<QScriptValuePrivate> obj(new QScriptValuePrivate(this, newQObject(qtobject, ownership, options)));
     QScriptSharedDataPointer<QScriptValuePrivate> proto(scriptObject->prototype());
     scriptObject->reinitialize(this, *obj);
     scriptObject->setPrototype(proto.data());
@@ -559,16 +552,11 @@ inline v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::variantTemplate()
     return m_variantTemplate;
 }
 
-inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newVariant(const QVariant &variant)
-{
-    return new QScriptValuePrivate(this, makeVariant(variant));
-}
-
 inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newVariant(QScriptValuePrivate* object, const QVariant &value)
 {
 
     if (!object->isObject())
-        return newVariant(value);
+        return new QScriptValuePrivate(this, newVariant(value));
 
     if (object->isVariant()) {
         // object is a wrapper of a qvariant.
@@ -578,7 +566,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newVariant(
     // FIXME it create a new instance instead of reusing this one. It doesn't replace existing references in JS.
     // Similar problem is in QSV::setScriptClass and QSE::newQObject.
     // Q_UNIMPLEMENTED();
-    QScriptSharedDataPointer<QScriptValuePrivate> obj(newVariant(value));
+    QScriptSharedDataPointer<QScriptValuePrivate> obj(new QScriptValuePrivate(this, newVariant(value)));
     QScriptSharedDataPointer<QScriptValuePrivate> proto(object->prototype());
     object->reinitialize(this, *obj);
     object->setPrototype(proto.data());

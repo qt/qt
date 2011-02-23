@@ -293,12 +293,12 @@ public:
 // Acts as a middle-man; intercepts a C++ signal,
 // and invokes a JS callback function.
 //
-class QtSignalData;
-class QtConnection : public QObject
+class QScriptSignalData;
+class QScriptConnection : public QObject
 {
 public:
-    QtConnection(QtSignalData *signal);
-    ~QtConnection();
+    QScriptConnection(QScriptSignalData *signal);
+    ~QScriptConnection();
 
     bool connect(v8::Handle<v8::Object> receiver, v8::Handle<v8::Object> callback, Qt::ConnectionType type);
     bool disconnect();
@@ -321,7 +321,7 @@ public:
     void deleteNow() { delete this; }
 
 private:
-    QtSignalData *m_signal;
+    QScriptSignalData *m_signal;
     v8::Persistent<v8::Object> m_callback;
     v8::Persistent<v8::Object> m_receiver;
 };
@@ -363,11 +363,11 @@ public:
     uint m_voidvoid : 1;
 };
 
-class QtMetaMethodData : public QScriptGenericMetaMethodData<QtMetaMethodData, &QScriptEnginePrivate::metaMethodTemplate>
+class QScriptMetaMethodData : public QScriptGenericMetaMethodData<QScriptMetaMethodData, &QScriptEnginePrivate::metaMethodTemplate>
 {
-    typedef QScriptGenericMetaMethodData<QtMetaMethodData, &QScriptEnginePrivate::metaMethodTemplate> Base;
+    typedef QScriptGenericMetaMethodData<QScriptMetaMethodData, &QScriptEnginePrivate::metaMethodTemplate> Base;
 public:
-    QtMetaMethodData(QScriptEnginePrivate *engine, v8::Handle<v8::Object> object, int index,
+    QScriptMetaMethodData(QScriptEnginePrivate *engine, v8::Handle<v8::Object> object, int index,
                      ResolveMode mode, bool overload, bool voidvoid)
     : Base(engine, object, index, mode, overload, voidvoid)
     { }
@@ -397,19 +397,19 @@ public:
 // - resolve mode: How the signal was resolved; by name or signature.
 //   If it was resolved by name, there's a chance the signal might have overloads.
 //
-class QtSignalData : public QScriptGenericMetaMethodData<QtSignalData, &QScriptEnginePrivate::signalTemplate>
+class QScriptSignalData : public QScriptGenericMetaMethodData<QScriptSignalData, &QScriptEnginePrivate::signalTemplate>
 {
-    typedef QScriptGenericMetaMethodData<QtSignalData, &QScriptEnginePrivate::signalTemplate> Base;
+    typedef QScriptGenericMetaMethodData<QScriptSignalData, &QScriptEnginePrivate::signalTemplate> Base;
 public:
 
-    QtSignalData(QScriptEnginePrivate *engine, v8::Handle<v8::Object> object, int index,
+    QScriptSignalData(QScriptEnginePrivate *engine, v8::Handle<v8::Object> object, int index,
                  ResolveMode mode, bool overload, bool voidvoid)
         : Base(engine, object, index, mode, overload, voidvoid)
     { }
 
-    ~QtSignalData()
+    ~QScriptSignalData()
     {
-        foreach (QtConnection *connection, m_connections) {
+        foreach (QScriptConnection *connection, m_connections) {
             delete connection;
         }
     }
@@ -421,31 +421,31 @@ public:
                                   Qt::ConnectionType type = Qt::AutoConnection);
     v8::Handle<v8::Value> disconnect(v8::Handle<v8::Function> callback);
 
-    static QtSignalData *get(v8::Handle<v8::Object> object)
+    static QScriptSignalData *get(v8::Handle<v8::Object> object)
     {
         void *ptr = object->GetPointerFromInternalField(0);
         Q_ASSERT(ptr != 0);
-        return static_cast<QtSignalData*>(ptr);
+        return static_cast<QScriptSignalData*>(ptr);
     }
 
-    void unregisterQtConnection(QtConnection *connection) { m_connections.removeAll(connection); }
+    void unregisterQScriptConnection(QScriptConnection *connection) { m_connections.removeAll(connection); }
 private:
     static v8::Handle<v8::Value> QtConnectCallback(const v8::Arguments& args);
     static v8::Handle<v8::Value> QtDisconnectCallback(const v8::Arguments& args);
-    QList<QtConnection*> m_connections;
+    QList<QScriptConnection*> m_connections;
 };
 
 
 
-v8::Handle<v8::FunctionTemplate> QtSignalData::createFunctionTemplate(QScriptEnginePrivate* engine)
+v8::Handle<v8::FunctionTemplate> QScriptSignalData::createFunctionTemplate(QScriptEnginePrivate* engine)
 {
     v8::HandleScope handleScope;
     v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
     funcTempl->SetClassName(v8::String::New("QtSignal"));
 
     v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
-    instTempl->SetCallAsFunctionHandler(QScriptV8ObjectWrapperHelper::callAsFunction<QtSignalData>);
-    instTempl->SetInternalFieldCount(1); // QtSignalData*
+    instTempl->SetCallAsFunctionHandler(QScriptV8ObjectWrapperHelper::callAsFunction<QScriptSignalData>);
+    instTempl->SetInternalFieldCount(1); // QScriptSignalData*
 
     v8::Handle<v8::ObjectTemplate> protoTempl = funcTempl->PrototypeTemplate();
     v8::Handle<v8::Signature> sig = v8::Signature::New(funcTempl);
@@ -455,14 +455,14 @@ v8::Handle<v8::FunctionTemplate> QtSignalData::createFunctionTemplate(QScriptEng
     return handleScope.Close(funcTempl);
 }
 
-v8::Handle<v8::FunctionTemplate> QtMetaMethodData::createFunctionTemplate(QScriptEnginePrivate* engine)
+v8::Handle<v8::FunctionTemplate> QScriptMetaMethodData::createFunctionTemplate(QScriptEnginePrivate* engine)
 {
     v8::HandleScope handleScope;
     v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
     funcTempl->SetClassName(v8::String::New("QtMetaMethod"));
 
     v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
-    instTempl->SetCallAsFunctionHandler(QScriptV8ObjectWrapperHelper::callAsFunction<QtMetaMethodData>);
+    instTempl->SetCallAsFunctionHandler(QScriptV8ObjectWrapperHelper::callAsFunction<QScriptMetaMethodData>);
     instTempl->SetInternalFieldCount(1);
 
     return handleScope.Close(funcTempl);
@@ -472,22 +472,22 @@ v8::Handle<v8::FunctionTemplate> QtMetaMethodData::createFunctionTemplate(QScrip
 // Connects this signal to the given callback.
 // receiver might be empty
 // Returns undefined if the connection succeeded, otherwise throws an error.
-v8::Handle<v8::Value> QtSignalData::connect(v8::Handle<v8::Object> receiver,
+v8::Handle<v8::Value> QScriptSignalData::connect(v8::Handle<v8::Object> receiver,
                                             v8::Handle<v8::Object> slot, Qt::ConnectionType type)
 {
-     if (QtMetaMethodData *cppSlot = QtMetaMethodData::safeGet(slot, engine)) {
+     if (QScriptMetaMethodData *cppSlot = QScriptMetaMethodData::safeGet(slot, engine)) {
          if (receiver.IsEmpty())
              receiver = cppSlot->object();
-         QObject *recv = QtInstanceData::get(receiver)->cppObject(QtInstanceData::IgnoreException);
+         QObject *recv = QScriptQObjectData::get(receiver)->cppObject(QScriptQObjectData::IgnoreException);
          if (recv) {
-             QObject *sender = QtInstanceData::get(object())->cppObject();
+             QObject *sender = QScriptQObjectData::get(object())->cppObject();
              if (QMetaObject::connect(sender, index(), recv, cppSlot->index(), type))
                  return v8::Undefined();
              else
                  return v8::ThrowException(v8::Exception::Error(v8::String::New("QtSignal.connect(): failed to connect")));
          }
      }
-     QtConnection *connection = new QtConnection(this);
+     QScriptConnection *connection = new QScriptConnection(this);
      if (!connection->connect(receiver, slot, type)) {
          delete connection;
          return v8::ThrowException(v8::Exception::Error(v8::String::New("QtSignal.connect(): failed to connect")));
@@ -498,10 +498,10 @@ v8::Handle<v8::Value> QtSignalData::connect(v8::Handle<v8::Object> receiver,
 
 // Disconnect this signal from the given callback.
 // Returns undefined if the disconnection succeeded, otherwise throws an error.
-v8::Handle<v8::Value> QtSignalData::disconnect(v8::Handle<v8::Function> callback)
+v8::Handle<v8::Value> QScriptSignalData::disconnect(v8::Handle<v8::Function> callback)
 {
     for (int i = 0; i < m_connections.size(); ++i) {
-        QtConnection *connection = m_connections.at(i);
+        QScriptConnection *connection = m_connections.at(i);
         if (connection->callback()->StrictEquals(callback)) {
             if (!connection->disconnect())
                 return v8::ThrowException(v8::Exception::Error(v8::String::New("QtSignal.disconnect(): failed to disconnect")));
@@ -517,7 +517,7 @@ v8::Handle<v8::Value> QtSignalData::disconnect(v8::Handle<v8::Function> callback
 template <typename T,  v8::Persistent<v8::FunctionTemplate> QScriptEnginePrivate::*functionTemplate>
 v8::Handle<v8::Value> QScriptGenericMetaMethodData<T, functionTemplate>::call()
 {
-    QtInstanceData *instance = QtInstanceData::get(object());
+    QScriptQObjectData *instance = QScriptQObjectData::get(object());
     v8::Local<v8::Value> error;
     QObject *qobject = instance->cppObject(&error);
     if (!qobject)
@@ -550,14 +550,14 @@ v8::Handle<v8::Value> QScriptGenericMetaMethodData<T, functionTemplate>::call()
     return result;
 }
 
-QtConnection::QtConnection(QtSignalData *signal)
+QScriptConnection::QScriptConnection(QScriptSignalData *signal)
     : m_signal(signal)
 {
 }
 
-QtConnection::~QtConnection()
+QScriptConnection::~QScriptConnection()
 {
-    m_signal->unregisterQtConnection(this);
+    m_signal->unregisterQScriptConnection(this);
     m_callback.Dispose();
     m_receiver.Dispose();
 }
@@ -566,17 +566,17 @@ QtConnection::~QtConnection()
 // Connects to this connection's signal, and binds this connection to the
 // given callback.
 // Returns true if the connection succeeded, otherwise returns false.
-bool QtConnection::connect(v8::Handle<v8::Object> receiver, v8::Handle<v8::Object> callback, Qt::ConnectionType type)
+bool QScriptConnection::connect(v8::Handle<v8::Object> receiver, v8::Handle<v8::Object> callback, Qt::ConnectionType type)
 {
     Q_ASSERT(m_callback.IsEmpty());
-    QtInstanceData *instance = QtInstanceData::get(m_signal->object());
+    QScriptQObjectData *instance = QScriptQObjectData::get(m_signal->object());
     QObject *sender = instance->cppObject();
     bool ok;
     if (sender) {
         if (QMetaObject::connect(sender, m_signal->index(), this, staticMetaObject.methodOffset(), type)) {
             if (!receiver.IsEmpty() && m_signal->engine->isQtObject(receiver)) {
-                instance = QtInstanceData::get(receiver);
-                QObject *recv = instance->cppObject(QtInstanceData::IgnoreException);
+                instance = QScriptQObjectData::get(receiver);
+                QObject *recv = instance->cppObject(QScriptQObjectData::IgnoreException);
                 if (recv) {
                     // FIXME: we are connecting to qobjects, can we try to connect them directly?
                     QObject::connect(recv, SIGNAL(destroyed()), this, SLOT(deleteNow()));
@@ -595,10 +595,10 @@ bool QtConnection::connect(v8::Handle<v8::Object> receiver, v8::Handle<v8::Objec
 }
 
 // Disconnects from this connection's signal, and unbinds the callback.
-bool QtConnection::disconnect()
+bool QScriptConnection::disconnect()
 {
     Q_ASSERT(!m_callback.IsEmpty());
-    QtInstanceData *instance = QtInstanceData::get(m_signal->object());
+    QScriptQObjectData *instance = QScriptQObjectData::get(m_signal->object());
     QObject *sender = instance->cppObject();
     bool ok = sender && QMetaObject::disconnect(sender, m_signal->index(),
                                       this, staticMetaObject.methodOffset());
@@ -612,11 +612,11 @@ bool QtConnection::disconnect()
 
 // This slot is called when the C++ signal is emitted.
 // It forwards the call to the JS callback.
-void QtConnection::onSignal(void **argv)
+void QScriptConnection::onSignal(void **argv)
 {
     Q_ASSERT(!m_callback.IsEmpty());
 
-    QScriptEnginePrivate *engine = QtInstanceData::get(m_signal->object())->engine();
+    QScriptEnginePrivate *engine = QScriptQObjectData::get(m_signal->object())->engine();
     QScriptIsolate api(engine);
     v8::HandleScope handleScope;
 
@@ -650,9 +650,9 @@ void QtConnection::onSignal(void **argv)
     if (receiver.IsEmpty())
         receiver = v8::Context::GetCurrent()->Global();
 
-    /*QtInstanceData *instance = QtInstanceData::safeGet(receiver);
+    /*QScriptQObjectData *instance = QtInstanceData::safeGet(receiver);
     if (instance) {
-        QObject *obj = instance->cppObject(QtInstanceData::IgnoreException);
+        QObject *obj = instance->cppObject(QScriptQObjectData::IgnoreException);
         if (!obj)
             return;
     }*/
@@ -668,7 +668,7 @@ void QtConnection::onSignal(void **argv)
 // moc-generated code.
 // DO NOT EDIT!
 
-static const uint qt_meta_data_QtConnection[] = {
+static const uint qt_meta_data_QScriptConnection[] = {
 
  // content:
        5,       // revision
@@ -688,33 +688,33 @@ static const uint qt_meta_data_QtConnection[] = {
        0        // eod
 };
 
-static const char qt_meta_stringdata_QtConnection[] = {
-    "QtConnection\0\0onSignal()\0deleteNow()\0"
+static const char qt_meta_stringdata_QScriptConnection[] = {
+    "QScriptConnection\0\0onSignal()\0deleteNow()\0"
 };
 
-const QMetaObject QtConnection::staticMetaObject = {
-    { &QObject::staticMetaObject, qt_meta_stringdata_QtConnection,
-      qt_meta_data_QtConnection, 0 }
+const QMetaObject QScriptConnection::staticMetaObject = {
+    { &QObject::staticMetaObject, qt_meta_stringdata_QScriptConnection,
+      qt_meta_data_QScriptConnection, 0 }
 };
 
 #ifdef Q_NO_DATA_RELOCATION
-const QMetaObject &QtConnection::getStaticMetaObject() { return staticMetaObject; }
+const QMetaObject &QScriptConnection::getStaticMetaObject() { return staticMetaObject; }
 #endif //Q_NO_DATA_RELOCATION
 
-const QMetaObject *QtConnection::metaObject() const
+const QMetaObject *QScriptConnection::metaObject() const
 {
     return QObject::d_ptr->metaObject ? QObject::d_ptr->metaObject : &staticMetaObject;
 }
 
-void *QtConnection::qt_metacast(const char *_clname)
+void *QScriptConnection::qt_metacast(const char *_clname)
 {
     if (!_clname) return 0;
-    if (!strcmp(_clname, qt_meta_stringdata_QtConnection))
-        return static_cast<void*>(const_cast< QtConnection*>(this));
+    if (!strcmp(_clname, qt_meta_stringdata_QScriptConnection))
+        return static_cast<void*>(const_cast< QScriptConnection*>(this));
     return QObject::qt_metacast(_clname);
 }
 
-int QtConnection::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+int QScriptConnection::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
     _id = QObject::qt_metacall(_c, _id, _a);
     if (_id < 0)
@@ -769,7 +769,7 @@ static v8::Handle<v8::Value> QtMetaPropertyFastGetter(v8::Local<v8::String> /*pr
                                                       const v8::AccessorInfo& info)
 {
     v8::Local<v8::Object> self = info.Holder();
-    QtInstanceData *data = QtInstanceData::get(self);
+    QScriptQObjectData *data = QtInstanceData::get(self);
 
     QObject *qobject = data->cppObject();
 
@@ -789,7 +789,7 @@ static void QtMetaPropertyFastSetter(v8::Local<v8::String> /*property*/,
                                      const v8::AccessorInfo& info)
 {
     v8::Local<v8::Object> self = info.Holder();
-    QtInstanceData *data = QtInstanceData::get(self);
+    QScriptQObjectData *data = QtInstanceData::get(self);
 
     QObject *qobject = data->cppObject();
 
@@ -811,7 +811,7 @@ static v8::Handle<v8::Value> QtMetaPropertyGetter(v8::Local<v8::String> property
                                                   const v8::AccessorInfo& info)
 {
     v8::Local<v8::Object> self = info.Holder();
-    QtInstanceData *data = QtInstanceData::get(self);
+    QScriptQObjectData *data = QScriptQObjectData::get(self);
     QScriptEnginePrivate *engine = data->engine();
     QScriptContextPrivate context(engine, &info);
 
@@ -850,7 +850,7 @@ static void QtMetaPropertySetter(v8::Local<v8::String> /*property*/,
                                  const v8::AccessorInfo& info)
 {
     v8::Local<v8::Object> self = info.Holder(); // This?
-    QtInstanceData *data = QtInstanceData::get(self);
+    QScriptQObjectData *data = QScriptQObjectData::get(self);
     QScriptEnginePrivate *engine = data->engine();
     QScriptContextPrivate context(engine, &info);
 
@@ -905,7 +905,7 @@ v8::Handle<v8::Value> QtDynamicPropertyGetter(v8::Local<v8::String> property,
                                                      const v8::AccessorInfo& info)
 {
     v8::Local<v8::Object> self = info.Holder(); // This?
-    QtInstanceData *data = QtInstanceData::get(self);
+    QScriptQObjectData *data = QScriptQObjectData::get(self);
     QScriptEnginePrivate *engine = data->engine();
     QScriptContextPrivate context(engine, &info);
 
@@ -936,7 +936,7 @@ void QtDynamicPropertySetter(v8::Local<v8::String> property,
                                     const v8::AccessorInfo& info)
 {
     v8::Local<v8::Object> self = info.Holder(); // This?
-    QtInstanceData *data = QtInstanceData::get(self);
+    QScriptQObjectData *data = QScriptQObjectData::get(self);
     QScriptEnginePrivate *engine = data->engine();
     QScriptContextPrivate context(engine, &info);
 
@@ -969,7 +969,7 @@ static v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property
     v8::Local<v8::Object> self = info.This();
     if (!engine->qtClassTemplate(&QObject::staticMetaObject)->HasInstance(self))
         return v8::Handle<v8::Value>(); //the QObject prototype is being used on another object.
-    QtInstanceData *data = QtInstanceData::get(self);
+    QScriptQObjectData *data = QScriptQObjectData::get(self);
     Q_ASSERT(engine == data->engine());
     QScriptContextPrivate context(engine, &info);
 
@@ -1008,7 +1008,7 @@ static v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property
             QString childName = child->objectName();
             if (childName == QString::fromLatin1(name)) {
                 Q_UNIMPLEMENTED();
-                return engine->makeQtObject(child);
+                return engine->newQObject(child);
             }
         }
     }
@@ -1088,16 +1088,16 @@ v8::Handle<v8::Value> QtMetaObjectCallback(const v8::Arguments& args)
 // an error is thrown.
 // If the connect succeeds, the associated JS function will be invoked
 // when the C++ object emits the signal.
-v8::Handle<v8::Value> QtSignalData::QtConnectCallback(const v8::Arguments& args)
+v8::Handle<v8::Value> QScriptSignalData::QtConnectCallback(const v8::Arguments& args)
 {
     v8::HandleScope handleScope;
     v8::Local<v8::Object> self = args.Holder();
-    QtSignalData *data = QtSignalData::get(self);
+    QScriptSignalData *data = QScriptSignalData::get(self);
 
     if (args.Length() == 0)
         return v8::ThrowException(v8::Exception::SyntaxError(v8::String::New("QtSignal.connect(): no arguments given")));
 
-    if (data->resolveMode() == QtSignalData::ResolvedByName) {
+    if (data->resolveMode() == QScriptSignalData::ResolvedByName) {
         // ### Check if the signal is overloaded. If it is, throw an error,
         // since it's not possible to know which of the overloads we should connect to.
         // Can probably figure this out at class/instance construction time
@@ -1142,10 +1142,10 @@ v8::Handle<v8::Value> QtSignalData::QtConnectCallback(const v8::Arguments& args)
 // The this-object is a QtSignal wrapper.
 // If the disconnect succeeds, this function returns undefined; otherwise,
 // an error is thrown.
-v8::Handle<v8::Value> QtSignalData::QtDisconnectCallback(const v8::Arguments& args)
+v8::Handle<v8::Value> QScriptSignalData::QtDisconnectCallback(const v8::Arguments& args)
 {
     v8::Local<v8::Object> self = args.Holder();
-    QtSignalData *data = QtSignalData::get(self);
+    QScriptSignalData *data = QScriptSignalData::get(self);
 
     if (args.Length() == 0)
         return v8::ThrowException(v8::Exception::SyntaxError(v8::String::New("QtSignal.disconnect(): no arguments given")));
@@ -1167,7 +1167,7 @@ static v8::Handle<v8::Value> QtGetMetaMethod(v8::Local<v8::String> /*property*/,
         //If we are not called on a QObject (ie, the prototype is used in another object, we cannot do anything
         return v8::Handle<v8::Value>();
     }
-    QtInstanceData *instance = QtInstanceData::get(self);
+    QScriptQObjectData *instance = QScriptQObjectData::get(self);
     Q_ASSERT(engine == instance->engine());
     //QScriptContextPrivate context(engine, &info);
 
@@ -1185,15 +1185,15 @@ static v8::Handle<v8::Value> QtGetMetaMethod(v8::Local<v8::String> /*property*/,
     const QMetaMethod method = meta->method(methodIndex);
 
     if (method.methodType() == QMetaMethod::Signal) {
-        QtSignalData *data = new QtSignalData(engine, self, methodIndex,
-                                              (intData & 0x40000000) ? QtSignalData::ResolvedBySignature : QtSignalData::ResolvedByName,
+        QScriptSignalData *data = new QScriptSignalData(engine, self, methodIndex,
+                                              (intData & 0x40000000) ? QScriptSignalData::ResolvedBySignature : QScriptSignalData::ResolvedByName,
                                               overload, voidvoid);
-        return QtSignalData::createInstance(data);
+        return QScriptSignalData::createInstance(data);
     } else {
-        QtMetaMethodData *data = new QtMetaMethodData(engine, self, methodIndex,
-                                                      (intData & 0x40000000) ? QtMetaMethodData::ResolvedBySignature : QtMetaMethodData::ResolvedByName,
+        QScriptMetaMethodData *data = new QScriptMetaMethodData(engine, self, methodIndex,
+                                                      (intData & 0x40000000) ? QScriptMetaMethodData::ResolvedBySignature : QScriptMetaMethodData::ResolvedByName,
                                                       overload, voidvoid);
-        return QtMetaMethodData::createInstance(data);
+        return QScriptMetaMethodData::createInstance(data);
     }
 }
 
@@ -1205,7 +1205,7 @@ static v8::Handle<v8::Value> findChildCallback(const v8::Arguments& args)
     v8::Local<v8::Object> self = args.This();
     if (!engine->qtClassTemplate(&QObject::staticMetaObject)->HasInstance(self))
         return v8::Handle<v8::Value>(); //the QObject prototype is being used on another object.
-        QtInstanceData *data = QtInstanceData::get(self);
+        QScriptQObjectData *data = QScriptQObjectData::get(self);
     Q_ASSERT(engine == data->engine());
     QScriptContextPrivate context(engine, &args);
 
@@ -1219,7 +1219,7 @@ static v8::Handle<v8::Value> findChildCallback(const v8::Arguments& args)
         name = QScriptConverter::toString(args[0]->ToString());
     QObject *child = qobject->findChild<QObject *>(name);
     QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
-    return handleScope.Close(engine->makeQtObject(child, QScriptEngine::QtOwnership, opt));
+    return handleScope.Close(engine->newQObject(child, QScriptEngine::QtOwnership, opt));
 }
 
 static v8::Handle<v8::Value> findChildrenWithRegExp(QScriptEnginePrivate *engine, QObject *qobject, v8::Handle<v8::Object> regExp)
@@ -1233,7 +1233,7 @@ static v8::Handle<v8::Value> findChildrenWithRegExp(QScriptEnginePrivate *engine
     for (int i = 0, resultIndex = 0; i < children.length(); i++) {
         argv[0] = QScriptConverter::toString(children.at(i)->objectName());
         if (testFunction->Call(regExp, 1, argv)->IsTrue()) {
-            result->Set(resultIndex, engine->makeQtObject(children.at(i), QScriptEngine::QtOwnership,
+            result->Set(resultIndex, engine->newQObject(children.at(i), QScriptEngine::QtOwnership,
                                                           QScriptEngine::PreferExistingWrapperObject));
             resultIndex++;
         }
@@ -1250,7 +1250,7 @@ static v8::Handle<v8::Value> findChildrenCallback(const v8::Arguments& args)
     v8::Local<v8::Object> self = args.This();
     if (!engine->qtClassTemplate(&QObject::staticMetaObject)->HasInstance(self))
         return v8::Handle<v8::Value>(); //the QObject prototype is being used on another object.
-        QtInstanceData *data = QtInstanceData::get(self);
+        QScriptQObjectData *data = QScriptQObjectData::get(self);
     Q_ASSERT(engine == data->engine());
     QScriptContextPrivate context(engine, &args);
 
@@ -1271,7 +1271,7 @@ static v8::Handle<v8::Value> findChildrenCallback(const v8::Arguments& args)
     v8::Local<v8::Array> array = v8::Array::New(children.length());
     const QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
     for (int i = 0; i < children.length(); i++) {
-        array->Set(i , engine->makeQtObject(children.at(i), QScriptEngine::QtOwnership, opt));
+        array->Set(i , engine->newQObject(children.at(i), QScriptEngine::QtOwnership, opt));
     }
     return handleScope.Close(array);
 }
@@ -1290,7 +1290,7 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
         funcTempl->Inherit(engine->qtClassTemplate(superMo));
 
     v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
-    // Internal field is used to hold QtInstanceData*.
+    // Internal field is used to hold QScriptQObjectData*.
     instTempl->SetInternalFieldCount(1);
 
     // Figure out method names (own and inherited).
