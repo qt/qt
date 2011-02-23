@@ -50,6 +50,7 @@
 #include <QtGui/qpainter.h>
 #include <QtGui/qgraphicssceneevent.h>
 #include <QtGui/qmatrix4x4.h>
+#include <QtGui/qinputcontext.h>
 #include <QtCore/qvarlengtharray.h>
 
 #include <private/qdeclarativedebugtrace_p.h>
@@ -532,6 +533,11 @@ void QSGCanvasPrivate::setFocusInScope(QSGItem *scope, QSGItem *item, FocusOptio
 
         Q_ASSERT(oldActiveFocusItem);
 
+#ifndef QT_NO_IM
+        if (QInputContext *ic = inputContext())
+            ic->reset();
+#endif
+
         activeFocusItem = 0;
         QFocusEvent event(QEvent::FocusOut, Qt::OtherFocusReason);
         q->sendEvent(oldActiveFocusItem, &event);
@@ -589,11 +595,13 @@ void QSGCanvasPrivate::setFocusInScope(QSGItem *scope, QSGItem *item, FocusOptio
             afi = afi->parentItem();
         }
 
+        updateInputMethodData();
+
         QFocusEvent event(QEvent::FocusIn, Qt::OtherFocusReason);
         q->sendEvent(newActiveFocusItem, &event); 
+    } else {
+        updateInputMethodData();
     }
-
-    updateInputMethodData();
 
     if (!changed.isEmpty()) 
         notifyFocusChangesRecur(changed.data(), changed.count() - 1);
@@ -629,6 +637,11 @@ void QSGCanvasPrivate::clearFocusInScope(QSGItem *scope, QSGItem *item, FocusOpt
         
         Q_ASSERT(oldActiveFocusItem);
 
+#ifndef QT_NO_IM
+        if (QInputContext *ic = inputContext())
+            ic->reset();
+#endif
+
         activeFocusItem = 0;
         QFocusEvent event(QEvent::FocusOut, Qt::OtherFocusReason);
         q->sendEvent(oldActiveFocusItem, &event);
@@ -663,11 +676,13 @@ void QSGCanvasPrivate::clearFocusInScope(QSGItem *scope, QSGItem *item, FocusOpt
         Q_ASSERT(newActiveFocusItem == scope);
         activeFocusItem = scope;
 
+        updateInputMethodData();
+
         QFocusEvent event(QEvent::FocusIn, Qt::OtherFocusReason);
         q->sendEvent(newActiveFocusItem, &event); 
+    } else {
+        updateInputMethodData();
     }
-
-    updateInputMethodData();
 
     if (!changed.isEmpty()) 
         notifyFocusChangesRecur(changed.data(), changed.count() - 1);
