@@ -57,9 +57,7 @@
 #include "qfile.h"
 #include "qdir.h"
 
-#if defined(Q_OS_INTEGRITY)
 #define QT_USE_MMAP
-#endif
 #include <stdlib.h>
 
 #ifdef QT_USE_MMAP
@@ -409,7 +407,10 @@ static void *qt_mmap(void *start, size_t length, int /*prot*/, int /*flags*/, in
     return buf;
 }
 #else
-#  define qt_mmap ::mmap
+static inline void *qt_mmap(void *start, size_t length, int prot, int flags, int fd, off_t offset)
+{
+    return mmap(start, length, prot, flags, fd, offset);
+}
 #endif
 
 
