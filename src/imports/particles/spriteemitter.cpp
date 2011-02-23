@@ -701,7 +701,6 @@ void SpriteEmitter::prepareNextFrame(uint timeInt)
         // Particle timestamp
         p.v1.t = p.v2.t = p.v3.t = p.v4.t = pt;
         p.v1.dt = p.v2.dt = p.v3.dt = p.v4.dt = pt;
-        p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = pt;
 
         // Particle position
         p.v1.x = p.v2.x = p.v3.x = p.v4.x =
@@ -744,6 +743,7 @@ void SpriteEmitter::prepareNextFrame(uint timeInt)
         p.v4.y += p.v1.size;
 
         // Initial Sprite State
+        p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = pt;
         p.v1.animIdx = p.v2.animIdx = p.v3.animIdx = p.v4.animIdx = 0;
         p.v1.frameCount = p.v2.frameCount = p.v3.frameCount = p.v4.frameCount = m_states[0]->frames();
         int durVar = 0;
@@ -800,7 +800,7 @@ void SpriteEmitter::prepareNextFrame(uint timeInt)
             if(nextIdx == -1)//No to states means stay here
                 nextIdx = stateIdx;
 
-            p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = pt;
+            p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = time;
             p.v1.animIdx = p.v2.animIdx = p.v3.animIdx = p.v4.animIdx = nextIdx;
             p.v1.frameCount = p.v2.frameCount = p.v3.frameCount = p.v4.frameCount = m_states[nextIdx]->frames();
             int durVar = 0;

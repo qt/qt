@@ -71,7 +71,7 @@ Item {
                 name: "spinning"
                 source: "meteor.png"
                 frames: 35
-                duration: 40
+                duration: 30
                 speedModifiesDuration: -0.1
                 to: {"explode":0, "spinning":1}
             },SpriteState{
