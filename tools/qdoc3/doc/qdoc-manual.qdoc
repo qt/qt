@@ -38,7 +38,7 @@
           \o \l {Topic Commands}
           \o \l {Context Commands}
             \list
-              \o \l {Navigating}
+              \o \l {Document Navigation}
               \o \l {Reporting Status}
               \o \l {Thread Support}
               \o \l {Relating Things}
@@ -5335,48 +5335,25 @@
     \page 14-qdoc-commands-contextcommands.html
     \previouspage Topic Commands
     \contentspage Table of Contents
-    \nextpage Navigating
+    \nextpage Document Navigation
 
     \title Context Commands
 
-    The context commands provide QDoc with information, that it
-    wouldn't figure out otherwise, about the documented object. For
-    example whether a class is thread-safe or not.
-
-    These commands can appear anywhere within a QDoc comment.
+    The context commands provide information about the element being
+    documented that QDoc can't deduce on its own. e.g. Is a class
+    thread-safe? Is a function reentrant? Which module is the class a
+    member of? Context commands can appear anywhere in a QDoc comment,
+    but we put them at the top of the comment, right below the \l
+    {Topic Commands} {topic} command.
 
     \section1 Categories
     \list
-    \o \l {Navigating}
+    \o \l {Document Navigation}
     \o \l {Reporting Status}
     \o \l {Thread Support}
     \o \l {Relating Things}
     \o \l {Grouping Things}
     \o \l {Naming Things}
-    \endlist
-
-    \section1 Command List
-
-    \list
-    \o \l {16-qdoc-commands-status.html#compat-command} {\\compat}
-    \o \l {15-qdoc-commands-navigation.html#contentspage-command} {\\contentspage}
-    \o \l {15-qdoc-commands-navigation.html#indexpage-command} {\\indexpage}
-    \o \l {19-qdoc-commands-grouping.html#ingroup-command} {\\ingroup}
-    \o \l {19-qdoc-commands-grouping.html#inmodule-command} {\\inmodule}
-    \o \l {16-qdoc-commands-status.html#internal-command} {\\internal}
-    \o \l {19-qdoc-commands-grouping.html#mainclass-command} {\\mainclass}
-    \o \l {15-qdoc-commands-navigation.html#nextpage-command} {\\nextpage}
-    \o \l {17-qdoc-commands-thread.html#nonreentrant-command} {\\nonreentrant}
-    \o \l {16-qdoc-commands-status.html#obsolete-command} {\\obsolete}
-    \o \l {18-qdoc-commands-relating.html#overload-command} {\\overload}
-    \o \l {16-qdoc-commands-status.html#preliminary-command} {\\preliminary}
-    \o \l {15-qdoc-commands-navigation.html#previouspage-command} {\\previouspage}
-    \o \l {17-qdoc-commands-thread.html#reentrant-command} {\\reentrant}
-    \o \l {18-qdoc-commands-relating.html#reimp-command} {\\reimp}
-    \o \l {18-qdoc-commands-relating.html#relates-command} {\\relates}
-    \o \l {15-qdoc-commands-navigation.html#startpage-command} {\\startpage}
-    \o \l {17-qdoc-commands-thread.html#threadsafe-command} {\\threadsafe}
-    \o \l {20-qdoc-commands-namingthings.html#title-command} {\\title}
     \endlist
 */
 
@@ -5386,7 +5363,7 @@
     \contentspage Table of Contents
     \nextpage Reporting Status
 
-    \title Navigating
+    \title Document Navigation
 
     The navigation commands allow you to link the pages of a multipage
     document together. They provide the components of a navigation bar
@@ -5609,7 +5586,7 @@
 
 /*!
     \page 16-qdoc-commands-status.html
-    \previouspage Navigating
+    \previouspage Document Navigation
     \contentspage Table of Contents
     \nextpage Thread Support
 
