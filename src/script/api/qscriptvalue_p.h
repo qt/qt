@@ -57,12 +57,11 @@ class QScriptClassPrivate;
   \class QScriptValuePrivate
 */
 class QScriptValuePrivate
-        : public QScriptSharedData
+        : public QSharedData
         , public QScriptLinkedNode
 {
-protected:
-    inline QScriptValuePrivate();
 public:
+    inline QScriptValuePrivate();
     inline static QScriptValuePrivate* get(const QScriptValue& q);
     inline static QScriptValue get(const QScriptValuePrivate* d);
     inline static QScriptValue get(QScriptValuePrivate* d);
@@ -200,26 +199,28 @@ private:
     inline bool prepareArgumentsForCall(v8::Handle<v8::Value> argv[], const QScriptValueList& arguments) const;
 };
 
-/*!
-   \internal
-   Do not use directly! Please use InvalidValue which is a static instance pointer.
-   \attention Instances of that classes leak reference so they can't be deleted by a smart pointer.
-*/
-class QScriptInvalidValuePrivate : public QScriptValuePrivate
+template<>
+class QGlobalStaticDeleter<QScriptValuePrivate>
 {
 public:
-    QScriptInvalidValuePrivate()
-        : QScriptValuePrivate()
+    QGlobalStatic<QScriptValuePrivate> &globalStatic;
+    QGlobalStaticDeleter(QGlobalStatic<QScriptValuePrivate> &_globalStatic)
+        : globalStatic(_globalStatic)
     {
-        ref.ref();
+        globalStatic.pointer->ref.ref();
     }
 
-    ~QScriptInvalidValuePrivate()
+    inline ~QGlobalStaticDeleter()
     {
-        ref.deref();
+        if (!globalStatic.pointer->ref.deref()) { // Logic copy & paste from SharedDataPointer
+            delete globalStatic.pointer;
+        }
+        globalStatic.pointer = 0;
+        globalStatic.destroyed = true;
     }
 };
-Q_GLOBAL_STATIC(QScriptInvalidValuePrivate, InvalidValue)
+
+Q_GLOBAL_STATIC(QScriptValuePrivate, InvalidValue)
 
 QT_END_NAMESPACE
 
