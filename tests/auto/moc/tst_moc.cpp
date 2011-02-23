@@ -494,6 +494,10 @@ private slots:
     void QTBUG12260_defaultTemplate();
     void notifyError();
     void revisions();
+    void warnings_data();
+    void warnings();
+
+
 signals:
     void sigWithUnsignedArg(unsigned foo);
     void sigWithSignedArg(signed foo);
@@ -1498,8 +1502,119 @@ void tst_Moc::revisions()
     revisions_T<VersionTestNotify>();
 }
 
+void tst_Moc::warnings_data()
+{
+    QTest::addColumn<QByteArray>("input");
+    QTest::addColumn<QStringList>("args");
+    QTest::addColumn<int>("exitCode");
+    QTest::addColumn<QString>("expectedStdOut");
+    QTest::addColumn<QString>("expectedStdErr");
+
+    // empty input should result in "no relevant classes" note
+    QTest::newRow("No relevant classes")
+        << QByteArray(" ")
+        << QStringList()
+        << 0
+        << QString()
+        << QString("standard input:0: Note: No relevant classes found. No output generated.");
+
+    // passing "-nn" should suppress "no relevant classes" note
+    QTest::newRow("-nn")
+        << QByteArray(" ")
+        << (QStringList() << "-nn")
+        << 0
+        << QString()
+        << QString();
+
+    // passing "-nw" should also suppress "no relevant classes" note
+    QTest::newRow("-nw")
+        << QByteArray(" ")
+        << (QStringList() << "-nw")
+        << 0
+        << QString()
+        << QString();
+
+    // This should output a warning
+    QTest::newRow("Invalid property warning")
+        << QByteArray("class X : public QObject { Q_OBJECT Q_PROPERTY(int x) };")
+        << QStringList()
+        << 0
+        << QString("IGNORE_ALL_STDOUT")
+        << QString("standard input:1: Warning: Property declaration x has no READ accessor function. The property will be invalid.");
+
+    // Passing "-nn" should NOT suppress the warning
+    QTest::newRow("Invalid property warning")
+        << QByteArray("class X : public QObject { Q_OBJECT Q_PROPERTY(int x) };")
+        << (QStringList() << "-nn")
+        << 0
+        << QString("IGNORE_ALL_STDOUT")
+        << QString("standard input:1: Warning: Property declaration x has no READ accessor function. The property will be invalid.");
+
+    // Passing "-nw" should suppress the warning
+    QTest::newRow("Invalid property warning")
+        << QByteArray("class X : public QObject { Q_OBJECT Q_PROPERTY(int x) };")
+        << (QStringList() << "-nw")
+        << 0
+        << QString("IGNORE_ALL_STDOUT")
+        << QString();
+
+    // This should output an error
+    QTest::newRow("Does not inherit QObject")
+        << QByteArray("class X { Q_OBJECT };")
+        << QStringList()
+        << 1
+        << QString()
+        << QString("standard input:1: Error: Class contains Q_OBJECT macro but does not inherit from QObject");
+
+    // "-nn" should not suppress the error
+    QTest::newRow("Does not inherit QObject with -nn")
+        << QByteArray("class X { Q_OBJECT };")
+        << (QStringList() << "-nn")
+        << 1
+        << QString()
+        << QString("standard input:1: Error: Class contains Q_OBJECT macro but does not inherit from QObject");
+
+    // "-nw" should not suppress the error
+    QTest::newRow("Does not inherit QObject with -nn")
+        << QByteArray("class X { Q_OBJECT };")
+        << (QStringList() << "-nw")
+        << 1
+        << QString()
+        << QString("standard input:1: Error: Class contains Q_OBJECT macro but does not inherit from QObject");
+}
+
+void tst_Moc::warnings()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled", SkipAll);
+#endif
+
+    QFETCH(QByteArray, input);
+    QFETCH(QStringList, args);
+    QFETCH(int, exitCode);
+    QFETCH(QString, expectedStdOut);
+    QFETCH(QString, expectedStdErr);
+
+    QProcess proc;
+    proc.start("moc", args);
+    QVERIFY(proc.waitForStarted());
+
+    QCOMPARE(proc.write(input), qint64(input.size()));
+
+    proc.closeWriteChannel();
+
+    QVERIFY(proc.waitForFinished());
+
+    QCOMPARE(proc.exitCode(), exitCode);
+    QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
+
+    // magic value "IGNORE_ALL_STDOUT" ignores stdout
+    if (expectedStdOut != "IGNORE_ALL_STDOUT")
+        QCOMPARE(QString::fromLocal8Bit(proc.readAllStandardOutput()).trimmed(), expectedStdOut);
+    QCOMPARE(QString::fromLocal8Bit(proc.readAllStandardError()).trimmed(), expectedStdErr);
+
+    }
+
 QTEST_APPLESS_MAIN(tst_Moc)
 #include "tst_moc.moc"
-
-
 
