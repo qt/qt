@@ -1008,8 +1008,9 @@ void tst_QScriptExtQObject::getSetStaticProperty_methodPersistence()
         QVERIFY(slot.isFunction());
         QScriptValue sameSlot = m_engine->evaluate("myObject.mySlot");
         QVERIFY(sameSlot.strictlyEquals(slot));
-        sameSlot = m_engine->evaluate("myObject[mySlot()]");
-        QEXPECT_FAIL("", "Signature-based method lookup creates new function wrapper object", Continue);
+        sameSlot = m_engine->evaluate("myObject['mySlot()']");
+        QVERIFY(sameSlot.isFunction());
+        QEXPECT_FAIL("", "QTBUG-17611: Signature-based method lookup creates new function wrapper object", Continue);
         QVERIFY(sameSlot.strictlyEquals(slot));
     }
 }
