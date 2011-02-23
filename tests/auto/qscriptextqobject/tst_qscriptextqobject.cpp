@@ -1103,7 +1103,7 @@ void tst_QScriptExtQObject::getSetDynamicProperty_doNotHideJSProperty()
     val.setProperty("x", 42);
     m_myObject->setProperty("x", 2222);
 
-    QEXPECT_FAIL("", "", Continue);
+    QEXPECT_FAIL("", "QTBUG-17612: Dynamic C++ property overrides JS property", Continue);
 
     // JS should see the original JS value
     QVERIFY(val.property("x").strictlyEquals(QScriptValue(m_engine, 42)));

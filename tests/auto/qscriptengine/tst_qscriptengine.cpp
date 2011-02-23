@@ -4200,7 +4200,8 @@ void tst_QScriptEngine::getterSetterThisObject_activation()
         // read
         eng.evaluate("act.__defineGetter__('x', function() { return this; })");
         QVERIFY(eng.evaluate("x === act").toBoolean());
-        QEXPECT_FAIL("", "Exotic overload (don't care for now)", Continue);
+        QEXPECT_FAIL("", "QTBUG-17605: Not possible to implement local variables as getter/setter properties", Abort);
+        QVERIFY(!eng.hasUncaughtException());
         QVERIFY(eng.evaluate("with (act) x").equals("foo"));
         QVERIFY(eng.evaluate("(function() { with (act) return x; })() === act").toBoolean());
         eng.evaluate("q = {}; with (act) with (q) x").equals(eng.evaluate("act"));
@@ -5316,7 +5317,7 @@ void tst_QScriptEngine::functionScopes()
         // top-level functions have only the global object in their scope
         QScriptValue fun = eng.evaluate("(function() {})");
         QVERIFY(fun.isFunction());
-        QEXPECT_FAIL("", "Function scope proxying is not implemented", Abort);
+        QEXPECT_FAIL("", "QScriptValue::scope() is internal, not implemented", Abort);
         QVERIFY(fun.scope().isObject());
         QVERIFY(fun.scope().strictlyEquals(eng.globalObject()));
         QVERIFY(!eng.globalObject().scope().isValid());
