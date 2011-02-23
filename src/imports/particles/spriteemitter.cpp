@@ -1,16 +1,19 @@
-#include "spriteparticles.h"
-
+#include "spriteemitter.h"
+#include "particlesystem.h"
 #include <qsgcontext.h>
 #include <adaptationlayer.h>
 #include <node.h>
 #include <geometry.h>
 #include <texturematerial.h>
 #include <qsgtexturemanager.h>
+#include <QFile>
+#include <cmath>
+#include <qmath.h>
 
-class SpriteParticlesMaterialSP : public AbstractMaterial
+class SpriteParticlesMaterial : public AbstractMaterial
 {
 public:
-    SpriteParticlesMaterialSP()
+    SpriteParticlesMaterial()
         : timestamp(0)
         , timelength(1)
         , framecount(1)
@@ -23,7 +26,7 @@ public:
     virtual AbstractMaterialShader *createShader() const;
     virtual int compare(const AbstractMaterial *other) const
     {
-        return this - static_cast<const SpriteParticlesMaterialSP *>(other);
+        return this - static_cast<const SpriteParticlesMaterial *>(other);
     }
 
     QSGTextureRef texture;
@@ -35,10 +38,10 @@ public:
 };
 
 
-class SpriteParticlesMaterialDataSP : public AbstractMaterialShader
+class SpriteParticlesMaterialData : public AbstractMaterialShader
 {
 public:
-    SpriteParticlesMaterialDataSP(const char *vertexFile = 0, const char *fragmentFile = 0)
+    SpriteParticlesMaterialData(const char *vertexFile = 0, const char *fragmentFile = 0)
     {
         QFile vf(vertexFile ? vertexFile : ":resources/spritevertex.shader");
         vf.open(QFile::ReadOnly);
@@ -62,7 +65,7 @@ public:
 
     virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *, Renderer::Updates updates)
     {
-        SpriteParticlesMaterialSP *m = static_cast<SpriteParticlesMaterialSP *>(newEffect);
+        SpriteParticlesMaterial *m = static_cast<SpriteParticlesMaterial *>(newEffect);
         Q_ASSERT(m->texture.isReady());
         renderer->setTexture(0, m->texture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -119,17 +122,16 @@ public:
 
     static float chunkOfBytes[1024];
 };
-float SpriteParticlesMaterialDataSP::chunkOfBytes[1024];
+float SpriteParticlesMaterialData::chunkOfBytes[1024];
 
 
-AbstractMaterialShader *SpriteParticlesMaterialSP::createShader() const
+AbstractMaterialShader *SpriteParticlesMaterial::createShader() const
 {
-    return new SpriteParticlesMaterialDataSP;
+    return new SpriteParticlesMaterialData;
 }
 
-SpriteParticles::SpriteParticles()
-    : m_running(true)
-    , m_do_reset(false)
+SpriteEmitter::SpriteEmitter(QObject* parent)
+    : ParticleEmitter(parent)
     , m_particles_per_second(10)
     , m_particle_duration(1000)
     , m_particle_size(16)
@@ -158,94 +160,77 @@ SpriteParticles::SpriteParticles()
     , m_reset_last(true)
     , m_last_timestamp(0)
 {
-    setFlag(ItemHasContents);
+//    setFlag(ItemHasContents);
 }
 
 
-void SpriteParticles::setRunning(bool r)
-{
-    if (r == m_running)
-        return;
-    m_running = r;
-
-    if (!m_running)
-        reset();
-    else {
-      m_reset_last = true;
-    }
-
-    emit runningChanged();
-    update();
-}
-
-
-void SpriteParticles::setParticleSize(qreal size)
+void SpriteEmitter::setParticleSize(qreal size)
 {
     if (size == m_particle_size)
         return;
     m_particle_size = size;
     emit particleSizeChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
-void SpriteParticles::setParticleEndSize(qreal size)
+void SpriteEmitter::setParticleEndSize(qreal size)
 {
     if (size == m_particle_end_size)
         return;
     m_particle_end_size = size;
     emit particleEndSizeChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
-void SpriteParticles::setParticleSizeVariation(qreal var)
+void SpriteEmitter::setParticleSizeVariation(qreal var)
 {
     if (var == m_particle_size_variation)
         return;
     m_particle_size_variation = var;
     emit particleSizeVariationChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
 
-void SpriteParticles::setEmitterX(qreal x)
+void SpriteEmitter::setEmitterX(qreal x)
 {
     if (x == m_emitter_x)
         return;
     m_emitter_x = x;
     emit emitterXChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
 
-void SpriteParticles::setEmitterY(qreal y)
+void SpriteEmitter::setEmitterY(qreal y)
 {
     if (y == m_emitter_y)
         return;
     m_emitter_y = y;
     emit emitterYChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
-void SpriteParticles::setEmitterXVariation(qreal var)
+void SpriteEmitter::setEmitterXVariation(qreal var)
 {
     if (var == m_emitter_x_variation)
         return;
     m_emitter_x_variation = var;
     emit emitterXVariationChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
-void SpriteParticles::setEmitterYVariation(qreal var)
+void SpriteEmitter::setEmitterYVariation(qreal var)
 {
     if (var == m_emitter_y_variation)
         return;
     m_emitter_y_variation = var;
     emit emitterYVariationChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
 
-void SpriteParticles::setEmitting(bool emitting)
+void SpriteEmitter::setEmitting(bool emitting)
 {
     if (emitting == m_emitting)
         return;
@@ -253,33 +238,33 @@ void SpriteParticles::setEmitting(bool emitting)
     if (m_emitting)
       m_reset_last = true;
     emit emittingChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
 
 
-void SpriteParticles::setImage(const QUrl &image)
+void SpriteEmitter::setImage(const QUrl &image)
 {
     if (image == m_image_name)
         return;
     m_image_name = image;
     emit imageChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
 
-void SpriteParticles::setColortable(const QUrl &table)
+void SpriteEmitter::setColortable(const QUrl &table)
 {
     if (table == m_colortable_name)
         return;
     m_colortable_name = table;
     emit colortableChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
 
 
-void SpriteParticles::setParticlesPerSecond(int pps)
+void SpriteEmitter::setParticlesPerSecond(int pps)
 {
     if (pps == m_particles_per_second)
         return;
@@ -290,7 +275,7 @@ void SpriteParticles::setParticlesPerSecond(int pps)
 
 
 
-void SpriteParticles::setParticleDuration(int dur)
+void SpriteEmitter::setParticleDuration(int dur)
 {
     if (dur == m_particle_duration)
         return;
@@ -300,127 +285,131 @@ void SpriteParticles::setParticleDuration(int dur)
 }
 
 
-void SpriteParticles::setXSpeed(qreal x)
+void SpriteEmitter::setXSpeed(qreal x)
 {
     if (x == m_x_speed)
         return;
     m_x_speed = x;
     emit xSpeedChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
-void SpriteParticles::setYSpeed(qreal y)
+void SpriteEmitter::setYSpeed(qreal y)
 {
     if (y == m_y_speed)
         return;
     m_y_speed = y;
     emit ySpeedChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
-void SpriteParticles::setXSpeedVariation(qreal x)
+void SpriteEmitter::setXSpeedVariation(qreal x)
 {
     if (x == m_x_speed_variation)
         return;
     m_x_speed_variation = x;
     emit xSpeedVariationChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
 
-void SpriteParticles::setYSpeedVariation(qreal y)
+void SpriteEmitter::setYSpeedVariation(qreal y)
 {
     if (y == m_y_speed_variation)
         return;
     m_y_speed_variation = y;
     emit ySpeedVariationChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
 
-void SpriteParticles::setSpeedFromMovement(qreal t)
+void SpriteEmitter::setSpeedFromMovement(qreal t)
 {
     if (t == m_speed_from_movement)
         return;
     m_speed_from_movement = t;
     emit speedFromMovementChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
 
-void SpriteParticles::setXAccel(qreal x)
+void SpriteEmitter::setXAccel(qreal x)
 {
     if (x == m_x_accel)
         return;
     m_x_accel = x;
     emit xAccelChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
-void SpriteParticles::setYAccel(qreal y)
+void SpriteEmitter::setYAccel(qreal y)
 {
     if (y == m_y_accel)
         return;
     m_y_accel = y;
     emit yAccelChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
-void SpriteParticles::setXAccelVariation(qreal x)
+void SpriteEmitter::setXAccelVariation(qreal x)
 {
     if (x == m_x_accel_variation)
         return;
     m_x_accel_variation = x;
     emit xAccelVariationChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
 
-void SpriteParticles::setYAccelVariation(qreal y)
+void SpriteEmitter::setYAccelVariation(qreal y)
 {
     if (y == m_y_accel_variation)
         return;
     m_y_accel_variation = y;
     emit yAccelVariationChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
 
-void SpriteParticles::setColor(const QColor &color)
+void SpriteEmitter::setColor(const QColor &color)
 {
     if (color == m_color)
         return;
     m_color = color;
     emit colorChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
-void SpriteParticles::setColorVariation(qreal var)
+void SpriteEmitter::setColorVariation(qreal var)
 {
     if (var == m_color_variation)
         return;
     m_color_variation = var;
     emit colorVariationChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
-void SpriteParticles::setAdditive(qreal additive)
+void SpriteEmitter::setAdditive(qreal additive)
 {
     if (m_additive == additive)
         return;
     m_additive = additive;
     emit additiveChanged();
-    update();
+    m_system->pleaseUpdate();
 }
 
 
-void SpriteParticles::reset()
+void SpriteEmitter::reset()
 {
-    update();
-    m_do_reset = true;
+    delete m_node;
+    delete m_material;
+
+    m_node = 0;
+    m_material = 0;
+    m_particle_count = 0;
 }
 
-int SpriteParticles::goalSeek(int curIdx, int dist)
+int SpriteEmitter::goalSeek(int curIdx, int dist)
 {
     //TODO: caching instead of excessively redoing iterative deepening (which was chosen arbitarily anyways)
     // Paraphrased - implement in an *efficient* manner
@@ -490,7 +479,7 @@ int SpriteParticles::goalSeek(int curIdx, int dist)
     return -1;
 }
 
-void SpriteParticles::addToUpdateList(uint t, int idx)
+void SpriteEmitter::addToUpdateList(uint t, int idx)
 {
     for(int i=0; i<m_stateUpdates.count(); i++){
         if(m_stateUpdates[i].first==t){
@@ -508,7 +497,7 @@ void SpriteParticles::addToUpdateList(uint t, int idx)
     m_stateUpdates << qMakePair(t, tmpList);
 }
 
-bool SpriteParticles::buildParticleTexture(QSGContext *sg)
+bool SpriteEmitter::buildParticleTexture(QSGContext *sg)
 {
     int frameHeight = 0;
     int frameWidth = 0;
@@ -520,13 +509,13 @@ bool SpriteParticles::buildParticleTexture(QSGContext *sg)
 
         QImage img(state->source().toLocalFile());
         if (img.isNull()) {
-            qWarning() << "SpriteParticles: loading image failed..." << state->source().toLocalFile();
+            qWarning() << "SpriteEmitter: loading image failed..." << state->source().toLocalFile();
             return false;
         }
 
         if(frameWidth){
             if(img.width() / state->frames() != frameWidth){
-                qWarning() << "SpriteParticles: Irregular frame width..." << state->source().toLocalFile();
+                qWarning() << "SpriteEmitter: Irregular frame width..." << state->source().toLocalFile();
                 return false;
             }
         }else{
@@ -535,7 +524,7 @@ bool SpriteParticles::buildParticleTexture(QSGContext *sg)
 
         if(frameHeight){
             if(img.height()!=frameHeight){
-                qWarning() << "SpriteParticles: Irregular frame height..." << state->source().toLocalFile();
+                qWarning() << "SpriteEmitter: Irregular frame height..." << state->source().toLocalFile();
                 return false;
             }
         }else{
@@ -556,20 +545,20 @@ bool SpriteParticles::buildParticleTexture(QSGContext *sg)
     return true;
 }
 
-void SpriteParticles::buildParticleNode()
+Node* SpriteEmitter::buildParticleNode()
 {
     QSGContext *sg = QSGContext::current;
 
     m_particle_count = m_particle_duration * m_particles_per_second / 1000.;
 
     if (m_particle_count * 4 > 0xffff) {
-        qWarning() << "SpriteParticles: too many particles...";
-        return;
+        qWarning() << "SpriteEmitter: too many particles...";
+        return 0;
     }
 
     if (m_states.isEmpty()) {
-        qWarning() << "SpriteParticles: No sprite states...";
-        return;
+        qWarning() << "SpriteEmitter: No sprite states...";
+        return 0;
     }
 
     if (m_material) {
@@ -577,10 +566,10 @@ void SpriteParticles::buildParticleNode()
         m_material = 0;
     }
 
-    m_material = new SpriteParticlesMaterialSP();
+    m_material = new SpriteParticlesMaterial();
 
     if(!buildParticleTexture(sg))//problem loading image files
-        return;
+        return 0;
 
     QVector<QSGAttributeDescription> attr;
     attr << QSGAttributeDescription(0, 2, GL_FLOAT, 0); // Position
@@ -589,6 +578,7 @@ void SpriteParticles::buildParticleNode()
     attr << QSGAttributeDescription(3, 4, GL_FLOAT, 0); // Vectors..
     attr << QSGAttributeDescription(4, 4, GL_FLOAT, 0); // AnimData
     attr << QSGAttributeDescription(5, 4, GL_UNSIGNED_BYTE, 0); // Colors
+
 
     Geometry *g = new Geometry(attr);
     g->setDrawingMode(QSG::Triangles);
@@ -613,6 +603,7 @@ void SpriteParticles::buildParticleNode()
             vertices[i].frameDuration = 1;
             vertices[i].frameCount = 1;
             vertices[i].animT = -1;
+
         }
 
         vertices[0].tx = 0;
@@ -648,38 +639,12 @@ void SpriteParticles::buildParticleNode()
     m_node = new GeometryNode();
     m_node->setGeometry(g);
     m_node->setMaterial(m_material);
-
-    m_timestamp.start();
     m_last_particle = 0;
-}
-
-Node *SpriteParticles::updatePaintNode(Node *, UpdatePaintNodeData *data)
-{
-    if(m_do_reset){
-        delete m_node;
-        delete m_material;
-
-        m_node = 0;
-        m_material = 0;
-        m_particle_count = 0;
-        m_do_reset = false;
-    }
-
-    prepareNextFrame();
-
-    if(m_running)
-        update();
     return m_node;
 }
 
-void SpriteParticles::prepareNextFrame()
+void SpriteEmitter::prepareNextFrame(uint timeInt)
 {
-    if (!m_running)
-        return;
-
-    if (m_node == 0)
-        buildParticleNode();
-
     if (m_node == 0) //error creating node
         return;
 
@@ -688,8 +653,6 @@ void SpriteParticles::prepareNextFrame()
         m_reset_last = false;
     }
 
-    //### Elapsed time never shrinks - may cause problems if left emitting for weeks at a time.
-    uint timeInt = m_timestamp.elapsed();
     qreal time =  timeInt / 1000.;
     m_material->timelength = m_particle_duration / 1000.;
     m_material->timestamp = time;
@@ -719,8 +682,8 @@ void SpriteParticles::prepareNextFrame()
     while (pt < time) {
         int pos = m_last_particle % m_particle_count;
 
-        foreach(ParticleAffector* a, m_affectors)
-            a->reset(pos);
+//TODO:        foreach(ParticleAffector* a, m_affectors)
+//            a->reset(pos);
 
         qreal t = 1 - (pt - opt) / dt;
 
@@ -851,18 +814,19 @@ void SpriteParticles::prepareNextFrame()
         m_stateUpdates.pop_front();
     }
 
-    for(int i=0; i < m_particle_count; i++){
-            ParticleVertices* p = &particles[i];
-            qreal dt = time - p->v1.dt;
-            p->v1.dt = p->v2.dt = p->v3.dt = p->v4.dt = time;
-        foreach(ParticleAffector* a, m_affectors){
-            a->affect(p, i, dt, this);//TODO: indicate when an index is reset (and associated data should be too)
-        }
-    }
-
     m_last_last_last_emitter = m_last_last_emitter;
     m_last_last_emitter = m_last_emitter;
     m_last_emitter = QPointF(m_emitter_x, m_emitter_y);
     m_last_timestamp = time;
 
+}
+
+uint SpriteEmitter::particleCount()
+{
+    return m_particle_count;
+}
+
+ParticleVertices* SpriteEmitter::particles()
+{
+    return (ParticleVertices *) m_node->geometry()->vertexData();
 }

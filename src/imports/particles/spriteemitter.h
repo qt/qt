@@ -1,22 +1,20 @@
-#ifndef SPRITEPARTICLES_H
-#define SPRITEPARTICLES_H
-
-#include <QtCore>
-#include <QtGui>
-
-#include <qsgitem.h>
+#ifndef SPRITEEMITTER_H
+#define SPRITEEMITTER_H
+#include "particleemitter.h"
 #include "spritestate.h"
-#include "particleaffector.h"
-#include "particlesystem.h"//for vertex structs
+#include <QUrl>
+#include <QPointF>
+#include <QList>
+#include <QColor>
+#include <QDeclarativeListProperty>
 
-class SpriteParticlesMaterialSP;
-class GeometryNode;
 class QSGContext;
+class GeometryNode;
+class SpriteParticlesMaterial;
 
-class SpriteParticles : public QSGItem
+class SpriteEmitter : public ParticleEmitter
 {
     Q_OBJECT
-
 
     Q_PROPERTY(QUrl image READ image WRITE setImage NOTIFY imageChanged)
 
@@ -47,17 +45,17 @@ class SpriteParticles : public QSGItem
 
     Q_PROPERTY(QDeclarativeListProperty<SpriteState> states READ states)
     Q_PROPERTY(QString goalState READ goalState WRITE setGoalState NOTIFY goalStateChanged)
-    Q_PROPERTY(QDeclarativeListProperty<ParticleAffector> affectors READ affectors)
 
     Q_PROPERTY(int frameCount READ frames WRITE setFrames NOTIFY framesChanged)
     Q_PROPERTY(int frameDuration READ frameDuration WRITE setFrameDuration NOTIFY frameDurationChanged)
-
 public:
-    SpriteParticles();
+    explicit SpriteEmitter(QObject *parent = 0);
+    virtual Node* buildParticleNode();
+    virtual void prepareNextFrame(uint timestamp);
+    virtual void reset();
 
-    bool isRunning() const { return m_running; }
-    void setRunning(bool r);
-
+    virtual uint particleCount();
+    virtual ParticleVertices* particles();
 
     QUrl image() const { return m_image_name; }
     void setImage(const QUrl &image);
@@ -152,14 +150,34 @@ public:
         return QDeclarativeListProperty<SpriteState>(this, m_states);
     }
 
-    QDeclarativeListProperty<ParticleAffector> affectors()
-    {
-        return QDeclarativeListProperty<ParticleAffector>(this, m_affectors);
-    }
-
     QString goalState() const
     {
         return m_goalState;
+    }
+
+
+    void setFrames(int arg)
+    {
+        if (m_frames != arg) {
+            m_frames = arg;
+            emit framesChanged(arg);
+        }
+    }
+
+    void setFrameDuration(int arg)
+    {
+        if (m_frameDuration != arg) {
+            m_frameDuration = arg;
+            emit frameDurationChanged(arg);
+        }
+    }
+
+    void setGoalState(QString arg)
+    {
+        if (m_goalState != arg) {
+            m_goalState = arg;
+            emit goalStateChanged(arg);
+        }
     }
 
 signals:
@@ -202,42 +220,8 @@ signals:
 
     void goalStateChanged(QString arg);
 
-public slots:
-void prepareNextFrame();
-
-void setFrames(int arg)
-{
-    if (m_frames != arg) {
-        m_frames = arg;
-        emit framesChanged(arg);
-    }
-}
-
-void setFrameDuration(int arg)
-{
-    if (m_frameDuration != arg) {
-        m_frameDuration = arg;
-        emit frameDurationChanged(arg);
-    }
-}
-
-void setGoalState(QString arg)
-{
-    if (m_goalState != arg) {
-        m_goalState = arg;
-        emit goalStateChanged(arg);
-    }
-}
-
-protected:
-    Node *updatePaintNode(Node *, UpdatePaintNodeData *);
-
 private:
-    void buildParticleNode();
     bool buildParticleTexture(QSGContext *sg);
-    void reset();
-
-    bool m_running;
     bool m_do_reset;
 
     QUrl m_image_name;
@@ -274,15 +258,13 @@ private:
     int m_frames;
     int m_frameDuration;
     QList<SpriteState*> m_states;
-    QList<ParticleAffector*> m_affectors;
 
     GeometryNode *m_node;
-    SpriteParticlesMaterialSP *m_material;
+    SpriteParticlesMaterial *m_material;
 
     // derived values...
     int m_particle_count;
     int m_last_particle;
-    QTime m_timestamp;
     int m_maxFrames;
 
     QPointF m_last_emitter;
@@ -301,5 +283,4 @@ private:
     QString m_goalState;
 };
 
-
-#endif // SPRITEPARTICLES_H
+#endif // SPRITEEMITTER_H

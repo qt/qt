@@ -130,6 +130,7 @@ public slots:
 
 private:
     friend class SpriteParticles;
+    friend class SpriteEmitter;
     QUrl m_source;
     int m_frames;
     int m_duration;

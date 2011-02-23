@@ -10,7 +10,11 @@ HEADERS += \
     particleaffector.h \
     wanderaffector.h \
     rockingaffector.h \
-    scalingaffector.h
+    scalingaffector.h \
+    particleemitter.h \
+    particlesystem.h \
+    trailsemitter.h \
+    spriteemitter.h
 
 SOURCES += \
     spriteparticles.cpp \
@@ -20,7 +24,11 @@ SOURCES += \
     particleaffector.cpp \
     wanderaffector.cpp \
     rockingaffector.cpp \
-    scalingaffector.cpp
+    scalingaffector.cpp \
+    particleemitter.cpp \
+    particlesystem.cpp \
+    trailsemitter.cpp \
+    spriteemitter.cpp
 
 QT += declarative opengl
 

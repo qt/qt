@@ -3,6 +3,7 @@ attribute highp vec2 vTex;
 attribute highp vec3 vData; //  x = time,  y = size,  z = endSize
 attribute highp vec4 vVec; // x,y = constant speed,  z,w = acceleration
 attribute highp vec4 vAnimData;// idx, duration, frameCount (this anim), timestamp (this anim)
+attribute lowp vec4 vColor;
 
 uniform highp mat4 matrix;                              
 uniform highp float timestamp;                          

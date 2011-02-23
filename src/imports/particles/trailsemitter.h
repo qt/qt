@@ -1,24 +1,20 @@
-#ifndef SPRITEPARTICLES_H
-#define SPRITEPARTICLES_H
+#ifndef TRAILSEMITTER_H
+#define TRAILSEMITTER_H
 
 #include <QtCore>
 #include <QtGui>
 
-#include <qsgitem.h>
-#include "spritestate.h"
-#include "particleaffector.h"
-#include "particlesystem.h"//for vertex structs
+#include "particleemitter.h"
 
-class SpriteParticlesMaterialSP;
+class ParticleTrailsMaterial;
 class GeometryNode;
-class QSGContext;
 
-class SpriteParticles : public QSGItem
+class TrailsEmitter : public ParticleEmitter
 {
     Q_OBJECT
 
-
     Q_PROPERTY(QUrl image READ image WRITE setImage NOTIFY imageChanged)
+    Q_PROPERTY(QUrl colortable READ colortable WRITE setColortable NOTIFY colortableChanged)
 
     Q_PROPERTY(qreal emitterX READ emitterX WRITE setEmitterX NOTIFY emitterXChanged)
     Q_PROPERTY(qreal emitterY READ emitterY WRITE setEmitterY NOTIFY emitterYChanged)
@@ -45,15 +41,14 @@ class SpriteParticles : public QSGItem
     Q_PROPERTY(qreal xAccelVariation READ xAccelVariation WRITE setXAccelVariation NOTIFY xAccelVariationChanged)
     Q_PROPERTY(qreal yAccelVariation READ yAccelVariation WRITE setYAccelVariation NOTIFY yAccelVariationChanged)
 
-    Q_PROPERTY(QDeclarativeListProperty<SpriteState> states READ states)
-    Q_PROPERTY(QString goalState READ goalState WRITE setGoalState NOTIFY goalStateChanged)
-    Q_PROPERTY(QDeclarativeListProperty<ParticleAffector> affectors READ affectors)
+    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
+    Q_PROPERTY(qreal colorVariation READ colorVariation WRITE setColorVariation NOTIFY colorVariationChanged)
 
-    Q_PROPERTY(int frameCount READ frames WRITE setFrames NOTIFY framesChanged)
-    Q_PROPERTY(int frameDuration READ frameDuration WRITE setFrameDuration NOTIFY frameDurationChanged)
+    Q_PROPERTY(qreal additive READ additive WRITE setAdditive NOTIFY additiveChanged)
 
 public:
-    SpriteParticles();
+    explicit TrailsEmitter(QObject* parent=0);
+    virtual ~TrailsEmitter(){}
 
     bool isRunning() const { return m_running; }
     void setRunning(bool r);
@@ -137,31 +132,13 @@ public:
 
     qreal renderOpacity() const { return m_render_opacity; }
 
-    int frames() const
-    {
-        return m_frames;
-    }
 
-    int frameDuration() const
-    {
-        return m_frameDuration;
-    }
+    virtual Node* buildParticleNode();
+    virtual void prepareNextFrame(uint timestamp);
+    virtual void reset();
 
-    QDeclarativeListProperty<SpriteState> states()
-    {
-        return QDeclarativeListProperty<SpriteState>(this, m_states);
-    }
-
-    QDeclarativeListProperty<ParticleAffector> affectors()
-    {
-        return QDeclarativeListProperty<ParticleAffector>(this, m_affectors);
-    }
-
-    QString goalState() const
-    {
-        return m_goalState;
-    }
-
+    virtual uint particleCount();
+    virtual ParticleVertices* particles();
 signals:
     void runningChanged();
 
@@ -195,47 +172,11 @@ signals:
     void colorChanged();
     void colorVariationChanged();
     void additiveChanged();
-
-    void framesChanged(int arg);
-
-    void frameDurationChanged(int arg);
-
-    void goalStateChanged(QString arg);
-
 public slots:
-void prepareNextFrame();
-
-void setFrames(int arg)
-{
-    if (m_frames != arg) {
-        m_frames = arg;
-        emit framesChanged(arg);
-    }
-}
-
-void setFrameDuration(int arg)
-{
-    if (m_frameDuration != arg) {
-        m_frameDuration = arg;
-        emit frameDurationChanged(arg);
-    }
-}
-
-void setGoalState(QString arg)
-{
-    if (m_goalState != arg) {
-        m_goalState = arg;
-        emit goalStateChanged(arg);
-    }
-}
 
 protected:
-    Node *updatePaintNode(Node *, UpdatePaintNodeData *);
 
 private:
-    void buildParticleNode();
-    bool buildParticleTexture(QSGContext *sg);
-    void reset();
 
     bool m_running;
     bool m_do_reset;
@@ -271,19 +212,12 @@ private:
     qreal m_color_variation;
     qreal m_additive;
 
-    int m_frames;
-    int m_frameDuration;
-    QList<SpriteState*> m_states;
-    QList<ParticleAffector*> m_affectors;
-
     GeometryNode *m_node;
-    SpriteParticlesMaterialSP *m_material;
+    ParticleTrailsMaterial *m_material;
 
     // derived values...
     int m_particle_count;
     int m_last_particle;
-    QTime m_timestamp;
-    int m_maxFrames;
 
     QPointF m_last_emitter;
     QPointF m_last_last_emitter;
@@ -294,12 +228,6 @@ private:
     qreal m_last_timestamp;
 
     qreal m_render_opacity;
-
-    void addToUpdateList(uint t, int idx);
-    int goalSeek(int curState, int dist=-1);
-    QList<QPair<uint, QList<int> > > m_stateUpdates;//### This could be done faster
-    QString m_goalState;
 };
 
-
-#endif // SPRITEPARTICLES_H
+#endif // TRAILSEMITTER_H

@@ -1,5 +1,6 @@
 #include "rockingaffector.h"
-#include "spriteparticles.h" //for ParticlesVertices
+#include "spriteemitter.h"
+#include "particlesystem.h"//for ParticlesVertices
 #include <cmath>
 
 const qreal PI = 3.141582653;//TODO: Use trancendental PI?
@@ -50,9 +51,8 @@ qreal sign(qreal a){
     return a<0.0 ? -1.0 : 1.0;
 }
 
-void RockingAffector::affect(ParticleVertices *p, int idx, qreal dt, SpriteParticles* sp)
+void RockingAffector::affect(ParticleVertices *p, int idx, qreal dt, QObject*)
 {
-    Q_UNUSED(sp);
     RockerData* d = getData(idx);
     qreal da = 0.0;
     if(d->initialAngleSet){
