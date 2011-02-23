@@ -148,7 +148,7 @@ public:
         else
             item->setWidth(size);
     }
-    bool contains(int x, int y) const {
+    bool contains(qreal x, qreal y) const {
         return (x >= item->x() && x < item->x() + item->width() &&
                 y >= item->y() && y < item->y() + item->height());
     }
@@ -2732,7 +2732,7 @@ void QDeclarativeListView::positionViewAtEnd()
 
     \bold Note: methods should only be called after the Component has completed.
 */
-int QDeclarativeListView::indexAt(int x, int y) const
+int QDeclarativeListView::indexAt(qreal x, qreal y) const
 {
     Q_D(const QDeclarativeListView);
     for (int i = 0; i < d->visibleItems.count(); ++i) {
