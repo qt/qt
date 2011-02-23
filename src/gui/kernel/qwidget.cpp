@@ -326,7 +326,6 @@ QWidgetPrivate::QWidgetPrivate(int version)
     drawRectOriginalAdded = false;
     originalDrawMethod = true;
     changeMethods = false;
-    hasOwnContext = false;
     isInUnifiedToolbar = false;
     unifiedSurface = 0;
     toolbar_ancestor = 0;

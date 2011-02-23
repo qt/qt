@@ -857,7 +857,6 @@ public:
     bool originalDrawMethod;
     // Do we need to change the methods?
     bool changeMethods;
-    bool hasOwnContext;
 
     // Unified toolbar variables
     bool isInUnifiedToolbar;
