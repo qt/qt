@@ -13,6 +13,9 @@
 
 #include <qdebug.h>
 
+// #define VSYNC_TIME_DEBUG
+
+
 class QVSyncAnimationDriverPrivate : public QAnimationDriverPrivate
 {
 public:
@@ -60,24 +63,7 @@ void QVSyncAnimationDriver::started()
         return;
     }
 
-    QEvent *event = new QEvent(QEvent::Type(QEvent::User + 1));
-    QApplication::postEvent(this, event);
-}
-
-bool QVSyncAnimationDriver::event(QEvent *e)
-{
-    Q_D(QVSyncAnimationDriver);
-
-    if (e->type() == QEvent::User + 1) {
-        while (isRunning() && !d->aborted && !d->threadData->quitNow) {
-            QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-            QApplication::processEvents(QEventLoop::AllEvents, 1);
-            advance();
-            ((WidgetAccessor *) d->window)->paint();
-        }
-    }
-
-    return QAnimationDriver::event(e);
+    d->window->update();
 }
 
 bool QVSyncAnimationDriver::eventFilter(QObject *object, QEvent *event) {
@@ -85,21 +71,55 @@ bool QVSyncAnimationDriver::eventFilter(QObject *object, QEvent *event) {
 
     if (isRunning()) {
 
-#ifdef Q_WS_QPA
-        if (object == d->window && event->type() == QEvent::UpdateRequest)
-            return true;
-        else
-#endif
-
         if (object == QApplication::instance() && event->type() == QEvent::Quit) {
             // If we get a close event while running, we are actually inside the processEvents()
             // block and need to exit an extra level to exit the final exec().
             d->aborted = true;
             QApplication::quit();
         } else if (object == d->window && event->type() == QEvent::Paint) {
-            // Since we are now blocking on vsync and we do a single fullscreen update,
-            // want to only respond to a single update pr 16.66 ms increment, which is
-            // the one we explicitly send to the window. All others we reject.
+
+#ifdef VSYNC_TIME_DEBUG
+            QTime time;
+            time.start();
+#endif
+
+            while (isRunning() && !d->aborted && !d->threadData->quitNow) {
+
+#ifdef VSYNC_TIME_DEBUG
+                time.start();
+#endif
+
+                QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+
+#ifdef VSYNC_TIME_DEBUG
+                int t1 = time.elapsed();
+#endif
+
+                QApplication::processEvents(QEventLoop::AllEvents, 1);
+
+#ifdef VSYNC_TIME_DEBUG
+                int t2 = time.elapsed();
+#endif
+
+                advance();
+
+#ifdef VSYNC_TIME_DEBUG
+                int t3 = time.elapsed();
+#endif
+
+                ((WidgetAccessor *) d->window)->paint();
+
+#ifdef VSYNC_TIME_DEBUG
+                int t4 = time.elapsed();
+                printf("VSync breakdown: deletes=%d, events=%d, animations=%d, painting=%d, totoal=%d %s\n",
+                       t1,
+                       t2 - t1,
+                       t3 - t2,
+                       t4 - t3,
+                       t4,
+                       t4 > 19 || t4 < 12 ? "** BAD **" : "");
+#endif
+            }
             return true;
         }
     }

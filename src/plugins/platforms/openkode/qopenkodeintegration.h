@@ -90,6 +90,8 @@ public:
     QOpenKODEIntegration();
     ~QOpenKODEIntegration();
 
+    bool hasCapability(QPlatformIntegration::Capability cap) const;
+
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const;
     QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;

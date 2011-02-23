@@ -130,8 +130,6 @@ void QSGCanvas::paintEvent(QPaintEvent *)
     if (!d->threadedRendering) {
         Q_ASSERT(d->context);
 
-        d->inUpdate = true;
-
         d->polishItems();
 
         QDeclarativeDebugTrace::addEvent(QDeclarativeDebugTrace::FramePaint);
@@ -142,8 +140,6 @@ void QSGCanvas::paintEvent(QPaintEvent *)
         d->renderSceneGraph();
 
         QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Painting);
-
-        d->inUpdate = false;
     }
 }
 
@@ -369,7 +365,6 @@ QSGCanvasPrivate::QSGCanvasPrivate()
     , context(0)
     , contextInThread(false)
     , threadedRendering(false)
-    , inUpdate(false)
     , exitThread(false)
     , animationRunning(false)
     , idle(false)
@@ -1441,19 +1436,19 @@ void QSGCanvas::maybeUpdate()
     if (d->threadedRendering) {
         if (!d->renderThreadAwakened) {
             d->renderThreadAwakened = true;
-            d->mutex.lock();
-            if (d->idle) {
+            bool locked = d->mutex.tryLock();
+            if (d->idle && locked) {
 #ifdef THREAD_DEBUG
                 qWarning("QSGRenderer: now maybe I should update...");
 #endif
                 d->wait.wakeOne();
             }
-            d->mutex.unlock();
+            if (locked)
+                d->mutex.unlock();
         }
-    }
-
-    if (!d->threadedRendering && !d->inUpdate && (!d->animationDriver || !d->animationDriver->isRunning()))
+    } else if (!d->animationDriver || !d->animationDriver->isRunning()) {
         update();
+    }
 }
 
 

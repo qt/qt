@@ -44,17 +44,22 @@
 #include "qsgitem.h"
 #include "qsgcanvas.h"
 #include "private/qsgfocusscope_p.h"
+#include <QDebug>
 
 class TestItem : public QSGItem
 {
 Q_OBJECT
 public:
-    TestItem(QSGItem *parent = 0) : QSGItem(parent), focused(false) {}
+    TestItem(QSGItem *parent = 0) : QSGItem(parent), focused(false), pressCount(0), releaseCount(0) {}
 
     bool focused;
+    int pressCount;
+    int releaseCount;
 protected:
     virtual void focusInEvent(QFocusEvent *) { Q_ASSERT(!focused); focused = true; }
     virtual void focusOutEvent(QFocusEvent *) { Q_ASSERT(focused); focused = false; }
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) { event->accept(); ++pressCount; }
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) { event->accept(); ++releaseCount; }
 };
 
 class TestFocusScope : public QSGFocusScope
@@ -87,6 +92,11 @@ private slots:
 
     void constructor();
     void setParentItem();
+
+    void visible();
+    void enabled();
+
+    void mouseGrab();
 };
 
 tst_qsgitem::tst_qsgitem()
@@ -628,6 +638,147 @@ void tst_qsgitem::setParentItem()
 
     delete child1;
     delete child2;
+}
+
+void tst_qsgitem::visible()
+{
+    QSGItem *root = new QSGItem;
+
+    QSGItem *child1 = new QSGItem;
+    child1->setParentItem(root);
+
+    QSGItem *child2 = new QSGItem;
+    child2->setParentItem(root);
+
+    QVERIFY(child1->isVisible());
+    QVERIFY(child2->isVisible());
+
+    root->setVisible(false);
+    QVERIFY(!child1->isVisible());
+    QVERIFY(!child2->isVisible());
+
+    root->setVisible(true);
+    QVERIFY(child1->isVisible());
+    QVERIFY(child2->isVisible());
+
+    child1->setVisible(false);
+    QVERIFY(!child1->isVisible());
+    QVERIFY(child2->isVisible());
+
+    child2->setParentItem(child1);
+    QVERIFY(!child1->isVisible());
+    QVERIFY(!child2->isVisible());
+
+    child2->setParentItem(root);
+    QVERIFY(!child1->isVisible());
+    QVERIFY(child2->isVisible());
+
+    delete root;
+    delete child1;
+    delete child2;
+}
+
+void tst_qsgitem::enabled()
+{
+    QSGItem *root = new QSGItem;
+
+    QSGItem *child1 = new QSGItem;
+    child1->setParentItem(root);
+
+    QSGItem *child2 = new QSGItem;
+    child2->setParentItem(root);
+
+    QVERIFY(child1->isEnabled());
+    QVERIFY(child2->isEnabled());
+
+    root->setEnabled(false);
+    QVERIFY(!child1->isEnabled());
+    QVERIFY(!child2->isEnabled());
+
+    root->setEnabled(true);
+    QVERIFY(child1->isEnabled());
+    QVERIFY(child2->isEnabled());
+
+    child1->setEnabled(false);
+    QVERIFY(!child1->isEnabled());
+    QVERIFY(child2->isEnabled());
+
+    child2->setParentItem(child1);
+    QVERIFY(!child1->isEnabled());
+    QVERIFY(!child2->isEnabled());
+
+    child2->setParentItem(root);
+    QVERIFY(!child1->isEnabled());
+    QVERIFY(child2->isEnabled());
+
+    delete root;
+    delete child1;
+    delete child2;
+}
+
+void tst_qsgitem::mouseGrab()
+{
+    QSGCanvas *canvas = new QSGCanvas;
+    canvas->resize(200, 200);
+    canvas->show();
+
+    TestItem *child1 = new TestItem;
+    child1->setAcceptedMouseButtons(Qt::LeftButton);
+    child1->setSize(QSizeF(200, 100));
+    child1->setParentItem(canvas->rootItem());
+
+    TestItem *child2 = new TestItem;
+    child2->setAcceptedMouseButtons(Qt::LeftButton);
+    child2->setY(100);
+    child2->setSize(QSizeF(200, 100));
+    child2->setParentItem(canvas->rootItem());
+
+    QTest::mousePress(canvas, Qt::LeftButton, 0, QPoint(50,50));
+    QVERIFY(canvas->mouseGrabberItem() == child1);
+    QCOMPARE(child1->pressCount, 1);
+    QTest::mouseRelease(canvas, Qt::LeftButton, 0, QPoint(50,50));
+    QVERIFY(canvas->mouseGrabberItem() == 0);
+    QCOMPARE(child1->releaseCount, 1);
+
+    QTest::mousePress(canvas, Qt::LeftButton, 0, QPoint(50,50));
+    QVERIFY(canvas->mouseGrabberItem() == child1);
+    QCOMPARE(child1->pressCount, 2);
+    child1->setEnabled(false);
+    QVERIFY(canvas->mouseGrabberItem() == 0);
+    QTest::mouseRelease(canvas, Qt::LeftButton, 0, QPoint(50,50));
+    QCOMPARE(child1->releaseCount, 1);
+    child1->setEnabled(true);
+
+    QTest::mousePress(canvas, Qt::LeftButton, 0, QPoint(50,50));
+    QVERIFY(canvas->mouseGrabberItem() == child1);
+    QCOMPARE(child1->pressCount, 3);
+    child1->setVisible(false);
+    QVERIFY(canvas->mouseGrabberItem() == 0);
+    QTest::mouseRelease(canvas, Qt::LeftButton, 0, QPoint(50,50));
+    QCOMPARE(child1->releaseCount, 1);
+    child1->setVisible(true);
+
+    QTest::mousePress(canvas, Qt::LeftButton, 0, QPoint(50,50));
+    QVERIFY(canvas->mouseGrabberItem() == child1);
+    QCOMPARE(child1->pressCount, 4);
+    child2->grabMouse();
+    QVERIFY(canvas->mouseGrabberItem() == child2);
+    QTest::mouseRelease(canvas, Qt::LeftButton, 0, QPoint(50,50));
+    QCOMPARE(child1->releaseCount, 1);
+    QCOMPARE(child2->releaseCount, 1);
+
+    child2->grabMouse();
+    QVERIFY(canvas->mouseGrabberItem() == child2);
+    QTest::mousePress(canvas, Qt::LeftButton, 0, QPoint(50,50));
+    QCOMPARE(child1->pressCount, 4);
+    QCOMPARE(child2->pressCount, 1);
+    QTest::mouseRelease(canvas, Qt::LeftButton, 0, QPoint(50,50));
+    QCOMPARE(child1->releaseCount, 1);
+    QCOMPARE(child2->releaseCount, 2);
+
+    delete child1;
+    delete child2;
+    delete canvas;
 }
 
 

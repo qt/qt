@@ -1,5 +1,6 @@
 #include "wanderaffector.h"
-#include "spriteparticles.h" //for ParticlesVertices
+#include "spriteemitter.h"
+#include "particlesystem.h"//for ParticlesVertices
 
 WanderAffector::WanderAffector(QObject *parent) :
     ParticleAffector(parent)
@@ -29,9 +30,8 @@ WanderData* WanderAffector::getData(int idx)
     return d;
 }
 
-void WanderAffector::affect(ParticleVertices *p, int idx, qreal dt, SpriteParticles *sp)
+void WanderAffector::affect(ParticleVertices *p, int idx, qreal dt, QObject*)
 {
-    Q_UNUSED(sp);
     WanderData* d = getData(idx);
     if (m_xVariance != 0.) {
         if ((d->x_vel > d->x_peak && d->x_var > 0.0) || (d->x_vel < -d->x_peak && d->x_var < 0.0)) {

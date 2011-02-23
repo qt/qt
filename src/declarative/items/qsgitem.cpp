@@ -781,8 +781,6 @@ void QSGItem::setParentItem(QSGItem *parentItem)
     QSGItem *oldParentItem = d->parentItem;
     QSGItem *scopeFocusedItem = 0;
 
-    // XXX todo - fixup visible and enabled?
-
     if (oldParentItem) {
         QSGItemPrivate *op = QSGItemPrivate::get(oldParentItem);
 
@@ -821,6 +819,9 @@ void QSGItem::setParentItem(QSGItem *parentItem)
     
     if (d->parentItem)
         QSGItemPrivate::get(d->parentItem)->addChild(this);
+
+    d->setEffectiveVisibleRecur(d->calcEffectiveVisible());
+    d->setEffectiveEnableRecur(d->calcEffectiveEnable());
 
     if (scopeFocusedItem && d->parentItem && d->canvas) {
         // We need to test whether this item becomes scope focused
@@ -2141,6 +2142,12 @@ void QSGItemPrivate::setEffectiveVisibleRecur(bool newEffectiveVisible)
     dirty(Visible);
     if (parentItem) QSGItemPrivate::get(parentItem)->dirty(ChildrenStackingChanged);
 
+    if (canvas) {
+        QSGCanvasPrivate *canvasPriv = QSGCanvasPrivate::get(canvas);
+        if (canvasPriv->mouseGrabberItem == q)
+            q->ungrabMouse();
+    }
+
     for (int ii = 0; ii < childItems.count(); ++ii) 
         QSGItemPrivate::get(childItems.at(ii))->setEffectiveVisibleRecur(newEffectiveVisible);
 
@@ -2165,7 +2172,7 @@ void QSGItemPrivate::setEffectiveEnableRecur(bool newEffectiveEnable)
 {
     Q_Q(QSGItem);
 
-    // XXX todo - need to fixup mouse grabber and focus
+    // XXX todo - need to fixup focus
 
     if (newEffectiveEnable && !explicitEnable) {
         // This item locally overrides enable
@@ -2178,6 +2185,12 @@ void QSGItemPrivate::setEffectiveEnableRecur(bool newEffectiveEnable)
     }
 
     effectiveEnable = newEffectiveEnable;
+
+    if (canvas) {
+        QSGCanvasPrivate *canvasPriv = QSGCanvasPrivate::get(canvas);
+        if (canvasPriv->mouseGrabberItem == q)
+            q->ungrabMouse();
+    }
 
     for (int ii = 0; ii < childItems.count(); ++ii) 
         QSGItemPrivate::get(childItems.at(ii))->setEffectiveEnableRecur(newEffectiveEnable);
