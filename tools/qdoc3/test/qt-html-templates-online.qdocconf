@@ -194,37 +194,3 @@ HTML.footer = \
     "  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);\n" \
     "  })();\n" \
     "  </script>\n"
-
-
-# Files not referenced in any qdoc file.
-# See also extraimages.HTML
-qhp.Qt.extraFiles = index.html \
-                    images/bg_l.png \
-                    images/bg_l_blank.png \
-                    images/bg_ll_blank.png \
-                    images/bg_ul_blank.png \
-                    images/header_bg.png \
-                    images/bg_r.png \
-                    images/box_bg.png \
-                    images/breadcrumb.png \
-                    images/bullet_gt.png \
-                    images/bullet_dn.png \
-                    images/bullet_sq.png \
-                    images/bullet_up.png \
-                    images/arrow_down.png \
-                    images/feedbackground.png \
-                    images/horBar.png \
-                    images/page.png \
-                    images/page_bg.png \
-                    images/sprites-combined.png \
-                    images/spinner.gif \
-                    scripts/functions.js \
-                    scripts/jquery.js \
-                    scripts/narrow.js \
-                    scripts/superfish.js \
-                    style/narrow.css \
-                    style/superfish.css \
-                    style/style_ie6.css \
-                    style/style_ie7.css \
-                    style/style_ie8.css \
-                    style/style.css

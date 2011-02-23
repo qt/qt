@@ -132,7 +132,7 @@ public:
 
     GestureArea is an invisible item: it is never painted.
 
-    \sa MouseArea, {declarative/touchinteraction/gestures}{Gestures example}
+    \sa MouseArea
 */
 
 /*!

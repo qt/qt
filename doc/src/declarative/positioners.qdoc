@@ -56,7 +56,7 @@ graphical elements:
 
 \section2 Column
 
-\div{float-right}
+\div {class="float-right"}
 \inlineimage qml-column.png
 \enddiv
 
@@ -73,7 +73,7 @@ must be added to a parent Rectangle, if desired.
 
 \section2 Row
 
-\div{float-right}
+\div {class="float-right"}
 \inlineimage qml-row.png
 \enddiv
 
@@ -90,7 +90,7 @@ left around the edges of the horizontally centered Row item.
 
 \section2 Grid
 
-\div{float-right}
+\div {class="float-right"}
 \inlineimage qml-grid-spacing.png
 \enddiv
 
@@ -111,7 +111,7 @@ at the appropriate places in the Grid definition.
 
 \section2 Flow
 
-\div{float-right}
+\div {class="float-right"}
 \inlineimage qml-flow-text1.png
 \inlineimage qml-flow-text2.png
 \enddiv
@@ -140,7 +140,7 @@ control of spacing between items and between lines of items.
 
 \section1 Repeaters
 
-\div{float-right}
+\div {class="float-right"}
 \inlineimage qml-repeater-grid-index.png
 \enddiv
 
