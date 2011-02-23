@@ -2247,8 +2247,7 @@ void tst_QScriptEngineAgent::syntaxError()
         QCOMPARE(spy->at(i).scriptId, spy->at(0).scriptId);
         QVERIFY(!spy->at(i).hasExceptionHandler);
         QVERIFY(spy->at(i).value.isError());
-        QEXPECT_FAIL("","QTBUG-6137 There are other messages in JSC",Continue);
-        QCOMPARE(spy->at(i).value.toString(), QString("SyntaxError: Expected `}'"));
+        QVERIFY(spy->at(i).value.toString().contains(QLatin1String("SyntaxError")));
         QCOMPARE(spy->at(i).scriptId, spy->at(0).scriptId);
         i = 7;
         //exit script
