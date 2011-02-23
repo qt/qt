@@ -1836,9 +1836,11 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
                 scaledEngine = font.d->engineForScript(script);
             }
             feCache.prevFontEngine = engine;
-            engine->ref.ref();
+            if (engine)
+                engine->ref.ref();
             feCache.prevScaledFontEngine = scaledEngine;
-            scaledEngine->ref.ref();
+            if (scaledEngine)
+                scaledEngine->ref.ref();
             feCache.prevScript = script;
             feCache.prevPosition = si.position;
             feCache.prevLength = length(&si);
@@ -1849,7 +1851,8 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
         else {
             engine = font.d->engineForScript(script);
             feCache.prevFontEngine = engine;
-            engine->ref.ref();
+            if (engine)
+                engine->ref.ref();
             feCache.prevScript = script;
             feCache.prevPosition = -1;
             feCache.prevLength = -1;
