@@ -1078,6 +1078,19 @@ void tst_QDeclarativeListView::sectionsDelegate()
         QTRY_COMPARE(item->y(), qreal(i*20*6));
     }
 
+    // remove section boundary
+    model.removeItem(5);
+    qApp->processEvents();
+    for (int i = 0; i < 3; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem,
+                "sect_" + (i == 0 ? QString("aaa") : QString::number(i)));
+        QVERIFY(item);
+    }
+
+    // QTBUG-17606
+    QList<QDeclarativeItem*> items = findItems<QDeclarativeItem>(contentItem, "sect_1");
+    QCOMPARE(items.count(), 1);
+
     delete canvas;
 }
 
