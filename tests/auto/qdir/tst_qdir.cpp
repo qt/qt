@@ -571,6 +571,12 @@ void tst_QDir::entryList_data()
                                   << int(QDir::AllEntries | QDir::Writable) << int(QDir::Name)
                                   << filterLinks(QString(".,..,directory,linktodirectory.lnk,writable").split(','));
 #endif
+    QTest::newRow("QDir::Files | QDir::Readable") << SRCDIR "entrylist/" << QStringList("*")
+                                  << int(QDir::Files | QDir::Readable) << int(QDir::Name)
+                                  << filterLinks(QString("file,linktofile.lnk,writable").split(','));
+    QTest::newRow("QDir::Dirs | QDir::Readable") << SRCDIR "entrylist/" << QStringList("*")
+                                  << int(QDir::Dirs | QDir::Readable) << int(QDir::Name)
+                                  << filterLinks(QString(".,..,directory,linktodirectory.lnk").split(','));
     QTest::newRow("Namefilters b*") << SRCDIR "entrylist/" << QStringList("d*")
                                   << int(QDir::NoFilter) << int(QDir::Name)
                                   << filterLinks(QString("directory").split(','));
