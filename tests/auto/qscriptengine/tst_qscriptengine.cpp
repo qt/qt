@@ -469,10 +469,10 @@ void tst_QScriptEngine::newArray_HooliganTask233836()
 {
     QScriptEngine eng;
     {
+        // According to ECMA-262, this should cause a RangeError.
         QScriptValue ret = eng.evaluate("a = new Array(4294967295); a.push('foo')");
-        QVERIFY(ret.isNumber());
-        QCOMPARE(ret.toInt32(), 0);
-        QCOMPARE(eng.evaluate("a[4294967295]").toString(), QString::fromLatin1("foo"));
+        QEXPECT_FAIL("", "ECMA compliance bug in Array.prototype.push: https://bugs.webkit.org/show_bug.cgi?id=55033", Continue);
+        QVERIFY(ret.isError() && ret.toString().contains(QLatin1String("RangeError")));
     }
     {
         QScriptValue ret = eng.newArray(0xFFFFFFFF);
@@ -671,7 +671,8 @@ void tst_QScriptEngine::jsRegExp()
     QCOMPARE(r5.toString(), QString::fromLatin1("/foo/gim"));
     // In JSC, constructing a RegExp from another produces the same identical object.
     // This is different from SpiderMonkey and old back-end.
-    QVERIFY(r5.strictlyEquals(r));
+    QEXPECT_FAIL("", "RegExp copy-constructor should return a new object: https://bugs.webkit.org/show_bug.cgi?id=55040", Continue);
+    QVERIFY(!r5.strictlyEquals(r));
 
     QScriptValue r6 = rxCtor.construct(QScriptValueList() << "foo" << "bar");
     QVERIFY(r6.isError());
@@ -1315,7 +1316,7 @@ void tst_QScriptEngine::globalObjectProperties()
     QCOMPARE(global.propertyFlags("URIError"), QScriptValue::SkipInEnumeration);
     QVERIFY(global.property("Math").isObject());
     QVERIFY(!global.property("Math").isFunction());
-    QEXPECT_FAIL("", "[ECMA compliance] JSC sets DontDelete flag for Math object", Continue);
+    QEXPECT_FAIL("", "[ECMA compliance] JSC sets DontDelete flag for Math object: https://bugs.webkit.org/show_bug.cgi?id=55034", Continue);
     QCOMPARE(global.propertyFlags("Math"), QScriptValue::SkipInEnumeration);
 }
 
