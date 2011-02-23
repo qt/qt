@@ -457,6 +457,10 @@ static QByteArray envVarLocale()
 ** Wrappers for Windows locale system functions
 */
 
+#ifndef MUI_LANGUAGE_NAME
+#define MUI_LANGUAGE_NAME 0x8
+#endif
+
 static const char *winLangCodeToIsoName(int code);
 static QString winIso639LangName(LCID id = LOCALE_USER_DEFAULT);
 static QString winIso3116CtryName(LCID id = LOCALE_USER_DEFAULT);
