@@ -155,7 +155,7 @@ void DistanceFieldGlyphNode::updateFont()
 
     QSGTextureRef texture = m_glyph_atlas->texture();
     if (texture.isNull()) {
-        qWarning("Unable to find distance-field file for font %s", m_glyphs.font().family().toLatin1().constData());
+        qWarning("Invalid distance-field texture for font %s", m_glyphs.font().family().toLatin1().constData());
         return;
     }
 

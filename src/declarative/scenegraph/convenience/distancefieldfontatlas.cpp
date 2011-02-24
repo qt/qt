@@ -68,10 +68,6 @@
 #  include <private/qfontengine_qpa_p.h>
 #endif
 
-#ifndef GL_BGRA
-#define GL_BGRA 0x80E1
-#endif
-
 void qt_disableFontHinting(QFont &font)
 {
     QFontEngine *fontEngine = QFontPrivate::get(font)->engineForScript(QUnicodeTables::Common);
@@ -303,6 +299,19 @@ bool DistanceFieldFontAtlas::useDistanceFieldForFont(const QFont &font)
     return false;
 }
 
+static void convert_to_Format_Alpha(QImage *image)
+{
+    const int width = image->width();
+    const int height = image->height();
+    uchar *data = image->bits();
+
+    for (int i = 0; i < height; ++i) {
+        uchar *o = data + i * width;
+        for (int x = 0; x < width; ++x)
+            o[x] = (uchar)qAlpha(image->pixel(x, i));
+    }
+}
+
 QSGTextureRef DistanceFieldFontAtlas::uploadDistanceField(const QImage &image)
 {
     Q_ASSERT(!image.isNull());
@@ -312,13 +321,13 @@ QSGTextureRef DistanceFieldFontAtlas::uploadDistanceField(const QImage &image)
     glBindTexture(GL_TEXTURE_2D, id);
 
     QImage i = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    convert_to_Format_Alpha(&i);
 
     // We only need to store the alpha component
 #ifdef QT_OPENGL_ES
-    QSGTextureManager::swizzleBGRAToRGBA(&i);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, i.width(), i.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, i.constBits());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, i.width(), i.height(), 0, GL_ALPHA, GL_UNSIGNED_BYTE, i.constBits());
 #else
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA8, i.width(), i.height(), 0, GL_BGRA, GL_UNSIGNED_BYTE, i.constBits());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA8, i.width(), i.height(), 0, GL_ALPHA, GL_UNSIGNED_BYTE, i.constBits());
 #endif
 
     GLuint error = glGetError();

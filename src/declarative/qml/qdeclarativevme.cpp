@@ -1011,27 +1011,41 @@ QScriptValue QDeclarativeVME::run(QDeclarativeContextData *parentCtxt, QDeclarat
     QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(parentCtxt->engine);
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(parentCtxt->engine);
 
-    // Create the script context
-    QDeclarativeContextData *ctxt = new QDeclarativeContextData;
-    ctxt->isInternal = true;
-    ctxt->url = script->url;
-    ctxt->imports = script->importCache;
-    if (ctxt->imports) ctxt->imports->addref();
-    ctxt->setParent(parentCtxt);
-
-    for (int ii = 0; ii < script->scripts.count(); ++ii)
-        ctxt->importedScripts << run(ctxt, script->scripts.at(ii)->scriptData());
-
     bool shared = script->pragmas & QDeclarativeParser::Object::ScriptBlock::Shared;
 
+    // Create the script context if required
+    QDeclarativeContextData *ctxt = 0;
+    if (!shared) {
+        ctxt = new QDeclarativeContextData;
+        ctxt->isInternal = true;
+        ctxt->url = script->url;
+
+        // For backward compatibility, if there are no imports, we need to use the
+        // imports from the parent context.  See QTBUG-17518.
+        if (!script->importCache->isEmpty()) {
+            ctxt->imports = script->importCache;
+        } else {
+            ctxt->imports = parentCtxt->imports;
+        }
+
+        if (ctxt->imports) {
+            ctxt->imports->addref();
+        }
+
+        ctxt->setParent(parentCtxt);
+
+        for (int ii = 0; ii < script->scripts.count(); ++ii)
+            ctxt->importedScripts << run(ctxt, script->scripts.at(ii)->scriptData());
+    }
+
     QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
-    if (shared)
+    if (shared) {
         scriptContext->pushScope(enginePriv->contextClass->newUrlContext(script->url.toString())); // XXX toString()?
-    else
+    } else {
         scriptContext->pushScope(enginePriv->contextClass->newUrlContext(ctxt, 0, script->url.toString()));
+    }
 
     scriptContext->pushScope(enginePriv->globalClass->staticGlobalObject());
-
     QScriptValue scope = QScriptDeclarativeClass::newStaticScopeObject(scriptEngine);
     scriptContext->pushScope(scope);
 
