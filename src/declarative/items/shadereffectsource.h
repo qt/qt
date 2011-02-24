@@ -117,6 +117,7 @@ class ShaderEffectSource : public TextureItem
     Q_PROPERTY(QSize textureSize READ textureSize WRITE setTextureSize NOTIFY textureSizeChanged)
     Q_PROPERTY(Format format READ format WRITE setFormat NOTIFY formatChanged)
     Q_PROPERTY(bool live READ live WRITE setLive NOTIFY liveChanged)
+    Q_PROPERTY(bool hideSource READ hideSource WRITE setHideSource NOTIFY hideSourceChanged)
     Q_ENUMS(Format)
 public:
     enum Format {
@@ -143,6 +144,9 @@ public:
     bool live() const;
     void setLive(bool live);
 
+    bool hideSource() const;
+    void setHideSource(bool hide);
+
     Q_INVOKABLE void grab();
 
 Q_SIGNALS:
@@ -151,6 +155,7 @@ Q_SIGNALS:
     void textureSizeChanged();
     void formatChanged();
     void liveChanged();
+    void hideSourceChanged();
 
 protected:
     virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
@@ -161,6 +166,7 @@ private:
     QSize m_textureSize;
     Format m_format;
     uint m_live : 1;
+    uint m_hideSource : 1;
 };
 
 QT_END_NAMESPACE

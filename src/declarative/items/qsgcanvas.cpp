@@ -1410,7 +1410,7 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
         itemPriv->paintNodeIndex = 0;
         for (; ii < orderedChildren.count() && orderedChildren.at(ii)->z() < 0; ++ii) {
             QSGItemPrivate *childPrivate = QSGItemPrivate::get(orderedChildren.at(ii));
-            if (!childPrivate->explicitVisible && !itemPriv->effectRefCount)
+            if (!childPrivate->explicitVisible && !childPrivate->effectRefCount)
                 continue;
             if (childPrivate->itemNode()->parent())
                 childPrivate->itemNode()->parent()->removeChildNode(childPrivate->itemNode());
@@ -1424,7 +1424,7 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
 
         for (; ii < orderedChildren.count(); ++ii) {
             QSGItemPrivate *childPrivate = QSGItemPrivate::get(orderedChildren.at(ii));
-            if (!childPrivate->explicitVisible && !itemPriv->effectRefCount)
+            if (!childPrivate->explicitVisible && !childPrivate->effectRefCount)
                 continue;
             if (childPrivate->itemNode()->parent())
                 childPrivate->itemNode()->parent()->removeChildNode(childPrivate->itemNode());
@@ -1438,8 +1438,9 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
         itemPriv->clipNode->update();
     }
 
-    if (dirty & (QSGItemPrivate::OpacityValue | QSGItemPrivate::Visible)) {
-        qreal opacity = itemPriv->explicitVisible ? itemPriv->opacity : qreal(0);
+    if (dirty & (QSGItemPrivate::OpacityValue | QSGItemPrivate::Visible | QSGItemPrivate::HideReference)) {
+        qreal opacity = itemPriv->explicitVisible && itemPriv->hideRefCount == 0
+                      ? itemPriv->opacity : qreal(0);
 
         if (opacity != 1 && !itemPriv->opacityNode) {
             itemPriv->opacityNode = new OpacityNode;

@@ -1108,7 +1108,8 @@ QSGItemPrivate::QSGItemPrivate()
 
   dirtyAttributes(0), nextDirtyItem(0), prevDirtyItem(0),
 
-  itemNodeInstance(0), opacityNode(0), clipNode(0), rootNode(0), groupNode(0), paintNode(0), paintNodeIndex(0), effectRefCount(0)
+  itemNodeInstance(0), opacityNode(0), clipNode(0), rootNode(0), groupNode(0), paintNode(0)
+  , paintNodeIndex(0), effectRefCount(0), hideRefCount(0)
 {
 }
 
@@ -2221,6 +2222,7 @@ QString QSGItemPrivate::dirtyToString() const
     DIRTY_TO_STRING(Canvas);
     DIRTY_TO_STRING(EffectReference);
     DIRTY_TO_STRING(Visible);
+    DIRTY_TO_STRING(HideReference);
 
     return rv;
 }
@@ -2270,22 +2272,30 @@ void QSGItemPrivate::removeFromDirtyList()
     Q_ASSERT(!nextDirtyItem);
 }
 
-void QSGItemPrivate::refFromEffectItem()
+void QSGItemPrivate::refFromEffectItem(bool hide)
 {
     ++effectRefCount;
     if (1 == effectRefCount) {
         dirty(EffectReference);
         if (parentItem) QSGItemPrivate::get(parentItem)->dirty(ChildrenStackingChanged);
     }
+    if (hide) {
+        if (++hideRefCount == 1)
+            dirty(HideReference);
+    }
 }
 
-void QSGItemPrivate::derefFromEffectItem()
+void QSGItemPrivate::derefFromEffectItem(bool unhide)
 {
     Q_ASSERT(effectRefCount);
     --effectRefCount;
     if (0 == effectRefCount) {
         dirty(EffectReference);
         if (parentItem) QSGItemPrivate::get(parentItem)->dirty(ChildrenStackingChanged);
+    }
+    if (unhide) {
+        if (--hideRefCount == 0)
+            dirty(HideReference);
     }
 }
 

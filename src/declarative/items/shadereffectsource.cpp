@@ -207,6 +207,7 @@ ShaderEffectSource::ShaderEffectSource(QSGItem *parent)
     , m_textureSize(0, 0)
     , m_format(RGBA)
     , m_live(true)
+    , m_hideSource(false)
 {
     setTextureProvider(new ShaderEffectTextureProvider(this), true);
 }
@@ -214,7 +215,7 @@ ShaderEffectSource::ShaderEffectSource(QSGItem *parent)
 ShaderEffectSource::~ShaderEffectSource()
 {
     if (m_sourceItem)
-        QSGItemPrivate::get(m_sourceItem)->derefFromEffectItem();
+        QSGItemPrivate::get(m_sourceItem)->derefFromEffectItem(m_hideSource);
 }
 
 QSGItem *ShaderEffectSource::sourceItem() const
@@ -227,7 +228,7 @@ void ShaderEffectSource::setSourceItem(QSGItem *item)
     if (item == m_sourceItem)
         return;
     if (m_sourceItem)
-        QSGItemPrivate::get(m_sourceItem)->derefFromEffectItem();
+        QSGItemPrivate::get(m_sourceItem)->derefFromEffectItem(m_hideSource);
     m_sourceItem = item;
     if (m_sourceItem) {
         // TODO: Find better solution.
@@ -238,7 +239,7 @@ void ShaderEffectSource::setSourceItem(QSGItem *item)
             m_sourceItem->setParentItem(this);
             m_sourceItem->setVisible(false);
         }
-        QSGItemPrivate::get(m_sourceItem)->refFromEffectItem();
+        QSGItemPrivate::get(m_sourceItem)->refFromEffectItem(m_hideSource);
     }
     update();
     emit sourceItemChanged();
@@ -298,6 +299,24 @@ void ShaderEffectSource::setLive(bool live)
     m_live = live;
     update();
     emit liveChanged();
+}
+
+bool ShaderEffectSource::hideSource() const
+{
+    return m_hideSource;
+}
+
+void ShaderEffectSource::setHideSource(bool hide)
+{
+    if (hide == m_hideSource)
+        return;
+    if (m_sourceItem) {
+        QSGItemPrivate::get(m_sourceItem)->refFromEffectItem(hide);
+        QSGItemPrivate::get(m_sourceItem)->derefFromEffectItem(m_hideSource);
+    }
+    m_hideSource = hide;
+    update();
+    emit hideSourceChanged();
 }
 
 void ShaderEffectSource::grab()
