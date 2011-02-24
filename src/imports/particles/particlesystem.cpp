@@ -92,6 +92,7 @@ void ParticleSystem::buildParticleNodes()
     m_particle_count = 0;//TODO: Only when changed?
     foreach(ParticleEmitter* e, m_emitters)
         m_particle_count += e->particlesPerSecond()*(e->particleDuration()/1000.0);
+    d.resize(m_particle_count);
 
     foreach(Particle* particle, m_particles){
         particle->setCount(m_particle_count);//TODO: only their count
@@ -132,12 +133,22 @@ Node *ParticleSystem::updatePaintNode(Node *, UpdatePaintNodeData *)
     return m_node;
 }
 
-void ParticleSystem::dataStore(ParticleData *data)
+ParticleData* ParticleSystem::newDatum()
 {
-    if(d.contains(data->systemIndex))
-        delete d.value(data->systemIndex);//Delete old
-
-    d.insert(data->systemIndex, data);
+    //TODO: Keep datums within one emitter? And within one particle.
+    //TODO: Switch to d->emitterIdx + eIdx*maxSize?
+    ParticleData* ret;
+    if(d[m_next_particle]){
+        ret = d[m_next_particle];
+    }else{
+        ret = new ParticleData;
+        d[m_next_particle] = ret;
+    }
+    ret->systemIndex = m_next_particle;
+    m_next_particle++;
+    if(m_next_particle >= m_particle_count)
+        m_next_particle = 0;
+    return ret;
 }
 
 void ParticleSystem::emitParticle(ParticleData* pd)
@@ -147,14 +158,8 @@ void ParticleSystem::emitParticle(ParticleData* pd)
             return;
         pd->p = m_particles.first();
     }
-    //TODO: Switch to d->emitterIdx + eIdx*maxSize?
-    pd->systemIndex = m_next_particle;
-    m_next_particle++;
-    if(m_next_particle >= m_particle_count)
-        m_next_particle = 0;
     foreach(ParticleAffector *a, m_affectors)
         a->reset(pd->systemIndex);
-    dataStore(pd);
     pd->p->load(pd);
 }
 
@@ -174,13 +179,17 @@ void ParticleSystem::prepareNextFrame()
     qreal time =  timeInt / 1000.;
     foreach(ParticleEmitter* emitter, m_emitters)
         emitter->emitWindow(timeInt);
-    for(QHash<int, ParticleData*>::iterator iter=d.begin(); iter != d.end(); iter++){
-        ParticleVertices* p = &((*iter)->pv);
-        qreal dt = time - p->v1.dt;
-        p->v1.dt = p->v2.dt = p->v3.dt = p->v4.dt = time;
-        foreach(ParticleAffector* a, m_affectors)
-            if (a->affect(*iter, dt))
-                (*iter)->p->reload(*iter);
+    if(m_affectors.count()){//Optimize the common no-affectors case
+        for(QVector<ParticleData*>::iterator iter=d.begin(); iter != d.end(); iter++){
+            if(!(*iter))
+                continue;
+            ParticleVertices* p = &((*iter)->pv);
+            qreal dt = time - p->v1.dt;
+            p->v1.dt = p->v2.dt = p->v3.dt = p->v4.dt = time;
+            foreach(ParticleAffector* a, m_affectors)
+                if (a->affect(*iter, dt))
+                    (*iter)->p->reload(*iter);
+        }
     }
     foreach(Particle* particle, m_particles)
         particle->prepareNextFrame(timeInt);

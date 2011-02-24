@@ -3,7 +3,7 @@
 
 #include <QSGItem>
 #include <QTime>
-#include <QHash>
+#include <QVector>
 
 class ParticleAffector;
 class ParticleEmitter;
@@ -54,6 +54,7 @@ void setRunning(bool arg)
 }
 
 void emitParticle(ParticleData* p);
+ParticleData* newDatum();
 
 protected:
     Node *updatePaintNode(Node *, UpdatePaintNodeData *);
@@ -62,7 +63,6 @@ private slots:
     void countChanged();
 private:
     void buildParticleNodes();
-    void dataStore(ParticleData* data);
     int m_next_particle;
     int m_particle_count;
     bool m_running;
@@ -72,7 +72,7 @@ private:
     QList<ParticleEmitter*> m_emitters;
     QList<ParticleAffector*> m_affectors;
     QList<Particle*> m_particles;
-    QHash<int, ParticleData*> d;
+    QVector<ParticleData*> d;
 };
 
 //TODO: Clean up all this into ParticleData

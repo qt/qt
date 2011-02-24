@@ -221,7 +221,7 @@ void TrailsEmitter::emitWindow(int timeStamp)
 
     while (pt < time) {
         int pos = m_last_particle % m_particle_count;
-        ParticleData* datum = new ParticleData;
+        ParticleData* datum = m_system->newDatum();
         datum->p = m_particle;
         datum->e = this;
         datum->emitterIndex = pos;
