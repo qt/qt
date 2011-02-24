@@ -948,7 +948,7 @@ void QXcbKeyboard::handleKeyEvent(QWidget *widget, QEvent::Type type, xcb_keycod
 
     QString string = translateKeySym(sym, state, qtcode, modifiers, chars, count);
 
-    QWindowSystemInterface::handleKeyEvent(widget, time, type, qtcode, modifiers, string.left(count));
+    QWindowSystemInterface::handleExtendedKeyEvent(widget, time, type, qtcode, modifiers, code, 0, state, string.left(count));
 }
 
 void QXcbKeyboard::handleKeyPressEvent(QWidget *widget, const xcb_key_press_event_t *event)

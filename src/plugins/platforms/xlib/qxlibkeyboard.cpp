@@ -996,5 +996,5 @@ void QXlibKeyboard::handleKeyEvent(QWidget *widget, QEvent::Type type, XKeyEvent
     KeySym keySym;
     count = XLookupString(ev,chars.data(),chars.size(),&keySym,0);
     QString text = translateKeySym(keySym,ev->state,qtcode,modifiers,chars,count);
-    QWindowSystemInterface::handleKeyEvent(widget,ev->time,type,qtcode,modifiers,text.left(count));
+    QWindowSystemInterface::handleExtendedKeyEvent(widget,ev->time,type,qtcode,modifiers,ev->keycode,0,ev->state,text.left(count));
 }
