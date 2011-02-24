@@ -279,7 +279,7 @@ qreal offsetParentRTL(QDeclarativeItem *rootItem, const char * itemString) {
 
 void mirrorAnchors(QDeclarativeItem *item) {
     QDeclarativeItemPrivate *itemPrivate = QDeclarativeItemPrivate::get(item);
-    itemPrivate->anchors()->setLayoutDirection(Qt::RightToLeft);
+    itemPrivate->setLayoutMirror(true);
 }
 
 void tst_qdeclarativeanchors::basicAnchorsRTL()
@@ -290,8 +290,18 @@ void tst_qdeclarativeanchors::basicAnchorsRTL()
     qApp->processEvents();
 
     QDeclarativeItem* rootItem = qobject_cast<QDeclarativeItem*>(view->rootObject());
+    foreach(QObject *child, rootItem->children()) {
+        bool mirrored = QDeclarativeItemPrivate::get(qobject_cast<QDeclarativeItem*>(child))->anchors()->property("mirrored").toBool();
+        QCOMPARE(mirrored, false);
+    }
+
     foreach(QObject *child, rootItem->children())
         mirrorAnchors(qobject_cast<QDeclarativeItem*>(child));
+
+    foreach(QObject *child, rootItem->children()) {
+        bool mirrored = QDeclarativeItemPrivate::get(qobject_cast<QDeclarativeItem*>(child))->anchors()->property("mirrored").toBool();
+        QCOMPARE(mirrored, true);
+    }
 
     //sibling horizontal
     QCOMPARE(childItem(rootItem, "rect1")->x(), offsetMasterRTL(rootItem, "rect1")-26.0);

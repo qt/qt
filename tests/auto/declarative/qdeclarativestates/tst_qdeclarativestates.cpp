@@ -818,7 +818,7 @@ void tst_qdeclarativestates::anchorChanges5()
 
 void mirrorAnchors(QDeclarativeItem *item) {
     QDeclarativeItemPrivate *itemPrivate = QDeclarativeItemPrivate::get(item);
-    itemPrivate->anchors()->setLayoutDirection(Qt::RightToLeft);
+    itemPrivate->setLayoutMirror(true);
 }
 
 qreal offsetRTL(QDeclarativeItem *anchorItem, QDeclarativeItem *item) {

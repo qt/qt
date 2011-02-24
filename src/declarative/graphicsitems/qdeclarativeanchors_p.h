@@ -79,7 +79,7 @@ class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeAnchors : public QObject
     Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged)
     Q_PROPERTY(QGraphicsObject *fill READ fill WRITE setFill RESET resetFill NOTIFY fillChanged)
     Q_PROPERTY(QGraphicsObject *centerIn READ centerIn WRITE setCenterIn RESET resetCenterIn NOTIFY centerInChanged)
-    Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection NOTIFY layoutDirectionChanged REVISION 1)
+    Q_PROPERTY(bool mirrored READ mirrored NOTIFY mirroredChanged REVISION 1)
 
 public:
     QDeclarativeAnchors(QObject *parent=0);
@@ -161,11 +161,10 @@ public:
 
     Anchors usedAnchors() const;
 
-    Qt::LayoutDirection layoutDirection() const;
-    void setLayoutDirection (Qt::LayoutDirection);
-
     void classBegin();
     void componentComplete();
+
+    bool mirrored();
 
 Q_SIGNALS:
     void leftChanged();
@@ -185,10 +184,11 @@ Q_SIGNALS:
     void verticalCenterOffsetChanged();
     void horizontalCenterOffsetChanged();
     void baselineOffsetChanged();
-    Q_REVISION(1) void layoutDirectionChanged();
+    Q_REVISION(1) void mirroredChanged();
 
 private:
     friend class QDeclarativeItem;
+    friend class QDeclarativeItemPrivate;
     friend class QDeclarativeGraphicsWidget;
     Q_DISABLE_COPY(QDeclarativeAnchors)
     Q_DECLARE_PRIVATE(QDeclarativeAnchors)

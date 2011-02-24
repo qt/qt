@@ -45,6 +45,7 @@
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecontext.h>
 #include <QtDeclarative/qdeclarativeexpression.h>
+#include <QtDeclarative/private/qdeclarativeitem_p.h>
 #include <QtDeclarative/private/qdeclarativelistview_p.h>
 #include <QtDeclarative/private/qdeclarativetext_p.h>
 #include <QtDeclarative/private/qdeclarativevisualitemmodel_p.h>
@@ -116,6 +117,7 @@ private slots:
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
     void rightToLeft();
+    void test_mirroring();
 
 private:
     template <class T> void items();
@@ -1697,8 +1699,6 @@ void tst_QDeclarativeListView::manualHighlight()
     QDeclarativeView *canvas = new QDeclarativeView(0);
     canvas->setFixedSize(240,320);
 
-    QDeclarativeContext *ctxt = canvas->rootContext();
-
     QString filename(SRCDIR "/data/manual-highlight.qml");
     canvas->setSource(QUrl::fromLocalFile(filename));
 
@@ -1828,8 +1828,6 @@ void tst_QDeclarativeListView::header()
         QDeclarativeView *canvas = createView();
 
         TestModel model;
-
-        QDeclarativeContext *ctxt = canvas->rootContext();
 
         canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/header1.qml"));
         qApp->processEvents();
@@ -2303,10 +2301,10 @@ void tst_QDeclarativeListView::testQtQuick11Attributes_data()
 void tst_QDeclarativeListView::rightToLeft()
 {
     QDeclarativeView *canvas = createView();
-
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/rightToLeft.qml"));
     qApp->processEvents();
 
+    QVERIFY(canvas->rootObject() != 0);
     QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "view");
     QTRY_VERIFY(listview != 0);
 
@@ -2339,6 +2337,67 @@ void tst_QDeclarativeListView::rightToLeft()
     QTRY_COMPARE(text->text(), QLatin1String("index: 2"));
 
     delete canvas;
+}
+
+void tst_QDeclarativeListView::test_mirroring()
+{
+    QDeclarativeView *canvasA = createView();
+    canvasA->setSource(QUrl::fromLocalFile(SRCDIR "/data/rightToLeft.qml"));
+    QDeclarativeListView *listviewA = findItem<QDeclarativeListView>(canvasA->rootObject(), "view");
+    QTRY_VERIFY(listviewA != 0);
+
+    QDeclarativeView *canvasB = createView();
+    canvasB->setSource(QUrl::fromLocalFile(SRCDIR "/data/rightToLeft.qml"));
+    QDeclarativeListView *listviewB = findItem<QDeclarativeListView>(canvasB->rootObject(), "view");
+    QTRY_VERIFY(listviewA != 0);
+    qApp->processEvents();
+
+    QList<QString> objectNames;
+    objectNames << "item1" << "item2"; // << "item3"
+
+    listviewA->setProperty("layoutDirection", Qt::LeftToRight);
+    listviewB->setProperty("layoutDirection", Qt::RightToLeft);
+    QCOMPARE(listviewA->layoutDirection(), listviewA->effectiveLayoutDirection());
+
+    // LTR != RTL
+    foreach(const QString objectName, objectNames)
+        QVERIFY(findItem<QDeclarativeItem>(listviewA, objectName)->x() != findItem<QDeclarativeItem>(listviewB, objectName)->x());
+
+    listviewA->setProperty("layoutDirection", Qt::LeftToRight);
+    listviewB->setProperty("layoutDirection", Qt::LeftToRight);
+
+    // LTR == LTR
+    foreach(const QString objectName, objectNames)
+        QCOMPARE(findItem<QDeclarativeItem>(listviewA, objectName)->x(), findItem<QDeclarativeItem>(listviewB, objectName)->x());
+
+    QVERIFY(listviewB->layoutDirection() == listviewB->effectiveLayoutDirection());
+    QDeclarativeItemPrivate::get(listviewB)->setLayoutMirror(true);
+    QVERIFY(listviewB->layoutDirection() != listviewB->effectiveLayoutDirection());
+
+    // LTR != LTR+mirror
+    foreach(const QString objectName, objectNames)
+        QVERIFY(findItem<QDeclarativeItem>(listviewA, objectName)->x() != findItem<QDeclarativeItem>(listviewB, objectName)->x());
+
+    listviewA->setProperty("layoutDirection", Qt::RightToLeft);
+
+    // RTL == LTR+mirror
+    foreach(const QString objectName, objectNames)
+        QCOMPARE(findItem<QDeclarativeItem>(listviewA, objectName)->x(), findItem<QDeclarativeItem>(listviewB, objectName)->x());
+
+    listviewB->setProperty("layoutDirection", Qt::RightToLeft);
+
+    // RTL != RTL+mirror
+    foreach(const QString objectName, objectNames)
+        QVERIFY(findItem<QDeclarativeItem>(listviewA, objectName)->x() != findItem<QDeclarativeItem>(listviewB, objectName)->x());
+
+    listviewA->setProperty("layoutDirection", Qt::LeftToRight);
+
+    // LTR == RTL+mirror
+    foreach(const QString objectName, objectNames)
+        QCOMPARE(findItem<QDeclarativeItem>(listviewA, objectName)->x(), findItem<QDeclarativeItem>(listviewB, objectName)->x());
+
+    delete canvasA;
+    delete canvasB;
 }
 
 void tst_QDeclarativeListView::qListModelInterface_items()

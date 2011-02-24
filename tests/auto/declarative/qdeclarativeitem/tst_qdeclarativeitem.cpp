@@ -66,6 +66,8 @@ private slots:
     void keysProcessingOrder();
     void keyNavigation();
     void keyNavigation_skipNotVisible();
+    void layoutMirroring();
+    void layoutMirroringIllegalParent();
     void smooth();
     void clip();
     void mapCoordinates();
@@ -87,12 +89,32 @@ private slots:
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
     void qtbug_16871();
-
 private:
-    template<typename T>
-    T *findItem(QGraphicsObject *parent, const QString &objectName);
     QDeclarativeEngine engine;
 };
+
+template<typename T>
+T *findItem(QGraphicsObject *parent, const QString &objectName)
+{
+    if (!parent)
+        return 0;
+
+    const QMetaObject &mo = T::staticMetaObject;
+    //qDebug() << parent->QGraphicsObject::children().count() << "children";
+    for (int i = 0; i < parent->childItems().count(); ++i) {
+        QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(parent->childItems().at(i));
+        if(!item)
+            continue;
+        //qDebug() << "try" << item;
+        if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName))
+            return static_cast<T*>(item);
+        item = findItem<T>(item, objectName);
+        if (item)
+            return static_cast<T*>(item);
+    }
+
+    return 0;
+}
 
 class KeysTestObject : public QObject
 {
@@ -378,6 +400,132 @@ void tst_QDeclarativeItem::keysProcessingOrder()
 
     delete canvas;
     delete testObject;
+}
+
+QDeclarativeItemPrivate *childPrivate(QGraphicsObject *rootItem, const char * itemString)
+{
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(rootItem, QString(QLatin1String(itemString)));
+    QDeclarativeItemPrivate* itemPrivate = QDeclarativeItemPrivate::get(item);
+    return itemPrivate;
+}
+
+QVariant childProperty(QGraphicsObject *rootItem, const char * itemString, const char * property)
+{
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(rootItem, QString(QLatin1String(itemString)));
+    return item->property(property);
+}
+
+bool anchorsMirrored(QGraphicsObject *rootItem, const char * itemString)
+{
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(rootItem, QString(QLatin1String(itemString)));
+    QDeclarativeItemPrivate* itemPrivate = QDeclarativeItemPrivate::get(item);
+    return itemPrivate->anchors()->mirrored();
+}
+
+void tst_QDeclarativeItem::layoutMirroring()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/layoutmirroring.qml"));
+    canvas->show();
+
+    QDeclarativeItem *rootItem = qobject_cast<QDeclarativeItem*>(canvas->rootObject());
+    QVERIFY(rootItem);
+    QDeclarativeItemPrivate *rootPrivate = QDeclarativeItemPrivate::get(rootItem);
+    QVERIFY(rootPrivate);
+
+    QCOMPARE(childPrivate(rootItem, "mirrored1")->effectiveLayoutMirror, true);
+    QCOMPARE(childPrivate(rootItem, "mirrored2")->effectiveLayoutMirror, true);
+    QCOMPARE(childPrivate(rootItem, "notMirrored1")->effectiveLayoutMirror, false);
+    QCOMPARE(childPrivate(rootItem, "notMirrored2")->effectiveLayoutMirror, false);
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror1")->effectiveLayoutMirror, true);
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror2")->effectiveLayoutMirror, true);
+
+    QCOMPARE(anchorsMirrored(rootItem, "mirrored1"), true);
+    QCOMPARE(anchorsMirrored(rootItem, "mirrored2"), true);
+    QCOMPARE(anchorsMirrored(rootItem, "notMirrored1"), false);
+    QCOMPARE(anchorsMirrored(rootItem, "notMirrored2"), false);
+    QCOMPARE(anchorsMirrored(rootItem, "inheritedMirror1"), true);
+    QCOMPARE(anchorsMirrored(rootItem, "inheritedMirror2"), true);
+
+    QCOMPARE(childPrivate(rootItem, "mirrored1")->inheritedLayoutMirror, true);
+    QCOMPARE(childPrivate(rootItem, "mirrored2")->inheritedLayoutMirror, false);
+    QCOMPARE(childPrivate(rootItem, "notMirrored1")->inheritedLayoutMirror, true);
+    QCOMPARE(childPrivate(rootItem, "notMirrored2")->inheritedLayoutMirror, false);
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror1")->inheritedLayoutMirror, true);
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror2")->inheritedLayoutMirror, true);
+
+    QCOMPARE(childPrivate(rootItem, "mirrored1")->isMirrorImplicit, false);
+    QCOMPARE(childPrivate(rootItem, "mirrored2")->isMirrorImplicit, false);
+    QCOMPARE(childPrivate(rootItem, "notMirrored1")->isMirrorImplicit, false);
+    QCOMPARE(childPrivate(rootItem, "notMirrored2")->isMirrorImplicit, true);
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror1")->isMirrorImplicit, true);
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror2")->isMirrorImplicit, true);
+
+    QCOMPARE(childPrivate(rootItem, "mirrored1")->inheritMirrorFromParent, true);
+    QCOMPARE(childPrivate(rootItem, "mirrored2")->inheritMirrorFromParent, false);
+    QCOMPARE(childPrivate(rootItem, "notMirrored1")->inheritMirrorFromParent, true);
+    QCOMPARE(childPrivate(rootItem, "notMirrored2")->inheritMirrorFromParent, false);
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror1")->inheritMirrorFromParent, true);
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror2")->inheritMirrorFromParent, true);
+
+    QCOMPARE(childPrivate(rootItem, "mirrored1")->inheritMirrorFromItem, true);
+    QCOMPARE(childPrivate(rootItem, "mirrored2")->inheritMirrorFromItem, false);
+    QCOMPARE(childPrivate(rootItem, "notMirrored1")->inheritMirrorFromItem, false);
+    QCOMPARE(childPrivate(rootItem, "notMirrored2")->inheritMirrorFromItem, false);
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror1")->inheritMirrorFromItem, false);
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror2")->inheritMirrorFromItem, false);
+
+    // load dynamic content using Loader that needs to inherit mirroring
+    rootItem->setProperty("state", "newContent");
+    QCOMPARE(childPrivate(rootItem, "notMirrored3")->effectiveLayoutMirror, false);
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror3")->effectiveLayoutMirror, true);
+
+    QCOMPARE(childPrivate(rootItem, "notMirrored3")->inheritedLayoutMirror, true);
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror3")->inheritedLayoutMirror, true);
+
+    QCOMPARE(childPrivate(rootItem, "notMirrored3")->isMirrorImplicit, false);
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror3")->isMirrorImplicit, true);
+
+    QCOMPARE(childPrivate(rootItem, "notMirrored3")->inheritMirrorFromParent, true);
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror3")->inheritMirrorFromParent, true);
+
+    QCOMPARE(childPrivate(rootItem, "notMirrored3")->inheritMirrorFromItem, false);
+    QCOMPARE(childPrivate(rootItem, "notMirrored3")->inheritMirrorFromItem, false);
+
+    // disable inheritance
+    rootItem->setProperty("childrenInherit", false);
+
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror1")->effectiveLayoutMirror, false);
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror2")->effectiveLayoutMirror, false);
+    QCOMPARE(childPrivate(rootItem, "mirrored1")->effectiveLayoutMirror, true);
+    QCOMPARE(childPrivate(rootItem, "notMirrored1")->effectiveLayoutMirror, false);
+
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror1")->inheritedLayoutMirror, false);
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror2")->inheritedLayoutMirror, false);
+    QCOMPARE(childPrivate(rootItem, "mirrored1")->inheritedLayoutMirror, false);
+    QCOMPARE(childPrivate(rootItem, "notMirrored1")->inheritedLayoutMirror, false);
+
+    // re-enable inheritance
+    rootItem->setProperty("childrenInherit", true);
+
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror1")->effectiveLayoutMirror, true);
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror2")->effectiveLayoutMirror, true);
+    QCOMPARE(childPrivate(rootItem, "mirrored1")->effectiveLayoutMirror, true);
+    QCOMPARE(childPrivate(rootItem, "notMirrored1")->effectiveLayoutMirror, false);
+
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror1")->inheritedLayoutMirror, true);
+    QCOMPARE(childPrivate(rootItem, "inheritedMirror2")->inheritedLayoutMirror, true);
+    QCOMPARE(childPrivate(rootItem, "mirrored1")->inheritedLayoutMirror, true);
+    QCOMPARE(childPrivate(rootItem, "notMirrored1")->inheritedLayoutMirror, true);
+}
+
+void tst_QDeclarativeItem::layoutMirroringIllegalParent()
+{
+    QDeclarativeComponent component(&engine);
+    component.setData("import QtQuick 1.1; QtObject { LayoutMirroring.enabled: true; LayoutMirroring.childrenInherit: true }", QUrl::fromLocalFile(""));
+    QTest::ignoreMessage(QtWarningMsg, "file::1:21: QML QtObject: LayoutDirection attached property only works with Items");
+    QObject *object = component.create();
+    QVERIFY(object != 0);
 }
 
 void tst_QDeclarativeItem::keyNavigation()
@@ -1002,32 +1150,6 @@ void tst_QDeclarativeItem::qtbug_16871()
     QVERIFY(o != 0);
     delete o;
 }
-
-
-template<typename T>
-T *tst_QDeclarativeItem::findItem(QGraphicsObject *parent, const QString &objectName)
-{
-    if (!parent)
-        return 0;
-
-    const QMetaObject &mo = T::staticMetaObject;
-    //qDebug() << parent->QGraphicsObject::children().count() << "children";
-    for (int i = 0; i < parent->childItems().count(); ++i) {
-        QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(parent->childItems().at(i));
-        if(!item)
-            continue;
-        //qDebug() << "try" << item;
-        if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName))
-            return static_cast<T*>(item);
-        item = findItem<T>(item, objectName);
-        if (item)
-            return static_cast<T*>(item);
-    }
-
-    return 0;
-}
-
-
 
 QTEST_MAIN(tst_QDeclarativeItem)
 

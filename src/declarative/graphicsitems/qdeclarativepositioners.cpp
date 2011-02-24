@@ -574,7 +574,7 @@ void QDeclarativeColumn::reportConflictingAnchors()
   \sa Grid::spacing
 */
 QDeclarativeRow::QDeclarativeRow(QDeclarativeItem *parent)
-: QDeclarativeBasePositioner(Horizontal, parent), m_layoutDirection(Qt::LeftToRight)
+: QDeclarativeBasePositioner(Horizontal, parent)
 {
 }
 
@@ -595,20 +595,39 @@ QDeclarativeRow::QDeclarativeRow(QDeclarativeItem *parent)
 */
 Qt::LayoutDirection QDeclarativeRow::layoutDirection() const
 {
-    return m_layoutDirection;
+    return QDeclarativeBasePositionerPrivate::getLayoutDirection(this);
 }
 
 void QDeclarativeRow::setLayoutDirection(Qt::LayoutDirection layoutDirection)
 {
-    if (m_layoutDirection != layoutDirection) {
-        m_layoutDirection = layoutDirection;
+    QDeclarativeBasePositionerPrivate *d = static_cast<QDeclarativeBasePositionerPrivate* >(QDeclarativeBasePositionerPrivate::get(this));
+    if (d->layoutDirection != layoutDirection) {
+        d->layoutDirection = layoutDirection;
         prePositioning();
         emit layoutDirectionChanged();
+        emit effectiveLayoutDirectionChanged();
     }
+}
+
+/*!
+    \qmlproperty enumeration Row::effectiveLayoutDirection
+    This property holds the effective layout direction of the row positioner.
+
+    When using the attached property {LayoutMirroring::mirror}{LayoutMirroring::mirror} for locale layouts,
+    the visual layout direction of the row positioner will be mirrored. However, the
+    property \l {Row::layoutDirection}{layoutDirection} will remain unchanged.
+
+    \sa Row::layoutDirection, {LayoutMirroring}{LayoutMirroring}
+*/
+
+Qt::LayoutDirection QDeclarativeRow::effectiveLayoutDirection() const
+{
+    return QDeclarativeBasePositionerPrivate::getEffectiveLayoutDirection(this);
 }
 
 void QDeclarativeRow::doPositioning(QSizeF *contentSize)
 {
+    QDeclarativeBasePositionerPrivate *d = static_cast<QDeclarativeBasePositionerPrivate*>(QDeclarativeBasePositionerPrivate::get(this));
     int hoffset = 0;
 
     QList<int> hoffsets;
@@ -617,7 +636,7 @@ void QDeclarativeRow::doPositioning(QSizeF *contentSize)
         if (!child.item || !child.isVisible)
             continue;
 
-        if(m_layoutDirection == Qt::LeftToRight){
+        if(d->isLeftToRight()){
             if(child.item->x() != hoffset)
                 positionX(hoffset, child);
         }else{
@@ -632,7 +651,7 @@ void QDeclarativeRow::doPositioning(QSizeF *contentSize)
 
     contentSize->setWidth(hoffset - spacing());
 
-    if(m_layoutDirection == Qt::LeftToRight)
+    if(d->isLeftToRight())
         return;
 
     //Right to Left layout
@@ -786,7 +805,7 @@ void QDeclarativeRow::reportConflictingAnchors()
   \sa rows, columns
 */
 QDeclarativeGrid::QDeclarativeGrid(QDeclarativeItem *parent) :
-    QDeclarativeBasePositioner(Both, parent), m_rows(-1), m_columns(-1), m_flow(LeftToRight), m_layoutDirection(Qt::LeftToRight)
+    QDeclarativeBasePositioner(Both, parent), m_rows(-1), m_columns(-1), m_flow(LeftToRight)
 {
 }
 
@@ -860,11 +879,11 @@ void QDeclarativeGrid::setFlow(Flow flow)
     Possible values are:
 
     \list
-    \o Qt.LeftToRight (default) - Items are positioned beginning
-    from the top, left anchor. The flow direction is dependent
-    on the \l Grid::flow property.
-    \o Qt.RightToLeft - Items are positioned beginning from the
-    top, right anchor. The flow direction is dependent on the
+    \o Qt.LeftToRight (default) - Items are positioned from the top to bottom,
+    and left to right. The flow direction is dependent on the
+    \l Grid::flow property.
+    \o Qt.RightToLeft - Items are positioned from the top to bottom,
+    and right to left. The flow direction is dependent on the
     \l Grid::flow property.
     \endlist
 
@@ -872,21 +891,39 @@ void QDeclarativeGrid::setFlow(Flow flow)
 */
 Qt::LayoutDirection QDeclarativeGrid::layoutDirection() const
 {
-    return m_layoutDirection;
+    return QDeclarativeBasePositionerPrivate::getLayoutDirection(this);
 }
 
 void QDeclarativeGrid::setLayoutDirection(Qt::LayoutDirection layoutDirection)
 {
-    if (m_layoutDirection != layoutDirection) {
-        m_layoutDirection = layoutDirection;
+    QDeclarativeBasePositionerPrivate *d = static_cast<QDeclarativeBasePositionerPrivate*>(QDeclarativeBasePositionerPrivate::get(this));
+    if (d->layoutDirection != layoutDirection) {
+        d->layoutDirection = layoutDirection;
         prePositioning();
         emit layoutDirectionChanged();
+        emit effectiveLayoutDirectionChanged();
     }
+}
+
+/*!
+    \qmlproperty enumeration Grid::effectiveLayoutDirection
+    This property holds the effective layout direction of the grid positioner.
+
+    When using the attached property {LayoutMirroring::mirror}{LayoutMirroring::mirror} for locale layouts,
+    the visual layout direction of the grid positioner will be mirrored. However, the
+    property \l {Grid::layoutDirection}{layoutDirection} will remain unchanged.
+
+    \sa Grid::layoutDirection, {LayoutMirroring}{LayoutMirroring}
+*/
+
+Qt::LayoutDirection QDeclarativeGrid::effectiveLayoutDirection() const
+{
+    return QDeclarativeBasePositionerPrivate::getEffectiveLayoutDirection(this);
 }
 
 void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
 {
-
+    QDeclarativeBasePositionerPrivate *d = static_cast<QDeclarativeBasePositionerPrivate*>(QDeclarativeBasePositionerPrivate::get(this));
     int c = m_columns;
     int r = m_rows;
     //Is allocating the extra QPODVector too much overhead?
@@ -976,7 +1013,7 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
         end = widthSum;
 
     int xoffset=0;
-    if(m_layoutDirection == Qt::RightToLeft)
+    if(!d->isLeftToRight())
         xoffset=end;
     int yoffset=0;
     int curRow =0;
@@ -984,7 +1021,7 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
     for (int i = 0; i < visibleItems.count(); ++i) {
         const PositionedItem &child = visibleItems.at(i);
         int childXOffset = xoffset;
-        if(m_layoutDirection == Qt::RightToLeft)
+        if(!d->isLeftToRight())
             childXOffset -= QGraphicsItemPrivate::get(child.item)->width();
         if((child.item->x()!=childXOffset)||(child.item->y()!=yoffset)){
             positionX(childXOffset, child);
@@ -992,7 +1029,7 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
         }
 
         if (m_flow == LeftToRight) {
-            if(m_layoutDirection == Qt::LeftToRight)
+            if(d->isLeftToRight())
                 xoffset+=maxColWidth[curCol]+spacing();
             else
                 xoffset-=maxColWidth[curCol]+spacing();
@@ -1000,7 +1037,7 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
             curCol%=c;
             if (!curCol){
                 yoffset+=maxRowHeight[curRow]+spacing();
-                if(m_layoutDirection == Qt::LeftToRight)
+                if(d->isLeftToRight())
                     xoffset=0;
                 else
                     xoffset=end;
@@ -1013,7 +1050,7 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
             curRow++;
             curRow%=r;
             if (!curRow){
-                if(m_layoutDirection == Qt::LeftToRight)
+                if(d->isLeftToRight())
                     xoffset+=maxColWidth[curCol]+spacing();
                 else
                     xoffset-=maxColWidth[curCol]+spacing();
@@ -1148,12 +1185,10 @@ class QDeclarativeFlowPrivate : public QDeclarativeBasePositionerPrivate
 
 public:
     QDeclarativeFlowPrivate()
-        : QDeclarativeBasePositionerPrivate(), flow(QDeclarativeFlow::LeftToRight),
-            layoutDirection(Qt::LeftToRight)
+        : QDeclarativeBasePositionerPrivate(), flow(QDeclarativeFlow::LeftToRight)
     {}
 
     QDeclarativeFlow::Flow flow;
-    Qt::LayoutDirection layoutDirection;
 };
 
 QDeclarativeFlow::QDeclarativeFlow(QDeclarativeItem *parent)
@@ -1202,11 +1237,11 @@ void QDeclarativeFlow::setFlow(Flow flow)
     Possible values are:
 
     \list
-    \o Qt.LeftToRight (default) - Items are positioned beginning
-    from the top, left anchor. The flow direction is dependent
-    on the \l Flow::flow property.
-    \o Qt.RightToLeft - Items are positioned beginning from the
-    top, right anchor. The flow direction is dependent on the
+    \o Qt.LeftToRight (default) - Items are positioned from the top to bottom,
+    and left to right. The flow direction is dependent on the
+    \l Flow::flow property.
+    \o Qt.RightToLeft - Items are positioned from the top to bottom,
+    and right to left. The flow direction is dependent on the
     \l Flow::flow property.
     \endlist
 
@@ -1226,7 +1261,24 @@ void QDeclarativeFlow::setLayoutDirection(Qt::LayoutDirection layoutDirection)
         d->layoutDirection = layoutDirection;
         prePositioning();
         emit layoutDirectionChanged();
+        emit effectiveLayoutDirectionChanged();
     }
+}
+
+/*!
+    \qmlproperty enumeration Flow::effectiveLayoutDirection
+    This property holds the effective layout direction of the flow positioner.
+
+    When using the attached property {LayoutMirroring::mirror}{LayoutMirroring::mirror} for locale layouts,
+    the visual layout direction of the grid positioner will be mirrored. However, the
+    property \l {Flow::layoutDirection}{layoutDirection} will remain unchanged.
+
+    \sa Flow::layoutDirection, {LayoutMirroring}{LayoutMirroring}
+*/
+
+Qt::LayoutDirection QDeclarativeFlow::effectiveLayoutDirection() const
+{
+    return QDeclarativeBasePositionerPrivate::getEffectiveLayoutDirection(this);
 }
 
 void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
@@ -1258,7 +1310,7 @@ void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
             }
         }
 
-        if(d->layoutDirection == Qt::LeftToRight){
+        if(d->isLeftToRight()){
             if(child.item->x() != hoffset)
                 positionX(hoffset, child);
         }else{
@@ -1281,7 +1333,7 @@ void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
         }
     }
 
-    if(d->layoutDirection == Qt::LeftToRight)
+    if(d->isLeftToRight())
         return;
 
     int end;

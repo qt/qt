@@ -77,6 +77,7 @@ QT_BEGIN_NAMESPACE
 
 class QNetworkReply;
 class QDeclarativeItemKeyFilter;
+class QDeclarativeLayoutMirroringAttached;
 
 //### merge into private?
 class QDeclarativeContents : public QObject, public QDeclarativeItemChangeListener
@@ -125,8 +126,10 @@ public:
       _stateGroup(0), origin(QDeclarativeItem::Center),
       widthValid(false), heightValid(false),
       componentComplete(true), keepMouse(false),
-      smooth(false), transformOriginDirty(true), doneEventPreHandler(false), keyHandler(0),
-      mWidth(0), mHeight(0), mImplicitWidth(0), mImplicitHeight(0), hadSubFocusItem(false)
+      smooth(false), transformOriginDirty(true), doneEventPreHandler(false),
+      inheritedLayoutMirror(false), effectiveLayoutMirror(false), isMirrorImplicit(true),
+      inheritMirrorFromParent(false), inheritMirrorFromItem(false), keyHandler(0),
+      mWidth(0), mHeight(0), mImplicitWidth(0), mImplicitHeight(0), attachedLayoutDirection(0), hadSubFocusItem(false)
     {
         QGraphicsItemPrivate::acceptedMouseButtons = 0;
         isDeclarativeItem = 1;
@@ -134,7 +137,6 @@ public:
                                       QGraphicsItem::ItemHasNoContents
                                       | QGraphicsItem::ItemIsFocusable
                                       | QGraphicsItem::ItemNegativeZStacksBehindParent);
-
     }
 
     void init(QDeclarativeItem *parent)
@@ -146,6 +148,11 @@ public:
         }
         baselineOffset.invalidate();
         mouseSetsFocus = false;
+        resolveLayoutMirror();
+    }
+
+    bool isMirrored() const {
+        return effectiveLayoutMirror;
     }
 
     // Private Properties
@@ -161,6 +168,10 @@ public:
     virtual qreal implicitHeight() const;
     virtual void implicitWidthChanged();
     virtual void implicitHeightChanged();
+
+    void resolveLayoutMirror();
+    void setImplicitLayoutMirror(bool mirror, bool inherit);
+    void setLayoutMirror(bool mirror);
 
     QDeclarativeListProperty<QObject> data();
     QDeclarativeListProperty<QObject> resources();
@@ -272,6 +283,11 @@ public:
     bool smooth:1;
     bool transformOriginDirty : 1;
     bool doneEventPreHandler : 1;
+    bool inheritedLayoutMirror:1;
+    bool effectiveLayoutMirror:1;
+    bool isMirrorImplicit:1;
+    bool inheritMirrorFromParent:1;
+    bool inheritMirrorFromItem:1;
 
     QDeclarativeItemKeyFilter *keyHandler;
 
@@ -279,6 +295,8 @@ public:
     qreal mHeight;
     qreal mImplicitWidth;
     qreal mImplicitHeight;
+
+    QDeclarativeLayoutMirroringAttached* attachedLayoutDirection;
 
     bool hadSubFocusItem;
 
@@ -325,6 +343,8 @@ public:
     virtual void transformChanged();
 
     virtual void focusChanged(bool);
+
+    virtual void mirrorChange() {};
 
     static qint64 consistentTime;
     static void setConsistentTime(qint64 t);
@@ -421,6 +441,31 @@ private:
     virtual void keyPressed(QKeyEvent *event, bool post);
     virtual void keyReleased(QKeyEvent *event, bool post);
     void setFocusNavigation(QDeclarativeItem *currentItem, const char *dir);
+};
+
+class QDeclarativeLayoutMirroringAttached : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled RESET resetEnabled NOTIFY enabledChanged)
+    Q_PROPERTY(bool childrenInherit READ childrenInherit WRITE setChildrenInherit NOTIFY childrenInheritChanged)
+
+public:
+    explicit QDeclarativeLayoutMirroringAttached(QObject *parent = 0);
+
+    bool enabled() const;
+    void setEnabled(bool);
+    void resetEnabled();
+
+    bool childrenInherit() const;
+    void setChildrenInherit(bool);
+
+    static QDeclarativeLayoutMirroringAttached *qmlAttachedProperties(QObject *);
+Q_SIGNALS:
+    void enabledChanged();
+    void childrenInheritChanged();
+private:
+    friend class QDeclarativeItemPrivate;
+    QDeclarativeItemPrivate *itemPrivate;
 };
 
 class QDeclarativeKeysAttachedPrivate : public QObjectPrivate
@@ -572,5 +617,7 @@ QML_DECLARE_TYPE(QDeclarativeKeysAttached)
 QML_DECLARE_TYPEINFO(QDeclarativeKeysAttached, QML_HAS_ATTACHED_PROPERTIES)
 QML_DECLARE_TYPE(QDeclarativeKeyNavigationAttached)
 QML_DECLARE_TYPEINFO(QDeclarativeKeyNavigationAttached, QML_HAS_ATTACHED_PROPERTIES)
+QML_DECLARE_TYPE(QDeclarativeLayoutMirroringAttached)
+QML_DECLARE_TYPEINFO(QDeclarativeLayoutMirroringAttached, QML_HAS_ATTACHED_PROPERTIES)
 
 #endif // QDECLARATIVEITEM_P_H

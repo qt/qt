@@ -73,7 +73,7 @@ public:
         if (view->flow() == QDeclarativeGridView::LeftToRight) {
             rowPos = item->y();
         } else {
-            if (view->layoutDirection() == Qt::RightToLeft)
+            if (view->effectiveLayoutDirection() == Qt::RightToLeft)
                 rowPos = -view->cellWidth()-item->x();
             else
                 rowPos = item->x();
@@ -83,7 +83,7 @@ public:
     qreal colPos() const {
         qreal colPos = 0;
         if (view->flow() == QDeclarativeGridView::LeftToRight) {
-            if (view->layoutDirection() == Qt::RightToLeft) {
+            if (view->effectiveLayoutDirection() == Qt::RightToLeft) {
                 int colSize = view->cellWidth();
                 int columns = view->width()/colSize;
                 colPos = colSize * (columns-1) - item->x();
@@ -101,14 +101,14 @@ public:
         if (view->flow() == QDeclarativeGridView::LeftToRight) {
             return item->y() + view->cellHeight() - 1;
         } else {
-            if (view->layoutDirection() == Qt::RightToLeft)
+            if (view->effectiveLayoutDirection() == Qt::RightToLeft)
                 return -item->x() - 1;
             else
                 return item->x() + view->cellWidth() - 1;
         }
     }
     void setPosition(qreal col, qreal row) {
-        if (view->layoutDirection() == Qt::RightToLeft) {
+        if (view->effectiveLayoutDirection() == Qt::RightToLeft) {
             if (view->flow() == QDeclarativeGridView::LeftToRight) {
                 int columns = view->width()/view->cellWidth();
                 item->setPos(QPointF((view->cellWidth() * (columns-1) - col), row));
@@ -188,7 +188,24 @@ public:
     }
 
     bool isRightToLeftTopToBottom() const {
-        return flow == QDeclarativeGridView::TopToBottom && layoutDirection == Qt::RightToLeft;
+        Q_Q(const QDeclarativeGridView);
+        return flow == QDeclarativeGridView::TopToBottom && q->effectiveLayoutDirection() == Qt::RightToLeft;
+    }
+
+    void regenerate() {
+        Q_Q(QDeclarativeGridView);
+        if (q->isComponentComplete()) {
+            clear();
+            updateGrid();
+            q->refill();
+            updateCurrent(currentIndex);
+        }
+    }
+
+    void mirrorChange() {
+        Q_Q(QDeclarativeGridView);
+        regenerate();
+        emit q->effectiveLayoutDirectionChanged();
     }
 
     qreal position() const {
@@ -201,7 +218,7 @@ public:
             q->QDeclarativeFlickable::setContentY(pos);
             q->QDeclarativeFlickable::setContentX(0);
         } else {
-            if (layoutDirection == Qt::LeftToRight)
+            if (q->effectiveLayoutDirection() == Qt::LeftToRight)
                 q->QDeclarativeFlickable::setContentX(pos);
             else
                 q->QDeclarativeFlickable::setContentX(-pos-size());
@@ -918,7 +935,7 @@ void QDeclarativeGridViewPrivate::updateFooter()
             rowOffset = footer->item->width()-cellWidth;
         } else {
             rowOffset = 0;
-            if (layoutDirection == Qt::RightToLeft)
+            if (q->effectiveLayoutDirection() == Qt::RightToLeft)
                 colOffset = footer->item->width()-cellWidth;
         }
         if (visibleItems.count()) {
@@ -971,7 +988,7 @@ void QDeclarativeGridViewPrivate::updateHeader()
             rowOffset = -cellWidth;
         } else {
             rowOffset = -headerSize();
-            if (layoutDirection == Qt::RightToLeft)
+            if (q->effectiveLayoutDirection() == Qt::RightToLeft)
                 colOffset = header->item->width()-cellWidth;
         }
         if (visibleItems.count()) {
@@ -1761,7 +1778,6 @@ void QDeclarativeGridView::setHighlightRangeMode(HighlightRangeMode mode)
   \bold Note: If GridView::flow is set to GridView.LeftToRight, this is not to be confused if
   GridView::layoutDirection is set to Qt.RightToLeft. The GridView.LeftToRight flow value simply
   indicates that the flow is horizontal.
-
 */
 
 Qt::LayoutDirection QDeclarativeGridView::layoutDirection() const
@@ -1775,12 +1791,30 @@ void QDeclarativeGridView::setLayoutDirection(Qt::LayoutDirection layoutDirectio
     Q_D(QDeclarativeGridView);
     if (d->layoutDirection != layoutDirection) {
         d->layoutDirection = layoutDirection;
-        d->clear();
-        d->updateGrid();
-        refill();
-        d->updateCurrent(d->currentIndex);
+        d->regenerate();
         emit layoutDirectionChanged();
+        emit effectiveLayoutDirectionChanged();
     }
+}
+
+/*!
+    \qmlproperty enumeration GridView::effectiveLayoutDirection
+    This property holds the effective layout direction of the grid.
+
+    When using the attached property \l {LayoutMirroring::mirror}{LayoutMirroring::mirror} for locale layouts,
+    the visual layout direction of the grid will be mirrored. However, the
+    property \l {GridView::layoutDirection}{layoutDirection} will remain unchanged.
+
+    \sa GridView::layoutDirection, {LayoutMirroring}{LayoutMirroring}
+*/
+
+Qt::LayoutDirection QDeclarativeGridView::effectiveLayoutDirection() const
+{
+    Q_D(const QDeclarativeGridView);
+    if (d->effectiveLayoutMirror)
+        return d->layoutDirection == Qt::RightToLeft ? Qt::LeftToRight : Qt::RightToLeft;
+    else
+        return d->layoutDirection;
 }
 
 /*!
@@ -1814,10 +1848,7 @@ void QDeclarativeGridView::setFlow(Flow flow)
         }
         setContentX(0);
         setContentY(0);
-        d->clear();
-        d->updateGrid();
-        refill();
-        d->updateCurrent(d->currentIndex);
+        d->regenerate();
         emit flowChanged();
     }
 }
@@ -2338,7 +2369,7 @@ void QDeclarativeGridView::moveCurrentIndexLeft()
     if (!count)
         return;
 
-    if (d->layoutDirection == Qt::LeftToRight) {
+    if (effectiveLayoutDirection() == Qt::LeftToRight) {
         if (d->flow == QDeclarativeGridView::LeftToRight) {
             if (currentIndex() > 0 || d->wrap) {
                 int index = currentIndex() - 1;
@@ -2381,7 +2412,7 @@ void QDeclarativeGridView::moveCurrentIndexRight()
     if (!count)
         return;
 
-    if (d->layoutDirection == Qt::LeftToRight) {
+    if (effectiveLayoutDirection() == Qt::LeftToRight) {
         if (d->flow == QDeclarativeGridView::LeftToRight) {
             if (currentIndex() < count - 1 || d->wrap) {
                 int index = currentIndex() + 1;

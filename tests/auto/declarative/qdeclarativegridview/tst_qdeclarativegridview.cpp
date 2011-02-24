@@ -46,6 +46,7 @@
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QtDeclarative/qdeclarativecontext.h>
 #include <QtDeclarative/qdeclarativeexpression.h>
+#include <QtDeclarative/private/qdeclarativeitem_p.h>
 #include <QtDeclarative/private/qlistmodelinterface_p.h>
 #include <QtDeclarative/private/qdeclarativegridview_p.h>
 #include <QtDeclarative/private/qdeclarativetext_p.h>
@@ -79,6 +80,7 @@ private slots:
     void modelChanges();
     void positionViewAtIndex();
     void positionViewAtIndex_rightToLeft();
+    void mirroring();
     void snapping();
     void resetModel();
     void enforceRange();
@@ -1347,6 +1349,67 @@ void tst_QDeclarativeGridView::snapping()
 
 }
 
+void tst_QDeclarativeGridView::mirroring()
+{
+    QDeclarativeView *canvasA = createView();
+    canvasA->setSource(QUrl::fromLocalFile(SRCDIR "/data/mirroring.qml"));
+    QDeclarativeGridView *gridviewA = findItem<QDeclarativeGridView>(canvasA->rootObject(), "view");
+    QTRY_VERIFY(gridviewA != 0);
+
+    QDeclarativeView *canvasB = createView();
+    canvasB->setSource(QUrl::fromLocalFile(SRCDIR "/data/mirroring.qml"));
+    QDeclarativeGridView *gridviewB = findItem<QDeclarativeGridView>(canvasB->rootObject(), "view");
+    QTRY_VERIFY(gridviewA != 0);
+    qApp->processEvents();
+
+    QList<QString> objectNames;
+    objectNames << "item1" << "item2"; // << "item3"
+
+    gridviewA->setProperty("layoutDirection", Qt::LeftToRight);
+    gridviewB->setProperty("layoutDirection", Qt::RightToLeft);
+    QCOMPARE(gridviewA->layoutDirection(), gridviewA->effectiveLayoutDirection());
+
+    // LTR != RTL
+    foreach(const QString objectName, objectNames)
+        QVERIFY(findItem<QDeclarativeItem>(gridviewA, objectName)->x() != findItem<QDeclarativeItem>(gridviewB, objectName)->x());
+
+    gridviewA->setProperty("layoutDirection", Qt::LeftToRight);
+    gridviewB->setProperty("layoutDirection", Qt::LeftToRight);
+
+    // LTR == LTR
+    foreach(const QString objectName, objectNames)
+        QCOMPARE(findItem<QDeclarativeItem>(gridviewA, objectName)->x(), findItem<QDeclarativeItem>(gridviewB, objectName)->x());
+
+    QVERIFY(gridviewB->layoutDirection() == gridviewB->effectiveLayoutDirection());
+    QDeclarativeItemPrivate::get(gridviewB)->setLayoutMirror(true);
+    QVERIFY(gridviewB->layoutDirection() != gridviewB->effectiveLayoutDirection());
+
+    // LTR != LTR+mirror
+    foreach(const QString objectName, objectNames)
+        QVERIFY(findItem<QDeclarativeItem>(gridviewA, objectName)->x() != findItem<QDeclarativeItem>(gridviewB, objectName)->x());
+
+    gridviewA->setProperty("layoutDirection", Qt::RightToLeft);
+
+    // RTL == LTR+mirror
+    foreach(const QString objectName, objectNames)
+        QCOMPARE(findItem<QDeclarativeItem>(gridviewA, objectName)->x(), findItem<QDeclarativeItem>(gridviewB, objectName)->x());
+
+    gridviewB->setProperty("layoutDirection", Qt::RightToLeft);
+
+    // RTL != RTL+mirror
+    foreach(const QString objectName, objectNames)
+        QVERIFY(findItem<QDeclarativeItem>(gridviewA, objectName)->x() != findItem<QDeclarativeItem>(gridviewB, objectName)->x());
+
+    gridviewA->setProperty("layoutDirection", Qt::LeftToRight);
+
+    // LTR == RTL+mirror
+    foreach(const QString objectName, objectNames)
+        QCOMPARE(findItem<QDeclarativeItem>(gridviewA, objectName)->x(), findItem<QDeclarativeItem>(gridviewB, objectName)->x());
+
+    delete canvasA;
+    delete canvasB;
+}
+
 void tst_QDeclarativeGridView::positionViewAtIndex_rightToLeft()
 {
     QDeclarativeView *canvas = createView();
@@ -1535,6 +1598,7 @@ void tst_QDeclarativeGridView::enforceRange()
 
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview-enforcerange.qml"));
     qApp->processEvents();
+    QVERIFY(canvas->rootObject() != 0);
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
     QTRY_VERIFY(gridview != 0);
@@ -1590,6 +1654,7 @@ void tst_QDeclarativeGridView::enforceRange_rightToLeft()
 
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview-enforcerange.qml"));
     qApp->processEvents();
+    QVERIFY(canvas->rootObject() != 0);
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
     QTRY_VERIFY(gridview != 0);

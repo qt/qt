@@ -175,13 +175,14 @@ QDeclarativeAnchors::~QDeclarativeAnchors()
 
 void QDeclarativeAnchorsPrivate::fillChanged()
 {
+    Q_Q(QDeclarativeAnchors);
     if (!fill || !isItemComplete())
         return;
 
     if (updatingFill < 2) {
         ++updatingFill;
 
-        qreal horizontalMargin = isMirrored() ? rightMargin : leftMargin;
+        qreal horizontalMargin = q->mirrored() ? rightMargin : leftMargin;
 
         if (fill == item->parentItem()) {                         //child-parent
             setItemPos(QPointF(horizontalMargin, topMargin));
@@ -201,13 +202,14 @@ void QDeclarativeAnchorsPrivate::fillChanged()
 
 void QDeclarativeAnchorsPrivate::centerInChanged()
 {
+    Q_Q(QDeclarativeAnchors);
     if (!centerIn || fill || !isItemComplete())
         return;
 
     if (updatingCenterIn < 2) {
         ++updatingCenterIn;
 
-        qreal effectiveHCenterOffset = isMirrored() ? -hCenterOffset : hCenterOffset;
+        qreal effectiveHCenterOffset = q->mirrored() ? -hCenterOffset : hCenterOffset;
         if (centerIn == item->parentItem()) {
             QPointF p(hcenter(item->parentItem()) - hcenter(item) + effectiveHCenterOffset,
                       vcenter(item->parentItem()) - vcenter(item) + vCenterOffset);
@@ -313,6 +315,13 @@ void QDeclarativeAnchors::componentComplete()
 {
     Q_D(QDeclarativeAnchors);
     d->componentComplete = true;
+}
+
+bool QDeclarativeAnchors::mirrored()
+{
+    Q_D(QDeclarativeAnchors);
+    QGraphicsItemPrivate * itemPrivate = QGraphicsItemPrivate::get(d->item);
+    return itemPrivate->isDeclarativeItem ? static_cast<QDeclarativeItemPrivate *>(itemPrivate)->effectiveLayoutMirror : false;
 }
 
 void QDeclarativeAnchorsPrivate::setItemHeight(qreal v)
@@ -502,11 +511,6 @@ bool QDeclarativeAnchorsPrivate::calcStretch(const QDeclarativeAnchorLine &edge1
     return invalid;
 }
 
-bool QDeclarativeAnchorsPrivate::isMirrored() const
-{
-    return layoutDirection == Qt::RightToLeft;
-}
-
 void QDeclarativeAnchorsPrivate::updateVerticalAnchors()
 {
     if (fill || centerIn || !isItemComplete())
@@ -591,6 +595,7 @@ inline QDeclarativeAnchorLine::AnchorLine reverseAnchorLine(QDeclarativeAnchorLi
 
 void QDeclarativeAnchorsPrivate::updateHorizontalAnchors()
 {
+    Q_Q(QDeclarativeAnchors);
     if (fill || centerIn || !isItemComplete())
         return;
 
@@ -599,7 +604,7 @@ void QDeclarativeAnchorsPrivate::updateHorizontalAnchors()
         qreal effectiveRightMargin, effectiveLeftMargin, effectiveHorizontalCenterOffset;
         QDeclarativeAnchorLine effectiveLeft, effectiveRight, effectiveHorizontalCenter;
         QDeclarativeAnchors::Anchor effectiveLeftAnchor, effectiveRightAnchor;
-        if (isMirrored()) {
+        if (q->mirrored()) {
             effectiveLeftAnchor = QDeclarativeAnchors::RightAnchor;
             effectiveRightAnchor = QDeclarativeAnchors::LeftAnchor;
             effectiveLeft.item = right.item;
@@ -1084,25 +1089,6 @@ QDeclarativeAnchors::Anchors QDeclarativeAnchors::usedAnchors() const
 {
     Q_D(const QDeclarativeAnchors);
     return d->usedAnchors;
-}
-
-
-Qt::LayoutDirection QDeclarativeAnchors::layoutDirection() const
-{
-    Q_D(const QDeclarativeAnchors);
-    return d->layoutDirection;
-}
-
-void QDeclarativeAnchors::setLayoutDirection(Qt::LayoutDirection layoutDirection)
-{
-    Q_D(QDeclarativeAnchors);
-    if (d->layoutDirection != layoutDirection) {
-        d->layoutDirection = layoutDirection;
-        d->fillChanged();
-        d->centerInChanged();
-        d->updateHorizontalAnchors();
-        emit layoutDirectionChanged();
-    }
 }
 
 bool QDeclarativeAnchorsPrivate::checkHValid() const

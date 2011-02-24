@@ -104,16 +104,17 @@ public:
             if (view->orientation() == QDeclarativeListView::Vertical)
                 return section->y();
             else
-                return (view->layoutDirection() == Qt::RightToLeft ? -section->width()-section->x() : section->x());
+                return (view->effectiveLayoutDirection() == Qt::RightToLeft ? -section->width()-section->x() : section->x());
         } else {
             return itemPosition();
         }
     }
+
     qreal itemPosition() const {
         if (view->orientation() == QDeclarativeListView::Vertical)
             return item->y();
         else
-            return (view->layoutDirection() == Qt::RightToLeft ? -item->width()-item->x() : item->x());
+            return (view->effectiveLayoutDirection() == Qt::RightToLeft ? -item->width()-item->x() : item->x());
     }
     qreal size() const {
         if (section)
@@ -133,7 +134,7 @@ public:
         if (view->orientation() == QDeclarativeListView::Vertical) {
             return item->y() + (item->height() >= 1.0 ? item->height() : 1) - 1;
         } else {
-            return (view->layoutDirection() == Qt::RightToLeft
+            return (view->effectiveLayoutDirection() == Qt::RightToLeft
                     ? -item->width()-item->x() + (item->width() >= 1.0 ? item->width() : 1)
                     : item->x() + (item->width() >= 1.0 ? item->width() : 1)) - 1;
         }
@@ -146,7 +147,7 @@ public:
             }
             item->setY(pos);
         } else {
-            if (view->layoutDirection() == Qt::RightToLeft) {
+            if (view->effectiveLayoutDirection() == Qt::RightToLeft) {
                 if (section) {
                     section->setX(-section->width()-pos);
                     pos += section->width();
@@ -248,8 +249,25 @@ public:
         return 0;
     }
 
+    void regenerate() {
+        Q_Q(QDeclarativeListView);
+        if (q->isComponentComplete()) {
+            clear();
+            setPosition(0);
+            q->refill();
+            updateCurrent(currentIndex);
+        }
+    }
+
+    void mirrorChange() {
+        Q_Q(QDeclarativeListView);
+        regenerate();
+        emit q->effectiveLayoutDirectionChanged();
+    }
+
     bool isRightToLeft() const {
-        return (layoutDirection == Qt::RightToLeft && orient == QDeclarativeListView::Horizontal);
+        Q_Q(const QDeclarativeListView);
+        return orient == QDeclarativeListView::Horizontal && q->effectiveLayoutDirection() == Qt::RightToLeft;
     }
 
     qreal position() const {
@@ -262,7 +280,7 @@ public:
         if (orient == QDeclarativeListView::Vertical) {
             q->QDeclarativeFlickable::setContentY(pos);
         } else {
-            if (layoutDirection == Qt::RightToLeft)
+            if (isRightToLeft())
                 q->QDeclarativeFlickable::setContentX(-pos-size());
             else
                 q->QDeclarativeFlickable::setContentX(pos);
@@ -2064,13 +2082,24 @@ void QDeclarativeListView::setOrientation(QDeclarativeListView::Orientation orie
             setContentHeight(-1);
             setFlickableDirection(HorizontalFlick);
         }
-        d->clear();
-        d->setPosition(0);
-        refill();
+        d->regenerate();
         emit orientationChanged();
-        d->updateCurrent(d->currentIndex);
     }
 }
+
+/*!
+  \qmlproperty enumeration ListView::layoutDirection
+  This property holds the layout direction of the horizontal list.
+
+  Possible values:
+
+  \list
+  \o Qt.LeftToRight (default) - Items will be laid out from left to right.
+  \o Qt.RightToLeft - Items will be laid out from right to let.
+  \endlist
+
+  \sa ListView::effectiveLayoutDirection
+*/
 
 Qt::LayoutDirection QDeclarativeListView::layoutDirection() const
 {
@@ -2083,12 +2112,30 @@ void QDeclarativeListView::setLayoutDirection(Qt::LayoutDirection layoutDirectio
     Q_D(QDeclarativeListView);
     if (d->layoutDirection != layoutDirection) {
         d->layoutDirection = layoutDirection;
-        d->clear();
-        d->setPosition(0);
-        refill();
+        d->regenerate();
         emit layoutDirectionChanged();
-        d->updateCurrent(d->currentIndex);
+        emit effectiveLayoutDirectionChanged();
     }
+}
+
+/*!
+    \qmlproperty enumeration ListView::effectiveLayoutDirection
+    This property holds the effective layout direction of the horizontal list.
+
+    When using the attached property \l {LayoutMirroring::mirror}{LayoutMirroring::mirror} for locale layouts,
+    the visual layout direction of the horizontal list will be mirrored. However, the
+    property \l {ListView::layoutDirection}{layoutDirection} will remain unchanged.
+
+    \sa ListView::layoutDirection, {LayoutMirroring}{LayoutMirroring}
+*/
+
+Qt::LayoutDirection QDeclarativeListView::effectiveLayoutDirection() const
+{
+    Q_D(const QDeclarativeListView);
+    if (d->effectiveLayoutMirror)
+        return d->layoutDirection == Qt::RightToLeft ? Qt::LeftToRight : Qt::RightToLeft;
+    else
+        return d->layoutDirection;
 }
 
 /*!
@@ -2671,8 +2718,8 @@ void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
         return;
 
     if (d->model && d->model->count() && d->interactive) {
-        if ((d->orient == QDeclarativeListView::Horizontal && d->layoutDirection == Qt::LeftToRight && event->key() == Qt::Key_Left)
-                    || (d->orient == QDeclarativeListView::Horizontal && d->layoutDirection == Qt::RightToLeft && event->key() == Qt::Key_Right)
+        if ((!d->isRightToLeft() && event->key() == Qt::Key_Left)
+                    || (d->orient == QDeclarativeListView::Horizontal && d->isRightToLeft() && event->key() == Qt::Key_Right)
                     || (d->orient == QDeclarativeListView::Vertical && event->key() == Qt::Key_Up)) {
             if (currentIndex() > 0 || (d->wrap && !event->isAutoRepeat())) {
                 decrementCurrentIndex();
@@ -2682,8 +2729,8 @@ void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
                 event->accept();
                 return;
             }
-        } else if ((d->orient == QDeclarativeListView::Horizontal && d->layoutDirection == Qt::LeftToRight && event->key() == Qt::Key_Right)
-                    || (d->orient == QDeclarativeListView::Horizontal && d->layoutDirection == Qt::RightToLeft && event->key() == Qt::Key_Left)
+        } else if ((!d->isRightToLeft() && event->key() == Qt::Key_Right)
+                    || (d->orient == QDeclarativeListView::Horizontal && d->isRightToLeft() && event->key() == Qt::Key_Left)
                     || (d->orient == QDeclarativeListView::Vertical && event->key() == Qt::Key_Down)) {
             if (currentIndex() < d->model->count() - 1 || (d->wrap && !event->isAutoRepeat())) {
                 incrementCurrentIndex();
@@ -2970,7 +3017,7 @@ void QDeclarativeListView::updateSections()
 void QDeclarativeListView::refill()
 {
     Q_D(QDeclarativeListView);
-    if (layoutDirection() == Qt::RightToLeft && orientation() == QDeclarativeListView::Horizontal)
+    if (d->isRightToLeft())
         d->refill(-d->position()-d->size()+1, -d->position());
     else
         d->refill(d->position(), d->position()+d->size()-1);
@@ -3416,11 +3463,8 @@ void QDeclarativeListView::itemsChanged(int, int)
 void QDeclarativeListView::modelReset()
 {
     Q_D(QDeclarativeListView);
-    d->clear();
-    d->setPosition(0);
-    refill();
     d->moveReason = QDeclarativeListViewPrivate::SetIndex;
-    d->updateCurrent(d->currentIndex);
+    d->regenerate();
     if (d->highlight && d->currentItem) {
         if (d->autoHighlight)
             d->highlight->setPosition(d->currentItem->position());
