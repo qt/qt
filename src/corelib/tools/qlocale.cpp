@@ -94,17 +94,6 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "qlocale_data_p.h"
 QT_END_INCLUDE_NAMESPACE
 
-QLocale::MeasurementSystem QLocalePrivate::measurementSystem() const
-{
-    for (int i = 0; i < ImperialMeasurementSystemsCount; ++i) {
-        if (ImperialMeasurementSystems[i].languageId == m_language_id
-            && ImperialMeasurementSystems[i].countryId == m_country_id) {
-            return QLocale::ImperialSystem;
-        }
-    }
-    return QLocale::MetricSystem;
-}
-
 // Assumes that code is a
 // QChar code[3];
 // If the code is two-digit the third digit must be 0
@@ -1826,6 +1815,17 @@ Qt::DayOfWeek QLocale::firstDayOfWeek() const
     return static_cast<Qt::DayOfWeek>(d()->m_first_day_of_week);
 }
 
+QLocale::MeasurementSystem QLocalePrivate::measurementSystem() const
+{
+    for (int i = 0; i < ImperialMeasurementSystemsCount; ++i) {
+        if (ImperialMeasurementSystems[i].languageId == m_language_id
+            && ImperialMeasurementSystems[i].countryId == m_country_id) {
+            return QLocale::ImperialSystem;
+        }
+    }
+    return QLocale::MetricSystem;
+}
+
 /*!
     \since 4.4
 
@@ -1833,25 +1833,15 @@ Qt::DayOfWeek QLocale::firstDayOfWeek() const
 */
 QLocale::MeasurementSystem QLocale::measurementSystem() const
 {
-    MeasurementSystem meas = MetricSystem;
-    bool found = false;
-
 #ifndef QT_NO_SYSTEMLOCALE
     if (d() == systemPrivate()) {
         QVariant res = systemLocale()->query(QSystemLocale::MeasurementSystem, QVariant());
-        if (!res.isNull()) {
-            meas = MeasurementSystem(res.toInt());
-            found = true;
-        }
+        if (!res.isNull())
+            return MeasurementSystem(res.toInt());
     }
 #endif
 
-    if (!found) {
-        meas = d()->measurementSystem();
-        found = true;
-    }
-
-    return meas;
+    return d()->measurementSystem();
 }
 
 /*!

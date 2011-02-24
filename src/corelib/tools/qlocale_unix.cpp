@@ -41,6 +41,7 @@
 
 #include "qlocale_p.h"
 
+#include "qstringbuilder.h"
 #include "qdatetime.h"
 #include "qstringlist.h"
 #include "qvariant.h"
@@ -60,63 +61,34 @@ struct QSystemLocaleData
         QByteArray numeric  = all.isEmpty() ? qgetenv("LC_NUMERIC") : all;
         QByteArray time     = all.isEmpty() ? qgetenv("LC_TIME") : all;
         QByteArray monetary = all.isEmpty() ? qgetenv("LC_MONETARY") : all;
-        QByteArray messages = all.isEmpty() ? qgetenv("LC_MESSAGES") : all;
+        lc_messages_var     = all.isEmpty() ? qgetenv("LC_MESSAGES") : all;
+        lc_measurement_var  = all.isEmpty() ? qgetenv("LC_MEASUREMENT") : all;
         QByteArray lang = qgetenv("LANG");
+        if (lang.isEmpty())
+            lang = QByteArray("C");
         if (numeric.isEmpty())
             numeric = lang;
         if (monetary.isEmpty())
             monetary = lang;
-        if (messages.isEmpty())
-            messages = lang;
-        lc_numeric = QLocale(QString::fromAscii(numeric));
-        lc_time = QLocale(QString::fromAscii(time));
-        lc_monetary = QLocale(QString::fromAscii(monetary));
-        lc_messages = QLocale(QString::fromAscii(messages));
+        if (lc_messages_var.isEmpty())
+            lc_messages_var = lang;
+        if (lc_measurement_var.isEmpty())
+            lc_measurement_var = lang;
+        lc_numeric = QLocale(QString::fromLatin1(numeric));
+        lc_time = QLocale(QString::fromLatin1(time));
+        lc_monetary = QLocale(QString::fromLatin1(monetary));
+        lc_messages = QLocale(QString::fromLatin1(lc_messages_var));
     }
 
     QLocale lc_numeric;
     QLocale lc_time;
     QLocale lc_monetary;
     QLocale lc_messages;
+    QByteArray lc_messages_var;
+    QByteArray lc_measurement_var;
 };
 Q_GLOBAL_STATIC(QSystemLocaleData, qSystemLocaleData)
 #endif
-
-
-static uint unixGetSystemMeasurementSystem()
-{
-    QString meas_locale = QString::fromLocal8Bit(qgetenv("LC_ALL"));
-    if (meas_locale.isEmpty()) {
-        meas_locale = QString::fromLocal8Bit(qgetenv("LC_MEASUREMENT"));
-    }
-    if (meas_locale.isEmpty()) {
-        meas_locale = QString::fromLocal8Bit(qgetenv("LANG"));
-    }
-    if (meas_locale.isEmpty()) {
-        meas_locale = QString::fromLocal8Bit("C");
-    }
-
-    if (meas_locale.compare(QString::fromLocal8Bit("Metric"), Qt::CaseInsensitive) == 0)
-        return 0;
-    if (meas_locale.compare(QString::fromLocal8Bit("Other"), Qt::CaseInsensitive) == 0)
-        return 0;
-
-    const QLocalePrivate* locale = findLocale(meas_locale);
-    return locale->measurementSystem();
-}
-
-static QByteArray envVarLocale()
-{
-    static QByteArray lang = 0;
-#ifdef Q_OS_UNIX
-    lang = qgetenv("LC_ALL");
-    if (lang.isNull())
-        lang = qgetenv("LC_NUMERIC");
-    if (lang.isNull())
-#endif
-        lang = qgetenv("LANG");
-    return lang;
-}
 
 #ifndef QT_NO_SYSTEMLOCALE
 /*!
@@ -124,7 +96,12 @@ static QByteArray envVarLocale()
 */
 QLocale QSystemLocale::fallbackLocale() const
 {
-    return QLocale(QLatin1String(envVarLocale()));
+    QByteArray lang = qgetenv("LC_ALL");
+    if (lang.isNull())
+        lang = qgetenv("LC_NUMERIC");
+    if (lang.isNull())
+        lang = qgetenv("LANG");
+    return QLocale(QLatin1String(lang));
 }
 
 /*!
@@ -205,10 +182,16 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         }
         return QString();
     }
-    case MeasurementSystem:
-        return QVariant(unixGetSystemMeasurementSystem());
+    case MeasurementSystem: {
+        const QString meas_locale = QString::fromLatin1(d->lc_measurement_var.constData(), d->lc_measurement_var.size());
+        if (meas_locale.compare(QLatin1String("Metric"), Qt::CaseInsensitive) == 0)
+            return QLocale::MetricSystem;
+        if (meas_locale.compare(QLatin1String("Other"), Qt::CaseInsensitive) == 0)
+            return QLocale::MetricSystem;
+        return QVariant((int)QLocale(meas_locale).measurementSystem());
+    }
     case UILanguages: {
-        QString languages = QString::fromLocal8Bit(qgetenv("LANGUAGE"));
+        static QString languages = QString::fromLatin1(qgetenv("LANGUAGE"));
         if (!languages.isEmpty()) {
             QStringList lst = languages.split(QLatin1Char(':'));
             for (int i = 0; i < lst.size();) {
@@ -222,17 +205,12 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
             }
             return lst;
         }
-        QString name = QString::fromLocal8Bit(qgetenv("LC_ALL"));
-        if (name.isEmpty()) {
-            name = QString::fromLocal8Bit(qgetenv("LC_MESSAGES"));
-            if (name.isEmpty())
-                name = QString::fromLocal8Bit(qgetenv("LANG"));
-        }
-        if (!name.isEmpty()) {
+        if (!d->lc_messages_var.isEmpty()) {
             QChar lang[3];
             QChar cntry[3];
             int lang_len, cntry_len;
-            if (splitLocaleName(name, lang, cntry, &lang_len, &cntry_len))
+            if (splitLocaleName(QString::fromLatin1(d->lc_messages_var.constData(), d->lc_messages_var.size()),
+                                lang, cntry, &lang_len, &cntry_len))
                 return QStringList(QString::fromRawData(lang, lang_len) % QLatin1Char('-') % QString::fromRawData(cntry, cntry_len));
         }
         return QVariant();
@@ -246,11 +224,5 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     return QVariant();
 }
 #endif // QT_NO_SYSTEMLOCALE
-
-QString timeZone()
-{
-    tzset();
-    return QString::fromLocal8Bit(tzname[1]);
-}
 
 QT_END_NAMESPACE
