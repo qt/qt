@@ -193,6 +193,8 @@ public:
     quint16 m_currency_digits : 2;
     quint16 m_currency_rounding : 3;
     quint16 m_first_day_of_week : 3;
+    quint16 m_weekend_start : 3;
+    quint16 m_weekend_end : 3;
 };
 
 inline char QLocalePrivate::digitToCLocale(const QChar &in) const

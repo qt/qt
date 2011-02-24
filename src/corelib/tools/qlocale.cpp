@@ -1827,6 +1827,40 @@ QLocale::MeasurementSystem QLocalePrivate::measurementSystem() const
 }
 
 /*!
+    \since 4.8
+
+    Returns the first day of the weekend according to the current locale.
+*/
+Qt::DayOfWeek QLocale::weekendStart() const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::WeekendStart, QVariant());
+        if (!res.isNull())
+            return static_cast<Qt::DayOfWeek>(res.toUInt());
+    }
+#endif
+    return static_cast<Qt::DayOfWeek>(d()->m_weekend_start);
+}
+
+/*!
+    \since 4.8
+
+    Returns the last day of the weekend according to the current locale.
+*/
+Qt::DayOfWeek QLocale::weekendEnd() const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::WeekendEnd, QVariant());
+        if (!res.isNull())
+            return static_cast<Qt::DayOfWeek>(res.toUInt());
+    }
+#endif
+    return static_cast<Qt::DayOfWeek>(d()->m_weekend_end);
+}
+
+/*!
     \since 4.4
 
     Returns the measurement system for the locale.

@@ -218,6 +218,8 @@ class Locale:
         self.am = eltText(firstChildElt(elt, "am"))
         self.pm = eltText(firstChildElt(elt, "pm"))
         self.firstDayOfWeek = convertToQtDayOfWeek(eltText(firstChildElt(elt, "firstDayOfWeek")))
+        self.weekendStart = convertToQtDayOfWeek(eltText(firstChildElt(elt, "weekendStart")))
+        self.weekendEnd = convertToQtDayOfWeek(eltText(firstChildElt(elt, "weekendEnd")))
         self.longDateFormat = convertFormat(eltText(firstChildElt(elt, "longDateFormat")))
         self.shortDateFormat = convertFormat(eltText(firstChildElt(elt, "shortDateFormat")))
         self.longTimeFormat = convertFormat(eltText(firstChildElt(elt, "longTimeFormat")))
@@ -451,7 +453,7 @@ def main():
     for key in locale_keys:
         l = locale_map[key]
 
-        data_temp_file.write("    { %6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, {%s}, %s,%s,%s,%s,%6d,%6d,%6d }, // %s/%s\n" \
+        data_temp_file.write("    { %6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, {%s}, %s,%s,%s,%s,%6d,%6d,%6d,%6d,%6d }, // %s/%s\n" \
                     % (key[0], key[1],
                         l.decimal,
                         l.group,
@@ -491,9 +493,11 @@ def main():
                         l.currencyDigits,
                         l.currencyRounding,
                         l.firstDayOfWeek,
+                        l.weekendStart,
+                        l.weekendEnd,
                         l.language,
                         l.country))
-    data_temp_file.write("    {      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,    0,0,    0,0,    0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0, {0,0,0}, 0,0, 0,0, 0,0, 0,0, 0, 0, 0 }  // trailing 0s\n")
+    data_temp_file.write("    {      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,    0,0,    0,0,    0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0, {0,0,0}, 0,0, 0,0, 0,0, 0,0, 0, 0, 0, 0, 0 }  // trailing 0s\n")
     data_temp_file.write("};\n")
 
     data_temp_file.write("\n")

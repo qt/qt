@@ -712,6 +712,8 @@
   \value UILanguages a list of strings representing locale names that could be used for UI translation.
   \value QuotationBegin a QString specifying the start of a quotation. the in variant contains a QLocale::QuotationStyle
   \value QuotationEnd a QString specifying the end of a quotation. the in variant contains a QLocale::QuotationStyle
+  \value WeekendStart a Qt::DayOfWeek enum specifying the first day of the weekend
+  \value WeekendEnd a Qt::DayOfWeek enum specifying the last day of the weekend
 */
 
 /*!

@@ -67,6 +67,7 @@ void CalendarWidget::localeChanged(QLocale locale)
 {
     calendar->setLocale(locale);
     firstDayCombo->setCurrentIndex(locale.firstDayOfWeek()-1);
+    updateWeekendDays();
 }
 
 void CalendarWidget::firstDayChanged(int index)
@@ -110,27 +111,41 @@ void CalendarWidget::maximumDateChanged(const QDate &date)
     minimumDateEdit->setDate(calendar->minimumDate());
 }
 
+bool CalendarWidget::isWeekendDay(Qt::DayOfWeek day) {
+    Qt::DayOfWeek start = calendar->locale().weekendStart();
+    Qt::DayOfWeek end = calendar->locale().weekendEnd();
+
+    if (start <= day && day <= end)
+        return true;
+    if (start > end && (day >= start || day <= end))
+        return true;
+    return false;
+}
+
+void CalendarWidget::updateWeekendDays() {
+    QTextCharFormat weekFormat, weekendFormat;
+    weekFormat.setForeground(qvariant_cast<QColor>(
+        weekdayColorCombo->itemData(weekdayColorCombo->currentIndex())));
+    weekendFormat.setForeground(qvariant_cast<QColor>(
+        weekendColorCombo->itemData(weekendColorCombo->currentIndex())));
+
+    calendar->setWeekdayTextFormat(Qt::Monday, isWeekendDay(Qt::Monday) ? weekendFormat : weekFormat);
+    calendar->setWeekdayTextFormat(Qt::Tuesday, isWeekendDay(Qt::Tuesday) ? weekendFormat : weekFormat);
+    calendar->setWeekdayTextFormat(Qt::Wednesday, isWeekendDay(Qt::Wednesday) ? weekendFormat : weekFormat);
+    calendar->setWeekdayTextFormat(Qt::Thursday, isWeekendDay(Qt::Thursday) ? weekendFormat : weekFormat);
+    calendar->setWeekdayTextFormat(Qt::Friday, isWeekendDay(Qt::Friday) ? weekendFormat : weekFormat);
+    calendar->setWeekdayTextFormat(Qt::Saturday, isWeekendDay(Qt::Saturday) ? weekendFormat : weekFormat);
+    calendar->setWeekdayTextFormat(Qt::Sunday, isWeekendDay(Qt::Sunday) ? weekendFormat : weekFormat);
+}
+
 void CalendarWidget::weekdayFormatChanged()
 {
-    QTextCharFormat format;
-
-    format.setForeground(qvariant_cast<QColor>(
-        weekdayColorCombo->itemData(weekdayColorCombo->currentIndex())));
-    calendar->setWeekdayTextFormat(Qt::Monday, format);
-    calendar->setWeekdayTextFormat(Qt::Tuesday, format);
-    calendar->setWeekdayTextFormat(Qt::Wednesday, format);
-    calendar->setWeekdayTextFormat(Qt::Thursday, format);
-    calendar->setWeekdayTextFormat(Qt::Friday, format);
+    updateWeekendDays();
 }
 
 void CalendarWidget::weekendFormatChanged()
 {
-    QTextCharFormat format;
-
-    format.setForeground(qvariant_cast<QColor>(
-        weekendColorCombo->itemData(weekendColorCombo->currentIndex())));
-    calendar->setWeekdayTextFormat(Qt::Saturday, format);
-    calendar->setWeekdayTextFormat(Qt::Sunday, format);
+    updateWeekendDays();
 }
 
 void CalendarWidget::reformatHeaders()

@@ -59,12 +59,14 @@ private slots:
     void selectedDateChanged();
     void minimumDateChanged(const QDate &date);
     void maximumDateChanged(const QDate &date);
+    void updateWeekendDays();
     void weekdayFormatChanged();
     void weekendFormatChanged();
     void reformatHeaders();
     void reformatCalendarPage();
 
 private:
+    bool isWeekendDay(Qt::DayOfWeek);
     void createPreviewGroupBox();
     void createGeneralOptionsGroupBox();
     void createDatesGroupBox();

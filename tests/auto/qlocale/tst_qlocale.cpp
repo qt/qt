@@ -143,6 +143,7 @@ private slots:
     void currency();
     void quoteString();
     void uiLanguages();
+    void weekendDays();
 
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
@@ -1124,6 +1125,9 @@ void tst_QLocale::macDefaultLocale()
     QCOMPARE(locale.dayName(7), QString("Sunday"));
     QCOMPARE(locale.monthName(1), QString("January"));
     QCOMPARE(locale.monthName(12), QString("December"));
+    QCOMPARE(locale.firstDayOfWeek(), Qt::Sunday);
+    QCOMPARE(locale.weekendStart(), Qt::Saturday);
+    QCOMPARE(locale.weekendEnd(), Qt::Sunday);
     QCOMPARE(locale.quoteString("string"), QString::fromUtf8("\xe2\x80\x9c" "string" "\xe2\x80\x9d"));
     QCOMPARE(locale.quoteString("string", QLocale::AlternateQuotation), QString::fromUtf8("\xe2\x80\x98" "string" "\xe2\x80\x99"));
 
@@ -2186,6 +2190,13 @@ void tst_QLocale::uiLanguages()
     const QLocale ru_RU("ru_RU");
     QCOMPARE(ru_RU.uiLanguages().size(), 1);
     QCOMPARE(ru_RU.uiLanguages().at(0), QLatin1String("ru_RU"));
+}
+
+void tst_QLocale::weekendDays()
+{
+    const QLocale c(QLocale::C);
+    QCOMPARE(c.weekendStart(), Qt::Saturday);
+    QCOMPARE(c.weekendEnd(), Qt::Sunday);
 }
 
 QTEST_APPLESS_MAIN(tst_QLocale)

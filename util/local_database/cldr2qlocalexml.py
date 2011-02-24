@@ -413,6 +413,22 @@ def integrateWeekData(filePath):
     satFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=sat]", attribute="territories")[0].split(" ")
     sunFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=sun]", attribute="territories")[0].split(" ")
 
+    monWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=mon]", attribute="territories")[0].split(" ")
+    tueWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=tue]", attribute="territories")[0].split(" ")
+    wedWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=wed]", attribute="territories")[0].split(" ")
+    thuWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=thu]", attribute="territories")[0].split(" ")
+    friWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=fri]", attribute="territories")[0].split(" ")
+    satWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=sat]", attribute="territories")[0].split(" ")
+    sunWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=sun]", attribute="territories")[0].split(" ")
+
+    monWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=mon]", attribute="territories")[0].split(" ")
+    tueWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=tue]", attribute="territories")[0].split(" ")
+    wedWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=wed]", attribute="territories")[0].split(" ")
+    thuWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=thu]", attribute="territories")[0].split(" ")
+    friWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=fri]", attribute="territories")[0].split(" ")
+    satWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=sat]", attribute="territories")[0].split(" ")
+    sunWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=sun]", attribute="territories")[0].split(" ")
+
     firstDayByCountryCode = {}
     for countryCode in monFirstDayIn:
         firstDayByCountryCode[countryCode] = "mon"
@@ -429,12 +445,54 @@ def integrateWeekData(filePath):
     for countryCode in sunFirstDayIn:
         firstDayByCountryCode[countryCode] = "sun"
 
+    weekendStartByCountryCode = {}
+    for countryCode in monWeekendStart:
+        weekendStartByCountryCode[countryCode] = "mon"
+    for countryCode in tueWeekendStart:
+        weekendStartByCountryCode[countryCode] = "tue"
+    for countryCode in wedWeekendStart:
+        weekendStartByCountryCode[countryCode] = "wed"
+    for countryCode in thuWeekendStart:
+        weekendStartByCountryCode[countryCode] = "thu"
+    for countryCode in friWeekendStart:
+        weekendStartByCountryCode[countryCode] = "fri"
+    for countryCode in satWeekendStart:
+        weekendStartByCountryCode[countryCode] = "sat"
+    for countryCode in sunWeekendStart:
+        weekendStartByCountryCode[countryCode] = "sun"
+
+    weekendEndByCountryCode = {}
+    for countryCode in monWeekendEnd:
+        weekendEndByCountryCode[countryCode] = "mon"
+    for countryCode in tueWeekendEnd:
+        weekendEndByCountryCode[countryCode] = "tue"
+    for countryCode in wedWeekendEnd:
+        weekendEndByCountryCode[countryCode] = "wed"
+    for countryCode in thuWeekendEnd:
+        weekendEndByCountryCode[countryCode] = "thu"
+    for countryCode in friWeekendEnd:
+        weekendEndByCountryCode[countryCode] = "fri"
+    for countryCode in satWeekendEnd:
+        weekendEndByCountryCode[countryCode] = "sat"
+    for countryCode in sunWeekendEnd:
+        weekendEndByCountryCode[countryCode] = "sun"
+
     for (key,locale) in locale_database.iteritems():
         countryCode = locale['country_code']
         if countryCode in firstDayByCountryCode:
             locale_database[key]['firstDayOfWeek'] = firstDayByCountryCode[countryCode]
         else:
             locale_database[key]['firstDayOfWeek'] = firstDayByCountryCode["001"]
+
+        if countryCode in weekendStartByCountryCode:
+            locale_database[key]['weekendStart'] = weekendStartByCountryCode[countryCode]
+        else:
+            locale_database[key]['weekendStart'] = weekendStartByCountryCode["001"]
+
+        if countryCode in weekendEndByCountryCode:
+            locale_database[key]['weekendEnd'] = weekendEndByCountryCode[countryCode]
+        else:
+            locale_database[key]['weekendEnd'] = weekendEndByCountryCode["001"]
 
 if len(sys.argv) != 2:
     usage()
@@ -611,6 +669,8 @@ print \
             <am>AM</am>\n\
             <pm>PM</pm>\n\
             <firstDayOfWeek>mon</firstDayOfWeek>\n\
+            <weekendStart>sat</weekendStart>\n\
+            <weekendEnd>sun</weekendEnd>\n\
             <longDateFormat>EEEE, d MMMM yyyy</longDateFormat>\n\
             <shortDateFormat>d MMM yyyy</shortDateFormat>\n\
             <longTimeFormat>HH:mm:ss z</longTimeFormat>\n\
@@ -659,6 +719,8 @@ for key in locale_keys:
     print "            <am>"       + l['am'].encode('utf-8') + "</am>"
     print "            <pm>"       + l['pm'].encode('utf-8') + "</pm>"
     print "            <firstDayOfWeek>"  + l['firstDayOfWeek'].encode('utf-8') + "</firstDayOfWeek>"
+    print "            <weekendStart>"  + l['weekendStart'].encode('utf-8') + "</weekendStart>"
+    print "            <weekendEnd>"  + l['weekendEnd'].encode('utf-8') + "</weekendEnd>"
     print "            <longDateFormat>"  + l['longDateFormat'].encode('utf-8')  + "</longDateFormat>"
     print "            <shortDateFormat>" + l['shortDateFormat'].encode('utf-8') + "</shortDateFormat>"
     print "            <longTimeFormat>"  + l['longTimeFormat'].encode('utf-8')  + "</longTimeFormat>"
