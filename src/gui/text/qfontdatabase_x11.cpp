@@ -1958,17 +1958,6 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
 #ifndef QT_NO_FONTCONFIG
         } else if (X11->has_fontconfig) {
             fe = loadFc(d, script, req);
-            if (fe != 0 && fe->fontDef.pixelSize != req.pixelSize && mainThread && qt_is_gui_used) {
-                QFontEngine *xlfdFontEngine = loadXlfd(d->screen, script, req);
-                if (xlfdFontEngine->fontDef.family == fe->fontDef.family) {
-                    delete fe;
-                    fe = xlfdFontEngine;
-                } else {
-                    delete xlfdFontEngine;
-                }
-            }
-
-
 #endif
         } else if (mainThread && qt_is_gui_used) {
             fe = loadXlfd(d->screen, script, req);
