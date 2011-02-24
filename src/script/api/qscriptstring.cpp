@@ -27,6 +27,7 @@
 #include "qscriptisolate_p.h"
 #include "qscriptengine_p.h"
 #include "qscript_impl_p.h"
+#include "qscriptshareddata_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -51,7 +52,7 @@ QScriptString::QScriptString(QScriptStringPrivate* d)
   \internal
 */
 QScriptString::QScriptString(QScriptPassPointer<QScriptStringPrivate> d)
-    : d_ptr(d)
+    : d_ptr(d.give())
 {
 }
 

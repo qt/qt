@@ -25,8 +25,7 @@
 #define QSCRIPTSTRING_H
 
 #include <QtCore/qstring.h>
-
-#include "qscriptshareddata_p.h"
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_HEADER
 
@@ -35,9 +34,10 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Script)
 
 class QScriptStringPrivate;
+template <class T> class QScriptPassPointer;
 
 //internal typedef
-typedef QScriptSharedDataPointer<QScriptStringPrivate> QScriptStringPtr;
+typedef QExplicitlySharedDataPointer<QScriptStringPrivate> QScriptStringPtr;
 
 class Q_SCRIPT_EXPORT QScriptString
 {
@@ -61,7 +61,7 @@ public:
 private:
     QScriptString(QScriptStringPrivate*);
     QScriptString(QScriptPassPointer<QScriptStringPrivate>);
-    QScriptSharedDataPointer<QScriptStringPrivate> d_ptr;
+    QExplicitlySharedDataPointer<QScriptStringPrivate> d_ptr;
     friend class QScriptValue;
     Q_DECLARE_PRIVATE(QScriptString)
 };

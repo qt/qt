@@ -28,8 +28,7 @@
 
 #include <QtCore/qlist.h>
 #include <QtCore/qsharedpointer.h>
-
-#include "qscriptshareddata_p.h"
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_HEADER
 
@@ -56,6 +55,8 @@ typedef double qsreal;
 class QScriptValuePrivate;
 class QScriptEnginePrivate;
 struct QScriptValuePrivatePointerDeleter;
+template <class T> class QScriptPassPointer;
+
 class Q_SCRIPT_EXPORT QScriptValue
 {
 public:
@@ -209,7 +210,7 @@ private:
     QScriptValue(QScriptPassPointer<QScriptValuePrivate>);
 
 private:
-    QScriptSharedDataPointer<QScriptValuePrivate> d_ptr;
+    QExplicitlySharedDataPointer<QScriptValuePrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptValue)
 };

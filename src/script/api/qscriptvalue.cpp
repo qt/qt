@@ -30,6 +30,7 @@
 #include "qscriptclass_p.h"
 #include "qscriptdeclarativeclassobject_p.h"
 #include "qscript_impl_p.h"
+#include "qscriptshareddata_p.h"
 #include <QtCore/qregexp.h>
 #include <QtCore/qstring.h>
 
@@ -131,7 +132,7 @@ QScriptValue::QScriptValue(QScriptValuePrivate* d)
     \internal
 */
 QScriptValue::QScriptValue(QScriptPassPointer<QScriptValuePrivate> d)
-    : d_ptr(d)
+    : d_ptr(d.give())
 {
 }
 

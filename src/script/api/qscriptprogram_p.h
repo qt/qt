@@ -26,6 +26,7 @@
 
 #include "qscriptconverter_p.h"
 #include "qscriptprogram.h"
+#include "qscriptshareddata_p.h"
 #include <QtCore/qstring.h>
 
 #include <v8.h>

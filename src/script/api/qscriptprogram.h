@@ -25,8 +25,7 @@
 #define QSCRIPTPROGRAM_H
 
 #include <QtCore/qstring.h>
-
-#include "qscriptshareddata_p.h"
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_HEADER
 
@@ -57,7 +56,7 @@ public:
     bool operator!=(const QScriptProgram &other) const;
 
 private:
-    QScriptSharedDataPointer<QScriptProgramPrivate> d_ptr;
+    QExplicitlySharedDataPointer<QScriptProgramPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QScriptProgram)
 };
 
