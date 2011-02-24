@@ -50,6 +50,8 @@
 #include <QApplication>
 #include <QFontMetrics>
 #include <QPainter>
+#include <QTextBoundaryFinder>
+#include <qstyle.h>
 
 #ifndef QT_NO_LINEEDIT
 
@@ -75,7 +77,7 @@ QT_BEGIN_NAMESPACE
     \sa TextEdit, Text, {declarative/text/textselection}{Text Selection example}
 */
 QDeclarativeTextInput::QDeclarativeTextInput(QDeclarativeItem* parent)
-    : QDeclarativePaintedItem(*(new QDeclarativeTextInputPrivate), parent)
+    : QDeclarativeImplicitSizePaintedItem(*(new QDeclarativeTextInputPrivate), parent)
 {
     Q_D(QDeclarativeTextInput);
     d->init();
@@ -353,6 +355,16 @@ void QDeclarativeTextInput::setHAlign(HAlignment align)
     emit horizontalAlignmentChanged(d->hAlign);
 }
 
+/*!
+    \qmlproperty bool TextInput::readOnly
+
+    Sets whether user input can modify the contents of the TextInput.
+
+    If readOnly is set to true, then user input will not affect the text
+    property. Any bindings or attempts to set the text property will still
+    work.
+*/
+
 bool QDeclarativeTextInput::isReadOnly() const
 {
     Q_D(const QDeclarativeTextInput);
@@ -365,11 +377,20 @@ void QDeclarativeTextInput::setReadOnly(bool ro)
     if (d->control->isReadOnly() == ro)
         return;
 
+    setFlag(QGraphicsItem::ItemAcceptsInputMethod, !ro);
     d->control->setReadOnly(ro);
 
     emit readOnlyChanged(ro);
 }
 
+/*!
+    \qmlproperty int TextInput::maximumLength
+    The maximum permitted length of the text in the TextInput.
+
+    If the text is too long, it is truncated at the limit.
+
+    By default, this property contains a value of 32767.
+*/
 int QDeclarativeTextInput::maxLength() const
 {
     Q_D(const QDeclarativeTextInput);
@@ -529,10 +550,10 @@ void QDeclarativeTextInput::select(int start, int end)
     It is equivalent to the following snippet, but is faster and easier
     to use.
 
-    \qml
+    \js
     myTextInput.text.toString().substring(myTextInput.selectionStart,
         myTextInput.selectionEnd);
-    \endqml
+    \endjs
 */
 QString QDeclarativeTextInput::selectedText() const
 {
@@ -593,6 +614,11 @@ void QDeclarativeTextInput::setAutoScroll(bool b)
     \ingroup qml-basic-visual-elements
 
     This element provides a validator for integer values.
+
+    IntValidator uses the \l {QLocale::setDefault()}{default locale} to interpret the number and
+    will accept locale specific digits, group separators, and positive and negative signs.  In
+    addition, IntValidator is always guaranteed to accept a number formatted according to the "C"
+    locale.
 */
 /*!
     \qmlproperty int IntValidator::top
@@ -748,6 +774,15 @@ bool QDeclarativeTextInput::hasAcceptableInput() const
     Q_D(const QDeclarativeTextInput);
     return d->control->hasAcceptableInput();
 }
+
+/*!
+    \qmlsignal TextInput::onAccepted()
+
+    This handler is called when the Return or Enter key is pressed.
+    Note that if there is a \l validator or \l inputMask set on the text
+    input, the handler will only be emitted if the input is in an acceptable
+    state.
+*/
 
 /*!
     \qmlproperty enumeration TextInput::echoMode
@@ -954,6 +989,7 @@ void QDeclarativeTextInput::inputMethodEvent(QInputMethodEvent *ev)
     } else {
         d->control->processInputMethodEvent(ev);
         updateSize();
+        d->updateHorizontalScroll();
     }
     if (!ev->isAccepted())
         QDeclarativePaintedItem::inputMethodEvent(ev);
@@ -992,6 +1028,10 @@ void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
             }
         }
     }
+    if (d->selectByMouse) {
+        setKeepMouseGrab(false);
+        d->pressPos = event->pos();
+    }
     bool mark = event->modifiers() & Qt::ShiftModifier;
     int cursor = d->xToPos(event->pos().x());
     d->control->moveCursor(cursor, mark);
@@ -1002,7 +1042,9 @@ void QDeclarativeTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
     if (d->selectByMouse) {
-        d->control->moveCursor(d->xToPos(event->pos().x()), true);
+        if (qAbs(int(event->pos().x() - d->pressPos.x())) > QApplication::startDragDistance())
+            setKeepMouseGrab(true);
+        moveCursorSelection(d->xToPos(event->pos().x()), d->mouseSelectionMode);
         event->setAccepted(true);
     } else {
         QDeclarativePaintedItem::mouseMoveEvent(event);
@@ -1016,6 +1058,8 @@ Handles the given mouse \a event.
 void QDeclarativeTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
+    if (d->selectByMouse)
+        setKeepMouseGrab(false);
     if (!d->showInputPanelOnFocus) { // input panel on click
         if (d->focusOnPress && !isReadOnly() && boundingRect().contains(event->pos())) {
             if (QGraphicsView * view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
@@ -1029,6 +1073,15 @@ void QDeclarativeTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     d->control->processEvent(event);
     if (!event->isAccepted())
         QDeclarativePaintedItem::mouseReleaseEvent(event);
+}
+
+bool QDeclarativeTextInput::sceneEvent(QEvent *event)
+{
+    bool rv = QDeclarativeItem::sceneEvent(event);
+    if (event->type() == QEvent::UngrabMouse) {
+        setKeepMouseGrab(false);
+    }
+    return rv;
 }
 
 bool QDeclarativeTextInput::event(QEvent* ev)
@@ -1072,13 +1125,15 @@ int QDeclarativeTextInputPrivate::calculateTextWidth()
 void QDeclarativeTextInputPrivate::updateHorizontalScroll()
 {
     Q_Q(QDeclarativeTextInput);
-    int cix = qRound(control->cursorToX());
+    const int preeditLength = control->preeditAreaText().length();
+    int cix = qRound(control->cursorToX(control->cursor() + preeditLength));
     QRect br(q->boundingRect().toRect());
     int widthUsed = calculateTextWidth();
+    Qt::Alignment va = QStyle::visualAlignment(control->layoutDirection(), QFlag(Qt::Alignment(hAlign)));
     if (autoScroll) {
         if (widthUsed <=  br.width()) {
             // text fits in br; use hscroll for alignment
-            switch (hAlign & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
+            switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
             case Qt::AlignRight:
                 hscroll = widthUsed - br.width() - 1;
                 break;
@@ -1101,13 +1156,26 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
             // right
             hscroll = widthUsed - br.width() + 1;
         }
+        if (preeditLength > 0) {
+            // check to ensure long pre-edit text doesn't push the cursor
+            // off to the left
+             cix = qRound(control->cursorToX(
+                     control->cursor() + qMax(0, control->preeditCursor() - 1)));
+             if (cix < hscroll)
+                 hscroll = cix;
+        }
     } else {
-        if(hAlign == QDeclarativeTextInput::AlignRight){
+        switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
+        case Qt::AlignRight:
             hscroll = q->width() - widthUsed;
-        }else if(hAlign == QDeclarativeTextInput::AlignHCenter){
+            break;
+        case Qt::AlignHCenter:
             hscroll = (q->width() - widthUsed) / 2;
-        } else {
+            break;
+        default:
+            // Left
             hscroll = 0;
+            break;
         }
     }
 }
@@ -1169,6 +1237,17 @@ QVariant QDeclarativeTextInput::inputMethodQuery(Qt::InputMethodQuery property) 
 }
 
 /*!
+    \qmlmethod void TextInput::deselect()
+
+    Removes active text selection.
+*/
+void QDeclarativeTextInput::deselect()
+{
+    Q_D(QDeclarativeTextInput);
+    d->control->deselect();
+}
+
+/*!
     \qmlmethod void TextInput::selectAll()
 
     Causes all text to be selected.
@@ -1211,7 +1290,8 @@ void QDeclarativeTextInput::copy()
 void QDeclarativeTextInput::paste()
 {
     Q_D(QDeclarativeTextInput);
-    d->control->paste();
+    if(!d->control->isReadOnly())
+        d->control->paste();
 }
 #endif // QT_NO_CLIPBOARD
 
@@ -1310,35 +1390,137 @@ void QDeclarativeTextInput::setSelectByMouse(bool on)
     }
 }
 
+/*!
+    \qmlproperty enum TextInput::mouseSelectionMode
+    \since Quick 1.1
+
+    Specifies how text should be selected using a mouse.
+
+    \list
+    \o TextInput.SelectCharacters - The selection is updated with individual characters. (Default)
+    \o TextInput.SelectWords - The selection is updated with whole words.
+    \endlist
+
+    This property only applies when \l selectByMouse is true.
+*/
+
+QDeclarativeTextInput::SelectionMode QDeclarativeTextInput::mouseSelectionMode() const
+{
+    Q_D(const QDeclarativeTextInput);
+    return d->mouseSelectionMode;
+}
+
+void QDeclarativeTextInput::setMouseSelectionMode(SelectionMode mode)
+{
+    Q_D(QDeclarativeTextInput);
+    if (d->mouseSelectionMode != mode) {
+        d->mouseSelectionMode = mode;
+        emit mouseSelectionModeChanged(mode);
+    }
+}
+
+bool QDeclarativeTextInput::canPaste() const
+{
+    Q_D(const QDeclarativeTextInput);
+    return d->canPaste;
+}
+
+void QDeclarativeTextInput::moveCursorSelection(int position)
+{
+    Q_D(QDeclarativeTextInput);
+    d->control->moveCursor(position, true);
+    d->updateHorizontalScroll();
+}
 
 /*!
-    \qmlmethod void TextInput::moveCursorSelection(int position)
+    \qmlmethod void TextInput::moveCursorSelection(int position, SelectionMode mode = TextInput.SelectCharacters)
+    \since Quick 1.1
 
-    Moves the cursor to \a position and updates the selection accordingly.
-    (To only move the cursor, set the \l cursorPosition property.)
+    Moves the cursor to \a position and updates the selection according to the optional \a mode
+    parameter.  (To only move the cursor, set the \l cursorPosition property.)
 
     When this method is called it additionally sets either the
     selectionStart or the selectionEnd (whichever was at the previous cursor position)
     to the specified position. This allows you to easily extend and contract the selected
     text range.
 
+    The selection mode specifies whether the selection is updated on a per character or a per word
+    basis.  If not specified the selection mode will default to TextInput.SelectCharacters.
+
+    \list
+    \o TextEdit.SelectCharacters - Sets either the selectionStart or selectionEnd (whichever was at
+    the previous cursor position) to the specified position.
+    \o TextEdit.SelectWords - Sets the selectionStart and selectionEnd to include all
+    words between the specified postion and the previous cursor position.  Words partially in the
+    range are included.
+    \endlist
+
     For example, take this sequence of calls:
 
     \code
         cursorPosition = 5
-        moveCursorSelection(9)
-        moveCursorSelection(7)
+        moveCursorSelection(9, TextInput.SelectCharacters)
+        moveCursorSelection(7, TextInput.SelectCharacters)
     \endcode
 
     This moves the cursor to position 5, extend the selection end from 5 to 9
     and then retract the selection end from 9 to 7, leaving the text from position 5 to 7
     selected (the 6th and 7th characters).
+
+    The same sequence with TextInput.SelectWords will extend the selection start to a word boundary
+    before or on position 5 and extend the selection end to a word boundary on or past position 9.
 */
-void QDeclarativeTextInput::moveCursorSelection(int position)
+void QDeclarativeTextInput::moveCursorSelection(int pos, SelectionMode mode)
 {
     Q_D(QDeclarativeTextInput);
-    d->control->moveCursor(position, true);
-    d->updateHorizontalScroll();
+
+    if (mode == SelectCharacters) {
+        d->control->moveCursor(pos, true);
+    } else if (pos != d->control->cursor()){
+        const int cursor = d->control->cursor();
+        int anchor;
+        if (!d->control->hasSelectedText())
+            anchor = d->control->cursor();
+        else if (d->control->selectionStart() == d->control->cursor())
+            anchor = d->control->selectionEnd();
+        else
+            anchor = d->control->selectionStart();
+
+        if (anchor < pos || (anchor == pos && cursor < pos)) {
+            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, d->control->text());
+            finder.setPosition(anchor);
+
+            const QTextBoundaryFinder::BoundaryReasons reasons = finder.boundaryReasons();
+            if (!(reasons & QTextBoundaryFinder::StartWord)
+                    || ((reasons & QTextBoundaryFinder::EndWord) && anchor > cursor)) {
+                finder.toPreviousBoundary();
+            }
+            anchor = finder.position();
+
+            finder.setPosition(pos);
+            if (!finder.isAtBoundary())
+                finder.toNextBoundary();
+
+            d->control->setSelection(anchor, finder.position() - anchor);
+        } else if (anchor > pos || (anchor == pos && cursor > pos)) {
+            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, d->control->text());
+            finder.setPosition(anchor);
+
+            const QTextBoundaryFinder::BoundaryReasons reasons = finder.boundaryReasons();
+            if (!(reasons & QTextBoundaryFinder::EndWord)
+                    || ((reasons & QTextBoundaryFinder::StartWord) && anchor < cursor)) {
+                finder.toNextBoundary();
+            }
+
+            anchor = finder.position();
+
+            finder.setPosition(pos);
+            if (!finder.isAtBoundary())
+                 finder.toPreviousBoundary();
+
+            d->control->setSelection(anchor, finder.position() - anchor);
+        }
+    }
 }
 
 /*!
@@ -1474,6 +1656,12 @@ void QDeclarativeTextInputPrivate::init()
                q, SIGNAL(accepted()));
     q->connect(control, SIGNAL(updateNeeded(QRect)),
                q, SLOT(updateRect(QRect)));
+#ifndef QT_NO_CLIPBOARD
+    q->connect(q, SIGNAL(readOnlyChanged(bool)),
+            q, SLOT(q_canPasteChanged()));
+    q->connect(QApplication::clipboard(), SIGNAL(dataChanged()),
+            q, SLOT(q_canPasteChanged()));
+#endif // QT_NO_CLIPBOARD
     q->updateSize();
     oldValidity = control->hasAcceptableInput();
     lastSelectionStart = 0;
@@ -1573,6 +1761,17 @@ void QDeclarativeTextInput::updateSize(bool needsRedraw)
         clearCache();
         update();
     }
+}
+
+void QDeclarativeTextInput::q_canPasteChanged()
+{
+    Q_D(QDeclarativeTextInput);
+    bool old = d->canPaste;
+#ifndef QT_NO_CLIPBOARD
+    d->canPaste = !d->control->isReadOnly() && QApplication::clipboard()->text().length() != 0;
+#endif
+    if(d->canPaste != old)
+        emit canPasteChanged();
 }
 
 QT_END_NAMESPACE

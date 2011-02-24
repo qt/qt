@@ -1245,12 +1245,14 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
 #ifdef Q_WS_S60
         // If widget is fullscreen/minimized, hide status pane and button container otherwise show them.
         QWidget *const window = qwidget->window();
-        const bool visible = !(window->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
-        const bool statusPaneVisibility = visible;
-        const bool isFullscreen = window->windowState() & Qt::WindowFullScreen;
-        const bool cbaVisibilityHint = window->windowFlags() & Qt::WindowSoftkeysVisibleHint;
-        const bool buttonGroupVisibility = (visible || (isFullscreen && cbaVisibilityHint));
-        S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
+        if (!window->parentWidget()) { // Only top level native windows have control over cba/status pane
+            const bool decorationsVisible = !(window->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
+            const bool statusPaneVisibility = decorationsVisible;
+            const bool isFullscreen = window->windowState() & Qt::WindowFullScreen;
+            const bool cbaVisibilityHint = window->windowFlags() & Qt::WindowSoftkeysVisibleHint;
+            const bool buttonGroupVisibility = (decorationsVisible || (isFullscreen && cbaVisibilityHint));
+            S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
+        }
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
         bool focusedControlFound = false;
@@ -1618,7 +1620,9 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     qRegisterMetaType<WId>("WId");
 }
 
+#ifdef QT_NO_FREETYPE
 extern void qt_cleanup_symbianFontDatabase(); // qfontdatabase_s60.cpp
+#endif
 
 /*****************************************************************************
   qt_cleanup() - cleans up when the application is finished
@@ -1635,7 +1639,9 @@ void qt_cleanup()
     QFontCache::cleanup(); // Has to happen now, since QFontEngineS60 has FBS handles
     QPixmapCache::clear(); // Has to happen now, since QS60PixmapData has FBS handles
 
+#ifdef QT_NO_FREETYPE
     qt_cleanup_symbianFontDatabase();
+#endif
 // S60 structure and window server session are freed in eventdispatcher destructor as they are needed there
 
     // It's important that this happens here, before the event dispatcher gets

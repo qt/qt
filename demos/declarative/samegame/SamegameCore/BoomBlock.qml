@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-import QtQuick 1.0
+import QtQuick 1.1
 import Qt.labs.particles 1.0
 
 Item {

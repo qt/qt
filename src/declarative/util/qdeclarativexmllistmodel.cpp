@@ -90,10 +90,15 @@ typedef QPair<int, int> QDeclarativeXmlListRange;
     \qml
     XmlListModel {
         id: xmlModel
-        ...
-        XmlRole { name: "title"; query: "title/string()" }
+        // ...
+        XmlRole {
+            name: "title"
+            query: "title/string()"
+        }
     }
+    \endqml
 
+    \qml
     ListView {
         model: xmlModel
         delegate: Text { text: title }
@@ -382,7 +387,7 @@ void QDeclarativeXmlQuery::doSubQueryJob()
     for (int i = 0; i < queries.size(); ++i) {
         QList<QVariant> resultList;
         if (!queries[i].isEmpty()) {
-            subquery.setQuery(m_prefix + QLatin1String("(let $v := ") + queries[i] + QLatin1String(" return if ($v) then ") + queries[i] + QLatin1String(" else \"\")"));
+            subquery.setQuery(m_prefix + QLatin1String("(let $v := string(") + queries[i] + QLatin1String(") return if ($v) then ") + queries[i] + QLatin1String(" else \"\")"));
             if (subquery.isValid()) {
                 QXmlResultItems resultItems;
                 subquery.evaluateTo(&resultItems);
@@ -792,9 +797,9 @@ void QDeclarativeXmlListModel::setNamespaceDeclarations(const QString &declarati
 
     This will access the \c title value for the first item in the model:
 
-    \qml
-        var title = model.get(0).title;
-    \endqml
+    \js
+    var title = model.get(0).title;
+    \endjs
 */
 QScriptValue QDeclarativeXmlListModel::get(int index) const
 {

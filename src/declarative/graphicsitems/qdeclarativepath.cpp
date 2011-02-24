@@ -845,7 +845,7 @@ void QDeclarativePathCubic::addToPath(QPainterPath &path)
     \o
     \qml
     PathView {
-        ...
+        // ...
         Path {
             startX: 20; startY: 0
             PathQuad { x: 50; y: 80; controlX: 0; controlY: 80 }
@@ -859,7 +859,7 @@ void QDeclarativePathCubic::addToPath(QPainterPath &path)
     \o
     \qml
     PathView {
-        ...
+        // ...
         Path {
             startX: 20; startY: 0
             PathQuad { x: 50; y: 80; controlX: 0; controlY: 80 }
@@ -892,7 +892,7 @@ void QDeclarativePathCubic::addToPath(QPainterPath &path)
 
     \qml
     PathView {
-        ...
+        // ...
         Path {
             startX: 0; startY: 0
             PathLine { x:100; y: 0; }

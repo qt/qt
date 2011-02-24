@@ -464,6 +464,7 @@ void QFontEngineMultiS60::loadEngine(int at)
     Q_ASSERT(engines[at]);
 }
 
+#ifdef QT_NO_FREETYPE
 static bool registerScreenDeviceFont(int screenDeviceFontIndex,
                                      const QSymbianFontDatabaseExtrasImplementation *dbExtras)
 {
@@ -525,6 +526,7 @@ static bool registerScreenDeviceFont(int screenDeviceFontIndex,
         family->writingSystems[system] = QtFontFamily::Supported;
     return true;
 }
+#endif
 
 static void initializeDb()
 {

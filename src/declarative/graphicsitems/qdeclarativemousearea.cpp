@@ -216,9 +216,9 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
     \section1 Example Usage
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage qml-mousearea-snippet.png
-    \endfloat
+    \enddiv
 
     The following example uses a MouseArea in a \l Rectangle that changes
     the \l Rectangle color to red when clicked:
@@ -314,6 +314,8 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
     position of the release of the click, and whether the click was held.
 
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
+
+    \sa onCanceled()
 */
 
 /*!
@@ -583,18 +585,22 @@ void QDeclarativeMouseArea::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
     Q_D(QDeclarativeMouseArea);
     if (!d->absorb)
         QDeclarativeItem::hoverEnterEvent(event);
-    else
+    else {
+        d->lastPos = event->pos();
         setHovered(true);
+        QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), Qt::NoButton, Qt::NoButton, event->modifiers(), false, false);
+        emit mousePositionChanged(&me);
+    }
 }
 
 void QDeclarativeMouseArea::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_D(QDeclarativeMouseArea);
     if (!d->absorb) {
-        QDeclarativeItem::hoverEnterEvent(event);
+        QDeclarativeItem::hoverMoveEvent(event);
     } else {
         d->lastPos = event->pos();
-        QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), Qt::NoButton, d->lastButtons, d->lastModifiers, false, d->longPress);
+        QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), Qt::NoButton, Qt::NoButton, event->modifiers(), false, false);
         emit mousePositionChanged(&me);
         me.setX(d->lastPos.x());
         me.setY(d->lastPos.y());
@@ -859,15 +865,16 @@ bool QDeclarativeMouseArea::setPressed(bool p)
             me.setX(d->lastPos.x());
             me.setY(d->lastPos.y());
             emit mousePositionChanged(&me);
+            emit pressedChanged();
         } else {
             emit released(&me);
             me.setX(d->lastPos.x());
             me.setY(d->lastPos.y());
+            emit pressedChanged();
             if (isclick && !d->longPress && !d->doubleClick)
                 emit clicked(&me);
         }
 
-        emit pressedChanged();
         return me.isAccepted();
     }
     return false;

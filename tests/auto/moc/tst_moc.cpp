@@ -494,6 +494,7 @@ private slots:
     void QTBUG12260_defaultTemplate();
     void notifyError();
     void QTBUG17635_invokableAndProperty();
+    void revisions();
 signals:
     void sigWithUnsignedArg(unsigned foo);
     void sigWithSignedArg(signed foo);
@@ -508,6 +509,7 @@ private:
     bool user2() { return false; };
     bool user3() { return false; };
     bool userFunction(){ return false; };
+    template <class T> void revisions_T();
 
 private:
     QString qtIncludePath;
@@ -1408,6 +1410,118 @@ void tst_Moc::QTBUG17635_invokableAndProperty()
     QCOMPARE(val, QString::fromLatin1("Chicken"));
     QVERIFY(mc.metaObject()->indexOfProperty("numberOfEggs") != -1);
     QVERIFY(mc.metaObject()->indexOfProperty("numberOfChickens") != -1);
+}
+
+// If changed, update VersionTestNotify below
+class VersionTest : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int prop1 READ foo)
+    Q_PROPERTY(int prop2 READ foo REVISION 2)
+    Q_ENUMS(TestEnum);
+
+public:
+    int foo() const { return 0; }
+
+    Q_INVOKABLE void method1() {}
+    Q_INVOKABLE Q_REVISION(4) void method2() {}
+
+    enum TestEnum { One, Two };
+
+public slots:
+    void slot1() {}
+    Q_REVISION(3) void slot2() {}
+
+signals:
+    void signal1();
+    Q_REVISION(5) void signal2();
+
+public slots Q_REVISION(6):
+    void slot3() {}
+    void slot4() {}
+
+signals Q_REVISION(7):
+    void signal3();
+    void signal4();
+};
+
+// If changed, update VersionTest above
+class VersionTestNotify : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int prop1 READ foo NOTIFY fooChanged)
+    Q_PROPERTY(int prop2 READ foo REVISION 2)
+    Q_ENUMS(TestEnum);
+
+public:
+    int foo() const { return 0; }
+
+    Q_INVOKABLE void method1() {}
+    Q_INVOKABLE Q_REVISION(4) void method2() {}
+
+    enum TestEnum { One, Two };
+
+public slots:
+    void slot1() {}
+    Q_REVISION(3) void slot2() {}
+
+signals:
+    void fooChanged();
+    void signal1();
+    Q_REVISION(5) void signal2();
+
+public slots Q_REVISION(6):
+    void slot3() {}
+    void slot4() {}
+
+signals Q_REVISION(7):
+    void signal3();
+    void signal4();
+};
+
+template <class T>
+void tst_Moc::revisions_T()
+{
+    int idx = T::staticMetaObject.indexOfProperty("prop1");
+    QVERIFY(T::staticMetaObject.property(idx).revision() == 0);
+    idx = T::staticMetaObject.indexOfProperty("prop2");
+    QVERIFY(T::staticMetaObject.property(idx).revision() == 2);
+
+    idx = T::staticMetaObject.indexOfMethod("method1()");
+    QVERIFY(T::staticMetaObject.method(idx).revision() == 0);
+    idx = T::staticMetaObject.indexOfMethod("method2()");
+    QVERIFY(T::staticMetaObject.method(idx).revision() == 4);
+
+    idx = T::staticMetaObject.indexOfSlot("slot1()");
+    QVERIFY(T::staticMetaObject.method(idx).revision() == 0);
+    idx = T::staticMetaObject.indexOfSlot("slot2()");
+    QVERIFY(T::staticMetaObject.method(idx).revision() == 3);
+
+    idx = T::staticMetaObject.indexOfSlot("slot3()");
+    QVERIFY(T::staticMetaObject.method(idx).revision() == 6);
+    idx = T::staticMetaObject.indexOfSlot("slot4()");
+    QVERIFY(T::staticMetaObject.method(idx).revision() == 6);
+
+    idx = T::staticMetaObject.indexOfSignal("signal1()");
+    QVERIFY(T::staticMetaObject.method(idx).revision() == 0);
+    idx = T::staticMetaObject.indexOfSignal("signal2()");
+    QVERIFY(T::staticMetaObject.method(idx).revision() == 5);
+
+    idx = T::staticMetaObject.indexOfSignal("signal3()");
+    QVERIFY(T::staticMetaObject.method(idx).revision() == 7);
+    idx = T::staticMetaObject.indexOfSignal("signal4()");
+    QVERIFY(T::staticMetaObject.method(idx).revision() == 7);
+
+    idx = T::staticMetaObject.indexOfEnumerator("TestEnum");
+    QCOMPARE(T::staticMetaObject.enumerator(idx).keyCount(), 2);
+    QCOMPARE(T::staticMetaObject.enumerator(idx).key(0), "One");
+}
+
+// test using both class that has properties with and without NOTIFY signals
+void tst_Moc::revisions()
+{
+    revisions_T<VersionTest>();
+    revisions_T<VersionTestNotify>();
 }
 
 QTEST_APPLESS_MAIN(tst_Moc)

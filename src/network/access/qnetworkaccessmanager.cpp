@@ -1139,10 +1139,11 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
 
     networkSession = QSharedNetworkSessionManager::getSession(config);
 
-    QObject::connect(networkSession.data(), SIGNAL(opened()), q, SIGNAL(networkSessionConnected()));
-    QObject::connect(networkSession.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()));
+    QObject::connect(networkSession.data(), SIGNAL(opened()), q, SIGNAL(networkSessionConnected()), Qt::QueuedConnection);
+    //QueuedConnection is used to avoid deleting the networkSession inside its closed signal
+    QObject::connect(networkSession.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()), Qt::QueuedConnection);
     QObject::connect(networkSession.data(), SIGNAL(stateChanged(QNetworkSession::State)),
-                     q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)));
+                     q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)), Qt::QueuedConnection);
 
     _q_networkSessionStateChanged(networkSession->state());
 }

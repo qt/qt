@@ -247,8 +247,12 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
                 ::memset(o, 0, instr.createSimple.typeSize + sizeof(QDeclarativeData));
                 instr.createSimple.create(o);
 
-                QDeclarativeData *ddata = 
-                    (QDeclarativeData *)(((const char *)o) + instr.createSimple.typeSize);
+                QDeclarativeData *ddata = (QDeclarativeData *)(((const char *)o) + instr.createSimple.typeSize);
+                const QDeclarativeCompiledData::TypeReference &ref = types.at(instr.createSimple.type);
+                if (!ddata->propertyCache && ref.typePropertyCache) {
+                    ddata->propertyCache = ref.typePropertyCache;
+                    ddata->propertyCache->addref();
+                }
                 ddata->lineNumber = instr.line;
                 ddata->columnNumber = instr.createSimple.column;
 
@@ -320,10 +324,12 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
 
                 (void)new QDeclarativeVMEMetaObject(target, &mo, data, comp);
 
-                QDeclarativeData *ddata = QDeclarativeData::get(target, true);
-                if (ddata->propertyCache) ddata->propertyCache->release();
-                ddata->propertyCache = propertyCaches.at(instr.storeMeta.propertyCache);
-                ddata->propertyCache->addref();
+                if (instr.storeMeta.propertyCache != -1) {
+                    QDeclarativeData *ddata = QDeclarativeData::get(target, true);
+                    if (ddata->propertyCache) ddata->propertyCache->release();
+                    ddata->propertyCache = propertyCaches.at(instr.storeMeta.propertyCache);
+                    ddata->propertyCache->addref();
+                }
             }
             break;
 
@@ -973,6 +979,11 @@ QDeclarativeCompiledData::TypeReference::createInstance(QDeclarativeContextData 
         QDeclarativeData *ddata = new (memory) QDeclarativeData;
         ddata->ownMemory = false;
         QObjectPrivate::get(rv)->declarativeData = ddata;
+
+        if (typePropertyCache && !ddata->propertyCache) {
+            ddata->propertyCache = typePropertyCache;
+            ddata->propertyCache->addref();
+        }
 
         return rv;
     } else {

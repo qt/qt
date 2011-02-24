@@ -62,7 +62,12 @@
 "/epoc32/data/z/resource/qt/plugins/graphicssystems/qglgraphicssystem.qtplugin" - "!:\resource\qt\plugins\graphicssystems\qglgraphicssystem.qtplugin"
 "/epoc32/release/armv5/urel/qsvgicon.dll"    - "!:\sys\bin\qsvgicon.dll"
 "/epoc32/data/z/resource/qt/plugins/iconengines/qsvgicon.qtplugin"    - "!:\resource\qt\plugins\iconengines\qsvgicon.qtplugin"
-"/epoc32/data/z/resource/qt/plugins/bearer/qsymbianbearer.qtplugin" - "c:\resource\qt\plugins\bearer\qsymbianbearer.qtplugin"
+"/epoc32/data/z/resource/qt/plugins/bearer/qsymbianbearer.qtplugin" - "!:\resource\qt\plugins\bearer\qsymbianbearer.qtplugin"
+
+; Phonon MMF plugin
+"/epoc32/release/armv5/urel/phonon_mmf.dll"    - "!:\sys\bin\phonon_mmf.dll"
+"/epoc32/data/z/resource/qt/plugins/phonon_backend/phonon_mmf.qtplugin" - "!:\resource\qt\plugins\phonon_backend\phonon_mmf.qtplugin"
+
 
 "/epoc32/release/armv5/urel/qts60plugin_5_0.dll" - "!:\sys\bin\qts60plugin_5_0.dll"
 

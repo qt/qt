@@ -228,7 +228,7 @@ static QString varMap(const QString &x)
     return ret;
 }
 
-static QStringList split_arg_list(QString params)
+static QStringList split_arg_list(const QString &params)
 {
     int quote = 0;
     QStringList args;
@@ -253,6 +253,8 @@ static QStringList split_arg_list(QString params)
                 while(x > last && params_data[x-1].unicode() == SPACE)
                     --x;
                 args << params.mid(last, x - last);
+                // Could do a check for unmatched parens here, but split_value_list()
+                // is called on all our output, so mistakes will be caught anyway.
                 return args;
             }
             ushort unicode = params_data[x].unicode();
@@ -285,6 +287,7 @@ static QStringList split_value_list(const QString &vals)
     QString build;
     QStringList ret;
     ushort quote = 0;
+    int parens = 0;
 
     const ushort LPAREN = '(';
     const ushort RPAREN = ')';
@@ -295,7 +298,7 @@ static QStringList split_value_list(const QString &vals)
     ushort unicode;
     const QChar *vals_data = vals.data();
     const int vals_len = vals.length();
-    for(int x = 0, parens = 0; x < vals_len; x++) {
+    for(int x = 0; x < vals_len; x++) {
         unicode = vals_data[x].unicode();
         if(x != (int)vals_len-1 && unicode == BACKSLASH &&
             (vals_data[x+1].unicode() == SINGLEQUOTE || vals_data[x+1].unicode() == DOUBLEQUOTE)) {
@@ -319,6 +322,11 @@ static QStringList split_value_list(const QString &vals)
     }
     if(!build.isEmpty())
         ret << build;
+    if (parens)
+        warn_msg(WarnDeprecated, "%s:%d: Unmatched parentheses are deprecated.",
+                 parser.file.toLatin1().constData(), parser.line_no);
+    // Could do a check for unmatched quotes here, but doVariableReplaceExpand()
+    // is called on all our output, so mistakes will be caught anyway.
     return ret;
 }
 
@@ -1678,10 +1686,10 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
             }
             if(format == UnknownFormat)
                 return IncludeNoExist;
-            if(place["QMAKE_INTERNAL_INCLUDED_FEATURES"].indexOf(file) != -1)
-                return IncludeFeatureAlreadyLoaded;
-            place["QMAKE_INTERNAL_INCLUDED_FEATURES"].append(file);
         }
+        if(place["QMAKE_INTERNAL_INCLUDED_FEATURES"].indexOf(file) != -1)
+            return IncludeFeatureAlreadyLoaded;
+        place["QMAKE_INTERNAL_INCLUDED_FEATURES"].append(file);
     }
     if(QDir::isRelativePath(file)) {
         QStringList include_roots;
@@ -2963,6 +2971,9 @@ QMakeProject::doVariableReplaceExpand(const QString &str, QMap<QString, QStringL
     else if(!current.isEmpty())
         ret.append(current);
     //qDebug() << "REPLACE" << str << ret;
+    if (quote)
+        warn_msg(WarnDeprecated, "%s:%d: Unmatched quotes are deprecated.",
+                 parser.file.toLatin1().constData(), parser.line_no);
     return ret;
 }
 

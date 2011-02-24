@@ -62,7 +62,7 @@ Item {
 
             GridView {
                 id: photoGridView; model: rssModel; delegate: Mobile.GridDelegate {}
-                cacheBuffer: 100
+                cacheBuffer: 1000
                 cellWidth: (parent.width-2)/4; cellHeight: cellWidth; width: parent.width; height: parent.height
             }
 

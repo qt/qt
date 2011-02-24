@@ -300,39 +300,25 @@ void QDirectFBPixmapData::fromImage(const QImage &img, Qt::ImageConversionFlags 
 {
     alpha = QDirectFBPixmapData::hasAlphaChannel(img, flags);
     imageFormat = alpha ? screen->alphaPixmapFormat() : screen->pixelFormat();
+
     QImage image;
     if ((flags & ~Qt::NoOpaqueDetection) != Qt::AutoColor) {
         image = img.convertToFormat(imageFormat, flags);
         flags = Qt::AutoColor;
     } else if (img.format() == QImage::Format_RGB32 || img.depth() == 1) {
         image = img.convertToFormat(imageFormat, flags);
+    } else if (img.format() != imageFormat) {
+        image = img.convertToFormat(imageFormat, flags);
     } else {
         image = img;
     }
 
-    IDirectFBSurface *imageSurface = screen->createDFBSurface(image, image.format(), QDirectFBScreen::DontTrackSurface);
-    if (!imageSurface) {
-        qWarning("QDirectFBPixmapData::fromImage()");
-        invalidate();
-        return;
-    }
-
-    dfbSurface = screen->createDFBSurface(image.size(), imageFormat, QDirectFBScreen::TrackSurface);
+    dfbSurface = screen->createDFBSurface(image, image.format(), QDirectFBScreen::NoPreallocated | QDirectFBScreen::TrackSurface);
     if (!dfbSurface) {
         qWarning("QDirectFBPixmapData::fromImage()");
         invalidate();
         return;
     }
-
-    if (image.hasAlphaChannel()) {
-        dfbSurface->Clear(dfbSurface, 0, 0, 0, 0);
-        dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_BLEND_ALPHACHANNEL);
-    } else {
-        dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
-    }
-
-    dfbSurface->Blit(dfbSurface, imageSurface, 0, 0, 0);
-    imageSurface->Release(imageSurface);
 
     w = image.width();
     h = image.height();

@@ -304,5 +304,14 @@ const QMetaObject *QDeclarativeCustomParser::resolveType(const QByteArray& name)
     return compiler->resolveType(name);
 }
 
+/*!
+    Rewrites \a expression and returns an identifier that can be
+    used to construct the binding later. \a name
+    is used as the name of the rewritten function.
+*/
+QDeclarativeBinding::Identifier QDeclarativeCustomParser::rewriteBinding(const QString& expression, const QByteArray& name)
+{
+    return compiler->rewriteBinding(expression, name);
+}
 
 QT_END_NAMESPACE

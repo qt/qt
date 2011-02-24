@@ -307,8 +307,10 @@ void QNetworkAccessFtpBackend::ftpDone()
             // logged in successfully, send the stat requests (if supported)
             QString command = url().path();
             command.prepend(QLatin1String("%1 "));
-            if (supportsSize)
+            if (supportsSize) {
+                ftp->rawCommand(QLatin1String("TYPE I"));
                 sizeId = ftp->rawCommand(command.arg(QLatin1String("SIZE"))); // get size
+            }
             if (supportsMdtm)
                 mdtmId = ftp->rawCommand(command.arg(QLatin1String("MDTM"))); // get modified time
             if (!supportsSize && !supportsMdtm)

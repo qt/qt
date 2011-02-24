@@ -214,6 +214,8 @@ namespace QDeclarativePrivate
         const QMetaObject *extensionMetaObject;
 
         QDeclarativeCustomParser *customParser;
+        int revision;
+        // If this is extended ensure "version" is bumped!!!
     };
 
     struct RegisterInterface {

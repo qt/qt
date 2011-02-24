@@ -549,10 +549,19 @@ private slots:
     void getSetDynamicProperty_doNotHideJSProperty();
     void getSetChildren();
     void callQtInvokable();
+    void callQtInvokable2();
+    void callQtInvokable3();
+    void callQtInvokable4();
+    void callQtInvokable5();
+    void callQtInvokable6();
+    void callQtInvokable7();
     void connectAndDisconnect();
+    void connectAndDisconnect_emitFromJS();
+    void connectAndDisconnect_senderWrapperCollected();
     void connectAndDisconnectWithBadArgs();
     void connectAndDisconnect_senderDeleted();
     void cppConnectAndDisconnect();
+    void cppConnectAndDisconnect2();
     void classEnums();
     void classConstructor();
     void overrideInvokable();
@@ -1270,7 +1279,10 @@ void tst_QScriptExtQObject::callQtInvokable()
     QCOMPARE(m_myObject->qtFunctionActuals().size(), 2);
     QCOMPARE(m_myObject->qtFunctionActuals().at(0).toInt(), 123);
     QCOMPARE(m_myObject->qtFunctionActuals().at(1).toInt(), 456);
+}
 
+void tst_QScriptExtQObject::callQtInvokable2()
+{
     m_myObject->resetQtFunctionInvoked();
     QVERIFY(m_engine->evaluate("myObject.myInvokableWithVoidStarArg(null)").isUndefined());
     QCOMPARE(m_myObject->qtFunctionInvoked(), 44);
@@ -1359,7 +1371,10 @@ void tst_QScriptExtQObject::callQtInvokable()
         QCOMPARE(ret.isArray(), true);
         QCOMPARE(m_myObject->qtFunctionInvoked(), 11);
     }
+}
 
+void tst_QScriptExtQObject::callQtInvokable3()
+{
     {
         QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithVectorOfIntArg(myObject.myInvokableReturningVectorOfInt())");
         QCOMPARE(ret.isUndefined(), true);
@@ -1485,7 +1500,10 @@ void tst_QScriptExtQObject::callQtInvokable()
         QCOMPARE(ret.property("0").strictlyEquals(QScriptValue(m_engine, 1)), true);
         QCOMPARE(ret.property("1").strictlyEquals(QScriptValue(m_engine, 5)), true);
     }
+}
 
+void tst_QScriptExtQObject::callQtInvokable4()
+{
     m_myObject->resetQtFunctionInvoked();
     {
         QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithQObjectStarArg(myObject)");
@@ -1571,7 +1589,10 @@ void tst_QScriptExtQObject::callQtInvokable()
         QCOMPARE(v.userType(), int(QMetaType::ULongLong));
         QCOMPARE(qvariant_cast<qulonglong>(v), qulonglong(123));
     }
+}
 
+void tst_QScriptExtQObject::callQtInvokable5()
+{
     m_myObject->resetQtFunctionInvoked();
     {
         QScriptValue fun = m_engine->evaluate("myObject.myInvokableWithQBrushArg");
@@ -1659,7 +1680,10 @@ void tst_QScriptExtQObject::callQtInvokable()
         QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
         QCOMPARE(qvariant_cast<QObject*>(m_myObject->qtFunctionActuals().at(0)), (QObject*)m_myObject);
     }
+}
 
+void tst_QScriptExtQObject::callQtInvokable6()
+{
     // QScriptValue arguments should be passed on without conversion
     m_myObject->resetQtFunctionInvoked();
     {
@@ -1723,18 +1747,21 @@ void tst_QScriptExtQObject::callQtInvokable()
             QCOMPARE(m_myObject->qtFunctionInvoked(), 55);
         }
     }
+}
 
+void tst_QScriptExtQObject::callQtInvokable7()
+{
     // qscript_call()
     {
         m_myObject->resetQtFunctionInvoked();
         QScriptValue ret = m_engine->evaluate("new myObject(123)");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'myObject' [MyQObject(name = \"\")] is not a constructor."));
+        QVERIFY(ret.toString().contains(QString::fromLatin1("TypeError")));
     }
     {
         m_myObject->resetQtFunctionInvoked();
         QScriptValue ret = m_engine->evaluate("myObject(123)");
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'myObject' [MyQObject(name = \"\")] is not a function."));
+        QVERIFY(ret.toString().contains(QString::fromLatin1("TypeError")));
     }
 
     // task 233624
@@ -1971,9 +1998,10 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     QVERIFY(m_engine->evaluate("myObject.mySignal.connect(myObject, 'mySlot')").isUndefined());
     QVERIFY(m_engine->evaluate("myObject.mySignal.disconnect(yetAnotherObject, 'func')").isUndefined());
     QVERIFY(m_engine->evaluate("myObject.mySignal.disconnect(myObject, 'mySlot')").isUndefined());
+}
 
-    // check that emitting signals from script works
-
+void tst_QScriptExtQObject::connectAndDisconnect_emitFromJS()
+{
     // no arguments
     QVERIFY(m_engine->evaluate("myObject.mySignal.connect(myObject.mySlot)").isUndefined());
     m_myObject->resetQtFunctionInvoked();
@@ -2022,7 +2050,10 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
     QCOMPARE(m_myObject->qtFunctionActuals().at(0).toInt(), 456);
     QVERIFY(m_engine->evaluate("myObject.mySignalWithIntArg.disconnect(myObject['myOverloadedSlot(int)'])").isUndefined());
+}
 
+void tst_QScriptExtQObject::connectAndDisconnect_senderWrapperCollected()
+{
     // when the wrapper dies, the connection stays alive
     QVERIFY(m_engine->evaluate("myObject.mySignal.connect(myObject.mySlot)").isUndefined());
     m_myObject->resetQtFunctionInvoked();
@@ -2210,7 +2241,14 @@ void tst_QScriptExtQObject::cppConnectAndDisconnect()
             QVERIFY(!qScriptDisconnect(&edit2, SIGNAL(textChanged(const QString &)), receiver, fun));
         }
     }
+}
 
+void tst_QScriptExtQObject::cppConnectAndDisconnect2()
+{
+    QScriptEngine eng;
+    QLineEdit edit;
+    QLineEdit edit2;
+    QScriptValue fun = eng.evaluate("function fun(text) { signalObject = this; signalArg = text; }; fun");
     // make sure we don't crash when engine is deleted
     {
         QScriptEngine *eng2 = new QScriptEngine;

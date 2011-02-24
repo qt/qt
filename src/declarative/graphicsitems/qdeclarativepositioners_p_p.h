@@ -55,7 +55,7 @@
 
 #include "private/qdeclarativepositioners_p.h"
 
-#include "private/qdeclarativeitem_p.h"
+#include "private/qdeclarativeimplicitsizeitem_p_p.h"
 
 #include <qdeclarativestate_p.h>
 #include <qdeclarativetransitionmanager_p_p.h>
@@ -67,7 +67,7 @@
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
-class QDeclarativeBasePositionerPrivate : public QDeclarativeItemPrivate, public QDeclarativeItemChangeListener
+class QDeclarativeBasePositionerPrivate : public QDeclarativeImplicitSizeItemPrivate, public QDeclarativeItemChangeListener
 {
     Q_DECLARE_PUBLIC(QDeclarativeBasePositioner)
 

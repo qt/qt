@@ -147,8 +147,8 @@ symbian {
 			text/qfontengine_s60.cpp
 		HEADERS += \
 			text/qfontengine_s60_p.h
-		LIBS += -lfntstr -lecom
 	}
+	LIBS += -lfntstr -lecom
 }
 
 !qpa {

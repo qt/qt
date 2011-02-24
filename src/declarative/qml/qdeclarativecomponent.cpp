@@ -54,11 +54,13 @@
 #include "private/qdeclarativescriptparser_p.h"
 #include "private/qdeclarativedebugtrace_p.h"
 #include "private/qdeclarativeenginedebug_p.h"
+#include <QtScript/qscriptvalueiterator.h>
 
 #include <QStack>
 #include <QStringList>
 #include <QtCore/qdebug.h>
 #include <QApplication>
+#include <qdeclarativeinfo.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -613,7 +615,7 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
 }
 
 /*!
-    \qmlmethod object Component::createObject(Item parent)
+    \qmlmethod object Component::createObject(Item parent, Script valuemap = null)
 
     Creates and returns an object instance of this component that will have the given 
     \a parent. Returns null if object creation fails.
@@ -631,6 +633,12 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
     it is not destroyed by the garbage collector.  This is regardless of Item.parent being set afterwards,
     since setting the Item parent does not change object ownership; only the graphical parent is changed.
 
+    Since QtQuick 1.1, a map of property values can be optionally passed to the method that applies values to the object's properties
+    before its creation is finalised. This will avoid binding issues that can occur when the object is
+    instantiated before property bindings have been set. For example:
+
+    \code component.createObject(parent, {"x": 100, "y": 100, "specialProperty": someObject}); \endcode
+
     Dynamically created instances can be deleted with the \c destroy() method.
     See \l {Dynamic Object Management in QML} for more information.
 */
@@ -646,25 +654,46 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
 QScriptValue QDeclarativeComponent::createObject(QObject* parent)
 {
     Q_D(QDeclarativeComponent);
-    QDeclarativeContext* ctxt = creationContext();
-    if(!ctxt && d->engine)
-        ctxt = d->engine->rootContext();
+    return d->createObject(parent, QScriptValue(QScriptValue::NullValue));
+}
+
+/*!
+    \internal
+    Overloadable method allows properties to be set during creation
+*/
+QScriptValue QDeclarativeComponent::createObject(QObject* parent, const QScriptValue& valuemap)
+{
+    Q_D(QDeclarativeComponent);
+
+    if (!valuemap.isObject() || valuemap.isArray()) {
+        qmlInfo(this) << tr("createObject: value is not an object");
+        return QScriptValue(QScriptValue::NullValue);
+    }
+    return d->createObject(parent, valuemap);
+}
+
+QScriptValue QDeclarativeComponentPrivate::createObject(QObject *publicParent, const QScriptValue valuemap)
+{
+    Q_Q(QDeclarativeComponent);
+    QDeclarativeContext* ctxt = q->creationContext();
+    if(!ctxt && engine)
+        ctxt = engine->rootContext();
     if (!ctxt)
         return QScriptValue(QScriptValue::NullValue);
-    QObject* ret = beginCreate(ctxt);
+    QObject* ret = q->beginCreate(ctxt);
     if (!ret) {
-        completeCreate();
+        q->completeCreate();
         return QScriptValue(QScriptValue::NullValue);
     }
 
-    if (parent) {
-        ret->setParent(parent);
+    if (publicParent) {
+        ret->setParent(publicParent);
         QList<QDeclarativePrivate::AutoParentFunction> functions = QDeclarativeMetaType::parentFunctions();
 
         bool needParent = false;
 
         for (int ii = 0; ii < functions.count(); ++ii) {
-            QDeclarativePrivate::AutoParentResult res = functions.at(ii)(ret, parent);
+            QDeclarativePrivate::AutoParentResult res = functions.at(ii)(ret, publicParent);
             if (res == QDeclarativePrivate::Parented) {
                 needParent = false;
                 break;
@@ -673,14 +702,41 @@ QScriptValue QDeclarativeComponent::createObject(QObject* parent)
             }
         }
 
-        if (needParent) 
+        if (needParent)
             qWarning("QDeclarativeComponent: Created graphical object was not placed in the graphics scene.");
     }
-    completeCreate();
 
-    QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(d->engine);
+    QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(engine);
     QDeclarativeData::get(ret, true)->setImplicitDestructible();
-    return priv->objectClass->newQObject(ret, QMetaType::QObjectStar);
+    QScriptValue newObject = priv->objectClass->newQObject(ret, QMetaType::QObjectStar);
+
+    if (valuemap.isObject() && !valuemap.isArray()) {
+        //Iterate through and assign properties
+        QScriptValueIterator it(valuemap);
+        while (it.hasNext()) {
+            it.next();
+            QScriptValue prop = newObject;
+            QString propName = it.name();
+            int index = propName.indexOf(QLatin1Char('.'));
+            if (index > 0) {
+                QString subProp = propName;
+                int lastIndex = 0;
+                while (index > 0) {
+                    subProp = propName.mid(lastIndex, index - lastIndex);
+                    prop = prop.property(subProp);
+                    lastIndex = index + 1;
+                    index = propName.indexOf(QLatin1Char('.'), index + 1);
+                }
+                prop.setProperty(propName.mid(propName.lastIndexOf(QLatin1Char('.')) + 1), it.value());
+            } else {
+                newObject.setProperty(propName, it.value());
+            }
+        }
+    }
+
+    q->completeCreate();
+
+    return newObject;
 }
 
 /*!
@@ -782,8 +838,10 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *parentCon
     Q_ASSERT(!isRoot || state); // Either this isn't a root component, or a state data must be provided
     Q_ASSERT((state != 0) ^ (errors != 0)); // One of state or errors (but not both) must be provided
 
-    if (isRoot) 
+    if (isRoot) {
         QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Creating);
+        QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::Creating, component->url);
+    }
 
     QDeclarativeContextData *ctxt = new QDeclarativeContextData;
     ctxt->isInternal = true;

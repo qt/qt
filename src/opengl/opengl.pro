@@ -163,6 +163,13 @@ symbian {
 
     HEADERS += qgl_egl_p.h
 
+    contains(QT_CONFIG, freetype) {
+        DEFINES += QT_NO_FONTCONFIG
+        INCLUDEPATH += \
+            ../3rdparty/freetype/src \
+            ../3rdparty/freetype/include
+    }
+
     symbian:TARGET.UID3 = 0x2002131A
 }
 

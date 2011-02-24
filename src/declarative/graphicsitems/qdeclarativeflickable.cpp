@@ -53,6 +53,10 @@ QT_BEGIN_NAMESPACE
 // before we perform a flick.
 static const int FlickThreshold = 20;
 
+// RetainGrabVelocity is the maxmimum instantaneous velocity that
+// will ensure the  Flickable retains the grab on consecutive flicks.
+static const int RetainGrabVelocity = 15;
+
 QDeclarativeFlickableVisibleArea::QDeclarativeFlickableVisibleArea(QDeclarativeFlickable *parent)
     : QObject(parent), flickable(parent), m_xPosition(0.), m_widthRatio(0.)
     , m_yPosition(0.), m_heightRatio(0.)
@@ -373,9 +377,9 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
 
     \section1 Example Usage
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage flickable.gif
-    \endfloat
+    \enddiv
 
     The following example shows a small view onto a large image in which the
     user can drag or flick the image in order to view different parts of it.
@@ -672,7 +676,8 @@ void QDeclarativeFlickable::setFlickableDirection(FlickableDirection direction)
 void QDeclarativeFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_Q(QDeclarativeFlickable);
-    if (interactive && timeline.isActive() && (qAbs(hData.velocity) > 10 || qAbs(vData.velocity) > 10))
+    if (interactive && timeline.isActive()
+            && (qAbs(hData.smoothVelocity.value()) > RetainGrabVelocity || qAbs(vData.smoothVelocity.value()) > RetainGrabVelocity))
         stealMouse = true; // If we've been flicked then steal the click.
     else
         stealMouse = false;
@@ -876,7 +881,7 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
     Q_D(QDeclarativeFlickable);
     if (!d->interactive) {
         QDeclarativeItem::wheelEvent(event);
-    } else if (yflick()) {
+    } else if (yflick() && event->orientation() == Qt::Vertical) {
         if (event->delta() > 0)
             d->vData.velocity = qMax(event->delta() - d->vData.smoothVelocity.value(), qreal(250.0));
         else
@@ -888,7 +893,7 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
             movementStarting();
         }
         event->accept();
-    } else if (xflick()) {
+    } else if (xflick() && event->orientation() == Qt::Horizontal) {
         if (event->delta() > 0)
             d->hData.velocity = qMax(event->delta() - d->hData.smoothVelocity.value(), qreal(250.0));
         else
@@ -1248,6 +1253,60 @@ void QDeclarativeFlickable::setContentHeight(qreal h)
     }
     emit contentHeightChanged();
     d->updateBeginningEnd();
+}
+
+/*!
+    \qmlmethod Flickable::resizeContent(real width, real height, QPointF center)
+    \preliminary
+
+    Resizes the content to \a width x \a height about \a center.
+
+    \bold {This method was added in QtQuick 1.1.}
+
+    This does not scale the contents of the Flickable - it only resizes the \l contentWidth
+    and \l contentHeight.
+
+    Resizing the content may result in the content being positioned outside
+    the bounds of the Flickable.  Calling \l returnToBounds() will
+    move the content back within legal bounds.
+*/
+void QDeclarativeFlickable::resizeContent(qreal w, qreal h, QPointF center)
+{
+    Q_D(QDeclarativeFlickable);
+    if (w != d->hData.viewSize) {
+        qreal oldSize = d->hData.viewSize;
+        setContentWidth(w);
+        if (center.x() != 0) {
+            qreal pos = center.x() * w / oldSize;
+            setContentX(contentX() + pos - center.x());
+        }
+    }
+    if (h != d->vData.viewSize) {
+        qreal oldSize = d->vData.viewSize;
+        setContentHeight(h);
+        if (center.y() != 0) {
+            qreal pos = center.y() * h / oldSize;
+            setContentY(contentY() + pos - center.y());
+        }
+    }
+}
+
+/*!
+    \qmlmethod Flickable::returnToBounds()
+    \preliminary
+
+    Ensures the content is within legal bounds.
+
+    \bold {This method was added in QtQuick 1.1.}
+
+    This may be called to ensure that the content is within legal bounds
+    after manually positioning the content.
+*/
+void QDeclarativeFlickable::returnToBounds()
+{
+    Q_D(QDeclarativeFlickable);
+    d->fixupX();
+    d->fixupY();
 }
 
 qreal QDeclarativeFlickable::vWidth() const

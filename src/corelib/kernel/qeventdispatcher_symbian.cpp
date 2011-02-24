@@ -657,7 +657,7 @@ public:
     : m_state(STATE_RUN), m_stop(false)
     {
         qt_symbian_throwIfError(m_lock.CreateLocal(0));
-        TInt err = m_idleDetectorThread.Create(KNullDesC(), &idleDetectorThreadFunc, 1024, NULL, this);
+        TInt err = m_idleDetectorThread.Create(KNullDesC(), &idleDetectorThreadFunc, 1024, &User::Allocator(), this);
         if (err != KErrNone)
             m_lock.Close();
         qt_symbian_throwIfError(err);
@@ -692,6 +692,7 @@ public:
 private:
     static TInt idleDetectorThreadFunc(TAny* self)
     {
+        User::RenameThread(_L("IdleDetectorThread"));
         static_cast<QIdleDetectorThread*>(self)->IdleLoop();
         return KErrNone;
     }
@@ -809,7 +810,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
         m_interrupt = false;
 
 #ifdef QT_SYMBIAN_PRIORITY_DROP
-        QTime eventTimer;
+        QElapsedTimer eventTimer;
 #endif
 
         while (1) {
