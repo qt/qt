@@ -152,6 +152,11 @@ public:
     MyQmlObject *myinvokableObject;
     Q_INVOKABLE MyQmlObject *returnme() { return this; }
 
+    struct MyType {
+        int value;
+    };
+    QVariant variant() const { return m_variant; }
+    
 signals:
     void basicSignal();
     void argumentSignal(int a, QString b, qreal c);
@@ -159,6 +164,7 @@ signals:
     void objectChanged();
     void anotherBasicSignal();
     void thirdBasicSignal();
+    void signalWithUnknownType(const MyQmlObject::MyType &arg);
 
 public slots:
     void deleteMe() { delete this; }
@@ -166,6 +172,7 @@ public slots:
     void method(int a) { if(a == 163) m_methodIntCalled = true; }
     void setString(const QString &s) { m_string = s; }
     void myinvokable(MyQmlObject *o) { myinvokableObject = o; }
+    void variantMethod(const QVariant &v) { m_variant = v; }
 
 private:
     friend class tst_qdeclarativeecmascript;
@@ -178,6 +185,7 @@ private:
     int m_value;
     int m_resetProperty;
     QRegExp m_regExp;
+    QVariant m_variant;
 };
 
 QML_DECLARE_TYPEINFO(MyQmlObject, QML_HAS_ATTACHED_PROPERTIES)
@@ -898,6 +906,7 @@ QML_DECLARE_TYPE(MyRevisionedBaseClassRegistered)
 QML_DECLARE_TYPE(MyRevisionedBaseClassUnregistered)
 QML_DECLARE_TYPE(MyRevisionedClass)
 QML_DECLARE_TYPE(MyRevisionedSubclass)
+Q_DECLARE_METATYPE(MyQmlObject::MyType)
 
 void registerTypes();
 

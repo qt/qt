@@ -51,6 +51,7 @@
 #include <QFontMetrics>
 #include <QPainter>
 #include <QTextBoundaryFinder>
+#include <QInputContext>
 #include <qstyle.h>
 
 #ifndef QT_NO_LINEEDIT
@@ -776,6 +777,15 @@ bool QDeclarativeTextInput::hasAcceptableInput() const
 }
 
 /*!
+    \qmlsignal TextInput::onAccepted()
+
+    This handler is called when the Return or Enter key is pressed.
+    Note that if there is a \l validator or \l inputMask set on the text
+    input, the handler will only be emitted if the input is in an acceptable
+    state.
+*/
+
+/*!
     \qmlproperty enumeration TextInput::echoMode
 
     Specifies how the text should be displayed in the TextInput.
@@ -938,7 +948,7 @@ void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
 {
     Q_Q(QDeclarativeTextInput);
     focused = hasFocus;
-    q->setCursorVisible(hasFocus);
+    q->setCursorVisible(hasFocus && scene && scene->hasFocus());
     if(q->echoMode() == QDeclarativeTextInput::PasswordEchoOnEdit && !hasFocus)
         control->updatePasswordEchoEditing(false);//QLineControl sets it on key events, but doesn't deal with focus events
     if (!hasFocus)
@@ -980,6 +990,7 @@ void QDeclarativeTextInput::inputMethodEvent(QInputMethodEvent *ev)
     } else {
         d->control->processInputMethodEvent(ev);
         updateSize();
+        d->updateHorizontalScroll();
     }
     if (!ev->isAccepted())
         QDeclarativePaintedItem::inputMethodEvent(ev);
@@ -992,6 +1003,8 @@ Handles the given mouse \a event.
 void QDeclarativeTextInput::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
+    if (d->sendMouseEventToInputContext(event, QEvent::MouseButtonDblClick))
+        return;
     if (d->selectByMouse) {
         int cursor = d->xToPos(event->pos().x());
         d->control->selectWordAtPos(cursor);
@@ -1004,6 +1017,8 @@ void QDeclarativeTextInput::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *even
 void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
+    if (d->sendMouseEventToInputContext(event, QEvent::MouseButtonPress))
+        return;
     if(d->focusOnPress){
         bool hadActiveFocus = hasActiveFocus();
         forceActiveFocus();
@@ -1018,6 +1033,10 @@ void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
             }
         }
     }
+    if (d->selectByMouse) {
+        setKeepMouseGrab(false);
+        d->pressPos = event->pos();
+    }
     bool mark = event->modifiers() & Qt::ShiftModifier;
     int cursor = d->xToPos(event->pos().x());
     d->control->moveCursor(cursor, mark);
@@ -1027,7 +1046,11 @@ void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void QDeclarativeTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
+    if (d->sendMouseEventToInputContext(event, QEvent::MouseMove))
+        event->setAccepted(true);
     if (d->selectByMouse) {
+        if (qAbs(int(event->pos().x() - d->pressPos.x())) > QApplication::startDragDistance())
+            setKeepMouseGrab(true);
         moveCursorSelection(d->xToPos(event->pos().x()), d->mouseSelectionMode);
         event->setAccepted(true);
     } else {
@@ -1042,6 +1065,10 @@ Handles the given mouse \a event.
 void QDeclarativeTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
+    if (d->sendMouseEventToInputContext(event, QEvent::MouseButtonRelease))
+        return;
+    if (d->selectByMouse)
+        setKeepMouseGrab(false);
     if (!d->showInputPanelOnFocus) { // input panel on click
         if (d->focusOnPress && !isReadOnly() && boundingRect().contains(event->pos())) {
             if (QGraphicsView * view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
@@ -1055,6 +1082,53 @@ void QDeclarativeTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     d->control->processEvent(event);
     if (!event->isAccepted())
         QDeclarativePaintedItem::mouseReleaseEvent(event);
+}
+
+bool QDeclarativeTextInputPrivate::sendMouseEventToInputContext(
+        QGraphicsSceneMouseEvent *event, QEvent::Type eventType)
+{
+#if !defined QT_NO_IM
+    if (event->widget() && control->composeMode()) {
+        int tmp_cursor = xToPos(event->pos().x());
+        int mousePos = tmp_cursor - control->cursor();
+        if (mousePos < 0 || mousePos > control->preeditAreaText().length()) {
+            mousePos = -1;
+            // don't send move events outside the preedit area
+            if (eventType == QEvent::MouseMove)
+                return true;
+        }
+
+        QInputContext *qic = event->widget()->inputContext();
+        if (qic) {
+            QMouseEvent mouseEvent(
+                    eventType,
+                    event->widget()->mapFromGlobal(event->screenPos()),
+                    event->screenPos(),
+                    event->button(),
+                    event->buttons(),
+                    event->modifiers());
+            // may be causing reset() in some input methods
+            qic->mouseHandler(mousePos, &mouseEvent);
+            event->setAccepted(mouseEvent.isAccepted());
+        }
+        if (!control->preeditAreaText().isEmpty())
+            return true;
+    }
+#else
+    Q_UNUSED(event);
+    Q_UNUSED(eventType)
+#endif
+
+    return false;
+}
+
+bool QDeclarativeTextInput::sceneEvent(QEvent *event)
+{
+    bool rv = QDeclarativeItem::sceneEvent(event);
+    if (event->type() == QEvent::UngrabMouse) {
+        setKeepMouseGrab(false);
+    }
+    return rv;
 }
 
 bool QDeclarativeTextInput::event(QEvent* ev)
@@ -1098,7 +1172,8 @@ int QDeclarativeTextInputPrivate::calculateTextWidth()
 void QDeclarativeTextInputPrivate::updateHorizontalScroll()
 {
     Q_Q(QDeclarativeTextInput);
-    int cix = qRound(control->cursorToX());
+    const int preeditLength = control->preeditAreaText().length();
+    int cix = qRound(control->cursorToX(control->cursor() + preeditLength));
     QRect br(q->boundingRect().toRect());
     int widthUsed = calculateTextWidth();
     Qt::Alignment va = QStyle::visualAlignment(control->layoutDirection(), QFlag(Qt::Alignment(hAlign)));
@@ -1127,6 +1202,14 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
             // text doesn't fit, text document is to the left of br; align
             // right
             hscroll = widthUsed - br.width() + 1;
+        }
+        if (preeditLength > 0) {
+            // check to ensure long pre-edit text doesn't push the cursor
+            // off to the left
+             cix = qRound(control->cursorToX(
+                     control->cursor() + qMax(0, control->preeditCursor() - 1)));
+             if (cix < hscroll)
+                 hscroll = cix;
         }
     } else {
         switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
@@ -1626,6 +1709,8 @@ void QDeclarativeTextInputPrivate::init()
     q->connect(QApplication::clipboard(), SIGNAL(dataChanged()),
             q, SLOT(q_canPasteChanged()));
 #endif // QT_NO_CLIPBOARD
+    q->connect(control, SIGNAL(updateMicroFocus()),
+               q, SLOT(updateMicroFocus()));
     q->updateSize();
     oldValidity = control->hasAcceptableInput();
     lastSelectionStart = 0;

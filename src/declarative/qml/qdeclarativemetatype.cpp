@@ -1015,6 +1015,93 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QScriptValue);
 
 QT_BEGIN_NAMESPACE
+
+bool QDeclarativeMetaType::canCopy(int type)
+{
+    switch(type) {
+    case QMetaType::VoidStar:
+    case QMetaType::QObjectStar:
+    case QMetaType::QWidgetStar:
+    case QMetaType::Long:
+    case QMetaType::Int:
+    case QMetaType::Short:
+    case QMetaType::Char:
+    case QMetaType::ULong:
+    case QMetaType::UInt:
+    case QMetaType::LongLong:
+    case QMetaType::ULongLong:
+    case QMetaType::UShort:
+    case QMetaType::UChar:
+    case QMetaType::Bool:
+    case QMetaType::Float:
+    case QMetaType::Double:
+    case QMetaType::QChar:
+    case QMetaType::QVariantMap:
+    case QMetaType::QVariantHash:
+    case QMetaType::QVariantList:
+    case QMetaType::QByteArray:
+    case QMetaType::QString:
+    case QMetaType::QStringList:
+    case QMetaType::QBitArray:
+    case QMetaType::QDate:
+    case QMetaType::QTime:
+    case QMetaType::QDateTime:
+    case QMetaType::QUrl:
+    case QMetaType::QLocale:
+    case QMetaType::QRect:
+    case QMetaType::QRectF:
+    case QMetaType::QSize:
+    case QMetaType::QSizeF:
+    case QMetaType::QLine:
+    case QMetaType::QLineF:
+    case QMetaType::QPoint:
+    case QMetaType::QPointF:
+    case QMetaType::QVector3D:
+#ifndef QT_NO_REGEXP
+    case QMetaType::QRegExp:
+#endif
+    case QMetaType::Void:
+#ifdef QT3_SUPPORT
+    case QMetaType::QColorGroup:
+#endif
+    case QMetaType::QFont:
+    case QMetaType::QPixmap:
+    case QMetaType::QBrush:
+    case QMetaType::QColor:
+    case QMetaType::QPalette:
+    case QMetaType::QIcon:
+    case QMetaType::QImage:
+    case QMetaType::QPolygon:
+    case QMetaType::QRegion:
+    case QMetaType::QBitmap:
+#ifndef QT_NO_CURSOR
+    case QMetaType::QCursor:
+#endif
+    case QMetaType::QSizePolicy:
+    case QMetaType::QKeySequence:
+    case QMetaType::QPen:
+    case QMetaType::QTextLength:
+    case QMetaType::QTextFormat:
+    case QMetaType::QMatrix:
+    case QMetaType::QTransform:
+    case QMetaType::QMatrix4x4:
+    case QMetaType::QVector2D:
+    case QMetaType::QVector4D:
+    case QMetaType::QQuaternion:
+        return true;
+
+    default:
+        if (type == qMetaTypeId<QVariant>() ||
+            type == qMetaTypeId<QScriptValue>() ||
+            typeCategory(type) != Unknown) {
+            return true;
+        }
+        break;
+    }
+
+    return false;
+}
+
 /*!
     Copies \a copy into \a data, assuming they both are of type \a type.  If
     \a copy is zero, a default type is copied.  Returns true if the copy was

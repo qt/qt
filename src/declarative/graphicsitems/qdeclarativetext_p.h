@@ -114,7 +114,7 @@ public:
                     Wrap = QTextOption::WrapAtWordBoundaryOrAnywhere
                   };
 
-    enum LineHeightMode { MultiplyHeight, PixelHeight };
+    enum LineHeightMode { ProportionalHeight, FixedHeight };
 
     QString text() const;
     void setText(const QString &);

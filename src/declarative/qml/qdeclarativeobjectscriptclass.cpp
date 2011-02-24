@@ -368,7 +368,7 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
         newBinding = new QDeclarativeBinding(value, obj, evalContext);
         newBinding->setSourceLocation(ctxtInfo.fileName(), ctxtInfo.functionStartLineNumber());
         newBinding->setTarget(QDeclarativePropertyPrivate::restore(*lastData, valueTypeData, obj, evalContext));
-        if (newBinding->expression().contains("this"))
+        if (newBinding->expression().contains(QLatin1String("this")))
             newBinding->setEvaluateFlags(newBinding->evaluateFlags() | QDeclarativeBinding::RequiresThisObject);
     }
 

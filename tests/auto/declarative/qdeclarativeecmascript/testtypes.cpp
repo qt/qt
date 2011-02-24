@@ -125,6 +125,8 @@ void registerTypes()
 
     qmlRegisterExtendedType<QWidget,QWidgetDeclarativeUI>("Qt.test",1,0,"QWidget");
     qmlRegisterType<QPlainTextEdit>("Qt.test",1,0,"QPlainTextEdit");
+
+    qRegisterMetaType<MyQmlObject::MyType>("MyQmlObject::MyType");
 }
 
 #include "testtypes.moc"

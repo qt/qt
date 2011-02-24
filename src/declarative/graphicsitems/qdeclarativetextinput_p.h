@@ -240,6 +240,7 @@ protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
+    bool sceneEvent(QEvent *event);
     void keyPressEvent(QKeyEvent* ev);
     void inputMethodEvent(QInputMethodEvent *);
     bool event(QEvent *e);

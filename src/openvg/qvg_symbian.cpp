@@ -147,7 +147,7 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         destroyImages();
         prevSize = QSize();
 
-        VGImage vgImage = sgImageToVGImage(context, *sgImage);
+        vgImage = sgImageToVGImage(context, *sgImage);
         if (vgImage != VG_INVALID_HANDLE) {
             w = vgGetParameteri(vgImage, VG_IMAGE_WIDTH);
             h = vgGetParameteri(vgImage, VG_IMAGE_HEIGHT);

@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+//#define QT_STRICT_ITERATORS
 
 #include <QtTest/QtTest>
 #include <qset.h>
@@ -808,6 +809,16 @@ void tst_QSet::javaMutableIterator()
         QMutableSetIterator<QString> i(set1);
         while (i.hasNext())
             sum += toNumber(i.next());
+        QVERIFY(sum == 24999 * 25000 / 2);
+    }
+
+    {
+        int sum = 0;
+        QMutableSetIterator<QString> i(set1);
+        while (i.hasNext()) {
+            i.next();
+            sum += toNumber(i.value());
+        }
         QVERIFY(sum == 24999 * 25000 / 2);
     }
 

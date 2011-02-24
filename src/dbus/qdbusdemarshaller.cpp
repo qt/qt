@@ -176,10 +176,10 @@ QDBusArgument::ElementType QDBusDemarshaller::currentType()
     case DBUS_TYPE_INVALID:
         return QDBusArgument::UnknownType;
 
-    default:
-        qWarning("QDBusDemarshaller: Found unknown D-Bus type %d '%c'",
-                 q_dbus_message_iter_get_arg_type(&iterator),
-                 q_dbus_message_iter_get_arg_type(&iterator));
+//    default:
+//        qWarning("QDBusDemarshaller: Found unknown D-Bus type %d '%c'",
+//                 q_dbus_message_iter_get_arg_type(&iterator),
+//                 q_dbus_message_iter_get_arg_type(&iterator));
     }
     return QDBusArgument::UnknownType;
 }
@@ -232,10 +232,15 @@ QVariant QDBusDemarshaller::toVariantInternal()
         return qVariantFromValue(duplicate());
 
     default:
-        qWarning("QDBusDemarshaller: Found unknown D-Bus type %d '%c'",
-                 q_dbus_message_iter_get_arg_type(&iterator),
-                 q_dbus_message_iter_get_arg_type(&iterator));
-        return QVariant();
+//        qWarning("QDBusDemarshaller: Found unknown D-Bus type %d '%c'",
+//                 q_dbus_message_iter_get_arg_type(&iterator),
+//                 q_dbus_message_iter_get_arg_type(&iterator));
+        char *ptr = 0;
+        ptr += q_dbus_message_iter_get_arg_type(&iterator);
+        q_dbus_message_iter_next(&iterator);
+
+        // I hope you never dereference this pointer!
+        return QVariant::fromValue<void *>(ptr);
         break;
     };
 }

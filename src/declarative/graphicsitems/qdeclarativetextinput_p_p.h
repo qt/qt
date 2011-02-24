@@ -104,6 +104,7 @@ public:
     void focusChanged(bool hasFocus);
     void updateHorizontalScroll();
     int calculateTextWidth();
+    bool sendMouseEventToInputContext(QGraphicsSceneMouseEvent *event, QEvent::Type eventType);
 
     QLineControl* control;
 
@@ -118,6 +119,7 @@ public:
     QDeclarativeTextInput::SelectionMode mouseSelectionMode;
     QPointer<QDeclarativeComponent> cursorComponent;
     QPointer<QDeclarativeItem> cursorItem;
+    QPointF pressPos;
 
     int lastSelectionStart;
     int lastSelectionEnd;
