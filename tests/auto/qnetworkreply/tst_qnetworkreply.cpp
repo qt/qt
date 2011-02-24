@@ -1498,6 +1498,12 @@ void tst_QNetworkReply::getErrors()
 {
     QFETCH(QString, url);
     QNetworkRequest request(url);
+
+#if defined(Q_OS_WIN) || defined (Q_OS_SYMBIAN)
+    if (qstrcmp(QTest::currentDataTag(), "empty-scheme-host") == 0)
+        QTest::ignoreMessage(QtWarningMsg, "QNetworkAccessFileBackendFactory: URL has no schema set, use file:// for files");
+#endif
+
     QNetworkReplyPtr reply = manager.get(request);
     reply->setParent(this);     // we have expect-fails
 
@@ -1513,7 +1519,6 @@ void tst_QNetworkReply::getErrors()
 
     QFETCH(int, error);
 #if defined(Q_OS_WIN) || defined (Q_OS_SYMBIAN)
-    QTest::ignoreMessage(QtWarningMsg, "QNetworkAccessFileBackendFactory: URL has no schema set, use file:// for files");
     QEXPECT_FAIL("empty-scheme-host", "this is expected to fail on Windows and Symbian, QTBUG-17731", Abort);
 #endif
     QEXPECT_FAIL("ftp-is-dir", "QFtp cannot provide enough detail", Abort);
