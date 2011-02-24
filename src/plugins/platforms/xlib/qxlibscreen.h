@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 class QXlibCursor;
 class QXlibKeyboard;
+class QXlibDisplay;
 
 class QXlibScreen : public QPlatformScreen
 {
@@ -58,16 +59,14 @@ public:
 
     ~QXlibScreen();
 
-    QString displayName() const { return mDisplayName; }
-
     QRect geometry() const { return mGeometry; }
     int depth() const { return mDepth; }
     QImage::Format format() const { return mFormat; }
     QSize physicalSize() const { return mPhysicalSize; }
 
-    Window rootWindow() { return RootWindow(mDisplay, mScreen); }
-    unsigned long blackPixel() { return BlackPixel(mDisplay, mScreen); }
-    unsigned long whitePixel() { return WhitePixel(mDisplay, mScreen); }
+    Window rootWindow();
+    unsigned long blackPixel();
+    unsigned long whitePixel();
 
     bool handleEvent(XEvent *xe);
     bool waitForClipboardEvent(Window win, int type, XEvent *event, int timeout);
@@ -76,8 +75,10 @@ public:
 
     static QXlibScreen *testLiteScreenForWidget(QWidget *widget);
 
-    Display *display() const;
+    QXlibDisplay *display() const;
     int xScreenNumber() const;
+
+    Visual *defaultVisual() const;
 
     QXlibKeyboard *keyboard() const;
 
@@ -87,7 +88,6 @@ public slots:
 private:
 
     void handleSelectionRequest(XEvent *event);
-    QString mDisplayName;
     QRect mGeometry;
     QSize mPhysicalSize;
     int mDepth;
@@ -95,7 +95,7 @@ private:
     QXlibCursor *mCursor;
     QXlibKeyboard *mKeyboard;
 
-    Display * mDisplay;
+    QXlibDisplay * mDisplay;
     int mScreen;
 };
 

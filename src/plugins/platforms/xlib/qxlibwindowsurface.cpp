@@ -47,6 +47,7 @@
 
 #include "qxlibwindow.h"
 #include "qxlibscreen.h"
+#include "qxlibdisplay.h"
 
 # include <sys/ipc.h>
 # include <sys/shm.h>
@@ -88,12 +89,11 @@ void QXlibWindowSurface::resizeShmImage(int width, int height)
     if (image_info)
         image_info->destroy();
     else
-        image_info = new QXlibShmImageInfo(screen->display());
+        image_info = new QXlibShmImageInfo(screen->display()->nativeDisplay());
 
-    Visual *visual = DefaultVisual(screen->display(), screen->xScreenNumber());
+    Visual *visual = screen->defaultVisual();
 
-
-    XImage *image = XShmCreateImage (screen->display(), visual, 24, ZPixmap, 0,
+    XImage *image = XShmCreateImage (screen->display()->nativeDisplay(), visual, 24, ZPixmap, 0,
                                      &image_info->shminfo, width, height);
 
 
@@ -105,7 +105,7 @@ void QXlibWindowSurface::resizeShmImage(int width, int height)
 
     image_info->image = image;
 
-    Status shm_attach_status = XShmAttach(screen->display(), &image_info->shminfo);
+    Status shm_attach_status = XShmAttach(screen->display()->nativeDisplay(), &image_info->shminfo);
 
     Q_ASSERT(shm_attach_status == True);
 
@@ -185,11 +185,11 @@ void QXlibWindowSurface::flush(QWidget *widget, const QRegion &region, const QPo
 
         // We could set send_event to true, and then use the ShmCompletion to synchronize,
         // but let's do like Qt/11 and just use XSync
-        XShmPutImage (screen->display(), window, gc, image_info->image, 0, 0,
+        XShmPutImage (screen->display()->nativeDisplay(), window, gc, image_info->image, 0, 0,
                       x, y, image_info->image->width, image_info->image->height,
                       /*send_event*/ False);
 
-        XSync(screen->display(), False);
+        screen->display()->sync();
     }
 #endif
 }

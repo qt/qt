@@ -44,6 +44,7 @@
 #include "qxlibintegration.h"
 #include "qxlibscreen.h"
 #include "qxlibwindow.h"
+#include "qxlibdisplay.h"
 
 #include <QtGui/QBitmap>
 
@@ -121,11 +122,11 @@ Cursor QXlibCursor::createCursorBitmap(QCursor * cursor)
         memcpy(maskBits + (destLineSize * i),mask + (bytesPerLine * i), destLineSize);
     }
 
-    Pixmap cp = XCreateBitmapFromData(testLiteScreen()->display(), rootwin, mapBits, width, height);
-    Pixmap mp = XCreateBitmapFromData(testLiteScreen()->display(), rootwin, maskBits, width, height);
-    Cursor c = XCreatePixmapCursor(testLiteScreen()->display(), cp, mp, &fg, &bg, spot.x(), spot.y());
-    XFreePixmap(testLiteScreen()->display(), cp);
-    XFreePixmap(testLiteScreen()->display(), mp);
+    Pixmap cp = XCreateBitmapFromData(testLiteScreen()->display()->nativeDisplay(), rootwin, mapBits, width, height);
+    Pixmap mp = XCreateBitmapFromData(testLiteScreen()->display()->nativeDisplay(), rootwin, maskBits, width, height);
+    Cursor c = XCreatePixmapCursor(testLiteScreen()->display()->nativeDisplay(), cp, mp, &fg, &bg, spot.x(), spot.y());
+    XFreePixmap(testLiteScreen()->display()->nativeDisplay(), cp);
+    XFreePixmap(testLiteScreen()->display()->nativeDisplay(), mp);
     delete[] mapBits;
     delete[] maskBits;
 
@@ -141,48 +142,48 @@ Cursor QXlibCursor::createCursorShape(int cshape)
 
     switch (cshape) {
     case Qt::ArrowCursor:
-        cursor =  XCreateFontCursor(testLiteScreen()->display(), XC_left_ptr);
+        cursor =  XCreateFontCursor(testLiteScreen()->display()->nativeDisplay(), XC_left_ptr);
         break;
     case Qt::UpArrowCursor:
-        cursor =  XCreateFontCursor(testLiteScreen()->display(), XC_center_ptr);
+        cursor =  XCreateFontCursor(testLiteScreen()->display()->nativeDisplay(), XC_center_ptr);
         break;
     case Qt::CrossCursor:
-        cursor =  XCreateFontCursor(testLiteScreen()->display(), XC_crosshair);
+        cursor =  XCreateFontCursor(testLiteScreen()->display()->nativeDisplay(), XC_crosshair);
         break;
     case Qt::WaitCursor:
-        cursor =  XCreateFontCursor(testLiteScreen()->display(), XC_watch);
+        cursor =  XCreateFontCursor(testLiteScreen()->display()->nativeDisplay(), XC_watch);
         break;
     case Qt::IBeamCursor:
-        cursor =  XCreateFontCursor(testLiteScreen()->display(), XC_xterm);
+        cursor =  XCreateFontCursor(testLiteScreen()->display()->nativeDisplay(), XC_xterm);
         break;
     case Qt::SizeAllCursor:
-        cursor =  XCreateFontCursor(testLiteScreen()->display(), XC_fleur);
+        cursor =  XCreateFontCursor(testLiteScreen()->display()->nativeDisplay(), XC_fleur);
         break;
     case Qt::PointingHandCursor:
-        cursor =  XCreateFontCursor(testLiteScreen()->display(), XC_hand2);
+        cursor =  XCreateFontCursor(testLiteScreen()->display()->nativeDisplay(), XC_hand2);
         break;
     case Qt::SizeBDiagCursor:
-        cursor =  XCreateFontCursor(testLiteScreen()->display(), XC_top_right_corner);
+        cursor =  XCreateFontCursor(testLiteScreen()->display()->nativeDisplay(), XC_top_right_corner);
         break;
     case Qt::SizeFDiagCursor:
-        cursor =  XCreateFontCursor(testLiteScreen()->display(), XC_bottom_right_corner);
+        cursor =  XCreateFontCursor(testLiteScreen()->display()->nativeDisplay(), XC_bottom_right_corner);
         break;
     case Qt::SizeVerCursor:
     case Qt::SplitVCursor:
-        cursor = XCreateFontCursor(testLiteScreen()->display(), XC_sb_v_double_arrow);
+        cursor = XCreateFontCursor(testLiteScreen()->display()->nativeDisplay(), XC_sb_v_double_arrow);
         break;
     case Qt::SizeHorCursor:
     case Qt::SplitHCursor:
-        cursor = XCreateFontCursor(testLiteScreen()->display(), XC_sb_h_double_arrow);
+        cursor = XCreateFontCursor(testLiteScreen()->display()->nativeDisplay(), XC_sb_h_double_arrow);
         break;
     case Qt::WhatsThisCursor:
-        cursor = XCreateFontCursor(testLiteScreen()->display(), XC_question_arrow);
+        cursor = XCreateFontCursor(testLiteScreen()->display()->nativeDisplay(), XC_question_arrow);
         break;
     case Qt::ForbiddenCursor:
-        cursor = XCreateFontCursor(testLiteScreen()->display(), XC_circle);
+        cursor = XCreateFontCursor(testLiteScreen()->display()->nativeDisplay(), XC_circle);
         break;
     case Qt::BusyCursor:
-        cursor = XCreateFontCursor(testLiteScreen()->display(), XC_watch);
+        cursor = XCreateFontCursor(testLiteScreen()->display()->nativeDisplay(), XC_watch);
         break;
 
     default: //default cursor for all the rest

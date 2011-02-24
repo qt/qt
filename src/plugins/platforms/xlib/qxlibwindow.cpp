@@ -45,6 +45,7 @@
 #include "qxlibscreen.h"
 #include "qxlibkeyboard.h"
 #include "qxlibstatic.h"
+#include "qxlibdisplay.h"
 
 #include <QtGui/QWindowSystemInterface>
 #include <QSocketNotifier>
@@ -86,9 +87,9 @@ QXlibWindow::QXlibWindow(QWidget *window)
 #else
         QPlatformWindowFormat windowFormat = correctColorBuffers(window->platformWindowFormat());
 
-        EGLDisplay eglDisplay = eglGetDisplay(mScreen->display());
+        EGLDisplay eglDisplay = eglGetDisplay(mScreen->display()->nativeDisplay());
         EGLConfig eglConfig = q_configFromQPlatformWindowFormat(eglDisplay,windowFormat);
-        VisualID id = QXlibEglIntegration::getCompatibleVisualId(mScreen->display(),eglConfig);
+        VisualID id = QXlibEglIntegration::getCompatibleVisualId(mScreen->display()->nativeDisplay(),eglConfig);
 
         XVisualInfo visualInfoTemplate;
         memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
@@ -96,14 +97,14 @@ QXlibWindow::QXlibWindow(QWidget *window)
 
         XVisualInfo *visualInfo;
         int matchingCount = 0;
-        visualInfo = XGetVisualInfo(mScreen->display(), VisualIDMask, &visualInfoTemplate, &matchingCount);
+        visualInfo = XGetVisualInfo(mScreen->display()->nativeDisplay(), VisualIDMask, &visualInfoTemplate, &matchingCount);
 #endif //!defined(QT_OPENGL_ES_2)
         if (visualInfo) {
-            Colormap cmap = XCreateColormap(mScreen->display(),mScreen->rootWindow(),visualInfo->visual,AllocNone);
+            Colormap cmap = XCreateColormap(mScreen->display()->nativeDisplay(),mScreen->rootWindow(),visualInfo->visual,AllocNone);
 
             XSetWindowAttributes a;
             a.colormap = cmap;
-            x_window = XCreateWindow(mScreen->display(), mScreen->rootWindow(),x, y, w, h,
+            x_window = XCreateWindow(mScreen->display()->nativeDisplay(), mScreen->rootWindow(),x, y, w, h,
                                      0, visualInfo->depth, InputOutput, visualInfo->visual,
                                      CWColormap, &a);
         } else {
@@ -111,7 +112,7 @@ QXlibWindow::QXlibWindow(QWidget *window)
         }
 #endif //!defined(QT_NO_OPENGL)
     } else {
-        x_window = XCreateSimpleWindow(mScreen->display(), mScreen->rootWindow(),
+        x_window = XCreateSimpleWindow(mScreen->display()->nativeDisplay(), mScreen->rootWindow(),
                                        x, y, w, h, 0 /*border_width*/,
                                        mScreen->blackPixel(), mScreen->whitePixel());
     }
@@ -120,9 +121,9 @@ QXlibWindow::QXlibWindow(QWidget *window)
     qDebug() << "QTestLiteWindow::QTestLiteWindow creating" << hex << x_window << window;
 #endif
 
-    XSetWindowBackgroundPixmap(mScreen->display(), x_window, XNone);
+    XSetWindowBackgroundPixmap(mScreen->display()->nativeDisplay(), x_window, XNone);
 
-    XSelectInput(mScreen->display(), x_window,
+    XSelectInput(mScreen->display()->nativeDisplay(), x_window,
                  ExposureMask | KeyPressMask | KeyReleaseMask |
                  EnterWindowMask | LeaveWindowMask | FocusChangeMask |
                  PointerMotionMask | ButtonPressMask |  ButtonReleaseMask |
@@ -141,7 +142,7 @@ QXlibWindow::QXlibWindow(QWidget *window)
 #endif // QT_NO_XSYNC
     if (window->windowFlags() & Qt::WindowContextHelpButtonHint)
         protocols[n++] = QXlibStatic::atom(QXlibStatic::_NET_WM_CONTEXT_HELP);
-    XSetWMProtocols(mScreen->display(), x_window, protocols, n);
+    XSetWMProtocols(mScreen->display()->nativeDisplay(), x_window, protocols, n);
 }
 
 
@@ -152,8 +153,8 @@ QXlibWindow::~QXlibWindow()
     qDebug() << "~QTestLiteWindow" << hex << x_window;
 #endif
     delete mGLContext;
-    XFreeGC(mScreen->display(), gc);
-    XDestroyWindow(mScreen->display(), x_window);
+    XFreeGC(mScreen->display()->nativeDisplay(), gc);
+    XDestroyWindow(mScreen->display()->nativeDisplay(), x_window);
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -245,7 +246,7 @@ void QXlibWindow::handleFocusOutEvent()
 
 void QXlibWindow::setGeometry(const QRect &rect)
 {
-    XMoveResizeWindow(mScreen->display(), x_window, rect.x(), rect.y(), rect.width(), rect.height());
+    XMoveResizeWindow(mScreen->display()->nativeDisplay(), x_window, rect.x(), rect.y(), rect.width(), rect.height());
     QPlatformWindow::setGeometry(rect);
 }
 
@@ -263,17 +264,17 @@ WId QXlibWindow::winId() const
 void QXlibWindow::setParent(const QPlatformWindow *window)
 {
     QPoint topLeft = geometry().topLeft();
-    XReparentWindow(mScreen->display(),x_window,window->winId(),topLeft.x(),topLeft.y());
+    XReparentWindow(mScreen->display()->nativeDisplay(),x_window,window->winId(),topLeft.x(),topLeft.y());
 }
 
 void QXlibWindow::raise()
 {
-    XRaiseWindow(mScreen->display(), x_window);
+    XRaiseWindow(mScreen->display()->nativeDisplay(), x_window);
 }
 
 void QXlibWindow::lower()
 {
-    XLowerWindow(mScreen->display(), x_window);
+    XLowerWindow(mScreen->display()->nativeDisplay(), x_window);
 }
 
 void QXlibWindow::setWindowTitle(const QString &title)
@@ -285,14 +286,14 @@ void QXlibWindow::setWindowTitle(const QString &title)
     windowName.format   = 8;
     windowName.nitems   = ba.length();
 
-    XSetWMName(mScreen->display(), x_window, &windowName);
+    XSetWMName(mScreen->display()->nativeDisplay(), x_window, &windowName);
 }
 
 GC QXlibWindow::createGC()
 {
     GC gc;
 
-    gc = XCreateGC(mScreen->display(), x_window, 0, 0);
+    gc = XCreateGC(mScreen->display()->nativeDisplay(), x_window, 0, 0);
     if (gc < 0) {
         qWarning("QTestLiteWindow::createGC() could not create GC");
     }
@@ -311,7 +312,7 @@ void QXlibWindow::paintEvent()
 
 void QXlibWindow::requestActivateWindow()
 {
-    XSetInputFocus(mScreen->display(), x_window, XRevertToParent, CurrentTime);
+    XSetInputFocus(mScreen->display()->nativeDisplay(), x_window, XRevertToParent, CurrentTime);
 }
 
 void QXlibWindow::resizeEvent(XConfigureEvent *e)
@@ -365,7 +366,7 @@ QXlibMWMHints QXlibWindow::getMWMHints() const
     ulong nitems, bytesLeft;
     uchar *data = 0;
     Atom atomForMotifWmHints = QXlibStatic::atom(QXlibStatic::_MOTIF_WM_HINTS);
-    if ((XGetWindowProperty(mScreen->display(), x_window, atomForMotifWmHints, 0, 5, false,
+    if ((XGetWindowProperty(mScreen->display()->nativeDisplay(), x_window, atomForMotifWmHints, 0, 5, false,
                             atomForMotifWmHints, &type, &format, &nitems, &bytesLeft,
                             &data) == Success)
         && (type == atomForMotifWmHints
@@ -390,11 +391,11 @@ void QXlibWindow::setMWMHints(const QXlibMWMHints &mwmhints)
 {
     Atom atomForMotifWmHints = QXlibStatic::atom(QXlibStatic::_MOTIF_WM_HINTS);
     if (mwmhints.flags != 0l) {
-        XChangeProperty(mScreen->display(), x_window,
+        XChangeProperty(mScreen->display()->nativeDisplay(), x_window,
                         atomForMotifWmHints, atomForMotifWmHints, 32,
                         PropModeReplace, (unsigned char *) &mwmhints, 5);
     } else {
-        XDeleteProperty(mScreen->display(), x_window, atomForMotifWmHints);
+        XDeleteProperty(mScreen->display()->nativeDisplay(), x_window, atomForMotifWmHints);
     }
 }
 
@@ -421,7 +422,7 @@ QVector<Atom> QXlibWindow::getNetWmState() const
     ulong propertyLength;
     ulong bytesLeft;
     uchar *propertyData = 0;
-    if (XGetWindowProperty(mScreen->display(), x_window, QXlibStatic::atom(QXlibStatic::_NET_WM_STATE), 0, 0,
+    if (XGetWindowProperty(mScreen->display()->nativeDisplay(), x_window, QXlibStatic::atom(QXlibStatic::_NET_WM_STATE), 0, 0,
                            False, XA_ATOM, &actualType, &actualFormat,
                            &propertyLength, &bytesLeft, &propertyData) == Success
         && actualType == XA_ATOM && actualFormat == 32) {
@@ -429,7 +430,7 @@ QVector<Atom> QXlibWindow::getNetWmState() const
         XFree((char*) propertyData);
 
         // fetch all data
-        if (XGetWindowProperty(mScreen->display(), x_window, QXlibStatic::atom(QXlibStatic::_NET_WM_STATE), 0,
+        if (XGetWindowProperty(mScreen->display()->nativeDisplay(), x_window, QXlibStatic::atom(QXlibStatic::_NET_WM_STATE), 0,
                                returnValue.size(), False, XA_ATOM, &actualType, &actualFormat,
                                &propertyLength, &bytesLeft, &propertyData) != Success) {
             returnValue.clear();
@@ -591,11 +592,11 @@ Qt::WindowFlags QXlibWindow::setWindowFlags(Qt::WindowFlags flags)
     }
 
     if (!netWmState.isEmpty()) {
-        XChangeProperty(mScreen->display(), x_window,
+        XChangeProperty(mScreen->display()->nativeDisplay(), x_window,
                         QXlibStatic::atom(QXlibStatic::_NET_WM_STATE), XA_ATOM, 32, PropModeReplace,
                         (unsigned char *) netWmState.data(), netWmState.size());
     } else {
-        XDeleteProperty(mScreen->display(), x_window, QXlibStatic::atom(QXlibStatic::_NET_WM_STATE));
+        XDeleteProperty(mScreen->display()->nativeDisplay(), x_window, QXlibStatic::atom(QXlibStatic::_NET_WM_STATE));
     }
 
 //##### only if initializeWindow???
@@ -609,7 +610,7 @@ Qt::WindowFlags QXlibWindow::setWindowFlags(Qt::WindowFlags flags)
 
         wsa.override_redirect = True;
         wsa.save_under = True;
-        XChangeWindowAttributes(mScreen->display(), x_window, CWOverrideRedirect | CWSaveUnder,
+        XChangeWindowAttributes(mScreen->display()->nativeDisplay(), x_window, CWOverrideRedirect | CWSaveUnder,
                                 &wsa);
     } else {
 #ifdef MYX11_DEBUG
@@ -634,22 +635,22 @@ void QXlibWindow::setVisible(bool visible)
                 parentXWindow = parentWidnow->x_window;
             }
         }
-        XSetTransientForHint(mScreen->display(),x_window,parentXWindow);
+        XSetTransientForHint(mScreen->display()->nativeDisplay(),x_window,parentXWindow);
     }
 
     if (visible) {
         //ensure that the window is viewed in correct position.
         doSizeHints();
-        XMapWindow(mScreen->display(), x_window);
+        XMapWindow(mScreen->display()->nativeDisplay(), x_window);
     } else {
-        XUnmapWindow(mScreen->display(), x_window);
+        XUnmapWindow(mScreen->display()->nativeDisplay(), x_window);
     }
 }
 
 void QXlibWindow::setCursor(const Cursor &cursor)
 {
-    XDefineCursor(mScreen->display(), x_window, cursor);
-    XFlush(mScreen->display());
+    XDefineCursor(mScreen->display()->nativeDisplay(), x_window, cursor);
+    mScreen->display()->flush();
 }
 
 QPlatformGLContext *QXlibWindow::glContext() const
@@ -662,7 +663,7 @@ QPlatformGLContext *QXlibWindow::glContext() const
 #if !defined(QT_OPENGL_ES_2)
         that->mGLContext = new QGLXContext(x_window, mScreen,widget()->platformWindowFormat());
 #else
-        EGLDisplay display = eglGetDisplay(mScreen->display());
+        EGLDisplay display = eglGetDisplay(mScreen->display()->nativeDisplay());
 
         QPlatformWindowFormat windowFormat = correctColorBuffers(widget()->platformWindowFormat());
 
@@ -706,7 +707,7 @@ void QXlibWindow::doSizeHints()
     s.flags |= PSize;
     s.flags |= PWinGravity;
     s.win_gravity = QApplication::isRightToLeft() ? NorthEastGravity : NorthWestGravity;
-    XSetWMNormalHints(mScreen->display(), x_window, &s);
+    XSetWMNormalHints(mScreen->display()->nativeDisplay(), x_window, &s);
 }
 
 QPlatformWindowFormat QXlibWindow::correctColorBuffers(const QPlatformWindowFormat &platformWindowFormat) const

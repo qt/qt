@@ -13,7 +13,8 @@ SOURCES = \
         qxlibkeyboard.cpp \
         qxlibclipboard.cpp \
         qxlibmime.cpp \
-        qxlibstatic.cpp
+        qxlibstatic.cpp \
+        qxlibdisplay.cpp
 
 HEADERS = \
         qxlibintegration.h \
@@ -24,7 +25,8 @@ HEADERS = \
         qxlibkeyboard.h \
         qxlibclipboard.h \
         qxlibmime.h \
-        qxlibstatic.h
+        qxlibstatic.h \
+        qxlibdisplay.h
 
 LIBS += -lX11 -lXext
 

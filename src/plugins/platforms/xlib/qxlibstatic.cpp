@@ -41,6 +41,7 @@
 
 #include "qxlibstatic.h"
 #include "qxlibscreen.h"
+#include "qxlibdisplay.h"
 
 #include <qplatformdefs.h>
 
@@ -366,7 +367,7 @@ private:
         Q_ASSERT(i == QXlibStatic::NPredefinedAtoms);
 
         QByteArray settings_atom_name("_QT_SETTINGS_TIMESTAMP_");
-        settings_atom_name += XDisplayName(qPrintable(screen->displayName()));
+        settings_atom_name += XDisplayName(qPrintable(screen->display()->displayName()));
         names[i++] = settings_atom_name;
 
         Q_ASSERT(i == QXlibStatic::NAtoms);
@@ -374,7 +375,7 @@ private:
         XInternAtoms(screen->display(), (char **)names, i, False, m_allAtoms);
     #else
         for (i = 0; i < QXlibStatic::NAtoms; ++i)
-            m_allAtoms[i] = XInternAtom(screen->display(), (char *)names[i], False);
+            m_allAtoms[i] = XInternAtom(screen->display()->nativeDisplay(), (char *)names[i], False);
     #endif
     }
 
@@ -386,7 +387,7 @@ private:
         unsigned long nitems, after;
         unsigned char *data = 0;
 
-        int e = XGetWindowProperty(screen->display(), screen->rootWindow(),
+        int e = XGetWindowProperty(screen->display()->nativeDisplay(), screen->rootWindow(),
                                    this->atom(QXlibStatic::_NET_SUPPORTED), 0, 0,
                                    False, XA_ATOM, &type, &format, &nitems, &after, &data);
         if (data)
@@ -397,7 +398,7 @@ private:
             ts.open(QIODevice::WriteOnly);
 
             while (after > 0) {
-                XGetWindowProperty(screen->display(), screen->rootWindow(),
+                XGetWindowProperty(screen->display()->nativeDisplay(), screen->rootWindow(),
                                    this->atom(QXlibStatic::_NET_SUPPORTED), offset, 1024,
                                    False, XA_ATOM, &type, &format, &nitems, &after, &data);
 
@@ -427,7 +428,7 @@ private:
     {
 #ifndef QT_NO_XFIXES
         // See if Xfixes is supported on the connected display
-        if (XQueryExtension(screen->display(), "XFIXES", &xfixes_major,
+        if (XQueryExtension(screen->display()->nativeDisplay(), "XFIXES", &xfixes_major,
                             &xfixes_eventbase, &xfixes_errorbase)) {
             ptrXFixesQueryExtension  = XFIXES_LOAD_V1(XFixesQueryExtension);
             ptrXFixesQueryVersion    = XFIXES_LOAD_V1(XFixesQueryVersion);
@@ -435,7 +436,7 @@ private:
             ptrXFixesSelectSelectionInput = XFIXES_LOAD_V2(XFixesSelectSelectionInput);
 
             if(ptrXFixesQueryExtension && ptrXFixesQueryVersion
-               && ptrXFixesQueryExtension(screen->display(), &xfixes_eventbase,
+               && ptrXFixesQueryExtension(screen->display()->nativeDisplay(), &xfixes_eventbase,
                                                &xfixes_errorbase)) {
                 // Xfixes is supported.
                 // Note: the XFixes protocol version is negotiated using QueryVersion.
@@ -446,7 +447,7 @@ private:
                 // X server when it receives an XFixes request is undefined.
                 int major = 3;
                 int minor = 0;
-                ptrXFixesQueryVersion(screen->display(), &major, &minor);
+                ptrXFixesQueryVersion(screen->display()->nativeDisplay(), &major, &minor);
                 use_xfixes = (major >= 1);
                 xfixes_major = major;
             }

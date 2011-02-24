@@ -42,6 +42,7 @@
 #include "qxlibkeyboard.h"
 
 #include "qxlibscreen.h"
+#include "qxlibdisplay.h"
 
 #include <QtGui/QWindowSystemInterface>
 
@@ -951,7 +952,7 @@ QXlibKeyboard::QXlibKeyboard(QXlibScreen *screen)
 
 void QXlibKeyboard::changeLayout()
 {
-    XkbDescPtr xkbDesc = XkbGetMap(m_screen->display(), XkbAllClientInfoMask, XkbUseCoreKbd);
+    XkbDescPtr xkbDesc = XkbGetMap(m_screen->display()->nativeDisplay(), XkbAllClientInfoMask, XkbUseCoreKbd);
     for (int i = xkbDesc->min_key_code; i < xkbDesc->max_key_code; ++i) {
         const uint mask = xkbDesc->map->modmap ? xkbDesc->map->modmap[i] : 0;
         if (mask == 0) {

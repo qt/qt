@@ -43,6 +43,7 @@
 
 #include "qxlibscreen.h"
 #include "qxlibmime.h"
+#include "qxlibdisplay.h"
 
 #include <private/qapplication_p.h>
 
@@ -92,7 +93,7 @@ protected:
                     if (targets[i] == 0)
                         continue;
 
-                    QStringList formatsForAtom = mimeFormatsForAtom(m_clipboard->screen()->display(),targets[i]);
+                    QStringList formatsForAtom = mimeFormatsForAtom(m_clipboard->screen()->display()->nativeDisplay(),targets[i]);
                     for (int j = 0; j < formatsForAtom.size(); ++j) {
                         if (!formatList.contains(formatsForAtom.at(j)))
                             that->formatList.append(formatsForAtom.at(j));
@@ -124,17 +125,17 @@ protected:
             atoms.append(targets[i]);
 
         QByteArray encoding;
-        Atom fmtatom = mimeAtomForFormat(m_clipboard->screen()->display(),fmt, requestedType, atoms, &encoding);
+        Atom fmtatom = mimeAtomForFormat(m_clipboard->screen()->display()->nativeDisplay(),fmt, requestedType, atoms, &encoding);
 
         if (fmtatom == 0)
             return QVariant();
 
-        return mimeConvertToFormat(m_clipboard->screen()->display(),fmtatom, m_clipboard->getDataInFormat(modeAtom,fmtatom), fmt, requestedType, encoding);
+        return mimeConvertToFormat(m_clipboard->screen()->display()->nativeDisplay(),fmtatom, m_clipboard->getDataInFormat(modeAtom,fmtatom), fmt, requestedType, encoding);
     }
 private:
     bool empty() const
     {
-        Window win = XGetSelectionOwner(m_clipboard->screen()->display(), modeAtom);
+        Window win = XGetSelectionOwner(m_clipboard->screen()->display()->nativeDisplay(), modeAtom);
 
         return win == XNone;
     }
@@ -167,7 +168,7 @@ const QMimeData * QXlibClipboard::mimeData(QClipboard::Mode mode) const
             QXlibClipboard *that = const_cast<QXlibClipboard *>(this);
             that->m_xClipboard = new QXlibClipboardMime(mode,that);
         }
-        Window clipboardOwner = XGetSelectionOwner(screen()->display(),QXlibStatic::atom(QXlibStatic::CLIPBOARD));
+        Window clipboardOwner = XGetSelectionOwner(screen()->display()->nativeDisplay(),QXlibStatic::atom(QXlibStatic::CLIPBOARD));
         if (clipboardOwner == owner()) {
             return m_clientClipboard;
         } else {
@@ -178,7 +179,7 @@ const QMimeData * QXlibClipboard::mimeData(QClipboard::Mode mode) const
             QXlibClipboard *that = const_cast<QXlibClipboard *>(this);
             that->m_xSelection = new QXlibClipboardMime(mode,that);
         }
-        Window clipboardOwner = XGetSelectionOwner(screen()->display(),XA_PRIMARY);
+        Window clipboardOwner = XGetSelectionOwner(screen()->display()->nativeDisplay(),XA_PRIMARY);
         if (clipboardOwner == owner()) {
             return m_clientSelection;
         } else {
@@ -218,9 +219,9 @@ void QXlibClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
         *d = data;
     }
 
-    XSetSelectionOwner(m_screen->display(), modeAtom, newOwner, CurrentTime);
+    XSetSelectionOwner(m_screen->display()->nativeDisplay(), modeAtom, newOwner, CurrentTime);
 
-    if (XGetSelectionOwner(m_screen->display(), modeAtom) != newOwner) {
+    if (XGetSelectionOwner(m_screen->display()->nativeDisplay(), modeAtom) != newOwner) {
         qWarning("QClipboard::setData: Cannot set X11 selection owner");
     }
 
@@ -244,7 +245,7 @@ Window QXlibClipboard::requestor() const
     if (!m_requestor) {
         int x = 0, y = 0, w = 3, h = 3;
         QXlibClipboard *that = const_cast<QXlibClipboard *>(this);
-        Window window  = XCreateSimpleWindow(m_screen->display(), m_screen->rootWindow(),
+        Window window  = XCreateSimpleWindow(m_screen->display()->nativeDisplay(), m_screen->rootWindow(),
                                        x, y, w, h, 0 /*border_width*/,
                                        m_screen->blackPixel(), m_screen->whitePixel());
         that->setRequestor(window);
@@ -255,7 +256,7 @@ Window QXlibClipboard::requestor() const
 void QXlibClipboard::setRequestor(Window window)
 {
     if (m_requestor != XNone) {
-        XDestroyWindow(m_screen->display(),m_requestor);
+        XDestroyWindow(m_screen->display()->nativeDisplay(),m_requestor);
     }
     m_requestor = window;
 }
@@ -265,7 +266,7 @@ Window QXlibClipboard::owner() const
     if (!m_owner) {
         int x = 0, y = 0, w = 3, h = 3;
         QXlibClipboard *that = const_cast<QXlibClipboard *>(this);
-        Window window  = XCreateSimpleWindow(m_screen->display(), m_screen->rootWindow(),
+        Window window  = XCreateSimpleWindow(m_screen->display()->nativeDisplay(), m_screen->rootWindow(),
                                        x, y, w, h, 0 /*border_width*/,
                                        m_screen->blackPixel(), m_screen->whitePixel());
         that->setOwner(window);
@@ -276,7 +277,7 @@ Window QXlibClipboard::owner() const
 void QXlibClipboard::setOwner(Window window)
 {
     if (m_owner != XNone){
-        XDestroyWindow(m_screen->display(),m_owner);
+        XDestroyWindow(m_screen->display()->nativeDisplay(),m_owner);
     }
     m_owner = window;
 }
@@ -286,7 +287,7 @@ Atom QXlibClipboard::sendTargetsSelection(QMimeData *d, Window window, Atom prop
     QVector<Atom> types;
     QStringList formats = QInternalMimeData::formatsHelper(d);
     for (int i = 0; i < formats.size(); ++i) {
-        QList<Atom> atoms = QXlibMime::mimeAtomsForFormat(screen()->display(),formats.at(i));
+        QList<Atom> atoms = QXlibMime::mimeAtomsForFormat(screen()->display()->nativeDisplay(),formats.at(i));
         for (int j = 0; j < atoms.size(); ++j) {
             if (!types.contains(atoms.at(j)))
                 types.append(atoms.at(j));
@@ -297,7 +298,7 @@ Atom QXlibClipboard::sendTargetsSelection(QMimeData *d, Window window, Atom prop
     types.append(QXlibStatic::atom(QXlibStatic::TIMESTAMP));
     types.append(QXlibStatic::atom(QXlibStatic::SAVE_TARGETS));
 
-    XChangeProperty(screen()->display(), window, property, XA_ATOM, 32,
+    XChangeProperty(screen()->display()->nativeDisplay(), window, property, XA_ATOM, 32,
                     PropModeReplace, (uchar *) types.data(), types.size());
     return property;
 }
@@ -308,14 +309,14 @@ Atom QXlibClipboard::sendSelection(QMimeData *d, Atom target, Window window, Ato
     int dataFormat = 0;
     QByteArray data;
 
-    QString fmt = QXlibMime::mimeAtomToString(screen()->display(), target);
+    QString fmt = QXlibMime::mimeAtomToString(screen()->display()->nativeDisplay(), target);
     if (fmt.isEmpty()) { // Not a MIME type we have
         qDebug() << "QClipboard: send_selection(): converting to type '%s' is not supported" << fmt.data();
         return XNone;
     }
     qDebug() << "QClipboard: send_selection(): converting to type '%s'" << fmt.data();
 
-    if (QXlibMime::mimeDataForAtom(screen()->display(),target, d, &data, &atomFormat, &dataFormat)) {
+    if (QXlibMime::mimeDataForAtom(screen()->display()->nativeDisplay(),target, d, &data, &atomFormat, &dataFormat)) {
 
          // don't allow INCR transfers when using MULTIPLE or to
         // Motif clients (since Motif doesn't support INCR)
@@ -323,10 +324,10 @@ Atom QXlibClipboard::sendSelection(QMimeData *d, Atom target, Window window, Ato
         bool allow_incr = property != motif_clip_temporary;
 
         // X_ChangeProperty protocol request is 24 bytes
-        const int increment = (XMaxRequestSize(screen()->display()) * 4) - 24;
+        const int increment = (XMaxRequestSize(screen()->display()->nativeDisplay()) * 4) - 24;
         if (data.size() > increment && allow_incr) {
             long bytes = data.size();
-            XChangeProperty(screen()->display(), window, property,
+            XChangeProperty(screen()->display()->nativeDisplay(), window, property,
                             QXlibStatic::atom(QXlibStatic::INCR), 32, PropModeReplace, (uchar *) &bytes, 1);
 
 //            (void)new QClipboardINCRTransaction(window, property, atomFormat, dataFormat, data, increment);
@@ -339,7 +340,7 @@ Atom QXlibClipboard::sendSelection(QMimeData *d, Atom target, Window window, Ato
             return XNone; // ### perhaps use several XChangeProperty calls w/ PropModeAppend?
         int dataSize = data.size() / (dataFormat / 8);
         // use a single request to transfer data
-        XChangeProperty(screen()->display(), window, property, atomFormat,
+        XChangeProperty(screen()->display()->nativeDisplay(), window, property, atomFormat,
                         dataFormat, PropModeReplace, (uchar *) data.data(),
                         dataSize);
     }
@@ -371,13 +372,13 @@ void QXlibClipboard::handleSelectionRequest(XEvent *xevent)
         d = m_clientClipboard;
     } else {
         qWarning("QClipboard: Unknown selection '%lx'", req->selection);
-        XSendEvent(screen()->display(), req->requestor, False, NoEventMask, &event);
+        XSendEvent(screen()->display()->nativeDisplay(), req->requestor, False, NoEventMask, &event);
         return;
     }
 
     if (!d) {
         qWarning("QClipboard: Cannot transfer data, no data available");
-        XSendEvent(screen()->display(), req->requestor, False, NoEventMask, &event);
+        XSendEvent(screen()->display()->nativeDisplay(), req->requestor, False, NoEventMask, &event);
         return;
     }
 
@@ -399,7 +400,7 @@ void QXlibClipboard::handleSelectionRequest(XEvent *xevent)
                                            0, &multi_type, &multi_format)
             || multi_format != 32) {
             // MULTIPLE property not formatted correctly
-            XSendEvent(screen()->display(), req->requestor, False, NoEventMask, &event);
+            XSendEvent(screen()->display()->nativeDisplay(), req->requestor, False, NoEventMask, &event);
             return;
         }
         nmulti = multi_data.size()/sizeof(*multi);
@@ -427,7 +428,7 @@ void QXlibClipboard::handleSelectionRequest(XEvent *xevent)
             ;
         } else if (target == xa_timestamp) {
 //            if (d->timestamp != CurrentTime) {
-//                XChangeProperty(screen()->display(), req->requestor, property, XA_INTEGER, 32,
+//                XChangeProperty(screen()->display()->nativeDisplay(), req->requestor, property, XA_INTEGER, 32,
 //                                PropModeReplace, CurrentTime, 1);
 //                ret = property;
 //            } else {
@@ -454,7 +455,7 @@ void QXlibClipboard::handleSelectionRequest(XEvent *xevent)
         if (multi_writeback) {
             // according to ICCCM 2.6.2 says to put None back
             // into the original property on the requestor window
-            XChangeProperty(screen()->display(), req->requestor, req->property, multi_type, 32,
+            XChangeProperty(screen()->display()->nativeDisplay(), req->requestor, req->property, multi_type, 32,
                             PropModeReplace, (uchar *) multi, nmulti * 2);
         }
 
@@ -463,7 +464,7 @@ void QXlibClipboard::handleSelectionRequest(XEvent *xevent)
     }
 
     // send selection notify to requestor
-    XSendEvent(screen()->display(), req->requestor, False, NoEventMask, &event);
+    XSendEvent(screen()->display()->nativeDisplay(), req->requestor, False, NoEventMask, &event);
 }
 
 static inline int maxSelectionIncr(Display *dpy)
@@ -471,7 +472,7 @@ static inline int maxSelectionIncr(Display *dpy)
 
 bool QXlibClipboard::clipboardReadProperty(Window win, Atom property, bool deleteProperty, QByteArray *buffer, int *size, Atom *type, int *format) const
 {
-    int    maxsize = maxSelectionIncr(screen()->display());
+    int    maxsize = maxSelectionIncr(screen()->display()->nativeDisplay());
     ulong  bytes_left; // bytes_after
     ulong  length;     // nitems
     uchar *data;
@@ -485,7 +486,7 @@ bool QXlibClipboard::clipboardReadProperty(Window win, Atom property, bool delet
         format = &dummy_format;
 
     // Don't read anything, just get the size of the property data
-    r = XGetWindowProperty(screen()->display(), win, property, 0, 0, False,
+    r = XGetWindowProperty(screen()->display()->nativeDisplay(), win, property, 0, 0, False,
                             AnyPropertyType, type, format,
                             &length, &bytes_left, &data);
     if (r != Success || (type && *type == XNone)) {
@@ -524,7 +525,7 @@ bool QXlibClipboard::clipboardReadProperty(Window win, Atom property, bool delet
         while (bytes_left) {
             // more to read...
 
-            r = XGetWindowProperty(screen()->display(), win, property, offset, maxsize/4,
+            r = XGetWindowProperty(screen()->display()->nativeDisplay(), win, property, offset, maxsize/4,
                                    False, AnyPropertyType, type, format,
                                    &length, &bytes_left, &data);
             if (r != Success || (type && *type == XNone))
@@ -559,7 +560,7 @@ bool QXlibClipboard::clipboardReadProperty(Window win, Atom property, bool delet
 
             char **list_ret = 0;
             int count;
-            if (XmbTextPropertyToTextList(screen()->display(), &textprop, &list_ret,
+            if (XmbTextPropertyToTextList(screen()->display()->nativeDisplay(), &textprop, &list_ret,
                          &count) == Success && count && list_ret) {
                 offset = buffer_offset = strlen(list_ret[0]);
                 buffer->resize(offset);
@@ -574,9 +575,9 @@ bool QXlibClipboard::clipboardReadProperty(Window win, Atom property, bool delet
         *size = buffer_offset;
 
     if (deleteProperty)
-        XDeleteProperty(screen()->display(), win, property);
+        XDeleteProperty(screen()->display()->nativeDisplay(), win, property);
 
-    XFlush(screen()->display());
+    screen()->display()->flush();
 
     return ok;
 }
@@ -600,7 +601,7 @@ QByteArray QXlibClipboard::clipboardReadIncrementalProperty(Window win, Atom pro
     }
 
     for (;;) {
-        XFlush(screen()->display());
+        screen()->display()->flush();
         if (!screen()->waitForClipboardEvent(win,PropertyNotify,&event,clipboard_timeout))
             break;
         if (event.xproperty.atom != property ||
@@ -645,11 +646,11 @@ QByteArray QXlibClipboard::getDataInFormat(Atom modeAtom, Atom fmtatom)
 
     Window   win = requestor();
 
-    XSelectInput(screen()->display(), win, NoEventMask); // don't listen for any events
+    XSelectInput(screen()->display()->nativeDisplay(), win, NoEventMask); // don't listen for any events
 
-    XDeleteProperty(screen()->display(), win, QXlibStatic::atom(QXlibStatic::_QT_SELECTION));
-    XConvertSelection(screen()->display(), modeAtom, fmtatom, QXlibStatic::atom(QXlibStatic::_QT_SELECTION), win, CurrentTime);
-    XSync(screen()->display(), false);
+    XDeleteProperty(screen()->display()->nativeDisplay(), win, QXlibStatic::atom(QXlibStatic::_QT_SELECTION));
+    XConvertSelection(screen()->display()->nativeDisplay(), modeAtom, fmtatom, QXlibStatic::atom(QXlibStatic::_QT_SELECTION), win, CurrentTime);
+    screen()->display()->sync();
 
     XEvent xevent;
     if (!screen()->waitForClipboardEvent(win,SelectionNotify,&xevent,clipboard_timeout) ||
@@ -658,7 +659,7 @@ QByteArray QXlibClipboard::getDataInFormat(Atom modeAtom, Atom fmtatom)
     }
 
     Atom   type;
-    XSelectInput(screen()->display(), win, PropertyChangeMask);
+    XSelectInput(screen()->display()->nativeDisplay(), win, PropertyChangeMask);
 
     if (clipboardReadProperty(win, QXlibStatic::atom(QXlibStatic::_QT_SELECTION), true, &buf, 0, &type, 0)) {
         if (type == QXlibStatic::atom(QXlibStatic::INCR)) {
@@ -667,7 +668,7 @@ QByteArray QXlibClipboard::getDataInFormat(Atom modeAtom, Atom fmtatom)
         }
     }
 
-    XSelectInput(screen()->display(), win, NoEventMask);
+    XSelectInput(screen()->display()->nativeDisplay(), win, NoEventMask);
 
 
     return buf;

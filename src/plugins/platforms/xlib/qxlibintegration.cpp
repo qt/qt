@@ -48,6 +48,7 @@
 #include "qgenericunixfontdatabase.h"
 #include "qxlibscreen.h"
 #include "qxlibclipboard.h"
+#include "qxlibdisplay.h"
 
 #if !defined(QT_NO_OPENGL)
 #if !defined(QT_OPENGL_ES_2)
@@ -143,7 +144,7 @@ bool QXlibIntegration::hasOpenGL() const
         const QXlibScreen *screen = static_cast<const QXlibScreen *>(mScreens.at(0));
         EGLint major, minor;
         eglBindAPI(EGL_OPENGL_ES_API);
-        EGLDisplay disp = eglGetDisplay(screen->display());
+        EGLDisplay disp = eglGetDisplay(screen->display()->nativeDisplay());
         wasEglInitialized = eglInitialize(disp,&major,&minor);
     }
     return wasEglInitialized;

@@ -46,6 +46,7 @@
 #include "qxlibkeyboard.h"
 #include "qxlibstatic.h"
 #include "qxlibclipboard.h"
+#include "qxlibdisplay.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QSocketNotifier>
@@ -192,36 +193,32 @@ QXlibScreen::QXlibScreen()
         : mFormat(QImage::Format_RGB32)
 {
     char *display_name = getenv("DISPLAY");
-    mDisplay = XOpenDisplay(display_name);
-    mDisplayName = QString::fromLocal8Bit(display_name);
-    if (!mDisplay) {
-        fprintf(stderr, "Cannot connect to X server: %s\n",
-                display_name);
-        exit(1);
-    }
+    Display *display = XOpenDisplay(display_name);
+    mDisplay = new QXlibDisplay(display);
+
 
 #ifndef DONT_USE_MIT_SHM
-    Status MIT_SHM_extension_supported = XShmQueryExtension (mDisplay);
+    Status MIT_SHM_extension_supported = XShmQueryExtension (mDisplay->nativeDisplay());
     Q_ASSERT(MIT_SHM_extension_supported == True);
 #endif
     original_x_errhandler = XSetErrorHandler(qt_x_errhandler);
 
     if (qgetenv("DO_X_SYNCHRONIZE").toInt())
-        XSynchronize(mDisplay, true);
+        XSynchronize(mDisplay->nativeDisplay(), true);
 
-    mScreen = DefaultScreen(mDisplay);
-    XSelectInput(mDisplay,rootWindow(), KeymapStateMask | EnterWindowMask | LeaveWindowMask | PropertyChangeMask);
-    int width = DisplayWidth(mDisplay, mScreen);
-    int height = DisplayHeight(mDisplay, mScreen);
+    mScreen = DefaultScreen(mDisplay->nativeDisplay());
+    XSelectInput(mDisplay->nativeDisplay(),rootWindow(), KeymapStateMask | EnterWindowMask | LeaveWindowMask | PropertyChangeMask);
+    int width = DisplayWidth(mDisplay->nativeDisplay(), mScreen);
+    int height = DisplayHeight(mDisplay->nativeDisplay(), mScreen);
     mGeometry = QRect(0,0,width,height);
 
-    int physicalWidth = DisplayWidthMM(mDisplay, mScreen);
-    int physicalHeight = DisplayHeightMM(mDisplay, mScreen);
+    int physicalWidth = DisplayWidthMM(mDisplay->nativeDisplay(), mScreen);
+    int physicalHeight = DisplayHeightMM(mDisplay->nativeDisplay(), mScreen);
     mPhysicalSize = QSize(physicalWidth,physicalHeight);
 
-    int xSocketNumber = XConnectionNumber(mDisplay);
+    int xSocketNumber = XConnectionNumber(mDisplay->nativeDisplay());
 
-    mDepth = DefaultDepth(mDisplay,mScreen);
+    mDepth = DefaultDepth(mDisplay->nativeDisplay(),mScreen);
 #ifdef MYX11_DEBUG
     qDebug() << "X socket:"<< xSocketNumber;
 #endif
@@ -235,7 +232,22 @@ QXlibScreen::QXlibScreen()
 QXlibScreen::~QXlibScreen()
 {
     delete mCursor;
-    XCloseDisplay(mDisplay);
+    delete mDisplay;
+}
+
+Window QXlibScreen::rootWindow()
+{
+    return RootWindow(mDisplay->nativeDisplay(), mScreen);
+}
+
+unsigned long QXlibScreen::blackPixel()
+{
+    return BlackPixel(mDisplay->nativeDisplay(), mScreen);
+}
+
+unsigned long QXlibScreen::whitePixel()
+{
+    return WhitePixel(mDisplay->nativeDisplay(), mScreen);
 }
 
 #ifdef KeyPress
@@ -358,15 +370,15 @@ bool QXlibScreen::waitForClipboardEvent(Window win, int type, XEvent *event, int
     QElapsedTimer timer;
     timer.start();
     do {
-        if (XCheckTypedWindowEvent(mDisplay,win,type,event))
+        if (XCheckTypedWindowEvent(mDisplay->nativeDisplay(),win,type,event))
             return true;
 
         // process other clipboard events, since someone is probably requesting data from us
         XEvent e;
-        if (XCheckIfEvent(mDisplay, &e, checkForClipboardEvents, 0))
+        if (XCheckIfEvent(mDisplay->nativeDisplay(), &e, checkForClipboardEvents, 0))
             handleEvent(&e);
 
-        XFlush(mDisplay);
+        mDisplay->flush();
 
         // sleep 50 ms, so we don't use up CPU cycles all the time.
         struct timeval usleep_tv;
@@ -379,11 +391,11 @@ bool QXlibScreen::waitForClipboardEvent(Window win, int type, XEvent *event, int
 
 void QXlibScreen::eventDispatcher()
 {
-        ulong marker = XNextRequest(mDisplay);
+        ulong marker = XNextRequest(mDisplay->nativeDisplay());
     //    int i = 0;
-        while (XPending(mDisplay)) {
+        while (XPending(mDisplay->nativeDisplay())) {
             XEvent event;
-            XNextEvent(mDisplay, &event);
+            XNextEvent(mDisplay->nativeDisplay(), &event);
             /* done = */
             handleEvent(&event);
 
@@ -392,7 +404,7 @@ void QXlibScreen::eventDispatcher()
                 qDebug() << "potential livelock averted";
     #endif
     #if 0
-                if (XEventsQueued(mDisplay, QueuedAfterFlush)) {
+                if (XEventsQueued(mDisplay->nativeDisplay(), QueuedAfterFlush)) {
                     qDebug() << "	with events queued";
                     QTimer::singleShot(0, this, SLOT(eventDispatcher()));
                 }
@@ -412,7 +424,7 @@ QImage QXlibScreen::grabWindow(Window window, int x, int y, int w, int h)
         window = rootWindow();
 
     XWindowAttributes window_attr;
-    if (!XGetWindowAttributes(mDisplay, window, &window_attr))
+    if (!XGetWindowAttributes(mDisplay->nativeDisplay(), window, &window_attr))
         return QImage();
 
     if (w < 0)
@@ -424,7 +436,7 @@ QImage QXlibScreen::grabWindow(Window window, int x, int y, int w, int h)
     // that it's "unsafe" to go outside the screen, so we can ignore that problem.
 
     //We're definitely not optimizing for speed...
-    XImage *xi = XGetImage(mDisplay, window, x, y, w, h, AllPlanes, ZPixmap);
+    XImage *xi = XGetImage(mDisplay->nativeDisplay(), window, x, y, w, h, AllPlanes, ZPixmap);
 
     if (!xi)
         return QImage();
@@ -443,7 +455,7 @@ QXlibScreen * QXlibScreen::testLiteScreenForWidget(QWidget *widget)
     return static_cast<QXlibScreen *>(platformScreen);
 }
 
-Display * QXlibScreen::display() const
+QXlibDisplay * QXlibScreen::display() const
 {
     return mDisplay;
 }
@@ -451,6 +463,11 @@ Display * QXlibScreen::display() const
 int QXlibScreen::xScreenNumber() const
 {
     return mScreen;
+}
+
+Visual * QXlibScreen::defaultVisual() const
+{
+    DefaultVisual(display()->nativeDisplay(), xScreenNumber());
 }
 
 QXlibKeyboard * QXlibScreen::keyboard() const
