@@ -41,20 +41,18 @@ void main() {
 
 
     //Applying Size here seems to screw with RockingAffector?
-    //highp float currentSize = mix(size, endSize, t * t);
+    highp float currentSize = mix(size, endSize, t * t);
 
-    //if (t < 0. || t > 1.)
-    //    currentSize = 0.;
+    if (t < 0. || t > 1.)
+        currentSize = 0.;
 
     //If affector is mananging pos, they don't set speed?
     highp vec2 pos = vPos
-    //               - currentSize / 2. + currentSize * vTex          // adjust size
+                   - currentSize / 2. + currentSize * vTex          // adjust size
                    + vVec.xy * t * timelength         // apply speed vector..
                    + vVec.zw * pow(t * timelength, 2.);
 
     gl_Position = matrix * vec4(pos.x, pos.y, 0, 1);
-
-    //gl_Position = matrix * vec4(vPos.x, vPos.y, 0, 1);
 
     // calculate opacity
     highp float fadeIn = min(t * 10., 1.);

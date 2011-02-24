@@ -16,7 +16,7 @@ class DriftAffector : public ParticleAffector
 public:
     explicit DriftAffector(QObject *parent = 0);
     ~DriftAffector();
-    virtual void affect(ParticleVertices *p, int idx, qreal dt, QObject* emitter);
+    virtual bool affect(ParticleData *d, qreal dt);
     virtual void reset(int idx);
     qreal yDrift() const
     {

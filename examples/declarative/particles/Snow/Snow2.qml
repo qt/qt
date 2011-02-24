@@ -7,8 +7,7 @@ Rectangle{
     ParticleSystem{
         id: particles
         anchors.fill: parent
-        particles: SpriteParticle{
-            id: sp
+        particles:SpriteParticle{
             states: SpriteState{
                 name: "snow"
                 source: "flake-01.png"
@@ -16,8 +15,8 @@ Rectangle{
                 duration: 40
             }
         }
-        emitters: TrailEmitter{
-            particle: sp
+        affectors: Drift{ xDrift: 7200; }
+        emitters:TrailEmitter{
             particlesPerSecond: 20
             particleDuration: 7000
             emitting: true
@@ -34,6 +33,5 @@ Rectangle{
             emitterXVariation: width/2
             emitterYVariation: 50
         }
-        affectors: Wander{ xVariance: 30; pace: 100; }
     }
 }

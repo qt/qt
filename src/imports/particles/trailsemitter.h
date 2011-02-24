@@ -13,18 +13,10 @@ class TrailsEmitter : public ParticleEmitter
 {
     Q_OBJECT
 
-    Q_PROPERTY(QUrl image READ image WRITE setImage NOTIFY imageChanged)
-    Q_PROPERTY(QUrl colortable READ colortable WRITE setColortable NOTIFY colortableChanged)
-
     Q_PROPERTY(qreal emitterX READ emitterX WRITE setEmitterX NOTIFY emitterXChanged)
     Q_PROPERTY(qreal emitterY READ emitterY WRITE setEmitterY NOTIFY emitterYChanged)
     Q_PROPERTY(qreal emitterXVariation READ emitterXVariation WRITE setEmitterXVariation NOTIFY emitterXVariationChanged)
     Q_PROPERTY(qreal emitterYVariation READ emitterYVariation WRITE setEmitterYVariation NOTIFY emitterYVariationChanged)
-
-    Q_PROPERTY(bool emitting READ emitting WRITE setEmitting NOTIFY emittingChanged)
-
-    Q_PROPERTY(int particlesPerSecond READ particlesPerSecond WRITE setParticlesPerSecond NOTIFY particlesPerSecondChanged)
-    Q_PROPERTY(int particleDuration READ particleDuration WRITE setParticleDuration NOTIFY particleDurationChanged)
 
     Q_PROPERTY(qreal particleSize READ particleSize WRITE setParticleSize NOTIFY particleSizeChanged)
     Q_PROPERTY(qreal particleEndSize READ particleEndSize WRITE setParticleEndSize NOTIFY particleEndSizeChanged)
@@ -41,30 +33,11 @@ class TrailsEmitter : public ParticleEmitter
     Q_PROPERTY(qreal xAccelVariation READ xAccelVariation WRITE setXAccelVariation NOTIFY xAccelVariationChanged)
     Q_PROPERTY(qreal yAccelVariation READ yAccelVariation WRITE setYAccelVariation NOTIFY yAccelVariationChanged)
 
-    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
-    Q_PROPERTY(qreal colorVariation READ colorVariation WRITE setColorVariation NOTIFY colorVariationChanged)
-
-    Q_PROPERTY(qreal additive READ additive WRITE setAdditive NOTIFY additiveChanged)
-
 public:
     explicit TrailsEmitter(QObject* parent=0);
     virtual ~TrailsEmitter(){}
+    virtual void emitWindow(int timeStamp);
 
-    bool isRunning() const { return m_running; }
-    void setRunning(bool r);
-
-
-    QUrl image() const { return m_image_name; }
-    void setImage(const QUrl &image);
-
-    QUrl colortable() const { return m_colortable_name; }
-    void setColortable(const QUrl &table);
-
-    int particlesPerSecond() const { return m_particles_per_second; }
-    void setParticlesPerSecond(int pps);
-
-    int particleDuration() const { return m_particle_duration; }
-    void setParticleDuration(int dur);
 
     qreal particleSize() const { return m_particle_size; }
     void setParticleSize(qreal size);
@@ -87,10 +60,6 @@ public:
 
     qreal emitterYVariation() const { return m_emitter_y_variation; }
     void setEmitterYVariation(qreal var);
-
-    bool emitting() const { return m_emitting; }
-    void setEmitting(bool emitting);
-
 
     qreal xSpeed() const { return m_x_speed; }
     void setXSpeed(qreal x);
@@ -121,32 +90,9 @@ public:
     void setYAccelVariation(qreal y);
 
 
-    QColor color() const { return m_color; }
-    void setColor(const QColor &color);
-
-    qreal colorVariation() const { return m_color_variation; }
-    void setColorVariation(qreal var);
-
-    qreal additive() const { return m_additive; }
-    void setAdditive(qreal additive);
-
     qreal renderOpacity() const { return m_render_opacity; }
 
-
-    virtual Node* buildParticleNode();
-    virtual void prepareNextFrame(uint timestamp);
-    virtual void reset();
-
-    virtual uint particleCount();
-    virtual ParticleVertices* particles();
 signals:
-    void runningChanged();
-
-    void imageChanged();
-    void colortableChanged();
-
-    void particlesPerSecondChanged();
-    void particleDurationChanged();
 
     void particleSizeChanged();
     void particleEndSizeChanged();
@@ -169,23 +115,11 @@ signals:
     void xAccelVariationChanged();
     void yAccelVariationChanged();
 
-    void colorChanged();
-    void colorVariationChanged();
-    void additiveChanged();
 public slots:
 
 protected:
 
 private:
-
-    bool m_running;
-    bool m_do_reset;
-
-    QUrl m_image_name;
-    QUrl m_colortable_name;
-
-    int m_particles_per_second;
-    int m_particle_duration;
 
     qreal m_particle_size;
     qreal m_particle_end_size;
@@ -195,7 +129,6 @@ private:
     qreal m_emitter_y;
     qreal m_emitter_x_variation;
     qreal m_emitter_y_variation;
-    bool m_emitting;
 
     qreal m_x_speed;
     qreal m_y_speed;
@@ -208,24 +141,15 @@ private:
     qreal m_x_accel_variation;
     qreal m_y_accel_variation;
 
-    QColor m_color;
-    qreal m_color_variation;
-    qreal m_additive;
-
-    GeometryNode *m_node;
-    ParticleTrailsMaterial *m_material;
-
     // derived values...
     int m_particle_count;
+    bool m_reset_last;
+    qreal m_last_timestamp;
     int m_last_particle;
 
     QPointF m_last_emitter;
     QPointF m_last_last_emitter;
     QPointF m_last_last_last_emitter;
-
-    bool m_reset_last;
-
-    qreal m_last_timestamp;
 
     qreal m_render_opacity;
 };

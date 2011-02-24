@@ -2,7 +2,6 @@
 #include "spriteemitter.h"
 #include "particlesystem.h"//for ParticlesVertices
 #include <cmath>
-#include <QDebug>
 
 const qreal PI = 3.141582653;//TODO: Use trancendental PI?
 const qreal CONV = PI/180;
@@ -65,7 +64,7 @@ void RockingAffector::affect(ParticleVertices *p, int idx, qreal dt, QObject*)
         d->curAngle += da;
     }else{//Jump to starting angle
         da = m_initialAngle * CONV;
-        d->curAngle = 0;//curAngle is relative to initialAngle
+        d->curAngle = da;
         d->initialAngleSet = true;
     }
 

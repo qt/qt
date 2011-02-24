@@ -30,23 +30,24 @@ void DriftAffector::reset(int idx)
     m_driftData.remove(idx);
 }
 
-void DriftAffector::affect(ParticleVertices *p, int idx, qreal dt, QObject*)
+bool DriftAffector::affect(ParticleData *data, qreal dt)
 {
-    DriftData* d = getData(idx);
+    DriftData* d = getData(data->systemIndex);
     qreal dx = (((qreal)qrand() / (qreal)RAND_MAX) - 0.5) * 2 * m_xDrift * dt;
     qreal dy = (((qreal)qrand() / (qreal)RAND_MAX) - 0.5) * 2 * m_yDrift * dt;
     d->xVel += dx * dt;
     d->yVel += dy * dt;
 
-    p->v1.x += d->xVel * dt;
-    p->v1.y += d->yVel * dt;
+    data->pv.v1.x += d->xVel * dt;
+    data->pv.v1.y += d->yVel * dt;
 
-    p->v2.x += d->xVel * dt;
-    p->v2.y += d->yVel * dt;
+    data->pv.v2.x += d->xVel * dt;
+    data->pv.v2.y += d->yVel * dt;
 
-    p->v3.x += d->xVel * dt;
-    p->v3.y += d->yVel * dt;
+    data->pv.v3.x += d->xVel * dt;
+    data->pv.v3.y += d->yVel * dt;
 
-    p->v4.x += d->xVel * dt;
-    p->v4.y += d->yVel * dt;
+    data->pv.v4.x += d->xVel * dt;
+    data->pv.v4.y += d->yVel * dt;
+    return true;
 }

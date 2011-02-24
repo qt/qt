@@ -39,15 +39,17 @@ Item {
 
     }
     ParticleSystem{
-        emitters: TrailsEmitter {
-            id: starField
+        particles: ColoredParticle {
             image: "star.png"
+            colorVariation: 0.3
+            color: "white"
+            additive: 1
+        }
+        emitters: TrailEmitter {
+            id: starField
 
             particlesPerSecond: 80
             particleDuration: 2500
-
-            colorVariation: 0.3
-            color: "white"
 
             emitterY: root.height / 2
             emitterX: root.width / 2
@@ -58,13 +60,12 @@ Item {
             particleSize: 0
             particleEndSize: 80
             particleSizeVariation: 10
-            additive: 1
         }
     }
 
     ParticleSystem{
         anchors.fill: parent
-        emitters: SpriteEmitter{
+        particles: SpriteParticle{
             id: particles
             states: [SpriteState{
                 id: spinState
@@ -88,7 +89,8 @@ Item {
                 duration: 1000
             }
             ]
-
+        }
+        emitters: TrailEmitter{
             particlesPerSecond: 12
             particleDuration: 5000
             emitting: true
@@ -99,7 +101,6 @@ Item {
             emitterX: width/2
             emitterY: height/2
         }
-        affectors: [Qlp.Scale{}]
     }
     Image {
         id: rocketShip
@@ -136,12 +137,8 @@ Item {
     }
     ParticleSystem {
         z: 0
-        emitters: TrailsEmitter{
-            id: trailsNormal2
+        particles: ColoredParticle{
             image: "particle4.png"
-
-            particlesPerSecond: 300
-            particleDuration: 500
 
             color: "orange"
             SequentialAnimation on color {
@@ -159,6 +156,12 @@ Item {
             }
 
             colorVariation: 0.2
+        }
+        emitters: TrailEmitter{
+            id: trailsNormal2
+
+            particlesPerSecond: 300
+            particleDuration: 500
 
             emitterY: holder.y
             emitterX: holder.x 

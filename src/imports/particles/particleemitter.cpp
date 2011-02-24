@@ -2,30 +2,25 @@
 
 ParticleEmitter::ParticleEmitter(QObject *parent) :
     QObject(parent)
+  , m_particle(0)
+  , m_particlesPerSecond(10)
+  , m_particleDuration(1000)
+  , m_emitting(true)
+
 {
 }
 
-Node* ParticleEmitter::buildParticleNode()
+void ParticleEmitter::emitWindow(int timeStamp)
 {
-    return 0;
+    Q_UNUSED(timeStamp);
 }
 
-void ParticleEmitter::prepareNextFrame(uint timestamp)
-{
-    Q_UNUSED(timestamp);
-}
 
-void ParticleEmitter::reset()
+void ParticleEmitter::setEmitting(bool arg)
 {
-
-}
-
-uint ParticleEmitter::particleCount()
-{
-    return 0;
-}
-
-ParticleVertices* ParticleEmitter::particles()
-{
-    return 0;
+    if (m_emitting != arg) {
+        m_emitting = arg;
+        emit emittingChanged(arg);
+        m_system->pleaseUpdate();
+    }
 }

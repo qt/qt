@@ -3,34 +3,44 @@ TARGETPATH = Qt/labs/particles
 include(../qimportbase.pri)
 
 HEADERS += \
-    spriteparticles.h \
-    spritestate.h \
     V1/qdeclarativeparticles_p.h \
+    #spriteparticles.h \
+    spritestate.h \
     pluginmain.h \
     particleaffector.h \
     wanderaffector.h \
-    rockingaffector.h \
-    scalingaffector.h \
+    #rockingaffector.h \
+    #scalingaffector.h \
+    driftaffector.h \
     particleemitter.h \
     particlesystem.h \
     trailsemitter.h \
-    spriteemitter.h \
-    driftaffector.h
+    #spriteemitter.h \
+    particle.h \
+    coloredparticle.h \
+    spriteparticle.h \
+    #spritegoalaffector.h \
+    zoneaffector.h
 
 SOURCES += \
-    spriteparticles.cpp \
-    spritestate.cpp \
     V1/qdeclarativeparticles.cpp \
+    #spriteparticles.cpp \
+    spritestate.cpp \
     main.cpp \
     particleaffector.cpp \
     wanderaffector.cpp \
-    rockingaffector.cpp \
-    scalingaffector.cpp \
+    #rockingaffector.cpp \
+    #scalingaffector.cpp \
+    driftaffector.cpp \
     particleemitter.cpp \
     particlesystem.cpp \
     trailsemitter.cpp \
-    spriteemitter.cpp \
-    driftaffector.cpp
+    #spriteemitter.cpp \
+    particle.cpp \
+    coloredparticle.cpp \
+    spriteparticle.cpp \
+    #spritegoalaffector.cpp \
+    zoneaffector.cpp
 
 QT += declarative opengl
 

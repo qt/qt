@@ -1,18 +1,13 @@
 #include "particleaffector.h"
-#include "particlesystem.h"
-#include "spriteemitter.h"
 
 ParticleAffector::ParticleAffector(QObject *parent) :
     QObject(parent)
 {
 }
 
-void ParticleAffector::affect(ParticleVertices *p, int idx, qreal dt, QObject* emitter)
+bool ParticleAffector::affect(ParticleData *, qreal)
 {
-    Q_UNUSED(p);
-    Q_UNUSED(idx);
-    Q_UNUSED(dt);
-    Q_UNUSED(emitter);
+    return false;
 }
 
 void ParticleAffector::reset(int idx)
