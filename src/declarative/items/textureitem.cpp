@@ -54,7 +54,8 @@ QT_BEGIN_NAMESPACE
 TextureItem::TextureItem(QSGItem *parent)
     : QSGItem(parent)
     , m_textureProvider(0)
-    , m_clampToEdge(true)
+    , m_wrapMode(ClampToEdge)
+    , m_requiresPreprocess(false)
 {
     setFlag(ItemHasContents);
 }
@@ -71,21 +72,21 @@ void TextureItem::setTextureProvider(QSGTextureProvider *provider, bool requires
     m_requiresPreprocess = requiresPreprocess;
 }
 
-bool TextureItem::clampToEdge() const
+TextureItem::WrapMode TextureItem::wrapMode() const
 {
-    return m_clampToEdge;
+    return m_wrapMode;
 }
 
-void TextureItem::setClampToEdge(bool clamp)
+void TextureItem::setWrapMode(WrapMode mode)
 {
-    if (clamp == m_clampToEdge)
+    if (mode == m_wrapMode)
         return;
-    m_clampToEdge = clamp;
+    m_wrapMode = mode;
     update();
-    emit clampToEdgeChanged();
+    emit wrapModeChanged();
 }
 
-Node *TextureItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
+Node *TextureItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
 {
     TextureNodeInterface *node = static_cast<TextureNodeInterface *>(oldNode);
     if (!node) {
@@ -94,8 +95,26 @@ Node *TextureItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         node->setTexture(m_textureProvider);
     }
 
-    m_textureProvider->setClampToEdge(m_clampToEdge);
-    m_textureProvider->setLinearFiltering(QSGItemPrivate::get(this)->smooth);
+    QSGTextureProvider::WrapMode hWrap = QSGTextureProvider::ClampToEdge;
+    QSGTextureProvider::WrapMode vWrap = QSGTextureProvider::ClampToEdge;
+    switch (m_wrapMode) {
+    case RepeatHorizontally:
+        hWrap = QSGTextureProvider::Repeat;
+        break;
+    case RepeatVertically:
+        vWrap = QSGTextureProvider::Repeat;
+        break;
+    case Repeat:
+        hWrap = vWrap = QSGTextureProvider::Repeat;
+        break;
+    default:
+        break;
+    }
+
+    m_textureProvider->setHorizontalWrapMode(hWrap);
+    m_textureProvider->setVerticalWrapMode(vWrap);
+    m_textureProvider->setFiltering(QSGItemPrivate::get(this)->smooth
+                                    ? QSGTextureProvider::Linear : QSGTextureProvider::Nearest);
 
     node->setTargetRect(QRectF(0, 0, width(), height()));
     node->setSourceRect(QRectF(0, 0, 1, 1));

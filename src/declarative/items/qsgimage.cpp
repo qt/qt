@@ -212,7 +212,7 @@ QSGTextureProvider *QSGImage::textureProvider() const
     return d->textureProvider;
 }
 
-Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
+Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
 {
     Q_D(QSGImage);
     //XXX Support mirror property
@@ -236,7 +236,8 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 
     QRectF targetRect;
     QRectF sourceRect;
-    bool clampToEdge = true;
+    QSGTextureProvider::WrapMode hWrap = QSGTextureProvider::ClampToEdge;
+    QSGTextureProvider::WrapMode vWrap = QSGTextureProvider::ClampToEdge;
 
     switch (d->fillMode) {
     default:
@@ -269,19 +270,20 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     case Tile:
         targetRect = QRectF(0, 0, width(), height());
         sourceRect = QRectF(0, 0, width(), height());
-        clampToEdge = false;
+        hWrap = QSGTextureProvider::Repeat;
+        vWrap = QSGTextureProvider::Repeat;
         break;
 
     case TileHorizontally:
         targetRect = QRectF(0, 0, width(), height());
         sourceRect = QRectF(0, 0, width(), d->pix.height());
-        clampToEdge = false;
+        hWrap = QSGTextureProvider::Repeat;
         break;
 
     case TileVertically:
         targetRect = QRectF(0, 0, width(), height());
         sourceRect = QRectF(0, 0, d->pix.width(), height());
-        clampToEdge = false;
+        vWrap = QSGTextureProvider::Repeat;
         break;
 
     };
@@ -291,8 +293,9 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
                   sourceRect.width() / d->pix.width(),
                   sourceRect.height() / d->pix.height());
 
-    d->textureProvider->setClampToEdge(clampToEdge);
-    d->textureProvider->setLinearFiltering(d->smooth);
+    d->textureProvider->setHorizontalWrapMode(hWrap);
+    d->textureProvider->setVerticalWrapMode(vWrap);
+    d->textureProvider->setFiltering(d->smooth ? QSGTextureProvider::Linear : QSGTextureProvider::Nearest);
 
     node->setTargetRect(targetRect);
     node->setSourceRect(nsrect);

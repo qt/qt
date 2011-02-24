@@ -123,17 +123,15 @@ void TextureProviderMaterialShader::updateState(Renderer *renderer, AbstractMate
         oldEffect = 0; // Force filtering update.
     }
 
-    if (oldEffect == 0 || tx->linearFiltering() != oldTx->linearFiltering()) {
-        int filtering = tx->linearFiltering() ? GL_LINEAR : GL_NEAREST;
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtering);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtering);
+    if (oldEffect == 0 || tx->filtering() != oldTx->filtering() || tx->mipmap() != oldTx->mipmap()) {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, tx->glMinFilter());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, tx->glMagFilter());
     }
 
-    if (oldEffect == 0 || tx->clampToEdge() != oldTx->clampToEdge()) {
-        int wrapMode = tx->clampToEdge() ? GL_CLAMP_TO_EDGE : GL_REPEAT;
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
-    }
+    if (oldEffect == 0 || tx->horizontalWrapMode() != oldTx->horizontalWrapMode())
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, tx->glTextureWrapS());
+    if (oldEffect == 0 || tx->verticalWrapMode() != oldTx->verticalWrapMode())
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tx->glTextureWrapT());
 
     if (updates & Renderer::UpdateMatrices)
         m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
@@ -161,13 +159,17 @@ int TextureProviderMaterial::compare(const AbstractMaterial *o) const
 {
     Q_ASSERT(o && type() == o->type());
     const TextureProviderMaterial *other = static_cast<const TextureProviderMaterial *>(o);
-    if (int diff = m_texture->texture()->textureId() - other->texture()->texture()->textureId())
+    if (int diff = m_texture->texture().texture() - other->texture()->texture().texture())
         return diff;
-    if (int diff = int(m_texture->linearFiltering()) - int(other->m_texture->linearFiltering()))
+    if (int diff = int(m_texture->opaque()) - int(other->m_texture->opaque()))
         return diff;
-    if (int diff = int(m_texture->clampToEdge()) - int(other->m_texture->clampToEdge()))
+    if (int diff = int(m_texture->horizontalWrapMode()) - int(other->m_texture->horizontalWrapMode()))
         return diff;
-    return int(m_texture->opaque()) - int(other->m_texture->opaque());
+    if (int diff = int(m_texture->verticalWrapMode()) - int(other->m_texture->verticalWrapMode()))
+        return diff;
+    if (int diff = int(m_texture->filtering()) - int(other->m_texture->filtering()))
+        return diff;
+    return int(m_texture->mipmap()) - int(other->m_texture->mipmap());
 }
 
 bool TextureProviderMaterial::is(const AbstractMaterial *effect)

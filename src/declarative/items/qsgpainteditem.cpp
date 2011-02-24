@@ -190,8 +190,9 @@ Node *QSGPaintedItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 
     node->setTargetRect(image.rect());
     node->setSourceRect(QRectF(0, 0, 1, 1));
-    d->textureProvider->setClampToEdge(true);
-    d->textureProvider->setLinearFiltering(d->smooth);
+    d->textureProvider->setHorizontalWrapMode(QSGTextureProvider::ClampToEdge);
+    d->textureProvider->setVerticalWrapMode(QSGTextureProvider::ClampToEdge);
+    d->textureProvider->setFiltering(d->smooth ? QSGTextureProvider::Linear : QSGTextureProvider::Nearest);
     d->textureProvider->setImage(image);
     node->update();
 

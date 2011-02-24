@@ -46,42 +46,25 @@ QT_BEGIN_NAMESPACE
 QSGTextureProvider::QSGTextureProvider(QObject *parent)
     : QObject(parent)
     , m_opaque(false)
-    , m_mipmap(false)
-    , m_clampToEdge(true)
-    , m_linearFiltering(false)
+    , m_hWrapMode(ClampToEdge)
+    , m_vWrapMode(ClampToEdge)
+    , m_filtering(Nearest)
+    , m_mipmap(None)
 {
 }
 
-void QSGTextureProvider::setOpaque(bool enabled)
+GLint QSGTextureProvider::glMinFilter() const
 {
-    if (enabled == m_opaque)
-        return;
-    m_opaque = enabled;
-    emit opaqueChanged();
+    bool linear = m_filtering == Linear;
+    switch (m_mipmap) {
+    case Nearest:
+        return linear ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST;
+    case Linear:
+        return linear ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR;
+    default:
+        return linear ? GL_LINEAR : GL_NEAREST;
+    }
 }
 
-void QSGTextureProvider::setMipmap(bool enabled)
-{
-    if (enabled == m_mipmap)
-        return;
-    m_mipmap = enabled;
-    emit mipmapChanged();
-}
-
-void QSGTextureProvider::setClampToEdge(bool enabled)
-{
-    if (enabled == m_clampToEdge)
-        return;
-    m_clampToEdge = enabled;
-    emit clampToEdgeChanged();
-}
-
-void QSGTextureProvider::setLinearFiltering(bool enabled)
-{
-    if (enabled == m_linearFiltering)
-        return;
-    m_linearFiltering= enabled;
-    emit linearFilteringChanged();
-}
 
 QT_END_NAMESPACE

@@ -63,26 +63,34 @@ class TextureItem : public QSGItem, public QSGTextureProviderInterface
 {
     Q_OBJECT
     Q_INTERFACES(QSGTextureProviderInterface)
-    Q_PROPERTY(bool clampToEdge READ clampToEdge WRITE setClampToEdge NOTIFY clampToEdgeChanged)
+    Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
+    Q_ENUMS(WrapMode)
     // TODO: property mipmapFiltering
 public:
+    enum WrapMode {
+        ClampToEdge,
+        RepeatHorizontally,
+        RepeatVertically,
+        Repeat
+    };
+
     TextureItem(QSGItem *parent = 0);
 
     virtual QSGTextureProvider *textureProvider() const;
     void setTextureProvider(QSGTextureProvider *provider, bool requiresPreprocess);
     
-    bool clampToEdge() const;
-    void setClampToEdge(bool clamp);
+    WrapMode wrapMode() const;
+    void setWrapMode(WrapMode mode);
 
 Q_SIGNALS:
-    void clampToEdgeChanged();
+    void wrapModeChanged();
 
 protected:
     virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
 
     QSGTextureProvider *m_textureProvider;
+    WrapMode m_wrapMode;
     uint m_requiresPreprocess : 1;
-    uint m_clampToEdge : 1;
 };
 
 QT_END_NAMESPACE

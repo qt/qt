@@ -54,40 +54,67 @@ QT_MODULE(Declarative)
 class Q_DECLARATIVE_EXPORT QSGTextureProvider : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool opaque READ opaque WRITE setOpaque NOTIFY opaqueChanged)
-    Q_PROPERTY(bool mipmap READ mipmap WRITE setMipmap NOTIFY mipmapChanged)
-    Q_PROPERTY(bool clampToEdge READ clampToEdge WRITE setClampToEdge NOTIFY clampToEdgeChanged)
-    Q_PROPERTY(bool linearFiltering READ linearFiltering WRITE setLinearFiltering NOTIFY linearFilteringChanged)
 public:
+    enum WrapMode {
+        Repeat,
+        ClampToEdge
+    };
+
+    enum Filtering {
+        None,
+        Nearest,
+        Linear
+    };
+
     QSGTextureProvider(QObject *parent = 0);
     virtual void updateTexture() { }
     virtual QSGTextureRef texture() = 0;
 
     bool opaque() const { return m_opaque; }
-    void setOpaque(bool enabled);
+    void setOpaque(bool enabled) { m_opaque = enabled; }
 
-    bool mipmap() const { return m_mipmap; }
-    void setMipmap(bool enabled);
+    WrapMode horizontalWrapMode() const { return WrapMode(m_hWrapMode); }
+    void setHorizontalWrapMode(WrapMode mode) { m_hWrapMode = mode; }
 
-    bool clampToEdge() const { return m_clampToEdge; }
-    void setClampToEdge(bool enabled);
+    WrapMode verticalWrapMode() const { return WrapMode(m_vWrapMode); }
+    void setVerticalWrapMode(WrapMode mode) { m_vWrapMode = mode; }
 
-    bool linearFiltering() const { return m_linearFiltering; }
-    void setLinearFiltering(bool enabled);
+    Filtering filtering() const { return Filtering(m_filtering); }
+    void setFiltering(Filtering filtering) { m_filtering = filtering; }
+
+    Filtering mipmap() const { return Filtering(m_mipmap); }
+    void setMipmap(Filtering filtering) { m_mipmap = filtering; }
+
+    inline GLint glTextureWrapS() const;
+    inline GLint glTextureWrapT() const;
+    GLint glMinFilter() const;
+    inline GLint glMagFilter() const;
 
 Q_SIGNALS:
-    void opaqueChanged();
     void textureChanged();
-    void mipmapChanged();
-    void clampToEdgeChanged();
-    void linearFilteringChanged();
 
 protected:
     uint m_opaque : 1;
-    uint m_mipmap : 1;
-    uint m_clampToEdge : 1;
-    uint m_linearFiltering : 1;
+    uint m_hWrapMode : 1;
+    uint m_vWrapMode : 1;
+    uint m_filtering : 2;
+    uint m_mipmap : 2;
 };
+
+GLint QSGTextureProvider::glTextureWrapS() const
+{
+    return m_hWrapMode == Repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE;
+}
+
+GLint QSGTextureProvider::glTextureWrapT() const
+{
+    return m_vWrapMode == Repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE;
+}
+
+GLint QSGTextureProvider::glMagFilter() const
+{
+    return m_filtering == Linear ? GL_LINEAR : GL_NEAREST;
+}
 
 
 // TODO: Find good name.
