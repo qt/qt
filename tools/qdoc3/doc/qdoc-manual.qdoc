@@ -127,7 +127,7 @@
     \endcode
 
     From this snippet, QDoc generates the now famous HTML page \l
-    {http://doc.trolltech.com/4.7/qobject.html} {QObject Class Reference}.
+    {http://doc.trolltech.com/4.7/qobject.html#details} {QObject Class Reference}.
     
     This manual explains how to use the QDoc commands to write useful
     qdoc comments in your source files. It also explains how to create
@@ -190,7 +190,6 @@
     appearance and logical structure.
 
     \list
-    \o \l {04-qdoc-commands-textmarkup.html#backslash-command} {\\\\}
     \o \l {04-qdoc-commands-textmarkup.html#a-command} {\\a}
     \o \l {11-qdoc-commands-specialcontent.html#abstract-command} {\\abstract}
     \o \l {06-qdoc-commands-includecodeinline.html#badcode-command} {\\badcode}
@@ -251,6 +250,7 @@
     \o \l {04-qdoc-commands-textmarkup.html#underline-command} {\\underline}
     \o \l {12-0-qdoc-commands-miscellaneous.html#raw-command} {\\unicode}
     \o \l {11-qdoc-commands-specialcontent.html#warning-command} {\\warning}
+    \o \l {04-qdoc-commands-textmarkup.html#backslash-command} {\\\\}
     \endlist
 
 */
@@ -5392,18 +5392,33 @@
     documented that QDoc can't deduce on its own. e.g. Is a class
     thread-safe? Is a function reentrant? Which module is the class a
     member of? Context commands can appear anywhere in a QDoc comment,
-    but we put them at the top of the comment, right below the \l
-    {Topic Commands} {topic} command.
+    but they are normally placed near the top of the comment, just
+    below the \l {Topic Commands} {topic} command.
 
-    \section1 Categories
     \list
-    \o \l {Document Navigation}
-    \o \l {Reporting Status}
-    \o \l {Thread Support}
-    \o \l {Relating Things}
-    \o \l {Grouping Things}
-    \o \l {Naming Things}
+      \o \l {16-qdoc-commands-status.html#compat-command}{\\compat},
+      \o \l {15-qdoc-commands-navigation.html#contentspage-command}{\\contentspage},
+      \o \l {15-qdoc-commands-navigation.html#indexpage-command}{\\indexpage},
+      \o \l {19-qdoc-commands-grouping.html#ingroup-command}{\\ingroup},
+      \o \l {19-qdoc-commands-grouping.html#inmodule-command}{\\inmodule},
+      \o \l {16-qdoc-commands-status.html#internal-command}{\\internal},
+      \o \l {19-qdoc-commands-grouping.html#mainclass-command}{\\mainclass},
+      \o \l {15-qdoc-commands-navigation.html#nextpage-command}{\\nextpage},
+      \o \l {17-qdoc-commands-thread.html#nonreentrant-command}{\\nonreentrant},
+      \o \l {16-qdoc-commands-status.html#obsolete-command}{\\obsolete},
+      \o \l {18-qdoc-commands-relating.html#overload-command}{\\overload},
+      \o \l {16-qdoc-commands-status.html#preliminary-command}{\\preliminary},
+      \o \l {15-qdoc-commands-navigation.html#previouspage-command}{\\previouspage},
+      \o \l {17-qdoc-commands-thread.html#reentrant-command}{\\reentrant},
+      \o \l {18-qdoc-commands-relating.html#reimp-command}{\\reimp},
+      \o \l {18-qdoc-commands-relating.html#relates-command}{\\relates},
+      \o \l {16-qdoc-commands-status.html#since-command}{\\since},
+      \o \l {15-qdoc-commands-navigation.html#startpage-command}{\\startpage},
+      \o \l {20-qdoc-commands-namingthings.html#subtitle-command}{\\subtitle}
+      \o \l {17-qdoc-commands-thread.html#threadsafe-command}{\\threadsafe},
+      \o \l {20-qdoc-commands-namingthings.html#title-command}{\\title}
     \endlist
+
 */
 
 /*!
@@ -5414,15 +5429,11 @@
 
     \title Document Navigation
 
-    The navigation commands allow you to link the pages of a multipage
-    document together. They provide the components of a navigation bar
-    at the top and bottom of the document. They also provide browser
-    and search engine support.
+    The navigation commands are for linking the pages of a document in
+    a meaningful sequence. Below is a sequence of QDoc comments that
+    shows a typical use of the navigation commands.
 
-    \section1 General Description
-
-    The QDoc comments below show a typical way of using the navigation
-    commands.
+    \section1 Example
 
     \code
     / *!
@@ -5493,8 +5504,7 @@
     * /
     \endcode
 
-    The second page of this multipage document, "Getting Started",
-    QDoc renders this as:
+    QDoc renders the  "Getting Started" page in \c{creatingdialogs.html}:
 
     \quotation
     \raw HTML
@@ -5529,18 +5539,16 @@
     \endraw
     \endquotation
 
-    in creatingdialogs.html.
-
-    In addition, the \l {indexpage-command} {\\indexpage} and \l
-    {startpage-command} {\\startpage} commands specifies links to the page's
-    index page and start page. These links are used by browsers and
-    search engines.
+    The \l {indexpage-command} {\\indexpage} and \l
+    {startpage-command} {\\startpage} commands create links to the
+    page's index page and start page. These links can be used by
+    browsers and search engines.
 
     The index page is typically an alphabetical list of the document's
     titles and topics, while the start page is the page considered by
     the author to be the starting point of a multipage document.
 
-    The links are included in the generated HTML source code but has
+    The links are included in the generated HTML source code but have
     no visual effect on the documentation:
 
     \code
@@ -5552,85 +5560,61 @@
     </head>
     \endcode
 
+    \section1 Commands
+
     \target previouspage-command
-    \section1 \\previouspage 
+    \section2 \\previouspage 
 
-    The \\previouspage command links the current page
-    to the previous one in an ordered series of documents.
+    The \\previouspage command links the current page to the previous
+    page in a sequence.a The command has two arguments, each enclosed
+    by curly braces: The first is the link target, i.e. the title of
+    the previous page, the second is the link text. If the page's
+    title is equivalent to the link text, the second argument can be
+    omitted.
 
-           The command has two arguments, each enclosed by curly
-           braces: The first is the link target, i.e. the title of the
-           previous page, the second is the link text. If the page's
-           title is equivalent to the link text, the second argument
-           can be omitted.
-
-           The command must stand alone on its own line.
-
-           In the end, the link is rendered at the top and bottom of
-           the current page. For an example, see the \l {General
-           Description} section.
-
+    The command must stand alone on its own line.
 
     \target nextpage-command
-    \section1 \\nextpage 
+    \section2 \\nextpage 
 
-    The \\nextpage command links the current
-    page to the next page in an ordered series of documents.
-
-           The command follows the same syntax and argument convention
-           as the \l {previouspage-command} {\\previouspage} command.
-
-           For an example, see the \l {General Description} section.
-
+    The \\nextpage command links the current page to the next page in
+    a sequence. The command follows the same syntax and argument
+    convention as the \l {previouspage-command} {\\previouspage}
+    command.
 
     \target startpage-command
-    \section1 \\startpage 
+    \section2 \\startpage 
 
-    The \\startpage command specifies the first document
-    in a collection of documents.
+    The \\startpage command specifies the first page of a sequence of
+    pages. The command must stand alone on its own line, and its
+    unique argument is the title of the first document.
 
-           The command must stand alone on its own line, and its
-           unique argument is the title of the first document.
-
-           QDoc will generate a link to the specified document which
-           is included in the HTML file but has no visual effect on
-           the documentation. The generated link type tells browsers
-           and search engines which document is considered by the
-           author to be the starting point of the collection.
-
-           For an example, see the \l {General Description} section.
-
+    QDoc will generate a link to the start page and include it in the
+    generated HTML file, but this has no visual effect on the
+    documentation. The generated link type tells browsers and search
+    engines which document is considered by the author to be the
+    starting point of the collection.
 
     \target contentspage-command
-    \section1 \\contentspage
+    \section2 \\contentspage
 
-    The \\contentspage command links the current
-    page to a contents page.
-
-           The command follows the same syntax and argument convention
-           as the \l {previouspage-command} {\\previouspage} command.
-
-           For an example, see the \l {General Description} section.
-
+    The \\contentspage command links the current page to a table of
+    contents page. The command follows the same syntax and argument
+    convention as the \l {previouspage-command} {\\previouspage}
+    command.
 
     \target indexpage-command
-    \section1 \\indexpage 
+    \section2 \\indexpage 
 
-    The \\indexpage command specifies a document providing
-    an index for the current document.
+    The \\indexpage command specifies an index page for the current
+    document. The command must stand alone on its own line, and its
+    unique argument is the title of the index document.
 
-           The command must stand alone on its own line, and its
-           unique argument is the title of the index document.
-
-           QDoc will generate a link to the specified document which
-           is included in the HTML file but has no visual effect on
-           the documentation. The generated link type tells browsers
-           and search engines which document is considered by the
-           author to be the index page for the current document.
-
-           For an example, see the \l {General Description} section.
-
-
+    QDoc will generate a link to the index page and include it in the
+    generated HTML file, but this has no visual effect on the
+    documentation. The generated link type tells browsers and search
+    engines which document is considered by the author to be the
+    index page of the collection.
 */
 
 /*!
@@ -5942,14 +5926,10 @@
 
     \title Thread Support
 
-    The thread support commands specify the level of support for
-    multithreaded programming of a class or function.
-
-    \section1 General Description
-
-    There are three levels of support for multithreaded programming of
-    a class or function: \c threadsafe, \c reentrant and \c
-    nonreentrant.
+    The thread support commands are for specifying the level of
+    support for multithreaded programming in a class or function.
+    There are three levels of support: \c threadsafe, \c reentrant and
+    \c nonreentrant.
 
     The default is \c nonreentrant which means that the associated
     class or function cannot be called by multiple threads. \c
@@ -5962,15 +5942,14 @@
     can be called simultaneously by multiple threads even when each
     invocation references shared data.
 
-    When a class is declared \c reentrant or \c threadsafe, using the
-    \l {reentrant-command} {\\reentrant} and \l {threadsafe-command} {\\threadsafe}
-    commands respectively, functions in the referenced class can be
-    declared \c nonreentrant, using the \l
-    {nonreentrant-command} {\\nonreentrant} command, excluding the functions
-    from the general view.
+    When a class is marked \l {reentrant-command} {\\reentrant} or \l
+    {threadsafe-command} {\\threadsafe}, functions in that class can
+    be marked \c nonreentrant using the \l {nonreentrant-command}
+    {\\nonreentrant} command. 
 
-    For example:
+    \section1 Example
 
+    \target reentrant-example
     \code
     / *!
         \class QLocale
@@ -6071,56 +6050,55 @@
     For more information see the general documentation on \l
     {threads.html#reentrant} {reentrancy and thread-safety}.
 
+    \section1 Commands
+
     \target threadsafe-command
-    \section1 \\threadsafe 
+    \section2 \\threadsafe 
 
-    The \\threadsafe command indicates that the
-    associated class or function can be called simultaneously by
-    multiple threads even when each invocation references
-    shared data.
+    The \\threadsafe command includes a line in the documentation to
+    indicate that the associated class or function is \e threadsafe
+    and can be called simultaneously by multiple threads, even when
+    separate invocations reference shared data.
 
-           The command must stand on its own line.
+    The command must stand on its own line.
 
-           The generated documentation resulting from using the
-           \\threadsafe command is similar to the result of using the
-           \l {reentrant-command} {\\reentrant} command. For an example, see
-           the \l {General Description} section.
+    The documentation generated from this command will be similar to
+    the what is generated for the \l {reentrant-command} {\\reentrant}
+    command. See the example above in the \l {reentrant-example}
+    {introduction}.
 
-           See also \l{reentrant-command} {\\reentrant} and
-           \l{nonreentrant-command} {\\nonreentrant}.
-
+    See also \l{reentrant-command} {\\reentrant} and
+    \l{nonreentrant-command} {\\nonreentrant}.
 
     \target reentrant-command
-    \section1 \\reentrant 
+    \section2 \\reentrant 
 
-    The \\reentrant command indicates that the associated
-    class or function  can be called simultaneously
-    by multiple threads, provided that each invocation of the
-    functions reference unique data.
+    The \\reentrant command indicates that the associated class or
+    function can be called simultaneously by multiple threads,
+    provided that each invocation references its own data. See the \l
+    {reentrant-example} {example} above.
 
-           The command must stand on its own line.
+    The command must stand on its own line.
 
-           For an example, see the \l {General Description} section.
-
-           See also \l{nonreentrant-command} {\\nonreentrant} and
-            \l{threadsafe-command} {\\threadsafe}.
-
+    See also \l{nonreentrant-command} {\\nonreentrant} and
+    \l{threadsafe-command} {\\threadsafe}.
 
     \target nonreentrant-command
-    \section1 \\nonreentrant 
+    \section2 \\nonreentrant 
 
-    The \\nonreentrant command indicates that the
-    associated class or function cannot be called by
-    multiple threads.
+    The \\nonreentrant command indicates that the associated class or
+    function cannot be called by multiple threads. Nonreentrant is the
+    default case. 
 
-           The command must stand on its own line.
+    The command must stand on its own line.
 
-           For an example, see the \l {General Description} section.
+    When a class is marked \l {reentrant-command} {\\reentrant} or \l
+    {threadsafe-command} {\\threadsafe}, functions in that class can
+    be marked \c nonreentrant using this command in the \l{fn-command}
+    {\\fn} comment of the functions to be excluded.
 
-           See also \l{reentrant-command} {\\reentrant} and
-           \l{threadsafe-command} {\\threadsafe}.
-
-
+    See also \l{reentrant-command} {\\reentrant} and
+    \l{threadsafe-command} {\\threadsafe}.
 */
 
 /*!
