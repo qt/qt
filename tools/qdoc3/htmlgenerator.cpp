@@ -401,6 +401,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
 
     switch (atom->type()) {
     case Atom::AbstractLeft:
+        if (relative)
+            relative->doc().location().warning(tr("\abstract is not implemented."));
+        else
+            Location::information(tr("\abstract is not implemented."));
         break;
     case Atom::AbstractRight:
         break;
@@ -476,6 +480,17 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         out() << formattingRightMap()[ATOM_FORMATTING_TELETYPE];
         break;
+    case Atom::CaptionLeft:
+        out() << "<p class=\"figCaption\">";
+        in_para = true;
+        break;
+    case Atom::CaptionRight:
+        endLink();
+        if (in_para) {
+            out() << "</p\n";
+            in_para = false;
+        }
+        break;
     case Atom::Code:
         out() << "<pre class=\"cpp\">"
               << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),
@@ -511,12 +526,14 @@ int HtmlGenerator::generateAtom(const Atom *atom,
               << trimmedTrailing(protectEnc(plainCode(indent(codeIndent,atom->string()))))
               << "</pre>\n";
         break;
-    case Atom::Div:
+    case Atom::DivLeft:
         out() << "<div";
         if (!atom->string().isEmpty())
-            out() << " class=\"" << atom->string() << "\">";
-        else
-            out() << ">";
+            out() << " " << atom->string();
+        out() << ">";
+        break;
+    case Atom::DivRight:
+        out() << "</div>";
         break;
     case Atom::FootnoteLeft:
         // ### For now
@@ -535,7 +552,11 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::FormatIf:
         break;
     case Atom::FormattingLeft:
-        out() << formattingLeftMap()[atom->string()];
+        if (atom->string().startsWith("span ")) {
+            out() << "<" + atom->string() << ">";
+        }
+        else
+            out() << formattingLeftMap()[atom->string()];
         if (atom->string() == ATOM_FORMATTING_PARAMETER) {
             if (atom->next() != 0 && atom->next()->type() == Atom::String) {
                 QRegExp subscriptRegExp("([a-z]+)_([0-9n])");
@@ -550,6 +571,9 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::FormattingRight:
         if (atom->string() == ATOM_FORMATTING_LINK) {
             endLink();
+        }
+        else if (atom->string().startsWith("span ")) {
+            out() << "</span>";
         }
         else {
             out() << formattingRightMap()[atom->string()];
@@ -891,9 +915,9 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             if (threeColumnEnumValueTable) {
                 out() << "<table class=\"valuelist\">";
                 if (++numTableRows % 2 == 1)
-                        out() << "<tr class=\"odd\">";
+                        out() << "<tr valign=\"top\" class=\"odd\">";
                 else
-                        out() << "<tr class=\"even\">";
+                        out() << "<tr valign=\"top\" class=\"even\">";
 
                 out() << "<th class=\"tblConst\">Constant</th>"
                       << "<th class=\"tblval\">Value</th>"
@@ -935,10 +959,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         else { // (atom->string() == ATOM_LIST_VALUE)
             // ### Trenton
 
-            out() << "<tr><td  class=\"topAlign\"><tt>"
+            out() << "<tr><td class=\"topAlign\"><tt>"
                   << protectEnc(plainCode(marker->markedUpEnumValue(atom->next()->string(),
                                                                  relative)))
-                  << "</tt></td><td class=\" topAlign\">";
+                  << "</tt></td><td class=\"topAlign\">";
 
             QString itemValue;
             if (relative->type() == Node::Enum) {
@@ -964,7 +988,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         else if (atom->string() == ATOM_LIST_VALUE) {
             if (threeColumnEnumValueTable) {
-                out() << "</td><td  class=\"topAlign\">";
+                out() << "</td><td class=\"topAlign\">";
                 if (matchAhead(atom, Atom::ListItemRight))
                     out() << "&nbsp;";
             }
@@ -1056,8 +1080,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             in_para = false;
         }
         if (!atom->string().isEmpty()) {
-            if (atom->string().contains("%"))
-                out() << "<table class=\"generic\">\n "; // width=\"" << atom->string() << "\">\n ";
+            if (atom->string().contains("%")) {
+                out() << "<table class=\"generic\" width=\""
+                      << atom->string() << "\">\n ";
+            }
             else {
                 out() << "<table class=\"generic\">\n";
             }
@@ -1071,14 +1097,14 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         out() << "</table>\n";
         break;
     case Atom::TableHeaderLeft:
-        out() << "<thead><tr class=\"qt-style topAlign\">";
+        out() << "<thead><tr class=\"qt-style\">";
         inTableHeader = true;
         break;
     case Atom::TableHeaderRight:
         out() << "</tr>";
         if (matchAhead(atom, Atom::TableHeaderLeft)) {
             skipAhead = 1;
-            out() << "\n<tr class=\"qt-style topAlign\">";
+            out() << "\n<tr class=\"qt-style\">";
         }
         else {
             out() << "</thead>\n";
@@ -1086,10 +1112,12 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         break;
     case Atom::TableRowLeft:
-        if (++numTableRows % 2 == 1)
-            out() << "<tr class=\"odd topAlign\">";
+        if (!atom->string().isEmpty())
+            out() << "<tr " << atom->string() << ">";
+        else if (++numTableRows % 2 == 1)
+            out() << "<tr valign=\"top\" class=\"odd\">";
         else
-            out() << "<tr class=\"even topAlign\">";
+            out() << "<tr valign=\"top\" class=\"even\">";
         break;
     case Atom::TableRowRight:
         out() << "</tr>\n";
@@ -1101,16 +1129,28 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             else
                 out() << "<td ";
 
-            QStringList spans = atom->string().split(",");
-            if (spans.size() == 2) {
-                if (spans.at(0) != "1")
-                    out() << " colspan=\"" << spans.at(0) << "\"";
-                if (spans.at(1) != "1")
-                    out() << " rowspan=\"" << spans.at(1) << "\"";
+            for (int i=0; i<atom->count(); ++i) {
+                if (i > 0)
+                    out() << " ";
+                QString p = atom->string(i);
+                if (p.contains('=')) {
+                    out() << p;
+                }
+                else {
+                    QStringList spans = p.split(",");
+                    if (spans.size() == 2) {
+                        if (spans.at(0) != "1")
+                            out() << " colspan=\"" << spans.at(0) << "\"";
+                        if (spans.at(1) != "1")
+                            out() << " rowspan=\"" << spans.at(1) << "\"";
+                    }
+                }
+            }
             if (inTableHeader)
                 out() << ">";
-            else
-                out() << "><p>"; 
+            else {
+                out() << ">"; 
+                //out() << "><p>"; 
             }
             if (matchAhead(atom, Atom::ParaLeft))
                 skipAhead = 1;
@@ -1119,8 +1159,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::TableItemRight:
         if (inTableHeader)
             out() << "</th>";
-        else
-            out() << "</p></td>";
+        else {
+            out() << "</td>";
+            //out() << "</p></td>";
+        }
         if (matchAhead(atom, Atom::ParaLeft))
             skipAhead = 1;
         break;
@@ -1135,9 +1177,6 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::UnknownCommand:
         out() << "<b class=\"redFont\"><code>\\" << protectEnc(atom->string())
               << "</code></b>";
-        break;
-    case Atom::EndDiv:
-        out() << "</div>";
         break;
 #ifdef QDOC_QML
     case Atom::QmlText:
@@ -2571,7 +2610,7 @@ void HtmlGenerator::generateSection(const NodeList& nl,
         else {
             if (twoColumn)
                 out() << "<table class=\"propsummary\">\n"
-                      << "<tr><td  class=\"topAlign\">";
+                      << "<tr><td class=\"topAlign\">";
             out() << "<ul>\n";
         }
 
@@ -2588,7 +2627,7 @@ void HtmlGenerator::generateSection(const NodeList& nl,
             }
             else {
                 if (twoColumn && i == (int) (nl.count() + 1) / 2)
-                    out() << "</ul></td><td  class=\"topAlign\"><ul>\n";
+                    out() << "</ul></td><td class=\"topAlign\"><ul>\n";
                 out() << "<li class=\"fn\">";
             }
 
@@ -2632,7 +2671,7 @@ void HtmlGenerator::generateSectionList(const Section& section,
         else {
             if (twoColumn)
                 out() << "<table class=\"propsummary\">\n"
-                      << "<tr><td  class=\"topAlign\">";
+                      << "<tr><td class=\"topAlign\">";
             out() << "<ul>\n";
         }
 
@@ -3833,9 +3872,9 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
             if ((*p)->type() == Node::QmlProperty) {
                 qpn = static_cast<const QmlPropertyNode*>(*p);
                 if (++numTableRows % 2 == 1)
-                    out() << "<tr class=\"odd\">";
+                    out() << "<tr valign=\"top\" class=\"odd\">";
                 else
-                    out() << "<tr class=\"even\">";
+                    out() << "<tr valign=\"top\" class=\"even\">";
 
                 out() << "<td class=\"tblQmlPropNode\"><p>";
 
@@ -3860,9 +3899,9 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         out() << "<table class=\"qmlname\">";
         //out() << "<tr>";
         if (++numTableRows % 2 == 1)
-            out() << "<tr class=\"odd\">";
+            out() << "<tr valign=\"top\" class=\"odd\">";
         else
-            out() << "<tr class=\"even\">";
+            out() << "<tr valign=\"top\" class=\"even\">";
         out() << "<td class=\"tblQmlFuncNode\"><p>";
         out() << "<a name=\"" + refForNode(qsn) + "\"></a>";
         generateSynopsis(qsn,relative,marker,CodeMarker::Detailed,false);
@@ -3877,9 +3916,9 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         out() << "<table class=\"qmlname\">";
         //out() << "<tr>";
         if (++numTableRows % 2 == 1)
-            out() << "<tr class=\"odd\">";
+            out() << "<tr valign=\"top\" class=\"odd\">";
         else
-            out() << "<tr class=\"even\">";
+            out() << "<tr valign=\"top\" class=\"even\">";
         out() << "<td class=\"tblQmlFuncNode\"><p>";
         out() << "<a name=\"" + refForNode(qmn) + "\"></a>";
         generateSynopsis(qmn,relative,marker,CodeMarker::Detailed,false);

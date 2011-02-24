@@ -1096,7 +1096,7 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
 
     \snippet doc/src/snippets/declarative/gridview/ContactModel.qml 0
 
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage gridview-simple.png
     \enddiv
 
@@ -1112,7 +1112,7 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     \codeline
     \snippet doc/src/snippets/declarative/gridview/gridview.qml classdocs simple
 
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage gridview-highlight.png
     \enddiv
 

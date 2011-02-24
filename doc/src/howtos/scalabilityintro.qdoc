@@ -196,7 +196,7 @@
     defined in a proportional way using a combination of
 
     \list
-    \o \l{Item::}{anchors} within an Item
+    \o \l{Item::anchors.top}{anchors} within an Item
     \o \l{Row} / \l{Column} / \l{Grid}
     \o simple javascript expressions such as width: Math.round(parent.width / 3.0).
     \endlist

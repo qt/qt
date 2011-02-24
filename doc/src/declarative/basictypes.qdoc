@@ -153,9 +153,6 @@
     Image { source: "pics/logo.png" }
     \endqml
 
-    \raw HTML
-    \endraw
-
     \sa {QML Basic Types}
 */
 

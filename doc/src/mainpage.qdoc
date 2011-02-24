@@ -30,14 +30,14 @@
 \title Develop with Qt
 \ingroup gettingstarted
 
-\div {indexboxcont indexboxbar}
+\div {class="indexboxcont indexboxbar"}
 Developing a Qt application involves many different steps and stages. From
 configuring Creator to distributing binaries to different platforms, Qt provides
 many options along the way.
 \image quick_screens.png
 \enddiv
 
-\div {indexboxcont indexboxbar normallist}
+\div {class="indexboxcont indexboxbar normallist"}
 \keyword qt-creator-configure-target
 \section1 Configuring Qt and Creator Targets
 Qt and Creator are configurable to compile applications on many platform targets
@@ -77,7 +77,7 @@ and their installation pages, view the \l {Supported Platforms} and the
 \l {Cross-Platform and Platform-Specific Development} pages.
 \enddiv
 
-\div {indexboxcont indexboxbar normallist}
+\div {class="indexboxcont indexboxbar normallist"}
 \keyword qt-technologies
 \section1 Qt Technologies
 
@@ -162,9 +162,9 @@ Qt supports many utilities that work on multiple platforms.
 \o \l{Making Applications Scriptable} - provides Qt applications with ECMAScript processor.
 \o \l{Qt Linguist Manual}{Qt Linguist} - for translating applications into local languages.
 \endlist
-For more information, visit the \l{Qt's Tools}{Qt Tools} page.
+For more information, visit the \l{Qt's Tools}{Qt Tools} page.
 \enddiv
-\div {indexboxcont indexboxbar normallist}
+\div {class="indexboxcont indexboxbar normallist"}
 \keyword qt-testing
 \section1 Testing Qt Applications
 Testing and debugging are part of the development process and Qt offers the
@@ -177,7 +177,7 @@ developer multiple methods of testing their code.
 \endlist
 \enddiv
 
-\div {indexboxcont indexboxbar normallist}
+\div {class="indexboxcont indexboxbar normallist"}
 \keyword qt-deployment
 \section1 Deployment
 Symbian phones, Maemo devices, desktop environments, embedded Linux devices -- Qt applications are deployable to many environments.
@@ -207,7 +207,7 @@ For additional information, visit the \l{Cross-Platform and Platform-Specific De
 and the \l {Supported Platforms} page.
 
 \enddiv
-\div {indexboxcont indexboxbar normallist}
+\div {class="indexboxcont indexboxbar normallist"}
 \section1 Where to Go from Here
 
 Qt Demos and Examples

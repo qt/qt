@@ -7,7 +7,7 @@
         color: #000000;
         background: #FFFFFF;
     }
-    body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form, fieldset, legend, input, button, textarea, p, blockquote, th, td
+    body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form, fieldset, legend, input, button, textarea, p, th, td
     {
         margin: 0;
         padding: 0;
@@ -185,7 +185,161 @@
     {
         float: right; margin-left: 2em
     }
+    div.clear-both
+    {
+        clear: both 
+    }
+    div.clear-left
+    {
+        clear: left 
+    }
+    div.clear-right
+    {
+        clear: right 
+    }
 
+    #color-white
+    {
+        background: #ffffff; 
+        color: #000000;
+    }
+    #color-black
+    {
+        background: #000000;
+        color: #ffffff;
+    }
+    #color-red
+    {
+        background: #ff0000;
+        color: #000000;
+    }
+    #color-darkRed
+    {
+        background: #800000;
+        color: #ffffff;
+    }
+    #color-green
+    {
+        background: #00ff00;
+        color: #000000;
+    }
+    #color-darkGreen
+    {
+        background: #008000;
+        color: #ffffff;
+    }
+    #color-blue
+    {
+        background: #0000ff;
+        color: #ffffff;
+    }
+    #color-darkBlue
+    {
+        background: #000080;
+        color: #ffffff;
+    }
+    #color-cyan
+    {
+        background: #00ffff;
+        color: #000000;
+    }
+    #color-darkCyan
+    {
+        background: #008080;
+        color: #ffffff;
+    }
+    #color-magenta
+    {
+        background: #ff00ff;
+        color: #000000;
+    }
+    #color-darkMagenta
+    {
+        background: #800080;
+        color: #ffffff;
+    }
+    #color-yellow
+    {
+        background: #ffff00;
+        color: #000000;
+    }
+    #color-darkYellow
+    {
+        background: #808000;
+        color: #ffffff;
+    }
+    #color-gray
+    {
+        background: #a0a0a4;
+        color: #000000;
+    }
+    #color-darkGray
+    {
+        background: #808080;
+        color: #ffffff;
+    }
+    #color-lightGray
+    {
+        background: #c0c0c0;
+        color: #000000;
+    }
+    #QtGuiColor
+    {
+      background-color: #98fd00;
+      color: black;
+    }
+    #QtCoreColor
+    {
+      background-color: #9c9cff;
+      color: black;
+    }
+    #DefaultColor
+    {
+      background-color: #f6f6dc;
+      color: black;
+    }
+    #FreetypeColor
+    {
+      background-color: #e6e6fa;
+      color: black;
+    }
+    #GLColor
+    {
+      background-color: #ffc0cb;
+      color: black;
+    }
+    #PthreadColor
+    {
+      background-color: #bdb76b;
+      color: black;
+    }
+    #OptionalColor
+    {
+      background-color: #cae1ff;
+      color: black;
+    }
+    #SMColor
+    {
+      background-color: #c2fafa;
+      color: black;
+    }
+    #MiscColor
+    {
+      background-color: #f0f9ff;
+      color: black;
+    }
+    #GlibColor
+    {
+      background-color: #b3b3b3;
+      color: black;
+    }
+    .figCaption
+    {
+      color:#363534;
+      font:italic 11px/1.2 Verdana;
+      text-align: center;
+      padding-top:0;
+    }
     span.comment
     {
         color: #008B00;
@@ -1031,11 +1185,28 @@
         padding:0px;
     }
 
-    .content .alignedsummary
-    {
-        margin: 15px;
-    }
+        .content .alignedsummary
+        {
+          margin: 15px;
+        }
 
+        .details
+        {
+            text-align: left;
+            font-size: 80%;
+            color: blue
+        }
+        .variableName
+        {
+            font-family: courier;
+	    color: blue
+        }
+        .newStuff
+        {
+            text-align: left;
+            font-size: 80%;
+            color: red
+        }
 
     .qmltype
     {

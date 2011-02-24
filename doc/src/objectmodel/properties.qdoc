@@ -83,6 +83,10 @@
     existing signal in that class that is emitted whenever the value
     of the property changes.
 
+    \o A \c REVISION number is optional. If included, it defines the
+    the property and its notifier signal to be used in a particular
+    revision of the API that is exposed to QML.
+
     \o The \c DESIGNABLE attribute indicates whether the property
     should be visible in the property editor of GUI design tool (e.g.,
     \l {Qt Designer}). Most properties are \c DESIGNABLE (default

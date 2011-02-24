@@ -1385,17 +1385,13 @@
 
 
     \target CreatingAMenu
-    \raw HTML
-    <div style="float: left; margin-right: 2em">
-    \endraw
+    \div {class="float-left"}
     \inlineimage designer-creating-menu1.png
     \inlineimage designer-creating-menu2.png
     \br
     \inlineimage designer-creating-menu3.png
     \inlineimage designer-creating-menu4.png
-    \raw HTML
-    </div>
-    \endraw
+    \enddiv
 
     \section2 Creating a Menu
 
@@ -1410,9 +1406,8 @@
     \key Escape to reject it. You can undo the editing operation later if
     required.
 
-    \raw HTML
-    <div style="clear: both" />
-    \endraw
+    \div {class="clear-both"}
+    \enddiv
 
     Menus can also be rearranged in the menu bar simply by dragging and
     dropping them in the preferred location. A vertical red line indicates the
@@ -1423,17 +1418,13 @@
     navigating the menu structure in the usual way.
 
     \target CreatingAMenuEntry
-    \raw HTML
-    <div style="float: right; margin-left: 2em">
-    \endraw
+    \div {class="float-right"}
     \inlineimage designer-creating-menu-entry1.png
     \inlineimage designer-creating-menu-entry2.png
     \br
     \inlineimage designer-creating-menu-entry3.png
     \inlineimage designer-creating-menu-entry4.png
-    \raw HTML
-    </div>
-    \endraw
+    \enddiv
 
     \section2 Creating a Menu Entry
 
@@ -1453,9 +1444,8 @@
     be accessible via the \l{#TheActionEditor}{Action Editor}, and any
     associated keyboard shortcut can be set there.
 
-    \raw HTML
-    <div style="clear: both" />
-    \endraw
+    \div {class="clear-both"}
+    \enddiv
 
     Just like with menus, entries can be moved around simply by dragging and
     dropping them in the preferred location. When an entry is dragged over a
@@ -1465,13 +1455,9 @@
 
     \section1 Toolbars
 
-    \raw HTML
-    <div style="float: left; margin-right: 2em">
-    \endraw
+    \div {class="float-left"}
     \inlineimage designer-creating-toolbar.png
-    \raw HTML
-    </div>
-    \endraw
+    \enddiv
 
     \section2 Creating and Removing a Toolbar
 
@@ -1483,9 +1469,8 @@
     Toolbars are removed from the form via an entry in the toolbar's context
     menu.
 
-    \raw HTML
-    <div style="clear: both" />
-    \endraw
+    \div {class="clear-both"}
+    \enddiv
 
     \section2 Adding and Removing Toolbar Buttons
 
@@ -1494,14 +1479,10 @@
     Since actions can be represented by menu entries and toolbar buttons,
     they can be moved between menus and toolbars.
 
-    \raw HTML
-    <div style="float: right; margin-left: 2em">
-    \endraw
+    \div {class="float-right"}
     \inlineimage designer-adding-toolbar-action.png
     \inlineimage designer-removing-toolbar-action.png
-    \raw HTML
-    </div>
-    \endraw
+    \enddiv
 
     To share an action between a menu and a toolbar, drag its icon from the
     action editor to the toolbar rather than from the menu where its entry is
@@ -1510,9 +1491,8 @@
 
     Toolbar buttons are removed via the toolbar's context menu.
 
-    \raw HTML
-    <div style="clear: both" />
-    \endraw
+    \div {class="clear-both"}
+    \enddiv
 
     \section1 Actions
 
@@ -1521,13 +1501,9 @@
     action editor window, simplifying the creation and management of actions.
 
     \target TheActionEditor
-    \raw HTML
-    <div style="float: left; margin-right: 2em">
-    \endraw
+    \div {class="float-left"}
     \inlineimage designer-action-editor.png
-    \raw HTML
-    </div>
-    \endraw
+    \enddiv
 
     \section2 The Action Editor
 
@@ -1543,9 +1519,8 @@
     \gui{Detailed View}. You can also copy and paste actions between menus,
     toolbars and forms.
 
-    \raw HTML
-    <div style="clear: both" />
-    \endraw
+    \div {class="clear-both"}
+    \enddiv
 
     \section2 Creating an Action
 
@@ -1560,19 +1535,14 @@
 
     Once the action is created, it can be used wherever actions are applicable.
 
-    \raw HTML
-    <div style="clear: left" />
-    \endraw
+    \div {class="clear-left"}
+    \enddiv
 
     \target AddingAnAction
-    \raw HTML
-    <div style="float: right; margin-left: 2em">
-    \endraw
+    \div {class="float-right"}
     \inlineimage designer-adding-menu-action.png
     \inlineimage designer-adding-toolbar-action.png
-    \raw HTML
-    </div>
-    \endraw
+    \enddiv
 
     \section2 Adding an Action
 
@@ -1584,9 +1554,8 @@
     will be added. Release the mouse button to add the action when you have
     found the right spot.
 
-    \raw HTML
-    <div style="clear: right" />
-    \endraw
+    \div {class="clear-right"}
+    \enddiv
 
     \section1 Dock Widgets
 
@@ -1598,13 +1567,9 @@
 
     \target AddingADockWidget
 
-    \raw HTML
-    <div style="float: left; margin-right: 2em">
-    \endraw
+    \div {class="float-left"}
     \inlineimage designer-adding-dockwidget.png
-    \raw HTML
-    </div>
-    \endraw
+    \enddiv
 
     \section2 Adding a Dock Widget
 
@@ -1623,9 +1588,8 @@
     \l{QDockWidget::}{windowTitle} property. This also helps to identify them on the
     form.
 
-    \raw HTML
-    <div style="clear: both" />
-    \endraw
+    \div {class="clear-both"}
+    \enddiv
 */
 
 
