@@ -1,5 +1,4 @@
 #include "wanderaffector.h"
-#include "spriteemitter.h"
 #include "particlesystem.h"//for ParticlesVertices
 
 WanderAffector::WanderAffector(QObject *parent) :
@@ -59,15 +58,9 @@ bool WanderAffector::affect(ParticleData* data, qreal dt)
     qreal dy = dt * d->x_vel;
 
     //### Should we be amending vel instead?
-    ParticleVertices* p = &(data->pv);
-    p->v1.x += dx;
-    p->v2.x += dx;
-    p->v3.x += dx;
-    p->v4.x += dx;
+    ParticleVertex* p = &(data->pv);
+    p->x += dx;
 
-    p->v1.y += dy;
-    p->v2.y += dy;
-    p->v3.y += dy;
-    p->v4.y += dy;
+    p->y += dy;
     return true;
 }

@@ -10,35 +10,15 @@ ParticleData::ParticleData()
     , emitterIndex(0)
     , systemIndex(0)
 {
-    //### A lot of this initialization was skipped before(tex) as it was constant
-    ParticleVertex *vertices = (ParticleVertex *) &pv;
-    for (int i=0; i<4; ++i) {
-        vertices[i].x = 0;
-        vertices[i].y = 0;
-        vertices[i].t = -1;
-        vertices[i].size = 0;
-        vertices[i].endSize = 0;
-        vertices[i].sx = 0;
-        vertices[i].sy = 0;
-        vertices[i].ax = 0;
-        vertices[i].ay = 0;
-        vertices[i].animIdx = 0;
-        vertices[i].frameDuration = 1;
-        vertices[i].frameCount = 1;
-        vertices[i].animT = -1;
-    }
-
-    vertices[0].tx = 0;
-    vertices[0].ty = 0;
-
-    vertices[1].tx = 1;
-    vertices[1].ty = 0;
-
-    vertices[2].tx = 0;
-    vertices[2].ty = 1;
-
-    vertices[3].tx = 1;
-    vertices[3].ty = 1;
+        pv.x = 0;
+        pv.y = 0;
+        pv.t = -1;
+        pv.size = 0;
+        pv.endSize = 0;
+        pv.sx = 0;
+        pv.sy = 0;
+        pv.ax = 0;
+        pv.ay = 0;
 }
 
 ParticleSystem::ParticleSystem(QSGItem *parent) :
@@ -183,9 +163,9 @@ void ParticleSystem::prepareNextFrame()
         for(QVector<ParticleData*>::iterator iter=d.begin(); iter != d.end(); iter++){
             if(!(*iter))
                 continue;
-            ParticleVertices* p = &((*iter)->pv);
-            qreal dt = time - p->v1.dt;
-            p->v1.dt = p->v2.dt = p->v3.dt = p->v4.dt = time;
+            ParticleVertex* p = &((*iter)->pv);
+            qreal dt = time - p->dt;
+            p->dt = time;
             foreach(ParticleAffector* a, m_affectors)
                 if (a->affect(*iter, dt))
                     (*iter)->p->reload(*iter);

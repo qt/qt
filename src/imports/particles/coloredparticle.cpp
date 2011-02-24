@@ -171,12 +171,12 @@ AbstractMaterialShader *ParticleTrailsMaterialCT::createShader() const
     return new ParticleTrailsMaterialDataCT;
 }
 
-//struct Color4ub {
-//    uchar r;
-//    uchar g;
-//    uchar b;
-//    uchar a;
-//};
+struct Color4ub {
+    uchar r;
+    uchar g;
+    uchar b;
+    uchar a;
+};
 
 struct ColoredParticleVertex {
     float x;
@@ -388,8 +388,6 @@ void vertexCopy(ColoredParticleVertex &b,const ParticleVertex& a)
 {
     b.x = a.x;
     b.y = a.y;
-    b.tx = a.tx;
-    b.ty = a.ty;
     b.t = a.t;
     b.size = a.size;
     b.endSize = a.endSize;
@@ -398,7 +396,6 @@ void vertexCopy(ColoredParticleVertex &b,const ParticleVertex& a)
     b.sy = a.sy;
     b.ax = a.ax;
     b.ay = a.ay;
-    b.color = a.color;
 }
 
 void ColoredParticle::reload(ParticleData *d)
@@ -411,10 +408,10 @@ void ColoredParticle::reload(ParticleData *d)
 
     //TODO: Reinterpret s and a changes so as to end up in the same place?
     //Perhaps we could be more efficient?
-    vertexCopy(p.v1, d->pv.v1);
-    vertexCopy(p.v2, d->pv.v2);
-    vertexCopy(p.v3, d->pv.v3);
-    vertexCopy(p.v4, d->pv.v4);
+    vertexCopy(p.v1, d->pv);
+    vertexCopy(p.v2, d->pv);
+    vertexCopy(p.v3, d->pv);
+    vertexCopy(p.v4, d->pv);
 }
 
 void ColoredParticle::load(ParticleData *d)
@@ -427,7 +424,12 @@ void ColoredParticle::load(ParticleData *d)
     color.g = m_color.green() * (1 - m_color_variation) + rand() % 256 * m_color_variation;
     color.b = m_color.blue() * (1 - m_color_variation) + rand() % 256 * m_color_variation;
     color.a = (1 - m_additive) * 255;
-    ParticleVertices &p = d->pv;
+    ColoredParticleVertices *particles = (ColoredParticleVertices *) m_node->geometry()->vertexData();
+    ColoredParticleVertices &p = particles[d->systemIndex];
     p.v1.color = p.v2.color = p.v3.color = p.v4.color = color;
-    reload(d);
+
+    vertexCopy(p.v1, d->pv);
+    vertexCopy(p.v2, d->pv);
+    vertexCopy(p.v3, d->pv);
+    vertexCopy(p.v4, d->pv);
 }

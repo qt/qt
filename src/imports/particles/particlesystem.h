@@ -76,17 +76,10 @@ private:
 };
 
 //TODO: Clean up all this into ParticleData
-struct Color4ub {
-    uchar r;
-    uchar g;
-    uchar b;
-    uchar a;
-};
+
 struct ParticleVertex {
     float x;
     float y;
-    float tx;
-    float ty;
     float t;
     float size;
     float endSize;
@@ -95,25 +88,13 @@ struct ParticleVertex {
     float sy;
     float ax;
     float ay;
-    float animIdx;
-    float frameDuration;
-    float frameCount;
-    float animT;
-    Color4ub color;
-};
-
-struct ParticleVertices {
-    ParticleVertex v1;
-    ParticleVertex v2;
-    ParticleVertex v3;
-    ParticleVertex v4;
 };
 
 class ParticleData{
 public:
     ParticleData();
 
-    ParticleVertices pv;
+    ParticleVertex pv;
     Particle* p;
     ParticleEmitter* e;
     int emitterIndex;

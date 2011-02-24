@@ -225,7 +225,7 @@ void TrailsEmitter::emitWindow(int timeStamp)
         datum->p = m_particle;
         datum->e = this;
         datum->emitterIndex = pos;
-        ParticleVertices &p = datum->pv;
+        ParticleVertex &p = datum->pv;
 
         qreal t = 1 - (pt - opt) / dt;
 
@@ -240,31 +240,30 @@ void TrailsEmitter::emitWindow(int timeStamp)
 
 
         // Particle timestamp
-        p.v1.t = p.v2.t = p.v3.t = p.v4.t = pt;
-        p.v1.dt = p.v2.dt = p.v3.dt = p.v4.dt = pt;
+        p.t = p.dt = pt;
 
         // Particle position
-        p.v1.x = p.v2.x = p.v3.x = p.v4.x =
+        p.x =
                 m_last_emitter.x() + dex * (pt - opt) / dt
                 - m_emitter_x_variation + rand() / float(RAND_MAX) * m_emitter_x_variation * 2;
-        p.v1.y = p.v2.y = p.v3.y = p.v4.y =
+        p.y =
                 m_last_emitter.y() + dey * (pt - opt) / dt
                 - m_emitter_y_variation + rand() / float(RAND_MAX) * m_emitter_y_variation * 2;
 
         // Particle speed
-        p.v1.sx = p.v2.sx = p.v3.sx = p.v4.sx =
+        p.sx =
                 m_x_speed
                 - m_x_speed_variation + rand() / float(RAND_MAX) * m_x_speed_variation * 2
                 + m_speed_from_movement * vx;
-        p.v1.sy = p.v2.sy = p.v3.sy = p.v4.sy =
+        p.sy =
                 m_y_speed
                 - m_y_speed_variation + rand() / float(RAND_MAX) * m_y_speed_variation * 2
                 + m_speed_from_movement * vy;
 
         // Particle acceleration
-        p.v1.ax = p.v2.ax = p.v3.ax = p.v4.ax =
+        p.ax =
                 m_x_accel - m_x_accel_variation + rand() / float(RAND_MAX) * m_x_accel_variation * 2;
-        p.v1.ay = p.v2.ay = p.v3.ay = p.v4.ay =
+        p.ay =
                 m_y_accel - m_y_accel_variation + rand() / float(RAND_MAX) * m_y_accel_variation * 2;
 
         // Particle size
@@ -274,8 +273,8 @@ void TrailsEmitter::emitWindow(int timeStamp)
         float size = m_particle_size + sizeVariation;
         float endSize = sizeAtEnd + sizeVariation;
 
-        p.v1.size = p.v2.size = p.v3.size = p.v4.size = size * float(m_emitting);
-        p.v1.endSize = p.v2.endSize = p.v3.endSize = p.v4.endSize = endSize * float(m_emitting);
+        p.size = size * float(m_emitting);
+        p.endSize = endSize * float(m_emitting);
 
         ++m_last_particle;
         pt = m_last_particle * particleRatio;

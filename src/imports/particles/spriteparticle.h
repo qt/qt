@@ -9,8 +9,6 @@ class SpriteParticlesMaterial;
 class SpriteParticle : public Particle
 {
     Q_OBJECT
-    Q_PROPERTY(int particleDuration READ particleDuration WRITE setParticleDuration NOTIFY particleDurationChanged)
-
     Q_PROPERTY(QDeclarativeListProperty<SpriteState> states READ states)
     Q_PROPERTY(QString goalState READ goalState WRITE setGoalState NOTIFY goalStateChanged)
     Q_PROPERTY(int frameDuration READ frameDuration WRITE setFrameDuration NOTIFY frameDurationChanged)
@@ -24,8 +22,6 @@ public:
     virtual void reset();
     virtual void prepareNextFrame(uint timeStamp);
 
-    int particleDuration() const { return m_particle_duration; }
-    void setParticleDuration(int dur);
     int frames() const
     {
         return m_frames;

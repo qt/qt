@@ -110,7 +110,6 @@ public:
             "vData",
             "vVec",
             "vAnimData",
-            "vColor",
             0
         };
         return attr;
@@ -136,6 +135,32 @@ AbstractMaterialShader *SpriteParticlesMaterial::createShader() const
 {
     return new SpriteParticlesMaterialData;
 }
+
+struct SpriteParticleVertex {
+    float x;
+    float y;
+    float tx;
+    float ty;
+    float t;
+    float size;
+    float endSize;
+    float dt;
+    float sx;
+    float sy;
+    float ax;
+    float ay;
+    float animIdx;
+    float frameDuration;
+    float frameCount;
+    float animT;
+};
+
+struct SpriteParticleVertices {
+    SpriteParticleVertex v1;
+    SpriteParticleVertex v2;
+    SpriteParticleVertex v3;
+    SpriteParticleVertex v4;
+};
 
 SpriteParticle::SpriteParticle(QObject *parent) :
     Particle(parent)
@@ -322,7 +347,6 @@ Node* SpriteParticle::buildParticleNode()
     attr << QSGAttributeDescription(2, 4, GL_FLOAT, 0); // Data
     attr << QSGAttributeDescription(3, 4, GL_FLOAT, 0); // Vectors..
     attr << QSGAttributeDescription(4, 4, GL_FLOAT, 0); // AnimData
-    attr << QSGAttributeDescription(5, 4, GL_UNSIGNED_BYTE, 0); // Colors
 
 
     Geometry *g = new Geometry(attr);
@@ -330,7 +354,7 @@ Node* SpriteParticle::buildParticleNode()
 
     int vCount = m_particle_count * 4;
     g->setVertexCount(vCount);
-    ParticleVertex *vertices = (ParticleVertex *) g->vertexData();
+    SpriteParticleVertex *vertices = (SpriteParticleVertex *) g->vertexData();
     for (int p=0; p<m_particle_count; ++p) {
 
         for (int i=0; i<4; ++i) {
@@ -388,9 +412,25 @@ Node* SpriteParticle::buildParticleNode()
     return m_node;
 }
 
+void vertexCopy(SpriteParticleVertex &b,const ParticleVertex& a)
+{
+    b.x = a.x;
+    b.y = a.y;
+    b.t = a.t;
+    b.size = a.size;
+    b.endSize = a.endSize;
+    b.dt = a.dt;
+    b.sx = a.sx;
+    b.sy = a.sy;
+    b.ax = a.ax;
+    b.ay = a.ay;
+}
+
 void SpriteParticle::load(ParticleData *d)
 {
-    ParticleVertices &p = d->pv;
+    SpriteParticleVertices *particles = (SpriteParticleVertices *) m_node->geometry()->vertexData();
+    SpriteParticleVertices &p = particles[d->systemIndex];
+
     // Initial Sprite State
     p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = p.v1.t;
     p.v1.animIdx = p.v2.animIdx = p.v3.animIdx = p.v4.animIdx = 0;
@@ -407,8 +447,13 @@ void SpriteParticle::load(ParticleData *d)
 
 //    if(m_states[0]->m_to.count() > 1)//Optimizes the single animation case
 //        addToUpdateList(timeInt + ((m_states[0]->duration()+durVar) * m_states[0]->frames()), pos);
+
+    vertexCopy(p.v1, d->pv);
+    vertexCopy(p.v2, d->pv);
+    vertexCopy(p.v3, d->pv);
+    vertexCopy(p.v4, d->pv);
+
     m_particle_duration = d->e->particleDuration();
-    reload(d);
 }
 
 void SpriteParticle::reload(ParticleData *d)
@@ -416,14 +461,14 @@ void SpriteParticle::reload(ParticleData *d)
     if (m_node == 0) //error creating node
         return;
 
-    ParticleVertices *particles = (ParticleVertices *) m_node->geometry()->vertexData();
+    SpriteParticleVertices *particles = (SpriteParticleVertices *) m_node->geometry()->vertexData();
     int pos = d->systemIndex;
-    ParticleVertices &p = particles[pos];
+    SpriteParticleVertices &p = particles[pos];
 
-    p.v1 = d->pv.v1;
-    p.v2 = d->pv.v2;
-    p.v3 = d->pv.v3;
-    p.v4 = d->pv.v4;
+    vertexCopy(p.v1, d->pv);
+    vertexCopy(p.v2, d->pv);
+    vertexCopy(p.v3, d->pv);
+    vertexCopy(p.v4, d->pv);
 }
 
 void SpriteParticle::prepareNextFrame(uint timeInt)

@@ -12,7 +12,6 @@ class ColoredParticle : public Particle
 
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
     Q_PROPERTY(qreal colorVariation READ colorVariation WRITE setColorVariation NOTIFY colorVariationChanged)
-    Q_PROPERTY(int particleDuration READ particleDuration WRITE setParticleDuration NOTIFY particleDurationChanged)//###This goes here or with emitters?
 
     Q_PROPERTY(qreal additive READ additive WRITE setAdditive NOTIFY additiveChanged)
 public:
@@ -43,8 +42,6 @@ public:
 
     qreal renderOpacity() const { return m_render_opacity; }
 
-    int particleDuration() const { return m_particleDuration; }
-    void setParticleDuration(int d){ if(d==m_particleDuration) return; m_particleDuration = d; emit particleDurationChanged(); }
 signals:
 
     void imageChanged();
@@ -70,7 +67,7 @@ private:
     QColor m_color;
     qreal m_color_variation;
     qreal m_additive;
-    int m_particleDuration;
+    qreal m_particleDuration;
 
     GeometryNode *m_node;
     ParticleTrailsMaterial *m_material;

@@ -38,16 +38,8 @@ bool DriftAffector::affect(ParticleData *data, qreal dt)
     d->xVel += dx * dt;
     d->yVel += dy * dt;
 
-    data->pv.v1.x += d->xVel * dt;
-    data->pv.v1.y += d->yVel * dt;
+    data->pv.x += d->xVel * dt;
+    data->pv.y += d->yVel * dt;
 
-    data->pv.v2.x += d->xVel * dt;
-    data->pv.v2.y += d->yVel * dt;
-
-    data->pv.v3.x += d->xVel * dt;
-    data->pv.v3.y += d->yVel * dt;
-
-    data->pv.v4.x += d->xVel * dt;
-    data->pv.v4.y += d->yVel * dt;
     return true;
 }
