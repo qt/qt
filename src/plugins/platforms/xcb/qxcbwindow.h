@@ -43,12 +43,12 @@
 #define QXCBWINDOW_H
 
 #include <QtGui/QPlatformWindow>
+#include <QtGui/QPlatformWindowFormat>
 
 #include <xcb/xcb.h>
 
 #include "qxcbobject.h"
 
-class QGLXContext;
 class QXcbScreen;
 
 class QXcbWindow : public QXcbObject, public QPlatformWindow
@@ -92,9 +92,7 @@ private:
     QXcbScreen *m_screen;
 
     xcb_window_t m_window;
-#ifdef XCB_USE_XLIB_FOR_GLX
-    QGLXContext *m_glx_context;
-#endif
+    QPlatformGLContext *m_context;
 };
 
 #endif

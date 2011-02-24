@@ -61,7 +61,7 @@
 #else
 #include "../eglconvenience/qeglconvenience.h"
 #include "../eglconvenience/qeglplatformcontext.h"
-#include "qxlibeglintegration.h"
+#include "../eglconvenience/qxlibeglintegration.h"
 #endif  //QT_OPENGL_ES_2
 #endif //QT_NO_OPENGL
 

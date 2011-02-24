@@ -45,12 +45,12 @@ contains(QT_CONFIG, opengl) {
         HEADERS += \
             ../eglconvenience/qeglplatformcontext.h \
             ../eglconvenience/qeglconvenience.h \
-            qxlibeglintegration.h
+            ../eglconvenience/qxlibeglintegration.h
 
         SOURCES += \
             ../eglconvenience/qeglplatformcontext.cpp \
             ../eglconvenience/qeglconvenience.cpp \
-            qxlibeglintegration.cpp
+            ../eglconvenience/qxlibeglintegration.cpp
         LIBS += -lEGL
     }
 }

@@ -49,7 +49,7 @@
 
 #include <stdio.h>
 
-#ifdef XCB_USE_XLIB_FOR_GLX
+#ifdef XCB_USE_XLIB
 #include <X11/Xlib.h>
 #include <X11/Xlib-xcb.h>
 #endif
@@ -59,7 +59,7 @@ QXcbConnection::QXcbConnection(const char *displayName)
 {
     int primaryScreen = 0;
 
-#ifdef XCB_USE_XLIB_FOR_GLX
+#ifdef XCB_USE_XLIB
     Display *dpy = XOpenDisplay(m_displayName.constData());
     primaryScreen = DefaultScreen(dpy);
     m_connection = XGetXCBConnection(dpy);
@@ -91,7 +91,7 @@ QXcbConnection::~QXcbConnection()
 {
     qDeleteAll(m_screens);
 
-#ifdef XCB_USE_XLIB_FOR_GLX
+#ifdef XCB_USE_XLIB
     XCloseDisplay((Display *)m_xlib_display);
 #else
     xcb_disconnect(xcb_connection());

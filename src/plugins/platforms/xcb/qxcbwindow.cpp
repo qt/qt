@@ -53,10 +53,17 @@
 
 #include <stdio.h>
 
-#ifdef XCB_USE_XLIB_FOR_GLX
+#ifdef XCB_USE_XLIB
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#endif
+
+#if defined(XCB_USE_GLX)
 #include "qglxintegration.h"
+#elif defined(XCB_USE_EGL)
+#include "../eglconvenience/qeglplatformcontext.h"
+#include "../eglconvenience/qeglconvenience.h"
+#include "../eglconvenience/qxlibeglintegration.h"
 #endif
 
 // Returns true if we should set WM_TRANSIENT_FOR on \a w
@@ -74,9 +81,7 @@ static inline bool isTransient(const QWidget *w)
 
 QXcbWindow::QXcbWindow(QWidget *tlw)
     : QPlatformWindow(tlw)
-#ifdef XCB_USE_XLIB_FOR_GLX
-    , m_glx_context(0)
-#endif
+    , m_context(0)
 {
     m_screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(tlw));
 
@@ -100,10 +105,24 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
         | XCB_EVENT_MASK_FOCUS_CHANGE
     };
 
-#ifdef XCB_USE_XLIB_FOR_GLX
+#if defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
     if (tlw->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
        && QApplicationPrivate::platformIntegration()->hasOpenGL() ) {
+#if defined(XCB_USE_GLX)
             XVisualInfo *visualInfo = QGLXContext::findVisualInfo(m_screen, tlw->platformWindowFormat());
+#elif defined(XCB_USE_EGL)
+        EGLDisplay eglDisplay = eglGetDisplay(DISPLAY_FROM_XCB(this));
+        EGLConfig eglConfig = q_configFromQPlatformWindowFormat(eglDisplay,tlw->platformWindowFormat(),true);
+        VisualID id = QXlibEglIntegration::getCompatibleVisualId(DISPLAY_FROM_XCB(this),eglConfig);
+
+        XVisualInfo visualInfoTemplate;
+        memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
+        visualInfoTemplate.visualid = id;
+
+        XVisualInfo *visualInfo;
+        int matchingCount = 0;
+        visualInfo = XGetVisualInfo(DISPLAY_FROM_XCB(this), VisualIDMask, &visualInfoTemplate, &matchingCount);
+#endif //XCB_USE_GLX
             if (visualInfo) {
                 Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(this), m_screen->root(), visualInfo->visual, AllocNone);
 
@@ -395,21 +414,31 @@ void QXcbWindow::requestActivateWindow()
 
 QPlatformGLContext *QXcbWindow::glContext() const
 {
-#ifdef XCB_USE_XLIB_FOR_GLX
     if (!QApplicationPrivate::platformIntegration()->hasOpenGL()) {
         printf("no opengl\n");
         return 0;
     }
-
-    if (!m_glx_context) {
+#if defined(XCB_USE_GLX)
+    if (!m_context) {
         QXcbWindow *that = const_cast<QXcbWindow *>(this);
-        that->m_glx_context = new QGLXContext(m_window, m_screen, widget()->platformWindowFormat());
+        that->m_context = new QGLXContext(m_window, m_screen, widget()->platformWindowFormat());
     }
+#elif defined(XCB_USE_EGL)
+    if (!m_context) {
+        EGLDisplay display = eglGetDisplay(DISPLAY_FROM_XCB(this));
 
-    return m_glx_context;
-#else
-    return 0;
+        EGLConfig config = q_configFromQPlatformWindowFormat(display,widget()->platformWindowFormat(),true);
+        QVector<EGLint> eglContextAttrs;
+        eglContextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
+        eglContextAttrs.append(2);
+        eglContextAttrs.append(EGL_NONE);
+
+        EGLSurface eglSurface = eglCreateWindowSurface(display,config,(EGLNativeWindowType)m_window,0);
+        QXcbWindow *that = const_cast<QXcbWindow *>(this);
+        that->m_context = new QEGLPlatformContext(display, config, eglContextAttrs.data(), eglSurface, EGL_OPENGL_ES_API);
+    }
 #endif
+    return m_context;
 }
 
 void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)

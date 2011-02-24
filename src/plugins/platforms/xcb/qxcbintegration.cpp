@@ -53,6 +53,10 @@
 
 #include <stdio.h>
 
+#ifdef XCB_USE_EGL
+#include <EGL/egl.h>
+#endif
+
 QXcbIntegration::QXcbIntegration()
     : m_connection(new QXcbConnection)
 {
@@ -118,8 +122,20 @@ QPixmap QXcbIntegration::grabWindow(WId window, int x, int y, int width, int hei
 
 bool QXcbIntegration::hasOpenGL() const
 {
-#ifdef XCB_USE_XLIB_FOR_GLX
+#if defined(XCB_USE_GLX)
     return true;
+#elif defined(XCB_USE_EGL)
+    static bool eglHasbeenInitialized = false;
+    static bool wasEglInitialized = false;
+    if (!eglHasbeenInitialized) {
+        eglHasbeenInitialized = true;
+        const QXcbScreen *screen = static_cast<const QXcbScreen *>(m_screens.at(0));
+        EGLint major, minor;
+        eglBindAPI(EGL_OPENGL_ES_API);
+        EGLDisplay disp = eglGetDisplay((Display*)screen->connection()->xlib_display());
+        wasEglInitialized = eglInitialize(disp,&major,&minor);
+    }
+    return wasEglInitialized;
 #else
     return false;
 #endif

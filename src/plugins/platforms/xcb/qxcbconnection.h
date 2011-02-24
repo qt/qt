@@ -232,7 +232,7 @@ public:
 
     QXcbKeyboard *keyboard() const { return m_keyboard; }
 
-#ifdef XCB_USE_XLIB_FOR_GLX
+#ifdef XCB_USE_XLIB
     void *xlib_display() const { return m_xlib_display; }
 #endif
 
@@ -254,7 +254,7 @@ private:
 
     QXcbKeyboard *m_keyboard;
 
-#ifdef XCB_USE_XLIB_FOR_GLX
+#ifdef XCB_USE_XLIB
     void *m_xlib_display;
 #endif
 };
