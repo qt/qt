@@ -21,6 +21,7 @@ class QVSyncAnimationDriverPrivate : public QAnimationDriverPrivate
 public:
     QWidget *window;
     bool aborted;
+    bool hijacked;
 };
 
 
@@ -40,6 +41,7 @@ QVSyncAnimationDriver::QVSyncAnimationDriver(QObject *parent)
     Q_D(QVSyncAnimationDriver);
     d->window = 0;
     d->aborted = false;
+    d->hijacked = false;
 
     qApp->installEventFilter(this);
 }
@@ -78,10 +80,15 @@ bool QVSyncAnimationDriver::eventFilter(QObject *object, QEvent *event) {
             QApplication::quit();
         } else if (object == d->window && event->type() == QEvent::Paint) {
 
+            if (d->hijacked)
+                return true;
+
 #ifdef VSYNC_TIME_DEBUG
             QTime time;
             time.start();
 #endif
+
+            d->hijacked = true;
 
             while (isRunning() && !d->aborted && !d->threadData->quitNow) {
 
@@ -120,6 +127,7 @@ bool QVSyncAnimationDriver::eventFilter(QObject *object, QEvent *event) {
                        t4 > 19 || t4 < 12 ? "** BAD **" : "");
 #endif
             }
+            d->hijacked = false;
             return true;
         }
     }
