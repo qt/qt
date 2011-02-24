@@ -773,6 +773,27 @@ void tst_QSqlTableModel::removeInsertedRow()
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
     QCOMPARE(model.data(model.index(1, 1)).toString(), QString("trond"));
     QCOMPARE(model.data(model.index(2, 1)).toString(), QString("vohi"));
+
+    // Now insert a row with a null, and check that removing it also works (QTBUG-15979 etc)
+    model.insertRow(1);
+    model.setData(model.index(1,0), 55);
+    model.setData(model.index(1,1), QString("null columns"));
+    model.setData(model.index(1,2), QVariant());
+
+    model.submitAll();
+
+    QCOMPARE(model.rowCount(), 4);
+    QCOMPARE(model.data(model.index(3, 0)).toInt(), 55);
+    QCOMPARE(model.data(model.index(3, 1)).toString(), QString("null columns"));
+    QCOMPARE(model.data(model.index(3, 2)).isNull(), true);
+
+    QVERIFY(model.removeRow(3));
+    model.submitAll();
+    QCOMPARE(model.rowCount(), 3);
+
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QCOMPARE(model.data(model.index(1, 1)).toString(), QString("trond"));
+    QCOMPARE(model.data(model.index(2, 1)).toString(), QString("vohi"));
 }
 
 void tst_QSqlTableModel::removeInsertedRows()
