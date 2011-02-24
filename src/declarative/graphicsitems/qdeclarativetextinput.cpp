@@ -927,8 +927,15 @@ QRectF QDeclarativeTextInput::positionToRectangle(int pos) const
         cursorRectangle().height());
 }
 
+int QDeclarativeTextInput::positionAt(int x) const
+{
+    Q_D(const QDeclarativeTextInput);
+    return d->control->xToPos(x + d->hscroll);
+}
+
 /*!
-    \qmlmethod int TextInput::positionAt(int x)
+    \qmlmethod int TextInput::positionAt(int x, CursorPosition position = CursorBetweenCharacters)
+    \since Quick 1.1
 
     This function returns the character position at
     x pixels from the left of the textInput. Position 0 is before the
@@ -937,11 +944,18 @@ QRectF QDeclarativeTextInput::positionToRectangle(int pos) const
 
     This means that for all x values before the first character this function returns 0,
     and for all x values after the last character this function returns text.length.
+
+    The cursor position type specifies how the cursor position should be resolved.
+
+    \list
+    \o TextInput.CursorBetweenCharacters - Returns the position between characters that is nearest x.
+    \o TextInput.CursorOnCharacter - Returns the position before the character that is nearest x.
+    \endlist
 */
-int QDeclarativeTextInput::positionAt(int x) const
+int QDeclarativeTextInput::positionAt(int x, CursorPosition position)
 {
     Q_D(const QDeclarativeTextInput);
-    return d->control->xToPos(x + d->hscroll);
+    return d->control->xToPos(x + d->hscroll, QTextLine::CursorPosition(position));
 }
 
 void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
