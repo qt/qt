@@ -5634,202 +5634,186 @@
     \target preliminary-command
     \section1 \\preliminary 
 
-    The \\preliminary command indicates that the
-    referenced function is under development.
+    The \\preliminary command is for indicating that a referenced
+    function is still under development.
 
-           The command must stand on its own line.
+    The command must stand on its own line.
 
-           The \\preliminary command expands to a notification in the
-           function documentation, and marks the function as
-           preliminary when it appears in lists. For example:
+    The \\preliminary command expands to a notification in the
+    function documentation, and marks the function as preliminary when
+    it appears in lists. For example:
 
-           \code
-           / *!
-               \preliminary
+    \code
+    / *!
+        \preliminary
 
-               Returns information about the joining properties of the
-               character (needed for certain languages such as
-               Arabic).
-           * /
-           QChar::Joining QChar::joining() const
-           {
-               return ::joining(*this);
-           }
-           \endcode
+        Returns information about the joining properties of the
+        character (needed for certain languages such as
+        Arabic).
+    * /
+    QChar::Joining QChar::joining() const
+    {
+        return ::joining(*this);
+    }
+    \endcode
 
-           QDoc renders this as:
+    QDoc renders this as:
 
-           \quotation
-               \raw HTML
-               <h3>
-               <a href="http://qt.nokia.com/doc/4.0/qchar.html#Joining-enum">Joining</a>
-               QChar::joining () const</h3>
-               \endraw
+    \quotation
+        \raw HTML
+        <h3>
+        <a href="http://qt.nokia.com/doc/4.0/qchar.html#Joining-enum">Joining</a>
+        QChar::joining () const</h3>
+        \endraw
 
-               \bold {This function is under development and
-               is subject to change.}
+        \bold {This function is under development and
+    	subject to change.}
 
-               Returns information about the joining properties of the
-               character (needed for certain languages such as
-               Arabic).
-           \endquotation
+        Returns information about the joining properties of the
+        character (needed for certain languages such as
+        Arabic).
+    \endquotation
 
-           And the function's entry in QChar's list of functions will
-           be rendered as
+    And the function's entry in QChar's list of functions will be
+    rendered as:
 
-         \quotation
-             \list
-             \o ...
-             \o Joining
-                \l {http://qt.nokia.com/doc/4.0/qchar.html#Joining-enum}
-                   {joining}()
-                const   \c (preliminary)
-             \o ...
-             \endlist
-         \endquotation
-
+    \quotation
+        \list
+        \o ...
+        \o Joining
+           \l {http://qt.nokia.com/doc/4.0/qchar.html#Joining-enum}
+              {joining}()
+           const   \c (preliminary)
+       \o ...
+       \endlist
+    \endquotation
 
     \target obsolete-command
     \section1 \\obsolete 
 
-    The \\obsolete command indicates that the referenced
-    function no longer should be used in new code;
-    there is no guarantee for how long it will remain in
-    the library.
+    The \\obsolete command is for indicating that a function is being
+    deprecated, and it should no longer be used in new code. There is
+    no guarantee for how long it will remain in the library.
 
-           The command must stand on its own line.
+    The command must stand on its own line.
 
-           When generating the reference documentation for a class,
-           QDoc will create and link to a separate page documenting
-           its obsolete functions.  Usually an equivalent function is
-           provided as an alternative.
+    When generating the reference documentation for a class, QDoc will
+    create and link to a separate page documenting its obsolete
+    functions.  Usually an equivalent function is provided as an
+    alternative.
 
-           For example:
+    \code
+    / *!
+        \fn MyClass::MyObsoleteFunction
+        \obsolete
 
-           \code
-           / *!
-               \fn MyClass::MyObsoleteFunction
-               \obsolete
+        Use MyNewFunction() instead.
+    * /
+    \endcode
 
-               Use MyNewFunction() instead.
-           * /
-           \endcode
+    QDoc renders this in \c{myclass-obsolete.html} as:
 
-           QDoc renders this as:
+    \quotation
+        \raw HTML
+        <h1>Obsolete Members for MyClass</h1>
+        \endraw
 
-           \quotation
-               \raw HTML
-               <h1>Obsolete Members for MyClass</h1>
-               \endraw
+        \bold {The following class members are obsolete.} They are
+        provided to keep old source code working. We strongly advise
+        against using them in new code.
 
-               \bold {The following class members are obsolete.} They
-               are provided to keep old source code working. We
-               strongly advise against using them in new code.
+        ...
 
-               ...
+        \list
+            \o void MyObsoleteFunction() \c (obsolete)
+            \o ...
+        \endlist
 
-               \list
-                   \o void MyObsoleteFunction() \c (obsolete)
-                   \o ...
-               \endlist
-
-               \raw HTML
-               <hr />
-               <h2>Member Function Documentation</h2>
-               <h3>void MyObsoleteFunction ()</h3>
-               <p>Use MyNewFunction() instead.</p>
-               \endraw
-
-               ...
-           \endquotation
-
-           in myclass-obsolete.html
-
-
+        \raw HTML
+        <hr />
+        <h2>Member Function Documentation</h2>
+        <h3>void MyObsoleteFunction ()</h3>
+        <p>Use MyNewFunction() instead.</p>
+        \endraw
+        ...
+    \endquotation
 
     \target compat-command
     \section1 \\compat 
 
-    The \\compat command indicates that the referenced class
-    or function is part of the support library provided to keep
-    old source code working.
+    The \\compat command is for indicating that a class or function is
+    part of the support library provided to keep old source code
+    working.
 
-           The command must stand on its own line.
+    The command must stand on its own line.
 
-           Usually an equivalent function or class is provided as an
-           alternative.
+    Usually an equivalent function or class is provided as an
+    alternative.
 
-           If the command is used within the documentation of a class,
-           the command expands to a warning that the referenced class
-           is part of the support library. The warning is located on
-           top of the associated documentation. For example:
+    If the command is used in the documentation of a class, the
+    command expands to a warning that the referenced class is part of
+    the support library. The warning is located at the top of the
+    documentation page.
 
-           \code
-           / *!
-               \class MyQt3SupportClass
-               \compat
-           * /
-           \endcode
+    \code
+    / *!
+        \class MyQt3SupportClass
+        \compat
+    * /
+    \endcode
 
-           QDoc renders this as:
+    QDoc renders this at the top of the MyQt3SupportClass class
+    reference page.
 
-           \quotation
-               \bold {This class is part of the Qt 3 support
-               library.} It is provided to keep old source code
-               working. We strongly advise against using it in new
-               code. See the \l
-               {http://qt.nokia.com/doc/4.0/porting4.html} {Porting
-               Guide} for more information.
-           \endquotation
+    \quotation
+        \bold {This class is part of the Qt 3 support
+        library.} It is provided to keep old source code
+        working. We strongly advise against using it in new
+        code. See the \l
+        {http://qt.nokia.com/doc/4.0/porting4.html} {Porting
+        Guide} for more information.
+    \endquotation
 
-           on the top of the MyQt3SupportClass class reference.
+    If the command is used when documenting a function, QDoc will
+    create and link to a separate page documenting Qt 3 support
+    members when generating the reference documentation for the
+    associated class.
 
-           If the command is used when documenting a function, QDoc
-           will create and link to a separate page documenting Qt 3
-           support members when generating the reference documentation
-           for the associated class. For example:
+    \code
+    / *!
+        \fn MyClass::MyQt3SupportMemberFunction
+        \compat
 
-           \code
-           / *!
-               \fn MyClass::MyQt3SupportMemberFunction
-               \compat
+        Use MyNewFunction() instead.
+    * /
+    \endcode
 
-               Use MyNewFunction() instead.
-           * /
-           \endcode
+    QDoc renders this in \c{myclass-qt3.html} as:
 
-           QDoc renders this as:
+    \quotation
+        \raw HTML
+        <h1>Qt 3 Support Members for MyClass</h1>
+        \endraw
 
-           \quotation
-               \raw HTML
-               <h1>Qt 3 Support Members for MyClass</h1>
-               \endraw
+        \bold {The following class members are part of the Qt 3
+        support layer.} They are provided to help you port old code to
+        Qt 4. We advise against using them in new code.
 
-               \bold {The following class members are part of the Qt
-               3 support layer.} They are provided to help you port
-               old code to Qt 4. We advise against using them in new
-               code.
+        ...
 
-               ...
+        \list
+            \o void MyQt3SupportMemberFunction()
+            \o ...
+        \endlist
 
-               \list
-                   \o void MyQt3SupportMemberFunction()
-                   \o ...
-               \endlist
-
-               \raw HTML
-               <hr />
-               <h2>Member Function Documentation</h2>
-               <h3>void MyQt3SupportMemberFunction ()</h3>
-               <p>Use MyNewFunction() instead.</p>
-               \endraw
-
-               ...
-           \endquotation
-
-           in myclass-qt3.html
-
-
+        \raw HTML
+        <hr />
+        <h2>Member Function Documentation</h2>
+        <h3>void MyQt3SupportMemberFunction ()</h3>
+        <p>Use MyNewFunction() instead.</p>
+        \endraw
+        ...
+    \endquotation
 
     \target internal-command
     \section1 \\internal 
@@ -5837,32 +5821,30 @@
     The \\internal command indicates that the referenced
     function is not part of the public interface.
 
-           The command must stand on its own line.
+    The command must stand on its own line.
 
-           QDoc ignores the documentation as well as the documented
-           item, when generating the associated class reference
-           documenation. For example:
+    QDoc ignores the documentation as well as the documented item,
+    when generating the associated class reference documenation.
 
-           \code
-           / *!
-               \internal
+    \code
+    / *!
+        \internal
 
-               Tries to find the decimal separator. If it can't find
-               it and the thousand delimiter is != '.' it will try to
-               find a '.';
-           * /
-           int QDoubleSpinBoxPrivate::findDelimiter
-                   (const QString &str, int index) const
-           {
-               int dotindex = str.indexOf(delimiter, index);
-               if (dotindex == -1 && thousand != dot && delimiter != dot)
-                   dotindex = str.indexOf(dot, index);
-               return dotindex;
-           }
-           \endcode
+        Tries to find the decimal separator. If it can't find
+        it and the thousand delimiter is != '.' it will try to
+        find a '.';
+    * /
+    int QDoubleSpinBoxPrivate::findDelimiter
+            (const QString &str, int index) const
+    {
+        int dotindex = str.indexOf(delimiter, index);
+        if (dotindex == -1 && thousand != dot && delimiter != dot)
+            dotindex = str.indexOf(dot, index);
+        return dotindex;
+    }
+    \endcode
 
-           in qspinbox.cpp, will not be rendered at all.
-
+    This function will not be included in the documentation.
 
     \target since-command
     \section1 \\since 
@@ -5870,52 +5852,46 @@
     The \\since command tells in which minor release
     the associated functionality was added.
 
-           For example:
+    \code
+    / *!
+        \since 4.1
 
-           \code
-           / *!
-               \since 4.1
+        Returns an icon for \a standardIcon.
 
-               Returns an icon for \a standardIcon.
+        ...
 
-               ...
+        \sa standardIconImplementation(), standardPixmap()
+    * /
+    QIcon QStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *option, const QWidget *widget) const
+    {
+    }
+    \endcode
 
-               \sa standardIconImplementation(), standardPixmap()
-           * /
-           QIcon QStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *option, const QWidget *widget) const
-           {
-           }
-           \endcode
+    QDoc renders this as:
 
-           QDoc renders this as:
+    \quotation
+        \raw HTML
+        <h3>QIcon QStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *option, const QWidget *widget) const</h3>
+        \endraw
 
-           \quotation
-               \raw HTML
-               <h3>QIcon QStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *option, const QWidget *widget) const</h3>
-               \endraw
+        This function was introduced in Qt version 4.1
 
-               This function was introduced in Qt version 4.1
+        Returns an icon for \a standardIcon.
 
-               Returns an icon for \a standardIcon.
+        ...
 
-               ...
+        See also \l {QStyle::standardIconImplementation()}
+        {standardIconImplementation()} and \l
+        {QStyle::standardPixmap()} {standardPixmap()}.
+    \endquotation
 
-               See also \l
-               {QStyle::standardIconImplementation()} {standardIconImplementation()}
-               and \l {QStyle::standardPixmap()} {standardPixmap()}.
-               \endquotation
+    QDoc generates the "Qt" reference from the \l
+    {25-qdoc-configuration-derivedprojects.html#project} {\c project}
+    configuration variable. For that reason this reference will change
+    according to the current documentation project.
 
-           QDoc generates the "Qt" reference from the \l
-           {25-qdoc-configuration-derivedprojects.html#project} {\c
-           project} configuration variable. For that reason this
-           reference will change according to the current
-           documentation project.
-
-           See also \l
-           {25-qdoc-configuration-derivedprojects.html#project} {\c
-           project}.
-
-
+    See also \l {25-qdoc-configuration-derivedprojects.html#project}
+    {\c project}.
 */
 
 /*!
