@@ -1042,8 +1042,25 @@ static v8::Handle<v8::Value> QtLazyPropertySetter(v8::Local<v8::String> property
                                                   v8::Local<v8::Value> value,
                                                   const v8::AccessorInfo& info)
 {
-//    qDebug() << Q_FUNC_INFO << "UNIMPLETMENTED" << QScriptConverter::toString(property);
-    return v8::Handle<v8::Value>();
+    QScriptEnginePrivate *engine = reinterpret_cast<QScriptEnginePrivate *>(v8::External::Unwrap(info.Data()));
+    Q_ASSERT(engine);
+    v8::Local<v8::Object> self = info.This();
+    if (!engine->qobjectTemplate()->HasInstance(self))
+        return v8::Handle<v8::Value>(); //the QObject prototype is being used on another object.
+    QScriptQObjectData *data = QScriptQObjectData::get(self);
+    Q_ASSERT(engine == data->engine());
+
+    v8::Local<v8::Value> error;
+    QObject *qobject = data->cppObject(&error);
+    if (!qobject)
+        return error;
+
+    QByteArray name = QScriptConverter::toString(property).toLatin1();
+    qobject->setProperty(name, engine->variantFromJS(value));
+
+    self->SetAccessor(property, QtDynamicPropertyGetter, QtDynamicPropertySetter);
+    
+    return value;
 }
 
 // This callback implements a catch-all property getter for QMetaObject wrapper objects.
