@@ -234,6 +234,8 @@ public:
     inline void unregisterScript(QScriptEngineAgentPrivate::UnloadData *data);
     inline void invalidateAllScripts();
 
+    bool hasDemarshalFunction(int metaTypeId) const { return m_typeInfos.value(metaTypeId).demarshal; }
+
     v8::Persistent<v8::FunctionTemplate> declarativeClassTemplate;
     v8::Persistent<v8::FunctionTemplate> scriptClassTemplate;
     v8::Persistent<v8::FunctionTemplate> metaMethodTemplate;

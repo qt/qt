@@ -866,19 +866,17 @@ static void QtMetaPropertySetter(v8::Local<v8::String> /*property*/,
     Q_ASSERT(prop.isWritable());
 
     QVariant cppValue;
-#if 0
+
     if (prop.isEnumType() && value->IsString()
         && !engine->hasDemarshalFunction(prop.userType())) {
         // Give QMetaProperty::write() a chance to convert from
         // string to enum value.
-        cppValue = qtStringFromJS(value->ToString());
-    } else
-#endif
-    {
+        cppValue = QScriptConverter::toString(value->ToString());
+    } else {
         int type = prop.userType();
         if (type == -1) { // -1 is a QVariant.
             cppValue = engine->variantFromJS(value);
-        } else  {
+        } else {
             cppValue = QVariant(type, (void *)0);
             if (!engine->metaTypeFromJS(value, type, cppValue.data())) {
                 cppValue = engine->variantFromJS(value);
