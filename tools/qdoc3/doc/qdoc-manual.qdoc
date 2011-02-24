@@ -274,7 +274,7 @@
     is misspelled, so when you document a function you should mention
     each formal parameter by name in the function description,
     preceded by the \\a command. The parameter name is then rendered
-    in italics. For example:
+    in italics.
 
     \code
       / *!
@@ -616,8 +616,6 @@
 
     The \\bold command renders its argument in bold font.
 
-    For example:
-
     \code
     / *!
         This is regular text; \bold {this text is
@@ -737,8 +735,6 @@
     The \\sub command renders its argument lower than the baseline of
     the regular text, using a smaller font.
 
-    For example:
-
     \code
     / *!
         Definition (Range): Consider the sequence
@@ -770,8 +766,6 @@
     The \\sup command renders its argument higher than
     the baseline of the regular text, using a smaller font.
 
-    For example:
-
     \code
     / *!
         The series
@@ -800,8 +794,6 @@
 
     The \\underline command renders its argument underlined.
 
-    For example:
-
     \code
     / *!
         The \underline {F}ile menu gives the users the possibility
@@ -829,7 +821,7 @@
     QDoc commands always start with a backslash alone. To display an
     actual backslash in the text you need to type two of the kind. If
     you want to display two backslashes, you need to type four, and so
-    forth. For example:
+    forth.
 
     \code
     / *!
@@ -926,7 +918,7 @@
     example from \c part to \c section1, is not allowed.
 
     You can \e begin with either of the three: \c part, \c chapter or
-    \c section1. For example:
+    \c section1.
 
 
            \code
@@ -1138,8 +1130,6 @@
     {quotefromfile-command} {\\quotefromfile} or \l
     {quotefile-command} {\\quotefile} command.
 
-    For example:
-
            \code
            / *!
                \code
@@ -1195,7 +1185,7 @@
 
     Like the \l {code-command} {\\code} command, this command begins
     its code snippet on a new line rendered in the code font and with
-    the standard indentation. For example:
+    the standard indentation.
 
            \code
            / *!
@@ -1255,7 +1245,7 @@
     Like the \l {code-command} {\\code} and \l {badcode-command}
     {\\badcode} commands, the \\newcode command renders its code on a
     new line in the documentation using a typewriter font and the
-    standard indentation. For example:
+    standard indentation.
 
            \code
            / *!
@@ -1331,7 +1321,7 @@
 
     The file's contents is rendered in a separate paragraph, using a
     typewriter font and the standard indentation. The code is shown
-    verbatim. For example:
+    verbatim.
 
            \code
            / *!
@@ -1377,7 +1367,7 @@
     {\\printuntil}, \l {skipline-command} {\\skipline}, \l
     {skipto-command} {\\skipto}, \l {skipuntil-command}
     {\\skipuntil}. This enables you to quote specific portions of a
-    file. For example:
+    file.
 
            \code
            / *!
@@ -1453,7 +1443,7 @@
 
     The line from the source file is rendered as a separate paragraph,
     using a typewriter font and the standard indentation. The code is
-    shown verbatim. For example:
+    shown verbatim.
 
            \code
            / *!
@@ -1521,7 +1511,7 @@
     \target substring
 
     If the substring argument is surrounded by slashes it is
-    interpreted as a \l {regular expression}. For example:
+    interpreted as a \l {regular expression}.
 
            \code
            / *!
@@ -1582,7 +1572,7 @@
 
     The lines from the source file are rendered in a separate
     paragraph, using a typewriter font and the standard
-    indentation. The code is shown verbatim. For example:
+    indentation. The code is shown verbatim.
 
            \code
            / *!
@@ -1631,7 +1621,7 @@
 
     The lines from the source file are rendered in a separate
     paragraph, using a typewriter font and the standard
-    indentation. The code is shown verbatim. For example:
+    indentation. The code is shown verbatim.
 
            \code
            / *!
@@ -1685,7 +1675,7 @@
     command also follows the same conventions for \l {substring}
     {argument} as the \l {printline-command} {\\printline} command,
     and it is used in conjunction with the \l {quotefromfile-command}
-    {\\quotefromfile} command. For example:
+    {\\quotefromfile} command.
 
            \code
            / *!
@@ -1744,7 +1734,7 @@
     The command also follows the same conventions for \l {substring}
     {argument} as the \l {printline-command} {\\printline} command,
     and it is used in conjunction with the \l {quotefromfile-command}
-    {\\quotefromfile} command. For example:
+    {\\quotefromfile} command.
 
            \code
            / *!
@@ -1802,7 +1792,7 @@
     The command also follows the same conventions for \l {substring}
     {argument} as the \l {printline-command} {\\printline} command,
     and it is used in conjunction with the \l {quotefromfile-command}
-    {\\quotefromfile} command. For example:
+    {\\quotefromfile} command.
 
            \code
            / *!
@@ -1850,7 +1840,7 @@
     The command is used in conjunction with the \l
     {quotefromfile-command} {\\quotefromfile} command, and should be
     stated on its own line. The dots are rendered on a new line, using
-    a typewriter font. For example:
+    a typewriter font.
 
            \code
            / *!
@@ -1875,7 +1865,7 @@
     (\l {Example File} {The complete example file...})
 
     The default indentation is 4 spaces, but this can be adjusted
-    using the command's optional argument. For example:
+    using the command's optional argument.
 
     \code
     / *!
@@ -1967,13 +1957,11 @@
     \section1 \\l (link)
 
     The \\l link command is used to create a hyperlink to many
-    different kinds of targets. The command's general syntax is
+    different kinds of targets. The command's general syntax is:
 
     \code
       \l {link target} {link text}
     \endcode
-
-    For example:
 
     \code
        / *!
@@ -2118,7 +2106,7 @@
     \endlist
 
     The \\sa command supports the same kind of links as the \l
-    {l-command} {\\l} command. For example:
+    {l-command} {\\l} command.
 
     \code
       / *!
@@ -2162,8 +2150,6 @@
     required around the target name, but they may be required when the
     target name is used in a link cammand. See below.
 
-    For example:
-
     \code
     / *!
         \target capturing parentheses
@@ -2205,7 +2191,7 @@
 
     The \\keyword command is like the \l {target-command} {\\target}
     command, but stronger. A keyword can be linked from anywhere using
-    a simple syntax. For example:
+    a simple syntax.
 
     Keywords must be unique over all the documents processed during
     the QDoc run. The command uses the rest of the line as its
@@ -2288,8 +2274,6 @@
     description argument. Be sure to follow the file name or the
     description with a line break. Curly brackets are required if the
     description argument spans multiple lines.
-
-    For example:
 
     \code
     / *!
@@ -2396,7 +2380,7 @@
     \endraw
 
     The command can also be used to insert an image inline with the
-    text. For example:
+    text.
 
     \code
     / *!
@@ -2500,7 +2484,7 @@
     \l {row-command} {\\row} command and consists of cells, which
     starts with a \l {o-command} {\\o} command. There is also a \l
     {header-command} {\\header} command which is a special kind of row
-    with a special formatting. For example:
+    with a special formatting.
 
            \code
            / *!
@@ -2629,7 +2613,7 @@
     cells. A cell is created with the \l {o-command} {\\o} command.
 
     A header cell's text is centered within the table cell and
-    rendered using a bold font. For example:
+    rendered using a bold font.
 
            \code
            / *!
@@ -2681,7 +2665,7 @@
 
     The background cell color of each row alternates between two
     shades of grey, making it easier to distinguish the rows from each
-    other. The cells' contents is left aligned. For example:
+    other. The cells' contents is left aligned.
 
            \code
            / *!
@@ -2824,7 +2808,7 @@
            \endlist
 
     The \\list command takes an optional argument providing
-    alternative appearances for the list items. For example:
+    alternative appearances for the list items.
 
            \code
            / *!
@@ -2931,7 +2915,7 @@
     {list-command} {\\list}.
 
     If the command is used within a table, you can in addition specify
-    how many rows or columns the item should span. For example:
+    how many rows or columns the item should span.
 
            \code
            / *!
@@ -3177,7 +3161,7 @@
            \endcode
 
     \warning The brief statement is used as the first paragraph of the
-    detailed description. Do not repeat the sentence. For example:
+    detailed description. Do not repeat the sentence.
 
            \code
            / *!
@@ -3400,7 +3384,7 @@
     \section1 \\warning 
 
     The \\warning command prepends "Warning:" to the command's
-    argument, in bold font. For example:
+    argument, in bold font.
 
            \code
            / *!
@@ -3741,7 +3725,7 @@
     the condition specified by the command's argument is true.
 
     The command reads the rest of the line and parses it as an C++ #if
-    statement. For example:
+    statement.
 
            \code
            / *!
@@ -3795,7 +3779,7 @@
 
     The \\else command can only be used within \l {if-command}
     {\\if...\\endif} commands, but is useful when there is only two
-    alternatives. For example:
+    alternatives.
 
            \code
            / *!
@@ -3906,7 +3890,7 @@
     the enclosing \c{/}\c{*!} ... \c{*}\c{/} marks.  To ensure that
     QDoc won't attempt to read the file as a stand-alone piece of
     documentation, we recommend that you use the \c .qdocinc
-    extension. For example:
+    extension.
 
             \code
             / *!
@@ -3943,7 +3927,7 @@
     The command accepts two arguments: The first argument (the
     following word) is equivalent to the HTML meta tag's \e name
     variable, and the second argument (the rest of the line) is
-    equivalent to the tag's \e contents variable. For example:
+    equivalent to the tag's \e contents variable.
 
            \code
            / *!
@@ -4042,11 +4026,11 @@
     currently the only supported format is HTML.
 
     The \\raw command is useful if you want some special HTML effects
-    in your documentation. For example:
+    in your documentation.
 
            \code
            / *!
-               Qt has some predefined QColor objects. For example:
+               Qt has some predefined QColor objects.
 
                \raw HTML
                <style type="text/css" id="colorstyles">
@@ -4067,7 +4051,7 @@
     QDoc renders this as:
 
            \quotation
-               Qt has some predefined QColor objects. For example:
+               Qt has some predefined QColor objects.
 
                \raw HTML
                <style type="text/css" id="colorstyles">
@@ -4187,7 +4171,7 @@
 
     The name of the thing being documented is the unique argument for
     each topic command. The naming convention is to use the complete
-    name. For example:
+    name.
 
     \code
         \enum QComboBox::InsertPolicy
@@ -4195,7 +4179,7 @@
 
     The \l {fn-command} {\\fn} command is a special case. For the \l
     {fn-command} {\\fn} command, use the function's signature
-    including the class qualifier. For example:
+    including the class qualifier.
 
     \code
         \fn void QGraphicsWidget::setWindowFlags(Qt::WindowFlags wFlags)
@@ -4210,7 +4194,7 @@
     ')' as its argument.
 
     If a topic command is repeated with different arguments, the
-    same documentation will appear for both the units. For example:
+    same documentation will appear for both the units.
 
     \code
     / *!
@@ -4559,7 +4543,7 @@
     function's QDoc comment is written immediately above the function
     implementation in the \c .cpp file. But it must be present when
     documenting an inline function in the \c .cpp file that is
-    implemented in the \c .h file. For example:
+    implemented in the \c .h file.
 
     \code
     / *!
@@ -4603,7 +4587,7 @@
 
     Each class name is listed as a link to the class reference page
     followed by the text from the class's \l {brief-command} {\\brief}
-    texts. For example:
+    texts.
 
     \code
     / *!
@@ -4660,7 +4644,7 @@
 
     Note that overview pages related to the group, must be listed
     explicitly using the \l {generatelist-command} {\\generatelist}
-    command with the \c related argument. For example:
+    command with the \c related argument.
 
     \code
     / *!
@@ -4694,7 +4678,6 @@
 
     If the argument doesn't exist as a header file, the \\headerfile
     command creates a documentation page for the header file anyway.
-    For example:
 
            \code
            / *!
@@ -4951,7 +4934,7 @@
     The \\namespace command is for documenting the contents of the C++
     namespace named as its argument. The documentation outline QDoc
     generates for a namespace is similar to the outline it generates
-    for a C++ class. For example:
+    for a C++ class.
 
     \code
     / *!
@@ -5005,7 +4988,7 @@
     The \\page command is for creating a stand-alone documentation
     page.  The argument is the name of the file where QDoc should
     store the page. The page title is set using the \l {title-command}
-    {\\title} command. For example:
+    {\\title} command.
 
            \code
            / *!
@@ -5036,7 +5019,6 @@
     \section1 \\externalpage 
 
     The \\externalpage command assigns a title to an external URL.
-    For example:
 
     \code
     / *!
@@ -5089,7 +5071,7 @@
 
     A property is defined using the Q_PROPERTY() macro. The macro
     takes as arguments the property's name and its set, reset and get
-    functions. For example:
+    functions.
 
     \code
     Q_PROPERTY(QString state READ state WRITE setState)
@@ -5107,7 +5089,7 @@
     fragment that will be included in a one line description of the
     property. The command follows the same rules for the \l
     {brief-property} {description} as the \l {variable-command}
-    {\\variable} command. For example:
+    {\\variable} command.
 
     \code
     / *!
@@ -5204,7 +5186,7 @@
     for the class, namespace, or header file in which the typedef 
     is declared. To relat the \\typedef to a class, namespace, or 
     header file, the \\typedef comment must contain a
-     \l {relates-command} {\\relates} command. For example:
+     \l {relates-command} {\\relates} command.
 
     \code
     / *!
@@ -5263,7 +5245,7 @@
     \endquotation
 
     Other typedefs are located on the reference page for the class
-    that defines them. For example:
+    that defines them.
 
     \code
     / *!
@@ -5625,11 +5607,12 @@
 
     \title Reporting Status
 
-    The usage commands can indicate whether a documented object is
-    under development, becoming obsolete, provided for compatibility
-    reasons or simply not part of the public interface. They can
-    describe the history of minor versions. And they can also describe
-    a documented object's ability to handle multithreaded programming.
+    These commands are for indicating that a documented element is
+    still under development, is becoming obsolete, is provided for
+    compatibility reasons, or is simply not to be included in the
+    public interface. The \l {since-command}{\\since} command is for
+    including information about the version when a function or class
+    first appeared.
 
     \target preliminary-command
     \section1 \\preliminary 
@@ -5641,7 +5624,7 @@
 
     The \\preliminary command expands to a notification in the
     function documentation, and marks the function as preliminary when
-    it appears in lists. For example:
+    it appears in lists.
 
     \code
     / *!
@@ -6172,7 +6155,7 @@
     The command must stand on its own line.
 
     QDoc will omit the reimplemented function from the class
-    reference. For example:
+    reference.
 
     \code
     / *!
@@ -6279,7 +6262,7 @@
     The \\ingroup command's argument is a group name, but note
     that the command considers the rest of the line as part of
     its argument. Make sure that the group name is followed by
-    a linebreak. For example:
+    a linebreak.
 
     \code
     / *!
@@ -6315,7 +6298,7 @@
 
     The command's argument is a module name, but note that the command
     considers the rest of the line as part of its argument. Make sure
-    that the module name is followed by a linebreak. For example:
+    that the module name is followed by a linebreak.
 
     \code
     /*!
@@ -6460,7 +6443,7 @@
     projects.
 
     If some of the variable keys have the same values, they can be set
-    at the same time. For example:
+    at the same time.
 
     \code
     {header, source}dirs = kernel
@@ -6482,7 +6465,7 @@
     provide a variable of the latter type with several strings they
     will simply be concatenated. The quotes around the value string
     are optional. But applying them allows you to use special
-    characters like '=' and ' \" ' within the string. For example:
+    characters like '=' and ' \" ' within the string.
 
     \code
     HTML.postheader = "<a href=\"index.html\">Home</a>"
@@ -6592,23 +6575,19 @@
 
     The \c alias variable renames a QDoc command.
 
-           The general syntax is \tt {alias.\e{original-command-name}
-           = \e temporary-command-name}.
+    The general syntax is \tt {alias.\e{original-command-name} = \e
+    temporary-command-name}.
 
-           For example:
+    \code
+    alias.i = e
+    \endcode
 
-           \code
-           alias.i = e
-           \endcode
+    This renames the built-in command \\i (italics) to \\e.  The \c
+    alias variable is often used for compatibility reasons; for more
+    information see the \l {Compatibility Issues} {compatibility
+    section}.
 
-           renames the built-in command \\i (italics) to \\e.
-
-           The \c alias variable is often used for compatibility
-           reasons; for more information see the 
-	   \l {Compatibility Issues} {compatibility section}.
-
-           See also \l {macro-command} {macro}.
-
+    See also \l {macro-command} {macro}.
 
     \target codeindent-variable
     \section1 codeindent 
@@ -6616,13 +6595,12 @@
     The \c codeindent variable specifies the level of
     indentation that QDoc uses when writing code snippets.
 
-           QDoc originally used a hard-coded value of four spaces for
-           code indentation to ensure that code snippets could be easily
-           distinguished from surrounding text. Since we can use
-           \l{HTML Specific Configuration Variables#HTML.stylesheets} {stylesheets} to
-           adjust the appearance of certain types of HTML elements, this
-           level of indentation is not always required.
-
+    QDoc originally used a hard-coded value of four spaces for code
+    indentation to ensure that code snippets could be easily
+    distinguished from surrounding text. Since we can use \l{HTML
+    Specific Configuration Variables#HTML.stylesheets} {stylesheets}
+    to adjust the appearance of certain types of HTML elements, this
+    level of indentation is not always required.
 
     \target defines-variable
     \section1 defines 
@@ -6630,57 +6608,53 @@
     The \c defines variable specifies the C++ preprocessor
     symbols that QDoc will recognize and respond to.
 
-           When a preprocessor symbol is specified using the \c
-           defines variable, you can also use the \l {if-command} {\\if}
-           command to enclose documentation that only will be included
-           if the preprocessor symbol is defined.
+    When a preprocessor symbol is specified using the \c defines
+    variable, you can also use the \l {if-command} {\\if} command to
+    enclose documentation that only will be included if the
+    preprocessor symbol is defined.
 
-           The values of the variable are regular expressions (see
-           QRegExp for details). By default, no symbol is defined,
-           meaning that code protected with #ifdef...#endif will be
-           ignored.
+    The values of the variable are regular expressions (see QRegExp
+    for details). By default, no symbol is defined, meaning that code
+    protected with #ifdef...#endif will be ignored.
 
-           For example:
+    \code
+    defines = Q_QDOC \
+              QT_.*_SUPPORT \
+              QT_.*_LIB \
+              QT_COMPAT \
+              QT3_SUPPORT \
+              Q_WS_.* \
+              Q_OS_.* \
+              Q_BYTE_ORDER \
+              __cplusplus
+    \endcode
 
-           \code
-           defines = Q_QDOC \
-                     QT_.*_SUPPORT \
-                     QT_.*_LIB \
-                     QT_COMPAT \
-                     QT3_SUPPORT \
-                     Q_WS_.* \
-                     Q_OS_.* \
-                     Q_BYTE_ORDER \
-                     __cplusplus
-           \endcode
+    This ensures that QDoc will process the code that requires these
+    symbols to be defined. For example:
 
-           ensures that QDoc will process the code that requires these
-           symbols to be defined. For example:
+    \code
+    #ifdef Q_WS_WIN
+        HDC getDC() const;
+        void releaseDC(HDC) const;
+    #endif
+    \endcode
 
-           \code
-           #ifdef Q_WS_WIN
-               HDC getDC() const;
-               void releaseDC(HDC) const;
-           #endif
-           \endcode
+    Since the Q_WS_.* regular expression (specified using the \c
+    defines variable) matches Q_WS_WIN, QDoc will process the code
+    within #ifdef and #endif in our example.
 
-           Since the Q_WS_.* regular expression (specified using the
-           \c defines variable) matches Q_WS_WIN, QDoc will process
-           the code within #ifdef and #endif in our example.
+    You can also define preprocessor symbols manually on the command
+    line using the -D option. For example:
 
-           You can also define preprocessor symbols manually on the
-           command line using the -D option. For example:
+    \code
+        currentdirectory$ qdoc3 -Dconsoleedition qt.qdocconf
+    \endcode
 
-           \code
-               currentdirectory$ qdoc3 -Dconsoleedition qt.qdocconf
-           \endcode
+    In this case the -D option ensures that the \c consoleedition
+    preprocessor symbol is defined when QDoc processes the source
+    files defined in the qt.qdocconf file.
 
-           In this case the -D option ensures that the \c
-           consoleedition preprocessor symbol is defined when QDoc
-           processes the source files defined in the qt.qdocconf file.
-
-           See also \l {falsehoods-variable} {falsehoods} and \l {if-command} {\\if}.
-
+    See also \l {falsehoods-variable} {falsehoods} and \l {if-command} {\\if}.
 
     \target edition-variable
     \section1 edition 
@@ -6734,8 +6708,6 @@
            order, and accept the first matching file it finds. It will
            only search in the specified directories, \e not in
            subdirectories.
-
-           For example:
 
            \code
            exampledirs = $QTDIR/doc/src \
@@ -6914,8 +6886,6 @@
     containing the header files associated with the \c .cpp source
     files used in the documentation.
 
-           For example:
-
            \code
            headerdirs = $QTDIR/src \
                         $QTDIR/extensions/activeqt \
@@ -6961,8 +6931,6 @@
     The \c headers variable allows you to specify individual
     header files in addition to those located in the directories
     specified by the \l {headerdirs} {\c headerdirs} variable.
-
-           For example:
 
            \code
            headers = $QTDIR/src/gui/widgets/qlineedit.h \
@@ -7023,8 +6991,6 @@
            only search in the specified directories, \e not in
            subdirectories.
 
-           For example:
-
            \code
            imagedirs = $QTDIR/doc/src/images \
                        $QTDIR/examples
@@ -7074,8 +7040,6 @@
     image files in addition to those located in the directories
     specified by the \l {imagedirs} {\c imagedirs} variable.
 
-           For example:
-
            \code
                images = $QTDIR/doc/src/images/calculator-example.png
            \endcode
@@ -7099,7 +7063,7 @@
            {images.fileextensions.\e{format} = *.\e{extension}}.
 
            The idea is to enable different image format for different
-           output format. For example:
+           output format.
 
            \code
                images.fileextensions.HTML = *.png
@@ -7173,8 +7137,6 @@
     The \c naturallanguage variable specifies the natural
     language used for the documentation generated by qdoc.
 
-           For example:
-
            \code
            naturallanguage = zh-Hans
            \endcode
@@ -7223,8 +7185,6 @@
     The \c outputencoding variable specifies the encoding
     used for the documentation generated by qdoc.
 
-           For example:
-
            \code
            outputencoding = UTF-8
            \endcode
@@ -7260,8 +7220,6 @@
            The \c outputprefixes variable specifies a mapping between types of files
            and the prefixes to prepend to the HTML file names in the generated
            documentation.
-
-           For example:
 
            \code
            outputprefixes = QML
@@ -7353,8 +7311,6 @@
     The \c sourceencoding variable specifies the encoding
     used for the source code and documentation.
 
-           For example:
-
            \code
            sourceencoding = UTF-8
            \endcode
@@ -7380,8 +7336,6 @@
     The \c sources variable allows you to specify individual source
     files in addition to those located in the directories specified by
     the \l {sourcedirs-variable} {sourcedirs} variable.
-
-           For example:
 
            \code
            sources = $QTDIR/src/gui/widgets/qlineedit.cpp \
@@ -7431,7 +7385,7 @@
     QDoc warnings from the output.
 
            The warnings are specified using standard wildcard
-           expressions. For example:
+           expressions.
 
            \code
            spurious = "Cannot find .*" \
@@ -7454,8 +7408,6 @@
            should perform syntax highlighting on source code quoted in the
            documentation it generates.
 
-           For example:
-
            \code
            syntaxhighlighting = true
            \endcode
@@ -7468,8 +7420,6 @@
     \section1 tabsize 
 
     The \c tabsize variable defines the size of a tab character.
-
-           For example:
 
            \code
            tabsize = 4
@@ -7492,8 +7442,6 @@
 
     The \c version variable specifies the version number of the
     documented software.
-
-           For example:
 
            \code
            version = 4.0.1
@@ -7905,7 +7853,7 @@
     associated with the \c .qdocconf file.
 
            The project's name is used to form a file name for the
-           associated project's \e index file. For example:
+           associated project's \e index file.
 
            \code
                project = QtMotif
@@ -7926,8 +7874,6 @@
             project. When we use the index on its own, QDoc will use
             this as the base URL when constructing links to classes,
             functions, and other things listed in the index.
-
-            For example:
 
             \code
                  project     = Qt
