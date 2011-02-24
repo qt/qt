@@ -6257,108 +6257,105 @@
     classes in the documentation, while the modules are elements of
     Qt's structure.
 
+    \section1 Commands
+
     \target mainclass-command
-    \section1 \\mainclass 
+    \section2 \\mainclass 
 
     The \\mainclass command relates the documented class to
     a group called mainclasses.
 
-           The command must stand on its own line.
+    The command must stand on its own line.
 
-           For example:
+    \code
+    / *!
+        \class QWidget qwidget.h
+        \brief The QWidget class is the base class of
+        all user interface objects.
 
-           \code
-           / *!
-               \class QWidget qwidget.h
-               \brief The QWidget class is the base class of
-               all user interface objects.
+        \mainclass
 
-               \mainclass
+        ...
+    * /
+    \endcode
 
-               ...
-           * /
-           \endcode
+    This will include the QWidget class in the \e mainclasses
+    group, which means, for example, that the class will appear on the
+    list created by calling the \l {generatelist-command}
+    {\\generatelist} command with the \c mainclasses argument:
 
-           will ensure that the QWidget class is included in the \c
-           mainclasses group, which means, for example, that the class
-           will appear on the list created by calling the \l
-           {generatelist-command} {\\generatelist} command with the \c
-           mainclasses argument:
+    \l http://qt.nokia.com/doc/4.0/mainclasses.html
 
-           \l http://qt.nokia.com/doc/4.0/mainclasses.html
+    \note The Qt documentation no longer includes the \e mainclasses
+    page.
 
-           See also \l {generatelist-command} {\\generatelist}.
-
+    See also \l {generatelist-command} {\\generatelist}.
 
     \target ingroup-command
-    \section1 \\ingroup 
+    \section2 \\ingroup 
 
     The \\ingroup command indicates that the given
     overview or documented class belongs to a certain group of
     related docmentation.
 
-           A class or overview may belong to many groups.
+    A class or overview may belong to many groups.
 
-           The \\ingroup command's argument is a group name, but note
-           that the command considers the rest of the line as part of
-           its argument. Make sure that the group name is followed by
-           a linebreak. For example:
+    The \\ingroup command's argument is a group name, but note
+    that the command considers the rest of the line as part of
+    its argument. Make sure that the group name is followed by
+    a linebreak. For example:
 
-           \code
-           / *!
-               \class QDir
-               \brief The QDir class provides access to directory
-                      structures and their contents.
+    \code
+    / *!
+        \class QDir
+        \brief The QDir class provides access to directory
+               structures and their contents.
 
-               \ingroup io
-               ...
-           * /
-           \endcode
+        \ingroup io
+        ...
+    * /
+    \endcode
 
-           will ensure that the QDir class is included in the \c io
-           group, which means, for example, that QDir will appear on
-           the list created by calling the \l {group-command} {\\group} command
-           with the \c io argument.
+    This will include the QDir class in the \c io group, which means,
+    for example, that QDir will appear on the list created by calling
+    the \l {group-command} {\\group} command with the \c io argument.
 
-           Note that to list overviews that are related to a given
-           group, you must generate the list exlicitly by using the \l
-           {generatelist-command} {\\generatelist} command with the \c related
-           argument.
+    To list overviews that are related to a certain group, you must
+    generate the list explicitly using the \l {generatelist-command}
+    {\\generatelist} command with the \c related argument.
 
-           See also \l {group-command} {\\group}.
+    See also \l {group-command} {\\group}.
 
     \target inmodule-command
-    \section1 \\inmodule 
+    \section2 \\inmodule 
 
-    The \\inmodule command relates the documented class
-    to the module specified by the command's argument.
+    The \\inmodule command relates a class to the module specified by
+    the command's argument.
 
-           For the basic classes in Qt, a class's module is determined
-           by its location, i.e. its directory. However, for
-           extensions, like ActiveQt and Qt Designer, a class needs to
-           be related to a module explicitly.
+    For the basic classes in Qt, a class's module is determined by its
+    location, i.e. its directory. However, for extensions, like
+    ActiveQt and Qt Designer, a class must be related to a module
+    explicitly.
 
-           The command's argument is a module name, but note that the
-           command considers the rest of the line as part of its
-           argument. Make sure that the module name is followed by a
-           linebreak. For example:
+    The command's argument is a module name, but note that the command
+    considers the rest of the line as part of its argument. Make sure
+    that the module name is followed by a linebreak. For example:
 
-           \code
-           /*!
-               \class QDesignerTaskMenuExtension
-               \inmodule QtDesigner
-           * /
-           \endcode
+    \code
+    /*!
+        \class QDesignerTaskMenuExtension
+        \inmodule QtDesigner
+    * /
+    \endcode
 
-           will ensure that the QDesignerTaskMenuExtension class is
-           included in the \c QtDesigner module, which means, for
-           example, that the class will appear on the list created by
-           calling the \l {generatelist-command} {\\generatelist} command with
-           the \c {{classesbymodule QtDesigner}} argument.
+    This ensures that the QDesignerTaskMenuExtension class is included
+    in the \c QtDesigner module, which means, for example, that the
+    class will appear on the list created by calling the \l
+    {generatelist-command} {\\generatelist} command with the \c
+    {{classesbymodule QtDesigner}} argument.
 
-           See also \l {module-command} {\\module} and \l
-           {generatelist-command} {\\generatelist}.
-
+    See also \l {module-command} {\\module} and \l
+    {generatelist-command} {\\generatelist}.
 */
 
 /*!
@@ -6369,90 +6366,83 @@
 
     \title Naming Things
 
-    In general a title command considers everything that follows it
-    until the first line break as its argument.  If the title needs to
-    be spanned over several lines, make sure to end each line (except
-    the last one) with a backslash.
+    In general, a title command considers everything that follows it
+    until the first line break as its argument.  If the title is so
+    long it must span multiple lines, end each line (except the last
+    one) with a backslash.
+
+    \section1 Commands
 
     \target title-command
-    \section1 \\title 
+    \section2 \\title 
 
-    The \\title command sets the title for a
-    documentation page, or allows you to override it.
+    The \\title command sets the title for a documentation page, or
+    allows you to override it.
 
-           For example:
+    \code
+    / *!
+        \page signalandslots.html
 
-           \code
-           / *!
-               \page signalandslots.html
+        \title Signals & Slots
 
-               \title Signals & Slots
+        Signals and slots are used for communication between
+        objects. The signals and slots mechanism is a central
+        feature of Qt and probably the part that differs most
+        from the features provided by other frameworks.
 
-               Signals and slots are used for communication between
-               objects. The signals and slots mechanism is a central
-               feature of Qt and probably the part that differs most
-               from the features provided by other frameworks.
+        ...
+    * /
+    \endcode
 
-               ...
-           * /
-           \endcode
+    QDoc renders this as:
 
-           QDoc renders this as:
+    \quotation
+        \raw HTML
+            <h1><center>Signal and Slots</center></h1>
+        \endraw
 
-           \quotation
-               \raw HTML
-                   <h1><center>Signal and Slots</center></h1>
-               \endraw
-
-               Signals and slots are used for communication between
-               objects. The signals and slots mechanism is a central
-               feature of Qt and probably the part that differs most
-               from the features provided by other frameworks.
-
-               ...
-           \endquotation
-           See also \l {subtitle-command} {\\subtitle}.
-
+        Signals and slots are used for communication between
+        objects. The signals and slots mechanism is a central
+        feature of Qt and probably the part that differs most
+        from the features provided by other frameworks.
+        ...
+    \endquotation
+    See also \l {subtitle-command} {\\subtitle}.
 
     \target subtitle-command
-    \section1 \\subtitle 
+    \section2 \\subtitle 
 
-    The \\subtitle command sets a subtitle for a
-    documentation page.
+    The \\subtitle command sets a subtitle for a documentation page.
 
-           For example:
+    \code
+    / *!
+        \page qtopiacore-overview.html
 
-           \code
-           / *!
-               \page qtopiacore-overview.html
+        \title Qtopia Core
+        \subtitle Qt for Embedded Linux
 
-               \title Qtopia Core
-               \subtitle Qt for Embedded Linux
+        Qt/Embedded, the embedded Linux port of Qt, is a
+        complete and self-contained C++ GUI and platform
+        development tool for Linux-based embedded development.
+        ...
+    * /
+    \endcode
 
-               Qt/Embedded, the embedded Linux port of Qt, is a
-               complete and self-contained C++ GUI and platform
-               development tool for Linux-based embedded development.
+    QDoc renders this as:
 
-               ...
-           * /
-           \endcode
+    \quotation
+        \raw HTML
+            <h1><center>Qtopia Core</center></h1>
+            <h2><center>Qt for Embedded Linux</center></h2>
+        \endraw
 
-           QDoc renders this as:
+        Qt/Embedded, the embedded Linux port of Qt, is a
+        complete and self-contained C++ GUI and platform
+        development tool for Linux-based embedded development.
+        ...
+    \endquotation
 
-           \quotation
-               \raw HTML
-                   <h1><center>Qtopia Core</center></h1>
-                   <h2><center>Qt for Embedded Linux</center></h2>
-               \endraw
-
-               Qt/Embedded, the embedded Linux port of Qt, is a
-               complete and self-contained C++ GUI and platform
-               development tool for Linux-based embedded development.
-
-               ...
-           \endquotation
-
-           See also \l {title-command} {\\title}.
+    See also \l {title-command} {\\title}.
 
 */
 
