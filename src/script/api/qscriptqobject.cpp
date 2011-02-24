@@ -62,26 +62,39 @@ static v8::Handle<v8::Value> callQtMetaMethod(QScriptEnginePrivate *engine, QObj
 
     // Convert arguments to C++ types.
     for (int i = 0; i < parameterTypeNames.size(); ++i) {
-        int atype = QMetaType::type(parameterTypeNames.at(i));
-        if (!atype)
+        int targetType = QMetaType::type(parameterTypeNames.at(i));
+        if (!targetType)
             Q_UNIMPLEMENTED();
 
         v8::Handle<v8::Value> actual = args[i];
 
+        QVariant v(targetType, (void *)0);
+        if (engine->metaTypeFromJS(actual, targetType, v.data())) {
+            cppArgs[1+i] = v;
+            continue;
+        }
+
         if(engine->isQtVariant(actual)) {
-            const QVariant &var = engine->variantValue(actual);
-            if (var.userType() == atype) {
+            QVariant &var = engine->variantValue(actual);
+            if (var.userType() == targetType) {
                 cppArgs[1+i] = var;
+                continue;
+            } else if (var.canConvert(QVariant::Type(targetType))) {
+                v = var;
+                v.convert(QVariant::Type(targetType));
+                cppArgs[1+i] = v;
+                continue;
+            }
+            QByteArray typeName = var.typeName();
+            if (typeName.endsWith('*')
+                && (QMetaType::type(typeName.left(typeName.size()-1)) == targetType)) {
+                cppArgs[1+i] = QVariant(targetType, *reinterpret_cast<void* *>(var.data()));
                 continue;
             }
         }
 
-        QVariant v(atype, (void *)0);
-        if (!engine->metaTypeFromJS(actual, atype, v.data())) {
-            // Throw TypeError.
-            Q_UNIMPLEMENTED();
-        }
-        cppArgs[1+i] = v;
+        Q_UNIMPLEMENTED();
+        //throw TypeError;
     }
 
     // Prepare void** array for metacall.
@@ -530,7 +543,11 @@ v8::Handle<v8::Value> QScriptGenericMetaMethodData<T, functionTemplate>::call()
     if (m_overloaded)
         methodIndex = resolveOverloadedQtMetaMethodCall(this->engine, meta, methodIndex, *args);
 
-    Q_ASSERT(methodIndex >= 0); // Ambiguous call.
+    if (methodIndex < 0) { // Ambiguous call.
+        Q_UNIMPLEMENTED();
+        //TODO: throw error
+        return error;
+    }
 
     QScriptEnginePrivate *oldEngine = 0;
     QScriptable *scriptable = instance->toQScriptable();
@@ -880,6 +897,12 @@ static void QtMetaPropertySetter(v8::Local<v8::String> /*property*/,
             cppValue = QVariant(type, (void *)0);
             if (!engine->metaTypeFromJS(value, type, cppValue.data())) {
                 cppValue = engine->variantFromJS(value);
+                if (cppValue.userType() != type) {
+                    QByteArray typeName = cppValue.typeName();
+                    if (typeName.endsWith('*') && (QMetaType::type(typeName.left(typeName.size()-1)) == type)) {
+                        cppValue = QVariant(type, *reinterpret_cast<void* *>(cppValue.data()));
+                    }
+                }
             }
         }
     }
