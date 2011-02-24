@@ -6109,147 +6109,139 @@
 
     \title Relating Things
 
-    The relation commands discribe how the documented object relates
-    to its context: Whether it is an overloaded function, a
-    reimplemented function or a global function related to a specified
-    class or header file.
+    The relating commands are for specifying how one documented
+    element relates to another documented element. e.g., This function
+    overloads of another function, or this function is a
+    reimplementation of another function, or this typedef is \e
+    related to some class or header file.
+
+    \section1 Commands
 
     \target overload-command
-    \section1 \\overload 
+    \section2 \\overload 
 
-    The \\overload command indicates that the 
-    function is a secondary overload of its name.
+    The \\overload command is for indicating that a function is a
+    secondary overload of its name.
 
-           The command must stand on its own line.
+    The command must stand on its own line.
 
-           For any overloaded function (except constructors), QDoc
-           expects one primary version of the function and all the 
-	   the overloads marked with the \bold{\\overload command}.
-           The primary version should be fully documented. Each 
-	   overload can have whatever extra documentation you want
-	   to add for just that overload. 
+    For a function name that is overloaded (except constructors), QDoc
+    expects one primary version of the function, and all the others
+    marked with the \bold {\\overload command}.  The primary version
+    should be fully documented. Each overload can have whatever extra
+    documentation you want to add for just that overloaded version.
 
-	   From Qt 4.5, you can include the function name plus '()'
-	   as a parameter to the \bold{\\overload} command, which 
-	   will include a standard \e{This function overloads...} 
-	   line of text with a link to the documentation for the 
-	   primary version of the function. 
+    From Qt 4.5, you can include the function name plus '()' as a
+    parameter to the \bold{\\overload} command, which will include a
+    standard \e{This function overloads...}  line of text with a link
+    to the documentation for the primary version of the function.
 
-	   For example:
+    \code
+    / *!
+        \overload addAction()
 
-           \code
-           / *!
-               \overload addAction()
+        This convenience function creates a new action with an
+        \a icon and some \a text. The function adds the newly
+        created action to the menu's list of actions, and
+        returns it.
 
-               This convenience function creates a new action with an
-               \a icon and some \a text. The function adds the newly
-               created action to the menu's list of actions, and
-               returns it.
+        \sa QWidget::addAction()
+    * /
+    QAction *QMenu::addAction(const QIcon &icon, const QString &text)
+    {
+        QAction *ret = new QAction(icon, text, this);
+        addAction(ret);
+        return ret;
+    }
+    \endcode
 
-               \sa QWidget::addAction()
-           * /
-           QAction *QMenu::addAction(const QIcon &icon, const QString &text)
-           {
-               QAction *ret = new QAction(icon, text, this);
-               addAction(ret);
-               return ret;
-           }
-           \endcode
+    QDoc renders this as:
 
-           QDoc renders this as:
+    \quotation
+        \raw HTML
+        <h3><a href="http://qt.nokia.com/doc/4.0/qaction.html">QAction</a>
+        * QMenu::addAction ( const QIcon & <i>icon</i>,
+        const QString & <i>text</i> )
+        </h3>
+        \endraw
 
-           \quotation
-               \raw HTML
-               <h3><a href="http://qt.nokia.com/doc/4.0/qaction.html">QAction</a>
-               * QMenu::addAction ( const QIcon & <i>icon</i>,
-               const QString & <i>text</i> )
-               </h3>
-               \endraw
+	This function overloads \l {http://qt.nokia.com/doc/4.0/qwidget.html#addAction} {addAction()}
 
-	       This function overloads \l {http://qt.nokia.com/doc/4.0/qwidget.html#addAction} {addAction()}
+        This convenience function creates a new action with an
+        \e icon and some \e text. The function adds the newly
+        created action to the menu's list of actions, and
+        returns it.
 
-               This convenience function creates a new action with an
-               \e icon and some \e text. The function adds the newly
-               created action to the menu's list of actions, and
-               returns it.
+        See also
+        \l {http://qt.nokia.com/doc/4.0/qwidget.html#addAction}
+        {QWidget::addAction}().
+    \endquotation
 
-               See also
-               \l {http://qt.nokia.com/doc/4.0/qwidget.html#addAction}
-               {QWidget::addAction}().
-           \endquotation
+    If you don't include the function name with the \bold{\\overlaod}
+    command, then instead of the "This function overloads..." line
+    with the link to the documentation for the primary version, you
+    get the old standard line:
 
-	   If you don't include the function name with the
-	   \bold{\\overlaod} command, then instead of the "This
-	   function overloads..." line with the link to the
-	   documentation for the primary version, you get the old
-	   standard line:
-
-	   \quotation
-               This is an overloaded member function, provided for
-               convenience. 
-	   \endquotation.
-
+    \quotation
+        This is an overloaded member function, provided for
+        convenience. 
+    \endquotation.
 
     \target reimp-command
-    \section1 \\reimp 
+    \section2 \\reimp 
 
-    The \\reimp command indicates that the
-    referenced function is a reimplementation of a virtual function,
-    where the reimplementation has no effect on the interface.
+    The \\reimp command is for indicating that a function is a
+    reimplementation of a virtual function.
 
-           The command must stand on its own line.
+    The command must stand on its own line.
 
-           QDoc will omit the reimplemented function from the class
-           reference. For example:
+    QDoc will omit the reimplemented function from the class
+    reference. For example:
 
-           \code
-           / *!
-               \reimp
-           * /
-           void QToolButton::nextCheckState()
-           {
-               Q_D(QToolButton);
-               if (!d->defaultAction)
-                   QAbstractButton::nextCheckState();
-               else
-                   d->defaultAction->trigger();
-           }
-           \endcode
+    \code
+    / *!
+        \reimp
+    * /
+    void QToolButton::nextCheckState()
+    {
+        Q_D(QToolButton);
+        if (!d->defaultAction)
+            QAbstractButton::nextCheckState();
+        else
+            d->defaultAction->trigger();
+    }
+    \endcode
 
-           will not be rendered at all; only a link to the inherited
-           QAbstractButton::nextCheckState() will appear in the
-           documentation.
-
+    This function will not be included in the documentation. Instead,
+    a link to the base function QAbstractButton::nextCheckState() will
+    appear in the documentation.
 
     \target relates-command
-    \section1 \\relates 
+    \section2 \\relates 
 
-    The \\relates command attaches the documentation of
-    a global function to that of a related class or header file.
+    The \\relates command is for including the documentation of a
+    global element to some class or header file. The argument is a
+    class name or header file.
 
-           The command's argument is a class name, an the command (and
-           its argument) must stand on its own line.
+    \code
+    / *!
+        \relates QChar
 
-           \code
-           / *!
-               \relates QChar
+        Reads a char from the stream \a in into char \a chr.
 
-               Reads a char from the stream \a in into char \a chr.
-
-               \sa {Format of the QDataStream operators}
-           * /
-           QDataStream &operator>>(QDataStream &in, QChar &chr)
-           {
-               quint16 u;
-               in >> u;
-               chr.unicode() = ushort(u);
-               return in;
-           }
-           \endcode
-
-           will be rendered with the QChar documentation.
-
-
+        \sa {Format of the QDataStream operators}
+    * /
+    QDataStream &operator>>(QDataStream &in, QChar &chr)
+    {
+        quint16 u;
+        in >> u;
+        chr.unicode() = ushort(u);
+        return in;
+    }
+    \endcode
+ 
+    The documentation for this function will be included on the reference page 
+    for class QChra.
 */
 
 /*!
@@ -7335,7 +7327,7 @@
 
            Example:
 
-           This option has been replaced by the \l{syntaxhighlighing} option.
+           This option has been replaced by the \l{syntaxhighlighting} option.
 
            For compatibility, the \c -slow command-line option has been
            retained. This has the effect of enabling syntax highlighting.
