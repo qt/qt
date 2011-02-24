@@ -458,6 +458,7 @@ private:
     {
         //qDebug() << "connectSocketSignals" << client;
         connect(client, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
+        connect(client, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWrittenSlot()));
         connect(client, SIGNAL(error(QAbstractSocket::SocketError)),
                 this, SLOT(slotError(QAbstractSocket::SocketError)));
     }
@@ -486,14 +487,14 @@ public slots:
                 receivedData.remove(0, doubleEndlPos+4);
 
             client->write(dataToTransmit);
-            while (client->bytesToWrite() > 0)
-                client->waitForBytesWritten();
+        }
+    }
 
-            if (doClose) {
-                client->disconnectFromHost();
-                disconnect(client, 0, this, 0);
-                client = 0;
-            }
+    void bytesWrittenSlot() {
+        if (doClose && client->bytesToWrite() == 0) {
+            client->disconnectFromHost();
+            disconnect(client, 0, this, 0);
+            client = 0;
         }
     }
 };
@@ -1511,6 +1512,10 @@ void tst_QNetworkReply::getErrors()
     //qDebug() << reply->errorString();
 
     QFETCH(int, error);
+#if defined(Q_OS_WIN) || defined (Q_OS_SYMBIAN)
+    QTest::ignoreMessage(QtWarningMsg, "QNetworkAccessFileBackendFactory: URL has no schema set, use file:// for files");
+    QEXPECT_FAIL("empty-scheme-host", "this is expected to fail on Windows and Symbian, QTBUG-17731", Abort);
+#endif
     QEXPECT_FAIL("ftp-is-dir", "QFtp cannot provide enough detail", Abort);
     // the line below is not necessary
     QEXPECT_FAIL("ftp-dir-not-readable", "QFtp cannot provide enough detail", Abort);
@@ -3698,12 +3703,12 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     incomingSocket->setReadBufferSize(1*1024);
     QTestEventLoop::instance().enterLoop(2);
     // some progress should have been made
+    QVERIFY(!spy.isEmpty());
     QList<QVariant> args = spy.last();
     qDebug() << "tst_QNetworkReply::ioPostToHttpsUploadProgress"
             << args.at(0).toLongLong()
             << sourceFile.size()
             << spy.size();
-    QVERIFY(!args.isEmpty());
     QVERIFY(args.at(0).toLongLong() > 0);
     // FIXME this is where it messes up
 
@@ -3714,16 +3719,16 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     incomingSocket->read(16*1024);
     QTestEventLoop::instance().enterLoop(2);
     // some more progress than before
+    QVERIFY(!spy.isEmpty());
     QList<QVariant> args2 = spy.last();
-    QVERIFY(!args2.isEmpty());
     QVERIFY(args2.at(0).toLongLong() > args.at(0).toLongLong());
 
     // set the read buffer to unlimited
     incomingSocket->setReadBufferSize(0);
     QTestEventLoop::instance().enterLoop(10);
     // progress should be finished
+    QVERIFY(!spy.isEmpty());
     QList<QVariant> args3 = spy.last();
-    QVERIFY(!args3.isEmpty());
     QVERIFY(args3.at(0).toLongLong() > args2.at(0).toLongLong());
     QCOMPARE(args3.at(0).toLongLong(), args3.at(1).toLongLong());
     QCOMPARE(args3.at(0).toLongLong(), sourceFile.size());
