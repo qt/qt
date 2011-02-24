@@ -277,14 +277,7 @@ private:
 
     virtual HB_Error getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints);
 
-    enum HintStyle {
-        HintNone,
-        HintLight,
-        HintMedium,
-        HintFull
-    };
-
-    void setDefaultHintStyle(HintStyle style);
+    virtual void setDefaultHintStyle(HintStyle style);
 protected:
 
     void freeGlyphSets();
