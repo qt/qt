@@ -493,6 +493,7 @@ private slots:
     void QTBUG5590_dummyProperty();
     void QTBUG12260_defaultTemplate();
     void notifyError();
+    void QTBUG17635_invokableAndProperty();
 signals:
     void sigWithUnsignedArg(unsigned foo);
     void sigWithSignedArg(signed foo);
@@ -1384,6 +1385,30 @@ void tst_Moc::notifyError()
 #endif
 }
 
+class QTBUG_17635_InvokableAndProperty : public QObject
+{
+    Q_OBJECT
+public:
+    Q_PROPERTY(int numberOfEggs READ numberOfEggs)
+    Q_PROPERTY(int numberOfChickens READ numberOfChickens)
+    Q_INVOKABLE QString getEgg(int index) { return QString::fromLatin1("Egg"); }
+    Q_INVOKABLE QString getChicken(int index) { return QString::fromLatin1("Chicken"); }
+    int numberOfEggs() { return 2; }
+    int numberOfChickens() { return 4; }
+};
+
+void tst_Moc::QTBUG17635_invokableAndProperty()
+{
+    //Moc used to fail parsing Q_INVOKABLE if they were dirrectly following a Q_PROPERTY;
+    QTBUG_17635_InvokableAndProperty mc;
+    QString val;
+    QMetaObject::invokeMethod(&mc, "getEgg", Q_RETURN_ARG(QString, val), Q_ARG(int, 10));
+    QCOMPARE(val, QString::fromLatin1("Egg"));
+    QMetaObject::invokeMethod(&mc, "getChicken", Q_RETURN_ARG(QString, val), Q_ARG(int, 10));
+    QCOMPARE(val, QString::fromLatin1("Chicken"));
+    QVERIFY(mc.metaObject()->indexOfProperty("numberOfEggs") != -1);
+    QVERIFY(mc.metaObject()->indexOfProperty("numberOfChickens") != -1);
+}
 
 QTEST_APPLESS_MAIN(tst_Moc)
 #include "tst_moc.moc"
