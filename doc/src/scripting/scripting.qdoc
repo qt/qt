@@ -657,6 +657,12 @@
   call to \c{connect()} in script code; \c{connect()} accepts both
   native and non-native functions as targets.
 
+  As discussed in \l{Default Conversion from Qt Script to C++}, Qt
+  Script handles conversion for many C++ types. If your function takes
+  arguments for which Qt Script does not handle conversion, you need
+  to supply conversion functions. This is done using the
+  qScriptRegisterMetaType() function.
+
   \section2 Making C++ Class Properties Available in QtScript
 
   In the previous example, if we wanted to get or set a property using
