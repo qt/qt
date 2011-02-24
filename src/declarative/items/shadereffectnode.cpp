@@ -129,6 +129,9 @@ void CustomMaterialShader::updateState(Renderer *r, AbstractMaterial *newEffect,
         case QVariant::Int:
             m_program.setUniformValue(m_uniformLocs.at(i), v.toInt());
             break;
+        case QVariant::Bool:
+            m_program.setUniformValue(m_uniformLocs.at(i), GLint(v.toBool()));
+            break;
         case QVariant::Size:
         case QVariant::SizeF:
             m_program.setUniformValue(m_uniformLocs.at(i), v.toSizeF());
