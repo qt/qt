@@ -44,6 +44,7 @@
 
 #include <wayland-client.h>
 
+#ifdef QT_WAYLAND_GL_SUPPORT
 #include <wayland-egl.h>
 
 #define GL_GLEXT_PROTOTYPES
@@ -53,5 +54,10 @@
 #define EGL_EGLEXT_PROTOTYPES
  #include <EGL/egl.h>
  #include <EGL/eglext.h>
+
+#else
+typedef void* EGLDisplay;
+typedef void* EGLConfig;
+#endif
 
 #endif // QWAYLANDINCLUDE_H

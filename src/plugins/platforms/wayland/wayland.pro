@@ -8,15 +8,11 @@ DEFINES += Q_PLATFORM_WAYLAND
 SOURCES =   main.cpp \
             qwaylandintegration.cpp \
             qwaylandshmsurface.cpp \
-            qwaylanddrmsurface.cpp \
             qwaylandinputdevice.cpp \
-            qwaylandglcontext.cpp \
             qwaylandcursor.cpp \
             qwaylanddisplay.cpp \
             qwaylandwindow.cpp \
             qwaylandscreen.cpp \
-            ../eglconvenience/qeglconvenience.cpp \
-            qwaylandeglwindow.cpp \
             qwaylandshmwindow.cpp
 
 HEADERS =   qwaylandintegration.h \
@@ -24,19 +20,31 @@ HEADERS =   qwaylandintegration.h \
             qwaylanddisplay.h \
             qwaylandwindow.h \
             qwaylandscreen.h \
-            qwaylandglcontext.h \
             qwaylandshmsurface.h \
             qwaylanddrmsurface.h \
             qwaylandbuffer.h \
-            ../eglconvenience/qeglconvenience.h \
             qwaylandinclude.h \
             qwaylandeglwindow.h \
             qwaylandshmwindow.h
 
-contains(QT_CONFIG, opengl) {
+LIBS += -lwayland-client
+LIBS += -lxkbcommon
+
+contains(QT_CONFIG, opengles2) {
     QT += opengl
+    LIBS += -lwayland-egl -lEGL
+
+    SOURCES += qwaylanddrmsurface.cpp \
+            qwaylandglcontext.cpp \
+            ../eglconvenience/qeglconvenience.cpp \
+            qwaylandeglwindow.cpp
+
+    HEADERS += qwaylandglcontext.h \
+            ../eglconvenience/qeglconvenience.h \
+
+    DEFINES += QT_WAYLAND_GL_SUPPORT
 }
-LIBS += -lwayland-client -lwayland-egl -lxkbcommon -lEGL
+
 unix {
 	CONFIG += link_pkgconfig
 	PKGCONFIG += libdrm

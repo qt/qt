@@ -54,7 +54,9 @@
 #include <QtGui/QPlatformWindowFormat>
 
 #include <QtGui/private/qpixmap_raster_p.h>
+#ifdef QT_WAYLAND_GL_SUPPORT
 #include <QtOpenGL/private/qpixmapdata_gl_p.h>
+#endif
 
 QWaylandIntegration::QWaylandIntegration(bool useOpenGL)
     : mFontDb(new QFontconfigDatabase())
@@ -71,8 +73,10 @@ QWaylandIntegration::screens() const
 
 QPixmapData *QWaylandIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
+#ifdef QT_WAYLAND_GL_SUPPORT
     if (mUseOpenGL)
         return new QGLPixmapData(type);
+#endif
     return new QRasterPixmapData(type);
 }
 

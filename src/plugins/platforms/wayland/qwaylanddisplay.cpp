@@ -171,8 +171,9 @@ void QWaylandDisplay::flushRequests(void)
 QWaylandDisplay::QWaylandDisplay(void)
     : mWriteNotifier(0)
 {
+#ifdef QT_WAYLAND_GL_SUPPORT
     EGLint major, minor;
-
+#endif
     mDisplay = wl_display_connect(NULL);
     if (mDisplay == NULL) {
         fprintf(stderr, "failed to create display: %m\n");
@@ -182,6 +183,7 @@ QWaylandDisplay::QWaylandDisplay(void)
     wl_display_add_global_listener(mDisplay,
                                    QWaylandDisplay::displayHandleGlobal, this);
 
+#ifdef QT_WAYLAND_GL_SUPPORT
     mNativeEglDisplay = wl_egl_display_create(mDisplay);
 
     mEglDisplay = eglGetDisplay((EGLNativeDisplayType)mNativeEglDisplay);
@@ -193,6 +195,12 @@ QWaylandDisplay::QWaylandDisplay(void)
 	    return;
 	}
     }
+#else
+    mNativeEglDisplay = 0;
+    mEglDisplay = 0;
+#endif
+
+    eventDispatcher();
 
     int fd = wl_display_get_fd(mDisplay, sourceUpdate, this);
     mReadNotifier = new QSocketNotifier(fd, QSocketNotifier::Read, this);
@@ -208,7 +216,9 @@ QWaylandDisplay::QWaylandDisplay(void)
 QWaylandDisplay::~QWaylandDisplay(void)
 {
     close(mFd);
+#ifdef QT_WAYLAND_GL_SUPPORT
     eglTerminate(mEglDisplay);
+#endif
     wl_display_destroy(mDisplay);
 }
 
