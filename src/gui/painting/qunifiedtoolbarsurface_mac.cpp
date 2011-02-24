@@ -99,6 +99,32 @@ void QUnifiedToolbarSurface::insertToolbar(QWidget *toolbar, const QPoint &offse
     recursiveRedirect(toolbar, toolbar, offset);
 }
 
+// We basically undo what we set in recursiveRedirect().
+void QUnifiedToolbarSurface::recursiveRemoval(QObject *object)
+{
+    if (object != 0) {
+        if (object->isWidgetType()) {
+            QWidget *widget = qobject_cast<QWidget *>(object);
+
+            if (!(widget->windowType() & Qt::Window)) {
+                widget->d_func()->unifiedSurface = 0;
+                widget->d_func()->isInUnifiedToolbar = false;
+                widget->d_func()->toolbar_offset = QPoint();
+                widget->d_func()->toolbar_ancestor = 0;
+
+                for (int i = 0; i < object->children().size(); ++i) {
+                    recursiveRemoval(object->children().at(i));
+                }
+            }
+        }
+    }
+}
+
+void QUnifiedToolbarSurface::removeToolbar(QToolBar *toolbar)
+{
+    recursiveRemoval(toolbar);
+}
+
 void QUnifiedToolbarSurface::setGeometry(const QRect &rect)
 {
     QWindowSurface::setGeometry(rect);
