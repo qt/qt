@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -740,7 +740,7 @@ void QHostInfoCache::put(const QString &name, const QHostInfo &info)
 
     QHostInfoCacheElement* element = new QHostInfoCacheElement();
     element->info = info;
-    element->age = QTime();
+    element->age = QElapsedTimer();
     element->age.start();
 
     QMutexLocker locker(&this->mutex);

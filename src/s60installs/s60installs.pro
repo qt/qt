@@ -16,8 +16,7 @@ symbian: {
         # It is also expected that devices newer than those based on S60 5.0 all have sqlite3.dll.
         contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {
             BLD_INF_RULES.prj_exports += \
-                "sqlite3.sis /epoc32/data/qt/sis/sqlite3.sis" \
-                "sqlite3_selfsigned.sis /epoc32/data/qt/sis/sqlite3_selfsigned.sis"
+                "sqlite3.sis /epoc32/data/qt/sis/sqlite3.sis"
             symbian-abld|symbian-sbsv2 {
                 sqlitedeployment = \
                     "; Deploy sqlite onto phone that does not have it already" \
@@ -85,12 +84,6 @@ symbian: {
         bearer_plugin.sources = $$QT_BUILD_TREE/plugins/bearer/qsymbianbearer$${QT_LIBINFIX}.dll
         bearer_plugin.path = c:$$QT_PLUGINS_BASE_DIR/bearer
         DEPLOYMENT += bearer_plugin
-    }
-
-    !contains(S60_VERSION, 3.1):!contains(S60_VERSION, 3.2) {
-        feedback_plugin.sources = $$QT_BUILD_TREE/plugins/s60/feedback/qtactilefeedback$${QT_LIBINFIX}.dll
-        feedback_plugin.path = c:$$QT_PLUGINS_BASE_DIR/feedback
-        DEPLOYMENT += feedback_plugin
     }
 
     qtlibraries.pkg_postrules += qts60plugindeployment
@@ -190,10 +183,6 @@ symbian: {
     contains(QT_CONFIG, openvg) {
         qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtOpenVG$${QT_LIBINFIX}.dll
         graphicssystems_plugins.sources += $$QT_BUILD_TREE/plugins/graphicssystems/qvggraphicssystem$${QT_LIBINFIX}.dll
-        # OpenVG requires Symbian^3 or later
-        pkg_platform_dependencies = \
-            "[0x20022E6D],0,0,0,{\"S60ProductID\"}" \
-            "[0x20032DE7],0,0,0,{\"S60ProductID\"}"
     }
 
     contains(QT_CONFIG, opengl) {

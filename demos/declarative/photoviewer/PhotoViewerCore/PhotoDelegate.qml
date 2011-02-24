@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-import QtQuick 1.0
+import QtQuick 1.1
 import "script/script.js" as Script
 
 Package {
@@ -61,7 +61,7 @@ Package {
 
             BorderImage {
                 anchors {
-                    fill: border.visible ? border : placeHolder
+                    fill: originalImage.status == Image.Ready ? border : placeHolder
                     leftMargin: -6; topMargin: -6; rightMargin: -8; bottomMargin: -8
                 }
                 source: 'images/box-shadow.png'; smooth: true
@@ -88,11 +88,11 @@ Package {
             }
             BusyIndicator { anchors.centerIn: parent; on: originalImage.status != Image.Ready }
             Image {
-                id: originalImage; smooth: true; source: "http://" + Script.getImagePath(content)
+                id: originalImage; smooth: true; source: "http://" + Script.getImagePath(content); cache: false
                 fillMode: Image.PreserveAspectFit; width: photoWrapper.width; height: photoWrapper.height
             }
             Image {
-                id: hqImage; smooth: true; source: ""; visible: false
+                id: hqImage; smooth: true; source: ""; visible: false; cache: false
                 fillMode: Image.PreserveAspectFit; width: photoWrapper.width; height: photoWrapper.height
             }
             Binding {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -50,7 +50,7 @@
     the list (before the first item). Here's how to iterate over all
     the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 0
 
     The next() function returns the next item in the list and
     advances the iterator. Unlike STL-style iterators, Java-style
@@ -65,7 +65,7 @@
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 1
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop.
@@ -98,7 +98,7 @@
     beginning of the list (before the first item). Here's how to
     iterate over all the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 2
 
     The next() function returns the next item in the list and
     advances the iterator. Unlike STL-style iterators, Java-style
@@ -113,7 +113,7 @@
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 3
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop.
@@ -150,7 +150,7 @@
     of the vector (before the first item). Here's how to iterate over
     all the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 4
 
     The next() function returns the next item in the vector and
     advances the iterator. Unlike STL-style iterators, Java-style
@@ -165,7 +165,7 @@
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 5
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop.
@@ -197,7 +197,7 @@
     the first item). Here's how to iterate over all the elements
     sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 6
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 6
 
     The next() function returns the next item in the set and
     advances the iterator. Unlike STL-style iterators, Java-style
@@ -212,7 +212,7 @@
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 7
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 7
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop.
@@ -251,7 +251,7 @@
     of the list (before the first item). Here's how to iterate over
     all the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 8
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 8
 
     The next() function returns the next item in the list and
     advances the iterator. Unlike STL-style iterators, Java-style
@@ -266,7 +266,7 @@
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 9
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 9
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop.
@@ -277,7 +277,7 @@
     insert().
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 10
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 10
 
     The example traverses a list, replacing negative numbers with
     their absolute values, and eliminating zeroes.
@@ -312,7 +312,7 @@
     beginning of the list (before the first item). Here's how to
     iterate over all the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 11
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 11
 
     The next() function returns the next item in the list and
     advances the iterator. Unlike STL-style iterators, Java-style
@@ -327,7 +327,7 @@
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 12
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 12
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop.
@@ -338,7 +338,7 @@
     insert().
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 13
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 13
 
     The example traverses a list, replacing negative numbers with
     their absolute values, and eliminating zeroes.
@@ -378,7 +378,7 @@
     beginning of the list (before the first item). Here's how to
     iterate over all the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 14
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 14
 
     The next() function returns the next item in the vector and
     advances the iterator. Unlike STL-style iterators, Java-style
@@ -393,7 +393,7 @@
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 15
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 15
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop.
@@ -404,7 +404,7 @@
     insert().
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 16
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 16
 
     The example traverses a vector, replacing negative numbers with
     their absolute values, and eliminating zeroes.
@@ -440,7 +440,7 @@
     of the set (before the first item). Here's how to iterate over
     all the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 17
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 17
 
     The next() function returns the next item in the set and
     advances the iterator. Unlike STL-style iterators, Java-style
@@ -455,7 +455,7 @@
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 18
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 18
 
     If you want to remove items as you iterate over the set, use
     remove().
@@ -755,7 +755,7 @@
     traversal functions (next(), previous(), findNext(), findPrevious()).
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 19
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 19
 
     \sa insert(), setValue()
 */
@@ -766,7 +766,7 @@
     traversal functions (next(), previous(), findNext(), findPrevious()).
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 20
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 20
 
     \sa insert(), setValue()
 */
@@ -777,7 +777,7 @@
     traversal functions (next(), previous(), findNext(), findPrevious()).
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 21
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 21
 
     \sa insert(), setValue()
 */
@@ -788,7 +788,7 @@
     traversal functions (next(), previous(), findNext(), findPrevious()).
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 22
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 22
 
     \sa value()
 */
@@ -802,7 +802,7 @@
     findPrevious().
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 23
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 23
 
     \sa value(), remove(), insert()
 */
@@ -816,7 +816,7 @@
     findPrevious().
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 24
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 24
 
     \sa value(), remove(), insert()
 */
@@ -830,7 +830,7 @@
     findPrevious().
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 25
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 25
 
     \sa value(), remove(), insert()
 */
@@ -889,7 +889,7 @@
     the map (before the first item). Here's how to iterate over all
     the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 26
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 26
 
     The next() function returns the next item in the map and
     advances the iterator. The key() and value() functions return the
@@ -906,12 +906,12 @@
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 27
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 27
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 28
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 28
 
     Multiple iterators can be used on the same map. If the map is
     modified while a QMapIterator is active, the QMapIterator will
@@ -941,7 +941,7 @@
     the hash (before the first item). Here's how to iterate over all
     the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 29
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 29
 
     The next() function returns the next item in the hash and
     advances the iterator. The key() and value() functions return the
@@ -958,12 +958,12 @@
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 30
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 30
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 31
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 31
 
     Multiple iterators can be used on the same hash. If the hash is
     modified while a QHashIterator is active, the QHashIterator will
@@ -994,7 +994,7 @@
     of the map (before the first item). Here's how to iterate over
     all the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 32
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 32
 
     The next() function returns the next item in the map and
     advances the iterator. The key() and value() functions return the
@@ -1011,12 +1011,12 @@
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 33
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 33
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 34
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 34
 
     If you want to remove items as you iterate over the map, use
     remove(). If you want to modify the value of an item, use
@@ -1024,7 +1024,7 @@
 
     Example:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 35
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 35
 
     The example removes all (key, value) pairs where the key and the
     value are the same.
@@ -1059,7 +1059,7 @@
     of the hash (before the first item). Here's how to iterate over
     all the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 36
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 36
 
     The next() function returns the next item in the hash and
     advances the iterator. The key() and value() functions return the
@@ -1076,12 +1076,12 @@
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 37
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 37
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 38
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 38
 
     If you want to remove items as you iterate over the hash, use
     remove(). If you want to modify the value of an item, use
@@ -1089,7 +1089,7 @@
 
     Example:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.qdoc 39
+    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 39
 
     The example removes all (key, value) pairs where the key and the
     value are the same.

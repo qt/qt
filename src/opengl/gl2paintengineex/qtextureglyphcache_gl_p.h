@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -83,6 +83,8 @@ public:
 
     inline void setPaintEnginePrivate(QGL2PaintEngineExPrivate *p) { pex = p; }
 
+    inline int serialNumber() const { return m_serialNumber; }
+
     enum FilterMode {
         Nearest,
         Linear
@@ -140,6 +142,7 @@ private:
     QGLShaderProgram *m_program;
 
     FilterMode m_filterMode;
+    int m_serialNumber;
 };
 
 QT_END_NAMESPACE

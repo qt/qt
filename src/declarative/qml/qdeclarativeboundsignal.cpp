@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,7 +49,9 @@
 #include "qdeclarative.h"
 #include "qdeclarativecontext.h"
 #include "private/qdeclarativeglobal_p.h"
+#include "private/qdeclarativedebugtrace_p.h"
 
+#include <QtCore/qstringbuilder.h>
 #include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -165,6 +167,13 @@ QDeclarativeBoundSignal *QDeclarativeBoundSignal::cast(QObject *o)
 int QDeclarativeBoundSignal::qt_metacall(QMetaObject::Call c, int id, void **a)
 {
     if (c == QMetaObject::InvokeMetaMethod && id == evaluateIdx) {
+        if (!m_expression)
+            return -1;
+        if (QDeclarativeDebugService::isDebuggingEnabled()) {
+            QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::HandlingSignal);
+            QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::HandlingSignal, QLatin1String(m_signal.signature()) % QLatin1String(": ") % m_expression->expression());
+            QDeclarativeDebugTrace::rangeLocation(QDeclarativeDebugTrace::HandlingSignal, m_expression->sourceFile(), m_expression->lineNumber());
+        }
         m_isEvaluating = true;
         if (!m_paramsValid) {
             if (!m_signal.parameterTypes().isEmpty())
@@ -180,6 +189,7 @@ int QDeclarativeBoundSignal::qt_metacall(QMetaObject::Call c, int id, void **a)
         }
         if (m_params) m_params->clearValues();
         m_isEvaluating = false;
+        QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::HandlingSignal);
         return -1;
     } else {
         return QObject::qt_metacall(c, id, a);

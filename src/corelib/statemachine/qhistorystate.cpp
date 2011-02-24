@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -168,6 +168,9 @@ QAbstractState *QHistoryState::defaultState() const
 /*!
   Sets this history state's default state to be the given \a state.
   \a state must be a sibling of this history state.
+
+  Note that this function does not set \a state as the initial state
+  of its parent.
 */
 void QHistoryState::setDefaultState(QAbstractState *state)
 {

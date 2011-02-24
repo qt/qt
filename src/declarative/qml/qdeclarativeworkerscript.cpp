@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -458,7 +458,7 @@ QDeclarativeWorkerScriptEngine::QDeclarativeWorkerScriptEngine(QDeclarativeEngin
 {
     d->m_lock.lock();
     connect(d, SIGNAL(stopThread()), this, SLOT(quit()), Qt::DirectConnection);
-    start(QThread::LowPriority);
+    start(QThread::IdlePriority);
     d->m_wait.wait(&d->m_lock);
     d->moveToThread(this);
     d->m_lock.unlock();
@@ -544,12 +544,7 @@ void QDeclarativeWorkerScriptEngine::run()
     The above worker script specifies a JavaScript file, "script.js", that handles
     the operations to be performed in the new thread. Here is \c script.js:
 
-    \qml
-    WorkerScript.onMessage = function(message) {
-        // ... long-running operations and calculations are done here
-        WorkerScript.sendMessage({ 'reply': 'Mouse is at ' + message.x + ',' + message.y })
-    }
-    \endqml
+    \quotefile doc/src/snippets/declarative/script.js
 
     When the user clicks anywhere within the rectangle, \c sendMessage() is
     called, triggering the \tt WorkerScript.onMessage() handler in

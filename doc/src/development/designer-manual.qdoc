@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2008,7 +2008,7 @@ pixmap property in the property editor.
     project file, ensuring that the application is compiled and linked
     appropriately.
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_designer-manual.pro 0
 
     The QUiLoader class provides a form loader object to construct the user
     interface. This user interface can be retrieved from any QIODevice, e.g.,
@@ -2018,7 +2018,7 @@ pixmap property in the property editor.
 
     The QtUiTools module classes can be included using the following directive:
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_designer-manual.cpp 1
 
     The QUiLoader::load() function is invoked as shown in this code from the
     \l{Text Finder Example}{Text Finder} example:
@@ -2090,7 +2090,7 @@ pixmap property in the property editor.
     \c setupUi() function to do this, so we only need to declare and
     implement a slot with a name that follows a standard convention:
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_designer-manual.cpp 2
 
     Using this convention, we can define and implement a slot that responds to
     mouse clicks on the \gui OK button:
@@ -2552,7 +2552,7 @@ pixmap property in the property editor.
     plugins are also built in release mode. To do this, include the following
     declaration in the plugin's \c{.pro} file:
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_designer-manual.pro 3
 
     If plugins are built in a mode that is incompatible with \QD, they will
     not be loaded and installed. For more information about plugins, see the
@@ -2561,7 +2561,7 @@ pixmap property in the property editor.
     It is also necessary to ensure that the plugin is installed together with
     other \QD widget plugins:
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_designer-manual.pro 4
 
     The \c $[QT_INSTALL_PLUGINS] variable is a placeholder to the location of
     the installed Qt plugins. You can configure \QD to look for plugins in
@@ -2720,7 +2720,7 @@ pixmap property in the property editor.
     using the Q_INTERFACES() macro in the extension class's definition. For
     example:
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 7
+    \snippet doc/src/snippets/code/doc_src_designer-manual.cpp 7
 
     This enables \QD to use the qobject_cast() function to query for supported
     interfaces using a QObject pointer only.
@@ -2755,13 +2755,13 @@ pixmap property in the property editor.
     You can either create a new QExtensionFactory and reimplement the
     QExtensionFactory::createExtension() function:
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 8
+    \snippet doc/src/snippets/code/doc_src_designer-manual.cpp 8
 
     or you can use an existing factory, expanding the
     QExtensionFactory::createExtension() function to enable the factory to
     create your custom extension as well:
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 9
+    \snippet doc/src/snippets/code/doc_src_designer-manual.cpp 9
 
 
     \section2 Accessing Qt Designer's Extension Manager
@@ -2773,7 +2773,7 @@ pixmap property in the property editor.
     an extension factory is typically made in the
     QDesignerCustomWidgetInterface::initialize() function:
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 10
+    \snippet doc/src/snippets/code/doc_src_designer-manual.cpp 10
 
     The \c formEditor parameter in the
     QDesignerCustomWidgetInterface::initialize() function is a pointer to \QD's
@@ -2818,7 +2818,7 @@ pixmap property in the property editor.
     Designer source code.
 
     \legalese
-    Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies). \BR
+    Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies). \BR
     Copyright (C) 2005 Bjoern Bergstroem
 
     Permission is hereby granted, free of charge, to any person obtaining

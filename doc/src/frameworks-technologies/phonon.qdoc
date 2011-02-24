@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -165,7 +165,7 @@
 
     The \c .pro file for a project needs the following line to be added:
 
-    \snippet doc/src/snippets/code/doc_src_phonon.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_phonon.pro 0
 
     Phonon comes with several widgets that provide functionality
     commonly associated with multimedia players - notably SeekSlider

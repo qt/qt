@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,6 +82,8 @@
 #define VAR_CXXFLAGS "QMAKE_CXXFLAGS"
 #define VAR_CFLAGS "QMAKE_CFLAGS"
 #define VAR_LFLAGS "QMAKE_LFLAGS"
+
+#define DEFINE_REPLACE_REGEXP "[^A-Z0-9_]"
 
 QString SymbianMakefileGenerator::fixPathForMmp(const QString& origPath, const QDir& parentDir)
 {
@@ -165,11 +167,15 @@ void SymbianMakefileGenerator::writeHeader(QTextStream &t)
     QString bldinfDefine = shortProFilename;
     bldinfDefine.append("_");
     bldinfDefine.append(generate_uid(project->projectFile()));
+    bldinfDefine = bldinfDefine.toUpper();
+
+    // replace anything not alphanumeric with underscore
+    QRegExp replacementMask(DEFINE_REPLACE_REGEXP);
+    bldinfDefine.replace(replacementMask, QLatin1String("_"));
 
     bldinfDefine.prepend("BLD_INF_");
-    removeEpocSpecialCharacters(bldinfDefine);
 
-    t << "#define " << bldinfDefine.toUpper() << endl << endl;
+    t << "#define " << bldinfDefine << endl << endl;
 }
 
 bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
@@ -902,13 +908,17 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
 
     const QStringList &subdirs = project->values("SUBDIRS");
     foreach(QString item, subdirs) {
+        bool fromFile = false;
         QString fixedItem;
         if (!project->isEmpty(item + ".file")) {
             fixedItem = project->first(item + ".file");
+            fromFile = true;
         } else if (!project->isEmpty(item + ".subdir")) {
             fixedItem = project->first(item + ".subdir");
+            fromFile = false;
         } else {
             fixedItem = item;
+            fromFile = item.endsWith(Option::pro_ext);
         }
 
         QString condition;
@@ -917,9 +927,15 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
 
         QFileInfo subdir(fileInfo(fixedItem));
         QString relativePath = directory.relativeFilePath(fixedItem);
-        QString subdirFileName = subdir.completeBaseName();
-        QString fullProName = subdir.absoluteFilePath();;
+        QString fullProName = subdir.absoluteFilePath();
         QString bldinfFilename;
+        QString subdirFileName;
+
+        if (fromFile) {
+            subdirFileName = subdir.completeBaseName();
+        } else {
+            subdirFileName = subdir.fileName();
+        }
 
         if (subdir.isDir()) {
             // Subdir is a regular project
@@ -941,7 +957,10 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
         QString uid = generate_uid(fullProName);
         QString bldinfDefine = QString("BLD_INF_") + subdirFileName + QString("_") + uid;
         bldinfDefine = bldinfDefine.toUpper();
-        removeEpocSpecialCharacters(bldinfDefine);
+
+        // replace anything not alphanumeric with underscore
+        QRegExp replacementMask(DEFINE_REPLACE_REGEXP);
+        bldinfDefine.replace(replacementMask, QLatin1String("_"));
 
         if (!condition.isEmpty())
             t << "#if defined(" << condition << ")" << endl;

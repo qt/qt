@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -144,7 +144,7 @@
   script function. In the following example a script signal handler is
   defined that will handle the QLineEdit::textChanged() signal:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 47
+  \snippet doc/src/snippets/code/doc_src_qtscript.cpp 47
 
   The first two arguments to qScriptConnect() are the same
   as you would pass to QObject::connect() to establish a normal C++
@@ -155,7 +155,7 @@
   ("slot") itself. The following example shows how the \c this argument
   can be put to use:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 48
+  \snippet doc/src/snippets/code/doc_src_qtscript.cpp 48
 
   We create two QLineEdit objects and define a single signal handler
   function. The connections use the same handler function, but the
@@ -179,13 +179,13 @@
   In this form of connection, the argument to \c{connect()} is the
   function to connect to the signal.
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 2
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 2
 
   The argument can be a Qt Script function, as in the above
   example, or it can be a QObject slot, as in
   the following example:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 3
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 3
 
   When the argument is a QObject slot, the argument types of the
   signal and slot do not necessarily have to be compatible;
@@ -196,7 +196,7 @@
   \c{disconnect()} function, passing the function to disconnect
   as argument:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 4
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 4
 
   When a script function is invoked in response to a signal, the
   \c this object will be the Global Object.
@@ -214,11 +214,11 @@
   \c{clicked} signal; passing the form as the \c this object
   makes sense in such a case.
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 5
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 5
 
   To disconnect from the signal, pass the same arguments to \c{disconnect()}:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 6
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 6
 
   \section3 Signal to Named Member Function Connections
 
@@ -234,11 +234,11 @@
   Note that the function is resolved when the connection is made, not
   when the signal is emitted.
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 7
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 7
 
   To disconnect from the signal, pass the same arguments to \c{disconnect()}:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 8
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 8
 
   \section3 Error Handling
 
@@ -247,14 +247,14 @@
   You can obtain an error message from the resulting \c{Error} object.
   Example:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 9
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 9
 
   \section3 Emitting Signals from Scripts
 
   To emit a signal from script code, you simply invoke the signal
   function, passing the relevant arguments:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 10
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 10
 
   It is currently not possible to define a new signal in a script;
   i.e., all signals must be defined by C++ classes.
@@ -267,13 +267,13 @@
   \c{myOverloadedSlot(int)} and \c{myOverloadedSlot(QString)}, the following
   script code will behave reasonably:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 11
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 11
 
   You can specify a particular overload by using array-style property access
   with the \l{QMetaObject::normalizedSignature()}{normalized signature} of
   the C++ function as the property name:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 12
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 12
 
   If the overloads have different number of arguments, QtScript will
   pick the overload with the argument count that best matches the
@@ -291,11 +291,11 @@
   property will automatically be invoked. For example, if your
   C++ class has a property declared as follows:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 13
+  \snippet doc/src/snippets/code/doc_src_qtscript.cpp 13
 
   then script code can do things like the following:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 14
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 14
 
   \section2 Accessing Child QObjects
 
@@ -306,12 +306,12 @@
   \c{"okButton"}, you can access this object in script code through
   the expression
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 15
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 15
 
   Since \c{objectName} is itself a Q_PROPERTY, you can manipulate
   the name in script code to, for example, rename an object:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 16
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 16
 
   You can also use the functions \c{findChild()} and \c{findChildren()}
   to find children. These two functions behave identically to
@@ -320,7 +320,7 @@
   For example, we can use these functions to find objects using strings
   and regular expressions:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 17
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 17
 
   You typically want to use \c{findChild()} when manipulating a form
   that uses nested layouts; that way the script is isolated from the
@@ -367,7 +367,7 @@
   For example, a constructor function that constructs QObjects
   only to be used in the script environment is a good candidate:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 18
+  \snippet doc/src/snippets/code/doc_src_qtscript.cpp 18
 
   \section3 Auto-Ownership
 
@@ -638,7 +638,7 @@
   For example, the following class definition enables scripting only for
   certain functions:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 19
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 19
 
   In the example above, aNonScriptableFunction() is not declared as a
   slot, so it will not be available in QtScript. The other three
@@ -649,7 +649,7 @@
   It is possible to make any function script-invokable by specifying
   the \c{Q_INVOKABLE} modifier when declaring the function:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 20
+  \snippet doc/src/snippets/code/doc_src_qtscript.cpp 20
 
   Once declared with \c{Q_INVOKABLE}, the method can be invoked from
   QtScript code just as if it were a slot. Although such a method is
@@ -662,14 +662,14 @@
   In the previous example, if we wanted to get or set a property using
   QtScript we would have to write code like the following:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 21
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 21
 
   Scripting languages often provide a property syntax to modify and
   retrieve properties (in our case the enabled state) of an
   object. Many script programmers would want to write the above code
   like this:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 22
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 22
 
   To make this possible, you must define properties in the C++ QObject
   subclass. For example, the following \c MyObject class declaration
@@ -677,7 +677,7 @@
   \c{setEnabled(bool)} as its setter function and \c{isEnabled()} as its
   getter function:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 23
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 23
 
   The only difference from the original code is the use of the macro
   \c{Q_PROPERTY}, which takes the type and name of the property, and
@@ -688,7 +688,7 @@
   declaring the property; by default, the \c{SCRIPTABLE} attribute is
   \c true. For example:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 24
+  \snippet doc/src/snippets/code/doc_src_qtscript.cpp 24
 
   \section2 Reacting to C++ Objects Signals in Scripts
 
@@ -703,14 +703,14 @@
   regardless of whether the signal will be connected to a slot in C++
   or in QtScript.
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 25
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 25
 
   The only change we have made to the code in the previous section is
   to declare a signals section with the relevant signal. Now, the
   script writer can define a function and connect to the object like
   this:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 26
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 26
 
   \section2 Design of Application Objects
 
@@ -752,7 +752,7 @@
   still allowing pointers to your custom objects to flow seamlessly
   between C++ and scripts. Example:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 43
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 43
 
   \section1 Function Objects and Native Functions
 
@@ -778,23 +778,23 @@
   result. The following script defines a Qt Script object that has a
   toKelvin() function:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 90
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 90
 
   The toKelvin() function takes a temperature in Kelvin as argument, and
   returns the temperature converted to Celsius. The following snippet shows
   how the toKelvin() function might be obtained and called from C++:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 91
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 91
 
   If a script defines a global function, you can access the function as a
   property of QScriptEngine::globalObject(). For example, the following script
   defines a global function add():
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 56
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 56
 
   C++ code might call the add() function as follows:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 92
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 92
 
   As already mentioned, functions are just values in Qt Script; a function by
   itself is not "tied to" a particular object. This is why you have to specify
@@ -816,7 +816,7 @@
   is invoked determines the \c this object when the function body is executed,
   as the following script example illustrates:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 49
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 49
 
   An important thing to note is that in Qt Script, unlike C++ and Java, the
   \c this object is not part of the execution scope. This means that
@@ -824,14 +824,14 @@
   use the \c this keyword to access the object's properties. For example,
   the following script probably doesn't do what you want:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 50
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 50
 
   You will get a reference error saying that 'a is not defined' or, worse,
   two totally unrelated global variables \c a and \c b will be used to
   perform the computation, if they exist. Instead, the script should look
   like this:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 51
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 51
 
   Accidentally omitting the \c this keyword is a typical source of
   error for programmers who are used to the scoping rules of C++ and Java.
@@ -844,7 +844,7 @@
   your function as if it were a "normal" script function. Here is how the
   previous \c{getProperty()} function can be written in C++:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 52
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 52
 
   Call QScriptEngine::newFunction() to wrap the function. This will
   produce a special type of function object that carries a pointer to
@@ -905,7 +905,7 @@
   script would normally define an \c{add()} function that takes two
   arguments, adds them together and returns the result:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 56
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 56
 
   When a script function is defined with formal parameters, their
   names can be viewed as mere aliases of properties of the \c
@@ -914,12 +914,12 @@
   variable. This means that the \c{add()} function can equivalently be
   written like this:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 57
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 57
 
   This latter form closely matches what a native implementation
   typically looks like:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 58
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 58
 
   \section3 Checking the Number of Arguments
 
@@ -930,13 +930,13 @@
   really needs two arguments in order to do something useful. This
   can be expressed by the script definition as follows:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 59
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 59
 
   This would result in an error being thrown if a script invokes
   \c{add()} with anything other than two arguments. The native
   function can be modified to perform the same check:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 62
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 62
 
   \section3 Checking the Types of Arguments
 
@@ -954,7 +954,7 @@
   stricter semantics (namely, that it should only add numeric
   operands), the argument types can be tested:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 60
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 60
 
   Then an invocation like \c{add("foo", new Array())} will
   cause an error to be thrown.
@@ -962,12 +962,12 @@
   The C++ version can call QScriptValue::isNumber() to perform similar
   tests:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 63
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 63
 
   A less strict script implementation might settle for performing an
   explicit to-number conversion before applying the \c{+} operator:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 61
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 61
 
   In a native implementation, this is equivalent to calling
   QScriptValue::toNumber() without performing any type test first,
@@ -1000,21 +1000,21 @@
   \c{concat("Qt", " ", "Script ", 101)} would return "Qt Script 101".
   A script definition of \c{concat()} might look like this:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 64
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 64
 
   Here is an equivalent native implementation:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 65
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 65
 
   A second use case for a variable number of arguments is to implement
   optional arguments. Here's how a script definition typically does
   it:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 66
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 66
 
   And here's the native equivalent:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 67
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 67
 
   A third use case for a variable number of arguments is to simulate
   C++ overloads. This involves checking the number of arguments and/or
@@ -1043,7 +1043,7 @@
      call to another function. In script code, this is what it
      typically looks like:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 68
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 68
 
      For example, \c{foo(10, 20, 30)} would result in the \c{foo()} function
      executing the equivalent of \c{bar(10, 20, 30)}. This is useful if
@@ -1054,7 +1054,7 @@
      function that has the exact same "signature". In C++, the forwarding
      function might look like this:
 
-     \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 69
+     \snippet doc/src/snippets/code/doc_src_qtscript.cpp 69
 
   \o The arguments object can serve as input to a QScriptValueIterator,
      providing a generic way to iterate over the arguments. A debugger
@@ -1072,7 +1072,7 @@
   Some script functions are constructors; they are expected to initialize
   new objects. The following snippet is a small example:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 75
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 75
 
   There is nothing special about constructor functions. In fact, any
   script function can act as a constructor function (i.e., any function
@@ -1118,7 +1118,7 @@
   The following example implements a constructor function that always
   creates and initializes a new object:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 76
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 76
 
   Given this constructor, scripts would be able to use either the
   expression \c{new Person("Bob")} or \c{Person("Bob")} to create a
@@ -1154,7 +1154,7 @@
   returns the function object being invoked. The following example
   shows how this might be used:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 55
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 55
 
   \section2 Native Functions as Arguments to Functions
 
@@ -1163,13 +1163,13 @@
   naturally. As an example, here's a native comparison function
   that compares its two arguments numerically:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 53
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 53
 
   The above function can be passed as argument to the standard
   \c{Array.prototype.sort} function to sort an array numerically,
   as the following C++ code illustrates:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 54
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 54
 
   Note that, in this case, we are truly treating the native function
   object as a value \mdash i.e., we don't store it as a property of the
@@ -1204,7 +1204,7 @@
   itself. This technique is typically used in conjunction with
   QScriptEngine::pushContext(), as in the following example:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 77
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 77
 
   We create a temporary execution context, create a local variable
   for it, evaluate the script, and finally restore the old context.
@@ -1227,7 +1227,7 @@
   define a native combined getter/setter that transforms the value
   slightly:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 78
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 78
 
   The example uses the internal data of the object to store and
   retrieve the transformed value. Alternatively, the property
@@ -1240,12 +1240,12 @@
   The following C++ code shows how an object property can be defined
   in terms of the native getter/setter:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 79
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 79
 
   When the property is accessed, like in the following script, the
   getter/setter does its job behind the scenes:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 80
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 80
 
   \note It is important that the setter function, not just the getter,
   returns the value of the property; i.e., the setter should \e{not}
@@ -1266,7 +1266,7 @@
   Property getters and setters can be defined and installed by script
   code as well, as in the following example:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 81
+    \snippet doc/src/snippets/code/doc_src_qtscript.js 81
 
   Getters and setters can only be used to implement "a priori
   properties"; i.e., the technique can't be used to react to an access
@@ -1342,7 +1342,7 @@
   including the \c{hasOwnProperty()} function and \c{toString()}
   function:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 27
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 27
 
   The \c{toString()} function itself is not defined in \c{o} (since we
   did not assign anything to \c{o.toString}), so instead the
@@ -1382,7 +1382,7 @@
   The following code defines a simple constructor function for a class
   called \c{Person}:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 28
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 28
 
   Next, you want to set up \c{Person.prototype} as your prototype
   object; i.e., define the interface that should be common to all
@@ -1397,19 +1397,19 @@
   \c{Object.prototype}, to give your \c{Person} objects a more
   appropriate string representation:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 29
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 29
 
   This resembles the process of reimplementing a virtual function
   in C++. Henceforth, when the property named \c{toString} is
   looked up in a \c{Person} object, it will be resolved in
   \c{Person.prototype}, not in \c{Object.prototype} as before:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 30
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 30
 
   There are also some other interesting things we can learn about a
   \c{Person} object:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 31
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 31
 
   The \c{hasOwnProperty()} function is not inherited from
   \c{Person.prototype}, but rather from \c{Object.prototype}, which is
@@ -1426,13 +1426,13 @@
   following example shows how one can create a subclass of \c{Person}
   called \c{Employee}:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 32
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 32
 
   Again, you can use the \c{instanceof} to verify that the
   class relationship between \c{Employee} and \c{Person} has been
   correctly established:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 33
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 33
 
   This shows that the prototype chain of \c{Employee} objects is the
   same as that of \c{Person} objects, but with \c{Employee.prototype}
@@ -1477,25 +1477,25 @@
   preceding section can be implemented in terms of the Qt Script API.
   We begin with the native constructor function:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 34
+  \snippet doc/src/snippets/code/doc_src_qtscript.cpp 34
 
   Here's the native equivalent of the \c{Person.prototype.toString}
   function we saw before:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 35
+  \snippet doc/src/snippets/code/doc_src_qtscript.cpp 35
 
   The \c{Person} class can then be initialized as follows:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 36
+  \snippet doc/src/snippets/code/doc_src_qtscript.cpp 36
 
   The implementation of the \c{Employee} subclass is similar. We
   use QScriptValue::call() to call the super-class (Person) constructor:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 37
+  \snippet doc/src/snippets/code/doc_src_qtscript.cpp 37
 
   The \c{Employee} class can then be initialized as follows:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 38
+  \snippet doc/src/snippets/code/doc_src_qtscript.cpp 38
 
   When implementing the prototype object of a class, you may want to use
   the QScriptable class, as it enables you to define the API of your
@@ -1521,7 +1521,7 @@
   modify the underlying C++ value, lets you modify the actual value
   contained in the script value (and not a copy of it).
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 39
+  \snippet doc/src/snippets/code/doc_src_qtscript.cpp 39
 
   \section2 Implementing Constructors for Value-based Types
 
@@ -1529,7 +1529,7 @@
   by wrapping a native factory function. For example, the following
   function implements a simple constructor for QPoint:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 44
+  \snippet doc/src/snippets/code/doc_src_qtscript.cpp 44
 
   In the above code we simplified things a bit, e.g. we didn't check
   the argument count to decide which QPoint C++ constructor to use.
@@ -1564,16 +1564,16 @@
   The following snippet shows a constructor function that constructs
   QXmlStreamReader objects that are stored using QSharedPointer:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 93
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 93
 
   Prototype functions can use qscriptvalue_cast() to cast the \c this object
   to the proper type:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 94
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 94
 
   The prototype and constructor objects are set up in the usual way:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 95
+    \snippet doc/src/snippets/code/doc_src_qtscript.cpp 95
 
   Scripts can now construct QXmlStreamReader objects by calling the \c
   XmlStreamReader constructor, and when the Qt Script object is
@@ -1643,12 +1643,12 @@
   somewhere else. The following code shows a custom print() that adds
   text to a QPlainTextEdit.
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 45
+  \snippet doc/src/snippets/code/doc_src_qtscript.cpp 45
 
   The following code shows how the custom print() function may be
   initialized and used.
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 46
+  \snippet doc/src/snippets/code/doc_src_qtscript.cpp 46
 
   A pointer to the QPlainTextEdit is stored as an internal property
   of the script function itself, so that it can be retrieved when
@@ -1680,7 +1680,7 @@
   function. Essentially all that is necessary to achieve this is to use
   the qsTr() script function. Example:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 82
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 82
 
   This accounts for 99% of the user-visible strings you're likely to write.
 
@@ -1689,7 +1689,7 @@
   unique in your project, you should use the qsTranslate() function and pass a
   suitable context as the first argument. Example:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 83
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 83
 
   If you need to have translatable text completely outside a function, there
   are two functions to help: QT_TR_NOOP() and QT_TRANSLATE_NOOP(). They merely
@@ -1698,18 +1698,18 @@
 
   Example of QT_TR_NOOP():
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 84
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 84
 
   Example of QT_TRANSLATE_NOOP():
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 85
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 85
 
   \section2 Use String.prototype.arg() for Dynamic Text
 
   The String.prototype.arg() function (which is modeled after QString::arg())
   offers a simple means for substituting arguments:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 86
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 86
 
     \section2 Produce Translations
 
@@ -1804,7 +1804,7 @@
     This property has the QScriptValue::Undeletable flag set.
     For example:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 40
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 40
 
   \i \c{Object.prototype.__defineGetter__} \br
     This function installs a
@@ -1814,7 +1814,7 @@
     \c this object will be the object whose property is accessed.
     For example:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 41
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 41
 
   \i \c{Object.prototype.__defineSetter__} \br
     This function installs a
@@ -1824,7 +1824,7 @@
     \c this object will be the object whose property is accessed.
     For example:
 
-  \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 42
+  \snippet doc/src/snippets/code/doc_src_qtscript.js 42
 
   \i \c{Function.prototype.connect} \br
     This function connects

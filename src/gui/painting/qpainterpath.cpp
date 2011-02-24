@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1196,7 +1196,8 @@ void QPainterPath::connectPath(const QPainterPath &other)
     int first = d->elements.size();
     d->elements += other.d_func()->elements;
 
-    d->elements[first].type = LineToElement;
+    if (first != 0)
+        d->elements[first].type = LineToElement;
 
     // avoid duplicate points
     if (first > 0 && QPointF(d->elements[first]) == QPointF(d->elements[first - 1])) {

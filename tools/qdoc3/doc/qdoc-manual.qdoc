@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -7296,6 +7296,25 @@
            the default format, and doesn't need to be specified.
 
 
+    \target outputprefixes
+    \section1 outputprefixes
+
+           The \c outputprefixes variable specifies a mapping between types of files
+           and the prefixes to prepend to the HTML file names in the generated
+           documentation.
+
+           For example:
+
+           \code
+           outputprefixes = QML
+           outputprefixes.QML = qt-components-
+           \endcode
+
+           By default, files containing the API documentation for QML elements
+           or components are prefixed with "qml-". In the above example, the
+           prefix "qt-components-" is used instead.
+
+
     \target qhp-variable
     \section1 qhp 
 
@@ -7316,12 +7335,10 @@
 
            Example:
 
-           \code
-               slow = true
-           \endcode
+           This option has been replaced by the \l{syntaxhighlighing} option.
 
-           Another way to turn on "slowness" is to invoke QDoc with the
-           \c -slow command-line option.
+           For compatibility, the \c -slow command-line option has been
+           retained. This has the effect of enabling syntax highlighting.
 
 
     \target sourcedirs-variable
@@ -7471,6 +7488,22 @@
            \code
            qt-4.0/src/opengl/qgl_mac.cpp:156: Missing parameter name
            \endcode
+
+    \target syntaxhighlighting
+    \section1 syntaxhighlighting
+
+           The \c syntaxhighlighting variable specifies whether QDoc
+           should perform syntax highlighting on source code quoted in the
+           documentation it generates.
+
+           For example:
+
+           \code
+           syntaxhighlighting = true
+           \endcode
+
+           will enable syntax highlighting for all supported programming
+           languages.
 
 
     \target tabsize-variable

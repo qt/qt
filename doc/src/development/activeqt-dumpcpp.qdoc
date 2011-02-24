@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -83,24 +83,24 @@
     as \c noncreatable) have a default constructor; this is typically a single class 
     of type \c Application. 
 
-    \snippet doc/src/snippets/code/doc_src_activeqt-dumpcpp.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_activeqt-dumpcpp.cpp 0
 
     All other classes can only be created by passing an IDispatch interface pointer 
     to the constructor; those classes should however not be created explicitly. 
     Instead, use the appropriate API of already created objects.
 
-    \snippet doc/src/snippets/code/doc_src_activeqt-dumpcpp.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_activeqt-dumpcpp.cpp 1
 
     All coclass wrappers also have one constructors taking an interface wrapper class
     for each interface implemented.
 
-    \snippet doc/src/snippets/code/doc_src_activeqt-dumpcpp.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_activeqt-dumpcpp.cpp 2
 
     You have to create coclasses to be able to connect to signals of the subobject.
     Note that the constructor deletes the interface object, so the following will
     cause a segmentation fault:
 
-    \snippet doc/src/snippets/code/doc_src_activeqt-dumpcpp.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_activeqt-dumpcpp.cpp 3
 
     If the return type is of a coclass or interface type declared in another type 
     library you have to include the namespace header for that other type library 
@@ -115,7 +115,7 @@
 
     In this case, create the correct wrapper class explicitly:
 
-    \snippet doc/src/snippets/code/doc_src_activeqt-dumpcpp.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_activeqt-dumpcpp.cpp 4
 
     You can of course use the IDispatch* returned directly, in which case you have to 
     call \c Release() when finished with the interface.

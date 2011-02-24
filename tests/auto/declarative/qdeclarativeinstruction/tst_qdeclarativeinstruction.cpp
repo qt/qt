@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -512,7 +512,7 @@ void tst_qdeclarativeinstruction::dump()
     {
         QDeclarativeInstruction i;
         i.line = 50;
-        i.type = (QDeclarativeInstruction::Type)(1234); // Non-existant
+        i.type = (QDeclarativeInstruction::Type)(1234); // Non-existent
         data->bytecode << i;
     }
 

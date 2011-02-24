@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -351,7 +351,7 @@ static QScriptValue qmlsqldatabase_read_transaction(QScriptContext *context, QSc
 }
 
 /*
-    Currently documented in doc/src/declarastive/globalobject.qdoc
+    Currently documented in doc/src/declarative/globalobject.qdoc
 */
 static QScriptValue qmlsqldatabase_open_sync(QScriptContext *context, QScriptEngine *engine)
 {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -996,13 +996,23 @@ bool Grid::shrinkFormLayoutSpans()
     for (WidgetSet::const_iterator it = widgets.constBegin(); it != cend ; ++it) {
         QWidget *w = *it;
         int row, col,  rowspan, colspan;
-        locateWidget(w, row, col, rowspan, colspan);
+        if (!locateWidget(w, row, col, rowspan, colspan))
+            qDebug("ooops, widget '%s' does not fit in layout", w->objectName().toUtf8().constData());
         const int maxColSpan = col == 0 ? 2 : 1;
         const int newColSpan = qMin(colspan, maxColSpan);
         const int newRowSpan = qMin(rowspan, maxRowSpan);
         if (newColSpan != colspan || newRowSpan != rowspan) {
-            setCells(QRect(col, row, colspan, rowspan), 0);
-            setCells(QRect(col, row, newColSpan, newRowSpan), w);
+            // in case like this:
+            // W1 W1
+            // W1 W2
+            // do:
+            // W1 0
+            // 0  W2
+            for (int i = row; i < row + rowspan - 1; i++)
+                for (int j = col; j < col + colspan - 1; j++)
+                    if (i > row + newColSpan - 1 || j > col + newRowSpan - 1)
+                        if (cell(i, j) == w)
+                            setCell(i, j, 0);
             shrunk = true;
         }
     }
@@ -1177,11 +1187,7 @@ void GridLayout<GridLikeLayout, LayoutType, GridMode>::doLayout()
             if (const Spacer *spacer = qobject_cast<const Spacer*>(w))
                 alignment = spacer->alignment();
 
-            if (rs * cs == 1) {
-                addWidgetToGrid(layout, w, r, c, 1, 1, alignment);
-            } else {
-                addWidgetToGrid(layout, w, r, c, rs, cs, alignment);
-            }
+            addWidgetToGrid(layout, w, r, c, rs, cs, alignment);
 
             w->show();
         } else {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \title Animation: Basics Example
     \example declarative/animation/basics
 
-    This example shows how to create and combine \l{QML Animation}{animations} in QML.
+    This example shows how to create and combine \l{QML Animation and Transitions}{animations} in QML.
 
     \table
     \row
@@ -50,16 +50,16 @@
     \title Animation: Behavior Examples
     \example declarative/animation/behaviors
 
-    This example shows how to use QML behaviors. 
+    This example shows how to use QML behaviors.
 
     \image qml-behaviors-example.png
 */
 
 /*!
-    \title Animation: Easing Example 
+    \title Animation: Easing Example
     \example declarative/animation/easing
 
-    This example shows the different easing modes available for \l{QML Animation}{animations}.
+    This example shows the different easing modes available for \l{QML Animation and Transitions}{animations}.
 
     \image qml-easing-example.png
 */
@@ -68,7 +68,7 @@
     \title Animation: States Example
     \example declarative/animation/states
 
-    These examples show how to use \l{States}{states} and \l{Transitions}{transitions}.
+    These examples show how to use \l{State}{states} and \l{Transition}{transitions}.
 
     The \c states.qml example shows how an item can change between states, and \c transitions.qml
     shows how these state changes can be animated.
@@ -122,9 +122,9 @@
     \page declarative-cppextensions-reference.html
     \title C++ Extensions: Reference examples
 
-    These examples show how QML can be extended from C++ in various ways. 
-    
-    The code for these examples is used throughout the \l {Extending QML in C++} reference
+    These examples show how QML can be extended from C++ in various ways.
+
+    The code for these examples is used throughout the \l {Extending QML Functionalities using C++} reference
     documentation, which highlights the main principles demonstrated in each example.
 
     Furthermore, here are additional pages that discuss each example in detail:
@@ -160,7 +160,7 @@
     \title LayoutItem Example
     \example declarative/cppextensions/qgraphicslayouts/layoutitem
 
-    This example show how to use the LayoutItem element to integrate QML items into an existing 
+    This example show how to use the LayoutItem element to integrate QML items into an existing
     \l{Graphics View Framework}{Graphics View}-based application.
 
     \image qml-layoutitem-example.png
@@ -169,7 +169,7 @@
     \title QGraphicsGridLayout Example
     \example declarative/cppextensions/qgraphicslayouts/qgraphicsgridlayout
 
-    This example shows how to use QGraphicsGridLayout to lay out QML items. This is 
+    This example shows how to use QGraphicsGridLayout to lay out QML items. This is
     useful if you need to integrate Qt \l{Graphics View Framework}{Graphics View} layouts with
     QML.
 
@@ -179,10 +179,10 @@
     \title QGraphicsLinearLayout Example
     \example declarative/cppextensions/qgraphicslayouts/qgraphicslinearlayout
 
-    This example shows how to use QGraphicsLinearLayout to lay out QML items. This is 
+    This example shows how to use QGraphicsLinearLayout to lay out QML items. This is
     useful if you need to integrate Qt \l{Graphics View Framework}{Graphics View} layouts with
     QML.
-    
+
     \image qml-qgraphicslinearlayout-example.png
 */
 /*!
@@ -198,7 +198,7 @@
     \o \l{declarative/cppextensions/qgraphicslayouts/qgraphicslinearlayout}{QGraphicsLinearLayout}
     \endlist
 
-    Also see \l {Integrating QML with existing Qt UI code} for information on using QML 
+    Also see \l {Integrating QML Code with Existing Qt UI Code} for information on using QML
     in Qt applications that use the Graphics View framework or ordinary QWidget-based views.
 */
 
@@ -215,7 +215,7 @@
     \title C++ Extensions: Image Provider Example
     \example declarative/cppextensions/imageprovider
 
-    This examples shows how to use QDeclarativeImageProvider to serve images 
+    This examples shows how to use QDeclarativeImageProvider to serve images
     to QML image elements.
 
     \image qml-imageprovider-example.png
@@ -270,13 +270,23 @@
 */
 
 /*!
-    \title Positioners Example
-    \example declarative/positioners
+    \title Positioners: Adding and Removing Items Example
+    \example declarative/positioners/addandremove
 
-    This example shows how to use positioner elements such as \l Row, \l Column,
-    \l Grid and \l Flow.
+    This example shows how to use the positioner elements such as \l Row, \l Column,
+    \l Grid and \l Flow, in particular how to add and remove items with appropriate transitions.
 
     \image qml-positioners-example.png
+*/
+
+/*!
+    \title Positioners: Layout Direction Example
+    \example declarative/positioners/layoutdirection
+
+    This example shows how to control the horizontal layout direction of
+    \l Row, \l Grid and \l Flow positioners.
+
+    \image qml-positioners-layoutdirection-example.png
 */
 
 /*!
@@ -525,7 +535,7 @@
     \example declarative/toys/clocks
 
     This example displays a set of clocks with different times for different cities.
-    Each clock is created by combining \l Image elements with \l Rotation transforms 
+    Each clock is created by combining \l Image elements with \l Rotation transforms
     and \l SpringAnimation behaviors.
 
     \image qml-clocks-example.png
@@ -570,13 +580,6 @@
     \l SequentialAnimation and \l PropertyAction to create a game of TV tennis.
 
     \image qml-tvtennis-example.png
-*/
-
-/*!
-    \title Touch Interaction: Gestures Example
-    \example declarative/touchinteraction/gestures
-
-    This example shows how to use the GestureArea element.
 */
 
 /*!
@@ -664,7 +667,7 @@
 
     This example shows how to create a tab widget. It also demonstrates how
     \l {Property aliases}{property aliases} and
-    \l {Default Properties}{default properties} can be used to collect and
+    \l {Introduction to the QML Language#Default Properties}{default properties} can be used to collect and
     assemble the child items declared within an \l Item.
 
     \image qml-tabwidget-example.png

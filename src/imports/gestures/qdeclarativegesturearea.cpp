@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -86,22 +86,22 @@ public:
 
     A GestureArea is like a MouseArea, but it has signals for gesture events.
 
-    \e {Elements in the Qt.labs module are not guaranteed to remain compatible
-    in future versions.}
+    \warning Elements in the Qt.labs module are not guaranteed to remain compatible
+    in future versions.
 
-    \e {This element is only functional on devices with touch input.}
+    \note This element is only functional on devices with touch input.
 
     \qml
     import Qt.labs.gestures 1.0
 
     GestureArea {
         anchors.fill: parent
-        onPan: ... gesture.acceleration ...
-        onPinch: ... gesture.rotationAngle ...
-        onSwipe: ...
-        onTapAndHold: ...
-        onTap: ...
-        onGesture: ...
+     // onPan:        ... gesture.acceleration ...
+     // onPinch:      ... gesture.rotationAngle ...
+     // onSwipe:      ...
+     // onTapAndHold: ...
+     // onTap:        ...
+     // onGesture:    ...
     }
     \endqml
 
@@ -132,7 +132,7 @@ public:
 
     GestureArea is an invisible item: it is never painted.
 
-    \sa MouseArea, {declarative/touchinteraction/gestures}{Gestures example}
+    \sa MouseArea
 */
 
 /*!

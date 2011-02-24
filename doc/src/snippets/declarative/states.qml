@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -37,24 +37,85 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-//![0]
+//![document]
 import QtQuick 1.0
- 
-Rectangle {
-    id: myRect
-    width: 200; height: 200
-    color: "red"
 
-    MouseArea {
-        anchors.fill: parent
-        onClicked: myRect.state = 'moved'
-    }
+//![parent begin]
+Rectangle {
+//![parent begin]
+
+    id: screen
+    width: 400; height: 500
+
+
+Rectangle {
+    id: flag
+}
+Column {
+    spacing: 15
+//![signal states]
+Rectangle {
+    id: signal
+    width: 200; height: 200
+    state: "NORMAL"
 
     states: [
         State {
-            name: "moved"
-            PropertyChanges { target: myRect; x: 50; y: 50 }
+            name: "NORMAL"
+            PropertyChanges { target: signal; color: "green"}
+            PropertyChanges { target: flag; state: "FLAG_DOWN"}
+        },
+        State {
+            name: "CRITICAL"
+            PropertyChanges { target: signal; color: "red"}
+            PropertyChanges { target: flag; state: "FLAG_UP"}
         }
     ]
 }
-//![0]
+//![signal states]
+
+//![switch states]
+Rectangle {
+    id: signalswitch
+    width: 75; height: 75
+    color: "blue"
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: {
+            if (signal.state == "NORMAL")
+                signal.state = "CRITICAL"
+            else
+                signal.state = "NORMAL"
+        }
+    }
+}
+//![switch states]
+
+//![when property]
+Rectangle {
+    id: bell
+    width: 75; height: 75
+    color: "yellow"
+
+    states: State {
+                name: "RINGING"
+                when: (signal.state == "CRITICAL")
+                PropertyChanges {target: speaker; play: "RING!"}
+            }
+}
+//![when property]
+
+Text {
+    id: speaker
+    property alias play: speaker.text
+    text: "NORMAL"
+}
+
+} // end of row
+
+//![parent end]
+}
+//![parent end]
+
+//![document]

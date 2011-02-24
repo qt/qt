@@ -12908,4 +12908,46 @@ EXPORTS
 	?resetCursorBlinkTimer@QLineControl@@QAEXXZ @ 12907 NONAME ; void QLineControl::resetCursorBlinkTimer(void)
 	?setSubFocus@QGraphicsItemPrivate@@QAEXPAVQGraphicsItem@@0@Z @ 12908 NONAME ; void QGraphicsItemPrivate::setSubFocus(class QGraphicsItem *, class QGraphicsItem *)
 	?clearSubFocus@QGraphicsItemPrivate@@QAEXPAVQGraphicsItem@@0@Z @ 12909 NONAME ; void QGraphicsItemPrivate::clearSubFocus(class QGraphicsItem *, class QGraphicsItem *)
+	?hitTest@QTextDocumentLayout@@UBEHABVQPointF@@W4HitTestAccuracy@Qt@@@Z @ 12910 NONAME ; int QTextDocumentLayout::hitTest(class QPointF const &, enum Qt::HitTestAccuracy) const
+	?positionInlineObject@QTextDocumentLayout@@MAEXVQTextInlineObject@@HABVQTextFormat@@@Z @ 12911 NONAME ; void QTextDocumentLayout::positionInlineObject(class QTextInlineObject, int, class QTextFormat const &)
+	?timerEvent@QTextDocumentLayout@@MAEXPAVQTimerEvent@@@Z @ 12912 NONAME ; void QTextDocumentLayout::timerEvent(class QTimerEvent *)
+	?draw@QTextDocumentLayout@@UAEXPAVQPainter@@ABUPaintContext@QAbstractTextDocumentLayout@@@Z @ 12913 NONAME ; void QTextDocumentLayout::draw(class QPainter *, struct QAbstractTextDocumentLayout::PaintContext const &)
+	?documentSize@QTextDocumentLayout@@UBE?AVQSizeF@@XZ @ 12914 NONAME ; class QSizeF QTextDocumentLayout::documentSize(void) const
+	?drawInlineObject@QTextDocumentLayout@@MAEXPAVQPainter@@ABVQRectF@@VQTextInlineObject@@HABVQTextFormat@@@Z @ 12915 NONAME ; void QTextDocumentLayout::drawInlineObject(class QPainter *, class QRectF const &, class QTextInlineObject, int, class QTextFormat const &)
+	?resizeInlineObject@QTextDocumentLayout@@MAEXVQTextInlineObject@@HABVQTextFormat@@@Z @ 12916 NONAME ; void QTextDocumentLayout::resizeInlineObject(class QTextInlineObject, int, class QTextFormat const &)
+	?dynamicDocumentSize@QTextDocumentLayout@@QBE?AVQSizeF@@XZ @ 12917 NONAME ; class QSizeF QTextDocumentLayout::dynamicDocumentSize(void) const
+	?metaObject@QTextDocumentLayout@@UBEPBUQMetaObject@@XZ @ 12918 NONAME ; struct QMetaObject const * QTextDocumentLayout::metaObject(void) const
+	?getStaticMetaObject@QTextDocumentLayout@@SAABUQMetaObject@@XZ @ 12919 NONAME ; struct QMetaObject const & QTextDocumentLayout::getStaticMetaObject(void)
+	?blockBoundingRect@QTextDocumentLayout@@UBE?AVQRectF@@ABVQTextBlock@@@Z @ 12920 NONAME ; class QRectF QTextDocumentLayout::blockBoundingRect(class QTextBlock const &) const
+	?qt_metacall@QTextDocumentLayout@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 12921 NONAME ; int QTextDocumentLayout::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?d_func@QTextDocumentLayout@@AAEPAVQTextDocumentLayoutPrivate@@XZ @ 12922 NONAME ; class QTextDocumentLayoutPrivate * QTextDocumentLayout::d_func(void)
+	?isDragEnabled@QTextControl@@QBE_NXZ @ 12923 NONAME ; bool QTextControl::isDragEnabled(void) const
+	?staticMetaObject@QTextDocumentLayout@@2UQMetaObject@@B @ 12924 NONAME ; struct QMetaObject const QTextDocumentLayout::staticMetaObject
+	?qt_metacast@QTextDocumentLayout@@UAEPAXPBD@Z @ 12925 NONAME ; void * QTextDocumentLayout::qt_metacast(char const *)
+	?documentChanged@QTextDocumentLayout@@MAEXHHH@Z @ 12926 NONAME ; void QTextDocumentLayout::documentChanged(int, int, int)
+	??1QTextDocumentLayout@@UAE@XZ @ 12927 NONAME ; QTextDocumentLayout::~QTextDocumentLayout(void)
+	?layoutStatus@QTextDocumentLayout@@QBEHXZ @ 12928 NONAME ; int QTextDocumentLayout::layoutStatus(void) const
+	?setDragEnabled@QTextControl@@QAEX_N@Z @ 12929 NONAME ; void QTextControl::setDragEnabled(bool)
+	?d_func@QTextDocumentLayout@@ABEPBVQTextDocumentLayoutPrivate@@XZ @ 12930 NONAME ; class QTextDocumentLayoutPrivate const * QTextDocumentLayout::d_func(void) const
+	?idealWidth@QTextDocumentLayout@@QBEMXZ @ 12931 NONAME ; float QTextDocumentLayout::idealWidth(void) const
+	?setFixedColumnWidth@QTextDocumentLayout@@QAEXH@Z @ 12932 NONAME ; void QTextDocumentLayout::setFixedColumnWidth(int)
+	?cursorWidth@QTextDocumentLayout@@QBEHXZ @ 12933 NONAME ; int QTextDocumentLayout::cursorWidth(void) const
+	?trUtf8@QTextDocumentLayout@@SA?AVQString@@PBD0H@Z @ 12934 NONAME ; class QString QTextDocumentLayout::trUtf8(char const *, char const *, int)
+	?pageCount@QTextDocumentLayout@@UBEHXZ @ 12935 NONAME ; int QTextDocumentLayout::pageCount(void) const
+	?setViewport@QTextDocumentLayout@@QAEXABVQRectF@@@Z @ 12936 NONAME ; void QTextDocumentLayout::setViewport(class QRectF const &)
+	?contentHasAlignment@QTextDocumentLayout@@QBE_NXZ @ 12937 NONAME ; bool QTextDocumentLayout::contentHasAlignment(void) const
+	?tr@QTextDocumentLayout@@SA?AVQString@@PBD0@Z @ 12938 NONAME ; class QString QTextDocumentLayout::tr(char const *, char const *)
+	?setLineHeight@QTextDocumentLayout@@IAEXMW4LineHeightMode@1@@Z @ 12939 NONAME ; void QTextDocumentLayout::setLineHeight(float, enum QTextDocumentLayout::LineHeightMode)
+	?tr@QTextDocumentLayout@@SA?AVQString@@PBD0H@Z @ 12940 NONAME ; class QString QTextDocumentLayout::tr(char const *, char const *, int)
+	?trUtf8@QTextDocumentLayout@@SA?AVQString@@PBD0@Z @ 12941 NONAME ; class QString QTextDocumentLayout::trUtf8(char const *, char const *)
+	?frameBoundingRect@QTextDocumentLayout@@UBE?AVQRectF@@PAVQTextFrame@@@Z @ 12942 NONAME ; class QRectF QTextDocumentLayout::frameBoundingRect(class QTextFrame *) const
+	?setCursorWidth@QTextDocumentLayout@@QAEXH@Z @ 12943 NONAME ; void QTextDocumentLayout::setCursorWidth(int)
+	??_EQTextDocumentLayout@@UAE@I@Z @ 12944 NONAME ; QTextDocumentLayout::~QTextDocumentLayout(unsigned int)
+	??0QTextDocumentLayout@@QAE@PAVQTextDocument@@@Z @ 12945 NONAME ; QTextDocumentLayout::QTextDocumentLayout(class QTextDocument *)
+	?doLayout@QTextDocumentLayout@@AAE?AVQRectF@@HHH@Z @ 12946 NONAME ; class QRectF QTextDocumentLayout::doLayout(int, int, int)
+	?ensureLayouted@QTextDocumentLayout@@QAEXM@Z @ 12947 NONAME ; void QTextDocumentLayout::ensureLayouted(float)
+	?layoutFinished@QTextDocumentLayout@@AAEXXZ @ 12948 NONAME ; void QTextDocumentLayout::layoutFinished(void)
+	?dynamicPageCount@QTextDocumentLayout@@QBEHXZ @ 12949 NONAME ; int QTextDocumentLayout::dynamicPageCount(void) const
+	?setWordSelectionEnabled@QTextControl@@QAEX_N@Z @ 12950 NONAME ; void QTextControl::setWordSelectionEnabled(bool)
+	?isWordSelectionEnabled@QTextControl@@QBE_NXZ @ 12951 NONAME ; bool QTextControl::isWordSelectionEnabled(void) const
 

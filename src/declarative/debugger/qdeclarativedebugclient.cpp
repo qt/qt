@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,7 +61,7 @@ public:
     QDeclarativeDebugClientPrivate();
 
     QString name;
-    QDeclarativeDebugConnection *client;
+    QDeclarativeDebugConnection *connection;
 };
 
 class QDeclarativeDebugConnectionPrivate : public QObject
@@ -202,7 +202,7 @@ QDeclarativeDebugConnection::~QDeclarativeDebugConnection()
 {
     QHash<QString, QDeclarativeDebugClient*>::iterator iter = d->plugins.begin();
     for (; iter != d->plugins.end(); ++iter) {
-         iter.value()->d_func()->client = 0;
+         iter.value()->d_func()->connection = 0;
          iter.value()->statusChanged(QDeclarativeDebugClient::NotConnected);
     }
 }
@@ -213,7 +213,7 @@ bool QDeclarativeDebugConnection::isConnected() const
 }
 
 QDeclarativeDebugClientPrivate::QDeclarativeDebugClientPrivate()
-: client(0)
+: connection(0)
 {
 }
 
@@ -223,26 +223,26 @@ QDeclarativeDebugClient::QDeclarativeDebugClient(const QString &name,
 {
     Q_D(QDeclarativeDebugClient);
     d->name = name;
-    d->client = parent;
+    d->connection = parent;
 
-    if (!d->client)
+    if (!d->connection)
         return;
 
-    if (d->client->d->plugins.contains(name)) {
+    if (d->connection->d->plugins.contains(name)) {
         qWarning() << "QDeclarativeDebugClient: Conflicting plugin name" << name;
-        d->client = 0;
+        d->connection = 0;
     } else {
-        d->client->d->plugins.insert(name, this);
-        d->client->d->advertisePlugins();
+        d->connection->d->plugins.insert(name, this);
+        d->connection->d->advertisePlugins();
     }
 }
 
 QDeclarativeDebugClient::~QDeclarativeDebugClient()
 {
     Q_D(const QDeclarativeDebugClient);
-    if (d->client && d->client->d) {
-        d->client->d->plugins.remove(d->name);
-        d->client->d->advertisePlugins();
+    if (d->connection && d->connection->d) {
+        d->connection->d->plugins.remove(d->name);
+        d->connection->d->advertisePlugins();
     }
 }
 
@@ -255,12 +255,12 @@ QString QDeclarativeDebugClient::name() const
 QDeclarativeDebugClient::Status QDeclarativeDebugClient::status() const
 {
     Q_D(const QDeclarativeDebugClient);
-    if (!d->client
-            || !d->client->isConnected()
-            || !d->client->d->gotHello)
+    if (!d->connection
+            || !d->connection->isConnected()
+            || !d->connection->d->gotHello)
         return NotConnected;
 
-    if (d->client->d->serverPlugins.contains(d->name))
+    if (d->connection->d->serverPlugins.contains(d->name))
         return Enabled;
 
     return Unavailable;
@@ -275,8 +275,8 @@ void QDeclarativeDebugClient::sendMessage(const QByteArray &message)
 
     QPacket pack;
     pack << d->name << message;
-    d->client->d->protocol->send(pack);
-    d->client->d->q->flush();
+    d->connection->d->protocol->send(pack);
+    d->connection->d->q->flush();
 }
 
 void QDeclarativeDebugClient::statusChanged(Status)

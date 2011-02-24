@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "private/qdeclarativeitem_p.h"
+#include "private/qdeclarativeimplicitsizeitem_p_p.h"
 #include "private/qdeclarativepixmapcache_p.h"
 
 #include <QtCore/QPointer>
@@ -61,7 +61,7 @@
 QT_BEGIN_NAMESPACE
 
 class QNetworkReply;
-class QDeclarativeImageBasePrivate : public QDeclarativeItemPrivate
+class QDeclarativeImageBasePrivate : public QDeclarativeImplicitSizeItemPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeImageBase)
 
@@ -70,7 +70,9 @@ public:
       : status(QDeclarativeImageBase::Null),
         progress(0.0),
         explicitSourceSize(false),
-        async(false)
+        async(false),
+        cache(true),
+        mirror(false)
     {
         QGraphicsItemPrivate::flags = QGraphicsItemPrivate::flags & ~QGraphicsItem::ItemHasNoContents;
     }
@@ -82,6 +84,8 @@ public:
     QSize sourcesize;
     bool explicitSourceSize : 1;
     bool async : 1;
+    bool cache : 1;
+    bool mirror: 1;
 };
 
 QT_END_NAMESPACE

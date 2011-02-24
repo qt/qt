@@ -93,5 +93,8 @@ QtObject {
         //: qsTrId() with comment, meta-data and plurals.
         //~ well-tested True
         qsTrId("qtn_bar_baz", 10);
+
+        //% "Source text"
+        qsTrId("qtn_baz_biz");
     }
 }

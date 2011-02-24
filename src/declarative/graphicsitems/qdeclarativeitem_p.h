@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -126,7 +126,7 @@ public:
       widthValid(false), heightValid(false),
       componentComplete(true), keepMouse(false),
       smooth(false), transformOriginDirty(true), doneEventPreHandler(false), keyHandler(0),
-      mWidth(0), mHeight(0), implicitWidth(0), implicitHeight(0), hadSubFocusItem(false)
+      mWidth(0), mHeight(0), mImplicitWidth(0), mImplicitHeight(0), hadSubFocusItem(false)
     {
         QGraphicsItemPrivate::acceptedMouseButtons = 0;
         isDeclarativeItem = 1;
@@ -156,6 +156,11 @@ public:
     qreal height() const;
     void setHeight(qreal);
     void resetHeight();
+
+    virtual qreal implicitWidth() const;
+    virtual qreal implicitHeight() const;
+    virtual void implicitWidthChanged();
+    virtual void implicitHeightChanged();
 
     QDeclarativeListProperty<QObject> data();
     QDeclarativeListProperty<QObject> resources();
@@ -272,8 +277,8 @@ public:
 
     qreal mWidth;
     qreal mHeight;
-    qreal implicitWidth;
-    qreal implicitHeight;
+    qreal mImplicitWidth;
+    qreal mImplicitHeight;
 
     bool hadSubFocusItem;
 
@@ -415,6 +420,7 @@ Q_SIGNALS:
 private:
     virtual void keyPressed(QKeyEvent *event, bool post);
     virtual void keyReleased(QKeyEvent *event, bool post);
+    void setFocusNavigation(QDeclarativeItem *currentItem, const char *dir);
 };
 
 class QDeclarativeKeysAttachedPrivate : public QObjectPrivate

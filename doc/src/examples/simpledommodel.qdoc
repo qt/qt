@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -53,7 +53,7 @@
     snippet reads the contents of a file into a QDomDocument object and traverses the
     document, reading all the plain text that can be found:
 
-    \snippet doc/src/snippets/code/doc_src_examples_simpledommodel.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_examples_simpledommodel.cpp 0
 
     In principle, the functions provided by QDomNode can be used to navigate from any
     given starting point in a document to the piece of data requested by another component.

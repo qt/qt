@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -27,9 +27,12 @@
 
 /*!
 \page qdeclarativei18n.html
+\ingroup qml-features
+\contentspage QML Features
+\previouspage {Network Transparency}{Loading Resources in QML}
+\nextpage {QML Features}
 \title QML Internationalization
 
-\section1 Overview
 
 Strings in QML can be marked for translation using the qsTr(), qsTranslate(),
 QT_TR_NOOP(), and QT_TRANSLATE_NOOP() functions.

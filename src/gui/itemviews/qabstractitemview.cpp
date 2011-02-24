@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -595,6 +595,15 @@ QAbstractItemView::QAbstractItemView(QAbstractItemViewPrivate &dd, QWidget *pare
 */
 QAbstractItemView::~QAbstractItemView()
 {
+    Q_D(QAbstractItemView);
+    // stop these timers here before ~QObject
+    d->delayedReset.stop();
+    d->updateTimer.stop();
+    d->delayedEditing.stop();
+    d->delayedAutoScroll.stop();
+    d->autoScrollTimer.stop();
+    d->delayedLayout.stop();
+    d->fetchMoreTimer.stop();
 }
 
 /*!
@@ -613,9 +622,9 @@ QAbstractItemView::~QAbstractItemView()
     deleteLater() functions to explicitly delete them.
 
     The view \e{does not} take ownership of the model unless it is the model's
-    parent object because the view may be shared between many different views.
+    parent object because the model may be shared between many different views.
 
-  \sa selectionModel(), setSelectionModel()
+    \sa selectionModel(), setSelectionModel()
 */
 void QAbstractItemView::setModel(QAbstractItemModel *model)
 {

@@ -403,4 +403,6 @@ EXPORTS
 	??0Value@QScriptDeclarativeClass@@QAE@PAVQScriptContext@@H@Z @ 402 NONAME ; QScriptDeclarativeClass::Value::Value(class QScriptContext *, int)
 	??0PersistentIdentifier@QScriptDeclarativeClass@@AAE@PAVQScriptEnginePrivate@@@Z @ 403 NONAME ; QScriptDeclarativeClass::PersistentIdentifier::PersistentIdentifier(class QScriptEnginePrivate *)
 	?compare@QScriptDeclarativeClass@@UAE_NPAUObject@1@0@Z @ 404 NONAME ; bool QScriptDeclarativeClass::compare(struct QScriptDeclarativeClass::Object *, struct QScriptDeclarativeClass::Object *)
+	?toString@PersistentIdentifier@QScriptDeclarativeClass@@QBE?AVQString@@XZ @ 405 NONAME ; class QString QScriptDeclarativeClass::PersistentIdentifier::toString(void) const
+	?startsWithUpper@QScriptDeclarativeClass@@QAE_NABQAX@Z @ 406 NONAME ; bool QScriptDeclarativeClass::startsWithUpper(void * const const &)
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -148,6 +148,9 @@ public:
     enum FlickableDirection { AutoFlickDirection=0x00, HorizontalFlick=0x01, VerticalFlick=0x02, HorizontalAndVerticalFlick=0x03 };
     FlickableDirection flickableDirection() const;
     void setFlickableDirection(FlickableDirection);
+
+    Q_INVOKABLE Q_REVISION(1) void resizeContent(qreal w, qreal h, QPointF center);
+    Q_INVOKABLE Q_REVISION(1) void returnToBounds();
 
 Q_SIGNALS:
     void contentWidthChanged();

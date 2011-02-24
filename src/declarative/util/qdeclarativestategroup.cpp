@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -88,7 +88,7 @@ public:
 
 /*!
    \qmlclass StateGroup QDeclarativeStateGroup
-    \ingroup qml-state-elements
+   \ingroup qml-state-elements
    \since 4.7
    \brief The StateGroup element provides state support for non-Item elements.
 
@@ -102,10 +102,10 @@ public:
            id: myStateGroup
            states: State {
                name: "state1"
-               ...
+               // ...
            }
            transitions: Transition {
-               ...
+               // ...
            }
        }
 
@@ -113,7 +113,7 @@ public:
    }
    \endqml
 
-   \sa {qmlstate}{States} {Transitions}, {QtDeclarative}
+   \sa {qmlstate}{States} {QML Animation and Transitions}{Transitions}, {QtDeclarative}
 */
 
 QDeclarativeStateGroup::QDeclarativeStateGroup(QObject *parent)
@@ -140,11 +140,15 @@ QList<QDeclarativeState *> QDeclarativeStateGroup::states() const
 
   \qml
   StateGroup {
-    states: [
-      State { ... },
-      State { ... }
-      ...
-    ]
+      states: [
+          State {
+              // State definition...
+          },
+          State {
+              // ...
+          }
+          // Other states...
+      ]
   }
   \endqml
 
@@ -197,15 +201,19 @@ void QDeclarativeStateGroupPrivate::clear_states(QDeclarativeListProperty<QDecla
 
   \qml
   StateGroup {
-    transitions: [
-      Transition { ... },
-      Transition { ... }
-      ...
-    ]
+      transitions: [
+          Transition {
+            // ...
+          },
+          Transition {
+            // ...
+          }
+          // ...
+      ]
   }
   \endqml
 
-  \sa {Transitions}
+  \sa {QML Animation and Transitions}{Transitions}
 */
 QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeStateGroup::transitionsProperty()
 {
@@ -221,14 +229,14 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeStateGroup::transit
   This property is often used in scripts to change between states. For
   example:
 
-  \qml
-    function toggle() {
-        if (button.state == 'On')
-            button.state = 'Off';
-        else
-            button.state = 'On';
-    }
-  \endqml
+  \js
+  function toggle() {
+      if (button.state == 'On')
+          button.state = 'Off';
+      else
+          button.state = 'On';
+  }
+  \endjs
 
   If the state group is in its base state (i.e. no explicit state has been
   set), \c state will be a blank string. Likewise, you can return a

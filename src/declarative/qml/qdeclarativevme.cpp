@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -247,8 +247,12 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
                 ::memset(o, 0, instr.createSimple.typeSize + sizeof(QDeclarativeData));
                 instr.createSimple.create(o);
 
-                QDeclarativeData *ddata = 
-                    (QDeclarativeData *)(((const char *)o) + instr.createSimple.typeSize);
+                QDeclarativeData *ddata = (QDeclarativeData *)(((const char *)o) + instr.createSimple.typeSize);
+                const QDeclarativeCompiledData::TypeReference &ref = types.at(instr.createSimple.type);
+                if (!ddata->propertyCache && ref.typePropertyCache) {
+                    ddata->propertyCache = ref.typePropertyCache;
+                    ddata->propertyCache->addref();
+                }
                 ddata->lineNumber = instr.line;
                 ddata->columnNumber = instr.createSimple.column;
 
@@ -320,10 +324,12 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
 
                 (void)new QDeclarativeVMEMetaObject(target, &mo, data, comp);
 
-                QDeclarativeData *ddata = QDeclarativeData::get(target, true);
-                if (ddata->propertyCache) ddata->propertyCache->release();
-                ddata->propertyCache = propertyCaches.at(instr.storeMeta.propertyCache);
-                ddata->propertyCache->addref();
+                if (instr.storeMeta.propertyCache != -1) {
+                    QDeclarativeData *ddata = QDeclarativeData::get(target, true);
+                    if (ddata->propertyCache) ddata->propertyCache->release();
+                    ddata->propertyCache = propertyCaches.at(instr.storeMeta.propertyCache);
+                    ddata->propertyCache->addref();
+                }
             }
             break;
 
@@ -938,8 +944,13 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
 
     if (bindValues.count)
         ep->bindValues << bindValues;
+    else if (bindValues.values)
+        bindValues.clear();
+
     if (parserStatus.count)
         ep->parserStatus << parserStatus;
+    else if (parserStatus.values)
+        parserStatus.clear();
 
     Q_ASSERT(stack.count() == 1);
     return stack.top();
@@ -968,6 +979,11 @@ QDeclarativeCompiledData::TypeReference::createInstance(QDeclarativeContextData 
         QDeclarativeData *ddata = new (memory) QDeclarativeData;
         ddata->ownMemory = false;
         QObjectPrivate::get(rv)->declarativeData = ddata;
+
+        if (typePropertyCache && !ddata->propertyCache) {
+            ddata->propertyCache = typePropertyCache;
+            ddata->propertyCache->addref();
+        }
 
         return rv;
     } else {

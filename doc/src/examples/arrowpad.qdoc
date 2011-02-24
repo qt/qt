@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,7 +66,7 @@
     context: it is the context of the texts in the \c ArrowPad class. 
     The \c Q_OBJECT macro defines \c tr(x) in \c ArrowPad like this:
 
-    \snippet doc/src/snippets/code/doc_src_examples_arrowpad.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_examples_arrowpad.cpp 0
 
     Knowing which class each source text appears in enables \e {Qt
     Linguist} to group texts that are logically related together, e.g.

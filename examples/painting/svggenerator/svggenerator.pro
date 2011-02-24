@@ -8,6 +8,8 @@ SOURCES   = displaywidget.cpp \
 
 QT += svg
 
+INCLUDEPATH += $$PWD
+
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/painting/svggenerator
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS svggenerator.pro

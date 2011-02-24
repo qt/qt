@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,9 +59,10 @@ public:
     bool recognizeCode( const QString& code );
     bool recognizeExtension( const QString& ext );
     bool recognizeLanguage( const QString& lang );
+    Atom::Type atomType() const;
     QString plainName( const Node *node );
     QString plainFullName( const Node *node, const Node *relative );
-    QString markedUpCode( const QString& code, const Node *relative, const QString& dirPath );
+    QString markedUpCode( const QString& code, const Node *relative, const Location &location );
     QString markedUpSynopsis( const Node *node, const Node *relative,
         		      SynopsisStyle style );
     QString markedUpName( const Node *node );

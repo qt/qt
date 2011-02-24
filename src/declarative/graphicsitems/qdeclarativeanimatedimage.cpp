@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -86,6 +86,25 @@ QT_BEGIN_NAMESPACE
     \sa BorderImage, Image
 */
 
+/*!
+    \qmlproperty bool AnimatedImage::cache
+    \since Quick 1.1
+
+    Specifies whether the image should be cached. The default value is
+    true. Setting \a cache to false is useful when dealing with large images,
+    to make sure that they aren't cached at the expense of small 'ui element' images.
+*/
+
+/*!
+    \qmlproperty bool AnimatedImage::mirror
+    \since Quick 1.1
+
+    This property holds whether the image should be horizontally inverted
+    (effectively displaying a mirrored image).
+
+    The default value is false.
+*/
+
 QDeclarativeAnimatedImage::QDeclarativeAnimatedImage(QDeclarativeItem *parent)
     : QDeclarativeImage(*(new QDeclarativeAnimatedImagePrivate), parent)
 {
@@ -126,7 +145,7 @@ void QDeclarativeAnimatedImage::setPaused(bool pause)
   \qmlproperty bool AnimatedImage::playing
   This property holds whether the animated image is playing.
 
-  By defaults, this property is true, meaning that the animation
+  By default, this property is true, meaning that the animation
   will start playing immediately.
 */
 bool QDeclarativeAnimatedImage::isPlaying() const

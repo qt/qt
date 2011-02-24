@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -110,6 +110,10 @@ public:
             int notifyIndex; // When !IsFunction
             int relatedIndex; // When IsFunction
         };
+        uint overrideIndexIsProperty : 1;
+        int overrideIndex : 31;
+        int revision; 
+        int metaObjectOffset;
 
         static Flags flagsForProperty(const QMetaProperty &, QDeclarativeEngine *engine = 0);
         void load(const QMetaProperty &, QDeclarativeEngine *engine = 0);
@@ -131,8 +135,9 @@ public:
     QDeclarativePropertyCache *copy() const;
     void append(QDeclarativeEngine *, const QMetaObject *, Data::Flag propertyFlags = Data::NoFlags,
                 Data::Flag methodFlags = Data::NoFlags, Data::Flag signalFlags = Data::NoFlags);
+    void append(QDeclarativeEngine *, const QMetaObject *, int revision, Data::Flag propertyFlags = Data::NoFlags,
+                Data::Flag methodFlags = Data::NoFlags, Data::Flag signalFlags = Data::NoFlags);
 
-    static QDeclarativePropertyCache *create(QDeclarativeEngine *, const QMetaObject *);
     static Data create(const QMetaObject *, const QString &);
 
     inline Data *property(const QScriptDeclarativeClass::Identifier &id) const;
@@ -141,13 +146,19 @@ public:
     Data *method(int) const;
     QStringList propertyNames() const;
 
+    inline Data *overrideData(Data *) const;
+    inline bool isAllowedInRevision(Data *) const;
+
     inline QDeclarativeEngine *qmlEngine() const;
     static Data *property(QDeclarativeEngine *, QObject *, const QScriptDeclarativeClass::Identifier &, Data &);
     static Data *property(QDeclarativeEngine *, QObject *, const QString &, Data &);
+
 protected:
     virtual void clear();
 
 private:
+    friend class QDeclarativeEnginePrivate;
+
     struct RData : public Data, public QDeclarativeRefCount { 
         QScriptDeclarativeClass::PersistentIdentifier identifier;
     };
@@ -155,6 +166,7 @@ private:
     typedef QVector<RData *> IndexCache;
     typedef QHash<QString, RData *> StringCache;
     typedef QHash<QScriptDeclarativeClass::Identifier, RData *> IdentifierCache;
+    typedef QVector<int> AllowedRevisionCache;
 
     void updateRecur(QDeclarativeEngine *, const QMetaObject *);
 
@@ -163,11 +175,13 @@ private:
     IndexCache methodIndexCache;
     StringCache stringCache;
     IdentifierCache identifierCache;
+    AllowedRevisionCache allowedRevisionCache;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativePropertyCache::Data::Flags);
   
 QDeclarativePropertyCache::Data::Data()
-: flags(0), propType(0), coreIndex(-1), notifyIndex(-1) 
+: flags(0), propType(0), coreIndex(-1), notifyIndex(-1), overrideIndexIsProperty(false), overrideIndex(-1),
+  revision(0), metaObjectOffset(-1)
 {
 }
 
@@ -176,7 +190,20 @@ bool QDeclarativePropertyCache::Data::operator==(const QDeclarativePropertyCache
     return flags == other.flags &&
            propType == other.propType &&
            coreIndex == other.coreIndex &&
-           notifyIndex == other.notifyIndex;
+           notifyIndex == other.notifyIndex &&
+           revision == other.revision;
+}
+
+QDeclarativePropertyCache::Data *
+QDeclarativePropertyCache::overrideData(Data *data) const
+{
+    if (data->overrideIndex < 0)
+        return 0;
+
+    if (data->overrideIndexIsProperty)
+        return indexCache.at(data->overrideIndex);
+    else
+        return methodIndexCache.at(data->overrideIndex);
 }
 
 QDeclarativePropertyCache::Data *
@@ -195,6 +222,12 @@ bool QDeclarativePropertyCache::ValueTypeData::operator==(const ValueTypeData &o
     return flags == o.flags &&
            valueTypeCoreIdx == o.valueTypeCoreIdx &&
            valueTypePropType == o.valueTypePropType; 
+}
+
+bool QDeclarativePropertyCache::isAllowedInRevision(Data *data) const
+{
+    return (data->metaObjectOffset == -1 && data->revision == 0) ||
+           (allowedRevisionCache[data->metaObjectOffset] >= data->revision);
 }
 
 QDeclarativeEngine *QDeclarativePropertyCache::qmlEngine() const

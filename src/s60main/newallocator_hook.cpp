@@ -69,6 +69,16 @@ TInt UserHeap::SetupThreadHeap(TBool aNotFirst, SStdEpocThreadCreateInfo& aInfo)
 // So the function is found and called dynamically, by library lookup. If it is not found, we
 // use the OS allocator creation functions instead.
 
+#if defined(QT_LIBINFIX)
+#  define QT_LSTRING2(x) L##x
+#  define QT_LSTRING(x) QT_LSTRING2(x)
+#  define QT_LIBINFIX_UNICODE QT_LSTRING(QT_LIBINFIX)
+#else
+#  define QT_LIBINFIX_UNICODE L""
+#endif
+
+_LIT(QtCoreLibName, "qtcore" QT_LIBINFIX_UNICODE L".dll");
+
 struct SThreadCreateInfo
     {
     TAny* iHandle;
@@ -106,7 +116,7 @@ TInt UserHeap::SetupThreadHeap(TBool aNotFirst, SStdEpocThreadCreateInfo& aInfo)
 #ifndef __WINS__
     // attempt to create the fast allocator through a known export ordinal in qtcore.dll
     RLibrary qtcore;
-    if (qtcore.Load(_L("qtcore.dll")) == KErrNone)
+    if (qtcore.Load(QtCoreLibName) == KErrNone)
     {
         const int qt_symbian_SetupThreadHeap_eabi_ordinal = 3713;
         TLibraryFunction libFunc = qtcore.Lookup(qt_symbian_SetupThreadHeap_eabi_ordinal);

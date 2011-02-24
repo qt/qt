@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -86,7 +86,7 @@ struct FunctionDef
     FunctionDef(): returnTypeIsVolatile(false), access(Private), isConst(false), isVirtual(false),
                    inlineCode(false), wasCloned(false), isCompat(false), isInvokable(false),
                    isScriptable(false), isSlot(false), isSignal(false),
-                   isConstructor(false), isDestructor(false), isAbstract(false) {}
+                   isConstructor(false), isDestructor(false), isAbstract(false), revision(0) {}
     Type type;
     QByteArray normalizedType;
     QByteArray tag;
@@ -111,11 +111,13 @@ struct FunctionDef
     bool isConstructor;
     bool isDestructor;
     bool isAbstract;
+
+    int revision;
 };
 
 struct PropertyDef
 {
-    PropertyDef():notifyId(-1), constant(false), final(false), gspec(ValueSpec){}
+    PropertyDef():notifyId(-1), constant(false), final(false), gspec(ValueSpec), revision(0){}
     QByteArray name, type, read, write, reset, designable, scriptable, editable, stored, user, notify, inPrivateClass;
     int notifyId;
     bool constant;
@@ -128,6 +130,7 @@ struct PropertyDef
         s += name.mid(1);
         return (s == write);
     }
+    int revision;
 };
 
 
@@ -139,7 +142,8 @@ struct ClassInfoDef
 
 struct ClassDef {
     ClassDef():
-        hasQObject(false), hasQGadget(false), notifyableProperties(0), begin(0), end(0){}
+        hasQObject(false), hasQGadget(false), notifyableProperties(0)
+        , revisionedMethods(0), revisionedProperties(0), begin(0), end(0){}
     QByteArray classname;
     QByteArray qualified;
     QList<QPair<QByteArray, FunctionDef::Access> > superclassList;
@@ -164,6 +168,8 @@ struct ClassDef {
     QMap<QByteArray, bool> enumDeclarations;
     QList<EnumDef> enumList;
     QMap<QByteArray, QByteArray> flagAliases;
+    int revisionedMethods;
+    int revisionedProperties;
 
     int begin;
     int end;
@@ -236,6 +242,7 @@ public:
     // in FunctionDef accordingly
     bool testFunctionAttribute(FunctionDef *def);
     bool testFunctionAttribute(Token tok, FunctionDef *def);
+    bool testFunctionRevision(FunctionDef *def);
 
     void checkSuperClasses(ClassDef *def);
     void checkProperties(ClassDef* cdef);

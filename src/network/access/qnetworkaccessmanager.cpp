@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,6 +48,7 @@
 #include "qabstractnetworkcache.h"
 
 #include "QtNetwork/qnetworksession.h"
+#include "QtNetwork/private/qsharednetworksession_p.h"
 
 #include "qnetworkaccesshttpbackend_p.h"
 #include "qnetworkaccessftpbackend_p.h"
@@ -1354,11 +1355,8 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
 
     initializeSession = false;
 
-    if (networkSession)
-        delete networkSession;
-
     if (!config.isValid()) {
-        networkSession = 0;
+        networkSession.clear();
         online = false;
 
         if (networkAccessible == QNetworkAccessManager::NotAccessible)
@@ -1369,18 +1367,12 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
         return;
     }
 
-    networkSession = new QNetworkSession(config, q);
+    networkSession = QSharedNetworkSessionManager::getSession(config);
 
-    QObject::connect(networkSession, SIGNAL(opened()), q, SIGNAL(networkSessionConnected()));
-    QObject::connect(networkSession, SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()));
-    QObject::connect(networkSession, SIGNAL(stateChanged(QNetworkSession::State)),
+    QObject::connect(networkSession.data(), SIGNAL(opened()), q, SIGNAL(networkSessionConnected()));
+    QObject::connect(networkSession.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()));
+    QObject::connect(networkSession.data(), SIGNAL(stateChanged(QNetworkSession::State)),
                      q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)));
-    QObject::connect(networkSession, SIGNAL(newConfigurationActivated()),
-                     q, SLOT(_q_networkSessionNewConfigurationActivated()));
-    QObject::connect(networkSession,
-                     SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)),
-                     q,
-                     SLOT(_q_networkSessionPreferredConfigurationChanged(QNetworkConfiguration,bool)));
 
     _q_networkSessionStateChanged(networkSession->state());
 }
@@ -1390,32 +1382,16 @@ void QNetworkAccessManagerPrivate::_q_networkSessionClosed()
     if (networkSession) {
         networkConfiguration = networkSession->configuration().identifier();
 
-        networkSession->deleteLater();
-        networkSession = 0;
+        networkSession.clear();
     }
-}
-
-void QNetworkAccessManagerPrivate::_q_networkSessionNewConfigurationActivated()
-{
-    Q_Q(QNetworkAccessManager);
-
-    if (networkSession) {
-        networkSession->accept();
-
-        emit q->networkSessionConnected();
-    }
-}
-
-void QNetworkAccessManagerPrivate::_q_networkSessionPreferredConfigurationChanged(const QNetworkConfiguration &, bool)
-{
-    if (networkSession)
-        networkSession->migrate();
 }
 
 void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession::State state)
 {
     Q_Q(QNetworkAccessManager);
 
+    if (state == QNetworkSession::Connected)
+        emit q->networkSessionConnected();
     if (online) {
         if (state != QNetworkSession::Connected && state != QNetworkSession::Roaming) {
             online = false;

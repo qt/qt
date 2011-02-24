@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -138,7 +138,7 @@
     target path for the project and adding it to the list of items to
     install:
 
-    \snippet doc/src/snippets/code/doc_src_examples_containerextension.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_examples_containerextension.pro 0
 
     The container extension is created as a library, and will be
     installed alongside the other \QD plugins when the project is

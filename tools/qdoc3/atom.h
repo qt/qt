@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -78,7 +78,7 @@ class Atom
         EndQmlText,
 #endif
         FootnoteLeft,
-        FootnoteRight,      // 20 
+        FootnoteRight,      // 20
         FormatElse,
         FormatEndif,
         FormatIf,
@@ -89,6 +89,10 @@ class Atom
         Image,
         ImageText,
         InlineImage,        // 30
+#ifdef QDOC_QML
+        JavaScript,
+        EndJavaScript,
+#endif
         LegaleseLeft,
         LegaleseRight,
         LineBreak,
@@ -96,42 +100,42 @@ class Atom
         LinkNode,
         ListLeft,
         ListItemNumber,
-        ListTagLeft,        // 38
-        ListTagRight,       // 39
-        ListItemLeft,       // 40
-        ListItemRight,      // 41
-        ListRight,          // 42
+        ListTagLeft,        // 40
+        ListTagRight,
+        ListItemLeft,
+        ListItemRight,
+        ListRight,
         Nop,
-        ParaLeft,           // 44
-        ParaRight,          // 45
+        ParaLeft,
+        ParaRight,
 #ifdef QDOC_QML
         Qml,
         QmlText,
 #endif
-        QuotationLeft,
+        QuotationLeft,      // 50
         QuotationRight,
-        RawString,          // 50
-        SectionLeft,        // 51
+        RawString,
+        SectionLeft,
         SectionRight,
         SectionHeadingLeft,
         SectionHeadingRight,
         SidebarLeft,
         SidebarRight,
         SinceList,
-        SnippetCommand,
+        SnippetCommand,     // 60
         SnippetIdentifier,
-        SnippetLocation,    // 60
-        String,             // 61
-        TableLeft,          // 62
+        SnippetLocation,
+        String,
+        TableLeft,
         TableRight,
         TableHeaderLeft,
         TableHeaderRight,
         TableRowLeft,
         TableRowRight,
-        TableItemLeft,
+        TableItemLeft,      // 70
         TableItemRight,
-        TableOfContents,    // 70
-        Target,             // 71
+        TableOfContents,
+        Target,
         UnhandledFormat, 
         UnknownCommand,
         Last = UnknownCommand

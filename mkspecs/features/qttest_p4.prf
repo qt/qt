@@ -13,5 +13,8 @@ symbian:{
 # prefix test binary with tst_
 !contains(TARGET, ^tst_.*):TARGET = $$join(TARGET,,"tst_")
 
-target.path += $$[QT_INSTALL_PREFIX]/tests/qt4
+isEmpty(target.path) {
+    target.path += $$[QT_INSTALL_PREFIX]/tests/qt4/$${TARGET}
+}
+
 INSTALLS += target

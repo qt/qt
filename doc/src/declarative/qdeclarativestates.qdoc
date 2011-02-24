@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -27,202 +27,110 @@
 
 /*!
 \page qdeclarativestates.html
+\ingroup qml-features
+\contentspage QML Features
+\previouspage {Importing Reusable Components}
+\nextpage {QML Animation and Transitions}{Animation and Transitions}
 \target qmlstates
 \title QML States
 
-\section1 Overview
+\section1 States Elements
+\list
+\o \l State
+\o \l PropertyChanges
+\o \l StateGroup
+\o \l StateChangeScript
+\o \l ParentChange
+\o \l AnchorChanges
+\endlist
 
-User interfaces are designed to present different interface configurations in
-different scenarios, or to modify their appearances in response to user
-interaction. Often, there are a set of changes that are made concurrently, such
-that the interface could be seen to be internally changing from one \e state to
-another. 
+Many user interface designs are \e state driven; interfaces have configurations
+that differ depending on the current state. For example, a traffic signal will
+configure its flags or lights depending on its state. While in the signal's
+\c stop state, a red light will turn on while the yellow and the green lights
+will turn off. In the \c caution state, the yellow light is on while the other
+lights are turned off.
 
-This applies generally to interface elements regardless of their complexity. 
-A photo viewer may initially present images in a grid, and when an image is
-clicked, change to a "detailed" state where the individual image is expanded
-and the interface is changed to present new options for image editing. On the
-other end of the scale, when a simple button is pressed, it may change to a
-"pressed" state in which its color and position is modified to give a pressed
-appearance.
-
-In QML, any object can change between different \e states to apply sets of
-changes that modify the properties of relevant items. Each \e state could 
-present a different configuration that could, for example:
+In QML, \e states are a set of property configurations defined in a \l State
+element. Different configurations could, for example:
 
 \list
 \o Show some UI elements and hide others
 \o Present different available actions to the user
-\o Start, stop or pause animations
+\o Start, stop, or pause animations
 \o Execute some script required in the new state
 \o Change a property value for a particular item
-\o Show a different view or "screen"
+\o Show a different view or screen
 \endlist
 
-Changes between states can be animated using \l {Transitions}{transitions}, as
-discussed further below.
-
-All \l {Item}-based objects have a \e {default state}, and can specify additional
-states by adding new \l State objects to the item's \l {Item::}{states}
-property. Each state has a \e name that is unique for all states within that
-item; the default state's name is an empty string. To change the current state
+All \l {Item}-based objects have a \c state property, and can specify additional
+states by adding new \c State objects to the item's \l {Item::}{states}
+property. Each state within a component has a unique \c name, an empty string
+being the default. To change the current state
 of an item, set the \l {Item::}{state} property to the name of the state.
 
-Non-Item objects can use states through the StateGroup element.
+Non-Item objects may use states through the \l StateGroup element.
 
-
-\section1 Creating states
+\section1 Creating States
 
 To create a state, add a \l State object to the item's \l {Item::}{states} property,
 which holds a list of states for that item.
 
-Following is an example. Here, the \l Rectangle is initially placed in the
-default (0, 0) position. It has defined an additional state named "moved", in
-which a PropertyChanges object repositions the rectangle to (50, 50). Clicking
-within the MouseArea changes the state to the "moved" state, thus moving the \l
-Rectangle.
+A warning \c signal component may have two states, the \c NORMAL and the
+\c CRITICAL state. Suppose that in the \c NORMAL state, the \c color of the
+signal should be \c green and the warning \c flag is down. Meanwhile, in the
+\c CRITICAL state, the \c color should be \c red and the flag is \c up. We may
+model the states using the \c State element and the color and flag
+configurations with the \c PropertyChanges element.
+\snippet doc/src/snippets/declarative/states.qml signal states
+The \l PropertyChanges element will change the values of object properties.
+Objects are referenced through their \l {qml-id-property}{id}. Objects outside
+the component are also referenced using the \c id property, exemplified by the
+property change to the external \c flag object.
 
-\snippet doc/src/snippets/declarative/states.qml 0
- 
-The \l State item defines all the changes to be made in the new state. It
-could specify additional properties to be changed, or create additional 
-PropertyChanges for other objects. It can also modify the properties of other 
-objects, not just the object that owns the state. For example:
+Further, the state may change by assigning the \c state property with the
+appropriate signal state. A state switch could be in a \l MouseArea element,
+assigning a different state whenever the signal receives a mouse click.
+\snippet doc/src/snippets/declarative/states.qml switch states
 
-\qml
-Rectangle {
-    ...
-    states: [
-        State {
-            name: "moved"
-            PropertyChanges { target: myRect; x: 50; y: 50; color: "blue" }
-            PropertyChanges { target: someOtherItem; width: 1000 }            
-        }
-    ]
-}
-\endqml
-
-As a convenience, if an item only has one state, its \l {Item::}{states} 
-property can be defined as a single \l State, without the square-brace list
-syntax:
-
-\qml
-Item {
-    ...
-    states: State {
-        ...
-    }
-}
-\endqml
-
-A \l State is not limited to performing modifications on property values. It 
-can also:
-
+The State element is not limited to performing modifications on property values.
+It can also:
 \list
-\o Run some script using StateChangeScript
-\o Override an existing signal handler for an object using PropertyChanges
-\o Re-parent an \l Item using ParentChanges
-\o Modify anchor values using AnchorChanges
+\o Run some script using \l StateChangeScript
+\o Override an existing signal handler for an object using \l PropertyChanges
+\o Re-parent an \l Item using \l ParentChange
+\o Modify anchor values using \l AnchorChanges
 \endlist
 
-The \l {declarative/animation/states}{States and Transitions example} 
-demonstrates how to declare a basic set of states and apply animated 
+\section1 The Default State
+
+Every \l Item based component has a \c state property and a \e{default state}.
+The default state is the empty string (\c{""}) and contains all of an item's
+initial property values. The default state is useful for managing property
+values before state changes. Setting the \c state property to an empty string
+will load the default state.
+
+\section1 The \c when Property
+
+For convenience, the \l State element has a \c when property that can bind to
+expressions to change the state whenever the bound expression evaluates to
+\c true. The \c when property will revert the state back to the
+\l {The Default State}{default state} when the expression evaluates to false.
+
+\snippet doc/src/snippets/declarative/states.qml when property
+The \c bell component will change to the \c RINGING state whenever the
+\c signal.state is \c CRITICAL.
+
+\section1 Animating State Changes
+
+State changes induce abrupt value changes. The \l Transition element allow
+smoother changes during state changes. In transitions, animations and
+interpolation behaviors are definable. The
+\l {QML Animation and Transitions}{Animation and Transitions} article has more
+information about creating state animations.
+
+The \l {declarative/animation/states}{States and Transitions example}
+demonstrates how to declare a basic set of states and apply animated
 transitions between them.
-
-
-\section1 The default state
-
-Of course, the \l Rectangle in the example above could have simply been moved
-by setting its position to (50, 50) in the mouse area's \c onClicked handler.
-However, aside from enabling batched property changes, one of the features of
-QML states is the ability of an item to revert to its \e {default state}.
-The default state contains all of an item's initial property values before 
-they were modified in a state change.
-
-For example, suppose the \l Rectangle should move to (50,50) when the mouse is
-pressed, and then move back to its original position when the mouse is 
-released. This can be achieved by using the \l {State::}{when} property,
-like this:
-
-\qml 
-Rectangle {
-    ...
-
-    MouseArea {
-        id: mouseArea
-        anchors.fill: parent
-    }
-
-    states: State {
-        name: "moved"; when: mouseArea.pressed
-        ...
-    }
-}
-\endqml 
-
-The \l {State::}{when} property is set to an expression that evaluates to
-\c true when the item should be set to that state. When the mouse is pressed,
-the state is changed to \e moved. When it is released, the item reverts to its
-\e default state, which defines all of the item's original property values.
-
-Alternatively, an item can be explicitly set to its default state by setting its
-\l {Item::}{state} property to an empty string (""). For example, instead of
-using the \l {State::}{when} property, the above code could be changed to:
-
-\qml 
-Rectangle {
-    ...
-
-    MouseArea {
-        anchors.fill: parent
-        onPressed: myRect.state = 'moved';
-        onReleased: myRect.state = '';
-    }
-
-    states: State {
-        name: "moved"
-        ...
-    }
-}
-\endqml 
-
-Obviously it makes sense to use the \l {State::}{when} property when possible
-as it provides a simpler (and a better, more declarative) solution than 
-assigning the state from signal handlers.
-
-
-\section1 Animating state changes
-
-
-State changes can be easily animated through \l {Transitions}{transitions}. A
-\l Transition defines the animations that should be applied when an item
-changes from one state to another.
-
-If the above example was modified to include the following \l Transition, the
-movement of the \l Rectangle would be animated:
-
-\qml
-Rectangle {
-    ...
-
-    MouseArea { ... }
-
-    states: [
-       ...
-    ]
-     
-    transitions: [
-        Transition {
-            NumberAnimation { properties: "x,y"; duration: 500 }
-        }
-    ]
- }
-\endqml  
-
-This \l Transition defines that if any \c x or \c y properties have changed
-during a state change within this item, their values should be animated over 500
-milliseconds.
-
-See the \l Transitions documentation for more information.
 
 */

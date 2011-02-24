@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -994,6 +994,7 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
     Qt::KeyboardModifiers keyMods = qt_cocoaModifiers2QtModifiers([theEvent modifierFlags]);
     NSInteger clickCount = [theEvent clickCount];
     Qt::MouseButtons buttons = 0;
+    static Qt::MouseButton previousButton = Qt::NoButton;
     {
         UInt32 mac_buttons;
         if (GetEventParameter(carbonEvent, kEventParamMouseChord, typeUInt32, 0,
@@ -1012,7 +1013,7 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
 #ifndef QT_NAMESPACE
         Q_ASSERT(clickCount > 0);
 #endif
-        if (clickCount % 2 == 0 && buttons == button)
+        if (clickCount % 2 == 0 && (previousButton == Qt::NoButton || previousButton == button))
             eventType = QEvent::MouseButtonDblClick;
         if (button == Qt::LeftButton && (keyMods & Qt::MetaModifier)) {
             button = Qt::RightButton;
@@ -1046,6 +1047,7 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
         QContextMenuEvent qcme(QContextMenuEvent::Mouse, qlocalPoint, qglobalPoint, keyMods);
         qt_sendSpontaneousEvent(widgetToGetMouse, &qcme);
     }
+    previousButton = button;
     return true;
 #endif
 }

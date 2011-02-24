@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -121,7 +121,7 @@
 
     Source code to access the OUT values:
 
-    \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_sql-driver.cpp 2
 
     \bold{Note:} \c{@outval1} and \c{@outval2} are variables local to the current
     connection and will not be affected by queries sent from another host
@@ -392,7 +392,7 @@
     sets, will be accessible only if you set the query's forward only
     mode to \e forward using \l QSqlQuery::setForwardOnly().
 
-    \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 10
+    \snippet doc/src/snippets/code/doc_src_sql-driver.cpp 10
 
     \bold{Note:} The value returned by the stored procedure's return statement
     is discarded.
@@ -679,7 +679,7 @@
     database file, no matter whether it is stored locally or on another
     server.
 
-    \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 24
+    \snippet doc/src/snippets/code/doc_src_sql-driver.cpp 24
 
     You need the InterBase/Firebird development headers and libraries
     to build this plugin.
@@ -694,7 +694,7 @@
     be overridden by setting the ISC_DPB_LC_CTYPE parameter with
     QSqlDatabase::setConnectOptions() before opening the connection.
 
-    \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 25
+    \snippet doc/src/snippets/code/doc_src_sql-driver.cpp 25
 
     If Qt doesn't support the given text encoding the driver will issue a
     warning message and connect to the database using UNICODE_FSS.
@@ -708,7 +708,7 @@
     procedure, only IN values need to be bound via QSqlQuery::bindValue(). The
     RETURN/OUT values can be retrieved via QSqlQuery::value(). Example:
 
-    \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 26
+    \snippet doc/src/snippets/code/doc_src_sql-driver.cpp 26
 
     \section3 How to Build the QIBASE Plugin on Unix and Mac OS X
 
@@ -775,7 +775,7 @@
     Make sure you have followed the guide to \l{Deploying Plugins}.
     If you experience plugin load problems and see output like this:
 
-    \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 31
+    \snippet doc/src/snippets/code/doc_src_sql-driver.cpp 31
 
     the problem is usually that the plugin had the wrong \l{Deploying
     Plugins#The Build Key}{build key}. This might require removing an

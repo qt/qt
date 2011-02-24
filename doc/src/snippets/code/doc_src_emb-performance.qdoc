@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,36 +41,3 @@
 //! [0]
 ./configure -static
 //! [0]
-
-
-//! [1]
-void *operator new[](size_t size)
-{
-    return malloc(size);
-}
-
-void *operator new(size_t size)
-{
-    return malloc(size);
-}
-
-void operator delete[](void *ptr)
-{
-    free(ptr);
-}
-
-void operator delete[](void *ptr, size_t)
-{
-    free(ptr);
-}
-
-void operator delete(void *ptr)
-{
-    free(ptr);
-}
-
-void operator delete(void *ptr, size_t)
-{
-    free(ptr);
-}
-//! [1]

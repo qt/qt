@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2830,7 +2830,8 @@ void QTreeWidget::setCurrentItem(QTreeWidgetItem *item, int column,
 
 
 /*!
-  Returns a pointer to the item at the coordinates \a p.
+  Returns a pointer to the item at the coordinates \a p. The coordinates
+  are relative to the tree widget's \l{QAbstractScrollArea::}{viewport()}.
 
   \sa visualItemRect()
 */
@@ -2844,7 +2845,8 @@ QTreeWidgetItem *QTreeWidget::itemAt(const QPoint &p) const
     \fn QTreeWidgetItem *QTreeWidget::itemAt(int x, int y) const
     \overload
 
-    Returns a pointer to the item at the coordinates (\a x, \a y).
+    Returns a pointer to the item at the coordinates (\a x, \a y). The coordinates
+    are relative to the tree widget's \l{QAbstractScrollArea::}{viewport()}.
 */
 
 /*!

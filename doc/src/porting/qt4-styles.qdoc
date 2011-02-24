@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -90,7 +90,7 @@
     pointer type is correct. If the object isn't of the right type,
     qstyleoption_cast() returns 0. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-styles.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qt4-styles.cpp 0
 
     For performance reasons, there are few member functions and the
     access to the variables is direct. This "low-level" feel makes
@@ -108,7 +108,7 @@
     The following code snippet illustrates how to use QStyle to
     draw the focus rectangle from a custom widget's paintEvent():
 
-    \snippet doc/src/snippets/code/doc_src_qt4-styles.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qt4-styles.cpp 1
 
     The next example shows how to derive from an existing style to
     customize the look of a graphical element:
@@ -130,11 +130,11 @@
     For example, here's the signature of the QStyle::drawControl()
     function in Qt 3:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-styles.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_qt4-styles.cpp 2
 
     Here's the signature of the same function in Qt 4:
 
-    \snippet doc/src/snippets/code/doc_src_qt4-styles.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_qt4-styles.cpp 3
 
     In Qt 3, some of the information required to draw a graphical
     element was stored in a QStyleOption parameter, while the rest

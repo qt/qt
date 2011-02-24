@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -27,10 +27,13 @@
 
 /*!
 \page qtbinding.html
-\target qtbinding
-\title Using QML in C++ Applications
+\ingroup qml-features
+\previouspage {Extending QML Functionalities using C++}
+\nextpage {Integrating QML Code with Existing Qt UI Code}
+\contentspage QML Features
+\title Using QML Bindings in C++ Applications
 
-QML is designed to be easily extensible from C++. The classes in the
+QML is designed to be easily extensible to and from C++. The classes in the
 Qt Declarative module allow QML components to be loaded and manipulated from C++, and through
 Qt's \l{The Meta-Object System}{meta-object system}, QML and C++ objects can easily
 communicate through Qt signals and slots. In addition, QML plugins can be written to create
@@ -85,7 +88,7 @@ delete rectangleInstance;
 
 QML documents can also be loaded using QDeclarativeView. This class provides a convenient
 QWidget-based view for embedding QML components into QGraphicsView-based applications. (For other
-methods of integrating QML into QWidget-based applications, see \l {Integrating QML with existing Qt
+methods of integrating QML into QWidget-based applications, see \l {Integrating QML Code with existing Qt
 UI code}.)
 
 
@@ -96,7 +99,7 @@ There are a number of ways to extend your QML application through C++. For examp
 \list
 \o Load a QML component and manipulate it (or its children) from C++
 \o Embed a C++ object and its properties directly into a QML component (for example, to make a
-particular C++ object callable from QML, or to replace a dummy list model data with a real data set)
+particular C++ object callable from QML, or to replace a dummy list model with a real data set)
 \o Define new QML elements (through QObject-based C++ classes) and create them directly from your
 QML code
 \endlist
@@ -235,6 +238,10 @@ defined by C++ classes; in fact, many of the core \l {QML Elements} are implemen
 C++ classes. When you create a QML object using one of these elements, you are simply creating an
 instance of a QObject-based C++ class and setting its properties.
 
+To create a visual item that fits in with the Qt Quick elements, base your class off \l QDeclarativeItem instead of QObject directly.
+You can then implement your own painting and functionality like any other QGraphicsObject. Note that QGraphicsItem::ItemHasNoContents is set by default on QDeclarativeItem because
+it does not paint anything; you will need to clear this if your item is supposed to paint anything (as opposed to being solely for input handling or logical grouping).
+
 For example, here is an \c ImageViewer class with an \c image URL property:
 
 \snippet doc/src/snippets/declarative/qtbinding/newelements/imageviewer.h 0
@@ -249,12 +256,17 @@ Then, any QML code loaded by your C++ application or \l{QDeclarativeExtensionPlu
 
 \snippet doc/src/snippets/declarative/qtbinding/newelements/standalone.qml 0
 
+
+It is advised that you avoid using QGraphicsItem functionality beyond the properties documented in QDeclarativeItem.
+This is because the GraphicsView backend is intended to be an implementation detail for QML, so the QtQuick items can be moved to faster backends as they become available with no change from a QML perspective.
+To minimize any porting requirements for custom visual items, try to stick to the documented properties in QDeclarativeItem where possible. Properties QDeclarativeItem inherits but doesn't document are classed as implementation details; they are not officially supported and may disappear between releases.
+
 Note that custom C++ types do not have to inherit from QDeclarativeItem; this is only necessary if it is
 a displayable item. If the item is not displayable, it can simply inherit from QObject.
 
 For more information on defining new QML elements, see the \l {Tutorial: Writing QML extensions with C++}
-{Writing QML extensions with C++} tutorial and the \l {Extending QML in C++} reference
-documentation.
+{Writing QML extensions with C++} tutorial and the
+\l {Extending QML Functionalities using C++} reference documentation.
 
 
 
@@ -297,17 +309,20 @@ methods on the \c myObject object, which has been set using QDeclarativeContext:
 \snippet doc/src/snippets/declarative/qtbinding/functions-cpp/main.cpp 0
 \endtable
 
-Note that QML does not support overloaded functions. If a C++ has more than one function with the
-same name, there is no guarantee which overloaded function will be called from QML.
+QML supports the calling of overloaded C++ functions. If there are multiple C++ functions with the
+same name but different arguments, the correct function will be called according to the number and
+the types of arguments that are provided.
 
 
 \section2 Receiving signals
 
 All QML signals are automatically available to C++, and can be connected to using QObject::connect()
-like any ordinary Qt C++ signal.
+like any ordinary Qt C++ signal. In return, any C++ signal can be received by a QML object using
+\l {Signal Handlers}{signal handlers}.
 
 Here is a QML component with a signal named \c qmlSignal. This signal is connected to a C++ object's
-slot using QObject::connect():
+slot using QObject::connect(), so that the \c cppSlot() method is called whenever the \c qmlSignal
+is emitted:
 
 \table
 \row
@@ -484,7 +499,8 @@ can be registered using qmlRegisterUncreatableType().  To be accessible from QML
 must begin with a capital letter.
 
 See the \l {Tutorial: Writing QML extensions with C++}{Writing QML extensions with C++} tutorial and
-the \l {Extending QML in C++} reference documentation for more information.
+the \l {Extending QML Functionalities using C++} reference documentation for
+more information.
 
 
 \section2 Automatic type conversion from strings

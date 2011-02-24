@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -509,10 +509,12 @@ int QThread::exec()
 
     Note that unlike the C library function of the same name, this
     function \e does return to the caller -- it is event processing
-    that stops.
-
-    This function does nothing if the thread does not have an event
-    loop.
+    that stops. 
+    
+    No QEventLoops will be started anymore in this thread  until 
+    QThread::exec() has been called again. If the eventloop in QThread::exec()
+    is not running then the next call to QThread::exec() will also return
+    immediately.
 
     \sa quit() QEventLoop
 */

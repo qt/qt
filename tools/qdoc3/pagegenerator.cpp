@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
   Nothing to do in the constructor.
  */
 PageGenerator::PageGenerator()
+    : outputCodec(0)
 {
     // nothing.
 }
@@ -205,15 +206,15 @@ QString PageGenerator::fileBase(const Node *node) const
 #ifdef QDOC_QML
         /*
           To avoid file name conflicts in the html directory,
-          we prepend "qml-" to the file name of QML element doc
-          files.
+          we prepend a prefix (by default, "qml-") to the file name of QML
+          element doc files.
          */
         if ((p->subType() == Node::QmlClass) ||
             (p->subType() == Node::QmlBasicType)) {
             if (!base.startsWith(QLatin1String("QML:")))
-                base.prepend("qml-");
+                base.prepend(outputPrefix(QLatin1String("QML")));
         }
-#endif        
+#endif
         if (!pp || pp->name().isEmpty() || pp->type() == Node::Fake)
             break;
         base.prepend(QLatin1Char('-'));
@@ -294,7 +295,9 @@ void PageGenerator::beginSubPage(const Location& location,
     if (!outFile->open(QFile::WriteOnly))
 	location.fatal(tr("Cannot open output file '%1'").arg(outFile->fileName()));
     QTextStream* out = new QTextStream(outFile);
-    out->setCodec(outputCodec);
+
+    if (outputCodec)
+        out->setCodec(outputCodec);
     outStreamStack.push(out);
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -98,6 +98,7 @@ class HtmlGenerator : public PageGenerator
     static QString protect(const QString &string, const QString &encoding = "ISO-8859-1");
     static QString cleanRef(const QString& ref);
     static QString sinceTitle(int i) { return sinceTitles[i]; }
+    static QString fullDocumentLocation(const Node *node);
 
  protected:
     virtual void startText(const Node *relative, CodeMarker *marker);
@@ -269,8 +270,6 @@ class HtmlGenerator : public PageGenerator
     QString endHeader;
     QString postHeader;
     QString postPostHeader;
-    QString creatorPostHeader;
-    QString creatorPostPostHeader;
     QString footer;
     QString address;
     bool pleaseGenerateMacRef;
@@ -281,7 +280,6 @@ class HtmlGenerator : public PageGenerator
     QStringList stylesheets;
     QStringList customHeadElements;
     const Tree *myTree;
-    bool slow;
     bool obsoleteLinks;
     QMap<QString, NodeMap > moduleClassMap;
     QMap<QString, NodeMap > moduleNamespaceMap;
@@ -309,8 +307,6 @@ class HtmlGenerator : public PageGenerator
 #define HTMLGENERATOR_GENERATEMACREFS   "generatemacrefs" // ### document me
 #define HTMLGENERATOR_POSTHEADER        "postheader"
 #define HTMLGENERATOR_POSTPOSTHEADER    "postpostheader"
-#define HTMLGENERATOR_CREATORPOSTHEADER        "postheader"
-#define HTMLGENERATOR_CREATORPOSTPOSTHEADER    "postpostheader"
 
 QT_END_NAMESPACE
 

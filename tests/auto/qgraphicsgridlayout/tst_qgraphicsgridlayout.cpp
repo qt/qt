@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -120,6 +120,11 @@ private slots:
     void avoidRecursionInInsertItem();
     void styleInfoLeak();
     void task236367_maxSizeHint();
+    void spanningItem2x2_data();
+    void spanningItem2x2();
+    void spanningItem2x3_data();
+    void spanningItem2x3();
+    void spanningItem();
     void heightForWidth();
     void heightForWidthWithSpanning();
     void stretchAndHeightForWidth();
@@ -2858,6 +2863,159 @@ void tst_QGraphicsGridLayout::heightForWidthWithSpanning()
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(200, -1)), QSizeF(200, 100));
     QEXPECT_FAIL("", "Due to an old bug this wrongly returns QWIDGETSIZE_MAX", Continue);
     QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(200, -1)), QSizeF(200, 10000));
+}
+
+Q_DECLARE_METATYPE(QSizePolicy::Policy)
+void tst_QGraphicsGridLayout::spanningItem2x2_data()
+{
+    QTest::addColumn<QSizePolicy::Policy>("sizePolicy");
+    QTest::addColumn<int>("itemHeight");
+    QTest::addColumn<int>("expectedHeight");
+
+    QTest::newRow("A larger spanning item with 2 widgets with fixed policy") << QSizePolicy::Fixed << 39 << 80;
+    QTest::newRow("A larger spanning item with 2 widgets with preferred policy") << QSizePolicy::Preferred << 39 << 80;
+    QTest::newRow("An equally-sized spanning item with 2 widgets with fixed policy") << QSizePolicy::Fixed << 40 << 80;
+    QTest::newRow("An equally-sized spanning item with 2 widgets with preferred policy") << QSizePolicy::Preferred << 40 << 80;
+    QTest::newRow("A smaller spanning item with 2 widgets with fixed policy") << QSizePolicy::Fixed << 41 << 82;
+    QTest::newRow("A smaller spanning item with 2 widgets with preferred policy") << QSizePolicy::Preferred << 41 << 82;
+}
+
+void tst_QGraphicsGridLayout::spanningItem2x2()
+{
+    QFETCH(QSizePolicy::Policy, sizePolicy);
+    QFETCH(int, itemHeight);
+    QFETCH(int, expectedHeight);
+    QGraphicsWidget *form = new QGraphicsWidget(0, Qt::Window);
+    QGraphicsGridLayout *layout = new QGraphicsGridLayout(form);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+
+    QGraphicsWidget *w1 = new QGraphicsWidget;
+    w1->setMinimumSize(80,80);
+    w1->setMaximumSize(80,80);
+
+    QGraphicsWidget *w2 = new QGraphicsWidget;
+    w2->setMinimumSize(80,itemHeight);
+    w2->setPreferredSize(80,itemHeight);
+    w2->setSizePolicy(QSizePolicy::Fixed, sizePolicy);
+
+    QGraphicsWidget *w3 = new QGraphicsWidget;
+    w3->setMinimumSize(80,itemHeight);
+    w3->setPreferredSize(80,itemHeight);
+    w3->setSizePolicy(QSizePolicy::Fixed, sizePolicy);
+
+    layout->addItem(w1, 0, 0, 2, 1);
+    layout->addItem(w2, 0, 1);
+    layout->addItem(w3, 1, 1);
+
+    QCOMPARE(layout->minimumSize(), QSizeF(160,expectedHeight));
+    if(sizePolicy == QSizePolicy::Fixed)
+        QCOMPARE(layout->maximumSize(), QSizeF(160,expectedHeight));
+    else
+        QCOMPARE(layout->maximumSize(), QSizeF(160,QWIDGETSIZE_MAX));
+}
+
+void tst_QGraphicsGridLayout::spanningItem2x3_data()
+{
+    QTest::addColumn<bool>("w1_fixed");
+    QTest::addColumn<bool>("w2_fixed");
+    QTest::addColumn<bool>("w3_fixed");
+    QTest::addColumn<bool>("w4_fixed");
+    QTest::addColumn<bool>("w5_fixed");
+
+    for(int w1 = 0; w1 < 2; w1++)
+        for(int w2 = 0; w2 < 2; w2++)
+            for(int w3 = 0; w3 < 2; w3++)
+                for(int w4 = 0; w4 < 2; w4++)
+                    for(int w5 = 0; w5 < 2; w5++) {
+                        QString description = QString("Fixed sizes:") + (w1?" w1":"") + (w2?" w2":"") + (w3?" w3":"") + (w4?" w4":"") + (w5?" w5":"");
+                        QTest::newRow(description.toLatin1()) << (bool)w1 << (bool)w2 << (bool)w3 << (bool)w4 << (bool)w5;
+                    }
+}
+
+void tst_QGraphicsGridLayout::spanningItem2x3()
+{
+    QFETCH(bool, w1_fixed);
+    QFETCH(bool, w2_fixed);
+    QFETCH(bool, w3_fixed);
+    QFETCH(bool, w4_fixed);
+    QFETCH(bool, w5_fixed);
+    QGraphicsGridLayout *layout = new QGraphicsGridLayout;
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+
+    QGraphicsWidget *w1 = new QGraphicsWidget;
+    w1->setMinimumSize(80,80);
+    w1->setMaximumSize(80,80);
+    if (w1_fixed)
+        w1->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+    QGraphicsWidget *w2 = new QGraphicsWidget;
+    w2->setMinimumSize(80,48);
+    w2->setPreferredSize(80,48);
+    if (w2_fixed)
+        w2->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+    QGraphicsWidget *w3 = new QGraphicsWidget;
+    w3->setMinimumSize(80,30);
+    w3->setPreferredSize(80,30);
+    if (w3_fixed)
+        w3->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+    QGraphicsWidget *w4 = new QGraphicsWidget;
+    w4->setMinimumSize(80,30);
+    w4->setMaximumSize(80,30);
+    if (w4_fixed)
+        w4->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+    QGraphicsWidget *w5 = new QGraphicsWidget;
+    w5->setMinimumSize(40,24);
+    w5->setMaximumSize(40,24);
+    if (w5_fixed)
+        w5->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+    layout->addItem(w1, 0, 0, 2, 1);
+    layout->addItem(w2, 0, 1);
+    layout->addItem(w3, 1, 1);
+    layout->addItem(w4, 0, 2);
+    layout->addItem(w5, 1, 2);
+
+    QCOMPARE(layout->minimumSize(), QSizeF(240,80));
+    // Only w2 and w3 grow vertically, so when they have a fixed vertical size policy,
+    // the whole layout cannot grow vertically.
+    if (w2_fixed && w3_fixed)
+        QCOMPARE(layout->maximumSize(), QSizeF(QWIDGETSIZE_MAX,80));
+    else
+        QCOMPARE(layout->maximumSize(), QSizeF(QWIDGETSIZE_MAX,QWIDGETSIZE_MAX));
+}
+
+void tst_QGraphicsGridLayout::spanningItem()
+{
+    QGraphicsWidget *form = new QGraphicsWidget(0, Qt::Window);
+    QGraphicsGridLayout *layout = new QGraphicsGridLayout(form);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+
+    QGraphicsWidget *w1 = new QGraphicsWidget;
+    w1->setMinimumSize(80,80);
+    w1->setMaximumSize(80,80);
+
+    QGraphicsWidget *w2 = new QGraphicsWidget;
+    w2->setMinimumSize(80,38);
+    w2->setPreferredSize(80,38);
+    w2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+    QGraphicsWidget *w3 = new QGraphicsWidget;
+    w3->setMinimumSize(80,38);
+    w3->setPreferredSize(80,38);
+    w3->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+    layout->addItem(w1, 0, 0, 2, 1);
+    layout->addItem(w2, 0, 1);
+    layout->addItem(w3, 1, 1);
+
+    QCOMPARE(layout->minimumSize(), QSizeF(160,80));
+    QCOMPARE(layout->maximumSize(), QSizeF(160,80));
 }
 
 void tst_QGraphicsGridLayout::stretchAndHeightForWidth()

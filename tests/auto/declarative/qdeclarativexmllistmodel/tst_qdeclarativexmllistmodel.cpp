@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -38,8 +38,17 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <private/qdeclarativeengine_p.h>
+
+#include <QtTest/QtTest>
+#include <QtGlobal>
+#include <math.h>
+
 #include <qtest.h>
 #include <QtTest/qsignalspy.h>
+#include <QtDeclarative/qdeclarativenetworkaccessmanagerfactory.h>
+#include <QtNetwork/qnetworkaccessmanager.h>
+#include <QtNetwork/qnetworkrequest.h>
 #include <QtCore/qtimer.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qtemporaryfile.h>
@@ -75,12 +84,14 @@ private slots:
     }
 
     void buildModel();
-    void missingFields();
+    void testTypes();
+    void testTypes_data();
     void cdata();
     void attributes();
     void roles();
     void roleErrors();
     void uniqueRoleNames();
+    void headers();
     void xml();
     void xml_data();
     void source();
@@ -139,6 +150,44 @@ private:
     QDeclarativeEngine engine;
 };
 
+class CustomNetworkAccessManagerFactory : public QObject, public QDeclarativeNetworkAccessManagerFactory
+{
+    Q_OBJECT
+public:
+    QVariantMap lastSentHeaders;
+
+protected:
+    QNetworkAccessManager *create(QObject *parent);
+};
+
+class CustomNetworkAccessManager : public QNetworkAccessManager
+{
+    Q_OBJECT
+public:
+    CustomNetworkAccessManager(CustomNetworkAccessManagerFactory *factory, QObject *parent)
+        : QNetworkAccessManager(parent), m_factory(factory) {}
+
+protected:
+    QNetworkReply *createRequest(Operation op, const QNetworkRequest &req, QIODevice * outgoingData = 0)
+    {
+        if (m_factory) {
+            QVariantMap map;
+            foreach (const QString &header, req.rawHeaderList())
+                map[header] = req.rawHeader(header.toUtf8());
+            m_factory->lastSentHeaders = map;
+        }
+        return QNetworkAccessManager::createRequest(op, req, outgoingData);
+    }
+
+    QPointer<CustomNetworkAccessManagerFactory> m_factory;
+};
+
+QNetworkAccessManager *CustomNetworkAccessManagerFactory::create(QObject *parent)
+{
+    return new CustomNetworkAccessManager(this, parent);
+}
+
+
 void tst_qdeclarativexmllistmodel::buildModel()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/model.qml"));
@@ -158,25 +207,68 @@ void tst_qdeclarativexmllistmodel::buildModel()
     delete model;
 }
 
-void tst_qdeclarativexmllistmodel::missingFields()
+void tst_qdeclarativexmllistmodel::testTypes()
 {
-    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/model2.qml"));
+    QFETCH(QString, xml);
+    QFETCH(QString, roleName);
+    QFETCH(QVariant, expectedValue);
+
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/testtypes.qml"));
     QDeclarativeXmlListModel *model = qobject_cast<QDeclarativeXmlListModel*>(component.create());
     QVERIFY(model != 0);
-    QTRY_COMPARE(model->count(), 9);
+    model->setXml(xml.toUtf8());
+    model->reload();
+    QTRY_COMPARE(model->count(), 1);
 
-    QList<int> roles;
-    roles << Qt::UserRole << Qt::UserRole + 1 << Qt::UserRole + 2 << Qt::UserRole + 3 << Qt::UserRole + 4;
-    QHash<int, QVariant> data = model->data(5, roles);
-    QVERIFY(data.count() == 5);
-    QCOMPARE(data.value(Qt::UserRole+3).toString(), QLatin1String(""));
-    QCOMPARE(data.value(Qt::UserRole+4).toString(), QLatin1String(""));
+    int role = -1;
+    foreach (int i, model->roles()) {
+        if (model->toString(i) == roleName) {
+            role = i;
+            break;
+        }
+    }
+    QVERIFY(role >= 0);
 
-    data = model->data(7, roles);
-    QVERIFY(data.count() == 5);
-    QCOMPARE(data.value(Qt::UserRole+2).toString(), QLatin1String(""));
+    if (expectedValue.toString() == "nan")
+        QVERIFY(qIsNaN(model->data(0, role).toDouble()));
+    else
+        QCOMPARE(model->data(0, role), expectedValue);
 
     delete model;
+}
+
+void tst_qdeclarativexmllistmodel::testTypes_data()
+{
+    QTest::addColumn<QString>("xml");
+    QTest::addColumn<QString>("roleName");
+    QTest::addColumn<QVariant>("expectedValue");
+
+    QTest::newRow("missing string field") << "<data></data>"
+            << "stringValue" << QVariant("");
+    QTest::newRow("empty string") << "<data><a-string></a-string></data>"
+            << "stringValue" << QVariant("");
+    QTest::newRow("1-char string") << "<data><a-string>5</a-string></data>"
+            << "stringValue" << QVariant("5");
+    QTest::newRow("string ok") << "<data><a-string>abc def g</a-string></data>"
+            << "stringValue" << QVariant("abc def g");
+
+    QTest::newRow("missing number field") << "<data></data>"
+            << "numberValue" << QVariant("");
+    double nan = qQNaN();
+    QTest::newRow("empty number field") << "<data><a-number></a-number></data>"
+            << "numberValue" << QVariant(nan);
+    QTest::newRow("number field with string") << "<data><a-number>a string</a-number></data>"
+            << "numberValue" << QVariant(nan);
+    QTest::newRow("-1") << "<data><a-number>-1</a-number></data>"
+            << "numberValue" << QVariant("-1");
+    QTest::newRow("-1.5") << "<data><a-number>-1.5</a-number></data>"
+            << "numberValue" << QVariant("-1.5");
+    QTest::newRow("0") << "<data><a-number>0</a-number></data>"
+            << "numberValue" << QVariant("0");
+    QTest::newRow("+1") << "<data><a-number>1</a-number></data>"
+            << "numberValue" << QVariant("1");
+    QTest::newRow("+1.5") << "<data><a-number>1.5</a-number></data>"
+            << "numberValue" << QVariant("1.5");
 }
 
 void tst_qdeclarativexmllistmodel::cdata()
@@ -310,6 +402,31 @@ void tst_qdeclarativexmllistmodel::xml_data()
     QTest::newRow("xml with no items") << "<Pets></Pets>" << 0;
     QTest::newRow("empty xml") << "" << 0;
     QTest::newRow("one item") << "<Pets><Pet><name>Hobbes</name><type>Tiger</type><age>7</age><size>Large</size></Pet></Pets>" << 1;
+}
+
+void tst_qdeclarativexmllistmodel::headers()
+{
+    // ensure the QNetworkAccessManagers created for this test are immediately deleted
+    QDeclarativeEngine qmlEng;
+
+    CustomNetworkAccessManagerFactory factory;
+    qmlEng.setNetworkAccessManagerFactory(&factory);
+
+    QDeclarativeComponent component(&qmlEng, QUrl::fromLocalFile(SRCDIR "/data/model.qml"));
+    QDeclarativeXmlListModel *model = qobject_cast<QDeclarativeXmlListModel*>(component.create());
+    QVERIFY(model != 0);
+    QTRY_COMPARE(model->status(), QDeclarativeXmlListModel::Ready);
+
+    QVariantMap expectedHeaders;
+    expectedHeaders["Accept"] = "application/xml";
+
+    QCOMPARE(factory.lastSentHeaders.count(), expectedHeaders.count());
+    foreach (const QString &header, expectedHeaders.keys()) {
+        QVERIFY(factory.lastSentHeaders.contains(header));
+        QCOMPARE(factory.lastSentHeaders[header].toString(), expectedHeaders[header].toString());
+    }
+
+    delete model;
 }
 
 void tst_qdeclarativexmllistmodel::source()

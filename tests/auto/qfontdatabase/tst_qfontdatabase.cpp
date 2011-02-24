@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -191,9 +191,6 @@ void tst_QFontDatabase::addAppFont_data()
 
 void tst_QFontDatabase::addAppFont()
 {
-#ifdef Q_OS_SYMBIAN
-    QSKIP( "Symbian: Application fonts are not yet supported", SkipAll );
-#else
     QFETCH(bool, useMemoryFont);
     QSignalSpy fontDbChangedSpy(QApplication::instance(), SIGNAL(fontDatabaseChanged()));
 
@@ -243,7 +240,6 @@ void tst_QFontDatabase::addAppFont()
     QCOMPARE(fontDbChangedSpy.count(), 2);
 
     QVERIFY(db.families() == oldFamilies);
-#endif
 }
 
 QTEST_MAIN(tst_QFontDatabase)

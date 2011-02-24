@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -65,6 +65,7 @@
 #include <QInputContext>
 #include <QPushButton>
 #include <QLineEdit>
+#include <QGraphicsLinearLayout>
 
 #include "../../shared/util.h"
 
@@ -469,6 +470,7 @@ private slots:
     void itemDiesDuringDraggingOperation();
     void QTBUG_12112_focusItem();
     void QTBUG_13473_sceneposchange();
+    void QTBUG_16374_crashInDestructor();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -11077,5 +11079,56 @@ void tst_QGraphicsItem::QTBUG_13473_sceneposchange()
     QCOMPARE(child->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 2);
 }
 
+class MyGraphicsWidget : public QGraphicsWidget {
+Q_OBJECT
+public:
+    MyGraphicsWidget()
+        : QGraphicsWidget(0)
+    {
+        QGraphicsLinearLayout *lay = new QGraphicsLinearLayout(Qt::Vertical);
+        QLatin1String wiseWords("AZ BUKI VEDI");
+        QString sentence(wiseWords);
+        QStringList words = sentence.split(QLatin1Char(' '), QString::SkipEmptyParts);
+        for (int i = 0; i < words.count(); ++i) {
+            QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget(this);
+            QLabel *label = new QLabel(words.at(i));
+            proxy->setWidget(label);
+            proxy->setFocusPolicy(Qt::StrongFocus);
+            proxy->setFlag(QGraphicsItem::ItemAcceptsInputMethod, true);
+            if (i%2 == 0)
+                proxy->setVisible(false);
+            proxy->setFocus();
+            lay->addItem(proxy);
+        }
+        setLayout(lay);
+    }
+
+};
+
+class MyWidgetWindow : public QGraphicsWidget
+{
+public:
+    MyWidgetWindow()
+        : QGraphicsWidget(0, Qt::Window)
+    {
+        QGraphicsLinearLayout *lay = new QGraphicsLinearLayout(Qt::Vertical);
+        MyGraphicsWidget *widget = new MyGraphicsWidget();
+        lay->addItem(widget);
+        setLayout(lay);
+    }
+};
+
+void tst_QGraphicsItem::QTBUG_16374_crashInDestructor()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+
+    MyWidgetWindow win;
+    scene.addItem(&win);
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+}
+    
 QTEST_MAIN(tst_QGraphicsItem)
 #include "tst_qgraphicsitem.moc"

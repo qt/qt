@@ -1,26 +1,19 @@
 include(qt-html-default-styles.qdocconf)
 
 HTML.postheader = \
-    " <div class=\"header\" id=\"qtdocheader\">\n" \
+    "<div class=\"header\" id=\"qtdocheader\">\n" \
     "  <div class=\"content\"> \n" \
-    "    <div id=\"nav-logo\">\n" \
-    "      <a href=\"index.html\">Home</a>\n" \
-    "    </div>\n" \
     "    <a href=\"index.html\" class=\"qtref\"><span>Qt Reference Documentation</span></a>\n" \
     "  </div>\n" \
-    "  <div class=\"wrap\">\n" \
-    "    <div class=\"toolbar\">\n" \
-    "      <div class=\"breadcrumb toolblock\">\n" \
-    "        <ul>\n" \
-    "          <li class=\"first\"><a href=\"index.html\">Home</a></li>\n" \
-    "          <!--  Breadcrumbs go here -->\n"
+    "  <div class=\"breadcrumb toolblock\">\n" \
+    "    <ul>\n" \
+    "      <li class=\"first\"><a href=\"index.html\">Home</a></li>\n" \
+    "      <!--  Breadcrumbs go here -->\n"
 
 HTML.postpostheader = \
-    "        </ul>\n" \
-    "      </div>\n" \
-    "    </div>\n" \
+    "    </ul>\n" \
     "  </div>\n" \
-    " </div>\n" \
+    "</div>\n" \
     "<div class=\"content mainContent\">\n"
 
 HTML.footer = \
@@ -30,7 +23,7 @@ HTML.footer = \
     "</div> \n" \
     "<div class=\"footer\">\n" \
     "  <p>\n" \
-    "     <acronym title=\"Copyright\">&copy;</acronym> 2008-2010 Nokia Corporation and/or its\n" \
+    "     <acronym title=\"Copyright\">&copy;</acronym> 2008-2011 Nokia Corporation and/or its\n" \
     "     subsidiaries. Nokia, Qt and their respective logos are trademarks of Nokia Corporation \n" \
     "     in Finland and/or other countries worldwide.</p>\n" \
     "  <p>\n" \
@@ -58,4 +51,4 @@ qhp.Qt.extraFiles = index.html \
                     images/bullet_up.png \
                     images/horBar.png \
                     images/sprites-combined.png \
-                    style/style.css
+                    style/offline.css

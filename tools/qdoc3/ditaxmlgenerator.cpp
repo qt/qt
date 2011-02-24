@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -320,7 +320,6 @@ DitaXmlGenerator::DitaXmlGenerator()
       offlineDocs(true),
       funcLeftParen("\\S(\\()"),
       myTree(0),
-      slow(false),
       obsoleteLinks(false),
       noLinks(false),
       tableColumnCount(0)
@@ -406,8 +405,6 @@ void DitaXmlGenerator::initializeGenerator(const Config &config)
 
         ++edition;
     }
-
-    slow = config.getBool(CONFIG_SLOW);
 
     stylesheets = config.getStringList(DitaXmlGenerator::format() +
                                        Config::dot +
@@ -2368,7 +2365,7 @@ void DitaXmlGenerator::generateIncludes(const InnerNode* inner, CodeMarker* mark
 
 /*!
   zzz
-  Generates a table of contents begining at \a node.
+  Generates a table of contents beginning at \a node.
   Currently just returns without writing anything.
  */
 void DitaXmlGenerator::generateTableOfContents(const Node* node,

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,11 +60,12 @@ public:
     virtual bool recognizeCode(const QString &code);
     virtual bool recognizeExtension(const QString &ext);
     virtual bool recognizeLanguage(const QString &language);
+    virtual Atom::Type atomType() const;
     virtual QString plainName(const Node *node);
     virtual QString plainFullName(const Node *node, const Node *relative);
     virtual QString markedUpCode(const QString &code, 
                                  const Node *relative, 
-                                 const QString &dirPath);
+                                 const Location &location);
 
     virtual QString markedUpName(const Node *node);
     virtual QString markedUpFullName(const Node *node, const Node *relative);
@@ -76,8 +77,8 @@ public:
     QList<QDeclarativeJS::AST::SourceLocation> extractPragmas(QString &script);
 
 private:
-    QString addMarkUp(const QString &code, const Node * /* relative */,
-                      const QString & /* dirPath */);
+    QString addMarkUp(const QString &code, const Node *relative,
+                      const Location &location);
 };
 
 QT_END_NAMESPACE

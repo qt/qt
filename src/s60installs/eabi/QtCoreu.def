@@ -3714,4 +3714,7 @@ EXPORTS
 	_Z26qt_symbian_SetupThreadHeapiR24SStdEpocThreadCreateInfo @ 3713 NONAME
 	_ZN24QAbstractDeclarativeData17objectNameChangedE @ 3714 NONAME DATA 4
 	_ZN23QEventDispatcherSymbian36queueDeferredActiveObjectsCompletionEv @ 3715 NONAME
+	_ZN23QCoreApplicationPrivate18symbianCommandLineEv @ 3716 NONAME
+	_ZNK11QMetaMethod8revisionEv @ 3717 NONAME
+	_ZNK13QMetaProperty8revisionEv @ 3718 NONAME
 

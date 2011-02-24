@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -583,18 +583,22 @@ void QDeclarativeMouseArea::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
     Q_D(QDeclarativeMouseArea);
     if (!d->absorb)
         QDeclarativeItem::hoverEnterEvent(event);
-    else
+    else {
+        d->lastPos = event->pos();
         setHovered(true);
+        QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), Qt::NoButton, Qt::NoButton, event->modifiers(), false, false);
+        emit mousePositionChanged(&me);
+    }
 }
 
 void QDeclarativeMouseArea::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_D(QDeclarativeMouseArea);
     if (!d->absorb) {
-        QDeclarativeItem::hoverEnterEvent(event);
+        QDeclarativeItem::hoverMoveEvent(event);
     } else {
         d->lastPos = event->pos();
-        QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), Qt::NoButton, d->lastButtons, d->lastModifiers, false, d->longPress);
+        QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), Qt::NoButton, Qt::NoButton, event->modifiers(), false, false);
         emit mousePositionChanged(&me);
         me.setX(d->lastPos.x());
         me.setY(d->lastPos.y());
@@ -859,15 +863,16 @@ bool QDeclarativeMouseArea::setPressed(bool p)
             me.setX(d->lastPos.x());
             me.setY(d->lastPos.y());
             emit mousePositionChanged(&me);
+            emit pressedChanged();
         } else {
             emit released(&me);
             me.setX(d->lastPos.x());
             me.setY(d->lastPos.y());
+            emit pressedChanged();
             if (isclick && !d->longPress && !d->doubleClick)
                 emit clicked(&me);
         }
 
-        emit pressedChanged();
         return me.isAccepted();
     }
     return false;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,6 +59,9 @@ private slots:
     void applicationPid();
     void globalPostedEventsCount();
     void processEventsAlwaysSendsPostedEvents();
+    void reexec();
+    void execAfterExit();
+    void eventLoopExecAfterExit();
 };
 
 class EventSpy : public QObject
@@ -522,6 +525,48 @@ void tst_QCoreApplication::processEventsAlwaysSendsPostedEvents()
         QCOMPARE(object.counter, i);
         ++i;
     } while (t.elapsed() < 3000);
+}
+
+void tst_QCoreApplication::reexec()
+{
+    int argc = 1;
+    char *argv[] = { "tst_qcoreapplication" };
+    QCoreApplication app(argc, argv);
+
+    // exec once
+    QMetaObject::invokeMethod(&app, "quit", Qt::QueuedConnection);
+    QCOMPARE(app.exec(), 0);
+
+    // and again
+    QMetaObject::invokeMethod(&app, "quit", Qt::QueuedConnection);
+    QCOMPARE(app.exec(), 0);
+}
+
+void tst_QCoreApplication::execAfterExit()
+{
+    int argc = 1;
+    char *argv[] = { "tst_qcoreapplication" };
+    QCoreApplication app(argc, argv);
+
+    app.exit(1);
+    QMetaObject::invokeMethod(&app, "quit", Qt::QueuedConnection);
+    QCOMPARE(app.exec(), 0);
+}
+
+void tst_QCoreApplication::eventLoopExecAfterExit()
+{
+    int argc = 1;
+    char *argv[] = { "tst_qcoreapplication" };
+    QCoreApplication app(argc, argv);
+
+    // exec once and exit
+    QMetaObject::invokeMethod(&app, "quit", Qt::QueuedConnection);
+    QCOMPARE(app.exec(), 0);
+
+    // and again, but this time using a QEventLoop
+    QEventLoop loop;
+    QMetaObject::invokeMethod(&loop, "quit", Qt::QueuedConnection);
+    QCOMPARE(loop.exec(), 0);
 }
 
 QTEST_APPLESS_MAIN(tst_QCoreApplication)

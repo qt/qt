@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,13 +29,13 @@
 \page qmlruntime.html
 \title Qt Declarative UI Runtime
 
-QML documents are loaded and executed by the QML runtime. This includes the 
+QML documents are loaded and executed by the QML runtime. This includes the
 Declarative UI engine along with the built-in QML elements and plugin modules,
 and it also provides access to third-party QML elements and modules.
 
-Applications that use QML need to invoke the QML runtime in order to 
-execute QML documents. This can be done by creating a QDeclarativeView 
-or a QDeclarativeEngine, as described below. In addition, the Declarative UI 
+Applications that use QML need to invoke the QML runtime in order to
+execute QML documents. This can be done by creating a QDeclarativeView
+or a QDeclarativeEngine, as described below. In addition, the Declarative UI
 package includes the \QQV tool, which loads \c .qml files. This tool is
 useful for developing and testing QML code without the need to write
 a C++ application to load the QML runtime.
@@ -44,7 +44,7 @@ a C++ application to load the QML runtime.
 
 \section1 Deploying QML-based applications
 
-To deploy an application that uses QML, the QML runtime must be invoked by 
+To deploy an application that uses QML, the QML runtime must be invoked by
 the application. This is done by writing a Qt C++ application that loads the
 QDeclarativeEngine by either:
 
@@ -61,12 +61,12 @@ For example, if there is a QML file, \c application.qml, like this:
 
 \qml
     import QtQuick 1.0
-    
+
     Rectangle { width: 100; height: 100; color: "red" }
 \endqml
 
 It can be loaded in a Qt application's \c main.cpp file like this:
- 
+
 \code
     #include <QApplication>
     #include <QDeclarativeView>
@@ -82,10 +82,10 @@ It can be loaded in a Qt application's \c main.cpp file like this:
         return app.exec();
     }
 \endcode
-       
-This creates a QWidget-based view that displays the contents of 
+
+This creates a QWidget-based view that displays the contents of
 \c application.qml.
- 
+
 The application's \c .pro \l{qmake Project Files}{project file} must specify
 the \c declarative module for the \c QT variable. For example:
 
@@ -97,36 +97,36 @@ the \c declarative module for the \c QT variable. For example:
 
 
 \section2 Creating a QDeclarativeEngine directly
-     
-If \c application.qml does not have any graphical components, or if it is 
+
+If \c application.qml does not have any graphical components, or if it is
 preferred to avoid QDeclarativeView for other reasons, the QDeclarativeEngine
 can be constructed directly instead. In this case, \c application.qml is
 loaded as a QDeclarativeComponent instance rather than placed into a view:
 
 \code
     #include <QApplication>
-    #include <QDeclarativeEngine>    
+    #include <QDeclarativeEngine>
     #include <QDeclarativeContext>
     #include <QDeclarativeComponent>
 
     int main(int argc, char *argv[])
     {
         QApplication app(argc, argv);
-    
+
         QDeclarativeEngine engine;
         QDeclarativeContext *objectContext = new QDeclarativeContext(engine.rootContext());
-    
+
         QDeclarativeComponent component(&engine, "application.qml");
         QObject *object = component.create(objectContext);
-         
+
         // ... delete object and objectContext when necessary
-    
+
         return app.exec();
     }
 \endcode
 
-See \l {Using QML in C++ Applications} for more information about using 
-QDeclarativeEngine, QDeclarativeContext and QDeclarativeComponent, as well 
+See \l {Using QML Bindings in C++ Applications} for more information about using
+QDeclarativeEngine, QDeclarativeContext and QDeclarativeComponent, as well
 as details on including QML files through \l{The Qt Resource System}{Qt's Resource system}.
 
 
@@ -135,8 +135,8 @@ as details on including QML files through \l{The Qt Resource System}{Qt's Resour
 
 The Declarative UI package includes a QML runtime tool, the \QQV, which loads
 and displays QML documents. This is useful during the application development
-phase for prototyping QML-based applications without writing your own C++ 
-applications to invoke the QML runtime. 
+phase for prototyping QML-based applications without writing your own C++
+applications to invoke the QML runtime.
 
 See the \l{QML Viewer} documentation for more details.
 

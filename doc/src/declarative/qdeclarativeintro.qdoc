@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -27,7 +27,7 @@
 
 /*!
 \page qdeclarativeintroduction.html
-\title Introduction to the QML language
+\title Introduction to the QML Language
 
 \tableofcontents
 
@@ -37,7 +37,7 @@ interface is specified as a tree of objects with properties.
 
 This introduction is meant for those with little or no programming
 experience. JavaScript is used as a scripting language in QML, so you may want
-to learn a bit more about it (\l{Javascript Guide}) before diving
+to learn a bit more about it (see the \l{Javascript Guide}) before diving
 deeper into QML. It's also helpful to have a basic understanding of other web
 technologies like HTML and CSS, but it's not required.
 
@@ -60,13 +60,13 @@ Rectangle {
 }
 \endqml
 
-Objects are specified by their type, followed by a pair of braces. Object
-types always begin with a capital letter. In the above example, there are
-two objects, a \l Rectangle, and an \l Image. Between the braces, we can specify
-information about the object, such as its properties.
+Here we create two objects, a \l Rectangle object and its child
+\l Image object. Objects are specified by their type, followed by a pair of
+braces in between which additional data can be defined for the object, such as
+its property values and any child objects.
 
-Properties are specified as \c {property: value}. In the above example, we
-can see the Image has a property named \c source, which has been assigned the
+Properties are specified with a \c {property: value} syntax. In the above example, we
+can see the \l Image object has a property named \c source, which has been assigned the
 value \c "pics/logo.png". The property and its value are separated by a colon.
 
 Properties can be specified one-per-line:
@@ -87,45 +87,12 @@ Rectangle { width: 100; height: 100 }
 When multiple property/value pairs are specified on a single line, they
 must be separated by a semicolon.
 
-The \c import statement imports the \c Qt \l{QML Modules}{module}, which contains all of the
+The \c import statement imports the \c QtQuick \l{QML Modules}{module}, which contains all of the
 standard \l {QML Elements}. Without this import statement, the \l Rectangle
 and \l Image elements would not be available.
 
-\section1 Expressions
 
-In addition to assigning values to properties, you can also assign
-expressions written in JavaScript.
-
-\qml
-Rotation {
-    angle: 360 * 3
-}
-\endqml
-
-These expressions can include references to other objects and properties, in which case
-a \e binding is established: when the value of the expression changes, the property the
-expression has been assigned to is automatically updated to that value.
-
-\qml
-Item {
-    Text {
-        id: text1
-        text: "Hello World"
-    }
-    Text {
-        id: text2
-        text: text1.text
-    }
-}
-\endqml
-
-In the example above, the \c text2 object will display the same text as \c text1. If \c text1 is changed,
-\c text2 is automatically changed to the same value.
-
-Note that to refer to other objects, we use their \e id values. (See below for more
-information on the \e id property.)
-
-\section1 QML Comments
+\section1 Comments
 
 Commenting in QML is similar to JavaScript.
 \list
@@ -149,27 +116,95 @@ Text {
 }
 \endqml
 
-In the above example, the Text object will have normal opacity, since the
+In the above example, the \l Text object will have normal opacity, since the
 line opacity: 0.5 has been turned into a comment.
+
+
+
+\section1 Object Identifiers
+
+Each object can be given a special \e id value that allows the object to be identified
+and referred to by other objects.
+
+For example, below we have two \l Text objects. The first \l Text object
+has an \c id value of "text1". The second \l Text object can now set its own
+\c text property value to be the same as that of the first object, by referring to
+\c text1.text:
+
+\qml
+import QtQuick 1.0
+
+Row {
+    Text {
+        id: text1
+        text: "Hello World"
+    }
+
+    Text { text: text1.text }
+}
+\endqml
+
+An object can be referred to by its \c id from anywhere within the \l {QML Documents}{component}
+in which it is declared. Therefore, an \c id value must always be unique within a single component.
+
+The \c id value is a special value for a QML object and should not be thought of as an
+ordinary object property; for example, it is not possible to access \c text1.id in the
+above example. Once an object is created, its \c id cannot be changed.
+
+Note that an \c id must begin with a lower-case letter or an underscore, and cannot contain
+characters other than letters, numbers and underscores.
+
+
+
+\section1 Expressions
+
+JavaScript expressions can be used to assign property values. For example:
+
+\qml
+Item {
+    width: 100 * 3
+    height: 50 + 22
+}
+\endqml
+
+These expressions can include references to other objects and properties, in which case
+a \l{Property Binding}{binding} is established: when the value of the expression changes,
+the property to which the expression is assigned is automatically updated to the
+new value. For example:
+
+\qml
+Item {
+    width: 300
+    height: 300
+
+    Rectangle {
+        width: parent.width - 50
+        height: 100
+        color: "yellow"
+    }
+}
+\endqml
+
+Here, the \l Rectangle object's \c width property is set relative to the width
+of its parent. Whenever the parent's width changes, the width of the \l Rectangle is
+automatically updated.
+
+
 
 \section1 Properties
 \target intro-properties
 
-\section2 Property naming
+\section2 Basic Property Types
 
-Properties begin with a lowercase letter (with the exception of \l{Attached Properties}).
-
-\section2 Property types
-
-QML supports properties of many types (see \l{QML Basic Types}). The basic types include int,
-real, bool, string, color, and lists.
+QML supports properties of many types (see \l{QML Basic Types}). The basic types include \c int,
+\c real, \c bool, \c string and \c color.
 
 \qml
 Item {
     x: 10.5             // a 'real' property
-    // ...
     state: "details"    // a 'string' property
     focus: true         // a 'bool' property
+    // ...
 }
 \endqml
 
@@ -183,31 +218,30 @@ Item {
 }
 \endcode
 
-\section3 The \c id property
+Note that with the exception of \l {Attached Properties}, properties always begin with a lowercase
+letter.
 
-Each object can be given a special unique property called an \e id. No other object within the
-same QML component (see \l{QML Documents}) can have the same \c id value. Assigning an id enables the object
-to be referred to by other objects and scripts.
 
-The first Rectangle element below has an \e id, "myRect". The second Rectangle element defines its
-own width by referring to \tt myRect.width, which means it will have the same \tt width
-value as the first Rectangle element.
+\section2 Property Change Notifications
+
+When a property changes value, it can send a signal to notify others of this change.
+
+To receive these signals, simply create a \e {signal handler} named with an \c on<Property>Changed
+syntax. For example, the \l Rectangle element has \l {Item::}{width} and \l {Rectangle::}{color}
+properties.  Below, we have a \l Rectangle object that has defined two signal handlers,
+\c onWidthChanged and \c onColorChanged, which will automaticallly be called whenever these
+properties are modified:
 
 \qml
-Item {
-    Rectangle {
-        id: myRect
-        width: 100
-        height: 100
-    }
-    Rectangle {
-        width: myRect.width
-        height: 200
-    }
+Rectangle {
+    width: 100; height: 100
+
+    onWidthChanged: console.log("Width has changed to:", width)
+    onColorChanged: console.log("Color has changed to:", color)
 }
 \endqml
 
-Note that an \e id must begin with a lower-case letter or an underscore, and cannot contain characters other than letters, numbers and underscores.
+Signal handlers are explained further \l {Signal Handlers}{below}.
 
 
 \section2 List properties
@@ -237,7 +271,7 @@ Items in the list can be accessed by index. See the \l{list}{list type} document
 for more details about list properties and their available operations.
 
 
-\section2 Default properties
+\section2 Default Properties
 
 Each object type can specify one of its list or object properties as its default property.
 If a property has been declared as the default property, the property tag can be omitted.
@@ -293,11 +327,24 @@ Some objects attach properties to another object.  Attached Properties
 are of the form \e {Type.property} where \e Type is the type of the
 element that attaches \e property.
 
-For example:
-\snippet doc/src/snippets/declarative/introduction-qml/attachedproperties1.qml component and list view
+For example, the \l ListView element attaches the \e ListView.isCurrentItem property
+to each delegate it creates:
 
-The \l ListView element attaches the \e ListView.isCurrentItem property
-to each delegate it creates.
+\qml
+Component {
+    id: myDelegate
+    Text {
+        text: "Hello"
+        color: ListView.isCurrentItem ? "red" : "blue"
+    }
+}
+\endqml
+
+\qml
+ListView {
+    delegate: myDelegate
+}
+\endqml
 
 Another example of attached properties is the \l Keys element which
 attaches properties for handling key presses to
@@ -310,29 +357,40 @@ Item {
 }
 \endqml
 
-\section2 Signal Handlers
+\section1 Signal Handlers
 
-Signal handlers allow actions to be taken in response to an event.  For instance,
-the \l MouseArea element has signal handlers to handle mouse press, release
-and click:
+Signal handlers allow JavaScript code to be executed in response to an event. For
+example, the \l MouseArea element has an \l {MouseArea::}{onClicked} handler that can
+be used to respond to a mouse click. Below, we use this handler to print a
+message whenever the mouse is clicked:
 
 \qml
-MouseArea {
-    onPressed: console.log("mouse button pressed")
+Item {
+    width: 100; height: 100
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: {
+            console.log("mouse button clicked")
+        }
+    }
 }
 \endqml
 
 All signal handlers begin with \e "on".
 
-Some signal handlers include an optional parameter, for example
-the MouseArea onPressed signal handler has a \e mouse parameter:
+Some signal handlers include an optional parameter. For example
+the MouseArea \l{MouseArea::}{onPressed} signal handler has a \c mouse parameter
+that contains information about the mouse press. This parameter can be referred to in
+the JavaScript code, as below:
 
 \qml
 MouseArea {
     acceptedButtons: Qt.LeftButton | Qt.RightButton
-    onPressed: if (mouse.button == Qt.RightButton) console.log("Right mouse button pressed")
+    onPressed: {
+        if (mouse.button == Qt.RightButton)
+            console.log("Right mouse button pressed")
+    }
 }
 \endqml
-
-
 */

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -159,7 +159,7 @@
     \section1 Qt Project Files
 
     The easiest method to use \l{#lupdate} {lupdate} and \l{#lrelease}
-    {lrelease} is by specifing a \c .pro Qt project file. There must
+    {lrelease} is by specifying a \c .pro Qt project file. There must
     be an entry in the \c TRANSLATIONS section of the project file for
     each language that is additional to the native language. A typical
     entry looks like this:
@@ -173,8 +173,8 @@
     An example of a complete \c .pro file with four translation source
     files:
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 0
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.pro 0
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.pro 1
 
     QTextCodec::setCodecForTr() makes it possible to choose a 8-bit
     encoding for literal strings that appear within \c tr() calls.
@@ -186,14 +186,14 @@
     application, \QL needs you to set the \c CODECFORTR
     entry in the \c .pro file as well. For example:
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.pro 1
 
     Also, if your compiler uses a different encoding for its runtime
     system as for its source code and you want to use  non-ASCII
     characters in string literals, you will need to set the \c
     CODECFORSRC. For example:
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.pro 2
 
     Microsoft Visual Studio 2005 .NET appears to be the only compiler
     for which this is necessary. However, if you want to write
@@ -201,7 +201,7 @@
     in your source files. You can still specify non-ASCII characters
     portably using escape sequences, for example:
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 3
 
     \target lupdate manual
     \section1 lupdate
@@ -342,8 +342,8 @@
     the bottom of the main window. The phrases and guesses window
     shows possible translations for the current string. These
     translation "guesses" have been read from phrase books
-    (\menu{Phrases|Open Phrase Book...}).  The current string's
-    current translation is also shown here. To select a guess, double
+    (\menu{Phrases|Open Phrase Book...}).  The current strings
+    translation is also shown here. To select a guess, double
     click it in the phrases and guesses window or use the keyboard
     shortcut shown to the right of the guess.
 
@@ -371,7 +371,7 @@
     subwindows are: \l{Context Window} {Context}, \l{Sources and Forms
     Window} {Sources and Forms}, \l{Strings Window} {Strings},
     \l{Phrases and Guesses Window} {Phrases and guesses}, and
-    \l{Warnings Window} {Warnings} (hidden in the UI snapsot). The
+    \l{Warnings Window} {Warnings} (hidden in the UI snapshot). The
     translation area is always visible, but the dockable subwindows
     can be activated or deactivated in the \menu{View|Views} menu, and
     dragged around by their title bars and dropped in the translation
@@ -513,7 +513,7 @@
     \o No Translation
     \o \inlineimage linguist-check-empty.png
     \o The string does not have a translation. Click the icon to 
-    accpet the empty translation anyway. The state is reset to  
+    accept the empty translation anyway. The state is reset to  
     \inlineimage linguist-check-on.png
     , and the number of accepted translations in the \e{Items} column 
     of the \l{Context Window} {context list} is incremented by 1.
@@ -567,7 +567,7 @@
 
     When \l{Translating Multiple Languages Simultaneously} {multiple
     languages} are being translated, this sequence of fields is
-    repeated for each language. See aso \l {Changing the Target
+    repeated for each language. See also \l {Changing the Target
     Locale}.
 
     \section2 Phrases and Guesses Window
@@ -585,7 +585,7 @@
     translation area, or you can use the translation's \e{Guess}
     hotkey on the right. You can also press \key{F10} to move the
     focus to the Phrases and Guesses Window, then use the up and down
-    arrow keys to find the desired translation, and and then press
+    arrow keys to find the desired translation, and then press
     \key{Enter} to copy it to the translation area.  If you decide
     that you don't want to copy a phrase after all, press \key{Esc} to
     return the focus to the translation area.
@@ -649,7 +649,7 @@
     {translation area} has text editing areas for both Polish and
     Japanese, and these are color-coded for easier separation.
     Second, the \l{Context Window} and the \l{Strings Window} both
-    have two clomuns labeled \inlineimage linguist-check-obsolete.png
+    have two columns labeled \inlineimage linguist-check-obsolete.png
     instead of one, and although it may be hard to tell, these columns
     are also color-coded with the same colors. The left-most column in
     either case applies to the top-most language area (Polish above)
@@ -793,7 +793,7 @@
     might reverse the phrases, e.g. \c{Datei %2 wird bearbeitet, wenn
     Datei %1 fertig ist}. Both numbered arguments appear in the
     translation, but in the reverse order. \c{%i} will always be
-    replaced by the same text in the translation stringss, regardless
+    replaced by the same text in the translation strings, regardless
     of where argument \e{i} appears in the argument sequence in the
     source string.
 
@@ -843,7 +843,7 @@
     are used to provide a common set of translations to help ensure consistency. 
     They can also be used to avoid duplication of effort since the translations 
     for a family of applications can be produced once in the phrase book.
-    If the translator reaches an untranslated phrase that is the same as a
+    If the translator reaches an non-translated phrase that is the same as a
     source phrase in a phrase book, \QL will show the
     phrase book entry in the \l {Phrases and Guesses Window}.
 
@@ -935,7 +935,7 @@
     List on the left hand. If the path to the files has changed, you can load
     the files manually via \menu{File|Open Form...}. Double-click on an entry
     in the Forms List to display the Form File. Select \e{<No Translation>} from
-    the toolbar to display the untranslated form.
+    the toolbar to display the non-translated form.
 
     \section1 Qt Linguist Reference
 
@@ -1027,7 +1027,7 @@
     \o \gui {Translation}
         \list
         \o \gui {Prev Unfinished Ctrl+K} \BR moves to the nearest previous
-        unfinished source phrase (unfinished means untranslated or
+        unfinished source phrase (unfinished means non-translated or
         translated but failed validation).
         \o \gui {Next Unfinished Ctrl+L} \BR moves to the next unfinished source
         phrase.
@@ -1333,11 +1333,11 @@
     User-visible strings are marked as translation targets by wrapping them
     in a \c tr() call, for example:
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 6
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 6
 
     would become
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 7
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 7
 
     All QObject subclasses that use the \c Q_OBJECT macro implement
     the \c tr() function.
@@ -1346,11 +1346,11 @@
     usually called as a member function of a QObject subclass, in
     other cases an explicit class name can be supplied, for example:
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 8
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 8
 
     or
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 9
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 9
 
     \section2 Distinguishing Between Identical Translatable Strings
 
@@ -1364,11 +1364,11 @@
     differ between the two. This is easily achieved using the
     two argument form of the \c tr() call, e.g.
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 10
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 10
 
     and
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 11
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 11
 
     Ctrl key accelerators are also translatable:
 
@@ -1385,7 +1385,7 @@
     solved by adding a comment using the keyword \e TRANSLATOR which
     describes the navigation steps to reach the text in question; e.g.
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 12
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 12
 
     These comments are particularly useful for widget classes.
 
@@ -1395,18 +1395,18 @@
     write "plural-aware" internationalized applications. This overload 
     has the following signature:
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 17
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 17
 
     Depending on the value of \c n, the \c tr() function will return a different 
     translation, with the correct grammatical number for the target language. 
     Also, any occurrence of \c %n is replaced with \c{n}'s value. For example:
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 18
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 18
 
     If a French translation is loaded, this will expand to "0 item 
     remplac\unicode{233}", "1 item remplac\unicode{233}", "2 items 
     remplac\unicode{233}s", etc., depending on \c{n}'s value. 
-    And if no translation is loaded, the orignal string is used, with \c %n 
+    And if no translation is loaded, the original string is used, with \c %n 
     replaced with count's value (e.g., "6 item(s) replaced").
 
     To handle plural forms in the native language, you need to load a 
@@ -1430,7 +1430,7 @@
     comment at the beginning of the source files that use \c
     MyClass::tr():
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 13
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 13
 
     After the comment, all references to \c MyClass::tr() will be
     understood as meaning \c MyNamespace::MyClass::tr().
@@ -1443,7 +1443,7 @@
     use either the tr() function of an appropriate class, or the
     QCoreApplication::translate() function directly:
 
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 14
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 14
 
     \section3 Using QT_TR_NOOP() and QT_TRANSLATE_NOOP()
 
@@ -1453,10 +1453,10 @@
     The macros expand to just the text (without the context).
 
     Example of QT_TR_NOOP():
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 15
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 15
 
     Example of QT_TRANSLATE_NOOP():
-    \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 16
+    \snippet doc/src/snippets/code/doc_src_linguist-manual.cpp 16
 
     \section1 Tutorials
 

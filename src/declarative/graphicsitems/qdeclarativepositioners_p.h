@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVELAYOUTS_H
 #define QDECLARATIVELAYOUTS_H
 
-#include "qdeclarativeitem.h"
+#include "qdeclarativeimplicitsizeitem_p.h"
 
 #include <private/qdeclarativestate_p.h>
 #include <private/qpodvector_p.h>
@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 class QDeclarativeBasePositionerPrivate;
 
-class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeBasePositioner : public QDeclarativeItem
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeBasePositioner : public QDeclarativeImplicitSizeItem
 {
     Q_OBJECT
 
@@ -129,12 +129,21 @@ private:
 class Q_AUTOTEST_EXPORT QDeclarativeRow: public QDeclarativeBasePositioner
 {
     Q_OBJECT
+    Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection NOTIFY layoutDirectionChanged REVISION 1)
 public:
     QDeclarativeRow(QDeclarativeItem *parent=0);
+
+    Qt::LayoutDirection layoutDirection() const;
+    void setLayoutDirection (Qt::LayoutDirection);
+
+Q_SIGNALS:
+    Q_REVISION(1) void layoutDirectionChanged();
+
 protected:
     virtual void doPositioning(QSizeF *contentSize);
     virtual void reportConflictingAnchors();
 private:
+    Qt::LayoutDirection m_layoutDirection;
     Q_DISABLE_COPY(QDeclarativeRow)
 };
 
@@ -144,6 +153,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeGrid : public QDeclarativeBasePositioner
     Q_PROPERTY(int rows READ rows WRITE setRows NOTIFY rowsChanged)
     Q_PROPERTY(int columns READ columns WRITE setColumns NOTIFY columnsChanged)
     Q_PROPERTY(Flow flow READ flow WRITE setFlow NOTIFY flowChanged)
+    Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection NOTIFY layoutDirectionChanged REVISION 1)
 
 public:
     QDeclarativeGrid(QDeclarativeItem *parent=0);
@@ -159,10 +169,14 @@ public:
     Flow flow() const;
     void setFlow(Flow);
 
+    Qt::LayoutDirection layoutDirection() const;
+    void setLayoutDirection (Qt::LayoutDirection);
+
 Q_SIGNALS:
     void rowsChanged();
     void columnsChanged();
     void flowChanged();
+    Q_REVISION(1) void layoutDirectionChanged();
 
 protected:
     virtual void doPositioning(QSizeF *contentSize);
@@ -172,6 +186,7 @@ private:
     int m_rows;
     int m_columns;
     Flow m_flow;
+    Qt::LayoutDirection m_layoutDirection;
     Q_DISABLE_COPY(QDeclarativeGrid)
 };
 
@@ -179,6 +194,7 @@ class QDeclarativeFlowPrivate;
 class Q_AUTOTEST_EXPORT QDeclarativeFlow: public QDeclarativeBasePositioner
 {
     Q_OBJECT
+    Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection NOTIFY layoutDirectionChanged REVISION 1)
     Q_PROPERTY(Flow flow READ flow WRITE setFlow NOTIFY flowChanged)
 public:
     QDeclarativeFlow(QDeclarativeItem *parent=0);
@@ -188,8 +204,12 @@ public:
     Flow flow() const;
     void setFlow(Flow);
 
+    Qt::LayoutDirection layoutDirection() const;
+    void setLayoutDirection (Qt::LayoutDirection);
+
 Q_SIGNALS:
     void flowChanged();
+    Q_REVISION(1) void layoutDirectionChanged();
 
 protected:
     virtual void doPositioning(QSizeF *contentSize);

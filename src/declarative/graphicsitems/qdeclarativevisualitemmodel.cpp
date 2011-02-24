@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -557,8 +557,9 @@ QDeclarativeVisualDataModelData::~QDeclarativeVisualDataModelData()
 void QDeclarativeVisualDataModelData::ensureProperties()
 {
     QDeclarativeVisualDataModelPrivate *modelPriv = QDeclarativeVisualDataModelPrivate::get(m_model);
-    if (modelPriv->m_metaDataCacheable && !modelPriv->m_metaDataCreated) {
-        modelPriv->createMetaData();
+    if (modelPriv->m_metaDataCacheable) {
+        if (!modelPriv->m_metaDataCreated)
+            modelPriv->createMetaData();
         if (modelPriv->m_metaDataCreated)
             m_meta->setCached(true);
     }
@@ -773,6 +774,8 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
         QObject::connect(d->m_abstractItemModel, SIGNAL(modelReset()), this, SLOT(_q_modelReset()));
         QObject::connect(d->m_abstractItemModel, SIGNAL(layoutChanged()), this, SLOT(_q_layoutChanged()));
         d->m_metaDataCacheable = true;
+        if (d->m_abstractItemModel->canFetchMore(d->m_root))
+            d->m_abstractItemModel->fetchMore(d->m_root);
         return;
     }
     if ((d->m_visualItemModel = qvariant_cast<QDeclarativeVisualDataModel *>(model))) {
@@ -836,7 +839,8 @@ void QDeclarativeVisualDataModel::setDelegate(QDeclarativeComponent *delegate)
     QML only operates on list data.  \c rootIndex allows the children of
     any node in a QAbstractItemModel to be provided by this model.
 
-    This property only affects models of type QAbstractItemModel.
+    This property only affects models of type QAbstractItemModel that
+    are hierarchical (e.g, a tree model). 
 
     For example, here is a simple interactive file system browser.
     When a directory name is clicked, the view's \c rootIndex is set to the
@@ -870,6 +874,8 @@ void QDeclarativeVisualDataModel::setRootIndex(const QVariant &root)
     if (d->m_root != modelIndex) {
         int oldCount = d->modelCount();
         d->m_root = modelIndex;
+        if (d->m_abstractItemModel && d->m_abstractItemModel->canFetchMore(modelIndex))
+            d->m_abstractItemModel->fetchMore(modelIndex);
         int newCount = d->modelCount();
         if (d->m_delegate && oldCount)
             emit itemsRemoved(0, oldCount);
@@ -1072,7 +1078,7 @@ QDeclarativeItem *QDeclarativeVisualDataModel::item(int index, const QByteArray 
         } else {
             delete data;
             delete ctxt;
-            qmlInfo(this, d->m_delegate->errors()) << "Error creating delgate";
+            qmlInfo(this, d->m_delegate->errors()) << "Error creating delegate";
         }
     }
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(nobj);
@@ -1094,6 +1100,8 @@ QDeclarativeItem *QDeclarativeVisualDataModel::item(int index, const QByteArray 
             d->m_delegateValidated = true;
         }
     }
+    if (d->modelCount()-1 == index && d->m_abstractItemModel && d->m_abstractItemModel->canFetchMore(d->m_root))
+        d->m_abstractItemModel->fetchMore(d->m_root);
 
     return item;
 }

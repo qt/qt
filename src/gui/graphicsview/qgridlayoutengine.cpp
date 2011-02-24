@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -194,7 +194,8 @@ void QGridLayoutRowData::distributeMultiCells(const QGridLayoutRowInfo &rowInfo)
 
         for (int k = 0; k < span; ++k) {
             boxes[start + k].combine(extras[k]);
-            stretches[start + k] = qMax(stretches[start + k], stretch);
+            if (stretch != 0)
+                stretches[start + k] = qMax(stretches[start + k], stretch);
         }
     }
     multiCellMap.clear();
@@ -1472,7 +1473,7 @@ void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData, const QLayoutSt
                     QGridLayoutBox *box;
                     if (effectiveRowSpan == 1) {
                         box = &rowBox;
-                        if (!userRowStretch)
+                        if (!userRowStretch && itemStretch != 0)
                             rowStretch = qMax(rowStretch, itemStretch);
                     } else {
                         QGridLayoutMultiCellData &multiCell =

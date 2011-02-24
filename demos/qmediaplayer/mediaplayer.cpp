@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,6 +46,11 @@
 #include "mediaplayer.h"
 #include "ui_settings.h"
 
+#ifdef Q_OS_SYMBIAN
+#include <cdbcols.h>
+#include <cdblen.h>
+#include <commdb.h>
+#endif
 
 MediaVideoWidget::MediaVideoWidget(MediaPlayer *player, QWidget *parent) :
     Phonon::VideoWidget(parent), m_player(player), m_action(this)
@@ -269,6 +274,10 @@ MediaPlayer::MediaPlayer() :
     fileMenu = new QMenu(this);
     QAction *openFileAction = fileMenu->addAction(tr("Open &File..."));
     QAction *openUrlAction = fileMenu->addAction(tr("Open &Location..."));
+#ifdef Q_OS_SYMBIAN
+    QAction *selectIAPAction = fileMenu->addAction(tr("Select &IAP..."));
+    connect(selectIAPAction, SIGNAL(triggered(bool)), this, SLOT(selectIAP()));
+#endif
     QAction *const openLinkAction = fileMenu->addAction(tr("Open &RAM File..."));
 
     connect(openLinkAction, SIGNAL(triggered(bool)), this, SLOT(openRamFile()));
@@ -949,3 +958,37 @@ void MediaPlayer::hasVideoChanged(bool bHasVideo)
     m_videoWindow.setVisible(bHasVideo);
     m_fullScreenAction->setEnabled(bHasVideo);
 }
+
+#ifdef Q_OS_SYMBIAN
+void MediaPlayer::selectIAP()
+{
+    TRAPD(err, selectIAPL());
+    if (KErrNone != err)
+        QMessageBox::warning(this, "Phonon Mediaplayer", "Error selecting IAP", QMessageBox::Close);
+}
+
+void MediaPlayer::selectIAPL()
+{
+    QVariant currentIAPValue = m_MediaObject.property("InternetAccessPointName");
+    QString currentIAPString = currentIAPValue.toString();
+    bool ok = false;
+    CCommsDatabase *commsDb = CCommsDatabase::NewL(EDatabaseTypeIAP);
+    CleanupStack::PushL(commsDb);
+    commsDb->ShowHiddenRecords();
+    CCommsDbTableView* view = commsDb->OpenTableLC(TPtrC(IAP));
+    QStringList items;
+    TInt currentIAP = 0;
+    for (TInt l = view->GotoFirstRecord(), i = 0; l != KErrNotFound; l = view->GotoNextRecord(), i++) {
+       TBuf<KCommsDbSvrMaxColumnNameLength> iapName;
+       view->ReadTextL(TPtrC(COMMDB_NAME), iapName);
+       QString iapString = QString::fromUtf16(iapName.Ptr(), iapName.Length());
+       items << iapString;
+       if (iapString == currentIAPString)
+           currentIAP = i;
+    }
+    currentIAPString = QInputDialog::getItem(this, tr("Select Access Point"), tr("Select Access Point"), items, currentIAP, false, &ok);
+    if (ok)
+        m_MediaObject.setProperty("InternetAccessPointName", currentIAPString);
+    CleanupStack::PopAndDestroy(2); //commsDB, view
+}
+#endif

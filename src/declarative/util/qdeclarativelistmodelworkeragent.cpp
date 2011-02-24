@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,25 +60,25 @@ void QDeclarativeListModelWorkerAgent::Data::clearChange()
 
 void QDeclarativeListModelWorkerAgent::Data::insertChange(int index, int count) 
 {
-    Change c = { Change::Inserted, index, count, 0 };
+    Change c = { Change::Inserted, index, count, 0, QList<int>() };
     changes << c;
 }
 
 void QDeclarativeListModelWorkerAgent::Data::removeChange(int index, int count) 
 {
-    Change c = { Change::Removed, index, count, 0 };
+    Change c = { Change::Removed, index, count, 0, QList<int>() };
     changes << c;
 }
 
 void QDeclarativeListModelWorkerAgent::Data::moveChange(int index, int count, int to)
 {
-    Change c = { Change::Moved, index, count, to };
+    Change c = { Change::Moved, index, count, to, QList<int>() };
     changes << c;
 }
 
-void QDeclarativeListModelWorkerAgent::Data::changedChange(int index, int count)
+void QDeclarativeListModelWorkerAgent::Data::changedChange(int index, int count, const QList<int> &roles)
 {
-    Change c = { Change::Changed, index, count, 0 };
+    Change c = { Change::Changed, index, count, 0, roles };
     changes << c;
 }
 
@@ -165,14 +165,18 @@ QScriptValue QDeclarativeListModelWorkerAgent::get(int index) const
 
 void QDeclarativeListModelWorkerAgent::set(int index, const QScriptValue &value)
 {
-    m_copy->set(index, value);
-    data.changedChange(index, 1);
+    QList<int> roles;
+    m_copy->set(index, value, &roles);
+    if (!roles.isEmpty())
+        data.changedChange(index, 1, roles);
 }
 
 void QDeclarativeListModelWorkerAgent::setProperty(int index, const QString& property, const QVariant& value)
 {
-    m_copy->setProperty(index, property, value);
-    data.changedChange(index, 1);
+    QList<int> roles;
+    m_copy->setProperty(index, property, value, &roles);
+    if (!roles.isEmpty())
+        data.changedChange(index, 1, roles);
 }
 
 void QDeclarativeListModelWorkerAgent::move(int from, int to, int count)
@@ -194,9 +198,9 @@ void QDeclarativeListModelWorkerAgent::sync()
     mutex.unlock();
 }
 
-void QDeclarativeListModelWorkerAgent::changedData(int index, int count)
+void QDeclarativeListModelWorkerAgent::changedData(int index, int count, const QList<int> &roles)
 {
-    data.changedChange(index, count);
+    data.changedChange(index, count, roles);
 }
 
 bool QDeclarativeListModelWorkerAgent::event(QEvent *e)
@@ -255,7 +259,7 @@ bool QDeclarativeListModelWorkerAgent::event(QEvent *e)
                     emit m_orig->itemsMoved(change.index, change.to, change.count);
                     break;
                 case Change::Changed:
-                    emit m_orig->itemsChanged(change.index, change.count, orig->m_roles.keys());
+                    emit m_orig->itemsChanged(change.index, change.count, change.roles);
                     break;
                 }
             }

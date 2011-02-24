@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -113,6 +113,9 @@ class QDeclarativeQtScriptExpression : public QDeclarativeAbstractExpression,
 public:
     enum Mode { SharedContext, ExplicitContext };
 
+    enum EvaluateFlag { RequiresThisObject = 0x01 };
+    Q_DECLARE_FLAGS(EvaluateFlags, EvaluateFlag)
+
     QDeclarativeQtScriptExpression();
     virtual ~QDeclarativeQtScriptExpression();
 
@@ -130,6 +133,9 @@ public:
     void setNotifyOnValueChange(bool);
     void resetNotifyOnChange();
     void setNotifyObject(QObject *, int );
+
+    void setEvaluateFlags(EvaluateFlags flags);
+    EvaluateFlags evaluateFlags() const;
 
     QScriptValue scriptValue(QObject *secondaryScope, bool *isUndefined);
 
@@ -157,7 +163,12 @@ private:
     QObject *guardObject;
     int guardObjectNotifyIndex;
     bool *deleted;
+
+    EvaluateFlags evalFlags;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeQtScriptExpression::EvaluateFlags)
+
 
 class QDeclarativeExpression;
 class QString;
@@ -169,6 +180,7 @@ public:
     ~QDeclarativeExpressionPrivate();
 
     void init(QDeclarativeContextData *, const QString &, QObject *);
+    void init(QDeclarativeContextData *, const QScriptValue &, QObject *);
     void init(QDeclarativeContextData *, void *, QDeclarativeRefCount *, QObject *, const QString &, int);
 
     QVariant value(QObject *secondaryScope = 0, bool *isUndefined = 0);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -123,6 +123,10 @@
 #ifdef QT_KEYPAD_NAVIGATION
 #include "qtabwidget.h" // Needed in inTabWidget()
 #endif // QT_KEYPAD_NAVIGATION
+
+#ifdef Q_WS_S60
+#include <aknappui.h>
+#endif
 
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
@@ -10810,6 +10814,42 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             d->registerTouchWindow();
 #endif
         break;
+    case Qt::WA_LockPortraitOrientation:
+    case Qt::WA_LockLandscapeOrientation:
+    case Qt::WA_AutoOrientation: {
+        const Qt::WidgetAttribute orientations[3] = {
+            Qt::WA_LockPortraitOrientation,
+            Qt::WA_LockLandscapeOrientation,
+            Qt::WA_AutoOrientation
+        };
+
+        if (on) {
+            // We can only have one of these set at a time
+            for (int i = 0; i < 3; ++i) {
+                if (orientations[i] != attribute)
+                    setAttribute_internal(orientations[i], false, data, d);
+            }
+        }
+
+#ifdef Q_WS_S60
+        CAknAppUiBase* appUi = static_cast<CAknAppUiBase*>(CEikonEnv::Static()->EikAppUi());
+        const CAknAppUiBase::TAppUiOrientation s60orientations[] = {
+            CAknAppUiBase::EAppUiOrientationPortrait,
+            CAknAppUiBase::EAppUiOrientationLandscape,
+            CAknAppUiBase::EAppUiOrientationAutomatic
+        };
+        CAknAppUiBase::TAppUiOrientation s60orientation = CAknAppUiBase::EAppUiOrientationUnspecified;
+        for (int i = 0; i < 3; ++i) {
+            if (testAttribute(orientations[i])) {
+                s60orientation = s60orientations[i];
+                break;
+            }
+        }
+        QT_TRAP_THROWING(appUi->SetOrientationL(s60orientation));
+        S60->orientationSet = true;
+#endif
+        break;
+    }
     default:
         break;
     }

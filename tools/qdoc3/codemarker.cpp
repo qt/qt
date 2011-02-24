@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,7 +59,6 @@ QList<CodeMarker *> CodeMarker::markers;
   been read.
  */
 CodeMarker::CodeMarker()
-    : slow(false)
 {
     markers.prepend(this);
 }
@@ -74,14 +73,11 @@ CodeMarker::~CodeMarker()
 }
 
 /*!
-  The only thing a code market initializes is its \e{slow}
-  flag. The \e{slow} flag indicates whether the operations
-  that slow down qdoc are to be performed or not. It is
-  turned off by default. 
+  A code market performs no initialization by default. Marker-specific
+  initialization is performed in subclasses.
  */
 void CodeMarker::initializeMarker(const Config &config)
 {
-    slow = config.getBool(QLatin1String(CONFIG_SLOW));
 }
 
 /*!

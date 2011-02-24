@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,6 +45,7 @@
 #include <private/qapplication_p.h>
 #include <private/qgraphicssystem_runtime_p.h>
 #include <private/qpixmap_raster_p.h>
+#include <private/qwindowsurface_gl_p.h>
 #include "qmeegoruntime.h"
 #include "qmeegoswitchevent.h"
 
@@ -152,4 +153,18 @@ void QMeeGoGraphicsSystemHelper::setTranslucent(bool translucent)
 {
     ENSURE_RUNNING_MEEGO;
     QMeeGoRuntime::setTranslucent(translucent);
+}
+
+void QMeeGoGraphicsSystemHelper::setSwapBehavior(SwapMode mode)
+{
+    ENSURE_RUNNING_MEEGO;
+
+    if (mode == AutomaticSwap)
+        QGLWindowSurface::swapBehavior = QGLWindowSurface::AutomaticSwap;
+    else if (mode == AlwaysFullSwap)
+        QGLWindowSurface::swapBehavior = QGLWindowSurface::AlwaysFullSwap;
+    else if (mode == AlwaysPartialSwap)
+        QGLWindowSurface::swapBehavior = QGLWindowSurface::AlwaysPartialSwap;
+    else if (mode == KillSwap)
+        QGLWindowSurface::swapBehavior = QGLWindowSurface::KillSwap;
 }

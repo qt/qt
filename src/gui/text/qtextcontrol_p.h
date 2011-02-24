@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -175,6 +175,12 @@ public:
     void setCursorIsFocusIndicator(bool b);
     bool cursorIsFocusIndicator() const;
 
+    void setDragEnabled(bool enabled);
+    bool isDragEnabled() const;
+
+    bool isWordSelectionEnabled() const;
+    void setWordSelectionEnabled(bool enabled);
+
 #ifndef QT_NO_PRINTER
     void print(QPrinter *printer) const;
 #endif
@@ -182,8 +188,6 @@ public:
     virtual int hitTest(const QPointF &point, Qt::HitTestAccuracy accuracy) const;
     virtual QRectF blockBoundingRect(const QTextBlock &block) const;
     QAbstractTextDocumentLayout::PaintContext getPaintContext(QWidget *widget) const;
-
-
 
 public Q_SLOTS:
     void setPlainText(const QString &text);
