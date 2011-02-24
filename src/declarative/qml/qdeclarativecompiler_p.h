@@ -305,11 +305,12 @@ private:
     struct ComponentCompileState
     {
         ComponentCompileState() 
-            : parserStatusCount(0), pushedProperties(0), root(0) {}
+            : parserStatusCount(0), pushedProperties(0), nested(false), root(0) {}
         QHash<QString, QDeclarativeParser::Object *> ids;
         QHash<int, QDeclarativeParser::Object *> idIndexes;
         int parserStatusCount;
         int pushedProperties;
+        bool nested;
 
         QByteArray compiledBindingData;
 

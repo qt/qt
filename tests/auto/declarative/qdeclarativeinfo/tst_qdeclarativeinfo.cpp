@@ -60,6 +60,7 @@ public:
 private slots:
     void qmlObject();
     void nestedQmlObject();
+    void nestedComponent();
     void nonQmlObject();
     void nullObject();
     void nonQmlContextedObject();
@@ -82,7 +83,7 @@ void tst_qdeclarativeinfo::qmlObject()
     QObject *object = component.create();
     QVERIFY(object != 0);
 
-    QString message = component.url().toString() + ":3:1: QML QObject_QML_0: Test Message";
+    QString message = component.url().toString() + ":3:1: QML QtObject: Test Message";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(message));
     qmlInfo(object) << "Test Message";
 
@@ -113,6 +114,27 @@ void tst_qdeclarativeinfo::nestedQmlObject()
     message = TEST_FILE("NestedObject.qml").toString() + ":6:14: QML QtObject: Inner Object";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(message));
     qmlInfo(nested2) << "Inner Object";
+}
+
+void tst_qdeclarativeinfo::nestedComponent()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("NestedComponent.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QObject *nested = qvariant_cast<QObject *>(object->property("nested"));
+    QVERIFY(nested != 0);
+    QObject *nested2 = qvariant_cast<QObject *>(object->property("nested2"));
+    QVERIFY(nested2 != 0);
+
+    QString message = component.url().toString() + ":10:9: QML NestedObject: Complex Object";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(message));
+    qmlInfo(nested) << "Complex Object";
+
+    message = component.url().toString() + ":16:9: QML Image: Simple Object";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(message));
+    qmlInfo(nested2) << "Simple Object";
 }
 
 void tst_qdeclarativeinfo::nonQmlObject()

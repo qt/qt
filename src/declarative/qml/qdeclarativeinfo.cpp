@@ -129,6 +129,18 @@ QDeclarativeInfo::~QDeclarativeInfo()
                     int marker = typeName.indexOf(QLatin1String("_QMLTYPE_"));
                     if (marker != -1)
                         typeName = typeName.left(marker);
+
+                    marker = typeName.indexOf(QLatin1String("_QML_"));
+                    if (marker != -1) {
+                        typeName = typeName.left(marker) + "*";
+                        type = QDeclarativeMetaType::qmlType(QMetaType::type(typeName.toLatin1()));
+                        if (type) {
+                            typeName = QLatin1String(type->qmlTypeName());
+                            int lastSlash = typeName.lastIndexOf(QLatin1Char('/'));
+                            if (lastSlash != -1)
+                                typeName = typeName.mid(lastSlash+1);
+                        }
+                    }
                 }
 
                 d->buffer.prepend(QLatin1String("QML ") + typeName + QLatin1String(": "));

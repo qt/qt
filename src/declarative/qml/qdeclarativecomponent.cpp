@@ -826,6 +826,34 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContextData *context, cons
     return begin(context, creationContext, cc, start, count, &state, 0, bindings);
 }
 
+/*
+    Try to do what's necessary for a reasonable display of the type
+    name, but no more (just enough for the client to do more extensive cleanup).
+
+    Should only be called when debugging is enabled.
+*/
+static inline QString buildTypeNameForDebug(const QMetaObject *metaObject)
+{
+    static const QString qmlMarker(QLatin1String("_QML"));
+    static const QChar underscore(QLatin1Char('_'));
+    static const QChar asterisk(QLatin1Char('*'));
+    QDeclarativeType *type = QDeclarativeMetaType::qmlType(metaObject);
+    QString typeName = type ? QLatin1String(type->qmlTypeName()) : QLatin1String(metaObject->className());
+    if (!type) {
+        //### optimize further?
+        int marker = typeName.indexOf(qmlMarker);
+        if (marker != -1 && marker < typeName.count() - 1) {
+            if (typeName[marker + 1] == underscore) {
+                const QString className = typeName.left(marker) + asterisk;
+                type = QDeclarativeMetaType::qmlType(QMetaType::type(className.toLatin1()));
+                if (type)
+                    typeName = QLatin1String(type->qmlTypeName());
+            }
+        }
+    }
+    return typeName;
+}
+
 QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *parentContext, 
                                               QDeclarativeContextData *componentCreationContext,
                                               QDeclarativeCompiledData *component, int start, int count,
@@ -838,10 +866,8 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *parentCon
     Q_ASSERT(!isRoot || state); // Either this isn't a root component, or a state data must be provided
     Q_ASSERT((state != 0) ^ (errors != 0)); // One of state or errors (but not both) must be provided
 
-    if (isRoot) {
+    if (isRoot)
         QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Creating);
-        QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::Creating, component->url);
-    }
 
     QDeclarativeContextData *ctxt = new QDeclarativeContextData;
     ctxt->isInternal = true;
@@ -887,6 +913,11 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *parentCon
         if  (!parentContext->isInternal)
             parentContext->asQDeclarativeContextPrivate()->instances.append(rv);
         QDeclarativeEngineDebugServer::instance()->objectCreated(parentContext->engine, rv);
+        if (isRoot) {
+            QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::Creating, buildTypeNameForDebug(rv->metaObject()));
+            QDeclarativeData *data = QDeclarativeData::get(rv);
+            QDeclarativeDebugTrace::rangeLocation(QDeclarativeDebugTrace::Creating, component->url, data ? data->lineNumber : -1);
+        }
     }
 
     return rv;
