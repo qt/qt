@@ -56,6 +56,7 @@ static void usage()
     qWarning(" ");
     qWarning(" options:");
     qWarning("  -d <directory>................................ output directory");
+    qWarning("  -no-multithread............................... don't use multiple threads to render distance-fields");
 
     qWarning(" ");
     exit(1);
@@ -99,7 +100,7 @@ public:
 
 QMutex DistFieldGenTask::m_mutex;
 
-static void generateDistanceFieldForFont(const QFont &font, const QString &destinationDir)
+static void generateDistanceFieldForFont(const QFont &font, const QString &destinationDir, bool multithread)
 {
     QFontDatabase db;
     QString fontString = font.family() + QLatin1String(" ") + db.styleString(font);
@@ -109,11 +110,18 @@ static void generateDistanceFieldForFont(const QFont &font, const QString &desti
 
     QMap<int, QImage> distfields;
     for (int i = 0; i < 0xFF; ++i) {
-        DistFieldGenTask *task = new DistFieldGenTask(&atlas, i, 0xFF, &distfields);
-        QThreadPool::globalInstance()->start(task);
+        if (multithread) {
+            DistFieldGenTask *task = new DistFieldGenTask(&atlas, i, 0xFF, &distfields);
+            QThreadPool::globalInstance()->start(task);
+        } else {
+            QImage df = atlas.renderDistanceFieldGlyph(i);
+            distfields.insert(i, df);
+            printProgress(float(distfields.count()) / 0xFF * 100);
+        }
     }
 
-    QThreadPool::globalInstance()->waitForDone();
+    if (multithread)
+        QThreadPool::globalInstance()->waitForDone();
 
     // Combine dist fields in one image
     QImage output(atlas.atlasSize(), QImage::Format_ARGB32_Premultiplied);
@@ -162,6 +170,8 @@ int main(int argc, char *argv[])
             || args.contains(QLatin1String("-h")))
         usage();
 
+    bool noMultithread = args.contains(QLatin1String("-no-multithread"));
+
     QString fontFile;
     QString destDir;
     for (int i = 0; i < args.count(); ++i) {
@@ -189,7 +199,7 @@ int main(int argc, char *argv[])
         int styleCount = styles.count();
         for (int j = 0; j < styleCount; ++j) {
             QFont font = fontDatabase.font(families.at(i), styles.at(j), 10); // point size is ignored
-            generateDistanceFieldForFont(font, destDir);
+            generateDistanceFieldForFont(font, destDir, !noMultithread);
         }
     }
 
