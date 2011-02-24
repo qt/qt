@@ -164,6 +164,7 @@ private slots:
     void translationContext_data();
     void translationContext();
     void translateScriptIdBased();
+    void translateFromBuiltinCallback();
     void functionScopes();
     void nativeFunctionScopes();
     void evaluateProgram();
@@ -4723,6 +4724,21 @@ void tst_QScriptEngine::translateScriptIdBased()
              QString::fromLatin1("10 fooish bar(s) found"));
     QCOMPARE(engine.evaluate("qsTrId('qtn_foo_bar', 10)").toString(),
              QString::fromLatin1("qtn_foo_bar")); // Doesn't have plural
+}
+
+void tst_QScriptEngine::translateFromBuiltinCallback()
+{
+    QScriptEngine eng;
+    eng.installTranslatorFunctions();
+
+    // Callback has no translation context.
+    eng.evaluate("function foo() { qsTr('foo'); }");
+
+    // Stack at translation time will be:
+    // qsTr, foo, forEach, global
+    // qsTr() needs to walk to the outer-most (global) frame before it finds
+    // a translation context, and this should not crash.
+    eng.evaluate("[10,20].forEach(foo)", "script.js");
 }
 
 void tst_QScriptEngine::functionScopes()

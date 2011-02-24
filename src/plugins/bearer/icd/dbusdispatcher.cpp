@@ -468,7 +468,7 @@ void DBusDispatcher::setupDBus()
         d_ptr->signal_vtable.message_function = signalHandler;
 
 	dbus_connection_set_exit_on_disconnect(d_ptr->connection, FALSE);
-        dbus_connection_setup_with_g_main(d_ptr->connection, NULL);
+        dbus_connection_setup_with_g_main(d_ptr->connection, g_main_context_get_thread_default());
         dbus_connection_register_object_path(d_ptr->connection, 
                                              d_ptr->signalPath.toLatin1(),
                                              &d_ptr->signal_vtable,

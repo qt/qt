@@ -236,7 +236,7 @@ void QDeclarativeSpringAnimationPrivate::updateMode()
 /*!
     \qmlclass SpringAnimation QDeclarativeSpringAnimation
     \ingroup qml-animation-transition
-    \inherits Animation
+    \inherits NumberAnimation
     \since 4.7
 
     \brief The SpringAnimation element allows a property to track a value in a spring-like motion.

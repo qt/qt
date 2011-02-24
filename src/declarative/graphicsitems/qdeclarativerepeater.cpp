@@ -198,7 +198,6 @@ void QDeclarativeRepeater::setModel(const QVariant &model)
     */
     }
     d->dataSource = model;
-    emit modelChanged();
     QObject *object = qvariant_cast<QObject*>(model);
     QDeclarativeVisualModel *vim = 0;
     if (object && (vim = qobject_cast<QDeclarativeVisualModel *>(object))) {
@@ -226,6 +225,7 @@ void QDeclarativeRepeater::setModel(const QVariant &model)
         */
         regenerate();
     }
+    emit modelChanged();
     emit countChanged();
 }
 

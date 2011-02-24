@@ -314,7 +314,9 @@
     \section3 How to Build the OCI Plugin on Windows
 
     Choosing the option "Programmer" in the Oracle Client Installer from
-    the Oracle Client Installation CD is sufficient to build the plugin.
+    the Oracle Client Installation CD is generally sufficient to build the
+    plugin.  For some versions of Oracle Client, you may also need to select
+    the "Call Interface (OCI)" option if it is available.
 
     Build the plugin as follows (here it is assumed that Oracle Client is
     installed in \c{C:\oracle}):
