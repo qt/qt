@@ -818,14 +818,14 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     clearExceptions();
     m_originalGlobalObject.destroy();
 
+    deallocateAdditionalResources();
+
     m_v8Context->Exit(); // Exit the context that was entered in QScriptOriginalGlobalObject ctor.
     m_v8Context.Dispose();
 
     m_isolate->Exit();
     m_isolate->Dispose();
     m_state = Destroyed;
-
-    deallocateAdditionalResources();
 }
 
 QScriptContextPrivate *QScriptEnginePrivate::pushContext()

@@ -1200,23 +1200,32 @@ static v8::Handle<v8::Value> QtGetMetaMethod(v8::Local<v8::String> /*property*/,
 
     const QMetaObject *meta = qobject->metaObject();
     uint intData = v8::Uint32::Cast(*dataArray->Get(1))->Value();
+
+    QHash<int, v8::Persistent<v8::Value> >::const_iterator it = instance->metaMethods.find(intData);
+    if (it != instance->metaMethods.end())
+        return *it;
+
     int methodIndex = intData & 0x3fffffff;
     bool overload = intData & (1 << 30);
     bool voidvoid = intData & (1 << 31);
 
     const QMetaMethod method = meta->method(methodIndex);
 
+    v8::Handle<v8::Object> result;
     if (method.methodType() == QMetaMethod::Signal) {
         QScriptSignalData *data = new QScriptSignalData(engine, self, methodIndex,
                                               (intData & 0x40000000) ? QScriptSignalData::ResolvedBySignature : QScriptSignalData::ResolvedByName,
                                               overload, voidvoid);
-        return QScriptSignalData::createInstance(data);
+        result = QScriptSignalData::createInstance(data);
     } else {
         QScriptMetaMethodData *data = new QScriptMetaMethodData(engine, self, methodIndex,
                                                       (intData & 0x40000000) ? QScriptMetaMethodData::ResolvedBySignature : QScriptMetaMethodData::ResolvedByName,
                                                       overload, voidvoid);
-        return QScriptMetaMethodData::createInstance(data);
+        result = QScriptMetaMethodData::createInstance(data);
     }
+
+    instance->metaMethods.insert(intData, v8::Persistent<v8::Value>::New(result));
+    return result;
 }
 
 static v8::Handle<v8::Value> findChildCallback(const v8::Arguments& args)

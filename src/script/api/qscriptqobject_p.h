@@ -80,6 +80,7 @@ public:
     inline QScriptEngine::QObjectWrapOptions options() const;
     inline QScriptable *toQScriptable();
 
+    QHash<int, v8::Persistent<v8::Value> > metaMethods;
 private:
     QWeakPointer<QObject> m_cppObject;
     QScriptEngine::ValueOwnership m_own;
