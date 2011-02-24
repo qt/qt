@@ -325,6 +325,7 @@ private Q_SLOTS:
 
     void ioGetFromHttpBrokenChunkedEncoding();
     void qtbug12908compressedHttpReply();
+    void compressedHttpReplyBrokenGzip();
 
     void getFromUnreachableIp();
 
@@ -5238,6 +5239,7 @@ void tst_QNetworkReply::qtbug12908compressedHttpReply()
     // dd if=/dev/zero of=qtbug-12908 bs=16384  count=1 && gzip qtbug-12908 && base64 -w 0 qtbug-12908.gz
     QString encodedFile("H4sICDdDaUwAA3F0YnVnLTEyOTA4AO3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA");
     QByteArray decodedFile = QByteArray::fromBase64(encodedFile.toAscii());
+    QCOMPARE(decodedFile.size(), 63);
 
     MiniHttpServer server(header.toAscii() + decodedFile);
     server.doClose = true;
@@ -5250,6 +5252,31 @@ void tst_QNetworkReply::qtbug12908compressedHttpReply()
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->size(), qint64(16384));
+    QCOMPARE(reply->readAll(), QByteArray(16384, '\0'));
+}
+
+void tst_QNetworkReply::compressedHttpReplyBrokenGzip()
+{
+    QString header("HTTP/1.0 200 OK\r\nContent-Encoding: gzip\r\nContent-Length: 63\r\n\r\n");
+
+    // dd if=/dev/zero of=qtbug-12908 bs=16384  count=1 && gzip qtbug-12908 && base64 -w 0 qtbug-12908.gz
+    // Then change "BMQ" to "BMX"
+    QString encodedFile("H4sICDdDaUwAA3F0YnVnLTEyOTA4AO3BMXEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA");
+    QByteArray decodedFile = QByteArray::fromBase64(encodedFile.toAscii());
+    QCOMPARE(decodedFile.size(), 63);
+
+    MiniHttpServer server(header.toAscii() + decodedFile);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(reply->error(), QNetworkReply::ProtocolFailure);
 }
 
 // TODO add similar test for FTP
