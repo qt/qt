@@ -486,7 +486,11 @@ public slots:
             if (multiple)
                 receivedData.remove(0, doubleEndlPos+4);
 
-            client->write(dataToTransmit);
+            // we need to emulate the bytesWrittenSlot call if the data is empty.
+            if (dataToTransmit.size() == 0)
+                QMetaObject::invokeMethod(this, "bytesWrittenSlot", Qt::QueuedConnection);
+            else
+                client->write(dataToTransmit);
         }
     }
 
