@@ -95,6 +95,7 @@ QWaylandShmWindowSurface::QWaylandShmWindowSurface(QWidget *window)
     : QWindowSurface(window)
     , mBuffer(0)
     , mDisplay(QWaylandScreen::waylandScreenFromWidget(window)->display())
+    , mWaitingForFrameSync(false)
 {
 }
 
@@ -105,6 +106,19 @@ QWaylandShmWindowSurface::~QWaylandShmWindowSurface()
 QPaintDevice *QWaylandShmWindowSurface::paintDevice()
 {
     return mBuffer->image();
+}
+
+void QWaylandShmWindowSurface::beginPaint(const QRegion &)
+{
+    while (mWaitingForFrameSync) {
+        mDisplay->eventDispatcher();
+    }
+}
+
+void QWaylandShmWindowSurface::frameCallback(void *data, uint32_t time)
+{
+    QWaylandShmWindowSurface *self = static_cast<QWaylandShmWindowSurface*>(data);
+    self->mWaitingForFrameSync = false;
 }
 
 void QWaylandShmWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
@@ -118,6 +132,8 @@ void QWaylandShmWindowSurface::flush(QWidget *widget, const QRegion &region, con
     for (int i = 0; i < rects.size(); i++) {
         waylandWindow->damage(rects.at(i));
     }
+    mWaitingForFrameSync = true;
+    mDisplay->frameCallback(QWaylandShmWindowSurface::frameCallback, this);
 }
 
 void QWaylandShmWindowSurface::resize(const QSize &size)
