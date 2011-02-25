@@ -955,8 +955,11 @@ static QScriptValue __setupPackage__(QScriptContext *ctx, QScriptEngine *eng)
 } // namespace QScript
 
 QScriptEnginePrivate::QScriptEnginePrivate()
-    : registeredScriptValues(0), freeScriptValues(0), freeScriptValuesCount(0),
-      registeredScriptStrings(0), inEval(false)
+    : originalGlobalObjectProxy(0), currentFrame(0),
+      qobjectPrototype(0), qmetaobjectPrototype(0), variantPrototype(0),
+      activeAgent(0), agentLineNumber(-1),
+      registeredScriptValues(0), freeScriptValues(0), freeScriptValuesCount(0),
+      registeredScriptStrings(0), processEventsInterval(-1), inEval(false)
 {
     qMetaTypeId<QScriptValue>();
     qMetaTypeId<QList<int> >();
@@ -1002,10 +1005,6 @@ QScriptEnginePrivate::QScriptEnginePrivate()
 
     currentFrame = exec;
 
-    originalGlobalObjectProxy = 0;
-    activeAgent = 0;
-    agentLineNumber = -1;
-    processEventsInterval = -1;
     cachedTranslationUrl = JSC::UString();
     cachedTranslationContext = JSC::UString();
     JSC::setCurrentIdentifierTable(oldTable);
@@ -1253,10 +1252,12 @@ void QScriptEnginePrivate::mark(JSC::MarkStack& markStack)
 {
     Q_Q(QScriptEngine);
 
-    markStack.append(originalGlobalObject());
-    markStack.append(globalObject());
-    if (originalGlobalObjectProxy)
-        markStack.append(originalGlobalObjectProxy);
+    if (originalGlobalObject()) {
+        markStack.append(originalGlobalObject());
+        markStack.append(globalObject());
+        if (originalGlobalObjectProxy)
+            markStack.append(originalGlobalObjectProxy);
+    }
 
     if (qobjectPrototype)
         markStack.append(qobjectPrototype);
@@ -1281,7 +1282,7 @@ void QScriptEnginePrivate::mark(JSC::MarkStack& markStack)
         }
     }
 
-    {
+    if (q) {
         QScriptContext *context = q->currentContext();
 
         while (context) {
