@@ -556,6 +556,7 @@ void QSocks5SocketEnginePrivate::initialize(Socks5Mode socks5Mode)
         udpData = new QSocks5UdpAssociateData;
         data = udpData;
         udpData->udpSocket = new QUdpSocket(q);
+        udpData->udpSocket->setProperty("_q_networksession", q->property("_q_networksession"));
         udpData->udpSocket->setProxy(QNetworkProxy::NoProxy);
         QObject::connect(udpData->udpSocket, SIGNAL(readyRead()),
                          q, SLOT(_q_udpSocketReadNotification()),
@@ -567,6 +568,7 @@ void QSocks5SocketEnginePrivate::initialize(Socks5Mode socks5Mode)
     }
 
     data->controlSocket = new QTcpSocket(q);
+    data->controlSocket->setProperty("_q_networksession", q->property("_q_networksession"));
     data->controlSocket->setProxy(QNetworkProxy::NoProxy);
     QObject::connect(data->controlSocket, SIGNAL(connected()), q, SLOT(_q_controlSocketConnected()),
                      Qt::DirectConnection);
@@ -1376,6 +1378,7 @@ bool QSocks5SocketEngine::bind(const QHostAddress &address, quint16 port)
         d->udpData->associatePort = d->localPort;
         d->localPort = 0;
         QUdpSocket dummy;
+        dummy.setProperty("_q_networksession", property("_q_networksession"));
         dummy.setProxy(QNetworkProxy::NoProxy);
         if (!dummy.bind()
             || writeDatagram(0,0, d->data->controlSocket->localAddress(), dummy.localPort()) != 0
