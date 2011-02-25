@@ -242,6 +242,14 @@ Requires:
 Name: QFileSystemWatcher
 SeeAlso: ???
 
+Feature: FILESYSTEMITERATOR
+Description: Provides fast file-system iteration.
+for modications.
+Section: File I/O
+Requires:
+Name: QFileSystemIterator
+SeeAlso: ???
+
 # Widgets
 
 Feature: TREEWIDGET

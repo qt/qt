@@ -79,6 +79,9 @@
 // Effects
 //#define QT_NO_EFFECTS
 
+// QFileSystemIterator
+//#define QT_NO_FILESYSTEMITERATOR
+
 // QFileSystemWatcher
 //#define QT_NO_FILESYSTEMWATCHER
 
