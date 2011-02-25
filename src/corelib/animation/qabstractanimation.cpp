@@ -404,6 +404,8 @@ void QUnifiedTimer::installAnimationDriver(QAnimationDriver *d)
    The default animation system is driven by a timer that fires at regular intervals.
    In some scenarios, it is better to drive the animation based on other synchronization
    mechanisms, such as the vertical refresh rate of the screen.
+
+   \internal
  */
 
 QAnimationDriver::QAnimationDriver(QObject *parent)
@@ -420,6 +422,8 @@ QAnimationDriver::QAnimationDriver(QAnimationDriverPrivate &dd, QObject *parent)
 /*!
     Advances the animation based on the current time. This function should
     be continuously called by the driver while the animation is running.
+
+    \internal
  */
 void QAnimationDriver::advance()
 {
@@ -434,6 +438,8 @@ void QAnimationDriver::advance()
 /*!
     Installs this animation driver. The animation driver is thread local and
     will only apply for the thread its installed in.
+
+    \internal
  */
 void QAnimationDriver::install()
 {
@@ -471,6 +477,8 @@ void QAnimationDriver::stop()
 
     This function is called by the animation framework to notify the driver
     that it should start running.
+
+    \internal
  */
 
 /*!
@@ -478,6 +486,8 @@ void QAnimationDriver::stop()
 
     This function is called by the animation framework to notify the driver
     that it should stop running.
+
+    \internal
  */
 
 /*!
