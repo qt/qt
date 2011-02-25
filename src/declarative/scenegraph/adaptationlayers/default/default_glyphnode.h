@@ -62,6 +62,8 @@ public:
 private:
     QPointF m_baseLine;
     TextMaskMaterial *m_material;
+
+    QSGGeometry m_geometry;
 };
 
 

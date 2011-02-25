@@ -48,11 +48,9 @@
 DistanceFieldGlyphNode::DistanceFieldGlyphNode()
     : m_material(0)
     , m_glyph_atlas(0)
+    , m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 0)
 {
-    QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
-        << QSGAttributeDescription(0, 2, GL_FLOAT, 4 * sizeof(float))
-        << QSGAttributeDescription(1, 2, GL_FLOAT, 4 * sizeof(float));
-    updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
+    m_geometry.setDrawingMode(GL_TRIANGLES);
 }
 
 DistanceFieldGlyphNode::~DistanceFieldGlyphNode()
@@ -93,16 +91,15 @@ void DistanceFieldGlyphNode::setGlyphs(const QPointF &position, const QGlyphs &g
 
 void DistanceFieldGlyphNode::updateGeometry()
 {
-    Geometry *g = geometry();
+    QSGGeometry *g = geometry();
     QRectF boundingRect;
 
     const QVector<quint32> &glyphIndexes = m_glyphs.glyphIndexes();
 
     Q_ASSERT(g->indexType() == GL_UNSIGNED_SHORT);
-    g->setVertexCount(glyphIndexes.size() * 4);
-    g->setIndexCount(glyphIndexes.size() * 6);
+    g->allocate(glyphIndexes.size() * 4, glyphIndexes.size() * 6);
     QVector4D *vp = (QVector4D *)g->vertexData();
-    ushort *ip = g->ushortIndexData();
+    ushort *ip = g->indexDataAsUShort();
 
     Q_ASSERT(m_glyph_atlas);
 

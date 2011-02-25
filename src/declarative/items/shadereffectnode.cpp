@@ -251,13 +251,10 @@ void ShaderEffectMaterial::updateTextures() const
 
 ShaderEffectNode::ShaderEffectNode()
     : m_meshResolution(1, 1)
+    , m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4)
 {
     Node::setFlag(UsePreprocess, true);
-
-    QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
-        << QSGAttributeDescription(0, 2, GL_FLOAT, 4 * sizeof(float))
-        << QSGAttributeDescription(1, 2, GL_FLOAT, 4 * sizeof(float));
-    updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
+    setGeometry(&m_geometry);
 }
 
 ShaderEffectNode::~ShaderEffectNode()
@@ -266,13 +263,13 @@ ShaderEffectNode::~ShaderEffectNode()
 
 void ShaderEffectNode::setRect(const QRectF &rect)
 {
-    setBoundingRect(rect);
+    m_rect = rect;
     m_dirty_geometry = true;
 }
 
 QRectF ShaderEffectNode::rect() const
 {
-    return boundingRect();
+    return m_rect;
 }
 
 void ShaderEffectNode::setResolution(const QSize &res)
@@ -304,16 +301,19 @@ void ShaderEffectNode::updateGeometry()
     int vmesh = m_meshResolution.height();
     int hmesh = m_meshResolution.width();
 
-    Geometry *g = geometry();
-    g->setDrawingMode(QSG::TriangleStrip);
-    g->setVertexCount((vmesh + 1) * (hmesh + 1));
-    g->setIndexCount(vmesh * 2 * (hmesh + 2));
+    QSGGeometry *g = geometry();
+    if (vmesh == 1 && hmesh == 1) {
+        if (g->vertexCount() != 4)
+            g->allocate(4);
+        QSGGeometry::updateTexturedRectGeometry(g, m_rect, QRectF(0, 0, 1, 1));
+        return;
+    }
 
-    struct V { float x, y, tx, ty; };
+    g->allocate((vmesh + 1) * (hmesh + 1), vmesh * 2 * (hmesh + 2));
 
-    V *vdata = (V *) g->vertexData();
+    QSGGeometry::TexturedPoint2D *vdata = g->vertexDataAsTexturedPoint2D();
 
-    QRectF dstRect = boundingRect();
+    QRectF dstRect = m_rect;
     QRectF srcRect(0, 0, 1, 1);
     for (int iy = 0; iy <= vmesh; ++iy) {
         float fy = iy / float(vmesh);
@@ -329,7 +329,7 @@ void ShaderEffectNode::updateGeometry()
         }
     }
 
-    quint16 *indices = (quint16 *)g->ushortIndexData();
+    quint16 *indices = (quint16 *)g->indexDataAsUShort();
     int i = 0;
     for (int iy = 0; iy < vmesh; ++iy) {
         *(indices++) = i + hmesh + 1;
@@ -339,7 +339,6 @@ void ShaderEffectNode::updateGeometry()
         }
         *(indices++) = i - 1;
     }
-    Q_ASSERT(indices == g->ushortIndexData() + g->indexCount());
 
     markDirty(Node::DirtyGeometry);
 }

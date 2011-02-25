@@ -71,18 +71,19 @@ public:
     virtual void update();
 
 private:
+    GeometryNode *border();
+
     enum {
         TypeFlat,
         TypeVertexGradient,
         TypeTextureGradient
     };
 
-    QRectF calculateBoundingRect();
     void updateGeometry();
     void updateGradientTexture();
 
     MaterialPreference m_material_preference;
-    GeometryNode m_border;
+    GeometryNode *m_border;
     FlatColorMaterial m_border_material;
     FlatColorMaterial m_fill_material;
     QSGTextureRef m_gradient_texture;
@@ -91,7 +92,9 @@ private:
     uint m_dirty_geometry : 1;
     uint m_dirty_gradienttexture : 1;
 
-    int m_material_type; // Only goes up to 3
+    uint m_material_type : 2; // Only goes up to 3
+
+    QSGGeometry m_default_geometry;
 
     QSGContext *m_context;
 };

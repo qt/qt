@@ -63,6 +63,9 @@ private:
     qreal m_radius;
 
     uint m_dirty_geometry : 1;
+    uint m_reserved : 31;
+
+    QSGGeometry m_geometry;
 };
 
 #endif // QSGCLIPNODE_P_H

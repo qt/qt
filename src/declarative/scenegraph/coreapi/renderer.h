@@ -140,10 +140,14 @@ public:
     NodeUpdater *nodeUpdater() const;
     void setNodeUpdater(NodeUpdater *updater);
 
+
 signals:
     void sceneGraphChanged(); // Add, remove, ChangeFlags changes...
 
 protected:
+    void draw(const BasicGeometryNode *geometry);
+    void bindGeometry(AbstractMaterialShader *material, const QSGGeometry *g);
+
     virtual void render() = 0;
     Renderer::ClipType updateStencilClip(const ClipNode *clip);
 

@@ -44,7 +44,10 @@
 
 QSGNinePatchNode::QSGNinePatchNode(const QRectF &targetRect, const QSGTextureRef &texture,
                                  const QRect &innerRect, bool linearFiltering)
-: m_targetRect(targetRect), m_innerRect(innerRect), m_linearFiltering(linearFiltering)
+    : m_targetRect(targetRect)
+    , m_innerRect(innerRect)
+    , m_linearFiltering(linearFiltering)
+    , m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 6 * 6, 5 * 5 * 6)
 {
     m_texture = texture;
     bool alpha = texture->hasAlphaChannel();
@@ -55,6 +58,8 @@ QSGNinePatchNode::QSGNinePatchNode(const QRectF &targetRect, const QSGTextureRef
 
     setOpaqueMaterial(&m_material);
     setMaterial(&m_materialO);
+    setGeometry(&m_geometry);
+    m_geometry.setDrawingMode(GL_TRIANGLES);
 
     updateGeometry();
 }
@@ -80,30 +85,19 @@ void QSGNinePatchNode::setLinearFiltering(bool linearFiltering)
 
 void QSGNinePatchNode::updateGeometry()
 {
-    // ### Gunnar: port properly
+    QSGGeometry *g = geometry();
 
-    Geometry *g = geometry();
-    if (g->isNull()) {
-        QVector<QSGAttributeDescription> desc;
-        desc << QSGAttributeDescription(0, 2, GL_FLOAT, 4 * sizeof(float));
-        desc << QSGAttributeDescription(1, 2, GL_FLOAT, 4 * sizeof(float));
-        updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
-        g->setVertexCount(6 * 6); // Grid of 6x6 vertices.
-        g->setIndexCount(5 * 5 * 6); // Grid of 5x5 cells, 2 triangles per cell.
-        g->setDrawingMode(QSG::Triangles);
-
-        ushort *indices = g->ushortIndexData();
-        int count = 0;
-        for (int i = 0; i < 5; ++i) {
-            int i6 = i * 6;
-            for (int j = 0; j < 5; ++j) {
-                indices[count++] = i6 + j + 0;
-                indices[count++] = i6 + j + 6;
-                indices[count++] = i6 + j + 7;
-                indices[count++] = i6 + j + 7;
-                indices[count++] = i6 + j + 1;
-                indices[count++] = i6 + j + 0;
-            }
+    ushort *indices = g->indexDataAsUShort();
+    int count = 0;
+    for (int i = 0; i < 5; ++i) {
+        int i6 = i * 6;
+        for (int j = 0; j < 5; ++j) {
+            indices[count++] = i6 + j + 0;
+            indices[count++] = i6 + j + 6;
+            indices[count++] = i6 + j + 7;
+            indices[count++] = i6 + j + 7;
+            indices[count++] = i6 + j + 1;
+            indices[count++] = i6 + j + 0;
         }
     }
 
@@ -114,6 +108,7 @@ void QSGNinePatchNode::updateGeometry()
     };
 
     V *vertices = (V *)g->vertexData();
+    Q_ASSERT(sizeof(V) == g->stride());
 
     qreal x[6], y[6], u[6], v[6];
 
@@ -156,7 +151,6 @@ void QSGNinePatchNode::updateGeometry()
             vertices[i * 6 + j] = V(x[j], y[i], u[j], v[i]);
     }
 
-    setBoundingRect(m_targetRect);
     markDirty(Node::DirtyGeometry);
 }
 

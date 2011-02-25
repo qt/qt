@@ -100,6 +100,8 @@ private:
     TextureProviderMaterialWithOpacity m_materialO;
 
     uint m_dirtyGeometry : 1;
+
+    QSGGeometry m_geometry;
 };
 
 #endif

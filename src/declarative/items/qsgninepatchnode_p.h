@@ -67,6 +67,7 @@ private:
     TextureMaterial m_material;
     TextureMaterialWithOpacity m_materialO;
     QSGTextureRef m_texture;
+    QSGGeometry m_geometry;
 };                                                         
 
 #endif // QSGNINEPATCHNODE_H

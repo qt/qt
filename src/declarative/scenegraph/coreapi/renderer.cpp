@@ -85,6 +85,33 @@ void BindableFbo::bind() const
     m_fbo->bind();
 }
 
+/*!
+    \class Renderer
+    \brief The renderer class is the abstract baseclass use for rendering the
+    QML scene graph.
+
+    The renderer is not tied to any particular surface. It expects a context to
+    be current and will render into that surface according to how the device rect,
+    viewport rect and projection transformation are set up.
+
+    Rendering is a sequence of steps initiated by calling renderScene(). This will
+    effectively draw the scene graph starting at the root node. The Node::preprocess()
+    function will be called for all the nodes in the graph, followed by an update
+    pass which updates all matrices, opacity, clip states and similar in the graph.
+    Because the update pass is called after preprocess, it is safe to modify the graph
+    during preprocess. To run a custom update pass over the graph, install a custom
+    NodeUpdater using setNodeUpdater(). Once all the graphs dirty states are updated,
+    the virtual render() function is called.
+
+    The render() function is implemented by Renderer subclasses to render the graph
+    in the most optimal way for a given hardware.
+
+    The renderer can make use of stencil, depth and color buffers in addition to the
+    scissor rect.
+
+    \internal
+ */
+
 
 Renderer::Renderer()
     : QObject()
@@ -182,14 +209,12 @@ void Renderer::renderScene(const Bindable &bindable)
 #ifdef QSG_RENDERER_TIMING
     int bindTime = frameTimer.elapsed();
 #endif
-    GeometryDataUploader::bind();
-    GeometryDataUploader::upload();
 
     render();
 #ifdef QSG_RENDERER_TIMING
     int renderTime = frameTimer.elapsed();
 #endif
-    GeometryDataUploader::release();
+
     m_changed_emitted = false;
     m_bindable = 0;
 
@@ -324,6 +349,14 @@ void Renderer::removeNodesToPreprocess(Node *node)
         m_nodes_to_preprocess.remove(node);
 }
 
+
+/*!
+    Convenience function to set up the stencil buffer for clipping based on \a clip.
+
+    If the clip is a pixel aligned rectangle, this function will use glScissor instead
+    of stencil.
+ */
+
 Renderer::ClipType Renderer::updateStencilClip(const ClipNode *clip)
 {
     if (!clip) {
@@ -352,7 +385,7 @@ Renderer::ClipType Renderer::updateStencilClip(const ClipNode *clip)
                            && qFuzzyIsNull(m(1, 0)) && qFuzzyIsNull(m(1, 2));
 
         if (canUseScissor) {
-            QRectF bbox = clip->boundingRect();
+            QRectF bbox = clip->clipRect();
             qreal invW = 1 / m(3, 3);
             qreal fx1 = (bbox.left() * m(0, 0) + m(0, 3)) * invW;
             qreal fy1 = (bbox.bottom() * m(1, 1) + m(1, 3)) * invW;
@@ -411,21 +444,14 @@ Renderer::ClipType Renderer::updateStencilClip(const ClipNode *clip)
             glStencilFunc(GL_EQUAL, clipDepth, 0xff); // stencil test, ref, test mask
             glStencilOp(GL_KEEP, GL_KEEP, GL_INCR); // stencil fail, z fail, z pass
 
-            Geometry *geometry = clip->geometry();
+            const QSGGeometry *geometry = clip->geometry();
+            Q_ASSERT(geometry->attributeCount() > 0);
+            const QSGGeometry::Attribute *a = geometry->attributes();
 
-            const QSGAttributeValue &v = geometry->attributeValue(0);
-            glVertexAttribPointer(0, v.tupleSize(), v.type(), GL_FALSE, v.stride(),
-                                  GeometryDataUploader::vertexData(geometry));
+            glVertexAttribPointer(0, a->tupleSize, a->type, GL_FALSE, geometry->stride(), geometry->vertexData());
 
             m_clip_program.setUniformValue(m_clip_matrix_id, m);
-
-            QPair<int, int> range = clip->indexRange();
-            if (geometry->indexCount()) {
-                glDrawElements(GLenum(geometry->drawingMode()), range.second - range.first, geometry->indexType()
-                               , GeometryDataUploader::indexData(geometry));
-            } else {
-                glDrawArrays(GLenum(geometry->drawingMode()), range.first, range.second - range.first);
-            }
+            draw(clip);
 
             ++clipDepth;
         }
@@ -449,4 +475,70 @@ Renderer::ClipType Renderer::updateStencilClip(const ClipNode *clip)
         glDisable(GL_SCISSOR_TEST);
 
     return stencilEnabled ? StencilClip : ScissorClip;
+}
+
+
+/*!
+    Issues the GL draw call for \a geometryNode.
+
+    The function assumes that attributes have been bound and set up prior
+    to making this call.
+
+    \internal
+ */
+
+void Renderer::draw(const BasicGeometryNode *node)
+{
+    const QSGGeometry *g = node->geometry();
+    if (g->indexCount()) {
+        glDrawElements(g->drawingMode(), g->indexCount(), g->indexType(), g->indexData());
+    } else {
+        glDrawArrays(g->drawingMode(), 0, g->vertexCount());
+    }
+}
+
+
+static inline int size_of_type(GLenum type)
+{
+    static int sizes[] = {
+        sizeof(char),
+        sizeof(unsigned char),
+        sizeof(short),
+        sizeof(unsigned short),
+        sizeof(int),
+        sizeof(unsigned int),
+        sizeof(float),
+        2,
+        3,
+        4,
+        sizeof(double)
+    };
+    return sizes[type - GL_BYTE];
+}
+
+/*!
+    Convenience function to set up and bind the vertex data in \a g to the
+    required attribute positions defined in \a material.
+
+    \internal
+ */
+
+void Renderer::bindGeometry(AbstractMaterialShader *material, const QSGGeometry *g)
+{
+    char const *const *attrNames = material->attributeNames();
+    int offset = 0;
+    for (int j = 0; attrNames[j]; ++j) {
+        if (!*attrNames[j])
+            continue;
+        Q_ASSERT_X(j < g->attributeCount(), "Renderer::bindGeometry()", "Geometry lacks attribute required by material");
+        const QSGGeometry::Attribute &a = g->attributes()[j];
+        Q_ASSERT_X(j == a.position, "Renderer::bindGeometry()", "Geometry does not have continous attribute positions");
+#if defined(QT_OPENGL_ES_2)
+        GLboolean normalize = a.type != GL_FLOAT;
+#else
+        GLboolean normalize = a.type != GL_FLOAT && a.type != GL_DOUBLE;
+#endif
+        glVertexAttribPointer(a.position, a.tupleSize, a.type, normalize, g->stride(), (char *) g->vertexData() + offset);
+        offset += a.tupleSize * size_of_type(a.type);
+    }
 }

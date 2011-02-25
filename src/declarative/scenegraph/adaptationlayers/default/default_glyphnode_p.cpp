@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "default_glyphnode_p.h"
-#include "geometry.h"
 
 #include <qglshaderprogram.h>
 
@@ -180,7 +179,7 @@ void TextMaskMaterial::init()
 void TextMaskMaterial::populate(const QPointF &p,
                                 const QVector<quint32> &glyphIndexes,
                                 const QVector<QPointF> &glyphPositions,
-                                Geometry *geometry,
+                                QSGGeometry *geometry,
                                 QRectF *boundingRect,
                                 QPointF *baseLine)
 {
@@ -196,10 +195,10 @@ void TextMaskMaterial::populate(const QPointF &p,
     int margin = cache->glyphMargin();
 
     Q_ASSERT(geometry->indexType() == GL_UNSIGNED_SHORT);
-    geometry->setVertexCount(glyphIndexes.size() * 4);
-    geometry->setIndexCount(glyphIndexes.size() * 6);
-    QVector4D *vp = (QVector4D *)geometry->vertexData();
-    ushort *ip = geometry->ushortIndexData();
+    geometry->allocate(glyphIndexes.size() * 4, glyphIndexes.size() * 6);
+    QVector4D *vp = (QVector4D *)geometry->vertexDataAsTexturedPoint2D();
+    Q_ASSERT(geometry->stride() == sizeof(QVector4D));
+    ushort *ip = geometry->indexDataAsUShort();
 
     QPointF position(p.x(), p.y() - m_fontEngine->ascent().toReal());
     bool supportsSubPixelPositions = m_fontEngine->supportsSubPixelPositions();

@@ -1,7 +1,6 @@
 #include <qsgcontext.h>
 #include <adaptationlayer.h>
 #include <node.h>
-#include <geometry.h>
 #include <texturematerial.h>
 #include <qsgtexturemanager.h>
 #include <QFile>
@@ -276,6 +275,21 @@ void ColoredParticle::reset()
      m_particle_count = 0;
 }
 
+static QSGGeometry::Attribute ColoredParticle_Attributes[] = {
+    { 0, 2, GL_FLOAT },             // Position
+    { 1, 2, GL_FLOAT },             // TexCoord
+    { 2, 4, GL_FLOAT },             // Data
+    { 3, 4, GL_FLOAT },             // Vectors
+    { 4, 4, GL_UNSIGNED_BYTE }   // Colors
+};
+
+static QSGGeometry::AttributeSet ColoredParticle_AttributeSet =
+{
+    5, // Attribute Count
+    (2 + 2 + 4 + 4) * sizeof(float) + 4 * sizeof(uchar),
+    ColoredParticle_Attributes
+};
+
 Node* ColoredParticle::buildParticleNode()
 {
     QSGContext *sg = QSGContext::current;
@@ -290,18 +304,12 @@ Node* ColoredParticle::buildParticleNode()
         return 0;
     }
 
-    QVector<QSGAttributeDescription> attr;
-    attr << QSGAttributeDescription(0, 2, GL_FLOAT, 0); // Position
-    attr << QSGAttributeDescription(1, 2, GL_FLOAT, 0); // TexCoord
-    attr << QSGAttributeDescription(2, 4, GL_FLOAT, 0); // Data
-    attr << QSGAttributeDescription(3, 4, GL_FLOAT, 0); // Vectors..
-    attr << QSGAttributeDescription(4, 4, GL_UNSIGNED_BYTE, 0); // Colors
-
-    Geometry *g = new Geometry(attr);
-    g->setDrawingMode(QSG::Triangles);
-
     int vCount = m_particle_count * 4;
-    g->setVertexCount(vCount);
+    int iCount = m_particle_count * 6;
+
+    QSGGeometry *g = new QSGGeometry(ColoredParticle_AttributeSet, vCount, iCount);
+    g->setDrawingMode(GL_TRIANGLES);
+
     ColoredParticleVertex *vertices = (ColoredParticleVertex *) g->vertexData();
     for (int p=0; p<m_particle_count; ++p) {
 
@@ -332,9 +340,7 @@ Node* ColoredParticle::buildParticleNode()
         vertices += 4;
     }
 
-    int iCount = m_particle_count * 6;
-    g->setIndexCount(iCount);
-    quint16 *indices = g->ushortIndexData();
+    quint16 *indices = g->indexDataAsUShort();
     for (int i=0; i<m_particle_count; ++i) {
         int o = i * 4;
         indices[0] = o;

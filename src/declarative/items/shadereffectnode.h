@@ -135,7 +135,10 @@ private:
 
     void updateGeometry();
 
+    QRectF m_rect;
     QSize m_meshResolution;
+
+    QSGGeometry m_geometry;
 
     bool m_dirty_geometry : 1;
 };

@@ -163,7 +163,6 @@ QMLRenderer::QMLRenderer()
     m_render_opaque_nodes = !args.contains("--no-opaque-nodes");
     m_render_alpha_nodes = !args.contains("--no-alpha-nodes");
 #endif
-    GeometryDataUploader::setUseBuffers(args.contains("--vbo-geometry"));
 }
 
 void QMLRenderer::nodeChanged(Node *node, Node::DirtyFlags flags)
@@ -296,28 +295,22 @@ void QMLRenderer::buildLists(Node *node)
     if (node->isSubtreeBlocked())
         return;
 
-    Geometry *g = 0;
-
     if (node->type() == Node::GeometryNodeType) {
         GeometryNode *geomNode = static_cast<GeometryNode *>(node);
-        g = geomNode->geometry();
-
-        if (g->vertexCount()) { //Sanity check
-            qreal opacity = geomNode->inheritedOpacity();
-            AbstractMaterial *m = geomNode->activeMaterial();
+        qreal opacity = geomNode->inheritedOpacity();
+        AbstractMaterial *m = geomNode->activeMaterial();
 
 #ifdef FORCE_NO_REORDER
-            if (true) {
+        if (true) {
 #else
-            if ((m->flags() & AbstractMaterial::Blending) || opacity < 1) {
+        if ((m->flags() & AbstractMaterial::Blending) || opacity < 1) {
 #endif
-                geomNode->setRenderOrder(m_currentRenderOrder - 1);
-                m_transparentNodes.append(geomNode);
-            } else {
-                geomNode->setRenderOrder(m_currentRenderOrder);
-                m_opaqueNodes.append(geomNode);
-                m_currentRenderOrder += 2;
-            }
+            geomNode->setRenderOrder(m_currentRenderOrder - 1);
+            m_transparentNodes.append(geomNode);
+        } else {
+            geomNode->setRenderOrder(m_currentRenderOrder);
+            m_opaqueNodes.append(geomNode);
+            m_currentRenderOrder += 2;
         }
     }
 
@@ -377,7 +370,6 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
     //int clipChangeCount = 0;
     //int programChangeCount = 0;
     //int materialChangeCount = 0;
-
 
     for (int i = 0; i < count; ++i) {
         GeometryNode *geomNode = list.at(i);
@@ -454,34 +446,9 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
 
         //glDepthRange((geomNode->renderOrder() + 0.1) * scale, (geomNode->renderOrder() + 0.9) * scale);
 
-        Geometry *g = geomNode->geometry();
-
-        char const *const *attrNames = program->attributeNames();
-        int offset = 0;
-        for (int j = 0; attrNames[j]; ++j) {
-            if (!*attrNames[j])
-                continue;
-            QSGAttributeValue attr = g->attributeValue(j);
-            if (!attr.isNull()) {
-#if defined(QT_OPENGL_ES_2)
-                GLboolean normalize = attr.type() != GL_FLOAT;
-#else
-                GLboolean normalize = attr.type() != GL_FLOAT && attr.type() != GL_DOUBLE;
-#endif
-                glVertexAttribPointer(j, attr.tupleSize(), attr.type(), normalize, attr.stride(),
-                                      GeometryDataUploader::vertexData(g, offset));
-                offset += attr.tupleSize() * attr.sizeOfType();
-            } else {
-                qWarning("Attribute required by effect is missing.");
-            }
-        }
-
-        QPair<int, int> indexRange = geomNode->indexRange();
-        if (g->indexCount())
-            glDrawElements(GLenum(g->drawingMode()), indexRange.second - indexRange.first, g->indexType(),
-                           GeometryDataUploader::indexData(g));
-        else
-            glDrawArrays(GLenum(g->drawingMode()), indexRange.first, indexRange.second - indexRange.first);
+        const QSGGeometry *g = geomNode->geometry();
+        bindGeometry(program, g);
+        draw(geomNode);
     }
     //qDebug("Clip: %i, shader program: %i, material: %i times changed while drawing %s items",
     //    clipChangeCount, programChangeCount, materialChangeCount,

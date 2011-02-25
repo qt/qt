@@ -45,8 +45,12 @@
 #include <qglshaderprogram.h>
 #include <private/qfont_p.h>
 
-DefaultGlyphNode::DefaultGlyphNode() : m_material(0)
+DefaultGlyphNode::DefaultGlyphNode()
+    : m_material(0)
+    , m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 0)
 {
+    m_geometry.setDrawingMode(GL_TRIANGLES);
+    setGeometry(&m_geometry);
 }
 
 DefaultGlyphNode::~DefaultGlyphNode()
@@ -73,11 +77,6 @@ void DefaultGlyphNode::setGlyphs(const QPointF &position, const QGlyphs &glyphs)
     m_material->setColor(m_color);
 
     QRectF boundingRect;
-    QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
-        << QSGAttributeDescription(0, 2, GL_FLOAT, 4 * sizeof(float))
-        << QSGAttributeDescription(1, 2, GL_FLOAT, 4 * sizeof(float));
-    updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
-
     m_material->populate(position, glyphs.glyphIndexes(), glyphs.positions(), geometry(),
                          &boundingRect, &m_baseLine);
     setMaterial(m_material);
@@ -85,6 +84,8 @@ void DefaultGlyphNode::setGlyphs(const QPointF &position, const QGlyphs &glyphs)
 
     Q_ASSERT(QGLContext::currentContext());
     m_material->updateGlyphCache(QGLContext::currentContext());
+
+    markDirty(DirtyGeometry);
 
 #ifdef QML_RUNTIME_TESTING
     description = QLatin1String("glyphs");

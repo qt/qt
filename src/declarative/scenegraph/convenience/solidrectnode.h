@@ -62,6 +62,7 @@ private:
     void updateGeometry();
     QRectF m_rect;
     FlatColorMaterial m_material;
+    QSGGeometry m_geometry;
 };
 
 
