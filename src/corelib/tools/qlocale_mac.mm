@@ -449,8 +449,13 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         return QVariant(static_cast<int>(macMeasurementSystem()));
 
     case AMText:
-    case PMText:
-        break;
+    case PMText: {
+        QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
+        QCFType<CFDateFormatterRef> formatter = CFDateFormatterCreate(NULL, locale, kCFDateFormatterLongStyle, kCFDateFormatterLongStyle);
+        QCFType<CFStringRef> value = static_cast<CFStringRef>(CFDateFormatterCopyProperty(formatter,
+            (type == AMText ? kCFDateFormatterAMSymbol : kCFDateFormatterPMSymbol)));
+        return QCFString::toQString(value);
+    }
     case FirstDayOfWeek:
         return QVariant(macFirstDayOfWeek());
     case CurrencySymbol:
