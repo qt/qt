@@ -5,12 +5,9 @@ ParticleAffector::ParticleAffector(QObject *parent) :
 {
 }
 
-void ParticleAffector::affect(ParticleVertices *p, int idx, qreal dt, SpriteParticles *sp)
+bool ParticleAffector::affect(ParticleData *, qreal)
 {
-    Q_UNUSED(p);
-    Q_UNUSED(idx);
-    Q_UNUSED(dt);
-    Q_UNUSED(sp);
+    return false;
 }
 
 void ParticleAffector::reset(int idx)

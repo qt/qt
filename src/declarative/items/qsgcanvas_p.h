@@ -55,7 +55,6 @@
 
 #include "qsgitem.h"
 #include "qsgcanvas.h"
-#include "qvsyncanimationdriver_p.h"
 #include "qdeclarativeguard_p.h"
 
 #include "qsgcontext.h"
@@ -163,7 +162,6 @@ public:
 
     uint contextInThread : 1;
     uint threadedRendering : 1;
-    uint inUpdate : 1;
     uint exitThread : 1;
     uint animationRunning: 1;
     uint idle : 1;              // Set to true when render thread sees no change and enters a wait()

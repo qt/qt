@@ -7,8 +7,9 @@
 #include <qsgitem.h>
 #include "spritestate.h"
 #include "particleaffector.h"
+#include "particlesystem.h"//for vertex structs
 
-class SpriteParticlesMaterial;
+class SpriteParticlesMaterialSP;
 class GeometryNode;
 class QSGContext;
 
@@ -16,7 +17,6 @@ class SpriteParticles : public QSGItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
 
     Q_PROPERTY(QUrl image READ image WRITE setImage NOTIFY imageChanged)
 
@@ -46,7 +46,7 @@ class SpriteParticles : public QSGItem
     Q_PROPERTY(qreal yAccelVariation READ yAccelVariation WRITE setYAccelVariation NOTIFY yAccelVariationChanged)
 
     Q_PROPERTY(QDeclarativeListProperty<SpriteState> states READ states)
-    Q_PROPERTY(QString goalState READ goalState WRITE goalState NOTIFY goalStateChanged)
+    Q_PROPERTY(QString goalState READ goalState WRITE setGoalState NOTIFY goalStateChanged)
     Q_PROPERTY(QDeclarativeListProperty<ParticleAffector> affectors READ affectors)
 
     Q_PROPERTY(int frameCount READ frames WRITE setFrames NOTIFY framesChanged)
@@ -221,7 +221,7 @@ void setFrameDuration(int arg)
     }
 }
 
-void goalState(QString arg)
+void setGoalState(QString arg)
 {
     if (m_goalState != arg) {
         m_goalState = arg;
@@ -277,7 +277,7 @@ private:
     QList<ParticleAffector*> m_affectors;
 
     GeometryNode *m_node;
-    SpriteParticlesMaterial *m_material;
+    SpriteParticlesMaterialSP *m_material;
 
     // derived values...
     int m_particle_count;
@@ -301,31 +301,5 @@ private:
     QString m_goalState;
 };
 
-
-struct ParticleVertex {
-    float x;
-    float y;
-    float tx;
-    float ty;
-    float t;
-    float size;
-    float endSize;
-    float dt;
-    float sx;
-    float sy;
-    float ax;
-    float ay;
-    float animIdx;
-    float frameDuration;
-    float frameCount;
-    float animT;
-};
-
-struct ParticleVertices {
-    ParticleVertex v1;
-    ParticleVertex v2;
-    ParticleVertex v3;
-    ParticleVertex v4;
-};
 
 #endif // SPRITEPARTICLES_H

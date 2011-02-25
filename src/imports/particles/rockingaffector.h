@@ -3,7 +3,7 @@
 #include "particleaffector.h"
 #include <QHash>
 
-class SpriteParticles;
+class SpriteEmitter;
 /*
   The inputs seem quite sensitive and the effect seems quite limited.
   it's not clear if this class should stick around, or be kicked out.
@@ -28,7 +28,7 @@ class RockingAffector : public ParticleAffector
 public:
     explicit RockingAffector(QObject *parent = 0);
     ~RockingAffector();
-    virtual void affect(ParticleVertices *p, int idx, qreal dt, SpriteParticles* sp);
+    virtual void affect(ParticleVertices *p, int idx, qreal dt, QObject*);
     virtual void reset(int idx);
     qreal angle() const
     {

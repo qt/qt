@@ -1,5 +1,6 @@
 #include "scalingaffector.h"
 #include "spriteparticles.h"
+#include "particlesystem.h"
 
 ScalingAffector::ScalingAffector(QObject *parent) :
     ParticleAffector(parent)
@@ -7,10 +8,10 @@ ScalingAffector::ScalingAffector(QObject *parent) :
 }
 
 //TODO: get duration better than from vAnimDat
-void ScalingAffector::affect(ParticleVertices *p, int idx, qreal dt, SpriteParticles* sp)
+void ScalingAffector::affect(ParticleVertices *p, int idx, qreal dt, QObject* emitter)
 {
     Q_UNUSED(idx);
-    qreal scale = (p->v1.endSize - p->v1.size) * (dt/(sp->particleDuration()/1000.0));
+    qreal scale = (p->v1.endSize - p->v1.size) * (dt/(emitter->property("particleDuration").toInt()/1000.0));
     scale *= 0.5;//half back, half forwards to grow from the center
 
     p->v1.x -= scale;

@@ -2396,14 +2396,22 @@ void tst_qdeclarativeecmascript::moduleApi()
 
 void tst_qdeclarativeecmascript::importScripts()
 {
+    QObject *object = 0;
+
     // first, ensure that the required behaviour works.
     QDeclarativeComponent component(&engine, TEST_FILE("jsimport/testImport.qml"));
-    QObject *object = component.create();
+    object = component.create();
     QVERIFY(object != 0);
     QCOMPARE(object->property("importedScriptStringValue"), QVariant(QString(QLatin1String("Hello, World!"))));
     QCOMPARE(object->property("importedScriptFunctionValue"), QVariant(20));
     QCOMPARE(object->property("importedModuleAttachedPropertyValue"), QVariant(19));
     QCOMPARE(object->property("importedModuleEnumValue"), QVariant(2));
+    delete object;
+
+    QDeclarativeComponent componentTwo(&engine, TEST_FILE("jsimport/testImportScoping.qml"));
+    object = componentTwo.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("componentError"), QVariant(5));
     delete object;
 
     // then, ensure that unintended behaviour does not work.
@@ -2427,6 +2435,24 @@ void tst_qdeclarativeecmascript::importScripts()
     QVERIFY(object != 0);
     QCOMPARE(object->property("importedModuleEnumValue"), QVariant(0));
     delete object;
+    QDeclarativeComponent failFiveComponent(&engine, TEST_FILE("jsimportfail/failFive.qml"));
+    object = failFiveComponent.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("componentError"), QVariant(0));
+    delete object;
+
+    // also, test that importing scripts with .pragma library works as required
+    QDeclarativeComponent pragmaLibraryComponent(&engine, TEST_FILE("jsimport/testImportPragmaLibrary.qml"));
+    object = pragmaLibraryComponent.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("testValue"), QVariant(31));
+    delete object;
+
+    // and that .pragma library scripts don't inherit imports from any .qml file
+    QDeclarativeComponent pragmaLibraryComponentTwo(&engine, TEST_FILE("jsimportfail/testImportPragmaLibrary.qml"));
+    object = pragmaLibraryComponentTwo.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("testValue"), QVariant(0));
 }
 
 // Test that assigning a null object works 

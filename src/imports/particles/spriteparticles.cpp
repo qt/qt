@@ -7,10 +7,10 @@
 #include <texturematerial.h>
 #include <qsgtexturemanager.h>
 
-class SpriteParticlesMaterial : public AbstractMaterial
+class SpriteParticlesMaterialSP : public AbstractMaterial
 {
 public:
-    SpriteParticlesMaterial()
+    SpriteParticlesMaterialSP()
         : timestamp(0)
         , timelength(1)
         , framecount(1)
@@ -23,7 +23,7 @@ public:
     virtual AbstractMaterialShader *createShader() const;
     virtual int compare(const AbstractMaterial *other) const
     {
-        return this - static_cast<const SpriteParticlesMaterial *>(other);
+        return this - static_cast<const SpriteParticlesMaterialSP *>(other);
     }
 
     QSGTextureRef texture;
@@ -35,10 +35,10 @@ public:
 };
 
 
-class SpriteParticlesMaterialData : public AbstractMaterialShader
+class SpriteParticlesMaterialDataSP : public AbstractMaterialShader
 {
 public:
-    SpriteParticlesMaterialData(const char *vertexFile = 0, const char *fragmentFile = 0)
+    SpriteParticlesMaterialDataSP(const char *vertexFile = 0, const char *fragmentFile = 0)
     {
         QFile vf(vertexFile ? vertexFile : ":resources/spritevertex.shader");
         vf.open(QFile::ReadOnly);
@@ -62,7 +62,7 @@ public:
 
     virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *, Renderer::Updates updates)
     {
-        SpriteParticlesMaterial *m = static_cast<SpriteParticlesMaterial *>(newEffect);
+        SpriteParticlesMaterialSP *m = static_cast<SpriteParticlesMaterialSP *>(newEffect);
         Q_ASSERT(m->texture.isReady());
         renderer->setTexture(0, m->texture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -99,6 +99,7 @@ public:
             "vData",
             "vVec",
             "vAnimData",
+            "vColor",
             0
         };
         return attr;
@@ -118,12 +119,12 @@ public:
 
     static float chunkOfBytes[1024];
 };
-float SpriteParticlesMaterialData::chunkOfBytes[1024];
+float SpriteParticlesMaterialDataSP::chunkOfBytes[1024];
 
 
-AbstractMaterialShader *SpriteParticlesMaterial::createShader() const
+AbstractMaterialShader *SpriteParticlesMaterialSP::createShader() const
 {
-    return new SpriteParticlesMaterialData;
+    return new SpriteParticlesMaterialDataSP;
 }
 
 SpriteParticles::SpriteParticles()
@@ -576,7 +577,7 @@ void SpriteParticles::buildParticleNode()
         m_material = 0;
     }
 
-    m_material = new SpriteParticlesMaterial();
+    m_material = new SpriteParticlesMaterialSP();
 
     if(!buildParticleTexture(sg))//problem loading image files
         return;
@@ -587,6 +588,7 @@ void SpriteParticles::buildParticleNode()
     attr << QSGAttributeDescription(2, 4, GL_FLOAT, 0); // Data
     attr << QSGAttributeDescription(3, 4, GL_FLOAT, 0); // Vectors..
     attr << QSGAttributeDescription(4, 4, GL_FLOAT, 0); // AnimData
+    attr << QSGAttributeDescription(5, 4, GL_UNSIGNED_BYTE, 0); // Colors
 
     Geometry *g = new Geometry(attr);
     g->setDrawingMode(QSG::Triangles);
@@ -736,7 +738,6 @@ void SpriteParticles::prepareNextFrame()
         // Particle timestamp
         p.v1.t = p.v2.t = p.v3.t = p.v4.t = pt;
         p.v1.dt = p.v2.dt = p.v3.dt = p.v4.dt = pt;
-        p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = pt;
 
         // Particle position
         p.v1.x = p.v2.x = p.v3.x = p.v4.x =
@@ -779,6 +780,7 @@ void SpriteParticles::prepareNextFrame()
         p.v4.y += p.v1.size;
 
         // Initial Sprite State
+        p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = pt;
         p.v1.animIdx = p.v2.animIdx = p.v3.animIdx = p.v4.animIdx = 0;
         p.v1.frameCount = p.v2.frameCount = p.v3.frameCount = p.v4.frameCount = m_states[0]->frames();
         int durVar = 0;
@@ -835,7 +837,7 @@ void SpriteParticles::prepareNextFrame()
             if(nextIdx == -1)//No to states means stay here
                 nextIdx = stateIdx;
 
-            p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = pt;
+            p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = time;
             p.v1.animIdx = p.v2.animIdx = p.v3.animIdx = p.v4.animIdx = nextIdx;
             p.v1.frameCount = p.v2.frameCount = p.v3.frameCount = p.v4.frameCount = m_states[nextIdx]->frames();
             int durVar = 0;

@@ -2,18 +2,15 @@
 #define PARTICLEAFFECTOR_H
 
 #include <QObject>
-
-struct ParticleVertices;
-class SpriteParticles;
+#include "particlesystem.h"
 
 class ParticleAffector : public QObject
 {
     Q_OBJECT
 public:
     explicit ParticleAffector(QObject *parent = 0);
-    //###Pass the system in? Or register it? Or becomes moot once everything's moved out?
-    virtual void affect(ParticleVertices *p, int idx, qreal dt, SpriteParticles* sp);
-    virtual void reset(int idx);//As some store their own data per idx
+    virtual bool affect(ParticleData *d, qreal dt);
+    virtual void reset(int systemIdx);//As some store their own data per idx
 signals:
 
 public slots:

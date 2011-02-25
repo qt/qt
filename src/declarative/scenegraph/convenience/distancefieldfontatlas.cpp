@@ -46,32 +46,6 @@
 #include <qmath.h>
 #include <qlibraryinfo.h>
 
-#if defined(Q_WS_X11) || defined(Q_WS_QWS) || (defined(Q_WS_S60) && !defined(QT_NO_FREETYPE))
-#  define USE_FREETYPE_ENGINE
-#  include <private/qfontengine_ft_p.h>
-#elif defined(Q_WS_S60)
-#  define USE_S60_ENGINE
-#  include <private/qfontengine_s60_p.h>
-#elif defined(Q_WS_WIN)
-#  define USE_WIN_ENGINE
-#  include <private/qfontengine_win_p.h>
-#elif defined(Q_WS_MAC)
-#  if defined(QT_MAC_USE_COCOA)
-#    define USE_CORETEXT_ENGINE
-#    include <private/qfontengine_coretext_p.h>
-#  else
-#    define USE_MAC_ENGINE
-#    include <private/qfontengine_mac_p.h>
-#  endif
-#elif defined(Q_WS_QPA)
-#  define USE_QPA_ENGINE
-#  include <private/qfontengine_qpa_p.h>
-#endif
-
-#ifndef GL_BGRA
-#define GL_BGRA 0x80E1
-#endif
-
 void qt_disableFontHinting(QFont &font)
 {
     QFontEngine *fontEngine = QFontPrivate::get(font)->engineForScript(QUnicodeTables::Common);
@@ -79,19 +53,7 @@ void qt_disableFontHinting(QFont &font)
         QFontEngineMulti *fem = static_cast<QFontEngineMulti *>(fontEngine);
         fontEngine = fem->engine(0);
     }
-
-#if defined(USE_FREETYPE_ENGINE)
-    if (fontEngine->type() == QFontEngine::Freetype) {
-        QFontEngineFT *ftEngine = static_cast<QFontEngineFT *>(fontEngine);
-        ftEngine->setDefaultHintStyle(QFontEngineFT::HintNone);
-    }
-#else
-    static bool warned = false;
-    if (!warned) {
-        qWarning("Warning: Un-hinted fonts are not supported yet on this platform.");
-        warned = true;
-    }
-#endif
+    fontEngine->setDefaultHintStyle(QFontEngine::HintNone);
 }
 
 #define DISTANCEFIELD_CHARRANGE 0xFF
@@ -303,6 +265,19 @@ bool DistanceFieldFontAtlas::useDistanceFieldForFont(const QFont &font)
     return false;
 }
 
+static void convert_to_Format_Alpha(QImage *image)
+{
+    const int width = image->width();
+    const int height = image->height();
+    uchar *data = image->bits();
+
+    for (int i = 0; i < height; ++i) {
+        uchar *o = data + i * width;
+        for (int x = 0; x < width; ++x)
+            o[x] = (uchar)qAlpha(image->pixel(x, i));
+    }
+}
+
 QSGTextureRef DistanceFieldFontAtlas::uploadDistanceField(const QImage &image)
 {
     Q_ASSERT(!image.isNull());
@@ -312,13 +287,13 @@ QSGTextureRef DistanceFieldFontAtlas::uploadDistanceField(const QImage &image)
     glBindTexture(GL_TEXTURE_2D, id);
 
     QImage i = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    convert_to_Format_Alpha(&i);
 
     // We only need to store the alpha component
 #ifdef QT_OPENGL_ES
-    QSGTextureManager::swizzleBGRAToRGBA(&i);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, i.width(), i.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, i.constBits());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, i.width(), i.height(), 0, GL_ALPHA, GL_UNSIGNED_BYTE, i.constBits());
 #else
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA8, i.width(), i.height(), 0, GL_BGRA, GL_UNSIGNED_BYTE, i.constBits());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA8, i.width(), i.height(), 0, GL_ALPHA, GL_UNSIGNED_BYTE, i.constBits());
 #endif
 
     GLuint error = glGetError();

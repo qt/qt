@@ -1,5 +1,5 @@
 #include "wanderaffector.h"
-#include "spriteparticles.h" //for ParticlesVertices
+#include "particlesystem.h"//for ParticlesVertices
 
 WanderAffector::WanderAffector(QObject *parent) :
     ParticleAffector(parent)
@@ -29,10 +29,16 @@ WanderData* WanderAffector::getData(int idx)
     return d;
 }
 
-void WanderAffector::affect(ParticleVertices *p, int idx, qreal dt, SpriteParticles *sp)
+void WanderAffector::reset(int systemIdx)
 {
-    Q_UNUSED(sp);
-    WanderData* d = getData(idx);
+    if(m_wanderData.contains(systemIdx))
+        delete m_wanderData[systemIdx];
+    m_wanderData.remove(systemIdx);
+}
+
+bool WanderAffector::affect(ParticleData* data, qreal dt)
+{
+    WanderData* d = getData(data->systemIndex);
     if (m_xVariance != 0.) {
         if ((d->x_vel > d->x_peak && d->x_var > 0.0) || (d->x_vel < -d->x_peak && d->x_var < 0.0)) {
             d->x_var = -d->x_var;
@@ -50,13 +56,11 @@ void WanderAffector::affect(ParticleVertices *p, int idx, qreal dt, SpritePartic
         d->y_vel += d->y_var * dt;
     }
     qreal dy = dt * d->x_vel;
-    p->v1.x += dx;
-    p->v2.x += dx;
-    p->v3.x += dx;
-    p->v4.x += dx;
 
-    p->v1.y += dy;
-    p->v2.y += dy;
-    p->v3.y += dy;
-    p->v4.y += dy;
+    //### Should we be amending vel instead?
+    ParticleVertex* p = &(data->pv);
+    p->x += dx;
+
+    p->y += dy;
+    return true;
 }

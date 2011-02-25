@@ -50,6 +50,7 @@
 #include <QtGui/qpainter.h>
 #include <QtGui/qgraphicssceneevent.h>
 #include <QtGui/qmatrix4x4.h>
+#include <QtGui/qinputcontext.h>
 #include <QtCore/qvarlengtharray.h>
 
 #include <private/qdeclarativedebugtrace_p.h>
@@ -128,9 +129,10 @@ void QSGCanvas::paintEvent(QPaintEvent *)
     Q_D(QSGCanvas);
 
     if (!d->threadedRendering) {
-        Q_ASSERT(d->context);
+        if (d->animationDriver->isRunning())
+            d->animationDriver->advance();
 
-        d->inUpdate = true;
+        Q_ASSERT(d->context);
 
         d->polishItems();
 
@@ -143,7 +145,8 @@ void QSGCanvas::paintEvent(QPaintEvent *)
 
         QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Painting);
 
-        d->inUpdate = false;
+        if (d->animationDriver->isRunning())
+            update();
     }
 }
 
@@ -179,10 +182,13 @@ void QSGCanvas::showEvent(QShowEvent *e)
         d->mutex.unlock();
     } else {
         makeCurrent();
-        d->initializeSceneGraph();
-        d->animationDriver = d->context->createAnimationDriver(this);
-        if (d->animationDriver)
-            d->animationDriver->install();
+
+        if (!d->context) {
+            d->initializeSceneGraph();
+            d->animationDriver = new QAnimationDriver();
+            if (d->animationDriver)
+                d->animationDriver->install();
+        }
     }
 }
 
@@ -369,7 +375,6 @@ QSGCanvasPrivate::QSGCanvasPrivate()
     , context(0)
     , contextInThread(false)
     , threadedRendering(false)
-    , inUpdate(false)
     , exitThread(false)
     , animationRunning(false)
     , idle(false)
@@ -537,6 +542,11 @@ void QSGCanvasPrivate::setFocusInScope(QSGItem *scope, QSGItem *item, FocusOptio
 
         Q_ASSERT(oldActiveFocusItem);
 
+#ifndef QT_NO_IM
+        if (QInputContext *ic = inputContext())
+            ic->reset();
+#endif
+
         activeFocusItem = 0;
         QFocusEvent event(QEvent::FocusOut, Qt::OtherFocusReason);
         q->sendEvent(oldActiveFocusItem, &event);
@@ -594,11 +604,13 @@ void QSGCanvasPrivate::setFocusInScope(QSGItem *scope, QSGItem *item, FocusOptio
             afi = afi->parentItem();
         }
 
+        updateInputMethodData();
+
         QFocusEvent event(QEvent::FocusIn, Qt::OtherFocusReason);
         q->sendEvent(newActiveFocusItem, &event); 
+    } else {
+        updateInputMethodData();
     }
-
-    updateInputMethodData();
 
     if (!changed.isEmpty()) 
         notifyFocusChangesRecur(changed.data(), changed.count() - 1);
@@ -634,6 +646,11 @@ void QSGCanvasPrivate::clearFocusInScope(QSGItem *scope, QSGItem *item, FocusOpt
         
         Q_ASSERT(oldActiveFocusItem);
 
+#ifndef QT_NO_IM
+        if (QInputContext *ic = inputContext())
+            ic->reset();
+#endif
+
         activeFocusItem = 0;
         QFocusEvent event(QEvent::FocusOut, Qt::OtherFocusReason);
         q->sendEvent(oldActiveFocusItem, &event);
@@ -668,11 +685,13 @@ void QSGCanvasPrivate::clearFocusInScope(QSGItem *scope, QSGItem *item, FocusOpt
         Q_ASSERT(newActiveFocusItem == scope);
         activeFocusItem = scope;
 
+        updateInputMethodData();
+
         QFocusEvent event(QEvent::FocusIn, Qt::OtherFocusReason);
         q->sendEvent(newActiveFocusItem, &event); 
+    } else {
+        updateInputMethodData();
     }
-
-    updateInputMethodData();
 
     if (!changed.isEmpty()) 
         notifyFocusChangesRecur(changed.data(), changed.count() - 1);
@@ -744,8 +763,15 @@ void QSGCanvasPrivate::cleanup(Node *n)
     q->maybeUpdate();
 }
 
+static QGLFormat tweakFormat(const QGLFormat &format = QGLFormat::defaultFormat())
+{
+    QGLFormat f = format;
+    f.setSwapInterval(1);
+    return f;
+}
+
 QSGCanvas::QSGCanvas(QWidget *parent, Qt::WindowFlags f)
-    : QGLWidget(*(new QSGCanvasPrivate), QGLFormat(), parent, (QGLWidget *) 0, f)
+    : QGLWidget(*(new QSGCanvasPrivate), tweakFormat(), parent, (QGLWidget *) 0, f)
 {
     Q_D(QSGCanvas);
 
@@ -753,7 +779,7 @@ QSGCanvas::QSGCanvas(QWidget *parent, Qt::WindowFlags f)
 }
 
 QSGCanvas::QSGCanvas(const QGLFormat &format, QWidget *parent, Qt::WindowFlags f)
-    : QGLWidget(*(new QSGCanvasPrivate), format, parent, (QGLWidget *) 0, f)
+    : QGLWidget(*(new QSGCanvasPrivate), tweakFormat(format), parent, (QGLWidget *) 0, f)
 {
     Q_D(QSGCanvas);
 
@@ -761,7 +787,7 @@ QSGCanvas::QSGCanvas(const QGLFormat &format, QWidget *parent, Qt::WindowFlags f
 }
 
 QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, QWidget *parent, Qt::WindowFlags f)
-: QGLWidget(dd, QGLFormat(), parent, 0, f)
+: QGLWidget(dd, tweakFormat(), parent, 0, f)
 {
     Q_D(QSGCanvas);
 
@@ -769,7 +795,7 @@ QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, QWidget *parent, Qt::WindowFlags f)
 }
 
 QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, const QGLFormat &format, QWidget *parent, Qt::WindowFlags f)
-: QGLWidget(dd, format, parent, 0, f)
+: QGLWidget(dd, tweakFormat(format), parent, 0, f)
 {
     Q_D(QSGCanvas);
 
@@ -1528,19 +1554,19 @@ void QSGCanvas::maybeUpdate()
     if (d->threadedRendering) {
         if (!d->renderThreadAwakened) {
             d->renderThreadAwakened = true;
-            d->mutex.lock();
-            if (d->idle) {
+            bool locked = d->mutex.tryLock();
+            if (d->idle && locked) {
 #ifdef THREAD_DEBUG
                 qWarning("QSGRenderer: now maybe I should update...");
 #endif
                 d->wait.wakeOne();
             }
-            d->mutex.unlock();
+            if (locked)
+                d->mutex.unlock();
         }
-    }
-
-    if (!d->threadedRendering && !d->inUpdate && (!d->animationDriver || !d->animationDriver->isRunning()))
+    } else if (!d->animationDriver || !d->animationDriver->isRunning()) {
         update();
+    }
 }
 
 

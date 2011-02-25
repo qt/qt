@@ -3,7 +3,7 @@
 #include <QHash>
 #include "particleaffector.h"
 
-class SpriteParticles;
+class SpriteEmitter;
 
 struct WanderData{
     qreal x_vel;
@@ -24,7 +24,8 @@ class WanderAffector : public ParticleAffector
 public:
     explicit WanderAffector(QObject *parent = 0);
     ~WanderAffector();
-    virtual void affect(ParticleVertices *p, int idx, qreal dt, SpriteParticles* sp);
+    virtual bool affect(ParticleData *d, qreal dt);
+    virtual void reset(int systemIdx);
 
     qreal xVariance() const
     {

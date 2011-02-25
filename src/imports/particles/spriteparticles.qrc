@@ -2,5 +2,9 @@
     <qresource prefix="/">
         <file>resources/spritefragment.shader</file>
         <file>resources/spritevertex.shader</file>
+        <file>resources/ctfragment.shader</file>
+        <file>resources/ctvertex.shader</file>
+        <file>resources/trailsfragment.shader</file>
+        <file>resources/trailsvertex.shader</file>
     </qresource>
 </RCC>

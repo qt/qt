@@ -58,12 +58,4 @@ SOURCES += \
     $$PWD/3d/qsgattributedescription.cpp \
     $$PWD/3d/qsgattributevalue.cpp \
 
-!qpa {
-contains(QT_CONFIG, freetype) {
-    INCLUDEPATH += $$PWD/../../3rdparty/freetype/include
-} else:contains(QT_CONFIG, system-freetype) {
-    include($$QT_SOURCE_TREE/config.tests/unix/freetype/freetype.pri)
-}
-}
-
 include(adaptationlayers/adaptationlayers.pri)
