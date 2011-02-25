@@ -44,6 +44,8 @@
 
 #ifdef Q_OS_NACL
 
+#include <sys/types.h>
+
 // pthread
 #include <pthread.h>
 #define PTHREAD_CANCEL_DISABLE 1
