@@ -1171,7 +1171,7 @@ ZEXTERN int Q_ZEXPORT    gzgetc OF((gzFile file));
    or -1 in case of end of file or error.
 */
 
-ZEXTERN int ZEXPORT    gzungetc OF((int c, gzFile file));
+ZEXTERN int Q_ZEXPORT    gzungetc OF((int c, gzFile file));
 /*
       Push one character back onto the stream to be read again later.
    Only one character of push-back is allowed.  gzungetc() returns the
