@@ -2201,6 +2201,8 @@ qint64 QAbstractSocket::readData(char *data, qint64 maxSize)
             return -1;          // no socket engine is probably EOF
         if (!d->socketEngine->isValid())
             return -1; // This is for unbuffered TCP when we already had been disconnected
+        if (d->state != QAbstractSocket::ConnectedState)
+            return -1; // This is for unbuffered TCP if we're not connected yet
         qint64 readBytes = d->socketEngine->read(data, maxSize);
         if (readBytes == -2) {
             // -2 from the engine means no bytes available (EAGAIN) so read more later
