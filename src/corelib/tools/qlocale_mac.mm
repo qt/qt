@@ -339,6 +339,7 @@ static QString macFormatCurrency(const QVariant &in)
     return QCFString::toQString(result);
 }
 
+#ifndef QT_NO_SYSTEMLOCALE
 static QVariant macQuotationSymbol(QSystemLocale::QueryType type, const QVariant &in)
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
@@ -365,6 +366,7 @@ static QVariant macQuotationSymbol(QSystemLocale::QueryType type, const QVariant
 #endif
     return QVariant();
 }
+#endif //QT_NO_SYSTEMLOCALE
 
 static void getMacPreferredLanguageAndCountry(QString *language, QString *country)
 {
