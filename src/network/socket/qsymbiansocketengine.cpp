@@ -368,7 +368,7 @@ bool QSymbianSocketEngine::initialize(int socketDescriptor, QAbstractSocket::Soc
 
     if (!QSymbianSocketManager::instance().lookupSocket(socketDescriptor, d->nativeSocket)) {
         qWarning("QSymbianSocketEngine::initialize - socket descriptor not found");
-        d->setError(QAbstractSocket::SocketResourceError,
+        d->setError(QAbstractSocket::UnsupportedSocketOperationError,
             QSymbianSocketEnginePrivate::InvalidSocketErrorString);
         return false;
     }
