@@ -180,16 +180,6 @@ void QSGTextNode::addTextLayout(const QPointF &position, QTextLayout *textLayout
         addTextDecorations(position, font, color, textLayout->boundingRect().width());
 }
 
-QRectF QSGTextNode::boundingRect() const
-{
-    QRectF brect;
-    for (int i=0; i<childCount(); ++i) {
-        Node *node = childAtIndex(i);
-        if (node != 0 && node->type() == Node::GeometryNodeType)
-            brect |= static_cast<GeometryNode *>(node)->boundingRect();
-    }
-    return brect;
-}
 
 /*!
   Returns true if \a text contains any HTML tags, attributes or CSS properties which are unrelated

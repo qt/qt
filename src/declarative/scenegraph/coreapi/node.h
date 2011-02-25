@@ -42,7 +42,7 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include "geometry.h"
+#include "qsggeometry.h"
 #include <QtGui/QMatrix4x4>
 
 #include <float.h>
@@ -86,20 +86,16 @@ public:
                                       | DirtyNodeAdded
                                       | DirtyOpacity,
 
-//        DirtyMatrixSubtree          = DirtyMatrix << 16,
-//        DirtyClipListSubtree        = DirtyClipList << 16,
-//        DirtyNodeAddedSubtree       = DirtyNodeAdded << 16,
-//        DirtyNodeRemovedSubtree     = DirtyNodeRemoved << 16,
-//        DirtyGeometrySubtree        = DirtyGeometry << 16,
-//        DirtyRenderOrderSubtree     = DirtyRenderOrder << 16,
-//        DirtyAllSubtree             = 0xffff0000
     };
     Q_DECLARE_FLAGS(DirtyFlags, DirtyFlag)
 
     enum Flag {
         OwnedByParent               = 0x0001,
         UsePreprocess               = 0x0002,
-        ChildrenDoNotOverloap       = 0x0004
+        ChildrenDoNotOverloap       = 0x0004,
+
+        // BasicGeometryNode
+        OwnsGeometry                = 0x00010000
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -188,27 +184,19 @@ public:
     BasicGeometryNode();
     ~BasicGeometryNode();
 
-    void setGeometry(Geometry *geometry, int firstIndex = 0, int endIndex = -1);
-    void updateGeometryDescription(const QVector<QSGAttributeDescription> &description, GLenum indexType);
-    Geometry *geometry() const { return m_geometry; }
-    int firstIndex() const { return m_first_index; }
-    void setFirstIndex(int index);
-    int endIndex() const { return m_end_index; }
-    void setEndIndex(int index);
-    QPair<int, int> indexRange() const; // If end index < 0, the upper bound will be set to the vertex or index count.
-
-    void setBoundingRect(const QRectF &bounds);
-    QRectF boundingRect() const { return m_bounding_rect; }
+    void setGeometry(QSGGeometry *geometry);
+    const QSGGeometry *geometry() const { return m_geometry; }
+    QSGGeometry *geometry() { return m_geometry; }
 
     const QMatrix4x4 *matrix() const { return m_matrix; }
     const ClipNode *clipList() const { return m_clip_list; }
 
 private:
     friend class NodeUpdater;
-    Geometry *m_geometry;
-    int m_first_index;
-    int m_end_index;
-    QRectF m_bounding_rect;
+    QSGGeometry *m_geometry;
+
+    int m_reserved_start_index;
+    int m_reserved_end_index;
 
     const QMatrix4x4 *m_matrix;
     const ClipNode *m_clip_list;
@@ -261,8 +249,14 @@ public:
     void setIsRectangular(bool rectHint);
     bool isRectangular() const { return m_is_rectangular; }
 
+    void setClipRect(const QRectF &);
+    QRectF clipRect() const { return m_clip_rect; }
+
 private:
     uint m_is_rectangular : 1;
+    uint m_reserved : 31;
+
+    QRectF m_clip_rect;
 };
 
 

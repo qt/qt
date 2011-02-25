@@ -57,8 +57,6 @@ public:
     QSGTextNode(QSGContext *);
     ~QSGTextNode();
 
-    QRectF boundingRect() const;
-
     virtual NodeSubType subType() const { return TextNodeSubType; }
 
     static bool isComplexRichText(QTextDocument *);

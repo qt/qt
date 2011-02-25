@@ -4,7 +4,7 @@ INCLUDEPATH += $$PWD/coreapi $$PWD/convenience $$PWD/3d
 QT += opengl
 
 # Core API
-HEADERS += $$PWD/coreapi/geometry.h \
+HEADERS += \
     $$PWD/coreapi/material.h \
     $$PWD/coreapi/node.h \
     $$PWD/coreapi/nodeupdater_p.h \
@@ -15,8 +15,9 @@ HEADERS += $$PWD/coreapi/geometry.h \
     $$PWD/coreapi/qsgtexturemanager.h \
     $$PWD/coreapi/qsgtexturemanager_p.h \
     $$PWD/coreapi/qsgtextureprovider.h \
+    scenegraph/coreapi/qsggeometry.h
 
-SOURCES += $$PWD/coreapi/geometry.cpp \
+SOURCES += \
     $$PWD/coreapi/material.cpp \
     $$PWD/coreapi/node.cpp \
     $$PWD/coreapi/nodeupdater.cpp \
@@ -26,6 +27,7 @@ SOURCES += $$PWD/coreapi/geometry.cpp \
     $$PWD/coreapi/qsgcontextplugin.cpp \
     $$PWD/coreapi/qsgtexturemanager.cpp \
     $$PWD/coreapi/qsgtextureprovider.cpp \
+    scenegraph/coreapi/qsggeometry.cpp
 
 # Convenience API
 HEADERS += $$PWD/convenience/areaallocator.h \
@@ -45,17 +47,11 @@ SOURCES += $$PWD/convenience/areaallocator.cpp \
 
 # 3D API (duplicates with qt3d)
 HEADERS += \
-    $$PWD/3d/qsgattributedescription.h \
-    $$PWD/3d/qsgattributevalue.h \
     $$PWD/3d/qsgmatrix4x4stack.h \
-    $$PWD/3d/qsgmatrix4x4stack_p.h \
-    $$PWD/3d/qsgarray.h \
+    $$PWD/3d/qsgmatrix4x4stack_p.h
 
 
 SOURCES += \
-    $$PWD/3d/qsgarray.cpp \
-    $$PWD/3d/qsgmatrix4x4stack.cpp \
-    $$PWD/3d/qsgattributedescription.cpp \
-    $$PWD/3d/qsgattributevalue.cpp \
+    $$PWD/3d/qsgmatrix4x4stack.cpp
 
 include(adaptationlayers/adaptationlayers.pri)

@@ -158,10 +158,15 @@ public:
 
     virtual QPointF baseLine() const = 0;
 
+    virtual QRectF boundingRect() const { return m_bounding_rect; }
+    virtual void setBoundingRect(const QRectF &bounds) { m_bounding_rect = bounds; }
+
 protected:
     QGlyphs m_glyphs;
     QPointF m_position;
     QColor m_color;
+
+    QRectF m_bounding_rect;
 };
 
 #endif

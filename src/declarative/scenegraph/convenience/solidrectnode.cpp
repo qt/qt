@@ -44,33 +44,18 @@
 
 
 SolidRectNode::SolidRectNode(const QRectF &rect, const QColor &color)
+    : m_geometry(QSGGeometry::defaultAttributes_Point2D(), 4)
 {
     setRect(rect);
     m_material.setColor(color);
     setMaterial(&m_material);
-
-    QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
-        << QSGAttributeDescription(0, 2, GL_FLOAT, 2 * sizeof(float));
-    updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
+    setGeometry(&m_geometry);
 }
 
 void SolidRectNode::updateGeometry()
 {
-    Geometry *g = geometry();
-
-    g->setDrawingMode(QSG::TriangleStrip);
-    g->setVertexCount(4);
-    g->setIndexCount(0);
-
-    QVector2D *vertices = (QVector2D *)g->vertexData();
-    for (int j = 0; j < 4; ++j) {
-        vertices[j].setX(j & 2 ? m_rect.right() : m_rect.left());
-        vertices[j].setY(j & 1 ? m_rect.bottom() : m_rect.top());
-    }
-
+    QSGGeometry::updateRectGeometry(&m_geometry, m_rect);
     markDirty(Node::DirtyGeometry);
-
-    setBoundingRect(m_rect);
 }
 
 void SolidRectNode::setRect(const QRectF &rect)

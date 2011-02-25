@@ -234,14 +234,11 @@ void TextureProviderMaterialWithOpacityShader::initialize()
 
 DefaultTextureNode::DefaultTextureNode()
     : m_dirtyGeometry(false)
+    , m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4)
 {
     setMaterial(&m_materialO);
     setOpaqueMaterial(&m_material);
-
-    QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
-        << QSGAttributeDescription(0, 2, GL_FLOAT, 4 * sizeof(float))
-        << QSGAttributeDescription(1, 2, GL_FLOAT, 4 * sizeof(float));
-    updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
+    setGeometry(&m_geometry);
 
 #ifdef QML_RUNTIME_TESTING
     description = QLatin1String("pixmap");
@@ -289,18 +286,7 @@ void DefaultTextureNode::preprocess()
 
 void DefaultTextureNode::updateGeometry()
 {
-    Geometry *g = geometry();
-    g->setVertexCount(4);
-    g->setIndexCount(0);
-    g->setDrawingMode(QSG::TriangleStrip);
-    struct V { float x, y, u, v; };
-    V *v = static_cast<V *>(g->vertexData());
-
-    for (int i = 0; i < 4; ++i) {
-        v[i].x = (i & 2 ? m_targetRect.right() : m_targetRect.left());
-        v[i].y = (i & 1 ? m_targetRect.bottom() : m_targetRect.top());
-        v[i].u = (i & 2 ? m_sourceRect.right() : m_sourceRect.left());
-        v[i].v = (i & 1 ? m_sourceRect.bottom() : m_sourceRect.top());
-    }
+    QSGGeometry::updateTexturedRectGeometry(&m_geometry, m_targetRect, m_sourceRect);
+    markDirty(DirtyGeometry);
     m_dirtyGeometry = false;
 }

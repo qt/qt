@@ -74,7 +74,7 @@ public:
     QGLTextureGlyphCache *glyphCache() const;
     void populate(const QPointF &position,
                   const QVector<quint32> &glyphIndexes, const QVector<QPointF> &glyphPositions,
-                  Geometry *geometry, QRectF *boundingRect, QPointF *baseLine);
+                  QSGGeometry *geometry, QRectF *boundingRect, QPointF *baseLine);
 
 private:
     void init();

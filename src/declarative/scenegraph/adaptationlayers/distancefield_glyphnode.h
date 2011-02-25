@@ -65,6 +65,7 @@ private:
     QPointF m_position;
     QGlyphs m_glyphs;
     DistanceFieldFontAtlas *m_glyph_atlas;
+    QSGGeometry m_geometry;
 };
 
 

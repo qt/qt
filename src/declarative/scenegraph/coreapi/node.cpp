@@ -43,7 +43,6 @@
 #include "renderer.h"
 #include "nodeupdater_p.h"
 #include "material.h"
-#include <qsgattributevalue.h>
 
 #include "limits.h"
 
@@ -98,7 +97,7 @@ void Node::prependChildNode(Node *node)
     if (node->type() == Node::GeometryNodeType) {
         GeometryNode *g = static_cast<GeometryNode *>(node);
         Q_ASSERT_X(g->material(), "Node::prependChildNode", "GeometryNode is missing material");
-        Q_ASSERT_X(!g->geometry()->isNull(), "Node::prependChildNode", "GeometryNode is missing geometry");
+        Q_ASSERT_X(g->geometry(), "Node::prependChildNode", "GeometryNode is missing geometry");
     }
 #endif
 
@@ -117,7 +116,7 @@ void Node::appendChildNode(Node *node)
     if (node->type() == Node::GeometryNodeType) {
         GeometryNode *g = static_cast<GeometryNode *>(node);
         Q_ASSERT_X(g->material(), "Node::appendChildNode", "GeometryNode is missing material");
-        Q_ASSERT_X(!g->geometry()->isNull(), "Node::appendChildNode", "GeometryNode is missing geometry");
+        Q_ASSERT_X(g->geometry(), "Node::appendChildNode", "GeometryNode is missing geometry");
     }
 #endif
 
@@ -137,7 +136,7 @@ void Node::insertChildNodeBefore(Node *node, Node *before)
     if (node->type() == Node::GeometryNodeType) {
         GeometryNode *g = static_cast<GeometryNode *>(node);
         Q_ASSERT_X(g->material(), "Node::insertChildNodeBefore", "GeometryNode is missing material");
-        Q_ASSERT_X(!g->geometry()->isNull(), "Node::insertChildNodeBefore", "GeometryNode is missing geometry");
+        Q_ASSERT_X(g->geometry(), "Node::insertChildNodeBefore", "GeometryNode is missing geometry");
     }
 #endif
 
@@ -161,7 +160,7 @@ void Node::insertChildNodeAfter(Node *node, Node *after)
     if (node->type() == Node::GeometryNodeType) {
         GeometryNode *g = static_cast<GeometryNode *>(node);
         Q_ASSERT_X(g->material(), "Node::insertChildNodeAfter", "GeometryNode is missing material");
-        Q_ASSERT_X(!g->geometry()->isNull(), "Node::insertChildNodeAfter", "GeometryNode is missing geometry");
+        Q_ASSERT_X(g->geometry(), "Node::insertChildNodeAfter", "GeometryNode is missing geometry");
     }
 #endif
 
@@ -211,71 +210,26 @@ void Node::markDirty(DirtyFlags flags)
 }
 
 BasicGeometryNode::BasicGeometryNode()
-    : m_first_index(0)
-    , m_end_index(-1)
+    : m_geometry(0)
     , m_matrix(0)
     , m_clip_list(0)
 {
-    m_geometry = new Geometry();
 }
 
 BasicGeometryNode::~BasicGeometryNode()
 {
     destroy();
-    delete m_geometry;
+    if (flags() & OwnsGeometry)
+        delete m_geometry;
 }
 
-void BasicGeometryNode::setGeometry(Geometry *geometry, int firstIndex, int endIndex)
+void BasicGeometryNode::setGeometry(QSGGeometry *geometry)
 {
-    delete m_geometry;
+    if (flags() & OwnsGeometry)
+        delete m_geometry;
     m_geometry = geometry;
-    m_first_index = firstIndex;
-    m_end_index = endIndex;
     markDirty(DirtyGeometry);
 }
-
-void BasicGeometryNode::updateGeometryDescription(const QVector<QSGAttributeDescription> &description, GLenum indexType)
-{
-    m_geometry->setIndexType(indexType);
-    m_geometry->setVertexDescription(description);
-    m_first_index = 0;
-    m_end_index = -1;
-    markDirty(DirtyGeometry);
-}
-
-void BasicGeometryNode::setFirstIndex(int index)
-{
-    m_first_index = index;
-    markDirty(DirtyGeometry);
-}
-
-void BasicGeometryNode::setEndIndex(int index)
-{
-    m_end_index = index;
-    markDirty(DirtyGeometry);
-}
-
-QPair<int, int> BasicGeometryNode::indexRange() const
-{
-    if (m_end_index >= 0)
-        return QPair<int, int>(m_first_index, m_end_index);
-    else if (m_geometry->indexCount())
-        return QPair<int, int>(m_first_index, m_geometry->indexCount());
-    else
-        return QPair<int, int>(m_first_index, m_geometry->vertexCount());
-}
-
-//void BasicGeometryNode::setUsagePattern(UsagePattern pattern)
-//{
-//    // Skip this functionallity for now...
-//    Q_UNUSED(pattern);
-//}
-
-void BasicGeometryNode::setBoundingRect(const QRectF &bounds)
-{
-    m_bounding_rect = bounds;
-}
-
 
 
 GeometryNode::GeometryNode()
@@ -396,11 +350,23 @@ ClipNode::~ClipNode()
 }
 
 /*!
-
+    Sets wether this clip node has a rectangular clip to \a rectHint.
  */
 void ClipNode::setIsRectangular(bool rectHint)
 {
     m_is_rectangular = rectHint;
+}
+
+
+/*!
+    Sets the clip rect of this clip node to \a rect.
+
+    When a rectangular clip is set in combination with setIsRectangular
+    the renderer may in some cases use a more optimal clip method.
+ */
+void ClipNode::setClipRect(const QRectF &rect)
+{
+    m_clip_rect = rect;
 }
 
 
@@ -570,40 +536,42 @@ QDebug operator<<(QDebug d, const GeometryNode *n)
     }
     d << "GeometryNode(" << hex << (void *) n << dec;
 
-    const Geometry *g = n->geometry();
-    switch (g->drawingMode()) {
-    case QSG::TriangleStrip: d << "strip"; break;
-    case QSG::TriangleFan: d << "fan"; break;
-    case QSG::Triangles: d << "triangles"; break;
-    default: break;
-    }
+    const QSGGeometry *g = n->geometry();
 
-     d << g->vertexCount();
+    if (!g) {
+        d << "no geometry";
+    } else {
 
-    if (n->childCount())
-        d << "children=" << n->childCount();
-    if (n->material())
-        d << "effect=" << n->material() << "type=" << n->material()->type();
-    d << "order=" << n->renderOrder();
-
-    QSGAttributeValue a = g->attributeValue(0);
-    if (!a.isNull() && a.type() == GL_FLOAT) {
-        float x1 = 1e10, x2 = -1e10, y1=1e10, y2=-1e10;
-        int stride = a.stride();
-        if (stride == 0)
-            stride = a.tupleSize() * a.sizeOfType();
-        for (int i = 0; i < g->vertexCount(); ++i) {
-            float x = ((float *)((char *)a.data() + i * stride))[0];
-            float y = ((float *)((char *)a.data() + i * stride))[1];
-
-            x1 = qMin(x1, x);
-            x2 = qMax(x2, x);
-            y1 = qMin(y1, y);
-            y2 = qMax(y2, y);
+        switch (g->drawingMode()) {
+        case GL_TRIANGLE_STRIP: d << "strip"; break;
+        case GL_TRIANGLE_FAN: d << "fan"; break;
+        case GL_TRIANGLES: d << "triangles"; break;
+        default: break;
         }
 
-        d << "x1=" << x1 << "y1=" << y1 << "x2=" << x2 << "y2=" << y2;
+         d << g->vertexCount();
+
+         if (g->attributeCount() > 0 && g->attributes()->type == GL_FLOAT) {
+             float x1 = 1e10, x2 = -1e10, y1=1e10, y2=-1e10;
+             int stride = g->stride();
+             for (int i = 0; i < g->vertexCount(); ++i) {
+                 float x = ((float *)((char *)const_cast<QSGGeometry *>(g)->vertexData() + i * stride))[0];
+                 float y = ((float *)((char *)const_cast<QSGGeometry *>(g)->vertexData() + i * stride))[1];
+
+                 x1 = qMin(x1, x);
+                 x2 = qMax(x2, x);
+                 y1 = qMin(y1, y);
+                 y2 = qMax(y2, y);
+             }
+
+             d << "x1=" << x1 << "y1=" << y1 << "x2=" << x2 << "y2=" << y2;
+         }
     }
+
+    d << "order=" << n->renderOrder();
+    if (n->material())
+        d << "effect=" << n->material() << "type=" << n->material()->type();
+
 
     d << ")";
 #ifdef QML_RUNTIME_TESTING
@@ -624,7 +592,6 @@ QDebug operator<<(QDebug d, const ClipNode *n)
     if (n->childCount())
         d << "children=" << n->childCount();
 
-    d << "bbox=" << n->boundingRect();
     d << "is rect?" << (n->isRectangular() ? "yes" : "no");
 
     d << ")";

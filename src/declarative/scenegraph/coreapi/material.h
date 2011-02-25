@@ -42,7 +42,6 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include "qsgattributedescription.h"
 #include "renderer.h"
 #include <qglshaderprogram.h>
 
