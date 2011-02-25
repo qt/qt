@@ -385,7 +385,7 @@ void tst_QSslSocket::constructing()
     QVERIFY(!socket.waitForConnected(10));
     QTest::ignoreMessage(QtWarningMsg, "QSslSocket::waitForDisconnected() is not allowed in UnconnectedState");
     QVERIFY(!socket.waitForDisconnected(10));
-    QCOMPARE(socket.protocol(), QSsl::SslV3);
+    QCOMPARE(socket.protocol(), QSsl::TlsV1);
 
     QSslConfiguration savedDefault = QSslConfiguration::defaultConfiguration();
 
@@ -771,7 +771,7 @@ void tst_QSslSocket::protocol()
 #endif
 
 //    qDebug() << "socket cert:" << socket->caCertificates().at(0).issuerInfo(QSslCertificate::CommonName);
-    QCOMPARE(socket->protocol(), QSsl::SslV3);
+    QCOMPARE(socket->protocol(), QSsl::TlsV1);
     {
         // Fluke allows SSLv3.
         socket->setProtocol(QSsl::SslV3);
