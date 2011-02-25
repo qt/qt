@@ -2159,9 +2159,15 @@ void tst_QLocale::currency()
 
     const QLocale de_DE("de_DE");
     QCOMPARE(de_DE.toCurrencyString(qulonglong(1234)), QString::fromUtf8("1234\xc2\xa0\xe2\x82\xac"));
+    QCOMPARE(de_DE.toCurrencyString(qulonglong(1234), QLatin1String("BAZ")), QString::fromUtf8("1234\xc2\xa0" "BAZ"));
     QCOMPARE(de_DE.toCurrencyString(qlonglong(-1234)), QString::fromUtf8("-1234\xc2\xa0\xe2\x82\xac"));
+    QCOMPARE(de_DE.toCurrencyString(qlonglong(-1234), QLatin1String("BAZ")), QString::fromUtf8("-1234\xc2\xa0" "BAZ"));
     QCOMPARE(de_DE.toCurrencyString(double(1234.56)), QString::fromUtf8("1234,56\xc2\xa0\xe2\x82\xac"));
     QCOMPARE(de_DE.toCurrencyString(double(-1234.56)), QString::fromUtf8("-1234,56\xc2\xa0\xe2\x82\xac"));
+    QCOMPARE(de_DE.toCurrencyString(double(-1234.56), QLatin1String("BAZ")), QString::fromUtf8("-1234,56\xc2\xa0" "BAZ"));
+
+    const QLocale system = QLocale::system();
+    QVERIFY(system.toCurrencyString(1, QLatin1String("FOO")).contains(QLatin1String("FOO")));
 }
 
 void tst_QLocale::quoteString()

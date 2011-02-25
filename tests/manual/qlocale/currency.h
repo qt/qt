@@ -58,11 +58,13 @@ private:
     QLineEdit *currencyName;
     QLabel *currencyFormattingLabel;
     QLineEdit *currencyFormattingValue;
+    QLabel *currencyFormattingSymbolLabel;
+    QLineEdit *currencyFormattingSymbol;
     QLineEdit *currencyFormatting;
 
 private slots:
     void localeChanged(QLocale locale);
-    void updateCurrencyFormatting(QString);
+    void updateCurrencyFormatting();
 };
 
 #endif

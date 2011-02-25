@@ -307,24 +307,24 @@ static QString macCurrencySymbol(QLocale::CurrencySymbolFormat format)
     return QString();
 }
 
-static QString macFormatCurrency(const QVariant &in)
+static QString macFormatCurrency(const QSystemLocale::CurrencyToStringArgument &arg)
 {
     QCFType<CFNumberRef> value;
-    switch (in.type()) {
+    switch (arg.value.type()) {
     case QVariant::Int:
     case QVariant::UInt: {
-        int v = in.toInt();
+        int v = arg.value.toInt();
         value = CFNumberCreate(NULL, kCFNumberIntType, &v);
         break;
     }
     case QVariant::Double: {
-        double v = in.toInt();
+        double v = arg.value.toInt();
         value = CFNumberCreate(NULL, kCFNumberDoubleType, &v);
         break;
     }
     case QVariant::LongLong:
     case QVariant::ULongLong: {
-        qint64 v = in.toLongLong();
+        qint64 v = arg.value.toLongLong();
         value = CFNumberCreate(NULL, kCFNumberLongLongType, &v);
         break;
     }
@@ -335,6 +335,10 @@ static QString macFormatCurrency(const QVariant &in)
     QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
     QCFType<CFNumberFormatterRef> currencyFormatter =
             CFNumberFormatterCreate(NULL, locale, kCFNumberFormatterCurrencyStyle);
+    if (!arg.symbol.isEmpty()) {
+        CFNumberFormatterSetProperty(currencyFormatter, kCFNumberFormatterCurrencySymbol,
+                                     QCFString::toCFStringRef(arg.symbol));
+    }
     QCFType<CFStringRef> result = CFNumberFormatterCreateStringWithNumber(NULL, currencyFormatter, value);
     return QCFString::toQString(result);
 }
@@ -458,7 +462,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     case CurrencySymbol:
         return QVariant(macCurrencySymbol(QLocale::CurrencySymbolFormat(in.toUInt())));
     case CurrencyToString:
-        return macFormatCurrency(in);
+        return macFormatCurrency(in.value<QSystemLocale::CurrencyToStringArgument>());
     case UILanguages: {
         QCFType<CFArrayRef> languages = (CFArrayRef)CFPreferencesCopyValue(
                  CFSTR("AppleLanguages"),

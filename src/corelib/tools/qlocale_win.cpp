@@ -48,6 +48,8 @@
 
 #include "private/qsystemlibrary_p.h"
 
+#include "qdebug.h"
+
 #if defined(Q_WS_WIN)
 #   include "qt_windows.h"
 #   include <time.h>
@@ -62,6 +64,21 @@ QT_BEGIN_NAMESPACE
 static const char *winLangCodeToIsoName(int code);
 static QString winIso639LangName(LCID id = LOCALE_USER_DEFAULT);
 static QString winIso3116CtryName(LCID id = LOCALE_USER_DEFAULT);
+
+static QString qt_getLocaleInfo(LCID lcid, LCTYPE type, int maxlen = 0)
+{
+    QVarLengthArray<wchar_t, 64> buf(maxlen ? maxlen : 64);
+    if (!GetLocaleInfo(lcid, type, buf.data(), buf.size()))
+        return QString();
+    return QString::fromWCharArray(buf.data());
+}
+static int qt_getLocaleInfo_int(LCID lcid, LCTYPE type, int maxlen = 0)
+{
+    QString str = qt_getLocaleInfo(lcid, type, maxlen);
+    bool ok = false;
+    int v = str.toInt(&ok);
+    return ok ? v : 0;
+}
 
 static QString getWinLocaleInfo(LCTYPE type)
 {
@@ -355,30 +372,30 @@ QString winCurrencySymbol(QLocale::CurrencySymbolFormat format)
     return QString();
 }
 
-static QString winFormatCurrency(const QVariant &in)
+static QString winFormatCurrency(const QSystemLocale::CurrencyToStringArgument &arg)
 {
     QString value;
-    switch (in.type()) {
+    switch (arg.value.type()) {
     case QVariant::Int:
         value = QLocalePrivate::longLongToString(QLatin1Char('0'), QLatin1Char(','), QLatin1Char('+'), QLatin1Char('-'),
-                                                 in.toInt(), -1, 10, -1, QLocale::OmitGroupSeparator);
+                                                 arg.value.toInt(), -1, 10, -1, QLocale::OmitGroupSeparator);
         break;
     case QVariant::UInt:
         value = QLocalePrivate::unsLongLongToString(QLatin1Char('0'), QLatin1Char(','), QLatin1Char('+'),
-                                                    in.toUInt(), -1, 10, -1, QLocale::OmitGroupSeparator);
+                                                    arg.value.toUInt(), -1, 10, -1, QLocale::OmitGroupSeparator);
         break;
     case QVariant::Double:
         value = QLocalePrivate::doubleToString(QLatin1Char('0'), QLatin1Char('+'), QLatin1Char('-'),
                                                QLatin1Char(' '), QLatin1Char(','), QLatin1Char('.'),
-                                               in.toDouble(), -1, QLocalePrivate::DFDecimal, -1, QLocale::OmitGroupSeparator);
+                                               arg.value.toDouble(), -1, QLocalePrivate::DFDecimal, -1, QLocale::OmitGroupSeparator);
         break;
     case QVariant::LongLong:
         value = QLocalePrivate::longLongToString(QLatin1Char('0'), QLatin1Char(','), QLatin1Char('+'), QLatin1Char('-'),
-                                                 in.toLongLong(), -1, 10, -1, QLocale::OmitGroupSeparator);
+                                                 arg.value.toLongLong(), -1, 10, -1, QLocale::OmitGroupSeparator);
         break;
     case QVariant::ULongLong:
         value = QLocalePrivate::unsLongLongToString(QLatin1Char('0'), QLatin1Char(','), QLatin1Char('+'),
-                                                    in.toULongLong(), -1, 10, -1, QLocale::OmitGroupSeparator);
+                                                    arg.value.toULongLong(), -1, 10, -1, QLocale::OmitGroupSeparator);
         break;
     default:
         return QString();
@@ -386,14 +403,45 @@ static QString winFormatCurrency(const QVariant &in)
 
     QVarLengthArray<wchar_t, 64> out(64);
     LCID lcid = GetUserDefaultLCID();
+
+    QString decimalSep;
+    QString thousandSep;
+    CURRENCYFMT format;
+    CURRENCYFMT *pformat = NULL;
+    if (!arg.symbol.isEmpty()) {
+        format.NumDigits = qt_getLocaleInfo_int(lcid, LOCALE_ICURRDIGITS);
+        format.LeadingZero = qt_getLocaleInfo_int(lcid, LOCALE_ILZERO);
+        decimalSep = qt_getLocaleInfo(lcid, LOCALE_SMONDECIMALSEP);
+        format.lpDecimalSep = (wchar_t *)decimalSep.utf16();
+        thousandSep = qt_getLocaleInfo(lcid, LOCALE_SMONTHOUSANDSEP);
+        format.lpThousandSep = (wchar_t *)thousandSep.utf16();
+        format.NegativeOrder = qt_getLocaleInfo_int(lcid, LOCALE_INEGCURR);
+        format.PositiveOrder = qt_getLocaleInfo_int(lcid, LOCALE_ICURRENCY);
+        format.lpCurrencySymbol = (wchar_t *)arg.symbol.utf16();
+
+        // grouping is complicated and ugly:
+        // int(0)  == "123456789.00"    == string("0")
+        // int(3)  == "123,456,789.00"  == string("3;0")
+        // int(30) == "123456,789.00"   == string("3;0;0")
+        // int(32) == "12,34,56,789.00" == string("3;2;0")
+        // int(320)== "1234,56,789.00"  == string("3;2")
+        QString groupingStr = qt_getLocaleInfo(lcid, LOCALE_SMONGROUPING);
+        format.Grouping = groupingStr.remove(QLatin1Char(';')).toInt();
+        if (format.Grouping % 10 == 0) // magic
+            format.Grouping /= 10;
+        else
+            format.Grouping *= 10;
+        pformat = &format;
+    }
+
     int ret = ::GetCurrencyFormat(lcid, 0, reinterpret_cast<const wchar_t *>(value.utf16()),
-                                  NULL, out.data(), out.size());
+                                  pformat, out.data(), out.size());
     if (ret == 0 && GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
         ret = ::GetCurrencyFormat(lcid, 0, reinterpret_cast<const wchar_t *>(value.utf16()),
-                                  NULL, out.data(), 0);
+                                  pformat, out.data(), 0);
         out.resize(ret);
         ::GetCurrencyFormat(lcid, 0, reinterpret_cast<const wchar_t *>(value.utf16()),
-                            NULL, out.data(), out.size());
+                            pformat, out.data(), out.size());
     }
 
     return QString::fromWCharArray(out.data());
@@ -540,7 +588,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     case CurrencySymbol:
         return QVariant(winCurrencySymbol(QLocale::CurrencySymbolFormat(in.toUInt())));
     case CurrencyToString:
-        return QVariant(winFormatCurrency(in));
+        return QVariant(winFormatCurrency(in.value<QSystemLocale::CurrencyToStringArgument>()));
     case UILanguages:
         return QVariant(winUILanguages());
     default:

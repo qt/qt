@@ -2802,7 +2802,7 @@ qulonglong QLocalePrivate::bytearrayToUnsLongLong(const char *num, int base, boo
 /*!
     \since 4.8
 
-    \enum QLocale::CurrencyFormat
+    \enum QLocale::CurrencySymbolFormat
 
     Specifies the format of the currency symbol.
 
@@ -2847,30 +2847,30 @@ QString QLocale::currencySymbol(QLocale::CurrencySymbolFormat format) const
 }
 
 /*!
-    \fn QString QLocale::toCurrencyString(short) const
+    \fn QString QLocale::toCurrencyString(short, const QString &) const
     \since 4.8
     \overload
 */
 
 /*!
-    \fn QString QLocale::toCurrencyString(ushort) const
+    \fn QString QLocale::toCurrencyString(ushort, const QString &) const
     \since 4.8
     \overload
 */
 
 /*!
-    \fn QString QLocale::toCurrencyString(int) const
+    \fn QString QLocale::toCurrencyString(int, const QString &) const
     \since 4.8
     \overload
 */
 
 /*!
-    \fn QString QLocale::toCurrencyString(uint) const
+    \fn QString QLocale::toCurrencyString(uint, const QString &) const
     \since 4.8
     \overload
 */
 /*!
-    \fn QString QLocale::toCurrencyString(float) const
+    \fn QString QLocale::toCurrencyString(float, const QString &) const
     \since 4.8
     \overload
 */
@@ -2879,12 +2879,16 @@ QString QLocale::currencySymbol(QLocale::CurrencySymbolFormat format) const
     \since 4.8
 
     Returns a localized string representation of \a value as a currency.
+    If the \a symbol is provided it is used instead of the default currency symbol.
+
+    \sa currencySymbol
 */
-QString QLocale::toCurrencyString(qlonglong value) const
+QString QLocale::toCurrencyString(qlonglong value, const QString &symbol) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d() == systemPrivate()) {
-        QVariant res = systemLocale()->query(QSystemLocale::CurrencyToString, value);
+        QSystemLocale::CurrencyToStringArgument arg(value, symbol);
+        QVariant res = systemLocale()->query(QSystemLocale::CurrencyToString, QVariant::fromValue(arg));
         if (!res.isNull())
             return res.toString();
     }
@@ -2898,22 +2902,23 @@ QString QLocale::toCurrencyString(qlonglong value) const
         value = -value;
     }
     QString str = d->longLongToString(value);
-    QString symbol = currencySymbol();
-    if (symbol.isEmpty())
-        symbol = currencySymbol(QLocale::CurrencyIsoCode);
+    QString sym = symbol.isEmpty() ? currencySymbol() : symbol;
+    if (sym.isEmpty())
+        sym = currencySymbol(QLocale::CurrencyIsoCode);
     QString format = getLocaleData(currency_format_data + idx, size);
-    return format.arg(str, symbol);
+    return format.arg(str, sym);
 }
 
 /*!
     \since 4.8
     \overload
 */
-QString QLocale::toCurrencyString(qulonglong value) const
+QString QLocale::toCurrencyString(qulonglong value, const QString &symbol) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d() == systemPrivate()) {
-        QVariant res = systemLocale()->query(QSystemLocale::CurrencyToString, value);
+        QSystemLocale::CurrencyToStringArgument arg(value, symbol);
+        QVariant res = systemLocale()->query(QSystemLocale::CurrencyToString, QVariant::fromValue(arg));
         if (!res.isNull())
             return res.toString();
     }
@@ -2922,18 +2927,23 @@ QString QLocale::toCurrencyString(qulonglong value) const
     quint8 idx = d->m_currency_format_idx;
     quint8 size = d->m_currency_format_size;
     QString str = d->unsLongLongToString(value);
-    QString symbol = currencySymbol();
-    if (symbol.isEmpty())
-        symbol = currencySymbol(QLocale::CurrencyIsoCode);
+    QString sym = symbol.isEmpty() ? currencySymbol() : symbol;
+    if (sym.isEmpty())
+        sym = currencySymbol(QLocale::CurrencyIsoCode);
     QString format = getLocaleData(currency_format_data + idx, size);
-    return format.arg(str, symbol);
+    return format.arg(str, sym);
 }
 
-QString QLocale::toCurrencyString(double value) const
+/*!
+    \since 4.8
+    \overload
+*/
+QString QLocale::toCurrencyString(double value, const QString &symbol) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d() == systemPrivate()) {
-        QVariant res = systemLocale()->query(QSystemLocale::CurrencyToString, value);
+        QSystemLocale::CurrencyToStringArgument arg(value, symbol);
+        QVariant res = systemLocale()->query(QSystemLocale::CurrencyToString, QVariant::fromValue(arg));
         if (!res.isNull())
             return res.toString();
     }
@@ -2948,11 +2958,11 @@ QString QLocale::toCurrencyString(double value) const
     }
     QString str = d->doubleToString(value, d->m_currency_digits,
                                     QLocalePrivate::DFDecimal);
-    QString symbol = currencySymbol();
-    if (symbol.isEmpty())
-        symbol = currencySymbol(QLocale::CurrencyIsoCode);
+    QString sym = symbol.isEmpty() ? currencySymbol() : symbol;
+    if (sym.isEmpty())
+        sym = currencySymbol(QLocale::CurrencyIsoCode);
     QString format = getLocaleData(currency_format_data + idx, size);
-    return format.arg(str, symbol);
+    return format.arg(str, sym);
 }
 
 /*!
