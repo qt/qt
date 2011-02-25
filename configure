@@ -960,8 +960,6 @@ if [ "$CFG_EMBEDDED" = "nacl" ]; then
     PLATFORM_QPA=yes
     echo "-fast"
     OPT_FAST=yes
-    echo "-release"
-    CFG_DEBUG=no
     echo "-qconfig minimal-system-dependencies"
     CFG_QCONFIG=minimal-system-dependencies
 
