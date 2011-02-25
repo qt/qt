@@ -781,7 +781,9 @@ Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QLocale &);
 
 QT_END_NAMESPACE
 
+#ifndef QT_NO_SYSTEMLOCALE
 Q_DECLARE_METATYPE(QSystemLocale::CurrencyToStringArgument)
+#endif
 
 QT_END_HEADER
 
