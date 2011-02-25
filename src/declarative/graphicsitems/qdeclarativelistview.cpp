@@ -942,7 +942,7 @@ void QDeclarativeListViewPrivate::createSection(FxListItem *listItem)
             } else {
                 QDeclarativeContext *context = new QDeclarativeContext(qmlContext(q));
                 context->setContextProperty(QLatin1String("section"), listItem->attached->m_section);
-                QObject *nobj = sectionCriteria->delegate()->create(context);
+                QObject *nobj = sectionCriteria->delegate()->beginCreate(context);
                 if (nobj) {
                     QDeclarative_setParent_noEvent(context, nobj);
                     listItem->section = qobject_cast<QDeclarativeItem *>(nobj);
@@ -956,6 +956,7 @@ void QDeclarativeListViewPrivate::createSection(FxListItem *listItem)
                 } else {
                     delete context;
                 }
+                sectionCriteria->delegate()->completeCreate();
             }
             listItem->setPosition(pos);
         } else {
@@ -2797,6 +2798,8 @@ void QDeclarativeListView::updateSections()
             roles << d->sectionCriteria->property().toUtf8();
         d->model->setWatchedRoles(roles);
         d->updateSections();
+        if (d->itemCount)
+            d->layout();
     }
 }
 

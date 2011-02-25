@@ -1091,6 +1091,28 @@ void tst_QDeclarativeListView::sectionsDelegate()
     QList<QDeclarativeItem*> items = findItems<QDeclarativeItem>(contentItem, "sect_1");
     QCOMPARE(items.count(), 1);
 
+    // QTBUG-17759
+    model.modifyItem(0, "One", "aaa");
+    model.modifyItem(1, "One", "aaa");
+    model.modifyItem(2, "One", "aaa");
+    model.modifyItem(3, "Four", "aaa");
+    model.modifyItem(4, "Four", "aaa");
+    model.modifyItem(5, "Four", "aaa");
+    model.modifyItem(6, "Five", "aaa");
+    model.modifyItem(7, "Five", "aaa");
+    model.modifyItem(8, "Five", "aaa");
+    model.modifyItem(9, "Two", "aaa");
+    model.modifyItem(10, "Two", "aaa");
+    model.modifyItem(11, "Two", "aaa");
+    QTest::qWait(100);
+    canvas->rootObject()->setProperty("sectionProperty", "name");
+    for (int i = 0; i < 4; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem,
+                "sect_" + model.name(i*3));
+        QVERIFY(item);
+        QTRY_COMPARE(item->y(), qreal(i*20*4));
+    }
+
     delete canvas;
 }
 
