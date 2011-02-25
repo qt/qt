@@ -2727,6 +2727,14 @@ JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, JSC::JSV
                                                   bool clearScopeChain)
 {
     JSC::JSValue thisObject = _thisObject;
+    if (!callee) {
+        // callee can't be zero, as this can cause JSC to crash during GC
+        // marking phase if the context's Arguments object has been created.
+        // Fake it by using the global object. Note that this is also handled
+        // in QScriptContext::callee(), as that function should still return
+        // an invalid value.
+        callee = originalGlobalObject();
+    }
     if (calledAsConstructor) {
         //JSC doesn't create default created object for native functions. so we do it
         JSC::JSValue prototype = callee->get(exec, exec->propertyNames().prototype);
