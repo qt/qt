@@ -118,8 +118,9 @@ public:
 
     void setProjectMatrixToDeviceRect();
     void setProjectMatrixToRect(const QRectF &rect);
-    void setProjectMatrix(const QMatrix4x4 &matrix) { m_projection_matrix = matrix; }
+    void setProjectMatrix(const QMatrix4x4 &matrix);
     QMatrix4x4 projectMatrix() const { return m_projection_matrix; }
+    bool isMirrored() const { return m_mirrored; }
 
     QMatrix4x4 combinedMatrix() const { return m_projectionMatrix.top() * m_modelViewMatrix.top(); }
 
@@ -174,6 +175,7 @@ private:
     int m_clip_matrix_id;
 
     bool m_changed_emitted;
+    bool m_mirrored;
 
     const Bindable *m_bindable;
 };

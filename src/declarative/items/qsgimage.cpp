@@ -45,19 +45,51 @@
 
 #include "qsgcontext.h"
 #include "adaptationlayer.h"
+#include "qsgtexturemanager.h"
+#include "textureitem.h"
 
 #include <QtGui/qpainter.h>
 
 QT_BEGIN_NAMESPACE
 
+QSGImageTextureProvider::QSGImageTextureProvider(QObject *parent)
+    : QSGTextureProvider(parent)
+{
+}
+
+void QSGImageTextureProvider::setImage(const QImage &image)
+{
+    QSGTextureManager *tm = QSGContext::current->textureManager();
+    m_texture = tm->upload(image);
+    emit textureChanged();
+}
+
+QSGTextureRef QSGImageTextureProvider::texture()
+{
+    return m_texture;
+}
+
+
+QSGImagePrivate::QSGImagePrivate()
+    : fillMode(QSGImage::Stretch)
+    , paintedWidth(0)
+    , paintedHeight(0)
+    , pixmapChanged(false)
+{
+}
+
 QSGImage::QSGImage(QSGItem *parent)
     : QSGImageBase(*(new QSGImagePrivate), parent)
 {
+    d_func()->textureProvider = new QSGImageTextureProvider(this);
+    connect(d_func()->textureProvider, SIGNAL(textureChanged()), this, SLOT(update()));
 }
 
 QSGImage::QSGImage(QSGImagePrivate &dd, QSGItem *parent)
     : QSGImageBase(dd, parent)
 {
+    d_func()->textureProvider = new QSGImageTextureProvider(this);
+    connect(d_func()->textureProvider, SIGNAL(textureChanged()), this, SLOT(update()));
 }
 
 QSGImage::~QSGImage()
@@ -174,7 +206,13 @@ QRectF QSGImage::boundingRect() const
     return QRectF(0, 0, qMax(width(), d->paintedWidth), qMax(height(), d->paintedHeight));
 }
 
-Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
+QSGTextureProvider *QSGImage::textureProvider() const
+{
+    Q_D(const QSGImage);
+    return d->textureProvider;
+}
+
+Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
 {
     Q_D(QSGImage);
     //XXX Support mirror property
@@ -188,18 +226,18 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     if (!node) { 
         d->pixmapChanged = true;
         node = QSGContext::current->createTextureNode();
+        node->setTexture(d->textureProvider);
     }
 
     if (d->pixmapChanged) {
-        QSGTextureManager *tm = QSGContext::current->textureManager();
-        QSGTextureRef ref = tm->upload(d->pix.pixmap().toImage());
-        node->setTexture(ref);
+        d->textureProvider->setImage(d->pix.pixmap().toImage());
         d->pixmapChanged = false;
     }
 
     QRectF targetRect;
     QRectF sourceRect;
-    bool clampToEdge = true;
+    QSGTextureProvider::WrapMode hWrap = QSGTextureProvider::ClampToEdge;
+    QSGTextureProvider::WrapMode vWrap = QSGTextureProvider::ClampToEdge;
 
     switch (d->fillMode) {
     default:
@@ -232,19 +270,20 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     case Tile:
         targetRect = QRectF(0, 0, width(), height());
         sourceRect = QRectF(0, 0, width(), height());
-        clampToEdge = false;
+        hWrap = QSGTextureProvider::Repeat;
+        vWrap = QSGTextureProvider::Repeat;
         break;
 
     case TileHorizontally:
         targetRect = QRectF(0, 0, width(), height());
         sourceRect = QRectF(0, 0, width(), d->pix.height());
-        clampToEdge = false;
+        hWrap = QSGTextureProvider::Repeat;
         break;
 
     case TileVertically:
         targetRect = QRectF(0, 0, width(), height());
         sourceRect = QRectF(0, 0, d->pix.width(), height());
-        clampToEdge = false;
+        vWrap = QSGTextureProvider::Repeat;
         break;
 
     };
@@ -254,10 +293,12 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
                   sourceRect.width() / d->pix.width(),
                   sourceRect.height() / d->pix.height());
 
-    node->setRect(targetRect);
+    d->textureProvider->setHorizontalWrapMode(hWrap);
+    d->textureProvider->setVerticalWrapMode(vWrap);
+    d->textureProvider->setFiltering(d->smooth ? QSGTextureProvider::Linear : QSGTextureProvider::Nearest);
+
+    node->setTargetRect(targetRect);
     node->setSourceRect(nsrect);
-    node->setClampToEdge(clampToEdge);
-    node->setLinearFiltering(d->smooth);
     node->update();
 
     return node;

@@ -55,6 +55,7 @@
 //
 
 #include "qsgimplicitsizeitem_p_p.h"
+#include "qsgimagebase_p.h"
 
 #include <private/qdeclarativepixmapcache_p.h>
 

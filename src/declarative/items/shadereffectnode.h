@@ -44,19 +44,49 @@
 
 #include "node.h"
 #include "material.h"
-#include "shadereffectitem.h"
+#include "qsgtextureprovider.h"
 
 #include <QtCore/qsharedpointer.h>
+#include <QtCore/qpointer.h>
 
-class ShaderEffectItem;
+struct ShaderEffectMaterialKey {
+    QByteArray vertexCode;
+    QByteArray fragmentCode;
+    const char *className;
+
+    bool operator == (const ShaderEffectMaterialKey &other) const;
+};
+
+uint qHash(const ShaderEffectMaterialKey &key);
+
+// TODO: Implement async loading and loading over network.
+// TODO: Implement support for multisampling.
+struct ShaderEffectProgram : public ShaderEffectMaterialKey
+{
+    ShaderEffectProgram() : respectsOpacity(false), respectsMatrix(false) {}
+
+    QVector<const char *> attributeNames;
+    QSet<QByteArray> uniformNames;
+
+    uint respectsOpacity : 1;
+    uint respectsMatrix : 1;
+};
+
+
+class CustomMaterialShader;
 class ShaderEffectMaterial : public AbstractMaterial // XXX todo - ugly hack
 {
 public:
     ShaderEffectMaterial();
     virtual AbstractMaterialType *type() const;
+    virtual AbstractMaterialShader *createShader() const;
     virtual int compare(const AbstractMaterial *other) const;
 
-    //void setFlag(Flags flags, bool set) { AbstractMaterial::setFlag(flags, set); }
+    void setProgramSource(const ShaderEffectProgram &);
+    void setUniforms(const QVector<QPair<QByteArray, QVariant> > &uniformValues);
+    void setTextures(const QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > &textures);
+    const QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > &textures() const;
+    void updateTextures() const;
 
 protected:
     friend class ShaderEffectItem;
@@ -68,17 +98,23 @@ protected:
     // CustomMaterialShaders based on the old one would incorrectly be used together with the new
     // one. To guarantee that the type pointer is unique, the type object must live as long as
     // there are any CustomMaterialShaders of that type.
-    QSharedPointer<AbstractMaterialType> m_type_obj;
+    QSharedPointer<AbstractMaterialType> m_type;
+
+    ShaderEffectProgram m_source;
+    QVector<QPair<QByteArray, QVariant> > m_uniformValues;
+    QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > m_textures;
+
+    static QHash<ShaderEffectMaterialKey, QSharedPointer<AbstractMaterialType> > materialMap;
 };
 
-class CustomMaterialShader;
 
-class ShaderEffectNode : public GeometryNode,
-                         public ShaderEffectMaterial
+class ShaderEffectNode : public QObject,
+                         public GeometryNode
 
 {
+    Q_OBJECT
 public:
-    ShaderEffectNode(ShaderEffectItem *item);
+    ShaderEffectNode();
     virtual ~ShaderEffectNode();
 
     void setRect(const QRectF &rect);
@@ -87,35 +123,21 @@ public:
     void setResolution(const QSize &res);
     QSize resolution() const;
 
-    // Inherited from Node
     virtual void preprocess();
 
-    // Inherited from AbstractMaterial
-    virtual AbstractMaterialShader *createShader() const;
-
-    void setProgramSource(const ShaderEffectProgram &);
-    void setData(const QList<QPair<QByteArray, QVariant> > &uniformValues);
-
     void update();
+
+private Q_SLOTS:
+    void markDirtyTexture();
 
 private:
     friend class CustomMaterialShader;
 
     void updateGeometry();
-    void invalidateShaders();
-
-    bool m_dirty_geometry : 1;
 
     QSize m_meshResolution;
 
-    ShaderEffectProgram m_source;
-    QList<QPair<QByteArray, QVariant> > m_uniformValues;
-
-    void updateShaderProgram();
-
-    QVector<CustomMaterialShader *> m_shaders;
-    ShaderEffectItem *m_item;
-
+    bool m_dirty_geometry : 1;
 };
 
 #endif // SHADEREFFECTNODE_H

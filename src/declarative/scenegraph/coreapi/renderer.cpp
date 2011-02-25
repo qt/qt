@@ -92,6 +92,7 @@ Renderer::Renderer()
     , m_root_node(0)
     , m_node_updater(0)
     , m_changed_emitted(false)
+    , m_mirrored(false)
     , m_bindable(0)
 {
     Q_ASSERT(QGLContext::currentContext());
@@ -219,6 +220,13 @@ void Renderer::setProjectMatrixToRect(const QRectF &rect)
                  qreal(0.01),
                  -1);
     setProjectMatrix(matrix);
+}
+
+void Renderer::setProjectMatrix(const QMatrix4x4 &matrix)
+{
+    m_projection_matrix = matrix;
+    // Mirrored relative to the usual Qt coordinate system with origin in the top left corner.
+    m_mirrored = matrix(0, 0) * matrix(1, 1) - matrix(0, 1) * matrix(1, 0) > 0;
 }
 
 void Renderer::setClearColor(const QColor &color)

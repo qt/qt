@@ -66,6 +66,7 @@ QT_BEGIN_NAMESPACE
 
 class QTextLayout;
 class QSGTextDocumentWithImageResources;
+class QSGImageTextureProvider;
 
 class Q_AUTOTEST_EXPORT QSGTextPrivate : public QSGImplicitSizeItemPrivate
 {
@@ -102,6 +103,7 @@ public:
     void invalidateImageCache();
     void checkImageCache();
     QPixmap imageCache;
+    QSGImageTextureProvider *textureProvider;
 
     bool imageCacheDirty:1;
     bool updateOnComponentComplete:1;

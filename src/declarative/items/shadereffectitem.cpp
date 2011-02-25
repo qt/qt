@@ -46,6 +46,8 @@
 #include "qsgitem_p.h"
 
 #include "qsgcontext.h"
+#include "qsgtextureprovider.h"
+#include "qsgcanvas.h"
 
 #include <QtCore/qsignalmapper.h>
 #include <QtOpenGL/qglframebufferobject.h>
@@ -78,7 +80,6 @@ ShaderEffectItem::ShaderEffectItem(QSGItem *parent)
     , m_blending(true)
     , m_dirtyData(true)
     , m_programDirty(true)
-    , m_active(true)
 {
     setFlag(QSGItem::ItemHasContents);
 }
@@ -129,38 +130,6 @@ void ShaderEffectItem::setBlending(bool enable)
     emit blendingChanged();
 }
 
-void ShaderEffectItem::setActive(bool enable)
-{
-    Q_UNUSED(enable);
-    if (m_active == enable)
-        return;
-
-    if (m_active) {
-        for (int i = 0; i < m_sources.size(); ++i) {
-            ShaderEffectSource *source = m_sources.at(i).source;
-            if (!source)
-                continue;
-            disconnect(source, SIGNAL(repaintRequired()), this, SLOT(markDirty()));
-            source->derefFromEffectItem();
-        }
-    }
-
-    m_active = enable;
-
-    if (m_active) {
-        for (int i = 0; i < m_sources.size(); ++i) {
-            ShaderEffectSource *source = m_sources.at(i).source;
-            if (!source)
-                continue;
-            source->refFromEffectItem();
-            connect(source, SIGNAL(repaintRequired()), this, SLOT(markDirty()));
-        }
-    }
-
-    update();
-    emit activeChanged();
-}
-
 void ShaderEffectItem::setMeshResolution(const QSize &size)
 {
     if (size == m_mesh_resolution)
@@ -168,15 +137,6 @@ void ShaderEffectItem::setMeshResolution(const QSize &size)
 
     m_mesh_resolution = size;
     update();
-}
-
-void ShaderEffectItem::preprocess()
-{
-    for (int i = 0; i < m_sources.size(); ++i) {
-        ShaderEffectSource *source = m_sources.at(i).source;
-        if (source)
-            source->update();
-    }
 }
 
 void ShaderEffectItem::changeSource(int index)
@@ -192,73 +152,39 @@ void ShaderEffectItem::markDirty()
     update();
 }
 
-void ShaderEffectItem::setSource(QVariant var, int index)
+void ShaderEffectItem::setSource(const QVariant &var, int index)
 {
     Q_ASSERT(index >= 0 && index < m_sources.size());
 
     SourceData &source = m_sources[index];
 
-    if (m_active && source.source) {
-        disconnect(source.source, SIGNAL(repaintRequired()), this, SLOT(markDirty()));
-        source.source->derefFromEffectItem();
-    }
-
-    enum SourceType { Url, Item, Source, Other };
-    SourceType sourceType = Other;
-    QObject *obj = 0;
-
-    if (!var.isValid()) {
-        sourceType = Source; // Causes source to be set to null.
-    } else if (var.type() == QVariant::Url || var.type() == QVariant::String) {
-        sourceType = Url;
-    } else if ((QMetaType::Type)var.type() == QMetaType::QObjectStar) {
-        obj = qVariantValue<QObject *>(var);
-        if (qobject_cast<QSGItem *>(obj))
-            sourceType = Item;
-        else if (!obj || qobject_cast<ShaderEffectSource *>(obj)) // Interpret null as ShaderEffectSource.
-            sourceType = Source;
-    }
-
-    switch (sourceType) {
-    case Url:
-        {
-            QUrl url = var.type() == QVariant::Url ? var.toUrl() : QUrl(var.toString());
-            if (source.ownedByEffect && !url.isEmpty() && source.source->sourceImage() == url)
-                break;
-            if (source.ownedByEffect)
-                delete source.source;
-            source.source = new ShaderEffectSource;
-            source.source->setSceneGraphContext(QSGContext::current);
-            source.ownedByEffect = true;
-            source.source->setSourceImage(url);
-        }
-        break;
-    case Item:
-        if (source.ownedByEffect && source.source->sourceItem() == obj)
-            break;
-        if (source.ownedByEffect)
-            delete source.source;
-        source.source = new ShaderEffectSource;
-        source.source->setSceneGraphContext(QSGContext::current);
-        source.ownedByEffect = true;
-        source.source->setSourceItem(static_cast<QSGItem *>(obj));
-        break;
-    case Source:
-        if (obj == source.source)
-            break;
-        if (source.ownedByEffect)
-            delete source.source;
-        source.source = static_cast<ShaderEffectSource *>(obj);
-        source.ownedByEffect = false;
-        break;
-    default:
+    source.source = 0;
+    source.item = 0;
+    if (var.isNull()) {
+        return;
+    } else if (!qVariantCanConvert<QObject *>(var)) {
         qWarning("Could not assign source of type '%s' to property '%s'.", var.typeName(), source.name.constData());
-        break;
+        return;
     }
 
-    if (m_active && source.source) {
-        source.source->refFromEffectItem();
-        connect(source.source, SIGNAL(repaintRequired()), this, SLOT(markDirty()));
+    QObject *obj = qVariantValue<QObject *>(var);
+
+    QSGTextureProviderInterface *int3rface = static_cast<QSGTextureProviderInterface *>(obj->qt_metacast("QSGTextureProviderInterface"));
+    if (int3rface) {
+        source.source = int3rface->textureProvider();
+    } else {
+        qWarning("Could not assign property '%s', did not implement QSGTextureProviderInterface.", source.name.constData());
+    }
+
+    source.item = qobject_cast<QSGItem *>(obj);
+
+    // TODO: Find better solution.
+    // 'source.item' needs a canvas to get a scenegraph node.
+    // The easiest way to make sure it gets a canvas is to
+    // make it a part of the same item tree as 'this'.
+    if (source.item && source.item->parentItem() == 0) {
+        source.item->setParentItem(this);
+        source.item->setVisible(false);
     }
 }
 
@@ -312,14 +238,13 @@ void ShaderEffectItem::reset()
     m_source.uniformNames.clear();
     m_source.respectsOpacity = false;
     m_source.respectsMatrix = false;
+    m_source.className = metaObject()->className();
 
     for (int i = 0; i < m_sources.size(); ++i) {
         const SourceData &source = m_sources.at(i);
-        if (m_active && source.source)
-            source.source->derefFromEffectItem();
         delete source.mapper;
-        if (source.ownedByEffect)
-            delete source.source;
+        if (source.item && source.item->parentItem() == this)
+            source.item->setParentItem(0);
     }
     m_sources.clear();
 
@@ -348,7 +273,7 @@ void ShaderEffectItem::updateProperties()
 
     for (int i = 0; i < m_sources.size(); ++i) {
         QVariant v = property(m_sources.at(i).name);
-        setSource(v, i); // Property exists.
+        setSource(v, i);
     }
 
     connectPropertySignals();
@@ -395,7 +320,7 @@ void ShaderEffectItem::lookThroughShaderCode(const QByteArray &code)
                     d.mapper = new QSignalMapper;
                     d.source = 0;
                     d.name = name;
-                    d.ownedByEffect = false;
+                    d.item = 0;
                     m_sources.append(d);
                 }
             }
@@ -403,16 +328,12 @@ void ShaderEffectItem::lookThroughShaderCode(const QByteArray &code)
     }
 }
 
-Node *ShaderEffectItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
+Node *ShaderEffectItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
 {
-    if (!m_active) {
-        delete oldNode;
-        return 0;
-    }
-
     ShaderEffectNode *node = static_cast<ShaderEffectNode *>(oldNode);
     if (!node) {
-        node = new ShaderEffectNode(this);
+        node = new ShaderEffectNode;
+        node->setMaterial(&m_material);
         m_programDirty = true;
         m_dirtyData = true;
     }
@@ -424,13 +345,14 @@ Node *ShaderEffectItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data
         if (s.vertexCode.isEmpty())
             s.vertexCode = qt_default_vertex_code;
 
-        node->setProgramSource(s);
+        m_material.setProgramSource(s);
+        node->markDirty(Node::DirtyMaterial);
         m_programDirty = false;
     }
 
     // Update blending
-    if (((node->AbstractMaterial::flags() & AbstractMaterial::Blending) != 0) != m_blending) {
-        node->ShaderEffectMaterial::setFlag(AbstractMaterial::Blending, m_blending);
+    if (bool(m_material.flags() & AbstractMaterial::Blending) != m_blending) {
+        m_material.setFlag(AbstractMaterial::Blending, m_blending);
         node->markDirty(Node::DirtyMaterial);
     }
 
@@ -440,13 +362,28 @@ Node *ShaderEffectItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data
     node->setRect(QRectF(0, 0, width(), height()));
 
     if (m_dirtyData) {
-        QList<QPair<QByteArray, QVariant> > values;
+        QVector<QPair<QByteArray, QVariant> > values;
+        QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > textures;
+        const QVector<QPair<QByteArray, QPointer<QSGTextureProvider> > > &oldTextures = m_material.textures();
+
         for (QSet<QByteArray>::const_iterator it = m_source.uniformNames.begin(); 
              it != m_source.uniformNames.end(); ++it) {
             values.append(qMakePair(*it, property(*it)));
         }
-
-        node->setData(values);
+        for (int i = 0; i < oldTextures.size(); ++i) {
+            QPointer<QSGTextureProvider> oldSource = oldTextures.at(i).second;
+            if (oldSource)
+                disconnect(oldSource, SIGNAL(textureChanged()), node, SLOT(markDirtyTexture()));
+        }
+        for (int i = 0; i < m_sources.size(); ++i) {
+            const SourceData &source = m_sources.at(i);
+            textures.append(qMakePair(source.name, source.source));
+            if (source.source)
+                connect(source.source, SIGNAL(textureChanged()), node, SLOT(markDirtyTexture()));
+        }
+        m_material.setUniforms(values);
+        m_material.setTextures(textures);
+        node->markDirty(Node::DirtyMaterial);
         m_dirtyData = false;
     }
 

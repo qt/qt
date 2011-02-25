@@ -39,67 +39,32 @@
 **
 ****************************************************************************/
 
+#include "qsgtextureprovider.h"
 
-#ifndef DEFAULT_PIXMAPNODE_H
-#define DEFAULT_PIXMAPNODE_H
+QT_BEGIN_NAMESPACE
 
-#include "adaptationlayer.h"
-
-#include "texturematerial.h"
-
-class TextureProviderMaterial : public AbstractMaterial
+QSGTextureProvider::QSGTextureProvider(QObject *parent)
+    : QObject(parent)
+    , m_opaque(false)
+    , m_hWrapMode(ClampToEdge)
+    , m_vWrapMode(ClampToEdge)
+    , m_filtering(Nearest)
+    , m_mipmap(None)
 {
-public:
-    TextureProviderMaterial()
-        : m_texture(0)
-    {
+}
+
+GLint QSGTextureProvider::glMinFilter() const
+{
+    bool linear = m_filtering == Linear;
+    switch (m_mipmap) {
+    case Nearest:
+        return linear ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST;
+    case Linear:
+        return linear ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR;
+    default:
+        return linear ? GL_LINEAR : GL_NEAREST;
     }
-
-    virtual AbstractMaterialType *type() const;
-    virtual AbstractMaterialShader *createShader() const;
-    virtual int compare(const AbstractMaterial *other) const;
-
-    void setTexture(QSGTextureProvider *texture);
-    QSGTextureProvider *texture() const { return m_texture; }
-
-    static bool is(const AbstractMaterial *effect);
-
-protected:
-    QSGTextureProvider *m_texture;
-};
+}
 
 
-class TextureProviderMaterialWithOpacity : public TextureProviderMaterial
-{
-public:
-    TextureProviderMaterialWithOpacity() { }
-
-    virtual AbstractMaterialType *type() const;
-    virtual AbstractMaterialShader *createShader() const;
-    void setTexture(QSGTextureProvider *texture);
-
-    static bool is(const AbstractMaterial *effect);
-};
-
-
-class DefaultTextureNode : public TextureNodeInterface
-{
-public:
-    DefaultTextureNode();
-    virtual void setTargetRect(const QRectF &rect);
-    virtual void setSourceRect(const QRectF &rect);
-    virtual void setTexture(QSGTextureProvider *texture);
-    virtual void update();
-
-    virtual void preprocess();
-
-private:
-    void updateGeometry();
-
-    TextureProviderMaterial m_material;
-    TextureProviderMaterialWithOpacity m_materialO;
-
-    uint m_dirtyGeometry : 1;
-};
-
-#endif
+QT_END_NAMESPACE

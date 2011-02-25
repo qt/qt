@@ -44,11 +44,9 @@
 
 #include "qsgitem.h"
 
-#include "shadereffectsource.h"
-
-#include "effectnode.h"
 #include "material.h"
 #include "adaptationlayer.h"
+#include "shadereffectnode.h"
 
 #include <QtCore/qpointer.h>
 
@@ -56,30 +54,12 @@ class QSGContext;
 class QSignalMapper;
 class CustomMaterialShader;
 
-// TODO: Implement async loading and loading over network.
-// TODO: Implement support for multisampling.
-struct ShaderEffectProgram
-{
-    ShaderEffectProgram() 
-    : respectsOpacity(false), respectsMatrix(false) {}
-
-    QByteArray vertexCode;
-    QByteArray fragmentCode;
-
-    QVector<const char *> attributeNames;
-    QSet<QByteArray> uniformNames;
-
-    uint respectsOpacity : 1;
-    uint respectsMatrix : 1;
-};
-
 class ShaderEffectItem : public QSGItem
 {
     Q_OBJECT
     Q_PROPERTY(QByteArray fragmentShader READ fragmentShader WRITE setFragmentShader NOTIFY fragmentShaderChanged)
     Q_PROPERTY(QByteArray vertexShader READ vertexShader WRITE setVertexShader NOTIFY vertexShaderChanged)
     Q_PROPERTY(bool blending READ blending WRITE setBlending NOTIFY blendingChanged)
-    Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)
     Q_PROPERTY(QSize meshResolution READ meshResolution WRITE setMeshResolution NOTIFY meshResolutionChanged)
 
 public:
@@ -97,19 +77,13 @@ public:
     bool blending() const { return m_blending; }
     void setBlending(bool enable);
 
-    bool active() const { return m_active; }
-    void setActive(bool enable);
-
     QSize meshResolution() const { return m_mesh_resolution; }
     void setMeshResolution(const QSize &size);
-
-    void preprocess();
 
 Q_SIGNALS:
     void fragmentShaderChanged();
     void vertexShaderChanged();
     void blendingChanged();
-    void activeChanged();
     void marginsChanged();
     void meshResolutionChanged();
 
@@ -124,7 +98,7 @@ private:
     friend class CustomMaterialShader;
     friend class ShaderEffectNode;
 
-    void setSource(QVariant var, int index);
+    void setSource(const QVariant &var, int index);
     void disconnectPropertySignals();
     void connectPropertySignals();
     void reset();
@@ -137,17 +111,17 @@ private:
     struct SourceData
     {
         QSignalMapper *mapper;
-        QPointer<ShaderEffectSource> source;
+        QPointer<QSGTextureProvider> source;
+        QPointer<QSGItem> item;
         QByteArray name;
-        bool ownedByEffect;
     };
     QVector<SourceData> m_sources;
+    ShaderEffectMaterial m_material;
 
     uint m_blending : 1;
     uint m_dirtyData : 1;
 
     uint m_programDirty : 1;
-    uint m_active : 1;
 };
 
 #endif // SHADEREFFECTITEM_H

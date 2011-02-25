@@ -1,7 +1,6 @@
-// Commit: ac5c099cc3c5b8c7eec7a49fdeb8a21037230350
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,11 +39,15 @@
 **
 ****************************************************************************/
 
-#ifndef QSGIMAGE_P_H
-#define QSGIMAGE_P_H
+#ifndef TEXTUREITEM_H
+#define TEXTUREITEM_H
 
-#include "qsgimagebase_p.h"
+#include "qsgitem.h"
 #include "qsgtextureprovider.h"
+#include "texturematerial.h"
+#include "node.h"
+#include "qobject.h"
+#include "qpointer.h"
 
 QT_BEGIN_HEADER
 
@@ -52,56 +55,46 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QSGImagePrivate;
-class Q_AUTOTEST_EXPORT QSGImage : public QSGImageBase, public QSGTextureProviderInterface
+class QSGTextureProvider;
+class Renderer;
+class QGLFramebufferObject;
+
+class TextureItem : public QSGItem, public QSGTextureProviderInterface
 {
     Q_OBJECT
-    Q_ENUMS(FillMode)
-
-    Q_PROPERTY(FillMode fillMode READ fillMode WRITE setFillMode NOTIFY fillModeChanged)
-    Q_PROPERTY(qreal paintedWidth READ paintedWidth NOTIFY paintedGeometryChanged)
-    Q_PROPERTY(qreal paintedHeight READ paintedHeight NOTIFY paintedGeometryChanged)
-    Q_PROPERTY(QSGTextureProvider *texture READ textureProvider)
-
     Q_INTERFACES(QSGTextureProviderInterface)
-
+    Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
+    Q_ENUMS(WrapMode)
+    // TODO: property mipmapFiltering
 public:
-    QSGImage(QSGItem *parent=0);
-    ~QSGImage();
+    enum WrapMode {
+        ClampToEdge,
+        RepeatHorizontally,
+        RepeatVertically,
+        Repeat
+    };
 
-    enum FillMode { Stretch, PreserveAspectFit, PreserveAspectCrop, Tile, TileVertically, TileHorizontally };
-    FillMode fillMode() const;
-    void setFillMode(FillMode);
-
-    QPixmap pixmap() const;
-    void setPixmap(const QPixmap &);
-
-    qreal paintedWidth() const;
-    qreal paintedHeight() const;
-
-    QRectF boundingRect() const;
+    TextureItem(QSGItem *parent = 0);
 
     virtual QSGTextureProvider *textureProvider() const;
+    void setTextureProvider(QSGTextureProvider *provider, bool requiresPreprocess);
+    
+    WrapMode wrapMode() const;
+    void setWrapMode(WrapMode mode);
 
 Q_SIGNALS:
-    void fillModeChanged();
-    void paintedGeometryChanged();
+    void wrapModeChanged();
 
 protected:
-    QSGImage(QSGImagePrivate &dd, QSGItem *parent);
-    void pixmapChange();
-    void updatePaintedGeometry();
-
-    virtual void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
     virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
 
-private:
-    Q_DISABLE_COPY(QSGImage)
-    Q_DECLARE_PRIVATE(QSGImage)
+    QSGTextureProvider *m_textureProvider;
+    WrapMode m_wrapMode;
+    uint m_requiresPreprocess : 1;
 };
 
 QT_END_NAMESPACE
-QML_DECLARE_TYPE(QSGImage)
+
 QT_END_HEADER
 
-#endif // QSGIMAGE_P_H
+#endif

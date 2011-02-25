@@ -47,6 +47,7 @@
 #include "qsgcontext.h"
 #include "adaptationlayer.h"
 #include "qsgtextnode_p.h"
+#include "qsgimage_p_p.h"
 
 #include <QtDeclarative/qdeclarativeinfo.h>
 #include <QtGui/qgraphicssceneevent.h>
@@ -110,6 +111,8 @@ void QSGTextPrivate::init()
     Q_Q(QSGText);
     q->setAcceptedMouseButtons(Qt::LeftButton);
     q->setFlag(QSGItem::ItemHasContents);
+    textureProvider = new QSGImageTextureProvider(q);
+    QObject::connect(textureProvider, SIGNAL(textureChanged()), q, SLOT(update()));
 }
 
 QSGTextDocumentWithImageResources::QSGTextDocumentWithImageResources(QSGText *parent) 
@@ -1044,21 +1047,21 @@ Node *QSGText::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         if (!oldNode || oldNode->subType() != Node::TextureNodeInterfaceSubType) {
             delete oldNode;
             node = QSGContext::current->createTextureNode();
+            node->setTexture(d->textureProvider);
             wasDirty = true;
         } else {
             node = static_cast<TextureNodeInterface *>(oldNode);
         }
 
         if (wasDirty) {
-            QSGTextureManager *tm = QSGContext::current->textureManager();
-            QSGTextureRef ref = tm->upload(d->imageCache.toImage());
-            node->setTexture(ref);
+            d->textureProvider->setImage(d->imageCache.toImage());
         }
 
-        node->setRect(QRectF(bounds.x(), bounds.y(), d->imageCache.width(), d->imageCache.height()));
-        node->setSourceRect(QRectF(0, 0, 1., 1.));
-        node->setClampToEdge(true);
-        node->setLinearFiltering(d->smooth);
+        node->setTargetRect(QRectF(bounds.x(), bounds.y(), d->imageCache.width(), d->imageCache.height()));
+        node->setSourceRect(QRectF(0, 0, 1, 1));
+        d->textureProvider->setHorizontalWrapMode(QSGTextureProvider::ClampToEdge);
+        d->textureProvider->setVerticalWrapMode(QSGTextureProvider::ClampToEdge);
+        d->textureProvider->setFiltering(d->smooth ? QSGTextureProvider::Linear : QSGTextureProvider::Nearest);
         node->update();
 
         return node;

@@ -306,4 +306,3 @@ void QSGTextureUploadRequest::done()
     emit requestCompleted(this);
     delete this;
 }
-

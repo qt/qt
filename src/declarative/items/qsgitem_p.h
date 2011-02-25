@@ -327,13 +327,14 @@ public:
 
         EffectReference         = 0x00008000,
         Visible                 = 0x00010000,
+        HideReference           = 0x00020000,
         // When you add an attribute here, don't forget to update
         // dirtyToString()
 
-        TransformUpdateMask     = TransformOrigin | Transform | BasicTransform | Position | Size | EffectReference | Canvas,
-        ComplexTransformUpdateMask     = Transform | EffectReference | Canvas,
+        TransformUpdateMask     = TransformOrigin | Transform | BasicTransform | Position | Size | Canvas,
+        ComplexTransformUpdateMask     = Transform | Canvas,
         ContentUpdateMask       = Size | Content | Smooth | Canvas,
-        ChildrenUpdateMask      = ChildrenChanged | ChildrenStackingChanged | Canvas,
+        ChildrenUpdateMask      = ChildrenChanged | ChildrenStackingChanged | EffectReference | Canvas,
 
     };
     quint32 dirtyAttributes;
@@ -359,18 +360,19 @@ public:
     TransformNode *itemNodeInstance;
     OpacityNode *opacityNode;
     QSGClipNode *clipNode;
+    RootNode *rootNode;
     Node *groupNode;
     Node *paintNode;
     int paintNodeIndex;
 
     virtual TransformNode *createTransformNode();
 
-    // A reference from an effect item means that this item is hidden by the effect, so
-    // it shouldn't be included in the main scene.  The itemNodeInstance should contain
-    // the identity transform.
-    void refFromEffectItem();
-    void derefFromEffectItem();
+    // A reference from an effect item means that this item is used by the effect, so
+    // it should insert a root node.
+    void refFromEffectItem(bool hide);
+    void derefFromEffectItem(bool unhide);
     int effectRefCount;
+    int hideRefCount;
 
     union ChangeData {
         ChangeData(QSGItem *v) : item(v) {}
@@ -631,9 +633,9 @@ Node *QSGItemPrivate::childContainerNode()
 {
     if (!groupNode) {
         groupNode = new Node();
-
-
-        if (clipNode)
+        if (rootNode)
+            rootNode->appendChildNode(groupNode);
+        else if (clipNode)
             clipNode->appendChildNode(groupNode);
         else if (opacityNode)
             opacityNode->appendChildNode(groupNode);

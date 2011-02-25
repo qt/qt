@@ -97,9 +97,10 @@ SOURCES += \
     $$PWD/shadereffectitem.cpp \
     $$PWD/shadereffectnode.cpp \
     $$PWD/shadereffectsource.cpp \
+    $$PWD/textureitem.cpp \
 
 HEADERS += \
     $$PWD/shadereffectitem.h \
     $$PWD/shadereffectnode.h \
     $$PWD/shadereffectsource.h \
-
+    $$PWD/textureitem.h \

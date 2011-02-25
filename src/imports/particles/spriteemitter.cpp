@@ -750,7 +750,7 @@ void SpriteEmitter::prepareNextFrame(uint timeInt)
         if(m_states[0]->durationVariance())//TODO: Move to shader, and thus include acceleration over time
             durVar += qrand() % m_states[0]->durationVariance();
         if(m_states[0]->speedModifer())
-            durVar += qFloor(m_states[0]->speedModifer() *  sqrt(pow(p.v1.sx, 2.0) + pow(p.v1.sy, 2.0)));//Arithmetic mean is faster, right?
+            durVar += qFloor(m_states[0]->speedModifer() *  qSqrt(p.v1.sx * p.v1.sx + p.v1.sy * p.v1.sy));//Arithmetic mean is faster, right?
         p.v1.frameDuration = p.v2.frameDuration = p.v3.frameDuration = p.v4.frameDuration = m_states[0]->duration() + durVar;
 
         for(int i=0; i<m_stateUpdates.count(); i++)

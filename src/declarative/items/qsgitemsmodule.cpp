@@ -70,6 +70,7 @@
 #include "qsgstateoperations_p.h"
 #include "qsganimation_p.h"
 #include "shadereffectitem.h"
+#include "shadereffectsource.h"
 //#include "private/qsgpincharea_p.h"
 
 static QDeclarativePrivate::AutoParentResult qsgitem_autoParent(QObject *obj, QObject *parent)

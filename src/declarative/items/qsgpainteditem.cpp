@@ -42,6 +42,7 @@
 
 #include "qsgpainteditem_p.h"
 #include "qsgpainteditem_p_p.h"
+#include "qsgimage_p_p.h"
 
 #include "qsgcontext.h"
 #include "adaptationlayer.h"
@@ -55,12 +56,16 @@ QSGPaintedItem::QSGPaintedItem(QSGItem *parent)
 : QSGItem(*(new QSGPaintedItemPrivate), parent)
 {
     setFlag(ItemHasContents);
+    d_func()->textureProvider = new QSGImageTextureProvider(this);
+    connect(d_func()->textureProvider, SIGNAL(textureChanged()), this, SLOT(update()));
 }
 
 QSGPaintedItem::QSGPaintedItem(QSGPaintedItemPrivate &dd, QSGItem *parent)
 : QSGItem(dd, parent)
 {
     setFlag(ItemHasContents);
+    d_func()->textureProvider = new QSGImageTextureProvider(this);
+    connect(d_func()->textureProvider, SIGNAL(textureChanged()), this, SLOT(update()));
 }
 
 QSGPaintedItem::~QSGPaintedItem()
@@ -170,8 +175,10 @@ Node *QSGPaintedItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     }
 
     TextureNodeInterface *node = static_cast<TextureNodeInterface *>(oldNode);
-    if (!node) 
+    if (!node) {
         node = QSGContext::current->createTextureNode();
+        node->setTexture(d->textureProvider);
+    }
 
     QImage image(width(), height(), QImage::Format_ARGB32);
     if (!d->opaquePainting)
@@ -181,13 +188,12 @@ Node *QSGPaintedItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 
     paint(&p);
 
-    node->setRect(image.rect());
+    node->setTargetRect(image.rect());
     node->setSourceRect(QRectF(0, 0, 1, 1));
-    node->setClampToEdge(true);
-    node->setLinearFiltering(false);
-    QSGTextureManager *tm = QSGContext::current->textureManager();
-    QSGTextureRef ref = tm->upload(image);
-    node->setTexture(ref);
+    d->textureProvider->setHorizontalWrapMode(QSGTextureProvider::ClampToEdge);
+    d->textureProvider->setVerticalWrapMode(QSGTextureProvider::ClampToEdge);
+    d->textureProvider->setFiltering(d->smooth ? QSGTextureProvider::Linear : QSGTextureProvider::Nearest);
+    d->textureProvider->setImage(image);
     node->update();
 
     return node;

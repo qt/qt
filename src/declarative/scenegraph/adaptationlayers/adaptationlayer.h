@@ -42,15 +42,15 @@
 #ifndef ADAPTATIONINTERFACES_H
 #define ADAPTATIONINTERFACES_H
 
+#include "node.h"
+#include "qsgtexturemanager.h"
+
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
 #include <QtGui/qcolor.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtGui/qglyphs.h>
 #include <QtCore/qurl.h>
-
-#include "node.h"
-#include "qsgtexturemanager.h"
 
 class Node;
 class QImage;
@@ -92,38 +92,31 @@ protected:
     int m_pen_width;
 };
 
+
+class QSGTextureProvider;
 class Q_DECLARATIVE_EXPORT TextureNodeInterface : public GeometryNode
 {
 public:
-    TextureNodeInterface() : m_texture(0), m_clamp_to_edge(true), m_linear_filtering(false) { }
+    TextureNodeInterface() : m_texture(0), m_sourceRect(0, 1, 1, -1) { }
 
-    virtual void setRect(const QRectF &rect) = 0;
-    QRectF rect() const { return m_rect; }
+    virtual void setTargetRect(const QRectF &rect) = 0;
+    QRectF targetRect() const { return m_targetRect; }
 
     // Normalized source coordinates..
     virtual void setSourceRect(const QRectF &rect) = 0;
-    QRectF sourceRect() const { return m_source_rect; }
+    QRectF sourceRect() const { return m_sourceRect; }
 
-    virtual void setTexture(const QSGTextureRef &ref) = 0;
-    const QSGTextureRef &texture() const;
-
-    virtual void setClampToEdge(bool clampToEdge) = 0;
-    bool clampToEdge() const { return m_clamp_to_edge; }
-
-    virtual void setLinearFiltering(bool linearFiltering) = 0;
-    bool linearFiltering() const { return m_linear_filtering; }
+    virtual void setTexture(QSGTextureProvider *texture) = 0;
+    QSGTextureProvider *texture() const { return m_texture; }
 
     virtual NodeSubType subType() const { return TextureNodeInterfaceSubType; }
 
     virtual void update() = 0;
 
 protected:
-    QSGTextureRef m_texture;
-    QRectF m_rect;
-    QRectF m_source_rect;
-    bool m_clamp_to_edge;
-    bool m_linear_filtering;
-
+    QSGTextureProvider *m_texture;
+    QRectF m_targetRect;
+    QRectF m_sourceRect;
 };
 
 

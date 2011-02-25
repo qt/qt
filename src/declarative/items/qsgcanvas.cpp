@@ -129,6 +129,9 @@ void QSGCanvas::paintEvent(QPaintEvent *)
     Q_D(QSGCanvas);
 
     if (!d->threadedRendering) {
+        if (d->animationDriver->isRunning())
+            d->animationDriver->advance();
+
         Q_ASSERT(d->context);
 
         d->polishItems();
@@ -141,6 +144,9 @@ void QSGCanvas::paintEvent(QPaintEvent *)
         d->renderSceneGraph();
 
         QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Painting);
+
+        if (d->animationDriver->isRunning())
+            update();
     }
 }
 
@@ -176,10 +182,13 @@ void QSGCanvas::showEvent(QShowEvent *e)
         d->mutex.unlock();
     } else {
         makeCurrent();
-        d->initializeSceneGraph();
-        d->animationDriver = d->context->createAnimationDriver(this);
-        if (d->animationDriver)
-            d->animationDriver->install();
+
+        if (!d->context) {
+            d->initializeSceneGraph();
+            d->animationDriver = new QAnimationDriver();
+            if (d->animationDriver)
+                d->animationDriver->install();
+        }
     }
 }
 
@@ -754,8 +763,15 @@ void QSGCanvasPrivate::cleanup(Node *n)
     q->maybeUpdate();
 }
 
+static QGLFormat tweakFormat(const QGLFormat &format = QGLFormat::defaultFormat())
+{
+    QGLFormat f = format;
+    f.setSwapInterval(1);
+    return f;
+}
+
 QSGCanvas::QSGCanvas(QWidget *parent, Qt::WindowFlags f)
-    : QGLWidget(*(new QSGCanvasPrivate), QGLFormat(), parent, (QGLWidget *) 0, f)
+    : QGLWidget(*(new QSGCanvasPrivate), tweakFormat(), parent, (QGLWidget *) 0, f)
 {
     Q_D(QSGCanvas);
 
@@ -763,7 +779,7 @@ QSGCanvas::QSGCanvas(QWidget *parent, Qt::WindowFlags f)
 }
 
 QSGCanvas::QSGCanvas(const QGLFormat &format, QWidget *parent, Qt::WindowFlags f)
-    : QGLWidget(*(new QSGCanvasPrivate), format, parent, (QGLWidget *) 0, f)
+    : QGLWidget(*(new QSGCanvasPrivate), tweakFormat(format), parent, (QGLWidget *) 0, f)
 {
     Q_D(QSGCanvas);
 
@@ -771,7 +787,7 @@ QSGCanvas::QSGCanvas(const QGLFormat &format, QWidget *parent, Qt::WindowFlags f
 }
 
 QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, QWidget *parent, Qt::WindowFlags f)
-: QGLWidget(dd, QGLFormat(), parent, 0, f)
+: QGLWidget(dd, tweakFormat(), parent, 0, f)
 {
     Q_D(QSGCanvas);
 
@@ -779,7 +795,7 @@ QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, QWidget *parent, Qt::WindowFlags f)
 }
 
 QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, const QGLFormat &format, QWidget *parent, Qt::WindowFlags f)
-: QGLWidget(dd, format, parent, 0, f)
+: QGLWidget(dd, tweakFormat(format), parent, 0, f)
 {
     Q_D(QSGCanvas);
 
@@ -942,7 +958,7 @@ bool QSGCanvasPrivate::deliverInitialMousePressEvent(QSGItem *item, QGraphicsSce
     QList<QSGItem *> children = itemPrivate->paintOrderChildItems();
     for (int ii = children.count() - 1; ii >= 0; --ii) {
         QSGItem *child = children.at(ii);
-        if (!child->isEnabled())
+        if (!child->isVisible() || !child->isEnabled())
             continue;
         if (deliverInitialMousePressEvent(child, event))
             return true;
@@ -1321,19 +1337,17 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
 
         QMatrix4x4 matrix;
 
-        if (!itemPriv->effectRefCount) {
-            if (itemPriv->x != 0. || itemPriv->y != 0.) 
-                matrix.translate(itemPriv->x, itemPriv->y);
+        if (itemPriv->x != 0. || itemPriv->y != 0.) 
+            matrix.translate(itemPriv->x, itemPriv->y);
 
-            if (itemPriv->scale != 1. || itemPriv->rotation != 0.) {
-                QPointF origin = itemPriv->computeTransformOrigin();
-                matrix.translate(origin.x(), origin.y());
-                if (itemPriv->scale != 1.)
-                    matrix.scale(itemPriv->scale, itemPriv->scale);
-                if (itemPriv->rotation != 0.)
-                    matrix.rotate(itemPriv->rotation, 0, 0, 1);
-                matrix.translate(-origin.x(), -origin.y());
-            }
+        if (itemPriv->scale != 1. || itemPriv->rotation != 0.) {
+            QPointF origin = itemPriv->computeTransformOrigin();
+            matrix.translate(origin.x(), origin.y());
+            if (itemPriv->scale != 1.)
+                matrix.scale(itemPriv->scale, itemPriv->scale);
+            if (itemPriv->rotation != 0.)
+                matrix.rotate(itemPriv->rotation, 0, 0, 1);
+            matrix.translate(-origin.x(), -origin.y());
         }
 
         if (dirty & QSGItemPrivate::ComplexTransformUpdateMask) {
@@ -1346,10 +1360,12 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
 
     bool clipEffectivelyChanged = dirty & QSGItemPrivate::Clip &&
                                   ((item->clip() == false) != (itemPriv->clipNode == 0));
+    bool effectRefEffectivelyChanged = dirty & QSGItemPrivate::EffectReference &&
+                                  ((itemPriv->effectRefCount == 0) != (itemPriv->rootNode == 0));
 
     if (clipEffectivelyChanged) {
         Node *parent = itemPriv->opacityNode ? (Node *) itemPriv->opacityNode : (Node *)itemPriv->itemNode();
-        Node *child = itemPriv->groupNode;
+        Node *child = itemPriv->rootNode ? (Node *)itemPriv->rootNode : (Node *)itemPriv->groupNode;
 
         if (item->clip()) {
             Q_ASSERT(itemPriv->clipNode == 0);
@@ -1363,16 +1379,56 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
 
         } else {
             Q_ASSERT(itemPriv->clipNode != 0);
+            parent->removeChildNode(itemPriv->clipNode);
+            if (child)
+                itemPriv->clipNode->removeChildNode(child);
             delete itemPriv->clipNode;
             itemPriv->clipNode = 0;
-            parent->appendChildNode(child);
+            if (child)
+                parent->appendChildNode(child);
         }
     }
 
     if (dirty & QSGItemPrivate::ChildrenUpdateMask) {
-
         while (itemPriv->childContainerNode()->childCount())
             itemPriv->childContainerNode()->removeChildNode(itemPriv->childContainerNode()->childAtIndex(0));
+    }
+
+    if (effectRefEffectivelyChanged) {
+        Node *parent = itemPriv->clipNode;
+        if (!parent)
+            parent = itemPriv->opacityNode;
+        if (!parent)
+            parent = itemPriv->itemNode();
+        Node *child = itemPriv->groupNode;
+
+        if (itemPriv->effectRefCount) {
+            Q_ASSERT(itemPriv->rootNode == 0);
+            itemPriv->rootNode = new RootNode;
+
+            if (child)
+                parent->removeChildNode(child);
+            parent->appendChildNode(itemPriv->rootNode);
+            if (child)
+                itemPriv->rootNode->appendChildNode(child);
+        } else {
+            Q_ASSERT(itemPriv->rootNode != 0);
+            parent->removeChildNode(itemPriv->rootNode);
+            if (child)
+                itemPriv->rootNode->removeChildNode(child);
+            delete itemPriv->rootNode;
+            itemPriv->rootNode = 0;
+            if (child)
+                parent->appendChildNode(child);
+        }
+    }
+
+    if (dirty & QSGItemPrivate::ChildrenUpdateMask) {
+        Node *groupNode = itemPriv->groupNode;
+        if (groupNode) {
+            for (int count = groupNode->childCount(); count; --count)
+                groupNode->removeChildNode(groupNode->childAtIndex(0));
+        }
 
         QList<QSGItem *> orderedChildren = itemPriv->paintOrderChildItems();
         int ii = 0;
@@ -1380,13 +1436,13 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
         itemPriv->paintNodeIndex = 0;
         for (; ii < orderedChildren.count() && orderedChildren.at(ii)->z() < 0; ++ii) {
             QSGItemPrivate *childPrivate = QSGItemPrivate::get(orderedChildren.at(ii));
+            if (!childPrivate->explicitVisible && !childPrivate->effectRefCount)
+                continue;
             if (childPrivate->itemNode()->parent())
                 childPrivate->itemNode()->parent()->removeChildNode(childPrivate->itemNode());
 
-            if (childPrivate->effectRefCount == 0) {
-                itemPriv->childContainerNode()->appendChildNode(childPrivate->itemNode());
-                itemPriv->paintNodeIndex++;
-            }
+            itemPriv->childContainerNode()->appendChildNode(childPrivate->itemNode());
+            itemPriv->paintNodeIndex++;
         }
 
         if (itemPriv->paintNode)
@@ -1394,12 +1450,12 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
 
         for (; ii < orderedChildren.count(); ++ii) {
             QSGItemPrivate *childPrivate = QSGItemPrivate::get(orderedChildren.at(ii));
+            if (!childPrivate->explicitVisible && !childPrivate->effectRefCount)
+                continue;
             if (childPrivate->itemNode()->parent())
                 childPrivate->itemNode()->parent()->removeChildNode(childPrivate->itemNode());
 
-            if (childPrivate->effectRefCount == 0) {
-                itemPriv->childContainerNode()->appendChildNode(childPrivate->itemNode());
-            }
+            itemPriv->childContainerNode()->appendChildNode(childPrivate->itemNode());
         }
     }
 
@@ -1408,18 +1464,28 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
         itemPriv->clipNode->update();
     }
 
-    if (dirty & QSGItemPrivate::OpacityValue) {
-        if (!itemPriv->opacityNode) {
+    if (dirty & (QSGItemPrivate::OpacityValue | QSGItemPrivate::Visible | QSGItemPrivate::HideReference)) {
+        qreal opacity = itemPriv->explicitVisible && itemPriv->hideRefCount == 0
+                      ? itemPriv->opacity : qreal(0);
+
+        if (opacity != 1 && !itemPriv->opacityNode) {
             itemPriv->opacityNode = new OpacityNode;
 
             Node *parent = itemPriv->itemNode();
-            Node *child = itemPriv->clipNode ? itemPriv->clipNode : itemPriv->childContainerNode();
+            Node *child = itemPriv->clipNode;
+            if (!child)
+                child = itemPriv->rootNode;
+            if (!child)
+                child = itemPriv->groupNode;
 
-            parent->removeChildNode(child);
+            if (child)
+                parent->removeChildNode(child);
             parent->appendChildNode(itemPriv->opacityNode);
-            itemPriv->opacityNode->appendChildNode(child);
+            if (child)
+                itemPriv->opacityNode->appendChildNode(child);
         }
-        itemPriv->opacityNode->setOpacity(itemPriv->opacity);
+        if (itemPriv->opacityNode)
+            itemPriv->opacityNode->setOpacity(opacity);
     }
 
     if (dirty & QSGItemPrivate::ContentUpdateMask) {
@@ -1433,7 +1499,7 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
                      itemPriv->paintNode->parent() == itemPriv->childContainerNode());
 
             if (itemPriv->paintNode && itemPriv->paintNode->parent() == 0) {
-                if (itemPriv->childContainerNode()->childCount() == 0)
+                if (itemPriv->childContainerNode()->childCount() == itemPriv->paintNodeIndex)
                     itemPriv->childContainerNode()->appendChildNode(itemPriv->paintNode);
                 else 
                     itemPriv->childContainerNode()->insertChildNodeBefore(itemPriv->paintNode, itemPriv->childContainerNode()->childAtIndex(itemPriv->paintNodeIndex));
@@ -1441,7 +1507,44 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
         } else if (itemPriv->paintNode) {
             delete itemPriv->paintNode;
         }
-    } 
+    }
+
+#ifndef QT_NO_DEBUG
+    // Check consistency.
+    const Node *nodeChain[] = {
+        itemPriv->itemNodeInstance,
+        itemPriv->opacityNode,
+        itemPriv->clipNode,
+        itemPriv->rootNode,
+        itemPriv->groupNode,
+        itemPriv->paintNode,
+    };
+
+    int ip = 0;
+    for (;;) {
+        while (ip < 5 && nodeChain[ip] == 0)
+            ++ip;
+        if (ip == 5)
+            break;
+        int ic = ip + 1;
+        while (ic < 5 && nodeChain[ic] == 0)
+            ++ic;
+        const Node *parent = nodeChain[ip];
+        const Node *child = nodeChain[ic];
+        if (child == 0) {
+            Q_ASSERT(parent == itemPriv->groupNode || parent->childCount() == 0);
+        } else {
+            Q_ASSERT(parent == itemPriv->groupNode || parent->childCount() == 1);
+            Q_ASSERT(child->parent() == parent);
+            bool containsChild = false;
+            for (int i = 0; i < parent->childCount(); ++i)
+                containsChild |= (parent->childAtIndex(i) == child);
+            Q_ASSERT(containsChild);
+        }
+        ip = ic;
+    }
+#endif
+
 }
 
 void QSGCanvas::maybeUpdate()

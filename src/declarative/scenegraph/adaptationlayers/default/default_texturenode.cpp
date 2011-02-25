@@ -40,193 +40,267 @@
 ****************************************************************************/
 
 #include "default_texturenode.h"
+#include "qsgtextureprovider.h"
 
-#include <qmath.h>
-#include <qvarlengtharray.h>
+static const char qt_material_vertex_code[] =
+    "uniform highp mat4 qt_Matrix;                      \n"
+    "attribute highp vec4 qt_Vertex;                    \n"
+    "attribute highp vec2 qt_MultiTexCoord0;            \n"
+    "varying highp vec2 qt_TexCoord0;                   \n"
+    "void main() {                                      \n"
+    "    qt_TexCoord0 = qt_MultiTexCoord0;              \n"
+    "    gl_Position = qt_Matrix * qt_Vertex;           \n"
+    "}";
+
+static const char qt_material_fragment_code[] =
+    "varying highp vec2 qt_TexCoord0;                   \n"
+    "uniform sampler2D qt_Texture;                      \n"
+    "void main() {                                      \n"
+    "    gl_FragColor = texture2D(qt_Texture, qt_TexCoord0);\n"
+    "}";
+
+static const char qt_material_opacity_fragment_code[] =
+    "varying highp vec2 qt_TexCoord0;                   \n"
+    "uniform sampler2D qt_Texture;                      \n"
+    "uniform lowp float opacity;                        \n"
+    "void main() {                                      \n"
+    "    gl_FragColor = texture2D(qt_Texture, qt_TexCoord0) * opacity; \n"
+    "}";
+
+
+class TextureProviderMaterialShader : public AbstractMaterialShader
+{
+public:
+    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual char const *const *attributeNames() const;
+
+    static AbstractMaterialType type;
+
+protected:
+    virtual void initialize();
+    virtual const char *vertexShader() const;
+    virtual const char *fragmentShader() const;
+
+    int m_matrix_id;
+};
+
+
+const char *TextureProviderMaterialShader::vertexShader() const
+{
+    return qt_material_vertex_code;
+}
+
+const char *TextureProviderMaterialShader::fragmentShader() const
+{
+    return qt_material_fragment_code;
+}
+
+AbstractMaterialType TextureProviderMaterialShader::type;
+
+char const *const *TextureProviderMaterialShader::attributeNames() const
+{
+    static char const *const attr[] = { "qt_Vertex", "qt_MultiTexCoord0", 0 };
+    return attr;
+}
+
+void TextureProviderMaterialShader::initialize()
+{
+    m_matrix_id = m_program.uniformLocation("qt_Matrix");
+    if (m_program.isLinked()) {
+        m_program.bind();
+        m_program.setUniformValue("qt_Texture", GLuint(0));
+    }
+}
+
+void TextureProviderMaterialShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+{
+    Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
+    QSGTextureProvider *tx = static_cast<TextureProviderMaterial *>(newEffect)->texture();
+    QSGTextureProvider *oldTx = oldEffect ? static_cast<TextureProviderMaterial *>(oldEffect)->texture() : 0;
+
+    if (oldEffect == 0 || tx->texture().texture() != oldTx->texture().texture()) {
+        renderer->setTexture(0, tx->texture());
+        oldEffect = 0; // Force filtering update.
+    }
+
+    if (oldEffect == 0 || tx->filtering() != oldTx->filtering() || tx->mipmap() != oldTx->mipmap()) {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, tx->glMinFilter());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, tx->glMagFilter());
+    }
+
+    if (oldEffect == 0 || tx->horizontalWrapMode() != oldTx->horizontalWrapMode())
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, tx->glTextureWrapS());
+    if (oldEffect == 0 || tx->verticalWrapMode() != oldTx->verticalWrapMode())
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tx->glTextureWrapT());
+
+    if (updates & Renderer::UpdateMatrices)
+        m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
+}
+
+
+void TextureProviderMaterial::setTexture(QSGTextureProvider *texture)
+{
+    m_texture = texture;
+    bool opaque = m_texture ? m_texture->opaque() : true;
+    setFlag(Blending, !opaque);
+}
+
+AbstractMaterialType *TextureProviderMaterial::type() const
+{
+    return &TextureProviderMaterialShader::type;
+}
+
+AbstractMaterialShader *TextureProviderMaterial::createShader() const
+{
+    return new TextureProviderMaterialShader;
+}
+
+int TextureProviderMaterial::compare(const AbstractMaterial *o) const
+{
+    Q_ASSERT(o && type() == o->type());
+    const TextureProviderMaterial *other = static_cast<const TextureProviderMaterial *>(o);
+    if (int diff = m_texture->texture().texture() - other->texture()->texture().texture())
+        return diff;
+    if (int diff = int(m_texture->opaque()) - int(other->m_texture->opaque()))
+        return diff;
+    if (int diff = int(m_texture->horizontalWrapMode()) - int(other->m_texture->horizontalWrapMode()))
+        return diff;
+    if (int diff = int(m_texture->verticalWrapMode()) - int(other->m_texture->verticalWrapMode()))
+        return diff;
+    if (int diff = int(m_texture->filtering()) - int(other->m_texture->filtering()))
+        return diff;
+    return int(m_texture->mipmap()) - int(other->m_texture->mipmap());
+}
+
+bool TextureProviderMaterial::is(const AbstractMaterial *effect)
+{
+    return effect->type() == &TextureProviderMaterialShader::type;
+}
+
+
+class TextureProviderMaterialWithOpacityShader : public TextureProviderMaterialShader
+{
+public:
+    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual void initialize();
+
+    static AbstractMaterialType type;
+
+protected:
+    virtual const char *fragmentShader() const { return qt_material_opacity_fragment_code; }
+
+    int m_opacity_id;
+};
+
+AbstractMaterialType TextureProviderMaterialWithOpacityShader::type;
+
+bool TextureProviderMaterialWithOpacity::is(const AbstractMaterial *effect)
+{
+    return effect->type() == &TextureProviderMaterialWithOpacityShader::type;
+}
+
+AbstractMaterialType *TextureProviderMaterialWithOpacity::type() const
+{
+    return &TextureProviderMaterialWithOpacityShader::type;
+}
+
+void TextureProviderMaterialWithOpacity::setTexture(QSGTextureProvider *texture)
+{
+    m_texture = texture;
+    setFlag(Blending, true);
+}
+
+AbstractMaterialShader *TextureProviderMaterialWithOpacity::createShader() const
+{
+    return new TextureProviderMaterialWithOpacityShader;
+}
+
+void TextureProviderMaterialWithOpacityShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+{
+    Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
+
+    if (updates & Renderer::UpdateOpacity)
+        m_program.setUniformValue(m_opacity_id, GLfloat(renderer->renderOpacity()));
+
+    TextureProviderMaterialShader::updateState(renderer, newEffect, oldEffect, updates);
+}
+
+void TextureProviderMaterialWithOpacityShader::initialize()
+{
+    TextureProviderMaterialShader::initialize();
+    m_opacity_id = m_program.uniformLocation("opacity");
+}
+
 
 DefaultTextureNode::DefaultTextureNode()
-    : m_dirty_texture(false)
-    , m_dirty_geometry(false)
+    : m_dirtyGeometry(false)
 {
+    setMaterial(&m_materialO);
+    setOpaqueMaterial(&m_material);
+
     QVector<QSGAttributeDescription> desc = QVector<QSGAttributeDescription>()
         << QSGAttributeDescription(0, 2, GL_FLOAT, 4 * sizeof(float))
         << QSGAttributeDescription(1, 2, GL_FLOAT, 4 * sizeof(float));
     updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
-    setMaterial(&m_materialO);
-    setOpaqueMaterial(&m_material);
 
 #ifdef QML_RUNTIME_TESTING
     description = QLatin1String("pixmap");
 #endif
 }
 
-void DefaultTextureNode::setRect(const QRectF &rect)
+void DefaultTextureNode::setTargetRect(const QRectF &rect)
 {
-    if (m_rect == rect)
+    if (rect == m_targetRect)
         return;
-    m_rect = rect;
-    setBoundingRect(rect);
-    m_dirty_geometry = true;
+    m_targetRect = rect;
+    m_dirtyGeometry = true;
+    markDirty(DirtyGeometry);
 }
 
 void DefaultTextureNode::setSourceRect(const QRectF &rect)
 {
-    if (m_source_rect == rect)
+    if (rect == m_sourceRect)
         return;
-    m_source_rect = rect;
-    m_dirty_geometry = true;
+    m_sourceRect = rect;
+    m_dirtyGeometry = true;
+    markDirty(DirtyGeometry);
 }
 
-void DefaultTextureNode::setTexture(const QSGTextureRef &texture)
+void DefaultTextureNode::setTexture(QSGTextureProvider *texture)
 {
-    if (texture.texture() == m_texture.texture()
-            && texture.subRect() == m_texture.subRect())
+    if (texture == m_texture)
         return;
-
     m_texture = texture;
-    m_dirty_texture = true;
+    m_material.setTexture(texture);
+    m_materialO.setTexture(texture);
+    markDirty(DirtyMaterial);
 }
-
-void DefaultTextureNode::setClampToEdge(bool clampToEdge)
-{
-    if (m_clamp_to_edge == clampToEdge)
-        return;
-    m_clamp_to_edge = clampToEdge;
-    m_dirty_material = true;
-}
-
-void DefaultTextureNode::setLinearFiltering(bool linearFiltering)
-{
-    if (m_linear_filtering == linearFiltering)
-        return;
-    m_linear_filtering = linearFiltering;
-    m_dirty_material = true;
-}
-
 
 void DefaultTextureNode::update()
 {
-    if (m_dirty_texture)
-        updateTexture();
-
-    // A texture update causes the source rectangle to change, so update geometry too.
-    if (m_dirty_geometry || m_dirty_texture)
+    if (m_dirtyGeometry)
         updateGeometry();
+}
 
-    if (m_dirty_material) {
-        m_material.setLinearFiltering(m_linear_filtering);
-        m_materialO.setLinearFiltering(m_linear_filtering);
-        m_material.setClampToEdge(m_clamp_to_edge);
-        m_materialO.setClampToEdge(m_clamp_to_edge);
-        markDirty(DirtyMaterial);
-    }
-
-    m_dirty_geometry = false;
-    m_dirty_texture = false;
+void DefaultTextureNode::preprocess()
+{
+    m_texture->updateTexture();
 }
 
 void DefaultTextureNode::updateGeometry()
 {
-    if (m_texture.isNull())
-        return;
-
     Geometry *g = geometry();
+    g->setVertexCount(4);
+    g->setIndexCount(0);
+    g->setDrawingMode(QSG::TriangleStrip);
+    struct V { float x, y, u, v; };
+    V *v = static_cast<V *>(g->vertexData());
 
-    QRectF normalizedSource = m_source_rect;
-
-    QVarLengthArray<qreal> xSrc, xDst;
-    xSrc.append(normalizedSource.left());
-    xDst.append(m_rect.left());
-    // ### gunnar: needs porting
-//    if (!m_texture.isNull() && !m_texture->hasOwnTexture()) {
-//        for (int i = qFloor(normalizedSource.left()) + 1; i <= qCeil(normalizedSource.right()) - 1; ++i) {
-//            xSrc.append(i);
-//            xDst.append(m_rect.left() + m_rect.width() * (i - normalizedSource.left()) / normalizedSource.width());
-//        }
-//    }
-    xSrc.append(normalizedSource.right());
-    xDst.append(m_rect.right());
-
-    QVarLengthArray<qreal> ySrc, yDst;
-    ySrc.append(normalizedSource.top());
-    yDst.append(m_rect.top());
-    // ### gunnar: needs porting
-//    if (!m_texture.isNull() && !m_texture->hasOwnTexture()) {
-//        for (int i = qFloor(normalizedSource.top()) + 1; i <= qCeil(normalizedSource.bottom()) - 1; ++i) {
-//            ySrc.append(i);
-//            yDst.append(m_rect.top() + m_rect.height() * (i - normalizedSource.top()) / normalizedSource.height());
-//        }
-//    }
-    ySrc.append(normalizedSource.bottom());
-    yDst.append(m_rect.bottom());
-
-    if (xSrc.size() == 2 && ySrc.size() == 2) {
-        g->setDrawingMode(QSG::TriangleStrip);
-        g->setVertexCount(4);
-        if (!m_clamp_to_edge) {
-            g->setIndexCount(4);
-            for (int i=0; i<4; ++i)
-                g->ushortIndexData()[i] = i;
-        }
-    } else {
-        g->setDrawingMode(QSG::Triangles);
-        int cellCount = (xSrc.size() - 1) * (ySrc.size() - 1);
-        int vertexCount = cellCount * 4; // Four vertices per grid cell.
-        if (vertexCount > 0x10000)
-            qWarning("QxPixmapNode::updateGeometry: Number of vertices exceeds 65536.");
-        g->setVertexCount(vertexCount);
-
-        if (!m_clamp_to_edge) {
-            int indexCount = cellCount * 6; // Six indices per grid cell.
-            g->setIndexCount(indexCount);
-
-            for (int i = 0; i < cellCount; ++i) {
-                g->ushortIndexData()[6 * i + 0] = i * 4 + 0;
-                g->ushortIndexData()[6 * i + 1] = i * 4 + 1;
-                g->ushortIndexData()[6 * i + 2] = i * 4 + 3;
-                g->ushortIndexData()[6 * i + 3] = i * 4 + 3;
-                g->ushortIndexData()[6 * i + 4] = i * 4 + 2;
-                g->ushortIndexData()[6 * i + 5] = i * 4 + 0;
-            }
-        }
+    for (int i = 0; i < 4; ++i) {
+        v[i].x = (i & 2 ? m_targetRect.right() : m_targetRect.left());
+        v[i].y = (i & 1 ? m_targetRect.bottom() : m_targetRect.top());
+        v[i].u = (i & 2 ? m_sourceRect.right() : m_sourceRect.left());
+        v[i].v = (i & 1 ? m_sourceRect.bottom() : m_sourceRect.top());
     }
-
-    struct V {
-        float x, y, tx, ty;
-    };
-
-    V *v = (V *) g->vertexData();
-
-    qreal xSrcOffset = qFloor(normalizedSource.left());
-    qreal ySrcOffset = qFloor(normalizedSource.top());
-    QRectF texSrcRect = m_texture.subRect();
-
-    for (int j = 0; j < ySrc.size() - 1; ++j) {
-        for (int i = 0; i < xSrc.size() - 1; ++i) {
-            v[0].x = v[1].x = xDst.at(i);
-            v[2].x = v[3].x = xDst.at(i + 1);
-            v[0].y = v[2].y = yDst.at(j);
-            v[1].y = v[3].y = yDst.at(j + 1);
-
-            QRectF src(texSrcRect.x() + (xSrc.at(i) - i - xSrcOffset) * texSrcRect.width(),
-                texSrcRect.y() + (ySrc.at(j) - j - ySrcOffset) * texSrcRect.height(),
-                (xSrc.at(i + 1) - xSrc.at(i)) * texSrcRect.width(),
-                (ySrc.at(j + 1) - ySrc.at(j)) * texSrcRect.height());
-
-            v[0].tx = v[1].tx = src.left();
-            v[2].tx = v[3].tx = src.right();
-            v[0].ty = v[2].ty = src.top();
-            v[1].ty = v[3].ty = src.bottom();            
-            v += 4;
-        }
-    }
-
-    markDirty(DirtyGeometry);
-}
-
-void DefaultTextureNode::updateTexture()
-{
-    bool opaque = !m_texture->hasAlphaChannel();
-    m_material.setTexture(m_texture, opaque);
-    m_materialO.setTexture(m_texture, opaque);
+    m_dirtyGeometry = false;
 }

@@ -14,7 +14,7 @@ HEADERS += $$PWD/coreapi/geometry.h \
     $$PWD/coreapi/qsgcontextplugin.h \
     $$PWD/coreapi/qsgtexturemanager.h \
     $$PWD/coreapi/qsgtexturemanager_p.h \
-    $$PWD/convenience/distancefieldfontatlas_p.h
+    $$PWD/coreapi/qsgtextureprovider.h \
 
 SOURCES += $$PWD/coreapi/geometry.cpp \
     $$PWD/coreapi/material.cpp \
@@ -25,8 +25,7 @@ SOURCES += $$PWD/coreapi/geometry.cpp \
     $$PWD/coreapi/qsgcontext.cpp \
     $$PWD/coreapi/qsgcontextplugin.cpp \
     $$PWD/coreapi/qsgtexturemanager.cpp \
-    $$PWD/convenience/distancefieldfontatlas.cpp
-
+    $$PWD/coreapi/qsgtextureprovider.cpp \
 
 # Convenience API
 HEADERS += $$PWD/convenience/areaallocator.h \
@@ -34,12 +33,14 @@ HEADERS += $$PWD/convenience/areaallocator.h \
     $$PWD/convenience/solidrectnode.h \
     $$PWD/convenience/texturematerial.h \
     $$PWD/convenience/vertexcolormaterial.h \
+    $$PWD/convenience/distancefieldfontatlas_p.h
 
 SOURCES += $$PWD/convenience/areaallocator.cpp \
     $$PWD/convenience/flatcolormaterial.cpp \
     $$PWD/convenience/solidrectnode.cpp \
     $$PWD/convenience/texturematerial.cpp \
     $$PWD/convenience/vertexcolormaterial.cpp \
+    $$PWD/convenience/distancefieldfontatlas.cpp
 
 
 # 3D API (duplicates with qt3d)
