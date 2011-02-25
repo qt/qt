@@ -5408,7 +5408,7 @@
     \endquotation
 
     \target qmlclass-command
-    \section1 \\qmlclass
+    \section1 \\qmlclass  \span {class="newStuff"} {(new)}
 
     The \\qmlclass command is for documenting a QML class that is
     instantiated by a C++ class. The command has two arguments. The
@@ -5453,31 +5453,50 @@
     \l{ingroup-command}{\\ingroup} commands.
 
     \target qmlproperty-command
-    \section1 \\qmlproperty
+    \section1 \\qmlproperty  \span {class="newStuff"} {(new)}
+
+    The \\qmlproperty command is for documenting a QML property. The
+    argument is the rest of the line. It should be the property type,
+    followed by the QML class name, the \c{::} qualifier, and finally
+    the property name. If we have a QML property named \c x in QML
+    class \c Translate, and the property has type \c {real}, the
+    \\qmlproperty for it would look like this:
+
+    \code
+        / *!
+            \qmlproperty real Translate::x
+
+            The translation along the X axis.
+        * /
+    \endcode
+
+    QDoc includes this QML property on the QML reference page for the
+    \l {http://doc.trolltech.com/4.7/qml-translate.html} {Translate}
+    class.
 
     \target qmlattachedproperty-command
-    \section1 \\qmlattachedproperty
+    \section1 \\qmlattachedproperty \span {class="newStuff"} {(new)}
 
     \target inherits-command
-    \section1 \\inherits
+    \section1 \\inherits  \span {class="newStuff"} {(new)}
 
     \target qmlsignal-command
-    \section1 \\qmlsignal
+    \section1 \\qmlsignal  \span {class="newStuff"} {(new)}
 
     \target qmlattachedsignal-command
-    \section1 \\qmlattachedsignal
+    \section1 \\qmlattachedsignal  \span {class="newStuff"} {(new)}
 
     \target qmlmethod-command
-    \section1 \\qmlmethod
+    \section1 \\qmlmethod  \span {class="newStuff"} {(new)}
 
     \target qmlattachedmethod-command
-    \section1 \\qmlattachedmethod
+    \section1 \\qmlattachedmethod  \span {class="newStuff"} {(new)}
 
     \target default-command
-    \section1 \\default
+    \section1 \\default  \span {class="newStuff"} {(new)}
 
     \target qmlbasictype-command
-    \section1 \\qmlbasictype
+    \section1 \\qmlbasictype  \span {class="newStuff"} {(new)}
 
 */
 
