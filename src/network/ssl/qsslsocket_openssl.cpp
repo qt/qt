@@ -386,6 +386,16 @@ init_context:
         return false;
     }
 
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+    if (client) {
+        // Set server hostname on TLS extension. RFC4366 section 3.1 requires it in ACE format.
+        QByteArray ace = QUrl::toAce(hostName);
+        if (!ace.isEmpty()) {
+            q_SSL_ctrl(ssl,SSL_CTRL_SET_TLSEXT_HOSTNAME,TLSEXT_NAMETYPE_host_name,ace.constData());
+        }
+    }
+#endif
+
     // Clear the session.
     q_SSL_clear(ssl);
     errorList.clear();
