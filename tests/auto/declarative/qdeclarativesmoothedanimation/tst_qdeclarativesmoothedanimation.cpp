@@ -177,6 +177,8 @@ void tst_qdeclarativesmoothedanimation::valueSource()
 
     QTRY_COMPARE(theRect->x(), qreal(200));
     QTRY_COMPARE(theRect->y(), qreal(200));
+
+    delete rect;
 }
 
 void tst_qdeclarativesmoothedanimation::behavior()
@@ -205,6 +207,8 @@ void tst_qdeclarativesmoothedanimation::behavior()
 
     QTRY_COMPARE(theRect->x(), qreal(200));
     QTRY_COMPARE(theRect->y(), qreal(200));
+
+    delete rect;
 }
 
 QTEST_MAIN(tst_qdeclarativesmoothedanimation)

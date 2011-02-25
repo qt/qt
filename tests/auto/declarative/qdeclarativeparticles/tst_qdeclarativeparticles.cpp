@@ -105,6 +105,8 @@ void tst_QDeclarativeParticles::properties()
 
     particles->setProperty("emissionRate", 12);
     QCOMPARE(particles->property("emissionRate").toInt(), 12);
+
+    delete canvas;
 }
 
 void tst_QDeclarativeParticles::motionGravity()
@@ -145,6 +147,8 @@ void tst_QDeclarativeParticles::motionGravity()
     QCOMPARE(xattractorSpy.count(), 1);
     QCOMPARE(yattractorSpy.count(), 1);
     QCOMPARE(accelerationSpy.count(), 1);
+
+    delete canvas;
 }
 
 void tst_QDeclarativeParticles::motionWander()
@@ -193,6 +197,8 @@ void tst_QDeclarativeParticles::motionWander()
     QCOMPARE(xvarianceSpy.count(), 1);
     QCOMPARE(yvarianceSpy.count(), 1);
     QCOMPARE(paceSpy.count(), 1);
+
+    delete canvas;
 }
 
 void tst_QDeclarativeParticles::runs()
@@ -203,6 +209,8 @@ void tst_QDeclarativeParticles::runs()
     QObject* particles = canvas->rootObject()->findChild<QObject*>("particles");
     QVERIFY(particles);
     QTest::qWait(1000);//Run for one second. Test passes if it doesn't crash.
+
+    delete canvas;
 }
 
 QDeclarativeView *tst_QDeclarativeParticles::createView(const QString &filename)
