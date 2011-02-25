@@ -381,7 +381,7 @@ def main():
         usage()
     if not os.path.isfile(qtsrcdir + "/src/corelib/tools/qlocale.h"):
         usage()
-    if not os.path.isfile(qtsrcdir + "/src/corelib/tools/qlocale.cpp"):
+    if not os.path.isfile(qtsrcdir + "/src/corelib/tools/qlocale.qdoc"):
         usage()
 
     (data_temp_file, data_temp_file_path) = tempfile.mkstemp("qlocale_data_p")
@@ -715,23 +715,23 @@ def main():
 
     os.rename(qlocaleh_temp_file_path, qtsrcdir + "/src/corelib/tools/qlocale.h")
 
-    # qlocale.cpp
+    # qlocale.qdoc
 
-    (qlocalecpp_temp_file, qlocalecpp_temp_file_path) = tempfile.mkstemp("qlocale.cpp")
-    qlocalecpp_temp_file = os.fdopen(qlocalecpp_temp_file, "w")
-    qlocalecpp_file = open(qtsrcdir + "/src/corelib/tools/qlocale.cpp", "r")
-    s = qlocalecpp_file.readline()
+    (qlocaleqdoc_temp_file, qlocaleqdoc_temp_file_path) = tempfile.mkstemp("qlocale.qdoc")
+    qlocaleqdoc_temp_file = os.fdopen(qlocaleqdoc_temp_file, "w")
+    qlocaleqdoc_file = open(qtsrcdir + "/src/corelib/tools/qlocale.qdoc", "r")
+    s = qlocaleqdoc_file.readline()
     DOCSTRING="    QLocale's data is based on Common Locale Data Repository "
     while s:
         if DOCSTRING in s:
-            qlocalecpp_temp_file.write(DOCSTRING + "v" + cldr_version + ".\n")
+            qlocaleqdoc_temp_file.write(DOCSTRING + "v" + cldr_version + ".\n")
         else:
-            qlocalecpp_temp_file.write(s)
-        s = qlocalecpp_file.readline()
-    qlocalecpp_temp_file.close()
-    qlocalecpp_file.close()
+            qlocaleqdoc_temp_file.write(s)
+        s = qlocaleqdoc_file.readline()
+    qlocaleqdoc_temp_file.close()
+    qlocaleqdoc_file.close()
 
-    os.rename(qlocalecpp_temp_file_path, qtsrcdir + "/src/corelib/tools/qlocale.cpp")
+    os.rename(qlocaleqdoc_temp_file_path, qtsrcdir + "/src/corelib/tools/qlocale.qdoc")
 
 if __name__ == "__main__":
     main()
