@@ -864,9 +864,16 @@ qint64 QSymbianSocketEngine::writeDatagram(const char *data, qint64 len,
         default:
             d->setError(QAbstractSocket::NetworkError, d->SendDatagramErrorString);
         }
+        return -1;
     }
 
-    return (err < 0) ? -1 : len;
+    if (QSysInfo::s60Version() <= QSysInfo::SV_S60_5_0) {
+        // This is evil hack, but for some reason native RSocket::SendTo returns 0,
+        // for large datagrams (such as 600 bytes). Based on comments from Open C team
+        // this should happen only in platforms <= S60 5.0.
+        return len;
+    }
+    return sentBytes();
 }
 
 // FIXME check where the native socket engine called that..
