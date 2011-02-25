@@ -45,7 +45,6 @@
 #include "qmlrenderer.h"
 #include "material.h"
 
-#include <qsgattributevalue.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/qapplication.h>
 #include <QtCore/qpair.h>

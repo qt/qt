@@ -46,7 +46,6 @@
 
 #include "adaptationlayer.h"
 
-#include <qsgattributevalue.h>
 #include <QGLShaderProgram>
 #include <qglframebufferobject.h>
 #include <QtGui/qapplication.h>

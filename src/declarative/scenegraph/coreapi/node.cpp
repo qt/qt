@@ -43,7 +43,6 @@
 #include "renderer.h"
 #include "nodeupdater_p.h"
 #include "material.h"
-#include <qsgattributevalue.h>
 
 #include "limits.h"
 
@@ -544,9 +543,9 @@ QDebug operator<<(QDebug d, const GeometryNode *n)
     } else {
 
         switch (g->drawingMode()) {
-        case QSG::TriangleStrip: d << "strip"; break;
-        case QSG::TriangleFan: d << "fan"; break;
-        case QSG::Triangles: d << "triangles"; break;
+        case GL_TRIANGLE_STRIP: d << "strip"; break;
+        case GL_TRIANGLE_FAN: d << "fan"; break;
+        case GL_TRIANGLES: d << "triangles"; break;
         default: break;
         }
 
