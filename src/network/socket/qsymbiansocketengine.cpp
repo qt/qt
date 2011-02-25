@@ -845,8 +845,19 @@ qint64 QSymbianSocketEngine::writeDatagram(const char *data, qint64 len,
     User::WaitForRequest(status); //Non blocking send
     TInt err = status.Int(); 
 
+#if defined (QNATIVESOCKETENGINE_DEBUG)
+    qDebug("QSymbianSocketEngine::writeDatagram(%p \"%s\", %lli, \"%s\", %i) == %lli (err=%d)", data,
+           qt_prettyDebug(data, qMin<int>(len, 16), len).data(), len, host.toString().toLatin1().constData(),
+           port, (qint64) sentBytes(), err);
+#endif
+
     if (err) {
         switch (err) {
+        case KErrWouldBlock:
+            // do not error the socket. (otherwise socket layer is reset)
+            // On symbian^1 and earlier, KErrWouldBlock is returned when interface is not up yet
+            // On symbian^3, KErrNone is returned but sentBytes = 0
+            return 0;
         case KErrTooBig:
             d->setError(QAbstractSocket::DatagramTooLargeError, d->DatagramTooLargeErrorString);
             break;
@@ -855,13 +866,7 @@ qint64 QSymbianSocketEngine::writeDatagram(const char *data, qint64 len,
         }
     }
 
-#if defined (QNATIVESOCKETENGINE_DEBUG)
-    qDebug("QSymbianSocketEnginePrivate::sendDatagram(%p \"%s\", %lli, \"%s\", %i) == %lli", data,
-           qt_prettyDebug(data, qMin<int>(len, 16), len).data(), len, host.toString().toLatin1().constData(),
-           port, (qint64) sentBytes());
-#endif
-
-    return qint64(sentBytes());
+    return (err < 0) ? -1 : len;
 }
 
 // FIXME check where the native socket engine called that..
