@@ -668,26 +668,28 @@ template <class Iterator> bool qt_stroke_side(Iterator *it,
 #endif
             QLineF line(qt_fixed_to_real(prev.x), qt_fixed_to_real(prev.y),
                         qt_fixed_to_real(e.x), qt_fixed_to_real(e.y));
-            QLineF normal = line.normalVector();
-            normal.setLength(offset);
-            line.translate(normal.dx(), normal.dy());
+            if (line.p1() != line.p2()) {
+                QLineF normal = line.normalVector();
+                normal.setLength(offset);
+                line.translate(normal.dx(), normal.dy());
 
-            // If we are starting a new subpath, move to correct starting point.
-            if (first) {
-                if (capFirst)
-                    stroker->joinPoints(prev.x, prev.y, line, stroker->capStyleMode());
-                else
-                    stroker->emitMoveTo(qt_real_to_fixed(line.x1()), qt_real_to_fixed(line.y1()));
-                *startTangent = line;
-                first = false;
-            } else {
-                stroker->joinPoints(prev.x, prev.y, line, stroker->joinStyleMode());
+                // If we are starting a new subpath, move to correct starting point.
+                if (first) {
+                    if (capFirst)
+                        stroker->joinPoints(prev.x, prev.y, line, stroker->capStyleMode());
+                    else
+                        stroker->emitMoveTo(qt_real_to_fixed(line.x1()), qt_real_to_fixed(line.y1()));
+                    *startTangent = line;
+                    first = false;
+                } else {
+                    stroker->joinPoints(prev.x, prev.y, line, stroker->joinStyleMode());
+                }
+
+                // Add the stroke for this line.
+                stroker->emitLineTo(qt_real_to_fixed(line.x2()),
+                                    qt_real_to_fixed(line.y2()));
+                prev = e;
             }
-
-            // Add the stroke for this line.
-            stroker->emitLineTo(qt_real_to_fixed(line.x2()),
-                                qt_real_to_fixed(line.y2()));
-            prev = e;
 
         // CurveToElement
         } else if (e.isCurveTo()) {
