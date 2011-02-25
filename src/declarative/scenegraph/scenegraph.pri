@@ -47,17 +47,11 @@ SOURCES += $$PWD/convenience/areaallocator.cpp \
 
 # 3D API (duplicates with qt3d)
 HEADERS += \
-    $$PWD/3d/qsgattributedescription.h \
-    $$PWD/3d/qsgattributevalue.h \
     $$PWD/3d/qsgmatrix4x4stack.h \
-    $$PWD/3d/qsgmatrix4x4stack_p.h \
-    $$PWD/3d/qsgarray.h \
+    $$PWD/3d/qsgmatrix4x4stack_p.h
 
 
 SOURCES += \
-    $$PWD/3d/qsgarray.cpp \
-    $$PWD/3d/qsgmatrix4x4stack.cpp \
-    $$PWD/3d/qsgattributedescription.cpp \
-    $$PWD/3d/qsgattributevalue.cpp \
+    $$PWD/3d/qsgmatrix4x4stack.cpp
 
 include(adaptationlayers/adaptationlayers.pri)
