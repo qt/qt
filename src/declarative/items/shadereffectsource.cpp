@@ -324,6 +324,8 @@ void ShaderEffectSource::grab()
     if (!m_sourceItem)
         return;
     QSGCanvas *canvas = m_sourceItem->canvas();
+    if (!canvas)
+        return;
     QSGCanvasPrivate::get(canvas)->updateDirtyNodes();
     QGLContext *glctx = const_cast<QGLContext *>(canvas->context());
     glctx->makeCurrent();
