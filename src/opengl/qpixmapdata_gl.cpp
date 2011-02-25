@@ -59,7 +59,7 @@
 
 QT_BEGIN_NAMESPACE
 
-extern QGLWidget* qt_gl_share_widget();
+Q_OPENGL_EXPORT extern QGLWidget* qt_gl_share_widget();
 
 /*!
     \class QGLFramebufferObjectPool
