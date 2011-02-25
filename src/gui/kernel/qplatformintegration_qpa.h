@@ -86,7 +86,9 @@ public:
 
 //Deeper window system integrations
     virtual QPlatformFontDatabase *fontDatabase() const;
+#ifndef QT_NO_CLIPBOARD
     virtual QPlatformClipboard *clipboard() const;
+#endif
 
 // Experimental in mainthread eventloop integration
 // This should only be used if it is only possible to do window system event processing in
