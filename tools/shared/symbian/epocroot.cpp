@@ -99,6 +99,11 @@ static void fixEpocRoot(QString &path)
     if (!path.size() || path[path.size()-1] != QLatin1Char('/')) {
         path += QLatin1Char('/');
     }
+#ifdef Q_OS_WIN32
+    // Make sure we have drive letter in epocroot
+    if (path.startsWith(QLatin1Char('/')))
+        path.prepend(QDir::currentPath().left(2));
+#endif
 }
 
 /**
