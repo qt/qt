@@ -651,7 +651,6 @@ QLocale::NumberOptions QLocale::numberOptions() const
 */
 QString QLocale::quoteString(const QString &str, QuotationStyle qs) const
 {
-
     return quoteString(&str, qs);
 }
 
@@ -664,14 +663,18 @@ QString QLocale::quoteString(const QStringRef &str, QuotationStyle qs) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d() == systemPrivate()) {
-        QVariant quotationBegin = systemLocale()->query(QSystemLocale::QuotationBegin, QVariant(qs));
-        QVariant quotationEnd = systemLocale()->query(QSystemLocale::QuotationEnd, QVariant(qs));
-        if (!quotationBegin.isNull() && !quotationEnd.isNull())
-            return quotationBegin.toString() % str % quotationEnd.toString();
+        QVariant res;
+        if (qs == QLocale::StandardQuotation)
+            res = systemLocale()->query(QSystemLocale::StringToStandardQuotation, QVariant::fromValue(str));
+        else
+            res = systemLocale()->query(QSystemLocale::StringToAlternateQuotation, QVariant::fromValue(str));
+
+        if (!res.isNull())
+            return res.toString();
     }
 #endif
 
-    if (qs == StandardQuotation)
+    if (qs == QLocale::StandardQuotation)
         return QChar(d()->m_quotation_start) % str % QChar(d()->m_quotation_end);
     else
         return QChar(d()->m_alternate_quotation_start) % str % QChar(d()->m_alternate_quotation_end);

@@ -340,26 +340,23 @@ static QString macFormatCurrency(const QVariant &in)
 }
 
 #ifndef QT_NO_SYSTEMLOCALE
-static QVariant macQuotationSymbol(QSystemLocale::QueryType type, const QVariant &in)
+static QVariant macQuoteString(QSystemLocale::QueryType type, const QStringRef &str)
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
     if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_6)
         return QVariant();
 
+    QString begin, end;
     QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
     switch (type) {
-    case  QSystemLocale::QuotationBegin:
-        if (in.toInt() == QLocale::StandardQuotation)
-            return QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleQuotationBeginDelimiterKey)));
-        else
-            return QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleAlternateQuotationBeginDelimiterKey)));
-        break;
-    case QSystemLocale::QuotationEnd:
-        if (in.toInt() == QLocale::StandardQuotation)
-            return QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleQuotationEndDelimiterKey)));
-        else
-            return QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleAlternateQuotationEndDelimiterKey)));
-        break;
+    case QSystemLocale::StringToStandardQuotation:
+        begin = QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleQuotationBeginDelimiterKey)));
+        end = QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleQuotationEndDelimiterKey)));
+        return QString(begin % str % end);
+    case QSystemLocale::StringToAlternateQuotation:
+        begin = QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleAlternateQuotationBeginDelimiterKey)));
+        end = QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleAlternateQuotationEndDelimiterKey)));
+        return QString(begin % str % end);
      default:
         break;
     }
@@ -478,9 +475,9 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         }
         return QVariant(result);
     }
-    case QuotationBegin:
-    case QuotationEnd:
-        return macQuotationSymbol(type,in);
+    case StringToStandardQuotation:
+    case StringToAlternateQuotation:
+        return macQuoteString(type, in.value<QStringRef>());
     default:
         break;
     }

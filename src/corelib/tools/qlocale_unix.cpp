@@ -113,6 +113,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     const QLocale &lc_numeric = d->lc_numeric;
     const QLocale &lc_time = d->lc_time;
     const QLocale &lc_monetary = d->lc_monetary;
+    const QLocale &lc_messages = d->lc_messages;
 
     switch (type) {
     case DecimalPoint:
@@ -215,9 +216,10 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         }
         return QVariant();
     }
-    case QuotationBegin:
-    case QuotationEnd:
-        break; // TODO
+    case StringToStandardQuotation:
+        return lc_messages.quoteString(in.value<QStringRef>());
+    case StringToAlternateQuotation:
+        return lc_messages.quoteString(in.value<QStringRef>(), QLocale::AlternateQuotation);
     default:
         break;
     }

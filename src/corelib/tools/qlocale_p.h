@@ -55,6 +55,7 @@
 
 #include "QtCore/qstring.h"
 #include "QtCore/qvarlengtharray.h"
+#include "QtCore/qmetatype.h"
 
 #include "qlocale.h"
 
@@ -63,6 +64,8 @@ class CEnvironmentChangeNotifier;
 #endif
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_METATYPE(QStringRef)
 
 struct Q_CORE_EXPORT QLocalePrivate
 {

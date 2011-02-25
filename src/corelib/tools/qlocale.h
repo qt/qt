@@ -101,8 +101,8 @@ public:
         CurrencySymbol, // QString in: format
         CurrencyToString, // QString in: qlonglong, qulonglong or double
         UILanguages, // QStringList
-        QuotationBegin, // QString in: StandardQuotation or AlternateQuotation
-        QuotationEnd // QString in: StandardQuotation or AlternateQuotation
+        StringToStandardQuotation, // QString in: QStringRef to quote
+        StringToAlternateQuotation // QString in: QStringRef to quote
     };
     virtual QVariant query(QueryType type, QVariant in) const;
     virtual QLocale fallbackLocale() const;
