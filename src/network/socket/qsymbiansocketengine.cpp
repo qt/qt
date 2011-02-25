@@ -1049,10 +1049,16 @@ qint64 QSymbianSocketEngine::read(char *data, qint64 maxSize)
     TPtr8 buffer((TUint8*)data, (int)maxSize);
     TSockXfrLength received = 0;
     TRequestStatus status;
-    d->nativeSocket.RecvOneOrMore(buffer, 0, status, received);
+    TSockAddr dummy;
+    if (d->socketType == QAbstractSocket::UdpSocket) {
+        //RecvOneOrMore() can only be used with stream-interfaced connected sockets; datagram interface sockets will return KErrNotSupported.
+        d->nativeSocket.RecvFrom(buffer, dummy, 0, status);
+    } else {
+        d->nativeSocket.RecvOneOrMore(buffer, 0, status, received);
+    }
     User::WaitForRequest(status); //Non blocking receive
     TInt err = status.Int();
-    int r = received();
+    int r = buffer.Length();
 
     if (err == KErrWouldBlock) {
         // No data was available for reading
@@ -1064,9 +1070,9 @@ qint64 QSymbianSocketEngine::read(char *data, qint64 maxSize)
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    qDebug("QSymbianSocketEngine::read(%p \"%s\", %llu) == %i",
+    qDebug("QSymbianSocketEngine::read(%p \"%s\", %llu) == %i (err = %d)",
            data, qt_prettyDebug(data, qMin(r, ssize_t(16)), r).data(),
-           maxSize, r);
+           maxSize, r, err);
 #endif
 
     return qint64(r);
