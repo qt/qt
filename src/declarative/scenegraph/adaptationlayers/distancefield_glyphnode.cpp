@@ -51,6 +51,7 @@ DistanceFieldGlyphNode::DistanceFieldGlyphNode()
     , m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 0)
 {
     m_geometry.setDrawingMode(GL_TRIANGLES);
+    setGeometry(&m_geometry);
 }
 
 DistanceFieldGlyphNode::~DistanceFieldGlyphNode()
