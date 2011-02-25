@@ -983,6 +983,7 @@ if [ "$CFG_EMBEDDED" = "nacl" ]; then
     CFG_SCRIPT=no
     CFG_SQLITE=no
     CFG_SQL_sqlite=no
+    CFG_LIBTIFF=no
     CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS tests"
     QT_CONFIG="$QT_CONFIG nacl"
 fi
