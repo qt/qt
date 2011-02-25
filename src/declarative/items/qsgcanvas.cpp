@@ -495,6 +495,16 @@ void QSGCanvasPrivate::sceneMouseEventForTransform(QGraphicsSceneMouseEvent &sce
     }
 }
 
+void QSGCanvasPrivate::transformTouchPoints(QList<QTouchEvent::TouchPoint> &touchPoints, const QTransform &transform)
+{
+    for (int i=0; i<touchPoints.count(); i++) {
+        QTouchEvent::TouchPoint &touchPoint = touchPoints[i];
+        touchPoint.setRect(transform.mapRect(touchPoint.sceneRect()));
+        touchPoint.setStartPos(transform.map(touchPoint.startScenePos()));
+        touchPoint.setLastPos(transform.map(touchPoint.lastScenePos()));
+    }
+}
+
 QEvent::Type QSGCanvasPrivate::sceneMouseEventTypeFromMouseEvent(QMouseEvent *event)
 {
     switch(event->type()) {
@@ -582,6 +592,34 @@ void QSGCanvasPrivate::sceneHoverEventFromMouseEvent(QGraphicsSceneHoverEvent &h
     hoverEvent.setAccepted(mouseEvent->isAccepted());
 
     lastMousePosition = mouseEvent->pos();
+}
+
+/*!
+Translates the data in \a touchEvent to this canvas.  This method leaves the item local positions in
+\a touchEvent untouched (these are filled in later).
+*/
+void QSGCanvasPrivate::translateTouchEvent(QTouchEvent *touchEvent)
+{
+    Q_Q(QSGCanvas);
+
+    touchEvent->setWidget(q);
+
+    QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
+    for (int i = 0; i < touchPoints.count(); ++i) {
+        QTouchEvent::TouchPoint &touchPoint = touchPoints[i];
+
+        touchPoint.setScreenRect(touchPoint.sceneRect());
+        touchPoint.setStartScreenPos(touchPoint.startScenePos());
+        touchPoint.setLastScreenPos(touchPoint.lastScenePos());
+
+        touchPoint.setSceneRect(touchPoint.rect());
+        touchPoint.setStartScenePos(touchPoint.startPos());
+        touchPoint.setLastScenePos(touchPoint.lastPos());
+
+        if (touchPoint.isPrimary())
+            lastMousePosition = touchPoint.pos().toPoint();
+    }
+    touchEvent->setTouchPoints(touchPoints);
 }
 
 void QSGCanvasPrivate::setFocusInScope(QSGItem *scope, QSGItem *item, FocusOptions options)
@@ -974,20 +1012,15 @@ bool QSGCanvas::event(QEvent *e)
     switch (e->type()) {
 
     case QEvent::TouchBegin:
-#ifdef TOUCH_DEBUG
-        qWarning("touchBeginEvent");
-#endif
-        return true;
     case QEvent::TouchUpdate:
-#ifdef TOUCH_DEBUG
-        qWarning("touchUpdateEvent");
-#endif
-        return true;
     case QEvent::TouchEnd:
-#ifdef TOUCH_DEBUG
-        qWarning("touchEndEvent");
-#endif
-        return true;
+    {
+        QTouchEvent *touch = static_cast<QTouchEvent *>(e);
+        d->translateTouchEvent(touch);
+        d->deliverTouchEvent(touch);
+        if (!touch->isAccepted())
+            return false;
+    }
     case QEvent::Leave:
         d->clearHover();
         d->lastMousePosition = QPoint();
@@ -1298,6 +1331,155 @@ void QSGCanvas::wheelEvent(QWheelEvent *event)
 }
 #endif // QT_NO_WHEELEVENT
 
+bool QSGCanvasPrivate::deliverTouchEvent(QTouchEvent *event)
+{
+#ifdef TOUCH_DEBUG
+    if (event->type() == QEvent::TouchBegin)
+        qWarning("touchBeginEvent");
+    else if (event->type() == QEvent::TouchUpdate)
+        qWarning("touchUpdateEvent");
+    else if (event->type() == QEvent::TouchEnd)
+        qWarning("touchEndEvent");
+#endif
+
+    QHash<QSGItem *, QList<QTouchEvent::TouchPoint> > updatedPoints;
+
+    if (event->type() == QTouchEvent::TouchBegin) {     // all points are new touch points
+        QSet<int> acceptedNewPoints;
+        deliverTouchPoints(rootItem, event, event->touchPoints(), &acceptedNewPoints, &updatedPoints);
+        if (acceptedNewPoints.count() > 0)
+            event->accept();
+        return event->isAccepted();
+    }
+
+    const QList<QTouchEvent::TouchPoint> &touchPoints = event->touchPoints();
+    QList<QTouchEvent::TouchPoint> newPoints;
+    QSGItem *item = 0;
+    for (int i=0; i<touchPoints.count(); i++) {
+        const QTouchEvent::TouchPoint &touchPoint = touchPoints[i];
+        switch (touchPoint.state()) {
+            case Qt::TouchPointPressed:
+                newPoints << touchPoint;
+                break;
+            case Qt::TouchPointMoved:
+            case Qt::TouchPointStationary:
+            case Qt::TouchPointReleased:
+                if (itemForTouchPointId.contains(touchPoint.id())) {
+                    item = itemForTouchPointId[touchPoint.id()];
+                    if (item)
+                        updatedPoints[item].append(touchPoint);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    if (newPoints.count() > 0 || updatedPoints.count() > 0) {
+        QSet<int> acceptedNewPoints;
+        int prevCount = updatedPoints.count();
+        deliverTouchPoints(rootItem, event, newPoints, &acceptedNewPoints, &updatedPoints);
+        if (acceptedNewPoints.count() > 0 || updatedPoints.count() != prevCount)
+            event->accept();
+    }
+
+    if (event->touchPointStates() & Qt::TouchPointReleased) {
+        for (int i=0; i<touchPoints.count(); i++) {
+            if (touchPoints[i].state() == Qt::TouchPointReleased)
+                itemForTouchPointId.remove(touchPoints[i].id());
+        }
+    }
+
+    return event->isAccepted();
+}
+
+bool QSGCanvasPrivate::deliverTouchPoints(QSGItem *item, QTouchEvent *event, const QList<QTouchEvent::TouchPoint> &newPoints, QSet<int> *acceptedNewPoints, QHash<QSGItem *, QList<QTouchEvent::TouchPoint> > *updatedPoints)
+{
+    Q_Q(QSGCanvas);
+    QSGItemPrivate *itemPrivate = QSGItemPrivate::get(item);
+
+    if (itemPrivate->opacity == 0.0)
+        return false;
+
+    if (itemPrivate->flags & QSGItem::ItemClipsChildrenToShape) {
+        QRectF bounds(0, 0, item->width(), item->height());
+        for (int i=0; i<newPoints.count(); i++) {
+            QPointF p = item->mapFromScene(newPoints[i].scenePos());
+            if (!bounds.contains(p))
+                return false;
+        }
+    }
+
+    QList<QSGItem *> children = itemPrivate->paintOrderChildItems();
+    for (int ii = children.count() - 1; ii >= 0; --ii) {
+        QSGItem *child = children.at(ii);
+        if (!child->isEnabled())
+            continue;
+        if (deliverTouchPoints(child, event, newPoints, acceptedNewPoints, updatedPoints))
+            return true;
+    }
+
+    QList<QTouchEvent::TouchPoint> matchingPoints;
+    if (newPoints.count() > 0 && acceptedNewPoints->count() < newPoints.count()) {
+        QRectF bounds(0, 0, item->width(), item->height());
+        for (int i=0; i<newPoints.count(); i++) {
+            if (acceptedNewPoints->contains(newPoints[i].id()))
+                continue;
+            QPointF p = item->mapFromScene(newPoints[i].scenePos());
+            if (bounds.contains(p))
+                matchingPoints << newPoints[i];
+        }
+    }
+
+    if (matchingPoints.count() > 0 || (*updatedPoints)[item].count() > 0) {
+        QList<QTouchEvent::TouchPoint> &eventPoints = (*updatedPoints)[item];
+        eventPoints.append(matchingPoints);
+        transformTouchPoints(eventPoints, itemPrivate->canvasToItemTransform());
+
+        Qt::TouchPointStates eventStates;
+        for (int i=0; i<eventPoints.count(); i++)
+            eventStates |= eventPoints[i].state();
+        // if all points have the same state, set the event type accordingly
+        QEvent::Type eventType;
+        switch (eventStates) {
+            case Qt::TouchPointPressed:
+                eventType = QEvent::TouchBegin;
+                break;
+            case Qt::TouchPointReleased:
+                eventType = QEvent::TouchEnd;
+                break;
+            default:
+                eventType = QEvent::TouchUpdate;
+                break;
+        }
+
+        if (eventStates != Qt::TouchPointStationary) {
+            QTouchEvent touchEvent(eventType);
+            touchEvent.setWidget(q);
+            touchEvent.setDeviceType(event->deviceType());
+            touchEvent.setModifiers(event->modifiers());
+            touchEvent.setTouchPointStates(eventStates);
+            touchEvent.setTouchPoints(eventPoints);
+
+            touchEvent.accept();
+            q->sendEvent(item, &touchEvent);
+
+            if (touchEvent.isAccepted()) {
+                for (int i=0; i<matchingPoints.count(); i++) {
+                    itemForTouchPointId[matchingPoints[i].id()] = item;
+                    acceptedNewPoints->insert(matchingPoints[i].id());
+                }
+            }
+        }
+    }
+
+    updatedPoints->remove(item);
+    if (acceptedNewPoints->count() == newPoints.count() && updatedPoints->isEmpty())
+        return true;
+
+    return false;
+}
+
 bool QSGCanvasPrivate::sendFilteredMouseEvent(QSGItem *target, QSGItem *item, QGraphicsSceneMouseEvent *event)
 {
     if (!target)
@@ -1365,6 +1547,11 @@ bool QSGCanvas::sendEvent(QSGItem *item, QEvent *e)
     case QEvent::GraphicsSceneHoverLeave:
     case QEvent::GraphicsSceneHoverMove:
         QSGItemPrivate::get(item)->deliverHoverEvent(static_cast<QGraphicsSceneHoverEvent *>(e));
+        break;
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+        QSGItemPrivate::get(item)->deliverTouchEvent(static_cast<QTouchEvent *>(e));
         break;
     default:
         break;

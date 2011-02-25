@@ -299,6 +299,7 @@ public:
     void deliverFocusEvent(QFocusEvent *);
     void deliverMouseEvent(QGraphicsSceneMouseEvent *);
     void deliverWheelEvent(QGraphicsSceneWheelEvent *);
+    void deliverTouchEvent(QTouchEvent *);
     void deliverHoverEvent(QGraphicsSceneHoverEvent *);
 
     bool calcEffectiveVisible() const;

@@ -1490,6 +1490,11 @@ void QSGItem::wheelEvent(QGraphicsSceneWheelEvent *event)
     event->ignore();
 }
 
+void QSGItem::touchEvent(QTouchEvent *event)
+{
+    event->ignore();
+}
+
 void QSGItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_UNUSED(event);
@@ -1941,6 +1946,12 @@ void QSGItemPrivate::deliverWheelEvent(QGraphicsSceneWheelEvent *e)
 {
     Q_Q(QSGItem);
     q->wheelEvent(e);
+}
+
+void QSGItemPrivate::deliverTouchEvent(QTouchEvent *e)
+{
+    Q_Q(QSGItem);
+    q->touchEvent(e);
 }
 
 void QSGItemPrivate::deliverHoverEvent(QGraphicsSceneHoverEvent *e)
