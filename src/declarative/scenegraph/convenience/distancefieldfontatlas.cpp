@@ -141,8 +141,8 @@ DistanceFieldFontAtlas::DistanceFieldFontAtlas(const QFont &font)
 
     QString basename = m_fontEngine->fontDef.family;
     basename.remove(QLatin1String(" "));
-    QString italic = m_fontEngine->fontDef.style == QFont::StyleNormal ? QLatin1String("") : QLatin1String("i");
-    QString bold = m_fontEngine->fontDef.weight > QFont::Normal ? QLatin1String("b") : QLatin1String("");
+    QString italic = m_font.italic() ? QLatin1String("i") : QLatin1String("");
+    QString bold = m_font.weight() > QFont::Normal ? QLatin1String("b") : QLatin1String("");
     m_distanceFieldFileName = basename + bold + italic + QLatin1String(".png");
 }
 
