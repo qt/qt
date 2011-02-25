@@ -4238,7 +4238,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         return;
 
     case PE_Widget:
-        if (!rule.hasDrawable()) {
+        if (w && !rule.hasDrawable()) {
             QWidget *container = containerWidget(w);
             if (styleSheetCaches->autoFillDisabledWidgets.contains(container)
                 && (container == w || !renderRule(container, opt).hasBackground())) {

@@ -314,6 +314,8 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
     position of the release of the click, and whether the click was held.
 
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
+
+    \sa onCanceled()
 */
 
 /*!
