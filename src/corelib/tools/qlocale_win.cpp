@@ -539,7 +539,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         return QVariant(winSystemFirstDayOfWeek());
     case CurrencySymbol:
         return QVariant(winCurrencySymbol(QLocale::CurrencySymbolFormat(in.toUInt())));
-    case FormatCurrency:
+    case CurrencyToString:
         return QVariant(winFormatCurrency(in));
     case UILanguages:
         return QVariant(winUILanguages());

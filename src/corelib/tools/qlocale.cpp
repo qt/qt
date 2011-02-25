@@ -2881,7 +2881,7 @@ QString QLocale::toCurrencyString(qlonglong value) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d() == systemPrivate()) {
-        QVariant res = systemLocale()->query(QSystemLocale::FormatCurrency, value);
+        QVariant res = systemLocale()->query(QSystemLocale::CurrencyToString, value);
         if (!res.isNull())
             return res.toString();
     }
@@ -2910,7 +2910,7 @@ QString QLocale::toCurrencyString(qulonglong value) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d() == systemPrivate()) {
-        QVariant res = systemLocale()->query(QSystemLocale::FormatCurrency, value);
+        QVariant res = systemLocale()->query(QSystemLocale::CurrencyToString, value);
         if (!res.isNull())
             return res.toString();
     }
@@ -2930,7 +2930,7 @@ QString QLocale::toCurrencyString(double value) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d() == systemPrivate()) {
-        QVariant res = systemLocale()->query(QSystemLocale::FormatCurrency, value);
+        QVariant res = systemLocale()->query(QSystemLocale::CurrencyToString, value);
         if (!res.isNull())
             return res.toString();
     }

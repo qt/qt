@@ -460,7 +460,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         return QVariant(macFirstDayOfWeek());
     case CurrencySymbol:
         return QVariant(macCurrencySymbol(QLocale::CurrencySymbolFormat(in.toUInt())));
-    case FormatCurrency:
+    case CurrencyToString:
         return macFormatCurrency(in);
     case UILanguages: {
         QCFType<CFArrayRef> languages = (CFArrayRef)CFPreferencesCopyValue(

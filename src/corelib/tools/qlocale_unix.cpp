@@ -165,7 +165,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         return lc_time.firstDayOfWeek();
     case CurrencySymbol:
         return lc_monetary.currencySymbol(QLocale::CurrencySymbolFormat(in.toUInt()));
-    case FormatCurrency: {
+    case CurrencyToString: {
         switch (in.type()) {
         case QVariant::Int:
             return lc_monetary.toCurrencyString(in.toInt());

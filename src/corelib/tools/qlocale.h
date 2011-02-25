@@ -99,7 +99,7 @@ public:
         WeekendStart, // Qt::DayOfWeek
         WeekendEnd, // Qt::DayOfWeek
         CurrencySymbol, // QString in: format
-        FormatCurrency, // QString in: qlonglong, qulonglong or double
+        CurrencyToString, // QString in: qlonglong, qulonglong or double
         UILanguages, // QStringList
         QuotationBegin, // QString in: StandardQuotation or AlternateQuotation
         QuotationEnd // QString in: StandardQuotation or AlternateQuotation
