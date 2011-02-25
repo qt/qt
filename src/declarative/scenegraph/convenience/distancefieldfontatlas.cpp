@@ -62,6 +62,8 @@ void qt_disableFontHinting(QFont &font)
 #define DISTANCEFIELD_TILESIZE 64
 #define DISTANCEFIELD_SCALE 16
 #define DISTANCEFIELD_RADIUS 80
+#define DISTANCEFIELD_MARGIN 50
+#define DISTANCEFIELD_MARGIN_THRESHOLD 0.31
 
 static float mindist(const QImage &in, int w, int h, int x, int y, int r, float maxdist)
 {
@@ -190,10 +192,14 @@ DistanceFieldFontAtlas::Metrics DistanceFieldFontAtlas::glyphMetrics(glyph_t gly
     QFixedPoint p;
     m_fontEngine->addGlyphsToPath(&glyph, &p, 1, &path, 0);
 
-    m.width = path.boundingRect().width();
-    m.height = path.boundingRect().height();
-    m.baselineX = path.boundingRect().x();
-    m.baselineY = -path.boundingRect().y();
+    float margin = 0.0;
+    if (scaleRatioFromRefSize() <= DISTANCEFIELD_MARGIN_THRESHOLD)
+        margin = DISTANCEFIELD_MARGIN / qreal(DISTANCEFIELD_SCALE) * scaleRatioFromRefSize();
+
+    m.width = path.boundingRect().width() + margin;
+    m.height = path.boundingRect().height() + margin;
+    m.baselineX = path.boundingRect().x() - margin;
+    m.baselineY = -path.boundingRect().y() + margin;
 
     return m;
 }
@@ -209,12 +215,16 @@ DistanceFieldFontAtlas::TexCoord DistanceFieldFontAtlas::glyphTexCoord(glyph_t g
     QFixedPoint p;
     m_referenceFontEngine->addGlyphsToPath(&glyph, &p, 1, &path, 0);
 
-    c.xMargin = DISTANCEFIELD_RADIUS / qreal(DISTANCEFIELD_SCALE) / texSize.width();
-    c.yMargin = DISTANCEFIELD_RADIUS / qreal(DISTANCEFIELD_SCALE) / texSize.height();
+    float margin = 0.0;
+    if (scaleRatioFromRefSize() <= DISTANCEFIELD_MARGIN_THRESHOLD)
+        margin = DISTANCEFIELD_MARGIN / qreal(DISTANCEFIELD_SCALE);
+
+    c.xMargin = (DISTANCEFIELD_RADIUS / qreal(DISTANCEFIELD_SCALE) - margin) / texSize.width();
+    c.yMargin = (DISTANCEFIELD_RADIUS / qreal(DISTANCEFIELD_SCALE) - margin) / texSize.height();
     c.x = ((glyph * DISTANCEFIELD_TILESIZE) % texSize.width()) / qreal(texSize.width());
     c.y = ((glyph * DISTANCEFIELD_TILESIZE) / texSize.width()) * DISTANCEFIELD_TILESIZE / qreal(texSize.height());
-    c.width = path.boundingRect().width() / qreal(texSize.width());
-    c.height = path.boundingRect().height() / qreal(texSize.height());
+    c.width = (path.boundingRect().width() + margin) / qreal(texSize.width());
+    c.height = (path.boundingRect().height() + margin) / qreal(texSize.height());
 
     return c;
 }
