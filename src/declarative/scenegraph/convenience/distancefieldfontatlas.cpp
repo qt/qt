@@ -241,14 +241,27 @@ QImage DistanceFieldFontAtlas::renderDistanceFieldGlyph(glyph_t glyph) const
         fontEngine = fem->engine(0);
     }
 
-    QImage glyphImage = fontEngine->alphaMapForGlyph(glyph);
-    QImage adjustedGlyph(glyphImage.width() + DISTANCEFIELD_RADIUS * 2, glyphImage.height() + DISTANCEFIELD_RADIUS * 2, QImage::Format_ARGB32_Premultiplied);
-    adjustedGlyph.fill(Qt::transparent);
-    QPainter p(&adjustedGlyph);
-    p.drawImage(DISTANCEFIELD_RADIUS, DISTANCEFIELD_RADIUS, glyphImage);
+    QPainterPath path;
+    QFixedPoint pt;
+    fontEngine->addGlyphsToPath(&glyph, &pt, 1, &path, 0);
+    int glyphWidth = path.boundingRect().width();
+    int glyphHeight = path.boundingRect().height();
+    if (glyphWidth < 1)
+        glyphWidth = 1;
+    if (glyphHeight < 1)
+        glyphHeight = 1;
+
+    QImage glyphImage(glyphWidth + DISTANCEFIELD_RADIUS * 2, glyphHeight + DISTANCEFIELD_RADIUS * 2, QImage::Format_ARGB32_Premultiplied);
+    glyphImage.fill(Qt::transparent);
+    QPainter p(&glyphImage);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setPen(Qt::NoPen);
+    p.setBrush(Qt::black);
+    p.translate(-path.boundingRect().x() + DISTANCEFIELD_RADIUS, -path.boundingRect().y() + DISTANCEFIELD_RADIUS);
+    p.drawPath(path);
     p.end();
 
-    QImage im = renderDistanceField(adjustedGlyph);
+    QImage im = renderDistanceField(glyphImage);
     return im;
 }
 
