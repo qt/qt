@@ -56,7 +56,8 @@ static void usage()
     qWarning(" ");
     qWarning(" options:");
     qWarning("  -d <directory>................................ output directory");
-    qWarning("  -no-multithread............................... don't use multiple threads to render distance-fields");
+    qWarning("  --no-multithread.............................. don't use multiple threads to render distance-fields");
+    qWarning("  --force-all-styles............................ force rendering of styles Normal, Bold, Italic and Bold Italic");
 
     qWarning(" ");
     exit(1);
@@ -170,7 +171,8 @@ int main(int argc, char *argv[])
             || args.contains(QLatin1String("-h")))
         usage();
 
-    bool noMultithread = args.contains(QLatin1String("-no-multithread"));
+    bool noMultithread = args.contains(QLatin1String("--no-multithread"));
+    bool forceAllStyles = args.contains(QLatin1String("--force-all-styles"));
 
     QString fontFile;
     QString destDir;
@@ -190,15 +192,26 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    QStringList allStyles = QStringList() << QLatin1String("Normal")
+                                          << QLatin1String("Bold")
+                                          << QLatin1String("Italic")
+                                          << QLatin1String("Bold Italic");
+
     // Generate distance-fields for all families and all styles provided by the font file
     QFontDatabase fontDatabase;
     QStringList families = QFontDatabase::applicationFontFamilies(fontID);
     int famCount = families.count();
     for (int i = 0; i < famCount; ++i) {
-        QStringList styles = fontDatabase.styles(families.at(i));
+        QStringList styles = forceAllStyles ? allStyles : fontDatabase.styles(families.at(i));
         int styleCount = styles.count();
         for (int j = 0; j < styleCount; ++j) {
-            QFont font = fontDatabase.font(families.at(i), styles.at(j), 10); // point size is ignored
+            QFont font;
+            if (forceAllStyles) {
+                int weight = styles.at(j).contains(QLatin1String("Bold")) ? QFont::Bold : QFont::Normal;
+                font = QFont(families.at(i), 10, weight, styles.at(j).contains(QLatin1String("Italic")));
+            } else {
+                font = fontDatabase.font(families.at(i), styles.at(j), 10); // point size is ignored
+            }
             generateDistanceFieldForFont(font, destDir, !noMultithread);
         }
     }
