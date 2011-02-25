@@ -727,8 +727,8 @@ public:
     NumberOptions numberOptions() const;
 
     enum QuotationStyle { StandardQuotation, AlternateQuotation };
-    QString quoteString(const QString &str, QuotationStyle qs = StandardQuotation) const;
-    QString quoteString(const QStringRef &str, QuotationStyle qs = StandardQuotation) const;
+    QString quoteString(const QString &str, QuotationStyle style = StandardQuotation) const;
+    QString quoteString(const QStringRef &str, QuotationStyle style = StandardQuotation) const;
 
 //private:                        // this should be private, but can't be
     struct Data {

@@ -91,9 +91,6 @@ Q_GLOBAL_STATIC(QSystemLocaleData, qSystemLocaleData)
 #endif
 
 #ifndef QT_NO_SYSTEMLOCALE
-/*!
-    \internal
-*/
 QLocale QSystemLocale::fallbackLocale() const
 {
     QByteArray lang = qgetenv("LC_ALL");
@@ -104,9 +101,6 @@ QLocale QSystemLocale::fallbackLocale() const
     return QLocale(QLatin1String(lang));
 }
 
-/*!
-    \internal
-*/
 QVariant QSystemLocale::query(QueryType type, QVariant in) const
 {
     QSystemLocaleData *d = qSystemLocaleData();

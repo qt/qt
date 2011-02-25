@@ -1,3 +1,29 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
 
 /*!
     \class QLocale
@@ -708,13 +734,59 @@
   \value PMText a string that represents the system PM designator associated with a 12-hour clock.
   \value FirstDayOfWeek a Qt::DayOfWeek enum specifiying the first day of the week
   \value CurrencySymbol a string that represents a currency in a format QLocale::CurrencyFormat.
-  \value CurrencyToString a localized string representation of a number with a currency symbol.
+  \value CurrencyToString a localized string representation of a number with a currency symbol. Converts a QSystemLocale::CurrencyToStringArgument stored in the in variant to a QString.
   \value UILanguages a list of strings representing locale names that could be used for UI translation.
   \value StringToStandardQuotation a QString containing a quoted version of the string ref stored in the in variant using standard quotes.
   \value StringToAlternateQuotation a QString containing a quoted version of the string ref stored in the in variant using alternate quotes.
   \value WeekendStart a Qt::DayOfWeek enum specifying the first day of the weekend
   \value WeekendEnd a Qt::DayOfWeek enum specifying the last day of the weekend
 */
+
+/*!
+    \fn QLocale QSystemLocale::fallbackLocale() const
+
+    \since 4.6
+    Returns the fallback locale obtained from the system.
+*/
+
+/*!
+    \fn QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
+
+    Generic query method for locale data. Provides indirection.
+    Denotes the \a type of the query
+    with \a in as input data depending on the query.
+
+    \sa QSystemLocale::QueryType
+*/
+
+/*!
+    \class QSystemLocale::CurrencyToStringArgument
+
+    A helper class that provides arguments for the QSystemLocale::query()
+    function with query type QSystemLocale::CurrencyToString.
+
+    \sa QSystemLocale::QueryType
+    \since 4.8
+*/
+
+/*!
+    \fn QSystemLocale::CurrencyToStringArgument::CurrencyToStringArgument()
+    \internal
+*/
+/*!
+    \variable QSystemLocale::CurrencyToStringArgument::value
+
+    An input value that should be converted to its string representation.
+    Contains one of QVariant::LongLong, QVariant::ULongLong or QVariant::Double
+    types.
+*/
+/*!
+    \variable QSystemLocale::CurrencyToStringArgument::symbol
+
+    An optional argument containing a currency symbol to be used in the
+    currency string.
+*/
+
 
 /*!
 \fn QString QLocale::toString(short i) const
@@ -772,4 +844,33 @@
 \a f and \a prec have the same meaning as in QString::number(double, char, int).
 
 \sa toDouble()
+*/
+
+/*!
+    \fn QString QLocale::toCurrencyString(short value, const QString &symbol) const
+    \since 4.8
+    \overload
+*/
+
+/*!
+    \fn QString QLocale::toCurrencyString(ushort value, const QString &symbol) const
+    \since 4.8
+    \overload
+*/
+
+/*!
+    \fn QString QLocale::toCurrencyString(int value, const QString &symbol) const
+    \since 4.8
+    \overload
+*/
+
+/*!
+    \fn QString QLocale::toCurrencyString(uint value, const QString &symbol) const
+    \since 4.8
+    \overload
+*/
+/*!
+    \fn QString QLocale::toCurrencyString(float value, const QString &symbol) const
+    \since 4.8
+    \overload
 */

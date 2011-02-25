@@ -825,13 +825,6 @@ QLocale QSystemLocale::fallbackLocale() const
     return QLocale(locale);
 }
 
-/*!
-    Generic query method for locale data. Provides indirection.
-    Denotes the \a type of the query
-    with \a in as input data depending on the query.
-
-    \sa QSystemLocale::QueryType
-*/
 QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
 {
     switch(type) {

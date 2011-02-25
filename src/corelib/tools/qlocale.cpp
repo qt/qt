@@ -643,15 +643,12 @@ QLocale::NumberOptions QLocale::numberOptions() const
 /*!
     \since 4.8
 
-    Returns \a str quoted according to the current locale.
-
-    If \a AlternateQuotation is used for \a QuoatationStyle
-    but the locale does not provide an alternate quotation,
-    we will fallback to the parent locale.
+    Returns \a str quoted according to the current locale using the given
+    quotation \a style.
 */
-QString QLocale::quoteString(const QString &str, QuotationStyle qs) const
+QString QLocale::quoteString(const QString &str, QuotationStyle style) const
 {
-    return quoteString(&str, qs);
+    return quoteString(&str, style);
 }
 
 /*!
@@ -659,12 +656,12 @@ QString QLocale::quoteString(const QString &str, QuotationStyle qs) const
 
     \overload
 */
-QString QLocale::quoteString(const QStringRef &str, QuotationStyle qs) const
+QString QLocale::quoteString(const QStringRef &str, QuotationStyle style) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d() == systemPrivate()) {
         QVariant res;
-        if (qs == QLocale::StandardQuotation)
+        if (style == QLocale::StandardQuotation)
             res = systemLocale()->query(QSystemLocale::StringToStandardQuotation, QVariant::fromValue(str));
         else
             res = systemLocale()->query(QSystemLocale::StringToAlternateQuotation, QVariant::fromValue(str));
@@ -674,7 +671,7 @@ QString QLocale::quoteString(const QStringRef &str, QuotationStyle qs) const
     }
 #endif
 
-    if (qs == QLocale::StandardQuotation)
+    if (style == QLocale::StandardQuotation)
         return QChar(d()->m_quotation_start) % str % QChar(d()->m_quotation_end);
     else
         return QChar(d()->m_alternate_quotation_start) % str % QChar(d()->m_alternate_quotation_end);
@@ -2847,41 +2844,12 @@ QString QLocale::currencySymbol(QLocale::CurrencySymbolFormat format) const
 }
 
 /*!
-    \fn QString QLocale::toCurrencyString(short, const QString &) const
-    \since 4.8
-    \overload
-*/
-
-/*!
-    \fn QString QLocale::toCurrencyString(ushort, const QString &) const
-    \since 4.8
-    \overload
-*/
-
-/*!
-    \fn QString QLocale::toCurrencyString(int, const QString &) const
-    \since 4.8
-    \overload
-*/
-
-/*!
-    \fn QString QLocale::toCurrencyString(uint, const QString &) const
-    \since 4.8
-    \overload
-*/
-/*!
-    \fn QString QLocale::toCurrencyString(float, const QString &) const
-    \since 4.8
-    \overload
-*/
-
-/*!
     \since 4.8
 
     Returns a localized string representation of \a value as a currency.
     If the \a symbol is provided it is used instead of the default currency symbol.
 
-    \sa currencySymbol
+    \sa currencySymbol()
 */
 QString QLocale::toCurrencyString(qlonglong value, const QString &symbol) const
 {
