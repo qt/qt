@@ -659,6 +659,34 @@ void QSslSocket::setPeerVerifyDepth(int depth)
 }
 
 /*!
+    \since 4.8
+
+    Returns the different hostname for the certificate validation, as set by
+    setPeerVerifyName or by connectToHostEncrypted.
+
+    \sa setPeerVerifyName(), connectToHostEncrypted()
+*/
+QString QSslSocket::peerVerifyName() const
+{
+    Q_D(const QSslSocket);
+    return d->verificationPeerName;
+}
+
+/*!
+    \since 4.8
+
+    Sets a different hostname for the certificate validation instead of the one used for the TCP
+    connection.
+
+    \sa connectToHostEncrypted()
+*/
+void QSslSocket::setPeerVerifyName(const QString &hostName)
+{
+    Q_D(QSslSocket);
+    d->verificationPeerName = hostName;
+}
+
+/*!
     \reimp
 
     Returns the number of decrypted bytes that are immediately available for
