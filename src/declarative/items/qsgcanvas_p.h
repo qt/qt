@@ -55,6 +55,7 @@
 
 #include "qsgitem.h"
 #include "qsgcanvas.h"
+#include "qvsyncanimationdriver_p.h"
 #include "qdeclarativeguard_p.h"
 
 #include "qsgcontext.h"

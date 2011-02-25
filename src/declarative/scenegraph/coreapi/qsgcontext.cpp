@@ -42,6 +42,7 @@
 #include "qsgcontext.h"
 #include "renderer.h"
 #include "node.h"
+#include "qvsyncanimationdriver_p.h"
 
 #include "qmlrenderer.h"
 #include "default/default_rectanglenode.h"
@@ -219,6 +220,17 @@ GlyphNodeInterface *QSGContext::createGlyphNode()
         return new DefaultGlyphNode;
 }
 
+
+QAnimationDriver *QSGContext::createAnimationDriver(QWidget *window)
+{
+    // ### Eventually kick out...
+    if (!qApp->arguments().contains("--no-vsync-animations")) {
+        QVSyncAnimationDriver *vsync = new QVSyncAnimationDriver();
+        vsync->setWidget(window);
+        return vsync;
+    }
+    return 0;
+}
 
 /*!
     Factory function for scene graph backends of the Text elements;

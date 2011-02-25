@@ -9,7 +9,8 @@ HEADERS += \
     $$PWD/qsgpartialuploadtexturemanager.h \
     $$PWD/qsgthreadedtexturemanager.h \
     $$PWD/distancefield_glyphnode.h \
-    $$PWD/distancefield_glyphnode_p.h
+    $$PWD/distancefield_glyphnode_p.h \
+    $$PWD/qvsyncanimationdriver_p.h
 
 SOURCES += \
     $$PWD/adaptationlayer.cpp \
@@ -20,7 +21,8 @@ SOURCES += \
     $$PWD/qsgpartialuploadtexturemanager.cpp \
     $$PWD/qsgthreadedtexturemanager.cpp \
     $$PWD/distancefield_glyphnode.cpp \
-    $$PWD/distancefield_glyphnode_p.cpp
+    $$PWD/distancefield_glyphnode_p.cpp \
+    $$PWD/qvsyncanimationdriver.cpp
 
 macx:{
     SOURCES += $$PWD/qsgmactexturemanager_mac.cpp
