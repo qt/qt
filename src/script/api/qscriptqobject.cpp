@@ -1095,6 +1095,27 @@ v8::Handle<v8::Value> QtMetaObjectPropertyGetter(v8::Local<v8::String> property,
     return v8::Handle<v8::Value>();
 }
 
+v8::Handle<v8::Array> QtMetaObjectEnumerator(const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+
+    v8::Local<v8::Object> self = info.Holder();
+    QtMetaObjectData *data = QtMetaObjectData::get(self);
+    QScriptEnginePrivate *engine = data->engine();
+    QScriptContextPrivate context(engine, &info);
+
+    const QMetaObject *meta = data->metaObject();
+    v8::Handle<v8::Array> names = v8::Array::New(0);
+    int index = 0;
+    for (int i = 0; i < meta->enumeratorCount(); ++i) {
+        QMetaEnum e = meta->enumerator(i);
+        for (int j = 0; j < e.keyCount(); ++j)
+            names->Set(index++, v8::String::New(e.key(j)));
+    }
+
+    return handleScope.Close(names);
+}
+
 // This callback is called when the QMetaObject is invoked
 v8::Handle<v8::Value> QtMetaObjectCallback(const v8::Arguments& args)
 {

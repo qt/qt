@@ -133,6 +133,7 @@ void QtDynamicPropertySetter(v8::Local<v8::String> property,
 v8::Handle<v8::Value> QtMetaObjectCallback(const v8::Arguments& args);
 v8::Handle<v8::Value> QtMetaObjectPropertyGetter(v8::Local<v8::String> property,
                                                  const v8::AccessorInfo& info);
+v8::Handle<v8::Array> QtMetaObjectEnumerator(const v8::AccessorInfo& info);
 QObject *toQtObject(QScriptEnginePrivate *engine, const v8::Handle<v8::Object> &object);
 
 

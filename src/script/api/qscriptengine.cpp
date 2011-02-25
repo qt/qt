@@ -701,7 +701,7 @@ v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::createMetaObjectTemplate(
     instTempl->SetInternalFieldCount(1); // QtMetaObjectData*
 
     instTempl->SetCallAsFunctionHandler(QtMetaObjectCallback);
-    instTempl->SetNamedPropertyHandler(QtMetaObjectPropertyGetter);
+    instTempl->SetNamedPropertyHandler(QtMetaObjectPropertyGetter, 0, 0, 0, QtMetaObjectEnumerator);
 
     return funcTempl;
 }
