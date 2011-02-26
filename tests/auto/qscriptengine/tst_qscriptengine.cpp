@@ -169,6 +169,7 @@ private slots:
     void nativeFunctionScopes();
     void evaluateProgram();
     void collectGarbageAfterConnect();
+    void collectGarbageAfterNativeArguments();
     void promoteThisObjectToQObjectInConstructor();
 
     void qRegExpInport_data();
@@ -5038,6 +5039,16 @@ void tst_QScriptEngine::collectGarbageAfterConnect()
     engine.evaluate("widget = null;");
     collectGarbage_helper(engine);
     QVERIFY(widget == 0);
+}
+
+void tst_QScriptEngine::collectGarbageAfterNativeArguments()
+{
+    // QTBUG-17788
+    QScriptEngine eng;
+    QScriptContext *ctx = eng.pushContext();
+    QScriptValue arguments = ctx->argumentsObject();
+    // Shouldn't crash when marking the arguments object.
+    collectGarbage_helper(eng);
 }
 
 static QScriptValue constructQObjectFromThisObject(QScriptContext *ctx, QScriptEngine *eng)
