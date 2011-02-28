@@ -687,6 +687,7 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine::ContextOwnership owner
     , m_v8Context(ownership == QScriptEngine::AdoptCurrentContext ?
             v8::Persistent<v8::Context>::New(v8::Context::GetCurrent()) : v8::Context::New())
     , m_originalGlobalObject(this, m_v8Context)
+    , m_reportedAddtionalMemoryCost(-1)
     , m_currentQsContext(0)
     , m_state(Idle)
     , m_currentAgent(0)
@@ -1211,6 +1212,16 @@ void QScriptEngine::reportAdditionalMemoryCost(int cost)
     d->reportAdditionalMemoryCost(cost);
 }
 
+void QScriptEnginePrivate::GCEpilogueCallback(v8::GCType type, v8::GCCallbackFlags flags)
+{
+    Q_UNUSED(type);
+    Q_UNUSED(flags);
+    QScriptEnginePrivate *engine = Isolates::engine(v8::Isolate::GetCurrent());
+    if (engine->m_reportedAddtionalMemoryCost) {
+        v8::V8::AdjustAmountOfExternalAllocatedMemory(-engine->m_reportedAddtionalMemoryCost);
+        engine->m_reportedAddtionalMemoryCost = 0;
+    }
+}
 
 /*!
     Evaluates \a program, using \a lineNumber as the base line number,

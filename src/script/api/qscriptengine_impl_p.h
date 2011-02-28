@@ -181,15 +181,23 @@ void QScriptEnginePrivate::collectGarbage()
 
 void QScriptEnginePrivate::reportAdditionalMemoryCost(int cost)
 {
-    /*// The check is needed only for compatibility.
-    if (cost > 0)
-        v8::V8::AdjustAmountOfExternalAllocatedMemory(cost);*/
-    // in V8, AdjustAmountOfExternalAllocatedMemory need to be balanced
+    // In V8, AdjustAmountOfExternalAllocatedMemory need to be balanced
     // by a negative number when the memory is released, else
     // the garbage collector will think it still has lot of memory and
     // will be run too often.
-    if (cost > 0)
-        Q_UNIMPLEMENTED();
+
+    // The check is needed only for compatibility.
+    if (cost > 0) {
+        int currentCost = m_reportedAddtionalMemoryCost;
+        if (currentCost == - 1) {
+            // Fist time call, add a gc callback.
+            // AddGCEpilogueCallback works per Isolate, it means that we have to install
+            // one callback per each engine instance.
+            v8::V8::AddGCEpilogueCallback(GCEpilogueCallback);
+        }
+        v8::V8::AdjustAmountOfExternalAllocatedMemory(cost);
+        m_reportedAddtionalMemoryCost += cost;
+    }
 }
 
 inline void QScriptEnginePrivate::setException(v8::Handle<v8::Value> value, v8::Handle<v8::Message> msg)

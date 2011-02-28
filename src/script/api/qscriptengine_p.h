@@ -111,6 +111,7 @@ public:
     inline bool isEvaluating() const;
     inline bool isDestroyed() const;
     inline void collectGarbage();
+    static void GCEpilogueCallback(v8::GCType type, v8::GCCallbackFlags flags);
     inline void reportAdditionalMemoryCost(int cost);
     inline void abortEvaluation(v8::Handle<v8::Value> result);
     inline v8::Handle<v8::Object> globalObject() const;
@@ -297,6 +298,7 @@ private:
     Exception m_exception;
     QScriptOriginalGlobalObject m_originalGlobalObject;
     v8::Persistent<v8::String> m_qtDataId;
+    int m_reportedAddtionalMemoryCost;
 
     typedef QHash<QPair<const QMetaObject *, QScriptEngine::QObjectWrapOptions>, v8::Persistent<v8::FunctionTemplate> > ClassTemplateHash;
     ClassTemplateHash m_qtClassTemplates;
