@@ -404,10 +404,8 @@ Renderer::ClipType Renderer::updateStencilClip(const ClipNode *clip)
                 clipRect &= QRect(ix1, iy1, ix2 - ix1, iy2 - iy1);
             }
 
-            if (clipRect.width() > 0 && clipRect.height() > 0)
-                glScissor(clipRect.x(), clipRect.y(), clipRect.width(), clipRect.height());
-            else
-                glScissor(0, 0, 0, 0);
+            clipRect = clipRect.normalized();
+            glScissor(clipRect.x(), clipRect.y(), clipRect.width(), clipRect.height());
         } else {
             if (!stencilEnabled) {
                 if (!m_clip_program.isLinked()) {
