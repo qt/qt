@@ -46,19 +46,19 @@ Window::Window()
 
     localeCombo->addItem("System", QLocale::system());
 
-    int index = 0;
-    for (int _lang = QLocale::C; _lang <= QLocale::LastLanguage; ++_lang) {
-        QLocale::Language lang = static_cast<QLocale::Language>(_lang);
-        QList<QLocale::Country> countries = QLocale::countriesForLanguage(lang);
-        for (int i = 0; i < countries.count(); ++i) {
-            QLocale::Country country = countries.at(i);
-            QString label = QLocale::languageToString(lang);
+    QStringList locales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript, QLocale::AnyCountry);
+    foreach (const QString &name, locales) {
+        QLocale locale(name);
+        QString label = QLocale::languageToString(locale.language());
+        label += QLatin1Char('/');
+        if (locale.script() != QLocale::AnyScript) {
+            label += QLocale::scriptToString(locale.script());
             label += QLatin1Char('/');
-            label += QLocale::countryToString(country);
-            localeCombo->addItem(label, QLocale(lang, country));
-            ++index;
         }
+        label += QLocale::countryToString(locale.country());
+        localeCombo->addItem(label, locale);
     }
+
     connect(localeCombo, SIGNAL(currentIndexChanged(int)),
             this, SLOT(localeChanged(int)));
 
@@ -102,15 +102,19 @@ void Window::systemLocaleChanged()
 {
     QLocale l = QLocale::system();
     QString lang = QLocale::languageToString(l.language());
+    QString script = QLocale::scriptToString(l.script());
     QString country = QLocale::countryToString(l.country());
-    localeCombo->setItemText(0, QString("System: %1/%2").arg(lang, country));
+    if (l.script() != QLocale::AnyScript)
+        localeCombo->setItemText(0, QString("System: %1-%2-%3").arg(lang, script, country));
+    else
+        localeCombo->setItemText(0, QString("System: %1-%2").arg(lang, country));
     emit localeChanged(0);
 }
 
 void Window::localeChanged(int idx)
 {
     QLocale locale = localeCombo->itemData(idx).toLocale();
-    localeName->setText(QString("Locale: %1").arg(locale.name()));
+    localeName->setText(QString("Locale: %1 (%2)").arg(locale.bcp47Name(), locale.name()));
     emit localeChanged(locale);
 }
 

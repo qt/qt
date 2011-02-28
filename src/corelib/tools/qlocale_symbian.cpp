@@ -57,9 +57,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// Located in qlocale.cpp
-extern void getLangAndCountry(const QString &name, QLocale::Language &lang, QLocale::Country &cntry);
-
 static TExtendedLocale _s60Locale;
 
 // Type definitions for runtime resolved function pointers
@@ -872,8 +869,9 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
                 TLanguage language = User::Language();
                 QString locale = QLatin1String(qt_symbianLocaleName(language));
                 QLocale::Language lang;
+                QLocale::Script script;
                 QLocale::Country cntry;
-                getLangAndCountry(locale, lang, cntry);
+                QLocalePrivate::getLangAndCountry(locale, lang, script, cntry);
                 if (type == LanguageId)
                     return lang;
                 // few iso codes have no country and will use this
@@ -882,6 +880,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
 
                 return cntry;
             }
+        case ScriptId:
+            return QVariant(QLocale::AnyScript);
         case NegativeSign:
         case PositiveSign:
             break;

@@ -94,14 +94,14 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "qlocale_data_p.h"
 QT_END_INCLUDE_NAMESPACE
 
-// Assumes that code is a
-// QChar code[3];
-// If the code is two-digit the third digit must be 0
-QLocale::Language codeToLanguage(const QChar *code)
+QLocale::Language QLocalePrivate::codeToLanguage(const QString &code)
 {
-    ushort uc1 = code[0].unicode();
-    ushort uc2 = code[1].unicode();
-    ushort uc3 = code[2].unicode();
+    int len = code.length();
+    if (len != 2 && len != 3)
+        return QLocale::C;
+    ushort uc1 = len-- > 0 ? code[0].toLower().unicode() : 0;
+    ushort uc2 = len-- > 0 ? code[1].toLower().unicode() : 0;
+    ushort uc3 = len-- > 0 ? code[2].toLower().unicode() : 0;
 
     if (uc1 == 'n' && uc2 == 'o' && uc3 == 0)
         uc2 = 'b';
@@ -115,13 +115,34 @@ QLocale::Language codeToLanguage(const QChar *code)
     return QLocale::C;
 }
 
-// Assumes that code is a
-// QChar code[3];
-QLocale::Country codeToCountry(const QChar *code)
+QLocale::Script QLocalePrivate::codeToScript(const QString &code)
 {
-    ushort uc1 = code[0].unicode();
-    ushort uc2 = code[1].unicode();
-    ushort uc3 = code[2].unicode();
+    int len = code.length();
+    if (len != 4)
+        return QLocale::AnyScript;
+
+    // script is titlecased in our data
+    unsigned char c0 = code.at(0).toUpper().toLatin1();
+    unsigned char c1 = code.at(1).toLower().toLatin1();
+    unsigned char c2 = code.at(2).toLower().toLatin1();
+    unsigned char c3 = code.at(3).toLower().toLatin1();
+
+    const unsigned char *c = script_code_list;
+    for (int i = 0; i < QLocale::LastScript; ++i, c += 4) {
+        if (c0 == c[0] && c1 == c[1] && c2 == c[2] && c3 == c[3])
+            return QLocale::Script(i);
+    }
+    return QLocale::AnyScript;
+}
+
+QLocale::Country QLocalePrivate::codeToCountry(const QString &code)
+{
+    int len = code.length();
+    if (len != 2 && len != 3)
+        return QLocale::AnyCountry;
+    ushort uc1 = len-- > 0 ? code[0].toUpper().unicode() : 0;
+    ushort uc2 = len-- > 0 ? code[1].toUpper().unicode() : 0;
+    ushort uc3 = len-- > 0 ? code[2].toUpper().unicode() : 0;
 
     const unsigned char *c = country_code_list;
     for (; *c != 0; c += 3) {
@@ -132,12 +153,14 @@ QLocale::Country codeToCountry(const QChar *code)
     return QLocale::AnyCountry;
 }
 
-QString languageToCode(QLocale::Language language)
+QString QLocalePrivate::languageCode() const
 {
-    if (language == QLocale::C)
+    if (m_language_id == QLocale::AnyLanguage)
+        return QString();
+    if (m_language_id == QLocale::C)
         return QLatin1String("C");
 
-    const unsigned char *c = language_code_list + 3*(uint(language));
+    const unsigned char *c = language_code_list + 3*(uint(m_language_id));
 
     QString code(c[2] == 0 ? 2 : 3, Qt::Uninitialized);
 
@@ -149,12 +172,20 @@ QString languageToCode(QLocale::Language language)
     return code;
 }
 
-QString countryToCode(QLocale::Country country)
+QString QLocalePrivate::scriptCode() const
 {
-    if (country == QLocale::AnyCountry)
+    if (m_script_id == QLocale::AnyScript || m_script_id > QLocale::LastScript)
+        return QString();
+    const unsigned char *c = script_code_list + 4*(uint(m_script_id));
+    return QString::fromLatin1((const char *)c, 4);
+}
+
+QString QLocalePrivate::countryCode() const
+{
+    if (m_country_id == QLocale::AnyCountry)
         return QString();
 
-    const unsigned char *c = country_code_list + 3*(uint(country));
+    const unsigned char *c = country_code_list + 3*(uint(m_country_id));
 
     QString code(c[2] == 0 ? 2 : 3, Qt::Uninitialized);
 
@@ -166,10 +197,46 @@ QString countryToCode(QLocale::Country country)
     return code;
 }
 
-const QLocalePrivate *findLocale(QLocale::Language language, QLocale::Country country)
+QString QLocalePrivate::bcp47Name() const
 {
-    unsigned language_id = language;
-    unsigned country_id = country;
+    if (m_language_id == QLocale::AnyLanguage)
+        return QString();
+    if (m_language_id == QLocale::C)
+        return QLatin1String("C");
+    const unsigned char *lang = language_code_list + 3*(uint(m_language_id));
+    const unsigned char *script =
+            (m_script_id != QLocale::AnyScript ? script_code_list + 4*(uint(m_script_id)) : 0);
+    const unsigned char *country =
+            (m_country_id != QLocale::AnyCountry  ? country_code_list + 3*(uint(m_country_id)) : 0);
+    char len = (lang[2] != 0 ? 3 : 2) + (script ? 4+1 : 0) + (country ? (country[2] != 0 ? 3 : 2)+1 : 0);
+    QString name(len, Qt::Uninitialized);
+    QChar *uc = name.data();
+    *uc++ = ushort(lang[0]);
+    *uc++ = ushort(lang[1]);
+    if (lang[2] != 0)
+        *uc++ = ushort(lang[2]);
+    if (script) {
+        *uc++ = QLatin1Char('-');
+        *uc++ = ushort(script[0]);
+        *uc++ = ushort(script[1]);
+        *uc++ = ushort(script[2]);
+        *uc++ = ushort(script[3]);
+    }
+    if (country) {
+        *uc++ = QLatin1Char('-');
+        *uc++ = ushort(country[0]);
+        *uc++ = ushort(country[1]);
+        if (country[2] != 0)
+            *uc++ = ushort(country[2]);
+    }
+    return name;
+}
+
+const QLocalePrivate *findLocale(QLocale::Language language, QLocale::Script script, QLocale::Country country)
+{
+    const unsigned language_id = language;
+    const unsigned script_id = script;
+    const unsigned country_id = country;
 
     uint idx = locale_index[language_id];
 
@@ -178,111 +245,133 @@ const QLocalePrivate *findLocale(QLocale::Language language, QLocale::Country co
     if (idx == 0) // default language has no associated country
         return d;
 
-    if (country == QLocale::AnyCountry)
+    if (script == QLocale::AnyScript && country == QLocale::AnyCountry)
         return d;
 
     Q_ASSERT(d->languageId() == language_id);
 
-    while (d->languageId() == language_id
-                && d->countryId() != country_id)
-        ++d;
-
-    if (d->countryId() == country_id
-            && d->languageId() == language_id)
-        return d;
+    if (country == QLocale::AnyCountry) {
+        while (d->m_language_id == language_id && d->m_script_id != script_id)
+            ++d;
+        if (d->m_language_id == language_id && d->m_script_id == script_id)
+            return d;
+    } else if (script == QLocale::AnyScript) {
+        while (d->m_language_id == language_id) {
+            if (d->m_script_id == script_id && d->m_country_id == country_id)
+                return d;
+            ++d;
+        }
+    } else {
+        // both script and country are explicitely specified
+        while (d->m_language_id == language_id) {
+            if (d->m_script_id == script_id && d->m_country_id == country_id)
+                return d;
+            ++d;
+        }
+    }
 
     return locale_data + idx;
 }
 
-bool splitLocaleName(const QString &name,
-                     QChar *lang_begin, QChar *cntry_begin,
-                     int *lang_len, int *cntry_len)
+static bool parse_locale_tag(const QString &input, int &i, QString *result, const QString &separators)
 {
-    for (int i = 0; i < 3; ++i)
-        lang_begin[i] = 0;
-    for (int i = 0; i < 3; ++i)
-        cntry_begin[i] = 0;
-    if (lang_len)
-        *lang_len = 0;
-    if (cntry_len)
-        *cntry_len = 0;
-
-    int l = name.length();
-
-    QChar *lang = lang_begin;
-    QChar *cntry = cntry_begin;
-
-    int state = 0;
-    const QChar *uc = name.unicode();
-    for (int i = 0; i < l; ++i) {
-        if (uc->unicode() == '.' || uc->unicode() == '@')
+    *result = QString(8, Qt::Uninitialized); // worst case according to BCP47
+    QChar *pch = result->data();
+    const QChar *uc = input.data() + i;
+    const int l = input.length();
+    int size = 0;
+    for (; i < l && size < 5; ++i, ++size) {
+        if (separators.contains(*uc))
             break;
-
-        switch (state) {
-            case 0:
-                // parsing language
-                if (uc->unicode() == '_' || uc->unicode() == '-') {
-                    state = 1;
-                    break;
-                }
-                if (lang - lang_begin == 3)
-                    return false;
-                if (uc->unicode() < 'a' || uc->unicode() > 'z')
-                    return false;
-
-                *lang = *uc;
-                ++lang;
-                break;
-            case 1:
-                // parsing country
-                if (cntry - cntry_begin == 3) {
-                    cntry_begin[0] = 0;
-                    break;
-                }
-
-                *cntry = *uc;
-                ++cntry;
-                break;
-        }
-
-        ++uc;
+        if (uc->unicode() > 0xFF) // latin only
+            return false;
+        *pch++ = *uc++;
     }
-
-    if (lang_len)
-        *lang_len = lang - lang_begin;
-    if (cntry_len)
-        *cntry_len = cntry - cntry_begin;
-
-    int lang_length = lang - lang_begin;
-    return lang_length == 2 || lang_length == 3;
+    result->truncate(size);
+    return true;
 }
 
-void getLangAndCountry(const QString &name, QLocale::Language &lang, QLocale::Country &cntry)
+bool splitLocaleName(const QString &name, QString &lang, QString &script, QString &cntry)
+{
+    const int length = name.length();
+
+    lang = script = cntry = QString();
+
+    const QString separators = QLatin1String("_-.@");
+    enum ParserState { NoState, LangState, ScriptState, CountryState };
+    ParserState state = LangState;
+    for (int i = 0; i < length && state != NoState; ) {
+        QString value;
+        if (!parse_locale_tag(name, i, &value, separators) ||value.isEmpty())
+            break;
+        QChar sep = i < length ? name.at(i) : QChar();
+        switch (state) {
+        case LangState:
+            lang = value;
+            if (i == length) {
+                // just language was specified
+                state = NoState;
+                break;
+            }
+            state = ScriptState;
+            break;
+        case ScriptState: {
+            QString scripts = QString::fromLatin1((const char *)script_code_list, sizeof(script_code_list));
+            if (value.length() == 4 && scripts.indexOf(value) % 4 == 0) {
+                // script name is always 4 characters
+                script = value;
+                state = CountryState;
+            } else {
+                // it wasn't a script, maybe it is a country then?
+                cntry = value;
+                state = NoState;
+            }
+            break;
+        }
+        case CountryState:
+            cntry = value;
+            state = NoState;
+            break;
+        case NoState:
+            // shouldn't happen
+            qWarning("QLocale: This should never happen");
+            break;
+        }
+        ++i;
+    }
+    return lang.length() == 2 || lang.length() == 3;
+}
+
+void QLocalePrivate::getLangAndCountry(const QString &name, QLocale::Language &lang,
+                                       QLocale::Script &script, QLocale::Country &cntry)
 {
     lang = QLocale::C;
+    script = QLocale::AnyScript;
     cntry = QLocale::AnyCountry;
 
-    QChar lang_code[3];
-    QChar cntry_code[3];
-    if (!splitLocaleName(name, lang_code, cntry_code))
+    QString lang_code;
+    QString script_code;
+    QString cntry_code;
+    if (!splitLocaleName(name, lang_code, script_code, cntry_code))
         return;
 
-    lang = codeToLanguage(lang_code);
+    lang = QLocalePrivate::codeToLanguage(lang_code);
     if (lang == QLocale::C)
         return;
-
-    if (cntry_code[0].unicode() != 0)
-        cntry = codeToCountry(cntry_code);
+    script = QLocalePrivate::codeToScript(script_code);
+    cntry = QLocalePrivate::codeToCountry(cntry_code);
 }
 
 const QLocalePrivate *findLocale(const QString &name)
 {
     QLocale::Language lang;
+    QLocale::Script script;
     QLocale::Country cntry;
-    getLangAndCountry(name, lang, cntry);
+    QLocalePrivate::getLangAndCountry(name, lang, script, cntry);
 
-    return findLocale(lang, cntry);
+    return findLocale(lang, script, cntry);
 }
+
 QString readEscapedFormatString(const QString &format, int *idx)
 {
     int &i = *idx;
@@ -389,11 +478,18 @@ void QLocalePrivate::updateSystemPrivate()
 #endif
 
     QVariant res = sys_locale->query(QSystemLocale::LanguageId, QVariant());
-    if (!res.isNull())
+    if (!res.isNull()) {
         system_lp->m_language_id = res.toInt();
+        system_lp->m_script_id = QLocale::AnyScript; // default for compatibility
+    }
     res = sys_locale->query(QSystemLocale::CountryId, QVariant());
-    if (!res.isNull())
+    if (!res.isNull()) {
         system_lp->m_country_id = res.toInt();
+        system_lp->m_script_id = QLocale::AnyScript; // default for compatibility
+    }
+    res = sys_locale->query(QSystemLocale::ScriptId, QVariant());
+    if (!res.isNull())
+        system_lp->m_script_id = res.toInt();
 
     res = sys_locale->query(QSystemLocale::DecimalPoint, QVariant());
     if (!res.isNull())
@@ -510,11 +606,12 @@ static quint16 localePrivateIndex(const QLocalePrivate *p)
 /*!
     Constructs a QLocale object with the specified \a name,
     which has the format
-    "language[_-country][.codeset][@modifier]" or "C", where:
+    "language[_script][_country][.codeset][@modifier]" or "C", where:
 
     \list
     \i language is a lowercase, two-letter, ISO 639 language code,
-    \i territory is an uppercase, two-letter, ISO 3166 country code,
+    \i script is a titlecase, four-letter, ISO 15924 script code,
+    \i country is an uppercase, two- or three-letter, ISO 3166 country code (also "419" as defined by United Nations),
     \i and codeset and modifier are ignored.
     \endlist
 
@@ -525,12 +622,12 @@ static quint16 localePrivateIndex(const QLocalePrivate *p)
     is not present, or is not a valid ISO 3166 code, the most
     appropriate country is chosen for the specified language.
 
-    The language and country codes are converted to their respective
-    \c Language and \c Country enums. After this conversion is
-    performed the constructor behaves exactly like QLocale(Country,
+    The language, script and country codes are converted to their respective
+    \c Language, \c Script and \c Country enums. After this conversion is
+    performed the constructor behaves exactly like QLocale(Country, Script,
     Language).
 
-    This constructor is much slower than QLocale(Country, Language).
+    This constructor is much slower than QLocale(Country, Script, Language).
 
     \sa name()
 */
@@ -579,7 +676,46 @@ QLocale::QLocale()
 QLocale::QLocale(Language language, Country country)
     : v(0)
 {
-    const QLocalePrivate *d = findLocale(language, country);
+    const QLocalePrivate *d = findLocale(language, QLocale::AnyScript, country);
+
+    // If not found, should default to system
+    if (d->languageId() == QLocale::C && language != QLocale::C) {
+        p.numberOptions = default_number_options;
+        p.index = localePrivateIndex(defaultPrivate());
+    } else {
+        p.numberOptions = 0;
+        p.index = localePrivateIndex(d);
+    }
+}
+\
+/*!
+    \since 4.8
+
+    Constructs a QLocale object with the specified \a language, \a script and
+    \a country.
+
+    \list
+    \i If the language/script/country is found in the database, it is used.
+    \i If both \a script is AnyScript and \a country is AnyCountry, the
+       language is used with the most appropriate available script and country
+       (for example, Germany for German),
+    \i If either \a script is AnyScript or \a country is AnyCountry, the
+       language is used with the first locale that matches the given \a script
+       and \a country.
+    \i If neither the language nor the country are found, QLocale
+       defaults to the default locale (see setDefault()).
+    \endlist
+
+    The language, script and country that are actually used can be queried
+    using language(), script() and country().
+
+    \sa setDefault() language() script() country()
+*/
+
+QLocale::QLocale(Language language, Script script, Country country)
+    : v(0)
+{
+    const QLocalePrivate *d = findLocale(language, script, country);
 
     // If not found, should default to system
     if (d->languageId() == QLocale::C && language != QLocale::C) {
@@ -708,6 +844,11 @@ QLocale::Language QLocale::language() const
     return Language(d()->languageId());
 }
 
+QLocale::Script QLocale::script() const
+{
+    return Script(d()->m_script_id);
+}
+
 /*!
     Returns the country of this locale.
 
@@ -722,16 +863,20 @@ QLocale::Country QLocale::country() const
     Returns the language and country of this locale as a
     string of the form "language_country", where
     language is a lowercase, two-letter ISO 639 language code,
-    and country is an uppercase, two-letter ISO 3166 country code.
+    and country is an uppercase, two- or three-letter ISO 3166 country code.
 
-    \sa language(), country()
+    Note that even if QLocale object was constructed with a specific script,
+    name() will ignore it for compatibility reasons. Use bcp47Name() instead
+    if you need a full locale name.
+
+    \sa QLocale(const QString &), language(), country(), bcp47Name()
 */
 
 QString QLocale::name() const
 {
     Language l = language();
 
-    QString result = languageToCode(l);
+    QString result = d()->languageCode();
 
     if (l == C)
         return result;
@@ -741,15 +886,30 @@ QString QLocale::name() const
         return result;
 
     result.append(QLatin1Char('_'));
-    result.append(countryToCode(c));
+    result.append(d()->countryCode());
 
     return result;
 }
 
 /*!
+    \since 4.8
+
+    Returns the dash-separated language, script and country (and possibly other BCP47 fields)
+    of this locale as a string.
+
+    This function tries to conform the locale name to BCP47.
+
+    \sa language(), country(), script()
+*/
+QString QLocale::bcp47Name() const
+{
+    return d()->bcp47Name();
+}
+
+/*!
     Returns a QString containing the name of \a language.
 
-    \sa countryToString(), name()
+    \sa countryToString(), scriptToString(), bcp47Name()
 */
 
 QString QLocale::languageToString(Language language)
@@ -762,7 +922,7 @@ QString QLocale::languageToString(Language language)
 /*!
     Returns a QString containing the name of \a country.
 
-    \sa country(), name()
+    \sa languageToString(), scriptToString(), country(), bcp47Name()
 */
 
 QString QLocale::countryToString(Country country)
@@ -770,6 +930,20 @@ QString QLocale::countryToString(Country country)
     if (uint(country) > uint(QLocale::LastCountry))
         return QLatin1String("Unknown");
     return QLatin1String(country_name_list + country_name_index[country]);
+}
+
+/*!
+    \since 4.8
+
+    Returns a QString containing the name of \a script.
+
+    \sa languageToString(), countryToString(), script(), bcp47Name()
+*/
+QString QLocale::scriptToString(QLocale::Script script)
+{
+    if (uint(script) > uint(QLocale::LastScript))
+        return QLatin1String("Unknown");
+    return QLatin1String(script_name_list + script_name_index[script]);
 }
 
 /*!
@@ -1579,12 +1753,47 @@ QLocale QLocale::system()
     return result;
 }
 
+
 /*!
+    \since 4.8
+
+    Returns the list of valid locale names that match the given \a language, \a
+    script and \a country.
+
+    Getting a list of all locales:
+    QStringList allLocales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript, QLocale::AnyCountry);
+*/
+QStringList QLocale::matchingLocales(QLocale::Language language,
+                                     QLocale::Script script,
+                                     QLocale::Country country)
+{
+    if (uint(language) > QLocale::LastLanguage || uint(script) > QLocale::LastScript ||
+            uint(country) > QLocale::LastCountry)
+        return QStringList();
+
+    QStringList result;
+    const QLocalePrivate *d = locale_data;
+    if (language == QLocale::AnyLanguage && script == QLocale::AnyScript && country == QLocale::AnyCountry)
+        result.reserve(locale_data_size);
+    if (language != QLocale::C)
+        d += locale_index[language];
+    while ( (d != locale_data + locale_data_size)
+            && (language == QLocale::AnyLanguage || d->m_language_id == uint(language))) {
+        result.append(d->bcp47Name());
+        ++d;
+    }
+    return result;
+}
+
+/*!
+    \obsolete
     \since 4.3
 
     Returns the list of countries that have entires for \a language in Qt's locale
     database. If the result is an empty list, then \a language is not represented in
     Qt's locale database.
+
+    \sa matchingLocales
 */
 QList<QLocale::Country> QLocale::countriesForLanguage(Language language)
 {
@@ -2939,7 +3148,7 @@ QString QLocale::toCurrencyString(double value, const QString &symbol) const
     Returns a sorted list of locale names that could be used for translation
     of messages presented to the user.
 
-    \sa QTranslator
+    \sa QTranslator, bcp47Name()
 */
 QStringList QLocale::uiLanguages() const
 {
@@ -2953,7 +3162,7 @@ QStringList QLocale::uiLanguages() const
         }
     }
 #endif
-    return QStringList(name());
+    return QStringList(bcp47Name());
 }
 
 QT_END_NAMESPACE

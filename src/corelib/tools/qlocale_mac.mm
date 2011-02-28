@@ -73,10 +73,9 @@ static QByteArray getMacLocaleName()
 {
     QByteArray result = envVarLocale();
 
-    QChar lang[3];
-    QChar cntry[3];
+    QString lang, script, cntry;
     if (result.isEmpty() || result != "C"
-            && !splitLocaleName(QString::fromLocal8Bit(result), lang, cntry)) {
+            && !splitLocaleName(QString::fromLocal8Bit(result), lang, script, cntry)) {
         QCFType<CFLocaleRef> l = CFLocaleCopyCurrent();
         CFStringRef locale = CFLocaleGetIdentifier(l);
         result = QCFString::toQString(locale).toUtf8();
@@ -436,15 +435,17 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     case LanguageId:
     case CountryId: {
         QString preferredLanguage;
-        QString preferredCountry(3, QChar()); // codeToCountry assumes QChar[3]
+        QString preferredCountry;
         getMacPreferredLanguageAndCountry(&preferredLanguage, &preferredCountry);
-        QLocale::Language languageCode = (preferredLanguage.isEmpty() ? QLocale::C : codeToLanguage(preferredLanguage.data()));
-        QLocale::Country countryCode = (preferredCountry.isEmpty() ? QLocale::AnyCountry : codeToCountry(preferredCountry.data()));
-        const QLocalePrivate *d = findLocale(languageCode, countryCode);
+        QLocale::Language languageCode = (preferredLanguage.isEmpty() ? QLocale::C : QLocalePrivate::codeToLanguage(preferredLanguage));
+        QLocale::Country countryCode = (preferredCountry.isEmpty() ? QLocale::AnyCountry : QLocalePrivate::codeToCountry(preferredCountry));
+        const QLocalePrivate *d = findLocale(languageCode, QLocale::AnyScript, countryCode);
         if (type == LanguageId)
             return (QLocale::Language)d->languageId();
         return (QLocale::Country)d->countryId();
     }
+    case ScriptId:
+        return QVariant(QLocale::AnyScript);
 
     case MeasurementSystem:
         return QVariant(static_cast<int>(macMeasurementSystem()));

@@ -112,7 +112,8 @@ public:
         CurrencyToString, // QString in: qlonglong, qulonglong or double
         UILanguages, // QStringList
         StringToStandardQuotation, // QString in: QStringRef to quote
-        StringToAlternateQuotation // QString in: QStringRef to quote
+        StringToAlternateQuotation, // QString in: QStringRef to quote
+        ScriptId // uint
     };
     virtual QVariant query(QueryType type, QVariant in) const;
     virtual QLocale fallbackLocale() const;
@@ -140,6 +141,7 @@ public:
 // GENERATED PART STARTS HERE
 // see qlocale_data_p.h for more info on generated data
     enum Language {
+        AnyLanguage = 0,
         C = 1,
         Abkhazian = 2,
         Afan = 3,
@@ -359,6 +361,19 @@ public:
         LastLanguage = Shambala
     };
 
+    enum Script {
+        AnyScript = 0,
+        ArabicScript = 1,
+        CyrillicScript = 2,
+        DeseretScript = 3,
+        GurmukhiScript = 4,
+        SimplifiedHanScript = 5,
+        TraditionalHanScript = 6,
+        LatinScript = 7,
+        MongolianScript = 8,
+        TifinaghScript = 9,
+        LastScript = TifinaghScript
+    };
     enum Country {
         AnyCountry = 0,
         Afghanistan = 1,
@@ -629,13 +644,17 @@ public:
     QLocale();
     QLocale(const QString &name);
     QLocale(Language language, Country country = AnyCountry);
+    QLocale(Language language, Script script, Country country);
     QLocale(const QLocale &other);
 
     QLocale &operator=(const QLocale &other);
 
     Language language() const;
+    Script script() const;
     Country country() const;
     QString name() const;
+
+    QString bcp47Name() const;
 
     short toShort(const QString &s, bool *ok = 0, int base = 0) const;
     ushort toUShort(const QString &s, bool *ok = 0, int base = 0) const;
@@ -716,11 +735,13 @@ public:
 
     static QString languageToString(Language language);
     static QString countryToString(Country country);
+    static QString scriptToString(Script script);
     static void setDefault(const QLocale &locale);
 
     static QLocale c() { return QLocale(C); }
     static QLocale system();
 
+    static QStringList matchingLocales(QLocale::Language language, QLocale::Script script, QLocale::Country country);
     static QList<Country> countriesForLanguage(Language lang);
 
     void setNumberOptions(NumberOptions options);

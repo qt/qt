@@ -77,8 +77,20 @@ public:
     QChar minus() const { return QChar(m_minus); }
     QChar exponential() const { return QChar(m_exponential); }
 
-    quint32 languageId() const { return m_language_id; }
-    quint32 countryId() const { return m_country_id; }
+    quint16 languageId() const { return m_language_id; }
+    quint16 countryId() const { return m_country_id; }
+
+    QString bcp47Name() const;
+
+    QString languageCode() const; // ### QByteArray::fromRawData would be more optimal
+    QString scriptCode() const;
+    QString countryCode() const;
+
+    static QLocale::Language codeToLanguage(const QString &code);
+    static QLocale::Script codeToScript(const QString &code);
+    static QLocale::Country codeToCountry(const QString &code);
+    static void getLangAndCountry(const QString &name, QLocale::Language &lang,
+                                  QLocale::Script &script, QLocale::Country &cntry);
 
     QLocale::MeasurementSystem measurementSystem() const;
 
@@ -161,7 +173,7 @@ public:
     QString dateTimeToString(const QString &format, const QDate *date, const QTime *time,
                              const QLocale *q) const;
 
-    quint16 m_language_id, m_country_id;
+    quint16 m_language_id, m_script_id, m_country_id;
 
     quint16 m_decimal, m_group, m_list, m_percent,
         m_zero, m_minus, m_plus, m_exponential;
@@ -248,15 +260,13 @@ private:
 };
 #endif
 
-const QLocalePrivate *findLocale(QLocale::Language language, QLocale::Country country);
+const QLocalePrivate *findLocale(QLocale::Language language,
+                                 QLocale::Script script,
+                                 QLocale::Country country);
 const QLocalePrivate *findLocale(const QString &name);
 QString readEscapedFormatString(const QString &format, int *idx);
-bool splitLocaleName(const QString &name, QChar *lang_begin, QChar *cntry_begin,
-                     int *lang_len = 0, int *cntry_len = 0);
+bool splitLocaleName(const QString &name, QString &lang, QString &script, QString &cntry);
 int repeatCount(const QString &s, int i);
-QLocale::Language codeToLanguage(const QChar *code);
-QLocale::Country codeToCountry(const QChar *code);
-void getLangAndCountry(const QString &name, QLocale::Language &lang, QLocale::Country &cntry);
 
 QT_END_NAMESPACE
 

@@ -46,6 +46,12 @@ import tempfile
 import datetime
 import xml.dom.minidom
 
+class Error:
+    def __init__(self, msg):
+        self.msg = msg
+    def __str__(self):
+        return self.msg
+
 def check_static_char_array_length(name, array):
     # some compilers like VC6 doesn't allow static arrays more than 64K bytes size.
     size = reduce(lambda x, y: x+len(escapedString(y)), array, 0)
@@ -103,6 +109,20 @@ def loadLanguageMap(doc):
 
     return result
 
+def loadScriptMap(doc):
+    result = {}
+
+    script_list_elt = firstChildElt(doc.documentElement, "scriptList")
+    script_elt = firstChildElt(script_list_elt, "script")
+    while script_elt:
+        script_id = int(eltText(firstChildElt(script_elt, "id")))
+        script_name = eltText(firstChildElt(script_elt, "name"))
+        script_code = eltText(firstChildElt(script_elt, "code"))
+        result[script_id] = (script_name, script_code)
+        script_elt = nextSiblingElt(script_elt, "script")
+
+    return result
+
 def loadCountryMap(doc):
     result = {}
 
@@ -129,6 +149,15 @@ def loadDefaultMap(doc):
         elt = nextSiblingElt(elt, "defaultCountry");
     return result
 
+def fixedScriptName(name, dupes):
+    name = name.replace(" ", "")
+    if name[-6:] != "Script":
+        name = name + "Script";
+    if name in dupes:
+        sys.stderr.write("\n\n\nERROR: The script name '%s' is messy" % name)
+        sys.exit(1);
+    return name
+
 def fixedCountryName(name, dupes):
     if name in dupes:
         return name.replace(" ", "") + "Country"
@@ -147,6 +176,12 @@ def findDupes(country_map, language_map):
 def languageNameToId(name, language_map):
     for key in language_map.keys():
         if language_map[key][0] == name:
+            return key
+    return -1
+
+def scriptNameToId(name, script_map):
+    for key in script_map.keys():
+        if script_map[key][0] == name:
             return key
     return -1
 
@@ -202,6 +237,7 @@ def assertSingleChar(string):
 class Locale:
     def __init__(self, elt):
         self.language = eltText(firstChildElt(elt, "language"))
+        self.script = eltText(firstChildElt(elt, "script"))
         self.country = eltText(firstChildElt(elt, "country"))
         self.decimal = int(eltText(firstChildElt(elt, "decimal")))
         self.group = int(eltText(firstChildElt(elt, "group")))
@@ -244,7 +280,7 @@ class Locale:
         self.currencyFormat = eltText(firstChildElt(elt, "currencyFormat"))
         self.currencyNegativeFormat = eltText(firstChildElt(elt, "currencyNegativeFormat"))
 
-def loadLocaleMap(doc, language_map, country_map):
+def loadLocaleMap(doc, language_map, script_map, country_map):
     result = {}
 
     locale_list_elt = firstChildElt(doc.documentElement, "localeList")
@@ -253,11 +289,14 @@ def loadLocaleMap(doc, language_map, country_map):
         locale = Locale(locale_elt)
         language_id = languageNameToId(locale.language, language_map)
         if language_id == -1:
-            sys.stderr.write("Cannot find a language id for %s\n" % locale.language)
+            sys.stderr.write("Cannot find a language id for '%s'\n" % locale.language)
+        script_id = scriptNameToId(locale.script, script_map)
+        if script_id == -1:
+            sys.stderr.write("Cannot find a script id for '%s'\n" % locale.script)
         country_id = countryNameToId(locale.country, country_map)
         if country_id == -1:
-            sys.stderr.write("Cannot find a country id for %s\n" % locale.country)
-        result[(language_id, country_id)] = locale
+            sys.stderr.write("Cannot find a country id for '%s'\n" % locale.country)
+        result[(language_id, script_id, country_id)] = locale
 
         locale_elt = nextSiblingElt(locale_elt, "locale")
 
@@ -273,14 +312,17 @@ def compareLocaleKeys(key1, key2):
 
         if l1.language in compareLocaleKeys.default_map:
             default = compareLocaleKeys.default_map[l1.language]
-            if l1.country == default:
+            if l1.country == default and key1[1] == 0:
                 return -1
-            if l2.country == default:
+            if l2.country == default and key2[1] == 0:
                 return 1
+
+        if key1[1] != key2[1]:
+            return key1[1] - key2[1]
     else:
         return key1[0] - key2[0]
 
-    return key1[1] - key2[1]
+    return key1[2] - key2[2]
 
 
 def languageCount(language_id, locale_map):
@@ -290,8 +332,25 @@ def languageCount(language_id, locale_map):
             result += 1
     return result
 
+def unicode2hex(s):
+    lst = []
+    for x in s:
+        v = ord(x)
+        if v > 0xFFFF:
+            # make a surrogate pair
+            # copied from qchar.h
+            high = (v >> 10) + 0xd7c0
+            low = (v % 0x400 + 0xdc00)
+            lst.append(hex(high))
+            lst.append(hex(low))
+        else:
+            lst.append(hex(v))
+    return lst
+
 class StringDataToken:
     def __init__(self, index, length):
+        if index > 0xFFFF or length > 0xFFFF:
+            raise Error("Position exceeds ushort range: %d,%d " % (index, length))
         self.index = index
         self.length = length
     def __str__(self):
@@ -305,9 +364,9 @@ class StringData:
         if s in self.hash:
             return self.hash[s]
 
-        lst = map(lambda x: hex(ord(x)), s)
+        lst = unicode2hex(s)
         index = len(self.data)
-        if index >= 65535:
+        if index > 65535:
             print "\n\n\n#error Data index is too big!"
             sys.stderr.write ("\n\n\nERROR: index exceeds the uint16 range! index = %d\n" % index)
             sys.exit(1)
@@ -316,7 +375,12 @@ class StringData:
             print "\n\n\n#error Data is too big!"
             sys.stderr.write ("\n\n\nERROR: data size exceeds the uint16 range! size = %d\n" % size)
             sys.exit(1)
-        token = StringDataToken(index, size)
+        token = None
+        try:
+            token = StringDataToken(index, size)
+        except Error as e:
+            sys.stderr.write("\n\n\nERROR: %s: on data '%s'" % (e, s))
+            sys.exit(1)
         self.hash[s] = token
         self.data += lst
         return token
@@ -395,9 +459,10 @@ def main():
 
     doc = xml.dom.minidom.parse(localexml)
     language_map = loadLanguageMap(doc)
+    script_map = loadScriptMap(doc)
     country_map = loadCountryMap(doc)
     default_map = loadDefaultMap(doc)
-    locale_map = loadLocaleMap(doc, language_map, country_map)
+    locale_map = loadLocaleMap(doc, language_map, script_map, country_map)
     dupes = findDupes(language_map, country_map)
 
     cldr_version = eltText(firstChildElt(doc.documentElement, "version"))
@@ -416,7 +481,6 @@ def main():
 
     # Locale index
     data_temp_file.write("static const quint16 locale_index[] = {\n")
-    data_temp_file.write("     0, // unused\n")
     index = 0
     for key in language_map.keys():
         i = 0
@@ -443,7 +507,7 @@ def main():
 
     # Locale data
     data_temp_file.write("static const QLocalePrivate locale_data[] = {\n")
-    data_temp_file.write("//      lang   terr    dec  group   list  prcnt   zero  minus  plus    exp quotStart quotEnd altQuotStart altQuotEnd sDtFmt lDtFmt sTmFmt lTmFmt ssMonth slMonth  sMonth lMonth  sDays  lDays  am,len      pm,len\n")
+    data_temp_file.write("//      lang   script terr    dec  group   list  prcnt   zero  minus  plus    exp quotStart quotEnd altQuotStart altQuotEnd sDtFmt lDtFmt sTmFmt lTmFmt ssMonth slMonth  sMonth lMonth  sDays  lDays  am,len      pm,len\n")
 
     locale_keys = locale_map.keys()
     compareLocaleKeys.default_map = default_map
@@ -452,9 +516,8 @@ def main():
 
     for key in locale_keys:
         l = locale_map[key]
-
-        data_temp_file.write("    { %6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, {%s}, %s,%s,%s,%s,%6d,%6d,%6d,%6d,%6d }, // %s/%s\n" \
-                    % (key[0], key[1],
+        data_temp_file.write("    { %6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, {%s}, %s,%s,%s,%s,%6d,%6d,%6d,%6d,%6d }, // %s/%s/%s\n" \
+                    % (key[0], key[1], key[2],
                         l.decimal,
                         l.group,
                         l.listDelim,
@@ -496,8 +559,9 @@ def main():
                         l.weekendStart,
                         l.weekendEnd,
                         l.language,
+                        l.script,
                         l.country))
-    data_temp_file.write("    {      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,    0,0,    0,0,    0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0, {0,0,0}, 0,0, 0,0, 0,0, 0,0, 0, 0, 0, 0, 0 }  // trailing 0s\n")
+    data_temp_file.write("    {      0,      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,    0,0,    0,0,    0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0, {0,0,0}, 0,0, 0,0, 0,0, 0,0, 0, 0, 0, 0, 0 }  // trailing 0s\n")
     data_temp_file.write("};\n")
 
     data_temp_file.write("\n")
@@ -586,6 +650,8 @@ def main():
     data_temp_file.write("static const char language_name_list[] =\n")
     data_temp_file.write("\"Default\\0\"\n")
     for key in language_map.keys():
+        if key == 0:
+            continue
         data_temp_file.write("\"" + language_map[key][0] + "\\0\"\n")
     data_temp_file.write(";\n")
 
@@ -593,12 +659,39 @@ def main():
 
     # Language name index
     data_temp_file.write("static const quint16 language_name_index[] = {\n")
-    data_temp_file.write("     0, // Unused\n")
+    data_temp_file.write("     0, // AnyLanguage\n")
     index = 8
     for key in language_map.keys():
+        if key == 0:
+            continue
         language = language_map[key][0]
         data_temp_file.write("%6d, // %s\n" % (index, language))
         index += len(language) + 1
+    data_temp_file.write("};\n")
+
+    data_temp_file.write("\n")
+
+    # Script name list
+    data_temp_file.write("static const char script_name_list[] =\n")
+    data_temp_file.write("\"Default\\0\"\n")
+    for key in script_map.keys():
+        if key == 0:
+            continue
+        data_temp_file.write("\"" + script_map[key][0] + "\\0\"\n")
+    data_temp_file.write(";\n")
+
+    data_temp_file.write("\n")
+
+    # Script name index
+    data_temp_file.write("static const quint16 script_name_index[] = {\n")
+    data_temp_file.write("     0, // AnyScript\n")
+    index = 8
+    for key in script_map.keys():
+        if key == 0:
+            continue
+        script = script_map[key][0]
+        data_temp_file.write("%6d, // %s\n" % (index, script))
+        index += len(script) + 1
     data_temp_file.write("};\n")
 
     data_temp_file.write("\n")
@@ -630,7 +723,6 @@ def main():
 
     # Language code list
     data_temp_file.write("static const unsigned char language_code_list[] =\n")
-    data_temp_file.write("\"  \\0\" // Unused\n")
     for key in language_map.keys():
         code = language_map[key][1]
         if len(code) == 2:
@@ -639,6 +731,15 @@ def main():
     data_temp_file.write(";\n")
 
     data_temp_file.write("\n")
+
+    # Script code list
+    data_temp_file.write("static const unsigned char script_code_list[] =\n")
+    for key in script_map.keys():
+        code = script_map[key][1]
+        for i in range(4 - len(code)):
+            code += "\\0"
+        data_temp_file.write("\"%2s\" // %s\n" % (code, script_map[key][0]))
+    data_temp_file.write(";\n")
 
     # Country code list
     data_temp_file.write("static const unsigned char country_code_list[] =\n")
@@ -690,6 +791,15 @@ def main():
     qlocaleh_temp_file.write("    };\n")
 
     qlocaleh_temp_file.write("\n")
+
+    # Script enum
+    qlocaleh_temp_file.write("    enum Script {\n")
+    script = ""
+    for key in script_map.keys():
+        script = fixedScriptName(script_map[key][0], dupes)
+        qlocaleh_temp_file.write("        " + script + " = " + str(key) + ",\n")
+    qlocaleh_temp_file.write("        LastScript = " + script + "\n")
+    qlocaleh_temp_file.write("    };\n")
 
     # Country enum
     qlocaleh_temp_file.write("    enum Country {\n")

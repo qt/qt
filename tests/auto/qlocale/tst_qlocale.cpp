@@ -185,6 +185,7 @@ void tst_QLocale::ctor()
         QCOMPARE(l.language(), QLocale::C);
         QCOMPARE(l.country(), QLocale::AnyCountry);
     }
+    TEST_CTOR(AnyLanguage, AnyCountry, default_lang, default_country)
     TEST_CTOR(C, AnyCountry, QLocale::C, QLocale::AnyCountry)
     TEST_CTOR(Aymara, AnyCountry, default_lang, default_country)
     TEST_CTOR(Aymara, France, default_lang, default_country)
@@ -310,6 +311,7 @@ void tst_QLocale::ctor()
     TEST_CTOR("en@", English, UnitedStates)
     TEST_CTOR("en.@", English, UnitedStates)
     TEST_CTOR("en_", English, UnitedStates)
+    TEST_CTOR("en_U", English, UnitedStates)
     TEST_CTOR("en_.", English, UnitedStates)
     TEST_CTOR("en_.@", English, UnitedStates)
     TEST_CTOR("en.bla", English, UnitedStates)
@@ -335,11 +337,35 @@ void tst_QLocale::ctor()
     TEST_CTOR("es-419", Spanish, LatinAmericaAndTheCaribbean)
 
     // test default countries for languages
+    TEST_CTOR("zh", Chinese, China)
+    TEST_CTOR("zh-Hans", Chinese, China)
     TEST_CTOR("mn", Mongolian, Mongolia)
     TEST_CTOR("ne", Nepali, Nepal)
 
 #undef TEST_CTOR
+#define TEST_CTOR(req_lc, exp_lang, exp_script, exp_country) \
+    { \
+    QLocale l(req_lc); \
+    QVERIFY2(l.language() == QLocale::exp_lang \
+        && l.script() == QLocale::exp_script \
+        && l.country() == QLocale::exp_country, \
+        QString("requested: \"" + QString(req_lc) + "\", got: " \
+        + QLocale::languageToString(l.language()) \
+        + "/" + QLocale::scriptToString(l.script()) \
+        + "/" + QLocale::countryToString(l.country())).toLatin1().constData()); \
+    }
 
+    TEST_CTOR("zh_CN", Chinese, AnyScript, China)
+    TEST_CTOR("zh_Hans_CN", Chinese, SimplifiedHanScript, China)
+    TEST_CTOR("zh_Hans", Chinese, SimplifiedHanScript, China)
+    TEST_CTOR("zh_Hant", Chinese, TraditionalHanScript, HongKong)
+    TEST_CTOR("zh_Hans_MO", Chinese, SimplifiedHanScript, Macau)
+    TEST_CTOR("zh_Hant_MO", Chinese, TraditionalHanScript, Macau)
+    TEST_CTOR("az_Latn_AZ", Azerbaijani, LatinScript, Azerbaijan)
+    TEST_CTOR("ha_Arab_NG", Hausa, ArabicScript, Nigeria)
+    TEST_CTOR("ha_Latn_NG", Hausa, LatinScript, Nigeria)
+
+#undef TEST_CTOR
 }
 
 void tst_QLocale::emptyCtor()
@@ -412,11 +438,12 @@ void tst_QLocale::emptyCtor()
     TEST_CTOR("nb_NO", "nb_NO")
     TEST_CTOR("nn_NO", "nn_NO")
 
+    TEST_CTOR("DE", "de_DE");
+    TEST_CTOR("EN", "en_US");
+
     TEST_CTOR("en/", defaultLoc)
-    TEST_CTOR("DE", defaultLoc);
     TEST_CTOR("asdfghj", defaultLoc);
     TEST_CTOR("123456", defaultLoc);
-    TEST_CTOR("EN", defaultLoc);
 
 #undef TEST_CTOR
 #endif
@@ -2086,6 +2113,10 @@ void tst_QLocale::monthName()
     QCOMPARE(ru.monthName(1, QLocale::LongFormat), QString::fromUtf8("\321\217\320\275\320\262\320\260\321\200\321\217"));
     QCOMPARE(ru.monthName(1, QLocale::ShortFormat), QString::fromUtf8("\321\217\320\275\320\262\56"));
     QCOMPARE(ru.monthName(1, QLocale::NarrowFormat), QString::fromUtf8("\320\257"));
+
+    // check that our CLDR scripts handle surrogate pairs correctly
+    QLocale dsrt("en-Dsrt-US");
+    QCOMPARE(dsrt.monthName(1, QLocale::LongFormat), QString::fromUtf8("\xf0\x90\x90\x96\xf0\x90\x90\xb0\xf0\x90\x91\x8c\xf0\x90\x90\xb7\xf0\x90\x90\xad\xf0\x90\x90\xaf\xf0\x90\x91\x89\xf0\x90\x90\xa8"));
 }
 
 void tst_QLocale::standaloneMonthName()
@@ -2191,11 +2222,11 @@ void tst_QLocale::uiLanguages()
 
     const QLocale en_US("en_US");
     QCOMPARE(en_US.uiLanguages().size(), 1);
-    QCOMPARE(en_US.uiLanguages().at(0), QLatin1String("en_US"));
+    QCOMPARE(en_US.uiLanguages().at(0), QLatin1String("en-US"));
 
     const QLocale ru_RU("ru_RU");
     QCOMPARE(ru_RU.uiLanguages().size(), 1);
-    QCOMPARE(ru_RU.uiLanguages().at(0), QLatin1String("ru_RU"));
+    QCOMPARE(ru_RU.uiLanguages().at(0), QLatin1String("ru-RU"));
 }
 
 void tst_QLocale::weekendDays()

@@ -120,8 +120,10 @@ def generateLocaleInfo(path):
     if not country_code:
         return {}
 
-    # we do not support scripts and variants
-    if variant_code or script_code:
+    # we do not support variants
+    # ### actually there is only one locale with variant: en_US_POSIX
+    #     does anybody care about it at all?
+    if variant_code:
         return {}
 
     language_id = enumdata.languageCodeToId(language_code)
@@ -129,6 +131,14 @@ def generateLocaleInfo(path):
         sys.stderr.write("unnknown language code \"" + language_code + "\"\n")
         return {}
     language = enumdata.language_list[language_id][0]
+
+    script_id = enumdata.scriptCodeToId(script_code)
+    if script_code == -1:
+        sys.stderr.write("unnknown script code \"" + script_code + "\"\n")
+        return {}
+    script = "AnyScript"
+    if script_id != -1:
+        script = enumdata.script_list[script_id][0]
 
     country_id = enumdata.countryCodeToId(country_code)
     country = ""
@@ -146,12 +156,14 @@ def generateLocaleInfo(path):
 
     result = {}
     result['language'] = language
+    result['script'] = script
     result['country'] = country
     result['language_code'] = language_code
     result['country_code'] = country_code
     result['script_code'] = script_code
     result['variant_code'] = variant_code
     result['language_id'] = language_id
+    result['script_id'] = script_id
     result['country_id'] = country_id
 
     supplementalPath = dir_name + "/../supplemental/supplementalData.xml"
@@ -511,7 +523,7 @@ for file in cldr_files:
         sys.stderr.write("skipping file \"" + file + "\"\n")
         continue
 
-    locale_database[(l['language_id'], l['country_id'], l['script_code'], l['variant_code'])] = l
+    locale_database[(l['language_id'], l['script_id'], l['country_id'], l['variant_code'])] = l
 
 integrateWeekData(cldr_dir+"/../supplemental/supplementalData.xml")
 locale_keys = locale_database.keys()
@@ -534,6 +546,16 @@ for id in enumdata.language_list:
     print "            <code>" + l[1] + "</code>"
     print "        </language>"
 print "    </languageList>"
+
+print "    <scriptList>"
+for id in enumdata.script_list:
+    l = enumdata.script_list[id]
+    print "        <script>"
+    print "            <name>" + l[0] + "</name>"
+    print "            <id>" + str(id) + "</id>"
+    print "            <code>" + l[1] + "</code>"
+    print "        </script>"
+print "    </scriptList>"
 
 print "    <countryList>"
 for id in enumdata.country_list:
@@ -653,6 +675,7 @@ print "    <localeList>"
 print \
 "        <locale>\n\
             <language>C</language>\n\
+            <script>AnyScript</script>\n\
             <country>AnyCountry</country>\n\
             <decimal>46</decimal>\n\
             <group>44</group>\n\
@@ -701,8 +724,10 @@ for key in locale_keys:
 
     print "        <locale>"
     print "            <language>" + l['language']        + "</language>"
+    print "            <script>" + l['script']        + "</script>"
     print "            <country>"  + l['country']         + "</country>"
     print "            <languagecode>" + l['language_code']        + "</languagecode>"
+    print "            <scriptcode>" + l['script_code']        + "</scriptcode>"
     print "            <countrycode>"  + l['country_code']         + "</countrycode>"
     print "            <decimal>"  + ordStr(l['decimal']) + "</decimal>"
     print "            <group>"    + ordStr(l['group'])   + "</group>"

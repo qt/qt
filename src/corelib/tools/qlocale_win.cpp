@@ -113,10 +113,9 @@ QByteArray getWinLocaleName(LCID id = LOCALE_USER_DEFAULT)
     QByteArray result;
     if (id == LOCALE_USER_DEFAULT) {
         result = envVarLocale();
-        QChar lang[3];
-        QChar cntry[3];
+        QString lang, script, cntry;
         if ( result == "C" || (!result.isEmpty()
-                && splitLocaleName(QString::fromLocal8Bit(result), lang, cntry)) ) {
+                && splitLocaleName(QString::fromLocal8Bit(result), lang, script, cntry)) ) {
             long id = 0;
             bool ok = false;
             id = qstrtoll(result.data(), 0, 0, &ok);
@@ -562,14 +561,17 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     case CountryId: {
         QString locale = QString::fromLatin1(getWinLocaleName());
         QLocale::Language lang;
+        QLocale::Script script;
         QLocale::Country cntry;
-        getLangAndCountry(locale, lang, cntry);
+        getLangAndCountry(locale, lang, script, cntry);
         if (type == LanguageId)
             return lang;
         if (cntry == QLocale::AnyCountry)
             return fallbackLocale().country();
         return cntry;
     }
+    case ScriptId:
+        return QVariant(QLocale::AnyScript);
 
     case MeasurementSystem:
         return QVariant(static_cast<int>(winSystemMeasurementSystem()));

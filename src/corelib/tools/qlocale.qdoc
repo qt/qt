@@ -707,6 +707,7 @@
   the type of information to return from the query() method is listed.
 
   \value LanguageId a uint specifying the language.
+  \value ScriptId a uint specifying the script.
   \value CountryId a uint specifying the country.
   \value DecimalPoint a QString specifying the decimal point.
   \value GroupSeparator a QString specifying the group separator.
