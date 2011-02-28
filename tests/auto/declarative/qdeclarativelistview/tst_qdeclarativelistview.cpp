@@ -1104,7 +1104,7 @@ void tst_QDeclarativeListView::sectionsDelegate()
     model.modifyItem(9, "Two", "aaa");
     model.modifyItem(10, "Two", "aaa");
     model.modifyItem(11, "Two", "aaa");
-    QTest::qWait(100);
+    QTRY_COMPARE(findItems<QDeclarativeItem>(contentItem, "sect_aaa").count(), 1);
     canvas->rootObject()->setProperty("sectionProperty", "name");
     // ensure view has settled.
     QTRY_COMPARE(findItems<QDeclarativeItem>(contentItem, "sect_Four").count(), 1);
@@ -1114,6 +1114,28 @@ void tst_QDeclarativeListView::sectionsDelegate()
         QVERIFY(item);
         QTRY_COMPARE(item->y(), qreal(i*20*4));
     }
+
+    // QTBUG-17769
+    model.removeItems(10, 20);
+    // ensure view has settled.
+    QTRY_COMPARE(findItems<QDeclarativeItem>(contentItem, "wrapper").count(), 10);
+    // Drag view up beyond bounds
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(20,20)));
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(20,0)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(20,-50)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(20,-200)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(20,-200)));
+    // view should settle back at 0
+    QTRY_COMPARE(listview->contentY(), 0.0);
 
     delete canvas;
 }
@@ -2445,7 +2467,7 @@ QList<T*> tst_QDeclarativeListView::findItems(QGraphicsObject *parent, const QSt
     //qDebug() << parent->childItems().count() << "children";
     for (int i = 0; i < parent->childItems().count(); ++i) {
         QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(parent->childItems().at(i));
-        if(!item)
+        if(!item || !item->isVisible())
             continue;
         //qDebug() << "try" << item;
         if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName))
