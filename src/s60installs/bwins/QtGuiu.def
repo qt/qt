@@ -12934,5 +12934,6 @@ EXPORTS
 	?setAlphaChannel@QVolatileImage@@QAEXABVQPixmap@@@Z @ 12933 NONAME ; void QVolatileImage::setAlphaChannel(class QPixmap const &)
 	?byteCount@QVolatileImage@@QBEHXZ @ 12934 NONAME ; int QVolatileImage::byteCount(void) const
 	??0QVolatileImage@@QAE@ABV0@@Z @ 12935 NONAME ; QVolatileImage::QVolatileImage(class QVolatileImage const &)
-	?depth@QVolatileImage@@QBEHXZ @ 12936 NONAME ; int QVolatileImage::depth(void) const
+	?depth@QVolatileImage@@QBEHXZ @ 12936 NONAME ; int QVolatileImage::depth(void) const	
+	?releaseCachedResources@QGraphicsSystem@@UAEXXZ @ 12937 NONAME ; void QGraphicsSystem::releaseCachedResources(void)
 

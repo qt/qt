@@ -12141,4 +12141,5 @@ EXPORTS
 	_ZNK14QVolatileImage7toImageEv @ 12140 NONAME
 	_ZNK14QVolatileImage9byteCountEv @ 12141 NONAME
 	_ZNK14QVolatileImage9constBitsEv @ 12142 NONAME
+	_ZN15QGraphicsSystem22releaseCachedResourcesEv @ 12143 NONAME
 
