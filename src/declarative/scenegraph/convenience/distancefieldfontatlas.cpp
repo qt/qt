@@ -149,6 +149,8 @@ DistanceFieldFontAtlas::DistanceFieldFontAtlas(const QFont &font)
     QString italic = m_font.italic() ? QLatin1String("i") : QLatin1String("");
     QString bold = m_font.weight() > QFont::Normal ? QLatin1String("b") : QLatin1String("");
     m_distanceFieldFileName = basename + bold + italic + QLatin1String(".png");
+
+    m_glyphCount = m_fontEngine->glyphCount();
 }
 
 bool DistanceFieldFontAtlas::distanceFieldAvailable() const
@@ -362,5 +364,5 @@ QString DistanceFieldFontAtlas::distanceFieldFileName() const
 
 int DistanceFieldFontAtlas::glyphCount() const
 {
-    return m_fontEngine->glyphCount();
+    return m_glyphCount;
 }
