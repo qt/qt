@@ -981,10 +981,8 @@ void tst_QScriptContext::backtrace()
     QVERIFY(!eng.hasUncaughtException());
     QVERIFY(ret.isArray());
     QStringList slist = qscriptvalue_cast<QStringList>(ret);
-    if (!qt_script_isJITEnabled()) {
-        QEXPECT_FAIL("eval", "QTBUG-17842: Missing line number in backtrace when function calls eval()", Continue);
-        QEXPECT_FAIL("eval in member", "QTBUG-17842: Missing line number in backtrace when function calls eval()", Continue);
-    }
+    QEXPECT_FAIL("eval", "QTBUG-17842: Missing line number in backtrace when function calls eval()", Continue);
+    QEXPECT_FAIL("eval in member", "QTBUG-17842: Missing line number in backtrace when function calls eval()", Continue);
     QCOMPARE(slist, expectedbacktrace);
 }
 
