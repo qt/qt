@@ -932,7 +932,7 @@ v8::Handle<v8::Value> QScriptEnginePrivate::newQObject(QObject *object,
         }
     }
 
-    if (!opt & QScriptEngine::ExcludeChildObjects) {
+    if (!(opt & QScriptEngine::ExcludeChildObjects)) {
         // Add accessors for current child objects.
         QList<QObject*> children = object->children();
         for (int i = 0; i < children.size(); ++i) {
