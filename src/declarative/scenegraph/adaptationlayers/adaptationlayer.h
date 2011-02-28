@@ -61,35 +61,14 @@ class TextureReference;
 class Q_DECLARATIVE_EXPORT RectangleNodeInterface : public GeometryNode
 {
 public:
-    RectangleNodeInterface() : m_radius(0), m_pen_width(0) { }
-
     virtual void setRect(const QRectF &rect) = 0;
-    QRectF rect() const { return m_rect; }
-
     virtual void setColor(const QColor &color) = 0;
-    QColor color() const { return m_color; }
-
     virtual void setPenColor(const QColor &color) = 0;
-    QColor penColor() const { return m_pen_color; }
-
-    virtual void setPenWidth(int width) = 0;
-    int penWidth() const { return m_pen_width; }
-
+    virtual void setPenWidth(qreal width) = 0;
     virtual void setGradientStops(const QGradientStops &stops) = 0;
-    QGradientStops gradientStops() const { return m_gradient_stops; }
-
     virtual void setRadius(qreal radius) = 0;
-    qreal radius() const { return m_radius; }
 
     virtual void update() = 0;
-
-protected:
-    QRectF m_rect;
-    QGradientStops m_gradient_stops;
-    QColor m_color;
-    QColor m_pen_color;
-    qreal m_radius;
-    int m_pen_width;
 };
 
 

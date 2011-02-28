@@ -65,7 +65,7 @@ public:
     virtual void setRect(const QRectF &rect);
     virtual void setColor(const QColor &color);
     virtual void setPenColor(const QColor &color);
-    virtual void setPenWidth(int width);
+    virtual void setPenWidth(qreal width);
     virtual void setGradientStops(const QGradientStops &stops);
     virtual void setRadius(qreal radius);
     virtual void update();
@@ -87,6 +87,11 @@ private:
     FlatColorMaterial m_border_material;
     FlatColorMaterial m_fill_material;
     QSGTextureRef m_gradient_texture;
+
+    QRectF m_rect;
+    QGradientStops m_gradient_stops;
+    qreal m_radius;
+    int m_pen_width;
 
     uint m_gradient_is_opaque : 1;
     uint m_dirty_geometry : 1;

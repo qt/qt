@@ -70,6 +70,7 @@ void FlatColorMaterialShader::updateState(Renderer *renderer, AbstractMaterial *
     FlatColorMaterial *newMaterial = static_cast<FlatColorMaterial *>(newEffect);
 
     const QColor &c = newMaterial->color();
+
     if (oldMaterial == 0 || c != oldMaterial->color() || (updates & Renderer::UpdateOpacity)) {
         qreal opacity = renderer->renderOpacity();
         QVector4D v(c.redF() * c.alphaF() * opacity,
@@ -113,7 +114,7 @@ const char *FlatColorMaterialShader::fragmentShader() const {
 }
 
 
-FlatColorMaterial::FlatColorMaterial() : m_color(Qt::white)
+FlatColorMaterial::FlatColorMaterial() : m_color(QColor(255, 255, 255))
 {
 }
 
