@@ -307,6 +307,7 @@ static QString macCurrencySymbol(QLocale::CurrencySymbolFormat format)
     return QString();
 }
 
+#ifndef QT_NO_SYSTEMLOCALE
 static QString macFormatCurrency(const QSystemLocale::CurrencyToStringArgument &arg)
 {
     QCFType<CFNumberRef> value;
@@ -343,7 +344,6 @@ static QString macFormatCurrency(const QSystemLocale::CurrencyToStringArgument &
     return QCFString::toQString(result);
 }
 
-#ifndef QT_NO_SYSTEMLOCALE
 static QVariant macQuoteString(QSystemLocale::QueryType type, const QStringRef &str)
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
