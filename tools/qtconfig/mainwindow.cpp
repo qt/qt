@@ -200,11 +200,11 @@ MainWindow::MainWindow()
     connect(ui->downFontpathButton, SIGNAL(clicked()), SLOT(downFontpath()));
     connect(ui->downSubstitutionButton, SIGNAL(clicked()), SLOT(downSubstitute()));
     connect(ui->fontFamilyCombo, SIGNAL(activated(QString)), SLOT(familySelected(QString)));
-    connect(ui->fileExitAction, SIGNAL(activated()), SLOT(fileExit()));
-    connect(ui->fileSaveAction, SIGNAL(activated()), SLOT(fileSave()));
-    connect(ui->helpAboutAction, SIGNAL(activated()), SLOT(helpAbout()));
-    connect(ui->helpAboutQtAction, SIGNAL(activated()), SLOT(helpAboutQt()));
-    connect(ui->mainTabWidget, SIGNAL(currentChanged(QWidget*)), SLOT(pageChanged(QWidget*)));
+    connect(ui->fileExitAction, SIGNAL(triggered()), SLOT(fileExit()));
+    connect(ui->fileSaveAction, SIGNAL(triggered()), SLOT(fileSave()));
+    connect(ui->helpAboutAction, SIGNAL(triggered()), SLOT(helpAbout()));
+    connect(ui->helpAboutQtAction, SIGNAL(triggered()), SLOT(helpAboutQt()));
+    connect(ui->mainTabWidget, SIGNAL(currentChanged(int)), SLOT(pageChanged(int)));
     connect(ui->paletteCombo, SIGNAL(activated(int)), SLOT(paletteSelected(int)));
     connect(ui->removeFontpathButton, SIGNAL(clicked()), SLOT(removeFontpath()));
     connect(ui->removeSubstitutionButton, SIGNAL(clicked()), SLOT(removeSubstitute()));
@@ -912,8 +912,9 @@ void MainWindow::helpAboutQt()
     QMessageBox::aboutQt(this, tr("Qt Configuration"));
 }
 
-void MainWindow::pageChanged(QWidget *page)
+void MainWindow::pageChanged(int pageNumber)
 {
+    QWidget *page = ui->mainTabWidget->widget(pageNumber);
     if (page == ui->interfaceTab)
         ui->helpView->setText(tr(interface_text));
     else if (page == ui->appearanceTab)

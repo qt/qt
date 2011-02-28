@@ -82,7 +82,7 @@ public slots:
     virtual void somethingModified();
     virtual void helpAbout();
     virtual void helpAboutQt();
-    virtual void pageChanged(QWidget *);
+    virtual void pageChanged(int);
 
 
 private:
