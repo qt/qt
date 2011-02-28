@@ -1598,7 +1598,7 @@ void tst_Moc::warnings()
 #ifdef Q_CC_MSVC
     // for some reasons, moc compiled with MSVC uses a different output format
     QRegExp lineNumberRe(":(\\d+):");
-    lineNumbreRe.setMinimal(true);
+    lineNumberRe.setMinimal(true);
     expectedStdErr.replace(lineNumberRe, "(\\1):");
 #endif
 
