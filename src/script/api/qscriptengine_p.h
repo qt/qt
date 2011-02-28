@@ -29,6 +29,7 @@
 #include <QtCore/qset.h>
 #include <QtCore/qstack.h>
 #include <QtCore/qstringlist.h>
+#include <QtCore/qmutex.h>
 
 #include <private/qobject_p.h>
 
@@ -80,6 +81,20 @@ class QScriptEnginePrivate
 
         inline void push();
         inline void pop();
+    };
+
+    // FIXME: This can go away as bug http://code.google.com/p/v8/issues/detail?id=1205
+    // will be resolved and we can store QScriptEnginePrivate* in v8::Isolate
+    class Isolates {
+    public:
+        static v8::Isolate *createEnterIsolate(QScriptEnginePrivate *engine);
+        static QScriptEnginePrivate *engine(v8::Isolate *isolate);
+    private:
+        Q_GLOBAL_STATIC(Isolates, isolates);
+
+        typedef QHash<v8::Isolate*, QScriptEnginePrivate*> QHashIsolateEngine;
+        QHashIsolateEngine m_mapping;
+        QMutex m_protector;
     };
 
     Q_DECLARE_PUBLIC(QScriptEngine)

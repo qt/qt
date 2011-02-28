@@ -661,17 +661,29 @@ v8::Handle<v8::Object> QScriptEnginePrivate::newVariant(const QVariant &value)
     return persistent;
 }
 
-static inline v8::Isolate *createEnterIsolate()
+v8::Isolate *QScriptEnginePrivate::Isolates::createEnterIsolate(QScriptEnginePrivate *engine)
 {
     v8::Isolate *isolate = v8::Isolate::New();
     isolate->Enter();
+    {
+        Isolates *i = isolates();
+        QMutexLocker lock(&(i->m_protector));
+        i->m_mapping.insert(isolate, engine);
+    }
     // FIXME It doesn't capture the stack, so backtrace test is failing.
     v8::V8::SetCaptureStackTraceForUncaughtExceptions(/* capture */ true, /* frame_limit */ 50);
     return isolate;
 }
 
+QScriptEnginePrivate *QScriptEnginePrivate::Isolates::engine(v8::Isolate *isolate)
+{
+    Isolates *i = isolates();
+    QMutexLocker lock(&(i->m_protector));
+    return i->m_mapping.value(isolate, 0);
+}
+
 QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine::ContextOwnership ownership)
-    : m_isolate(createEnterIsolate())
+    : m_isolate(Isolates::createEnterIsolate(this))
     , m_v8Context(ownership == QScriptEngine::AdoptCurrentContext ?
             v8::Persistent<v8::Context>::New(v8::Context::GetCurrent()) : v8::Context::New())
     , m_originalGlobalObject(this, m_v8Context)
