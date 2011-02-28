@@ -205,8 +205,11 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
             QChar cntry[3];
             int lang_len, cntry_len;
             if (splitLocaleName(QString::fromLatin1(d->lc_messages_var.constData(), d->lc_messages_var.size()),
-                                lang, cntry, &lang_len, &cntry_len))
-                return QStringList(QString::fromRawData(lang, lang_len) % QLatin1Char('-') % QString::fromRawData(cntry, cntry_len));
+                                lang, cntry, &lang_len, &cntry_len)) {
+                if (!cntry_len && lang_len)
+                    return QStringList(QString(lang, lang_len));
+                return QStringList(QString(lang, lang_len) % QLatin1Char('-') % QString(cntry, cntry_len));
+            }
         }
         return QVariant();
     }
