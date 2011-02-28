@@ -71,7 +71,8 @@ public:
 #if defined(Q_OS_SYMBIAN)
     enum NativeType {
         FbsBitmap,
-        SgImage
+        SgImage,
+        VolatileImage
     };
 #endif
     enum ClassId { RasterClass, X11Class, MacClass, DirectFBClass,

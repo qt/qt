@@ -12108,4 +12108,37 @@ EXPORTS
 	_ZN20QGraphicsItemPrivate11setSubFocusEP13QGraphicsItemS1_ @ 12107 NONAME
 	_ZN20QGraphicsItemPrivate13clearSubFocusEP13QGraphicsItemS1_ @ 12108 NONAME
 	_ZN12QLineControl21resetCursorBlinkTimerEv @ 12109 NONAME
+	_ZN14QVolatileImage11paintEngineEv @ 12110 NONAME
+	_ZN14QVolatileImage12ensureFormatEN6QImage6FormatE @ 12111 NONAME
+	_ZN14QVolatileImage15setAlphaChannelERK7QPixmap @ 12112 NONAME
+	_ZN14QVolatileImage4bitsEv @ 12113 NONAME
+	_ZN14QVolatileImage4fillEj @ 12114 NONAME
+	_ZN14QVolatileImage8copyFromEPS_RK5QRect @ 12115 NONAME
+	_ZN14QVolatileImage8imageRefEv @ 12116 NONAME
+	_ZN14QVolatileImageC1EPvS0_ @ 12117 NONAME
+	_ZN14QVolatileImageC1ERK6QImage @ 12118 NONAME
+	_ZN14QVolatileImageC1ERKS_ @ 12119 NONAME
+	_ZN14QVolatileImageC1EiiN6QImage6FormatE @ 12120 NONAME
+	_ZN14QVolatileImageC1Ev @ 12121 NONAME
+	_ZN14QVolatileImageC2EPvS0_ @ 12122 NONAME
+	_ZN14QVolatileImageC2ERK6QImage @ 12123 NONAME
+	_ZN14QVolatileImageC2ERKS_ @ 12124 NONAME
+	_ZN14QVolatileImageC2EiiN6QImage6FormatE @ 12125 NONAME
+	_ZN14QVolatileImageC2Ev @ 12126 NONAME
+	_ZN14QVolatileImageD1Ev @ 12127 NONAME
+	_ZN14QVolatileImageD2Ev @ 12128 NONAME
+	_ZN14QVolatileImageaSERKS_ @ 12129 NONAME
+	_ZNK14QVolatileImage12bytesPerLineEv @ 12130 NONAME
+	_ZNK14QVolatileImage13endDataAccessEb @ 12131 NONAME
+	_ZNK14QVolatileImage15beginDataAccessEv @ 12132 NONAME
+	_ZNK14QVolatileImage15hasAlphaChannelEv @ 12133 NONAME
+	_ZNK14QVolatileImage20duplicateNativeImageEv @ 12134 NONAME
+	_ZNK14QVolatileImage5depthEv @ 12135 NONAME
+	_ZNK14QVolatileImage5widthEv @ 12136 NONAME
+	_ZNK14QVolatileImage6formatEv @ 12137 NONAME
+	_ZNK14QVolatileImage6heightEv @ 12138 NONAME
+	_ZNK14QVolatileImage6isNullEv @ 12139 NONAME
+	_ZNK14QVolatileImage7toImageEv @ 12140 NONAME
+	_ZNK14QVolatileImage9byteCountEv @ 12141 NONAME
+	_ZNK14QVolatileImage9constBitsEv @ 12142 NONAME
 
