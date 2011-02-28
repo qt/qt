@@ -65,8 +65,6 @@ class CEnvironmentChangeNotifier;
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_METATYPE(QStringRef)
-
 struct Q_CORE_EXPORT QLocalePrivate
 {
 public:
@@ -261,5 +259,7 @@ QLocale::Country codeToCountry(const QChar *code);
 void getLangAndCountry(const QString &name, QLocale::Language &lang, QLocale::Country &cntry);
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QStringRef)
 
 #endif // QLOCALE_P_H
