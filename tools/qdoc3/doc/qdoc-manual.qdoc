@@ -5544,12 +5544,14 @@
 
     The \\qmlattachedsignal command is for documenting an attachable 
     \l{http://doc.trolltech.com/4.7/qdeclarativeintroduction.html#signal-handlers}
-    {signal handler}.
-    The argument is the rest of the line. It should be the QML element where 
-    the signal handler is declared, the \c{::} qualifier, and finally the 
-    signal handler name. If we have a QML attached signal handler named 
-    \c onAdd() in QML element \c GridView, the \\qmlattachedsignal for it 
-    would look like this:
+    {signal handler}. The \\qmlattachedsignal command is used just like 
+    the \l{qmlsignal-command} {\\qmlsignal} command. 
+
+    The argument is the rest of the line. It should be the name of the
+    QML element where the signal handler is declared, the \c{::}
+    qualifier, and finally the signal handler name. If we have a QML
+    attached signal handler named \c onAdd() in the \c GridView
+    element, the \\qmlattachedsignal for it would look like this:
 
     \code
     / *!
@@ -5566,11 +5568,36 @@
     \target qmlmethod-command
     \section1 \\qmlmethod  \span {class="newStuff"} {(new)}
 
+    The \\qmlmethod command is for documenting a QML method. The
+    argument is the complete method signature, including return
+    type and parameter names and types.
+
+    \code
+    / *!
+        \qmlmethod void TextInput::select(int start, int end)
+
+        Causes the text from \a start to \a end to be selected.
+
+        If either start or end is out of range, the selection is not changed.
+
+        After calling this, selectionStart will become the lesser and
+        selectionEnd will become the greater (regardless of the order
+        passed to this method).
+
+       \sa selectionStart, selectionEnd
+    * / 
+    \endcode
+
+    QDoc includes this documentation on the element refence page for the 
+    \l{http://doc.trolltech.com/4.7/qml-textinput.html#select-method}
+    {TextInput} element.
+
     \target qmlattachedmethod-command
     \section1 \\qmlattachedmethod  \span {class="newStuff"} {(new but not used)}
 
-    The \\qmlattachedmethod command was included in QDoc for symmetery, 
-    but it is currently not used.
+    The \\qmlattachedmethod command was included in QDoc for symmetery
+    with the \\qmlattachedsignal command, but it hasn't been used so far, 
+    so maybe that means there is no such thing as an attached method.
 
     \target default-command
     \section1 \\default  \span {class="newStuff"} {(new)}
@@ -5578,6 +5605,40 @@
     \target qmlbasictype-command
     \section1 \\qmlbasictype  \span {class="newStuff"} {(new)}
 
+    The \\qmlbasictype command is for documenting a basic type for QML.
+    The argument is the type name. The type must be included in the 
+    QML basic types group using the \l{ingroup-command}{\\ingroup}
+    command as shown below. This will cause QDoc to include the 
+    documentation for the type on the
+    \l{http://doc.trolltech.com/4.7/qdeclarativebasictypes.html}
+    {QML Basic Types} page. The \l{brief-command} {\\brief} command
+    is also required, because it appears on the 
+    \l{http://doc.trolltech.com/4.7/qdeclarativebasictypes.html}
+    {QML Basic Types} page as well.
+
+    \code
+    / *!
+        \qmlbasictype int
+        \ingroup qmlbasictypes
+
+        \brief An integer is a whole number, e.g. 0, 10, or -20.
+
+        An integer is a whole number, e.g. 0, 10, or -20. The possible
+        \c int values range from around -2000000000 to around
+        2000000000, although most elements will only accept a reduced
+        range (which they mention in their documentation).
+
+        Example:
+        \qml
+        Item { width: 100; height: 200 }
+        \endqml
+
+        \sa {QML Basic Types}
+    * /
+    \endcode
+
+    QDoc outputs this as \l{http://doc.trolltech.com/4.7/qml-int.html}
+    {qml-int.html}.
 */
 
 /*!
