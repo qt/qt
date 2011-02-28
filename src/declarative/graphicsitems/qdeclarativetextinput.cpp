@@ -1299,6 +1299,7 @@ QVariant QDeclarativeTextInput::inputMethodQuery(Qt::InputMethodQuery property) 
 
 /*!
     \qmlmethod void TextInput::deselect()
+    \since Quick 1.1
 
     Removes active text selection.
 */
@@ -1480,6 +1481,13 @@ void QDeclarativeTextInput::setMouseSelectionMode(SelectionMode mode)
     }
 }
 
+/*!
+    \qmlproperty bool TextInput::canPaste
+    \since QtQuick 1.1
+
+    Returns true if the TextInput is writable and the content of the clipboard is
+    suitable for pasting into the TextEdit.
+*/
 bool QDeclarativeTextInput::canPaste() const
 {
     Q_D(const QDeclarativeTextInput);

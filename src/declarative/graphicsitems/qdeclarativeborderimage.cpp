@@ -214,6 +214,15 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
 */
 
 /*!
+    \qmlproperty bool BorderImage::cache
+    \since Quick 1.1
+
+    Specifies whether the image should be cached. The default value is
+    true. Setting \a cache to false is useful when dealing with large images,
+    to make sure that they aren't cached at the expense of small 'ui element' images.
+*/
+
+/*!
     \qmlproperty bool BorderImage::mirror
     \since Quick 1.1
 

@@ -1297,10 +1297,9 @@ void QDeclarativeFlickable::setContentHeight(qreal h)
 /*!
     \qmlmethod Flickable::resizeContent(real width, real height, QPointF center)
     \preliminary
+    \since Quick 1.1
 
     Resizes the content to \a width x \a height about \a center.
-
-    \bold {This method was added in QtQuick 1.1.}
 
     This does not scale the contents of the Flickable - it only resizes the \l contentWidth
     and \l contentHeight.
@@ -1333,10 +1332,9 @@ void QDeclarativeFlickable::resizeContent(qreal w, qreal h, QPointF center)
 /*!
     \qmlmethod Flickable::returnToBounds()
     \preliminary
+    \since Quick 1.1
 
     Ensures the content is within legal bounds.
-
-    \bold {This method was added in QtQuick 1.1.}
 
     This may be called to ensure that the content is within legal bounds
     after manually positioning the content.
