@@ -1106,6 +1106,8 @@ void tst_QDeclarativeListView::sectionsDelegate()
     model.modifyItem(11, "Two", "aaa");
     QTest::qWait(100);
     canvas->rootObject()->setProperty("sectionProperty", "name");
+    // ensure view has settled.
+    QTRY_COMPARE(findItems<QDeclarativeItem>(contentItem, "sect_Four").count(), 1);
     for (int i = 0; i < 4; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem,
                 "sect_" + model.name(i*3));
