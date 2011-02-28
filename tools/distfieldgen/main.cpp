@@ -104,11 +104,10 @@ QMutex DistFieldGenTask::m_mutex;
 
 static void generateDistanceFieldForFont(const QFont &font, const QString &destinationDir, bool multithread)
 {
+    DistanceFieldFontAtlas atlas(font);
     QFontDatabase db;
     QString fontString = font.family() + QLatin1String(" ") + db.styleString(font);
-    qWarning("> Generating distance-field for font '%s'", fontString.toLatin1().constData());
-
-    DistanceFieldFontAtlas atlas(font);
+    qWarning("> Generating distance-field for font '%s' (%d glyphs)", fontString.toLatin1().constData(), atlas.glyphCount());
 
     QMap<int, QImage> distfields;
     for (int i = 0; i < atlas.glyphCount(); ++i) {
