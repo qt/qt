@@ -921,6 +921,8 @@ void QDeclarativeTextInput::moveCursor()
 QRectF QDeclarativeTextInput::positionToRectangle(int pos) const
 {
     Q_D(const QDeclarativeTextInput);
+    if (pos > d->control->cursorPosition())
+        pos += d->control->preeditAreaText().length();
     return QRectF(d->control->cursorToX(pos)-d->hscroll,
         0.0,
         d->control->cursorWidth(),
@@ -929,8 +931,7 @@ QRectF QDeclarativeTextInput::positionToRectangle(int pos) const
 
 int QDeclarativeTextInput::positionAt(int x) const
 {
-    Q_D(const QDeclarativeTextInput);
-    return d->control->xToPos(x + d->hscroll);
+    return positionAt(x, CursorBetweenCharacters);
 }
 
 /*!
@@ -952,10 +953,18 @@ int QDeclarativeTextInput::positionAt(int x) const
     \o TextInput.CursorOnCharacter - Returns the position before the character that is nearest x.
     \endlist
 */
-int QDeclarativeTextInput::positionAt(int x, CursorPosition position)
+int QDeclarativeTextInput::positionAt(int x, CursorPosition position) const
 {
     Q_D(const QDeclarativeTextInput);
-    return d->control->xToPos(x + d->hscroll, QTextLine::CursorPosition(position));
+    int pos = d->control->xToPos(x + d->hscroll, QTextLine::CursorPosition(position));
+    const int cursor = d->control->cursor();
+    if (pos > cursor) {
+        const int preeditLength = d->control->preeditAreaText().length();
+        pos = pos > cursor + preeditLength
+                ? pos - preeditLength
+                : cursor;
+    }
+    return pos;
 }
 
 void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
@@ -1065,7 +1074,7 @@ void QDeclarativeTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
     if (d->sendMouseEventToInputContext(event, QEvent::MouseMove))
-        event->setAccepted(true);
+        return;
     if (d->selectByMouse) {
         if (qAbs(int(event->pos().x() - d->pressPos.x())) > QApplication::startDragDistance())
             setKeepMouseGrab(true);

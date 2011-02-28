@@ -121,6 +121,8 @@ private slots:
     void dragMouseSelection();
     void inputMethodHints();
 
+    void positionAt();
+
     void cursorDelegate();
     void cursorVisible();
     void delegateLoading_data();
@@ -1247,6 +1249,56 @@ void tst_qdeclarativetextedit::inputMethodHints()
     QVERIFY(textEditObject->inputMethodHints() & Qt::ImhNoPredictiveText);
     textEditObject->setInputMethodHints(Qt::ImhUppercaseOnly);
     QVERIFY(textEditObject->inputMethodHints() & Qt::ImhUppercaseOnly);
+
+    delete canvas;
+}
+
+void tst_qdeclarativetextedit::positionAt()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/positionAt.qml");
+    QVERIFY(canvas->rootObject() != 0);
+    canvas->show();
+    canvas->setFocus();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+
+    QDeclarativeTextEdit *texteditObject = qobject_cast<QDeclarativeTextEdit *>(canvas->rootObject());
+    QVERIFY(texteditObject != 0);
+
+    QFontMetrics fm(texteditObject->font());
+    const int y0 = fm.height() / 2;
+    const int y1 = fm.height() * 3 / 2;
+
+    int pos = texteditObject->positionAt(texteditObject->width()/2, y0);
+    int diff = abs(int(fm.width(texteditObject->text().left(pos))-texteditObject->width()/2));
+
+    // some tollerance for different fonts.
+#ifdef Q_OS_LINUX
+    QVERIFY(diff < 2);
+#else
+    QVERIFY(diff < 5);
+#endif
+
+    const qreal x0 = texteditObject->positionToRectangle(pos).x();
+    const qreal x1 = texteditObject->positionToRectangle(pos + 1).x();
+
+    QString preeditText = texteditObject->text().mid(0, pos);
+    texteditObject->setText(texteditObject->text().mid(pos));
+    texteditObject->setCursorPosition(0);
+
+    QInputMethodEvent inputEvent(preeditText, QList<QInputMethodEvent::Attribute>());
+    QApplication::sendEvent(canvas, &inputEvent);
+
+    // Check all points within the preedit text return the same position.
+    QCOMPARE(texteditObject->positionAt(0, y0), 0);
+    QCOMPARE(texteditObject->positionAt(x0 / 2, y0), 0);
+    QCOMPARE(texteditObject->positionAt(x0, y0), 0);
+
+    // Verify positioning returns to normal after the preedit text.
+    QCOMPARE(texteditObject->positionAt(x1, y0), 1);
+    QCOMPARE(texteditObject->positionToRectangle(1).x(), x1);
+
+    QVERIFY(texteditObject->positionAt(x0 / 2, y1) > 0);
 
     delete canvas;
 }

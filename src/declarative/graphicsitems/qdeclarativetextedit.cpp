@@ -606,6 +606,22 @@ int QDeclarativeTextEdit::positionAt(int x, int y) const
 {
     Q_D(const QDeclarativeTextEdit);
     int r = d->document->documentLayout()->hitTest(QPoint(x,y-d->yoff), Qt::FuzzyHit);
+    QTextCursor cursor = d->control->textCursor();
+    if (r > cursor.position()) {
+        // The cursor position includes positions within the preedit text, but only positions in the
+        // same text block are offset so it is possible to get a position that is either part of the
+        // preedit or the next text block.
+        QTextLayout *layout = cursor.block().layout();
+        const int preeditLength = layout
+                ? layout->preeditAreaText().length()
+                : 0;
+        if (preeditLength > 0
+                && d->document->documentLayout()->blockBoundingRect(cursor.block()).contains(x,y-d->yoff)) {
+            r = r > cursor.position() + preeditLength
+                    ? r - preeditLength
+                    : cursor.position();
+        }
+    }
     return r;
 }
 

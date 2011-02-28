@@ -976,6 +976,25 @@ void tst_qdeclarativetextinput::positionAt()
     QCOMPARE(textinputObject->positionAt(x, QDeclarativeTextInput::CursorBetweenCharacters), pos + 1);
     QCOMPARE(textinputObject->positionAt(x, QDeclarativeTextInput::CursorOnCharacter), pos);
 
+    const qreal x0 = textinputObject->positionToRectangle(pos).x();
+    const qreal x1 = textinputObject->positionToRectangle(pos + 1).x();
+
+    QString preeditText = textinputObject->text().mid(0, pos);
+    textinputObject->setText(textinputObject->text().mid(pos));
+    textinputObject->setCursorPosition(0);
+
+    QInputMethodEvent inputEvent(preeditText, QList<QInputMethodEvent::Attribute>());
+    QApplication::sendEvent(canvas, &inputEvent);
+
+    // Check all points within the preedit text return the same position.
+    QCOMPARE(textinputObject->positionAt(0), 0);
+    QCOMPARE(textinputObject->positionAt(x0 / 2), 0);
+    QCOMPARE(textinputObject->positionAt(x0), 0);
+
+    // Verify positioning returns to normal after the preedit text.
+    QCOMPARE(textinputObject->positionAt(x1), 1);
+    QCOMPARE(textinputObject->positionToRectangle(1).x(), x1);
+
     delete canvas;
 }
 
@@ -1849,7 +1868,8 @@ void tst_qdeclarativetextinput::preeditAutoScroll()
     MyInputContext ic;
     view.setInputContext(&ic);
     QDeclarativeTextInput input;
-    input.setWidth(QFontMetricsF(input.font()).width(committedText));
+    QFontMetricsF fm(input.font());
+    input.setWidth(fm.width(committedText));
     input.setText(committedText);
     input.setPos(0, 0);
     input.setFocus(true);
@@ -1862,7 +1882,7 @@ void tst_qdeclarativetextinput::preeditAutoScroll()
     // test the text is scrolled so the preedit is visible.
     ic.sendPreeditText(preeditText.mid(0, 3), 1);
     QVERIFY(input.positionAt(0) != 0);
-    QCOMPARE(input.positionAt(input.width()), 8);
+    QVERIFY(input.cursorRectangle().x() - 1 <= input.width());
 
     // test the text is scrolled back when the preedit is removed.
     ic.sendEvent(QInputMethodEvent());
@@ -1871,26 +1891,31 @@ void tst_qdeclarativetextinput::preeditAutoScroll()
 
     // test if the preedit is larger than the text input that the
     // character preceding the cursor is still visible.
+    qreal x = input.positionToRectangle(0).x();
     for (int i = 0; i < 3; ++i) {
         ic.sendPreeditText(preeditText, i + 1);
-        QCOMPARE(input.positionAt(0), 5 + i);
+        QVERIFY(input.cursorRectangle().x() >= fm.width(preeditText.at(i)));
+        QVERIFY(input.positionToRectangle(0).x() < x);
+        x = input.positionToRectangle(0).x();
     }
     for (int i = 1; i >= 0; --i) {
         ic.sendPreeditText(preeditText, i + 1);
-        QCOMPARE(input.positionAt(0), 5 + i);
+        QVERIFY(input.cursorRectangle().x() >= fm.width(preeditText.at(i)));
+        QVERIFY(input.positionToRectangle(0).x() > x);
+        x = input.positionToRectangle(0).x();
     }
 
     // Test incrementing the preedit cursor doesn't cause further
     // scrolling when right most text is visible.
     ic.sendPreeditText(preeditText, preeditText.length() - 3);
-    int position = input.positionAt(0);
+    x = input.positionToRectangle(0).x();
     for (int i = 2; i >= 0; --i) {
         ic.sendPreeditText(preeditText, preeditText.length() - i);
-        QCOMPARE(input.positionAt(0), position);
+        QCOMPARE(input.positionToRectangle(0).x(), x);
     }
     for (int i = 1; i <  3; ++i) {
         ic.sendPreeditText(preeditText, preeditText.length() - i);
-        QCOMPARE(input.positionAt(0), position);
+        QCOMPARE(input.positionToRectangle(0).x(), x);
     }
 
     // Test disabling auto scroll.
