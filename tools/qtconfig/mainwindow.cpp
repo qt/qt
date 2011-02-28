@@ -233,7 +233,7 @@ MainWindow::MainWindow()
 
     modified = true;
     desktopThemeName = tr("Desktop Settings (Default)");
-    setIcon(QPixmap(":/trolltech/qtconfig/images/appicon.png"));
+    setWindowIcon(QPixmap(":/trolltech/qtconfig/images/appicon.png"));
     QStringList gstyles = QStyleFactory::keys();
     gstyles.sort();
     ui->guiStyleCombo->addItem(desktopThemeName);

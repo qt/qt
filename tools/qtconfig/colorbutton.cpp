@@ -53,8 +53,8 @@ QT_BEGIN_NAMESPACE
 
 ColorButton::ColorButton(QWidget *parent)
     : QAbstractButton(parent)
-    , mousepressed(false)
     , col(Qt::black)
+    , mousepressed(false)
 {
     setAcceptDrops(true);
     connect(this, SIGNAL(clicked()), SLOT(changeColor()));
