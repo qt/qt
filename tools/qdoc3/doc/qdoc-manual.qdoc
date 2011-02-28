@@ -5410,10 +5410,10 @@
     \target qmlclass-command
     \section1 \\qmlclass  \span {class="newStuff"} {(new)}
 
-    The \\qmlclass command is for documenting a QML class that is
+    The \\qmlclass command is for documenting a QML element that is
     instantiated by a C++ class. The command has two arguments. The
-    first argument is the name of the QML class. The second argument
-    is the name of the C++ class that instantiates the QML class. 
+    first argument is the name of the QML element. The second argument
+    is the name of the C++ class that instantiates the QML element. 
 
     \code
     / *!
@@ -5443,24 +5443,24 @@
     * /
     \endcode
 
-    This example generates the \l
-    {http://doc.trolltech.com/4.7/qml-transform.html} {QML Trasform
+    This example generates the 
+    \l {http://doc.trolltech.com/4.7/qml-transform.html} {QML Trasform
     Element} page. The \\qmlclass comment should include the \l
     {since-command} {\\since} command, because all QML elements are
     new. It should also include the \l{brief-command} {\\brief}
-    command. And since every QML class is a member of a group of QML
-    classes, it should also include one or more
-    \l{ingroup-command}{\\ingroup} commands.
+    command. And since every QML element is a member of a group of QML
+    elements, it should also include one or more \l{ingroup-command}
+    {\\ingroup} commands.
 
     \target qmlproperty-command
     \section1 \\qmlproperty  \span {class="newStuff"} {(new)}
 
     The \\qmlproperty command is for documenting a QML property. The
-    argument is the rest of the line. It should be the property type,
-    followed by the QML class name, the \c{::} qualifier, and finally
-    the property name. If we have a QML property named \c x in QML
-    class \c Translate, and the property has type \c {real}, the
-    \\qmlproperty for it would look like this:
+    argument is the rest of the line. The argument text should be the
+    property type, followed by the QML element name, the \c{::}
+    qualifier, and finally the property name. If we have a QML
+    property named \c x in QML element \c Translate, and the property
+    has type \c {real}, the \\qmlproperty for it would look like this:
 
     \code
         / *!
@@ -5472,10 +5472,40 @@
 
     QDoc includes this QML property on the QML reference page for the
     \l {http://doc.trolltech.com/4.7/qml-translate.html} {Translate}
-    class.
+    element.
 
     \target qmlattachedproperty-command
     \section1 \\qmlattachedproperty \span {class="newStuff"} {(new)}
+
+    The \\qmlattachedproperty command is for documenting a QML
+    property that will be attached to some QML element type. See
+    \l{http://doc.trolltech.com/4.7/qdeclarativeintroduction.html#attached-properties}
+    {Attached Properties}. The argument is the rest of the line. The 
+    argument text should be the property type, followed by the QML 
+    element name where the property is being declared, the \c{::}
+    qualifier, and finally the property name. If we have a QML
+    attached property named \c isCurrentItem in QML element \c ListView,
+    and the property has type \c {bool}, the \\qmlattachedproperty for 
+    it would look like this:
+
+    \code
+    / *!
+        \qmlattachedproperty bool ListView::isCurrentItem
+        This attached property is true if this delegate is the current 
+	item; otherwise false.
+
+        It is attached to each instance of the delegate.
+
+        This property may be used to adjust the appearance of the current 
+	item, for example:
+
+        \snippet doc/src/snippets/declarative/listview/listview.qml isCurrentItem
+    * /
+    \endcode
+
+    QDoc includes this attached property on the QML reference page for the
+    \l{http://doc.trolltech.com/4.7/qml-listview.html#isCurrentItem-prop} 
+    {ListView} element.
 
     \target inherits-command
     \section1 \\inherits  \span {class="newStuff"} {(new)}
@@ -5483,14 +5513,64 @@
     \target qmlsignal-command
     \section1 \\qmlsignal  \span {class="newStuff"} {(new)}
 
+    The \\qmlsignal command is for documenting a  
+    \l{http://doc.trolltech.com/4.7/qdeclarativeintroduction.html#signal-handlers}
+    {signal handler}.
+    The argument is the rest of the line. It should be the QML element where the
+    signal handler is declared, the \c{::} qualifier, and finally the signal 
+    handler name. If we have a QML signal handler named \c onAdd() in QML 
+    element \c MouseArea, the \\qmlsignal for it would look like this:
+
+    \code
+    / *!
+        \qmlsignal MouseArea::onEntered()
+
+        This handler is called when the mouse enters the mouse area.
+
+        By default the onEntered handler is only called while a button is
+        pressed. Setting hoverEnabled to true enables handling of
+        onEntered when no mouse button is pressed.
+
+        \sa hoverEnabled
+    * /
+    \endcode
+
+    QDoc includes this documentation on the QML reference page for the
+    \l{http://doc.trolltech.com/4.7/qml-mousearea.html#onEntered-signal}
+    {MouseArea} element.
+
     \target qmlattachedsignal-command
     \section1 \\qmlattachedsignal  \span {class="newStuff"} {(new)}
+
+    The \\qmlattachedsignal command is for documenting an attachable 
+    \l{http://doc.trolltech.com/4.7/qdeclarativeintroduction.html#signal-handlers}
+    {signal handler}.
+    The argument is the rest of the line. It should be the QML element where 
+    the signal handler is declared, the \c{::} qualifier, and finally the 
+    signal handler name. If we have a QML attached signal handler named 
+    \c onAdd() in QML element \c GridView, the \\qmlattachedsignal for it 
+    would look like this:
+
+    \code
+    / *!
+        \qmlattachedsignal GridView::onAdd()
+        This attached handler is called immediately after an item is 
+	added to the view.
+    * /
+    \endcode
+
+    QDoc includes this documentation on the QML reference page for the
+    \l{http://doc.trolltech.com/4.7/qml-gridview.html#onAdd-signal}
+    {GridView} element.
 
     \target qmlmethod-command
     \section1 \\qmlmethod  \span {class="newStuff"} {(new)}
 
     \target qmlattachedmethod-command
-    \section1 \\qmlattachedmethod  \span {class="newStuff"} {(new)}
+    \section1 \\qmlattachedmethod  \span {class="newStuff"} {(new but not used)}
+
+    The \\qmlattachedmethod command was included in QDoc for symmetery, 
+    but it is currently not used.
 
     \target default-command
     \section1 \\default  \span {class="newStuff"} {(new)}
