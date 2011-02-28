@@ -52,7 +52,8 @@
 QT_BEGIN_NAMESPACE
 
 #define Q_GLOBAL_STATIC_QAPP_DESTRUCTION(TYPE, NAME)                    \
-    Q_GLOBAL_STATIC_INIT(TYPE, NAME);                                   \
+    static QGlobalStatic<TYPE > this_##NAME                             \
+                = { Q_BASIC_ATOMIC_INITIALIZER(0), false };             \
     static void NAME##_cleanup()                                        \
     {                                                                   \
         delete this_##NAME.pointer;                                     \
