@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
         int styleCount = styles.count();
         for (int j = 0; j < styleCount; ++j) {
             QFont font;
-            if (forceAllStyles) {
+            if (forceAllStyles || customStyles.count() > 0) {
                 int weight = styles.at(j).contains(QLatin1String("Bold")) ? QFont::Bold : QFont::Normal;
                 font = QFont(families.at(i), 10, weight, styles.at(j).contains(QLatin1String("Italic")));
             } else {
