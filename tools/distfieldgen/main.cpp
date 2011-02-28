@@ -58,7 +58,7 @@ static void usage()
     qWarning("  -d <directory>................................ output directory");
     qWarning("  --no-multithread.............................. don't use multiple threads to render distance-fields");
     qWarning("  --force-all-styles............................ force rendering of styles Normal, Bold, Italic and Bold Italic");
-    qWarning("  -styles \"style1 style2 ...\"................... force rendering of specified styles");
+    qWarning("  -styles \"style1,style2,..\".................... force rendering of specified styles");
 
     qWarning(" ");
     exit(1);
@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
     if (args.contains(QLatin1String("-styles"))) {
         int index = args.indexOf(QLatin1String("-styles"));
         QString styles = args.at(index + 1);
-        customStyles = styles.split(QLatin1String(" "));
+        customStyles = styles.split(QLatin1String(","));
     }
 
     // Load the font
