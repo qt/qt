@@ -699,8 +699,8 @@ static const uint qt_meta_data_QScriptConnection[] = {
        0,       // signalCount
 
  // slots: signature, parameters, type, tag, flags
-      14,   13,   13,   13, 0x0a,
-      25,   13,   13,   13, 0x0a,
+      19,   18,   18,   18, 0x0a,
+      30,   18,   18,   18, 0x0a,
 
        0        // eod
 };
