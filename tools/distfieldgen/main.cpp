@@ -58,6 +58,7 @@ static void usage()
     qWarning("  -d <directory>................................ output directory");
     qWarning("  --no-multithread.............................. don't use multiple threads to render distance-fields");
     qWarning("  --force-all-styles............................ force rendering of styles Normal, Bold, Italic and Bold Italic");
+    qWarning("  -styles \"style1 style2 ...\"................... force rendering of specified styles");
 
     qWarning(" ");
     exit(1);
@@ -184,6 +185,13 @@ int main(int argc, char *argv[])
             destDir = args.at(++i);
     }
 
+    QStringList customStyles;
+    if (args.contains(QLatin1String("-styles"))) {
+        int index = args.indexOf(QLatin1String("-styles"));
+        QString styles = args.at(index + 1);
+        customStyles = styles.split(QLatin1String(" "));
+    }
+
     // Load the font
     int fontID = QFontDatabase::addApplicationFont(fontFile);
     if (fontID == -1) {
@@ -202,7 +210,14 @@ int main(int argc, char *argv[])
     QStringList families = QFontDatabase::applicationFontFamilies(fontID);
     int famCount = families.count();
     for (int i = 0; i < famCount; ++i) {
-        QStringList styles = forceAllStyles ? allStyles : fontDatabase.styles(families.at(i));
+        QStringList styles;
+        if (forceAllStyles)
+            styles = allStyles;
+        else if (customStyles.count() > 0)
+            styles = customStyles;
+        else
+            styles = fontDatabase.styles(families.at(i));
+
         int styleCount = styles.count();
         for (int j = 0; j < styleCount; ++j) {
             QFont font;
