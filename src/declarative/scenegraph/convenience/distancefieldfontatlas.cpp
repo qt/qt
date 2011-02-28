@@ -56,7 +56,6 @@ void qt_disableFontHinting(QFont &font)
     fontEngine->setDefaultHintStyle(QFontEngine::HintNone);
 }
 
-#define QT_DISTANCEFIELD_GLYPHRANGE 0xFF
 #define QT_DISTANCEFIELD_TEXTURESIZE 2048
 #define QT_DISTANCEFIELD_BASEFONTSIZE 54
 #define QT_DISTANCEFIELD_TILESIZE 64
@@ -130,6 +129,10 @@ DistanceFieldFontAtlas::DistanceFieldFontAtlas(const QFont &font)
 {
     m_font = font;
     m_fontEngine = QFontPrivate::get(m_font)->engineForScript(QUnicodeTables::Common);
+    if (m_fontEngine->type() == QFontEngine::Multi) {
+        QFontEngineMulti *fem = static_cast<QFontEngineMulti *>(m_fontEngine);
+        m_fontEngine = fem->engine(0);
+    }
     qt_disableFontHinting(m_font);
 
     QFont referenceFont = m_font;
@@ -179,7 +182,7 @@ QSGTextureRef DistanceFieldFontAtlas::texture()
 QSize DistanceFieldFontAtlas::atlasSize() const
 {
     const int texWidth = QT_DISTANCEFIELD_TEXTURESIZE;
-    const int texHeight = ((QT_DISTANCEFIELD_GLYPHRANGE * QT_DISTANCEFIELD_TILESIZE) / texWidth + 1) * QT_DISTANCEFIELD_TILESIZE;
+    const int texHeight = ((glyphCount() * QT_DISTANCEFIELD_TILESIZE) / texWidth + 1) * QT_DISTANCEFIELD_TILESIZE;
     return QSize(texWidth, texHeight);
 }
 
@@ -206,7 +209,7 @@ DistanceFieldFontAtlas::Metrics DistanceFieldFontAtlas::glyphMetrics(glyph_t gly
 
 DistanceFieldFontAtlas::TexCoord DistanceFieldFontAtlas::glyphTexCoord(glyph_t glyph) const
 {
-    if (glyph >= QT_DISTANCEFIELD_GLYPHRANGE)
+    if (glyph >= glyphCount())
         qWarning("Warning: distance-field glyph is not available with index %d", glyph);
 
     TexCoord c;
@@ -357,7 +360,7 @@ QString DistanceFieldFontAtlas::distanceFieldFileName() const
     return m_distanceFieldFileName;
 }
 
-int DistanceFieldFontAtlas::glyphRange() const
+int DistanceFieldFontAtlas::glyphCount() const
 {
-    return QT_DISTANCEFIELD_GLYPHRANGE;
+    return m_fontEngine->glyphCount();
 }

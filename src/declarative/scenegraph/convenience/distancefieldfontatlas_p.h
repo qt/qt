@@ -81,7 +81,7 @@ public:
     QString distanceFieldDir() const;
     QString distanceFieldFileName() const;
 
-    int glyphRange() const;
+    int glyphCount() const;
 
     static bool useDistanceFieldForFont(const QFont &font);
 
