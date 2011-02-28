@@ -1217,10 +1217,14 @@ v8::Handle<v8::Value> QScriptSignalData::QtDisconnectCallback(const v8::Argument
     return data->disconnect(v8::Handle<v8::Function>(v8::Function::Cast(*args[0])));
 }
 
-static v8::Handle<v8::Value> QtGetMetaMethod(v8::Local<v8::String> /*property*/,
-                                             const v8::AccessorInfo& info)
+static v8::Handle<v8::Value> QtGetMetaMethod(v8::Local<v8::String> property, const v8::AccessorInfo& info)
 {
     v8::Local<v8::Object> self = info.This();
+
+    v8::Local<v8::Value> cached = self->GetHiddenValue(property);
+    if (!cached.IsEmpty())
+        return cached;
+
     v8::Local<v8::Array> dataArray = v8::Array::Cast(*info.Data());
     QScriptEnginePrivate *engine = static_cast<QScriptEnginePrivate *>(v8::External::Unwrap(dataArray->Get(0)));
     if (!engine->isQtObject(self)) {
@@ -1244,17 +1248,21 @@ static v8::Handle<v8::Value> QtGetMetaMethod(v8::Local<v8::String> /*property*/,
 
     const QMetaMethod method = meta->method(methodIndex);
 
+    v8::Handle<v8::Object> result;
     if (method.methodType() == QMetaMethod::Signal) {
         QScriptSignalData *data = new QScriptSignalData(engine, self, methodIndex,
                                               (intData & 0x40000000) ? QScriptSignalData::ResolvedBySignature : QScriptSignalData::ResolvedByName,
                                               overload, voidvoid);
-        return QScriptSignalData::createInstance(data);
+        result = QScriptSignalData::createInstance(data);
     } else {
         QScriptMetaMethodData *data = new QScriptMetaMethodData(engine, self, methodIndex,
                                                       (intData & 0x40000000) ? QScriptMetaMethodData::ResolvedBySignature : QScriptMetaMethodData::ResolvedByName,
                                                       overload, voidvoid);
-        return QScriptMetaMethodData::createInstance(data);
+        result = QScriptMetaMethodData::createInstance(data);
     }
+
+    self->SetHiddenValue(property, result);
+    return result;
 }
 
 static v8::Handle<v8::Value> findChildCallback(const v8::Arguments& args)
