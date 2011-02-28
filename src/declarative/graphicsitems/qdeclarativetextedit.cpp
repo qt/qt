@@ -544,6 +544,7 @@ void QDeclarativeTextEdit::setWrapMode(WrapMode mode)
 
 /*!
     \qmlproperty int TextEdit::lineCount
+    \since Quick 1.1
 
     Returns the total number of lines in the textEdit item.
 */
@@ -1134,6 +1135,7 @@ void QDeclarativeTextEditPrivate::focusChanged(bool hasFocus)
 
 /*!
     \qmlmethod void TextEdit::deselect()
+    \since Quick 1.1
 
     Removes active text selection.
 */
@@ -1381,13 +1383,11 @@ void QDeclarativeTextEdit::updateImgCache(const QRectF &rf)
 
 /*!
     \qmlproperty bool TextEdit::canPaste
+    \since QtQuick 1.1
 
     Returns true if the TextEdit is writable and the content of the clipboard is
     suitable for pasting into the TextEdit.
-
-    \since QtQuick 1.1
 */
-
 bool QDeclarativeTextEdit::canPaste() const
 {
     Q_D(const QDeclarativeTextEdit);

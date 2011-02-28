@@ -955,6 +955,10 @@ void tst_qdeclarativetextinput::positionAt()
     QVERIFY(diff < 5);
 #endif
 
+    int x = textinputObject->positionToRectangle(pos + 1).x() - 1;
+    QCOMPARE(textinputObject->positionAt(x, QDeclarativeTextInput::CursorBetweenCharacters), pos + 1);
+    QCOMPARE(textinputObject->positionAt(x, QDeclarativeTextInput::CursorOnCharacter), pos);
+
     // Check without autoscroll...
     textinputObject->setAutoScroll(false);
     pos = textinputObject->positionAt(textinputObject->width()/2);
@@ -966,6 +970,10 @@ void tst_qdeclarativetextinput::positionAt()
 #else
     QVERIFY(diff < 5);
 #endif
+
+    x = textinputObject->positionToRectangle(pos + 1).x() - 1;
+    QCOMPARE(textinputObject->positionAt(x, QDeclarativeTextInput::CursorBetweenCharacters), pos + 1);
+    QCOMPARE(textinputObject->positionAt(x, QDeclarativeTextInput::CursorOnCharacter), pos);
 
     delete canvas;
 }
