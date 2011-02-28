@@ -92,10 +92,7 @@ inline QScriptQObjectData::QScriptQObjectData(QScriptEnginePrivate *engine, QObj
 
 inline QScriptQObjectData::~QScriptQObjectData()
 {
-    foreach (v8::Persistent<v8::Value> it , metaMethods)
-        it.Dispose();
-    metaMethods.clear();
-
+//    qDebug("~QScriptQObjectData()");
     switch (m_own) {
     case QScriptEngine::QtOwnership:
         break;
