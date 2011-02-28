@@ -1738,7 +1738,7 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
     if (winver)
         return winver;
     winver = QSysInfo::WV_NT;
-    OSVERSIONINFOW osver;
+    OSVERSIONINFO osver;
     osver.dwOSVersionInfoSize = sizeof(osver);
     GetVersionEx(&osver);
 #ifdef Q_OS_WINCE
