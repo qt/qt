@@ -199,8 +199,8 @@ DistanceFieldFontAtlas::Metrics DistanceFieldFontAtlas::glyphMetrics(glyph_t gly
     if (scaleRatioFromRefSize() <= QT_DISTANCEFIELD_MARGIN_THRESHOLD)
         margin = QT_DISTANCEFIELD_MARGIN / qreal(QT_DISTANCEFIELD_SCALE) * scaleRatioFromRefSize();
 
-    m.width = path.boundingRect().width() + margin;
-    m.height = path.boundingRect().height() + margin;
+    m.width = path.boundingRect().width() + margin * 2;
+    m.height = path.boundingRect().height() + margin * 2;
     m.baselineX = path.boundingRect().x() - margin;
     m.baselineY = -path.boundingRect().y() + margin;
 
@@ -229,8 +229,8 @@ DistanceFieldFontAtlas::TexCoord DistanceFieldFontAtlas::glyphTexCoord(glyph_t g
     c.yMargin = (QT_DISTANCEFIELD_RADIUS / qreal(QT_DISTANCEFIELD_SCALE) - margin) / texSize.height();
     c.x = ((glyph * QT_DISTANCEFIELD_TILESIZE) % texSize.width()) / qreal(texSize.width());
     c.y = ((glyph * QT_DISTANCEFIELD_TILESIZE) / texSize.width()) * QT_DISTANCEFIELD_TILESIZE / qreal(texSize.height());
-    c.width = (path.boundingRect().width() + margin) / qreal(texSize.width());
-    c.height = (path.boundingRect().height() + margin) / qreal(texSize.height());
+    c.width = (path.boundingRect().width() + margin * 2) / qreal(texSize.width());
+    c.height = (path.boundingRect().height() + margin * 2) / qreal(texSize.height());
 
     return c;
 }
