@@ -372,6 +372,7 @@ QString winCurrencySymbol(QLocale::CurrencySymbolFormat format)
     return QString();
 }
 
+#ifndef QT_NO_SYSTEMLOCALE
 static QString winFormatCurrency(const QSystemLocale::CurrencyToStringArgument &arg)
 {
     QString value;
@@ -491,8 +492,6 @@ QStringList winUILanguages()
     // old Windows before Vista
     return QStringList(QString::fromLatin1(winLangCodeToIsoName(GetUserDefaultUILanguage())));
 }
-
-#ifndef QT_NO_SYSTEMLOCALE
 
 QLocale QSystemLocale::fallbackLocale() const
 {
