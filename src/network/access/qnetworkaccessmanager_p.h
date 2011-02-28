@@ -73,6 +73,7 @@ class QNetworkAccessManagerPrivate: public QObjectPrivate
 public:
     QNetworkAccessManagerPrivate()
         : networkCache(0), cookieJar(0),
+          httpThread(0),
 #ifndef QT_NO_NETWORKPROXY
           proxyFactory(0),
 #endif
@@ -123,6 +124,8 @@ public:
 
     QNetworkCookieJar *cookieJar;
 
+    QThread *httpThread;
+
 
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy proxy;
@@ -140,7 +143,7 @@ public:
     bool cookieJarCreated;
 
     // The cache with authorization data:
-    QNetworkAccessAuthenticationManager* authenticationManager;
+    QSharedPointer<QNetworkAccessAuthenticationManager> authenticationManager;
 
     // this cache can be used by individual backends to cache e.g. their TCP connections to a server
     // and use the connections for multiple requests.
