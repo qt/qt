@@ -140,7 +140,7 @@ class Q_CORE_EXPORT QAnimationDriver : public QObject
     Q_DECLARE_PRIVATE(QAnimationDriver)
 
 public:
-    QAnimationDriver(QObject *parent);
+    QAnimationDriver(QObject *parent = 0);
 
     void advance();
     void install();
@@ -148,8 +148,8 @@ public:
     bool isRunning() const;
 
 protected:
-    virtual void started() = 0;
-    virtual void stopped() = 0;
+    virtual void started() {};
+    virtual void stopped() {};
 
     QAnimationDriver(QAnimationDriverPrivate &dd, QObject *parent = 0);
 
