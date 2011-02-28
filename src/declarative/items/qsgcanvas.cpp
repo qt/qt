@@ -52,6 +52,7 @@
 #include <QtGui/qmatrix4x4.h>
 #include <QtGui/qinputcontext.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/qabstractanimation.h>
 
 #include <private/qdeclarativedebugtrace_p.h>
 
@@ -83,6 +84,23 @@ have a scope focused item), and the other items will have their focus cleared.
 // #define TOUCH_DEBUG
 // #define DIRTY_DEBUG
 // #define THREAD_DEBUG
+
+class QSGAnimationDriver : public QAnimationDriver
+{
+public:
+    QSGAnimationDriver(QWidget *w)
+        : widget(w)
+    {
+        Q_ASSERT(w);
+    }
+
+    void started()
+    {
+        widget->update();
+    }
+
+    QWidget *widget;
+};
 
 QSGItem::UpdatePaintNodeData::UpdatePaintNodeData()
 : transformNode(0)
@@ -185,7 +203,7 @@ void QSGCanvas::showEvent(QShowEvent *e)
 
         if (!d->context) {
             d->initializeSceneGraph();
-            d->animationDriver = new QAnimationDriver();
+            d->animationDriver = new QSGAnimationDriver(this);
             if (d->animationDriver)
                 d->animationDriver->install();
         }
