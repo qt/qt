@@ -55,7 +55,7 @@ to either instantiating an object instance, or assigning a property a value.
 QML relies heavily on Qt's meta object system and can only instantiate classes
 that derive from QObject. For visual element types, this will usually mean a subclass
 of QDeclarativeItem; for models used with the view elements, a subclass of QAbstractItemModel;
-and for abitrary objects with properties, a direct subclass of QObject.
+and for arbitrary objects with properties, a direct subclass of QObject.
 
 The QML engine has no intrinsic knowledge of any class types.  Instead the
 programmer must register the C++ types with their corresponding QML names.
@@ -526,7 +526,7 @@ The \c {invite()} method is similarly available if it is declared as a slot.
 \snippet examples/declarative/cppextensions/referenceexamples/valuesource/example.qml 0
 \snippet examples/declarative/cppextensions/referenceexamples/valuesource/example.qml 1
 
-The QML snippet shown above applies a property value source to the \c announcment property.
+The QML snippet shown above applies a property value source to the \c announcement property.
 A property value source generates a value for a property that changes over time.
 
 Property value sources are most commonly used to do animation.  Rather than
@@ -566,7 +566,7 @@ assignment fails does the engine call the \l {QDeclarativePropertyValueSource::}
 the type to also be used in contexts other than just as a value source.
 
 \l {Extending QML -  Property Value Source Example} shows the complete code used
-implement the \c HappyBirthdaySong property value source.
+to implement the \c HappyBirthdaySong property value source.
 
 \section1 Property Binding
 
