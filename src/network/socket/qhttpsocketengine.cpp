@@ -704,11 +704,10 @@ void QHttpSocketEngine::slotSocketError(QAbstractSocket::SocketError error)
 
     d->state = None;
     setError(error, d->socket->errorString());
-    if (error == QAbstractSocket::RemoteHostClosedError) {
-        emitReadNotification();
-    } else {
+    if (error != QAbstractSocket::RemoteHostClosedError)
         qDebug() << "QHttpSocketEngine::slotSocketError: got weird error =" << error;
-    }
+    //read notification needs to always be emitted, otherwise the higher layer doesn't get the disconnected signal
+    emitReadNotification();
 }
 
 void QHttpSocketEngine::slotSocketStateChanged(QAbstractSocket::SocketState state)
