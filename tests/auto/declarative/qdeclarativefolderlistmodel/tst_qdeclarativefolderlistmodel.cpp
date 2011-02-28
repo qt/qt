@@ -133,6 +133,9 @@ void tst_qdeclarativefolderlistmodel::refresh()
     QAbstractListModel *flm = qobject_cast<QAbstractListModel*>(component.create());
     QVERIFY(flm != 0);
 
+    flm->setProperty("folder",QUrl::fromLocalFile(SRCDIR "/data"));
+    QTRY_COMPARE(flm->property("count").toInt(),2); // wait for refresh
+
     int count = flm->rowCount();
 
     connect(flm, SIGNAL(rowsRemoved(const QModelIndex&,int,int)),
