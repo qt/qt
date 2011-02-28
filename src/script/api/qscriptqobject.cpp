@@ -351,7 +351,13 @@ public:
                                  ResolveMode mode , bool overload, bool voidvoid)
         : m_object(v8::Persistent<v8::Object>::New(object)), m_index(index), m_resolveMode(mode)
         , m_overloaded(overload) , m_voidvoid(voidvoid)
-    { this->engine = eng; }
+    {
+        this->engine = eng;
+        // We cannot keep a persistant reference to the object, else it would never be garbage collected.
+        //  (the object also reference us,  and persistent object are automatically marked.
+        //  A reference is kept in the second internal field of the v8 method object.
+        m_object.MakeWeak(this, objectDestroyed);
+    }
     ~QScriptGenericMetaMethodData()
     {
         m_object.Dispose();
@@ -374,6 +380,15 @@ public:
     uint m_resolveMode:1;
     uint m_overloaded : 1;
     uint m_voidvoid : 1;
+private:
+    static void objectDestroyed(v8::Persistent<v8::Value> object, void *data) {
+        QScriptGenericMetaMethodData *that = static_cast<QScriptGenericMetaMethodData *>(data);
+        Q_ASSERT(that->m_object == object);
+        that->m_object.Clear();
+        object.Dispose();
+        // Note that since the method keep a reference to the object in its internal field,
+        // this is only called when the QScriptGenericMetaMethodData is about to be garbage collected as well.
+    }
 };
 
 class QScriptMetaMethodData : public QScriptGenericMetaMethodData<QScriptMetaMethodData, &QScriptEnginePrivate::metaMethodTemplate>
@@ -458,7 +473,7 @@ v8::Handle<v8::FunctionTemplate> QScriptSignalData::createFunctionTemplate(QScri
 
     v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
     instTempl->SetCallAsFunctionHandler(QScriptV8ObjectWrapperHelper::callAsFunction<QScriptSignalData>);
-    instTempl->SetInternalFieldCount(1); // QScriptSignalData*
+    instTempl->SetInternalFieldCount(2); // QScriptSignalData* , and the 'self'
 
     v8::Handle<v8::ObjectTemplate> protoTempl = funcTempl->PrototypeTemplate();
     v8::Handle<v8::Signature> sig = v8::Signature::New(funcTempl);
@@ -476,7 +491,7 @@ v8::Handle<v8::FunctionTemplate> QScriptMetaMethodData::createFunctionTemplate(Q
 
     v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
     instTempl->SetCallAsFunctionHandler(QScriptV8ObjectWrapperHelper::callAsFunction<QScriptMetaMethodData>);
-    instTempl->SetInternalFieldCount(1);
+    instTempl->SetInternalFieldCount(2); // QScriptMetaMethodData* and the 'self'
 
     return handleScope.Close(funcTempl);
 }
@@ -1262,6 +1277,8 @@ static v8::Handle<v8::Value> QtGetMetaMethod(v8::Local<v8::String> property, con
     }
 
     self->SetHiddenValue(property, result);
+    //make a reference so QScriptGenericMetaMethodData::m_object is not garbage collected too early
+    result->SetInternalField(1, self);
     return result;
 }
 

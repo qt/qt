@@ -585,6 +585,7 @@ private slots:
     void nestedArrayAsSlotArgument();
     void nestedObjectAsSlotArgument_data();
     void nestedObjectAsSlotArgument();
+    void collectGarbageAndSlots();
 
 private:
     QScriptEngine *m_engine;
@@ -3668,6 +3669,26 @@ void tst_QScriptExtQObject::nestedObjectAsSlotArgument()
         QCOMPARE(m_myObject->qtFunctionActuals().at(0).toMap(), expected);
     }
 }
+
+void tst_QScriptExtQObject::collectGarbageAndSlots()
+{
+    MyQObject *cppObject = new MyQObject;
+    QWeakPointer<MyQObject> guard(cppObject);
+
+    QScriptEngine engine;
+    engine.globalObject().setProperty("cppObject", engine.newQObject(
+            cppObject, QScriptEngine::ScriptOwnership));
+    engine.evaluate("var slot = cppObject.mySlot;  cppObject = null;");
+    engine.collectGarbage();
+    QVERIFY(guard); //not destroyed yet, we have a reference to the slot;
+    QCOMPARE(cppObject->qtFunctionInvoked(), -1);
+    engine.evaluate("slot();");
+    QCOMPARE(cppObject->qtFunctionInvoked(), 20);
+    engine.evaluate("slot = null;");
+    engine.collectGarbage();
+    QVERIFY(!guard); //now, the object should be destroyed
+}
+
 
 QTEST_MAIN(tst_QScriptExtQObject)
 #include "tst_qscriptextqobject.moc"

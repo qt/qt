@@ -47,7 +47,7 @@ template <typename T>
 T *getDataPointer(v8::Handle<v8::Object> self)
 {
     Q_ASSERT(!self.IsEmpty());
-    Q_ASSERT(self->InternalFieldCount() == 1);
+    Q_ASSERT(self->InternalFieldCount() >= 1);
     T *data = reinterpret_cast<T *>(self->GetPointerFromInternalField(0));
     Q_ASSERT(data != 0);
     return data;
@@ -169,7 +169,7 @@ struct QScriptV8ObjectWrapper
 
         v8::Handle<v8::ObjectTemplate> instanceTempl = (data->engine->*functionTemplate)->InstanceTemplate();
         v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
-        Q_ASSERT(instance->InternalFieldCount() == 1);
+        Q_ASSERT(instance->InternalFieldCount() >= 1);
         instance->SetPointerInInternalField(0, data);
         v8::Persistent<v8::Object> persistent = v8::Persistent<v8::Object>::New(instance);
         persistent.MakeWeak(data, QScriptV8ObjectWrapperHelper::weakCallback<T>);
@@ -181,7 +181,7 @@ struct QScriptV8ObjectWrapper
 template <typename T, v8::Persistent<v8::FunctionTemplate> QScriptEnginePrivate::*functionTemplate>
 T* QScriptV8ObjectWrapper<T, functionTemplate>::get(v8::Handle<v8::Object> object)
 {
-    Q_ASSERT(object->InternalFieldCount() == 1);
+    Q_ASSERT(object->InternalFieldCount() >= 1);
     T *data = reinterpret_cast<T *>(object->GetPointerFromInternalField(0));
     return data;
 }
