@@ -59,6 +59,8 @@
 
 QT_BEGIN_NAMESPACE
 
+static float SYNTHETIC_ITALIC_SKEW = tanf(14 * acosf(0) / 90);
+
 /*****************************************************************************
   QFontEngine debug facilities
  *****************************************************************************/
@@ -467,6 +469,9 @@ glyph_metrics_t QCoreTextFontEngine::boundingBox(glyph_t glyph)
     glyph_metrics_t ret;
     CGGlyph g = glyph;
     CGRect rect = CTFontGetBoundingRectsForGlyphs(ctfont, kCTFontHorizontalOrientation, &g, 0, 1);
+    if (synthesisFlags & QFontEngine::SynthesizedItalic) {
+        rect.size.width += rect.size.height * SYNTHETIC_ITALIC_SKEW;
+    }
     ret.width = QFixed::fromReal(rect.size.width);
     ret.height = QFixed::fromReal(rect.size.height);
     ret.x = QFixed::fromReal(rect.origin.x);
@@ -558,7 +563,7 @@ void QCoreTextFontEngine::draw(CGContextRef ctx, qreal x, qreal y, const QTextIt
     CGAffineTransformConcat(cgMatrix, oldTextMatrix);
 
     if (synthesisFlags & QFontEngine::SynthesizedItalic)
-        cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, -tanf(14 * acosf(0) / 90), 1, 0, 0));
+        cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, -SYNTHETIC_ITALIC_SKEW, 1, 0, 0));
 
     cgMatrix = CGAffineTransformConcat(cgMatrix, transform);
 
@@ -646,7 +651,7 @@ void QCoreTextFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *position
     cgMatrix = CGAffineTransformScale(cgMatrix, 1, -1);
 
     if (synthesisFlags & QFontEngine::SynthesizedItalic)
-        cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, -tanf(14 * acosf(0) / 90), 1, 0, 0));
+        cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, -SYNTHETIC_ITALIC_SKEW, 1, 0, 0));
 
 
     for (int i = 0; i < nGlyphs; ++i) {
@@ -681,7 +686,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, int margin, bool aa)
     CGAffineTransformConcat(cgMatrix, oldTextMatrix);
 
     if (synthesisFlags & QFontEngine::SynthesizedItalic)
-        cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, tanf(14 * acosf(0) / 90), 1, 0, 0));
+        cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, SYNTHETIC_ITALIC_SKEW, 1, 0, 0));
 
     cgMatrix = CGAffineTransformConcat(cgMatrix, transform);
 
@@ -1625,7 +1630,7 @@ QImage QFontEngineMac::imageForGlyph(glyph_t glyph, int margin, bool colorful)
     CGAffineTransformConcat(cgMatrix, oldTextMatrix);
 
     if (synthesisFlags & QFontEngine::SynthesizedItalic)
-        cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, tanf(14 * acosf(0) / 90), 1, 0, 0));
+        cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, SYNTHETIC_ITALIC_SKEW, 1, 0, 0));
 
     cgMatrix = CGAffineTransformConcat(cgMatrix, transform);
 
@@ -1718,7 +1723,7 @@ void QFontEngineMac::draw(CGContextRef ctx, qreal x, qreal y, const QTextItemInt
     CGAffineTransformConcat(cgMatrix, oldTextMatrix);
 
     if (synthesisFlags & QFontEngine::SynthesizedItalic)
-        cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, -tanf(14 * acosf(0) / 90), 1, 0, 0));
+        cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, -SYNTHETIC_ITALIC_SKEW, 1, 0, 0));
 
     cgMatrix = CGAffineTransformConcat(cgMatrix, transform);
 
