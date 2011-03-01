@@ -248,10 +248,10 @@ QVolatileImageData::QVolatileImageData(const QImage &sourceImage)
     : next(0), prev(0), bitmap(0), pengine(0)
 {
     registerImageData(this);
-    // Try being optimal: Defer the bitmap creation and pixel data copying
-    // to ensureBitmap() which will be called when there is a real need for
-    // the bitmap.
     image = sourceImage;
+    // The following is not mandatory, but we do it here to have a bitmap
+    // created always in order to reduce local heap usage.
+    ensureBitmap();
 }
 
 QVolatileImageData::QVolatileImageData(void *nativeImage, void *nativeMask)
@@ -462,8 +462,6 @@ void QVolatileImageData::ensureImage()
 
 void QVolatileImageData::ensureBitmap()
 {
-    // Creates the bitmap from the image if not yet done. This case can happen
-    // only if we were constructed from a QImage. Otherwise this is a no-op.
     if (!bitmap && !image.isNull()) {
         bitmap = imageToBitmap(image);
         updateImage();
