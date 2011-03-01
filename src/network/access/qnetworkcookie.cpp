@@ -359,7 +359,7 @@ void QNetworkCookie::setValue(const QByteArray &value)
 }
 
 // ### move this to qnetworkcookie_p.h and share with qnetworkaccesshttpbackend
-static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &position)
+static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &position, bool isNameValue)
 {
     // format is one of:
     //    (1)  token
@@ -394,10 +394,14 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
         // quoted-string  = ( <"> *(qdtext | quoted-pair ) <"> )
         // qdtext         = <any TEXT except <">>
         // quoted-pair    = "\" CHAR
-        ++i;
+
+        // If its NAME=VALUE, retain the value as is
+        // refer to ttp://bugreports.qt.nokia.com/browse/QTBUG-17746
+        if (!isNameValue)
+            ++i;
         while (i < length) {
             register char c = text.at(i);
-            if (c == '"') {
+            if (c == '"' && !isNameValue) {
                 // end of quoted text
                 break;
             } else if (c == '\\') {
@@ -406,6 +410,8 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
                     // broken line
                     return qMakePair(QByteArray(), QByteArray());
                 c = text.at(i);
+            } else if ((c == ';' || c == ',') && isNameValue) {
+                break;
             }
 
             second += c;
@@ -476,10 +482,12 @@ QByteArray QNetworkCookie::toRawForm(RawForm form) const
 
     result = d->name;
     result += '=';
-    if (d->value.contains(';') ||
+    if ((d->value.contains(';') ||
         d->value.contains(',') ||
         d->value.contains(' ') ||
-        d->value.contains('"')) {
+        d->value.contains('"')) &&
+        (!d->value.startsWith('"') &&
+        !d->value.endsWith('"'))) {
         result += '"';
 
         QByteArray value = d->value;
@@ -947,7 +955,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
         QNetworkCookie cookie;
 
         // The first part is always the "NAME=VALUE" part
-        QPair<QByteArray,QByteArray> field = nextField(cookieString, position);
+        QPair<QByteArray,QByteArray> field = nextField(cookieString, position, true);
         if (field.first.isEmpty() || field.second.isNull())
             // parsing error
             break;
@@ -965,7 +973,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
 
             case ';':
                 // new field in the cookie
-                field = nextField(cookieString, position);
+                field = nextField(cookieString, position, false);
                 field.first = field.first.toLower(); // everything but the NAME=VALUE is case-insensitive
 
                 if (field.first == "expires") {
