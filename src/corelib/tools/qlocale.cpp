@@ -2103,7 +2103,7 @@ QString QLocalePrivate::dateTimeToString(const QString &format, const QDate *dat
                 } else {
                     repeat = 1;
                 }
-                result.append(am_pm == AM ? QLatin1String("am") : QLatin1String("pm"));
+                result.append(am_pm == AM ? q->amText().toLower() : q->pmText().toLower());
                 break;
 
             case 'A':
@@ -2113,7 +2113,7 @@ QString QLocalePrivate::dateTimeToString(const QString &format, const QDate *dat
                 } else {
                     repeat = 1;
                 }
-                result.append(am_pm == AM ? QLatin1String("AM") : QLatin1String("PM"));
+                result.append(am_pm == AM ? q->amText().toUpper() : q->pmText().toUpper());
                 break;
 
             case 'z':
