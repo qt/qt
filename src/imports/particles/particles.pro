@@ -28,7 +28,8 @@ HEADERS += \
     gravityaffector.h \
     attractoraffector.h \
     meanderaffector.h \
-    toggleaffector.h
+    toggleaffector.h \
+    spriteimage.h
 
 SOURCES += \
     V1/qdeclarativeparticles.cpp \
@@ -56,7 +57,8 @@ SOURCES += \
     gravityaffector.cpp \
     attractoraffector.cpp \
     meanderaffector.cpp \
-    toggleaffector.cpp
+    toggleaffector.cpp \
+    spriteimage.cpp
 
 QT += declarative opengl
 

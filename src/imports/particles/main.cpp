@@ -23,6 +23,7 @@
 #include "particle.h"
 #include "coloredparticle.h"
 #include "spriteparticle.h"
+#include "spriteimage.h"
 #include "V1/qdeclarativeparticles_p.h"
 
 void ParticlesPlugin::registerTypes(const char *uri)
@@ -36,6 +37,7 @@ void ParticlesPlugin::registerTypes(const char *uri)
     qmlRegisterType<QDeclarativeParticleMotionWander>(uri,1,0,"ParticleMotionWander");
     qmlRegisterType<SpriteState>(uri, 2, 0, "Sprite");
     qmlRegisterType<SpriteEngine>(uri, 2, 0, "SpriteEngine");
+    qmlRegisterType<SpriteImage>(uri, 2, 0, "SpriteImage");
 
     qmlRegisterType<ParticleSystem>(uri, 2, 0, "ParticleSystem");
 

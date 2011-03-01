@@ -6,5 +6,7 @@
         <file>resources/ctvertex.shader</file>
         <file>resources/trailsfragment.shader</file>
         <file>resources/trailsvertex.shader</file>
+        <file>resources/spriteimagefragment.shader</file>
+        <file>resources/spriteimagevertex.shader</file>
     </qresource>
 </RCC>
