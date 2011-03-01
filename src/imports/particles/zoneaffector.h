@@ -11,6 +11,7 @@ class ZoneAffector : public ParticleAffector
     Q_PROPERTY(qreal width READ width WRITE setWidth NOTIFY widthChanged);
     Q_PROPERTY(qreal height READ height WRITE setHeight NOTIFY heightChanged);
     Q_PROPERTY(ParticleAffector* affector READ affector WRITE affector NOTIFY affectorChanged)
+    Q_CLASSINFO("DefaultProperty", "affector")
 public:
     explicit ZoneAffector(QObject *parent = 0);
 

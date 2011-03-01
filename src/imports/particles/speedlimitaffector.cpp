@@ -21,7 +21,6 @@ bool SpeedLimitAffector::affect(ParticleData *d, qreal dt){
 
     if(s >= m_speedLimit*1.01){
         qreal theta = atan2(y,x);
-        qDebug() << "from" << x << y << "to " << m_speedLimit * cos(theta) << m_speedLimit * sin(theta);
         d->setInstantaneousSX(m_speedLimit * cos(theta));
         d->setInstantaneousSY(m_speedLimit * sin(theta));
     }

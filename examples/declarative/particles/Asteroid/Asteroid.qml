@@ -6,16 +6,9 @@ Item {
     id: root
     width: 360
     height: 540
-    Timer{
-        id: particleResetTimer
-        interval: spinState.duration * spinState.frames
-        repeat: false
-        running: false
-        onTriggered: particles.goalState = ""
-    }
     MouseArea{
+        id: ma
         anchors.fill: parent
-        onClicked: {particles.goalState="nullFrame"; particleResetTimer.start();}
     }
 
     SequentialAnimation {
@@ -67,28 +60,30 @@ Item {
         anchors.fill: parent
         particles: SpriteParticle{
             id: particles
-            states: [SpriteState{
-                id: spinState
-                name: "spinning"
-                source: "meteor.png"
-                frames: 35
-                duration: 30
-                speedModifiesDuration: -0.1
-                to: {"explode":0, "spinning":1}
-            },SpriteState{
-                name: "explode"
-                source: "_explo.png"
-                frames: 22
-                duration: 40
-                speedModifiesDuration: -0.1
-                to: {"nullFrame":1}
-            },SpriteState{//Not sure if this is needed, but seemed easiest
-                name: "nullFrame"
-                source: "nullRock.png"
-                frames: 1
-                duration: 1000
+            spriteEngine: SpriteEngine{
+                sprites:[Sprite{
+                    id: spinState
+                    name: "spinning"
+                    source: "meteor.png"
+                    frames: 35
+                    duration: 30
+                    speedModifiesDuration: -0.1
+                    to: {"explode":0, "spinning":1}
+                },Sprite{
+                    name: "explode"
+                    source: "_explo.png"
+                    frames: 22
+                    duration: 40
+                    speedModifiesDuration: -0.1
+                    to: {"nullFrame":1}
+                },Sprite{//Not sure if this is needed, but seemed easiest
+                    name: "nullFrame"
+                    source: "nullRock.png"
+                    frames: 1
+                    duration: 1000
+                }
+                ]
             }
-            ]
         }
         emitters: TrailEmitter{
             particlesPerSecond: 12
@@ -100,6 +95,18 @@ Item {
             particleEndSize: 300
             emitterX: width/2
             emitterY: height/2
+        }
+        affectors: Toggle{
+            affecting: ma.pressed;
+            Zone{
+                x: ma.mouseX - 16
+                y: ma.mouseY - 16
+                width: 32
+                height:32
+                SpriteGoal{
+                    goalState: "nullFrame"
+                }
+            }
         }
     }
     Image {

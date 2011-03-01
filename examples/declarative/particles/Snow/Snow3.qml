@@ -9,7 +9,7 @@ Rectangle{
         id: particles
         anchors.fill: parent
         particles:SpriteParticle{
-            states: SpriteState{
+            sprite: Sprite{
                 name: "snow"
                 source: "flake-01.png"
                 frames: 51
