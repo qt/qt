@@ -446,10 +446,12 @@ public:
 
     void setDrawFrameRect(const QRect &rect)
     {
-        m_movieLayer.frame.origin.x = rect.x();
-        m_movieLayer.frame.origin.y = rect.y();
-        m_movieLayer.frame.size.width = rect.width();
-        m_movieLayer.frame.size.height = rect.height();
+        NSRect frame = m_movieLayer.frame;
+        frame.origin.x = rect.x();
+        frame.origin.y = rect.y();
+        frame.size.width = rect.width();
+        frame.size.height = rect.height();
+        m_movieLayer.frame = frame;
     }
 
 #else // QT_MAC_USE_COCOA == false
