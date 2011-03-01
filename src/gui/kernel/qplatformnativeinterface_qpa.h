@@ -59,6 +59,7 @@ public:
     virtual void *eglDisplayForWidget(QWidget *widget);
     virtual void *nativeConnectionForWidget(QWidget *widget);
     virtual void *nativeScreenForWidget(QWidget *widget);
+    virtual void *nativeGraphicsDeviceForWidget(QWidget *widget);
 };
 
 QT_END_NAMESPACE

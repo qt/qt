@@ -43,25 +43,31 @@
 
 QT_BEGIN_NAMESPACE
 
-void * QPlatformNativeInterface::nativeDisplayForWidget(QWidget *widget)
+void *QPlatformNativeInterface::nativeDisplayForWidget(QWidget *widget)
 {
     Q_UNUSED(widget);
     return 0;
 }
 
-void * QPlatformNativeInterface::eglDisplayForWidget(QWidget *widget)
+void *QPlatformNativeInterface::eglDisplayForWidget(QWidget *widget)
 {
     Q_UNUSED(widget);
     return 0;
 }
 
-void * QPlatformNativeInterface::nativeConnectionForWidget(QWidget *widget)
+void *QPlatformNativeInterface::nativeConnectionForWidget(QWidget *widget)
 {
     Q_UNUSED(widget);
     return 0;
 }
 
-void * QPlatformNativeInterface::nativeScreenForWidget(QWidget *widget)
+void *QPlatformNativeInterface::nativeScreenForWidget(QWidget *widget)
+{
+    Q_UNUSED(widget);
+    return 0;
+}
+
+void *QPlatformNativeInterface::nativeGraphicsDeviceForWidget(QWidget *widget)
 {
     Q_UNUSED(widget);
     return 0;
