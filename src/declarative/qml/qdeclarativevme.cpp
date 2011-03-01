@@ -949,7 +949,6 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
 
         QDeclarativeEnginePrivate::clear(bindValues);
         QDeclarativeEnginePrivate::clear(parserStatus);
-        ep->finalizedParserStatus.clear();
         return 0;
     }
 
