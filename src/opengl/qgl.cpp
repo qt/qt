@@ -1791,7 +1791,7 @@ static void convertFromGLImage(QImage &img, int w, int h, bool alpha_format, boo
 
 QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)
 {
-    QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32
+    QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32_Premultiplied
                                                      : QImage::Format_RGB32);
     int w = size.width();
     int h = size.height();

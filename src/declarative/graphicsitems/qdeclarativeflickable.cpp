@@ -53,6 +53,10 @@ QT_BEGIN_NAMESPACE
 // before we perform a flick.
 static const int FlickThreshold = 20;
 
+// RetainGrabVelocity is the maxmimum instantaneous velocity that
+// will ensure the  Flickable retains the grab on consecutive flicks.
+static const int RetainGrabVelocity = 15;
+
 QDeclarativeFlickableVisibleArea::QDeclarativeFlickableVisibleArea(QDeclarativeFlickable *parent)
     : QObject(parent), flickable(parent), m_xPosition(0.), m_widthRatio(0.)
     , m_yPosition(0.), m_heightRatio(0.)
@@ -672,7 +676,8 @@ void QDeclarativeFlickable::setFlickableDirection(FlickableDirection direction)
 void QDeclarativeFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_Q(QDeclarativeFlickable);
-    if (interactive && timeline.isActive() && (qAbs(hData.velocity) > 10 || qAbs(vData.velocity) > 10))
+    if (interactive && timeline.isActive()
+            && (qAbs(hData.smoothVelocity.value()) > RetainGrabVelocity || qAbs(vData.smoothVelocity.value()) > RetainGrabVelocity))
         stealMouse = true; // If we've been flicked then steal the click.
     else
         stealMouse = false;
@@ -840,7 +845,8 @@ void QDeclarativeFlickable::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeFlickable);
     if (d->interactive) {
-        d->handleMousePressEvent(event);
+        if (!d->pressed)
+            d->handleMousePressEvent(event);
         event->accept();
     } else {
         QDeclarativeItem::mousePressEvent(event);
@@ -905,10 +911,26 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
     }
 }
 
+bool QDeclarativeFlickablePrivate::isOutermostPressDelay() const
+{
+    Q_Q(const QDeclarativeFlickable);
+    QDeclarativeItem *item = q->parentItem();
+    while (item) {
+        QDeclarativeFlickable *flick = qobject_cast<QDeclarativeFlickable*>(item);
+        if (flick && flick->pressDelay() > 0 && flick->isInteractive())
+            return false;
+        item = item->parentItem();
+    }
+
+    return true;
+}
+
 void QDeclarativeFlickablePrivate::captureDelayedPress(QGraphicsSceneMouseEvent *event)
 {
     Q_Q(QDeclarativeFlickable);
     if (!q->scene() || pressDelay <= 0)
+        return;
+    if (!isOutermostPressDelay())
         return;
     delayedPressTarget = q->scene()->mouseGrabberItem();
     delayedPressEvent = new QGraphicsSceneMouseEvent(event->type());
@@ -965,9 +987,10 @@ void QDeclarativeFlickable::timerEvent(QTimerEvent *event)
                 if (scene()->mouseGrabberItem() == d->delayedPressTarget)
                     d->delayedPressTarget->ungrabMouse();
                 //Use the event handler that will take care of finding the proper item to propagate the event
-                QApplication::sendEvent(scene(), d->delayedPressEvent);
+                QApplication::postEvent(scene(), d->delayedPressEvent);
+            } else {
+                delete d->delayedPressEvent;
             }
-            delete d->delayedPressEvent;
             d->delayedPressEvent = 0;
         }
     }
@@ -1338,6 +1361,22 @@ bool QDeclarativeFlickable::yflick() const
     return d->flickableDirection & QDeclarativeFlickable::VerticalFlick;
 }
 
+bool QDeclarativeFlickable::sceneEvent(QEvent *event)
+{
+    bool rv = QDeclarativeItem::sceneEvent(event);
+    if (event->type() == QEvent::UngrabMouse) {
+        Q_D(QDeclarativeFlickable);
+        if (d->pressed) {
+            // if our mouse grab has been removed (probably by another Flickable),
+            // fix our state
+            d->pressed = false;
+            d->stealMouse = false;
+            setKeepMouseGrab(false);
+        }
+    }
+    return rv;
+}
+
 bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeFlickable);
@@ -1365,7 +1404,7 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
             d->handleMouseMoveEvent(&mouseEvent);
             break;
         case QEvent::GraphicsSceneMousePress:
-            if (d->delayedPressEvent)
+            if (d->pressed) // we are already pressed - this is a delayed replay
                 return false;
 
             d->handleMousePressEvent(&mouseEvent);
@@ -1384,6 +1423,8 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
                 // We send the release
                 scene()->sendEvent(s->mouseGrabberItem(), event);
                 // And the event has been consumed
+                d->stealMouse = false;
+                d->pressed = false;
                 return true;
             }
             d->handleMouseReleaseEvent(&mouseEvent);
@@ -1406,6 +1447,7 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
         d->stealMouse = false;
         d->pressed = false;
     }
+
     return false;
 }
 
@@ -1504,6 +1546,9 @@ bool QDeclarativeFlickable::isFlickingVertically() const
     If the flickable is dragged/flicked before the delay times out
     the press event will not be delivered.  If the button is released
     within the timeout, both the press and release will be delivered.
+
+    Note that for nested Flickables with pressDelay set, the pressDelay of
+    inner Flickables is overridden by the outermost Flickable.
 */
 int QDeclarativeFlickable::pressDelay() const
 {

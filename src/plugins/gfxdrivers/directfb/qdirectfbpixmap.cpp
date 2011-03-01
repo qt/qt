@@ -245,10 +245,9 @@ bool QDirectFBPixmapData::fromDataBufferDescription(const DFBDataBufferDescripti
     QDirectFBPointer<IDirectFBDataBuffer> dataBuffer(dataBufferPtr);
 
     IDirectFBImageProvider *providerPtr;
-    if ((result = dataBuffer->CreateImageProvider(dataBuffer.data(), &providerPtr)) != DFB_OK) {
-        DirectFBError("QDirectFBPixmapData::fromDataBufferDescription(): Can't create image provider", result);
+    if ((result = dataBuffer->CreateImageProvider(dataBuffer.data(), &providerPtr)) != DFB_OK)
         return false;
-    }
+
     QDirectFBPointer<IDirectFBImageProvider> provider(providerPtr);
 
     DFBImageDescription imageDescription;

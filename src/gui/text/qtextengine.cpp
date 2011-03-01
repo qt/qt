@@ -1385,6 +1385,15 @@ void QTextEngine::shape(int item) const
     }
 }
 
+static inline void releaseCachedFontEngine(QFontEngine *fontEngine)
+{
+    if (fontEngine) {
+        fontEngine->ref.deref();
+        if (fontEngine->cache_count == 0 && fontEngine->ref == 0)
+            delete fontEngine;
+    }
+}
+
 void QTextEngine::invalidate()
 {
     freeMemory();
@@ -1392,6 +1401,9 @@ void QTextEngine::invalidate()
     maxWidth = 0;
     if (specialData)
         specialData->resolvedFormatIndices.clear();
+
+    releaseCachedFontEngine(feCache.prevFontEngine);
+    releaseCachedFontEngine(feCache.prevScaledFontEngine);
     feCache.reset();
 }
 
@@ -1824,7 +1836,11 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
                 scaledEngine = font.d->engineForScript(script);
             }
             feCache.prevFontEngine = engine;
+            if (engine)
+                engine->ref.ref();
             feCache.prevScaledFontEngine = scaledEngine;
+            if (scaledEngine)
+                scaledEngine->ref.ref();
             feCache.prevScript = script;
             feCache.prevPosition = si.position;
             feCache.prevLength = length(&si);
@@ -1835,6 +1851,8 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
         else {
             engine = font.d->engineForScript(script);
             feCache.prevFontEngine = engine;
+            if (engine)
+                engine->ref.ref();
             feCache.prevScript = script;
             feCache.prevPosition = -1;
             feCache.prevLength = -1;

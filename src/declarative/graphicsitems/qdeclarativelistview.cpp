@@ -148,7 +148,7 @@ public:
         else
             item->setWidth(size);
     }
-    bool contains(int x, int y) const {
+    bool contains(qreal x, qreal y) const {
         return (x >= item->x() && x < item->x() + item->width() &&
                 y >= item->y() && y < item->y() + item->height());
     }
@@ -225,6 +225,26 @@ public:
                     foundFirst = true;
             }
         }
+        return 0;
+    }
+
+    // Returns the item before modelIndex, if created.
+    // May return an item marked for removal.
+    FxListItem *itemBefore(int modelIndex) const {
+        if (modelIndex < visibleIndex)
+            return 0;
+        int idx = 1;
+        int lastIndex = -1;
+        while (idx < visibleItems.count()) {
+            FxListItem *item = visibleItems.at(idx);
+            if (item->index != -1)
+                lastIndex = item->index;
+            if (item->index == modelIndex)
+                return visibleItems.at(idx-1);
+            ++idx;
+        }
+        if (lastIndex == modelIndex-1)
+            return visibleItems.last();
         return 0;
     }
 
@@ -561,7 +581,7 @@ FxListItem *QDeclarativeListViewPrivate::createItem(int modelIndex)
             QString propValue = model->stringValue(modelIndex, sectionCriteria->property());
             listItem->attached->m_section = sectionCriteria->sectionString(propValue);
             if (modelIndex > 0) {
-                if (FxListItem *item = visibleItem(modelIndex-1))
+                if (FxListItem *item = itemBefore(modelIndex))
                     listItem->attached->m_prevSection = item->attached->section();
                 else
                     listItem->attached->m_prevSection = sectionAt(modelIndex-1);
@@ -969,18 +989,18 @@ void QDeclarativeListViewPrivate::updateSections()
         QDeclarativeListViewAttached *prevAtt = 0;
         int idx = -1;
         for (int i = 0; i < visibleItems.count(); ++i) {
+            QDeclarativeListViewAttached *attached = visibleItems.at(i)->attached;
+            attached->setPrevSection(prevSection);
             if (visibleItems.at(i)->index != -1) {
-                QDeclarativeListViewAttached *attached = visibleItems.at(i)->attached;
-                attached->setPrevSection(prevSection);
                 QString propValue = model->stringValue(visibleItems.at(i)->index, sectionCriteria->property());
                 attached->setSection(sectionCriteria->sectionString(propValue));
-                if (prevAtt)
-                    prevAtt->setNextSection(attached->section());
-                createSection(visibleItems.at(i));
-                prevSection = attached->section();
-                prevAtt = attached;
                 idx = visibleItems.at(i)->index;
             }
+            createSection(visibleItems.at(i));
+            if (prevAtt)
+                prevAtt->setNextSection(attached->section());
+            prevSection = attached->section();
+            prevAtt = attached;
         }
         if (prevAtt) {
             if (idx > 0 && idx < model->count()-1)
@@ -2732,7 +2752,7 @@ void QDeclarativeListView::positionViewAtEnd()
 
     \bold Note: methods should only be called after the Component has completed.
 */
-int QDeclarativeListView::indexAt(int x, int y) const
+int QDeclarativeListView::indexAt(qreal x, qreal y) const
 {
     Q_D(const QDeclarativeListView);
     for (int i = 0; i < d->visibleItems.count(); ++i) {
@@ -3096,6 +3116,7 @@ void QDeclarativeListView::destroyRemoved()
     }
 
     // Correct the positioning of the items
+    d->updateSections();
     d->layout();
 }
 

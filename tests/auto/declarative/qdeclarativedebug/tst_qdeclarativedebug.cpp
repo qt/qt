@@ -167,8 +167,8 @@ void tst_QDeclarativeDebug::recursiveObjectTest(QObject *o, const QDeclarativeDe
 {
     const QMetaObject *meta = o->metaObject();
 
-    QDeclarativeType *type = QDeclarativeMetaType::qmlType(o->metaObject());
-    QString className = type ? type->qmlTypeName() : QString();
+    QDeclarativeType *type = QDeclarativeMetaType::qmlType(meta);
+    QString className = type ? QString(type->qmlTypeName()) : QString(meta->className());
     className = className.mid(className.lastIndexOf(QLatin1Char('/'))+1);
 
     QCOMPARE(oref.debugId(), QDeclarativeDebugService::idForObject(o));
@@ -293,12 +293,21 @@ void tst_QDeclarativeDebug::initTestCase()
     QList<QByteArray> qml;
     qml << "import QtQuick 1.0\n"
             "Item {"
+                "id: root\n"
                 "width: 10; height: 20; scale: blueRect.scale;"
                 "Rectangle { id: blueRect; width: 500; height: 600; color: \"blue\"; }"
                 "Text { color: blueRect.color; }"
                 "MouseArea {"
                     "onEntered: { console.log('hello') }"
                 "}"
+                "property variant varObj\n"
+                "property variant varObjList: []\n"
+                "Component.onCompleted: {\n"
+                    "varObj = blueRect;\n"
+                    "var list = varObjList;\n"
+                    "list[0] = blueRect;\n"
+                    "varObjList = list;\n"
+                "}\n"
             "}";
 
     // add second component to test multiple root contexts
@@ -742,7 +751,6 @@ void tst_QDeclarativeDebug::queryObject()
         QCOMPARE(findProperty(rect.properties(), "color").value(), qVariantFromValue(QColor("blue")));
 
         QCOMPARE(findProperty(text.properties(), "color").value(), qVariantFromValue(QColor("blue")));
-
     } else {
         foreach(const QDeclarativeDebugObjectReference &child, obj.children())
             QCOMPARE(child.properties().count(), 0);
@@ -799,6 +807,8 @@ void tst_QDeclarativeDebug::queryExpressionResult_data()
     QTest::newRow("width + 50") << "width + 50" << qVariantFromValue(60);
     QTest::newRow("blueRect.width") << "blueRect.width" << qVariantFromValue(500);
     QTest::newRow("bad expr") << "aeaef" << qVariantFromValue(QString("<undefined>"));
+    QTest::newRow("QObject*") << "varObj" << qVariantFromValue(QString("<unnamed object>"));
+    QTest::newRow("list of QObject*") << "varObjList" << qVariantFromValue(QString("<unknown value>"));
 }
 
 void tst_QDeclarativeDebug::tst_QDeclarativeDebugFileReference()

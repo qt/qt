@@ -49,6 +49,7 @@
 #include "qkbdum_qws.h"
 #include "qkbdvfb_qws.h"
 #include "qkbdqnx_qws.h"
+#include "qkbdintegrity_qws.h"
 #include <stdlib.h>
 #include "private/qfactoryloader_p.h"
 #include "qkbddriverplugin_qws.h"
@@ -106,6 +107,10 @@ QWSKeyboardHandler *QKbdDriverFactory::create(const QString& key, const QString&
     if (driver == QLatin1String("qnx") || driver.isEmpty())
         return new QWSQnxKeyboardHandler(device);
 #endif
+#if defined(Q_OS_INTEGRITY)
+    if (driver == QLatin1String("integrity") || driver.isEmpty())
+        return new QWSIntKeyboardHandler(device);
+#endif
 #ifndef QT_NO_QWS_KEYBOARD
 # ifndef QT_NO_QWS_KBD_TTY
     if (driver == QLatin1String("tty") || driver.isEmpty())
@@ -150,6 +155,9 @@ QStringList QKbdDriverFactory::keys()
 
 #if defined(Q_OS_QNX) && !defined(QT_NO_QWS_KBD_QNX)
     list << QLatin1String("QNX");
+#endif
+#if defined(Q_OS_INTEGRITY) && !defined(QT_NO_QWS_KBD_INTEGRITY)
+    list << QLatin1String("INTEGRITY");
 #endif
 #ifndef QT_NO_QWS_KBD_TTY
     list << QLatin1String("TTY");

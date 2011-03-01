@@ -110,6 +110,7 @@ private slots:
 
     void passwordCharacter();
     void cursorDelegate();
+    void cursorVisible();
     void navigation();
     void copyAndPaste();
     void readOnly();
@@ -125,6 +126,8 @@ private slots:
     void testQtQuick11Attributes_data();
 
     void preeditAutoScroll();
+    void preeditMicroFocus();
+    void inputContextMouseHandler();
 
 private:
     void simulateKey(QDeclarativeView *, int key);
@@ -1314,6 +1317,75 @@ void tst_qdeclarativetextinput::cursorDelegate()
     delete view;
 }
 
+void tst_qdeclarativetextinput::cursorVisible()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+
+    QDeclarativeTextInput input;
+    QSignalSpy spy(&input, SIGNAL(cursorVisibleChanged(bool)));
+
+    QCOMPARE(input.isCursorVisible(), false);
+
+    input.setCursorVisible(true);
+    QCOMPARE(input.isCursorVisible(), true);
+    QCOMPARE(spy.count(), 1);
+
+    input.setCursorVisible(false);
+    QCOMPARE(input.isCursorVisible(), false);
+    QCOMPARE(spy.count(), 2);
+
+    input.setFocus(true);
+    QCOMPARE(input.isCursorVisible(), false);
+    QCOMPARE(spy.count(), 2);
+
+    scene.addItem(&input);
+    QCOMPARE(input.isCursorVisible(), true);
+    QCOMPARE(spy.count(), 3);
+
+    input.setFocus(false);
+    QCOMPARE(input.isCursorVisible(), false);
+    QCOMPARE(spy.count(), 4);
+
+    input.setFocus(true);
+    QCOMPARE(input.isCursorVisible(), true);
+    QCOMPARE(spy.count(), 5);
+
+    scene.clearFocus();
+    QCOMPARE(input.isCursorVisible(), false);
+    QCOMPARE(spy.count(), 6);
+
+    scene.setFocus();
+    QCOMPARE(input.isCursorVisible(), true);
+    QCOMPARE(spy.count(), 7);
+
+    view.clearFocus();
+    QCOMPARE(input.isCursorVisible(), false);
+    QCOMPARE(spy.count(), 8);
+
+    view.setFocus();
+    QCOMPARE(input.isCursorVisible(), true);
+    QCOMPARE(spy.count(), 9);
+
+    // on mac, setActiveWindow(0) on mac does not deactivate the current application
+    // (you have to switch to a different app or hide the current app to trigger this)
+#if !defined(Q_WS_MAC)
+    QApplication::setActiveWindow(0);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(0));
+    QCOMPARE(input.isCursorVisible(), false);
+    QCOMPARE(spy.count(), 10);
+
+    QApplication::setActiveWindow(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+    QCOMPARE(input.isCursorVisible(), true);
+    QCOMPARE(spy.count(), 11);
+#endif
+}
+
 void tst_qdeclarativetextinput::readOnly()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/readOnly.qml");
@@ -1419,7 +1491,7 @@ QDeclarativeView *tst_qdeclarativetextinput::createView(const QString &filename)
 class MyInputContext : public QInputContext
 {
 public:
-    MyInputContext() : openInputPanelReceived(false), closeInputPanelReceived(false) {}
+    MyInputContext() : openInputPanelReceived(false), closeInputPanelReceived(false), updateReceived(false), eventType(QEvent::None) {}
     ~MyInputContext() {}
 
     QString identifierName() { return QString(); }
@@ -1438,6 +1510,19 @@ public:
         return QInputContext::filterEvent(event);
     }
 
+    void update() { updateReceived = true; }
+
+    void mouseHandler(int x, QMouseEvent *event)
+    {
+        cursor = x;
+        eventType = event->type();
+        eventPosition = event->pos();
+        eventGlobalPosition = event->globalPos();
+        eventButton = event->button();
+        eventButtons = event->buttons();
+        eventModifiers = event->modifiers();
+    }
+
     void sendPreeditText(const QString &text, int cursor)
     {
         QList<QInputMethodEvent::Attribute> attributes;
@@ -1450,6 +1535,14 @@ public:
 
     bool openInputPanelReceived;
     bool closeInputPanelReceived;
+    bool updateReceived;
+    int cursor;
+    QEvent::Type eventType;
+    QPoint eventPosition;
+    QPoint eventGlobalPosition;
+    Qt::MouseButton eventButton;
+    Qt::MouseButtons eventButtons;
+    Qt::KeyboardModifiers eventModifiers;
 };
 
 void tst_qdeclarativetextinput::openInputPanelOnClick()
@@ -1798,6 +1891,179 @@ void tst_qdeclarativetextinput::preeditAutoScroll()
     ic.sendPreeditText(preeditText.mid(0, 3), 1);
     QCOMPARE(input.positionAt(0), 0);
     QCOMPARE(input.positionAt(input.width()), 5);
+}
+
+void tst_qdeclarativetextinput::preeditMicroFocus()
+{
+    QString preeditText = "super";
+
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    MyInputContext ic;
+    view.setInputContext(&ic);
+    QDeclarativeTextInput input;
+    input.setPos(0, 0);
+    input.setFocus(true);
+    scene.addItem(&input);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+
+    QRect currentRect;
+    QRect previousRect = input.inputMethodQuery(Qt::ImMicroFocus).toRect();
+
+    // Verify that the micro focus rect is positioned the same for position 0 as
+    // it would be if there was no preedit text.
+    ic.updateReceived = false;
+    ic.sendPreeditText(preeditText, 0);
+    currentRect = input.inputMethodQuery(Qt::ImMicroFocus).toRect();
+    QCOMPARE(currentRect, previousRect);
+#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
+    QCOMPARE(ic.updateReceived, true);
+#endif
+
+    // Verify that the micro focus rect moves to the left as the cursor position
+    // is incremented.
+    for (int i = 1; i <= 5; ++i) {
+        ic.updateReceived = false;
+        ic.sendPreeditText(preeditText, i);
+        currentRect = input.inputMethodQuery(Qt::ImMicroFocus).toRect();
+        QVERIFY(previousRect.left() < currentRect.left());
+#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
+        QCOMPARE(ic.updateReceived, true);
+#endif
+        previousRect = currentRect;
+    }
+
+    // Verify that if there is no preedit cursor then the micro focus rect is the
+    // same as it would be if it were positioned at the end of the preedit text.
+    ic.sendPreeditText(preeditText, 0);
+    ic.updateReceived = false;
+    ic.sendEvent(QInputMethodEvent(preeditText, QList<QInputMethodEvent::Attribute>()));
+    currentRect = input.inputMethodQuery(Qt::ImMicroFocus).toRect();
+    QCOMPARE(currentRect, previousRect);
+#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
+    QCOMPARE(ic.updateReceived, true);
+#endif
+}
+
+void tst_qdeclarativetextinput::inputContextMouseHandler()
+{
+    QString text = "supercalifragisiticexpialidocious!";
+
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    MyInputContext ic;
+    view.setInputContext(&ic);
+    QDeclarativeTextInput input;
+    input.setWidth(200);
+    input.setText(text.mid(0, 12));
+    input.setCursorPosition(12);
+    input.setPos(0, 0);
+    input.setFocus(true);
+    scene.addItem(&input);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+
+    QFontMetricsF fm(input.font());
+    const qreal y = fm.height() / 2;
+
+    QPoint position2 = view.mapFromScene(input.mapToScene(QPointF(fm.width(text.mid(0, 2)), y)));
+    QPoint position8 = view.mapFromScene(input.mapToScene(QPointF(fm.width(text.mid(0, 8)), y)));
+    QPoint position20 = view.mapFromScene(input.mapToScene(QPointF(fm.width(text.mid(0, 20)), y)));
+    QPoint position27 = view.mapFromScene(input.mapToScene(QPointF(fm.width(text.mid(0, 27)), y)));
+    QPoint globalPosition2 = view.viewport()->mapToGlobal(position2);
+    QPoint globalposition8 = view.viewport()->mapToGlobal(position8);
+    QPoint globalposition20 = view.viewport()->mapToGlobal(position20);
+    QPoint globalposition27 = view.viewport()->mapToGlobal(position27);
+
+    ic.sendEvent(QInputMethodEvent(text.mid(12), QList<QInputMethodEvent::Attribute>()));
+
+    QTest::mouseDClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, position2);
+    QCOMPARE(ic.eventType, QEvent::MouseButtonDblClick);
+    QCOMPARE(ic.eventPosition, position2);
+    QCOMPARE(ic.eventGlobalPosition, globalPosition2);
+    QCOMPARE(ic.eventButton, Qt::LeftButton);
+    QCOMPARE(ic.eventModifiers, Qt::NoModifier);
+    QVERIFY(ic.cursor < 0);
+    ic.eventType = QEvent::None;
+
+    QTest::mousePress(view.viewport(), Qt::LeftButton, Qt::NoModifier, position2);
+    QCOMPARE(ic.eventType, QEvent::MouseButtonPress);
+    QCOMPARE(ic.eventPosition, position2);
+    QCOMPARE(ic.eventGlobalPosition, globalPosition2);
+    QCOMPARE(ic.eventButton, Qt::LeftButton);
+    QCOMPARE(ic.eventModifiers, Qt::NoModifier);
+    QVERIFY(ic.cursor < 0);
+    ic.eventType = QEvent::None;
+
+    {   QMouseEvent mv(QEvent::MouseMove, position8, globalposition8, Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(view.viewport(), &mv); }
+    QCOMPARE(ic.eventType, QEvent::None);
+
+    {   QMouseEvent mv(QEvent::MouseMove, position27, globalposition27, Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(view.viewport(), &mv); }
+    QCOMPARE(ic.eventType, QEvent::MouseMove);
+    QCOMPARE(ic.eventPosition, position27);
+    QCOMPARE(ic.eventGlobalPosition, globalposition27);
+    QCOMPARE(ic.eventButton, Qt::LeftButton);
+    QCOMPARE(ic.eventModifiers, Qt::NoModifier);
+    QVERIFY(ic.cursor >= 14 && ic.cursor <= 16);    // 15 is expected but some platforms may be off by one.
+    ic.eventType = QEvent::None;
+
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::NoModifier, position27);
+    QCOMPARE(ic.eventType, QEvent::MouseButtonRelease);
+    QCOMPARE(ic.eventPosition, position27);
+    QCOMPARE(ic.eventGlobalPosition, globalposition27);
+    QCOMPARE(ic.eventButton, Qt::LeftButton);
+    QCOMPARE(ic.eventModifiers, Qt::NoModifier);
+    QVERIFY(ic.cursor >= 14 && ic.cursor <= 16);
+    ic.eventType = QEvent::None;
+
+    // And in the other direction.
+    QTest::mouseDClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, position27);
+    QCOMPARE(ic.eventType, QEvent::MouseButtonDblClick);
+    QCOMPARE(ic.eventPosition, position27);
+    QCOMPARE(ic.eventGlobalPosition, globalposition27);
+    QCOMPARE(ic.eventButton, Qt::LeftButton);
+    QCOMPARE(ic.eventModifiers, Qt::ControlModifier);
+    QVERIFY(ic.cursor >= 14 && ic.cursor <= 16);
+    ic.eventType = QEvent::None;
+
+    QTest::mousePress(view.viewport(), Qt::RightButton, Qt::ControlModifier, position27);
+    QCOMPARE(ic.eventType, QEvent::MouseButtonPress);
+    QCOMPARE(ic.eventPosition, position27);
+    QCOMPARE(ic.eventGlobalPosition, globalposition27);
+    QCOMPARE(ic.eventButton, Qt::RightButton);
+    QCOMPARE(ic.eventModifiers, Qt::ControlModifier);
+    QVERIFY(ic.cursor >= 14 && ic.cursor <= 16);
+    ic.eventType = QEvent::None;
+
+    {   QMouseEvent mv(QEvent::MouseMove, position20, globalposition20, Qt::RightButton, Qt::RightButton,Qt::ControlModifier);
+        QApplication::sendEvent(view.viewport(), &mv); }
+    QCOMPARE(ic.eventType, QEvent::MouseMove);
+    QCOMPARE(ic.eventPosition, position20);
+    QCOMPARE(ic.eventGlobalPosition, globalposition20);
+    QCOMPARE(ic.eventButton, Qt::RightButton);
+    QCOMPARE(ic.eventModifiers, Qt::ControlModifier);
+    QVERIFY(ic.cursor >= 7 && ic.cursor <= 9);
+    ic.eventType = QEvent::None;
+
+    {   QMouseEvent mv(QEvent::MouseMove, position2, globalPosition2, Qt::RightButton, Qt::RightButton,Qt::ControlModifier);
+        QApplication::sendEvent(view.viewport(), &mv); }
+    QCOMPARE(ic.eventType, QEvent::None);
+
+    QTest::mouseRelease(view.viewport(), Qt::RightButton, Qt::ControlModifier, position2);
+    QCOMPARE(ic.eventType, QEvent::MouseButtonRelease);
+    QCOMPARE(ic.eventPosition, position2);
+    QCOMPARE(ic.eventGlobalPosition, globalPosition2);
+    QCOMPARE(ic.eventButton, Qt::RightButton);
+    QCOMPARE(ic.eventModifiers, Qt::ControlModifier);
+    QVERIFY(ic.cursor < 0);
+    ic.eventType = QEvent::None;
 }
 
 QTEST_MAIN(tst_qdeclarativetextinput)

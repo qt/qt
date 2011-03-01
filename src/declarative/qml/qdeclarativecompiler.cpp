@@ -618,7 +618,7 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
         out->types << ref;
     }
 
-    Object *root = unit->parser().tree();
+    QDeclarativeParser::Object *root = unit->parser().tree();
     Q_ASSERT(root);
 
     this->engine = engine;
@@ -647,7 +647,7 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
     return !isError();
 }
 
-void QDeclarativeCompiler::compileTree(Object *tree)
+void QDeclarativeCompiler::compileTree(QDeclarativeParser::Object *tree)
 {
     compileState.root = tree;
     componentStat.lineNumber = tree->location.start.line;
@@ -708,14 +708,14 @@ void QDeclarativeCompiler::compileTree(Object *tree)
         enginePrivate->registerCompositeType(output);
 }
 
-static bool ValuePtrLessThan(const Value *t1, const Value *t2) 
+static bool ValuePtrLessThan(const QDeclarativeParser::Value *t1, const QDeclarativeParser::Value *t2)
 {
     return t1->location.start.line < t2->location.start.line ||
            (t1->location.start.line == t2->location.start.line &&
             t1->location.start.column < t2->location.start.column);
 }
 
-bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
+bool QDeclarativeCompiler::buildObject(QDeclarativeParser::Object *obj, const BindingContext &ctxt)
 {
     componentStat.objects++;
 
@@ -792,7 +792,7 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
 
                 defaultProperty->values  = obj->defaultProperty->values;
                 defaultProperty->values += explicitProperty->values;
-                foreach(Value *value, defaultProperty->values)
+                foreach(QDeclarativeParser::Value *value, defaultProperty->values)
                     value->addref();
                 qSort(defaultProperty->values.begin(), defaultProperty->values.end(), ValuePtrLessThan);
 
@@ -1255,7 +1255,7 @@ bool QDeclarativeCompiler::buildComponent(QDeclarativeParser::Object *obj,
     if (!obj->dynamicSlots.isEmpty())
         COMPILE_EXCEPTION(obj, tr("Component objects cannot declare new functions."));
 
-    Object *root = 0;
+    QDeclarativeParser::Object *root = 0;
     if (obj->defaultProperty && obj->defaultProperty->values.count())
         root = obj->defaultProperty->values.first()->object;
 
@@ -1296,7 +1296,7 @@ bool QDeclarativeCompiler::buildComponentFromRoot(QDeclarativeParser::Object *ob
 // Build a sub-object.  A sub-object is one that was not created directly by
 // QML - such as a grouped property object, or an attached object.  Sub-object's
 // can't have an id, involve a custom parser, have attached properties etc.
-bool QDeclarativeCompiler::buildSubObject(Object *obj, const BindingContext &ctxt)
+bool QDeclarativeCompiler::buildSubObject(QDeclarativeParser::Object *obj, const BindingContext &ctxt)
 {
     Q_ASSERT(obj->metatype);
     Q_ASSERT(!obj->defaultProperty);
@@ -1609,7 +1609,7 @@ void QDeclarativeCompiler::genListProperty(QDeclarativeParser::Property *prop,
     output->bytecode << fetch;
 
     for (int ii = 0; ii < prop->values.count(); ++ii) {
-        Value *v = prop->values.at(ii);
+        QDeclarativeParser::Value *v = prop->values.at(ii);
 
         if (v->type == Value::CreatedObject) {
 
@@ -1897,7 +1897,7 @@ bool QDeclarativeCompiler::buildValueTypeProperty(QObject *type,
         if (prop->values.count() > 1) {
             COMPILE_EXCEPTION(prop, tr("Single property assignment expected"));
         } else if (prop->values.count()) {
-            Value *value = prop->values.at(0);
+            QDeclarativeParser::Value *value = prop->values.at(0);
 
             if (value->object) {
                 COMPILE_EXCEPTION(prop, tr("Unexpected object assignment"));
@@ -1926,7 +1926,7 @@ bool QDeclarativeCompiler::buildValueTypeProperty(QObject *type,
         }
 
         for (int ii = 0; ii < prop->onValues.count(); ++ii) {
-            Value *v = prop->onValues.at(ii);
+            QDeclarativeParser::Value *v = prop->onValues.at(ii);
             Q_ASSERT(v->object);
 
             COMPILE_CHECK(buildPropertyOnAssignment(prop, obj, baseObj, v, ctxt)); 
@@ -1956,7 +1956,7 @@ bool QDeclarativeCompiler::buildListProperty(QDeclarativeParser::Property *prop,
 
     bool assignedBinding = false;
     for (int ii = 0; ii < prop->values.count(); ++ii) {
-        Value *v = prop->values.at(ii);
+        QDeclarativeParser::Value *v = prop->values.at(ii);
         if (v->object) {
             v->type = Value::CreatedObject;
             COMPILE_CHECK(buildObject(v->object, ctxt));
@@ -2011,7 +2011,7 @@ bool QDeclarativeCompiler::buildPropertyAssignment(QDeclarativeParser::Property 
         COMPILE_EXCEPTION(prop->values.at(0), tr( "Cannot assign multiple values to a singular property") );
 
     for (int ii = 0; ii < prop->values.count(); ++ii) {
-        Value *v = prop->values.at(ii);
+        QDeclarativeParser::Value *v = prop->values.at(ii);
         if (v->object) {
 
             COMPILE_CHECK(buildPropertyObjectAssignment(prop, obj, v, ctxt));
@@ -2024,7 +2024,7 @@ bool QDeclarativeCompiler::buildPropertyAssignment(QDeclarativeParser::Property 
     }
 
     for (int ii = 0; ii < prop->onValues.count(); ++ii) {
-        Value *v = prop->onValues.at(ii);
+        QDeclarativeParser::Value *v = prop->onValues.at(ii);
 
         Q_ASSERT(v->object);
         COMPILE_CHECK(buildPropertyOnAssignment(prop, obj, obj, v, ctxt));
@@ -2379,7 +2379,7 @@ bool QDeclarativeCompiler::mergeDynamicMetaProperties(QDeclarativeParser::Object
             COMPILE_EXCEPTION(property, tr("Invalid property nesting"));
 
         for (int ii = 0; ii < p.defaultValue->values.count(); ++ii) {
-            Value *v = p.defaultValue->values.at(ii);
+            QDeclarativeParser::Value *v = p.defaultValue->values.at(ii);
             v->addref();
             property->values.append(v);
         }
@@ -2672,7 +2672,7 @@ static QStringList astNodeToStringList(QDeclarativeJS::AST::Node *node)
 
 bool QDeclarativeCompiler::compileAlias(QMetaObjectBuilder &builder,
                                         QByteArray &data,
-                                        Object *obj,
+                                        QDeclarativeParser::Object *obj,
                                         const Object::DynamicProperty &prop)
 {
     if (!prop.defaultValue)
@@ -2695,7 +2695,7 @@ bool QDeclarativeCompiler::compileAlias(QMetaObjectBuilder &builder,
     if (!compileState.ids.contains(alias.at(0)))
         COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias reference. Unable to find id \"%1\"").arg(alias.at(0)));
 
-    Object *idObject = compileState.ids[alias.at(0)];
+    QDeclarativeParser::Object *idObject = compileState.ids[alias.at(0)];
 
     QByteArray typeName;
 
@@ -2878,7 +2878,7 @@ bool QDeclarativeCompiler::completeComponentBuild()
     componentStat.ids = compileState.ids.count();
 
     for (int ii = 0; ii < compileState.aliasingObjects.count(); ++ii) {
-        Object *aliasObject = compileState.aliasingObjects.at(ii);
+        QDeclarativeParser::Object *aliasObject = compileState.aliasingObjects.at(ii);
         COMPILE_CHECK(buildDynamicMeta(aliasObject, ResolveAliases));
     }
 
