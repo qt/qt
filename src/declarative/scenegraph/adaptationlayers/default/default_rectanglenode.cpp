@@ -62,6 +62,8 @@ DefaultRectangleNode::DefaultRectangleNode(MaterialPreference preference, QSGCon
     , m_context(context)
 {
     setGeometry(&m_default_geometry);
+    setMaterial(&m_fill_material);
+    m_border_material.setColor(QColor(0, 0, 0));
 
     m_material_type = TypeFlat;
 
@@ -89,7 +91,6 @@ GeometryNode *DefaultRectangleNode::border()
 {
     if (!m_border) {
         m_border = new GeometryNode;
-        m_border_material.setColor(m_pen_color);
         m_border->setMaterial(&m_border_material);
         QSGGeometry *geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 0);
         m_border->setGeometry(geometry);
@@ -108,9 +109,8 @@ void DefaultRectangleNode::setRect(const QRectF &rect)
 
 void DefaultRectangleNode::setColor(const QColor &color)
 {
-    if (color == m_color)
+    if (color == m_fill_material.color())
         return;
-    m_color = color;
     if (m_gradient_stops.isEmpty()) {
         Q_ASSERT(m_material_type == TypeFlat);
         m_fill_material.setColor(color);
@@ -120,13 +120,13 @@ void DefaultRectangleNode::setColor(const QColor &color)
 
 void DefaultRectangleNode::setPenColor(const QColor &color)
 {
-    if (color == m_pen_color)
+    if (color == m_border_material.color())
         return;
-    m_border_material.setColor(m_pen_color);
+    m_border_material.setColor(color);
     border()->setMaterial(&m_border_material); // Indicate that the material state has changed.
 }
 
-void DefaultRectangleNode::setPenWidth(int width)
+void DefaultRectangleNode::setPenWidth(qreal width)
 {
     if (width == m_pen_width)
         return;
@@ -159,7 +159,6 @@ void DefaultRectangleNode::setGradientStops(const QGradientStops &stops)
             delete opaqueMaterial();
             setOpaqueMaterial(0);
 
-            m_fill_material.setColor(m_color);
             setMaterial(&m_fill_material);
             m_material_type = TypeFlat;
 
@@ -259,7 +258,7 @@ struct TextureVertex
 void DefaultRectangleNode::updateGeometry()
 {
     // fast path for the simple case...
-    if ((m_pen_width == 0 || m_pen_color.alpha() == 0)
+    if ((m_pen_width == 0 || m_border_material.color().alpha() == 0)
             && m_radius == 0
             && m_material_type == TypeFlat) {
         QSGGeometry::updateRectGeometry(&m_default_geometry, m_rect);
@@ -291,7 +290,7 @@ void DefaultRectangleNode::updateGeometry()
     QVector<Vertex> borderVertexData;
     QVector<ushort> borderIndexData;
 
-    Color4ub fillColor = colorToColor4ub(m_color);
+    Color4ub fillColor = colorToColor4ub(m_fill_material.color());
     const QGradientStops &stops = m_gradient_stops;
 
     // Calculate from where in the texture to sample gradient colours.

@@ -1276,6 +1276,7 @@ bool QDeclarativeCompiler::buildComponentFromRoot(QDeclarativeParser::Object *ob
 
     compileState = ComponentCompileState();
     compileState.root = obj;
+    compileState.nested = true;
 
     componentStat = ComponentStat();
     componentStat.lineNumber = obj->location.start.line;
@@ -2405,7 +2406,7 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
     newClassName.append("_QML_");
     int idx = classIndexCounter()->fetchAndAddRelaxed(1);
     newClassName.append(QByteArray::number(idx));
-    if (compileState.root == obj) {
+    if (compileState.root == obj && !compileState.nested) {
         QString path = output->url.path();
         int lastSlash = path.lastIndexOf(QLatin1Char('/'));
         if (lastSlash > -1) {

@@ -52,6 +52,7 @@
 #include <QtGui/qmatrix4x4.h>
 #include <QtGui/qinputcontext.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/qabstractanimation.h>
 
 #include <private/qdeclarativedebugtrace_p.h>
 
@@ -83,6 +84,23 @@ have a scope focused item), and the other items will have their focus cleared.
 // #define TOUCH_DEBUG
 // #define DIRTY_DEBUG
 // #define THREAD_DEBUG
+
+class QSGAnimationDriver : public QAnimationDriver
+{
+public:
+    QSGAnimationDriver(QWidget *w)
+        : widget(w)
+    {
+        Q_ASSERT(w);
+    }
+
+    void started()
+    {
+        widget->update();
+    }
+
+    QWidget *widget;
+};
 
 QSGItem::UpdatePaintNodeData::UpdatePaintNodeData()
 : transformNode(0)
@@ -129,6 +147,9 @@ void QSGCanvas::paintEvent(QPaintEvent *)
     Q_D(QSGCanvas);
 
     if (!d->threadedRendering) {
+        if (d->animationDriver->isRunning())
+            d->animationDriver->advance();
+
         Q_ASSERT(d->context);
 
         d->polishItems();
@@ -141,6 +162,9 @@ void QSGCanvas::paintEvent(QPaintEvent *)
         d->renderSceneGraph();
 
         QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Painting);
+
+        if (d->animationDriver->isRunning())
+            update();
     }
 }
 
@@ -176,10 +200,13 @@ void QSGCanvas::showEvent(QShowEvent *e)
         d->mutex.unlock();
     } else {
         makeCurrent();
-        d->initializeSceneGraph();
-        d->animationDriver = d->context->createAnimationDriver(this);
-        if (d->animationDriver)
-            d->animationDriver->install();
+
+        if (!d->context) {
+            d->initializeSceneGraph();
+            d->animationDriver = new QSGAnimationDriver(this);
+            if (d->animationDriver)
+                d->animationDriver->install();
+        }
     }
 }
 
@@ -754,8 +781,15 @@ void QSGCanvasPrivate::cleanup(Node *n)
     q->maybeUpdate();
 }
 
+static QGLFormat tweakFormat(const QGLFormat &format = QGLFormat::defaultFormat())
+{
+    QGLFormat f = format;
+    f.setSwapInterval(1);
+    return f;
+}
+
 QSGCanvas::QSGCanvas(QWidget *parent, Qt::WindowFlags f)
-    : QGLWidget(*(new QSGCanvasPrivate), QGLFormat(), parent, (QGLWidget *) 0, f)
+    : QGLWidget(*(new QSGCanvasPrivate), tweakFormat(), parent, (QGLWidget *) 0, f)
 {
     Q_D(QSGCanvas);
 
@@ -763,7 +797,7 @@ QSGCanvas::QSGCanvas(QWidget *parent, Qt::WindowFlags f)
 }
 
 QSGCanvas::QSGCanvas(const QGLFormat &format, QWidget *parent, Qt::WindowFlags f)
-    : QGLWidget(*(new QSGCanvasPrivate), format, parent, (QGLWidget *) 0, f)
+    : QGLWidget(*(new QSGCanvasPrivate), tweakFormat(format), parent, (QGLWidget *) 0, f)
 {
     Q_D(QSGCanvas);
 
@@ -771,7 +805,7 @@ QSGCanvas::QSGCanvas(const QGLFormat &format, QWidget *parent, Qt::WindowFlags f
 }
 
 QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, QWidget *parent, Qt::WindowFlags f)
-: QGLWidget(dd, QGLFormat(), parent, 0, f)
+: QGLWidget(dd, tweakFormat(), parent, 0, f)
 {
     Q_D(QSGCanvas);
 
@@ -779,7 +813,7 @@ QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, QWidget *parent, Qt::WindowFlags f)
 }
 
 QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, const QGLFormat &format, QWidget *parent, Qt::WindowFlags f)
-: QGLWidget(dd, format, parent, 0, f)
+: QGLWidget(dd, tweakFormat(format), parent, 0, f)
 {
     Q_D(QSGCanvas);
 

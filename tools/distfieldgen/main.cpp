@@ -58,6 +58,7 @@ static void usage()
     qWarning("  -d <directory>................................ output directory");
     qWarning("  --no-multithread.............................. don't use multiple threads to render distance-fields");
     qWarning("  --force-all-styles............................ force rendering of styles Normal, Bold, Italic and Bold Italic");
+    qWarning("  -styles \"style1,style2,..\".................... force rendering of specified styles");
 
     qWarning(" ");
     exit(1);
@@ -103,21 +104,20 @@ QMutex DistFieldGenTask::m_mutex;
 
 static void generateDistanceFieldForFont(const QFont &font, const QString &destinationDir, bool multithread)
 {
+    DistanceFieldFontAtlas atlas(font);
     QFontDatabase db;
     QString fontString = font.family() + QLatin1String(" ") + db.styleString(font);
-    qWarning("> Generating distance-field for font '%s'", fontString.toLatin1().constData());
-
-    DistanceFieldFontAtlas atlas(font);
+    qWarning("> Generating distance-field for font '%s' (%d glyphs)", fontString.toLatin1().constData(), atlas.glyphCount());
 
     QMap<int, QImage> distfields;
-    for (int i = 0; i < 0xFF; ++i) {
+    for (int i = 0; i < atlas.glyphCount(); ++i) {
         if (multithread) {
-            DistFieldGenTask *task = new DistFieldGenTask(&atlas, i, 0xFF, &distfields);
+            DistFieldGenTask *task = new DistFieldGenTask(&atlas, i, atlas.glyphCount(), &distfields);
             QThreadPool::globalInstance()->start(task);
         } else {
             QImage df = atlas.renderDistanceFieldGlyph(i);
             distfields.insert(i, df);
-            printProgress(float(distfields.count()) / 0xFF * 100);
+            printProgress(float(distfields.count()) / atlas.glyphCount() * 100);
         }
     }
 
@@ -184,6 +184,13 @@ int main(int argc, char *argv[])
             destDir = args.at(++i);
     }
 
+    QStringList customStyles;
+    if (args.contains(QLatin1String("-styles"))) {
+        int index = args.indexOf(QLatin1String("-styles"));
+        QString styles = args.at(index + 1);
+        customStyles = styles.split(QLatin1String(","));
+    }
+
     // Load the font
     int fontID = QFontDatabase::addApplicationFont(fontFile);
     if (fontID == -1) {
@@ -202,11 +209,18 @@ int main(int argc, char *argv[])
     QStringList families = QFontDatabase::applicationFontFamilies(fontID);
     int famCount = families.count();
     for (int i = 0; i < famCount; ++i) {
-        QStringList styles = forceAllStyles ? allStyles : fontDatabase.styles(families.at(i));
+        QStringList styles;
+        if (forceAllStyles)
+            styles = allStyles;
+        else if (customStyles.count() > 0)
+            styles = customStyles;
+        else
+            styles = fontDatabase.styles(families.at(i));
+
         int styleCount = styles.count();
         for (int j = 0; j < styleCount; ++j) {
             QFont font;
-            if (forceAllStyles) {
+            if (forceAllStyles || customStyles.count() > 0) {
                 int weight = styles.at(j).contains(QLatin1String("Bold")) ? QFont::Bold : QFont::Normal;
                 font = QFont(families.at(i), 10, weight, styles.at(j).contains(QLatin1String("Italic")));
             } else {

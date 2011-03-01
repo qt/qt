@@ -81,6 +81,8 @@ public:
     QString distanceFieldDir() const;
     QString distanceFieldFileName() const;
 
+    int glyphCount() const;
+
     static bool useDistanceFieldForFont(const QFont &font);
 
 private:
@@ -91,6 +93,7 @@ private:
     QFontEngine *m_fontEngine;
     QFontEngine *m_referenceFontEngine;
     QString m_distanceFieldFileName;
+    int m_glyphCount;
 
     static QHash<QString, bool> m_distfield_availability;
     static QHash<QString, QSGTextureRef> m_textures;

@@ -56,14 +56,13 @@ void qt_disableFontHinting(QFont &font)
     fontEngine->setDefaultHintStyle(QFontEngine::HintNone);
 }
 
-#define DISTANCEFIELD_CHARRANGE 0xFF
-#define DISTANCEFIELD_TEXTURESIZE 2048
-#define DISTANCEFIELD_BASEFONTSIZE 54
-#define DISTANCEFIELD_TILESIZE 64
-#define DISTANCEFIELD_SCALE 16
-#define DISTANCEFIELD_RADIUS 80
-#define DISTANCEFIELD_MARGIN 50
-#define DISTANCEFIELD_MARGIN_THRESHOLD 0.31
+#define QT_DISTANCEFIELD_TEXTURESIZE 2048
+#define QT_DISTANCEFIELD_BASEFONTSIZE 54
+#define QT_DISTANCEFIELD_TILESIZE 64
+#define QT_DISTANCEFIELD_SCALE 16
+#define QT_DISTANCEFIELD_RADIUS 80
+#define QT_DISTANCEFIELD_MARGIN 50
+#define QT_DISTANCEFIELD_MARGIN_THRESHOLD 0.31
 
 static float mindist(const QImage &in, int w, int h, int x, int y, int r, float maxdist)
 {
@@ -99,14 +98,14 @@ static float mindist(const QImage &in, int w, int h, int x, int y, int r, float 
 
 static QImage renderDistanceField(const QImage &in)
 {
-    int outWidth = in.width() / DISTANCEFIELD_SCALE;
-    int outHeight = in.height() / DISTANCEFIELD_SCALE;
+    int outWidth = in.width() / QT_DISTANCEFIELD_SCALE;
+    int outHeight = in.height() / QT_DISTANCEFIELD_SCALE;
     QImage df(outWidth, outHeight, QImage::Format_ARGB32_Premultiplied);
     int x, y, ix, iy;
     float d;
     float sx = in.width() / float(outWidth);
     float sy = in.height() / float(outHeight);
-    int r = DISTANCEFIELD_RADIUS;
+    int r = QT_DISTANCEFIELD_RADIUS;
     float maxsq = 2 * r * r;
     float max = qSqrt(maxsq);
 
@@ -130,10 +129,14 @@ DistanceFieldFontAtlas::DistanceFieldFontAtlas(const QFont &font)
 {
     m_font = font;
     m_fontEngine = QFontPrivate::get(m_font)->engineForScript(QUnicodeTables::Common);
+    if (m_fontEngine->type() == QFontEngine::Multi) {
+        QFontEngineMulti *fem = static_cast<QFontEngineMulti *>(m_fontEngine);
+        m_fontEngine = fem->engine(0);
+    }
     qt_disableFontHinting(m_font);
 
     QFont referenceFont = m_font;
-    referenceFont.setPixelSize(DISTANCEFIELD_BASEFONTSIZE);
+    referenceFont.setPixelSize(QT_DISTANCEFIELD_BASEFONTSIZE);
     qt_disableFontHinting(referenceFont);
     m_referenceFontEngine = QFontPrivate::get(referenceFont)->engineForScript(QUnicodeTables::Common);
     if (m_referenceFontEngine->type() == QFontEngine::Multi) {
@@ -146,6 +149,8 @@ DistanceFieldFontAtlas::DistanceFieldFontAtlas(const QFont &font)
     QString italic = m_font.italic() ? QLatin1String("i") : QLatin1String("");
     QString bold = m_font.weight() > QFont::Normal ? QLatin1String("b") : QLatin1String("");
     m_distanceFieldFileName = basename + bold + italic + QLatin1String(".png");
+
+    m_glyphCount = m_fontEngine->glyphCount();
 }
 
 bool DistanceFieldFontAtlas::distanceFieldAvailable() const
@@ -178,8 +183,8 @@ QSGTextureRef DistanceFieldFontAtlas::texture()
 
 QSize DistanceFieldFontAtlas::atlasSize() const
 {
-    const int texWidth = DISTANCEFIELD_TEXTURESIZE;
-    const int texHeight = ((DISTANCEFIELD_CHARRANGE * DISTANCEFIELD_TILESIZE) / texWidth + 1) * DISTANCEFIELD_TILESIZE;
+    const int texWidth = QT_DISTANCEFIELD_TEXTURESIZE;
+    const int texHeight = ((glyphCount() * QT_DISTANCEFIELD_TILESIZE) / texWidth + 1) * QT_DISTANCEFIELD_TILESIZE;
     return QSize(texWidth, texHeight);
 }
 
@@ -193,11 +198,11 @@ DistanceFieldFontAtlas::Metrics DistanceFieldFontAtlas::glyphMetrics(glyph_t gly
     m_fontEngine->addGlyphsToPath(&glyph, &p, 1, &path, 0);
 
     float margin = 0.0;
-    if (scaleRatioFromRefSize() <= DISTANCEFIELD_MARGIN_THRESHOLD)
-        margin = DISTANCEFIELD_MARGIN / qreal(DISTANCEFIELD_SCALE) * scaleRatioFromRefSize();
+    if (scaleRatioFromRefSize() <= QT_DISTANCEFIELD_MARGIN_THRESHOLD)
+        margin = QT_DISTANCEFIELD_MARGIN / qreal(QT_DISTANCEFIELD_SCALE) * scaleRatioFromRefSize();
 
-    m.width = path.boundingRect().width() + margin;
-    m.height = path.boundingRect().height() + margin;
+    m.width = path.boundingRect().width() + margin * 2;
+    m.height = path.boundingRect().height() + margin * 2;
     m.baselineX = path.boundingRect().x() - margin;
     m.baselineY = -path.boundingRect().y() + margin;
 
@@ -206,6 +211,9 @@ DistanceFieldFontAtlas::Metrics DistanceFieldFontAtlas::glyphMetrics(glyph_t gly
 
 DistanceFieldFontAtlas::TexCoord DistanceFieldFontAtlas::glyphTexCoord(glyph_t glyph) const
 {
+    if (glyph >= glyphCount())
+        qWarning("Warning: distance-field glyph is not available with index %d", glyph);
+
     TexCoord c;
 
     const QSize texSize = atlasSize();
@@ -216,15 +224,15 @@ DistanceFieldFontAtlas::TexCoord DistanceFieldFontAtlas::glyphTexCoord(glyph_t g
     m_referenceFontEngine->addGlyphsToPath(&glyph, &p, 1, &path, 0);
 
     float margin = 0.0;
-    if (scaleRatioFromRefSize() <= DISTANCEFIELD_MARGIN_THRESHOLD)
-        margin = DISTANCEFIELD_MARGIN / qreal(DISTANCEFIELD_SCALE);
+    if (scaleRatioFromRefSize() <= QT_DISTANCEFIELD_MARGIN_THRESHOLD)
+        margin = QT_DISTANCEFIELD_MARGIN / qreal(QT_DISTANCEFIELD_SCALE);
 
-    c.xMargin = (DISTANCEFIELD_RADIUS / qreal(DISTANCEFIELD_SCALE) - margin) / texSize.width();
-    c.yMargin = (DISTANCEFIELD_RADIUS / qreal(DISTANCEFIELD_SCALE) - margin) / texSize.height();
-    c.x = ((glyph * DISTANCEFIELD_TILESIZE) % texSize.width()) / qreal(texSize.width());
-    c.y = ((glyph * DISTANCEFIELD_TILESIZE) / texSize.width()) * DISTANCEFIELD_TILESIZE / qreal(texSize.height());
-    c.width = (path.boundingRect().width() + margin) / qreal(texSize.width());
-    c.height = (path.boundingRect().height() + margin) / qreal(texSize.height());
+    c.xMargin = (QT_DISTANCEFIELD_RADIUS / qreal(QT_DISTANCEFIELD_SCALE) - margin) / texSize.width();
+    c.yMargin = (QT_DISTANCEFIELD_RADIUS / qreal(QT_DISTANCEFIELD_SCALE) - margin) / texSize.height();
+    c.x = ((glyph * QT_DISTANCEFIELD_TILESIZE) % texSize.width()) / qreal(texSize.width());
+    c.y = ((glyph * QT_DISTANCEFIELD_TILESIZE) / texSize.width()) * QT_DISTANCEFIELD_TILESIZE / qreal(texSize.height());
+    c.width = (path.boundingRect().width() + margin * 2) / qreal(texSize.width());
+    c.height = (path.boundingRect().height() + margin * 2) / qreal(texSize.height());
 
     return c;
 }
@@ -232,7 +240,7 @@ DistanceFieldFontAtlas::TexCoord DistanceFieldFontAtlas::glyphTexCoord(glyph_t g
 QImage DistanceFieldFontAtlas::renderDistanceFieldGlyph(glyph_t glyph) const
 {
     QFont renderFont = m_font;
-    renderFont.setPixelSize(DISTANCEFIELD_BASEFONTSIZE * DISTANCEFIELD_SCALE);
+    renderFont.setPixelSize(QT_DISTANCEFIELD_BASEFONTSIZE * QT_DISTANCEFIELD_SCALE);
     qt_disableFontHinting(renderFont);
 
     QFontEngine *fontEngine = QFontPrivate::get(renderFont)->engineForScript(QUnicodeTables::Common);
@@ -251,13 +259,13 @@ QImage DistanceFieldFontAtlas::renderDistanceFieldGlyph(glyph_t glyph) const
     if (glyphHeight < 1)
         glyphHeight = 1;
 
-    QImage glyphImage(glyphWidth + DISTANCEFIELD_RADIUS * 2, glyphHeight + DISTANCEFIELD_RADIUS * 2, QImage::Format_ARGB32_Premultiplied);
+    QImage glyphImage(glyphWidth + QT_DISTANCEFIELD_RADIUS * 2, glyphHeight + QT_DISTANCEFIELD_RADIUS * 2, QImage::Format_ARGB32_Premultiplied);
     glyphImage.fill(Qt::transparent);
     QPainter p(&glyphImage);
     p.setRenderHint(QPainter::Antialiasing);
     p.setPen(Qt::NoPen);
     p.setBrush(Qt::black);
-    p.translate(-path.boundingRect().x() + DISTANCEFIELD_RADIUS, -path.boundingRect().y() + DISTANCEFIELD_RADIUS);
+    p.translate(-path.boundingRect().x() + QT_DISTANCEFIELD_RADIUS, -path.boundingRect().y() + QT_DISTANCEFIELD_RADIUS);
     p.drawPath(path);
     p.end();
 
@@ -267,7 +275,7 @@ QImage DistanceFieldFontAtlas::renderDistanceFieldGlyph(glyph_t glyph) const
 
 qreal DistanceFieldFontAtlas::scaleRatioFromRefSize() const
 {
-    return m_fontEngine->fontDef.pixelSize / DISTANCEFIELD_BASEFONTSIZE;
+    return m_fontEngine->fontDef.pixelSize / QT_DISTANCEFIELD_BASEFONTSIZE;
 }
 
 QImage DistanceFieldFontAtlas::distanceFieldAtlas() const
@@ -352,4 +360,9 @@ QString DistanceFieldFontAtlas::distanceFieldDir() const
 QString DistanceFieldFontAtlas::distanceFieldFileName() const
 {
     return m_distanceFieldFileName;
+}
+
+int DistanceFieldFontAtlas::glyphCount() const
+{
+    return m_glyphCount;
 }
