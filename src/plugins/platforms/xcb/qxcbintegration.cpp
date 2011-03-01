@@ -136,7 +136,12 @@ bool QXcbIntegration::hasOpenGL() const
         wasEglInitialized = eglInitialize(disp,&major,&minor);
     }
     return wasEglInitialized;
-#else
-    return false;
+#elif defined(XCB_USE_DRI2)
+    if (m_connection->hasSupportForDri2()) {
+        return true;
+    }
 #endif
+    return false;
+}
+
 }

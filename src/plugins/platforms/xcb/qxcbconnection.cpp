@@ -46,16 +46,38 @@
 
 #include <QtAlgorithms>
 #include <QSocketNotifier>
+#include <QtGui/private/qapplication_p.h>
+
+#include <QtCore/QDebug>
 
 #include <stdio.h>
+#include <errno.h>
 
 #ifdef XCB_USE_XLIB
 #include <X11/Xlib.h>
 #include <X11/Xlib-xcb.h>
 #endif
 
+#ifdef XCB_USE_DRI2
+#include <xcb/dri2.h>
+#include <xcb/xfixes.h>
+extern "C" {
+#include <xf86drm.h>
+}
+#define MESA_EGL_NO_X11_HEADERS
+#define EGL_EGLEXT_PROTOTYPES
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#endif
+
 QXcbConnection::QXcbConnection(const char *displayName)
     : m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
+#ifdef XCB_USE_DRI2
+    , m_dri2_major(0)
+    , m_dri2_minor(0)
+    , m_dri2_support_probed(false)
+    , m_has_support_for_dri2(false)
+#endif
 {
     int primaryScreen = 0;
 
@@ -67,8 +89,8 @@ QXcbConnection::QXcbConnection(const char *displayName)
     m_xlib_display = dpy;
 #else
     m_connection = xcb_connect(m_displayName.constData(), &primaryScreen);
-#endif
 
+#endif //XCB_USE_XLIB
     m_setup = xcb_get_setup(xcb_connection());
 
     xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_setup);
@@ -85,6 +107,10 @@ QXcbConnection::QXcbConnection(const char *displayName)
     m_keyboard = new QXcbKeyboard(this);
 
     initializeAllAtoms();
+
+#ifdef XCB_USE_DRI2
+    initializeDri2();
+#endif
 }
 
 QXcbConnection::~QXcbConnection()
@@ -124,7 +150,7 @@ break;
 } \
 break;
 
-#define XCB_EVENT_DEBUG
+//#define XCB_EVENT_DEBUG
 
 void printXcbEvent(const char *message, xcb_generic_event_t *event)
 {
@@ -405,3 +431,104 @@ void QXcbConnection::initializeAllAtoms() {
     for (i = 0; i < QXcbAtom::NAtoms; ++i)
         m_allAtoms[i] = xcb_intern_atom_reply(xcb_connection(), cookies[i], 0)->atom;
 }
+
+#ifdef XCB_USE_DRI2
+void QXcbConnection::initializeDri2()
+{
+    xcb_dri2_connect_cookie_t connect_cookie = xcb_dri2_connect_unchecked (m_connection,
+                                                                           m_screens[0]->root(),
+                                                                           XCB_DRI2_DRIVER_TYPE_DRI);
+
+    xcb_dri2_connect_reply_t *connect = xcb_dri2_connect_reply (m_connection,
+                                                                connect_cookie, NULL);
+
+    if (! connect || connect->driver_name_length + connect->device_name_length == 0) {
+        qDebug() << "Failed to connect to dri2";
+        return;
+    }
+
+    QString dri2DeviceName = QString::fromLocal8Bit(xcb_dri2_connect_device_name (connect),
+                                                    xcb_dri2_connect_device_name_length (connect));
+    delete connect;
+
+    int fd = open(qPrintable(dri2DeviceName), O_RDWR);
+    if (fd < 0) {
+        qDebug() << "InitializeDri2: Could'nt open device << dri2DeviceName";
+        return;
+    }
+
+    drm_magic_t magic;
+    if (drmGetMagic(fd, &magic)) {
+        qDebug() << "Failed to get drmMagic";
+        return;
+    }
+
+    xcb_dri2_authenticate_cookie_t authenticate_cookie = xcb_dri2_authenticate_unchecked(m_connection,
+                                                                                         m_screens[0]->root(), magic);
+    xcb_dri2_authenticate_reply_t *authenticate = xcb_dri2_authenticate_reply(m_connection,
+                                                                              authenticate_cookie, NULL);
+    if (authenticate == NULL || !authenticate->authenticated) {
+        fprintf(stderr, "DRI2: failed to authenticate\n");
+        free(authenticate);
+        return;
+    }
+
+    delete authenticate;
+
+    EGLDisplay display = eglGetDRMDisplayMESA(fd);
+    if (!display) {
+        fprintf(stderr, "failed to create display\n");
+        return;
+    }
+
+    m_egl_display = display;
+    EGLint major,minor;
+    if (!eglInitialize(display, &major, &minor)) {
+        fprintf(stderr, "failed to initialize display\n");
+        return;
+    }
+}
+
+bool QXcbConnection::hasSupportForDri2() const
+{
+    if (!m_dri2_support_probed) {
+        xcb_generic_error_t *error = 0;
+
+        xcb_prefetch_extension_data (m_connection, &xcb_xfixes_id);
+        xcb_prefetch_extension_data (m_connection, &xcb_dri2_id);
+
+        xcb_xfixes_query_version_cookie_t xfixes_query_cookie = xcb_xfixes_query_version(m_connection,
+                                                                                         XCB_XFIXES_MAJOR_VERSION,
+                                                                                         XCB_XFIXES_MINOR_VERSION);
+
+        xcb_dri2_query_version_cookie_t dri2_query_cookie = xcb_dri2_query_version (m_connection,
+                                                                                    XCB_DRI2_MAJOR_VERSION,
+                                                                                    XCB_DRI2_MINOR_VERSION);
+
+        xcb_xfixes_query_version_reply_t *xfixes_query = xcb_xfixes_query_version_reply (m_connection,
+                                                                                         xfixes_query_cookie, &error);
+        if (!xfixes_query || error || xfixes_query->major_version < 2) {
+            delete error;
+            delete xfixes_query;
+            return false;
+        }
+        delete xfixes_query;
+
+        xcb_dri2_query_version_reply_t *dri2_query = xcb_dri2_query_version_reply (m_connection,
+                                                                                   dri2_query_cookie, &error);
+        if (!dri2_query || error) {
+            delete error;
+            delete dri2_query;
+            return false;
+        }
+
+        QXcbConnection *that = const_cast<QXcbConnection *>(this);
+        that->m_dri2_major = dri2_query->major_version;
+        that->m_dri2_minor = dri2_query->minor_version;
+
+        that->m_has_support_for_dri2 = true;
+        that->m_dri2_support_probed = true;
+    }
+    return m_has_support_for_dri2;
+}
+#endif //XCB_USE_DRI2

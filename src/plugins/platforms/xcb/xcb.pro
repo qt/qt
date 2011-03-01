@@ -23,26 +23,36 @@ HEADERS = \
 
 contains(QT_CONFIG, opengl) {
     QT += opengl
-    DEFINES += XCB_USE_XLIB
-    LIBS += -lX11 -lX11-xcb
 
-    contains(QT_CONFIG, opengles2) {
-        DEFINES += XCB_USE_EGL
-        HEADERS += \
-            ../eglconvenience/qeglplatformcontext.h \
-            ../eglconvenience/qeglconvenience.h \
-            ../eglconvenience/qxlibeglintegration.h
+    DEFINES += XCB_USE_DRI2
+    contains(DEFINES, XCB_USE_DRI2) {
+        LIBS += -lxcb-dri2 -lxcb-xfixes -lEGL
 
-        SOURCES += \
-            ../eglconvenience/qeglplatformcontext.cpp \
-            ../eglconvenience/qeglconvenience.cpp \
-            ../eglconvenience/qxlibeglintegration.cpp
+        HEADERS += qdri2context.h
+        SOURCES += qdri2context.cpp
 
-        LIBS += -lEGL
     } else {
-        DEFINES += XCB_USE_GLX
-        HEADERS += qglxintegration.h
-        SOURCES += qglxintegration.cpp
+        DEFINES += XCB_USE_XLIB
+        LIBS += -lX11 -lX11-xcb
+
+        contains(QT_CONFIG, opengles2) {
+            DEFINES += XCB_USE_EGL
+            HEADERS += \
+                ../eglconvenience/qeglplatformcontext.h \
+                ../eglconvenience/qeglconvenience.h \
+                ../eglconvenience/qxlibeglintegration.h
+
+            SOURCES += \
+                ../eglconvenience/qeglplatformcontext.cpp \
+                ../eglconvenience/qeglconvenience.cpp \
+                ../eglconvenience/qxlibeglintegration.cpp
+
+            LIBS += -lEGL
+        } else {
+            DEFINES += XCB_USE_GLX
+            HEADERS += qglxintegration.h
+            SOURCES += qglxintegration.cpp
+        }
     }
 }
 

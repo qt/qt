@@ -43,6 +43,9 @@
 
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
+#ifdef XCB_USE_DRI2
+#include "qdri2context.h"
+#endif
 
 #include <xcb/xcb_icccm.h>
 
@@ -137,7 +140,7 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
                 qFatal("no window!");
             }
     } else
-#endif
+#endif //defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
     {
         m_window = xcb_generate_id(xcb_connection());
 
@@ -437,6 +440,12 @@ QPlatformGLContext *QXcbWindow::glContext() const
         QXcbWindow *that = const_cast<QXcbWindow *>(this);
         that->m_context = new QEGLPlatformContext(display, config, eglContextAttrs.data(), eglSurface, EGL_OPENGL_ES_API);
     }
+#elif defined(XCB_USE_DRI2)
+    if (!m_context) {
+        QXcbWindow *that = const_cast<QXcbWindow *>(this);
+        that->m_context = new QDri2Context(that);
+    }
+
 #endif
     return m_context;
 }
@@ -474,6 +483,11 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     QPlatformWindow::setGeometry(rect);
 
     QWindowSystemInterface::handleGeometryChange(widget(), rect);
+
+#if XCB_USE_DRI2
+    if (m_context)
+        static_cast<QDri2Context *>(m_context)->resize(rect.size());
+#endif
 }
 
 static Qt::MouseButtons translateMouseButtons(int s)
