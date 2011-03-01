@@ -49,10 +49,10 @@ inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine
     Q_ASSERT(engine);
 }
 
-inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args, v8::Handle<v8::Value> callee)
+inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args, v8::Handle<v8::Value> callee, v8::Handle<v8::Object> customThisObject)
     : q_ptr(this), engine(engine), arguments(args), accessorInfo(0),
       context(v8::Persistent<v8::Context>::New(v8::Context::NewFunctionContext())),
-      parent(engine->setCurrentQSContext(this)), previous(0),
+      parent(engine->setCurrentQSContext(this)), previous(0), m_thisObject(v8::Persistent<v8::Object>::New(customThisObject)),
       m_callee(v8::Persistent<v8::Value>::New(callee)), hasArgumentGetter(false)
 {
     Q_ASSERT(engine);
@@ -161,12 +161,14 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::argumentsO
 
 inline v8::Handle<v8::Object> QScriptContextPrivate::thisObject() const
 {
-    if (isNativeFunction()) {
+    // setThisObject() doesn't work for native functions, but the constructor for native function
+    // can set m_thisObject, so we give it higher precedence.
+    if (!m_thisObject.IsEmpty()) {
+        return m_thisObject;
+    } else if (isNativeFunction()) {
         return arguments->This();
     } else if (isNativeAccessor()) {
         return accessorInfo->This();
-    } else if (!m_thisObject.IsEmpty()) {
-        return m_thisObject;
     } else {
         return engine->globalObject();
     }

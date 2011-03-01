@@ -396,6 +396,7 @@ QVariant TestClass::extension(Extension extension,
         } else if (m_callableMode == CallableReturnsArgumentsObject) {
             return qVariantFromValue(ctx->argumentsObject());
         } else if (m_callableMode == CallableInitializesThisObject) {
+            ctx->thisObject().setProperty("foo", QScriptValue(1234));
             engine()->newQObject(ctx->thisObject(), engine());
             return QVariant();
         }
@@ -1102,7 +1103,6 @@ void tst_QScriptClass::extension_Callable_construct()
     cls.setCallableMode(TestClass::CallableReturnsGlobalObject);
     {
         QScriptValue ret = obj.construct();
-        QEXPECT_FAIL("", "Callable extension hasn't been implemented yet", Abort);
         QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
         QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
         QVERIFY(ret.isObject());
@@ -1124,7 +1124,11 @@ void tst_QScriptClass::extension_Callable_construct()
         QScriptValue ret = obj.construct();
         QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
         QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
+        QCOMPARE(ret.property("foo").toInt32(), 1234);
+        // ### The two following fails are not directly related with the Callable construct functionality.
+        QEXPECT_FAIL("", "FIXME: QSEP::newQObject(QScriptValue, QObject, ...) creates new scriptvalue instead of reusing the passed one.", Continue);
         QVERIFY(ret.isQObject());
+        QEXPECT_FAIL("", "FIXME: QSEP::newQObject(QScriptValue, QObject, ...) creates new scriptvalue instead of reusing the passed one.", Continue);
         QCOMPARE(ret.toQObject(), (QObject*)&eng);
     }
     // From JS
@@ -1133,7 +1137,11 @@ void tst_QScriptClass::extension_Callable_construct()
         QScriptValue ret = eng.evaluate("new obj()");
         QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
         QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
+        QCOMPARE(ret.property("foo").toInt32(), 1234);
+        // ### The two following fails are not directly related with the Callable construct functionality.
+        QEXPECT_FAIL("", "FIXME: QSEP::newQObject(QScriptValue, QObject, ...) creates new scriptvalue instead of reusing the passed one.", Continue);
         QVERIFY(ret.isQObject());
+        QEXPECT_FAIL("", "FIXME: QSEP::newQObject(QScriptValue, QObject, ...) creates new scriptvalue instead of reusing the passed one.", Continue);
         QCOMPARE(ret.toQObject(), (QObject*)&eng);
     }
 }

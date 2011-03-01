@@ -236,24 +236,38 @@ v8::Handle<v8::Array> QScriptClassObject::enumerate()
 
 v8::Handle<v8::Value> QScriptClassObject::call(const v8::Arguments& args)
 {
+    v8::HandleScope handleScope;
     QScriptClassObject *data = QScriptV8ObjectWrapperHelper::getDataPointer<QScriptClassObject>(args.Holder());
-    QScriptContextPrivate qScriptContext(data->engine, &args, args.Holder());
 
     // ### Does it make sense to consider call the original object when there's no scriptclass?
     if (!data->scriptClass()) {
         Q_UNIMPLEMENTED();
-        return v8::Handle<v8::Value>();
+        return handleScope.Close(v8::Handle<v8::Value>());
     }
 
-    v8::HandleScope handleScope;
-    if (!data->scriptClass()->userCallback()->supportsExtension(QScriptClass::Callable))
+    QScriptClass *userCallback = data->scriptClass()->userCallback();
+    if (!userCallback->supportsExtension(QScriptClass::Callable))
         return handleScope.Close(v8::ThrowException(v8::Exception::TypeError(v8::String::New("QScriptClass for object doesn't support Callable extension"))));
 
-    QScriptContext *ctx = data->engine->currentContext();
-    Q_ASSERT(ctx);
-    QVariant result = data->scriptClass()->userCallback()->extension(QScriptClass::Callable,
-                                                                     qVariantFromValue(ctx));
-    return handleScope.Close(data->engine->variantToJS(result));
+    v8::Handle<v8::Object> thisObject;
+
+    // v8 doesn't create a new Object to put in This() when the constructor call came from
+    // a callback registered with SetCallAsFunctionHandler().
+    if (args.IsConstructCall()) {
+        thisObject = v8::Object::New();
+        v8::Handle<v8::Value> proto = data->property(v8::String::New("prototype"));
+        if (!proto.IsEmpty() && proto->IsObject())
+            thisObject->SetPrototype(proto);
+    }
+
+    QScriptContextPrivate qScriptContext(data->engine, &args, args.Holder(), thisObject);
+    QScriptContext *ctx = &qScriptContext;
+    Q_ASSERT(ctx == data->engine->currentContext());
+
+    v8::Handle<v8::Value> result = data->engine->variantToJS(userCallback->extension(QScriptClass::Callable, qVariantFromValue(ctx)));
+    if (args.IsConstructCall() && (result.IsEmpty() || !result->IsObject()))
+        return handleScope.Close(thisObject);
+    return handleScope.Close(result);
 }
 
 v8::Handle<v8::FunctionTemplate> QScriptClassObject::createFunctionTemplate(QScriptEnginePrivate *engine)
