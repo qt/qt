@@ -64,7 +64,7 @@ uint qHash(const TexCoordCacheKey &key);
 class Q_DECLARATIVE_EXPORT DistanceFieldFontAtlas
 {
 public:
-    DistanceFieldFontAtlas(const QFont &font);
+    static DistanceFieldFontAtlas *get(const QFont &font);
 
     bool distanceFieldAvailable() const;
 
@@ -99,8 +99,12 @@ public:
     static bool useDistanceFieldForFont(const QFont &font);
 
 private:
+    DistanceFieldFontAtlas(const QFont &font);
+
     QImage distanceFieldAtlas() const;
     QSGTextureRef uploadDistanceField(const QImage &image);
+
+    static QHash<QString, DistanceFieldFontAtlas *> m_atlases;
 
     QFont m_font;
     QFontEngine *m_fontEngine;

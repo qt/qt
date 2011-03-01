@@ -127,9 +127,39 @@ uint qHash(const TexCoordCacheKey &key)
     return (qHash(key.distfield) << 13) | (key.glyph & 0x1FFF);
 }
 
+QHash<QString, DistanceFieldFontAtlas *> DistanceFieldFontAtlas::m_atlases;
 QHash<TexCoordCacheKey, DistanceFieldFontAtlas::TexCoord> DistanceFieldFontAtlas::m_texCoords;
 QHash<QString, bool> DistanceFieldFontAtlas::m_distfield_availability;
 QHash<QString, QSGTextureRef> DistanceFieldFontAtlas::m_textures;
+
+static QString fontKey(const QFont &font)
+{
+    QString key;
+
+    QFontEngine *fontEngine = QFontPrivate::get(font)->engineForScript(QUnicodeTables::Common);
+    if (fontEngine->type() == QFontEngine::Multi) {
+        QFontEngineMulti *fem = static_cast<QFontEngineMulti *>(fontEngine);
+        fontEngine = fem->engine(0);
+    }
+
+    key = fontEngine->fontDef.family;
+    key.remove(QLatin1String(" "));
+    QString italic = font.italic() ? QLatin1String("i") : QLatin1String("");
+    QString bold = font.weight() > QFont::Normal ? QLatin1String("b") : QLatin1String("");
+    key += bold + italic + QString::number(fontEngine->fontDef.pixelSize);
+
+    return key;
+}
+
+DistanceFieldFontAtlas *DistanceFieldFontAtlas::get(const QFont &font)
+{
+    QString key = fontKey(font);
+    QHash<QString, DistanceFieldFontAtlas *>::iterator atlas = m_atlases.find(key);
+    if (atlas == m_atlases.end())
+        atlas = m_atlases.insert(key, new DistanceFieldFontAtlas(font));
+
+    return atlas.value();
+}
 
 DistanceFieldFontAtlas::DistanceFieldFontAtlas(const QFont &font)
 {
@@ -320,8 +350,7 @@ bool DistanceFieldFontAtlas::useDistanceFieldForFont(const QFont &font)
 {
     static QStringList args = qApp->arguments();
     if (args.contains(QLatin1String("--distancefield-text"))) {
-        DistanceFieldFontAtlas a(font);
-        return a.distanceFieldAvailable();
+        return DistanceFieldFontAtlas::get(font)->distanceFieldAvailable();
     }
     return false;
 }
