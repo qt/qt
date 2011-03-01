@@ -183,9 +183,12 @@ QSGTextureRef DistanceFieldFontAtlas::texture()
 
 QSize DistanceFieldFontAtlas::atlasSize() const
 {
-    const int texWidth = QT_DISTANCEFIELD_TEXTURESIZE;
-    const int texHeight = ((glyphCount() * QT_DISTANCEFIELD_TILESIZE) / texWidth + 1) * QT_DISTANCEFIELD_TILESIZE;
-    return QSize(texWidth, texHeight);
+    if (!m_size.isValid()) {
+        const int texWidth = QT_DISTANCEFIELD_TEXTURESIZE;
+        const int texHeight = ((glyphCount() * QT_DISTANCEFIELD_TILESIZE) / texWidth + 1) * QT_DISTANCEFIELD_TILESIZE;
+        m_size = QSize(texWidth, texHeight);
+    }
+    return m_size;
 }
 
 DistanceFieldFontAtlas::Metrics DistanceFieldFontAtlas::glyphMetrics(glyph_t glyph) const
@@ -346,7 +349,7 @@ QSGTextureRef DistanceFieldFontAtlas::uploadDistanceField(const QImage &image)
 
 QString DistanceFieldFontAtlas::distanceFieldDir() const
 {
-    QString distfieldpath = QString::fromLocal8Bit(qgetenv("QT_QML_DISTFIELDDIR"));
+    static QString distfieldpath = QString::fromLocal8Bit(qgetenv("QT_QML_DISTFIELDDIR"));
     if (distfieldpath.isEmpty()) {
 #ifndef QT_NO_SETTINGS
         distfieldpath = QLibraryInfo::location(QLibraryInfo::LibrariesPath);

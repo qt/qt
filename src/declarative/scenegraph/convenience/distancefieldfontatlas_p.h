@@ -94,6 +94,7 @@ private:
     QFontEngine *m_referenceFontEngine;
     QString m_distanceFieldFileName;
     int m_glyphCount;
+    mutable QSize m_size;
 
     static QHash<QString, bool> m_distfield_availability;
     static QHash<QString, QSGTextureRef> m_textures;
