@@ -80,7 +80,7 @@ class QSGCanvasPrivate;
 class QSGThreadedRendererAnimationDriver : public QAnimationDriver
 {
 public:
-    QSGThreadedRendererAnimationDriver(QSGCanvasPrivate *r);
+    QSGThreadedRendererAnimationDriver(QSGCanvasPrivate *r, QObject *parent);
 
 protected:
     virtual void started();

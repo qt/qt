@@ -96,8 +96,8 @@ int sceneGraphRenderTime;
 class QSGAnimationDriver : public QAnimationDriver
 {
 public:
-    QSGAnimationDriver(QWidget *w)
-        : widget(w)
+    QSGAnimationDriver(QWidget *w, QObject *parent)
+        : QAnimationDriver(parent), widget(w)
     {
         Q_ASSERT(w);
     }
@@ -119,8 +119,8 @@ QSGRootItem::QSGRootItem()
 {
 }
 
-QSGThreadedRendererAnimationDriver::QSGThreadedRendererAnimationDriver(QSGCanvasPrivate *r)
-    : QAnimationDriver(0)
+QSGThreadedRendererAnimationDriver::QSGThreadedRendererAnimationDriver(QSGCanvasPrivate *r, QObject *parent)
+    : QAnimationDriver(parent)
     , renderer(r)
 {
 }
@@ -232,7 +232,8 @@ void QSGCanvas::showEvent(QShowEvent *e)
     if (d->threadedRendering) {
         d->contextInThread = true;
         doneCurrent();
-        d->animationDriver = new QSGThreadedRendererAnimationDriver(d);
+        if (!d->animationDriver)
+            d->animationDriver = new QSGThreadedRendererAnimationDriver(d, this);
         d->animationDriver->install();
         d->mutex.lock();
         d->thread->start();
@@ -243,10 +244,10 @@ void QSGCanvas::showEvent(QShowEvent *e)
 
         if (!d->context) {
             d->initializeSceneGraph();
-            d->animationDriver = new QSGAnimationDriver(this);
-            if (d->animationDriver)
-                d->animationDriver->install();
+            d->animationDriver = new QSGAnimationDriver(this, this);
         }
+
+        d->animationDriver->install();
     }
 }
 
@@ -263,6 +264,8 @@ void QSGCanvas::hideEvent(QHideEvent *e)
         d->mutex.unlock();
         d->thread->wait();
     }
+
+    d->animationDriver->uninstall();
 
     QGLWidget::hideEvent(e);
 }
@@ -371,8 +374,12 @@ void QSGCanvasPrivate::runThread()
         QCoreApplication::postEvent(q, new QEvent(QEvent::User));
         wait.wait(&mutex);
 
-        if (exitThread)
+        if (exitThread) {
+#ifdef THREAD_DEBUG
+            qWarning("QSGRenderer: Render Thread: Shutting down...");
+#endif
             break;
+        }
 
 #ifdef THREAD_DEBUG
         qWarning("QSGRenderer: Render Thread: Main thread has stopped, syncing scene");
@@ -423,6 +430,10 @@ void QSGCanvasPrivate::runThread()
 
     }
 
+
+#ifdef THREAD_DEBUG
+    qWarning("QSGRenderer: Render Thread: shutting down, waking up main thread");
+#endif
     wait.wakeOne();
     mutex.unlock();
 
@@ -945,7 +956,12 @@ bool QSGCanvas::event(QEvent *e)
         d->renderThreadAwakened = false;
 
         d->wait.wakeOne();
-        d->wait.wait(&d->mutex);
+
+        // The thread is exited when the widget has been hidden. We then need to
+        // skip the waiting, otherwise we would be waiting for a wakeup that never
+        // comes.
+        if (d->thread->isRunning())
+            d->wait.wait(&d->mutex);
 #ifdef THREAD_DEBUG
         qWarning("QSGRenderer: Main Thread: Resumed");
 #endif
