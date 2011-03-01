@@ -34,13 +34,13 @@
 */
 
 /*!
-    \page internationalization.html
     \title Internationalization with Qt
     \brief Information about Qt's support for internationalization and multiple languages.
     \nextpage Writing Source Code for Translation
 
     \ingroup qt-basic-concepts
-	
+    \group internationalization
+
     \keyword internationalization
     \keyword i18n
 
@@ -511,7 +511,7 @@
 /*!
     \page i18n-source-translation.html
     \title Writing Source Code for Translation
-    \ingroup i18n
+    \ingroup internationalization
     \previouspage Internationalization with Qt
     \contentspage Internationalization with Qt
     \nextpage Translation Rules for Plurals
@@ -723,7 +723,7 @@
 /*!
     \page i18n-plural-rules.html
     \title Translation Rules for Plurals
-    \ingroup i18n
+    \ingroup internationalization
     \previouspage Writing Source Code for Translation
     \contentspage Internationalization with Qt
     \brief A summary of the translation rules for plurals produced by Qt's i18n tools.

@@ -232,6 +232,7 @@
 /*!
     \title Internationalization Example
     \example declarative/i18n
+    \ingroup internationalization
 
     This example shows how to enable text translation in QML.
 
