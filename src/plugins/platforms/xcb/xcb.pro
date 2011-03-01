@@ -10,7 +10,8 @@ SOURCES = \
         qxcbscreen.cpp \
         qxcbwindow.cpp \
         qxcbwindowsurface.cpp \
-        main.cpp
+        main.cpp \
+        qxcbnativeinterface.cpp
 
 HEADERS = \
         qxcbconnection.h \
@@ -19,7 +20,8 @@ HEADERS = \
         qxcbobject.h \
         qxcbscreen.h \
         qxcbwindow.h \
-        qxcbwindowsurface.h
+        qxcbwindowsurface.h \
+        qxcbnativeinterface.h
 
 contains(QT_CONFIG, opengl) {
     QT += opengl

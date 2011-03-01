@@ -67,11 +67,14 @@ public:
     QPlatformFontDatabase *fontDatabase() const;
     bool hasOpenGL() const;
 
+    QPlatformNativeInterface *nativeInterface()const;
+
 private:
     QList<QPlatformScreen *> m_screens;
     QXcbConnection *m_connection;
 
     QPlatformFontDatabase *m_fontDatabase;
+    QPlatformNativeInterface *m_nativeInterface;
 };
 
 QT_END_NAMESPACE

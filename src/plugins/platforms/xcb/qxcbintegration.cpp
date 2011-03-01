@@ -44,6 +44,7 @@
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
 #include "qxcbwindowsurface.h"
+#include "qxcbnativeinterface.h"
 
 #include <xcb/xcb.h>
 
@@ -64,6 +65,7 @@ QXcbIntegration::QXcbIntegration()
         m_screens << screen;
 
     m_fontDatabase = new QGenericUnixFontDatabase();
+    m_nativeInterface = new QXcbNativeInterface;
 }
 
 QXcbIntegration::~QXcbIntegration()
@@ -144,4 +146,7 @@ bool QXcbIntegration::hasOpenGL() const
     return false;
 }
 
+QPlatformNativeInterface * QXcbIntegration::nativeInterface() const
+{
+    return m_nativeInterface;
 }
