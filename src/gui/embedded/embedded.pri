@@ -120,6 +120,12 @@ embedded {
                 LIBS += -lgf
         }
 
+        contains( gfx-drivers, integrityfb ) {
+                HEADERS += embedded/qscreenintegrityfb_qws.h
+                SOURCES += embedded/qscreenintegrityfb_qws.cpp
+                LIBS += -lfbdev
+        }
+
 	contains( gfx-drivers, qvfb ) {
 		HEADERS += embedded/qscreenvfb_qws.h
 		SOURCES += embedded/qscreenvfb_qws.cpp
@@ -174,6 +180,11 @@ embedded {
                 SOURCES += embedded/qkbdqnx_qws.cpp
         }
 
+        contains( kbd-drivers, integrity ) {
+                HEADERS += embedded/qkbdintegrity_qws.h
+                SOURCES += embedded/qkbdintegrity_qws.cpp
+        }
+
 #
 # Mouse drivers
 #
@@ -206,5 +217,10 @@ embedded {
         contains( mouse-drivers, qnx ) {
                 HEADERS += embedded/qmouseqnx_qws.h
                 SOURCES += embedded/qmouseqnx_qws.cpp
+        }
+
+	contains( mouse-drivers, integrity ) {
+                HEADERS += embedded/qmouseintegrity_qws.h
+                SOURCES += embedded/qmouseintegrity_qws.cpp
         }
 }

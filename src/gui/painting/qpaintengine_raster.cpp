@@ -662,19 +662,19 @@ QRasterPaintEngineState::QRasterPaintEngineState()
 
 QRasterPaintEngineState::QRasterPaintEngineState(QRasterPaintEngineState &s)
     : QPainterState(s)
-    , stroker(s.stroker)
-    , lastBrush(s.lastBrush)
-    , brushData(s.brushData)
     , lastPen(s.lastPen)
     , penData(s.penData)
-    , fillFlags(s.fillFlags)
+    , stroker(s.stroker)
     , strokeFlags(s.strokeFlags)
+    , lastBrush(s.lastBrush)
+    , brushData(s.brushData)
+    , fillFlags(s.fillFlags)
     , pixmapFlags(s.pixmapFlags)
     , intOpacity(s.intOpacity)
     , txscale(s.txscale)
-    , flag_bits(s.flag_bits)
     , clip(s.clip)
     , dirty(s.dirty)
+    , flag_bits(s.flag_bits)
 {
     brushData.tempImage = 0;
     penData.tempImage = 0;
@@ -3715,6 +3715,13 @@ void QRasterPaintEnginePrivate::rasterizeLine_dashed(QLineF line,
     const QPen &pen = s->lastPen;
     const bool squareCap = (pen.capStyle() == Qt::SquareCap);
     const QVector<qreal> pattern = pen.dashPattern();
+
+    qreal patternLength = 0;
+    for (int i = 0; i < pattern.size(); ++i)
+        patternLength += pattern.at(i);
+
+    if (patternLength <= 0)
+        return;
 
     qreal length = line.length();
     Q_ASSERT(length > 0);

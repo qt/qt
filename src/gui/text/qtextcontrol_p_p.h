@@ -135,9 +135,23 @@ public:
                          Qt::KeyboardModifiers modifiers,
                          Qt::MouseButtons buttons,
                          const QPoint &globalPos);
-    void mouseMoveEvent(Qt::MouseButtons buttons, const QPointF &pos);
-    void mouseReleaseEvent(Qt::MouseButton button, const QPointF &pos);
-    void mouseDoubleClickEvent(QEvent *e, Qt::MouseButton button, const QPointF &pos);
+    void mouseMoveEvent(QEvent *e, Qt::MouseButton button, const QPointF &pos,
+                        Qt::KeyboardModifiers modifiers,
+                        Qt::MouseButtons buttons,
+                        const QPoint &globalPos);
+    void mouseReleaseEvent(QEvent *e, Qt::MouseButton button, const QPointF &pos,
+                           Qt::KeyboardModifiers modifiers,
+                           Qt::MouseButtons buttons,
+                           const QPoint &globalPos);
+    void mouseDoubleClickEvent(QEvent *e, Qt::MouseButton button, const QPointF &pos,
+                               Qt::KeyboardModifiers modifiers,
+                               Qt::MouseButtons buttons,
+                               const QPoint &globalPos);
+    bool sendMouseEventToInputContext(QEvent *e,  QEvent::Type eventType, Qt::MouseButton button,
+                                      const QPointF &pos,
+                                      Qt::KeyboardModifiers modifiers,
+                                      Qt::MouseButtons buttons,
+                                      const QPoint &globalPos);
     void contextMenuEvent(const QPoint &screenPos, const QPointF &docPos, QWidget *contextWidget);
     void focusEvent(QFocusEvent *e);
 #ifdef QT_KEYPAD_NAVIGATION
