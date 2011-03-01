@@ -83,10 +83,16 @@ void RegisterFileAllocator::grow(void* newEnd)
         TInt nBytes = (TInt)(newEnd) - (TInt)(m_comEnd);
         nBytes = SYMBIAN_ROUNDUPTOMULTIPLE(nBytes, m_poolSize);
         TInt offset = (TInt)m_comEnd - (TInt)m_buffer;
+        // The reserved size is not guaranteed to be a multiple of the pool size.
+        TInt maxBytes = (TInt)m_resEnd - (TInt)m_comEnd;
+        if (nBytes > maxBytes)
+            nBytes = maxBytes;
 
         TInt ret = m_chunk.Commit(offset, nBytes);
         if (ret == KErrNone)
             m_comEnd = (void*)(m_chunk.Base() + m_chunk.Size());
+        else
+            CRASH();
     }
 }
 

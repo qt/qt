@@ -355,7 +355,11 @@ void QMainWindowLayout::updateHIToolBarStatus()
         // Move everything out of the HIToolbar into the main toolbar.
         while (!qtoolbarsInUnifiedToolbarList.isEmpty()) {
             // Should shrink the list by one every time.
-            layoutState.mainWindow->addToolBar(Qt::TopToolBarArea, qtoolbarsInUnifiedToolbarList.first());
+            QToolBar *toolbar = qtoolbarsInUnifiedToolbarList.first();
+            layoutState.mainWindow->addToolBar(Qt::TopToolBarArea, toolbar);
+#if defined(QT_MAC_USE_COCOA)
+            toolbar->d_func()->isInUnifiedToolbar = false;
+#endif
         }
         macWindowToolbarSet(qt_mac_window_for(layoutState.mainWindow), 0);
     } else {
@@ -363,7 +367,8 @@ void QMainWindowLayout::updateHIToolBarStatus()
         for (int i = 0; i < toolbars.size(); ++i) {
             QToolBar *toolbar = toolbars.at(i);
             if (toolBarArea(toolbar) == Qt::TopToolBarArea) {
-                removeWidget(toolbar);  // Do this here, because we are in an in-between state.
+                // Do this here, because we are in an in-between state.
+                removeWidget(toolbar);
                 layoutState.mainWindow->addToolBar(Qt::TopToolBarArea, toolbar);
             }
         }
@@ -387,10 +392,20 @@ void QMainWindowLayout::insertIntoMacToolbar(QToolBar *before, QToolBar *toolbar
     if (toolbar == 0)
         return;
 
+#if defined(QT_MAC_USE_COCOA)
+    // toolbar will now become native (if not allready) since we need
+    // an nsview for it inside the corresponding NSToolbarItem.
+    // Setting isInUnifiedToolbar will (among other things) stop alien
+    // siblings from becoming native when this happends since the toolbar
+    // will not overlap with other children of the QMainWindow. NB: Switching
+    // unified toolbar off after this stage is not supported, as this means
+    // that either the menubar must be alien again, or the sibling must
+    // be backed by an nsview to protect from overlapping issues:
+    toolbar->d_func()->isInUnifiedToolbar = true;
+#endif
 
     QToolBarLayout *toolbarLayout = static_cast<QToolBarLayout *>(toolbar->layout());
-    toolbarSaveState.insert(toolbar, ToolBarSaveState(toolbar->isMovable(),
-                                                      toolbar->maximumSize()));
+    toolbarSaveState.insert(toolbar, ToolBarSaveState(toolbar->isMovable(), toolbar->maximumSize()));
 
     if (toolbarLayout->hasExpandFlag() == false)
         toolbar->setMaximumSize(toolbar->sizeHint());
@@ -399,8 +414,8 @@ void QMainWindowLayout::insertIntoMacToolbar(QToolBar *before, QToolBar *toolbar
     toolbarLayout->setUsePopupMenu(true);
     // Make the toolbar a child of the mainwindow to avoid creating a window.
     toolbar->setParent(layoutState.mainWindow);
-    toolbar->createWinId();  // Now create the OSViewRef.
 
+    toolbar->winId();  // Now create the OSViewRef.
     layoutState.mainWindow->createWinId();
 
     OSWindowRef window = qt_mac_window_for(layoutState.mainWindow);

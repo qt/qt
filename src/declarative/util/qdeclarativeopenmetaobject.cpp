@@ -97,7 +97,6 @@ int QDeclarativeOpenMetaObjectType::createProperty(const QByteArray &name)
     int id = d->mob.propertyCount();
     d->mob.addSignal("__" + QByteArray::number(id) + "()");
     QMetaPropertyBuilder build = d->mob.addProperty(name, "QVariant", id);
-    build.setDynamic(true);
     propertyCreated(id, build);
     qFree(d->mem);
     d->mem = d->mob.toMetaObject();

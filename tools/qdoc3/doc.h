@@ -100,7 +100,7 @@ class Doc
     bool isEmpty() const;
     const QString& source() const;
     const Text& body() const;
-    Text briefText() const;
+    Text briefText(bool inclusive = false) const;
     Text trimmedBriefText(const QString &className) const;
     Text legaleseText() const;
     const QString& baseName() const;

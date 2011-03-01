@@ -72,6 +72,35 @@ static QString sbsRvctPrefix;
     extern char **environ;
 #endif
 
+static void fixFlmCmd(QString *cmdLine, const QMap<QString, QString> &commandsToReplace)
+{
+    // If commandItem starts with any $$QMAKE_* commands, do a replace for SBS equivalent.
+    // Command replacement is done only for the start of the command or right after
+    // concatenation operators (&& and ||), as otherwise unwanted replacements might occur.
+    static QString cmdFind(QLatin1String("(^|&&\\s*|\\|\\|\\s*)%1"));
+    static QString cmdReplace(QLatin1String("\\1%1"));
+
+    // $$escape_expand(\\n\\t) doesn't work for bld.inf files, but is often used as command
+    // separator, so replace it with "&&" command concatenator.
+    cmdLine->replace("\n\t", "&&");
+
+    // Iterate command replacements in reverse alphabetical order of keys so
+    // that keys which are starts of other longer keys are iterated after longer keys.
+    QMapIterator<QString, QString> cmdIter(commandsToReplace);
+    cmdIter.toBack();
+    while (cmdIter.hasPrevious()) {
+        cmdIter.previous();
+        if (cmdLine->contains(cmdIter.key()))
+            cmdLine->replace(QRegExp(cmdFind.arg(cmdIter.key())), cmdReplace.arg(cmdIter.value()));
+    }
+
+    // Sbsv2 toolchain strips all backslashes (even double ones) from option parameters, so just
+    // assume all backslashes are directory separators and replace them with slashes.
+    // Problem: If some command actually needs backslashes for something else than dir separator,
+    // we are out of luck.
+    cmdLine->replace("\\", "/");
+}
+
 // Copies Qt FLMs to correct location under epocroot.
 // This is not done by configure as it is possible to change epocroot after configure.
 void SymbianSbsv2MakefileGenerator::exportFlm()
@@ -386,7 +415,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         }
         t << endl;
         t << "clean-debug: " << BLD_INF_FILENAME << endl;
-        t << "\t$(SBS) reallyclean";
+        t << "\t$(SBS) reallyclean --toolcheck=off";
         foreach(QString clause, debugClauses) {
             t << clause;
         }
@@ -406,7 +435,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         }
         t << endl;
         t << "clean-release: " << BLD_INF_FILENAME << endl;
-        t << "\t$(SBS) reallyclean";
+        t << "\t$(SBS) reallyclean --toolcheck=off";
         foreach(QString clause, releaseClauses) {
             t << clause;
         }
@@ -516,8 +545,10 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
 
     generateDistcleanTargets(t);
 
+    // Do not check for tools when doing generic clean, as most tools are not actually needed for
+    // cleaning. Mainly this is relevant for environments that do not have winscw compiler.
     t << "clean: " << BLD_INF_FILENAME << endl;
-    t << "\t-$(SBS) reallyclean";
+    t << "\t-$(SBS) reallyclean --toolcheck=off";
     foreach(QString clause, allClauses) {
         t << clause;
     }
@@ -560,12 +591,6 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
                              project->values("QMAKE_SBSV2_DEL_DIR").join(" "));
     commandsToReplace.insert(project->values("QMAKE_DEL_TREE").join(" "),
                              project->values("QMAKE_SBSV2_DEL_TREE").join(" "));
-
-    // If commandItem starts with any $$QMAKE_* commands, do a replace for SBS equivalent
-    // Command replacement is done only for the start of the command or right after
-    // concatenation operators (&& and ||), as otherwise unwanted replacements might occur.
-    static QString cmdFind("(^|&&\\s*|\\|\\|\\s*)%1");
-    static QString cmdReplace("\\1%1");
 
     // Write extra compilers and targets to initialize QMAKE_ET_* variables
     // Cache results to avoid duplicate calls when creating wrapper makefile
@@ -621,26 +646,13 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
                 t << "OPTION PREDEP_TARGET " << absoluteTarget << endl;
                 t << "OPTION DEPS " << absoluteDeps << endl;
 
-                // Iterate command replacements in reverse alphabetical order of keys so
-                // that keys which are starts of other longer keys are iterated after longer keys.
-                QMapIterator<QString, QString> cmdIter(commandsToReplace);
-                cmdIter.toBack();
-                while (cmdIter.hasPrevious()) {
-                    cmdIter.previous();
-                    if (commandItem.contains(cmdIter.key())) {
-                        commandItem.replace(QRegExp(cmdFind.arg(cmdIter.key())),
-                                            cmdReplace.arg(cmdIter.value()));
-                    }
-                }
-
                 if (commandItem.indexOf("$(INCPATH)") != -1)
                     commandItem.replace("$(INCPATH)", incPath.join(" "));
                 if (commandItem.indexOf("$(DEFINES)") != -1)
                     commandItem.replace("$(DEFINES)", defines.join(" "));
 
-                // Sbsv2 strips all backslashes (even doubles ones) from option parameters, so just replace them with slashes
-                // Problem: If some command actually needs backslashes for something else than dir separator, we are out of luck...
-                commandItem.replace("\\", "/");
+                fixFlmCmd(&commandItem, commandsToReplace);
+
                 t << "OPTION COMMAND " << commandItem << endl;
                 t << "END" << endl;
             }
@@ -670,9 +682,11 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
 
     // Write post link rules
     if (!project->isEmpty("QMAKE_POST_LINK")) {
+        QString postLinkCmd = var("QMAKE_POST_LINK");
+        fixFlmCmd(&postLinkCmd, commandsToReplace);
         t << "START EXTENSION qt/qmake_post_link" << endl;
-        t << "OPTION POST_LINK_CMD " << var("QMAKE_POST_LINK") << endl;
-        t << "OPTION LINK_TARGET " << removePathSeparators(escapeFilePath(fileFixify(project->first("TARGET"))).append(".").append(getTargetExtension())) << endl;
+        t << "OPTION POST_LINK_CMD " << postLinkCmd << endl;
+        t << "OPTION LINK_TARGET " << fixedTarget << QLatin1String(".") << getTargetExtension() << endl;
         t << "END" << endl;
         t << endl;
     }
@@ -707,6 +721,18 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     t << "END" << endl;
     t << endl;
 
+    // Handle QMAKE_CLEAN
+    QStringList cleanFiles = project->values("QMAKE_CLEAN");
+    if (!cleanFiles.isEmpty()) {
+        QStringList absoluteCleanFiles;
+        foreach (QString cleanFile, cleanFiles) {
+            QFileInfo fi(cleanFile);
+            absoluteCleanFiles << fi.absoluteFilePath();
+        }
+        t << "START EXTENSION qt/qmake_clean" << endl;
+        t << "OPTION CLEAN_FILES " << absoluteCleanFiles.join(" ") << endl;
+        t << "END" << endl;
+    }
     t << endl;
 }
 

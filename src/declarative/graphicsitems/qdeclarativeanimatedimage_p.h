@@ -97,6 +97,7 @@ private Q_SLOTS:
     void playingStatusChanged();
 
 protected:
+    virtual void load();
     void componentComplete();
 
 private:

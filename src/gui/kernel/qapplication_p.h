@@ -489,8 +489,6 @@ public:
 #ifdef QT_MAC_USE_COCOA
     static void qt_initAfterNSAppStarted();
     static void setupAppleEvents();
-    static void updateOverrideCursor();
-    static void disableUsageOfCursorRects(bool disable);
 #endif
     static bool qt_mac_apply_settings();
 #endif

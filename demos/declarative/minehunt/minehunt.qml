@@ -104,7 +104,7 @@ Item {
         anchors.centerIn: parent; width: parent.width - 20
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.WordWrap
-        text: "Minehunt will not run properly if the C++ plugin is not compiled.\n\nPlease see README."
+        text: "Minehunt demo has to be compiled to run.\n\nPlease see README."
         color: "white"; font.bold: true; font.pixelSize: 14
         visible: tiles == undefined
     }

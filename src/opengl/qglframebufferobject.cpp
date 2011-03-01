@@ -1216,8 +1216,8 @@ void QGLFramebufferObject::drawTexture(const QPointF &point, QMacCompatGLuint te
 }
 #endif
 
-Q_DECL_IMPORT extern int qt_defaultDpiX();
-Q_DECL_IMPORT extern int qt_defaultDpiY();
+Q_GUI_EXPORT int qt_defaultDpiX();
+Q_GUI_EXPORT int qt_defaultDpiY();
 
 /*! \reimp */
 int QGLFramebufferObject::metric(PaintDeviceMetric metric) const

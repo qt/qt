@@ -89,6 +89,9 @@ private slots:
     void nonItem();
     void vmeErrors();
     void creationContext();
+    void QTBUG_16928();
+    void implicitSize();
+    void QTBUG_17114();
 
 private:
     QDeclarativeEngine engine;
@@ -588,6 +591,45 @@ void tst_QDeclarativeLoader::creationContext()
     QCOMPARE(o->property("test").toBool(), true);
 
     delete o;
+}
+
+void tst_QDeclarativeLoader::QTBUG_16928()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("QTBUG_16928.qml"));
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+
+    QCOMPARE(item->width(), 250.);
+    QCOMPARE(item->height(), 250.);
+
+    delete item;
+}
+
+void tst_QDeclarativeLoader::implicitSize()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("implicitSize.qml"));
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+
+    QCOMPARE(item->width(), 150.);
+    QCOMPARE(item->height(), 150.);
+
+    QCOMPARE(item->property("implHeight").toReal(), 100.);
+    QCOMPARE(item->property("implWidth").toReal(), 100.);
+
+    delete item;
+}
+
+void tst_QDeclarativeLoader::QTBUG_17114()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("QTBUG_17114.qml"));
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+
+    QCOMPARE(item->property("loaderWidth").toReal(), 32.);
+    QCOMPARE(item->property("loaderHeight").toReal(), 32.);
+
+    delete item;
 }
 
 QTEST_MAIN(tst_QDeclarativeLoader)

@@ -111,14 +111,14 @@ void QDeclarativeBasePositioner::graphicsWidgetGeometryChanged()
     Note that the subclass is responsible for adding the spacing in between items.
 */
 QDeclarativeBasePositioner::QDeclarativeBasePositioner(PositionerType at, QDeclarativeItem *parent)
-    : QDeclarativeItem(*(new QDeclarativeBasePositionerPrivate), parent)
+    : QDeclarativeImplicitSizeItem(*(new QDeclarativeBasePositionerPrivate), parent)
 {
     Q_D(QDeclarativeBasePositioner);
     d->init(at);
 }
 
 QDeclarativeBasePositioner::QDeclarativeBasePositioner(QDeclarativeBasePositionerPrivate &dd, PositionerType at, QDeclarativeItem *parent)
-    : QDeclarativeItem(dd, parent)
+    : QDeclarativeImplicitSizeItem(dd, parent)
 {
     Q_D(QDeclarativeBasePositioner);
     d->init(at);
@@ -364,9 +364,13 @@ void QDeclarativeBasePositioner::finishApplyTransitions()
   \qml
   Column {
       spacing: 2
-      add: ...
-      move: ...
-      ...
+      add: Transition {
+          // Define an animation for adding a new item...
+      }
+      move: Transition {
+          // Define an animation for moving items within the column...
+      }
+      // ...
   }
   \endqml
 
@@ -381,7 +385,7 @@ void QDeclarativeBasePositioner::finishApplyTransitions()
 
   Items with a width or height of 0 will not be positioned.
 
-  \sa Row, Grid, Flow, {declarative/positioners}{Positioners example}
+  \sa Row, Grid, Flow, {declarative/positioners/addandremove}{Positioners example}
 */
 /*!
     \qmlproperty Transition Column::add
@@ -421,7 +425,7 @@ void QDeclarativeBasePositioner::finishApplyTransitions()
     }
     \endqml
 
-    \sa add, {declarative/positioners}{Positioners example}
+    \sa add, {declarative/positioners/addandremove}{Positioners example}
 */
 /*!
   \qmlproperty int Column::spacing
@@ -524,7 +528,7 @@ void QDeclarativeColumn::reportConflictingAnchors()
 
   Items with a width or height of 0 will not be positioned.
 
-  \sa Column, Grid, Flow, {declarative/positioners}{Positioners example}
+  \sa Column, Grid, Flow, {declarative/positioners/addandremove}{Positioners example}
 */
 /*!
     \qmlproperty Transition Row::add
@@ -563,7 +567,7 @@ void QDeclarativeColumn::reportConflictingAnchors()
     }
     \endqml
 
-    \sa add, {declarative/positioners}{Positioners example}
+    \sa add, {declarative/positioners/addandremove}{Positioners example}
 */
 /*!
   \qmlproperty int Row::spacing
@@ -574,21 +578,55 @@ void QDeclarativeColumn::reportConflictingAnchors()
   \sa Grid::spacing
 */
 QDeclarativeRow::QDeclarativeRow(QDeclarativeItem *parent)
-: QDeclarativeBasePositioner(Horizontal, parent)
+: QDeclarativeBasePositioner(Horizontal, parent), m_layoutDirection(Qt::LeftToRight)
 {
+}
+
+/*!
+    \qmlproperty enumeration Row::layoutDirection
+    This property holds the layoutDirection of the row.
+
+    Possible values:
+
+    \list
+    \o Qt.LeftToRight (default) - Items are laid out from left to right. If the width of the row is explicitly set,
+    the left anchor remains to the left of the row.
+    \o Qt.RightToLeft - Items are laid out from right to left. If the width of the row is explicitly set,
+    the right anchor remains to the right of the row.
+    \endlist
+
+    \sa Grid::layoutDirection, Flow::layoutDirection, {declarative/positioners/layoutdirection}{Layout directions example}
+*/
+Qt::LayoutDirection QDeclarativeRow::layoutDirection() const
+{
+    return m_layoutDirection;
+}
+
+void QDeclarativeRow::setLayoutDirection(Qt::LayoutDirection layoutDirection)
+{
+    if (m_layoutDirection != layoutDirection) {
+        m_layoutDirection = layoutDirection;
+        prePositioning();
+        emit layoutDirectionChanged();
+    }
 }
 
 void QDeclarativeRow::doPositioning(QSizeF *contentSize)
 {
     int hoffset = 0;
 
+    QList<int> hoffsets;
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
         if (!child.item || !child.isVisible)
             continue;
 
-        if(child.item->x() != hoffset)
-            positionX(hoffset, child);
+        if(m_layoutDirection == Qt::LeftToRight){
+            if(child.item->x() != hoffset)
+                positionX(hoffset, child);
+        }else{
+            hoffsets << hoffset;
+        }
 
         contentSize->setHeight(qMax(contentSize->height(), QGraphicsItemPrivate::get(child.item)->height()));
 
@@ -597,6 +635,26 @@ void QDeclarativeRow::doPositioning(QSizeF *contentSize)
     }
 
     contentSize->setWidth(hoffset - spacing());
+
+    if(m_layoutDirection == Qt::LeftToRight)
+        return;
+
+    //Right to Left layout
+    int end = 0;
+    if(!widthValid())
+        end = contentSize->width();
+    else
+        end = width();
+
+    int acc = 0;
+    for (int ii = 0; ii < positionedItems.count(); ++ii) {
+        const PositionedItem &child = positionedItems.at(ii);
+        if (!child.item || !child.isVisible)
+            continue;
+        hoffset = end - hoffsets[acc++] - QGraphicsItemPrivate::get(child.item)->width();
+        if(child.item->x() != hoffset)
+            positionX(hoffset, child);
+    }
 }
 
 void QDeclarativeRow::reportConflictingAnchors()
@@ -674,7 +732,7 @@ void QDeclarativeRow::reportConflictingAnchors()
 
   Items with a width or height of 0 will not be positioned.
 
-  \sa Flow, Row, Column, {declarative/positioners}{Positioners example}
+  \sa Flow, Row, Column, {declarative/positioners/addandremove}{Positioners example}
 */
 /*!
     \qmlproperty Transition Grid::add
@@ -712,7 +770,7 @@ void QDeclarativeRow::reportConflictingAnchors()
     }
     \endqml
 
-    \sa add, {declarative/positioners}{Positioners example}
+    \sa add, {declarative/positioners/addandremove}{Positioners example}
 */
 /*!
   \qmlproperty int Grid::spacing
@@ -732,7 +790,7 @@ void QDeclarativeRow::reportConflictingAnchors()
   \sa rows, columns
 */
 QDeclarativeGrid::QDeclarativeGrid(QDeclarativeItem *parent) :
-    QDeclarativeBasePositioner(Both, parent), m_rows(-1), m_columns(-1), m_flow(LeftToRight)
+    QDeclarativeBasePositioner(Both, parent), m_rows(-1), m_columns(-1), m_flow(LeftToRight), m_layoutDirection(Qt::LeftToRight)
 {
 }
 
@@ -780,7 +838,7 @@ void QDeclarativeGrid::setRows(const int rows)
 
     \list
     \o Grid.LeftToRight (default) - Items are positioned next to
-       to each other from left to right, then wrapped to the next line.
+       each other in the \l layoutDirection, then wrapped to the next line.
     \o Grid.TopToBottom - Items are positioned next to each
        other from top to bottom, then wrapped to the next column.
     \endlist
@@ -796,6 +854,37 @@ void QDeclarativeGrid::setFlow(Flow flow)
         m_flow = flow;
         prePositioning();
         emit flowChanged();
+    }
+}
+
+/*!
+    \qmlproperty enumeration Grid::layoutDirection
+    This property holds the layout direction of the layout.
+
+    Possible values are:
+
+    \list
+    \o Qt.LeftToRight (default) - Items are positioned beginning
+    from the top, left anchor. The flow direction is dependent
+    on the \l Grid::flow property.
+    \o Qt.RightToLeft - Items are positioned beginning from the
+    top, right anchor. The flow direction is dependent on the
+    \l Grid::flow property.
+    \endlist
+
+    \sa Flow::layoutDirection, Row::layoutDirection, {declarative/positioners/layoutdirection}{Layout directions example}
+*/
+Qt::LayoutDirection QDeclarativeGrid::layoutDirection() const
+{
+    return m_layoutDirection;
+}
+
+void QDeclarativeGrid::setLayoutDirection(Qt::LayoutDirection layoutDirection)
+{
+    if (m_layoutDirection != layoutDirection) {
+        m_layoutDirection = layoutDirection;
+        prePositioning();
+        emit layoutDirectionChanged();
     }
 }
 
@@ -820,6 +909,9 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
     } else if (m_columns <= 0){
         c = (numVisible+(m_rows-1))/m_rows;
     }
+
+    if(r==0 || c==0)
+        return; //Nothing to do
 
     QList<int> maxColWidth;
     QList<int> maxRowHeight;
@@ -851,7 +943,7 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
                 if (i==0)
                     maxColWidth << 0;
 
-                if (childIndex == positionedItems.count())
+                if (childIndex == visibleItems.count())
                     break;
 
                 const PositionedItem &child = visibleItems.at(childIndex++);
@@ -864,40 +956,71 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
         }
     }
 
+    int widthSum = 0;
+    for(int j=0; j < maxColWidth.size(); j++){
+        if(j)
+            widthSum += spacing();
+        widthSum += maxColWidth[j];
+    }
+
+    int heightSum = 0;
+    for(int i=0; i < maxRowHeight.size(); i++){
+        if(i)
+            heightSum += spacing();
+        heightSum += maxRowHeight[i];
+    }
+
+    contentSize->setHeight(heightSum);
+    contentSize->setWidth(widthSum);
+
+    int end = 0;
+    if(widthValid())
+        end = width();
+    else
+        end = widthSum;
+
     int xoffset=0;
+    if(m_layoutDirection == Qt::RightToLeft)
+        xoffset=end;
     int yoffset=0;
     int curRow =0;
     int curCol =0;
     for (int i = 0; i < visibleItems.count(); ++i) {
         const PositionedItem &child = visibleItems.at(i);
-        if((child.item->x()!=xoffset)||(child.item->y()!=yoffset)){
-            positionX(xoffset, child);
+        int childXOffset = xoffset;
+        if(m_layoutDirection == Qt::RightToLeft)
+            childXOffset -= QGraphicsItemPrivate::get(child.item)->width();
+        if((child.item->x()!=childXOffset)||(child.item->y()!=yoffset)){
+            positionX(childXOffset, child);
             positionY(yoffset, child);
         }
 
         if (m_flow == LeftToRight) {
-            contentSize->setWidth(qMax(contentSize->width(), xoffset + QGraphicsItemPrivate::get(child.item)->width()));
-            contentSize->setHeight(yoffset + maxRowHeight[curRow]);
-
-            xoffset+=maxColWidth[curCol]+spacing();
+            if(m_layoutDirection == Qt::LeftToRight)
+                xoffset+=maxColWidth[curCol]+spacing();
+            else
+                xoffset-=maxColWidth[curCol]+spacing();
             curCol++;
             curCol%=c;
             if (!curCol){
                 yoffset+=maxRowHeight[curRow]+spacing();
-                xoffset=0;
+                if(m_layoutDirection == Qt::LeftToRight)
+                    xoffset=0;
+                else
+                    xoffset=end;
                 curRow++;
                 if (curRow>=r)
                     break;
             }
         } else {
-            contentSize->setHeight(qMax(contentSize->height(), yoffset + QGraphicsItemPrivate::get(child.item)->height()));
-            contentSize->setWidth(xoffset + maxColWidth[curCol]);
-
             yoffset+=maxRowHeight[curRow]+spacing();
             curRow++;
             curRow%=r;
             if (!curRow){
-                xoffset+=maxColWidth[curCol]+spacing();
+                if(m_layoutDirection == Qt::LeftToRight)
+                    xoffset+=maxColWidth[curCol]+spacing();
+                else
+                    xoffset-=maxColWidth[curCol]+spacing();
                 yoffset=0;
                 curCol++;
                 if (curCol>=c)
@@ -973,7 +1096,7 @@ void QDeclarativeGrid::reportConflictingAnchors()
 
   Items with a width or height of 0 will not be positioned.
 
-  \sa Column, Row, Grid, {declarative/positioners}{Positioners example}
+  \sa Column, Row, Grid, {declarative/positioners/addandremove}{Positioners example}
 */
 /*!
     \qmlproperty Transition Flow::add
@@ -1012,7 +1135,7 @@ void QDeclarativeGrid::reportConflictingAnchors()
     }
     \endqml
 
-    \sa add, {declarative/positioners}{Positioners example}
+    \sa add, {declarative/positioners/addandremove}{Positioners example}
 */
 /*!
   \qmlproperty int Flow::spacing
@@ -1029,10 +1152,12 @@ class QDeclarativeFlowPrivate : public QDeclarativeBasePositionerPrivate
 
 public:
     QDeclarativeFlowPrivate()
-        : QDeclarativeBasePositionerPrivate(), flow(QDeclarativeFlow::LeftToRight)
+        : QDeclarativeBasePositionerPrivate(), flow(QDeclarativeFlow::LeftToRight),
+            layoutDirection(Qt::LeftToRight)
     {}
 
     QDeclarativeFlow::Flow flow;
+    Qt::LayoutDirection layoutDirection;
 };
 
 QDeclarativeFlow::QDeclarativeFlow(QDeclarativeItem *parent)
@@ -1051,7 +1176,7 @@ QDeclarativeFlow::QDeclarativeFlow(QDeclarativeItem *parent)
 
     \list
     \o Flow.LeftToRight (default) - Items are positioned next to
-    to each other from left to right until the width of the Flow
+    to each other according to the \l layoutDirection until the width of the Flow
     is exceeded, then wrapped to the next line.
     \o Flow.TopToBottom - Items are positioned next to each
     other from top to bottom until the height of the Flow is exceeded,
@@ -1074,6 +1199,40 @@ void QDeclarativeFlow::setFlow(Flow flow)
     }
 }
 
+/*!
+    \qmlproperty enumeration Flow::layoutDirection
+    This property holds the layout direction of the layout.
+
+    Possible values are:
+
+    \list
+    \o Qt.LeftToRight (default) - Items are positioned beginning
+    from the top, left anchor. The flow direction is dependent
+    on the \l Flow::flow property.
+    \o Qt.RightToLeft - Items are positioned beginning from the
+    top, right anchor. The flow direction is dependent on the
+    \l Flow::flow property.
+    \endlist
+
+    \sa Grid::layoutDirection, Row::layoutDirection, {declarative/positioners/layoutdirection}{Layout directions example}
+*/
+
+Qt::LayoutDirection QDeclarativeFlow::layoutDirection() const
+{
+    Q_D(const QDeclarativeFlow);
+    return d->layoutDirection;
+}
+
+void QDeclarativeFlow::setLayoutDirection(Qt::LayoutDirection layoutDirection)
+{
+    Q_D(QDeclarativeFlow);
+    if (d->layoutDirection != layoutDirection) {
+        d->layoutDirection = layoutDirection;
+        prePositioning();
+        emit layoutDirectionChanged();
+    }
+}
+
 void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
 {
     Q_D(QDeclarativeFlow);
@@ -1081,6 +1240,7 @@ void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
     int hoffset = 0;
     int voffset = 0;
     int linemax = 0;
+    QList<int> hoffsets;
 
     for (int i = 0; i < positionedItems.count(); ++i) {
         const PositionedItem &child = positionedItems.at(i);
@@ -1102,10 +1262,14 @@ void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
             }
         }
 
-        if(child.item->x() != hoffset || child.item->y() != voffset){
-            positionX(hoffset, child);
-            positionY(voffset, child);
+        if(d->layoutDirection == Qt::LeftToRight){
+            if(child.item->x() != hoffset)
+                positionX(hoffset, child);
+        }else{
+            hoffsets << hoffset;
         }
+        if(child.item->y() != voffset)
+            positionY(voffset, child);
 
         contentSize->setWidth(qMax(contentSize->width(), hoffset + childPrivate->width()));
         contentSize->setHeight(qMax(contentSize->height(), voffset + childPrivate->height()));
@@ -1119,6 +1283,24 @@ void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
             voffset += spacing();
             linemax = qMax(linemax, qCeil(childPrivate->width()));
         }
+    }
+
+    if(d->layoutDirection == Qt::LeftToRight)
+        return;
+
+    int end;
+    if(widthValid())
+        end = width();
+    else
+        end = contentSize->width();
+    int acc = 0;
+    for (int i = 0; i < positionedItems.count(); ++i) {
+        const PositionedItem &child = positionedItems.at(i);
+        if (!child.item || !child.isVisible)
+            continue;
+        hoffset = end - hoffsets[acc++] - QGraphicsItemPrivate::get(child.item)->width();
+        if(child.item->x() != hoffset)
+            positionX(hoffset, child);
     }
 }
 

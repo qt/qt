@@ -28,11 +28,8 @@ function loadComponent() {
 
 function createItem() {
     if (itemComponent.status == Component.Ready && draggedItem == null) {
-        draggedItem = itemComponent.createObject(window);
-        draggedItem.image = paletteItem.image;
-        draggedItem.x = posnInWindow.x;
-        draggedItem.y = posnInWindow.y;
-        draggedItem.z = 3;  // make sure created item is above the ground layer
+        draggedItem = itemComponent.createObject(window, {"image": paletteItem.image, "x": posnInWindow.x, "y": posnInWindow.y, "z": 3});
+        // make sure created item is above the ground layer
     } else if (itemComponent.status == Component.Error) {
         draggedItem = null;
         console.log("error creating component");

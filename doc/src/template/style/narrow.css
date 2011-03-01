@@ -135,7 +135,7 @@
     .creator .wrap
     {
         margin: 0px;
-		background:#FFFFFF;
+        background:#FFFFFF;
     }
     .narrow .wrap .toolbar
     {
@@ -170,7 +170,7 @@
     .narrow .wrap .breadcrumb ul li.last a {
       color: #363534;
     }
-    
+
     #narrowsearch {
       display: none;
     }
@@ -213,7 +213,7 @@
       width: 64%;
       padding-left: 0;
     }
-    
+
     .narrow .indexboxcont .sectionlist {
       width: 32.5%;
     }
@@ -253,7 +253,7 @@
     #narrowmenu li,
     #narrowmenu li ul {
       background-color: #fff;
-	  margin-top:-1px;
+      margin-top:-1px;
     }
 
     #narrowmenu li ul {
@@ -266,6 +266,6 @@
     }
 
     /* end narrow mode */
-	.creator #narrowsearch, .creator #narrowmenu{
-		display:none;
-	}
+    .creator #narrowsearch, .creator #narrowmenu{
+        display:none;
+    }

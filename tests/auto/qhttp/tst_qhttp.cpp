@@ -856,7 +856,7 @@ void tst_QHttp::proxy2()
     QTestEventLoop::instance().enterLoop(30);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(readyRead_ba.count("Welcome to fluke.troll.no"), 2);
+    QCOMPARE(readyRead_ba.count("Welcome to qt-test-server"), 2);
 
     readyRead_ba.clear();
 }
@@ -891,7 +891,7 @@ void tst_QHttp::proxy3()
     QTestEventLoop::instance().enterLoop(30);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(readyRead_ba.count("Welcome to fluke.troll.no"), 2);
+    QCOMPARE(readyRead_ba.count("Welcome to qt-test-server"), 2);
 
     readyRead_ba.clear();
 }

@@ -1,11 +1,49 @@
-include(qt.qdocconf)
+include(qt-project.qdocconf)
 
 imagedirs               = $QTDIR/doc/src/images \
                           $QTDIR/examples \
-			  $QTDIR/doc/src/template/images
+                          $QTDIR/doc/src/declarative/pics \
+                          $QTDIR/doc/src/template/images
 
 outputdir               = $QTDIR/doc/ditaxml
 outputformats           = DITAXML
 
 generateindex           = true
 url                     = .
+macro.aacute.DITAXML    = "&aacute;"
+macro.Aring.DITAXML     = "&Aring;"
+macro.aring.DITAXML     = "&aring;"
+macro.Auml.DITAXML      = "&Auml;"
+macro.author            = "\\bold{Author:}"
+macro.br.DITAXML        = " "
+macro.BR.DITAXML        = " "
+macro.copyright.DITAXML = "&copy;"
+macro.eacute.DITAXML    = "&eacute;"
+macro.gui               = "\\bold"
+macro.hr.DITAXML        = " "
+macro.iacute.DITAXML    = "&iacute;"
+macro.key               = "\\bold"
+macro.menu              = "\\bold"
+macro.note              = "\\bold{Note:}"
+macro.oslash.DITAXML    = "&oslash;"
+macro.ouml.DITAXML      = "&ouml;"
+macro.QA                = "\\e{Qt Assistant}"
+macro.QD                = "\\e{Qt Designer}"
+macro.QL                = "\\e{Qt Linguist}"
+macro.QQV               = "\\e{Qt QML Viewer}"
+macro.param             = "\\e"
+macro.raisedaster.DITAXML  = "<sup>*</sup>"
+macro.rarrow.DITAXML    = "&rarr;"
+macro.reg.DITAXML       = "<sup>&reg;</sup>"
+macro.return            = "Returns"
+macro.starslash         = "\\c{*/}"
+macro.begincomment      = "\\c{/*}"
+macro.endcomment        = "\\c{*/}"
+macro.uuml.DITAXML      = "&uuml;"
+macro.mdash.DITAXML     = "&mdash;"
+
+macro.beginfloatleft.HTML   = " "
+macro.beginfloatright.HTML  = " "
+macro.endfloat.HTML         = " "
+macro.clearfloat.HTML       = " "
+macro.emptyspan.DITAXML	    = " "

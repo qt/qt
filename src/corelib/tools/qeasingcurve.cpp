@@ -92,14 +92,18 @@
     animation.setEasingCurve(QEasingCurve::InOutQuad);
     \endcode
 
-    The ability to set an amplitude, overshoot, or period depends on the QEasingCurve type. Amplitude access
-    is available to curves that behave as springs such as elastic and bounce curves. Changing the amplitude changes
-    the height of the curve. Period access is only available to elastic curves and setting a higher period slows
-    the rate of bounce. Only curves that have "boomerang" behaviors such as the InBack, OutBack, InOutBack, and OutInBack 
-    have overshoot settings. These curves will interpolate beyond the end points and return to the end point, 
-    acting similar to a boomerang.
+    The ability to set an amplitude, overshoot, or period depends on
+    the QEasingCurve type. Amplitude access is available to curves
+    that behave as springs such as elastic and bounce curves. Changing
+    the amplitude changes the height of the curve. Period access is
+    only available to elastic curves and setting a higher period slows
+    the rate of bounce. Only curves that have "boomerang" behaviors
+    such as the InBack, OutBack, InOutBack, and OutInBack have
+    overshoot settings. These curves will interpolate beyond the end
+    points and return to the end point, acting similar to a boomerang.
 
-    The \l{Easing Curves Example} contains samples of QEasingCurve types and lets you change the curve settings.
+    The \l{Easing Curves Example} contains samples of QEasingCurve
+    types and lets you change the curve settings.
 
  */
 

@@ -334,10 +334,10 @@ QList<QByteArray> QDeclarativeDomProperty::propertyNameParts() const
     Return true if this property is used as a default property in the QML
     document.
 
-    \qml
+    \code
 <Text text="hello"/>
 <Text>hello</Text>
-    \endqml
+    \endcode
 
     The above two examples return the same DOM tree, except that the second has
     the default property flag set on the text property.  Observe that whether
@@ -509,10 +509,10 @@ QByteArray QDeclarativeDomDynamicProperty::propertyTypeName() const
     Return true if this property is used as a default property in the QML
     document.
 
-    \qml
+    \code
 <Text text="hello"/>
 <Text>hello</Text>
-    \endqml
+    \endcode
 
     The above two examples return the same DOM tree, except that the second has
     the default property flag set on the text property.  Observe that whether

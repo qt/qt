@@ -43,7 +43,7 @@
 
 #include "qnetworkinterface.h"
 #include "qnetworkinterface_p.h"
-#include "../corelib/kernel/qcore_symbian_p.h"
+#include <private/qcore_symbian_p.h>
 
 #ifndef QT_NO_NETWORKINTERFACE
 

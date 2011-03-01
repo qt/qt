@@ -158,6 +158,22 @@ Q_CORE_EXPORT RFs& qt_s60GetRFs();
 // Defined in qlocale_symbian.cpp.
 Q_CORE_EXPORT QByteArray qt_symbianLocaleName(int code);
 
+template <typename R>
+struct QScopedPointerRCloser
+{
+    static inline void cleanup(R *rPointer)
+    {
+        // Enforce a complete type.
+        // If you get a compile error here, read the section on forward declared
+        // classes in the QScopedPointer documentation.
+        typedef char IsIncompleteType[ sizeof(R) ? 1 : -1 ];
+        (void) sizeof(IsIncompleteType);
+
+        if (rPointer)
+            rPointer->Close();
+    }
+};
+
 QT_END_NAMESPACE
 
 QT_END_HEADER

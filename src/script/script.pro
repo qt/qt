@@ -89,7 +89,6 @@ include(script.pri)
 
 symbian {
     TARGET.UID3=0x2001B2E1
-    LIBS += -lhal
 }
 
 symbian {
@@ -100,6 +99,10 @@ symbian {
         QMAKE_CXXFLAGS -= --thumb
     }
     QMAKE_CXXFLAGS.ARMCC += -OTime -O3
+}
+
+integrity {
+    CFLAGS += --diag_remark=236,82
 }
 
 # WebKit doesn't compile in C++0x mode

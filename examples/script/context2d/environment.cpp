@@ -363,6 +363,23 @@ QScriptValue Environment::evaluate(const QString &code, const QString &fileName)
     return m_engine->evaluate(code, fileName);
 }
 
+bool Environment::hasIntervalTimers() const
+{
+    return !m_intervalHash.isEmpty();
+}
+
+// This is used by the Context2D QtScript benchmark.
+void Environment::triggerTimers()
+{
+    for (int x = 0; x < 2; ++x) {
+        QList<int> timerIds = x ? m_intervalHash.keys() : m_timeoutHash.keys();
+        for (int i = 0; i < timerIds.size(); ++i) {
+            QTimerEvent fakeEvent(timerIds.at(i));
+            timerEvent(&fakeEvent);
+        }
+    }
+}
+
 //! [2]
 QScriptValue Environment::toWrapper(QObject *object)
 {

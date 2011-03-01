@@ -200,6 +200,16 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
 */
 
 /*!
+    \qmlproperty bool BorderImage::mirror
+    \since Quick 1.1
+
+    This property holds whether the image should be horizontally inverted
+    (effectively displaying a mirrored image).
+
+    The default value is false.
+*/
+
+/*!
     \qmlproperty url BorderImage::source
 
     This property holds the URL that refers to the source image.
@@ -215,16 +225,28 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
     image \c picture.png:
 
     \qml
-    border.left: 10
-    border.top: 10
-    border.bottom: 10
-    border.right: 10
-    source: picture.png
+    BorderImage {
+        border.left: 10
+        border.top: 10
+        border.bottom: 10
+        border.right: 10
+        source: "picture.png"
+    }
     \endqml
 
     The URL may be absolute, or relative to the URL of the component.
 
     \sa QDeclarativeImageProvider
+*/
+
+/*!
+    \qmlproperty QSize BorderImage::sourceSize
+
+    This property holds the actual width and height of the loaded image.
+
+    In BorderImage, this property is read-only.
+
+    \sa Image::sourceSize
 */
 void QDeclarativeBorderImage::setSource(const QUrl &url)
 {
@@ -290,7 +312,12 @@ void QDeclarativeBorderImage::load()
             }
         } else {
 
-            d->pix.load(qmlEngine(this), d->url, d->async);
+            QDeclarativePixmap::Options options;
+            if (d->async)
+                options |= QDeclarativePixmap::Asynchronous;
+            if (d->cache)
+                options |= QDeclarativePixmap::Cache;
+            d->pix.load(qmlEngine(this), d->url, options);
 
             if (d->pix.isLoading()) {
                 d->pix.connectFinished(this, SLOT(requestFinished()));
@@ -310,6 +337,7 @@ void QDeclarativeBorderImage::load()
                 d->progress = 1.0;
                 emit statusChanged(d->status);
                 emit progressChanged(d->progress);
+                requestFinished();
                 update();
             }
         }
@@ -337,7 +365,10 @@ void QDeclarativeBorderImage::load()
     the bottom of the image:
 
     \qml
-    border.bottom: 10
+    BorderImage {
+        border.bottom: 10
+        // ...
+    }
     \endqml
 
     The border lines can also be specified using a
@@ -413,7 +444,12 @@ void QDeclarativeBorderImage::setGridScaledImage(const QDeclarativeGridScaledIma
 
         d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
 
-        d->pix.load(qmlEngine(this), d->sciurl, d->async);
+        QDeclarativePixmap::Options options;
+        if (d->async)
+            options |= QDeclarativePixmap::Asynchronous;
+        if (d->cache)
+            options |= QDeclarativePixmap::Cache;
+        d->pix.load(qmlEngine(this), d->sciurl, options);
 
         if (d->pix.isLoading()) {
             static int thisRequestProgress = -1;
@@ -465,6 +501,9 @@ void QDeclarativeBorderImage::requestFinished()
     setImplicitWidth(impsize.width());
     setImplicitHeight(impsize.height());
 
+    if (d->sourcesize.width() != d->pix.width() || d->sourcesize.height() != d->pix.height())
+        emit sourceSizeChanged();
+
     d->progress = 1.0;
     emit statusChanged(d->status);
     emit progressChanged(1.0);
@@ -514,8 +553,15 @@ void QDeclarativeBorderImage::paint(QPainter *p, const QStyleOptionGraphicsItem 
 
     bool oldAA = p->testRenderHint(QPainter::Antialiasing);
     bool oldSmooth = p->testRenderHint(QPainter::SmoothPixmapTransform);
+    QTransform oldTransform;
     if (d->smooth)
         p->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
+    if (d->mirror) {
+        oldTransform = p->transform();
+        QTransform mirror;
+        mirror.translate(d->width(), 0).scale(-1, 1.0);
+        p->setWorldTransform(mirror * oldTransform);
+    }
 
     const QDeclarativeScaleGrid *border = d->getScaleGrid();
     int left = border->left();
@@ -541,6 +587,8 @@ void QDeclarativeBorderImage::paint(QPainter *p, const QStyleOptionGraphicsItem 
         p->setRenderHint(QPainter::Antialiasing, oldAA);
         p->setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
     }
+    if (d->mirror)
+        p->setWorldTransform(oldTransform);
 }
 
 QT_END_NAMESPACE

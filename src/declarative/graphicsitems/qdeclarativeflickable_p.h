@@ -149,6 +149,9 @@ public:
     FlickableDirection flickableDirection() const;
     void setFlickableDirection(FlickableDirection);
 
+    Q_INVOKABLE Q_REVISION(1) void resizeContent(qreal w, qreal h, QPointF center);
+    Q_INVOKABLE Q_REVISION(1) void returnToBounds();
+
 Q_SIGNALS:
     void contentWidthChanged();
     void contentHeightChanged();
@@ -201,6 +204,7 @@ protected:
     virtual void viewportMoved();
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
+    bool sceneEvent(QEvent *event);
     bool sendMouseEvent(QGraphicsSceneMouseEvent *event);
 
     bool xflick() const;

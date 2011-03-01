@@ -1378,12 +1378,13 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size, Skin
 QPixmap QS60StylePrivate::backgroundTexture()
 {
     bool createNewBackground = false;
+    TRect applicationRect = (static_cast<CEikAppUi*>(S60->appUi())->ApplicationRect());
     if (!m_background) {
         createNewBackground = true;
     } else {
         //if background brush does not match screensize, re-create it
-        if (m_background->width() != S60->screenWidthInPixels ||
-            m_background->height() != S60->screenHeightInPixels) {
+        if (m_background->width() != applicationRect.Width() ||
+            m_background->height() != applicationRect.Height()) {
             delete m_background;
             createNewBackground = true;
         }
@@ -1391,7 +1392,7 @@ QPixmap QS60StylePrivate::backgroundTexture()
 
     if (createNewBackground) {
         QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen,
-            QSize(S60->screenWidthInPixels, S60->screenHeightInPixels), 0, SkinElementFlags());
+                QSize(applicationRect.Width(), applicationRect.Height()), 0, SkinElementFlags());
         m_background = new QPixmap(background);
     }
     return *m_background;
@@ -1411,7 +1412,6 @@ QS60Style::QS60Style()
 void QS60StylePrivate::handleDynamicLayoutVariantSwitch()
 {
     clearCaches(QS60StylePrivate::CC_LayoutChange);
-    setBackgroundTexture(qApp);
     setActiveLayout();
     refreshUI();
     foreach (QWidget *widget, QApplication::allWidgets())

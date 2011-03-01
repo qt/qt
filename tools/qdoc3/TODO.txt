@@ -10,8 +10,6 @@
     * Don't turn X11 and similar names into links.
     * Added automatic links from getters to setters and vice versa.
     * Support \module and show which module each class is from.
-    * Use bullet list for the list of all functions, now that
-      Assistant handles these gracefully.
     * Fix occasional crash caused by misuse of const_cast().
     * Provide clearer error messages when resolves fail.
 
@@ -55,11 +53,8 @@ MUST HAVES:
   * Provide a "List of all properties" page.
 
   * expand QObjectList -> QList<QObject *>
-  * make \macro work (?)
   * warning for unnamed parameters in property access functions
   * \center...\endcenter
-
-  * warning for undocumented enum values
 
 LINKS:
 
@@ -73,8 +68,6 @@ LINKS:
   * improve the \a warnings for overloads; if one overload documents a para, fine
 
   * implement \sidebar
-
-  * implement qbook
 
   * implement \legalesefile
 
@@ -92,5 +85,3 @@ NICE FEATURES:
 OTHER:
   * make qdoc run faster
   * make sure \headerfile works even if specified after \relates
-
-  * use qtstyle.css instead of inline style for each page

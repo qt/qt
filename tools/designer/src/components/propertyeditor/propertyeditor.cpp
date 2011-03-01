@@ -91,6 +91,7 @@ static const char *ViewKeyC = "View";
 static const char *ColorKeyC = "Colored";
 static const char *SortedKeyC = "Sorted";
 static const char *ExpansionKeyC = "ExpandedItems";
+static const char *SplitterPositionKeyC = "SplitterPosition";
 
 enum SettingsView { TreeView, ButtonView };
 
@@ -365,10 +366,12 @@ PropertyEditor::PropertyEditor(QDesignerFormEditorInterface *core, QWidget *pare
     m_sorting = settings->value(QLatin1String(SortedKeyC), false).toBool();
     m_coloring = settings->value(QLatin1String(ColorKeyC), true).toBool();
     const QVariantMap expansionState = settings->value(QLatin1String(ExpansionKeyC), QVariantMap()).toMap();
+    const int splitterPosition = settings->value(QLatin1String(SplitterPositionKeyC), 150).toInt();
     settings->endGroup();
     // Apply settings
     m_sortingAction->setChecked(m_sorting);
     m_coloringAction->setChecked(m_coloring);
+    m_treeBrowser->setSplitterPosition(splitterPosition);
 #if QT_VERSION >= 0x040500
     switch (view) {
     case TreeView:
@@ -415,6 +418,7 @@ void PropertyEditor::saveSettings() const
             expansionState.insert(it.key(), QVariant(it.value()));
     }
     settings->setValue(QLatin1String(ExpansionKeyC), expansionState);
+    settings->setValue(QLatin1String(SplitterPositionKeyC), m_treeBrowser->splitterPosition());
     settings->endGroup();
 }
 

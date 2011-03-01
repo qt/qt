@@ -53,6 +53,10 @@ QT_BEGIN_NAMESPACE
 // before we perform a flick.
 static const int FlickThreshold = 20;
 
+// RetainGrabVelocity is the maxmimum instantaneous velocity that
+// will ensure the  Flickable retains the grab on consecutive flicks.
+static const int RetainGrabVelocity = 15;
+
 QDeclarativeFlickableVisibleArea::QDeclarativeFlickableVisibleArea(QDeclarativeFlickable *parent)
     : QObject(parent), flickable(parent), m_xPosition(0.), m_widthRatio(0.)
     , m_yPosition(0.), m_heightRatio(0.)
@@ -299,7 +303,7 @@ void QDeclarativeFlickablePrivate::fixup(AxisData &data, qreal minExtent, qreal 
             timeline.move(data.move, maxExtent - dist/2, QEasingCurve(QEasingCurve::InQuad), fixupDuration/4);
             timeline.move(data.move, maxExtent, QEasingCurve(QEasingCurve::OutExpo), 3*fixupDuration/4);
         } else {
-            timeline.set(data.move, minExtent);
+            timeline.set(data.move, maxExtent);
         }
     }
     vTime = timeline.time();
@@ -373,9 +377,9 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
 
     \section1 Example Usage
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage flickable.gif
-    \endfloat
+    \enddiv
 
     The following example shows a small view onto a large image in which the
     user can drag or flick the image in order to view different parts of it.
@@ -672,7 +676,8 @@ void QDeclarativeFlickable::setFlickableDirection(FlickableDirection direction)
 void QDeclarativeFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_Q(QDeclarativeFlickable);
-    if (interactive && timeline.isActive() && (qAbs(hData.velocity) > 10 || qAbs(vData.velocity) > 10))
+    if (interactive && timeline.isActive()
+            && (qAbs(hData.smoothVelocity.value()) > RetainGrabVelocity || qAbs(vData.smoothVelocity.value()) > RetainGrabVelocity))
         stealMouse = true; // If we've been flicked then steal the click.
     else
         stealMouse = false;
@@ -840,7 +845,8 @@ void QDeclarativeFlickable::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeFlickable);
     if (d->interactive) {
-        d->handleMousePressEvent(event);
+        if (!d->pressed)
+            d->handleMousePressEvent(event);
         event->accept();
     } else {
         QDeclarativeItem::mousePressEvent(event);
@@ -876,7 +882,7 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
     Q_D(QDeclarativeFlickable);
     if (!d->interactive) {
         QDeclarativeItem::wheelEvent(event);
-    } else if (yflick()) {
+    } else if (yflick() && event->orientation() == Qt::Vertical) {
         if (event->delta() > 0)
             d->vData.velocity = qMax(event->delta() - d->vData.smoothVelocity.value(), qreal(250.0));
         else
@@ -888,7 +894,7 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
             movementStarting();
         }
         event->accept();
-    } else if (xflick()) {
+    } else if (xflick() && event->orientation() == Qt::Horizontal) {
         if (event->delta() > 0)
             d->hData.velocity = qMax(event->delta() - d->hData.smoothVelocity.value(), qreal(250.0));
         else
@@ -905,10 +911,26 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
     }
 }
 
+bool QDeclarativeFlickablePrivate::isOutermostPressDelay() const
+{
+    Q_Q(const QDeclarativeFlickable);
+    QDeclarativeItem *item = q->parentItem();
+    while (item) {
+        QDeclarativeFlickable *flick = qobject_cast<QDeclarativeFlickable*>(item);
+        if (flick && flick->pressDelay() > 0 && flick->isInteractive())
+            return false;
+        item = item->parentItem();
+    }
+
+    return true;
+}
+
 void QDeclarativeFlickablePrivate::captureDelayedPress(QGraphicsSceneMouseEvent *event)
 {
     Q_Q(QDeclarativeFlickable);
     if (!q->scene() || pressDelay <= 0)
+        return;
+    if (!isOutermostPressDelay())
         return;
     delayedPressTarget = q->scene()->mouseGrabberItem();
     delayedPressEvent = new QGraphicsSceneMouseEvent(event->type());
@@ -965,9 +987,10 @@ void QDeclarativeFlickable::timerEvent(QTimerEvent *event)
                 if (scene()->mouseGrabberItem() == d->delayedPressTarget)
                     d->delayedPressTarget->ungrabMouse();
                 //Use the event handler that will take care of finding the proper item to propagate the event
-                QApplication::sendEvent(scene(), d->delayedPressEvent);
+                QApplication::postEvent(scene(), d->delayedPressEvent);
+            } else {
+                delete d->delayedPressEvent;
             }
-            delete d->delayedPressEvent;
             d->delayedPressEvent = 0;
         }
     }
@@ -1250,6 +1273,60 @@ void QDeclarativeFlickable::setContentHeight(qreal h)
     d->updateBeginningEnd();
 }
 
+/*!
+    \qmlmethod Flickable::resizeContent(real width, real height, QPointF center)
+    \preliminary
+
+    Resizes the content to \a width x \a height about \a center.
+
+    \bold {This method was added in QtQuick 1.1.}
+
+    This does not scale the contents of the Flickable - it only resizes the \l contentWidth
+    and \l contentHeight.
+
+    Resizing the content may result in the content being positioned outside
+    the bounds of the Flickable.  Calling \l returnToBounds() will
+    move the content back within legal bounds.
+*/
+void QDeclarativeFlickable::resizeContent(qreal w, qreal h, QPointF center)
+{
+    Q_D(QDeclarativeFlickable);
+    if (w != d->hData.viewSize) {
+        qreal oldSize = d->hData.viewSize;
+        setContentWidth(w);
+        if (center.x() != 0) {
+            qreal pos = center.x() * w / oldSize;
+            setContentX(contentX() + pos - center.x());
+        }
+    }
+    if (h != d->vData.viewSize) {
+        qreal oldSize = d->vData.viewSize;
+        setContentHeight(h);
+        if (center.y() != 0) {
+            qreal pos = center.y() * h / oldSize;
+            setContentY(contentY() + pos - center.y());
+        }
+    }
+}
+
+/*!
+    \qmlmethod Flickable::returnToBounds()
+    \preliminary
+
+    Ensures the content is within legal bounds.
+
+    \bold {This method was added in QtQuick 1.1.}
+
+    This may be called to ensure that the content is within legal bounds
+    after manually positioning the content.
+*/
+void QDeclarativeFlickable::returnToBounds()
+{
+    Q_D(QDeclarativeFlickable);
+    d->fixupX();
+    d->fixupY();
+}
+
 qreal QDeclarativeFlickable::vWidth() const
 {
     Q_D(const QDeclarativeFlickable);
@@ -1284,6 +1361,22 @@ bool QDeclarativeFlickable::yflick() const
     return d->flickableDirection & QDeclarativeFlickable::VerticalFlick;
 }
 
+bool QDeclarativeFlickable::sceneEvent(QEvent *event)
+{
+    bool rv = QDeclarativeItem::sceneEvent(event);
+    if (event->type() == QEvent::UngrabMouse) {
+        Q_D(QDeclarativeFlickable);
+        if (d->pressed) {
+            // if our mouse grab has been removed (probably by another Flickable),
+            // fix our state
+            d->pressed = false;
+            d->stealMouse = false;
+            setKeepMouseGrab(false);
+        }
+    }
+    return rv;
+}
+
 bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeFlickable);
@@ -1311,7 +1404,7 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
             d->handleMouseMoveEvent(&mouseEvent);
             break;
         case QEvent::GraphicsSceneMousePress:
-            if (d->delayedPressEvent)
+            if (d->pressed) // we are already pressed - this is a delayed replay
                 return false;
 
             d->handleMousePressEvent(&mouseEvent);
@@ -1330,6 +1423,8 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
                 // We send the release
                 scene()->sendEvent(s->mouseGrabberItem(), event);
                 // And the event has been consumed
+                d->stealMouse = false;
+                d->pressed = false;
                 return true;
             }
             d->handleMouseReleaseEvent(&mouseEvent);
@@ -1352,6 +1447,7 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
         d->stealMouse = false;
         d->pressed = false;
     }
+
     return false;
 }
 
@@ -1450,6 +1546,9 @@ bool QDeclarativeFlickable::isFlickingVertically() const
     If the flickable is dragged/flicked before the delay times out
     the press event will not be delivered.  If the button is released
     within the timeout, both the press and release will be delivered.
+
+    Note that for nested Flickables with pressDelay set, the pressDelay of
+    inner Flickables is overridden by the outermost Flickable.
 */
 int QDeclarativeFlickable::pressDelay() const
 {
