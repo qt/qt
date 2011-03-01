@@ -996,18 +996,22 @@ void QDeclarativeTextInput::inputMethodEvent(QInputMethodEvent *ev)
 {
     Q_D(QDeclarativeTextInput);
     ev->ignore();
+    const bool wasComposing = d->control->preeditAreaText().length() > 0;
     inputMethodPreHandler(ev);
-    if (ev->isAccepted())
-        return;
-    if (d->control->isReadOnly()) {
-        ev->ignore();
-    } else {
-        d->control->processInputMethodEvent(ev);
-        updateSize();
-        d->updateHorizontalScroll();
+    if (!ev->isAccepted()) {
+        if (d->control->isReadOnly()) {
+            ev->ignore();
+        } else {
+            d->control->processInputMethodEvent(ev);
+            updateSize();
+            d->updateHorizontalScroll();
+        }
     }
     if (!ev->isAccepted())
         QDeclarativePaintedItem::inputMethodEvent(ev);
+
+    if (wasComposing != (d->control->preeditAreaText().length() > 0))
+        emit inputMethodComposingChanged();
 }
 
 /*!
@@ -1704,6 +1708,25 @@ void QDeclarativeTextInput::focusInEvent(QFocusEvent *event)
         }
     }
     QDeclarativePaintedItem::focusInEvent(event);
+}
+
+/*!
+    \qmlproperty bool TextInput::isInputMethodComposing()
+
+    \since QtQuick 1.1
+
+    This property holds whether the TextInput has partial text input from an
+    input method.
+
+    While it is composing an input method may rely on mouse or key events from
+    the TextInput to edit or commit the partial text.  This property can be
+    used to determine when to disable events handlers that may interfere with
+    the correct operation of an input method.
+*/
+bool QDeclarativeTextInput::isInputMethodComposing() const
+{
+    Q_D(const QDeclarativeTextInput);
+    return d->control->preeditAreaText().length() > 0;
 }
 
 void QDeclarativeTextInputPrivate::init()

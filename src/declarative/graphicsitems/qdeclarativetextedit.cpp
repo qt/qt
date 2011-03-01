@@ -1318,7 +1318,10 @@ Handles the given input method \a event.
 void QDeclarativeTextEdit::inputMethodEvent(QInputMethodEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
+    const bool wasComposing = isInputMethodComposing();
     d->control->processEvent(event, QPointF(0, -d->yoff));
+    if (wasComposing != isInputMethodComposing())
+        emit inputMethodComposingChanged();
 }
 
 /*!
@@ -1392,6 +1395,27 @@ bool QDeclarativeTextEdit::canPaste() const
 {
     Q_D(const QDeclarativeTextEdit);
     return d->canPaste;
+}
+
+/*!
+    \qmlproperty bool TextEdit::isInputMethodComposing()
+
+    \since QtQuick 1.1
+
+    This property holds whether the TextEdit has partial text input from an
+    input method.
+
+    While it is composing an input method may rely on mouse or key events from
+    the TextEdit to edit or commit the partial text.  This property can be used
+    to determine when to disable events handlers that may interfere with the
+    correct operation of an input method.
+*/
+bool QDeclarativeTextEdit::isInputMethodComposing() const
+{
+    Q_D(const QDeclarativeTextEdit);
+    if (QTextLayout *layout = d->control->textCursor().block().layout())
+        return layout->preeditAreaText().length() > 0;
+    return false;
 }
 
 void QDeclarativeTextEditPrivate::init()

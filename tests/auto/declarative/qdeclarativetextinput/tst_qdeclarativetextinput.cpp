@@ -128,6 +128,7 @@ private slots:
     void preeditAutoScroll();
     void preeditMicroFocus();
     void inputContextMouseHandler();
+    void inputMethodComposing();
 
 private:
     void simulateKey(QDeclarativeView *, int key);
@@ -2072,6 +2073,43 @@ void tst_qdeclarativetextinput::inputContextMouseHandler()
     QCOMPARE(ic.eventModifiers, Qt::ControlModifier);
     QVERIFY(ic.cursor < 0);
     ic.eventType = QEvent::None;
+}
+
+void tst_qdeclarativetextinput::inputMethodComposing()
+{
+    QString text = "supercalifragisiticexpialidocious!";
+
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    MyInputContext ic;
+    view.setInputContext(&ic);
+    QDeclarativeTextInput input;
+    input.setWidth(200);
+    input.setText(text.mid(0, 12));
+    input.setCursorPosition(12);
+    input.setPos(0, 0);
+    input.setFocus(true);
+    scene.addItem(&input);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+
+    QSignalSpy spy(&input, SIGNAL(inputMethodComposingChanged()));
+
+    QCOMPARE(input.isInputMethodComposing(), false);
+
+    ic.sendEvent(QInputMethodEvent(text.mid(3), QList<QInputMethodEvent::Attribute>()));
+    QCOMPARE(input.isInputMethodComposing(), true);
+    QCOMPARE(spy.count(), 1);
+
+    ic.sendEvent(QInputMethodEvent(text.mid(12), QList<QInputMethodEvent::Attribute>()));
+    QCOMPARE(input.isInputMethodComposing(), true);
+    QCOMPARE(spy.count(), 1);
+
+    ic.sendEvent(QInputMethodEvent());
+    QCOMPARE(input.isInputMethodComposing(), false);
+    QCOMPARE(spy.count(), 2);
 }
 
 QTEST_MAIN(tst_qdeclarativetextinput)

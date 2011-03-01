@@ -97,6 +97,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeTextInput : public QDeclarativeImplicitSizeP
     Q_PROPERTY(bool selectByMouse READ selectByMouse WRITE setSelectByMouse NOTIFY selectByMouseChanged)
     Q_PROPERTY(SelectionMode mouseSelectionMode READ mouseSelectionMode WRITE setMouseSelectionMode NOTIFY mouseSelectionModeChanged REVISION 1)
     Q_PROPERTY(bool canPaste READ canPaste NOTIFY canPasteChanged REVISION 1)
+    Q_PROPERTY(bool inputMethodComposing READ isInputMethodComposing NOTIFY inputMethodComposingChanged REVISION 1)
 
 public:
     QDeclarativeTextInput(QDeclarativeItem* parent=0);
@@ -210,6 +211,8 @@ public:
     QRectF boundingRect() const;
     bool canPaste() const;
 
+    bool isInputMethodComposing() const;
+
 Q_SIGNALS:
     void textChanged();
     void cursorPositionChanged();
@@ -237,6 +240,7 @@ Q_SIGNALS:
     void selectByMouseChanged(bool selectByMouse);
     Q_REVISION(1) void mouseSelectionModeChanged(SelectionMode mode);
     Q_REVISION(1) void canPasteChanged();
+    Q_REVISION(1) void inputMethodComposingChanged();
 
 protected:
     virtual void geometryChanged(const QRectF &newGeometry,
