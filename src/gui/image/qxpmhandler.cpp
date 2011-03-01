@@ -864,7 +864,7 @@ static bool read_xpm_body(
     QByteArray buf(200, 0);
     int i;
 
-    if (cpp > 15)
+    if (cpp < 0 || cpp > 15)
         return false;
 
     // For > 256 colors, we delay creation of the image until

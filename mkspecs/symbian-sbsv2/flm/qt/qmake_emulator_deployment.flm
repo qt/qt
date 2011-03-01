@@ -33,5 +33,6 @@ ifeq ($($(SINGLETON)),)
 $(eval $(call qmake_emulator_deployment, $(subst $(CHAR_SPACE),\$(CHAR_SPACE),$(DEPLOY_TARGET)), $(subst $(CHAR_SPACE),\$(CHAR_SPACE),$(DEPLOY_SOURCE))))
 $(call makepath,$(dir $(DEPLOY_TARGET)))
 $(eval $(call GenerateStandardCleanTarget,$(CLEAN_TARGET),''))
+$(eval $(call whatmacro,$(CLEAN_TARGET)))
 endif	
 

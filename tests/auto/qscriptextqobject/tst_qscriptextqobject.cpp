@@ -1008,8 +1008,9 @@ void tst_QScriptExtQObject::getSetStaticProperty_methodPersistence()
         QVERIFY(slot.isFunction());
         QScriptValue sameSlot = m_engine->evaluate("myObject.mySlot");
         QVERIFY(sameSlot.strictlyEquals(slot));
-        sameSlot = m_engine->evaluate("myObject[mySlot()]");
-        QEXPECT_FAIL("", "Signature-based method lookup creates new function wrapper object", Continue);
+        sameSlot = m_engine->evaluate("myObject['mySlot()']");
+        QVERIFY(sameSlot.isFunction());
+        QEXPECT_FAIL("", "QTBUG-17611: Signature-based method lookup creates new function wrapper object", Continue);
         QVERIFY(sameSlot.strictlyEquals(slot));
     }
 }
@@ -1103,7 +1104,7 @@ void tst_QScriptExtQObject::getSetDynamicProperty_doNotHideJSProperty()
     val.setProperty("x", 42);
     m_myObject->setProperty("x", 2222);
 
-    QEXPECT_FAIL("", "", Continue);
+    QEXPECT_FAIL("", "QTBUG-17612: Dynamic C++ property overrides JS property", Continue);
 
     // JS should see the original JS value
     QVERIFY(val.property("x").strictlyEquals(QScriptValue(m_engine, 42)));

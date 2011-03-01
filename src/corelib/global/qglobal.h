@@ -369,7 +369,20 @@ namespace QT_NAMESPACE {}
 */
 
 #if defined(__ghs)
-#  define Q_OUTOFLINE_TEMPLATE inline
+# define Q_OUTOFLINE_TEMPLATE inline
+
+/* the following are necessary because the GHS C++ name mangling relies on __*/
+# define Q_CONSTRUCTOR_FUNCTION0(AFUNC) \
+   static const int AFUNC ## _init_variable_ = AFUNC();
+# define Q_CONSTRUCTOR_FUNCTION(AFUNC) Q_CONSTRUCTOR_FUNCTION0(AFUNC)
+# define Q_DESTRUCTOR_FUNCTION0(AFUNC) \
+    class AFUNC ## _dest_class_ { \
+    public: \
+       inline AFUNC ## _dest_class_() { } \
+       inline ~ AFUNC ## _dest_class_() { AFUNC(); } \
+    } AFUNC ## _dest_instance_;
+# define Q_DESTRUCTOR_FUNCTION(AFUNC) Q_DESTRUCTOR_FUNCTION0(AFUNC)
+
 #endif
 
 /* Symantec C++ is now Digital Mars */
@@ -460,7 +473,6 @@ namespace QT_NAMESPACE {}
 #  if defined(__INTEL_COMPILER)
 /* Intel C++ also masquerades as GCC 3.2.0 */
 #    define Q_CC_INTEL
-#    define Q_NO_TEMPLATE_FRIENDS
 #  endif
 #  if defined(__clang__)
 /* Clang also masquerades as GCC 4.2.1 */
@@ -761,6 +773,24 @@ namespace QT_NAMESPACE {}
 
 #else
 #  error "Qt has not been tested with this compiler - talk to qt-bugs@trolltech.com"
+#endif
+
+#ifdef Q_CC_INTEL
+#  if __INTEL_COMPILER < 1200
+#    define Q_NO_TEMPLATE_FRIENDS
+#  endif
+#  if defined(__GXX_EXPERIMENTAL_CXX0X__) || defined(__GXX_EXPERIMENTAL_CPP0X__)
+#    if __INTEL_COMPILER >= 1100
+#      define Q_COMPILER_RVALUE_REFS
+#      define Q_COMPILER_EXTERN_TEMPLATES
+#    elif __INTEL_COMPILER >= 1200
+#      define Q_COMPILER_VARIADIC_TEMPLATES
+#      define Q_COMPILER_AUTO_TYPE
+#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
+#      define Q_COMPILER_CLASS_ENUM
+#      define Q_COMPILER_LAMBDA
+#    endif
+#  endif
 #endif
 
 #ifndef Q_PACKED
@@ -1428,7 +1458,7 @@ class QDataStream;
 #    define Q_AUTOTEST_EXPORT
 #endif
 
-inline void qt_noop() {}
+inline void qt_noop(void) {}
 
 /* These wrap try/catch so we can switch off exceptions later.
 
@@ -2469,9 +2499,14 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #  define QT_SYMBIAN_SUPPORTS_SGIMAGE
 #endif
 
-#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#ifdef SYMBIAN_GRAPHICS_SET_SURFACE_TRANSPARENCY_AVAILABLE
 #  define Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
 #endif
+
+#ifdef SYMBIAN_GRAPHICS_TRANSITION_EFFECTS_SIGNALING_AVAILABLE
+#  define Q_SYMBIAN_TRANSITION_EFFECTS
+#endif
+
 #endif
 
 //Symbian does not support data imports from a DLL

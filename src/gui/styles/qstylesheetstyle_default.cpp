@@ -151,7 +151,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
     BasicSelector bSelector;
     Selector selector;
     Declaration decl;
-    Value value;
+    QCss::Value value;
     Pseudo pseudo;
     AttributeSelector attr;
 
