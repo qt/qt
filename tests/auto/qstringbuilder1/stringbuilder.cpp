@@ -110,4 +110,6 @@ void runScenario()
     r = string P ba;
     QCOMPARE(r, r2);
 #endif
+
+    QCOMPARE(QByteArray(qPrintable(string P string)), QByteArray(string.toLatin1() + string.toLatin1()));
 }
