@@ -95,6 +95,29 @@ public:
     ParticleData();
 
     ParticleVertex pv;
+
+    //Convenience functions for working backwards, because parameters are from the start of particle life
+    //If setting multiple parameters at once, doing the conversion yourself will be faster.
+
+    //sets the x accleration without affecting the instantaneous x velocity or position
+    void setInstantaneousAX(qreal ax);
+    //sets the x velocity without affecting the instantaneous x postion
+    void setInstantaneousSX(qreal vx);
+    //sets the instantaneous x postion
+    void setInstantaneousX(qreal x);
+    //sets the y accleration without affecting the instantaneous y velocity or position
+    void setInstantaneousAY(qreal ay);
+    //sets the y velocity without affecting the instantaneous y postion
+    void setInstantaneousSY(qreal vy);
+    //sets the instantaneous Y postion
+    void setInstantaneousY(qreal y);
+
+    //TODO: Slight caching?
+    qreal curX() const;
+    qreal curSX() const;
+    qreal curY() const;
+    qreal curSY() const;
+
     Particle* p;
     ParticleEmitter* e;
     int emitterIndex;

@@ -5,80 +5,91 @@ Rectangle{
     color: "goldenrod"
     width: 800
     height: 800
-    SpriteParticles{
-        id: particles
+    id: root
+    ParticleSystem{
         anchors.fill: parent
-        goalState:ma.pressed?"dead":""
-        states: [SpriteState{
+        particles:SpriteParticle{
+        id: particles
+        spriteEngine: SpriteEngine{
+        sprites: [Sprite{
             name: "happy"
             source: "squarefacesprite2.png"
             frames: 6
             duration: 120
             to: {"silly": 0.4, "sad": 0.2, "cyclops":0.1, "boggled":0.3, "dying":0.0}
-        }, SpriteState{
+        }, Sprite{
             name: "silly"
             source: "squarefacesprite.png"
             frames: 6
             duration: 120
             to: {"love": 0.4, "happy": 0.1, "evil": 0.2, "cyclops":0.1, "boggled":0.2}
-        }, SpriteState{
+        }, Sprite{
             name: "sad"
             source: "squarefacesprite3.png"
             frames: 6
             duration: 120
             to: {"love" : 0.2, "evil": 0.2, "silly": 0.2, "cyclops":0.2, "boggled":0.2}
-        }, SpriteState{
+        }, Sprite{
             name: "cyclops"
             source: "squarefacesprite4.png"
             frames: 6
             duration: 120
             to: {"love": 0.1, "evil": 0.1, "silly":0.1, "boggled":0.1, "cyclops" : 1.0}
-        }, SpriteState{
+        }, Sprite{
             name: "evil"
             source: "squarefacesprite5.png"
             frames: 6
             duration: 120
             to: {"happy": 1.0}
-        }, SpriteState{
+        }, Sprite{
             name: "love"
             source: "squarefacesprite6.png"
             frames: 6
             duration: 120
             to: {"sad": 0.6, "evil":0.4, "boggled":0.2}
-        }, SpriteState{
+        }, Sprite{
             name: "boggled"
             source: "squarefacesprite7.png"
             frames: 6
             duration: 120
             to: {"love" : 0.2, "evil": 0.2, "silly": 0.2, "cyclops":0.1, "sad":0.2}
-        }, SpriteState{
+        }, Sprite{
             name: "dying"
             source: "squarefacespriteX.png"
             frames: 4
             duration: 120
             to: {"dead":1.0}
-        }, SpriteState{
+        }, Sprite{
             name: "dead"
             source: "squarefacespriteXX.png"
             frames: 1
             duration: 10000
         }]
-
-        particlesPerSecond: 16
-        particleDuration: 8000
-        emitting: true
-        xSpeed: 0
-        ySpeed: 100
-        xSpeedVariation: 10
-        ySpeedVariation: 100
-        xAccel: 0
-        yAccel: 10
-        particleSize: 30
-        particleSizeVariation: 10
-        emitterX: width/2
-        emitterY: 50
-        emitterXVariation: width/2
-        emitterYVariation: 50
+        }
+        }
+        emitters: TrailEmitter{
+            particlesPerSecond: 16
+            particleDuration: 10000
+            emitting: true
+            xSpeed: 0
+            ySpeed: 60
+            xSpeedVariation: 10
+            ySpeedVariation: 10
+            xAccel: 0
+            yAccel: 10
+            particleSize: 30
+            particleSizeVariation: 10
+            emitterX: width/2
+            emitterY: 50
+            emitterXVariation: width/2
+            emitterYVariation: 50
+        }
+        affectors: Zone{
+            width: root.width;
+            height: root.height/2;
+            y: root.height/2;
+            affector: SpriteGoal{goalState:"dead"}
+        }
     }
     MouseArea{
         id: ma

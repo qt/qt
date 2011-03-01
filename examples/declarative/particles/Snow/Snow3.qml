@@ -4,11 +4,11 @@ import Qt.labs.particles 2.0
 Rectangle{
     width: 360
     height: 540
+    id: root
     ParticleSystem{
         id: particles
         anchors.fill: parent
-        particles: SpriteParticle{
-            id: sp
+        particles:SpriteParticle{
             sprite: Sprite{
                 name: "snow"
                 source: "flake-01.png"
@@ -16,8 +16,12 @@ Rectangle{
                 duration: 40
             }
         }
-        emitters: TrailEmitter{
-            particle: sp
+        affectors:[Drift{
+            xDrift: 200
+        }, SpeedLimit{
+            speedLimit: 100
+        }]
+        emitters:TrailEmitter{
             particlesPerSecond: 20
             particleDuration: 7000
             emitting: true
@@ -34,6 +38,5 @@ Rectangle{
             emitterXVariation: width/2
             emitterYVariation: 50
         }
-        affectors: Wander{ xVariance: 30; pace: 100; }
     }
 }

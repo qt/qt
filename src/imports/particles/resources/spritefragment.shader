@@ -4,5 +4,5 @@ varying highp vec2 fTex;
 varying lowp vec4 fColor;
 
 void main() {
-    gl_FragColor = texture2D(texture, fTex);// * fColor.w;
+    gl_FragColor = texture2D(texture, fTex) * fColor.w;
 }

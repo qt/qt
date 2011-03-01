@@ -2,6 +2,7 @@
 #define SPRITEPARTICLE_H
 #include "particle.h"
 class SpriteState;
+class SpriteEngine;
 class GeometryNode;
 class QSGContext;
 class SpriteParticlesMaterial;
@@ -9,9 +10,8 @@ class SpriteParticlesMaterial;
 class SpriteParticle : public Particle
 {
     Q_OBJECT
-    Q_PROPERTY(QDeclarativeListProperty<SpriteState> states READ states)
-    Q_PROPERTY(QString goalState READ goalState WRITE setGoalState NOTIFY goalStateChanged)
-    Q_PROPERTY(int frameDuration READ frameDuration WRITE setFrameDuration NOTIFY frameDurationChanged)
+    Q_PROPERTY(SpriteState* sprite READ sprite WRITE setSprite NOTIFY spriteChanged)
+    Q_PROPERTY(SpriteEngine* spriteEngine READ spriteEngine WRITE setSpriteEngine NOTIFY spriteEngineChanged)
 
 public:
     explicit SpriteParticle(QObject *parent = 0);
@@ -22,64 +22,40 @@ public:
     virtual void reset();
     virtual void prepareNextFrame(uint timeStamp);
 
-    int frames() const
+    SpriteEngine* spriteEngine() const
     {
-        return m_frames;
+        return m_spriteEngine;
     }
 
-    int frameDuration() const
+    SpriteState* sprite() const
     {
-        return m_frameDuration;
+        return m_sprite;
     }
 
-    QDeclarativeListProperty<SpriteState> states()
-    {
-        return QDeclarativeListProperty<SpriteState>(this, m_states);
-    }
-
-    QString goalState() const
-    {
-        return m_goalState;
-    }
 signals:
-    void particleDurationChanged();
-    void framesChanged(int arg);
+    void spriteEngineChanged(SpriteEngine* arg);
 
-    void frameDurationChanged(int arg);
-
-    void goalStateChanged(QString arg);
+    void spriteChanged(SpriteState* arg);
 
 public slots:
 
-    void setFrames(int arg)
+    void setSpriteEngine(SpriteEngine* arg)
     {
-        if (m_frames != arg) {
-            m_frames = arg;
-            emit framesChanged(arg);
+        if (m_spriteEngine != arg) {
+            m_spriteEngine = arg;
+            emit spriteEngineChanged(arg);
         }
     }
 
-    void setFrameDuration(int arg)
+    void setSprite(SpriteState* arg)
     {
-        if (m_frameDuration != arg) {
-            m_frameDuration = arg;
-            emit frameDurationChanged(arg);
-        }
-    }
-
-    void setGoalState(QString arg)
-    {
-        if (m_goalState != arg) {
-            m_goalState = arg;
-            emit goalStateChanged(arg);
+        if (m_sprite != arg) {
+            m_sprite = arg;
+            emit spriteChanged(arg);
         }
     }
 
 private:
-    int m_frames;
-    int m_frameDuration;
-    QList<SpriteState*> m_states;
-
     GeometryNode *m_node;
     SpriteParticlesMaterial *m_material;
 
@@ -91,11 +67,8 @@ private:
 
     bool buildParticleTexture(QSGContext *sg);
 
-    //TODO: Need to move to affector and engine-like
-    void addToUpdateList(uint t, int idx);
-    int goalSeek(int curState, int dist=-1);
-    QList<QPair<uint, QList<int> > > m_stateUpdates;//### This could be done faster
-    QString m_goalState;
+    SpriteState* m_sprite;
+    SpriteEngine* m_spriteEngine;
 };
 
 #endif // SPRITEPARTICLE_H
