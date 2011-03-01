@@ -111,6 +111,11 @@ QPlatformClipboard *QPlatformIntegration::clipboard() const
     return clipboard;
 }
 
+QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
+{
+    return 0;
+}
+
 /*!
     \class QPlatformIntegration
     \since 4.8
