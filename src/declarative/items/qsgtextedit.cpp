@@ -1,4 +1,4 @@
-// Commit: d446a0ec464556ede91225b14e75f2f8f5a748d5
+// Commit: a99b6221f5296f97bfa29e0560943634ccc30c3f
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -547,6 +547,10 @@ void QSGTextEdit::setSelectByMouse(bool on)
     if (d->selectByMouse != on) {
         d->selectByMouse = on;
         setKeepMouseGrab(on);
+        if (on)
+            setTextInteractionFlags(d->control->textInteractionFlags() | Qt::TextSelectableByMouse);
+        else
+            setTextInteractionFlags(d->control->textInteractionFlags() & ~Qt::TextSelectableByMouse);
         emit selectByMouseChanged(on);
     }
 }
@@ -575,11 +579,10 @@ void QSGTextEdit::setReadOnly(bool r)
 
     setFlag(QSGItem::ItemAcceptsInputMethod, !r);
     Qt::TextInteractionFlags flags = Qt::LinksAccessibleByMouse;
-    if (r) {
+    if (d->selectByMouse)
         flags = flags | Qt::TextSelectableByMouse;
-    } else {
-        flags = flags | Qt::TextEditorInteraction;
-    }
+    if (!r)
+        flags = flags | Qt::TextSelectableByKeyboard | Qt::TextEditable;
     d->control->setTextInteractionFlags(flags);
     if (!r)
         d->control->moveCursor(QTextCursor::End);
@@ -724,8 +727,7 @@ void QSGTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
             }
         }
     }
-    if (event->type() != QEvent::GraphicsSceneMouseDoubleClick || d->selectByMouse)
-        d->control->processEvent(event, QPointF(0, -d->yoff));
+    d->control->processEvent(event, QPointF(0, -d->yoff));
     if (!event->isAccepted())
         QSGPaintedItem::mousePressEvent(event);
 }
@@ -758,13 +760,9 @@ Handles the given mouse \a event.
 void QSGTextEdit::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QSGTextEdit);
-    if (d->selectByMouse) {
-        d->control->processEvent(event, QPointF(0, -d->yoff));
-        if (!event->isAccepted())
-            QSGPaintedItem::mouseDoubleClickEvent(event);
-    } else {
+    d->control->processEvent(event, QPointF(0, -d->yoff));
+    if (!event->isAccepted())
         QSGPaintedItem::mouseDoubleClickEvent(event);
-    }
 }
 
 /*!
@@ -774,14 +772,9 @@ Handles the given mouse \a event.
 void QSGTextEdit::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QSGTextEdit);
-    if (d->selectByMouse) {
-        d->control->processEvent(event, QPointF(0, -d->yoff));
-        if (!event->isAccepted())
-            QSGPaintedItem::mouseMoveEvent(event);
-        event->setAccepted(true);
-    } else {
+    d->control->processEvent(event, QPointF(0, -d->yoff));
+    if (!event->isAccepted())
         QSGPaintedItem::mouseMoveEvent(event);
-    }
 }
 
 /*!
@@ -796,8 +789,9 @@ void QSGTextEdit::inputMethodEvent(QInputMethodEvent *event)
 
 void QSGTextEdit::itemChange(GraphicsItemChange change, const QVariant &value)
 {
+    Q_D(QSGTextEdit);
     if (change == ItemActiveFocusHasChanged) {
-        setCursorVisible(value.toBool());
+        setCursorVisible(value.toBool() && d->canvas && d->canvas->hasFocus());
     }
     QSGItem::itemChange(change, value);
 }
@@ -865,7 +859,7 @@ void QSGTextEditPrivate::init()
 
     control = new QTextControl(q);
     control->setIgnoreUnusedNavigationEvents(true);
-    control->setTextInteractionFlags(control->textInteractionFlags() | Qt::LinksAccessibleByMouse);
+    control->setTextInteractionFlags(Qt::LinksAccessibleByMouse | Qt::TextSelectableByKeyboard | Qt::TextEditable);
     control->setDragEnabled(false);
 
     // QTextControl follows the default text color

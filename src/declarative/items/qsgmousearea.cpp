@@ -1,4 +1,4 @@
-// Commit: f018d9236647b687e03dd9d2e1867944b4f4058b
+// Commit: 5981173f0451736bf2b53e7bf36dbbd02d8f3904
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -177,7 +177,7 @@ void QSGDrag::setFilterChildren(bool filter)
 
 QSGMouseAreaPrivate::QSGMouseAreaPrivate()
 : absorb(true), hovered(false), pressed(false), longPress(false),
-  moved(false), stealMouse(false), doubleClick(false), drag(0)
+  moved(false), stealMouse(false), doubleClick(false), preventStealing(false), drag(0)
 {
 }
 
@@ -254,6 +254,22 @@ void QSGMouseArea::setEnabled(bool a)
     }
 }
 
+bool QSGMouseArea::preventStealing() const
+{
+    Q_D(const QSGMouseArea);
+    return d->preventStealing;
+}
+
+void QSGMouseArea::setPreventStealing(bool prevent)
+{
+    Q_D(QSGMouseArea);
+    if (prevent != d->preventStealing) {
+        d->preventStealing = prevent;
+        setKeepMouseGrab(d->preventStealing && d->absorb);
+        emit preventStealingChanged();
+    }
+}
+
 Qt::MouseButtons QSGMouseArea::pressedButtons() const
 {
     Q_D(const QSGMouseArea);
@@ -264,7 +280,7 @@ void QSGMouseArea::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QSGMouseArea);
     d->moved = false;
-    d->stealMouse = false;
+    d->stealMouse = d->preventStealing;
     if (!d->absorb)
         QSGItem::mousePressEvent(event);
     else {
@@ -281,7 +297,7 @@ void QSGMouseArea::mousePressEvent(QGraphicsSceneMouseEvent *event)
         // we should only start timer if pressAndHold is connected to.
         if (d->isPressAndHoldConnected())
             d->pressAndHoldTimer.start(PressAndHoldDelay, this);
-        setKeepMouseGrab(false);
+        setKeepMouseGrab(d->stealMouse);
         event->setAccepted(setPressed(true));
     }
 }

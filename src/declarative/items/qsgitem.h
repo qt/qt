@@ -277,7 +277,6 @@ public:
 
     Qt::InputMethodHints inputMethodHints() const;
     void setInputMethodHints(Qt::InputMethodHints hints);
-    void updateMicroFocus();
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
 
     struct UpdatePaintNodeData {
@@ -289,6 +288,8 @@ public:
 
 public Q_SLOTS:
     void update();
+    void updateMicroFocus();
+
 Q_SIGNALS:
     void childrenRectChanged(const QRectF &);
     void baselineOffsetChanged(qreal);
