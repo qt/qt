@@ -157,6 +157,7 @@ private slots:
     void reportAdditionalMemoryCost();
     void gcWithNestedDataStructure();
     void processEventsWhileRunning();
+    void throwErrorFromProcessEvents_data();
     void throwErrorFromProcessEvents();
     void disableProcessEventsInterval();
     void stacktrace();
@@ -164,6 +165,7 @@ private slots:
     void numberParsing();
     void automaticSemicolonInsertion();
     void abortEvaluation_notEvaluating();
+    void abortEvaluation_data();
     void abortEvaluation();
     void abortEvaluation_tryCatch();
     void abortEvaluation_fromNative();
@@ -2961,17 +2963,42 @@ public:
     QScriptEngine *engine;
 };
 
+void tst_QScriptEngine::throwErrorFromProcessEvents_data()
+{
+    QTest::addColumn<QString>("script");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("while (1)")
+        << QString::fromLatin1("while (1) { }")
+        << QString::fromLatin1("Error: Killed");
+    QTest::newRow("while (1) i++")
+        << QString::fromLatin1("i = 0; while (1) { i++; }")
+        << QString::fromLatin1("Error: Killed");
+    // Unlike abortEvaluation(), scripts should be able to catch the
+    // exception.
+    QTest::newRow("try catch")
+        << QString::fromLatin1("try {"
+                               "    while (1) { }"
+                               "} catch(e) {"
+                               "    throw new Error('Caught');"
+                               "}")
+        << QString::fromLatin1("Error: Caught");
+}
+
 void tst_QScriptEngine::throwErrorFromProcessEvents()
 {
+    QFETCH(QString, script);
+    QFETCH(QString, error);
+
     QScriptEngine eng;
 
     EventReceiver2 receiver(&eng);
     QCoreApplication::postEvent(&receiver, new QEvent(QEvent::Type(QEvent::User+1)));
 
     eng.setProcessEventsInterval(100);
-    QScriptValue ret = eng.evaluate(QString::fromLatin1("while (1) { }"));
+    QScriptValue ret = eng.evaluate(script);
     QVERIFY(ret.isError());
-    QCOMPARE(ret.toString(), QString::fromLatin1("Error: Killed"));
+    QCOMPARE(ret.toString(), error);
 }
 
 void tst_QScriptEngine::disableProcessEventsInterval()
@@ -3386,8 +3413,26 @@ void tst_QScriptEngine::abortEvaluation_notEvaluating()
     }
 }
 
+void tst_QScriptEngine::abortEvaluation_data()
+{
+    QTest::addColumn<QString>("script");
+
+    QTest::newRow("while (1)")
+        << QString::fromLatin1("while (1) { }");
+    QTest::newRow("while (1) i++")
+        << QString::fromLatin1("i = 0; while (1) { i++; }");
+    QTest::newRow("try catch")
+        << QString::fromLatin1("try {"
+                               "    while (1) { }"
+                               "} catch(e) {"
+                               "    throw new Error('Caught');"
+                               "}");
+}
+
 void tst_QScriptEngine::abortEvaluation()
 {
+    QFETCH(QString, script);
+
     QScriptEngine eng;
     EventReceiver3 receiver(&eng);
 
@@ -3395,7 +3440,7 @@ void tst_QScriptEngine::abortEvaluation()
     for (int x = 0; x < 4; ++x) {
         QCoreApplication::postEvent(&receiver, new QEvent(QEvent::Type(QEvent::User+1)));
         receiver.resultType = EventReceiver3::AbortionResult(x);
-        QScriptValue ret = eng.evaluate(QString::fromLatin1("while (1) { }"));
+        QScriptValue ret = eng.evaluate(script);
         switch (receiver.resultType) {
         case EventReceiver3::None:
             QVERIFY(!eng.hasUncaughtException());
