@@ -615,19 +615,28 @@ void QDeclarativeKeyNavigationAttached::keyPressed(QKeyEvent *event, bool post)
         return;
     }
 
+    bool mirror = false;
     switch(event->key()) {
-    case Qt::Key_Left:
-        if (d->left) {
-            setFocusNavigation(d->left, "left");
+    case Qt::Key_Left: {
+        if (QDeclarativeItem *parentItem = qobject_cast<QDeclarativeItem*>(parent()))
+            mirror = QDeclarativeItemPrivate::get(parentItem)->effectiveLayoutMirror;
+        QDeclarativeItem* leftItem = mirror ? d->right : d->left;
+        if (leftItem) {
+            setFocusNavigation(leftItem, mirror ? "right" : "left");
             event->accept();
         }
         break;
-    case Qt::Key_Right:
-        if (d->right) {
-            setFocusNavigation(d->right, "right");
+    }
+    case Qt::Key_Right: {
+        if (QDeclarativeItem *parentItem = qobject_cast<QDeclarativeItem*>(parent()))
+            mirror = QDeclarativeItemPrivate::get(parentItem)->effectiveLayoutMirror;
+        QDeclarativeItem* rightItem = mirror ? d->left : d->right;
+        if (rightItem) {
+            setFocusNavigation(rightItem, mirror ? "left" : "right");
             event->accept();
         }
         break;
+    }
     case Qt::Key_Up:
         if (d->up) {
             setFocusNavigation(d->up, "up");
@@ -669,16 +678,19 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
         return;
     }
 
+    bool mirror = false;
     switch(event->key()) {
     case Qt::Key_Left:
-        if (d->left) {
+        if (QDeclarativeItem *parentItem = qobject_cast<QDeclarativeItem*>(parent()))
+            mirror = QDeclarativeItemPrivate::get(parentItem)->effectiveLayoutMirror;
+        if (mirror ? d->right : d->left)
             event->accept();
-        }
         break;
     case Qt::Key_Right:
-        if (d->right) {
+        if (QDeclarativeItem *parentItem = qobject_cast<QDeclarativeItem*>(parent()))
+            mirror = QDeclarativeItemPrivate::get(parentItem)->effectiveLayoutMirror;
+        if (mirror ? d->left : d->right)
             event->accept();
-        }
         break;
     case Qt::Key_Up:
         if (d->up) {

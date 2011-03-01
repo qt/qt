@@ -65,6 +65,7 @@ private slots:
     void keys();
     void keysProcessingOrder();
     void keyNavigation();
+    void keyNavigation_RightToLeft();
     void keyNavigation_skipNotVisible();
     void layoutMirroring();
     void layoutMirroringIllegalParent();
@@ -598,6 +599,59 @@ void tst_QDeclarativeItem::keyNavigation()
 
     // backtab
     key = QKeyEvent(QEvent::KeyPress, Qt::Key_Backtab, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+
+    item = findItem<QDeclarativeItem>(canvas->rootObject(), "item1");
+    QVERIFY(item);
+    QVERIFY(item->hasActiveFocus());
+
+    delete canvas;
+}
+
+void tst_QDeclarativeItem::keyNavigation_RightToLeft()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setFixedSize(240,320);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keynavigationtest.qml"));
+    canvas->show();
+    qApp->processEvents();
+
+    QDeclarativeItem *rootItem = qobject_cast<QDeclarativeItem*>(canvas->rootObject());
+    QVERIFY(rootItem);
+    QDeclarativeItemPrivate* rootItemPrivate = QDeclarativeItemPrivate::get(rootItem);
+
+    rootItemPrivate->effectiveLayoutMirror = true; // LayoutMirroring.mirror: true
+    rootItemPrivate->isMirrorImplicit = false;
+    rootItemPrivate->inheritMirrorFromItem = true; // LayoutMirroring.inherit: true
+    rootItemPrivate->resolveLayoutMirror();
+
+    QEvent wa(QEvent::WindowActivate);
+    QApplication::sendEvent(canvas, &wa);
+    QFocusEvent fe(QEvent::FocusIn);
+    QApplication::sendEvent(canvas, &fe);
+
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(canvas->rootObject(), "item1");
+    QVERIFY(item);
+    QVERIFY(item->hasActiveFocus());
+
+    QVariant result;
+    QVERIFY(QMetaObject::invokeMethod(canvas->rootObject(), "verify",
+            Q_RETURN_ARG(QVariant, result)));
+    QVERIFY(result.toBool());
+
+    // right
+    QKeyEvent key(QEvent::KeyPress, Qt::Key_Left, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+
+    item = findItem<QDeclarativeItem>(canvas->rootObject(), "item2");
+    QVERIFY(item);
+    QVERIFY(item->hasActiveFocus());
+
+    // left
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Right, Qt::NoModifier, "", false, 1);
     QApplication::sendEvent(canvas, &key);
     QVERIFY(key.isAccepted());
 
