@@ -384,18 +384,39 @@ int QUnifiedTimer::closestPauseAnimationTimeToFinish()
     return closestTimeToFinish;
 }
 
+
 void QUnifiedTimer::installAnimationDriver(QAnimationDriver *d)
 {
-    if (driver->isRunning()) {
-        qWarning("QUnifiedTimer: Cannot change animation driver while animations are running");
+    if (driver != &defaultDriver) {
+        qWarning("QUnifiedTimer: animation driver already installed...");
         return;
     }
 
-    if (driver && driver != &defaultDriver)
-        delete driver;
+    if (driver->isRunning()) {
+        driver->stop();
+        d->start();
+    }
 
     driver = d;
+
 }
+
+
+void QUnifiedTimer::uninstallAnimationDriver(QAnimationDriver *d)
+{
+    if (driver != d) {
+        qWarning("QUnifiedTimer: trying to uninstall a driver that is not installed...");
+        return;
+    }
+
+    driver = &defaultDriver;
+
+    if (d->isRunning()) {
+        d->stop();
+        driver->start();
+    }
+}
+
 
 /*!
    \class QAnimationDriver
@@ -446,6 +467,15 @@ void QAnimationDriver::install()
 {
     QUnifiedTimer *timer = QUnifiedTimer::instance(true);
     timer->installAnimationDriver(this);
+}
+
+/*!
+    Uninstalls this animation driver.
+ */
+void QAnimationDriver::uninstall()
+{
+    QUnifiedTimer *timer = QUnifiedTimer::instance(true);
+    timer->uninstallAnimationDriver(this);
 }
 
 bool QAnimationDriver::isRunning() const

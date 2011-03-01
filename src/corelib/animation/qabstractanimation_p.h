@@ -180,6 +180,7 @@ public:
     static void updateAnimationTimer();
 
     void installAnimationDriver(QAnimationDriver *driver);
+    void uninstallAnimationDriver(QAnimationDriver *driver);
 
     void restartAnimationTimer();
     void updateAnimationsTime();
