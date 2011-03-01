@@ -61,6 +61,12 @@ public:
     inline QScriptContextPrivate(QScriptContextPrivate *parent, v8::Handle<v8::StackFrame> frame); // internal, for js frame (allocated in parentContext())
     inline ~QScriptContextPrivate();
 
+    inline bool isGlobalContext() const { return !parent; }
+    inline bool isNativeFunction() const { return arguments; }
+    inline bool isNativeAccessor() const { return accessorInfo; }
+    inline bool isJSFrame() const { return !frame.IsEmpty(); }
+    inline bool isPushedContext() const { return !context.IsEmpty() && !arguments && !accessorInfo; }
+
     inline QScriptPassPointer<QScriptValuePrivate> argument(int index) const;
     inline int argumentCount() const;
     inline QScriptPassPointer<QScriptValuePrivate> argumentsObject() const;

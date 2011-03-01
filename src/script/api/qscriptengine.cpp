@@ -838,7 +838,7 @@ QScriptContextPrivate *QScriptEnginePrivate::pushContext()
 void QScriptEnginePrivate::popContext()
 {
     QScriptContextPrivate *ctx = currentContext();
-    if (!ctx->parentContext() || ctx->arguments) {
+    if (!ctx->isPushedContext()) {
         qWarning("QScriptEngine::popContext() doesn't match with pushContext()");
     } else {
         delete ctx;
@@ -870,7 +870,7 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handl
         Q_ASSERT(!thisObj.IsEmpty());
 
         // Lazily initialize the 'arguments' property in JS context
-        if (m_currentQsContext->arguments)
+        if (m_currentQsContext->isNativeFunction())
             m_currentQsContext->initializeArgumentsProperty();
 
         result = script->Run(thisObj);

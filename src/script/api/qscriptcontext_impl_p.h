@@ -56,6 +56,7 @@ inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine
       m_callee(v8::Persistent<v8::Value>::New(callee)), hasArgumentGetter(false)
 {
     Q_ASSERT(engine);
+    Q_ASSERT(parent);
     context->Enter();
 }
 
@@ -65,6 +66,7 @@ inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine
   parent(engine->setCurrentQSContext(this)), previous(0), hasArgumentGetter(false)
 {
     Q_ASSERT(engine);
+    Q_ASSERT(parent);
     context->Enter();
 }
 
@@ -74,6 +76,7 @@ inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine
       previous(0), hasArgumentGetter(false)
 {
     Q_ASSERT(engine);
+    Q_ASSERT(parent);
     context->Enter();
 }
 
@@ -82,6 +85,7 @@ inline QScriptContextPrivate::QScriptContextPrivate(QScriptContextPrivate *paren
       parent(parent), previous(0), frame(v8::Persistent<v8::StackFrame>::New(frame)), hasArgumentGetter(false)
 {
     Q_ASSERT(engine);
+    Q_ASSERT(parent);
 }
 
 
@@ -94,10 +98,10 @@ inline QScriptContextPrivate::~QScriptContextPrivate()
     m_thisObject.Dispose();
     m_callee.Dispose();
 
-    if (!parent)
+    if (isGlobalContext())
         return;
 
-    if (frame.IsEmpty()) {
+    if (!isJSFrame()) {
         QScriptContextPrivate *old = engine->setCurrentQSContext(parent);
         if (old != this) {
             qWarning("QScriptEngine::pushContext() doesn't match with popContext()");
@@ -123,7 +127,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::argument(i
     if (index < 0)
         return InvalidValue();
 
-    if (arguments) {
+    if (isNativeFunction()) {
         if (index >= arguments->Length())
             return new QScriptValuePrivate(engine, QScriptValue::UndefinedValue);
 
@@ -135,7 +139,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::argument(i
 
 inline int QScriptContextPrivate::argumentCount() const
 {
-    if (arguments) {
+    if (isNativeFunction()) {
         return arguments->Length();
     }
 
@@ -144,7 +148,7 @@ inline int QScriptContextPrivate::argumentCount() const
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::argumentsObject() const
 {
-    if (arguments) {
+    if (isNativeFunction()) {
         if (!argsObject) {
             QScriptContextPrivate *that = const_cast<QScriptContextPrivate *>(this);
             that->argsObject = that->createArgumentsObject();
@@ -157,9 +161,9 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::argumentsO
 
 inline v8::Handle<v8::Object> QScriptContextPrivate::thisObject() const
 {
-    if (arguments) {
+    if (isNativeFunction()) {
         return arguments->This();
-    } else if (accessorInfo) {
+    } else if (isNativeAccessor()) {
         return accessorInfo->This();
     } else if (!m_thisObject.IsEmpty()) {
         return m_thisObject;
@@ -170,22 +174,25 @@ inline v8::Handle<v8::Object> QScriptContextPrivate::thisObject() const
 
 inline void QScriptContextPrivate::setThisObject(QScriptValuePrivate *newThis)
 {
-    if (!newThis->isObject()) {
-//        qWarning() << "QScriptContext::setThisObject: cannot set this object for native context";
+    if (isNativeFunction() || isNativeAccessor() || isJSFrame()) {
+        qWarning("QScriptContext::setThisObject: cannot set this object for context");
         return;
     }
+
+    if (!newThis->isObject())
+        return;
+
     if (newThis->engine() != engine) {
         qWarning("QScriptContext::setThisObject() failed: cannot set an object created in "
                  "a different engine");
         return;
     }
-    if (!parent) {
-        //global object
+
+    if (isGlobalContext()) {
         engine->setGlobalObject(newThis);
         return;
     }
-    if (!frame.IsEmpty())
-        qWarning() << "QScriptContext::setThisObject: cannot set this object for native context";
+
     m_thisObject.Dispose();
     m_thisObject = v8::Persistent<v8::Object>::New(*newThis);
 }
@@ -193,10 +200,11 @@ inline void QScriptContextPrivate::setThisObject(QScriptValuePrivate *newThis)
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::callee() const
 {
-    if (!m_callee.IsEmpty())
-        return new QScriptValuePrivate(engine, m_callee);
-    if (arguments)
+    if (isNativeFunction()) {
+        if (!m_callee.IsEmpty())
+            return new QScriptValuePrivate(engine, m_callee);
         return new QScriptValuePrivate(engine, arguments->Callee());
+    }
 
     Q_UNIMPLEMENTED();
     return InvalidValue();
@@ -204,21 +212,23 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::callee() c
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::activationObject() const
 {
-    if (!parent)
+    if (isGlobalContext())
         return new QScriptValuePrivate(engine, engine->globalObject());
-    if (context.IsEmpty()) {
+    if (isJSFrame()) {
         Q_UNIMPLEMENTED();
         return InvalidValue();
     }
     Q_ASSERT(!context.IsEmpty());
 
     v8::Handle<v8::Object> activation = context->GetExtensionObject();
-    if (hasArgumentGetter || (arguments && !activation->Has(v8::String::New("arguments")))) {
-        //we need to build the arguments now just in case the activationobject is used after the
-        // QScriptContext is out of scope
-        QScriptSharedDataPointer<QScriptValuePrivate> argsObject(argumentsObject());
-        activation->ForceSet(v8::String::New("arguments"), *argsObject);
-        const_cast<bool&>(hasArgumentGetter) = false;
+    if (isNativeFunction()) {
+        if (hasArgumentGetter || !activation->Has(v8::String::New("arguments"))) {
+            // We need to build the arguments now just in case the activation object is used after
+            // the QScriptContext is out of scope.
+            QScriptSharedDataPointer<QScriptValuePrivate> argsObject(argumentsObject());
+            activation->ForceSet(v8::String::New("arguments"), *argsObject);
+            const_cast<bool&>(hasArgumentGetter) = false;
+        }
     }
     return new QScriptValuePrivate(engine, activation);
 }
@@ -234,16 +244,15 @@ inline void QScriptContextPrivate::setActivationObject(QScriptValuePrivate *acti
         return;
     }
 
-    if (!parent) {
+    if (isGlobalContext()) {
         engine->setGlobalObject(activation);
+        return;
+    } else if (isJSFrame()) {
+        Q_UNIMPLEMENTED();
         return;
     }
 
-    if (!context.IsEmpty()) {
-        context->SetExtensionObject(*activation);
-        return;
-    }
-    Q_UNIMPLEMENTED();
+    context->SetExtensionObject(*activation);
 }
 
 inline QScriptValueList QScriptContextPrivate::scopeChain() const
@@ -266,7 +275,7 @@ inline QScriptValueList QScriptContextPrivate::scopeChain() const
         } while (!current.IsEmpty());
     }
 
-    if (frame.IsEmpty()) {
+    if (!isJSFrame()) {
         // Implicit global context
         list.append(QScriptValuePrivate::get(new QScriptValuePrivate(engine, thisObject())));
     }

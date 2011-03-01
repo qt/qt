@@ -277,9 +277,9 @@ QScriptValue QScriptContext::argumentsObject() const
 */
 bool QScriptContext::isCalledAsConstructor() const
 {
-    if (d_ptr->arguments)
+    if (d_ptr->isNativeFunction())
         return d_ptr->arguments->IsConstructCall();
-    if (!d_ptr->frame.IsEmpty()) {
+    if (d_ptr->isJSFrame()) {
         QScriptIsolate api(d_ptr->engine);
         return d_ptr->frame->IsConstructor();
     }
@@ -305,7 +305,7 @@ QScriptContext *QScriptContext::parentContext() const
     }
     if (d_ptr->previous)
         return d_ptr->previous;
-    if (!d_ptr->frame.IsEmpty())
+    if (d_ptr->isJSFrame())
         return 0; //skip all the native contexts. They are unfortunately hidden by V8, we reached the end of the stack already.
     return d_ptr->parent;
 }
@@ -457,18 +457,16 @@ QString QScriptContext::toString() const
 
     QString functionName = info.functionName();
     if (functionName.isEmpty()) {
-        if (!d_ptr->parent || (!d_ptr->previous && !d_ptr->frame.IsEmpty())) {
+        if (d_ptr->isGlobalContext() || (!d_ptr->previous && d_ptr->isJSFrame())) {
             result.append(QLatin1String("<global>"));
-        } else {
-            if (d_ptr->frame.IsEmpty()) {
+        } else if (!d_ptr->isJSFrame()) {
                 result.append(QLatin1String("<native>"));
+        } else {
+            QScriptIsolate api(d_ptr->engine);
+            if (d_ptr->frame->IsEval()) {
+                result.append(QLatin1String("<eval>"));
             } else {
-                QScriptIsolate api(d_ptr->engine);
-                if (d_ptr->frame->IsEval()) {
-                    result.append(QLatin1String("<eval>"));
-                } else {
-                    result.append(QLatin1String("<anonymous>"));
-                }
+                result.append(QLatin1String("<anonymous>"));
             }
         }
     } else {
