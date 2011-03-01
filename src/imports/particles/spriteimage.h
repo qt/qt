@@ -14,6 +14,7 @@ class SpriteImage : public QSGItem
     Q_OBJECT
     Q_PROPERTY(bool running READ running WRITE setRunning NOTIFY runningChanged)
     //###Fold SpriteEngine/Sprite back into sprites from a user perspective?
+    //###Also, try to share similar spriteEngines for less overhead?
     Q_PROPERTY(SpriteState* sprite READ sprite WRITE setSprite NOTIFY spriteChanged)
     Q_PROPERTY(SpriteEngine* spriteEngine READ spriteEngine WRITE setSpriteEngine NOTIFY spriteEngineChanged)
 

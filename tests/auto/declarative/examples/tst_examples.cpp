@@ -87,6 +87,7 @@ tst_examples::tst_examples()
     // Add directories you want excluded here
     excludedDirs << "doc/src/snippets/declarative/visualdatamodel_rootindex";
     excludedDirs << "doc/src/snippets/declarative/qtbinding";
+    excludedDirs << "examples/declarative/particles";//Needs Cleanup first
 
 #ifdef QT_NO_WEBKIT
     excludedDirs << "examples/declarative/modelviews/webview";
