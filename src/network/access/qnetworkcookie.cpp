@@ -397,21 +397,24 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
 
         // If its NAME=VALUE, retain the value as is
         // refer to ttp://bugreports.qt.nokia.com/browse/QTBUG-17746
-        if (!isNameValue)
-            ++i;
+        if (isNameValue)
+            second += '"';
+        ++i;
         while (i < length) {
             register char c = text.at(i);
-            if (c == '"' && !isNameValue) {
+            if (c == '"') {
                 // end of quoted text
+                if (isNameValue)
+                    second += '"';
                 break;
             } else if (c == '\\') {
+                if (isNameValue)
+                    second += '\\';
                 ++i;
                 if (i >= length)
                     // broken line
                     return qMakePair(QByteArray(), QByteArray());
                 c = text.at(i);
-            } else if ((c == ';' || c == ',') && isNameValue) {
-                break;
             }
 
             second += c;
