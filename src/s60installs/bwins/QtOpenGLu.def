@@ -703,4 +703,12 @@ EXPORTS
 	?maxTextureWidth@QGLTextureGlyphCache@@UBEHXZ @ 702 NONAME ; int QGLTextureGlyphCache::maxTextureWidth(void) const
 	?filterMode@QGLTextureGlyphCache@@QBE?AW4FilterMode@1@XZ @ 703 NONAME ; enum QGLTextureGlyphCache::FilterMode QGLTextureGlyphCache::filterMode(void) const
 	?setFilterMode@QGLTextureGlyphCache@@QAEXW4FilterMode@1@@Z @ 704 NONAME ; void QGLTextureGlyphCache::setFilterMode(enum QGLTextureGlyphCache::FilterMode)
+	?toNativeType@QGLPixmapData@@UAEPAXW4NativeType@QPixmapData@@@Z @ 705 NONAME ; void * QGLPixmapData::toNativeType(enum QPixmapData::NativeType)
+	?fromNativeType@QGLPixmapData@@UAEXPAXW4NativeType@QPixmapData@@@Z @ 706 NONAME ; void QGLPixmapData::fromNativeType(void *, enum QPixmapData::NativeType)
+	?clear@QGLTextureGlyphCache@@QAEXXZ @ 707 NONAME ; void QGLTextureGlyphCache::clear(void)
+	?context@QGLTextureGlyphCache@@QBEPAVQGLContext@@XZ @ 708 NONAME ; class QGLContext * QGLTextureGlyphCache::context(void) const
+	?swapBehavior@QGLWindowSurface@@2W4SwapMode@1@A @ 709 NONAME ; enum QGLWindowSurface::SwapMode QGLWindowSurface::swapBehavior
+	?createPixmapForImage@QGLPixmapData@@AAEXAAVQImage@@V?$QFlags@W4ImageConversionFlag@Qt@@@@_N@Z @ 710 NONAME ; void QGLPixmapData::createPixmapForImage(class QImage &, class QFlags<enum Qt::ImageConversionFlag>, bool)
+	?fromImageReader@QGLPixmapData@@UAEXPAVQImageReader@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 711 NONAME ; void QGLPixmapData::fromImageReader(class QImageReader *, class QFlags<enum Qt::ImageConversionFlag>)
+	?setContext@QGLTextureGlyphCache@@QAEXPAVQGLContext@@@Z @ 712 NONAME ; void QGLTextureGlyphCache::setContext(class QGLContext *)
 

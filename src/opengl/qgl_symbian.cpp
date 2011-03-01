@@ -44,12 +44,14 @@
 #include <coemain.h>
 #include <coecntrl.h>
 #include <w32std.h>
+#include <private/qt_s60_p.h>
 #include <private/qpixmap_s60_p.h>
 #include <private/qimagepixmapcleanuphooks_p.h>
 #include <private/qgl_p.h>
 #include <private/qpaintengine_opengl_p.h>
 #include <private/qwidget_p.h> // to access QWExtra
 #include "qgl_egl_p.h"
+#include "qpixmapdata_gl_p.h"
 #include "qcolormap.h"
 #include <QDebug>
 
@@ -356,6 +358,118 @@ void QGLWidgetPrivate::recreateEglSurface()
 #endif
 
     eglSurfaceWindowId = currentId;
+}
+
+/*
+ * Symbian specific QGLPixmapData functions
+ */
+
+static CFbsBitmap* createBlitCopy(CFbsBitmap* bitmap)
+{
+    CFbsBitmap *copy = q_check_ptr(new CFbsBitmap);
+    if (!copy)
+        return 0;
+
+    if (copy->Create(bitmap->SizeInPixels(), bitmap->DisplayMode()) != KErrNone) {
+        delete copy;
+        copy = 0;
+
+        return 0;
+    }
+
+    CFbsBitmapDevice* bitmapDevice = 0;
+    CFbsBitGc *bitmapGc = 0;
+    QT_TRAP_THROWING(bitmapDevice = CFbsBitmapDevice::NewL(copy));
+    QT_TRAP_THROWING(bitmapGc = CFbsBitGc::NewL());
+    bitmapGc->Activate(bitmapDevice);
+
+    bitmapGc->BitBlt(TPoint(), bitmap);
+
+    delete bitmapGc;
+    delete bitmapDevice;
+
+    return copy;
+}
+
+void QGLPixmapData::fromNativeType(void* pixmap, NativeType type)
+{
+    if (type == QPixmapData::FbsBitmap) {
+        CFbsBitmap *bitmap = reinterpret_cast<CFbsBitmap*>(pixmap);
+
+        bool deleteSourceBitmap = false;
+#ifdef Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
+
+        // Rasterize extended bitmaps
+
+        TUid extendedBitmapType = bitmap->ExtendedBitmapType();
+        if (extendedBitmapType != KNullUid) {
+            bitmap = createBlitCopy(bitmap);
+            deleteSourceBitmap = true;
+        }
+#endif
+
+        if (bitmap->IsCompressedInRAM()) {
+            bitmap = createBlitCopy(bitmap);
+            deleteSourceBitmap = true;
+        }
+
+        TDisplayMode displayMode = bitmap->DisplayMode();
+        QImage::Format format = qt_TDisplayMode2Format(displayMode);
+
+        TSize size = bitmap->SizeInPixels();
+        int bytesPerLine = bitmap->ScanLineLength(size.iWidth, displayMode);
+
+        bitmap->BeginDataAccess();
+        uchar *bytes = (uchar*)bitmap->DataAddress();
+        QImage img = QImage(bytes, size.iWidth, size.iHeight, bytesPerLine, format);
+        img = img.copy();
+        bitmap->EndDataAccess();
+
+        if (displayMode == EGray2) {
+            //Symbian thinks set pixels are white/transparent, Qt thinks they are foreground/solid
+            //So invert mono bitmaps so that masks work correctly.
+            img.invertPixels();
+        } else if (displayMode == EColor16M) {
+            img = img.rgbSwapped(); // EColor16M is BGR
+        }
+
+        fromImage(img, Qt::AutoColor);
+
+        if (deleteSourceBitmap)
+            delete bitmap;
+    }
+}
+
+void* QGLPixmapData::toNativeType(NativeType type)
+{
+    if (type == QPixmapData::FbsBitmap) {
+        CFbsBitmap *bitmap = q_check_ptr(new CFbsBitmap);
+
+        if (bitmap) {
+            QImage image = toImage();
+
+            TDisplayMode displayMode(EColor16MU);
+            if (image.format()==QImage::Format_ARGB32_Premultiplied)
+                displayMode = EColor16MAP;
+
+            if (bitmap->Create(TSize(image.width(), image.height()),
+                              displayMode) == KErrNone) {
+                const uchar *sptr = const_cast<const QImage&>(image).bits();
+                bitmap->BeginDataAccess();
+
+                uchar *dptr = (uchar*)bitmap->DataAddress();
+                Mem::Copy(dptr, sptr, image.byteCount());
+
+                bitmap->EndDataAccess();
+            } else {
+                delete bitmap;
+                bitmap = 0;
+            }
+        }
+
+        return reinterpret_cast<void*>(bitmap);
+    }
+    return 0;
 }
 
 QT_END_NAMESPACE
