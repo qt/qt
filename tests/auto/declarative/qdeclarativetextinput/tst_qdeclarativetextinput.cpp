@@ -914,16 +914,47 @@ void tst_qdeclarativetextinput::horizontalAlignment_RightToLeft()
     QVERIFY(textInputPrivate != 0);
     QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
 
-    // "Right" Align
-    textInput->setHAlign(QDeclarativeTextInput::AlignRight);
+    // implicit alignment should follow the reading direction of RTL text
     QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
+    QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
+
+    // explicitly left aligned
+    textInput->setHAlign(QDeclarativeTextInput::AlignLeft);
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignLeft);
     QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
 
-    // Center Align
+    // explicitly right aligned
+    textInput->setHAlign(QDeclarativeTextInput::AlignRight);
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
+    QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
+
+    // explicitly center aligned
     textInput->setHAlign(QDeclarativeTextInput::AlignHCenter);
     QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignHCenter);
     QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
     QVERIFY(-textInputPrivate->hscroll + textInputPrivate->width() > canvas->width()/2);
+
+    // reseted alignment should go back to following the text reading direction
+    textInput->resetHAlign();
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
+    QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
+
+    // English text should be implicitly left aligned
+    textInput->setText("Hello world!");
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignLeft);
+    QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
+
+    // empty text should implicitly follow the layout direction
+    QApplication::setLayoutDirection(Qt::RightToLeft);
+    textInput->setText("");
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
+    QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
+    textInput->setHAlign(QDeclarativeTextInput::AlignLeft);
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignLeft);
+    QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
+
+    // set layout direction back to LTR to avoid affecting other autotests
+    QApplication::setLayoutDirection(Qt::LeftToRight);
 
     delete canvas;
 }

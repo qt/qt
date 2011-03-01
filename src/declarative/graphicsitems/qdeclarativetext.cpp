@@ -97,17 +97,18 @@ DEFINE_BOOL_CONFIG_OPTION(enableImageCache, QML_ENABLE_TEXT_IMAGE_CACHE);
 QString QDeclarativeTextPrivate::elideChar = QString(0x2026);
 
 QDeclarativeTextPrivate::QDeclarativeTextPrivate()
-: color((QRgb)0), style(QDeclarativeText::Normal), hAlign(QDeclarativeText::AlignLeft), 
+: color((QRgb)0), style(QDeclarativeText::Normal), hAlign(QDeclarativeText::AlignLeft),
   vAlign(QDeclarativeText::AlignTop), elideMode(QDeclarativeText::ElideNone),
   format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap), lineHeight(1),
-  lineHeightMode(QDeclarativeText::ProportionalHeight),
-  lineCount(1), truncated(false), maximumLineCount(INT_MAX),
+  lineHeightMode(QDeclarativeText::ProportionalHeight), lineCount(1), truncated(false), maximumLineCount(INT_MAX),
   maximumLineCountValid(false), imageCacheDirty(true), updateOnComponentComplete(true), richText(false), singleline(false),
-  cacheAllTextAsImage(true), internalWidthUpdate(false), requireImplicitWidth(false), naturalWidth(0), doc(0)
+  cacheAllTextAsImage(true), internalWidthUpdate(false), requireImplicitWidth(false),  hAlignImplicit(true), naturalWidth(0), doc(0)
 {
     cacheAllTextAsImage = enableImageCache();
     QGraphicsItemPrivate::acceptedMouseButtons = Qt::LeftButton;
     QGraphicsItemPrivate::flags = QGraphicsItemPrivate::flags & ~QGraphicsItem::ItemHasNoContents;
+    if (QApplication::layoutDirection() == Qt::RightToLeft)
+        hAlign = QDeclarativeText::AlignRight;
 }
 
 QTextDocumentWithImageResources::QTextDocumentWithImageResources(QDeclarativeText *parent) 
@@ -209,6 +210,21 @@ qreal QDeclarativeTextPrivate::implicitWidth() const
         me->updateSize();
     }
     return mImplicitWidth;
+}
+
+void QDeclarativeTextPrivate::determineHorizontalAlignment()
+{
+    Q_Q(QDeclarativeText);
+    if (hAlignImplicit && q->isComponentComplete()) {
+        // if no explicit alignment has been set, follow the natural layout direction of the text
+        QDeclarativeText::HAlignment previousAlign = hAlign;
+        if (text.isEmpty() && QApplication::layoutDirection() == Qt::RightToLeft)
+            hAlign = QDeclarativeText::AlignRight;
+        else
+            hAlign = text.isRightToLeft() ? QDeclarativeText::AlignRight : QDeclarativeText::AlignLeft;
+        if (previousAlign != hAlign)
+            emit q->horizontalAlignmentChanged(hAlign);
+    }
 }
 
 void QDeclarativeTextPrivate::updateLayout()
@@ -367,17 +383,6 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
     textOption.setWrapMode(QTextOption::WrapMode(wrapMode));
     layout.setTextOption(textOption);
 
-    QDeclarativeText::HAlignment hAlignment = hAlign;
-    if(text.isRightToLeft()) {
-        if ((hAlign == QDeclarativeText::AlignLeft) || (hAlign == QDeclarativeText::AlignJustify)) {
-            hAlignment = QDeclarativeText::AlignRight;
-        } else if (hAlign == QDeclarativeText::AlignRight) {
-            hAlignment = QDeclarativeText::AlignLeft;
-        } else {
-            hAlignment = hAlign;
-        }
-    }
-
     bool elideText = false;
     bool truncate = false;
 
@@ -423,10 +428,10 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
                         // Need to correct for alignment
                         line.setLineWidth(lineWidth-elideWidth);
                         int x = line.naturalTextWidth();
-                        if (hAlignment == QDeclarativeText::AlignRight) {
+                        if (hAlign == QDeclarativeText::AlignRight) {
                             x = q->width()-elideWidth;
-                        } else if (hAlignment == QDeclarativeText::AlignHCenter) {
-                            x = (q->width()+line.naturalTextWidth()-elideWidth)/2;
+                        } else if (hAlign == QDeclarativeText::AlignHCenter) {
+                            x = (q->width()+line.naturalTextWidth() - elideWidth)/2;
                         }
                         elidePos = QPointF(x, y + fm.ascent());
                         elideText = true;
@@ -472,13 +477,13 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
         height += (lineHeightMode == QDeclarativeText::FixedHeight) ? lineHeight : line.height() * lineHeight;
 
         if (!cacheAllTextAsImage) {
-            if ((hAlignment == QDeclarativeText::AlignLeft) || (hAlignment == QDeclarativeText::AlignJustify)) {
+            if ((hAlign == QDeclarativeText::AlignLeft) || (hAlign == QDeclarativeText::AlignJustify)) {
                 x = 0;
-            } else if (hAlignment == QDeclarativeText::AlignRight) {
+            } else if (hAlign == QDeclarativeText::AlignRight) {
                 x = layoutWidth - line.naturalTextWidth();
                 if (elideText && i == layout.lineCount()-1)
                     x -= elideWidth; // Correct for when eliding multilines
-            } else if (hAlignment == QDeclarativeText::AlignHCenter) {
+            } else if (hAlign == QDeclarativeText::AlignHCenter) {
                 x = (layoutWidth - line.naturalTextWidth()) / 2;
                 if (elideText && i == layout.lineCount()-1)
                     x -= elideWidth/2; // Correct for when eliding multilines
@@ -946,6 +951,7 @@ void QDeclarativeText::setText(const QString &n)
     }
 
     d->text = n;
+    d->determineHorizontalAlignment();
     d->updateLayout();
 
     emit textChanged(d->text);
@@ -1064,7 +1070,9 @@ void QDeclarativeText::setStyleColor(const QColor &color)
     \qmlproperty enumeration Text::verticalAlignment
 
     Sets the horizontal and vertical alignment of the text within the Text items
-    width and height.  By default, the text is top-left aligned.
+    width and height. By default, the text is vertically aligned to the top. Horizontal
+    alignment follows the natural alignment of the text, for example text that is read
+    from left to right will be aligned to the left.
 
     The valid values for \c horizontalAlignment are \c Text.AlignLeft, \c Text.AlignRight, \c Text.AlignHCenter and
     \c Text.AlignJustify.  The valid values for \c verticalAlignment are \c Text.AlignTop, \c Text.AlignBottom
@@ -1084,6 +1092,7 @@ QDeclarativeText::HAlignment QDeclarativeText::hAlign() const
 void QDeclarativeText::setHAlign(HAlignment align)
 {
     Q_D(QDeclarativeText);
+    d->hAlignImplicit = false;
     if (d->hAlign == align)
         return;
 
@@ -1094,6 +1103,19 @@ void QDeclarativeText::setHAlign(HAlignment align)
     d->updateLayout();
 
     emit horizontalAlignmentChanged(align);
+}
+
+void QDeclarativeText::resetHAlign()
+{
+    Q_D(QDeclarativeText);
+    d->hAlignImplicit = true;
+    QDeclarativeText::HAlignment oldAlignment = d->hAlign;
+    d->determineHorizontalAlignment();
+    if (oldAlignment != d->hAlign) {
+        prepareGeometryChange();
+        d->updateLayout();
+        emit horizontalAlignmentChanged(d->hAlign);
+    }
 }
 
 QDeclarativeText::VAlignment QDeclarativeText::vAlign() const
@@ -1556,6 +1578,7 @@ void QDeclarativeText::componentComplete()
     QDeclarativeItem::componentComplete();
     if (d->updateOnComponentComplete) {
         d->updateOnComponentComplete = false;
+        d->determineHorizontalAlignment();
         if (d->richText) {
             d->ensureDoc();
             d->doc->setText(d->text);

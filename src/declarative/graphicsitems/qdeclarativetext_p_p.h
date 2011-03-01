@@ -76,6 +76,7 @@ public:
 
     void updateSize();
     void updateLayout();
+    void determineHorizontalAlignment();
 
     QString text;
     QFont font;
@@ -110,6 +111,7 @@ public:
     bool cacheAllTextAsImage:1;
     bool internalWidthUpdate:1;
     bool requireImplicitWidth:1;
+    bool hAlignImplicit:1;
 
     QSize layedOutTextSize;
     QSize paintedSize;

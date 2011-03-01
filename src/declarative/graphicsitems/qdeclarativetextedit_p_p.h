@@ -71,8 +71,8 @@ public:
       : color("black"), hAlign(QDeclarativeTextEdit::AlignLeft), vAlign(QDeclarativeTextEdit::AlignTop),
       imgDirty(true), dirty(false), richText(false), cursorVisible(false), focusOnPress(true),
       showInputPanelOnFocus(true), clickCausedFocus(false), persistentSelection(true), requireImplicitWidth(false),
-      textMargin(0.0), lastSelectionStart(0), lastSelectionEnd(0), cursorComponent(0), cursor(0),
-      format(QDeclarativeTextEdit::AutoText), document(0), wrapMode(QDeclarativeTextEdit::NoWrap),
+      hAlignImplicit(true), rightToLeftText(false), textMargin(0.0), lastSelectionStart(0), lastSelectionEnd(0),
+      cursorComponent(0), cursor(0), format(QDeclarativeTextEdit::AutoText), document(0), wrapMode(QDeclarativeTextEdit::NoWrap),
       mouseSelectionMode(QDeclarativeTextEdit::SelectCharacters), selectByMouse(false), canPaste(false),
       yoff(0)
     {
@@ -88,6 +88,7 @@ public:
     void updateDefaultTextOption();
     void relayoutDocument();
     void updateSelection();
+    void determineHorizontalAlignment();
     qreal implicitWidth() const;
     void focusChanged(bool);
 
@@ -112,6 +113,8 @@ public:
     bool clickCausedFocus : 1;
     bool persistentSelection : 1;
     bool requireImplicitWidth:1;
+    bool hAlignImplicit:1;
+    bool rightToLeftText:1;
     qreal textMargin;
     int lastSelectionStart;
     int lastSelectionEnd;

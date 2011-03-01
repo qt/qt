@@ -327,7 +327,9 @@ void QDeclarativeTextInput::setSelectedTextColor(const QColor &color)
     \qmlproperty enumeration TextInput::horizontalAlignment
 
     Sets the horizontal alignment of the text within the TextInput item's
-    width and height.  By default, the text is left aligned.
+    width and height. By default, the text alignment follows the natural alignment
+    of the text, for example text that is read from left to right will be aligned to
+    the left.
 
     TextInput does not have vertical alignment, as the natural height is
     exactly the height of the single line of text. If you set the height
@@ -347,12 +349,26 @@ QDeclarativeTextInput::HAlignment QDeclarativeTextInput::hAlign() const
 void QDeclarativeTextInput::setHAlign(HAlignment align)
 {
     Q_D(QDeclarativeTextInput);
-    if(align == d->hAlign)
+    d->hAlignImplicit = false;
+    if(align == d->hAlign || align > QDeclarativeTextInput::AlignHCenter) // justify not supported
         return;
     d->hAlign = align;
     updateRect();
     d->updateHorizontalScroll();
     emit horizontalAlignmentChanged(d->hAlign);
+}
+
+void QDeclarativeTextInput::resetHAlign()
+{
+    Q_D(QDeclarativeTextInput);
+    d->hAlignImplicit = true;
+    QDeclarativeTextInput::HAlignment oldAlignment = d->hAlign;
+    d->determineHorizontalAlignment();
+    if (oldAlignment != d->hAlign) {
+        updateRect();
+        d->updateHorizontalScroll();
+        emit horizontalAlignmentChanged(d->hAlign);
+    }
 }
 
 /*!
@@ -961,16 +977,21 @@ void QDeclarativeTextInput::keyPressEvent(QKeyEvent* ev)
     keyPressPreHandler(ev);
     if (ev->isAccepted())
         return;
-    if (((ev->key() == Qt::Key_Up || ev->key() == Qt::Key_Down) && ev->modifiers() == Qt::NoModifier) // Don't allow MacOSX up/down support, and we don't allow a completer.
-        || (((d->control->cursor() == 0 && ev->key() == Qt::Key_Left)
-            || (d->control->cursor() == d->control->text().length()
-                && ev->key() == Qt::Key_Right))
-            && (d->lastSelectionStart == d->lastSelectionEnd)))
-    {
-        //ignore when moving off the end
-        //unless there is a selection, because then moving will do something (deselect)
+
+    // Don't allow MacOSX up/down support, and we don't allow a completer.
+    bool ignore = (ev->key() == Qt::Key_Up || ev->key() == Qt::Key_Down) && ev->modifiers() == Qt::NoModifier;
+    if (!ignore && (d->lastSelectionStart == d->lastSelectionEnd) && (ev->key() == Qt::Key_Right || ev->key() == Qt::Key_Left)) {
+        // Ignore when moving off the end unless there is a selection,
+        // because then moving will do something (deselect).
+        int cursorPosition = d->control->cursor();
+        if (cursorPosition == 0)
+            ignore = ev->key() == (d->control->text().mid(cursorPosition,1).isRightToLeft() ? Qt::Key_Right : Qt::Key_Left);
+        if (cursorPosition == d->control->text().length())
+            ignore = ev->key() == (d->control->text().mid(cursorPosition-1,1).isRightToLeft() ? Qt::Key_Left : Qt::Key_Right);
+    }
+    if (ignore) {
         ev->ignore();
-    }else{
+    } else {
         d->control->processKeyEvent(ev);
     }
     if (!ev->isAccepted())
@@ -1129,11 +1150,11 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
     int cix = qRound(control->cursorToX(control->cursor() + preeditLength));
     QRect br(q->boundingRect().toRect());
     int widthUsed = calculateTextWidth();
-    Qt::Alignment va = QStyle::visualAlignment(control->layoutDirection(), QFlag(Qt::Alignment(hAlign)));
+
     if (autoScroll) {
         if (widthUsed <=  br.width()) {
             // text fits in br; use hscroll for alignment
-            switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
+            switch (hAlign & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
             case Qt::AlignRight:
                 hscroll = widthUsed - br.width() - 1;
                 break;
@@ -1165,11 +1186,11 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
                  hscroll = cix;
         }
     } else {
-        switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
-        case Qt::AlignRight:
+        switch (hAlign) {
+        case QDeclarativeTextInput::AlignRight:
             hscroll = q->width() - widthUsed;
             break;
-        case Qt::AlignHCenter:
+        case QDeclarativeTextInput::AlignHCenter:
             hscroll = (q->width() - widthUsed) / 2;
             break;
         default:
@@ -1177,6 +1198,22 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
             hscroll = 0;
             break;
         }
+    }
+}
+
+void QDeclarativeTextInputPrivate::determineHorizontalAlignment()
+{
+    Q_Q(QDeclarativeTextInput);
+    if (hAlignImplicit) {
+        QString text = control->text();
+        // if no explicit alignment has been set, follow the natural layout direction of the text
+        QDeclarativeTextInput::HAlignment previousAlign = hAlign;
+        if (text.isEmpty() && QApplication::layoutDirection() == Qt::RightToLeft)
+            hAlign = QDeclarativeTextInput::AlignRight;
+        else
+            hAlign = text.isRightToLeft() ? QDeclarativeTextInput::AlignRight : QDeclarativeTextInput::AlignLeft;
+        if (previousAlign != hAlign)
+            emit q->horizontalAlignmentChanged(hAlign);
     }
 }
 
@@ -1671,6 +1708,9 @@ void QDeclarativeTextInputPrivate::init()
     QPalette p = control->palette();
     selectedTextColor = p.color(QPalette::HighlightedText);
     selectionColor = p.color(QPalette::Highlight);
+
+    if (QApplication::layoutDirection() == Qt::RightToLeft)
+        hAlign = QDeclarativeTextInput::AlignRight;
 }
 
 void QDeclarativeTextInput::cursorPosChanged()
@@ -1719,6 +1759,7 @@ void QDeclarativeTextInput::q_textChanged()
     Q_D(QDeclarativeTextInput);
     updateSize();
     d->updateHorizontalScroll();
+    d->determineHorizontalAlignment();
     updateMicroFocus();
     emit textChanged();
     emit displayTextChanged();

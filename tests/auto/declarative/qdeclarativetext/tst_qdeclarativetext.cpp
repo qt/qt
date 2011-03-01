@@ -517,18 +517,44 @@ void tst_qdeclarativetext::horizontalAlignment_RightToLeft()
     QDeclarativeTextPrivate *textPrivate = QDeclarativeTextPrivate::get(text);
     QVERIFY(textPrivate != 0);
 
+    // implicit alignment should follow the reading direction of RTL text
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
     QVERIFY(textPrivate->layout.lineAt(0).x() > canvas->width()/2);
 
-    // "Right" aligned
-    text->setHAlign(QDeclarativeText::AlignRight);
-    QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+    // explicitly left aligned
+    text->setHAlign(QDeclarativeText::AlignLeft);
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignLeft);
     QVERIFY(textPrivate->layout.lineAt(0).x() < canvas->width()/2);
 
-    // Center aligned
+    // explicitly right aligned
+    text->setHAlign(QDeclarativeText::AlignRight);
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+    QVERIFY(textPrivate->layout.lineAt(0).x() > canvas->width()/2);
+
+    // explicitly center aligned
     text->setHAlign(QDeclarativeText::AlignHCenter);
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignHCenter);
     QVERIFY(textPrivate->layout.lineAt(0).x() < canvas->width()/2);
-    QVERIFY(textPrivate->layout.lineAt(0).x() + textPrivate->layout.lineAt(0).width() > canvas->width()/2);
+
+    // reseted alignment should go back to following the text reading direction
+    text->resetHAlign();
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+    QVERIFY(textPrivate->layout.lineAt(0).x() > canvas->width()/2);
+
+    // English text should be implicitly left aligned
+    text->setText("Hello world!");
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignLeft);
+    QVERIFY(textPrivate->layout.lineAt(0).x() < canvas->width()/2);
+
+    // empty text should implicitly follow the layout direction
+    QApplication::setLayoutDirection(Qt::RightToLeft);
+    text->setText("");
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+    text->setHAlign(QDeclarativeText::AlignLeft);
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignLeft);
+
+    // set layout direction back to LTR to avoid affecting other autotests
+    QApplication::setLayoutDirection(Qt::LeftToRight);
 
     delete canvas;
 }
