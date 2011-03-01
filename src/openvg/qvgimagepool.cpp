@@ -177,7 +177,7 @@ void QVGImagePool::hibernate()
 {
     Q_D(QVGImagePool);
     QVGPixmapData *pd = d->lruLast;
-    while(pd) {
+    while (pd) {
         QVGPixmapData *prevLRU = pd->prevLRU;
         pd->inImagePool = false;
         pd->inLRU = false;
