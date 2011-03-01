@@ -57,7 +57,6 @@ QSGPaintedItem::QSGPaintedItem(QSGItem *parent)
 {
     setFlag(ItemHasContents);
     d_func()->textureProvider = new QSGImageTextureProvider(this);
-    connect(d_func()->textureProvider, SIGNAL(textureChanged()), this, SLOT(update()));
 }
 
 QSGPaintedItem::QSGPaintedItem(QSGPaintedItemPrivate &dd, QSGItem *parent)
@@ -65,7 +64,6 @@ QSGPaintedItem::QSGPaintedItem(QSGPaintedItemPrivate &dd, QSGItem *parent)
 {
     setFlag(ItemHasContents);
     d_func()->textureProvider = new QSGImageTextureProvider(this);
-    connect(d_func()->textureProvider, SIGNAL(textureChanged()), this, SLOT(update()));
 }
 
 QSGPaintedItem::~QSGPaintedItem()
