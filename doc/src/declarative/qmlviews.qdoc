@@ -67,8 +67,9 @@ For more information, consult the \l {QML Data Models} article.
 \section1 View Delegates
 
 Views need a \e delegate to visually represent an item in a list. A view will
-visual each item list according to the template defined by the delegate.
-Properties of the model are accessible as well as an \c index property.
+visualize each item list according to the template defined by the delegate.
+Items in a model are accessible through the \c index property as well as the
+item's properties.
 \snippet doc/src/snippets/declarative/listview.qml delegate
 \image listview-setup.png
 
@@ -94,7 +95,7 @@ The club may decorate the members list by binding visual objects to the
 \section1 ListView Sections
 
 \l {ListView} contents may be grouped into \e sections, where related list items
-are labelled according to their sections. Further, the sections may be decorated
+are labeled according to their sections. Further, the sections may be decorated
 with \l{qml-view-delegate}{delegates}.
 
 A list may contain a list indicating people's names and the team on which team
