@@ -1707,6 +1707,8 @@ class Object : public Value {
   V8EXPORT Local<Value> Call(Handle<Object> recv,
                              int argc,
                              Handle<Value> argv[]);
+
+  V8EXPORT Local<Object> NewInstance(int argc, Handle<Value> argv[]) const;
 #endif
 
  private:

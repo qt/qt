@@ -3017,6 +3017,29 @@ Local<v8::Value> v8::Object::Call(v8::Handle<v8::Object> recv, int argc,
   i::Handle<i::Object> result(raw_result);
   return Utils::ToLocal(result);
 }
+
+Local<v8::Object> Object::NewInstance(int argc,
+                                      v8::Handle<v8::Value> argv[]) const {
+  ON_BAILOUT("v8::Object::NewInstance()", return Local<v8::Object>());
+  LOG_API("Object::NewInstance");
+  ENTER_V8;
+  HandleScope scope;
+  i::Handle<i::JSObject> obj = Utils::OpenHandle(this);
+  STATIC_ASSERT(sizeof(v8::Handle<v8::Value>) == sizeof(i::Object**));
+  i::Object*** args = reinterpret_cast<i::Object***>(argv);
+  EXCEPTION_PREAMBLE();
+  i::Handle<i::Object> returned;
+  if (obj->IsJSFunction()) {
+    i::Handle<i::JSFunction> function = i::Handle<i::JSFunction>::cast(obj);
+    returned = i::Execution::New(function, argc, args, &has_pending_exception);
+  } else {
+    i::Handle<i::JSFunction> delegate =
+        i::Handle<i::JSFunction>::cast(i::Execution::GetConstructorDelegate(obj));
+    returned = i::Execution::Call(delegate, obj, argc, args, &has_pending_exception);
+  }
+  EXCEPTION_BAILOUT_CHECK(Local<v8::Object>());
+  return scope.Close(Utils::ToLocal(i::Handle<i::JSObject>::cast(returned)));
+}
 #endif
 
 
