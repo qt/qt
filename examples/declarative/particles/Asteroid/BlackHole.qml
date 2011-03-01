@@ -117,28 +117,21 @@ Rectangle{
             emitterYVariation: height/2
         }]
         affectors: [
-            GravitationalSingularity{id: gs; x: root.width/4; y: root.height/4; strength: 4000000;},
-/*            Zone{
-                x: gs.x - 8;
-                y: gs.y - 8;
-                width: 16
-                height: 16
-                affector: Kill{}
-            },*/
-            GravitationalSingularity{id: g2; x: 3*root.width/4; y: root.height/2; strength: 4000000;},
-           /* Zone{
-                x: g2.x - 8;
-                y: g2.y - 8;
-                width: 16
-                height: 16
-                affector: Kill{}
-            },*/
-            GravitationalSingularity{id: s3; x: root.width/4; y: 3*root.height/4; strength: 4000000;},
+            GravitationalSingularity{id: gs; x: root.width/4; y: root.height/4; strength: -400000;},
             Zone{
-                x: s3.x - 8;
-                y: s3.y - 8;
-                width: 16
-                height: 16
+                x: gs.x - 4;
+                y: gs.y - 4;
+                width: 8
+                height: 8
+                affector: Kill{}
+            },
+            Attractor{id: g2; x: 3*root.width/4; y: root.height/2; strength: 100000;},
+            GravitationalSingularity{id: g3; x: root.width/4; y: 3*root.height/4; strength: -400000;},
+            Zone{
+                x: g3.x - 4;
+                y: g3.y - 4;
+                width: 8
+                height: 8
                 affector: Kill{}
             }
         ]
@@ -200,7 +193,8 @@ Rectangle{
             emitterYVariation: height/2
         }]
         affectors: [
-            GravitationalSingularity{id: gs2; x: gs.x; y: gs.y; strength: gs.strength/40;}
+            Attractor{id: gs2; x: gs.x; y: gs.y; strength: g2.strength/100;},
+            Attractor{id: gs22; x: g3.x; y: g3.y; strength: g2.strength/100;}
         ]
     }
     Text{
