@@ -182,6 +182,7 @@ public:
     struct CreateSimpleInstruction {
         void (*create)(void *);
         int typeSize;
+        int type;
         ushort column;
     };
     struct StoreMetaInstruction {

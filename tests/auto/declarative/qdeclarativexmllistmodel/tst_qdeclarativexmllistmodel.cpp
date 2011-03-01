@@ -40,6 +40,10 @@
 ****************************************************************************/
 #include <private/qdeclarativeengine_p.h>
 
+#include <QtTest/QtTest>
+#include <QtGlobal>
+#include <math.h>
+
 #include <qtest.h>
 #include <QtTest/qsignalspy.h>
 #include <QtDeclarative/qdeclarativenetworkaccessmanagerfactory.h>
@@ -80,7 +84,8 @@ private slots:
     }
 
     void buildModel();
-    void missingFields();
+    void testTypes();
+    void testTypes_data();
     void cdata();
     void attributes();
     void roles();
@@ -202,25 +207,68 @@ void tst_qdeclarativexmllistmodel::buildModel()
     delete model;
 }
 
-void tst_qdeclarativexmllistmodel::missingFields()
+void tst_qdeclarativexmllistmodel::testTypes()
 {
-    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/model2.qml"));
+    QFETCH(QString, xml);
+    QFETCH(QString, roleName);
+    QFETCH(QVariant, expectedValue);
+
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/testtypes.qml"));
     QDeclarativeXmlListModel *model = qobject_cast<QDeclarativeXmlListModel*>(component.create());
     QVERIFY(model != 0);
-    QTRY_COMPARE(model->count(), 9);
+    model->setXml(xml.toUtf8());
+    model->reload();
+    QTRY_COMPARE(model->count(), 1);
 
-    QList<int> roles;
-    roles << Qt::UserRole << Qt::UserRole + 1 << Qt::UserRole + 2 << Qt::UserRole + 3 << Qt::UserRole + 4;
-    QHash<int, QVariant> data = model->data(5, roles);
-    QVERIFY(data.count() == 5);
-    QCOMPARE(data.value(Qt::UserRole+3).toString(), QLatin1String(""));
-    QCOMPARE(data.value(Qt::UserRole+4).toString(), QLatin1String(""));
+    int role = -1;
+    foreach (int i, model->roles()) {
+        if (model->toString(i) == roleName) {
+            role = i;
+            break;
+        }
+    }
+    QVERIFY(role >= 0);
 
-    data = model->data(7, roles);
-    QVERIFY(data.count() == 5);
-    QCOMPARE(data.value(Qt::UserRole+2).toString(), QLatin1String(""));
+    if (expectedValue.toString() == "nan")
+        QVERIFY(qIsNaN(model->data(0, role).toDouble()));
+    else
+        QCOMPARE(model->data(0, role), expectedValue);
 
     delete model;
+}
+
+void tst_qdeclarativexmllistmodel::testTypes_data()
+{
+    QTest::addColumn<QString>("xml");
+    QTest::addColumn<QString>("roleName");
+    QTest::addColumn<QVariant>("expectedValue");
+
+    QTest::newRow("missing string field") << "<data></data>"
+            << "stringValue" << QVariant("");
+    QTest::newRow("empty string") << "<data><a-string></a-string></data>"
+            << "stringValue" << QVariant("");
+    QTest::newRow("1-char string") << "<data><a-string>5</a-string></data>"
+            << "stringValue" << QVariant("5");
+    QTest::newRow("string ok") << "<data><a-string>abc def g</a-string></data>"
+            << "stringValue" << QVariant("abc def g");
+
+    QTest::newRow("missing number field") << "<data></data>"
+            << "numberValue" << QVariant("");
+    double nan = qQNaN();
+    QTest::newRow("empty number field") << "<data><a-number></a-number></data>"
+            << "numberValue" << QVariant(nan);
+    QTest::newRow("number field with string") << "<data><a-number>a string</a-number></data>"
+            << "numberValue" << QVariant(nan);
+    QTest::newRow("-1") << "<data><a-number>-1</a-number></data>"
+            << "numberValue" << QVariant("-1");
+    QTest::newRow("-1.5") << "<data><a-number>-1.5</a-number></data>"
+            << "numberValue" << QVariant("-1.5");
+    QTest::newRow("0") << "<data><a-number>0</a-number></data>"
+            << "numberValue" << QVariant("0");
+    QTest::newRow("+1") << "<data><a-number>1</a-number></data>"
+            << "numberValue" << QVariant("1");
+    QTest::newRow("+1.5") << "<data><a-number>1.5</a-number></data>"
+            << "numberValue" << QVariant("1.5");
 }
 
 void tst_qdeclarativexmllistmodel::cdata()
@@ -521,6 +569,11 @@ void tst_qdeclarativexmllistmodel::reload()
     QSignalSpy spyRemove(model, SIGNAL(itemsRemoved(int,int)));
     QSignalSpy spyCount(model, SIGNAL(countChanged())); 
 
+    //reload multiple times to test the xml query aborting
+    model->reload();
+    model->reload();
+    QCoreApplication::processEvents();
+    model->reload();
     model->reload();
     QTRY_COMPARE(spyCount.count(), 1);
     QTRY_COMPARE(spyInsert.count(), 1);
@@ -791,9 +844,27 @@ void tst_qdeclarativexmllistmodel::threading()
             data3 += "name=C" + QString::number(i) + ",age=3" + QString::number(i) + ",sport=Curling;";
         }
 
+        //Set the xml data multiple times with randomized order and mixed with multiple event loops
+        //to test the xml query reloading/aborting, the result should be stable.
         m1->setXml(makeItemXmlAndData(data1));
         m2->setXml(makeItemXmlAndData(data2));
         m3->setXml(makeItemXmlAndData(data3));
+        QCoreApplication::processEvents();
+        m2->setXml(makeItemXmlAndData(data2));
+        m1->setXml(makeItemXmlAndData(data1));
+        m2->setXml(makeItemXmlAndData(data2));
+        QCoreApplication::processEvents();
+        m3->setXml(makeItemXmlAndData(data3));
+        QCoreApplication::processEvents();
+        m2->setXml(makeItemXmlAndData(data2));
+        m1->setXml(makeItemXmlAndData(data1));
+        m2->setXml(makeItemXmlAndData(data2));
+        m3->setXml(makeItemXmlAndData(data3));
+        QCoreApplication::processEvents();
+        m2->setXml(makeItemXmlAndData(data2));
+        m3->setXml(makeItemXmlAndData(data3));
+        m3->setXml(makeItemXmlAndData(data3));
+        QCoreApplication::processEvents();
 
         QTRY_VERIFY(m1->count() == dataCount && m2->count() == dataCount && m3->count() == dataCount);
 

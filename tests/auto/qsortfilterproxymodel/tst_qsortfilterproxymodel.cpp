@@ -144,6 +144,8 @@ private slots:
     void taskQTBUG_7537_appearsAndSort();
     void taskQTBUG_7716_unnecessaryDynamicSorting();
     void taskQTBUG_10287_unnecessaryMapCreation();
+    void taskQTBUG_17812_resetInvalidate_data();
+    void taskQTBUG_17812_resetInvalidate();
 
     void testMultipleProxiesWithSelection();
     void mapSelectionFromSource();
@@ -3211,6 +3213,61 @@ void tst_QSortFilterProxyModel::filteredColumns()
     // Parent is QModelIndex()
     insertCommand->doCommand();
 
+}
+
+void tst_QSortFilterProxyModel::taskQTBUG_17812_resetInvalidate_data()
+{
+    QTest::addColumn<int>("test");
+    QTest::addColumn<bool>("works");
+
+    QTest::newRow("nothing") << 0 << false;
+    QTest::newRow("reset") << 1 << true;
+    QTest::newRow("invalidate") << 2 << true;
+    QTest::newRow("invalidate_filter") << 3 << true;
+}
+
+void tst_QSortFilterProxyModel::taskQTBUG_17812_resetInvalidate()
+{
+    QFETCH(int, test);
+    QFETCH(bool, works);
+
+    struct Proxy : QSortFilterProxyModel {
+        QString pattern;
+        virtual bool filterAcceptsRow(int source_row, const QModelIndex&) const {
+            return sourceModel()->data(sourceModel()->index(source_row, 0)).toString().contains(pattern);
+        }
+        void notifyChange(int test) {
+            switch (test) {
+            case 0: break;
+            case 1: reset(); break;
+            case 2: invalidate(); break;
+            case 3: invalidateFilter(); break;
+            }
+        }
+    };
+
+    QStringListModel sourceModel(QStringList() << "Poisson" << "Vache" << "Brebis"
+                                               << "Elephant" << "Cochon" << "Serpent"
+                                               << "Mouton" << "Ecureuil" << "Mouche");
+    Proxy proxy;
+    proxy.pattern = QString::fromLatin1("n");
+    proxy.setSourceModel(&sourceModel);
+
+    QCOMPARE(proxy.rowCount(), 5);
+    for (int i = 0; i < proxy.rowCount(); i++) {
+        QVERIFY(proxy.data(proxy.index(i,0)).toString().contains('n'));
+    }
+
+    proxy.pattern = QString::fromLatin1("o");
+    proxy.notifyChange(test);
+
+    QCOMPARE(proxy.rowCount(), works ? 4 : 5);
+    bool ok = true;
+    for (int i = 0; i < proxy.rowCount(); i++) {
+        if (!proxy.data(proxy.index(i,0)).toString().contains('o'))
+            ok = false;
+    }
+    QCOMPARE(ok, works);
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)

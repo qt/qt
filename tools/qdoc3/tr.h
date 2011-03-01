@@ -46,14 +46,26 @@
 #ifndef TR_H
 #define TR_H
 
+#ifndef QT_BOOTSTRAPPED
+#  include "qcoreapplication.h"
+#endif
+
 #include <qstring.h>
 
 QT_BEGIN_NAMESPACE
 
-inline QString tr( const char *sourceText, const char * /* comment */ = 0 )
+#if defined(QT_BOOTSTRAPPED) || defined(QT_NO_TRANSLATION)
+inline QString tr(const char *sourceText, const char *comment = 0)
 {
+    Q_UNUSED(comment);
     return QString( QLatin1String(sourceText) );
 }
+#else
+inline QString tr(const char *sourceText, const char *comment = 0)
+{
+    return QCoreApplication::instance()->translate("", sourceText, comment);
+}
+#endif
 
 QT_END_NAMESPACE
 

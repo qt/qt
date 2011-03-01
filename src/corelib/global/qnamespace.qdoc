@@ -1259,6 +1259,13 @@
     to this top level window. This attribute has no effect on non-X11
     platforms.
 
+    \value WA_LockPortraitOrientation Locks the widget to a portrait orientation,
+    ignoring changes to the display's orientation with respect to the user.
+    \value WA_LockLandscapeOrientation Locks the widget to a landscape orientation,
+    ignoring changes to the display's orientation with respect to the user.
+    \value WA_AutoOrientation Causes the widget to change orientation whenever the
+    display changes orientation with respect to the user.
+
     \omitvalue WA_SetLayoutDirection
     \omitvalue WA_InputMethodTransparent
     \omitvalue WA_WState_CompressKeys

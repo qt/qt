@@ -444,6 +444,7 @@ static QVector<Atom> getNetWmState(QWidget *w)
         && actualType == XA_ATOM && actualFormat == 32) {
         returnValue.resize(bytesLeft / 4);
         XFree((char*) propertyData);
+        propertyData = 0;
 
         // fetch all data
         if (XGetWindowProperty(X11->display, w->internalWinId(), ATOM(_NET_WM_STATE), 0,
@@ -458,7 +459,8 @@ static QVector<Atom> getNetWmState(QWidget *w)
         if (!returnValue.isEmpty()) {
             memcpy(returnValue.data(), propertyData, returnValue.size() * sizeof(Atom));
         }
-        XFree((char*) propertyData);
+        if (propertyData)
+            XFree((char*) propertyData);
     }
 
     return returnValue;
@@ -1316,40 +1318,12 @@ QPoint QWidgetPrivate::mapFromGlobal(const QPoint &pos) const
 QPoint QWidget::mapToGlobal(const QPoint &pos) const
 {
     Q_D(const QWidget);
-    QPoint offset = data->crect.topLeft();
-    const QWidget *w = this;
-    const QWidget *p = w->parentWidget();
-    while (!w->isWindow() && p) {
-        w = p;
-        p = p->parentWidget();
-        offset += w->data->crect.topLeft();
-    }
-
-    const QWidgetPrivate *wd = w->d_func();
-    QTLWExtra *tlw = wd->topData();
-    if (!tlw->embedded)
-        return pos + offset;
-
     return d->mapToGlobal(pos);
 }
 
 QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 {
     Q_D(const QWidget);
-    QPoint offset = data->crect.topLeft();
-    const QWidget *w = this;
-    const QWidget *p = w->parentWidget();
-    while (!w->isWindow() && p) {
-        w = p;
-        p = p->parentWidget();
-        offset += w->data->crect.topLeft();
-    }
-
-    const QWidgetPrivate *wd = w->d_func();
-    QTLWExtra *tlw = wd->topData();
-    if (!tlw->embedded)
-        return pos - offset;
-
     return d->mapFromGlobal(pos);
 }
 

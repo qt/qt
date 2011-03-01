@@ -124,6 +124,7 @@ private:
         int index; // Inserted/Removed/Moved/Changed
         int count; // Inserted/Removed/Moved/Changed
         int to;    // Moved
+        QList<int> roles;
     };
 
     struct Data {
@@ -133,7 +134,7 @@ private:
         void insertChange(int index, int count);
         void removeChange(int index, int count);
         void moveChange(int index, int count, int to);
-        void changedChange(int index, int count);
+        void changedChange(int index, int count, const QList<int> &roles);
     };
     Data data;
 
@@ -143,7 +144,7 @@ private:
         QDeclarativeListModel *list;
     };
 
-    void changedData(int index, int count);
+    void changedData(int index, int count, const QList<int> &roles);
 
     QAtomicInt m_ref;
     QDeclarativeListModel *m_orig;

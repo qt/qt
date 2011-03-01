@@ -51,7 +51,7 @@ to either instantiating an object instance, or assigning a property a value.
 QML relies heavily on Qt's meta object system and can only instantiate classes
 that derive from QObject. For visual element types, this will usually mean a subclass
 of QDeclarativeItem; for models used with the view elements, a subclass of QAbstractItemModel;
-and for abitrary objects with properties, a direct subclass of QObject.
+and for arbitrary objects with properties, a direct subclass of QObject.
 
 The QML engine has no intrinsic knowledge of any class types.  Instead the
 programmer must register the C++ types with their corresponding QML names.
@@ -111,6 +111,75 @@ Person {
 
 \l {Extending QML - Adding Types Example} shows the complete code used to create
 the \c Person type.
+
+\section1 QML Type Versioning
+
+In C++ adding a new method or property cannot break old applications.
+In QML, however, new methods and properties can change what a name previously
+resolved to to within a scope chain.
+
+For example, consider these two QML files
+
+\code
+// main.qml
+import QtQuick 1.0
+Item {
+    id: root
+    MyComponent {}
+}
+\endcode
+
+\code
+// MyComponent.qml
+import MyModule 1.0
+CppItem {
+    value: root.x
+}
+\endcode
+
+where CppItem maps to the C++ class QCppItem.
+
+If the author of QCppItem adds a "root" property to QCppItem in a new version of the module, 
+it will break the above program as \c root.x now resolves to a different value.
+The solution is to allow the author of QCppItem to state that the new \c root property is 
+only available from a particular version of QCppItem onwards. This permits new properties
+and features to be added to existing elements without breaking existing programs. 
+
+QML enables this by allowing the properties, methods and signals of a class to be tagged with
+a particular \e revision, so that they are only accessible if the relevant module version
+is imported.  In this case, the author can tag the \c root property as being added in
+\e {revision 1} of the class, and register that revision in version 1.1 of the module.
+
+The REVISION tag is used to mark the \c root property as added in revision 1 of the class.
+Methods such as Q_INVOKABLE's, signals and slots can also be tagged for a
+revision using the \c Q_REVISION(x) macro:
+
+\code
+class CppItem : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int root READ root WRITE setRoot NOTIFY rootChanged REVISION 1)
+
+signals:
+    Q_REVISION(1) void rootChanged();
+};
+\endcode
+
+To register the new class revision to a particular version the following function is used:
+
+\code
+template<typename T, int metaObjectRevision>
+int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const char *qmlName)
+\endcode
+
+To register \c CppItem version 1 for \c {MyModule 1.1}:
+
+\code
+qmlRegisterType<QCppItem,1>("MyModule", 1, 1, "CppItem")
+\endcode
+
+\c root is only available when MyModule 1.1 is imported.
+
 
 \section1 Object and List Property Types
 
@@ -453,7 +522,7 @@ The \c {invite()} method is similarly available if it is declared as a slot.
 \snippet examples/declarative/cppextensions/referenceexamples/valuesource/example.qml 0
 \snippet examples/declarative/cppextensions/referenceexamples/valuesource/example.qml 1
 
-The QML snippet shown above applies a property value source to the \c announcment property.
+The QML snippet shown above applies a property value source to the \c announcement property.
 A property value source generates a value for a property that changes over time.
 
 Property value sources are most commonly used to do animation.  Rather than
@@ -493,7 +562,7 @@ assignment fails does the engine call the \l {QDeclarativePropertyValueSource::}
 the type to also be used in contexts other than just as a value source.
 
 \l {Extending QML -  Property Value Source Example} shows the complete code used
-implement the \c HappyBirthdaySong property value source.
+to implement the \c HappyBirthdaySong property value source.
 
 \section1 Property Binding
 
@@ -733,12 +802,14 @@ It is optional for a property to have a default value. The default value is a co
 behaviorally identical to doing it in two steps, like this:
 
 \qml
-// Use default value
-property int myProperty: 10
+Item {
+    // Use default value
+    property int myProperty: 10
 
-// Longer, but behaviorally identical
-property int myProperty
-myProperty: 10
+    // Longer, but behaviorally identical
+    property int myProperty
+    myProperty: 10
+}
 \endqml
 
 
@@ -769,9 +840,11 @@ QML object types can also be used as property types. This includes
 defined like this:
 
 \qml
-property Item itemProperty
-property QtObject objectProperty
-property MyCustomType customProperty
+Item {
+    property Item itemProperty
+    property QtObject objectProperty
+    property MyCustomType customProperty
+}
 \endqml
 
 Such object-type properties default to an \c undefined value.
@@ -784,7 +857,9 @@ see the \l {variant}{variant type documentation} for details.
 list:
 
 \qml
-property list<Item> listOfItems
+Item {
+    property list<Item> listOfItems
+}
 \endqml
 
 Note that list properties cannot be modified like ordinary JavaScript
@@ -825,7 +900,7 @@ If the \l{Item::children}{children} property was not the default property for
 \qml
 Item {
     children: [
-        Rectangle {}
+        Rectangle {},
         Rectangle {}
     ]
 }
@@ -1075,7 +1150,7 @@ code removes the connection created in \c application.qml above:
 \qml
 // application.qml
 Item {
-    ...
+    // ...
 
     function removeSignal() {
         button.clicked.disconnect(item.myMethod)
@@ -1100,5 +1175,4 @@ MouseArea {
 
 Whenever the \l MouseArea \c clicked signal is emitted, the \c rect.buttonClicked signal will
 automatically be emitted as well.
-
 */

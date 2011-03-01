@@ -79,11 +79,11 @@ void tst_QDeclarativeDebugService::initTestCase()
     QTest::ignoreMessage(QtWarningMsg, "Qml debugging is enabled. Only use this in a safe environment!");
     QDeclarativeDebugHelper::enableDebugging();
 
-    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Waiting for connection on port 3769...");
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Waiting for connection on port 13769...");
     new QDeclarativeEngine(this);
 
     m_conn = new QDeclarativeDebugConnection(this);
-    m_conn->connectToHost("127.0.0.1", 3769);
+    m_conn->connectToHost("127.0.0.1", 13769);
 
     QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Connection established");
     bool ok = m_conn->waitForConnected();
@@ -133,6 +133,10 @@ void tst_QDeclarativeDebugService::sendMessage()
     client.sendMessage(msg);
     QByteArray resp = client.waitForResponse();
     QCOMPARE(resp, msg);
+
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugService: Conflicting plugin name \"tst_QDeclarativeDebugService::sendMessage()\" ");
+    QDeclarativeDebugService duplicate("tst_QDeclarativeDebugService::sendMessage()");
+    duplicate.sendMessage("msg");
 }
 
 void tst_QDeclarativeDebugService::idForObject()
@@ -189,7 +193,7 @@ int main(int argc, char *argv[])
     char **_argv = new char*[_argc];
     for (int i = 0; i < argc; ++i)
         _argv[i] = argv[i];
-    _argv[_argc - 1] = "-qmljsdebugger=port:3769";
+    _argv[_argc - 1] = "-qmljsdebugger=port:13769";
 
     QApplication app(_argc, _argv);
     tst_QDeclarativeDebugService tc;

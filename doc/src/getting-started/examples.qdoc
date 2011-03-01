@@ -488,10 +488,12 @@
     \image ipc-examples.png
 
     \list
-    \o \l{ipc/localfortuneclient}{Local Fortune Client}\raisedaster
-    \o \l{ipc/localfortuneserver}{Local Fortune Server}\raisedaster
+    \o \l{ipc/localfortuneclient}{Local Fortune Client}
+    \o \l{ipc/localfortuneserver}{Local Fortune Server}
     \o \l{ipc/sharedmemory}{Shared Memory}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!

@@ -6056,19 +6056,28 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
 
 fi # QWS
 
+EGL_VARIANT=none
 # EGL Support
 if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
     if [ "$CFG_EGL" != "no" ]; then
         # detect EGL support
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl4gles1" "EGL (GLES/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
-            # EGL specified by QMAKE_*_EGL, included with <GLES/egl.h>
-            CFG_EGL=yes
-            CFG_EGL_GLES_INCLUDES=yes
-        elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl" "EGL (EGL/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl" "EGL (EGL/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
             # EGL specified by QMAKE_*_EGL, included with <EGL/egl.h>
+            EGL_VARIANT=regular
             CFG_EGL=yes
-            CFG_EGL_GLES_INCLUDES=no
-        else
+        fi
+
+        # Prefer this variant for ES1
+        if [ "$CFG_OPENGL" = "es1" -o "$EGL_VARIANT" = "none" ]; then
+            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl4gles1" "EGL (GLES/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
+                # EGL specified by QMAKE_*_EGL, included with <GLES/egl.h>
+                EGL_VARIANT=gles
+                CFG_EGL=yes
+                CFG_EGL_GLES_INCLUDES=yes
+            fi
+        fi
+
+        if [ "$EGL_VARIANT" = "none" ]; then
             if [ "$CFG_EGL" = "yes" ]; then
                 echo "The EGL functionality test failed!"
                 echo " EGL is required for OpenGL ES to manage contexts & surfaces."

@@ -1489,7 +1489,7 @@ namespace {
     {
     public:
         QOpenGLStaticTextUserData()
-            : QStaticTextUserData(OpenGLUserData), cacheSize(0, 0)
+            : QStaticTextUserData(OpenGLUserData), cacheSize(0, 0), cacheSerialNumber(0)
         {
         }
 
@@ -1501,6 +1501,7 @@ namespace {
         QGL2PEXVertexArray vertexCoordinateArray;
         QGL2PEXVertexArray textureCoordinateArray;
         QFontEngineGlyphCache::Type glyphType;
+        int cacheSerialNumber;
     };
 
 }
@@ -1518,12 +1519,10 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
     QGLTextureGlyphCache *cache =
         (QGLTextureGlyphCache *) staticTextItem->fontEngine()->glyphCache(ctx, glyphType, QTransform());
-    if (!cache || cache->cacheType() != glyphType) {
+    if (!cache || cache->cacheType() != glyphType || cache->context() == 0) {
         cache = new QGLTextureGlyphCache(ctx, glyphType, QTransform());
         staticTextItem->fontEngine()->setGlyphCache(ctx, cache);
         recreateVertexArrays = true;
-    } else if (cache->context() == 0) { // Old context has been destroyed, new context has same ptr value
-        cache->setContext(ctx);
     }
 
     if (staticTextItem->userDataNeedsUpdate) {
@@ -1534,8 +1533,11 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         recreateVertexArrays = true;
     } else {
         QOpenGLStaticTextUserData *userData = static_cast<QOpenGLStaticTextUserData *>(staticTextItem->userData());
-        if (userData->glyphType != glyphType)
+        if (userData->glyphType != glyphType) {
             recreateVertexArrays = true;
+        } else if (userData->cacheSerialNumber != cache->serialNumber()) {
+            recreateVertexArrays = true;
+        }
     }
 
     // We only need to update the cache with new glyphs if we are actually going to recreate the vertex arrays.
@@ -1580,6 +1582,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         }
 
         userData->glyphType = glyphType;
+        userData->cacheSerialNumber = cache->serialNumber();
 
         // Use cache if backend optimizations is turned on
         vertexCoordinates = &userData->vertexCoordinateArray;

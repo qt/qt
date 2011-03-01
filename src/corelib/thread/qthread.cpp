@@ -482,7 +482,10 @@ int QThread::exec()
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
     d->data->quitNow = false;
-    d->exited = false;
+    if (d->exited) {
+        d->exited = false;
+        return d->returnCode;
+    }
     locker.unlock();
 
     QEventLoop eventLoop;
@@ -506,10 +509,12 @@ int QThread::exec()
 
     Note that unlike the C library function of the same name, this
     function \e does return to the caller -- it is event processing
-    that stops.
-
-    This function does nothing if the thread does not have an event
-    loop.
+    that stops. 
+    
+    No QEventLoops will be started anymore in this thread  until 
+    QThread::exec() has been called again. If the eventloop in QThread::exec()
+    is not running then the next call to QThread::exec() will also return
+    immediately.
 
     \sa quit() QEventLoop
 */

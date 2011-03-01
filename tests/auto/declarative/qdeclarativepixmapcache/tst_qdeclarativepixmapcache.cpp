@@ -47,6 +47,11 @@
 #include "testhttpserver.h"
 #include "../../../shared/util.h"
 
+#ifndef QT_NO_CONCURRENT
+#include <qtconcurrentrun.h>
+#include <qfuture.h>
+#endif
+
 // These don't let normal people run tests!
 //#include "../network-settings.h"
 
@@ -74,7 +79,10 @@ private slots:
     void massive();
     void cancelcrash();
     void shrinkcache();
+#ifndef QT_NO_CONCURRENT
     void networkCrash();
+#endif
+
 private:
     QDeclarativeEngine engine;
     QUrl thisfile;
@@ -354,6 +362,8 @@ void tst_qdeclarativepixmapcache::shrinkcache()
     }
 }
 
+#ifndef QT_NO_CONCURRENT
+
 void createNetworkServer()
 {
    QEventLoop eventLoop;
@@ -377,6 +387,8 @@ void tst_qdeclarativepixmapcache::networkCrash()
     }
     future.cancel();
 }
+
+#endif
 
 QTEST_MAIN(tst_qdeclarativepixmapcache)
 

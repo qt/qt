@@ -860,6 +860,50 @@ void tst_QScriptContext::backtrace_data()
 
         QTest::newRow("js recursive") << source << expected;
     }
+
+    {
+        QString source = QString::fromLatin1(
+            "[0].forEach(\n"
+            "    function() {\n"
+            "        result = bt();\n"
+            "}); result");
+
+        QStringList expected;
+        expected << "<native>() at -1"
+                 << "<anonymous>(0, 0, 0) at testfile:3"
+                 << QString::fromLatin1("forEach(%0) at -1")
+                    // Because the JIT doesn't store the arguments in the frame
+                    // for built-in functions, arguments are not available.
+                    // Will work when the copy of JavaScriptCore is updated
+                    // (QTBUG-16568).
+                    .arg(qt_script_isJITEnabled()
+                         ? ""
+                         : "function () {\n        result = bt();\n}")
+                 << "<global>() at testfile:4";
+        QTest::newRow("js callback from built-in") << source << expected;
+    }
+
+    {
+        QString source = QString::fromLatin1(
+            "[10,20].forEach(\n"
+            "    function() {\n"
+            "        result = bt();\n"
+            "}); result");
+
+        QStringList expected;
+        expected << "<native>() at -1"
+                 << "<anonymous>(20, 1, 10,20) at testfile:3"
+                 << QString::fromLatin1("forEach(%0) at -1")
+                    // Because the JIT doesn't store the arguments in the frame
+                    // for built-in functions, arguments are not available.
+                    // Will work when the copy of JavaScriptCore is updated
+                    // (QTBUG-16568).
+                    .arg(qt_script_isJITEnabled()
+                         ? ""
+                         : "function () {\n        result = bt();\n}")
+                 << "<global>() at testfile:4";
+        QTest::newRow("js callback from built-in") << source << expected;
+    }
 }
 
 

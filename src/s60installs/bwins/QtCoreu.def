@@ -4487,4 +4487,6 @@ EXPORTS
 	?queueDeferredActiveObjectsCompletion@QEventDispatcherSymbian@@QAEXXZ @ 4486 NONAME ; void QEventDispatcherSymbian::queueDeferredActiveObjectsCompletion(void)
 	?reactivateDeferredActiveObjects@QEventDispatcherSymbian@@UAEXXZ @ 4487 NONAME ; void QEventDispatcherSymbian::reactivateDeferredActiveObjects(void)
 	?symbianCommandLine@QCoreApplicationPrivate@@SAPAVCApaCommandLine@@XZ @ 4488 NONAME ; class CApaCommandLine * QCoreApplicationPrivate::symbianCommandLine(void)
+	?revision@QMetaProperty@@QBEHXZ @ 4489 NONAME ; int QMetaProperty::revision(void) const
+	?revision@QMetaMethod@@QBEHXZ @ 4490 NONAME ; int QMetaMethod::revision(void) const
 

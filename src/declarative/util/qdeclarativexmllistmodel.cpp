@@ -46,11 +46,9 @@
 
 #include <QDebug>
 #include <QStringList>
-#include <QQueue>
+#include <QMap>
 #include <QApplication>
 #include <QThread>
-#include <QMutex>
-#include <QWaitCondition>
 #include <QXmlQuery>
 #include <QXmlResultItems>
 #include <QXmlNodeModelIndex>
@@ -58,6 +56,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QTimer>
+#include <QMutex>
 
 #include <private/qobject_p.h>
 
@@ -90,10 +89,15 @@ typedef QPair<int, int> QDeclarativeXmlListRange;
     \qml
     XmlListModel {
         id: xmlModel
-        ...
-        XmlRole { name: "title"; query: "title/string()" }
+        // ...
+        XmlRole {
+            name: "title"
+            query: "title/string()"
+        }
     }
+    \endqml
 
+    \qml
     ListView {
         model: xmlModel
         delegate: Text { text: title }
@@ -142,39 +146,32 @@ struct XmlQueryJob
     QStringList keyRoleResultsCache;
 };
 
-class QDeclarativeXmlQuery : public QThread
+class QDeclarativeXmlQuery : public QObject
 {
     Q_OBJECT
 public:
     QDeclarativeXmlQuery(QObject *parent=0)
-        : QThread(parent), m_quit(false), m_abortQueryId(-1), m_queryIds(XMLLISTMODEL_CLEAR_ID + 1) {
+        : QObject(parent), m_queryIds(XMLLISTMODEL_CLEAR_ID + 1) {
         qRegisterMetaType<QDeclarativeXmlQueryResult>("QDeclarativeXmlQueryResult");
-        m_currentJob.queryId = -1;
+        moveToThread(&m_thread);
+        m_thread.start(QThread::IdlePriority);
     }
 
     ~QDeclarativeXmlQuery() {
-        m_mutex.lock();
-        m_quit = true;
-        m_condition.wakeOne();
-        m_mutex.unlock();
-
-        wait();
+        if(m_thread.isRunning()) {
+            m_thread.quit();
+            m_thread.wait();
+        }
     }
 
     void abort(int id) {
-        QMutexLocker locker(&m_mutex);
-        QQueue<XmlQueryJob>::iterator it;
-        for (it = m_jobs.begin(); it != m_jobs.end(); ++it) {
-            if ((*it).queryId == id) {
-                m_jobs.erase(it);
-                return;
-            }
+        QMutexLocker ml(&m_mutex);
+        if (id != -1) {
+            m_jobs.remove(id);
         }
-        m_abortQueryId = id;
     }
 
-    int doQuery(QString query, QString namespaces, QByteArray data, QList<QDeclarativeXmlListModelRole *> *roleObjects, QStringList keyRoleResultsCache) {
-        QMutexLocker locker(&m_mutex);
+    int doQuery(QString query, QString namespaces, QByteArray data, QList<QDeclarativeXmlListModelRole *>* roleObjects, QStringList keyRoleResultsCache) {
 
         XmlQueryJob job;
         job.queryId = m_queryIds;
@@ -193,14 +190,47 @@ public:
             if (roleObjects->at(i)->isKey())
                 job.keyRoleQueries << job.roleQueries.last();
         }
-        m_jobs.enqueue(job);
-        m_queryIds++;
 
-        if (!isRunning())
-            start(QThread::IdlePriority);
-        else
-            m_condition.wakeOne();
+        {
+            QMutexLocker ml(&m_mutex);
+            m_jobs.insert(m_queryIds, job);
+            m_queryIds++;
+            if (m_queryIds <= 0)
+              m_queryIds = 1;
+        }
+
+        QMetaObject::invokeMethod(this, "processQuery", Qt::QueuedConnection, Q_ARG(int, job.queryId));
         return job.queryId;
+    }
+
+private slots:
+    void processQuery(int queryId) {
+        XmlQueryJob job;
+
+        {
+            QMutexLocker ml(&m_mutex);
+            if (!m_jobs.contains(queryId))
+                return;
+            job = m_jobs.value(queryId);
+        }
+
+        QDeclarativeXmlQueryResult r;
+        doQueryJob(&job);
+        doSubQueryJob(&job);
+        r.queryId = job.queryId;
+        r.size = m_size;
+        r.data = m_modelData;
+        r.inserted = m_insertedItemRanges;
+        r.removed = m_removedItemRanges;
+        r.keyRoleResultsCache = job.keyRoleResultsCache;
+
+        {
+            QMutexLocker ml(&m_mutex);
+            if (m_jobs.contains(queryId)) {
+                emit queryCompleted(r);
+                m_jobs.remove(queryId);
+            }
+        }
     }
 
 Q_SIGNALS:
@@ -208,54 +238,21 @@ Q_SIGNALS:
     void error(void*, const QString&);
 
 protected:
-    void run() {
-        m_mutex.lock();
 
-        while (!m_quit) {
-            if (!m_jobs.isEmpty())
-                m_currentJob = m_jobs.dequeue();
-            m_mutex.unlock();
-
-            QDeclarativeXmlQueryResult r;
-            if (m_currentJob.queryId != -1) {
-                doQueryJob();
-                doSubQueryJob();
-                r.queryId = m_currentJob.queryId;
-                r.size = m_size;
-                r.data = m_modelData;
-                r.inserted = m_insertedItemRanges;
-                r.removed = m_removedItemRanges;
-                r.keyRoleResultsCache = m_currentJob.keyRoleResultsCache;
-            }
-
-            m_mutex.lock();
-            if (m_currentJob.queryId != -1 && m_abortQueryId != m_currentJob.queryId)
-                emit queryCompleted(r);
-            if (m_jobs.isEmpty() && !m_quit)
-                m_condition.wait(&m_mutex);
-            m_currentJob.queryId = -1;
-            m_abortQueryId = -1;
-        }
-
-        m_mutex.unlock();
-    }
 
 private:
-    void doQueryJob();
-    void doSubQueryJob();
-    void getValuesOfKeyRoles(QStringList *values, QXmlQuery *query) const;
+    void doQueryJob(XmlQueryJob* job);
+    void doSubQueryJob(XmlQueryJob* job);
+    void getValuesOfKeyRoles(const XmlQueryJob& currentJob, QStringList *values, QXmlQuery *query) const;
     void addIndexToRangeList(QList<QDeclarativeXmlListRange> *ranges, int index) const;
 
 private:
     QMutex m_mutex;
-    QWaitCondition m_condition;
-    QQueue<XmlQueryJob> m_jobs;
-    XmlQueryJob m_currentJob;
-    bool m_quit;
-    int m_abortQueryId;
+    QThread m_thread;
+    QMap<int, XmlQueryJob> m_jobs;
+    int m_queryIds;
     QString m_prefix;
     int m_size;
-    int m_queryIds;
     QList<QList<QVariant> > m_modelData;
     QList<QDeclarativeXmlListRange> m_insertedItemRanges;
     QList<QDeclarativeXmlListRange> m_removedItemRanges;
@@ -263,16 +260,16 @@ private:
 
 Q_GLOBAL_STATIC(QDeclarativeXmlQuery, globalXmlQuery)
 
-void QDeclarativeXmlQuery::doQueryJob()
+void QDeclarativeXmlQuery::doQueryJob(XmlQueryJob* currentJob)
 {
-    Q_ASSERT(m_currentJob.queryId != -1);
+    Q_ASSERT(currentJob->queryId != -1);
 
     QString r;
     QXmlQuery query;
-    QBuffer buffer(&m_currentJob.data);
+    QBuffer buffer(&currentJob->data);
     buffer.open(QIODevice::ReadOnly);
     query.bindVariable(QLatin1String("src"), &buffer);
-    query.setQuery(m_currentJob.namespaces + m_currentJob.query);
+    query.setQuery(currentJob->namespaces + currentJob->query);
     query.evaluateTo(&r);
 
     //always need a single root element
@@ -280,9 +277,9 @@ void QDeclarativeXmlQuery::doQueryJob()
     QBuffer b(&xml);
     b.open(QIODevice::ReadOnly);
 
-    QString namespaces = QLatin1String("declare namespace dummy=\"http://qtsotware.com/dummy\";\n") + m_currentJob.namespaces;
+    QString namespaces = QLatin1String("declare namespace dummy=\"http://qtsotware.com/dummy\";\n") + currentJob->namespaces;
     QString prefix = QLatin1String("doc($inputDocument)/dummy:items") +
-                     m_currentJob.query.mid(m_currentJob.query.lastIndexOf(QLatin1Char('/')));
+                     currentJob->query.mid(currentJob->query.lastIndexOf(QLatin1Char('/')));
 
     //figure out how many items we are dealing with
     int count = -1;
@@ -297,18 +294,16 @@ void QDeclarativeXmlQuery::doQueryJob()
             count = item.toAtomicValue().toInt();
     }
 
-    m_currentJob.data = xml;
+    currentJob->data = xml;
     m_prefix = namespaces + prefix + QLatin1Char('/');
     m_size = 0;
     if (count > 0)
         m_size = count;
 }
 
-void QDeclarativeXmlQuery::getValuesOfKeyRoles(QStringList *values, QXmlQuery *query) const
+void QDeclarativeXmlQuery::getValuesOfKeyRoles(const XmlQueryJob& currentJob, QStringList *values, QXmlQuery *query) const
 {
-    Q_ASSERT(m_currentJob.queryId != -1);
-
-    const QStringList &keysQueries = m_currentJob.keyRoleQueries;
+    const QStringList &keysQueries = currentJob.keyRoleQueries;
     QString keysQuery;
     if (keysQueries.count() == 1)
         keysQuery = m_prefix + keysQueries[0];
@@ -336,34 +331,34 @@ void QDeclarativeXmlQuery::addIndexToRangeList(QList<QDeclarativeXmlListRange> *
         ranges->append(qMakePair(index, 1));
 }
 
-void QDeclarativeXmlQuery::doSubQueryJob()
+void QDeclarativeXmlQuery::doSubQueryJob(XmlQueryJob* currentJob)
 {
-    Q_ASSERT(m_currentJob.queryId != -1);
+    Q_ASSERT(currentJob->queryId != -1);
     m_modelData.clear();
 
-    QBuffer b(&m_currentJob.data);
+    QBuffer b(&currentJob->data);
     b.open(QIODevice::ReadOnly);
 
     QXmlQuery subquery;
     subquery.bindVariable(QLatin1String("inputDocument"), &b);
 
     QStringList keyRoleResults;
-    getValuesOfKeyRoles(&keyRoleResults, &subquery);
+    getValuesOfKeyRoles(*currentJob, &keyRoleResults, &subquery);
 
     // See if any values of key roles have been inserted or removed.
 
     m_insertedItemRanges.clear();
     m_removedItemRanges.clear();
-    if (m_currentJob.keyRoleResultsCache.isEmpty()) {
+    if (currentJob->keyRoleResultsCache.isEmpty()) {
         m_insertedItemRanges << qMakePair(0, m_size);
     } else {
-        if (keyRoleResults != m_currentJob.keyRoleResultsCache) {
+        if (keyRoleResults != currentJob->keyRoleResultsCache) {
             QStringList temp;
-            for (int i=0; i<m_currentJob.keyRoleResultsCache.count(); i++) {
-                if (!keyRoleResults.contains(m_currentJob.keyRoleResultsCache[i]))
+            for (int i=0; i<currentJob->keyRoleResultsCache.count(); i++) {
+                if (!keyRoleResults.contains(currentJob->keyRoleResultsCache[i]))
                     addIndexToRangeList(&m_removedItemRanges, i);
                 else 
-                    temp << m_currentJob.keyRoleResultsCache[i];
+                    temp << currentJob->keyRoleResultsCache[i];
             }
 
             for (int i=0; i<keyRoleResults.count(); i++) {
@@ -374,15 +369,15 @@ void QDeclarativeXmlQuery::doSubQueryJob()
             }
         }
     }
-    m_currentJob.keyRoleResultsCache = keyRoleResults;
+    currentJob->keyRoleResultsCache = keyRoleResults;
 
     // Get the new values for each role.
     //### we might be able to condense even further (query for everything in one go)
-    const QStringList &queries = m_currentJob.roleQueries;
+    const QStringList &queries = currentJob->roleQueries;
     for (int i = 0; i < queries.size(); ++i) {
         QList<QVariant> resultList;
         if (!queries[i].isEmpty()) {
-            subquery.setQuery(m_prefix + QLatin1String("(let $v := ") + queries[i] + QLatin1String(" return if ($v) then ") + queries[i] + QLatin1String(" else \"\")"));
+            subquery.setQuery(m_prefix + QLatin1String("(let $v := string(") + queries[i] + QLatin1String(") return if ($v) then ") + queries[i] + QLatin1String(" else \"\")"));
             if (subquery.isValid()) {
                 QXmlResultItems resultItems;
                 subquery.evaluateTo(&resultItems);
@@ -392,7 +387,7 @@ void QDeclarativeXmlQuery::doSubQueryJob()
                     item = resultItems.next();
                 }
             } else {
-                emit error(m_currentJob.roleQueryErrorId.at(i), queries[i]);
+                emit error(currentJob->roleQueryErrorId.at(i), queries[i]);
             }
         }
         //### should warn here if things have gone wrong.
@@ -792,9 +787,9 @@ void QDeclarativeXmlListModel::setNamespaceDeclarations(const QString &declarati
 
     This will access the \c title value for the first item in the model:
 
-    \qml
-        var title = model.get(0).title;
-    \endqml
+    \js
+    var title = model.get(0).title;
+    \endjs
 */
 QScriptValue QDeclarativeXmlListModel::get(int index) const
 {

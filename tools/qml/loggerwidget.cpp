@@ -45,6 +45,8 @@
 #include <QActionGroup>
 #include <QMenu>
 #include <QPlainTextEdit>
+#include <QLabel>
+#include <QVBoxLayout>
 #ifdef Q_WS_MAEMO_5
 #  include <QScrollArea>
 #  include <QVBoxLayout>
@@ -64,6 +66,19 @@ LoggerWidget::LoggerWidget(QWidget *parent) :
 
     m_plainTextEdit = new QPlainTextEdit();
 
+#if defined(Q_OS_SYMBIAN)
+    QAction* clearAction = new QAction(tr("Clear"), this);
+    clearAction->setSoftKeyRole(QAction::PositiveSoftKey);
+    connect(clearAction, SIGNAL(triggered()), m_plainTextEdit, SLOT(clear()));
+    addAction(clearAction);
+
+    m_plainTextEdit->setReadOnly(true);
+    QAction* backAction = new QAction( tr("Back"), this );
+    backAction->setSoftKeyRole( QAction::NegativeSoftKey );
+    connect(backAction, SIGNAL(triggered()), this, SLOT(hide()));
+    addAction( backAction );
+#endif
+
 #ifdef Q_WS_MAEMO_5
     new TextEditAutoResizer(m_plainTextEdit);
     setAttribute(Qt::WA_Maemo5StackedWindow);
@@ -74,6 +89,15 @@ LoggerWidget::LoggerWidget(QWidget *parent) :
 #else
     setCentralWidget(m_plainTextEdit);
 #endif
+
+    m_noWarningsLabel = new QLabel(m_plainTextEdit);
+    m_noWarningsLabel->setText(tr("(No warnings)"));
+    m_noWarningsLabel->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(m_noWarningsLabel);
+    m_plainTextEdit->setLayout(layout);
+    connect(m_plainTextEdit, SIGNAL(textChanged()), this, SLOT(updateNoWarningsLabel()));
+
     readSettings();
     setupPreferencesMenu();
 }
@@ -196,6 +220,11 @@ void LoggerWidget::setupPreferencesMenu()
     default:
         autoWarningsPreference->setChecked(true);
     }
+}
+
+void LoggerWidget::updateNoWarningsLabel()
+{
+    m_noWarningsLabel->setVisible(m_plainTextEdit->toPlainText().length() == 0);
 }
 
 QT_END_NAMESPACE

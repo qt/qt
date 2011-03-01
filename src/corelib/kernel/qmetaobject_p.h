@@ -78,7 +78,8 @@ enum PropertyFlags  {
     ResolveEditable = 0x00080000,
     User = 0x00100000,
     ResolveUser = 0x00200000,
-    Notify = 0x00400000
+    Notify = 0x00400000,
+    Revisioned = 0x00800000
 };
 
 enum MethodFlags  {
@@ -95,7 +96,8 @@ enum MethodFlags  {
 
     MethodCompatibility = 0x10,
     MethodCloned = 0x20,
-    MethodScriptable = 0x40
+    MethodScriptable = 0x40,
+    MethodRevisioned = 0x80
 };
 
 enum MetaObjectFlags {

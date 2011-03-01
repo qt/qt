@@ -192,7 +192,7 @@
 
     \snippet examples/painting/concentriccircles/window.h 0
 
-    We declare the various components of the main window, i.e the text
+    We declare the various components of the main window, i.e., the text
     labels and a double array that will hold reference to the four \c
     {CircleWidget}s. In addition we declare the private \c
     createLabel() function to simplify the constructor.

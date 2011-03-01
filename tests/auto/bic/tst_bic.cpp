@@ -135,6 +135,9 @@ tst_Bic::tst_Bic()
 
     /* This structure is semi-private and should never shrink */
     bic.addBlacklistedClass(QLatin1String("QVFbHeader"));
+
+    /* This structure has a version field that allows extension */
+    bic.addBlacklistedClass(QLatin1String("QDeclarativePrivate::RegisterType"));
 }
 
 void tst_Bic::initTestCase_data()
