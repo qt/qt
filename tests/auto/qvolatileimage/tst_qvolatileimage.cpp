@@ -229,6 +229,7 @@ bool fuzzyCompareImages(const QImage &image1, const QImage &image2, int toleranc
 
 void tst_QVolatileImage::paint()
 {
+#ifdef Q_OS_SYMBIAN
     QVolatileImage img(100, 100, QImage::Format_ARGB32);
     img.beginDataAccess();
     img.imageRef().fill(QColor(Qt::green).rgba());
@@ -269,6 +270,7 @@ void tst_QVolatileImage::paint()
     } else {
         QSKIP("Pixmaps not painted via raster, skipping paint test", SkipSingle);
     }
+#endif
 }
 
 void tst_QVolatileImage::fill()
