@@ -1,11 +1,20 @@
 #include "pluginmain.h"
-//#include "spriteparticles.h"
 #include "spritestate.h"
+#include "spriteengine.h"
 #include "particleaffector.h"
 #include "wanderaffector.h"
 //#include "rockingaffector.h"
 //#include "scalingaffector.h"
+#include "gravityaffector.h"
 #include "driftaffector.h"
+#include "gravitationalsingularityaffector.h"
+#include "frictionaffector.h"
+#include "meanderaffector.h"
+#include "attractoraffector.h"
+#include "speedlimitaffector.h"
+#include "killaffector.h"
+#include "zoneaffector.h"
+#include "spritegoalaffector.h"
 #include "particlesystem.h"
 #include "particleemitter.h"
 //#include "spriteemitter.h"
@@ -24,7 +33,8 @@ void ParticlesPlugin::registerTypes(const char *uri)
     qmlRegisterType<QDeclarativeParticleMotionGravity>(uri,1,0,"ParticleMotionGravity");
     qmlRegisterType<QDeclarativeParticleMotionLinear>(uri,1,0,"ParticleMotionLinear");
     qmlRegisterType<QDeclarativeParticleMotionWander>(uri,1,0,"ParticleMotionWander");
-    qmlRegisterType<SpriteState>(uri, 2, 0, "SpriteState");
+    qmlRegisterType<SpriteState>(uri, 2, 0, "Sprite");
+    qmlRegisterType<SpriteEngine>(uri, 2, 0, "SpriteEngine");
 
     qmlRegisterType<ParticleSystem>(uri, 2, 0, "ParticleSystem");
 
@@ -40,6 +50,15 @@ void ParticlesPlugin::registerTypes(const char *uri)
     //qmlRegisterType<ScalingAffector>(uri, 2, 0, "Scale");
     //qmlRegisterType<RockingAffector>(uri, 2, 0, "Rocking");
     qmlRegisterType<DriftAffector>(uri, 2, 0, "Drift");
+    qmlRegisterType<FrictionAffector>(uri, 2, 0, "Friction");
+    qmlRegisterType<GravitationalSingularityAffector>(uri, 2, 0, "GravitationalSingularity");
+    qmlRegisterType<AttractorAffector>(uri, 2, 0, "Attractor");
+    qmlRegisterType<MeanderAffector>(uri, 2, 0, "Meander");
+    qmlRegisterType<SpeedLimitAffector>(uri, 2, 0, "SpeedLimit");
+    qmlRegisterType<GravityAffector>(uri, 2, 0, "Gravity");
+    qmlRegisterType<ZoneAffector>(uri, 2, 0, "Zone");
+    qmlRegisterType<KillAffector>(uri, 2, 0, "Kill");
+    qmlRegisterType<SpriteGoalAffector>(uri, 2, 0, "SpriteGoal");
 }
 
 Q_EXPORT_PLUGIN2(Particles, ParticlesPlugin);

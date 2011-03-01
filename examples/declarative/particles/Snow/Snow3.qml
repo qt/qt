@@ -4,6 +4,7 @@ import Qt.labs.particles 2.0
 Rectangle{
     width: 360
     height: 540
+    id: root
     ParticleSystem{
         id: particles
         anchors.fill: parent
@@ -15,7 +16,11 @@ Rectangle{
                 duration: 40
             }
         }
-        affectors: Drift{ xDrift: 800; }
+        affectors:[Drift{
+            xDrift: 200
+        }, SpeedLimit{
+            speedLimit: 100
+        }]
         emitters:TrailEmitter{
             particlesPerSecond: 20
             particleDuration: 7000

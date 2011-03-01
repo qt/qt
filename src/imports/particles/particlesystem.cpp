@@ -166,11 +166,102 @@ void ParticleSystem::prepareNextFrame()
             ParticleVertex* p = &((*iter)->pv);
             qreal dt = time - p->dt;
             p->dt = time;
+            bool modified = false;
             foreach(ParticleAffector* a, m_affectors)
                 if (a->affect(*iter, dt))
-                    (*iter)->p->reload(*iter);
+                    modified = true;
+            if(modified)
+                (*iter)->p->reload(*iter);
         }
     }
     foreach(Particle* particle, m_particles)
         particle->prepareNextFrame(timeInt);
+}
+
+//sets the x accleration without affecting the instantaneous x velocity or position
+void ParticleData::setInstantaneousAX(qreal ax)
+{
+    qreal t = pv.dt - pv.t;
+    qreal sx = (pv.sx + t*pv.ax) - t*ax;
+    qreal ex = pv.x + pv.sx * t + pv.ax * t * t;
+    qreal x = ex - t*sx - t*t*ax;
+
+    pv.ax = ax;
+    pv.sx = sx;
+    pv.x = x;
+}
+
+//sets the x velocity without affecting the instantaneous x postion
+void ParticleData::setInstantaneousSX(qreal vx)
+{
+    qreal t = pv.dt - pv.t;
+    qreal sx = vx - t*pv.ax;
+    qreal ex = pv.x + pv.sx * t + pv.ax * t * t;
+    qreal x = ex - t*sx - t*t*pv.ax;
+
+    pv.sx = sx;
+    pv.x = x;
+}
+
+//sets the instantaneous x postion
+void ParticleData::setInstantaneousX(qreal x)
+{
+    qreal t = pv.dt - pv.t;
+    pv.x = x - t*pv.sx - t*t*pv.ax;
+}
+
+//sets the y accleration without affecting the instantaneous y velocity or position
+void ParticleData::setInstantaneousAY(qreal ay)
+{
+    qreal t = pv.dt - pv.t;
+    qreal sy = (pv.sy + t*pv.ay) - t*ay;
+    qreal ey = pv.y + pv.sy * t + pv.ay * t * t;
+    qreal y = ey - t*sy - t*t*ay;
+
+    pv.ay = ay;
+    pv.sy = sy;
+    pv.y = y;
+}
+
+//sets the y velocity without affecting the instantaneous y position
+void ParticleData::setInstantaneousSY(qreal vy)
+{
+    qreal t = pv.dt - pv.t;
+    qreal sy = vy - t*pv.ay;
+    qreal ey = pv.y + pv.sy * t + pv.ay * t * t;
+    qreal y = ey - t*sy - t*t*pv.ay;
+
+    pv.sy = sy;
+    pv.y = y;
+}
+
+//sets the instantaneous Y position
+void ParticleData::setInstantaneousY(qreal y)
+{
+    qreal t = pv.dt - pv.t;
+    pv.y = y - t*pv.sy - t*t*pv.ay;
+}
+
+qreal ParticleData::curX() const
+{
+    qreal t = pv.dt - pv.t;
+    return pv.x + pv.sx * t + pv.ax * t * t;
+}
+
+qreal ParticleData::curSX() const
+{
+    qreal t = pv.dt - pv.t;
+    return pv.sx + t*pv.ax;
+}
+
+qreal ParticleData::curY() const
+{
+    qreal t = pv.dt - pv.t;
+    return pv.y + pv.sy * t + pv.ay * t * t;
+}
+
+qreal ParticleData::curSY() const
+{
+    qreal t = pv.dt - pv.t;
+    return pv.sy + t*pv.ay;
 }

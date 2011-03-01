@@ -4,7 +4,6 @@ include(../qimportbase.pri)
 
 HEADERS += \
     V1/qdeclarativeparticles_p.h \
-    #spriteparticles.h \
     spritestate.h \
     pluginmain.h \
     particleaffector.h \
@@ -19,12 +18,19 @@ HEADERS += \
     particle.h \
     coloredparticle.h \
     spriteparticle.h \
-    #spritegoalaffector.h \
-    zoneaffector.h
+    spritegoalaffector.h \
+    zoneaffector.h \
+    frictionaffector.h \
+    gravitationalsingularityaffector.h \
+    killaffector.h \
+    speedlimitaffector.h \
+    spriteengine.h \
+    gravityaffector.h \
+    attractoraffector.h \
+    meanderaffector.h
 
 SOURCES += \
     V1/qdeclarativeparticles.cpp \
-    #spriteparticles.cpp \
     spritestate.cpp \
     main.cpp \
     particleaffector.cpp \
@@ -39,8 +45,16 @@ SOURCES += \
     particle.cpp \
     coloredparticle.cpp \
     spriteparticle.cpp \
-    #spritegoalaffector.cpp \
-    zoneaffector.cpp
+    spritegoalaffector.cpp \
+    zoneaffector.cpp \
+    frictionaffector.cpp \
+    gravitationalsingularityaffector.cpp \
+    killaffector.cpp \
+    speedlimitaffector.cpp \
+    spriteengine.cpp \
+    gravityaffector.cpp \
+    attractoraffector.cpp \
+    meanderaffector.cpp
 
 QT += declarative opengl
 

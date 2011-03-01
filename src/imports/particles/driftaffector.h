@@ -1,12 +1,6 @@
 #ifndef DRIFTAFFECTOR_H
 #define DRIFTAFFECTOR_H
 #include "particleaffector.h"
-#include <QHash>
-
-struct DriftData{
-    qreal xVel;
-    qreal yVel;
-};
 
 class DriftAffector : public ParticleAffector
 {
@@ -53,8 +47,6 @@ void setXDrift(qreal arg)
 }
 
 private:
-    DriftData* getData(int idx);
-    QHash<int, DriftData*> m_driftData;
     qreal m_yDrift;
     qreal m_xDrift;
 };
