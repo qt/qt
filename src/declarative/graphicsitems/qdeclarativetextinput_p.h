@@ -120,8 +120,14 @@ public:
         SelectWords
     };
 
+    enum CursorPosition {
+        CursorBetweenCharacters,
+        CursorOnCharacter
+    };
+
     //Auxilliary functions needed to control the TextInput from QML
     Q_INVOKABLE int positionAt(int x) const;
+    Q_INVOKABLE Q_REVISION(1) int positionAt(int x, CursorPosition position);
     Q_INVOKABLE QRectF positionToRectangle(int pos) const;
     Q_INVOKABLE void moveCursorSelection(int pos);
     Q_INVOKABLE Q_REVISION(1) void moveCursorSelection(int pos, SelectionMode mode);

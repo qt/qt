@@ -761,20 +761,20 @@ EXPORTS
 	_ZN24QDeclarativeCustomParser5errorERK28QDeclarativeCustomParserNodeRK7QString @ 760 NONAME
 	_ZN24QDeclarativeCustomParser5errorERK32QDeclarativeCustomParserPropertyRK7QString @ 761 NONAME
 	_ZN24QDeclarativeCustomParser5errorERK7QString @ 762 NONAME
-	_ZN24QDeclarativeDebugService11idForObjectEP7QObject @ 763 NONAME ABSENT
-	_ZN24QDeclarativeDebugService11objectForIdEi @ 764 NONAME ABSENT
-	_ZN24QDeclarativeDebugService11qt_metacallEN11QMetaObject4CallEiPPv @ 765 NONAME ABSENT
-	_ZN24QDeclarativeDebugService11qt_metacastEPKc @ 766 NONAME ABSENT
-	_ZN24QDeclarativeDebugService11sendMessageERK10QByteArray @ 767 NONAME ABSENT
+	_ZN24QDeclarativeDebugService11idForObjectEP7QObject @ 763 NONAME
+	_ZN24QDeclarativeDebugService11objectForIdEi @ 764 NONAME
+	_ZN24QDeclarativeDebugService11qt_metacallEN11QMetaObject4CallEiPPv @ 765 NONAME
+	_ZN24QDeclarativeDebugService11qt_metacastEPKc @ 766 NONAME
+	_ZN24QDeclarativeDebugService11sendMessageERK10QByteArray @ 767 NONAME
 	_ZN24QDeclarativeDebugService14enabledChangedEb @ 768 NONAME ABSENT
-	_ZN24QDeclarativeDebugService14objectToStringEP7QObject @ 769 NONAME ABSENT
-	_ZN24QDeclarativeDebugService15messageReceivedERK10QByteArray @ 770 NONAME ABSENT
-	_ZN24QDeclarativeDebugService16staticMetaObjectE @ 771 NONAME DATA 16 ABSENT
-	_ZN24QDeclarativeDebugService18hasDebuggingClientEv @ 772 NONAME ABSENT
-	_ZN24QDeclarativeDebugService18isDebuggingEnabledEv @ 773 NONAME ABSENT
-	_ZN24QDeclarativeDebugService19getStaticMetaObjectEv @ 774 NONAME ABSENT
-	_ZN24QDeclarativeDebugServiceC1ERK7QStringP7QObject @ 775 NONAME ABSENT
-	_ZN24QDeclarativeDebugServiceC2ERK7QStringP7QObject @ 776 NONAME ABSENT
+	_ZN24QDeclarativeDebugService14objectToStringEP7QObject @ 769 NONAME
+	_ZN24QDeclarativeDebugService15messageReceivedERK10QByteArray @ 770 NONAME
+	_ZN24QDeclarativeDebugService16staticMetaObjectE @ 771 NONAME DATA 16
+	_ZN24QDeclarativeDebugService18hasDebuggingClientEv @ 772 NONAME
+	_ZN24QDeclarativeDebugService18isDebuggingEnabledEv @ 773 NONAME
+	_ZN24QDeclarativeDebugService19getStaticMetaObjectEv @ 774 NONAME
+	_ZN24QDeclarativeDebugServiceC1ERK7QStringP7QObject @ 775 NONAME
+	_ZN24QDeclarativeDebugServiceC2ERK7QStringP7QObject @ 776 NONAME
 	_ZN24QDeclarativeDomComponentC1ERKS_ @ 777 NONAME ABSENT
 	_ZN24QDeclarativeDomComponentC1Ev @ 778 NONAME ABSENT
 	_ZN24QDeclarativeDomComponentC2ERKS_ @ 779 NONAME ABSENT
@@ -1425,8 +1425,8 @@ EXPORTS
 	_ZNK23QDeclarativePropertyMapixERK7QString @ 1424 NONAME
 	_ZNK24QDeclarativeCustomParser11resolveTypeERK10QByteArray @ 1425 NONAME
 	_ZNK24QDeclarativeCustomParser12evaluateEnumERK10QByteArray @ 1426 NONAME
-	_ZNK24QDeclarativeDebugService10metaObjectEv @ 1427 NONAME ABSENT
-	_ZNK24QDeclarativeDebugService4nameEv @ 1428 NONAME ABSENT
+	_ZNK24QDeclarativeDebugService10metaObjectEv @ 1427 NONAME
+	_ZNK24QDeclarativeDebugService4nameEv @ 1428 NONAME
 	_ZNK24QDeclarativeDebugService9isEnabledEv @ 1429 NONAME ABSENT
 	_ZNK24QDeclarativeDomComponent13componentRootEv @ 1430 NONAME ABSENT
 	_ZNK24QDeclarativeScriptString11scopeObjectEv @ 1431 NONAME
@@ -1554,7 +1554,7 @@ EXPORTS
 	_ZTI23QDeclarativeItemPrivate @ 1553 NONAME
 	_ZTI23QDeclarativePropertyMap @ 1554 NONAME
 	_ZTI24QDeclarativeCustomParser @ 1555 NONAME
-	_ZTI24QDeclarativeDebugService @ 1556 NONAME ABSENT
+	_ZTI24QDeclarativeDebugService @ 1556 NONAME
 	_ZTI24QDeclarativeParserStatus @ 1557 NONAME
 	_ZTI25QDeclarativeImageProvider @ 1558 NONAME
 	_ZTI26QDeclarativeDebuggerStatus @ 1559 NONAME ABSENT
@@ -1604,7 +1604,7 @@ EXPORTS
 	_ZTV23QDeclarativeItemPrivate @ 1603 NONAME
 	_ZTV23QDeclarativePropertyMap @ 1604 NONAME
 	_ZTV24QDeclarativeCustomParser @ 1605 NONAME
-	_ZTV24QDeclarativeDebugService @ 1606 NONAME ABSENT
+	_ZTV24QDeclarativeDebugService @ 1606 NONAME
 	_ZTV24QDeclarativeParserStatus @ 1607 NONAME
 	_ZTV25QDeclarativeImageProvider @ 1608 NONAME
 	_ZTV26QDeclarativeDebuggerStatus @ 1609 NONAME ABSENT
@@ -1777,10 +1777,10 @@ EXPORTS
 	_ZN23QDeclarativeDebugClientD1Ev @ 1776 NONAME ABSENT
 	_ZN23QDeclarativeDebugClientD2Ev @ 1777 NONAME ABSENT
 	_ZN23QDeclarativeEngineDebug13statusChangedENS_6StatusE @ 1778 NONAME ABSENT
-	_ZN24QDeclarativeDebugService13statusChangedENS_6StatusE @ 1779 NONAME ABSENT
-	_ZN24QDeclarativeDebugServiceD0Ev @ 1780 NONAME ABSENT
-	_ZN24QDeclarativeDebugServiceD1Ev @ 1781 NONAME ABSENT
-	_ZN24QDeclarativeDebugServiceD2Ev @ 1782 NONAME ABSENT
+	_ZN24QDeclarativeDebugService13statusChangedENS_6StatusE @ 1779 NONAME
+	_ZN24QDeclarativeDebugServiceD0Ev @ 1780 NONAME
+	_ZN24QDeclarativeDebugServiceD1Ev @ 1781 NONAME
+	_ZN24QDeclarativeDebugServiceD2Ev @ 1782 NONAME
 	_ZN26QDeclarativeBasePositioner10addChangedEv @ 1783 NONAME ABSENT
 	_ZN26QDeclarativeBasePositioner10itemChangeEN13QGraphicsItem18GraphicsItemChangeERK8QVariant @ 1784 NONAME ABSENT
 	_ZN26QDeclarativeBasePositioner10setSpacingEi @ 1785 NONAME ABSENT
@@ -1851,7 +1851,7 @@ EXPORTS
 	_ZNK17QDeclarativeTimer9isRunningEv @ 1850 NONAME ABSENT
 	_ZNK23QDeclarativeDebugClient6statusEv @ 1851 NONAME ABSENT
 	_ZNK23QDeclarativeEngineDebug6statusEv @ 1852 NONAME ABSENT
-	_ZNK24QDeclarativeDebugService6statusEv @ 1853 NONAME ABSENT
+	_ZNK24QDeclarativeDebugService6statusEv @ 1853 NONAME
 	_ZNK26QDeclarativeBasePositioner10metaObjectEv @ 1854 NONAME ABSENT
 	_ZNK26QDeclarativeBasePositioner3addEv @ 1855 NONAME ABSENT
 	_ZNK26QDeclarativeBasePositioner4moveEv @ 1856 NONAME ABSENT
