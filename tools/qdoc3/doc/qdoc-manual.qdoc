@@ -4202,8 +4202,6 @@
     documented. Some topic commands allow you to create documentation
     pages that aren't tied to any underlying source code element.
 
-    \section1 General Description
-
     When QDoc processes a QDoc comment, it tries to connect the
     comment to an element in the source code by first looking for a
     topic command that names the source code element. If there is no
@@ -4572,6 +4570,54 @@
 
         ...
     \endquotation
+
+    \target externalpage-command
+    \section1 \\externalpage 
+
+    The \\externalpage command assigns a title to an external URL.
+
+    \code
+    / *!
+        \externalpage http://doc.trolltech.com/4.3/qtopiacore.html
+        \title Qtopia Core
+    * /
+    \endcode
+
+    This allows you to include a link to the external page in your
+    documentation this way:
+
+    \code
+    / *!
+        The broad scope of the \l {Qtopia Core} API enables it to
+        be used across a wide variety of development projects.
+    * /
+    \endcode
+
+    QDoc renders this as:
+
+    \quotation
+        The broad scope of the \l
+        {http://doc.trolltech.com/4.3/qtopiacore.html} {Qtopia
+        Core} API enables it to be used across a wide variety
+        of development projects.
+    \endquotation
+
+    To achieve the same result without using the \\externalpage
+    command, you would have to hard code the adress into your
+    documentation:
+
+    \code
+    / *!
+        The broad scope of the \l
+        {http://doc.trolltech.com/4.3/qtopiacore.html} {Qtopia
+        Core} API enables it to be used across a wide variety
+        of development projects.
+    * /
+    \endcode
+
+    The \\externalpage command makes it easier to maintain the
+    documentation. If the adress changes, you only need to change the
+    argument of the \\externalpage command.
 
     \target fn-command
     \section1 \\fn (function)
@@ -5061,54 +5107,6 @@
 
     QDoc renders this page in \c {aboutqt.html}.
 
-    \target externalpage-command
-    \section1 \\externalpage 
-
-    The \\externalpage command assigns a title to an external URL.
-
-    \code
-    / *!
-        \externalpage http://doc.trolltech.com/4.3/qtopiacore.html
-        \title Qtopia Core
-    * /
-    \endcode
-
-    This allows you to include a link to the external page in your
-    documentation this way:
-
-    \code
-    / *!
-        The broad scope of the \l {Qtopia Core} API enables it to
-        be used across a wide variety of development projects.
-    * /
-    \endcode
-
-    QDoc renders this as:
-
-    \quotation
-        The broad scope of the \l
-        {http://doc.trolltech.com/4.3/qtopiacore.html} {Qtopia
-        Core} API enables it to be used across a wide variety
-        of development projects.
-    \endquotation
-
-    To achieve the same result without using the \\externalpage
-    command, you would have to hard code the adress into your
-    documentation:
-
-    \code
-    / *!
-        The broad scope of the \l
-        {http://doc.trolltech.com/4.3/qtopiacore.html} {Qtopia
-        Core} API enables it to be used across a wide variety
-        of development projects.
-    * /
-    \endcode
-
-    The \\externalpage command makes it easier to maintain the
-    documentation. If the adress changes, you only need to change the
-    argument of the \\externalpage command.
-
     \target property-command
     \section1 \\property 
 
@@ -5222,190 +5220,6 @@
 
      See also \l {class-command} {\\class} and \l
      {generatelist-command} {\\generatelist}.
-
-    \target typedef-command
-    \section1 \\typedef 
-
-    The \\typedef command is for documenting a C++ typedef. The
-    argument is the name of the typedef. The documentation for 
-    the typedef will be included in the refernece documentation 
-    for the class, namespace, or header file in which the typedef 
-    is declared. To relat the \\typedef to a class, namespace, or 
-    header file, the \\typedef comment must contain a
-     \l {relates-command} {\\relates} command.
-
-    \code
-    / *!
-        \typedef QObjectList
-        \relates QObject
-
-        Synonym for QList<QObject>.
-    * /
-    \endcode
-
-    QDoc includes this in \c {qobject.html} as:
-
-    \quotation
-        \raw HTML
-        <h3>typedef QObjectList</h3>
-        \endraw
-
-        Synonym for QList<QObject>.
-    \endquotation
-
-    Another, although more rare, example:
-
-    \code
-    / *!
-        \typedef QMsgHandler
-        \relates QtGlobal
-
-        This is a typedef for a pointer to a function with the
-        following signature:
-
-        \code
-            void myMsgHandler(QtMsgType, const char *);
-        \ endcode
-
-        \sa QtMsgType, qInstallMsgHandler()
-    * /
-    \endcode
-
-    QDoc includes this in \c {qtglobal.html} as:
-
-    \quotation
-        \raw HTML
-        <h3>typedef QtMsgHandler</h3>
-        \endraw
-
-        This is a typedef for a pointer to a function with the
-        following signature:
-
-        \raw HTML
-        <tt>
-        <pre>    void myMsgHandler(QtMsgType, const char *);</pre>
-        </tt>
-        \endraw
-
-        See also QtMsgType and qInstallMsgHandler().
-    \endquotation
-
-    Other typedefs are located on the reference page for the class
-    that defines them.
-
-    \code
-    / *!
-        \typedef QLinkedList::Iterator
-
-        Qt-style synonym for QList::iterator.
-    * /
-    \endcode
-
-    QDoc includes this one on the reference page for class QLinkedList as:
-
-    \quotation
-        \raw HTML
-        <h3>typedef QLinkedList::Iterator</h3>
-        \endraw
-
-        Qt-style synonym for QList::iterator.
-    \endquotation
-
-    \target variable-command
-    \section1 \\variable 
-
-    The \\variable command is for documenting a class member variable
-    or a constant. The argument is the variable or constant name. The
-    \\variable command comment includes a \l {brief-command} {\\brief}
-    command. QDoc generates the documentation based on the text from
-    \\brief command. 
-
-    The documentation will be located in the in the associated class,
-    header file or namespace documentation.
-
-    In case of a member variable:
-
-    \code
-    / *!
-        \variable QStyleOption::palette
-        \brief the palette that should be used when painting
-               the control
-    * /
-    \endcode
-
-    QDoc includes this in qstyleoption.html as:
-
-    \quotation
-        \raw HTML
-        <h3>
-            <a href="http://qt.nokia.com/doc/4.0/qpalette.html">
-                QPalette
-            </a>
-            QStyleOption::palette
-        </h3>
-        \endraw
-
-        This variable holds the palette that should be used
-        when painting the control.
-    \endquotation
-
-    You can also document constants with the \\variable command.  For
-    example, suppose you have the \c Type and \c UserType constants in
-    the QTreeWidgetItem class:
-
-    \code
-    enum { Type = 0, UserType = 1000 };
-    \endcode
-
-    For these, the \\vaqriable command can be used this way:
-
-    \code
-    / *!
-        \variable QTreeWidgetItem::Type
-
-        The default type for tree widget items.
-
-        \sa UserType, type()
-    * /
-    \endcode
-    \code
-    / *!
-        \variable QTreeWidgetItem::UserType
-
-        The minimum value for custom types. Values below
-        UserType are reserved by Qt.
-
-        \sa Type, type()
-    * /
-    \endcode
-
-    QDoc includes these in qtreewidget.html as:
-
-    \quotation
-        \raw HTML
-        <h3>
-        const int QTreeWidgetItem::Type
-        </h3>
-        \endraw
-
-        The default type for tree widget items.
-
-        See also \l {QTreeWidgetItem::UserType} {UserType} and \l
-        {QTreeWidgetItem::type()} {type()}.
-
-        \raw HTML
-        <h3>
-        const int QTreeWidgetItem::UserType
-        </h3>
-        \endraw
-
-        The minimum value for custom types. Values below
-        UserType are reserved by Qt.
-
-        See also \l {QTreeWidgetItem::Type} {Type} and
-        \l{QTreeWidgetItem::type()} {type()}.
-
-    \endquotation
 
     \target qmlattachedproperty-command
     \section1 \\qmlattachedproperty \span {class="newStuff"} {(new)}
@@ -5627,11 +5441,192 @@
     \l{http://doc.trolltech.com/4.7/qml-mousearea.html#onEntered-signal}
     {MouseArea} element.
 
+    \target typedef-command
+    \section1 \\typedef 
+
+    The \\typedef command is for documenting a C++ typedef. The
+    argument is the name of the typedef. The documentation for 
+    the typedef will be included in the refernece documentation 
+    for the class, namespace, or header file in which the typedef 
+    is declared. To relat the \\typedef to a class, namespace, or 
+    header file, the \\typedef comment must contain a
+     \l {relates-command} {\\relates} command.
+
+    \code
+    / *!
+        \typedef QObjectList
+        \relates QObject
+
+        Synonym for QList<QObject>.
+    * /
+    \endcode
+
+    QDoc includes this in \c {qobject.html} as:
+
+    \quotation
+        \raw HTML
+        <h3>typedef QObjectList</h3>
+        \endraw
+
+        Synonym for QList<QObject>.
+    \endquotation
+
+    Another, although more rare, example:
+
+    \code
+    / *!
+        \typedef QMsgHandler
+        \relates QtGlobal
+
+        This is a typedef for a pointer to a function with the
+        following signature:
+
+        \code
+            void myMsgHandler(QtMsgType, const char *);
+        \ endcode
+
+        \sa QtMsgType, qInstallMsgHandler()
+    * /
+    \endcode
+
+    QDoc includes this in \c {qtglobal.html} as:
+
+    \quotation
+        \raw HTML
+        <h3>typedef QtMsgHandler</h3>
+        \endraw
+
+        This is a typedef for a pointer to a function with the
+        following signature:
+
+        \raw HTML
+        <tt>
+        <pre>    void myMsgHandler(QtMsgType, const char *);</pre>
+        </tt>
+        \endraw
+
+        See also QtMsgType and qInstallMsgHandler().
+    \endquotation
+
+    Other typedefs are located on the reference page for the class
+    that defines them.
+
+    \code
+    / *!
+        \typedef QLinkedList::Iterator
+
+        Qt-style synonym for QList::iterator.
+    * /
+    \endcode
+
+    QDoc includes this one on the reference page for class QLinkedList as:
+
+    \quotation
+        \raw HTML
+        <h3>typedef QLinkedList::Iterator</h3>
+        \endraw
+
+        Qt-style synonym for QList::iterator.
+    \endquotation
+
+    \target variable-command
+    \section1 \\variable 
+
+    The \\variable command is for documenting a class member variable
+    or a constant. The argument is the variable or constant name. The
+    \\variable command comment includes a \l {brief-command} {\\brief}
+    command. QDoc generates the documentation based on the text from
+    \\brief command. 
+
+    The documentation will be located in the in the associated class,
+    header file or namespace documentation.
+
+    In case of a member variable:
+
+    \code
+    / *!
+        \variable QStyleOption::palette
+        \brief the palette that should be used when painting
+               the control
+    * /
+    \endcode
+
+    QDoc includes this in qstyleoption.html as:
+
+    \quotation
+        \raw HTML
+        <h3>
+            <a href="http://qt.nokia.com/doc/4.0/qpalette.html">
+                QPalette
+            </a>
+            QStyleOption::palette
+        </h3>
+        \endraw
+
+        This variable holds the palette that should be used
+        when painting the control.
+    \endquotation
+
+    You can also document constants with the \\variable command.  For
+    example, suppose you have the \c Type and \c UserType constants in
+    the QTreeWidgetItem class:
+
+    \code
+    enum { Type = 0, UserType = 1000 };
+    \endcode
+
+    For these, the \\vaqriable command can be used this way:
+
+    \code
+    / *!
+        \variable QTreeWidgetItem::Type
+
+        The default type for tree widget items.
+
+        \sa UserType, type()
+    * /
+    \endcode
+    \code
+    / *!
+        \variable QTreeWidgetItem::UserType
+
+        The minimum value for custom types. Values below
+        UserType are reserved by Qt.
+
+        \sa Type, type()
+    * /
+    \endcode
+
+    QDoc includes these in qtreewidget.html as:
+
+    \quotation
+        \raw HTML
+        <h3>
+        const int QTreeWidgetItem::Type
+        </h3>
+        \endraw
+
+        The default type for tree widget items.
+
+        See also \l {QTreeWidgetItem::UserType} {UserType} and \l
+        {QTreeWidgetItem::type()} {type()}.
+
+        \raw HTML
+        <h3>
+        const int QTreeWidgetItem::UserType
+        </h3>
+        \endraw
+
+        The minimum value for custom types. Values below
+        UserType are reserved by Qt.
+
+        See also \l {QTreeWidgetItem::Type} {Type} and
+        \l{QTreeWidgetItem::type()} {type()}.
+
+    \endquotation
+
     \target default-command
     \section1 \\default  \span {class="newStuff"} {(new)}
-
-    \target inherits-command
-    \section1 \\inherits  \span {class="newStuff"} {(new)}
 
 */
 
@@ -5655,6 +5650,7 @@
       \o \l {15-qdoc-commands-navigation.html#contentspage-command}{\\contentspage},
       \o \l {15-qdoc-commands-navigation.html#indexpage-command}{\\indexpage},
       \o \l {19-qdoc-commands-grouping.html#ingroup-command}{\\ingroup},
+      \o \l {18-qdoc-commands-relating.html#inherits-command}{\\inherits},
       \o \l {19-qdoc-commands-grouping.html#inmodule-command}{\\inmodule},
       \o \l {16-qdoc-commands-status.html#internal-command}{\\internal},
       \o \l {19-qdoc-commands-grouping.html#mainclass-command}{\\mainclass},
@@ -6343,11 +6339,52 @@
 
     The relating commands are for specifying how one documented
     element relates to another documented element. e.g., This function
-    overloads of another function, or this function is a
+    is an overload of another function, or this function is a
     reimplementation of another function, or this typedef is \e
-    related to some class or header file.
+    related to some class or header file. There is also a command
+    for documenting that a QML element inherits some other QML 
+    element.
 
     \section1 Commands
+
+    \target inherits-command
+    \section2 \\inherits  \span {class="newStuff"} {(new)}
+
+    The \\inherits command is for documenting that one QML element 
+    inherits some other QML element. It must be included in the 
+    inheriting element's \l{qmlclass-command}{\\qmlclass} comment.
+    The argument is the name of the inherited QML element. 
+
+    \code
+    / *!
+        \qmlclass PauseAnimation QDeclarativePauseAnimation
+        \ingroup qml-animation-transition
+        \since 4.7
+        \inherits Animation
+        \brief The PauseAnimation element provides a pause for an animation.
+
+        When used in a SequentialAnimation, PauseAnimation is a step
+        when nothing happens, for a specified duration.
+
+        A 500ms animation sequence, with a 100ms pause between two animations:
+
+        SequentialAnimation {
+            NumberAnimation { ... duration: 200 }
+            PauseAnimation { duration: 100 }
+            NumberAnimation { ... duration: 200 }
+        }
+
+        \sa {QML Animation and Transitions}, {declarative/animation/basics}{Animation basics example}
+    * /
+    \endcode
+
+    QDoc includes this line on the reference page for the
+    \l{http://doc.trolltech.com/4.7/qml-pauseanimation.html} {PauseAnimation}
+    element:
+
+    \quotation
+        Inherits \l{http://doc.trolltech.com/4.7/qml-animation.html} {Animation}
+    \endquotation
 
     \target overload-command
     \section2 \\overload 
@@ -8328,6 +8365,7 @@
     \o \l {12-0-qdoc-commands-miscellaneous.html#include-command} {\\include}
     \o \l {15-qdoc-commands-navigation.html#indexpage-command} {\\indexpage}
     \o \l {19-qdoc-commands-grouping.html#ingroup-command} {\\ingroup}
+    \o \l {18-qdoc-commands-relating.html#inherits-command}{\\inherits} \span {class="newStuff"} {(new)}
     \o \l {19-qdoc-commands-grouping.html#inmodule-command} {\\inmodule}
     \o \l {09-qdoc-commands-includingimages.html#inlineimage-command} {\\inlineimage}
     \o \l {16-qdoc-commands-status.html#internal-command} {\\internal}
@@ -8357,6 +8395,13 @@
     \o \l {07-0-qdoc-commands-includingexternalcode.html#printto-command} {\\printto}
     \o \l {07-0-qdoc-commands-includingexternalcode.html#printuntil-command} {\\printuntil}
     \o \l {13-qdoc-commands-topics.html#property-command} {\\property}
+    \o \l {13-qdoc-commands-topics.html#qmlattachedproperty-command} {\\qmlattachedproperty} \span {class="newStuff"} {(new)}
+    \o \l {13-qdoc-commands-topics.html#qmlattachedsignal-command} {\\qmlattachedsignal} \span {class="newStuff"} {(new)}
+    \o \l {13-qdoc-commands-topics.html#qmlbasictype-command} {\\qmlbasictype} \span {class="newStuff"} {(new)}
+    \o \l {13-qdoc-commands-topics.html#qmlclass-command} {\\qmlclass} \span {class="newStuff"} {(new)}
+    \o \l {13-qdoc-commands-topics.html#qmlmethod-command} {\\qmlmethod} \span {class="newStuff"} {(new)}
+    \o \l {13-qdoc-commands-topics.html#qmlproperty-command} {\\qmlproperty} \span {class="newStuff"} {(new)}
+    \o \l {13-qdoc-commands-topics.html#qmlsignal-command} {\\qmlsignal} \span {class="newStuff"} {(new)}
     \o \l {11-qdoc-commands-specialcontent.html#quotation-command} {\\quotation}
     \o \l {07-0-qdoc-commands-includingexternalcode.html#quotefile-command} {\\quotefile}
     \o \l {07-0-qdoc-commands-includingexternalcode.html#quotefromfile-command} {\\quotefromfile}
