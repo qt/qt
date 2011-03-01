@@ -239,6 +239,7 @@ public:
 #ifdef XCB_USE_DRI2
     bool hasSupportForDri2() const;
     void *egl_display() const { return m_egl_display; }
+    QByteArray dri2DeviceName() const { return m_dri2_device_name; }
 #endif
 
 private slots:
@@ -272,6 +273,7 @@ private:
     bool m_dri2_support_probed;
     bool m_has_support_for_dri2;
     void *m_egl_display;
+    QByteArray m_dri2_device_name;
 #endif
 
 };

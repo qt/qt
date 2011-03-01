@@ -447,13 +447,14 @@ void QXcbConnection::initializeDri2()
         return;
     }
 
-    QString dri2DeviceName = QString::fromLocal8Bit(xcb_dri2_connect_device_name (connect),
+    m_dri2_device_name = QByteArray(xcb_dri2_connect_device_name (connect),
                                                     xcb_dri2_connect_device_name_length (connect));
     delete connect;
 
-    int fd = open(qPrintable(dri2DeviceName), O_RDWR);
+    int fd = open(m_dri2_device_name.constData(), O_RDWR);
     if (fd < 0) {
         qDebug() << "InitializeDri2: Could'nt open device << dri2DeviceName";
+        m_dri2_device_name = QByteArray();
         return;
     }
 
