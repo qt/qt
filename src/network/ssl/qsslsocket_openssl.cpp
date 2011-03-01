@@ -393,14 +393,15 @@ init_context:
     }
 
 #if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
-    if (client) {
+    if (client && q_SSLeay() >= 0x00090806fL) {
         // Set server hostname on TLS extension. RFC4366 section 3.1 requires it in ACE format.
         QString tlsHostName = verificationPeerName.isEmpty() ? q->peerName() : verificationPeerName;
         if (tlsHostName.isEmpty())
             tlsHostName = hostName;
         QByteArray ace = QUrl::toAce(tlsHostName);
         if (!ace.isEmpty()) {
-            q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, ace.constData());
+            if (!q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, ace.constData()))
+                qWarning("could not set SSL_CTRL_SET_TLSEXT_HOSTNAME, Server Name Indication disabled");
         }
     }
 #endif

@@ -266,6 +266,7 @@ DEFINEFUNC3(DSA *, d2i_DSAPrivateKey, DSA **a, a, unsigned char **b, b, long c, 
 DEFINEFUNC(void, OPENSSL_add_all_algorithms_noconf, void, DUMMYARG, return, DUMMYARG)
 DEFINEFUNC(void, OPENSSL_add_all_algorithms_conf, void, DUMMYARG, return, DUMMYARG)
 DEFINEFUNC3(int, SSL_CTX_load_verify_locations, SSL_CTX *ctx, ctx, const char *CAfile, CAfile, const char *CApath, CApath, return 0, return)
+DEFINEFUNC(long, SSLeay, void, DUMMYARG, return 0, return)
 
 #ifdef Q_OS_SYMBIAN
 #define RESOLVEFUNC(func, ordinal, lib) \
@@ -606,6 +607,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSLv3_server_method, 197, libs.first )
     RESOLVEFUNC(SSLv23_server_method, 191, libs.first )
     RESOLVEFUNC(TLSv1_server_method, 200, libs.first )
+    RESOLVEFUNC(SSL_CTX_load_verify_locations, 34, libs.first )
     RESOLVEFUNC(X509_NAME_oneline, 1830, libs.second )
     RESOLVEFUNC(X509_PUBKEY_get, 1844, libs.second )
     RESOLVEFUNC(X509_STORE_free, 1939, libs.second )
@@ -637,7 +639,7 @@ bool q_resolveOpenSslSymbols()
 #endif
     RESOLVEFUNC(OPENSSL_add_all_algorithms_noconf, 1153, libs.second )
     RESOLVEFUNC(OPENSSL_add_all_algorithms_conf, 1152, libs.second )
-    RESOLVEFUNC(SSL_CTX_load_verify_locations, 34, libs.second )
+    RESOLVEFUNC(SSLeay, 1504, libs.second )
 #else // Q_OS_SYMBIAN
 #ifdef SSLEAY_MACROS
     RESOLVEFUNC(ASN1_dup)
@@ -766,6 +768,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(OPENSSL_add_all_algorithms_noconf)
     RESOLVEFUNC(OPENSSL_add_all_algorithms_conf)
     RESOLVEFUNC(SSL_CTX_load_verify_locations)
+    RESOLVEFUNC(SSLeay)
 #endif // Q_OS_SYMBIAN
     symbolsResolved = true;
     delete libs.first;

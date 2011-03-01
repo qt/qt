@@ -416,6 +416,7 @@ DSA *q_d2i_DSAPrivateKey(DSA **a, unsigned char **pp, long length);
 void q_OPENSSL_add_all_algorithms_noconf();
 void q_OPENSSL_add_all_algorithms_conf();
 int q_SSL_CTX_load_verify_locations(SSL_CTX *ctx, const char *CAfile, const char *CApath);
+long q_SSLeay();
 
 // Helper function
 class QDateTime;
