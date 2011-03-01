@@ -33,31 +33,29 @@
 
     \list
       \o \l {Introduction to QDoc}
-      \o \l {The QDoc Commands}
+      \o \l {Command Index}
+      \o \l {Topic Commands}
+      \o \l {Context Commands}
         \list
-          \o \l {Topic Commands}
-          \o \l {Context Commands}
-            \list
-              \o \l {Document Navigation}
-              \o \l {Reporting Status}
-              \o \l {Thread Support}
-              \o \l {Relating Things}
-              \o \l {Grouping Things}
-              \o \l {Naming Things}
-            \endlist
-          \o \l{Markup Commands}
-            \list
-              \o \l {Text Markup} \span {class="newStuff"} {(new: div & span)}
-              \o \l {Document Structure}
-              \o \l {Including Code Inline}
-              \o \l {Including External Code}
-              \o \l {Creating Links}
-              \o \l {Including Images}
-              \o \l {Tables and Lists}
-              \o \l {Special Content}
-              \o \l {Miscellaneous}
-            \endlist
-        \endlist 
+          \o \l {Document Navigation}
+          \o \l {Reporting Status}
+          \o \l {Thread Support}
+          \o \l {Relating Things}
+          \o \l {Grouping Things}
+          \o \l {Naming Things}
+        \endlist
+      \o \l{Markup Commands}
+        \list
+          \o \l {Text Markup}
+          \o \l {Document Structure}
+          \o \l {Including Code Inline}
+          \o \l {Including External Code}
+          \o \l {Creating Links}
+          \o \l {Including Images}
+          \o \l {Tables and Lists}
+          \o \l {Special Content}
+          \o \l {Miscellaneous}
+        \endlist
       \o \l {The QDoc Configuration File}
         \list
           \o \l {General Configuration Variables}
@@ -77,7 +75,7 @@
     \page 01-qdoc-manual.html
     \contentspage Table of Contents
     \previouspage Table of Contents
-    \nextpage The QDoc Commands
+    \nextpage Command Index
 
     \title Introduction to QDoc
 
@@ -229,7 +227,7 @@
     \o \l {11-qdoc-commands-specialcontent.html#quotation-command} {\\quotation}
     \o \l {07-0-qdoc-commands-includingexternalcode.html#quotefile-command} {\\quotefile}
     \o \l {07-0-qdoc-commands-includingexternalcode.html#quotefromfile-command} {\\quotefromfile}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#raw-command} {\\raw} \span {class="newStuff"} {(avoid)}
+    \o \l {12-0-qdoc-commands-miscellaneous.html#raw-command} {\\raw} \span {class="newStuff"} {(deprecated)}
     \o \l {10-qdoc-commands-tablesandlists.html#row-command} {\\row}
     \o \l {08-qdoc-commands-creatinglinks.html#sa-command} {\\sa}
     \o \l {05-qdoc-commands-documentstructure.html#sectionOne-command} {\\section1}
@@ -252,7 +250,6 @@
     \o \l {11-qdoc-commands-specialcontent.html#warning-command} {\\warning}
     \o \l {04-qdoc-commands-textmarkup.html#backslash-command} {\\\\}
     \endlist
-
 */
 
 /*!
@@ -4192,7 +4189,7 @@
 
 /*!
     \page 13-qdoc-commands-topics.html
-    \previouspage The QDoc Commands
+    \previouspage Command Index
     \contentspage Table of Contents
     \nextpage Context Commands
 
@@ -5624,10 +5621,6 @@
         \l{QTreeWidgetItem::type()} {type()}.
 
     \endquotation
-
-    \target default-command
-    \section1 \\default  \span {class="newStuff"} {(new)}
-
 */
 
 /*!
@@ -5883,113 +5876,6 @@
     including information about the version when a function or class
     first appeared.
 
-    \target preliminary-command
-    \section1 \\preliminary 
-
-    The \\preliminary command is for indicating that a referenced
-    function is still under development.
-
-    The command must stand on its own line.
-
-    The \\preliminary command expands to a notification in the
-    function documentation, and marks the function as preliminary when
-    it appears in lists.
-
-    \code
-    / *!
-        \preliminary
-
-        Returns information about the joining properties of the
-        character (needed for certain languages such as
-        Arabic).
-    * /
-    QChar::Joining QChar::joining() const
-    {
-        return ::joining(*this);
-    }
-    \endcode
-
-    QDoc renders this as:
-
-    \quotation
-        \raw HTML
-        <h3>
-        <a href="http://qt.nokia.com/doc/4.0/qchar.html#Joining-enum">Joining</a>
-        QChar::joining () const</h3>
-        \endraw
-
-        \bold {This function is under development and
-    	subject to change.}
-
-        Returns information about the joining properties of the
-        character (needed for certain languages such as
-        Arabic).
-    \endquotation
-
-    And the function's entry in QChar's list of functions will be
-    rendered as:
-
-    \quotation
-        \list
-        \o ...
-        \o Joining
-           \l {http://qt.nokia.com/doc/4.0/qchar.html#Joining-enum}
-              {joining}()
-           const   \c (preliminary)
-       \o ...
-       \endlist
-    \endquotation
-
-    \target obsolete-command
-    \section1 \\obsolete 
-
-    The \\obsolete command is for indicating that a function is being
-    deprecated, and it should no longer be used in new code. There is
-    no guarantee for how long it will remain in the library.
-
-    The command must stand on its own line.
-
-    When generating the reference documentation for a class, QDoc will
-    create and link to a separate page documenting its obsolete
-    functions.  Usually an equivalent function is provided as an
-    alternative.
-
-    \code
-    / *!
-        \fn MyClass::MyObsoleteFunction
-        \obsolete
-
-        Use MyNewFunction() instead.
-    * /
-    \endcode
-
-    QDoc renders this in \c{myclass-obsolete.html} as:
-
-    \quotation
-        \raw HTML
-        <h1>Obsolete Members for MyClass</h1>
-        \endraw
-
-        \bold {The following class members are obsolete.} They are
-        provided to keep old source code working. We strongly advise
-        against using them in new code.
-
-        ...
-
-        \list
-            \o void MyObsoleteFunction() \c (obsolete)
-            \o ...
-        \endlist
-
-        \raw HTML
-        <hr />
-        <h2>Member Function Documentation</h2>
-        <h3>void MyObsoleteFunction ()</h3>
-        <p>Use MyNewFunction() instead.</p>
-        \endraw
-        ...
-    \endquotation
-
     \target compat-command
     \section1 \\compat 
 
@@ -6067,6 +5953,80 @@
         ...
     \endquotation
 
+    \target default-command
+    \section1 \\default  \span {class="newStuff"} {(new)}
+
+    The \\default command is for marking a QML property as the 
+    \l {http://doc.trolltech.com/4.7/qdeclarativeintroduction.html#default-properties}
+    {default property}. The word \span {class="newStuff"} {default} is shown in red in
+    the documentation of the property.
+
+    \code
+    / *!
+        \qmlproperty list<Change> State::changes
+        This property holds the changes to apply for this state
+        \default
+
+        By default these changes are applied against the default state. If the state
+        extends another state, then the changes are applied against the state being
+        extended.
+    * /
+    \endcode
+
+    See how QDoc renders this property on the reference page for the
+    \l {http://doc.trolltech.com/4.7/qml-state.html#changes-prop} {State}
+    element.
+
+    \target obsolete-command
+    \section1 \\obsolete 
+
+    The \\obsolete command is for indicating that a function is being
+    deprecated, and it should no longer be used in new code. There is
+    no guarantee for how long it will remain in the library.
+
+    The command must stand on its own line.
+
+    When generating the reference documentation for a class, QDoc will
+    create and link to a separate page documenting its obsolete
+    functions.  Usually an equivalent function is provided as an
+    alternative.
+
+    \code
+    / *!
+        \fn MyClass::MyObsoleteFunction
+        \obsolete
+
+        Use MyNewFunction() instead.
+    * /
+    \endcode
+
+    QDoc renders this in \c{myclass-obsolete.html} as:
+
+    \quotation
+        \raw HTML
+        <h1>Obsolete Members for MyClass</h1>
+        \endraw
+
+        \bold {The following class members are obsolete.} They are
+        provided to keep old source code working. We strongly advise
+        against using them in new code.
+
+        ...
+
+        \list
+            \o void MyObsoleteFunction() \c (obsolete)
+            \o ...
+        \endlist
+
+        \raw HTML
+        <hr />
+        <h2>Member Function Documentation</h2>
+        <h3>void MyObsoleteFunction ()</h3>
+        <p>Use MyNewFunction() instead.</p>
+        \endraw
+        ...
+    \endquotation
+
     \target internal-command
     \section1 \\internal 
 
@@ -6097,6 +6057,63 @@
     \endcode
 
     This function will not be included in the documentation.
+
+    \target preliminary-command
+    \section1 \\preliminary 
+
+    The \\preliminary command is for indicating that a referenced
+    function is still under development.
+
+    The command must stand on its own line.
+
+    The \\preliminary command expands to a notification in the
+    function documentation, and marks the function as preliminary when
+    it appears in lists.
+
+    \code
+    / *!
+        \preliminary
+
+        Returns information about the joining properties of the
+        character (needed for certain languages such as
+        Arabic).
+    * /
+    QChar::Joining QChar::joining() const
+    {
+        return ::joining(*this);
+    }
+    \endcode
+
+    QDoc renders this as:
+
+    \quotation
+        \raw HTML
+        <h3>
+        <a href="http://qt.nokia.com/doc/4.0/qchar.html#Joining-enum">Joining</a>
+        QChar::joining () const</h3>
+        \endraw
+
+        \bold {This function is under development and
+    	subject to change.}
+
+        Returns information about the joining properties of the
+        character (needed for certain languages such as
+        Arabic).
+    \endquotation
+
+    And the function's entry in QChar's list of functions will be
+    rendered as:
+
+    \quotation
+        \list
+        \o ...
+        \o Joining
+           \l {http://qt.nokia.com/doc/4.0/qchar.html#Joining-enum}
+              {joining}()
+           const   \c (preliminary)
+       \o ...
+       \endlist
+    \endquotation
 
     \target since-command
     \section1 \\since 
@@ -8326,7 +8343,7 @@
     \contentspage Table of Contents
     \nextpage Topic Commands
 
-    \title The QDoc Commands
+    \title Command Index
 
     This is a complete, alphabetized list of the QDoc commands.
 
@@ -8345,6 +8362,7 @@
     \o \l {07-0-qdoc-commands-includingexternalcode.html#codeline-command} {\\codeline},
     \o \l {16-qdoc-commands-status.html#compat-command} {\\compat}
     \o \l {15-qdoc-commands-navigation.html#contentspage-command} {\\contentspage}
+    \o \l {16-qdoc-commands-status.html#default-command} {\\default} \span {class="newStuff"} {(new)}
     \o \l {04-qdoc-commands-textmarkup.html#div-command} {\\div} \span {class="newStuff"} {(new)}
     \o \l {07-0-qdoc-commands-includingexternalcode.html#dots-command} {\\dots}
     \o \l {12-0-qdoc-commands-miscellaneous.html#else-command} {\\else}
