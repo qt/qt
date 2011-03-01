@@ -48,6 +48,19 @@
 
 void qt_disableFontHinting(QFont &font);
 
+struct TexCoordCacheKey {
+    QString distfield;
+    glyph_t glyph;
+
+    TexCoordCacheKey(const QString &df, glyph_t g) : distfield(df), glyph(g) { }
+
+    bool operator==(const TexCoordCacheKey &other) const {
+        return other.distfield == distfield && other.glyph == glyph;
+    }
+};
+
+uint qHash(const TexCoordCacheKey &key);
+
 class Q_DECLARATIVE_EXPORT DistanceFieldFontAtlas
 {
 public:
@@ -61,7 +74,7 @@ public:
         qreal baselineX;
         qreal baselineY;
     };
-    Metrics glyphMetrics(glyph_t glyph) const;
+    Metrics glyphMetrics(glyph_t glyph);
 
     struct TexCoord {
         qreal x;
@@ -71,7 +84,7 @@ public:
         qreal xMargin;
         qreal yMargin;
     };
-    TexCoord glyphTexCoord(glyph_t glyph) const;
+    TexCoord glyphTexCoord(glyph_t glyph);
 
     QSGTextureRef texture();
     QSize atlasSize() const;
@@ -95,6 +108,11 @@ private:
     QString m_distanceFieldFileName;
     int m_glyphCount;
     mutable QSize m_size;
+    float m_glyphMetricMargin;
+    float m_glyphTexMargin;
+
+    QHash<glyph_t, Metrics> m_metrics;
+    static QHash<TexCoordCacheKey, DistanceFieldFontAtlas::TexCoord> m_texCoords;
 
     static QHash<QString, bool> m_distfield_availability;
     static QHash<QString, QSGTextureRef> m_textures;
