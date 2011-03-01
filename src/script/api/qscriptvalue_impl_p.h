@@ -1101,7 +1101,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::construct(in
 
     QScriptEnginePrivate::EvaluateScope evaluateScope(e);
     v8::TryCatch tryCatch;
-    v8::Handle<v8::Value> result = v8::Handle<v8::Function>::Cast(m_value)->NewInstance(argc, argv);
+    v8::Handle<v8::Value> result = v8::Object::Cast(*m_value)->NewInstance(argc, argv);
 
     if (result.IsEmpty()) {
         result = tryCatch.Exception();
@@ -1119,7 +1119,8 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::construct(co
         QScriptSharedDataPointer<QScriptValuePrivate> ctor(new QScriptValuePrivate(engine(), data->constructor()));
         return ctor->construct(args);
     }
-    if (!isFunction())
+    // ### Should we support calling declarative classes as constructors?
+    if (!isCallable() || QScriptDeclarativeClassObject::declarativeClass(this))
         return InvalidValue();
 
     v8::HandleScope handleScope;
@@ -1137,7 +1138,8 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::construct(co
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::construct(const QScriptValue& arguments)
 {
-    if (!isFunction())
+    // ### Should we support calling declarative classes as constructors?
+    if (!isCallable() || QScriptDeclarativeClassObject::declarativeClass(this))
         return InvalidValue();
 
     v8::HandleScope handleScope;
