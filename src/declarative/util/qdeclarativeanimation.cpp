@@ -554,7 +554,7 @@ void QDeclarativeAbstractAnimation::timelineComplete()
 
 /*!
     \qmlclass PauseAnimation QDeclarativePauseAnimation
-  \ingroup qml-animation-transition
+    \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The PauseAnimation element provides a pause for an animation.
