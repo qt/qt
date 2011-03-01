@@ -355,9 +355,10 @@ void QInputContext::widgetDestroyed(QWidget *widget)
     in complex input method. In the case, call QInputContext::reset()
     to ensure proper termination of inputting.
 
-    You must not send any QInputMethodEvent except empty InputMethodEnd event using
-    QInputContext::reset() at reimplemented reset(). It will break
-    input state consistency.
+    In a reimplementation of reset(), you must not send any
+    QInputMethodEvent containing preedit text. You can only commit
+    string and attributes; otherwise, you risk breaking input state
+    consistency.
 */
 
 
