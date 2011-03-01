@@ -92,6 +92,7 @@ tst_examples::tst_examples()
 #ifdef QT_NO_WEBKIT
     excludedDirs << "examples/declarative/modelviews/webview";
     excludedDirs << "demos/declarative/webbrowser";
+    excludedDirs << "doc/src/snippets/declarative/webview";
 #endif
 
 #ifdef QT_NO_XMLPATTERNS
