@@ -254,6 +254,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, int val)
     : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate(QScriptEnginePrivate::get(engine)))
 {
     if (engine) {
+        QScript::APIShim shim(d_ptr->engine);
         JSC::ExecState *exec = d_ptr->engine->currentFrame;
         d_ptr->initFrom(JSC::jsNumber(exec, val));
     } else
@@ -271,6 +272,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, uint val)
     : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate(QScriptEnginePrivate::get(engine)))
 {
     if (engine) {
+        QScript::APIShim shim(d_ptr->engine);
         JSC::ExecState *exec = d_ptr->engine->currentFrame;
         d_ptr->initFrom(JSC::jsNumber(exec, val));
     } else
@@ -288,6 +290,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, qsreal val)
     : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate(QScriptEnginePrivate::get(engine)))
 {
     if (engine) {
+        QScript::APIShim shim(d_ptr->engine);
         JSC::ExecState *exec = d_ptr->engine->currentFrame;
         d_ptr->initFrom(JSC::jsNumber(exec, val));
     } else
@@ -305,6 +308,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, const QString &val)
     : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate(QScriptEnginePrivate::get(engine)))
 {
     if (engine) {
+        QScript::APIShim shim(d_ptr->engine);
         JSC::ExecState *exec = d_ptr->engine->currentFrame;
         d_ptr->initFrom(JSC::jsString(exec, val));
     } else {
@@ -325,6 +329,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, const char *val)
     : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate(QScriptEnginePrivate::get(engine)))
 {
     if (engine) {
+        QScript::APIShim shim(d_ptr->engine);
         JSC::ExecState *exec = d_ptr->engine->currentFrame;
         d_ptr->initFrom(JSC::jsString(exec, val));
     } else {

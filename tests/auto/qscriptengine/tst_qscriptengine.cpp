@@ -235,6 +235,7 @@ private slots:
     void evaluateProgram_multipleEngines();
     void evaluateProgram_empty();
     void collectGarbageAfterConnect();
+    void collectGarbageAfterNativeArguments();
     void promoteThisObjectToQObjectInConstructor();
     void scriptValueFromQMetaObject();
 
@@ -5641,6 +5642,16 @@ void tst_QScriptEngine::collectGarbageAfterConnect()
     // The connection should not keep the widget alive.
     collectGarbage_helper(engine);
     QVERIFY(widget == 0);
+}
+
+void tst_QScriptEngine::collectGarbageAfterNativeArguments()
+{
+    // QTBUG-17788
+    QScriptEngine eng;
+    QScriptContext *ctx = eng.pushContext();
+    QScriptValue arguments = ctx->argumentsObject();
+    // Shouldn't crash when marking the arguments object.
+    collectGarbage_helper(eng);
 }
 
 static QScriptValue constructQObjectFromThisObject(QScriptContext *ctx, QScriptEngine *eng)
