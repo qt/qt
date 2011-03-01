@@ -336,7 +336,9 @@ void tst_QTcpSocket::init()
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
         QFETCH_GLOBAL(int, proxyType);
-        QString fluke = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first().toString();
+        QList<QHostAddress> addresses = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses();
+        QVERIFY2(addresses.count() > 0, "failed to get ip address for test server");
+        QString fluke = addresses.first().toString();
         QNetworkProxy proxy;
 
         switch (proxyType) {
@@ -606,7 +608,7 @@ void tst_QTcpSocket::timeoutConnect()
     // Port 1357 is configured to drop packets on the test server
     socket->connectToHost(address, 1357);
     QVERIFY(timer.elapsed() < 50);
-    QVERIFY(!socket->waitForConnected(200));
+    QVERIFY(!socket->waitForConnected(1000)); //200ms is too short when using SOCKS proxy authentication
     QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
     QCOMPARE(int(socket->error()), int(QTcpSocket::SocketTimeoutError));
 
@@ -1035,7 +1037,7 @@ public:
         : server(0), ok(false), quit(false)
     { }
 
-    ~ReceiverThread() { /*delete server;*/ terminate(); wait();  }
+    ~ReceiverThread() { }
 
     bool listen()
     {
@@ -1045,6 +1047,14 @@ public:
         serverPort = server->serverPort();
         server->moveToThread(this);
         return true;
+    }
+
+    static void cleanup(void *ptr)
+    {
+        ReceiverThread* self = reinterpret_cast<ReceiverThread*>(ptr);
+        self->quit = true;
+        self->wait(30000);
+        delete self;
     }
 
 protected:
@@ -1093,18 +1103,16 @@ void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop()
 {
     QFETCH(QByteArray, data);
 
-    ReceiverThread thread;
-    QVERIFY(thread.listen());
-    thread.start();
+    QScopedPointer<ReceiverThread, ReceiverThread> thread (new ReceiverThread);
+    QVERIFY(thread->listen());
+    thread->start();
 
     // proceed to the connect-write-disconnect
     QTcpSocket *socket = newSocket();
-    socket->connectToHost("127.0.0.1", thread.serverPort);
+    socket->connectToHost("127.0.0.1", thread->serverPort);
     if (!data.isEmpty())
         socket->write(data);
     if (socket->state() == QAbstractSocket::ConnectedState) {
-        thread.quit = true;
-        thread.wait();
         QSKIP("localhost connections are immediate, test case is invalid", SkipSingle);
     }
 
@@ -1130,9 +1138,9 @@ void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop()
     delete socket;
 
     // check if the other side received everything ok
-    QVERIFY(thread.wait(30000));
-    QVERIFY(thread.ok);
-    QCOMPARE(thread.receivedData, data);
+    QVERIFY(thread->wait(30000));
+    QVERIFY(thread->ok);
+    QCOMPARE(thread->receivedData, data);
 }
 
 //----------------------------------------------------------------------------------
@@ -1194,6 +1202,7 @@ void tst_QTcpSocket::downloadBigFile()
 
     connect(tmpSocket, SIGNAL(connected()), SLOT(exitLoopSlot()));
     connect(tmpSocket, SIGNAL(readyRead()), SLOT(downloadBigFileSlot()));
+    connect(tmpSocket, SIGNAL(disconnected()), SLOT(exitLoopSlot()));
 
     tmpSocket->connectToHost(QtNetworkSettings::serverName(), 80);
 
