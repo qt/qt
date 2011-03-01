@@ -50,13 +50,15 @@
 
 QT_BEGIN_NAMESPACE
 
+DEFINE_BOOL_CONFIG_OPTION(qmlFboOverlay, QML_FBO_OVERLAY)
+
 ShaderEffectTextureProvider::ShaderEffectTextureProvider(QObject *parent)
     : QSGTextureProvider(parent)
     , m_item(0)
     , m_format(GL_RGBA)
     , m_renderer(0)
     , m_fbo(0)
-#ifdef QML_SUBTREE_DEBUG
+#ifdef QSG_DEBUG_FBO_OVERLAY
     , m_debugOverlay(0)
 #endif
     , m_live(true)
@@ -68,7 +70,7 @@ ShaderEffectTextureProvider::~ShaderEffectTextureProvider()
 {
     delete m_renderer;
     delete m_fbo;
-#ifdef QML_SUBTREE_DEBUG
+#ifdef QSG_DEBUG_FBO_OVERLAY
     delete m_debugOverlay;
 #endif
 }
@@ -171,16 +173,18 @@ void ShaderEffectTextureProvider::grab()
     root->markDirty(Node::DirtyNodeAdded); // Force matrix and clip update.
     m_renderer->nodeChanged(root, Node::DirtyNodeAdded); // Force render list update.
 
-#ifdef QML_SUBTREE_DEBUG
-    if (!m_debugOverlay)
-        m_debugOverlay = QSGContext::current->createRectangleNode();
-    m_debugOverlay->setRect(QRectF(0, 0, m_size->width(), m_size->height()));
-    m_debugOverlay->setColor(QColor(0xff, 0x00, 0x80, 0x40));
-    m_debugOverlay->setPenColor(QColor());
-    m_debugOverlay->setPenWidth(0);
-    m_debugOverlay->setRadius(0);
-    m_debugOverlay->update();
-    root->appendChildNode(m_debugOverlay);
+#ifdef QSG_DEBUG_FBO_OVERLAY
+    if (qmlFboOverlay()) {
+        if (!m_debugOverlay)
+            m_debugOverlay = QSGContext::current->createRectangleNode();
+        m_debugOverlay->setRect(QRectF(0, 0, m_size.width(), m_size.height()));
+        m_debugOverlay->setColor(QColor(0xff, 0x00, 0x80, 0x40));
+        m_debugOverlay->setPenColor(QColor());
+        m_debugOverlay->setPenWidth(0);
+        m_debugOverlay->setRadius(0);
+        m_debugOverlay->update();
+        root->appendChildNode(m_debugOverlay);
+    }
 #endif
 
     m_dirtyTexture = false;
@@ -195,8 +199,9 @@ void ShaderEffectTextureProvider::grab()
 
     root->markDirty(dirty | Node::DirtyNodeAdded); // Force matrix, clip and render list update.
 
-#ifdef QML_SUBTREE_DEBUG
-    root->removeChildNode(m_debugOverlay);
+#ifdef QSG_DEBUG_FBO_OVERLAY
+    if (qmlFboOverlay())
+        root->removeChildNode(m_debugOverlay);
 #endif
 }
 
