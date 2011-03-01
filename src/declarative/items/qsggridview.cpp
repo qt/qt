@@ -1,4 +1,4 @@
-// Commit: f4d385cec1f09971163d7e5d9e9b09b19f1873c4
+// Commit: f93d1245e5c36cf25cd6fd3c3418ee7e63e04ac2
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -80,7 +80,7 @@ public:
             item->setPos(QPointF(row, col));
         }
     }
-    bool contains(int x, int y) const {
+    bool contains(qreal x, qreal y) const {
         return (x >= item->x() && x < item->x() + view->cellWidth() &&
                 y >= item->y() && y < item->y() + view->cellHeight());
     }
@@ -1865,7 +1865,7 @@ void QSGGridView::positionViewAtEnd()
     d->positionViewAtIndex(d->model->count(), End);
 }
 
-int QSGGridView::indexAt(int x, int y) const
+int QSGGridView::indexAt(qreal x, qreal y) const
 {
     Q_D(const QSGGridView);
     for (int i = 0; i < d->visibleItems.count(); ++i) {

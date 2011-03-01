@@ -1,4 +1,4 @@
-// Commit: ac5c099cc3c5b8c7eec7a49fdeb8a21037230350
+// Commit: 57676c237992e0aa5a93a4e8fa66b3e7b90c2c90
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -130,6 +130,7 @@ class Q_AUTOTEST_EXPORT QSGMouseArea : public QSGItem
     Q_PROPERTY(Qt::MouseButtons acceptedButtons READ acceptedButtons WRITE setAcceptedButtons NOTIFY acceptedButtonsChanged)
     Q_PROPERTY(bool hoverEnabled READ hoverEnabled WRITE setHoverEnabled NOTIFY hoverEnabledChanged)
     Q_PROPERTY(QSGDrag *drag READ drag CONSTANT) //### add flicking to QSGDrag or add a QDeclarativeFlick ???
+    Q_PROPERTY(bool preventStealing READ preventStealing WRITE setPreventStealing NOTIFY preventStealingChanged)
 
 public:
     QSGMouseArea(QSGItem *parent=0);
@@ -154,6 +155,9 @@ public:
 
     QSGDrag *drag();
 
+    bool preventStealing() const;
+    void setPreventStealing(bool prevent);
+
 Q_SIGNALS:
     void hoveredChanged();
     void pressedChanged();
@@ -162,6 +166,7 @@ Q_SIGNALS:
     void hoverEnabledChanged();
     void positionChanged(QSGMouseEvent *mouse);
     void mousePositionChanged(QSGMouseEvent *mouse);
+    void preventStealingChanged();
 
     void pressed(QSGMouseEvent *mouse);
     void pressAndHold(QSGMouseEvent *mouse);
