@@ -384,7 +384,7 @@ def main():
     if not os.path.isfile(qtsrcdir + "/src/corelib/tools/qlocale.qdoc"):
         usage()
 
-    (data_temp_file, data_temp_file_path) = tempfile.mkstemp("qlocale_data_p")
+    (data_temp_file, data_temp_file_path) = tempfile.mkstemp("qlocale_data_p", dir=qtsrcdir)
     data_temp_file = os.fdopen(data_temp_file, "w")
     qlocaledata_file = open(qtsrcdir + "/src/corelib/tools/qlocale_data_p.h", "r")
     s = qlocaledata_file.readline()
@@ -667,7 +667,7 @@ def main():
 
     # qlocale.h
 
-    (qlocaleh_temp_file, qlocaleh_temp_file_path) = tempfile.mkstemp("qlocale.h")
+    (qlocaleh_temp_file, qlocaleh_temp_file_path) = tempfile.mkstemp("qlocale.h", dir=qtsrcdir)
     qlocaleh_temp_file = os.fdopen(qlocaleh_temp_file, "w")
     qlocaleh_file = open(qtsrcdir + "/src/corelib/tools/qlocale.h", "r")
     s = qlocaleh_file.readline()
@@ -717,7 +717,7 @@ def main():
 
     # qlocale.qdoc
 
-    (qlocaleqdoc_temp_file, qlocaleqdoc_temp_file_path) = tempfile.mkstemp("qlocale.qdoc")
+    (qlocaleqdoc_temp_file, qlocaleqdoc_temp_file_path) = tempfile.mkstemp("qlocale.qdoc", dir=qtsrcdir)
     qlocaleqdoc_temp_file = os.fdopen(qlocaleqdoc_temp_file, "w")
     qlocaleqdoc_file = open(qtsrcdir + "/src/corelib/tools/qlocale.qdoc", "r")
     s = qlocaleqdoc_file.readline()
