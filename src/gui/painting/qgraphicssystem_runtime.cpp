@@ -285,6 +285,7 @@ void QRuntimeWindowSurface::flush(QWidget *widget, const QRegion &region,
 
 void QRuntimeWindowSurface::setGeometry(const QRect &rect)
 {
+    QWindowSurface::setGeometry(rect);
     m_windowSurface->setGeometry(rect);
 }
 

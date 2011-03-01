@@ -5,7 +5,7 @@
   <package id="qt" name="Qt" levels="tool mw app">
     <collection id="qtconf" name="Qt Config" level="tool">
             <component id="qt_deviceconfiguration" name="Qt Device Configuration" class="config tool" filter="s60,qt_tools" introduced="^2">
-                <unit bldFile="src/config.profiles/symbian"/>
+                <unit bldFile="config.profiles/symbian"/>
             </component>
     </collection>
     <collection id="qt_info" name="Qt Info" level="mw">
@@ -16,7 +16,7 @@
 
     <collection id="qtlocalization" name="Qt Localization" level="app">
             <component id="qtlocalization_build" name="Qt localization Build" introduced="^2" filter="s60">
-            <unit bldFile="src/config.profiles/symbian/translations_symbian" qt:proFile="translations.pro"/>
+            <unit bldFile="config.profiles/symbian/translations_symbian" qt:proFile="translations.pro"/>
             </component>
     </collection>
 
