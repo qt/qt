@@ -52,7 +52,7 @@ An \c import statement includes the module name, and possibly a version number.
 This can be seen in the snippet commonly found at the top of QML files:
 
 \qml
-    import QtQuick 1.0
+import QtQuick 1.0
 \endqml
 
 This imports version 1.0 of the "QtQuick" module into the global namespace. (The QML

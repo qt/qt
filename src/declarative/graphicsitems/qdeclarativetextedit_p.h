@@ -94,6 +94,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeTextEdit : public QDeclarativeImplicitSizePa
     Q_PROPERTY(bool selectByMouse READ selectByMouse WRITE setSelectByMouse NOTIFY selectByMouseChanged)
     Q_PROPERTY(SelectionMode mouseSelectionMode READ mouseSelectionMode WRITE setMouseSelectionMode NOTIFY mouseSelectionModeChanged REVISION 1)
     Q_PROPERTY(bool canPaste READ canPaste NOTIFY canPasteChanged REVISION 1)
+    Q_PROPERTY(bool inputMethodComposing READ isInputMethodComposing NOTIFY inputMethodComposingChanged REVISION 1)
 
 public:
     QDeclarativeTextEdit(QDeclarativeItem *parent=0);
@@ -216,6 +217,8 @@ public:
 
     QRectF boundingRect() const;
 
+    bool isInputMethodComposing() const;
+
 Q_SIGNALS:
     void textChanged(const QString &);
     void paintedSizeChanged();
@@ -243,6 +246,7 @@ Q_SIGNALS:
     Q_REVISION(1) void mouseSelectionModeChanged(SelectionMode mode);
     Q_REVISION(1) void linkActivated(const QString &link);
     Q_REVISION(1) void canPasteChanged();
+    Q_REVISION(1) void inputMethodComposingChanged();
 
 public Q_SLOTS:
     void selectAll();

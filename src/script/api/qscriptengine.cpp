@@ -858,7 +858,8 @@ JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JS
     {
         JSC::ExecState *frame = exec->callerFrame()->removeHostCallFrameFlag();
         while (frame) {
-            if (frame->codeBlock() && frame->codeBlock()->source()
+            if (frame->codeBlock() && QScriptEnginePrivate::hasValidCodeBlockRegister(frame)
+                && frame->codeBlock()->source()
                 && !frame->codeBlock()->source()->url().isEmpty()) {
                 context = engine->translationContextFromUrl(frame->codeBlock()->source()->url());
                 break;

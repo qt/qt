@@ -89,10 +89,15 @@ typedef QPair<int, int> QDeclarativeXmlListRange;
     \qml
     XmlListModel {
         id: xmlModel
-        ...
-        XmlRole { name: "title"; query: "title/string()" }
+        // ...
+        XmlRole {
+            name: "title"
+            query: "title/string()"
+        }
     }
+    \endqml
 
+    \qml
     ListView {
         model: xmlModel
         delegate: Text { text: title }
@@ -782,9 +787,9 @@ void QDeclarativeXmlListModel::setNamespaceDeclarations(const QString &declarati
 
     This will access the \c title value for the first item in the model:
 
-    \qml
-        var title = model.get(0).title;
-    \endqml
+    \js
+    var title = model.get(0).title;
+    \endjs
 */
 QScriptValue QDeclarativeXmlListModel::get(int index) const
 {

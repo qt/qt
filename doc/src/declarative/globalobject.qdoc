@@ -48,7 +48,7 @@ data from over a network.
 The XMLHttpRequest API implements the same \l {http://www.w3.org/TR/XMLHttpRequest/}{W3C standard}
 as many popular web browsers with following exceptions:
 \list
-\i QML's XMLHttpRequest does not enforce the same origin policty.
+\i QML's XMLHttpRequest does not enforce the same origin policy.
 \i QML's XMLHttpRequest does not support \e synchronous requests.
 \endlist
 
@@ -77,7 +77,7 @@ browser.  The following objects and properties are supported by the QML implemen
 \o lastChild
 \o previousSibling
 \o nextSibling
-\o attribtes
+\o attributes
 \endlist
 
 \o 

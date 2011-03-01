@@ -1208,14 +1208,14 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
     Each of the types is represented by a subclass of QGradient:
 
     \table
-    \row
-    \o \inlineimage qgradient-linear.png
-    \o \inlineimage qgradient-radial.png
-    \o \inlineimage qgradient-conical.png
     \header
     \o QLinearGradient
     \o QRadialGradient
     \o QConicalGradient
+    \row
+    \o \inlineimage qgradient-linear.png
+    \o \inlineimage qgradient-radial.png
+    \o \inlineimage qgradient-conical.png
     \endtable
 
     The colors in a gradient are defined using stop points of the

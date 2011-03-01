@@ -606,25 +606,7 @@ public:
     ScriptAction to specify the point in the transition at which
     the StateChangeScript should to be run.
 
-    \qml
-    State {
-        name "state1"
-        StateChangeScript {
-            name: "myScript"
-            script: doStateStuff();
-        }
-        ...
-    }
-    ...
-    Transition {
-        to: "state1"
-        SequentialAnimation {
-            NumberAnimation { ... }
-            ScriptAction { scriptName: "myScript" }
-            NumberAnimation { ... }
-        }
-    }
-    \endqml
+    \snippet snippets/declarative/states/statechangescript.qml state and transition
 
     \sa ScriptAction
 */
@@ -659,7 +641,7 @@ void QDeclarativeStateChangeScript::setScript(const QDeclarativeScriptString &s)
     This property holds the name of the script. This name can be used by a
     ScriptAction to target a specific script.
 
-    \sa ScriptAction::stateChangeScriptName
+    \sa ScriptAction::scriptName
 */
 QString QDeclarativeStateChangeScript::name() const
 {

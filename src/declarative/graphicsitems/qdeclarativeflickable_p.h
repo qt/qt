@@ -204,6 +204,7 @@ protected:
     virtual void viewportMoved();
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
+    bool sceneEvent(QEvent *event);
     bool sendMouseEvent(QGraphicsSceneMouseEvent *event);
 
     bool xflick() const;

@@ -74,7 +74,7 @@ AddressBook::AddressBook(QWidget *parent)
 //! [tooltip 1]    
     loadButton->setToolTip(tr("Load contacts from a file"));
 //! [tooltip 1]        
-    saveButton = new QPushButton(tr("Sa&ve..."));
+    saveButton = new QPushButton(tr("&Save..."));
 //! [tooltip 2]
     saveButton->setToolTip(tr("Save contacts to a file"));
 //! [tooltip 2]

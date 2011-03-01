@@ -379,14 +379,14 @@ void QDeclarativePathViewPrivate::regenerate()
     \l decrementCurrentIndex() or \l incrementCurrentIndex(), for example to navigate
     using the left and right arrow keys:
 
-    \code
+    \qml
     PathView {
-        ...
+        // ...
         focus: true
         Keys.onLeftPressed: decrementCurrentIndex()
         Keys.onRightPressed: incrementCurrentIndex()
     }
-    \endcode
+    \endqml
 
     The path view itself is a focus scope (see \l{qmlfocus#Acquiring Focus and Focus Scopes}{the focus documentation page} for more details).
 
@@ -444,7 +444,7 @@ QDeclarativePathView::~QDeclarativePathView()
     Component {
         Rectangle {
             visible: PathView.onPath
-            ...
+            // ...
         }
     }
     \endqml
@@ -706,14 +706,14 @@ void QDeclarativePathViewPrivate::setAdjustedOffset(qreal o)
     of the \l{PathView::onPath}{PathView.onPath} attached property to ensure that
     the highlight is hidden when flicked away from the path.
 
-    \code
+    \qml
     Component {
         Rectangle {
             visible: PathView.onPath
-            ...
+            // ...
         }
     }
-    \endcode
+    \endqml
 
     \sa highlightItem, highlightRangeMode
 */

@@ -51,7 +51,7 @@ defineReplace(processSymbianLibrary) {
 }
 
 # This part turn "-llibc" into "libc.dso", and moves -L entries to QMAKE_LIBDIR.
-libsToProcess = LIBS QMAKE_LIBS
+libsToProcess = LIBS LIBS_PRIVATE QMAKE_LIBS
 for(libToProcess, libsToProcess) {
     qt_libraries = $$split($$libToProcess, " ")
     eval($$libToProcess =)
@@ -90,8 +90,8 @@ count(splitVersion, 0) {
 } else {
     count(splitVersion, 3) {
         hexVersion = $$system("sh -c 'printf %02x $$member(splitVersion, 0)'")
-        hexPart2 = $$system("sh -c 'printf %02x $$member(splitVersion, 1)'")"
-        hexPart2 = $$hexPart2$$system("sh -c 'printf %02x $$member(splitVersion, 2)'")"
+        hexPart2 = $$system("sh -c 'printf %02x $$member(splitVersion, 1)'")
+        hexPart2 = $$hexPart2$$system("sh -c 'printf %02x $$member(splitVersion, 2)'")
         decVersion = $$system("sh -c 'printf %1d 0x$$hexVersion'").
         hexVersion = $$hexVersion$$hexPart2
         decVersion = $$decVersion$$system("sh -c 'printf %d 0x$$hexPart2'")
@@ -147,6 +147,7 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
         LIBS += -ledllstub.lib -ledll.lib\\(uc_dll_.o\\)
     } else :linux-gcce {
         LIBS += \
+            -l:edllstub.lib \
             -l:edll.lib \
             -l:usrt2_2.lib \
             -l:dfpaeabi.dso \

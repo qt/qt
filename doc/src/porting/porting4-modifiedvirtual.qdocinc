@@ -10,7 +10,7 @@
 \row \o bool QMacMime::canConvert(const char *, int) \o bool QMacMime::canConvert(const QString &, int)
 \row \o QValueList<QByteArray> QMacMime::convertFromMime(QByteArray, const char *, int) \o QList<QByteArray> QMacMime::convertFromMime(QByteArray, const QString &, int)
 \row \o QByteArray QMacMime::convertToMime(QValueList<QByteArray> data, const char *, int) \o QByteArray QMacMime::convertToMime(QList<QByteArray> data, const QString &, int)
-\row \o const char * QMacMime::convertorName() \o QString QMacMime::convertorName()
+\row \o const char * QMacMime::convertorName( ) \o QString QMacMime::convertorName( )
 \row \o int QMacMime::flavorFor(const char *) \o int QMacMime::flavorFor(const QString &)
 \row \o const char * QMacMime::mimeFor(int) \o QString QMacMime::mimeFor(int)
 \row \o QMetaObject * QObject::metaObject() const \o const QMetaObject * QObject::metaObject() const

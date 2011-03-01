@@ -123,7 +123,7 @@ public:
         }
 
     }
-    bool contains(int x, int y) const {
+    bool contains(qreal x, qreal y) const {
         return (x >= item->x() && x < item->x() + view->cellWidth() &&
                 y >= item->y() && y < item->y() + view->cellHeight());
     }
@@ -1022,8 +1022,7 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
         || (flow == QDeclarativeGridView::LeftToRight && &data == &hData))
         return;
 
-    int oldDuration = fixupDuration;
-    fixupDuration = moveReason == Mouse ? fixupDuration : 0;
+    fixupMode = moveReason == Mouse ? fixupMode : Immediate;
 
     qreal highlightStart;
     qreal highlightEnd;
@@ -1067,7 +1066,6 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
                 pos = qMax(qMin(bottomItem->rowPos() - highlightStart, -maxExtent), -minExtent);
         } else {
             QDeclarativeFlickablePrivate::fixup(data, minExtent, maxExtent);
-            fixupDuration = oldDuration;
             return;
         }
         if (currentItem && haveHighlightRange && highlightRange == QDeclarativeGridView::StrictlyEnforceRange) {
@@ -1085,10 +1083,12 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
         qreal dist = qAbs(data.move + pos);
         if (dist > 0) {
             timeline.reset(data.move);
-            if (fixupDuration)
+            if (fixupMode != Immediate) {
                 timeline.move(data.move, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration/2);
-            else
+                data.fixingUp = true;
+            } else {
                 timeline.set(data.move, -pos);
+            }
             vTime = timeline.time();
         }
     } else if (haveHighlightRange && highlightRange == QDeclarativeGridView::StrictlyEnforceRange) {
@@ -1103,23 +1103,26 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
                 viewPos = -viewPos-size();
             timeline.reset(data.move);
             if (viewPos != position()) {
-                if (fixupDuration)
+                if (fixupMode != Immediate) {
                     timeline.move(data.move, -viewPos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration/2);
-                else
+                    data.fixingUp = true;
+                } else {
                     timeline.set(data.move, -viewPos);
+                }
             }
             vTime = timeline.time();
         }
     } else {
         QDeclarativeFlickablePrivate::fixup(data, minExtent, maxExtent);
     }
-    fixupDuration = oldDuration;
+    fixupMode = Normal;
 }
 
 void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal maxExtent, qreal vSize,
                                         QDeclarativeTimeLineCallback::Callback fixupCallback, qreal velocity)
 {
     Q_Q(QDeclarativeGridView);
+    data.fixingUp = false;
     moveReason = Mouse;
     if ((!haveHighlightRange || highlightRange != QDeclarativeGridView::StrictlyEnforceRange)
         && snapMode == QDeclarativeGridView::NoSnap) {
@@ -1243,9 +1246,9 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
 
     \snippet doc/src/snippets/declarative/gridview/ContactModel.qml 0
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage gridview-simple.png
-    \endfloat
+    \enddiv
 
     This model can be referenced as \c ContactModel in other QML files. See \l{QML Modules}
     for more information about creating reusable components like this.
@@ -1259,9 +1262,9 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     \codeline
     \snippet doc/src/snippets/declarative/gridview/gridview.qml classdocs simple
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage gridview-highlight.png
-    \endfloat
+    \enddiv
 
     The view will create a new delegate for each item in the model. Note that the delegate
     is able to access the model's \c name and \c portrait data directly.
@@ -2567,6 +2570,7 @@ void QDeclarativeGridView::positionViewAtIndex(int index, int mode)
 /*!
     \qmlmethod GridView::positionViewAtBeginning()
     \qmlmethod GridView::positionViewAtEnd()
+    \since Quick 1.1
 
     Positions the view at the beginning or end, taking into account any header or footer.
 
@@ -2611,7 +2615,7 @@ void QDeclarativeGridView::positionViewAtEnd()
 
     \bold Note: methods should only be called after the Component has completed.
 */
-int QDeclarativeGridView::indexAt(int x, int y) const
+int QDeclarativeGridView::indexAt(qreal x, qreal y) const
 {
     Q_D(const QDeclarativeGridView);
     for (int i = 0; i < d->visibleItems.count(); ++i) {

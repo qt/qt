@@ -987,10 +987,18 @@ void QDeclarativeItemPrivate::setLayoutMirror(bool mirror)
 
     This example forwards key events to two lists:
     \qml
-    ListView { id: list1 ... }
-    ListView { id: list2 ... }
-    Keys.forwardTo: [list1, list2]
-    focus: true
+    Item {
+        ListView {
+            id: list1
+            // ...
+        }
+        ListView {
+            id: list2
+            // ...
+        }
+        Keys.forwardTo: [list1, list2]
+        focus: true
+    }
     \endqml
 */
 
@@ -2324,13 +2332,18 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
   \o \image declarative-anchors_example.png
   \o Text anchored to Image, horizontally centered and vertically below, with a margin.
   \qml
-  Image { id: pic; ... }
-  Text {
-      id: label
-      anchors.horizontalCenter: pic.horizontalCenter
-      anchors.top: pic.bottom
-      anchors.topMargin: 5
-      ...
+  Item {
+      Image {
+          id: pic
+          // ...
+      }
+      Text {
+          id: label
+          anchors.horizontalCenter: pic.horizontalCenter
+          anchors.top: pic.bottom
+          anchors.topMargin: 5
+          // ...
+      }
   }
   \endqml
   \row
@@ -2340,13 +2353,18 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
   property of both defaults to 0.
 
   \qml
-    Image { id: pic; ... }
-    Text {
-        id: label
-        anchors.left: pic.right
-        anchors.leftMargin: 5
-        ...
-    }
+  Item {
+      Image {
+          id: pic
+          // ...
+      }
+      Text {
+          id: label
+          anchors.left: pic.right
+          anchors.leftMargin: 5
+          // ...
+      }
+  }
   \endqml
   \endtable
 
@@ -2668,11 +2686,15 @@ QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::resources()
 
   \qml
   Item {
-    states: [
-      State { ... },
-      State { ... }
-      ...
-    ]
+      states: [
+          State {
+              // ...
+          },
+          State {
+              // ...
+          }
+          // ...
+      ]
   }
   \endqml
 
@@ -2690,11 +2712,15 @@ QDeclarativeListProperty<QDeclarativeState> QDeclarativeItemPrivate::states()
 
   \qml
   Item {
-    transitions: [
-      Transition { ... },
-      Transition { ... }
-      ...
-    ]
+      transitions: [
+          Transition {
+              // ...
+          },
+          Transition {
+              // ...
+          }
+          // ...
+      ]
   }
   \endqml
 
@@ -2719,11 +2745,15 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
 
   \qml
   Item {
-    filter: [
-      Blur { ... },
-      Reflection { ... }
-      ...
-    ]
+      filter: [
+          Blur {
+              // ...
+          },
+          Reflection {
+              // ...
+          }
+          // ...
+      ]
   }
   \endqml
 */
@@ -2758,14 +2788,14 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
   This property is often used in scripts to change between states. For
   example:
 
-  \qml
-    function toggle() {
-        if (button.state == 'On')
-            button.state = 'Off';
-        else
-            button.state = 'On';
-    }
-  \endqml
+  \js
+  function toggle() {
+      if (button.state == 'On')
+          button.state = 'Off';
+      else
+          button.state = 'On';
+  }
+  \endjs
 
   If the item is in its base state (i.e. no explicit state has been
   set), \c state will be a blank string. Likewise, you can return an

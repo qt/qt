@@ -72,8 +72,8 @@ public:
 
 /*!
     \qmlclass Connections QDeclarativeConnections
-  \ingroup qml-utility-elements
-  \since 4.7
+    \ingroup qml-utility-elements
+    \since 4.7
     \brief A Connections element describes generalized connections to signals.
 
     A Connections object creates a connection to a QML signal.
@@ -83,7 +83,7 @@ public:
 
     \qml
     MouseArea {
-        onClicked: { foo(...) }
+        onClicked: { foo(parameters) }
     }
     \endqml
 
@@ -104,7 +104,7 @@ public:
     \qml
     MouseArea {
         Connections {
-            onClicked: foo(...)
+            onClicked: foo(parameters)
         }
     }
     \endqml
@@ -116,10 +116,10 @@ public:
     MouseArea {
         id: area
     }
-    ...
+    // ...
     Connections {
         target: area
-        onClicked: foo(...)
+        onClicked: foo(parameters)
     }
     \endqml
 

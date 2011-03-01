@@ -56,82 +56,89 @@ class Atom
 {
  public:
     enum Type { 
-        AbstractLeft, 
-        AbstractRight, 
+        AbstractLeft,       // 00
+        AbstractRight,
         AnnotatedList,
         AutoLink,
-        BaseName, 
+        BaseName,
         BriefLeft,
-        BriefRight, 
+        BriefRight,
         C,
-        CaptionLeft, 
+        CaptionLeft,
         CaptionRight,
-        Code, 
-        CodeBad, 
-        CodeNew, 
-        CodeOld, 
+        Code,               // 10
+        CodeBad,
+        CodeNew,
+        CodeOld,
         CodeQuoteArgument,
         CodeQuoteCommand,
+        Div,
 #ifdef QDOC_QML
+        EndDiv,
         EndQmlText,
 #endif
         FootnoteLeft,
-        FootnoteRight,
-        FormatElse, 
+        FootnoteRight,      // 20
+        FormatElse,
         FormatEndif,
         FormatIf,
         FormattingLeft,
         FormattingRight,
         GeneratedList,
-        Image, 
+        GuidLink,
+        Image,
         ImageText,
-        InlineImage,
+        InlineImage,        // 30
+#ifdef QDOC_QML
+        JavaScript,
+        EndJavaScript,
+#endif
         LegaleseLeft,
         LegaleseRight,
-        LineBreak, 
-        Link, 
+        LineBreak,
+        Link,
         LinkNode,
-        ListLeft, 
+        ListLeft,
         ListItemNumber,
-        ListTagLeft,
-        ListTagRight,
-        ListItemLeft,
-        ListItemRight, 
-        ListRight, 
-        Nop, 
+        ListTagLeft,        // 40
+        ListTagRight,       // 41
+        ListItemLeft,       // 42
+        ListItemRight,      // 43
+        ListRight,          // 44
+        Nop,
         ParaLeft,
-        ParaRight, 
+        ParaRight,
 #ifdef QDOC_QML
         Qml,
         QmlText,
 #endif
-        QuotationLeft, 
+        QuotationLeft,      // 50
         QuotationRight,
         RawString,
-        SectionLeft,
+        SectionLeft,        // 53
         SectionRight,
         SectionHeadingLeft,
         SectionHeadingRight,
-        SidebarLeft, 
+        SidebarLeft,
         SidebarRight,
         SinceList,
-        SnippetCommand,
+        SnippetCommand,     // 60
         SnippetIdentifier,
         SnippetLocation,
-        String,
-        TableLeft,
-        TableRight, 
+        String,             // 63
+        TableLeft,          // 64
+        TableRight,
         TableHeaderLeft,
         TableHeaderRight,
         TableRowLeft,
-        TableRowRight, 
-        TableItemLeft, 
+        TableRowRight,
+        TableItemLeft,      // 70
         TableItemRight,
         TableOfContents,
-        Target,
+        Target,             // 73
         UnhandledFormat, 
         UnknownCommand,
-        Last = UnknownCommand 
+        Last = UnknownCommand
     };
 
     Atom(Type type, const QString &string = "")

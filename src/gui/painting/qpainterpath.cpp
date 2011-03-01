@@ -240,12 +240,12 @@ static void qt_debug_path(const QPainterPath &path)
     provides two methods for filling paths:
 
     \table
-    \row
-    \o \inlineimage qt-fillrule-oddeven.png
-    \o \inlineimage qt-fillrule-winding.png
     \header
     \o Qt::OddEvenFill
     \o Qt::WindingFill
+    \row
+    \o \inlineimage qt-fillrule-oddeven.png
+    \o \inlineimage qt-fillrule-winding.png
     \endtable
 
     See the Qt::FillRule documentation for the definition of the
@@ -315,12 +315,12 @@ static void qt_debug_path(const QPainterPath &path)
     QPainterPath to draw text.
 
     \table
-    \row
-    \o \inlineimage qpainterpath-example.png
-    \o \inlineimage qpainterpath-demo.png
     \header
     \o \l {painting/painterpaths}{Painter Paths Example}
     \o \l {demos/deform}{Vector Deformation Demo}
+    \row
+    \o \inlineimage qpainterpath-example.png
+    \o \inlineimage qpainterpath-demo.png
     \endtable
 
     \sa QPainterPathStroker, QPainter, QRegion, {Painter Paths Example}
@@ -1245,12 +1245,12 @@ Qt::FillRule QPainterPath::fillRule() const
     fillRule. Qt provides two methods for filling paths:
 
     \table
-    \row
-    \o \inlineimage qt-fillrule-oddeven.png
-    \o \inlineimage qt-fillrule-winding.png
     \header
     \o Qt::OddEvenFill (default)
     \o Qt::WindingFill
+    \row
+    \o \inlineimage qt-fillrule-oddeven.png
+    \o \inlineimage qt-fillrule-winding.png
     \endtable
 
     \sa fillRule()

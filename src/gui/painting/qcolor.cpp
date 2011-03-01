@@ -78,12 +78,12 @@ QT_BEGIN_NAMESPACE
     names.
 
     \table
+    \header
+    \o RGB \o HSV \o CMYK
     \row
     \o \inlineimage qcolor-rgb.png
     \o \inlineimage qcolor-hsv.png
     \o \inlineimage qcolor-cmyk.png
-    \header
-    \o RGB \o HSV \o CMYK
     \endtable
 
     The QColor constructor creates the color based on RGB values.  To

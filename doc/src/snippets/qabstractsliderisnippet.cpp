@@ -50,7 +50,7 @@ QAbstractSliderPrivate::~QAbstractSliderPrivate()
 {
 }
 
-oid QAbstractSlider::setRange(int min, int max)
+void QAbstractSlider::setRange(int min, int max)
 {
     Q_D(QAbstractSlider);
     int oldMin = d->minimum;

@@ -51,6 +51,7 @@
 #include <QFontMetrics>
 #include <QPainter>
 #include <QTextBoundaryFinder>
+#include <QInputContext>
 #include <qstyle.h>
 
 #ifndef QT_NO_LINEEDIT
@@ -566,10 +567,10 @@ void QDeclarativeTextInput::select(int start, int end)
     It is equivalent to the following snippet, but is faster and easier
     to use.
 
-    \qml
+    \js
     myTextInput.text.toString().substring(myTextInput.selectionStart,
         myTextInput.selectionEnd);
-    \endqml
+    \endjs
 */
 QString QDeclarativeTextInput::selectedText() const
 {
@@ -936,14 +937,22 @@ void QDeclarativeTextInput::moveCursor()
 QRectF QDeclarativeTextInput::positionToRectangle(int pos) const
 {
     Q_D(const QDeclarativeTextInput);
+    if (pos > d->control->cursorPosition())
+        pos += d->control->preeditAreaText().length();
     return QRectF(d->control->cursorToX(pos)-d->hscroll,
         0.0,
         d->control->cursorWidth(),
         cursorRectangle().height());
 }
 
+int QDeclarativeTextInput::positionAt(int x) const
+{
+    return positionAt(x, CursorBetweenCharacters);
+}
+
 /*!
-    \qmlmethod int TextInput::positionAt(int x)
+    \qmlmethod int TextInput::positionAt(int x, CursorPosition position = CursorBetweenCharacters)
+    \since Quick 1.1
 
     This function returns the character position at
     x pixels from the left of the textInput. Position 0 is before the
@@ -952,18 +961,33 @@ QRectF QDeclarativeTextInput::positionToRectangle(int pos) const
 
     This means that for all x values before the first character this function returns 0,
     and for all x values after the last character this function returns text.length.
+
+    The cursor position type specifies how the cursor position should be resolved.
+
+    \list
+    \o TextInput.CursorBetweenCharacters - Returns the position between characters that is nearest x.
+    \o TextInput.CursorOnCharacter - Returns the position before the character that is nearest x.
+    \endlist
 */
-int QDeclarativeTextInput::positionAt(int x) const
+int QDeclarativeTextInput::positionAt(int x, CursorPosition position) const
 {
     Q_D(const QDeclarativeTextInput);
-    return d->control->xToPos(x + d->hscroll);
+    int pos = d->control->xToPos(x + d->hscroll, QTextLine::CursorPosition(position));
+    const int cursor = d->control->cursor();
+    if (pos > cursor) {
+        const int preeditLength = d->control->preeditAreaText().length();
+        pos = pos > cursor + preeditLength
+                ? pos - preeditLength
+                : cursor;
+    }
+    return pos;
 }
 
 void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
 {
     Q_Q(QDeclarativeTextInput);
     focused = hasFocus;
-    q->setCursorVisible(hasFocus);
+    q->setCursorVisible(hasFocus && scene && scene->hasFocus());
     if(q->echoMode() == QDeclarativeTextInput::PasswordEchoOnEdit && !hasFocus)
         control->updatePasswordEchoEditing(false);//QLineControl sets it on key events, but doesn't deal with focus events
     if (!hasFocus)
@@ -1002,18 +1026,22 @@ void QDeclarativeTextInput::inputMethodEvent(QInputMethodEvent *ev)
 {
     Q_D(QDeclarativeTextInput);
     ev->ignore();
+    const bool wasComposing = d->control->preeditAreaText().length() > 0;
     inputMethodPreHandler(ev);
-    if (ev->isAccepted())
-        return;
-    if (d->control->isReadOnly()) {
-        ev->ignore();
-    } else {
-        d->control->processInputMethodEvent(ev);
-        updateSize();
-        d->updateHorizontalScroll();
+    if (!ev->isAccepted()) {
+        if (d->control->isReadOnly()) {
+            ev->ignore();
+        } else {
+            d->control->processInputMethodEvent(ev);
+            updateSize();
+            d->updateHorizontalScroll();
+        }
     }
     if (!ev->isAccepted())
         QDeclarativePaintedItem::inputMethodEvent(ev);
+
+    if (wasComposing != (d->control->preeditAreaText().length() > 0))
+        emit inputMethodComposingChanged();
 }
 
 /*!
@@ -1023,6 +1051,8 @@ Handles the given mouse \a event.
 void QDeclarativeTextInput::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
+    if (d->sendMouseEventToInputContext(event, QEvent::MouseButtonDblClick))
+        return;
     if (d->selectByMouse) {
         int cursor = d->xToPos(event->pos().x());
         d->control->selectWordAtPos(cursor);
@@ -1035,6 +1065,8 @@ void QDeclarativeTextInput::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *even
 void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
+    if (d->sendMouseEventToInputContext(event, QEvent::MouseButtonPress))
+        return;
     if(d->focusOnPress){
         bool hadActiveFocus = hasActiveFocus();
         forceActiveFocus();
@@ -1062,6 +1094,8 @@ void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void QDeclarativeTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
+    if (d->sendMouseEventToInputContext(event, QEvent::MouseMove))
+        return;
     if (d->selectByMouse) {
         if (qAbs(int(event->pos().x() - d->pressPos.x())) > QApplication::startDragDistance())
             setKeepMouseGrab(true);
@@ -1079,6 +1113,8 @@ Handles the given mouse \a event.
 void QDeclarativeTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
+    if (d->sendMouseEventToInputContext(event, QEvent::MouseButtonRelease))
+        return;
     if (d->selectByMouse)
         setKeepMouseGrab(false);
     if (!d->showInputPanelOnFocus) { // input panel on click
@@ -1094,6 +1130,44 @@ void QDeclarativeTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     d->control->processEvent(event);
     if (!event->isAccepted())
         QDeclarativePaintedItem::mouseReleaseEvent(event);
+}
+
+bool QDeclarativeTextInputPrivate::sendMouseEventToInputContext(
+        QGraphicsSceneMouseEvent *event, QEvent::Type eventType)
+{
+#if !defined QT_NO_IM
+    if (event->widget() && control->composeMode()) {
+        int tmp_cursor = xToPos(event->pos().x());
+        int mousePos = tmp_cursor - control->cursor();
+        if (mousePos < 0 || mousePos > control->preeditAreaText().length()) {
+            mousePos = -1;
+            // don't send move events outside the preedit area
+            if (eventType == QEvent::MouseMove)
+                return true;
+        }
+
+        QInputContext *qic = event->widget()->inputContext();
+        if (qic) {
+            QMouseEvent mouseEvent(
+                    eventType,
+                    event->widget()->mapFromGlobal(event->screenPos()),
+                    event->screenPos(),
+                    event->button(),
+                    event->buttons(),
+                    event->modifiers());
+            // may be causing reset() in some input methods
+            qic->mouseHandler(mousePos, &mouseEvent);
+            event->setAccepted(mouseEvent.isAccepted());
+        }
+        if (!control->preeditAreaText().isEmpty())
+            return true;
+    }
+#else
+    Q_UNUSED(event);
+    Q_UNUSED(eventType)
+#endif
+
+    return false;
 }
 
 bool QDeclarativeTextInput::sceneEvent(QEvent *event)
@@ -1275,6 +1349,7 @@ QVariant QDeclarativeTextInput::inputMethodQuery(Qt::InputMethodQuery property) 
 
 /*!
     \qmlmethod void TextInput::deselect()
+    \since Quick 1.1
 
     Removes active text selection.
 */
@@ -1456,6 +1531,13 @@ void QDeclarativeTextInput::setMouseSelectionMode(SelectionMode mode)
     }
 }
 
+/*!
+    \qmlproperty bool TextInput::canPaste
+    \since QtQuick 1.1
+
+    Returns true if the TextInput is writable and the content of the clipboard is
+    suitable for pasting into the TextEdit.
+*/
 bool QDeclarativeTextInput::canPaste() const
 {
     Q_D(const QDeclarativeTextInput);
@@ -1672,6 +1754,25 @@ void QDeclarativeTextInput::focusInEvent(QFocusEvent *event)
         }
     }
     QDeclarativePaintedItem::focusInEvent(event);
+}
+
+/*!
+    \qmlproperty bool TextInput::isInputMethodComposing()
+
+    \since QtQuick 1.1
+
+    This property holds whether the TextInput has partial text input from an
+    input method.
+
+    While it is composing an input method may rely on mouse or key events from
+    the TextInput to edit or commit the partial text.  This property can be
+    used to determine when to disable events handlers that may interfere with
+    the correct operation of an input method.
+*/
+bool QDeclarativeTextInput::isInputMethodComposing() const
+{
+    Q_D(const QDeclarativeTextInput);
+    return d->control->preeditAreaText().length() > 0;
 }
 
 void QDeclarativeTextInputPrivate::init()

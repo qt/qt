@@ -722,11 +722,24 @@ QPixmap QDeclarativeTextPrivate::drawOutline(const QPixmap &source, const QPixma
     \brief The Text item allows you to add formatted text to a scene.
     \inherits Item
 
-    A Text item can display both plain and rich text. For example:
+    Text items can display both plain and rich text. For example, red text with
+    a specific font and size can be defined like this:
 
     \qml
-    Text { text: "Hello World!"; font.family: "Helvetica"; font.pointSize: 24; color: "red" }
-    Text { text: "<b>Hello</b> <i>World!</i>" }
+    Text {
+        text: "Hello World!"
+        font.family: "Helvetica"
+        font.pointSize: 24
+        color: "red"
+    }
+    \endqml
+
+    Rich text is defined using HTML-style markup:
+
+    \qml
+    Text {
+        text: "<b>Hello</b> <i>World!</i>"
+    }
     \endqml
 
     \image declarative-text.png
@@ -963,12 +976,20 @@ void QDeclarativeText::setText(const QString &n)
 
     The text color.
 
+    An example of green text defined using hexadecimal notation:
     \qml
-    //green text using hexadecimal notation
-    Text { color: "#00FF00"; ... }
+    Text {
+        color: "#00FF00"
+        text: "green text"
+    }
+    \endqml
 
-    //steelblue text using SVG color name
-    Text { color: "steelblue"; ... }
+    An example of steel blue text defined using an SVG color name:
+    \qml
+    Text {
+        color: "steelblue"
+        text: "blue text"
+    }
     \endqml
 */
 QColor QDeclarativeText::color() const
@@ -1169,6 +1190,7 @@ void QDeclarativeText::setWrapMode(WrapMode mode)
 
 /*!
     \qmlproperty int Text::lineCount
+    \since Quick 1.1
 
     Returns the number of lines visible in the text item.
 
@@ -1184,6 +1206,7 @@ int QDeclarativeText::lineCount() const
 
 /*!
     \qmlproperty bool Text::truncated
+    \since Quick 1.1
 
     Returns true if the text has been truncated due to \l maximumLineCount
     or \l elide.
@@ -1200,6 +1223,7 @@ bool QDeclarativeText::truncated() const
 
 /*!
     \qmlproperty int Text::maximumLineCount
+    \since Quick 1.1
 
     Set this property to limit the number of lines that the text item will show.
     If elide is set to Text.ElideRight, the text will be elided appropriately.
@@ -1452,6 +1476,7 @@ qreal QDeclarativeText::paintedHeight() const
 
 /*!
     \qmlproperty real Text::lineHeight
+    \since Quick 1.1
 
     Sets the line height for the text.
     The value can be in pixels or a multiplier depending on lineHeightMode.

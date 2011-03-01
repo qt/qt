@@ -174,13 +174,10 @@
     transparent blue to a quad of \c "#800000FF".
 
     Example:
-    \qml
-    Rectangle { color: "steelblue" }
-    Rectangle { color: "transparent" }
-    Rectangle { color: "#FF0000" }
-    Rectangle { color: "#800000FF" }
-    Rectangle { color: "#00000000" }    // ARGB fully transparent
-    \endqml
+    \div{float-right}
+    \inlineimage declarative-colors.png
+    \enddiv
+    \snippet doc/src/snippets/declarative/colors.qml colors
 
     Or with the \l{QML:Qt::rgba()}{Qt.rgba()}, \l{QML:Qt::hsla()}{Qt.hsla()}, \l{QML:Qt::darker()}{Qt.darker()},
     \l{QML:Qt::lighter()}{Qt.lighter()} or \l{QML:Qt::tint()}{Qt.tint()} functions:
@@ -361,9 +358,11 @@
     Actions are used like this:
 
     \qml
-    MouseArea { onClicked: myaction.trigger() }
-    State { name: "enabled"; when: myaction.enabled == true }
-    Text { text: someaction.text }
+    Item {
+        MouseArea { onClicked: myaction.trigger() }
+        State { name: "enabled"; when: myaction.enabled == true }
+        Text { text: someaction.text }
+    }
     \endqml
 
     \sa {QML Basic Types}

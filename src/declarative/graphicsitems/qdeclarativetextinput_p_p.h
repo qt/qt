@@ -105,6 +105,7 @@ public:
     void updateHorizontalScroll();
     void determineHorizontalAlignment();
     int calculateTextWidth();
+    bool sendMouseEventToInputContext(QGraphicsSceneMouseEvent *event, QEvent::Type eventType);
 
     QLineControl* control;
 

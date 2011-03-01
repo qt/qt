@@ -281,7 +281,7 @@ QDeclarativePropertyChangesParser::compile(const QList<QDeclarativeCustomParserP
         QDeclarativeParser::Variant v = qvariant_cast<QDeclarativeParser::Variant>(data.at(ii).second);
         QVariant var;
         bool isScript = v.isScript();
-        QDeclarativeBinding::Identifier id;
+        QDeclarativeBinding::Identifier id = 0;
         switch(v.type()) {
         case QDeclarativeParser::Variant::Boolean:
             var = QVariant(v.asBoolean());

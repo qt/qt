@@ -46,6 +46,7 @@
 #include "node.h"
 #include "tree.h"
 #include "codemarker.h"
+#include <QUuid>
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -103,7 +104,6 @@ Node::Node(Type type, InnerNode *parent, const QString& name)
 {
     if (par)
         par->addChild(this);
-    //uuid = QUuid::createUuid();
 }
 
 /*!
@@ -270,14 +270,16 @@ QString Node::fileBase() const
 }
 
 /*!
-  Returns this node's Universally Unique IDentifier.
-  If its UUID has not yet been created, it is created
-  first.
+  Returns this node's Universally Unique IDentifier as a
+  QString. Creates the UUID first, if it has not been created.
  */
-QUuid Node::guid() const
+QString Node::guid() const
 {
-    if (uuid.isNull())
-        uuid = QUuid::createUuid();
+    if (uuid.isEmpty()) {
+        QUuid quuid = QUuid::createUuid();
+        QString t = quuid.toString();
+        uuid = "id-" + t.mid(1,t.length()-2);
+    }
     return uuid;
 }
 
@@ -1152,8 +1154,8 @@ QString Parameter::reconstruct(bool value) const
     if (!p.endsWith(QChar('*')) && !p.endsWith(QChar('&')) && !p.endsWith(QChar(' ')))
         p += " ";
     p += nam;
-    if (value)
-        p += def;
+    if (value && !def.isEmpty())
+        p += " = " + def;
     return p;
 }
 
@@ -1362,6 +1364,21 @@ QString FunctionNode::signature(bool values) const
 }
 
 /*!
+  Returns true if the node's status is Internal, or if its
+  parent is a class with internal status.
+ */
+bool FunctionNode::isInternal() const
+{
+    if (status() == Internal)
+        return true;
+    if (parent() && parent()->status() == Internal)
+        return true;
+    if (relates() && relates()->status() == Internal)
+        return true;
+    return false;
+}
+
+/*!
   Print some debugging stuff.
  */
 void FunctionNode::debug() const
@@ -1545,11 +1562,6 @@ void QmlClassNode::clear()
  */
 QString QmlClassNode::fileBase() const
 {
-#if 0
-    if (Node::fileBase() == "item")
-        qDebug() << "FILEBASE: qmlitem" << name();
-    return "qml_" + Node::fileBase();
-#endif
     return Node::fileBase();
 }
 
@@ -1681,10 +1693,13 @@ static QString valueType(const QString& n)
   read-only. The algorithm for figuring this out is long
   amd tedious and almost certainly will break. It currently
   doesn't work for qmlproperty bool PropertyChanges::explicit,
-  because the tokenized gets confused on "explicit" .
+  because the tokenizer gets confused on "explicit".
  */
 bool QmlPropertyNode::isWritable(const Tree* tree) const
 {
+    if (wri != Trool_Default)
+        return fromTrool(wri, false);
+
     Node* n = parent();
     while (n && n->subType() != Node::QmlClass)
         n = n->parent();

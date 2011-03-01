@@ -88,6 +88,7 @@ void QDeclarativeListReferencePrivate::release()
 /*!
 \class QDeclarativeListReference
 \since 4.7
+\module QtDeclarative
 \brief The QDeclarativeListReference class allows the manipulation of QDeclarativeListProperty properties.
 
 QDeclarativeListReference allows C++ programs to read from, and assign values to a QML list property in a

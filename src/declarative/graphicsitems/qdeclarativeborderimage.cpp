@@ -149,6 +149,20 @@ QT_BEGIN_NAMESPACE
     \sa Image, AnimatedImage
  */
 
+/*!
+    \qmlproperty bool BorderImage::asynchronous
+
+    Specifies that images on the local filesystem should be loaded
+    asynchronously in a separate thread.  The default value is
+    false, causing the user interface thread to block while the
+    image is loaded.  Setting \a asynchronous to true is useful where
+    maintaining a responsive user interface is more desirable
+    than having images immediately visible.
+
+    Note that this property is only valid for images read from the
+    local filesystem.  Images loaded via a network resource (e.g. HTTP)
+    are always loaded asynchonously.
+*/
 QDeclarativeBorderImage::QDeclarativeBorderImage(QDeclarativeItem *parent)
   : QDeclarativeImageBase(*(new QDeclarativeBorderImagePrivate), parent)
 {
@@ -200,6 +214,15 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
 */
 
 /*!
+    \qmlproperty bool BorderImage::cache
+    \since Quick 1.1
+
+    Specifies whether the image should be cached. The default value is
+    true. Setting \a cache to false is useful when dealing with large images,
+    to make sure that they aren't cached at the expense of small 'ui element' images.
+*/
+
+/*!
     \qmlproperty bool BorderImage::mirror
     \since Quick 1.1
 
@@ -225,11 +248,13 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
     image \c picture.png:
 
     \qml
-    border.left: 10
-    border.top: 10
-    border.bottom: 10
-    border.right: 10
-    source: picture.png
+    BorderImage {
+        border.left: 10
+        border.top: 10
+        border.bottom: 10
+        border.right: 10
+        source: "picture.png"
+    }
     \endqml
 
     The URL may be absolute, or relative to the URL of the component.
@@ -363,7 +388,10 @@ void QDeclarativeBorderImage::load()
     the bottom of the image:
 
     \qml
-    border.bottom: 10
+    BorderImage {
+        border.bottom: 10
+        // ...
+    }
     \endqml
 
     The border lines can also be specified using a

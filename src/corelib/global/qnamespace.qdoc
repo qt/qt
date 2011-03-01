@@ -156,6 +156,13 @@
            whole lifetime. This attribute must be set before QApplication is
            constructed.
 
+    \omitvalue AA_S60DisablePartialScreenInputMode By default in Symbian^3,
+           a separate editing window is opened on top of an application. This is exactly
+           like editing on previous versions of Symbian behave. When this attribute
+           is true, a virtual keyboard window is shown on top of application and it
+           is ensured that the focused text widget is visible. This is only supported in
+           Symbian^3. (internal)
+
     \omitvalue AA_AttributeCount
 */
 
@@ -1251,6 +1258,13 @@
     \value WA_X11DoNotAcceptFocus Asks the window manager to not give focus
     to this top level window. This attribute has no effect on non-X11
     platforms.
+
+    \value WA_LockPortraitOrientation Locks the widget to a portrait orientation,
+    ignoring changes to the display's orientation with respect to the user.
+    \value WA_LockLandscapeOrientation Locks the widget to a landscape orientation,
+    ignoring changes to the display's orientation with respect to the user.
+    \value WA_AutoOrientation Causes the widget to change orientation whenever the
+    display changes orientation with respect to the user.
 
     \omitvalue WA_SetLayoutDirection
     \omitvalue WA_InputMethodTransparent
