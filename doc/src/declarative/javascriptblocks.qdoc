@@ -205,7 +205,7 @@ component destruction.
 Property bindings can be created in JavaScript by assigning the property with a \c function
 that returns the required value.
 
-See \l {Binding Properties from JavaScript} for details.
+See \l {qml-javascript-assignment}{Property Assignment versus Property Binding} for details.
 
 
 \section1 Receiving QML Signals in JavaScript
@@ -293,8 +293,8 @@ To run code after the environment setup has completed, refer to
 
 \o The value of \c this is currently undefined in QML in the majority of contexts
 
-The \c this keyword is supported when \l {Binding Properties from JavaScript}
-{binding properties from JavaScript}. In all other situations, the value of
+The \c this keyword is supported when binding properties from JavaScript. 
+In all other situations, the value of
 \c this is undefined in QML.
 
 To refer to any element, provide an \c id.  For example:

@@ -1497,7 +1497,6 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                     }
                 }
                 else {
-                    qDebug() << "ATTR:" << attr;
                     QStringList spans = attr.split(",");
                     if (spans.size() == 2) {
                         if ((spans[0].toInt()>1) || (spans[1].toInt()>1)) {
