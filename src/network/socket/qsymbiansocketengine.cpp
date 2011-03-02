@@ -1665,16 +1665,26 @@ qint64 QSymbianSocketEngine::bytesToWrite() const
 bool QSymbianSocketEngine::event(QEvent* ev)
 {
     Q_D(QSymbianSocketEngine);
+#ifdef QNATIVESOCKETENGINE_DEBUG
+    qDebug() << "QSymbianSocketEngine::event";
+#endif
     switch (ev->type()) {
     case QEvent::ThreadChange:
+#ifdef QNATIVESOCKETENGINE_DEBUG
+        qDebug() << "ThreadChange";
+#endif
         if (d->asyncSelect) {
             delete d->asyncSelect;
             d->asyncSelect = 0;
             QEvent *postThreadChangeEvent = new QEvent(PostThreadChangeEvent);
             QCoreApplication::postEvent(this, postThreadChangeEvent);
         }
+        d->selectTimer.Close();
         return true;
     case PostThreadChangeEvent:
+#ifdef QNATIVESOCKETENGINE_DEBUG
+        qDebug() << "PostThreadChangeEvent";
+#endif
         // recreate select in new thread
         d->asyncSelect = q_check_ptr(new QAsyncSelect(0, d->nativeSocket, this));
         if (d->readNotifier) {
