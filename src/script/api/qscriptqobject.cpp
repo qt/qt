@@ -1044,8 +1044,9 @@ static v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property
             QObject *child = children.at(index);
             QString childName = child->objectName();
             if (childName == QString::fromLatin1(name)) {
-                Q_UNIMPLEMENTED();
-                return engine->newQObject(child);
+                v8::Handle<v8::Value> result = engine->newQObject(child);
+                self->Set(property, result, v8::PropertyAttribute(v8::DontEnum | v8::DontDelete));
+                return result;
             }
         }
     }

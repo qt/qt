@@ -932,18 +932,6 @@ v8::Handle<v8::Value> QScriptEnginePrivate::newQObject(QObject *object,
         }
     }
 
-    if (!(opt & QScriptEngine::ExcludeChildObjects)) {
-        // Add accessors for current child objects.
-        QList<QObject*> children = object->children();
-        for (int i = 0; i < children.size(); ++i) {
-            QObject *child = children.at(i);
-            if (child->objectName().isEmpty())
-                continue;
-            //FIXME Install an accessor.
-            //Q_UNIMPLEMENTED();
-        }
-    }
-
     for (const QMetaObject* cls = object->metaObject(); cls; cls = cls->superClass()) {
         QByteArray className = cls->className();
         className.append("*"); // We are searching for a pointer.

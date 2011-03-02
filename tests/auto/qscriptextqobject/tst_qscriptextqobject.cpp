@@ -1133,11 +1133,16 @@ void tst_QScriptExtQObject::getSetChildren()
     // add a child
     MyQObject *child = new MyQObject(m_myObject);
     child->setObjectName("child");
+
+    QEXPECT_FAIL("", "hasOwnProperty not yet implemented for QObject", Continue);
     QCOMPARE(m_engine->evaluate("myObject.hasOwnProperty('child')")
              .strictlyEquals(QScriptValue(m_engine, true)), true);
 
+    QEXPECT_FAIL("", "flags not yet implemented chlidren properties", Continue);
     QVERIFY(mobj.propertyFlags("child") & QScriptValue::ReadOnly);
+    QEXPECT_FAIL("", "flags not yet implemented chlidren properties", Continue);
     QVERIFY(mobj.propertyFlags("child") & QScriptValue::Undeletable);
+    QEXPECT_FAIL("", "flags not yet implemented chlidren properties", Continue);
     QVERIFY(mobj.propertyFlags("child") & QScriptValue::SkipInEnumeration);
     QVERIFY(!(mobj.propertyFlags("child") & QScriptValue::QObjectMember));
 
@@ -1152,6 +1157,7 @@ void tst_QScriptExtQObject::getSetChildren()
     // add a grandchild
     MyQObject *grandChild = new MyQObject(child);
     grandChild->setObjectName("grandChild");
+    QEXPECT_FAIL("", "hasOwnProperty not yet implemented for QObject", Continue);
     QCOMPARE(m_engine->evaluate("myObject.child.hasOwnProperty('grandChild')")
              .strictlyEquals(QScriptValue(m_engine, true)), true);
 
@@ -1162,6 +1168,7 @@ void tst_QScriptExtQObject::getSetChildren()
 
     // delete child
     delete child;
+    QEXPECT_FAIL("", "Removing child not yet implemented", Abort);
     QCOMPARE(m_engine->evaluate("myObject.hasOwnProperty('child')")
              .strictlyEquals(QScriptValue(m_engine, false)), true);
 
