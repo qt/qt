@@ -527,6 +527,7 @@ QScriptValueList QScriptContext::scopeChain() const
 void QScriptContext::pushScope(const QScriptValue &object)
 {
     Q_D(QScriptContext);
+    Q_ASSERT(this == d->engine->currentContext());
     QScriptIsolate api(d->engine);
     v8::HandleScope handleScope;
     QScriptValuePrivate *object_p = QScriptValuePrivate::get(object);
