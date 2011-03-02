@@ -327,6 +327,9 @@ void vertexCopy(SpriteParticleVertex &b,const ParticleVertex& a)
 
 void SpriteParticle::load(ParticleData *d)
 {
+    if (m_node == 0) //error creating node
+        return;
+
     SpriteParticleVertices *particles = (SpriteParticleVertices *) m_node->geometry()->vertexData();
     SpriteParticleVertices &p = particles[d->systemIndex];
 
