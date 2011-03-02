@@ -1,5 +1,5 @@
-import Qt.labs.particles 2.1
-import Qt.labs.particles 2.1 as Qlp
+import Qt.labs.particles 2.0
+import Qt.labs.particles 2.0 as Qlp
 import QtQuick 2.0
 
 Item {
@@ -66,7 +66,7 @@ Item {
                     name: "spinning"
                     source: "meteor.png"
                     frames: 35
-                    duration: 30
+                    duration: 40
                     speedModifiesDuration: -0.1
                     to: {"explode":0, "spinning":1}
                 },Sprite{
