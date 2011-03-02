@@ -4,7 +4,7 @@ RESOURCES   = chart.qrc
 SOURCES     = main.cpp \
               mainwindow.cpp \
               pieview.cpp
-unix:!mac:!symbian:!vxworks:LIBS+= -lm
+unix:!mac:!symbian:!vxworks:!integrity:LIBS+= -lm
 
 TARGET.EPOCHEAPSIZE = 0x200000 0x800000
 

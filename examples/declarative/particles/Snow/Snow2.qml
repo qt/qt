@@ -8,14 +8,14 @@ Rectangle{
         id: particles
         anchors.fill: parent
         particles:SpriteParticle{
-            states: SpriteState{
+            sprite: Sprite{
                 name: "snow"
                 source: "flake-01.png"
                 frames: 51
                 duration: 40
             }
         }
-        affectors: Drift{ xDrift: 7200; }
+        affectors: Drift{ xDrift: 800; }
         emitters:TrailEmitter{
             particlesPerSecond: 20
             particleDuration: 7000

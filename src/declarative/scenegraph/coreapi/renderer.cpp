@@ -57,9 +57,10 @@
 
 // #define QSG_RENDERER_TIMING
 #ifdef QSG_RENDERER_TIMING
-QTime frameTimer;
-int preprocessTime;
-int updatePassTime;
+static QTime frameTimer;
+static int preprocessTime;
+static int updatePassTime;
+static int frameNumber = 0;
 #endif
 
 void Bindable::clear() const
@@ -118,6 +119,7 @@ Renderer::Renderer()
     , m_node_updater(0)
     , m_changed_emitted(false)
     , m_mirrored(false)
+    , m_is_rendering(false)
     , m_bindable(0)
 {
     Q_ASSERT(QGLContext::currentContext());
@@ -196,6 +198,7 @@ void Renderer::renderScene(const Bindable &bindable)
     if (!m_root_node)
         return;
 
+    m_is_rendering = true;
 #ifdef QSG_RENDERER_TIMING
     frameTimer.start();
 #endif
@@ -213,19 +216,19 @@ void Renderer::renderScene(const Bindable &bindable)
     int renderTime = frameTimer.elapsed();
 #endif
 
+    m_is_rendering = false;
     m_changed_emitted = false;
     m_bindable = 0;
 
 #ifdef QSG_RENDERER_TIMING
-    printf("Breakdown of frametime: preprocess=%d, updates=%d, binding=%d, render=%d, total=%d\n",
+    printf("Frame #%d: Breakdown of frametime: preprocess=%d, updates=%d, binding=%d, render=%d, total=%d\n",
+           ++frameNumber,
            preprocessTime,
            updatePassTime - preprocessTime,
            bindTime - updatePassTime,
            renderTime - bindTime,
            renderTime);
 #endif
-
-
 }
 
 void Renderer::setProjectMatrixToDeviceRect()
@@ -296,7 +299,7 @@ void Renderer::nodeChanged(Node *node, Node::DirtyFlags flags)
     if (flags & Node::DirtyNodeRemoved)
         removeNodesToPreprocess(node);
 
-    if (!m_changed_emitted) {
+    if (!m_changed_emitted && !m_is_rendering) {
         // Premature overoptimization to avoid excessive signal emissions
         m_changed_emitted = true;
         emit sceneGraphChanged();
@@ -403,10 +406,8 @@ Renderer::ClipType Renderer::updateStencilClip(const ClipNode *clip)
                 clipRect &= QRect(ix1, iy1, ix2 - ix1, iy2 - iy1);
             }
 
-            if (clipRect.width() > 0 && clipRect.height() > 0)
-                glScissor(clipRect.x(), clipRect.y(), clipRect.width(), clipRect.height());
-            else
-                glScissor(0, 0, 0, 0);
+            clipRect = clipRect.normalized();
+            glScissor(clipRect.x(), clipRect.y(), clipRect.width(), clipRect.height());
         } else {
             if (!stencilEnabled) {
                 if (!m_clip_program.isLinked()) {

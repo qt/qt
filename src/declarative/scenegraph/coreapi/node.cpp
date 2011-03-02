@@ -255,13 +255,12 @@ GeometryNode::~GeometryNode()
     normally be specified in the order of back-to-front.
 
     The default render order is 0.
+
+    \internal
   */
 void GeometryNode::setRenderOrder(int order)
 {
-    if (m_render_order != order) {
-        m_render_order = order;
-        markDirty(DirtyRenderOrder);
-    }
+    m_render_order = order;
 }
 
 

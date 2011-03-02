@@ -5,26 +5,43 @@ Rectangle{
     color: "goldenrod"
     width: 400
     height: 400
-    SpriteParticles{
-        id: particles
+    ParticleSystem{
         anchors.fill: parent
-        states: SpriteState{
-            source: "squarefacesprite.png"
-            frames: 6
-            duration: 120
+        particles:[ SpriteParticle{
+            id: single
+            sprite: Sprite{
+                source: "squarefacesprite.png"
+                frames: 6
+                duration: 120
+            }
+        },SpriteParticle{
+            id: engine
+            spriteEngine: SpriteEngine{
+                sprites:[
+                    Sprite{
+                        source: "squarefacesprite.png"
+                        frames: 6
+                        duration: 120
+                    }
+                ]
+            }
         }
-
-        particlesPerSecond: 6
-        particleDuration: 5000
-        emitting: true
-        xSpeed: 0
-        ySpeed: 0
-        xSpeedVariation: 100
-        ySpeedVariation: 100
-        particleSize: 30
-        particleSizeVariation: 10
-        emitterX: width/2
-        emitterY: height/2
+        ]
+        emitters:TrailEmitter{
+        particle: engine
+        id: particles
+            particlesPerSecond: 6
+            particleDuration: 5000
+            emitting: true
+            xSpeed: 0
+            ySpeed: 0
+            xSpeedVariation: 100
+            ySpeedVariation: 100
+            particleSize: 30
+            particleSizeVariation: 10
+            emitterX: width/2
+            emitterY: height/2
+        }
     }
     Binding{
         target: particles

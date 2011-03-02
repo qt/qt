@@ -82,7 +82,7 @@ public:
             item->setPos(QPointF(row, col));
         }
     }
-    bool contains(int x, int y) const {
+    bool contains(qreal x, qreal y) const {
         return (x >= item->x() && x < item->x() + view->cellWidth() &&
                 y >= item->y() && y < item->y() + view->cellHeight());
     }
@@ -2294,7 +2294,7 @@ void QDeclarativeGridView::positionViewAtEnd()
 
     \bold Note: methods should only be called after the Component has completed.
 */
-int QDeclarativeGridView::indexAt(int x, int y) const
+int QDeclarativeGridView::indexAt(qreal x, qreal y) const
 {
     Q_D(const QDeclarativeGridView);
     for (int i = 0; i < d->visibleItems.count(); ++i) {

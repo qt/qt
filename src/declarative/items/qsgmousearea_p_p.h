@@ -1,4 +1,4 @@
-// Commit: ac5c099cc3c5b8c7eec7a49fdeb8a21037230350
+// Commit: 57676c237992e0aa5a93a4e8fa66b3e7b90c2c90
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -84,6 +84,7 @@ public:
     bool dragY : 1;
     bool stealMouse : 1;
     bool doubleClick : 1;
+    bool preventStealing : 1;
     QSGDrag *drag;
     QPointF startScene;
     qreal startX;

@@ -1,4 +1,4 @@
-// Commit: d446a0ec464556ede91225b14e75f2f8f5a748d5
+// Commit: bf9ca539dc4c5efff801856ad9d3f7e14dabad26
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -49,6 +49,7 @@
 
 #include <QtDeclarative/qdeclarativeinfo.h>
 #include <QtGui/qgraphicssceneevent.h>
+#include <QtGui/qinputcontext.h>
 #include <QTextBoundaryFinder>
 #include <qstyle.h>
 
@@ -524,6 +525,8 @@ void QSGTextInput::inputMethodEvent(QInputMethodEvent *ev)
 void QSGTextInput::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QSGTextInput);
+    if (d->sendMouseEventToInputContext(event, QEvent::MouseButtonDblClick))
+        return;
     if (d->selectByMouse) {
         int cursor = d->xToPos(event->pos().x());
         d->control->selectWordAtPos(cursor);
@@ -536,6 +539,8 @@ void QSGTextInput::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 void QSGTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QSGTextInput);
+    if (d->sendMouseEventToInputContext(event, QEvent::MouseButtonPress))
+        return;
     if(d->focusOnPress){
         bool hadActiveFocus = hasActiveFocus();
         forceActiveFocus();
@@ -563,6 +568,8 @@ void QSGTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void QSGTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QSGTextInput);
+    if (d->sendMouseEventToInputContext(event, QEvent::MouseMove))
+        event->setAccepted(true);
     if (d->selectByMouse) {
         if (qAbs(int(event->pos().x() - d->pressPos.x())) > QApplication::startDragDistance())
             setKeepMouseGrab(true);
@@ -576,6 +583,8 @@ void QSGTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void QSGTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QSGTextInput);
+    if (d->sendMouseEventToInputContext(event, QEvent::MouseButtonRelease))
+        return;
     if (d->selectByMouse)
         setKeepMouseGrab(false);
     if (!d->showInputPanelOnFocus) { // input panel on click
@@ -589,6 +598,44 @@ void QSGTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     d->control->processEvent(event);
     if (!event->isAccepted())
         QSGPaintedItem::mouseReleaseEvent(event);
+}
+
+bool QSGTextInputPrivate::sendMouseEventToInputContext(
+        QGraphicsSceneMouseEvent *event, QEvent::Type eventType)
+{
+#if !defined QT_NO_IM
+    if (event->widget() && control->composeMode()) {
+        int tmp_cursor = xToPos(event->pos().x());
+        int mousePos = tmp_cursor - control->cursor();
+        if (mousePos < 0 || mousePos > control->preeditAreaText().length()) {
+            mousePos = -1;
+            // don't send move events outside the preedit area
+            if (eventType == QEvent::MouseMove)
+                return true;
+        }
+
+        QInputContext *qic = event->widget()->inputContext();
+        if (qic) {
+            QMouseEvent mouseEvent(
+                    eventType,
+                    event->widget()->mapFromGlobal(event->screenPos()),
+                    event->screenPos(),
+                    event->button(),
+                    event->buttons(),
+                    event->modifiers());
+            // may be causing reset() in some input methods
+            qic->mouseHandler(mousePos, &mouseEvent);
+            event->setAccepted(mouseEvent.isAccepted());
+        }
+        if (!control->preeditAreaText().isEmpty())
+            return true;
+    }
+#else
+    Q_UNUSED(event);
+    Q_UNUSED(eventType)
+#endif
+
+    return false;
 }
 
 void QSGTextInput::mouseUngrabEvent()
@@ -946,7 +993,7 @@ void QSGTextInput::itemChange(GraphicsItemChange change, const QVariant &value)
     if (change == ItemActiveFocusHasChanged) {
         bool hasFocus = value.toBool();
         d->focused = hasFocus;
-        setCursorVisible(hasFocus);
+        setCursorVisible(hasFocus && d->canvas && d->canvas->hasFocus());
         if(echoMode() == QSGTextInput::PasswordEchoOnEdit && !hasFocus)
             d->control->updatePasswordEchoEditing(false);//QLineControl sets it on key events, but doesn't deal with focus events
         if (!hasFocus)
@@ -979,6 +1026,8 @@ void QSGTextInputPrivate::init()
     q->connect(QApplication::clipboard(), SIGNAL(dataChanged()),
             q, SLOT(q_canPasteChanged()));
 #endif // QT_NO_CLIPBOARD
+    q->connect(control, SIGNAL(updateMicroFocus()),
+               q, SLOT(updateMicroFocus()));
     q->updateSize();
     oldValidity = control->hasAcceptableInput();
     lastSelectionStart = 0;

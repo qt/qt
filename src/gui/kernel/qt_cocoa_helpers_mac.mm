@@ -1627,6 +1627,7 @@ void qt_mac_constructQIconFromIconRef(const IconRef icon, const IconRef overlayI
 #ifdef QT_MAC_USE_COCOA
 void qt_mac_menu_collapseSeparators(void */*NSMenu **/ theMenu, bool collapse)
 {
+    QMacCocoaAutoReleasePool pool;
     OSMenuRef menu = static_cast<OSMenuRef>(theMenu);
     if (collapse) {
         bool previousIsSeparator = true; // setting to true kills all the separators placed at the top.

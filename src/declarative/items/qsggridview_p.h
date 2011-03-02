@@ -1,4 +1,4 @@
-// Commit: ebd4bc73c46c2962742a682b6a391fb68c482aec
+// Commit: f93d1245e5c36cf25cd6fd3c3418ee7e63e04ac2
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -160,7 +160,7 @@ public:
     enum PositionMode { Beginning, Center, End, Visible, Contain };
 
     Q_INVOKABLE void positionViewAtIndex(int index, int mode);
-    Q_INVOKABLE int indexAt(int x, int y) const;
+    Q_INVOKABLE int indexAt(qreal x, qreal y) const;
     Q_INVOKABLE void positionViewAtBeginning();
     Q_INVOKABLE void positionViewAtEnd();
 

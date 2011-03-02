@@ -1,4 +1,4 @@
-// Commit: 6129a16a74620916d3e8bff29a3788374ca21c94
+// Commit: d9d68c383b7b1438d3034cd3708cfba5fb9706ef
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -148,7 +148,7 @@ public:
         else
             item->setWidth(size);
     }
-    bool contains(int x, int y) const {
+    bool contains(qreal x, qreal y) const {
         return (x >= item->x() && x < item->x() + item->width() &&
                 y >= item->y() && y < item->y() + item->height());
     }
@@ -225,6 +225,26 @@ public:
                     foundFirst = true;
             }
         }
+        return 0;
+    }
+
+    // Returns the item before modelIndex, if created.
+    // May return an item marked for removal.
+    FxListItemSG *itemBefore(int modelIndex) const {
+        if (modelIndex < visibleIndex)
+            return 0;
+        int idx = 1;
+        int lastIndex = -1;
+        while (idx < visibleItems.count()) {
+            FxListItemSG *item = visibleItems.at(idx);
+            if (item->index != -1)
+                lastIndex = item->index;
+            if (item->index == modelIndex)
+                return visibleItems.at(idx-1);
+            ++idx;
+        }
+        if (lastIndex == modelIndex-1)
+            return visibleItems.last();
         return 0;
     }
 
@@ -561,7 +581,7 @@ FxListItemSG *QSGListViewPrivate::createItem(int modelIndex)
             QString propValue = model->stringValue(modelIndex, sectionCriteria->property());
             listItem->attached->m_section = sectionCriteria->sectionString(propValue);
             if (modelIndex > 0) {
-                if (FxListItemSG *item = visibleItem(modelIndex-1))
+                if (FxListItemSG *item = itemBefore(modelIndex))
                     listItem->attached->m_prevSection = item->attached->section();
                 else
                     listItem->attached->m_prevSection = sectionAt(modelIndex-1);
@@ -969,18 +989,18 @@ void QSGListViewPrivate::updateSections()
         QSGListViewAttached *prevAtt = 0;
         int idx = -1;
         for (int i = 0; i < visibleItems.count(); ++i) {
+            QSGListViewAttached *attached = visibleItems.at(i)->attached;
+            attached->setPrevSection(prevSection);
             if (visibleItems.at(i)->index != -1) {
-                QSGListViewAttached *attached = visibleItems.at(i)->attached;
-                attached->setPrevSection(prevSection);
                 QString propValue = model->stringValue(visibleItems.at(i)->index, sectionCriteria->property());
                 attached->setSection(sectionCriteria->sectionString(propValue));
-                if (prevAtt)
-                    prevAtt->setNextSection(attached->section());
-                createSection(visibleItems.at(i));
-                prevSection = attached->section();
-                prevAtt = attached;
                 idx = visibleItems.at(i)->index;
             }
+            createSection(visibleItems.at(i));
+            if (prevAtt)
+                prevAtt->setNextSection(attached->section());
+            prevSection = attached->section();
+            prevAtt = attached;
         }
         if (prevAtt) {
             if (idx > 0 && idx < model->count()-1)
@@ -2226,7 +2246,7 @@ void QSGListView::positionViewAtEnd()
     d->positionViewAtIndex(d->model->count(), End);
 }
 
-int QSGListView::indexAt(int x, int y) const
+int QSGListView::indexAt(qreal x, qreal y) const
 {
     Q_D(const QSGListView);
     for (int i = 0; i < d->visibleItems.count(); ++i) {
@@ -2591,6 +2611,7 @@ void QSGListView::destroyRemoved()
     }
 
     // Correct the positioning of the items
+    d->updateSections();
     d->layout();
 }
 

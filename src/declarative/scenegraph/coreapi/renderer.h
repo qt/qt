@@ -180,6 +180,7 @@ private:
 
     bool m_changed_emitted;
     bool m_mirrored;
+    bool m_is_rendering;
 
     const Bindable *m_bindable;
 };

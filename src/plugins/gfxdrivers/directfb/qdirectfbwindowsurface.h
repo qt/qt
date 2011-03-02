@@ -100,7 +100,6 @@ private:
     void updateIsOpaque();
     void setOpaque(bool opaque);
     void releaseSurface();
-    QDirectFBWindowSurface *sibling;
 
 #ifdef QT_DIRECTFB_WM
     void createWindow(const QRect &rect);

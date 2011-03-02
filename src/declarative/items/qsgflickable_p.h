@@ -1,4 +1,4 @@
-// Commit: ebd4bc73c46c2962742a682b6a391fb68c482aec
+// Commit: 1bcddaaf318fc37c71c5191913f3487c49444ec6
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -205,6 +205,7 @@ protected:
     virtual void viewportMoved();
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
+    void mouseUngrabEvent();
     bool sendMouseEvent(QGraphicsSceneMouseEvent *event);
 
     bool xflick() const;

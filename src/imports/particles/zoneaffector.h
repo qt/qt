@@ -6,53 +6,67 @@ class ZoneAffector : public ParticleAffector
 {
     Q_OBJECT
     //TODO: Can we get anchors in here? consider becoming an un-parented QSGItem?
-    Q_PROPERTY(int x READ x WRITE setX NOTIFY xChanged);
-    Q_PROPERTY(int y READ y WRITE setY NOTIFY yChanged);
-    Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged);
-    Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged);
-    Q_PROPERTY(ParticleAffector* affector READ affector)
+    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged);
+    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged);
+    Q_PROPERTY(qreal width READ width WRITE setWidth NOTIFY widthChanged);
+    Q_PROPERTY(qreal height READ height WRITE setHeight NOTIFY heightChanged);
+    Q_PROPERTY(ParticleAffector* affector READ affector WRITE affector NOTIFY affectorChanged)
+    Q_CLASSINFO("DefaultProperty", "affector")
 public:
     explicit ZoneAffector(QObject *parent = 0);
 
     virtual bool affect(ParticleData *d, qreal dt);
-    int x() const
-    {
-        return m_x;
-    }
-
-    int y() const
-    {
-        return m_y;
-    }
-
-    int width() const
-    {
-        return m_width;
-    }
-
-    int height() const
-    {
-        return m_height;
-    }
 
     ParticleAffector* affector() const
     {
         return m_affector;
     }
 
+    qreal x() const
+    {
+        return m_x;
+    }
+
+    qreal y() const
+    {
+        return m_y;
+    }
+
+    qreal width() const
+    {
+        return m_width;
+    }
+
+    qreal height() const
+    {
+        return m_height;
+    }
+
 signals:
 
-    void xChanged(int arg);
 
-    void yChanged(int arg);
+    void affectorChanged(ParticleAffector* arg);
 
-    void widthChanged(int arg);
+    void xChanged(qreal arg);
 
-    void heightChanged(int arg);
+    void yChanged(qreal arg);
+
+    void widthChanged(qreal arg);
+
+    void heightChanged(qreal arg);
 
 public slots:
 
-void setX(int arg)
+
+void affector(ParticleAffector* arg)
+{
+    if (m_affector != arg) {
+        m_affector = arg;
+        emit affectorChanged(arg);
+    }
+}
+
+void setX(qreal arg)
 {
     if (m_x != arg) {
         m_x = arg;
@@ -60,7 +74,7 @@ void setX(int arg)
     }
 }
 
-void setY(int arg)
+void setY(qreal arg)
 {
     if (m_y != arg) {
         m_y = arg;
@@ -68,7 +82,7 @@ void setY(int arg)
     }
 }
 
-void setWidth(int arg)
+void setWidth(qreal arg)
 {
     if (m_width != arg) {
         m_width = arg;
@@ -76,7 +90,7 @@ void setWidth(int arg)
     }
 }
 
-void setHeight(int arg)
+void setHeight(qreal arg)
 {
     if (m_height != arg) {
         m_height = arg;
@@ -85,10 +99,10 @@ void setHeight(int arg)
 }
 
 private:
-int m_x;
-int m_y;
-int m_width;
-int m_height;
+qreal m_x;
+qreal m_y;
+qreal m_width;
+qreal m_height;
 ParticleAffector* m_affector;
 };
 

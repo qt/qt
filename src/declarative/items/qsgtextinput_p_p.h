@@ -1,4 +1,4 @@
-// Commit: 32b68e009da38a2c85ceacce72c919606331522c
+// Commit: 521a9bba59fe198ec7b1afe9bb25a9d3334675cf
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -102,6 +102,7 @@ public:
     void startCreatingCursor();
     void updateHorizontalScroll();
     int calculateTextWidth();
+    bool sendMouseEventToInputContext(QGraphicsSceneMouseEvent *event, QEvent::Type eventType);
 
     QLineControl* control;
 
