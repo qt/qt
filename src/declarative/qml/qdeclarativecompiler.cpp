@@ -323,16 +323,20 @@ bool QDeclarativeCompiler::testLiteralAssignment(const QMetaProperty &prop,
 void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
                                        QDeclarativeParser::Value *v)
 {
-    QString string = v->value.asString();
-
     QDeclarativeInstruction instr;
     instr.line = v->location.start.line;
     if (prop.isEnumType()) {
         int value;
-        if (prop.isFlagType()) {
-            value = prop.enumerator().keysToValue(string.toUtf8().constData());
-        } else
-            value = prop.enumerator().keyToValue(string.toUtf8().constData());
+        if (v->value.isNumber()) {
+            // Preresolved enum
+            value = (int)v->value.asNumber();
+        } else {
+            // Must be a string
+            if (prop.isFlagType()) {
+                value = prop.enumerator().keysToValue(v->value.asString().toUtf8().constData());
+            } else
+                value = prop.enumerator().keyToValue(v->value.asString().toUtf8().constData());
+        }
 
         instr.type = QDeclarativeInstruction::StoreInteger;
         instr.storeInteger.propertyIndex = prop.propertyIndex();
@@ -340,6 +344,8 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
         output->bytecode << instr;
         return;
     }
+
+    QString string = v->value.asString();
 
     int type = prop.userType();
     switch(type) {
@@ -2221,20 +2227,35 @@ bool QDeclarativeCompiler::testQualifiedEnumAssignment(const QMetaProperty &prop
             objTypeName = objType->qmlTypeName();
     }
 
-    if (!type || objTypeName != type->qmlTypeName())
+    if (!type)
         return true;
 
     QString enumValue = parts.at(1);
-    int value;
-    if (prop.isFlagType()) {
-        value = prop.enumerator().keysToValue(enumValue.toUtf8().constData());
-    } else
-        value = prop.enumerator().keyToValue(enumValue.toUtf8().constData());
+    int value = -1;
+
+    if (objTypeName == type->qmlTypeName()) {
+        // When these two match, we can short cut the search
+        if (prop.isFlagType()) {
+            value = prop.enumerator().keysToValue(enumValue.toUtf8().constData());
+        } else {
+            value = prop.enumerator().keyToValue(enumValue.toUtf8().constData());
+        }
+    } else {
+        // Otherwise we have to search the whole type
+        // This matches the logic in QDeclarativeTypeNameScriptClass
+        QByteArray enumName = enumValue.toUtf8();
+        const QMetaObject *metaObject = type->baseMetaObject();
+        for (int ii = metaObject->enumeratorCount() - 1; value == -1 && ii >= 0; --ii) {
+            QMetaEnum e = metaObject->enumerator(ii);
+            value = e.keyToValue(enumName.constData());
+        }
+    }
+
     if (value == -1)
         return true;
 
     v->type = Value::Literal;
-    v->value = QDeclarativeParser::Variant(enumValue);
+    v->value = QDeclarativeParser::Variant((double)value);
     *isAssignment = true;
 
     return true;
