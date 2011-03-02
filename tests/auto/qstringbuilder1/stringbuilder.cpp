@@ -40,9 +40,13 @@
 ****************************************************************************/
 
 #define LITERAL "some literal"
+#define LITERAL_LEN (sizeof(LITERAL)-1)
+#define LITERAL_EXTRA "some literal" "EXTRA"
 
 // "some literal", but replacing all vocals by their umlauted UTF-8 string :)
 #define UTF8_LITERAL "s\xc3\xb6m\xc3\xab l\xc3\xaft\xc3\xabr\xc3\xa4l"
+#define UTF8_LITERAL_LEN (sizeof(UTF8_LITERAL)-1)
+#define UTF8_LITERAL_EXTRA "s\xc3\xb6m\xc3\xab l\xc3\xaft\xc3\xabr\xc3\xa4l" "EXTRA"
 
 
 //fix for gcc4.0: if the operator+ does not exist without QT_USE_FAST_OPERATOR_PLUS
@@ -65,7 +69,6 @@ void runScenario()
     QLatin1Char achar('c');
     QString r2(QLatin1String(LITERAL LITERAL));
     QString r;
-    QByteArray ba(LITERAL);
 
     r = l1literal Q l1literal;
     QCOMPARE(r, r2);
@@ -86,6 +89,15 @@ void runScenario()
     QCOMPARE(r, r2);
     r = LITERAL P string;
     QCOMPARE(r, r2);
+
+    QByteArray ba = QByteArray(LITERAL);
+    r = ba P string;
+    QCOMPARE(r, r2);
+    r = string P ba;
+    QCOMPARE(r, r2);
+
+    static const char badata[] = LITERAL_EXTRA;
+    ba = QByteArray::fromRawData(badata, LITERAL_LEN);
     r = ba P string;
     QCOMPARE(r, r2);
     r = string P ba;
@@ -109,6 +121,18 @@ void runScenario()
     QCOMPARE(r, r2);
     r = string P ba;
     QCOMPARE(r, r2);
+
+    ba = QByteArray::fromRawData(UTF8_LITERAL_EXTRA, UTF8_LITERAL_LEN);
+    r = ba P string;
+    QCOMPARE(r, r2);
+    r = string P ba;
+    QCOMPARE(r, r2);
+
+    ba = QByteArray(); // empty
+    r = ba P string;
+    QCOMPARE(r, string);
+    r = string P ba;
+    QCOMPARE(r, string);
 #endif
 
     string = QString::fromLatin1(LITERAL);
