@@ -4,6 +4,7 @@ include(../../qpluginbase.pri)
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
 DEFINES += Q_PLATFORM_WAYLAND
+DEFINES += $$QMAKE_DEFINES_WAYLAND
 
 SOURCES =   main.cpp \
             qwaylandintegration.cpp \
@@ -27,8 +28,9 @@ HEADERS =   qwaylandintegration.h \
             qwaylandeglwindow.h \
             qwaylandshmwindow.h
 
-LIBS += -lwayland-client
-LIBS += -lxkbcommon
+INCLUDEPATH += $$QMAKE_INCDIR_WAYLAND
+LIBS += $$QMAKE_LIBS_WAYLAND
+QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_WAYLAND
 
 contains(QT_CONFIG, opengles2) {
     QT += opengl
@@ -45,12 +47,12 @@ contains(QT_CONFIG, opengles2) {
     DEFINES += QT_WAYLAND_GL_SUPPORT
 }
 
-unix {
+unix:isEmpty(QMAKE_INCDIR_WAYLAND) {
 	CONFIG += link_pkgconfig
 	PKGCONFIG += libdrm
 }
 
-include (../fontdatabases/fontconfig/fontconfig.pri)
+include (../fontdatabases/genericunix/genericunix.pri)
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

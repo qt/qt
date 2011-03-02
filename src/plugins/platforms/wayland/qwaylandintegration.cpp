@@ -47,7 +47,7 @@
 #include "qwaylandshmwindow.h"
 #include "qwaylandeglwindow.h"
 
-#include "qfontconfigdatabase.h"
+#include "qgenericunixfontdatabase.h"
 
 #include <QtGui/QWindowSystemInterface>
 #include <QtGui/QPlatformCursor>
@@ -59,7 +59,7 @@
 #endif
 
 QWaylandIntegration::QWaylandIntegration(bool useOpenGL)
-    : mFontDb(new QFontconfigDatabase())
+    : mFontDb(new QGenericUnixFontDatabase())
     , mDisplay(new QWaylandDisplay())
     , mUseOpenGL(useOpenGL)
 {
