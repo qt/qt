@@ -207,7 +207,7 @@
                 <li><a href="qml-flipable.html">Flipable Element</a> - The Flipable item provides a surface that can be flipped or reflected.</li>
                 <li><a href="qml-focuspanel.html">FocusPanel Element</a> - The FocusPanel item explicitly creates a focus panel.</li>
                 <li><a href="qml-focusscope.html">FocusScope Element</a> - The FocusScope object explicitly creates a focus scope for focus management.</li>
-                <li><a href="qml-gesturearea.html">GestureArea Element</a> - The GestureArea item enables simple gesture handling.</li>
+                <li><a href="qml-pincharea.html">PinchArea Element</a> - The PinchArea item enables simple pinch gesture handling.</li>
                 <li><a href="qml-keynavigation.html">KeyNavigation Element</a> - The KeyNavigation attached property supports key navigation by arrow keys.</li>
                 <li><a href="qml-keys.html">Keys Element</a> - The Keys attached property provides key handling to Items.</li>
                 <li><a href="qml-mousearea.html">MouseArea Element</a> - The MouseArea item enables simple mouse handling.</li>
