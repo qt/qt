@@ -531,7 +531,12 @@ void QScriptValue::setPrototype(const QScriptValue &prototype)
     Q_D(QScriptValue);
     if (!d || !d->isObject())
         return;
-    if (prototype.isValid() && QScriptValuePrivate::getEngine(prototype)
+
+    JSC::JSValue other = d->engine->scriptValueToJSCValue(prototype);
+    if (!other || !(other.isObject() || other.isNull()))
+        return;
+
+    if (QScriptValuePrivate::getEngine(prototype)
         && (QScriptValuePrivate::getEngine(prototype) != d->engine)) {
         qWarning("QScriptValue::setPrototype() failed: "
                  "cannot set a prototype created in "
@@ -539,7 +544,6 @@ void QScriptValue::setPrototype(const QScriptValue &prototype)
         return;
     }
     JSC::JSObject *thisObject = JSC::asObject(d->jscValue);
-    JSC::JSValue other = d->engine->scriptValueToJSCValue(prototype);
 
     // check for cycle
     JSC::JSValue nextPrototypeValue = other;
