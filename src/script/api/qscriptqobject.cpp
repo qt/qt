@@ -41,6 +41,40 @@
 
 QT_BEGIN_NAMESPACE
 
+static inline bool methodNameEquals(const QMetaMethod &method,
+                                    const char *signature, int nameLength)
+{
+    const char *otherSignature = method.signature();
+    return !qstrncmp(otherSignature, signature, nameLength)
+        && (otherSignature[nameLength] == '(');
+}
+
+static inline int methodNameLength(const char *signature)
+{
+    const char *s = signature;
+    while (*s && (*s != '('))
+        ++s;
+    return s - signature;
+}
+
+static v8::Handle<v8::Value> throwAmbiguousError(const QMetaObject *meta, const QByteArray &functionName, const QString &errorString)
+{
+    int nameLength = methodNameLength(functionName);
+    QString string = errorString + QLatin1String(" %1(); candidates were");
+    string = string.arg(QString::fromLatin1(functionName, nameLength));
+
+    for (int index = 0; index < meta->methodCount(); ++index) {
+        QMetaMethod method = meta->method(index);
+        if (!methodNameEquals(method, functionName, nameLength))
+            continue;
+        string += QLatin1String("\n    ");
+        string += QLatin1String(method.signature());
+    }
+    return v8::ThrowException(v8::Exception::TypeError(QScriptConverter::toString(string)));
+}
+
+
+
 // Generic implementation of Qt meta-method invocation.
 // Uses QMetaType and friends to resolve types and convert arguments.
 static v8::Handle<v8::Value> callQtMetaMethod(QScriptEnginePrivate *engine, QObject *qobject,
@@ -51,22 +85,39 @@ static v8::Handle<v8::Value> callQtMetaMethod(QScriptEnginePrivate *engine, QObj
     QList<QByteArray> parameterTypeNames = method.parameterTypes();
 
     if (args.Length() < parameterTypeNames.size()) {
-        // Throw error: too few args.
-        Q_UNIMPLEMENTED();
+        return throwAmbiguousError(meta, method.signature(), QString::fromLatin1("too few arguments in call to"));
     }
 
-    int rtype = QMetaType::type(method.typeName());
-
+    const char *returnTypeName = method.typeName();
+    int rtype = QMetaType::type(returnTypeName);
     QVarLengthArray<QVariant, 10> cppArgs(1 + parameterTypeNames.size());
-    cppArgs[0] = QVariant(rtype, (void *)0);
+    if (rtype > 0) {
+        cppArgs[0] = QVariant(rtype, (void *)0);
+    } else if (*returnTypeName) { //empty is not void*
+        return v8::ThrowException(v8::Exception::TypeError(QScriptConverter::toString(
+            QString::fromLatin1("cannot call %0(): unknown return type `%1' (register the type with qScriptRegisterMetaType())")
+                .arg(QString::fromLatin1(method.signature(), methodNameLength(method.signature())),
+                     QLatin1String(returnTypeName)))));
+    }
 
     // Convert arguments to C++ types.
     for (int i = 0; i < parameterTypeNames.size(); ++i) {
-        int targetType = QMetaType::type(parameterTypeNames.at(i));
-        if (!targetType)
-            Q_UNIMPLEMENTED();
-
         v8::Handle<v8::Value> actual = args[i];
+
+        int targetType = QMetaType::type(parameterTypeNames.at(i));
+        if (!targetType) {
+            QVariant v(QMetaType::QObjectStar, (void *)0);
+            if (engine->convertToNativeQObject(actual, parameterTypeNames.at(i), reinterpret_cast<void* *>(v.data()))) {
+                cppArgs[1+i] = v;
+                continue;
+            }
+
+            return v8::ThrowException(v8::Exception::TypeError(QScriptConverter::toString(
+                QString::fromLatin1("cannot call %0(): argument %1 has unknown type `%2' (register the type with qScriptRegisterMetaType())")
+                    .arg(QString::fromLatin1(method.signature(), methodNameLength(method.signature())),
+                         QString::number(i+1), QLatin1String(parameterTypeNames.at(i))))));
+        }
+
 
         QVariant v(targetType, (void *)0);
         if (engine->metaTypeFromJS(actual, targetType, v.data())) {
@@ -93,8 +144,7 @@ static v8::Handle<v8::Value> callQtMetaMethod(QScriptEnginePrivate *engine, QObj
             }
         }
 
-        Q_UNIMPLEMENTED();
-        //throw TypeError;
+        return throwAmbiguousError(meta, method.signature(), QString::fromLatin1("incompatible type of argument(s) in call to"));
     }
 
     // Prepare void** array for metacall.
@@ -102,28 +152,16 @@ static v8::Handle<v8::Value> callQtMetaMethod(QScriptEnginePrivate *engine, QObj
     void **argvData = argv.data();
     for (int i = 0; i < cppArgs.size(); ++i)
         argvData[i] = const_cast<void *>(cppArgs[i].constData());
+    if (rtype <= 0)
+        argvData[0] = 0;
 
     // Call the C++ method!
     QMetaObject::metacall(qobject, QMetaObject::InvokeMetaMethod, methodIndex, argvData);
 
     // Convert and return result.
+    if (rtype <= 0)
+        return v8::Undefined();
     return engine->metaTypeToJS(rtype, argvData[0]);
-}
-
-static inline bool methodNameEquals(const QMetaMethod &method,
-                                    const char *signature, int nameLength)
-{
-    const char *otherSignature = method.signature();
-    return !qstrncmp(otherSignature, signature, nameLength)
-        && (otherSignature[nameLength] == '(');
-}
-
-static inline int methodNameLength(const char *signature)
-{
-    const char *s = signature;
-    while (*s && (*s != '('))
-        ++s;
-    return s - signature;
 }
 
 static int conversionDistance(QScriptEnginePrivate *engine, v8::Handle<v8::Value> actual, int targetType)
@@ -266,6 +304,8 @@ static int resolveOverloadedQtMetaMethodCall(QScriptEnginePrivate *engine, const
         if (distance < bestDistance) {
             bestIndex = index;
             bestDistance = distance;
+        } else if (distance == bestDistance) {
+            bestIndex = -1; //ambiguous;
         }
     }
     return bestIndex;
@@ -559,9 +599,7 @@ v8::Handle<v8::Value> QScriptGenericMetaMethodData<T, functionTemplate>::call()
         methodIndex = resolveOverloadedQtMetaMethodCall(this->engine, meta, methodIndex, *args);
 
     if (methodIndex < 0) { // Ambiguous call.
-        Q_UNIMPLEMENTED();
-        //TODO: throw error
-        return error;
+        return throwAmbiguousError(meta, meta->method(m_index).signature(), QString::fromLatin1("ambiguous call of overloaded function"));
     }
 
     QScriptEnginePrivate *oldEngine = 0;
