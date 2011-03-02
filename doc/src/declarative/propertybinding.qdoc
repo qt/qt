@@ -78,6 +78,7 @@ overly complex - such as involving multiple lines, or imperative loops - it may 
 to refactor the component entirely, or at least factor the binding out into a separate
 function.
 
+\keyword qml-javascript-assignment
 \section1 Property Assignment versus Property Binding
 
 When working with both QML and JavaScript, it is important to differentiate between

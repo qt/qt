@@ -504,7 +504,7 @@
 
     \qml
     Item {
-        property variant attributes: { ''color': 'red', 'width': 100 }
+        property variant attributes: { 'color': 'red', 'width': 100 }
 
         Component.onCompleted: {
             // Change the value of attributes.color to 'blue':
