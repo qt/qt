@@ -55,6 +55,8 @@ DefaultRectangleNode::DefaultRectangleNode(MaterialPreference preference, QSGCon
     : m_material_preference(preference)
     , m_border(0)
     , m_gradient_texture(0)
+    , m_radius(0)
+    , m_pen_width(0)
     , m_gradient_is_opaque(true)
     , m_dirty_geometry(false)
     , m_dirty_gradienttexture(false)

@@ -675,8 +675,6 @@ QDeclarativeScriptBlob *QDeclarativeTypeLoader::getScript(const QUrl &url)
         scriptBlob = new QDeclarativeScriptBlob(url, this);
         m_scriptCache.insert(url, scriptBlob);
         QDeclarativeDataLoader::load(scriptBlob);
-    } else {
-        scriptBlob->scriptData()->addref();
     }
 
     return scriptBlob;
@@ -1084,8 +1082,6 @@ const QDeclarativeImports &QDeclarativeScriptBlob::imports() const
 
 QDeclarativeScriptData *QDeclarativeScriptBlob::scriptData() const
 {
-    if (m_scriptData)
-        m_scriptData->addref();
     return m_scriptData;
 }
 

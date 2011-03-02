@@ -122,8 +122,44 @@ static QImage renderDistanceField(const QImage &in)
     return df;
 }
 
+uint qHash(const TexCoordCacheKey &key)
+{
+    return (qHash(key.distfield) << 13) | (key.glyph & 0x1FFF);
+}
+
+QHash<QString, DistanceFieldFontAtlas *> DistanceFieldFontAtlas::m_atlases;
+QHash<TexCoordCacheKey, DistanceFieldFontAtlas::TexCoord> DistanceFieldFontAtlas::m_texCoords;
 QHash<QString, bool> DistanceFieldFontAtlas::m_distfield_availability;
 QHash<QString, QSGTextureRef> DistanceFieldFontAtlas::m_textures;
+
+static QString fontKey(const QFont &font)
+{
+    QString key;
+
+    QFontEngine *fontEngine = QFontPrivate::get(font)->engineForScript(QUnicodeTables::Common);
+    if (fontEngine->type() == QFontEngine::Multi) {
+        QFontEngineMulti *fem = static_cast<QFontEngineMulti *>(fontEngine);
+        fontEngine = fem->engine(0);
+    }
+
+    key = fontEngine->fontDef.family;
+    key.remove(QLatin1String(" "));
+    QString italic = font.italic() ? QLatin1String("i") : QLatin1String("");
+    QString bold = font.weight() > QFont::Normal ? QLatin1String("b") : QLatin1String("");
+    key += bold + italic + QString::number(fontEngine->fontDef.pixelSize);
+
+    return key;
+}
+
+DistanceFieldFontAtlas *DistanceFieldFontAtlas::get(const QFont &font)
+{
+    QString key = fontKey(font);
+    QHash<QString, DistanceFieldFontAtlas *>::iterator atlas = m_atlases.find(key);
+    if (atlas == m_atlases.end())
+        atlas = m_atlases.insert(key, new DistanceFieldFontAtlas(font));
+
+    return atlas.value();
+}
 
 DistanceFieldFontAtlas::DistanceFieldFontAtlas(const QFont &font)
 {
@@ -151,6 +187,8 @@ DistanceFieldFontAtlas::DistanceFieldFontAtlas(const QFont &font)
     m_distanceFieldFileName = basename + bold + italic + QLatin1String(".png");
 
     m_glyphCount = m_fontEngine->glyphCount();
+    m_glyphMetricMargin = QT_DISTANCEFIELD_MARGIN / qreal(QT_DISTANCEFIELD_SCALE) * scaleRatioFromRefSize();
+    m_glyphTexMargin = QT_DISTANCEFIELD_MARGIN / qreal(QT_DISTANCEFIELD_SCALE);
 }
 
 bool DistanceFieldFontAtlas::distanceFieldAvailable() const
@@ -183,58 +221,80 @@ QSGTextureRef DistanceFieldFontAtlas::texture()
 
 QSize DistanceFieldFontAtlas::atlasSize() const
 {
-    const int texWidth = QT_DISTANCEFIELD_TEXTURESIZE;
-    const int texHeight = ((glyphCount() * QT_DISTANCEFIELD_TILESIZE) / texWidth + 1) * QT_DISTANCEFIELD_TILESIZE;
-    return QSize(texWidth, texHeight);
+    if (!m_size.isValid()) {
+        const int texWidth = QT_DISTANCEFIELD_TEXTURESIZE;
+        const int texHeight = ((glyphCount() * QT_DISTANCEFIELD_TILESIZE) / texWidth + 1) * QT_DISTANCEFIELD_TILESIZE;
+        m_size = QSize(texWidth, texHeight);
+    }
+    return m_size;
 }
 
-DistanceFieldFontAtlas::Metrics DistanceFieldFontAtlas::glyphMetrics(glyph_t glyph) const
+DistanceFieldFontAtlas::Metrics DistanceFieldFontAtlas::glyphMetrics(glyph_t glyph)
 {
-    Metrics m;
+    QHash<glyph_t, Metrics>::iterator metric = m_metrics.find(glyph);
+    if (metric == m_metrics.end()) {
+        //XXX yoann temporary (and slow) solution to get metrics in float
+        QPainterPath path;
+        QFixedPoint p;
+        m_fontEngine->addGlyphsToPath(&glyph, &p, 1, &path, 0);
 
-    //XXX yoann temporary (and slow) solution to get metrics in float
-    QPainterPath path;
-    QFixedPoint p;
-    m_fontEngine->addGlyphsToPath(&glyph, &p, 1, &path, 0);
+        Metrics m;
+        m.width = path.boundingRect().width();
+        m.height = path.boundingRect().height();
+        m.baselineX = path.boundingRect().x();
+        m.baselineY = -path.boundingRect().y();
 
-    float margin = 0.0;
-    if (scaleRatioFromRefSize() <= QT_DISTANCEFIELD_MARGIN_THRESHOLD)
-        margin = QT_DISTANCEFIELD_MARGIN / qreal(QT_DISTANCEFIELD_SCALE) * scaleRatioFromRefSize();
+        metric = m_metrics.insert(glyph, m);
+    }
 
-    m.width = path.boundingRect().width() + margin * 2;
-    m.height = path.boundingRect().height() + margin * 2;
-    m.baselineX = path.boundingRect().x() - margin;
-    m.baselineY = -path.boundingRect().y() + margin;
+    if (scaleRatioFromRefSize() <= QT_DISTANCEFIELD_MARGIN_THRESHOLD) {
+        Metrics m = metric.value();
+        m.width += m_glyphMetricMargin * 2;
+        m.height += m_glyphMetricMargin * 2;
+        m.baselineX -= m_glyphMetricMargin;
+        m.baselineY += m_glyphMetricMargin;
+        return m;
+    }
 
-    return m;
+    return metric.value();
 }
 
-DistanceFieldFontAtlas::TexCoord DistanceFieldFontAtlas::glyphTexCoord(glyph_t glyph) const
+DistanceFieldFontAtlas::TexCoord DistanceFieldFontAtlas::glyphTexCoord(glyph_t glyph)
 {
     if (glyph >= glyphCount())
         qWarning("Warning: distance-field glyph is not available with index %d", glyph);
 
-    TexCoord c;
+    TexCoordCacheKey key(distanceFieldFileName(), glyph);
+    QHash<TexCoordCacheKey, TexCoord>::iterator texCoord = m_texCoords.find(key);
+    if (texCoord == m_texCoords.end()) {
+        const QSize texSize = atlasSize();
 
-    const QSize texSize = atlasSize();
+        //XXX yoann temporary (and slow) solution to get metrics in float
+        QPainterPath path;
+        QFixedPoint p;
+        m_referenceFontEngine->addGlyphsToPath(&glyph, &p, 1, &path, 0);
 
-    //XXX yoann temporary (and slow) solution to get metrics in float
-    QPainterPath path;
-    QFixedPoint p;
-    m_referenceFontEngine->addGlyphsToPath(&glyph, &p, 1, &path, 0);
+        TexCoord c;
+        c.xMargin = QT_DISTANCEFIELD_RADIUS / qreal(QT_DISTANCEFIELD_SCALE) / texSize.width();
+        c.yMargin = QT_DISTANCEFIELD_RADIUS / qreal(QT_DISTANCEFIELD_SCALE) / texSize.height();
+        c.x = ((glyph * QT_DISTANCEFIELD_TILESIZE) % texSize.width()) / qreal(texSize.width());
+        c.y = ((glyph * QT_DISTANCEFIELD_TILESIZE) / texSize.width()) * QT_DISTANCEFIELD_TILESIZE / qreal(texSize.height());
+        c.width = path.boundingRect().width() / qreal(texSize.width());
+        c.height = path.boundingRect().height() / qreal(texSize.height());
 
-    float margin = 0.0;
-    if (scaleRatioFromRefSize() <= QT_DISTANCEFIELD_MARGIN_THRESHOLD)
-        margin = QT_DISTANCEFIELD_MARGIN / qreal(QT_DISTANCEFIELD_SCALE);
+        texCoord = m_texCoords.insert(key, c);
+    }
 
-    c.xMargin = (QT_DISTANCEFIELD_RADIUS / qreal(QT_DISTANCEFIELD_SCALE) - margin) / texSize.width();
-    c.yMargin = (QT_DISTANCEFIELD_RADIUS / qreal(QT_DISTANCEFIELD_SCALE) - margin) / texSize.height();
-    c.x = ((glyph * QT_DISTANCEFIELD_TILESIZE) % texSize.width()) / qreal(texSize.width());
-    c.y = ((glyph * QT_DISTANCEFIELD_TILESIZE) / texSize.width()) * QT_DISTANCEFIELD_TILESIZE / qreal(texSize.height());
-    c.width = (path.boundingRect().width() + margin * 2) / qreal(texSize.width());
-    c.height = (path.boundingRect().height() + margin * 2) / qreal(texSize.height());
+    if (scaleRatioFromRefSize() <= QT_DISTANCEFIELD_MARGIN_THRESHOLD) {
+        TexCoord c = texCoord.value();
+        c.xMargin -= m_glyphTexMargin / atlasSize().width();
+        c.yMargin -= m_glyphTexMargin / atlasSize().height();
+        c.width += (m_glyphTexMargin * 2) / qreal(atlasSize().width());
+        c.height += (m_glyphTexMargin * 2) / qreal(atlasSize().height());
+        return c;
+    }
 
-    return c;
+    return texCoord.value();
 }
 
 QImage DistanceFieldFontAtlas::renderDistanceFieldGlyph(glyph_t glyph) const
@@ -289,9 +349,8 @@ QImage DistanceFieldFontAtlas::distanceFieldAtlas() const
 bool DistanceFieldFontAtlas::useDistanceFieldForFont(const QFont &font)
 {
     static QStringList args = qApp->arguments();
-    if (args.contains("--distancefield-text")) {
-        DistanceFieldFontAtlas a(font);
-        return a.distanceFieldAvailable();
+    if (args.contains(QLatin1String("--distancefield-text"))) {
+        return DistanceFieldFontAtlas::get(font)->distanceFieldAvailable();
     }
     return false;
 }
@@ -346,7 +405,7 @@ QSGTextureRef DistanceFieldFontAtlas::uploadDistanceField(const QImage &image)
 
 QString DistanceFieldFontAtlas::distanceFieldDir() const
 {
-    QString distfieldpath = QString::fromLocal8Bit(qgetenv("QT_QML_DISTFIELDDIR"));
+    static QString distfieldpath = QString::fromLocal8Bit(qgetenv("QT_QML_DISTFIELDDIR"));
     if (distfieldpath.isEmpty()) {
 #ifndef QT_NO_SETTINGS
         distfieldpath = QLibraryInfo::location(QLibraryInfo::LibrariesPath);

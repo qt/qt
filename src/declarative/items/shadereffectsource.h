@@ -50,7 +50,7 @@
 #include "qsize.h"
 #include "qrect.h"
 
-//#define QML_SUBTREE_DEBUG
+#define QSG_DEBUG_FBO_OVERLAY
 
 QT_BEGIN_HEADER
 
@@ -101,7 +101,7 @@ private:
     QGLFramebufferObject *m_fbo;
     QSGTextureRef m_texture;
 
-#ifdef QML_SUBTREE_DEBUG
+#ifdef QSG_DEBUG_FBO_OVERLAY
     RectangleNodeInterface *m_debugOverlay;
 #endif
 

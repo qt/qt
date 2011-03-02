@@ -143,7 +143,9 @@ public:
     QAnimationDriver(QObject *parent = 0);
 
     void advance();
+
     void install();
+    void uninstall();
 
     bool isRunning() const;
 

@@ -85,11 +85,19 @@ have a scope focused item), and the other items will have their focus cleared.
 // #define DIRTY_DEBUG
 // #define THREAD_DEBUG
 
+// #define FRAME_TIMING
+
+#ifdef FRAME_TIMING
+static QTime frameTimer;
+int sceneGraphRenderTime;
+#endif
+
+
 class QSGAnimationDriver : public QAnimationDriver
 {
 public:
-    QSGAnimationDriver(QWidget *w)
-        : widget(w)
+    QSGAnimationDriver(QWidget *w, QObject *parent)
+        : QAnimationDriver(parent), widget(w)
     {
         Q_ASSERT(w);
     }
@@ -111,8 +119,8 @@ QSGRootItem::QSGRootItem()
 {
 }
 
-QSGThreadedRendererAnimationDriver::QSGThreadedRendererAnimationDriver(QSGCanvasPrivate *r)
-    : QAnimationDriver(0)
+QSGThreadedRendererAnimationDriver::QSGThreadedRendererAnimationDriver(QSGCanvasPrivate *r, QObject *parent)
+    : QAnimationDriver(parent)
     , renderer(r)
 {
 }
@@ -141,14 +149,21 @@ void QSGThreadedRendererAnimationDriver::stopped()
     renderer->mutex.unlock();
 }
 
-
 void QSGCanvas::paintEvent(QPaintEvent *)
 {
     Q_D(QSGCanvas);
 
     if (!d->threadedRendering) {
+#ifdef FRAME_TIMING
+        int lastFrame = frameTimer.restart();
+#endif
+
         if (d->animationDriver->isRunning())
             d->animationDriver->advance();
+
+#ifdef FRAME_TIMING
+        int animationTime = frameTimer.elapsed();
+#endif
 
         Q_ASSERT(d->context);
 
@@ -157,9 +172,34 @@ void QSGCanvas::paintEvent(QPaintEvent *)
         QDeclarativeDebugTrace::addEvent(QDeclarativeDebugTrace::FramePaint);
         QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Painting);
 
+#ifdef FRAME_TIMING
+        int polishTime = frameTimer.elapsed();
+#endif
+
         makeCurrent();
+
+#ifdef FRAME_TIMING
+        int makecurrentTime = frameTimer.elapsed();
+#endif
+
         d->syncSceneGraph();
+
+#ifdef FRAME_TIMING
+        int syncTime = frameTimer.elapsed();
+#endif
+
         d->renderSceneGraph();
+
+#ifdef FRAME_TIMING
+        printf("FrameTimes, last=%d, animations=%d, polish=%d, makeCurrent=%d, sync=%d, sgrender=%d, total=%d\n",
+               lastFrame,
+               animationTime,
+               polishTime - animationTime,
+               makecurrentTime - polishTime,
+               syncTime - makecurrentTime,
+               sceneGraphRenderTime - syncTime,
+               frameTimer.elapsed());
+#endif
 
         QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Painting);
 
@@ -192,7 +232,8 @@ void QSGCanvas::showEvent(QShowEvent *e)
     if (d->threadedRendering) {
         d->contextInThread = true;
         doneCurrent();
-        d->animationDriver = new QSGThreadedRendererAnimationDriver(d);
+        if (!d->animationDriver)
+            d->animationDriver = new QSGThreadedRendererAnimationDriver(d, this);
         d->animationDriver->install();
         d->mutex.lock();
         d->thread->start();
@@ -203,10 +244,10 @@ void QSGCanvas::showEvent(QShowEvent *e)
 
         if (!d->context) {
             d->initializeSceneGraph();
-            d->animationDriver = new QSGAnimationDriver(this);
-            if (d->animationDriver)
-                d->animationDriver->install();
+            d->animationDriver = new QSGAnimationDriver(this, this);
         }
+
+        d->animationDriver->install();
     }
 }
 
@@ -223,6 +264,8 @@ void QSGCanvas::hideEvent(QHideEvent *e)
         d->mutex.unlock();
         d->thread->wait();
     }
+
+    d->animationDriver->uninstall();
 
     QGLWidget::hideEvent(e);
 }
@@ -278,6 +321,11 @@ void QSGCanvasPrivate::renderSceneGraph()
 
     context->renderNextFrame();
 
+
+#ifdef FRAME_TIMING
+    sceneGraphRenderTime = frameTimer.elapsed();
+#endif
+
     glctx->swapBuffers();
 }
 
@@ -326,8 +374,12 @@ void QSGCanvasPrivate::runThread()
         QCoreApplication::postEvent(q, new QEvent(QEvent::User));
         wait.wait(&mutex);
 
-        if (exitThread)
+        if (exitThread) {
+#ifdef THREAD_DEBUG
+            qWarning("QSGRenderer: Render Thread: Shutting down...");
+#endif
             break;
+        }
 
 #ifdef THREAD_DEBUG
         qWarning("QSGRenderer: Render Thread: Main thread has stopped, syncing scene");
@@ -378,6 +430,10 @@ void QSGCanvasPrivate::runThread()
 
     }
 
+
+#ifdef THREAD_DEBUG
+    qWarning("QSGRenderer: Render Thread: shutting down, waking up main thread");
+#endif
     wait.wakeOne();
     mutex.unlock();
 
@@ -900,7 +956,12 @@ bool QSGCanvas::event(QEvent *e)
         d->renderThreadAwakened = false;
 
         d->wait.wakeOne();
-        d->wait.wait(&d->mutex);
+
+        // The thread is exited when the widget has been hidden. We then need to
+        // skip the waiting, otherwise we would be waiting for a wakeup that never
+        // comes.
+        if (d->thread->isRunning())
+            d->wait.wait(&d->mutex);
 #ifdef THREAD_DEBUG
         qWarning("QSGRenderer: Main Thread: Resumed");
 #endif

@@ -57,7 +57,6 @@ DistanceFieldGlyphNode::DistanceFieldGlyphNode()
 DistanceFieldGlyphNode::~DistanceFieldGlyphNode()
 {
     delete m_material;
-    delete m_glyph_atlas;
 }
 
 void DistanceFieldGlyphNode::setColor(const QColor &color)
@@ -148,8 +147,7 @@ void DistanceFieldGlyphNode::updateGeometry()
 
 void DistanceFieldGlyphNode::updateFont()
 {
-    delete m_glyph_atlas;
-    m_glyph_atlas = new DistanceFieldFontAtlas(m_glyphs.font());
+    m_glyph_atlas = DistanceFieldFontAtlas::get(m_glyphs.font());
 
     QSGTextureRef texture = m_glyph_atlas->texture();
     if (texture.isNull()) {
