@@ -287,15 +287,15 @@ bool QTcpServer::listen(const QHostAddress &address, quint16 port)
 
     delete d->socketEngine;
     d->socketEngine = QAbstractSocketEngine::createSocketEngine(QAbstractSocket::TcpSocket, proxy, this);
-#ifndef QT_NO_BEARERMANAGEMENT
-    //copy network session down to the socket engine (if it has been set)
-    d->socketEngine->setProperty("_q_networksession", property("_q_networksession"));
-#endif
     if (!d->socketEngine) {
         d->serverSocketError = QAbstractSocket::UnsupportedSocketOperationError;
         d->serverSocketErrorString = tr("Operation on socket is not supported");
         return false;
     }
+#ifndef QT_NO_BEARERMANAGEMENT
+    //copy network session down to the socket engine (if it has been set)
+    d->socketEngine->setProperty("_q_networksession", property("_q_networksession"));
+#endif
     if (!d->socketEngine->initialize(QAbstractSocket::TcpSocket, proto)) {
         d->serverSocketError = d->socketEngine->error();
         d->serverSocketErrorString = d->socketEngine->errorString();
