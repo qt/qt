@@ -117,7 +117,7 @@ inline QObject *QScriptQObjectData::cppObject(v8::Local<v8::Value> *error) const
         // But because of the v8 bug, tryCatch in QSVP doesn't catch the error and obtain as a result
         // an empty handler.
         // v8::ThrowException(err);
-        v8::Local<v8::Value> err = v8::Exception::Error(msg);
+        v8::Local<v8::Value> err = v8::Exception::TypeError(msg);
         engine()->setException(err);
         if (error) {
             *error = err;

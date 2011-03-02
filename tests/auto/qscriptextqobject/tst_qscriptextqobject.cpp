@@ -2102,7 +2102,6 @@ void tst_QScriptExtQObject::connectAndDisconnect_senderWrapperCollected()
     m_engine->collectGarbage();
     m_myObject->resetQtFunctionInvoked();
     m_myObject->emitMySignal();
-    QEXPECT_FAIL("object-js3", "The connection is garbage collected in v8 and was not in jsc", Continue);  //Investigate if this is because the garbage collection in JSC was not complete.
     QCOMPARE(m_myObject->qtFunctionInvoked(), (shouldPersist ? 20 : -1));
 }
 
@@ -3419,7 +3418,7 @@ void tst_QScriptExtQObject::objectDeleted()
     {
         QScriptValue ret = eng.evaluate("o.myInvokable()");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QLatin1String("TypeError: Property 'myInvokable' of object #<error> is not a function"));
+        QVERIFY(ret.toString().startsWith("TypeError:"));
     }
     {
         QScriptValue ret = eng.evaluate("o.myInvokableWithIntArg(10)");
