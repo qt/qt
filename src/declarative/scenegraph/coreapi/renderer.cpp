@@ -80,7 +80,6 @@ BindableFbo::BindableFbo(QGLContext *ctx, QGLFramebufferObject *fbo) : m_ctx(ctx
 
 void BindableFbo::bind() const
 {
-    m_ctx->makeCurrent();
     m_fbo->bind();
 }
 
@@ -185,7 +184,7 @@ void Renderer::renderScene()
     {
     public:
         B() : m_ctx(const_cast<QGLContext *>(QGLContext::currentContext())) { }
-        void bind() const { m_ctx->makeCurrent(); QGLFramebufferObject::bindDefault(); }
+        void bind() const { QGLFramebufferObject::bindDefault(); }
     private:
         QGLContext *m_ctx;
     } b;
