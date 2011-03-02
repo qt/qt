@@ -563,7 +563,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         QLocale::Language lang;
         QLocale::Script script;
         QLocale::Country cntry;
-        getLangAndCountry(locale, lang, script, cntry);
+        QLocalePrivate::getLangAndCountry(locale, lang, script, cntry);
         if (type == LanguageId)
             return lang;
         if (cntry == QLocale::AnyCountry)
