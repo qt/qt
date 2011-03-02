@@ -1392,7 +1392,6 @@ void tst_QScriptExtQObject::callQtInvokable2()
 
 void tst_QScriptExtQObject::callQtInvokable3()
 {
-    QSKIP("Crashes on V8 back-end", SkipAll);
     {
         QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithVectorOfIntArg(myObject.myInvokableReturningVectorOfInt())");
         QCOMPARE(ret.isUndefined(), true);
