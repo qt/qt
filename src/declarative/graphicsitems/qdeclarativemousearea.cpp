@@ -315,7 +315,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
 
-    \sa onCanceled()
+    \sa onCanceled
 */
 
 /*!

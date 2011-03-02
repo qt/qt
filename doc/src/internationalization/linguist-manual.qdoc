@@ -29,6 +29,7 @@
     \page linguist-manual.html
     \title Qt Linguist Manual
     \ingroup qttools
+    \ingroup internationalization
 
     \startpage {index.html}{Qt Reference Documentation}
     \nextpage Qt Linguist Manual: Release Manager
@@ -144,6 +145,7 @@
 /*!
     \page linguist-manager.html
     \title Qt Linguist Manual: Release Manager
+    \ingroup internationalization
 
     \contentspage {Qt Linguist Manual}{Contents}
     \previouspage Qt Linguist Manual
@@ -286,6 +288,7 @@
 /*!
     \page linguist-translators.html
     \title Qt Linguist Manual: Translators
+    \ingroup internationalization
 
     \contentspage {Qt Linguist Manual}{Contents}
     \previouspage Qt Linguist Manual: Release Manager
@@ -1217,6 +1220,7 @@
 /*!
     \page linguist-programmers.html
     \title Qt Linguist Manual: Programmers
+    \ingroup internationalization
 
     \contentspage {Qt Linguist Manual}{Contents}
     \previouspage Qt Linguist Manual: Translators
@@ -1504,6 +1508,7 @@
 /*!
     \page linguist-ts-file-format.html
     \title Qt Linguist Manual: TS File Format
+    \ingroup internationalization
 
     \contentspage {Qt Linguist Manual}{Contents}
     \previouspage Qt Linguist Manual: Programmers

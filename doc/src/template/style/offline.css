@@ -143,13 +143,13 @@
     {
         border-left: 1px solid #E6E6E6;
         background-color: #F6F6F6;
-        color: #66666E;
+        color: black;
     }
     table tr.even
     {
         border-left: 1px solid #E6E6E6;
         background-color: #ffffff;
-        color: #66666E;
+        color: #202020;
     }
 
     div.float-left

@@ -51,14 +51,9 @@ In addition, Qt's official code style may be found at the \l {Qt Coding Style}.
 To import items such as directories, use the "import" keyword, similar to
 the way the \c {import QtQuick 1.0} statement is used.
 
-\qml
-import QtQuick 1.0
-import QtWebKit 1.0
-import "subdirectory"
-import "script.js"
-\endqml
+\snippet doc/src/snippets/declarative/imports/best-practices.qml imports
 
-To facilitate the importation of QML components, it is best to begin the QML
+To facilitate the import of QML components, it is best to begin the QML
 file with an uppercase character. This way, the user can simply declare the
 component using the file name as the component name. For example, if a QML
 component is in a file named \c Button.qml, then the user may import the
@@ -99,5 +94,4 @@ same group.
 Treating groups of properties as a block can ease confusion and help relate the
 properties with other properties.
 \snippet doc/src/snippets/declarative/bestpractices/group.qml grouped
-
 */
