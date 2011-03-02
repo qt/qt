@@ -4,6 +4,8 @@
 #include <QPainter>
 #include <QSet>
 
+#include <QSGTextureManager>
+
 SpriteEngine::SpriteEngine(QObject *parent) :
     QObject(parent), m_timeOffset(0)
 {
@@ -32,6 +34,7 @@ QImage SpriteEngine::assembledImage()
     int frameHeight = 0;
     int frameWidth = 0;
     m_maxFrames = 0;
+    int maxSize = QSGTextureManager().maxTextureSize();
 
     foreach(SpriteState* state, m_states){
         if(state->frames() > m_maxFrames)
@@ -51,6 +54,10 @@ QImage SpriteEngine::assembledImage()
         }else{
             frameWidth = img.width() / state->frames();
         }
+        if(img.width() > maxSize){
+            qWarning() << "SpriteEngine: Animation too wide..." << state->source().toLocalFile();
+            return QImage();
+        }
 
         if(frameHeight){
             if(img.height()!=frameHeight){
@@ -59,6 +66,11 @@ QImage SpriteEngine::assembledImage()
             }
         }else{
             frameHeight = img.height();
+        }
+
+        if(img.height() > maxSize){
+            qWarning() << "SpriteEngine: Animation too tall..." << state->source().toLocalFile();
+            return QImage();
         }
     }
 
@@ -70,6 +82,11 @@ QImage SpriteEngine::assembledImage()
         QImage img(state->source().toLocalFile());
         p.drawImage(0,y,img);
         y += frameHeight;
+    }
+
+    if(image.height() > maxSize){
+        qWarning() << "SpriteEngine: Too many animations to fit in one texture...";
+        return QImage();
     }
     return image;
 }
