@@ -109,7 +109,22 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(const QSt
 {
     v8::TryCatch tryCatch;
     v8::ScriptOrigin scriptOrigin(QScriptConverter::toString(fileName), v8::Integer::New(lineNumber - 1));
-    v8::Handle<v8::Script> script = v8::Script::CompileEval(QScriptConverter::toString(program), &scriptOrigin);
+    v8::Handle<v8::Script> script;
+    // This is a risk management problem. CompileEval function is our extension to V8, so it introduces
+    // constant risk that it is or will be broken. It is safer to use the standard function instead.
+    // Of course it doesn't mean that we shouldn't fix problems in CompileEval, we want to reduce
+    // potential bug impact.
+    // FIXME: CompileEval introduces instability in V8 debugger which affects QSEAgent. This check
+    // may be removed for testing QSEA to test other code paths.
+    // http://bugreports.qt.nokia.com/browse/QTBUG-17878
+    if (m_baseQsContext.data() == m_currentQsContext // no pushContext
+            && m_currentQsContext->scopes.empty()    // no pushScope
+            && globalObject()->StrictEquals(static_cast<v8::Local<v8::Object> >(m_originalGlobalObject)->GetPrototype()) // no setGlobalObject
+            ) {
+        script = v8::Script::Compile(QScriptConverter::toString(program), &scriptOrigin);
+    } else {
+        script = v8::Script::CompileEval(QScriptConverter::toString(program), &scriptOrigin);
+    }
     if (script.IsEmpty()) {
         // TODO: Why don't we get the exception, as with Script::Compile()?
         // Q_ASSERT(tryCatch.HasCaught());

@@ -57,6 +57,7 @@ public:
     inline void installArgFunctionOnOrgStringPrototype(v8::Handle<v8::Function> arg);
     inline void defineGetterOrSetter(v8::Handle< v8::Object > recv, v8::Handle< v8::String > prototypeName, v8::Handle< v8::Value > value, uint attribs) const;
     inline v8::Local<v8::Object> getOwnPropertyDescriptor(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const;
+    inline operator v8::Local<v8::Object>();
 private:
     Q_DISABLE_COPY(QScriptOriginalGlobalObject)
     inline void initializeMember(v8::Handle<v8::String> prototypeName, v8::Handle<v8::Value> type, v8::Persistent<v8::Object>& constructor, v8::Persistent<v8::Value>& prototype);
@@ -239,6 +240,10 @@ void QScriptOriginalGlobalObject::defineGetterOrSetter(v8::Handle<v8::Object> re
         m_defineSetter->Call(recv, 2, argv);
 }
 
+inline QScriptOriginalGlobalObject::operator v8::Local<v8::Object>()
+{
+    return v8::Local<v8::Object>::New(m_globalObject);
+}
 
 QT_END_NAMESPACE
 
