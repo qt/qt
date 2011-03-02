@@ -1045,7 +1045,9 @@ static v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property
             QString childName = child->objectName();
             if (childName == QString::fromLatin1(name)) {
                 v8::Handle<v8::Value> result = engine->newQObject(child);
-                self->Set(property, result, v8::PropertyAttribute(v8::DontEnum | v8::DontDelete));
+                //TODO: We could set the property, but then we should also make sure it goes away when the object is destroyed.
+                //  and we should not hide the dynamic properties
+                //self->Set(property, result, v8::PropertyAttribute(v8::DontEnum | v8::DontDelete));
                 return result;
             }
         }
