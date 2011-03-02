@@ -2328,8 +2328,7 @@ void tst_QScriptValue::getSetPrototype_invalidPrototype()
     inv.setPrototype(object);
     QCOMPARE(inv.prototype().isValid(), false);
     object.setPrototype(inv);
-    // FIXME should it be invalid or proto?
-    QVERIFY(object.prototype().strictlyEquals(inv));
+    QVERIFY(object.prototype().strictlyEquals(proto));
 }
 
 void tst_QScriptValue::getSetPrototype_twoEngines()
@@ -2366,8 +2365,6 @@ void tst_QScriptValue::getSetPrototype_notObjectOrNull()
     QScriptEngine eng;
     QScriptValue object = eng.newObject();
     QScriptValue originalProto = object.prototype();
-
-    QEXPECT_FAIL("", "QTBUG-15154: QScriptValue::setPrototype() allows a non-Object value to be set as prototype", Abort);
 
     // bool
     object.setPrototype(true);
