@@ -45,6 +45,7 @@
 
 #include "qxlibwindow.h"
 #include "qxlibscreen.h"
+#include "qxlibdisplay.h"
 
 #if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
 #include <X11/Xlib.h>
@@ -122,7 +123,7 @@ GLXFBConfig QGLXContext::findConfig(const QXlibScreen *screen, const QPlatformWi
         QVector<int> spec = buildSpec(reducedFormat);
         int confcount = 0;
         GLXFBConfig *configs;
-        configs = glXChooseFBConfig(screen->display(),screen->xScreenNumber(),spec.constData(),&confcount);
+        configs = glXChooseFBConfig(screen->display()->nativeDisplay(),screen->xScreenNumber(),spec.constData(),&confcount);
         if (confcount)
         {
             for (int i = 0; i < confcount; i++) {
@@ -130,7 +131,7 @@ GLXFBConfig QGLXContext::findConfig(const QXlibScreen *screen, const QPlatformWi
                 // Make sure we try to get an ARGB visual if the format asked for an alpha:
                 if (reducedFormat.alpha()) {
                     int alphaSize;
-                    glXGetFBConfigAttrib(screen->display(),configs[i],GLX_ALPHA_SIZE,&alphaSize);
+                    glXGetFBConfigAttrib(screen->display()->nativeDisplay(),configs[i],GLX_ALPHA_SIZE,&alphaSize);
                     if (alphaSize > 0)
                         break;
                 } else {
@@ -152,7 +153,7 @@ GLXFBConfig QGLXContext::findConfig(const QXlibScreen *screen, const QPlatformWi
 XVisualInfo *QGLXContext::findVisualInfo(const QXlibScreen *screen, const QPlatformWindowFormat &format)
 {
     GLXFBConfig config = QGLXContext::findConfig(screen,format);
-    XVisualInfo *visualInfo = glXGetVisualFromFBConfig(screen->display(),config);
+    XVisualInfo *visualInfo = glXGetVisualFromFBConfig(screen->display()->nativeDisplay(),config);
     return visualInfo;
 }
 
@@ -264,8 +265,8 @@ QGLXContext::QGLXContext(Window window, QXlibScreen *screen, const QPlatformWind
         shareGlxContext = static_cast<const QGLXContext*>(sharePlatformContext)->glxContext();
 
     GLXFBConfig config = findConfig(screen,format);
-    m_context = glXCreateNewContext(screen->display(),config,GLX_RGBA_TYPE,shareGlxContext,TRUE);
-    m_windowFormat = QGLXContext::platformWindowFromGLXFBConfig(screen->display(),config,m_context);
+    m_context = glXCreateNewContext(screen->display()->nativeDisplay(),config,GLX_RGBA_TYPE,shareGlxContext,TRUE);
+    m_windowFormat = QGLXContext::platformWindowFromGLXFBConfig(screen->display()->nativeDisplay(),config,m_context);
 
 #ifdef MYX11_DEBUG
     qDebug() << "QGLXGLContext::create context" << m_context;
@@ -282,7 +283,7 @@ QGLXContext::~QGLXContext()
 {
     if (m_context) {
         qDebug("Destroying GLX context 0x%p", m_context);
-        glXDestroyContext(m_screen->display(), m_context);
+        glXDestroyContext(m_screen->display()->nativeDisplay(), m_context);
     }
 }
 
@@ -297,15 +298,15 @@ void QGLXContext::createDefaultSharedContex(QXlibScreen *screen)
     GLXContext context;
     GLXFBConfig config = findConfig(screen,format);
     if (config) {
-        XVisualInfo *visualInfo = glXGetVisualFromFBConfig(screen->display(),config);
-        Colormap cmap = XCreateColormap(screen->display(),screen->rootWindow(),visualInfo->visual,AllocNone);
+        XVisualInfo *visualInfo = glXGetVisualFromFBConfig(screen->display()->nativeDisplay(),config);
+        Colormap cmap = XCreateColormap(screen->display()->nativeDisplay(),screen->rootWindow(),visualInfo->visual,AllocNone);
         XSetWindowAttributes a;
         a.colormap = cmap;
-        Window sharedWindow = XCreateWindow(screen->display(), screen->rootWindow(),x, y, w, h,
+        Window sharedWindow = XCreateWindow(screen->display()->nativeDisplay(), screen->rootWindow(),x, y, w, h,
                                   0, visualInfo->depth, InputOutput, visualInfo->visual,
                                   CWColormap, &a);
 
-        context = glXCreateNewContext(screen->display(),config,GLX_RGBA_TYPE,0,TRUE);
+        context = glXCreateNewContext(screen->display()->nativeDisplay(),config,GLX_RGBA_TYPE,0,TRUE);
         QPlatformGLContext *sharedContext = new QGLXContext(screen,sharedWindow,context);
         QPlatformGLContext::setDefaultSharedContext(sharedContext);
     } else {
@@ -319,18 +320,18 @@ void QGLXContext::makeCurrent()
 #ifdef MYX11_DEBUG
     qDebug("QGLXGLContext::makeCurrent(window=0x%x, ctx=0x%x)", m_drawable, m_context);
 #endif
-    glXMakeCurrent(m_screen->display(), m_drawable, m_context);
+    glXMakeCurrent(m_screen->display()->nativeDisplay(), m_drawable, m_context);
 }
 
 void QGLXContext::doneCurrent()
 {
     QPlatformGLContext::doneCurrent();
-    glXMakeCurrent(m_screen->display(), 0, 0);
+    glXMakeCurrent(m_screen->display()->nativeDisplay(), 0, 0);
 }
 
 void QGLXContext::swapBuffers()
 {
-    glXSwapBuffers(m_screen->display(), m_drawable);
+    glXSwapBuffers(m_screen->display()->nativeDisplay(), m_drawable);
 }
 
 void* QGLXContext::getProcAddress(const QString& procName)
@@ -342,7 +343,7 @@ void* QGLXContext::getProcAddress(const QString& procName)
     if (resolved && !glXGetProcAddressARB)
         return 0;
     if (!glXGetProcAddressARB) {
-        QList<QByteArray> glxExt = QByteArray(glXGetClientString(m_screen->display(), GLX_EXTENSIONS)).split(' ');
+        QList<QByteArray> glxExt = QByteArray(glXGetClientString(m_screen->display()->nativeDisplay(), GLX_EXTENSIONS)).split(' ');
         if (glxExt.contains("GLX_ARB_get_proc_address")) {
 #if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
             void *handle = dlopen(NULL, RTLD_LAZY);

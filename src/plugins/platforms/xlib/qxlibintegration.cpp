@@ -135,7 +135,7 @@ bool QXlibIntegration::hasOpenGL() const
 #if !defined(QT_NO_OPENGL)
 #if !defined(QT_OPENGL_ES_2)
     QXlibScreen *screen = static_cast<const QXlibScreen *>(mScreens.at(0));
-    return glXQueryExtension(screen->display(), 0, 0) != 0;
+    return glXQueryExtension(screen->display()->nativeDisplay(), 0, 0) != 0;
 #else
     static bool eglHasbeenInitialized = false;
     static bool wasEglInitialized = false;
