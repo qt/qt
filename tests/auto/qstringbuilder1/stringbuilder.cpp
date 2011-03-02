@@ -111,5 +111,6 @@ void runScenario()
     QCOMPARE(r, r2);
 #endif
 
+    string = QString::fromLatin1(LITERAL);
     QCOMPARE(QByteArray(qPrintable(string P string)), QByteArray(string.toLatin1() + string.toLatin1()));
 }
