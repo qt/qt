@@ -482,6 +482,7 @@ QRect QDeclarativeTextInput::cursorRectangle() const
     Q_D(const QDeclarativeTextInput);
     QRect r = d->control->cursorRect();
     r.setHeight(r.height()-1); // Make consistent with TextEdit (QLineControl inexplicably adds 1)
+    r.moveLeft(r.x() - d->hscroll);
     return r;
 }
 

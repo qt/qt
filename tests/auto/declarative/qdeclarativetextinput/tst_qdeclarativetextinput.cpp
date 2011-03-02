@@ -111,6 +111,7 @@ private slots:
     void passwordCharacter();
     void cursorDelegate();
     void cursorVisible();
+    void cursorRectangle();
     void navigation();
     void copyAndPaste();
     void readOnly();
@@ -1414,6 +1415,41 @@ void tst_qdeclarativetextinput::cursorVisible()
 #endif
 }
 
+void tst_qdeclarativetextinput::cursorRectangle()
+{
+    QString text = "Hello World!";
+
+    QDeclarativeTextInput input;
+    input.setText(text);
+    QFontMetricsF fm(input.font());
+    input.setWidth(fm.width(text.mid(0, 5)));
+
+    QRect r;
+
+    for (int i = 0; i <= 5; ++i) {
+        input.setCursorPosition(i);
+        r = input.cursorRectangle();
+        int textWidth = fm.width(text.mid(0, i));
+
+        QVERIFY(r.left() < textWidth);
+        QVERIFY(r.right() > textWidth);
+    }
+
+    // Check the cursor rectangle remains within the input bounding rect when auto scrolling.
+    QVERIFY(r.left() < input.boundingRect().width());
+    QVERIFY(r.right() >= input.width());
+
+    for (int i = 6; i < text.length(); ++i) {
+        input.setCursorPosition(i);
+        QCOMPARE(r, input.cursorRectangle());
+    }
+
+    for (int i = text.length() - 2; i >= 0; --i) {
+        input.setCursorPosition(i);
+        QVERIFY(r.right() >= 0);
+    }
+}
+
 void tst_qdeclarativetextinput::readOnly()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/readOnly.qml");
@@ -1882,7 +1918,7 @@ void tst_qdeclarativetextinput::preeditAutoScroll()
     // test the text is scrolled so the preedit is visible.
     ic.sendPreeditText(preeditText.mid(0, 3), 1);
     QVERIFY(input.positionAt(0) != 0);
-    QVERIFY(input.cursorRectangle().x() - 1 <= input.width());
+    QVERIFY(input.cursorRectangle().left() < input.boundingRect().width());
 
     // test the text is scrolled back when the preedit is removed.
     ic.sendEvent(QInputMethodEvent());
@@ -1894,13 +1930,13 @@ void tst_qdeclarativetextinput::preeditAutoScroll()
     qreal x = input.positionToRectangle(0).x();
     for (int i = 0; i < 3; ++i) {
         ic.sendPreeditText(preeditText, i + 1);
-        QVERIFY(input.cursorRectangle().x() >= fm.width(preeditText.at(i)));
+        QVERIFY(input.cursorRectangle().right() >= fm.width(preeditText.at(i)));
         QVERIFY(input.positionToRectangle(0).x() < x);
         x = input.positionToRectangle(0).x();
     }
     for (int i = 1; i >= 0; --i) {
         ic.sendPreeditText(preeditText, i + 1);
-        QVERIFY(input.cursorRectangle().x() >= fm.width(preeditText.at(i)));
+        QVERIFY(input.cursorRectangle().right() >= fm.width(preeditText.at(i)));
         QVERIFY(input.positionToRectangle(0).x() > x);
         x = input.positionToRectangle(0).x();
     }
