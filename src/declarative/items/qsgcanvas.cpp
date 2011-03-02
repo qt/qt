@@ -85,6 +85,14 @@ have a scope focused item), and the other items will have their focus cleared.
 // #define DIRTY_DEBUG
 // #define THREAD_DEBUG
 
+// #define FRAME_TIMING
+
+#ifdef FRAME_TIMING
+static QTime frameTimer;
+int sceneGraphRenderTime;
+#endif
+
+
 class QSGAnimationDriver : public QAnimationDriver
 {
 public:
@@ -141,14 +149,21 @@ void QSGThreadedRendererAnimationDriver::stopped()
     renderer->mutex.unlock();
 }
 
-
 void QSGCanvas::paintEvent(QPaintEvent *)
 {
     Q_D(QSGCanvas);
 
     if (!d->threadedRendering) {
+#ifdef FRAME_TIMING
+        int lastFrame = frameTimer.restart();
+#endif
+
         if (d->animationDriver->isRunning())
             d->animationDriver->advance();
+
+#ifdef FRAME_TIMING
+        int animationTime = frameTimer.elapsed();
+#endif
 
         Q_ASSERT(d->context);
 
@@ -157,9 +172,34 @@ void QSGCanvas::paintEvent(QPaintEvent *)
         QDeclarativeDebugTrace::addEvent(QDeclarativeDebugTrace::FramePaint);
         QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Painting);
 
+#ifdef FRAME_TIMING
+        int polishTime = frameTimer.elapsed();
+#endif
+
         makeCurrent();
+
+#ifdef FRAME_TIMING
+        int makecurrentTime = frameTimer.elapsed();
+#endif
+
         d->syncSceneGraph();
+
+#ifdef FRAME_TIMING
+        int syncTime = frameTimer.elapsed();
+#endif
+
         d->renderSceneGraph();
+
+#ifdef FRAME_TIMING
+        printf("FrameTimes, last=%d, animations=%d, polish=%d, makeCurrent=%d, sync=%d, sgrender=%d, total=%d\n",
+               lastFrame,
+               animationTime,
+               polishTime - animationTime,
+               makecurrentTime - polishTime,
+               syncTime - makecurrentTime,
+               sceneGraphRenderTime - syncTime,
+               frameTimer.elapsed());
+#endif
 
         QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Painting);
 
@@ -277,6 +317,11 @@ void QSGCanvasPrivate::renderSceneGraph()
     context->renderer()->setProjectMatrixToDeviceRect();
 
     context->renderNextFrame();
+
+
+#ifdef FRAME_TIMING
+    sceneGraphRenderTime = frameTimer.elapsed();
+#endif
 
     glctx->swapBuffers();
 }
