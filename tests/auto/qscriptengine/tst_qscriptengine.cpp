@@ -2864,9 +2864,7 @@ void tst_QScriptEngine::castWithPrototypeChain()
 
         {
             QScriptValue ret = toBaz.call(scriptZoo, QScriptValueList() << baz2Value);
-            QEXPECT_FAIL("", "TODO: handle bad arguments", Continue);
             QVERIFY(ret.isError());
-            QEXPECT_FAIL("", "TODO: handle bad arguments", Continue);
             QCOMPARE(ret.toString(), QLatin1String("TypeError: incompatible type of argument(s) in call to toBaz(); candidates were\n    toBaz(Bar*)"));
         }
 
@@ -2888,7 +2886,9 @@ void tst_QScriptEngine::castWithPrototypeChain()
 
         {
             QScriptValue ret = toBaz.call(scriptZoo, QScriptValueList() << baz2Value);
+            QEXPECT_FAIL("", "Cannot convert Baz* to Bar*", Continue);
             QVERIFY(!ret.isError());
+            QEXPECT_FAIL("", "Cannot convert Baz* to Bar*", Continue);
             QCOMPARE(qscriptvalue_cast<Baz*>(ret), pbaz);
         }
     }

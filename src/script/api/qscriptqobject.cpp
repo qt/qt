@@ -101,7 +101,7 @@ static v8::Handle<v8::Value> callQtMetaMethod(QScriptEnginePrivate *engine, QObj
     }
 
     // Convert arguments to C++ types.
-    for (int i = 0; i < parameterTypeNames.size(); ++i) {
+    for (int i = 0; i < parameterTypeNames.size() && !engine->hasUncaughtException(); ++i) {
         v8::Handle<v8::Value> actual = args[i];
 
         int targetType = QMetaType::type(parameterTypeNames.at(i));
@@ -145,6 +145,10 @@ static v8::Handle<v8::Value> callQtMetaMethod(QScriptEnginePrivate *engine, QObj
         }
 
         return throwAmbiguousError(meta, method.signature(), QString::fromLatin1("incompatible type of argument(s) in call to"));
+    }
+
+    if (engine->hasUncaughtException()) {
+        return engine->uncaughtException();
     }
 
     // Prepare void** array for metacall.

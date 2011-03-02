@@ -181,7 +181,7 @@ public:
     inline bool hasUncaughtException() const;
     inline int uncaughtExceptionLineNumber() const;
     inline QStringList uncaughtExceptionBacktrace() const;
-    QScriptPassPointer<QScriptValuePrivate> uncaughtException() const;
+    v8::Handle<v8::Value> uncaughtException() const;
     inline void saveException();
     inline void restoreException();
 

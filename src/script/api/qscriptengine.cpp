@@ -949,6 +949,8 @@ v8::Handle<v8::Value> QScriptEnginePrivate::newQObject(QObject *object,
 
 QScriptValue QScriptEnginePrivate::scriptValueFromInternal(v8::Handle<v8::Value> value) const 
 {
+    if (value.IsEmpty())
+        return QScriptValuePrivate::get(InvalidValue());
     return QScriptValuePrivate::get(new QScriptValuePrivate(const_cast<QScriptEnginePrivate *>(this), value));
 }
 
@@ -1096,14 +1098,14 @@ QScriptValue QScriptEngine::uncaughtException() const
 {
     Q_D(const QScriptEngine);
     QScriptIsolate api(d);
-    return QScriptValuePrivate::get(d->uncaughtException());
+    return d->scriptValueFromInternal(d->uncaughtException());
 }
 
-QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::uncaughtException() const
+v8::Handle<v8::Value> QScriptEnginePrivate::uncaughtException() const
 {
     if (!hasUncaughtException())
-        return InvalidValue();
-    return new QScriptValuePrivate(const_cast<QScriptEnginePrivate*>(this), static_cast<v8::Handle<v8::Value> >(m_exception));
+        return v8::Handle<v8::Value>();
+    return m_exception;
 }
 
 /*!
@@ -2506,7 +2508,7 @@ Q_AUTOTEST_EXPORT bool qt_script_isJITEnabled()
 void QScriptEnginePrivate::emitSignalHandlerException()
 {
     Q_Q(QScriptEngine);
-    emit q->signalHandlerException(QScriptValuePrivate::get(uncaughtException()));
+    emit q->signalHandlerException(scriptValueFromInternal(uncaughtException()));
 }
 
 /*!
