@@ -31,6 +31,15 @@ Rectangle{
         opacity: gameOver ? 1 : 0
         Behavior on opacity{NumberAnimation{}}
     }
+    Text{
+        color: "white"
+        font.pixelSize: 24
+        anchors.left: parent.left
+        anchors.bottom: parent.bottom
+        anchors.margins: 8
+        text: "Score: " + score
+    }
+    property int score: 0
     property bool gameOver: false
     property int maxLives: 3
     property int lives: maxLives
@@ -92,19 +101,21 @@ Rectangle{
     ParticleSystem{
         id: foreground
         anchors.fill: parent
-        particles: [ColoredParticle{
+        ColoredParticle{
             id: stars
             image: "content/star.png"
             color: "white"
             colorVariation: 0.1
             additive: 1
-        },ColoredParticle{
+        }
+        ColoredParticle{
             id: shot
             image: "content/star.png"
 
             color: "orange"
             colorVariation: 0.3
-        },ColoredParticle{
+        }
+        ColoredParticle{
             id: engine
             image: "content/particle4.png"
 
@@ -125,16 +136,42 @@ Rectangle{
 
             colorVariation: 0.2
             additive: 1
-        }, SpriteParticle{
+        }
+        SpriteParticle{
             id: powerups
-            sprites: Sprite{
+            Sprite{
+                name: "norm"
                 source: "content/powerupScore.png"
-                frames: 6
-                duration: 120
+                frames: 35
+                duration: 40
+                to: {"norm":1, "got":0}
             }
-        }]
+            Sprite{
+                name: "got"
+                source: "content/powerupScore_got.png"
+                frames: 22
+                duration: 40
+                to: {"null":1}
+            }
+            Sprite{
+                name: "null"
+                source: "content/powerupScore_gone.png"
+                frames: 1
+                duration: 1000
+            }
+        }
         affectors: [
-            GravitationalSingularity{
+            Zone{
+                x: rocket.x - 30
+                y: rocket.y - 30
+                width: 60
+                height: 60
+                SpriteGoal{
+                    goalState: "got"
+                    jump: true
+                    onAffected: if(!gameOver) score += 1000
+                }
+            }, GravitationalSingularity{
                 id: gs1; x: vorteX; y: vorteY; strength: 800000;
             }, Zone{
                 x: gs1.x - holeSize;
@@ -169,8 +206,7 @@ Rectangle{
                 width: holeSize * 2
                 height: holeSize * 2
                 affector: Kill{}
-            }
-        ]
+            }        ]
     }
     TrailEmitter{
         particle: powerups
@@ -267,6 +303,7 @@ Rectangle{
     Text{
         color: "white"
         anchors.bottom: parent.bottom
+        anchors.right: parent.right
         text:"Drag the ship, but don't hit a black hole!"
     }
 }

@@ -43,6 +43,9 @@ bool SpriteGoalAffector::affect(ParticleData *d, qreal dt)
 
     if(m_goalIdx == -2 || engine != m_lastEngine)
         updateStateIndex(engine);
-    engine->setGoal(m_goalIdx, d->systemIndex, m_jump);
+    if(engine->spriteState(d->systemIndex) != m_goalIdx){
+        engine->setGoal(m_goalIdx, d->systemIndex, m_jump);
+        emit affected(QPointF(d->curX(), d->curY()));//###Expensive if unconnected?
+    }
     return false; //Doesn't affect particle data
 }

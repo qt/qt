@@ -28,6 +28,7 @@ signals:
 
     void jumpChanged(bool arg);
 
+    void affected(const QPointF &pos);
 public slots:
 
 void setGoalState(QString arg);
