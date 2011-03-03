@@ -64,62 +64,320 @@ void qt_disableFontHinting(QFont &font)
 #define QT_DISTANCEFIELD_MARGIN 50
 #define QT_DISTANCEFIELD_MARGIN_THRESHOLD 0.31
 
-static float mindist(const QImage &in, int w, int h, int x, int y, int r, float maxdist)
+struct Point
 {
-    int i, j, startx, starty, stopx, stopy, hit;
-    float d, dx, dy;
-    float mind = maxdist;
-    int p;
-    bool outside = (0 == qAlpha(in.pixel(x, y)));
+    float x, y;
+};
 
-    startx = qMax(0, x - r);
-    starty = qMax(0, y - r);
-    stopx = qMin(w, x + r);
-    stopy = qMin(h, y + r);
+struct Vertex
+{
+    Point p;
+    float d;
+};
 
-    for (i = starty; i < stopy; i++) {
-        for (j = startx; j < stopx; j++) {
-            p = qAlpha(in.pixel(j, i));
-            dx = j - x;
-            dy = i - y;
-            d = dx * dx + dy * dy;
-            hit = (p != 0) == outside;
-            if (hit && (d < mind)) {
-                mind = d;
+void fillTrapezoid(float *bits, int width, int height, int fromY, int toY,
+                   const Vertex *left1, const Vertex *left2,
+                   const Vertex *right1, const Vertex *right2)
+{
+    fromY = qMax(0, fromY);
+    toY = qMin(height, toY);
+
+    if (toY <= fromY)
+        return;
+
+    float leftDx = (left2->p.x - left1->p.x) / (left2->p.y - left1->p.y);
+    float leftDd = (left2->d - left1->d) / (left2->p.y - left1->p.y);
+    float leftX = left1->p.x + (fromY - left1->p.y) * leftDx;
+    float leftD = left1->d + (fromY - left1->p.y) * leftDd;
+
+    float rightDx = (right2->p.x - right1->p.x) / (right2->p.y - right1->p.y);
+    float rightDd = (right2->d - right1->d) / (right2->p.y - right1->p.y);
+    float rightX = right1->p.x + (fromY - right1->p.y) * rightDx;
+    float rightD = right1->d + (fromY - right1->p.y) * rightDd;
+
+    bits += width * fromY;
+    for (int y = fromY; y < toY; ++y, leftX += leftDx, leftD += leftDd, rightX += rightDx, rightD += rightDd, bits += width) {
+        int fromX = qMax(0, qCeil(leftX));
+        int toX = qMin(width, qCeil(rightX));
+        if (toX <= fromX)
+            continue;
+        float dd = (leftD - rightD) / (leftX - rightX);
+        float d = leftD + (fromX - leftX) * dd;
+        for (int x = fromX; x < toX; ++x, d += dd) {
+            if (abs(d) < abs(bits[x]))
+                bits[x] = d;
+        }
+    }
+}
+
+bool lineIntersection(Point &result, const Point &left1, const Point &left2, const Point &right1, const Point &right2)
+{
+    Point u = { left2.x - left1.x, left2.y - left1.y };
+    Point v = { right2.x - right1.x, right2.y - right1.y };
+    float uxv = u.x * v.y - u.y * v.x;
+    if (uxv == 0)
+        return false;
+    Point d = { left1.x - right1.x, left1.y - right1.y };
+    float uxd = u.x * d.y - u.y * d.x;
+    float vxd = v.x * d.y - v.y * d.x;
+    float t = uxd / uxv;
+    float s = vxd / uxv;
+    result.x = right1.x + t * v.x;
+    result.y = right1.y + t * v.y;
+    return t > 0 && t < 1 && s > 0 && s < 1;
+}
+
+void drawQuad(float *bits, int width, int height, const Vertex *v1, const Vertex *v2, const Vertex *v3, const Vertex *v4)
+{
+    float minY = qMin(qMin(v1->p.y, v2->p.y), qMin(v3->p.y, v4->p.y));
+    while (v1->p.y > minY) {
+        const Vertex *tmp = v1;
+        v1 = v2;
+        v2 = v3;
+        v3 = v4;
+        v4 = tmp;
+    }
+    //   v1
+    //  /  \
+    // v4  v2
+    //  \  /
+    //   v3
+
+#if 0
+    // Algorithm changed. The quad is now always convex.
+    if (v2->p.y > v3->p.y && v4->p.y > v3->p.y) {
+        // Concave or complex.
+        Point p14x32;
+        Point p12x34;
+        bool int14x32 = lineIntersection(p14x32, v1->p, v4->p, v3->p, v2->p);
+        bool int12x34 = lineIntersection(p12x34, v1->p, v2->p, v3->p, v4->p);
+        if (int14x32) {
+            fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(p14x32.y), v1, v4, v1, v2);
+            fillTrapezoid(bits, width, height, qCeil(v3->p.y), qCeil(p14x32.y), v3, v2, v3, v4);
+            fillTrapezoid(bits, width, height, qCeil(p14x32.y), qCeil(v2->p.y), v3, v2, v1, v2);
+            fillTrapezoid(bits, width, height, qCeil(p14x32.y), qCeil(v4->p.y), v1, v4, v3, v4);
+        } else if (int12x34) {
+            fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(p12x34.y), v1, v4, v1, v2);
+            fillTrapezoid(bits, width, height, qCeil(v3->p.y), qCeil(p12x34.y), v3, v2, v3, v4);
+            fillTrapezoid(bits, width, height, qCeil(p12x34.y), qCeil(v4->p.y), v1, v4, v3, v4);
+            fillTrapezoid(bits, width, height, qCeil(p12x34.y), qCeil(v2->p.y), v3, v2, v1, v2);
+        } else if (v2->p.y > v4->p.y) {
+            fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(v4->p.y), v1, v4, v1, v2);
+            fillTrapezoid(bits, width, height, qCeil(v3->p.y), qCeil(v4->p.y), v3, v2, v3, v4);
+            fillTrapezoid(bits, width, height, qCeil(v4->p.y), qCeil(v2->p.y), v3, v2, v1, v2);
+        } else {
+            fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(v2->p.y), v1, v4, v1, v2);
+            fillTrapezoid(bits, width, height, qCeil(v3->p.y), qCeil(v2->p.y), v3, v2, v3, v4);
+            fillTrapezoid(bits, width, height, qCeil(v2->p.y), qCeil(v4->p.y), v1, v4, v3, v4);
+        }
+    } else 
+#endif
+    if (v2->p.y > v3->p.y) {
+        // Right side is straight.
+        fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(v4->p.y), v1, v4, v1, v2);
+        fillTrapezoid(bits, width, height, qCeil(v4->p.y), qCeil(v3->p.y), v4, v3, v1, v2);
+        fillTrapezoid(bits, width, height, qCeil(v3->p.y), qCeil(v2->p.y), v3, v2, v1, v2);
+    } else if (v4->p.y > v3->p.y) {
+        // Left side is straight.
+        fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(v2->p.y), v1, v4, v1, v2);
+        fillTrapezoid(bits, width, height, qCeil(v2->p.y), qCeil(v3->p.y), v1, v4, v2, v3);
+        fillTrapezoid(bits, width, height, qCeil(v3->p.y), qCeil(v4->p.y), v1, v4, v3, v4);
+    } else {
+        // Diamond shaped.
+        if (v2->p.y > v4->p.y) {
+            fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(v4->p.y), v1, v4, v1, v2);
+            fillTrapezoid(bits, width, height, qCeil(v4->p.y), qCeil(v2->p.y), v4, v3, v1, v2);
+            fillTrapezoid(bits, width, height, qCeil(v2->p.y), qCeil(v3->p.y), v4, v3, v2, v3);
+        } else {
+            fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(v2->p.y), v1, v4, v1, v2);
+            fillTrapezoid(bits, width, height, qCeil(v2->p.y), qCeil(v4->p.y), v1, v4, v2, v3);
+            fillTrapezoid(bits, width, height, qCeil(v4->p.y), qCeil(v3->p.y), v4, v3, v2, v3);
+        }
+    }
+}
+
+void drawTriangle(float *bits, int width, int height, const Vertex *v1, const Vertex *v2, const Vertex *v3)
+{
+    float minY = qMin(qMin(v1->p.y, v2->p.y), v3->p.y);
+    while (v1->p.y > minY) {
+        const Vertex *tmp = v1;
+        v1 = v2;
+        v2 = v3;
+        v3 = tmp;
+    }
+    //   v1
+    //  /  \
+    // v3--v2
+
+    if (v2->p.y > v3->p.y) {
+        fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(v3->p.y), v1, v3, v1, v2);
+        fillTrapezoid(bits, width, height, qCeil(v3->p.y), qCeil(v2->p.y), v3, v2, v1, v2);
+    } else {
+        fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(v2->p.y), v1, v3, v1, v2);
+        fillTrapezoid(bits, width, height, qCeil(v2->p.y), qCeil(v3->p.y), v1, v3, v2, v3);
+    }
+}
+
+QImage makeDistanceField(const QPainterPath &path, float offs)
+{
+    QList<QPolygonF> polys = path.toSubpathPolygons();
+
+    QImage image(QT_DISTANCEFIELD_TILESIZE, QT_DISTANCEFIELD_TILESIZE, QImage::Format_ARGB32_Premultiplied);
+
+    if (polys.isEmpty()) {
+        image.fill(0);
+        return image;
+    }
+
+    union Pacific {
+        float value;
+        QRgb color;
+    };
+    Pacific interior;
+    Pacific exterior;
+    interior.value = 127;
+    exterior.value = -127;
+
+    image.fill(exterior.color);
+
+    QPainter p(&image);
+    p.setCompositionMode(QPainter::CompositionMode_Source);
+    p.translate(offs, offs);
+    p.scale(1 / qreal(QT_DISTANCEFIELD_SCALE), 1 / qreal(QT_DISTANCEFIELD_SCALE));
+    p.fillPath(path, QColor::fromRgba(interior.color));
+    p.end();
+    float *bits = (float *)image.bits();
+    const float angleStep = 15 * 3.141592653589793238f / 180;
+    Point rotation = { cos(angleStep), sin(angleStep) };
+
+    int outerPoly = 0;
+    int topVertex = 0;
+    QVarLengthArray<QVector<Point>, 4> allNormals(polys.count());
+    QVarLengthArray<QVector<Vertex>, 4> allVertices(polys.count());
+    QVarLengthArray<QVector<bool>, 4> allIsConvex(polys.count());
+
+    for (int i = 0; i < polys.count(); ++i) {
+        const QPolygonF &poly = polys.at(i);
+        QVector<Point> &normals = allNormals[i];
+        QVector<Vertex> &vertices = allVertices[i];
+        QVector<bool> &isConvex = allIsConvex[i];
+        normals.reserve(poly.count());
+        vertices.reserve(poly.count());
+
+        // Calculate vertex normals.
+        for (int next = 0, prev = poly.count() - 1; next < poly.count(); prev = next++) {
+            const QPointF &from = poly.at(prev);
+            const QPointF &to = poly.at(next);
+            Point n;
+            n.x = float(to.y() - from.y());
+            n.y = float(from.x() - to.x());
+            if (n.x == 0 && n.y == 0)
+                continue;
+            float scale = offs / sqrt(n.x * n.x + n.y * n.y);
+            n.x *= scale;
+            n.y *= scale;
+            normals.append(n);
+
+            Vertex v;
+            v.p.x = float(to.x() / QT_DISTANCEFIELD_SCALE) + offs - 0.5f;
+            v.p.y = float(to.y() / QT_DISTANCEFIELD_SCALE) + offs - 0.5f;
+            v.d = 0.0f;
+            vertices.append(v);
+
+            if (v.p.y < allVertices.at(outerPoly).at(topVertex).p.y) {
+                outerPoly = i;
+                topVertex = vertices.count() - 1;
+            }
+        }
+
+        isConvex.resize(normals.count());
+        for (int next = 0, prev = normals.count() - 1; next < normals.count(); prev = next++)
+            isConvex[prev] = (normals.at(prev).x * normals.at(next).y - normals.at(prev).y * normals.at(next).x > 0);
+    }
+
+    int dir = allIsConvex.at(outerPoly).at(topVertex) ? 1 : -1;
+
+    for (int i = 0; i < polys.count(); ++i) {
+        const QVector<Point> &normals = allNormals[i];
+        const QVector<Vertex> &vertices = allVertices[i];
+        const QVector<bool> &isConvex = allIsConvex[i];
+        // Draw quads.
+        for (int next = 0, prev = normals.count() - 1; next < normals.count(); prev = next++) {
+            Point n = normals.at(next);
+            Vertex intPrev = vertices.at(prev);
+            Vertex extPrev = vertices.at(prev);
+            Vertex intNext = vertices.at(next);
+            Vertex extNext = vertices.at(next);
+
+            extPrev.p.x += n.x;
+            extPrev.p.y += n.y;
+            intPrev.p.x -= n.x;
+            intPrev.p.y -= n.y;
+            extNext.p.x += n.x;
+            extNext.p.y += n.y;
+            intNext.p.x -= n.x;
+            intNext.p.y -= n.y;
+            extPrev.d = -dir * offs * QT_DISTANCEFIELD_SCALE;
+            extNext.d = -dir * offs * QT_DISTANCEFIELD_SCALE;
+            intPrev.d = dir * offs * QT_DISTANCEFIELD_SCALE;
+            intNext.d = dir * offs * QT_DISTANCEFIELD_SCALE;
+
+            drawQuad(bits, image.width(), image.height(),
+                     &vertices.at(prev), &extPrev,
+                     &extNext, &vertices.at(next));
+
+            drawQuad(bits, image.width(), image.height(),
+                     &intPrev, &vertices.at(prev),
+                     &vertices.at(next), &intNext);
+
+            if (isConvex.at(prev)) {
+                Vertex v = extPrev;
+                for (;;) {
+                    Point rn = { n.x * rotation.x + n.y * rotation.y,
+                                 n.y * rotation.x - n.x * rotation.y };
+                    n = rn;
+                    if (n.x * normals.at(prev).y - n.y * normals.at(prev).x >= -0.001) {
+                        v.p.x = vertices.at(prev).p.x + normals.at(prev).x;
+                        v.p.y = vertices.at(prev).p.y + normals.at(prev).y;
+                        drawTriangle(bits, image.width(), image.height(), &vertices.at(prev), &v, &extPrev);
+                        break;
+                    }
+
+                    v.p.x = vertices.at(prev).p.x + n.x;
+                    v.p.y = vertices.at(prev).p.y + n.y;
+                    drawTriangle(bits, image.width(), image.height(), &vertices.at(prev), &v, &extPrev);
+                    extPrev = v;
+                }
+            } else {
+                Vertex v = intPrev;
+                for (;;) {
+                    Point rn = { n.x * rotation.x - n.y * rotation.y,
+                                 n.y * rotation.x + n.x * rotation.y };
+                    n = rn;
+                    if (n.x * normals.at(prev).y - n.y * normals.at(prev).x <= 0.001) {
+                        v.p.x = vertices.at(prev).p.x - normals.at(prev).x;
+                        v.p.y = vertices.at(prev).p.y - normals.at(prev).y;
+                        drawTriangle(bits, image.width(), image.height(), &vertices.at(prev), &intPrev, &v);
+                        break;
+                    }
+
+                    v.p.x = vertices.at(prev).p.x - n.x;
+                    v.p.y = vertices.at(prev).p.y - n.y;
+                    drawTriangle(bits, image.width(), image.height(), &vertices.at(prev), &intPrev, &v);
+                    intPrev = v;
+                }
             }
         }
     }
 
-    if (outside)
-        return qSqrt(mind);
-    else
-        return -qSqrt(mind);
-}
-
-static QImage renderDistanceField(const QImage &in)
-{
-    int outWidth = in.width() / QT_DISTANCEFIELD_SCALE;
-    int outHeight = in.height() / QT_DISTANCEFIELD_SCALE;
-    QImage df(outWidth, outHeight, QImage::Format_ARGB32_Premultiplied);
-    int x, y, ix, iy;
-    float d;
-    float sx = in.width() / float(outWidth);
-    float sy = in.height() / float(outHeight);
-    int r = QT_DISTANCEFIELD_RADIUS;
-    float maxsq = 2 * r * r;
-    float max = qSqrt(maxsq);
-
-    for(y = 0; y < outHeight; y++){
-        for(x = 0; x < outWidth; x++){
-            ix = (x * sx) + (sx / 2);
-            iy = (y * sy) + (sy / 2);
-            d = mindist(in, in.width(), in.height(), ix, iy, r, maxsq);
-            float a = 127.5f + 127.5f * (-d / max);
-            df.setPixel(x, y, qRgba(0, 0, 0, qRound(a)));
-        }
+    for (int y = 0; y < image.height(); ++y) {
+        QRgb *iLine = (QRgb *)image.scanLine(y);
+        float *fLine = (float *)iLine;
+        for (int x = 0; x < image.width(); ++x)
+            iLine[x] = QRgb(fLine[x] + 127) << 24;
     }
 
-    return df;
+    return image;
 }
 
 uint qHash(const TexCoordCacheKey &key)
@@ -312,24 +570,9 @@ QImage DistanceFieldFontAtlas::renderDistanceFieldGlyph(glyph_t glyph) const
     QPainterPath path;
     QFixedPoint pt;
     fontEngine->addGlyphsToPath(&glyph, &pt, 1, &path, 0);
-    int glyphWidth = path.boundingRect().width();
-    int glyphHeight = path.boundingRect().height();
-    if (glyphWidth < 1)
-        glyphWidth = 1;
-    if (glyphHeight < 1)
-        glyphHeight = 1;
+    path.translate(-path.boundingRect().topLeft());
 
-    QImage glyphImage(glyphWidth + QT_DISTANCEFIELD_RADIUS * 2, glyphHeight + QT_DISTANCEFIELD_RADIUS * 2, QImage::Format_ARGB32_Premultiplied);
-    glyphImage.fill(Qt::transparent);
-    QPainter p(&glyphImage);
-    p.setRenderHint(QPainter::Antialiasing);
-    p.setPen(Qt::NoPen);
-    p.setBrush(Qt::black);
-    p.translate(-path.boundingRect().x() + QT_DISTANCEFIELD_RADIUS, -path.boundingRect().y() + QT_DISTANCEFIELD_RADIUS);
-    p.drawPath(path);
-    p.end();
-
-    QImage im = renderDistanceField(glyphImage);
+    QImage im = makeDistanceField(path, QT_DISTANCEFIELD_RADIUS / qreal(QT_DISTANCEFIELD_SCALE));
     return im;
 }
 

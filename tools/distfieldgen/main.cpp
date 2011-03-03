@@ -104,20 +104,20 @@ QMutex DistFieldGenTask::m_mutex;
 
 static void generateDistanceFieldForFont(const QFont &font, const QString &destinationDir, bool multithread)
 {
-    DistanceFieldFontAtlas atlas(font);
+    DistanceFieldFontAtlas *atlas = DistanceFieldFontAtlas::get(font);
     QFontDatabase db;
     QString fontString = font.family() + QLatin1String(" ") + db.styleString(font);
-    qWarning("> Generating distance-field for font '%s' (%d glyphs)", fontString.toLatin1().constData(), atlas.glyphCount());
+    qWarning("> Generating distance-field for font '%s' (%d glyphs)", fontString.toLatin1().constData(), atlas->glyphCount());
 
     QMap<int, QImage> distfields;
-    for (int i = 0; i < atlas.glyphCount(); ++i) {
+    for (int i = 0; i < atlas->glyphCount(); ++i) {
         if (multithread) {
-            DistFieldGenTask *task = new DistFieldGenTask(&atlas, i, atlas.glyphCount(), &distfields);
+            DistFieldGenTask *task = new DistFieldGenTask(atlas, i, atlas->glyphCount(), &distfields);
             QThreadPool::globalInstance()->start(task);
         } else {
-            QImage df = atlas.renderDistanceFieldGlyph(i);
+            QImage df = atlas->renderDistanceFieldGlyph(i);
             distfields.insert(i, df);
-            printProgress(float(distfields.count()) / atlas.glyphCount() * 100);
+            printProgress(float(distfields.count()) / atlas->glyphCount() * 100);
         }
     }
 
@@ -125,13 +125,13 @@ static void generateDistanceFieldForFont(const QFont &font, const QString &desti
         QThreadPool::globalInstance()->waitForDone();
 
     // Combine dist fields in one image
-    QImage output(atlas.atlasSize(), QImage::Format_ARGB32_Premultiplied);
+    QImage output(atlas->atlasSize(), QImage::Format_ARGB32_Premultiplied);
     output.fill(Qt::transparent);
     int i = 0;
     QPainter p(&output);
     foreach (const QImage &df, distfields.values()) {
-        DistanceFieldFontAtlas::TexCoord c = atlas.glyphTexCoord(i);
-        p.drawImage(qRound(c.x * atlas.atlasSize().width()), qRound(c.y * atlas.atlasSize().height()), df);
+        DistanceFieldFontAtlas::TexCoord c = atlas->glyphTexCoord(i);
+        p.drawImage(qRound(c.x * atlas->atlasSize().width()), qRound(c.y * atlas->atlasSize().height()), df);
         ++i;
     }
     p.end();
@@ -141,7 +141,7 @@ static void generateDistanceFieldForFont(const QFont &font, const QString &desti
     // Save output
     QString destDir = destinationDir;
     if (destDir.isEmpty()) {
-        destDir = atlas.distanceFieldDir();
+        destDir = atlas->distanceFieldDir();
         QDir dir;
         dir.mkpath(destDir);
     } else {
@@ -154,7 +154,7 @@ static void generateDistanceFieldForFont(const QFont &font, const QString &desti
         destDir = dfi.canonicalFilePath();
     }
 
-    QString out = QString(QLatin1String("%1/%2")).arg(destDir).arg(atlas.distanceFieldFileName());
+    QString out = QString(QLatin1String("%1/%2")).arg(destDir).arg(atlas->distanceFieldFileName());
     output.save(out);
     qWarning("  Distance-field saved to '%s'\n", out.toLatin1().constData());
 }
