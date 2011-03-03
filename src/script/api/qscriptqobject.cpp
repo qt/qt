@@ -57,6 +57,25 @@ static inline int methodNameLength(const char *signature)
     return s - signature;
 }
 
+static int indexOfMetaEnum(const QMetaObject *meta, const QByteArray &str)
+{
+    QByteArray scope;
+    QByteArray name;
+    int scopeIdx = str.lastIndexOf("::");
+    if (scopeIdx != -1) {
+        scope = str.left(scopeIdx);
+        name = str.mid(scopeIdx + 2);
+    } else {
+        name = str;
+    }
+    for (int i = meta->enumeratorCount() - 1; i >= 0; --i) {
+        QMetaEnum m = meta->enumerator(i);
+        if ((m.name() == name) && (scope.isEmpty() || (m.scope() == scope)))
+            return i;
+    }
+    return -1;
+}
+
 static v8::Handle<v8::Value> throwAmbiguousError(const QMetaObject *meta, const QByteArray &functionName, const QString &errorString)
 {
     int nameLength = methodNameLength(functionName);
@@ -72,8 +91,6 @@ static v8::Handle<v8::Value> throwAmbiguousError(const QMetaObject *meta, const 
     }
     return v8::ThrowException(v8::Exception::TypeError(QScriptConverter::toString(string)));
 }
-
-
 
 // Generic implementation of Qt meta-method invocation.
 // Uses QMetaType and friends to resolve types and convert arguments.
@@ -106,6 +123,26 @@ static v8::Handle<v8::Value> callQtMetaMethod(QScriptEnginePrivate *engine, QObj
 
         int targetType = QMetaType::type(parameterTypeNames.at(i));
         if (!targetType) {
+
+            int enumIndex = indexOfMetaEnum(meta, parameterTypeNames.at(i));
+            if (enumIndex != -1) {
+                const QMetaEnum m(meta->enumerator(enumIndex));
+                Q_ASSERT(m.isValid());
+                if (actual->IsNumber()) {
+                    int ival = actual->ToInt32()->Value();
+                    if (m.valueToKey(ival) != 0) {
+                        cppArgs[1+i] = ival;
+                        continue;
+                    }
+                } else if (actual->IsString()) {
+                    int ival = m.keyToValue(QScriptConverter::toString(actual->ToString()).toLatin1());
+                    if (ival != -1) {
+                        cppArgs[1+i] = ival;
+                        continue;
+                    }
+                }
+            }
+
             QVariant v(QMetaType::QObjectStar, (void *)0);
             if (engine->convertToNativeQObject(actual, parameterTypeNames.at(i), reinterpret_cast<void* *>(v.data()))) {
                 cppArgs[1+i] = v;
