@@ -113,6 +113,11 @@ The \l {Qt Quick} page has links to various Qt Quick topics such as QML
 features, addons, and tools.
 
 The \l {QML Examples and Demos} page has a gallery of QML applications.
+
+\section1 License Information
+\list
+\o \l{Qt Quick Licensing Information}
+\endlist
 */
 
 

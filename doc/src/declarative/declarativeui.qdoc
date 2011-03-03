@@ -90,7 +90,7 @@ Qt applications.
 
 \list
 \o \l{Debugging QML}
-\o \l{Developing Qt Quick Applications with Creator}{Developing with Qt Creator}
+\o \l{external: Developing Qt Quick Applications with Creator}{Developing with Qt Creator}
 \o \l{QML Viewer}
 \endlist
 
@@ -102,7 +102,7 @@ Qt applications.
 \o \l{Qt Declarative Module}
 \o \l{QML Basic Types}{QML Data Types}
 \o \l{QML Coding Conventions}
-\o \l{Qt Creator Manual}
+\o \l{external: Qt Creator Manual}{Qt Creator Manual}
 \o \l{Programming with Qt}
 \o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/index.html}{Qt Mobility Documentation}
 \endlist
@@ -139,5 +139,10 @@ examples for porting}
 \list
 \o \l{QML Best Practices: Coding Conventions}{Coding Tips}
 \o \l{QML Performance}{Performance Tips}
+\endlist
+
+\section1 License Information
+\list
+\o \l{Qt Quick Licensing Information}
 \endlist
 */
