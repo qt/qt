@@ -52,6 +52,10 @@ DistanceFieldGlyphNode::DistanceFieldGlyphNode()
 {
     m_geometry.setDrawingMode(GL_TRIANGLES);
     setGeometry(&m_geometry);
+
+#ifdef QML_RUNTIME_TESTING
+    description = QLatin1String("glyphs");
+#endif
 }
 
 DistanceFieldGlyphNode::~DistanceFieldGlyphNode()
@@ -61,36 +65,38 @@ DistanceFieldGlyphNode::~DistanceFieldGlyphNode()
 
 void DistanceFieldGlyphNode::setColor(const QColor &color)
 {
+    if (color == m_color)
+        return;
+
     m_color = color;
-    if (m_material != 0) {
-        m_material->setColor(color);
-        setMaterial(m_material); // Indicate the material state has changed
-    }
+
+    if (!m_material)
+        m_material = new DistanceFieldTextMaterial;
+
+    m_material->setColor(color);
+    setMaterial(m_material); // Indicate the material state has changed
+
 }
 
 void DistanceFieldGlyphNode::setGlyphs(const QPointF &position, const QGlyphs &glyphs)
 {
-    if (m_material != 0)
-        delete m_material;
-
     QFontEngine *fe = QFontPrivate::get(glyphs.font())->engineForScript(QUnicodeTables::Common);
-    m_position = QPointF(position.x(), position.y() - fe->ascent().toReal());
-    m_glyphs = glyphs;
+    QPointF pos(position.x(), position.y() - fe->ascent().toReal());
 
-    m_material = new DistanceFieldTextMaterial;
-    m_material->setColor(m_color);
-    setMaterial(m_material);
+    if (glyphs.font() != m_font) {
+        m_font = glyphs.font();
+        updateFont();
+    }
 
-    updateFont();
-    updateGeometry();
-
-#ifdef QML_RUNTIME_TESTING
-    description = QLatin1String("glyphs");
-#endif
+    if (pos != m_position || glyphs != m_glyphs)
+        updateGlyphs(pos, glyphs);
 }
 
-void DistanceFieldGlyphNode::updateGeometry()
+void DistanceFieldGlyphNode::updateGlyphs(const QPointF &pos, const QGlyphs &glyphs)
 {
+    m_glyphs = glyphs;
+    m_position = pos;
+
     QSGGeometry *g = geometry();
     QRectF boundingRect;
 
@@ -147,13 +153,16 @@ void DistanceFieldGlyphNode::updateGeometry()
 
 void DistanceFieldGlyphNode::updateFont()
 {
-    m_glyph_atlas = DistanceFieldFontAtlas::get(m_glyphs.font());
+    m_glyph_atlas = DistanceFieldFontAtlas::get(m_font);
 
     QSGTextureRef texture = m_glyph_atlas->texture();
     if (texture.isNull()) {
-        qWarning("Invalid distance-field texture for font %s", m_glyphs.font().family().toLatin1().constData());
+        qWarning("Invalid distance-field texture for font %s", m_font.family().toLatin1().constData());
         return;
     }
+
+    if (!m_material)
+        m_material = new DistanceFieldTextMaterial;
 
     m_material->setTexture(texture);
     m_material->setScale(m_glyph_atlas->scaleRatioFromRefSize());

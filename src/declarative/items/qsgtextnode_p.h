@@ -50,6 +50,7 @@ class QTextBlock;
 class QColor;
 class QTextDocument;
 class QSGContext;
+class SolidRectNode;
 
 class QSGTextNode : public TransformNode
 {
@@ -65,12 +66,18 @@ public:
     void addTextLayout(const QPointF &position, QTextLayout *textLayout, const QColor &color = QColor());
     void addTextDocument(const QPointF &position, QTextDocument *textDocument, const QColor &color = QColor());
 
+    void setTextLayout(const QPointF &position, QTextLayout *textLayout, const QColor &color = QColor());
+
 private:
     void addTextBlock(const QPointF &position, QTextDocument *textDocument, const QTextBlock &block,
                       const QColor &overrideColor);
     GlyphNodeInterface *addGlyphs(const QPointF &position, const QGlyphs &glyphs, const QColor &color);
     void addTextDecorations(const QPointF &position, const QFont &font, const QColor &color,
                             qreal width);
+
+    QList<GlyphNodeInterface *> glyphNodes() const;
+    QList<SolidRectNode *> decorationNodes() const;
+    void deleteDecorations();
 
     QSGContext *m_context;
 };
