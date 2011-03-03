@@ -28,8 +28,8 @@ void GravitationalSingularityAffector::subaffect(ParticleData *d, qreal dt, bool
         d->pv.x = m_x;
         d->pv.y = m_y;
         return;
-    }else if(first && r < 100.0){//Too close, typical dt values are far too coarse for simulation. This may kill perf though
-        int parts = floor(1000.0/r);
+    }else if(first && r < 10.0){//Too close, typical dt values are far too coarse for simulation. This may kill perf though
+        int parts = floor(100.0/r);
         for(int i=0; i<parts; i++)
             subaffect(d, dt/parts, false);
         return;
@@ -38,6 +38,6 @@ void GravitationalSingularityAffector::subaffect(ParticleData *d, qreal dt, bool
     qreal ds = (m_strength / (r*r)) * dt;
     dx = ds * cos(theta);
     dy = ds * sin(theta);
-    d->setInstantaneousAX(d->pv.ax + dx);
-    d->setInstantaneousAY(d->pv.ay + dy);
+    d->setInstantaneousSX(d->pv.sx + dx);
+    d->setInstantaneousSY(d->pv.sy + dy);
 }
