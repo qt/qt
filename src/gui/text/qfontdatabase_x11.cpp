@@ -2120,4 +2120,26 @@ bool QFontDatabase::supportsThreadedFontRendering()
 #endif
 }
 
+QString QFontDatabase::resolveFontFamilyAlias(const QString &family)
+{
+#if defined(QT_NO_FONTCONFIG)
+    return family;
+#else
+    FcPattern *pattern = FcPatternCreate();
+    if (!pattern)
+        return family;
+
+    FcPatternAddString(pattern, FC_FAMILY, (const FcChar8 *) family.toUtf8().data());
+    FcConfigSubstitute(0, pattern, FcMatchPattern);
+    FcDefaultSubstitute(pattern);
+
+    FcChar8 *familyAfterSubstitution;
+    FcPatternGetString(pattern, FC_FAMILY, 0, &familyAfterSubstitution);
+    QString resolved = QString::fromUtf8((const char *) familyAfterSubstitution);
+    FcPatternDestroy(pattern);
+
+    return resolved;
+#endif
+}
+
 QT_END_NAMESPACE

@@ -3,7 +3,7 @@ EXPORTS
 	?setStored@QMetaPropertyBuilder@@QAEX_N@Z @ 2 NONAME ABSENT ; void QMetaPropertyBuilder::setStored(bool)
 	?trUtf8@QDeclarativeExpression@@SA?AVQString@@PBD0H@Z @ 3 NONAME ; class QString QDeclarativeExpression::trUtf8(char const *, char const *, int)
 	?qt_metacast@QDeclarativeComponent@@UAEPAXPBD@Z @ 4 NONAME ; void * QDeclarativeComponent::qt_metacast(char const *)
-	?name@QDeclarativeDebugService@@QBE?AVQString@@XZ @ 5 NONAME ABSENT ; class QString QDeclarativeDebugService::name(void) const
+	?name@QDeclarativeDebugService@@QBE?AVQString@@XZ @ 5 NONAME ; class QString QDeclarativeDebugService::name(void) const
 	?debugId@QDeclarativeDebugObjectReference@@QBEHXZ @ 6 NONAME ABSENT ; int QDeclarativeDebugObjectReference::debugId(void) const
 	?addPluginPath@QDeclarativeEngine@@QAEXABVQString@@@Z @ 7 NONAME ; void QDeclarativeEngine::addPluginPath(class QString const &)
 	?name@QMetaPropertyBuilder@@QBE?AVQByteArray@@XZ @ 8 NONAME ABSENT ; class QByteArray QMetaPropertyBuilder::name(void) const
@@ -11,7 +11,7 @@ EXPORTS
 	?propertyOffset@QDeclarativeOpenMetaObjectType@@QBEHXZ @ 10 NONAME ABSENT ; int QDeclarativeOpenMetaObjectType::propertyOffset(void) const
 	??0QDeclarativeText@@QAE@PAVQDeclarativeItem@@@Z @ 11 NONAME ABSENT ; QDeclarativeText::QDeclarativeText(class QDeclarativeItem *)
 	?propertyTypeName@QDeclarativeProperty@@QBEPBDXZ @ 12 NONAME ; char const * QDeclarativeProperty::propertyTypeName(void) const
-	?getStaticMetaObject@QDeclarativeDebugService@@SAABUQMetaObject@@XZ @ 13 NONAME ABSENT ; struct QMetaObject const & QDeclarativeDebugService::getStaticMetaObject(void)
+	?getStaticMetaObject@QDeclarativeDebugService@@SAABUQMetaObject@@XZ @ 13 NONAME ; struct QMetaObject const & QDeclarativeDebugService::getStaticMetaObject(void)
 	?setLeft@QDeclarativeAnchors@@QAEXABVQDeclarativeAnchorLine@@@Z @ 14 NONAME ABSENT ; void QDeclarativeAnchors::setLeft(class QDeclarativeAnchorLine const &)
 	?qt_metacall@QDeclarativeExpression@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 15 NONAME ; int QDeclarativeExpression::qt_metacall(enum QMetaObject::Call, int, void * *)
 	?staticMetaObject@QDeclarativePen@@2UQMetaObject@@B @ 16 NONAME ABSENT ; struct QMetaObject const QDeclarativePen::staticMetaObject
@@ -145,7 +145,7 @@ EXPORTS
 	?isConnected@QDeclarativeDebugClient@@QBE_NXZ @ 144 NONAME ABSENT ; bool QDeclarativeDebugClient::isConnected(void) const
 	?enabled@QDeclarativeBinding@@QBE_NXZ @ 145 NONAME ABSENT ; bool QDeclarativeBinding::enabled(void) const
 	?setSource@QDeclarativeView@@QAEXABVQUrl@@@Z @ 146 NONAME ; void QDeclarativeView::setSource(class QUrl const &)
-	??_EQDeclarativeDebugService@@UAE@I@Z @ 147 NONAME ABSENT ; QDeclarativeDebugService::~QDeclarativeDebugService(unsigned int)
+	??_EQDeclarativeDebugService@@UAE@I@Z @ 147 NONAME ; QDeclarativeDebugService::~QDeclarativeDebugService(unsigned int)
 	??0QDeclarativeDomDynamicProperty@@QAE@ABV0@@Z @ 148 NONAME ABSENT ; QDeclarativeDomDynamicProperty::QDeclarativeDomDynamicProperty(class QDeclarativeDomDynamicProperty const &)
 	?className@QDeclarativeDebugObjectReference@@QBE?AVQString@@XZ @ 149 NONAME ABSENT ; class QString QDeclarativeDebugObjectReference::className(void) const
 	?indexOfSlot@QMetaObjectBuilder@@QAEHABVQByteArray@@@Z @ 150 NONAME ABSENT ; int QMetaObjectBuilder::indexOfSlot(class QByteArray const &)
@@ -294,7 +294,7 @@ EXPORTS
 	?attachedPropertiesType@QDeclarativeType@@QBEPBUQMetaObject@@XZ @ 293 NONAME ABSENT ; struct QMetaObject const * QDeclarativeType::attachedPropertiesType(void) const
 	?setName@QDeclarativeState@@QAEXABVQString@@@Z @ 294 NONAME ; void QDeclarativeState::setName(class QString const &)
 	?setReversed@QDeclarativeTransition@@QAEX_N@Z @ 295 NONAME ; void QDeclarativeTransition::setReversed(bool)
-	?idForObject@QDeclarativeDebugService@@SAHPAVQObject@@@Z @ 296 NONAME ABSENT ; int QDeclarativeDebugService::idForObject(class QObject *)
+	?idForObject@QDeclarativeDebugService@@SAHPAVQObject@@@Z @ 296 NONAME ; int QDeclarativeDebugService::idForObject(class QObject *)
 	?qt_metacall@QDeclarativeDebugWatch@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 297 NONAME ABSENT ; int QDeclarativeDebugWatch::qt_metacall(enum QMetaObject::Call, int, void * *)
 	?fromState@QDeclarativeTransition@@QBE?AVQString@@XZ @ 298 NONAME ; class QString QDeclarativeTransition::fromState(void) const
 	??1QDeclarativeExpression@@UAE@XZ @ 299 NONAME ; QDeclarativeExpression::~QDeclarativeExpression(void)
@@ -332,7 +332,7 @@ EXPORTS
 	??0QDeclarativeCustomParserNode@@QAE@ABV0@@Z @ 331 NONAME ; QDeclarativeCustomParserNode::QDeclarativeCustomParserNode(class QDeclarativeCustomParserNode const &)
 	??1QDeclarativeImageProvider@@UAE@XZ @ 332 NONAME ; QDeclarativeImageProvider::~QDeclarativeImageProvider(void)
 	?sync@QDeclarativeListModel@@QAEXXZ @ 333 NONAME ABSENT ; void QDeclarativeListModel::sync(void)
-	?objectForId@QDeclarativeDebugService@@SAPAVQObject@@H@Z @ 334 NONAME ABSENT ; class QObject * QDeclarativeDebugService::objectForId(int)
+	?objectForId@QDeclarativeDebugService@@SAPAVQObject@@H@Z @ 334 NONAME ; class QObject * QDeclarativeDebugService::objectForId(int)
 	?hasFocus@QDeclarativeItem@@QBE_NXZ @ 335 NONAME ; bool QDeclarativeItem::hasFocus(void) const
 	??1QDeclarativeExtensionPlugin@@UAE@XZ @ 336 NONAME ; QDeclarativeExtensionPlugin::~QDeclarativeExtensionPlugin(void)
 	?qt_metacall@QDeclarativeBehavior@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 337 NONAME ABSENT ; int QDeclarativeBehavior::qt_metacall(enum QMetaObject::Call, int, void * *)
@@ -482,7 +482,7 @@ EXPORTS
 	?pluginPathList@QDeclarativeEngine@@QBE?AVQStringList@@XZ @ 481 NONAME ; class QStringList QDeclarativeEngine::pluginPathList(void) const
 	?parentContext@QDeclarativeContext@@QBEPAV1@XZ @ 482 NONAME ; class QDeclarativeContext * QDeclarativeContext::parentContext(void) const
 	?leftMarginChanged@QDeclarativeAnchors@@IAEXXZ @ 483 NONAME ABSENT ; void QDeclarativeAnchors::leftMarginChanged(void)
-	?staticMetaObject@QDeclarativeDebugService@@2UQMetaObject@@B @ 484 NONAME ABSENT ; struct QMetaObject const QDeclarativeDebugService::staticMetaObject
+	?staticMetaObject@QDeclarativeDebugService@@2UQMetaObject@@B @ 484 NONAME ; struct QMetaObject const QDeclarativeDebugService::staticMetaObject
 	?topMargin@QDeclarativeAnchors@@QBEMXZ @ 485 NONAME ABSENT ; float QDeclarativeAnchors::topMargin(void) const
 	??0QDeclarativeDebugExpressionQuery@@AAE@PAVQObject@@@Z @ 486 NONAME ABSENT ; QDeclarativeDebugExpressionQuery::QDeclarativeDebugExpressionQuery(class QObject *)
 	??0QPacket@@IAE@ABVQByteArray@@@Z @ 487 NONAME ; QPacket::QPacket(class QByteArray const &)
@@ -559,7 +559,7 @@ EXPORTS
 	?metaObject@QDeclarativeEngine@@UBEPBUQMetaObject@@XZ @ 558 NONAME ; struct QMetaObject const * QDeclarativeEngine::metaObject(void) const
 	??_EQDeclarativeDebugContextReference@@QAE@I@Z @ 559 NONAME ABSENT ; QDeclarativeDebugContextReference::~QDeclarativeDebugContextReference(unsigned int)
 	?propertyWrite@QDeclarativeOpenMetaObject@@MAEXH@Z @ 560 NONAME ABSENT ; void QDeclarativeOpenMetaObject::propertyWrite(int)
-	?qt_metacall@QDeclarativeDebugService@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 561 NONAME ABSENT ; int QDeclarativeDebugService::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@QDeclarativeDebugService@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 561 NONAME ; int QDeclarativeDebugService::qt_metacall(enum QMetaObject::Call, int, void * *)
 	?setVerticalCenterOffset@QDeclarativeAnchors@@QAEXM@Z @ 562 NONAME ABSENT ; void QDeclarativeAnchors::setVerticalCenterOffset(float)
 	??1QDeclarativeDebugWatch@@UAE@XZ @ 563 NONAME ABSENT ; QDeclarativeDebugWatch::~QDeclarativeDebugWatch(void)
 	??1QPacketAutoSend@@UAE@XZ @ 564 NONAME ABSENT ; QPacketAutoSend::~QPacketAutoSend(void)
@@ -641,7 +641,7 @@ EXPORTS
 	?d_func@QDeclarativeItem@@AAEPAVQDeclarativeItemPrivate@@XZ @ 640 NONAME ; class QDeclarativeItemPrivate * QDeclarativeItem::d_func(void)
 	?binding@QDeclarativeDomValueBinding@@QBE?AVQString@@XZ @ 641 NONAME ABSENT ; class QString QDeclarativeDomValueBinding::binding(void) const
 	?updateAutoState@QDeclarativeStateGroup@@AAE_NXZ @ 642 NONAME ; bool QDeclarativeStateGroup::updateAutoState(void)
-	?tr@QDeclarativeDebugService@@SA?AVQString@@PBD0@Z @ 643 NONAME ABSENT ; class QString QDeclarativeDebugService::tr(char const *, char const *)
+	?tr@QDeclarativeDebugService@@SA?AVQString@@PBD0@Z @ 643 NONAME ; class QString QDeclarativeDebugService::tr(char const *, char const *)
 	?tr@QDeclarativeComponent@@SA?AVQString@@PBD0H@Z @ 644 NONAME ; class QString QDeclarativeComponent::tr(char const *, char const *, int)
 	??1QDeclarativeProperty@@QAE@XZ @ 645 NONAME ; QDeclarativeProperty::~QDeclarativeProperty(void)
 	?fontChanged@QDeclarativeText@@IAEXABVQFont@@@Z @ 646 NONAME ABSENT ; void QDeclarativeText::fontChanged(class QFont const &)
@@ -667,14 +667,14 @@ EXPORTS
 	?getStaticMetaObject@QDeclarativeListModel@@SAABUQMetaObject@@XZ @ 666 NONAME ABSENT ; struct QMetaObject const & QDeclarativeListModel::getStaticMetaObject(void)
 	?setStdCppSet@QMetaPropertyBuilder@@QAEX_N@Z @ 667 NONAME ABSENT ; void QMetaPropertyBuilder::setStdCppSet(bool)
 	??0QDeclarativeItemPrivate@@QAE@XZ @ 668 NONAME ; QDeclarativeItemPrivate::QDeclarativeItemPrivate(void)
-	??0QDeclarativeDebugService@@QAE@ABVQString@@PAVQObject@@@Z @ 669 NONAME ABSENT ; QDeclarativeDebugService::QDeclarativeDebugService(class QString const &, class QObject *)
+	??0QDeclarativeDebugService@@QAE@ABVQString@@PAVQObject@@@Z @ 669 NONAME ; QDeclarativeDebugService::QDeclarativeDebugService(class QString const &, class QObject *)
 	?load@QDeclarativePixmap@@QAEXPAVQDeclarativeEngine@@ABVQUrl@@_N@Z @ 670 NONAME ABSENT ; void QDeclarativePixmap::load(class QDeclarativeEngine *, class QUrl const &, bool)
 	??_EQPacketAutoSend@@UAE@I@Z @ 671 NONAME ABSENT ; QPacketAutoSend::~QPacketAutoSend(unsigned int)
 	?saveValueType@QDeclarativePropertyPrivate@@SA?AVQByteArray@@PBUQMetaObject@@H0H@Z @ 672 NONAME ABSENT ; class QByteArray QDeclarativePropertyPrivate::saveValueType(struct QMetaObject const *, int, struct QMetaObject const *, int)
 	?resetHeight@QDeclarativeItem@@QAEXXZ @ 673 NONAME ; void QDeclarativeItem::resetHeight(void)
 	?setVAlign@QDeclarativeText@@QAEXW4VAlignment@1@@Z @ 674 NONAME ABSENT ; void QDeclarativeText::setVAlign(enum QDeclarativeText::VAlignment)
-	??1QDeclarativeDebugService@@UAE@XZ @ 675 NONAME ABSENT ; QDeclarativeDebugService::~QDeclarativeDebugService(void)
-	?trUtf8@QDeclarativeDebugService@@SA?AVQString@@PBD0H@Z @ 676 NONAME ABSENT ; class QString QDeclarativeDebugService::trUtf8(char const *, char const *, int)
+	??1QDeclarativeDebugService@@UAE@XZ @ 675 NONAME ; QDeclarativeDebugService::~QDeclarativeDebugService(void)
+	?trUtf8@QDeclarativeDebugService@@SA?AVQString@@PBD0H@Z @ 676 NONAME ; class QString QDeclarativeDebugService::trUtf8(char const *, char const *, int)
 	?elideMode@QDeclarativeText@@QBE?AW4TextElideMode@1@XZ @ 677 NONAME ABSENT ; enum QDeclarativeText::TextElideMode QDeclarativeText::elideMode(void) const
 	?baseUrl@QDeclarativeContext@@QBE?AVQUrl@@XZ @ 678 NONAME ; class QUrl QDeclarativeContext::baseUrl(void) const
 	?qt_metacall@QDeclarativeDebugRootContextQuery@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 679 NONAME ABSENT ; int QDeclarativeDebugRootContextQuery::qt_metacall(enum QMetaObject::Call, int, void * *)
@@ -849,7 +849,7 @@ EXPORTS
 	??1QDeclarativeBehavior@@UAE@XZ @ 848 NONAME ABSENT ; QDeclarativeBehavior::~QDeclarativeBehavior(void)
 	?qmlInfo@@YA?AVQDeclarativeInfo@@PBVQObject@@@Z @ 849 NONAME ; class QDeclarativeInfo qmlInfo(class QObject const *)
 	?qt_metacall@QDeclarativeDebugClient@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 850 NONAME ABSENT ; int QDeclarativeDebugClient::qt_metacall(enum QMetaObject::Call, int, void * *)
-	?d_func@QDeclarativeDebugService@@ABEPBVQDeclarativeDebugServicePrivate@@XZ @ 851 NONAME ABSENT ; class QDeclarativeDebugServicePrivate const * QDeclarativeDebugService::d_func(void) const
+	?d_func@QDeclarativeDebugService@@ABEPBVQDeclarativeDebugServicePrivate@@XZ @ 851 NONAME ; class QDeclarativeDebugServicePrivate const * QDeclarativeDebugService::d_func(void) const
 	??1QDeclarativeDebugQuery@@UAE@XZ @ 852 NONAME ABSENT ; QDeclarativeDebugQuery::~QDeclarativeDebugQuery(void)
 	?data_append@QDeclarativeItemPrivate@@SAXPAV?$QDeclarativeListProperty@VQObject@@@@PAVQObject@@@Z @ 853 NONAME ; void QDeclarativeItemPrivate::data_append(class QDeclarativeListProperty<class QObject> *, class QObject *)
 	?tr@QDeclarativeState@@SA?AVQString@@PBD0@Z @ 854 NONAME ; class QString QDeclarativeState::tr(char const *, char const *)
@@ -1120,7 +1120,7 @@ EXPORTS
 	?expression@QDeclarativeDebugExpressionQuery@@QBE?AVQVariant@@XZ @ 1119 NONAME ABSENT ; class QVariant QDeclarativeDebugExpressionQuery::expression(void) const
 	??4QDeclarativeDomList@@QAEAAV0@ABV0@@Z @ 1120 NONAME ABSENT ; class QDeclarativeDomList & QDeclarativeDomList::operator=(class QDeclarativeDomList const &)
 	?qt_metacall@QDeclarativeComponent@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 1121 NONAME ; int QDeclarativeComponent::qt_metacall(enum QMetaObject::Call, int, void * *)
-	?tr@QDeclarativeDebugService@@SA?AVQString@@PBD0H@Z @ 1122 NONAME ABSENT ; class QString QDeclarativeDebugService::tr(char const *, char const *, int)
+	?tr@QDeclarativeDebugService@@SA?AVQString@@PBD0H@Z @ 1122 NONAME ; class QString QDeclarativeDebugService::tr(char const *, char const *, int)
 	?staticMetaObject@QDeclarativeEngine@@2UQMetaObject@@B @ 1123 NONAME ; struct QMetaObject const QDeclarativeEngine::staticMetaObject
 	?staticMetaObject@QDeclarativeStateOperation@@2UQMetaObject@@B @ 1124 NONAME ; struct QMetaObject const QDeclarativeStateOperation::staticMetaObject
 	?actions@QDeclarativeStateOperation@@UAE?AV?$QList@VQDeclarativeAction@@@@XZ @ 1125 NONAME ; class QList<class QDeclarativeAction> QDeclarativeStateOperation::actions(void)
@@ -1145,7 +1145,7 @@ EXPORTS
 	?sourceFile@QDeclarativeExpression@@QBE?AVQString@@XZ @ 1144 NONAME ; class QString QDeclarativeExpression::sourceFile(void) const
 	??_EQDeclarativeAnchors@@UAE@I@Z @ 1145 NONAME ABSENT ; QDeclarativeAnchors::~QDeclarativeAnchors(unsigned int)
 	?removeNotifySignal@QMetaPropertyBuilder@@QAEXXZ @ 1146 NONAME ABSENT ; void QMetaPropertyBuilder::removeNotifySignal(void)
-	?trUtf8@QDeclarativeDebugService@@SA?AVQString@@PBD0@Z @ 1147 NONAME ABSENT ; class QString QDeclarativeDebugService::trUtf8(char const *, char const *)
+	?trUtf8@QDeclarativeDebugService@@SA?AVQString@@PBD0@Z @ 1147 NONAME ; class QString QDeclarativeDebugService::trUtf8(char const *, char const *)
 	?setImportPathList@QDeclarativeEngine@@QAEXABVQStringList@@@Z @ 1148 NONAME ; void QDeclarativeEngine::setImportPathList(class QStringList const &)
 	?enabledChanged@QDeclarativeDebugService@@MAEX_N@Z @ 1149 NONAME ABSENT ; void QDeclarativeDebugService::enabledChanged(bool)
 	?addWatch@QDeclarativeEngineDebug@@QAEPAVQDeclarativeDebugWatch@@ABVQDeclarativeDebugObjectReference@@PAVQObject@@@Z @ 1150 NONAME ABSENT ; class QDeclarativeDebugWatch * QDeclarativeEngineDebug::addWatch(class QDeclarativeDebugObjectReference const &, class QObject *)
@@ -1176,7 +1176,7 @@ EXPORTS
 	?paint@QDeclarativeRectangle@@UAEXPAVQPainter@@PBVQStyleOptionGraphicsItem@@PAVQWidget@@@Z @ 1175 NONAME ABSENT ; void QDeclarativeRectangle::paint(class QPainter *, class QStyleOptionGraphicsItem const *, class QWidget *)
 	??6QDeclarativeState@@QAEAAV0@PAVQDeclarativeStateOperation@@@Z @ 1176 NONAME ; class QDeclarativeState & QDeclarativeState::operator<<(class QDeclarativeStateOperation *)
 	?destroy@QDeclarativeAbstractBinding@@UAEXXZ @ 1177 NONAME ABSENT ; void QDeclarativeAbstractBinding::destroy(void)
-	?qt_metacast@QDeclarativeDebugService@@UAEPAXPBD@Z @ 1178 NONAME ABSENT ; void * QDeclarativeDebugService::qt_metacast(char const *)
+	?qt_metacast@QDeclarativeDebugService@@UAEPAXPBD@Z @ 1178 NONAME ; void * QDeclarativeDebugService::qt_metacast(char const *)
 	?qt_metacast@QDeclarativeValueType@@UAEPAXPBD@Z @ 1179 NONAME ABSENT ; void * QDeclarativeValueType::qt_metacast(char const *)
 	?childAt@QDeclarativeItem@@QBEPAV1@MM@Z @ 1180 NONAME ; class QDeclarativeItem * QDeclarativeItem::childAt(float, float) const
 	?paintedWidth@QDeclarativeText@@QBEMXZ @ 1181 NONAME ABSENT ; float QDeclarativeText::paintedWidth(void) const
@@ -1297,7 +1297,7 @@ EXPORTS
 	?value@QDeclarativeOpenMetaObject@@QBE?AVQVariant@@H@Z @ 1296 NONAME ABSENT ; class QVariant QDeclarativeOpenMetaObject::value(int) const
 	?tr@QDeclarativeDebugRootContextQuery@@SA?AVQString@@PBD0H@Z @ 1297 NONAME ABSENT ; class QString QDeclarativeDebugRootContextQuery::tr(char const *, char const *, int)
 	?setFromState@QDeclarativeTransition@@QAEXABVQString@@@Z @ 1298 NONAME ; void QDeclarativeTransition::setFromState(class QString const &)
-	?metaObject@QDeclarativeDebugService@@UBEPBUQMetaObject@@XZ @ 1299 NONAME ABSENT ; struct QMetaObject const * QDeclarativeDebugService::metaObject(void) const
+	?metaObject@QDeclarativeDebugService@@UBEPBUQMetaObject@@XZ @ 1299 NONAME ; struct QMetaObject const * QDeclarativeDebugService::metaObject(void) const
 	?state@QDeclarativeDebugQuery@@QBE?AW4State@1@XZ @ 1300 NONAME ABSENT ; enum QDeclarativeDebugQuery::State QDeclarativeDebugQuery::state(void) const
 	?setBottom@QDeclarativeScaleGrid@@QAEXH@Z @ 1301 NONAME ABSENT ; void QDeclarativeScaleGrid::setBottom(int)
 	?topMarginChanged@QDeclarativeAnchors@@IAEXXZ @ 1302 NONAME ABSENT ; void QDeclarativeAnchors::topMarginChanged(void)
@@ -1305,7 +1305,7 @@ EXPORTS
 	?position@QDeclarativeDomObject@@QBEHXZ @ 1304 NONAME ABSENT ; int QDeclarativeDomObject::position(void) const
 	?update@QDeclarativeBinding@@UAEXV?$QFlags@W4WriteFlag@QDeclarativePropertyPrivate@@@@@Z @ 1305 NONAME ABSENT ; void QDeclarativeBinding::update(class QFlags<enum QDeclarativePropertyPrivate::WriteFlag>)
 	?tr@QDeclarativeBehavior@@SA?AVQString@@PBD0@Z @ 1306 NONAME ABSENT ; class QString QDeclarativeBehavior::tr(char const *, char const *)
-	?isDebuggingEnabled@QDeclarativeDebugService@@SA_NXZ @ 1307 NONAME ABSENT ; bool QDeclarativeDebugService::isDebuggingEnabled(void)
+	?isDebuggingEnabled@QDeclarativeDebugService@@SA_NXZ @ 1307 NONAME ; bool QDeclarativeDebugService::isDebuggingEnabled(void)
 	?tr@QDeclarativeText@@SA?AVQString@@PBD0H@Z @ 1308 NONAME ABSENT ; class QString QDeclarativeText::tr(char const *, char const *, int)
 	?reset@QDeclarativeProperty@@QBE_NXZ @ 1309 NONAME ; bool QDeclarativeProperty::reset(void) const
 	?objectDebugId@QDeclarativeDebugWatch@@QBEHXZ @ 1310 NONAME ABSENT ; int QDeclarativeDebugWatch::objectDebugId(void) const
@@ -1344,7 +1344,7 @@ EXPORTS
 	?maximumPacketSize@QPacketProtocol@@QBEHXZ @ 1343 NONAME ; int QPacketProtocol::maximumPacketSize(void) const
 	??_EQDeclarativeDebuggerStatus@@UAE@I@Z @ 1344 NONAME ABSENT ; QDeclarativeDebuggerStatus::~QDeclarativeDebuggerStatus(unsigned int)
 	?error@QDeclarativeCustomParser@@IAEXABVQString@@@Z @ 1345 NONAME ; void QDeclarativeCustomParser::error(class QString const &)
-	?messageReceived@QDeclarativeDebugService@@MAEXABVQByteArray@@@Z @ 1346 NONAME ABSENT ; void QDeclarativeDebugService::messageReceived(class QByteArray const &)
+	?messageReceived@QDeclarativeDebugService@@MAEXABVQByteArray@@@Z @ 1346 NONAME ; void QDeclarativeDebugService::messageReceived(class QByteArray const &)
 	??0QDeclarativeParserStatus@@QAE@XZ @ 1347 NONAME ; QDeclarativeParserStatus::QDeclarativeParserStatus(void)
 	?isNumber@Variant@QDeclarativeParser@@QBE_NXZ @ 1348 NONAME ; bool QDeclarativeParser::Variant::isNumber(void) const
 	?getStaticMetaObject@QDeclarativeEngineDebug@@SAABUQMetaObject@@XZ @ 1349 NONAME ABSENT ; struct QMetaObject const & QDeclarativeEngineDebug::getStaticMetaObject(void)
@@ -1475,7 +1475,7 @@ EXPORTS
 	?packetWritten@QPacketProtocol@@IAEXXZ @ 1474 NONAME ; void QPacketProtocol::packetWritten(void)
 	?getStaticMetaObject@QDeclarativeDebugObjectQuery@@SAABUQMetaObject@@XZ @ 1475 NONAME ABSENT ; struct QMetaObject const & QDeclarativeDebugObjectQuery::getStaticMetaObject(void)
 	?isSignalProperty@QDeclarativeProperty@@QBE_NXZ @ 1476 NONAME ; bool QDeclarativeProperty::isSignalProperty(void) const
-	?d_func@QDeclarativeDebugService@@AAEPAVQDeclarativeDebugServicePrivate@@XZ @ 1477 NONAME ABSENT ; class QDeclarativeDebugServicePrivate * QDeclarativeDebugService::d_func(void)
+	?d_func@QDeclarativeDebugService@@AAEPAVQDeclarativeDebugServicePrivate@@XZ @ 1477 NONAME ; class QDeclarativeDebugServicePrivate * QDeclarativeDebugService::d_func(void)
 	?qmlTypeNames@QDeclarativeMetaType@@SA?AV?$QList@VQByteArray@@@@XZ @ 1478 NONAME ABSENT ; class QList<class QByteArray> QDeclarativeMetaType::qmlTypeNames(void)
 	?componentComplete@QDeclarativeItem@@MAEXXZ @ 1479 NONAME ; void QDeclarativeItem::componentComplete(void)
 	?creationContext@QDeclarativeComponent@@QBEPAVQDeclarativeContext@@XZ @ 1480 NONAME ; class QDeclarativeContext * QDeclarativeComponent::creationContext(void) const
@@ -1575,7 +1575,7 @@ EXPORTS
 	?keyCount@QMetaEnumBuilder@@QBEHXZ @ 1574 NONAME ABSENT ; int QMetaEnumBuilder::keyCount(void) const
 	??1QDeclarativeDomProperty@@QAE@XZ @ 1575 NONAME ABSENT ; QDeclarativeDomProperty::~QDeclarativeDomProperty(void)
 	?url@QDeclarativePixmap@@QBEABVQUrl@@XZ @ 1576 NONAME ; class QUrl const & QDeclarativePixmap::url(void) const
-	?sendMessage@QDeclarativeDebugService@@QAEXABVQByteArray@@@Z @ 1577 NONAME ABSENT ; void QDeclarativeDebugService::sendMessage(class QByteArray const &)
+	?sendMessage@QDeclarativeDebugService@@QAEXABVQByteArray@@@Z @ 1577 NONAME ; void QDeclarativeDebugService::sendMessage(class QByteArray const &)
 	?context@QDeclarativeScriptString@@QBEPAVQDeclarativeContext@@XZ @ 1578 NONAME ; class QDeclarativeContext * QDeclarativeScriptString::context(void) const
 	?queryObject@QDeclarativeEngineDebug@@QAEPAVQDeclarativeDebugObjectQuery@@ABVQDeclarativeDebugObjectReference@@PAVQObject@@@Z @ 1579 NONAME ABSENT ; class QDeclarativeDebugObjectQuery * QDeclarativeEngineDebug::queryObject(class QDeclarativeDebugObjectReference const &, class QObject *)
 	?tr@QDeclarativePropertyMap@@SA?AVQString@@PBD0H@Z @ 1580 NONAME ; class QString QDeclarativePropertyMap::tr(char const *, char const *, int)
@@ -1608,7 +1608,7 @@ EXPORTS
 	??_EQDeclarativeComponent@@UAE@I@Z @ 1607 NONAME ; QDeclarativeComponent::~QDeclarativeComponent(unsigned int)
 	?get@QDeclarativeItemPrivate@@SAPAV1@PAVQDeclarativeItem@@@Z @ 1608 NONAME ; class QDeclarativeItemPrivate * QDeclarativeItemPrivate::get(class QDeclarativeItem *)
 	?staticMetaObject@QDeclarativeView@@2UQMetaObject@@B @ 1609 NONAME ; struct QMetaObject const QDeclarativeView::staticMetaObject
-	?objectToString@QDeclarativeDebugService@@SA?AVQString@@PAVQObject@@@Z @ 1610 NONAME ABSENT ; class QString QDeclarativeDebugService::objectToString(class QObject *)
+	?objectToString@QDeclarativeDebugService@@SA?AVQString@@PAVQObject@@@Z @ 1610 NONAME ; class QString QDeclarativeDebugService::objectToString(class QObject *)
 	?defaultValue@QDeclarativeDomDynamicProperty@@QBE?AVQDeclarativeDomProperty@@XZ @ 1611 NONAME ABSENT ; class QDeclarativeDomProperty QDeclarativeDomDynamicProperty::defaultValue(void) const
 	?relatedMetaObject@QMetaObjectBuilder@@QBEPBUQMetaObject@@H@Z @ 1612 NONAME ABSENT ; struct QMetaObject const * QMetaObjectBuilder::relatedMetaObject(int) const
 	?addKey@QMetaEnumBuilder@@QAEHABVQByteArray@@H@Z @ 1613 NONAME ABSENT ; int QMetaEnumBuilder::addKey(class QByteArray const &, int)
@@ -1633,7 +1633,7 @@ EXPORTS
 	?tr@QDeclarativeView@@SA?AVQString@@PBD0@Z @ 1632 NONAME ; class QString QDeclarativeView::tr(char const *, char const *)
 	?qt_metacall@QPacketProtocol@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 1633 NONAME ; int QPacketProtocol::qt_metacall(enum QMetaObject::Call, int, void * *)
 	??0QDeclarativeItem@@QAE@PAV0@@Z @ 1634 NONAME ; QDeclarativeItem::QDeclarativeItem(class QDeclarativeItem *)
-	?hasDebuggingClient@QDeclarativeDebugService@@SA_NXZ @ 1635 NONAME ABSENT ; bool QDeclarativeDebugService::hasDebuggingClient(void)
+	?hasDebuggingClient@QDeclarativeDebugService@@SA_NXZ @ 1635 NONAME ; bool QDeclarativeDebugService::hasDebuggingClient(void)
 	?staticMetaObject@QDeclarativeContext@@2UQMetaObject@@B @ 1636 NONAME ; struct QMetaObject const QDeclarativeContext::staticMetaObject
 	?setContextForObject@QDeclarativeEngine@@SAXPAVQObject@@PAVQDeclarativeContext@@@Z @ 1637 NONAME ; void QDeclarativeEngine::setContextForObject(class QObject *, class QDeclarativeContext *)
 	?baselineOffsetChanged@QDeclarativeItem@@IAEXM@Z @ 1638 NONAME ; void QDeclarativeItem::baselineOffsetChanged(float)
@@ -1733,7 +1733,7 @@ EXPORTS
 	?start@QDeclarativeTimer@@QAEXXZ @ 1732 NONAME ABSENT ; void QDeclarativeTimer::start(void)
 	?transition@QDeclarativeAbstractAnimation@@UAEXAAV?$QList@VQDeclarativeAction@@@@AAV?$QList@VQDeclarativeProperty@@@@W4TransitionDirection@1@@Z @ 1733 NONAME ABSENT ; void QDeclarativeAbstractAnimation::transition(class QList<class QDeclarativeAction> &, class QList<class QDeclarativeProperty> &, enum QDeclarativeAbstractAnimation::TransitionDirection)
 	?componentComplete@QDeclarativeAbstractAnimation@@UAEXXZ @ 1734 NONAME ABSENT ; void QDeclarativeAbstractAnimation::componentComplete(void)
-	?statusChanged@QDeclarativeDebugService@@MAEXW4Status@1@@Z @ 1735 NONAME ABSENT ; void QDeclarativeDebugService::statusChanged(enum QDeclarativeDebugService::Status)
+	?statusChanged@QDeclarativeDebugService@@MAEXW4Status@1@@Z @ 1735 NONAME ; void QDeclarativeDebugService::statusChanged(enum QDeclarativeDebugService::Status)
 	?runningChanged@QDeclarativeAbstractAnimation@@IAEX_N@Z @ 1736 NONAME ABSENT ; void QDeclarativeAbstractAnimation::runningChanged(bool)
 	?trUtf8@QDeclarativeAbstractAnimation@@SA?AVQString@@PBD0H@Z @ 1737 NONAME ABSENT ; class QString QDeclarativeAbstractAnimation::trUtf8(char const *, char const *, int)
 	??_EQDeclarativeBasePositioner@@UAE@I@Z @ 1738 NONAME ABSENT ; QDeclarativeBasePositioner::~QDeclarativeBasePositioner(unsigned int)
@@ -1813,7 +1813,7 @@ EXPORTS
 	?setTarget@QDeclarativeAbstractAnimation@@EAEXABVQDeclarativeProperty@@@Z @ 1812 NONAME ABSENT ; void QDeclarativeAbstractAnimation::setTarget(class QDeclarativeProperty const &)
 	?alwaysRunToEnd@QDeclarativeAbstractAnimation@@QBE_NXZ @ 1813 NONAME ABSENT ; bool QDeclarativeAbstractAnimation::alwaysRunToEnd(void) const
 	?tr@QDeclarativeTimer@@SA?AVQString@@PBD0H@Z @ 1814 NONAME ABSENT ; class QString QDeclarativeTimer::tr(char const *, char const *, int)
-	?status@QDeclarativeDebugService@@QBE?AW4Status@1@XZ @ 1815 NONAME ABSENT ; enum QDeclarativeDebugService::Status QDeclarativeDebugService::status(void) const
+	?status@QDeclarativeDebugService@@QBE?AW4Status@1@XZ @ 1815 NONAME ; enum QDeclarativeDebugService::Status QDeclarativeDebugService::status(void) const
 	?intervalChanged@QDeclarativeTimer@@IAEXXZ @ 1816 NONAME ABSENT ; void QDeclarativeTimer::intervalChanged(void)
 	?isPaused@QDeclarativeAbstractAnimation@@QBE_NXZ @ 1817 NONAME ABSENT ; bool QDeclarativeAbstractAnimation::isPaused(void) const
 	?getStaticMetaObject@QDeclarativeAbstractAnimation@@SAABUQMetaObject@@XZ @ 1818 NONAME ABSENT ; struct QMetaObject const & QDeclarativeAbstractAnimation::getStaticMetaObject(void)

@@ -942,7 +942,7 @@ void QDeclarativeListViewPrivate::createSection(FxListItem *listItem)
             } else {
                 QDeclarativeContext *context = new QDeclarativeContext(qmlContext(q));
                 context->setContextProperty(QLatin1String("section"), listItem->attached->m_section);
-                QObject *nobj = sectionCriteria->delegate()->create(context);
+                QObject *nobj = sectionCriteria->delegate()->beginCreate(context);
                 if (nobj) {
                     QDeclarative_setParent_noEvent(context, nobj);
                     listItem->section = qobject_cast<QDeclarativeItem *>(nobj);
@@ -956,6 +956,7 @@ void QDeclarativeListViewPrivate::createSection(FxListItem *listItem)
                 } else {
                     delete context;
                 }
+                sectionCriteria->delegate()->completeCreate();
             }
             listItem->setPosition(pos);
         } else {
@@ -1197,8 +1198,7 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
         return;
 
     correctFlick = false;
-    int oldDuration = fixupDuration;
-    fixupDuration = moveReason == Mouse ? fixupDuration : 0;
+    fixupMode = moveReason == Mouse ? fixupMode : Immediate;
 
     if (currentItem && haveHighlightRange && highlightRange == QDeclarativeListView::StrictlyEnforceRange) {
         updateHighlight();
@@ -1211,10 +1211,12 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
 
         timeline.reset(data.move);
         if (viewPos != position()) {
-            if (fixupDuration)
+            if (fixupMode != Immediate) {
                 timeline.move(data.move, -viewPos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration/2);
-            else
+                data.fixingUp = true;
+            } else {
                 timeline.set(data.move, -viewPos);
+            }
         }
         vTime = timeline.time();
     } else if (snapMode != QDeclarativeListView::NoSnap) {
@@ -1230,23 +1232,24 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
            pos = qMax(qMin(bottomItem->position() - highlightRangeStart, -maxExtent), -minExtent);
         } else {
             QDeclarativeFlickablePrivate::fixup(data, minExtent, maxExtent);
-            fixupDuration = oldDuration;
             return;
         }
 
         qreal dist = qAbs(data.move + pos);
         if (dist > 0) {
             timeline.reset(data.move);
-            if (fixupDuration)
+            if (fixupMode != Immediate) {
                 timeline.move(data.move, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration/2);
-            else
+                data.fixingUp = true;
+            } else {
                 timeline.set(data.move, -pos);
+            }
             vTime = timeline.time();
         }
     } else {
         QDeclarativeFlickablePrivate::fixup(data, minExtent, maxExtent);
     }
-    fixupDuration = oldDuration;
+    fixupMode = Normal;
 }
 
 void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal maxExtent, qreal vSize,
@@ -1254,6 +1257,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
 {
     Q_Q(QDeclarativeListView);
 
+    data.fixingUp = false;
     moveReason = Mouse;
     if ((!haveHighlightRange || highlightRange != QDeclarativeListView::StrictlyEnforceRange) && snapMode == QDeclarativeListView::NoSnap) {
         correctFlick = true;
@@ -2708,6 +2712,7 @@ void QDeclarativeListView::positionViewAtIndex(int index, int mode)
 /*!
     \qmlmethod ListView::positionViewAtBeginning()
     \qmlmethod ListView::positionViewAtEnd()
+    \since Quick 1.1
 
     Positions the view at the beginning or end, taking into account any header or footer.
 
@@ -2797,6 +2802,8 @@ void QDeclarativeListView::updateSections()
             roles << d->sectionCriteria->property().toUtf8();
         d->model->setWatchedRoles(roles);
         d->updateSections();
+        if (d->itemCount)
+            d->layout();
     }
 }
 
