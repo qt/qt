@@ -2082,6 +2082,9 @@ void QProcess::terminate()
     On Symbian, this function requires platform security capability
     \c PowerMgmt. If absent, the process will panic with KERN-EXEC 46.
 
+    \note Killing running processes from other processes will typically
+    cause a panic in Symbian due to platform security.
+
     \sa {Symbian Platform Security Requirements}
     \sa terminate()
 */
