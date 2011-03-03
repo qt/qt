@@ -941,7 +941,6 @@ void tst_QScriptContext::backtrace()
     QVERIFY(!eng.hasUncaughtException());
     QVERIFY(ret.isArray());
     QStringList slist = qscriptvalue_cast<QStringList>(ret);
-    QEXPECT_FAIL("closure", "It should not be <eval>.  Maybe because we call CompileEval, v8 things everything is eval", Continue);
     QCOMPARE(slist, expectedbacktrace);
 }
 

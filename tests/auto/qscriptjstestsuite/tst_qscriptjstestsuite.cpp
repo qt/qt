@@ -654,7 +654,6 @@ tst_Suite::tst_Suite()
     // Failures due to switch to JSC as back-end
     addExpectedFailure("ecma/Array/15.4.3.1-2.js", "var props = ''; for ( p in Array  ) { props += p } props", willFixInNextReleaseMessage);
     addExpectedFailure("ecma/Boolean/15.6.3.1-1.js", "var str='';for ( p in Boolean ) { str += p } str;", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma/Expressions/11.4.1.js", "var abc; delete(abc)", willFixInNextReleaseMessage);
     addExpectedFailure("ecma/FunctionObjects/15.3.3.1-2.js", "var str='';for (prop in Function ) str += prop; str;", willFixInNextReleaseMessage);
     addExpectedFailure("ecma/ObjectObjects/15.2.3.1-1.js", "var str = '';for ( p in Object ) { str += p; }; str", willFixInNextReleaseMessage);
     addExpectedFailure("ecma/Statements/12.6.3-11.js", "result = \"\"; for ( p in Number ) { result += String(p) };", willFixInNextReleaseMessage);
