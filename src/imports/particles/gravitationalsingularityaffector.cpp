@@ -103,19 +103,19 @@ void GravitationalSingularityAffector::subaffect(ParticleData *d, qreal dt, bool
         qreal nextX = d->pv.x + d->pv.sx * dt + d->pv.ax * dt * dt * 0.5;
         qreal nextY = d->pv.y + d->pv.sy * dt + d->pv.ay * dt * dt * 0.5;
         if(lineIntersect(d->pv.x, d->pv.y, nextX, nextY, m_x, m_y)){
-//            d->pv.ax = 0;
-//            d->pv.ay = 0;
-//            d->pv.sx = 0;
-//            d->pv.sy = 0;
-//            d->pv.x = m_x;
-//            d->pv.y = m_y;
-//            return;
-            //Passed center - the near infinite forces cancel out
-            d->pv.x = m_x + m_x - d->pv.x;
-            d->pv.y = m_y + m_y - d->pv.y;
-            d->pv.sx *= -1;
-            d->pv.sy *= -1;
+            d->pv.ax = 0;
+            d->pv.ay = 0;
+            d->pv.sx = 0;
+            d->pv.sy = 0;
+            d->pv.x = m_x;
+            d->pv.y = m_y;
             return;
+            //Passed center - the near infinite forces cancel out
+//            d->pv.x = m_x + m_x - d->pv.x;
+//            d->pv.y = m_y + m_y - d->pv.y;
+//            d->pv.sx *= -1;
+//            d->pv.sy *= -1;
+//            return;
         }
         //Simulate advancing a dt
         d->pv.x = nextX;

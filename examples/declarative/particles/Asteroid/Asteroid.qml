@@ -55,8 +55,19 @@ Item {
             particleSizeVariation: 10
         }
     }
-
+    TrailEmitter{
+            system: meteorSystem
+            particlesPerSecond: 12
+            particleDuration: 5000
+            emitting: true
+            yAccelVariation: 80
+            xAccelVariation: 80;
+            particleSize: 15
+            particleEndSize: 300
+            anchors.centerIn: parent
+     }
     ParticleSystem{
+        id: meteorSystem
         anchors.fill: parent
         particles: SpriteParticle{
             id: particles
@@ -83,26 +94,16 @@ Item {
                 }
             ]
         }
-        emitters: TrailEmitter{
-            particlesPerSecond: 12
-            particleDuration: 5000
-            emitting: true
-            yAccelVariation: 80
-            xAccelVariation: 80;
-            particleSize: 15
-            particleEndSize: 300
-            emitterX: width/2
-            emitterY: height/2
-        }
-        affectors: Toggle{
-            affecting: ma.pressed;
+         affectors: Toggle{
+            affecting: true
             Zone{
-                x: ma.mouseX - 16
-                y: ma.mouseY - 16
-                width: 32
-                height:32
+                x: holder.x - 30
+                y: holder.y - 30
+                width:  60
+                height: 60
                 SpriteGoal{
-                    goalState: "nullFrame"
+                    goalState: "explode"
+                    jump: true
                 }
             }
         }
@@ -117,8 +118,8 @@ Item {
     }
     Item {
         id: holder
-        x: circle.x - Math.sin(circle.percent * 6.28316530714)*250
-        y: circle.y + Math.cos(circle.percent * 6.28316530714)*250
+        x: circle.x - Math.sin(circle.percent * 6.28316530714)*200
+        y: circle.y + Math.cos(circle.percent * 6.28316530714)*200
         z: 1
     }
 
