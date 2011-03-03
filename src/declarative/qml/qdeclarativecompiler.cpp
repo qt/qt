@@ -63,7 +63,7 @@
 #include "private/qdeclarativeglobal_p.h"
 #include "private/qdeclarativescriptparser_p.h"
 #include "private/qdeclarativebinding_p.h"
-#include "private/qdeclarativecompiledbindings_p.h"
+#include "private/qdeclarativev4compiler_p.h"
 #include "private/qdeclarativeglobalscriptclass_p.h"
 
 #include <QColor>
@@ -79,7 +79,6 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(compilerDump, QML_COMPILER_DUMP);
 DEFINE_BOOL_CONFIG_OPTION(compilerStatDump, QML_COMPILER_STATS);
-DEFINE_BOOL_CONFIG_OPTION(bindingsDump, QML_BINDINGS_DUMP);
 
 using namespace QDeclarativeParser;
 
@@ -658,21 +657,6 @@ void QDeclarativeCompiler::compileTree(QDeclarativeParser::Object *tree)
     compileState.root = tree;
     componentStat.lineNumber = tree->location.start.line;
 
-    if (!buildObject(tree, BindingContext()) || !completeComponentBuild())
-        return;
-
-    QDeclarativeInstruction init;
-    init.type = QDeclarativeInstruction::Init;
-    init.line = 0;
-    init.init.bindingsSize = compileState.bindings.count();
-    init.init.parserStatusSize = compileState.parserStatusCount;
-    init.init.contextCache = genContextCache();
-    if (compileState.compiledBindingData.isEmpty())
-        init.init.compiledBinding = -1;
-    else
-        init.init.compiledBinding = output->indexForByteArray(compileState.compiledBindingData);
-    output->bytecode << init;
-
     // Build global import scripts
     QStringList importedScriptIndexes;
 
@@ -690,19 +674,35 @@ void QDeclarativeCompiler::compileTree(QDeclarativeParser::Object *tree)
         output->bytecode << import;
     }
 
+    // We generate the importCache before we build the tree so that
+    // it can be used in the binding compiler.  Given we "expect" the
+    // QML compilation to succeed, this isn't a waste.
+    output->importCache = new QDeclarativeTypeNameCache(engine);
+    for (int ii = 0; ii < importedScriptIndexes.count(); ++ii) 
+        output->importCache->add(importedScriptIndexes.at(ii), ii);
+    unit->imports().populateCache(output->importCache, engine);
+
+    if (!buildObject(tree, BindingContext()) || !completeComponentBuild())
+        return;
+
+    QDeclarativeInstruction init;
+    init.type = QDeclarativeInstruction::Init;
+    init.line = 0;
+    init.init.bindingsSize = compileState.bindings.count();
+    init.init.parserStatusSize = compileState.parserStatusCount;
+    init.init.contextCache = genContextCache();
+    if (compileState.compiledBindingData.isEmpty())
+        init.init.compiledBinding = -1;
+    else
+        init.init.compiledBinding = output->indexForByteArray(compileState.compiledBindingData);
+    output->bytecode << init;
+
     genObject(tree);
 
     QDeclarativeInstruction def;
     init.line = 0;
     def.type = QDeclarativeInstruction::SetDefault;
     output->bytecode << def;
-
-    output->importCache = new QDeclarativeTypeNameCache(engine);
-
-    for (int ii = 0; ii < importedScriptIndexes.count(); ++ii) 
-        output->importCache->add(importedScriptIndexes.at(ii), ii);
-
-    unit->imports().populateCache(output->importCache, engine);
 
     Q_ASSERT(tree->metatype);
 
@@ -2905,25 +2905,26 @@ bool QDeclarativeCompiler::completeComponentBuild()
         COMPILE_CHECK(buildDynamicMeta(aliasObject, ResolveAliases));
     }
 
-    QDeclarativeBindingCompiler::Expression expr;
+    QDeclarativeV4Compiler::Expression expr;
     expr.component = compileState.root;
     expr.ids = compileState.ids;
+    expr.importCache = output->importCache;
+    expr.imports = unit->imports();
 
-    QDeclarativeBindingCompiler bindingCompiler;
+    QDeclarativeV4Compiler bindingCompiler;
 
     for (QHash<QDeclarativeParser::Value*,BindingReference>::Iterator iter = compileState.bindings.begin(); 
          iter != compileState.bindings.end(); ++iter) {
 
         BindingReference &binding = *iter;
 
-        expr.context = binding.bindingContext.object;
-        expr.property = binding.property;
-        expr.expression = binding.expression;
-        expr.imports = unit->imports();
-
         // ### We don't currently optimize for bindings on alias's - because 
         // of the solution to QTBUG-13719
         if (!binding.property->isAlias) {
+            expr.context = binding.bindingContext.object;
+            expr.property = binding.property;
+            expr.expression = binding.expression;
+
             int index = bindingCompiler.compile(expr, enginePrivate);
             if (index != -1) {
                 binding.dataType = BindingReference::Experimental;
@@ -2964,11 +2965,8 @@ bool QDeclarativeCompiler::completeComponentBuild()
         componentStat.scriptBindings.append(iter.key()->location);
     }
 
-    if (bindingCompiler.isValid()) {
+    if (bindingCompiler.isValid()) 
         compileState.compiledBindingData = bindingCompiler.program();
-        if (bindingsDump()) 
-            QDeclarativeBindingCompiler::dump(compileState.compiledBindingData);
-    }
 
     saveComponentState();
 

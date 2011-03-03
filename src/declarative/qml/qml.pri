@@ -30,7 +30,6 @@ SOURCES += \
     $$PWD/qdeclarativeenginedebug.cpp \
     $$PWD/qdeclarativerewrite.cpp \
     $$PWD/qdeclarativevaluetype.cpp \
-    $$PWD/qdeclarativecompiledbindings.cpp \
     $$PWD/qdeclarativefastproperties.cpp \
     $$PWD/qdeclarativexmlhttprequest.cpp \
     $$PWD/qdeclarativesqldatabase.cpp \
@@ -104,7 +103,6 @@ HEADERS += \
     $$PWD/qpodvector_p.h \
     $$PWD/qbitfield_p.h \
     $$PWD/qdeclarativevaluetype_p.h \
-    $$PWD/qdeclarativecompiledbindings_p.h \
     $$PWD/qdeclarativefastproperties_p.h \
     $$PWD/qdeclarativexmlhttprequest_p.h \
     $$PWD/qdeclarativesqldatabase_p.h \
@@ -136,6 +134,7 @@ HEADERS += \
 QT += sql
 include(parser/parser.pri)
 include(rewriter/rewriter.pri)
+include(v4/v4.pri)
 
 # mirrors logic in corelib/kernel/kernel.pri
 unix:!symbian: contains(QT_CONFIG, clock-gettime):include($$QT_SOURCE_TREE/config.tests/unix/clock-gettime/clock-gettime.pri)

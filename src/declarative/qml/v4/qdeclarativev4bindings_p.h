@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEBINDINGOPTIMIZATIONS_P_H
-#define QDECLARATIVEBINDINGOPTIMIZATIONS_P_H
+#ifndef QDECLARATIVEV4BINDINGS_P_H
+#define QDECLARATIVEV4BINDINGS_P_H
 
 //
 //  W A R N I N G
@@ -55,62 +55,38 @@
 
 #include "private/qdeclarativeexpression_p.h"
 #include "private/qdeclarativebinding_p.h"
+#include "private/qdeclarativev4instruction_p.h"
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-struct QDeclarativeBindingCompilerPrivate;
-class QDeclarativeBindingCompiler
+class QDeclarativeV4BindingsPrivate;
+class QDeclarativeV4Bindings : public QObject, 
+                               public QDeclarativeAbstractExpression, 
+                               public QDeclarativeRefCount
 {
 public:
-    QDeclarativeBindingCompiler();
-    ~QDeclarativeBindingCompiler();
-
-    // Returns true if bindings were compiled
-    bool isValid() const;
-
-    struct Expression
-    {
-        QDeclarativeParser::Object *component;
-        QDeclarativeParser::Object *context;
-        QDeclarativeParser::Property *property;
-        QDeclarativeParser::Variant expression;
-        QHash<QString, QDeclarativeParser::Object *> ids;
-        QDeclarativeImports imports;
-    };
-
-    // -1 on failure, otherwise the binding index to use
-    int compile(const Expression &, QDeclarativeEnginePrivate *);
-
-    // Returns the compiled program
-    QByteArray program() const;
-
-    static void dump(const QByteArray &);
-private:
-    QDeclarativeBindingCompilerPrivate *d;
-};
-
-class QDeclarativeCompiledBindingsPrivate;
-class QDeclarativeCompiledBindings : public QObject, public QDeclarativeAbstractExpression, public QDeclarativeRefCount
-{
-public:
-    QDeclarativeCompiledBindings(const char *program, QDeclarativeContextData *context);
-    virtual ~QDeclarativeCompiledBindings();
+    QDeclarativeV4Bindings(const char *program, QDeclarativeContextData *context);
+    virtual ~QDeclarativeV4Bindings();
 
     QDeclarativeAbstractBinding *configBinding(int index, QObject *target, QObject *scope, int property);
+
+#ifdef QML_THREADED_INTERPRETER
+    static void **getDecodeInstrTable();
+#endif
 
 protected:
     int qt_metacall(QMetaObject::Call, int, void **);
 
 private:
-    Q_DISABLE_COPY(QDeclarativeCompiledBindings)
-    Q_DECLARE_PRIVATE(QDeclarativeCompiledBindings)
+    Q_DISABLE_COPY(QDeclarativeV4Bindings)
+    Q_DECLARE_PRIVATE(QDeclarativeV4Bindings)
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QDECLARATIVEBINDINGOPTIMIZATIONS_P_H
+#endif // QDECLARATIVEV4BINDINGS_P_H
 

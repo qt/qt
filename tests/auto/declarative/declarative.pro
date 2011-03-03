@@ -79,7 +79,8 @@ contains(QT_CONFIG, private_tests) {
            qdeclarativevisualdatamodel \
            qdeclarativeworkerscript \
            qdeclarativexmllistmodel \
-           qpacketprotocol
+           qpacketprotocol \
+           qdeclarativev4
 
 contains(QT_CONFIG, webkit) {
     SUBDIRS += \

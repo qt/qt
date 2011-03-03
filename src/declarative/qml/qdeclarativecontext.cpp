@@ -46,9 +46,9 @@
 #include "private/qdeclarativeexpression_p.h"
 #include "private/qdeclarativeengine_p.h"
 #include "qdeclarativeengine.h"
-#include "private/qdeclarativecompiledbindings_p.h"
 #include "qdeclarativeinfo.h"
 #include "private/qdeclarativeglobalscriptclass_p.h"
+#include "private/qdeclarativev4bindings_p.h"
 
 #include <qscriptengine.h>
 #include <QtCore/qvarlengtharray.h>
