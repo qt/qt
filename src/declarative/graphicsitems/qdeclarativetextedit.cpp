@@ -1235,6 +1235,23 @@ void QDeclarativeTextEdit::select(int start, int end)
     updateSelectionMarkers();
 }
 
+/*!
+    \qmlmethod void TextEdit::isRightToLeft(int start, int end)
+
+    Returns true if the natural reading direction of the editor text
+    found between positions \a start and \a end is right to left.
+*/
+bool QDeclarativeTextEdit::isRightToLeft(int start, int end)
+{
+    Q_D(QDeclarativeTextEdit);
+    if (start > end) {
+        qmlInfo(this) << "isRightToLeft(start, end) called with the end property being smaller than the start.";
+        return false;
+    } else {
+        return d->text.mid(start, end - start).isRightToLeft();
+    }
+}
+
 #ifndef QT_NO_CLIPBOARD
 /*!
     \qmlmethod TextEdit::cut()

@@ -89,6 +89,8 @@ private slots:
     void font();
     void color();
     void selection();
+    void isRightToLeft_data();
+    void isRightToLeft();
     void moveCursorSelection_data();
     void moveCursorSelection();
     void moveCursorSelectionSequence_data();
@@ -433,6 +435,63 @@ void tst_qdeclarativetextinput::selection()
     QVERIFY(textinputObject->selectedText().isNull());
 
     delete textinputObject;
+}
+
+void tst_qdeclarativetextinput::isRightToLeft_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<bool>("emptyString");
+    QTest::addColumn<bool>("firstCharacter");
+    QTest::addColumn<bool>("lastCharacter");
+    QTest::addColumn<bool>("middleCharacter");
+    QTest::addColumn<bool>("startString");
+    QTest::addColumn<bool>("midString");
+    QTest::addColumn<bool>("endString");
+
+    const quint16 arabic_str[] = { 0x0638, 0x0643, 0x00646, 0x0647, 0x0633, 0x0638, 0x0643, 0x00646, 0x0647, 0x0633, 0x0647};
+    QTest::newRow("Empty") << "" << false << false << false << false << false << false << false;
+    QTest::newRow("Neutral") << "23244242" << false << false << false << false << false << false << false;
+    QTest::newRow("LTR") << "Hello world" << false << false << false << false << false << false << false;
+    QTest::newRow("RTL") << QString::fromUtf16(arabic_str, 11) << false << true << true << true << true << true << true;
+    QTest::newRow("Bidi RTL + LTR + RTL") << QString::fromUtf16(arabic_str, 11) + QString("Hello world") + QString::fromUtf16(arabic_str, 11) << false << true << true << false << true << true << true;
+    QTest::newRow("Bidi LTR + RTL + LTR") << QString("Hello world") + QString::fromUtf16(arabic_str, 11) + QString("Hello world") << false << false << false << true << false << false << false;
+}
+
+void tst_qdeclarativetextinput::isRightToLeft()
+{
+    QFETCH(QString, text);
+    QFETCH(bool, emptyString);
+    QFETCH(bool, firstCharacter);
+    QFETCH(bool, lastCharacter);
+    QFETCH(bool, middleCharacter);
+    QFETCH(bool, startString);
+    QFETCH(bool, midString);
+    QFETCH(bool, endString);
+
+    QDeclarativeTextInput textInput;
+    textInput.setText(text);
+
+    // first test that the right string is delivered to the QString::isRightToLeft()
+    QCOMPARE(textInput.isRightToLeft(0,0), text.mid(0,0).isRightToLeft());
+    QCOMPARE(textInput.isRightToLeft(0,1), text.mid(0,1).isRightToLeft());
+    QCOMPARE(textInput.isRightToLeft(text.count()-2, text.count()-1), text.mid(text.count()-2, text.count()-1).isRightToLeft());
+    QCOMPARE(textInput.isRightToLeft(text.count()/2, text.count()/2 + 1), text.mid(text.count()/2, text.count()/2 + 1).isRightToLeft());
+    QCOMPARE(textInput.isRightToLeft(0,text.count()/4), text.mid(0,text.count()/4).isRightToLeft());
+    QCOMPARE(textInput.isRightToLeft(text.count()/4,3*text.count()/4), text.mid(text.count()/4,3*text.count()/4).isRightToLeft());
+    if (text.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML TextInput: isRightToLeft(start, end) called with the end property being smaller than the start.");
+    QCOMPARE(textInput.isRightToLeft(3*text.count()/4,text.count()-1), text.mid(3*text.count()/4,text.count()-1).isRightToLeft());
+
+    // then test that the feature actually works
+    QCOMPARE(textInput.isRightToLeft(0,0), emptyString);
+    QCOMPARE(textInput.isRightToLeft(0,1), firstCharacter);
+    QCOMPARE(textInput.isRightToLeft(text.count()-2, text.count()-1), lastCharacter);
+    QCOMPARE(textInput.isRightToLeft(text.count()/2, text.count()/2 + 1), middleCharacter);
+    QCOMPARE(textInput.isRightToLeft(0,text.count()/4), startString);
+    QCOMPARE(textInput.isRightToLeft(text.count()/4,3*text.count()/4), midString);
+    if (text.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML TextInput: isRightToLeft(start, end) called with the end property being smaller than the start.");
+    QCOMPARE(textInput.isRightToLeft(3*text.count()/4,text.count()-1), endString);
 }
 
 void tst_qdeclarativetextinput::moveCursorSelection_data()

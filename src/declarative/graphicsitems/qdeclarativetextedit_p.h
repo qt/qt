@@ -253,6 +253,7 @@ public Q_SLOTS:
     void selectWord();
     void select(int start, int end);
     Q_REVISION(1) void deselect();
+    Q_REVISION(1) bool isRightToLeft(int start, int end);
 #ifndef QT_NO_CLIPBOARD
     void cut();
     void copy();
