@@ -1647,8 +1647,7 @@
     \section1 INCLUDEPATH
 
     This variable specifies the #include directories which should be
-    searched when compiling the project. Use ';' or a space as the
-    directory separator.
+    searched when compiling the project.
 
     For example:
 

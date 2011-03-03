@@ -112,6 +112,7 @@ SUBDIRS=\
     qmimedata \
     qmouseevent_modal \
     qmovie \
+    qvolatileimage \
     qnetworkaccessmanager_and_qprogressdialog \
     qnetworkcachemetadata \
     qnetworkdiskcache \
