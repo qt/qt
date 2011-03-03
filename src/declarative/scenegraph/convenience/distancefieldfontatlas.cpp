@@ -75,7 +75,7 @@ struct Vertex
     float d;
 };
 
-void fillTrapezoid(QRgb *bits, int width, int height, int fromY, int toY,
+void fillTrapezoid(float *bits, int width, int height, int fromY, int toY,
                    const Vertex *left1, const Vertex *left2,
                    const Vertex *right1, const Vertex *right2)
 {
@@ -104,8 +104,8 @@ void fillTrapezoid(QRgb *bits, int width, int height, int fromY, int toY,
         float dd = (leftD - rightD) / (leftX - rightX);
         float d = leftD + (fromX - leftX) * dd;
         for (int x = fromX; x < toX; ++x, d += dd) {
-            if (abs(d) < abs((bits[x] >> 24) - 127))
-                bits[x] = QRgb(d + 127) << 24;
+            if (abs(d) < abs(bits[x]))
+                bits[x] = d;
         }
     }
 }
@@ -127,7 +127,7 @@ bool lineIntersection(Point &result, const Point &left1, const Point &left2, con
     return t > 0 && t < 1 && s > 0 && s < 1;
 }
 
-void drawQuad(QRgb *bits, int width, int height, const Vertex *v1, const Vertex *v2, const Vertex *v3, const Vertex *v4)
+void drawQuad(float *bits, int width, int height, const Vertex *v1, const Vertex *v2, const Vertex *v3, const Vertex *v4)
 {
     float minY = qMin(qMin(v1->p.y, v2->p.y), qMin(v3->p.y, v4->p.y));
     while (v1->p.y > minY) {
@@ -143,6 +143,8 @@ void drawQuad(QRgb *bits, int width, int height, const Vertex *v1, const Vertex 
     //  \  /
     //   v3
 
+#if 0
+    // Algorithm changed. The quad is now always convex.
     if (v2->p.y > v3->p.y && v4->p.y > v3->p.y) {
         // Concave or complex.
         Point p14x32;
@@ -168,7 +170,9 @@ void drawQuad(QRgb *bits, int width, int height, const Vertex *v1, const Vertex 
             fillTrapezoid(bits, width, height, qCeil(v3->p.y), qCeil(v2->p.y), v3, v2, v3, v4);
             fillTrapezoid(bits, width, height, qCeil(v2->p.y), qCeil(v4->p.y), v1, v4, v3, v4);
         }
-    } else if (v2->p.y > v3->p.y) {
+    } else 
+#endif
+    if (v2->p.y > v3->p.y) {
         // Right side is straight.
         fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(v4->p.y), v1, v4, v1, v2);
         fillTrapezoid(bits, width, height, qCeil(v4->p.y), qCeil(v3->p.y), v4, v3, v1, v2);
@@ -192,7 +196,7 @@ void drawQuad(QRgb *bits, int width, int height, const Vertex *v1, const Vertex 
     }
 }
 
-void drawTriangle(QRgb *bits, int width, int height, const Vertex *v1, const Vertex *v2, const Vertex *v3)
+void drawTriangle(float *bits, int width, int height, const Vertex *v1, const Vertex *v2, const Vertex *v3)
 {
     float minY = qMin(qMin(v1->p.y, v2->p.y), v3->p.y);
     while (v1->p.y > minY) {
@@ -219,17 +223,30 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
     QList<QPolygonF> polys = path.toSubpathPolygons();
 
     QImage image(QT_DISTANCEFIELD_TILESIZE, QT_DISTANCEFIELD_TILESIZE, QImage::Format_ARGB32_Premultiplied);
-    image.fill(0);
 
-    if (polys.isEmpty())
+    if (polys.isEmpty()) {
+        image.fill(0);
         return image;
+    }
+
+    union Pacific {
+        float value;
+        QRgb color;
+    };
+    Pacific interior;
+    Pacific exterior;
+    interior.value = 127;
+    exterior.value = -127;
+
+    image.fill(exterior.color);
 
     QPainter p(&image);
+    p.setCompositionMode(QPainter::CompositionMode_Source);
     p.translate(offs, offs);
     p.scale(1 / qreal(QT_DISTANCEFIELD_SCALE), 1 / qreal(QT_DISTANCEFIELD_SCALE));
-    p.fillPath(path, Qt::black);
+    p.fillPath(path, QColor::fromRgba(interior.color));
     p.end();
-    QRgb *bits = (QRgb *)image.bits();
+    float *bits = (float *)image.bits();
     const float angleStep = 15 * 3.141592653589793238f / 180;
     Point rotation = { cos(angleStep), sin(angleStep) };
 
@@ -243,64 +260,42 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
         const QPolygonF &poly = polys.at(i);
         QVector<Point> &normals = allNormals[i];
         QVector<Vertex> &vertices = allVertices[i];
+        QVector<bool> &isConvex = allIsConvex[i];
         normals.reserve(poly.count());
-        vertices.reserve(3 * poly.count());
-        // Calculate vertex "normals".
+        vertices.reserve(poly.count());
+
+        // Calculate vertex normals.
         for (int next = 0, prev = poly.count() - 1; next < poly.count(); prev = next++) {
             const QPointF &from = poly.at(prev);
             const QPointF &to = poly.at(next);
-            Point pos = { float(to.x() / QT_DISTANCEFIELD_SCALE) + offs - 0.5f, float(to.y() / QT_DISTANCEFIELD_SCALE) + offs - 0.5f }; // 0.5f because of rounding used in drawQuad.
-            Point normal = { float(to.y() - from.y()), float(from.x() - to.x()) };
-            if (normal.x == 0 && normal.y == 0)
+            Point n;
+            n.x = float(to.y() - from.y());
+            n.y = float(from.x() - to.x());
+            if (n.x == 0 && n.y == 0)
                 continue;
-            float scale = offs / sqrt(normal.x * normal.x + normal.y * normal.y);
-            normal.x *= scale;
-            normal.y *= scale;
-            normals.append(normal);
-            Vertex v = { pos, 0 };
-            vertices.append(v);
-            vertices.append(v);
-            vertices.append(v);
-        }
+            float scale = offs / sqrt(n.x * n.x + n.y * n.y);
+            n.x *= scale;
+            n.y *= scale;
+            normals.append(n);
 
-        QVector<bool> &isConvex = allIsConvex[i];
-        isConvex.resize(normals.count());
-        // Normalize normals and calculate vertices.
-        for (int next = 0, prev = normals.count() - 1; next < normals.count(); prev = next++) {
-            Point avgNormal = {
-                normals.at(next).x + normals.at(prev).x,
-                normals.at(next).y + normals.at(prev).y
-            };
-            const Point &normal = normals.at(prev);
-            Vertex &intV = vertices[prev * 3];
-            Vertex &extV = vertices[prev * 3 + 2];
-            if (avgNormal.x != 0 || avgNormal.y != 0) {
-                float scale = (offs * offs) / (avgNormal.x * normal.x + avgNormal.y * normal.y);
-                avgNormal.x *= scale;
-                avgNormal.y *= scale;
-                intV.d = offs * QT_DISTANCEFIELD_SCALE;
-                extV.d = -offs * QT_DISTANCEFIELD_SCALE;
-                intV.p.x -= avgNormal.x;
-                intV.p.y -= avgNormal.y;
-                extV.p.x += avgNormal.x;
-                extV.p.y += avgNormal.y;
-            }
-            if (vertices.at(prev * 3 + 1).p.y < allVertices.at(outerPoly).at(topVertex * 3 + 1).p.y) {
+            Vertex v;
+            v.p.x = float(to.x() / QT_DISTANCEFIELD_SCALE) + offs - 0.5f;
+            v.p.y = float(to.y() / QT_DISTANCEFIELD_SCALE) + offs - 0.5f;
+            v.d = 0.0f;
+            vertices.append(v);
+
+            if (v.p.y < allVertices.at(outerPoly).at(topVertex).p.y) {
                 outerPoly = i;
-                topVertex = prev;
+                topVertex = vertices.count() - 1;
             }
-            isConvex[prev] = (normals.at(prev).x * normals.at(next).y - normals.at(prev).y * normals.at(next).x > 0);
         }
-        Q_ASSERT(isConvex.count() == normals.count());
-        Q_ASSERT(vertices.count() == 3 * normals.count());
+
+        isConvex.resize(normals.count());
+        for (int next = 0, prev = normals.count() - 1; next < normals.count(); prev = next++)
+            isConvex[prev] = (normals.at(prev).x * normals.at(next).y - normals.at(prev).y * normals.at(next).x > 0);
     }
 
-    if (!allIsConvex.at(outerPoly).at(topVertex)) {
-        for (int i = 0; i < polys.count(); ++i) {
-            for (int j = 0; j < allVertices.at(i).count(); ++j)
-                allVertices[i][j].d = -allVertices.at(i).at(j).d;
-        }
-    }
+    int dir = allIsConvex.at(outerPoly).at(topVertex) ? 1 : -1;
 
     for (int i = 0; i < polys.count(); ++i) {
         const QVector<Point> &normals = allNormals[i];
@@ -308,73 +303,78 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
         const QVector<bool> &isConvex = allIsConvex[i];
         // Draw quads.
         for (int next = 0, prev = normals.count() - 1; next < normals.count(); prev = next++) {
-            Vertex intPrev = vertices.at(prev * 3);
-            Vertex extPrev = vertices.at(prev * 3 + 2);
-            Vertex intNext = vertices.at(next * 3);
-            Vertex extNext = vertices.at(next * 3 + 2);
-            if (isConvex.at(prev)) {
-                extPrev.p.x = vertices.at(prev * 3 + 1).p.x + normals.at(next).x;
-                extPrev.p.y = vertices.at(prev * 3 + 1).p.y + normals.at(next).y;
-            } else {
-                intPrev.p.x = vertices.at(prev * 3 + 1).p.x - normals.at(next).x;
-                intPrev.p.y = vertices.at(prev * 3 + 1).p.y - normals.at(next).y;
-            }
-            if (isConvex.at(next)) {
-                extNext.p.x = vertices.at(next * 3 + 1).p.x + normals.at(next).x;
-                extNext.p.y = vertices.at(next * 3 + 1).p.y + normals.at(next).y;
-            } else {
-                intNext.p.x = vertices.at(next * 3 + 1).p.x - normals.at(next).x;
-                intNext.p.y = vertices.at(next * 3 + 1).p.y - normals.at(next).y;
-            }
+            Point n = normals.at(next);
+            Vertex intPrev = vertices.at(prev);
+            Vertex extPrev = vertices.at(prev);
+            Vertex intNext = vertices.at(next);
+            Vertex extNext = vertices.at(next);
+
+            extPrev.p.x += n.x;
+            extPrev.p.y += n.y;
+            intPrev.p.x -= n.x;
+            intPrev.p.y -= n.y;
+            extNext.p.x += n.x;
+            extNext.p.y += n.y;
+            intNext.p.x -= n.x;
+            intNext.p.y -= n.y;
+            extPrev.d = -dir * offs * QT_DISTANCEFIELD_SCALE;
+            extNext.d = -dir * offs * QT_DISTANCEFIELD_SCALE;
+            intPrev.d = dir * offs * QT_DISTANCEFIELD_SCALE;
+            intNext.d = dir * offs * QT_DISTANCEFIELD_SCALE;
 
             drawQuad(bits, image.width(), image.height(),
-                     &vertices.at(prev * 3 + 1), &extPrev,
-                     &extNext, &vertices.at(next * 3 + 1));
+                     &vertices.at(prev), &extPrev,
+                     &extNext, &vertices.at(next));
 
             drawQuad(bits, image.width(), image.height(),
-                     &intPrev, &vertices.at(prev * 3 + 1),
-                     &vertices.at(next * 3 + 1), &intNext);
+                     &intPrev, &vertices.at(prev),
+                     &vertices.at(next), &intNext);
 
             if (isConvex.at(prev)) {
-                Point n = normals.at(next);
                 Vertex v = extPrev;
                 for (;;) {
                     Point rn = { n.x * rotation.x + n.y * rotation.y,
                                  n.y * rotation.x - n.x * rotation.y };
                     n = rn;
                     if (n.x * normals.at(prev).y - n.y * normals.at(prev).x >= -0.001) {
-                        v.p.x = vertices.at(prev * 3 + 1).p.x + normals.at(prev).x;
-                        v.p.y = vertices.at(prev * 3 + 1).p.y + normals.at(prev).y;
-                        drawTriangle(bits, image.width(), image.height(), &vertices.at(prev * 3 + 1), &v, &extPrev);
+                        v.p.x = vertices.at(prev).p.x + normals.at(prev).x;
+                        v.p.y = vertices.at(prev).p.y + normals.at(prev).y;
+                        drawTriangle(bits, image.width(), image.height(), &vertices.at(prev), &v, &extPrev);
                         break;
                     }
 
-                    v.p.x = vertices.at(prev * 3 + 1).p.x + n.x;
-                    v.p.y = vertices.at(prev * 3 + 1).p.y + n.y;
-                    drawTriangle(bits, image.width(), image.height(), &vertices.at(prev * 3 + 1), &v, &extPrev);
+                    v.p.x = vertices.at(prev).p.x + n.x;
+                    v.p.y = vertices.at(prev).p.y + n.y;
+                    drawTriangle(bits, image.width(), image.height(), &vertices.at(prev), &v, &extPrev);
                     extPrev = v;
                 }
             } else {
-                Point n = normals.at(next);
                 Vertex v = intPrev;
                 for (;;) {
                     Point rn = { n.x * rotation.x - n.y * rotation.y,
                                  n.y * rotation.x + n.x * rotation.y };
                     n = rn;
                     if (n.x * normals.at(prev).y - n.y * normals.at(prev).x <= 0.001) {
-                        v.p.x = vertices.at(prev * 3 + 1).p.x - normals.at(prev).x;
-                        v.p.y = vertices.at(prev * 3 + 1).p.y - normals.at(prev).y;
-                        drawTriangle(bits, image.width(), image.height(), &vertices.at(prev * 3 + 1), &intPrev, &v);
+                        v.p.x = vertices.at(prev).p.x - normals.at(prev).x;
+                        v.p.y = vertices.at(prev).p.y - normals.at(prev).y;
+                        drawTriangle(bits, image.width(), image.height(), &vertices.at(prev), &intPrev, &v);
                         break;
                     }
 
-                    v.p.x = vertices.at(prev * 3 + 1).p.x - n.x;
-                    v.p.y = vertices.at(prev * 3 + 1).p.y - n.y;
-                    drawTriangle(bits, image.width(), image.height(), &vertices.at(prev * 3 + 1), &intPrev, &v);
+                    v.p.x = vertices.at(prev).p.x - n.x;
+                    v.p.y = vertices.at(prev).p.y - n.y;
+                    drawTriangle(bits, image.width(), image.height(), &vertices.at(prev), &intPrev, &v);
                     intPrev = v;
                 }
             }
         }
+    }
+
+    for (int y = 0; y < image.height(); ++y) {
+        QRgb *iLine = (QRgb *)image.scanLine(y);
+        float *fLine = (float *)iLine;
+        for (int x = 0; x < image.width(); ++x)
+            iLine[x] = QRgb(fLine[x] + 127) << 24;
     }
 
     return image;
