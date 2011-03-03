@@ -1174,6 +1174,24 @@ void tst_qdeclarativetextinput::inputMethods()
     QApplication::sendEvent(canvas, &event);
     QCOMPARE(input->text(), QString("My Hello world!"));
 
+    input->setCursorPosition(2);
+    event.setCommitString("Your", -2, 2);
+    QApplication::sendEvent(canvas, &event);
+    QCOMPARE(input->text(), QString("Your Hello world!"));
+    QCOMPARE(input->cursorPosition(), 4);
+
+    input->setCursorPosition(7);
+    event.setCommitString("Goodbye", -2, 5);
+    QApplication::sendEvent(canvas, &event);
+    QCOMPARE(input->text(), QString("Your Goodbye world!"));
+    QCOMPARE(input->cursorPosition(), 12);
+
+    input->setCursorPosition(8);
+    event.setCommitString("Our", -8, 4);
+    QApplication::sendEvent(canvas, &event);
+    QCOMPARE(input->text(), QString("Our Goodbye world!"));
+    QCOMPARE(input->cursorPosition(), 7);
+
     delete canvas;
 }
 
