@@ -1,6 +1,7 @@
 #ifndef SPRITEPARTICLE_H
 #define SPRITEPARTICLE_H
 #include "particle.h"
+#include <QDeclarativeListProperty>
 class SpriteState;
 class SpriteEngine;
 class GeometryNode;
@@ -10,9 +11,8 @@ class SpriteParticlesMaterial;
 class SpriteParticle : public Particle
 {
     Q_OBJECT
-    Q_PROPERTY(SpriteState* sprite READ sprite WRITE setSprite NOTIFY spriteChanged)
-    Q_PROPERTY(SpriteEngine* spriteEngine READ spriteEngine WRITE setSpriteEngine NOTIFY spriteEngineChanged)
-
+    Q_PROPERTY(QDeclarativeListProperty<SpriteState> sprites READ sprites)
+    Q_CLASSINFO("DefaultProperty", "sprites")
 public:
     explicit SpriteParticle(QObject *parent = 0);
     virtual void load(ParticleData*);
@@ -22,39 +22,14 @@ public:
     virtual void reset();
     virtual void prepareNextFrame(uint timeStamp);
 
-    SpriteEngine* spriteEngine() const
-    {
-        return m_spriteEngine;
-    }
-
-    SpriteState* sprite() const
-    {
-        return m_sprite;
-    }
-
+    QDeclarativeListProperty<SpriteState> sprites();
+    SpriteEngine* spriteEngine() {return m_spriteEngine;}
 signals:
-    void spriteEngineChanged(SpriteEngine* arg);
-
-    void spriteChanged(SpriteState* arg);
 
 public slots:
 
-    void setSpriteEngine(SpriteEngine* arg)
-    {
-        if (m_spriteEngine != arg) {
-            m_spriteEngine = arg;
-            emit spriteEngineChanged(arg);
-        }
-    }
-
-    void setSprite(SpriteState* arg)
-    {
-        if (m_sprite != arg) {
-            m_sprite = arg;
-            emit spriteChanged(arg);
-        }
-    }
-
+private slots:
+    void createEngine();
 private:
     GeometryNode *m_node;
     SpriteParticlesMaterial *m_material;
@@ -63,11 +38,8 @@ private:
     int m_particle_duration;
     int m_last_particle;
     QTime m_timestamp;
-    int m_maxFrames;
 
-    bool buildParticleTexture(QSGContext *sg);
-
-    SpriteState* m_sprite;
+    QList<SpriteState*> m_sprites;
     SpriteEngine* m_spriteEngine;
 };
 

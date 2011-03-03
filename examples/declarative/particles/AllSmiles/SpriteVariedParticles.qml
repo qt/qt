@@ -8,7 +8,6 @@ Rectangle{
     ParticleSystem{
         anchors.fill: parent
         particles: SpriteParticle{
-            spriteEngine: SpriteEngine{
                 sprites: [Sprite{
                     name: "initial"
                     source: "squarefacesprite.png"
@@ -51,7 +50,6 @@ Rectangle{
                     frames: 6
                     duration: 120
                 }]
-            }
         }
         emitters: TrailEmitter{
 

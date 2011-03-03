@@ -7,7 +7,6 @@ Rectangle{
     height: 800
     id: root
     SpriteImage{
-        spriteEngine: SpriteEngine{
         sprites: [Sprite{
             name: "happy"
             source: "squarefacesprite2.png"
@@ -62,7 +61,6 @@ Rectangle{
             frames: 1
             duration: 10000
         }]
-        }
 
         width: 100
         height: 100
@@ -74,8 +72,6 @@ Rectangle{
         anchors.fill: parent
         particles:SpriteParticle{
         id: particles
-        spriteEngine: SpriteEngine{
-            id: engine
         sprites: [Sprite{
             name: "happy"
             source: "squarefacesprite2.png"
@@ -130,7 +126,6 @@ Rectangle{
             frames: 1
             duration: 10000
         }]
-        }
         }
         emitters: TrailEmitter{
             particlesPerSecond: 16
@@ -155,9 +150,5 @@ Rectangle{
             y: root.height/2;
             affector: SpriteGoal{goalState:"dead"}
         }
-    }
-    MouseArea{
-        id: ma
-        anchors.fill: parent
     }
 }

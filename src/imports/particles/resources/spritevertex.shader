@@ -23,8 +23,7 @@ void main() {
     highp float t = (timestamp - vData.x) / timelength;
 
     //Calculate frame location in texture
-    highp float frameIndex = fract((((timestamp - vAnimData.w)*1000.)/vAnimData.y)/vAnimData.z) * vAnimData.z;
-    //fract(x/z)*z used to avoid uints and % (GLSL chokes on them?)
+    highp float frameIndex = mod((((timestamp - vAnimData.w)*1000.)/vAnimData.y),vAnimData.z);
     progress = mod((timestamp - vAnimData.w)*1000., vAnimData.y) / vAnimData.y;
 
     frameIndex = floor(frameIndex);
@@ -41,7 +40,9 @@ void main() {
 
     fTexA = frameTex;
     //Next frame is also passed, for interpolation
-    frameIndex = mod(frameIndex+1., vAnimData.z);
+    //### Should the next anim be precalculated to allow for interpolation there?
+    if(frameIndex != vAnimData.z - 1.)//Can't do it for the last frame though, this anim may not loop
+        frameIndex = mod(frameIndex+1., vAnimData.z);
 
     if(vTex.x == 0.)
         frameTex.x = (frameIndex/framecount);

@@ -166,42 +166,29 @@ SpriteParticle::SpriteParticle(QObject *parent) :
     Particle(parent)
     , m_node(0)
     , m_material(0)
-    , m_sprite(0)
     , m_spriteEngine(0)
 {
+}
+
+QDeclarativeListProperty<SpriteState> SpriteParticle::sprites()
+{
+    return QDeclarativeListProperty<SpriteState>(this, &m_sprites, spriteAppend, spriteCount, spriteAt, spriteClear);
+}
+
+void SpriteParticle::createEngine()
+{
+    if(m_spriteEngine)
+        delete m_spriteEngine;
+    if(m_sprites.count())
+        m_spriteEngine = new SpriteEngine(m_sprites, this);
+    else
+        m_spriteEngine = 0;
+    reset();//###this is probalby out of updatePaintNode and shouldn't be
 }
 
 void SpriteParticle::setCount(int c)
 {
     m_particle_count = c;//### Terribly shoddy
-}
-
-bool SpriteParticle::buildParticleTexture(QSGContext *sg)
-{
-    m_maxFrames = 0;
-
-    if(!m_sprite && !m_spriteEngine){
-        qWarning() << "SpriteParticle: No sprite or sprite engine...";
-        return false;
-    }
-
-    if(m_sprite){
-        QImage img(m_sprite->source().toLocalFile());
-        if (img.isNull()) {
-            qWarning() << "SpriteParticle: loading image failed..." << m_sprite->source().toLocalFile();
-            return false;
-        }
-        m_maxFrames = m_sprite->frames();
-        m_material->texture = sg->textureManager()->upload(img);
-    }else{//m_spriteEngine
-        m_maxFrames = m_spriteEngine->maxFrames();
-        QImage image = m_spriteEngine->assembledImage();
-        if(image.isNull())
-            return false;
-        m_spriteEngine->setCount(m_particle_count);
-        m_material->texture = sg->textureManager()->upload(image);
-     }
-    return true;
 }
 
 static QSGGeometry::Attribute SpriteParticle_Attributes[] = {
@@ -235,8 +222,8 @@ Node* SpriteParticle::buildParticleNode()
         return 0;
     }
 
-    if (!m_sprite && !m_spriteEngine) {
-        qWarning() << "SpriteParticle: No sprite or engine...";
+    if (!m_spriteEngine) {
+        qWarning() << "SpriteParticle: No sprite engine...";
         return 0;
     }
 
@@ -247,8 +234,12 @@ Node* SpriteParticle::buildParticleNode()
 
     m_material = new SpriteParticlesMaterial();
 
-    if(!buildParticleTexture(sg))//problem loading image files
+    QImage image = m_spriteEngine->assembledImage();
+    if(image.isNull())
         return 0;
+    m_material->texture = sg->textureManager()->upload(image);
+    m_material->framecount = m_spriteEngine->maxFrames();
+    m_spriteEngine->setCount(m_particle_count);
 
     int vCount = m_particle_count * 4;
     int iCount = m_particle_count * 6;
@@ -336,13 +327,10 @@ void SpriteParticle::load(ParticleData *d)
     // Initial Sprite State
     p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = p.v1.t;
     p.v1.animIdx = p.v2.animIdx = p.v3.animIdx = p.v4.animIdx = 0;
-    SpriteState* state = m_sprite;
-    if(!state)
-        state = m_spriteEngine->state(0);
+    SpriteState* state = m_spriteEngine->state(0);
     p.v1.frameCount = p.v2.frameCount = p.v3.frameCount = p.v4.frameCount = state->frames();
     p.v1.frameDuration = p.v2.frameDuration = p.v3.frameDuration = p.v4.frameDuration = state->duration();
-    if(m_spriteEngine)
-        m_spriteEngine->startSprite(d->systemIndex);
+    m_spriteEngine->startSprite(d->systemIndex);
 
     vertexCopy(p.v1, d->pv);
     vertexCopy(p.v2, d->pv);
@@ -375,21 +363,19 @@ void SpriteParticle::prepareNextFrame(uint timeInt)
     qreal time =  timeInt / 1000.;
     m_material->timelength = m_particle_duration / 1000.;
     m_material->timestamp = time;
-    m_material->framecount = m_maxFrames;
-    m_material->animcount = m_sprite?1:m_spriteEngine->stateCount();
+    m_material->animcount = m_spriteEngine->stateCount();
 
-    if(!m_sprite){//Advance State
-        SpriteParticleVertices *particles = (SpriteParticleVertices *) m_node->geometry()->vertexData();
-        m_spriteEngine->updateSprites(timeInt);
-        for(int i=0; i<m_particle_count; i++){
-            SpriteParticleVertices &p = particles[i];
-            int curIdx = m_spriteEngine->spriteState(i);
-            if(curIdx != p.v1.animIdx){
-                p.v1.animIdx = p.v2.animIdx = p.v3.animIdx = p.v4.animIdx = curIdx;
-                p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = time;
-                p.v1.frameCount = p.v2.frameCount = p.v3.frameCount = p.v4.frameCount = m_spriteEngine->state(curIdx)->frames();
-                p.v1.frameDuration = p.v2.frameDuration = p.v3.frameDuration = p.v4.frameDuration = m_spriteEngine->state(curIdx)->duration();
-            }
+    //Advance State
+    SpriteParticleVertices *particles = (SpriteParticleVertices *) m_node->geometry()->vertexData();
+    m_spriteEngine->updateSprites(timeInt);
+    for(int i=0; i<m_particle_count; i++){
+        SpriteParticleVertices &p = particles[i];
+        int curIdx = m_spriteEngine->spriteState(i);
+        if(curIdx != p.v1.animIdx){
+            p.v1.animIdx = p.v2.animIdx = p.v3.animIdx = p.v4.animIdx = curIdx;
+            p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = time;
+            p.v1.frameCount = p.v2.frameCount = p.v3.frameCount = p.v4.frameCount = m_spriteEngine->state(curIdx)->frames();
+            p.v1.frameDuration = p.v2.frameDuration = p.v3.frameDuration = p.v4.frameDuration = m_spriteEngine->state(curIdx)->duration();
         }
     }
 }

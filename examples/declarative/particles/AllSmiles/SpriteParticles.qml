@@ -9,26 +9,13 @@ Rectangle{
         anchors.fill: parent
         particles:[ SpriteParticle{
             id: single
-            sprite: Sprite{
+            Sprite{
                 source: "squarefacesprite.png"
                 frames: 6
                 duration: 120
             }
-        },SpriteParticle{
-            id: engine
-            spriteEngine: SpriteEngine{
-                sprites:[
-                    Sprite{
-                        source: "squarefacesprite.png"
-                        frames: 6
-                        duration: 120
-                    }
-                ]
-            }
-        }
-        ]
+        }]
         emitters:TrailEmitter{
-        particle: engine
         id: particles
             particlesPerSecond: 6
             particleDuration: 5000

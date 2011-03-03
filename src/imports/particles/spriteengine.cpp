@@ -10,9 +10,20 @@ SpriteEngine::SpriteEngine(QObject *parent) :
     QObject(parent), m_timeOffset(0)
 {
     //Default size 1
-    m_sprites.resize(1);
-    m_goals.resize(1);
+    setCount(1);
     m_advanceTime.start();
+}
+
+SpriteEngine::SpriteEngine(QList<SpriteState*> states, QObject *parent) :
+    QObject(parent), m_states(states), m_timeOffset(0)
+{
+    //Default size 1
+    setCount(1);
+    m_advanceTime.start();
+}
+
+SpriteEngine::~SpriteEngine()
+{
 }
 
 int SpriteEngine::maxFrames()

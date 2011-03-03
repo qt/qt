@@ -13,23 +13,14 @@ class SpriteImage : public QSGItem
 {
     Q_OBJECT
     Q_PROPERTY(bool running READ running WRITE setRunning NOTIFY runningChanged)
-    //###Fold SpriteEngine/Sprite back into sprites from a user perspective?
-    //###Also, try to share similar spriteEngines for less overhead?
-    Q_PROPERTY(SpriteState* sprite READ sprite WRITE setSprite NOTIFY spriteChanged)
-    Q_PROPERTY(SpriteEngine* spriteEngine READ spriteEngine WRITE setSpriteEngine NOTIFY spriteEngineChanged)
+    //###try to share similar spriteEngines for less overhead?
+    Q_PROPERTY(QDeclarativeListProperty<SpriteState> sprites READ sprites)
+    Q_CLASSINFO("DefaultProperty", "sprites")
 
 public:
     explicit SpriteImage(QSGItem *parent = 0);
 
-    SpriteState* sprite() const
-    {
-        return m_sprite;
-    }
-
-    SpriteEngine* spriteEngine() const
-    {
-        return m_spriteEngine;
-    }
+    QDeclarativeListProperty<SpriteState> sprites();
 
     bool running() const
     {
@@ -38,29 +29,10 @@ public:
 
 signals:
 
-    void spriteChanged(SpriteState* arg);
-
-    void spriteEngineChanged(SpriteEngine* arg);
 
     void runningChanged(bool arg);
 
 public slots:
-
-void setSprite(SpriteState* arg)
-{
-    if (m_sprite != arg) {
-        m_sprite = arg;
-        emit spriteChanged(arg);
-    }
-}
-
-void setSpriteEngine(SpriteEngine* arg)
-{
-    if (m_spriteEngine != arg) {
-        m_spriteEngine = arg;
-        emit spriteEngineChanged(arg);
-    }
-}
 
 void setRunning(bool arg)
 {
@@ -70,16 +42,17 @@ void setRunning(bool arg)
     }
 }
 
+private slots:
+    void createEngine();
 protected:
     void reset();
     Node *updatePaintNode(Node *, UpdatePaintNodeData *);
 private:
     void prepareNextFrame();
     GeometryNode* buildNode();
-    bool buildParticleTexture(QSGContext *sg);
     GeometryNode *m_node;
     SpriteMaterial *m_material;
-    SpriteState* m_sprite;
+    QList<SpriteState*> m_sprites;
     SpriteEngine* m_spriteEngine;
     QTime m_timestamp;
     int m_maxFrames;

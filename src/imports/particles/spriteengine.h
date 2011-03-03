@@ -15,10 +15,14 @@ class SpriteState;
 class SpriteEngine : public QObject
 {
     Q_OBJECT
+    //TODO: Optimize single sprite case
     Q_PROPERTY(QDeclarativeListProperty<SpriteState> sprites READ sprites)
     Q_PROPERTY(QString globalGoal READ globalGoal WRITE setGlobalGoal NOTIFY globalGoalChanged)
 public:
     explicit SpriteEngine(QObject *parent = 0);
+    SpriteEngine(QList<SpriteState*> sprites, QObject *parent=0);
+    ~SpriteEngine();
+
     QDeclarativeListProperty<SpriteState> sprites()
     {
         return QDeclarativeListProperty<SpriteState>(this, m_states);
@@ -71,5 +75,29 @@ private:
     QString m_globalGoal;
     int m_maxFrames;
 };
+
+//Common use is to have your own list property which is transparently an engine
+inline void spriteAppend(QDeclarativeListProperty<SpriteState> *p, SpriteState* s)
+{
+    reinterpret_cast<QList<SpriteState *> *>(p->data)->append(s);
+    p->object->metaObject()->invokeMethod(p->object, "createEngine");
+}
+
+inline SpriteState* spriteAt(QDeclarativeListProperty<SpriteState> *p, int idx)
+{
+    return reinterpret_cast<QList<SpriteState *> *>(p->data)->at(idx);
+}
+
+inline void spriteClear(QDeclarativeListProperty<SpriteState> *p)
+{
+    reinterpret_cast<QList<SpriteState *> *>(p->data)->clear();
+    p->object->metaObject()->invokeMethod(p->object, "createEngine");
+}
+
+inline int spriteCount(QDeclarativeListProperty<SpriteState> *p)
+{
+    return reinterpret_cast<QList<SpriteState *> *>(p->data)->count();
+}
+
 
 #endif // SPRITEENGINE_H

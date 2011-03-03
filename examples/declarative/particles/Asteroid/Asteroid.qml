@@ -60,8 +60,7 @@ Item {
         anchors.fill: parent
         particles: SpriteParticle{
             id: particles
-            spriteEngine: SpriteEngine{
-                sprites:[Sprite{
+            sprites:[Sprite{
                     id: spinState
                     name: "spinning"
                     source: "meteor.png"
@@ -82,8 +81,7 @@ Item {
                     frames: 1
                     duration: 1000
                 }
-                ]
-            }
+            ]
         }
         emitters: TrailEmitter{
             particlesPerSecond: 12

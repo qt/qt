@@ -159,7 +159,6 @@ SpriteImage::SpriteImage(QSGItem *parent) :
     QSGItem(parent)
     , m_node(0)
     , m_material(0)
-    , m_sprite(0)
     , m_spriteEngine(0)
     , m_pleaseReset(false)
     , m_running(true)
@@ -167,6 +166,23 @@ SpriteImage::SpriteImage(QSGItem *parent) :
     setFlag(ItemHasContents);
     connect(this, SIGNAL(runningChanged(bool)),
             this, SLOT(update()));
+}
+
+QDeclarativeListProperty<SpriteState> SpriteImage::sprites()
+{
+    return QDeclarativeListProperty<SpriteState>(this, &m_sprites, spriteAppend, spriteCount, spriteAt, spriteClear);
+}
+
+void SpriteImage::createEngine()
+{
+    //TODO: delay until component complete
+    if(m_spriteEngine)
+        delete m_spriteEngine;
+    if(m_sprites.count())
+        m_spriteEngine = new SpriteEngine(m_sprites, this);
+    else
+        m_spriteEngine = 0;
+    reset();
 }
 
 static QSGGeometry::Attribute SpriteImage_Attributes[] = {
@@ -181,41 +197,12 @@ static QSGGeometry::AttributeSet SpriteImage_AttributeSet =
     SpriteImage_Attributes
 };
 
-bool SpriteImage::buildParticleTexture(QSGContext *sg)
-{
-    m_maxFrames = 0;
-
-    if(m_sprite){
-        QImage img(m_sprite->source().toLocalFile());
-        if (img.isNull()) {
-            qWarning() << "SpriteImage: loading image failed..." << m_sprite->source().toLocalFile();
-            return false;
-        }
-        m_maxFrames = m_sprite->frames();
-        m_material->texture = sg->textureManager()->upload(img);
-        m_material->height = img.height();
-        m_material->width = img.width()/m_maxFrames;
-    }else{//m_spriteEngine
-        m_maxFrames = m_spriteEngine->maxFrames();
-        QImage image = m_spriteEngine->assembledImage();
-        if(image.isNull())
-            return false;
-        m_spriteEngine->setCount(1);
-        m_material->texture = sg->textureManager()->upload(image);
-        m_material->height = image.height()/m_spriteEngine->stateCount();
-        m_material->width = image.width()/m_maxFrames;
-    }
-    m_material->framecount = m_maxFrames;
-    return true;
-}
-
-
 GeometryNode* SpriteImage::buildNode()
 {
     QSGContext *sg = QSGContext::current;
 
-    if (!m_sprite && !m_spriteEngine) {
-        qWarning() << "SpriteImage: No sprite or engine...";
+    if (!m_spriteEngine) {
+        qWarning() << "SpriteImage: No sprite engine...";
         return 0;
     }
 
@@ -226,8 +213,11 @@ GeometryNode* SpriteImage::buildNode()
 
     m_material = new SpriteMaterial();
 
-    if(!buildParticleTexture(sg))//problem loading image files
-            return 0;
+    QImage image = m_spriteEngine->assembledImage();
+    if(image.isNull())
+        return 0;
+    m_material->texture = sg->textureManager()->upload(image);
+    m_material->framecount = m_spriteEngine->maxFrames();
 
     int vCount = 4;
     int iCount = 6;
@@ -237,13 +227,10 @@ GeometryNode* SpriteImage::buildNode()
     SpriteVertices *p = (SpriteVertices *) g->vertexData();
     p->v1.animT = p->v2.animT = p->v3.animT = p->v4.animT = 0;
     p->v1.animIdx = p->v2.animIdx = p->v3.animIdx = p->v4.animIdx = 0;
-    SpriteState* state = m_sprite;
-    if(!state)
-        state = m_spriteEngine->state(0);
+    SpriteState* state = m_spriteEngine->state(0);
     p->v1.frameCount = p->v2.frameCount = p->v3.frameCount = p->v4.frameCount = state->frames();
     p->v1.frameDuration = p->v2.frameDuration = p->v3.frameDuration = p->v4.frameDuration = state->duration();
-    if(m_spriteEngine)
-        m_spriteEngine->startSprite(0);
+    m_spriteEngine->startSprite(0);
 
     p->v1.tx = 0;
     p->v1.ty = 0;
@@ -286,6 +273,7 @@ Node *SpriteImage::updatePaintNode(Node *, UpdatePaintNodeData *)
 
         m_node = 0;
         m_material = 0;
+        m_pleaseReset = false;
     }
 
     prepareNextFrame();
@@ -309,18 +297,19 @@ void SpriteImage::prepareNextFrame()
     uint timeInt = m_timestamp.elapsed();
     qreal time =  timeInt / 1000.;
     m_material->timestamp = time;
-    m_material->animcount = m_sprite?1:m_spriteEngine->stateCount();
+    m_material->animcount = m_spriteEngine->stateCount();
+    m_material->height = height();
+    m_material->width = width();
 
-    if(!m_sprite){//Advance State
-        SpriteVertices *p = (SpriteVertices *) m_node->geometry()->vertexData();
-        m_spriteEngine->updateSprites(timeInt);
-        int curIdx = m_spriteEngine->spriteState();
-        if(curIdx != p->v1.animIdx){
-            p->v1.animIdx = p->v2.animIdx = p->v3.animIdx = p->v4.animIdx = curIdx;
-            p->v1.animT = p->v2.animT = p->v3.animT = p->v4.animT = time;
-            p->v1.frameCount = p->v2.frameCount = p->v3.frameCount = p->v4.frameCount = m_spriteEngine->state(curIdx)->frames();
-            p->v1.frameDuration = p->v2.frameDuration = p->v3.frameDuration = p->v4.frameDuration = m_spriteEngine->state(curIdx)->duration();
-        }
+    //Advance State
+    SpriteVertices *p = (SpriteVertices *) m_node->geometry()->vertexData();
+    m_spriteEngine->updateSprites(timeInt);
+    int curIdx = m_spriteEngine->spriteState();
+    if(curIdx != p->v1.animIdx){
+        p->v1.animIdx = p->v2.animIdx = p->v3.animIdx = p->v4.animIdx = curIdx;
+        p->v1.animT = p->v2.animT = p->v3.animT = p->v4.animT = time;
+        p->v1.frameCount = p->v2.frameCount = p->v3.frameCount = p->v4.frameCount = m_spriteEngine->state(curIdx)->frames();
+        p->v1.frameDuration = p->v2.frameDuration = p->v3.frameDuration = p->v4.frameDuration = m_spriteEngine->state(curIdx)->duration();
     }
 }
 

@@ -32,7 +32,7 @@ Rectangle{
             additive: 1
         },SpriteParticle{
             id: roids
-            sprite: Sprite{
+            sprites: Sprite{
                 id: spinState
                 name: "spinning"
                 source: "meteor.png"
@@ -159,7 +159,7 @@ Rectangle{
             additive: 1
         },SpriteParticle{
             id: roids2
-            sprite: Sprite{
+            sprites: Sprite{
                 name: "spinning"
                 source: "meteor.png"
                 frames: 35
