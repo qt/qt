@@ -77,7 +77,7 @@ class QDeclarativeEngine;
 class QDeclarativeExpression;
 class QDeclarativeExpressionPrivate;
 class QDeclarativeAbstractExpression;
-class QDeclarativeCompiledBindings;
+class QDeclarativeV4Bindings;
 class QDeclarativeContextData;
 
 class QDeclarativeContextPrivate : public QObjectPrivate
@@ -189,7 +189,7 @@ public:
     void setIdPropertyData(QDeclarativeIntegerCache *);
 
     // Optimized binding pointer
-    QDeclarativeCompiledBindings *optimizedBindings;
+    QDeclarativeV4Bindings *optimizedBindings;
 
     // Linked contexts. this owns linkedContext.
     QDeclarativeContextData *linkedContext;

@@ -57,7 +57,7 @@
 #include "private/qdeclarativevmemetaobject_p.h"
 #include "private/qdeclarativebinding_p_p.h"
 #include "private/qdeclarativecontext_p.h"
-#include "private/qdeclarativecompiledbindings_p.h"
+#include "private/qdeclarativev4bindings_p.h"
 #include "private/qdeclarativeglobal_p.h"
 #include "private/qdeclarativeglobalscriptclass_p.h"
 #include "qdeclarativescriptstring.h"
@@ -172,7 +172,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
                 if (instr.init.contextCache != -1) 
                     ctxt->setIdPropertyData(comp->contextCaches.at(instr.init.contextCache));
                 if (instr.init.compiledBinding != -1) 
-                    ctxt->optimizedBindings = new QDeclarativeCompiledBindings(datas.at(instr.init.compiledBinding).constData(), ctxt);
+                    ctxt->optimizedBindings = new QDeclarativeV4Bindings(datas.at(instr.init.compiledBinding).constData(), ctxt);
             }
             break;
 

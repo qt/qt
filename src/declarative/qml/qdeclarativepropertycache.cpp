@@ -61,6 +61,8 @@ QDeclarativePropertyCache::Data::Flags QDeclarativePropertyCache::Data::flagsFor
         flags |= Data::IsWritable;
     if (p.isResettable())
         flags |= Data::IsResettable;
+    if (p.isFinal())
+        flags |= Data::IsFinal;
 
     if (propType == qMetaTypeId<QDeclarativeBinding *>()) {
         flags |= Data::IsQmlBinding;

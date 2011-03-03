@@ -84,20 +84,21 @@ public:
                     IsWritable        = 0x00000002,
                     IsResettable      = 0x00000004,
                     IsAlias           = 0x00000008,
+                    IsFinal           = 0x00000010,
 
                     // These are mutualy exclusive
-                    IsFunction        = 0x00000010,
-                    IsQObjectDerived  = 0x00000020,
-                    IsEnumType        = 0x00000040,
-                    IsQList           = 0x00000080,
-                    IsQmlBinding      = 0x00000100,
-                    IsQScriptValue    = 0x00000200,
+                    IsFunction        = 0x00000020,
+                    IsQObjectDerived  = 0x00000040,
+                    IsEnumType        = 0x00000080,
+                    IsQList           = 0x00000100,
+                    IsQmlBinding      = 0x00000200,
+                    IsQScriptValue    = 0x00000400,
 
                     // Apply only to IsFunctions
-                    IsVMEFunction     = 0x00000400,
-                    HasArguments      = 0x00000800,
-                    IsSignal          = 0x00001000,
-                    IsVMESignal       = 0x00002000
+                    IsVMEFunction     = 0x00000800,
+                    HasArguments      = 0x00001000,
+                    IsSignal          = 0x00002000,
+                    IsVMESignal       = 0x00004000
         };
         Q_DECLARE_FLAGS(Flags, Flag)
 
