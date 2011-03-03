@@ -185,7 +185,13 @@ QWaylandDisplay::QWaylandDisplay(void)
 
 #ifdef QT_WAYLAND_GL_SUPPORT
     mNativeEglDisplay = wl_egl_display_create(mDisplay);
+#else
+    mNativeEglDisplay = 0;
+#endif
 
+    eventDispatcher();
+
+#ifdef QT_WAYLAND_GL_SUPPORT
     mEglDisplay = eglGetDisplay((EGLNativeDisplayType)mNativeEglDisplay);
     if (mEglDisplay == NULL) {
         qWarning("EGL not available");
@@ -196,11 +202,8 @@ QWaylandDisplay::QWaylandDisplay(void)
 	}
     }
 #else
-    mNativeEglDisplay = 0;
     mEglDisplay = 0;
 #endif
-
-    eventDispatcher();
 
     int fd = wl_display_get_fd(mDisplay, sourceUpdate, this);
     mReadNotifier = new QSocketNotifier(fd, QSocketNotifier::Read, this);
