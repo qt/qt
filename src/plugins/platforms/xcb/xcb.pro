@@ -26,9 +26,12 @@ HEADERS = \
 contains(QT_CONFIG, opengl) {
     QT += opengl
 
-    DEFINES += XCB_USE_DRI2
+#    DEFINES += XCB_USE_DRI2
     contains(DEFINES, XCB_USE_DRI2) {
         LIBS += -lxcb-dri2 -lxcb-xfixes -lEGL
+
+        CONFIG += link_pkgconfig
+        PKGCONFIG += libdrm
 
         HEADERS += qdri2context.h
         SOURCES += qdri2context.cpp
