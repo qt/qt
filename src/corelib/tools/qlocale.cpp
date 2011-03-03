@@ -280,10 +280,12 @@ static bool parse_locale_tag(const QString &input, int &i, QString *result, cons
     const QChar *uc = input.data() + i;
     const int l = input.length();
     int size = 0;
-    for (; i < l && size < 5; ++i, ++size) {
+    for (; i < l && size < 8; ++i, ++size) {
         if (separators.contains(*uc))
             break;
-        if (uc->unicode() > 0xFF) // latin only
+        if (! ((uc->unicode() >= 'a' && uc->unicode() <= 'z') ||
+               (uc->unicode() >= 'A' && uc->unicode() <= 'Z') ||
+               (uc->unicode() >= '0' && uc->unicode() <= '9')) ) // latin only
             return false;
         *pch++ = *uc++;
     }
@@ -307,6 +309,10 @@ bool splitLocaleName(const QString &name, QString &lang, QString &script, QStrin
         QChar sep = i < length ? name.at(i) : QChar();
         switch (state) {
         case LangState:
+            if (!sep.isNull() && !separators.contains(sep)) {
+                state = NoState;
+                break;
+            }
             lang = value;
             if (i == length) {
                 // just language was specified
