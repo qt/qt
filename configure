@@ -6173,10 +6173,10 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
 
     fi
 
-    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists wayland-client 2>/dev/null; then
-        QMAKE_CFLAGS_WAYLAND=`$PKG_CONFIG --cflags wayland-client 2>/dev/null`
-        QMAKE_LIBS_WAYLAND=`$PKG_CONFIG --libs wayland-client 2>/dev/null`
-        QMAKE_INCDIR_WAYLAND=`$PKG_CONFIG --variable=includedir wayland-client 2>/dev/null`
+    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists wayland-client xkbcommon 2>/dev/null; then
+        QMAKE_CFLAGS_WAYLAND=`$PKG_CONFIG --cflags wayland-client xkbcommon 2>/dev/null`
+        QMAKE_LIBS_WAYLAND=`$PKG_CONFIG --libs wayland-client xkbcommon 2>/dev/null`
+        QMAKE_INCDIR_WAYLAND=`$PKG_CONFIG --variable=includedir wayland-client xkbcommon 2>/dev/null`
     fi
 
     # QMake variables set here override those in the mkspec. Therefore we only set the variables here if they are not zero.
