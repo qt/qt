@@ -4,7 +4,7 @@
 #include "spritestate.h"
 
 SpriteGoalAffector::SpriteGoalAffector(QObject *parent) :
-    ParticleAffector(parent), m_goalIdx(-1)
+    ParticleAffector(parent), m_goalIdx(-1), m_jump(false)
 {
 }
 
@@ -43,6 +43,6 @@ bool SpriteGoalAffector::affect(ParticleData *d, qreal dt)
 
     if(m_goalIdx == -2 || engine != m_lastEngine)
         updateStateIndex(engine);
-    engine->setGoal(m_goalIdx, d->systemIndex);
+    engine->setGoal(m_goalIdx, d->systemIndex, m_jump);
     return false; //Doesn't affect particle data
 }

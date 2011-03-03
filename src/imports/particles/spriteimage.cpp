@@ -307,7 +307,7 @@ void SpriteImage::prepareNextFrame()
     int curIdx = m_spriteEngine->spriteState();
     if(curIdx != p->v1.animIdx){
         p->v1.animIdx = p->v2.animIdx = p->v3.animIdx = p->v4.animIdx = curIdx;
-        p->v1.animT = p->v2.animT = p->v3.animT = p->v4.animT = time;
+        p->v1.animT = p->v2.animT = p->v3.animT = p->v4.animT = m_spriteEngine->spriteStart()/1000.0;
         p->v1.frameCount = p->v2.frameCount = p->v3.frameCount = p->v4.frameCount = m_spriteEngine->state(curIdx)->frames();
         p->v1.frameDuration = p->v2.frameDuration = p->v3.frameDuration = p->v4.frameDuration = m_spriteEngine->state(curIdx)->duration();
     }

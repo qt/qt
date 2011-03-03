@@ -35,9 +35,21 @@ int SpriteEngine::maxFrames()
    return max;
 }
 
-void SpriteEngine::setGoal(int state, int sprite)
+void SpriteEngine::setGoal(int state, int sprite, bool jump)
 {
-    m_goals[sprite] = state;
+    if(sprite >= m_sprites.count() || state >= m_states.count())
+        return;
+    if(!jump){
+        m_goals[sprite] = state;
+        return;
+    }
+
+    if(m_sprites[sprite] == state)
+        return;//Already there
+    m_sprites[sprite] = state;
+    m_goals[sprite] = -1;
+    restartSprite(sprite);
+    return;
 }
 
 QImage SpriteEngine::assembledImage()
@@ -106,6 +118,7 @@ void SpriteEngine::setCount(int c)
 {
     m_sprites.resize(c);
     m_goals.resize(c);
+    m_startTimes.resize(c);
 }
 
 void SpriteEngine::startSprite(int index)
@@ -114,7 +127,13 @@ void SpriteEngine::startSprite(int index)
         return;
     m_sprites[index] = 0;
     m_goals[index] = -1;
-    int time = m_states[0]->duration() * m_states[0]->frames() + m_timeOffset + m_advanceTime.elapsed();
+    restartSprite(index);
+}
+
+void SpriteEngine::restartSprite(int index)
+{
+    m_startTimes[index] = m_timeOffset + m_advanceTime.elapsed();
+    int time = m_states[m_sprites[index]]->duration() * m_states[m_sprites[index]]->frames() + m_startTimes[index];
     for(int i=0; i<m_stateUpdates.count(); i++)
         m_stateUpdates[i].second.removeAll(index);
     addToUpdateList(time, index);
@@ -158,6 +177,7 @@ uint SpriteEngine::updateSprites(uint time)
                 nextIdx = stateIdx;
 
             m_sprites[idx] = nextIdx;
+            m_startTimes[idx] = time;
             //TODO: emit something?
             addToUpdateList((m_states[nextIdx]->duration() * m_states[nextIdx]->frames()) + time, idx);
         }

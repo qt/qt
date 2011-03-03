@@ -36,13 +36,13 @@ public:
     void setCount(int c);
 
     int spriteState(int sprite=0) {return m_sprites[sprite];}
-
+    int spriteStart(int sprite=0) {return m_startTimes[sprite];}
     int stateIndex(SpriteState* s){return m_states.indexOf(s);}
     SpriteState* state(int idx){return m_states[idx];}
     int stateCount() {return m_states.count();}
     int maxFrames();
 
-    void setGoal(int state, int sprite=0);
+    void setGoal(int state, int sprite=0, bool jump=false);
     QImage assembledImage();
 
     void startSprite(int index=0);
@@ -63,11 +63,13 @@ public slots:
     uint updateSprites(uint time);
 
 private:
+    void restartSprite(int sprite);
     void addToUpdateList(uint t, int idx);
     int goalSeek(int curState, int spriteIdx, int dist=-1);
     QList<SpriteState*> m_states;
     QVector<int> m_sprites;//int is the index in m_states of the current state
     QVector<int> m_goals;
+    QVector<int> m_startTimes;
     QList<QPair<uint, QList<int> > > m_stateUpdates;//### This could be done faster
 
     QTime m_advanceTime;
