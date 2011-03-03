@@ -9,7 +9,7 @@ Rectangle{
         anchors.fill: parent
         particles: ColoredParticle{
             id: cp
-            image: "particle.png"
+            image: "content/particle.png"
             colorVariation: 0.4
             additive: 1
         }

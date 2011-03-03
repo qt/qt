@@ -2,7 +2,7 @@
 #include "particlesystem.h"
 #include "particle.h"
 
-TrailsEmitter::TrailsEmitter(QObject* parent)
+TrailsEmitter::TrailsEmitter(QSGItem* parent)
     : ParticleEmitter(parent)
     , m_particle_size(16)
     , m_particle_end_size(-1)
@@ -189,7 +189,7 @@ void TrailsEmitter::emitWindow(int timeStamp)
     }
 
     if (m_reset_last) {
-        m_last_emitter = m_last_last_emitter = QPointF(m_emitter_x, m_emitter_y);
+        m_last_emitter = m_last_last_emitter = QPointF(x() + m_emitter_x, y() + m_emitter_y);
         m_last_timestamp = timeStamp/1000.;
         m_reset_last = false;
     }
@@ -218,7 +218,10 @@ void TrailsEmitter::emitWindow(int timeStamp)
     qreal cy = (m_emitter_y + m_last_emitter.y()) / 2;
 
     float sizeAtEnd = m_particle_end_size >= 0 ? m_particle_end_size : m_particle_size;
-
+    qreal emitter_x_variation = m_emitter_x_variation + width()/2;
+    qreal emitter_y_variation = m_emitter_y_variation + height()/2;
+    qreal emitter_x_offset = m_last_emitter.x() - x() + width()/2;
+    qreal emitter_y_offset = m_last_emitter.y() - y() + height()/2;
     while (pt < time) {
         int pos = m_last_particle % m_particle_count;
         ParticleData* datum = m_system->newDatum();
@@ -244,11 +247,11 @@ void TrailsEmitter::emitWindow(int timeStamp)
 
         // Particle position
         p.x =
-                m_last_emitter.x() + dex * (pt - opt) / dt
-                - m_emitter_x_variation + rand() / float(RAND_MAX) * m_emitter_x_variation * 2;
+                emitter_x_offset + dex * (pt - opt) / dt
+                - emitter_x_variation + rand() / float(RAND_MAX) * emitter_x_variation * 2;
         p.y =
-                m_last_emitter.y() + dey * (pt - opt) / dt
-                - m_emitter_y_variation + rand() / float(RAND_MAX) * m_emitter_y_variation * 2;
+                emitter_y_offset + dey * (pt - opt) / dt
+                - emitter_y_variation + rand() / float(RAND_MAX) * emitter_y_variation * 2;
 
         // Particle speed
         p.sx =
@@ -283,7 +286,7 @@ void TrailsEmitter::emitWindow(int timeStamp)
 
     m_last_last_last_emitter = m_last_last_emitter;
     m_last_last_emitter = m_last_emitter;
-    m_last_emitter = QPointF(m_emitter_x, m_emitter_y);
+    m_last_emitter = QPointF(x() + m_emitter_x, y() + m_emitter_y);
     m_last_timestamp = time;
 }
 

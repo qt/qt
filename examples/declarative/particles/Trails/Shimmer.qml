@@ -10,7 +10,7 @@ Rectangle{
         anchors.fill: parent
         particles: ColoredParticle{
             id: sp
-            image: "../Asteroid/star.png"
+            image: "content/star.png"
             colorVariation: 0.2
         }
         emitters: TrailEmitter{

@@ -15,35 +15,36 @@ Rectangle{
                 duration: 120
             }
         }]
-        emitters:TrailEmitter{
-        id: particles
-            particlesPerSecond: 6
-            particleDuration: 5000
-            emitting: true
-            xSpeed: 0
-            ySpeed: 0
-            xSpeedVariation: 100
-            ySpeedVariation: 100
-            particleSize: 30
-            particleSizeVariation: 10
-            emitterX: width/2
-            emitterY: height/2
+        z: 2
+        emitters: particles
+    }
+    Rectangle{
+        id: rect
+        width: 40
+        height: 40
+        x: 180
+        y: 180
+        color: "lightsteelblue"
+        TrailEmitter{
+            anchors.centerIn: parent
+            id: particles
+                particlesPerSecond: 6
+                particleDuration: 5000
+                emitting: true
+                xSpeed: 0
+                ySpeed: 0
+                xSpeedVariation: 100
+                ySpeedVariation: 100
+                particleSize: 30
+                particleSizeVariation: 10
+        }
+        z: 1
+        MouseArea{
+            id: ma
+            anchors.fill: parent
+            drag.target: rect
+            drag.axis: Drag.XandYAxis
         }
     }
-    Binding{
-        target: particles
-        property: "emitterY"
-        value: ma.mouseY
-        when: ma.mouseX !=0 || ma.mouseY!=0
-    }
-    Binding{
-        target: particles
-        property: "emitterX"
-        value: ma.mouseX
-        when: ma.mouseX !=0 || ma.mouseY!=0
-    }
-    MouseArea{
-        id: ma
-        anchors.fill: parent
-    }
+
 }

@@ -13,8 +13,8 @@ Rectangle {
             colorVariation: 0.5
             additive: 1
 
-            image: "particle.png"
-            colortable: "colortable.png"
+            image: "content/particle.png"
+            colortable: "content/colortable.png"
         }
         emitters: TrailEmitter{
             particlesPerSecond: 500

@@ -1,13 +1,15 @@
 #ifndef PARTICLEEMITTER_H
 #define PARTICLEEMITTER_H
 
-#include <QObject>
+#include <QSGItem>
 #include <QDebug>
 #include "particlesystem.h"
 
-class ParticleEmitter : public QObject
+class ParticleEmitter : public QSGItem
 {
     Q_OBJECT
+    //###currently goes in emitters OR sets system. Pick one?
+    Q_PROPERTY(ParticleSystem* system READ system WRITE setSystem NOTIFY systemChanged)
     Q_PROPERTY(Particle* particle READ particle WRITE setParticle NOTIFY particleChanged)
     Q_PROPERTY(bool emitting READ emitting WRITE setEmitting NOTIFY emittingChanged)
 
@@ -15,7 +17,7 @@ class ParticleEmitter : public QObject
     Q_PROPERTY(int particleDuration READ particleDuration WRITE setParticleDuration NOTIFY particleDurationChanged)
 
 public:
-    explicit ParticleEmitter(QObject *parent = 0);
+    explicit ParticleEmitter(QSGItem *parent = 0);
     virtual void emitWindow(int timeStamp);
 
     ParticleSystem* m_system;//###Needs to be set from classless function? Needed at all?
@@ -36,12 +38,19 @@ public:
         return m_particleDuration;
     }
 
+    ParticleSystem* system() const
+    {
+        return m_system;
+    }
+
 signals:
     void particlesPerSecondChanged(int);
     void particleDurationChanged(int);
     void emittingChanged(bool);
 
     void particleChanged(Particle* arg);
+
+    void systemChanged(ParticleSystem* arg);
 
 public slots:
 
@@ -71,12 +80,21 @@ public slots:
         }
     }
 
+    void setSystem(ParticleSystem* arg)
+    {
+        if (m_system != arg) {
+            m_system = arg;
+            emit systemChanged(arg);
+        }
+    }
+
 protected:
     Particle* m_particle;
     int m_particlesPerSecond;
     int m_particleDuration;
     bool m_emitting;
-private:
+private slots:
+    void registerSystem(ParticleSystem* s){s->registerEmitter(this);}
 
 };
 

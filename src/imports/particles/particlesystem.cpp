@@ -58,6 +58,12 @@ QDeclarativeListProperty<ParticleEmitter> ParticleSystem::emitters()
     return QDeclarativeListProperty<ParticleEmitter>(this, &m_emitters, emitterAppend, emitterCount, emitterAt, emitterClear);
 }
 
+void ParticleSystem::registerEmitter(ParticleEmitter *emitter)
+{
+    QDeclarativeListProperty<ParticleEmitter> tmp(this, &m_emitters, emitterAppend, emitterCount, emitterAt, emitterClear);
+    emitterAppend(&tmp, emitter);
+}
+
 void ParticleSystem::countChanged()
 {
     reset();//Need to give Particles new Count
@@ -138,6 +144,14 @@ void ParticleSystem::emitParticle(ParticleData* pd)
             return;
         pd->p = m_particles.first();
     }
+
+    //Account for relative emitter position
+    QPointF offset = this->mapFromItem(pd->e, QPointF(0, 0));
+    if(offset != QPointF(0,0)){
+        pd->pv.x += offset.x();
+        pd->pv.y += offset.y();
+    }
+
     foreach(ParticleAffector *a, m_affectors)
         a->reset(pd->systemIndex);
     pd->p->load(pd);

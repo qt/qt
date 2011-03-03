@@ -13,6 +13,7 @@ class TrailsEmitter : public ParticleEmitter
 {
     Q_OBJECT
 
+    //XXXCurrently these are added to item props
     Q_PROPERTY(qreal emitterX READ emitterX WRITE setEmitterX NOTIFY emitterXChanged)
     Q_PROPERTY(qreal emitterY READ emitterY WRITE setEmitterY NOTIFY emitterYChanged)
     Q_PROPERTY(qreal emitterXVariation READ emitterXVariation WRITE setEmitterXVariation NOTIFY emitterXVariationChanged)
@@ -34,7 +35,7 @@ class TrailsEmitter : public ParticleEmitter
     Q_PROPERTY(qreal yAccelVariation READ yAccelVariation WRITE setYAccelVariation NOTIFY yAccelVariationChanged)
 
 public:
-    explicit TrailsEmitter(QObject* parent=0);
+    explicit TrailsEmitter(QSGItem* parent=0);
     virtual ~TrailsEmitter(){}
     virtual void emitWindow(int timeStamp);
 

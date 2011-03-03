@@ -34,7 +34,7 @@ Rectangle {
 
     ParticleSystem{
         particles: ColoredParticle{
-            image: "particle.png"
+            image: "content/particle.png"
             color: "cyan"
             SequentialAnimation on color {
                 loops: Animation.Infinite
@@ -106,7 +106,7 @@ Rectangle {
                 }
             }
             colorVariation: 0.5
-            image: "star.png"
+            image: "content/star.png"
         }
         emitters: TrailEmitter{
             id: trailsStars
@@ -138,7 +138,7 @@ Rectangle {
     }
     ParticleSystem {
         particles: ColoredParticle{
-            image: "particle.png"
+            image: "content/particle.png"
             color: "orange"
             SequentialAnimation on color {
                 loops: Animation.Infinite
@@ -179,7 +179,7 @@ Rectangle {
     }
     ParticleSystem {
         particles: ColoredParticle{
-            image: "star.png"
+            image: "content/star.png"
             color: "green"
             SequentialAnimation on color {
                 loops: Animation.Infinite

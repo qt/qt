@@ -17,6 +17,7 @@ class ParticleSystem : public QSGItem
     Q_PROPERTY(QDeclarativeListProperty<ParticleAffector> affectors READ affectors)
     Q_PROPERTY(QDeclarativeListProperty<ParticleEmitter> emitters READ emitters)
     Q_PROPERTY(QDeclarativeListProperty<Particle> particles READ particles)
+    Q_CLASSINFO("DefaultProperty", "particles")
 
 public:
     explicit ParticleSystem(QSGItem *parent = 0);
@@ -43,6 +44,7 @@ void runningChanged(bool arg);
 
 public slots:
 void pleaseUpdate(){if(this)update();}//XXX
+void registerEmitter(ParticleEmitter* emitter);
 void reset();
 void prepareNextFrame();
 void setRunning(bool arg)

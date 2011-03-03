@@ -1,13 +1,15 @@
 #include "particleemitter.h"
 
-ParticleEmitter::ParticleEmitter(QObject *parent) :
-    QObject(parent)
+ParticleEmitter::ParticleEmitter(QSGItem *parent) :
+    QSGItem(parent)
   , m_particle(0)
   , m_particlesPerSecond(10)
   , m_particleDuration(1000)
   , m_emitting(true)
 
 {
+    connect(this, SIGNAL(systemChanged(ParticleSystem*)),
+            this, SLOT(registerSystem(ParticleSystem*)));
 }
 
 void ParticleEmitter::emitWindow(int timeStamp)
