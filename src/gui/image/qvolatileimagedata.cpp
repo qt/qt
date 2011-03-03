@@ -39,47 +39,75 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSYSTEM_P_H
-#define QGRAPHICSSYSTEM_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "private/qpixmapdata_p.h"
-#include "private/qwindowsurface_p.h"
-#include "private/qpaintengine_blitter_p.h"
-
-#include <qdebug.h>
+#include "qvolatileimagedata_p.h"
+#include <QtGui/qpaintengine.h>
 
 QT_BEGIN_NAMESPACE
 
-class QPixmapFilter;
-class QBlittable;
-
-class Q_GUI_EXPORT QGraphicsSystem
+QVolatileImageData::QVolatileImageData()
+    : pengine(0)
 {
-public:
-    virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
-    virtual QPixmapData *createPixmapData(QPixmapData *origin);
-    virtual QWindowSurface *createWindowSurface(QWidget *widget) const = 0;
+}
 
-    virtual ~QGraphicsSystem();
+QVolatileImageData::QVolatileImageData(int w, int h, QImage::Format format)
+    : pengine(0)
+{
+    image = QImage(w, h, format);
+}
 
-    //### Remove this & change qpixmap.cpp & qbitmap.cpp once every platform is gaurenteed
-    //    to have a graphics system.
-    static QPixmapData *createDefaultPixmapData(QPixmapData::PixelType type);
+QVolatileImageData::QVolatileImageData(const QImage &sourceImage)
+    : pengine(0)
+{
+    image = sourceImage;
+}
 
-    virtual void releaseCachedResources();
-};
+QVolatileImageData::QVolatileImageData(void *, void *)
+    : pengine(0)
+{
+    // Not supported.
+}
+
+QVolatileImageData::QVolatileImageData(const QVolatileImageData &other)
+{
+    image = other.image;
+    // The detach is not mandatory here but we do it nonetheless in order to
+    // keep the behavior consistent with other platforms.
+    image.detach();
+    pengine = 0;
+}
+
+QVolatileImageData::~QVolatileImageData()
+{
+    delete pengine;
+}
+
+void QVolatileImageData::beginDataAccess() const
+{
+    // nothing to do here
+}
+
+void QVolatileImageData::endDataAccess(bool readOnly) const
+{
+    Q_UNUSED(readOnly);
+    // nothing to do here
+}
+
+bool QVolatileImageData::ensureFormat(QImage::Format format)
+{
+    if (image.format() != format) {
+        image = image.convertToFormat(format);
+    }
+    return true;
+}
+
+void *QVolatileImageData::duplicateNativeImage() const
+{
+    return 0;
+}
+
+void QVolatileImageData::ensureImage()
+{
+    // nothing to do here
+}
 
 QT_END_NAMESPACE
-
-#endif

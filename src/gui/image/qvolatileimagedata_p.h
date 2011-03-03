@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSYSTEM_P_H
-#define QGRAPHICSSYSTEM_P_H
+#ifndef QVOLATILEIMAGEDATA_P_H
+#define QVOLATILEIMAGEDATA_P_H
 
 //
 //  W A R N I N G
@@ -53,33 +53,45 @@
 // We mean it.
 //
 
-#include "private/qpixmapdata_p.h"
-#include "private/qwindowsurface_p.h"
-#include "private/qpaintengine_blitter_p.h"
+#include <QtGui/qimage.h>
+#include <QtCore/qshareddata.h>
 
-#include <qdebug.h>
+#ifdef Q_OS_SYMBIAN
+class CFbsBitmap;
+#endif
 
 QT_BEGIN_NAMESPACE
 
-class QPixmapFilter;
-class QBlittable;
-
-class Q_GUI_EXPORT QGraphicsSystem
+class QVolatileImageData : public QSharedData
 {
 public:
-    virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
-    virtual QPixmapData *createPixmapData(QPixmapData *origin);
-    virtual QWindowSurface *createWindowSurface(QWidget *widget) const = 0;
+    QVolatileImageData();
+    QVolatileImageData(int w, int h, QImage::Format format);
+    QVolatileImageData(const QImage &sourceImage);
+    QVolatileImageData(void *nativeImage, void *nativeMask);
+    QVolatileImageData(const QVolatileImageData &other);
+    ~QVolatileImageData();
 
-    virtual ~QGraphicsSystem();
+    void beginDataAccess() const;
+    void endDataAccess(bool readOnly = false) const;
+    bool ensureFormat(QImage::Format format);
+    void *duplicateNativeImage() const;
+    void ensureImage();
 
-    //### Remove this & change qpixmap.cpp & qbitmap.cpp once every platform is gaurenteed
-    //    to have a graphics system.
-    static QPixmapData *createDefaultPixmapData(QPixmapData::PixelType type);
-
-    virtual void releaseCachedResources();
+#ifdef Q_OS_SYMBIAN
+    void updateImage();
+    void initWithBitmap(CFbsBitmap *source);
+    void applyMask(CFbsBitmap *mask);
+    void ensureBitmap();
+    void release();
+    QVolatileImageData *next;
+    QVolatileImageData *prev;
+    CFbsBitmap *bitmap;
+#endif
+    QImage image;
+    QPaintEngine *pengine;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QVOLATILEIMAGEDATA_P_H

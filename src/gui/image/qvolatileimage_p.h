@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSYSTEM_P_H
-#define QGRAPHICSSYSTEM_P_H
+#ifndef QVOLATILEIMAGE_P_H
+#define QVOLATILEIMAGE_P_H
 
 //
 //  W A R N I N G
@@ -53,33 +53,49 @@
 // We mean it.
 //
 
-#include "private/qpixmapdata_p.h"
-#include "private/qwindowsurface_p.h"
-#include "private/qpaintengine_blitter_p.h"
-
-#include <qdebug.h>
+#include <QtGui/qimage.h>
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
 
-class QPixmapFilter;
-class QBlittable;
+class QVolatileImageData;
 
-class Q_GUI_EXPORT QGraphicsSystem
+class Q_GUI_EXPORT QVolatileImage
 {
 public:
-    virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
-    virtual QPixmapData *createPixmapData(QPixmapData *origin);
-    virtual QWindowSurface *createWindowSurface(QWidget *widget) const = 0;
+    QVolatileImage();
+    QVolatileImage(int w, int h, QImage::Format format);
+    explicit QVolatileImage(const QImage &sourceImage);
+    explicit QVolatileImage(void *nativeImage, void *nativeMask = 0);
+    QVolatileImage(const QVolatileImage &other);
+    ~QVolatileImage();
+    QVolatileImage &operator=(const QVolatileImage &rhs);
 
-    virtual ~QGraphicsSystem();
+    bool isNull() const;
+    QImage::Format format() const;
+    int width() const;
+    int height() const;
+    int bytesPerLine() const;
+    int byteCount() const;
+    int depth() const;
+    bool hasAlphaChannel() const;
+    void beginDataAccess() const;
+    void endDataAccess(bool readOnly = false) const;
+    uchar *bits();
+    const uchar *constBits() const;
+    bool ensureFormat(QImage::Format format);
+    QImage toImage() const;
+    QImage &imageRef();
+    QPaintEngine *paintEngine();
+    void setAlphaChannel(const QPixmap &alphaChannel);
+    void fill(uint pixelValue);
+    void *duplicateNativeImage() const;
+    void copyFrom(QVolatileImage *source, const QRect &rect);
 
-    //### Remove this & change qpixmap.cpp & qbitmap.cpp once every platform is gaurenteed
-    //    to have a graphics system.
-    static QPixmapData *createDefaultPixmapData(QPixmapData::PixelType type);
-
-    virtual void releaseCachedResources();
+private:
+    QSharedDataPointer<QVolatileImageData> d;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QVOLATILEIMAGE_P_H
