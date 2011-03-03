@@ -1297,7 +1297,7 @@ static int qCocoaViewCount = 0;
     QString qtText;
     // Cursor position is retrived from the range.
     QList<QInputMethodEvent::Attribute> attrs;
-    attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, selRange.location, 1, QVariant());
+    attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, selRange.location + selRange.length, 1, QVariant());
     if ([aString isKindOfClass:[NSAttributedString class]]) {
         qtText = QCFString::toQString(reinterpret_cast<CFStringRef>([aString string]));
         composingLength = qtText.length();
