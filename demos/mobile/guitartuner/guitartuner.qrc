@@ -1,0 +1,75 @@
+/******************************************************************************
+ *
+ * Copyright (c) 2011 Nokia Corporation and/or its subsidiary(-ies).
+ * All rights reserved.
+ * Contact: Nokia Corporation (qt-info@nokia.com)
+ *
+ * $QT_BEGIN_LICENSE:BSD$
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the author organization nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * $QT_END_LICENSE$
+ *
+ *****************************************************************************/
+<RCC>
+    <qresource prefix="/">
+        <file>src/application.qml</file>
+        <file>src/mycomponents/adjustbars.js</file>
+        <file>src/mycomponents/adjuster.qml</file>
+        <file>src/mycomponents/meter.qml</file>
+        <file>src/mycomponents/notebuttonview.qml</file>
+        <file>src/mycomponents/notesmodel.qml</file>
+        <file>src/mycomponents/togglebutton.qml</file>
+        <file>src/mycomponents/images/meterBG.png</file>
+        <file>src/mycomponents/images/pointerShadow.png</file>
+        <file>src/mycomponents/images/sensitivity.png</file>
+        <file>src/mycomponents/images/tuner_a.png</file>
+        <file>src/mycomponents/images/tuner_a_on.png</file>
+        <file>src/mycomponents/images/tuner_b.png</file>
+        <file>src/mycomponents/images/tuner_b_on.png</file>
+        <file>src/mycomponents/images/tuner_d.png</file>
+        <file>src/mycomponents/images/tuner_d_on.png</file>
+        <file>src/mycomponents/images/tuner_e.png</file>
+        <file>src/mycomponents/images/tuner_e_on.png</file>
+        <file>src/mycomponents/images/tuner_g.png</file>
+        <file>src/mycomponents/images/tuner_g_on.png</file>
+        <file>src/mycomponents/images/voicemode_off.png</file>
+        <file>src/mycomponents/images/voicemode_on.png</file>
+        <file>src/mycomponents/images/volume.png</file>
+        <file>src/mycomponents/images/volume_off.png</file>
+        <file>src/mycomponents/images/guitartuner_skin.png</file>
+        <file>src/mycomponents/images/power.png</file>
+        <file>src/mycomponents/images/tuner_auto.png</file>
+        <file>src/mycomponents/images/tuner_auto_on.png</file>
+        <file>src/mycomponents/images/big_a.png</file>
+        <file>src/mycomponents/images/big_b.png</file>
+        <file>src/mycomponents/images/big_d.png</file>
+        <file>src/mycomponents/images/big_e.png</file>
+        <file>src/mycomponents/images/big_g.png</file>
+        <file>src/mycomponents/images/glowing_a.png</file>
+        <file>src/mycomponents/images/glowing_b.png</file>
+        <file>src/mycomponents/images/glowing_d.png</file>
+        <file>src/mycomponents/images/glowing_e.png</file>
+        <file>src/mycomponents/images/glowing_g.png</file>
+        <file>src/mycomponents/images/pointer.png</file>
+    </qresource>
+</RCC>

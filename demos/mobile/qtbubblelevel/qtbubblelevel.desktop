@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Name=QtBubbleLevel
+Exec=/opt/usr/bin/qtbubblelevel
+Icon=qtbubblelevel
+StartupWMClass=
+X-Window-Icon=qtbubblelevel
+X-HildonDesk-ShowInToolbar=true
+X-Osso-Type=application/x-executable
+Terminal=false

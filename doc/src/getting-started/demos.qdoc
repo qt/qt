@@ -54,6 +54,17 @@
     If you are new to Qt, and want to start developing applications,
     you should probably start by going through the \l{Tutorials}.
 
+    \keyword qt-mobile-demos
+    \section1 Mobile Applications
+    These are demonstrations of some of the capabilities of \l{Qt Quick} and 
+    \l{external: Qt Mobility Manual}{Mobility} to create feature rich mobile
+    applications.
+    \list
+    \o \l{demos/mobile/guitartuner}{Guitar Tuner} - a guitar tuner made with a QML frontend and a Mobility based backend
+    \o \l{demos/mobile/quickhit}{Quick Hit} - a game that uses multimedia and Qt Quick
+    \o \l{demos/mobile/qtbubblelevel}{Qt Bubble Level} - a game that utilizes hardware sensors for effects
+    \o \l{demos/mobile/qcamera}{QCamera} - a camera application that accesses mobile contacts and networking
+    \endlist
     \section1 Painting
 
     \list

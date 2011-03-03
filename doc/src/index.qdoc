@@ -29,33 +29,24 @@
 \page index.html
 \keyword Qt Reference Documentation
 
-\div {class="indexbox guide"}
-    \div {class="heading"}
-        Qt Developer Guide
-    \enddiv
-\enddiv
 \div {class="indexbox tools"}
     \div {class="indexboxcont indexboxbar"}
         \div {class="sectionlist normallist"}
-        \div {class="heading"}
-            What is Qt
-        \enddiv
-        \image qt-logo_large.png
-        Qt is a cross-platform application and UI framework. Using Qt, you can
-        write applications once and deploy them across desktop, mobile, and
-        embedded operating systems without rewriting the source code.
+            \div {class="heading"}
+                What is Qt
+            \enddiv
+            \list
+            \o \l{Qt Whitepaper}{Qt C++ Framework}
+            \o \l{Intro to Qt Quick}{Qt Quick}
+            \o \l{external: Qt Mobility Manual}{Qt Mobility}
+            \o \l{Qt WebKit}
+            \endlist
         \enddiv
         \div {class="sectionlist normallist"}
             \list
-            \o \l{http://doc.qt.nokia.com/nokia-qtsdk-1.0/index.html}{Qt SDK}
-            \o \l{http://developer.qt.nokia.com/wiki/QtCreatorWhitepaper}{Qt Creator}
-            \o \l{http://doc.qt.nokia.com/qtsimulator-1.1/index.html}{Qt Simulator}
-            \endlist
-            \list
-            \o \l{http://developer.qt.nokia.com/wiki/QtWhitepaper}{Qt C++ Framework}
-            \o \l{Qt Quick}
-            \o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/index.html}{Qt Mobility}
-            \o \l{Qt WebKit}
+            \o \l{external: Qt SDK Manual}{Qt SDK}
+            \o \l{Qt Creator Whitepaper}{Qt Creator}
+            \o \l{external: Qt Simulator Manual}{Qt Simulator}
             \endlist
             \list
             \o \l{Supported Platforms}{Platform Support}
@@ -64,9 +55,8 @@
         \enddiv
         \div {class="sectionlist normallist"}
             \div {class="heading"}
-                See Qt
+                Qt in Action
             \enddiv
-            \image mobile.png
             \list
             \o \l{Qt Demonstrations}{Application Gallery}
             \o \l{Tutorials}
@@ -82,42 +72,44 @@
             \div {class="heading"}
                 Develop with Qt
             \enddiv
-            \image tools.png
             \list
+            \o \l{Getting Started Guides}{Getting Started with Qt}
             \o \l{Develop with Qt}{Steps to Programming Qt Applications}
             \o \l{qt-creator-configure-target}{Configure Qt and Creator for Platforms}
             \o \l{qt-technologies}{Qt Features and Technologies}
             \o \l{qt-utilities}{Utilities and Testing}
-            \o \l{qt-deployment}{Deploying Applications and Publish to Ovi Store}
+            \o \l{qt-deployment}{Deploying and Publishing Applications to Ovi Store}
+            \endlist
+
+        \enddiv
+        \div {class="sectionlist normallist"}
+            \div {class="heading"}
+                UI Creation with Qt
+            \enddiv
+
+            \list
+            \o \l{qt-ui-creation}{Create UI with Qt}
+            \o \l{qt-rendering-painting-system}{Qt's Rendering and Painting Systems}
+            \o \l{Qt Quick} - develop fluid UIs with QML
+            \o \l{Widgets and Layouts} - elements for C++ interfaces
+            \o \l{external: Designer in Creator}{Designing UI in Creator}
             \endlist
         \enddiv
         \div {class="sectionlist normallist"}
             \div {class="heading"}
                 Featured Articles
             \enddiv
-            \image guide.png
             \list
             \o \l{Scalability}{How to Create Scalable Applications}
-            \o \l{http://doc.qt.nokia.com/nokia-qtsdk-1.0/creator-developing-symbian.html}{Setting Up Development Environment for Symbian}
-            \o \l{http://doc.qt.nokia.com/nokia-qtsdk-1.0/creator-developing-maemo.html}{Setting Up Development Environment for Maemo}
-            \o \l{http://doc.qt.nokia.com/qtcreator-snapshot/creator-publish-ovi.html}{Publishing Qt Applications to Ovi Store}
+            \o \l{external: Setting Up Development Environment for Symbian}{Setting Up Development Environment for Symbian}
+            \o \l{external: Setting Up Development Environment for Maemo}{Setting Up Development Environment for Maemo}
+            \o \l{qt-mobile-demos}{Mobile Applications and Demos}
+            \o \l{external: Publishing Applications to Ovi Store}{Publishing Applications to Ovi Store}
             \endlist
             \list
             \o \l{Qt Development: The Steps from Challenge to Achievement}{The Steps from Challenge to Achievement}
             A case analysis of a business development problem and a search for
 innovative solutions using Qt.
-            \endlist
-        \enddiv
-        \div {class="sectionlist normallist"}
-            \div {class="heading"}
-                UI Creation with Qt
-            \enddiv
-            \image qml.png
-            \list
-            \o \l{qt-ui-creation}{Create UI with Qt}
-            \o \l{qt-rendering-painting-system}{Qt's Rendering and Painting Systems}
-            \o \l{Qt Quick} - develop fluid UIs with QML
-            \o \l{Widgets and Layouts} - elements for C++ interfaces
             \endlist
         \enddiv
     \enddiv
@@ -137,17 +129,18 @@ innovative solutions using Qt.
             \o \l{All Modules}{All Modules}
             \o \l{All Namespaces}{All Namespaces}
             \o \l{Global Qt Declarations}{Global Declarations}
-
             \endlist
         \enddiv
         \div {class="sectionlist normallist"}
             \list
-            \o \l{Qt Quick}
             \o \l{QML Elements}
             \endlist
             \list
-            \o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/index.html}{Qt Mobility APIs}
-            \o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/qml-plugins.html}{Mobility QML Plugins}
+            \o \l{external: Qt Mobility Manual}{Qt Mobility APIs}
+            \o \l{external: Qt Mobility QML Plugins}{Mobility QML Plugins}
+            \endlist
+            \list
+            \o \l{Qt Licenses and Credits}
             \endlist
         \enddiv
         \div {class="sectionlist normallist"}
@@ -155,8 +148,8 @@ innovative solutions using Qt.
                 Qt Manuals
             \enddiv
             \list
-            \o \l{http://doc.qt.nokia.com/qtcreator-2.0/index.html}{Qt Creator}
-            \o \l{http://doc.qt.nokia.com/qtsimulator/index.html}{Qt Simulator}
+            \o \l{external: Qt Creator Manual}{Qt Creator}
+            \o \l{external: Qt Simulator Manual}{Qt Simulator}
             \o \l{linguist-manual.html}{Qt Linguist}
             \o \l{assistant-manual.html}{Qt Assistant}
             \endlist
