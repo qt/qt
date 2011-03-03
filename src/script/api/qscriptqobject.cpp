@@ -345,8 +345,13 @@ static int resolveOverloadedQtMetaMethodCall(QScriptEnginePrivate *engine, const
         if (distance < bestDistance) {
             bestIndex = index;
             bestDistance = distance;
-        } else if (distance == bestDistance) {
-            bestIndex = -1; //ambiguous;
+        } else if (distance == bestDistance && bestIndex >= 0) {
+            // it is possible that a virtual method is redeclared in a subclass,
+            // in which case we want to ignore the superclass declaration
+            if (qstrcmp(method.signature(), meta->method(bestIndex).signature())) {
+                // different signature with the same distance, this is ambiguous;
+                bestIndex = -1;
+            }
         }
     }
     return bestIndex;
