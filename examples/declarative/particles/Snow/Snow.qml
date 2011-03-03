@@ -4,6 +4,7 @@ import Qt.labs.particles 2.0
 Rectangle{
     width: 360
     height: 540
+    id: page
     ParticleSystem{
         id: particles
         anchors.fill: parent
@@ -29,11 +30,18 @@ Rectangle{
             yAccel: 4
             particleSize: 20
             particleSizeVariation: 10
-            emitterX: width/2
+            emitterX: page.width/2
             emitterY: 50
-            emitterXVariation: width/2
+            emitterXVariation: page.width/2
             emitterYVariation: 50
         }
-        affectors: Wander{ xVariance: 30; pace: 100; }
+        affectors: [Wander{ xVariance: 30; pace: 100; },
+            Zone{
+                x: 0
+                y: 3 * page.height/4
+                width: page.width
+                height: page.height/4
+                Kill{}
+            }]
     }
 }
