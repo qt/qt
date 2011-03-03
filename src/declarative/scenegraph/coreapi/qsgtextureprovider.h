@@ -85,10 +85,10 @@ public:
     Filtering mipmap() const { return Filtering(m_mipmap); }
     void setMipmap(Filtering filtering) { m_mipmap = filtering; }
 
-    inline GLint glTextureWrapS() const;
-    inline GLint glTextureWrapT() const;
+    GLint glTextureWrapS() const;
+    GLint glTextureWrapT() const;
     GLint glMinFilter() const;
-    inline GLint glMagFilter() const;
+    GLint glMagFilter() const;
 
 Q_SIGNALS:
     void textureChanged();
@@ -100,21 +100,6 @@ protected:
     uint m_filtering : 2;
     uint m_mipmap : 2;
 };
-
-GLint QSGTextureProvider::glTextureWrapS() const
-{
-    return m_hWrapMode == Repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE;
-}
-
-GLint QSGTextureProvider::glTextureWrapT() const
-{
-    return m_vWrapMode == Repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE;
-}
-
-GLint QSGTextureProvider::glMagFilter() const
-{
-    return m_filtering == Linear ? GL_LINEAR : GL_NEAREST;
-}
 
 
 // TODO: Find good name.
