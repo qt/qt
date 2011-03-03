@@ -207,8 +207,8 @@ void TrailsEmitter::emitWindow(int timeStamp)
     qreal dt = time - m_last_timestamp; // timestamp delta...
 
     // emitter difference since last...
-    qreal dex = (m_emitter_x - m_last_emitter.x());
-    qreal dey = (m_emitter_y - m_last_emitter.y());
+    qreal dex = (m_emitter_x + x() - m_last_emitter.x());
+    qreal dey = (m_emitter_y + y() - m_last_emitter.y());
 
     qreal ax = (m_last_last_emitter.x() + m_last_emitter.x()) / 2;
     qreal bx = m_last_emitter.x();
