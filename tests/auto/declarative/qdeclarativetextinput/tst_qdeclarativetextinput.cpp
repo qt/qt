@@ -604,10 +604,8 @@ void tst_qdeclarativetextinput::moveCursorSelection_data()
             << standard[2] << 13 << 6 << QDeclarativeTextInput::SelectWords << 6 << 13 << false;
     QTest::newRow("Hello<(, world!)>|words")
             << standard[2] << 5 << 13 << QDeclarativeTextInput::SelectWords << 5 << 13 << true;
-    // Fails due to an issue with QTextBoundaryFinder and punctuation at the end of strings.
-    // QTBUG-11365
-    // QTest::newRow("world<(!)>|words")
-    //         << standard[2] << 12 << 13 << QDeclarativeTextInput::SelectWords << 12 << 13 << true;
+     QTest::newRow("world<(!)>|words")
+             << standard[2] << 12 << 13 << QDeclarativeTextInput::SelectWords << 12 << 13 << true;
     QTest::newRow("world!<()>)|words")
             << standard[2] << 13 << 13 << QDeclarativeTextInput::SelectWords << 13 << 13 << true;
     QTest::newRow("world<()>!)|words")
@@ -653,16 +651,15 @@ void tst_qdeclarativetextinput::moveCursorSelection_data()
     QTest::newRow(" <s(pac)ey>   text |words")
             << standard[4] << 1 << 4 << QDeclarativeTextInput::SelectWords << 1 << 7 << true;
     QTest::newRow(" spacey   <t(ex)t> |words")
-            << standard[4] << 11 << 13 << QDeclarativeTextInput::SelectWords << 10 << 14 << false; // Should be reversible. QTBUG-11365
+            << standard[4] << 11 << 13 << QDeclarativeTextInput::SelectWords << 10 << 14 << true;
     QTest::newRow("<( )>spacey   text |words|ltr")
             << standard[4] << 0 << 1 << QDeclarativeTextInput::SelectWords << 0 << 1 << false;
     QTest::newRow("<( )spacey>   text |words|rtl")
             << standard[4] << 1 << 0 << QDeclarativeTextInput::SelectWords << 0 << 7 << false;
     QTest::newRow("spacey   <text( )>|words|ltr")
             << standard[4] << 14 << 15 << QDeclarativeTextInput::SelectWords << 10 << 15 << false;
-//    QTBUG-11365
-//    QTest::newRow("spacey   text<( )>|words|rtl")
-//            << standard[4] << 15 << 14 << QDeclarativeTextInput::SelectWords << 14 << 15 << false;
+    QTest::newRow("spacey   text<( )>|words|rtl")
+            << standard[4] << 15 << 14 << QDeclarativeTextInput::SelectWords << 14 << 15 << false;
     QTest::newRow("<()> spacey   text |words")
             << standard[4] << 0 << 0 << QDeclarativeTextInput::SelectWords << 0 << 0 << false;
     QTest::newRow(" spacey   text <()>|words")
@@ -857,23 +854,21 @@ void tst_qdeclarativetextinput::moveCursorSelectionSequence_data()
             << 15 << 12 << 15
             << 10 << 15
             << 15 << 15;
-//    QTBUG-11365
-//    QTest::newRow(" spacey   <te(xt{^ )>}|rtl")
-//            << standard[4]
-//            << 15 << 12 << 14
-//            << 10 << 15
-//            << 14 << 15;
+    QTest::newRow(" spacey   <te(xt{^ )>}|rtl")
+            << standard[4]
+            << 15 << 12 << 14
+            << 10 << 15
+            << 14 << 15;
     QTest::newRow(" spacey   {<te(x^t} )>|ltr")
             << standard[4]
             << 12 << 15 << 13
             << 10 << 15
             << 10 << 14;
-//    QTBUG-11365
-//    QTest::newRow(" spacey   {<te(xt^} )>|ltr")
-//            << standard[4]
-//            << 12 << 15 << 14
-//            << 10 << 15
-//            << 10 << 14;
+    QTest::newRow(" spacey   {<te(xt^} )>|ltr")
+            << standard[4]
+            << 12 << 15 << 14
+            << 10 << 15
+            << 10 << 14;
 }
 
 void tst_qdeclarativetextinput::moveCursorSelectionSequence()
