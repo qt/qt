@@ -197,8 +197,8 @@ void ParticleData::setInstantaneousAX(qreal ax)
 {
     qreal t = pv.dt - pv.t;
     qreal sx = (pv.sx + t*pv.ax) - t*ax;
-    qreal ex = pv.x + pv.sx * t + pv.ax * t * t;
-    qreal x = ex - t*sx - t*t*ax;
+    qreal ex = pv.x + pv.sx * t + 0.5 * pv.ax * t * t;
+    qreal x = ex - t*sx - 0.5 * t*t*ax;
 
     pv.ax = ax;
     pv.sx = sx;
@@ -210,8 +210,8 @@ void ParticleData::setInstantaneousSX(qreal vx)
 {
     qreal t = pv.dt - pv.t;
     qreal sx = vx - t*pv.ax;
-    qreal ex = pv.x + pv.sx * t + pv.ax * t * t;
-    qreal x = ex - t*sx - t*t*pv.ax;
+    qreal ex = pv.x + pv.sx * t + 0.5 * pv.ax * t * t;
+    qreal x = ex - t*sx - 0.5 * t*t*pv.ax;
 
     pv.sx = sx;
     pv.x = x;
@@ -221,7 +221,7 @@ void ParticleData::setInstantaneousSX(qreal vx)
 void ParticleData::setInstantaneousX(qreal x)
 {
     qreal t = pv.dt - pv.t;
-    pv.x = x - t*pv.sx - t*t*pv.ax;
+    pv.x = x - t*pv.sx - 0.5 * t*t*pv.ax;
 }
 
 //sets the y accleration without affecting the instantaneous y velocity or position
@@ -229,8 +229,8 @@ void ParticleData::setInstantaneousAY(qreal ay)
 {
     qreal t = pv.dt - pv.t;
     qreal sy = (pv.sy + t*pv.ay) - t*ay;
-    qreal ey = pv.y + pv.sy * t + pv.ay * t * t;
-    qreal y = ey - t*sy - t*t*ay;
+    qreal ey = pv.y + pv.sy * t + 0.5 * pv.ay * t * t;
+    qreal y = ey - t*sy - 0.5 * t*t*ay;
 
     pv.ay = ay;
     pv.sy = sy;
@@ -242,8 +242,8 @@ void ParticleData::setInstantaneousSY(qreal vy)
 {
     qreal t = pv.dt - pv.t;
     qreal sy = vy - t*pv.ay;
-    qreal ey = pv.y + pv.sy * t + pv.ay * t * t;
-    qreal y = ey - t*sy - t*t*pv.ay;
+    qreal ey = pv.y + pv.sy * t + 0.5 * pv.ay * t * t;
+    qreal y = ey - t*sy - 0.5 * t*t*pv.ay;
 
     pv.sy = sy;
     pv.y = y;
@@ -253,13 +253,13 @@ void ParticleData::setInstantaneousSY(qreal vy)
 void ParticleData::setInstantaneousY(qreal y)
 {
     qreal t = pv.dt - pv.t;
-    pv.y = y - t*pv.sy - t*t*pv.ay;
+    pv.y = y - t*pv.sy - 0.5 * t*t*pv.ay;
 }
 
 qreal ParticleData::curX() const
 {
     qreal t = pv.dt - pv.t;
-    return pv.x + pv.sx * t + pv.ax * t * t;
+    return pv.x + pv.sx * t + 0.5 * pv.ax * t * t;
 }
 
 qreal ParticleData::curSX() const
@@ -271,7 +271,7 @@ qreal ParticleData::curSX() const
 qreal ParticleData::curY() const
 {
     qreal t = pv.dt - pv.t;
-    return pv.y + pv.sy * t + pv.ay * t * t;
+    return pv.y + pv.sy * t + 0.5 * pv.ay * t * t;
 }
 
 qreal ParticleData::curSY() const

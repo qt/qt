@@ -21,8 +21,32 @@ Rectangle{
         }
     }
 
+    TrailEmitter{
+        particle: stars//TODO: Merge stars and roids
+        system: particles
+        particlesPerSecond: 40
+        particleDuration: 4000
+        emitting: true
+        particleSize: 30
+        particleSizeVariation: 10
+        xSpeed: 220
+        xSpeedVariation: 40
+        height: parent.height
+    }
+    TrailEmitter{
+        particle: roids//TODO: Merge stars and roids
+        system: particles
+        particlesPerSecond: 10
+        particleDuration: 4000
+        emitting: true
+        particleSize: 30
+        particleSizeVariation: 10
+        xSpeed: 220
+        xSpeedVariation: 40
+        height: parent.height
+    }
     ParticleSystem{
-        id: shipStuff
+        id: particles
         anchors.fill: parent
         particles: [ColoredParticle{
             id: stars
@@ -68,70 +92,13 @@ Rectangle{
             colorVariation: 0.2
             additive: 1
         }]
-        emitters: [TrailEmitter{
-            particle: engine
-            particlesPerSecond: 200
-            particleDuration: 1000
-            emitting: true
-            particleSize: 10
-            particleEndSize: 4
-            particleSizeVariation: 4
-            xSpeed: -128
-            xSpeedVariation: 32
-            emitterX: ship.x + 10
-            emitterY: ship.y + 11
-            emitterXVariation: 10
-            emitterYVariation: 10
-        }, TrailEmitter{
-            particle: shot
-            particlesPerSecond: 32
-            particleDuration: 2000
-            emitting: spacePressed
-            particleSize: 40
-            xSpeed: 256
-            emitterX: ship.x + 15
-            emitterY: ship.y + 11
-        }, TrailEmitter{
-            particle: stars//TODO: Merge stars and roids
-            particlesPerSecond: 40
-            particleDuration: 4000
-            emitting: true
-            particleSize: 30
-            particleSizeVariation: 10
-            xSpeed: 220
-            xSpeedVariation: 40
-            emitterX: -40
-            emitterY: height/2
-            emitterYVariation: height/2
-        }, TrailEmitter{
-            particle: roids//TODO: Merge stars and roids
-            particlesPerSecond: 10
-            particleDuration: 4000
-            emitting: true
-            particleSize: 30
-            particleSizeVariation: 10
-            xSpeed: 220
-            xSpeedVariation: 40
-            emitterX: -40
-            emitterY: height/2
-            emitterYVariation: height/2
-        }]
         affectors: [
-            GravitationalSingularity{id: gs; x: root.width/4; y: root.height/4; strength: -400000;},
+            GravitationalSingularity{id: gs; x: root.width/2; y: root.height/2; strength: 4000000;},
             Zone{
-                x: gs.x - 4;
-                y: gs.y - 4;
-                width: 8
-                height: 8
-                affector: Kill{}
-            },
-            Attractor{id: g2; x: 3*root.width/4; y: root.height/2; strength: 100000;},
-            GravitationalSingularity{id: g3; x: root.width/4; y: 3*root.height/4; strength: -400000;},
-            Zone{
-                x: g3.x - 4;
-                y: g3.y - 4;
-                width: 8
-                height: 8
+                x: gs.x - 8;
+                y: gs.y - 8;
+                width: 16
+                height: 16
                 affector: Kill{}
             }
         ]
@@ -147,55 +114,31 @@ Rectangle{
             drag.axis: Drag.XandYAxis
             drag.target: ship
         }
-    }
-    ParticleSystem{
-        id: background
-        anchors.fill: parent
-        particles: [ColoredParticle{
-            id: stars2
-            image: "star.png"
-            color: "white"
-            colorVariation: 0.1
-            additive: 1
-        },SpriteParticle{
-            id: roids2
-            sprites: Sprite{
-                name: "spinning"
-                source: "meteor.png"
-                frames: 35
-                duration: 80
-                speedModifiesDuration: -0.1
-            }
-        }]
-        emitters: [TrailEmitter{
-            particle: stars2//TODO: Merge stars and roids
-            particlesPerSecond: 160
-            particleDuration: 4000
+        TrailEmitter{
+            particle: engine
+            system: particles
+            particlesPerSecond: 200
+            particleDuration: 1000
             emitting: true
-            particleSize: 30
-            particleSizeVariation: 10
-            xSpeed: 220
-            xSpeedVariation: 40
-            emitterX: -40
-            emitterY: height/2
-            emitterYVariation: height/2
-        }, TrailEmitter{
-            particle: roids2//TODO: Merge stars and roids
-            particlesPerSecond: 60
-            particleDuration: 4000
-            emitting: true
-            particleSize: 30
-            particleSizeVariation: 10
-            xSpeed: 220
-            xSpeedVariation: 40
-            emitterX: -40
-            emitterY: height/2
-            emitterYVariation: height/2
-        }]
-        affectors: [
-            Attractor{id: gs2; x: gs.x; y: gs.y; strength: g2.strength/100;},
-            Attractor{id: gs22; x: g3.x; y: g3.y; strength: g2.strength/100;}
-        ]
+            particleSize: 10
+            particleEndSize: 4
+            particleSizeVariation: 4
+            xSpeed: -128
+            xSpeedVariation: 32
+            height: parent.height
+            width: 20
+        }
+        TrailEmitter{
+            particle: shot
+            system: particles
+            particlesPerSecond: 32
+            particleDuration: 2000
+            emitting: spacePressed
+            particleSize: 40
+            xSpeed: 256
+            x: parent.width
+            y: parent.height/2
+        }
     }
     Text{
         color: "white"

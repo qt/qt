@@ -27,7 +27,7 @@ void main() {
     highp vec2 pos = vPos
                    - currentSize / 2. + currentSize * vTex          // adjust size
                    + vVec.xy * t * timelength         // apply speed vector..
-                   + vVec.zw * pow(t * timelength, 2.);
+                   + 0.5 * vVec.zw * pow(t * timelength, 2.);
 
     gl_Position = matrix * vec4(pos.x, pos.y, 0, 1);
 
