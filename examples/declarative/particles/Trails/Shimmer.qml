@@ -13,18 +13,16 @@ Rectangle{
             image: "content/star.png"
             colorVariation: 0.2
         }
-        emitters: TrailEmitter{
-            particle: sp
-            particlesPerSecond: 2000
-            particleDuration: 2000
-            emitting: true
-            particleSize: 40
-            particleSizeVariation: 10
-            emitterX: width/2
-            emitterY: height/2
-            emitterXVariation: width/2
-            emitterYVariation: height/2
-        }
         affectors: Wander{ xVariance: 30; yVariance: 30; pace: 10; }
+    }
+    TrailEmitter{
+        anchors.fill: parent
+        system: particles
+        particle: sp
+        particlesPerSecond: 2000
+        particleDuration: 2000
+        emitting: true
+        particleSize: 40
+        particleSizeVariation: 10
     }
 }
