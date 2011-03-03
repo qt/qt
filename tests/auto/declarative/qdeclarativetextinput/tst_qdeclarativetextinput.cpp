@@ -1451,6 +1451,7 @@ void tst_qdeclarativetextinput::cursorRectangle()
 
         QVERIFY(r.left() < textWidth);
         QVERIFY(r.right() > textWidth);
+        QCOMPARE(input.inputMethodQuery(Qt::ImMicroFocus).toRect(), r);
     }
 
     // Check the cursor rectangle remains within the input bounding rect when auto scrolling.
@@ -1460,11 +1461,14 @@ void tst_qdeclarativetextinput::cursorRectangle()
     for (int i = 6; i < text.length(); ++i) {
         input.setCursorPosition(i);
         QCOMPARE(r, input.cursorRectangle());
+        QCOMPARE(input.inputMethodQuery(Qt::ImMicroFocus).toRect(), r);
     }
 
     for (int i = text.length() - 2; i >= 0; --i) {
         input.setCursorPosition(i);
+        r = input.cursorRectangle();
         QVERIFY(r.right() >= 0);
+        QCOMPARE(input.inputMethodQuery(Qt::ImMicroFocus).toRect(), r);
     }
 }
 
