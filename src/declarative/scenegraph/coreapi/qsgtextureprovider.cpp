@@ -41,6 +41,10 @@
 
 #include "qsgtextureprovider.h"
 
+#ifndef GL_CLAMP_TO_EDGE
+#define GL_CLAMP_TO_EDGE 0x812F
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QSGTextureProvider::QSGTextureProvider(QObject *parent)
@@ -51,6 +55,16 @@ QSGTextureProvider::QSGTextureProvider(QObject *parent)
     , m_filtering(Nearest)
     , m_mipmap(None)
 {
+}
+
+GLint QSGTextureProvider::glTextureWrapS() const
+{
+    return m_hWrapMode == Repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE;
+}
+
+GLint QSGTextureProvider::glTextureWrapT() const
+{
+    return m_vWrapMode == Repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE;
 }
 
 GLint QSGTextureProvider::glMinFilter() const
@@ -64,6 +78,11 @@ GLint QSGTextureProvider::glMinFilter() const
     default:
         return linear ? GL_LINEAR : GL_NEAREST;
     }
+}
+
+GLint QSGTextureProvider::glMagFilter() const
+{
+    return m_filtering == Linear ? GL_LINEAR : GL_NEAREST;
 }
 
 
