@@ -50,8 +50,6 @@
 #include "qmutex_p.h"
 #include "qreadwritelock_p.h"
 
-#include <errno.h>
-
 #ifndef QT_NO_THREAD
 
 QT_BEGIN_NAMESPACE

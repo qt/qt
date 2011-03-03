@@ -41,7 +41,6 @@
 
 #include "qplatformdefs.h"
 #include "qmutex.h"
-#include <qdebug.h>
 
 #ifndef QT_NO_THREAD
 #include "qatomic.h"

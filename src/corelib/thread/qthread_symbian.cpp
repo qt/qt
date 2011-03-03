@@ -45,11 +45,9 @@
 #include <private/qeventdispatcher_symbian_p.h>
 #include "qthreadstorage.h"
 #include "qthread_p.h"
-#include "qdebug.h"
 #include "qsystemerror_p.h"
 
 #include <sched.h>
-#include <errno.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -183,7 +181,7 @@ public:
         }
         start();
     }
-    static void add(QThread* thread)
+    static void add(QThread *thread)
     {
         QMutexLocker adoptedThreadMonitorMutexlock(&adoptedThreadMonitorMutex);
         if (!adoptedThreadAdder) {
