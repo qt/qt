@@ -961,16 +961,15 @@ bool QProcessPrivate::waitForFinished(int msecs)
             User::WaitForRequest(logonStatus, timerStatus);
             QPROCESS_DEBUG_PRINT("QProcessPrivate::waitForFinished() - Wait completed");
 
-            if (timerStatus == KErrNone)
+            if (logonStatus != KRequestPending) {
+                timer.Cancel();
+                User::WaitForRequest(timerStatus);
+            } else {
                 timeoutOccurred = true;
-
-            timer.Cancel();
+                symbianProcess->LogonCancel(logonStatus);
+                User::WaitForRequest(logonStatus);
+            }
             timer.Close();
-
-            symbianProcess->LogonCancel(logonStatus);
-
-            // Eat cancel request completion so that it won't mess up main thread scheduling later
-            User::WaitForRequest(logonStatus, timerStatus);
         }
     } else {
         QPROCESS_DEBUG_PRINT("QProcessPrivate::waitForFinished(), qt_rprocess_running returned false");
