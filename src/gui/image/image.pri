@@ -75,11 +75,11 @@ else:symbian {
     SOURCES += image/qpixmap_s60.cpp
 }
 
-symbian {
-    SOURCES += image/qvolatileimagedata_symbian.cpp
+!symbian|contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2) {
+    SOURCES += image/qvolatileimagedata.cpp
 }
 else {
-    SOURCES += image/qvolatileimagedata.cpp
+    SOURCES += image/qvolatileimagedata_symbian.cpp
 }
 
 # Built-in image format support
