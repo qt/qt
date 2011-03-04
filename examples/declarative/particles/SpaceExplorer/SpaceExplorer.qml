@@ -228,9 +228,23 @@ Rectangle{
         particleSizeVariation: 10
         anchors.fill: parent
     }
-    Image{
+    SpriteImage{
         id: rocket
-        source:"content/rocket2.png"
+        //Sprites or childen for default?
+        Sprite{
+            name: "normal"
+            source: "content/rocket2.png"
+            frames: 1
+            duration: 1000
+            to: {"normal": 0.9, "winking" : 0.1}
+        }
+        Sprite{
+            name: "winking"
+            source: "content/rocketEye.png"
+            frames: 10
+            duration: 40
+                to: {"normal" : 1}
+        }
         x: root.width/2
         y: root.height/2
         property int lx: 0
@@ -242,12 +256,13 @@ Rectangle{
         onXChanged:{ lastX = lx; lx = x;}
         onYChanged:{ lastY = ly; ly = y;}
         rotation: Helpers.direction(lastX, lastY, x, y)
+        data:[
         MouseArea{
             id: ma
             anchors.fill: parent;
             drag.axis: Drag.XandYAxis
             drag.target: rocket
-        }
+        },
         TrailEmitter{
             system: foreground
             particle: engine
@@ -263,7 +278,7 @@ Rectangle{
             height: 4
             width: 4
             
-        } 
+        }, 
         TrailEmitter{
             system: foreground
             particle: shot
@@ -276,6 +291,7 @@ Rectangle{
             x: parent.width - 4
             y: parent.height/2
         }
+        ]
     }
    ParticleSystem{
         id: background
