@@ -171,7 +171,7 @@ QPixmapData *QMeeGoGraphicsSystem::pixmapDataFromEGLSharedImage(Qt::HANDLE handl
         return QMeeGoGraphicsSystem::wrapPixmapData(pmd);
     } else {
         QRasterPixmapData *pmd = new QRasterPixmapData(QPixmapData::PixmapType);
-        pmd->fromImage(softImage, Qt::NoOpaqueDetection);
+        pmd->fromImage(softImage, Qt::NoFormatConversion);
 
         // Make sure that the image was not converted in any way
         if (pmd->buffer()->data_ptr()->data !=

@@ -1650,8 +1650,10 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
             emit q->cursorPositionChanged();
         _q_updateCurrentCharFormatAndSelection();
 #ifndef QT_NO_IM
-        if (QInputContext *ic = inputContext()) {
-            ic->update();
+        if (contextWidget) {
+            if (QInputContext *ic = inputContext()) {
+                ic->update();
+            }
         }
 #endif //QT_NO_IM
     } else {
