@@ -564,6 +564,7 @@ void QSGCanvasPrivate::sceneMouseEventFromMouseEvent(QGraphicsSceneMouseEvent &s
     sceneEvent.setButtons(event->buttons());
     sceneEvent.setButton(event->button());
     sceneEvent.setModifiers(event->modifiers());
+    sceneEvent.setWidget(q);
 
     for (int ii = 0; ii < 5; ++ii) {
         if (sceneEvent.buttons() & (1 << ii)) {
