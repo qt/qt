@@ -96,11 +96,21 @@ QString DitaXmlGenerator::ditaTags[] =
         "apiDesc",
         "APIMap",
         "apiName",
+        "audience",
+        "author",
         "b",
         "body",
         "bodydiv",
+        "brand",
+        "category",
         "codeblock",
         "comment",
+        "component",
+        "copyrholder",
+        "copyright",
+        "copyryear",
+        "created",
+        "critdates",
         "cxxAPIMap",
         "cxxClass",
         "cxxClassAbstract",
@@ -194,6 +204,8 @@ QString DitaXmlGenerator::ditaTags[] =
         "cxxVariableReimplemented",
         "cxxVariableScopedName",
         "cxxVariableStorageClassSpecifierStatic",
+        "data",
+        "data-about",
         "dd",
         "dl",
         "dlentry",
@@ -203,21 +215,33 @@ QString DitaXmlGenerator::ditaTags[] =
         "i",
         "image",
         "keyword",
+        "keywords",
         "li",
         "link",
         "linktext",
         "lq",
+        "metadata",
         "ol",
+        "othermeta",
         "p",
         "parameter",
+        "permissions",
         "ph",
+        "platform",
         "pre",
+        "prodinfo",
+        "prodname",
+        "prolog",
+        "publisher",
         "related-links",
+        "resourceid",
+        "revised",
         "row",
         "section",
         "sectiondiv",
         "shortdesc",
         "simpletable",
+        "source",
         "stentry",
         "sthead",
         "strow",
@@ -233,8 +257,11 @@ QString DitaXmlGenerator::ditaTags[] =
         "topicmeta",
         "topicref",
         "tt",
-        "ul",
         "u",
+        "ul",
+        "unknown",
+        "vrm",
+        "vrmlist",
         "xref",
         ""
     };
@@ -1611,8 +1638,11 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
 
-        // not included: <prolog>
-    
+        writeStartTag(DT_prolog);
+        writeStartTag(DT_metadata);
+        writeEndTag(); // <metadata>
+        writeEndTag(); // <prolog>
+            
         writeStartTag(DT_cxxClassDetail);
         writeStartTag(DT_cxxClassDefinition);
         writeLocation(nsn);
@@ -1735,7 +1765,10 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
 
-        // not included: <prolog>
+        writeStartTag(DT_prolog);
+        writeStartTag(DT_metadata);
+        writeEndTag(); // <metadata>
+        writeEndTag(); // <prolog>
     
         writeStartTag(DT_cxxClassDetail);
         writeStartTag(DT_cxxClassDefinition);
@@ -1876,6 +1909,12 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
          */
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
+
+        writeStartTag(DT_prolog);
+        writeStartTag(DT_metadata);
+        writeEndTag(); // <metadata>
+        writeEndTag(); // <prolog>
+
         writeStartTag(DT_cxxClassDetail);
         writeStartTag(DT_apiDesc);
         xmlWriter().writeAttribute("spectitle",title);
@@ -1996,7 +2035,10 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
 
-        // not included: <prolog>
+        writeStartTag(DT_prolog);
+        writeStartTag(DT_metadata);
+        writeEndTag(); // <metadata>
+        writeEndTag(); // <prolog>
     
         writeStartTag(DT_cxxClassDetail);
         writeStartTag(DT_apiDesc);
@@ -2106,6 +2148,12 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode* fake, CodeMarker* marker
 
     generateHeader(fake, fullTitle);
     generateBrief(fake, marker); // <shortdesc>
+
+    writeStartTag(DT_prolog);
+    writeStartTag(DT_metadata);
+    writeEndTag(); // <metadata>
+    writeEndTag(); // <prolog>
+
     writeStartTag(DT_body);
     if (fake->subType() == Node::Module) {
         generateStatus(fake, marker);
