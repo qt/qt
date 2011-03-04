@@ -46,6 +46,7 @@
 #include <qmath.h>
 #include <qlibraryinfo.h>
 #include <private/qtriangulator_p.h>
+#include <private/qdeclarativeglobal_p.h>
 
 void qt_disableFontHinting(QFont &font)
 {
@@ -171,7 +172,7 @@ void drawQuad(float *bits, int width, int height, const DFVertex *v1, const DFVe
             fillTrapezoid(bits, width, height, qCeil(v3->p.y), qCeil(v2->p.y), v3, v2, v3, v4);
             fillTrapezoid(bits, width, height, qCeil(v2->p.y), qCeil(v4->p.y), v1, v4, v3, v4);
         }
-    } else 
+    } else
 #endif
     if (v2->p.y > v3->p.y) {
         // Right side is straight.
@@ -386,6 +387,8 @@ uint qHash(const TexCoordCacheKey &key)
     return (qHash(key.distfield) << 13) | (key.glyph & 0x1FFF);
 }
 
+DEFINE_BOOL_CONFIG_OPTION(enableDistanceField, QML_ENABLE_DISTANCEFIELD)
+
 QHash<QString, DistanceFieldFontAtlas *> DistanceFieldFontAtlas::m_atlases;
 QHash<TexCoordCacheKey, DistanceFieldFontAtlas::TexCoord> DistanceFieldFontAtlas::m_texCoords;
 QHash<QString, bool> DistanceFieldFontAtlas::m_distfield_availability;
@@ -592,10 +595,9 @@ QImage DistanceFieldFontAtlas::distanceFieldAtlas() const
 
 bool DistanceFieldFontAtlas::useDistanceFieldForFont(const QFont &font)
 {
-    static QStringList args = qApp->arguments();
-    if (args.contains(QLatin1String("--distancefield-text"))) {
+    if (enableDistanceField())
         return DistanceFieldFontAtlas::get(font)->distanceFieldAvailable();
-    }
+
     return false;
 }
 
@@ -649,7 +651,7 @@ QSGTextureRef DistanceFieldFontAtlas::uploadDistanceField(const QImage &image)
 
 QString DistanceFieldFontAtlas::distanceFieldDir() const
 {
-    static QString distfieldpath = QString::fromLocal8Bit(qgetenv("QT_QML_DISTFIELDDIR"));
+    static QString distfieldpath = QString::fromLocal8Bit(qgetenv("QML_DISTFIELD_DIR"));
     if (distfieldpath.isEmpty()) {
 #ifndef QT_NO_SETTINGS
         distfieldpath = QLibraryInfo::location(QLibraryInfo::LibrariesPath);
