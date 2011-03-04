@@ -88,7 +88,7 @@ public:
 
     void grab();
 
-private Q_SLOTS:
+public Q_SLOTS:
     void markDirtyTexture();
 
 private:
@@ -99,6 +99,7 @@ private:
 
     Renderer *m_renderer;
     QGLFramebufferObject *m_fbo;
+    QGLFramebufferObject *m_multisampledFbo;
     QSGTextureRef m_texture;
 
 #ifdef QSG_DEBUG_FBO_OVERLAY
@@ -107,6 +108,8 @@ private:
 
     uint m_live : 1;
     uint m_dirtyTexture : 1;
+    uint m_multisamplingSupportChecked : 1;
+    uint m_multisampling : 1;
 };
 
 class ShaderEffectSource : public TextureItem
@@ -118,6 +121,7 @@ class ShaderEffectSource : public TextureItem
     Q_PROPERTY(Format format READ format WRITE setFormat NOTIFY formatChanged)
     Q_PROPERTY(bool live READ live WRITE setLive NOTIFY liveChanged)
     Q_PROPERTY(bool hideSource READ hideSource WRITE setHideSource NOTIFY hideSourceChanged)
+    Q_PROPERTY(bool mipmap READ mipmap WRITE setMipmap NOTIFY mipmapChanged)
     Q_ENUMS(Format)
 public:
     enum Format {
@@ -147,6 +151,9 @@ public:
     bool hideSource() const;
     void setHideSource(bool hide);
 
+    bool mipmap() const;
+    void setMipmap(bool enabled);
+
     Q_INVOKABLE void grab();
 
 Q_SIGNALS:
@@ -156,6 +163,7 @@ Q_SIGNALS:
     void formatChanged();
     void liveChanged();
     void hideSourceChanged();
+    void mipmapChanged();
 
 protected:
     virtual Node *updatePaintNode(Node *, UpdatePaintNodeData *);
@@ -167,6 +175,7 @@ private:
     Format m_format;
     uint m_live : 1;
     uint m_hideSource : 1;
+    uint m_mipmap : 1;
 };
 
 QT_END_NAMESPACE
