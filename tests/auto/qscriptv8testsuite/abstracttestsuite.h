@@ -49,8 +49,8 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qvector.h>
+#include <QtCore/qtextstream.h>
 
-class QTextStream;
 class TestMetaObjectBuilder;
 
 namespace TestConfig {
