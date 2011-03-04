@@ -262,7 +262,7 @@ const QLocalePrivate *findLocale(QLocale::Language language, QLocale::Script scr
             ++d;
         }
     } else {
-        // both script and country are explicitely specified
+        // both script and country are explicitly specified
         while (d->m_language_id == language_id) {
             if (d->m_script_id == script_id && d->m_country_id == country_id)
                 return d;
