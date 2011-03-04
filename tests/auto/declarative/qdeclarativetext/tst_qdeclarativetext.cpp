@@ -520,32 +520,32 @@ void tst_qdeclarativetext::horizontalAlignment_RightToLeft()
 
     // implicit alignment should follow the reading direction of RTL text
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
-    QVERIFY(textPrivate->layout.lineAt(0).x() > canvas->width()/2);
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() > canvas->width()/2);
 
     // explicitly left aligned
     text->setHAlign(QDeclarativeText::AlignLeft);
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignLeft);
-    QVERIFY(textPrivate->layout.lineAt(0).x() < canvas->width()/2);
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() < canvas->width()/2);
 
     // explicitly right aligned
     text->setHAlign(QDeclarativeText::AlignRight);
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
-    QVERIFY(textPrivate->layout.lineAt(0).x() > canvas->width()/2);
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() > canvas->width()/2);
 
     // explicitly center aligned
     text->setHAlign(QDeclarativeText::AlignHCenter);
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignHCenter);
-    QVERIFY(textPrivate->layout.lineAt(0).x() < canvas->width()/2);
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() < canvas->width()/2);
 
     // reseted alignment should go back to following the text reading direction
     text->resetHAlign();
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
-    QVERIFY(textPrivate->layout.lineAt(0).x() > canvas->width()/2);
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() > canvas->width()/2);
 
     // English text should be implicitly left aligned
     text->setText("Hello world!");
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignLeft);
-    QVERIFY(textPrivate->layout.lineAt(0).x() < canvas->width()/2);
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() < canvas->width()/2);
 
     // empty text is also implicitly left aligned
     text->setText("");
