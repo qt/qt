@@ -145,10 +145,12 @@ void QHttpNetworkConnectionChannel::init()
 
 void QHttpNetworkConnectionChannel::close()
 {
-    socket->blockSignals(true);
+    if (socket->state() == QAbstractSocket::UnconnectedState)
+        state = QHttpNetworkConnectionChannel::IdleState;
+    else
+        state = QHttpNetworkConnectionChannel::ClosingState;
+
     socket->close();
-    socket->blockSignals(false);
-    state = QHttpNetworkConnectionChannel::IdleState;
 }
 
 
@@ -679,7 +681,8 @@ void QHttpNetworkConnectionChannel::allDone()
     reconnectAttempts = 2;
 
     // now the channel can be seen as free/idle again, all signal emissions for the reply have been done
-    this->state = QHttpNetworkConnectionChannel::IdleState;
+    if (state != QHttpNetworkConnectionChannel::ClosingState)
+        state = QHttpNetworkConnectionChannel::IdleState;
 
     // if it does not need to be sent again we can set it to 0
     // the previous code did not do that and we had problems with accidental re-sending of a
@@ -729,7 +732,8 @@ void QHttpNetworkConnectionChannel::allDone()
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     } else if (alreadyPipelinedRequests.isEmpty()) {
         if (connectionCloseEnabled)
-            close();
+            if (socket->state() != QAbstractSocket::UnconnectedState)
+                close();
         if (qobject_cast<QHttpNetworkConnection*>(connection))
             QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     }
@@ -936,6 +940,12 @@ void QHttpNetworkConnectionChannel::_q_bytesWritten(qint64 bytes)
 
 void QHttpNetworkConnectionChannel::_q_disconnected()
 {
+    if (state == QHttpNetworkConnectionChannel::ClosingState) {
+        state = QHttpNetworkConnectionChannel::IdleState;
+        QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
+        return;
+    }
+
     // read the available data before closing
     if (isSocketWaiting() || isSocketReading()) {
         if (reply) {

@@ -765,7 +765,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
 
     //resend the necessary ones.
     for (int i = 0; i < channelCount; ++i) {
-        if (channels[i].resendCurrent) {
+        if (channels[i].resendCurrent && (channels[i].state != QHttpNetworkConnectionChannel::ClosingState)) {
             channels[i].resendCurrent = false;
             channels[i].state = QHttpNetworkConnectionChannel::IdleState;
 
