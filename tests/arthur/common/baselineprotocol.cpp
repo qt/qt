@@ -310,7 +310,7 @@ bool BaselineProtocol::connect(const QString &testCase, bool *dryrun)
     }
 
     if (cmd == Abort) {
-        errMsg += QLS("Server aborted connection. Reason: ") + QString::fromLatin1(block);
+        errMsg += QLS("Server rejected connection. Reason: ") + QString::fromLatin1(block);
         return false;
     }
 
