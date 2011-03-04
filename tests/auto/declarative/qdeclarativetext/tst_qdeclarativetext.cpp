@@ -109,6 +109,7 @@ private slots:
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
 
+    void qtbug_14734();
 private:
     QStringList standard;
     QStringList richText;
@@ -1226,6 +1227,19 @@ void tst_qdeclarativetext::testQtQuick11Attributes_data()
     QTest::newRow("truncated") << "property bool foo: truncated"
         << "<Unknown File>:1: ReferenceError: Can't find variable: truncated"
         << "";
+}
+
+void tst_qdeclarativetext::qtbug_14734()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/qtbug_14734.qml");
+    QVERIFY(canvas);
+
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    delete canvas;
 }
 
 QTEST_MAIN(tst_qdeclarativetext)

@@ -498,6 +498,7 @@ QRect QDeclarativeTextInput::cursorRectangle() const
     Q_D(const QDeclarativeTextInput);
     QRect r = d->control->cursorRect();
     r.setHeight(r.height()-1); // Make consistent with TextEdit (QLineControl inexplicably adds 1)
+    r.moveLeft(r.x() - d->hscroll);
     return r;
 }
 
@@ -1324,7 +1325,7 @@ QVariant QDeclarativeTextInput::inputMethodQuery(Qt::InputMethodQuery property) 
     Q_D(const QDeclarativeTextInput);
     switch(property) {
     case Qt::ImMicroFocus:
-        return d->control->cursorRect();
+        return cursorRectangle();
     case Qt::ImFont:
         return font();
     case Qt::ImCursorPosition:
@@ -1623,38 +1624,41 @@ void QDeclarativeTextInput::moveCursorSelection(int pos, SelectionMode mode)
             anchor = d->control->selectionStart();
 
         if (anchor < pos || (anchor == pos && cursor < pos)) {
-            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, d->control->text());
+            const QString text = d->control->text();
+            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, text);
             finder.setPosition(anchor);
 
             const QTextBoundaryFinder::BoundaryReasons reasons = finder.boundaryReasons();
-            if (!(reasons & QTextBoundaryFinder::StartWord)
+            if (anchor < text.length() && !(reasons & QTextBoundaryFinder::StartWord)
                     || ((reasons & QTextBoundaryFinder::EndWord) && anchor > cursor)) {
                 finder.toPreviousBoundary();
             }
-            anchor = finder.position();
+            anchor = finder.position() != -1 ? finder.position() : 0;
 
             finder.setPosition(pos);
-            if (!finder.isAtBoundary())
+            if (pos > 0 && !finder.boundaryReasons())
                 finder.toNextBoundary();
+            const int cursor = finder.position() != -1 ? finder.position() : text.length();
 
-            d->control->setSelection(anchor, finder.position() - anchor);
+            d->control->setSelection(anchor, cursor - anchor);
         } else if (anchor > pos || (anchor == pos && cursor > pos)) {
-            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, d->control->text());
+            const QString text = d->control->text();
+            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, text);
             finder.setPosition(anchor);
 
             const QTextBoundaryFinder::BoundaryReasons reasons = finder.boundaryReasons();
-            if (!(reasons & QTextBoundaryFinder::EndWord)
+            if (anchor > 0 && !(reasons & QTextBoundaryFinder::EndWord)
                     || ((reasons & QTextBoundaryFinder::StartWord) && anchor < cursor)) {
                 finder.toNextBoundary();
             }
-
-            anchor = finder.position();
+            anchor = finder.position() != -1 ? finder.position() : text.length();
 
             finder.setPosition(pos);
-            if (!finder.isAtBoundary())
+            if (pos < text.length() && !finder.boundaryReasons())
                  finder.toPreviousBoundary();
+            const int cursor = finder.position() != -1 ? finder.position() : 0;
 
-            d->control->setSelection(anchor, finder.position() - anchor);
+            d->control->setSelection(anchor, cursor - anchor);
         }
     }
 }
