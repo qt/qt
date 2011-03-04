@@ -45,6 +45,7 @@
 #include <qfileinfo.h>
 #include <qmath.h>
 #include <qlibraryinfo.h>
+#include <private/qtriangulator_p.h>
 
 void qt_disableFontHinting(QFont &font)
 {
@@ -220,14 +221,14 @@ void drawTriangle(float *bits, int width, int height, const DFVertex *v1, const 
 
 QImage makeDistanceField(const QPainterPath &path, float offs)
 {
-    QList<QPolygonF> polys = path.toSubpathPolygons();
-
     QImage image(QT_DISTANCEFIELD_TILESIZE, QT_DISTANCEFIELD_TILESIZE, QImage::Format_ARGB32_Premultiplied);
 
-    if (polys.isEmpty()) {
+    if (path.isEmpty()) {
         image.fill(0);
         return image;
     }
+
+    QPolylineSet polys = qPolyline(path);
 
     union Pacific {
         float value;
@@ -246,31 +247,42 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
     p.scale(1 / qreal(QT_DISTANCEFIELD_SCALE), 1 / qreal(QT_DISTANCEFIELD_SCALE));
     p.fillPath(path, QColor::fromRgba(interior.color));
     p.end();
+
     float *bits = (float *)image.bits();
     const float angleStep = 15 * 3.141592653589793238f / 180;
     DFPoint rotation = { cos(angleStep), sin(angleStep) };
 
-    int outerPoly = 0;
-    int topVertex = 0;
-    QVarLengthArray<QVector<DFPoint>, 4> allNormals(polys.count());
-    QVarLengthArray<QVector<DFVertex>, 4> allVertices(polys.count());
-    QVarLengthArray<QVector<bool>, 4> allIsConvex(polys.count());
+    bool isShortData = polys.indices.type() == QVertexIndexVector::UnsignedShort;
+    const void *indices = polys.indices.data();
+    int index = 0;
+    QVector<DFPoint> normals;
+    QVector<DFVertex> vertices;
+    normals.reserve(polys.vertices.count());
+    vertices.reserve(polys.vertices.count());
 
-    for (int i = 0; i < polys.count(); ++i) {
-        const QPolygonF &poly = polys.at(i);
-        QVector<DFPoint> &normals = allNormals[i];
-        QVector<DFVertex> &vertices = allVertices[i];
-        QVector<bool> &isConvex = allIsConvex[i];
-        normals.reserve(poly.count());
-        vertices.reserve(poly.count());
+    while (index < polys.indices.size()) {
+        normals.clear();
+        vertices.clear();
+
+        // Find end of polygon.
+        int end = index;
+        if (isShortData) {
+            while (((quint16 *)indices)[end] != quint16(-1))
+                ++end;
+        } else {
+            while (((quint32 *)indices)[end] != quint32(-1))
+                ++end;
+        }
 
         // Calculate vertex normals.
-        for (int next = 0, prev = poly.count() - 1; next < poly.count(); prev = next++) {
-            const QPointF &from = poly.at(prev);
-            const QPointF &to = poly.at(next);
+        for (int next = index, prev = end - 1; next < end; prev = next++) {
+            quint32 fromVertexIndex = isShortData ? (quint32)((quint16 *)indices)[prev] : ((quint32 *)indices)[prev];
+            quint32 toVertexIndex = isShortData ? (quint32)((quint16 *)indices)[next] : ((quint32 *)indices)[next];
+            const qreal *from = &polys.vertices.at(fromVertexIndex * 2);
+            const qreal *to = &polys.vertices.at(toVertexIndex * 2);
             DFPoint n;
-            n.x = float(to.y() - from.y());
-            n.y = float(from.x() - to.x());
+            n.x = float(to[1] - from[1]);
+            n.y = float(from[0] - to[0]);
             if (n.x == 0 && n.y == 0)
                 continue;
             float scale = offs / sqrt(n.x * n.x + n.y * n.y);
@@ -279,28 +291,16 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
             normals.append(n);
 
             DFVertex v;
-            v.p.x = float(to.x() / QT_DISTANCEFIELD_SCALE) + offs - 0.5f;
-            v.p.y = float(to.y() / QT_DISTANCEFIELD_SCALE) + offs - 0.5f;
+            v.p.x = float(to[0] / QT_DISTANCEFIELD_SCALE) + offs - 0.5f;
+            v.p.y = float(to[1] / QT_DISTANCEFIELD_SCALE) + offs - 0.5f;
             v.d = 0.0f;
             vertices.append(v);
-
-            if (v.p.y < allVertices.at(outerPoly).at(topVertex).p.y) {
-                outerPoly = i;
-                topVertex = vertices.count() - 1;
-            }
         }
 
-        isConvex.resize(normals.count());
+        QVector<bool> isConvex(normals.count());
         for (int next = 0, prev = normals.count() - 1; next < normals.count(); prev = next++)
             isConvex[prev] = (normals.at(prev).x * normals.at(next).y - normals.at(prev).y * normals.at(next).x > 0);
-    }
 
-    int dir = allIsConvex.at(outerPoly).at(topVertex) ? 1 : -1;
-
-    for (int i = 0; i < polys.count(); ++i) {
-        const QVector<DFPoint> &normals = allNormals[i];
-        const QVector<DFVertex> &vertices = allVertices[i];
-        const QVector<bool> &isConvex = allIsConvex[i];
         // Draw quads.
         for (int next = 0, prev = normals.count() - 1; next < normals.count(); prev = next++) {
             DFPoint n = normals.at(next);
@@ -317,10 +317,10 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
             extNext.p.y += n.y;
             intNext.p.x -= n.x;
             intNext.p.y -= n.y;
-            extPrev.d = -dir * offs * QT_DISTANCEFIELD_SCALE;
-            extNext.d = -dir * offs * QT_DISTANCEFIELD_SCALE;
-            intPrev.d = dir * offs * QT_DISTANCEFIELD_SCALE;
-            intNext.d = dir * offs * QT_DISTANCEFIELD_SCALE;
+            extPrev.d = 127;
+            extNext.d = 127;
+            intPrev.d = -127;
+            intNext.d = -127;
 
             drawQuad(bits, image.width(), image.height(),
                      &vertices.at(prev), &extPrev,
@@ -368,6 +368,7 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
                 }
             }
         }
+        index = end + 1;
     }
 
     for (int y = 0; y < image.height(); ++y) {
