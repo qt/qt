@@ -53,6 +53,53 @@ isEmpty(TARGET.UID2) {
     }
 }
 
+# Allow .pro files to specify include path(s) to be prepended to the list.
+#
+# This allows the project to override the default ordering, whereby paths
+# relative to $$QMAKE_INCDIR_QT always come first.  This ordering can cause
+# problems when both the epoc32/include tree and a Qt include directory
+# contain a header of the same name - in this case, the Qt header is always
+# included by virtue of its path appearing first in the SYSTEMINCLUDE
+# directives in the generated MMP file.
+#
+# To work around this situation, the following line can be added to the .pro
+# file:
+#	PREPEND_INCLUDEPATH = /epoc32/include
+#
+INCLUDEPATH = $$PREPEND_INCLUDEPATH $$INCLUDEPATH
+
+# Add dependency to Qt package to all other projects besides Qt libs.
+# Note: Qt libs package with full capabilities has UID3 of 0x2001E61C,
+#       while self-signed version typically has temporary UID3 of 0xE001E61C.
+contains(CONFIG, qt):!contains(TARGET.UID3, 0x2001E61C):!contains(TARGET.UID3, 0xE001E61C):isEmpty(QT_LIBINFIX) {
+    qt_pkg_name = Qt
+    pkg_depends_qt += \
+        "; Default dependency to Qt libraries" \
+        "(0x2001E61C), $${QT_MAJOR_VERSION}, $${QT_MINOR_VERSION}, $${QT_PATCH_VERSION}, {$$addLanguageDependentPkgItem(qt_pkg_name)}"
+
+    # Projects linking to webkit need dependency to webkit
+    contains(QT, webkit): {
+        # these can be overridden by mkspecs/modules/qt_webkit.pri
+        isEmpty(QT_WEBKIT_MAJOR_VERSION) {
+            QT_WEBKIT_MAJOR_VERSION = $${QT_MAJOR_VERSION}
+            QT_WEBKIT_MINOR_VERSION = $${QT_MINOR_VERSION}
+            QT_WEBKIT_PATCH_VERSION = $${QT_PATCH_VERSION}
+        }
+
+        webkit_pkg_name = QtWebKit
+        pkg_depends_webkit += \
+            "; Dependency to Qt Webkit" \
+            "(0x200267C2), $${QT_WEBKIT_MAJOR_VERSION}, $${QT_WEBKIT_MINOR_VERSION}, $${QT_WEBKIT_PATCH_VERSION}, {$$addLanguageDependentPkgItem(webkit_pkg_name)}"
+    } else {
+        default_deployment.pkg_prerules -= pkg_depends_webkit
+    }
+} else {
+    default_deployment.pkg_prerules -= pkg_depends_webkit pkg_depends_qt
+}
+
+isEmpty(TARGET.EPOCSTACKSIZE):TARGET.EPOCSTACKSIZE = 0x14000
+isEmpty(TARGET.EPOCHEAPSIZE):TARGET.EPOCHEAPSIZE = 0x020000 0x800000
+
 # Supports Symbian^3 and Symbian^4 by default and also S60 3.1, 3.2, and 5.0 if built against any of those.
 platform_product_id = S60ProductID
 platform_product_id = $$addLanguageDependentPkgItem(platform_product_id)
