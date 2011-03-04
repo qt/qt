@@ -39,12 +39,13 @@
 **
 ****************************************************************************/
 
-
-#include "qscroller_p.h"
+#include <QtCore/qglobal.h>
 
 #ifdef Q_WS_MAC
 
 #import <Cocoa/Cocoa.h>
+
+#include "qscroller_p.h"
 
 QPointF QScrollerPrivate::realDpi(int screen)
 {
