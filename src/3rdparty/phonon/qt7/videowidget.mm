@@ -446,7 +446,7 @@ public:
 
     void setDrawFrameRect(const QRect &rect)
     {
-        NSRect frame = m_movieLayer.frame;
+        CGRect frame = m_movieLayer.frame;
         frame.origin.x = rect.x();
         frame.origin.y = rect.y();
         frame.size.width = rect.width();
