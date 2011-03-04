@@ -286,7 +286,13 @@ void QHttpNetworkConnectionPrivate::emitReplyError(QAbstractSocket *socket,
         int i = indexOf(socket);
         // remove the corrupt data if any
         reply->d_func()->eraseData();
+
+        // Clean the channel
         channels[i].close();
+        channels[i].reply = 0;
+        channels[i].request = QHttpNetworkRequest();
+        channels[i].requeueCurrentlyPipelinedRequests();
+
         // send the next request
         QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
     }

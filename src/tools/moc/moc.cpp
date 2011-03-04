@@ -685,10 +685,13 @@ void Moc::parse()
                     if (parseEnum(&enumDef))
                         def.enumList += enumDef;
                 } break;
+                case SEMIC:
+                case COLON:
+                    break;
                 default:
                     FunctionDef funcDef;
                     funcDef.access = access;
-                    int rewind = index;
+                    int rewind = index--;
                     if (parseMaybeFunction(&def, &funcDef)) {
                         if (funcDef.isConstructor) {
                             if ((access == FunctionDef::Public) && funcDef.isInvokable) {

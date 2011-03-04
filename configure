@@ -6707,6 +6707,8 @@ if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ] || [ "$CFG_JAVASCRIPTCORE_JIT" = "auto"
         if [ $? != "0" ]; then
            CFG_JAVASCRIPTCORE_JIT=no
         fi
+    elif [ "$XPLATFORM" = "symbian-gcce" ]; then
+        CFG_JAVASCRIPTCORE_JIT=no
     fi
 fi
 
@@ -7412,11 +7414,11 @@ EOF
         canBuildWebKit="no"
         canBuildQtConcurrent="no"
 	;;
-    symbian/*-gcce)
+    symbian-gcce)
         canBuildWebKit="no"
         canBuildQtConcurrent="no"
         ;;
-    symbian/*-armcc)
+    symbian-armcc)
         canBuildQtConcurrent="no"
         ;;
 esac
