@@ -798,6 +798,8 @@ def main():
     for key in script_map.keys():
         script = fixedScriptName(script_map[key][0], dupes)
         qlocaleh_temp_file.write("        " + script + " = " + str(key) + ",\n")
+    qlocaleh_temp_file.write("        SimplifiedChineseScript = SimplifiedHanScript,\n")
+    qlocaleh_temp_file.write("        TraditionalChineseScript = TraditionalHanScript,\n")
     qlocaleh_temp_file.write("        LastScript = " + script + "\n")
     qlocaleh_temp_file.write("    };\n")
 

@@ -118,6 +118,7 @@
 
     This enumerated type is used to specify a language.
 
+    \value AnyLanguage
     \value C The "C" locale is identical in behavior to English/UnitedStates.
     \value Abkhazian
     \value Afan
@@ -340,7 +341,7 @@
     \value Shambala
     \omitvalue LastLanguage
 
-    \sa language()
+    \sa language(), languageToString()
 */
 
 /*!
@@ -598,7 +599,29 @@
     \value LatinAmericaAndTheCaribbean
     \omitvalue LastCountry
 
-    \sa country()
+    \sa country(), countryToString()
+*/
+
+/*!
+    \enum QLocale::Script
+
+    This enumerated type is used to specify a script.
+
+    \value AnyScript
+    \value ArabicScript
+    \value CyrillicScript
+    \value DeseretScript
+    \value GurmukhiScript
+    \value SimplifiedHanScript same as SimplifiedChineseScript
+    \value SimplifiedChineseScript same as SimplifiedHanScript
+    \value TraditionalHanScript same as TraditionalChineseScript
+    \value TraditionalChineseScript same as TraditionalHanScript
+    \value LatinScript
+    \value MongolianScript
+    \value TifinaghScript
+    \omitvalue LastScript
+
+    \sa script(), scriptToString(), languageToString()
 */
 
 /*!
