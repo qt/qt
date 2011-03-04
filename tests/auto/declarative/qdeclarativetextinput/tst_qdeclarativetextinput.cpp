@@ -2066,6 +2066,7 @@ void tst_qdeclarativetextinput::preeditMicroFocus()
     view.setInputContext(&ic);
     QDeclarativeTextInput input;
     input.setPos(0, 0);
+    input.setAutoScroll(false);
     input.setFocus(true);
     scene.addItem(&input);
     view.show();
