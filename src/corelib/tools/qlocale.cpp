@@ -635,7 +635,7 @@ static quint16 localePrivateIndex(const QLocalePrivate *p)
 
     This constructor is much slower than QLocale(Country, Script, Language).
 
-    \sa name()
+    \sa bcp47Name()
 */
 
 QLocale::QLocale(const QString &name)
@@ -843,13 +843,20 @@ void QLocale::setDefault(const QLocale &locale)
 /*!
     Returns the language of this locale.
 
-    \sa country(), languageToString(), name()
+    \sa script(), country(), languageToString(), bcp47Name()
 */
 QLocale::Language QLocale::language() const
 {
     return Language(d()->languageId());
 }
 
+/*!
+    \since 4.8
+
+    Returns the script of this locale.
+
+    \sa language(), country(), languageToString(), scriptToString(), bcp47Name()
+*/
 QLocale::Script QLocale::script() const
 {
     return Script(d()->m_script_id);
@@ -858,7 +865,7 @@ QLocale::Script QLocale::script() const
 /*!
     Returns the country of this locale.
 
-    \sa language(), countryToString(), name()
+    \sa language(), script(), countryToString(), bcp47Name()
 */
 QLocale::Country QLocale::country() const
 {
@@ -871,11 +878,11 @@ QLocale::Country QLocale::country() const
     language is a lowercase, two-letter ISO 639 language code,
     and country is an uppercase, two- or three-letter ISO 3166 country code.
 
-    Note that even if QLocale object was constructed with a specific script,
-    name() will ignore it for compatibility reasons. Use bcp47Name() instead
+    Note that even if QLocale object was constructed with an explicit script,
+    name() will not contain it for compatibility reasons. Use bcp47Name() instead
     if you need a full locale name.
 
-    \sa QLocale(const QString &), language(), country(), bcp47Name()
+    \sa QLocale(const QString &), language(), script(), country(), bcp47Name()
 */
 
 QString QLocale::name() const
@@ -903,9 +910,13 @@ QString QLocale::name() const
     Returns the dash-separated language, script and country (and possibly other BCP47 fields)
     of this locale as a string.
 
+    Unlike the uiLanguages() the returned value of the bcp47Name() represents
+    the locale name of the QLocale data but not the language the user-interface
+    should be in.
+
     This function tries to conform the locale name to BCP47.
 
-    \sa language(), country(), script()
+    \sa language(), country(), script(), uiLanguages()
 */
 QString QLocale::bcp47Name() const
 {
@@ -3151,8 +3162,16 @@ QString QLocale::toCurrencyString(double value, const QString &symbol) const
 /*!
     \since 4.8
 
-    Returns a sorted list of locale names that could be used for translation
-    of messages presented to the user.
+    Returns an ordered list of locale names for translation purposes in
+    preference order.
+
+    The return value represents locale names that the user expects to see the
+    UI translation in.
+
+    Most like you do not need to use this function directly, but just pass the
+    QLocale object to the QTranslator::load() function.
+
+    The first item in the list is the most preferred one.
 
     \sa QTranslator, bcp47Name()
 */
