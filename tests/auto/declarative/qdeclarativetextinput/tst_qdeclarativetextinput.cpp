@@ -145,7 +145,8 @@ tst_qdeclarativetextinput::tst_qdeclarativetextinput()
     standard << "the quick brown fox jumped over the lazy dog"
         << "It's supercalifragisiticexpialidocious!"
         << "Hello, world!"
-        << "!dlrow ,olleH";
+        << "!dlrow ,olleH"
+        << " spacey   text ";
 
     colorStrings << "aliceblue"
                  << "antiquewhite"
@@ -446,6 +447,9 @@ void tst_qdeclarativetextinput::moveCursorSelection_data()
     QTest::addColumn<int>("selectionEnd");
     QTest::addColumn<bool>("reversible");
 
+    // () contains the text selected by the cursor.
+    // <> contains the actual selection.
+
     QTest::newRow("(t)he|characters")
             << standard[0] << 0 << 1 << QDeclarativeTextInput::SelectCharacters << 0 << 1 << true;
     QTest::newRow("do(g)|characters")
@@ -583,6 +587,24 @@ void tst_qdeclarativetextinput::moveCursorSelection_data()
             << standard[3] << 0 << 0 << QDeclarativeTextInput::SelectWords << 0 << 0 << true;
     QTest::newRow("!<()>dlrow|words")
             << standard[3] << 1 << 1 << QDeclarativeTextInput::SelectWords << 1 << 1 << true;
+
+    QTest::newRow(" <s(pac)ey>   text |words")
+            << standard[4] << 1 << 4 << QDeclarativeTextInput::SelectWords << 1 << 7 << true;
+    QTest::newRow(" spacey   <t(ex)t> |words")
+            << standard[4] << 11 << 13 << QDeclarativeTextInput::SelectWords << 10 << 14 << false; // Should be reversible. QTBUG-11365
+    QTest::newRow("<( )>spacey   text |words|ltr")
+            << standard[4] << 0 << 1 << QDeclarativeTextInput::SelectWords << 0 << 1 << false;
+    QTest::newRow("<( )spacey>   text |words|rtl")
+            << standard[4] << 1 << 0 << QDeclarativeTextInput::SelectWords << 0 << 7 << false;
+    QTest::newRow("spacey   <text( )>|words|ltr")
+            << standard[4] << 14 << 15 << QDeclarativeTextInput::SelectWords << 10 << 15 << false;
+//    QTBUG-11365
+//    QTest::newRow("spacey   text<( )>|words|rtl")
+//            << standard[4] << 15 << 14 << QDeclarativeTextInput::SelectWords << 14 << 15 << false;
+    QTest::newRow("<()> spacey   text |words")
+            << standard[4] << 0 << 0 << QDeclarativeTextInput::SelectWords << 0 << 0 << false;
+    QTest::newRow(" spacey   text <()>|words")
+            << standard[4] << 15 << 15 << QDeclarativeTextInput::SelectWords << 15 << 15 << false;
 }
 
 void tst_qdeclarativetextinput::moveCursorSelection()
@@ -628,6 +650,11 @@ void tst_qdeclarativetextinput::moveCursorSelectionSequence_data()
     QTest::addColumn<int>("selection1End");
     QTest::addColumn<int>("selection2Start");
     QTest::addColumn<int>("selection2End");
+
+    // () contains the text selected by the cursor.
+    // <> contains the actual selection.
+    // ^ is the revised cursor position.
+    // {} contains the revised selection.
 
     QTest::newRow("the {<quick( bro)wn> f^ox} jumped|ltr")
             << standard[0]
@@ -741,6 +768,50 @@ void tst_qdeclarativetextinput::moveCursorSelectionSequence_data()
             << 11 << 9 << 5
             << 8 << 13
             << 1 << 13;
+
+    QTest::newRow("{<(^} sp)acey>   text |ltr")
+            << standard[4]
+            << 0 << 3 << 0
+            << 0 << 7
+            << 0 << 0;
+    QTest::newRow("{<( ^}sp)acey>   text |ltr")
+            << standard[4]
+            << 0 << 3 << 1
+            << 0 << 7
+            << 0 << 1;
+    QTest::newRow("<( {s^p)acey>}   text |rtl")
+            << standard[4]
+            << 3 << 0 << 2
+            << 0 << 7
+            << 1 << 7;
+    QTest::newRow("<( {^sp)acey>}   text |rtl")
+            << standard[4]
+            << 3 << 0 << 1
+            << 0 << 7
+            << 1 << 7;
+
+    QTest::newRow(" spacey   <te(xt {^)>}|rtl")
+            << standard[4]
+            << 15 << 12 << 15
+            << 10 << 15
+            << 15 << 15;
+//    QTBUG-11365
+//    QTest::newRow(" spacey   <te(xt{^ )>}|rtl")
+//            << standard[4]
+//            << 15 << 12 << 14
+//            << 10 << 15
+//            << 14 << 15;
+    QTest::newRow(" spacey   {<te(x^t} )>|ltr")
+            << standard[4]
+            << 12 << 15 << 13
+            << 10 << 15
+            << 10 << 14;
+//    QTBUG-11365
+//    QTest::newRow(" spacey   {<te(xt^} )>|ltr")
+//            << standard[4]
+//            << 12 << 15 << 14
+//            << 10 << 15
+//            << 10 << 14;
 }
 
 void tst_qdeclarativetextinput::moveCursorSelectionSequence()
@@ -1451,6 +1522,7 @@ void tst_qdeclarativetextinput::cursorRectangle()
 
         QVERIFY(r.left() < textWidth);
         QVERIFY(r.right() > textWidth);
+        QCOMPARE(input.inputMethodQuery(Qt::ImMicroFocus).toRect(), r);
     }
 
     // Check the cursor rectangle remains within the input bounding rect when auto scrolling.
@@ -1460,11 +1532,14 @@ void tst_qdeclarativetextinput::cursorRectangle()
     for (int i = 6; i < text.length(); ++i) {
         input.setCursorPosition(i);
         QCOMPARE(r, input.cursorRectangle());
+        QCOMPARE(input.inputMethodQuery(Qt::ImMicroFocus).toRect(), r);
     }
 
     for (int i = text.length() - 2; i >= 0; --i) {
         input.setCursorPosition(i);
+        r = input.cursorRectangle();
         QVERIFY(r.right() >= 0);
+        QCOMPARE(input.inputMethodQuery(Qt::ImMicroFocus).toRect(), r);
     }
 }
 
@@ -1991,6 +2066,7 @@ void tst_qdeclarativetextinput::preeditMicroFocus()
     view.setInputContext(&ic);
     QDeclarativeTextInput input;
     input.setPos(0, 0);
+    input.setAutoScroll(false);
     input.setFocus(true);
     scene.addItem(&input);
     view.show();
