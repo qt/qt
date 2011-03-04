@@ -89,8 +89,7 @@ protected:
     QSGCanvasPrivate *renderer;
 };
 
-
-
+class QTouchEvent;
 class QSGCanvasPrivate : public QGLWidgetPrivate
 {
 public:
@@ -112,12 +111,17 @@ public:
     QPoint lastMousePosition;
     QPoint buttonDownPositions[5]; // Left, Right, Middle, XButton1, XButton2
     void sceneMouseEventFromMouseEvent(QGraphicsSceneMouseEvent &, QMouseEvent *);
+    void translateTouchEvent(QTouchEvent *touchEvent);
     static QEvent::Type sceneMouseEventTypeFromMouseEvent(QMouseEvent *);
     static void sceneMouseEventForTransform(QGraphicsSceneMouseEvent &, const QTransform &);
+    static void transformTouchPoints(QList<QTouchEvent::TouchPoint> &touchPoints, const QTransform &transform);
     bool deliverInitialMousePressEvent(QSGItem *, QGraphicsSceneMouseEvent *);
     bool deliverMouseEvent(QGraphicsSceneMouseEvent *);
     bool sendFilteredMouseEvent(QSGItem *, QSGItem *, QGraphicsSceneMouseEvent *);
     bool deliverWheelEvent(QSGItem *, QGraphicsSceneWheelEvent *);
+    bool deliverTouchPoints(QSGItem *, QTouchEvent *, const QList<QTouchEvent::TouchPoint> &, QSet<int> *,
+            QHash<QSGItem *, QList<QTouchEvent::TouchPoint> > *);
+    bool deliverTouchEvent(QTouchEvent *);
     void sceneHoverEventFromMouseEvent(QGraphicsSceneHoverEvent &, QMouseEvent *);
     bool deliverHoverEvent(QSGItem *, QGraphicsSceneHoverEvent *);
     void sendHoverEvent(QEvent::Type, QSGItem *, QGraphicsSceneHoverEvent *);
@@ -182,7 +186,7 @@ public:
 
     QAnimationDriver *animationDriver;
 
-
+    QHash<int, QSGItem *> itemForTouchPointId;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSGCanvasPrivate::FocusOptions)

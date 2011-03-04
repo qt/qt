@@ -54,6 +54,7 @@
 #include "qsgborderimage_p.h"
 #include "qsgscalegrid_p_p.h"
 #include "qsgmousearea_p.h"
+#include "qsgpincharea_p.h"
 #include "qsgflickable_p.h"
 #include "qsgflickable_p_p.h"
 #include "qsglistview_p.h"
@@ -160,10 +161,9 @@ static void qt_sgitems_defineModule(const char *uri, int major, int minor)
     qmlRegisterUncreatableType<QSGKeyNavigationAttached>(uri,major,minor,"KeyNavigation",QSGKeyNavigationAttached::tr("KeyNavigation is only available via attached properties"));
     qmlRegisterUncreatableType<QSGKeysAttached>(uri,major,minor,"Keys",QSGKeysAttached::tr("Keys is only available via attached properties"));
 
-//XXX fix PinchArea
-//    qmlRegisterType<QDeclarativePinchArea>(uri,major,minor,"PinchArea");
-//    qmlRegisterType<QDeclarativePinch>(uri,major,minor"Pinch");
-//    qmlRegisterType<QDeclarativePinchEvent>();
+    qmlRegisterType<QSGPinchArea>(uri,major,minor,"PinchArea");
+    qmlRegisterType<QSGPinch>(uri,major,minor,"Pinch");
+    qmlRegisterType<QSGPinchEvent>();
 
     qmlRegisterType<ShaderEffectItem>("QtQuick", 2, 0, "ShaderEffectItem");
     qmlRegisterType<ShaderEffectSource>("QtQuick", 2, 0, "ShaderEffectSource");

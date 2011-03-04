@@ -32,6 +32,8 @@ HEADERS += \
     $$PWD/qsgscalegrid_p_p.h \
     $$PWD/qsgmousearea_p.h \
     $$PWD/qsgmousearea_p_p.h \
+    $$PWD/qsgpincharea_p.h \
+    $$PWD/qsgpincharea_p_p.h \
     $$PWD/qsgflickable_p.h \
     $$PWD/qsgflickable_p_p.h \
     $$PWD/qsglistview_p.h \
@@ -76,6 +78,7 @@ SOURCES += \
     $$PWD/qsgninepatchnode.cpp \
     $$PWD/qsgscalegrid.cpp \
     $$PWD/qsgmousearea.cpp \
+    $$PWD/qsgpincharea.cpp \
     $$PWD/qsgflickable.cpp \
     $$PWD/qsglistview.cpp \
     $$PWD/qsgvisualitemmodel.cpp \

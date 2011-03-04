@@ -173,6 +173,8 @@ void tst_qdeclarativewebview::basicProperties()
     QCOMPARE(wv->property("pixelCacheSize").toInt(),0);
     qvariant_cast<QAction*>(wv->property("reload"))->trigger();
     QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
+
+    delete wv;
 }
 
 void tst_qdeclarativewebview::settings()
@@ -239,6 +241,8 @@ void tst_qdeclarativewebview::settings()
         QVERIFY(s->property("privateBrowsingEnabled") == on);
         QVERIFY(s->property("zoomTextOnly") == on);
     }
+
+    delete wv;
 }
 
 void tst_qdeclarativewebview::historyNav()
@@ -304,6 +308,8 @@ void tst_qdeclarativewebview::historyNav()
     QVERIFY(qvariant_cast<QAction*>(wv->property("forward"))->isEnabled());
     QVERIFY(qvariant_cast<QAction*>(wv->property("stop")));
     QVERIFY(!qvariant_cast<QAction*>(wv->property("stop"))->isEnabled());
+
+    delete wv;
 }
 
 void tst_qdeclarativewebview::multipleWindows()
@@ -317,6 +323,8 @@ void tst_qdeclarativewebview::multipleWindows()
     QDeclarativeItem* popup = qobject_cast<QDeclarativeItem*>(grid->children().at(2)); // first popup after Component and Loader.
     QVERIFY(popup != 0);
     QTRY_COMPARE(popup->x(), 150.0);
+
+    delete grid;
 }
 
 void tst_qdeclarativewebview::loadError()
@@ -336,6 +344,8 @@ void tst_qdeclarativewebview::loadError()
 
         qvariant_cast<QAction*>(wv->property("reload"))->trigger();
     }
+
+    delete wv;
 }
 
 void tst_qdeclarativewebview::setHtml()
@@ -349,6 +359,8 @@ void tst_qdeclarativewebview::setHtml()
     QSignalSpy spy(wv, SIGNAL(htmlChanged()));
     wv->setProperty("html", QString("<html><head><title>Basic</title></head><body><p>text</p></body></html>"));
     QCOMPARE(spy.count(),1);
+
+    delete wv;
 }
 
 void tst_qdeclarativewebview::elementAreaAt()
@@ -366,6 +378,8 @@ void tst_qdeclarativewebview::elementAreaAt()
     QCOMPARE(wv->elementAreaAt(130,30,280,280),QRect(76,1,223,54)); // Area BC
     QCOMPARE(wv->elementAreaAt(130,30,400,400),QRect(0,0,310,100)); // Whole view
     */
+
+    delete wv;
 }
 
 void tst_qdeclarativewebview::javaScript()
@@ -380,6 +394,8 @@ void tst_qdeclarativewebview::javaScript()
     QCOMPARE(wv->evaluateJavaScript("window.status").toString(), QString("status here"));
     QCOMPARE(wv->evaluateJavaScript("window.myjsname.qmlprop").toString(), QString("qmlvalue"));
     */
+
+    delete wv;
 }
 
 /*
@@ -441,6 +457,8 @@ void tst_qdeclarativewebview::newWindowParent()
 
     wv->setProperty("newWindowParent", QVariant::fromValue((QDeclarativeItem*)0));
     QCOMPARE(newWindowParentSpy.count(),2);
+
+    delete rootItem;
 }
 
 void tst_qdeclarativewebview::newWindowComponent()
@@ -466,6 +484,8 @@ void tst_qdeclarativewebview::newWindowComponent()
 
     wv->setProperty("newWindowComponent", QVariant::fromValue((QDeclarativeComponent*)0));
     QCOMPARE(newWindowComponentSpy.count(),2);
+
+    delete rootItem;
 }
 
 void tst_qdeclarativewebview::renderingEnabled()
@@ -490,6 +510,8 @@ void tst_qdeclarativewebview::renderingEnabled()
 
     wv->setProperty("renderingEnabled", true);
     QCOMPARE(renderingEnabledSpy.count(),2);
+
+    delete rootItem;
 }
 
 void tst_qdeclarativewebview::pressGrabTime()
@@ -513,6 +535,8 @@ void tst_qdeclarativewebview::pressGrabTime()
 
     wv->setProperty("pressGrabTime", 0);
     QCOMPARE(pressGrabTimeSpy.count(),2);
+
+    delete rootItem;
 }
 
 QTEST_MAIN(tst_qdeclarativewebview)

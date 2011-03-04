@@ -93,6 +93,8 @@ void tst_QDeclarativeView::scene()
     QVERIFY(declarativeItem);
     QVERIFY(scene.items().count() > 0);
     QCOMPARE(scene.items().at(0), declarativeItem);
+
+    delete view;
 }
 
 void tst_QDeclarativeView::resizemodedeclarativeitem()

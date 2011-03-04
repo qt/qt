@@ -458,6 +458,7 @@ void tst_QDeclarativePathView::dataModel()
     QCOMPARE(pathview->currentIndex(), model.count()-1);
 
     delete canvas;
+    delete testObject;
 }
 
 void tst_QDeclarativePathView::pathMoved()
@@ -617,6 +618,8 @@ void tst_QDeclarativePathView::resetModel()
         QVERIFY(display != 0);
         QCOMPARE(display->text(), strings.at(i));
     }
+
+    delete canvas;
 }
 
 void tst_QDeclarativePathView::propertyChanges()

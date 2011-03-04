@@ -89,6 +89,7 @@ class QSGKeyEvent;
 class QSGAnchors;
 class QSGItemPrivate;
 class QSGCanvas;
+class QTouchEvent;
 class Node;
 class TransformNode;
 class Q_DECLARATIVE_EXPORT QSGItem : public QObject, public QDeclarativeParserStatus
@@ -343,6 +344,7 @@ protected:
     virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     virtual void mouseUngrabEvent(); // XXX todo - params?
     virtual void wheelEvent(QGraphicsSceneWheelEvent *event);
+    virtual void touchEvent(QTouchEvent *event);
     virtual void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
     virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);

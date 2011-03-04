@@ -857,6 +857,7 @@ void tst_QDeclarativeItem::childrenRect()
     QCOMPARE(item->height(), qreal(0));
 
     delete o;
+    delete canvas;
 }
 
 // QTBUG-11383
