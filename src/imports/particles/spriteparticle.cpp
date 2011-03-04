@@ -183,12 +183,12 @@ void SpriteParticle::createEngine()
         m_spriteEngine = new SpriteEngine(m_sprites, this);
     else
         m_spriteEngine = 0;
-    reset();//###this is probalby out of updatePaintNode and shouldn't be
+    reset();//###this is probably out of updatePaintNode and shouldn't be
 }
 
 void SpriteParticle::setCount(int c)
 {
-    m_particle_count = c;//### Terribly shoddy
+    m_particle_count = c;//### shoddy
 }
 
 static QSGGeometry::Attribute SpriteParticle_Attributes[] = {
@@ -322,7 +322,7 @@ void SpriteParticle::load(ParticleData *d)
         return;
 
     SpriteParticleVertices *particles = (SpriteParticleVertices *) m_node->geometry()->vertexData();
-    SpriteParticleVertices &p = particles[d->systemIndex];
+    SpriteParticleVertices &p = particles[d->particleIndex];
 
     // Initial Sprite State
     p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = p.v1.t;
@@ -330,7 +330,7 @@ void SpriteParticle::load(ParticleData *d)
     SpriteState* state = m_spriteEngine->state(0);
     p.v1.frameCount = p.v2.frameCount = p.v3.frameCount = p.v4.frameCount = state->frames();
     p.v1.frameDuration = p.v2.frameDuration = p.v3.frameDuration = p.v4.frameDuration = state->duration();
-    m_spriteEngine->startSprite(d->systemIndex);
+    m_spriteEngine->startSprite(d->particleIndex);
 
     vertexCopy(p.v1, d->pv);
     vertexCopy(p.v2, d->pv);
@@ -346,7 +346,7 @@ void SpriteParticle::reload(ParticleData *d)
         return;
 
     SpriteParticleVertices *particles = (SpriteParticleVertices *) m_node->geometry()->vertexData();
-    int pos = d->systemIndex;
+    int pos = d->particleIndex;
     SpriteParticleVertices &p = particles[pos];
 
     vertexCopy(p.v1, d->pv);

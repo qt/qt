@@ -10,6 +10,14 @@ class ParticleEmitter;
 class Particle;
 class ParticleData;
 
+
+struct EmitterData{
+    int size;
+    int start;
+    int nextIdx;
+    QHash<Particle*, int> particleOffsets;
+};
+
 class ParticleSystem : public QSGItem
 {
     Q_OBJECT
@@ -56,7 +64,7 @@ void setRunning(bool arg)
 }
 
 void emitParticle(ParticleData* p);
-ParticleData* newDatum();
+ParticleData* newDatum(ParticleEmitter* e, Particle* p);
 
 protected:
     Node *updatePaintNode(Node *, UpdatePaintNodeData *);
@@ -65,7 +73,6 @@ private slots:
     void countChanged();
 private:
     void buildParticleNodes();
-    int m_next_particle;
     int m_particle_count;
     bool m_running;
     bool m_do_reset;
@@ -74,7 +81,8 @@ private:
     QList<ParticleEmitter*> m_emitters;
     QList<ParticleAffector*> m_affectors;
     QList<Particle*> m_particles;
-    QVector<ParticleData*> d;
+    QVector<ParticleData*> data;
+    QList<EmitterData*> m_emitterData;//size, start
 };
 
 //TODO: Clean up all this into ParticleData
@@ -122,7 +130,7 @@ public:
 
     Particle* p;
     ParticleEmitter* e;
-    int emitterIndex;
+    int particleIndex;
     int systemIndex;
 };
 

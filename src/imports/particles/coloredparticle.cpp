@@ -408,7 +408,7 @@ void ColoredParticle::reload(ParticleData *d)
 {
     ColoredParticleVertices *particles = (ColoredParticleVertices *) m_node->geometry()->vertexData();
 
-    int pos = d->systemIndex;
+    int pos = d->particleIndex;
 
     ColoredParticleVertices &p = particles[pos];
 
@@ -431,7 +431,7 @@ void ColoredParticle::load(ParticleData *d)
     color.b = m_color.blue() * (1 - m_color_variation) + rand() % 256 * m_color_variation;
     color.a = (1 - m_additive) * 255;
     ColoredParticleVertices *particles = (ColoredParticleVertices *) m_node->geometry()->vertexData();
-    ColoredParticleVertices &p = particles[d->systemIndex];
+    ColoredParticleVertices &p = particles[d->particleIndex];
     p.v1.color = p.v2.color = p.v3.color = p.v4.color = color;
 
     vertexCopy(p.v1, d->pv);

@@ -4,9 +4,13 @@ import "content/helpers.js" as Helpers
 
 Rectangle{
     id: root
-    width: 1200
-    height: 1000
+    width: 360
+    height: 540
     color: "black"
+    Image{
+        anchors.centerIn: parent
+        source: "../Asteroid/finalfrontier.png"
+    }
     property bool spacePressed: false
     property int holeSize: 4
     focus: true
@@ -23,9 +27,54 @@ Rectangle{
         }
     }
 
+    function fakeMove(){
+        fakeMoving = rocket.x < 80 || rocket.x+rocket.width-root.width > -80 || rocket.y < 80 || rocket.y+rocket.height-root.height > -80;
+        if(fakeMoving)
+            fakeMovementDir = Helpers.direction(root.width/2, root.height/2, rocket.x, rocket.y) + 180;
+    }
+    property bool fakeMoving: false
+    property real fakeMovementDir: 0
+
+    TrailEmitter{
+        particle: stars2
+        system: background
+        particlesPerSecond: 60
+        particleDuration: 4000
+        emitting: true
+        particleSize: 30
+        particleSizeVariation: 10
+        emitterX: root.width/2
+        emitterY: root.height/2
+        emitterXVariation: root.width/2
+        emitterYVariation: root.height/2
+    }
+    ParticleSystem{
+        id: background
+        anchors.fill: parent
+        ColoredParticle{
+            id: stars2
+            image: "content/star.png"
+            color: "white"
+            colorVariation: 0.1
+            additive: 1
+        }
+        affectors:[
+            Gravity{
+                acceleration: fakeMoving?10:0
+                angle: fakeMovementDir
+            }
+        ]
+    }
     Text{
         color: "white"
-        font.pixelSize: 48
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        text:"Drag the ship, but don't hit a black hole!"
+        font.pixelSize: 10
+    }
+    Text{
+        color: "white"
+        font.pixelSize: 36
         anchors.centerIn: parent
         text: "GAME OVER"
         opacity: gameOver ? 1 : 0
@@ -33,14 +82,27 @@ Rectangle{
     }
     Text{
         color: "white"
-        font.pixelSize: 24
+        font.pixelSize: 18
         anchors.left: parent.left
         anchors.bottom: parent.bottom
         anchors.margins: 8
         text: "Score: " + score
     }
+    Image{
+        source: "content/orangeStar.png"
+        width: 40
+        height: 40
+        anchors.right: parent.right
+        anchors.top: parent.top
+        MouseArea{
+            anchors.fill: parent
+            anchors.margins: -20
+            onClicked: shoot = !shoot
+        }
+    }
     property int score: 0
     property bool gameOver: false
+    property bool shoot: true
     property int maxLives: 3
     property int lives: maxLives
     property bool alive: !Helpers.intersects(rocket, gs1.x, gs1.y, holeSize) && !Helpers.intersects(rocket, gs2.x, gs2.y, holeSize) && !Helpers.intersects(rocket, gs3.x, gs3.y, holeSize)  && !Helpers.intersects(rocket, gs4.x, gs4.y, holeSize);
@@ -62,37 +124,38 @@ Rectangle{
         }
     }
 
+    property real courseDur: 10000
     property real vorteX: width/4
     property real vorteY: height/4
-    Behavior on vorteX{NumberAnimation{duration: 5000}}
-    Behavior on vorteY{NumberAnimation{duration: 5000}}
+    Behavior on vorteX{NumberAnimation{duration: courseDur}}
+    Behavior on vorteY{NumberAnimation{duration: courseDur}}
     property real vorteX2: width/4
     property real vorteY2: 3*height/4
-    Behavior on vorteX2{NumberAnimation{duration: 5000}}
-    Behavior on vorteY2{NumberAnimation{duration: 5000}}
+    Behavior on vorteX2{NumberAnimation{duration: courseDur}}
+    Behavior on vorteY2{NumberAnimation{duration: courseDur}}
     property real vorteX3: 3*width/4
     property real vorteY3: height/4
-    Behavior on vorteX3{NumberAnimation{duration: 5000}}
-    Behavior on vorteY3{NumberAnimation{duration: 5000}}
+    Behavior on vorteX3{NumberAnimation{duration: courseDur}}
+    Behavior on vorteY3{NumberAnimation{duration: courseDur}}
     property real vorteX4: 3*width/4
     property real vorteY4: 3*height/4
-    Behavior on vorteX4{NumberAnimation{duration: 5000}}
-    Behavior on vorteY4{NumberAnimation{duration: 5000}}
+    Behavior on vorteX4{NumberAnimation{duration: courseDur}}
+    Behavior on vorteY4{NumberAnimation{duration: courseDur}}
     Timer{
         id: vorTimer
-        interval: 5000
+        interval: courseDur
         running: true
         repeat: true
         triggeredOnStart: true
         onTriggered: {
-            vorteX = Math.random() * width;
-            vorteY = Math.random() * height;
-            vorteX2 = Math.random() * width;
-            vorteY2 = Math.random() * height;
-            vorteX3 = Math.random() * width;
-            vorteY3 = Math.random() * height;
-            vorteX4 = Math.random() * width;
-            vorteY4 = Math.random() * height;
+            vorteX = Math.random() * width * 2 - width * 0.5;
+            vorteY = Math.random() * height * 2 - height * 0.5;
+            vorteX2 = Math.random() * width * 2 - width * 0.5;
+            vorteY2 = Math.random() * height * 2 - height * 0.5;
+            vorteX3 = Math.random() * width * 2 - width * 0.5;
+            vorteY3 = Math.random() * height * 2 - height * 0.5;
+            vorteX4 = Math.random() * width * 2 - width * 0.5;
+            vorteY4 = Math.random() * height * 2 - height * 0.5;
         }
     }
 
@@ -230,7 +293,7 @@ Rectangle{
     }
     SpriteImage{
         id: rocket
-        //Sprites or childen for default?
+        //Sprites or children for default?
         Sprite{
             name: "normal"
             source: "content/rocket2.png"
@@ -253,8 +316,8 @@ Rectangle{
         property int lastY: 0
         width: 45
         height: 22
-        onXChanged:{ lastX = lx; lx = x;}
-        onYChanged:{ lastY = ly; ly = y;}
+        onXChanged:{ lastX = lx; lx = x; fakeMove()}
+        onYChanged:{ lastY = ly; ly = y; fakeMove()}
         rotation: Helpers.direction(lastX, lastY, x, y)
         data:[
         MouseArea{
@@ -284,43 +347,14 @@ Rectangle{
             particle: shot
             particlesPerSecond: 16
             particleDuration: 1600
-            emitting: !gameOver
+            emitting: !gameOver && shoot
             particleSize: 40
-            xSpeed: 128 * Math.cos(rocket.rotation * (Math.PI / 180))
-            ySpeed: 128 * Math.sin(rocket.rotation * (Math.PI / 180))
+            xSpeed: 256 * Math.cos(rocket.rotation * (Math.PI / 180))
+            ySpeed: 256 * Math.sin(rocket.rotation * (Math.PI / 180))
             x: parent.width - 4
             y: parent.height/2
         }
         ]
-    }
-   ParticleSystem{
-        id: background
-        anchors.fill: parent
-        particles: [ColoredParticle{
-            id: stars2
-            image: "content/star.png"
-            color: "white"
-            colorVariation: 0.1
-            additive: 1
-        }]
-        emitters: [TrailEmitter{
-            particle: stars2//TODO: Merge stars and roids
-            particlesPerSecond: 60
-            particleDuration: 4000
-            emitting: true
-            particleSize: 30
-            particleSizeVariation: 10
-            emitterX: root.width/2
-            emitterY: root.height/2
-            emitterXVariation: root.width/2
-            emitterYVariation: root.height/2
-        }]
-    }
-    Text{
-        color: "white"
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
-        text:"Drag the ship, but don't hit a black hole!"
     }
 }
 

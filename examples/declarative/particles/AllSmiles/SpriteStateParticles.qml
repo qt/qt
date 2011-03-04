@@ -139,9 +139,9 @@ Rectangle{
             yAccel: 10
             particleSize: 30
             particleSizeVariation: 10
-            emitterX: width/2
+            emitterX: root.width/2
             emitterY: 50
-            emitterXVariation: width/2
+            emitterXVariation: root.width/2
             emitterYVariation: 50
         }
         affectors: Zone{

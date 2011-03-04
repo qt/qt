@@ -5,6 +5,23 @@ Rectangle{
     width: 360
     height: 540
     id: page
+        TrailEmitter{
+            particle: sp
+            system: particles
+            particlesPerSecond: 20
+            particleDuration: 7000
+            emitting: true
+            xSpeed: 0
+            ySpeed: 80
+            xSpeedVariation: 20
+            ySpeedVariation: 40
+            xAccel: 0
+            yAccel: 4
+            particleSize: 20
+            particleSizeVariation: 10
+            anchors.fill: parent
+            anchors.bottomMargin: 200
+        }
     ParticleSystem{
         id: particles
         anchors.fill: parent
@@ -17,30 +34,12 @@ Rectangle{
                 duration: 40
             }
         }
-        emitters: TrailEmitter{
-            particle: sp
-            particlesPerSecond: 20
-            particleDuration: 7000
-            emitting: true
-            xSpeed: 0
-            ySpeed: 80
-            xSpeedVariation: 20
-            ySpeedVariation: 40
-            xAccel: 0
-            yAccel: 4
-            particleSize: 20
-            particleSizeVariation: 10
-            emitterX: page.width/2
-            emitterY: 50
-            emitterXVariation: page.width/2
-            emitterYVariation: 50
-        }
         affectors: [Wander{ xVariance: 30; pace: 100; },
             Zone{
                 x: 0
-                y: 3 * page.height/4
+                y: page.height - 200
                 width: page.width
-                height: page.height/4
+                height: 200
                 Kill{}
             }]
     }

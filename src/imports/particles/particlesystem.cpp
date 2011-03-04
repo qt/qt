@@ -3,11 +3,12 @@
 #include "particleemitter.h"
 #include "particleaffector.h"
 #include "particle.h"
+#include <cmath>
 
 ParticleData::ParticleData()
     : p(0)
     , e(0)
-    , emitterIndex(0)
+    , particleIndex(0)
     , systemIndex(0)
 {
         pv.x = 0;
@@ -72,16 +73,39 @@ void ParticleSystem::countChanged()
 void ParticleSystem::buildParticleNodes()
 {
     //TODO: Staggered loading (as emitted)
-    m_node = new Node;
+    if(m_node)
+        delete m_node;
+    m_node = 0;
 
     //TODO: update m_last_particle?
     m_particle_count = 0;//TODO: Only when changed?
-    foreach(ParticleEmitter* e, m_emitters)
-        m_particle_count += e->particlesPerSecond()*(e->particleDuration()/1000.0);
-    d.resize(m_particle_count);
+    qDeleteAll(m_emitterData);
+    m_emitterData.clear();
+
+    if(!m_emitters.count() || !m_particles.count())
+        return;
+
+    m_node = new Node;
+    foreach(ParticleEmitter* e, m_emitters){
+        if(!e->particle())
+            e->setParticle(m_particles[0]);
+        m_emitterData << new EmitterData;
+        m_emitterData.last()->size = ceil(e->particlesPerSecond()*(e->particleDuration()/1000.0));
+        m_emitterData.last()->start = m_particle_count;
+        m_emitterData.last()->nextIdx = 0;
+        m_particle_count += m_emitterData.last()->size;
+    }
+    data.resize(m_particle_count);
 
     foreach(Particle* particle, m_particles){
-        particle->setCount(m_particle_count);//TODO: only their count
+        int particleCount = 0;
+        for(int i=0; i<m_emitters.count(); i++){
+            if(m_emitters[i]->particle() == particle){
+                m_emitterData[i]->particleOffsets.insert(particle, particleCount);
+                particleCount += m_emitterData[i]->size;
+            }
+        }
+        particle->setCount(particleCount);
         Node* child = particle->buildParticleNode();
         if(child)
             m_node->appendChildNode(child);
@@ -89,7 +113,6 @@ void ParticleSystem::buildParticleNodes()
             qDebug() << "Couldn't build" << particle;
     }
 
-    m_next_particle = 0;
     m_timestamp.start();
 }
 
@@ -119,21 +142,26 @@ Node *ParticleSystem::updatePaintNode(Node *, UpdatePaintNodeData *)
     return m_node;
 }
 
-ParticleData* ParticleSystem::newDatum()
+ParticleData* ParticleSystem::newDatum(ParticleEmitter* e, Particle* p)
 {
     //TODO: Keep datums within one emitter? And within one particle.
-    //TODO: Switch to d->emitterIdx + eIdx*maxSize?
     ParticleData* ret;
-    if(d[m_next_particle]){
-        ret = d[m_next_particle];
+    int eIdx = m_emitters.indexOf(e);
+    int nextIdx = m_emitterData[eIdx]->start + m_emitterData[eIdx]->nextIdx++;
+    if( m_emitterData[eIdx]->nextIdx >= m_emitterData[eIdx]->size)
+        m_emitterData[eIdx]->nextIdx = 0;
+
+    if(data[nextIdx]){//Recycle, it's faster. //###Reset?
+        ret = data[nextIdx];
     }else{
         ret = new ParticleData;
-        d[m_next_particle] = ret;
+        data[nextIdx] = ret;
     }
-    ret->systemIndex = m_next_particle;
-    m_next_particle++;
-    if(m_next_particle >= m_particle_count)
-        m_next_particle = 0;
+
+    ret->systemIndex = nextIdx;
+    ret->particleIndex = nextIdx - m_emitterData[eIdx]->start + m_emitterData[eIdx]->particleOffsets[p];
+    ret->e = e;
+    ret->p = p;
     return ret;
 }
 
@@ -174,16 +202,18 @@ void ParticleSystem::prepareNextFrame()
     foreach(ParticleEmitter* emitter, m_emitters)
         emitter->emitWindow(timeInt);
     if(m_affectors.count()){//Optimize the common no-affectors case
-        for(QVector<ParticleData*>::iterator iter=d.begin(); iter != d.end(); iter++){
+        for(QVector<ParticleData*>::iterator iter=data.begin(); iter != data.end(); iter++){
             if(!(*iter))
                 continue;
             ParticleVertex* p = &((*iter)->pv);
             qreal dt = time - p->dt;
             p->dt = time;
             bool modified = false;
-            foreach(ParticleAffector* a, m_affectors)
-                if (a->affect(*iter, dt))
+            foreach(ParticleAffector* a, m_affectors){
+                if (a->affect(*iter, dt)){
                     modified = true;
+                }
+            }
             if(modified)
                 (*iter)->p->reload(*iter);
         }

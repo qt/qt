@@ -95,11 +95,9 @@ Rectangle {
             TrailEmitter{
                 anchors.fill: parent
                 system: particles;
-                particlesPerSecond: 100
-                particleDuration: 1000
-                speedFromMovement: 1
-                particleSize: 15
-                particleEndSize: 25
+                particlesPerSecond: 500
+                particleDuration: 500
+                particleSize: 20
             }
         }
     }
