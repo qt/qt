@@ -64,20 +64,20 @@ void qt_disableFontHinting(QFont &font)
 #define QT_DISTANCEFIELD_MARGIN 50
 #define QT_DISTANCEFIELD_MARGIN_THRESHOLD 0.31
 
-struct Point
+struct DFPoint
 {
     float x, y;
 };
 
-struct Vertex
+struct DFVertex
 {
-    Point p;
+    DFPoint p;
     float d;
 };
 
 void fillTrapezoid(float *bits, int width, int height, int fromY, int toY,
-                   const Vertex *left1, const Vertex *left2,
-                   const Vertex *right1, const Vertex *right2)
+                   const DFVertex *left1, const DFVertex *left2,
+                   const DFVertex *right1, const DFVertex *right2)
 {
     fromY = qMax(0, fromY);
     toY = qMin(height, toY);
@@ -110,14 +110,14 @@ void fillTrapezoid(float *bits, int width, int height, int fromY, int toY,
     }
 }
 
-bool lineIntersection(Point &result, const Point &left1, const Point &left2, const Point &right1, const Point &right2)
+bool lineIntersection(DFPoint &result, const DFPoint &left1, const DFPoint &left2, const DFPoint &right1, const DFPoint &right2)
 {
-    Point u = { left2.x - left1.x, left2.y - left1.y };
-    Point v = { right2.x - right1.x, right2.y - right1.y };
+    DFPoint u = { left2.x - left1.x, left2.y - left1.y };
+    DFPoint v = { right2.x - right1.x, right2.y - right1.y };
     float uxv = u.x * v.y - u.y * v.x;
     if (uxv == 0)
         return false;
-    Point d = { left1.x - right1.x, left1.y - right1.y };
+    DFPoint d = { left1.x - right1.x, left1.y - right1.y };
     float uxd = u.x * d.y - u.y * d.x;
     float vxd = v.x * d.y - v.y * d.x;
     float t = uxd / uxv;
@@ -127,11 +127,11 @@ bool lineIntersection(Point &result, const Point &left1, const Point &left2, con
     return t > 0 && t < 1 && s > 0 && s < 1;
 }
 
-void drawQuad(float *bits, int width, int height, const Vertex *v1, const Vertex *v2, const Vertex *v3, const Vertex *v4)
+void drawQuad(float *bits, int width, int height, const DFVertex *v1, const DFVertex *v2, const DFVertex *v3, const DFVertex *v4)
 {
     float minY = qMin(qMin(v1->p.y, v2->p.y), qMin(v3->p.y, v4->p.y));
     while (v1->p.y > minY) {
-        const Vertex *tmp = v1;
+        const DFVertex *tmp = v1;
         v1 = v2;
         v2 = v3;
         v3 = v4;
@@ -147,8 +147,8 @@ void drawQuad(float *bits, int width, int height, const Vertex *v1, const Vertex
     // Algorithm changed. The quad is now always convex.
     if (v2->p.y > v3->p.y && v4->p.y > v3->p.y) {
         // Concave or complex.
-        Point p14x32;
-        Point p12x34;
+        DFPoint p14x32;
+        DFPoint p12x34;
         bool int14x32 = lineIntersection(p14x32, v1->p, v4->p, v3->p, v2->p);
         bool int12x34 = lineIntersection(p12x34, v1->p, v2->p, v3->p, v4->p);
         if (int14x32) {
@@ -196,11 +196,11 @@ void drawQuad(float *bits, int width, int height, const Vertex *v1, const Vertex
     }
 }
 
-void drawTriangle(float *bits, int width, int height, const Vertex *v1, const Vertex *v2, const Vertex *v3)
+void drawTriangle(float *bits, int width, int height, const DFVertex *v1, const DFVertex *v2, const DFVertex *v3)
 {
     float minY = qMin(qMin(v1->p.y, v2->p.y), v3->p.y);
     while (v1->p.y > minY) {
-        const Vertex *tmp = v1;
+        const DFVertex *tmp = v1;
         v1 = v2;
         v2 = v3;
         v3 = tmp;
@@ -248,18 +248,18 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
     p.end();
     float *bits = (float *)image.bits();
     const float angleStep = 15 * 3.141592653589793238f / 180;
-    Point rotation = { cos(angleStep), sin(angleStep) };
+    DFPoint rotation = { cos(angleStep), sin(angleStep) };
 
     int outerPoly = 0;
     int topVertex = 0;
-    QVarLengthArray<QVector<Point>, 4> allNormals(polys.count());
-    QVarLengthArray<QVector<Vertex>, 4> allVertices(polys.count());
+    QVarLengthArray<QVector<DFPoint>, 4> allNormals(polys.count());
+    QVarLengthArray<QVector<DFVertex>, 4> allVertices(polys.count());
     QVarLengthArray<QVector<bool>, 4> allIsConvex(polys.count());
 
     for (int i = 0; i < polys.count(); ++i) {
         const QPolygonF &poly = polys.at(i);
-        QVector<Point> &normals = allNormals[i];
-        QVector<Vertex> &vertices = allVertices[i];
+        QVector<DFPoint> &normals = allNormals[i];
+        QVector<DFVertex> &vertices = allVertices[i];
         QVector<bool> &isConvex = allIsConvex[i];
         normals.reserve(poly.count());
         vertices.reserve(poly.count());
@@ -268,7 +268,7 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
         for (int next = 0, prev = poly.count() - 1; next < poly.count(); prev = next++) {
             const QPointF &from = poly.at(prev);
             const QPointF &to = poly.at(next);
-            Point n;
+            DFPoint n;
             n.x = float(to.y() - from.y());
             n.y = float(from.x() - to.x());
             if (n.x == 0 && n.y == 0)
@@ -278,7 +278,7 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
             n.y *= scale;
             normals.append(n);
 
-            Vertex v;
+            DFVertex v;
             v.p.x = float(to.x() / QT_DISTANCEFIELD_SCALE) + offs - 0.5f;
             v.p.y = float(to.y() / QT_DISTANCEFIELD_SCALE) + offs - 0.5f;
             v.d = 0.0f;
@@ -298,16 +298,16 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
     int dir = allIsConvex.at(outerPoly).at(topVertex) ? 1 : -1;
 
     for (int i = 0; i < polys.count(); ++i) {
-        const QVector<Point> &normals = allNormals[i];
-        const QVector<Vertex> &vertices = allVertices[i];
+        const QVector<DFPoint> &normals = allNormals[i];
+        const QVector<DFVertex> &vertices = allVertices[i];
         const QVector<bool> &isConvex = allIsConvex[i];
         // Draw quads.
         for (int next = 0, prev = normals.count() - 1; next < normals.count(); prev = next++) {
-            Point n = normals.at(next);
-            Vertex intPrev = vertices.at(prev);
-            Vertex extPrev = vertices.at(prev);
-            Vertex intNext = vertices.at(next);
-            Vertex extNext = vertices.at(next);
+            DFPoint n = normals.at(next);
+            DFVertex intPrev = vertices.at(prev);
+            DFVertex extPrev = vertices.at(prev);
+            DFVertex intNext = vertices.at(next);
+            DFVertex extNext = vertices.at(next);
 
             extPrev.p.x += n.x;
             extPrev.p.y += n.y;
@@ -331,9 +331,9 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
                      &vertices.at(next), &intNext);
 
             if (isConvex.at(prev)) {
-                Vertex v = extPrev;
+                DFVertex v = extPrev;
                 for (;;) {
-                    Point rn = { n.x * rotation.x + n.y * rotation.y,
+                    DFPoint rn = { n.x * rotation.x + n.y * rotation.y,
                                  n.y * rotation.x - n.x * rotation.y };
                     n = rn;
                     if (n.x * normals.at(prev).y - n.y * normals.at(prev).x >= -0.001) {
@@ -349,9 +349,9 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
                     extPrev = v;
                 }
             } else {
-                Vertex v = intPrev;
+                DFVertex v = intPrev;
                 for (;;) {
-                    Point rn = { n.x * rotation.x - n.y * rotation.y,
+                    DFPoint rn = { n.x * rotation.x - n.y * rotation.y,
                                  n.y * rotation.x + n.x * rotation.y };
                     n = rn;
                     if (n.x * normals.at(prev).y - n.y * normals.at(prev).x <= 0.001) {
