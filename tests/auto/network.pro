@@ -19,12 +19,15 @@ SUBDIRS=\
     platformsocketengine \
     qnetworkaccessmanager \
     qnetworkaddressentry \
+    qnetworkcachemetadata \
     qnetworkconfiguration \
     qnetworkconfigurationmanager \
     qnetworkcookie \
     qnetworkcookiejar \
+    qnetworkdiskcache \
     qnetworkinterface \
     qnetworkproxy \
+    qnetworkreply \
     qnetworkrequest \
     qnetworksession \
     qobjectperformance \
@@ -37,6 +40,8 @@ SUBDIRS=\
     qsslsocket \
     qsslsocket_onDemandCertificates_member \
     qsslsocket_onDemandCertificates_static \
+    qtcpserver \
+    qudpsocket \
 #    qnetworkproxyfactory \ # Uses a hardcoded proxy configuration
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
