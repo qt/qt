@@ -474,17 +474,13 @@ void tst_qdeclarativetextedit::hAlign_RightToLeft()
     QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignLeft);
     QVERIFY(textEdit->positionToRectangle(0).x() < canvas->width()/2);
 
-    // empty text should implicitly follow the layout direction
-    QApplication::setLayoutDirection(Qt::RightToLeft);
+    // empty text is also implicitly left aligned
     textEdit->setText("");
-    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
-    QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
-    textEdit->setHAlign(QDeclarativeTextEdit::AlignLeft);
     QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignLeft);
     QVERIFY(textEdit->positionToRectangle(0).x() < canvas->width()/2);
-
-    // set layout direction back to LTR to avoid affecting other autotests
-    QApplication::setLayoutDirection(Qt::LeftToRight);
+    textEdit->setHAlign(QDeclarativeTextEdit::AlignRight);
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
+    QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
 
     delete canvas;
 }

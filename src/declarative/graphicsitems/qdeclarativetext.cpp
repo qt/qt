@@ -218,10 +218,7 @@ void QDeclarativeTextPrivate::determineHorizontalAlignment()
     if (hAlignImplicit && q->isComponentComplete()) {
         // if no explicit alignment has been set, follow the natural layout direction of the text
         QDeclarativeText::HAlignment previousAlign = hAlign;
-        if (text.isEmpty() && QApplication::layoutDirection() == Qt::RightToLeft)
-            hAlign = QDeclarativeText::AlignRight;
-        else
-            hAlign = text.isRightToLeft() ? QDeclarativeText::AlignRight : QDeclarativeText::AlignLeft;
+        hAlign = text.isRightToLeft() ? QDeclarativeText::AlignRight : QDeclarativeText::AlignLeft;
         if (previousAlign != hAlign)
             emit q->horizontalAlignmentChanged(hAlign);
     }

@@ -1078,17 +1078,13 @@ void tst_qdeclarativetextinput::horizontalAlignment_RightToLeft()
     QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignLeft);
     QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
 
-    // empty text should implicitly follow the layout direction
-    QApplication::setLayoutDirection(Qt::RightToLeft);
+    // empty text is also implicitly left aligned
     textInput->setText("");
-    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
-    QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
-    textInput->setHAlign(QDeclarativeTextInput::AlignLeft);
     QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignLeft);
     QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
-
-    // set layout direction back to LTR to avoid affecting other autotests
-    QApplication::setLayoutDirection(Qt::LeftToRight);
+    textInput->setHAlign(QDeclarativeTextInput::AlignRight);
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
+    QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
 
     delete canvas;
 }
