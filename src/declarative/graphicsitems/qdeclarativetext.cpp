@@ -107,8 +107,6 @@ QDeclarativeTextPrivate::QDeclarativeTextPrivate()
     cacheAllTextAsImage = enableImageCache();
     QGraphicsItemPrivate::acceptedMouseButtons = Qt::LeftButton;
     QGraphicsItemPrivate::flags = QGraphicsItemPrivate::flags & ~QGraphicsItem::ItemHasNoContents;
-    if (QApplication::layoutDirection() == Qt::RightToLeft)
-        hAlign = QDeclarativeText::AlignRight;
 }
 
 QTextDocumentWithImageResources::QTextDocumentWithImageResources(QDeclarativeText *parent) 

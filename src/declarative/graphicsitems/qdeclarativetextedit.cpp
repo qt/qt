@@ -1512,9 +1512,6 @@ void QDeclarativeTextEditPrivate::init()
     document->setDocumentMargin(textMargin);
     document->setUndoRedoEnabled(false); // flush undo buffer.
     document->setUndoRedoEnabled(true);
-
-    if (QApplication::layoutDirection() == Qt::RightToLeft)
-        hAlign = QDeclarativeTextEdit::AlignRight;
     updateDefaultTextOption();
 }
 

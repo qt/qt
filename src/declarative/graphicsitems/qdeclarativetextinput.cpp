@@ -1827,9 +1827,6 @@ void QDeclarativeTextInputPrivate::init()
     QPalette p = control->palette();
     selectedTextColor = p.color(QPalette::HighlightedText);
     selectionColor = p.color(QPalette::Highlight);
-
-    if (QApplication::layoutDirection() == Qt::RightToLeft)
-        hAlign = QDeclarativeTextInput::AlignRight;
 }
 
 void QDeclarativeTextInput::cursorPosChanged()
