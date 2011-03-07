@@ -55,7 +55,7 @@
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qvolatileimage_p.h>
-#include <private/qvg_p.h>
+#include "qvg_p.h"
 
 #if defined(Q_OS_SYMBIAN)
 class RSGImage;
@@ -125,6 +125,13 @@ public:
     // Called when the QVGImagePool wants to reclaim this pixmap's
     // VGImage objects to reuse storage.
     virtual void reclaimImages();
+
+    // If vgImage is valid but source is null, copies pixel data from GPU back
+    // into main memory and destroys vgImage. For a normal pixmap this function
+    // does nothing, however if the pixmap was created directly from a VGImage
+    // (e.g. via SgImage on Symbian) then by doing the readback this ensures
+    // that QImage-based functions can operate too.
+    virtual void ensureReadback(bool readOnly) const;
 
     QSize size() const { return QSize(w, h); }
 

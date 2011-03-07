@@ -105,6 +105,8 @@ void QVGPixmapData::destroyImageAndContext()
     if (vgImage != VG_INVALID_HANDLE) {
         // We need to have a context current to destroy the image.
 #if !defined(QT_NO_EGL)
+        if (!context)
+            context = qt_vg_create_context(0, QInternal::Pixmap);
         if (context->isCurrent()) {
             destroyImages();
         } else {
@@ -243,10 +245,7 @@ void QVGPixmapData::fill(const QColor &color)
 {
     if (!isValid())
         return;
-
-    if (source.isNull())
-        source = QVolatileImage(w, h, sourceFormat());
-
+    forceToImage();
     if (source.depth() == 1) {
         // Pick the best approximate color in the image's colortable.
         int gray = qGray(color.rgba());
@@ -258,13 +257,11 @@ void QVGPixmapData::fill(const QColor &color)
     } else {
         source.fill(PREMUL(color.rgba()));
     }
-
-    // Re-upload the image to VG the next time toVGImage() is called.
-    recreate = true;
 }
 
 bool QVGPixmapData::hasAlphaChannel() const
 {
+    ensureReadback(true);
     if (!source.isNull())
         return source.hasAlphaChannel();
     else
@@ -273,6 +270,8 @@ bool QVGPixmapData::hasAlphaChannel() const
 
 void QVGPixmapData::setAlphaChannel(const QPixmap &alphaChannel)
 {
+    if (!isValid())
+        return;
     forceToImage();
     source.setAlphaChannel(alphaChannel);
 }
@@ -281,12 +280,11 @@ QImage QVGPixmapData::toImage() const
 {
     if (!isValid())
         return QImage();
-
+    ensureReadback(true);
     if (source.isNull()) {
         source = QVolatileImage(w, h, sourceFormat());
         recreate = true;
     }
-
     return source.toImage();
 }
 
@@ -476,16 +474,40 @@ int QVGPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
     }
 }
 
-// Force the pixmap data to be backed by some valid data.
+// Ensures that the pixmap is backed by some valid data and forces the data to
+// be re-uploaded to the VGImage when toVGImage() is called next time.
 void QVGPixmapData::forceToImage()
 {
     if (!isValid())
         return;
 
+    ensureReadback(false);
+
     if (source.isNull())
         source = QVolatileImage(w, h, sourceFormat());
 
     recreate = true;
+}
+
+void QVGPixmapData::ensureReadback(bool readOnly) const
+{
+    if (vgImage != VG_INVALID_HANDLE && source.isNull()) {
+        source = QVolatileImage(w, h, sourceFormat());
+        source.beginDataAccess();
+        vgGetImageSubData(vgImage, source.bits(), source.bytesPerLine(),
+                          qt_vg_image_to_vg_format(source.format()),
+                          0, 0, w, h);
+        source.endDataAccess();
+        if (readOnly) {
+            recreate = false;
+        } else {
+            // Once we did a readback, the original VGImage must be destroyed
+            // because it may be shared (e.g. created via SgImage) and a subsequent
+            // upload of the image data may produce unexpected results.
+            const_cast<QVGPixmapData *>(this)->destroyImages();
+            recreate = true;
+        }
+    }
 }
 
 QImage::Format QVGPixmapData::sourceFormat() const

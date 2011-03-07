@@ -127,7 +127,7 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         }
 
         is_null = (w <= 0 || h <= 0);
-        source = QVolatileImage(); // vgGetImageSubData() some day?
+        source = QVolatileImage(); // readback will be done later, only when needed
         recreate = false;
         prevSize = QSize(w, h);
         updateSerial();
