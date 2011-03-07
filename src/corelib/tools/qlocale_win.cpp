@@ -231,7 +231,7 @@ static QString winDateToString(const QDate &date, DWORD flags)
     return QString();
 }
 
-static QString winTimeToString(const QTime &time)
+static QString winTimeToString(const QTime &time, bool longFormat)
 {
     SYSTEMTIME st;
     memset(&st, 0, sizeof(SYSTEMTIME));
@@ -241,6 +241,9 @@ static QString winTimeToString(const QTime &time)
     st.wMilliseconds = 0;
 
     DWORD flags = 0;
+    if (!longFormat && QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7)
+        flags = 2; // TIME_NOSECONDS
+
     LCID id = GetUserDefaultLCID();
 
     wchar_t buf[255];
@@ -546,12 +549,12 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         return winDateToString(in.toDate(), type == DateToStringShort ? DATE_SHORTDATE : DATE_LONGDATE);
     case TimeToStringShort:
     case TimeToStringLong:
-        return winTimeToString(in.toTime());
+        return winTimeToString(in.toTime(), type == TimeToStringLong);
     case DateTimeToStringShort:
     case DateTimeToStringLong: {
         const QDateTime dt = in.toDateTime();
         return QString(winDateToString(dt.date(), type == DateTimeToStringShort ? DATE_SHORTDATE : DATE_LONGDATE)
-            + QLatin1Char(' ') + winTimeToString(dt.time())); }
+            + QLatin1Char(' ') + winTimeToString(dt.time(), type == DateTimeToStringLong)); }
 
     case ZeroDigit:
         locale_info = LOCALE_SNATIVEDIGITS;
