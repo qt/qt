@@ -315,6 +315,7 @@ class DitaXmlGenerator : public PageGenerator
     void writePropertyParameter(const QString& tag, const NodeList& nlist);
     void writeRelatedLinks(const FakeNode* fake, CodeMarker* marker);
     void writeLink(const Node* node, const QString& tex, const QString& role);
+    void writeProlog(const InnerNode* inner, CodeMarker* marker);
 
  private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };
