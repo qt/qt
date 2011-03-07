@@ -492,7 +492,10 @@ static QString winFormatCurrency(const QSystemLocale::CurrencyToStringArgument &
                             pformat, out.data(), out.size());
     }
 
-    return QString::fromWCharArray(out.data());
+    value = QString::fromWCharArray(out.data());
+    if (substitution(lcid) == SAlways)
+        substituteDigits(lcid, value);
+    return value;
 }
 
 QStringList winUILanguages()
