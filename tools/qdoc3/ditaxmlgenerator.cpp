@@ -1637,11 +1637,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
          */
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
-
-        writeStartTag(DT_prolog);
-        writeStartTag(DT_metadata);
-        writeEndTag(); // <metadata>
-        writeEndTag(); // <prolog>
+        writeProlog(inner,marker);
             
         writeStartTag(DT_cxxClassDetail);
         writeStartTag(DT_cxxClassDefinition);
@@ -1764,11 +1760,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
-
-        writeStartTag(DT_prolog);
-        writeStartTag(DT_metadata);
-        writeEndTag(); // <metadata>
-        writeEndTag(); // <prolog>
+        writeProlog(inner,marker);
     
         writeStartTag(DT_cxxClassDetail);
         writeStartTag(DT_cxxClassDefinition);
@@ -1909,11 +1901,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
          */
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
-
-        writeStartTag(DT_prolog);
-        writeStartTag(DT_metadata);
-        writeEndTag(); // <metadata>
-        writeEndTag(); // <prolog>
+        writeProlog(inner,marker);
 
         writeStartTag(DT_cxxClassDetail);
         writeStartTag(DT_apiDesc);
@@ -2034,12 +2022,8 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
+        writeProlog(inner,marker);
 
-        writeStartTag(DT_prolog);
-        writeStartTag(DT_metadata);
-        writeEndTag(); // <metadata>
-        writeEndTag(); // <prolog>
-    
         writeStartTag(DT_cxxClassDetail);
         writeStartTag(DT_apiDesc);
         xmlWriter().writeAttribute("spectitle",title);
@@ -2148,11 +2132,7 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode* fake, CodeMarker* marker
 
     generateHeader(fake, fullTitle);
     generateBrief(fake, marker); // <shortdesc>
-
-    writeStartTag(DT_prolog);
-    writeStartTag(DT_metadata);
-    writeEndTag(); // <metadata>
-    writeEndTag(); // <prolog>
+    writeProlog(fake, marker);
 
     writeStartTag(DT_body);
     if (fake->subType() == Node::Module) {
@@ -5546,6 +5526,92 @@ void DitaXmlGenerator::writeDitaMap()
         ++i;
     }
     endSubPage();
+}
+
+/*!
+  Writes the <prolog> element for the \a inner node
+  using the \a marker. The <prolog> element contains
+  the <metadata> element, plus some others. This
+  function writes one or more of these elements:
+
+  \list
+    \o <audience>
+    \o <author>
+    \o <brand>
+    \o <category>
+    \o <compomnent>
+    \o <copyrholder>
+    \o <copyright>
+    \o <created>
+    \o <copyryear>
+    \o <critdates>
+    \o <keyword>
+    \o <keywords>
+    \o <metadata>
+    \o <othermeta>
+    \o <permissions>
+    \o <platform>
+    \o <prodinfo>
+    \o <prodname>
+    \o <prolog>
+    \o <publisher>
+    \o <resourceid>
+    \o <revised>
+    \o <source>
+    \o <tm>
+    \o <unknown>
+    \o <vrm>
+    \o <vrmlist>
+  \endlist
+  
+ */
+void
+DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
+{
+    if (!inner)
+        return;
+    writeStartTag(DT_prolog);
+    
+    writeStartTag(DT_author);
+    QString author = inner->author();
+    if (author.isEmpty())
+        author = "Qt Development Frameworks";
+    xmlWriter().writeCharacters(author);
+    writeEndTag(); // <author>
+        
+    writeStartTag(DT_metadata);
+    writeStartTag(DT_category);
+    QString category = "Page";
+    if (inner->type() == Node::Class)
+        category = "C++ Class";
+    else if (inner->type() == Node::Namespace)
+        category = "C++ Namespace";
+    else if (inner->type() == Node::Fake) {
+        if (inner->subType() == Node::QmlBasicType)
+            category = "QML Class";
+        else if (inner->subType() == Node::QmlClass)
+            category = "QML Basic Type";
+        else if (inner->subType() == Node::HeaderFile)
+            category = "Header File";
+        else if (inner->subType() == Node::Module)
+            category = "Module";
+        else if (inner->subType() == Node::File)
+            category = "Example Source File";
+        else if (inner->subType() == Node::Example)
+            category = "Example";
+        else if (inner->subType() == Node::Image)
+            category = "Image";
+        else if (inner->subType() == Node::Group)
+            category = "Group";
+        else if (inner->subType() == Node::Page)
+            category = "Page";
+        else if (inner->subType() == Node::ExternalPage)
+            category = "External Page"; // Is this necessary?
+    }
+    xmlWriter().writeCharacters(category);
+    writeEndTag(); // <category>
+    writeEndTag(); // <metadata>
+    writeEndTag(); // <prolog>
 }
 
 QT_END_NAMESPACE
