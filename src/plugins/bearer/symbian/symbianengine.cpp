@@ -829,6 +829,7 @@ void SymbianEngine::updateStatesToSnaps()
                 discovered = true;
             }
         }
+        snapConfigLocker.unlock();
         if (active) {
             changeConfigurationStateTo(ptr, QNetworkConfiguration::Active);
         } else if (discovered) {
