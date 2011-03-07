@@ -2146,7 +2146,7 @@ void QDeclarativeListView::setLayoutDirection(Qt::LayoutDirection layoutDirectio
     \qmlproperty enumeration ListView::effectiveLayoutDirection
     This property holds the effective layout direction of the horizontal list.
 
-    When using the attached property \l {LayoutMirroring::mirror}{LayoutMirroring::mirror} for locale layouts,
+    When using the attached property \l {LayoutMirroring::enabled}{LayoutMirroring::enabled} for locale layouts,
     the visual layout direction of the horizontal list will be mirrored. However, the
     property \l {ListView::layoutDirection}{layoutDirection} will remain unchanged.
 

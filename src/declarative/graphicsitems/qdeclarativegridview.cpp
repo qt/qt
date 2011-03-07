@@ -1804,7 +1804,7 @@ void QDeclarativeGridView::setLayoutDirection(Qt::LayoutDirection layoutDirectio
     \qmlproperty enumeration GridView::effectiveLayoutDirection
     This property holds the effective layout direction of the grid.
 
-    When using the attached property \l {LayoutMirroring::mirror}{LayoutMirroring::mirror} for locale layouts,
+    When using the attached property \l {LayoutMirroring::enabled}{LayoutMirroring::enabled} for locale layouts,
     the visual layout direction of the grid will be mirrored. However, the
     property \l {GridView::layoutDirection}{layoutDirection} will remain unchanged.
 
