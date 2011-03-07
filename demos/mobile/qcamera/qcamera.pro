@@ -25,8 +25,8 @@ CONFIG += mobility
 MOBILITY = contacts \
     messaging \
     multimedia \
-    location \
-    systeminfo
+    systeminfo \
+    location
 
 RESOURCES += resources.qrc
 
