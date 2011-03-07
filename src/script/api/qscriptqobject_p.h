@@ -129,6 +129,13 @@ v8::Handle<v8::Value> QtDynamicPropertyGetter(v8::Local<v8::String> property,
 void QtDynamicPropertySetter(v8::Local<v8::String> property,
                                     v8::Local<v8::Value> value,
                                     const v8::AccessorInfo& info);
+
+v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property,
+                                                  const v8::AccessorInfo& info);
+v8::Handle<v8::Value> QtLazyPropertySetter(v8::Local<v8::String> property,
+                                                  v8::Local<v8::Value> value,
+                                                  const v8::AccessorInfo& info);
+
 v8::Handle<v8::Value> QtMetaObjectCallback(const v8::Arguments& args);
 v8::Handle<v8::Value> QtMetaObjectPropertyGetter(v8::Local<v8::String> property,
                                                  const v8::AccessorInfo& info);

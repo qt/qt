@@ -1082,7 +1082,7 @@ void QtDynamicPropertySetter(v8::Local<v8::String> property,
 // Q_INVOKABLE method or slot. It handles signals (which are methods that must
 // be bound to an object), and dynamic properties and child objects (since they
 // are instance-specific, not defined by the QMetaObject).
-static v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property,
+v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property,
                                                   const v8::AccessorInfo& info)
 {
     QScriptEnginePrivate *engine = reinterpret_cast<QScriptEnginePrivate *>(v8::External::Unwrap(info.Data()));
@@ -1140,7 +1140,7 @@ static v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property
     return v8::Handle<v8::Value>();
 }
 
-static v8::Handle<v8::Value> QtLazyPropertySetter(v8::Local<v8::String> property,
+v8::Handle<v8::Value> QtLazyPropertySetter(v8::Local<v8::String> property,
                                                   v8::Local<v8::Value> value,
                                                   const v8::AccessorInfo& info)
 {
@@ -1150,6 +1150,8 @@ static v8::Handle<v8::Value> QtLazyPropertySetter(v8::Local<v8::String> property
     if (!engine->qobjectTemplate()->HasInstance(self))
         return v8::Handle<v8::Value>(); //the QObject prototype is being used on another object.
     QScriptQObjectData *data = QScriptQObjectData::get(self);
+    if (!(data->options() & QScriptEngine::AutoCreateDynamicProperties))
+        return v8::Handle<v8::Value>();
     Q_ASSERT(engine == data->engine());
 
     v8::Local<v8::Value> error;

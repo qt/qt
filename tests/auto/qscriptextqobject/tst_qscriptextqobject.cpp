@@ -1030,7 +1030,6 @@ void tst_QScriptExtQObject::getSetDynamicProperty()
 
     // add a dynamic property in C++
     QCOMPARE(m_myObject->setProperty("dynamicProperty", 123), false);
-    QEXPECT_FAIL("", "hasOwnProperty does not reflect that change", Continue);
     QCOMPARE(m_engine->evaluate("myObject.hasOwnProperty('dynamicProperty')")
              .strictlyEquals(QScriptValue(m_engine, true)), true);
     QCOMPARE(m_engine->evaluate("myObject.dynamicProperty")
@@ -1134,7 +1133,6 @@ void tst_QScriptExtQObject::getSetChildren()
     MyQObject *child = new MyQObject(m_myObject);
     child->setObjectName("child");
 
-    QEXPECT_FAIL("", "hasOwnProperty not yet implemented for QObject", Continue);
     QCOMPARE(m_engine->evaluate("myObject.hasOwnProperty('child')")
              .strictlyEquals(QScriptValue(m_engine, true)), true);
 
@@ -1158,7 +1156,6 @@ void tst_QScriptExtQObject::getSetChildren()
     // add a grandchild
     MyQObject *grandChild = new MyQObject(child);
     grandChild->setObjectName("grandChild");
-    QEXPECT_FAIL("", "hasOwnProperty not yet implemented for QObject", Continue);
     QCOMPARE(m_engine->evaluate("myObject.child.hasOwnProperty('grandChild')")
              .strictlyEquals(QScriptValue(m_engine, true)), true);
 
