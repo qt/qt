@@ -148,6 +148,46 @@ Q_CORE_EXPORT QLocale qt_localeFromLCID(LCID id)
     return QLocale(QString::fromLatin1(getWinLocaleName(id)));
 }
 
+enum SubstitutionType {
+    SContext,
+    SAlways,
+    SNever
+};
+
+static SubstitutionType substitution(LCID lcid)
+{
+    wchar_t buf[8];
+    if (!GetLocaleInfo(lcid, LOCALE_IDIGITSUBSTITUTION, buf, 8))
+        return SNever;
+    if (buf[0] == '1')
+        return SNever;
+    if (buf[0] == '0')
+        return SContext;
+    if (buf[0] == '2')
+        return SAlways;
+    wchar_t digits[11];
+    if (!GetLocaleInfo(lcid, LOCALE_SNATIVEDIGITS, digits, 11))
+        return SNever;
+    const wchar_t zero = digits[0];
+    if (buf[0] == zero + 2)
+        return SAlways;
+    return SNever;
+}
+
+static QString &substituteDigits(LCID lcid, QString &string)
+{
+    wchar_t buf[11];
+    if (!GetLocaleInfo(lcid, LOCALE_SNATIVEDIGITS, buf, 11))
+        return string;
+    ushort zero = (ushort)buf[0];
+    ushort *qch = (ushort *)string.data();
+    for (ushort *end = qch + string.size(); qch != end; ++qch) {
+        if (*qch >= '0' && *qch <= '9')
+            *qch = zero + (*qch - '0');
+    }
+    return string;
+}
+
 static QString winToQtFormat(const QString &sys_fmt)
 {
     QString result;
@@ -212,8 +252,6 @@ static QString winToQtFormat(const QString &sys_fmt)
     return result;
 }
 
-
-
 static QString winDateToString(const QDate &date, DWORD flags)
 {
     SYSTEMTIME st;
@@ -225,9 +263,12 @@ static QString winDateToString(const QDate &date, DWORD flags)
     LCID id = GetUserDefaultLCID();
 
     wchar_t buf[255];
-    if (GetDateFormat(id, flags, &st, 0, buf, 255))
-        return QString::fromWCharArray(buf);
-
+    if (GetDateFormat(id, flags, &st, NULL, buf, 255)) {
+        QString format = QString::fromWCharArray(buf);
+        if (substitution(id) == SAlways)
+            substituteDigits(id, format);
+        return format;
+    }
     return QString();
 }
 
@@ -247,8 +288,12 @@ static QString winTimeToString(const QTime &time, bool longFormat)
     LCID id = GetUserDefaultLCID();
 
     wchar_t buf[255];
-    if (GetTimeFormat(id, flags, &st, 0, buf, 255))
-        return QString::fromWCharArray(buf);
+    if (GetTimeFormat(id, flags, &st, NULL, buf, 255)) {
+        QString format = QString::fromWCharArray(buf);
+        if (substitution(id) == SAlways)
+            substituteDigits(id, format);
+        return format;
+    }
 
     return QString();
 }
