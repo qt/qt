@@ -2455,13 +2455,25 @@ void tst_qdeclarativeecmascript::moduleApi()
     QCOMPARE(object->property("qobjectParentedTest").toInt(), 26);
     delete object;
 
-    // test that caching of module apis works correcntly.
+    // test that caching of module apis works correctly.
     QDeclarativeComponent componentTwo(&engine, TEST_FILE("moduleApiCaching.qml"));
     object = componentTwo.create();
     QVERIFY(object != 0);
     QCOMPARE(object->property("existingUriTest").toInt(), 20);
     QCOMPARE(object->property("scriptTest").toInt(), 13);            // shouldn't have incremented.
     QCOMPARE(object->property("qobjectParentedTest").toInt(), 26);   // shouldn't have incremented.
+    delete object;
+
+    // test that writing to a property of module apis works correctly.
+    QDeclarativeComponent componentThree(&engine, TEST_FILE("moduleApiWriting.qml"));
+    object = componentThree.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("readOnlyProperty").toInt(), 20);
+    QCOMPARE(object->property("writableProperty").toInt(), 50);
+    QVERIFY(object->setProperty("firstProperty", QVariant(30))); // shouldn't affect value of readOnlyProperty
+    QVERIFY(object->setProperty("writableProperty", QVariant(30))); // SHOULD affect value of writableProperty
+    QCOMPARE(object->property("readOnlyProperty").toInt(), 20);
+    QCOMPARE(object->property("writableProperty").toInt(), 30);
     delete object;
 
     QDeclarativeComponent failOne(&engine, TEST_FILE("moduleApiMajorVersionFail.qml"));

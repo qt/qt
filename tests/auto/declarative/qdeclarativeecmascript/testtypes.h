@@ -912,6 +912,7 @@ class testQObjectApi : public QObject
 {
     Q_OBJECT
     Q_PROPERTY (int qobjectTestProperty READ qobjectTestProperty NOTIFY qobjectTestPropertyChanged)
+    Q_PROPERTY (int qobjectTestWritableProperty READ qobjectTestWritableProperty WRITE setQObjectTestWritableProperty NOTIFY qobjectTestWritablePropertyChanged)
 
 public:
     testQObjectApi(QObject* parent = 0)
@@ -924,11 +925,16 @@ public:
     int qobjectTestProperty() const { return m_testProperty; }
     void setQObjectTestProperty(int tp) { m_testProperty = tp; emit qobjectTestPropertyChanged(tp); }
 
+    int qobjectTestWritableProperty() const { return m_testWritableProperty; }
+    void setQObjectTestWritableProperty(int tp) { m_testWritableProperty = tp; emit qobjectTestWritablePropertyChanged(tp); }
+
 signals:
     void qobjectTestPropertyChanged(int testProperty);
+    void qobjectTestWritablePropertyChanged(int testWritableProperty);
 
 private:
     int m_testProperty;
+    int m_testWritableProperty;
 };
 
 void registerTypes();
