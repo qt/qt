@@ -47,11 +47,11 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
-class tst_Suite : public AbstractTestSuite
+class tst_QScriptV8TestSuite : public AbstractTestSuite
 {
 public:
-    tst_Suite();
-    virtual ~tst_Suite();
+    tst_QScriptV8TestSuite();
+    virtual ~tst_QScriptV8TestSuite();
 
 protected:
     struct ExpectedFailure
@@ -106,12 +106,12 @@ static QScriptValue qscript_fail(QScriptContext *ctx, QScriptEngine *eng)
     return ret;
 }
 
-void tst_Suite::writeSkipConfigFile(QTextStream &stream)
+void tst_QScriptV8TestSuite::writeSkipConfigFile(QTextStream &stream)
 {
     stream << QString::fromLatin1("# testcase | message") << endl;
 }
 
-void tst_Suite::writeExpectFailConfigFile(QTextStream &stream)
+void tst_QScriptV8TestSuite::writeExpectFailConfigFile(QTextStream &stream)
 {
     stream << QString::fromLatin1("# testcase | actual | expected | message") << endl;
     for (int i = 0; i < expectedFailures.size(); ++i) {
@@ -126,7 +126,7 @@ void tst_Suite::writeExpectFailConfigFile(QTextStream &stream)
     }
 }
 
-void tst_Suite::runTestFunction(int testIndex)
+void tst_QScriptV8TestSuite::runTestFunction(int testIndex)
 {
     QString name = testNames.at(testIndex);
     QString path = testsDir.absoluteFilePath(name + ".js");
@@ -179,7 +179,7 @@ void tst_Suite::runTestFunction(int testIndex)
     }
 }
 
-tst_Suite::tst_Suite()
+tst_QScriptV8TestSuite::tst_QScriptV8TestSuite()
     : AbstractTestSuite("tst_QScriptV8TestSuite",
                         ":/tests", ":/")
 {
@@ -195,11 +195,11 @@ tst_Suite::tst_Suite()
     finalizeMetaObject();
 }
 
-tst_Suite::~tst_Suite()
+tst_QScriptV8TestSuite::~tst_QScriptV8TestSuite()
 {
 }
 
-void tst_Suite::initTestCase()
+void tst_QScriptV8TestSuite::initTestCase()
 {
     AbstractTestSuite::initTestCase();
 
@@ -214,7 +214,7 @@ void tst_Suite::initTestCase()
     }
 }
 
-void tst_Suite::configData(TestConfig::Mode mode, const QStringList &parts)
+void tst_QScriptV8TestSuite::configData(TestConfig::Mode mode, const QStringList &parts)
 {
     switch (mode) {
     case TestConfig::Skip:
@@ -228,13 +228,13 @@ void tst_Suite::configData(TestConfig::Mode mode, const QStringList &parts)
     }
 }
 
-void tst_Suite::addExpectedFailure(const QString &testName, const QString &actual,
+void tst_QScriptV8TestSuite::addExpectedFailure(const QString &testName, const QString &actual,
                                    const QString &expected, const QString &message)
 {
     expectedFailures.append(ExpectedFailure(testName, actual, expected, message));
 }
 
-bool tst_Suite::isExpectedFailure(const QString &testName, const QString &actual,
+bool tst_QScriptV8TestSuite::isExpectedFailure(const QString &testName, const QString &actual,
                                   const QString &expected, QString *message) const
 {
     for (int i = 0; i < expectedFailures.size(); ++i) {
@@ -248,17 +248,17 @@ bool tst_Suite::isExpectedFailure(const QString &testName, const QString &actual
     return false;
 }
 
-void tst_Suite::addTestExclusion(const QString &testName, const QString &message)
+void tst_QScriptV8TestSuite::addTestExclusion(const QString &testName, const QString &message)
 {
     testExclusions.append(qMakePair(QRegExp(testName), message));
 }
 
-void tst_Suite::addTestExclusion(const QRegExp &rx, const QString &message)
+void tst_QScriptV8TestSuite::addTestExclusion(const QRegExp &rx, const QString &message)
 {
     testExclusions.append(qMakePair(rx, message));
 }
 
-bool tst_Suite::isExcludedTest(const QString &testName, QString *message) const
+bool tst_QScriptV8TestSuite::isExcludedTest(const QString &testName, QString *message) const
 {
     for (int i = 0; i < testExclusions.size(); ++i) {
         if (testExclusions.at(i).first.indexIn(testName) != -1) {
@@ -270,4 +270,4 @@ bool tst_Suite::isExcludedTest(const QString &testName, QString *message) const
     return false;
 }
 
-QTEST_MAIN(tst_Suite)
+QTEST_MAIN(tst_QScriptV8TestSuite)

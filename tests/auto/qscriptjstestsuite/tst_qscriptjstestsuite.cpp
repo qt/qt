@@ -94,12 +94,12 @@ struct FailureItem
     QString message;
 };
 
-class tst_Suite : public AbstractTestSuite
+class tst_QScriptJSTestSuite : public AbstractTestSuite
 {
 
 public:
-    tst_Suite();
-    virtual ~tst_Suite();
+    tst_QScriptJSTestSuite();
+    virtual ~tst_QScriptJSTestSuite();
 
 protected:
     virtual void configData(TestConfig::Mode mode, const QStringList &parts);
@@ -175,7 +175,7 @@ static QScriptValue qscript_TestCase(QScriptContext *ctx, QScriptEngine *eng)
     return ret;
 }
 
-void tst_Suite::runTestFunction(int testIndex)
+void tst_QScriptJSTestSuite::runTestFunction(int testIndex)
 {
     if (!(testIndex & 1)) {
         // data
@@ -330,7 +330,7 @@ void tst_Suite::runTestFunction(int testIndex)
     }
 }
 
-tst_Suite::tst_Suite()
+tst_QScriptJSTestSuite::tst_QScriptJSTestSuite()
     : AbstractTestSuite("tst_QScriptJsTestSuite",
                         QString::fromLatin1("%0/tests").arg(SRCDIR),
                         ":/")
@@ -355,11 +355,11 @@ tst_Suite::tst_Suite()
     finalizeMetaObject();
 }
 
-tst_Suite::~tst_Suite()
+tst_QScriptJSTestSuite::~tst_QScriptJSTestSuite()
 {
 }
 
-void tst_Suite::configData(TestConfig::Mode mode, const QStringList &parts)
+void tst_QScriptJSTestSuite::configData(TestConfig::Mode mode, const QStringList &parts)
 {
     switch (mode) {
     case TestConfig::Skip:
@@ -372,12 +372,12 @@ void tst_Suite::configData(TestConfig::Mode mode, const QStringList &parts)
     }
 }
 
-void tst_Suite::writeSkipConfigFile(QTextStream &stream)
+void tst_QScriptJSTestSuite::writeSkipConfigFile(QTextStream &stream)
 {
     stream << QString::fromLatin1("# testcase | message") << endl;
 }
 
-void tst_Suite::writeExpectFailConfigFile(QTextStream &stream)
+void tst_QScriptJSTestSuite::writeExpectFailConfigFile(QTextStream &stream)
 {
     stream << QString::fromLatin1("# testcase | description | message") << endl;
     for (int i = 0; i < expectedFailures.size(); ++i) {
@@ -393,27 +393,27 @@ void tst_Suite::writeExpectFailConfigFile(QTextStream &stream)
     }
 }
 
-void tst_Suite::addExpectedFailure(const QRegExp &path, const QString &description, const QString &message)
+void tst_QScriptJSTestSuite::addExpectedFailure(const QRegExp &path, const QString &description, const QString &message)
 {
     expectedFailures.append(FailureItem(FailureItem::ExpectFail, path, description, message));
 }
 
-void tst_Suite::addExpectedFailure(const QString &fileName, const QString &description, const QString &message)
+void tst_QScriptJSTestSuite::addExpectedFailure(const QString &fileName, const QString &description, const QString &message)
 {
     expectedFailures.append(FailureItem(FailureItem::ExpectFail, QRegExp(fileName), description, message));
 }
 
-void tst_Suite::addSkip(const QRegExp &path, const QString &description, const QString &message)
+void tst_QScriptJSTestSuite::addSkip(const QRegExp &path, const QString &description, const QString &message)
 {
     expectedFailures.append(FailureItem(FailureItem::Skip, path, description, message));
 }
 
-void tst_Suite::addSkip(const QString &fileName, const QString &description, const QString &message)
+void tst_QScriptJSTestSuite::addSkip(const QString &fileName, const QString &description, const QString &message)
 {
     expectedFailures.append(FailureItem(FailureItem::Skip, QRegExp(fileName), description, message));
 }
 
-bool tst_Suite::isExpectedFailure(const QString &fileName, const QString &description,
+bool tst_QScriptJSTestSuite::isExpectedFailure(const QString &fileName, const QString &description,
                                   QString *message, FailureItem::Action *action) const
 {
     for (int i = 0; i < expectedFailures.size(); ++i) {
@@ -430,17 +430,17 @@ bool tst_Suite::isExpectedFailure(const QString &fileName, const QString &descri
     return false;
 }
 
-void tst_Suite::addFileExclusion(const QString &fileName, const QString &message)
+void tst_QScriptJSTestSuite::addFileExclusion(const QString &fileName, const QString &message)
 {
     fileExclusions.append(qMakePair(QRegExp(fileName), message));
 }
 
-void tst_Suite::addFileExclusion(const QRegExp &rx, const QString &message)
+void tst_QScriptJSTestSuite::addFileExclusion(const QRegExp &rx, const QString &message)
 {
     fileExclusions.append(qMakePair(rx, message));
 }
 
-bool tst_Suite::isExcludedFile(const QString &fileName, QString *message) const
+bool tst_QScriptJSTestSuite::isExcludedFile(const QString &fileName, QString *message) const
 {
     for (int i = 0; i < fileExclusions.size(); ++i) {
         if (fileExclusions.at(i).first.indexIn(fileName) != -1) {
@@ -452,4 +452,4 @@ bool tst_Suite::isExcludedFile(const QString &fileName, QString *message) const
     return false;
 }
 
-QTEST_MAIN(tst_Suite)
+QTEST_MAIN(tst_QScriptJSTestSuite)
