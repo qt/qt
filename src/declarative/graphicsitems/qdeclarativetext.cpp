@@ -210,18 +210,6 @@ qreal QDeclarativeTextPrivate::implicitWidth() const
     return mImplicitWidth;
 }
 
-void QDeclarativeTextPrivate::determineHorizontalAlignment()
-{
-    Q_Q(QDeclarativeText);
-    if (hAlignImplicit && q->isComponentComplete()) {
-        // if no explicit alignment has been set, follow the natural layout direction of the text
-        QDeclarativeText::HAlignment previousAlign = hAlign;
-        hAlign = text.isRightToLeft() ? QDeclarativeText::AlignRight : QDeclarativeText::AlignLeft;
-        if (previousAlign != hAlign)
-            emit q->horizontalAlignmentChanged(hAlign);
-    }
-}
-
 void QDeclarativeTextPrivate::updateLayout()
 {
     Q_Q(QDeclarativeText);
@@ -305,7 +293,7 @@ void QDeclarativeTextPrivate::updateSize()
         ensureDoc();
         doc->setDefaultFont(font);
         QTextOption option;
-        option.setAlignment((Qt::Alignment)int(hAlign | vAlign));
+        option.setAlignment((Qt::Alignment)int(q->effectiveHAlign() | vAlign));
         option.setWrapMode(QTextOption::WrapMode(wrapMode));
         doc->setDefaultTextOption(option);
         if (requireImplicitWidth && q->widthValid()) {
@@ -371,7 +359,7 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
         lineWidth = q->width();
 
     QTextOption textOption = layout.textOption();
-    textOption.setAlignment(Qt::Alignment(hAlign));
+    textOption.setAlignment(Qt::Alignment(q->effectiveHAlign()));
     textOption.setWrapMode(QTextOption::WrapMode(wrapMode));
     layout.setTextOption(textOption);
 
@@ -1049,6 +1037,7 @@ void QDeclarativeText::setStyleColor(const QColor &color)
 /*!
     \qmlproperty enumeration Text::horizontalAlignment
     \qmlproperty enumeration Text::verticalAlignment
+    \qmlproperty enumeration Text::effectiveHorizontalAlignment
 
     Sets the horizontal and vertical alignment of the text within the Text items
     width and height. By default, the text is vertically aligned to the top. Horizontal
@@ -1063,6 +1052,11 @@ void QDeclarativeText::setStyleColor(const QColor &color)
     all alignments are equivalent. If you want the text to be, say, centered in its parent, then you will
     need to either modify the Item::anchors, or set horizontalAlignment to Text.AlignHCenter and bind the width to 
     that of the parent.
+
+    When using the attached property LayoutMirroring::enabled to mirror application
+    layouts, the horizontal alignment of text will also be mirrored. However, the property
+    \c horizontalAlignment will remain unchanged. To query the effective horizontal alignment
+    of Text, use the read-only property \c effectiveHorizontalAlignment.
 */
 QDeclarativeText::HAlignment QDeclarativeText::hAlign() const
 {
@@ -1073,29 +1067,72 @@ QDeclarativeText::HAlignment QDeclarativeText::hAlign() const
 void QDeclarativeText::setHAlign(HAlignment align)
 {
     Q_D(QDeclarativeText);
+    bool forceAlign = d->hAlignImplicit && d->effectiveLayoutMirror;
     d->hAlignImplicit = false;
-    if (d->hAlign == align)
-        return;
-
-    if (isComponentComplete())
-        prepareGeometryChange();
-
-    d->hAlign = align;
-    d->updateLayout();
-
-    emit horizontalAlignmentChanged(align);
+    if (d->setHAlign(align, forceAlign) && isComponentComplete())
+        d->updateLayout();
 }
 
 void QDeclarativeText::resetHAlign()
 {
     Q_D(QDeclarativeText);
     d->hAlignImplicit = true;
-    QDeclarativeText::HAlignment oldAlignment = d->hAlign;
-    d->determineHorizontalAlignment();
-    if (oldAlignment != d->hAlign) {
-        prepareGeometryChange();
+    if (d->determineHorizontalAlignment() && isComponentComplete())
         d->updateLayout();
-        emit horizontalAlignmentChanged(d->hAlign);
+}
+
+QDeclarativeText::HAlignment QDeclarativeText::effectiveHAlign() const
+{
+    Q_D(const QDeclarativeText);
+    QDeclarativeText::HAlignment effectiveAlignment = d->hAlign;
+    if (!d->hAlignImplicit && d->effectiveLayoutMirror) {
+        switch (d->hAlign) {
+        case QDeclarativeText::AlignLeft:
+            effectiveAlignment = QDeclarativeText::AlignRight;
+            break;
+        case QDeclarativeText::AlignRight:
+            effectiveAlignment = QDeclarativeText::AlignLeft;
+            break;
+        default:
+            break;
+        }
+    }
+    return effectiveAlignment;
+}
+
+bool QDeclarativeTextPrivate::setHAlign(QDeclarativeText::HAlignment alignment, bool forceAlign)
+{
+    Q_Q(QDeclarativeText);
+    if (hAlign != alignment || forceAlign) {
+        QDeclarativeText::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
+        hAlign = alignment;
+
+        emit q->horizontalAlignmentChanged(hAlign);
+        if (oldEffectiveHAlign != q->effectiveHAlign())
+            emit q->effectiveHorizontalAlignmentChanged();
+        return true;
+    }
+    return false;
+}
+
+bool QDeclarativeTextPrivate::determineHorizontalAlignment()
+{
+    Q_Q(QDeclarativeText);
+    if (hAlignImplicit && q->isComponentComplete()) {
+        // if no explicit alignment has been set, follow the natural layout direction of the text
+        return setHAlign(text.isRightToLeft() ? QDeclarativeText::AlignRight : QDeclarativeText::AlignLeft);
+    }
+    return false;
+}
+
+void QDeclarativeTextPrivate::mirrorChange()
+{
+    Q_Q(QDeclarativeText);
+    if (q->isComponentComplete()) {
+        if (!hAlignImplicit && (hAlign == QDeclarativeText::AlignRight || hAlign == QDeclarativeText::AlignLeft)) {
+            updateLayout();
+            emit q->effectiveHorizontalAlignmentChanged();
+        }
     }
 }
 

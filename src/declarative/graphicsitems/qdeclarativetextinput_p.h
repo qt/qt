@@ -71,7 +71,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeTextInput : public QDeclarativeImplicitSizeP
     Q_PROPERTY(QColor selectedTextColor READ selectedTextColor WRITE setSelectedTextColor NOTIFY selectedTextColorChanged)
     Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY fontChanged)
     Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign RESET resetHAlign NOTIFY horizontalAlignmentChanged)
-
+    Q_PROPERTY(HAlignment effectiveHorizontalAlignment READ effectiveHAlign NOTIFY effectiveHorizontalAlignmentChanged REVISION 1)
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly NOTIFY readOnlyChanged)
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible NOTIFY cursorVisibleChanged)
     Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition NOTIFY cursorPositionChanged)
@@ -154,6 +154,7 @@ public:
     HAlignment hAlign() const;
     void setHAlign(HAlignment align);
     void resetHAlign();
+    HAlignment effectiveHAlign() const;
 
     bool isReadOnly() const;
     void setReadOnly(bool);
@@ -242,6 +243,7 @@ Q_SIGNALS:
     Q_REVISION(1) void mouseSelectionModeChanged(SelectionMode mode);
     Q_REVISION(1) void canPasteChanged();
     Q_REVISION(1) void inputMethodComposingChanged();
+    Q_REVISION(1) void effectiveHorizontalAlignmentChanged();
 
 protected:
     virtual void geometryChanged(const QRectF &newGeometry,

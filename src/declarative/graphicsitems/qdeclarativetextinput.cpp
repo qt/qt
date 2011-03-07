@@ -326,6 +326,7 @@ void QDeclarativeTextInput::setSelectedTextColor(const QColor &color)
 
 /*!
     \qmlproperty enumeration TextInput::horizontalAlignment
+    \qmlproperty enumeration TextInput::effectiveHorizontalAlignment
 
     Sets the horizontal alignment of the text within the TextInput item's
     width and height. By default, the text alignment follows the natural alignment
@@ -340,6 +341,11 @@ void QDeclarativeTextInput::setSelectedTextColor(const QColor &color)
 
     The valid values for \c horizontalAlignment are \c TextInput.AlignLeft, \c TextInput.AlignRight and
     \c TextInput.AlignHCenter.
+
+    When using the attached property LayoutMirroring::enabled to mirror application
+    layouts, the horizontal alignment of text will also be mirrored. However, the property
+    \c horizontalAlignment will remain unchanged. To query the effective horizontal alignment
+    of TextInput, use the read-only property \c effectiveHorizontalAlignment.
 */
 QDeclarativeTextInput::HAlignment QDeclarativeTextInput::hAlign() const
 {
@@ -350,25 +356,75 @@ QDeclarativeTextInput::HAlignment QDeclarativeTextInput::hAlign() const
 void QDeclarativeTextInput::setHAlign(HAlignment align)
 {
     Q_D(QDeclarativeTextInput);
+    bool forceAlign = d->hAlignImplicit && d->effectiveLayoutMirror;
     d->hAlignImplicit = false;
-    if(align == d->hAlign || align > QDeclarativeTextInput::AlignHCenter) // justify not supported
-        return;
-    d->hAlign = align;
-    updateRect();
-    d->updateHorizontalScroll();
-    emit horizontalAlignmentChanged(d->hAlign);
+    if (d->setHAlign(align, forceAlign) && isComponentComplete()) {
+        updateRect();
+        d->updateHorizontalScroll();
+    }
 }
 
 void QDeclarativeTextInput::resetHAlign()
 {
     Q_D(QDeclarativeTextInput);
     d->hAlignImplicit = true;
-    QDeclarativeTextInput::HAlignment oldAlignment = d->hAlign;
-    d->determineHorizontalAlignment();
-    if (oldAlignment != d->hAlign) {
+    if (d->determineHorizontalAlignment() && isComponentComplete()) {
         updateRect();
         d->updateHorizontalScroll();
-        emit horizontalAlignmentChanged(d->hAlign);
+    }
+}
+
+QDeclarativeTextInput::HAlignment QDeclarativeTextInput::effectiveHAlign() const
+{
+    Q_D(const QDeclarativeTextInput);
+    QDeclarativeTextInput::HAlignment effectiveAlignment = d->hAlign;
+    if (!d->hAlignImplicit && d->effectiveLayoutMirror) {
+        switch (d->hAlign) {
+        case QDeclarativeTextInput::AlignLeft:
+            effectiveAlignment = QDeclarativeTextInput::AlignRight;
+            break;
+        case QDeclarativeTextInput::AlignRight:
+            effectiveAlignment = QDeclarativeTextInput::AlignLeft;
+            break;
+        default:
+            break;
+        }
+    }
+    return effectiveAlignment;
+}
+
+bool QDeclarativeTextInputPrivate::setHAlign(QDeclarativeTextInput::HAlignment alignment, bool forceAlign)
+{
+    Q_Q(QDeclarativeTextInput);
+    if ((hAlign != alignment || forceAlign) && alignment <= QDeclarativeTextInput::AlignHCenter) { // justify not supported
+        QDeclarativeTextInput::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
+        hAlign = alignment;
+        return true;
+        emit q->horizontalAlignmentChanged(alignment);
+        if (oldEffectiveHAlign != q->effectiveHAlign())
+            emit q->effectiveHorizontalAlignmentChanged();
+    }
+    return false;
+}
+
+bool QDeclarativeTextInputPrivate::determineHorizontalAlignment()
+{
+    if (hAlignImplicit) {
+        // if no explicit alignment has been set, follow the natural layout direction of the text
+        return setHAlign(control->text().isRightToLeft() ? QDeclarativeTextInput::AlignRight : QDeclarativeTextInput::AlignLeft);
+    }
+    return false;
+}
+
+void QDeclarativeTextInputPrivate::mirrorChange()
+{
+    Q_Q(QDeclarativeTextInput);
+    if (q->isComponentComplete()) {
+        if (!hAlignImplicit && (hAlign == QDeclarativeTextInput::AlignRight || hAlign == QDeclarativeTextInput::AlignLeft)) {
+            q->updateRect();
+            updateHorizontalScroll();
+            emit q->effectiveHorizontalAlignmentChanged();
+        }
     }
 }
 
@@ -1226,10 +1282,11 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
     QRect br(q->boundingRect().toRect());
     int widthUsed = calculateTextWidth();
 
+    QDeclarativeTextInput::HAlignment effectiveHAlign = q->effectiveHAlign();
     if (autoScroll) {
         if (widthUsed <=  br.width()) {
             // text fits in br; use hscroll for alignment
-            switch (hAlign & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
+            switch (effectiveHAlign & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
             case Qt::AlignRight:
                 hscroll = widthUsed - br.width() - 1;
                 break;
@@ -1261,7 +1318,7 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
                  hscroll = cix;
         }
     } else {
-        switch (hAlign) {
+        switch (effectiveHAlign) {
         case QDeclarativeTextInput::AlignRight:
             hscroll = q->width() - widthUsed;
             break;
@@ -1273,19 +1330,6 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
             hscroll = 0;
             break;
         }
-    }
-}
-
-void QDeclarativeTextInputPrivate::determineHorizontalAlignment()
-{
-    Q_Q(QDeclarativeTextInput);
-    if (hAlignImplicit) {
-        QString text = control->text();
-        // if no explicit alignment has been set, follow the natural layout direction of the text
-        QDeclarativeTextInput::HAlignment previousAlign = hAlign;
-        hAlign = text.isRightToLeft() ? QDeclarativeTextInput::AlignRight : QDeclarativeTextInput::AlignLeft;
-        if (previousAlign != hAlign)
-            emit q->horizontalAlignmentChanged(hAlign);
     }
 }
 
@@ -1874,8 +1918,8 @@ void QDeclarativeTextInput::q_textChanged()
 {
     Q_D(QDeclarativeTextInput);
     updateSize();
-    d->updateHorizontalScroll();
     d->determineHorizontalAlignment();
+    d->updateHorizontalScroll();
     updateMicroFocus();
     emit textChanged();
     emit displayTextChanged();

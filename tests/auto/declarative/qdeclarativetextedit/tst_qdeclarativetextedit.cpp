@@ -469,6 +469,30 @@ void tst_qdeclarativetextedit::hAlign_RightToLeft()
     QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
     QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
 
+    // mirror the text item
+    QDeclarativeItemPrivate::get(textEdit)->setLayoutMirror(true);
+
+    // mirrored implicit alignment should continue to follow the reading direction of the text
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
+    QCOMPARE(textEdit->effectiveHAlign(), QDeclarativeTextEdit::AlignRight);
+    QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
+
+    // mirrored explicitly right aligned behaves as left aligned
+    textEdit->setHAlign(QDeclarativeTextEdit::AlignRight);
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
+    QCOMPARE(textEdit->effectiveHAlign(), QDeclarativeTextEdit::AlignLeft);
+    QVERIFY(textEdit->positionToRectangle(0).x() < canvas->width()/2);
+
+    // mirrored explicitly left aligned behaves as right aligned
+    textEdit->setHAlign(QDeclarativeTextEdit::AlignLeft);
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignLeft);
+    QCOMPARE(textEdit->effectiveHAlign(), QDeclarativeTextEdit::AlignRight);
+    QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
+
+    // disable mirroring
+    QDeclarativeItemPrivate::get(textEdit)->setLayoutMirror(false);
+    textEdit->resetHAlign();
+
     // English text should be implicitly left aligned
     textEdit->setText("Hello world!");
     QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignLeft);

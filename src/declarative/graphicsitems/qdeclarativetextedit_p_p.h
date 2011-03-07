@@ -88,7 +88,9 @@ public:
     void updateDefaultTextOption();
     void relayoutDocument();
     void updateSelection();
-    void determineHorizontalAlignment();
+    bool determineHorizontalAlignment();
+    bool setHAlign(QDeclarativeTextEdit::HAlignment, bool forceAlign = false);
+    void mirrorChange();
     qreal implicitWidth() const;
     void focusChanged(bool);
 

@@ -76,7 +76,9 @@ public:
 
     void updateSize();
     void updateLayout();
-    void determineHorizontalAlignment();
+    bool determineHorizontalAlignment();
+    bool setHAlign(QDeclarativeText::HAlignment, bool forceAlign = false);
+    void mirrorChange();
 
     QString text;
     QFont font;

@@ -1050,20 +1050,24 @@ void tst_qdeclarativetextinput::horizontalAlignment_RightToLeft()
 
     // implicit alignment should follow the reading direction of RTL text
     QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
+    QCOMPARE(textInput->effectiveHAlign(), textInput->hAlign());
     QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
 
     // explicitly left aligned
     textInput->setHAlign(QDeclarativeTextInput::AlignLeft);
     QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignLeft);
+    QCOMPARE(textInput->effectiveHAlign(), textInput->hAlign());
     QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
 
     // explicitly right aligned
     textInput->setHAlign(QDeclarativeTextInput::AlignRight);
+    QCOMPARE(textInput->effectiveHAlign(), textInput->hAlign());
     QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
     QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
 
     // explicitly center aligned
     textInput->setHAlign(QDeclarativeTextInput::AlignHCenter);
+    QCOMPARE(textInput->effectiveHAlign(), textInput->hAlign());
     QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignHCenter);
     QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
     QVERIFY(-textInputPrivate->hscroll + textInputPrivate->width() > canvas->width()/2);
@@ -1071,7 +1075,33 @@ void tst_qdeclarativetextinput::horizontalAlignment_RightToLeft()
     // reseted alignment should go back to following the text reading direction
     textInput->resetHAlign();
     QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
+    QCOMPARE(textInput->effectiveHAlign(), textInput->hAlign());
     QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
+
+    // mirror the text item
+    QDeclarativeItemPrivate::get(textInput)->setLayoutMirror(true);
+
+    // mirrored implicit alignment should continue to follow the reading direction of the text
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
+    QCOMPARE(textInput->effectiveHAlign(), textInput->hAlign());
+    QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
+
+    // explicitly right aligned behaves as left aligned
+    textInput->setHAlign(QDeclarativeTextInput::AlignRight);
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
+    QCOMPARE(textInput->effectiveHAlign(), QDeclarativeTextInput::AlignLeft);
+    QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
+
+    // mirrored explicitly left aligned behaves as right aligned
+    textInput->setHAlign(QDeclarativeTextInput::AlignLeft);
+    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignLeft);
+    QCOMPARE(textInput->effectiveHAlign(), QDeclarativeTextInput::AlignRight);
+    QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
+
+    // disable mirroring
+    QDeclarativeItemPrivate::get(textInput)->setLayoutMirror(false);
+    QCOMPARE(textInput->effectiveHAlign(), textInput->hAlign());
+    textInput->resetHAlign();
 
     // English text should be implicitly left aligned
     textInput->setText("Hello world!");

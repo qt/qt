@@ -70,6 +70,7 @@ class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeText : public QDeclarativeImplici
     Q_PROPERTY(TextStyle style READ style WRITE setStyle NOTIFY styleChanged)
     Q_PROPERTY(QColor styleColor READ styleColor WRITE setStyleColor NOTIFY styleColorChanged)
     Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign RESET resetHAlign NOTIFY horizontalAlignmentChanged)
+    Q_PROPERTY(HAlignment effectiveHorizontalAlignment READ effectiveHAlign NOTIFY effectiveHorizontalAlignmentChanged REVISION 1)
     Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign NOTIFY verticalAlignmentChanged)
     Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
     Q_PROPERTY(int lineCount READ lineCount NOTIFY lineCountChanged REVISION 1)
@@ -134,6 +135,7 @@ public:
     HAlignment hAlign() const;
     void setHAlign(HAlignment align);
     void resetHAlign();
+    HAlignment effectiveHAlign() const;
 
     VAlignment vAlign() const;
     void setVAlign(VAlignment align);
@@ -189,6 +191,7 @@ Q_SIGNALS:
     void paintedSizeChanged();
     Q_REVISION(1) void lineHeightChanged(qreal lineHeight);
     Q_REVISION(1) void lineHeightModeChanged(LineHeightMode mode);
+    Q_REVISION(1) void effectiveHorizontalAlignmentChanged();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);

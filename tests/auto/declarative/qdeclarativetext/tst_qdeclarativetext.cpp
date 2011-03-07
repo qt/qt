@@ -520,27 +520,56 @@ void tst_qdeclarativetext::horizontalAlignment_RightToLeft()
 
     // implicit alignment should follow the reading direction of RTL text
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+    QCOMPARE(text->effectiveHAlign(), text->hAlign());
     QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() > canvas->width()/2);
 
     // explicitly left aligned
     text->setHAlign(QDeclarativeText::AlignLeft);
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignLeft);
+    QCOMPARE(text->effectiveHAlign(), text->hAlign());
     QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() < canvas->width()/2);
 
     // explicitly right aligned
     text->setHAlign(QDeclarativeText::AlignRight);
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+    QCOMPARE(text->effectiveHAlign(), text->hAlign());
     QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() > canvas->width()/2);
 
     // explicitly center aligned
     text->setHAlign(QDeclarativeText::AlignHCenter);
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignHCenter);
+    QCOMPARE(text->effectiveHAlign(), text->hAlign());
     QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() < canvas->width()/2);
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().right() > canvas->width()/2);
 
     // reseted alignment should go back to following the text reading direction
     text->resetHAlign();
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
     QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() > canvas->width()/2);
+
+    // mirror the text item
+    QDeclarativeItemPrivate::get(text)->setLayoutMirror(true);
+
+    // mirrored implicit alignment should continue to follow the reading direction of the text
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+    QCOMPARE(text->effectiveHAlign(), QDeclarativeText::AlignRight);
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() > canvas->width()/2);
+
+    // mirrored explicitly right aligned behaves as left aligned
+    text->setHAlign(QDeclarativeText::AlignRight);
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+    QCOMPARE(text->effectiveHAlign(), QDeclarativeText::AlignLeft);
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() < canvas->width()/2);
+
+    // mirrored explicitly left aligned behaves as right aligned
+    text->setHAlign(QDeclarativeText::AlignLeft);
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignLeft);
+    QCOMPARE(text->effectiveHAlign(), QDeclarativeText::AlignRight);
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() > canvas->width()/2);
+
+    // disable mirroring
+    QDeclarativeItemPrivate::get(text)->setLayoutMirror(false);
+    text->resetHAlign();
 
     // English text should be implicitly left aligned
     text->setText("Hello world!");

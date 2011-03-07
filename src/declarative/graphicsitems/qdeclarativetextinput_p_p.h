@@ -103,7 +103,9 @@ public:
     void startCreatingCursor();
     void focusChanged(bool hasFocus);
     void updateHorizontalScroll();
-    void determineHorizontalAlignment();
+    bool determineHorizontalAlignment();
+    bool setHAlign(QDeclarativeTextInput::HAlignment, bool forceAlign = false);
+    void mirrorChange();
     int calculateTextWidth();
     bool sendMouseEventToInputContext(QGraphicsSceneMouseEvent *event, QEvent::Type eventType);
 
