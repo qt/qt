@@ -175,8 +175,19 @@ bool QVGImagePool::reclaimSpace(VGImageFormat format,
 
 void QVGImagePool::hibernate()
 {
-    // Nothing to do here at the moment since the pool does not
-    // retain VGImage's after they have been released.
+    Q_D(QVGImagePool);
+    QVGPixmapData *pd = d->lruLast;
+    while (pd) {
+        QVGPixmapData *prevLRU = pd->prevLRU;
+        pd->inImagePool = false;
+        pd->inLRU = false;
+        pd->nextLRU = 0;
+        pd->prevLRU = 0;
+        pd->hibernate();
+        pd = prevLRU;
+    }
+    d->lruFirst = 0;
+    d->lruLast = 0;
 }
 
 void QVGImagePool::moveToHeadOfLRU(QVGPixmapData *data)

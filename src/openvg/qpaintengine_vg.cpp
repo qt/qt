@@ -3134,9 +3134,13 @@ void QVGPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF
         if (pm.size().width() <= screenSize.width()
             && pm.size().height() <= screenSize.height())
             vgpd->failedToAlloc = false;
-    }
 
-    drawImage(r, *(pd->buffer()), sr, Qt::AutoColor);
+        vgpd->source.beginDataAccess();
+        drawImage(r, vgpd->source.imageRef(), sr, Qt::AutoColor);
+        vgpd->source.endDataAccess(true);
+    } else {
+        drawImage(r, *(pd->buffer()), sr, Qt::AutoColor);
+    }
 }
 
 void QVGPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pm)
@@ -3162,9 +3166,13 @@ void QVGPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pm)
         if (pm.size().width() <= screenSize.width()
             && pm.size().height() <= screenSize.height())
             vgpd->failedToAlloc = false;
-    }
 
-    drawImage(pos, *(pd->buffer()));
+        vgpd->source.beginDataAccess();
+        drawImage(pos, vgpd->source.imageRef());
+        vgpd->source.endDataAccess();
+    } else {
+        drawImage(pos, *(pd->buffer()));
+    }
 }
 
 void QVGPaintEngine::drawImage

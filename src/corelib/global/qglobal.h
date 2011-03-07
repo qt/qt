@@ -369,7 +369,20 @@ namespace QT_NAMESPACE {}
 */
 
 #if defined(__ghs)
-#  define Q_OUTOFLINE_TEMPLATE inline
+# define Q_OUTOFLINE_TEMPLATE inline
+
+/* the following are necessary because the GHS C++ name mangling relies on __*/
+# define Q_CONSTRUCTOR_FUNCTION0(AFUNC) \
+   static const int AFUNC ## _init_variable_ = AFUNC();
+# define Q_CONSTRUCTOR_FUNCTION(AFUNC) Q_CONSTRUCTOR_FUNCTION0(AFUNC)
+# define Q_DESTRUCTOR_FUNCTION0(AFUNC) \
+    class AFUNC ## _dest_class_ { \
+    public: \
+       inline AFUNC ## _dest_class_() { } \
+       inline ~ AFUNC ## _dest_class_() { AFUNC(); } \
+    } AFUNC ## _dest_instance_;
+# define Q_DESTRUCTOR_FUNCTION(AFUNC) Q_DESTRUCTOR_FUNCTION0(AFUNC)
+
 #endif
 
 /* Symantec C++ is now Digital Mars */
@@ -1445,7 +1458,7 @@ class QDataStream;
 #    define Q_AUTOTEST_EXPORT
 #endif
 
-inline void qt_noop() {}
+inline void qt_noop(void) {}
 
 /* These wrap try/catch so we can switch off exceptions later.
 

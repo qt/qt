@@ -41,6 +41,7 @@
 #include <private/qpaintengine_s60_p.h>
 #include <private/qpixmap_s60_p.h>
 #include <private/qt_s60_p.h>
+#include <private/qvolatileimage_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -90,7 +91,15 @@ void QS60PaintEngine::drawPixmap(const QPointF &p, const QPixmap &pm)
         QRasterPaintEngine::drawPixmap(p, pm);
         srcData->endDataAccess();
     } else {
-        QRasterPaintEngine::drawPixmap(p, pm);
+        void *nativeData = pm.pixmapData()->toNativeType(QPixmapData::VolatileImage);
+        if (nativeData) {
+            QVolatileImage *img = static_cast<QVolatileImage *>(nativeData);
+            img->beginDataAccess();
+            QRasterPaintEngine::drawImage(p, img->imageRef());
+            img->endDataAccess(true);
+        } else {
+            QRasterPaintEngine::drawPixmap(p, pm);
+        }
     }
 }
 
@@ -102,7 +111,15 @@ void QS60PaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRect
         QRasterPaintEngine::drawPixmap(r, pm, sr);
         srcData->endDataAccess();
     } else {
-        QRasterPaintEngine::drawPixmap(r, pm, sr);
+        void *nativeData = pm.pixmapData()->toNativeType(QPixmapData::VolatileImage);
+        if (nativeData) {
+            QVolatileImage *img = static_cast<QVolatileImage *>(nativeData);
+            img->beginDataAccess();
+            QRasterPaintEngine::drawImage(r, img->imageRef(), sr);
+            img->endDataAccess(true);
+        } else {
+            QRasterPaintEngine::drawPixmap(r, pm, sr);
+        }
     }
 }
 
