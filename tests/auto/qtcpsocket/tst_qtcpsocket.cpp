@@ -1389,7 +1389,7 @@ void tst_QTcpSocket::flush()
 
     connect(socket, SIGNAL(connected()), SLOT(exitLoopSlot()));
     socket->connectToHost(QtNetworkSettings::serverName(), 143);
-    enterLoop(5000);
+    enterLoop(60);
     QVERIFY(socket->isOpen());
 
     socket->write("1 LOGOUT\r\n");
