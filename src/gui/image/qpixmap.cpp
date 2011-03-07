@@ -116,8 +116,11 @@ extern QApplication::Type qt_appType;
 
 void QPixmap::init(int w, int h, int type)
 {
-    if (qt_appType == QApplication::Tty)
-        qFatal("QPixmap: Cannot create a QPixmap when no GUI is being used");
+    if (qt_appType == QApplication::Tty) {
+        qWarning("QPixmap: Cannot create a QPixmap when no GUI is being used");
+        data = 0;
+        return;
+    }
 
     if ((w > 0 && h > 0) || type == QPixmapData::BitmapType)
         data = QPixmapData::create(w, h, (QPixmapData::PixelType) type);
