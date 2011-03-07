@@ -60,9 +60,6 @@ public:
     void setTexture(QSGTextureRef t) { m_dirtyTexture = true; m_texture = t; }
     const QSGTextureRef &texture() const { return m_texture; }
 
-    void setOpacity(qreal opacity) { m_opacity = opacity; }
-    qreal opacity() const { return m_opacity; }
-
     void setScale(qreal scale) { m_scale = scale; }
     qreal scale() const { return m_scale; }
 
@@ -76,7 +73,6 @@ public:
 private:
     QSGTextureRef m_texture;
     QColor m_color;
-    qreal m_opacity;
     qreal m_scale;
     bool m_dirtyTexture;
 };

@@ -57,7 +57,7 @@ public:
     virtual void setColor(const QColor &color);
 
 private:
-    void updateGlyphs(const QPointF &pos, const QGlyphs &glyphs);
+    void updateGeometry();
     void updateFont();
 
     QPointF m_baseLine;
@@ -66,7 +66,6 @@ private:
     QGlyphs m_glyphs;
     DistanceFieldFontAtlas *m_glyph_atlas;
     QSGGeometry m_geometry;
-    QFont m_font;
 };
 
 

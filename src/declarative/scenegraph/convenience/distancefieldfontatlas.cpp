@@ -45,6 +45,8 @@
 #include <qfileinfo.h>
 #include <qmath.h>
 #include <qlibraryinfo.h>
+#include <private/qtriangulator_p.h>
+#include <private/qdeclarativeglobal_p.h>
 
 void qt_disableFontHinting(QFont &font)
 {
@@ -64,20 +66,20 @@ void qt_disableFontHinting(QFont &font)
 #define QT_DISTANCEFIELD_MARGIN 50
 #define QT_DISTANCEFIELD_MARGIN_THRESHOLD 0.31
 
-struct Point
+struct DFPoint
 {
     float x, y;
 };
 
-struct Vertex
+struct DFVertex
 {
-    Point p;
+    DFPoint p;
     float d;
 };
 
 void fillTrapezoid(float *bits, int width, int height, int fromY, int toY,
-                   const Vertex *left1, const Vertex *left2,
-                   const Vertex *right1, const Vertex *right2)
+                   const DFVertex *left1, const DFVertex *left2,
+                   const DFVertex *right1, const DFVertex *right2)
 {
     fromY = qMax(0, fromY);
     toY = qMin(height, toY);
@@ -110,14 +112,14 @@ void fillTrapezoid(float *bits, int width, int height, int fromY, int toY,
     }
 }
 
-bool lineIntersection(Point &result, const Point &left1, const Point &left2, const Point &right1, const Point &right2)
+bool lineIntersection(DFPoint &result, const DFPoint &left1, const DFPoint &left2, const DFPoint &right1, const DFPoint &right2)
 {
-    Point u = { left2.x - left1.x, left2.y - left1.y };
-    Point v = { right2.x - right1.x, right2.y - right1.y };
+    DFPoint u = { left2.x - left1.x, left2.y - left1.y };
+    DFPoint v = { right2.x - right1.x, right2.y - right1.y };
     float uxv = u.x * v.y - u.y * v.x;
     if (uxv == 0)
         return false;
-    Point d = { left1.x - right1.x, left1.y - right1.y };
+    DFPoint d = { left1.x - right1.x, left1.y - right1.y };
     float uxd = u.x * d.y - u.y * d.x;
     float vxd = v.x * d.y - v.y * d.x;
     float t = uxd / uxv;
@@ -127,11 +129,11 @@ bool lineIntersection(Point &result, const Point &left1, const Point &left2, con
     return t > 0 && t < 1 && s > 0 && s < 1;
 }
 
-void drawQuad(float *bits, int width, int height, const Vertex *v1, const Vertex *v2, const Vertex *v3, const Vertex *v4)
+void drawQuad(float *bits, int width, int height, const DFVertex *v1, const DFVertex *v2, const DFVertex *v3, const DFVertex *v4)
 {
     float minY = qMin(qMin(v1->p.y, v2->p.y), qMin(v3->p.y, v4->p.y));
     while (v1->p.y > minY) {
-        const Vertex *tmp = v1;
+        const DFVertex *tmp = v1;
         v1 = v2;
         v2 = v3;
         v3 = v4;
@@ -147,8 +149,8 @@ void drawQuad(float *bits, int width, int height, const Vertex *v1, const Vertex
     // Algorithm changed. The quad is now always convex.
     if (v2->p.y > v3->p.y && v4->p.y > v3->p.y) {
         // Concave or complex.
-        Point p14x32;
-        Point p12x34;
+        DFPoint p14x32;
+        DFPoint p12x34;
         bool int14x32 = lineIntersection(p14x32, v1->p, v4->p, v3->p, v2->p);
         bool int12x34 = lineIntersection(p12x34, v1->p, v2->p, v3->p, v4->p);
         if (int14x32) {
@@ -170,7 +172,7 @@ void drawQuad(float *bits, int width, int height, const Vertex *v1, const Vertex
             fillTrapezoid(bits, width, height, qCeil(v3->p.y), qCeil(v2->p.y), v3, v2, v3, v4);
             fillTrapezoid(bits, width, height, qCeil(v2->p.y), qCeil(v4->p.y), v1, v4, v3, v4);
         }
-    } else 
+    } else
 #endif
     if (v2->p.y > v3->p.y) {
         // Right side is straight.
@@ -196,11 +198,11 @@ void drawQuad(float *bits, int width, int height, const Vertex *v1, const Vertex
     }
 }
 
-void drawTriangle(float *bits, int width, int height, const Vertex *v1, const Vertex *v2, const Vertex *v3)
+void drawTriangle(float *bits, int width, int height, const DFVertex *v1, const DFVertex *v2, const DFVertex *v3)
 {
     float minY = qMin(qMin(v1->p.y, v2->p.y), v3->p.y);
     while (v1->p.y > minY) {
-        const Vertex *tmp = v1;
+        const DFVertex *tmp = v1;
         v1 = v2;
         v2 = v3;
         v3 = tmp;
@@ -220,14 +222,14 @@ void drawTriangle(float *bits, int width, int height, const Vertex *v1, const Ve
 
 QImage makeDistanceField(const QPainterPath &path, float offs)
 {
-    QList<QPolygonF> polys = path.toSubpathPolygons();
-
     QImage image(QT_DISTANCEFIELD_TILESIZE, QT_DISTANCEFIELD_TILESIZE, QImage::Format_ARGB32_Premultiplied);
 
-    if (polys.isEmpty()) {
+    if (path.isEmpty()) {
         image.fill(0);
         return image;
     }
+
+    QPolylineSet polys = qPolyline(path);
 
     union Pacific {
         float value;
@@ -246,31 +248,42 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
     p.scale(1 / qreal(QT_DISTANCEFIELD_SCALE), 1 / qreal(QT_DISTANCEFIELD_SCALE));
     p.fillPath(path, QColor::fromRgba(interior.color));
     p.end();
+
     float *bits = (float *)image.bits();
     const float angleStep = 15 * 3.141592653589793238f / 180;
-    Point rotation = { cos(angleStep), sin(angleStep) };
+    DFPoint rotation = { cos(angleStep), sin(angleStep) };
 
-    int outerPoly = 0;
-    int topVertex = 0;
-    QVarLengthArray<QVector<Point>, 4> allNormals(polys.count());
-    QVarLengthArray<QVector<Vertex>, 4> allVertices(polys.count());
-    QVarLengthArray<QVector<bool>, 4> allIsConvex(polys.count());
+    bool isShortData = polys.indices.type() == QVertexIndexVector::UnsignedShort;
+    const void *indices = polys.indices.data();
+    int index = 0;
+    QVector<DFPoint> normals;
+    QVector<DFVertex> vertices;
+    normals.reserve(polys.vertices.count());
+    vertices.reserve(polys.vertices.count());
 
-    for (int i = 0; i < polys.count(); ++i) {
-        const QPolygonF &poly = polys.at(i);
-        QVector<Point> &normals = allNormals[i];
-        QVector<Vertex> &vertices = allVertices[i];
-        QVector<bool> &isConvex = allIsConvex[i];
-        normals.reserve(poly.count());
-        vertices.reserve(poly.count());
+    while (index < polys.indices.size()) {
+        normals.clear();
+        vertices.clear();
+
+        // Find end of polygon.
+        int end = index;
+        if (isShortData) {
+            while (((quint16 *)indices)[end] != quint16(-1))
+                ++end;
+        } else {
+            while (((quint32 *)indices)[end] != quint32(-1))
+                ++end;
+        }
 
         // Calculate vertex normals.
-        for (int next = 0, prev = poly.count() - 1; next < poly.count(); prev = next++) {
-            const QPointF &from = poly.at(prev);
-            const QPointF &to = poly.at(next);
-            Point n;
-            n.x = float(to.y() - from.y());
-            n.y = float(from.x() - to.x());
+        for (int next = index, prev = end - 1; next < end; prev = next++) {
+            quint32 fromVertexIndex = isShortData ? (quint32)((quint16 *)indices)[prev] : ((quint32 *)indices)[prev];
+            quint32 toVertexIndex = isShortData ? (quint32)((quint16 *)indices)[next] : ((quint32 *)indices)[next];
+            const qreal *from = &polys.vertices.at(fromVertexIndex * 2);
+            const qreal *to = &polys.vertices.at(toVertexIndex * 2);
+            DFPoint n;
+            n.x = float(to[1] - from[1]);
+            n.y = float(from[0] - to[0]);
             if (n.x == 0 && n.y == 0)
                 continue;
             float scale = offs / sqrt(n.x * n.x + n.y * n.y);
@@ -278,36 +291,24 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
             n.y *= scale;
             normals.append(n);
 
-            Vertex v;
-            v.p.x = float(to.x() / QT_DISTANCEFIELD_SCALE) + offs - 0.5f;
-            v.p.y = float(to.y() / QT_DISTANCEFIELD_SCALE) + offs - 0.5f;
+            DFVertex v;
+            v.p.x = float(to[0] / QT_DISTANCEFIELD_SCALE) + offs - 0.5f;
+            v.p.y = float(to[1] / QT_DISTANCEFIELD_SCALE) + offs - 0.5f;
             v.d = 0.0f;
             vertices.append(v);
-
-            if (v.p.y < allVertices.at(outerPoly).at(topVertex).p.y) {
-                outerPoly = i;
-                topVertex = vertices.count() - 1;
-            }
         }
 
-        isConvex.resize(normals.count());
+        QVector<bool> isConvex(normals.count());
         for (int next = 0, prev = normals.count() - 1; next < normals.count(); prev = next++)
             isConvex[prev] = (normals.at(prev).x * normals.at(next).y - normals.at(prev).y * normals.at(next).x > 0);
-    }
 
-    int dir = allIsConvex.at(outerPoly).at(topVertex) ? 1 : -1;
-
-    for (int i = 0; i < polys.count(); ++i) {
-        const QVector<Point> &normals = allNormals[i];
-        const QVector<Vertex> &vertices = allVertices[i];
-        const QVector<bool> &isConvex = allIsConvex[i];
         // Draw quads.
         for (int next = 0, prev = normals.count() - 1; next < normals.count(); prev = next++) {
-            Point n = normals.at(next);
-            Vertex intPrev = vertices.at(prev);
-            Vertex extPrev = vertices.at(prev);
-            Vertex intNext = vertices.at(next);
-            Vertex extNext = vertices.at(next);
+            DFPoint n = normals.at(next);
+            DFVertex intPrev = vertices.at(prev);
+            DFVertex extPrev = vertices.at(prev);
+            DFVertex intNext = vertices.at(next);
+            DFVertex extNext = vertices.at(next);
 
             extPrev.p.x += n.x;
             extPrev.p.y += n.y;
@@ -317,10 +318,10 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
             extNext.p.y += n.y;
             intNext.p.x -= n.x;
             intNext.p.y -= n.y;
-            extPrev.d = -dir * offs * QT_DISTANCEFIELD_SCALE;
-            extNext.d = -dir * offs * QT_DISTANCEFIELD_SCALE;
-            intPrev.d = dir * offs * QT_DISTANCEFIELD_SCALE;
-            intNext.d = dir * offs * QT_DISTANCEFIELD_SCALE;
+            extPrev.d = 127;
+            extNext.d = 127;
+            intPrev.d = -127;
+            intNext.d = -127;
 
             drawQuad(bits, image.width(), image.height(),
                      &vertices.at(prev), &extPrev,
@@ -331,9 +332,9 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
                      &vertices.at(next), &intNext);
 
             if (isConvex.at(prev)) {
-                Vertex v = extPrev;
+                DFVertex v = extPrev;
                 for (;;) {
-                    Point rn = { n.x * rotation.x + n.y * rotation.y,
+                    DFPoint rn = { n.x * rotation.x + n.y * rotation.y,
                                  n.y * rotation.x - n.x * rotation.y };
                     n = rn;
                     if (n.x * normals.at(prev).y - n.y * normals.at(prev).x >= -0.001) {
@@ -349,9 +350,9 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
                     extPrev = v;
                 }
             } else {
-                Vertex v = intPrev;
+                DFVertex v = intPrev;
                 for (;;) {
-                    Point rn = { n.x * rotation.x - n.y * rotation.y,
+                    DFPoint rn = { n.x * rotation.x - n.y * rotation.y,
                                  n.y * rotation.x + n.x * rotation.y };
                     n = rn;
                     if (n.x * normals.at(prev).y - n.y * normals.at(prev).x <= 0.001) {
@@ -368,6 +369,7 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
                 }
             }
         }
+        index = end + 1;
     }
 
     for (int y = 0; y < image.height(); ++y) {
@@ -384,6 +386,8 @@ uint qHash(const TexCoordCacheKey &key)
 {
     return (qHash(key.distfield) << 13) | (key.glyph & 0x1FFF);
 }
+
+DEFINE_BOOL_CONFIG_OPTION(enableDistanceField, QML_ENABLE_DISTANCEFIELD)
 
 QHash<QString, DistanceFieldFontAtlas *> DistanceFieldFontAtlas::m_atlases;
 QHash<TexCoordCacheKey, DistanceFieldFontAtlas::TexCoord> DistanceFieldFontAtlas::m_texCoords;
@@ -591,10 +595,9 @@ QImage DistanceFieldFontAtlas::distanceFieldAtlas() const
 
 bool DistanceFieldFontAtlas::useDistanceFieldForFont(const QFont &font)
 {
-    static QStringList args = qApp->arguments();
-    if (args.contains(QLatin1String("--distancefield-text"))) {
+    if (enableDistanceField())
         return DistanceFieldFontAtlas::get(font)->distanceFieldAvailable();
-    }
+
     return false;
 }
 
@@ -648,7 +651,7 @@ QSGTextureRef DistanceFieldFontAtlas::uploadDistanceField(const QImage &image)
 
 QString DistanceFieldFontAtlas::distanceFieldDir() const
 {
-    static QString distfieldpath = QString::fromLocal8Bit(qgetenv("QT_QML_DISTFIELDDIR"));
+    static QString distfieldpath = QString::fromLocal8Bit(qgetenv("QML_DISTFIELD_DIR"));
     if (distfieldpath.isEmpty()) {
 #ifndef QT_NO_SETTINGS
         distfieldpath = QLibraryInfo::location(QLibraryInfo::LibrariesPath);

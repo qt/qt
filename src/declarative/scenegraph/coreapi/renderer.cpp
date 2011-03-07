@@ -216,6 +216,7 @@ void Renderer::renderScene(const Bindable &bindable)
     int renderTime = frameTimer.elapsed();
 #endif
 
+    glDisable(GL_SCISSOR_TEST);
     m_is_rendering = false;
     m_changed_emitted = false;
     m_bindable = 0;

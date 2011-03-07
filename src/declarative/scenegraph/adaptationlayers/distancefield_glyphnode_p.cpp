@@ -65,7 +65,6 @@ private:
     int m_alphaMin_id;
     int m_alphaMax_id;
     int m_color_id;
-    int m_opacity_id;
 };
 
 const char *DistanceFieldTextMaterialShader::vertexShader() const {
@@ -131,10 +130,10 @@ void DistanceFieldTextMaterialShader::updateState(Renderer *renderer, AbstractMa
 
     if (oldMaterial == 0
            || material->color() != oldMaterial->color()
-           || material->opacity() != oldMaterial->opacity()) {
+           || (updates & Renderer::UpdateOpacity)) {
         QVector4D color(material->color().redF(), material->color().greenF(),
                         material->color().blueF(), material->color().alphaF());
-        color *= material->opacity();
+        color *= renderer->renderOpacity();
         m_program.setUniformValue(m_color_id, color);
     }
 
@@ -170,7 +169,7 @@ void DistanceFieldTextMaterialShader::updateState(Renderer *renderer, AbstractMa
 }
 
 DistanceFieldTextMaterial::DistanceFieldTextMaterial()
-    : m_texture(0), m_opacity(1.0), m_scale(1.0), m_dirtyTexture(false)
+    : m_texture(0), m_scale(1.0), m_dirtyTexture(false)
 {
    setFlag(Blending, true);
 }
@@ -197,10 +196,6 @@ int DistanceFieldTextMaterial::compare(const AbstractMaterial *o) const
     if (m_scale != other->m_scale) {
         qreal s1 = m_scale, s2 = other->m_scale;
         return int(s2 < s1) - int(s1 < s2);
-    }
-    if (m_opacity != other->m_opacity) {
-        qreal o1 = m_opacity, o2 = other->m_opacity;
-        return int(o2 < o1) - int(o1 < o2);
     }
     QRgb c1 = m_color.rgba();
     QRgb c2 = other->m_color.rgba();

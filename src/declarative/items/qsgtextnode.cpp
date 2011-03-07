@@ -180,67 +180,6 @@ void QSGTextNode::addTextLayout(const QPointF &position, QTextLayout *textLayout
         addTextDecorations(position, font, color, textLayout->boundingRect().width());
 }
 
-void QSGTextNode::setTextLayout(const QPointF &position, QTextLayout *textLayout, const QColor &color)
-{
-    deleteDecorations();
-
-    QList<QGlyphs> glyphsList(textLayout->glyphs());
-    QList<GlyphNodeInterface *> nodes = glyphNodes();
-
-    int glyphCount = glyphsList.count();
-    int nodeCount = nodes.count();
-
-    for (int i = 0; i < glyphCount; ++i) {
-        if (i < nodeCount) {
-            GlyphNodeInterface *node = nodes.at(i);
-            node->setGlyphs(position, glyphsList.at(i));
-            node->setColor(color);
-        } else {
-            addGlyphs(position, glyphsList.at(i), color);
-        }
-    }
-
-    if (glyphCount < nodeCount) {
-        for (int i = nodeCount; i > glyphCount; --i)
-            delete childAtIndex(i - 1);
-    }
-
-    QFont font = textLayout->font();
-    if (font.strikeOut() || font.underline() || font.overline())
-        addTextDecorations(position, font, color, textLayout->boundingRect().width());
-}
-
-QList<GlyphNodeInterface *> QSGTextNode::glyphNodes() const
-{
-    QList<GlyphNodeInterface *> nodes;
-    for (int i = 0; i < childCount(); ++i) {
-        Node *n = childAtIndex(i);
-        if (n->subType() == Node::GlyphNodeSubType)
-            nodes.append(static_cast<GlyphNodeInterface *>(n));
-    }
-    return nodes;
-}
-
-QList<SolidRectNode *> QSGTextNode::decorationNodes() const
-{
-    QList<SolidRectNode *> nodes;
-    for (int i = 0; i < childCount(); ++i) {
-        Node *n = childAtIndex(i);
-        if (n->subType() == Node::SolidRectNodeSubType)
-            nodes.append(static_cast<SolidRectNode *>(n));
-    }
-    return nodes;
-}
-
-void QSGTextNode::deleteDecorations()
-{
-    for (int i = 0; i < childCount(); ++i) {
-        Node *n = childAtIndex(i);
-        if (n->subType() == Node::SolidRectNodeSubType)
-            delete n;
-    }
-}
-
 
 /*!
   Returns true if \a text contains any HTML tags, attributes or CSS properties which are unrelated
@@ -248,7 +187,7 @@ void QSGTextNode::deleteDecorations()
   false, \a text is considered to be easily representable in the scenegraph. If it returns true,
   then the text should be prerendered into a pixmap before it's displayed on screen.
 */
-bool QSGTextNode::isComplexRichText(QTextDocument *doc)
+bool QSGTextNode::isComplexRichText(QTextDocument *doc) 
 {
     if (doc == 0)
         return false;
