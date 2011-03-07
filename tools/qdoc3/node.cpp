@@ -771,6 +771,14 @@ void InnerNode::removeChild(Node *child)
     }
 }
 
+/*! \fn QString InnerNode::author() const
+  Returns the author.
+ */
+
+/*! \fn void InnerNode::setAuthor(const QString& author)
+  Sets the \a author.
+ */
+
 /*!
   Find the module (QtCore, QtGui, etc.) to which the class belongs.
   We do this by obtaining the full path to the header file's location
