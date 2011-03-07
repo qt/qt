@@ -155,3 +155,8 @@ QPlatformWindowFormat QEGLPlatformContext::platformWindowFormat() const
 {
     return m_windowFormat;
 }
+
+EGLContext QEGLPlatformContext::eglContext() const
+{
+    return m_eglContext;
+}

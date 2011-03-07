@@ -238,8 +238,13 @@ public:
 
 #ifdef XCB_USE_DRI2
     bool hasSupportForDri2() const;
-    void *egl_display() const { return m_egl_display; }
     QByteArray dri2DeviceName() const { return m_dri2_device_name; }
+#endif
+#ifdef XCB_USE_EGL
+    bool hasEgl() const;
+#endif
+#if defined(XCB_USE_EGL) || defined(XCB_USE_DRI2)
+    void *egl_display() const { return m_egl_display; }
 #endif
 
 private slots:
@@ -272,15 +277,17 @@ private:
     uint32_t m_dri2_minor;
     bool m_dri2_support_probed;
     bool m_has_support_for_dri2;
-    void *m_egl_display;
     QByteArray m_dri2_device_name;
 #endif
-
+#if defined(XCB_USE_EGL) || defined(XCB_USE_DRI2)
+    void *m_egl_display;
+    bool m_has_egl;
+#endif
 };
 
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))
 
-#ifdef XCB_USE_DRI2
+#if defined(XCB_USE_DRI2) || defined(XCB_USE_EGL)
 #define EGL_DISPLAY_FROM_XCB(object) ((EGLDisplay)(object->connection()->egl_display()))
 #endif //endifXCB_USE_DRI2
 

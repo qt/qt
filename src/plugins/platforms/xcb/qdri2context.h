@@ -24,6 +24,8 @@ public:
 
     QPlatformWindowFormat platformWindowFormat() const;
 
+    void *eglContext() const;
+
 protected:
     xcb_dri2_dri2_buffer_t *backBuffer();
     QScopedPointer<QDri2ContextPrivate> d_ptr;

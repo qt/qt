@@ -127,17 +127,7 @@ bool QXcbIntegration::hasOpenGL() const
 #if defined(XCB_USE_GLX)
     return true;
 #elif defined(XCB_USE_EGL)
-    static bool eglHasbeenInitialized = false;
-    static bool wasEglInitialized = false;
-    if (!eglHasbeenInitialized) {
-        eglHasbeenInitialized = true;
-        const QXcbScreen *screen = static_cast<const QXcbScreen *>(m_screens.at(0));
-        EGLint major, minor;
-        eglBindAPI(EGL_OPENGL_ES_API);
-        EGLDisplay disp = eglGetDisplay((Display*)screen->connection()->xlib_display());
-        wasEglInitialized = eglInitialize(disp,&major,&minor);
-    }
-    return wasEglInitialized;
+    return m_connection->hasEgl();
 #elif defined(XCB_USE_DRI2)
     if (m_connection->hasSupportForDri2()) {
         return true;

@@ -222,3 +222,9 @@ xcb_dri2_dri2_buffer_t * QDri2Context::backBuffer()
 
     return buffers;
 }
+
+void * QDri2Context::eglContext() const
+{
+    Q_D(QDri2Context);
+    return d->eglContext;
+}

@@ -14,7 +14,8 @@ public:
         EglDisplay,
         Connection,
         Screen,
-        GraphicsDevice
+        GraphicsDevice,
+        EglContext
     };
 
     void *nativeResourceForWidget(const QByteArray &resourceString, QWidget *widget);
@@ -24,6 +25,7 @@ public:
     void *connectionForWidget(QWidget *widget);
     void *screenForWidget(QWidget *widget);
     void *graphicsDeviceForWidget(QWidget *widget);
+    void *eglContextForWidget(QWidget *widget);
 
 private:
     static QXcbScreen *qPlatformScreenForWidget(QWidget *widget);

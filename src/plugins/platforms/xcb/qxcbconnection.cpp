@@ -58,6 +58,10 @@
 #include <X11/Xlib-xcb.h>
 #endif
 
+#ifdef XCB_USE_EGL //dont pull in eglext prototypes
+#include <EGL/egl.h>
+#endif
+
 #ifdef XCB_USE_DRI2
 #include <xcb/dri2.h>
 #include <xcb/xfixes.h>
@@ -87,6 +91,13 @@ QXcbConnection::QXcbConnection(const char *displayName)
     m_connection = XGetXCBConnection(dpy);
     XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
     m_xlib_display = dpy;
+#ifdef XCB_USE_EGL
+    EGLDisplay eglDisplay = eglGetDisplay(dpy);
+    m_egl_display = eglDisplay;
+    EGLint major, minor;
+    eglBindAPI(EGL_OPENGL_ES_API);
+    m_has_egl = eglInitialize(eglDisplay,&major,&minor);
+#endif //XCB_USE_EGL
 #else
     m_connection = xcb_connect(m_displayName.constData(), &primaryScreen);
 
@@ -430,6 +441,11 @@ void QXcbConnection::initializeAllAtoms() {
 
     for (i = 0; i < QXcbAtom::NAtoms; ++i)
         m_allAtoms[i] = xcb_intern_atom_reply(xcb_connection(), cookies[i], 0)->atom;
+}
+
+bool QXcbConnection::hasEgl() const
+{
+    return m_has_egl;
 }
 
 #ifdef XCB_USE_DRI2
