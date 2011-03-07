@@ -803,11 +803,10 @@ QString QLocale::quoteString(const QStringRef &str, QuotationStyle style) const
 #ifndef QT_NO_SYSTEMLOCALE
     if (d() == systemPrivate()) {
         QVariant res;
-        if (style == QLocale::StandardQuotation)
-            res = systemLocale()->query(QSystemLocale::StringToStandardQuotation, QVariant::fromValue(str));
-        else
+        if (style == QLocale::AlternateQuotation)
             res = systemLocale()->query(QSystemLocale::StringToAlternateQuotation, QVariant::fromValue(str));
-
+        if (res.isNull() || style == QLocale::StandardQuotation)
+            res = systemLocale()->query(QSystemLocale::StringToStandardQuotation, QVariant::fromValue(str));
         if (!res.isNull())
             return res.toString();
     }
