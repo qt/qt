@@ -89,7 +89,7 @@ private:
 
 protected:
     virtual void componentComplete();
-    void itemChange(GraphicsItemChange change, const QVariant &value);
+    void itemChange(ItemChange change, const ItemChangeData &value);
 
 private Q_SLOTS:
     void itemsInserted(int,int);

@@ -176,7 +176,7 @@ void QSGRepeater::componentComplete()
     regenerate();
 }
 
-void QSGRepeater::itemChange(GraphicsItemChange change, const QVariant &value)
+void QSGRepeater::itemChange(ItemChange change, const ItemChangeData &value)
 {
     QSGItem::itemChange(change, value);
     if (change == ItemParentHasChanged) {

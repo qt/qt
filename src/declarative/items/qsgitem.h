@@ -155,14 +155,27 @@ public:
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
-    enum GraphicsItemChange {
-        ItemChildAddedChange,      // Item, BasePositioner
-        ItemChildRemovedChange,    // Item, BasePositioner
-        ItemSceneChange,           // Loader
-        ItemVisibleHasChanged,     // Item, MouseArea, PaintedItem
-        ItemParentHasChanged,      // Item, Repeater
-        ItemOpacityHasChanged,     // Item
-        ItemActiveFocusHasChanged, // TextEdit, TextInput
+    enum ItemChange {
+        ItemChildAddedChange,      // value.item
+        ItemChildRemovedChange,    // value.item
+        ItemSceneChange,           // value.canvas
+        ItemVisibleHasChanged,     // value.realValue
+        ItemParentHasChanged,      // value.item
+        ItemOpacityHasChanged,     // value.realValue
+        ItemActiveFocusHasChanged, // value.boolValue
+        ItemRotationHasChanged,    // value.realValue
+    };
+
+    union ItemChangeData {
+        ItemChangeData(QSGItem *v) : item(v) {}
+        ItemChangeData(QSGCanvas *v) : canvas(v) {}
+        ItemChangeData(qreal v) : realValue(v) {}
+        ItemChangeData(bool v) : boolValue(v) {}
+
+        QSGItem *item;
+        QSGCanvas *canvas;
+        qreal realValue;
+        bool boolValue;
     };
 
     enum TransformOrigin {
@@ -322,8 +335,7 @@ protected:
     virtual bool event(QEvent *);
 
     bool isComponentComplete() const;
-    // XXX todo - rework this to take a union instead of a qvariant
-    virtual void itemChange(GraphicsItemChange, const QVariant &);
+    virtual void itemChange(ItemChange, const ItemChangeData &);
 
     void setImplicitWidth(qreal);
     bool widthValid() const; // ### better name?

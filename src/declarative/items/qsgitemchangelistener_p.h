@@ -69,6 +69,11 @@ public:
     virtual void itemVisibilityChanged(QSGItem *) {}
     virtual void itemOpacityChanged(QSGItem *) {}
     virtual void itemDestroyed(QSGItem *) {}
+    virtual void itemChildAdded(QSGItem *, QSGItem *) {}
+    virtual void itemChildRemoved(QSGItem *, QSGItem *) {}
+    virtual void itemParentChanged(QSGItem *, QSGItem *) {}
+    virtual void itemRotationChanged(QSGItem *) {}
+
     virtual QSGAnchorsPrivate *anchorPrivate() { return 0; }
 };
 

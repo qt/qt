@@ -195,7 +195,7 @@ protected:
 
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
-    virtual void itemChange(GraphicsItemChange change, const QVariant& value);
+    virtual void itemChange(ItemChange change, const ItemChangeData& value);
 
 private:
     void handlePress();
