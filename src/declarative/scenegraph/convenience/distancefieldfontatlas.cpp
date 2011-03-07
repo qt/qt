@@ -41,10 +41,7 @@
 
 #include "distancefieldfontatlas_p.h"
 
-#include <qapplication.h>
-#include <qfileinfo.h>
 #include <qmath.h>
-#include <qlibraryinfo.h>
 #include <private/qtriangulator_p.h>
 #include <private/qdeclarativeglobal_p.h>
 
@@ -382,6 +379,19 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
     return image;
 }
 
+static void convert_to_Format_Alpha(QImage *image)
+{
+    const int width = image->width();
+    const int height = image->height();
+    uchar *data = image->bits();
+
+    for (int i = 0; i < height; ++i) {
+        uchar *o = data + i * width;
+        for (int x = 0; x < width; ++x)
+            o[x] = (uchar)qAlpha(image->pixel(x, i));
+    }
+}
+
 uint qHash(const TexCoordCacheKey &key)
 {
     return (qHash(key.distfield) << 13) | (key.glyph & 0x1FFF);
@@ -391,7 +401,7 @@ DEFINE_BOOL_CONFIG_OPTION(enableDistanceField, QML_ENABLE_DISTANCEFIELD)
 
 QHash<QString, DistanceFieldFontAtlas *> DistanceFieldFontAtlas::m_atlases;
 QHash<TexCoordCacheKey, DistanceFieldFontAtlas::TexCoord> DistanceFieldFontAtlas::m_texCoords;
-QHash<QString, bool> DistanceFieldFontAtlas::m_distfield_availability;
+QSet<TexCoordCacheKey> DistanceFieldFontAtlas::m_generatedGlyphs;
 QHash<QString, QSGTextureRef> DistanceFieldFontAtlas::m_textures;
 
 static QString fontKey(const QFont &font)
@@ -446,39 +456,42 @@ DistanceFieldFontAtlas::DistanceFieldFontAtlas(const QFont &font)
     basename.remove(QLatin1String(" "));
     QString italic = m_font.italic() ? QLatin1String("i") : QLatin1String("");
     QString bold = m_font.weight() > QFont::Normal ? QLatin1String("b") : QLatin1String("");
-    m_distanceFieldFileName = basename + bold + italic + QLatin1String(".png");
+    m_distanceFieldKey = basename + bold + italic;
 
     m_glyphCount = m_fontEngine->glyphCount();
     m_glyphMetricMargin = QT_DISTANCEFIELD_MARGIN / qreal(QT_DISTANCEFIELD_SCALE) * scaleRatioFromRefSize();
     m_glyphTexMargin = QT_DISTANCEFIELD_MARGIN / qreal(QT_DISTANCEFIELD_SCALE);
 }
 
-bool DistanceFieldFontAtlas::distanceFieldAvailable() const
-{
-    QHash<QString, bool>::iterator available = m_distfield_availability.find(m_distanceFieldFileName);
-    if (available == m_distfield_availability.end()) {
-        QString distFieldFile = QString(QLatin1String("%1/%2")).arg(distanceFieldDir()).arg(m_distanceFieldFileName);
-        QFileInfo distFieldInfo(distFieldFile);
-        bool exists = distFieldInfo.exists();
-        if (!exists)
-            qWarning("Warning: distance-field rendering '%s' does not exist", distFieldFile.toLatin1().constData());
-        available = m_distfield_availability.insert(m_distanceFieldFileName, exists);
-    }
-    return available.value();
-}
-
 QSGTextureRef DistanceFieldFontAtlas::texture()
 {
-    if (!distanceFieldAvailable())
-        return QSGTextureRef();
-
-    QHash<QString, QSGTextureRef>::iterator tex = m_textures.find(m_distanceFieldFileName);
+    QHash<QString, QSGTextureRef>::iterator tex = m_textures.find(m_distanceFieldKey);
     if (tex == m_textures.end()) {
-        QImage distFieldImage = distanceFieldAtlas();
-        tex = m_textures.insert(m_distanceFieldFileName, uploadDistanceField(distFieldImage));
+        tex = m_textures.insert(m_distanceFieldKey, createTexture());
     }
 
     return tex.value();
+}
+
+void DistanceFieldFontAtlas::populate(int count, const glyph_t *glyphs)
+{
+    glBindTexture(GL_TEXTURE_2D, texture()->textureId());
+
+    for (int i = 0; i < count; ++i) {
+        TexCoordCacheKey key(m_distanceFieldKey, glyphs[i]);
+        if (m_generatedGlyphs.contains(key))
+            continue;
+
+        QImage glyph = renderDistanceFieldGlyph(glyphs[i]);
+        convert_to_Format_Alpha(&glyph);
+
+        int x = (glyphs[i] * QT_DISTANCEFIELD_TILESIZE) % atlasSize().width();
+        int y = ((glyphs[i] * QT_DISTANCEFIELD_TILESIZE) / atlasSize().width()) * QT_DISTANCEFIELD_TILESIZE;
+
+        glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, glyph.width(), glyph.height(), GL_ALPHA, GL_UNSIGNED_BYTE, glyph.constBits());
+
+        m_generatedGlyphs.insert(key);
+    }
 }
 
 QSize DistanceFieldFontAtlas::atlasSize() const
@@ -526,7 +539,7 @@ DistanceFieldFontAtlas::TexCoord DistanceFieldFontAtlas::glyphTexCoord(glyph_t g
     if (glyph >= glyphCount())
         qWarning("Warning: distance-field glyph is not available with index %d", glyph);
 
-    TexCoordCacheKey key(distanceFieldFileName(), glyph);
+    TexCoordCacheKey key(m_distanceFieldKey, glyph);
     QHash<TexCoordCacheKey, TexCoord>::iterator texCoord = m_texCoords.find(key);
     if (texCoord == m_texCoords.end()) {
         const QSize texSize = atlasSize();
@@ -585,52 +598,17 @@ qreal DistanceFieldFontAtlas::scaleRatioFromRefSize() const
     return m_fontEngine->fontDef.pixelSize / QT_DISTANCEFIELD_BASEFONTSIZE;
 }
 
-QImage DistanceFieldFontAtlas::distanceFieldAtlas() const
+QSGTextureRef DistanceFieldFontAtlas::createTexture()
 {
-    if (!distanceFieldAvailable())
-        return QImage();
-
-    return QImage(QString(QLatin1String("%1/%2")).arg(distanceFieldDir()).arg(m_distanceFieldFileName));
-}
-
-bool DistanceFieldFontAtlas::useDistanceFieldForFont(const QFont &font)
-{
-    if (enableDistanceField())
-        return DistanceFieldFontAtlas::get(font)->distanceFieldAvailable();
-
-    return false;
-}
-
-static void convert_to_Format_Alpha(QImage *image)
-{
-    const int width = image->width();
-    const int height = image->height();
-    uchar *data = image->bits();
-
-    for (int i = 0; i < height; ++i) {
-        uchar *o = data + i * width;
-        for (int x = 0; x < width; ++x)
-            o[x] = (uchar)qAlpha(image->pixel(x, i));
-    }
-}
-
-QSGTextureRef DistanceFieldFontAtlas::uploadDistanceField(const QImage &image)
-{
-    Q_ASSERT(!image.isNull());
-
     GLuint id;
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
 
-    QImage i = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-    convert_to_Format_Alpha(&i);
-
-    // We only need to store the alpha component
-#ifdef QT_OPENGL_ES
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, i.width(), i.height(), 0, GL_ALPHA, GL_UNSIGNED_BYTE, i.constBits());
-#else
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA8, i.width(), i.height(), 0, GL_ALPHA, GL_UNSIGNED_BYTE, i.constBits());
-#endif
+    const QSize size = atlasSize();
+    QVarLengthArray<uchar> data(size.width() * size.height());
+    for (int i = 0; i < data.size(); ++i)
+        data[i] = 0;
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, size.width(), size.height(), 0, GL_ALPHA, GL_UNSIGNED_BYTE, &data[0]);
 
     GLuint error = glGetError();
     if (error != GL_NO_ERROR) {
@@ -641,30 +619,17 @@ QSGTextureRef DistanceFieldFontAtlas::uploadDistanceField(const QImage &image)
 
     QSGTexture *texture = new QSGTexture;
     texture->setTextureId(id);
-    texture->setTextureSize(image.size());
-    texture->setAlphaChannel(image.hasAlphaChannel());
+    texture->setTextureSize(size);
+    texture->setAlphaChannel(true);
     texture->setStatus(QSGTexture::Ready);
 
     QSGTextureRef ref(texture);
     return ref;
 }
 
-QString DistanceFieldFontAtlas::distanceFieldDir() const
+bool DistanceFieldFontAtlas::distanceFieldEnabled()
 {
-    static QString distfieldpath = QString::fromLocal8Bit(qgetenv("QML_DISTFIELD_DIR"));
-    if (distfieldpath.isEmpty()) {
-#ifndef QT_NO_SETTINGS
-        distfieldpath = QLibraryInfo::location(QLibraryInfo::LibrariesPath);
-        distfieldpath += QLatin1String("/fonts/distancefields");
-#endif
-    }
-
-    return distfieldpath;
-}
-
-QString DistanceFieldFontAtlas::distanceFieldFileName() const
-{
-    return m_distanceFieldFileName;
+    return enableDistanceField();
 }
 
 int DistanceFieldFontAtlas::glyphCount() const

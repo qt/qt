@@ -91,17 +91,19 @@ void DistanceFieldGlyphNode::setGlyphs(const QPointF &position, const QGlyphs &g
 
 void DistanceFieldGlyphNode::updateGeometry()
 {
+    Q_ASSERT(m_glyph_atlas);
+
     QSGGeometry *g = geometry();
     QRectF boundingRect;
 
     const QVector<quint32> &glyphIndexes = m_glyphs.glyphIndexes();
 
+    m_glyph_atlas->populate(glyphIndexes.count(), glyphIndexes.constData());
+
     Q_ASSERT(g->indexType() == GL_UNSIGNED_SHORT);
     g->allocate(glyphIndexes.size() * 4, glyphIndexes.size() * 6);
     QVector4D *vp = (QVector4D *)g->vertexData();
     ushort *ip = g->indexDataAsUShort();
-
-    Q_ASSERT(m_glyph_atlas);
 
     for (int i = 0; i < glyphIndexes.size(); ++i) {
         quint32 glyphIndex = glyphIndexes.at(i);

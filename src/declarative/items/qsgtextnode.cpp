@@ -148,7 +148,7 @@ void QSGTextNode::addTextDecorations(const QPointF &position, const QFont &font,
 
 GlyphNodeInterface *QSGTextNode::addGlyphs(const QPointF &position, const QGlyphs &glyphs, const QColor &color)
 {
-    GlyphNodeInterface *node = m_context->createGlyphNode(glyphs.font());
+    GlyphNodeInterface *node = m_context->createGlyphNode();
     node->setGlyphs(position, glyphs);
     node->setColor(color);
 
@@ -187,7 +187,7 @@ void QSGTextNode::addTextLayout(const QPointF &position, QTextLayout *textLayout
   false, \a text is considered to be easily representable in the scenegraph. If it returns true,
   then the text should be prerendered into a pixmap before it's displayed on screen.
 */
-bool QSGTextNode::isComplexRichText(QTextDocument *doc) 
+bool QSGTextNode::isComplexRichText(QTextDocument *doc)
 {
     if (doc == 0)
         return false;

@@ -66,8 +66,6 @@ class Q_DECLARATIVE_EXPORT DistanceFieldFontAtlas
 public:
     static DistanceFieldFontAtlas *get(const QFont &font);
 
-    bool distanceFieldAvailable() const;
-
     struct Metrics {
         qreal width;
         qreal height;
@@ -91,25 +89,23 @@ public:
     qreal scaleRatioFromRefSize() const;
     QImage renderDistanceFieldGlyph(glyph_t glyph) const;
 
-    QString distanceFieldDir() const;
-    QString distanceFieldFileName() const;
-
     int glyphCount() const;
 
-    static bool useDistanceFieldForFont(const QFont &font);
+    void populate(int count, const glyph_t *glyphs);
+
+    static bool distanceFieldEnabled();
 
 private:
     DistanceFieldFontAtlas(const QFont &font);
 
-    QImage distanceFieldAtlas() const;
-    QSGTextureRef uploadDistanceField(const QImage &image);
+    QSGTextureRef createTexture();
 
     static QHash<QString, DistanceFieldFontAtlas *> m_atlases;
 
     QFont m_font;
     QFontEngine *m_fontEngine;
     QFontEngine *m_referenceFontEngine;
-    QString m_distanceFieldFileName;
+    QString m_distanceFieldKey;
     int m_glyphCount;
     mutable QSize m_size;
     float m_glyphMetricMargin;
@@ -117,8 +113,8 @@ private:
 
     QHash<glyph_t, Metrics> m_metrics;
     static QHash<TexCoordCacheKey, DistanceFieldFontAtlas::TexCoord> m_texCoords;
+    static QSet<TexCoordCacheKey> m_generatedGlyphs;
 
-    static QHash<QString, bool> m_distfield_availability;
     static QHash<QString, QSGTextureRef> m_textures;
 };
 
