@@ -145,10 +145,11 @@ public:
         if (parent) {
             QDeclarative_setParent_noEvent(q, parent);
             q->setParentItem(parent);
+            QDeclarativeItemPrivate *parentPrivate = QDeclarativeItemPrivate::get(parent);
+            setImplicitLayoutMirror(parentPrivate->inheritedLayoutMirror, parentPrivate->inheritMirrorFromParent);
         }
         baselineOffset.invalidate();
         mouseSetsFocus = false;
-        resolveLayoutMirror();
     }
 
     bool isMirrored() const {

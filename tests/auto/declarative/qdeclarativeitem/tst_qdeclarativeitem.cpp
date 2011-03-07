@@ -518,6 +518,39 @@ void tst_QDeclarativeItem::layoutMirroring()
     QCOMPARE(childPrivate(rootItem, "inheritedMirror2")->inheritedLayoutMirror, true);
     QCOMPARE(childPrivate(rootItem, "mirrored1")->inheritedLayoutMirror, true);
     QCOMPARE(childPrivate(rootItem, "notMirrored1")->inheritedLayoutMirror, true);
+    
+    //
+    // dynamic parenting
+    //
+    QDeclarativeItem *parentItem1 = new QDeclarativeItem();
+    QDeclarativeItemPrivate::get(parentItem1)->effectiveLayoutMirror = true; // LayoutMirroring.enabled: true
+    QDeclarativeItemPrivate::get(parentItem1)->isMirrorImplicit = false;
+    QDeclarativeItemPrivate::get(parentItem1)->inheritMirrorFromItem = true; // LayoutMirroring.childrenInherit: true
+    QDeclarativeItemPrivate::get(parentItem1)->resolveLayoutMirror();
+
+    // inherit in constructor
+    QDeclarativeItem *childItem1 = new QDeclarativeItem(parentItem1);
+    QCOMPARE(QDeclarativeItemPrivate::get(childItem1)->effectiveLayoutMirror, true);
+    QCOMPARE(QDeclarativeItemPrivate::get(childItem1)->inheritMirrorFromParent, true);
+
+    // inherit through a parent change
+    QDeclarativeItem *childItem2 = new QDeclarativeItem();
+    QCOMPARE(QDeclarativeItemPrivate::get(childItem2)->effectiveLayoutMirror, false);
+    QCOMPARE(QDeclarativeItemPrivate::get(childItem2)->inheritMirrorFromParent, false);
+    childItem2->setParentItem(parentItem1);
+    QCOMPARE(QDeclarativeItemPrivate::get(childItem2)->effectiveLayoutMirror, true);
+    QCOMPARE(QDeclarativeItemPrivate::get(childItem2)->inheritMirrorFromParent, true);
+
+    // stop inherting through a parent change
+    QDeclarativeItem *parentItem2 = new QDeclarativeItem();
+    QDeclarativeItemPrivate::get(parentItem2)->effectiveLayoutMirror = true; // LayoutMirroring.enabled: true
+    QDeclarativeItemPrivate::get(parentItem2)->resolveLayoutMirror();
+    childItem2->setParentItem(parentItem2);
+    QCOMPARE(QDeclarativeItemPrivate::get(childItem2)->effectiveLayoutMirror, false);
+    QCOMPARE(QDeclarativeItemPrivate::get(childItem2)->inheritMirrorFromParent, false);
+    
+    delete parentItem1;
+    delete parentItem2;
 }
 
 void tst_QDeclarativeItem::layoutMirroringIllegalParent()
