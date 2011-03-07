@@ -113,7 +113,8 @@ public:
         UILanguages, // QStringList
         StringToStandardQuotation, // QString in: QStringRef to quote
         StringToAlternateQuotation, // QString in: QStringRef to quote
-        ScriptId // uint
+        ScriptId, // uint
+        LocaleChanged // system locale changed
     };
     virtual QVariant query(QueryType type, QVariant in) const;
     virtual QLocale fallbackLocale() const;

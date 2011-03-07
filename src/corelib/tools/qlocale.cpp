@@ -477,6 +477,10 @@ void QLocalePrivate::updateSystemPrivate()
     const QSystemLocale *sys_locale = systemLocale();
     if (!system_lp)
         system_lp = globalLocalePrivate();
+
+    // tell the object that the system locale has changed.
+    sys_locale->query(QSystemLocale::LocaleChanged, QVariant());
+
     *system_lp = *sys_locale->fallbackLocale().d();
 
 #if defined(Q_OS_SYMBIAN)
