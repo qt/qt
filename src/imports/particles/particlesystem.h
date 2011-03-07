@@ -60,6 +60,8 @@ void setRunning(bool arg)
     if (m_running != arg) {
         m_running = arg;
         emit runningChanged(arg);
+        if(arg)
+            update();
     }
 }
 
