@@ -159,6 +159,7 @@ void QDesignerFormWindow::firstShow()
         if (m_editor) {
             connect(m_editor, SIGNAL(fileNameChanged(QString)), this, SLOT(updateWindowTitle(QString)));
             updateWindowTitle(m_editor->fileName());
+            updateChanged();
         }
     }
     show();

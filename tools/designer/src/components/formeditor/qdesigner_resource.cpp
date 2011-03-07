@@ -2302,6 +2302,7 @@ void QDesignerResource::createResources(DomResources *resources)
                     path = core()->dialogGui()->getOpenFileName(dialogParent, fileDialogTitle, fi.absolutePath(), fileDialogPattern);
                     if (path.isEmpty())
                         break;
+                    m_formWindow->setProperty("_q_resourcepathchanged", QVariant(true));
                 } else {
                     break;
                 }
