@@ -57,6 +57,10 @@
 #include <QtGui/private/qapplication_p.h>
 #endif
 
+#ifdef QGL_USE_TEXTURE_POOL
+#include "private/qgltexturepool_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 extern QGLWidget *qt_gl_getShareWidget();
@@ -100,6 +104,11 @@ QWindowSurface *QGLGraphicsSystem::createWindowSurface(QWidget *widget) const
 
     return new QGLWindowSurface(widget);
 }
-
+#ifdef QGL_USE_TEXTURE_POOL
+void QGLGraphicsSystem::releaseCachedResources()
+{
+    QGLTexturePool::instance()->hibernate();
+}
+#endif
 QT_END_NAMESPACE
 

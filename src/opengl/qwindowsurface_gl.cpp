@@ -181,16 +181,14 @@ QGLGraphicsSystem::QGLGraphicsSystem(bool useX11GL)
 //
 // QGLWindowSurface
 //
-
 class QGLGlobalShareWidget
 {
 public:
-    QGLGlobalShareWidget() : widget(0), initializing(false) {}
+    QGLGlobalShareWidget() : firstPixmap(0), widgetRefCount(0), widget(0), initializing(false) {}
 
     QGLWidget *shareWidget() {
         if (!initializing && !widget && !cleanedUp) {
             initializing = true;
-
             widget = new QGLWidget(QGLFormat(QGL::SingleBuffer | QGL::NoDepthBuffer | QGL::NoStencilBuffer));
             widget->resize(1, 1);
 
@@ -226,6 +224,9 @@ public:
 
     static bool cleanedUp;
 
+    QGLPixmapData *firstPixmap;
+    int widgetRefCount;
+
 private:
     QGLWidget *widget;
     bool initializing;
@@ -254,6 +255,41 @@ QGLWidget* qt_gl_share_widget()
 void qt_destroy_gl_share_widget()
 {
     _qt_gl_share_widget()->destroy();
+}
+
+void qt_gl_register_pixmap(QGLPixmapData *pd)
+{
+    QGLGlobalShareWidget *shared = _qt_gl_share_widget();
+    pd->next = shared->firstPixmap;
+    pd->prev = 0;
+    if (shared->firstPixmap)
+        shared->firstPixmap->prev = pd;
+    shared->firstPixmap = pd;
+}
+
+void qt_gl_unregister_pixmap(QGLPixmapData *pd)
+{
+    if (pd->next)
+        pd->next->prev = pd->prev;
+    if (pd->prev) {
+        pd->prev->next = pd->next;
+    } else {
+        QGLGlobalShareWidget *shared = _qt_gl_share_widget();
+        if (shared)
+           shared->firstPixmap = pd->next;
+    }
+}
+
+void qt_gl_hibernate_pixmaps()
+{
+    QGLGlobalShareWidget *shared = _qt_gl_share_widget();
+
+    // Scan all QGLPixmapData objects in the system and hibernate them.
+    QGLPixmapData *pd = shared->firstPixmap;
+    while (pd != 0) {
+        pd->hibernate();
+        pd = pd->next;
+    }
 }
 
 struct QGLWindowSurfacePrivate
@@ -347,6 +383,27 @@ QGLWindowSurface::~QGLWindowSurface()
     delete d_ptr->pb;
     delete d_ptr->fbo;
     delete d_ptr;
+
+    if (QGLGlobalShareWidget::cleanedUp)
+        return;
+
+    --(_qt_gl_share_widget()->widgetRefCount);
+
+#ifdef QGL_USE_TEXTURE_POOL
+    if (_qt_gl_share_widget()->widgetRefCount <= 0) {
+        // All of the widget window surfaces have been destroyed
+        // but we still have GL pixmaps active.  Ask them to hibernate
+        // to free up GPU resources until a widget is shown again.
+        // This may eventually cause the EGLContext to be destroyed
+        // because nothing in the system needs a context, which will
+        // free up even more GPU resources.
+        qt_gl_hibernate_pixmaps();
+
+        // Destroy the context if necessary.
+        if (!qt_gl_share_widget()->context()->isSharing())
+            qt_destroy_gl_share_widget();
+    }
+#endif
 }
 
 void QGLWindowSurface::deleted(QObject *object)
@@ -394,6 +451,9 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 
     ctx->create(qt_gl_share_widget()->context());
 
+    if (widget != qt_gl_share_widget())
+        ++(_qt_gl_share_widget()->widgetRefCount);
+
 #ifndef QT_NO_EGL
     static bool checkedForNOKSwapRegion = false;
     static bool haveNOKSwapRegion = false;
@@ -405,9 +465,9 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
         if (haveNOKSwapRegion)
             qDebug() << "Found EGL_NOK_swap_region2 extension. Using partial updates.";
     }
-
-    if (ctx->d_func()->eglContext->configAttrib(EGL_SWAP_BEHAVIOR) != EGL_BUFFER_PRESERVED &&
-        ! haveNOKSwapRegion)
+    bool swapBehaviourPreserved = (ctx->d_func()->eglContext->configAttrib(EGL_SWAP_BEHAVIOR)
+                        || (ctx->d_func()->eglContext->configAttrib(EGL_SURFACE_TYPE)&EGL_SWAP_BEHAVIOR_PRESERVED_BIT));
+    if (!swapBehaviourPreserved && !haveNOKSwapRegion)
         setPartialUpdateSupport(false); // Force full-screen updates
     else
         setPartialUpdateSupport(true);
@@ -421,7 +481,9 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 
     voidPtr = &widgetPrivate->extraData()->glContext;
     d_ptr->contexts << ctxPtr;
+#ifndef Q_OS_SYMBIAN
     qDebug() << "hijackWindow() context created for" << widget << d_ptr->contexts.size();
+#endif
 }
 
 QGLContext *QGLWindowSurface::context() const
@@ -908,8 +970,9 @@ void QGLWindowSurface::updateGeometry() {
     if (d_ptr->destructive_swap_buffers)
         initializeOffscreenTexture(surfSize);
 #endif
-
-    qDebug() << "QGLWindowSurface: Using plain widget as window surface" << this;;
+#ifndef Q_OS_SYMBIAN
+    qDebug() << "QGLWindowSurface: Using plain widget as window surface" << this;
+#endif
     d_ptr->ctx = ctx;
     d_ptr->ctx->d_ptr->internal_context = true;
 }
