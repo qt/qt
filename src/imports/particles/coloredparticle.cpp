@@ -424,7 +424,6 @@ void ColoredParticle::reload(ParticleData *d)
 
     ColoredParticleVertices &p = particles[pos];
 
-    //TODO: Reinterpret s and a changes so as to end up in the same place?
     //Perhaps we could be more efficient?
     vertexCopy(p.v1, d->pv);
     vertexCopy(p.v2, d->pv);
@@ -444,7 +443,7 @@ void ColoredParticle::load(ParticleData *d)
     color.r = m_color.red() * (1 - m_color_variation) + rand() % 256 * m_color_variation;
     color.g = m_color.green() * (1 - m_color_variation) + rand() % 256 * m_color_variation;
     color.b = m_color.blue() * (1 - m_color_variation) + rand() % 256 * m_color_variation;
-    color.a = (1 - m_additive) * 255;
+    color.a = (1 - m_additive) * m_color.alpha();
     ColoredParticleVertices *particles = (ColoredParticleVertices *) m_node->geometry()->vertexData();
     ColoredParticleVertices &p = particles[d->particleIndex];
     p.v1.color = p.v2.color = p.v3.color = p.v4.color = color;

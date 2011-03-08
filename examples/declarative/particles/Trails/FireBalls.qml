@@ -40,7 +40,7 @@ Rectangle {
         ColoredParticle{
             id: fireball
             image: "content/particleA.png"
-            colorVariation: 0.1
+            colorVariation: 0.2
             color: "#ff400f"
             additive: 1
         }
