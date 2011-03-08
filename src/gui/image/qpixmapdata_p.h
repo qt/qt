@@ -72,7 +72,8 @@ public:
     enum NativeType {
         FbsBitmap,
         SgImage,
-        VolatileImage
+        VolatileImage,
+        NativeImageHandleProvider
     };
 #endif
     enum ClassId { RasterClass, X11Class, MacClass, DirectFBClass,

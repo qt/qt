@@ -76,6 +76,8 @@ void qt_vg_unregister_pixmap(QVGPixmapData *pd);
 void qt_vg_hibernate_pixmaps(QVGSharedContext *context);
 #endif
 
+class QNativeImageHandleProvider;
+
 class Q_OPENVG_EXPORT QVGPixmapData : public QPixmapData
 {
 public:
@@ -138,6 +140,9 @@ public:
 #if defined(Q_OS_SYMBIAN)
     void* toNativeType(NativeType type);
     void fromNativeType(void* pixmap, NativeType type);
+    bool initFromNativeImageHandle(void *handle, const QString &type);
+    void createFromNativeImageHandleProvider();
+    void releaseNativeImageHandle();
 #endif
 
 protected:
@@ -175,6 +180,12 @@ protected:
     bool inImagePool;
 #if !defined(QT_NO_EGL)
     mutable QEglContext *context;
+#endif
+
+#if defined(Q_OS_SYMBIAN)
+    mutable QNativeImageHandleProvider *nativeImageHandleProvider;
+    void *nativeImageHandle;
+    QString nativeImageType;
 #endif
 
     void forceToImage();
