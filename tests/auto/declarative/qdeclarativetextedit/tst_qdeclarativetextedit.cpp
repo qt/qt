@@ -112,6 +112,7 @@ private slots:
     void selection();
     void isRightToLeft_data();
     void isRightToLeft();
+    void keySelection();
     void moveCursorSelection_data();
     void moveCursorSelection();
     void moveCursorSelectionSequence_data();
@@ -149,7 +150,7 @@ private slots:
     void inputMethodComposing();
 
 private:
-    void simulateKey(QDeclarativeView *, int key);
+    void simulateKey(QDeclarativeView *, int key, Qt::KeyboardModifiers modifiers = 0);
     QDeclarativeView *createView(const QString &filename);
 
     QStringList standard;
@@ -873,6 +874,56 @@ void tst_qdeclarativetextedit::isRightToLeft()
     QCOMPARE(textEdit.isRightToLeft(3*text.count()/4,text.count()-1), endString);
 }
 
+void tst_qdeclarativetextedit::keySelection()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/navigation.qml");
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+    canvas->setFocus();
+
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeTextEdit *input = qobject_cast<QDeclarativeTextEdit *>(qvariant_cast<QObject *>(canvas->rootObject()->property("myInput")));
+
+    QVERIFY(input != 0);
+    QTRY_VERIFY(input->hasActiveFocus() == true);
+
+    QSignalSpy spy(input, SIGNAL(selectionChanged()));
+
+    simulateKey(canvas, Qt::Key_Right, Qt::ShiftModifier);
+    QVERIFY(input->hasActiveFocus() == true);
+    QCOMPARE(input->selectedText(), QString("a"));
+    QCOMPARE(spy.count(), 1);
+    simulateKey(canvas, Qt::Key_Right);
+    QVERIFY(input->hasActiveFocus() == true);
+    QCOMPARE(input->selectedText(), QString());
+    QCOMPARE(spy.count(), 2);
+    simulateKey(canvas, Qt::Key_Right);
+    QVERIFY(input->hasActiveFocus() == false);
+    QCOMPARE(input->selectedText(), QString());
+    QCOMPARE(spy.count(), 2);
+
+    simulateKey(canvas, Qt::Key_Left);
+    QVERIFY(input->hasActiveFocus() == true);
+    QCOMPARE(spy.count(), 2);
+    simulateKey(canvas, Qt::Key_Left, Qt::ShiftModifier);
+    QVERIFY(input->hasActiveFocus() == true);
+    QCOMPARE(input->selectedText(), QString("a"));
+    QCOMPARE(spy.count(), 3);
+    simulateKey(canvas, Qt::Key_Left);
+    QVERIFY(input->hasActiveFocus() == true);
+    QCOMPARE(input->selectedText(), QString());
+    QCOMPARE(spy.count(), 4);
+    simulateKey(canvas, Qt::Key_Left);
+    QVERIFY(input->hasActiveFocus() == false);
+    QCOMPARE(input->selectedText(), QString());
+    QCOMPARE(spy.count(), 4);
+
+    delete canvas;
+}
+
 void tst_qdeclarativetextedit::moveCursorSelection_data()
 {
     QTest::addColumn<QString>("testStr");
@@ -1591,6 +1642,8 @@ void tst_qdeclarativetextedit::navigation()
     simulateKey(canvas, Qt::Key_Right);
     QVERIFY(input->hasActiveFocus() == true);
     simulateKey(canvas, Qt::Key_Right);
+    QVERIFY(input->hasActiveFocus() == true);
+    simulateKey(canvas, Qt::Key_Right);
     QVERIFY(input->hasActiveFocus() == false);
     simulateKey(canvas, Qt::Key_Left);
     QVERIFY(input->hasActiveFocus() == true);
@@ -1718,10 +1771,10 @@ void tst_qdeclarativetextedit::readOnly()
     delete canvas;
 }
 
-void tst_qdeclarativetextedit::simulateKey(QDeclarativeView *view, int key)
+void tst_qdeclarativetextedit::simulateKey(QDeclarativeView *view, int key, Qt::KeyboardModifiers modifiers)
 {
-    QKeyEvent press(QKeyEvent::KeyPress, key, 0);
-    QKeyEvent release(QKeyEvent::KeyRelease, key, 0);
+    QKeyEvent press(QKeyEvent::KeyPress, key, modifiers);
+    QKeyEvent release(QKeyEvent::KeyRelease, key, modifiers);
 
     QApplication::sendEvent(view, &press);
     QApplication::sendEvent(view, &release);
