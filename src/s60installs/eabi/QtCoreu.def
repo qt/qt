@@ -1439,7 +1439,7 @@ EXPORTS
 	_ZN31QAbstractEventDispatcherPrivate4initEv @ 1438 NONAME
 	_ZN31QNonContiguousByteDeviceFactory4wrapEP24QNonContiguousByteDevice @ 1439 NONAME
 	_ZN31QNonContiguousByteDeviceFactory6createEP10QByteArray @ 1440 NONAME
-	_ZN31QNonContiguousByteDeviceFactory6createEP11QRingBuffer @ 1441 NONAME
+	_ZN31QNonContiguousByteDeviceFactory6createEP11QRingBuffer @ 1441 NONAME ABSENT
 	_ZN31QNonContiguousByteDeviceFactory6createEP9QIODevice @ 1442 NONAME
 	_ZN4QDir10setCurrentERK7QString @ 1443 NONAME
 	_ZN4QDir10setSortingE6QFlagsINS_8SortFlagEE @ 1444 NONAME
