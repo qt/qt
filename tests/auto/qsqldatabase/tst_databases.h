@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,6 +51,7 @@
 #include <QDir>
 #include <QVariant>
 #include <QDebug>
+#include <QSqlTableModel>
 
 #include <QtTest/QtTest>
 
@@ -166,6 +167,29 @@ public:
         return count;
     }
 
+    int fillTestTableWithStrategies( const QString& driverPrefix = QString() ) const
+    {
+        QTest::addColumn<QString>( "dbName" );
+        QTest::addColumn<int>("submitpolicy_i");
+        int count = 0;
+
+        for ( int i = 0; i < dbNames.count(); ++i ) {
+            QSqlDatabase db = QSqlDatabase::database( dbNames.at( i ) );
+
+            if ( !db.isValid() )
+                continue;
+
+            if ( driverPrefix.isEmpty() || db.driverName().startsWith( driverPrefix ) ) {
+                QTest::newRow( QString("%1 [field]").arg(dbNames.at( i )).toLatin1() ) << dbNames.at( i ) << (int)QSqlTableModel::OnFieldChange;
+                QTest::newRow( QString("%1 [row]").arg(dbNames.at( i )).toLatin1() ) << dbNames.at( i ) << (int)QSqlTableModel::OnRowChange;
+                QTest::newRow( QString("%1 [manual]").arg(dbNames.at( i )).toLatin1() ) << dbNames.at( i ) << (int)QSqlTableModel::OnManualSubmit;
+                ++count;
+            }
+        }
+
+        return count;
+    }
+
     void addDb( const QString& driver, const QString& dbName,
                 const QString& user = QString(), const QString& passwd = QString(),
                 const QString& host = QString(), int port = -1, const QString params = QString() )
@@ -235,6 +259,8 @@ public:
 //         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "postgres74-nokia.trolltech.com.au" );         // Version 7.4.19-1.el4_6.1
 //         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "bq-pgsql81.apac.nokia.com" );         // Version 8.1.11-1.el5_1.1
 //         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "bq-pgsql84.apac.nokia.com" );         // Version 8.4.1-2.1.i586
+//         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "bq-pgsql90.apac.nokia.com" );         // Version 9.0.0
+
 
 //         addDb( "QDB2", "testdb", "troll", "trond", "silence.nokia.troll.no" ); // DB2 v9.1 on silence
 

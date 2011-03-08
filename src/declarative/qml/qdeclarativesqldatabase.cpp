@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -172,16 +172,23 @@ static const char* sqlerror[] = {
     return errorValue; \
 }
 
-
-static QString databaseFile(const QString& connectionName, QScriptEngine *engine)
+static QString qmlsqldatabase_databasesPath(QScriptEngine *engine)
 {
     QDeclarativeScriptEngine *qmlengine = static_cast<QDeclarativeScriptEngine*>(engine);
-    QString basename = qmlengine->offlineStoragePath
-                + QDir::separator() + QLatin1String("Databases") + QDir::separator();
-    basename += connectionName;
-    return basename;
+    return qmlengine->offlineStoragePath
+            + QDir::separator() + QLatin1String("Databases");
 }
 
+static void qmlsqldatabase_initDatabasesPath(QScriptEngine *engine)
+{
+    QDir().mkpath(qmlsqldatabase_databasesPath(engine));
+}
+
+static QString qmlsqldatabase_databaseFile(const QString& connectionName, QScriptEngine *engine)
+{
+    return qmlsqldatabase_databasesPath(engine) + QDir::separator()
+            + connectionName;
+}
 
 
 static QScriptValue qmlsqldatabase_item(QScriptContext *context, QScriptEngine *engine)
@@ -302,7 +309,7 @@ static QScriptValue qmlsqldatabase_change_version(QScriptContext *context, QScri
 
     if (ok) {
         context->thisObject().setProperty(QLatin1String("version"), to_version, QScriptValue::ReadOnly);
-        QSettings ini(databaseFile(db.connectionName(),engine)+QLatin1String(".ini"),QSettings::IniFormat);
+        QSettings ini(qmlsqldatabase_databaseFile(db.connectionName(),engine) + QLatin1String(".ini"), QSettings::IniFormat);
         ini.setValue(QLatin1String("Version"), to_version);
     }
 
@@ -344,10 +351,12 @@ static QScriptValue qmlsqldatabase_read_transaction(QScriptContext *context, QSc
 }
 
 /*
-    Currently documented in doc/src/declarastive/globalobject.qdoc
+    Currently documented in doc/src/declarative/globalobject.qdoc
 */
 static QScriptValue qmlsqldatabase_open_sync(QScriptContext *context, QScriptEngine *engine)
 {
+    qmlsqldatabase_initDatabasesPath(engine);
+
     QSqlDatabase database;
 
     QString dbname = context->argument(0).toString();
@@ -360,7 +369,7 @@ static QScriptValue qmlsqldatabase_open_sync(QScriptContext *context, QScriptEng
     md5.addData(dbname.toUtf8());
     QString dbid(QLatin1String(md5.result().toHex()));
 
-    QString basename = databaseFile(dbid,engine);
+    QString basename = qmlsqldatabase_databaseFile(dbid, engine);
     bool created = false;
     QString version = dbversion;
 
@@ -375,7 +384,6 @@ static QScriptValue qmlsqldatabase_open_sync(QScriptContext *context, QScriptEng
         } else {
             created = !QFile::exists(basename+QLatin1String(".sqlite"));
             database = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), dbid);
-            QDir().mkpath(basename);
             if (created) {
                 ini.setValue(QLatin1String("Name"), dbname);
                 if (dbcreationCallback.isFunction())

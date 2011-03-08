@@ -55,7 +55,7 @@ class MyShmImageInfo;
 class QTestLiteWindowSurface : public QWindowSurface
 {
 public:
-    QTestLiteWindowSurface (QTestLiteScreen *screen, QWidget *window);
+    QTestLiteWindowSurface (QWidget *window);
     ~QTestLiteWindowSurface();
 
     QPaintDevice *paintDevice();

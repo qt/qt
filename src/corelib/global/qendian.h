@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,9 +44,8 @@
 
 #include <QtCore/qglobal.h>
 
-#ifdef Q_OS_LINUX
-# include <features.h>
-#endif
+// include stdlib.h and hope that it defines __GLIBC__ for glibc-based systems
+#include <stdlib.h>
 
 #ifdef __GLIBC__
 #include <byteswap.h>

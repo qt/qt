@@ -46,10 +46,6 @@
 #include <QtScript/qscriptengine.h>
 #include <QtScript/qscriptvalue.h>
 
-#if defined(Q_OS_SYMBIAN)
-# define SRCDIR ""
-#endif
-
 //TESTED_FILES=
 
 static QString readFile(const QString &filename)
@@ -84,9 +80,8 @@ private:
 
 tst_SunSpider::tst_SunSpider()
 {
-    testsDir = QDir(SRCDIR);
-    bool testsFound = testsDir.cd("tests");
-    if (!testsFound)
+    testsDir = QDir(":/tests");
+    if (!testsDir.exists())
         qWarning("*** no tests/ dir!");
 }
 
@@ -115,7 +110,7 @@ void tst_SunSpider::benchmark_data()
 void tst_SunSpider::benchmark()
 {
     QFETCH(QString, testName);
-    QString testContents = readFile(testsDir.absoluteFilePath(testName + ".js"));
+    QString testContents = readFile(testsDir.filePath(testName + ".js"));
     QVERIFY(!testContents.isEmpty());
 
     QScriptEngine engine;

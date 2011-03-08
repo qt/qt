@@ -3791,4 +3791,19 @@ EXPORTS
 	_ZTV13QUnifiedTimer @ 3790 NONAME
 	_ZTV16QAnimationDriver @ 3791 NONAME
 	_ZTV23QAnimationDriverPrivate @ 3792 NONAME
+	_ZN12QSystemError8toStringEv @ 3793 NONAME
+	_ZN5QChar21currentUnicodeVersionEv @ 3794 NONAME
+	_ZN9QFileInfoC1EP16QFileInfoPrivate @ 3795 NONAME
+	_ZN9QFileInfoC2EP16QFileInfoPrivate @ 3796 NONAME
+	_ZN13QFSFileEngine4openE6QFlagsIN9QIODevice12OpenModeFlagEEP7__sFILES0_IN5QFile14FileHandleFlagEE @ 3797 NONAME
+	_ZN13QFSFileEngine4openE6QFlagsIN9QIODevice12OpenModeFlagEERK5RFileS0_IN5QFile14FileHandleFlagEE @ 3798 NONAME
+	_ZN13QFSFileEngine4openE6QFlagsIN9QIODevice12OpenModeFlagEEiS0_IN5QFile14FileHandleFlagEE @ 3799 NONAME
+	_ZN5QFile4openEP7__sFILE6QFlagsIN9QIODevice12OpenModeFlagEES2_INS_14FileHandleFlagEE @ 3800 NONAME
+	_ZN5QFile4openERK5RFile6QFlagsIN9QIODevice12OpenModeFlagEES3_INS_14FileHandleFlagEE @ 3801 NONAME
+	_ZN5QFile4openEi6QFlagsIN9QIODevice12OpenModeFlagEES0_INS_14FileHandleFlagEE @ 3802 NONAME
+	_ZN23QCoreApplicationPrivate18symbianCommandLineEv @ 3803 NONAME
+	_ZNK16QXmlStreamWriter8hasErrorEv @ 3804 NONAME
+	_ZNK13QElapsedTimer12nsecsElapsedEv @ 3805 NONAME
+	_ZNK11QMetaMethod8revisionEv @ 3806 NONAME
+	_ZNK13QMetaProperty8revisionEv @ 3807 NONAME
 

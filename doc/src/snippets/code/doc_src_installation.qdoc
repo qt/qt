@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -328,9 +328,10 @@ runonphone -s myapp.sis myapp.exe
 //! [49]
 
 //! [50]
-nokia_plugin/openc/s60opencsis/openc_ssl_s60_1_6_ss.sis
-nokia_plugin/openc/s60opencsis/pips_s60_1_6_ss.sis
-nokia_plugin/opencpp/s60opencppsis/stdcpp_s60_1_6_ss.sis
+src/s60installs/sqlite3.sis
+$EPOCROOT/nokia_plugin/openc/s60opencsis/openc_ssl_s60_1_6_ss.sis
+$EPOCROOT/nokia_plugin/openc/s60opencsis/pips_s60_1_6_ss.sis
+$EPOCROOT/nokia_plugin/opencpp/s60opencppsis/stdcpp_s60_1_6_ss.sis
 //! [50]
 
 

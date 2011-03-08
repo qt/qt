@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -858,7 +858,8 @@ JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JS
     {
         JSC::ExecState *frame = exec->callerFrame()->removeHostCallFrameFlag();
         while (frame) {
-            if (frame->codeBlock() && frame->codeBlock()->source()
+            if (frame->codeBlock() && QScriptEnginePrivate::hasValidCodeBlockRegister(frame)
+                && frame->codeBlock()->source()
                 && !frame->codeBlock()->source()->url().isEmpty()) {
                 context = engine->translationContextFromUrl(frame->codeBlock()->source()->url());
                 break;
@@ -1022,6 +1023,7 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     while (!ownedAgents.isEmpty())
         delete ownedAgents.takeFirst();
 
+    detachAllRegisteredScriptPrograms();
     detachAllRegisteredScriptValues();
     detachAllRegisteredScriptStrings();
     qDeleteAll(m_qobjectData);
@@ -1576,6 +1578,14 @@ bool QScriptEnginePrivate::scriptDisconnect(JSC::JSValue signal, JSC::JSValue re
 
 #endif
 
+void QScriptEnginePrivate::detachAllRegisteredScriptPrograms()
+{
+    QSet<QScriptProgramPrivate*>::const_iterator it;
+    for (it = registeredScriptPrograms.constBegin(); it != registeredScriptPrograms.constEnd(); ++it)
+        (*it)->detachFromEngine();
+    registeredScriptPrograms.clear();
+}
+
 void QScriptEnginePrivate::detachAllRegisteredScriptValues()
 {
     QScriptValuePrivate *it;
@@ -2078,10 +2088,10 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun,
     JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue function = new (exec)QScript::FunctionWrapper(exec, length, JSC::Identifier(exec, ""), fun);
     QScriptValue result = d->scriptValueFromJSCValue(function);
-    result.setProperty(QLatin1String("prototype"), prototype, QScriptValue::Undeletable);
+    result.setProperty(QLatin1String("prototype"), prototype,
+                       QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
     const_cast<QScriptValue&>(prototype)
-        .setProperty(QLatin1String("constructor"), result,
-                     QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+        .setProperty(QLatin1String("constructor"), result, QScriptValue::SkipInEnumeration);
     return result;
 }
 
@@ -2347,9 +2357,9 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, in
     JSC::JSValue function = new (exec)QScript::FunctionWrapper(exec, length, JSC::Identifier(exec, ""), fun);
     QScriptValue result = d->scriptValueFromJSCValue(function);
     QScriptValue proto = newObject();
-    result.setProperty(QLatin1String("prototype"), proto, QScriptValue::Undeletable);
-    proto.setProperty(QLatin1String("constructor"), result,
-                      QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    result.setProperty(QLatin1String("prototype"), proto,
+                       QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    proto.setProperty(QLatin1String("constructor"), result, QScriptValue::SkipInEnumeration);
     return result;
 }
 
@@ -2365,9 +2375,9 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature 
     JSC::JSValue function = new (exec)QScript::FunctionWithArgWrapper(exec, /*length=*/0, JSC::Identifier(exec, ""), fun, arg);
     QScriptValue result = d->scriptValueFromJSCValue(function);
     QScriptValue proto = newObject();
-    result.setProperty(QLatin1String("prototype"), proto, QScriptValue::Undeletable);
-    proto.setProperty(QLatin1String("constructor"), result,
-                      QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    result.setProperty(QLatin1String("prototype"), proto,
+                       QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    proto.setProperty(QLatin1String("constructor"), result, QScriptValue::SkipInEnumeration);
     return result;
 }
 
@@ -2753,9 +2763,7 @@ JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, JSC::JSV
         if (!clearScopeChain) {
             newCallFrame->init(0, /*vPC=*/0, exec->scopeChain(), exec, flags | ShouldRestoreCallFrame, argc, callee);
         } else {
-            JSC::JSObject *jscObject = originalGlobalObject();
-            JSC::ScopeChainNode *scn = new JSC::ScopeChainNode(0, jscObject, &exec->globalData(), exec->lexicalGlobalObject(), jscObject);
-            newCallFrame->init(0, /*vPC=*/0, scn, exec, flags | ShouldRestoreCallFrame, argc, callee);
+            newCallFrame->init(0, /*vPC=*/0, globalExec()->scopeChain(), exec, flags | ShouldRestoreCallFrame, argc, callee);
         }
     } else {
         setContextFlags(newCallFrame, flags);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -77,10 +77,14 @@ Q_DESTRUCTOR_FUNCTION(timerIdsDestructorFunction)
 
 static QBasicAtomicInt nextFreeTimerId = Q_BASIC_ATOMIC_INITIALIZER(1);
 
+static const int TimerIdMask = 0x00ffffff;
+static const int TimerSerialMask = ~TimerIdMask & ~0x80000000;
+static const int TimerSerialCounter = TimerIdMask + 1;
+
 // avoid the ABA-problem by using 7 of the top 8 bits of the timerId as a serial number
 static inline int prepareNewValueWithSerialNumber(int oldId, int newId)
 {
-    return (newId & 0x00FFFFFF) | ((oldId + 0x01000000) & 0x7f000000);
+    return (newId & TimerIdMask) | ((oldId + TimerSerialCounter) & TimerSerialMask);
 }
 
 static inline int bucketOffset(int timerId)
@@ -120,17 +124,32 @@ void QAbstractEventDispatcherPrivate::init()
     }
 }
 
+// Timer IDs are implemented using a free-list;
+// there's a vector initialized with:
+//    X[i] = i + 1
+// and nextFreeTimerId starts with 1.
+//
+// Allocating a timer ID involves taking the ID from
+//    X[nextFreeTimerId]
+// updating nextFreeTimerId to this value and returning the old value
+//
+// When the timer ID is allocated, its cell in the vector is unused (it's a
+// free list). As an added protection, we use the cell to store an invalid
+// (negative) value that we can later check for integrity.
+//
+// (continues below).
 int QAbstractEventDispatcherPrivate::allocateTimerId()
 {
     int timerId, newTimerId;
+    int at, *b;
     do {
-        timerId = nextFreeTimerId;
+        timerId = nextFreeTimerId; //.loadAcquire(); // ### FIXME Proper memory ordering semantics
 
         // which bucket are we looking in?
-        int which = timerId & 0x00ffffff;
+        int which = timerId & TimerIdMask;
         int bucket = bucketOffset(which);
-        int at = bucketIndex(bucket, which);
-        int *b = timerIds[bucket];
+        at = bucketIndex(bucket, which);
+        b = timerIds[bucket];
 
         if (!b) {
             // allocate a new bucket
@@ -142,23 +161,38 @@ int QAbstractEventDispatcherPrivate::allocateTimerId()
             }
         }
 
-        newTimerId = b[at];
+        newTimerId = prepareNewValueWithSerialNumber(timerId, b[at]);
     } while (!nextFreeTimerId.testAndSetRelaxed(timerId, newTimerId));
+
+    b[at] = -timerId;
 
     return timerId;
 }
 
+// Releasing a timer ID requires putting the current ID back in the vector;
+// we do it by setting:
+//    X[timerId] = nextFreeTimerId;
+// then we update nextFreeTimerId to the timer we've just released
+//
+// The extra code in allocateTimerId and releaseTimerId are ABA prevention
+// and bucket memory. The buckets are simply to make sure we allocate only
+// the necessary number of timers. See above.
+//
+// ABA prevention simply adds a value to 7 of the top 8 bits when resetting
+// nextFreeTimerId.
 void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
 {
-    int which = timerId & 0x00ffffff;
+    int which = timerId & TimerIdMask;
     int bucket = bucketOffset(which);
     int at = bucketIndex(bucket, which);
     int *b = timerIds[bucket];
 
+    Q_ASSERT(b[at] == -timerId);
+
     int freeId, newTimerId;
     do {
-        freeId = nextFreeTimerId;
-        b[at] = freeId & 0x00ffffff;
+        freeId = nextFreeTimerId;//.loadAcquire(); // ### FIXME Proper memory ordering semantics
+        b[at] = freeId & TimerIdMask;
 
         newTimerId = prepareNewValueWithSerialNumber(freeId, timerId);
     } while (!nextFreeTimerId.testAndSetRelease(freeId, newTimerId));

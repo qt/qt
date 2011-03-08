@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -379,7 +379,7 @@ bool HelpViewer::findText(const QString &text, FindFlags flags, bool incremental
     bool fromSearch)
 {
     TRACE_OBJ
-    Q_UNUSED((incremental && fromSearch))
+    Q_UNUSED(incremental); Q_UNUSED(fromSearch);
     QWebPage::FindFlags options = QWebPage::FindWrapsAroundDocument;
     if (flags & FindBackward)
         options |= QWebPage::FindBackward;

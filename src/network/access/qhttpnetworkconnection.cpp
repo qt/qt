@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -286,7 +286,13 @@ void QHttpNetworkConnectionPrivate::emitReplyError(QAbstractSocket *socket,
         int i = indexOf(socket);
         // remove the corrupt data if any
         reply->d_func()->eraseData();
+
+        // Clean the channel
         channels[i].close();
+        channels[i].reply = 0;
+        channels[i].request = QHttpNetworkRequest();
+        channels[i].requeueCurrentlyPipelinedRequests();
+
         // send the next request
         QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
     }
@@ -759,7 +765,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
 
     //resend the necessary ones.
     for (int i = 0; i < channelCount; ++i) {
-        if (channels[i].resendCurrent) {
+        if (channels[i].resendCurrent && (channels[i].state != QHttpNetworkConnectionChannel::ClosingState)) {
             channels[i].resendCurrent = false;
             channels[i].state = QHttpNetworkConnectionChannel::IdleState;
 
@@ -855,10 +861,15 @@ QHttpNetworkReply* QHttpNetworkConnection::sendRequest(const QHttpNetworkRequest
     return d->queueRequest(request);
 }
 
-bool QHttpNetworkConnection::isEncrypted() const
+bool QHttpNetworkConnection::isSsl() const
 {
     Q_D(const QHttpNetworkConnection);
     return d->encrypt;
+}
+
+QHttpNetworkConnectionChannel *QHttpNetworkConnection::channels() const
+{
+    return d_func()->channels;
 }
 
 #ifndef QT_NO_NETWORKPROXY

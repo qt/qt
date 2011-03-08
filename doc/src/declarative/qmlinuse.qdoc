@@ -1,17 +1,17 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -72,7 +72,7 @@
           </div>
           <!-- tech domains start -->
           <div class="item group">
-            <hr>
+            <hr />
             <div class="secondary">
               <div class="box">
                 <!-- video box -->
@@ -100,7 +100,7 @@
           </div>
           <!-- next -->
           <div class="item group">
-            <hr>
+            <hr />
             <div class="secondary">
               <div class="box">
                 <!-- video box -->
@@ -140,7 +140,7 @@
           </div>
           <!-- next -->
           <div class="item group">
-            <hr>
+            <hr />
             <div class="secondary">
               <div class="box">
                 <!-- video box -->
@@ -185,7 +185,7 @@
           </div>
           <!-- next -->
           <div class="item group">
-            <hr>
+            <hr />
             <div class="secondary">
               <div class="box">
                 <!-- video box -->
@@ -198,7 +198,7 @@
               <!-- video box end -->
             </div>
             <div class="primary">
-              <h2><a name="interactElement">QML Interaction Elements</h2></a>
+              <h2><a name="interactElement">QML Interaction Elements</a></h2>
               <p>
                 These elements define basic interactions such as touch movements and focus management.</p>
               <b>Elements:</b>
@@ -216,7 +216,7 @@
           </div>
           <!-- next -->
           <div class="item group">
-            <hr>
+            <hr />
             <div class="secondary">
               <div class="box">
                 <!-- video box -->
@@ -243,7 +243,7 @@
           </div>
           <!-- next -->
           <div class="item group">
-            <hr>
+            <hr />
             <div class="secondary">
               <div class="box">
                 <!-- video box -->
@@ -276,7 +276,7 @@
           </div>
           <!-- next -->
           <div class="item group">
-            <hr>
+            <hr />
             <div class="secondary">
               <div class="box">
                 <!-- video box -->
@@ -307,7 +307,7 @@
           </div>
           <!-- next -->
           <div class="item group">
-            <hr>
+            <hr />
             <div class="secondary">
               <div class="box">
                 <!-- video box -->
@@ -334,7 +334,7 @@
           </div>
           <!-- next -->
           <div class="item group">
-            <hr>
+            <hr />
             <div class="secondary">
               <div class="box">
                 <!-- video box -->
@@ -372,7 +372,7 @@
           </div>
           <!-- next -->
           <div class="item group">
-            <hr>
+            <hr />
             <div class="secondary">
               <div class="box">
                 <!-- video box -->
@@ -410,7 +410,7 @@
           </div>
           <!-- next -->
           <div class="item group">
-            <hr>
+            <hr />
             <div class="secondary">
               <div class="box">
                 <!-- video box -->
@@ -441,7 +441,7 @@
           </div>
           <!-- next -->
           <div class="item group">
-            <hr>
+            <hr />
             <div class="secondary">
               <div class="box">
                 <!-- video box -->
@@ -468,7 +468,7 @@
           </div>
           <!-- next -->
           <div class="item group">
-            <hr>
+            <hr />
             <div class="secondary">
               <div class="box">
                 <!-- video box -->

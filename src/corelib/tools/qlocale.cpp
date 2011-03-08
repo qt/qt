@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1576,8 +1576,6 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
        defaults to the default locale (see setDefault()).
     \endlist
 
-    The "C" locale is identical in behavior to \l{English}/\l{UnitedStates}.
-
     Use language() and country() to determine the actual language and
     country values used.
 
@@ -2201,7 +2199,7 @@ static quint16 localePrivateIndex(const QLocalePrivate *p)
 /*!
     Constructs a QLocale object with the specified \a name,
     which has the format
-    "language[_country][.codeset][@modifier]" or "C", where:
+    "language[_territory][.codeset][@modifier]" or "C", where:
 
     \list
     \i language is a lowercase, two-letter, ISO 639 language code,

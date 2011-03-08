@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -288,6 +288,7 @@ private slots:
     void taskQT657_paintIntoCacheWithTransparentParts();
     void taskQTBUG_7863_paintIntoCacheWithTransparentParts();
     void taskQT_3674_doNotCrash();
+    void taskQTBUG_15977_renderWithDeviceCoordinateCache();
 };
 
 void tst_QGraphicsScene::initTestCase()
@@ -3837,6 +3838,23 @@ public:
     mutable int queryCalls;
 };
 
+class TestInputContext : public QInputContext
+{
+public:
+    TestInputContext() {}
+
+    QString identifierName() { return QString(); }
+    QString language() { return QString(); }
+
+    void reset() {
+        ++resetCalls;
+        sendEvent(QInputMethodEvent()); }
+
+    bool isComposing() const { return false; }
+
+    int resetCalls;
+};
+
 void tst_QGraphicsScene::inputMethod()
 {
     QFETCH(int, flags);
@@ -3846,14 +3864,22 @@ void tst_QGraphicsScene::inputMethod()
     item->setFlags((QGraphicsItem::GraphicsItemFlags)flags);
 
     QGraphicsScene scene;
-    QEvent activate(QEvent::WindowActivate);
-    QApplication::sendEvent(&scene, &activate);
+    QGraphicsView view(&scene);
+    TestInputContext inputContext;
+    view.setInputContext(&inputContext);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    view.setFocus();
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
+    inputContext.resetCalls = 0;
     scene.addItem(item);
     QInputMethodEvent event;
 
     scene.setFocusItem(item);
     QCOMPARE(!!(item->flags() & QGraphicsItem::ItemIsFocusable), scene.focusItem() == item);
+    QCOMPARE(inputContext.resetCalls, 0);
 
     item->eventCalls = 0;
     qApp->sendEvent(&scene, &event);
@@ -3864,6 +3890,9 @@ void tst_QGraphicsScene::inputMethod()
     QCOMPARE(item->queryCalls, callFocusItem ? 1 : 0);
 
     scene.setFocusItem(0);
+    // the input context is reset twice, once because an item has lost focus and again because
+    // the Qt::WA_InputMethodEnabled flag is cleared because no item has focus.
+    QCOMPARE(inputContext.resetCalls, callFocusItem ? 2 : 0);
     QCOMPARE(item->eventCalls, callFocusItem ? 2 : 0); // verify correct delivery of "reset" event
     QCOMPARE(item->queryCalls, callFocusItem ? 1 : 0); // verify that value is unaffected
 
@@ -4627,6 +4656,28 @@ void tst_QGraphicsScene::zeroScale()
     rect1->setPos(20,20);
     QApplication::processEvents();
     QTRY_COMPARE(cl.changes.count(), 2);
+}
+
+void tst_QGraphicsScene::taskQTBUG_15977_renderWithDeviceCoordinateCache()
+{
+    QGraphicsScene scene;
+    scene.setSceneRect(0, 0, 100, 100);
+    QGraphicsRectItem *rect = scene.addRect(0, 0, 100, 100);
+    rect->setPen(Qt::NoPen);
+    rect->setBrush(Qt::red);
+    rect->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+
+    QImage image(100, 100, QImage::Format_RGB32);
+    QPainter p(&image);
+    scene.render(&p);
+    p.end();
+
+    QImage expected(100, 100, QImage::Format_RGB32);
+    p.begin(&expected);
+    p.fillRect(expected.rect(), Qt::red);
+    p.end();
+
+    QCOMPARE(image, expected);
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

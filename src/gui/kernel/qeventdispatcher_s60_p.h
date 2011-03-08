@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,6 +73,13 @@ public:
     void DoCancel();
 
     void complete();
+
+private:
+    // Workaround for a BC break from S60 3.2 -> 5.0, where the CEikonEnv override was removed.
+    // To avoid linking to that when we build against 3.2, define an empty body here.
+    // Reserved_*() have been verified to be empty in the S60 code.
+    void Reserved_1() {}
+    void Reserved_2() {}
 
 private:
     int m_lastIterationCount;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -75,19 +75,19 @@ public:
 
     virtual ActionList actions();
 
-    bool containsProperty(const QByteArray &name) const;
-    bool containsValue(const QByteArray &name) const;
-    bool containsExpression(const QByteArray &name) const;
-    void changeValue(const QByteArray &name, const QVariant &value);
-    void changeExpression(const QByteArray &name, const QString &expression);
-    void removeProperty(const QByteArray &name);
-    QVariant value(const QByteArray &name) const;
-    QString expression(const QByteArray &name) const;
+    bool containsProperty(const QString &name) const;
+    bool containsValue(const QString &name) const;
+    bool containsExpression(const QString &name) const;
+    void changeValue(const QString &name, const QVariant &value);
+    void changeExpression(const QString &name, const QString &expression);
+    void removeProperty(const QString &name);
+    QVariant value(const QString &name) const;
+    QString expression(const QString &name) const;
 
     void detachFromState();
     void attachToState();
 
-    QVariant property(const QByteArray &name) const;
+    QVariant property(const QString &name) const;
 };
 
 class QDeclarativePropertyChangesParser : public QDeclarativeCustomParser

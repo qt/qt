@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -95,7 +95,8 @@ public:
         WritingState = 2,       // writing the data
         WaitingState = 4,       // waiting for reply
         ReadingState = 8,       // reading the reply
-        BusyState = (ConnectingState|WritingState|WaitingState|ReadingState)
+        ClosingState = 16,
+        BusyState = (ConnectingState|WritingState|WaitingState|ReadingState|ClosingState)
     };
     QAbstractSocket *socket;
     bool ssl;
@@ -156,6 +157,8 @@ public:
     bool isSocketWriting() const;
     bool isSocketWaiting() const;
     bool isSocketReading() const;
+
+    friend class QNetworkAccessHttpBackend;
 
     protected slots:
     void _q_receiveReply();

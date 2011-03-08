@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -783,8 +783,8 @@ QBitmap QPixmap::createHeuristicMask(bool clipTight) const
 /*!
     Creates and returns a mask for this pixmap based on the given \a
     maskColor. If the \a mode is Qt::MaskInColor, all pixels matching the
-    maskColor will be opaque. If \a mode is Qt::MaskOutColor, all pixels
-    matching the maskColor will be transparent.
+    maskColor will be transparent. If \a mode is Qt::MaskOutColor, all pixels
+    matching the maskColor will be opaque.
 
     This function is slow because it involves converting to/from a
     QImage.

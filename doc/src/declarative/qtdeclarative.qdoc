@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,7 +56,9 @@
   \macro QML_DECLARE_TYPE()
   \relates QDeclarativeEngine
 
-  Equivalent to \c Q_DECLARE_METATYPE(TYPE) and \c Q_DECLARE_METATYPE(QDeclarativeListProperty<TYPE>)
+  Equivalent to \c Q_DECLARE_METATYPE(TYPE *) and \c Q_DECLARE_METATYPE(QDeclarativeListProperty<TYPE>)
+
+  #include <QtDeclarative> to use this macro.
 */
 
 /*!
@@ -68,6 +70,8 @@
   
   Current the only supported type info is \c QML_HAS_ATTACHED_PROPERTIES which
   declares that the \a Type supports \l {Attached Properties}.
+
+  #include <QtDeclarative> to use this macro.
 */
 
 
@@ -81,11 +85,30 @@
 
   Returns the QML type id.
 
+  There are two forms of this template function:
+
+  \code
+  template<typename T>
+  int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const char *qmlName);
+
+  template<typename T, int metaObjectRevision>
+  int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const char *qmlName);
+  \endcode
+
+  The former is the standard form which registers the type \e T as a new type.
+  The latter allows a particular revision of a class to be registered in
+  a specified version (see \l {QML Type Versioning}).
+
+
   For example, this registers a C++ class \c MySliderItem as a QML type
   named \c Slider for version 1.0 of a \l{QML Modules}{module} called
   "com.mycompany.qmlcomponents":
 
   \code
+  #include <QtDeclarative>
+
+  ...
+
   qmlRegisterType<MySliderItem>("com.mycompany.qmlcomponents", 1, 0, "Slider");
   \endcode
 
@@ -95,7 +118,9 @@
   \qml
   import com.mycompany.qmlcomponents 1.0
 
-  Slider { ... }
+  Slider {
+      // ...
+  }
   \endqml
 
   Note that it's perfectly reasonable for a library to register types to older versions
@@ -118,6 +143,8 @@
   This is useful where the type is only intended for providing attached properties or enum values.
 
   Returns the QML type id.
+
+  #include <QtDeclarative> to use this function.
 
   \sa qmlRegisterTypeNotAvailable()
 */
@@ -154,6 +181,8 @@
 
   Without this, a generic "Game is not a type" message would be given.
 
+  #include <QtDeclarative> to use this function.
+
   \sa qmlRegisterUncreatableType()
 */
 
@@ -166,6 +195,8 @@
   system. Instances of this type cannot be created from the QML
   system.
 
+  #include <QtDeclarative> to use this function.
+
   Returns the QML type id.
 */
 
@@ -175,6 +206,8 @@
 
   This template function registers the C++ type in the QML system
   under the name \a typeName.
+
+  #include <QtDeclarative> to use this function.
 
   Returns the QML type id.
   */

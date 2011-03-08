@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -213,7 +213,7 @@ bool QSslConfiguration::isNull() const
 */
 QSsl::SslProtocol QSslConfiguration::protocol() const
 {
-    return d ? d->protocol : QSsl::SslV3;
+    return d ? d->protocol : QSsl::TlsV1;
 }
 
 /*!
@@ -518,7 +518,7 @@ void QSslConfiguration::setCaCertificates(const QList<QSslCertificate> &certific
 
     \list
       \o no local certificate and no private key
-      \o protocol SSLv3
+      \o protocol TlsV1
       \o the system's default CA certificate list
       \o the cipher list equal to the list of the SSL libraries'
          supported SSL ciphers

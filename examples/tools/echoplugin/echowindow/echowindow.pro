@@ -6,8 +6,8 @@ SOURCES    = echowindow.cpp \
 TARGET     = echoplugin
 QMAKE_PROJECT_NAME = echopluginwindow
 win32 {
-    debug:DESTDIR = ../debug/
-    release:DESTDIR = ../release/
+    CONFIG(debug, release|debug):DESTDIR = ../debug/
+    CONFIG(release, release|debug):DESTDIR = ../release/
 } else {
     DESTDIR    = ../
 }

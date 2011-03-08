@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -223,8 +223,8 @@ void QSplashScreen::finish(QWidget *mainWin)
 {
     if (mainWin) {
 #if defined(Q_WS_X11)
-        extern void qt_x11_wait_for_window_manager(QWidget *mainWin);
-        qt_x11_wait_for_window_manager(mainWin);
+        extern void qt_x11_wait_for_window_manager(QWidget *mainWin, bool);
+        qt_x11_wait_for_window_manager(mainWin, false);
 #endif
     }
     close();

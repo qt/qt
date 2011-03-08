@@ -87,7 +87,10 @@ static struct AttrInfo attrs[] = {
 #endif //QEGL_EXTRA_DEBUG
 
 QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
-    : m_depth(32), m_format(QImage::Format_ARGB32_Premultiplied), m_platformContext(0)
+    : m_depth(32)
+    , m_format(QImage::Format_Invalid)
+    , m_platformContext(0)
+    , m_surface(0)
 {
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglScreen %p\n", this);
@@ -116,7 +119,25 @@ QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
 
     qWarning("Initialized display %d %d\n", major, minor);
 
-    QPlatformWindowFormat platformFormat;
+    int swapInterval = 1;
+    QByteArray swapIntervalString = qgetenv("QT_QPA_EGLFS_SWAPINTERVAL");
+    if (!swapIntervalString.isEmpty()) {
+        bool ok;
+        swapInterval = swapIntervalString.toInt(&ok);
+        if (!ok)
+            swapInterval = 1;
+    }
+    eglSwapInterval(m_dpy, swapInterval);
+}
+
+void QEglFSScreen::createAndSetPlatformContext() const {
+    const_cast<QEglFSScreen *>(this)->createAndSetPlatformContext();
+}
+
+void QEglFSScreen::createAndSetPlatformContext()
+{
+    QPlatformWindowFormat platformFormat = QPlatformWindowFormat::defaultFormat();
+
     platformFormat.setWindowApi(QPlatformWindowFormat::OpenGL);
 
     QByteArray depthString = qgetenv("QT_QPA_EGLFS_DEPTH");
@@ -132,23 +153,15 @@ QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
         platformFormat.setRedBufferSize(8);
         platformFormat.setGreenBufferSize(8);
         platformFormat.setBlueBufferSize(8);
+        m_depth = 32;
+        m_format = QImage::Format_RGB32;
     }
-
     if (!qgetenv("QT_QPA_EGLFS_MULTISAMPLE").isEmpty()) {
         platformFormat.setSampleBuffers(true);
     }
 
-    int swapInterval = 1;
-    QByteArray swapIntervalString = qgetenv("QT_QPA_EGLFS_SWAPINTERVAL");
-    if (!swapIntervalString.isEmpty()) {
-        bool ok;
-        swapInterval = swapIntervalString.toInt(&ok);
-        if (!ok)
-            swapInterval = 1;
-    }
 
     EGLConfig config = q_configFromQPlatformWindowFormat(m_dpy, platformFormat);
-    eglSwapInterval(display, swapInterval);
 
     EGLNativeWindowType eglWindow = 0;
 #ifdef Q_OPENKODE
@@ -189,15 +202,44 @@ QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
     attribList[temp++] = 2; // GLES version 2
     attribList[temp++] = EGL_NONE;
 
-    m_platformContext = new QEGLPlatformContext(m_dpy,config,attribList,m_surface,EGL_OPENGL_ES_API);
+    QEGLPlatformContext *platformContext = new QEGLPlatformContext(m_dpy,config,attribList,m_surface,EGL_OPENGL_ES_API);
+    platformContext->makeDefaultSharedContext();
+    m_platformContext = platformContext;
 
-//    qWarning("Created platformcontext");
-    EGLint w,h;
-
+    EGLint w,h;                    // screen size detection
     eglQuerySurface(m_dpy, m_surface, EGL_WIDTH, &w);
     eglQuerySurface(m_dpy, m_surface, EGL_HEIGHT, &h);
 
     m_geometry = QRect(0,0,w,h);
+
+}
+
+QRect QEglFSScreen::geometry() const
+{
+    if (m_geometry.isNull()) {
+        createAndSetPlatformContext();
+    }
+    return m_geometry;
+}
+
+int QEglFSScreen::depth() const
+{
+    return m_depth;
+}
+
+QImage::Format QEglFSScreen::format() const
+{
+    if (m_format == QImage::Format_Invalid)
+        createAndSetPlatformContext();
+    return m_format;
+}
+QPlatformGLContext *QEglFSScreen::platformContext() const
+{
+    if (!m_platformContext) {
+        QEglFSScreen *that = const_cast<QEglFSScreen *>(this);
+        that->createAndSetPlatformContext();
+    }
+    return m_platformContext;
 }
 
 QT_END_NAMESPACE

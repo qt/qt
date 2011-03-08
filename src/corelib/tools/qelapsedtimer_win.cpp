@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -79,14 +79,14 @@ static void resolveLibs()
     done = true;
 }
 
-static inline qint64 ticksToMilliseconds(qint64 ticks)
+static inline qint64 ticksToNanoseconds(qint64 ticks)
 {
     if (counterFrequency > 0) {
         // QueryPerformanceCounter uses an arbitrary frequency
-        return ticks * 1000 / counterFrequency;
+        return ticks * 1000000000 / counterFrequency;
     } else {
         // GetTickCount(64) return milliseconds
-        return ticks;
+        return ticks * 1000000;
     }
 }
 
@@ -144,24 +144,30 @@ qint64 QElapsedTimer::restart()
     qint64 oldt1 = t1;
     t1 = getTickCount();
     t2 = 0;
-    return ticksToMilliseconds(t1 - oldt1);
+    return ticksToNanoseconds(t1 - oldt1) / 1000000;
+}
+
+qint64 QElapsedTimer::nsecsElapsed() const
+{
+    qint64 elapsed = getTickCount() - t1;
+    return ticksToNanoseconds(elapsed);
 }
 
 qint64 QElapsedTimer::elapsed() const
 {
     qint64 elapsed = getTickCount() - t1;
-    return ticksToMilliseconds(elapsed);
+    return ticksToNanoseconds(elapsed) / 1000000;
 }
 
 qint64 QElapsedTimer::msecsSinceReference() const
 {
-    return ticksToMilliseconds(t1);
+    return ticksToNanoseconds(t1) / 1000000;
 }
 
 qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const
 {
     qint64 difference = other.t1 - t1;
-    return ticksToMilliseconds(difference);
+    return ticksToNanoseconds(difference) / 1000000;
 }
 
 qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -213,10 +213,10 @@
 /*!
     \page threads-reentrancy.html
     \title Reentrancy and Thread-Safety
-    
+
     \keyword reentrant
     \keyword thread-safe
-    
+
     \previouspage Synchronizing Threads
     \contentspage Thread Support in Qt
     \nextpage Threads and QObjects
@@ -243,6 +243,15 @@
     from multiple threads, even if all the threads use the \e{same}
     instance of the class.
 
+    \note Qt classes are only documented as \e{thread-safe} if they
+    are intended to be used by multiple threads. If a function is not
+    marked as thread-safe or reentrant, it should not be used from
+    different threads. If a class is not marked as thread-safe or
+    reentrant then a specific instance of that class should not be
+    accessed from different threads.
+
+    \section1 Reentrancy
+
     C++ classes are often reentrant, simply because they only access
     their own member data. Any thread can call a member function on an
     instance of a reentrant class, as long as no other thread can call
@@ -268,6 +277,8 @@
     end up overwriting each other, and the variable is incremented
     only once!
 
+    \section1 Thread-Safety
+
     Clearly, the access must be serialized: Thread A must perform
     steps 1, 2, 3 without interruption (atomically) before thread B
     can perform the same steps; or vice versa. An easy way to make
@@ -284,6 +295,8 @@
     declared with the \c mutable qualifier because we need to lock
     and unlock the mutex in \c value(), which is a const function.
 
+    \section1 Notes on Qt Classes
+
     Many Qt classes are \e{reentrant}, but they are not made
     \e{thread-safe}, because making them thread-safe would incur the
     extra overhead of repeatedly locking and unlocking a QMutex. For
@@ -296,9 +309,6 @@
     Some Qt classes and functions are thread-safe. These are mainly
     the thread-related classes (e.g. QMutex) and fundamental functions
     (e.g. QCoreApplication::postEvent()).
-
-    \note Qt Classes are only documented as \e{thread-safe} if they
-    are intended to be used by multiple threads.
 
     \note Terminology in the multithreading domain isn't entirely
     standardized. POSIX uses definitions of reentrant and thread-safe

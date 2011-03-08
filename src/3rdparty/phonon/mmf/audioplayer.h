@@ -67,7 +67,7 @@ typedef CMdaAudioPlayerUtility NativePlayer;
     virtual int setDeviceVolume(int mmfVolume);
     virtual int openFile(const QString &fileName);
     virtual int openFile(RFile& file);
-    virtual int openUrl(const QString& url);
+    virtual int openUrl(const QString& url, int iap);
     virtual int openDescriptor(const TDesC8 &des);
     virtual int bufferStatus() const;
     virtual void doClose();

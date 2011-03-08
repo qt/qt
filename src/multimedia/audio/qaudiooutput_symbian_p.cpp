@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -436,8 +436,8 @@ void QAudioOutputPrivate::writePaddingData()
         unsigned char *ptr = const_cast<unsigned char*>(outputBuffer.Ptr());
         Mem::FillZ(ptr, paddingBytes);
         outputBuffer.SetLength(outputBuffer.Length() + paddingBytes);
+        Q_ASSERT(m_bytesPadding >= paddingBytes);
         m_bytesPadding -= paddingBytes;
-        Q_ASSERT(m_bytesPadding >= 0);
 
         if (m_pullMode && m_source->atEnd())
             lastBufferFilled();

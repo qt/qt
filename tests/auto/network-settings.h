@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -64,6 +64,7 @@
 //#define SYMBIAN_WINSOCK_CONNECTIVITY
 #endif // Q_CC_NOKIAX86
 
+// FIXME: any reason we do this for symbian only, and not other platforms?
 class QtNetworkSettingsRecord {
 public:
     QtNetworkSettingsRecord() { }
@@ -128,7 +129,6 @@ public:
     static QString wildcardServerName()
     {
         return "qt-test-server.wildcard.dev." + serverDomainName();
-        //return "qttest.wildcard.dev." + serverDomainName();
     }
 
 #ifdef QT_NETWORK_LIB
@@ -149,8 +149,10 @@ public:
     }
 #endif
 
-    static QByteArray expectedReplyIMAP()
+    static bool compareReplyIMAP(QByteArray const& actual)
     {
+        QList<QByteArray> expected;
+
 #ifdef Q_OS_SYMBIAN
         loadTestSettings();
 
@@ -160,17 +162,35 @@ public:
                 imapExpectedReply = entry->recordValue().toAscii();
                 imapExpectedReply.append('\r').append('\n');
             }
-            return imapExpectedReply.data();
+            expected << imapExpectedReply.data();
         }
 #endif
-        QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] " );
-        expected = expected.append(QtNetworkSettings::serverName().toAscii());
-        expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
-        return expected;
+
+        // Mandriva; old test server
+        expected << QByteArray( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] " )
+            .append(QtNetworkSettings::serverName().toAscii())
+            .append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+
+        // Ubuntu 10.04; new test server
+        expected << QByteArray( "* OK " )
+            .append(QtNetworkSettings::serverLocalName().toAscii())
+            .append(" Cyrus IMAP4 v2.2.13-Debian-2.2.13-19 server ready\r\n");
+
+        // Feel free to add more as needed
+
+        Q_FOREACH (QByteArray const& ba, expected) {
+            if (ba == actual) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    static QByteArray expectedReplySSL()
+    static bool compareReplyIMAPSSL(QByteArray const& actual)
     {
+        QList<QByteArray> expected;
+
 #ifdef Q_OS_SYMBIAN
         loadTestSettings();
 
@@ -180,19 +200,46 @@ public:
                 imapExpectedReplySsl = entry->recordValue().toAscii();
                 imapExpectedReplySsl.append('\r').append('\n');
             }
-            return imapExpectedReplySsl.data();
+            expected << imapExpectedReplySsl.data();
         }
 #endif
-        QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID AUTH=PLAIN SASL-IR] " );
-        expected = expected.append(QtNetworkSettings::serverName().toAscii());
-        expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
-        return expected;
+        // Mandriva; old test server
+        expected << QByteArray( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID AUTH=PLAIN SASL-IR] " )
+            .append(QtNetworkSettings::serverName().toAscii())
+            .append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+
+        // Ubuntu 10.04; new test server
+        expected << QByteArray( "* OK " )
+            .append(QtNetworkSettings::serverLocalName().toAscii())
+            .append(" Cyrus IMAP4 v2.2.13-Debian-2.2.13-19 server ready\r\n");
+
+        // Feel free to add more as needed
+
+        Q_FOREACH (QByteArray const& ba, expected) {
+            if (ba == actual) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    static QByteArray expectedReplyFtp()
+    static bool compareReplyFtp(QByteArray const& actual)
     {
-        QByteArray expected( "220 (vsFTPd 2.0.5)\r\n221 Goodbye.\r\n" );
-        return expected;
+        QList<QByteArray> expected;
+
+        // A few different vsFTPd versions.
+        // Feel free to add more as needed
+        expected << QByteArray( "220 (vsFTPd 2.0.5)\r\n221 Goodbye.\r\n" );
+        expected << QByteArray( "220 (vsFTPd 2.2.2)\r\n221 Goodbye.\r\n" );
+
+        Q_FOREACH (QByteArray const& ba, expected) {
+            if (ba == actual) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 #ifdef Q_OS_SYMBIAN

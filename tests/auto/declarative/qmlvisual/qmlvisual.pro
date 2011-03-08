@@ -19,7 +19,7 @@ symbian: {
     qdeclarativepathview \
     qdeclarativepositioners \
     qdeclarativesmoothedanimation \
-    qdeclarativespringfollow \
+    qdeclarativespringanimation \
     qdeclarativetext \
     qdeclarativetextedit \
     qdeclarativetextinput \
@@ -27,7 +27,7 @@ symbian: {
     repeater \
     selftest_noimages \
     webview
-    DEPLOYMENT = importFiles
+    DEPLOYMENT += importFiles
 } else {
     DEFINES += QT_TEST_SOURCE_DIR=\"\\\"$$PWD\\\"\"
 }

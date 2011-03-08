@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1403,8 +1403,9 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         }
         break;
     case CE_ProgressBarGroove:
-        qDrawShadePanel(p, opt->rect, opt->palette, true, 1,
-                        &opt->palette.brush(QPalette::Window));
+        if (opt->rect.isValid())
+            qDrawShadePanel(p, opt->rect, opt->palette, true, 1,
+                            &opt->palette.brush(QPalette::Window));
         break;
     case CE_ProgressBarLabel:
         if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
@@ -2217,7 +2218,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
              if (vopt->state & QStyle::State_HasFocus) {
                 QStyleOptionFocusRect o;
                 o.QStyleOption::operator=(*vopt);
-                o.rect = subElementRect(SE_ItemViewItemFocusRect, vopt, widget);
+                o.rect = proxy()->subElementRect(SE_ItemViewItemFocusRect, vopt, widget);
                 o.state |= QStyle::State_KeyboardFocusChange;
                 o.state |= QStyle::State_Item;
                 QPalette::ColorGroup cg = (vopt->state & QStyle::State_Enabled)

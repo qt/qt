@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,6 +59,7 @@
 #include "private/qobject_p.h"
 #include "QtNetwork/qnetworkproxy.h"
 #include "QtNetwork/qnetworksession.h"
+#include "qnetworkaccessauthenticationmanager_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -72,6 +73,7 @@ class QNetworkAccessManagerPrivate: public QObjectPrivate
 public:
     QNetworkAccessManagerPrivate()
         : networkCache(0), cookieJar(0),
+          httpThread(0),
 #ifndef QT_NO_NETWORKPROXY
           proxyFactory(0),
 #endif
@@ -81,7 +83,8 @@ public:
           online(false),
           initializeSession(true),
 #endif
-          cookieJarCreated(false)
+          cookieJarCreated(false),
+          authenticationManager(new QNetworkAccessAuthenticationManager)
     { }
     ~QNetworkAccessManagerPrivate();
 
@@ -121,6 +124,8 @@ public:
 
     QNetworkCookieJar *cookieJar;
 
+    QThread *httpThread;
+
 
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy proxy;
@@ -128,7 +133,7 @@ public:
 #endif
 
 #ifndef QT_NO_BEARERMANAGEMENT
-    QNetworkSession *networkSession;
+    QSharedPointer<QNetworkSession> networkSession;
     QString networkConfiguration;
     QNetworkAccessManager::NetworkAccessibility networkAccessible;
     bool online;
@@ -136,6 +141,9 @@ public:
 #endif
 
     bool cookieJarCreated;
+
+    // The cache with authorization data:
+    QSharedPointer<QNetworkAccessAuthenticationManager> authenticationManager;
 
     // this cache can be used by individual backends to cache e.g. their TCP connections to a server
     // and use the connections for multiple requests.

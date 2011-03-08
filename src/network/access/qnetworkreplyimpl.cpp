@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -57,7 +57,7 @@ Q_DECLARE_METATYPE(QSharedPointer<char>)
 QT_BEGIN_NAMESPACE
 
 inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
-    : backend(0), outgoingData(0), outgoingDataBuffer(0),
+    : backend(0), outgoingData(0),
       copyDevice(0),
       cacheEnabled(false), cacheSaveDevice(0),
       notificationHandlingPaused(false),
@@ -91,13 +91,13 @@ void QNetworkReplyImplPrivate::_q_startOperation()
     }
 
 #ifndef QT_NO_BEARERMANAGEMENT
-    if (!backend->start()) {
+    if (!backend->start()) { // ### we should call that method even if bearer is not used
         // backend failed to start because the session state is not Connected.
         // QNetworkAccessManager will call reply->backend->start() again for us when the session
         // state changes.
         state = WaitingForSession;
 
-        QNetworkSession *session = manager->d_func()->networkSession;
+        QNetworkSession *session = manager->d_func()->networkSession.data();
 
         if (session) {
             Q_Q(QNetworkReplyImpl);
@@ -115,11 +115,16 @@ void QNetworkReplyImplPrivate::_q_startOperation()
     }
 #endif
 
-    if (state != Finished) {
-        if (operation == QNetworkAccessManager::GetOperation)
-            pendingNotifications.append(NotifyDownstreamReadyWrite);
+    if (backend && backend->isSynchronous()) {
+        state = Finished;
+        q_func()->setFinished(true);
+    } else {
+        if (state != Finished) {
+            if (operation == QNetworkAccessManager::GetOperation)
+                pendingNotifications.append(NotifyDownstreamReadyWrite);
 
-        handleNotifications();
+            handleNotifications();
+        }
     }
 }
 
@@ -207,7 +212,7 @@ void QNetworkReplyImplPrivate::_q_bufferOutgoingData()
 
     if (!outgoingDataBuffer) {
         // first call, create our buffer
-        outgoingDataBuffer = new QRingBuffer();
+        outgoingDataBuffer = QSharedPointer<QRingBuffer>(new QRingBuffer());
 
         QObject::connect(outgoingData, SIGNAL(readyRead()), q, SLOT(_q_bufferOutgoingData()));
         QObject::connect(outgoingData, SIGNAL(readChannelFinished()), q, SLOT(_q_bufferOutgoingDataFinished()));
@@ -252,7 +257,7 @@ void QNetworkReplyImplPrivate::_q_networkSessionConnected()
     if (manager.isNull())
         return;
 
-    QNetworkSession *session = manager->d_func()->networkSession;
+    QNetworkSession *session = manager->d_func()->networkSession.data();
     if (!session)
         return;
 
@@ -277,8 +282,8 @@ void QNetworkReplyImplPrivate::_q_networkSessionConnected()
 
 void QNetworkReplyImplPrivate::_q_networkSessionFailed()
 {
-    // Abort waiting replies.
-    if (state == WaitingForSession) {
+    // Abort waiting and working replies.
+    if (state == WaitingForSession || state == Working) {
         state = Working;
         error(QNetworkReplyImpl::UnknownNetworkError,
               QCoreApplication::translate("QNetworkReply", "Network session error."));
@@ -297,7 +302,27 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
     url = request.url();
     operation = op;
 
-    if (outgoingData && backend) {
+    q->QIODevice::open(QIODevice::ReadOnly);
+    // Internal code that does a HTTP reply for the synchronous Ajax
+    // in QtWebKit.
+    QVariant synchronousHttpAttribute = req.attribute(
+            static_cast<QNetworkRequest::Attribute>(QNetworkRequest::SynchronousRequestAttribute));
+    // The synchronous HTTP is a corner case, we will put all upload data in one big QByteArray in the outgoingDataBuffer.
+    // Yes, this is not the most efficient thing to do, but on the other hand synchronous XHR needs to die anyway.
+    if (synchronousHttpAttribute.toBool() && outgoingData) {
+        outgoingDataBuffer = QSharedPointer<QRingBuffer>(new QRingBuffer());
+        qint64 previousDataSize = 0;
+        do {
+            previousDataSize = outgoingDataBuffer->size();
+            outgoingDataBuffer->append(outgoingData->readAll());
+        } while (outgoingDataBuffer->size() != previousDataSize);
+    }
+
+    if (backend)
+        backend->setSynchronous(synchronousHttpAttribute.toBool());
+
+
+    if (outgoingData && backend && !backend->isSynchronous()) {
         // there is data to be uploaded, e.g. HTTP POST.
 
         if (!backend->needsResetableUploadData() || !outgoingData->isSequential()) {
@@ -308,7 +333,7 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
         } else {
             bool bufferingDisallowed =
                     req.attribute(QNetworkRequest::DoNotBufferUploadDataAttribute,
-                                             false).toBool();
+                                  false).toBool();
 
             if (bufferingDisallowed) {
                 // if a valid content-length header for the request was supplied, we can disable buffering
@@ -326,24 +351,21 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
             }
         }
     } else {
-        // No outgoing data (e.g. HTTP GET request)
-        // or no backend
-        // if no backend, _q_startOperation will handle the error of this
-
         // for HTTP, we want to send out the request as fast as possible to the network, without
         // invoking methods in a QueuedConnection
 #ifndef QT_NO_HTTP
-        if (qobject_cast<QNetworkAccessHttpBackend *>(backend)) {
+        if (qobject_cast<QNetworkAccessHttpBackend *>(backend) || (backend && backend->isSynchronous())) {
             _q_startOperation();
         } else {
             QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
         }
 #else
-        QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
+        if (backend && backend->isSynchronous())
+            _q_startOperation();
+        else
+            QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
 #endif // QT_NO_HTTP
-    }
-
-    q->QIODevice::open(QIODevice::ReadOnly);
+        }
 }
 
 void QNetworkReplyImplPrivate::backendNotify(InternalNotifications notification)
@@ -610,8 +632,9 @@ char* QNetworkReplyImplPrivate::getDownloadBuffer(qint64 size)
 {
     Q_Q(QNetworkReplyImpl);
 
-    // Check attribute() if allocating a buffer of that size can be allowed
     if (!downloadBuffer) {
+        // We are requested to create it
+        // Check attribute() if allocating a buffer of that size can be allowed
         QVariant bufferAllocationPolicy = request.attribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute);
         if (bufferAllocationPolicy.isValid() && bufferAllocationPolicy.toLongLong() >= size) {
             downloadBufferCurrentSize = 0;
@@ -625,6 +648,18 @@ char* QNetworkReplyImplPrivate::getDownloadBuffer(qint64 size)
 
     return downloadBuffer;
 }
+
+void QNetworkReplyImplPrivate::setDownloadBuffer(QSharedPointer<char> sp, qint64 size)
+{
+    Q_Q(QNetworkReplyImpl);
+
+    downloadBufferPointer = sp;
+    downloadBuffer = downloadBufferPointer.data();
+    downloadBufferCurrentSize = 0;
+    downloadBufferMaximumSize = size;
+    q->setAttribute(QNetworkRequest::DownloadBufferAttribute, qVariantFromValue<QSharedPointer<char> > (downloadBufferPointer));
+}
+
 
 void QNetworkReplyImplPrivate::appendDownstreamDataDownloadBuffer(qint64 bytesReceived, qint64 bytesTotal)
 {
@@ -669,7 +704,7 @@ void QNetworkReplyImplPrivate::finished()
 
     if (!manager.isNull()) {
 #ifndef QT_NO_BEARERMANAGEMENT
-        QNetworkSession *session = manager->d_func()->networkSession;
+        QNetworkSession *session = manager->d_func()->networkSession.data();
         if (session && session->state() == QNetworkSession::Roaming &&
             state == Working && errorCode != QNetworkReply::OperationCanceledError) {
             // only content with a known size will fail with a temporary network failure error
@@ -722,6 +757,11 @@ void QNetworkReplyImplPrivate::finished()
 void QNetworkReplyImplPrivate::error(QNetworkReplyImpl::NetworkError code, const QString &errorMessage)
 {
     Q_Q(QNetworkReplyImpl);
+    // Can't set and emit multiple errors.
+    if (errorCode != QNetworkReply::NoError) {
+        qWarning() << "QNetworkReplyImplPrivate::error: Internal problem, this method must only be called once.";
+        return;
+    }
 
     errorCode = code;
     q->setErrorString(errorMessage);
@@ -779,9 +819,6 @@ QNetworkReplyImpl::~QNetworkReplyImpl()
     // save had been properly finished. So if it is still enabled it means we got deleted/aborted.
     if (d->isCachingEnabled())
         d->networkCache()->remove(url());
-
-    if (d->outgoingDataBuffer)
-        delete d->outgoingDataBuffer;
 }
 
 void QNetworkReplyImpl::abort()

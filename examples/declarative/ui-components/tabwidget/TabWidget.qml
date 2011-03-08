@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,8 +45,8 @@ Item {
 
     // Setting the default property to stack.children means any child items
     // of the TabWidget are actually added to the 'stack' item's children.
-    // See the "Extending Types from QML" documentation for details on default
-    // properties.
+    // See the "Writing QML Components: Properties, Methods and Signals"
+    // documentation for details on default properties.
     default property alias content: stack.children
 
     property int current: 0

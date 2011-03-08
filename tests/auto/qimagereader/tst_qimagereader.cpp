@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1107,6 +1107,11 @@ void tst_QImageReader::readFromDevice()
         QCOMPARE(image1, expectedImage);
     }
 
+#if defined (Q_OS_SYMBIAN) && defined (__WINS__)
+    //the emulator hangs in socket write (this is a test bug, it assumes the TCP stack can accept a whole image to its buffers)
+    if(imageData.size() > 16384)
+        QSKIP("image larger than socket buffer (test needs to be rewritten)", SkipSingle);
+#endif
     Server server(imageData);
     QEventLoop loop;
     connect(&server, SIGNAL(ready()), &loop, SLOT(quit()));
@@ -1258,7 +1263,10 @@ void tst_QImageReader::devicePosition()
     buf.seek(preLen);
     QImageReader reader(&buf, format);
     QCOMPARE(expected, reader.read());
-    if (format != "ppm" && format != "gif")  // Known not to work
+    if (format != "ppm" &&
+        format != "pgm" &&
+        format != "pbm" &&
+        format != "gif")  // Known not to work
         QCOMPARE(buf.pos(), qint64(preLen+imageDataSize));
 }
 
@@ -1402,6 +1410,9 @@ void tst_QImageReader::readFromResources_data()
     QTest::newRow("corrupt-pixels.xpm") << QString("corrupt-pixels.xpm")
                                                << QByteArray("xpm") << QSize(0, 0)
                                                << QString("QImage: XPM pixels missing on image line 3");
+    QTest::newRow("corrupt-pixel-count.xpm") << QString("corrupt-pixel-count.xpm")
+                                             << QByteArray("xpm") << QSize(0, 0)
+                                             << QString("");
     QTest::newRow("marble.xpm") << QString("marble.xpm")
                                        << QByteArray("xpm") << QSize(240, 240)
                                        << QString("");

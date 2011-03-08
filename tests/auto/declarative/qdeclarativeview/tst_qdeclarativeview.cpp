@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,6 +60,7 @@ public:
     tst_QDeclarativeView();
 
 private slots:
+    void scene();
     void resizemodedeclarativeitem();
     void resizemodegraphicswidget();
     void errors();
@@ -72,6 +73,26 @@ private:
 
 tst_QDeclarativeView::tst_QDeclarativeView()
 {
+}
+
+void tst_QDeclarativeView::scene()
+{
+    // QTBUG-14771
+    QGraphicsScene scene;
+    scene.setItemIndexMethod(QGraphicsScene::NoIndex);
+    scene.setStickyFocus(true);
+
+    QDeclarativeView *view = new QDeclarativeView();
+    QVERIFY(view);
+    QVERIFY(view->scene());
+    view->setScene(&scene);
+    QCOMPARE(view->scene(), &scene);
+
+    view->setSource(QUrl::fromLocalFile(SRCDIR "/data/resizemodedeclarativeitem.qml"));
+    QDeclarativeItem* declarativeItem = qobject_cast<QDeclarativeItem*>(view->rootObject());
+    QVERIFY(declarativeItem);
+    QVERIFY(scene.items().count() > 0);
+    QCOMPARE(scene.items().at(0), declarativeItem);
 }
 
 void tst_QDeclarativeView::resizemodedeclarativeitem()

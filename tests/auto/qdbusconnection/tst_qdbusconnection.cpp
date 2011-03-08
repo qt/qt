@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -105,6 +105,8 @@ private slots:
 
     void slotsWithLessParameters();
     void nestedCallWithCallback();
+
+    void serviceRegistrationRaceCondition();
 
 public:
     QString serviceName() const { return "com.trolltech.Qt.Autotests.QDBusConnection"; }
@@ -645,6 +647,73 @@ void tst_QDBusConnection::nestedCallWithCallback()
     QTestEventLoop::instance().enterLoop(15);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(signalsReceived, 1);
+}
+
+class RaceConditionSignalWaiter : public QObject
+{
+    Q_OBJECT
+public:
+    int count;
+    RaceConditionSignalWaiter() : count (0) {}
+    virtual ~RaceConditionSignalWaiter() {}
+
+public slots:
+    void countUp() { ++count; emit done(); }
+signals:
+    void done();
+};
+
+void tst_QDBusConnection::serviceRegistrationRaceCondition()
+{
+    // There was a race condition in the updating of list of name owners in
+    // QtDBus. When the user connects to a signal coming from a given
+    // service, we must listen for NameOwnerChanged signals relevant to that
+    // name and update when the owner changes. However, it's possible that we
+    // receive in one chunk from the server both the NameOwnerChanged signal
+    // about the service and the signal we're interested in. Since QtDBus
+    // posts events in order to handle the incoming signals, the update
+    // happens too late.
+
+    const QString connectionName = "testConnectionName";
+    const QString serviceName = "org.example.SecondaryName";
+
+    QDBusConnection session = QDBusConnection::sessionBus();
+    QVERIFY(!session.interface()->isServiceRegistered(serviceName));
+
+    // connect to the signal:
+    RaceConditionSignalWaiter recv;
+    session.connect(serviceName, "/", "com.trolltech.TestCase", "oneSignal", &recv, SLOT(countUp()));
+
+    // create a secondary connection and register a name
+    QDBusConnection connection = QDBusConnection::connectToBus(QDBusConnection::SessionBus, connectionName);
+    QDBusConnection::disconnectFromBus(connectionName); // disconnection happens when "connection" goes out of scope
+    QVERIFY(connection.isConnected());
+    QVERIFY(connection.registerService(serviceName));
+
+    // send a signal
+    QDBusMessage msg = QDBusMessage::createSignal("/", "com.trolltech.TestCase", "oneSignal");
+    connection.send(msg);
+
+    // make a blocking call just to be sure that the buffer was flushed
+    msg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus",
+                                         "NameHasOwner");
+    msg << connectionName;
+    connection.call(msg); // ignore result
+
+    // Now here's the race condition (more info on task QTBUG-15651):
+    // the bus has most likely queued three signals for us to work on:
+    // 1) NameOwnerChanged for the connection we created above
+    // 2) NameOwnerChanged for the service we registered above
+    // 3) The "oneSignal" signal we sent
+    //
+    // We'll most likely receive all three in one go from the server. We must
+    // update the owner of serviceName before we start processing the
+    // "oneSignal" signal.
+
+    QTestEventLoop::instance().connect(&recv, SIGNAL(done()), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(1);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(recv.count, 1);
 }
 
 QString MyObject::path;

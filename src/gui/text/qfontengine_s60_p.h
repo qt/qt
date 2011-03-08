@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,13 +58,11 @@
 #include "qsize.h"
 #include <openfont.h>
 
-#ifdef SYMBIAN_GDI_GLYPHDATA
-#define Q_SYMBIAN_HAS_FONTTABLE_API
-#endif
-
-#ifdef Q_SYMBIAN_HAS_FONTTABLE_API
+// The glyph outline code is intentionally disabled. It will be reactivated as
+// soon as the glyph outline API is backported from Symbian(^4) to Symbian(^3).
+#if 0
 #define Q_SYMBIAN_HAS_GLYPHOUTLINE_API
-#endif // Q_SYMBIAN_HAS_FONTTABLE_API
+#endif
 
 class CFont;
 
@@ -83,16 +81,18 @@ public:
     CFont *fontOwner() const;
     bool isSymbolCMap() const;
     QFixed unitsPerEm() const;
+    static bool symbianFontTableApiAvailable();
 
 private:
     CFont* m_cFont;
     mutable bool m_symbolCMap;
     mutable QByteArray m_cmapTable;
     mutable QFixed m_unitsPerEm;
-#ifndef Q_SYMBIAN_HAS_FONTTABLE_API
+
+    // m_openFont and m_openFont are used if Symbian does not provide
+    // the Font Table API
     COpenFont *m_openFont;
     mutable MOpenFontTrueTypeExtension *m_trueTypeExtension;
-#endif // Q_SYMBIAN_HAS_FONTTABLE_API
 };
 
 class QFontEngineS60 : public QFontEngine

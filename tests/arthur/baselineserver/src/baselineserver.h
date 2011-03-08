@@ -50,10 +50,11 @@
 #include <QDateTime>
 
 #include "baselineprotocol.h"
-#include "htmlpage.h"
+#include "report.h"
 
 // #seconds between update checks
 #define HEARTBEAT 10
+#define MetadataFileExt "metadata"
 
 class BaselineServer : public QTcpServer
 {
@@ -74,7 +75,10 @@ private slots:
 private:
     QTimer *heartbeatTimer;
     QDateTime meLastMod;
+    QString lastRunId;
+    int lastRunIdIdx;
     static QString storage;
+    static QString url;
 };
 
 
@@ -84,10 +88,11 @@ class BaselineThread : public QThread
     Q_OBJECT
 
 public:
-    BaselineThread(int socketDescriptor, QObject *parent);
+    BaselineThread(const QString &runId, int socketDescriptor, QObject *parent);
     void run();
 
 private:
+    QString runId;
     int socketDescriptor;
 };
 
@@ -97,9 +102,12 @@ class BaselineHandler : public QObject
     Q_OBJECT
 
 public:
-    BaselineHandler(int socketDescriptor = -1);
+    BaselineHandler(const QString &runId, int socketDescriptor = -1);
     void testPathMapping();
+    QString pathForItem(const ImageItem &item, bool isBaseline = true, bool absolute = true) const;
 
+    // CGI callbacks:
+    static QString view(const QString &baseline, const QString &rendered, const QString &compared);
     static QString clearAllBaselines(const QString &context);
     static QString updateSingleBaseline(const QString &oldBaseline, const QString &newBaseline);
     static QString blacklistTest(const QString &context, const QString &itemId, bool removeFromBlacklist = false);
@@ -109,19 +117,21 @@ private slots:
     void receiveDisconnect();
 
 private:
+    bool establishConnection();
     void provideBaselineChecksums(const QByteArray &itemListBlock);
     void storeImage(const QByteArray &itemBlock, bool isBaseline);
-    void mapPlatformInfo();
-    QString pathForItem(const ImageItem &item, bool isBaseline = true, bool absolute = true);
+    void storeItemMetadata(const PlatformInfo &metadata, const QString &path);
+    PlatformInfo fetchItemMetadata(const QString &path);
+    void mapPlatformInfo() const;
     const char *logtime();
     QString computeMismatchScore(const QImage& baseline, const QImage& rendered);
 
     BaselineProtocol proto;
     PlatformInfo plat;
-    PlatformInfo mapped;
-    bool connectionEstablished;
+    mutable PlatformInfo mapped;
     QString runId;
-    HTMLPage report;
+    bool connectionEstablished;
+    Report report;
 };
 
 #endif // BASELINESERVER_H

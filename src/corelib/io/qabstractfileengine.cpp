@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,6 +51,10 @@
 #include "qfsfileengine.h"
 #include "qdiriterator.h"
 #include "qstringbuilder.h"
+
+#include <QtCore/private/qfilesystementry_p.h>
+#include <QtCore/private/qfilesystemmetadata_p.h>
+#include <QtCore/private/qfilesystemengine_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -149,6 +153,29 @@ QAbstractFileEngineHandler::~QAbstractFileEngineHandler()
     }
 }
 
+/*
+   \ìnternal
+
+   Handles calls to custom file engine handlers.
+*/
+QAbstractFileEngine *qt_custom_file_engine_handler_create(const QString &path)
+{
+    QAbstractFileEngine *engine = 0;
+
+    if (qt_file_engine_handlers_in_use) {
+        QReadLocker locker(fileEngineHandlerMutex());
+
+        // check for registered handlers that can load the file
+        QAbstractFileEngineHandlerList *handlers = fileEngineHandlers();
+        for (int i = 0; i < handlers->size(); i++) {
+            if ((engine = handlers->at(i)->create(path)))
+                break;
+        }
+    }
+
+    return engine;
+}
+
 /*!
     \fn QAbstractFileEngine *QAbstractFileEngineHandler::create(const QString &fileName) const
 
@@ -177,57 +204,17 @@ QAbstractFileEngineHandler::~QAbstractFileEngineHandler()
 */
 QAbstractFileEngine *QAbstractFileEngine::create(const QString &fileName)
 {
-    if (qt_file_engine_handlers_in_use) {
-        QReadLocker locker(fileEngineHandlerMutex());
+    QFileSystemEntry entry(fileName);
+    QFileSystemMetaData metaData;
+    QAbstractFileEngine *engine = QFileSystemEngine::resolveEntryAndCreateLegacyEngine(entry, metaData);
 
-        // check for registered handlers that can load the file
-        QAbstractFileEngineHandlerList *handlers = fileEngineHandlers();
-        for (int i = 0; i < handlers->size(); i++) {
-            if (QAbstractFileEngine *ret = handlers->at(i)->create(fileName))
-                return ret;
-        }
-    }
-
-#ifdef QT_BUILD_CORE_LIB
-    for (int prefixSeparator = 0; prefixSeparator < fileName.size(); ++prefixSeparator) {
-        QChar const ch = fileName[prefixSeparator];
-        if (ch == QLatin1Char('/'))
-            break;
-
-        if (ch == QLatin1Char(':')) {
-            if (prefixSeparator == 0)
-                return new QResourceFileEngine(fileName);
-
-            if (prefixSeparator == 1)
-                break;
-
-            const QStringList &paths = QDir::searchPaths(fileName.left(prefixSeparator));
-            for (int i = 0; i < paths.count(); i++) {
-                QAbstractFileEngine *engine = create(paths.at(i) % QLatin1Char('/') % fileName.mid(prefixSeparator + 1));
-                if (engine && (engine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::ExistsFlag)) {
-                    return engine;
-                }
-                delete engine;
-            }
-
-            break;
-        }
-
-        //  There's no need to fully validate the prefix here. Consulting the
-        //  unicode tables could be expensive and validation is already
-        //  performed in QDir::setSearchPaths.
-        //
-        //  if (!ch.isLetterOrNumber())
-        //      break;
-    }
+#ifndef QT_NO_FSFILEENGINE
+    if (!engine)
+        // fall back to regular file engine
+        return new QFSFileEngine(entry.filePath());
 #endif
 
-#ifdef QT_NO_FSFILEENGINE
-    return 0;
-#else
-    // fall back to regular file engine
-    return new QFSFileEngine(fileName);
-#endif
+    return engine;
 }
 
 /*!

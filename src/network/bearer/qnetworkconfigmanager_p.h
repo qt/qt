@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -64,7 +64,6 @@
 QT_BEGIN_NAMESPACE
 
 class QBearerEngine;
-class QTimer;
 
 class Q_NETWORK_EXPORT QNetworkConfigurationManagerPrivate : public QObject
 {
@@ -74,50 +73,30 @@ public:
     QNetworkConfigurationManagerPrivate();
     virtual ~QNetworkConfigurationManagerPrivate();
 
-    QNetworkConfiguration defaultConfiguration();
-    QList<QNetworkConfiguration> allConfigurations(QNetworkConfiguration::StateFlags filter);
-    QNetworkConfiguration configurationFromIdentifier(const QString &identifier);
+    QNetworkConfiguration defaultConfiguration() const;
+    QList<QNetworkConfiguration> allConfigurations(QNetworkConfiguration::StateFlags filter) const;
+    QNetworkConfiguration configurationFromIdentifier(const QString &identifier) const;
 
-    bool isOnline();
+    bool isOnline() const;
 
-    QNetworkConfigurationManager::Capabilities capabilities();
+    QNetworkConfigurationManager::Capabilities capabilities() const;
 
     void performAsyncConfigurationUpdate();
 
-    QList<QBearerEngine *> engines();
-
-    Q_INVOKABLE void startPolling();
+    QList<QBearerEngine *> engines() const;
 
     void enablePolling();
     void disablePolling();
 
-public slots:
+public Q_SLOTS:
     void updateConfigurations();
 
 Q_SIGNALS:
-    void configurationAdded(const QNetworkConfiguration& config);
-    void configurationRemoved(const QNetworkConfiguration& config);
+    void configurationAdded(const QNetworkConfiguration &config);
+    void configurationRemoved(const QNetworkConfiguration &config);
+    void configurationChanged(const QNetworkConfiguration &config);
     void configurationUpdateComplete();
-    void configurationChanged(const QNetworkConfiguration& config);
     void onlineStateChanged(bool isOnline);
-
-    void abort();
-
-private:
-    QTimer *pollTimer;
-
-    QMutex mutex;
-
-    QList<QBearerEngine *> sessionEngines;
-
-    QSet<QString> onlineConfigurations;
-
-    QSet<int> pollingEngines;
-    QSet<int> updatingEngines;
-    int forcedPolling;
-    bool updating;
-
-    bool firstUpdate;
 
 private Q_SLOTS:
     void configurationAdded(QNetworkConfigurationPrivatePointer ptr);
@@ -125,6 +104,23 @@ private Q_SLOTS:
     void configurationChanged(QNetworkConfigurationPrivatePointer ptr);
 
     void pollEngines();
+
+private:
+    void startPolling();
+
+private:
+    mutable QMutex mutex;
+
+    QList<QBearerEngine *> sessionEngines;
+
+    QSet<QString> onlineConfigurations;
+
+    QSet<QBearerEngine *> pollingEngines;
+    QSet<QBearerEngine *> updatingEngines;
+    int forcedPolling;
+    bool updating;
+
+    bool firstUpdate;
 };
 
 Q_NETWORK_EXPORT QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate();
@@ -133,4 +129,4 @@ QT_END_NAMESPACE
 
 #endif // QT_NO_BEARERMANAGEMENT
 
-#endif //QNETWORKCONFIGURATIONMANAGERPRIVATE_H
+#endif // QNETWORKCONFIGURATIONMANAGERPRIVATE_H

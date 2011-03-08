@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -63,7 +63,7 @@ void QDeclarativeCompiledData::dump(QDeclarativeInstruction *instr, int idx)
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "INIT\t\t\t" << instr->init.bindingsSize << "\t" << instr->init.parserStatusSize << "\t" << instr->init.contextCache << "\t" << instr->init.compiledBinding;
         break;
     case QDeclarativeInstruction::CreateObject:
-        qWarning().nospace() << idx << "\t\t" << line << "\t" << "CREATE\t\t\t" << instr->create.type << "\t\t\t" << types.at(instr->create.type).className;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "CREATE\t\t\t" << instr->create.type << "\t" << instr->create.bindingBits << "\t\t" << types.at(instr->create.type).className;
         break;
     case QDeclarativeInstruction::CreateSimpleObject:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "CREATE_SIMPLE\t\t" << instr->createSimple.typeSize;
@@ -174,6 +174,9 @@ void QDeclarativeCompiledData::dump(QDeclarativeInstruction *instr, int idx)
     case QDeclarativeInstruction::StoreBinding:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_BINDING\t" << instr->assignBinding.property << "\t" << instr->assignBinding.value << "\t" << instr->assignBinding.context;
         break;
+    case QDeclarativeInstruction::StoreBindingOnAlias:
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_BINDING_ALIAS\t" << instr->assignBinding.property << "\t" << instr->assignBinding.value << "\t" << instr->assignBinding.context;
+        break;
     case QDeclarativeInstruction::StoreCompiledBinding:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_COMPILED_BINDING\t" << instr->assignBinding.property << "\t" << instr->assignBinding.value << "\t" << instr->assignBinding.context;
         break;
@@ -203,7 +206,7 @@ void QDeclarativeCompiledData::dump(QDeclarativeInstruction *instr, int idx)
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "FETCH\t\t\t" << instr->fetch.property;
         break;
     case QDeclarativeInstruction::FetchValueType:
-        qWarning().nospace() << idx << "\t\t" << line << "\t" << "FETCH_VALUE\t\t" << instr->fetchValue.property << "\t" << instr->fetchValue.type;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "FETCH_VALUE\t\t" << instr->fetchValue.property << "\t" << instr->fetchValue.type << "\t" << instr->fetchValue.bindingSkipList;
         break;
     case QDeclarativeInstruction::PopFetchedObject:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "POP";

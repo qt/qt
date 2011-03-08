@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,7 +43,6 @@
   cppcodemarker.cpp
 */
 
-#include <qdebug.h>
 #include "atom.h"
 #include "cppcodemarker.h"
 #include "node.h"
@@ -51,29 +50,6 @@
 #include "tree.h"
 
 QT_BEGIN_NAMESPACE
-
-static int insertTagAround(QString &result, int pos, int len, const QString &tagName,
-                           const QString &attributes = QString())
-{
-    QString s;
-    //s.reserve(result.size() + tagName.size() * 2 + attributes.size() + 20);
-    s += result.midRef(0, pos);
-    s += QLatin1Char('<');
-    s += tagName;
-    if (!attributes.isEmpty()) {
-        s += QLatin1Char(' ');
-        s += attributes;
-    }
-    s += QLatin1Char('>');
-    s += result.midRef(pos, len);
-    s += QLatin1String("</");
-    s += tagName;
-    s += QLatin1Char('>');
-    s += result.midRef(pos + len);
-    int diff = s.length() - result.length();
-    result = s;
-    return diff;
-}
 
 /*!
   The constructor does nothing.
@@ -127,6 +103,14 @@ bool CppCodeMarker::recognizeLanguage(const QString &lang)
 }
 
 /*!
+  Returns the type of atom used to represent C++ code in the documentation.
+*/
+Atom::Type CppCodeMarker::atomType() const
+{
+    return Atom::Code;
+}
+
+/*!
   Returns the \a node name, or "()" if \a node is a
   Node::Function node.
  */
@@ -158,9 +142,9 @@ QString CppCodeMarker::plainFullName(const Node *node, const Node *relative)
 
 QString CppCodeMarker::markedUpCode(const QString &code,
                                     const Node *relative,
-				    const QString &dirPath)
+				    const Location &location)
 {
-    return addMarkUp(protect(code), relative, dirPath);
+    return addMarkUp(code, relative, location);
 }
 
 QString CppCodeMarker::markedUpSynopsis(const Node *node,
@@ -438,10 +422,10 @@ QString CppCodeMarker::markedUpIncludes(const QStringList& includes)
 
     QStringList::ConstIterator inc = includes.begin();
     while (inc != includes.end()) {
-	code += "#include &lt;<@headerfile>" + *inc + "</@headerfile>&gt;\n";
+	code += "<@preprocessor>#include &lt;<@headerfile>" + *inc + "</@headerfile>&gt;</@preprocessor>\n";
 	++inc;
     }
-    return addMarkUp(code, 0, "");
+    return code;
 }
 
 QString CppCodeMarker::functionBeginRegExp(const QString& funcName)
@@ -454,21 +438,6 @@ QString CppCodeMarker::functionEndRegExp(const QString& /* funcName */)
 {
     return "^\\}$";
 }
-
-#if 0
-	    FastSection privateReimpFuncs(classe,
-                                          "Private Reimplemented Functions",
-                                          "private reimplemented function",
-                                          "private reimplemented functions");
-	    FastSection protectedReimpFuncs(classe,
-                                            "Protected Reimplemented Functions",
-                                            "protected reimplemented function",
-                                            "protected reimplemented functions");
-	    FastSection publicReimpFuncs(classe,
-                                         "Public Reimplemented Functions",
-                                         "public reimplemented function",
-                                         "public reimplemented functions");
-#endif
 
 QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                                        SynopsisStyle style,
@@ -882,240 +851,282 @@ const Node *CppCodeMarker::resolveTarget(const QString& target,
     return 0;
 }
 
-QString CppCodeMarker::addMarkUp(const QString& protectedCode,
-                                 const Node * /* relative */,
-                                 const QString& /* dirPath */)
+static const char * const typeTable[] = {
+    "bool", "char", "double", "float", "int", "long", "short",
+    "signed", "unsigned", "uint", "ulong", "ushort", "uchar", "void",
+    "qlonglong", "qulonglong",
+    "qint", "qint8", "qint16", "qint32", "qint64",
+    "quint", "quint8", "quint16", "quint32", "quint64",
+    "qreal", "cond", 0
+};
+
+static const char * const keywordTable[] = {
+    "and", "and_eq", "asm", "auto", "bitand", "bitor", "break",
+    "case", "catch", "class", "compl", "const", "const_cast",
+    "continue", "default", "delete", "do", "dynamic_cast", "else",
+    "enum", "explicit", "export", "extern", "false", "for", "friend",
+    "goto", "if", "include", "inline", "monitor", "mutable", "namespace",
+    "new", "not", "not_eq", "operator", "or", "or_eq", "private", "protected",
+    "public", "register", "reinterpret_cast", "return", "sizeof",
+    "static", "static_cast", "struct", "switch", "template", "this",
+    "throw", "true", "try", "typedef", "typeid", "typename", "union",
+    "using", "virtual", "volatile", "wchar_t", "while", "xor",
+    "xor_eq", "synchronized",
+    // Qt specific
+    "signals", "slots", "emit", 0
+};
+
+static QString untabified(const QString &in)
 {
-    static QRegExp globalInclude("#include +&lt;([^<>&]+)&gt;");
-    static QRegExp yHasTypeX("(?:^|\n *)([a-zA-Z_][a-zA-Z_0-9]*)"
-	                     "(?:&lt;[^;{}]+&gt;)?(?: *(?:\\*|&amp;) *| +)"
-	                     "([a-zA-Z_][a-zA-Z_0-9]*)? *[,;()=]");
-    static QRegExp xNewY("([a-zA-Z_][a-zA-Z_0-9]*) *= *new +([a-zA-Z_0-9]+)");
-    static QRegExp xDotY("\\b([a-zA-Z_][a-zA-Z_0-9]*) *(?:\\.|-&gt;|,[ \n]*S(?:IGNAL|LOT)\\() *"
-	                 "([a-zA-Z_][a-zA-Z_0-9]*)(?= *\\()");
-    static QRegExp xIsStaticZOfY("[\n:;{(=] *(([a-zA-Z_0-9]+)::([a-zA-Z_0-9]+))(?= *\\()");
-    static QRegExp classX("[:,][ \n]*(?:p(?:ublic|r(?:otected|ivate))[ \n]+)?"
-                          "([a-zA-Z_][a-zA-Z_0-9]*)");
-    static QRegExp globalX("[\n{()=] *([a-zA-Z_][a-zA-Z_0-9]*)[ \n]*\\(");
-    static QRegExp multiLineComment("/(?:( )?\\*(?:[^*]+|\\*(?! /))*\\*\\1/)");
-    multiLineComment.setMinimal(true);
-    static QRegExp singleLineComment("[^:]//(?!!)[^!\\n]*");
-    static QRegExp preprocessor("(?:^|\n)(#[ \t]*(?:include|if|elif|endif|error|pragma|define"
-                                "|warning)(?:(?:\\\\\n|\\n#)[^\n]*)*)");
-    static QRegExp literals("&quot;(?:[^\\\\&]|\\\\[^\n]|&(?!quot;))*&quot;"
-                            "|'(?:[^\\\\]|\\\\(?:[^x0-9']|x[0-9a-f]{1,4}|[0-9]{1,3}))'");
+    QString res;
+    int col = 0;
+    int i = 0;
 
-    QString result = protectedCode;
-    int pos;
-
-    if (!hurryUp()) {
-        /*
-          Mark global includes. For example:
-
-          #include &lt;<@headerfile>QString</@headerfile>
-        */
-        pos = 0;
-        while ((pos = result.indexOf(globalInclude, pos)) != -1)
-            pos += globalInclude.matchedLength()
-                   + insertTagAround(result,
-                                     globalInclude.pos(1),
-                                     globalInclude.cap(1).length(),
-                                     "@headerfile");
-
-        /*
-            Look for variable definitions and similar constructs, mark
-            the data type, and remember the type of the variable.
-        */
-        QMap<QString, QSet<QString> > typesForVariable;
-        pos = 0;
-        while ((pos = yHasTypeX.indexIn(result, pos)) != -1) {
-	    QString x = yHasTypeX.cap(1);
-	    QString y = yHasTypeX.cap(2);
-
-	    if (!y.isEmpty())
-	        typesForVariable[y].insert(x);
-
-	    /*
-                Without the minus one at the end, 'void member(Class
-                var)' would give 'member' as a variable of type 'void',
-                but would ignore 'Class var'. (### Is that true?)
-	    */
-            pos += yHasTypeX.matchedLength()
-                   + insertTagAround(result,
-                                     yHasTypeX.pos(1),
-                                     x.length(),
-                                     "@type") - 1;
-        }
-
-        /*
-            Do syntax highlighting of preprocessor directives.
-        */
-        pos = 0;
-        while ((pos = preprocessor.indexIn(result, pos)) != -1)
-            pos += preprocessor.matchedLength()
-                   + insertTagAround(result,
-                                     preprocessor.pos(1),
-                                     preprocessor.cap(1).length(),
-                                     "@preprocessor");
-
-        /*
-            Deal with string and character literals.
-        */
-        pos = 0;
-        while ((pos = literals.indexIn(result, pos)) != -1)
-            pos += literals.matchedLength()
-                   + insertTagAround(result,
-                                     pos,
-                                     literals.matchedLength(),
-                                     result.at(pos) ==
-                                       QLatin1Char(' ') ? "@string" : "@char");
-
-        /*
-            Look for 'var = new Class'.
-        */
-        pos = 0;
-        while ((pos = xNewY.indexIn(result, pos)) != -1) {
-	    QString x = xNewY.cap(1);
-	    QString y = xNewY.cap(2);
-	    typesForVariable[x].insert(y);
-
-	    pos += xNewY.matchedLength() + insertTagAround(result,
-                                                           xNewY.pos(2),
-                                                           y.length(),
-                                                           "@type");
-        }
-
-        /*
-            Insert some stuff that cannot harm.
-        */
-        typesForVariable["qApp"].insert("QApplication");
-
-        /*
-            Add link to ': Class'.
-        */
-        pos = 0;
-        while ((pos = classX.indexIn(result, pos)) != -1)
-	    pos += classX.matchedLength()
-                   + insertTagAround(result,
-                                     classX.pos(1),
-                                     classX.cap(1).length(),
-                                     "@type") - 1;
-
-        /*
-            Find use of any of
-
-                var.method()
-	        var->method()
-	        var, SIGNAL(method())
-	        var, SLOT(method()).
-        */
-        pos = 0;
-        while ((pos = xDotY.indexIn(result, pos)) != -1) {
-	    QString x = xDotY.cap(1);
-	    QString y = xDotY.cap(2);
-
-	    QSet<QString> types = typesForVariable.value(x);
-            pos += xDotY.matchedLength()
-                   + insertTagAround(result,
-                                     xDotY.pos(2),
-                                     xDotY.cap(2).length(),
-                                     "@func",
-                                     (types.count() == 1) ? "target=\""
-                                        + protect(*types.begin() + "::" + y)
-                                        + "()\"" : QString());
-        }
-
-        /*
-            Add link to 'Class::method()'.
-        */
-        pos = 0;
-        while ((pos = xIsStaticZOfY.indexIn(result, pos)) != -1) {
-	    QString x = xIsStaticZOfY.cap(1);
-	    QString z = xIsStaticZOfY.cap(3);
-
-            pos += insertTagAround(result,
-                                   xIsStaticZOfY.pos(3),
-                                   z.length(),
-                                   "@func",
-                                   "target=\"" + protect(x) + "()\"");
-            pos += insertTagAround(result,
-                                   xIsStaticZOfY.pos(2),
-                                   xIsStaticZOfY.cap(2).length(),
-                                   "@type");
-            pos += xIsStaticZOfY.matchedLength() - 1;
-        }
-
-        /*
-            Add link to 'globalFunction()'.
-        */
-        pos = 0;
-        while ((pos = globalX.indexIn(result, pos)) != -1) {
-            QString x = globalX.cap(1);
-	    if (x != "QT_FORWARD_DECLARE_CLASS") {
-                pos += globalX.matchedLength()
-                       + insertTagAround(result,
-                                         globalX.pos(1),
-                                         x.length(),
-                                         "@func",
-                                         "target=\"" + protect(x) + "()\"") - 1;
-            }
-            else
-                pos += globalX.matchedLength();
-        }
+    for (; i < (int) in.length(); i++) {
+	if (in[i] == QChar('\t')) {
+	    res += QString("        " + (col & 0x7));
+	    col = (col + 8) & ~0x7;
+	} else {
+	    res += in[i];
+	    if (in[i] == QChar('\n'))
+		col = 0;
+	}
     }
 
-    /*
-        Do syntax highlighting of comments. Also alter the code in a
-        minor way, so that we can include comments in documentation
-        comments.
-    */
-    pos = 0;
-    while (pos != -1) {
-        int mlpos;
-        int slpos;
-        int len;
-        slpos = singleLineComment.indexIn(result, pos);
-        mlpos = multiLineComment.indexIn(result, pos);
+    return res;
+}
 
-        if (slpos == -1 && mlpos == -1)
-            break;
+/*
+    @char
+    @class
+    @comment
+    @function
+    @keyword
+    @number
+    @op
+    @preprocessor
+    @string
+    @type
+*/
 
-        if (slpos == -1) {
-            pos = mlpos;
-            len = multiLineComment.matchedLength();
-        }
-        else if (mlpos == -1) {
-            pos = slpos + 1;
-            len = singleLineComment.matchedLength() - 1;
-        }
-        else {
-            if (slpos < mlpos) {
-                pos = slpos + 1;
-                len = singleLineComment.matchedLength() - 1;
-            }
-            else {
-                pos = mlpos;
-                len = multiLineComment.matchedLength();
-            }
-        }
+QString CppCodeMarker::addMarkUp(const QString &in,
+                                 const Node * /* relative */,
+                                 const Location & /* location */)
+{
+#define readChar() \
+    ch = (i < (int)code.length()) ? code[i++].cell() : EOF
 
-        if (result.at(pos + 1) == QLatin1Char(' ')) {
-            result.remove(pos + len - 2, 1);
-            result.remove(pos + 1, 1);
-            len -= 2;
+    QString code = in;
 
-            forever {
-                int endcodePos = result.indexOf("\\ endcode", pos);
-                if (endcodePos == -1 || endcodePos >= pos + len)
-                    break;
-                result.remove(endcodePos + 1, 1);
-                len -= 1;
-            }
-        }
-        pos += len + insertTagAround(result, pos, len, "@comment");
+    QMap<QString, int> types;
+    QMap<QString, int> keywords;
+    int j = 0;
+    while (typeTable[j] != 0) {
+	types.insert(QString(typeTable[j]), 0);
+	j++;
+    }
+    j = 0;
+    while (keywordTable[j] != 0) {
+	keywords.insert(QString(keywordTable[j]), 0);
+	j++;
     }
 
-    return result;
+    QString out("");
+    int braceDepth = 0;
+    int parenDepth = 0;
+    int i = 0;
+    int start = 0;
+    int finish = 0;
+    char ch;
+    QRegExp classRegExp("Qt?(?:[A-Z3]+[a-z][A-Za-z]*|t)");
+    QRegExp functionRegExp("q([A-Z][a-z]+)+");
+
+    readChar();
+
+    while (ch != EOF) {
+	QString tag;
+        bool target = false;
+
+	if (isalpha(ch) || ch == '_') {
+	    QString ident;
+	    do {
+		ident += ch;
+                finish = i;
+		readChar();
+	    } while (isalnum(ch) || ch == '_');
+
+	    if (classRegExp.exactMatch(ident)) {
+		tag = QLatin1String("type");
+            } else if (functionRegExp.exactMatch(ident)) {
+                tag = QLatin1String("func");
+                target = true;
+	    } else if (types.contains(ident)) {
+		tag = QLatin1String("type");
+	    } else if (keywords.contains(ident)) {
+		tag = QLatin1String("keyword");
+	    } else if (braceDepth == 0 && parenDepth == 0) {
+		if (QString(code.unicode() + i - 1, code.length() - (i - 1))
+		     .indexOf(QRegExp(QLatin1String("^\\s*\\("))) == 0)
+		    tag = QLatin1String("func");
+                    target = true;
+	    }
+	} else if (isdigit(ch)) {
+	    do {
+                finish = i;
+		readChar();
+	    } while (isalnum(ch) || ch == '.');
+	    tag = QLatin1String("number");
+	} else {
+	    switch (ch) {
+	    case '+':
+	    case '-':
+	    case '!':
+	    case '%':
+	    case '^':
+	    case '&':
+	    case '*':
+	    case ',':
+	    case '.':
+	    case '<':
+	    case '=':
+	    case '>':
+	    case '?':
+	    case '[':
+	    case ']':
+	    case '|':
+	    case '~':
+                finish = i;
+		readChar();
+		tag = QLatin1String("op");
+		break;
+	    case '"':
+                finish = i;
+		readChar();
+
+		while (ch != EOF && ch != '"') {
+		    if (ch == '\\')
+			readChar();
+		    readChar();
+		}
+                finish = i;
+		readChar();
+		tag = QLatin1String("string");
+		break;
+	    case '#':
+                finish = i;
+		readChar();
+		while (ch != EOF && ch != '\n') {
+		    if (ch == '\\')
+			readChar();
+                    finish = i;
+		    readChar();
+		}
+		tag = QLatin1String("preprocessor");
+		break;
+	    case '\'':
+                finish = i;
+		readChar();
+
+		while (ch != EOF && ch != '\'') {
+		    if (ch == '\\')
+			readChar();
+		    readChar();
+		}
+                finish = i;
+		readChar();
+		tag = QLatin1String("char");
+		break;
+	    case '(':
+                finish = i;
+		readChar();
+		parenDepth++;
+		break;
+	    case ')':
+                finish = i;
+		readChar();
+		parenDepth--;
+		break;
+	    case ':':
+                finish = i;
+		readChar();
+		if (ch == ':') {
+                    finish = i;
+		    readChar();
+		    tag = QLatin1String("op");
+		}
+		break;
+	    case '/':
+                finish = i;
+		readChar();
+		if (ch == '/') {
+		    do {
+                        finish = i;
+			readChar();
+		    } while (ch != EOF && ch != '\n');
+		    tag = QLatin1String("comment");
+		} else if (ch == '*') {
+		    bool metAster = false;
+		    bool metAsterSlash = false;
+
+                    finish = i;
+		    readChar();
+
+		    while (!metAsterSlash) {
+			if (ch == EOF)
+			    break;
+
+			if (ch == '*')
+			    metAster = true;
+			else if (metAster && ch == '/')
+			    metAsterSlash = true;
+			else
+			    metAster = false;
+                        finish = i;
+			readChar();
+		    }
+		    tag = QLatin1String("comment");
+		} else {
+		    tag = QLatin1String("op");
+		}
+		break;
+	    case '{':
+                finish = i;
+		readChar();
+		braceDepth++;
+		break;
+	    case '}':
+                finish = i;
+		readChar();
+		braceDepth--;
+		break;
+	    default:
+                finish = i;
+		readChar();
+	    }
+	}
+
+        QString text;
+        text = code.mid(start, finish - start);
+        start = finish;
+
+	if (!tag.isEmpty()) {
+	    out += QLatin1String("<@") + tag;
+            if (target)
+                out += QLatin1String(" target=\"") + text + QLatin1String("()\"");
+            out += QLatin1String(">");
+        }
+
+        out += protect(text);
+
+	if (!tag.isEmpty())
+	    out += QLatin1String("</@") + tag + QLatin1String(">");
+    }
+
+    if (start < code.length()) {
+        out += protect(code.mid(start));
+    }
+
+    return out;
 }
 
 #ifdef QDOC_QML

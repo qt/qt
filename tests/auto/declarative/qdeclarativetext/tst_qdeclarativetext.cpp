@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,12 +43,14 @@
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <private/qdeclarativetext_p.h>
+#include <private/qdeclarativetext_p_p.h>
 #include <private/qdeclarativevaluetype_p.h>
 #include <QFontMetrics>
 #include <QGraphicsSceneMouseEvent>
 #include <qmath.h>
 #include <QDeclarativeView>
 #include <private/qapplication_p.h>
+#include <limits.h>
 
 #include "../../../shared/util.h"
 #include "testhttpserver.h"
@@ -78,8 +80,12 @@ private slots:
     void embeddedImages_data();
     void embeddedImages();
 
+    void lineCount();
+    void lineHeight();
+
     // ### these tests may be trivial    
     void horizontalAlignment();
+    void horizontalAlignment_RightToLeft();
     void verticalAlignment();
     void font();
     void style();
@@ -98,6 +104,10 @@ private slots:
     void clickLink();
 
     void QTBUG_12291();
+    void implicitSize_data();
+    void implicitSize();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
 
 private:
     QStringList standard;
@@ -460,6 +470,8 @@ void tst_qdeclarativetext::alignments()
         QCOMPARE(actual,expect);
     }
 #endif
+
+    delete canvas;
 }
 
 //the alignment tests may be trivial o.oa
@@ -493,6 +505,32 @@ void tst_qdeclarativetext::horizontalAlignment()
         }
     }
 
+}
+
+void tst_qdeclarativetext::horizontalAlignment_RightToLeft()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/horizontalAlignment_RightToLeft.qml");
+    QDeclarativeText *text = canvas->rootObject()->findChild<QDeclarativeText*>("text");
+    QVERIFY(text != 0);
+    canvas->show();
+
+    QDeclarativeTextPrivate *textPrivate = QDeclarativeTextPrivate::get(text);
+    QVERIFY(textPrivate != 0);
+
+    QVERIFY(textPrivate->layout.lineAt(0).x() > canvas->width()/2);
+
+    // "Right" aligned
+    text->setHAlign(QDeclarativeText::AlignRight);
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+    QVERIFY(textPrivate->layout.lineAt(0).x() < canvas->width()/2);
+
+    // Center aligned
+    text->setHAlign(QDeclarativeText::AlignHCenter);
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignHCenter);
+    QVERIFY(textPrivate->layout.lineAt(0).x() < canvas->width()/2);
+    QVERIFY(textPrivate->layout.lineAt(0).x() + textPrivate->layout.lineAt(0).width() > canvas->width()/2);
+
+    delete canvas;
 }
 
 void tst_qdeclarativetext::verticalAlignment()
@@ -926,6 +964,8 @@ void tst_qdeclarativetext::QTBUG_12291()
     QDeclarativeText *text = ob->findChild<QDeclarativeText*>("text");
     QVERIFY(text);
     QVERIFY(text->boundingRect().isValid());
+
+    delete canvas;
 }
 
 class EventSender : public QGraphicsItem
@@ -1018,6 +1058,150 @@ void tst_qdeclarativetext::embeddedImages()
         QCOMPARE(textObject->width(), 16.0); // default size of QTextDocument broken image icon
         QCOMPARE(textObject->height(), 16.0);
     }
+
+    delete textObject;
+}
+
+void tst_qdeclarativetext::lineCount()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/lineCount.qml");
+
+    QDeclarativeText *myText = canvas->rootObject()->findChild<QDeclarativeText*>("myText");
+    QVERIFY(myText != 0);
+
+    QVERIFY(myText->lineCount() > 1);
+    QVERIFY(!myText->truncated());
+    QCOMPARE(myText->maximumLineCount(), INT_MAX);
+
+    myText->setMaximumLineCount(2);
+    QCOMPARE(myText->lineCount(), 2);
+    QCOMPARE(myText->truncated(), true);
+    QCOMPARE(myText->maximumLineCount(), 2);
+
+    myText->resetMaximumLineCount();
+    QCOMPARE(myText->maximumLineCount(), INT_MAX);
+    QCOMPARE(myText->truncated(), false);
+
+    myText->setElideMode(QDeclarativeText::ElideRight);
+    myText->setMaximumLineCount(2);
+    QCOMPARE(myText->lineCount(), 2);
+    QCOMPARE(myText->truncated(), true);
+    QCOMPARE(myText->maximumLineCount(), 2);
+
+    delete canvas;
+}
+
+void tst_qdeclarativetext::lineHeight()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/lineHeight.qml");
+
+    QDeclarativeText *myText = canvas->rootObject()->findChild<QDeclarativeText*>("myText");
+    QVERIFY(myText != 0);
+
+    QVERIFY(myText->lineHeight() == 1);
+    QVERIFY(myText->lineHeightMode() == QDeclarativeText::ProportionalHeight);
+
+    qreal h = myText->height();
+    myText->setLineHeight(1.5);
+    QVERIFY(myText->height() == h * 1.5);
+
+    myText->setLineHeightMode(QDeclarativeText::FixedHeight);
+    myText->setLineHeight(20);
+    QCOMPARE(myText->height(), myText->lineCount() * 20.0);
+
+    myText->setText("Lorem ipsum sit <b>amet</b>, consectetur adipiscing elit. Integer felis nisl, varius in pretium nec, venenatis non erat. Proin lobortis interdum dictum.");
+    myText->setLineHeightMode(QDeclarativeText::ProportionalHeight);
+    myText->setLineHeight(1.0);
+
+    qreal h2 = myText->height();
+    myText->setLineHeight(2.0);
+    QEXPECT_FAIL("", "QTBUG-17325", Continue);
+    QVERIFY(myText->height() == h2 * 2.0);
+
+    myText->setLineHeightMode(QDeclarativeText::FixedHeight);
+    myText->setLineHeight(10);
+    QEXPECT_FAIL("", "QTBUG-17325", Continue);
+    QCOMPARE(myText->height(), myText->lineCount() * 10.0);
+
+    delete canvas;
+}
+
+void tst_qdeclarativetext::implicitSize_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<QString>("wrap");
+    QTest::newRow("plain") << "The quick red fox jumped over the lazy brown dog" << "Text.NoWrap";
+    QTest::newRow("richtext") << "<b>The quick red fox jumped over the lazy brown dog</b>" << "Text.NoWrap";
+    QTest::newRow("plain_wrap") << "The quick red fox jumped over the lazy brown dog" << "Text.Wrap";
+    QTest::newRow("richtext_wrap") << "<b>The quick red fox jumped over the lazy brown dog</b>" << "Text.Wrap";
+}
+
+void tst_qdeclarativetext::implicitSize()
+{
+    QFETCH(QString, text);
+    QFETCH(QString, wrap);
+    QString componentStr = "import QtQuick 1.1\nText { text: \"" + text + "\"; width: 50; wrapMode: " + wrap + " }";
+    QDeclarativeComponent textComponent(&engine);
+    textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeText *textObject = qobject_cast<QDeclarativeText*>(textComponent.create());
+
+    QVERIFY(textObject->width() < textObject->implicitWidth());
+    QVERIFY(textObject->height() == textObject->implicitHeight());
+
+    textObject->resetWidth();
+    QVERIFY(textObject->width() == textObject->implicitWidth());
+    QVERIFY(textObject->height() == textObject->implicitHeight());
+}
+
+void tst_qdeclarativetext::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; Text { " + code.toUtf8() + " }", QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; Text { " + code.toUtf8() + " }", QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+}
+
+void tst_qdeclarativetext::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("maximumLineCount") << "maximumLineCount: 4"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Text.maximumLineCount\" is not available in QtQuick 1.0.\n";
+
+    QTest::newRow("lineHeight") << "lineHeight: 2"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Text.lineHeight\" is not available in QtQuick 1.0.\n";
+
+    QTest::newRow("lineHeightMode") << "lineHeightMode: Text.ProportionalHeight"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"Text.lineHeightMode\" is not available in QtQuick 1.0.\n";
+
+    QTest::newRow("lineCount") << "property int foo: lineCount"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: lineCount"
+        << "";
+
+    QTest::newRow("truncated") << "property bool foo: truncated"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: truncated"
+        << "";
 }
 
 QTEST_MAIN(tst_qdeclarativetext)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -249,6 +249,8 @@ void tst_QProcess::constructing()
     char c;
     QCOMPARE(process.read(&c, 1), qlonglong(-1));
     QCOMPARE(process.write(&c, 1), qlonglong(-1));
+
+    QProcess proc2;
 }
 
 void tst_QProcess::simpleStart()
@@ -265,7 +267,7 @@ void tst_QProcess::simpleStart()
     process->start("testProcessNormal/testProcessNormal");
     if (process->state() != QProcess::Starting)
         QCOMPARE(process->state(), QProcess::Running);
-    QVERIFY(process->waitForStarted(5000));
+    QVERIFY2(process->waitForStarted(5000), qPrintable(process->errorString()));
     QCOMPARE(process->state(), QProcess::Running);
 #if defined(Q_OS_WINCE)
     // Note: This actually seems incorrect, it will only exit the while loop when finishing fails
@@ -277,7 +279,7 @@ void tst_QProcess::simpleStart()
     while (process->waitForReadyRead(5000))
     { }
 #endif
-    QCOMPARE(process->state(), QProcess::NotRunning);
+    QCOMPARE(int(process->state()), int(QProcess::NotRunning));
 
     delete process;
     process = 0;
@@ -1585,6 +1587,7 @@ void tst_QProcess::spaceArgsTest()
 #if defined(Q_OS_SYMBIAN)
         // Symbian test outputs to a file, so check that
         FILE* file = fopen("c:\\logs\\qprocess_args_test.txt","r");
+        QVERIFY(file);
         char buf[256];
         fgets(buf, 256, file);
         fclose(file);
@@ -1614,6 +1617,7 @@ void tst_QProcess::spaceArgsTest()
 #if defined(Q_OS_SYMBIAN)
         // Symbian test outputs to a file, so check that
         file = fopen("c:\\logs\\qprocess_args_test.txt","r");
+        QVERIFY(file);
         fgets(buf, 256, file);
         fclose(file);
         actual = QString::fromLatin1(buf).split("|");
@@ -1661,6 +1665,7 @@ void tst_QProcess::nativeArguments()
 # else
     FILE* file = fopen("\\temp\\qprocess_args_test.txt","r");
 # endif
+    QVERIFY(file);
     char buf[256];
     fgets(buf, 256, file);
     fclose(file);
@@ -1999,11 +2004,15 @@ void tst_QProcess::spaceInName()
 void tst_QProcess::lockupsInStartDetached()
 {
 #if !defined(Q_OS_SYMBIAN)
-    // What exactly is this call supposed to achieve anyway?
+    // Check that QProcess doesn't cause a lock up at this program's
+    // exit if a thread was started and we tried to run a program that
+    // doesn't exist. Before Qt 4.2, this used to lock up on Unix due
+    // to calling ::exit instead of ::_exit if execve failed.
+
     QHostInfo::lookupHost(QString("something.invalid"), 0, 0);
-#endif
     QProcess::execute("yjhbrty");
     QProcess::startDetached("yjhbrty");
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2285,7 +2294,9 @@ void tst_QProcess::detachedWorkingDirectoryAndPid()
 
     QFileInfo fi(infoFile);
     fi.setCaching(false);
-    while (fi.size() == 0) {
+    //The guard counter ensures the test does not hang if the sub process fails.
+    //Instead, the test will fail when trying to open & verify the sub process output file.
+    for (int guard = 0; guard < 100 && fi.size() == 0; guard++) {
         QTest::qSleep(100);
     }
 
@@ -2397,6 +2408,7 @@ void tst_QProcess::startFinishStartFinish()
 #if defined(Q_OS_SYMBIAN)
         // Symbian test outputs to a file, so check that
         FILE* file = fopen("c:\\logs\\qprocess_output_test.txt","r");
+        QVERIFY(file);
         char buf[30];
         fgets(buf, 30, file);
         QCOMPARE(QString::fromLatin1(buf),

@@ -62,19 +62,21 @@ namespace Phonon
 
         VideoRendererEVR::VideoRendererEVR(QWidget *target) : m_target(target)
         {
+            if (QSysInfo::WindowsVersion < QSysInfo::WV_VISTA)
+                return;
             m_filter = Filter(CLSID_EnhancedVideoRenderer, IID_IBaseFilter);
             if (!m_filter) {
                 return;
             }
 
             ComPointer<IMFVideoDisplayControl> filterControl = getService<IMFVideoDisplayControl>(m_filter, MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl);
-            if (!filterControl) {
+            if (!filterControl ||
+                FAILED(filterControl->SetVideoWindow(reinterpret_cast<HWND>(target->winId()))) ||
+                FAILED(filterControl->SetAspectRatioMode(MFVideoARMode_None)) ||        // We're in control of the size
+                !getService<IMFVideoMixerControl>(m_filter, MR_VIDEO_MIXER_SERVICE, IID_IMFVideoMixerControl) ||
+                !getService<IMFVideoProcessor>(m_filter, MR_VIDEO_MIXER_SERVICE, IID_IMFVideoProcessor))  {
                 m_filter = Filter(); //will release the interface
-                return;
             }
-
-            filterControl->SetVideoWindow(reinterpret_cast<HWND>(target->winId()));
-            filterControl->SetAspectRatioMode(MFVideoARMode_None); // We're in control of the size
         }
 
         QImage VideoRendererEVR::snapshot() const

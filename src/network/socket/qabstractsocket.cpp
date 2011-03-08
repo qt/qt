@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2136,7 +2136,7 @@ qint64 QAbstractSocket::readData(char *data, qint64 maxSize)
         qDebug("QAbstractSocket::readData(%p '%c (0x%.2x)', 1) == 1 [char buffer]",
                data, isprint(int(uchar(*data))) ? *data : '?', *data);
 #endif
-        if (d->readBuffer.isEmpty() && d->socketEngine)
+        if (d->readBuffer.isEmpty() && d->socketEngine && d->socketEngine->isValid())
             d->socketEngine->setReadNotificationEnabled(true);
         return 1;
     }
@@ -2148,7 +2148,8 @@ qint64 QAbstractSocket::readData(char *data, qint64 maxSize)
             && d->readBuffer.size() < maxSize
             && d->readBufferMaxSize > 0
             && maxSize < d->readBufferMaxSize
-            && d->socketEngine) {
+            && d->socketEngine
+            && d->socketEngine->isValid()) {
         // Our buffer is empty and a read() was requested for a byte amount that is smaller
         // than the readBufferMaxSize. This means that we should fill our buffer since we want
         // such small reads come from the buffer and not always go to the costly socket engine read()
@@ -2198,6 +2199,10 @@ qint64 QAbstractSocket::readData(char *data, qint64 maxSize)
     if (!d->isBuffered) {
         if (!d->socketEngine)
             return -1;          // no socket engine is probably EOF
+        if (!d->socketEngine->isValid())
+            return -1; // This is for unbuffered TCP when we already had been disconnected
+        if (d->state != QAbstractSocket::ConnectedState)
+            return -1; // This is for unbuffered TCP if we're not connected yet
         qint64 readBytes = d->socketEngine->read(data, maxSize);
         if (readBytes == -2) {
             // -2 from the engine means no bytes available (EAGAIN) so read more later
@@ -2624,7 +2629,7 @@ void QAbstractSocket::setReadBufferSize(qint64 size)
         // ensure that the read notification is enabled if we've now got
         // room in the read buffer
         // but only if we're not inside canReadNotification -- that will take care on its own
-        if (size == 0 || d->readBuffer.size() < size)
+        if ((size == 0 || d->readBuffer.size() < size) && d->state == QAbstractSocket::ConnectedState) // Do not change the notifier unless we are connected.
             d->socketEngine->setReadNotificationEnabled(true);
     }
 }

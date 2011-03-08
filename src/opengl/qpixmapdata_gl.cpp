@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,10 +55,11 @@
 #include <qdesktopwidget.h>
 #include <qfile.h>
 #include <qimagereader.h>
+#include <qbuffer.h>
 
 QT_BEGIN_NAMESPACE
 
-extern QGLWidget* qt_gl_share_widget();
+extern const QGLContext* qt_gl_share_context();
 
 /*!
     \class QGLFramebufferObjectPool
@@ -261,14 +262,14 @@ QGLPixmapData::QGLPixmapData(PixelType type)
 
 QGLPixmapData::~QGLPixmapData()
 {
-    QGLWidget *shareWidget = qt_gl_share_widget();
-    if (!shareWidget)
+    const QGLContext *shareContext = qt_gl_share_context();
+    if (!shareContext)
         return;
 
     delete m_engine;
 
     if (m_texture.id) {
-        QGLShareContextScope ctx(shareWidget->context());
+        QGLShareContextScope ctx(shareContext);
         glDeleteTextures(1, &m_texture.id);
     }
 }
@@ -288,7 +289,7 @@ bool QGLPixmapData::isValidContext(const QGLContext *ctx) const
     if (ctx == m_ctx)
         return true;
 
-    const QGLContext *share_ctx = qt_gl_share_widget()->context();
+    const QGLContext *share_ctx = qt_gl_share_context();
     return ctx == share_ctx || QGLContext::areSharing(ctx, share_ctx);
 }
 
@@ -308,7 +309,7 @@ void QGLPixmapData::resize(int width, int height)
     d = pixelType() == QPixmapData::PixmapType ? 32 : 1;
 
     if (m_texture.id) {
-        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+        QGLShareContextScope ctx(qt_gl_share_context());
         glDeleteTextures(1, &m_texture.id);
         m_texture.id = 0;
     }
@@ -325,7 +326,7 @@ void QGLPixmapData::ensureCreated() const
 
     m_dirty = false;
 
-    QGLShareContextScope ctx(qt_gl_share_widget()->context());
+    QGLShareContextScope ctx(qt_gl_share_context());
     m_ctx = ctx;
 
     const GLenum internal_format = m_hasAlpha ? GL_RGBA : GL_RGB;
@@ -369,8 +370,101 @@ void QGLPixmapData::ensureCreated() const
 void QGLPixmapData::fromImage(const QImage &image,
                               Qt::ImageConversionFlags flags)
 {
+    QImage img = image;
+    createPixmapForImage(img, flags, false);
+}
+
+void QGLPixmapData::fromImageReader(QImageReader *imageReader,
+                                 Qt::ImageConversionFlags flags)
+{
+    QImage image = imageReader->read();
+    if (image.isNull())
+        return;
+
+    createPixmapForImage(image, flags, true);
+}
+
+bool QGLPixmapData::fromFile(const QString &filename, const char *format,
+                             Qt::ImageConversionFlags flags)
+{
+    if (pixelType() == QPixmapData::BitmapType)
+        return QPixmapData::fromFile(filename, format, flags);
+    QFile file(filename);
+    if (file.open(QIODevice::ReadOnly)) {
+        QByteArray data = file.peek(64);
+        bool alpha;
+        if (m_texture.canBindCompressedTexture
+                (data.constData(), data.size(), format, &alpha)) {
+            resize(0, 0);
+            data = file.readAll();
+            file.close();
+            QGLShareContextScope ctx(qt_gl_share_context());
+            QSize size = m_texture.bindCompressedTexture
+                (data.constData(), data.size(), format);
+            if (!size.isEmpty()) {
+                w = size.width();
+                h = size.height();
+                is_null = false;
+                d = 32;
+                m_hasAlpha = alpha;
+                m_source = QImage();
+                m_dirty = isValid();
+                return true;
+            }
+            return false;
+        }
+    }
+
+    QImage image = QImageReader(filename, format).read();
+    if (image.isNull())
+        return false;
+
+    createPixmapForImage(image, flags, true);
+
+    return !isNull();
+}
+
+bool QGLPixmapData::fromData(const uchar *buffer, uint len, const char *format,
+                             Qt::ImageConversionFlags flags)
+{
+    bool alpha;
+    const char *buf = reinterpret_cast<const char *>(buffer);
+    if (m_texture.canBindCompressedTexture(buf, int(len), format, &alpha)) {
+        resize(0, 0);
+        QGLShareContextScope ctx(qt_gl_share_context());
+        QSize size = m_texture.bindCompressedTexture(buf, int(len), format);
+        if (!size.isEmpty()) {
+            w = size.width();
+            h = size.height();
+            is_null = false;
+            d = 32;
+            m_hasAlpha = alpha;
+            m_source = QImage();
+            m_dirty = isValid();
+            return true;
+        }
+    }
+
+    QByteArray a = QByteArray::fromRawData(reinterpret_cast<const char *>(buffer), len);
+    QBuffer b(&a);
+    b.open(QIODevice::ReadOnly);
+    QImage image = QImageReader(&b, format).read();
+    if (image.isNull())
+        return false;
+
+    createPixmapForImage(image, flags, true);
+
+    return !isNull();
+}
+
+/*!
+    out-of-place conversion (inPlace == false) will always detach()
+ */
+void QGLPixmapData::createPixmapForImage(QImage &image, Qt::ImageConversionFlags flags, bool inPlace)
+{
     if (image.size() == QSize(w, h))
         setSerialNumber(++qt_gl_pixmap_serial);
+
     resize(image.width(), image.height());
 
     if (pixelType() == BitmapType) {
@@ -386,7 +480,15 @@ void QGLPixmapData::fromImage(const QImage &image,
                 || const_cast<QImage &>(image).data_ptr()->checkForAlphaPixels()))
             format = QImage::Format_ARGB32_Premultiplied;;
 
-        m_source = image.convertToFormat(format);
+        if (inPlace && image.data_ptr()->convertInPlace(format, flags)) {
+            m_source = image;
+        } else {
+            m_source = image.convertToFormat(format);
+
+            // convertToFormat won't detach the image if format stays the same.
+            if (image.format() == format)
+                m_source.detach();
+        }
     }
 
     m_dirty = true;
@@ -399,67 +501,10 @@ void QGLPixmapData::fromImage(const QImage &image,
     d = m_source.depth();
 
     if (m_texture.id) {
-        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+        QGLShareContextScope ctx(qt_gl_share_context());
         glDeleteTextures(1, &m_texture.id);
         m_texture.id = 0;
     }
-}
-
-bool QGLPixmapData::fromFile(const QString &filename, const char *format,
-                             Qt::ImageConversionFlags flags)
-{
-    if (pixelType() == QPixmapData::BitmapType)
-        return QPixmapData::fromFile(filename, format, flags);
-    QFile file(filename);
-    if (!file.open(QIODevice::ReadOnly))
-        return false;
-    QByteArray data = file.peek(64);
-    bool alpha;
-    if (m_texture.canBindCompressedTexture
-            (data.constData(), data.size(), format, &alpha)) {
-        resize(0, 0);
-        data = file.readAll();
-        file.close();
-        QGLShareContextScope ctx(qt_gl_share_widget()->context());
-        QSize size = m_texture.bindCompressedTexture
-            (data.constData(), data.size(), format);
-        if (!size.isEmpty()) {
-            w = size.width();
-            h = size.height();
-            is_null = false;
-            d = 32;
-            m_hasAlpha = alpha;
-            m_source = QImage();
-            m_dirty = isValid();
-            return true;
-        }
-        return false;
-    }
-    fromImage(QImageReader(&file, format).read(), flags);
-    return !isNull();
-}
-
-bool QGLPixmapData::fromData(const uchar *buffer, uint len, const char *format,
-                             Qt::ImageConversionFlags flags)
-{
-    bool alpha;
-    const char *buf = reinterpret_cast<const char *>(buffer);
-    if (m_texture.canBindCompressedTexture(buf, int(len), format, &alpha)) {
-        resize(0, 0);
-        QGLShareContextScope ctx(qt_gl_share_widget()->context());
-        QSize size = m_texture.bindCompressedTexture(buf, int(len), format);
-        if (!size.isEmpty()) {
-            w = size.width();
-            h = size.height();
-            is_null = false;
-            d = 32;
-            m_hasAlpha = alpha;
-            m_source = QImage();
-            m_dirty = isValid();
-            return true;
-        }
-    }
-    return QPixmapData::fromData(buffer, len, format, flags);
 }
 
 bool QGLPixmapData::scroll(int dx, int dy, const QRect &rect)
@@ -479,7 +524,7 @@ void QGLPixmapData::copy(const QPixmapData *data, const QRect &rect)
 
     const QGLPixmapData *other = static_cast<const QGLPixmapData *>(data);
     if (other->m_renderFbo) {
-        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+        QGLShareContextScope ctx(qt_gl_share_context());
 
         resize(rect.width(), rect.height());
         m_hasAlpha = other->m_hasAlpha;
@@ -586,6 +631,12 @@ QImage QGLPixmapData::toImage() const
     if (m_renderFbo) {
         copyBackFromRenderFbo(true);
     } else if (!m_source.isNull()) {
+        QImageData *data = const_cast<QImage &>(m_source).data_ptr();
+        if (data->paintEngine && data->paintEngine->isActive()
+            && data->paintEngine->paintDevice() == &m_source)
+        {
+            return m_source.copy();
+        }
         return m_source;
     } else if (m_dirty || m_hasFillColor) {
         return fillImage(m_fillColor);
@@ -593,7 +644,7 @@ QImage QGLPixmapData::toImage() const
         ensureCreated();
     }
 
-    QGLShareContextScope ctx(qt_gl_share_widget()->context());
+    QGLShareContextScope ctx(qt_gl_share_context());
     glBindTexture(GL_TEXTURE_2D, m_texture.id);
     return qt_gl_read_texture(QSize(w, h), true, true);
 }
@@ -617,7 +668,7 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
 
     m_hasFillColor = false;
 
-    const QGLContext *share_ctx = qt_gl_share_widget()->context();
+    const QGLContext *share_ctx = qt_gl_share_context();
     QGLShareContextScope ctx(share_ctx);
 
     ensureCreated();
@@ -672,8 +723,8 @@ QPaintEngine* QGLPixmapData::paintEngine() const
         extern QGLWidget* qt_gl_share_widget();
 
         if (!QGLContext::currentContext())
-            qt_gl_share_widget()->makeCurrent();
-        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+            const_cast<QGLContext *>(qt_gl_share_context())->makeCurrent();
+        QGLShareContextScope ctx(qt_gl_share_context());
 
         QGLFramebufferObjectFormat format;
         format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
@@ -739,8 +790,8 @@ QGLTexture* QGLPixmapData::texture() const
     return &m_texture;
 }
 
-Q_DECL_IMPORT extern int qt_defaultDpiX();
-Q_DECL_IMPORT extern int qt_defaultDpiY();
+Q_GUI_EXPORT int qt_defaultDpiX();
+Q_GUI_EXPORT int qt_defaultDpiY();
 
 int QGLPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {

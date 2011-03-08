@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -437,6 +437,7 @@ void Configure::parseCmdLine()
 {
     int argCount = configCmdLine.size();
     int i = 0;
+    const QStringList imageFormats = QStringList() << "gif" << "png" << "mng" << "jpeg" << "tiff";
 
 #if !defined(EVAL)
     if (argCount < 1) // skip rest if no arguments
@@ -739,6 +740,23 @@ void Configure::parseCmdLine()
         } else if (configCmdLine.at(i) == "-opengl-es-2") {
             dictionary[ "OPENGL" ]          = "yes";
             dictionary[ "OPENGL_ES_2" ]     = "yes";
+        } else if (configCmdLine.at(i) == "-opengl") {
+            dictionary[ "OPENGL" ]          = "yes";
+            i++;
+            if (i == argCount)
+                break;
+
+            if (configCmdLine.at(i) == "es1") {
+                dictionary[ "OPENGL_ES_CM" ]    = "yes";
+            } else if ( configCmdLine.at(i) == "es2" ) {
+                dictionary[ "OPENGL_ES_2" ]     = "yes";
+            } else if ( configCmdLine.at(i) == "desktop" ) {
+                dictionary[ "OPENGL_ES_2" ]     = "yes";
+            } else {
+                cout << "Argument passed to -opengl option is not valid." << endl;
+                dictionary[ "DONE" ] = "error";
+                break;
+            }
         }
 
         // OpenVG Support -------------------------------------------
@@ -812,6 +830,17 @@ void Configure::parseCmdLine()
             dictionary[ "SQL_IBASE" ] = "plugin";
         else if (configCmdLine.at(i) == "-no-sql-ibase")
             dictionary[ "SQL_IBASE" ] = "no";
+
+        // Image formats --------------------------------------------
+        else if (configCmdLine.at(i).startsWith("-qt-imageformat-") &&
+                 imageFormats.contains(configCmdLine.at(i).section('-', 3)))
+            dictionary[ configCmdLine.at(i).section('-', 3).toUpper() ] = "yes";
+        else if (configCmdLine.at(i).startsWith("-plugin-imageformat-") &&
+                 imageFormats.contains(configCmdLine.at(i).section('-', 3)))
+            dictionary[ configCmdLine.at(i).section('-', 3).toUpper() ] = "plugin";
+        else if (configCmdLine.at(i).startsWith("-no-imageformat-") &&
+                 imageFormats.contains(configCmdLine.at(i).section('-', 3)))
+            dictionary[ configCmdLine.at(i).section('-', 3).toUpper() ] = "no";
 #endif
         // IDE project generation -----------------------------------
         else if (configCmdLine.at(i) == "-no-dsp")
@@ -1010,6 +1039,10 @@ void Configure::parseCmdLine()
             if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
                 dictionary[ "QT_INSTALL_PLUGINS" ] =
                     QString("\\resource\\qt%1\\plugins").arg(dictionary[ "QT_LIBINFIX" ]);
+                dictionary[ "QT_INSTALL_IMPORTS" ] =
+                    QString("\\resource\\qt%1\\imports").arg(dictionary[ "QT_LIBINFIX" ]);
+                dictionary[ "QT_INSTALL_TRANSLATIONS" ] =
+                    QString("\\resource\\qt%1\\translations").arg(dictionary[ "QT_LIBINFIX" ]);
             }
         } else if (configCmdLine.at(i) == "-D") {
             ++i;
@@ -1733,6 +1766,11 @@ bool Configure::displayHelp()
 
         desc("QT3SUPPORT", "no","-no-qt3support",       "Disables the Qt 3 support functionality.\n");
         desc("OPENGL", "no","-no-opengl",               "Disables OpenGL functionality\n");
+        desc("OPENGL", "no","-opengl <api>",            "Enable OpenGL support with specified API version.\n"
+                                                        "Available values for <api>:");
+        desc("", "", "",                                "  desktop - Enable support for Desktop OpenGL", ' ');
+        desc("OPENGL_ES_CM", "no", "",                  "  es1 - Enable support for OpenGL ES Common Profile", ' ');
+        desc("OPENGL_ES_2",  "no", "",                  "  es2 - Enable support for OpenGL ES 2.0", ' ');
 
         desc("OPENVG", "no","-no-openvg",               "Disables OpenVG functionality\n");
         desc("OPENVG", "yes","-openvg",                 "Enables OpenVG functionality");
@@ -1892,8 +1930,7 @@ bool Configure::displayHelp()
         desc("CETEST", "no",       "-no-cetest",           "Do not compile Windows CE remote test application");
         desc("CETEST", "yes",      "-cetest",              "Compile Windows CE remote test application");
         desc(                      "-signature <file>",    "Use file for signing the target project");
-        desc("OPENGL_ES_CM", "no", "-opengl-es-cm",        "Enable support for OpenGL ES Common");
-        desc("OPENGL_ES_2",  "no", "-opengl-es-2",         "Enable support for OpenGL ES 2.0");
+
         desc("DIRECTSHOW", "no",   "-phonon-wince-ds9",    "Enable Phonon Direct Show 9 backend for Windows CE");
 
         // Qt\Symbian only options go below here -----------------------------------------------------------------------------
@@ -2483,15 +2520,11 @@ void Configure::generateOutputVars()
         qtConfig += "no-gif";
     else if (dictionary[ "GIF" ] == "yes")
         qtConfig += "gif";
-    else if (dictionary[ "GIF" ] == "plugin")
-        qmakeFormatPlugins += "gif";
 
     if (dictionary[ "TIFF" ] == "no")
         qtConfig += "no-tiff";
     else if (dictionary[ "TIFF" ] == "yes")
         qtConfig += "tiff";
-    else if (dictionary[ "TIFF" ] == "plugin")
-        qmakeFormatPlugins += "tiff";
     if (dictionary[ "LIBTIFF" ] == "system")
         qtConfig += "system-tiff";
 
@@ -2499,8 +2532,6 @@ void Configure::generateOutputVars()
         qtConfig += "no-jpeg";
     else if (dictionary[ "JPEG" ] == "yes")
         qtConfig += "jpeg";
-    else if (dictionary[ "JPEG" ] == "plugin")
-        qmakeFormatPlugins += "jpeg";
     if (dictionary[ "LIBJPEG" ] == "system")
         qtConfig += "system-jpeg";
 
@@ -2819,8 +2850,6 @@ void Configure::generateOutputVars()
         qmakeVars += QString("styles         += ") + qmakeStyles.join(" ");
     if (!qmakeStylePlugins.isEmpty())
         qmakeVars += QString("style-plugins  += ") + qmakeStylePlugins.join(" ");
-    if (!qmakeFormatPlugins.isEmpty())
-        qmakeVars += QString("imageformat-plugins += ") + qmakeFormatPlugins.join(" ");
 
     if (dictionary["QMAKESPEC"].endsWith("-g++")) {
         QString includepath = qgetenv("INCLUDE");
@@ -3236,8 +3265,7 @@ void Configure::generateConfigfiles()
     }
 
     // Copy configured mkspec to default directory, but remove the old one first, if there is any
-    QString mkspecsPath = buildPath + "/mkspecs";
-    QString defSpec = mkspecsPath + "/default";
+    QString defSpec = buildPath + "/mkspecs/default";
     QFileInfo defSpecInfo(defSpec);
     if (defSpecInfo.exists()) {
         if (!Environment::rmdir(defSpec)) {
@@ -3247,24 +3275,13 @@ void Configure::generateConfigfiles()
         }
     }
 
-    QDir mkspecsDir(mkspecsPath);
-    if (!mkspecsDir.mkdir("default")) {
-        cout << "Couldn't create default mkspec dir!" << endl;
-        dictionary["DONE"] = "error";
-        return;
-    }
-
     QString spec = dictionary.contains("XQMAKESPEC") ? dictionary["XQMAKESPEC"] : dictionary["QMAKESPEC"];
     QString pltSpec = sourcePath + "/mkspecs/" + spec;
-    outName = defSpec + "/qmake.conf";
-    QFile qmakeConfFile(outName);
-    if (qmakeConfFile.open(QFile::WriteOnly | QFile::Text)) {
-        QTextStream qmakeConfStream;
-        qmakeConfStream.setDevice(&qmakeConfFile);
-        qmakeConfStream << "QMAKESPEC_ORIGINAL=" << pltSpec << endl << endl;
-        qmakeConfStream << "include(" << pltSpec << "/qmake.conf)" << endl;
-        qmakeConfStream.flush();
-        qmakeConfFile.close();
+    QString includeSpec = buildPath + "/mkspecs/" + spec;
+    if (!Environment::cpdir(pltSpec, defSpec, includeSpec)) {
+        cout << "Couldn't update default mkspec! Does " << qPrintable(pltSpec) << " exist?" << endl;
+        dictionary["DONE"] = "error";
+        return;
     }
 
     // Generate the new qconfig.cpp file
@@ -3426,10 +3443,14 @@ void Configure::displayConfig()
         QString webkit = dictionary[ "WEBKIT" ];
         if (webkit == "debug")
             webkit = "yes (debug)";
-        cout << "WebKit support.............." << webkit;
+        cout << "WebKit support.............." << webkit << endl;
     }
-    cout << "Declarative support........." << dictionary[ "DECLARATIVE" ] << endl;
-    cout << "Declarative debugging......." << dictionary[ "DECLARATIVE_DEBUG" ] << endl;
+    {
+        QString declarative = dictionary[ "DECLARATIVE" ];
+        cout << "Declarative support........." << declarative << endl;
+        if (declarative == "yes")
+            cout << "Declarative debugging......." << dictionary[ "DECLARATIVE_DEBUG" ] << endl;
+    }
     cout << "QtScript support............" << dictionary[ "SCRIPT" ] << endl;
     cout << "QtScriptTools support......." << dictionary[ "SCRIPTTOOLS" ] << endl;
     cout << "Graphics System............." << dictionary[ "GRAPHICS_SYSTEM" ] << endl;
@@ -3560,7 +3581,11 @@ void Configure::generateHeaders()
         QStringList env;
         env += QString("QTDIR=" + sourcePath);
         env += QString("PATH=" + buildPath + "/bin/;" + qgetenv("PATH"));
-        Environment::execute(args, env, QStringList());
+        int retc = Environment::execute(args, env, QStringList());
+        if (retc) {
+            cout << "syncqt failed, return code " << retc << endl << endl;
+            dictionary["DONE"] = "error";
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -292,7 +292,8 @@ void setupTranslation(const QString &fileName, const QString &dir)
     QTranslator *translator = new QTranslator(QCoreApplication::instance());
     if (translator->load(fileName, dir)) {
         QCoreApplication::installTranslator(translator);
-    } else if (!fileName.endsWith(QLatin1String("en_US"))) {
+    } else if (!fileName.endsWith(QLatin1String("en_US"))
+            && !fileName.endsWith(QLatin1String("_C"))) {
         qWarning("Could not load translation file %s in directory %s.",
                  qPrintable(fileName), qPrintable(dir));
     }

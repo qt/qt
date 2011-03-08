@@ -2,7 +2,7 @@
 <!--
 # /****************************************************************************
 # **
-# ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+# ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 # ** Contact: Nokia Corporation (qt-info@nokia.com)
 # **
 # ** This file is part of symbian-sbsv2 mkspec.
@@ -38,4 +38,9 @@
     <interface name="qt.qmake_store_build" extends="Symbian.UserFLM"
                 flm="qmake_store_build.flm">
     </interface>    
+
+    <interface name="qt.qmake_clean" extends="Symbian.UserFLM"
+                flm="qmake_clean.flm">
+        <param name='CLEAN_FILES' />
+    </interface>
 </build>

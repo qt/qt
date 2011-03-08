@@ -88,7 +88,7 @@ class Q_GUI_EXPORT QPlatformFontDatabase
 public:
     virtual void populateFontDatabase();
     virtual QFontEngine *fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *handle);
-    virtual QStringList fallbacksForFamily(const QString family, const QFont::Style &style, const QUnicodeTables::Script &script) const;
+    virtual QStringList fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const;
     virtual QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
     virtual void releaseHandle(void *handle);
 
@@ -96,8 +96,8 @@ public:
 
     //callback
     static void registerQPF2Font(const QByteArray &dataArray, void *handle);
-    static void registerFont(const QString &familyname, const QString &foundryname, int weight,
-                             QFont::Style style, int stetch, bool antialiased, bool scalable, int pixelSize,
+    static void registerFont(const QString &familyname, const QString &foundryname, QFont::Weight weight,
+                             QFont::Style style, QFont::Stretch stretch, bool antialiased, bool scalable, int pixelSize,
                              const QSupportedWritingSystems &writingSystems, void *handle);
 };
 

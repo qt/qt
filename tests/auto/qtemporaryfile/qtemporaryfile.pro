@@ -10,3 +10,5 @@ symbian {
 }else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
+
+CONFIG += parallel_test

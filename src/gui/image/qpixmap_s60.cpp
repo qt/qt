@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1010,6 +1010,33 @@ void QS60PixmapData::fromNativeType(void* pixmap, NativeType nativeType)
                 delete sourceBitmap;
         }
     }
+}
+
+void QS60PixmapData::convertToDisplayMode(int mode)
+{
+    const TDisplayMode displayMode = static_cast<TDisplayMode>(mode);
+    if (!cfbsBitmap || cfbsBitmap->DisplayMode() == displayMode)
+        return;
+    if (image.depth() != TDisplayModeUtils::NumDisplayModeBitsPerPixel(displayMode)) {
+        qWarning("Cannot convert display mode due to depth mismatch");
+        return;
+    }
+
+    const TSize size = cfbsBitmap->SizeInPixels();
+    QScopedPointer<CFbsBitmap> newBitmap(createSymbianCFbsBitmap(size, displayMode));
+
+    const uchar *sptr = const_cast<const QImage &>(image).bits();
+    symbianBitmapDataAccess->beginDataAccess(newBitmap.data());
+    uchar *dptr = (uchar*)newBitmap->DataAddress();
+    Mem::Copy(dptr, sptr, image.byteCount());
+    symbianBitmapDataAccess->endDataAccess(newBitmap.data());
+
+    QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
+    delete cfbsBitmap;
+    lock.relock();
+    cfbsBitmap = newBitmap.take();
+    setSerialNumber(cfbsBitmap->Handle());
+    UPDATE_BUFFER();
 }
 
 QPixmapData *QS60PixmapData::createCompatiblePixmapData() const

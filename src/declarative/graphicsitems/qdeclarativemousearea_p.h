@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -129,6 +129,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeMouseArea : public QDeclarativeItem
     Q_PROPERTY(Qt::MouseButtons acceptedButtons READ acceptedButtons WRITE setAcceptedButtons NOTIFY acceptedButtonsChanged)
     Q_PROPERTY(bool hoverEnabled READ hoverEnabled WRITE setHoverEnabled NOTIFY hoverEnabledChanged)
     Q_PROPERTY(QDeclarativeDrag *drag READ drag CONSTANT) //### add flicking to QDeclarativeDrag or add a QDeclarativeFlick ???
+    Q_PROPERTY(bool preventStealing READ preventStealing WRITE setPreventStealing NOTIFY preventStealingChanged REVISION 1)
 
 public:
     QDeclarativeMouseArea(QDeclarativeItem *parent=0);
@@ -153,6 +154,9 @@ public:
 
     QDeclarativeDrag *drag();
 
+    bool preventStealing() const;
+    void setPreventStealing(bool prevent);
+
 Q_SIGNALS:
     void hoveredChanged();
     void pressedChanged();
@@ -161,6 +165,7 @@ Q_SIGNALS:
     void hoverEnabledChanged();
     void positionChanged(QDeclarativeMouseEvent *mouse);
     void mousePositionChanged(QDeclarativeMouseEvent *mouse);
+    Q_REVISION(1) void preventStealingChanged();
 
     void pressed(QDeclarativeMouseEvent *mouse);
     void pressAndHold(QDeclarativeMouseEvent *mouse);

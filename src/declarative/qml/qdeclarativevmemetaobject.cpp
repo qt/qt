@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,6 +46,7 @@
 #include "qdeclarativeexpression.h"
 #include "private/qdeclarativeexpression_p.h"
 #include "private/qdeclarativecontext_p.h"
+#include "private/qdeclarativebinding_p.h"
 
 Q_DECLARE_METATYPE(QScriptValue);
 
@@ -589,7 +590,21 @@ int QDeclarativeVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                 if (d->isObjectAlias()) {
                     *reinterpret_cast<QObject **>(a[0]) = target;
                     return -1;
-                } else if (d->isValueTypeAlias()) {
+                } 
+                
+                // Remove binding (if any) on write
+                if(c == QMetaObject::WriteProperty) {
+                    int flags = *reinterpret_cast<int*>(a[3]);
+                    if (flags & QDeclarativePropertyPrivate::RemoveBindingOnAliasWrite) {
+                        QDeclarativeData *targetData = QDeclarativeData::get(target);
+                        if (targetData && targetData->hasBindingBit(d->propertyIndex())) {
+                            QDeclarativeAbstractBinding *binding = QDeclarativePropertyPrivate::setBinding(target, d->propertyIndex(), d->isValueTypeAlias()?d->valueTypeIndex():-1, 0);
+                            if (binding) binding->destroy();
+                        }
+                    }
+                }
+                
+                if (d->isValueTypeAlias()) {
                     // Value type property
                     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(ctxt->engine);
 
@@ -819,6 +834,36 @@ void QDeclarativeVMEMetaObject::setVMEProperty(int index, const QScriptValue &v)
         static_cast<QDeclarativeVMEMetaObject *>(parent)->setVMEProperty(index, v);
     }
     return writeVarProperty(index - propOffset, v);
+}
+
+bool QDeclarativeVMEMetaObject::aliasTarget(int index, QObject **target, int *coreIndex, int *valueTypeIndex) const
+{
+    Q_ASSERT(index >= propOffset + metaData->propertyCount);
+
+    *target = 0;
+    *coreIndex = -1;
+    *valueTypeIndex = -1;
+
+    if (!ctxt)
+        return false;
+
+    QDeclarativeVMEMetaData::AliasData *d = metaData->aliasData() + (index - propOffset - metaData->propertyCount);
+    QDeclarativeContext *context = ctxt->asQDeclarativeContext();
+    QDeclarativeContextPrivate *ctxtPriv = QDeclarativeContextPrivate::get(context);
+
+    *target = ctxtPriv->data->idValues[d->contextIdx].data();
+    if (!*target)
+        return false;
+
+    if (d->isObjectAlias()) {
+    } else if (d->isValueTypeAlias()) {
+        *coreIndex = d->propertyIndex();
+        *valueTypeIndex = d->valueTypeIndex();
+    } else {
+        *coreIndex = d->propertyIndex();
+    }
+
+    return true;
 }
 
 void QDeclarativeVMEMetaObject::connectAlias(int aliasId)

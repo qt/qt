@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -144,8 +144,17 @@
                                 Smart installer will attempt to download
                                 missing dependencies in addition to
                                 just installing the application.
+                                Note: The application \c .sis contained in smart installer \c .sis
+                                will be recreated and signed with same certificates as
+                                smart installer \c .sis.
+    \row \o \c ok_installer_sis \o Otherwise similar to \c installer_sis target, except
+                                the application sis will not be recreated. This is useful
+                                when application \c .sis needs to be separately signed before
+                                including it into smart installer \c .sis.
     \row \o \c unsigned_installer_sis \o Create unsigned \l{Smart Installer}{smart installer}
                                          \c .sis file for project.
+                                         Note: The application \c .sis contained in smart installer
+                                         \c .sis will also be unsigned.
     \row \o \c stub_sis      \o Create a stub sis to allow upgradability of projects
                                 that are deployed in ROM
     \endtable
@@ -222,6 +231,7 @@
     \row \o -s                  \o Generates stub sis for ROM.
     \row \o -n <name>           \o Specifies the final sis name.
     \row \o -g                  \o Treat gcce platform as armv5.
+    \row \o -d                  \o Skip automatic patching of the package when default certificate is used.
     \endtable
 
     Execute the \c{createpackage.pl} script without any

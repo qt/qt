@@ -41,8 +41,18 @@
 
 #include "qplatformscreen_qpa.h"
 #include <QtGui/qapplication.h>
+#include <QtGui/private/qapplication_p.h>
 #include <QtGui/qdesktopwidget.h>
+#include <QtGui/qplatformintegration_qpa.h>
+#include <QtGui/qwidget.h>
+#include <QtGui/private/qwidget_p.h>
 
+/*!
+    Return the given top level widget for a given position.
+
+    Default implementation retrieves a list of all top level widgets and finds the first widget
+    which contains point \a pos
+*/
 QWidget *QPlatformScreen::topLevelAt(const QPoint & pos) const
 {
     QWidgetList list = QApplication::topLevelWidgets();
@@ -56,6 +66,13 @@ QWidget *QPlatformScreen::topLevelAt(const QPoint & pos) const
     return 0;
 }
 
+/*! \fn physicalSize() const
+    Reimplement in subclass to return the physical size of the screen. This function is used by
+    QFont to convert point sizes to pixel sizes.
+
+    Default implementation takes the pixel size of the screen, considers a dpi of 100 and returns
+    the calculated (and probably wrong) physical size
+*/
 QSize QPlatformScreen::physicalSize() const
 {
     static const int dpi = 100;
@@ -63,4 +80,50 @@ QSize QPlatformScreen::physicalSize() const
     int height = geometry().height() / dpi * qreal(25.4) ;
     return QSize(width,height);
 }
+
+Q_GUI_EXPORT extern QWidgetPrivate *qt_widget_private(QWidget *widget);
+QPlatformScreen * QPlatformScreen::platformScreenForWidget(const QWidget *widget)
+{
+    QWidget *window = widget->window();
+    QWidgetPrivate *windowPrivate = qt_widget_private(window);
+    QTLWExtra * topData = windowPrivate->topData();
+    QPlatformIntegration *integration =
+            QApplicationPrivate::platformIntegration();
+    return integration->screens()[topData->screenIndex];
+}
+
+/*!
+    \class QPlatformScreen
+    \since 4.8
+    \internal
+    \preliminary
+    \ingroup qpa
+
+    \brief The QPlatformScreen class provides an abstraction for visual displays.
+
+    Many window systems has support for retrieving information on the attached displays. To be able
+    to query the display QPA uses QPlatformScreen. Qt its self is most dependent on the
+    physicalSize() function, since this is the function it uses to calculate the dpi to use when
+    converting point sizes to pixels sizes. However, this is unfortunate on some systems, as the
+    native system fakes its dpi size.
+
+    QPlatformScreen is also used by the public api QDesktopWidget for information about the desktop.
+ */
+
+/*! \fn geometry() const
+    Reimplement in subclass to return the pixel geometry of the screen
+*/
+
+/*! \fn availableGeometry() const
+    Reimplement in subclass to return the pixel geometry of the available space
+    This normally is the desktop screen minus the task manager, global menubar etc.
+*/
+
+/*! \fn depth() const
+    Reimplement in subclass to return current depth of the screen
+*/
+
+/*! \fn format() const
+    Reimplement in subclass to return the image format which corresponds to the screen format
+*/
 

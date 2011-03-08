@@ -9,6 +9,7 @@ HEADERS +=  \
         io/qdataurl_p.h \
         io/qdebug.h \
         io/qdir.h \
+        io/qdir_p.h \
         io/qdiriterator.h \
         io/qfile.h \
         io/qfileinfo.h \
@@ -29,7 +30,11 @@ HEADERS +=  \
         io/qfsfileengine_p.h \
         io/qfsfileengine_iterator_p.h \
         io/qfilesystemwatcher.h \
-        io/qfilesystemwatcher_p.h
+        io/qfilesystemwatcher_p.h \
+        io/qfilesystementry_p.h \
+        io/qfilesystemengine_p.h \
+        io/qfilesystemmetadata_p.h \
+        io/qfilesystemiterator_p.h
 
 SOURCES += \
         io/qabstractfileengine.cpp \
@@ -52,25 +57,35 @@ SOURCES += \
         io/qsettings.cpp \
         io/qfsfileengine.cpp \
         io/qfsfileengine_iterator.cpp \
-        io/qfilesystemwatcher.cpp
+        io/qfilesystemwatcher.cpp \
+        io/qfilesystementry.cpp \
+        io/qfilesystemengine.cpp
 
 win32 {
         SOURCES += io/qsettings_win.cpp
         SOURCES += io/qprocess_win.cpp
         SOURCES += io/qfsfileengine_win.cpp
 
-        SOURCES += io/qfsfileengine_iterator_win.cpp
         SOURCES += io/qfilesystemwatcher_win.cpp
         HEADERS += io/qfilesystemwatcher_win_p.h
         HEADERS += io/qwindowspipewriter_p.h
         SOURCES += io/qwindowspipewriter.cpp
+        SOURCES += io/qfilesystemengine_win.cpp
+        SOURCES += io/qfilesystemiterator_win.cpp
 } else:unix {
         SOURCES += io/qfsfileengine_unix.cpp
-        SOURCES += io/qfsfileengine_iterator_unix.cpp
-        symbian:SOURCES += io/qprocess_symbian.cpp
-        else:SOURCES += io/qprocess_unix.cpp
+        symbian {
+            SOURCES += io/qfilesystemengine_symbian.cpp
+            SOURCES += io/qprocess_symbian.cpp
+            SOURCES += io/qfilesystemiterator_symbian.cpp
+        } else {
+            SOURCES += io/qfilesystemengine_unix.cpp
+            SOURCES += io/qprocess_unix.cpp
+            SOURCES += io/qfilesystemiterator_unix.cpp
+        }
         !nacl:macx-*: {
             HEADERS += io/qfilesystemwatcher_fsevents_p.h
+            SOURCES += io/qfilesystemengine_mac.cpp
             SOURCES += io/qsettings_mac.cpp io/qfilesystemwatcher_fsevents.cpp
         }
 

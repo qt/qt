@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -285,6 +285,7 @@ void QRuntimeWindowSurface::flush(QWidget *widget, const QRegion &region,
 
 void QRuntimeWindowSurface::setGeometry(const QRect &rect)
 {
+    QWindowSurface::setGeometry(rect);
     m_windowSurface->setGeometry(rect);
 }
 
@@ -322,7 +323,6 @@ QRuntimeGraphicsSystem::QRuntimeGraphicsSystem()
     : m_windowSurfaceDestroyPolicy(DestroyImmediately),
       m_graphicsSystem(0)
 {
-    QApplicationPrivate::graphics_system_name = QLatin1String("runtime");
     QApplicationPrivate::runtime_graphics_system = true;
 
 #ifdef QT_DEFAULT_RUNTIME_SYSTEM
@@ -336,6 +336,8 @@ QRuntimeGraphicsSystem::QRuntimeGraphicsSystem()
 #endif
 
     m_graphicsSystem = QGraphicsSystemFactory::create(m_graphicsSystemName);
+
+    QApplicationPrivate::graphics_system_name = QLatin1String("runtime");
 }
 
 

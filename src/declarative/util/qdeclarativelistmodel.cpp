@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -108,9 +108,9 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
     The following example shows a ListModel containing three elements, with the roles
     "name" and "cost".
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage listmodel.png
-    \endfloat
+    \enddiv
 
     \snippet doc/src/snippets/declarative/listmodel.qml 0
 
@@ -133,9 +133,9 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
 
     The delegate displays all the fruit attributes:
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage listmodel-nested.png
-    \endfloat
+    \enddiv
 
     \snippet doc/src/snippets/declarative/listmodel-nested.qml delegate
 
@@ -559,6 +559,14 @@ QScriptValue QDeclarativeListModel::get(int index) const
 */
 void QDeclarativeListModel::set(int index, const QScriptValue& valuemap)
 {
+    QList<int> roles;
+    set(index, valuemap, &roles);
+    if (!roles.isEmpty() && !inWorkerThread())
+        emit itemsChanged(index, 1, roles);
+}
+
+void QDeclarativeListModel::set(int index, const QScriptValue& valuemap, QList<int> *roles)
+{
     if (!valuemap.isObject() || valuemap.isArray()) {
         qmlInfo(this) << tr("set: value is not an object");
         return;
@@ -571,14 +579,10 @@ void QDeclarativeListModel::set(int index, const QScriptValue& valuemap)
     if (index == count()) {
         append(valuemap);
     } else {
-        QList<int> roles;
         if (m_flat)
-            m_flat->set(index, valuemap, &roles);
+            m_flat->set(index, valuemap, roles);
         else
-            m_nested->set(index, valuemap, &roles);
-
-        if (!inWorkerThread())
-            emit itemsChanged(index, 1, roles);
+            m_nested->set(index, valuemap, roles);
     }
 }
 
@@ -597,19 +601,23 @@ void QDeclarativeListModel::set(int index, const QScriptValue& valuemap)
 */
 void QDeclarativeListModel::setProperty(int index, const QString& property, const QVariant& value)
 {
+    QList<int> roles;
+    setProperty(index, property, value, &roles);
+    if (!roles.isEmpty() && !inWorkerThread())
+        emit itemsChanged(index, 1, roles);
+}
+
+void QDeclarativeListModel::setProperty(int index, const QString& property, const QVariant& value, QList<int> *roles)
+{
     if (count() == 0 || index >= count() || index < 0) {
         qmlInfo(this) << tr("set: index %1 out of range").arg(index);
         return;
     }
 
-    QList<int> roles;
     if (m_flat)
-        m_flat->setProperty(index, property, value, &roles);
+        m_flat->setProperty(index, property, value, roles);
     else
-        m_nested->setProperty(index, property, value, &roles);
-
-    if (!inWorkerThread())
-        emit itemsChanged(index, 1, roles);
+        m_nested->setProperty(index, property, value, roles);
 }
 
 /*!
@@ -1011,9 +1019,11 @@ void FlatListModel::setProperty(int index, const QString& property, const QVaria
     } else {
         role = iter.value();
     }
-    roles->append(role);
 
-    m_values[index][role] = value;
+    if (m_values[index][role] != value) {
+        roles->append(role);
+        m_values[index][role] = value;
+    }
 }
 
 void FlatListModel::move(int from, int to, int n)
@@ -1042,6 +1052,10 @@ bool FlatListModel::addValue(const QScriptValue &value, QHash<int, QVariant> *ro
             m_roles.insert(role, name);
             iter = m_strings.insert(name, role);
             if (roles)
+                roles->append(role);
+        } else {
+            int role = iter.value();
+            if (roles && row->contains(role) && row->value(role) != v)
                 roles->append(role);
         }
         row->insert(*iter, v);
@@ -1151,14 +1165,14 @@ void FlatListScriptClass::setProperty(Object *obj, const Identifier &name, const
         QHash<int, QVariant> &row = m_model->m_values[index];
         row[role] = value.toVariant();
 
+        QList<int> roles;
+        roles << role;
         if (m_model->m_parentAgent) {
             // This is the list in the worker thread, so tell the agent to
             // emit itemsChanged() later
-            m_model->m_parentAgent->changedData(index, 1);
+            m_model->m_parentAgent->changedData(index, 1, roles);
         } else {
             // This is the list in the main thread, so emit itemsChanged()
-            QList<int> roles;
-            roles << role;
             emit m_model->m_listModel->itemsChanged(index, 1, roles);
         }
     }
@@ -1350,7 +1364,9 @@ void NestedListModel::set(int index, const QScriptValue& valuemap, QList<int> *r
     Q_ASSERT(index >=0 && index < count());
 
     ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
-    node->setObjectValue(valuemap);
+    bool emitItemsChanged = node->setObjectValue(valuemap);
+    if (!emitItemsChanged)
+        return;
 
     QScriptValueIterator it(valuemap);
     while (it.hasNext()) {
@@ -1369,7 +1385,9 @@ void NestedListModel::setProperty(int index, const QString& property, const QVar
     Q_ASSERT(index >=0 && index < count());
 
     ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
-    node->setProperty(property, value);
+    bool emitItemsChanged = node->setProperty(property, value);
+    if (!emitItemsChanged)
+        return;
 
     int r = roleStrings.indexOf(property);
     if (r < 0) {
@@ -1441,24 +1459,37 @@ void ModelNode::clear()
     properties.clear();
 }
 
-void ModelNode::setObjectValue(const QScriptValue& valuemap, bool writeToCache) {
+bool ModelNode::setObjectValue(const QScriptValue& valuemap, bool writeToCache)
+{
+    bool emitItemsChanged = false;
+
     QScriptValueIterator it(valuemap);
     while (it.hasNext()) {
         it.next();
+        ModelNode *prev = properties.value(it.name());
         ModelNode *value = new ModelNode(m_model);
         QScriptValue v = it.value();
+
         if (v.isArray()) {
             value->isArray = true;
             value->setListValue(v);
+            if (writeToCache && objectCache)
+                objectCache->setValue(it.name().toUtf8(), QVariant::fromValue(value->model(m_model)));
+            emitItemsChanged = true;    // for now, too inefficient to check whether list and sublists have changed
         } else {
             value->values << v.toVariant();
             if (writeToCache && objectCache)
                 objectCache->setValue(it.name().toUtf8(), value->values.last());
+            if (!emitItemsChanged && prev && prev->values.count() == 1
+                    && prev->values[0] != value->values.last()) {
+                emitItemsChanged = true;
+            }
         }
         if (properties.contains(it.name()))
             delete properties[it.name()];
         properties.insert(it.name(), value);
     }
+    return emitItemsChanged;
 }
 
 void ModelNode::setListValue(const QScriptValue& valuelist) {
@@ -1481,9 +1512,12 @@ void ModelNode::setListValue(const QScriptValue& valuelist) {
     }
 }
 
-void ModelNode::setProperty(const QString& prop, const QVariant& val) {
+bool ModelNode::setProperty(const QString& prop, const QVariant& val) {
     QHash<QString, ModelNode *>::const_iterator it = properties.find(prop);
+    bool emitItemsChanged = false;
     if (it != properties.end()) {
+        if (val != (*it)->values[0])
+            emitItemsChanged = true;
         (*it)->values[0] = val;
     } else {
         ModelNode *n = new ModelNode(m_model);
@@ -1492,6 +1526,7 @@ void ModelNode::setProperty(const QString& prop, const QVariant& val) {
     }
     if (objectCache)
         objectCache->setValue(prop.toUtf8(), val);
+    return emitItemsChanged;
 }
 
 void ModelNode::updateListIndexes()
@@ -1559,7 +1594,7 @@ ModelObject::ModelObject(ModelNode *node, NestedListModel *model, QScriptEngine 
 void ModelObject::setValue(const QByteArray &name, const QVariant &val)
 {
     m_meta->setValue(name, val);
-    setProperty(name.constData(), val);
+    //setProperty(name.constData(), val);
 }
 
 void ModelObject::setNodeUpdatesEnabled(bool enable)
@@ -1586,9 +1621,9 @@ void ModelNodeMetaObject::propertyWritten(int index)
 
     QScriptValue sv = m_seng->newObject();
     sv.setProperty(propName, m_seng->newVariant(value));
-    m_obj->m_node->setObjectValue(sv, false);
-
-    m_obj->m_node->changedProperty(propName);
+    bool changed = m_obj->m_node->setObjectValue(sv, false);
+    if (changed)
+        m_obj->m_node->changedProperty(propName);
 }
 
 

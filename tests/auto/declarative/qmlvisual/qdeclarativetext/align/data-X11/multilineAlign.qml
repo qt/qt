@@ -10,238 +10,238 @@ VisualTest {
     }
     Frame {
         msec: 32
-        hash: "d80fd046c582a26230e547471f290f12"
+        hash: "377fd9e347a2e6e0930d1422ce744c5c"
     }
     Frame {
         msec: 48
-        hash: "d80fd046c582a26230e547471f290f12"
+        hash: "377fd9e347a2e6e0930d1422ce744c5c"
     }
     Frame {
         msec: 64
-        hash: "d80fd046c582a26230e547471f290f12"
+        hash: "377fd9e347a2e6e0930d1422ce744c5c"
     }
     Frame {
         msec: 80
-        hash: "d80fd046c582a26230e547471f290f12"
+        hash: "377fd9e347a2e6e0930d1422ce744c5c"
     }
     Frame {
         msec: 96
-        hash: "d80fd046c582a26230e547471f290f12"
+        hash: "377fd9e347a2e6e0930d1422ce744c5c"
     }
     Frame {
         msec: 112
-        hash: "d80fd046c582a26230e547471f290f12"
+        hash: "377fd9e347a2e6e0930d1422ce744c5c"
     }
     Frame {
         msec: 128
-        hash: "d80fd046c582a26230e547471f290f12"
+        hash: "377fd9e347a2e6e0930d1422ce744c5c"
     }
     Frame {
         msec: 144
-        hash: "d80fd046c582a26230e547471f290f12"
+        hash: "377fd9e347a2e6e0930d1422ce744c5c"
     }
     Frame {
         msec: 160
-        hash: "d80fd046c582a26230e547471f290f12"
+        hash: "377fd9e347a2e6e0930d1422ce744c5c"
     }
     Frame {
         msec: 176
-        hash: "f9e466557e920150c638621536d94e5b"
+        hash: "36106ba13106d262c02c67e82bba1443"
     }
     Frame {
         msec: 192
-        hash: "f9e466557e920150c638621536d94e5b"
+        hash: "36106ba13106d262c02c67e82bba1443"
     }
     Frame {
         msec: 208
-        hash: "f9e466557e920150c638621536d94e5b"
+        hash: "36106ba13106d262c02c67e82bba1443"
     }
     Frame {
         msec: 224
-        hash: "f9e466557e920150c638621536d94e5b"
+        hash: "36106ba13106d262c02c67e82bba1443"
     }
     Frame {
         msec: 240
-        hash: "f9e466557e920150c638621536d94e5b"
+        hash: "36106ba13106d262c02c67e82bba1443"
     }
     Frame {
         msec: 256
-        hash: "f9e466557e920150c638621536d94e5b"
+        hash: "36106ba13106d262c02c67e82bba1443"
     }
     Frame {
         msec: 272
-        hash: "f9e466557e920150c638621536d94e5b"
+        hash: "36106ba13106d262c02c67e82bba1443"
     }
     Frame {
         msec: 288
-        hash: "f9e466557e920150c638621536d94e5b"
+        hash: "36106ba13106d262c02c67e82bba1443"
     }
     Frame {
         msec: 304
-        hash: "f9e466557e920150c638621536d94e5b"
+        hash: "36106ba13106d262c02c67e82bba1443"
     }
     Frame {
         msec: 320
-        hash: "f9e466557e920150c638621536d94e5b"
+        hash: "36106ba13106d262c02c67e82bba1443"
     }
     Frame {
         msec: 336
-        hash: "40b5718a9370c332f254a3ead05dfe5b"
+        hash: "509d31a486ae2f83055b52ec12f33e76"
     }
     Frame {
         msec: 352
-        hash: "40b5718a9370c332f254a3ead05dfe5b"
+        hash: "509d31a486ae2f83055b52ec12f33e76"
     }
     Frame {
         msec: 368
-        hash: "40b5718a9370c332f254a3ead05dfe5b"
+        hash: "509d31a486ae2f83055b52ec12f33e76"
     }
     Frame {
         msec: 384
-        hash: "40b5718a9370c332f254a3ead05dfe5b"
+        hash: "509d31a486ae2f83055b52ec12f33e76"
     }
     Frame {
         msec: 400
-        hash: "40b5718a9370c332f254a3ead05dfe5b"
+        hash: "509d31a486ae2f83055b52ec12f33e76"
     }
     Frame {
         msec: 416
-        hash: "40b5718a9370c332f254a3ead05dfe5b"
+        hash: "509d31a486ae2f83055b52ec12f33e76"
     }
     Frame {
         msec: 432
-        hash: "40b5718a9370c332f254a3ead05dfe5b"
+        hash: "509d31a486ae2f83055b52ec12f33e76"
     }
     Frame {
         msec: 448
-        hash: "40b5718a9370c332f254a3ead05dfe5b"
+        hash: "509d31a486ae2f83055b52ec12f33e76"
     }
     Frame {
         msec: 464
-        hash: "40b5718a9370c332f254a3ead05dfe5b"
+        hash: "509d31a486ae2f83055b52ec12f33e76"
     }
     Frame {
         msec: 480
-        hash: "40b5718a9370c332f254a3ead05dfe5b"
+        hash: "509d31a486ae2f83055b52ec12f33e76"
     }
     Frame {
         msec: 496
-        hash: "3249c560c69e915020f9632acd1c5eca"
+        hash: "09b9249750ba637ef659cbc7b9a6055f"
     }
     Frame {
         msec: 512
-        hash: "3249c560c69e915020f9632acd1c5eca"
+        hash: "09b9249750ba637ef659cbc7b9a6055f"
     }
     Frame {
         msec: 528
-        hash: "3249c560c69e915020f9632acd1c5eca"
+        hash: "09b9249750ba637ef659cbc7b9a6055f"
     }
     Frame {
         msec: 544
-        hash: "3249c560c69e915020f9632acd1c5eca"
+        hash: "09b9249750ba637ef659cbc7b9a6055f"
     }
     Frame {
         msec: 560
-        hash: "3249c560c69e915020f9632acd1c5eca"
+        hash: "09b9249750ba637ef659cbc7b9a6055f"
     }
     Frame {
         msec: 576
-        hash: "3249c560c69e915020f9632acd1c5eca"
+        hash: "09b9249750ba637ef659cbc7b9a6055f"
     }
     Frame {
         msec: 592
-        hash: "3249c560c69e915020f9632acd1c5eca"
+        hash: "09b9249750ba637ef659cbc7b9a6055f"
     }
     Frame {
         msec: 608
-        hash: "3249c560c69e915020f9632acd1c5eca"
+        hash: "09b9249750ba637ef659cbc7b9a6055f"
     }
     Frame {
         msec: 624
-        hash: "3249c560c69e915020f9632acd1c5eca"
+        hash: "09b9249750ba637ef659cbc7b9a6055f"
     }
     Frame {
         msec: 640
-        hash: "3249c560c69e915020f9632acd1c5eca"
+        hash: "09b9249750ba637ef659cbc7b9a6055f"
     }
     Frame {
         msec: 656
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 672
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 688
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 704
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 720
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 736
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 752
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 768
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 784
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 800
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 816
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 832
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 848
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 864
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 880
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 896
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 912
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 928
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 944
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
     Frame {
         msec: 960
-        hash: "2df61c56ba08ef258a0d493760127a8d"
+        hash: "1ac7017fcf7c9775b66ed1fb78930a45"
     }
 }

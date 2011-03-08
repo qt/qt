@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -486,8 +486,6 @@ class ProgressTextTask : public RunFunctionTask<T>
 public:
     void runFunctor()
     {
-        while (this->isProgressUpdateNeeded() == false)
-            QTest::qSleep(1);
         this->setProgressValueAndText(1, QLatin1String("Foo 1"));
 
         while (this->isProgressUpdateNeeded() == false)
@@ -497,6 +495,10 @@ public:
         while (this->isProgressUpdateNeeded() == false)
             QTest::qSleep(1);
         this->setProgressValueAndText(3, QLatin1String("Foo 3"));
+
+        while (this->isProgressUpdateNeeded() == false)
+            QTest::qSleep(1);
+        this->setProgressValueAndText(4, QLatin1String("Foo 4"));
     }
 };
 
@@ -524,14 +526,16 @@ void tst_QFutureWatcher::progressText()
         QTestEventLoop::instance().enterLoop(5);
         QVERIFY(!QTestEventLoop::instance().timeout());
 
-        QCOMPARE(f.progressText(), QLatin1String("Foo 3"));
-        QCOMPARE(f.progressValue(), 3);
+        QCOMPARE(f.progressText(), QLatin1String("Foo 4"));
+        QCOMPARE(f.progressValue(), 4);
         QVERIFY(progressValues.contains(1));
         QVERIFY(progressValues.contains(2));
         QVERIFY(progressValues.contains(3));
+        QVERIFY(progressValues.contains(4));
         QVERIFY(progressTexts.contains(QLatin1String("Foo 1")));
         QVERIFY(progressTexts.contains(QLatin1String("Foo 2")));
         QVERIFY(progressTexts.contains(QLatin1String("Foo 3")));
+        QVERIFY(progressTexts.contains(QLatin1String("Foo 4")));
     }
 }
 

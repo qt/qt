@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -130,7 +130,7 @@
 
     \snippet doc/src/snippets/code/doc_src_qtestlib.qdoc 1
 
-    If you are using other buildtools, make sure that you add the location
+    If you are using other build tools, make sure that you add the location
     of the QTestLib header files to your include path (usually \c{include/QtTest}
     under your Qt installation directory). If you are using a release build
     of Qt, link your test to the \c QtTest library. For debug builds, use
@@ -245,10 +245,10 @@
     \endtable
 
     In short, walltime is always available but requires many repetitions to
-    get a useful result. 
-    Tick counters are usually available and can provide 
-    results with fewer repetitions, but can be susceptible to CPU frequency 
-    scaling issues. 
+    get a useful result.
+    Tick counters are usually available and can provide
+    results with fewer repetitions, but can be susceptible to CPU frequency
+    scaling issues.
     Valgrind provides exact results, but does not take
     I/O waits into account, and is only available on a limited number of
     platforms.
@@ -264,7 +264,7 @@
     See the chapter 5 in the \l{QTestLib Tutorial} for more benchmarking examples.
 
     \section1 Using QTestLib remotely on Windows CE
-    \c cetest is a convenience application which helps the user to launch an 
+    \c cetest is a convenience application which helps the user to launch an
     application remotely on a Windows CE device or emulator.
 
     It needs to be executed after the unit test has been successfully compiled.
@@ -370,7 +370,7 @@
     \title QTestLib Tutorial
 
     This tutorial gives a short introduction to how to use some of the
-    features of the QTestLib framework. It is divided into four
+    features of the QTestLib framework. It is divided into five
     chapters:
 
     \list 1
@@ -717,15 +717,15 @@
 
     \section1 Writing a Benchmark
     To create a benchmark we extend a test function with a QBENCHMARK macro.
-    A benchmark test function will then typically consist of setup code and 
+    A benchmark test function will then typically consist of setup code and
     a QBENCHMARK macro that contains the code to be measured. This test
     function benchmarks QString::localeAwareCompare().
 
     \snippet examples/qtestlib/tutorial5/benchmarking.cpp 0
 
-    Setup can be done at the beginning of the function, the clock is not 
+    Setup can be done at the beginning of the function, the clock is not
     running at this point. The code inside the QBENCHMARK macro will be
-    measured, and possibly repeated several times in order to  get an 
+    measured, and possibly repeated several times in order to  get an
     accurate measurement.
 
     Several \l {testlib-benchmarking-measurement}{back-ends} are available
@@ -733,7 +733,7 @@
 
     \section1 Data Functions
 
-    Data functions are useful for creating benchmarks that compare 
+    Data functions are useful for creating benchmarks that compare
     multiple data inputs, for example locale aware compare against standard
     compare.
 
@@ -743,20 +743,19 @@
 
     \snippet examples/qtestlib/tutorial5/benchmarking.cpp 2
 
-    The "if(useLocaleCompare)" switch is placed outside the QBENCHMARK 
+    The "if(useLocaleCompare)" switch is placed outside the QBENCHMARK
     macro to avoid measuring its overhead. Each benchmark test function
-    can have one active QBENCHMARK macro. 
+    can have one active QBENCHMARK macro.
 
     \section1 External Tools
 
     Tools for handling and visualizing test data are available as part of
-    the qtestlib-tools project on the 
-	\l{http://labs.qt.nokia.com/}{http://labs.qt.nokia.com/}Qt Labs Web site.
+    the \l {qtestlib-tools} project in the \l{Qt Labs} web site.
 	These include a tool for comparing performance data obtained from test
 	runs and a utility to generate Web-based graphs of performance data.
 
-    See the \l{qtestlib-tools Announcement} for more information on these
-    tools and a simple graphing example.
+    See the \l{qtestlib-tools Announcement}{qtestlib-tools announcement}
+    for more information on these tools and a simple graphing example.
 
 */
 

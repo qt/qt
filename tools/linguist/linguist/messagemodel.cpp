@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -206,6 +206,13 @@ bool DataModel::load(const QString &fileName, bool *langGuessed, QWidget *parent
     bool ok = tor.load(fileName, cd, QLatin1String("auto"));
     if (!ok) {
         QMessageBox::warning(parent, QObject::tr("Qt Linguist"), cd.error());
+        return false;
+    }
+
+    if (!tor.messageCount()) {
+        QMessageBox::warning(parent, QObject::tr("Qt Linguist"),
+                             tr("The translation file '%1' will not be loaded because it is empty.")
+                             .arg(Qt::escape(fileName)));
         return false;
     }
 

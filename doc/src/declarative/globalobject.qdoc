@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,7 +48,7 @@ data from over a network.
 The XMLHttpRequest API implements the same \l {http://www.w3.org/TR/XMLHttpRequest/}{W3C standard}
 as many popular web browsers with following exceptions:
 \list
-\i QML's XMLHttpRequest does not enforce the same origin policty.
+\i QML's XMLHttpRequest does not enforce the same origin policy.
 \i QML's XMLHttpRequest does not support \e synchronous requests.
 \endlist
 
@@ -77,7 +77,7 @@ browser.  The following objects and properties are supported by the QML implemen
 \o lastChild
 \o previousSibling
 \o nextSibling
-\o attribtes
+\o attributes
 \endlist
 
 \o 
@@ -141,8 +141,9 @@ using the Offline Storage API.
 \section3 db = openDatabaseSync(identifier, version, description, estimated_size, callback(db))
 
 Returns the database identified by \e identifier. If the database does not already exist, it
-is created with the properties \e description and \e estimated_size and the function \e callback
-is called with the database as a parameter.
+is created, and the function \e callback is called with the database as a parameter. \e description
+and \e estimated_size are written to the INI file (described below), but are otherwise currently
+unused.
 
 May throw exception with code property SQLException.DATABASE_ERR, or SQLException.VERSION_ERR.
 
@@ -153,7 +154,7 @@ When a database is first created, an INI file is also created specifying its cha
 \row \o Name \o The name of the database passed to \c openDatabase()
 \row \o Version \o The version of the database passed to \c openDatabase()
 \row \o Description \o The description of the database passed to \c openDatabase()
-\row \o EstimatedSize \o The estimated size of the database passed to \c openDatabase()
+\row \o EstimatedSize \o The estimated size (in bytes) of the database passed to \c openDatabase()
 \row \o Driver \o Currently "QSQLITE"
 \endtable
 

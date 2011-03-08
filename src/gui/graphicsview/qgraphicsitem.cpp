@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -3295,9 +3295,13 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
     }
 
     // Update the child focus chain.
-    if (scene && scene->focusItem())
-        scene->focusItem()->d_ptr->clearSubFocus();
-    f->d_ptr->setSubFocus();
+    QGraphicsItem *commonAncestor = 0;
+    if (scene && scene->focusItem()) {
+        commonAncestor = scene->focusItem()->commonAncestorItem(f);
+        scene->focusItem()->d_ptr->clearSubFocus(scene->focusItem(), commonAncestor);
+    }
+
+    f->d_ptr->setSubFocus(f, commonAncestor);
 
     // Update the scene's focus item.
     if (scene) {
@@ -5554,7 +5558,7 @@ void QGraphicsItemPrivate::ensureSceneTransformRecursive(QGraphicsItem **topMost
 /*!
     \internal
 */
-void QGraphicsItemPrivate::setSubFocus(QGraphicsItem *rootItem)
+void QGraphicsItemPrivate::setSubFocus(QGraphicsItem *rootItem, QGraphicsItem *stopItem)
 {
     // Update focus child chain. Stop at panels, or if this item
     // is hidden, stop at the first item with a visible parent.
@@ -5567,7 +5571,7 @@ void QGraphicsItemPrivate::setSubFocus(QGraphicsItem *rootItem)
         if (parent != q_ptr && parent->d_ptr->subFocusItem) {
             if (parent->d_ptr->subFocusItem == q_ptr)
                 break;
-            parent->d_ptr->subFocusItem->d_ptr->clearSubFocus();
+            parent->d_ptr->subFocusItem->d_ptr->clearSubFocus(0, stopItem);
         }
         parent->d_ptr->subFocusItem = q_ptr;
         parent->d_ptr->subFocusItemChange();
@@ -5580,7 +5584,7 @@ void QGraphicsItemPrivate::setSubFocus(QGraphicsItem *rootItem)
 /*!
     \internal
 */
-void QGraphicsItemPrivate::clearSubFocus(QGraphicsItem *rootItem)
+void QGraphicsItemPrivate::clearSubFocus(QGraphicsItem *rootItem, QGraphicsItem *stopItem)
 {
     // Reset sub focus chain.
     QGraphicsItem *parent = rootItem ? rootItem : q_ptr;
@@ -5588,7 +5592,8 @@ void QGraphicsItemPrivate::clearSubFocus(QGraphicsItem *rootItem)
         if (parent->d_ptr->subFocusItem != q_ptr)
             break;
         parent->d_ptr->subFocusItem = 0;
-        parent->d_ptr->subFocusItemChange();
+        if (parent != stopItem && !parent->isAncestorOf(stopItem))
+            parent->d_ptr->subFocusItemChange();
     } while (!parent->isPanel() && (parent = parent->d_ptr->parent));
 }
 
@@ -7684,11 +7689,13 @@ void QGraphicsObject::updateMicroFocus()
 
 void QGraphicsItemPrivate::children_append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item)
 {
-    QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(list->object);
-    if (QGraphicsItemPrivate::get(graphicsObject)->sendParentChangeNotification) {
-        item->setParentItem(graphicsObject);
-    } else {
-        QGraphicsItemPrivate::get(item)->setParentItemHelper(graphicsObject, 0, 0);
+    if (item) {
+        QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(list->object);
+        if (QGraphicsItemPrivate::get(graphicsObject)->sendParentChangeNotification) {
+            item->setParentItem(graphicsObject);
+        } else {
+            QGraphicsItemPrivate::get(item)->setParentItemHelper(graphicsObject, 0, 0);
+        }
     }
 }
 

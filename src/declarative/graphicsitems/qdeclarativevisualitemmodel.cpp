@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -557,8 +557,9 @@ QDeclarativeVisualDataModelData::~QDeclarativeVisualDataModelData()
 void QDeclarativeVisualDataModelData::ensureProperties()
 {
     QDeclarativeVisualDataModelPrivate *modelPriv = QDeclarativeVisualDataModelPrivate::get(m_model);
-    if (modelPriv->m_metaDataCacheable && !modelPriv->m_metaDataCreated) {
-        modelPriv->createMetaData();
+    if (modelPriv->m_metaDataCacheable) {
+        if (!modelPriv->m_metaDataCreated)
+            modelPriv->createMetaData();
         if (modelPriv->m_metaDataCreated)
             m_meta->setCached(true);
     }
@@ -773,6 +774,8 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
         QObject::connect(d->m_abstractItemModel, SIGNAL(modelReset()), this, SLOT(_q_modelReset()));
         QObject::connect(d->m_abstractItemModel, SIGNAL(layoutChanged()), this, SLOT(_q_layoutChanged()));
         d->m_metaDataCacheable = true;
+        if (d->m_abstractItemModel->canFetchMore(d->m_root))
+            d->m_abstractItemModel->fetchMore(d->m_root);
         return;
     }
     if ((d->m_visualItemModel = qvariant_cast<QDeclarativeVisualDataModel *>(model))) {
@@ -870,6 +873,8 @@ void QDeclarativeVisualDataModel::setRootIndex(const QVariant &root)
     if (d->m_root != modelIndex) {
         int oldCount = d->modelCount();
         d->m_root = modelIndex;
+        if (d->m_abstractItemModel && d->m_abstractItemModel->canFetchMore(modelIndex))
+            d->m_abstractItemModel->fetchMore(modelIndex);
         int newCount = d->modelCount();
         if (d->m_delegate && oldCount)
             emit itemsRemoved(0, oldCount);
@@ -1072,7 +1077,7 @@ QDeclarativeItem *QDeclarativeVisualDataModel::item(int index, const QByteArray 
         } else {
             delete data;
             delete ctxt;
-            qmlInfo(this, d->m_delegate->errors()) << "Error creating delgate";
+            qmlInfo(this, d->m_delegate->errors()) << "Error creating delegate";
         }
     }
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(nobj);
@@ -1094,6 +1099,8 @@ QDeclarativeItem *QDeclarativeVisualDataModel::item(int index, const QByteArray 
             d->m_delegateValidated = true;
         }
     }
+    if (d->modelCount()-1 == index && d->m_abstractItemModel && d->m_abstractItemModel->canFetchMore(d->m_root))
+        d->m_abstractItemModel->fetchMore(d->m_root);
 
     return item;
 }
@@ -1367,7 +1374,7 @@ void QDeclarativeVisualDataModel::_q_rowsMoved(const QModelIndex &sourceParent, 
     Q_D(QDeclarativeVisualDataModel);
     const int count = sourceEnd - sourceStart + 1;
     if (destinationParent == d->m_root && sourceParent == d->m_root) {
-        _q_itemsMoved(sourceStart, destinationRow, count);
+        _q_itemsMoved(sourceStart, sourceStart > destinationRow ? destinationRow : destinationRow-1, count);
     } else if (sourceParent == d->m_root) {
         _q_itemsRemoved(sourceStart, count);
     } else if (destinationParent == d->m_root) {

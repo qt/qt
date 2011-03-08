@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,7 +59,7 @@ class QPacket;
 class QPacketAutoSend;
 class QPacketProtocolPrivate;
 
-class Q_DECLARATIVE_PRIVATE_EXPORT QPacketProtocol : public QObject
+class Q_DECLARATIVE_EXPORT QPacketProtocol : public QObject
 {
 Q_OBJECT
 public:
@@ -89,7 +89,7 @@ private:
 };
 
 
-class Q_DECLARATIVE_PRIVATE_EXPORT QPacket : public QDataStream
+class Q_DECLARATIVE_EXPORT QPacket : public QDataStream
 {
 public:
     QPacket();
@@ -98,6 +98,7 @@ public:
 
     void clear();
     bool isEmpty() const;
+    QByteArray data() const;
 
 protected:
     friend class QPacketProtocol;

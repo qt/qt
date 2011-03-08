@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -68,6 +68,7 @@ public:
     void invalidate();
     bool isValid() const;
 
+    qint64 nsecsElapsed() const;
     qint64 elapsed() const;
     bool hasExpired(qint64 timeout) const;
 

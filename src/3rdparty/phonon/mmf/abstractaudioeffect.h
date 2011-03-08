@@ -21,7 +21,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QScopedPointer>
 
-#include <audioeffectbase.h>
+#include <AudioEffectBase.h>
 
 #include <phonon/effectinterface.h>
 
@@ -124,7 +124,7 @@ private:
 
 #define PHONON_MMF_DEFINE_EFFECT_FUNCTIONS(Effect)                      \
                                                                         \
-void Effect##::createEffect(AudioPlayer::NativePlayer *player)          \
+void Effect::createEffect(AudioPlayer::NativePlayer *player)            \
 {                                                                       \
     C##Effect *ptr = 0;                                                 \
     QT_TRAP_THROWING(ptr = C##Effect::NewL(*player));                   \

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -77,6 +77,7 @@ private slots:
     void quaternion();
     void matrix4x4();
     void font();
+    void variant();
 
     void bindingAssignment();
     void bindingRead();
@@ -94,6 +95,7 @@ private slots:
     void conflictingBindings();
     void returnValues();
     void varAssignment();
+    void bindingsSpliceCorrectly();
 
 private:
     QDeclarativeEngine engine;
@@ -207,6 +209,19 @@ void tst_qdeclarativevaluetypes::sizef()
 
         delete object;
     }
+}
+
+void tst_qdeclarativevaluetypes::variant()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("variant_read.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QCOMPARE(float(object->property("s_width").toDouble()), float(0.1));
+    QCOMPARE(float(object->property("s_height").toDouble()), float(100923.2));
+    QCOMPARE(object->property("copy"), QVariant(QSizeF(0.1, 100923.2)));
+
+    delete object;
 }
 
 void tst_qdeclarativevaluetypes::sizereadonly()
@@ -940,6 +955,61 @@ void tst_qdeclarativevaluetypes::varAssignment()
     QCOMPARE(object->property("z").toInt(), 3);
 
     delete object;
+}
+
+// Test bindings splice together correctly
+void tst_qdeclarativevaluetypes::bindingsSpliceCorrectly()
+{
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("bindingsSpliceCorrectly.1.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test").toBool(), true);
+
+    delete object;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("bindingsSpliceCorrectly.2.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test").toBool(), true);
+
+    delete object;
+    }
+
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("bindingsSpliceCorrectly.3.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test").toBool(), true);
+
+    delete object;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("bindingsSpliceCorrectly.4.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test").toBool(), true);
+
+    delete object;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("bindingsSpliceCorrectly.5.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test").toBool(), true);
+
+    delete object;
+    }
 }
 
 QTEST_MAIN(tst_qdeclarativevaluetypes)

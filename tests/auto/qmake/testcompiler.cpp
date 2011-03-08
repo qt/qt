@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -142,23 +142,16 @@ bool TestCompiler::runCommand( QString cmdline )
 
     bool failed = false;
     child.setReadChannel(QProcess::StandardError);
-    while (QProcess::Running == child.state()) {
-        if (child.waitForReadyRead(1000)) {
-            QString output = child.readAllStandardError();
-            testOutput_.append(output);
-
-            output.prepend('\n');
-            if (output.contains("\nProject MESSAGE: FAILED"))
-                failed = true;
-        }
-    }
-
     child.waitForFinished(-1);
 
-    return failed
-        ? false
-        : (child.exitStatus() == QProcess::NormalExit)
-            && (child.exitCode() == 0);
+    foreach (const QByteArray &output, child.readAllStandardError().split('\n')) {
+        testOutput_.append(QString::fromLocal8Bit(output));
+
+        if (output.startsWith("Project MESSAGE: FAILED"))
+            failed = true;
+    }
+
+    return !failed && child.exitStatus() == QProcess::NormalExit && child.exitCode() == 0;
 }
 
 void TestCompiler::setBaseCommands( QString makeCmd, QString qmakeCmd )

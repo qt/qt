@@ -51,24 +51,39 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
+class QPlatformGLContextPrivate;
+
 class Q_OPENGL_EXPORT QPlatformGLContext
 {
+Q_DECLARE_PRIVATE(QPlatformGLContext);
+
 public:
+    explicit QPlatformGLContext();
     virtual ~QPlatformGLContext();
 
-    virtual void makeCurrent() = 0;
-    virtual void doneCurrent() = 0;
+    virtual void makeCurrent();
+    virtual void doneCurrent();
     virtual void swapBuffers() = 0;
     virtual void* getProcAddress(const QString& procName) = 0;
 
     virtual QPlatformWindowFormat platformWindowFormat() const = 0;
 
+    const static QPlatformGLContext *currentContext();
     static QPlatformGLContext *defaultSharedContext();
 
 protected:
 
     static void setDefaultSharedContext(QPlatformGLContext *sharedContext);
 
+    QScopedPointer<QPlatformGLContextPrivate> d_ptr;
+private:
+    //hack to make it work with QGLContext::CurrentContext
+    friend class QGLContext;
+    friend class QWidgetPrivate;
+    void *qGLContextHandle() const;
+    void setQGLContextHandle(void *handle,void (*qGLContextDeleteFunction)(void *));
+    void deleteQGLContext();
+    Q_DISABLE_COPY(QPlatformGLContext);
 };
 
 QT_END_NAMESPACE

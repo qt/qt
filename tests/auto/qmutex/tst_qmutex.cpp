@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -67,6 +67,7 @@ private slots:
     void lock_unlock_locked_tryLock();
     void stressTest();
     void tryLockRace();
+    void qtbug16115_trylock();
 };
 
 static const int iterations = 100;
@@ -462,6 +463,43 @@ void tst_QMutex::tryLockRace()
     // mutex not in use, should be able to lock it
     QVERIFY(TryLockRaceThread::mutex.tryLock());
     TryLockRaceThread::mutex.unlock();
+}
+
+static volatile int qtbug16115_trylock_counter;
+
+void tst_QMutex::qtbug16115_trylock()
+{
+    //Used to deadlock on unix
+    struct TrylockThread : QThread {
+        TrylockThread(QMutex &mut) : mut(mut) {}
+        QMutex &mut;
+        void run() {
+            for (int i = 0; i < 1000000; ++i) {
+                if (mut.tryLock(0)) {
+                    Q_ASSERT((++qtbug16115_trylock_counter) == 1);
+                    Q_ASSERT((--qtbug16115_trylock_counter) == 0);
+                    mut.unlock();
+                }
+            }
+        }
+    };
+    QMutex mut;
+    TrylockThread t1(mut);
+    TrylockThread t2(mut);
+    TrylockThread t3(mut);
+    t1.start();
+    t2.start();
+    t3.start();
+
+    for (int i = 0; i < 1000000; ++i) {
+        mut.lock();
+        Q_ASSERT((++qtbug16115_trylock_counter) == 1);
+        Q_ASSERT((--qtbug16115_trylock_counter) == 0);
+        mut.unlock();
+    }
+    t1.wait();
+    t2.wait();
+    t3.wait();
 }
 
 QTEST_MAIN(tst_QMutex)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -532,10 +532,7 @@ LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
                     PostMessage(d->internalHwnd, WM_QT_SENDPOSTEDEVENTS, 0, 0);
                 }
             } else if (d->sendPostedEventsWindowsTimerId == 0
-                       && localSerialNumber != d->lastSerialNumber
-                       // if this message IS the one that triggers sendPostedEvents(), no need to post it again
-                       && (msg->hwnd != d->internalHwnd
-                           || msg->message != WM_QT_SENDPOSTEDEVENTS)) {
+                       && localSerialNumber != d->lastSerialNumber) {
                 // start a special timer to continue delivering posted events while
                 // there are still input and timer messages in the message queue
                 d->sendPostedEventsWindowsTimerId = SetTimer(d->internalHwnd,

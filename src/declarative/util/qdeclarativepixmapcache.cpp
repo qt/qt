@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -684,7 +684,7 @@ void QDeclarativePixmapStore::timerEvent(QTimerEvent *)
 }
 
 QDeclarativePixmapReply::QDeclarativePixmapReply(QDeclarativePixmapData *d)
-: data(d), reader(0), loading(false), redirectCount(0), requestSize(d->requestSize)
+: data(d), reader(0), requestSize(d->requestSize), loading(false), redirectCount(0)
 {
     if (finishedIndex == -1) {
         finishedIndex = QDeclarativePixmapReply::staticMetaObject.indexOfSignal("finished()");
@@ -959,20 +959,20 @@ QRect QDeclarativePixmap::rect() const
 
 void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url)
 {
-    load(engine, url, QSize(), false);
+    load(engine, url, QSize(), QDeclarativePixmap::Cache);
 }
 
-void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, bool async)
+void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, QDeclarativePixmap::Options options)
 {
-    load(engine, url, QSize(), async);
+    load(engine, url, QSize(), options);
 }
 
 void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, const QSize &size)
 {
-    load(engine, url, size, false);
+    load(engine, url, size, QDeclarativePixmap::Cache);
 }
 
-void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, const QSize &requestSize, bool async)
+void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, const QSize &requestSize, QDeclarativePixmap::Options options)
 {
     if (d) { d->release(); d = 0; }
 
@@ -982,19 +982,20 @@ void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, const
     QHash<QDeclarativePixmapKey, QDeclarativePixmapData *>::Iterator iter = store->m_cache.find(key);
 
     if (iter == store->m_cache.end()) {
-        if (async) {
+        if (options & QDeclarativePixmap::Asynchronous) {
             // pixmaps can only be loaded synchronously
             if (url.scheme() == QLatin1String("image") 
                     && QDeclarativeEnginePrivate::get(engine)->getImageProviderType(url) == QDeclarativeImageProvider::Pixmap) {
-                async = false;
+                options &= ~QDeclarativePixmap::Asynchronous;
             }
         }
 
-        if (!async) {
+        if (!(options & QDeclarativePixmap::Asynchronous)) {
             bool ok = false;
             d = createPixmapDataSync(engine, url, requestSize, &ok);
             if (ok) {
-                d->addToCache();
+                if (options & QDeclarativePixmap::Cache)
+                    d->addToCache();
                 return;
             }
             if (d)  // loadable, but encountered error while loading
@@ -1007,7 +1008,8 @@ void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, const
         QDeclarativePixmapReader *reader = QDeclarativePixmapReader::instance(engine);
 
         d = new QDeclarativePixmapData(url, requestSize);
-        d->addToCache();
+        if (options & QDeclarativePixmap::Cache)
+            d->addToCache();
 
         d->reply = reader->getImage(d);
     } else {

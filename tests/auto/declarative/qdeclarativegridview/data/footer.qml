@@ -1,6 +1,9 @@
 import QtQuick 1.0
 
 Rectangle {
+    function changeFooter() {
+        grid.footer = footer2
+    }
     width: 240
     height: 320
     color: "#ffffff"
@@ -28,5 +31,10 @@ Rectangle {
         model: testModel
         delegate: myDelegate
         footer: Text { objectName: "footer"; text: "Footer"; height: 30 }
+    }
+
+    Component {
+        id: footer2
+        Text { objectName: "footer2"; text: "Footer 2"; height: 20 }
     }
 }

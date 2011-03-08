@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -141,12 +141,18 @@ private slots:
     void showContextMenu(const QPoint& point);
     void bufferStatus(int percent);
     void openUrl();
+#ifdef Q_OS_SYMBIAN
+    void selectIAP();
+#endif
     void openRamFile();
     void configureEffect();
     void hasVideoChanged(bool);
 
 private:
     bool playPauseForDialog();
+#ifdef Q_OS_SYMBIAN
+    void selectIAPL();
+#endif
 
     QIcon playIcon;
     QIcon pauseIcon;

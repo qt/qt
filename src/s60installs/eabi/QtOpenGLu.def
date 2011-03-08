@@ -293,13 +293,13 @@ EXPORTS
 	_ZN17QGLContextPrivate14extensionFuncsEPK10QGLContext @ 292 NONAME
 	_ZN17QGLGraphicsSystemC1Eb @ 293 NONAME
 	_ZN17QGLGraphicsSystemC2Eb @ 294 NONAME
-	_ZN18QGLContextResource5valueEPK10QGLContext @ 295 NONAME
-	_ZN18QGLContextResource6insertEPK10QGLContextPv @ 296 NONAME
-	_ZN18QGLContextResource7cleanupEPK10QGLContextPv @ 297 NONAME
-	_ZN18QGLContextResourceC1EPFvPvE @ 298 NONAME
-	_ZN18QGLContextResourceC2EPFvPvE @ 299 NONAME
-	_ZN18QGLContextResourceD1Ev @ 300 NONAME
-	_ZN18QGLContextResourceD2Ev @ 301 NONAME
+	_ZN18QGLContextResource5valueEPK10QGLContext @ 295 NONAME ABSENT
+	_ZN18QGLContextResource6insertEPK10QGLContextPv @ 296 NONAME ABSENT
+	_ZN18QGLContextResource7cleanupEPK10QGLContextPv @ 297 NONAME ABSENT
+	_ZN18QGLContextResourceC1EPFvPvE @ 298 NONAME ABSENT
+	_ZN18QGLContextResourceC2EPFvPvE @ 299 NONAME ABSENT
+	_ZN18QGLContextResourceD1Ev @ 300 NONAME ABSENT
+	_ZN18QGLContextResourceD2Ev @ 301 NONAME ABSENT
 	_ZN20QGLCustomShaderStage11setInactiveEv @ 302 NONAME
 	_ZN20QGLCustomShaderStage12setOnPainterEP8QPainter @ 303 NONAME
 	_ZN20QGLCustomShaderStage16setUniformsDirtyEv @ 304 NONAME
@@ -333,15 +333,15 @@ EXPORTS
 	_ZN20QGLFramebufferObjectD0Ev @ 332 NONAME
 	_ZN20QGLFramebufferObjectD1Ev @ 333 NONAME
 	_ZN20QGLFramebufferObjectD2Ev @ 334 NONAME
-	_ZN20QGLTextureGlyphCache11fillTextureERKN18QTextureGlyphCache5CoordEj @ 335 NONAME
-	_ZN20QGLTextureGlyphCache11qt_metacallEN11QMetaObject4CallEiPPv @ 336 NONAME
-	_ZN20QGLTextureGlyphCache11qt_metacastEPKc @ 337 NONAME
-	_ZN20QGLTextureGlyphCache16staticMetaObjectE @ 338 NONAME DATA 16
+	_ZN20QGLTextureGlyphCache11fillTextureERKN18QTextureGlyphCache5CoordEj @ 335 NONAME ABSENT
+	_ZN20QGLTextureGlyphCache11qt_metacallEN11QMetaObject4CallEiPPv @ 336 NONAME ABSENT
+	_ZN20QGLTextureGlyphCache11qt_metacastEPKc @ 337 NONAME ABSENT
+	_ZN20QGLTextureGlyphCache16staticMetaObjectE @ 338 NONAME DATA 16 ABSENT
 	_ZN20QGLTextureGlyphCache17createTextureDataEii @ 339 NONAME
 	_ZN20QGLTextureGlyphCache17resizeTextureDataEii @ 340 NONAME
-	_ZN20QGLTextureGlyphCache19getStaticMetaObjectEv @ 341 NONAME
-	_ZN20QGLTextureGlyphCacheC1EP10QGLContextN21QFontEngineGlyphCache4TypeERK10QTransform @ 342 NONAME
-	_ZN20QGLTextureGlyphCacheC2EP10QGLContextN21QFontEngineGlyphCache4TypeERK10QTransform @ 343 NONAME
+	_ZN20QGLTextureGlyphCache19getStaticMetaObjectEv @ 341 NONAME ABSENT
+	_ZN20QGLTextureGlyphCacheC1EP10QGLContextN21QFontEngineGlyphCache4TypeERK10QTransform @ 342 NONAME ABSENT
+	_ZN20QGLTextureGlyphCacheC2EP10QGLContextN21QFontEngineGlyphCache4TypeERK10QTransform @ 343 NONAME ABSENT
 	_ZN20QGLTextureGlyphCacheD0Ev @ 344 NONAME
 	_ZN20QGLTextureGlyphCacheD1Ev @ 345 NONAME
 	_ZN20QGLTextureGlyphCacheD2Ev @ 346 NONAME
@@ -601,7 +601,7 @@ EXPORTS
 	_ZNK20QGLFramebufferObject7isValidEv @ 600 NONAME
 	_ZNK20QGLFramebufferObject7textureEv @ 601 NONAME
 	_ZNK20QGLFramebufferObject7toImageEv @ 602 NONAME
-	_ZNK20QGLTextureGlyphCache10metaObjectEv @ 603 NONAME
+	_ZNK20QGLTextureGlyphCache10metaObjectEv @ 603 NONAME ABSENT
 	_ZNK20QGLTextureGlyphCache12glyphPaddingEv @ 604 NONAME
 	_ZNK21QGraphicsShaderEffect10metaObjectEv @ 605 NONAME
 	_ZNK21QGraphicsShaderEffect19pixelShaderFragmentEv @ 606 NONAME
@@ -690,14 +690,14 @@ EXPORTS
 	_ZThn8_N16QGLWindowSurface8endPaintERK7QRegion @ 689 NONAME
 	_ZThn8_N16QGLWindowSurfaceD0Ev @ 690 NONAME
 	_ZThn8_N16QGLWindowSurfaceD1Ev @ 691 NONAME
-	_ZThn8_N20QGLTextureGlyphCache11fillTextureERKN18QTextureGlyphCache5CoordEj @ 692 NONAME
-	_ZThn8_N20QGLTextureGlyphCache17createTextureDataEii @ 693 NONAME
-	_ZThn8_N20QGLTextureGlyphCache17resizeTextureDataEii @ 694 NONAME
-	_ZThn8_N20QGLTextureGlyphCacheD0Ev @ 695 NONAME
-	_ZThn8_N20QGLTextureGlyphCacheD1Ev @ 696 NONAME
+	_ZThn8_N20QGLTextureGlyphCache11fillTextureERKN18QTextureGlyphCache5CoordEj @ 692 NONAME ABSENT
+	_ZThn8_N20QGLTextureGlyphCache17createTextureDataEii @ 693 NONAME ABSENT
+	_ZThn8_N20QGLTextureGlyphCache17resizeTextureDataEii @ 694 NONAME ABSENT
+	_ZThn8_N20QGLTextureGlyphCacheD0Ev @ 695 NONAME ABSENT
+	_ZThn8_N20QGLTextureGlyphCacheD1Ev @ 696 NONAME ABSENT
 	_ZThn8_N9QGLWidgetD0Ev @ 697 NONAME
 	_ZThn8_N9QGLWidgetD1Ev @ 698 NONAME
-	_ZThn8_NK20QGLTextureGlyphCache12glyphPaddingEv @ 699 NONAME
+	_ZThn8_NK20QGLTextureGlyphCache12glyphPaddingEv @ 699 NONAME ABSENT
 	_ZThn8_NK9QGLWidget11paintEngineEv @ 700 NONAME
 	_ZeqRK9QGLFormatS1_ @ 701 NONAME
 	_Zls6QDebugRK9QGLFormat @ 702 NONAME
@@ -705,6 +705,6 @@ EXPORTS
 	_ZN16QGLWindowSurface26initializeOffscreenTextureERK5QSize @ 704 NONAME
 	_ZNK20QGLTextureGlyphCache15maxTextureWidthEv @ 705 NONAME
 	_ZNK20QGLTextureGlyphCache16maxTextureHeightEv @ 706 NONAME
-	_ZThn8_NK20QGLTextureGlyphCache15maxTextureWidthEv @ 707 NONAME
-	_ZThn8_NK20QGLTextureGlyphCache16maxTextureHeightEv @ 708 NONAME
+	_ZThn8_NK20QGLTextureGlyphCache15maxTextureWidthEv @ 707 NONAME ABSENT
+	_ZThn8_NK20QGLTextureGlyphCache16maxTextureHeightEv @ 708 NONAME ABSENT
 

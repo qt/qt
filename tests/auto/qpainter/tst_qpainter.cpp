@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -261,6 +261,8 @@ private slots:
 
     void QTBUG14614_gradientCacheRaceCondition();
     void drawTextOpacity();
+
+    void QTBUG17053_zeroDashPattern();
 
 private:
     void fillData();
@@ -4682,6 +4684,26 @@ void tst_QPainter::drawTextOpacity()
     p.end();
 
     QCOMPARE(image, copy);
+}
+
+void tst_QPainter::QTBUG17053_zeroDashPattern()
+{
+    QImage image(32, 32, QImage::Format_RGB32);
+    image.fill(0xffffffff);
+
+    QImage original = image;
+
+    QVector<qreal> pattern;
+    pattern << qreal(0) << qreal(0);
+
+    QPainter p(&image);
+    QPen pen(Qt::black, 2.0);
+    pen.setDashPattern(pattern);
+
+    p.setPen(pen);
+    p.drawLine(0, 0, image.width(), image.height());
+
+    QCOMPARE(image, original);
 }
 
 QTEST_MAIN(tst_QPainter)

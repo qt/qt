@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -132,6 +132,7 @@ private slots:
 
     // Bugs
     void crashOnValueProperty();
+    void aliasPropertyBindings();
 
     void copy();
 private:
@@ -166,6 +167,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty()
     QCOMPARE(prop.isWritable(), false);
     QCOMPARE(prop.isDesignable(), false);
     QCOMPARE(prop.isResettable(), false);
+    QCOMPARE(prop.isSignalProperty(), false);
     QCOMPARE(prop.isValid(), false);
     QCOMPARE(prop.object(), (QObject *)0);
     QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
@@ -262,6 +264,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object()
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), false);
         QCOMPARE(prop.isResettable(), false);
+        QCOMPARE(prop.isSignalProperty(), false);
         QCOMPARE(prop.isValid(), false);
         QCOMPARE(prop.object(), (QObject *)0);
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
@@ -308,6 +311,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object()
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), true);
         QCOMPARE(prop.isResettable(), false);
+        QCOMPARE(prop.isSignalProperty(), false);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::Normal);
@@ -361,6 +365,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), false);
         QCOMPARE(prop.isResettable(), false);
+        QCOMPARE(prop.isSignalProperty(), false);
         QCOMPARE(prop.isValid(), false);
         QCOMPARE(prop.object(), (QObject *)0);
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
@@ -407,6 +412,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), true);
         QCOMPARE(prop.isResettable(), false);
+        QCOMPARE(prop.isSignalProperty(), false);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::Normal);
@@ -455,6 +461,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), false);
         QCOMPARE(prop.isResettable(), false);
+        QCOMPARE(prop.isSignalProperty(), true);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
@@ -502,6 +509,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), false);
         QCOMPARE(prop.isResettable(), false);
+        QCOMPARE(prop.isSignalProperty(), true);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
@@ -554,6 +562,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_context()
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), false);
         QCOMPARE(prop.isResettable(), false);
+        QCOMPARE(prop.isSignalProperty(), false);
         QCOMPARE(prop.isValid(), false);
         QCOMPARE(prop.object(), (QObject *)0);
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
@@ -600,6 +609,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_context()
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), true);
         QCOMPARE(prop.isResettable(), false);
+        QCOMPARE(prop.isSignalProperty(), false);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::Normal);
@@ -653,6 +663,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), false);
         QCOMPARE(prop.isResettable(), false);
+        QCOMPARE(prop.isSignalProperty(), false);
         QCOMPARE(prop.isValid(), false);
         QCOMPARE(prop.object(), (QObject *)0);
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
@@ -699,6 +710,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), true);
         QCOMPARE(prop.isResettable(), false);
+        QCOMPARE(prop.isSignalProperty(), false);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::Normal);
@@ -747,6 +759,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), false);
         QCOMPARE(prop.isResettable(), false);
+        QCOMPARE(prop.isSignalProperty(), true);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
@@ -794,6 +807,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), false);
         QCOMPARE(prop.isResettable(), false);
+        QCOMPARE(prop.isSignalProperty(), true);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
@@ -921,6 +935,17 @@ void tst_qdeclarativeproperty::read()
         QCOMPARE(p.read(), QVariant("myName"));
     }
 
+    // Value prop by name (static)
+    {
+        QObject o;
+
+        QCOMPARE(QDeclarativeProperty::read(&o, "objectName"), QVariant(QString()));
+
+        o.setObjectName("myName");
+
+        QCOMPARE(QDeclarativeProperty::read(&o, "objectName"), QVariant("myName"));
+    }
+
     // Value-type prop
     {
         PropertyObject o;
@@ -993,6 +1018,16 @@ void tst_qdeclarativeproperty::read()
         QCOMPARE(qvariant_cast<QObject *>(v)->property("a").toInt(), 10);
         QCOMPARE(qvariant_cast<QObject *>(v)->property("b").toInt(), 19);
     }
+    {   // static
+        QDeclarativeComponent component(&engine, TEST_FILE("readSynthesizedObject.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QVariant v = QDeclarativeProperty::read(object, "test", &engine);
+        QVERIFY(v.userType() == QMetaType::QObjectStar);
+        QCOMPARE(qvariant_cast<QObject *>(v)->property("a").toInt(), 10);
+        QCOMPARE(qvariant_cast<QObject *>(v)->property("b").toInt(), 19);
+    }
 
     // Attached property
     {
@@ -1023,6 +1058,15 @@ void tst_qdeclarativeproperty::read()
 
         QDeclarativeProperty p(object, "Foo.MyContainer.foo", qmlContext(object));
         QCOMPARE(p.read(), QVariant(10));
+        delete object;
+    }
+    {   // static
+        QDeclarativeComponent component(&engine);
+        component.setData("import Test 1.0 as Foo\nFoo.MyContainer { Foo.MyContainer.foo: 10 }", QUrl());
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(QDeclarativeProperty::read(object, "Foo.MyContainer.foo", qmlContext(object)), QVariant(10));
         delete object;
     }
 }
@@ -1062,6 +1106,13 @@ void tst_qdeclarativeproperty::write()
         QDeclarativeProperty p(&o, QString("objectName"));
         QCOMPARE(o.objectName(), QString());
         QCOMPARE(p.write(QVariant(QString("myName"))), true);
+        QCOMPARE(o.objectName(), QString("myName"));
+    }
+
+    // Writable prop by name (static)
+    {
+        PropertyObject o;
+        QCOMPARE(QDeclarativeProperty::write(&o, QString("objectName"), QVariant(QString("myName"))), true);
         QCOMPARE(o.objectName(), QString("myName"));
     }
 
@@ -1135,6 +1186,18 @@ void tst_qdeclarativeproperty::write()
         QVERIFY(result != QUrl("main.qml"));
 
         QCOMPARE(p2.write(QUrl("main.qml")), true);
+        QCOMPARE(o.url(), result);
+    }
+    {   // static
+        PropertyObject o;
+
+        QCOMPARE(QDeclarativeProperty::write(&o, "url", QUrl("main.qml")), true);
+        QCOMPARE(o.url(), QUrl("main.qml"));
+
+        QUrl result = engine.baseUrl().resolved(QUrl("main.qml"));
+        QVERIFY(result != QUrl("main.qml"));
+
+        QCOMPARE(QDeclarativeProperty::write(&o, "url", QUrl("main.qml"), engine.rootContext()), true);
         QCOMPARE(o.url(), result);
     }
 
@@ -1306,6 +1369,74 @@ void tst_qdeclarativeproperty::crashOnValueProperty()
     QCOMPARE(p.read(), QVariant(10));
     p.write(QVariant(20));
     QCOMPARE(p.read(), QVariant(20));
+}
+
+// QTBUG-13719
+void tst_qdeclarativeproperty::aliasPropertyBindings()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasPropertyBindings.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("realProperty").toReal(), 90.);
+    QCOMPARE(object->property("aliasProperty").toReal(), 90.);
+
+    object->setProperty("test", 10);
+
+    QCOMPARE(object->property("realProperty").toReal(), 110.);
+    QCOMPARE(object->property("aliasProperty").toReal(), 110.);
+
+    QDeclarativeProperty realProperty(object, QLatin1String("realProperty"));
+    QDeclarativeProperty aliasProperty(object, QLatin1String("aliasProperty"));
+
+    // Check there is a binding on these two properties
+    QVERIFY(QDeclarativePropertyPrivate::binding(realProperty) != 0);
+    QVERIFY(QDeclarativePropertyPrivate::binding(aliasProperty) != 0);
+
+    // Check that its the same binding on these two properties
+    QCOMPARE(QDeclarativePropertyPrivate::binding(realProperty),
+             QDeclarativePropertyPrivate::binding(aliasProperty));
+
+    // Change the binding
+    object->setProperty("state", QString("switch"));
+
+    QVERIFY(QDeclarativePropertyPrivate::binding(realProperty) != 0);
+    QVERIFY(QDeclarativePropertyPrivate::binding(aliasProperty) != 0);
+    QCOMPARE(QDeclarativePropertyPrivate::binding(realProperty),
+             QDeclarativePropertyPrivate::binding(aliasProperty));
+
+    QCOMPARE(object->property("realProperty").toReal(), 96.);
+    QCOMPARE(object->property("aliasProperty").toReal(), 96.);
+
+    // Check the old binding really has not effect any more
+    object->setProperty("test", 4);
+
+    QCOMPARE(object->property("realProperty").toReal(), 96.);
+    QCOMPARE(object->property("aliasProperty").toReal(), 96.);
+
+    object->setProperty("test2", 9);
+
+    QCOMPARE(object->property("realProperty").toReal(), 288.);
+    QCOMPARE(object->property("aliasProperty").toReal(), 288.);
+
+    // Revert
+    object->setProperty("state", QString(""));
+
+    QVERIFY(QDeclarativePropertyPrivate::binding(realProperty) != 0);
+    QVERIFY(QDeclarativePropertyPrivate::binding(aliasProperty) != 0);
+    QCOMPARE(QDeclarativePropertyPrivate::binding(realProperty),
+             QDeclarativePropertyPrivate::binding(aliasProperty));
+
+    QCOMPARE(object->property("realProperty").toReal(), 20.);
+    QCOMPARE(object->property("aliasProperty").toReal(), 20.);
+
+    object->setProperty("test2", 3);
+
+    QCOMPARE(object->property("realProperty").toReal(), 20.);
+    QCOMPARE(object->property("aliasProperty").toReal(), 20.);
+
+    delete object;
 }
 
 void tst_qdeclarativeproperty::copy()

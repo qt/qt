@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -725,6 +725,14 @@ bool QFileDialogPrivate::setVisible_sys(bool visible)
     Q_Q(QFileDialog);
     if (!visible == q->isHidden())
         return false;
+
+    if (q->windowFlags() & Qt::WindowStaysOnTopHint) {
+        // The native file dialog tries all it can to stay
+        // on the NSModalPanel level. And it might also show
+        // its own "create directory" dialog that we cannot control.
+        // So we need to use the non-native version in this case...
+        return false;
+    }
 
 #ifndef QT_MAC_USE_COCOA
     return visible ? showCarbonNavServicesDialog() : hideCarbonNavServicesDialog();

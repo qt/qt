@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,6 +60,12 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QLibrary> // for loading the security lib for the CA store
 
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+// Symbian does not seem to have the symbol for SNI defined
+#ifndef SSL_CTRL_SET_TLSEXT_HOSTNAME
+#define SSL_CTRL_SET_TLSEXT_HOSTNAME 55
+#endif
+#endif
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_OS_MAC)
@@ -80,6 +86,7 @@ QT_BEGIN_NAMESPACE
 
 bool QSslSocketPrivate::s_libraryLoaded = false;
 bool QSslSocketPrivate::s_loadedCiphersAndCerts = false;
+bool QSslSocketPrivate::s_loadRootCertsOnDemand = false;
 
 /* \internal
 
@@ -317,6 +324,13 @@ init_context:
         q_X509_STORE_add_cert(ctx->cert_store, (X509 *)caCertificate.handle());
     }
 
+    if (s_loadRootCertsOnDemand && allowRootCertOnDemandLoading) {
+        // tell OpenSSL the directories where to look up the root certs on demand
+        QList<QByteArray> unixDirs = unixRootCertDirectories();
+        for (int a = 0; a < unixDirs.count(); ++a)
+            q_SSL_CTX_load_verify_locations(ctx, 0, unixDirs.at(a).constData());
+    }
+
     // Register a custom callback to get all verification errors.
     X509_STORE_set_verify_cb_func(ctx->cert_store, q_X509Callback);
 
@@ -377,6 +391,20 @@ init_context:
         emit q->error(QAbstractSocket::UnknownSocketError);
         return false;
     }
+
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+    if (client && q_SSLeay() >= 0x00090806fL) {
+        // Set server hostname on TLS extension. RFC4366 section 3.1 requires it in ACE format.
+        QString tlsHostName = verificationPeerName.isEmpty() ? q->peerName() : verificationPeerName;
+        if (tlsHostName.isEmpty())
+            tlsHostName = hostName;
+        QByteArray ace = QUrl::toAce(tlsHostName);
+        if (!ace.isEmpty()) {
+            if (!q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, ace.constData()))
+                qWarning("could not set SSL_CTRL_SET_TLSEXT_HOSTNAME, Server Name Indication disabled");
+        }
+    }
+#endif
 
     // Clear the session.
     q_SSL_clear(ssl);
@@ -517,8 +545,22 @@ void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
     } else {
         qWarning("could not load crypt32 library"); // should never happen
     }
+#elif defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(Q_OS_MAC)
+    // check whether we can enable on-demand root-cert loading (i.e. check whether the sym links are there)
+    QList<QByteArray> dirs = unixRootCertDirectories();
+    QStringList symLinkFilter;
+    symLinkFilter << QLatin1String("[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].[0-9]");
+    for (int a = 0; a < dirs.count(); ++a) {
+        QDirIterator iterator(QLatin1String(dirs.at(a)), symLinkFilter, QDir::Files);
+        if (iterator.hasNext()) {
+            s_loadRootCertsOnDemand = true;
+            break;
+        }
+    }
 #endif
-    setDefaultCaCertificates(systemCaCertificates());
+    // if on-demand loading was not enabled, load the certs now
+    if (!s_loadRootCertsOnDemand)
+        setDefaultCaCertificates(systemCaCertificates());
 }
 
 /*!
@@ -780,6 +822,7 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
                     systemCerts.append(QSslCertificate::fromData(rawCert, QSsl::Der));
                 }
             }
+            CFRelease(cfCerts);
         }
         else {
            // no detailed error handling here
@@ -813,15 +856,7 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
     }
 #elif defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     QSet<QString> certFiles;
-    QList<QByteArray> directories;
-    directories << "/etc/ssl/certs/"; // (K)ubuntu, OpenSUSE, Mandriva, MeeGo ...
-    directories << "/usr/lib/ssl/certs/"; // Gentoo, Mandrake
-    directories << "/usr/share/ssl/"; // Centos, Redhat, SuSE
-    directories << "/usr/local/ssl/"; // Normal OpenSSL Tarball
-    directories << "/var/ssl/certs/"; // AIX
-    directories << "/usr/local/ssl/certs/"; // Solaris
-    directories << "/opt/openssl/certs/"; // HP-UX
-
+    QList<QByteArray> directories = unixRootCertDirectories();
     QDir currentDir;
     QStringList nameFilters;
     nameFilters << QLatin1String("*.pem") << QLatin1String("*.crt");

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,41 +56,42 @@ class CppCodeMarker : public CodeMarker
     CppCodeMarker();
     ~CppCodeMarker();
 
-    bool recognizeCode(const QString& code);
-    bool recognizeExtension(const QString& ext);
-    bool recognizeLanguage(const QString& lang);
-    QString plainName(const Node *node);
-    QString plainFullName(const Node *node, const Node *relative);
-    QString markedUpCode(const QString& code, 
-                         const Node *relative, 
-                         const QString& dirPath);
-    QString markedUpSynopsis(const Node *node, 
-                             const Node *relative,
-                             SynopsisStyle style);
+    virtual bool recognizeCode(const QString& code);
+    virtual bool recognizeExtension(const QString& ext);
+    virtual bool recognizeLanguage(const QString& lang);
+    virtual Atom::Type atomType() const;
+    virtual QString plainName(const Node *node);
+    virtual QString plainFullName(const Node *node, const Node *relative);
+    virtual QString markedUpCode(const QString& code, 
+                                 const Node *relative, 
+                                 const Location &location);
+    virtual QString markedUpSynopsis(const Node *node, 
+                                     const Node *relative,
+                                     SynopsisStyle style);
 #ifdef QDOC_QML
-    QString markedUpQmlItem(const Node *node, bool summary);
+    virtual QString markedUpQmlItem(const Node *node, bool summary);
 #endif
-    QString markedUpName(const Node *node);
-    QString markedUpFullName(const Node *node, const Node *relative);
-    QString markedUpEnumValue(const QString &enumValue, const Node *relative);
-    QString markedUpIncludes(const QStringList& includes);
-    QString functionBeginRegExp(const QString& funcName);
-    QString functionEndRegExp(const QString& funcName);
-    QList<Section> sections(const InnerNode *innerNode, 
-                            SynopsisStyle style, 
-                            Status status);
-    QList<Section> qmlSections(const QmlClassNode* qmlClassNode,
-                               SynopsisStyle style,
-                               const Tree* tree);
-    const Node* resolveTarget(const QString& target, 
-                              const Tree* tree, 
-                              const Node* relative,
-                              const Node* self = 0);
+    virtual QString markedUpName(const Node *node);
+    virtual QString markedUpFullName(const Node *node, const Node *relative);
+    virtual QString markedUpEnumValue(const QString &enumValue, const Node *relative);
+    virtual QString markedUpIncludes(const QStringList& includes);
+    virtual QString functionBeginRegExp(const QString& funcName);
+    virtual QString functionEndRegExp(const QString& funcName);
+    virtual QList<Section> sections(const InnerNode *innerNode, 
+                                    SynopsisStyle style, 
+                                    Status status);
+    virtual QList<Section> qmlSections(const QmlClassNode* qmlClassNode,
+                                       SynopsisStyle style,
+                                       const Tree* tree);
+    virtual const Node* resolveTarget(const QString& target, 
+                                      const Tree* tree, 
+                                      const Node* relative,
+                                      const Node* self = 0);
 
 private:
     QString addMarkUp(const QString& protectedCode, 
                       const Node *relative, 
-                      const QString& dirPath);
+                      const Location &location);
 };
 
 QT_END_NAMESPACE

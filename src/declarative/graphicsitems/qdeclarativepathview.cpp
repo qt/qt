@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -379,19 +379,26 @@ void QDeclarativePathViewPrivate::regenerate()
     \l decrementCurrentIndex() or \l incrementCurrentIndex(), for example to navigate
     using the left and right arrow keys:
 
-    \code
+    \qml
     PathView {
-        ...
+        // ...
         focus: true
         Keys.onLeftPressed: decrementCurrentIndex()
         Keys.onRightPressed: incrementCurrentIndex()
     }
-    \endcode
+    \endqml
 
     The path view itself is a focus scope (see \l{qmlfocus#Acquiring Focus and Focus Scopes}{the focus documentation page} for more details).
 
     Delegates are instantiated as needed and may be destroyed at any time.
     State should \e never be stored in a delegate.
+
+    PathView attaches a number of properties to the root item of the delegate, for example
+    \c {PathView.isCurrentItem}.  In the following example, the root delegate item can access
+    this attached property directly as \c PathView.isCurrentItem, while the child
+    \c nameText object must refer to this property as \c wrapper.PathView.isCurrentItem.
+
+    \snippet doc/src/snippets/declarative/pathview/pathview.qml 1
 
     \bold Note that views do not enable \e clip automatically.  If the view
     is not clipped by another item or the screen, it will be necessary
@@ -437,7 +444,7 @@ QDeclarativePathView::~QDeclarativePathView()
     Component {
         Rectangle {
             visible: PathView.onPath
-            ...
+            // ...
         }
     }
     \endqml
@@ -452,6 +459,8 @@ QDeclarativePathView::~QDeclarativePathView()
     It is attached to each instance of the delegate.
 
     This property may be used to adjust the appearance of the current item.
+
+    \snippet doc/src/snippets/declarative/pathview/pathview.qml 1
 */
 
 /*!
@@ -697,14 +706,14 @@ void QDeclarativePathViewPrivate::setAdjustedOffset(qreal o)
     of the \l{PathView::onPath}{PathView.onPath} attached property to ensure that
     the highlight is hidden when flicked away from the path.
 
-    \code
+    \qml
     Component {
         Rectangle {
             visible: PathView.onPath
-            ...
+            // ...
         }
     }
-    \endcode
+    \endqml
 
     \sa highlightItem, highlightRangeMode
 */
@@ -1133,15 +1142,17 @@ void QDeclarativePathViewPrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent 
     QPointF pathPoint = pointNear(event->pos(), &newPc);
     if (!stealMouse) {
         QPointF delta = pathPoint - startPoint;
-        if (qAbs(delta.x()) > QApplication::startDragDistance() || qAbs(delta.y()) > QApplication::startDragDistance())
+        if (qAbs(delta.x()) > QApplication::startDragDistance() || qAbs(delta.y()) > QApplication::startDragDistance()) {
             stealMouse = true;
+            startPc = newPc;
+        }
     }
 
     if (stealMouse) {
         moveReason = QDeclarativePathViewPrivate::Mouse;
         qreal diff = (newPc - startPc)*modelCount*mappedRange;
         if (diff) {
-            setOffset(offset + diff);
+            q->setOffset(offset + diff);
 
             if (diff > modelCount/2)
                 diff -= modelCount;
@@ -1307,8 +1318,10 @@ void QDeclarativePathView::componentComplete()
     // It is possible that a refill has already happended to to Path
     // bindings being handled in the componentComplete().  If so
     // don't do it again.
-    if (d->items.count() == 0)
+    if (d->items.count() == 0 && d->model) {
+        d->modelCount = d->model->count();
         d->regenerate();
+    }
     d->updateHighlight();
 }
 
@@ -1442,17 +1455,18 @@ void QDeclarativePathView::itemsInserted(int modelIndex, int count)
     if (!d->isValid() || !isComponentComplete())
         return;
 
-    d->itemCache += d->items;
-    d->items.clear();
-    if (modelIndex <= d->currentIndex) {
-        d->currentIndex += count;
-        emit currentIndexChanged();
-    } else if (d->offset != 0) {
-        d->offset += count;
-        d->offsetAdj += count;
+    if (d->modelCount) {
+        d->itemCache += d->items;
+        d->items.clear();
+        if (modelIndex <= d->currentIndex) {
+            d->currentIndex += count;
+            emit currentIndexChanged();
+        } else if (d->offset != 0) {
+            d->offset += count;
+            d->offsetAdj += count;
+        }
     }
-
-    d->modelCount = d->model->count();
+    d->modelCount += count;
     if (d->flicking || d->moving) {
         d->regenerate();
         d->updateCurrent();
@@ -1478,7 +1492,7 @@ void QDeclarativePathView::itemsRemoved(int modelIndex, int count)
         currentChanged = true;
     } else if (d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count) {
         // current item has been removed.
-        d->currentIndex = qMin(modelIndex, d->modelCount-1);
+        d->currentIndex = qMin(modelIndex, d->modelCount-count-1);
         if (d->currentItem) {
             if (QDeclarativePathViewAttached *att = d->attached(d->currentItem))
                 att->setIsCurrentItem(true);
@@ -1489,18 +1503,29 @@ void QDeclarativePathView::itemsRemoved(int modelIndex, int count)
     d->itemCache += d->items;
     d->items.clear();
 
+    bool changedOffset = false;
     if (modelIndex > d->currentIndex) {
         if (d->offset >= count) {
+            changedOffset = true;
             d->offset -= count;
             d->offsetAdj -= count;
         }
     }
 
-    d->modelCount = d->model->count();
-    d->regenerate();
-    d->updateCurrent();
-    if (!d->modelCount)
+    d->modelCount -= count;
+    if (!d->modelCount) {
+        while (d->itemCache.count())
+            d->releaseItem(d->itemCache.takeLast());
+        d->offset = 0;
+        changedOffset = true;
+        d->tl.reset(d->moveOffset);
         update();
+    } else {
+        d->regenerate();
+        d->updateCurrent();
+    }
+    if (changedOffset)
+        emit offsetChanged();
     if (currentChanged)
         emit currentIndexChanged();
     emit countChanged();
@@ -1588,7 +1613,7 @@ void QDeclarativePathView::movementEnding()
 int QDeclarativePathViewPrivate::calcCurrentIndex()
 {
     int current = -1;
-    if (model && items.count()) {
+    if (modelCount && model && items.count()) {
         offset = qmlMod(offset, modelCount);
         if (offset < 0)
             offset += modelCount;
@@ -1604,7 +1629,7 @@ void QDeclarativePathViewPrivate::updateCurrent()
     Q_Q(QDeclarativePathView);
     if (moveReason != Mouse)
         return;
-    if (!haveHighlightRange || highlightRangeMode != QDeclarativePathView::StrictlyEnforceRange)
+    if (!modelCount || !haveHighlightRange || highlightRangeMode != QDeclarativePathView::StrictlyEnforceRange)
         return;
 
     int idx = calcCurrentIndex();

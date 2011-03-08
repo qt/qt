@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,9 +51,9 @@
     key overviews to deepen your understanding of Qt: The Qt \l{Object
     Model} and \l{Signals and Slots}.
 
-    \beginfloatleft
+    \div{float-left}
     \inlineimage qtdemo-small.png
-    \endfloat
+    \enddiv
 
     \section1 Getting an Overview
 

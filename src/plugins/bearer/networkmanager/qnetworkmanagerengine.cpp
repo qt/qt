@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -210,6 +210,11 @@ void QNetworkManagerEngine::connectToId(const QString &id)
             break;
         } else if (device.deviceType() == DEVICE_TYPE_802_11_WIRELESS &&
                    connectionType == QLatin1String("802-11-wireless")) {
+            dbusDevicePath = devicePath.path();
+            break;
+        }
+        else if (device.deviceType() == DEVICE_TYPE_GSM &&
+                connectionType == QLatin1String("gsm")) {
             dbusDevicePath = devicePath.path();
             break;
         }
@@ -743,9 +748,11 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
                     QNetworkConfigurationPrivatePointer ptr =
                         accessPointConfigurations.take(accessPointId);
 
-                    mutex.unlock();
-                    emit configurationRemoved(ptr);
-                    mutex.lock();
+                    if (ptr) {
+                        mutex.unlock();
+                        emit configurationRemoved(ptr);
+                        mutex.lock();
+                    }
                 }
                 break;
             }

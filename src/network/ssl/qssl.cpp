@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -101,9 +101,9 @@ QT_BEGIN_NAMESPACE
 
     Describes the protocol of the cipher.
 
-    \value SslV3 SSLv3 - the default protocol.
+    \value SslV3 SSLv3
     \value SslV2 SSLv2
-    \value TlsV1 TLSv1
+    \value TlsV1 TLSv1 - the default protocol.
     \value UnknownProtocol The cipher's protocol cannot be determined.
     \value AnyProtocol The socket understands SSLv2, SSLv3, and TLSv1. This
     value is used by QSslSocket only.

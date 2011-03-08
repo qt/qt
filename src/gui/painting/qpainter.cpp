@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -149,6 +149,13 @@ static inline uint line_emulation(uint emulation)
                         | QGradient_StretchToDevice
                         | QPaintEngine::ObjectBoundingModeGradients
                         | QPaintEngine_OpaqueBackground);
+}
+
+static bool qt_paintengine_supports_transformations(QPaintEngine::Type type)
+{
+    return type == QPaintEngine::OpenGL2
+            || type == QPaintEngine::OpenVG
+            || type == QPaintEngine::OpenGL;
 }
 
 #ifndef QT_NO_DEBUG
@@ -1119,14 +1126,14 @@ void QPainterPrivate::updateState(QPainterState *newState)
     the range of available patterns.
 
     \table
-    \row
-    \o \inlineimage qpainter-vectordeformation.png
-    \o \inlineimage qpainter-gradients.png
-    \o \inlineimage qpainter-pathstroking.png
     \header
     \o \l {demos/deform}{Vector Deformation}
     \o \l {demos/gradients}{Gradients}
     \o \l {demos/pathstroke}{Path Stroking}
+    \row
+    \o \inlineimage qpainter-vectordeformation.png
+    \o \inlineimage qpainter-gradients.png
+    \o \inlineimage qpainter-pathstroking.png
     \endtable
 
 
@@ -1199,13 +1206,13 @@ void QPainterPrivate::updateState(QPainterState *newState)
     coordinate transformations.
 
     \table
+    \header
+    \o  nop \o rotate() \o scale() \o translate()
     \row
     \o \inlineimage qpainter-clock.png
     \o \inlineimage qpainter-rotation.png
     \o \inlineimage qpainter-scale.png
     \o \inlineimage qpainter-translation.png
-    \header
-    \o  nop \o rotate() \o scale() \o translate()
     \endtable
 
     The most commonly used transformations are scaling, rotation,
@@ -5795,8 +5802,17 @@ void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
 
     int count = qMin(glyphIndexes.size(), glyphPositions.size());
     QVarLengthArray<QFixedPoint, 128> fixedPointPositions(count);
-    for (int i=0; i<count; ++i)
-        fixedPointPositions[i] = QFixedPoint::fromPointF(position + glyphPositions.at(i));
+
+    bool paintEngineSupportsTransformations =
+            d->extended != 0
+            ? qt_paintengine_supports_transformations(d->extended->type())
+            : false;
+    for (int i=0; i<count; ++i) {
+        QPointF processedPosition = position + glyphPositions.at(i);
+        if (!paintEngineSupportsTransformations)
+            processedPosition = d->state->transform().map(processedPosition);
+        fixedPointPositions[i] = QFixedPoint::fromPointF(processedPosition);
+    }
 
     d->drawGlyphs(glyphIndexes.data(), fixedPointPositions.data(), count);
 
@@ -5988,10 +6004,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         return;
     }
 
-    bool paintEngineSupportsTransformations = d->extended->type() == QPaintEngine::OpenGL2
-                                           || d->extended->type() == QPaintEngine::OpenVG
-                                           || d->extended->type() == QPaintEngine::OpenGL;
-
+    bool paintEngineSupportsTransformations = qt_paintengine_supports_transformations(d->extended->type());
     if (paintEngineSupportsTransformations && !staticText_d->untransformedCoordinates) {
         staticText_d->untransformedCoordinates = true;
         staticText_d->needsRelayout = true;
@@ -9221,7 +9234,7 @@ void QPainter::drawPixmapFragments(const PixmapFragment *fragments, int fragment
     QPainter::drawPixmapFragments() function. The variables \a x, \a y, \a
     width and \a height are used to calculate the target rectangle that is
     drawn. \a x and \a y denotes the center of the target rectangle. The \a
-    width and \a heigth in the target rectangle is scaled by the \a scaleX and
+    width and \a height in the target rectangle is scaled by the \a scaleX and
     \a scaleY values. The resulting target rectangle is then rotated \a
     rotation degrees around the \a x, \a y center point.
 

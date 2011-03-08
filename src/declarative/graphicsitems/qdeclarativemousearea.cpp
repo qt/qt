@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -216,9 +216,9 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
     \section1 Example Usage
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage qml-mousearea-snippet.png
-    \endfloat
+    \enddiv
 
     The following example uses a MouseArea in a \l Rectangle that changes
     the \l Rectangle color to red when clicked:
@@ -314,6 +314,8 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
     position of the release of the click, and whether the click was held.
 
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
+
+    \sa onCanceled()
 */
 
 /*!
@@ -414,6 +416,40 @@ void QDeclarativeMouseArea::setEnabled(bool a)
         emit enabledChanged();
     }
 }
+
+/*!
+    \qmlproperty bool MouseArea::preventStealing
+    \since Quick 1.1
+    This property holds whether the mouse events may be stolen from this
+    MouseArea.
+
+    If a MouseArea is placed within an item that filters child mouse
+    events, such as Flickable, the mouse
+    events may be stolen from the MouseArea if a gesture is recognized
+    by the parent element, e.g. a flick gesture.  If preventStealing is
+    set to true, no element will steal the mouse events.
+
+    Note that setting preventStealing to true once an element has started
+    stealing events will have no effect until the next press event.
+
+    By default this property is false.
+*/
+bool QDeclarativeMouseArea::preventStealing() const
+{
+    Q_D(const QDeclarativeMouseArea);
+    return d->preventStealing;
+}
+
+void QDeclarativeMouseArea::setPreventStealing(bool prevent)
+{
+    Q_D(QDeclarativeMouseArea);
+    if (prevent != d->preventStealing) {
+        d->preventStealing = prevent;
+        setKeepMouseGrab(d->preventStealing && d->absorb);
+        emit preventStealingChanged();
+    }
+}
+
 /*!
     \qmlproperty MouseButtons MouseArea::pressedButtons
     This property holds the mouse buttons currently pressed.
@@ -441,7 +477,7 @@ void QDeclarativeMouseArea::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeMouseArea);
     d->moved = false;
-    d->stealMouse = false;
+    d->stealMouse = d->preventStealing;
     if (!d->absorb)
         QDeclarativeItem::mousePressEvent(event);
     else {
@@ -458,7 +494,7 @@ void QDeclarativeMouseArea::mousePressEvent(QGraphicsSceneMouseEvent *event)
         // we should only start timer if pressAndHold is connected to.
         if (d->isPressAndHoldConnected())
             d->pressAndHoldTimer.start(PressAndHoldDelay, this);
-        setKeepMouseGrab(false);
+        setKeepMouseGrab(d->stealMouse);
         event->setAccepted(setPressed(true));
     }
 }
@@ -583,18 +619,22 @@ void QDeclarativeMouseArea::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
     Q_D(QDeclarativeMouseArea);
     if (!d->absorb)
         QDeclarativeItem::hoverEnterEvent(event);
-    else
+    else {
+        d->lastPos = event->pos();
         setHovered(true);
+        QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), Qt::NoButton, Qt::NoButton, event->modifiers(), false, false);
+        emit mousePositionChanged(&me);
+    }
 }
 
 void QDeclarativeMouseArea::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_D(QDeclarativeMouseArea);
     if (!d->absorb) {
-        QDeclarativeItem::hoverEnterEvent(event);
+        QDeclarativeItem::hoverMoveEvent(event);
     } else {
         d->lastPos = event->pos();
-        QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), Qt::NoButton, d->lastButtons, d->lastModifiers, false, d->longPress);
+        QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), Qt::NoButton, Qt::NoButton, event->modifiers(), false, false);
         emit mousePositionChanged(&me);
         me.setX(d->lastPos.x());
         me.setY(d->lastPos.y());
@@ -859,15 +899,16 @@ bool QDeclarativeMouseArea::setPressed(bool p)
             me.setX(d->lastPos.x());
             me.setY(d->lastPos.y());
             emit mousePositionChanged(&me);
+            emit pressedChanged();
         } else {
             emit released(&me);
             me.setX(d->lastPos.x());
             me.setY(d->lastPos.y());
+            emit pressedChanged();
             if (isclick && !d->longPress && !d->doubleClick)
                 emit clicked(&me);
         }
 
-        emit pressedChanged();
         return me.isAccepted();
     }
     return false;

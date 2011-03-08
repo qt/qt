@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -163,6 +163,7 @@ class QMutexData
         ~QMutexData();
 };
 
+#ifdef QT_NO_DEBUG
 inline void QMutex::unlockInline()
 {
     if (d->recursive) {
@@ -189,7 +190,13 @@ inline void QMutex::lockInline()
         lockInternal();
     }
 }
-
+#else // QT_NO_DEBUG
+//in debug we do not use inline calls in order to allow debugging tools
+// to hook the mutex locking functions.
+inline void QMutex::unlockInline() { unlock(); }
+inline bool QMutex::tryLockInline() { return tryLock(); }
+inline void QMutex::lockInline() { lock(); }
+#endif // QT_NO_DEBUG
 
 
 #else // QT_NO_THREAD

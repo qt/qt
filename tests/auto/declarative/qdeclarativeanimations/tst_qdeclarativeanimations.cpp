@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -85,6 +85,9 @@ private slots:
     void rotation();
     void runningTrueBug();
     void nonTransitionBug();
+    void registrationBug();
+    void doubleRegistrationBug();
+    void alwaysRunToEndRestartBug();
 };
 
 #define QTIMED_COMPARE(lhs, rhs) do { \
@@ -791,6 +794,54 @@ void tst_qdeclarativeanimations::nonTransitionBug()
     rectPrivate->setState("free");
     QTest::qWait(300);
     QCOMPARE(mover->x(), qreal(100));
+}
+
+//QTBUG-14042
+void tst_qdeclarativeanimations::registrationBug()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/registrationBug.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+    QTRY_COMPARE(rect->property("value"), QVariant(int(100)));
+}
+
+void tst_qdeclarativeanimations::doubleRegistrationBug()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/doubleRegistrationBug.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeAbstractAnimation *anim = rect->findChild<QDeclarativeAbstractAnimation*>("animation");
+    QVERIFY(anim != 0);
+    QTRY_COMPARE(anim->qtAnimation()->state(), QAbstractAnimation::Stopped);
+}
+
+//QTBUG-16736
+void tst_qdeclarativeanimations::alwaysRunToEndRestartBug()
+{
+    QDeclarativeRectangle rect;
+    QDeclarativePropertyAnimation animation;
+    animation.setTarget(&rect);
+    animation.setProperty("x");
+    animation.setTo(200);
+    animation.setDuration(1000);
+    animation.setLoops(-1);
+    animation.setAlwaysRunToEnd(true);
+    QVERIFY(animation.loops() == -1);
+    QVERIFY(animation.alwaysRunToEnd() == true);
+    animation.start();
+    animation.stop();
+    animation.start();
+    animation.stop();
+    QTest::qWait(500);
+    QVERIFY(rect.x() != qreal(200));
+    QTest::qWait(800);
+    QTIMED_COMPARE(rect.x(), qreal(200));
+    QCOMPARE(static_cast<QDeclarativeAbstractAnimation*>(&animation)->qtAnimation()->state(), QAbstractAnimation::Stopped);
 }
 
 QTEST_MAIN(tst_qdeclarativeanimations)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -142,6 +142,9 @@ bool MingwMakefileGenerator::writeMakefile(QTextStream &t)
 
     if(project->first("TEMPLATE") == "app" ||
        project->first("TEMPLATE") == "lib") {
+        if(project->isActiveConfig("create_pc") && project->first("TEMPLATE") == "lib")
+            writePkgConfigFile();
+
         if(Option::mkfile::do_stub_makefile) {
             t << "QMAKE    = " << var("QMAKE_QMAKE") << endl;
             QStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
@@ -199,8 +202,31 @@ void createArObjectScriptFile(const QString &fileName, const QString &target, co
     }
 }
 
+void createRvctObjectScriptFile(const QString &fileName, const QStringList &objList)
+{
+    QString filePath = Option::output_dir + QDir::separator() + fileName;
+    QFile file(filePath);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream t(&file);
+        for (QStringList::ConstIterator it = objList.constBegin(); it != objList.constEnd(); ++it) {
+            if (QDir::isRelativePath(*it))
+                t << "./" << *it << endl;
+            else
+                t << *it << endl;
+        }
+        t.flush();
+        file.close();
+    }
+}
+
 void MingwMakefileGenerator::writeMingwParts(QTextStream &t)
 {
+    if (!project->isEmpty("QMAKE_SYMBIAN_SHLIB")) {
+        t << "vpath %.dso " << project->values("QMAKE_LIBDIR").join(";") << endl;
+        t << "vpath %.lib " << project->values("QMAKE_LIBDIR").join(";") << endl;
+        t << "\n\n";
+    }
+
     writeStandardParts(t);
 
     if (!preCompHeaderOut.isEmpty()) {
@@ -267,7 +293,7 @@ void MingwMakefileGenerator::init()
         if(configs.indexOf("qt") == -1)
             configs.append("qt");
 
-    if(project->isActiveConfig("dll")) {
+    if(project->isActiveConfig("dll") && project->values("QMAKE_SYMBIAN_SHLIB").isEmpty()) {
         QString destDir = "";
         if(!project->first("DESTDIR").isEmpty())
             destDir = Option::fixPathToTargetOS(project->first("DESTDIR") + Option::dir_sep, false, false);
@@ -276,7 +302,7 @@ void MingwMakefileGenerator::init()
 	project->values("QMAKE_LFLAGS").append(QString("-Wl,--out-implib,") + project->first("MINGW_IMPORT_LIB"));
     }
 
-    if(!project->values("DEF_FILE").isEmpty())
+    if(!project->values("DEF_FILE").isEmpty() && project->values("QMAKE_SYMBIAN_SHLIB").isEmpty())
         project->values("QMAKE_LFLAGS").append(QString("-Wl,") + project->first("DEF_FILE"));
 
     MakefileGenerator::init();
@@ -312,12 +338,9 @@ void MingwMakefileGenerator::init()
 void MingwMakefileGenerator::fixTargetExt()
 {
     if (project->isActiveConfig("staticlib") && project->first("TEMPLATE") == "lib") {
-        project->values("TARGET_EXT").append(".a");
         project->values("QMAKE_LFLAGS").append("-static");
-        project->values("TARGET").first() =  "lib" + project->first("TARGET");
-    } else {
-        Win32MakefileGenerator::fixTargetExt();
     }
+    Win32MakefileGenerator::fixTargetExt();
 }
 
 void MingwMakefileGenerator::writeIncPart(QTextStream &t)
@@ -345,17 +368,28 @@ void MingwMakefileGenerator::writeLibsPart(QTextStream &t)
         t << "LIBS        =        ";
         if(!project->values("QMAKE_LIBDIR").isEmpty())
             writeLibDirPart(t);
-        t << var("QMAKE_LIBS").replace(QRegExp("(\\slib|^lib)")," -l") << ' '
-          << var("QMAKE_LIBS_PRIVATE").replace(QRegExp("(\\slib|^lib)")," -l") << endl;
+        if (project->isActiveConfig("rvct_linker")) {
+            t << var("QMAKE_LIBS") << ' '
+              << var("QMAKE_LIBS_PRIVATE") << endl;
+        } else {
+            t << var("QMAKE_LIBS").replace(QRegExp("(\\slib|^lib)")," -l") << ' '
+              << var("QMAKE_LIBS_PRIVATE").replace(QRegExp("(\\slib|^lib)")," -l") << endl;
+        }
     }
 }
 
 void MingwMakefileGenerator::writeLibDirPart(QTextStream &t)
 {
     QStringList libDirs = project->values("QMAKE_LIBDIR");
-    for (int i = 0; i < libDirs.size(); ++i)
+    QString libArg = QString::fromLatin1("-L");
+    if (project->isActiveConfig("rvct_linker"))
+        libArg = QString::fromLatin1("--userlibpath ");
+    for (int i = 0; i < libDirs.size(); ++i) {
         libDirs[i].remove("\"");
-    t << valGlue(libDirs,"-L"+quote,quote+" -L" +quote,quote) << " ";
+        if (libDirs[i].endsWith("\\"))
+            libDirs[i].chop(1);
+    }
+    t << valGlue(libDirs, libArg+quote, quote+" "+libArg+quote, quote) << " ";
 }
 
 void MingwMakefileGenerator::writeObjectsPart(QTextStream &t)
@@ -367,20 +401,33 @@ void MingwMakefileGenerator::writeObjectsPart(QTextStream &t)
 	if (!var("BUILD_NAME").isEmpty()) {
 	    ar_script_file += "." + var("BUILD_NAME");
 	}
-	createArObjectScriptFile(ar_script_file, var("DEST_TARGET"), project->values("OBJECTS"));
         // QMAKE_LIB is used for win32, including mingw, whereas QMAKE_AR is used on Unix.
-        // Strip off any options since the ar commands will be read from file.
-        QString ar_cmd = var("QMAKE_LIB").section(" ", 0, 0);;
-        if (ar_cmd.isEmpty())
-            ar_cmd = "ar";
-        objectsLinkLine = ar_cmd + " -M < " + ar_script_file;
+        if (project->isActiveConfig("rvct_linker")) {
+            createRvctObjectScriptFile(ar_script_file, project->values("OBJECTS"));
+            QString ar_cmd = project->values("QMAKE_LIB").join(" ");
+            if (ar_cmd.isEmpty())
+                ar_cmd = "armar --create";
+            objectsLinkLine = ar_cmd + " " + var("DEST_TARGET") + " --via " + ar_script_file;
+        } else {
+            // Strip off any options since the ar commands will be read from file.
+            QString ar_cmd = var("QMAKE_LIB").section(" ", 0, 0);;
+            if (ar_cmd.isEmpty())
+                ar_cmd = "ar";
+            createArObjectScriptFile(ar_script_file, var("DEST_TARGET"), project->values("OBJECTS"));
+            objectsLinkLine = ar_cmd + " -M < " + ar_script_file;
+        }
     } else {
         QString ld_script_file = var("QMAKE_LINK_OBJECT_SCRIPT") + "." + var("TARGET");
 	if (!var("BUILD_NAME").isEmpty()) {
 	    ld_script_file += "." + var("BUILD_NAME");
 	}
-	createLdObjectScriptFile(ld_script_file, project->values("OBJECTS"));
-        objectsLinkLine = ld_script_file;
+        if (project->isActiveConfig("rvct_linker")) {
+            createRvctObjectScriptFile(ld_script_file, project->values("OBJECTS"));
+            objectsLinkLine = QString::fromLatin1("--via ") + ld_script_file;
+        } else {
+            createLdObjectScriptFile(ld_script_file, project->values("OBJECTS"));
+            objectsLinkLine = ld_script_file;
+        }
     }
     Win32MakefileGenerator::writeObjectsPart(t);
 }

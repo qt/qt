@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -114,6 +114,7 @@ public:
     virtual void _q_modelDestroyed();
     virtual void _q_layoutChanged();
     void _q_headerDataChanged() { doDelayedItemsLayout(); }
+    void _q_scrollerStateChanged();
 
     void fetchMore();
 
@@ -413,6 +414,12 @@ public:
 
     QAbstractItemView::ScrollMode verticalScrollMode;
     QAbstractItemView::ScrollMode horizontalScrollMode;
+
+#ifndef QT_NO_GESTURES
+    // the selection before the last mouse down. In case we have to restore it for scrolling
+    QItemSelection oldSelection;
+    QModelIndex oldCurrent;
+#endif
 
     bool currentIndexSet;
 

@@ -75,7 +75,7 @@ protected:
     virtual int setDeviceVolume(int mmfVolume) = 0;
     virtual int openFile(const QString &fileName) = 0;
     virtual int openFile(RFile& file) = 0;
-    virtual int openUrl(const QString& url) = 0;
+    virtual int openUrl(const QString& url, int iap) = 0;
     virtual int openDescriptor(const TDesC8 &des) = 0;
     virtual int bufferStatus() const = 0;
     virtual void doClose() = 0;

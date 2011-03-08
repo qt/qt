@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -490,10 +490,12 @@
     \image ipc-examples.png
 
     \list
-    \o \l{ipc/localfortuneclient}{Local Fortune Client}\raisedaster
-    \o \l{ipc/localfortuneserver}{Local Fortune Server}\raisedaster
+    \o \l{ipc/localfortuneclient}{Local Fortune Client}
+    \o \l{ipc/localfortuneserver}{Local Fortune Server}
     \o \l{ipc/sharedmemory}{Shared Memory}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!

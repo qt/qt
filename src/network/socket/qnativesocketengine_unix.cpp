@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -202,9 +202,6 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
 
         return false;
     }
-
-    // Ensure that the socket is closed on exec*().
-    ::fcntl(socket, F_SETFD, FD_CLOEXEC);
 
     socketDescriptor = socket;
     return true;
@@ -613,16 +610,6 @@ int QNativeSocketEnginePrivate::nativeAccept()
     int acceptedDescriptor = ::accept(socketDescriptor, 0, 0);
 #else
     int acceptedDescriptor = qt_safe_accept(socketDescriptor, 0, 0);
-#endif
-    //check if we have valid descriptor at all
-    if(acceptedDescriptor > 0) {
-        // Ensure that the socket is closed on exec*()
-        ::fcntl(acceptedDescriptor, F_SETFD, FD_CLOEXEC);
-    }
-#ifdef Q_OS_SYMBIAN
-    else {
-        qWarning("QNativeSocketEnginePrivate::nativeAccept() - acceptedDescriptor <= 0");
-    }
 #endif
 
     return acceptedDescriptor;

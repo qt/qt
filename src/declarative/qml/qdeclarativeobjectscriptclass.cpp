@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -69,7 +69,7 @@ struct ObjectData : public QScriptDeclarativeClass::Object {
     virtual ~ObjectData() {
         if (object && !object->parent()) {
             QDeclarativeData *ddata = QDeclarativeData::get(object, false);
-            if (ddata && !ddata->indestructible && 0 == --ddata->objectDataRefCount)
+            if (ddata && !ddata->indestructible && 0 == --ddata->objectDataRefCount) 
                 object->deleteLater();
         }
     }
@@ -149,8 +149,8 @@ QDeclarativeObjectScriptClass::queryProperty(Object *object, const Identifier &n
 
 QScriptClass::QueryFlags
 QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
-                                    QScriptClass::QueryFlags flags, QDeclarativeContextData *evalContext,
-                                    QueryHints hints)
+                                             QScriptClass::QueryFlags flags, QDeclarativeContextData *evalContext,
+                                             QueryHints hints)
 {
     Q_UNUSED(flags);
     lastData = 0;
@@ -165,6 +165,12 @@ QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &nam
 
     QDeclarativeEnginePrivate *enginePrivate = QDeclarativeEnginePrivate::get(engine);
     lastData = QDeclarativePropertyCache::property(engine, obj, name, local);
+    if ((hints & ImplicitObject) && lastData && lastData->revision != 0) {
+
+        QDeclarativeData *ddata = QDeclarativeData::get(obj);
+        if (ddata && ddata->propertyCache && !ddata->propertyCache->isAllowedInRevision(lastData)) 
+            return 0;
+    }
 
     if (lastData)
         return QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess;
@@ -354,8 +360,20 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
         }
     }
 
+    QDeclarativeBinding *newBinding = 0;
+    if (value.isFunction() && !value.isRegExp()) {
+        QScriptContextInfo ctxtInfo(context);
+        QDeclarativePropertyCache::ValueTypeData valueTypeData;
+
+        newBinding = new QDeclarativeBinding(value, obj, evalContext);
+        newBinding->setSourceLocation(ctxtInfo.fileName(), ctxtInfo.functionStartLineNumber());
+        newBinding->setTarget(QDeclarativePropertyPrivate::restore(*lastData, valueTypeData, obj, evalContext));
+        if (newBinding->expression().contains(QLatin1String("this")))
+            newBinding->setEvaluateFlags(newBinding->evaluateFlags() | QDeclarativeBinding::RequiresThisObject);
+    }
+
     QDeclarativeAbstractBinding *delBinding =
-        QDeclarativePropertyPrivate::setBinding(obj, lastData->coreIndex, -1, 0);
+        QDeclarativePropertyPrivate::setBinding(obj, lastData->coreIndex, -1, newBinding);
     if (delBinding)
         delBinding->destroy();
 
@@ -374,9 +392,8 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
         QString error = QLatin1String("Cannot assign [undefined] to ") +
                         QLatin1String(QMetaType::typeName(lastData->propType));
         context->throwError(error);
-    } else if (!value.isRegExp() && value.isFunction()) {
-        QString error = QLatin1String("Cannot assign a function to a property.");
-        context->throwError(error);
+    } else if (value.isFunction() && !value.isRegExp()) {
+        // this is handled by the binding creation above
     } else {
         QVariant v;
         if (lastData->flags & QDeclarativePropertyCache::Data::IsQList)
@@ -808,7 +825,14 @@ QScriptDeclarativeClass::Value MetaCallArgument::toValue(QDeclarativeEngine *e)
         }
         return QScriptDeclarativeClass::Value(engine, rv);
     } else if (type == -1 || type == qMetaTypeId<QVariant>()) {
-        return QScriptDeclarativeClass::Value(engine, QDeclarativeEnginePrivate::get(e)->scriptValueFromVariant(*((QVariant *)&data)));
+        QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(e);
+        QScriptValue rv = ep->scriptValueFromVariant(*((QVariant *)&data));
+        if (rv.isQObject()) {
+            QObject *object = rv.toQObject();
+            if (object)
+                QDeclarativeData::get(object, true)->setImplicitDestructible();
+        }
+        return QScriptDeclarativeClass::Value(engine, rv);
     } else {
         return QScriptDeclarativeClass::Value();
     }

@@ -7,7 +7,7 @@ SOURCES += tst_qdeclarativespringanimation.cpp
 symbian: {
     importFiles.files = data
     importFiles.path = .
-    DEPLOYMENT = importFiles
+    DEPLOYMENT += importFiles
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

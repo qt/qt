@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -71,6 +71,7 @@ int qmlRegisterValueTypeEnums(const char *uri, int versionMajor, int versionMino
 
         0, 0,
 
+        0,
         0
     };
 
@@ -109,36 +110,54 @@ void QDeclarativeValueTypeFactory::registerValueTypes()
 
 QDeclarativeValueType *QDeclarativeValueTypeFactory::valueType(int t)
 {
+    QDeclarativeValueType *rv = 0;
+
     switch (t) {
     case QVariant::Point:
-        return new QDeclarativePointValueType;
+        rv = new QDeclarativePointValueType;
+        break;
     case QVariant::PointF:
-        return new QDeclarativePointFValueType;
+        rv = new QDeclarativePointFValueType;
+        break;
     case QVariant::Size:
-        return new QDeclarativeSizeValueType;
+        rv = new QDeclarativeSizeValueType;
+        break;
     case QVariant::SizeF:
-        return new QDeclarativeSizeFValueType;
+        rv = new QDeclarativeSizeFValueType;
+        break;
     case QVariant::Rect:
-        return new QDeclarativeRectValueType;
+        rv = new QDeclarativeRectValueType;
+        break;
     case QVariant::RectF:
-        return new QDeclarativeRectFValueType;
+        rv = new QDeclarativeRectFValueType;
+        break;
     case QVariant::Vector2D:
-        return new QDeclarativeVector2DValueType;
+        rv = new QDeclarativeVector2DValueType;
+        break;
     case QVariant::Vector3D:
-        return new QDeclarativeVector3DValueType;
+        rv = new QDeclarativeVector3DValueType;
+        break;
     case QVariant::Vector4D:
-        return new QDeclarativeVector4DValueType;
+        rv = new QDeclarativeVector4DValueType;
+        break;
     case QVariant::Quaternion:
-        return new QDeclarativeQuaternionValueType;
+        rv = new QDeclarativeQuaternionValueType;
+        break;
     case QVariant::Matrix4x4:
-        return new QDeclarativeMatrix4x4ValueType;
+        rv = new QDeclarativeMatrix4x4ValueType;
+        break;
     case QVariant::EasingCurve:
-        return new QDeclarativeEasingValueType;
+        rv = new QDeclarativeEasingValueType;
+        break;
     case QVariant::Font:
-        return new QDeclarativeFontValueType;
+        rv = new QDeclarativeFontValueType;
+        break;
     default:
-        return 0;
+        break;
     }
+
+    Q_ASSERT(!rv || rv->metaObject()->propertyCount() < 32);
+    return rv;
 }
 
 QDeclarativeValueType::QDeclarativeValueType(QObject *parent)

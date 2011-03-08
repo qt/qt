@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1684,9 +1684,7 @@ QT_TRIVIAL_MEMCONVERT_IMPL(qrgb888)
 QT_TRIVIAL_MEMCONVERT_IMPL(qargb6666)
 QT_TRIVIAL_MEMCONVERT_IMPL(qrgb666)
 QT_TRIVIAL_MEMCONVERT_IMPL(quint16)
-#ifdef Q_WS_QWS
 QT_TRIVIAL_MEMCONVERT_IMPL(qrgb565)
-#endif
 QT_TRIVIAL_MEMCONVERT_IMPL(qargb8565)
 QT_TRIVIAL_MEMCONVERT_IMPL(qargb8555)
 QT_TRIVIAL_MEMCONVERT_IMPL(qrgb555)
@@ -1783,9 +1781,7 @@ QT_RECTCONVERT_TRIVIAL_IMPL(quint32)
 QT_RECTCONVERT_TRIVIAL_IMPL(qrgb888)
 QT_RECTCONVERT_TRIVIAL_IMPL(qargb6666)
 QT_RECTCONVERT_TRIVIAL_IMPL(qrgb666)
-#ifdef Q_WS_QWS
 QT_RECTCONVERT_TRIVIAL_IMPL(qrgb565)
-#endif
 QT_RECTCONVERT_TRIVIAL_IMPL(qargb8565)
 QT_RECTCONVERT_TRIVIAL_IMPL(quint16)
 QT_RECTCONVERT_TRIVIAL_IMPL(qargb8555)

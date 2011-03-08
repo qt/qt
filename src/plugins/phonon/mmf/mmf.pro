@@ -103,7 +103,7 @@ symbian {
 		exists($${EPOCROOT}epoc32/include/mw/downloadmgrclient.h) {
 			HEADERS += $$PHONON_MMF_DIR/download.h
 			SOURCES += $$PHONON_MMF_DIR/download.cpp
-			LIBS += -ldownloadmgr
+			LIBS += -lDownloadMgr
 			DEFINES += PHONON_MMF_PROGRESSIVE_DOWNLOAD
 		}
 	}
@@ -128,8 +128,11 @@ symbian {
         is_using_gnupoc {
             LIBS += -laudioequalizereffect -lbassboosteffect -ldistanceattenuationeffect -ldopplerbase -leffectbase -lenvironmentalreverbeffect -llistenerdopplereffect -llistenerlocationeffect -llistenerorientationeffect -llocationbase -lloudnesseffect -lorientationbase -lsourcedopplereffect -lsourcelocationeffect -lsourceorientationeffect -lstereowideningeffect
         } else {
-            LIBS += -lAudioEqualizerEffect -lBassBoostEffect -lDistanceAttenuationEffect -lDopplerBase -lEffectBase -lEnvironmentalReverbEffect -lListenerDopplerEffect -lListenerLocationEffect -lListenerOrientationEffect -lLocationBase -lLoudnessEffect -lOrientationBase -lSourceDopplerEffect -lSourceLocationEffect -lSourceOrientationEffect -lStereoWideningEffect
+	    LIBS += -lAudioEqualizerEffect -lBassBoostEffect -lDistanceAttenuationEffect -lDopplerbase -lEffectBase -lEnvironmentalReverbEffect -lListenerDopplerEffect -lListenerLocationEffect -lListenerOrientationEffect -lLocationBase -lLoudnessEffect -lOrientationBase -lSourceDopplerEffect -lSourceLocationEffect -lSourceOrientationEffect -lStereoWideningEffect
         }
+
+	# This is to allow IAP to be specified
+	LIBS += -lcommdb
 
 	# This is needed for having the .qtplugin file properly created on Symbian.
 	QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/phonon_backend

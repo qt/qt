@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -173,14 +173,14 @@ Rectangle {
         width: parent.width
         model: folders1
         delegate: folderDelegate
-        highlight: Rectangle { 
+        highlight: Rectangle {
             color: palette.highlight
             visible: root.showFocusHighlight && view1.count != 0
             gradient: Gradient {
                 GradientStop { id: t1; position: 0.0; color: palette.highlight }
                 GradientStop { id: t2; position: 1.0; color: Qt.lighter(palette.highlight) }
             }
-            width: view1.currentItem.width
+            width: view1.currentItem == null ? 0 : view1.currentItem.width
         }
         highlightMoveSpeed: 1000
         pressDelay: 100
@@ -230,7 +230,7 @@ Rectangle {
                 GradientStop { id: t1; position: 0.0; color: palette.highlight }
                 GradientStop { id: t2; position: 1.0; color: Qt.lighter(palette.highlight) }
             }
-            width: view1.currentItem.width
+            width: view1.currentItem == null ? 0 : view1.currentItem.width
         }
         highlightMoveSpeed: 1000
         pressDelay: 100

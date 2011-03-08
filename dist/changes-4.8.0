@@ -51,6 +51,8 @@ QtGui
  - Removed dependency of OpenGL Utility Library (GLU)
  - Added QGLFunctions, which provides cross-platform access to the
    OpenGL/ES 2.0 API.
+ - Including <QtOpenGL> will not work in combination with GLEW, as
+   QGLFunctions will undefine GLEW's defines.
 
 
 ****************************************************************************

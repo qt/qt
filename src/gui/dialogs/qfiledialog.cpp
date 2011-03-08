@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1770,7 +1770,7 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
 
     On Symbian^3 the parameter \a selectedFilter has no meaning and the
     \a options parameter is only used to define if the native file dialog is
-    used.
+    used. On Symbian^3, this function can only return a single filename.
 
     \warning Do not delete \a parent during the execution of the dialog. If you
     want to do this, you should create the dialog yourself using one of the
@@ -3311,7 +3311,7 @@ QString QFSCompleter::pathFromIndex(const QModelIndex &index) const
         if (currentLocation == QDir::separator())
             return path.mid(currentLocation.length());
 #endif
-        if (currentLocation.endsWith('/'))
+        if (currentLocation.endsWith(QLatin1Char('/')))
             return path.mid(currentLocation.length());
         else
             return path.mid(currentLocation.length()+1);

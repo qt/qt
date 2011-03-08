@@ -8,73 +8,79 @@ SUBDIRS += \
 SUBDIRS += \
            examples \
            parserstress \
+           qdeclarativecomponent \
+           qdeclarativecontext \
+           qdeclarativeengine \
+           qdeclarativeerror \
+           qdeclarativefolderlistmodel \
+           qdeclarativeinfo \
+           qdeclarativelayoutitem \
+           qdeclarativelistreference \
+           qdeclarativemoduleplugin \
+           qdeclarativeparticles \
+           qdeclarativepixmapcache \
+           qdeclarativeqt \
+           qdeclarativeview \
+           qdeclarativeviewer \
+           qdeclarativexmlhttprequest \
+           qmlvisual \
+           moduleqt47
+
+contains(QT_CONFIG, private_tests) {
+    SUBDIRS += \
            qdeclarativeanchors \
            qdeclarativeanimatedimage \
            qdeclarativeanimations \
+           qdeclarativeapplication \
            qdeclarativebehaviors \
            qdeclarativebinding \
            qdeclarativeborderimage \
-           qdeclarativecomponent \
            qdeclarativeconnection \
-           qdeclarativecontext \
            qdeclarativedebug \
            qdeclarativedebugclient \
            qdeclarativedebugservice \
            qdeclarativedom \
            qdeclarativeecmascript \
-           qdeclarativeengine \
-           qdeclarativeerror \
-           qdeclarativefolderlistmodel \
-           qdeclarativefontloader \
            qdeclarativeflickable \
            qdeclarativeflipable \
            qdeclarativefocusscope \
+           qdeclarativefontloader \
            qdeclarativegridview \
            qdeclarativeimage \
            qdeclarativeimageprovider \
-           qdeclarativeinfo \
            qdeclarativeinstruction \
            qdeclarativeitem \
            qdeclarativelanguage \
-           qdeclarativelayoutitem \
            qdeclarativelistmodel \
-           qdeclarativelistreference \
            qdeclarativelistview \
            qdeclarativeloader \
-           qdeclarativemoduleplugin \
            qdeclarativemousearea \
-           qdeclarativeparticles \
            qdeclarativepathview \
-           qdeclarativepixmapcache \
+           qdeclarativepincharea \
            qdeclarativepositioners \
            qdeclarativeproperty \
            qdeclarativepropertymap \
-           qdeclarativeqt \
            qdeclarativerepeater \
            qdeclarativesmoothedanimation \
            qdeclarativespringanimation \
+           qdeclarativestyledtext \
            qdeclarativesqldatabase \
            qdeclarativestates \
-           qdeclarativestyledtext \
            qdeclarativesystempalette \
            qdeclarativetext \
            qdeclarativetextedit \
            qdeclarativetextinput \
            qdeclarativetimer \
            qdeclarativevaluetypes \
-           qdeclarativeview \
-           qdeclarativeviewer \
            qdeclarativevisualdatamodel \
            qdeclarativeworkerscript \
-           qdeclarativexmlhttprequest \
            qdeclarativexmllistmodel \
-           qmlvisual \
-           qpacketprotocol \
-           moduleqt47
+           qpacketprotocol
 
 contains(QT_CONFIG, webkit) {
     SUBDIRS += \
            qdeclarativewebview
+}
 }
 
 # Tests which should run in Pulse

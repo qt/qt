@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -559,6 +559,8 @@ QImage ICOReader::iconAt(int index)
                     icoAttrib.ncolors = 0;
                 else                    // # colors used
                     icoAttrib.ncolors = header.biClrUsed ? header.biClrUsed : 1 << icoAttrib.nbits;
+                if (icoAttrib.ncolors > 256) //color table can't be more than 256
+                    return img;
                 icoAttrib.w = iconEntry.bWidth;
                 if (icoAttrib.w == 0)
                     icoAttrib.w = header.biWidth;

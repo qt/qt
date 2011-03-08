@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -646,6 +646,10 @@ public:
     { }
     ~QFontDatabasePrivate() {
         free();
+#if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
+        if (symbianExtras)
+            delete symbianExtras;
+#endif
     }
     QtFontFamily *family(const QString &f, bool = false);
     void free() {
@@ -654,16 +658,13 @@ public:
         ::free(families);
         families = 0;
         count = 0;
-#if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
-        if (symbianExtras) {
-            delete symbianExtras;
-            symbianExtras = 0;
-        }
-#endif
         // don't clear the memory fonts!
     }
 
     int count;
+#if defined(Q_WS_X11) && !defined(QT_NO_FONTCONFIG)
+    QString systemLang;
+#endif
     QtFontFamily **families;
 
     struct ApplicationFont {
@@ -675,6 +676,10 @@ public:
         QVector<FONTSIGNATURE> signatures;
 #elif defined(Q_WS_MAC)
         ATSFontContainerRef handle;
+#elif defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
+        QString temporaryFileName;
+        TInt screenDeviceFontFileId;
+        TUid fontStoreFontFileUid;
 #endif
         QStringList families;
     };
@@ -701,7 +706,7 @@ public:
 #if defined(Q_WS_QWS)
     QDataStream *stream;
 #elif defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
-    const QSymbianFontDatabaseExtras *symbianExtras;
+    QSymbianFontDatabaseExtras *symbianExtras;
 #endif
 #if defined(Q_WS_QWS) || defined(Q_WS_QPA)
     QStringList fallbackFamilies;
@@ -2570,6 +2575,8 @@ bool QFontDatabasePrivate::isApplicationFont(const QString &fileName)
     \note Adding application fonts on Unix/X11 platforms without fontconfig is
     currently not supported.
 
+    \note On Symbian, the font family names get truncated to a length of 20 characters.
+
     \sa addApplicationFontFromData(), applicationFontFamilies(), removeApplicationFont()
 */
 int QFontDatabase::addApplicationFont(const QString &fileName)
@@ -2599,6 +2606,8 @@ int QFontDatabase::addApplicationFont(const QString &fileName)
 
     \bold{Note:} Adding application fonts on Unix/X11 platforms without fontconfig is
     currently not supported.
+
+    \note On Symbian, the font family names get truncated to a length of 20 characters.
 
     \sa addApplicationFont(), applicationFontFamilies(), removeApplicationFont()
 */

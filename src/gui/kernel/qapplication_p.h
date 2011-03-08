@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -489,8 +489,6 @@ public:
 #ifdef QT_MAC_USE_COCOA
     static void qt_initAfterNSAppStarted();
     static void setupAppleEvents();
-    static void updateOverrideCursor();
-    static void disableUsageOfCursorRects(bool disable);
 #endif
     static bool qt_mac_apply_settings();
 #endif
@@ -507,6 +505,8 @@ public:
 
     static void processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *e);
     static void processLeaveEvent(QWindowSystemInterfacePrivate::LeaveEvent *e);
+
+    static void processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e);
 
     static void processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e);
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -70,7 +70,6 @@ class QNetworkAccessManagerPrivate;
 class QNetworkReplyImplPrivate;
 class QAbstractNetworkCache;
 class QNetworkCacheMetaData;
-class QNetworkAccessBackendUploadIODevice;
 class QNonContiguousByteDevice;
 
 // Should support direct file upload from disk or download to disk.
@@ -157,6 +156,9 @@ public:
     QVariant attribute(QNetworkRequest::Attribute code) const;
     void setAttribute(QNetworkRequest::Attribute code, const QVariant &value);
 
+    bool isSynchronous() { return synchronous; }
+    void setSynchronous(bool sync) { synchronous = sync; }
+
     // return true if the QNonContiguousByteDevice of the upload
     // data needs to support reset(). Currently needed for HTTP.
     // This will possibly enable buffering of the upload data.
@@ -166,10 +168,11 @@ public:
     virtual bool canResume() const { return false; }
     virtual void setResumeOffset(quint64 offset) { Q_UNUSED(offset); }
 
+    virtual bool processRequestSynchronously() { return false; }
+
 protected:
     // Create the device used for reading the upload data
     QNonContiguousByteDevice* createUploadByteDevice();
-
 
     // these functions control the downstream mechanism
     // that is, data that has come via the connection and is going out the backend
@@ -179,6 +182,8 @@ protected:
     // not actually appending data, it was already written to the user buffer
     void writeDownstreamDataDownloadBuffer(qint64, qint64);
     char* getDownloadBuffer(qint64);
+
+    QSharedPointer<QNonContiguousByteDevice> uploadByteDevice;
 
 public slots:
     // for task 251801, needs to be a slot to be called asynchronously
@@ -191,19 +196,23 @@ protected slots:
     void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth);
 #endif
     void authenticationRequired(QAuthenticator *auth);
-    void cacheCredentials(QAuthenticator *auth);
     void metaDataChanged();
     void redirectionRequested(const QUrl &destination);
     void sslErrors(const QList<QSslError> &errors);
     void emitReplyUploadProgress(qint64 bytesSent, qint64 bytesTotal);
 
+protected:
+    // FIXME In the long run we should get rid of our QNAM architecture
+    // and scrap this ReplyImpl/Backend distinction.
+    QNetworkAccessManagerPrivate *manager;
+    QNetworkReplyImplPrivate *reply;
+
 private:
     friend class QNetworkAccessManager;
     friend class QNetworkAccessManagerPrivate;
-    friend class QNetworkAccessBackendUploadIODevice;
     friend class QNetworkReplyImplPrivate;
-    QNetworkAccessManagerPrivate *manager;
-    QNetworkReplyImplPrivate *reply;
+
+    bool synchronous;
 };
 
 class QNetworkAccessBackendFactory

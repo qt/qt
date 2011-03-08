@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -69,6 +69,8 @@
 #include "private/qdeclarativetypenamecache_p.h"
 #include "private/qdeclarativeinclude_p.h"
 #include "private/qdeclarativenotifier_p.h"
+#include "private/qdeclarativedebugtrace_p.h"
+#include "private/qdeclarativeapplication_p.h"
 
 #include <QtCore/qmetaobject.h>
 #include <QScriptClass>
@@ -202,8 +204,9 @@ void QDeclarativeEnginePrivate::defineModule()
 
 \brief The \c Qt object provides useful enums and functions from Qt, for use in all QML files. 
 
-The \c Qt object is not a QML element; it cannot be instantiated. It is a global object 
-with enums and functions.  To use it, call the members of the global \c Qt object directly. 
+The \c Qt object is a global object with utility functions, properties and enums.
+
+It is not instantiable; to use it, call the members of the global \c Qt object directly.
 For example:
 
 \qml
@@ -218,8 +221,8 @@ Text {
 
 \section1 Enums
 
-The Qt object contains enums that declared into Qt's Meta-Object System. For example, you can access
-the \c Leftbutton member of the \c Qt::MouseButton enum with \c Qt.LeftButton.
+The Qt object contains the enums available in the \l {Qt Namespace}. For example, you can access
+the \l Qt::LeftButton and \l Qt::RightButton enum values as \c Qt.LeftButton and \c Qt.RightButton.
 
 
 \section1 Types
@@ -260,6 +263,84 @@ of their use.
     \o \l{QML:Qt::createQmlObject()}{object Qt.createQmlObject(string qml, object parent, string filepath)}
 \endlist
 */
+
+
+/*!
+    \qmlproperty object QML:Qt::application
+    \since QtQuick 1.1
+
+    The \c application object provides access to global application state
+    properties shared by many QML components.
+
+    Its properties are:
+
+    \table
+    \row
+    \o \c application.active
+    \o
+    This read-only property indicates whether the application is the top-most and focused
+    application, and the user is able to interact with the application. The property
+    is false when the application is in the background, the device keylock or screen
+    saver is active, the screen backlight is turned off, or the global system dialog
+    is being displayed on top of the application. It can be used for stopping and
+    pausing animations, timers and active processing of data in order to save device
+    battery power and free device memory and processor load when the application is not
+    active.
+
+    \row
+    \o \c application.layoutDirection
+    \o
+    This read-only property can be used to query the default layout direction of the
+    application. On system start-up, the default layout direction depends on the
+    application's language. The property has a value of \c Qt.RightToLeft in locales
+    where text and graphic elements are read from right to left, and \c Qt.LeftToRight
+    where the reading direction flows from left to right. You can bind to this
+    property to customize your application layouts to support both layout directions.
+
+    Possible values are:
+
+    \list
+    \o Qt.LeftToRight - Text and graphics elements should be positioned
+                        from left to right.
+    \o Qt.RightToLeft - Text and graphics elements should be positioned
+                        from right to left.
+    \endlist
+    \endtable
+
+    The following example uses the \c application object to indicate
+    whether the application is currently active:
+
+    \snippet doc/src/snippets/declarative/application.qml document
+
+*/
+
+
+/*!
+\qmlmethod object Qt::include(string url, jsobject callback)
+
+Includes another JavaScript file. This method can only be used from within JavaScript files,
+and not regular QML files.
+
+This imports all functions from \a url into the current script's namespace.
+
+Qt.include() returns an object that describes the status of the operation.  The object has
+a single property, \c {status}, that is set to one of the following values:
+
+\table
+\header \o Symbol \o Value \o Description
+\row \o result.OK \o 0 \o The include completed successfully.
+\row \o result.LOADING \o 1 \o Data is being loaded from the network.
+\row \o result.NETWORK_ERROR \o 2 \o A network error occurred while fetching the url.
+\row \o result.EXCEPTION \o 3 \o A JavaScript exception occurred while executing the included code.
+An additional \c exception property will be set in this case.
+\endtable
+
+The \c status property will be updated as the operation progresses.
+
+If provided, \a callback is invoked when the operation completes.  The callback is passed
+the same object as is returned from the Qt.include() call.
+*/
+// Qt.include() is implemented in qdeclarativeinclude.cpp
 
 
 QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
@@ -431,6 +512,8 @@ QDeclarativeEnginePrivate::~QDeclarativeEnginePrivate()
         (*iter)->release();
     for(QHash<const QMetaObject *, QDeclarativePropertyCache *>::Iterator iter = propertyCache.begin(); iter != propertyCache.end(); ++iter)
         (*iter)->release();
+    for(QHash<QPair<QDeclarativeType *, int>, QDeclarativePropertyCache *>::Iterator iter = typePropertyCache.begin(); iter != typePropertyCache.end(); ++iter)
+        (*iter)->release();
 
 }
 
@@ -492,6 +575,9 @@ void QDeclarativeEnginePrivate::init()
     typeNameClass = new QDeclarativeTypeNameScriptClass(q);
     listClass = new QDeclarativeListScriptClass(q);
     rootContext = new QDeclarativeContext(q,true);
+
+    QScriptValue applicationObject = objectClass->newQObject(new QDeclarativeApplication(q));
+    scriptEngine.globalObject().property(QLatin1String("Qt")).setProperty(QLatin1String("application"), applicationObject);
 
     if (QCoreApplication::instance()->thread() == q->thread() &&
         QDeclarativeEngineDebugServer::isDebuggingEnabled()) {
@@ -678,6 +764,9 @@ QNetworkAccessManager *QDeclarativeEngine::networkAccessManager() const
   requests. See the QDeclarativeImageProvider documentation for details on
   implementing and using image providers.
 
+  All required image providers should be added to the engine before any
+  QML sources files are loaded.
+
   Note that images loaded from a QDeclarativeImageProvider are cached
   by QPixmapCache, similar to any image loaded by QML.
 
@@ -687,7 +776,7 @@ void QDeclarativeEngine::addImageProvider(const QString &providerId, QDeclarativ
 {
     Q_D(QDeclarativeEngine);
     QMutexLocker locker(&d->mutex);
-    d->imageProviders.insert(providerId, QSharedPointer<QDeclarativeImageProvider>(provider));
+    d->imageProviders.insert(providerId.toLower(), QSharedPointer<QDeclarativeImageProvider>(provider));
 }
 
 /*!
@@ -730,8 +819,10 @@ QImage QDeclarativeEnginePrivate::getImageFromProvider(const QUrl &url, QSize *s
     QImage image;
     QSharedPointer<QDeclarativeImageProvider> provider = imageProviders.value(url.host());
     locker.unlock();
-    if (provider)
-        image = provider->requestImage(url.path().mid(1), size, req_size);
+    if (provider) {
+        QString imageId = url.toString(QUrl::RemoveScheme | QUrl::RemoveAuthority).mid(1);
+        image = provider->requestImage(imageId, size, req_size);
+    }
     return image;
 }
 
@@ -741,8 +832,10 @@ QPixmap QDeclarativeEnginePrivate::getPixmapFromProvider(const QUrl &url, QSize 
     QPixmap pixmap;
     QSharedPointer<QDeclarativeImageProvider> provider = imageProviders.value(url.host());
     locker.unlock();
-    if (provider)
-        pixmap = provider->requestPixmap(url.path().mid(1), size, req_size);
+    if (provider) {
+        QString imageId = url.toString(QUrl::RemoveScheme | QUrl::RemoveAuthority).mid(1);
+        pixmap = provider->requestPixmap(imageId, size, req_size);
+    }
     return pixmap;
 }
 
@@ -897,9 +990,7 @@ void QDeclarativeEngine::setObjectOwnership(QObject *object, ObjectOwnership own
     if (!object)
         return;
 
-    // No need to do anything if CppOwnership and there is no QDeclarativeData as
-    // the current ownership must be CppOwnership
-    QDeclarativeData *ddata = QDeclarativeData::get(object, ownership == JavaScriptOwnership);
+    QDeclarativeData *ddata = QDeclarativeData::get(object, true);
     if (!ddata)
         return;
 
@@ -927,7 +1018,14 @@ Q_AUTOTEST_EXPORT void qmlExecuteDeferred(QObject *object)
     QDeclarativeData *data = QDeclarativeData::get(object);
 
     if (data && data->deferredComponent) {
-
+        if (QDeclarativeDebugService::isDebuggingEnabled()) {
+            QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Creating);
+            QDeclarativeType *type = QDeclarativeMetaType::qmlType(object->metaObject());
+            QString typeName = type ? QLatin1String(type->qmlTypeName()) : QString::fromLatin1(object->metaObject()->className());
+            QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::Creating, typeName);
+            if (data->outerContext)
+                QDeclarativeDebugTrace::rangeLocation(QDeclarativeDebugTrace::Creating, data->outerContext->url, data->lineNumber);
+        }
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(data->context->engine);
 
         QDeclarativeComponentPrivate::ConstructionState state;
@@ -937,6 +1035,7 @@ Q_AUTOTEST_EXPORT void qmlExecuteDeferred(QObject *object)
         data->deferredComponent = 0;
 
         QDeclarativeComponentPrivate::complete(ep, &state);
+        QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Creating);
     }
 }
 
@@ -957,7 +1056,7 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
     if (!data)
         return 0; // Attached properties are only on objects created by QML
 
-    QObject *rv = data->extendedData?data->attachedProperties()->value(id):0;
+    QObject *rv = data->hasExtendedData()?data->attachedProperties()->value(id):0;
     if (rv || !create)
         return rv;
 
@@ -983,6 +1082,35 @@ QObject *qmlAttachedPropertiesObject(int *idCache, const QObject *object,
         return 0;
 
     return qmlAttachedPropertiesObjectById(*idCache, object, create);
+}
+
+class QDeclarativeDataExtended {
+public:
+    QDeclarativeDataExtended();
+    ~QDeclarativeDataExtended();
+
+    QHash<int, QObject *> attachedProperties;
+    QDeclarativeNotifier objectNameNotifier;
+};
+
+QDeclarativeDataExtended::QDeclarativeDataExtended()
+{
+}
+
+QDeclarativeDataExtended::~QDeclarativeDataExtended()
+{
+}
+
+QDeclarativeNotifier *QDeclarativeData::objectNameNotifier() const
+{
+    if (!extendedData) extendedData = new QDeclarativeDataExtended;
+    return &extendedData->objectNameNotifier;
+}
+
+QHash<int, QObject *> *QDeclarativeData::attachedProperties() const
+{
+    if (!extendedData) extendedData = new QDeclarativeDataExtended;
+    return &extendedData->attachedProperties;
 }
 
 void QDeclarativeData::destroyed(QObject *object)
@@ -1073,28 +1201,6 @@ void QDeclarativeData::setBindingBit(QObject *obj, int bit)
     }
 
     bindingBits[bit / 32] |= (1 << (bit % 32));
-}
-
-QDeclarativeData::ExtendedData::ExtendedData()
-: objectNameNotifier(0)
-{
-}
-
-QDeclarativeData::ExtendedData::~ExtendedData()
-{
-    ((QDeclarativeNotifier *)&objectNameNotifier)->~QDeclarativeNotifier();
-}
-
-QDeclarativeNotifier *QDeclarativeData::objectNameNotifier() const
-{
-    if (!extendedData) extendedData = new ExtendedData;
-    return (QDeclarativeNotifier *)&extendedData->objectNameNotifier;
-}
-
-QHash<int, QObject *> *QDeclarativeData::attachedProperties() const
-{
-    if (!extendedData) extendedData = new ExtendedData;
-    return &extendedData->attachedProperties;
 }
 
 /*!
@@ -1333,7 +1439,17 @@ QScriptValue QDeclarativeEnginePrivate::vector3d(QScriptContext *ctxt, QScriptEn
 
 /*!
 \qmlmethod string Qt::formatDate(datetime date, variant format)
-Returns the string representation of \c date, formatted according to \c format.
+
+Returns a string representation of \c date, optionally formatted according
+to \c format.
+
+The \a date parameter may be a JavaScript \c Date object, a \l{date}{date}
+property, a QDate, or QDateTime value. The \a format parameter may be any of
+the possible format values as described for
+\l{QML:Qt::formatDateTime()}{Qt.formatDateTime()}.
+
+If \a format is not specified, \a date is formatted using
+\l {Qt::DefaultLocaleShortDate}{Qt.DefaultLocaleShortDate}.
 */
 #ifndef QT_NO_DATESTRING
 QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptEngine*engine)
@@ -1360,9 +1476,16 @@ QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptE
 
 /*!
 \qmlmethod string Qt::formatTime(datetime time, variant format)
-Returns the string representation of \c time, formatted according to \c format.
 
-See Qt::formatDateTime for how to define \c format.
+Returns a string representation of \c time, optionally formatted according to
+\c format.
+
+The \a time parameter may be a JavaScript \c Date object, a QTime, or QDateTime
+value. The \a format parameter may be any of the possible format values as
+described for \l{QML:Qt::formatDateTime()}{Qt.formatDateTime()}.
+
+If \a format is not specified, \a time is formatted using
+\l {Qt::DefaultLocaleShortDate}{Qt.DefaultLocaleShortDate}.
 */
 QScriptValue QDeclarativeEnginePrivate::formatTime(QScriptContext*ctxt, QScriptEngine*engine)
 {
@@ -1370,29 +1493,49 @@ QScriptValue QDeclarativeEnginePrivate::formatTime(QScriptContext*ctxt, QScriptE
     if(argCount == 0 || argCount > 2)
         return ctxt->throwError(QLatin1String("Qt.formatTime(): Invalid arguments"));
 
-    QTime date = ctxt->argument(0).toDateTime().time();
+    QTime time;
+    QScriptValue sv = ctxt->argument(0);
+    if (sv.isDate())
+        time = sv.toDateTime().time();
+    else if (sv.toVariant().type() == QVariant::Time)
+        time = sv.toVariant().toTime();
+
     Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
     if (argCount == 2) {
         QScriptValue formatArg = ctxt->argument(1);
         if (formatArg.isString()) {
             QString format = formatArg.toString();
-            return engine->newVariant(QVariant::fromValue(date.toString(format)));
+            return engine->newVariant(QVariant::fromValue(time.toString(format)));
         } else if (formatArg.isNumber()) {
             enumFormat = Qt::DateFormat(formatArg.toUInt32());
         } else {
             return ctxt->throwError(QLatin1String("Qt.formatTime(): Invalid time format"));
         }
     }
-    return engine->newVariant(QVariant::fromValue(date.toString(enumFormat)));
+    return engine->newVariant(QVariant::fromValue(time.toString(enumFormat)));
 }
 
 /*!
 \qmlmethod string Qt::formatDateTime(datetime dateTime, variant format)
-Returns the string representation of \c dateTime, formatted according to \c format.
 
-\c format for the date/time formatting functions is be specified as follows.
+Returns a string representation of \c datetime, optionally formatted according to
+\c format.
 
-    These expressions may be used for the date:
+The \a date parameter may be a JavaScript \c Date object, a \l{date}{date}
+property, a QDate, QTime, or QDateTime value.
+
+If \a format is not provided, \a dateTime is formatted using
+\l {Qt::DefaultLocaleShortDate}{Qt.DefaultLocaleShortDate}. Otherwise,
+\a format should be either.
+
+\list
+\o One of the Qt::DateFormat enumeration values, such as
+   \c Qt.DefaultLocaleShortDate or \c Qt.ISODate
+\o A string that specifies the format of the returned string, as detailed below.
+\endlist
+
+If \a format specifies a format string, it should use the following expressions
+to specify the date:
 
     \table
     \header \i Expression \i Output
@@ -1416,7 +1559,7 @@ Returns the string representation of \c dateTime, formatted according to \c form
     \row \i yyyy \i the year as four digit number
     \endtable
 
-    These expressions may be used for the time:
+In addition the following expressions can be used to specify the time:
 
     \table
     \header \i Expression \i Output
@@ -1437,23 +1580,28 @@ Returns the string representation of \c dateTime, formatted according to \c form
     \endtable
 
     All other input characters will be ignored. Any sequence of characters that
-    are enclosed in singlequotes will be treated as text and not be used as an
-    expression. Two consecutive singlequotes ("''") are replaced by a singlequote
+    are enclosed in single quotes will be treated as text and not be used as an
+    expression. Two consecutive single quotes ("''") are replaced by a single quote
     in the output.
 
-    Example format strings (assumed that the date and time is 21 May 2001
-    14:13:09):
+For example, if the following date/time value was specified:
+
+    \code
+    // 21 May 2001 14:13:09
+    var dateTime = new Date(2001, 5, 21, 14, 13, 09)
+    \endcode
+
+This \a dateTime value could be passed to \c Qt.formatDateTime(),
+\l {QML:Qt::formatDate()}{Qt.formatDate()} or \l {QML:Qt::formatTime()}{Qt.formatTime()}
+with the \a format values below to produce the following results:
 
     \table
-    \header \i Format       \i Result
-    \row \i dd.MM.yyyy      \i 21.05.2001
-    \row \i ddd MMMM d yy   \i Tue May 21 01
-    \row \i hh:mm:ss.zzz    \i 14:13:09.042
-    \row \i h:m:s ap        \i 2:13:9 pm
+    \header \i Format \i Result
+    \row \i "dd.MM.yyyy"      \i 21.05.2001
+    \row \i "ddd MMMM d yy"   \i Tue May 21 01
+    \row \i "hh:mm:ss.zzz"    \i 14:13:09.042
+    \row \i "h:m:s ap"        \i 2:13:9 pm
     \endtable
-
-If no format is specified the locale's short format is used. Alternatively, you can specify
-\c Qt.DefaultLocaleLongDate to get the locale's long format.
 */
 QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScriptEngine*engine)
 {
@@ -1833,14 +1981,24 @@ QScriptValue QDeclarativeEnginePrivate::quit(QScriptContext * /*ctxt*/, QScriptE
 }
 
 /*!
-\qmlmethod color Qt::tint(color baseColor, color tintColor)
+    \qmlmethod color Qt::tint(color baseColor, color tintColor)
     This function allows tinting one color with another.
 
-    The tint color should usually be mostly transparent, or you will not be able to see the underlying color. The below example provides a slight red tint by having the tint color be pure red which is only 1/16th opaque.
+    The tint color should usually be mostly transparent, or you will not be
+    able to see the underlying color. The below example provides a slight red
+    tint by having the tint color be pure red which is only 1/16th opaque.
 
     \qml
-    Rectangle { x: 0; width: 80; height: 80; color: "lightsteelblue" }
-    Rectangle { x: 100; width: 80; height: 80; color: Qt.tint("lightsteelblue", "#10FF0000") }
+    Item {
+        Rectangle {
+            x: 0; width: 80; height: 80
+            color: "lightsteelblue"
+        }
+        Rectangle {
+            x: 100; width: 80; height: 80
+            color: Qt.tint("lightsteelblue", "#10FF0000")
+        }
+    }
     \endqml
     \image declarative-rect_tint.png
 
@@ -1955,10 +2113,11 @@ QVariant QDeclarativeEnginePrivate::scriptValueToVariant(const QScriptValue &val
 /*!
   Adds \a path as a directory where the engine searches for
   installed modules in a URL-based directory structure.
+  The \a path may be a local filesystem directory or a URL.
 
   The newly added \a path will be first in the importPathList().
 
-  \sa setImportPathList()
+  \sa setImportPathList(), \l {QML Modules}
 */
 void QDeclarativeEngine::addImportPath(const QString& path)
 {
@@ -2113,6 +2272,125 @@ static void *voidptr_constructor(const void *v)
     }
 }
 
+QDeclarativePropertyCache *QDeclarativeEnginePrivate::createCache(const QMetaObject *mo)
+{
+    Q_Q(QDeclarativeEngine);
+
+    if (!mo->superClass()) {
+        QDeclarativePropertyCache *rv = new QDeclarativePropertyCache(q, mo);
+        propertyCache.insert(mo, rv);
+        return rv;
+    } else {
+        QDeclarativePropertyCache *super = cache(mo->superClass());
+        QDeclarativePropertyCache *rv = super->copy();
+        rv->append(q, mo);
+        propertyCache.insert(mo, rv);
+        return rv;
+    }
+}
+
+QDeclarativePropertyCache *QDeclarativeEnginePrivate::createCache(QDeclarativeType *type, int minorVersion, 
+                                                                  QDeclarativeError &error)
+{
+    QList<QDeclarativeType *> types;
+
+    int maxMinorVersion = 0;
+
+    const QMetaObject *metaObject = type->metaObject();
+    while (metaObject) {
+        QDeclarativeType *t = QDeclarativeMetaType::qmlType(metaObject, type->module(), 
+                                                            type->majorVersion(), minorVersion);
+        if (t) {
+            maxMinorVersion = qMax(maxMinorVersion, t->minorVersion());
+            types << t;
+        } else {
+            types << 0;
+        }
+
+        metaObject = metaObject->superClass();
+    }
+
+    if (QDeclarativePropertyCache *c = typePropertyCache.value(qMakePair(type, maxMinorVersion))) {
+        c->addref();
+        typePropertyCache.insert(qMakePair(type, minorVersion), c);
+        return c;
+    }
+
+    QDeclarativePropertyCache *raw = cache(type->metaObject());
+
+    bool hasCopied = false;
+
+    for (int ii = 0; ii < types.count(); ++ii) {
+        QDeclarativeType *currentType = types.at(ii);
+        if (!currentType)
+            continue;
+
+        int rev = currentType->metaObjectRevision();
+        int moIndex = types.count() - 1 - ii;
+
+        if (raw->allowedRevisionCache[moIndex] != rev) {
+            if (!hasCopied) {
+                raw = raw->copy();
+                hasCopied = true;
+            }
+            raw->allowedRevisionCache[moIndex] = rev;
+        }
+    }
+
+    // Test revision compatibility - the basic rule is:
+    //    * Anything that is excluded, cannot overload something that is not excluded *
+
+    // Signals override:
+    //    * other signals and methods of the same name.
+    //    * properties named on<Signal Name> 
+    //    * automatic <property name>Changed notify signals
+
+    // Methods override:
+    //    * other methods of the same name
+
+    // Properties override:
+    //    * other elements of the same name
+
+    bool overloadError = false;
+    QString overloadName;
+
+#if 0
+    for (QDeclarativePropertyCache::StringCache::ConstIterator iter = raw->stringCache.begin();
+         !overloadError && iter != raw->stringCache.end();
+         ++iter) {
+
+        QDeclarativePropertyCache::Data *d = *iter;
+        if (raw->isAllowedInRevision(d))
+            continue; // Not excluded - no problems
+
+        // check that a regular "name" overload isn't happening
+        QDeclarativePropertyCache::Data *current = d;
+        while (!overloadError && current) {
+            current = d->overrideData(current);
+            if (current && raw->isAllowedInRevision(current)) 
+                overloadError = true;
+        }
+    }
+#endif
+
+    if (overloadError) {
+        if (hasCopied) raw->release();
+            
+        error.setDescription(QLatin1String("Type ") + QString::fromUtf8(type->qmlTypeName()) + QLatin1String(" ") + QString::number(type->majorVersion()) + QLatin1String(".") + QString::number(minorVersion) + QLatin1String(" contains an illegal property \"") + overloadName + QLatin1String("\".  This is an error in the type's implementation."));
+        return 0;
+    }
+
+    if (!hasCopied) raw->addref();
+    typePropertyCache.insert(qMakePair(type, minorVersion), raw);
+
+    if (minorVersion != maxMinorVersion) {
+        raw->addref();
+        typePropertyCache.insert(qMakePair(type, maxMinorVersion), raw);
+    }
+
+    return raw;
+}
+
 void QDeclarativeEnginePrivate::registerCompositeType(QDeclarativeCompiledData *data)
 {
     QByteArray name = data->root->className();
@@ -2225,8 +2503,9 @@ bool QDeclarative_isFileCaseCorrect(const QString &fileName)
         if (a != c)
             return false;
     }
+#else
+    Q_UNUSED(fileName)
 #endif
-
     return true;
 }
 

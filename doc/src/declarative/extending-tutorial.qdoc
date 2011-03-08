@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -285,8 +285,8 @@ int-type property to store an identifier for each chart:
     }
 \endcode
 
-We can also use various other property types. QML has built-in support for the following
-types listed in the \l{Extending Types from QML} document, including the following:
+We can also use various other property types. QML has built-in support for the types
+listed in the \l{Adding Properties} documentation, which includes the following:
 
 \list
 \o bool, unsigned int, int, float, double, qreal

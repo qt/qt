@@ -146,9 +146,9 @@ int MMF::AbstractVideoPlayer::openFile(RFile &file)
     return err;
 }
 
-int MMF::AbstractVideoPlayer::openUrl(const QString &url)
+int MMF::AbstractVideoPlayer::openUrl(const QString &url, int iap)
 {
-    TRAPD(err, m_player->OpenUrlL(qt_QString2TPtrC(url)));
+    TRAPD(err, m_player->OpenUrlL(qt_QString2TPtrC(url), iap));
     return err;
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -203,6 +203,8 @@ public:
     void disconnectRelay(const QString &service,
                          const QString &path, const QString &interface,
                          QDBusAbstractInterface *receiver, const char *signal);
+    void registerService(const QString &serviceName);
+    void unregisterService(const QString &serviceName);
 
     bool handleMessage(const QDBusMessage &msg);
     void waitForFinished(QDBusPendingCallPrivate *pcall);
@@ -247,9 +249,11 @@ public slots:
     void socketWrite(int);
     void objectDestroyed(QObject *o);
     void relaySignal(QObject *obj, const QMetaObject *, int signalId, const QVariantList &args);
-    void _q_serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
-    void registerService(const QString &serviceName);
-    void unregisterService(const QString &serviceName);
+
+private slots:
+    void serviceOwnerChangedNoLock(const QString &name, const QString &oldOwner, const QString &newOwner);
+    void registerServiceNoLock(const QString &serviceName);
+    void unregisterServiceNoLock(const QString &serviceName);
 
 signals:
     void serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
@@ -303,6 +307,9 @@ public:
                             QObject *receiver, const char *signal, int minMIdx,
                             bool buildSignature);
     static DBusHandlerResult messageFilter(DBusConnection *, DBusMessage *, void *);
+    static bool checkReplyForDelivery(QDBusConnectionPrivate *target, QObject *object,
+                                      int idx, const QList<int> &metaTypes,
+                                      const QDBusMessage &msg);
     static QDBusCallDeliveryEvent *prepareReply(QDBusConnectionPrivate *target, QObject *object,
                                                 int idx, const QList<int> &metaTypes,
                                                 const QDBusMessage &msg);

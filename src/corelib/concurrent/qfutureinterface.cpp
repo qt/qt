@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -421,9 +421,11 @@ bool QFutureInterfaceBase::referenceCountIsOne() const
 
 QFutureInterfaceBasePrivate::QFutureInterfaceBasePrivate(QFutureInterfaceBase::State initialState)
     : refCount(1), m_progressValue(0), m_progressMinimum(0), m_progressMaximum(0),
-      state(initialState), progressTimeStarted(false), pendingResults(0),
+      state(initialState), pendingResults(0),
       manualProgress(false), m_expectedResultCount(0), runnable(0)
-{ }
+{
+    progressTime.invalidate();
+}
 
 int QFutureInterfaceBasePrivate::internal_resultCount() const
 {
@@ -455,12 +457,11 @@ bool QFutureInterfaceBasePrivate::internal_updateProgress(int progress,
     m_progressValue = progress;
     m_progressText = progressText;
 
-    if (progressTimeStarted == true && m_progressValue != m_progressMaximum) // make sure the first and last steps are emitted.
+    if (progressTime.isValid() && m_progressValue != m_progressMaximum) // make sure the first and last steps are emitted.
         if (progressTime.elapsed() < (1000 / MaxProgressEmitsPerSecond))
             return false;
 
     progressTime.start();
-    progressTimeStarted = true;
     return true;
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -3426,8 +3426,9 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
         QString tz = parts.at(5);
         if (!tz.startsWith(QLatin1String("GMT"), Qt::CaseInsensitive))
             return QDateTime();
-        int tzoffset = 0;
+        QDateTime dt(date, time, Qt::UTC);
         if (tz.length() > 3) {
+            int tzoffset = 0;
             QChar sign = tz.at(3);
             if ((sign != QLatin1Char('+'))
                 && (sign != QLatin1Char('-'))) {
@@ -3442,8 +3443,9 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
             tzoffset = (tzhour*60 + tzminute) * 60;
             if (sign == QLatin1Char('-'))
                 tzoffset = -tzoffset;
+            dt.setUtcOffset(tzoffset);
         }
-        return QDateTime(date, time, Qt::UTC).addSecs(-tzoffset).toLocalTime();
+        return dt.toLocalTime();
     }
 #endif //QT_NO_TEXTDATE
     }
@@ -5838,6 +5840,41 @@ bool operator==(const QDateTimeParser::SectionNode &s1, const QDateTimeParser::S
     return (s1.type == s2.type) && (s1.pos == s2.pos) && (s1.count == s2.count);
 }
 
+#ifdef Q_OS_SYMBIAN
+const static TTime UnixEpochOffset(I64LIT(0xdcddb30f2f8000));
+const static TInt64 MinimumMillisecondTime(KMinTInt64 / 1000);
+const static TInt64 MaximumMillisecondTime(KMaxTInt64 / 1000);
+QDateTime qt_symbian_TTime_To_QDateTime(const TTime& time)
+{
+    TTimeIntervalMicroSeconds absolute = time.MicroSecondsFrom(UnixEpochOffset);
+
+    return QDateTime::fromMSecsSinceEpoch(absolute.Int64() / 1000);
+}
+
+TTime qt_symbian_QDateTime_To_TTime(const QDateTime& datetime)
+{
+    qint64 absolute = datetime.toMSecsSinceEpoch();
+    if(absolute > MaximumMillisecondTime)
+        return TTime(KMaxTInt64);
+    if(absolute < MinimumMillisecondTime)
+        return TTime(KMinTInt64);
+    return TTime(absolute * 1000);
+}
+
+time_t qt_symbian_TTime_To_time_t(const TTime& time)
+{
+    TTimeIntervalSeconds interval;
+    TInt err = time.SecondsFrom(UnixEpochOffset, interval);
+    if (err || interval.Int() < 0)
+        return (time_t) 0;
+    return (time_t) interval.Int();
+}
+
+TTime qt_symbian_time_t_To_TTime(time_t time)
+{
+    return UnixEpochOffset + TTimeIntervalSeconds(time);
+}
+#endif //Q_OS_SYMBIAN
 
 #endif // QT_BOOTSTRAPPED
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1320,6 +1320,9 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     Conversely, actions can be added to widgets with the addAction(),
     addActions() and insertAction() functions.
 
+    \warning To make QMenu visible on the screen, exec() or popup() should be
+    used instead of show().
+
     \section1 QMenu on Qt for Windows CE
 
     If a menu is integrated into the native menubar on Windows Mobile we
@@ -1795,10 +1798,12 @@ QSize QMenu::sizeHint() const
 void QMenu::popup(const QPoint &p, QAction *atAction)
 {
     Q_D(QMenu);
+#ifndef Q_OS_SYMBIAN
     if (d->scroll) { // reset scroll state from last popup
         d->scroll->scrollOffset = 0;
         d->scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
     }
+#endif
     d->tearoffHighlighted = 0;
     d->motions = 0;
     d->doChildEffects = true;

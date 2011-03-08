@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -327,7 +327,7 @@ static inline bool isLineSeparatorBlockAfterTable(const QTextBlock &block, const
 
 /*
 
-Optimisation strategies:
+Optimization strategies:
 
 HTML layout:
 
@@ -2506,6 +2506,24 @@ void QTextDocumentLayoutPrivate::layoutFlow(QTextFrame::Iterator it, QTextLayout
     fd->currentLayoutStruct = 0;
 }
 
+static inline void getLineHeightParams(const QTextBlockFormat &blockFormat, const QTextLine &line, qreal scaling,
+                                       QFixed *lineAdjustment, QFixed *lineBreakHeight, QFixed *lineHeight)
+{
+    *lineHeight = QFixed::fromReal(blockFormat.lineHeight(line.height(), scaling));
+
+    if (blockFormat.lineHeightType() == QTextBlockFormat::FixedHeight || blockFormat.lineHeightType() == QTextBlockFormat::MinimumHeight) {
+        *lineBreakHeight = *lineHeight;
+        if (blockFormat.lineHeightType() == QTextBlockFormat::FixedHeight)
+            *lineAdjustment = QFixed::fromReal(line.ascent() + qMax(line.leading(), qreal(0.0))) - ((*lineHeight * 4) / 5);
+        else
+            *lineAdjustment = QFixed::fromReal(line.height()) - *lineHeight;
+    }
+    else {
+        *lineBreakHeight = QFixed::fromReal(line.height());
+        *lineAdjustment = 0;
+    }
+}
+
 void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosition, const QTextBlockFormat &blockFormat,
                                              QTextLayoutStruct *layoutStruct, int layoutFrom, int layoutTo, const QTextBlockFormat *previousBlockFormat)
 {
@@ -2639,8 +2657,12 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
 
             }
 
-            QFixed lineHeight = QFixed::fromReal(line.height());
-            if (layoutStruct->pageHeight > 0 && layoutStruct->absoluteY() + lineHeight > layoutStruct->pageBottom) {
+            QFixed lineBreakHeight, lineHeight, lineAdjustment;
+            qreal scaling = (q->paintDevice() && q->paintDevice()->logicalDpiY() != qt_defaultDpi()) ?
+                            qreal(q->paintDevice()->logicalDpiY()) / qreal(qt_defaultDpi()) : 1;
+            getLineHeightParams(blockFormat, line, scaling, &lineAdjustment, &lineBreakHeight, &lineHeight);
+
+            if (layoutStruct->pageHeight > 0 && layoutStruct->absoluteY() + lineBreakHeight > layoutStruct->pageBottom) {
                 layoutStruct->newPage();
 
                 floatMargins(layoutStruct->y, layoutStruct, &left, &right);
@@ -2652,7 +2674,7 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
                     right -= text_indent;
             }
 
-            line.setPosition(QPointF((left - layoutStruct->x_left).toReal(), (layoutStruct->y - cy).toReal()));
+            line.setPosition(QPointF((left - layoutStruct->x_left).toReal(), (layoutStruct->y - cy - lineAdjustment).toReal()));
             layoutStruct->y += lineHeight;
             layoutStruct->contentsWidth
                 = qMax<QFixed>(layoutStruct->contentsWidth, QFixed::fromReal(line.x() + line.naturalTextWidth()) + totalRightMargin);
@@ -2672,11 +2694,16 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
             QTextLine line = tl->lineAt(i);
             layoutStruct->contentsWidth
                 = qMax(layoutStruct->contentsWidth, QFixed::fromReal(line.x() + tl->lineAt(i).naturalTextWidth()) + totalRightMargin);
-            const QFixed lineHeight = QFixed::fromReal(line.height());
+
+            QFixed lineBreakHeight, lineHeight, lineAdjustment;
+            qreal scaling = (q->paintDevice() && q->paintDevice()->logicalDpiY() != qt_defaultDpi()) ?
+                            qreal(q->paintDevice()->logicalDpiY()) / qreal(qt_defaultDpi()) : 1;
+            getLineHeightParams(blockFormat, line, scaling, &lineAdjustment, &lineBreakHeight, &lineHeight);
+
             if (layoutStruct->pageHeight != QFIXED_MAX) {
-                if (layoutStruct->absoluteY() + lineHeight > layoutStruct->pageBottom)
+                if (layoutStruct->absoluteY() + lineBreakHeight > layoutStruct->pageBottom)
                     layoutStruct->newPage();
-                line.setPosition(QPointF(line.position().x(), layoutStruct->y.toReal() - tl->position().y()));
+                line.setPosition(QPointF(line.position().x(), (layoutStruct->y - lineAdjustment).toReal() - tl->position().y()));
             }
             layoutStruct->y += lineHeight;
         }

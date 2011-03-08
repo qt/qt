@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -88,19 +88,10 @@ void QConnmanEngine::initialize()
 
         connect(tech,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
                 this,SLOT(technologyPropertyChangedContext(QString,QString,QDBusVariant)));
+    }
 
-        foreach(const QString devicePath,tech->getDevices()) {
-            QConnmanDeviceInterface *dev;
-            dev = new QConnmanDeviceInterface(devicePath);
-            if(!deviceMap.value(techPath).contains(devicePath)) {
-                connect(dev,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
-                        this,SLOT(devicePropertyChangedContext(QString,QString,QDBusVariant)));
-                deviceMap.insert(techPath,QStringList() << devicePath);
-                foreach(const QString network,dev->getNetworks()) {
-                    serviceNetworks.insert(getServiceForNetwork(network),network);
-                }
-            }
-        }
+    foreach(const QString servPath, connmanManager->getServices()) {
+        addServiceConfiguration(servPath);
     }
 
     // Get current list of access points.
@@ -110,7 +101,6 @@ void QConnmanEngine::initialize()
 QList<QNetworkConfigurationPrivate *> QConnmanEngine::getConfigurations()
 {
     QMutexLocker locker(&mutex);
-    getNetworkListing();
     QList<QNetworkConfigurationPrivate *> fetchedConfigurations;
     QNetworkConfigurationPrivate* cpPriv = 0;
 
@@ -131,21 +121,6 @@ QList<QNetworkConfigurationPrivate *> QConnmanEngine::getConfigurations()
         delete config;
     }
     return fetchedConfigurations;
-}
-
-void QConnmanEngine::getNetworkListing()
-{
-    QMutexLocker locker(&mutex);
-    QMapIterator<QString,QStringList> i(deviceMap);
-    while(i.hasNext()) {
-        i.next();
-        QConnmanDeviceInterface dev(i.value().at(0));
-        if(dev.isValid()) {
-            foreach(const QString network,dev.getNetworks()) {
-                addNetworkConfiguration(network);
-            }
-        }
-    }
 }
 
 void QConnmanEngine::doRequestUpdate()
@@ -225,7 +200,7 @@ void QConnmanEngine::requestUpdate()
 QString QConnmanEngine::serviceFromId(const QString &id)
 {
     QMutexLocker locker(&mutex);
-    foreach(const QString service, serviceNetworks.keys()) {
+    foreach(const QString service, serviceNetworks) {
         if (id == QString::number(qHash(service)))
             return service;
     }
@@ -330,24 +305,6 @@ QNetworkConfigurationPrivatePointer QConnmanEngine::defaultConfiguration()
     return QNetworkConfigurationPrivatePointer();
 }
 
-
-QString QConnmanEngine::getServiceForNetwork(const QString &netPath)
-{
-    QMutexLocker locker(&mutex);
-    QConnmanNetworkInterface network(netPath, this);
-    foreach(QString service,connmanManager->getServices()) {
-
-        QString devicePath = netPath.section("/",5,5);
-
-        QConnmanServiceInterface serv(service,this);
-        if(serv.getName() == network.getName()
-            && network.getSignalStrength() == serv.getSignalStrength()) {
-            return service;
-        }
-    }
-    return QString();
-}
-
 void QConnmanEngine::propertyChangedContext(const QString &path,const QString &item, const QDBusVariant &value)
 {
     Q_UNUSED(path);
@@ -399,84 +356,17 @@ void QConnmanEngine::servicePropertyChangedContext(const QString &path,const QSt
     }
 }
 
-void QConnmanEngine::networkPropertyChangedContext(const QString &/*path*/,const QString &/*item*/, const QDBusVariant &/*value*/)
-{
-    QMutexLocker locker(&mutex);
-}
-
-void QConnmanEngine::devicePropertyChangedContext(const QString &devpath,const QString &item,const QDBusVariant &value)
-{
-    QMutexLocker locker(&mutex);
-    if(item == "Networks") {
-
-        QConnmanNetworkInterface network(devpath, this);
-
-        QDBusArgument arg = qvariant_cast<QDBusArgument>(value.variant());
-        QStringList remainingNetworks  = qdbus_cast<QStringList>(arg);
-        QString devicetype;
-        QMapIterator<QString,QStringList> i(deviceMap);
-        while(i.hasNext()) {
-            i.next();
-            if(i.value().contains(devpath)) {
-                devicetype = i.key().section("/",-1);
-            }
-        }
-
-        QStringList oldnetworks = knownNetworks[devicetype];
-
-        if(remainingNetworks.count() > oldnetworks.count()) {
-            foreach(const QString netPath, remainingNetworks) {
-                if(!oldnetworks.contains(netPath)) {
-                    addNetworkConfiguration(netPath);
-                }
-            }
-        } else {
-            foreach(const QString netPath, oldnetworks) {
-                QString servicePath = serviceNetworks.key(netPath);
-                if(!remainingNetworks.contains(netPath)) {
-                    if(servicePath.isEmpty()) {
-                        removeConfiguration(QString::number(qHash(netPath)));
-                    }  else {
-                        removeConfiguration(QString::number(qHash(servicePath)));
-                    }
-                    knownNetworks[devicetype].removeAll(netPath);
-                }
-            }
-        }
-    }
-}
-
 void QConnmanEngine::technologyPropertyChangedContext(const QString & path, const QString &item, const QDBusVariant &value)
 {
-  if(item == "Devices") {
-      QDBusArgument arg = qvariant_cast<QDBusArgument>(value.variant());
-      QStringList list = qdbus_cast<QStringList>(arg);
-  }
-  if(item == "State") {
+    if(item == "State") {
+        if(value.variant().toString() == "offline") {
+            QConnmanTechnologyInterface tech(path);
+            disconnect(&tech,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
+                       this,SLOT(technologyPropertyChangedContext(QString,QString,QDBusVariant)));
 
-      if(value.variant().toString() == "available") {
-          QConnmanTechnologyInterface tech(connmanManager->getPathForTechnology(path));
-          foreach(const QString devPath, tech.getDevices()) {
-
-              if(!deviceMap.value(path).contains(devPath)) {
-                  QConnmanDeviceInterface *dev;
-                  dev = new QConnmanDeviceInterface(devPath,this);
-                  connect(dev,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
-                          this,SLOT(devicePropertyChangedContext(QString,QString,QDBusVariant)));
-                  deviceMap.insert(path,QStringList() << devPath);
-              }
-          }
-      }
-      if(value.variant().toString() == "offline") {
-          deviceMap.remove(path);
-          QConnmanTechnologyInterface tech(path);
-          disconnect(&tech,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
-                     this,SLOT(technologyPropertyChangedContext(QString,QString,QDBusVariant)));
-
-          technologies.remove(path);
-          getNetworkListing();
-      }
-  }
+            technologies.remove(path);
+        }
+    }
 }
 
 void QConnmanEngine::configurationChange(const QString &id)
@@ -513,8 +403,8 @@ void QConnmanEngine::configurationChange(const QString &id)
         locker.unlock();
         emit configurationChanged(ptr);
         locker.relock();
-
     }
+
      locker.unlock();
      emit updateCompleted();
 }
@@ -622,12 +512,7 @@ void QConnmanEngine::removeConfiguration(const QString &id)
         disconnect(&serv,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
                    this,SLOT(servicePropertyChangedContext(QString,QString, QDBusVariant)));
 
-        QString netPath = serviceNetworks.value(service);
-        serviceNetworks.remove(service);
-
-        QConnmanServiceInterface network(netPath);
-        disconnect(&network,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
-                   this,SLOT(networkPropertyChangedContext(QString,QString, QDBusVariant)));
+        serviceNetworks.removeOne(service);
 
         QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(id);
         locker.unlock();
@@ -641,20 +526,11 @@ void QConnmanEngine::addServiceConfiguration(const QString &servicePath)
     QMutexLocker locker(&mutex);
     QConnmanServiceInterface *serv;
     serv = new QConnmanServiceInterface(servicePath);
-    const QString netPath = serviceNetworks.value(servicePath);
-
-    QConnmanNetworkInterface *network;
-    network = new QConnmanNetworkInterface(netPath, this);
-
 
     const QString id = QString::number(qHash(servicePath));
 
     if (!accessPointConfigurations.contains(id)) {
-        QConnmanDeviceInterface device(netPath.section("/",0,5),this);
-
-        serviceNetworks.insert(servicePath,netPath);
-
-        knownNetworks[device.getType()].append(netPath);
+        serviceNetworks.append(servicePath);
 
         connect(serv,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
                 this,SLOT(servicePropertyChangedContext(QString,QString, QDBusVariant)));
@@ -693,110 +569,18 @@ void QConnmanEngine::addServiceConfiguration(const QString &servicePath)
             cpPriv->purpose = QNetworkConfiguration::PrivatePurpose;
         }
 
-        connect(network,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
-                this,SLOT(networkPropertyChangedContext(QString,QString, QDBusVariant)));
-
         cpPriv->state = getStateForService(servicePath);
 
         QNetworkConfigurationPrivatePointer ptr(cpPriv);
         accessPointConfigurations.insert(ptr->id, ptr);
         foundConfigurations.append(cpPriv);
-        configInterfaces[cpPriv->id] = device.getInterface();
+        configInterfaces[cpPriv->id] = serv->getInterface(); 
 
         locker.unlock();
         emit configurationAdded(ptr);
         locker.relock();
         emit updateCompleted();
     }
-}
-
-void QConnmanEngine::addNetworkConfiguration(const QString &networkPath)
-{
-    QMutexLocker locker(&mutex);
-    if(networkPath.isNull())
-        return;
-
-    QConnmanNetworkInterface *network;
-    network = new QConnmanNetworkInterface(networkPath, this);
-    QString servicePath = getServiceForNetwork(networkPath);
-    QConnmanServiceInterface *serv;
-
-    QString id;
-    QConnmanDeviceInterface device(networkPath.section("/",0,5),this);
-
-    if(servicePath.isEmpty()) {
-        id = QString::number(qHash(networkPath));
-    } else {
-        id = QString::number(qHash(servicePath));
-        serv = new QConnmanServiceInterface(servicePath,this);
-        connect(serv,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
-                this,SLOT(servicePropertyChangedContext(QString,QString, QDBusVariant)));
-    }
-
-    if (!id.isEmpty() && !accessPointConfigurations.contains(id)) {
-
-        knownNetworks[device.getType()].append(networkPath);
-
-        serviceNetworks.insert(servicePath,networkPath);
-
-        connect(network,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
-                this,SLOT(networkPropertyChangedContext(QString,QString, QDBusVariant)));
-
-        QNetworkConfigurationPrivate* cpPriv = new QNetworkConfigurationPrivate();
-
-        QString networkName = network->getName();
-
-        if(networkName.isEmpty())
-            networkName = "Hidden Network";
-
-        QNetworkConfiguration::BearerType bearerType;
-
-        if(servicePath.isEmpty()) {
-            QString devicePath = networkPath.section("/",0,5);
-
-            QConnmanDeviceInterface device(devicePath,this);
-            bearerType = typeToBearer(device.getType());
-        } else {
-            if(serv->getType() == "cellular") {
-                bearerType = ofonoTechToBearerType("cellular");
-                if(servicePath.isEmpty()) {
-                    networkName = serv->getName();
-                }
-                cpPriv->roamingSupported = isRoamingAllowed(servicePath);
-            } else {
-                bearerType = typeToBearer(serv->getType());
-            }
-        }
-
-        cpPriv->name = networkName;
-        cpPriv->isValid = true;
-        cpPriv->id = id;
-        cpPriv->type = QNetworkConfiguration::InternetAccessPoint;
-        cpPriv->bearerType = bearerType;
-
-        if(network->getWifiSecurity() == "none") {
-            cpPriv->purpose = QNetworkConfiguration::PublicPurpose;
-        } else {
-            cpPriv->purpose = QNetworkConfiguration::PrivatePurpose;
-        }
-
-        if(servicePath.isEmpty())
-            cpPriv->state = QNetworkConfiguration::Undefined;
-        else
-            cpPriv->state = getStateForService(servicePath);
-
-        QNetworkConfigurationPrivatePointer ptr(cpPriv);
-        accessPointConfigurations.insert(ptr->id, ptr);
-        foundConfigurations.append(cpPriv);
-        configInterfaces[cpPriv->id] = device.getInterface();
-
-        locker.unlock();
-        emit configurationAdded(ptr);
-        locker.relock();
-        emit updateCompleted();
-    } /*else {
-        qDebug() << "Not added~~~~~~~~~~~";
-    }*/
 }
 
 bool QConnmanEngine::requiresPolling() const

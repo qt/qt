@@ -34,6 +34,7 @@ HEADERS += \
         painting/qprinter.h \
         painting/qprinter_p.h \
         painting/qprinterinfo.h \
+        painting/qprinterinfo_p.h \
         painting/qrasterizer_p.h \
         painting/qregion.h \
         painting/qstroker_p.h \
@@ -73,6 +74,7 @@ SOURCES += \
         painting/qprintengine_pdf.cpp \
         painting/qprintengine_ps.cpp \
         painting/qprinter.cpp \
+        painting/qprinterinfo.cpp \
         painting/qrasterizer.cpp \
         painting/qregion.cpp \
         painting/qstroker.cpp \

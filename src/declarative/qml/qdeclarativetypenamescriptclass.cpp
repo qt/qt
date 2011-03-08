@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -109,9 +109,8 @@ QDeclarativeTypeNameScriptClass::queryProperty(Object *obj, const Identifier &na
 
     } else if (data->type) {
 
-        QString strName = toString(name);
-
-        if (strName.at(0).isUpper()) {
+        if (startsWithUpper(name)) {
+            QString strName = toString(name);
             // Must be an enum
             if (data->mode == IncludeEnums) {
                 // ### Optimize

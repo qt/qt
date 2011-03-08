@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -404,6 +404,7 @@ static QEvent *cloneEvent(QEvent *e)
         we2->setButtons(we->buttons());
         we2->setModifiers(we->modifiers());
         we2->setOrientation(we->orientation());
+        we2->setDelta(we->delta());
         return we2;
     }
 #endif

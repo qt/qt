@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,7 +60,53 @@
 
     \section1 Recent Additions to Qt 4
 
-    The following features have been added to Qt since the first release of Qt 4:
+    The following features have been added to Qt since the first release of Qt 4.
+
+    In Qt 4.7:
+    \list
+    \o Declarative UI Development with \l{Qt Quick}, technologies for creating
+       fluid, dynamic user interfaces.
+    \o Support for \l{Bearer Management}{network bearer management}, enabling
+       features such as control over network interfaces and support for roaming
+       between networks.
+    \o Feature and performance improvements in QtWebKit, including a new tiled
+       backing store, control over scroll bars used in frames and framesets,
+       accelerated compositing and \l{The QtWebKit Bridge}{support for hybrid
+       development}.
+    \o General performance improvements, including the use of "alien widgets"
+       on Mac OS X, the QStaticText class for optimized text rendering, a new
+       \l{QPainter::drawPixmapFragments()}{API for rendering pixmap fragments}
+       and an updated version of the JavaScriptCore engine for the QtScript
+       module with improved performance.
+    \endlist
+
+    In Qt 4.6:
+    \list
+    \o Support for \l{The Symbian platform - Introduction to Qt}{the Symbian Platform}
+       as a mainstream Qt platform, with integration into the S60 framework.
+    \o The \l{The Animation Framework}{animation framework} allows animations to be
+       created using both widgets and graphics items.
+    \o The \l{The State Machine Framework}{state machine framework} provides a robust
+       state chart implementation based on Harel statecharts and SCXML.
+    \o Support for \l{QTouchEvent}{touch input} and \l{Gestures Programming}{gestures}
+       enable developers to create intuitive user interfaces for touch-based devices.
+    \o A \l{QWebElement}{DOM access API} for QtWebKit provides a cleaner and safer way
+       to access elements and structures of Web pages without the use of JavaScript.
+    \o A collection of performance improvements, covering QGraphicsView, QPixmapCache,
+       QNetworkAccessManager, QContiguousCache class, hardware-accelerated rendering
+       support through \l{OpenVG Rendering in Qt}{OpenVG}, and the removal of Win9x
+       support.
+    \o A collection of \l{QGraphicsEffect}{graphics effects} make it easy to apply
+       and simple effects to graphics items and combine them to produce more complex
+       effects.
+    \o Support for XML schema validation in the QtXmlPatterns module covering
+       large parts of version 1.0 of the specification.
+    \o Qt3D enablers, including math primitives for \l{QMatrix4x4}{matrix multiplication},
+       \l{QVector3D}{vectors}, \l{QQuaternion}{quaternions} (client-side), and an API
+       for \l{QGLShader}{vertex and fragment shaders}, GLSL/ES.
+    \o \l{QtMultimedia Module}{Multimedia services} providing low-level access to the
+       system's audio system.
+    \endlist
 
     In Qt 4.5:
     \list
@@ -209,7 +255,7 @@
     \row    \o \l{Qt3Support}   \o Qt 3 support classes
     \row    \o \l{QAxContainer} \o ActiveQt client extension
     \row    \o \l{QAxServer}    \o ActiveQt server extension
-    \row    \o \l{QtHelp}  	\o Classes for integrating online documentation
+    \row    \o \l{QtHelp}       \o Classes for integrating online documentation
     \row    \o \l{QtDesigner}   \o Classes for extending and embedding Qt Designer
     \row    \o \l{QtUiTools}    \o Classes for dynamic GUI generation
     \row    \o \l{QtTest}       \o Tool classes for unit testing
@@ -282,7 +328,7 @@
 
     With Qt 4, the Qt class has become the Qt namespace. If you want
     to access a constant that is part of the Qt namespace, prefix it
-    with \c Qt:: (e.g., \c{Qt::yellow}), or add the directive
+    with \c{Qt::} (e.g., \c{Qt::yellow}), or add the directive
 
     \snippet doc/src/snippets/code/doc_src_qt4-intro.qdoc 7
 
@@ -295,7 +341,7 @@
     in Qt 3, it was legal to write \c QWidget::yellow instead of \c
     Qt::yellow, because QWidget inherited from Qt. This won't work in
     Qt 4; you must write \c Qt::yellow or add the "using namespace"
-    directive and drop the \c Qt:: prefix.
+    directive and drop the \c{Qt::} prefix.
 
     The \l{qt3to4 - The Qt 3 to 4 Porting Tool}{qt3to4} porting tool
     automates this conversion.
@@ -451,7 +497,7 @@
     A list of other Qt 4 features can be found on the \bold{\l{What's
     New in Qt 4}} page.
 
-    \section1 Declarative UI development with Qt Quick
+    \section1 Declarative UI Development with Qt Quick
 
     \image quick_screens.png
 
@@ -508,7 +554,7 @@
 
     For hybrid QtWebKit and C++ projects, Qt 4.7 has added support for
     transporting \l{QPixmap}s between Qt C++ and WebKit. We have also
-    improved the documentation hybrid development. Read more here:
+    improved the documentation for hybrid development. Read more here:
     \l{The QtWebKit Bridge}.
 
     \section1 QtWebKit Performance Benchmarks
@@ -680,7 +726,7 @@
     See the QTouchEvent class documentation for more information on touch
     input and QGestureEvent for gestures.
 
-    \section1 DOM access API
+    \section1 DOM Access API
 
     Web pages and XML both have very complex document object models.
     The W3C selector API provides a very simple way to access and
@@ -699,7 +745,7 @@
 
     \list
         \o Rewritten the QGraphicsView rendering algorithm.
-        \o Made QPixmapCache support efficient Key datastructure.
+        \o Made QPixmapCache support efficient Key data structure.
         \o Reduced overhead in QNetworkAccessManager.
         \o Added the QContiguousCache class, which provides efficient caching of
            contiguous data.
@@ -740,7 +786,7 @@
     See the \l{XML Processing} and QXmlSchema class documentation for more
     information.
 
-    \section1 Qt3D enablers
+    \section1 Qt3D Enablers
 
     As more of Qt, and more of the applications built on Qt go 3D,
     API's should be provided to simplify this. Mainly, the new API
@@ -750,7 +796,7 @@
 
     The main features of the Qt3D enablers are currently: Math
     primitives for matrix multiplication, vectors, quaternions
-    (client-side), and API for vertex and fragment shaders, GLSL/ES.
+    (client-side), and an API for vertex and fragment shaders, GLSL/ES.
     Future research will, among other things include stencils,
     scissors, vertex buffers and arrays, texture manipulation, and
     geometry shaders.

@@ -1,8 +1,0 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource prefix="/">
-    <file name="icon.png">./icons/icon.png</file>
-    <file name="icon.bmp">./icons/icon.bmp</file>
-    <file name="big.png">./icons/big.png</file>
-    <file name="folder.png">./icons/folder.png</file>
-</qresource>
-</RCC>

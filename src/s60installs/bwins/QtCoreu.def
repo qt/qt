@@ -4585,4 +4585,24 @@ EXPORTS
 	?advance@QAnimationDriver@@QAEXXZ @ 4584 NONAME ; void QAnimationDriver::advance(void)
 	?start@QAnimationDriver@@AAEXXZ @ 4585 NONAME ; void QAnimationDriver::start(void)
 	?unlockInline@QMutex@@QAEXXZ @ 4586 NONAME ; void QMutex::unlockInline(void)
+	??0QSystemError@@QAE@HW4ErrorScope@0@@Z @ 4587 NONAME ; QSystemError::QSystemError(int, enum QSystemError::ErrorScope)
+	??0QSystemError@@QAE@XZ @ 4588 NONAME ; QSystemError::QSystemError(void)
+	?error@QSystemError@@QAEHXZ @ 4589 NONAME ; int QSystemError::error(void)
+	?scope@QSystemError@@QAE?AW4ErrorScope@1@XZ @ 4590 NONAME ; enum QSystemError::ErrorScope QSystemError::scope(void)
+	?toString@QSystemError@@QAE?AVQString@@XZ @ 4591 NONAME ; class QString QSystemError::toString(void)
+	??0QFileInfo@@QAE@PAVQFileInfoPrivate@@@Z @ 4592 NONAME ; QFileInfo::QFileInfo(class QFileInfoPrivate *)
+	?currentUnicodeVersion@QChar@@SA?AW4UnicodeVersion@1@XZ @ 4593 NONAME ; enum QChar::UnicodeVersion QChar::currentUnicodeVersion(void)
+	?open@QFSFileEngine@@QAE_NV?$QFlags@W4OpenModeFlag@QIODevice@@@@ABVRFile@@V?$QFlags@W4FileHandleFlag@QFile@@@@@Z @ 4594 NONAME ; bool QFSFileEngine::open(class QFlags<enum QIODevice::OpenModeFlag>, class RFile const &, class QFlags<enum QFile::FileHandleFlag>)
+	?open@QFSFileEngine@@QAE_NV?$QFlags@W4OpenModeFlag@QIODevice@@@@HV?$QFlags@W4FileHandleFlag@QFile@@@@@Z @ 4595 NONAME ; bool QFSFileEngine::open(class QFlags<enum QIODevice::OpenModeFlag>, int, class QFlags<enum QFile::FileHandleFlag>)
+	?open@QFSFileEngine@@QAE_NV?$QFlags@W4OpenModeFlag@QIODevice@@@@PAU__sFILE@@V?$QFlags@W4FileHandleFlag@QFile@@@@@Z @ 4596 NONAME ; bool QFSFileEngine::open(class QFlags<enum QIODevice::OpenModeFlag>, struct __sFILE *, class QFlags<enum QFile::FileHandleFlag>)
+	?open@QFile@@QAE_NABVRFile@@V?$QFlags@W4OpenModeFlag@QIODevice@@@@V?$QFlags@W4FileHandleFlag@QFile@@@@@Z @ 4597 NONAME ; bool QFile::open(class RFile const &, class QFlags<enum QIODevice::OpenModeFlag>, class QFlags<enum QFile::FileHandleFlag>)
+	?open@QFile@@QAE_NHV?$QFlags@W4OpenModeFlag@QIODevice@@@@V?$QFlags@W4FileHandleFlag@QFile@@@@@Z @ 4598 NONAME ; bool QFile::open(int, class QFlags<enum QIODevice::OpenModeFlag>, class QFlags<enum QFile::FileHandleFlag>)
+	?open@QFile@@QAE_NPAU__sFILE@@V?$QFlags@W4OpenModeFlag@QIODevice@@@@V?$QFlags@W4FileHandleFlag@QFile@@@@@Z @ 4599 NONAME ; bool QFile::open(struct __sFILE *, class QFlags<enum QIODevice::OpenModeFlag>, class QFlags<enum QFile::FileHandleFlag>)
+	?symbianCommandLine@QCoreApplicationPrivate@@SAPAVCApaCommandLine@@XZ @ 4600 NONAME ; class CApaCommandLine * QCoreApplicationPrivate::symbianCommandLine(void)
+	?nsecsElapsed@QElapsedTimer@@QBE_JXZ @ 4601 NONAME ; long long QElapsedTimer::nsecsElapsed(void) const
+	??XQPoint@@QAEAAV0@N@Z @ 4602 NONAME ; class QPoint & QPoint::operator*=(double)
+	??XQPoint@@QAEAAV0@H@Z @ 4603 NONAME ; class QPoint & QPoint::operator*=(int)
+	?hasError@QXmlStreamWriter@@QBE_NXZ @ 4604 NONAME ; bool QXmlStreamWriter::hasError(void) const
+	?revision@QMetaProperty@@QBEHXZ @ 4605 NONAME ; int QMetaProperty::revision(void) const
+	?revision@QMetaMethod@@QBEHXZ @ 4606 NONAME ; int QMetaMethod::revision(void) const
 

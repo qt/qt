@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -28,7 +28,9 @@
 /*!
 \page qml-anchor-layout.html
 \target anchor-layout
-\title Anchor-based Layout in QML
+\title Anchor-Based Layout in QML
+
+\section1 Overview
 
 In addition to the more traditional \l Grid, \l Row, and \l Column,
 QML also provides a way to layout items using the concept of \e anchors.
@@ -54,7 +56,44 @@ In this case, the left edge of \e rect2 is bound to the right edge of \e rect1, 
 
 \image edge1.png
 
-The anchoring system also allows you to specify margins and offsets. Margins specify the amount of empty space to leave to the outside of an item, while offsets allow you to manipulate positioning using the center anchor lines. Note that margins specified using the anchor layout system only have meaning for anchors; they won't have any effect when using other layouts or absolute positioning.
+
+You can specify multiple anchors. For example:
+
+\code
+Rectangle { id: rect1; ... }
+Rectangle { id: rect2; anchors.left: rect1.right; anchors.top: rect1.bottom; ... }
+\endcode
+
+\image edge3.png
+
+By specifying multiple horizontal or vertical anchors you can control the size of an item. Below,
+\e rect2 is anchored to the right of \e rect1 and the left of \e rect3. If either of the blue
+rectangles are moved, \e rect2 will stretch and shrink as necessary:
+
+\code
+Rectangle { id: rect1; x: 0; ... }
+Rectangle { id: rect2; anchors.left: rect1.right; anchors.right: rect3.left; ... }
+Rectangle { id: rect3; x: 150; ... }
+\endcode
+
+\image edge4.png
+
+There are also some convenience anchors. anchors.fill is a convenience that is the same as setting the left,right,top and bottom anchors
+to the left,right,top and bottom of the target item. anchors.centerIn is another convenience anchor, and is the same as setting the verticalCenter
+and horizontalCenter anchors to the verticalCenter and horizontalCenter of the target item.
+
+\section1 Anchor Margins and Offsets
+
+The anchoring system also allows \e margins and \e offsets to be specified for an item's anchors.
+Margins specify the amount of empty space to leave to the outside of an item's anchor, while
+offsets allow positioning to be manipulated using the center anchor lines.  An item can
+specify its anchor margins individually through \l {Item::anchors.leftMargin}{leftMargin},
+\l {Item::anchors.rightMargin}{rightMargin}, \l {Item::anchors.topMargin}{topMargin} and
+\l {Item::anchors.bottomMargin}{bottomMargin}, or use \l {Item::}{anchors.margins} to
+specify the same margin value for all four edges. Anchor offsets are specified using
+\l {Item::anchors.horizontalCenterOffset}{horizontalCenterOffset},
+\l {Item::anchors.verticalCenterOffset}{verticalCenterOffset} and
+\l {Item::anchors.baselineOffset}{baselineOffset}.
 
 \image margins_qml.png
 
@@ -69,28 +108,15 @@ In this case, a margin of 5 pixels is reserved to the left of \e rect2, producin
 
 \image edge2.png
 
-You can specify multiple anchors. For example:
+\note Anchor margins only apply to anchors; they are \e not a generic means of applying margins to an \l Item.
+If an anchor margin is specified for an edge but the item is not anchored to any item on that
+edge, the margin is not applied.
 
-\code
-Rectangle { id: rect1; ... }
-Rectangle { id: rect2; anchors.left: rect1.right; anchors.top: rect1.bottom; ... }
-\endcode
 
-\image edge3.png
+\section1 Restrictions
 
-By specifying multiple horizontal or vertical anchors you can control the size of an item. For example:
-
-\code
-Rectangle { id: rect1; x: 0; ... }
-Rectangle { id: rect2; anchors.left: rect1.right; anchors.right: rect3.left; ... }
-Rectangle { id: rect3; x: 150; ... }
-\endcode
-
-\image edge4.png
-
-\section1 Limitations
-
-For performance reasons, you can only anchor an item to its siblings and direct parent. For example, the following anchor would be considered invalid and would produce a warning:
+For performance reasons, you can only anchor an item to its siblings and direct parent. For example,
+the following anchor is invalid and would produce a warning:
 
 \badcode
 Item {
@@ -102,5 +128,14 @@ Item {
     Rectangle { id: rect2; anchors.left: rect1.right; ... }    // invalid anchor!
 }
 \endcode
+
+Also, anchor-based layouts cannot be mixed with absolute positioning. If an item specifies its
+\l {Item::}{x} position and also sets \l {Item::}{anchors.left},
+or anchors its left and right edges but additionally sets a \l {Item::}{width}, the
+result is undefined, as it would not be clear whether the item should use anchoring or absolute
+positioning. The same can be said for setting an item's \l {Item::}{y} and \l {Item::}{height}
+with \l {Item::}{anchors.top} and \l {Item::}{anchors.bottom}, or setting \l {Item::}{anchors.fill}
+as well as \l {Item::}{width} or \l {Item::}{height}. If you wish to change from using
+anchor-based to absolute positioning, you can clear an anchor value by setting it to \c undefined.
 
 */

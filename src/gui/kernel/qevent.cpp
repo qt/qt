@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,6 +52,10 @@
 #include "qevent_p.h"
 #include "qgesture.h"
 #include "qgesture_p.h"
+
+#ifdef Q_OS_SYMBIAN
+#include "private/qcore_symbian_p.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -724,12 +728,12 @@ QWheelEvent::QWheelEvent(const QPoint &pos, const QPoint& globalPos, int delta, 
     The \a type parameter must be QEvent::KeyPress, QEvent::KeyRelease,
     or QEvent::ShortcutOverride.
 
-    Int \a key is the code for the Qt::Key that the event loop should listen 
-    for. If \a key is 0, the event is not a result of a known key; for 
+    Int \a key is the code for the Qt::Key that the event loop should listen
+    for. If \a key is 0, the event is not a result of a known key; for
     example, it may be the result of a compose sequence or keyboard macro.
-    The \a modifiers holds the keyboard modifiers, and the given \a text 
-    is the Unicode text that the key generated. If \a autorep is true, 
-    isAutoRepeat() will be true. \a count is the number of keys involved 
+    The \a modifiers holds the keyboard modifiers, and the given \a text
+    is the Unicode text that the key generated. If \a autorep is true,
+    isAutoRepeat() will be true. \a count is the number of keys involved
     in the event.
 */
 QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const QString& text,
@@ -1658,7 +1662,7 @@ Qt::ButtonState QContextMenuEvent::state() const
     string is controlled by the widget only). The AttributeType enum
     describes the different attributes that can be set.
 
-    A class implementing QWidget::inputMethodEvent() or 
+    A class implementing QWidget::inputMethodEvent() or
     QGraphicsItem::inputMethodEvent() should at least understand and
     honor the \l TextFormat and \l Cursor attributes.
 
@@ -3023,8 +3027,15 @@ QShowEvent::~QShowEvent()
     This event is only used to notify the application of a request.
     It may be safely ignored.
 
-    \note This class is currently supported for Mac OS X only.
+    \note This class is currently supported for Mac OS X and Symbian only.
 */
+
+QFileOpenEventPrivate::~QFileOpenEventPrivate()
+{
+#ifdef Q_OS_SYMBIAN
+    file.Close();
+#endif
+}
 
 /*!
     \internal
@@ -3049,6 +3060,22 @@ QFileOpenEvent::QFileOpenEvent(const QUrl &url)
     f = url.toLocalFile();
 }
 
+#ifdef Q_OS_SYMBIAN
+/*! \internal
+*/
+QFileOpenEvent::QFileOpenEvent(const RFile &fileHandle)
+    : QEvent(FileOpen)
+{
+    TFileName fullName;
+    fileHandle.FullName(fullName);
+    f = qt_TDesC2QString(fullName);
+    QScopedPointer<QFileOpenEventPrivate> priv(new QFileOpenEventPrivate(QUrl::fromLocalFile(f)));
+    // Duplicate here allows the file handle to be valid after S60 app construction is complete.
+    qt_symbian_throwIfError(priv->file.Duplicate(fileHandle));
+    d = reinterpret_cast<QEventPrivate *>(priv.take());
+}
+#endif
+
 /*! \internal
 */
 QFileOpenEvent::~QFileOpenEvent()
@@ -3072,6 +3099,39 @@ QFileOpenEvent::~QFileOpenEvent()
 QUrl QFileOpenEvent::url() const
 {
     return reinterpret_cast<const QFileOpenEventPrivate *>(d)->url;
+}
+
+/*!
+    \fn bool openFile(QFile &file, QIODevice::OpenMode flags) const
+
+    Opens a QFile on the file referenced by this event.
+    Returns true if successful; otherwise returns false.
+
+    This is necessary as some files cannot be opened by name, but require specific
+    information stored in this event.
+    For example, if this QFileOpenEvent contains a request to open a Symbian data caged file,
+    the QFile could only be opened from the Symbian RFile used in the construction of this event.
+
+    \since 4.8
+*/
+bool QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
+{
+    file.setFileName(f);
+#ifdef Q_OS_SYMBIAN
+    const QFileOpenEventPrivate *priv = reinterpret_cast<const QFileOpenEventPrivate *>(d);
+    if (priv->file.SubSessionHandle()) {
+        RFile dup;
+        // Duplicate here means that the opened QFile will continue to be valid beyond the lifetime of this QFileOpenEvent.
+        // It also allows openFile to be used in threads other than the thread in which the QFileOpenEvent was created.
+        if (dup.Duplicate(priv->file) == KErrNone) {
+            QScopedPointer<RFile, QScopedPointerRCloser<RFile> > dupCloser(&dup);
+            bool open = file.open(dup, flags, QFile::AutoCloseHandle);
+            dupCloser.take();
+            return open;
+        }
+    }
+#endif
+    return file.open(flags);
 }
 
 #ifndef QT_NO_TOOLBAR
@@ -3622,7 +3682,7 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
 
 #endif
 
-/*! 
+/*!
     \class QTouchEvent
     \brief The QTouchEvent class contains parameters that describe a touch event.
     \since 4.6
@@ -4567,5 +4627,224 @@ const QGestureEventPrivate *QGestureEvent::d_func() const
 #endif
 
 #endif // QT_NO_GESTURES
+
+/*!
+    \class QScrollPrepareEvent
+    \since 4.8
+    \ingroup events
+
+    \brief The QScrollPrepareEvent class is send in preparation of a scrolling.
+
+    The scroll prepare event is send before scrolling (usually by QScroller) is started.
+    The object receiving this event should set viewportSize, maxContentPos and contentPos.
+    It also should accept this event to indicate that scrolling should be started.
+
+    It is not guaranteed that a QScrollEvent will be send after an acceepted
+    QScrollPrepareEvent, e.g. in a case where the maximum content position is (0,0).
+
+    \sa QScrollEvent, QScroller
+*/
+
+/*!
+    Creates new QScrollPrepareEvent
+    The \a startPos is the position of a touch or mouse event that started the scrolling.
+*/
+QScrollPrepareEvent::QScrollPrepareEvent(const QPointF &startPos)
+    : QEvent(QEvent::ScrollPrepare)
+{
+    d = reinterpret_cast<QEventPrivate *>(new QScrollPrepareEventPrivate());
+    d_func()->startPos = startPos;
+}
+
+/*!
+    Destroys QScrollEvent.
+*/
+QScrollPrepareEvent::~QScrollPrepareEvent()
+{
+    delete reinterpret_cast<QScrollPrepareEventPrivate *>(d);
+}
+
+/*!
+    Returns the position of the touch or mouse event that started the scrolling.
+*/
+QPointF QScrollPrepareEvent::startPos() const
+{
+    return d_func()->startPos;
+}
+
+/*!
+    Returns size of the area that is to be scrolled as set by setViewportSize
+
+    \sa setViewportSize()
+*/
+QSizeF QScrollPrepareEvent::viewportSize() const
+{
+    return d_func()->viewportSize;
+}
+
+/*!
+    Returns the range of coordinates for the content as set by setContentPosRange().
+*/
+QRectF QScrollPrepareEvent::contentPosRange() const
+{
+    return d_func()->contentPosRange;
+}
+
+/*!
+    Returns the current position of the content as set by setContentPos.
+*/
+QPointF QScrollPrepareEvent::contentPos() const
+{
+    return d_func()->contentPos;
+}
+
+
+/*!
+    Sets the size of the area that is to be scrolled to \a size.
+
+    \sa viewportSize()
+*/
+void QScrollPrepareEvent::setViewportSize(const QSizeF &size)
+{
+    d_func()->viewportSize = size;
+}
+
+/*!
+    Sets the range of content coordinates to \a rect.
+
+    \sa contentPosRange()
+*/
+void QScrollPrepareEvent::setContentPosRange(const QRectF &rect)
+{
+    d_func()->contentPosRange = rect;
+}
+
+/*!
+    Sets the current content position to \a pos.
+
+    \sa contentPos()
+*/
+void QScrollPrepareEvent::setContentPos(const QPointF &pos)
+{
+    d_func()->contentPos = pos;
+}
+
+
+/*!
+    \internal
+*/
+QScrollPrepareEventPrivate *QScrollPrepareEvent::d_func()
+{
+    return reinterpret_cast<QScrollPrepareEventPrivate *>(d);
+}
+
+/*!
+    \internal
+*/
+const QScrollPrepareEventPrivate *QScrollPrepareEvent::d_func() const
+{
+    return reinterpret_cast<const QScrollPrepareEventPrivate *>(d);
+}
+
+/*!
+    \class QScrollEvent
+    \since 4.8
+    \ingroup events
+
+    \brief The QScrollEvent class is send when scrolling.
+
+    The scroll event is send to indicate that the receiver should be scrolled.
+    Usually the receiver should be something visual like QWidget or QGraphicsObject.
+
+    Some care should be taken that no conflicting QScrollEvents are sent from two
+    sources. Using QScroller::scrollTo is save however.
+
+    \sa QScrollPrepareEvent, QScroller
+*/
+
+/*!
+    \enum QScrollEvent::ScrollState
+
+    This enum describes the states a scroll event can have.
+
+    \value ScrollStarted Set for the first scroll event of a scroll activity.
+
+    \value ScrollUpdated Set for all but the first and the last scroll event of a scroll activity.
+
+    \value ScrollFinished Set for the last scroll event of a scroll activity.
+
+    \sa QScrollEvent::scrollState()
+*/
+
+/*!
+    Creates a new QScrollEvent
+    \a contentPos is the new content position, \a overshootDistance is the
+    new overshoot distance while \a scrollState indicates if this scroll
+    event is the first one, the last one or some event in between.
+*/
+QScrollEvent::QScrollEvent(const QPointF &contentPos, const QPointF &overshootDistance, ScrollState scrollState)
+    : QEvent(QEvent::Scroll)
+{
+    d = reinterpret_cast<QEventPrivate *>(new QScrollEventPrivate());
+    d_func()->contentPos = contentPos;
+    d_func()->overshoot= overshootDistance;
+    d_func()->state = scrollState;
+}
+
+/*!
+    Destroys QScrollEvent.
+*/
+QScrollEvent::~QScrollEvent()
+{
+    delete reinterpret_cast<QScrollEventPrivate *>(d);
+}
+
+/*!
+    Returns the new scroll position.
+*/
+QPointF QScrollEvent::contentPos() const
+{
+    return d_func()->contentPos;
+}
+
+/*!
+    Returns the new overshoot distance.
+    See QScroller for an explanation of the term overshoot.
+
+    \sa QScroller
+*/
+QPointF QScrollEvent::overshootDistance() const
+{
+    return d_func()->overshoot;
+}
+
+/*!
+    Returns the current scroll state as a combination of ScrollStateFlag values.
+    ScrollStarted (or ScrollFinished) will be set, if this scroll event is the first (or last) event in a scrolling activity.
+    Please note that both values can be set at the same time, if the activity consists of a single QScrollEvent.
+    All other scroll events in between will have their state set to ScrollUpdated.
+
+    A widget could for example revert selections when scrolling is started and stopped.
+*/
+QScrollEvent::ScrollState QScrollEvent::scrollState() const
+{
+    return d_func()->state;
+}
+
+/*!
+    \internal
+*/
+QScrollEventPrivate *QScrollEvent::d_func()
+{
+    return reinterpret_cast<QScrollEventPrivate *>(d);
+}
+
+/*!
+    \internal
+*/
+const QScrollEventPrivate *QScrollEvent::d_func() const
+{
+    return reinterpret_cast<const QScrollEventPrivate *>(d);
+}
 
 QT_END_NAMESPACE

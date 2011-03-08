@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -214,7 +214,7 @@ static QString qWarnODBCHandle(int handleType, SQLHANDLE handle, int *nativeCode
                           state_,
                           &nativeCode_,
                           0,
-                          NULL,
+                          0,
                           &msgLen);
         if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && msgLen > 0)
             description_.resize(msgLen+1);
@@ -391,7 +391,7 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
                 // colSize-1: remove 0 termination when there is more data to fetch
                 int rSize = (r == SQL_SUCCESS_WITH_INFO) ? colSize : lengthIndicator/sizeof(SQLTCHAR);
                     fieldVal += fromSQLTCHAR(buf, rSize);
-                if (lengthIndicator < (unsigned int)colSize*sizeof(SQLTCHAR)) {
+                if (lengthIndicator < SQLLEN(colSize*sizeof(SQLTCHAR))) {
                     // workaround for Drivermanagers that don't return SQL_NO_DATA
                     break;
                 }
@@ -432,7 +432,7 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
                 // colSize-1: remove 0 termination when there is more data to fetch
                 int rSize = (r == SQL_SUCCESS_WITH_INFO) ? colSize : lengthIndicator;
                     fieldVal += QString::fromUtf8((const char *)buf.constData(), rSize);
-                if (lengthIndicator < (unsigned int)colSize) {
+                if (lengthIndicator < SQLLEN(colSize)) {
                     // workaround for Drivermanagers that don't return SQL_NO_DATA
                     break;
                 }

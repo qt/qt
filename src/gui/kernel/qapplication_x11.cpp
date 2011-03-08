@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2015,12 +2015,15 @@ void qt_init(QApplicationPrivate *priv, int,
                     (PtrXRRRootToScreen) xrandrLib.resolve("XRRRootToScreen");
                 X11->ptrXRRQueryExtension =
                     (PtrXRRQueryExtension) xrandrLib.resolve("XRRQueryExtension");
+                X11->ptrXRRSizes =
+                    (PtrXRRSizes) xrandrLib.resolve("XRRSizes");
             }
 #  else
             X11->ptrXRRSelectInput = XRRSelectInput;
             X11->ptrXRRUpdateConfiguration = XRRUpdateConfiguration;
             X11->ptrXRRRootToScreen = XRRRootToScreen;
             X11->ptrXRRQueryExtension = XRRQueryExtension;
+            X11->ptrXRRSizes = XRRSizes;
 #  endif
 
             if (X11->ptrXRRQueryExtension
@@ -5224,14 +5227,15 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
         bool trust = isVisible()
                      && (d->topData()->parentWinId == XNone ||
                          d->topData()->parentWinId == QX11Info::appRootWindow());
+        bool isCPos = false;
 
         if (event->xconfigure.send_event || trust) {
             // if a ConfigureNotify comes from a real sendevent request, we can
             // trust its values.
             newCPos.rx() = event->xconfigure.x + event->xconfigure.border_width;
             newCPos.ry() = event->xconfigure.y + event->xconfigure.border_width;
+            isCPos = true;
         }
-
         if (isVisible())
             QApplication::syncX();
 
@@ -5257,6 +5261,7 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
                                    otherEvent.xconfigure.border_width;
                     newCPos.ry() = otherEvent.xconfigure.y +
                                    otherEvent.xconfigure.border_width;
+                    isCPos = true;
                 }
             }
 #ifndef QT_NO_XSYNC
@@ -5267,6 +5272,19 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
                     break;
             }
 #endif // QT_NO_XSYNC
+        }
+
+        if (!isCPos) {
+            // we didn't get an updated position of the toplevel.
+            // either we haven't moved or there is a bug in the window manager.
+            // anyway, let's query the position to be certain.
+            int x, y;
+            Window child;
+            XTranslateCoordinates(X11->display, internalWinId(),
+                                  QApplication::desktop()->screen(d->xinfo.screen())->internalWinId(),
+                                  0, 0, &x, &y, &child);
+            newCPos.rx() = x;
+            newCPos.ry() = y;
         }
 
         QRect cr (geometry());
@@ -5311,18 +5329,6 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
     }
 
     if (wasResize) {
-        static bool slowResize = qgetenv("QT_SLOW_TOPLEVEL_RESIZE").toInt();
-        if (d->extra->compress_events && !slowResize && !data->in_show && isVisible()) {
-            QApplication::syncX();
-            XEvent otherEvent;
-            while (XCheckTypedWindowEvent(X11->display, internalWinId(), ConfigureNotify, &otherEvent)
-                   && !qt_x11EventFilter(&otherEvent) && !x11Event(&otherEvent)
-                   && otherEvent.xconfigure.event == otherEvent.xconfigure.window) {
-                data->crect.setWidth(otherEvent.xconfigure.width);
-                data->crect.setHeight(otherEvent.xconfigure.height);
-            }
-        }
-
         if (isVisible() && data->crect.size() != oldSize) {
             Q_ASSERT(d->extra->topextra);
             QWidgetBackingStore *bs = d->extra->topextra->backingStore.data();
@@ -5331,7 +5337,7 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
             // resize optimization in order to get invalidated regions for resized widgets.
             // The optimization discards all invalidateBuffer() calls since we're going to
             // repaint everything anyways, but that's not the case with static contents.
-            if (!slowResize && !hasStaticContents)
+            if (!hasStaticContents)
                 d->extra->topextra->inTopLevelResize = true;
             QResizeEvent e(data->crect.size(), oldSize);
             QApplication::sendSpontaneousEvent(this, &e);
@@ -5655,10 +5661,21 @@ static void sm_performSaveYourself(QSessionManagerPrivate* smd)
     sm_setProperty(QString::fromLatin1(SmProgram), argument0);
     // tell the session manager about our user as well.
     struct passwd *entryPtr = 0;
-#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
-    QVarLengthArray<char, 1024> buf(sysconf(_SC_GETPW_R_SIZE_MAX));
+#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && (_POSIX_THREAD_SAFE_FUNCTIONS - 0 > 0)
+    QVarLengthArray<char, 1024> buf(qMax<long>(sysconf(_SC_GETPW_R_SIZE_MAX), 1024L));
     struct passwd entry;
-    getpwuid_r(geteuid(), &entry, buf.data(), buf.size(), &entryPtr);
+    while (getpwuid_r(geteuid(), &entry, buf.data(), buf.size(), &entryPtr) == ERANGE) {
+        if (buf.size() >= 32768) {
+            // too big already, fail
+            static char badusername[] = "";
+            entryPtr = &entry;
+            entry.pw_name = badusername;
+            break;
+        }
+
+        // retry with a bigger buffer
+        buf.resize(buf.size() * 2);
+    }
 #else
     entryPtr = getpwuid(geteuid());
 #endif

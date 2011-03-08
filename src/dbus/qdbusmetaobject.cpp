@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -169,6 +169,8 @@ QDBusMetaObjectGenerator::QDBusMetaObjectGenerator(const QString &interfaceName,
     }
 }
 
+Q_DBUS_EXPORT bool qt_dbus_metaobject_skip_annotations = false;
+
 QDBusMetaObjectGenerator::Type
 QDBusMetaObjectGenerator::findType(const QByteArray &signature,
                                    const QDBusIntrospection::Annotations &annotations,
@@ -178,7 +180,7 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
     result.id = QVariant::Invalid;
 
     int type = QDBusMetaType::signatureToType(signature);
-    if (type == QVariant::Invalid) {
+    if (type == QVariant::Invalid && !qt_dbus_metaobject_skip_annotations) {
         // it's not a type normally handled by our meta type system
         // it must contain an annotation
         QString annotationName = QString::fromLatin1("com.trolltech.QtDBus.QtTypeName");
@@ -191,16 +193,35 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
         QByteArray typeName = annotations.value(annotationName).toLatin1();
 
         // verify that it's a valid one
-        if (typeName.isEmpty())
-            return result;      // invalid
+        if (!typeName.isEmpty()) {
+            // type name found
+            type = QVariant::nameToType(typeName);
+            if (type == QVariant::UserType)
+                type = QMetaType::type(typeName);
+        }
 
-        type = QVariant::nameToType(typeName);
-        if (type == QVariant::UserType)
-            type = QMetaType::type(typeName);
-        if (type == QVariant::Invalid || signature != QDBusMetaType::typeToSignature(type))
-            return result;      // unknown type is invalid too
+        if (type == QVariant::Invalid || signature != QDBusMetaType::typeToSignature(type)) {
+            // type is still unknown or doesn't match back to the signature that it
+            // was expected to, so synthesize a fake type
+            type = QMetaType::VoidStar;
+            typeName = "QDBusRawType<0x" + signature.toHex() + ">*";
+        }
 
         result.name = typeName;
+    } else if (type == QVariant::Invalid) {
+        // this case is used only by the qdbus command-line tool
+        // invalid, let's create an impossible type that contains the signature
+
+        if (signature == "av") {
+            result.name = "QVariantList";
+            type = QVariant::List;
+        } else if (signature == "a{sv}") {
+            result.name = "QVariantMap";
+            type = QVariant::Map;
+        } else {
+            result.name = "QDBusRawType::" + signature;
+            type = -1;
+        }
     } else {
         result.name = QVariant::typeToName( QVariant::Type(type) );
     }

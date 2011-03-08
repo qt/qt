@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,19 +52,20 @@
 QT_BEGIN_NAMESPACE
 
 ColorButton::ColorButton(QWidget *parent)
-    : QAbstractButton(parent), mousepressed(false)
+    : QAbstractButton(parent)
+    , col(Qt::black)
+    , mousepressed(false)
 {
     setAcceptDrops(true);
-    col = Qt::black;
     connect(this, SIGNAL(clicked()), SLOT(changeColor()));
 }
 
 
 ColorButton::ColorButton(const QColor &c, QWidget *parent)
     : QAbstractButton(parent)
+    , col(c)
 {
     setAcceptDrops(true);
-    col = c;
     connect(this, SIGNAL(clicked()), SLOT(changeColor()));
 }
 
@@ -182,7 +183,7 @@ void ColorButton::mouseReleaseEvent(QMouseEvent *e)
 
 void ColorButton::mouseMoveEvent(QMouseEvent *e)
 {
-    if (! mousepressed)
+    if (!mousepressed)
         return;
 
     if ((presspos - e->pos()).manhattanLength() > QApplication::startDragDistance()) {

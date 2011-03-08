@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -76,6 +76,7 @@ public:
     virtual QGLFormat format() const;
     virtual QSize size() const = 0;
     virtual bool alphaRequested() const;
+    virtual bool isFlipped() const;
 
     // returns the QGLPaintDevice for the given QPaintDevice
     static QGLPaintDevice* getDevice(QPaintDevice*);

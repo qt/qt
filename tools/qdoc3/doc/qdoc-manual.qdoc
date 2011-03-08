@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -7069,6 +7069,8 @@
     \l {22-qdoc-configuration-generalvariables.html#outputdir}{outputdir},
     \l {22-qdoc-configuration-generalvariables.html#outputformats}
        {outputformats},
+    \l {22-qdoc-configuration-generalvariables.html#outputprefixes}
+       {outputprefixes},
     \l {22-qdoc-configuration-generalvariables.html#slow}{slow},
     \l {22-qdoc-configuration-generalvariables.html#sourcedirs}{sourcedirs},
     \l {22-qdoc-configuration-generalvariables.html#sources}{sources},
@@ -7155,6 +7157,8 @@
     \l {22-qdoc-configuration-generalvariables.html#outputdir}{outputdir},
     \l {22-qdoc-configuration-generalvariables.html#outputformats}
        {outputformats},
+    \l {22-qdoc-configuration-generalvariables.html#outputprefixes}
+       {outputprefixes},
     \l {22-qdoc-configuration-generalvariables.html#slow}{slow},
     \l {22-qdoc-configuration-generalvariables.html#sourcedirs}{sourcedirs},
     \l {22-qdoc-configuration-generalvariables.html#sources}{sources},
@@ -7796,6 +7800,23 @@
            the default format, and doesn't need to be specified.
 
     \row
+        \o \bold outputprefixes \target outputprefixes
+        \o \bold {The \c outputprefixes variable specifies a mapping between
+           types of files and the prefixes to prepend to the HTML file names
+           in the generated documentation.}
+
+           For example:
+
+           \code
+           outputprefixes = QML
+           outputprefixes.QML = qt-components-
+           \endcode
+
+           Be default, files containing the API documentation for QML elements
+           or components are prefixed with "qml-". In the above example, the
+           prefix "qt-components-" is used instead.
+
+    \row
         \o \bold qhp \target qhp
         \o \bold{The \c qhp variable is used to define the information to be
            written out to Qt Help Project (\c{qhp}) files.}
@@ -7804,20 +7825,14 @@
            about this process.
 
     \row
-        \o \bold slow \target slow
-        \o \bold {The \c slow variable specifies whether QDoc should do
-           time-consuming processing, such as syntax highlighting.}
+        \o \bold slow (removed) \target slow
+        \o \bold {The \c slow variable previously specified whether QDoc should
+           do time-consuming processing, such as syntax highlighting.}
 
-           By default, this setting is false.
+           This option has been replaced by the \l{syntaxhighlighing} option.
 
-           Example:
-
-           \code
-               slow = true
-           \endcode
-
-           Another way to turn on "slowness" is to invoke QDoc with the
-           \c -slow command-line option.
+           For compatibility, the \c -slow command-line option has been
+           retained. This has the effect of enabling syntax highlighting.
 
     \row
         \o \bold sourcedirs \target sourcedirs
@@ -7955,6 +7970,21 @@
            \code
            qt-4.0/src/opengl/qgl_mac.cpp:156: Missing parameter name
            \endcode
+
+    \row
+        \o \bold syntaxhighlighting \target syntaxhighlighting
+        \o \bold{The \c syntaxhighlighting variable specifies whether QDoc
+           should perform syntax highlighting on source code quoted in the
+           documentation it output.}
+
+           For example:
+
+           \code
+           syntaxhighlighting = true
+           \endcode
+
+           will enable syntax highlighting for all supported programming
+           languages.
 
     \row
         \o \bold tabsize \target tabsize

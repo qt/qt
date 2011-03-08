@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -130,6 +130,7 @@ QWindowsStylePrivate::QWindowsStylePrivate()
         pSHGetStockIconInfo = (PtrSHGetStockIconInfo)shellLib.resolve("SHGetStockIconInfo");
     }
 #endif
+    startTime.start();
 }
 
 // Returns true if the toplevel parent of \a widget has seen the Alt-key
@@ -1394,8 +1395,8 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             if (!QPixmapCache::find(pixmapName, pixmap)) {
                 int border = size/5;
                 int sqsize = 2*(size/2);
-                QImage image(sqsize, sqsize, QImage::Format_ARGB32);
-                image.fill(Qt::transparent);
+                QImage image(sqsize, sqsize, QImage::Format_ARGB32_Premultiplied);
+                image.fill(0);
                 QPainter imagePainter(&image);
 
                 QPolygon a;
@@ -2396,8 +2397,10 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
 #ifndef QT_NO_PROGRESSBAR
     case CE_ProgressBarContents:
         if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
-
             QRect rect = pb->rect;
+            if (!rect.isValid())
+                return;
+
             bool vertical = false;
             bool inverted = false;
 

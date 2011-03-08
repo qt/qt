@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -130,7 +130,7 @@ public:
     QBenchmarkGlobalData:current is created at the beginning of qExec()
     and cleared at the end.
 */
-class QBenchmarkGlobalData
+class Q_TESTLIB_EXPORT QBenchmarkGlobalData
 {
 public:
     static QBenchmarkGlobalData *current;
@@ -161,7 +161,7 @@ private:
     created at the beginning of qInvokeTestMethod() and cleared at
     the end.
 */
-class QBenchmarkTestMethodData
+class Q_TESTLIB_EXPORT QBenchmarkTestMethodData
 {
 public:
     static QBenchmarkTestMethodData *current;

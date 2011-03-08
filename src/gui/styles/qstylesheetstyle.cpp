@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -3701,7 +3701,9 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                         editRect.translate(cb->iconSize.width() + spacing, 0);
             }
             if (!cb->currentText.isEmpty() && !cb->editable) {
-                drawItemText(p, editRect.adjusted(0, 0, 0, 0), Qt::AlignLeft | Qt::AlignVCenter, cb->palette,
+                QPalette styledPalette(cb->palette);
+                rule.configurePalette(&styledPalette, QPalette::Text, QPalette::Base);
+                drawItemText(p, editRect.adjusted(0, 0, 0, 0), Qt::AlignLeft | Qt::AlignVCenter, styledPalette,
                              cb->state & State_Enabled, cb->currentText, QPalette::Text);
             }
             p->restore();
@@ -4236,7 +4238,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         return;
 
     case PE_Widget:
-        if (!rule.hasDrawable()) {
+        if (w && !rule.hasDrawable()) {
             QWidget *container = containerWidget(w);
             if (styleSheetCaches->autoFillDisabledWidgets.contains(container)
                 && (container == w || !renderRule(container, opt).hasBackground())) {

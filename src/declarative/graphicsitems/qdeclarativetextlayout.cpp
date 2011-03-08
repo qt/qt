@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -361,10 +361,18 @@ void QDeclarativeTextLayout::draw(QPainter *painter, const QPointF &p)
         d->position = p;
     }
 
+    QPen oldPen = priv->state->pen;
+    QColor currentColor = oldPen.color();
     for (int ii = 0; ii < itemCount; ++ii) {
         QStaticTextItem &item = d->items[ii];
+        if (item.color.isValid() && currentColor != item.color) {
+            painter->setPen(item.color);
+            currentColor = item.color;
+        }
         priv->extended->drawStaticTextItem(&item);
     }
+    if (currentColor != oldPen.color())
+        painter->setPen(oldPen);
 }
 
 QT_END_NAMESPACE

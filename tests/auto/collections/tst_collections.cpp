@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -3635,7 +3635,7 @@ template<template<class, class> class C> void QTBUG13079_collectionInsideCollect
 }
 
 
-static quint32 qHash(const QTBUG13079_Node<QSet> &)
+quint32 qHash(const QTBUG13079_Node<QSet> &)
 {
     return 0;
 }

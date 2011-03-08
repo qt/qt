@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,6 +54,11 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qset.h>
+#include <QtCore/qfile.h>
+
+#ifdef Q_OS_SYMBIAN
+class RFile;
+#endif
 
 QT_BEGIN_HEADER
 
@@ -641,10 +646,14 @@ class Q_GUI_EXPORT QFileOpenEvent : public QEvent
 public:
     QFileOpenEvent(const QString &file);
     QFileOpenEvent(const QUrl &url);
+#ifdef Q_OS_SYMBIAN
+    QFileOpenEvent(const RFile &fileHandle);
+#endif
     ~QFileOpenEvent();
 
     inline QString file() const { return f; }
     QUrl url() const;
+    bool openFile(QFile &file, QIODevice::OpenMode flags) const;
 private:
     QString f;
 };
@@ -879,6 +888,52 @@ private:
     friend class QGestureManager;
 };
 #endif // QT_NO_GESTURES
+
+class QScrollPrepareEventPrivate;
+class Q_GUI_EXPORT QScrollPrepareEvent : public QEvent
+{
+public:
+    QScrollPrepareEvent(const QPointF &startPos);
+    ~QScrollPrepareEvent();
+
+    QPointF startPos() const;
+
+    QSizeF viewportSize() const;
+    QRectF contentPosRange() const;
+    QPointF contentPos() const;
+
+    void setViewportSize(const QSizeF &size);
+    void setContentPosRange(const QRectF &rect);
+    void setContentPos(const QPointF &pos);
+
+private:
+    QScrollPrepareEventPrivate *d_func();
+    const QScrollPrepareEventPrivate *d_func() const;
+};
+
+
+class QScrollEventPrivate;
+class Q_GUI_EXPORT QScrollEvent : public QEvent
+{
+public:
+    enum ScrollState
+    {
+        ScrollStarted,
+        ScrollUpdated,
+        ScrollFinished
+    };
+
+    QScrollEvent(const QPointF &contentPos, const QPointF &overshoot, ScrollState scrollState);
+    ~QScrollEvent();
+
+    QPointF contentPos() const;
+    QPointF overshootDistance() const;
+    ScrollState scrollState() const;
+
+private:
+    QScrollEventPrivate *d_func();
+    const QScrollEventPrivate *d_func() const;
+};
 
 QT_END_NAMESPACE
 

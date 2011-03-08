@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,6 +58,10 @@
 #include <QtCore/qnamespace.h>
 #include <QtCore/qmutex.h>
 
+#if defined(Q_OS_MAC)
+# include <mach/semaphore.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QMutexPrivate : public QMutexData {
@@ -65,15 +69,19 @@ public:
     QMutexPrivate(QMutex::RecursionMode mode);
     ~QMutexPrivate();
 
-    ulong self();
     bool wait(int timeout = -1);
     void wakeUp();
 
-    volatile int lastSpinCount;
+    // 1ms = 1000000ns
+    enum { MaximumSpinTimeThreshold = 1000000 };
+    volatile qint64 maximumSpinTime;
+    volatile qint64 averageWaitTime;
     Qt::HANDLE owner;
     uint count;
 
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_MAC)
+    semaphore_t mach_semaphore;
+#elif defined(Q_OS_UNIX) && !defined(Q_OS_LINUX)
     volatile bool wakeup;
     pthread_mutex_t mutex;
     pthread_cond_t cond;

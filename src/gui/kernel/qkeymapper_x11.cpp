@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,13 +61,6 @@
 
 #include <ctype.h>
 
-QT_BEGIN_NAMESPACE
-
-#ifndef QT_NO_XKB
-
-// bring in the auto-generated xkbLayoutData
-#include "qkeymapper_x11_p.cpp"
-
 #ifdef QT_LINUXBASE
 // LSB's IsKeypadKey define is wrong - see
 // http://bugs.linuxbase.org/show_bug.cgi?id=2521
@@ -80,6 +73,13 @@ QT_BEGIN_NAMESPACE
       (((KeySym)(keysym) >= 0x11000000) && ((KeySym)(keysym) <= 0x1100FFFF))
 #endif
 
+QT_BEGIN_NAMESPACE
+
+#ifndef QT_NO_XKB
+
+// bring in the auto-generated xkbLayoutData
+#include "qkeymapper_x11_p.cpp"
+
 QLocale q_getKeyboardLocale(const QByteArray &layoutName, const QByteArray &variantName)
 {
     int i = 0;
@@ -91,7 +91,6 @@ QLocale q_getKeyboardLocale(const QByteArray &layoutName, const QByteArray &vari
     return QLocale::c();
 }
 #endif // QT_NO_XKB
-
 
 // from qapplication_x11.cpp
 extern uchar qt_alt_mask;

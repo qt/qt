@@ -1,0 +1,25 @@
+
+qtPrepareTool(LRELEASE, lrelease)
+
+loc.CONFIG = no_link
+loc.commands = $$LRELEASE ${QMAKE_FILE_IN} -qm ${QMAKE_FILE_OUT}
+loc.output = $${EPOCROOT}epoc32/data/z/resource/qt/translations/${QMAKE_FILE_BASE}.qm
+loc.input = TRANSLATIONS
+loc.variable_out = PRE_TARGETDEPS
+
+loc_winscwudeb.CONFIG = no_link
+loc_winscwudeb.commands = $$LRELEASE ${QMAKE_FILE_IN} -qm ${QMAKE_FILE_OUT}
+loc_winscwudeb.output = $${EPOCROOT}epoc32/release/winscw/udeb/z/resource/qt/translations/${QMAKE_FILE_BASE}.qm
+loc_winscwudeb.input = TRANSLATIONS
+loc_winscwudeb.variable_out = PRE_TARGETDEPS
+
+loc_winscwurel.CONFIG = no_link
+loc_winscwurel.commands = $$LRELEASE ${QMAKE_FILE_IN} -qm ${QMAKE_FILE_OUT}
+loc_winscwurel.output = $${EPOCROOT}epoc32/release/winscw/urel/z/resource/qt/translations/${QMAKE_FILE_BASE}.qm
+loc_winscwurel.input = TRANSLATIONS
+loc_winscwurel.variable_out = PRE_TARGETDEPS
+
+QMAKE_EXTRA_COMPILERS += loc
+QMAKE_EXTRA_COMPILERS += loc_winscwudeb
+QMAKE_EXTRA_COMPILERS += loc_winscwurel
+

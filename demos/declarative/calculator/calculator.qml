@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,7 +46,7 @@ import "Core/calculator.js" as CalcEngine
 Rectangle {
     id: window
 
-    width: 480; height: 360
+    width: 360; height: 480
     color: "#282828"
 
     property string rotateLeft: "\u2939"
@@ -63,7 +63,15 @@ Rectangle {
         id: main
         state: "orientation " + runtime.orientation
 
-        width: parent.width; height: parent.height; anchors.centerIn: parent
+        property bool landscapeWindow: window.width > window.height 
+        property real baseWidth: landscapeWindow ? window.height : window.width
+        property real baseHeight: landscapeWindow ? window.width : window.height
+        property real rotationDelta: landscapeWindow ? -90 : 0
+
+        rotation: rotationDelta
+        width: main.baseWidth
+        height: main.baseHeight
+        anchors.centerIn: parent
 
         Column {
             id: box; spacing: 8
@@ -132,24 +140,20 @@ Rectangle {
         states: [
             State {
                 name: "orientation " + Orientation.Landscape
-                PropertyChanges { target: main; rotation: 90; width: window.height; height: window.width }
-                PropertyChanges { target: rotateButton; operation: rotateLeft }
+                PropertyChanges { target: main; rotation: 90 + rotationDelta; width: main.baseHeight; height: main.baseWidth }
             },
             State {
                 name: "orientation " + Orientation.PortraitInverted
-                PropertyChanges { target: main; rotation: 180; }
-                PropertyChanges { target: rotateButton; operation: rotateRight }
+                PropertyChanges { target: main; rotation: 180 + rotationDelta; }
             },
             State {
                 name: "orientation " + Orientation.LandscapeInverted
-                PropertyChanges { target: main; rotation: 270; width: window.height; height: window.width }
-                PropertyChanges { target: rotateButton; operation: rotateLeft }
+                PropertyChanges { target: main; rotation: 270 + rotationDelta; width: main.baseHeight; height: main.baseWidth }
             }
         ]
 
         transitions: Transition {
             SequentialAnimation {
-                PropertyAction { target: rotateButton; property: "operation" }
                 RotationAnimation { direction: RotationAnimation.Shortest; duration: 300; easing.type: Easing.InOutQuint  }
                 NumberAnimation { properties: "x,y,width,height"; duration: 300; easing.type: Easing.InOutQuint }
             }

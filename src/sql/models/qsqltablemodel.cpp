@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -265,7 +265,7 @@ QSqlRecord QSqlTableModelPrivate::primaryValues(int row)
     QSqlTableModel can also be used to access a database
     programmatically, without binding it to a view:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 25
+    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 21
 
     The code snippet above extracts the \c salary field from record 4 in
     the result set of the query \c{SELECT * from employee}.
@@ -393,6 +393,8 @@ QString QSqlTableModel::tableName() const
     specified filter and sort condition, and returns true if successful; otherwise
     returns false.
 
+    \note Calling select() will revert any unsubmitted changes and remove any inserted columns.
+
     \sa setTable(), setFilter(), selectStatement()
 */
 bool QSqlTableModel::select()
@@ -423,6 +425,10 @@ QVariant QSqlTableModel::data(const QModelIndex &index, int role) const
     if (!index.isValid() || (role != Qt::DisplayRole && role != Qt::EditRole))
         return QVariant();
 
+    // Problem.. we need to use QSQM::indexInQuery to handle inserted columns
+    // but inserted rows we need to handle
+    // and indexInQuery is not virtual (grrr) so any values we pass to QSQM need
+    // to handle the insertedRows
     QModelIndex item = indexInQuery(index);
 
     switch (d->strategy) {
@@ -450,7 +456,9 @@ QVariant QSqlTableModel::data(const QModelIndex &index, int role) const
             return var;
         break; }
     }
-    return QSqlQueryModel::data(item, role);
+
+    // We need to handle row mapping here, but not column mapping
+    return QSqlQueryModel::data(index.sibling(item.row(), index.column()), role);
 }
 
 /*!
@@ -649,7 +657,7 @@ bool QSqlTableModel::insertRowIntoTable(const QSqlRecord &values)
         return false;
     }
 
-    return d->exec(stmt, prepStatement, rec);
+    return d->exec(stmt, prepStatement, rec, QSqlRecord() /* no where values */);
 }
 
 /*!
@@ -687,7 +695,7 @@ bool QSqlTableModel::deleteRowFromTable(int row)
     }
     stmt.append(QLatin1Char(' ')).append(where);
 
-    return d->exec(stmt, prepStatement, whereValues);
+    return d->exec(stmt, prepStatement, QSqlRecord() /* no new values */, whereValues);
 }
 
 /*!
@@ -1095,9 +1103,12 @@ bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
             int idx = row + i;
             if (idx >= rowCount())
                 return false;
-            if (d->cache.value(idx).op == QSqlTableModelPrivate::Insert)
+            if (d->cache.value(idx).op == QSqlTableModelPrivate::Insert) {
                 revertRow(idx);
-            else {
+                // Reverting a row means all the other cache entries have been adjusted downwards
+                // so fake this by adjusting row
+                --row;
+            } else {
                 d->cache[idx].op = QSqlTableModelPrivate::Delete;
                 d->cache[idx].primaryValues = d->primaryValues(indexInQuery(createIndex(idx, 0)).row());
                 emit headerDataChanged(Qt::Vertical, idx, idx);
@@ -1225,7 +1236,7 @@ int QSqlTableModel::rowCount(const QModelIndex &parent) const
 QModelIndex QSqlTableModel::indexInQuery(const QModelIndex &item) const
 {
     Q_D(const QSqlTableModel);
-    const QModelIndex it = QSqlQueryModel::indexInQuery(item);
+    const QModelIndex it = QSqlQueryModel::indexInQuery(item); // this adjusts columns only
     if (d->strategy == OnManualSubmit) {
         int rowOffset = 0;
         QSqlTableModelPrivate::CacheMap::ConstIterator i = d->cache.constBegin();
@@ -1332,6 +1343,9 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
             else
                 mrow.rec.setValue(idx, record.value(i));
         }
+
+        if (isOk)
+            emit dataChanged(createIndex(row, 0), createIndex(row, columnCount() - 1));
         return isOk; }
     }
     return false;

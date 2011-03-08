@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1130,7 +1130,7 @@ Qt::ItemFlags QStandardItem::flags() const
   meaning that the user can interact with the item; if \a enabled is false, the
   user cannot interact with the item.
 
-  This flag takes presedence over the other item flags; e.g. if an item is not
+  This flag takes precedence over the other item flags; e.g. if an item is not
   enabled, it cannot be selected by the user, even if the Qt::ItemIsSelectable
   flag has been set.
 

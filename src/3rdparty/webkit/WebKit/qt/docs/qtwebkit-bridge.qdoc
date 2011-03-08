@@ -415,7 +415,7 @@
 
     \section2 Internet Security
 
-    When exposing native object to an open web environment, it is importwhichant to understand the security
+    When exposing native object to an open web environment, it is important to understand the security
     implications. Think whether the exposed object enables the web environment access to things that
     shouldn't be open, and whether the web content loaded by that web page comes from a trusted. In general, when
     exposing native QObjects that give the web environment access to private information or to functionality

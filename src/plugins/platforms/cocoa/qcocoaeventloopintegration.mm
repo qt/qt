@@ -48,81 +48,65 @@
 #include <QtCore/QElapsedTimer>
 
 #include <QDebug>
+#include <QApplication>
 
-@implementation OurApplication
-
-- (void) run
-{
-    QCocoaAutoReleasePool pool;
-    [self finishLaunching];
-
-    shouldKeepRunning = YES;
+void wakeupCallback ( void * ) {
+    QPlatformEventLoopIntegration::processEvents();
 }
 
-- (void) processEvents : (int) msec
+void timerCallback( CFRunLoopTimerRef timer, void *info)
 {
-    QCocoaAutoReleasePool pool;
-    Q_UNUSED(pool);
-
-    QElapsedTimer timer;
-    timer.start();
-
-    NSTimeInterval seconds = NSTimeInterval(msec)/1000;
-    id untilDate = [NSDate dateWithTimeIntervalSinceNow:seconds];
-    bool continueLooping = true;
-    while ((timer.elapsed() < (msec-1)) && continueLooping) {
-        NSEvent *event =
-            [self nextEventMatchingMask:NSAnyEventMask
-            untilDate:untilDate
-            inMode:NSDefaultRunLoopMode
-            dequeue:YES];
-        if ([event type] == NSApplicationDefined
-                && [event subtype] ==  QCocoaEventLoopIntegration::wakeupEventId) {
-            continueLooping = false;
-        } else {
-            [self sendEvent:event];
-        }
-
-    }
-    [self updateWindows];
+    QPlatformEventLoopIntegration::processEvents();
+    QCocoaEventLoopIntegration *eventLoopIntegration =
+            static_cast<QCocoaEventLoopIntegration *>(info);
+    qint64 nextTime = eventLoopIntegration->nextTimerEvent();
+    CFAbsoluteTime nexttime = CFAbsoluteTimeGetCurrent();
+    nexttime = nexttime + (double(nextTime)/1000);
+    CFRunLoopTimerSetNextFireDate(timer,nexttime);
 }
-
-@end
-
-int QCocoaEventLoopIntegration::wakeupEventId = SHRT_MAX;
 
 QCocoaEventLoopIntegration::QCocoaEventLoopIntegration() :
     QPlatformEventLoopIntegration()
 {
-    app = (OurApplication *)[OurApplication sharedApplication];
-    [app run];
+    [NSApplication sharedApplication];
+    m_sourceContext.version = 0;
+    m_sourceContext.info = this;
+    m_sourceContext.retain = 0;
+    m_sourceContext.release = 0;
+    m_sourceContext.copyDescription = 0;
+    m_sourceContext.equal = 0;
+    m_sourceContext.hash = 0;
+    m_sourceContext.schedule = 0;
+    m_sourceContext.cancel = 0;
+    m_sourceContext.perform = wakeupCallback;
+
+    m_source = CFRunLoopSourceCreate(0,0,&m_sourceContext);
+    CFRunLoopAddSource(CFRunLoopGetMain(),m_source,kCFRunLoopCommonModes);
+
+    m_timerContext.version = 0;
+    m_timerContext.info = this;
+    m_timerContext.retain = 0;
+    m_timerContext.release = 0;
+    m_timerContext.copyDescription = 0;
+    CFAbsoluteTime fireDate = CFAbsoluteTimeGetCurrent ();
+    CFTimeInterval interval = 30;
+
+    CFRunLoopTimerRef m_timerSource = CFRunLoopTimerCreate(0,fireDate,interval,0,0,timerCallback,&m_timerContext);
+    CFRunLoopAddTimer(CFRunLoopGetMain(),m_timerSource,kCFRunLoopCommonModes);
 }
 
-void QCocoaEventLoopIntegration::processEvents(qint64 msec)
+void QCocoaEventLoopIntegration::startEventLoop()
 {
-    [app processEvents:msec];
+    [[NSApplication sharedApplication] run];
 }
 
-void QCocoaEventLoopIntegration::wakeup()
+void QCocoaEventLoopIntegration::quitEventLoop()
 {
-    QCocoaAutoReleasePool pool;
-    Q_UNUSED(pool);
+    [[NSApplication sharedApplication] terminate:nil];
+}
 
-    NSPoint p = NSMakePoint(0,0);
-    NSWindow *nswin = [app keyWindow];
-    double timestamp = (double)(AbsoluteToDuration(UpTime())) / 1000.0;
-    NSEvent *event = [NSEvent
-            otherEventWithType:NSApplicationDefined
-            location:NSZeroPoint
-            modifierFlags:0
-            timestamp: timestamp
-            windowNumber:[nswin windowNumber]
-            context:0
-            subtype:QCocoaEventLoopIntegration::wakeupEventId
-            data1:0
-            data2:0
-            ];
-    [app postEvent:event atStart:NO];
-
+void QCocoaEventLoopIntegration::qtNeedsToProcessEvents()
+{
+    CFRunLoopSourceSignal(m_source);
 }
 

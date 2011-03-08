@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -107,6 +107,11 @@ public:
 
         int baseLineX;
         int baseLineY;
+
+        bool isNull() const
+        {
+            return w == 0 || h == 0;
+        }
     };
 
     bool populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,

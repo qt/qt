@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -50,6 +50,8 @@
 #include <unistd.h>
 #endif
 
+#include "../../shared/util.h"
+
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -90,6 +92,9 @@ private slots:
 
     void QTBUG13633_dontBlockEvents();
     void postedEventsShouldNotStarveTimers();
+#ifdef Q_OS_SYMBIAN
+    void handleLeaks();
+#endif
 };
 
 class TimerHelper : public QObject
@@ -269,9 +274,9 @@ void tst_QTimer::livelock()
     QFETCH(int, interval);
     LiveLockTester tester(interval);
     QTest::qWait(180); // we have to use wait here, since we're testing timers with a non-zero timeout
-    QCOMPARE(tester.timeoutsForFirst, 1);
+    QTRY_COMPARE(tester.timeoutsForFirst, 1);
     QCOMPARE(tester.timeoutsForExtra, 0);
-    QCOMPARE(tester.timeoutsForSecond, 1);
+    QTRY_COMPARE(tester.timeoutsForSecond, 1);
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 	if (QSysInfo::WindowsVersion < QSysInfo::WV_XP)
 		QEXPECT_FAIL("non-zero timer", "Multimedia timers are not available on Windows 2000", Continue);
@@ -721,7 +726,7 @@ void tst_QTimer::QTBUG13633_dontBlockEvents()
 {
     DontBlockEvents t;
     QTest::qWait(60);
-    QVERIFY(t.total > 2);
+    QTRY_VERIFY(t.total > 2);
 }
 
 class SlotRepeater : public QObject {
@@ -749,6 +754,41 @@ void tst_QTimer::postedEventsShouldNotStarveTimers()
     QTest::qWait(100);
     QVERIFY(timerHelper.count > 5);
 }
+
+#ifdef Q_OS_SYMBIAN
+void tst_QTimer::handleLeaks()
+{
+    const int timercount = 5;
+    int processhandles_start;
+    int threadhandles_start;
+    RThread().HandleCount(processhandles_start, threadhandles_start);
+    {
+    TimerHelper timerHelper;
+    QList<QTimer*> timers;
+    for (int i=0;i<timercount;i++) {
+        QTimer* timer = new QTimer;
+        timers.append(timer);
+        connect(timer, SIGNAL(timeout()), &timerHelper, SLOT(timeout()));
+        timer->setSingleShot(true);
+        timer->start(i); //test both zero and normal timeouts
+    }
+    int processhandles_mid;
+    int threadhandles_mid;
+    RThread().HandleCount(processhandles_mid, threadhandles_mid);
+    qDebug() << threadhandles_mid - threadhandles_start << "new thread owned handles";
+    QTest::qWait(100);
+    QCOMPARE(timerHelper.count, timercount);
+    qDeleteAll(timers);
+    }
+    int processhandles_end;
+    int threadhandles_end;
+    RThread().HandleCount(processhandles_end, threadhandles_end);
+    QCOMPARE(threadhandles_end, threadhandles_start); //RTimer::CreateLocal creates a thread owned handle
+    //Can not verify process handles because QObject::connect may create up to 2 mutexes
+    //from a QMutexPool (4 process owned handles with open C imp.)
+    //QCOMPARE(processhandles_end, processhandles_start);
+}
+#endif
 
 QTEST_MAIN(tst_QTimer)
 #include "tst_qtimer.moc"

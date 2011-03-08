@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -53,12 +53,16 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Core)
 
 class QDir;
+class QDirIteratorPrivate;
 class QDateTime;
 class QFileInfoPrivate;
 
 class Q_CORE_EXPORT QFileInfo
 {
+    friend class QDirIteratorPrivate;
 public:
+    explicit QFileInfo(QFileInfoPrivate *d);
+
     QFileInfo();
     QFileInfo(const QString &file);
     QFileInfo(const QFile &file);

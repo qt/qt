@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -157,7 +157,7 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
 
             JSC::Instruction *returnPC = rewindContext->returnPC();
             JSC::CodeBlock *codeBlock = frame->codeBlock();
-            if (returnPC && codeBlock) {
+            if (returnPC && codeBlock && QScriptEnginePrivate::hasValidCodeBlockRegister(frame)) {
 #if ENABLE(JIT)
                 unsigned bytecodeOffset = codeBlock->getBytecodeIndex(frame, JSC::ReturnAddressPtr(returnPC));
 #else
@@ -171,7 +171,7 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
 
     // Get the filename and the scriptId:
     JSC::CodeBlock *codeBlock = frame->codeBlock();
-    if (codeBlock) {
+    if (codeBlock && QScriptEnginePrivate::hasValidCodeBlockRegister(frame)) {
            JSC::SourceProvider *source = codeBlock->source();
            scriptId = source->asID();
            fileName = source->url();
@@ -181,7 +181,8 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
     JSC::JSObject *callee = frame->callee();
     if (callee && callee->inherits(&JSC::InternalFunction::info))
         functionName = JSC::asInternalFunction(callee)->name(frame);
-    if (callee && callee->inherits(&JSC::JSFunction::info)) {
+    if (callee && callee->inherits(&JSC::JSFunction::info)
+        && !JSC::asFunction(callee)->isHostFunction()) {
         functionType = QScriptContextInfo::ScriptFunction;
         JSC::FunctionExecutable *body = JSC::asFunction(callee)->jsExecutable();
         functionStartLineNumber = body->lineNo();

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -210,7 +210,7 @@ public:
     : running(false), paused(false), alwaysRunToEnd(false),
       connectedTimeLine(false), componentComplete(true),
       avoidPropertyValueSourceStart(false), disableUserControl(false),
-      loopCount(1), group(0) {}
+      registered(false), loopCount(1), group(0) {}
 
     bool running:1;
     bool paused:1;
@@ -219,6 +219,7 @@ public:
     bool componentComplete:1;
     bool avoidPropertyValueSourceStart:1;
     bool disableUserControl:1;
+    bool registered:1;
 
     int loopCount;
 

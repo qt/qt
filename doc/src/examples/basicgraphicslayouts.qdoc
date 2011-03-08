@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -133,19 +133,19 @@
 
     \snippet examples/graphicsview/basicgraphicslayouts/layoutitem.cpp 2
 
-    The reimplementation of {QGraphicsItem::boundingRect()}{boundingRect()}
+    The reimplementation of \l{QGraphicsItem::}{boundingRect()}
     will set the top left corner at (0,0), and the size of it will be
     the size of the layout items
-    {QGraphicsLayoutItem::geometry()}{geometry()}. This is the area that
+    \l{QGraphicsLayoutItem::}{geometry()}. This is the area that
     we paint within.
 
     \snippet examples/graphicsview/basicgraphicslayouts/layoutitem.cpp 3
 
 
-    The reimplementation of {QGraphicsLayoutItem::setGeometry()}{setGeometry()}
+    The reimplementation of \l{QGraphicsLayoutItem::setGeometry()}{setGeometry()}
     simply calls its baseclass implementation. However, since this will change
     the boundingRect we must also call
-    {QGraphicsItem::prepareGeometryChange()}{prepareGeometryChange()}.
+    \l{QGraphicsItem::prepareGeometryChange()}{prepareGeometryChange()}.
     Finally, we move the item according to \c geom.topLeft().
 
     \snippet examples/graphicsview/basicgraphicslayouts/layoutitem.cpp 4

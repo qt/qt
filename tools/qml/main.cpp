@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,14 +59,45 @@ QtMsgHandler systemMsgOutput = 0;
 static QDeclarativeViewer *openFile(const QString &fileName);
 static void showViewer(QDeclarativeViewer *viewer);
 
+QString warnings;
+void exitApp(int i)
+{
+#ifdef Q_OS_WIN
+    // Debugging output is not visible by default on Windows -
+    // therefore show modal dialog with errors instead.
+    if (!warnings.isEmpty()) {
+        QMessageBox::warning(0, QApplication::tr("Qt QML Viewer"), warnings);
+    }
+#endif
+    exit(i);
+}
+
+QWeakPointer<LoggerWidget> logger;
+static QAtomicInt recursiveLock(0);
+
 #if defined (Q_OS_SYMBIAN)
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#endif
 
 void myMessageOutput(QtMsgType type, const char *msg)
 {
+    QString strMsg = QString::fromLatin1(msg);
+
+    if (!QCoreApplication::closingDown()) {
+        if (!logger.isNull()) {
+            if (recursiveLock.testAndSetOrdered(0, 1)) {
+                QMetaObject::invokeMethod(logger.data(), "append", Q_ARG(QString, strMsg));
+                recursiveLock = 0;
+            }
+        } else {
+            warnings += strMsg;
+            warnings += QLatin1Char('\n');
+        }
+    }
+#if defined (Q_OS_SYMBIAN)
     static int fd = -1;
     if (fd == -1)
         fd = ::open("E:\\qml.log", O_WRONLY | O_CREAT);
@@ -74,52 +105,19 @@ void myMessageOutput(QtMsgType type, const char *msg)
     ::write(fd, msg, strlen(msg));
     ::write(fd, "\n", 1);
     ::fsync(fd);
-
     switch (type) {
     case QtFatalMsg:
         abort();
     }
-}
+#endif
 
-#else // !defined (Q_OS_SYMBIAN)
-
-QWeakPointer<LoggerWidget> logger;
-
-QString warnings;
-void showWarnings()
-{
-    if (!warnings.isEmpty()) {
-        int argc = 0; char **argv = 0;
-        QApplication application(argc, argv); // QApplication() in main has been destroyed already.
-        Q_UNUSED(application)
-        QMessageBox::warning(0, QApplication::tr("Qt QML Viewer"), warnings);
-    }
-}
-
-static QAtomicInt recursiveLock(0);
-
-void myMessageOutput(QtMsgType type, const char *msg)
-{
-    QString strMsg = QString::fromLatin1(msg);
-
-    if (!logger.isNull() && !QCoreApplication::closingDown()) {
-        if (recursiveLock.testAndSetOrdered(0, 1)) {
-            QMetaObject::invokeMethod(logger.data(), "append", Q_ARG(QString, strMsg));
-            recursiveLock = 0;
-        }
-    } else {
-        warnings += strMsg;
-        warnings += QLatin1Char('\n');
-    }
-    if (systemMsgOutput) { // Windows
+    if (systemMsgOutput) {
         systemMsgOutput(type, msg);
     } else { // Unix
         fprintf(stderr, "%s\n", msg);
         fflush(stderr);
     }
 }
-
-#endif
 
 static QDeclarativeViewer* globalViewer = 0;
 
@@ -165,7 +163,8 @@ void usage()
 
     qWarning(" ");
     qWarning(" Press F1 for interactive help");
-    exit(1);
+
+    exitApp(1);
 }
 
 void scriptOptsUsage()
@@ -184,7 +183,8 @@ void scriptOptsUsage()
     qWarning("  saveonexit ............................... save recording on viewer exit");
     qWarning(" ");
     qWarning(" One of record, play or both must be specified.");
-    exit(1);
+
+    exitApp(1);
 }
 
 enum WarningsConfig { ShowWarnings, HideWarnings, DefaultWarnings };
@@ -370,7 +370,7 @@ static void parseCommandLineOptions(const QStringList &arguments)
             qApp->setStartDragDistance(arguments.at(++i).toInt());
         } else if (arg == QLatin1String("-v") || arg == QLatin1String("-version")) {
             qWarning("Qt QML Viewer version %s", QT_VERSION_STR);
-            exit(0);
+            exitApp(0);
         } else if (arg == "-translation") {
             if (lastArg) usage();
             opts.translationFile = arguments.at(++i);
@@ -400,7 +400,7 @@ static void parseCommandLineOptions(const QStringList &arguments)
                 QDeclarativeEngine tmpEngine;
                 QString paths = tmpEngine.importPathList().join(QLatin1String(":"));
                 qWarning("Current search path: %s", paths.toLocal8Bit().constData());
-                exit(0);
+                exitApp(0);
             }
             opts.imports << arguments.at(++i);
         } else if (arg == "-P") {
@@ -463,7 +463,6 @@ static QDeclarativeViewer *createViewer()
         viewer->setScript(opts.script);
     }
 
-#if !defined(Q_OS_SYMBIAN)
     logger = viewer->warningsWidget();
     if (opts.warningsConfig == ShowWarnings) {
         logger.data()->setDefaultVisibility(LoggerWidget::ShowWarnings);
@@ -471,7 +470,6 @@ static QDeclarativeViewer *createViewer()
     } else if (opts.warningsConfig == HideWarnings){
         logger.data()->setDefaultVisibility(LoggerWidget::HideWarnings);
     }
-#endif
 
     if (opts.experimentalGestures)
         viewer->enableExperimentalGestures();
@@ -523,17 +521,7 @@ QDeclarativeViewer *openFile(const QString &fileName)
 
 int main(int argc, char ** argv)
 {
-#if defined (Q_OS_SYMBIAN)
-    qInstallMsgHandler(myMessageOutput);
-#else
     systemMsgOutput = qInstallMsgHandler(myMessageOutput);
-#endif
-
-#if defined (Q_OS_WIN)
-    // Debugging output is not visible by default on Windows -
-    // therefore show modal dialog with errors instead.
-    atexit(showWarnings);
-#endif
 
 #if defined (Q_WS_X11) || defined (Q_WS_MAC)
     //### default to using raster graphics backend for now
@@ -562,8 +550,11 @@ int main(int argc, char ** argv)
 
     QTranslator qmlTranslator;
     if (!opts.translationFile.isEmpty()) {
-        qmlTranslator.load(opts.translationFile);
-        app.installTranslator(&qmlTranslator);
+        if (qmlTranslator.load(opts.translationFile)) {
+            app.installTranslator(&qmlTranslator);
+        } else {
+            qWarning() << "Could not load the translation file" << opts.translationFile;
+        }
     }
 
     if (opts.fullScreen && opts.maximized)

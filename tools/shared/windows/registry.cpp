@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -157,6 +157,9 @@ QString qt_readRegistryKey(HKEY parentHandle, const QString &rSubkey)
     }
 
     RegCloseKey(handle);
+#else
+    Q_UNUSED(parentHandle);
+    Q_UNUSED(rSubkey)
 #endif
 
     return result;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -677,7 +677,7 @@ bool QChar::isSymbol() const
     \since 4.7
 
     Returns true if the UCS-4-encoded character specified by \a ucs4
-    is the high part of a utf16 surrogate
+    is the low part of a utf16 surrogate
     (ie. if its code point is between 0xdc00 and 0xdfff, inclusive).
 */
 
@@ -686,7 +686,7 @@ bool QChar::isSymbol() const
     \since 4.7
 
     Returns true if the UCS-4-encoded character specified by \a ucs4
-    can be splited to the high and low parts of a utf16 surrogate
+    can be split into the high and low parts of a utf16 surrogate
     (ie. if its code point is greater than or equals to 0x10000).
 */
 

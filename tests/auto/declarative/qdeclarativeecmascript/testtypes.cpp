@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -113,9 +113,20 @@ void registerTypes()
     qmlRegisterType<NumberAssignment>("Qt.test", 1,0, "NumberAssignment");
     qmlRegisterExtendedType<DefaultPropertyExtendedObject, DefaultPropertyExtensionObject>("Qt.test", 1,0, "DefaultPropertyExtendedObject");
     qmlRegisterType<OverrideDefaultPropertyObject>("Qt.test", 1,0, "OverrideDefaultPropertyObject");
+    qmlRegisterType<MyRevisionedClass>("Qt.test",1,0,"MyRevisionedClass");
+    qmlRegisterType<MyRevisionedClass,1>("Qt.test",1,1,"MyRevisionedClass");
+
+    // Register the uncreatable base class
+    qmlRegisterRevision<MyRevisionedBaseClassRegistered,1>("Qt.test",1,1);
+    // MyRevisionedSubclass 1.0 uses MyRevisionedClass revision 0
+    qmlRegisterType<MyRevisionedSubclass>("Qt.test",1,0,"MyRevisionedSubclass");
+    // MyRevisionedSubclass 1.1 uses MyRevisionedClass revision 1
+    qmlRegisterType<MyRevisionedSubclass,1>("Qt.test",1,1,"MyRevisionedSubclass");
 
     qmlRegisterExtendedType<QWidget,QWidgetDeclarativeUI>("Qt.test",1,0,"QWidget");
     qmlRegisterType<QPlainTextEdit>("Qt.test",1,0,"QPlainTextEdit");
+
+    qRegisterMetaType<MyQmlObject::MyType>("MyQmlObject::MyType");
 }
 
 #include "testtypes.moc"

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,20 +58,29 @@ public:
 private slots:
     void expires_data();
     void expires();
+    void expiresSynchronous_data();
+    void expiresSynchronous();
 
     void lastModified_data();
     void lastModified();
+    void lastModifiedSynchronous_data();
+    void lastModifiedSynchronous();
 
     void etag_data();
     void etag();
+    void etagSynchronous_data();
+    void etagSynchronous();
 
     void cacheControl_data();
     void cacheControl();
+    void cacheControlSynchronous_data();
+    void cacheControlSynchronous();
 
     void deleteCache();
 
 private:
     void check();
+    void checkSynchronous();
 };
 
 class NetworkDiskCache : public QNetworkDiskCache
@@ -142,6 +151,16 @@ void tst_QAbstractNetworkCache::expires()
     check();
 }
 
+void tst_QAbstractNetworkCache::expiresSynchronous_data()
+{
+    expires_data();
+}
+
+void tst_QAbstractNetworkCache::expiresSynchronous()
+{
+    checkSynchronous();
+}
+
 void tst_QAbstractNetworkCache::lastModified_data()
 {
     QTest::addColumn<QNetworkRequest::CacheLoadControl>("cacheLoadControl");
@@ -164,6 +183,16 @@ void tst_QAbstractNetworkCache::lastModified()
     check();
 }
 
+void tst_QAbstractNetworkCache::lastModifiedSynchronous_data()
+{
+    tst_QAbstractNetworkCache::lastModified_data();
+}
+
+void tst_QAbstractNetworkCache::lastModifiedSynchronous()
+{
+    checkSynchronous();
+}
+
 void tst_QAbstractNetworkCache::etag_data()
 {
     QTest::addColumn<QNetworkRequest::CacheLoadControl>("cacheLoadControl");
@@ -184,6 +213,16 @@ void tst_QAbstractNetworkCache::etag_data()
 void tst_QAbstractNetworkCache::etag()
 {
     check();
+}
+
+void tst_QAbstractNetworkCache::etagSynchronous_data()
+{
+    tst_QAbstractNetworkCache::etag_data();
+}
+
+void tst_QAbstractNetworkCache::etagSynchronous()
+{
+    checkSynchronous();
 }
 
 void tst_QAbstractNetworkCache::cacheControl_data()
@@ -215,6 +254,16 @@ void tst_QAbstractNetworkCache::cacheControl_data()
 void tst_QAbstractNetworkCache::cacheControl()
 {
     check();
+}
+
+void tst_QAbstractNetworkCache::cacheControlSynchronous_data()
+{
+    tst_QAbstractNetworkCache::cacheControl_data();
+}
+
+void tst_QAbstractNetworkCache::cacheControlSynchronous()
+{
+    checkSynchronous();
 }
 
 void tst_QAbstractNetworkCache::check()
@@ -250,6 +299,58 @@ void tst_QAbstractNetworkCache::check()
         QCOMPARE(reply2->error(), QNetworkReply::ContentNotFoundError);
         QCOMPARE(secondData, QByteArray());
     } else {
+        QCOMPARE(reply2->error(), QNetworkReply::NoError);
+        QCOMPARE(QString(secondData), QString(goodData));
+        QCOMPARE(secondData, goodData);
+        QCOMPARE(reply2->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+    }
+
+    if (fetchFromCache) {
+        QList<QByteArray> rawHeaderList = reply->rawHeaderList();
+        QList<QByteArray> rawHeaderList2 = reply2->rawHeaderList();
+        qSort(rawHeaderList);
+        qSort(rawHeaderList2);
+    }
+    QCOMPARE(diskCache->gotData, fetchFromCache);
+}
+
+void tst_QAbstractNetworkCache::checkSynchronous()
+{
+    QSKIP("not working yet, see QTBUG-15221", SkipAll);
+
+    QFETCH(QNetworkRequest::CacheLoadControl, cacheLoadControl);
+    QFETCH(QString, url);
+    QFETCH(bool, fetchFromCache);
+
+    QNetworkAccessManager manager;
+    NetworkDiskCache *diskCache = new NetworkDiskCache(&manager);
+    manager.setCache(diskCache);
+    QCOMPARE(diskCache->gotData, false);
+
+    QUrl realUrl = url.contains("://") ? url : TESTFILE + url;
+    QNetworkRequest request(realUrl);
+
+    request.setAttribute(
+            QNetworkRequest::SynchronousRequestAttribute,
+            true);
+
+    // prime the cache
+    QNetworkReply *reply = manager.get(request);
+    QVERIFY(reply->isFinished()); // synchronous
+    QCOMPARE(diskCache->gotData, false);
+    QByteArray goodData = reply->readAll();
+
+    request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, cacheLoadControl);
+
+    // should be in the cache now
+    QNetworkReply *reply2 = manager.get(request);
+    QVERIFY(reply2->isFinished()); // synchronous
+
+    QByteArray secondData = reply2->readAll();
+    if (!fetchFromCache && cacheLoadControl == QNetworkRequest::AlwaysCache) {
+        QCOMPARE(reply2->error(), QNetworkReply::ContentNotFoundError);
+        QCOMPARE(secondData, QByteArray());
+    } else {
         if (reply2->error() != QNetworkReply::NoError)
             qDebug() << reply2->errorString();
         QCOMPARE(reply2->error(), QNetworkReply::NoError);
@@ -263,16 +364,6 @@ void tst_QAbstractNetworkCache::check()
         QList<QByteArray> rawHeaderList2 = reply2->rawHeaderList();
         qSort(rawHeaderList);
         qSort(rawHeaderList2);
-
-        // headers can change
-        for (int i = 0; i < rawHeaderList.count(); ++i) {
-            //qDebug() << i << rawHeaderList.value(i) << reply->rawHeader(rawHeaderList.value(i));
-            //qDebug() << i << rawHeaderList2.value(i) << reply2->rawHeader(rawHeaderList2.value(i));
-            //QCOMPARE(QString(rawHeaderList.value(i)), QString(rawHeaderList2.value(i)));
-            //QCOMPARE(QString(reply->rawHeader(rawHeaderList.value(i))), QString(reply2->rawHeader(rawHeaderList2.value(i))));
-        }
-        //QCOMPARE(rawHeaderList.count(), rawHeaderList2.count());
-
     }
     QCOMPARE(diskCache->gotData, fetchFromCache);
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -181,7 +181,6 @@ public:
             elementIndicesVBOId(0),
             opacityArray(0),
             snapToPixelGrid(false),
-            addOffset(false),
             nativePaintingActive(false),
             inverseScale(1),
             lastMaskTextureUsed(0)
@@ -274,6 +273,8 @@ public:
     QBrush currentBrush; // May not be the state's brush!
     const QBrush noBrush;
 
+    QPixmap currentBrushPixmap;
+
     QGL2PEXVertexArray vertexCoordinateArray;
     QGL2PEXVertexArray textureCoordinateArray;
     QVector<GLushort> elementIndices;
@@ -283,7 +284,6 @@ public:
     GLfloat staticTextureCoordinateArray[8];
 
     bool snapToPixelGrid;
-    bool addOffset; // When enabled, adds a 0.49,0.49 offset to matrix in updateMatrix
     bool nativePaintingActive;
     GLfloat pmvMatrix[3][3];
     GLfloat inverseScale;

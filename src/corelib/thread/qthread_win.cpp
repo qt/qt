@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -298,7 +298,10 @@ unsigned int __stdcall QThreadPrivate::start(void *arg)
 
     QThread::setTerminationEnabled(false);
 
-    data->quitNow = false;
+    {
+        QMutexLocker locker(&thr->d_func()->mutex);
+        data->quitNow = thr->d_func()->exited;
+    }
     // ### TODO: allow the user to create a custom event dispatcher
     createEventDispatcher(data);
 

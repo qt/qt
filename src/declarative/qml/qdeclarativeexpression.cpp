@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -101,6 +101,19 @@ void QDeclarativeExpressionPrivate::init(QDeclarativeContextData *ctxt, const QS
     QDeclarativeAbstractExpression::setContext(ctxt);
     scopeObject = me;
     expressionFunctionValid = false;
+}
+
+void QDeclarativeExpressionPrivate::init(QDeclarativeContextData *ctxt, const QScriptValue &func,
+                                         QObject *me)
+{
+    expression = func.toString();
+
+    QDeclarativeAbstractExpression::setContext(ctxt);
+    scopeObject = me;
+
+    expressionFunction = func;
+    expressionFunctionMode = ExplicitContext;
+    expressionFunctionValid = true;
 }
 
 void QDeclarativeExpressionPrivate::init(QDeclarativeContextData *ctxt, void *expr, 
@@ -304,6 +317,19 @@ QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContextData *ctxt, QO
     d->setNotifyObject(this, QDeclarativeExpression_notifyIdx);
 }
 
+/*!  \internal */
+QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContextData *ctxt, QObject *scope, const QScriptValue &func,
+                       QDeclarativeExpressionPrivate &dd)
+: QObject(dd, 0)
+{
+    Q_D(QDeclarativeExpression);
+    d->init(ctxt, func, scope);
+
+    if (QDeclarativeExpression_notifyIdx == -1)
+        QDeclarativeExpression_notifyIdx = QDeclarativeExpression::staticMetaObject.indexOfMethod("_q_notify()");
+    d->setNotifyObject(this, QDeclarativeExpression_notifyIdx);
+}
+
 /*!
     Destroy the QDeclarativeExpression instance.
 */
@@ -412,6 +438,16 @@ void QDeclarativeQtScriptExpression::setNotifyObject(QObject *object, int notify
     }
 }
 
+void QDeclarativeQtScriptExpression::setEvaluateFlags(EvaluateFlags flags)
+{
+    evalFlags = flags;
+}
+
+QDeclarativeQtScriptExpression::EvaluateFlags QDeclarativeQtScriptExpression::evaluateFlags() const
+{
+    return evalFlags;
+}
+
 QScriptValue QDeclarativeQtScriptExpression::scriptValue(QObject *secondaryScope, bool *isUndefined)
 {
     Q_ASSERT(context() && context()->engine);
@@ -476,7 +512,10 @@ QScriptValue QDeclarativeQtScriptExpression::eval(QObject *secondaryScope, bool 
         oldOverride = ep->contextClass->setOverrideObject(expressionContext, secondaryScope);
     }
 
-    QScriptValue svalue = expressionFunction.call(); // This could cause this to be deleted
+    QScriptValue thisObject;
+    if (evalFlags & RequiresThisObject)
+        thisObject = ep->objectClass->newQObject(scopeObject);
+    QScriptValue svalue = expressionFunction.call(thisObject); // This could cause this c++ object to be deleted
 
     if (isShared) {
         ep->sharedContext = oldSharedContext;

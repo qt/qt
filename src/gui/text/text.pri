@@ -93,9 +93,15 @@ unix:x11 {
 }
 
 !embedded:!qpa:!x11:mac {
+        HEADERS += \
+                text/qfontengine_mac_p.h
+        OBJECTIVE_HEADERS += \
+                text/qfontengine_coretext_p.h
 	SOURCES += \
-		text/qfont_mac.cpp
-        OBJECTIVE_SOURCES += text/qfontengine_mac.mm
+                text/qfont_mac.cpp
+        OBJECTIVE_SOURCES += \
+                text/qfontengine_coretext.mm \
+                text/qfontengine_mac.mm
 }
 
 embedded {
@@ -141,8 +147,8 @@ symbian {
 			text/qfontengine_s60.cpp
 		HEADERS += \
 			text/qfontengine_s60_p.h
-		LIBS += -lfntstr -lecom
 	}
+	LIBS += -lfntstr -lecom
 }
 
 !qpa {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,8 +52,8 @@ class DeviceOrientation : public QObject
     Q_OBJECT
     Q_ENUMS(Orientation)
 public:
-    enum Orientation { 
-        UnknownOrientation, 
+    enum Orientation {
+        UnknownOrientation,
         Portrait,
         Landscape,
         PortraitInverted,

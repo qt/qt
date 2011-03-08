@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -80,7 +80,7 @@ class QSslConfigurationPrivate: public QSharedData
 {
 public:
     QSslConfigurationPrivate()
-        : protocol(QSsl::SslV3),
+        : protocol(QSsl::TlsV1),
           peerVerifyMode(QSslSocket::AutoVerifyPeer),
           peerVerifyDepth(0)
     { }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -266,7 +266,7 @@
 
     \overload
 
-    This is the same as qFind(\a{container}.begin(), \a{container}.end(), value);
+    This is the same as qFind(\a{container}.constBegin(), \a{container}.constEnd(), value);
 */
 
 /*! \fn void qCount(InputIterator begin, InputIterator end, const T &value, Size &n)

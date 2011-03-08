@@ -28,7 +28,7 @@ Item {
             objectName: "highlight"
             width: 180; height: 20
             color: "lightsteelblue"; radius: 5
-            y: list.currentItem.y
+            y: list.currentItem.y+5
         }
     }
 

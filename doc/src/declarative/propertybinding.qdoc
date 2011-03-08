@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -95,44 +95,109 @@ Rectangle {
 \endcode
 
 
-\section1 Effects of Property Assignment in JavaScript
+\section1 Binding Properties from JavaScript
 
-Assigning a property value from JavaScript does \e not create a property binding.
-For example:
+When working with both QML and JavaScript, it is important to differentiate between
+\l {Property Binding} syntax in QML and simple \e {property assignment} in JavaScript. Take
+the example below, which uses property binding to ensure the item's \c height is always twice
+its \c width:
+
+\qml
+Item {
+    width: 100
+    height: width * 2
+}
+\endqml
+
+On the other hand, take the following JavaScript code snippet, which \e assigns, rather
+than \e binds, the value of the \c height property:
 
 \code
-Rectangle {
+Item {
+    width: 100
 
     Component.onCompleted: {
-        width = otherItem.width;
+        height = width * 2  // if width changes later, height is not updated!
     }
 }
 \endcode
 
-Instead of creating a property binding, this simply sets the \c width of the \l Rectangle
-to the value of \c other.width at the time the JavaScript code is invoked.  See 
-\l {Property Assignment vs Property Binding} for more details.
+Instead of creating a property binding, this simply sets the \c height property to the correct
+value \e {at the time that} the JavaScript code is invoked. Unlike the first example, the
+\c height will never change if \c width changes.
 
-Also note that assigning a value to a property that is currently bound will remove the binding.
-A property can only have one value at a time, and if any code explicitly sets
-this value, the binding is removed.  The \l Rectangle in the example below will have
-a width of 13, regardless of the \c otherItem's width.
+The \e {property : value} syntax for property binding is QML-specific and cannot be used in
+JavaScript. Instead, to bind a property from JavaScript, assign a \e function to the property
+that returns the required value. The following code correctly sets the property binding
+created in the first example, but creates the binding in JavaScript rather than QML:
 
-\code
-Rectangle {
-    width: otherItem.width
+\qml
+Item {
+    width: 100
 
     Component.onCompleted: {
-        width = 13;
+        height = (function() { return width * 2 })
+    }
+}
+\endqml
+
+
+\section2 Using \c this to create a binding
+
+When creating a property binding from JavaScript, QML allows the use of the \c this keyword to
+refer to the object to which the property binding will be assigned. This allows one to
+explicitly refer to a property within an object when there may be ambiguity about the exact
+property that should be used for the binding.
+
+For example, the \c Component.onCompleted handler below is defined within the scope of the
+\l Item, and references to \c width within this scope would refer to the \l Item's width, rather
+than that of the \l Rectangle. To bind the \l Rectangle's \c height to its own \c width, the
+function needs to explicitly refer to \c this.width rather than just \c width. Otherwise, the
+height of the \l Rectangle would be bound to the width of the \l Item and not the \l Rectangle.
+
+\qml
+Item {
+    width: 500
+    height: 500
+
+    Rectangle {
+        id: rect
+        width: 100
+        color: "yellow"
+    }
+
+    Component.onCompleted: {
+        rect.height = (function() { return this.width * 2 })
+    }
+}
+\endqml
+
+(In this case, the function could also have referred to \c rect.width rather than \c this.width.)
+
+Note that the value of \c this is not defined outside of its use in property binding.
+See \l {QML JavaScript Restrictions} for details.
+
+
+\section2 Effects of property assignment
+
+Note that assigning a value to a property that is currently bound will remove the binding.
+A property can only have one value at a time, and if any code explicitly sets this value, the
+binding is removed. In the following example, although \c width has been bound to \c height,
+the binding is removed by the JavaScript code that assigns \c width to 50:
+
+\code
+Item {
+    width: height * 2
+    height: 100
+
+    Component.onCompleted: {
+        width = 50;
     }
 }
 \endcode
 
-There is no way to create a property binding directly from imperative JavaScript code,
-although it is possible to set up a \l Binding object (shown below).
 
-
-\section1 Binding Element
+\section1 The Binding Element
 
 The implicit binding syntax shown previously is easy to use and works perfectly for most uses
 of bindings.  In some advanced cases, it is necessary to create bindings explicitly using the 

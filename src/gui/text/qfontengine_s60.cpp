@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,115 +46,116 @@
 #include <private/qapplication_p.h>
 #include "qimage.h"
 #include <private/qt_s60_p.h>
+#include <private/qpixmap_s60_p.h>
 
 #include <e32base.h>
 #include <e32std.h>
 #include <eikenv.h>
 #include <gdi.h>
-#if defined(Q_SYMBIAN_HAS_FONTTABLE_API) || defined(Q_SYMBIAN_HAS_GLYPHOUTLINE_API)
+#if defined(Q_SYMBIAN_HAS_GLYPHOUTLINE_API)
 #include <graphics/gdi/gdiplatapi.h>
-#endif // Q_SYMBIAN_HAS_FONTTABLE_API || Q_SYMBIAN_HAS_GLYPHOUTLINE_API
+#endif // Q_SYMBIAN_HAS_GLYPHOUTLINE_API
+
+// Replication of TGetFontTableParam & friends.
+// There is unfortunately no compile time flag like SYMBIAN_FONT_TABLE_API
+// that would help us to only replicate these things for Symbian versions
+// that do not yet have the font table Api. Symbian's public SDK does
+// generally not define any usable macros.
+class QSymbianTGetFontTableParam
+{
+public:
+    TUint32 iTag;
+    TAny *iContent;
+    TInt iLength;
+};
+const TUid QSymbianKFontGetFontTable      = {0x102872C1};
+const TUid QSymbianKFontReleaseFontTable  = {0x2002AC24};
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_SYMBIAN_HAS_FONTTABLE_API
-QSymbianTypeFaceExtras::QSymbianTypeFaceExtras(CFont* cFont, COpenFont *openFont)
-    : m_cFont(cFont)
-    , m_symbolCMap(false)
-{
-    Q_UNUSED(openFont)
-}
-
-QSymbianTypeFaceExtras::~QSymbianTypeFaceExtras()
-{
-    S60->screenDevice()->ReleaseFont(m_cFont);
-}
-
-QByteArray QSymbianTypeFaceExtras::getSfntTable(uint tag) const
-{
-    RFontTable fontTable;
-    if (fontTable.Open(*m_cFont, tag) != KErrNone)
-        return QByteArray();
-    const QByteArray byteArray(reinterpret_cast<const char *>
-            (fontTable.TableContent()),fontTable.TableLength());
-    fontTable.Close();
-    return byteArray;
-}
-
-bool QSymbianTypeFaceExtras::getSfntTableData(uint tag, uchar *buffer, uint *length) const
-{
-    RFontTable fontTable;
-    if (fontTable.Open(*m_cFont, tag) != KErrNone)
-        return false;
-
-    bool result = true;
-    const TInt tableByteLength = fontTable.TableLength();
-
-    if (*length > 0 && *length < tableByteLength) {
-        result = false; // Caller did not allocate enough memory
-    } else {
-        *length = tableByteLength;
-        if (buffer)
-            memcpy(buffer, fontTable.TableContent(), tableByteLength);
-    }
-
-    fontTable.Close();
-    return result;
-}
-
-#else // Q_SYMBIAN_HAS_FONTTABLE_API
 QSymbianTypeFaceExtras::QSymbianTypeFaceExtras(CFont* cFont, COpenFont *openFont)
     : m_cFont(cFont)
     , m_symbolCMap(false)
     , m_openFont(openFont)
 {
-    TAny *trueTypeExtension = NULL;
-    m_openFont->ExtendedInterface(KUidOpenFontTrueTypeExtension, trueTypeExtension);
-    m_trueTypeExtension = static_cast<MOpenFontTrueTypeExtension*>(trueTypeExtension);
-    Q_ASSERT(m_trueTypeExtension);
+    if (!symbianFontTableApiAvailable()) {
+        TAny *trueTypeExtension = NULL;
+        m_openFont->ExtendedInterface(KUidOpenFontTrueTypeExtension, trueTypeExtension);
+        m_trueTypeExtension = static_cast<MOpenFontTrueTypeExtension*>(trueTypeExtension);
+        Q_ASSERT(m_trueTypeExtension);
+    }
 }
 
 QSymbianTypeFaceExtras::~QSymbianTypeFaceExtras()
 {
+    if (symbianFontTableApiAvailable())
+        S60->screenDevice()->ReleaseFont(m_cFont);
 }
 
 QByteArray QSymbianTypeFaceExtras::getSfntTable(uint tag) const
 {
-    Q_ASSERT(m_trueTypeExtension->HasTrueTypeTable(tag));
-    TInt error = KErrNone;
-    TInt tableByteLength = 0;
-    TAny *table = m_trueTypeExtension->GetTrueTypeTable(error, tag, &tableByteLength);
-    Q_CHECK_PTR(table);
-    QByteArray result(static_cast<const char*>(table), tableByteLength);
-    m_trueTypeExtension->ReleaseTrueTypeTable(table);
-    return result;
+    if (symbianFontTableApiAvailable()) {
+        QSymbianTGetFontTableParam fontTableParams = { tag, 0, 0 };
+        if (m_cFont->ExtendedFunction(QSymbianKFontGetFontTable, &fontTableParams) == KErrNone) {
+            const char* const fontTableContent =
+                    static_cast<const char *>(fontTableParams.iContent);
+            const QByteArray fontTable(fontTableContent, fontTableParams.iLength);
+            m_cFont->ExtendedFunction(QSymbianKFontReleaseFontTable, &fontTableParams);
+            return fontTable;
+        }
+        return QByteArray();
+    } else {
+        Q_ASSERT(m_trueTypeExtension->HasTrueTypeTable(tag));
+        TInt error = KErrNone;
+        TInt tableByteLength = 0;
+        TAny *table = m_trueTypeExtension->GetTrueTypeTable(error, tag, &tableByteLength);
+        Q_CHECK_PTR(table);
+        const QByteArray result(static_cast<const char*>(table), tableByteLength);
+        m_trueTypeExtension->ReleaseTrueTypeTable(table);
+        return result;
+    }
 }
 
 bool QSymbianTypeFaceExtras::getSfntTableData(uint tag, uchar *buffer, uint *length) const
 {
-    if (!m_trueTypeExtension->HasTrueTypeTable(tag))
-        return false;
-
     bool result = true;
-    TInt error = KErrNone;
-    TInt tableByteLength;
-    TAny *table = m_trueTypeExtension->GetTrueTypeTable(error, tag, &tableByteLength);
-    Q_CHECK_PTR(table);
-
-    if (error != KErrNone) {
-        return false;
-    } else if (*length > 0 && *length < tableByteLength) {
-        result = false; // Caller did not allocate enough memory
+    if (symbianFontTableApiAvailable()) {
+        QSymbianTGetFontTableParam fontTableParams = { tag, 0, 0 };
+        if (m_cFont->ExtendedFunction(QSymbianKFontGetFontTable, &fontTableParams) == KErrNone) {
+            if (*length > 0 && *length < fontTableParams.iLength) {
+                result = false; // Caller did not allocate enough memory
+            } else {
+                *length = fontTableParams.iLength;
+                if (buffer)
+                    memcpy(buffer, fontTableParams.iContent, fontTableParams.iLength);
+            }
+            m_cFont->ExtendedFunction(QSymbianKFontReleaseFontTable, &fontTableParams);
+        } else {
+            result = false;
+        }
     } else {
-        *length = tableByteLength;
-        if (buffer)
-            memcpy(buffer, table, tableByteLength);
-    }
+        if (!m_trueTypeExtension->HasTrueTypeTable(tag))
+            return false;
 
-    m_trueTypeExtension->ReleaseTrueTypeTable(table);
+        TInt error = KErrNone;
+        TInt tableByteLength;
+        TAny *table = m_trueTypeExtension->GetTrueTypeTable(error, tag, &tableByteLength);
+        Q_CHECK_PTR(table);
+
+        if (error != KErrNone) {
+            return false;
+        } else if (*length > 0 && *length < tableByteLength) {
+            result = false; // Caller did not allocate enough memory
+        } else {
+            *length = tableByteLength;
+            if (buffer)
+                memcpy(buffer, table, tableByteLength);
+        }
+
+        m_trueTypeExtension->ReleaseTrueTypeTable(table);
+    }
     return result;
 }
-#endif // Q_SYMBIAN_HAS_FONTTABLE_API
 
 const uchar *QSymbianTypeFaceExtras::cmap() const
 {
@@ -196,6 +197,39 @@ QFixed QSymbianTypeFaceExtras::unitsPerEm() const
     return m_unitsPerEm;
 }
 
+bool QSymbianTypeFaceExtras::symbianFontTableApiAvailable()
+{
+    enum FontTableApiAvailability {
+        Unknown,
+        Available,
+        Unavailable
+    };
+    static FontTableApiAvailability availability =
+            QSysInfo::symbianVersion() < QSysInfo::SV_SF_3 ?
+                Unavailable : Unknown;
+    if (availability == Unknown) {
+        // Actually, we should ask CFeatureDiscovery::IsFeatureSupportedL()
+        // with FfFontTable here. But since at the time of writing, the
+        // FfFontTable flag check either gave false positives or false
+        // negatives. Here comes an implicit check via CFont::ExtendedFunction.
+        QSymbianTGetFontTableParam fontTableParams = {
+            MAKE_TAG('O', 'S', '/', '2'), 0, 0 };
+        QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
+        CFont *font;
+        const TInt getFontErr = S60->screenDevice()->GetNearestFontInTwips(font, TFontSpec());
+        Q_ASSERT(getFontErr == KErrNone);
+        if (font->ExtendedFunction(QSymbianKFontGetFontTable, &fontTableParams) == KErrNone) {
+            font->ExtendedFunction(QSymbianKFontReleaseFontTable, &fontTableParams);
+            availability = Available;
+        } else {
+            availability = Unavailable;
+        }
+        S60->screenDevice()->ReleaseFont(font);
+        lock.relock();
+    }
+    return availability == Available;
+}
+
 // duplicated from qfontengine_xyz.cpp
 static inline unsigned int getChar(const QChar *str, int &i, const int len)
 {
@@ -210,10 +244,13 @@ static inline unsigned int getChar(const QChar *str, int &i, const int len)
     return uc;
 }
 
+extern QString qt_symbian_fontNameWithAppFontMarker(const QString &fontName); // qfontdatabase_s60.cpp
+
 CFont *QFontEngineS60::fontWithSize(qreal size) const
 {
     CFont *result = 0;
-    TFontSpec fontSpec(qt_QString2TPtrC(QFontEngine::fontDef.family), TInt(size));
+    const QString family = qt_symbian_fontNameWithAppFontMarker(QFontEngine::fontDef.family);
+    TFontSpec fontSpec(qt_QString2TPtrC(family), TInt(size));
     fontSpec.iFontStyle.SetBitmapType(EAntiAliasedGlyphBitmap);
     fontSpec.iFontStyle.SetPosture(QFontEngine::fontDef.style == QFont::StyleNormal?EPostureUpright:EPostureItalic);
     fontSpec.iFontStyle.SetStrokeWeight(QFontEngine::fontDef.weight > QFont::Normal?EStrokeWeightBold:EStrokeWeightNormal);

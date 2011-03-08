@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -208,8 +208,6 @@ public:
     QPostEventList postEventList;
     bool canWait;
     QVector<void *> tls;
-
-    QMutex mutex;
 
 # ifdef Q_OS_SYMBIAN
     RThread symbian_thread_handle;

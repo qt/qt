@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1029,3 +1029,15 @@ DEPLOYMENT += dep_note
 //! [156]
 DEPLOYMENT.display_name = My Qt App
 //! [156]
+
+//! [157]
+packagesExist(sqlite3 QtNetwork QtDeclarative) {
+    DEFINES += USE_FANCY_UI
+}
+//! [157]
+
+//! [158]
+#ifdef USE_FANCY_UI
+    // Use the fancy UI, as we have extra packages available
+#endif
+//! [158]

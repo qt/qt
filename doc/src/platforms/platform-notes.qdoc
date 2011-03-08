@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -81,14 +81,11 @@
     \header \o                  \o Concurrent \o XmlPatterns \o WebKit(*)   \o CLucene  \o Phonon
     \row    \o g++ 3.3          \o            \o \bold{X}    \o          \o \bold{X} \o \bold{X}
     \row    \o g++ 3.4 and up   \o \bold{X}   \o \bold{X}    \o \bold{X} \o \bold{X} \o \bold{X}
-    \row
     \row    \o SunCC 5.5        \o            \o             \o          \o \bold{X} \o \bold{X}
-    \row
     \row    \o aCC series 3     \o            \o             \o          \o \bold{X} \o \bold{X}
     \row    \o aCC series 6     \o \bold{X}   \o \bold{X}    \o \bold{X} \o \bold{X} \o \bold{X}
     \row    \o xlC 6            \o            \o             \o          \o \bold{X} \o \bold{X}
     \row    \o Intel CC 10      \o \bold{X}   \o \bold{X}    \o \bold{X} \o \bold{X} \o \bold{X}
-    \row
     \row    \o MSVC 2003        \o \bold{X}   \o \bold{X}    \o          \o \bold{X} \o \bold{X}
     \row    \o MSVC 2005 and up \o \bold{X}   \o \bold{X}    \o \bold{X} \o \bold{X} \o \bold{X}
     \endtable
@@ -429,7 +426,7 @@
     details.
 
     \note A MinGW installation is only needed to build against the
-    binary pacakge, not to run the pre-compiled binaries that are in
+    binary package, not to run the pre-compiled binaries that are in
     the package.
 
     \section2 Intel C++ Compiler (Windows, Altix)
@@ -737,18 +734,23 @@
             \o \c PowerMgmt if QProcess::kill(...) or QProcess::terminate(...) is called.
     \row    \o QtCore
             \o \c AllFiles when \l{http://developer.symbian.org/wiki/index.php/Capabilities_%28Symbian_Signed%29/AllFiles_Capability}{accessing specific areas.}
+    \row    \o QtDeclarative
+            \o \c NetworkServices is automatically added for this module if no capabilities are explicitly specified.
     \row    \o QtNetwork
-            \o \c NetworkServices is basically always required for this module.
+            \o \c NetworkServices is automatically added for this module if no capabilities are explicitly specified.
+    \row    \o QtNetwork
             \o \c ReadUserData is required to include all the phone's SSL certificates in the system's default CA certificate list
                   (for example those added by the user or stored in the SIM card),
                   without this capability only the CA certs built into the phone are used.
     \row    \o QtMultiMedia
             \o \c UserEnvironment if QAudioInput is used.
+    \row    \o QtWebkit
+            \o \c NetworkServices is automatically added for this module if no capabilities are explicitly specified.
     \endtable
 
-    Note that some modules rely on other modules. If your application uses
-    QtXmlPatterns, QtWebkit or QtScript it may still require \c NetworkServices
-    as these modules rely on QtNetwork to go online.
+    \note Some modules rely on other modules. E.g. QtWebkit and QtDeclarative
+    depend on QtNetwork and therefore any application that
+    depends on these modules is also likely to need \c NetworkServices capability.
 
     For more information see the documentation of the individual Qt classes. If
     a class does not mention Symbian capabilities, it requires none.

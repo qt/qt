@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -173,8 +173,8 @@ public:
     QGenericMatrix<N, M, qreal> toGenericMatrix() const;
 
     inline qreal *data();
-    inline const qreal *data() const { return m[0]; }
-    inline const qreal *constData() const { return m[0]; }
+    inline const qreal *data() const { return *m; }
+    inline const qreal *constData() const { return *m; }
 
     void optimize();
 
@@ -974,7 +974,7 @@ inline qreal *QMatrix4x4::data()
     // We have to assume that the caller will modify the matrix elements,
     // so we flip it over to "General" mode.
     flagBits = General;
-    return m[0];
+    return *m;
 }
 
 #ifndef QT_NO_DEBUG_STREAM

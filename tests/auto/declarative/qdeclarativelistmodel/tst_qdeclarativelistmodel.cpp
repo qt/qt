@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,6 +59,7 @@
 #endif
 
 Q_DECLARE_METATYPE(QList<int>)
+Q_DECLARE_METATYPE(QList<QVariantHash>)
 
 class tst_qdeclarativelistmodel : public QObject
 {
@@ -100,6 +101,11 @@ private slots:
     void get_nested();
     void get_nested_data();
     void crash_model_with_multiple_roles();
+    void set_model_cache();
+    void property_changes();
+    void property_changes_data();
+    void property_changes_worker();
+    void property_changes_worker_data();
 };
 int tst_qdeclarativelistmodel::roleFromName(const QDeclarativeListModel *model, const QString &roleName)
 {
@@ -297,13 +303,10 @@ void tst_qdeclarativelistmodel::dynamic_data()
     QTest::newRow("nested-append3") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]});get(0).bars.append({'a':4});get(0).bars.get(3).a}" << 4 << "";
 
     QTest::newRow("nested-insert") << "{append({'foo':123});insert(0,{'bars':[{'a':1},{'b':2},{'c':3}]});get(0).bars.get(0).a}" << 1 << "";
-    QTest::newRow("nested-set") << "{append({'foo':123});set(0,{'foo':[{'x':123}]});get(0).foo.get(0).x}" << 123 << "";
+    QTest::newRow("nested-set") << "{append({'foo':[{'x':1}]});set(0,{'foo':[{'x':123}]});get(0).foo.get(0).x}" << 123 << "";
 
     QTest::newRow("nested-count") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]}); get(0).bars.count}" << 3 << "";
     QTest::newRow("nested-clear") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]}); get(0).bars.clear(); get(0).bars.count}" << 0 << "";
-
-    // XXX
-    //QTest::newRow("nested-setprop") << "{append({'foo':123});setProperty(0,'foo',[{'x':123}]);get(0).foo.get(0).x}" << 123 << "";
 }
 
 void tst_qdeclarativelistmodel::dynamic()
@@ -418,6 +421,9 @@ void tst_qdeclarativelistmodel::dynamic_worker_sync()
     // execute a set of commands on the worker list model, then check the
     // changes are reflected in the list model in the main thread
     if (QByteArray(QTest::currentDataTag()).startsWith("nested"))
+        QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML ListModel: Cannot add list-type data when modifying or after modification from a worker script");
+
+    if (QByteArray(QTest::currentDataTag()).startsWith("nested-set"))
         QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML ListModel: Cannot add list-type data when modifying or after modification from a worker script");
 
     QVERIFY(QMetaObject::invokeMethod(item, "evalExpressionViaWorker", 
@@ -926,6 +932,163 @@ void tst_qdeclarativelistmodel::crash_model_with_multiple_roles()
 
     // used to cause a crash in QDeclarativeVisualDataModel
     model->setProperty(0, "black", true);
+}
+
+//QTBUG-15190
+void tst_qdeclarativelistmodel::set_model_cache()
+{
+    QDeclarativeEngine eng;
+    QDeclarativeComponent component(&eng, QUrl::fromLocalFile(SRCDIR "/data/setmodelcachelist.qml"));
+    QObject *model = component.create();
+    QVERIFY2(component.errorString().isEmpty(), QTest::toString(component.errorString()));
+    QVERIFY(model != 0);
+    QVERIFY(model->property("ok").toBool());
+}
+
+void tst_qdeclarativelistmodel::property_changes()
+{
+    QFETCH(QString, script_setup);
+    QFETCH(QString, script_change);
+    QFETCH(QString, roleName);
+    QFETCH(int, listIndex);
+    QFETCH(bool, itemsChanged);
+    QFETCH(QString, testExpression);
+
+    QDeclarativeEngine engine;
+    QDeclarativeListModel model;
+    QDeclarativeEngine::setContextForObject(&model, engine.rootContext());
+    engine.rootContext()->setContextObject(&model);
+
+    QDeclarativeExpression expr(engine.rootContext(), &model, script_setup);
+    expr.evaluate();
+    QVERIFY2(!expr.hasError(), QTest::toString(expr.error().toString()));
+
+    QString signalHandler = "on" + QString(roleName[0].toUpper()) + roleName.mid(1, roleName.length()) + "Changed:";
+    QString qml = "import QtQuick 1.0\n"
+                  "Connections {\n"
+                        "property bool gotSignal: false\n"
+                        "target: model.get(0)\n"
+                        + signalHandler + " gotSignal = true\n"
+                  "}\n";
+    QDeclarativeComponent component(&engine);
+    component.setData(qml.toUtf8(), QUrl::fromLocalFile(""));
+    engine.rootContext()->setContextProperty("model", &model);
+    QObject *connectionsObject = component.create();
+    QVERIFY2(component.errorString().isEmpty(), QTest::toString(component.errorString()));
+
+    QSignalSpy spyItemsChanged(&model, SIGNAL(itemsChanged(int, int, QList<int>)));
+
+    expr.setExpression(script_change);
+    expr.evaluate();
+    QVERIFY2(!expr.hasError(), QTest::toString(expr.error()));
+
+    // test the object returned by get() emits the correct signals
+    QCOMPARE(connectionsObject->property("gotSignal").toBool(), itemsChanged);
+
+    // test itemsChanged() is emitted correctly
+    if (itemsChanged) {
+        QCOMPARE(spyItemsChanged.count(), 1);
+        QCOMPARE(spyItemsChanged.at(0).at(0).toInt(), listIndex);
+        QCOMPARE(spyItemsChanged.at(0).at(1).toInt(), 1);
+    } else {
+        QCOMPARE(spyItemsChanged.count(), 0);
+    }
+
+    expr.setExpression(testExpression);
+    QCOMPARE(expr.evaluate().toBool(), true);
+
+    delete connectionsObject;
+}
+
+void tst_qdeclarativelistmodel::property_changes_data()
+{
+    QTest::addColumn<QString>("script_setup");
+    QTest::addColumn<QString>("script_change");
+    QTest::addColumn<QString>("roleName");
+    QTest::addColumn<int>("listIndex");
+    QTest::addColumn<bool>("itemsChanged");
+    QTest::addColumn<QString>("testExpression");
+
+    QTest::newRow("set: plain") << "append({'a':123, 'b':456, 'c':789});" << "set(0,{'b':123});"
+            << "b" << 0 << true << "get(0).b == 123";
+    QTest::newRow("setProperty: plain") << "append({'a':123, 'b':456, 'c':789});" << "setProperty(0, 'b', 123);"
+            << "b" << 0 << true << "get(0).b == 123";
+
+    QTest::newRow("set: plain, no changes") << "append({'a':123, 'b':456, 'c':789});" << "set(0,{'b':456});"
+            << "b" << 0 << false << "get(0).b == 456";
+    QTest::newRow("setProperty: plain, no changes") << "append({'a':123, 'b':456, 'c':789});" << "setProperty(0, 'b', 456);"
+            << "b" << 0 << false << "get(0).b == 456";
+
+    // Following tests only call set() since setProperty() only allows plain
+    // values, not lists, as the argument.
+    // Note that when a list is changed, itemsChanged() is currently always
+    // emitted regardless of whether it actually changed or not.
+
+    QTest::newRow("nested-set: list, new size") << "append({'a':123, 'b':[{'a':1},{'a':2},{'a':3}], 'c':789});" << "set(0,{'b':[{'a':1},{'a':2}]});"
+            << "b" << 0 << true << "get(0).b.get(0).a == 1 && get(0).b.get(1).a == 2";
+
+    QTest::newRow("nested-set: list, empty -> non-empty") << "append({'a':123, 'b':[], 'c':789});" << "set(0,{'b':[{'a':1},{'a':2},{'a':3}]});"
+            << "b" << 0 << true << "get(0).b.get(0).a == 1 && get(0).b.get(1).a == 2 && get(0).b.get(2).a == 3";
+
+    QTest::newRow("nested-set: list, non-empty -> empty") << "append({'a':123, 'b':[{'a':1},{'a':2},{'a':3}], 'c':789});" << "set(0,{'b':[]});"
+            << "b" << 0 << true << "get(0).b.count == 0";
+
+    QTest::newRow("nested-set: list, same size, different values") << "append({'a':123, 'b':[{'a':1},{'a':2},{'a':3}], 'c':789});" << "set(0,{'b':[{'a':1},{'a':222},{'a':3}]});"
+            << "b" << 0 << true << "get(0).b.get(0).a == 1 && get(0).b.get(1).a == 222 && get(0).b.get(2).a == 3";
+
+    QTest::newRow("nested-set: list, no changes") << "append({'a':123, 'b':[{'a':1},{'a':2},{'a':3}], 'c':789});" << "set(0,{'b':[{'a':1},{'a':2},{'a':3}]});"
+            << "b" << 0 << true << "get(0).b.get(0).a == 1 && get(0).b.get(1).a == 2 && get(0).b.get(2).a == 3";
+
+    QTest::newRow("nested-set: list, no changes, empty") << "append({'a':123, 'b':[], 'c':789});" << "set(0,{'b':[]});"
+            << "b" << 0 << true << "get(0).b.count == 0";
+}
+
+
+void tst_qdeclarativelistmodel::property_changes_worker()
+{
+    // nested models are not supported when WorkerScript is involved
+    if (QByteArray(QTest::currentDataTag()).startsWith("nested-"))
+        return;
+
+    QFETCH(QString, script_setup);
+    QFETCH(QString, script_change);
+    QFETCH(QString, roleName);
+    QFETCH(int, listIndex);
+    QFETCH(bool, itemsChanged);
+
+    QDeclarativeListModel model;
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/model.qml"));
+    QVERIFY2(component.errorString().isEmpty(), component.errorString().toUtf8());
+    QDeclarativeItem *item = createWorkerTest(&engine, &component, &model);
+    QVERIFY(item != 0);
+
+    QDeclarativeExpression expr(engine.rootContext(), &model, script_setup);
+    expr.evaluate();
+    QVERIFY2(!expr.hasError(), QTest::toString(expr.error().toString()));
+
+    QSignalSpy spyItemsChanged(&model, SIGNAL(itemsChanged(int, int, QList<int>)));
+
+    QVERIFY(QMetaObject::invokeMethod(item, "evalExpressionViaWorker",
+            Q_ARG(QVariant, QStringList(script_change))));
+    waitForWorker(item);
+
+    // test itemsChanged() is emitted correctly
+    if (itemsChanged) {
+        QCOMPARE(spyItemsChanged.count(), 1);
+        QCOMPARE(spyItemsChanged.at(0).at(0).toInt(), listIndex);
+        QCOMPARE(spyItemsChanged.at(0).at(1).toInt(), 1);
+    } else {
+        QCOMPARE(spyItemsChanged.count(), 0);
+    }
+
+    delete item;
+    qApp->processEvents();
+}
+
+void tst_qdeclarativelistmodel::property_changes_worker_data()
+{
+    property_changes_data();
 }
 
 QTEST_MAIN(tst_qdeclarativelistmodel)

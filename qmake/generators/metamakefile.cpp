@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -489,6 +489,8 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
         mkfile = new SymbianSbsv2MakefileGenerator;
     } else if(gen == "SYMBIAN_UNIX") {
         mkfile = new SymbianMakefileTemplate<UnixMakefileGenerator>;
+    } else if(gen == "SYMBIAN_MINGW") {
+        mkfile = new SymbianMakefileTemplate<MingwMakefileGenerator>;
     } else {
         fprintf(stderr, "Unknown generator specified: %s\n", gen.toLatin1().constData());
     }
@@ -545,7 +547,7 @@ MetaMakefileGenerator::modesForGenerator(const QString &gen,
     } else if (gen == "PROJECTBUILDER" || gen == "XCODE") {
         *host_mode = Option::HOST_MACX_MODE;
         *target_mode = Option::TARG_MACX_MODE;
-    } else if (gen == "SYMBIAN_ABLD" || gen == "SYMBIAN_SBSV2" || gen == "SYMBIAN_UNIX") {
+    } else if (gen == "SYMBIAN_ABLD" || gen == "SYMBIAN_SBSV2" || gen == "SYMBIAN_UNIX" || gen == "SYMBIAN_MINGW") {
 #if defined(Q_OS_MAC)
         *host_mode = Option::HOST_MACX_MODE;
 #elif defined(Q_OS_UNIX)

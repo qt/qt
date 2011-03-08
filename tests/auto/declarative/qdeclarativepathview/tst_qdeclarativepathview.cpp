@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -53,6 +53,7 @@
 #include <QtDeclarative/private/qdeclarativevaluetype_p.h>
 #include <QAbstractListModel>
 #include <QStringListModel>
+#include <QStandardItemModel>
 #include <QFile>
 
 #include "../../../shared/util.h"
@@ -61,6 +62,25 @@
 // In Symbian OS test data is located in applications private dir
 #define SRCDIR "."
 #endif
+
+static void initStandardTreeModel(QStandardItemModel *model)
+{
+    QStandardItem *item;
+    item = new QStandardItem(QLatin1String("Row 1 Item"));
+    model->insertRow(0, item);
+
+    item = new QStandardItem(QLatin1String("Row 2 Item"));
+    item->setCheckable(true);
+    model->insertRow(1, item);
+
+    QStandardItem *childItem = new QStandardItem(QLatin1String("Row 2 Child Item"));
+    item->setChild(0, childItem);
+
+    item = new QStandardItem(QLatin1String("Row 3 Item"));
+    item->setIcon(QIcon());
+    model->insertRow(2, item);
+}
+
 
 class tst_QDeclarativePathView : public QObject
 {
@@ -87,6 +107,10 @@ private slots:
     void emptyModel();
     void closed();
     void pathUpdate();
+    void visualDataModel();
+    void undefinedPath();
+    void mouseDrag();
+    void treeModel();
 
 private:
     QDeclarativeView *createView();
@@ -428,6 +452,10 @@ void tst_QDeclarativePathView::dataModel()
     pathview->setOffset(7);
     pathview->setOffset(0);
     QCOMPARE(findItems<QDeclarativeItem>(pathview, "wrapper").count(), 5);
+
+    pathview->setCurrentIndex(model.count()-1);
+    model.removeItem(model.count()-1);
+    QCOMPARE(pathview->currentIndex(), model.count()-1);
 
     delete canvas;
 }
@@ -831,6 +859,91 @@ void tst_QDeclarativePathView::pathUpdate()
     QDeclarativeItem *item = findItem<QDeclarativeItem>(pathView, "wrapper", 0);
     QVERIFY(item);
     QCOMPARE(item->x(), 150.0);
+
+    delete canvas;
+}
+
+void tst_QDeclarativePathView::visualDataModel()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/vdm.qml"));
+
+    QDeclarativePathView *obj = qobject_cast<QDeclarativePathView*>(c.create());
+    QVERIFY(obj != 0);
+
+    QCOMPARE(obj->count(), 3);
+
+    delete obj;
+}
+
+void tst_QDeclarativePathView::undefinedPath()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/undefinedpath.qml"));
+
+    QDeclarativePathView *obj = qobject_cast<QDeclarativePathView*>(c.create());
+    QVERIFY(obj != 0);
+
+    QCOMPARE(obj->count(), 3);
+
+    delete obj;
+}
+
+void tst_QDeclarativePathView::mouseDrag()
+{
+    QDeclarativeView *canvas = createView();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/dragpath.qml"));
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QDeclarativePathView *pathview = qobject_cast<QDeclarativePathView*>(canvas->rootObject());
+    QVERIFY(pathview != 0);
+
+    int current = pathview->currentIndex();
+
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(10,100)));
+
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(30,100)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(90,100)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+
+    QVERIFY(pathview->currentIndex() != current);
+
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(40,100)));
+
+    delete canvas;
+}
+
+void tst_QDeclarativePathView::treeModel()
+{
+    QDeclarativeView *canvas = createView();
+
+    QStandardItemModel model;
+    initStandardTreeModel(&model);
+    canvas->engine()->rootContext()->setContextProperty("myModel", &model);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/treemodel.qml"));
+
+    QDeclarativePathView *pathview = qobject_cast<QDeclarativePathView*>(canvas->rootObject());
+    QVERIFY(pathview != 0);
+    QCOMPARE(pathview->count(), 3);
+
+    QDeclarativeText *item = findItem<QDeclarativeText>(pathview, "wrapper", 0);
+    QVERIFY(item);
+    QCOMPARE(item->text(), QLatin1String("Row 1 Item"));
+
+    QVERIFY(QMetaObject::invokeMethod(pathview, "setRoot", Q_ARG(QVariant, 1)));
+    QCOMPARE(pathview->count(), 1);
+
+    QTRY_VERIFY(item = findItem<QDeclarativeText>(pathview, "wrapper", 0));
+    QTRY_COMPARE(item->text(), QLatin1String("Row 2 Child Item"));
 
     delete canvas;
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -130,7 +130,7 @@
     item on the scene gains focus, the scene automatically gains focus. If the
     scene has focus, hasFocus() will return true, and key events will be
     forwarded to the focus item, if any. If the scene loses focus, (i.e.,
-    someone calls clearFocus(),) while an item has focus, the scene will
+    someone calls clearFocus()) while an item has focus, the scene will
     maintain its item focus information, and once the scene regains focus, it
     will make sure the last focus item regains focus.
 
@@ -806,28 +806,23 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
     }
 
     if (focusItem) {
-        QFocusEvent event(QEvent::FocusOut, focusReason);
         lastFocusItem = focusItem;
-        focusItem = 0;
-        sendEvent(lastFocusItem, &event);
 
 #ifndef QT_NO_IM
         if (lastFocusItem
             && (lastFocusItem->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
-            // Reset any visible preedit text
-            QInputMethodEvent imEvent;
-            sendEvent(lastFocusItem, &imEvent);
-
             // Close any external input method panel. This happens
             // automatically by removing WA_InputMethodEnabled on
             // the views, but if we are changing focus, we have to
             // do it ourselves.
-            if (item) {
-                for (int i = 0; i < views.size(); ++i)
-                    if (views.at(i)->inputContext())
-                        views.at(i)->inputContext()->reset();
-            }
+            for (int i = 0; i < views.size(); ++i)
+                if (views.at(i)->inputContext())
+                    views.at(i)->inputContext()->reset();
         }
+
+        focusItem = 0;
+        QFocusEvent event(QEvent::FocusOut, focusReason);
+        sendEvent(lastFocusItem, &event);
 #endif //QT_NO_IM
     }
 
@@ -3104,8 +3099,8 @@ bool QGraphicsScene::stickyFocus() const
     \list
     \o If the item receives a mouse release event when there are no other
     buttons pressed, it loses the mouse grab.
-    \o If the item becomes invisible (i.e., someone calls \c {item->setVisible(false))},
-    or if it becomes disabled (i.e., someone calls \c {item->setEnabled(false))},
+    \o If the item becomes invisible (i.e., someone calls \c {item->setVisible(false)}),
+    or if it becomes disabled (i.e., someone calls \c {item->setEnabled(false)}),
     it loses the mouse grab.
     \o If the item is removed from the scene, it loses the mouse grab.
     \endlist
@@ -4367,25 +4362,8 @@ static void _q_paintIntoCache(QPixmap *pix, QGraphicsItem *item, const QRegion &
 static inline bool transformIsSimple(const QTransform& transform)
 {
     QTransform::TransformationType type = transform.type();
-    if (type == QTransform::TxNone || type == QTransform::TxTranslate) {
+    if (type <= QTransform::TxScale) {
         return true;
-    } else if (type == QTransform::TxScale) {
-        // Check for 0 and 180 degree rotations.
-        // (0 might happen after 4 rotations of 90 degrees).
-        qreal m11 = transform.m11();
-        qreal m12 = transform.m12();
-        qreal m21 = transform.m21();
-        qreal m22 = transform.m22();
-        if (m12 == 0.0f && m21 == 0.0f) {
-            if (m11 == 1.0f && m22 == 1.0f)
-                return true; // 0 degrees
-            else if (m11 == -1.0f && m22 == -1.0f)
-                return true; // 180 degrees.
-            if(m11 == 1.0f && m22 == -1.0f)
-                return true; // 0 degrees inverted y.
-            else if(m11 == -1.0f && m22 == 1.0f)
-                return true; // 180 degrees inverted y.
-        }
     } else if (type == QTransform::TxRotate) {
         // Check for 90, and 270 degree rotations.
         qreal m11 = transform.m11();
@@ -4583,13 +4561,13 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             itemCache->exposed.clear();
             deviceData->cacheIndent = QPoint();
             pix = QPixmap();
-        } else {
+        } else if (!viewRect.isNull()) {
             allowPartialCacheExposure = deviceData->cacheIndent != QPoint();
         }
 
         // Allow partial cache exposure if the device rect isn't fully contained and
         // deviceRect is 20% taller or wider than the viewRect.
-        if (!allowPartialCacheExposure && !viewRect.contains(deviceRect)) {
+        if (!allowPartialCacheExposure && !viewRect.isNull() && !viewRect.contains(deviceRect)) {
             allowPartialCacheExposure = (viewRect.width() * 1.2 < deviceRect.width())
                                          || (viewRect.height() * 1.2 < deviceRect.height());
         }
@@ -5941,6 +5919,8 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
         }
         if (item->isPanel())
             break;
+        if (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation)
+            break;
     }
 
     // If nobody could take focus, clear it.
@@ -5972,6 +5952,8 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
             break;
         }
         if (item && item->isPanel())
+            break;
+        if (item && (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation))
             break;
     }
 

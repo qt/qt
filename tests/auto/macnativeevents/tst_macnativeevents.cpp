@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -488,7 +488,7 @@ void tst_MacNativeEvents::testModifierCtrlWithDontSwapCtrlAndMeta()
 {
     // On Mac, we switch the Command and Control modifier by default, so that Command
     // means Meta, and Control means Command. Lets check that the flag to swith off
-    // this behaviour works. While working on this test I realised that we actually
+    // this behaviour works. While working on this test I realized that we actually
     // don't (and never have) respected this flag for raw key events. Only for
     // menus, through QKeySequence. I don't want to change this behaviour now, at
     // least not until someone complains. So I choose to let the test just stop

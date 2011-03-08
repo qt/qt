@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -743,7 +743,10 @@ void QHttpSocketEngine::emitReadNotification()
 {
     Q_D(QHttpSocketEngine);
     d->readNotificationActivated = true;
-    if (d->readNotificationEnabled && !d->readNotificationPending) {
+    // if there is a connection notification pending we have to emit the readNotification
+    // incase there is connection error. This is only needed for Windows, but it does not
+    // hurt in other cases.
+    if ((d->readNotificationEnabled && !d->readNotificationPending) || d->connectionNotificationPending) {
         d->readNotificationPending = true;
         QMetaObject::invokeMethod(this, "emitPendingReadNotification", Qt::QueuedConnection);
     }

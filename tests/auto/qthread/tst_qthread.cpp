@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -113,6 +113,7 @@ private slots:
     void wait3_slowDestructor();
     void destroyFinishRace();
     void startFinishRace();
+    void startAndQuitCustomEventLoop();
 
     void stressTest();
 };
@@ -1149,6 +1150,21 @@ void tst_QThread::startFinishRace()
         QCOMPARE(thr.i, 0);
     }
 }
+
+void tst_QThread::startAndQuitCustomEventLoop()
+{
+    struct Thread : QThread {
+        void run() { QEventLoop().exec(); }
+    };
+
+   for (int i = 0; i < 5; i++) {
+       Thread t;
+       t.start();
+       t.quit();
+       t.wait();
+   }
+}
+
 
 QTEST_MAIN(tst_QThread)
 #include "tst_qthread.moc"

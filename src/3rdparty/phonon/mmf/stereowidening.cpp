@@ -16,7 +16,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include <stereowideningbase.h>
+#include <StereoWideningBase.h>
 #include "stereowidening.h"
 
 QT_BEGIN_NAMESPACE

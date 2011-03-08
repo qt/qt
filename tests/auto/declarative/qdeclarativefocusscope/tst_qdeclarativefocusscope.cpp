@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -71,6 +71,7 @@ private slots:
     void noParentFocus();
     void signalEmission();
     void qtBug13380();
+    void forceActiveFocus();
 };
 
 /*
@@ -428,6 +429,114 @@ void tst_qdeclarativefocusscope::qtBug13380()
 
     view->rootObject()->setProperty("showRect", true);
     QVERIFY(view->rootObject()->property("noFocus").toBool());
+
+    delete view;
+}
+
+void tst_qdeclarativefocusscope::forceActiveFocus()
+{
+    QDeclarativeView *view = new QDeclarativeView;
+    view->setSource(QUrl::fromLocalFile(SRCDIR "/data/forceActiveFocus.qml"));
+
+    QGraphicsObject *rootObject = view->rootObject();
+    QVERIFY(rootObject);
+
+    QDeclarativeItem *scope = findItem<QDeclarativeItem>(rootObject, QLatin1String("scope"));
+    QDeclarativeItem *itemA1 = findItem<QDeclarativeItem>(rootObject, QLatin1String("item-a1"));
+    QDeclarativeItem *scopeA = findItem<QDeclarativeItem>(rootObject, QLatin1String("scope-a"));
+    QDeclarativeItem *itemA2 = findItem<QDeclarativeItem>(rootObject, QLatin1String("item-a2"));
+    QDeclarativeItem *itemB1 = findItem<QDeclarativeItem>(rootObject, QLatin1String("item-b1"));
+    QDeclarativeItem *scopeB = findItem<QDeclarativeItem>(rootObject, QLatin1String("scope-b"));
+    QDeclarativeItem *itemB2 = findItem<QDeclarativeItem>(rootObject, QLatin1String("item-b2"));
+
+    QVERIFY(scope);
+    QVERIFY(itemA1);
+    QVERIFY(scopeA);
+    QVERIFY(itemA2);
+    QVERIFY(itemB1);
+    QVERIFY(scopeB);
+    QVERIFY(itemB2);
+
+    QSignalSpy rootSpy(rootObject, SIGNAL(activeFocusChanged(bool)));
+    QSignalSpy scopeSpy(scope, SIGNAL(activeFocusChanged(bool)));
+    QSignalSpy scopeASpy(scopeA, SIGNAL(activeFocusChanged(bool)));
+    QSignalSpy scopeBSpy(scopeB, SIGNAL(activeFocusChanged(bool)));
+
+    // First, walk the focus from item-a1 down to item-a2 and back again
+    itemA1->forceActiveFocus();
+    QVERIFY(itemA1->hasActiveFocus());
+    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(scopeSpy.count(), 1);
+
+    scopeA->forceActiveFocus();
+    QVERIFY(!itemA1->hasActiveFocus());
+    QVERIFY(scopeA->hasActiveFocus());
+    QCOMPARE(scopeASpy.count(), 1);
+    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(scopeSpy.count(), 1);
+
+    itemA2->forceActiveFocus();
+    QVERIFY(!itemA1->hasActiveFocus());
+    QVERIFY(itemA2->hasActiveFocus());
+    QVERIFY(scopeA->hasActiveFocus());
+    QCOMPARE(scopeASpy.count(), 1);
+    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(scopeSpy.count(), 1);
+
+    scopeA->forceActiveFocus();
+    QVERIFY(!itemA1->hasActiveFocus());
+    QVERIFY(itemA2->hasActiveFocus());
+    QVERIFY(scopeA->hasActiveFocus());
+    QCOMPARE(scopeASpy.count(), 1);
+    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(scopeSpy.count(), 1);
+
+    itemA1->forceActiveFocus();
+    QVERIFY(itemA1->hasActiveFocus());
+    QVERIFY(!scopeA->hasActiveFocus());
+    QVERIFY(!itemA2->hasActiveFocus());
+    QCOMPARE(scopeASpy.count(), 2);
+    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(scopeSpy.count(), 1);
+
+    // Then jump back and forth between branch 'a' and 'b'
+    itemB1->forceActiveFocus();
+    QVERIFY(itemB1->hasActiveFocus());
+    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(scopeSpy.count(), 1);
+
+    scopeA->forceActiveFocus();
+    QVERIFY(!itemA1->hasActiveFocus());
+    QVERIFY(!itemB1->hasActiveFocus());
+    QVERIFY(scopeA->hasActiveFocus());
+    QCOMPARE(scopeASpy.count(), 3);
+    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(scopeSpy.count(), 1);
+
+    scopeB->forceActiveFocus();
+    QVERIFY(!scopeA->hasActiveFocus());
+    QVERIFY(!itemB1->hasActiveFocus());
+    QVERIFY(scopeB->hasActiveFocus());
+    QCOMPARE(scopeASpy.count(), 4);
+    QCOMPARE(scopeBSpy.count(), 1);
+    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(scopeSpy.count(), 1);
+
+    itemA2->forceActiveFocus();
+    QVERIFY(!scopeB->hasActiveFocus());
+    QVERIFY(itemA2->hasActiveFocus());
+    QCOMPARE(scopeASpy.count(), 5);
+    QCOMPARE(scopeBSpy.count(), 2);
+    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(scopeSpy.count(), 1);
+
+    itemB2->forceActiveFocus();
+    QVERIFY(!itemA2->hasActiveFocus());
+    QVERIFY(itemB2->hasActiveFocus());
+    QCOMPARE(scopeASpy.count(), 6);
+    QCOMPARE(scopeBSpy.count(), 3);
+    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(scopeSpy.count(), 1);
 
     delete view;
 }

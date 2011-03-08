@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1768,7 +1768,7 @@ QImage::Format QScreenPrivate::preferredImageFormat() const
     This function is called by every \l{Qt for Embedded Linux}
     application on startup, and must be implemented to map in the
     framebuffer and the accelerated drivers that the graphics card
-    control registers.  Note that coonnect must be called \e before
+    control registers.  Note that connect must be called \e before
     the initDevice() function.
 
     Ensure that true is returned if a connection to the screen device

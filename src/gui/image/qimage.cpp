@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -477,12 +477,12 @@ bool QImageData::checkForAlphaPixels() const
     function. For example:
 
     \table
+    \header
+    \o {2,1}32-bit
     \row
     \o \inlineimage qimage-32bit_scaled.png
     \o
     \snippet doc/src/snippets/code/src_gui_image_qimage.cpp 0
-    \header
-    \o {2,1}32-bit
     \endtable
 
     In case of a 8-bit and monchrome images, the pixel value is only
@@ -498,12 +498,12 @@ bool QImageData::checkForAlphaPixels() const
     example:
 
     \table
+    \header
+    \o {2,1} 8-bit
     \row
     \o \inlineimage qimage-8bit_scaled.png
     \o
     \snippet doc/src/snippets/code/src_gui_image_qimage.cpp 1
-    \header
-    \o {2,1} 8-bit
     \endtable
 
     QImage also provide the scanLine() function which returns a
@@ -1085,9 +1085,14 @@ QImage::QImage(const char * const xpm[])
 QImage::QImage(const QImage &image)
     : QPaintDevice()
 {
-    d = image.d;
-    if (d)
-        d->ref.ref();
+    if (image.paintingActive()) {
+        d = 0;
+        operator=(image.copy());
+    } else {
+        d = image.d;
+        if (d)
+            d->ref.ref();
+    }
 }
 
 #ifdef QT3_SUPPORT
@@ -1284,11 +1289,15 @@ QImage::~QImage()
 
 QImage &QImage::operator=(const QImage &image)
 {
-    if (image.d)
-        image.d->ref.ref();
-    if (d && !d->ref.deref())
-        delete d;
-    d = image.d;
+    if (image.paintingActive()) {
+        operator=(image.copy());
+    } else {
+        if (image.d)
+            image.d->ref.ref();
+        if (d && !d->ref.deref())
+            delete d;
+        d = image.d;
+    }
     return *this;
 }
 
@@ -2018,11 +2027,11 @@ void QImage::fill(Qt::GlobalColor color)
     Fills the entire image with the given \a color.
 
     If the depth of the image is 1, the image will be filled with 1 if
-    \a color equals Qt::color0; it will otherwise be filled with 0.
+    \a color equals Qt::color1; it will otherwise be filled with 0.
 
     If the depth of the image is 8, the image will be filled with the
     index corresponding the \a color in the color table if present; it
-    will otherwise be filled with 0.|
+    will otherwise be filled with 0.
 
     \since 4.8
 */
@@ -3831,6 +3840,26 @@ void qInitImageConversions()
         converter_map[QImage::Format_RGB888][QImage::Format_ARGB32_Premultiplied] = convert_RGB888_to_RGB32_neon;
     }
 #endif
+}
+
+void qGamma_correct_back_to_linear_cs(QImage *image)
+{
+    extern uchar qt_pow_rgb_gamma[256];
+
+    // gamma correct the pixels back to linear color space...
+    int h = image->height();
+    int w = image->width();
+
+    for (int y=0; y<h; ++y) {
+        uint *pixels = (uint *) image->scanLine(y);
+        for (int x=0; x<w; ++x) {
+            uint p = pixels[x];
+            uint r = qt_pow_rgb_gamma[qRed(p)];
+            uint g = qt_pow_rgb_gamma[qGreen(p)];
+            uint b = qt_pow_rgb_gamma[qBlue(p)];
+            pixels[x] = (r << 16) | (g << 8) | b | 0xff000000;
+        }
+    }
 }
 
 /*!

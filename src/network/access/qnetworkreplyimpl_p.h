@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -164,6 +164,7 @@ public:
     void appendDownstreamData(QIODevice *data);
     void appendDownstreamData(const QByteArray &data);
 
+    void setDownloadBuffer(QSharedPointer<char> sp, qint64 size);
     char* getDownloadBuffer(qint64 size);
     void appendDownstreamDataDownloadBuffer(qint64, qint64);
 
@@ -175,7 +176,7 @@ public:
 
     QNetworkAccessBackend *backend;
     QIODevice *outgoingData;
-    QRingBuffer *outgoingDataBuffer;
+    QSharedPointer<QRingBuffer> outgoingDataBuffer;
     QIODevice *copyDevice;
     QAbstractNetworkCache *networkCache() const;
 

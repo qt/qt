@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -195,7 +195,7 @@
     This function returns a QWidget containing a QToolButton with
     an image of one of the \c DiagramItems, i.e., flowchart shapes.
     The image is created by the \c DiagramItem through the \c image()
-    function.  The QButtonGroup class lets us attach a QVariant with
+    function. The QButtonGroup class lets us attach an id (int) with
     each button; we store the diagram's type, i.e., the
     DiagramItem::DiagramType enum. We use the stored diagram type when
     we create new diagram items for the scene.  The widgets created

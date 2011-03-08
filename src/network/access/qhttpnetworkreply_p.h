@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -125,7 +125,9 @@ public:
 
     qint64 bytesAvailable() const;
     qint64 bytesAvailableNextBlock() const;
+    bool readAnyAvailable() const;
     QByteArray readAny();
+    QByteArray readAll();
     void setDownstreamLimited(bool t);
 
     bool supportsUserProvidedDownloadBuffer();

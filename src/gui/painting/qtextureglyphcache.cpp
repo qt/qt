@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -175,11 +175,16 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
                metrics.yoff.toReal(),
                metrics.x.toReal(),
                metrics.y.toReal());
-#endif
+#endif        
+        GlyphAndSubPixelPosition key(glyph, subPixelPosition);
         int glyph_width = metrics.width.ceil().toInt();
         int glyph_height = metrics.height.ceil().toInt();
-        if (glyph_height == 0 || glyph_width == 0)
+        if (glyph_height == 0 || glyph_width == 0) {
+            // Avoid multiple calls to boundingBox() for non-printable characters
+            Coord c = { 0, 0, 0, 0, 0, 0 };
+            coords.insert(key, c);
             continue;
+        }
         glyph_width += margin * 2 + 4;
         glyph_height += margin * 2 + 4;
         // align to 8-bit boundary
@@ -192,7 +197,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
                     metrics.x.round().truncate(),
                     -metrics.y.truncate() }; // baseline for horizontal scripts
 
-        listItemCoordinates.insert(GlyphAndSubPixelPosition(glyph, subPixelPosition), c);
+        listItemCoordinates.insert(key, c);
         rowHeight = qMax(rowHeight, glyph_height);
     }
     if (listItemCoordinates.isEmpty())
@@ -225,7 +230,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
                 // no room on the current line, start new glyph strip
                 m_cx = 0;
                 m_cy += m_currentRowHeight + paddingDoubled;
-                m_currentRowHeight = 0; // New row
+                m_currentRowHeight = c.h + margin * 2; // New row
             }
         }
 
@@ -445,7 +450,7 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g, QFixed subP
     QPoint base(c.x + glyphMargin(), c.y + glyphMargin() + c.baseLineY-1);
     if (m_image.rect().contains(base))
         m_image.setPixel(base, 255);
-    m_image.save(QString::fromLatin1("cache-%1.png").arg(int(this)));
+    m_image.save(QString::fromLatin1("cache-%1.png").arg(qint64(this)));
 #endif
 }
 

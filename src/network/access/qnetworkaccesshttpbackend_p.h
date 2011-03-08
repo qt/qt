@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,6 +61,8 @@
 
 #include "QtCore/qpointer.h"
 #include "QtCore/qdatetime.h"
+#include "QtCore/qsharedpointer.h"
+#include "qatomic.h"
 
 #ifndef QT_NO_HTTP
 
@@ -99,22 +101,44 @@ public:
     bool canResume() const;
     void setResumeOffset(quint64 offset);
 
+signals:
+    // To HTTP thread:
+    void startHttpRequest();
+    void abortHttpRequest();
+
+    void startHttpRequestSynchronously();
+
+    void haveUploadData(QByteArray dataArray, bool dataAtEnd, qint64 dataSize);
 private slots:
-    void replyReadyRead();
+    // From HTTP thread:
+    void replyDownloadData(QByteArray);
     void replyFinished();
-    void replyHeaderChanged();
-    void replyDownloadProgressSlot(int,int);
+    void replyDownloadMetaData(QList<QPair<QByteArray,QByteArray> >,int,QString,bool,QSharedPointer<char>,qint64);
+    void replyDownloadProgressSlot(qint64,qint64);
     void httpAuthenticationRequired(const QHttpNetworkRequest &request, QAuthenticator *auth);
-    void httpCacheCredentials(const QHttpNetworkRequest &request, QAuthenticator *auth);
     void httpError(QNetworkReply::NetworkError error, const QString &errorString);
+#ifndef QT_NO_OPENSSL
+    void replySslErrors(const QList<QSslError> &, bool *, QList<QSslError> *);
+    void replySslConfigurationChanged(const QSslConfiguration&);
+#endif
+
+    // From QNonContiguousByteDeviceThreadForwardImpl in HTTP thread:
+    void resetUploadDataSlot(bool *r);
+    void wantUploadDataSlot(qint64);
+    void sentUploadDataSlot(qint64);
+
     bool sendCacheContents(const QNetworkCacheMetaData &metaData);
-    void finished(); // override
 
 private:
-    QHttpNetworkReply *httpReply;
-    QPointer<QNetworkAccessCachedHttpConnection> http;
-    QByteArray cacheKey;
-    QNetworkAccessBackendUploadIODevice *uploadDevice;
+    QHttpNetworkRequest httpRequest; // There is also a copy in the HTTP thread
+    int statusCode;
+    QString reasonPhrase;
+    // Will be increased by HTTP thread:
+    QSharedPointer<QAtomicInt> pendingDownloadDataEmissions;
+    QSharedPointer<QAtomicInt> pendingDownloadProgressEmissions;
+    bool loadingFromCache;
+    QByteDataBuffer pendingDownloadData;
+    bool usingZerocopyDownloadBuffer;
 
 #ifndef QT_NO_OPENSSL
     QSslConfiguration *pendingSslConfiguration;
@@ -124,7 +148,6 @@ private:
 
     quint64 resumeOffset;
 
-    void disconnectFromHttp();
     void validateCache(QHttpNetworkRequest &httpRequest, bool &loadedFromCache);
     void invalidateCache();
     void postRequest();

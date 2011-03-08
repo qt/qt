@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -682,7 +682,7 @@ QSize QLabelPrivate::sizeForWidth(int w) const
 
             bool tryWidth = (w < 0) && (align & Qt::TextWordWrap);
             if (tryWidth)
-                w = fm.averageCharWidth() * 80;
+                w = qMin(fm.averageCharWidth() * 80, q->maximumSize().width());
             else if (w < 0)
                 w = 2000;
             w -= (hextra + contentsMargin.width());

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -287,11 +287,14 @@ void tst_QDBusXmlParser::methods_data()
         "</method>" << map;
 
     // one invalid arg
+    method.inputArgs << arg("~", "invalid");
+    map.clear();
+    map << method;
     QTest::newRow("two-in-one-invalid") <<
         "<method name=\"Method\">"
         "<arg type=\"s\" direction=\"in\"/>"
-        "<arg type=\"~\" name=\"invalid\" direction=\"in\"/>" // this line should be ignored
         "<arg type=\"v\" direction=\"in\"/>"
+        "<arg type=\"~\" name=\"invalid\" direction=\"in\"/>"
         "</method>" << map;
 
     // one out argument
@@ -380,8 +383,6 @@ void tst_QDBusXmlParser::methods()
 
     QFETCH(QString, xmlDataFragment);
 
-    if (strcmp(QTest::currentDataTag(), "two-in-one-invalid") == 0)
-        QTest::ignoreMessage(QtWarningMsg, "Invalid D-BUS type signature '~' found while parsing introspection");
     QDBusIntrospection::Interface iface =
         QDBusIntrospection::parseInterface(xmlHeader + xmlDataFragment + xmlFooter);
 
@@ -390,9 +391,9 @@ void tst_QDBusXmlParser::methods()
     QFETCH(MethodMap, methodMap);
     MethodMap parsedMap = iface.methods;
 
-    QCOMPARE(methodMap.count(), parsedMap.count());
-    QCOMPARE(methodMap, parsedMap);
-}             
+    QCOMPARE(parsedMap.count(), methodMap.count());
+    QCOMPARE(parsedMap, methodMap);
+}
 
 void tst_QDBusXmlParser::signals__data()
 {

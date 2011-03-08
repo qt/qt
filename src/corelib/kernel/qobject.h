@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -370,18 +370,18 @@ template <class T>
 inline T qobject_cast(QObject *object)
 {
 #if !defined(QT_NO_QOBJECT_CHECK)
-    reinterpret_cast<T>(0)->qt_check_for_QOBJECT_macro(*reinterpret_cast<T>(object));
+    reinterpret_cast<T>(object)->qt_check_for_QOBJECT_macro(*reinterpret_cast<T>(object));
 #endif
-    return static_cast<T>(reinterpret_cast<T>(0)->staticMetaObject.cast(object));
+    return static_cast<T>(reinterpret_cast<T>(object)->staticMetaObject.cast(object));
 }
 
 template <class T>
 inline T qobject_cast(const QObject *object)
 {
 #if !defined(QT_NO_QOBJECT_CHECK)
-    reinterpret_cast<T>(0)->qt_check_for_QOBJECT_macro(*reinterpret_cast<T>(const_cast<QObject *>(object)));
+    reinterpret_cast<T>(object)->qt_check_for_QOBJECT_macro(*reinterpret_cast<T>(const_cast<QObject *>(object)));
 #endif
-    return static_cast<T>(reinterpret_cast<T>(0)->staticMetaObject.cast(object));
+    return static_cast<T>(reinterpret_cast<T>(object)->staticMetaObject.cast(object));
 }
 
 

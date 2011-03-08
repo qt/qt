@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -270,7 +270,7 @@ private:
     const QSharedPointer<WindowManager> m_wm;
 };
 
-// Test mask from enviroment as test lib does not allow options.
+// Test mask from environment as test lib does not allow options.
 static inline unsigned testMask()
 {
     unsigned testMask = tst_GuiAppLauncher::TestAll;

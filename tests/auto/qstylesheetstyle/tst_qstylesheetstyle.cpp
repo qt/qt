@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -100,6 +100,7 @@ private slots:
     void task188195_baseBackground();
     void task232085_spinBoxLineEditBg();
     void changeStyleInChangeEvent();
+    void QTBUG15910_crashNullWidget();
 
     //at the end because it mess with the style.
     void widgetStyle();
@@ -1655,6 +1656,23 @@ void tst_QStyleSheetStyle::QTBUG11658_cachecrash()
     QTest::qWaitForWindowShown(w);
     delete w;
     qApp->setStyleSheet(QString());
+}
+
+void tst_QStyleSheetStyle::QTBUG15910_crashNullWidget()
+{
+    struct : QWidget {
+        virtual void paintEvent(QPaintEvent* ) {
+            QStyleOption opt;
+            opt.init(this);
+            QPainter p(this);
+            style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, 0);
+            style()->drawPrimitive(QStyle::PE_Frame, &opt, &p, 0);
+            style()->drawControl(QStyle::CE_PushButton, &opt, &p, 0);
+        }
+    } w;
+    w.setStyleSheet("* { background-color: white; color:black; border 3px solid yellow }");
+    w.show();
+    QTest::qWaitForWindowShown(&w);
 }
 
 

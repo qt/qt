@@ -7,7 +7,7 @@ win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x63000000
 solaris-cc*:QMAKE_CXXFLAGS_RELEASE -= -O2
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
-unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
+unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
 
 include(../qbase.pri)
 
@@ -60,7 +60,9 @@ SOURCES += qgl.cpp \
                 gl2paintengineex/qglcustomshaderstage_p.h \
                 gl2paintengineex/qtriangulatingstroker_p.h \
                 gl2paintengineex/qtriangulator_p.h \
-                gl2paintengineex/qtextureglyphcache_gl_p.h
+                gl2paintengineex/qtextureglyphcache_gl_p.h \
+                gl2paintengineex/qglshadercache_p.h \
+                gl2paintengineex/qglshadercache_meego_p.h
 
     SOURCES +=  qglshaderprogram.cpp \
                 qglpixmapfilter.cpp \
@@ -160,6 +162,13 @@ symbian {
                qgl_egl.cpp
 
     HEADERS += qgl_egl_p.h
+
+    contains(QT_CONFIG, freetype) {
+        DEFINES += QT_NO_FONTCONFIG
+        INCLUDEPATH += \
+            ../3rdparty/freetype/src \
+            ../3rdparty/freetype/include
+    }
 
     symbian:TARGET.UID3 = 0x2002131A
 }

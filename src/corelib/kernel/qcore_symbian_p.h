@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -160,6 +160,22 @@ Q_CORE_EXPORT RSocketServ& qt_symbianGetSocketServer();
 
 // Defined in qlocale_symbian.cpp.
 Q_CORE_EXPORT QByteArray qt_symbianLocaleName(int code);
+
+template <typename R>
+struct QScopedPointerRCloser
+{
+    static inline void cleanup(R *rPointer)
+    {
+        // Enforce a complete type.
+        // If you get a compile error here, read the section on forward declared
+        // classes in the QScopedPointer documentation.
+        typedef char IsIncompleteType[ sizeof(R) ? 1 : -1 ];
+        (void) sizeof(IsIncompleteType);
+
+        if (rPointer)
+            rPointer->Close();
+    }
+};
 
 //Wrapper for RSocket so it can be used as a key in QHash or QMap
 class QHashableSocket : public RSocket

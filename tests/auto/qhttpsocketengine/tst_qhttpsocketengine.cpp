@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -325,7 +325,7 @@ void tst_QHttpSocketEngine::simpleConnectToIMAP()
     QVERIFY(socketDevice.read(array.data(), array.size()) == available);
 
     // Check that the greeting is what we expect it to be
-    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());
+    QVERIFY2(QtNetworkSettings::compareReplyIMAP(array), array.constData());
 
 
     // Write a logout message
@@ -455,7 +455,7 @@ void tst_QHttpSocketEngine::tcpSocketBlockingTest()
     // Read greeting
     QVERIFY(socket.waitForReadyRead(5000));
     QString s = socket.readLine();
-    QCOMPARE(s.toLatin1().constData(), QtNetworkSettings::expectedReplyIMAP().constData());
+    QVERIFY2(QtNetworkSettings::compareReplyIMAP(s.toLatin1()), qPrintable(s));
 
     // Write NOOP
     QCOMPARE((int) socket.write("1 NOOP\r\n", 8), 8);
@@ -530,8 +530,8 @@ void tst_QHttpSocketEngine::tcpSocketNonBlockingTest()
 
     // Read greeting
     QVERIFY(!tcpSocketNonBlocking_data.isEmpty());
-    QCOMPARE(tcpSocketNonBlocking_data.at(0).toLatin1().constData(),
-            QtNetworkSettings::expectedReplyIMAP().constData());
+    QByteArray data = tcpSocketNonBlocking_data.at(0).toLatin1();
+    QVERIFY2(QtNetworkSettings::compareReplyIMAP(data), data.constData());
 
 
     tcpSocketNonBlocking_data.clear();
@@ -713,7 +713,7 @@ void tst_QHttpSocketEngine::passwordAuth()
     QVERIFY(socketDevice.read(array.data(), array.size()) == available);
 
     // Check that the greeting is what we expect it to be
-    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());
+    QVERIFY2(QtNetworkSettings::compareReplyIMAP(array), array.constData());
 
 
     // Write a logout message

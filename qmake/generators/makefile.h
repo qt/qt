@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -104,6 +104,11 @@ protected:
     void writeExtraCompilerVariables(QTextStream &t);
     virtual bool writeStubMakefile(QTextStream &t);
     virtual bool writeMakefile(QTextStream &t);
+
+    QString pkgConfigPrefix() const;
+    QString pkgConfigFileName(bool fixify=true);
+    QString pkgConfigFixPath(QString) const;
+    void writePkgConfigFile();   // for pkg-config
 
     //generating subtarget makefiles
     struct SubTarget

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -963,9 +963,6 @@ bool QProcessPrivate::_q_canWrite()
         destroyPipe(stdinChannel.pipe);
         processError = QProcess::WriteError;
         q->setErrorString(QProcess::tr("Error writing to process"));
-#if defined(QPROCESS_DEBUG) && !defined(Q_OS_WINCE)
-        qDebug("QProcessPrivate::canWrite(), failed to write (%s)", strerror(errno));
-#endif
         emit q->error(processError);
         return false;
     }
@@ -974,11 +971,13 @@ bool QProcessPrivate::_q_canWrite()
     qDebug("QProcessPrivate::canWrite(), wrote %d bytes to the process input", int(written));
 #endif
 
-    writeBuffer.free(written);
-    if (!emittedBytesWritten) {
-        emittedBytesWritten = true;
-        emit q->bytesWritten(written);
-        emittedBytesWritten = false;
+    if (written != 0) {
+        writeBuffer.free(written);
+        if (!emittedBytesWritten) {
+            emittedBytesWritten = true;
+            emit q->bytesWritten(written);
+            emittedBytesWritten = false;
+        }
     }
     if (stdinChannel.notifier && !writeBuffer.isEmpty())
         stdinChannel.notifier->setEnabled(true);

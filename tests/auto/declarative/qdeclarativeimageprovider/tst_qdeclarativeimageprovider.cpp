@@ -100,6 +100,8 @@ public:
 
     QImage requestImage(const QString &id, QSize *size, const QSize& requestedSize)
     {
+        lastImageId = id;
+
         if (id == QLatin1String("no-such-file.png"))
             return QImage();
 
@@ -114,6 +116,7 @@ public:
     }
 
     bool *deleteWatch;
+    QString lastImageId;
 };
 Q_DECLARE_METATYPE(TestQImageProvider*);
 
@@ -134,6 +137,8 @@ public:
 
     QPixmap requestPixmap(const QString &id, QSize *size, const QSize& requestedSize)
     {
+        lastImageId = id;
+
         if (id == QLatin1String("no-such-file.png"))
             return QPixmap();
 
@@ -148,6 +153,7 @@ public:
     }
 
     bool *deleteWatch;
+    QString lastImageId;
 };
 Q_DECLARE_METATYPE(TestQPixmapProvider*);
 
@@ -164,22 +170,53 @@ QString tst_qdeclarativeimageprovider::newImageFileName() const
 void tst_qdeclarativeimageprovider::fillRequestTestsData(const QString &id)
 {
     QTest::addColumn<QString>("source");
+    QTest::addColumn<QString>("imageId");
     QTest::addColumn<QString>("properties");
     QTest::addColumn<QSize>("size");
     QTest::addColumn<QString>("error");
 
-    QTest::newRow(QTest::toString(id + " exists")) << newImageFileName() << "" << QSize(100,100) << "";
-    QTest::newRow(QTest::toString(id + " scaled")) << newImageFileName() << "sourceSize: \"80x30\"" << QSize(80,30) << "";
+    QString fileName = newImageFileName();
+    QTest::newRow(QTest::toString(id + " simple test"))
+            << "image://test/" + fileName << fileName << "" << QSize(100,100) << "";
 
-    QTest::newRow(QTest::toString(id + " missing")) << "image://test/no-such-file.png" << "" << QSize()
+    fileName = newImageFileName();
+    QTest::newRow(QTest::toString(id + " simple test with capitalization"))//As it's a URL, should make no difference
+            << "image://Test/" + fileName << fileName << "" << QSize(100,100) << "";
+
+    fileName = newImageFileName();
+    QTest::newRow(QTest::toString(id + " url with no id"))
+        << "image://test/" + fileName << "" + fileName << "" << QSize(100,100) << "";
+
+    fileName = newImageFileName();
+    QTest::newRow(QTest::toString(id + " url with path"))
+        << "image://test/test/path" + fileName << "test/path" + fileName << "" << QSize(100,100) << "";
+
+    fileName = newImageFileName();
+    QTest::newRow(QTest::toString(id + " url with fragment"))
+        << "image://test/faq.html?#question13" + fileName << "faq.html?#question13" + fileName << "" << QSize(100,100) << "";
+
+    fileName = newImageFileName();
+    QTest::newRow(QTest::toString(id + " url with query"))
+        << "image://test/cgi-bin/drawgraph.cgi?type=pie&color=green" + fileName << "cgi-bin/drawgraph.cgi?type=pie&color=green" + fileName
+        << "" << QSize(100,100) << "";
+
+    fileName = newImageFileName();
+    QTest::newRow(QTest::toString(id + " scaled image"))
+            << "image://test/" + fileName << fileName << "sourceSize: \"80x30\"" << QSize(80,30) << "";
+
+    QTest::newRow(QTest::toString(id + " missing"))
+        << "image://test/no-such-file.png" << "no-such-file.png" << "" << QSize(100,100)
         << "file::2:1: QML Image: Failed to get image from provider: image://test/no-such-file.png";
-    QTest::newRow(QTest::toString(id + " unknown provider")) << "image://bogus/exists.png" << "" << QSize()
+
+    QTest::newRow(QTest::toString(id + " unknown provider"))
+        << "image://bogus/exists.png" << "" << "" << QSize()
         << "file::2:1: QML Image: Failed to get image from provider: image://bogus/exists.png";
 }
 
 void tst_qdeclarativeimageprovider::runTest(bool async, QDeclarativeImageProvider *provider)
 {
     QFETCH(QString, source);
+    QFETCH(QString, imageId);
     QFETCH(QString, properties);
     QFETCH(QSize, size);
     QFETCH(QString, error);
@@ -210,6 +247,11 @@ void tst_qdeclarativeimageprovider::runTest(bool async, QDeclarativeImageProvide
             QTRY_VERIFY(obj->status() == QDeclarativeImage::Ready);
         else
             QVERIFY(obj->status() == QDeclarativeImage::Ready);
+        if (QByteArray(QTest::currentDataTag()).startsWith("qimage"))
+            QCOMPARE(static_cast<TestQImageProvider*>(provider)->lastImageId, imageId);
+        else
+            QCOMPARE(static_cast<TestQPixmapProvider*>(provider)->lastImageId, imageId);
+
         QCOMPARE(obj->width(), qreal(size.width()));
         QCOMPARE(obj->height(), qreal(size.height()));
         QCOMPARE(obj->pixmap().width(), size.width());

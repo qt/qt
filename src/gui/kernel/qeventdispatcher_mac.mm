@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -588,7 +588,10 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
         // manually (rather than from a QEventLoop), we cannot enter a tight
         // loop and block this call, but instead we need to return after one flush:
         const bool canExec_3rdParty = d->nsAppRunCalledByQt || ![NSApp isRunning];
-        const bool canExec_Qt = flags & QEventLoop::DialogExec || flags & QEventLoop::EventLoopExec;
+        const bool canExec_Qt =
+                (flags & QEventLoop::DialogExec || flags & QEventLoop::EventLoopExec)
+                && !(flags & QEventLoop::ExcludeUserInputEvents);
+
 
         if (canExec_Qt && canExec_3rdParty) {
             // We can use exec-mode, meaning that we can stay in a tight loop until
@@ -844,7 +847,7 @@ static void setChildrenWorksWhenModal(QWidget *widget, bool worksWhenModal)
         NSWindow *window = qt_mac_window_for(dialogs[i]);
         if (window && [window isKindOfClass:[NSPanel class]]) {
             [static_cast<NSPanel *>(window) setWorksWhenModal:worksWhenModal];
-            if (worksWhenModal && dialogs[i]->isVisible()){
+            if (worksWhenModal && [window isVisible]){
                 [window orderFront:window];
             }
         }
@@ -856,6 +859,7 @@ void QEventDispatcherMacPrivate::updateChildrenWorksWhenModal()
     // Make the dialog children of the widget
     // active. And make the dialog children of
     // the previous modal dialog unactive again:
+    QMacCocoaAutoReleasePool pool;
     int size = cocoaModalSessionStack.size();
     if (size > 0){
         if (QWidget *prevModal = cocoaModalSessionStack[size-1].widget)

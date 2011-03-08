@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -26,11 +26,11 @@
 ****************************************************************************/
 
 /*!
-  \page bearer-management.html
+\page bearer-management.html
 
-  \title Bearer Management
-  \ingroup qt-network
-  \brief An API to control the system's connectivity state.
+\title Bearer Management
+\ingroup qt-network
+\brief An API to control the system's connectivity state.
 
 Bearer Management controls the connectivity state of the system so that
 the user can start or stop interfaces or roam transparently between

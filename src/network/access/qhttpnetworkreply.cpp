@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -177,6 +177,12 @@ qint64 QHttpNetworkReply::bytesAvailableNextBlock() const
         return -1;
 }
 
+bool QHttpNetworkReply::readAnyAvailable() const
+{
+    Q_D(const QHttpNetworkReply);
+    return (d->responseData.bufferCount() > 0);
+}
+
 QByteArray QHttpNetworkReply::readAny()
 {
     Q_D(QHttpNetworkReply);
@@ -187,6 +193,12 @@ QByteArray QHttpNetworkReply::readAny()
     if (d->downstreamLimited && d->responseData.bufferCount() == 1)
         d->connection->d_func()->readMoreLater(this);
     return d->responseData.read();
+}
+
+QByteArray QHttpNetworkReply::readAll()
+{
+    Q_D(QHttpNetworkReply);
+    return d->responseData.readAll();
 }
 
 void QHttpNetworkReply::setDownstreamLimited(bool dsl)

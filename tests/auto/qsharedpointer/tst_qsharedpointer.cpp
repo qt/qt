@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -283,8 +283,8 @@ void tst_QSharedPointer::operators()
     QSharedPointer<char> p1;
     QSharedPointer<char> p2(new char);
     qptrdiff diff = p2.data() - p1.data();
-    Q_ASSERT(p1.data() < p2.data());
-    Q_ASSERT(diff > 0);
+    Q_ASSERT(p1.data() != p2.data());
+    Q_ASSERT(diff != 0);
 
     // operator-
     QCOMPARE(p2 - p1.data(), diff);

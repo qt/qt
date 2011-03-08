@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -33,7 +33,7 @@
     the \l {QML Elements}.
 
     Some of these types can also be used for defining 
-    \c property values in QML. See \l{Extending types from QML} for the
+    \c property values in QML. See \l{Writing QML Components: Properties, Methods and Signals} for the
     list of types that can be used for \c property values.
 
     \annotatedlist qmlbasictypes
@@ -90,6 +90,26 @@
     \note In QML all reals are stored in single precision, \l
     {http://en.wikipedia.org/wiki/IEEE_754} {IEEE floating point}
     format.
+
+    \sa {QML Basic Types}
+*/
+
+/*!
+    \qmlbasictype double
+    \ingroup qmlbasictypes
+
+    \brief A double number has a decimal point and is stored in double precision.
+
+    A double number has a decimal point and is stored in double precision, \l
+    {http://en.wikipedia.org/wiki/IEEE_754} {IEEE floating point}
+    format.
+
+    Example:
+    \qml
+    Item {
+        property double number: 32155.2355
+    }
+    \endqml
 
     \sa {QML Basic Types}
 */
@@ -154,13 +174,10 @@
     transparent blue to a quad of \c "#800000FF".
 
     Example:
-    \qml
-    Rectangle { color: "steelblue" }
-    Rectangle { color: "transparent" }
-    Rectangle { color: "#FF0000" }
-    Rectangle { color: "#800000FF" }
-    Rectangle { color: "#00000000" }    // ARGB fully transparent
-    \endqml
+    \div{float-right}
+    \inlineimage declarative-colors.png
+    \enddiv
+    \snippet doc/src/snippets/declarative/colors.qml colors
 
     Or with the \l{QML:Qt::rgba()}{Qt.rgba()}, \l{QML:Qt::hsla()}{Qt.hsla()}, \l{QML:Qt::darker()}{Qt.darker()},
     \l{QML:Qt::lighter()}{Qt.lighter()} or \l{QML:Qt::tint()}{Qt.tint()} functions:
@@ -341,9 +358,11 @@
     Actions are used like this:
 
     \qml
-    MouseArea { onClicked: myaction.trigger() }
-    State { name: "enabled"; when: myaction.enabled == true }
-    Text { text: someaction.text }
+    Item {
+        MouseArea { onClicked: myaction.trigger() }
+        State { name: "enabled"; when: myaction.enabled == true }
+        Text { text: someaction.text }
+    }
     \endqml
 
     \sa {QML Basic Types}
@@ -380,14 +399,11 @@
     \c child1, \c child2 and \c child3 will be added to the children list
     in the order in which they appear.
 
-    List \l {Adding new properties}{properties} can be created as a
-    \c variant type, or as a \c list<Type> type, where \c Type is the
-    type of the object in the list:
+    List \l {Adding Properties}{properties} can be declared as \c list<Type>
+    type, where \c Type is the type of the object in the list:
 
     \qml
     Item {
-        property variant values: [ 10, 20, 'abc', 'xyz' ]
-
         property list<Rectangle> rects: [
             Rectangle { width: 100; height: 100},
             Rectangle { width: 200; height: 200}
@@ -395,59 +411,120 @@
     }
     \endqml
 
-    A \c variant list can contain values of any of the \l {QML Basic Types}{basic QML types}
-    such as numbers, strings, etc. while a \c list<Type> list can only contain values
-    that match (or are derived from) the specified \c Type.
+    A list property can only contain values that match (or are derived from) the
+    specified \c Type.
 
-    A list property can be cleared by setting it to an empty list:
+    While the \c rects property can be reassigned to a different list value (including
+    an empty list), its individual values cannot be modified. See the \l variant type
+    documentation for details.
+
+    \sa {QML Basic Types}
+*/
+
+/*!
+    \qmlbasictype variant
+    \ingroup qmlbasictypes
+
+    \brief A variant type is a generic property type.
+
+    A variant is a generic property type. A variant type property can hold
+    any of the \l {QML Basic Types}{basic type} values:
 
     \qml
     Item {
-        children: []
+        property variant aNumber: 100
+        property variant aString: "Hello world!"
+        property variant aBool: false
     }
     \endqml
 
-    A list property cannot be modified in any other way. Items cannot be dynamically added to
-    or removed from the list through JavaScript operations; any \c push() operations on the
-    list only modify a \e copy of the list and not the actual list. (These current limitations
-    are due to restrictions on \l {Property Binding} where lists are involved.)
+    The \c variant type can also hold:
 
-    To create a modifiable list, create an array object from within a \c .js JavaScript file,
-    or implement a custom list element in C++. Here is a QML element that modifies the list in a
-    JavaScript file:
+    \list
+    \o An array of \l {QML Basic Types}{basic type} values
+    \o A map of key-value pairs with \l {QML Basic Types}{basic-type} values
+    \endlist
 
-    \table
-    \row
-    \o
+    For example, below is an \c items array and an \c attributes map. Their
+    contents can be examined using JavaScript \c for loops. Individual array
+    values are accessible by index, and individual map values are accessible
+    by key:
+
     \qml
-    // QML
-    import "script.js" as Script
-
     Item {
+        property variant items: [1, 2, 3, "four", "five"]
+        property variant attributes: { 'color': 'red', 'width': 100 }
+
         Component.onCompleted: {
-            Script.addItem('abc')
-            console.log("Added:", Script.getList()[0])
+            for (var i=0; i<items.length; i++)
+                console.log(items[i])
+
+            for (var prop in attributes)
+                console.log(prop, "=", attributes[prop])
         }
     }
     \endqml
 
-    \o
-    \code
-    // script.js
-    var myArray = new Array()
+    While this is a convenient way to store array and map-type values, you
+    must be aware that the \c items and \c attributes properties above are \e not
+    QML objects (and certainly not JavaScript object either) and the key-value
+    pairs in \c attributes are \e not QML properties. Rather, the \c items
+    property holds an array of values, and \c attributes holds a set of key-value
+    pairs. Since they are stored as a set of values, instead of as an object,
+    their contents \e cannot be modified individually:
 
-    function getList() {
-        return myArray
+    \qml
+    Item {
+        property variant items: [1, 2, 3, "four", "five"]
+        property variant attributes: { 'color': 'red', 'width': 100 }
+
+        Component.onCompleted: {
+            items[0] = 10
+            console.log(items[0])     // This will still be '1'!
+            attributes.color = 'blue'
+            console.log(attributes.color)     // This will still be 'red'!
+        }
     }
+    \endqml
 
-    function addItem(item) {
-        myArray.push(item)
+    Additionally, since \c items and \c attributes are not QML objects, changing
+    their individual values do not trigger property change notifications. If
+    the above example had \c onNumberChanged or \c onAnimalChanged signal
+    handlers, they would not have been called.  If, however, the \c items or
+    \c attributes properties themselves were reassigned to different values, then
+    such handlers would be called.
+
+    One way to "update" the contents of an array or map is to copy the property
+    to a JavaScript object, modify the copy as desired, and then reassign the
+    property to the updated copy. Note, however, that this is not efficient.
+    In the example below, which reassigns the \c attributes property, the \e entire
+    set of key-value pairs must be serialized and deserialized every time it is
+    copied between a JavaScript object and a QML property:
+
+    \qml
+    Item {
+        property variant attributes: { ''color': 'red', 'width': 100 }
+
+        Component.onCompleted: {
+            // Change the value of attributes.color to 'blue':
+            var temp = attributes     // copy all values to 'temp'
+            temp.color = 'blue'
+            attributes = temp         // copy all values back to 'attributes'
+        }
     }
-    \endcode
-    \endtable
+    \endqml
 
-    However, note that a JavaScript list should not be used as a QML \c property value,
-    as the property is not updated when the list changes.
+    Since this operation is inefficient, if a list or map should be modifiable,
+    it is better to use alternative approaches. For example, you could implement
+    a custom C++ list element, or write to a JavaScript object defined from
+    within a JavaScript file.
+
+    JavaScript programmers should also note that when a JavaScript object is
+    copied to an array or map property, the \e contents of the object (that is,
+    its key-value properties) are copied, rather than the object itself. The
+    property does not hold a reference to the original JavaScript object, and
+    extra data such as the object's JavaScript prototype chain is also lost in
+    the process.
 
     \sa {QML Basic Types}
 */
@@ -489,7 +566,7 @@
 
     An enumeration type consists of a set of named values.
 
-    An enumeration value may be specifed as either a string:
+    An enumeration value may be specified as either a string:
     \qml
     Text { horizontalAlignment: "AlignRight" }
     \endqml

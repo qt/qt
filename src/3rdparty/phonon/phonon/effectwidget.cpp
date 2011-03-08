@@ -112,7 +112,7 @@ void EffectWidgetPrivate::autogenerateUi()
 #endif
 
         QWidget *control = 0;
-        switch (para.type()) {
+        switch (int(para.type())) {
         case QVariant::String:
             {
                 QComboBox *cb = new QComboBox(q);

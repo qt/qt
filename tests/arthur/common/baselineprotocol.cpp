@@ -48,6 +48,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QTime>
+#include <QPointer>
 
 #ifndef QMAKESPEC
 #define QMAKESPEC "Unknown"
@@ -128,11 +129,10 @@ PlatformInfo::PlatformInfo(bool useLocal)
 
 ImageItem &ImageItem::operator=(const ImageItem &other)
 {
-    scriptName = other.scriptName;
-    scriptChecksum = other.scriptChecksum;
+    testFunction = other.testFunction;
+    itemName = other.itemName;
+    itemChecksum = other.itemChecksum;
     status = other.status;
-    renderFormat = other.renderFormat;
-    engine = other.engine;
     image = other.image;
     imageChecksums = other.imageChecksums;
     return *this;
@@ -165,6 +165,7 @@ quint64 ImageItem::computeChecksum(const QImage &image)
     return (quint64(h1) << 32) | h2;
 }
 
+#if 0
 QString ImageItem::engineAsString() const
 {
     switch (engine) {
@@ -205,6 +206,7 @@ QString ImageItem::formatAsString() const
         return QLS("UnknownFormat");
     return QLS(formatNames[renderFormat]);
 }
+#endif
 
 void ImageItem::writeImageToStream(QDataStream &out) const
 {
@@ -249,22 +251,22 @@ void ImageItem::readImageFromStream(QDataStream &in)
 
 QDataStream & operator<< (QDataStream &stream, const ImageItem &ii)
 {
-    stream << ii.scriptName << ii.scriptChecksum << quint8(ii.status) << quint8(ii.renderFormat)
-           << quint8(ii.engine) << ii.imageChecksums;
+    stream << ii.testFunction << ii.itemName << ii.itemChecksum << quint8(ii.status) << ii.imageChecksums;
     ii.writeImageToStream(stream);
     return stream;
 }
 
 QDataStream & operator>> (QDataStream &stream, ImageItem &ii)
 {
-    quint8 encFormat, encStatus, encEngine;
-    stream >> ii.scriptName >> ii.scriptChecksum >> encStatus >> encFormat
-           >> encEngine >> ii.imageChecksums;
-    ii.renderFormat = QImage::Format(encFormat);
+    quint8 encStatus;
+    stream >> ii.testFunction >> ii.itemName >> ii.itemChecksum >> encStatus >> ii.imageChecksums;
     ii.status = ImageItem::ItemStatus(encStatus);
-    ii.engine = ImageItem::GraphicsEngine(encEngine);
     ii.readImageFromStream(stream);
     return stream;
+}
+
+BaselineProtocol::BaselineProtocol()
+{
 }
 
 BaselineProtocol::~BaselineProtocol()
@@ -275,7 +277,7 @@ BaselineProtocol::~BaselineProtocol()
 }
 
 
-bool BaselineProtocol::connect(bool *dryrun)
+bool BaselineProtocol::connect(const QString &testCase, bool *dryrun)
 {
     errMsg.clear();
     QByteArray serverName(qgetenv("QT_LANCELOT_SERVER"));
@@ -292,6 +294,7 @@ bool BaselineProtocol::connect(bool *dryrun)
     }
 
     PlatformInfo pi(true);
+    pi.insert(PI_TestCase, testCase);
     QByteArray block;
     QDataStream ds(&block, QIODevice::ReadWrite);
     ds << pi;
@@ -342,11 +345,15 @@ bool BaselineProtocol::acceptConnection(PlatformInfo *pi)
 }
 
 
-bool BaselineProtocol::requestBaselineChecksums(ImageItemList *itemList)
+bool BaselineProtocol::requestBaselineChecksums(const QString &testFunction, ImageItemList *itemList)
 {
     errMsg.clear();
     if (!itemList)
         return false;
+
+    for(ImageItemList::iterator it = itemList->begin(); it != itemList->end(); it++)
+        it->testFunction = testFunction;
+
     QByteArray block;
     QDataStream ds(&block, QIODevice::ReadWrite);
     ds << *itemList;

@@ -1,4 +1,44 @@
 #!/usr/bin/perl -w
+#############################################################################
+##
+## Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+## All rights reserved.
+## Contact: Nokia Corporation (qt-info@nokia.com)
+##
+## This file is part of the utilities of the Qt Toolkit.
+##
+## $QT_BEGIN_LICENSE:LGPL$
+## No Commercial Usage
+## This file contains pre-release code and may not be distributed.
+## You may use this file in accordance with the terms and conditions
+## contained in the Technology Preview License Agreement accompanying
+## this package.
+##
+## GNU Lesser General Public License Usage
+## Alternatively, this file may be used under the terms of the GNU Lesser
+## General Public License version 2.1 as published by the Free Software
+## Foundation and appearing in the file LICENSE.LGPL included in the
+## packaging of this file.  Please review the following information to
+## ensure the GNU Lesser General Public License version 2.1 requirements
+## will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+##
+## In addition, as a special exception, Nokia gives you certain additional
+## rights.  These rights are described in the Nokia Qt LGPL Exception
+## version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+##
+## If you have questions regarding the use of this file, please contact
+## Nokia at qt-info@nokia.com.
+##
+##
+##
+##
+##
+##
+##
+##
+## $QT_END_LICENSE$
+##
+#############################################################################
 
 # A script to get around some shortcomings in elf2e32, namely:
 # - Returning 0 even when there are errors.
@@ -106,7 +146,7 @@ while (1) {
                     $origDefLine = <$origDefFile>;
                     if (defined($origDefLine)) {
                         $origDefLine =~ s/[\n\r]//;
-                        if ($origDefLine =~ /([a-z0-9_]+) +\@ ([0-9]+) (.*)/i) {
+                        if ($origDefLine =~ /([a-z0-9_]+) +\@ *([0-9]+) (.*)/i) {
                             $origSym = $1;
                             $origOrdinal = $2;
                             $origExtraData = $3;
@@ -121,7 +161,7 @@ while (1) {
             if ($savedNewDefFileLine) {
                 # This happens if the new def file was missing an entry.
                 $newDefLine = $savedNewDefFileLine;
-                $newDefLine =~ /([a-z0-9_]+) +\@ ([0-9]+) (.*)/i or die("$0: Shouldn't happen");
+                $newDefLine =~ /([a-z0-9_]+) +\@ *([0-9]+) (.*)/i or die("$0: Shouldn't happen");
                 $newSym = $1;
                 $newOrdinal = $2;
                 $newExtraData = $3;
@@ -131,7 +171,7 @@ while (1) {
                     $newDefLine = <$newDefFile>;
                     if (defined($newDefLine)) {
                         $newDefLine =~ s/[\n\r]//;
-                        if ($newDefLine =~ /([a-z0-9_]+) +\@ ([0-9]+) (.*)/i) {
+                        if ($newDefLine =~ /([a-z0-9_]+) +\@ *([0-9]+) (.*)/i) {
                             $newSym = $1;
                             $newOrdinal = $2;
                             $newExtraData = $3;

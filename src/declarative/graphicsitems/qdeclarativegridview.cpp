@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,7 +82,7 @@ public:
             item->setPos(QPointF(row, col));
         }
     }
-    bool contains(int x, int y) const {
+    bool contains(qreal x, qreal y) const {
         return (x >= item->x() && x < item->x() + view->cellWidth() &&
                 y >= item->y() && y < item->y() + view->cellHeight());
     }
@@ -219,12 +219,8 @@ public:
             }
         } else {
             qreal pos = (modelIndex / columns) * rowSize();
-            if (header) {
-                qreal headerSize = flow == QDeclarativeGridView::LeftToRight
-                                   ? header->item->height()
-                                   : header->item->width();
-                pos += headerSize;
-            }
+            if (header)
+                pos += headerSize();
             return pos;
         }
         return 0;
@@ -291,11 +287,9 @@ public:
             if (item->index == -1)
                 continue;
             qreal itemTop = item->rowPos();
-            if (item->index == model->count()-1 || (itemTop+rowSize()/2 >= pos))
+            if (itemTop+rowSize()/2 >= pos && itemTop - rowSize()/2 <= pos)
                 return item;
         }
-        if (visibleItems.count() && visibleItems.first()->rowPos() <= pos)
-            return visibleItems.first();
         return 0;
     }
 
@@ -315,6 +309,16 @@ public:
         return index;
     }
 
+    qreal headerSize() const {
+        if (!header)
+            return 0.0;
+
+        return flow == QDeclarativeGridView::LeftToRight
+                       ? header->item->height()
+                       : header->item->width();
+    }
+
+
     virtual void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry) {
         Q_Q(const QDeclarativeGridView);
         QDeclarativeFlickablePrivate::itemGeometryChanged(item, newGeometry, oldGeometry);
@@ -327,11 +331,14 @@ public:
                 }
             }
         } else if ((header && header->item == item) || (footer && footer->item == item)) {
-            updateHeader();
-            updateFooter();
+            if (header)
+                updateHeader();
+            if (footer)
+                updateFooter();
         }
     }
 
+    void positionViewAtIndex(int index, int mode);
     virtual void fixup(AxisData &data, qreal minExtent, qreal maxExtent);
     virtual void flick(AxisData &data, qreal minExtent, qreal maxExtent, qreal vSize,
                 QDeclarativeTimeLineCallback::Callback fixupCallback, qreal velocity);
@@ -731,7 +738,7 @@ void QDeclarativeGridViewPrivate::createHighlight()
             QDeclarative_setParent_noEvent(item, q->contentItem());
             item->setParentItem(q->contentItem());
             highlight = new FxGridItem(item, q);
-            if (currentItem)
+            if (currentItem && autoHighlight)
                 highlight->setPosition(currentItem->colPos(), currentItem->rowPos());
             highlightXAnimator = new QSmoothedAnimation(q);
             highlightXAnimator->target = QDeclarativeProperty(highlight->item, QLatin1String("x"));
@@ -878,14 +885,11 @@ void QDeclarativeGridViewPrivate::updateHeader()
     if (header) {
         if (visibleItems.count()) {
             qreal startPos = startPosition();
-            qreal headerSize = flow == QDeclarativeGridView::LeftToRight
-                               ? header->item->height()
-                               : header->item->width();
             if (visibleIndex == 0) {
-                header->setPosition(0, startPos - headerSize);
+                header->setPosition(0, startPos - headerSize());
             } else {
-                if (position() <= startPos || header->rowPos() > startPos - headerSize)
-                    header->setPosition(0, startPos - headerSize);
+                if (position() <= startPos || header->rowPos() > startPos - headerSize())
+                    header->setPosition(0, startPos - headerSize());
             }
         } else {
             header->setPosition(0, 0);
@@ -920,10 +924,14 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
             qreal bottomPos = qMax(bottomItem->rowPos() - highlightRangeEnd, -minExtent);
             pos = qAbs(data.move + topPos) < qAbs(data.move + bottomPos) ? topPos : bottomPos;
         } else if (topItem) {
-            pos = qMax(qMin(topItem->rowPos() - highlightRangeStart, -maxExtent), -minExtent);
+            if (topItem->index == 0 && header && position()+highlightRangeStart < header->rowPos()+headerSize()/2)
+                pos = header->rowPos() - highlightRangeStart;
+            else
+                pos = qMax(qMin(topItem->rowPos() - highlightRangeStart, -maxExtent), -minExtent);
         } else if (bottomItem) {
             pos = qMax(qMin(bottomItem->rowPos() - highlightRangeStart, -maxExtent), -minExtent);
         } else {
+            QDeclarativeFlickablePrivate::fixup(data, minExtent, maxExtent);
             fixupDuration = oldDuration;
             return;
         }
@@ -1090,9 +1098,9 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
 
     \snippet doc/src/snippets/declarative/gridview/ContactModel.qml 0
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage gridview-simple.png
-    \endfloat
+    \enddiv
 
     This model can be referenced as \c ContactModel in other QML files. See \l{QML Modules}
     for more information about creating reusable components like this.
@@ -1106,9 +1114,9 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     \codeline
     \snippet doc/src/snippets/declarative/gridview/gridview.qml classdocs simple
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage gridview-highlight.png
-    \endfloat
+    \enddiv
 
     The view will create a new delegate for each item in the model. Note that the delegate
     is able to access the model's \c name and \c portrait data directly.
@@ -1125,6 +1133,13 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
 
     Delegates are instantiated as needed and may be destroyed at any time.
     State should \e never be stored in a delegate.
+
+    GridView attaches a number of properties to the root item of the delegate, for example
+    \c {GridView.isCurrentItem}.  In the following example, the root delegate item can access
+    this attached property directly as \c GridView.isCurrentItem, while the child
+    \c contactInfo object must refer to this property as \c wrapper.GridView.isCurrentItem.
+
+    \snippet doc/src/snippets/declarative/gridview/gridview.qml isCurrentItem
 
     \note Views do not set the \l{Item::}{clip} property automatically.
     If the view is not clipped by another item or the screen, it will be necessary
@@ -1162,6 +1177,8 @@ QDeclarativeGridView::~QDeclarativeGridView()
     This attached property holds the view that manages this delegate instance.
 
     It is attached to each instance of the delegate.
+
+    \snippet doc/src/snippets/declarative/gridview/gridview.qml isCurrentItem
 */
 
 /*!
@@ -1248,7 +1265,8 @@ void QDeclarativeGridView::setModel(const QVariant &model)
                 d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
                 d->updateCurrent(d->currentIndex);
                 if (d->highlight && d->currentItem) {
-                    d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+                    if (d->autoHighlight)
+                        d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
                     d->updateTrackedItem();
                 }
                 d->moveReason = QDeclarativeGridViewPrivate::Other;
@@ -1316,7 +1334,8 @@ void QDeclarativeGridView::setDelegate(QDeclarativeComponent *delegate)
             d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
             if (d->highlight && d->currentItem) {
-                d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+                if (d->autoHighlight)
+                    d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
                 d->updateTrackedItem();
             }
             d->moveReason = QDeclarativeGridViewPrivate::Other;
@@ -1599,6 +1618,8 @@ void QDeclarativeGridView::setFlow(Flow flow)
             setContentHeight(-1);
             setFlickableDirection(QDeclarativeFlickable::HorizontalFlick);
         }
+        setContentX(0);
+        setContentY(0);
         d->clear();
         d->updateGrid();
         refill();
@@ -1760,12 +1781,18 @@ void QDeclarativeGridView::setFooter(QDeclarativeComponent *footer)
     Q_D(QDeclarativeGridView);
     if (d->footerComponent != footer) {
         if (d->footer) {
+            if (scene())
+                scene()->removeItem(d->footer->item);
+            d->footer->item->deleteLater();
             delete d->footer;
             d->footer = 0;
         }
         d->footerComponent = footer;
-        d->updateFooter();
-        d->updateGrid();
+        if (isComponentComplete()) {
+            d->updateFooter();
+            d->updateGrid();
+            d->fixupPosition();
+        }
         emit footerChanged();
     }
 }
@@ -1790,13 +1817,19 @@ void QDeclarativeGridView::setHeader(QDeclarativeComponent *header)
     Q_D(QDeclarativeGridView);
     if (d->headerComponent != header) {
         if (d->header) {
+            if (scene())
+                scene()->removeItem(d->header->item);
+            d->header->item->deleteLater();
             delete d->header;
             d->header = 0;
         }
         d->headerComponent = header;
-        d->updateHeader();
-        d->updateFooter();
-        d->updateGrid();
+        if (isComponentComplete()) {
+            d->updateHeader();
+            d->updateFooter();
+            d->updateGrid();
+            d->fixupPosition();
+        }
         emit headerChanged();
     }
 }
@@ -2102,6 +2135,78 @@ void QDeclarativeGridView::moveCurrentIndexRight()
     }
 }
 
+void QDeclarativeGridViewPrivate::positionViewAtIndex(int index, int mode)
+{
+    Q_Q(QDeclarativeGridView);
+    if (!isValid())
+        return;
+    if (mode < QDeclarativeGridView::Beginning || mode > QDeclarativeGridView::Contain)
+        return;
+
+    int idx = qMax(qMin(index, model->count()-1), 0);
+
+    if (layoutScheduled)
+        layout();
+    qreal pos = position();
+    FxGridItem *item = visibleItem(idx);
+    qreal maxExtent = flow == QDeclarativeGridView::LeftToRight ? -q->maxYExtent() : -q->maxXExtent();
+    if (!item) {
+        int itemPos = rowPosAt(idx);
+        // save the currently visible items in case any of them end up visible again
+        QList<FxGridItem*> oldVisible = visibleItems;
+        visibleItems.clear();
+        visibleIndex = idx - idx % columns;
+        maxExtent = flow == QDeclarativeGridView::LeftToRight ? -q->maxYExtent() : -q->maxXExtent();
+        setPosition(qMin(qreal(itemPos), maxExtent));
+        // now release the reference to all the old visible items.
+        for (int i = 0; i < oldVisible.count(); ++i)
+            releaseItem(oldVisible.at(i));
+        item = visibleItem(idx);
+    }
+    if (item) {
+        qreal itemPos = item->rowPos();
+        switch (mode) {
+        case QDeclarativeGridView::Beginning:
+            pos = itemPos;
+            if (index < 0 && header) {
+                pos -= flow == QDeclarativeGridView::LeftToRight
+                            ? header->item->height()
+                            : header->item->width();
+            }
+            break;
+        case QDeclarativeGridView::Center:
+            pos = itemPos - (size() - rowSize())/2;
+            break;
+        case QDeclarativeGridView::End:
+            pos = itemPos - size() + rowSize();
+            if (index >= model->count() && footer) {
+                pos += flow == QDeclarativeGridView::LeftToRight
+                            ? footer->item->height()
+                            : footer->item->width();
+            }
+            break;
+        case QDeclarativeGridView::Visible:
+            if (itemPos > pos + size())
+                pos = itemPos - size() + rowSize();
+            else if (item->endRowPos() < pos)
+                pos = itemPos;
+            break;
+        case QDeclarativeGridView::Contain:
+            if (item->endRowPos() > pos + size())
+                pos = itemPos - size() + rowSize();
+            if (itemPos < pos)
+                pos = itemPos;
+        }
+        pos = qMin(pos, maxExtent);
+        qreal minExtent = flow == QDeclarativeGridView::LeftToRight ? -q->minYExtent() : -q->minXExtent();
+        pos = qMax(pos, minExtent);
+        moveReason = QDeclarativeGridViewPrivate::Other;
+        q->cancelFlick();
+        setPosition(pos);
+    }
+    fixupPosition();
+}
+
 /*!
     \qmlmethod GridView::positionViewAtIndex(int index, PositionMode mode)
 
@@ -2139,58 +2244,42 @@ void QDeclarativeGridView::positionViewAtIndex(int index, int mode)
     Q_D(QDeclarativeGridView);
     if (!d->isValid() || index < 0 || index >= d->model->count())
         return;
-    if (mode < Beginning || mode > Contain)
-        return;
+    d->positionViewAtIndex(index, mode);
+}
 
-    if (d->layoutScheduled)
-        d->layout();
-    qreal pos = d->position();
-    FxGridItem *item = d->visibleItem(index);
-    if (!item) {
-        int itemPos = d->rowPosAt(index);
-        // save the currently visible items in case any of them end up visible again
-        QList<FxGridItem*> oldVisible = d->visibleItems;
-        d->visibleItems.clear();
-        d->visibleIndex = index - index % d->columns;
-        d->setPosition(itemPos);
-        // now release the reference to all the old visible items.
-        for (int i = 0; i < oldVisible.count(); ++i)
-            d->releaseItem(oldVisible.at(i));
-        item = d->visibleItem(index);
-    }
-    if (item) {
-        qreal itemPos = item->rowPos();
-        switch (mode) {
-        case Beginning:
-            pos = itemPos;
-            break;
-        case Center:
-            pos = itemPos - (d->size() - d->rowSize())/2;
-            break;
-        case End:
-            pos = itemPos - d->size() + d->rowSize();
-            break;
-        case Visible:
-            if (itemPos > pos + d->size())
-                pos = itemPos - d->size() + d->rowSize();
-            else if (item->endRowPos() < pos)
-                pos = itemPos;
-            break;
-        case Contain:
-            if (item->endRowPos() > pos + d->size())
-                pos = itemPos - d->size() + d->rowSize();
-            if (itemPos < pos)
-                pos = itemPos;
-        }
-        qreal maxExtent = d->flow == QDeclarativeGridView::LeftToRight ? -maxYExtent() : -maxXExtent();
-        pos = qMin(pos, maxExtent);
-        qreal minExtent = d->flow == QDeclarativeGridView::LeftToRight ? -minYExtent() : -minXExtent();
-        pos = qMax(pos, minExtent);
-        d->moveReason = QDeclarativeGridViewPrivate::Other;
-        cancelFlick();
-        d->setPosition(pos);
-    }
-    d->fixupPosition();
+/*!
+    \qmlmethod GridView::positionViewAtBeginning()
+    \qmlmethod GridView::positionViewAtEnd()
+
+    Positions the view at the beginning or end, taking into account any header or footer.
+
+    It is not recommended to use \l {Flickable::}{contentX} or \l {Flickable::}{contentY} to position the view
+    at a particular index.  This is unreliable since removing items from the start
+    of the list does not cause all other items to be repositioned, and because
+    the actual start of the view can vary based on the size of the delegates.
+
+    \bold Note: methods should only be called after the Component has completed.  To position
+    the view at startup, this method should be called by Component.onCompleted.  For
+    example, to position the view at the end on startup:
+
+    \code
+    Component.onCompleted: positionViewAtEnd()
+    \endcode
+*/
+void QDeclarativeGridView::positionViewAtBeginning()
+{
+    Q_D(QDeclarativeGridView);
+    if (!d->isValid())
+        return;
+    d->positionViewAtIndex(-1, Beginning);
+}
+
+void QDeclarativeGridView::positionViewAtEnd()
+{
+    Q_D(QDeclarativeGridView);
+    if (!d->isValid())
+        return;
+    d->positionViewAtIndex(d->model->count(), End);
 }
 
 /*!
@@ -2205,7 +2294,7 @@ void QDeclarativeGridView::positionViewAtIndex(int index, int mode)
 
     \bold Note: methods should only be called after the Component has completed.
 */
-int QDeclarativeGridView::indexAt(int x, int y) const
+int QDeclarativeGridView::indexAt(qreal x, qreal y) const
 {
     Q_D(const QDeclarativeGridView);
     for (int i = 0; i < d->visibleItems.count(); ++i) {
@@ -2221,6 +2310,8 @@ void QDeclarativeGridView::componentComplete()
 {
     Q_D(QDeclarativeGridView);
     QDeclarativeFlickable::componentComplete();
+    d->updateHeader();
+    d->updateFooter();
     d->updateGrid();
     if (d->isValid()) {
         refill();
@@ -2230,7 +2321,8 @@ void QDeclarativeGridView::componentComplete()
         else
             d->updateCurrent(d->currentIndex);
         if (d->highlight && d->currentItem) {
-            d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+            if (d->autoHighlight)
+                d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
             d->updateTrackedItem();
         }
         d->moveReason = QDeclarativeGridViewPrivate::Other;
@@ -2298,24 +2390,9 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
     Q_D(QDeclarativeGridView);
     if (!isComponentComplete())
         return;
-    if (!d->visibleItems.count() || d->model->count() <= 1) {
-        d->scheduleLayout();
-        if (d->itemCount && d->currentIndex >= modelIndex) {
-            // adjust current item index
-            d->currentIndex += count;
-            if (d->currentItem)
-                d->currentItem->index = d->currentIndex;
-            emit currentIndexChanged();
-        } else if (!d->currentIndex || (d->currentIndex < 0 && !d->currentIndexCleared)) {
-            d->updateCurrent(0);
-        }
-        d->itemCount += count;
-        emit countChanged();
-        return;
-    }
 
-    int index = d->mapFromModel(modelIndex);
-    if (index == -1) {
+    int index = d->visibleItems.count() ? d->mapFromModel(modelIndex) : 0;
+    if (index < 0) {
         int i = d->visibleItems.count() - 1;
         while (i > 0 && d->visibleItems.at(i)->index == -1)
             --i;
@@ -2346,28 +2423,35 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
         }
     }
 
-    // At least some of the added items will be visible
     int insertCount = count;
-    if (index < d->visibleIndex) {
+    if (index < d->visibleIndex && d->visibleItems.count()) {
         insertCount -= d->visibleIndex - index;
         index = d->visibleIndex;
         modelIndex = d->visibleIndex;
     }
 
-    index -= d->visibleIndex;
     int to = d->buffer+d->position()+d->size()-1;
-    int colPos, rowPos;
-    if (index < d->visibleItems.count()) {
-        colPos = d->visibleItems.at(index)->colPos();
-        rowPos = d->visibleItems.at(index)->rowPos();
-    } else {
-        // appending items to visible list
-        colPos = d->visibleItems.at(index-1)->colPos() + d->colSize();
-        rowPos = d->visibleItems.at(index-1)->rowPos();
-        if (colPos > d->colSize() * (d->columns-1)) {
-            colPos = 0;
-            rowPos += d->rowSize();
+    int colPos = 0;
+    int rowPos = 0;
+    if (d->visibleItems.count()) {
+        index -= d->visibleIndex;
+        if (index < d->visibleItems.count()) {
+            colPos = d->visibleItems.at(index)->colPos();
+            rowPos = d->visibleItems.at(index)->rowPos();
+        } else {
+            // appending items to visible list
+            colPos = d->visibleItems.at(index-1)->colPos() + d->colSize();
+            rowPos = d->visibleItems.at(index-1)->rowPos();
+            if (colPos > d->colSize() * (d->columns-1)) {
+                colPos = 0;
+                rowPos += d->rowSize();
+            }
         }
+    } else if (d->itemCount == 0 && d->header) {
+        if (d->flow == QDeclarativeGridView::LeftToRight)
+            rowPos = d->headerSize();
+        else
+            colPos = d->headerSize();
     }
 
     // Update the indexes of the following visible items.
@@ -2420,6 +2504,8 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
         if (d->currentItem) {
             d->currentItem->index = d->currentIndex;
             d->currentItem->setPosition(d->colPosAt(d->currentIndex), d->rowPosAt(d->currentIndex));
+        } else if (!d->currentIndex || (d->currentIndex < 0 && !d->currentIndexCleared)) {
+            d->updateCurrent(0);
         }
         emit currentIndexChanged();
     }
@@ -2537,11 +2623,7 @@ void QDeclarativeGridView::itemsMoved(int from, int to, int count)
         return;
     QHash<int,FxGridItem*> moved;
 
-    bool removedBeforeVisible = false;
     FxGridItem *firstItem = d->firstVisibleItem();
-
-    if (from < to && from < d->visibleIndex && to > d->visibleIndex)
-        removedBeforeVisible = true;
 
     QList<FxGridItem*>::Iterator it = d->visibleItems.begin();
     while (it != d->visibleItems.end()) {
@@ -2551,16 +2633,12 @@ void QDeclarativeGridView::itemsMoved(int from, int to, int count)
             item->index += (to-from);
             moved.insert(item->index, item);
             it = d->visibleItems.erase(it);
-            if (item->rowPos() < firstItem->rowPos())
-                removedBeforeVisible = true;
         } else {
             if (item->index > from && item->index != -1) {
                 // move everything after the moved items.
                 item->index -= count;
                 if (item->index < d->visibleIndex)
                     d->visibleIndex = item->index;
-            } else if (item->index != -1) {
-                removedBeforeVisible = true;
             }
             ++it;
         }
@@ -2638,7 +2716,8 @@ void QDeclarativeGridView::modelReset()
     d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
     d->updateCurrent(d->currentIndex);
     if (d->highlight && d->currentItem) {
-        d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+        if (d->autoHighlight)
+            d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
         d->updateTrackedItem();
     }
     d->moveReason = QDeclarativeGridViewPrivate::Other;

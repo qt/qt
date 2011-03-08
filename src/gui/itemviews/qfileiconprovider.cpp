@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -234,7 +234,7 @@ QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
     const QString fileExtension = QLatin1Char('.') + fileInfo.suffix().toUpper();
 
     QString key;
-    if (fileInfo.isFile() && !fileInfo.isExecutable() && !fileInfo.isSymLink())
+    if (fileInfo.isFile() && !fileInfo.isExecutable() && !fileInfo.isSymLink() && fileExtension != QLatin1String(".ICO"))
         key = QLatin1String("qt_") + fileExtension;
 
     QPixmap pixmap;

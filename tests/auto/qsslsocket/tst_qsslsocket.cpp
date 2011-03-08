@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -385,11 +385,14 @@ void tst_QSslSocket::constructing()
     QVERIFY(!socket.waitForConnected(10));
     QTest::ignoreMessage(QtWarningMsg, "QSslSocket::waitForDisconnected() is not allowed in UnconnectedState");
     QVERIFY(!socket.waitForDisconnected(10));
-    QCOMPARE(socket.protocol(), QSsl::SslV3);
+    QCOMPARE(socket.protocol(), QSsl::TlsV1);
 
     QSslConfiguration savedDefault = QSslConfiguration::defaultConfiguration();
 
     // verify that changing the default config doesn't affect this socket
+    // (on Unix, the ca certs might be empty, depending on whether we load
+    // them on demand or not, so set them explicitly)
+    socket.setCaCertificates(QSslSocket::systemCaCertificates());
     QSslSocket::setDefaultCaCertificates(QList<QSslCertificate>());
     QSslSocket::setDefaultCiphers(QList<QSslCipher>());
     QVERIFY(!socket.caCertificates().isEmpty());
@@ -502,8 +505,9 @@ void tst_QSslSocket::simpleConnectWithIgnore()
     if (!socket.canReadLine())
         enterLoop(10);
 
-    QCOMPARE(socket.readAll(), QtNetworkSettings::expectedReplySSL());
+    QByteArray data = socket.readAll();
     socket.disconnectFromHost();
+    QVERIFY2(QtNetworkSettings::compareReplyIMAPSSL(data), data.constData());
 }
 
 void tst_QSslSocket::sslErrors_data()
@@ -517,11 +521,6 @@ void tst_QSslSocket::sslErrors_data()
         << 993
         << (SslErrorList() << QSslError::HostNameMismatch
                            << QSslError::SelfSignedCertificate);
-
-    QTest::newRow("imap.trolltech.com")
-        << "imap.trolltech.com"
-        << 993
-        << (SslErrorList() << QSslError::SelfSignedCertificateInChain);
 }
 
 void tst_QSslSocket::sslErrors()
@@ -772,7 +771,7 @@ void tst_QSslSocket::protocol()
 #endif
 
 //    qDebug() << "socket cert:" << socket->caCertificates().at(0).issuerInfo(QSslCertificate::CommonName);
-    QCOMPARE(socket->protocol(), QSsl::SslV3);
+    QCOMPARE(socket->protocol(), QSsl::TlsV1);
     {
         // Fluke allows SSLv3.
         socket->setProtocol(QSsl::SslV3);

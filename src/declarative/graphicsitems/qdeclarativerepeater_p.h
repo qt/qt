@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -72,10 +72,16 @@ public:
 
     int count() const;
 
+    Q_INVOKABLE Q_REVISION(1) QDeclarativeItem *itemAt(int index) const;
+
 Q_SIGNALS:
     void modelChanged();
     void delegateChanged();
     void countChanged();
+
+    Q_REVISION(1) void itemAdded(int index, QDeclarativeItem *item);
+    Q_REVISION(1) void itemRemoved(int index, QDeclarativeItem *item);
+
 private:
     void clear();
     void regenerate();

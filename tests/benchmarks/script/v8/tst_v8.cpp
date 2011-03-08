@@ -46,10 +46,6 @@
 #include <QtScript/qscriptengine.h>
 #include <QtScript/qscriptvalue.h>
 
-#if defined(Q_OS_SYMBIAN)
-# define SRCDIR ""
-#endif
-
 //TESTED_FILES=
 
 static QString readFile(const QString &filename)
@@ -84,9 +80,8 @@ private:
 
 tst_V8::tst_V8()
 {
-    testsDir = QDir(SRCDIR);
-    bool testsFound = testsDir.cd("tests");
-    if (!testsFound)
+    testsDir = QDir(":/tests");
+    if (!testsDir.exists())
         qWarning("*** no tests/ dir!");
 }
 
@@ -120,10 +115,10 @@ void tst_V8::benchmark()
 {
     QFETCH(QString, testName);
 
-    QString baseDotJsContents = readFile(testsDir.absoluteFilePath("base.js"));
+    QString baseDotJsContents = readFile(testsDir.filePath("base.js"));
     QVERIFY(!baseDotJsContents.isEmpty());
 
-    QString testContents = readFile(testsDir.absoluteFilePath(testName + ".js"));
+    QString testContents = readFile(testsDir.filePath(testName + ".js"));
     QVERIFY(!testContents.isEmpty());
 
     QScriptEngine engine;

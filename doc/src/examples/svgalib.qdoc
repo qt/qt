@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -322,9 +322,8 @@
     \snippet examples/qws/svgalib/svgalibsurface.h 0
 
     We can implement most of the pure virtual functions inherited from
-    QWSWindowSurface as trivial inline functions, except the 
-    \l {QWindowSurface::}{scroll()} function that actually makes use
-    of some hardware acceleration:
+    QWSWindowSurface as trivial inline functions, except the scroll()
+    function that actually makes use of some hardware acceleration:
 
     \snippet examples/qws/svgalib/svgalibsurface.cpp 0
 

@@ -106,11 +106,5 @@ void QCocoaWindow::windowDidResize()
     //jlind: XXX This isn't ideal. Eventdispatcher does not run when resizing...
     NSRect rect = [[m_nsWindow contentView]frame];
     QRect geo(rect.origin.x,rect.origin.y,rect.size.width,rect.size.height);
-    if (geometry() != geo) {
-        widget()->setGeometry(geo);
-        QResizeEvent e(geo.size(), geometry().size());
-        setGeometry(geo);
-        QApplication::sendEvent(widget(), &e);
-        widget()->repaint();
-    }
+    QWindowSystemInterface::handleGeometryChange(widget(),geo);
 }

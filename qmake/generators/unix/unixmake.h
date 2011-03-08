@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,10 +51,6 @@ class UnixMakefileGenerator : public MakefileGenerator
     bool init_flag, include_deps;
     QString libtoolFileName(bool fixify=true);
     void writeLibtoolFile();     // for libtool
-    QString pkgConfigPrefix() const;
-    QString pkgConfigFileName(bool fixify=true);
-    QString pkgConfigFixPath(QString) const;
-    void writePkgConfigFile();   // for pkg-config
     void writePrlFile(QTextStream &);
 
 public:

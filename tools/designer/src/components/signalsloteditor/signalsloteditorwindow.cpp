@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -658,8 +658,12 @@ QWidget *ConnectionDelegate::createEditor(QWidget *parent,
 
         const qdesigner_internal::ClassesMemberFunctions class_list = qdesigner_internal::reverseClassesMemberFunctions(obj_name, type, peer, m_form);
 
-        QObject *object = m_form->findChild<QObject*>(obj_name);
-
+        QObject *object = 0;
+        if (obj_name == m_form->mainContainer()->objectName()) {
+            object = m_form->mainContainer();
+        } else {
+            object = m_form->mainContainer()->findChild<QObject*>(obj_name);
+        }
         inline_editor->addText(type == qdesigner_internal::SignalMember ? tr("<signal>") : tr("<slot>"));
         foreach (const qdesigner_internal::ClassMemberFunctions &class_info, class_list) {
             if (class_info.m_className.isEmpty() || class_info.m_memberList.isEmpty())

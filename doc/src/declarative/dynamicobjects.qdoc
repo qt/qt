@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -62,10 +62,16 @@ To dynamically load a component defined in a QML file, call the
 This function takes the URL of the QML file as its only argument and creates
 a \l Component object from this URL.
 
-Once you have a \l Component, you can call its \l {Component::createObject()}{createObject()} method to create an instance of
-the component. This function takes exactly one argument, which is the parent for the new item. Since graphical items will
-not appear on the scene without a parent, it is recommended that you set the parent this way. However, if you wish to set
-the parent later you can safely pass \c null to this function.
+Once you have a \l Component, you can call its \l {Component::createObject()}{createObject()} method to create an instance of 
+the component. This function can take one or two arguments:
+\list
+\o The first is the parent for the new item. Since graphical items will not appear on the scene without a parent, it is 
+  recommended that you set the parent this way. However, if you wish to set the parent later you can safely pass \c null to 
+  this function. 
+\o The second is optional and is a script which assigns values to the item's properties during creation. This avoids warnings 
+  when certain properties have been bound to before they have been set by the code. Additionally, there are small performance 
+  benefits when instantiating objects in this way.
+\endlist
 
 Here is an example. First there is \c Sprite.qml, which defines a simple QML component:
 
@@ -101,6 +107,9 @@ Notice in both instances, \l {Component::createObject()}{createObject()} is call
 
 When using files with relative paths, the path should
 be relative to the file where \l {QML:Qt::createComponent()}{Qt.createComponent()} is executed.
+
+To connect signals to (or receive signals from) dynamically created objects, use the signal
+\c connect() method. See \l {Connecting signals to methods and other signals} for more information.
 
 
 \section2 Creating an object from a string of QML
@@ -181,7 +190,9 @@ Note also that if a \c SelfDestroyingRect instance was created statically like t
 
 \qml
 Item {
-    SelfDestroyingRect { ... }
+    SelfDestroyingRect {
+        // ...
+    }
 }
 \endqml
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -155,9 +155,11 @@ void QFactoryLoader::update()
                     continue;
                 }
                 QObject *instance = library->instance();
-                if (!instance)
+                if (!instance) {
+                    library->release();
                     // ignore plugins that have a valid signature but cannot be loaded.
                     continue;
+                }
                 QFactoryInterface *factory = qobject_cast<QFactoryInterface*>(instance);
                 if (instance && factory && instance->qt_metacast(d->iid))
                     keys = factory->keys();

@@ -65,9 +65,9 @@ void QPlatformFontDatabase::registerQPF2Font(const QByteArray &dataArray, void *
         QByteArray writingSystemBits = QFontEngineQPA::extractHeaderField(data, QFontEngineQPA::Tag_WritingSystems).toByteArray();
 
         if (!fontName.isEmpty() && pixelSize) {
-            int fontWeight = 50;
+            QFont::Weight fontWeight = QFont::Normal;
             if (weight.type() == QVariant::Int || weight.type() == QVariant::UInt)
-                fontWeight = weight.toInt();
+                fontWeight = QFont::Weight(weight.toInt());
 
             QFont::Style fontStyle = static_cast<QFont::Style>(style.toInt());
 
@@ -80,16 +80,16 @@ void QPlatformFontDatabase::registerQPF2Font(const QByteArray &dataArray, void *
                     currentByte >>= 1;
                 }
             }
-
-            registerFont(fontName,QString(),fontWeight,fontStyle,100,true,false,pixelSize,writingSystems,handle);
+            QFont::Stretch stretch = QFont::Unstretched;
+            registerFont(fontName,QString(),fontWeight,fontStyle,stretch,true,false,pixelSize,writingSystems,handle);
         }
     } else {
         qDebug() << "header verification of QPF2 font failed. maybe it is corrupt?";
     }
 }
 
-void QPlatformFontDatabase::registerFont(const QString &familyname, const QString &foundryname, int weight,
-                                         QFont::Style style, int stretch, bool antialiased, bool scalable, int pixelSize,
+void QPlatformFontDatabase::registerFont(const QString &familyname, const QString &foundryname, QFont::Weight weight,
+                                         QFont::Style style, QFont::Stretch stretch, bool antialiased, bool scalable, int pixelSize,
                                          const QSupportedWritingSystems &writingSystems, void *usrPtr)
 {
     if (scalable)
@@ -165,6 +165,23 @@ bool QSupportedWritingSystems::supported(QFontDatabase::WritingSystem writingSys
     return d->vector.at(writingSystem);
 }
 
+/*!
+    \class QSupportedWritingSystems
+    \brief The QSupportedWritingSystems class is used when registering fonts with the internal Qt
+    fontdatabase
+    \ingroup painting
+
+    Its to provide an easy to use interface for indicating what writing systems a specific font
+    supports.
+
+*/
+
+/*!
+  This function is called once at startup by Qts internal fontdatabase. Reimplement this function
+  in a subclass for a convenient place to initialise the internal fontdatabase.
+
+  The default implementation looks in the fontDir() location and registers all qpf2 fonts.
+*/
 void QPlatformFontDatabase::populateFontDatabase()
 {
     QString fontpath = fontDir();
@@ -188,6 +205,9 @@ void QPlatformFontDatabase::populateFontDatabase()
     }
 }
 
+/*!
+
+*/
 QFontEngine *QPlatformFontDatabase::fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *handle)
 {
     Q_UNUSED(script);
@@ -198,10 +218,14 @@ QFontEngine *QPlatformFontDatabase::fontEngine(const QFontDef &fontDef, QUnicode
     return engine;
 }
 
-QStringList QPlatformFontDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QUnicodeTables::Script &script) const
+/*!
+
+*/
+QStringList QPlatformFontDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const
 {
     Q_UNUSED(family);
     Q_UNUSED(style);
+    Q_UNUSED(styleHint);
     Q_UNUSED(script);
     return QStringList();
 }
@@ -219,12 +243,18 @@ QStringList QPlatformFontDatabase::addApplicationFont(const QByteArray &fontData
     return QStringList();
 }
 
+/*!
+
+*/
 void QPlatformFontDatabase::releaseHandle(void *handle)
 {
     QByteArray *fileDataPtr = static_cast<QByteArray *>(handle);
     delete fileDataPtr;
 }
 
+/*!
+
+*/
 QString QPlatformFontDatabase::fontDir() const
 {
     QString fontpath = QString::fromLocal8Bit(qgetenv("QT_QPA_FONTDIR"));
@@ -238,4 +268,24 @@ QString QPlatformFontDatabase::fontDir() const
     return fontpath;
 }
 
+/*!
+    \class QPlatformFontDatabase
+    \brief The QPlatformFontDatabase makes it possible to customize how fonts are picked up, and
+    and how they are rendered
+
+    \ingroup painting
+
+    QPlatformFontDatabase is the superclass which is intended to let platform implementations use
+    native font handling.
+
+    Qt has its internal fontdatabase which it uses to pick up available fonts. To be able
+    to populate this database subclass this class, and reimplement populateFontDatabase().
+
+    Use the function registerFont to populate the internal fontdatabase.
+
+    Sometimes a specified font does not have the required glyphs, then the fallbackForFamily
+    function is called.
+
+    \sa QSupportedWritingSystems
+*/
 QT_END_NAMESPACE

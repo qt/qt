@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,7 +55,6 @@ QT_BEGIN_NAMESPACE
 
 QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen *scr)
     : QDirectFBPaintDevice(scr)
-    , sibling(0)
 #ifndef QT_NO_DIRECTFB_WM
     , dfbWindow(0)
 #endif
@@ -75,7 +74,6 @@ QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirect
 
 QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen *scr, QWidget *widget)
     : QWSWindowSurface(widget), QDirectFBPaintDevice(scr)
-    , sibling(0)
 #ifndef QT_NO_DIRECTFB_WM
     , dfbWindow(0)
 #endif
@@ -123,7 +121,7 @@ void QDirectFBWindowSurface::raise()
 
 IDirectFBWindow *QDirectFBWindowSurface::directFBWindow() const
 {
-    return (dfbWindow ? dfbWindow : (sibling ? sibling->dfbWindow : 0));
+    return dfbWindow;
 }
 
 void QDirectFBWindowSurface::createWindow(const QRect &rect)
@@ -287,17 +285,40 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
 
 QByteArray QDirectFBWindowSurface::permanentState() const
 {
-    QByteArray state(sizeof(this), 0);
-    *reinterpret_cast<const QDirectFBWindowSurface**>(state.data()) = this;
+    QByteArray state(sizeof(SurfaceFlags) + sizeof(DFBWindowID), 0);
+    char *ptr = state.data();
+    SurfaceFlags flags = surfaceFlags();
+    memcpy(ptr, &flags, sizeof(SurfaceFlags));
+    ptr += sizeof(SurfaceFlags);
+    DFBWindowID did = (DFBWindowID)(-1);
+    if (dfbWindow)
+        dfbWindow->GetID(dfbWindow, &did);
+    memcpy(ptr, &did, sizeof(DFBWindowID));
     return state;
 }
 
 void QDirectFBWindowSurface::setPermanentState(const QByteArray &state)
 {
-    if (state.size() == sizeof(this)) {
-        sibling = *reinterpret_cast<QDirectFBWindowSurface *const*>(state.constData());
-        Q_ASSERT(sibling);
-        setSurfaceFlags(sibling->surfaceFlags());
+    const char *ptr = state.constData();
+    IDirectFBDisplayLayer *layer = screen->dfbDisplayLayer();
+    SurfaceFlags flags;
+    memcpy(&flags, ptr, sizeof(SurfaceFlags));
+
+    setSurfaceFlags(flags);
+    ptr += sizeof(SurfaceFlags);
+    DFBWindowID id;
+    memcpy(&id, ptr, sizeof(DFBWindowID));
+    if (dfbSurface)
+        dfbSurface->Release(dfbSurface);
+    if (id != (DFBWindowID)-1) {
+        IDirectFBWindow *dw;
+        layer->GetWindow(layer, id, &dw);
+        if (dw->GetSurface(dw, &dfbSurface) != DFB_OK)
+                dfbSurface = 0;
+        dw->Release(dw);
+    }
+    else {
+        dfbSurface = 0;
     }
 }
 
@@ -406,8 +427,6 @@ void QDirectFBWindowSurface::endPaint(const QRegion &)
 
 IDirectFBSurface *QDirectFBWindowSurface::directFBSurface() const
 {
-    if (!dfbSurface && sibling && sibling->dfbSurface)
-        return sibling->dfbSurface;
     return dfbSurface;
 }
 
@@ -415,11 +434,8 @@ IDirectFBSurface *QDirectFBWindowSurface::directFBSurface() const
 IDirectFBSurface *QDirectFBWindowSurface::surfaceForWidget(const QWidget *widget, QRect *rect) const
 {
     Q_ASSERT(widget);
-    if (!dfbSurface) {
-        if (sibling && (!sibling->sibling || sibling->dfbSurface))
-            return sibling->surfaceForWidget(widget, rect);
+    if (!dfbSurface)
         return 0;
-    }
     QWidget *win = window();
     Q_ASSERT(win);
     if (rect) {

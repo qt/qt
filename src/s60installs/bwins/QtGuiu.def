@@ -2725,7 +2725,7 @@ EXPORTS
 	?clearSelection@QTextCursor@@QAEXXZ @ 2724 NONAME ; void QTextCursor::clearSelection(void)
 	?clearSpans@QTableView@@QAEXXZ @ 2725 NONAME ; void QTableView::clearSpans(void)
 	?clearString@QLineControl@@ABE?AVQString@@II@Z @ 2726 NONAME ; class QString QLineControl::clearString(unsigned int, unsigned int) const
-	?clearSubFocus@QGraphicsItemPrivate@@QAEXPAVQGraphicsItem@@@Z @ 2727 NONAME ; void QGraphicsItemPrivate::clearSubFocus(class QGraphicsItem *)
+	?clearSubFocus@QGraphicsItemPrivate@@QAEXPAVQGraphicsItem@@@Z @ 2727 NONAME ABSENT ; void QGraphicsItemPrivate::clearSubFocus(class QGraphicsItem *)
 	?clearUndo@QLineControl@@QAEXXZ @ 2728 NONAME ; void QLineControl::clearUndo(void)
 	?click@QAbstractButton@@QAEXXZ @ 2729 NONAME ; void QAbstractButton::click(void)
 	?clicked@QAbstractButton@@IAEX_N@Z @ 2730 NONAME ; void QAbstractButton::clicked(bool)
@@ -9914,7 +9914,7 @@ EXPORTS
 	?setStyleSheet@QWidget@@QAEXABVQString@@@Z @ 9913 NONAME ; void QWidget::setStyleSheet(class QString const &)
 	?setStyleStrategy@QFont@@QAEXW4StyleStrategy@1@@Z @ 9914 NONAME ; void QFont::setStyleStrategy(enum QFont::StyleStrategy)
 	?setStyle_helper@QWidgetPrivate@@QAEXPAVQStyle@@_N1@Z @ 9915 NONAME ; void QWidgetPrivate::setStyle_helper(class QStyle *, bool, bool)
-	?setSubFocus@QGraphicsItemPrivate@@QAEXPAVQGraphicsItem@@@Z @ 9916 NONAME ; void QGraphicsItemPrivate::setSubFocus(class QGraphicsItem *)
+	?setSubFocus@QGraphicsItemPrivate@@QAEXPAVQGraphicsItem@@@Z @ 9916 NONAME ABSENT ; void QGraphicsItemPrivate::setSubFocus(class QGraphicsItem *)
 	?setSubTitle@QWizardPage@@QAEXABVQString@@@Z @ 9917 NONAME ; void QWizardPage::setSubTitle(class QString const &)
 	?setSubTitleFormat@QWizard@@QAEXW4TextFormat@Qt@@@Z @ 9918 NONAME ; void QWizard::setSubTitleFormat(enum Qt::TextFormat)
 	?setSubmitPolicy@QDataWidgetMapper@@QAEXW4SubmitPolicy@1@@Z @ 9919 NONAME ; void QDataWidgetMapper::setSubmitPolicy(enum QDataWidgetMapper::SubmitPolicy)
@@ -13051,4 +13051,101 @@ EXPORTS
 	??_EQBlittable@@UAE@I@Z @ 13050 NONAME ; QBlittable::~QBlittable(unsigned int)
 	?qt_addBitmapToPath@@YAXMMPBEHHHPAVQPainterPath@@@Z @ 13051 NONAME ; void qt_addBitmapToPath(float, float, unsigned char const *, int, int, int, class QPainterPath *)
 	?drawGlyphs@QPainter@@QAEXABVQPointF@@ABVQGlyphs@@@Z @ 13052 NONAME ; void QPainter::drawGlyphs(class QPointF const &, class QGlyphs const &)
-
+	??0QFlickGesture@@QAE@PAVQObject@@W4MouseButton@Qt@@0@Z @ 13053 NONAME ; QFlickGesture::QFlickGesture(class QObject *, enum Qt::MouseButton, class QObject *)
+	??0QScrollEvent@@QAE@ABVQPointF@@0W4ScrollState@0@@Z @ 13054 NONAME ; QScrollEvent::QScrollEvent(class QPointF const &, class QPointF const &, enum QScrollEvent::ScrollState)
+	??0QScrollPrepareEvent@@QAE@ABVQPointF@@@Z @ 13055 NONAME ; QScrollPrepareEvent::QScrollPrepareEvent(class QPointF const &)
+	??0QScroller@@AAE@PAVQObject@@@Z @ 13056 NONAME ; QScroller::QScroller(class QObject *)
+	??0QScrollerProperties@@QAE@ABV0@@Z @ 13057 NONAME ; QScrollerProperties::QScrollerProperties(class QScrollerProperties const &)
+	??0QScrollerProperties@@QAE@XZ @ 13058 NONAME ; QScrollerProperties::QScrollerProperties(void)
+	??1QFlickGesture@@UAE@XZ @ 13059 NONAME ; QFlickGesture::~QFlickGesture(void)
+	??1QScrollEvent@@UAE@XZ @ 13060 NONAME ; QScrollEvent::~QScrollEvent(void)
+	??1QScrollPrepareEvent@@UAE@XZ @ 13061 NONAME ; QScrollPrepareEvent::~QScrollPrepareEvent(void)
+	??1QScroller@@EAE@XZ @ 13062 NONAME ; QScroller::~QScroller(void)
+	??1QScrollerProperties@@UAE@XZ @ 13063 NONAME ; QScrollerProperties::~QScrollerProperties(void)
+	??4QScrollerProperties@@QAEAAV0@ABV0@@Z @ 13064 NONAME ; class QScrollerProperties & QScrollerProperties::operator=(class QScrollerProperties const &)
+	??8QScrollerProperties@@QBE_NABV0@@Z @ 13065 NONAME ; bool QScrollerProperties::operator==(class QScrollerProperties const &) const
+	??9QScrollerProperties@@QBE_NABV0@@Z @ 13066 NONAME ; bool QScrollerProperties::operator!=(class QScrollerProperties const &) const
+	??_EQFlickGesture@@UAE@I@Z @ 13067 NONAME ; QFlickGesture::~QFlickGesture(unsigned int)
+	??_EQScrollEvent@@UAE@I@Z @ 13068 NONAME ; QScrollEvent::~QScrollEvent(unsigned int)
+	??_EQScrollPrepareEvent@@UAE@I@Z @ 13069 NONAME ; QScrollPrepareEvent::~QScrollPrepareEvent(unsigned int)
+	??_EQScroller@@UAE@I@Z @ 13070 NONAME ; QScroller::~QScroller(unsigned int)
+	??_EQScrollerProperties@@UAE@I@Z @ 13071 NONAME ; QScrollerProperties::~QScrollerProperties(unsigned int)
+	?activeScrollers@QScroller@@SA?AV?$QList@PAVQScroller@@@@XZ @ 13072 NONAME ; class QList<class QScroller *> QScroller::activeScrollers(void)
+	?canStartScrollingAt@QAbstractScrollAreaPrivate@@QAE_NABVQPoint@@@Z @ 13073 NONAME ; bool QAbstractScrollAreaPrivate::canStartScrollingAt(class QPoint const &)
+	?clearSubFocus@QGraphicsItemPrivate@@QAEXPAVQGraphicsItem@@0@Z @ 13074 NONAME ; void QGraphicsItemPrivate::clearSubFocus(class QGraphicsItem *, class QGraphicsItem *)
+	?contentPos@QScrollEvent@@QBE?AVQPointF@@XZ @ 13075 NONAME ; class QPointF QScrollEvent::contentPos(void) const
+	?contentPos@QScrollPrepareEvent@@QBE?AVQPointF@@XZ @ 13076 NONAME ; class QPointF QScrollPrepareEvent::contentPos(void) const
+	?contentPosRange@QScrollPrepareEvent@@QBE?AVQRectF@@XZ @ 13077 NONAME ; class QRectF QScrollPrepareEvent::contentPosRange(void) const
+	?d_func@QFlickGesture@@AAEPAVQFlickGesturePrivate@@XZ @ 13078 NONAME ; class QFlickGesturePrivate * QFlickGesture::d_func(void)
+	?d_func@QFlickGesture@@ABEPBVQFlickGesturePrivate@@XZ @ 13079 NONAME ; class QFlickGesturePrivate const * QFlickGesture::d_func(void) const
+	?d_func@QScrollEvent@@AAEPAVQScrollEventPrivate@@XZ @ 13080 NONAME ; class QScrollEventPrivate * QScrollEvent::d_func(void)
+	?d_func@QScrollEvent@@ABEPBVQScrollEventPrivate@@XZ @ 13081 NONAME ; class QScrollEventPrivate const * QScrollEvent::d_func(void) const
+	?d_func@QScrollPrepareEvent@@AAEPAVQScrollPrepareEventPrivate@@XZ @ 13082 NONAME ; class QScrollPrepareEventPrivate * QScrollPrepareEvent::d_func(void)
+	?d_func@QScrollPrepareEvent@@ABEPBVQScrollPrepareEventPrivate@@XZ @ 13083 NONAME ; class QScrollPrepareEventPrivate const * QScrollPrepareEvent::d_func(void) const
+	?d_func@QScroller@@AAEPAVQScrollerPrivate@@XZ @ 13084 NONAME ; class QScrollerPrivate * QScroller::d_func(void)
+	?d_func@QScroller@@ABEPBVQScrollerPrivate@@XZ @ 13085 NONAME ; class QScrollerPrivate const * QScroller::d_func(void) const
+	?ensureVisible@QScroller@@QAEXABVQRectF@@MM@Z @ 13086 NONAME ; void QScroller::ensureVisible(class QRectF const &, float, float)
+	?ensureVisible@QScroller@@QAEXABVQRectF@@MMH@Z @ 13087 NONAME ; void QScroller::ensureVisible(class QRectF const &, float, float, int)
+	?finalPosition@QScroller@@QBE?AVQPointF@@XZ @ 13088 NONAME ; class QPointF QScroller::finalPosition(void) const
+	?getStaticMetaObject@QFlickGesture@@SAABUQMetaObject@@XZ @ 13089 NONAME ; struct QMetaObject const & QFlickGesture::getStaticMetaObject(void)
+	?getStaticMetaObject@QScroller@@SAABUQMetaObject@@XZ @ 13090 NONAME ; struct QMetaObject const & QScroller::getStaticMetaObject(void)
+	?grabGesture@QScroller@@SA?AW4GestureType@Qt@@PAVQObject@@W4ScrollerGestureType@1@@Z @ 13091 NONAME ; enum Qt::GestureType QScroller::grabGesture(class QObject *, enum QScroller::ScrollerGestureType)
+	?grabbedGesture@QScroller@@SA?AW4GestureType@Qt@@PAVQObject@@@Z @ 13092 NONAME ; enum Qt::GestureType QScroller::grabbedGesture(class QObject *)
+	?handleInput@QScroller@@QAE_NW4Input@1@ABVQPointF@@_J@Z @ 13093 NONAME ; bool QScroller::handleInput(enum QScroller::Input, class QPointF const &, long long)
+	?hasScroller@QScroller@@SA_NPAVQObject@@@Z @ 13094 NONAME ; bool QScroller::hasScroller(class QObject *)
+	?metaObject@QFlickGesture@@UBEPBUQMetaObject@@XZ @ 13095 NONAME ; struct QMetaObject const * QFlickGesture::metaObject(void) const
+	?metaObject@QScroller@@UBEPBUQMetaObject@@XZ @ 13096 NONAME ; struct QMetaObject const * QScroller::metaObject(void) const
+	?overshootDistance@QScrollEvent@@QBE?AVQPointF@@XZ @ 13097 NONAME ; class QPointF QScrollEvent::overshootDistance(void) const
+	?pixelPerMeter@QScroller@@QBE?AVQPointF@@XZ @ 13098 NONAME ; class QPointF QScroller::pixelPerMeter(void) const
+	?qGamma_correct_back_to_linear_cs@@YAXPAVQImage@@@Z @ 13099 NONAME ; void qGamma_correct_back_to_linear_cs(class QImage *)
+	?qt_metacall@QFlickGesture@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 13100 NONAME ; int QFlickGesture::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@QScroller@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 13101 NONAME ; int QScroller::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacast@QFlickGesture@@UAEPAXPBD@Z @ 13102 NONAME ; void * QFlickGesture::qt_metacast(char const *)
+	?qt_metacast@QScroller@@UAEPAXPBD@Z @ 13103 NONAME ; void * QScroller::qt_metacast(char const *)
+	?resendPrepareEvent@QScroller@@QAEXXZ @ 13104 NONAME ; void QScroller::resendPrepareEvent(void)
+	?resetCursorBlinkTimer@QLineControl@@QAEXXZ @ 13105 NONAME ; void QLineControl::resetCursorBlinkTimer(void)
+	?scrollMetric@QScrollerProperties@@QBE?AVQVariant@@W4ScrollMetric@1@@Z @ 13106 NONAME ; class QVariant QScrollerProperties::scrollMetric(enum QScrollerProperties::ScrollMetric) const
+	?scrollState@QScrollEvent@@QBE?AW4ScrollState@1@XZ @ 13107 NONAME ; enum QScrollEvent::ScrollState QScrollEvent::scrollState(void) const
+	?scrollTo@QScroller@@QAEXABVQPointF@@@Z @ 13108 NONAME ; void QScroller::scrollTo(class QPointF const &)
+	?scrollTo@QScroller@@QAEXABVQPointF@@H@Z @ 13109 NONAME ; void QScroller::scrollTo(class QPointF const &, int)
+	?scroller@QScroller@@SAPAV1@PAVQObject@@@Z @ 13110 NONAME ; class QScroller * QScroller::scroller(class QObject *)
+	?scroller@QScroller@@SAPBV1@PBVQObject@@@Z @ 13111 NONAME ; class QScroller const * QScroller::scroller(class QObject const *)
+	?scrollerProperties@QScroller@@QBE?AVQScrollerProperties@@XZ @ 13112 NONAME ; class QScrollerProperties QScroller::scrollerProperties(void) const
+	?scrollerPropertiesChanged@QScroller@@IAEXABVQScrollerProperties@@@Z @ 13113 NONAME ; void QScroller::scrollerPropertiesChanged(class QScrollerProperties const &)
+	?setContentPos@QScrollPrepareEvent@@QAEXABVQPointF@@@Z @ 13114 NONAME ; void QScrollPrepareEvent::setContentPos(class QPointF const &)
+	?setContentPosRange@QScrollPrepareEvent@@QAEXABVQRectF@@@Z @ 13115 NONAME ; void QScrollPrepareEvent::setContentPosRange(class QRectF const &)
+	?setDefaultScrollerProperties@QScrollerProperties@@SAXABV1@@Z @ 13116 NONAME ; void QScrollerProperties::setDefaultScrollerProperties(class QScrollerProperties const &)
+	?setScrollMetric@QScrollerProperties@@QAEXW4ScrollMetric@1@ABVQVariant@@@Z @ 13117 NONAME ; void QScrollerProperties::setScrollMetric(enum QScrollerProperties::ScrollMetric, class QVariant const &)
+	?setScrollerProperties@QScroller@@QAEXABVQScrollerProperties@@@Z @ 13118 NONAME ; void QScroller::setScrollerProperties(class QScrollerProperties const &)
+	?setSnapPositionsX@QScroller@@QAEXABV?$QList@M@@@Z @ 13119 NONAME ; void QScroller::setSnapPositionsX(class QList<float> const &)
+	?setSnapPositionsX@QScroller@@QAEXMM@Z @ 13120 NONAME ; void QScroller::setSnapPositionsX(float, float)
+	?setSnapPositionsY@QScroller@@QAEXABV?$QList@M@@@Z @ 13121 NONAME ; void QScroller::setSnapPositionsY(class QList<float> const &)
+	?setSnapPositionsY@QScroller@@QAEXMM@Z @ 13122 NONAME ; void QScroller::setSnapPositionsY(float, float)
+	?setSubFocus@QGraphicsItemPrivate@@QAEXPAVQGraphicsItem@@0@Z @ 13123 NONAME ; void QGraphicsItemPrivate::setSubFocus(class QGraphicsItem *, class QGraphicsItem *)
+	?setViewportSize@QScrollPrepareEvent@@QAEXABVQSizeF@@@Z @ 13124 NONAME ; void QScrollPrepareEvent::setViewportSize(class QSizeF const &)
+	?startPos@QScrollPrepareEvent@@QBE?AVQPointF@@XZ @ 13125 NONAME ; class QPointF QScrollPrepareEvent::startPos(void) const
+	?state@QScroller@@QBE?AW4State@1@XZ @ 13126 NONAME ; enum QScroller::State QScroller::state(void) const
+	?stateChanged@QScroller@@IAEXW4State@1@@Z @ 13127 NONAME ; void QScroller::stateChanged(enum QScroller::State)
+	?stop@QScroller@@QAEXXZ @ 13128 NONAME ; void QScroller::stop(void)
+	?target@QScroller@@QBEPAVQObject@@XZ @ 13129 NONAME ; class QObject * QScroller::target(void) const
+	?tr@QFlickGesture@@SA?AVQString@@PBD0@Z @ 13130 NONAME ; class QString QFlickGesture::tr(char const *, char const *)
+	?tr@QFlickGesture@@SA?AVQString@@PBD0H@Z @ 13131 NONAME ; class QString QFlickGesture::tr(char const *, char const *, int)
+	?tr@QScroller@@SA?AVQString@@PBD0@Z @ 13132 NONAME ; class QString QScroller::tr(char const *, char const *)
+	?tr@QScroller@@SA?AVQString@@PBD0H@Z @ 13133 NONAME ; class QString QScroller::tr(char const *, char const *, int)
+	?trUtf8@QFlickGesture@@SA?AVQString@@PBD0@Z @ 13134 NONAME ; class QString QFlickGesture::trUtf8(char const *, char const *)
+	?trUtf8@QFlickGesture@@SA?AVQString@@PBD0H@Z @ 13135 NONAME ; class QString QFlickGesture::trUtf8(char const *, char const *, int)
+	?trUtf8@QScroller@@SA?AVQString@@PBD0@Z @ 13136 NONAME ; class QString QScroller::trUtf8(char const *, char const *)
+	?trUtf8@QScroller@@SA?AVQString@@PBD0H@Z @ 13137 NONAME ; class QString QScroller::trUtf8(char const *, char const *, int)
+	?ungrabGesture@QScroller@@SAXPAVQObject@@@Z @ 13138 NONAME ; void QScroller::ungrabGesture(class QObject *)
+	?unsetDefaultScrollerProperties@QScrollerProperties@@SAXXZ @ 13139 NONAME ; void QScrollerProperties::unsetDefaultScrollerProperties(void)
+	?velocity@QScroller@@QBE?AVQPointF@@XZ @ 13140 NONAME ; class QPointF QScroller::velocity(void) const
+	?viewportSize@QScrollPrepareEvent@@QBE?AVQSizeF@@XZ @ 13141 NONAME ; class QSizeF QScrollPrepareEvent::viewportSize(void) const
+	?staticMetaObject@QScroller@@2UQMetaObject@@B @ 13142 NONAME ; struct QMetaObject const QScroller::staticMetaObject
+	?staticMetaObject@QFlickGesture@@2UQMetaObject@@B @ 13143 NONAME ; struct QMetaObject const QFlickGesture::staticMetaObject
+	?isDragEnabled@QTextControl@@QBE_NXZ @ 13144 NONAME ; bool QTextControl::isDragEnabled(void) const
+	?setWordSelectionEnabled@QTextControl@@QAEX_N@Z @ 13145 NONAME ; void QTextControl::setWordSelectionEnabled(bool)
+	?setDragEnabled@QTextControl@@QAEX_N@Z @ 13146 NONAME ; void QTextControl::setDragEnabled(bool)
+	?isWordSelectionEnabled@QTextControl@@QBE_NXZ @ 13147 NONAME ; bool QTextControl::isWordSelectionEnabled(void) const
+	?ProcessCommandParametersL@QS60MainAppUi@@UAEHW4TApaCommand@@AAV?$TBuf@$0BAA@@@ABVTDesC8@@@Z @ 13148 NONAME ; int QS60MainAppUi::ProcessCommandParametersL(enum TApaCommand, class TBuf<256> &, class TDesC8 const &)
+	?openFile@QFileOpenEvent@@QBE_NAAVQFile@@V?$QFlags@W4OpenModeFlag@QIODevice@@@@@Z @ 13149 NONAME ; bool QFileOpenEvent::openFile(class QFile &, class QFlags<enum QIODevice::OpenModeFlag>) const
+	??0QFileOpenEvent@@QAE@ABVRFile@@@Z @ 13150 NONAME ; QFileOpenEvent::QFileOpenEvent(class RFile const &)

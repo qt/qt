@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -434,7 +434,7 @@ private:
     // Lazily computed from the above user input
     mutable int q_cachedEffectiveFirstRows[NOrientations];
     mutable int q_cachedEffectiveLastRows[NOrientations];
-    mutable quint8 q_cachedConstraintOrientation : 2;
+    mutable quint8 q_cachedConstraintOrientation : 3;
 
     // Layout item input
     mutable QLayoutStyleInfo q_cachedDataForStyleInfo;

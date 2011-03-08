@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,7 +82,7 @@ QList<SerialPortId> enumerateSerialPorts(int loglevel)
 
     for (struct usb_bus *bus = usb_get_busses(); bus; bus = bus->next) {
         for (struct usb_device *device = bus->devices; device; device = device->next) {
-            for (int n = 0; n < device->descriptor.bNumConfigurations; ++n) {
+            for (int n = 0; n < device->descriptor.bNumConfigurations && device->config; ++n) {
                 struct usb_config_descriptor &usbConfig =device->config[n];
                 QList<int> usableInterfaces;
                 for (int m = 0; m < usbConfig.bNumInterfaces; ++m) {
@@ -146,6 +146,10 @@ QList<SerialPortId> enumerateSerialPorts(int loglevel)
 
                 // second loop to find the actual data interface.
                 foreach (int i, usableInterfaces) {
+#ifdef Q_OS_MAC
+                    eligibleInterfaces << QString("^cu\\.usbmodem.*%1$")
+                        .arg(QString("%1").arg(descriptor.bInterfaceNumber, 1, 16).toUpper());
+#else
                     // ### manufacturer and product strings are only readable as root :(
                     if (!manufacturerString.isEmpty() && !productString.isEmpty()) {
                         eligibleInterfaces << QString("usb-%1_%2-if%3")
@@ -155,6 +159,7 @@ QList<SerialPortId> enumerateSerialPorts(int loglevel)
                     } else {
                         eligibleInterfaces << QString("if%1").arg(i, 2, 16, QChar('0')); // fix!
                     }
+#endif
                 }
                 eligibleInterfacesInfo << InterfaceInfo(manufacturerString, productString, device->descriptor.idVendor, device->descriptor.idProduct);
             }
@@ -164,14 +169,24 @@ QList<SerialPortId> enumerateSerialPorts(int loglevel)
     if (loglevel > 1)
         qDebug() << "      searching for interfaces:" << eligibleInterfaces;
 
+#ifdef Q_OS_MAC
+    QDir dir("/dev/");
+    bool allowAny = false;
+#else
     QDir dir("/dev/serial/by-id/");
-    foreach (const QFileInfo &info, dir.entryInfoList()) {
+    bool allowAny = eligibleInterfaces.isEmpty();
+#endif
+    foreach (const QFileInfo &info, dir.entryInfoList(QDir::System)) {
         if (!info.isDir()) {
-            bool usable = eligibleInterfaces.isEmpty();
+            bool usable = allowAny;
+            QString friendlyName = info.fileName();
             foreach (const QString &iface, eligibleInterfaces) {
-                if (info.fileName().contains(iface)) {
+                if (info.fileName().contains(QRegExp(iface))) {
                     if (loglevel > 1)
                         qDebug() << "      found device file:" << info.fileName() << endl;
+#ifdef Q_OS_MAC
+                    friendlyName = eligibleInterfacesInfo[eligibleInterfaces.indexOf(iface)].product;
+#endif
                     usable = true;
                     break;
                 }
@@ -180,7 +195,7 @@ QList<SerialPortId> enumerateSerialPorts(int loglevel)
                 continue;
 
             SerialPortId id;
-            id.friendlyName = info.fileName();
+            id.friendlyName = friendlyName;
             id.portName = info.canonicalFilePath();
             list << id;
         }
@@ -193,11 +208,15 @@ QList<SerialPortId> enumerateSerialPorts(int loglevel)
                      << iface.manufacturer
                      << "Product:"
                      << iface.product
+#ifdef Q_OS_LINUX
                      << endl
                      << "    Load generic driver using:"
                      << QString("sudo modprobe usbserial vendor=0x%1 product=0x%2")
                         .arg(iface.manufacturerid, 4, 16, QChar('0'))
                         .arg(iface.productid, 4, 16, QChar('0'));
+#else
+                     ;
+#endif
         }
     }
     return list;

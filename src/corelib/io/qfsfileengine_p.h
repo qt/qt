@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,7 +56,13 @@
 #include "qplatformdefs.h"
 #include "QtCore/qfsfileengine.h"
 #include "private/qabstractfileengine_p.h"
+#include <QtCore/private/qfilesystementry_p.h>
+#include <QtCore/private/qfilesystemmetadata_p.h>
 #include <qhash.h>
+
+#ifdef Q_OS_SYMBIAN
+#include <f32file.h>
+#endif
 
 #ifndef QT_NO_FSFILEENGINE
 
@@ -74,13 +80,10 @@ public:
 #ifdef Q_WS_WIN
     static QString longFileName(const QString &path);
 #endif
-    static QString canonicalized(const QString &path);
 
-    QString filePath;
-    QByteArray nativeFilePath;
+    QFileSystemEntry fileEntry;
     QIODevice::OpenMode openMode;
 
-    void nativeInitFileName();
     bool nativeOpen(QIODevice::OpenMode openMode);
     bool openFh(QIODevice::OpenMode flags, FILE *fh);
     bool openFd(QIODevice::OpenMode flags, int fd);
@@ -89,7 +92,9 @@ public:
     bool nativeFlush();
     bool flushFh();
     qint64 nativeSize() const;
+#ifndef Q_OS_WIN
     qint64 sizeFdFh() const;
+#endif
     qint64 nativePos() const;
     qint64 posFdFh() const;
     bool nativeSeek(qint64);
@@ -102,12 +107,42 @@ public:
     qint64 writeFdFh(const char *data, qint64 len);
     int nativeHandle() const;
     bool nativeIsSequential() const;
+#ifndef Q_OS_WIN
     bool isSequentialFdFh() const;
+#endif
 
     uchar *map(qint64 offset, qint64 size, QFile::MemoryMapFlags flags);
     bool unmap(uchar *ptr);
 
+    mutable QFileSystemMetaData metaData;
+
     FILE *fh;
+#ifdef Q_OS_SYMBIAN
+#ifdef  SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
+    RFile64 symbianFile;
+    TInt64 symbianFilePos;
+#else
+    RFile symbianFile;
+    
+    /**
+     * The cursor position in the underlying file.  This differs
+     * from devicePos because the latter is updated on calls to
+     * writeData, even if no data was physically transferred to
+     * the file, but instead stored in the write buffer.
+     * 
+     * iFilePos is updated on calls to RFile::Read and
+     * RFile::Write.  It is also updated on calls to seek() but
+     * RFile::Seek is not called when that happens because
+     * Symbian supports positioned reads and writes, saving a file
+     * server call, and because Symbian does not support seeking
+     * past the end of a file.  
+     */
+    TInt symbianFilePos;
+#endif
+    mutable int fileHandleForMaps;
+    int getMapHandle();
+#endif
+
 #ifdef Q_WS_WIN
     HANDLE fileHandle;
     HANDLE mapHandle;
@@ -120,7 +155,6 @@ public:
     mutable DWORD fileAttrib;
 #else
     QHash<uchar *, QPair<int /*offset % PageSize*/, size_t /*length + offset % PageSize*/> > maps;
-    mutable QT_STATBUF st;
 #endif
     int fd;
 
@@ -142,21 +176,15 @@ public:
     mutable uint is_link : 1;
 #endif
 
-    bool doStat() const;
+#if defined(Q_OS_WIN)
+    bool doStat(QFileSystemMetaData::MetaDataFlags flags) const;
+#else
+    bool doStat(QFileSystemMetaData::MetaDataFlags flags = QFileSystemMetaData::PosixStatFlags) const;
+#endif
     bool isSymlink() const;
 
 #if defined(Q_OS_WIN32)
     int sysOpen(const QString &, int flags);
-#endif
-
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-    static void resolveLibs();
-    static bool resolveUNCLibs();
-    static bool uncListSharesOnServer(const QString &server, QStringList *list);
-#endif
-
-#ifdef Q_OS_SYMBIAN
-    void setSymbianError(int symbianError, QFile::FileError defaultError, QString defaultString);
 #endif
 
 protected:

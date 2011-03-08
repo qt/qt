@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -164,6 +164,8 @@ public:
         TextIndent = 0x1034,
         TabPositions = 0x1035,
         BlockIndent = 0x1040,
+        LineHeight = 0x1048,
+        LineHeightType = 0x1049,
         BlockNonBreakableLines = 0x1050,
         BlockTrailingHorizontalRulerWidth = 0x1060,
 
@@ -531,6 +533,14 @@ inline void QTextCharFormat::setTableCellColumnSpan(int _tableCellColumnSpan)
 class Q_GUI_EXPORT QTextBlockFormat : public QTextFormat
 {
 public:
+    enum LineHeightTypes {
+        SingleHeight = 0,
+        ProportionalHeight = 1,
+        FixedHeight = 2,
+        MinimumHeight = 3,
+        LineDistanceHeight = 4
+    };
+
     QTextBlockFormat();
 
     bool isValid() const { return isBlockFormat(); }
@@ -568,6 +578,14 @@ public:
     inline int indent() const
     { return intProperty(BlockIndent); }
 
+    inline void setLineHeight(qreal height, int heightType)
+    { setProperty(LineHeight, height); setProperty(LineHeightType, heightType); }
+    inline qreal lineHeight(qreal scriptLineHeight, qreal scaling) const;
+    inline qreal lineHeight() const
+    { return doubleProperty(LineHeight); }
+    inline int lineHeightType() const
+    { return intProperty(LineHeightType); }
+
     inline void setNonBreakableLines(bool b)
     { setProperty(BlockNonBreakableLines, b); }
     inline bool nonBreakableLines() const
@@ -591,6 +609,23 @@ inline void QTextBlockFormat::setAlignment(Qt::Alignment aalignment)
 
 inline void QTextBlockFormat::setIndent(int aindent)
 { setProperty(BlockIndent, aindent); }
+
+inline qreal QTextBlockFormat::lineHeight(qreal scriptLineHeight, qreal scaling = 1.0) const
+{
+  switch(intProperty(LineHeightType)) {
+    case SingleHeight:
+      return(scriptLineHeight);
+    case ProportionalHeight:
+      return(scriptLineHeight * doubleProperty(LineHeight) / 100.0);
+    case FixedHeight:
+      return(doubleProperty(LineHeight) * scaling);
+    case MinimumHeight:
+      return(qMax(scriptLineHeight, doubleProperty(LineHeight) * scaling));
+    case LineDistanceHeight:
+      return(scriptLineHeight + doubleProperty(LineHeight) * scaling);
+  }
+  return(0);
+}
 
 class Q_GUI_EXPORT QTextListFormat : public QTextFormat
 {

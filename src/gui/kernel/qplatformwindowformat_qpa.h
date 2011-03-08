@@ -67,6 +67,7 @@ public:
         SampleBuffers           = 0x0200,
         DeprecatedFunctions     = 0x0400,
         UseDefaultSharedContext = 0x0800,
+        HasWindowSurface        = 0x1000,
         SingleBuffer            = DoubleBuffer    << 16,
         NoDepthBuffer           = DepthBuffer     << 16,
         ColorIndex              = Rgba            << 16,
@@ -78,7 +79,8 @@ public:
         NoOverlay               = HasOverlay      << 16,
         NoSampleBuffers         = SampleBuffers   << 16,
         NoDeprecatedFunctions   = DeprecatedFunctions << 16,
-        NoDefaultSharedContext  = UseDefaultSharedContext << 16
+        NoDefaultSharedContext  = UseDefaultSharedContext << 16,
+        NoWindowSurface         = HasWindowSurface << 16
 
     };
     Q_DECLARE_FLAGS(FormatOptions, FormatOption)
@@ -149,8 +151,8 @@ public:
     void setDirectRendering(bool enable);
     bool useDefaultSharedContext() const;
     void setUseDefaultSharedContext(bool enable);
-//    bool hasOverlay() const;
-//    void setOverlay(bool enable);
+    bool hasWindowSurface() const;
+    void setWindowSurface(bool enable);
 
     void setOption(QPlatformWindowFormat::FormatOptions opt);
     bool testOption(QPlatformWindowFormat::FormatOptions opt) const;
@@ -219,10 +221,10 @@ inline bool QPlatformWindowFormat::directRendering() const
     return testOption(QPlatformWindowFormat::DirectRendering);
 }
 
-//inline bool QPlatformWindowFormat::hasOverlay() const
-//{
-//    return testOption(QPlatformWindowFormat::HasOverlay);
-//}
+inline bool QPlatformWindowFormat::hasWindowSurface() const
+{
+    return testOption(QPlatformWindowFormat::HasWindowSurface);
+}
 
 inline bool QPlatformWindowFormat::sampleBuffers() const
 {

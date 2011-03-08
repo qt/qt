@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1889,7 +1889,7 @@ void tst_QScriptValue::getSetProperty_gettersAndSetters()
         QCOMPARE(object.propertyFlags("foo") & ~QScriptValue::UserRange,
                  QScriptValue::PropertyGetter );
 
-        QEXPECT_FAIL("", "User-range flags are not retained for getter/setter properties", Continue);
+        QEXPECT_FAIL("", "QTBUG-17615: User-range flags are not retained for getter/setter properties", Continue);
         QCOMPARE(object.propertyFlags("foo"),
                  QScriptValue::PropertyGetter | QScriptValue::UserRange);
         object.setProperty("x", num);
@@ -1970,7 +1970,7 @@ void tst_QScriptValue::getSetProperty_gettersAndSetters()
     QCOMPARE(object.property("foo").isUndefined(), true);
 }
 
-void tst_QScriptValue::getSetProperty_gettersAndSettersThrowError()
+void tst_QScriptValue::getSetProperty_gettersAndSettersThrowErrorNative()
 {
     // getter/setter that throws an error
     QScriptEngine eng;
@@ -1984,6 +1984,32 @@ void tst_QScriptValue::getSetProperty_gettersAndSettersThrowError()
     QVERIFY(ret.isError());
     QVERIFY(eng.hasUncaughtException());
     QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
+    QCOMPARE(ret.toString(), QLatin1String("Error: get foo"));
+    eng.evaluate("Object"); // clear exception state...
+    QVERIFY(!eng.hasUncaughtException());
+    object.setProperty("foo", str);
+    QVERIFY(eng.hasUncaughtException());
+    QCOMPARE(eng.uncaughtException().toString(), QLatin1String("Error: set foo"));
+}
+
+void tst_QScriptValue::getSetProperty_gettersAndSettersThrowErrorJS()
+{
+    // getter/setter that throws an error (from js function)
+    QScriptEngine eng;
+    QScriptValue str = QScriptValue(&eng, "bar");
+
+    eng.evaluate("o = new Object; "
+                 "o.__defineGetter__('foo', function() { throw new Error('get foo') }); "
+                 "o.__defineSetter__('foo', function() { throw new Error('set foo') }); ");
+    QScriptValue object = eng.evaluate("o");
+    QVERIFY(!eng.hasUncaughtException());
+    QScriptValue ret = object.property("foo");
+    QEXPECT_FAIL("", "QTBUG-17616: Exception thrown from js function are not returned by the JSC port", Continue);
+    QVERIFY(ret.isError());
+    QVERIFY(eng.hasUncaughtException());
+    QEXPECT_FAIL("", "QTBUG-17616: Exception thrown from js function are not returned by the JSC port", Continue);
+    QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
+    QCOMPARE(eng.uncaughtException().toString(), QLatin1String("Error: get foo"));
     eng.evaluate("Object"); // clear exception state...
     QVERIFY(!eng.hasUncaughtException());
     object.setProperty("foo", str);
@@ -2051,6 +2077,12 @@ void tst_QScriptValue::getSetProperty_gettersAndSettersChange()
     QVERIFY(!object.property("x").isValid());
     object.setProperty("foo", num);
     QVERIFY(object.property("x").equals(num));
+
+    eng.globalObject().setProperty("object", object);
+    QScriptValue res = eng.evaluate("object.x = 89; var a = object.foo; object.foo = 65; a");
+    QCOMPARE(res.toInt32(), 89);
+    QCOMPARE(object.property("x").toInt32(), 65);
+    QCOMPARE(object.property("foo").toInt32(), 65);
 }
 
 void tst_QScriptValue::getSetProperty_array()
@@ -2153,9 +2185,9 @@ void tst_QScriptValue::getSetProperty()
     }
     // should still be deletable from C++
     object.setProperty("undeletableProperty", QScriptValue());
-    QEXPECT_FAIL("", "With JSC-based back-end, undeletable properties can't be deleted from C++", Continue);
+    QEXPECT_FAIL("", "QTBUG-17617: With JSC-based back-end, undeletable properties can't be deleted from C++", Continue);
     QVERIFY(!object.property("undeletableProperty").isValid());
-    QEXPECT_FAIL("", "With JSC-based back-end, undeletable properties can't be deleted from C++", Continue);
+    QEXPECT_FAIL("", "QTBUG-17617: With JSC-based back-end, undeletable properties can't be deleted from C++", Continue);
     QCOMPARE(object.propertyFlags("undeletableProperty"), 0);
 
   // SkipInEnumeration
@@ -3930,5 +3962,31 @@ void tst_QScriptValue::nestedObjectToVariant()
     QVERIFY(o.isObject());
     QCOMPARE(o.toVariant(), expected);
 }
+
+void tst_QScriptValue::propertyFlags_data()
+{
+    QTest::addColumn<QString>("program");
+    QTest::addColumn<uint>("expected");
+
+    QTest::newRow("nothing") << "" << 0u;
+    QTest::newRow("getter") << "o.__defineGetter__('prop', function() { return 'blah' } );\n" << uint(QScriptValue::PropertyGetter);
+    QTest::newRow("setter") << "o.__defineSetter__('prop', function(a) { this.setted_prop2 = a; } );\n" << uint(QScriptValue::PropertySetter);
+    QTest::newRow("getterSetter") <<  "o.__defineGetter__('prop', function() { return 'ploup' } );\n"
+                                      "o.__defineSetter__('prop', function(a) { this.setted_prop3 = a; } );\n" << uint(QScriptValue::PropertySetter|QScriptValue::PropertyGetter);
+    QTest::newRow("nothing2") << "o.prop = 'nothing'" << 0u;
+}
+
+void tst_QScriptValue::propertyFlags()
+{
+    QFETCH(QString, program);
+    QFETCH(uint, expected);
+    QScriptEngine eng;
+    eng.evaluate("o = new Object;");
+    eng.evaluate(program);
+    QScriptValue o = eng.evaluate("o");
+
+    QCOMPARE(uint(o.propertyFlags("prop")), expected);
+}
+
 
 QTEST_MAIN(tst_QScriptValue)

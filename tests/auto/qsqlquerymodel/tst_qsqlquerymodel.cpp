@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -318,12 +318,22 @@ void tst_QSqlQueryModel::insertColumn()
     model.setQuery(QSqlQuery("select * from " + qTableName("test", __FILE__), db));
     model.fetchMore(); // necessary???
 
+    bool isToUpper = db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2");
+    const QString idColumn(isToUpper ? "ID" : "id");
+    const QString nameColumn(isToUpper ? "NAME" : "name");
+    const QString titleColumn(isToUpper ? "TITLE" : "title");
+
     QSignalSpy spy(&model, SIGNAL(columnsInserted(QModelIndex, int, int)));
 
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
     QCOMPARE(model.data(model.index(0, 2)).toInt(), 1);
     QCOMPARE(model.data(model.index(0, 3)), QVariant());
+
+    QCOMPARE(model.headerData(0, Qt::Horizontal).toString(), idColumn);
+    QCOMPARE(model.headerData(1, Qt::Horizontal).toString(), nameColumn);
+    QCOMPARE(model.headerData(2, Qt::Horizontal).toString(), titleColumn);
+    QCOMPARE(model.headerData(3, Qt::Horizontal).toString(), QString("4"));
 
     QVERIFY(model.insertColumn(1));
 
@@ -343,6 +353,12 @@ void tst_QSqlQueryModel::insertColumn()
     QCOMPARE(model.data(model.index(0, 2)).toString(), QString("harry"));
     QCOMPARE(model.data(model.index(0, 3)).toInt(), 1);
     QCOMPARE(model.data(model.index(0, 4)), QVariant());
+
+    QCOMPARE(model.headerData(0, Qt::Horizontal).toString(), idColumn);
+    QCOMPARE(model.headerData(1, Qt::Horizontal).toString(), QString("2"));
+    QCOMPARE(model.headerData(2, Qt::Horizontal).toString(), nameColumn);
+    QCOMPARE(model.headerData(3, Qt::Horizontal).toString(), titleColumn);
+    QCOMPARE(model.headerData(4, Qt::Horizontal).toString(), QString("5"));
 
     QVERIFY(!model.insertColumn(-1));
     QVERIFY(!model.insertColumn(100));
@@ -378,14 +394,21 @@ void tst_QSqlQueryModel::insertColumn()
     QCOMPARE(model.indexInQuery(model.index(0, 5)).column(), -1);
     QCOMPARE(model.indexInQuery(model.index(0, 6)).column(), -1);
 
-    bool isToUpper = db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2");
     QCOMPARE(model.record().field(0).name(), QString());
-    QCOMPARE(model.record().field(1).name(), isToUpper ? QString("ID") : QString("id"));
+    QCOMPARE(model.record().field(1).name(), idColumn);
     QCOMPARE(model.record().field(2).name(), QString());
-    QCOMPARE(model.record().field(3).name(), isToUpper ? QString("NAME") : QString("name"));
-    QCOMPARE(model.record().field(4).name(), isToUpper ? QString("TITLE") : QString("title"));
+    QCOMPARE(model.record().field(3).name(), nameColumn);
+    QCOMPARE(model.record().field(4).name(), titleColumn);
     QCOMPARE(model.record().field(5).name(), QString());
     QCOMPARE(model.record().field(6).name(), QString());
+
+    QCOMPARE(model.headerData(0, Qt::Horizontal).toString(), QString("1"));
+    QCOMPARE(model.headerData(1, Qt::Horizontal).toString(), idColumn);
+    QCOMPARE(model.headerData(2, Qt::Horizontal).toString(), QString("3"));
+    QCOMPARE(model.headerData(3, Qt::Horizontal).toString(), nameColumn);
+    QCOMPARE(model.headerData(4, Qt::Horizontal).toString(), titleColumn);
+    QCOMPARE(model.headerData(5, Qt::Horizontal).toString(), QString("6"));
+    QCOMPARE(model.headerData(6, Qt::Horizontal).toString(), QString("7"));
 }
 
 void tst_QSqlQueryModel::record()

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -94,13 +94,14 @@ Both relative and absolute JavaScript URLs can be imported.  In the case of a
 relative URL, the location is resolved relative to the location of the
 \l {QML Document} that contains the import.  If the script file is not accessible,
 an error will occur.  If the JavaScript needs to be fetched from a network
-resource, the QML document has a "Loading"
-\l {QDeclarativeComponent::status()}{status} until the script has been
-downloaded.
+resource, the component's \l {QDeclarativeComponent::status()}{status} is set to
+"Loading" until the script has been downloaded.
 
 Imported JavaScript files are always qualified using the "as" keyword.  The
 qualifier for JavaScript files must be unique, so there is always a one-to-one
-mapping between qualifiers and JavaScript files.
+mapping between qualifiers and JavaScript files. (This also means qualifiers cannot
+be named the same as built-in JavaScript objects such as \c Date and \c Math).
+
 
 \section2 Code-Behind Implementation Files
 
@@ -143,6 +144,31 @@ As they are shared, stateless library files cannot access QML component instance
 objects or properties directly, although QML values can be passed as function
 parameters.
 
+
+\section2 Importing One JavaScript File From Another
+
+If a JavaScript file needs to use functions defined inside another JavaScript file,
+the other file can be imported using the \l {QML:Qt::include()}{Qt.include()}
+function. This imports all functions from the other file into the current file's
+namespace.
+
+For example, the QML code below left calls \c showCalculations() in \c script.js,
+which in turn can call \c factorial() in \c factorial.js, as it has included
+\c factorial.js using \l {QML:Qt::include()}{Qt.include()}.
+
+\table
+\row
+\o {1,2} \snippet doc/src/snippets/declarative/integrating-javascript/includejs/app.qml 0
+\o \snippet doc/src/snippets/declarative/integrating-javascript/includejs/script.js 0
+\row
+\o \snippet doc/src/snippets/declarative/integrating-javascript/includejs/factorial.js 0
+\endtable
+
+Notice that calling \l {QML:Qt::include()}{Qt.include()} imports all functions from
+\c factorial.js into the \c MyScript namespace, which means the QML component can also
+access \c factorial() directly as \c MyScript.factorial().
+
+
 \section1 Running JavaScript at Startup
 
 It is occasionally necessary to run some imperative code at application (or
@@ -174,37 +200,31 @@ Likewise, the \l {Component::onDestruction} attached property is triggered on
 component destruction.
 
 
-\section1 Property Assignment vs Property Binding
+\section1 JavaScript and Property Binding
 
-When working with both QML and JavaScript, it is important to differentiate between
-QML \l {Property Binding} and JavaScript value assignment. In QML, a property 
-binding is created using the \e {property: value} syntax:
+Property bindings can be created in JavaScript by assigning the property with a \c function
+that returns the required value.
 
-\code
-Rectangle {
-    width: otherItem.width
-}
-\endcode
+See \l {Binding Properties from JavaScript} for details.
 
-The \c width of the above \l Rectangle is updated whenever \c otherItem.width changes. On the other
-hand, take the following JavaScript code snippet, that runs when the \l Rectangle is created:
 
-\code
-Rectangle {
+\section1 Receiving QML Signals in JavaScript
 
-    Component.onCompleted: {
-        width = otherItem.width;
-    }
-}
-\endcode
+To receive a QML signal, use the signal's \c connect() method to connect it to a JavaScript
+function.
 
-The \c width of this \l Rectangle is \e assigned the value of \c otherItem.width using the
-\e {property = value} syntax in JavaScript. Unlike the QML \e {property: value} syntax, this
-does not invoke QML property binding; the \c rectangle.width property is set to the value
-of \c otherItem.width at the time of the assignment and will not be updated if that value
-changes.
+For example, the following code connects the MouseArea \c clicked signal to the \c jsFunction()
+in \c script.js:
 
-See \l {Property Binding} for more information.
+\table
+\row
+\o \snippet doc/src/snippets/declarative/integrating-javascript/connectjs.qml 0
+\o \snippet doc/src/snippets/declarative/integrating-javascript/script.js 0
+\endtable
+
+The \c jsFunction() will now be called whenever MouseArea's \c clicked signal is emitted.
+
+See \l {Connecting signals to methods and other signals} for more information.
 
 
 \section1 QML JavaScript Restrictions
@@ -270,10 +290,13 @@ This restriction exists as the QML environment is not yet fully established.
 To run code after the environment setup has completed, refer to
 \l {Running JavaScript at Startup}.
 
-\o The value of \c this is currently undefined in QML
+\o The value of \c this is currently undefined in QML in the majority of contexts
 
-The value of \c this is undefined in QML.  To refer to any element, provide
-an \c id.  For example:
+The \c this keyword is supported when \l {Binding Properties from JavaScript}
+{binding properties from JavaScript}. In all other situations, the value of
+\c this is undefined in QML.
+
+To refer to any element, provide an \c id.  For example:
 
 \qml
 Item {

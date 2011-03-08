@@ -79,7 +79,7 @@ void kdprocessevent( const KDEvent *event)
         qDebug() << "KD_EVENT_INPUT_KEY_ATX";
         break;
     case QT_EVENT_WAKEUP_EVENTLOOP:
-//        qDebug() << "QT_EVENT_WAKEUP_EVENTLOOP";
+        QPlatformEventLoopIntegration::processEvents();
         break;
     default:
         break;
@@ -90,25 +90,34 @@ void kdprocessevent( const KDEvent *event)
 }
 
 QOpenKODEEventLoopIntegration::QOpenKODEEventLoopIntegration()
+    : m_quit(false)
 {
     m_kdThread = kdThreadSelf();
     kdInstallCallback(&kdprocessevent,QT_EVENT_WAKEUP_EVENTLOOP,this);
 }
 
-void QOpenKODEEventLoopIntegration::processEvents(qint64 msec)
+void QOpenKODEEventLoopIntegration::startEventLoop()
 {
-    if (msec == 0)
-        msec = -1;
-    const KDEvent *event = kdWaitEvent(msec*1000);
-    if (event) {
-        kdDefaultEvent(event);
-        while ((event = kdWaitEvent(0)) != 0) {
+
+    while(!m_quit) {
+        qint64 msec = nextTimerEvent();
+        const KDEvent *event = kdWaitEvent(msec);
+        if (event) {
             kdDefaultEvent(event);
+            while ((event = kdWaitEvent(0)) != 0) {
+                kdDefaultEvent(event);
+            }
         }
+        QPlatformEventLoopIntegration::processEvents();
     }
 }
 
-void QOpenKODEEventLoopIntegration::wakeup()
+void QOpenKODEEventLoopIntegration::quitEventLoop()
+{
+    m_quit = true;
+}
+
+void QOpenKODEEventLoopIntegration::qtNeedsToProcessEvents()
 {
     KDEvent *event = kdCreateEvent();
     event->type = QT_EVENT_WAKEUP_EVENTLOOP;

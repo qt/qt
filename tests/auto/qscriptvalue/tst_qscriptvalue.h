@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -127,7 +127,8 @@ private slots:
     void getSetProperty_resolveMode();
     void getSetProperty_twoEngines();
     void getSetProperty_gettersAndSetters();
-    void getSetProperty_gettersAndSettersThrowError();
+    void getSetProperty_gettersAndSettersThrowErrorNative();
+    void getSetProperty_gettersAndSettersThrowErrorJS();
     void getSetProperty_gettersAndSettersOnNative();
     void getSetProperty_gettersAndSettersOnGlobalObject();
     void getSetProperty_gettersAndSettersChange();
@@ -178,6 +179,8 @@ private slots:
     void objectId();
     void nestedObjectToVariant_data();
     void nestedObjectToVariant();
+    void propertyFlags_data();
+    void propertyFlags();
 
 
 private:

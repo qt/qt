@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -177,6 +177,11 @@ QScriptDeclarativeClass::PersistentIdentifier::operator=(const PersistentIdentif
     engine = other.engine;
     ((JSC::Identifier &)d) = (JSC::Identifier &)(other.d);
     return *this;
+}
+
+QString QScriptDeclarativeClass::PersistentIdentifier::toString() const
+{
+    return ((JSC::Identifier &)d).ustring();
 }
 
 QScriptDeclarativeClass::QScriptDeclarativeClass(QScriptEngine *engine)
@@ -466,6 +471,14 @@ QString QScriptDeclarativeClass::toString(const Identifier &identifier)
 {
     JSC::UString::Rep *r = (JSC::UString::Rep *)identifier;
     return QString((QChar *)r->data(), r->size());
+}
+
+bool QScriptDeclarativeClass::startsWithUpper(const Identifier &identifier)
+{
+    JSC::UString::Rep *r = (JSC::UString::Rep *)identifier;
+    if (r->size() < 1)
+        return false;
+    return QChar::category((ushort)(r->data()[0])) == QChar::Letter_Uppercase;
 }
 
 quint32 QScriptDeclarativeClass::toArrayIndex(const Identifier &identifier, bool *ok)

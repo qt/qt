@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,6 +82,42 @@ QT_BEGIN_NAMESPACE
   Never to grayscale.
 */
 
+class QPngHandlerPrivate
+{
+public:
+    enum State {
+        Ready,
+        ReadHeader,
+        ReadingEnd,
+        Error
+    };
+
+    QPngHandlerPrivate(QPngHandler *qq)
+        : gamma(0.0), quality(2), png_ptr(0), info_ptr(0),
+          end_info(0), row_pointers(0), state(Ready), q(qq)
+    { }
+
+    float gamma;
+    int quality;
+    QString description;
+    QStringList readTexts;
+
+    png_struct *png_ptr;
+    png_info *info_ptr;
+    png_info *end_info;
+    png_byte **row_pointers;
+
+    bool readPngHeader();
+    bool readPngImage(QImage *image);
+
+    QImage::Format readImageFormat();
+
+    State state;
+
+    QPngHandler *q;
+};
+
+
 #if defined(Q_C_CALLBACKS)
 extern "C" {
 #endif
@@ -118,7 +154,16 @@ private:
 static
 void CALLBACK_CALL_TYPE iod_read_fn(png_structp png_ptr, png_bytep data, png_size_t length)
 {
-    QIODevice *in = (QIODevice *)png_get_io_ptr(png_ptr);
+    QPngHandlerPrivate *d = (QPngHandlerPrivate *)png_get_io_ptr(png_ptr);
+    QIODevice *in = d->q->device();
+
+    if (d->state == QPngHandlerPrivate::ReadingEnd && !in->isSequential() && (in->size() - in->pos()) < 4 && length == 4) {
+        // Workaround for certain malformed PNGs that lack the final crc bytes
+        uchar endcrc[4] = { 0xae, 0x42, 0x60, 0x82 };
+        qMemCopy(data, endcrc, 4);
+        in->seek(in->size());
+        return;
+    }
 
     while (length) {
         int nr = in->read((char*)data, length);
@@ -314,40 +359,6 @@ static void CALLBACK_CALL_TYPE qt_png_warning(png_structp /*png_ptr*/, png_const
 }
 #endif
 
-class QPngHandlerPrivate
-{
-public:
-    enum State {
-        Ready,
-        ReadHeader,
-        Error
-    };
-
-    QPngHandlerPrivate(QPngHandler *qq)
-        : gamma(0.0), quality(2), png_ptr(0), info_ptr(0),
-          end_info(0), row_pointers(0), state(Ready), q(qq)
-    { }
-
-    float gamma;
-    int quality;
-    QString description;
-    QStringList readTexts;
-
-    png_struct *png_ptr;
-    png_info *info_ptr;
-    png_info *end_info;
-    png_byte **row_pointers;
-
-    bool readPngHeader();
-    bool readPngImage(QImage *image);
-
-    QImage::Format readImageFormat();
-
-    State state;
-
-    QPngHandler *q;
-};
-
 /*!
     \internal
 */
@@ -380,7 +391,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngHeader()
         return false;
     }
 
-    png_set_read_fn(png_ptr, q->device(), iod_read_fn);
+    png_set_read_fn(png_ptr, this, iod_read_fn);
     png_read_info(png_ptr, info_ptr);
 
 #ifndef QT_NO_IMAGE_TEXT
@@ -484,6 +495,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
     for (int i = 0; i < readTexts.size()-1; i+=2)
         outImage->setText(readTexts.at(i), readTexts.at(i+1));
 
+    state = ReadingEnd;
     png_read_end(png_ptr, end_info);
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
     delete [] row_pointers;

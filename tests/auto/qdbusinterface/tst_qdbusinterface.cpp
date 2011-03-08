@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -169,6 +169,25 @@ public slots:
 int MyObject::callCount = 0;
 QVariantList MyObject::callArgs;
 
+class MyObjectUnknownType: public QObject
+{
+    Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", "com.trolltech.QtDBus.MyObject")
+    Q_CLASSINFO("D-Bus Introspection", ""
+"  <interface name=\"com.trolltech.QtDBus.MyObjectUnknownTypes\" >\n"
+"    <property access=\"readwrite\" type=\"~\" name=\"prop1\" />\n"
+"    <signal name=\"somethingHappened\" >\n"
+"      <arg direction=\"out\" type=\"~\" />\n"
+"    </signal>\n"
+"    <method name=\"ping\" >\n"
+"      <arg direction=\"in\" type=\"~\" name=\"ping\" />\n"
+"      <arg direction=\"out\" type=\"~\" name=\"ping\" />\n"
+"    </method>\n"
+"    <method name=\"regularMethod\" />\n"
+"  </interface>\n"
+                "")
+};
+
 class Spy: public QObject
 {
     Q_OBJECT
@@ -228,6 +247,7 @@ private slots:
     void notValidDerived();
     void invalidAfterServiceOwnerChanged();
     void introspect();
+    void introspectUnknownTypes();
     void callMethod();
     void invokeMethod();
     void invokeMethodWithReturn();
@@ -250,8 +270,7 @@ void tst_QDBusInterface::initTestCase()
 
     con.registerObject("/", &obj, QDBusConnection::ExportAllProperties
                        | QDBusConnection::ExportAllSlots
-                       | QDBusConnection::ExportAllInvokables
-                       | QDBusConnection::ExportChildObjects);
+                       | QDBusConnection::ExportAllInvokables);
 }
 
 void tst_QDBusInterface::notConnected()
@@ -320,6 +339,27 @@ void tst_QDBusInterface::introspect()
     QCOMPARE(mo->propertyCount() - mo->propertyOffset(), 2);
     QVERIFY(mo->indexOfProperty("prop1") != -1);
     QVERIFY(mo->indexOfProperty("complexProp") != -1);
+}
+
+void tst_QDBusInterface::introspectUnknownTypes()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    MyObjectUnknownType obj;
+    con.registerObject("/unknownTypes", &obj, QDBusConnection::ExportAllContents);
+    QDBusInterface iface(QDBusConnection::sessionBus().baseService(), QLatin1String("/unknownTypes"),
+                         "com.trolltech.QtDBus.MyObjectUnknownTypes");
+
+    const QMetaObject *mo = iface.metaObject();
+    QVERIFY(mo->indexOfMethod("regularMethod()") != -1); // this is the control
+    QVERIFY(mo->indexOfMethod("somethingHappened(QDBusRawType<0x7e>*)") != -1);
+
+    QVERIFY(mo->indexOfMethod("ping(QDBusRawType<0x7e>*)") != -1);
+    int midx = mo->indexOfMethod("ping(QDBusRawType<0x7e>*)");
+    QCOMPARE(mo->method(midx).typeName(), "QDBusRawType<0x7e>*");
+
+    QVERIFY(mo->indexOfProperty("prop1") != -1);
+    int pidx = mo->indexOfProperty("prop1");
+    QCOMPARE(mo->property(pidx).typeName(), "QDBusRawType<0x7e>*");
 }
 
 void tst_QDBusInterface::callMethod()

@@ -158,9 +158,9 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
         EGLSurface surface = eglCreateWindowSurface(screen->eglDisplay(),m_eglConfig,m_eglWindow,m_eglWindowAttrs.constData());
         m_platformGlContext = new QEGLPlatformContext(screen->eglDisplay(), m_eglConfig,
                                                       m_eglContextAttrs.data(), surface, m_eglApi);
-        m_platformGlContext->makeDefaultSaredContext();
+        m_platformGlContext->makeDefaultSharedContext();
     } else {
-        m_platformGlContext = static_cast<QEGLPlatformContext *>(QPlatformGLContext::defaultSharedContext());
+        m_platformGlContext = const_cast<QEGLPlatformContext *>(static_cast<const QEGLPlatformContext *>(QPlatformGLContext::defaultSharedContext()));
         kdDestroyWindow(m_kdWindow);
         m_kdWindow = 0;
     }
@@ -209,7 +209,6 @@ void QOpenKODEWindow::setGeometry(const QRect &rect)
 
     //need to recreate context
     if (needToDeleteContext) {
-        qDebug() << "deleting context";
         delete m_platformGlContext;
 
         QList<QPlatformScreen *> screens = QApplicationPrivate::platformIntegration()->screens();

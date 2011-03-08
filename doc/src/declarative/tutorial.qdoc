@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -94,7 +94,7 @@ We add a \l Text element as a child of the root Rectangle element that displays 
 The \c y property is used to position the text vertically at 30 pixels from the top of its parent.
 
 The \c anchors.horizontalCenter property refers to the horizontal center of an element.
-In this case, we specify that our text element should be horizontally centered in the \e page element (see \l{anchor-layout}{Anchor-based Layout}).
+In this case, we specify that our text element should be horizontally centered in the \e page element (see \l{anchor-layout}{Anchor-Based Layout}).
 
 The \c font.pointSize and \c font.bold properties are related to fonts and use the \l{dot properties}{dot notation}.
 
@@ -124,7 +124,7 @@ Our color picker is made of six cells with different colors.
 To avoid writing the same code multiple times for each cell, we create a new \c Cell component.
 A component provides a way of defining a new type that we can re-use in other QML files.
 A QML component is like a black-box and interacts with the outside world through properties, signals and functions and is generally
-defined in its own QML file. (For more details, see \l {Defining new Components}).
+defined in its own QML file. (For more details, see \l {Defining New Components}).
 The component's filename must always start with a capital letter.
 
 Here is the QML code for \c Cell.qml:
@@ -144,7 +144,7 @@ An \l Item is the most basic visual element in QML and is often used as a contai
 
 We declare a \c cellColor property. This property is accessible from  \e outside our component, this allows us
 to instantiate the cells with different colors.
-This property is just an alias to an existing property - the color of the rectangle that compose the cell (see \l{Adding new properties}).
+This property is just an alias to an existing property - the color of the rectangle that compose the cell (see \l{Adding Properties}).
 
 \snippet examples/declarative/tutorials/helloworld/Cell.qml 5
 
@@ -156,7 +156,7 @@ We will use this signal to change the color of the text in the main QML file lat
 Our cell component is basically a colored rectangle with the \c id \e rectangle.
 
 The \c anchors.fill property is a convenient way to set the size of an element.
-In this case the rectangle will have the same size as its parent (see \l{anchor-layout}{Anchor-based Layout}).
+In this case the rectangle will have the same size as its parent (see \l{anchor-layout}{Anchor-Based Layout}).
 
 \snippet examples/declarative/tutorials/helloworld/Cell.qml 3
 

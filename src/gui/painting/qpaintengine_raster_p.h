@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -267,6 +267,8 @@ private:
 #if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
     void drawGlyphsS60(const QPointF &p, const QTextItemInt &ti);
 #endif // Q_OS_SYMBIAN && QT_NO_FREETYPE
+
+    bool setClipRectInDeviceCoords(const QRect &r, Qt::ClipOperation op);
 
     inline void ensureBrush(const QBrush &brush) {
         if (!qbrush_fast_equals(state()->lastBrush, brush) || (brush.style() != Qt::NoBrush && state()->fillFlags))

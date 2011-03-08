@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,13 +66,14 @@ using namespace QDeclarativeJS;
 using namespace QDeclarativeParser;
 
 QDeclarativeParser::Object::Object()
-: type(-1), majorVersion(-1), minorVersion(-1), idIndex(-1), metatype(0), defaultProperty(0), parserStatusCast(-1)
+: type(-1), majorVersion(-1), minorVersion(-1), idIndex(-1), metatype(0), synthCache(0), defaultProperty(0), parserStatusCast(-1)
 {
 }
 
 QDeclarativeParser::Object::~Object() 
 { 
     if (defaultProperty) defaultProperty->release();
+    if (synthCache) synthCache->release();
     foreach(Property *prop, properties)
         prop->release();
     foreach(Property *prop, valueProperties)
@@ -205,13 +206,13 @@ QDeclarativeParser::Object::DynamicSlot::DynamicSlot(const DynamicSlot &o)
 
 QDeclarativeParser::Property::Property()
 : parent(0), type(0), index(-1), value(0), isDefault(true), isDeferred(false), 
-  isValueTypeSubProperty(false)
+  isValueTypeSubProperty(false), isAlias(false)
 {
 }
 
 QDeclarativeParser::Property::Property(const QByteArray &n)
 : parent(0), type(0), index(-1), value(0), name(n), isDefault(false), 
-  isDeferred(false), isValueTypeSubProperty(false)
+  isDeferred(false), isValueTypeSubProperty(false), isAlias(false)
 {
 }
 
