@@ -1141,6 +1141,9 @@ int QSymbianSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool 
             //restart asynchronous notifier (only one IOCTL allowed at a time)
             if (asyncSelect)
                 asyncSelect->IssueRequest();
+#ifdef QNATIVESOCKETENGINE_DEBUG
+            qDebug() << "QSymbianSocketEnginePrivate::nativeSelect: select timeout";
+#endif
             return 0; //timeout
         } else {
             selectTimer.Cancel();
@@ -1148,11 +1151,20 @@ int QSymbianSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool 
         }
     }
 
+#ifdef QNATIVESOCKETENGINE_DEBUG
+    qDebug() << "QSymbianSocketEnginePrivate::nativeSelect: select status" << selectStat.Int() << (int)selectFlags();
+#endif
     if (selectStat != KErrNone)
         return selectStat.Int();
     if (selectFlags() & KSockSelectExcept) {
         TInt err;
         nativeSocket.GetOpt(KSOSelectLastError, KSOLSocket, err);
+#ifdef QNATIVESOCKETENGINE_DEBUG
+        qDebug() << "QSymbianSocketEnginePrivate::nativeSelect: select last error" <<  err;
+#endif
+        //TODO: avoidable cast?
+        //set the error here, because read won't always return the same error again as select.
+        const_cast<QSymbianSocketEnginePrivate*>(this)->setError(err);
         //restart asynchronous notifier (only one IOCTL allowed at a time)
         if (asyncSelect)
             asyncSelect->IssueRequest(); //TODO: in error case should we restart or not?
@@ -1381,6 +1393,7 @@ void QSymbianSocketEnginePrivate::setError(TInt symbianError)
     switch (symbianError) {
     case KErrDisconnected:
     case KErrEof:
+    case KErrConnectionTerminated: //interface stopped externally - RConnection::Stop(EStopAuthoritative)
         setError(QAbstractSocket::RemoteHostClosedError,
                  QSymbianSocketEnginePrivate::RemoteHostClosedErrorString);
         break;
