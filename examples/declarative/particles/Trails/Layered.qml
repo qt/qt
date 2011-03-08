@@ -22,7 +22,7 @@ Rectangle{
             pairs: [pairA, pairB]
             SpriteParticle{
                 Sprite{
-                    source: "Trails/content/particle2.png"
+                    source: "content/particle2.png"
                 }
             }
         }
@@ -45,13 +45,13 @@ Rectangle{
             id: pairA
             SpriteParticle{
                 Sprite{
-                    source: "Trails/content/particle3.png"
+                    source: "content/particle3.png"
                 }
             }
         }
         ColoredParticle{
             id: dummy2
-            image: "Trails/content/particle3.png"
+            image: "content/particle3.png"
         }
         emitters:TrailEmitter{
             particle: dummy2
@@ -74,13 +74,13 @@ Rectangle{
             //pair: pairA 
             SpriteParticle{
                 Sprite{
-                    source: "Trails/content/particle.png"
+                    source: "content/particle.png"
                 }
             }
         }
         ColoredParticle{
             id: dummy
-            image: "Trails/content/particle3.png"
+            image: "content/particle3.png"
         }
         emitters:TrailEmitter{
             particle: dummy
