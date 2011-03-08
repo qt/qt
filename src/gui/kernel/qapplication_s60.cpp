@@ -96,6 +96,10 @@ QT_BEGIN_NAMESPACE
 // Goom Events through Window Server
 static const int KGoomMemoryLowEvent = 0x10282DBF;
 static const int KGoomMemoryGoodEvent = 0x20026790;
+// Split view open/close events from AVKON
+static const int KSplitViewOpenEvent = 0x2001E2C0;
+static const int KSplitViewCloseEvent = 0x2001E2C1;
+
 
 #if defined(QT_DEBUG)
 static bool        appNoGrab        = false;        // Grabbing enabled
@@ -1224,6 +1228,11 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
     if (m_ignoreFocusChanged || (qwidget->windowType() & Qt::WindowType_Mask) == Qt::Desktop)
         return;
 
+#ifdef Q_WS_S60
+    if (S60->splitViewLastWidget)
+        return;
+#endif
+
     // Popups never get focused, but still receive the FocusChanged when they are hidden.
     if (QApplicationPrivate::popupWidgets != 0
             || (qwidget->windowType() & Qt::Popup) == Qt::Popup)
@@ -1302,9 +1311,56 @@ void QSymbianControl::handleClientAreaChange()
     }
 }
 
+bool QSymbianControl::isSplitViewWidget(QWidget *widget) {
+    bool returnValue = true;
+    //Ignore events sent to non-active windows, not visible widgets and not parents of input widget.
+    if (!qwidget->isActiveWindow()
+        || !qwidget->isVisible()
+        || !qwidget->isAncestorOf(widget)) {
+
+        returnValue = false;
+    }
+    return returnValue;
+}
+
 void QSymbianControl::HandleResourceChange(int resourceType)
 {
     switch (resourceType) {
+    case KSplitViewCloseEvent: //intentional fall-through
+    case KSplitViewOpenEvent: {
+#if !defined(QT_NO_IM) && defined(Q_WS_S60)
+
+        //Fetch widget getting the text input
+        QWidget *widget = QWidget::keyboardGrabber();
+        if (!widget) {
+            if (QApplicationPrivate::popupWidgets) {
+                widget = QApplication::activePopupWidget()->focusWidget();
+                if (!widget) {
+                    widget = QApplication::activePopupWidget();
+                }
+            } else {
+                widget = QApplicationPrivate::focus_widget;
+                if (!widget) {
+                    widget = qwidget;
+                }
+            }
+        }
+        if (widget) {
+            QCoeFepInputContext *ic = qobject_cast<QCoeFepInputContext *>(widget->inputContext());
+            if (!ic) {
+                ic = qobject_cast<QCoeFepInputContext *>(qApp->inputContext());
+            }
+            if (ic && isSplitViewWidget(widget)) {
+                if (resourceType == KSplitViewCloseEvent) {
+                    ic->resetSplitViewWidget();
+                } else {
+                    ic->ensureFocusWidgetVisible(widget);
+                }
+            }
+        }
+#endif // !defined(QT_NO_IM) && defined(Q_WS_S60)
+    }
+    break;
     case KInternalStatusPaneChange:
         handleClientAreaChange();
         if (IsFocused() && IsVisible()) {

@@ -142,7 +142,10 @@ public:
     int avkonComponentsSupportTransparency : 1;
     int menuBeingConstructed : 1;
     int orientationSet : 1;
+    int partial_keyboard : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
+    QPointer<QWidget> splitViewLastWidget;
+
     static CEikButtonGroupContainer *cba;
 
     enum ScanCodeState {
@@ -252,6 +255,7 @@ private:
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
     void translateAdvancedPointerEvent(const TAdvancedPointerEvent *event);
 #endif
+    bool isSplitViewWidget(QWidget *widget);
 
 public:
     void handleClientAreaChange();
@@ -297,6 +301,7 @@ inline QS60Data::QS60Data()
   avkonComponentsSupportTransparency(0),
   menuBeingConstructed(0),
   orientationSet(0),
+  partial_keyboard(0),
   s60ApplicationFactory(0)
 #ifdef Q_OS_SYMBIAN
   ,s60InstalledTrapHandler(0)
