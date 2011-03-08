@@ -209,7 +209,6 @@ ColoredParticle::ColoredParticle(QObject* parent)
     , m_additive(1)
     , m_node(0)
     , m_material(0)
-    , m_particle_count(0)
 {
 }
 
@@ -261,8 +260,11 @@ void ColoredParticle::setAdditive(qreal additive)
 
 void ColoredParticle::setCount(int c)
 {
-    m_particle_count = c;
-    //m_system->pleaseReset();//XXX
+    Particle::setCount(c);
+    if(m_node)
+        delete m_node;
+    m_node = 0;//Force rebuild;
+    wantsReset = true;
 }
 
 void ColoredParticle::reset()
@@ -272,7 +274,8 @@ void ColoredParticle::reset()
 
      m_node = 0;
      m_material = 0;
-     m_particle_count = 0;
+     m_count = 0;
+     wantsReset = true;
 }
 
 static QSGGeometry::Attribute ColoredParticle_Attributes[] = {
@@ -294,7 +297,13 @@ Node* ColoredParticle::buildParticleNode()
 {
     QSGContext *sg = QSGContext::current;
 
-    if (m_particle_count * 4 > 0xffff || m_particle_count <= 0) {
+    if (m_count * 4 > 0xffff) {
+        printf("ColoredParticle: Too many particles... \n");
+        return 0;
+    }
+
+    if(m_count <= 0) {
+        printf("ColoredParticle: Too few particles... \n");
         return 0;
     }
 
@@ -304,14 +313,14 @@ Node* ColoredParticle::buildParticleNode()
         return 0;
     }
 
-    int vCount = m_particle_count * 4;
-    int iCount = m_particle_count * 6;
+    int vCount = m_count * 4;
+    int iCount = m_count * 6;
 
     QSGGeometry *g = new QSGGeometry(ColoredParticle_AttributeSet, vCount, iCount);
     g->setDrawingMode(GL_TRIANGLES);
 
     ColoredParticleVertex *vertices = (ColoredParticleVertex *) g->vertexData();
-    for (int p=0; p<m_particle_count; ++p) {
+    for (int p=0; p<m_count; ++p) {
 
         for (int i=0; i<4; ++i) {
             vertices[i].x = 0;
@@ -341,7 +350,7 @@ Node* ColoredParticle::buildParticleNode()
     }
 
     quint16 *indices = g->indexDataAsUShort();
-    for (int i=0; i<m_particle_count; ++i) {
+    for (int i=0; i<m_count; ++i) {
         int o = i * 4;
         indices[0] = o;
         indices[1] = o + 1;
@@ -406,6 +415,9 @@ void vertexCopy(ColoredParticleVertex &b,const ParticleVertex& a)
 
 void ColoredParticle::reload(ParticleData *d)
 {
+    if (m_node == 0)
+        return;
+
     ColoredParticleVertices *particles = (ColoredParticleVertices *) m_node->geometry()->vertexData();
 
     int pos = d->particleIndex;
@@ -422,6 +434,9 @@ void ColoredParticle::reload(ParticleData *d)
 
 void ColoredParticle::load(ParticleData *d)
 {
+    if (m_node == 0)
+        return;
+
     m_particleDuration = d->e->particleDuration();//XXX
     //Color initialization
     // Particle color

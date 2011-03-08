@@ -25,6 +25,7 @@ class ParticleSystem : public QSGItem
     Q_PROPERTY(QDeclarativeListProperty<ParticleAffector> affectors READ affectors)
     Q_PROPERTY(QDeclarativeListProperty<ParticleEmitter> emitters READ emitters)
     Q_PROPERTY(QDeclarativeListProperty<Particle> particles READ particles)
+    Q_PROPERTY(int startTime READ startTime WRITE setStartTime NOTIFY startTimeChanged)
     Q_CLASSINFO("DefaultProperty", "particles")
 
 public:
@@ -37,18 +38,22 @@ bool isRunning() const
 
 QDeclarativeListProperty<ParticleEmitter> emitters();
 
-QDeclarativeListProperty<Particle> particles()
-{
-    return QDeclarativeListProperty<Particle>(this, m_particles);
-}
+QDeclarativeListProperty<Particle> particles();
 
 QDeclarativeListProperty<ParticleAffector> affectors()
 {
     return QDeclarativeListProperty<ParticleAffector>(this, m_affectors);
 }
+int startTime() const
+{
+    return m_startTime;
+}
+
 signals:
 
 void runningChanged(bool arg);
+
+void startTimeChanged(int arg);
 
 public slots:
 void pleaseUpdate(){if(this)update();}//XXX
@@ -68,6 +73,11 @@ void setRunning(bool arg)
 void emitParticle(ParticleData* p);
 ParticleData* newDatum(ParticleEmitter* e, Particle* p);
 
+void setStartTime(int arg)
+{
+    m_startTime = arg;
+}
+
 protected:
     Node *updatePaintNode(Node *, UpdatePaintNodeData *);
 
@@ -85,6 +95,7 @@ private:
     QList<Particle*> m_particles;
     QVector<ParticleData*> data;
     QList<EmitterData*> m_emitterData;//size, start
+    int m_startTime;
 };
 
 //TODO: Clean up all this into ParticleData

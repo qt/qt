@@ -5,15 +5,20 @@ Rectangle{
     width: 360
     height: 540
     color: "black"
+    MouseArea{
+        anchors.fill: parent
+        onClicked: particles.running = !particles.running
+    }
     ParticleSystem{
         id: particles
         anchors.fill: parent
+        running: false
         particles: ColoredParticle{
             id: sp
             image: "content/star.png"
             colorVariation: 0.2
         }
-        affectors: Wander{ xVariance: 30; yVariance: 30; pace: 10; }
+ //       affectors: Wander{ xVariance: 30; yVariance: 30; pace: 10; }
     }
     TrailEmitter{
         anchors.fill: parent

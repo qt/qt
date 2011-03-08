@@ -73,7 +73,6 @@ private:
     ParticleTrailsMaterial *m_material;
 
     // derived values...
-    int m_particle_count;
     int m_last_particle;
 
     qreal m_render_opacity;

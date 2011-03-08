@@ -23,7 +23,7 @@ ParticleData::ParticleData()
 }
 
 ParticleSystem::ParticleSystem(QSGItem *parent) :
-    QSGItem(parent), m_running(true)
+    QSGItem(parent), m_running(true) , m_startTime(0)
 {
     setFlag(ItemHasContents);
 }
@@ -63,6 +63,32 @@ void ParticleSystem::registerEmitter(ParticleEmitter *emitter)
 {
     QDeclarativeListProperty<ParticleEmitter> tmp(this, &m_emitters, emitterAppend, emitterCount, emitterAt, emitterClear);
     emitterAppend(&tmp, emitter);
+}
+
+void particleAppend(QDeclarativeListProperty<Particle> *p, Particle* pe)
+{
+    pe->m_system = qobject_cast<ParticleSystem*>(p->object);
+    reinterpret_cast<QList<Particle  *> *>(p->data)->append(pe);
+}
+
+Particle* particleAt(QDeclarativeListProperty<Particle> *p, int idx)
+{
+    return reinterpret_cast<QList<Particle  *> *>(p->data)->at(idx);
+}
+
+void particleClear(QDeclarativeListProperty<Particle> *p)
+{
+    reinterpret_cast<QList<Particle  *> *>(p->data)->clear();
+}
+
+int particleCount(QDeclarativeListProperty<Particle> *p)
+{
+    return reinterpret_cast<QList<Particle *> *>(p->data)->count();
+}
+
+QDeclarativeListProperty<Particle> ParticleSystem::particles()
+{
+    return QDeclarativeListProperty<Particle>(this, &m_particles, particleAppend, particleCount, particleAt, particleClear);
 }
 
 void ParticleSystem::countChanged()
@@ -111,6 +137,7 @@ void ParticleSystem::buildParticleNodes()
             m_node->appendChildNode(child);
         else
             qDebug() << "Couldn't build" << particle;
+        particle->wantsReset = false;
     }
 
     m_timestamp.start();
@@ -190,14 +217,42 @@ void ParticleSystem::prepareNextFrame()
     if (!m_running)
         return;
 
-    if (m_node == 0)
+    bool nodeReset = false;
+    foreach(Particle* p, m_particles){
+        if(p->wantsReset){
+            nodeReset = true;
+            p->wantsReset = false;
+        }
+    }
+    bool haveReset = false;
+    if (m_node == 0 || nodeReset){
         buildParticleNodes();
+        haveReset = true;
+    }
 
     if (m_node == 0) //error creating nodes
         return;
 
+    if(haveReset){
+        for(int i=0; i<m_startTime; i+= 50){//big jumps
+            foreach(ParticleEmitter* emitter, m_emitters)
+                emitter->emitWindow(i);//then there's the big jump to start time?
+            if(m_affectors.count()){//Optimize the common no-affectors case
+                for(QVector<ParticleData*>::iterator iter=data.begin(); iter != data.end(); iter++){
+                    if(!(*iter))
+                        continue;
+                    ParticleVertex* p = &((*iter)->pv);
+                    qreal dt = i - p->dt;
+                    p->dt = i;
+                    foreach(ParticleAffector* a, m_affectors)
+                        a->affect(*iter, dt);
+                }
+            }
+        }
+    }
+
     //### Elapsed time never shrinks - may cause problems if left emitting for weeks at a time.
-    uint timeInt = m_timestamp.elapsed();
+    uint timeInt = m_timestamp.elapsed() + m_startTime;
     qreal time =  timeInt / 1000.;
     foreach(ParticleEmitter* emitter, m_emitters)
         emitter->emitWindow(timeInt);
@@ -217,7 +272,7 @@ void ParticleSystem::prepareNextFrame()
             if(modified)
                 (*iter)->p->reload(*iter);
         }
-    }
+    }//TODO:Move particle positions along with element moves
     foreach(Particle* particle, m_particles)
         particle->prepareNextFrame(timeInt);
 }
