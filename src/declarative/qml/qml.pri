@@ -56,7 +56,8 @@ SOURCES += \
     $$PWD/qdeclarativeextensionplugin.cpp \
     $$PWD/qdeclarativeimport.cpp \
     $$PWD/qdeclarativelist.cpp \ 
-    $$PWD/qperformancetimer.cpp
+    $$PWD/qperformancetimer.cpp \
+    $$PWD/qintrusivelist.cpp \
 
 HEADERS += \
     $$PWD/qdeclarativeparser_p.h \
@@ -131,7 +132,8 @@ HEADERS += \
     $$PWD/qdeclarativeextensioninterface.h \
     $$PWD/qdeclarativeimport_p.h \
     $$PWD/qdeclarativeextensionplugin.h \
-    $$PWD/qperformancetimer_p.h
+    $$PWD/qperformancetimer_p.h \
+    $$PWD/qintrusivelist_p.h \
 
 QT += sql
 include(parser/parser.pri)
