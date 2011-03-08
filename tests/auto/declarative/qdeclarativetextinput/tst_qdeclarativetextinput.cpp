@@ -116,6 +116,8 @@ private slots:
     void cursorRectangle();
     void navigation();
     void copyAndPaste();
+    void canPasteEmpty();
+    void canPaste();
     void readOnly();
 
     void openInputPanelOnClick();
@@ -1504,6 +1506,42 @@ void tst_qdeclarativetextinput::copyAndPaste() {
         }
         index++;
     }
+#endif
+}
+
+void tst_qdeclarativetextinput::canPasteEmpty() {
+#ifndef QT_NO_CLIPBOARD
+
+    QApplication::clipboard()->clear();
+
+    QString componentStr = "import QtQuick 1.0\nTextInput { text: \"Hello world!\" }";
+    QDeclarativeComponent textInputComponent(&engine);
+    textInputComponent.setData(componentStr.toLatin1(), QUrl());
+    QDeclarativeTextInput *textInput = qobject_cast<QDeclarativeTextInput*>(textInputComponent.create());
+    QVERIFY(textInput != 0);
+
+    QLineControl lc;
+    bool cp = !lc.isReadOnly() && QApplication::clipboard()->text().length() != 0;
+    QCOMPARE(textInput->canPaste(), cp);
+
+#endif
+}
+
+void tst_qdeclarativetextinput::canPaste() {
+#ifndef QT_NO_CLIPBOARD
+
+    QApplication::clipboard()->setText("Some text");
+
+    QString componentStr = "import QtQuick 1.0\nTextInput { text: \"Hello world!\" }";
+    QDeclarativeComponent textInputComponent(&engine);
+    textInputComponent.setData(componentStr.toLatin1(), QUrl());
+    QDeclarativeTextInput *textInput = qobject_cast<QDeclarativeTextInput*>(textInputComponent.create());
+    QVERIFY(textInput != 0);
+
+    QLineControl lc;
+    bool cp = !lc.isReadOnly() && QApplication::clipboard()->text().length() != 0;
+    QCOMPARE(textInput->canPaste(), cp);
+
 #endif
 }
 

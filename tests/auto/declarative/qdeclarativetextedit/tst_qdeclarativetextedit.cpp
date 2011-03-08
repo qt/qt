@@ -132,6 +132,8 @@ private slots:
     void navigation();
     void readOnly();
     void copyAndPaste();
+    void canPaste();
+    void canPasteEmpty();
     void textInput();
     void openInputPanelOnClick();
     void openInputPanelOnFocus();
@@ -1648,6 +1650,42 @@ void tst_qdeclarativetextedit::copyAndPaste() {
     textEdit->paste();
     QCOMPARE(textEdit->text(), QString("Hello world!Hello world!"));
     QCOMPARE(textEdit->text().length(), 24);
+#endif
+}
+
+void tst_qdeclarativetextedit::canPaste() {
+#ifndef QT_NO_CLIPBOARD
+
+    QApplication::clipboard()->setText("Some text");
+
+    QString componentStr = "import QtQuick 1.0\nTextEdit { text: \"Hello world!\" }";
+    QDeclarativeComponent textEditComponent(&engine);
+    textEditComponent.setData(componentStr.toLatin1(), QUrl());
+    QDeclarativeTextEdit *textEdit = qobject_cast<QDeclarativeTextEdit*>(textEditComponent.create());
+    QVERIFY(textEdit != 0);
+
+    // check initial value - QTBUG-17765
+    QTextControl tc;
+    QCOMPARE(textEdit->canPaste(), tc.canPaste());
+
+#endif
+}
+
+void tst_qdeclarativetextedit::canPasteEmpty() {
+#ifndef QT_NO_CLIPBOARD
+
+    QApplication::clipboard()->clear();
+
+    QString componentStr = "import QtQuick 1.0\nTextEdit { text: \"Hello world!\" }";
+    QDeclarativeComponent textEditComponent(&engine);
+    textEditComponent.setData(componentStr.toLatin1(), QUrl());
+    QDeclarativeTextEdit *textEdit = qobject_cast<QDeclarativeTextEdit*>(textEditComponent.create());
+    QVERIFY(textEdit != 0);
+
+    // check initial value - QTBUG-17765
+    QTextControl tc;
+    QCOMPARE(textEdit->canPaste(), tc.canPaste());
+
 #endif
 }
 

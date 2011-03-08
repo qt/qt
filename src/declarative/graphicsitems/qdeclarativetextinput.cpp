@@ -1861,6 +1861,7 @@ void QDeclarativeTextInputPrivate::init()
             q, SLOT(q_canPasteChanged()));
     q->connect(QApplication::clipboard(), SIGNAL(dataChanged()),
             q, SLOT(q_canPasteChanged()));
+    canPaste = !control->isReadOnly() && QApplication::clipboard()->text().length() != 0;
 #endif // QT_NO_CLIPBOARD
     q->connect(control, SIGNAL(updateMicroFocus()),
                q, SLOT(updateMicroFocus()));

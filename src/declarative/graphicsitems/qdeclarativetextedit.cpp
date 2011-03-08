@@ -1562,6 +1562,7 @@ void QDeclarativeTextEditPrivate::init()
 #ifndef QT_NO_CLIPBOARD
     QObject::connect(q, SIGNAL(readOnlyChanged(bool)), q, SLOT(q_canPasteChanged()));
     QObject::connect(QApplication::clipboard(), SIGNAL(dataChanged()), q, SLOT(q_canPasteChanged()));
+    canPaste = control->canPaste();
 #endif
 
     document = control->document();
