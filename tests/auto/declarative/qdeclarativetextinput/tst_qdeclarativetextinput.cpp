@@ -115,6 +115,7 @@ private slots:
     void cursorVisible();
     void cursorRectangle();
     void navigation();
+    void navigation_RTL();
     void copyAndPaste();
     void canPasteEmpty();
     void canPaste();
@@ -1431,6 +1432,45 @@ void tst_qdeclarativetextinput::navigation()
     QCOMPARE(input->cursorPosition(),2);
     simulateKey(canvas, Qt::Key_Down);
     QCOMPARE(input->cursorPosition(),2);
+
+    delete canvas;
+}
+
+void tst_qdeclarativetextinput::navigation_RTL()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/navigation.qml");
+    canvas->show();
+    canvas->setFocus();
+
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeTextInput *input = qobject_cast<QDeclarativeTextInput *>(qvariant_cast<QObject *>(canvas->rootObject()->property("myInput")));
+
+    QVERIFY(input != 0);
+    const quint16 arabic_str[] = { 0x0638, 0x0643, 0x00646, 0x0647, 0x0633, 0x0638, 0x0643, 0x00646, 0x0647, 0x0633, 0x0647};
+    input->setText(QString::fromUtf16(arabic_str, 11));
+
+    input->setCursorPosition(0);
+    QTRY_VERIFY(input->hasActiveFocus() == true);
+
+    // move off
+    simulateKey(canvas, Qt::Key_Right);
+    QVERIFY(input->hasActiveFocus() == false);
+
+    // move back
+    simulateKey(canvas, Qt::Key_Left);
+    QVERIFY(input->hasActiveFocus() == true);
+
+    input->setCursorPosition(input->text().length());
+    QVERIFY(input->hasActiveFocus() == true);
+
+    // move off
+    simulateKey(canvas, Qt::Key_Left);
+    QVERIFY(input->hasActiveFocus() == false);
+
+    // move back
+    simulateKey(canvas, Qt::Key_Right);
+    QVERIFY(input->hasActiveFocus() == true);
 
     delete canvas;
 }

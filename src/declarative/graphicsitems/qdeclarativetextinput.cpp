@@ -1068,9 +1068,9 @@ void QDeclarativeTextInput::keyPressEvent(QKeyEvent* ev)
         // because then moving will do something (deselect).
         int cursorPosition = d->control->cursor();
         if (cursorPosition == 0)
-            ignore = ev->key() == (d->control->text().mid(cursorPosition,1).isRightToLeft() ? Qt::Key_Right : Qt::Key_Left);
+            ignore = ev->key() == (d->control->layoutDirection() == Qt::LeftToRight ? Qt::Key_Left : Qt::Key_Right);
         if (cursorPosition == d->control->text().length())
-            ignore = ev->key() == (d->control->text().mid(cursorPosition-1,1).isRightToLeft() ? Qt::Key_Left : Qt::Key_Right);
+            ignore = ev->key() == (d->control->layoutDirection() == Qt::LeftToRight ? Qt::Key_Right : Qt::Key_Left);
     }
     if (ignore) {
         ev->ignore();
