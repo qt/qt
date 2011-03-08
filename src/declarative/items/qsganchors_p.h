@@ -40,8 +40,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEANCHORS_P_H
-#define QDECLARATIVEANCHORS_P_H
+#ifndef QSGANCHORS_P_H
+#define QSGANCHORS_P_H
 
 #include <qdeclarative.h>
 
@@ -193,4 +193,4 @@ QML_DECLARE_TYPE(QSGAnchors)
 
 QT_END_HEADER
 
-#endif // QDECLARATIVEANCHORS_P_H
+#endif // QSGANCHORS_P_H

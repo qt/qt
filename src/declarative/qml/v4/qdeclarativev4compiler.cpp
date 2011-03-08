@@ -49,6 +49,7 @@
 #include <private/qdeclarativefastproperties_p.h>
 #include <private/qdeclarativejsengine_p.h>
 #include <private/qdeclarativeanchors_p_p.h> // For AnchorLine
+#include <private/qsganchors_p_p.h> // For AnchorLine
 
 QT_BEGIN_NAMESPACE
 
@@ -332,6 +333,8 @@ void QDeclarativeV4CompilerPrivate::visitName(IR::Name *e)
 
         default:
             if (propTy == qMetaTypeId<QDeclarativeAnchorLine>()) {
+                regType = PODValueType;
+            } else if (propTy == qMetaTypeId<QSGAnchorLine>()) {
                 regType = PODValueType;
             } else if (QDeclarativeMetaType::isQObject(propTy)) {
                 regType = QObjectStarType;
@@ -888,6 +891,9 @@ void QDeclarativeV4CompilerPrivate::visitRet(IR::Ret *s)
             break;
         case IR::AnchorLineType:
             test.storetest.regType = qMetaTypeId<QDeclarativeAnchorLine>();
+            break;
+        case IR::SGAnchorLineType:
+            test.storetest.regType = qMetaTypeId<QSGAnchorLine>();
             break;
         case IR::ObjectType:
             test.storetest.regType = QMetaType::QObjectStar;

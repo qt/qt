@@ -48,6 +48,7 @@
 #include <private/qdeclarativefastproperties_p.h>
 #include <private/qdeclarativedebugtrace_p.h>
 #include <private/qdeclarativeanchors_p_p.h> // For AnchorLine
+#include <private/qsganchors_p_p.h> // For AnchorLine
 
 #include <QtDeclarative/qdeclarativeinfo.h>
 #include <QtCore/qnumeric.h>
@@ -538,6 +539,11 @@ static bool testCompareVariants(const QVariant &qtscriptRaw, const QVariant &v4)
         QDeclarativeAnchorLine ra = qvariant_cast<QDeclarativeAnchorLine>(v4);
 
         return la == ra;
+    } else if (type == qMetaTypeId<QSGAnchorLine>()) {
+        QSGAnchorLine la = qvariant_cast<QSGAnchorLine>(qtscript);
+        QSGAnchorLine ra = qvariant_cast<QSGAnchorLine>(v4);
+
+        return la == ra;
     } else if (type == QMetaType::Double) {
 
         double la = qvariant_cast<double>(qtscript);
@@ -618,6 +624,8 @@ static void testBindingResult(const QString &binding, int line, int column,
         default:
             if (resultType == qMetaTypeId<QDeclarativeAnchorLine>()) {
                 v4value = qVariantFromValue<QDeclarativeAnchorLine>(*(QDeclarativeAnchorLine *)result.typeDataPtr());
+            } else if (resultType == qMetaTypeId<QSGAnchorLine>()) {
+                v4value = qVariantFromValue<QSGAnchorLine>(*(QSGAnchorLine *)result.typeDataPtr());
             } else {
                 iserror = true;
                 v4Result = "Unknown V4 type";
