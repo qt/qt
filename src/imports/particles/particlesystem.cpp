@@ -122,6 +122,8 @@ void ParticleSystem::buildParticleNodes()
         m_particle_count += m_emitterData.last()->size;
     }
     data.resize(m_particle_count);
+    if(m_particle_count > 16000)
+        qWarning() << "Particle system contains a vast number of particles (>16000). Expect poor performance";
 
     foreach(Particle* particle, m_particles){
         int particleCount = 0;

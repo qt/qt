@@ -270,6 +270,7 @@ private:
     qreal m_yAccelVariation;
     Particle* m_follow;
     QSet<ParticleData*> m_pending;
+    QVector<qreal> m_lastEmission;
     int m_particlesPerParticlePerSecond;
     qreal m_lastTimeStamp;
     qreal m_emitterXVariation;

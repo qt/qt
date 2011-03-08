@@ -437,7 +437,7 @@ void ColoredParticle::load(ParticleData *d)
     if (m_node == 0)
         return;
 
-    m_particleDuration = d->e->particleDuration();//XXX
+    m_particleDuration = d->e->particleDuration();//XXX, only last particle
     //Color initialization
     // Particle color
     Color4ub color;

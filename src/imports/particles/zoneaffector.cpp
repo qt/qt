@@ -16,3 +16,9 @@ bool ZoneAffector::affect(ParticleData *d, qreal dt)
         return m_affector->affect(d, dt);
     return false;
 }
+
+void ZoneAffector::reset(int systemIdx)
+{
+    if(m_affector)
+        m_affector->reset(systemIdx);
+}

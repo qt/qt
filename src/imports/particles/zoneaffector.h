@@ -16,6 +16,7 @@ public:
     explicit ZoneAffector(QObject *parent = 0);
 
     virtual bool affect(ParticleData *d, qreal dt);
+    virtual void reset(int systemIdx);
 
     ParticleAffector* affector() const
     {

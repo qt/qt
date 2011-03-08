@@ -1,5 +1,6 @@
 #include "followemitter.h"
 #include "particle.h"
+#include <cmath>
 
 FollowEmitter::FollowEmitter(QSGItem *parent) :
     ParticleEmitter(parent)
@@ -36,17 +37,19 @@ void FollowEmitter::setFollow(Particle *arg)
 }
 
 void FollowEmitter::recalcParticlesPerSecond(){
-    if(!m_follow)
-        m_particlesPerSecond = 0;
-    else if(!m_follow->count())//It hasn't been told how many it's emitting yet
-        m_particlesPerSecond = 10000;//TODO: Fix this horrendous hack
-    else
-        m_particlesPerSecond = m_particlesPerParticlePerSecond * m_follow->count();
+    if(!m_follow){
+        return;
+    }else if(!m_follow->count()){//It hasn't been told how many it's emitting yet
+        setParticlesPerSecond(1000);//TODO: Fix this horrendous hack
+    }else{
+        setParticlesPerSecond(m_particlesPerParticlePerSecond * m_follow->count());
+        m_lastEmission.resize(m_follow->count());
+    }
 }
 
 void FollowEmitter::emitWindow(int timeStamp)
 {
-    if (m_system == 0)
+    if (m_system == 0 || m_follow == 0)
         return;
     if(!m_emitting)
         return;
@@ -60,7 +63,7 @@ void FollowEmitter::emitWindow(int timeStamp)
     float sizeAtEnd = m_particleEndSize >= 0 ? m_particleEndSize : m_particleSize;
 
     foreach(ParticleData* d, m_pending){
-        pt = m_lastTimeStamp;//or d->pv->dt?
+        pt = m_lastEmission[d->particleIndex];
         while(pt < time){
             ParticleData* datum = m_system->newDatum(this, m_particle);
             ParticleVertex &p = datum->pv;
@@ -108,6 +111,7 @@ void FollowEmitter::emitWindow(int timeStamp)
             pt += particleRatio;
             m_system->emitParticle(datum);
         }
+        m_lastEmission[d->particleIndex] = pt;
     }
 
     m_lastTimeStamp = time;
