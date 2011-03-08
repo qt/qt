@@ -262,6 +262,8 @@ class InnerNode : public Node
     NodeList overloads(const QString &funcName) const;
     const QStringList& includes() const { return inc; }
 
+    QString author() const { return author_; }
+    void setAuthor(const QString& author) { author_ = author; }
     QStringList primaryKeys();
     QStringList secondaryKeys();
     const QStringList& pageKeywords() const { return pageKeywds; }
@@ -280,6 +282,7 @@ class InnerNode : public Node
     void removeChild(Node* child);
     void removeRelated(Node* pseudoChild);
 
+    QString author_;
     QStringList pageKeywds;
     QStringList inc;
     NodeList children;
