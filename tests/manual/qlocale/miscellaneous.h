@@ -56,14 +56,17 @@ private:
     QLabel *standardQuotedTextLabel;
     QLabel *alternateQuotedTextLabel;
     QLabel *textDirectionLabel;
+    QLabel *listToSeparatedStringLabel;
     QLineEdit *textToQuote;
     QLineEdit *standardQuotedText;
     QLineEdit *alternateQuotedText;
     QLineEdit *textDirection;
+    QLineEdit *listToSeparatedStringText;
 
 private slots:
     void localeChanged(QLocale locale);
     void updateQuotedText(QString str);
+    void updateListToSeparatedStringText();
 };
 
 #endif // MISCELLANEOUS_H

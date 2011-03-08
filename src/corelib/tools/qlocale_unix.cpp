@@ -214,6 +214,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         return lc_messages.quoteString(in.value<QStringRef>());
     case StringToAlternateQuotation:
         return lc_messages.quoteString(in.value<QStringRef>(), QLocale::AlternateQuotation);
+    case ListToSeparatedString:
+        return lc_messages.createSeparatedList(in.value<QStringList>());
     default:
         break;
     }

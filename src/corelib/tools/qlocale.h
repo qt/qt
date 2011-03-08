@@ -113,7 +113,8 @@ public:
         UILanguages, // QStringList
         StringToStandardQuotation, // QString in: QStringRef to quote
         StringToAlternateQuotation, // QString in: QStringRef to quote
-        ScriptId // uint
+        ScriptId, // uint
+        ListToSeparatedString // QString
     };
     virtual QVariant query(QueryType type, QVariant in) const;
     virtual QLocale fallbackLocale() const;
@@ -751,6 +752,7 @@ public:
     QString quoteString(const QString &str, QuotationStyle style = StandardQuotation) const;
     QString quoteString(const QStringRef &str, QuotationStyle style = StandardQuotation) const;
 
+    QString createSeparatedList(const QStringList &strl) const;
 //private:                        // this should be private, but can't be
     struct Data {
         quint16 index;

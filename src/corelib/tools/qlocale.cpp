@@ -820,6 +820,45 @@ QString QLocale::quoteString(const QStringRef &str, QuotationStyle style) const
 }
 
 /*!
+    \since 4.8
+
+    Returns a string according to the current locale.
+*/
+QString QLocale::createSeparatedList(const QStringList &strl) const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res;
+        res = systemLocale()->query(QSystemLocale::ListToSeparatedString, QVariant::fromValue(strl));
+
+        if (!res.isNull())
+            return res.toString();
+    }
+#endif
+
+    const int size = strl.size();
+    if (size == 1)
+        return strl.at(0);
+    else if (size == 2) {
+        QString format = getLocaleData(list_pattern_part_data + d()->m_list_pattern_part_two_idx, d()->m_list_pattern_part_two_size);
+        return format.arg(strl.at(0), strl.at(1));
+    }
+    else if (size > 2) {
+        QString formatStart = getLocaleData(list_pattern_part_data + d()->m_list_pattern_part_start_idx, d()->m_list_pattern_part_start_size);
+        QString formatMid = getLocaleData(list_pattern_part_data + d()->m_list_pattern_part_mid_idx, d()->m_list_pattern_part_mid_size);
+        QString formatEnd = getLocaleData(list_pattern_part_data + d()->m_list_pattern_part_end_idx, d()->m_list_pattern_part_end_size);
+        QString result = formatStart.arg(strl.at(0), strl.at(1));
+        int i;
+        for (i = 2; i < size - 1; ++i)
+            result = formatMid.arg(result, strl.at(i));
+        result = formatEnd.arg(result, strl.at(size - 1));
+        return result;
+    }
+
+    return QString();
+}
+
+/*!
     \nonreentrant
 
     Sets the global default locale to \a locale. These

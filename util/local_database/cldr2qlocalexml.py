@@ -82,6 +82,14 @@ def parse_number_format(patterns, data):
         result.append(pattern)
     return result
 
+def parse_list_pattern_part_format(pattern):
+    # this is a very limited parsing of the format for list pattern part only.
+    result = ""
+    result = pattern.replace("{0}", "%1")
+    result = result.replace("{1}", "%2")
+    result = result.replace("{2}", "%3")
+    return result
+
 def ordStr(c):
     if len(c) == 1:
         return str(ord(c))
@@ -215,6 +223,10 @@ def generateLocaleInfo(path):
     result['quotationEnd'] = findEntry(path, "delimiters/quotationEnd")
     result['alternateQuotationStart'] = findEntry(path, "delimiters/alternateQuotationStart")
     result['alternateQuotationEnd'] = findEntry(path, "delimiters/alternateQuotationEnd")
+    result['listPatternPartStart'] = parse_list_pattern_part_format(findEntry(path, "listPatterns/listPattern/listPatternPart[start]"))
+    result['listPatternPartMiddle'] = parse_list_pattern_part_format(findEntry(path, "listPatterns/listPattern/listPatternPart[middle]"))
+    result['listPatternPartEnd'] = parse_list_pattern_part_format(findEntry(path, "listPatterns/listPattern/listPatternPart[end]"))
+    result['listPatternPartTwo'] = parse_list_pattern_part_format(findEntry(path, "listPatterns/listPattern/listPatternPart[2]"))
     result['am'] = findEntry(path, "dates/calendars/calendar[gregorian]/dayPeriods/dayPeriodContext[format]/dayPeriodWidth[wide]/dayPeriod[am]", draft)
     result['pm'] = findEntry(path, "dates/calendars/calendar[gregorian]/dayPeriods/dayPeriodContext[format]/dayPeriodWidth[wide]/dayPeriod[pm]", draft)
     result['longDateFormat'] = convert_date(findEntry(path, "dates/calendars/calendar[gregorian]/dateFormats/dateFormatLength[full]/dateFormat/pattern"))
@@ -689,6 +701,10 @@ print \
             <quotationEnd>\"</quotationEnd>\n\
             <alternateQuotationStart>\'</alternateQuotationStart>\n\
             <alternateQuotationEnd>\'</alternateQuotationEnd>\n\
+            <listPatternPartStart>%1, %2</listPatternPartStart>\n\
+            <listPatternPartMiddle>%1, %2</listPatternPartMiddle>\n\
+            <listPatternPartEnd>%1, %2</listPatternPartEnd>\n\
+            <listPatternPartTwo>%1, %2</listPatternPartTwo>\n\
             <am>AM</am>\n\
             <pm>PM</pm>\n\
             <firstDayOfWeek>mon</firstDayOfWeek>\n\
@@ -741,6 +757,10 @@ for key in locale_keys:
     print "            <quotationEnd>" + l['quotationEnd'].encode('utf-8')   + "</quotationEnd>"
     print "            <alternateQuotationStart>" + l['alternateQuotationStart'].encode('utf-8') + "</alternateQuotationStart>"
     print "            <alternateQuotationEnd>" + l['alternateQuotationEnd'].encode('utf-8')   + "</alternateQuotationEnd>"
+    print "            <listPatternPartStart>" + l['listPatternPartStart'].encode('utf-8')   + "</listPatternPartStart>"
+    print "            <listPatternPartMiddle>" + l['listPatternPartMiddle'].encode('utf-8')   + "</listPatternPartMiddle>"
+    print "            <listPatternPartEnd>" + l['listPatternPartEnd'].encode('utf-8')   + "</listPatternPartEnd>"
+    print "            <listPatternPartTwo>" + l['listPatternPartTwo'].encode('utf-8')   + "</listPatternPartTwo>"
     print "            <am>"       + l['am'].encode('utf-8') + "</am>"
     print "            <pm>"       + l['pm'].encode('utf-8') + "</pm>"
     print "            <firstDayOfWeek>"  + l['firstDayOfWeek'].encode('utf-8') + "</firstDayOfWeek>"
