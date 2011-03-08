@@ -108,6 +108,8 @@ private slots:
     void setMulticastInterface();
     void multicast_data();
     void multicast();
+    void echo_data();
+    void echo();
 
 protected slots:
     void empty_readyReadSlot();
@@ -1093,6 +1095,56 @@ void tst_QUdpSocket::multicast()
     QCOMPARE(receivedDatagrams, datagrams);
 
     QVERIFY2(receiver.leaveMulticastGroup(groupAddress), qPrintable(receiver.errorString()));
+}
+
+void tst_QUdpSocket::echo_data()
+{
+    QTest::addColumn<bool>("connect");
+    QTest::newRow("writeDatagram") << false;
+    QTest::newRow("write") << true;
+}
+
+void tst_QUdpSocket::echo()
+{
+    QFETCH(bool, connect);
+    QHostInfo info = QHostInfo::fromName(QtNetworkSettings::serverName());
+    QVERIFY(info.addresses().count());
+    QHostAddress remote = info.addresses().first();
+
+    QUdpSocket sock;
+    if (connect) {
+        sock.connectToHost(remote, 7);
+    } else {
+        sock.bind();
+    }
+    QByteArray out(30, 'x');
+    QByteArray in;
+    int successes = 0;
+    for (int i=0;i<20;i++) {
+        if (connect) {
+            sock.write(out);
+        } else {
+            sock.writeDatagram(out, remote, 7);
+        }
+        if (sock.waitForReadyRead(1000)) {
+            while (sock.hasPendingDatagrams()) {
+                QHostAddress from;
+                quint16 port;
+                if (connect) {
+                    in = sock.read(sock.pendingDatagramSize());
+                } else {
+                    in.resize(sock.pendingDatagramSize());
+                    sock.readDatagram(in.data(), in.length(), &from, &port);
+                }
+                if (in==out)
+                    successes++;
+            }
+        }
+        if (!sock.isValid())
+            QFAIL(sock.errorString().toLatin1().constData());
+        qDebug() << "packets in" << successes << "out" << i;
+    }
+    QVERIFY(successes >= 18);
 }
 
 QTEST_MAIN(tst_QUdpSocket)
