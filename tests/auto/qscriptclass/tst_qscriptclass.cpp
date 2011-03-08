@@ -617,7 +617,7 @@ void tst_QScriptClass::newInstance()
     QScriptValue obj1 = eng.newObject(&cls);
     QVERIFY(!obj1.data().isValid());
     QVERIFY(obj1.prototype().strictlyEquals(cls.prototype()));
-    QEXPECT_FAIL("", "classname is not implemented", Continue);
+    QEXPECT_FAIL("", "QTBUG-17599: classname is not implemented", Continue);
     QCOMPARE(obj1.toString(), QString::fromLatin1("[object TestClass]"));
     QCOMPARE(obj1.scriptClass(), (QScriptClass*)&cls);
 
@@ -741,7 +741,7 @@ void tst_QScriptClass::getAndSetPropertyFromCpp()
         QCOMPARE(obj1.propertyFlags(foo2), foo2Pflags);
         QVERIFY(cls.lastQueryPropertyObject().strictlyEquals(obj1));
         QVERIFY(cls.lastQueryPropertyName() == foo2);
-        QEXPECT_FAIL("", "classObject.getOwnPropertyDescriptor() reads the property value", Continue);
+        QEXPECT_FAIL("", "QTBUG-17601: classObject.getOwnPropertyDescriptor() reads the property value", Continue);
         QVERIFY(!cls.lastPropertyObject().isValid());
         QVERIFY(cls.lastPropertyFlagsObject().strictlyEquals(obj1));
         QVERIFY(cls.lastPropertyFlagsName() == foo2);

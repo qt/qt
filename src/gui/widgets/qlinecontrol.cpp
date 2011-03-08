@@ -420,7 +420,7 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
 
     int c = m_cursor; // cursor position after insertion of commit string
     if (event->replacementStart() <= 0)
-        c += event->commitString().length() + qMin(-event->replacementStart(), event->replacementLength());
+        c += event->commitString().length() - qMin(-event->replacementStart(), event->replacementLength());
 
     m_cursor += event->replacementStart();
 
@@ -456,6 +456,7 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
 #ifndef QT_NO_IM
     setPreeditArea(m_cursor, event->preeditString());
 #endif //QT_NO_IM
+    const int oldPreeditCursor = m_preeditCursor;
     m_preeditCursor = event->preeditString().length();
     m_hideCursor = false;
     QList<QTextLayout::FormatRange> formats;
@@ -479,6 +480,8 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
     updateDisplayText(/*force*/ true);
     if (cursorPositionChanged)
         emitCursorPositionChanged();
+    else if (m_preeditCursor != oldPreeditCursor)
+        emit updateMicroFocus();
     if (isGettingInput)
         finishChange(priorState);
 }

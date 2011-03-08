@@ -180,6 +180,7 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativePinch>("QtQuick",1,1,"Pinch");
     qmlRegisterType<QDeclarativePinchEvent>();
     qmlRegisterType<QDeclarativeItem,1>("QtQuick",1,1,"Item");
+    qmlRegisterType<QDeclarativeMouseArea,1>("QtQuick",1,1,"MouseArea");
     qmlRegisterType<QDeclarativeFlickable,1>("QtQuick",1,1,"Flickable");
     qmlRegisterType<QDeclarativeListView,1>("QtQuick",1,1,"ListView");
     qmlRegisterType<QDeclarativeGridView,1>("QtQuick",1,1,"GridView");
