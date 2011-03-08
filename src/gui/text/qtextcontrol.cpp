@@ -284,7 +284,7 @@ bool QTextControlPrivate::cursorMoveKeyEvent(QKeyEvent *e)
         if (cursor.position() != oldCursorPos)
             emit q->cursorPositionChanged();
         emit q->microFocusChanged();
-    } else if (ignoreNavigationEvents && isNavigationEvent) {
+    } else if (ignoreNavigationEvents && isNavigationEvent && oldSelection.anchor() == cursor.anchor()) {
         return false;
     }
 
