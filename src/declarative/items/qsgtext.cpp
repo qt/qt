@@ -726,7 +726,7 @@ void QSGText::setFont(const QFont &font)
     d->sourceFont = font;
     QFont oldFont = d->font;
     d->font = font;
-    if (DistanceFieldFontAtlas::useDistanceFieldForFont(d->font))
+    if (DistanceFieldFontAtlas::distanceFieldEnabled())
         qt_disableFontHinting(d->font);
 
     if (d->font.pointSizeF() != -1) {

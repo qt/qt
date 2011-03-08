@@ -242,7 +242,7 @@ protected:
     void mouseUngrabEvent();
     bool event(QEvent *e);
     void focusInEvent(QFocusEvent *event);
-    virtual void itemChange(GraphicsItemChange, const QVariant &);
+    virtual void itemChange(ItemChange, const ItemChangeData &);
 
 public Q_SLOTS:
     void selectAll();

@@ -204,7 +204,10 @@ public:
         SiblingOrder = 0x02,
         Visibility = 0x04,
         Opacity = 0x08,
-        Destroyed = 0x10
+        Destroyed = 0x10,
+        Parent = 0x20,
+        Children = 0x40,
+        Rotation = 0x80,
     };
 
     Q_DECLARE_FLAGS(ChangeTypes, ChangeType)
@@ -375,18 +378,7 @@ public:
     int effectRefCount;
     int hideRefCount;
 
-    union ChangeData {
-        ChangeData(QSGItem *v) : item(v) {}
-        ChangeData(QSGCanvas *v) : canvas(v) {}
-        ChangeData(qreal v) : realValue(v) {}
-        ChangeData(bool v) : boolValue(v) {}
-
-        QSGItem *item;
-        QSGCanvas *canvas;
-        qreal realValue;
-        bool boolValue;
-    };
-    void itemChange(QSGItem::GraphicsItemChange, ChangeData);
+    void itemChange(QSGItem::ItemChange, const QSGItem::ItemChangeData &);
 
     static qint64 consistentTime;
     static void setConsistentTime(qint64 t);

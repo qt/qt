@@ -41,10 +41,7 @@
 
 #include "distancefieldfontatlas_p.h"
 
-#include <qapplication.h>
-#include <qfileinfo.h>
 #include <qmath.h>
-#include <qlibraryinfo.h>
 #include <private/qtriangulator_p.h>
 #include <private/qdeclarativeglobal_p.h>
 
@@ -77,59 +74,7 @@ struct DFVertex
     float d;
 };
 
-void fillTrapezoid(float *bits, int width, int height, int fromY, int toY,
-                   const DFVertex *left1, const DFVertex *left2,
-                   const DFVertex *right1, const DFVertex *right2)
-{
-    fromY = qMax(0, fromY);
-    toY = qMin(height, toY);
-
-    if (toY <= fromY)
-        return;
-
-    float leftDx = (left2->p.x - left1->p.x) / (left2->p.y - left1->p.y);
-    float leftDd = (left2->d - left1->d) / (left2->p.y - left1->p.y);
-    float leftX = left1->p.x + (fromY - left1->p.y) * leftDx;
-    float leftD = left1->d + (fromY - left1->p.y) * leftDd;
-
-    float rightDx = (right2->p.x - right1->p.x) / (right2->p.y - right1->p.y);
-    float rightDd = (right2->d - right1->d) / (right2->p.y - right1->p.y);
-    float rightX = right1->p.x + (fromY - right1->p.y) * rightDx;
-    float rightD = right1->d + (fromY - right1->p.y) * rightDd;
-
-    bits += width * fromY;
-    for (int y = fromY; y < toY; ++y, leftX += leftDx, leftD += leftDd, rightX += rightDx, rightD += rightDd, bits += width) {
-        int fromX = qMax(0, qCeil(leftX));
-        int toX = qMin(width, qCeil(rightX));
-        if (toX <= fromX)
-            continue;
-        float dd = (leftD - rightD) / (leftX - rightX);
-        float d = leftD + (fromX - leftX) * dd;
-        for (int x = fromX; x < toX; ++x, d += dd) {
-            if (abs(d) < abs(bits[x]))
-                bits[x] = d;
-        }
-    }
-}
-
-bool lineIntersection(DFPoint &result, const DFPoint &left1, const DFPoint &left2, const DFPoint &right1, const DFPoint &right2)
-{
-    DFPoint u = { left2.x - left1.x, left2.y - left1.y };
-    DFPoint v = { right2.x - right1.x, right2.y - right1.y };
-    float uxv = u.x * v.y - u.y * v.x;
-    if (uxv == 0)
-        return false;
-    DFPoint d = { left1.x - right1.x, left1.y - right1.y };
-    float uxd = u.x * d.y - u.y * d.x;
-    float vxd = v.x * d.y - v.y * d.x;
-    float t = uxd / uxv;
-    float s = vxd / uxv;
-    result.x = right1.x + t * v.x;
-    result.y = right1.y + t * v.y;
-    return t > 0 && t < 1 && s > 0 && s < 1;
-}
-
-void drawQuad(float *bits, int width, int height, const DFVertex *v1, const DFVertex *v2, const DFVertex *v3, const DFVertex *v4)
+static void drawRectangle(float *bits, int width, int height, const DFVertex *v1, const DFVertex *v2, const DFVertex *v3, const DFVertex *v4)
 {
     float minY = qMin(qMin(v1->p.y, v2->p.y), qMin(v3->p.y, v4->p.y));
     while (v1->p.y > minY) {
@@ -145,60 +90,102 @@ void drawQuad(float *bits, int width, int height, const DFVertex *v1, const DFVe
     //  \  /
     //   v3
 
-#if 0
-    // Algorithm changed. The quad is now always convex.
-    if (v2->p.y > v3->p.y && v4->p.y > v3->p.y) {
-        // Concave or complex.
-        DFPoint p14x32;
-        DFPoint p12x34;
-        bool int14x32 = lineIntersection(p14x32, v1->p, v4->p, v3->p, v2->p);
-        bool int12x34 = lineIntersection(p12x34, v1->p, v2->p, v3->p, v4->p);
-        if (int14x32) {
-            fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(p14x32.y), v1, v4, v1, v2);
-            fillTrapezoid(bits, width, height, qCeil(v3->p.y), qCeil(p14x32.y), v3, v2, v3, v4);
-            fillTrapezoid(bits, width, height, qCeil(p14x32.y), qCeil(v2->p.y), v3, v2, v1, v2);
-            fillTrapezoid(bits, width, height, qCeil(p14x32.y), qCeil(v4->p.y), v1, v4, v3, v4);
-        } else if (int12x34) {
-            fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(p12x34.y), v1, v4, v1, v2);
-            fillTrapezoid(bits, width, height, qCeil(v3->p.y), qCeil(p12x34.y), v3, v2, v3, v4);
-            fillTrapezoid(bits, width, height, qCeil(p12x34.y), qCeil(v4->p.y), v1, v4, v3, v4);
-            fillTrapezoid(bits, width, height, qCeil(p12x34.y), qCeil(v2->p.y), v3, v2, v1, v2);
-        } else if (v2->p.y > v4->p.y) {
-            fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(v4->p.y), v1, v4, v1, v2);
-            fillTrapezoid(bits, width, height, qCeil(v3->p.y), qCeil(v4->p.y), v3, v2, v3, v4);
-            fillTrapezoid(bits, width, height, qCeil(v4->p.y), qCeil(v2->p.y), v3, v2, v1, v2);
-        } else {
-            fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(v2->p.y), v1, v4, v1, v2);
-            fillTrapezoid(bits, width, height, qCeil(v3->p.y), qCeil(v2->p.y), v3, v2, v3, v4);
-            fillTrapezoid(bits, width, height, qCeil(v2->p.y), qCeil(v4->p.y), v1, v4, v3, v4);
+    int fromY = qMax(0, qCeil(v1->p.y));
+    int midY1 = qMin(height, qCeil(qMin(v2->p.y, v4->p.y)));
+    int midY2 = qMin(height, qCeil(qMax(v2->p.y, v4->p.y)));
+    int toY = qMin(height, qCeil(v3->p.y));
+
+    if (toY <= fromY)
+        return;
+
+    bits += width * fromY;
+    int y = fromY;
+
+    float leftDx = (v4->p.x - v1->p.x) / (v4->p.y - v1->p.y);
+    float leftDd = (v4->d - v1->d) / (v4->p.y - v1->p.y);
+    float leftX = v1->p.x + (fromY - v1->p.y) * leftDx;
+    float leftD = v1->d + (fromY - v1->p.y) * leftDd;
+
+    float rightDx = (v2->p.x - v1->p.x) / (v2->p.y - v1->p.y);
+    float rightDd = (v2->d - v1->d) / (v2->p.y - v1->p.y);
+    float rightX = v1->p.x + (fromY - v1->p.y) * rightDx;
+    float rightD = v1->d + (fromY - v1->p.y) * rightDd;
+
+    float dd = ((v2->d - v1->d) * (v3->p.y - v1->p.y) - (v2->p.y - v1->p.y) * (v3->d - v1->d))
+             / ((v2->p.x - v1->p.x) * (v3->p.y - v1->p.y) - (v2->p.y - v1->p.y) * (v3->p.x - v1->p.x));
+
+    for (; y < midY1; ++y, leftX += leftDx, leftD += leftDd, rightX += rightDx, rightD += rightDd, bits += width) {
+        int fromX = qMax(0, qCeil(leftX));
+        int toX = qMin(width, qCeil(rightX));
+        if (toX <= fromX)
+            continue;
+        float d = leftD + (fromX - leftX) * dd;
+        for (int x = fromX; x < toX; ++x, d += dd) {
+            if (abs(d) < abs(bits[x]))
+                bits[x] = d;
         }
-    } else
-#endif
-    if (v2->p.y > v3->p.y) {
-        // Right side is straight.
-        fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(v4->p.y), v1, v4, v1, v2);
-        fillTrapezoid(bits, width, height, qCeil(v4->p.y), qCeil(v3->p.y), v4, v3, v1, v2);
-        fillTrapezoid(bits, width, height, qCeil(v3->p.y), qCeil(v2->p.y), v3, v2, v1, v2);
-    } else if (v4->p.y > v3->p.y) {
-        // Left side is straight.
-        fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(v2->p.y), v1, v4, v1, v2);
-        fillTrapezoid(bits, width, height, qCeil(v2->p.y), qCeil(v3->p.y), v1, v4, v2, v3);
-        fillTrapezoid(bits, width, height, qCeil(v3->p.y), qCeil(v4->p.y), v1, v4, v3, v4);
+    }
+
+    if (midY1 == toY)
+        return;
+
+    if (v2->p.y > v4->p.y) {
+        // Long right edge.
+        leftDx = (v3->p.x - v4->p.x) / (v3->p.y - v4->p.y);
+        leftDd = (v3->d - v4->d) / (v3->p.y - v4->p.y);
+        leftX = v4->p.x + (midY1 - v4->p.y) * leftDx;
+        leftD = v4->d + (midY1 - v4->p.y) * leftDd;
     } else {
-        // Diamond shaped.
-        if (v2->p.y > v4->p.y) {
-            fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(v4->p.y), v1, v4, v1, v2);
-            fillTrapezoid(bits, width, height, qCeil(v4->p.y), qCeil(v2->p.y), v4, v3, v1, v2);
-            fillTrapezoid(bits, width, height, qCeil(v2->p.y), qCeil(v3->p.y), v4, v3, v2, v3);
-        } else {
-            fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(v2->p.y), v1, v4, v1, v2);
-            fillTrapezoid(bits, width, height, qCeil(v2->p.y), qCeil(v4->p.y), v1, v4, v2, v3);
-            fillTrapezoid(bits, width, height, qCeil(v4->p.y), qCeil(v3->p.y), v4, v3, v2, v3);
+        // Long left edge.
+        rightDx = (v3->p.x - v2->p.x) / (v3->p.y - v2->p.y);
+        rightDd = (v3->d - v2->d) / (v3->p.y - v2->p.y);
+        rightX = v2->p.x + (midY1 - v2->p.y) * rightDx;
+        rightD = v2->d + (midY1 - v2->p.y) * rightDd;
+    }
+
+    for (; y < midY2; ++y, leftX += leftDx, leftD += leftDd, rightX += rightDx, rightD += rightDd, bits += width) {
+        int fromX = qMax(0, qCeil(leftX));
+        int toX = qMin(width, qCeil(rightX));
+        if (toX <= fromX)
+            continue;
+        float d = leftD + (fromX - leftX) * dd;
+        for (int x = fromX; x < toX; ++x, d += dd) {
+            if (abs(d) < abs(bits[x]))
+                bits[x] = d;
+        }
+    }
+
+    if (midY2 == toY)
+        return;
+
+    if (v2->p.y > v4->p.y) {
+        // Long left edge.
+        rightDx = (v3->p.x - v2->p.x) / (v3->p.y - v2->p.y);
+        rightDd = (v3->d - v2->d) / (v3->p.y - v2->p.y);
+        rightX = v2->p.x + (midY2 - v2->p.y) * rightDx;
+        rightD = v2->d + (midY2 - v2->p.y) * rightDd;
+    } else {
+        // Long right edge.
+        leftDx = (v3->p.x - v4->p.x) / (v3->p.y - v4->p.y);
+        leftDd = (v3->d - v4->d) / (v3->p.y - v4->p.y);
+        leftX = v4->p.x + (midY2 - v4->p.y) * leftDx;
+        leftD = v4->d + (midY2 - v4->p.y) * leftDd;
+    }
+
+    for (; y < toY; ++y, leftX += leftDx, leftD += leftDd, rightX += rightDx, rightD += rightDd, bits += width) {
+        int fromX = qMax(0, qCeil(leftX));
+        int toX = qMin(width, qCeil(rightX));
+        if (toX <= fromX)
+            continue;
+        float d = leftD + (fromX - leftX) * dd;
+        for (int x = fromX; x < toX; ++x, d += dd) {
+            if (abs(d) < abs(bits[x]))
+                bits[x] = d;
         }
     }
 }
 
-void drawTriangle(float *bits, int width, int height, const DFVertex *v1, const DFVertex *v2, const DFVertex *v3)
+static void drawTriangle(float *bits, int width, int height, const DFVertex *v1, const DFVertex *v2, const DFVertex *v3)
 {
     float minY = qMin(qMin(v1->p.y, v2->p.y), v3->p.y);
     while (v1->p.y > minY) {
@@ -211,16 +198,71 @@ void drawTriangle(float *bits, int width, int height, const DFVertex *v1, const 
     //  /  \
     // v3--v2
 
+    int fromY = qMax(0, qCeil(v1->p.y));
+    int midY = qMin(height, qCeil(qMin(v2->p.y, v3->p.y)));
+    int toY = qMin(height, qCeil(qMax(v2->p.y, v3->p.y)));
+
+    if (toY <= fromY)
+        return;
+
+    float leftDx = (v3->p.x - v1->p.x) / (v3->p.y - v1->p.y);
+    float leftDd = (v3->d - v1->d) / (v3->p.y - v1->p.y);
+    float leftX = v1->p.x + (fromY - v1->p.y) * leftDx;
+    float leftD = v1->d + (fromY - v1->p.y) * leftDd;
+
+    float rightDx = (v2->p.x - v1->p.x) / (v2->p.y - v1->p.y);
+    float rightDd = (v2->d - v1->d) / (v2->p.y - v1->p.y);
+    float rightX = v1->p.x + (fromY - v1->p.y) * rightDx;
+    float rightD = v1->d + (fromY - v1->p.y) * rightDd;
+
+    float dd = ((v2->d - v1->d) * (v3->p.y - v1->p.y) - (v2->p.y - v1->p.y) * (v3->d - v1->d))
+             / ((v2->p.x - v1->p.x) * (v3->p.y - v1->p.y) - (v2->p.y - v1->p.y) * (v3->p.x - v1->p.x));
+
+    bits += width * fromY;
+    int y = fromY;
+    for (; y < midY; ++y, leftX += leftDx, leftD += leftDd, rightX += rightDx, rightD += rightDd, bits += width) {
+        int fromX = qMax(0, qCeil(leftX));
+        int toX = qMin(width, qCeil(rightX));
+        if (toX <= fromX)
+            continue;
+        float d = leftD + (fromX - leftX) * dd;
+        for (int x = fromX; x < toX; ++x, d += dd) {
+            if (abs(d) < abs(bits[x]))
+                bits[x] = d;
+        }
+    }
+
+    if (midY == toY)
+        return;
+
     if (v2->p.y > v3->p.y) {
-        fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(v3->p.y), v1, v3, v1, v2);
-        fillTrapezoid(bits, width, height, qCeil(v3->p.y), qCeil(v2->p.y), v3, v2, v1, v2);
+        // Long right edge.
+        leftDx = (v2->p.x - v3->p.x) / (v2->p.y - v3->p.y);
+        leftDd = (v2->d - v3->d) / (v2->p.y - v3->p.y);
+        leftX = v3->p.x + (midY - v3->p.y) * leftDx;
+        leftD = v3->d + (midY - v3->p.y) * leftDd;
     } else {
-        fillTrapezoid(bits, width, height, qCeil(v1->p.y), qCeil(v2->p.y), v1, v3, v1, v2);
-        fillTrapezoid(bits, width, height, qCeil(v2->p.y), qCeil(v3->p.y), v1, v3, v2, v3);
+        // Long left edge.
+        rightDx = (v3->p.x - v2->p.x) / (v3->p.y - v2->p.y);
+        rightDd = (v3->d - v2->d) / (v3->p.y - v2->p.y);
+        rightX = v2->p.x + (midY - v2->p.y) * rightDx;
+        rightD = v2->d + (midY - v2->p.y) * rightDd;
+    }
+
+    for (; y < toY; ++y, leftX += leftDx, leftD += leftDd, rightX += rightDx, rightD += rightDd, bits += width) {
+        int fromX = qMax(0, qCeil(leftX));
+        int toX = qMin(width, qCeil(rightX));
+        if (toX <= fromX)
+            continue;
+        float d = leftD + (fromX - leftX) * dd;
+        for (int x = fromX; x < toX; ++x, d += dd) {
+            if (abs(d) < abs(bits[x]))
+                bits[x] = d;
+        }
     }
 }
 
-QImage makeDistanceField(const QPainterPath &path, float offs)
+static QImage makeDistanceField(const QPainterPath &path, float offs)
 {
     QImage image(QT_DISTANCEFIELD_TILESIZE, QT_DISTANCEFIELD_TILESIZE, QImage::Format_ARGB32_Premultiplied);
 
@@ -251,7 +293,7 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
 
     float *bits = (float *)image.bits();
     const float angleStep = 15 * 3.141592653589793238f / 180;
-    DFPoint rotation = { cos(angleStep), sin(angleStep) };
+    const DFPoint rotation = { cos(angleStep), sin(angleStep) };
 
     bool isShortData = polys.indices.type() == QVertexIndexVector::UnsignedShort;
     const void *indices = polys.indices.data();
@@ -323,13 +365,11 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
             intPrev.d = -127;
             intNext.d = -127;
 
-            drawQuad(bits, image.width(), image.height(),
-                     &vertices.at(prev), &extPrev,
-                     &extNext, &vertices.at(next));
+            drawRectangle(bits, image.width(), image.height(),
+                          &vertices.at(prev), &extPrev, &extNext, &vertices.at(next));
 
-            drawQuad(bits, image.width(), image.height(),
-                     &intPrev, &vertices.at(prev),
-                     &vertices.at(next), &intNext);
+            drawRectangle(bits, image.width(), image.height(),
+                          &intPrev, &vertices.at(prev), &vertices.at(next), &intNext);
 
             if (isConvex.at(prev)) {
                 DFVertex v = extPrev;
@@ -382,6 +422,19 @@ QImage makeDistanceField(const QPainterPath &path, float offs)
     return image;
 }
 
+static void convert_to_Format_Alpha(QImage *image)
+{
+    const int width = image->width();
+    const int height = image->height();
+    uchar *data = image->bits();
+
+    for (int i = 0; i < height; ++i) {
+        uchar *o = data + i * width;
+        for (int x = 0; x < width; ++x)
+            o[x] = (uchar)qAlpha(image->pixel(x, i));
+    }
+}
+
 uint qHash(const TexCoordCacheKey &key)
 {
     return (qHash(key.distfield) << 13) | (key.glyph & 0x1FFF);
@@ -391,7 +444,7 @@ DEFINE_BOOL_CONFIG_OPTION(enableDistanceField, QML_ENABLE_DISTANCEFIELD)
 
 QHash<QString, DistanceFieldFontAtlas *> DistanceFieldFontAtlas::m_atlases;
 QHash<TexCoordCacheKey, DistanceFieldFontAtlas::TexCoord> DistanceFieldFontAtlas::m_texCoords;
-QHash<QString, bool> DistanceFieldFontAtlas::m_distfield_availability;
+QSet<TexCoordCacheKey> DistanceFieldFontAtlas::m_generatedGlyphs;
 QHash<QString, QSGTextureRef> DistanceFieldFontAtlas::m_textures;
 
 static QString fontKey(const QFont &font)
@@ -446,39 +499,42 @@ DistanceFieldFontAtlas::DistanceFieldFontAtlas(const QFont &font)
     basename.remove(QLatin1String(" "));
     QString italic = m_font.italic() ? QLatin1String("i") : QLatin1String("");
     QString bold = m_font.weight() > QFont::Normal ? QLatin1String("b") : QLatin1String("");
-    m_distanceFieldFileName = basename + bold + italic + QLatin1String(".png");
+    m_distanceFieldKey = basename + bold + italic;
 
     m_glyphCount = m_fontEngine->glyphCount();
     m_glyphMetricMargin = QT_DISTANCEFIELD_MARGIN / qreal(QT_DISTANCEFIELD_SCALE) * scaleRatioFromRefSize();
     m_glyphTexMargin = QT_DISTANCEFIELD_MARGIN / qreal(QT_DISTANCEFIELD_SCALE);
 }
 
-bool DistanceFieldFontAtlas::distanceFieldAvailable() const
-{
-    QHash<QString, bool>::iterator available = m_distfield_availability.find(m_distanceFieldFileName);
-    if (available == m_distfield_availability.end()) {
-        QString distFieldFile = QString(QLatin1String("%1/%2")).arg(distanceFieldDir()).arg(m_distanceFieldFileName);
-        QFileInfo distFieldInfo(distFieldFile);
-        bool exists = distFieldInfo.exists();
-        if (!exists)
-            qWarning("Warning: distance-field rendering '%s' does not exist", distFieldFile.toLatin1().constData());
-        available = m_distfield_availability.insert(m_distanceFieldFileName, exists);
-    }
-    return available.value();
-}
-
 QSGTextureRef DistanceFieldFontAtlas::texture()
 {
-    if (!distanceFieldAvailable())
-        return QSGTextureRef();
-
-    QHash<QString, QSGTextureRef>::iterator tex = m_textures.find(m_distanceFieldFileName);
+    QHash<QString, QSGTextureRef>::iterator tex = m_textures.find(m_distanceFieldKey);
     if (tex == m_textures.end()) {
-        QImage distFieldImage = distanceFieldAtlas();
-        tex = m_textures.insert(m_distanceFieldFileName, uploadDistanceField(distFieldImage));
+        tex = m_textures.insert(m_distanceFieldKey, createTexture());
     }
 
     return tex.value();
+}
+
+void DistanceFieldFontAtlas::populate(int count, const glyph_t *glyphs)
+{
+    glBindTexture(GL_TEXTURE_2D, texture()->textureId());
+
+    for (int i = 0; i < count; ++i) {
+        TexCoordCacheKey key(m_distanceFieldKey, glyphs[i]);
+        if (m_generatedGlyphs.contains(key))
+            continue;
+
+        QImage glyph = renderDistanceFieldGlyph(glyphs[i]);
+        convert_to_Format_Alpha(&glyph);
+
+        int x = (glyphs[i] * QT_DISTANCEFIELD_TILESIZE) % atlasSize().width();
+        int y = ((glyphs[i] * QT_DISTANCEFIELD_TILESIZE) / atlasSize().width()) * QT_DISTANCEFIELD_TILESIZE;
+
+        glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, glyph.width(), glyph.height(), GL_ALPHA, GL_UNSIGNED_BYTE, glyph.constBits());
+
+        m_generatedGlyphs.insert(key);
+    }
 }
 
 QSize DistanceFieldFontAtlas::atlasSize() const
@@ -526,7 +582,7 @@ DistanceFieldFontAtlas::TexCoord DistanceFieldFontAtlas::glyphTexCoord(glyph_t g
     if (glyph >= glyphCount())
         qWarning("Warning: distance-field glyph is not available with index %d", glyph);
 
-    TexCoordCacheKey key(distanceFieldFileName(), glyph);
+    TexCoordCacheKey key(m_distanceFieldKey, glyph);
     QHash<TexCoordCacheKey, TexCoord>::iterator texCoord = m_texCoords.find(key);
     if (texCoord == m_texCoords.end()) {
         const QSize texSize = atlasSize();
@@ -585,52 +641,17 @@ qreal DistanceFieldFontAtlas::scaleRatioFromRefSize() const
     return m_fontEngine->fontDef.pixelSize / QT_DISTANCEFIELD_BASEFONTSIZE;
 }
 
-QImage DistanceFieldFontAtlas::distanceFieldAtlas() const
+QSGTextureRef DistanceFieldFontAtlas::createTexture()
 {
-    if (!distanceFieldAvailable())
-        return QImage();
-
-    return QImage(QString(QLatin1String("%1/%2")).arg(distanceFieldDir()).arg(m_distanceFieldFileName));
-}
-
-bool DistanceFieldFontAtlas::useDistanceFieldForFont(const QFont &font)
-{
-    if (enableDistanceField())
-        return DistanceFieldFontAtlas::get(font)->distanceFieldAvailable();
-
-    return false;
-}
-
-static void convert_to_Format_Alpha(QImage *image)
-{
-    const int width = image->width();
-    const int height = image->height();
-    uchar *data = image->bits();
-
-    for (int i = 0; i < height; ++i) {
-        uchar *o = data + i * width;
-        for (int x = 0; x < width; ++x)
-            o[x] = (uchar)qAlpha(image->pixel(x, i));
-    }
-}
-
-QSGTextureRef DistanceFieldFontAtlas::uploadDistanceField(const QImage &image)
-{
-    Q_ASSERT(!image.isNull());
-
     GLuint id;
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
 
-    QImage i = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-    convert_to_Format_Alpha(&i);
-
-    // We only need to store the alpha component
-#ifdef QT_OPENGL_ES
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, i.width(), i.height(), 0, GL_ALPHA, GL_UNSIGNED_BYTE, i.constBits());
-#else
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA8, i.width(), i.height(), 0, GL_ALPHA, GL_UNSIGNED_BYTE, i.constBits());
-#endif
+    const QSize size = atlasSize();
+    QVarLengthArray<uchar> data(size.width() * size.height());
+    for (int i = 0; i < data.size(); ++i)
+        data[i] = 0;
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, size.width(), size.height(), 0, GL_ALPHA, GL_UNSIGNED_BYTE, &data[0]);
 
     GLuint error = glGetError();
     if (error != GL_NO_ERROR) {
@@ -641,30 +662,17 @@ QSGTextureRef DistanceFieldFontAtlas::uploadDistanceField(const QImage &image)
 
     QSGTexture *texture = new QSGTexture;
     texture->setTextureId(id);
-    texture->setTextureSize(image.size());
-    texture->setAlphaChannel(image.hasAlphaChannel());
+    texture->setTextureSize(size);
+    texture->setAlphaChannel(true);
     texture->setStatus(QSGTexture::Ready);
 
     QSGTextureRef ref(texture);
     return ref;
 }
 
-QString DistanceFieldFontAtlas::distanceFieldDir() const
+bool DistanceFieldFontAtlas::distanceFieldEnabled()
 {
-    static QString distfieldpath = QString::fromLocal8Bit(qgetenv("QML_DISTFIELD_DIR"));
-    if (distfieldpath.isEmpty()) {
-#ifndef QT_NO_SETTINGS
-        distfieldpath = QLibraryInfo::location(QLibraryInfo::LibrariesPath);
-        distfieldpath += QLatin1String("/fonts/distancefields");
-#endif
-    }
-
-    return distfieldpath;
-}
-
-QString DistanceFieldFontAtlas::distanceFieldFileName() const
-{
-    return m_distanceFieldFileName;
+    return enableDistanceField();
 }
 
 int DistanceFieldFontAtlas::glyphCount() const

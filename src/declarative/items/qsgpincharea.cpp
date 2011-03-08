@@ -385,8 +385,7 @@ void QSGPinchArea::geometryChanged(const QRectF &newGeometry,
     QSGItem::geometryChanged(newGeometry, oldGeometry);
 }
 
-void QSGPinchArea::itemChange(GraphicsItemChange change,
-                                       const QVariant &value)
+void QSGPinchArea::itemChange(ItemChange change, const ItemChangeData &value)
 {
     QSGItem::itemChange(change, value);
 }

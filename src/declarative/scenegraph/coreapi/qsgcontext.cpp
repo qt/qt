@@ -211,16 +211,7 @@ TextureNodeInterface *QSGContext::createTextureNode()
  */
 GlyphNodeInterface *QSGContext::createGlyphNode()
 {
-    return new DefaultGlyphNode;
-}
-
-
-/*!
-    Factory function for scene graph backends of the Text elements;
- */
-GlyphNodeInterface *QSGContext::createGlyphNode(const QFont &font)
-{
-    if (DistanceFieldFontAtlas::useDistanceFieldForFont(font))
+    if (DistanceFieldFontAtlas::distanceFieldEnabled())
         return new DistanceFieldGlyphNode;
     else
         return new DefaultGlyphNode;

@@ -150,13 +150,13 @@ void QSGBasePositioner::componentComplete()
     reportConflictingAnchors();
 }
 
-void QSGBasePositioner::itemChange(GraphicsItemChange change, const QVariant &value)
+void QSGBasePositioner::itemChange(ItemChange change, const ItemChangeData &value)
 {
     Q_D(QSGBasePositioner);
     if (change == ItemChildAddedChange){
         prePositioning();
     } else if (change == ItemChildRemovedChange) {
-        QSGItem *child = value.value<QSGItem*>();
+        QSGItem *child = value.item;
         QSGBasePositioner::PositionedItem posItem(child);
         int idx = positionedItems.find(posItem);
         if (idx >= 0) {
