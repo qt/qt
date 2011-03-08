@@ -1110,10 +1110,15 @@ void tst_qdeclarativetextinput::horizontalAlignment_RightToLeft()
     QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignLeft);
     QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
 
-    // empty text is also implicitly left aligned
+    // empty text with implicit alignment follows the system locale-based
+    // keyboard input direction from QApplication::keyboardInputDirection
     textInput->setText("");
-    QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignLeft);
-    QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
+    QCOMPARE(textInput->hAlign(), QApplication::keyboardInputDirection() == Qt::LeftToRight ?
+                                  QDeclarativeTextInput::AlignLeft : QDeclarativeTextInput::AlignRight);
+    if (QApplication::keyboardInputDirection() == Qt::LeftToRight)
+        QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
+    else
+        QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
     textInput->setHAlign(QDeclarativeTextInput::AlignRight);
     QCOMPARE(textInput->hAlign(), QDeclarativeTextInput::AlignRight);
     QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);

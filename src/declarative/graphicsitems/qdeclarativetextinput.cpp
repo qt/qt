@@ -411,7 +411,9 @@ bool QDeclarativeTextInputPrivate::determineHorizontalAlignment()
 {
     if (hAlignImplicit) {
         // if no explicit alignment has been set, follow the natural layout direction of the text
-        return setHAlign(control->text().isRightToLeft() ? QDeclarativeTextInput::AlignRight : QDeclarativeTextInput::AlignLeft);
+        QString text = control->text();
+        bool isRightToLeft = text.isEmpty() ? QApplication::keyboardInputDirection() == Qt::RightToLeft : text.isRightToLeft();
+        return setHAlign(isRightToLeft ? QDeclarativeTextInput::AlignRight : QDeclarativeTextInput::AlignLeft);
     }
     return false;
 }
@@ -1872,6 +1874,7 @@ void QDeclarativeTextInputPrivate::init()
     QPalette p = control->palette();
     selectedTextColor = p.color(QPalette::HighlightedText);
     selectionColor = p.color(QPalette::Highlight);
+    determineHorizontalAlignment();
 }
 
 void QDeclarativeTextInput::cursorPosChanged()

@@ -576,9 +576,11 @@ void tst_qdeclarativetext::horizontalAlignment_RightToLeft()
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignLeft);
     QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() < canvas->width()/2);
 
-    // empty text is also implicitly left aligned
+    // empty text with implicit alignment follows the system locale-based
+    // keyboard input direction from QApplication::keyboardInputDirection
     text->setText("");
-    QCOMPARE(text->hAlign(), QDeclarativeText::AlignLeft);
+    QCOMPARE(text->hAlign(), QApplication::keyboardInputDirection() == Qt::LeftToRight ?
+                                  QDeclarativeText::AlignLeft : QDeclarativeText::AlignRight);
     text->setHAlign(QDeclarativeText::AlignRight);
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
 

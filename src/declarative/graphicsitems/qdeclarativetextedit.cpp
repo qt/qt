@@ -550,7 +550,8 @@ bool QDeclarativeTextEditPrivate::determineHorizontalAlignment()
     Q_Q(QDeclarativeTextEdit);
     if (hAlignImplicit && q->isComponentComplete()) {
         // if no explicit alignment has been set, follow the natural layout direction of the text
-        return setHAlign(text.isRightToLeft() ? QDeclarativeTextEdit::AlignRight : QDeclarativeTextEdit::AlignLeft);
+        bool isRightToLeft = text.isEmpty() ? QApplication::keyboardInputDirection() == Qt::RightToLeft : text.isRightToLeft();
+        return setHAlign(isRightToLeft ? QDeclarativeTextEdit::AlignRight : QDeclarativeTextEdit::AlignLeft);
     }
     return false;
 }

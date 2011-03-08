@@ -1120,7 +1120,8 @@ bool QDeclarativeTextPrivate::determineHorizontalAlignment()
     Q_Q(QDeclarativeText);
     if (hAlignImplicit && q->isComponentComplete()) {
         // if no explicit alignment has been set, follow the natural layout direction of the text
-        return setHAlign(text.isRightToLeft() ? QDeclarativeText::AlignRight : QDeclarativeText::AlignLeft);
+        bool isRightToLeft = text.isEmpty() ? QApplication::keyboardInputDirection() == Qt::RightToLeft : text.isRightToLeft();
+        return setHAlign(isRightToLeft ? QDeclarativeText::AlignRight : QDeclarativeText::AlignLeft);
     }
     return false;
 }

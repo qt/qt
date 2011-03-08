@@ -500,10 +500,15 @@ void tst_qdeclarativetextedit::hAlign_RightToLeft()
     QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignLeft);
     QVERIFY(textEdit->positionToRectangle(0).x() < canvas->width()/2);
 
-    // empty text is also implicitly left aligned
+    // empty text with implicit alignment follows the system locale-based
+    // keyboard input direction from QApplication::keyboardInputDirection
     textEdit->setText("");
-    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignLeft);
-    QVERIFY(textEdit->positionToRectangle(0).x() < canvas->width()/2);
+    QCOMPARE(textEdit->hAlign(), QApplication::keyboardInputDirection() == Qt::LeftToRight ?
+                                  QDeclarativeTextEdit::AlignLeft : QDeclarativeTextEdit::AlignRight);
+    if (QApplication::keyboardInputDirection() == Qt::LeftToRight)
+        QVERIFY(textEdit->positionToRectangle(0).x() < canvas->width()/2);
+    else
+        QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
     textEdit->setHAlign(QDeclarativeTextEdit::AlignRight);
     QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
     QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
