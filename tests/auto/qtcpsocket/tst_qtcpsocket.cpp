@@ -981,6 +981,9 @@ void tst_QTcpSocket::disconnectWhileConnecting_data()
 void tst_QTcpSocket::disconnectWhileConnecting()
 {
     QFETCH(QByteArray, data);
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return; //proxy not useful for localhost test case
 
     QTcpServer server;
     QVERIFY(server.listen(QHostAddress::LocalHost));
@@ -1106,6 +1109,9 @@ void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop_data()
 void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop()
 {
     QFETCH(QByteArray, data);
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return; //proxy not useful for localhost test case
 
     QScopedPointer<ReceiverThread, ReceiverThread> thread (new ReceiverThread);
     QVERIFY(thread->listen());
@@ -1646,6 +1652,9 @@ private slots:
 //----------------------------------------------------------------------------------
 void tst_QTcpSocket::remoteCloseError()
 {
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return; //proxy not useful for localhost test case
     RemoteCloseErrorServer server;
     QVERIFY(server.listen(QHostAddress::LocalHost));
 
@@ -1956,6 +1965,9 @@ void tst_QTcpSocket::linuxKernelBugLocalSocket()
 //----------------------------------------------------------------------------------
 void tst_QTcpSocket::abortiveClose()
 {
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return; //proxy not useful for localhost test case
     QTcpServer server;
     QVERIFY(server.listen(QHostAddress::LocalHost));
     connect(&server, SIGNAL(newConnection()), this, SLOT(exitLoopSlot()));
@@ -1994,6 +2006,9 @@ void tst_QTcpSocket::abortiveClose_abortSlot()
 //----------------------------------------------------------------------------------
 void tst_QTcpSocket::localAddressEmptyOnBSD()
 {
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return; //proxy not useful for localhost test case
     QTcpServer server;
     QVERIFY(server.listen(QHostAddress::LocalHost));
 
@@ -2264,6 +2279,9 @@ void tst_QTcpSocket::moveToThread0()
 
 void tst_QTcpSocket::increaseReadBufferSize()
 {
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return; //proxy not useful for localhost test case
     QTcpServer server;
     QTcpSocket *active = newSocket();
     connect(active, SIGNAL(readyRead()), SLOT(exitLoopSlot()));
