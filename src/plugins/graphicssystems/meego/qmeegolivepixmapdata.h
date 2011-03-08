@@ -42,8 +42,12 @@
 #ifndef MLIVEPIXMAPDATA_H
 #define MLIVEPIXMAPDATA_H
 
+#include <QLinkedList>
 #include <private/qpixmapdata_gl_p.h>
 #include "qmeegoextensions.h"
+
+class QMeeGoLivePixmapData;
+typedef QLinkedList<QMeeGoLivePixmapData *> QMeeGoLivePixmapDataList;
 
 class QMeeGoLivePixmapData : public QGLPixmapData
 {
@@ -66,6 +70,9 @@ public:
 
     QPixmap *backingX11Pixmap;
     QImage lockedImage;
+    QMeeGoLivePixmapDataList::Iterator pos;
+
+    static void invalidateSurfaces();
 };
 
 #endif

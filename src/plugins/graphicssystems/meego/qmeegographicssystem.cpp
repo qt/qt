@@ -335,3 +335,8 @@ void qt_meego_destroy_fence_sync(void* fs)
 {
     return QMeeGoGraphicsSystem::destroyFenceSync(fs);
 }
+
+void qt_meego_invalidate_live_surfaces(void)
+{
+    return QMeeGoLivePixmapData::invalidateSurfaces();
+}
