@@ -115,7 +115,7 @@ public:
     bool requireImplicitWidth:1;
     bool hAlignImplicit:1;
 
-    QSize layedOutTextSize;
+    QRect layedOutTextRect;
     QSize paintedSize;
     qreal naturalWidth;
     virtual qreal implicitWidth() const;
@@ -123,7 +123,7 @@ public:
     QPixmap textDocumentImage(bool drawStyle);
     QTextDocumentWithImageResources *doc;
 
-    QSize setupTextLayout();
+    QRect setupTextLayout();
     QPixmap textLayoutImage(bool drawStyle);
     void drawTextLayout(QPainter *p, const QPointF &pos, bool drawStyle);
     QDeclarativeTextLayout layout;

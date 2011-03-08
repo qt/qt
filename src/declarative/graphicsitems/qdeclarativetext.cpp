@@ -282,11 +282,11 @@ void QDeclarativeTextPrivate::updateSize()
 
     //setup instance of QTextLayout for all cases other than richtext
     if (!richText) {
-        size = setupTextLayout();
-        if (layedOutTextSize != size) {
+        QRect textRect = setupTextLayout();
+        if (layedOutTextRect.size() != textRect.size())
             q->prepareGeometryChange();
-            layedOutTextSize = size;
-        }
+        layedOutTextRect = textRect;
+        size = textRect.size();
         dy -= size.height();
     } else {
         singleline = false; // richtext can't elide or be optimized for single-line case
@@ -306,9 +306,9 @@ void QDeclarativeTextPrivate::updateSize()
             doc->setTextWidth(doc->idealWidth()); // ### Text does not align if width is not set (QTextDoc bug)
         dy -= (int)doc->size().height();
         QSize dsize = doc->size().toSize();
-        if (dsize != layedOutTextSize) {
+        if (dsize != layedOutTextRect.size()) {
             q->prepareGeometryChange();
-            layedOutTextSize = dsize;
+            layedOutTextRect = QRect(QPoint(0,0), dsize);
         }
         size = QSize(int(doc->idealWidth()),dsize.height());
     }
@@ -343,14 +343,13 @@ void QDeclarativeTextPrivate::updateSize()
     Returns the size of the final text.  This can be used to position the text vertically (the text is
     already absolutely positioned horizontally).
 */
-QSize QDeclarativeTextPrivate::setupTextLayout()
+QRect QDeclarativeTextPrivate::setupTextLayout()
 {
     // ### text layout handling should be profiled and optimized as needed
     // what about QStackTextEngine engine(tmp, d->font.font()); QTextLayout textLayout(&engine);
     Q_Q(QDeclarativeText);
     layout.setCacheEnabled(true);
 
-    qreal widthUsed = 0;
     qreal lineWidth = 0;
     int visibleCount = 0;
 
@@ -378,11 +377,12 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
                 break;
         }
         layout.endLayout();
-        naturalWidth = 0;
+        QRectF br;
         for (int i = 0; i < layout.lineCount(); ++i) {
             QTextLine line = layout.lineAt(i);
-            naturalWidth = qMax(naturalWidth, line.naturalTextWidth());
+            br = br.united(line.naturalTextRect());
         }
+        naturalWidth = br.width();
     }
 
     if (maximumLineCountValid) {
@@ -440,19 +440,21 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
     }
 
     qreal height = 0;
+    QRectF br;
     for (int i = 0; i < layout.lineCount(); ++i) {
         QTextLine line = layout.lineAt(i);
-        // calc width
-        widthUsed = qMax(widthUsed, line.naturalTextRect().right());
         // set line spacing
         line.setPosition(QPointF(line.position().x(), height));
-        if (elideText && i == layout.lineCount()-1)
+        if (elideText && i == layout.lineCount()-1) {
             elidePos.setY(height + fm.ascent());
+            br = br.united(QRectF(elidePos, QSizeF(fm.width(elideChar), fm.ascent())));
+        }
+        br = br.united(line.naturalTextRect());
         height += (lineHeightMode == QDeclarativeText::FixedHeight) ? lineHeight : line.height() * lineHeight;
     }
 
     if (!q->widthValid())
-        naturalWidth = widthUsed;
+        naturalWidth = br.width();
 
     //Update the number of visible lines
     if (lineCount != visibleCount) {
@@ -460,7 +462,7 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
         emit q->lineCountChanged();
     }
 
-    return QSize(qCeil(widthUsed), qCeil(height));
+    return QRect(qRound(br.x()), qRound(br.y()), qCeil(br.width()), qCeil(br.height()));
 }
 
 /*!
@@ -470,7 +472,7 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
 QPixmap QDeclarativeTextPrivate::textLayoutImage(bool drawStyle)
 {
     //do layout
-    QSize size = layedOutTextSize;
+    QSize size = layedOutTextRect.size();
     //paint text
     QPixmap img(size);
     if (!size.isEmpty()) {
@@ -483,7 +485,7 @@ QPixmap QDeclarativeTextPrivate::textLayoutImage(bool drawStyle)
 #ifdef Q_WS_MAC
         qt_applefontsmoothing_enabled = oldSmooth;
 #endif
-        drawTextLayout(&p, QPointF(0,0), drawStyle);
+        drawTextLayout(&p, QPointF(-layedOutTextRect.x(),0), drawStyle);
     }
     return img;
 }
@@ -501,7 +503,7 @@ void QDeclarativeTextPrivate::drawTextLayout(QPainter *painter, const QPointF &p
     painter->setFont(font);
     layout.draw(painter, pos);
     if (!elidePos.isNull())
-        painter->drawText(elidePos, elideChar);
+        painter->drawText(pos + elidePos, elideChar);
 }
 
 /*!
@@ -1388,44 +1390,25 @@ QRectF QDeclarativeText::boundingRect() const
 {
     Q_D(const QDeclarativeText);
 
-    int w = width();
-    int h = height();
-
-    int x = 0;
-    int y = 0;
-
-    QSize size = d->layedOutTextSize;
+    QRect rect = d->layedOutTextRect;
     if (d->style != Normal)
-        size += QSize(2,2);
+        rect.adjust(-1, 0, 1, 2);
 
     // Could include font max left/right bearings to either side of rectangle.
 
-    switch (d->hAlign) {
-    case AlignLeft:
-    case AlignJustify:
-        x = 0;
-        break;
-    case AlignRight:
-        x = w - size.width();
-        break;
-    case AlignHCenter:
-        x = (w - size.width()) / 2;
-        break;
-    }
-
+    int h = height();
     switch (d->vAlign) {
     case AlignTop:
-        y = 0;
         break;
     case AlignBottom:
-        y = h - size.height();
+        rect.setY(h - rect.height());
         break;
     case AlignVCenter:
-        y = (h - size.height()) / 2;
+        rect.setY((h - rect.height()) / 2);
         break;
     }
 
-    return QRectF(x,y,size.width(),size.height());
+    return QRectF(rect);
 }
 
 /*! \internal */
@@ -1571,8 +1554,8 @@ void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
     } else {
         QRectF bounds = boundingRect();
 
-        bool needClip = clip() && (d->layedOutTextSize.width() > width() ||
-                                   d->layedOutTextSize.height() > height());
+        bool needClip = clip() && (d->layedOutTextRect.width() > width() ||
+                                   d->layedOutTextRect.height() > height());
 
         if (needClip) {
             p->save();
