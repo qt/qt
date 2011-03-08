@@ -445,6 +445,9 @@ void tst_QTcpSocket::setInvalidSocketDescriptor()
 
 void tst_QTcpSocket::setSocketDescriptor()
 {
+#ifdef Q_OS_SYMBIAN
+    QSKIP("adopting open c socket handles is not supported", SkipAll);
+#else
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;                 // this test doesn't make sense with proxies
@@ -484,6 +487,7 @@ void tst_QTcpSocket::setSocketDescriptor()
     delete socket;
 #ifdef Q_OS_WIN
     delete dummy;
+#endif
 #endif
 }
 
@@ -607,14 +611,14 @@ void tst_QTcpSocket::timeoutConnect()
 
     // Port 1357 is configured to drop packets on the test server
     socket->connectToHost(address, 1357);
-    QVERIFY(timer.elapsed() < 50);
+    QVERIFY(timer.elapsed() < 150);
     QVERIFY(!socket->waitForConnected(1000)); //200ms is too short when using SOCKS proxy authentication
     QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
     QCOMPARE(int(socket->error()), int(QTcpSocket::SocketTimeoutError));
 
     timer.start();
     socket->connectToHost(address, 1357);
-    QVERIFY(timer.elapsed() < 50);
+    QVERIFY(timer.elapsed() < 150);
     QTimer::singleShot(50, &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
