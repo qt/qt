@@ -884,7 +884,9 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *parentCon
     enginePriv->inBeginCreate = true;
 
     QDeclarativeVME vme;
+    enginePriv->referenceScarceResources(); // "hold" scarce resources in memory during evaluation.
     QObject *rv = vme.run(ctxt, component, start, count, bindings);
+    enginePriv->dereferenceScarceResources(); // "release" scarce resources if top-level expression evaluation is complete.
 
     if (vme.isError()) {
        if(errors) *errors = vme.errors();

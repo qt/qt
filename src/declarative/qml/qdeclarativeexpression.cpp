@@ -630,7 +630,6 @@ QScriptValue QDeclarativeExpressionPrivate::scriptValue(QObject *secondaryScope,
     if (!expressionFunctionValid) {
         QDeclarativeEngine *engine = context()->engine;
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
-
         QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
 
         QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
@@ -663,8 +662,10 @@ QVariant QDeclarativeExpressionPrivate::value(QObject *secondaryScope, bool *isU
     }
 
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(q->engine());
-
-    return ep->scriptValueToVariant(scriptValue(secondaryScope, isUndefined), qMetaTypeId<QList<QObject*> >());
+    ep->referenceScarceResources(); // "hold" scarce resources in memory during evaluation.
+    QVariant retn(ep->scriptValueToVariant(scriptValue(secondaryScope, isUndefined), qMetaTypeId<QList<QObject*> >()));
+    ep->dereferenceScarceResources(); // "release" scarce resources if top-level expression evaluation is complete.
+    return retn;
 }
 
 /*!

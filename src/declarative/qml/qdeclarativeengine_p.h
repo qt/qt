@@ -67,6 +67,7 @@
 #include "private/qdeclarativeproperty_p.h"
 #include "private/qdeclarativepropertycache_p.h"
 #include "private/qdeclarativeobjectscriptclass_p.h"
+#include "private/qdeclarativescarceresourcescriptclass_p.h"
 #include "private/qdeclarativecontextscriptclass_p.h"
 #include "private/qdeclarativevaluetypescriptclass_p.h"
 #include "private/qdeclarativemetatype_p.h"
@@ -93,6 +94,8 @@ class QDeclarativeExpression;
 class QDeclarativeContextScriptClass;
 class QDeclarativeImportDatabase;
 class QDeclarativeObjectScriptClass;
+class QDeclarativeScarceResourceScriptClass;
+class ScarceResourceData;
 class QDeclarativeTypeNameScriptClass;
 class QDeclarativeValueTypeScriptClass;
 class QScriptEngineDebugger;
@@ -169,6 +172,7 @@ public:
     QDeclarativeContextData *sharedContext;
     QObject *sharedScope;
     QDeclarativeObjectScriptClass *objectClass;
+    QDeclarativeScarceResourceScriptClass *scarceResourceClass;
     QDeclarativeValueTypeScriptClass *valueTypeClass;
     QDeclarativeTypeNameScriptClass *typeNameClass;
     QDeclarativeListScriptClass *listClass;
@@ -235,6 +239,18 @@ public:
     QDeclarativeImageProvider::ImageType getImageProviderType(const QUrl &url);
     QImage getImageFromProvider(const QUrl &url, QSize *size, const QSize& req_size);
     QPixmap getPixmapFromProvider(const QUrl &url, QSize *size, const QSize& req_size);
+
+    /*
+       A scarce resource (like a large pixmap or texture) will be cached in a
+       JavaScript wrapper object when accessed in a binding or other js expression.
+       We need some way to automatically release that scarce resource prior to normal
+       garbage collection (unless the user explicitly preserves the resource).
+     */
+    ScarceResourceData* scarceResources;
+    int scarceResourcesRefCount;
+    static bool variantIsScarceResource(const QVariant& val);
+    void referenceScarceResources();
+    void dereferenceScarceResources();
 
     mutable QMutex mutex;
 
