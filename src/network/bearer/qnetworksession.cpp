@@ -705,6 +705,15 @@ void QNetworkSession::disconnectNotify(const char *signal)
         d->setALREnabled(false);
 }
 
+#ifdef Q_OS_SYMBIAN
+RConnection* QNetworkSessionPrivate::nativeSession(QNetworkSession &s)
+{
+    if (!s.d)
+        return 0;
+    return s.d->nativeSession();
+}
+#endif
+
 #include "moc_qnetworksession.cpp"
 
 QT_END_NAMESPACE

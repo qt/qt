@@ -2048,6 +2048,10 @@ void QSslSocketPrivate::createPlainSocket(QIODevice::OpenMode openMode)
     q->setPeerName(QString());
 
     plainSocket = new QTcpSocket(q);
+#ifndef QT_NO_BEARERMANAGEMENT
+    //copy network session down to the plain socket (if it has been set)
+    plainSocket->setProperty("_q_networksession", q->property("_q_networksession"));
+#endif
     q->connect(plainSocket, SIGNAL(connected()),
                q, SLOT(_q_connectedSlot()),
                Qt::DirectConnection);

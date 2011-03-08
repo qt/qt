@@ -46,7 +46,7 @@
 #include "qnetworkreply_p.h"
 #include "QtCore/qhash.h"
 #include "QtCore/qmutex.h"
-#include "QtNetwork/qnetworksession.h"
+#include "QtNetwork/private/qnetworksession_p.h"
 
 #include "qnetworkaccesscachebackend_p.h"
 #include "qabstractnetworkcache.h"
@@ -96,6 +96,11 @@ QNetworkAccessBackend *QNetworkAccessManagerPrivate::findBackend(QNetworkAccessM
             QNetworkAccessBackend *backend = (*it)->create(op, request);
             if (backend) {
                 backend->manager = this;
+#ifndef QT_NO_BEARERMANAGEMENT
+                //copy network session down to the backend
+                if (networkSession)
+                    backend->setProperty("_q_networksession", QVariant::fromValue(networkSession));
+#endif
                 return backend; // found a factory that handled our request
             }
             ++it;

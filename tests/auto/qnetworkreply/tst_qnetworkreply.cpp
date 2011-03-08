@@ -47,6 +47,7 @@
 #include <QtCore/QEventLoop>
 #include <QtCore/QFile>
 #include <QtCore/QSharedPointer>
+#include <QtCore/QScopedPointer>
 #include <QtCore/QTemporaryFile>
 #include <QtNetwork/QTcpServer>
 #include <QtNetwork/QTcpSocket>
@@ -63,6 +64,11 @@
 #ifndef QT_NO_OPENSSL
 #include <QtNetwork/qsslerror.h>
 #include <QtNetwork/qsslconfiguration.h>
+#endif
+#ifndef QT_NO_BEARERMANAGEMENT
+#include <QtNetwork/qnetworkconfigmanager.h>
+#include <QtNetwork/qnetworkconfiguration.h>
+#include <QtNetwork/qnetworksession.h>
 #endif
 
 #include <time.h>
@@ -132,6 +138,11 @@ class tst_QNetworkReply: public QObject
 #ifndef QT_NO_OPENSSL
     QSslConfiguration storedSslConfiguration;
     QList<QSslError> storedExpectedSslErrors;
+#endif
+#ifndef QT_NO_BEARER_MANAGEMENT
+    QNetworkConfigurationManager *netConfMan;
+    QNetworkConfiguration networkConfiguration;
+    QScopedPointer<QNetworkSession> networkSession;
 #endif
 
 public:
@@ -414,16 +425,23 @@ public:
     QTcpSocket *client; // always the last one that was received
     QByteArray dataToTransmit;
     QByteArray receivedData;
+    QSemaphore ready;
     bool doClose;
     bool doSsl;
     bool multiple;
     int totalConnections;
 
-    MiniHttpServer(const QByteArray &data, bool ssl = false)
+    MiniHttpServer(const QByteArray &data, bool ssl = false, QThread *thread = 0)
         : client(0), dataToTransmit(data), doClose(true), doSsl(ssl),
           multiple(false), totalConnections(0)
     {
         listen();
+        if (thread) {
+            connect(thread, SIGNAL(started()), this, SLOT(threadStartedSlot()));
+            moveToThread(thread);
+            thread->start();
+            ready.acquire();
+        }
     }
 
 protected:
@@ -500,6 +518,11 @@ public slots:
             disconnect(client, 0, this, 0);
             client = 0;
         }
+    }
+
+    void threadStartedSlot()
+    {
+        ready.release();
     }
 };
 
@@ -1138,6 +1161,18 @@ void tst_QNetworkReply::initTestCase()
 #endif
 
     QDir::setSearchPaths("srcdir", QStringList() << SRCDIR);
+#ifndef QT_NO_OPENSSL
+    QSslSocket::defaultCaCertificates(); //preload certificates
+#endif
+#ifndef QT_NO_BEARERMANAGEMENT
+    netConfMan = new QNetworkConfigurationManager(this);
+    networkConfiguration = netConfMan->defaultConfiguration();
+    networkSession.reset(new QNetworkSession(networkConfiguration));
+    if (!networkSession->isOpen()) {
+        networkSession->open();
+        QVERIFY(networkSession->waitForOpened(30000));
+    }
+#endif
 }
 
 void tst_QNetworkReply::cleanupTestCase()
@@ -1145,6 +1180,9 @@ void tst_QNetworkReply::cleanupTestCase()
 #if !defined Q_OS_WIN
     QFile::remove(wronlyFileName);
 #endif
+    if (networkSession && networkSession->isOpen()) {
+        networkSession->close();
+    }
 }
 
 void tst_QNetworkReply::init()
@@ -4507,6 +4545,26 @@ void tst_QNetworkReply::httpProxyCommandsSynchronous_data()
     httpProxyCommands_data();
 }
 
+struct QThreadCleanup
+{
+    static inline void cleanup(QThread *thread)
+    {
+        thread->quit();
+        if (thread->wait(3000))
+            delete thread;
+        else
+            qWarning("thread hung, leaking memory so test can finish");
+    }
+};
+
+struct QDeleteLaterCleanup
+{
+    static inline void cleanup(QObject *o)
+    {
+        o->deleteLater();
+    }
+};
+
 void tst_QNetworkReply::httpProxyCommandsSynchronous()
 {
     QFETCH(QUrl, url);
@@ -4516,11 +4574,9 @@ void tst_QNetworkReply::httpProxyCommandsSynchronous()
     // when using synchronous commands, we need a different event loop for
     // the server thread, because the client is never returning to the
     // event loop
-    MiniHttpServer proxyServer(responseToSend);
-    QThread serverThread;
-    proxyServer.moveToThread(&serverThread);
-    serverThread.start();
-    QNetworkProxy proxy(QNetworkProxy::HttpProxy, "127.0.0.1", proxyServer.serverPort());
+    QScopedPointer<QThread, QThreadCleanup> serverThread(new QThread);
+    QScopedPointer<MiniHttpServer, QDeleteLaterCleanup> proxyServer(new MiniHttpServer(responseToSend, false, serverThread.data()));
+    QNetworkProxy proxy(QNetworkProxy::HttpProxy, "127.0.0.1", proxyServer->serverPort());
 
     manager.setProxy(proxy);
     QNetworkRequest request(url);
@@ -4533,8 +4589,6 @@ void tst_QNetworkReply::httpProxyCommandsSynchronous()
     QNetworkReplyPtr reply = manager.get(request);
     QVERIFY(reply->isFinished()); // synchronous
     manager.setProxy(QNetworkProxy());
-    serverThread.quit();
-    serverThread.wait(3000);
 
     //qDebug() << reply->error() << reply->errorString();
 
@@ -4542,7 +4596,7 @@ void tst_QNetworkReply::httpProxyCommandsSynchronous()
     // especially since it won't succeed in the HTTPS case
     // so just check that the command was correct
 
-    QString receivedHeader = proxyServer.receivedData.left(expectedCommand.length());
+    QString receivedHeader = proxyServer->receivedData.left(expectedCommand.length());
     QCOMPARE(receivedHeader, expectedCommand);
 }
 
@@ -5157,6 +5211,7 @@ public:
 
     void finishedSlot() {
         // We should have already received all readyRead
+        QVERIFY(!bytesAvailableList.isEmpty());
         QVERIFY(bytesAvailableList.last() == uploadSize);
     }
 };
@@ -5302,7 +5357,7 @@ void tst_QNetworkReply::getFromUnreachableIp()
     QNetworkReplyPtr reply = manager.get(request);
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(5);
+    QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QVERIFY(reply->error() != QNetworkReply::NoError);
@@ -5469,7 +5524,7 @@ void tst_QNetworkReply::synchronousRequest_data()
         << QString("text/plain");
 
     QTest::newRow("simple-file")
-        << QUrl(QString::fromLatin1("file:///" SRCDIR "/rfc3252.txt"))
+        << QUrl::fromLocalFile(SRCDIR "/rfc3252.txt")
         << QString("file:" SRCDIR "/rfc3252.txt")
         << true
         << QString();

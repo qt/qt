@@ -110,10 +110,6 @@
 # include "qtcpserver.h"
 #endif
 
-#ifdef Q_OS_SYMBIAN
-# include <private/qcore_symbian_p.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 //#define QNATIVESOCKETENGINE_DEBUG
@@ -164,9 +160,6 @@ QT_BEGIN_NAMESPACE
 */
 QNativeSocketEnginePrivate::QNativeSocketEnginePrivate() :
     socketDescriptor(-1),
-#ifdef Q_OS_SYMBIAN
-    socketServer(qt_symbianGetSocketServer()),
-#endif
     readNotifier(0),
     writeNotifier(0),
     exceptNotifier(0)
@@ -394,7 +387,6 @@ bool QNativeSocketEngine::initialize(QAbstractSocket::SocketType socketType, QAb
 
 
     // Make sure we receive out-of-band data
-    // On Symbian OS this works only with native IP stack, not with WinSock
     if (socketType == QAbstractSocket::TcpSocket
         && !setOption(ReceiveOutOfBandData, 1)) {
         qWarning("QNativeSocketEngine::initialize unable to inline out-of-band data");

@@ -1125,8 +1125,25 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
 
     initializeSession = false;
 
-    if (!config.isValid()) {
-        networkSession.clear();
+    QSharedPointer<QNetworkSession> newSession;
+    if (config.isValid())
+        newSession = QSharedNetworkSessionManager::getSession(config);
+
+    if (networkSession) {
+        //do nothing if new and old session are the same
+        if (networkSession == newSession)
+            return;
+        //disconnect from old session
+        QObject::disconnect(networkSession.data(), SIGNAL(opened()), q, SIGNAL(networkSessionConnected()));
+        QObject::disconnect(networkSession.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()));
+        QObject::disconnect(networkSession.data(), SIGNAL(stateChanged(QNetworkSession::State)),
+            q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)));
+    }
+
+    //switch to new session (null if config was invalid)
+    networkSession = newSession;
+
+    if (!networkSession) {
         online = false;
 
         if (networkAccessible == QNetworkAccessManager::NotAccessible)
@@ -1137,8 +1154,7 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
         return;
     }
 
-    networkSession = QSharedNetworkSessionManager::getSession(config);
-
+    //connect to new session
     QObject::connect(networkSession.data(), SIGNAL(opened()), q, SIGNAL(networkSessionConnected()), Qt::QueuedConnection);
     //QueuedConnection is used to avoid deleting the networkSession inside its closed signal
     QObject::connect(networkSession.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()), Qt::QueuedConnection);
@@ -1150,9 +1166,15 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
 
 void QNetworkAccessManagerPrivate::_q_networkSessionClosed()
 {
+    Q_Q(QNetworkAccessManager);
     if (networkSession) {
         networkConfiguration = networkSession->configuration().identifier();
 
+        //disconnect from old session
+        QObject::disconnect(networkSession.data(), SIGNAL(opened()), q, SIGNAL(networkSessionConnected()));
+        QObject::disconnect(networkSession.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()));
+        QObject::disconnect(networkSession.data(), SIGNAL(stateChanged(QNetworkSession::State)),
+            q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)));
         networkSession.clear();
     }
 }
@@ -1161,8 +1183,12 @@ void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession
 {
     Q_Q(QNetworkAccessManager);
 
-    if (state == QNetworkSession::Connected)
+    //Do not emit the networkSessionConnected signal here, except for roaming -> connected
+    //transition, otherwise it is emitted twice in a row when opening a connection.
+    if (state == QNetworkSession::Connected && lastSessionState == QNetworkSession::Roaming)
         emit q->networkSessionConnected();
+    lastSessionState = state;
+
     if (online) {
         if (state != QNetworkSession::Connected && state != QNetworkSession::Roaming) {
             online = false;

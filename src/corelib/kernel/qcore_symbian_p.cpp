@@ -217,13 +217,15 @@ Q_CORE_EXPORT RFs& qt_s60GetRFs()
 }
 
 QSymbianSocketManager::QSymbianSocketManager() :
-    iNextSocket(0)
+    iNextSocket(0), iDefaultConnection(0)
 {
     TSessionPref preferences;
     // ### In future this could be changed to KAfInet6 when that is more common than IPv4
     preferences.iAddrFamily = KAfInet;
     preferences.iProtocol = KProtocolInetIp;
-    qt_symbian_throwIfError(iSocketServ.Connect(preferences));
+    //use global message pool, as we do not know how many sockets app will use
+    //TODO: is this the right choice?
+    qt_symbian_throwIfError(iSocketServ.Connect(preferences, -1));
     qt_symbian_throwIfError(iSocketServ.ShareAuto());
 }
 
@@ -283,11 +285,21 @@ int QSymbianSocketManager::lookupSocket(const RSocket& socket) const {
 
 bool QSymbianSocketManager::lookupSocket(int fd, RSocket& socket) const {
     QMutexLocker l(&iMutex);
-    int id = fd + socket_offset;
+    int id = fd - socket_offset;
     if(!reverseSocketMap.contains(id))
         return false;
     socket = reverseSocketMap.value(id);
     return true;
+}
+
+void QSymbianSocketManager::setDefaultConnection(RConnection* con)
+{
+    iDefaultConnection = con;
+}
+
+RConnection* QSymbianSocketManager::defaultConnection() const
+{
+    return iDefaultConnection;
 }
 
 Q_GLOBAL_STATIC(QSymbianSocketManager, qt_symbianSocketManager);

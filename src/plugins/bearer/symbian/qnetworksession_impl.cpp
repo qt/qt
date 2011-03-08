@@ -45,8 +45,6 @@
 #include <es_enum.h>
 #include <es_sock.h>
 #include <in_sock.h>
-#include <stdapis/sys/socket.h>
-#include <stdapis/net/if.h>
 #include <private/qcore_symbian_p.h>
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
@@ -62,32 +60,48 @@
 QT_BEGIN_NAMESPACE
 
 QNetworkSessionPrivateImpl::QNetworkSessionPrivateImpl(SymbianEngine *engine)
-:   CActive(CActive::EPriorityUserInput), engine(engine),
-    iDynamicUnSetdefaultif(0), ipConnectionNotifier(0),
+:   engine(engine), iSocketServ(qt_symbianGetSocketServer()),
+    ipConnectionNotifier(0), ipConnectionStarter(0),
     iHandleStateNotificationsFromManager(false), iFirstSync(true), iStoppedByUser(false),
     iClosedByUser(false), iError(QNetworkSession::UnknownSessionError), iALREnabled(0),
-    iConnectInBackground(false), isOpening(false), iSocketServ(qt_symbianGetSocketServer())
+    iConnectInBackground(false), isOpening(false)
 {
-    CActiveScheduler::Add(this);
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     iMobility = NULL;
 #endif
-    // Try to load "Open C" dll dynamically and
-    // try to attach to unsetdefaultif function dynamically.
-    // This is to avoid build breaks with old OpenC versions.
-    if (iOpenCLibrary.Load(_L("libc")) == KErrNone) {
-        iDynamicUnSetdefaultif = (TOpenCUnSetdefaultifFunction)iOpenCLibrary.Lookup(597);
-    }
-#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
-    qDebug() << "QNS this : " << QString::number((uint)this) << " - ";
-    if (iDynamicUnSetdefaultif)
-        qDebug() << "dynamic unsetdefaultif() is present in PIPS library. ";
-    else
-        qDebug() << "dynamic unsetdefaultif() not present in PIPS library. ";
-#endif
 
     TRAP_IGNORE(iConnectionMonitor.ConnectL());
+}
+
+void QNetworkSessionPrivateImpl::closeHandles()
+{
+    // Cancel Connection Progress Notifications first.
+    // Note: ConnectionNotifier must be destroyed before RConnection::Close()
+    //       => deleting ipConnectionNotifier results RConnection::CancelProgressNotification()
+    delete ipConnectionNotifier;
+    ipConnectionNotifier = NULL;
+
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
+    // mobility monitor must be deleted before RConnection is closed
+    delete iMobility;
+    iMobility = NULL;
+#endif
+
+    // Cancel possible RConnection::Start() - may call RConnection::Close if Start was in progress
+    delete ipConnectionStarter;
+    ipConnectionStarter = 0;
+    //close any open connection (note Close twice is safe in case Cancel did it above)
+    iConnection.Close();
+
+    QSymbianSocketManager::instance().setDefaultConnection(0);
+
+    iConnectionMonitor.Close();
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+    qDebug() << "QNS this : " << QString::number((uint)this)
+             << " - handles closed";
+#endif
+
 }
 
 QNetworkSessionPrivateImpl::~QNetworkSessionPrivateImpl()
@@ -95,31 +109,10 @@ QNetworkSessionPrivateImpl::~QNetworkSessionPrivateImpl()
     isOpen = false;
     isOpening = false;
 
-    // Cancel Connection Progress Notifications first.
-    // Note: ConnectionNotifier must be destroyed before Canceling RConnection::Start()
-    //       => deleting ipConnectionNotifier results RConnection::CancelProgressNotification()
-    delete ipConnectionNotifier;
-    ipConnectionNotifier = NULL;
-
-#ifdef SNAP_FUNCTIONALITY_AVAILABLE
-    if (iMobility) {
-        delete iMobility;
-        iMobility = NULL;
-    }
-#endif
-
-    // Cancel possible RConnection::Start()
-    Cancel();
-
-    // Close global 'Open C' RConnection
-    // Clears also possible unsetdefaultif() flags.
-    setdefaultif(0);
-
-    iConnectionMonitor.Close();
-    iOpenCLibrary.Close();
+    closeHandles();
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
     qDebug() << "QNS this : " << QString::number((uint)this)
-             << " - destroyed (and setdefaultif(0))";
+             << " - destroyed";
 #endif
 }
 
@@ -166,7 +159,7 @@ void QNetworkSessionPrivateImpl::configurationAdded(QNetworkConfigurationPrivate
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
         qDebug() << "QNS this : " << QString::number((uint)this) << " - "
                  << "configurationAdded IAP: "
-                 << toSymbianConfig(privateConfiguration(config))->numericIdentifier();
+                 << toSymbianConfig(config)->numericIdentifier();
 #endif
 
         syncStateWithInterface();
@@ -363,6 +356,7 @@ void QNetworkSessionPrivateImpl::open()
     iStoppedByUser = false;
     iClosedByUser = false;
 
+    Q_ASSERT(!iConnection.SubSessionHandle());
     TInt error = iConnection.Open(iSocketServ);
     if (error != KErrNone) {
         // Could not open RConnection
@@ -403,9 +397,9 @@ void QNetworkSessionPrivateImpl::open()
 
             pref.SetIapId(symbianConfig->numericIdentifier());
 #endif
-            iConnection.Start(pref, iStatus);
-            if (!IsActive()) {
-                SetActive();
+            if (!ipConnectionStarter) {
+                ipConnectionStarter = new ConnectionStarter(*this, iConnection);
+                ipConnectionStarter->Start(pref);
             }
             // Avoid flip flop of states if the configuration is already
             // active. IsOpen/opened() will indicate when ready.
@@ -431,9 +425,9 @@ void QNetworkSessionPrivateImpl::open()
 #else
         TConnSnapPref snapPref(symbianConfig->numericIdentifier());
 #endif
-        iConnection.Start(snapPref, iStatus);
-        if (!IsActive()) {
-            SetActive();
+        if (!ipConnectionStarter) {
+            ipConnectionStarter = new ConnectionStarter(*this, iConnection);
+            ipConnectionStarter->Start(snapPref);
         }
         // Avoid flip flop of states if the configuration is already
         // active. IsOpen/opened() will indicate when ready.
@@ -442,9 +436,9 @@ void QNetworkSessionPrivateImpl::open()
         }
     } else if (publicConfig.type() == QNetworkConfiguration::UserChoice) {
         iKnownConfigsBeforeConnectionStart = engine->accessPointConfigurationIdentifiers();
-        iConnection.Start(iStatus);
-        if (!IsActive()) {
-            SetActive();
+        if (!ipConnectionStarter) {
+            ipConnectionStarter = new ConnectionStarter(*this, iConnection);
+            ipConnectionStarter->Start();
         }
         newState(QNetworkSession::Connecting);
     }
@@ -454,9 +448,7 @@ void QNetworkSessionPrivateImpl::open()
         isOpening = false;
         iError = QNetworkSession::UnknownSessionError;
         emit QNetworkSessionPrivate::error(iError);
-        if (ipConnectionNotifier) {
-            ipConnectionNotifier->StopNotifications();
-        }
+        closeHandles();
         syncStateWithInterface();    
     }
 }
@@ -508,30 +500,10 @@ void QNetworkSessionPrivateImpl::close(bool allowSignals)
 
     serviceConfig = QNetworkConfiguration();
     
-#ifdef SNAP_FUNCTIONALITY_AVAILABLE
-    if (iMobility) {
-        delete iMobility;
-        iMobility = NULL;
-    }
-#endif
+    closeHandles();
 
-    if (ipConnectionNotifier && !iHandleStateNotificationsFromManager) {
-        ipConnectionNotifier->StopNotifications();
-        // Start handling IAP state change signals from QNetworkConfigurationManagerPrivate
-        iHandleStateNotificationsFromManager = true;
-    }
-    
-    Cancel(); // closes iConnection
-
-    // Close global 'Open C' RConnection. If OpenC supports,
-    // close the defaultif for good to avoid difficult timing
-    // and bouncing issues of network going immediately back up
-    //  because of e.g. select() thread etc.
-    if (iDynamicUnSetdefaultif) {
-        iDynamicUnSetdefaultif();
-    } else {
-        setdefaultif(0);
-    }
+    // Start handling IAP state change signals from QNetworkConfigurationManagerPrivate
+    iHandleStateNotificationsFromManager = true;
 
     // If UserChoice, go down immediately. If some other configuration,
     // go down immediately if there is no reports expected from the platform;
@@ -627,13 +599,7 @@ void QNetworkSessionPrivateImpl::migrate()
 {
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     if (iMobility) {
-        // Close global 'Open C' RConnection. If openC supports, use the 'heavy'
-        // version to block all subsequent requests.
-        if (iDynamicUnSetdefaultif) {
-            iDynamicUnSetdefaultif();
-        } else {
-            setdefaultif(0);
-        }
+        QSymbianSocketManager::instance().setDefaultConnection(0);
         // Start migrating to new IAP
         iMobility->MigrateToPreferredCarrier();
     }
@@ -663,12 +629,7 @@ void QNetworkSessionPrivateImpl::accept()
 
         QNetworkConfiguration newActiveConfig = activeConfiguration(iNewRoamingIap);
 
-        // Use name of the new IAP to open global 'Open C' RConnection
-        QByteArray nameAsByteArray = newActiveConfig.name().toUtf8();
-        ifreq ifr;
-        memset(&ifr, 0, sizeof(struct ifreq));
-        strcpy(ifr.ifr_name, nameAsByteArray.constData());
-        setdefaultif(&ifr);
+        QSymbianSocketManager::instance().setDefaultConnection(&iConnection);
 
         newState(QNetworkSession::Connected, iNewRoamingIap);
     }
@@ -686,12 +647,7 @@ void QNetworkSessionPrivateImpl::reject()
         } else {
             QNetworkConfiguration newActiveConfig = activeConfiguration(iOldRoamingIap);
 
-            // Use name of the old IAP to open global 'Open C' RConnection
-            QByteArray nameAsByteArray = newActiveConfig.name().toUtf8();
-            ifreq ifr;
-            memset(&ifr, 0, sizeof(struct ifreq));
-            strcpy(ifr.ifr_name, nameAsByteArray.constData());
-            setdefaultif(&ifr);
+            QSymbianSocketManager::instance().setDefaultConnection(&iConnection);
 
             newState(QNetworkSession::Connected, iOldRoamingIap);
         }
@@ -744,12 +700,14 @@ void QNetworkSessionPrivateImpl::NewCarrierActive(TAccessPointInfo /*aNewAPInfo*
     }
 }
 
-void QNetworkSessionPrivateImpl::Error(TInt /*aError*/)
+void QNetworkSessionPrivateImpl::Error(TInt aError)
 {
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
     qDebug() << "QNS this : " << QString::number((uint)this) << " - "
-            << "roaming Error() occurred, isOpen is: " << isOpen;
+            << "roaming Error() occurred" << aError << ", isOpen is: " << isOpen;
 #endif
+    if (aError == KErrCancel)
+        return; //avoid recursive deletion
     if (isOpen) {
         isOpen = false;
         isOpening = false;
@@ -757,10 +715,7 @@ void QNetworkSessionPrivateImpl::Error(TInt /*aError*/)
         serviceConfig = QNetworkConfiguration();
         iError = QNetworkSession::RoamingError;
         emit QNetworkSessionPrivate::error(iError);
-        Cancel();
-        if (ipConnectionNotifier) {
-            ipConnectionNotifier->StopNotifications();
-        }
+        closeHandles();
         QT_TRY {
             syncStateWithInterface();
             // In some cases IAP is still in Connected state when
@@ -1052,13 +1007,14 @@ QNetworkConfiguration QNetworkSessionPrivateImpl::activeConfiguration(TUint32 ia
     return publicConfig;
 }
 
-void QNetworkSessionPrivateImpl::RunL()
+void QNetworkSessionPrivateImpl::ConnectionStartComplete(TInt statusCode)
 {
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
     qDebug() << "QNS this : " << QString::number((uint)this) << " - "
-            << "RConnection::RunL with status code: " << iStatus.Int();
+            << "RConnection::Start completed with status code: " << statusCode;
 #endif
-    TInt statusCode = iStatus.Int();
+    delete ipConnectionStarter;
+    ipConnectionStarter = 0;
 
     switch (statusCode) {
         case KErrNone: // Connection created successfully
@@ -1073,30 +1029,20 @@ void QNetworkSessionPrivateImpl::RunL()
                 // Connectivity Test, ICT, failed).
                 error = KErrGeneral;
             } else {
-                // Use name of the IAP to open global 'Open C' RConnection
-                ifreq ifr;
-                memset(&ifr, 0, sizeof(struct ifreq));
-                QByteArray nameAsByteArray = newActiveConfig.name().toUtf8();
-                strcpy(ifr.ifr_name, nameAsByteArray.constData());
-                error = setdefaultif(&ifr);
+                QSymbianSocketManager::instance().setDefaultConnection(&iConnection);
             }
             if (error != KErrNone) {
                 isOpen = false;
                 isOpening = false;
                 iError = QNetworkSession::UnknownSessionError;
                 QT_TRYCATCH_LEAVING(emit QNetworkSessionPrivate::error(iError));
-                if (ipConnectionNotifier) {
-                    ipConnectionNotifier->StopNotifications();
-                }
+                closeHandles();
                 if (!newActiveConfig.isValid()) {
                     // No valid configuration, bail out.
                     // Status updates from QNCM won't be received correctly
                     // because there is no configuration to associate them with so transit here.
-                    iConnection.Close();
                     newState(QNetworkSession::Closing);
                     newState(QNetworkSession::Disconnected);
-                } else {
-                    Cancel();
                 }
                 QT_TRYCATCH_LEAVING(syncStateWithInterface());
                 return;
@@ -1139,10 +1085,7 @@ void QNetworkSessionPrivateImpl::RunL()
             serviceConfig = QNetworkConfiguration();
             iError = QNetworkSession::InvalidConfigurationError;
             QT_TRYCATCH_LEAVING(emit QNetworkSessionPrivate::error(iError));
-            if (ipConnectionNotifier) {
-                ipConnectionNotifier->StopNotifications();
-            }
-            Cancel();
+            closeHandles();
             QT_TRYCATCH_LEAVING(syncStateWithInterface());
             break;
         case KErrCancel: // Connection attempt cancelled
@@ -1161,18 +1104,10 @@ void QNetworkSessionPrivateImpl::RunL()
                 iError = QNetworkSession::UnknownSessionError;
             }
             QT_TRYCATCH_LEAVING(emit QNetworkSessionPrivate::error(iError));
-            if (ipConnectionNotifier) {
-                ipConnectionNotifier->StopNotifications();
-            }
-            Cancel();
+            closeHandles();
             QT_TRYCATCH_LEAVING(syncStateWithInterface());
             break;
     }
-}
-
-void QNetworkSessionPrivateImpl::DoCancel()
-{
-    iConnection.Close();
 }
 
 // Enters newState if feasible according to current state.
@@ -1199,12 +1134,7 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
 #endif
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
-        // Use name of the IAP to set default IAP
-        QByteArray nameAsByteArray = activeConfig.name().toUtf8();
-        ifreq ifr;
-        strcpy(ifr.ifr_name, nameAsByteArray.constData());
-
-        setdefaultif(&ifr);
+        QSymbianSocketManager::instance().setDefaultConnection(&iConnection);
 #endif
     }
 
@@ -1256,10 +1186,7 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
         serviceConfig = QNetworkConfiguration();
         iError = QNetworkSession::SessionAbortedError;
         emit QNetworkSessionPrivate::error(iError);
-        if (ipConnectionNotifier) {
-            ipConnectionNotifier->StopNotifications();
-        }
-        Cancel();
+        closeHandles();
         // Start handling IAP state change signals from QNetworkConfigurationManagerPrivate
         iHandleStateNotificationsFromManager = true;
         emitSessionClosed = true; // Emit SessionClosed after state change has been reported
@@ -1525,6 +1452,11 @@ bool QNetworkSessionPrivateImpl::easyWlanTrueIapId(TUint32 &trueIapId) const
 }
 #endif
 
+RConnection* QNetworkSessionPrivateImpl::nativeSession()
+{
+    return &iConnection;
+}
+
 ConnectionProgressNotifier::ConnectionProgressNotifier(QNetworkSessionPrivateImpl& owner, RConnection& connection)
     : CActive(CActive::EPriorityUserInput), iOwner(owner), iConnection(connection)
 {
@@ -1562,6 +1494,50 @@ void ConnectionProgressNotifier::RunL()
         // warning, this object may be deleted in the callback - do nothing after handleSymbianConnectionStatusChange
         QT_TRYCATCH_LEAVING(iOwner.handleSymbianConnectionStatusChange(iProgress().iStage, iProgress().iError));
     }
+}
+
+ConnectionStarter::ConnectionStarter(QNetworkSessionPrivateImpl &owner, RConnection &connection)
+    : CActive(CActive::EPriorityUserInput), iOwner(owner), iConnection(connection)
+{
+    CActiveScheduler::Add(this);
+}
+
+ConnectionStarter::~ConnectionStarter()
+{
+    Cancel();
+}
+
+void ConnectionStarter::Start()
+{
+    if (!IsActive()) {
+        iConnection.Start(iStatus);
+        SetActive();
+    }
+}
+
+void ConnectionStarter::Start(TConnPref &pref)
+{
+    if (!IsActive()) {
+        iConnection.Start(pref, iStatus);
+        SetActive();
+    }
+}
+
+void ConnectionStarter::RunL()
+{
+    iOwner.ConnectionStartComplete(iStatus.Int());
+    //note owner deletes on callback
+}
+
+TInt ConnectionStarter::RunError(TInt err)
+{
+    qWarning() << "ConnectionStarter::RunError" << err;
+    return KErrNone;
+}
+
+void ConnectionStarter::DoCancel()
+{
+    iConnection.Close();
 }
 
 QT_END_NAMESPACE

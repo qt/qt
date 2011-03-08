@@ -6484,13 +6484,9 @@ fi
 
 # find if the platform supports IPv6
 if [ "$CFG_IPV6" != "no" ]; then
-    #
-    # We accidently enabled IPv6 for Qt Symbian in 4.6.x. However the underlying OpenC does not fully support IPV6.
-    # Therefore for 4.7.1 and following we disable it until OpenC either supports it or we have the native Qt
-    # symbian socket engine.
-    #
     if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
-        CFG_IPV6=no
+        #IPV6 should always be enabled for Symbian release
+        CFG_IPV6=yes
     elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ipv6 "IPv6" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_IPV6=yes
     else

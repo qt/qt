@@ -531,6 +531,8 @@ void tst_QSslSocket::sslErrors()
 
     QSslSocketPtr socket = newSocket();
     socket->connectToHostEncrypted(host, port);
+    if (!socket->waitForConnected())
+        QEXPECT_FAIL("imap.trolltech.com", "server not open to internet", Continue);
     socket->waitForEncrypted(5000);
 
     SslErrorList output;
@@ -539,7 +541,7 @@ void tst_QSslSocket::sslErrors()
     }
 
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
-    if (output.last() == QSslError::CertificateUntrusted)
+    if (output.count() && output.last() == QSslError::CertificateUntrusted)
         output.takeLast();
 #endif
     QCOMPARE(output, expected);
@@ -648,7 +650,7 @@ void tst_QSslSocket::sessionCipher()
     connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
     QVERIFY(socket->sessionCipher().isNull());
     socket->connectToHost(QtNetworkSettings::serverName(), 443 /* https */);
-    QVERIFY(socket->waitForConnected(5000));
+    QVERIFY(socket->waitForConnected(10000));
     QVERIFY(socket->sessionCipher().isNull());
     socket->startClientEncryption();
     QVERIFY(socket->waitForEncrypted(5000));
@@ -682,7 +684,7 @@ void tst_QSslSocket::localCertificate()
     socket->setPrivateKey(QLatin1String(SRCDIR "certs/fluke.key"));
 
     socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
-    QVERIFY(socket->waitForEncrypted(5000));
+    QVERIFY(socket->waitForEncrypted(10000));
 }
 
 void tst_QSslSocket::mode()
@@ -1415,8 +1417,8 @@ protected:
         // delayed start of encryption
         QTest::qSleep(100);
         QSslSocket *socket = server.socket;
-        Q_ASSERT(socket);
-        Q_ASSERT(socket->isValid());
+        QVERIFY(socket);
+        QVERIFY(socket->isValid());
         socket->ignoreSslErrors();
         socket->startServerEncryption();
         if (!socket->waitForEncrypted(2000))
@@ -1606,7 +1608,7 @@ void tst_QSslSocket::disconnectFromHostWhenConnecting()
     QCOMPARE(state, socket->state());
     QVERIFY(socket->state() == QAbstractSocket::HostLookupState ||
             socket->state() == QAbstractSocket::ConnectingState);
-    QVERIFY(socket->waitForDisconnected(5000));
+    QVERIFY(socket->waitForDisconnected(10000));
     QCOMPARE(socket->state(), QAbstractSocket::UnconnectedState);
     // we did not call close, so the socket must be still open
     QVERIFY(socket->isOpen());

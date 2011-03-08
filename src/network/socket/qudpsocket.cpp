@@ -504,16 +504,6 @@ qint64 QUdpSocket::writeDatagram(const char *data, qint64 size, const QHostAddre
         return -1;
 
     qint64 sent = d->socketEngine->writeDatagram(data, size, address, port);
-#ifdef Q_OS_SYMBIAN
-    if( QSysInfo::s60Version() <= QSysInfo::SV_S60_5_0 ) {
-        // This is evil hack, but for some reason native RSocket::SendTo returns 0,
-        // for large datagrams (such as 600 bytes). Based on comments from Open C team
-        // this should happen only in platforms <= S60 5.0.
-        // As an workaround, we just set sent = size
-        if( sent == 0 )
-            sent = size;
-    }
-#endif
     d->cachedSocketDescriptor = d->socketEngine->socketDescriptor();
 
     if (sent >= 0) {

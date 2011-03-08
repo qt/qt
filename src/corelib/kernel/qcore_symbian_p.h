@@ -188,7 +188,7 @@ public:
     }
     bool operator<(const QHashableSocket &other) const
     {
-        if(Session().Handle() == other.Session().Handle())
+        if (Session().Handle() == other.Session().Handle())
             return SubSessionHandle() < other.SubSessionHandle();
         return Session().Handle() < other.Session().Handle();
     }
@@ -246,6 +246,19 @@ public:
 
     /*!
       \internal
+      Set the default connection to use for new sockets
+      \param an open connection
+    */
+    void setDefaultConnection(RConnection* con);
+    /*!
+      \internal
+      Get the default connection to use for new sockets
+      \return the connection, or null pointer if there is none set
+    */
+    RConnection *defaultConnection() const;
+
+    /*!
+      \internal
       Gets a reference to the singleton socket manager
     */
     static QSymbianSocketManager& instance();
@@ -259,6 +272,7 @@ private:
     QHash<int, RSocket> reverseSocketMap;
     mutable QMutex iMutex;
     RSocketServ iSocketServ;
+    RConnection *iDefaultConnection;
 };
 
 QT_END_NAMESPACE
