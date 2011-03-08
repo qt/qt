@@ -1125,6 +1125,15 @@ void tst_qdeclarativetextinput::horizontalAlignment_RightToLeft()
     QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
 
     delete canvas;
+
+    // alignment of TextInput with no text set to it
+    QString componentStr = "import QtQuick 1.0\nTextInput {}";
+    QDeclarativeComponent textComponent(&engine);
+    textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeTextInput *textObject = qobject_cast<QDeclarativeTextInput*>(textComponent.create());
+    QCOMPARE(textObject->hAlign(), QApplication::keyboardInputDirection() == Qt::LeftToRight ?
+                                  QDeclarativeTextInput::AlignLeft : QDeclarativeTextInput::AlignRight);
+    delete textObject;
 }
 
 void tst_qdeclarativetextinput::positionAt()

@@ -79,6 +79,7 @@ public:
     bool determineHorizontalAlignment();
     bool setHAlign(QDeclarativeText::HAlignment, bool forceAlign = false);
     void mirrorChange();
+    QTextDocument *textDocument();
 
     QString text;
     QFont font;
@@ -114,6 +115,7 @@ public:
     bool internalWidthUpdate:1;
     bool requireImplicitWidth:1;
     bool hAlignImplicit:1;
+    bool rightToLeftText:1;
 
     QRect layedOutTextRect;
     QSize paintedSize;

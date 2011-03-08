@@ -50,7 +50,6 @@
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>
-#include <QTextCursor>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QAbstractTextDocumentLayout>
@@ -102,7 +101,7 @@ QDeclarativeTextPrivate::QDeclarativeTextPrivate()
   format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap), lineHeight(1),
   lineHeightMode(QDeclarativeText::ProportionalHeight), lineCount(1), truncated(false), maximumLineCount(INT_MAX),
   maximumLineCountValid(false), imageCacheDirty(true), updateOnComponentComplete(true), richText(false), singleline(false),
-  cacheAllTextAsImage(true), internalWidthUpdate(false), requireImplicitWidth(false),  hAlignImplicit(true), naturalWidth(0), doc(0)
+  cacheAllTextAsImage(true), internalWidthUpdate(false), requireImplicitWidth(false),  hAlignImplicit(true), rightToLeftText(false), naturalWidth(0), doc(0)
 {
     cacheAllTextAsImage = enableImageCache();
     QGraphicsItemPrivate::acceptedMouseButtons = Qt::LeftButton;
@@ -292,8 +291,16 @@ void QDeclarativeTextPrivate::updateSize()
         singleline = false; // richtext can't elide or be optimized for single-line case
         ensureDoc();
         doc->setDefaultFont(font);
+
+        QDeclarativeText::HAlignment horizontalAlignment = q->effectiveHAlign();
+        if (rightToLeftText) {
+            if (horizontalAlignment == QDeclarativeText::AlignLeft)
+                horizontalAlignment = QDeclarativeText::AlignRight;
+            else if (horizontalAlignment == QDeclarativeText::AlignRight)
+                horizontalAlignment = QDeclarativeText::AlignLeft;
+        }
         QTextOption option;
-        option.setAlignment((Qt::Alignment)int(q->effectiveHAlign() | vAlign));
+        option.setAlignment((Qt::Alignment)int(horizontalAlignment | vAlign));
         option.setWrapMode(QTextOption::WrapMode(wrapMode));
         doc->setDefaultTextOption(option);
         if (requireImplicitWidth && q->widthValid()) {
@@ -909,15 +916,18 @@ void QDeclarativeText::setText(const QString &n)
         return;
 
     d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(n));
-    if (d->richText && isComponentComplete()) {
-        d->ensureDoc();
-        d->doc->setText(n);
-    }
-
     d->text = n;
-    d->determineHorizontalAlignment();
+    if (isComponentComplete()) {
+        if (d->richText) {
+            d->ensureDoc();
+            d->doc->setText(n);
+            d->rightToLeftText = d->doc->toPlainText().isRightToLeft();
+        } else {
+            d->rightToLeftText = d->text.isRightToLeft();
+        }
+        d->determineHorizontalAlignment();
+    }
     d->updateLayout();
-
     emit textChanged(d->text);
 }
 
@@ -1122,9 +1132,8 @@ bool QDeclarativeTextPrivate::determineHorizontalAlignment()
 {
     Q_Q(QDeclarativeText);
     if (hAlignImplicit && q->isComponentComplete()) {
-        // if no explicit alignment has been set, follow the natural layout direction of the text
-        bool isRightToLeft = text.isEmpty() ? QApplication::keyboardInputDirection() == Qt::RightToLeft : text.isRightToLeft();
-        return setHAlign(isRightToLeft ? QDeclarativeText::AlignRight : QDeclarativeText::AlignLeft);
+        bool alignToRight = text.isEmpty() ? QApplication::keyboardInputDirection() == Qt::RightToLeft : rightToLeftText;
+        return setHAlign(alignToRight ? QDeclarativeText::AlignRight : QDeclarativeText::AlignLeft);
     }
     return false;
 }
@@ -1138,6 +1147,11 @@ void QDeclarativeTextPrivate::mirrorChange()
             emit q->effectiveHorizontalAlignmentChanged();
         }
     }
+}
+
+QTextDocument *QDeclarativeTextPrivate::textDocument()
+{
+    return doc;
 }
 
 QDeclarativeText::VAlignment QDeclarativeText::vAlign() const
@@ -1585,11 +1599,14 @@ void QDeclarativeText::componentComplete()
     QDeclarativeItem::componentComplete();
     if (d->updateOnComponentComplete) {
         d->updateOnComponentComplete = false;
-        d->determineHorizontalAlignment();
         if (d->richText) {
             d->ensureDoc();
             d->doc->setText(d->text);
+            d->rightToLeftText = d->doc->toPlainText().isRightToLeft();
+        } else {
+            d->rightToLeftText = d->text.isRightToLeft();
         }
+        d->determineHorizontalAlignment();
         d->updateLayout();
     }
 }

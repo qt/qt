@@ -549,9 +549,8 @@ bool QDeclarativeTextEditPrivate::determineHorizontalAlignment()
 {
     Q_Q(QDeclarativeTextEdit);
     if (hAlignImplicit && q->isComponentComplete()) {
-        // if no explicit alignment has been set, follow the natural layout direction of the text
-        bool isRightToLeft = text.isEmpty() ? QApplication::keyboardInputDirection() == Qt::RightToLeft : text.isRightToLeft();
-        return setHAlign(isRightToLeft ? QDeclarativeTextEdit::AlignRight : QDeclarativeTextEdit::AlignLeft);
+        bool alignToRight = text.isEmpty() ? QApplication::keyboardInputDirection() == Qt::RightToLeft : rightToLeftText;
+        return setHAlign(alignToRight ? QDeclarativeTextEdit::AlignRight : QDeclarativeTextEdit::AlignLeft);
     }
     return false;
 }
@@ -1578,7 +1577,7 @@ void QDeclarativeTextEdit::q_textChanged()
 {
     Q_D(QDeclarativeTextEdit);
     d->text = text();
-    d->rightToLeftText = d->text.isRightToLeft();
+    d->rightToLeftText = d->document->begin().layout()->engine()->isRightToLeft();
     d->determineHorizontalAlignment();
     d->updateDefaultTextOption();
     updateSize();

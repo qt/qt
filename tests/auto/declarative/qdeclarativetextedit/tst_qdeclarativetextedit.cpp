@@ -448,7 +448,7 @@ void tst_qdeclarativetextedit::hAlign_RightToLeft()
     QVERIFY(textEdit != 0);
     canvas->show();
 
-    // implicit alignment should follow the reading direction of RTL text
+    // implicit alignment should follow the reading direction of text
     QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
     QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
 
@@ -461,6 +461,29 @@ void tst_qdeclarativetextedit::hAlign_RightToLeft()
     textEdit->setHAlign(QDeclarativeTextEdit::AlignRight);
     QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
     QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
+
+    QString textString = textEdit->text();
+    textEdit->setText(QString("<i>") + textString + QString("</i>"));
+    textEdit->resetHAlign();
+
+    // implicitly aligned rich text should follow the reading direction of RTL text
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
+    QCOMPARE(textEdit->effectiveHAlign(), textEdit->hAlign());
+    QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
+
+    // explicitly left aligned rich text
+    textEdit->setHAlign(QDeclarativeTextEdit::AlignLeft);
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignLeft);
+    QCOMPARE(textEdit->effectiveHAlign(), textEdit->hAlign());
+    QVERIFY(textEdit->positionToRectangle(0).x() < canvas->width()/2);
+
+    // explicitly right aligned rich text
+    textEdit->setHAlign(QDeclarativeTextEdit::AlignRight);
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
+    QCOMPARE(textEdit->effectiveHAlign(), textEdit->hAlign());
+    QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
+
+    textEdit->setText(textString);
 
     // explicitly center aligned
     textEdit->setHAlign(QDeclarativeTextEdit::AlignHCenter);
@@ -515,6 +538,15 @@ void tst_qdeclarativetextedit::hAlign_RightToLeft()
     QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
 
     delete canvas;
+
+    // alignment of TextEdit with no text set to it
+    QString componentStr = "import QtQuick 1.0\nTextEdit {}";
+    QDeclarativeComponent textComponent(&engine);
+    textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeTextEdit *textObject = qobject_cast<QDeclarativeTextEdit*>(textComponent.create());
+    QCOMPARE(textObject->hAlign(), QApplication::keyboardInputDirection() == Qt::LeftToRight ?
+                                  QDeclarativeTextEdit::AlignLeft : QDeclarativeTextEdit::AlignRight);
+    delete textObject;
 }
 
 void tst_qdeclarativetextedit::vAlign()

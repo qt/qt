@@ -523,17 +523,43 @@ void tst_qdeclarativetext::horizontalAlignment_RightToLeft()
     QCOMPARE(text->effectiveHAlign(), text->hAlign());
     QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() > canvas->width()/2);
 
-    // explicitly left aligned
+    // explicitly left aligned text
     text->setHAlign(QDeclarativeText::AlignLeft);
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignLeft);
     QCOMPARE(text->effectiveHAlign(), text->hAlign());
     QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() < canvas->width()/2);
 
-    // explicitly right aligned
+    // explicitly right aligned text
     text->setHAlign(QDeclarativeText::AlignRight);
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
     QCOMPARE(text->effectiveHAlign(), text->hAlign());
     QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() > canvas->width()/2);
+
+    // change to rich text
+    QString textString = text->text();
+    text->setText(QString("<i>") + textString + QString("</i>"));
+    text->setTextFormat(QDeclarativeText::RichText);
+    text->resetHAlign();
+
+    // implicitly aligned rich text should follow the reading direction of text
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+    QCOMPARE(text->effectiveHAlign(), text->hAlign());
+    QVERIFY(textPrivate->textDocument()->defaultTextOption().alignment() & Qt::AlignLeft);
+
+    // explicitly left aligned rich text
+    text->setHAlign(QDeclarativeText::AlignLeft);
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignLeft);
+    QCOMPARE(text->effectiveHAlign(), text->hAlign());
+    QVERIFY(textPrivate->textDocument()->defaultTextOption().alignment() & Qt::AlignRight);
+
+    // explicitly right aligned rich text
+    text->setHAlign(QDeclarativeText::AlignRight);
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+    QCOMPARE(text->effectiveHAlign(), text->hAlign());
+    QVERIFY(textPrivate->textDocument()->defaultTextOption().alignment() & Qt::AlignLeft);
+
+    text->setText(textString);
+    text->setTextFormat(QDeclarativeText::PlainText);
 
     // explicitly center aligned
     text->setHAlign(QDeclarativeText::AlignHCenter);
@@ -583,8 +609,16 @@ void tst_qdeclarativetext::horizontalAlignment_RightToLeft()
                                   QDeclarativeText::AlignLeft : QDeclarativeText::AlignRight);
     text->setHAlign(QDeclarativeText::AlignRight);
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
-
     delete canvas;
+
+    // alignment of Text with no text set to it
+    QString componentStr = "import QtQuick 1.0\nText {}";
+    QDeclarativeComponent textComponent(&engine);
+    textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeText *textObject = qobject_cast<QDeclarativeText*>(textComponent.create());
+    QCOMPARE(textObject->hAlign(), QApplication::keyboardInputDirection() == Qt::LeftToRight ?
+                                  QDeclarativeText::AlignLeft : QDeclarativeText::AlignRight);
+    delete textObject;
 }
 
 void tst_qdeclarativetext::verticalAlignment()
