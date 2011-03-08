@@ -163,7 +163,7 @@ void tst_NativeImageHandleProvider::bitmap()
         prov.bmp = new CFbsBitmap;
         QCOMPARE(prov.bmp->Create(TSize(prov.w, prov.h), EColor16MAP), KErrNone);
         CFbsBitmapDevice *bitmapDevice = CFbsBitmapDevice::NewL(prov.bmp);
-        CBitmapContext *bitmapContext = 0;        
+        CBitmapContext *bitmapContext = 0;
         QCOMPARE(bitmapDevice->CreateBitmapContext(bitmapContext), KErrNone);
         TRgb symbianColor = TRgb(255, 200, 100);
         bitmapContext->SetBrushColor(symbianColor);
