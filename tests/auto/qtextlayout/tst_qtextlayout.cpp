@@ -124,8 +124,8 @@ private slots:
     void testLineBreakingAllSpaces();
     void lineWidthFromBOM();
     void textWidthVsWIdth();
-
     void textWithSurrogates_qtbug15679();
+    void textWidthWithStackedTextEngine();
 
 private:
     QFont testFont;
@@ -1430,6 +1430,17 @@ void tst_QTextLayout::textWithSurrogates_qtbug15679()
     // are surrogate pairs, we need to add two for each
     // character)
     QCOMPARE(x[2] - x[0], x[5] - x[3]);
+}
+
+void tst_QTextLayout::textWidthWithStackedTextEngine()
+{
+    QString text = QString::fromUtf8("คลิก ถัดไป เพื่อดำเนินการต่อ");
+    QTextLayout layout(text);
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    layout.endLayout();
+    QFontMetricsF fm(layout.font());
+    QCOMPARE(line.naturalTextWidth(), fm.width(text));
 }
 
 QTEST_MAIN(tst_QTextLayout)

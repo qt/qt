@@ -86,11 +86,9 @@ class QNetworkReplyFileImplPrivate: public QNetworkReplyPrivate
 {
 public:
     QNetworkReplyFileImplPrivate();
-    ~QNetworkReplyFileImplPrivate();
 
-    QAbstractFileEngine *fileEngine;
-    qint64 fileSize;
-    qint64 filePos;
+    QFile realFile;
+    qint64 realFileSize;
 
     Q_DECLARE_PUBLIC(QNetworkReplyFileImpl)
 };
