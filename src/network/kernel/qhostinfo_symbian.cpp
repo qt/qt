@@ -41,10 +41,6 @@
 
 //#define QHOSTINFO_DEBUG
 
-// Symbian Headers
-#include <es_sock.h>
-#include <in_sock.h>
-
 // Qt Headers
 #include <QByteArray>
 #include <QUrl>
@@ -54,11 +50,13 @@
 
 #include "qhostinfo_p.h"
 #include <private/qcore_symbian_p.h>
+#include <private/qsystemerror_p.h>
 
 QT_BEGIN_NAMESPACE
 
 
-QHostInfo QHostInfoAgent::fromName(const QString &hostName)
+
+QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetworkSession> networkSession)
 {
     QHostInfo results;
 
@@ -66,12 +64,20 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     RSocketServ socketServ(qt_symbianGetSocketServer());
     RHostResolver hostResolver;
 
+
+    // TODO - check if networkSession is null
+    // RConnection connection = magicalApi(networkSession);
+    // int err = connection.Open(blah, blah);
+    // if (err) {
+    //          do something;
+    // }
+
     // Will return both IPv4 and IPv6
     // TODO: Pass RHostResolver.Open() the global RConnection
     int err = hostResolver.Open(socketServ, KAfInet, KProtocolInetUdp);
     if (err) {
         results.setError(QHostInfo::UnknownError);
-        results.setErrorString(tr("Symbian error code: %1").arg(err));
+        results.setErrorString(QSystemError(err,QSystemError::NativeError).toString());
 
         return results;
     }
@@ -99,7 +105,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
                 results.setErrorString(tr("Host not found"));
             } else {
                 results.setError(QHostInfo::UnknownError);
-                results.setErrorString(tr("Symbian error code: %1").arg(err));
+                results.setErrorString(QSystemError(err,QSystemError::NativeError).toString());
             }
 
             return results;
@@ -134,7 +140,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
             results.setErrorString(tr("Host not found"));
         } else {
             results.setError(QHostInfo::UnknownError);
-            results.setErrorString(tr("Symbian error code: %1").arg(err));
+            results.setErrorString(QSystemError(err,QSystemError::NativeError).toString());
         }
 
         return results;
@@ -156,7 +162,8 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         hostAdd = nameResult().iAddr;
         hostAdd.Output(ipAddr);
 
-        if (ipAddr.Length() > 0) {
+        // Ensure that record is valid (not an alias and with length greater than 0)
+        if (!(nameResult().iFlags & TNameRecord::EAlias) && (ipAddr.Length() > 0)) {
            if (nameResult().iAddr.Family() == KAfInet) {
                 // IPv4 - prepend
                 hostAddresses.prepend(QHostAddress(qt_TDesC2QString(ipAddr)));
@@ -171,6 +178,13 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 
     results.setAddresses(hostAddresses);
     return results;
+}
+
+QHostInfo QHostInfoAgent::fromName(const QString &hostName)
+{
+    // null shared pointer
+    QSharedPointer<QNetworkSession> networkSession;
+    return fromName(hostName, networkSession);
 }
 
 QString QHostInfo::localHostName()
@@ -199,6 +213,297 @@ QString QHostInfo::localDomainName()
 {
     // TODO - fill with code.
     return QString();
+}
+
+
+QSymbianHostResolver::QSymbianHostResolver(const QString &hostName, int identifier)
+    : CActive(CActive::EPriorityStandard), iId(identifier), iHostName(hostName),
+      iSocketServ(qt_symbianGetSocketServer())
+{
+    CActiveScheduler::Add(this);
+}
+
+QSymbianHostResolver::~QSymbianHostResolver()
+{
+    Cancel();
+    iHostResolver.Close();
+}
+
+// Async equivalent to QHostInfoAgent::fromName()
+QHostInfo QSymbianHostResolver::requestHostLookup()
+{
+
+#if defined(QHOSTINFO_DEBUG)
+    qDebug("QHostInfoAgent::fromName(%s) looking up...",
+           hostName.toLatin1().constData());
+#endif
+
+    int err = iHostResolver.Open(iSocketServ, KAfInet, KProtocolInetUdp);
+    if (err) {
+        // What are we doing with iResults??
+        iResults.setError(QHostInfo::UnknownError);
+        iResults.setErrorString(QObject::tr("Symbian error code: %1").arg(err));
+
+        iHostResolver.Close();
+        return iResults;
+    }
+
+    if (iAddress.setAddress(iHostName)) {
+        // Reverse lookup
+
+        TInetAddr IpAdd;
+        IpAdd.Input(qt_QString2TPtrC(iHostName));
+
+        // Asynchronous request.
+        iHostResolver.GetByAddress(IpAdd, iNameResult, iStatus); // <---- ASYNC
+        iState = EGetByAddress;
+
+    } else {
+
+        // IDN support
+        QByteArray aceHostname = QUrl::toAce(iHostName);
+        iResults.setHostName(iHostName);
+        if (aceHostname.isEmpty()) {
+            iResults.setError(QHostInfo::HostNotFound);
+            iResults.setErrorString(iHostName.isEmpty() ?
+                                   QCoreApplication::translate("QHostInfoAgent", "No host name given") :
+                                   QCoreApplication::translate("QHostInfoAgent", "Invalid hostname"));
+
+            iHostResolver.Close();
+            return iResults;
+        }
+
+        // Asynchronous request.
+        iHostResolver.GetByName(qt_QString2TPtrC(QString::fromLatin1(aceHostname)), iNameResult, iStatus);
+        iState = EGetByName;
+    }
+
+    SetActive();
+
+    return iResults;
+}
+
+void QSymbianHostResolver::DoCancel()
+{
+    QSymbianHostInfoLookupManger *manager = QSymbianHostInfoLookupManger::globalInstance();
+    manager->lookupFinished(this);
+    iHostResolver.Cancel();
+}
+
+void QSymbianHostResolver::RunL()
+{
+    QT_TRYCATCH_LEAVING(run());
+}
+
+void QSymbianHostResolver::run()
+{
+    if (iState == EGetByName)
+        processNameResults();
+    else if (iState == EGetByAddress)
+        processAddressResults();
+
+    iState = EIdle;
+
+    QSymbianHostInfoLookupManger *manager = QSymbianHostInfoLookupManger::globalInstance();
+    manager->lookupFinished(this);
+
+    resultEmitter.emitResultsReady(iResults);
+
+    delete this;
+}
+
+TInt QSymbianHostResolver::RunError(TInt aError)
+{
+    QT_TRY {
+        iState = EIdle;
+
+        QSymbianHostInfoLookupManger *manager = QSymbianHostInfoLookupManger::globalInstance();
+        manager->lookupFinished(this);
+
+        iResults.setError(QHostInfo::UnknownError);
+        iResults.setErrorString(QSystemError(aError,QSystemError::NativeError).toString());
+
+        resultEmitter.emitResultsReady(iResults);
+    }
+    QT_CATCH(...) {}
+
+    delete this;
+
+    return KErrNone;
+}
+
+void QSymbianHostResolver::processNameResults()
+{
+    TInt err = iStatus.Int();
+    if (err < 0) {
+        // TODO - Could there be other errors? Symbian docs don't say.
+        if (err = KErrNotFound) {
+            iResults.setError(QHostInfo::HostNotFound);
+            iResults.setErrorString(QObject::tr("Host not found"));
+        } else {
+            iResults.setError(QHostInfo::UnknownError);
+            iResults.setErrorString(QSystemError(err,QSystemError::NativeError).toString());
+        }
+
+        iHostResolver.Close();
+        return;
+    }
+
+    QList<QHostAddress> hostAddresses;
+
+    TInetAddr hostAdd = iNameResult().iAddr;
+    // 39 is the maximum length of an IPv6 address.
+    TBuf<39> ipAddr;
+
+    // Fill ipAddr with the IP address from hostAdd
+    hostAdd.Output(ipAddr);
+    if (ipAddr.Length() > 0)
+        hostAddresses.append(QHostAddress(qt_TDesC2QString(ipAddr)));
+
+    // Check if there's more than one IP address linkd to this name
+    while (iHostResolver.Next(iNameResult) == KErrNone) {
+        hostAdd = iNameResult().iAddr;
+        hostAdd.Output(ipAddr);
+
+        // Ensure that record is valid (not an alias and with length greater than 0)
+        if (!(iNameResult().iFlags & TNameRecord::EAlias) && (ipAddr.Length() > 0)) {
+           if (iNameResult().iAddr.Family() == KAfInet) {
+                // IPv4 - prepend
+                hostAddresses.prepend(QHostAddress(qt_TDesC2QString(ipAddr)));
+            } else {
+                // IPv6 - append
+                hostAddresses.append(QHostAddress(qt_TDesC2QString(ipAddr)));
+            }
+        }
+    }
+
+    iResults.setAddresses(hostAddresses);
+}
+
+void QSymbianHostResolver::processAddressResults()
+{
+    TInt err = iStatus.Int();
+
+    if (err < 0) {
+        // TODO - Could there be other errors? Symbian docs don't say.
+        if (err = KErrNotFound) {
+            iResults.setError(QHostInfo::HostNotFound);
+            iResults.setErrorString(QObject::tr("Host not found"));
+        } else {
+            iResults.setError(QHostInfo::UnknownError);
+            iResults.setErrorString(QSystemError(err,QSystemError::NativeError).toString());
+        }
+
+        return;
+    }
+
+    iResults.setHostName(qt_TDesC2QString(iNameResult().iName));
+    iResults.setAddresses(QList<QHostAddress>() << iAddress);
+}
+
+
+int QSymbianHostResolver::id()
+{
+    return iId;
+}
+
+QSymbianHostInfoLookupManger::QSymbianHostInfoLookupManger()
+{
+}
+
+QSymbianHostInfoLookupManger::~QSymbianHostInfoLookupManger()
+{
+    iCurrentLookups.Close();
+    iScheduledLookups.Close();
+}
+
+void QSymbianHostInfoLookupManger::clear()
+{
+    QMutexLocker locker(&mutex);
+    iCurrentLookups.ResetAndDestroy();
+    iScheduledLookups.ResetAndDestroy();
+}
+
+void QSymbianHostInfoLookupManger::lookupFinished(QSymbianHostResolver *r)
+{
+    QMutexLocker locker(&mutex);
+
+    // remove finished lookup from array and destroy
+    TInt count = iCurrentLookups.Count();
+    for (TInt i = 0; i < count; i++) {
+        if (iCurrentLookups[i]->id() == r->id()) {
+            iCurrentLookups.Remove(i);
+            break;
+        }
+    }
+
+    runNextLookup();
+}
+
+void QSymbianHostInfoLookupManger::runNextLookup()
+{
+    // check to see if there are any scheduled lookups
+    if (iScheduledLookups.Count() > 0) {
+        // if so, move one to the current lookups and run it
+        // FIFO
+        QSymbianHostResolver* hostResolver = iScheduledLookups[0];
+        iCurrentLookups.Append(hostResolver);
+        iScheduledLookups.Remove(0);
+        hostResolver->requestHostLookup();
+    }
+}
+
+// called from QHostInfo
+void QSymbianHostInfoLookupManger::scheduleLookup(QSymbianHostResolver* r)
+{
+    QMutexLocker locker(&mutex);
+
+    // Check to see if we have space on the current lookups pool.
+    if (iCurrentLookups.Count() >= KMaxConcurrentLookups) {
+        // If no, schedule for later.
+        iScheduledLookups.Append(r);
+        return;
+    } else {
+        // If yes, add it to the current lookups.
+        iCurrentLookups.Append(r);
+
+        // ... and trigger the async call.
+        r->requestHostLookup();
+    }
+}
+
+void QSymbianHostInfoLookupManger::abortLookup(int id)
+{
+    QMutexLocker locker(&mutex);
+
+    int i = 0;
+    // Find the aborted lookup by ID.
+    // First in the current lookups.
+    for (i = 0; i < iCurrentLookups.Count(); i++) {
+        if (id = iCurrentLookups[i]->id()) {
+            QSymbianHostResolver* r = iCurrentLookups[i];
+            iCurrentLookups.Remove(i);
+            r->Cancel();
+            runNextLookup();
+            return;
+        }
+    }
+    // Then in the scheduled lookups.
+    for (i = 0; i < iScheduledLookups.Count(); i++) {
+        if (id = iScheduledLookups[i]->id()) {
+            QSymbianHostResolver* r = iScheduledLookups[i];
+            iScheduledLookups.Remove(i);
+            delete r;
+            return;
+        }
+    }
+}
+
+
+QSymbianHostInfoLookupManger* QSymbianHostInfoLookupManger::globalInstance()
+{
+    return static_cast<QSymbianHostInfoLookupManger*>
+            (QAbstractHostInfoLookupManger::globalInstance());
 }
 
 QT_END_NAMESPACE

@@ -69,8 +69,17 @@
 #include <QElapsedTimer>
 #include <QCache>
 
+#include <QNetworkSession>
+
+#ifdef Q_OS_SYMBIAN
+// Symbian Headers
+#include <es_sock.h>
+#include <in_sock.h>
+#endif
+
 
 QT_BEGIN_NAMESPACE
+
 
 class QHostInfoResult : public QObject
 {
@@ -91,6 +100,12 @@ class QHostInfoAgent : public QObject
     Q_OBJECT
 public:
     static QHostInfo fromName(const QString &hostName);
+    static QHostInfo fromName(const QString &hostName, QSharedPointer<QNetworkSession> networkSession);
+
+#ifdef Q_OS_SYMBIAN
+    static int lookupHost(const QString &name, QObject *receiver, const char *member);
+    static void abortHostLookup(int lookupId);
+#endif
 };
 
 class QHostInfoPrivate
@@ -151,7 +166,25 @@ public:
     QHostInfoResult resultEmitter;
 };
 
-class QHostInfoLookupManager : public QObject
+
+class QAbstractHostInfoLookupManger : public QObject
+{
+    Q_OBJECT
+
+public:
+    ~QAbstractHostInfoLookupManger() {}
+    virtual void clear() = 0;
+
+    QHostInfoCache cache;
+
+protected:
+     QAbstractHostInfoLookupManger() {}
+     static QAbstractHostInfoLookupManger* globalInstance();
+
+};
+
+#ifndef Q_OS_SYMBIAN
+class QHostInfoLookupManager : public QAbstractInfoLookupManager
 {
     Q_OBJECT
 public:
@@ -168,8 +201,6 @@ public:
     // called from QHostInfoRunnable
     void lookupFinished(QHostInfoRunnable *r);
     bool wasAborted(int id);
-
-    QHostInfoCache cache;
 
     friend class QHostInfoRunnable;
 protected:
@@ -188,6 +219,84 @@ protected:
 private slots:
     void waitForThreadPoolDone() { threadPool.waitForDone(); }
 };
+
+#else
+
+class QSymbianHostResolver : public CActive
+{
+public:
+    QSymbianHostResolver(const QString &hostName, int id);
+    ~QSymbianHostResolver();
+
+    QHostInfo requestHostLookup();
+    int id();
+
+    QHostInfoResult resultEmitter;
+
+private:
+    void DoCancel();
+    void RunL();
+    void run();
+    TInt RunError(TInt aError);
+
+    void processNameResults();
+    void processAddressResults();
+
+private:
+    int iId;
+
+    const QString iHostName;
+
+    RSocketServ& iSocketServ;
+    RHostResolver iHostResolver;
+
+    TRequestStatus iStatus;
+
+    TNameEntry iNameResult;
+    QHostAddress iAddress;
+
+    QHostInfo iResults;
+
+    enum {
+        EIdle,
+        EGetByName,
+        EGetByAddress
+    } iState;
+};
+
+class QSymbianHostInfoLookupManger : public QAbstractHostInfoLookupManger
+{
+    Q_OBJECT
+public:
+    QSymbianHostInfoLookupManger();
+    ~QSymbianHostInfoLookupManger();
+
+    static QSymbianHostInfoLookupManger* globalInstance();
+
+    int id();
+    void clear();
+
+    // called from QHostInfo
+    void scheduleLookup(QSymbianHostResolver *r);
+    void abortLookup(int id);
+
+    // called from QSymbianHostResolver
+    void lookupFinished(QSymbianHostResolver *r);
+
+private:
+    void runNextLookup();
+
+    static const int KMaxConcurrentLookups = 5;
+
+    RPointerArray<QSymbianHostResolver> iCurrentLookups;
+    RPointerArray<QSymbianHostResolver> iScheduledLookups;
+    RPointerArray<QSymbianHostResolver> iFinishedLookups;
+
+    QMutex mutex;
+};
+#endif
+
+
 
 QT_END_NAMESPACE
 
