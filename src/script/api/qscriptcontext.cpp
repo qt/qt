@@ -268,8 +268,14 @@ QScriptValue QScriptContext::argument(int index) const
 QScriptValue QScriptContext::callee() const
 {
     const JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
-    QScript::APIShim shim(QScript::scriptEngineFromExec(frame));
-    return QScript::scriptEngineFromExec(frame)->scriptValueFromJSCValue(frame->callee());
+    QScriptEnginePrivate *eng = QScript::scriptEngineFromExec(frame);
+    QScript::APIShim shim(eng);
+    if (frame->callee() == eng->originalGlobalObject()) {
+        // This is a pushContext()-created context; the callee is a lie.
+        Q_ASSERT(QScriptEnginePrivate::contextFlags(const_cast<JSC::CallFrame*>(frame)) & QScriptEnginePrivate::NativeContext);
+        return QScriptValue();
+    }
+    return eng->scriptValueFromJSCValue(frame->callee());
 }
 
 /*!

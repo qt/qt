@@ -197,7 +197,7 @@ symbian {
         # Partial upgrade SIS file
         vendorinfo = \
             "; Localised Vendor name" \
-            "%{\"Nokia, Qt\"}" \
+            "%{\"Nokia\"}" \
             " " \
             "; Unique Vendor name" \
             ":\"Nokia, Qt\"" \

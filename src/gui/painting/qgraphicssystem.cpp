@@ -89,4 +89,9 @@ QPixmapData *QGraphicsSystem::createPixmapData(QPixmapData *origin)
     return createPixmapData(origin->pixelType());
 }
 
+void QGraphicsSystem::releaseCachedResources()
+{
+    // Do nothing here
+}
+
 QT_END_NAMESPACE

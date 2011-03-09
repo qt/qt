@@ -60,6 +60,13 @@
 QT_FORWARD_DECLARE_CLASS(QStringList);
 QT_FORWARD_DECLARE_CLASS(QCocoaDropData);
 
+@interface NSPanel (QtIntegration)
+- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender;
+- (NSDragOperation)draggingUpdated:(id <NSDraggingInfo>)sender;
+- (void)draggingExited:(id <NSDraggingInfo>)sender;
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender;
+@end
+
 @interface QT_MANGLE_NAMESPACE(QCocoaPanel) : NSPanel {
     QStringList *currentCustomDragTypes;
     QCocoaDropData *dropData;

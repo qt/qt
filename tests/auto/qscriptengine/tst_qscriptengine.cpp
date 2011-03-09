@@ -157,6 +157,7 @@ private slots:
     void reportAdditionalMemoryCost();
     void gcWithNestedDataStructure();
     void processEventsWhileRunning();
+    void throwErrorFromProcessEvents_data();
     void throwErrorFromProcessEvents();
     void disableProcessEventsInterval();
     void stacktrace();
@@ -164,6 +165,7 @@ private slots:
     void numberParsing();
     void automaticSemicolonInsertion();
     void abortEvaluation_notEvaluating();
+    void abortEvaluation_data();
     void abortEvaluation();
     void abortEvaluation_tryCatch();
     void abortEvaluation_fromNative();
@@ -235,6 +237,7 @@ private slots:
     void evaluateProgram_multipleEngines();
     void evaluateProgram_empty();
     void collectGarbageAfterConnect();
+    void collectGarbageAfterNativeArguments();
     void promoteThisObjectToQObjectInConstructor();
     void scriptValueFromQMetaObject();
 
@@ -470,10 +473,10 @@ void tst_QScriptEngine::newArray_HooliganTask233836()
 {
     QScriptEngine eng;
     {
+        // According to ECMA-262, this should cause a RangeError.
         QScriptValue ret = eng.evaluate("a = new Array(4294967295); a.push('foo')");
-        QVERIFY(ret.isNumber());
-        QCOMPARE(ret.toInt32(), 0);
-        QCOMPARE(eng.evaluate("a[4294967295]").toString(), QString::fromLatin1("foo"));
+        QEXPECT_FAIL("", "ECMA compliance bug in Array.prototype.push: https://bugs.webkit.org/show_bug.cgi?id=55033", Continue);
+        QVERIFY(ret.isError() && ret.toString().contains(QLatin1String("RangeError")));
     }
     {
         QScriptValue ret = eng.newArray(0xFFFFFFFF);
@@ -672,7 +675,8 @@ void tst_QScriptEngine::jsRegExp()
     QCOMPARE(r5.toString(), QString::fromLatin1("/foo/gim"));
     // In JSC, constructing a RegExp from another produces the same identical object.
     // This is different from SpiderMonkey and old back-end.
-    QVERIFY(r5.strictlyEquals(r));
+    QEXPECT_FAIL("", "RegExp copy-constructor should return a new object: https://bugs.webkit.org/show_bug.cgi?id=55040", Continue);
+    QVERIFY(!r5.strictlyEquals(r));
 
     QScriptValue r6 = rxCtor.construct(QScriptValueList() << "foo" << "bar");
     QVERIFY(r6.isError());
@@ -1316,7 +1320,7 @@ void tst_QScriptEngine::globalObjectProperties()
     QCOMPARE(global.propertyFlags("URIError"), QScriptValue::SkipInEnumeration);
     QVERIFY(global.property("Math").isObject());
     QVERIFY(!global.property("Math").isFunction());
-    QEXPECT_FAIL("", "[ECMA compliance] JSC sets DontDelete flag for Math object", Continue);
+    QEXPECT_FAIL("", "[ECMA compliance] JSC sets DontDelete flag for Math object: https://bugs.webkit.org/show_bug.cgi?id=55034", Continue);
     QCOMPARE(global.propertyFlags("Math"), QScriptValue::SkipInEnumeration);
 }
 
@@ -2960,17 +2964,42 @@ public:
     QScriptEngine *engine;
 };
 
+void tst_QScriptEngine::throwErrorFromProcessEvents_data()
+{
+    QTest::addColumn<QString>("script");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("while (1)")
+        << QString::fromLatin1("while (1) { }")
+        << QString::fromLatin1("Error: Killed");
+    QTest::newRow("while (1) i++")
+        << QString::fromLatin1("i = 0; while (1) { i++; }")
+        << QString::fromLatin1("Error: Killed");
+    // Unlike abortEvaluation(), scripts should be able to catch the
+    // exception.
+    QTest::newRow("try catch")
+        << QString::fromLatin1("try {"
+                               "    while (1) { }"
+                               "} catch(e) {"
+                               "    throw new Error('Caught');"
+                               "}")
+        << QString::fromLatin1("Error: Caught");
+}
+
 void tst_QScriptEngine::throwErrorFromProcessEvents()
 {
+    QFETCH(QString, script);
+    QFETCH(QString, error);
+
     QScriptEngine eng;
 
     EventReceiver2 receiver(&eng);
     QCoreApplication::postEvent(&receiver, new QEvent(QEvent::Type(QEvent::User+1)));
 
     eng.setProcessEventsInterval(100);
-    QScriptValue ret = eng.evaluate(QString::fromLatin1("while (1) { }"));
+    QScriptValue ret = eng.evaluate(script);
     QVERIFY(ret.isError());
-    QCOMPARE(ret.toString(), QString::fromLatin1("Error: Killed"));
+    QCOMPARE(ret.toString(), error);
 }
 
 void tst_QScriptEngine::disableProcessEventsInterval()
@@ -3385,8 +3414,26 @@ void tst_QScriptEngine::abortEvaluation_notEvaluating()
     }
 }
 
+void tst_QScriptEngine::abortEvaluation_data()
+{
+    QTest::addColumn<QString>("script");
+
+    QTest::newRow("while (1)")
+        << QString::fromLatin1("while (1) { }");
+    QTest::newRow("while (1) i++")
+        << QString::fromLatin1("i = 0; while (1) { i++; }");
+    QTest::newRow("try catch")
+        << QString::fromLatin1("try {"
+                               "    while (1) { }"
+                               "} catch(e) {"
+                               "    throw new Error('Caught');"
+                               "}");
+}
+
 void tst_QScriptEngine::abortEvaluation()
 {
+    QFETCH(QString, script);
+
     QScriptEngine eng;
     EventReceiver3 receiver(&eng);
 
@@ -3394,7 +3441,7 @@ void tst_QScriptEngine::abortEvaluation()
     for (int x = 0; x < 4; ++x) {
         QCoreApplication::postEvent(&receiver, new QEvent(QEvent::Type(QEvent::User+1)));
         receiver.resultType = EventReceiver3::AbortionResult(x);
-        QScriptValue ret = eng.evaluate(QString::fromLatin1("while (1) { }"));
+        QScriptValue ret = eng.evaluate(script);
         switch (receiver.resultType) {
         case EventReceiver3::None:
             QVERIFY(!eng.hasUncaughtException());
@@ -4201,7 +4248,8 @@ void tst_QScriptEngine::getterSetterThisObject_activation()
         // read
         eng.evaluate("act.__defineGetter__('x', function() { return this; })");
         QVERIFY(eng.evaluate("x === act").toBoolean());
-        QEXPECT_FAIL("", "Exotic overload (don't care for now)", Continue);
+        QEXPECT_FAIL("", "QTBUG-17605: Not possible to implement local variables as getter/setter properties", Abort);
+        QVERIFY(!eng.hasUncaughtException());
         QVERIFY(eng.evaluate("with (act) x").equals("foo"));
         QVERIFY(eng.evaluate("(function() { with (act) return x; })() === act").toBoolean());
         eng.evaluate("q = {}; with (act) with (q) x").equals(eng.evaluate("act"));
@@ -5332,7 +5380,7 @@ void tst_QScriptEngine::functionScopes()
         // top-level functions have only the global object in their scope
         QScriptValue fun = eng.evaluate("(function() {})");
         QVERIFY(fun.isFunction());
-        QEXPECT_FAIL("", "Function scope proxying is not implemented", Abort);
+        QEXPECT_FAIL("", "QScriptValue::scope() is internal, not implemented", Abort);
         QVERIFY(fun.scope().isObject());
         QVERIFY(fun.scope().strictlyEquals(eng.globalObject()));
         QVERIFY(!eng.globalObject().scope().isValid());
@@ -5639,6 +5687,16 @@ void tst_QScriptEngine::collectGarbageAfterConnect()
     // The connection should not keep the widget alive.
     collectGarbage_helper(engine);
     QVERIFY(widget == 0);
+}
+
+void tst_QScriptEngine::collectGarbageAfterNativeArguments()
+{
+    // QTBUG-17788
+    QScriptEngine eng;
+    QScriptContext *ctx = eng.pushContext();
+    QScriptValue arguments = ctx->argumentsObject();
+    // Shouldn't crash when marking the arguments object.
+    collectGarbage_helper(eng);
 }
 
 static QScriptValue constructQObjectFromThisObject(QScriptContext *ctx, QScriptEngine *eng)

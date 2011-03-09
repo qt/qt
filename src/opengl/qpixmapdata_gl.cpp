@@ -59,7 +59,7 @@
 
 QT_BEGIN_NAMESPACE
 
-extern const QGLContext* qt_gl_share_context();
+Q_OPENGL_EXPORT extern const QGLContext* qt_gl_share_context();
 
 /*!
     \class QGLFramebufferObjectPool

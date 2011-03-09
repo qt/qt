@@ -825,11 +825,7 @@ void QGLWindowSurface::updateGeometry() {
     ctx->updatePaintDevice();
 #endif
 
-#ifdef Q_WS_QPA
-    QSize surfSize = size();
-#else
     QSize surfSize = geometry().size();
-#endif
 
     if (surfSize.width() <= 0 || surfSize.height() <= 0)
         return;

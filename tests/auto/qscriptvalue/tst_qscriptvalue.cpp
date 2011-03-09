@@ -1889,7 +1889,7 @@ void tst_QScriptValue::getSetProperty_gettersAndSetters()
         QCOMPARE(object.propertyFlags("foo") & ~QScriptValue::UserRange,
                  QScriptValue::PropertyGetter );
 
-        QEXPECT_FAIL("", "User-range flags are not retained for getter/setter properties", Continue);
+        QEXPECT_FAIL("", "QTBUG-17615: User-range flags are not retained for getter/setter properties", Continue);
         QCOMPARE(object.propertyFlags("foo"),
                  QScriptValue::PropertyGetter | QScriptValue::UserRange);
         object.setProperty("x", num);
@@ -2004,10 +2004,10 @@ void tst_QScriptValue::getSetProperty_gettersAndSettersThrowErrorJS()
     QScriptValue object = eng.evaluate("o");
     QVERIFY(!eng.hasUncaughtException());
     QScriptValue ret = object.property("foo");
-    QEXPECT_FAIL("", "Exception thrown from js function are not returned by the JSC port", Continue);
+    QEXPECT_FAIL("", "QTBUG-17616: Exception thrown from js function are not returned by the JSC port", Continue);
     QVERIFY(ret.isError());
     QVERIFY(eng.hasUncaughtException());
-    QEXPECT_FAIL("", "Exception thrown from js function are not returned by the JSC port", Continue);
+    QEXPECT_FAIL("", "QTBUG-17616: Exception thrown from js function are not returned by the JSC port", Continue);
     QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
     QCOMPARE(eng.uncaughtException().toString(), QLatin1String("Error: get foo"));
     eng.evaluate("Object"); // clear exception state...
@@ -2185,9 +2185,9 @@ void tst_QScriptValue::getSetProperty()
     }
     // should still be deletable from C++
     object.setProperty("undeletableProperty", QScriptValue());
-    QEXPECT_FAIL("", "With JSC-based back-end, undeletable properties can't be deleted from C++", Continue);
+    QEXPECT_FAIL("", "QTBUG-17617: With JSC-based back-end, undeletable properties can't be deleted from C++", Continue);
     QVERIFY(!object.property("undeletableProperty").isValid());
-    QEXPECT_FAIL("", "With JSC-based back-end, undeletable properties can't be deleted from C++", Continue);
+    QEXPECT_FAIL("", "QTBUG-17617: With JSC-based back-end, undeletable properties can't be deleted from C++", Continue);
     QCOMPARE(object.propertyFlags("undeletableProperty"), 0);
 
   // SkipInEnumeration
@@ -2328,8 +2328,7 @@ void tst_QScriptValue::getSetPrototype_invalidPrototype()
     inv.setPrototype(object);
     QCOMPARE(inv.prototype().isValid(), false);
     object.setPrototype(inv);
-    // FIXME should it be invalid or proto?
-    QVERIFY(object.prototype().strictlyEquals(inv));
+    QVERIFY(object.prototype().strictlyEquals(proto));
 }
 
 void tst_QScriptValue::getSetPrototype_twoEngines()
@@ -2366,8 +2365,6 @@ void tst_QScriptValue::getSetPrototype_notObjectOrNull()
     QScriptEngine eng;
     QScriptValue object = eng.newObject();
     QScriptValue originalProto = object.prototype();
-
-    QEXPECT_FAIL("", "QTBUG-15154: QScriptValue::setPrototype() allows a non-Object value to be set as prototype", Abort);
 
     // bool
     object.setPrototype(true);

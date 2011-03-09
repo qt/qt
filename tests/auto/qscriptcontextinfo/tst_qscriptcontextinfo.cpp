@@ -151,7 +151,7 @@ void tst_QScriptContextInfo::nativeFunction()
         QVERIFY(info.scriptId() != -1);
         QCOMPARE(info.fileName(), fileName);
         QCOMPARE(info.lineNumber(), lineNumber);
-        QEXPECT_FAIL("", "columnNumber doesn't work", Continue);
+        QEXPECT_FAIL("", "QTBUG-17602: columnNumber doesn't work", Continue);
         QCOMPARE(info.columnNumber(), 1);
         QCOMPARE(info.functionName(), QString());
         QCOMPARE(info.functionEndLineNumber(), -1);
@@ -183,7 +183,7 @@ void tst_QScriptContextInfo::scriptFunction()
         QVERIFY(info.scriptId() != -1);
         QCOMPARE(info.fileName(), fileName);
         QCOMPARE(info.lineNumber(), lineNumber + 1);
-        QEXPECT_FAIL("", "columnNumber doesn't work", Continue);
+        QEXPECT_FAIL("", "QTBUG-17602: columnNumber doesn't work", Continue);
         QCOMPARE(info.columnNumber(), 2);
         QCOMPARE(info.functionName(), QString::fromLatin1("bar"));
         QCOMPARE(info.functionStartLineNumber(), lineNumber);
@@ -202,7 +202,7 @@ void tst_QScriptContextInfo::scriptFunction()
         QVERIFY(info.scriptId() != -1);
         QCOMPARE(info.fileName(), fileName);
         QCOMPARE(info.lineNumber(), lineNumber + 3);
-        QEXPECT_FAIL("", "columnNumber doesn't work", Continue);
+        QEXPECT_FAIL("", "QTBUG-17602: columnNumber doesn't work", Continue);
         QCOMPARE(info.columnNumber(), 1);
         QCOMPARE(info.functionName(), QString());
         QCOMPARE(info.functionEndLineNumber(), -1);

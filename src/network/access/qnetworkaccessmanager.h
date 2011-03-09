@@ -156,6 +156,8 @@ protected:
 
 private:
     friend class QNetworkReplyImplPrivate;
+    friend class QNetworkAccessHttpBackend;
+
     Q_DECLARE_PRIVATE(QNetworkAccessManager)
     Q_PRIVATE_SLOT(d_func(), void _q_replyFinished())
     Q_PRIVATE_SLOT(d_func(), void _q_replySslErrors(QList<QSslError>))

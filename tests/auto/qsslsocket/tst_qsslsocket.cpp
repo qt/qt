@@ -390,6 +390,9 @@ void tst_QSslSocket::constructing()
     QSslConfiguration savedDefault = QSslConfiguration::defaultConfiguration();
 
     // verify that changing the default config doesn't affect this socket
+    // (on Unix, the ca certs might be empty, depending on whether we load
+    // them on demand or not, so set them explicitly)
+    socket.setCaCertificates(QSslSocket::systemCaCertificates());
     QSslSocket::setDefaultCaCertificates(QList<QSslCertificate>());
     QSslSocket::setDefaultCiphers(QList<QSslCipher>());
     QVERIFY(!socket.caCertificates().isEmpty());
@@ -518,11 +521,6 @@ void tst_QSslSocket::sslErrors_data()
         << 993
         << (SslErrorList() << QSslError::HostNameMismatch
                            << QSslError::SelfSignedCertificate);
-
-    QTest::newRow("imap.trolltech.com")
-        << "imap.trolltech.com"
-        << 993
-        << (SslErrorList() << QSslError::SelfSignedCertificateInChain);
 }
 
 void tst_QSslSocket::sslErrors()
