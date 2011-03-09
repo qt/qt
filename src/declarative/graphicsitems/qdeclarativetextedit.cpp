@@ -48,6 +48,7 @@
 
 #include <QtCore/qmath.h>
 
+#include <private/qtextengine_p.h>
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>
