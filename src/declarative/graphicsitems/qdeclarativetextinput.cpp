@@ -482,6 +482,7 @@ QRect QDeclarativeTextInput::cursorRectangle() const
     Q_D(const QDeclarativeTextInput);
     QRect r = d->control->cursorRect();
     r.setHeight(r.height()-1); // Make consistent with TextEdit (QLineControl inexplicably adds 1)
+    r.moveLeft(r.x() - d->hscroll);
     return r;
 }
 
@@ -921,14 +922,22 @@ void QDeclarativeTextInput::moveCursor()
 QRectF QDeclarativeTextInput::positionToRectangle(int pos) const
 {
     Q_D(const QDeclarativeTextInput);
+    if (pos > d->control->cursorPosition())
+        pos += d->control->preeditAreaText().length();
     return QRectF(d->control->cursorToX(pos)-d->hscroll,
         0.0,
         d->control->cursorWidth(),
         cursorRectangle().height());
 }
 
+int QDeclarativeTextInput::positionAt(int x) const
+{
+    return positionAt(x, CursorBetweenCharacters);
+}
+
 /*!
-    \qmlmethod int TextInput::positionAt(int x)
+    \qmlmethod int TextInput::positionAt(int x, CursorPosition position = CursorBetweenCharacters)
+    \since Quick 1.1
 
     This function returns the character position at
     x pixels from the left of the textInput. Position 0 is before the
@@ -937,11 +946,26 @@ QRectF QDeclarativeTextInput::positionToRectangle(int pos) const
 
     This means that for all x values before the first character this function returns 0,
     and for all x values after the last character this function returns text.length.
+
+    The cursor position type specifies how the cursor position should be resolved.
+
+    \list
+    \o TextInput.CursorBetweenCharacters - Returns the position between characters that is nearest x.
+    \o TextInput.CursorOnCharacter - Returns the position before the character that is nearest x.
+    \endlist
 */
-int QDeclarativeTextInput::positionAt(int x) const
+int QDeclarativeTextInput::positionAt(int x, CursorPosition position) const
 {
     Q_D(const QDeclarativeTextInput);
-    return d->control->xToPos(x + d->hscroll);
+    int pos = d->control->xToPos(x + d->hscroll, QTextLine::CursorPosition(position));
+    const int cursor = d->control->cursor();
+    if (pos > cursor) {
+        const int preeditLength = d->control->preeditAreaText().length();
+        pos = pos > cursor + preeditLength
+                ? pos - preeditLength
+                : cursor;
+    }
+    return pos;
 }
 
 void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
@@ -982,18 +1006,22 @@ void QDeclarativeTextInput::inputMethodEvent(QInputMethodEvent *ev)
 {
     Q_D(QDeclarativeTextInput);
     ev->ignore();
+    const bool wasComposing = d->control->preeditAreaText().length() > 0;
     inputMethodPreHandler(ev);
-    if (ev->isAccepted())
-        return;
-    if (d->control->isReadOnly()) {
-        ev->ignore();
-    } else {
-        d->control->processInputMethodEvent(ev);
-        updateSize();
-        d->updateHorizontalScroll();
+    if (!ev->isAccepted()) {
+        if (d->control->isReadOnly()) {
+            ev->ignore();
+        } else {
+            d->control->processInputMethodEvent(ev);
+            updateSize();
+            d->updateHorizontalScroll();
+        }
     }
     if (!ev->isAccepted())
         QDeclarativePaintedItem::inputMethodEvent(ev);
+
+    if (wasComposing != (d->control->preeditAreaText().length() > 0))
+        emit inputMethodComposingChanged();
 }
 
 /*!
@@ -1047,7 +1075,7 @@ void QDeclarativeTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
     if (d->sendMouseEventToInputContext(event, QEvent::MouseMove))
-        event->setAccepted(true);
+        return;
     if (d->selectByMouse) {
         if (qAbs(int(event->pos().x() - d->pressPos.x())) > QApplication::startDragDistance())
             setKeepMouseGrab(true);
@@ -1260,7 +1288,7 @@ QVariant QDeclarativeTextInput::inputMethodQuery(Qt::InputMethodQuery property) 
     Q_D(const QDeclarativeTextInput);
     switch(property) {
     case Qt::ImMicroFocus:
-        return d->control->cursorRect();
+        return cursorRectangle();
     case Qt::ImFont:
         return font();
     case Qt::ImCursorPosition:
@@ -1285,6 +1313,7 @@ QVariant QDeclarativeTextInput::inputMethodQuery(Qt::InputMethodQuery property) 
 
 /*!
     \qmlmethod void TextInput::deselect()
+    \since Quick 1.1
 
     Removes active text selection.
 */
@@ -1466,6 +1495,13 @@ void QDeclarativeTextInput::setMouseSelectionMode(SelectionMode mode)
     }
 }
 
+/*!
+    \qmlproperty bool TextInput::canPaste
+    \since QtQuick 1.1
+
+    Returns true if the TextInput is writable and the content of the clipboard is
+    suitable for pasting into the TextEdit.
+*/
 bool QDeclarativeTextInput::canPaste() const
 {
     Q_D(const QDeclarativeTextInput);
@@ -1534,38 +1570,41 @@ void QDeclarativeTextInput::moveCursorSelection(int pos, SelectionMode mode)
             anchor = d->control->selectionStart();
 
         if (anchor < pos || (anchor == pos && cursor < pos)) {
-            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, d->control->text());
+            const QString text = d->control->text();
+            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, text);
             finder.setPosition(anchor);
 
             const QTextBoundaryFinder::BoundaryReasons reasons = finder.boundaryReasons();
-            if (!(reasons & QTextBoundaryFinder::StartWord)
+            if (anchor < text.length() && !(reasons & QTextBoundaryFinder::StartWord)
                     || ((reasons & QTextBoundaryFinder::EndWord) && anchor > cursor)) {
                 finder.toPreviousBoundary();
             }
-            anchor = finder.position();
+            anchor = finder.position() != -1 ? finder.position() : 0;
 
             finder.setPosition(pos);
-            if (!finder.isAtBoundary())
+            if (pos > 0 && !finder.boundaryReasons())
                 finder.toNextBoundary();
+            const int cursor = finder.position() != -1 ? finder.position() : text.length();
 
-            d->control->setSelection(anchor, finder.position() - anchor);
+            d->control->setSelection(anchor, cursor - anchor);
         } else if (anchor > pos || (anchor == pos && cursor > pos)) {
-            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, d->control->text());
+            const QString text = d->control->text();
+            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, text);
             finder.setPosition(anchor);
 
             const QTextBoundaryFinder::BoundaryReasons reasons = finder.boundaryReasons();
-            if (!(reasons & QTextBoundaryFinder::EndWord)
+            if (anchor > 0 && !(reasons & QTextBoundaryFinder::EndWord)
                     || ((reasons & QTextBoundaryFinder::StartWord) && anchor < cursor)) {
                 finder.toNextBoundary();
             }
-
-            anchor = finder.position();
+            anchor = finder.position() != -1 ? finder.position() : text.length();
 
             finder.setPosition(pos);
-            if (!finder.isAtBoundary())
+            if (pos < text.length() && !finder.boundaryReasons())
                  finder.toPreviousBoundary();
+            const int cursor = finder.position() != -1 ? finder.position() : 0;
 
-            d->control->setSelection(anchor, finder.position() - anchor);
+            d->control->setSelection(anchor, cursor - anchor);
         }
     }
 }
@@ -1684,6 +1723,25 @@ void QDeclarativeTextInput::focusInEvent(QFocusEvent *event)
     QDeclarativePaintedItem::focusInEvent(event);
 }
 
+/*!
+    \qmlproperty bool TextInput::isInputMethodComposing()
+
+    \since QtQuick 1.1
+
+    This property holds whether the TextInput has partial text input from an
+    input method.
+
+    While it is composing an input method may rely on mouse or key events from
+    the TextInput to edit or commit the partial text.  This property can be
+    used to determine when to disable events handlers that may interfere with
+    the correct operation of an input method.
+*/
+bool QDeclarativeTextInput::isInputMethodComposing() const
+{
+    Q_D(const QDeclarativeTextInput);
+    return d->control->preeditAreaText().length() > 0;
+}
+
 void QDeclarativeTextInputPrivate::init()
 {
     Q_Q(QDeclarativeTextInput);
@@ -1708,6 +1766,7 @@ void QDeclarativeTextInputPrivate::init()
             q, SLOT(q_canPasteChanged()));
     q->connect(QApplication::clipboard(), SIGNAL(dataChanged()),
             q, SLOT(q_canPasteChanged()));
+    canPaste = !control->isReadOnly() && QApplication::clipboard()->text().length() != 0;
 #endif // QT_NO_CLIPBOARD
     q->connect(control, SIGNAL(updateMicroFocus()),
                q, SLOT(updateMicroFocus()));

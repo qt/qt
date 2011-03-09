@@ -544,6 +544,7 @@ void QDeclarativeTextEdit::setWrapMode(WrapMode mode)
 
 /*!
     \qmlproperty int TextEdit::lineCount
+    \since Quick 1.1
 
     Returns the total number of lines in the textEdit item.
 */
@@ -605,6 +606,22 @@ int QDeclarativeTextEdit::positionAt(int x, int y) const
 {
     Q_D(const QDeclarativeTextEdit);
     int r = d->document->documentLayout()->hitTest(QPoint(x,y-d->yoff), Qt::FuzzyHit);
+    QTextCursor cursor = d->control->textCursor();
+    if (r > cursor.position()) {
+        // The cursor position includes positions within the preedit text, but only positions in the
+        // same text block are offset so it is possible to get a position that is either part of the
+        // preedit or the next text block.
+        QTextLayout *layout = cursor.block().layout();
+        const int preeditLength = layout
+                ? layout->preeditAreaText().length()
+                : 0;
+        if (preeditLength > 0
+                && d->document->documentLayout()->blockBoundingRect(cursor.block()).contains(x,y-d->yoff)) {
+            r = r > cursor.position() + preeditLength
+                    ? r - preeditLength
+                    : cursor.position();
+        }
+    }
     return r;
 }
 
@@ -1134,6 +1151,7 @@ void QDeclarativeTextEditPrivate::focusChanged(bool hasFocus)
 
 /*!
     \qmlmethod void TextEdit::deselect()
+    \since Quick 1.1
 
     Removes active text selection.
 */
@@ -1316,7 +1334,10 @@ Handles the given input method \a event.
 void QDeclarativeTextEdit::inputMethodEvent(QInputMethodEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
+    const bool wasComposing = isInputMethodComposing();
     d->control->processEvent(event, QPointF(0, -d->yoff));
+    if (wasComposing != isInputMethodComposing())
+        emit inputMethodComposingChanged();
 }
 
 /*!
@@ -1381,17 +1402,36 @@ void QDeclarativeTextEdit::updateImgCache(const QRectF &rf)
 
 /*!
     \qmlproperty bool TextEdit::canPaste
+    \since QtQuick 1.1
 
     Returns true if the TextEdit is writable and the content of the clipboard is
     suitable for pasting into the TextEdit.
-
-    \since QtQuick 1.1
 */
-
 bool QDeclarativeTextEdit::canPaste() const
 {
     Q_D(const QDeclarativeTextEdit);
     return d->canPaste;
+}
+
+/*!
+    \qmlproperty bool TextEdit::isInputMethodComposing()
+
+    \since QtQuick 1.1
+
+    This property holds whether the TextEdit has partial text input from an
+    input method.
+
+    While it is composing an input method may rely on mouse or key events from
+    the TextEdit to edit or commit the partial text.  This property can be used
+    to determine when to disable events handlers that may interfere with the
+    correct operation of an input method.
+*/
+bool QDeclarativeTextEdit::isInputMethodComposing() const
+{
+    Q_D(const QDeclarativeTextEdit);
+    if (QTextLayout *layout = d->control->textCursor().block().layout())
+        return layout->preeditAreaText().length() > 0;
+    return false;
 }
 
 void QDeclarativeTextEditPrivate::init()
@@ -1429,6 +1469,7 @@ void QDeclarativeTextEditPrivate::init()
 #ifndef QT_NO_CLIPBOARD
     QObject::connect(q, SIGNAL(readOnlyChanged(bool)), q, SLOT(q_canPasteChanged()));
     QObject::connect(QApplication::clipboard(), SIGNAL(dataChanged()), q, SLOT(q_canPasteChanged()));
+    canPaste = control->canPaste();
 #endif
 
     document = control->document();

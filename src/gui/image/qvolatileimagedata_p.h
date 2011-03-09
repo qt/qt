@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,48 +39,59 @@
 **
 ****************************************************************************/
 
-#include "qgraphicssystem_vg_p.h"
-#include <QtOpenVG/private/qpixmapdata_vg_p.h>
-#include <QtOpenVG/private/qwindowsurface_vg_p.h>
-#include <QtOpenVG/private/qvgimagepool_p.h>
-#if defined(Q_OS_SYMBIAN) && !defined(Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE)
-#include <QtGui/private/qwidget_p.h>
+#ifndef QVOLATILEIMAGEDATA_P_H
+#define QVOLATILEIMAGEDATA_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtGui/qimage.h>
+#include <QtCore/qshareddata.h>
+
+#ifdef Q_OS_SYMBIAN
+class CFbsBitmap;
 #endif
-#include <QtGui/private/qapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QVGGraphicsSystem::QVGGraphicsSystem()
+class QVolatileImageData : public QSharedData
 {
-    QApplicationPrivate::graphics_system_name = QLatin1String("openvg");
-}
+public:
+    QVolatileImageData();
+    QVolatileImageData(int w, int h, QImage::Format format);
+    QVolatileImageData(const QImage &sourceImage);
+    QVolatileImageData(void *nativeImage, void *nativeMask);
+    QVolatileImageData(const QVolatileImageData &other);
+    ~QVolatileImageData();
 
-QPixmapData *QVGGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
-{
-#if !defined(QVG_NO_SINGLE_CONTEXT) && !defined(QVG_NO_PIXMAP_DATA)
-    // Pixmaps can use QVGPixmapData; bitmaps must use raster.
-    if (type == QPixmapData::PixmapType)
-        return new QVGPixmapData(type);
-    else
-        return new QRasterPixmapData(type);
-#else
-    return new QRasterPixmapData(type);
+    void beginDataAccess() const;
+    void endDataAccess(bool readOnly = false) const;
+    bool ensureFormat(QImage::Format format);
+    void *duplicateNativeImage() const;
+    void ensureImage();
+
+#ifdef Q_OS_SYMBIAN
+    void updateImage();
+    void initWithBitmap(CFbsBitmap *source);
+    void applyMask(CFbsBitmap *mask);
+    void ensureBitmap();
+    void release();
+    QVolatileImageData *next;
+    QVolatileImageData *prev;
+    CFbsBitmap *bitmap;
 #endif
-}
-
-QWindowSurface *QVGGraphicsSystem::createWindowSurface(QWidget *widget) const
-{
-#if defined(Q_OS_SYMBIAN) && !defined(Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE)
-    QWidgetPrivate *d = qt_widget_private(widget);
-    if (!d->isOpaque && widget->testAttribute(Qt::WA_TranslucentBackground))
-        return d->createDefaultWindowSurface_sys();
-#endif
-    return new QVGWindowSurface(widget);
-}
-
-void QVGGraphicsSystem::releaseCachedResources()
-{
-    QVGImagePool::instance()->hibernate();
-}
+    QImage image;
+    QPaintEngine *pengine;
+};
 
 QT_END_NAMESPACE
+
+#endif // QVOLATILEIMAGEDATA_P_H

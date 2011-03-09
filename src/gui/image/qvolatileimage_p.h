@@ -39,54 +39,63 @@
 **
 ****************************************************************************/
 
-#include "qgraphicssystem_p.h"
+#ifndef QVOLATILEIMAGE_P_H
+#define QVOLATILEIMAGE_P_H
 
-#ifdef Q_WS_X11
-# include <private/qpixmap_x11_p.h>
-#endif
-#if defined(Q_WS_WIN)
-# include <private/qpixmap_raster_p.h>
-#endif
-#ifdef Q_WS_MAC
-# include <private/qpixmap_mac_p.h>
-#endif
-#ifdef Q_OS_SYMBIAN
-# include <private/qpixmap_s60_p.h>
-#endif
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtGui/qimage.h>
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
 
-QGraphicsSystem::~QGraphicsSystem()
-{
-}
+class QVolatileImageData;
 
-QPixmapData *QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixelType type)
+class Q_GUI_EXPORT QVolatileImage
 {
-#ifdef Q_WS_QWS
-    Q_UNUSED(type);
-#endif
-#if defined(Q_WS_X11)
-    return new QX11PixmapData(type);
-#elif defined(Q_WS_WIN)
-    return new QRasterPixmapData(type);
-#elif defined(Q_WS_MAC)
-    return new QMacPixmapData(type);
-#elif defined(Q_OS_SYMBIAN)
-    return new QS60PixmapData(type);    
-#elif !defined(Q_WS_QWS)
-#error QGraphicsSystem::createDefaultPixmapData() not implemented
-#endif
-    return 0;
-}
+public:
+    QVolatileImage();
+    QVolatileImage(int w, int h, QImage::Format format);
+    explicit QVolatileImage(const QImage &sourceImage);
+    explicit QVolatileImage(void *nativeImage, void *nativeMask = 0);
+    QVolatileImage(const QVolatileImage &other);
+    ~QVolatileImage();
+    QVolatileImage &operator=(const QVolatileImage &rhs);
 
-QPixmapData *QGraphicsSystem::createPixmapData(QPixmapData *origin)
-{
-    return createPixmapData(origin->pixelType());
-}
+    bool isNull() const;
+    QImage::Format format() const;
+    int width() const;
+    int height() const;
+    int bytesPerLine() const;
+    int byteCount() const;
+    int depth() const;
+    bool hasAlphaChannel() const;
+    void beginDataAccess() const;
+    void endDataAccess(bool readOnly = false) const;
+    uchar *bits();
+    const uchar *constBits() const;
+    bool ensureFormat(QImage::Format format);
+    QImage toImage() const;
+    QImage &imageRef();
+    QPaintEngine *paintEngine();
+    void setAlphaChannel(const QPixmap &alphaChannel);
+    void fill(uint pixelValue);
+    void *duplicateNativeImage() const;
+    void copyFrom(QVolatileImage *source, const QRect &rect);
 
-void QGraphicsSystem::releaseCachedResources()
-{
-    // Do nothing here
-}
+private:
+    QSharedDataPointer<QVolatileImageData> d;
+};
 
 QT_END_NAMESPACE
+
+#endif // QVOLATILEIMAGE_P_H

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,48 +39,75 @@
 **
 ****************************************************************************/
 
-#include "qgraphicssystem_vg_p.h"
-#include <QtOpenVG/private/qpixmapdata_vg_p.h>
-#include <QtOpenVG/private/qwindowsurface_vg_p.h>
-#include <QtOpenVG/private/qvgimagepool_p.h>
-#if defined(Q_OS_SYMBIAN) && !defined(Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE)
-#include <QtGui/private/qwidget_p.h>
-#endif
-#include <QtGui/private/qapplication_p.h>
+#include "qvolatileimagedata_p.h"
+#include <QtGui/qpaintengine.h>
 
 QT_BEGIN_NAMESPACE
 
-QVGGraphicsSystem::QVGGraphicsSystem()
+QVolatileImageData::QVolatileImageData()
+    : pengine(0)
 {
-    QApplicationPrivate::graphics_system_name = QLatin1String("openvg");
 }
 
-QPixmapData *QVGGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
+QVolatileImageData::QVolatileImageData(int w, int h, QImage::Format format)
+    : pengine(0)
 {
-#if !defined(QVG_NO_SINGLE_CONTEXT) && !defined(QVG_NO_PIXMAP_DATA)
-    // Pixmaps can use QVGPixmapData; bitmaps must use raster.
-    if (type == QPixmapData::PixmapType)
-        return new QVGPixmapData(type);
-    else
-        return new QRasterPixmapData(type);
-#else
-    return new QRasterPixmapData(type);
-#endif
+    image = QImage(w, h, format);
 }
 
-QWindowSurface *QVGGraphicsSystem::createWindowSurface(QWidget *widget) const
+QVolatileImageData::QVolatileImageData(const QImage &sourceImage)
+    : pengine(0)
 {
-#if defined(Q_OS_SYMBIAN) && !defined(Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE)
-    QWidgetPrivate *d = qt_widget_private(widget);
-    if (!d->isOpaque && widget->testAttribute(Qt::WA_TranslucentBackground))
-        return d->createDefaultWindowSurface_sys();
-#endif
-    return new QVGWindowSurface(widget);
+    image = sourceImage;
 }
 
-void QVGGraphicsSystem::releaseCachedResources()
+QVolatileImageData::QVolatileImageData(void *, void *)
+    : pengine(0)
 {
-    QVGImagePool::instance()->hibernate();
+    // Not supported.
+}
+
+QVolatileImageData::QVolatileImageData(const QVolatileImageData &other)
+{
+    image = other.image;
+    // The detach is not mandatory here but we do it nonetheless in order to
+    // keep the behavior consistent with other platforms.
+    image.detach();
+    pengine = 0;
+}
+
+QVolatileImageData::~QVolatileImageData()
+{
+    delete pengine;
+}
+
+void QVolatileImageData::beginDataAccess() const
+{
+    // nothing to do here
+}
+
+void QVolatileImageData::endDataAccess(bool readOnly) const
+{
+    Q_UNUSED(readOnly);
+    // nothing to do here
+}
+
+bool QVolatileImageData::ensureFormat(QImage::Format format)
+{
+    if (image.format() != format) {
+        image = image.convertToFormat(format);
+    }
+    return true;
+}
+
+void *QVolatileImageData::duplicateNativeImage() const
+{
+    return 0;
+}
+
+void QVolatileImageData::ensureImage()
+{
+    // nothing to do here
 }
 
 QT_END_NAMESPACE

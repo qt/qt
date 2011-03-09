@@ -111,8 +111,11 @@ private slots:
     void passwordCharacter();
     void cursorDelegate();
     void cursorVisible();
+    void cursorRectangle();
     void navigation();
     void copyAndPaste();
+    void canPasteEmpty();
+    void canPaste();
     void readOnly();
 
     void openInputPanelOnClick();
@@ -128,6 +131,7 @@ private slots:
     void preeditAutoScroll();
     void preeditMicroFocus();
     void inputContextMouseHandler();
+    void inputMethodComposing();
 
 private:
     void simulateKey(QDeclarativeView *, int key);
@@ -143,7 +147,8 @@ tst_qdeclarativetextinput::tst_qdeclarativetextinput()
     standard << "the quick brown fox jumped over the lazy dog"
         << "It's supercalifragisiticexpialidocious!"
         << "Hello, world!"
-        << "!dlrow ,olleH";
+        << "!dlrow ,olleH"
+        << " spacey   text ";
 
     colorStrings << "aliceblue"
                  << "antiquewhite"
@@ -444,6 +449,9 @@ void tst_qdeclarativetextinput::moveCursorSelection_data()
     QTest::addColumn<int>("selectionEnd");
     QTest::addColumn<bool>("reversible");
 
+    // () contains the text selected by the cursor.
+    // <> contains the actual selection.
+
     QTest::newRow("(t)he|characters")
             << standard[0] << 0 << 1 << QDeclarativeTextInput::SelectCharacters << 0 << 1 << true;
     QTest::newRow("do(g)|characters")
@@ -581,6 +589,24 @@ void tst_qdeclarativetextinput::moveCursorSelection_data()
             << standard[3] << 0 << 0 << QDeclarativeTextInput::SelectWords << 0 << 0 << true;
     QTest::newRow("!<()>dlrow|words")
             << standard[3] << 1 << 1 << QDeclarativeTextInput::SelectWords << 1 << 1 << true;
+
+    QTest::newRow(" <s(pac)ey>   text |words")
+            << standard[4] << 1 << 4 << QDeclarativeTextInput::SelectWords << 1 << 7 << true;
+    QTest::newRow(" spacey   <t(ex)t> |words")
+            << standard[4] << 11 << 13 << QDeclarativeTextInput::SelectWords << 10 << 14 << false; // Should be reversible. QTBUG-11365
+    QTest::newRow("<( )>spacey   text |words|ltr")
+            << standard[4] << 0 << 1 << QDeclarativeTextInput::SelectWords << 0 << 1 << false;
+    QTest::newRow("<( )spacey>   text |words|rtl")
+            << standard[4] << 1 << 0 << QDeclarativeTextInput::SelectWords << 0 << 7 << false;
+    QTest::newRow("spacey   <text( )>|words|ltr")
+            << standard[4] << 14 << 15 << QDeclarativeTextInput::SelectWords << 10 << 15 << false;
+//    QTBUG-11365
+//    QTest::newRow("spacey   text<( )>|words|rtl")
+//            << standard[4] << 15 << 14 << QDeclarativeTextInput::SelectWords << 14 << 15 << false;
+    QTest::newRow("<()> spacey   text |words")
+            << standard[4] << 0 << 0 << QDeclarativeTextInput::SelectWords << 0 << 0 << false;
+    QTest::newRow(" spacey   text <()>|words")
+            << standard[4] << 15 << 15 << QDeclarativeTextInput::SelectWords << 15 << 15 << false;
 }
 
 void tst_qdeclarativetextinput::moveCursorSelection()
@@ -626,6 +652,11 @@ void tst_qdeclarativetextinput::moveCursorSelectionSequence_data()
     QTest::addColumn<int>("selection1End");
     QTest::addColumn<int>("selection2Start");
     QTest::addColumn<int>("selection2End");
+
+    // () contains the text selected by the cursor.
+    // <> contains the actual selection.
+    // ^ is the revised cursor position.
+    // {} contains the revised selection.
 
     QTest::newRow("the {<quick( bro)wn> f^ox} jumped|ltr")
             << standard[0]
@@ -739,6 +770,50 @@ void tst_qdeclarativetextinput::moveCursorSelectionSequence_data()
             << 11 << 9 << 5
             << 8 << 13
             << 1 << 13;
+
+    QTest::newRow("{<(^} sp)acey>   text |ltr")
+            << standard[4]
+            << 0 << 3 << 0
+            << 0 << 7
+            << 0 << 0;
+    QTest::newRow("{<( ^}sp)acey>   text |ltr")
+            << standard[4]
+            << 0 << 3 << 1
+            << 0 << 7
+            << 0 << 1;
+    QTest::newRow("<( {s^p)acey>}   text |rtl")
+            << standard[4]
+            << 3 << 0 << 2
+            << 0 << 7
+            << 1 << 7;
+    QTest::newRow("<( {^sp)acey>}   text |rtl")
+            << standard[4]
+            << 3 << 0 << 1
+            << 0 << 7
+            << 1 << 7;
+
+    QTest::newRow(" spacey   <te(xt {^)>}|rtl")
+            << standard[4]
+            << 15 << 12 << 15
+            << 10 << 15
+            << 15 << 15;
+//    QTBUG-11365
+//    QTest::newRow(" spacey   <te(xt{^ )>}|rtl")
+//            << standard[4]
+//            << 15 << 12 << 14
+//            << 10 << 15
+//            << 14 << 15;
+    QTest::newRow(" spacey   {<te(x^t} )>|ltr")
+            << standard[4]
+            << 12 << 15 << 13
+            << 10 << 15
+            << 10 << 14;
+//    QTBUG-11365
+//    QTest::newRow(" spacey   {<te(xt^} )>|ltr")
+//            << standard[4]
+//            << 12 << 15 << 14
+//            << 10 << 15
+//            << 10 << 14;
 }
 
 void tst_qdeclarativetextinput::moveCursorSelectionSequence()
@@ -955,6 +1030,10 @@ void tst_qdeclarativetextinput::positionAt()
     QVERIFY(diff < 5);
 #endif
 
+    int x = textinputObject->positionToRectangle(pos + 1).x() - 1;
+    QCOMPARE(textinputObject->positionAt(x, QDeclarativeTextInput::CursorBetweenCharacters), pos + 1);
+    QCOMPARE(textinputObject->positionAt(x, QDeclarativeTextInput::CursorOnCharacter), pos);
+
     // Check without autoscroll...
     textinputObject->setAutoScroll(false);
     pos = textinputObject->positionAt(textinputObject->width()/2);
@@ -966,6 +1045,29 @@ void tst_qdeclarativetextinput::positionAt()
 #else
     QVERIFY(diff < 5);
 #endif
+
+    x = textinputObject->positionToRectangle(pos + 1).x() - 1;
+    QCOMPARE(textinputObject->positionAt(x, QDeclarativeTextInput::CursorBetweenCharacters), pos + 1);
+    QCOMPARE(textinputObject->positionAt(x, QDeclarativeTextInput::CursorOnCharacter), pos);
+
+    const qreal x0 = textinputObject->positionToRectangle(pos).x();
+    const qreal x1 = textinputObject->positionToRectangle(pos + 1).x();
+
+    QString preeditText = textinputObject->text().mid(0, pos);
+    textinputObject->setText(textinputObject->text().mid(pos));
+    textinputObject->setCursorPosition(0);
+
+    QInputMethodEvent inputEvent(preeditText, QList<QInputMethodEvent::Attribute>());
+    QApplication::sendEvent(canvas, &inputEvent);
+
+    // Check all points within the preedit text return the same position.
+    QCOMPARE(textinputObject->positionAt(0), 0);
+    QCOMPARE(textinputObject->positionAt(x0 / 2), 0);
+    QCOMPARE(textinputObject->positionAt(x0), 0);
+
+    // Verify positioning returns to normal after the preedit text.
+    QCOMPARE(textinputObject->positionAt(x1), 1);
+    QCOMPARE(textinputObject->positionToRectangle(1).x(), x1);
 
     delete canvas;
 }
@@ -1145,6 +1247,24 @@ void tst_qdeclarativetextinput::inputMethods()
     QApplication::sendEvent(canvas, &event);
     QCOMPARE(input->text(), QString("My Hello world!"));
 
+    input->setCursorPosition(2);
+    event.setCommitString("Your", -2, 2);
+    QApplication::sendEvent(canvas, &event);
+    QCOMPARE(input->text(), QString("Your Hello world!"));
+    QCOMPARE(input->cursorPosition(), 4);
+
+    input->setCursorPosition(7);
+    event.setCommitString("Goodbye", -2, 5);
+    QApplication::sendEvent(canvas, &event);
+    QCOMPARE(input->text(), QString("Your Goodbye world!"));
+    QCOMPARE(input->cursorPosition(), 12);
+
+    input->setCursorPosition(8);
+    event.setCommitString("Our", -8, 4);
+    QApplication::sendEvent(canvas, &event);
+    QCOMPARE(input->text(), QString("Our Goodbye world!"));
+    QCOMPARE(input->cursorPosition(), 7);
+
     delete canvas;
 }
 
@@ -1273,6 +1393,42 @@ void tst_qdeclarativetextinput::copyAndPaste() {
 #endif
 }
 
+void tst_qdeclarativetextinput::canPasteEmpty() {
+#ifndef QT_NO_CLIPBOARD
+
+    QApplication::clipboard()->clear();
+
+    QString componentStr = "import QtQuick 1.0\nTextInput { text: \"Hello world!\" }";
+    QDeclarativeComponent textInputComponent(&engine);
+    textInputComponent.setData(componentStr.toLatin1(), QUrl());
+    QDeclarativeTextInput *textInput = qobject_cast<QDeclarativeTextInput*>(textInputComponent.create());
+    QVERIFY(textInput != 0);
+
+    QLineControl lc;
+    bool cp = !lc.isReadOnly() && QApplication::clipboard()->text().length() != 0;
+    QCOMPARE(textInput->canPaste(), cp);
+
+#endif
+}
+
+void tst_qdeclarativetextinput::canPaste() {
+#ifndef QT_NO_CLIPBOARD
+
+    QApplication::clipboard()->setText("Some text");
+
+    QString componentStr = "import QtQuick 1.0\nTextInput { text: \"Hello world!\" }";
+    QDeclarativeComponent textInputComponent(&engine);
+    textInputComponent.setData(componentStr.toLatin1(), QUrl());
+    QDeclarativeTextInput *textInput = qobject_cast<QDeclarativeTextInput*>(textInputComponent.create());
+    QVERIFY(textInput != 0);
+
+    QLineControl lc;
+    bool cp = !lc.isReadOnly() && QApplication::clipboard()->text().length() != 0;
+    QCOMPARE(textInput->canPaste(), cp);
+
+#endif
+}
+
 void tst_qdeclarativetextinput::passwordCharacter()
 {
     QString componentStr = "import QtQuick 1.0\nTextInput { text: \"Hello world!\"; font.family: \"Helvetica\"; echoMode: TextInput.Password }";
@@ -1384,6 +1540,45 @@ void tst_qdeclarativetextinput::cursorVisible()
     QCOMPARE(input.isCursorVisible(), true);
     QCOMPARE(spy.count(), 11);
 #endif
+}
+
+void tst_qdeclarativetextinput::cursorRectangle()
+{
+    QString text = "Hello World!";
+
+    QDeclarativeTextInput input;
+    input.setText(text);
+    QFontMetricsF fm(input.font());
+    input.setWidth(fm.width(text.mid(0, 5)));
+
+    QRect r;
+
+    for (int i = 0; i <= 5; ++i) {
+        input.setCursorPosition(i);
+        r = input.cursorRectangle();
+        int textWidth = fm.width(text.mid(0, i));
+
+        QVERIFY(r.left() < textWidth);
+        QVERIFY(r.right() > textWidth);
+        QCOMPARE(input.inputMethodQuery(Qt::ImMicroFocus).toRect(), r);
+    }
+
+    // Check the cursor rectangle remains within the input bounding rect when auto scrolling.
+    QVERIFY(r.left() < input.boundingRect().width());
+    QVERIFY(r.right() >= input.width());
+
+    for (int i = 6; i < text.length(); ++i) {
+        input.setCursorPosition(i);
+        QCOMPARE(r, input.cursorRectangle());
+        QCOMPARE(input.inputMethodQuery(Qt::ImMicroFocus).toRect(), r);
+    }
+
+    for (int i = text.length() - 2; i >= 0; --i) {
+        input.setCursorPosition(i);
+        r = input.cursorRectangle();
+        QVERIFY(r.right() >= 0);
+        QCOMPARE(input.inputMethodQuery(Qt::ImMicroFocus).toRect(), r);
+    }
 }
 
 void tst_qdeclarativetextinput::readOnly()
@@ -1840,7 +2035,8 @@ void tst_qdeclarativetextinput::preeditAutoScroll()
     MyInputContext ic;
     view.setInputContext(&ic);
     QDeclarativeTextInput input;
-    input.setWidth(QFontMetricsF(input.font()).width(committedText));
+    QFontMetricsF fm(input.font());
+    input.setWidth(fm.width(committedText));
     input.setText(committedText);
     input.setPos(0, 0);
     input.setFocus(true);
@@ -1853,7 +2049,7 @@ void tst_qdeclarativetextinput::preeditAutoScroll()
     // test the text is scrolled so the preedit is visible.
     ic.sendPreeditText(preeditText.mid(0, 3), 1);
     QVERIFY(input.positionAt(0) != 0);
-    QCOMPARE(input.positionAt(input.width()), 8);
+    QVERIFY(input.cursorRectangle().left() < input.boundingRect().width());
 
     // test the text is scrolled back when the preedit is removed.
     ic.sendEvent(QInputMethodEvent());
@@ -1862,26 +2058,31 @@ void tst_qdeclarativetextinput::preeditAutoScroll()
 
     // test if the preedit is larger than the text input that the
     // character preceding the cursor is still visible.
+    qreal x = input.positionToRectangle(0).x();
     for (int i = 0; i < 3; ++i) {
         ic.sendPreeditText(preeditText, i + 1);
-        QCOMPARE(input.positionAt(0), 5 + i);
+        QVERIFY(input.cursorRectangle().right() >= fm.width(preeditText.at(i)));
+        QVERIFY(input.positionToRectangle(0).x() < x);
+        x = input.positionToRectangle(0).x();
     }
     for (int i = 1; i >= 0; --i) {
         ic.sendPreeditText(preeditText, i + 1);
-        QCOMPARE(input.positionAt(0), 5 + i);
+        QVERIFY(input.cursorRectangle().right() >= fm.width(preeditText.at(i)));
+        QVERIFY(input.positionToRectangle(0).x() > x);
+        x = input.positionToRectangle(0).x();
     }
 
     // Test incrementing the preedit cursor doesn't cause further
     // scrolling when right most text is visible.
     ic.sendPreeditText(preeditText, preeditText.length() - 3);
-    int position = input.positionAt(0);
+    x = input.positionToRectangle(0).x();
     for (int i = 2; i >= 0; --i) {
         ic.sendPreeditText(preeditText, preeditText.length() - i);
-        QCOMPARE(input.positionAt(0), position);
+        QCOMPARE(input.positionToRectangle(0).x(), x);
     }
     for (int i = 1; i <  3; ++i) {
         ic.sendPreeditText(preeditText, preeditText.length() - i);
-        QCOMPARE(input.positionAt(0), position);
+        QCOMPARE(input.positionToRectangle(0).x(), x);
     }
 
     // Test disabling auto scroll.
@@ -1903,6 +2104,7 @@ void tst_qdeclarativetextinput::preeditMicroFocus()
     view.setInputContext(&ic);
     QDeclarativeTextInput input;
     input.setPos(0, 0);
+    input.setAutoScroll(false);
     input.setFocus(true);
     scene.addItem(&input);
     view.show();
@@ -2064,6 +2266,43 @@ void tst_qdeclarativetextinput::inputContextMouseHandler()
     QCOMPARE(ic.eventModifiers, Qt::ControlModifier);
     QVERIFY(ic.cursor < 0);
     ic.eventType = QEvent::None;
+}
+
+void tst_qdeclarativetextinput::inputMethodComposing()
+{
+    QString text = "supercalifragisiticexpialidocious!";
+
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    MyInputContext ic;
+    view.setInputContext(&ic);
+    QDeclarativeTextInput input;
+    input.setWidth(200);
+    input.setText(text.mid(0, 12));
+    input.setCursorPosition(12);
+    input.setPos(0, 0);
+    input.setFocus(true);
+    scene.addItem(&input);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+
+    QSignalSpy spy(&input, SIGNAL(inputMethodComposingChanged()));
+
+    QCOMPARE(input.isInputMethodComposing(), false);
+
+    ic.sendEvent(QInputMethodEvent(text.mid(3), QList<QInputMethodEvent::Attribute>()));
+    QCOMPARE(input.isInputMethodComposing(), true);
+    QCOMPARE(spy.count(), 1);
+
+    ic.sendEvent(QInputMethodEvent(text.mid(12), QList<QInputMethodEvent::Attribute>()));
+    QCOMPARE(input.isInputMethodComposing(), true);
+    QCOMPARE(spy.count(), 1);
+
+    ic.sendEvent(QInputMethodEvent());
+    QCOMPARE(input.isInputMethodComposing(), false);
+    QCOMPARE(spy.count(), 2);
 }
 
 QTEST_MAIN(tst_qdeclarativetextinput)

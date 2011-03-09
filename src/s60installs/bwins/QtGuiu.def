@@ -12952,4 +12952,32 @@ EXPORTS
 	?isWordSelectionEnabled@QTextControl@@QBE_NXZ @ 12951 NONAME ; bool QTextControl::isWordSelectionEnabled(void) const
 	?assignedInputContext@QWidgetPrivate@@QBEPAVQInputContext@@XZ @ 12952 NONAME ; class QInputContext * QWidgetPrivate::assignedInputContext(void) const
 	?updateMicroFocus@QLineControl@@IAEXXZ @ 12953 NONAME ; void QLineControl::updateMicroFocus(void)
+	?beginDataAccess@QVolatileImage@@QBEXXZ @ 12954 NONAME ; void QVolatileImage::beginDataAccess(void) const
+	??1QVolatileImage@@QAE@XZ @ 12955 NONAME ; QVolatileImage::~QVolatileImage(void)
+	??0QVolatileImage@@QAE@HHW4Format@QImage@@@Z @ 12956 NONAME ; QVolatileImage::QVolatileImage(int, int, enum QImage::Format)
+	?ensureFormat@QVolatileImage@@QAE_NW4Format@QImage@@@Z @ 12957 NONAME ; bool QVolatileImage::ensureFormat(enum QImage::Format)
+	?fill@QVolatileImage@@QAEXI@Z @ 12958 NONAME ; void QVolatileImage::fill(unsigned int)
+	?isNull@QVolatileImage@@QBE_NXZ @ 12959 NONAME ; bool QVolatileImage::isNull(void) const
+	?toImage@QVolatileImage@@QBE?AVQImage@@XZ @ 12960 NONAME ; class QImage QVolatileImage::toImage(void) const
+	??0QVolatileImage@@QAE@ABVQImage@@@Z @ 12961 NONAME ; QVolatileImage::QVolatileImage(class QImage const &)
+	?format@QVolatileImage@@QBE?AW4Format@QImage@@XZ @ 12962 NONAME ; enum QImage::Format QVolatileImage::format(void) const
+	?endDataAccess@QVolatileImage@@QBEX_N@Z @ 12963 NONAME ; void QVolatileImage::endDataAccess(bool) const
+	?constBits@QVolatileImage@@QBEPBEXZ @ 12964 NONAME ; unsigned char const * QVolatileImage::constBits(void) const
+	?height@QVolatileImage@@QBEHXZ @ 12965 NONAME ; int QVolatileImage::height(void) const
+	?duplicateNativeImage@QVolatileImage@@QBEPAXXZ @ 12966 NONAME ; void * QVolatileImage::duplicateNativeImage(void) const
+	?bits@QVolatileImage@@QAEPAEXZ @ 12967 NONAME ; unsigned char * QVolatileImage::bits(void)
+	?paintEngine@QVolatileImage@@QAEPAVQPaintEngine@@XZ @ 12968 NONAME ; class QPaintEngine * QVolatileImage::paintEngine(void)
+	?bytesPerLine@QVolatileImage@@QBEHXZ @ 12969 NONAME ; int QVolatileImage::bytesPerLine(void) const
+	?width@QVolatileImage@@QBEHXZ @ 12970 NONAME ; int QVolatileImage::width(void) const
+	?copyFrom@QVolatileImage@@QAEXPAV1@ABVQRect@@@Z @ 12971 NONAME ; void QVolatileImage::copyFrom(class QVolatileImage *, class QRect const &)
+	?imageRef@QVolatileImage@@QAEAAVQImage@@XZ @ 12972 NONAME ; class QImage & QVolatileImage::imageRef(void)
+	??0QVolatileImage@@QAE@PAX0@Z @ 12973 NONAME ; QVolatileImage::QVolatileImage(void *, void *)
+	??4QVolatileImage@@QAEAAV0@ABV0@@Z @ 12974 NONAME ; class QVolatileImage & QVolatileImage::operator=(class QVolatileImage const &)
+	??0QVolatileImage@@QAE@XZ @ 12975 NONAME ; QVolatileImage::QVolatileImage(void)
+	?hasAlphaChannel@QVolatileImage@@QBE_NXZ @ 12976 NONAME ; bool QVolatileImage::hasAlphaChannel(void) const
+	?setAlphaChannel@QVolatileImage@@QAEXABVQPixmap@@@Z @ 12977 NONAME ; void QVolatileImage::setAlphaChannel(class QPixmap const &)
+	?byteCount@QVolatileImage@@QBEHXZ @ 12978 NONAME ; int QVolatileImage::byteCount(void) const
+	??0QVolatileImage@@QAE@ABV0@@Z @ 12979 NONAME ; QVolatileImage::QVolatileImage(class QVolatileImage const &)
+	?depth@QVolatileImage@@QBEHXZ @ 12980 NONAME ; int QVolatileImage::depth(void) const
+	?releaseCachedResources@QGraphicsSystem@@UAEXXZ @ 12981 NONAME ; void QGraphicsSystem::releaseCachedResources(void)
 
