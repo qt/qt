@@ -191,6 +191,7 @@ QHttpThreadDelegate::QHttpThreadDelegate(QObject *parent) :
     , downloadBuffer(0)
     , httpConnection(0)
     , httpReply(0)
+    , synchronousRequestLoop(0)
 {
 }
 
@@ -316,12 +317,16 @@ void QHttpThreadDelegate::abortRequest()
     if (httpReply) {
         delete httpReply;
         httpReply = 0;
-        this->deleteLater();
     }
 
     // Got aborted by the timeout timer
-    if (synchronous)
+    if (synchronous) {
         incomingErrorCode = QNetworkReply::TimeoutError;
+        QMetaObject::invokeMethod(synchronousRequestLoop, "quit", Qt::QueuedConnection);
+    } else {
+        //only delete this for asynchronous mode or QNetworkAccessHttpBackend will crash - see QNetworkAccessHttpBackend::postRequest()
+        this->deleteLater();
+    }
 }
 
 void QHttpThreadDelegate::readyReadSlot()
