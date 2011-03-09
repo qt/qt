@@ -267,8 +267,8 @@ void tst_qdeclarativeflickable::nestedPressDelay()
     QVERIFY(outer->property("pressed").toBool() == false);
 
     // The outer pressDelay will prevail (50ms, vs. 10sec)
-    QTest::qWait(300);
-    QVERIFY(outer->property("pressed").toBool() == true);
+    // QTRY_VERIFY() has 5sec timeout, so will timeout well within 10sec.
+    QTRY_VERIFY(outer->property("pressed").toBool() == true);
 
     QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(150, 150)));
 
