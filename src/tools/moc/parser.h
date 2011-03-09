@@ -50,10 +50,11 @@ QT_BEGIN_NAMESPACE
 class Parser
 {
 public:
-    Parser():index(0), displayWarnings(true){}
+    Parser():index(0), displayWarnings(true), displayNotes(true) {}
     Symbols symbols;
     int index;
     bool displayWarnings;
+    bool displayNotes;
 
     QStack<QByteArray> currentFilenames;
 
@@ -73,6 +74,7 @@ public:
     void error(int rollback);
     void error(const char *msg = 0);
     void warning(const char * = 0);
+    void note(const char * = 0);
 
 };
 

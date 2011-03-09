@@ -34,4 +34,8 @@ symbian:SOURCES += thread/qmutex_symbian.cpp \
 
 win32:SOURCES += thread/qmutex_win.cpp \
                  thread/qthread_win.cpp \
-                 thread/qwaitcondition_win.cpp
+		 thread/qwaitcondition_win.cpp
+
+integrity:SOURCES += thread/qmutex_unix.cpp \
+                thread/qthread_unix.cpp \
+		thread/qwaitcondition_unix.cpp

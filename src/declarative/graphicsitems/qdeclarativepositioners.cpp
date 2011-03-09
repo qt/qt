@@ -584,6 +584,8 @@ QDeclarativeRow::QDeclarativeRow(QDeclarativeItem *parent)
 
 /*!
     \qmlproperty enumeration Row::layoutDirection
+    \since Quick 1.1
+
     This property holds the layoutDirection of the row.
 
     Possible values:
@@ -859,6 +861,8 @@ void QDeclarativeGrid::setFlow(Flow flow)
 
 /*!
     \qmlproperty enumeration Grid::layoutDirection
+    \since Quick 1.1
+
     This property holds the layout direction of the layout.
 
     Possible values are:
@@ -1201,6 +1205,8 @@ void QDeclarativeFlow::setFlow(Flow flow)
 
 /*!
     \qmlproperty enumeration Flow::layoutDirection
+    \since Quick 1.1
+
     This property holds the layout direction of the layout.
 
     Possible values are:

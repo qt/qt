@@ -143,6 +143,15 @@
     setDefaultCaCertificates().
     \endlist
 
+    \note If available, root certificates on Unix (excluding Mac OS X) will be
+    loaded on demand from the standard certificate directories. If
+    you do not want to load root certificates on demand, you need to call either
+    the static function setDefaultCaCertificates() before the first SSL handshake
+    is made in your application, (e.g. via
+    "QSslSocket::setDefaultCaCertificates(QSslSocket::systemCaCertificates());"),
+    or call setCaCertificates() on your QSslSocket instance prior to the SSL
+    handshake.
+
     For more information about ciphers and certificates, refer to QSslCipher and
     QSslCertificate.
 
@@ -1249,6 +1258,7 @@ void QSslSocket::setCaCertificates(const QList<QSslCertificate> &certificates)
 {
     Q_D(QSslSocket);
     d->configuration.caCertificates = certificates;
+    d->allowRootCertOnDemandLoading = false;
 }
 
 /*!
@@ -1257,6 +1267,9 @@ void QSslSocket::setCaCertificates(const QList<QSslCertificate> &certificates)
   validate the peer's certificate. It can be moodified prior to the
   handshake with addCaCertificate(), addCaCertificates(), and
   setCaCertificates().
+
+  \note On Unix, this method may return an empty list if the root
+  certificates are loaded on demand.
 
   \sa addCaCertificate(), addCaCertificates(), setCaCertificates()
 */
@@ -1311,10 +1324,9 @@ void QSslSocket::addDefaultCaCertificates(const QList<QSslCertificate> &certific
 /*!
     Sets the default CA certificate database to \a certificates. The
     default CA certificate database is originally set to your system's
-    default CA certificate database. If no system default database is
-    found, Qt will provide its own default database. You can override
-    the default CA certificate database with your own CA certificate
-    database using this function.
+    default CA certificate database. You can override the default CA
+    certificate database with your own CA certificate database using
+    this function.
 
     Each SSL socket's CA certificate database is initialized to the
     default CA certificate database.
@@ -1335,6 +1347,9 @@ void QSslSocket::setDefaultCaCertificates(const QList<QSslCertificate> &certific
 
     Each SSL socket's CA certificate database is initialized to the
     default CA certificate database.
+
+    \note On Unix, this method may return an empty list if the root
+    certificates are loaded on demand.
 
     \sa caCertificates()
 */
@@ -1803,6 +1818,7 @@ QSslSocketPrivate::QSslSocketPrivate()
     , connectionEncrypted(false)
     , ignoreAllSslErrors(false)
     , readyReadEmittedPointer(0)
+    , allowRootCertOnDemandLoading(true)
     , plainSocket(0)
 {
     QSslConfigurationPrivate::deepCopyDefaultConfiguration(&configuration);
@@ -1879,6 +1895,7 @@ void QSslSocketPrivate::setDefaultSupportedCiphers(const QList<QSslCipher> &ciph
 */
 QList<QSslCertificate> QSslSocketPrivate::defaultCaCertificates()
 {
+    // ### Qt5: rename everything containing "caCertificates" to "rootCertificates" or similar
     QSslSocketPrivate::ensureInitialized();
     QMutexLocker locker(&globalData()->mutex);
     return globalData()->config->caCertificates;
@@ -1893,6 +1910,9 @@ void QSslSocketPrivate::setDefaultCaCertificates(const QList<QSslCertificate> &c
     QMutexLocker locker(&globalData()->mutex);
     globalData()->config.detach();
     globalData()->config->caCertificates = certs;
+    // when the certificates are set explicitly, we do not want to
+    // load the system certificates on demand
+    s_loadRootCertsOnDemand = false;
 }
 
 /*!
@@ -2190,6 +2210,20 @@ void QSslSocketPrivate::_q_flushReadBuffer()
     // trigger a read from the plainSocket into SSL
     if (mode != QSslSocket::UnencryptedMode)
         transmit();
+}
+
+/*!
+    \internal
+*/
+QList<QByteArray> QSslSocketPrivate::unixRootCertDirectories()
+{
+    return QList<QByteArray>() <<  "/etc/ssl/certs/" // (K)ubuntu, OpenSUSE, Mandriva, MeeGo ...
+                               << "/usr/lib/ssl/certs/" // Gentoo, Mandrake
+                               << "/usr/share/ssl/" // Centos, Redhat, SuSE
+                               << "/usr/local/ssl/" // Normal OpenSSL Tarball
+                               << "/var/ssl/certs/" // AIX
+                               << "/usr/local/ssl/certs/" // Solaris
+                               << "/opt/openssl/certs/"; // HP-UX
 }
 
 QT_END_NAMESPACE

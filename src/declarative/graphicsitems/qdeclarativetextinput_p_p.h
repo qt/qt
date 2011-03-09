@@ -104,6 +104,7 @@ public:
     void focusChanged(bool hasFocus);
     void updateHorizontalScroll();
     int calculateTextWidth();
+    bool sendMouseEventToInputContext(QGraphicsSceneMouseEvent *event, QEvent::Type eventType);
 
     QLineControl* control;
 

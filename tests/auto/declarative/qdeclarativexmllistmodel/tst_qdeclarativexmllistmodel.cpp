@@ -569,6 +569,11 @@ void tst_qdeclarativexmllistmodel::reload()
     QSignalSpy spyRemove(model, SIGNAL(itemsRemoved(int,int)));
     QSignalSpy spyCount(model, SIGNAL(countChanged())); 
 
+    //reload multiple times to test the xml query aborting
+    model->reload();
+    model->reload();
+    QCoreApplication::processEvents();
+    model->reload();
     model->reload();
     QTRY_COMPARE(spyCount.count(), 1);
     QTRY_COMPARE(spyInsert.count(), 1);
@@ -839,9 +844,27 @@ void tst_qdeclarativexmllistmodel::threading()
             data3 += "name=C" + QString::number(i) + ",age=3" + QString::number(i) + ",sport=Curling;";
         }
 
+        //Set the xml data multiple times with randomized order and mixed with multiple event loops
+        //to test the xml query reloading/aborting, the result should be stable.
         m1->setXml(makeItemXmlAndData(data1));
         m2->setXml(makeItemXmlAndData(data2));
         m3->setXml(makeItemXmlAndData(data3));
+        QCoreApplication::processEvents();
+        m2->setXml(makeItemXmlAndData(data2));
+        m1->setXml(makeItemXmlAndData(data1));
+        m2->setXml(makeItemXmlAndData(data2));
+        QCoreApplication::processEvents();
+        m3->setXml(makeItemXmlAndData(data3));
+        QCoreApplication::processEvents();
+        m2->setXml(makeItemXmlAndData(data2));
+        m1->setXml(makeItemXmlAndData(data1));
+        m2->setXml(makeItemXmlAndData(data2));
+        m3->setXml(makeItemXmlAndData(data3));
+        QCoreApplication::processEvents();
+        m2->setXml(makeItemXmlAndData(data2));
+        m3->setXml(makeItemXmlAndData(data3));
+        m3->setXml(makeItemXmlAndData(data3));
+        QCoreApplication::processEvents();
 
         QTRY_VERIFY(m1->count() == dataCount && m2->count() == dataCount && m3->count() == dataCount);
 

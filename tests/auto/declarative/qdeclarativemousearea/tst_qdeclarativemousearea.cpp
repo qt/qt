@@ -43,8 +43,10 @@
 #include <QtTest/QSignalSpy>
 #include <private/qdeclarativemousearea_p.h>
 #include <private/qdeclarativerectangle_p.h>
+#include <private/qdeclarativeflickable_p.h>
 #include <QtDeclarative/qdeclarativeview.h>
 #include <QtDeclarative/qdeclarativecontext.h>
+#include <QtDeclarative/qdeclarativeengine.h>
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -65,6 +67,9 @@ private slots:
     void doubleClick();
     void clickTwice();
     void pressedOrdering();
+    void preventStealing();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
 
 private:
     QDeclarativeView *createView();
@@ -356,6 +361,8 @@ void tst_QDeclarativeMouseArea::noOnClickedWithPressAndHold()
 
     QVERIFY(!canvas->rootObject()->property("clicked").toBool());
     QVERIFY(canvas->rootObject()->property("held").toBool());
+
+    delete canvas;
 }
 
 void tst_QDeclarativeMouseArea::onMousePressRejected()
@@ -399,6 +406,8 @@ void tst_QDeclarativeMouseArea::onMousePressRejected()
     QVERIFY(canvas->rootObject()->property("mr1_released").toBool());
     QVERIFY(!canvas->rootObject()->property("mr1_canceled").toBool());
     QVERIFY(!canvas->rootObject()->property("mr2_released").toBool());
+
+    delete canvas;
 }
 
 void tst_QDeclarativeMouseArea::doubleClick()
@@ -436,6 +445,7 @@ void tst_QDeclarativeMouseArea::doubleClick()
     QCOMPARE(canvas->rootObject()->property("doubleClicked").toInt(), 1);
     QCOMPARE(canvas->rootObject()->property("released").toInt(), 2);
 
+    delete canvas;
 }
 
 // QTBUG-14832
@@ -476,6 +486,8 @@ void tst_QDeclarativeMouseArea::clickTwice()
     QCOMPARE(canvas->rootObject()->property("pressed").toInt(), 2);
     QCOMPARE(canvas->rootObject()->property("released").toInt(), 2);
     QCOMPARE(canvas->rootObject()->property("clicked").toInt(), 2);
+
+    delete canvas;
 }
 
 void tst_QDeclarativeMouseArea::pressedOrdering()
@@ -510,6 +522,119 @@ void tst_QDeclarativeMouseArea::pressedOrdering()
     QCOMPARE(canvas->rootObject()->property("value").toString(), QLatin1String("pressed"));
 
     delete canvas;
+}
+
+void tst_QDeclarativeMouseArea::preventStealing()
+{
+    QDeclarativeView *canvas = createView();
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/preventstealing.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeFlickable *flickable = qobject_cast<QDeclarativeFlickable*>(canvas->rootObject());
+    QVERIFY(flickable != 0);
+
+    QDeclarativeMouseArea *mouseArea = canvas->rootObject()->findChild<QDeclarativeMouseArea*>("mousearea");
+    QVERIFY(mouseArea != 0);
+
+    QSignalSpy mousePositionSpy(mouseArea, SIGNAL(positionChanged(QDeclarativeMouseEvent*)));
+
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(80, 80)));
+
+    // Without preventStealing, mouse movement over MouseArea would
+    // cause the Flickable to steal mouse and trigger content movement.
+    QGraphicsScene *scene = canvas->scene();
+    QGraphicsSceneMouseEvent moveEvent(QEvent::GraphicsSceneMouseMove);
+    moveEvent.setScenePos(QPointF(70, 70));
+    moveEvent.setButton(Qt::LeftButton);
+    moveEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &moveEvent);
+
+    moveEvent.setScenePos(QPointF(60, 60));
+    moveEvent.setButton(Qt::LeftButton);
+    moveEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &moveEvent);
+
+    moveEvent.setScenePos(QPointF(50, 50));
+    moveEvent.setButton(Qt::LeftButton);
+    moveEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &moveEvent);
+
+    // We should have received all three move events
+    QCOMPARE(mousePositionSpy.count(), 3);
+    QVERIFY(mouseArea->pressed());
+
+    // Flickable content should not have moved.
+    QCOMPARE(flickable->contentX(), 0.);
+    QCOMPARE(flickable->contentY(), 0.);
+
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(50, 50)));
+
+    // Now allow stealing and confirm Flickable does its thing.
+    canvas->rootObject()->setProperty("stealing", false);
+
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(80, 80)));
+
+    // Without preventStealing, mouse movement over MouseArea would
+    // cause the Flickable to steal mouse and trigger content movement.
+    moveEvent.setScenePos(QPointF(70, 70));
+    QApplication::sendEvent(scene, &moveEvent);
+
+    moveEvent.setScenePos(QPointF(60, 60));
+    QApplication::sendEvent(scene, &moveEvent);
+
+    moveEvent.setScenePos(QPointF(50, 50));
+    QApplication::sendEvent(scene, &moveEvent);
+
+    // We should only have received the first move event
+    QCOMPARE(mousePositionSpy.count(), 4);
+    // Our press should be taken away
+    QVERIFY(!mouseArea->pressed());
+
+    // Flickable content should have moved.
+    QCOMPARE(flickable->contentX(), 10.);
+    QCOMPARE(flickable->contentY(), 10.);
+
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(50, 50)));
+
+    delete canvas;
+}
+
+void tst_QDeclarativeMouseArea::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; MouseArea { " + code.toUtf8() + " }", QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; MouseArea { " + code.toUtf8() + " }", QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+}
+
+void tst_QDeclarativeMouseArea::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("preventStealing") << "preventStealing: true"
+        << "QDeclarativeComponent: Component is not ready"
+        << ":1 \"MouseArea.preventStealing\" is not available in QtQuick 1.0.\n";
 }
 
 QTEST_MAIN(tst_QDeclarativeMouseArea)

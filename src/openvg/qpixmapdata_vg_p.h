@@ -54,6 +54,7 @@
 //
 
 #include <QtGui/private/qpixmap_raster_p.h>
+#include <QtGui/private/qvolatileimage_p.h>
 #include <private/qvg_p.h>
 
 #if defined(Q_OS_SYMBIAN)
@@ -99,6 +100,7 @@ public:
     bool hasAlphaChannel() const;
     void setAlphaChannel(const QPixmap &alphaChannel);
     QImage toImage() const;
+    void copy(const QPixmapData *data, const QRect &rect);
     QImage *buffer();
     QPaintEngine* paintEngine() const;
 
@@ -161,7 +163,7 @@ protected:
     VGImage vgImage;
     VGImage vgImageOpacity;
     qreal cachedOpacity;
-    mutable QImage source;
+    mutable QVolatileImage source;
     mutable bool recreate;
     bool inImagePool;
 #if !defined(QT_NO_EGL)
@@ -170,6 +172,8 @@ protected:
 
     void forceToImage();
     QImage::Format sourceFormat() const;
+    QImage::Format idealFormat(QImage *image, Qt::ImageConversionFlags flags) const;
+    void updateSerial();
 
     void destroyImageAndContext();
     void destroyImages();

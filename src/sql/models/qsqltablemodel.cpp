@@ -657,7 +657,7 @@ bool QSqlTableModel::insertRowIntoTable(const QSqlRecord &values)
         return false;
     }
 
-    return d->exec(stmt, prepStatement, rec);
+    return d->exec(stmt, prepStatement, rec, QSqlRecord() /* no where values */);
 }
 
 /*!
@@ -695,7 +695,7 @@ bool QSqlTableModel::deleteRowFromTable(int row)
     }
     stmt.append(QLatin1Char(' ')).append(where);
 
-    return d->exec(stmt, prepStatement, whereValues);
+    return d->exec(stmt, prepStatement, QSqlRecord() /* no new values */, whereValues);
 }
 
 /*!
