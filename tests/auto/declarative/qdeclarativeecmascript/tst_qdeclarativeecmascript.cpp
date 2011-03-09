@@ -2467,6 +2467,8 @@ void tst_qdeclarativeecmascript::moduleApi()
 
     // test that writing to a property of module apis works correctly.
     QDeclarativeComponent componentThree(&engine, TEST_FILE("moduleApiWriting.qml"));
+    QString expectedWarning = QLatin1String("file://") + TEST_FILE("moduleApiWriting.qml").toLocalFile() + QLatin1String(":15: Error: Cannot assign to read-only property \"qobjectTestProperty\"");
+    QTest::ignoreMessage(QtWarningMsg, expectedWarning.toAscii().constData());
     object = componentThree.create();
     QVERIFY(object != 0);
     QCOMPARE(object->property("readOnlyProperty").toInt(), 20);
@@ -2478,10 +2480,12 @@ void tst_qdeclarativeecmascript::moduleApi()
     delete object;
 
     QDeclarativeComponent failOne(&engine, TEST_FILE("moduleApiMajorVersionFail.qml"));
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeComponent: Component is not ready");
     object = failOne.create();
     QVERIFY(object == 0); // should have failed: invalid major version
 
     QDeclarativeComponent failTwo(&engine, TEST_FILE("moduleApiMinorVersionFail.qml"));
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeComponent: Component is not ready");
     object = failTwo.create();
     QVERIFY(object == 0); // should have failed: invalid minor version
 }
@@ -2508,26 +2512,38 @@ void tst_qdeclarativeecmascript::importScripts()
 
     // then, ensure that unintended behaviour does not work.
     QDeclarativeComponent failOneComponent(&engine, TEST_FILE("jsimportfail/failOne.qml"));
+    QString expectedWarning = QLatin1String("file://") + TEST_FILE("jsimportfail/failOne.qml").toLocalFile() + QLatin1String(":6: TypeError: Result of expression 'TestScriptImport.ImportOneJs' [undefined] is not an object.");
+    QTest::ignoreMessage(QtWarningMsg, expectedWarning.toAscii().constData());
     object = failOneComponent.create();
     QVERIFY(object != 0);
     QVERIFY(object->property("importScriptFunctionValue").toString().isEmpty());
     delete object;
     QDeclarativeComponent failTwoComponent(&engine, TEST_FILE("jsimportfail/failTwo.qml"));
+    expectedWarning = QLatin1String("file://") + TEST_FILE("jsimportfail/failTwo.qml").toLocalFile() + QLatin1String(":6: ReferenceError: Can't find variable: ImportOneJs");
+    QTest::ignoreMessage(QtWarningMsg, expectedWarning.toAscii().constData());
     object = failTwoComponent.create();
     QVERIFY(object != 0);
     QVERIFY(object->property("importScriptFunctionValue").toString().isEmpty());
     delete object;
     QDeclarativeComponent failThreeComponent(&engine, TEST_FILE("jsimportfail/failThree.qml"));
+    expectedWarning = QLatin1String("file://") + TEST_FILE("jsimportfail/failThree.qml").toLocalFile() + QLatin1String(":7: TypeError: Result of expression 'testQtObject.TestModuleImport.JsQtTest' [undefined] is not an object.");
+    QTest::ignoreMessage(QtWarningMsg, expectedWarning.toAscii().constData());
     object = failThreeComponent.create();
     QVERIFY(object != 0);
     QCOMPARE(object->property("importedModuleAttachedPropertyValue"), QVariant(false));
     delete object;
     QDeclarativeComponent failFourComponent(&engine, TEST_FILE("jsimportfail/failFour.qml"));
+    expectedWarning = QLatin1String("file://") + TEST_FILE("jsimportfail/failFour.qml").toLocalFile() + QLatin1String(":6: ReferenceError: Can't find variable: JsQtTest");
+    QTest::ignoreMessage(QtWarningMsg, expectedWarning.toAscii().constData());
     object = failFourComponent.create();
     QVERIFY(object != 0);
     QCOMPARE(object->property("importedModuleEnumValue"), QVariant(0));
     delete object;
     QDeclarativeComponent failFiveComponent(&engine, TEST_FILE("jsimportfail/failFive.qml"));
+    expectedWarning = QLatin1String("file://") + TEST_FILE("jsimportfail/importWithImports.js").toLocalFile() + QLatin1String(":8: ReferenceError: Can't find variable: Component");
+    QTest::ignoreMessage(QtWarningMsg, expectedWarning.toAscii().constData());
+    expectedWarning = QLatin1String("file://") + TEST_FILE("jsimportfail/importPragmaLibrary.js").toLocalFile() + QLatin1String(":6: ReferenceError: Can't find variable: Component");
+    QTest::ignoreMessage(QtWarningMsg, expectedWarning.toAscii().constData());
     object = failFiveComponent.create();
     QVERIFY(object != 0);
     QCOMPARE(object->property("componentError"), QVariant(0));
