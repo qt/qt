@@ -49,6 +49,8 @@ int startTime() const
     return m_startTime;
 }
 
+int count(){ return m_particle_count; }
+
 signals:
 
 void runningChanged(bool arg);

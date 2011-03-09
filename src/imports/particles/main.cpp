@@ -16,6 +16,8 @@
 #include "zoneaffector.h"
 #include "toggleaffector.h"
 #include "spritegoalaffector.h"
+#include "swarmaffector.h"
+#include "turbulenceaffector.h"
 #include "particlesystem.h"
 #include "particleemitter.h"
 //#include "spriteemitter.h"
@@ -70,6 +72,8 @@ void ParticlesPlugin::registerTypes(const char *uri)
     qmlRegisterType<ToggleAffector>(uri, 2, 0, "Toggle");
     qmlRegisterType<KillAffector>(uri, 2, 0, "Kill");
     qmlRegisterType<SpriteGoalAffector>(uri, 2, 0, "SpriteGoal");
+    qmlRegisterType<SwarmAffector>(uri, 2, 0 , "Swarm");
+    qmlRegisterType<TurbulenceAffector>(uri, 2, 0 , "Turbulence");
 }
 
 Q_EXPORT_PLUGIN2(Particles, ParticlesPlugin);

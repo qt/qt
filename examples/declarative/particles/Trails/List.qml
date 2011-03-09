@@ -51,7 +51,7 @@ Rectangle {
     color: "black"
     ParticleSystem{
         id: particles
-        z: 100
+        z: 10
         ColoredParticle{
             image: "content/star.png"
             color: "white"
@@ -91,13 +91,16 @@ Rectangle {
             width: 200; height: 50
             color: "#333366"
             y: listView.currentItem.y;
-            Behavior on y { SpringAnimation { spring: 2; damping: 0.1 } }
+            //Behavior on y { SpringAnimation { spring: 2; damping: 0.1 } }
+            Behavior on y { NumberAnimation {id: anim} }
             TrailEmitter{
                 anchors.fill: parent
                 system: particles;
-                particlesPerSecond: 500
-                particleDuration: 500
-                particleSize: 20
+                emitting: anim.running
+                particlesPerSecond: 600
+                particleDuration: 600
+                particleSize: 16
+                particleEndSize: 8
             }
         }
     }
