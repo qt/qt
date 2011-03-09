@@ -67,6 +67,15 @@ static QString winIso3116CtryName(LCID id = LOCALE_USER_DEFAULT);
 #ifndef MUI_LANGUAGE_NAME
 #define MUI_LANGUAGE_NAME 0x8
 #endif
+#ifndef LOCALE_SSHORTESTDAYNAME1
+#  define LOCALE_SSHORTESTDAYNAME1 0x0060
+#  define LOCALE_SSHORTESTDAYNAME2 0x0061
+#  define LOCALE_SSHORTESTDAYNAME3 0x0062
+#  define LOCALE_SSHORTESTDAYNAME4 0x0063
+#  define LOCALE_SSHORTESTDAYNAME5 0x0064
+#  define LOCALE_SSHORTESTDAYNAME6 0x0065
+#  define LOCALE_SSHORTESTDAYNAME7 0x0066
+#endif
 
 struct QSystemLocalePrivate
 {
@@ -257,11 +266,19 @@ QVariant QSystemLocalePrivate::dayName(int day, QLocale::FormatType type)
             LOCALE_SDAYNAME3, LOCALE_SDAYNAME4, LOCALE_SDAYNAME5,
             LOCALE_SDAYNAME6, LOCALE_SDAYNAME7 };
 
+    static const LCTYPE narrow_day_map[]
+        = { LOCALE_SSHORTESTDAYNAME1, LOCALE_SSHORTESTDAYNAME2,
+            LOCALE_SSHORTESTDAYNAME3, LOCALE_SSHORTESTDAYNAME4,
+            LOCALE_SSHORTESTDAYNAME5, LOCALE_SSHORTESTDAYNAME6,
+            LOCALE_SSHORTESTDAYNAME7 };
+
     day -= 1;
 
-    LCTYPE lctype = (type == QLocale::ShortFormat || type == QLocale::NarrowFormat)
-                    ? short_day_map[day] : long_day_map[day];
-    return getLocaleInfo(lctype);
+    if (type == QLocale::LongFormat)
+        return getLocaleInfo(long_day_map[day]);
+    else if (type == QLocale::NarrowFormat && QSysInfo::windowsVersion() >= QSysInfo::WV_VISTA)
+        return getLocaleInfo(narrow_day_map[day]);
+    return getLocaleInfo(short_day_map[day]);
 }
 
 QVariant QSystemLocalePrivate::monthName(int month, QLocale::FormatType type)
