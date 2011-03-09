@@ -45,101 +45,105 @@
 #include "qreadwritelock.h"
 #include "qatomic.h"
 #include "qstring.h"
+#include "qelapsedtimer"
 
 #include "qmutex_p.h"
 #include "qreadwritelock_p.h"
-
-#include <errno.h>
 
 #ifndef QT_NO_THREAD
 
 QT_BEGIN_NAMESPACE
 
-static void report_error(int code, const char *where, const char *what)
+static void report_error(int err, const char *where, const char *what)
 {
-    if (code != 0)
-        qWarning("%s: %s failure: %s", where, what, qPrintable(qt_error_string(code)));
+    if (err != KErrNone)
+        qWarning("%s: %s failure: %d", where, what, err);
 }
 
 class QWaitConditionPrivate {
 public:
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
+    RMutex mutex;
+    RCondVar cond;
     int waiters;
     int wakeups;
 
+    QWaitConditionPrivate()
+    : waiters(0), wakeups(0)
+    {
+        qt_symbian_throwIfError(mutex.CreateLocal());
+        int err = cond.CreateLocal();
+        if (err != KErrNone) {
+            mutex.Close();
+            qt_symbian_throwIfError(err);
+        }
+    }
+
+    ~QWaitConditionPrivate()
+    {
+        cond.Close();
+        mutex.Close();
+    }
+
     bool wait(unsigned long time)
     {
-        int code;
-        forever {
-            if (time != ULONG_MAX) {
-                struct timeval tv;
-                gettimeofday(&tv, 0);
-
-                timespec ti;
-                ti.tv_nsec = (tv.tv_usec + (time % 1000) * 1000) * 1000;
-                ti.tv_sec = tv.tv_sec + (time / 1000) + (ti.tv_nsec / 1000000000);
-                ti.tv_nsec %= 1000000000;
-
-                code = pthread_cond_timedwait(&cond, &mutex, &ti);
-            } else {
-                code = pthread_cond_wait(&cond, &mutex);
-            }
-            if (code == 0 && wakeups == 0) {
-                // many vendors warn of spurios wakeups from
-                // pthread_cond_wait(), especially after signal delivery,
-                // even though POSIX doesn't allow for it... sigh
-                continue;
-            }
-            break;
+        TInt err = KErrNone;
+        if (time == ULONG_MAX) {
+            // untimed wait, loop because RCondVar::Wait may return before the condition is triggered
+            do {
+                err = cond.Wait(mutex);
+            } while (err == KErrNone && wakeups == 0);
+        } else {
+            unsigned long maxWait = KMaxTInt / 1000;
+            QElapsedTimer waitTimer;
+            do {
+                waitTimer.start();
+                unsigned long waitTime = qMin(maxWait, time);
+                // wait at least 1ms, as 0 means no wait
+                err = cond.TimedWait(mutex, qMax(1ul, waitTime) * 1000);
+                // RCondVar::TimedWait may return before the condition is triggered, update the timeout with actual wait time
+                time -= qMin((unsigned long)waitTimer.elapsed(), waitTime);
+            } while ((err == KErrNone && wakeups == 0) || (err == KErrTimedOut && time > 0));
         }
 
         Q_ASSERT_X(waiters > 0, "QWaitCondition::wait", "internal error (waiters)");
         --waiters;
-        if (code == 0) {
+        if (err == KErrNone) {
             Q_ASSERT_X(wakeups > 0, "QWaitCondition::wait", "internal error (wakeups)");
             --wakeups;
         }
-        report_error(pthread_mutex_unlock(&mutex), "QWaitCondition::wait()", "mutex unlock");
 
-        if (code && code != ETIMEDOUT)
-            report_error(code, "QWaitCondition::wait()", "cv wait");
+        mutex.Signal();
 
-        return (code == 0);
+        if (err && err != KErrTimedOut)
+            report_error(err, "QWaitCondition::wait()", "cv wait");
+        return err == KErrNone;
     }
 };
-
 
 QWaitCondition::QWaitCondition()
 {
     d = new QWaitConditionPrivate;
-    report_error(pthread_mutex_init(&d->mutex, NULL), "QWaitCondition", "mutex init");
-    report_error(pthread_cond_init(&d->cond, NULL), "QWaitCondition", "cv init");
-    d->waiters = d->wakeups = 0;
 }
-
 
 QWaitCondition::~QWaitCondition()
 {
-    report_error(pthread_cond_destroy(&d->cond), "QWaitCondition", "cv destroy");
-    report_error(pthread_mutex_destroy(&d->mutex), "QWaitCondition", "mutex destroy");
     delete d;
 }
 
 void QWaitCondition::wakeOne()
 {
-    report_error(pthread_mutex_lock(&d->mutex), "QWaitCondition::wakeOne()", "mutex lock");
+    d->mutex.Wait();
     d->wakeups = qMin(d->wakeups + 1, d->waiters);
-    report_error(pthread_cond_signal(&d->cond), "QWaitCondition::wakeOne()", "cv signal");
-    report_error(pthread_mutex_unlock(&d->mutex), "QWaitCondition::wakeOne()", "mutex unlock");
+    d->cond.Signal();
+    d->mutex.Signal();
 }
 
 void QWaitCondition::wakeAll()
 {
-    report_error(pthread_mutex_lock(&d->mutex), "QWaitCondition::wakeAll()", "mutex lock");
+    d->mutex.Wait();
     d->wakeups = d->waiters;
-    report_error(pthread_cond_broadcast(&d->cond), "QWaitCondition::wakeAll()", "cv broadcast");
-    report_error(pthread_mutex_unlock(&d->mutex), "QWaitCondition::wakeAll()", "mutex unlock");
+    d->cond.Broadcast();
+    d->mutex.Signal();
 }
 
 bool QWaitCondition::wait(QMutex *mutex, unsigned long time)
@@ -151,7 +155,7 @@ bool QWaitCondition::wait(QMutex *mutex, unsigned long time)
         return false;
     }
 
-    report_error(pthread_mutex_lock(&d->mutex), "QWaitCondition::wait()", "mutex lock");
+    d->mutex.Wait();
     ++d->waiters;
     mutex->unlock();
 
@@ -171,7 +175,7 @@ bool QWaitCondition::wait(QReadWriteLock *readWriteLock, unsigned long time)
         return false;
     }
 
-    report_error(pthread_mutex_lock(&d->mutex), "QWaitCondition::wait()", "mutex lock");
+    d->mutex.Wait();
     ++d->waiters;
 
     int previousAccessCount = readWriteLock->d->accessCount;
