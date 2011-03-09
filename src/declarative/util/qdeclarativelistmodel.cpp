@@ -143,7 +143,7 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
     \section1 Modifying List Models
 
     The content of a ListModel may be created and modified using the clear(),
-    append(), set() and setProperty() methods.  For example:
+    append(), set(), insert() and setProperty() methods.  For example:
 
     \snippet doc/src/snippets/declarative/listmodel-modify.qml delegate
 
