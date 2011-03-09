@@ -1156,14 +1156,12 @@ void tst_qdeclarativetext::lineHeight()
     QVERIFY(myText->lineHeightMode() == QDeclarativeText::ProportionalHeight);
 
     qreal h = myText->height();
-    int lc = myText->lineCount();
-    qreal lh = myText->height() / lc;
     myText->setLineHeight(1.5);
-    QVERIFY(qAbs(myText->height() - (((lc-1) * lh * 1.5) + lh)) < 1.0);
+    QVERIFY(myText->height() == h * 1.5);
 
     myText->setLineHeightMode(QDeclarativeText::FixedHeight);
     myText->setLineHeight(20);
-    QCOMPARE(myText->height(), ((lc-1) * 20.0) + lh);
+    QCOMPARE(myText->height(), myText->lineCount() * 20.0);
 
     myText->setText("Lorem ipsum sit <b>amet</b>, consectetur adipiscing elit. Integer felis nisl, varius in pretium nec, venenatis non erat. Proin lobortis interdum dictum.");
     myText->setLineHeightMode(QDeclarativeText::ProportionalHeight);

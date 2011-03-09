@@ -452,6 +452,7 @@ QRect QDeclarativeTextPrivate::setupTextLayout()
         br = br.united(line.naturalTextRect());
         height += (lineHeightMode == QDeclarativeText::FixedHeight) ? lineHeight : line.height() * lineHeight;
     }
+    br.setHeight(height);
 
     if (!q->widthValid())
         naturalWidth = br.width();
