@@ -1086,6 +1086,7 @@ bool QSGCanvasPrivate::deliverInitialMousePressEvent(QSGItem *item, QGraphicsSce
             q->sendEvent(item, event);
             if (event->isAccepted()) 
                 return true;
+            mouseGrabberItem->ungrabMouse();
             mouseGrabberItem = 0;
         }
     }

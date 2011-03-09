@@ -118,6 +118,7 @@ void QSGTextPrivate::init()
 QSGTextDocumentWithImageResources::QSGTextDocumentWithImageResources(QSGText *parent) 
 : QTextDocument(parent), outstanding(0)
 {
+    setUndoRedoEnabled(false);
 }
 
 QSGTextDocumentWithImageResources::~QSGTextDocumentWithImageResources()
@@ -235,6 +236,16 @@ void QSGTextPrivate::updateLayout()
         } else {
             singleline = false;
             QDeclarativeStyledText::parse(text, layout);
+        }
+    } else {
+        ensureDoc();
+        QTextBlockFormat::LineHeightTypes type;
+        type = lineHeightMode == QSGText::FixedHeight ? QTextBlockFormat::FixedHeight : QTextBlockFormat::ProportionalHeight;
+        QTextBlockFormat blockFormat;
+        blockFormat.setLineHeight((lineHeightMode == QSGText::FixedHeight ? lineHeight : lineHeight * 100), type);
+        for (QTextBlock it = doc->begin(); it != doc->end(); it = it.next()) {
+            QTextCursor cursor(it);
+            cursor.setBlockFormat(blockFormat);
         }
     }
 
