@@ -440,7 +440,8 @@ void DitaXmlGenerator::initializeGenerator(const Config &config)
                                               Config::dot +
                                               DITAXMLGENERATOR_CUSTOMHEADELEMENTS);
     codeIndent = config.getInt(CONFIG_CODEINDENT);
-
+    version = config.getString(CONFIG_VERSION);
+    vrm = version.split(".");
 }
 
 /*!
@@ -5536,9 +5537,9 @@ void DitaXmlGenerator::writeDitaMap()
 
   \list
     \o <audience>
-    \o <author>
+    \o <author> *
     \o <brand>
-    \o <category>
+    \o <category> *
     \o <compomnent>
     \o <copyrholder>
     \o <copyright>
@@ -5547,13 +5548,13 @@ void DitaXmlGenerator::writeDitaMap()
     \o <critdates>
     \o <keyword>
     \o <keywords>
-    \o <metadata>
+    \o <metadata> *
     \o <othermeta>
     \o <permissions>
     \o <platform>
     \o <prodinfo>
     \o <prodname>
-    \o <prolog>
+    \o <prolog> *
     \o <publisher>
     \o <resourceid>
     \o <revised>
@@ -5563,6 +5564,8 @@ void DitaXmlGenerator::writeDitaMap()
     \o <vrm>
     \o <vrmlist>
   \endlist
+
+  \node * means the tag has been used.
   
  */
 void
@@ -5610,6 +5613,24 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
     }
     xmlWriter().writeCharacters(category);
     writeEndTag(); // <category>
+    if (vrm.size() > 0) {
+        qDebug() << "VRM" << vrm;
+        writeStartTag(DT_prodinfo);
+        writeStartTag(DT_prodname);
+        xmlWriter().writeCharacters(projectDescription);
+        writeEndTag(); // <prodname>
+        writeStartTag(DT_vrmlist);
+        writeStartTag(DT_vrm);
+        if (vrm.size() > 0)
+            xmlWriter().writeAttribute("version",vrm[0]);
+        if (vrm.size() > 1)
+            xmlWriter().writeAttribute("release",vrm[1]);
+        if (vrm.size() > 2)
+            xmlWriter().writeAttribute("modification",vrm[2]);
+        writeEndTag(); // <vrm>
+        writeEndTag(); // <vrmlist>
+        writeEndTag(); // <prodinfo>
+    }
     writeEndTag(); // <metadata>
     writeEndTag(); // <prolog>
 }
