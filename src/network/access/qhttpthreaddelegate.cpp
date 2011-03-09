@@ -142,8 +142,13 @@ class QNetworkAccessCachedHttpConnection: public QHttpNetworkConnection,
 {
     // Q_OBJECT
 public:
+#ifdef QT_NO_BEARERMANAGEMENT
     QNetworkAccessCachedHttpConnection(const QString &hostName, quint16 port, bool encrypt)
         : QHttpNetworkConnection(hostName, port, encrypt)
+#else
+    QNetworkAccessCachedHttpConnection(const QString &hostName, quint16 port, bool encrypt, QSharedPointer<QNetworkSession> networkSession)
+        : QHttpNetworkConnection(hostName, port, encrypt, /*parent=*/0, networkSession)
+#endif
     {
         setExpires(true);
         setShareable(true);
@@ -250,7 +255,11 @@ void QHttpThreadDelegate::startRequest()
     if (httpConnection == 0) {
         // no entry in cache; create an object
         // the http object is actually a QHttpNetworkConnection
+#ifdef QT_NO_BEARERMANAGEMENT
         httpConnection = new QNetworkAccessCachedHttpConnection(urlCopy.host(), urlCopy.port(), ssl);
+#else
+        httpConnection = new QNetworkAccessCachedHttpConnection(urlCopy.host(), urlCopy.port(), ssl, networkSession);
+#endif
 #ifndef QT_NO_OPENSSL
         // Set the QSslConfiguration from this QNetworkRequest.
         if (ssl) {
