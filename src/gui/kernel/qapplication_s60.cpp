@@ -405,6 +405,7 @@ QSymbianControl::QSymbianControl(QWidget *w)
     , m_longTapDetector(0)
     , m_ignoreFocusChanged(0)
     , m_symbianPopupIsOpen(0)
+    , m_inExternalScreenOverride(false)
 {
 }
 
@@ -412,9 +413,11 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
 {
     if (!desktop)
     {
-        if (isWindowOwning || !qwidget->parentWidget())
-            CreateWindowL(S60->windowGroup());
-        else
+        if (isWindowOwning || !qwidget->parentWidget()
+            || qwidget->parentWidget()->windowType() == Qt::Desktop) {
+            RWindowGroup &wg(S60->windowGroup(qwidget));
+            CreateWindowL(wg);
+        } else {
             /**
              * TODO: in order to avoid creating windows for all ancestors of
              * this widget up to the root window, the parameter passed to
@@ -424,6 +427,7 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
              * is created for a widget between this one and the root window.
              */
             CreateWindowL(qwidget->parentWidget()->winId());
+        }
 
         // Necessary in order to be able to track the activation status of
         // the control's window
@@ -456,7 +460,7 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
             windowPurpose = ETfxPurposeSplashScreenWindow;
             break;
         default:
-            windowPurpose = (isWindowOwning || !qwidget->parentWidget())
+            windowPurpose = (isWindowOwning || !qwidget->parentWidget() || qwidget->parentWidget()->windowType() == Qt::Desktop)
                             ? ETfxPurposeWindow : ETfxPurposeChildWindow;
             break;
         }
@@ -987,14 +991,15 @@ TKeyResponse QSymbianControl::handleVirtualMouse(const TKeyEvent& keyEvent,TEven
                 }
             }
             //clip to screen size (window server allows a sprite hotspot to be outside the screen)
+            int screenNumber = S60->screenNumberForWidget(qwidget);
             if (x < 0)
                 x = 0;
-            else if (x >= S60->screenWidthInPixels)
-                x = S60->screenWidthInPixels - 1;
+            else if (x >= S60->screenWidthInPixelsForScreen[screenNumber])
+                x = S60->screenWidthInPixelsForScreen[screenNumber] - 1;
             if (y < 0)
                 y = 0;
-            else if (y >= S60->screenHeightInPixels)
-                y = S60->screenHeightInPixels - 1;
+            else if (y >= S60->screenHeightInPixelsForScreen[screenNumber])
+                y = S60->screenHeightInPixelsForScreen[screenNumber] - 1;
             TPoint epos(x, y);
             TPoint cpos = epos - PositionRelativeToScreen();
             fakeEvent.iPosition = cpos;
@@ -1171,6 +1176,18 @@ void QSymbianControl::SizeChanged()
     QSize newSize(Size().iWidth, Size().iHeight);
 
     if (oldSize != newSize) {
+        const bool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
+        const int screenNumber = S60->screenNumberForWidget(qwidget);
+        if (!m_inExternalScreenOverride && isFullscreen && screenNumber > 0) {
+            int screenWidth = S60->screenWidthInPixelsForScreen[screenNumber];
+            int screenHeight = S60->screenHeightInPixelsForScreen[screenNumber];
+            TSize screenSize(screenWidth, screenHeight);
+            if (screenWidth > 0 && screenHeight > 0 && screenSize != Size()) {
+                m_inExternalScreenOverride = true;
+                SetExtent(TPoint(0, 0), screenSize);
+                return;
+            }
+        }
         QRect cr = qwidget->geometry();
         cr.setSize(newSize);
         qwidget->data->crect = cr;
@@ -1192,6 +1209,8 @@ void QSymbianControl::SizeChanged()
             }
         }
     }
+
+    m_inExternalScreenOverride = false;
 
     // CCoeControl::SetExtent calls SizeChanged, but does not call
     // PositionChanged, so we call it here to ensure that the widget's
@@ -2035,7 +2054,8 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
             return 1;
         }
         break;
-    case EEventScreenDeviceChanged:
+    case EEventScreenDeviceChanged: // fallthrough
+    case EEventDisplayChanged:
         if (callSymbianEventFilters(symbianEvent))
             return 1;
         if (S60)

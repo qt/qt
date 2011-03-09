@@ -2454,6 +2454,8 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #  define Q_SYMBIAN_TRANSITION_EFFECTS
 #endif
 
+#ifdef SYMBIAN_WSERV_AND_CONE_MULTIPLE_SCREENS
+#define Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS
 #endif
 
 //Symbian does not support data imports from a DLL
