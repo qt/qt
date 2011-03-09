@@ -2055,7 +2055,9 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
         }
         break;
     case EEventScreenDeviceChanged: // fallthrough
+#if defined(Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS)
     case EEventDisplayChanged:
+#endif
         if (callSymbianEventFilters(symbianEvent))
             return 1;
         if (S60)

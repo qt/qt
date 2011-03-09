@@ -129,10 +129,12 @@ void QDesktopWidgetPrivate::init(QDesktopWidget *that)
     // valid or not.
 
     screenCount = S60->screenCount();
+#if defined(Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS)
     if (displayControl) {
         if (displayControl->NumberOfResolutions() < 1)
             screenCount = 1;
     }
+#endif
     if (screenCount < 1) {
         qWarning("No screen available");
         screenCount = 1;
@@ -147,7 +149,7 @@ void QDesktopWidgetPrivate::init(QDesktopWidget *that)
     screens->resize(screenCount);
 
     for (int i = 0; i < screenCount; ++i) {
-        // All screens will share the same geometry as there is no true virtual desktop
+        // All screens will have a position of (0, 0) as there is no true virtual desktop
         // or pointer event support for multiple screens on Symbian.
         QRect r(0, 0,
             S60->screenWidthInPixelsForScreen[i], S60->screenHeightInPixelsForScreen[i]);
