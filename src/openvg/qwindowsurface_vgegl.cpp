@@ -768,6 +768,11 @@ bool QVGEGLWindowSurfaceDirect::scroll(QWidget *widget, const QRegion& area, int
         context->lazyDoneCurrent();
         return true;
     }
+#else
+    Q_UNUSED(widget);
+    Q_UNUSED(area);
+    Q_UNUSED(dx);
+    Q_UNUSED(dy);
 #endif
     return false;
 }

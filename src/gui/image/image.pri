@@ -30,7 +30,8 @@ HEADERS += \
         image/qpixmapfilter_p.h \
         image/qimagepixmapcleanuphooks_p.h \
         image/qvolatileimage_p.h \
-        image/qvolatileimagedata_p.h
+        image/qvolatileimagedata_p.h \
+        image/qnativeimagehandleprovider_p.h
 
 SOURCES += \
         image/qbitmap.cpp \

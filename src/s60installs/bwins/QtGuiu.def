@@ -12980,4 +12980,5 @@ EXPORTS
 	??0QVolatileImage@@QAE@ABV0@@Z @ 12979 NONAME ; QVolatileImage::QVolatileImage(class QVolatileImage const &)
 	?depth@QVolatileImage@@QBEHXZ @ 12980 NONAME ; int QVolatileImage::depth(void) const
 	?releaseCachedResources@QGraphicsSystem@@UAEXXZ @ 12981 NONAME ; void QGraphicsSystem::releaseCachedResources(void)
+	?qt_s60_setPartialScreenInputMode@@YAX_N@Z @ 12982 NONAME ; void qt_s60_setPartialScreenInputMode(bool)
 
