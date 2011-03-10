@@ -244,7 +244,7 @@ void QSGCanvas::showEvent(QShowEvent *e)
     } else {
         makeCurrent();
 
-        if (!d->context) {
+        if (!d->context || !d->context->isReady()) {
             d->initializeSceneGraph();
             d->animationDriver = new QSGAnimationDriver(this, this);
         }
