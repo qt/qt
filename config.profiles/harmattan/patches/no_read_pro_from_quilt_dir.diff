@@ -1,0 +1,13 @@
+Index: qt-maemo-qtp/configure
+===================================================================
+--- qt-maemo-qtp.orig/configure
++++ qt-maemo-qtp/configure
+@@ -8465,7 +8465,7 @@
+ # .projects.3    -> the rest
+ rm -f .projects .projects.1 .projects.2 .projects.3
+ 
+-QMAKE_PROJECTS=`find "$relpath/." -name '*.pro' -print | sed 's-/\./-/-'`
++QMAKE_PROJECTS=`find "$relpath/." -name '*.pro' -a ! -path '*/.pc/*' -print | sed 's-/\./-/-'`
+ if [ -z "$AWK" ]; then
+     for p in `echo $QMAKE_PROJECTS`; do
+         echo "$p" >> .projects

@@ -1,0 +1,21 @@
+Index: qt-maemo-qtp/tests/auto/qvariant/tst_qvariant.cpp
+===================================================================
+--- qt-maemo-qtp.orig/tests/auto/qvariant/tst_qvariant.cpp
++++ qt-maemo-qtp/tests/auto/qvariant/tst_qvariant.cpp
+@@ -3122,6 +3122,7 @@
+ 
+ void tst_QVariant::numericalConvert()
+ {
++    int low_int = 3;
+     QVariant vfloat(float(5.3));
+     QVariant vdouble(double(5.3));
+     QVariant vreal(qreal(5.3));
+@@ -3137,7 +3138,7 @@
+ 
+     for(int i = 0; i < vect.size(); i++) {
+         double num = 5.3;
+-        if (i >= 3 && i <= 7)
++        if (i >= low_int && i <= 7)
+             num = 5;
+         QVariant *v = vect.at(i);
+         QCOMPARE(v->toFloat() , float(num));
