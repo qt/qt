@@ -34,8 +34,8 @@ The Guitar Tuner application can be used to tune guitar strings by analyzing the
 audio recorded by the device microphone. Guitar Tuner can be also used in the
 listening mode. It will then play the audio by the corresponding frequency, and
 the user can tune the guitar by ear. The application demonstrates the audio-in
-and the audio-out interfaces of 
-\l{external: Mobility Multimedia}{Qt Mobility Multimedia} and integrating Qt 
+and the audio-out interfaces of
+\l{external: Mobility Multimedia}{Qt Mobility Multimedia} and integrating Qt
 code to the Qt Quick UI.
 
     The example is hosted in Projects Forum Nokia: https://projects.forum.nokia.com/guitartuner

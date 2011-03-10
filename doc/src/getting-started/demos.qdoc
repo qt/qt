@@ -39,7 +39,7 @@
     \l{Qt Examples} and are used to highlight certain features of
     Qt.
 
-    \table 
+    \table
     \header
     \o {2,1} Getting an Overview
     \row
@@ -56,7 +56,7 @@
 
     \keyword qt-mobile-demos
     \section1 Mobile Applications
-    These are demonstrations of some of the capabilities of \l{Qt Quick} and 
+    These are demonstrations of some of the capabilities of \l{Qt Quick} and
     \l{external: Qt Mobility Manual}{Mobility} to create feature rich mobile
     applications.
     \list
@@ -116,19 +116,19 @@
     \list
     \o \l{demos/mainwindow}{Main Window} shows Qt's extensive support for main window
        features, such as tool bars, dock windows, and menus.
-    \o \l{demos/macmainwindow}{Mac Main Window} shows how to create main window applications that has 
+    \o \l{demos/macmainwindow}{Mac Main Window} shows how to create main window applications that has
       the same appearance as other Mac OS X applications.
     \endlist
 
     \section1 Graphics View
 
     \list
-    \o \l{demos/chip}{40000 Chips} uses the \l{Graphics View Framework} to 
-       efficiently display a large number of individual graphical items on 
-       a scrolling canvas and highlighting features including rotation, 
+    \o \l{demos/chip}{40000 Chips} uses the \l{Graphics View Framework} to
+       efficiently display a large number of individual graphical items on
+       a scrolling canvas and highlighting features including rotation,
        zooming, level of detail control, and item selection.
-    \o \l{demos/embeddeddialogs}{Embedded Dialogs} showcases Qt 4.4's 
-       \e{Widgets on the Canvas} feature by embedding several 
+    \o \l{demos/embeddeddialogs}{Embedded Dialogs} showcases Qt 4.4's
+       \e{Widgets on the Canvas} feature by embedding several
        fully-functional dialogs in a scene.
     \o \l{demos/boxes}{Boxes} showcases Qt's OpenGL support and the
        integration with the \l{Graphics View Framework}.
