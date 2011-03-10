@@ -1889,7 +1889,7 @@ void tst_QScriptValue::getSetProperty_gettersAndSetters()
         QCOMPARE(object.propertyFlags("foo") & ~QScriptValue::UserRange,
                  QScriptValue::PropertyGetter );
 
-        QEXPECT_FAIL("", "User-range flags are not retained for getter/setter properties", Continue);
+        QEXPECT_FAIL("", "QTBUG-17615: User-range flags are not retained for getter/setter properties", Continue);
         QCOMPARE(object.propertyFlags("foo"),
                  QScriptValue::PropertyGetter | QScriptValue::UserRange);
         object.setProperty("x", num);
@@ -2213,9 +2213,9 @@ void tst_QScriptValue::getSetProperty()
     }
     // should still be deletable from C++
     object.setProperty("undeletableProperty", QScriptValue());
-    QEXPECT_FAIL("", "With JSC-based back-end, undeletable properties can't be deleted from C++", Continue);
+    QEXPECT_FAIL("", "QTBUG-17617: With JSC-based back-end, undeletable properties can't be deleted from C++", Continue);
     QVERIFY(!object.property("undeletableProperty").isValid());
-    QEXPECT_FAIL("", "With JSC-based back-end, undeletable properties can't be deleted from C++", Continue);
+    QEXPECT_FAIL("", "QTBUG-17617: With JSC-based back-end, undeletable properties can't be deleted from C++", Continue);
     QCOMPARE(object.propertyFlags("undeletableProperty"), 0);
 
   // SkipInEnumeration

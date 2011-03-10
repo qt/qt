@@ -78,6 +78,7 @@ QT_BEGIN_NAMESPACE
 extern void qt_mac_update_cursor(); // qcursor_mac.mm
 extern bool qt_sendSpontaneousEvent(QObject *, QEvent *); // qapplication.cpp
 extern QPointer<QWidget> qt_last_mouse_receiver; // qapplication_mac.cpp
+extern QPointer<QWidget> qt_last_native_mouse_receiver; // qt_cocoa_helpers_mac.mm
 extern OSViewRef qt_mac_nativeview_for(const QWidget *w); // qwidget_mac.mm
 extern OSViewRef qt_mac_effectiveview_for(const QWidget *w); // qwidget_mac.mm
 extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
@@ -461,6 +462,7 @@ static int qCocoaViewCount = 0;
         if (widgetUnderMouse == 0) {
             QApplicationPrivate::dispatchEnterLeave(0, qt_last_mouse_receiver);
             qt_last_mouse_receiver = 0;
+            qt_last_native_mouse_receiver = 0;
         }
     }
 }
@@ -795,7 +797,7 @@ static int qCocoaViewCount = 0;
 - (BOOL)resignFirstResponder
 {
     if (!qwidget)
-        return NO;
+        return YES;
 
     // Seems like the following test only triggers if this
     // view is inside a QMacNativeWidget:
@@ -981,7 +983,7 @@ static int qCocoaViewCount = 0;
     QString qtText;
     // Cursor position is retrived from the range.
     QList<QInputMethodEvent::Attribute> attrs;
-    attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, selRange.location, 1, QVariant());
+    attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, selRange.location + selRange.length, 1, QVariant());
     if ([aString isKindOfClass:[NSAttributedString class]]) {
         qtText = QCFString::toQString(reinterpret_cast<CFStringRef>([aString string]));
         composingLength = qtText.length();

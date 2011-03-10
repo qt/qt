@@ -1380,7 +1380,7 @@ EXPORTS
 	?create@QAbstractFileEngine@@SAPAV1@ABVQString@@@Z @ 1379 NONAME ; class QAbstractFileEngine * QAbstractFileEngine::create(class QString const &)
 	?create@QNonContiguousByteDeviceFactory@@SAPAVQNonContiguousByteDevice@@PAVQByteArray@@@Z @ 1380 NONAME ; class QNonContiguousByteDevice * QNonContiguousByteDeviceFactory::create(class QByteArray *)
 	?create@QNonContiguousByteDeviceFactory@@SAPAVQNonContiguousByteDevice@@PAVQIODevice@@@Z @ 1381 NONAME ; class QNonContiguousByteDevice * QNonContiguousByteDeviceFactory::create(class QIODevice *)
-	?create@QNonContiguousByteDeviceFactory@@SAPAVQNonContiguousByteDevice@@PAVQRingBuffer@@@Z @ 1382 NONAME ; class QNonContiguousByteDevice * QNonContiguousByteDeviceFactory::create(class QRingBuffer *)
+	?create@QNonContiguousByteDeviceFactory@@SAPAVQNonContiguousByteDevice@@PAVQRingBuffer@@@Z @ 1382 NONAME ABSENT ; class QNonContiguousByteDevice * QNonContiguousByteDeviceFactory::create(class QRingBuffer *)
 	?create@QSharedMemory@@QAE_NHW4AccessMode@1@@Z @ 1383 NONAME ; bool QSharedMemory::create(int, enum QSharedMemory::AccessMode)
 	?create@QTextCodecPlugin@@EAEPAVQTextCodec@@ABVQString@@@Z @ 1384 NONAME ; class QTextCodec * QTextCodecPlugin::create(class QString const &)
 	?create@QVariant@@IAEXHPBX@Z @ 1385 NONAME ; void QVariant::create(int, void const *)
@@ -4603,4 +4603,10 @@ EXPORTS
 	??XQPoint@@QAEAAV0@N@Z @ 4602 NONAME ; class QPoint & QPoint::operator*=(double)
 	??XQPoint@@QAEAAV0@H@Z @ 4603 NONAME ; class QPoint & QPoint::operator*=(int)
 	?hasError@QXmlStreamWriter@@QBE_NXZ @ 4604 NONAME ; bool QXmlStreamWriter::hasError(void) const
+	?revision@QMetaProperty@@QBEHXZ @ 4605 NONAME ; int QMetaProperty::revision(void) const
+	?revision@QMetaMethod@@QBEHXZ @ 4606 NONAME ; int QMetaMethod::revision(void) const
+	?started@QAnimationDriver@@MAEXXZ @ 4607 NONAME ; void QAnimationDriver::started(void)
+	?stopped@QAnimationDriver@@MAEXXZ @ 4608 NONAME ; void QAnimationDriver::stopped(void)
+	?isResetDisabled@QNonContiguousByteDevice@@QAE_NXZ @ 4609 NONAME ; bool QNonContiguousByteDevice::isResetDisabled(void)
+	?create@QNonContiguousByteDeviceFactory@@SAPAVQNonContiguousByteDevice@@V?$QSharedPointer@VQRingBuffer@@@@@Z @ 4610 NONAME ; class QNonContiguousByteDevice * QNonContiguousByteDeviceFactory::create(class QSharedPointer<class QRingBuffer>)
 

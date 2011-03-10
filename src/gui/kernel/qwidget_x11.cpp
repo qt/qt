@@ -1327,40 +1327,12 @@ QPoint QWidgetPrivate::mapFromGlobal(const QPoint &pos) const
 QPoint QWidget::mapToGlobal(const QPoint &pos) const
 {
     Q_D(const QWidget);
-    QPoint offset = data->crect.topLeft();
-    const QWidget *w = this;
-    const QWidget *p = w->parentWidget();
-    while (!w->isWindow() && p) {
-        w = p;
-        p = p->parentWidget();
-        offset += w->data->crect.topLeft();
-    }
-
-    const QWidgetPrivate *wd = w->d_func();
-    QTLWExtra *tlw = wd->topData();
-    if (!tlw->embedded)
-        return pos + offset;
-
     return d->mapToGlobal(pos);
 }
 
 QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 {
     Q_D(const QWidget);
-    QPoint offset = data->crect.topLeft();
-    const QWidget *w = this;
-    const QWidget *p = w->parentWidget();
-    while (!w->isWindow() && p) {
-        w = p;
-        p = p->parentWidget();
-        offset += w->data->crect.topLeft();
-    }
-
-    const QWidgetPrivate *wd = w->d_func();
-    QTLWExtra *tlw = wd->topData();
-    if (!tlw->embedded)
-        return pos - offset;
-
     return d->mapFromGlobal(pos);
 }
 
@@ -1524,7 +1496,7 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
                 || !QX11Info::appDefaultColormap(xinfo.screen())) {
                 // unknown DE or non-default visual/colormap, use 1bpp bitmap
                 if (!forceReset || !topData->iconPixmap)
-                    topData->iconPixmap = new QBitmap(qt_toX11Pixmap(icon.pixmap(QSize(64,64))));
+                    topData->iconPixmap = new QPixmap(qt_toX11Pixmap(QBitmap(icon.pixmap(QSize(64,64)))));
                 pixmap_handle = topData->iconPixmap->handle();
             } else {
                 // default depth, use a normal pixmap (even though this

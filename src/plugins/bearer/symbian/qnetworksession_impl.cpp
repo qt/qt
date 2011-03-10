@@ -1552,8 +1552,8 @@ void ConnectionProgressNotifier::StartNotifications()
 {
     if (!IsActive()) {
         SetActive();
+        iConnection.ProgressNotification(iProgress, iStatus);
     }
-    iConnection.ProgressNotification(iProgress, iStatus);
 }
 
 void ConnectionProgressNotifier::StopNotifications()
@@ -1569,10 +1569,10 @@ void ConnectionProgressNotifier::DoCancel()
 void ConnectionProgressNotifier::RunL()
 {
     if (iStatus == KErrNone) {
-        QT_TRYCATCH_LEAVING(iOwner.handleSymbianConnectionStatusChange(iProgress().iStage, iProgress().iError));
-    
         SetActive();
         iConnection.ProgressNotification(iProgress, iStatus);
+        // warning, this object may be deleted in the callback - do nothing after handleSymbianConnectionStatusChange
+        QT_TRYCATCH_LEAVING(iOwner.handleSymbianConnectionStatusChange(iProgress().iStage, iProgress().iError));
     }
 }
 

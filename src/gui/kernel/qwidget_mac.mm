@@ -186,6 +186,7 @@ extern void qt_mac_event_release(QWidget *w); //qapplication_mac.mm
 extern void qt_event_request_showsheet(QWidget *); //qapplication_mac.mm
 extern void qt_event_request_window_change(QWidget *); //qapplication_mac.mm
 extern QPointer<QWidget> qt_last_mouse_receiver; //qapplication_mac.mm
+extern QPointer<QWidget> qt_last_native_mouse_receiver; //qt_cocoa_helpers_mac.mm
 extern IconRef qt_mac_create_iconref(const QPixmap &); //qpixmap_mac.cpp
 extern void qt_mac_set_cursor(const QCursor *, const QPoint &); //qcursor_mac.mm
 extern void qt_mac_update_cursor(); //qcursor_mac.mm
@@ -3524,6 +3525,8 @@ void QWidgetPrivate::show_sys()
         qt_mac_getTargetForMouseEvent(0, QEvent::Enter, qlocal, qglobal, 0, &widgetUnderMouse);
         QApplicationPrivate::dispatchEnterLeave(widgetUnderMouse, qt_last_mouse_receiver);
         qt_last_mouse_receiver = widgetUnderMouse;
+        qt_last_native_mouse_receiver = widgetUnderMouse ?
+            (widgetUnderMouse->internalWinId() ? widgetUnderMouse : widgetUnderMouse->nativeParentWidget()) : 0;
     }
 #endif
 
@@ -3676,8 +3679,10 @@ void QWidgetPrivate::hide_sys()
         QPoint qlocal, qglobal;
         QWidget *widgetUnderMouse = 0;
         qt_mac_getTargetForMouseEvent(0, QEvent::Leave, qlocal, qglobal, 0, &widgetUnderMouse);
-        QApplicationPrivate::dispatchEnterLeave(widgetUnderMouse, qt_last_mouse_receiver);
+        QApplicationPrivate::dispatchEnterLeave(widgetUnderMouse, qt_last_native_mouse_receiver);
         qt_last_mouse_receiver = widgetUnderMouse;
+        qt_last_native_mouse_receiver = widgetUnderMouse ?
+            (widgetUnderMouse->internalWinId() ? widgetUnderMouse : widgetUnderMouse->nativeParentWidget()) : 0;
      }
 #endif
 

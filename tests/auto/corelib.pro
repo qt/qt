@@ -59,6 +59,7 @@ SUBDIRS=\
    qresourceengine \
    qringbuffer \
    qscopedpointer \
+   qscopedvaluerollback \
    qsemaphore \
    qsequentialanimationgroup \
    qset \

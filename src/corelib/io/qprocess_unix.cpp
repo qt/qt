@@ -645,7 +645,7 @@ void QProcessPrivate::startProcess()
     if (childPid < 0) {
         // Cleanup, report error and return
 #if defined (QPROCESS_DEBUG)
-        qDebug("qt_fork failed: %s", qt_error_string(lastForkErrno));
+        qDebug("qt_fork failed: %s", qPrintable(qt_error_string(lastForkErrno)));
 #endif
         processManager()->unlock();
         q->setProcessState(QProcess::NotRunning);
@@ -849,7 +849,7 @@ qint64 QProcessPrivate::writeToStdin(const char *data, qint64 maxlen)
     qDebug("QProcessPrivate::writeToStdin(%p \"%s\", %lld) == %lld",
            data, qt_prettyDebug(data, maxlen, 16).constData(), maxlen, written);
     if (written == -1)
-        qDebug("QProcessPrivate::writeToStdin(), failed to write (%s)", qt_error_string(errno));
+        qDebug("QProcessPrivate::writeToStdin(), failed to write (%s)", qPrintable(qt_error_string(errno)));
 #endif
     // If the O_NONBLOCK flag is set and If some data can be written without blocking
     // the process, write() will transfer what it can and return the number of bytes written.

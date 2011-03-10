@@ -744,7 +744,7 @@ void tst_QScriptClass::getAndSetPropertyFromCpp()
         QVERIFY(cls.lastQueryPropertyObject().strictlyEquals(obj1));
         QEXPECT_FAIL("", "Function propertyFlags hasn't beed implemented yet", Continue);
         QVERIFY(cls.lastQueryPropertyName() == foo2);
-        //QEXPECT_FAIL("", "classObject.getOwnPropertyDescriptor() reads the property value", Continue);
+        //QEXPECT_FAIL("", "QTBUG-17601: classObject.getOwnPropertyDescriptor() reads the property value", Continue);
         QVERIFY(!cls.lastPropertyObject().isValid());
         QEXPECT_FAIL("", "Function propertyFlags hasn't beed implemented yet", Continue);
         QVERIFY(cls.lastPropertyFlagsObject().strictlyEquals(obj1));

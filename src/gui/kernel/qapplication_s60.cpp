@@ -87,7 +87,7 @@
 #include <hal.h>
 #include <hal_data.h>
 
-#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#ifdef Q_SYMBIAN_TRANSITION_EFFECTS
 #include <graphics/wstfxconst.h>
 #endif
 
@@ -432,7 +432,7 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
         DrawableWindow()->SetPointerGrab(ETrue);
     }
 
-#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#ifdef Q_SYMBIAN_TRANSITION_EFFECTS
     if (OwnsWindow()) {
         TTfxWindowPurpose windowPurpose(ETfxPurposeNone);
         switch (qwidget->windowType()) {
@@ -1245,12 +1245,14 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
 #ifdef Q_WS_S60
         // If widget is fullscreen/minimized, hide status pane and button container otherwise show them.
         QWidget *const window = qwidget->window();
-        const bool visible = !(window->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
-        const bool statusPaneVisibility = visible;
-        const bool isFullscreen = window->windowState() & Qt::WindowFullScreen;
-        const bool cbaVisibilityHint = window->windowFlags() & Qt::WindowSoftkeysVisibleHint;
-        const bool buttonGroupVisibility = (visible || (isFullscreen && cbaVisibilityHint));
-        S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
+        if (!window->parentWidget()) { // Only top level native windows have control over cba/status pane
+            const bool decorationsVisible = !(window->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
+            const bool statusPaneVisibility = decorationsVisible;
+            const bool isFullscreen = window->windowState() & Qt::WindowFullScreen;
+            const bool cbaVisibilityHint = window->windowFlags() & Qt::WindowSoftkeysVisibleHint;
+            const bool buttonGroupVisibility = (decorationsVisible || (isFullscreen && cbaVisibilityHint));
+            S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
+        }
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
         bool focusedControlFound = false;
@@ -1545,6 +1547,8 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     repository = 0;
 #endif
 
+    qt_keymapper_private()->updateInputLanguage();
+
 #ifdef QT_KEYPAD_NAVIGATION
     if (touch) {
         QApplicationPrivate::navigationMode = Qt::NavigationModeNone;
@@ -1584,7 +1588,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     systemFont.setFamily(systemFont.defaultFamily());
     QApplicationPrivate::setSystemFont(systemFont);
 
-#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#ifdef Q_SYMBIAN_TRANSITION_EFFECTS
     QObject::connect(qApp, SIGNAL(aboutToQuit()), qApp, SLOT(_q_aboutToQuit()));
 #endif
 
@@ -1691,7 +1695,7 @@ bool QApplicationPrivate::modalState()
 
 void QApplicationPrivate::enterModal_sys(QWidget *widget)
 {
-#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#ifdef Q_SYMBIAN_TRANSITION_EFFECTS
     S60->wsSession().SendEffectCommand(ETfxCmdAppModalModeEnter);
 #endif
     if (widget) {
@@ -1709,7 +1713,7 @@ void QApplicationPrivate::enterModal_sys(QWidget *widget)
 
 void QApplicationPrivate::leaveModal_sys(QWidget *widget)
 {
-#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#ifdef Q_SYMBIAN_TRANSITION_EFFECTS
     S60->wsSession().SendEffectCommand(ETfxCmdAppModalModeExit);
 #endif
     if (widget) {
@@ -2092,6 +2096,13 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
         }
         break;
 #endif
+
+#ifdef Q_WS_S60
+    case KEikInputLanguageChange:
+        qt_keymapper_private()->updateInputLanguage();
+        break;
+#endif
+
     default:
         break;
     }
@@ -2390,7 +2401,7 @@ void QApplication::restoreOverrideCursor()
 
 void QApplicationPrivate::_q_aboutToQuit()
 {
-#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#ifdef Q_SYMBIAN_TRANSITION_EFFECTS
     // Send the shutdown tfx command
     S60->wsSession().SendEffectCommand(ETfxCmdAppShutDown);
 #endif

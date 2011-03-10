@@ -288,13 +288,16 @@ private:
 #else
     void readNode(QIODevice& f)
     {
-        uchar rw = f.getch();
-        uchar cl = f.getch();
+        char rw;
+        char cl;
+        f.getChar(&rw);
+        f.getChar(&cl);
         min = (rw << 8) | cl;
-        rw = f.getch();
-        cl = f.getch();
+        f.getChar(&rw);
+        f.getChar(&cl);
         max = (rw << 8) | cl;
-        int flags = f.getch();
+        char flags;
+        f.getChar(&flags);
         if ( flags & 1 )
             less = new QPFGlyphTree;
         else
@@ -332,7 +335,7 @@ private:
         int n = max-min+1;
         for (int i=0; i<n; i++) {
             glyph[i].metrics = new QPFGlyphMetrics;
-            f.readBlock((char*)glyph[i].metrics, sizeof(QPFGlyphMetrics));
+            f.read((char*)glyph[i].metrics, sizeof(QPFGlyphMetrics));
         }
         if ( less )
             less->readMetrics(f);
@@ -365,7 +368,7 @@ private:
             //############### s = qt_screen->mapToDevice( s );
             uint datasize = glyph[i].metrics->linestep * s.height();
             glyph[i].data = new uchar[datasize]; // ### deleted?
-            f.readBlock((char*)glyph[i].data, datasize);
+            f.read((char*)glyph[i].data, datasize);
         }
         if ( less )
             less->readData(f);
@@ -385,6 +388,32 @@ public:
     size_t mmapLength;
 };
 
+#if defined(Q_OS_INTEGRITY)
+static void *qt_mmap(void *start, size_t length, int /*prot*/, int /*flags*/, int fd, off_t offset)
+{
+    // INTEGRITY cannot mmap local files - load it into a local buffer
+    if (::lseek(fd, offset, SEEK_SET) == -1) {
+#  if defined(DEBUG_FONTENGINE)
+        perror("lseek failed");
+#  endif
+    }
+    void *buf = malloc(length);
+    if (::read(fd, buf, length) != (ssize_t)length) {
+#  if defined(DEBUG_FONTENGINE)
+        perror("read failed");
+#  endif
+    }
+
+    return buf;
+}
+#else
+static inline void *qt_mmap(void *start, size_t length, int prot, int flags, int fd, off_t offset)
+{
+    return mmap(start, length, prot, flags, fd, offset);
+}
+#endif
+
+
 
 QFontEngineQPF1::QFontEngineQPF1(const QFontDef&, const QString &fn)
 {
@@ -395,16 +424,18 @@ QFontEngineQPF1::QFontEngineQPF1(const QFontDef&, const QString &fn)
     QT_STATBUF st;
     if ( QT_FSTAT( f, &st ) )
         qFatal("Failed to stat %s",QFile::encodeName(fn).data());
-    uchar* data = (uchar*)mmap( 0, // any address
+    uchar* data = (uchar*)qt_mmap( 0, // any address
                                 st.st_size, // whole file
                                 PROT_READ, // read-only memory
-#if !defined(Q_OS_SOLARIS) && !defined(Q_OS_QNX4) && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_VXWORKS)
+#if defined(Q_OS_INTEGRITY)
+	                        0,
+#elif !defined(Q_OS_SOLARIS) && !defined(Q_OS_QNX4) && !defined(Q_OS_VXWORKS)
                                 MAP_FILE | MAP_PRIVATE, // swap-backed map from file
 #else
                                 MAP_PRIVATE,
 #endif
                                 f, 0 ); // from offset 0 of f
-#if defined(Q_OS_QNX4) && !defined(MAP_FAILED)
+#if !defined(MAP_FAILED) && (defined(Q_OS_QNX4) || defined(Q_OS_INTEGRITY))
 #define MAP_FAILED ((void *)-1)
 #endif
     if ( !data || data == (uchar*)MAP_FAILED )

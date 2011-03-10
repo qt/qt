@@ -253,7 +253,7 @@ bool QHttpNetworkConnectionChannel::sendRequest()
 #endif
         {
             // get pointer to upload data
-            qint64 currentReadSize;
+            qint64 currentReadSize = 0;
             qint64 desiredReadSize = qMin(socketWriteMaxSize, bytesTotal - written);
             const char *readPointer = uploadByteDevice->readPointer(desiredReadSize, currentReadSize);
 
@@ -476,7 +476,8 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
                     }
 #ifndef QT_NO_COMPRESS
                     else if (!expand(false)) { // expand a chunk if possible
-                        return; // ### expand failed
+                        // If expand() failed we can just return, it had already called connection->emitReplyError()
+                        return;
                     }
 #endif
                 }
@@ -645,27 +646,37 @@ void QHttpNetworkConnectionChannel::allDone()
 {
 #ifndef QT_NO_COMPRESS
     // expand the whole data.
-    if (reply->d_func()->expectContent() && reply->d_func()->autoDecompress && !reply->d_func()->streamEnd)
-        expand(true); // ### if expand returns false, its an error
+    if (reply->d_func()->expectContent() && reply->d_func()->autoDecompress && !reply->d_func()->streamEnd) {
+        bool expandResult = expand(true);
+        // If expand() failed we can just return, it had already called connection->emitReplyError()
+        if (!expandResult)
+            return;
+    }
 #endif
+
+    if (!reply) {
+        qWarning() << "QHttpNetworkConnectionChannel::allDone() called without reply. Please report at http://bugreports.qt.nokia.com/";
+        return;
+    }
+
     // while handling 401 & 407, we might reset the status code, so save this.
     bool emitFinished = reply->d_func()->shouldEmitSignals();
-    handleStatus();
-    // ### at this point there should be no more data on the socket
-    // close if server requested
     bool connectionCloseEnabled = reply->d_func()->isConnectionCloseEnabled();
-    if (connectionCloseEnabled)
-        close();
+    detectPipeliningSupport();
+
+    handleStatus();
+    // handleStatus() might have removed the reply because it already called connection->emitReplyError()
+
     // queue the finished signal, this is required since we might send new requests from
     // slot connected to it. The socket will not fire readyRead signal, if we are already
     // in the slot connected to readyRead
-    if (emitFinished)
+    if (reply && emitFinished)
         QMetaObject::invokeMethod(reply, "finished", Qt::QueuedConnection);
+
+
     // reset the reconnection attempts after we receive a complete reply.
     // in case of failures, each channel will attempt two reconnects before emitting error.
     reconnectAttempts = 2;
-
-    detectPipeliningSupport();
 
     // now the channel can be seen as free/idle again, all signal emissions for the reply have been done
     this->state = QHttpNetworkConnectionChannel::IdleState;
@@ -717,6 +728,8 @@ void QHttpNetworkConnectionChannel::allDone()
         // leading whitespace.
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     } else if (alreadyPipelinedRequests.isEmpty()) {
+        if (connectionCloseEnabled)
+            close();
         if (qobject_cast<QHttpNetworkConnection*>(connection))
             QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     }

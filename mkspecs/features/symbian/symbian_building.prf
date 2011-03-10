@@ -1,6 +1,11 @@
 symbian-armcc {
     QMAKE_CFLAGS += $$QMAKE_CFLAGS.ARMCC
     QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS.ARMCC
+    # This is to prevent inclusion of the shipped RVCT headers, which are often in the
+    # environment variable RVCTxxINC by default. -J prevents the searching of that location,
+    # but needs a path, so just specify somewhere guaranteed not to contain header files.
+    QMAKE_CFLAGS += -J$${EPOCROOT}epoc32/ignore_this_path
+    QMAKE_CXXFLAGS += -J$${EPOCROOT}epoc32/ignore_this_path
 } else:symbian-gcce {
     QMAKE_CFLAGS += $$QMAKE_CFLAGS.GCCE
     QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS.GCCE
@@ -51,7 +56,7 @@ defineReplace(processSymbianLibrary) {
 }
 
 # This part turn "-llibc" into "libc.dso", and moves -L entries to QMAKE_LIBDIR.
-libsToProcess = LIBS QMAKE_LIBS
+libsToProcess = LIBS LIBS_PRIVATE QMAKE_LIBS
 for(libToProcess, libsToProcess) {
     qt_libraries = $$split($$libToProcess, " ")
     eval($$libToProcess =)
@@ -90,8 +95,8 @@ count(splitVersion, 0) {
 } else {
     count(splitVersion, 3) {
         hexVersion = $$system("perl -e \"printf (\\\"%02x\\\", $$member(splitVersion, 0))\"")
-        hexPart2 = $$system("perl -e \"printf (\\\"%02x\\\", $$member(splitVersion, 1))\"")"
-        hexPart2 = $$hexPart2$$system("perl -e \"printf (\\\"%02x\\\", $$member(splitVersion, 2))\"")"
+        hexPart2 = $$system("perl -e \"printf (\\\"%02x\\\", $$member(splitVersion, 1))\"")
+        hexPart2 = $$hexPart2$$system("perl -e \"printf (\\\"%02x\\\", $$member(splitVersion, 2))\"")
         decVersion = $$system("perl -e \"printf (\\\"%1d\\\", 0x$$hexVersion)\"").
         hexVersion = $$hexVersion$$hexPart2
         decVersion = $$decVersion$$system("perl -e \"printf (\\\"%d\\\", 0x$$hexPart2)\"")
@@ -235,13 +240,9 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@:.*") {
 }
 
 # Symbian resource files
-symbian-armcc: {
-    SYMBIAN_RVCT22INC=$$(RVCT22INC)
-    !isEmpty(SYMBIAN_RVCT22INC):symbian_resources_INCLUDES = -I$${SYMBIAN_RVCT22INC}
-}
-symbian_resources_INCLUDES = $$replace(symbian_resources_INCLUDES, ",", " -I")
-symbian_resources_INCLUDES += $$join(INCLUDEPATH, " -I", "-I")
+symbian_resources_INCLUDES = $$join(INCLUDEPATH, " -I", "-I")
 symbian_resources_DEFINES = $$join(DEFINES, " -D", "-D")
+symbian_resources_DEFINES += -D__QT_SYMBIAN_RESOURCE__
 symbian_resources_RCC_DIR = $$replace(RCC_DIR, "/$", "")
 symbian_resources_INCLUDES += "-I$$symbian_resources_RCC_DIR"
 
@@ -256,6 +257,7 @@ for(symbian_resource, SYMBIAN_RESOURCES) {
 symbianresources.input = SYMBIAN_RESOURCES
 symbianresources.output = $$symbian_resources_RCC_DIR/${QMAKE_FILE_BASE}$${QT_LIBINFIX}.rsg
 symbianresources.commands = cpp -nostdinc -undef \
+                            -include $$QMAKE_SYMBIAN_INCLUDES \
                             $$symbian_resources_INCLUDES \
                             $$symbian_resources_DEFINES \
                             ${QMAKE_FILE_NAME} \
@@ -271,46 +273,79 @@ symbianresources.CONFIG = no_link target_predeps
 
 QMAKE_EXTRA_COMPILERS += symbianresources
 
+# This section generates the rsg and rsc files for symbian.
 contains(TEMPLATE, "app"):!contains(CONFIG, "no_icon") {
-    # Make our own extra target in order to get dependencies for generated
-    # files right. This also avoids the warning about files not found.
-    symbianGenResource.target = $${symbian_resources_RCC_DIR}/$${baseTarget}.rsg
-    symbianGenResource.commands = cpp -nostdinc -undef \
-                                  $$symbian_resources_INCLUDES \
-                                  $$symbian_resources_DEFINES \
-                                  $${baseTarget}.rss \
-                                  > $${symbian_resources_RCC_DIR}/$${baseTarget}.rpp \
-                                  && rcomp -u -m045,046,047 \
-                                  -s$${symbian_resources_RCC_DIR}/$${baseTarget}.rpp \
-                                  -o$${symbianDestdir}/$${baseTarget}.rsc \
-                                  -h$${symbian_resources_RCC_DIR}/$${baseTarget}.rsg \
-                                  -i$${baseTarget}.rss
-    silent:symbianGenResource.commands = @echo rcomp $${baseTarget}.rss && $$symbianGenResource.commands
-    symbianGenResource.depends = $${baseTarget}.rss
-    PRE_TARGETDEPS += $${symbian_resources_RCC_DIR}/$${baseTarget}.rsg
-    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseTarget}.rsg
-    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseTarget}.rpp
-    QMAKE_DISTCLEAN += $${baseTarget}.rss
-    QMAKE_DISTCLEAN += $${symbianDestdir}/$${baseTarget}.rsc
+    # Look for extra languages for the resources, and then generate a target for each one.
+    localize_deployment:symbianGenResourceLanguages = $$SYMBIAN_MATCHED_LANGUAGES default
+    else:symbianGenResourceLanguages = default
+    for(language, symbianGenResourceLanguages) {
+        # Special languages get their language number appended to the filename.
+        contains(language, default) {
+            symbianGenResource_DEFINES = $$symbian_resources_DEFINES
+            rpp = $${symbian_resources_RCC_DIR}/$${baseTarget}.rpp
+            rsc = $${symbianDestdir}/$${baseTarget}.rsc
+            rsg = $${symbian_resources_RCC_DIR}/$${baseTarget}.rsg
+        } else {
+            languageNo = $$eval(SYMBIAN_LANG.$$language)
+            symbianGenResource_DEFINES = $$symbian_resources_DEFINES -DLANGUAGE_$${languageNo}
+            rpp = $${symbian_resources_RCC_DIR}/$${baseTarget}_$${languageNo}.rpp
+            rsc = $${symbianDestdir}/$${baseTarget}.r$${languageNo}
+            rsg = $${symbian_resources_RCC_DIR}/$${baseTarget}_$${languageNo}.rsg
+        }
 
-    symbianGenRegResource.target = $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rsg
-    symbianGenRegResource.commands = cpp -nostdinc -undef \
-                                     $$symbian_resources_INCLUDES \
-                                     $$symbian_resources_DEFINES \
-                                     $${baseTarget}_reg.rss \
-                                     > $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rpp \
-                                     && rcomp -u -m045,046,047 \
-                                     -s$${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rpp \
-                                     -o$${symbianDestdir}/$${baseTarget}_reg.rsc \
-                                     -h$${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rsg \
-                                     -i$${baseTarget}_reg.rss
-    silent:symbianGenRegResource.commands = @echo rcomp $${baseTarget}_reg.rss && $$symbianGenRegResource.commands
-    symbianGenRegResource.depends = $${baseTarget}_reg.rss $${symbian_resources_RCC_DIR}/$${baseTarget}.rsg
-    PRE_TARGETDEPS += $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rsg
-    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rsg
-    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rpp
-    QMAKE_DISTCLEAN += $${baseTarget}_reg.rss
-    QMAKE_DISTCLEAN += $${symbianDestdir}/$${baseTarget}_reg.rsc
+        # Make our own extra target in order to get dependencies for generated
+        # files right. This also avoids the warning about files not found.
+        eval(symbianGenResource_$${language}.target = $$rsg)
+        eval(symbianGenResource_$${language}.commands = cpp -nostdinc -undef \
+                                      -include $$QMAKE_SYMBIAN_INCLUDES \
+                                      $$symbian_resources_INCLUDES \
+                                      $$symbianGenResource_DEFINES \
+                                      $${baseTarget}.rss \
+                                      > $$rpp \
+                                      && rcomp -u -m045,046,047 \
+                                      -s$$rpp \
+                                      -o$$rsc \
+                                      -h$$rsg \
+                                      -i$${baseTarget}.rss)
+        silent:eval(symbianGenResource_$${language}.commands = @echo rcomp $${baseTarget}.rss && $$eval(symbianGenResource_$${language}.commands))
+        eval(symbianGenResource_$${language}.depends = $${baseTarget}.rss)
+        PRE_TARGETDEPS += $$rsg
+        QMAKE_CLEAN += $$rsg $$rpp
+        QMAKE_DISTCLEAN += $$rsc
+
+        QMAKE_EXTRA_TARGETS += symbianGenResource_$${language}
+
+        # Note that we depend on the base rsg file, even if dealing with a specific language.
+        # hence we don't use $$rsg on the next line.
+        eval(symbianGenRegResource_$${language}.depends = $${baseTarget}_reg.rss $${symbian_resources_RCC_DIR}/$${baseTarget}.rsg)
+        contains(language, default) {
+            rpp = $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rpp
+            rsc = $${symbianDestdir}/$${baseTarget}_reg.rsc
+            rsg = $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rsg
+        } else {
+            rpp = $${symbian_resources_RCC_DIR}/$${baseTarget}_reg_$${languageNo}.rpp
+            rsc = $${symbianDestdir}/$${baseTarget}_reg.r$${languageNo}
+            rsg = $${symbian_resources_RCC_DIR}/$${baseTarget}_reg_$${languageNo}.rsg
+        }
+        eval(symbianGenRegResource_$${language}.target = $$rsg)
+        eval(symbianGenRegResource_$${language}.commands = cpp -nostdinc -undef \
+                                         -include $$QMAKE_SYMBIAN_INCLUDES \
+                                         $$symbian_resources_INCLUDES \
+                                         $$symbianGenResource_DEFINES \
+                                         $${baseTarget}_reg.rss \
+                                         > $$rpp \
+                                         && rcomp -u -m045,046,047 \
+                                         -s$$rpp \
+                                         -o$$rsc \
+                                         -h$$rsg \
+                                         -i$${baseTarget}_reg.rss)
+        silent:eval(symbianGenRegResource_$${language}.commands = @echo rcomp $${baseTarget}_reg.rss && $$eval(symbianGenRegResource_$${language}.commands))
+        PRE_TARGETDEPS += $$rsg
+        QMAKE_CLEAN += $$rsg $$rpp
+        QMAKE_DISTCLEAN += $$rsc
+
+        QMAKE_EXTRA_TARGETS += symbianGenRegResource_$${language}
+    }
 
     # Trick to get qmake to create the RCC_DIR for us.
     symbianRccDirCreation.input = SOURCES
@@ -318,14 +353,15 @@ contains(TEMPLATE, "app"):!contains(CONFIG, "no_icon") {
     symbianRccDirCreation.output = $${symbian_resources_RCC_DIR}/symbian_resource_dummy
     symbianRccDirCreation.CONFIG = no_link combine
 
-    QMAKE_EXTRA_TARGETS += symbianGenResource symbianGenRegResource
     QMAKE_EXTRA_COMPILERS += symbianRccDirCreation
 
-    QMAKE_DISTCLEAN += $${baseTarget}.loc
+    QMAKE_DISTCLEAN += $${baseTarget}.rss \
+                       $${baseTarget}_reg.rss \
+                       $${baseTarget}.loc
 }
 
 # Generated pkg files
 
-QMAKE_DISTCLEAN += $${baseTarget}_template.pkg
-QMAKE_DISTCLEAN += $${baseTarget}_installer.pkg
-QMAKE_DISTCLEAN += $${baseTarget}_stub.pkg
+QMAKE_DISTCLEAN += $${baseTarget}_template.pkg \
+                   $${baseTarget}_installer.pkg \
+                   $${baseTarget}_stub.pkg

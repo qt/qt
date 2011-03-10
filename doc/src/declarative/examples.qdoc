@@ -136,7 +136,8 @@ The examples can be found in Qt's \c examples/declarative directory.
 
 \section2 Positioners
 \list
-\o \l{declarative/positioners}{Example}
+\o \l{declarative/positioners/addandremove}{Adding and Removing Items}
+\o \l{declarative/positioners/layoutdirection}{Layout Direction}
 \endlist
 
 \section2 Key Interaction

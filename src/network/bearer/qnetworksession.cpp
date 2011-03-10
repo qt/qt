@@ -250,6 +250,9 @@ QNetworkSession::QNetworkSession(const QNetworkConfiguration &connectionConfig, 
             }
         }
     }
+
+    qRegisterMetaType<QNetworkSession::State>();
+    qRegisterMetaType<QNetworkSession::SessionError>();
 }
 
 /*!
@@ -677,7 +680,7 @@ void QNetworkSession::connectNotify(const char *signal)
 
     //check for preferredConfigurationChanged() signal connect notification
     //This is not required on all platforms
-    if (QLatin1String(signal) == SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)))
+    if (qstrcmp(signal, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool))) == 0)
         d->setALREnabled(true);
 }
 
@@ -698,7 +701,7 @@ void QNetworkSession::disconnectNotify(const char *signal)
 
     //check for preferredConfigurationChanged() signal disconnect notification
     //This is not required on all platforms
-    if (QLatin1String(signal) == SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)))
+    if (qstrcmp(signal, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool))) == 0)
         d->setALREnabled(false);
 }
 

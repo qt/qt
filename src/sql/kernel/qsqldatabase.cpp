@@ -798,7 +798,7 @@ void QSqlDatabasePrivate::init(const QString &type)
     Destroys the object and frees any allocated resources.
 
     If this is the last QSqlDatabase object that uses a certain
-    database connection, the is automatically closed.
+    database connection, the database connection is automatically closed.
 
     \sa close()
 */

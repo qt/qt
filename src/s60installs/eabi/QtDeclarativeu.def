@@ -19,24 +19,24 @@ EXPORTS
 	_ZN15QPacketAutoSendD0Ev @ 18 NONAME ABSENT
 	_ZN15QPacketAutoSendD1Ev @ 19 NONAME ABSENT
 	_ZN15QPacketAutoSendD2Ev @ 20 NONAME ABSENT
-	_ZN15QPacketProtocol11qt_metacallEN11QMetaObject4CallEiPPv @ 21 NONAME ABSENT
-	_ZN15QPacketProtocol11qt_metacastEPKc @ 22 NONAME ABSENT
-	_ZN15QPacketProtocol13invalidPacketEv @ 23 NONAME ABSENT
-	_ZN15QPacketProtocol13packetWrittenEv @ 24 NONAME ABSENT
-	_ZN15QPacketProtocol16staticMetaObjectE @ 25 NONAME DATA 16 ABSENT
-	_ZN15QPacketProtocol19getStaticMetaObjectEv @ 26 NONAME ABSENT
-	_ZN15QPacketProtocol20setMaximumPacketSizeEi @ 27 NONAME ABSENT
-	_ZN15QPacketProtocol4readEv @ 28 NONAME ABSENT
-	_ZN15QPacketProtocol4sendERK7QPacket @ 29 NONAME ABSENT
-	_ZN15QPacketProtocol4sendEv @ 30 NONAME ABSENT
-	_ZN15QPacketProtocol5clearEv @ 31 NONAME ABSENT
-	_ZN15QPacketProtocol6deviceEv @ 32 NONAME ABSENT
-	_ZN15QPacketProtocol9readyReadEv @ 33 NONAME ABSENT
-	_ZN15QPacketProtocolC1EP9QIODeviceP7QObject @ 34 NONAME ABSENT
-	_ZN15QPacketProtocolC2EP9QIODeviceP7QObject @ 35 NONAME ABSENT
-	_ZN15QPacketProtocolD0Ev @ 36 NONAME ABSENT
-	_ZN15QPacketProtocolD1Ev @ 37 NONAME ABSENT
-	_ZN15QPacketProtocolD2Ev @ 38 NONAME ABSENT
+	_ZN15QPacketProtocol11qt_metacallEN11QMetaObject4CallEiPPv @ 21 NONAME
+	_ZN15QPacketProtocol11qt_metacastEPKc @ 22 NONAME
+	_ZN15QPacketProtocol13invalidPacketEv @ 23 NONAME
+	_ZN15QPacketProtocol13packetWrittenEv @ 24 NONAME
+	_ZN15QPacketProtocol16staticMetaObjectE @ 25 NONAME DATA 16
+	_ZN15QPacketProtocol19getStaticMetaObjectEv @ 26 NONAME
+	_ZN15QPacketProtocol20setMaximumPacketSizeEi @ 27 NONAME
+	_ZN15QPacketProtocol4readEv @ 28 NONAME
+	_ZN15QPacketProtocol4sendERK7QPacket @ 29 NONAME
+	_ZN15QPacketProtocol4sendEv @ 30 NONAME
+	_ZN15QPacketProtocol5clearEv @ 31 NONAME
+	_ZN15QPacketProtocol6deviceEv @ 32 NONAME
+	_ZN15QPacketProtocol9readyReadEv @ 33 NONAME
+	_ZN15QPacketProtocolC1EP9QIODeviceP7QObject @ 34 NONAME
+	_ZN15QPacketProtocolC2EP9QIODeviceP7QObject @ 35 NONAME
+	_ZN15QPacketProtocolD0Ev @ 36 NONAME
+	_ZN15QPacketProtocolD1Ev @ 37 NONAME
+	_ZN15QPacketProtocolD2Ev @ 38 NONAME
 	_ZN16QDeclarativeInfoC1EP23QDeclarativeInfoPrivate @ 39 NONAME
 	_ZN16QDeclarativeInfoC1ERKS_ @ 40 NONAME
 	_ZN16QDeclarativeInfoC2EP23QDeclarativeInfoPrivate @ 41 NONAME
@@ -241,8 +241,8 @@ EXPORTS
 	_ZN18QDeclarativePixmap23connectDownloadProgressEP7QObjecti @ 240 NONAME
 	_ZN18QDeclarativePixmap4loadEP18QDeclarativeEngineRK4QUrl @ 241 NONAME
 	_ZN18QDeclarativePixmap4loadEP18QDeclarativeEngineRK4QUrlRK5QSize @ 242 NONAME
-	_ZN18QDeclarativePixmap4loadEP18QDeclarativeEngineRK4QUrlRK5QSizeb @ 243 NONAME
-	_ZN18QDeclarativePixmap4loadEP18QDeclarativeEngineRK4QUrlb @ 244 NONAME
+	_ZN18QDeclarativePixmap4loadEP18QDeclarativeEngineRK4QUrlRK5QSizeb @ 243 NONAME ABSENT
+	_ZN18QDeclarativePixmap4loadEP18QDeclarativeEngineRK4QUrlb @ 244 NONAME ABSENT
 	_ZN18QDeclarativePixmap5clearEP7QObject @ 245 NONAME
 	_ZN18QDeclarativePixmap5clearEv @ 246 NONAME
 	_ZN18QDeclarativePixmap9setPixmapERK7QPixmap @ 247 NONAME
@@ -761,20 +761,20 @@ EXPORTS
 	_ZN24QDeclarativeCustomParser5errorERK28QDeclarativeCustomParserNodeRK7QString @ 760 NONAME
 	_ZN24QDeclarativeCustomParser5errorERK32QDeclarativeCustomParserPropertyRK7QString @ 761 NONAME
 	_ZN24QDeclarativeCustomParser5errorERK7QString @ 762 NONAME
-	_ZN24QDeclarativeDebugService11idForObjectEP7QObject @ 763 NONAME ABSENT
-	_ZN24QDeclarativeDebugService11objectForIdEi @ 764 NONAME ABSENT
-	_ZN24QDeclarativeDebugService11qt_metacallEN11QMetaObject4CallEiPPv @ 765 NONAME ABSENT
-	_ZN24QDeclarativeDebugService11qt_metacastEPKc @ 766 NONAME ABSENT
-	_ZN24QDeclarativeDebugService11sendMessageERK10QByteArray @ 767 NONAME ABSENT
+	_ZN24QDeclarativeDebugService11idForObjectEP7QObject @ 763 NONAME
+	_ZN24QDeclarativeDebugService11objectForIdEi @ 764 NONAME
+	_ZN24QDeclarativeDebugService11qt_metacallEN11QMetaObject4CallEiPPv @ 765 NONAME
+	_ZN24QDeclarativeDebugService11qt_metacastEPKc @ 766 NONAME
+	_ZN24QDeclarativeDebugService11sendMessageERK10QByteArray @ 767 NONAME
 	_ZN24QDeclarativeDebugService14enabledChangedEb @ 768 NONAME ABSENT
-	_ZN24QDeclarativeDebugService14objectToStringEP7QObject @ 769 NONAME ABSENT
-	_ZN24QDeclarativeDebugService15messageReceivedERK10QByteArray @ 770 NONAME ABSENT
-	_ZN24QDeclarativeDebugService16staticMetaObjectE @ 771 NONAME DATA 16 ABSENT
-	_ZN24QDeclarativeDebugService18hasDebuggingClientEv @ 772 NONAME ABSENT
-	_ZN24QDeclarativeDebugService18isDebuggingEnabledEv @ 773 NONAME ABSENT
-	_ZN24QDeclarativeDebugService19getStaticMetaObjectEv @ 774 NONAME ABSENT
-	_ZN24QDeclarativeDebugServiceC1ERK7QStringP7QObject @ 775 NONAME ABSENT
-	_ZN24QDeclarativeDebugServiceC2ERK7QStringP7QObject @ 776 NONAME ABSENT
+	_ZN24QDeclarativeDebugService14objectToStringEP7QObject @ 769 NONAME
+	_ZN24QDeclarativeDebugService15messageReceivedERK10QByteArray @ 770 NONAME
+	_ZN24QDeclarativeDebugService16staticMetaObjectE @ 771 NONAME DATA 16
+	_ZN24QDeclarativeDebugService18hasDebuggingClientEv @ 772 NONAME
+	_ZN24QDeclarativeDebugService18isDebuggingEnabledEv @ 773 NONAME
+	_ZN24QDeclarativeDebugService19getStaticMetaObjectEv @ 774 NONAME
+	_ZN24QDeclarativeDebugServiceC1ERK7QStringP7QObject @ 775 NONAME
+	_ZN24QDeclarativeDebugServiceC2ERK7QStringP7QObject @ 776 NONAME
 	_ZN24QDeclarativeDomComponentC1ERKS_ @ 777 NONAME ABSENT
 	_ZN24QDeclarativeDomComponentC1Ev @ 778 NONAME ABSENT
 	_ZN24QDeclarativeDomComponentC2ERKS_ @ 779 NONAME ABSENT
@@ -1059,20 +1059,20 @@ EXPORTS
 	_ZN39QDeclarativeNetworkAccessManagerFactoryD0Ev @ 1058 NONAME
 	_ZN39QDeclarativeNetworkAccessManagerFactoryD1Ev @ 1059 NONAME
 	_ZN39QDeclarativeNetworkAccessManagerFactoryD2Ev @ 1060 NONAME
-	_ZN7QPacket5clearEv @ 1061 NONAME ABSENT
-	_ZN7QPacketC1ERK10QByteArray @ 1062 NONAME ABSENT
-	_ZN7QPacketC1ERKS_ @ 1063 NONAME ABSENT
-	_ZN7QPacketC1Ev @ 1064 NONAME ABSENT
-	_ZN7QPacketC2ERK10QByteArray @ 1065 NONAME ABSENT
-	_ZN7QPacketC2ERKS_ @ 1066 NONAME ABSENT
-	_ZN7QPacketC2Ev @ 1067 NONAME ABSENT
-	_ZN7QPacketD0Ev @ 1068 NONAME ABSENT
-	_ZN7QPacketD1Ev @ 1069 NONAME ABSENT
-	_ZN7QPacketD2Ev @ 1070 NONAME ABSENT
+	_ZN7QPacket5clearEv @ 1061 NONAME
+	_ZN7QPacketC1ERK10QByteArray @ 1062 NONAME
+	_ZN7QPacketC1ERKS_ @ 1063 NONAME
+	_ZN7QPacketC1Ev @ 1064 NONAME
+	_ZN7QPacketC2ERK10QByteArray @ 1065 NONAME
+	_ZN7QPacketC2ERKS_ @ 1066 NONAME
+	_ZN7QPacketC2Ev @ 1067 NONAME
+	_ZN7QPacketD0Ev @ 1068 NONAME
+	_ZN7QPacketD1Ev @ 1069 NONAME
+	_ZN7QPacketD2Ev @ 1070 NONAME
 	_ZNK15QDeclarativePen10metaObjectEv @ 1071 NONAME ABSENT
-	_ZNK15QPacketProtocol10metaObjectEv @ 1072 NONAME ABSENT
-	_ZNK15QPacketProtocol16packetsAvailableEv @ 1073 NONAME ABSENT
-	_ZNK15QPacketProtocol17maximumPacketSizeEv @ 1074 NONAME ABSENT
+	_ZNK15QPacketProtocol10metaObjectEv @ 1072 NONAME
+	_ZNK15QPacketProtocol16packetsAvailableEv @ 1073 NONAME
+	_ZNK15QPacketProtocol17maximumPacketSizeEv @ 1074 NONAME
 	_ZNK16QDeclarativeItem10metaObjectEv @ 1075 NONAME
 	_ZNK16QDeclarativeItem10parentItemEv @ 1076 NONAME
 	_ZNK16QDeclarativeItem10widthValidEv @ 1077 NONAME
@@ -1425,8 +1425,8 @@ EXPORTS
 	_ZNK23QDeclarativePropertyMapixERK7QString @ 1424 NONAME
 	_ZNK24QDeclarativeCustomParser11resolveTypeERK10QByteArray @ 1425 NONAME
 	_ZNK24QDeclarativeCustomParser12evaluateEnumERK10QByteArray @ 1426 NONAME
-	_ZNK24QDeclarativeDebugService10metaObjectEv @ 1427 NONAME ABSENT
-	_ZNK24QDeclarativeDebugService4nameEv @ 1428 NONAME ABSENT
+	_ZNK24QDeclarativeDebugService10metaObjectEv @ 1427 NONAME
+	_ZNK24QDeclarativeDebugService4nameEv @ 1428 NONAME
 	_ZNK24QDeclarativeDebugService9isEnabledEv @ 1429 NONAME ABSENT
 	_ZNK24QDeclarativeDomComponent13componentRootEv @ 1430 NONAME ABSENT
 	_ZNK24QDeclarativeScriptString11scopeObjectEv @ 1431 NONAME
@@ -1524,10 +1524,10 @@ EXPORTS
 	_ZNK36QDeclarativeDomValueValueInterceptor6objectEv @ 1523 NONAME ABSENT
 	_ZNK38QDeclarativeDebugObjectExpressionWatch10expressionEv @ 1524 NONAME ABSENT
 	_ZNK38QDeclarativeDebugObjectExpressionWatch10metaObjectEv @ 1525 NONAME ABSENT
-	_ZNK7QPacket7isEmptyEv @ 1526 NONAME ABSENT
+	_ZNK7QPacket7isEmptyEv @ 1526 NONAME
 	_ZTI15QDeclarativePen @ 1527 NONAME ABSENT
 	_ZTI15QPacketAutoSend @ 1528 NONAME ABSENT
-	_ZTI15QPacketProtocol @ 1529 NONAME ABSENT
+	_ZTI15QPacketProtocol @ 1529 NONAME
 	_ZTI16QDeclarativeItem @ 1530 NONAME
 	_ZTI16QDeclarativeText @ 1531 NONAME ABSENT
 	_ZTI16QDeclarativeView @ 1532 NONAME
@@ -1554,7 +1554,7 @@ EXPORTS
 	_ZTI23QDeclarativeItemPrivate @ 1553 NONAME
 	_ZTI23QDeclarativePropertyMap @ 1554 NONAME
 	_ZTI24QDeclarativeCustomParser @ 1555 NONAME
-	_ZTI24QDeclarativeDebugService @ 1556 NONAME ABSENT
+	_ZTI24QDeclarativeDebugService @ 1556 NONAME
 	_ZTI24QDeclarativeParserStatus @ 1557 NONAME
 	_ZTI25QDeclarativeImageProvider @ 1558 NONAME
 	_ZTI26QDeclarativeDebuggerStatus @ 1559 NONAME ABSENT
@@ -1574,10 +1574,10 @@ EXPORTS
 	_ZTI36QDeclarativePropertyValueInterceptor @ 1573 NONAME
 	_ZTI38QDeclarativeDebugObjectExpressionWatch @ 1574 NONAME ABSENT
 	_ZTI39QDeclarativeNetworkAccessManagerFactory @ 1575 NONAME
-	_ZTI7QPacket @ 1576 NONAME ABSENT
+	_ZTI7QPacket @ 1576 NONAME
 	_ZTV15QDeclarativePen @ 1577 NONAME ABSENT
 	_ZTV15QPacketAutoSend @ 1578 NONAME ABSENT
-	_ZTV15QPacketProtocol @ 1579 NONAME ABSENT
+	_ZTV15QPacketProtocol @ 1579 NONAME
 	_ZTV16QDeclarativeItem @ 1580 NONAME
 	_ZTV16QDeclarativeText @ 1581 NONAME ABSENT
 	_ZTV16QDeclarativeView @ 1582 NONAME
@@ -1604,7 +1604,7 @@ EXPORTS
 	_ZTV23QDeclarativeItemPrivate @ 1603 NONAME
 	_ZTV23QDeclarativePropertyMap @ 1604 NONAME
 	_ZTV24QDeclarativeCustomParser @ 1605 NONAME
-	_ZTV24QDeclarativeDebugService @ 1606 NONAME ABSENT
+	_ZTV24QDeclarativeDebugService @ 1606 NONAME
 	_ZTV24QDeclarativeParserStatus @ 1607 NONAME
 	_ZTV25QDeclarativeImageProvider @ 1608 NONAME
 	_ZTV26QDeclarativeDebuggerStatus @ 1609 NONAME ABSENT
@@ -1623,7 +1623,7 @@ EXPORTS
 	_ZTV36QDeclarativePropertyValueInterceptor @ 1622 NONAME
 	_ZTV38QDeclarativeDebugObjectExpressionWatch @ 1623 NONAME ABSENT
 	_ZTV39QDeclarativeNetworkAccessManagerFactory @ 1624 NONAME
-	_ZTV7QPacket @ 1625 NONAME ABSENT
+	_ZTV7QPacket @ 1625 NONAME
 	_ZThn16_N16QDeclarativeItem10classBeginEv @ 1626 NONAME
 	_ZThn16_N16QDeclarativeItem17componentCompleteEv @ 1627 NONAME
 	_ZThn16_N16QDeclarativeItemD0Ev @ 1628 NONAME
@@ -1677,9 +1677,9 @@ EXPORTS
 	_ZN23QDeclarativeEngineDebug10newObjectsEv @ 1676 NONAME ABSENT
 	_ZN17QDeclarativeState20addEntryToRevertListERK18QDeclarativeAction @ 1677 NONAME
 	_ZN17QDeclarativeState22addEntriesToRevertListERK5QListI18QDeclarativeActionE @ 1678 NONAME
-	_ZN17QDeclarativeState23changeValueInRevertListEP7QObjectRK10QByteArrayRK8QVariant @ 1679 NONAME
-	_ZN17QDeclarativeState25changeBindingInRevertListEP7QObjectRK10QByteArrayP27QDeclarativeAbstractBinding @ 1680 NONAME
-	_ZN17QDeclarativeState25removeEntryFromRevertListEP7QObjectRK10QByteArray @ 1681 NONAME
+	_ZN17QDeclarativeState23changeValueInRevertListEP7QObjectRK10QByteArrayRK8QVariant @ 1679 NONAME ABSENT
+	_ZN17QDeclarativeState25changeBindingInRevertListEP7QObjectRK10QByteArrayP27QDeclarativeAbstractBinding @ 1680 NONAME ABSENT
+	_ZN17QDeclarativeState25removeEntryFromRevertListEP7QObjectRK10QByteArray @ 1681 NONAME ABSENT
 	_ZN17QDeclarativeState30removeAllEntriesFromRevertListEP7QObject @ 1682 NONAME
 	_ZN23QDeclarativeItemPrivate10data_clearEP24QDeclarativeListPropertyI7QObjectE @ 1683 NONAME
 	_ZN23QDeclarativeItemPrivate10data_countEP24QDeclarativeListPropertyI7QObjectE @ 1684 NONAME
@@ -1706,9 +1706,9 @@ EXPORTS
 	_ZN27QDeclarativePropertyChangesD1Ev @ 1705 NONAME ABSENT
 	_ZN27QDeclarativePropertyChangesD2Ev @ 1706 NONAME ABSENT
 	_ZNK17QDeclarativeState13isStateActiveEv @ 1707 NONAME
-	_ZNK17QDeclarativeState17valueInRevertListEP7QObjectRK10QByteArray @ 1708 NONAME
-	_ZNK17QDeclarativeState19bindingInRevertListEP7QObjectRK10QByteArray @ 1709 NONAME
-	_ZNK17QDeclarativeState28containsPropertyInRevertListEP7QObjectRK10QByteArray @ 1710 NONAME
+	_ZNK17QDeclarativeState17valueInRevertListEP7QObjectRK10QByteArray @ 1708 NONAME ABSENT
+	_ZNK17QDeclarativeState19bindingInRevertListEP7QObjectRK10QByteArray @ 1709 NONAME ABSENT
+	_ZNK17QDeclarativeState28containsPropertyInRevertListEP7QObjectRK10QByteArray @ 1710 NONAME ABSENT
 	_ZNK26QDeclarativeStateOperation5stateEv @ 1711 NONAME
 	_ZNK27QDeclarativePropertyChanges10expressionERK10QByteArray @ 1712 NONAME ABSENT
 	_ZNK27QDeclarativePropertyChanges10isExplicitEv @ 1713 NONAME ABSENT
@@ -1777,10 +1777,10 @@ EXPORTS
 	_ZN23QDeclarativeDebugClientD1Ev @ 1776 NONAME ABSENT
 	_ZN23QDeclarativeDebugClientD2Ev @ 1777 NONAME ABSENT
 	_ZN23QDeclarativeEngineDebug13statusChangedENS_6StatusE @ 1778 NONAME ABSENT
-	_ZN24QDeclarativeDebugService13statusChangedENS_6StatusE @ 1779 NONAME ABSENT
-	_ZN24QDeclarativeDebugServiceD0Ev @ 1780 NONAME ABSENT
-	_ZN24QDeclarativeDebugServiceD1Ev @ 1781 NONAME ABSENT
-	_ZN24QDeclarativeDebugServiceD2Ev @ 1782 NONAME ABSENT
+	_ZN24QDeclarativeDebugService13statusChangedENS_6StatusE @ 1779 NONAME
+	_ZN24QDeclarativeDebugServiceD0Ev @ 1780 NONAME
+	_ZN24QDeclarativeDebugServiceD1Ev @ 1781 NONAME
+	_ZN24QDeclarativeDebugServiceD2Ev @ 1782 NONAME
 	_ZN26QDeclarativeBasePositioner10addChangedEv @ 1783 NONAME ABSENT
 	_ZN26QDeclarativeBasePositioner10itemChangeEN13QGraphicsItem18GraphicsItemChangeERK8QVariant @ 1784 NONAME ABSENT
 	_ZN26QDeclarativeBasePositioner10setSpacingEi @ 1785 NONAME ABSENT
@@ -1851,7 +1851,7 @@ EXPORTS
 	_ZNK17QDeclarativeTimer9isRunningEv @ 1850 NONAME ABSENT
 	_ZNK23QDeclarativeDebugClient6statusEv @ 1851 NONAME ABSENT
 	_ZNK23QDeclarativeEngineDebug6statusEv @ 1852 NONAME ABSENT
-	_ZNK24QDeclarativeDebugService6statusEv @ 1853 NONAME ABSENT
+	_ZNK24QDeclarativeDebugService6statusEv @ 1853 NONAME
 	_ZNK26QDeclarativeBasePositioner10metaObjectEv @ 1854 NONAME ABSENT
 	_ZNK26QDeclarativeBasePositioner3addEv @ 1855 NONAME ABSENT
 	_ZNK26QDeclarativeBasePositioner4moveEv @ 1856 NONAME ABSENT
@@ -1885,4 +1885,49 @@ EXPORTS
 	_ZThn8_N29QDeclarativeAbstractAnimationD1Ev @ 1884 NONAME ABSENT
 	_ZN23QDeclarativeDebugHelper15enableDebuggingEv @ 1885 NONAME
 	_ZN27QDeclarativePropertyPrivate7connectEPK7QObjectiS2_iiPi @ 1886 NONAME ABSENT
+	_ZN16QDeclarativeItem20implicitWidthChangedEv @ 1887 NONAME
+	_ZN16QDeclarativeItem21implicitHeightChangedEv @ 1888 NONAME
+	_ZN17QDeclarativeState23changeValueInRevertListEP7QObjectRK7QStringRK8QVariant @ 1889 NONAME
+	_ZN17QDeclarativeState25changeBindingInRevertListEP7QObjectRK7QStringP27QDeclarativeAbstractBinding @ 1890 NONAME
+	_ZN17QDeclarativeState25removeEntryFromRevertListEP7QObjectRK7QString @ 1891 NONAME
+	_ZN18QDeclarativePixmap4loadEP18QDeclarativeEngineRK4QUrl6QFlagsINS_6OptionEE @ 1892 NONAME
+	_ZN18QDeclarativePixmap4loadEP18QDeclarativeEngineRK4QUrlRK5QSize6QFlagsINS_6OptionEE @ 1893 NONAME
+	_ZN21QDeclarativeComponent12createObjectEP7QObjectRK12QScriptValue @ 1894 NONAME
+	_ZN22QDeclarativeExpressionC1EP23QDeclarativeContextDataP7QObjectRK12QScriptValueR29QDeclarativeExpressionPrivate @ 1895 NONAME
+	_ZN22QDeclarativeExpressionC2EP23QDeclarativeContextDataP7QObjectRK12QScriptValueR29QDeclarativeExpressionPrivate @ 1896 NONAME
+	_ZN23QDeclarativeDebugServer10addServiceEP24QDeclarativeDebugService @ 1897 NONAME
+	_ZN23QDeclarativeDebugServer11qt_metacallEN11QMetaObject4CallEiPPv @ 1898 NONAME
+	_ZN23QDeclarativeDebugServer11qt_metacastEPKc @ 1899 NONAME
+	_ZN23QDeclarativeDebugServer11sendMessageEP24QDeclarativeDebugServiceRK10QByteArray @ 1900 NONAME
+	_ZN23QDeclarativeDebugServer13removeServiceEP24QDeclarativeDebugService @ 1901 NONAME
+	_ZN23QDeclarativeDebugServer14receiveMessageERK10QByteArray @ 1902 NONAME
+	_ZN23QDeclarativeDebugServer16staticMetaObjectE @ 1903 NONAME DATA 16
+	_ZN23QDeclarativeDebugServer19getStaticMetaObjectEv @ 1904 NONAME
+	_ZN23QDeclarativeDebugServer8instanceEv @ 1905 NONAME
+	_ZN23QDeclarativeDebugServerC1Ev @ 1906 NONAME
+	_ZN23QDeclarativeDebugServerC2Ev @ 1907 NONAME
+	_ZN23QDeclarativeItemPrivate20implicitWidthChangedEv @ 1908 NONAME
+	_ZN23QDeclarativeItemPrivate21implicitHeightChangedEv @ 1909 NONAME
+	_ZN24QDeclarativeCustomParser14rewriteBindingERK7QStringRK10QByteArray @ 1910 NONAME
+	_ZNK17QDeclarativeState17valueInRevertListEP7QObjectRK7QString @ 1911 NONAME
+	_ZNK17QDeclarativeState19bindingInRevertListEP7QObjectRK7QString @ 1912 NONAME
+	_ZNK17QDeclarativeState28containsPropertyInRevertListEP7QObjectRK7QString @ 1913 NONAME
+	_ZNK23QDeclarativeDebugServer10metaObjectEv @ 1914 NONAME
+	_ZNK23QDeclarativeDebugServer12serviceNamesEv @ 1915 NONAME
+	_ZNK23QDeclarativeDebugServer18hasDebuggingClientEv @ 1916 NONAME
+	_ZNK23QDeclarativeDebugServer8servicesEv @ 1917 NONAME
+	_ZNK23QDeclarativeItemPrivate13implicitWidthEv @ 1918 NONAME
+	_ZNK23QDeclarativeItemPrivate14implicitHeightEv @ 1919 NONAME
+	_ZNK7QPacket4dataEv @ 1920 NONAME
+	_ZTI23QDeclarativeDebugServer @ 1921 NONAME
+	_ZTV23QDeclarativeDebugServer @ 1922 NONAME
+	_ZN20QDeclarativeRefCount6addrefEv @ 1923 NONAME
+	_ZN20QDeclarativeRefCount7releaseEv @ 1924 NONAME
+	_ZN20QDeclarativeRefCountC1Ev @ 1925 NONAME
+	_ZN20QDeclarativeRefCountC2Ev @ 1926 NONAME
+	_ZN20QDeclarativeRefCountD0Ev @ 1927 NONAME
+	_ZN20QDeclarativeRefCountD1Ev @ 1928 NONAME
+	_ZN20QDeclarativeRefCountD2Ev @ 1929 NONAME
+	_ZTI20QDeclarativeRefCount @ 1930 NONAME
+	_ZTV20QDeclarativeRefCount @ 1931 NONAME
 

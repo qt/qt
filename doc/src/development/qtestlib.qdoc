@@ -130,7 +130,7 @@
 
     \snippet doc/src/snippets/code/doc_src_qtestlib.qdoc 1
 
-    If you are using other buildtools, make sure that you add the location
+    If you are using other build tools, make sure that you add the location
     of the QTestLib header files to your include path (usually \c{include/QtTest}
     under your Qt installation directory). If you are using a release build
     of Qt, link your test to the \c QtTest library. For debug builds, use

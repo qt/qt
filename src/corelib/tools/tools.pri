@@ -29,6 +29,9 @@ HEADERS +=  \
         tools/qrect.h \
         tools/qregexp.h \
         tools/qringbuffer_p.h \
+        tools/qscopedpointer.h \
+        tools/qscopedpointer_p.h \
+        tools/qscopedvaluerollback.h \
         tools/qshareddata.h \
         tools/qsharedpointer.h \
         tools/qsharedpointer_impl.h \
@@ -45,9 +48,7 @@ HEADERS +=  \
         tools/qelapsedtimer.h \
         tools/qunicodetables_p.h \
         tools/qvarlengtharray.h \
-        tools/qvector.h \
-        tools/qscopedpointer.h \
-        tools/qscopedpointer_p.h
+        tools/qvector.h
 
 
 SOURCES += \
@@ -87,6 +88,7 @@ symbian:SOURCES+=tools/qlocale_symbian.cpp
 else:symbian:SOURCES += tools/qelapsedtimer_symbian.cpp
 else:unix:SOURCES += tools/qelapsedtimer_unix.cpp
 else:win32:SOURCES += tools/qelapsedtimer_win.cpp
+else:integrity:SOURCES += tools/qelapsedtimer_unix.cpp
 else:SOURCES += tools/qelapsedtimer_generic.cpp
 
 contains(QT_CONFIG, zlib):include($$PWD/../../3rdparty/zlib.pri)
