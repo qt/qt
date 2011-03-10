@@ -509,7 +509,7 @@ void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
         // as the statuspane size is not changing.
 
         if (!(windowToMove->windowState() & Qt::WindowFullScreen)) {
-            widget->setWindowState(
+            windowToMove->setWindowState(
                 (windowToMove->windowState() & ~(Qt::WindowMinimized | Qt::WindowFullScreen)) | Qt::WindowFullScreen);
         }
 
