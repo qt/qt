@@ -3,7 +3,8 @@
 #include <cmath>
 
 TurbulenceAffector::TurbulenceAffector(QObject *parent) :
-    ParticleAffector(parent), m_system(0), m_strength(10), m_lastT(0), m_frequency(1), m_size(10)
+    ParticleAffector(parent),
+    m_system(0), m_strength(10), m_lastT(0), m_frequency(1), m_gridSize(10)
 {
 }
 
@@ -17,10 +18,10 @@ void TurbulenceAffector::ensureInit(ParticleData* d)
     if(m_system == d->p->m_system)
         return;
     m_system = d->p->m_system;
-    m_field.resize(m_size);
-    for(int i=0; i<m_size; i++)
-        m_field[i].resize(m_size);
-    m_spacing = QPointF(m_system->width()/m_size, m_system->height()/m_size);
+    m_field.resize(m_gridSize);
+    for(int i=0; i<m_gridSize; i++)
+        m_field[i].resize(m_gridSize);
+    m_spacing = QPointF(m_system->width()/m_gridSize, m_system->height()/m_gridSize);
     m_magSum = magnitude(m_spacing.x(), m_spacing.y())*2;
     //TODO: Don't crash when system size changes
 }
@@ -36,11 +37,11 @@ void TurbulenceAffector::tickAdvance(ParticleData *d)
 
 void TurbulenceAffector::mapUpdate()
 {
-    QPoint pos(rand() % m_size, rand() % m_size);
+    QPoint pos(rand() % m_gridSize, rand() % m_gridSize);
     QPointF vector(m_strength  - (((qreal)rand() / RAND_MAX) * m_strength*2),
                    m_strength  - (((qreal)rand() / RAND_MAX) * m_strength*2));
-    for(int i = 0; i < m_size; i++){
-        for(int j = 0; j < m_size; j++){
+    for(int i = 0; i < m_gridSize; i++){
+        for(int j = 0; j < m_gridSize; j++){
             qreal dist = magnitude(i-pos.x(), j-pos.y());
             m_field[i][j] += vector/(dist + 1);
             if(magnitude(m_field[i][j].x(), m_field[i][j].y()) > m_strength){
@@ -69,7 +70,7 @@ bool TurbulenceAffector::affect(ParticleData *d, qreal dt)
     nodes << qMakePair((int)floor(nodePos.x()), (int)floor(nodePos.y()));
     typedef QPair<int, int> intPair;
     foreach(const intPair &p, nodes){
-        if(!QRect(0,0,m_size-1,m_size-1).contains(QPoint(p.first, p.second)))
+        if(!QRect(0,0,m_gridSize-1,m_gridSize-1).contains(QPoint(p.first, p.second)))
             continue;
         qreal dist = magnitude(pos.x() - p.first*m_spacing.x(), pos.y() - p.second*m_spacing.y());
         fx += m_field[p.first][p.second].x() * ((m_magSum - dist)/m_magSum);//Proportionally weight nodes

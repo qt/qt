@@ -28,7 +28,7 @@ public:
 
     int size() const
     {
-        return m_size;
+        return m_gridSize;
     }
 
 signals:
@@ -59,8 +59,8 @@ void setFrequency(int arg)
 
 void setSize(int arg)
 {
-    if (m_size != arg) {
-        m_size = arg;
+    if (m_gridSize != arg) {
+        m_gridSize = arg;
         emit sizeChanged(arg);
     }
 }
@@ -70,13 +70,13 @@ private:
     void tickAdvance(ParticleData* d);
     void mapUpdate();
     ParticleSystem* m_system;
-    QVector<QVector<QPointF> > m_field;
     int m_strength;
     qreal m_lastT;
     int m_frequency;
-    int m_size;
+    int m_gridSize;
     QPointF m_spacing;
     qreal m_magSum;
+    QVector<QVector<QPointF> > m_field;
 };
 
 #endif // TURBULENCEAFFECTOR_H

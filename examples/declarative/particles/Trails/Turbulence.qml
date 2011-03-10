@@ -32,8 +32,8 @@ Rectangle{
             additive: 1
         }
         affectors: [
-            Turbulence{
-                strength: 36; frequency: 16; size: 16
+            Turbulence{ 
+                strength: 32;
             }, Zone{
                 width: root.width
                 height: 232
