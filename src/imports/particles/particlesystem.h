@@ -22,11 +22,7 @@ class ParticleSystem : public QSGItem
 {
     Q_OBJECT
     Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
-    Q_PROPERTY(QDeclarativeListProperty<ParticleAffector> affectors READ affectors)
-    Q_PROPERTY(QDeclarativeListProperty<ParticleEmitter> emitters READ emitters)
-    Q_PROPERTY(QDeclarativeListProperty<ParticleType> particles READ particles)
     Q_PROPERTY(int startTime READ startTime WRITE setStartTime NOTIFY startTimeChanged)
-    Q_CLASSINFO("DefaultProperty", "particles")
 
 public:
     explicit ParticleSystem(QSGItem *parent = 0);
@@ -36,14 +32,6 @@ bool isRunning() const
     return m_running;
 }
 
-QDeclarativeListProperty<ParticleEmitter> emitters();
-
-QDeclarativeListProperty<ParticleType> particles();
-
-QDeclarativeListProperty<ParticleAffector> affectors()
-{
-    return QDeclarativeListProperty<ParticleAffector>(this, m_affectors);
-}
 int startTime() const
 {
     return m_startTime;
@@ -59,21 +47,10 @@ void startTimeChanged(int arg);
 
 public slots:
 void pleaseUpdate(){if(this)update();}//XXX
-void registerEmitter(ParticleEmitter* emitter);
 void reset();
 void prepareNextFrame();
-void setRunning(bool arg)
-{
-    if (m_running != arg) {
-        m_running = arg;
-        emit runningChanged(arg);
-        if(arg)
-            update();
-    }
-}
+void setRunning(bool arg);
 
-void emitParticle(ParticleData* p);
-ParticleData* newDatum(ParticleEmitter* e, ParticleType* p);
 
 void setStartTime(int arg)
 {
@@ -81,23 +58,32 @@ void setStartTime(int arg)
 }
 
 protected:
-    Node *updatePaintNode(Node *, UpdatePaintNodeData *);
+    void componentComplete();
 
 private slots:
     void countChanged();
+public://but only really for related class usage. Perhaps we should all be friends?
+    void emitParticle(ParticleData* p);
+    ParticleData* newDatum(ParticleEmitter* e, ParticleType* p);
+    uint systemSync(ParticleType* p);
+    QTime m_timestamp;
+    QVector<ParticleData*> data;
+    QList<EmitterData*> m_emitterData;//size, start
+
+    void registerParticleType(ParticleType* p);
+    void registerParticleEmitter(ParticleEmitter* e);
+    void registerParticleAffector(ParticleAffector* a);
 private:
-    void buildParticleNodes();
+    void initializeSystem();
     int m_particle_count;
     bool m_running;
-    bool m_do_reset;
-    Node* m_node;
-    QTime m_timestamp;
+    bool m_initialized;
     QList<ParticleEmitter*> m_emitters;
     QList<ParticleAffector*> m_affectors;
     QList<ParticleType*> m_particles;
-    QVector<ParticleData*> data;
-    QList<EmitterData*> m_emitterData;//size, start
+    QList<ParticleType*> m_syncList;
     int m_startTime;
+    uint m_timeInt;
 };
 
 //TODO: Clean up all this into ParticleData

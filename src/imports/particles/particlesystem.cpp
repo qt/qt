@@ -11,84 +11,38 @@ ParticleData::ParticleData()
     , particleIndex(0)
     , systemIndex(0)
 {
-        pv.x = 0;
-        pv.y = 0;
-        pv.t = -1;
-        pv.size = 0;
-        pv.endSize = 0;
-        pv.sx = 0;
-        pv.sy = 0;
-        pv.ax = 0;
-        pv.ay = 0;
+    pv.x = 0;
+    pv.y = 0;
+    pv.t = -1;
+    pv.size = 0;
+    pv.endSize = 0;
+    pv.sx = 0;
+    pv.sy = 0;
+    pv.ax = 0;
+    pv.ay = 0;
 }
 
 ParticleSystem::ParticleSystem(QSGItem *parent) :
     QSGItem(parent), m_running(true) , m_startTime(0)
 {
-    setFlag(ItemHasContents);
 }
 
-void emitterAppend(QDeclarativeListProperty<ParticleEmitter> *p, ParticleEmitter* pe)
+void ParticleSystem::registerParticleType(ParticleType* p)
 {
-    pe->m_system = qobject_cast<ParticleSystem*>(p->object);
-    QObject::connect(pe, SIGNAL(particlesPerSecondChanged(int)),
-            p->object, SLOT(countChanged()));
-    QObject::connect(pe, SIGNAL(particleDurationChanged(int)),
-            p->object, SLOT(countChanged()));
-    p->object->metaObject()->invokeMethod(p->object, "countChanged");
-    reinterpret_cast<QList<ParticleEmitter  *> *>(p->data)->append(pe);
+    m_particles << p;//###Set or uniqueness checking?
+    reset();
 }
 
-ParticleEmitter* emitterAt(QDeclarativeListProperty<ParticleEmitter> *p, int idx)
+void ParticleSystem::registerParticleEmitter(ParticleEmitter* e)
 {
-    return reinterpret_cast<QList<ParticleEmitter  *> *>(p->data)->at(idx);
+    m_emitters << e;//###How to get them out?
+    reset();
 }
 
-void emitterClear(QDeclarativeListProperty<ParticleEmitter> *p)
+void ParticleSystem::registerParticleAffector(ParticleAffector* a)
 {
-    reinterpret_cast<QList<ParticleEmitter  *> *>(p->data)->clear();
-}
-
-int emitterCount(QDeclarativeListProperty<ParticleEmitter> *p)
-{
-    return reinterpret_cast<QList<ParticleEmitter *> *>(p->data)->count();
-}
-
-QDeclarativeListProperty<ParticleEmitter> ParticleSystem::emitters()
-{
-    return QDeclarativeListProperty<ParticleEmitter>(this, &m_emitters, emitterAppend, emitterCount, emitterAt, emitterClear);
-}
-
-void ParticleSystem::registerEmitter(ParticleEmitter *emitter)
-{
-    QDeclarativeListProperty<ParticleEmitter> tmp(this, &m_emitters, emitterAppend, emitterCount, emitterAt, emitterClear);
-    emitterAppend(&tmp, emitter);
-}
-
-void particleAppend(QDeclarativeListProperty<ParticleType> *p, ParticleType* pe)
-{
-    pe->m_system = qobject_cast<ParticleSystem*>(p->object);
-    reinterpret_cast<QList<ParticleType  *> *>(p->data)->append(pe);
-}
-
-ParticleType* particleAt(QDeclarativeListProperty<ParticleType> *p, int idx)
-{
-    return reinterpret_cast<QList<ParticleType  *> *>(p->data)->at(idx);
-}
-
-void particleClear(QDeclarativeListProperty<ParticleType> *p)
-{
-    reinterpret_cast<QList<ParticleType  *> *>(p->data)->clear();
-}
-
-int particleCount(QDeclarativeListProperty<ParticleType> *p)
-{
-    return reinterpret_cast<QList<ParticleType *> *>(p->data)->count();
-}
-
-QDeclarativeListProperty<ParticleType> ParticleSystem::particles()
-{
-    return QDeclarativeListProperty<ParticleType>(this, &m_particles, particleAppend, particleCount, particleAt, particleClear);
+    m_affectors << a;
+    reset();//TODO: Slim down the huge batch of resets at the start
 }
 
 void ParticleSystem::countChanged()
@@ -96,22 +50,29 @@ void ParticleSystem::countChanged()
     reset();//Need to give Particles new Count
 }
 
-void ParticleSystem::buildParticleNodes()
+void ParticleSystem::setRunning(bool arg)
 {
-    //TODO: Staggered loading (as emitted)
-    if(m_node)
-        delete m_node;
-    m_node = 0;
+    if (m_running != arg) {
+        m_running = arg;
+        emit runningChanged(arg);
+        reset();
+    }
+}
 
-    //TODO: update m_last_particle?
+void ParticleSystem::componentComplete()
+{
+    QSGItem::componentComplete();
+    reset();
+}
+
+void ParticleSystem::initializeSystem()
+{
     m_particle_count = 0;//TODO: Only when changed?
     qDeleteAll(m_emitterData);
     m_emitterData.clear();
-
     if(!m_emitters.count() || !m_particles.count())
         return;
 
-    m_node = new Node;
     foreach(ParticleEmitter* e, m_emitters){
         if(!e->particle())
             e->setParticle(m_particles[0]);
@@ -120,7 +81,7 @@ void ParticleSystem::buildParticleNodes()
         m_emitterData.last()->start = m_particle_count;
         m_emitterData.last()->nextIdx = 0;
         m_particle_count += m_emitterData.last()->size;
-    }
+    }//TODO: Particle based, not emitter based, blocks?
     data.resize(m_particle_count);
     if(m_particle_count > 16000)
         qWarning() << "Particle system contains a vast number of particles (>16000). Expect poor performance";
@@ -134,41 +95,20 @@ void ParticleSystem::buildParticleNodes()
             }
         }
         particle->setCount(particleCount);
-        Node* child = particle->buildParticleNode();
-        if(child)
-            m_node->appendChildNode(child);
-        else
-            qDebug() << "Couldn't build" << particle;
-        particle->wantsReset = false;
+        particle->m_pleaseReset = true;
     }
 
     m_timestamp.start();
+    m_initialized = true;
 }
 
 void ParticleSystem::reset()
 {
-    m_do_reset = true;
-}
-
-Node *ParticleSystem::updatePaintNode(Node *, UpdatePaintNodeData *)
-{
-    if(m_do_reset){
-        foreach(ParticleType* particle, m_particles)
-            particle->reset();
-        delete m_node;
-        m_node = 0;
-        m_do_reset = false;
-    }
-
-    prepareNextFrame();
-
-    if(m_running){
-        update();
-        if (m_node)
-            m_node->markDirty(Node::DirtyMaterial);//### Will this propagate to Particle Nodes?
-    }
-
-    return m_node;
+    if(!m_running)
+        return;
+    initializeSystem();
+    foreach(ParticleType* p, m_particles)
+        p->update();
 }
 
 ParticleData* ParticleSystem::newDatum(ParticleEmitter* e, ParticleType* p)
@@ -193,7 +133,7 @@ ParticleData* ParticleSystem::newDatum(ParticleEmitter* e, ParticleType* p)
     ret->p = p;
     return ret;
 }
-
+//TODO: Merge with newDatum
 void ParticleSystem::emitParticle(ParticleData* pd)
 {// called from prepareNextFrame()->emitWindow - enforce?
     if(!pd->p){
@@ -214,69 +154,43 @@ void ParticleSystem::emitParticle(ParticleData* pd)
     pd->p->load(pd);
 }
 
-void ParticleSystem::prepareNextFrame()
+
+
+uint ParticleSystem::systemSync(ParticleType* p)
 {
     if (!m_running)
-        return;
+        return 0;
+    if (!m_initialized)
+        return 0;//error in initialization
 
-    bool nodeReset = false;
-    foreach(ParticleType* p, m_particles){
-        if(p->wantsReset){
-            nodeReset = true;
-            p->wantsReset = false;
-        }
-    }
-    bool haveReset = false;
-    if (m_node == 0 || nodeReset){
-        buildParticleNodes();
-        haveReset = true;
-    }
+    if(m_syncList.isEmpty() || m_syncList.contains(p)){//Need to advance the simulation
+        m_syncList.clear();
 
-    if (m_node == 0) //error creating nodes
-        return;
-
-    if(haveReset){
-        for(int i=0; i<m_startTime; i+= 50){//big jumps
-            foreach(ParticleEmitter* emitter, m_emitters)
-                emitter->emitWindow(i);//then there's the big jump to start time?
-            if(m_affectors.count()){//Optimize the common no-affectors case
-                for(QVector<ParticleData*>::iterator iter=data.begin(); iter != data.end(); iter++){
-                    if(!(*iter))
-                        continue;
-                    ParticleVertex* p = &((*iter)->pv);
-                    qreal dt = i - p->dt;
-                    p->dt = i;
-                    foreach(ParticleAffector* a, m_affectors)
-                        a->affect(*iter, dt);
+        //### Elapsed time never shrinks - may cause problems if left emitting for weeks at a time.
+        m_timeInt = m_timestamp.elapsed() + m_startTime;
+        qreal time =  m_timeInt / 1000.;
+        foreach(ParticleEmitter* emitter, m_emitters)
+            emitter->emitWindow(m_timeInt);
+        if(m_affectors.count()){//Optimizes the common no-affectors case//TODO: Forced per-particle is restrictive. Give it all
+            for(QVector<ParticleData*>::iterator iter=data.begin(); iter != data.end(); iter++){
+                if(!(*iter))
+                    continue;
+                ParticleVertex* p = &((*iter)->pv);
+                qreal dt = time - p->dt;
+                p->dt = time;
+                bool modified = false;
+                foreach(ParticleAffector* a, m_affectors){
+                    if (a->affect(*iter, dt)){
+                        modified = true;
+                    }
                 }
+                if(modified)
+                    (*iter)->p->reload(*iter);
             }
-        }
+        }//TODO:Move particle positions along with system element moves?
     }
-
-    //### Elapsed time never shrinks - may cause problems if left emitting for weeks at a time.
-    uint timeInt = m_timestamp.elapsed() + m_startTime;
-    qreal time =  timeInt / 1000.;
-    foreach(ParticleEmitter* emitter, m_emitters)
-        emitter->emitWindow(timeInt);
-    if(m_affectors.count()){//Optimize the common no-affectors case
-        for(QVector<ParticleData*>::iterator iter=data.begin(); iter != data.end(); iter++){
-            if(!(*iter))
-                continue;
-            ParticleVertex* p = &((*iter)->pv);
-            qreal dt = time - p->dt;
-            p->dt = time;
-            bool modified = false;
-            foreach(ParticleAffector* a, m_affectors){
-                if (a->affect(*iter, dt)){
-                    modified = true;
-                }
-            }
-            if(modified)
-                (*iter)->p->reload(*iter);
-        }
-    }//TODO:Move particle positions along with element moves
-    foreach(ParticleType* particle, m_particles)
-        particle->prepareNextFrame(timeInt);
+    m_syncList << p;
+    return m_timeInt;
 }
 
 //sets the x accleration without affecting the instantaneous x velocity or position

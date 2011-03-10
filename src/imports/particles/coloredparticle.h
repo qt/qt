@@ -15,15 +15,12 @@ class ColoredParticle : public ParticleType
 
     Q_PROPERTY(qreal additive READ additive WRITE setAdditive NOTIFY additiveChanged)
 public:
-    explicit ColoredParticle(QObject *parent = 0);
+    explicit ColoredParticle(QSGItem *parent = 0);
     virtual ~ColoredParticle(){}
 
     virtual void load(ParticleData*);
     virtual void reload(ParticleData*);
     virtual void setCount(int c);
-    virtual Node* buildParticleNode();
-    virtual void reset();
-    virtual void prepareNextFrame(uint timeStamp);
 
     QUrl image() const { return m_image_name; }
     void setImage(const QUrl &image);
@@ -55,7 +52,10 @@ signals:
 public slots:
 
 protected:
-
+    Node *updatePaintNode(Node *, UpdatePaintNodeData *);
+    void reset();
+    void prepareNextFrame();
+    GeometryNode* buildParticleNode();
 private:
 
     bool m_do_reset;

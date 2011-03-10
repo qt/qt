@@ -9,9 +9,9 @@ SwarmAffector::SwarmAffector(QObject *parent) :
 
 void SwarmAffector::ensureInit(ParticleData* d)
 {
-    if(m_system == d->p->m_system)
+    if(m_system == d->p->system())
         return;
-    m_system = d->p->m_system;
+    m_system = d->p->system();
     m_lastPos.resize(m_system->count());
 }
 

@@ -20,7 +20,6 @@ public:
     explicit ParticleEmitter(QSGItem *parent = 0);
     virtual void emitWindow(int timeStamp);
 
-    ParticleSystem* m_system;//###Needs to be set from classless function? Needed at all?
     ParticleType* particle() {return m_particle;}
 
     bool emitting() const
@@ -49,7 +48,6 @@ signals:
     void emittingChanged(bool);
 
     void particleChanged(ParticleType* arg);
-
     void systemChanged(ParticleSystem* arg);
 
 public slots:
@@ -84,18 +82,17 @@ public slots:
     {
         if (m_system != arg) {
             m_system = arg;
+            m_system->registerParticleEmitter(this);
             emit systemChanged(arg);
         }
     }
 
 protected:
     ParticleType* m_particle;
+    ParticleSystem* m_system;
     int m_particlesPerSecond;
     int m_particleDuration;
     bool m_emitting;
-private slots:
-    void registerSystem(ParticleSystem* s){s->registerEmitter(this);}
-
 };
 
 #endif // PARTICLEEMITTER_H

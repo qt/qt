@@ -4,25 +4,40 @@
 #include <QObject>
 #include "particlesystem.h"
 
-class ParticleType : public QObject
+class ParticleType : public QSGItem
 {
     Q_OBJECT
+    Q_PROPERTY(ParticleSystem* system READ system WRITE setSystem NOTIFY systemChanged)
 public:
-    explicit ParticleType(QObject *parent = 0);
+    explicit ParticleType(QSGItem *parent = 0);
     virtual void load(ParticleData*);
     virtual void reload(ParticleData*);
     virtual void setCount(int c);
     virtual int count();
-    virtual Node* buildParticleNode();
-    virtual void reset();
-    virtual void prepareNextFrame(uint timeStamp);
-    ParticleSystem* m_system; //set by classless function
-    bool wantsReset;
+    ParticleSystem* system() const
+    {
+        return m_system;
+    }
+
 signals:
     void countChanged();
+    void systemChanged(ParticleSystem* arg);
+
 public slots:
+void setSystem(ParticleSystem* arg)
+{
+    if (m_system != arg) {
+        m_system = arg;
+        m_system->registerParticleType(this);
+        emit systemChanged(arg);
+    }
+}
+
 protected:
+    ParticleSystem* m_system;
+    friend class ParticleSystem;
     int m_count;
+    bool m_pleaseReset;
 };
 
 #endif // PARTICLE_H

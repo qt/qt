@@ -14,20 +14,21 @@ class SpriteParticle : public ParticleType
     Q_PROPERTY(QDeclarativeListProperty<SpriteState> sprites READ sprites)
     Q_CLASSINFO("DefaultProperty", "sprites")
 public:
-    explicit SpriteParticle(QObject *parent = 0);
+    explicit SpriteParticle(QSGItem *parent = 0);
     virtual void load(ParticleData*);
     virtual void reload(ParticleData*);
     virtual void setCount(int c);
-    virtual Node* buildParticleNode();
-    virtual void reset();
-    virtual void prepareNextFrame(uint timeStamp);
 
     QDeclarativeListProperty<SpriteState> sprites();
     SpriteEngine* spriteEngine() {return m_spriteEngine;}
 signals:
 
 public slots:
-
+protected:
+    Node *updatePaintNode(Node *, UpdatePaintNodeData *);
+    void reset();
+    void prepareNextFrame();
+    GeometryNode* buildParticleNode();
 private slots:
     void createEngine();
 private:

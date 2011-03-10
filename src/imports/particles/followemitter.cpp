@@ -63,6 +63,10 @@ void FollowEmitter::emitWindow(int timeStamp)
     float sizeAtEnd = m_particleEndSize >= 0 ? m_particleEndSize : m_particleSize;
 
     foreach(ParticleData* d, m_pending){
+        if(d->p != m_follow){//WTF?
+            m_pending.remove(d);
+            continue;
+        }
         pt = m_lastEmission[d->particleIndex];
         while(pt < time){
             ParticleData* datum = m_system->newDatum(this, m_particle);

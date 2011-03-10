@@ -8,8 +8,6 @@ ParticleEmitter::ParticleEmitter(QSGItem *parent) :
   , m_emitting(true)
 
 {
-    connect(this, SIGNAL(systemChanged(ParticleSystem*)),
-            this, SLOT(registerSystem(ParticleSystem*)));
 }
 
 void ParticleEmitter::emitWindow(int timeStamp)

@@ -37,9 +37,9 @@ void TurbulenceAffector::setSize(int arg)
 
 void TurbulenceAffector::ensureInit(ParticleData* d)
 {
-    if(m_system == d->p->m_system)
+    if(m_system == d->p->system())
         return;
-    m_system = d->p->m_system;
+    m_system = d->p->system();
     m_field = (QPointF**)malloc(m_gridSize * sizeof(QPointF*));
     for(int i=0; i<m_gridSize; i++)
         m_field[i]  = (QPointF*)malloc(m_gridSize * sizeof(QPointF));

@@ -25,7 +25,7 @@
 #include "particle.h"
 #include "coloredparticle.h"
 #include "spriteparticle.h"
-#include "pairedparticle.h"
+//#include "pairedparticle.h"
 #include "spriteimage.h"
 #include "followemitter.h"
 #include "followaffector.h"
@@ -49,7 +49,7 @@ void ParticlesPlugin::registerTypes(const char *uri)
     qmlRegisterType<ParticleType>(uri, 2, 0, "Particle");
     qmlRegisterType<ColoredParticle>(uri, 2, 0, "ColoredParticle");
     qmlRegisterType<SpriteParticle>(uri, 2, 0, "SpriteParticle");
-    qmlRegisterType<PairedParticle>(uri, 2, 0, "PairedParticle");
+    //qmlRegisterType<PairedParticle>(uri, 2, 0, "PairedParticle");
 
     qmlRegisterType<ParticleEmitter>(uri, 2, 0, "ParticleEmitter");
     qmlRegisterType<TrailsEmitter>(uri, 2, 0, "TrailEmitter");

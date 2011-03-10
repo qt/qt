@@ -201,7 +201,7 @@ struct ColoredParticleVertices {
 };
 
 
-ColoredParticle::ColoredParticle(QObject* parent)
+ColoredParticle::ColoredParticle(QSGItem* parent)
     : ParticleType(parent)
     , m_do_reset(false)
     , m_color(Qt::white)
@@ -210,6 +210,7 @@ ColoredParticle::ColoredParticle(QObject* parent)
     , m_node(0)
     , m_material(0)
 {
+    setFlag(ItemHasContents);
 }
 
 void ColoredParticle::setImage(const QUrl &image)
@@ -261,21 +262,12 @@ void ColoredParticle::setAdditive(qreal additive)
 void ColoredParticle::setCount(int c)
 {
     ParticleType::setCount(c);
-    if(m_node)
-        delete m_node;
-    m_node = 0;//Force rebuild;
-    wantsReset = true;
+    m_pleaseReset = true;
 }
 
 void ColoredParticle::reset()
 {
-     delete m_node;
-     delete m_material;
-
-     m_node = 0;
-     m_material = 0;
-     m_count = 0;
-     wantsReset = true;
+     m_pleaseReset = true;
 }
 
 static QSGGeometry::Attribute ColoredParticle_Attributes[] = {
@@ -293,7 +285,7 @@ static QSGGeometry::AttributeSet ColoredParticle_AttributeSet =
     ColoredParticle_Attributes
 };
 
-Node* ColoredParticle::buildParticleNode()
+GeometryNode* ColoredParticle::buildParticleNode()
 {
     QSGContext *sg = QSGContext::current;
 
@@ -387,15 +379,40 @@ Node* ColoredParticle::buildParticleNode()
     return m_node;
 }
 
-void ColoredParticle::prepareNextFrame(uint timeStamp)
+Node *ColoredParticle::updatePaintNode(Node *, UpdatePaintNodeData *)
 {
-    if (m_node == 0)
-        return;
+    if(m_pleaseReset){
+        if(m_node)
+            delete m_node;
+        if(m_material)
+            delete m_material;
+
+        m_node = 0;
+        m_material = 0;
+        m_pleaseReset = false;
+    }
+
+    prepareNextFrame();
+    if (m_node){
+        update();
+        m_node->markDirty(Node::DirtyMaterial);
+    }
+
+    return m_node;
+}
+
+void ColoredParticle::prepareNextFrame()
+{
+    if (m_node == 0){    //TODO: Staggered loading (as emitted)
+        m_node = buildParticleNode();
+        if(m_node == 0)
+            return;
+    }
+    uint timeStamp = m_system->systemSync(this);
 
     qreal time = timeStamp / 1000.;
     m_material->timelength = m_particleDuration / 1000.;
     m_material->timestamp = time;
-
 }
 
 
@@ -436,7 +453,7 @@ void ColoredParticle::load(ParticleData *d)
     if (m_node == 0)
         return;
 
-    m_particleDuration = d->e->particleDuration();//XXX, only last particle
+    m_particleDuration = d->e->particleDuration();//XXX, only last particle so assumes they're all the same
     //Color initialization
     // Particle color
     Color4ub color;

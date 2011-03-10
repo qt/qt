@@ -30,7 +30,7 @@ HEADERS += \
     meanderaffector.h \
     toggleaffector.h \
     spriteimage.h \
-    pairedparticle.h \
+    #pairedparticle.h \
     followemitter.h \
     followaffector.h \
     swarmaffector.h \
@@ -64,7 +64,7 @@ SOURCES += \
     meanderaffector.cpp \
     toggleaffector.cpp \
     spriteimage.cpp \
-    pairedparticle.cpp \
+    #pairedparticle.cpp \
     followemitter.cpp \
     followaffector.cpp \
     swarmaffector.cpp \

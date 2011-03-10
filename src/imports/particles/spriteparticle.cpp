@@ -162,12 +162,13 @@ struct SpriteParticleVertices {
     SpriteParticleVertex v4;
 };
 
-SpriteParticle::SpriteParticle(QObject *parent) :
+SpriteParticle::SpriteParticle(QSGItem *parent) :
     ParticleType(parent)
     , m_node(0)
     , m_material(0)
     , m_spriteEngine(0)
 {
+    setFlag(ItemHasContents);
 }
 
 QDeclarativeListProperty<SpriteState> SpriteParticle::sprites()
@@ -189,10 +190,7 @@ void SpriteParticle::createEngine()
 void SpriteParticle::setCount(int c)
 {
     ParticleType::setCount(c);
-    if(m_node)
-        delete m_node;
-    m_node = 0;
-    wantsReset = true;
+    m_pleaseReset = true;
 }
 
 static QSGGeometry::Attribute SpriteParticle_Attributes[] = {
@@ -212,7 +210,7 @@ static QSGGeometry::AttributeSet SpriteParticle_AttributeSet =
 
 
 
-Node* SpriteParticle::buildParticleNode()
+GeometryNode* SpriteParticle::buildParticleNode()
 {
     QSGContext *sg = QSGContext::current;
 
@@ -359,19 +357,46 @@ void SpriteParticle::reload(ParticleData *d)
     vertexCopy(p.v4, d->pv);
 }
 
-void SpriteParticle::prepareNextFrame(uint timeInt)
-{
-    if (m_node == 0) //error creating node
-        return;
 
-    qreal time =  timeInt / 1000.;
+Node *SpriteParticle::updatePaintNode(Node *, UpdatePaintNodeData *)
+{
+    if(m_pleaseReset){
+        if(m_node)
+            delete m_node;
+        if(m_material)
+            delete m_material;
+
+        m_node = 0;
+        m_material = 0;
+        m_pleaseReset = false;
+    }
+    prepareNextFrame();
+    if (m_node){
+        update();
+        m_node->markDirty(Node::DirtyMaterial);
+    }
+
+    return m_node;
+}
+
+void SpriteParticle::prepareNextFrame()
+{
+    if (m_node == 0){    //TODO: Staggered loading (as emitted) (is it just moving this check to load()?)
+        m_node = buildParticleNode();
+        if(m_node == 0)
+            return;
+    }
+    uint timeStamp = m_system->systemSync(this);
+
+
+    qreal time =  timeStamp / 1000.;
     m_material->timelength = m_particle_duration / 1000.;
     m_material->timestamp = time;
     m_material->animcount = m_spriteEngine->stateCount();
 
     //Advance State
     SpriteParticleVertices *particles = (SpriteParticleVertices *) m_node->geometry()->vertexData();
-    m_spriteEngine->updateSprites(timeInt);
+    m_spriteEngine->updateSprites(timeStamp);
     for(int i=0; i<m_count; i++){
         SpriteParticleVertices &p = particles[i];
         int curIdx = m_spriteEngine->spriteState(i);
@@ -386,11 +411,5 @@ void SpriteParticle::prepareNextFrame(uint timeInt)
 
 void SpriteParticle::reset()
 {
-    delete m_node;
-    delete m_material;
-
-    m_node = 0;
-    m_material = 0;
-    m_count = 0;
-    wantsReset = true;
+    m_pleaseReset = true;
 }

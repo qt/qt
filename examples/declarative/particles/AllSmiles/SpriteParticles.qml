@@ -5,18 +5,16 @@ Rectangle{
     color: "goldenrod"
     width: 400
     height: 400
-    ParticleSystem{
-        anchors.fill: parent
-        particles:[ SpriteParticle{
-            id: single
-            Sprite{
-                source: "squarefacesprite.png"
-                frames: 6
-                duration: 120
-            }
-        }]
+    SpriteParticle{
+        id: single
+        system: sys
         z: 2
-        emitters: particles
+        anchors.fill: parent
+        Sprite{
+            source: "squarefacesprite.png"
+            frames: 6
+            duration: 120
+        }
     }
     Rectangle{
         id: rect
@@ -26,6 +24,7 @@ Rectangle{
         y: 180
         color: "lightsteelblue"
         TrailEmitter{
+            system: sys
             anchors.centerIn: parent
             id: particles
                 particlesPerSecond: 6
@@ -45,6 +44,10 @@ Rectangle{
             drag.target: rect
             drag.axis: Drag.XandYAxis
         }
+    }
+    ParticleSystem{
+        id: sys
+        anchors.fill: parent
     }
 
 }

@@ -65,14 +65,14 @@ void PairedParticle::setCount(int c)
     //TODO: Track wantsReset properly
     if(!m_pairs.isEmpty()){
         m_particle->setCount(c);
-        wantsReset = true;
+        m_pleaseReset = true;
         foreach(PairedParticle* pair, m_pairs){
             pair->m_particle->setCount(c);
-            pair->wantsReset = true;
+            pair->m_pleaseReset = true;
         }
     }else{
         m_particle->setCount(qMax(c,1));
-        wantsReset = true;
+        m_pleaseReset = true;
     }
 }
 

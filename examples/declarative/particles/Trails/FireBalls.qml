@@ -9,41 +9,7 @@ Rectangle {
 
     ParticleSystem{
         id: particles
-        ColoredParticle{
-            id: smoke
-            image: "content/particle.png"
-            colorVariation: 0
-            color: "#111111"
-            additive: 1
-        }
-        ColoredParticle{
-            id: smoke2
-            image: "content/particle.png"
-            colorVariation: 0
-            color: "#111111"
-            additive: 1
-        }
-        ColoredParticle{
-            id: flame
-            image: "content/particle.png"
-            colorVariation: 0.1
-            color: "#ff400f"
-            additive: 1
-        }
-        ColoredParticle{
-            id: flame2
-            image: "content/particle.png"
-            colorVariation: 0.1
-            color: "#ff400f"
-            additive: 1
-        }
-        ColoredParticle{
-            id: fireball
-            image: "content/particleA.png"
-            colorVariation: 0.2
-            color: "#ff400f"
-            additive: 1
-        }
+        particles: [smoke, smoke2, flame, flame2, fireball]
         affectors:[
             Follow{ emitter: fireballSmoke },
             Zone{
@@ -57,6 +23,41 @@ Rectangle {
         ]
     }
 
+    ColoredParticle{
+        id: smoke
+        image: "content/particle.png"
+        colorVariation: 0
+        color: "#111111"
+        additive: 1
+    }
+    ColoredParticle{
+        id: smoke2
+        image: "content/particle.png"
+        colorVariation: 0
+        color: "#111111"
+        additive: 1
+    }
+    ColoredParticle{
+        id: flame
+        image: "content/particle.png"
+        colorVariation: 0.1
+        color: "#ff400f"
+        additive: 1
+    }
+    ColoredParticle{
+        id: flame2
+        image: "content/particle.png"
+        colorVariation: 0.1
+        color: "#ff400f"
+        additive: 1
+    }
+    ColoredParticle{
+        id: fireball
+        image: "content/particleA.png"
+        colorVariation: 0.2
+        color: "#ff400f"
+        additive: 1
+    }
     TrailEmitter{
         id: fire
         system: particles

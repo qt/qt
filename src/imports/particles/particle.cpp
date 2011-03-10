@@ -1,7 +1,7 @@
 #include "particle.h"
 
-ParticleType::ParticleType(QObject *parent) :
-    QObject(parent)
+ParticleType::ParticleType(QSGItem *parent) :
+    QSGItem(parent)
 {
 }
 
@@ -26,15 +26,3 @@ int ParticleType::count()
     return m_count;
 }
 
-Node* ParticleType::buildParticleNode()
-{
-    return 0;
-}
-
-void ParticleType::reset()
-{
-}
-
-void ParticleType::prepareNextFrame(uint timeStamp)
-{
-}
