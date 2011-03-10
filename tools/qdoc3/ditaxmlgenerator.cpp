@@ -5540,7 +5540,7 @@ void DitaXmlGenerator::writeDitaMap()
     \o <author> *
     \o <brand>
     \o <category> *
-    \o <compomnent>
+    \o <compomnent> *
     \o <copyrholder>
     \o <copyright>
     \o <created>
@@ -5550,19 +5550,19 @@ void DitaXmlGenerator::writeDitaMap()
     \o <keywords>
     \o <metadata> *
     \o <othermeta>
-    \o <permissions>
+    \o <permissions> *
     \o <platform>
-    \o <prodinfo>
-    \o <prodname>
+    \o <prodinfo> *
+    \o <prodname> *
     \o <prolog> *
-    \o <publisher>
+    \o <publisher> *
     \o <resourceid>
     \o <revised>
     \o <source>
     \o <tm>
     \o <unknown>
-    \o <vrm>
-    \o <vrmlist>
+    \o <vrm> *
+    \o <vrmlist> *
   \endlist
 
   \node * means the tag has been used.
@@ -5575,13 +5575,27 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
         return;
     writeStartTag(DT_prolog);
     
-    writeStartTag(DT_author);
     QString author = inner->author();
+    writeStartTag(DT_author);
     if (author.isEmpty())
         author = "Qt Development Frameworks";
     xmlWriter().writeCharacters(author);
     writeEndTag(); // <author>
-        
+
+    QString publisher = inner->publisher();
+    writeStartTag(DT_publisher);
+    if (publisher.isEmpty())
+        publisher = "Nokia";
+    xmlWriter().writeCharacters(publisher);
+    writeEndTag(); // <publisher>
+
+    QString permissions = inner->permissions();
+    writeStartTag(DT_permissions);
+    if (permissions.isEmpty())
+        permissions = "all";
+    xmlWriter().writeAttribute("view",permissions);
+    writeEndTag(); // <permissions>
+
     writeStartTag(DT_metadata);
     writeStartTag(DT_category);
     QString category = "Page";
