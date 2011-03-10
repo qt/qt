@@ -55,6 +55,7 @@
 #include "private/qdeclarativestringconverters_p.h"
 #include "private/qdeclarativexmlhttprequest_p.h"
 #include "private/qdeclarativesqldatabase_p.h"
+#include "private/qdeclarativescarceresourcescriptclass_p.h"
 #include "private/qdeclarativetypenamescriptclass_p.h"
 #include "private/qdeclarativelistscriptclass_p.h"
 #include "qdeclarativescriptstring.h"
@@ -350,7 +351,7 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
   objectClass(0), valueTypeClass(0), globalClass(0), cleanup(0), erroredBindings(0),
   inProgressCreations(0), scriptEngine(this), workerScriptEngine(0), componentAttached(0),
   inBeginCreate(false), networkAccessManager(0), networkAccessManagerFactory(0),
-  typeLoader(e), importDatabase(e), uniqueId(1)
+  scarceResources(0), scarceResourcesRefCount(0), typeLoader(e), importDatabase(e), uniqueId(1)
 {
     if (!qt_QmlQtModule_registered) {
         qt_QmlQtModule_registered = true;
@@ -501,6 +502,8 @@ QDeclarativeEnginePrivate::~QDeclarativeEnginePrivate()
     contextClass = 0;
     delete objectClass;
     objectClass = 0;
+    delete scarceResourceClass;
+    scarceResourceClass = 0;
     delete valueTypeClass;
     valueTypeClass = 0;
     delete typeNameClass;
@@ -576,6 +579,7 @@ void QDeclarativeEnginePrivate::init()
 
     contextClass = new QDeclarativeContextScriptClass(q);
     objectClass = new QDeclarativeObjectScriptClass(q);
+    scarceResourceClass = new QDeclarativeScarceResourceScriptClass(q);
     valueTypeClass = new QDeclarativeValueTypeScriptClass(q);
     typeNameClass = new QDeclarativeTypeNameScriptClass(q);
     listClass = new QDeclarativeListScriptClass(q);
@@ -2077,7 +2081,9 @@ QScriptValue QDeclarativeEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine
 
 QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &val)
 {
-    if (val.userType() == qMetaTypeId<QDeclarativeListReference>()) {
+    if (variantIsScarceResource(val)) {
+        return scarceResourceClass->newScarceResource(val);
+    } else if (val.userType() == qMetaTypeId<QDeclarativeListReference>()) {
         QDeclarativeListReferencePrivate *p =
             QDeclarativeListReferencePrivate::get((QDeclarativeListReference*)val.constData());
         if (p->object) {
@@ -2106,11 +2112,69 @@ QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &v
     }
 }
 
+/*
+   If the variant is a scarce resource (consumes a large amount of memory, or
+   only a limited number of them can be held in memory at any given time without
+   exhausting supply for future use) we need to release the scarce resource
+   after evaluation of the javascript binding is complete.
+ */
+bool QDeclarativeEnginePrivate::variantIsScarceResource(const QVariant& val)
+{
+    if (val.type() == QVariant::Pixmap) {
+        return true;
+    } else if (val.type() == QVariant::Image) {
+        return true;
+    }
+
+    return false;
+}
+
+/*
+   This function should be called prior to evaluation of any js expression,
+   so that scarce resources are not freed prematurely (eg, if there is a
+   nested javascript expression).
+ */
+void QDeclarativeEnginePrivate::referenceScarceResources()
+{
+    scarceResourcesRefCount += 1;
+}
+
+/*
+   This function should be called after evaluation of the js expression is
+   complete, and so the scarce resources may be freed safely.
+ */
+void QDeclarativeEnginePrivate::dereferenceScarceResources()
+{
+    Q_ASSERT(scarceResourcesRefCount > 0);
+    scarceResourcesRefCount -= 1;
+
+    // if the refcount is zero, then evaluation of the "top level"
+    // expression must have completed.  We can safely release the
+    // scarce resources.
+    if (scarceResourcesRefCount == 0) {
+        // iterate through the list and release them all.
+        // note that the actual SRD is owned by the JS engine,
+        // so we cannot delete the SRD; but we can free the
+        // memory used by the variant in the SRD.
+        ScarceResourceData *srd = 0;
+        while (scarceResources) {
+            srd = scarceResources; // srd points to the "old" (current) head of the list
+            scarceResources = srd->next; // srd->next is the "new" head of the list
+            if (srd->next) srd->next->prev = &scarceResources; // newHead->prev = listptr.
+            srd->next = 0;
+            srd->prev = 0;
+            srd->releaseResource(); // release the old head node.
+        }
+    }
+}
+
 QVariant QDeclarativeEnginePrivate::scriptValueToVariant(const QScriptValue &val, int hint)
 {
     QScriptDeclarativeClass *dc = QScriptDeclarativeClass::scriptClass(val);
     if (dc == objectClass)
         return QVariant::fromValue(objectClass->toQObject(val));
+    else if (dc == scarceResourceClass)
+        return scarceResourceClass->toVariant(val);
     else if (dc == valueTypeClass)
         return valueTypeClass->toVariant(val);
     else if (dc == contextClass)

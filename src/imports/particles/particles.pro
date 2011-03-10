@@ -29,7 +29,12 @@ HEADERS += \
     attractoraffector.h \
     meanderaffector.h \
     toggleaffector.h \
-    spriteimage.h
+    spriteimage.h \
+    pairedparticle.h \
+    followemitter.h \
+    followaffector.h \
+    swarmaffector.h \
+    turbulenceaffector.h
 
 SOURCES += \
     V1/qdeclarativeparticles.cpp \
@@ -58,7 +63,12 @@ SOURCES += \
     attractoraffector.cpp \
     meanderaffector.cpp \
     toggleaffector.cpp \
-    spriteimage.cpp
+    spriteimage.cpp \
+    pairedparticle.cpp \
+    followemitter.cpp \
+    followaffector.cpp \
+    swarmaffector.cpp \
+    turbulenceaffector.cpp
 
 QT += declarative opengl
 

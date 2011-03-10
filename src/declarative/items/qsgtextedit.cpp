@@ -787,11 +787,11 @@ void QSGTextEdit::inputMethodEvent(QInputMethodEvent *event)
     d->control->processEvent(event, QPointF(0, -d->yoff));
 }
 
-void QSGTextEdit::itemChange(GraphicsItemChange change, const QVariant &value)
+void QSGTextEdit::itemChange(ItemChange change, const ItemChangeData &value)
 {
     Q_D(QSGTextEdit);
     if (change == ItemActiveFocusHasChanged) {
-        setCursorVisible(value.toBool() && d->canvas && d->canvas->hasFocus());
+        setCursorVisible(value.boolValue && d->canvas && d->canvas->hasFocus());
     }
     QSGItem::itemChange(change, value);
 }

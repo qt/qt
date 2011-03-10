@@ -4,7 +4,7 @@ var maxColumn = 10;
 var maxRow = 15;
 var maxIndex = maxColumn*maxRow;
 var board = new Array(maxIndex);
-var blockSrc = "SamegameCore/BoomBlock.qml";
+var blockSrc = "BoomBlock.qml";
 var scoresURL = "";
 var gameDuration;
 var component = Qt.createComponent(blockSrc);

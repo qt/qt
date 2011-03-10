@@ -148,7 +148,7 @@ void QSGTextNode::addTextDecorations(const QPointF &position, const QFont &font,
 
 GlyphNodeInterface *QSGTextNode::addGlyphs(const QPointF &position, const QGlyphs &glyphs, const QColor &color)
 {
-    GlyphNodeInterface *node = m_context->createGlyphNode(glyphs.font());
+    GlyphNodeInterface *node = m_context->createGlyphNode();
     node->setGlyphs(position, glyphs);
     node->setColor(color);
 
@@ -178,67 +178,6 @@ void QSGTextNode::addTextLayout(const QPointF &position, QTextLayout *textLayout
     QFont font = textLayout->font();
     if (font.strikeOut() || font.underline() || font.overline())
         addTextDecorations(position, font, color, textLayout->boundingRect().width());
-}
-
-void QSGTextNode::setTextLayout(const QPointF &position, QTextLayout *textLayout, const QColor &color)
-{
-    deleteDecorations();
-
-    QList<QGlyphs> glyphsList(textLayout->glyphs());
-    QList<GlyphNodeInterface *> nodes = glyphNodes();
-
-    int glyphCount = glyphsList.count();
-    int nodeCount = nodes.count();
-
-    for (int i = 0; i < glyphCount; ++i) {
-        if (i < nodeCount) {
-            GlyphNodeInterface *node = nodes.at(i);
-            node->setGlyphs(position, glyphsList.at(i));
-            node->setColor(color);
-        } else {
-            addGlyphs(position, glyphsList.at(i), color);
-        }
-    }
-
-    if (glyphCount < nodeCount) {
-        for (int i = nodeCount; i > glyphCount; --i)
-            delete childAtIndex(i - 1);
-    }
-
-    QFont font = textLayout->font();
-    if (font.strikeOut() || font.underline() || font.overline())
-        addTextDecorations(position, font, color, textLayout->boundingRect().width());
-}
-
-QList<GlyphNodeInterface *> QSGTextNode::glyphNodes() const
-{
-    QList<GlyphNodeInterface *> nodes;
-    for (int i = 0; i < childCount(); ++i) {
-        Node *n = childAtIndex(i);
-        if (n->subType() == Node::GlyphNodeSubType)
-            nodes.append(static_cast<GlyphNodeInterface *>(n));
-    }
-    return nodes;
-}
-
-QList<SolidRectNode *> QSGTextNode::decorationNodes() const
-{
-    QList<SolidRectNode *> nodes;
-    for (int i = 0; i < childCount(); ++i) {
-        Node *n = childAtIndex(i);
-        if (n->subType() == Node::SolidRectNodeSubType)
-            nodes.append(static_cast<SolidRectNode *>(n));
-    }
-    return nodes;
-}
-
-void QSGTextNode::deleteDecorations()
-{
-    for (int i = 0; i < childCount(); ++i) {
-        Node *n = childAtIndex(i);
-        if (n->subType() == Node::SolidRectNodeSubType)
-            delete n;
-    }
 }
 
 

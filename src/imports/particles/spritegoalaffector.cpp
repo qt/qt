@@ -2,6 +2,7 @@
 #include "spriteparticle.h"
 #include "spriteengine.h"
 #include "spritestate.h"
+#include <QDebug>
 
 SpriteGoalAffector::SpriteGoalAffector(QObject *parent) :
     ParticleAffector(parent), m_goalIdx(-1), m_jump(false)
@@ -43,9 +44,9 @@ bool SpriteGoalAffector::affect(ParticleData *d, qreal dt)
 
     if(m_goalIdx == -2 || engine != m_lastEngine)
         updateStateIndex(engine);
-    if(engine->spriteState(d->systemIndex) != m_goalIdx){
-        engine->setGoal(m_goalIdx, d->systemIndex, m_jump);
+    if(engine->spriteState(d->particleIndex) != m_goalIdx){
+        engine->setGoal(m_goalIdx, d->particleIndex, m_jump);
         emit affected(QPointF(d->curX(), d->curY()));//###Expensive if unconnected?
     }
-    return false; //Doesn't affect particle data
+    return true; //###Doesn't affect particle data
 }

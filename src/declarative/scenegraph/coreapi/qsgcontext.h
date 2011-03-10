@@ -84,7 +84,6 @@ public:
     virtual RectangleNodeInterface *createRectangleNode();
     virtual TextureNodeInterface *createTextureNode();
     virtual GlyphNodeInterface *createGlyphNode();
-    virtual GlyphNodeInterface *createGlyphNode(const QFont &font);
     virtual Renderer *createRenderer();
     virtual QSGTextureManager *createTextureManager(QSGContext *context);
 

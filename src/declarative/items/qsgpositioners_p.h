@@ -83,7 +83,7 @@ public:
 protected:
     QSGBasePositioner(QSGBasePositionerPrivate &dd, PositionerType at, QSGItem *parent);
     virtual void componentComplete();
-    virtual void itemChange(GraphicsItemChange, const QVariant &);
+    virtual void itemChange(ItemChange, const ItemChangeData &);
     void finishApplyTransitions();
 
 Q_SIGNALS:

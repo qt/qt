@@ -277,7 +277,7 @@ protected:
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void inputMethodEvent(QInputMethodEvent *e);
-    virtual void itemChange(GraphicsItemChange, const QVariant &);
+    virtual void itemChange(ItemChange, const ItemChangeData &);
 
     void paint(QPainter *);
 private:

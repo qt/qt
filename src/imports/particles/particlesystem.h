@@ -10,6 +10,14 @@ class ParticleEmitter;
 class Particle;
 class ParticleData;
 
+
+struct EmitterData{
+    int size;
+    int start;
+    int nextIdx;
+    QHash<Particle*, int> particleOffsets;
+};
+
 class ParticleSystem : public QSGItem
 {
     Q_OBJECT
@@ -17,6 +25,7 @@ class ParticleSystem : public QSGItem
     Q_PROPERTY(QDeclarativeListProperty<ParticleAffector> affectors READ affectors)
     Q_PROPERTY(QDeclarativeListProperty<ParticleEmitter> emitters READ emitters)
     Q_PROPERTY(QDeclarativeListProperty<Particle> particles READ particles)
+    Q_PROPERTY(int startTime READ startTime WRITE setStartTime NOTIFY startTimeChanged)
     Q_CLASSINFO("DefaultProperty", "particles")
 
 public:
@@ -29,18 +38,24 @@ bool isRunning() const
 
 QDeclarativeListProperty<ParticleEmitter> emitters();
 
-QDeclarativeListProperty<Particle> particles()
-{
-    return QDeclarativeListProperty<Particle>(this, m_particles);
-}
+QDeclarativeListProperty<Particle> particles();
 
 QDeclarativeListProperty<ParticleAffector> affectors()
 {
     return QDeclarativeListProperty<ParticleAffector>(this, m_affectors);
 }
+int startTime() const
+{
+    return m_startTime;
+}
+
+int count(){ return m_particle_count; }
+
 signals:
 
 void runningChanged(bool arg);
+
+void startTimeChanged(int arg);
 
 public slots:
 void pleaseUpdate(){if(this)update();}//XXX
@@ -52,11 +67,18 @@ void setRunning(bool arg)
     if (m_running != arg) {
         m_running = arg;
         emit runningChanged(arg);
+        if(arg)
+            update();
     }
 }
 
 void emitParticle(ParticleData* p);
-ParticleData* newDatum();
+ParticleData* newDatum(ParticleEmitter* e, Particle* p);
+
+void setStartTime(int arg)
+{
+    m_startTime = arg;
+}
 
 protected:
     Node *updatePaintNode(Node *, UpdatePaintNodeData *);
@@ -65,7 +87,6 @@ private slots:
     void countChanged();
 private:
     void buildParticleNodes();
-    int m_next_particle;
     int m_particle_count;
     bool m_running;
     bool m_do_reset;
@@ -74,7 +95,9 @@ private:
     QList<ParticleEmitter*> m_emitters;
     QList<ParticleAffector*> m_affectors;
     QList<Particle*> m_particles;
-    QVector<ParticleData*> d;
+    QVector<ParticleData*> data;
+    QList<EmitterData*> m_emitterData;//size, start
+    int m_startTime;
 };
 
 //TODO: Clean up all this into ParticleData
@@ -122,7 +145,7 @@ public:
 
     Particle* p;
     ParticleEmitter* e;
-    int emitterIndex;
+    int particleIndex;
     int systemIndex;
 };
 

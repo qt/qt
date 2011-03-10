@@ -119,6 +119,7 @@ static QObject *qobject_api(QDeclarativeEngine *engine, QScriptEngine *scriptEng
 
     testQObjectApi *o = new testQObjectApi();
     o->setQObjectTestProperty(20);
+    o->setQObjectTestWritableProperty(50);
     return o;
 }
 
@@ -147,6 +148,9 @@ void registerTypes()
     qmlRegisterType<OverrideDefaultPropertyObject>("Qt.test", 1,0, "OverrideDefaultPropertyObject");
     qmlRegisterType<MyRevisionedClass>("Qt.test",1,0,"MyRevisionedClass");
     qmlRegisterType<MyRevisionedClass,1>("Qt.test",1,1,"MyRevisionedClass");
+
+    // test scarce resource property binding post-evaluation optimisation
+    qmlRegisterType<ScarceResourceObject>("Qt.test", 1,0, "MyScarceResourceObject");
 
     // Register the uncreatable base class
     qmlRegisterRevision<MyRevisionedBaseClassRegistered,1>("Qt.test",1,1);

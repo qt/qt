@@ -94,7 +94,7 @@ DEFINE_BOOL_CONFIG_OPTION(enableImageCache, QML_ENABLE_TEXT_IMAGE_CACHE);
 QString QSGTextPrivate::elideChar = QString(0x2026);
 
 QSGTextPrivate::QSGTextPrivate()
-: color((QRgb)0), style(QSGText::Normal), hAlign(QSGText::AlignLeft),
+: color((QRgb)0), style(QSGText::Normal), hAlign(QSGText::AlignLeft), 
   vAlign(QSGText::AlignTop), elideMode(QSGText::ElideNone),
   format(QSGText::AutoText), wrapMode(QSGText::NoWrap), lineHeight(1),
   lineHeightMode(QSGText::ProportionalHeight),
@@ -115,14 +115,15 @@ void QSGTextPrivate::init()
     QObject::connect(textureProvider, SIGNAL(textureChanged()), q, SLOT(update()));
 }
 
-QSGTextDocumentWithImageResources::QSGTextDocumentWithImageResources(QSGText *parent)
+QSGTextDocumentWithImageResources::QSGTextDocumentWithImageResources(QSGText *parent) 
 : QTextDocument(parent), outstanding(0)
 {
+    setUndoRedoEnabled(false);
 }
 
 QSGTextDocumentWithImageResources::~QSGTextDocumentWithImageResources()
 {
-    if (!m_resources.isEmpty())
+    if (!m_resources.isEmpty()) 
         qDeleteAll(m_resources);
 }
 
@@ -235,6 +236,16 @@ void QSGTextPrivate::updateLayout()
         } else {
             singleline = false;
             QDeclarativeStyledText::parse(text, layout);
+        }
+    } else {
+        ensureDoc();
+        QTextBlockFormat::LineHeightTypes type;
+        type = lineHeightMode == QSGText::FixedHeight ? QTextBlockFormat::FixedHeight : QTextBlockFormat::ProportionalHeight;
+        QTextBlockFormat blockFormat;
+        blockFormat.setLineHeight((lineHeightMode == QSGText::FixedHeight ? lineHeight : lineHeight * 100), type);
+        for (QTextBlock it = doc->begin(); it != doc->end(); it = it.next()) {
+            QTextCursor cursor(it);
+            cursor.setBlockFormat(blockFormat);
         }
     }
 
@@ -526,7 +537,7 @@ QPixmap QSGTextPrivate::textLayoutImage(bool drawStyle)
 }
 
 /*!
-    Paints the QSGTextPrivate::layout QTextLayout into \a painter at \a pos.  If
+    Paints the QSGTextPrivate::layout QTextLayout into \a painter at \a pos.  If 
     \a drawStyle is true, the style color overrides all colors in the document.
 */
 void QSGTextPrivate::drawTextLayout(QPainter *painter, const QPointF &pos, bool drawStyle)
@@ -581,7 +592,7 @@ QPixmap QSGTextPrivate::textDocumentImage(bool drawStyle)
 /*!
     Mark the image cache as dirty.
 */
-void QSGTextPrivate::invalidateImageCache()
+void QSGTextPrivate::invalidateImageCache() 
 {
     Q_Q(QSGText);
 
@@ -638,13 +649,13 @@ void QSGTextPrivate::checkImageCache()
             break;
         }
 
-    }
+    } 
 
     imageCacheDirty = false;
 }
 
-/*!
-    Ensures the QSGTextPrivate::doc variable is set to a valid text document
+/*! 
+    Ensures the QSGTextPrivate::doc variable is set to a valid text document 
 */
 void QSGTextPrivate::ensureDoc()
 {
@@ -726,7 +737,7 @@ void QSGText::setFont(const QFont &font)
     d->sourceFont = font;
     QFont oldFont = d->font;
     d->font = font;
-    if (DistanceFieldFontAtlas::useDistanceFieldForFont(d->font))
+    if (DistanceFieldFontAtlas::distanceFieldEnabled())
         qt_disableFontHinting(d->font);
 
     if (d->font.pointSizeF() != -1) {
@@ -867,7 +878,7 @@ void QSGText::setWrapMode(WrapMode mode)
 
     d->wrapMode = mode;
     d->updateLayout();
-
+    
     emit wrapModeChanged();
 }
 
@@ -951,7 +962,7 @@ void QSGText::setElideMode(QSGText::TextElideMode mode)
 
     d->elideMode = mode;
     d->updateLayout();
-
+    
     emit elideModeChanged(d->elideMode);
 }
 
@@ -1075,15 +1086,16 @@ Node *QSGText::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
             node = static_cast<QSGTextNode *>(oldNode);
         }
 
+        node->deleteContent();
         node->setMatrix(QMatrix4x4());
 
         if (d->richText) {
-            node->deleteContent();
+
             d->ensureDoc();
             node->addTextDocument(bounds.topLeft(), d->doc);
 
         } else {
-            node->setTextLayout(QPoint(0, bounds.y()), &d->layout, d->color);
+            node->addTextLayout(QPoint(0, bounds.y()), &d->layout, d->color);
             QMatrix4x4 m;
             m.translate(0, QFontMetricsF(d->font).ascent());
             node->setMatrix(m);

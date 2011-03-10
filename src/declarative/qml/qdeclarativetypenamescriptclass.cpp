@@ -179,7 +179,6 @@ QDeclarativeTypeNameScriptClass::property(Object *obj, const Identifier &name)
 
 void QDeclarativeTypeNameScriptClass::setProperty(Object *o, const Identifier &n, const QScriptValue &v)
 {
-    Q_ASSERT(object);
     Q_ASSERT(!type);
 
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
@@ -187,6 +186,7 @@ void QDeclarativeTypeNameScriptClass::setProperty(Object *o, const Identifier &n
         Q_ASSERT(api->qobjectApi);
         ep->objectClass->setProperty(api->qobjectApi, n, v, context());
     } else {
+        Q_ASSERT(object);
         ep->objectClass->setProperty(((TypeNameData *)o)->object, n, v, context());
     }
 }

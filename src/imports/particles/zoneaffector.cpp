@@ -12,7 +12,13 @@ bool ZoneAffector::affect(ParticleData *d, qreal dt)
         return false;
     qreal x = d->curX();
     qreal y = d->curY();
-    if(x > m_x && x < m_x+m_width && y > m_y && y < m_y+m_height)
+    if(x >= m_x && x <= m_x+m_width && y >= m_y && y <= m_y+m_height)
         return m_affector->affect(d, dt);
     return false;
+}
+
+void ZoneAffector::reset(int systemIdx)
+{
+    if(m_affector)
+        m_affector->reset(systemIdx);
 }

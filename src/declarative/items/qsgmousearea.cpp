@@ -572,8 +572,7 @@ void QSGMouseArea::geometryChanged(const QRectF &newGeometry,
         d->lastPos = mapFromScene(d->lastScenePos);
 }
 
-void QSGMouseArea::itemChange(GraphicsItemChange change,
-                                       const QVariant &value)
+void QSGMouseArea::itemChange(ItemChange change, const ItemChangeData &value)
 {
     Q_D(QSGMouseArea);
     switch (change) {

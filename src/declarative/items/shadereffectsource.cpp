@@ -58,11 +58,14 @@ ShaderEffectTextureProvider::ShaderEffectTextureProvider(QObject *parent)
     , m_format(GL_RGBA)
     , m_renderer(0)
     , m_fbo(0)
+    , m_multisampledFbo(0)
 #ifdef QSG_DEBUG_FBO_OVERLAY
     , m_debugOverlay(0)
 #endif
     , m_live(true)
     , m_dirtyTexture(true)
+    , m_multisamplingSupportChecked(false)
+    , m_multisampling(false)
 {
 }
 
@@ -70,6 +73,7 @@ ShaderEffectTextureProvider::~ShaderEffectTextureProvider()
 {
     delete m_renderer;
     delete m_fbo;
+    delete m_multisampledFbo;
 #ifdef QSG_DEBUG_FBO_OVERLAY
     delete m_debugOverlay;
 #endif
@@ -146,7 +150,8 @@ void ShaderEffectTextureProvider::grab()
     if (m_size.isEmpty()) {
         m_texture = QSGTextureRef();
         delete m_fbo;
-        m_fbo = 0;
+        delete m_multisampledFbo;
+        m_multisampledFbo = m_fbo = 0;
         return;
     }
 
@@ -156,16 +161,47 @@ void ShaderEffectTextureProvider::grab()
     }
     m_renderer->setRootNode(static_cast<RootNode *>(root));
 
-    if (!m_fbo || m_fbo->size() != m_size || m_fbo->format().internalTextureFormat() != m_format) {
-        delete m_fbo;
-        QGLFramebufferObjectFormat format;
-        format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
-        format.setInternalTextureFormat(m_format);
-        m_fbo = new QGLFramebufferObject(m_size, format);
-        QSGTexture *tex = new QSGTexture;
-        tex->setTextureId(m_fbo->texture());
-        tex->setOwnsTexture(false);
-        m_texture = QSGTextureRef(tex);
+    bool mipmap = m_mipmap != None;
+    if (!m_fbo || m_fbo->size() != m_size || m_fbo->format().internalTextureFormat() != m_format
+        || (!m_fbo->format().mipmap() && mipmap))
+    {
+        if (!m_multisamplingSupportChecked) {
+            QList<QByteArray> extensions = QByteArray((const char *)glGetString(GL_EXTENSIONS)).split(' ');
+            m_multisampling = extensions.contains("GL_EXT_framebuffer_multisample")
+                            && extensions.contains("GL_EXT_framebuffer_blit");
+            m_multisamplingSupportChecked = true;
+        }
+        if (m_multisampling) {
+            delete m_fbo;
+            delete m_multisampledFbo;
+            QGLFramebufferObjectFormat format;
+
+            format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+            format.setInternalTextureFormat(m_format);
+            format.setSamples(8);
+            m_multisampledFbo = new QGLFramebufferObject(m_size, format);
+
+            format.setAttachment(QGLFramebufferObject::NoAttachment);
+            format.setMipmap(m_mipmap);
+            format.setSamples(0);
+            m_fbo = new QGLFramebufferObject(m_size, format);
+
+            QSGTexture *tex = new QSGTexture;
+            tex->setTextureId(m_fbo->texture());
+            tex->setOwnsTexture(false);
+            m_texture = QSGTextureRef(tex);
+        } else {
+            delete m_fbo;
+            QGLFramebufferObjectFormat format;
+            format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+            format.setInternalTextureFormat(m_format);
+            format.setMipmap(m_mipmap);
+            m_fbo = new QGLFramebufferObject(m_size, format);
+            QSGTexture *tex = new QSGTexture;
+            tex->setTextureId(m_fbo->texture());
+            tex->setOwnsTexture(false);
+            m_texture = QSGTextureRef(tex);
+        }
     }
 
     // Render texture.
@@ -195,7 +231,19 @@ void ShaderEffectTextureProvider::grab()
     QRectF mirrored(m_rect.left(), m_rect.bottom(), m_rect.width(), -m_rect.height());
     m_renderer->setProjectMatrixToRect(mirrored);
     m_renderer->setClearColor(Qt::transparent);
-    m_renderer->renderScene(BindableFbo(const_cast<QGLContext *>(ctx), m_fbo));
+
+    if (m_multisampling) {
+        m_renderer->renderScene(BindableFbo(const_cast<QGLContext *>(ctx), m_multisampledFbo));
+        QRect r(0, 0, m_fbo->width(), m_fbo->height());
+        QGLFramebufferObject::blitFramebuffer(m_fbo, r, m_multisampledFbo, r);
+    } else {
+        m_renderer->renderScene(BindableFbo(const_cast<QGLContext *>(ctx), m_fbo));
+    }
+
+    if (mipmap) {
+        m_renderer->setTexture(0, m_texture);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
 
     root->markDirty(dirty | Node::DirtyNodeAdded); // Force matrix, clip and render list update.
 
@@ -213,6 +261,7 @@ ShaderEffectSource::ShaderEffectSource(QSGItem *parent)
     , m_format(RGBA)
     , m_live(true)
     , m_hideSource(false)
+    , m_mipmap(false)
 {
     setTextureProvider(new ShaderEffectTextureProvider(this), true);
 }
@@ -324,6 +373,20 @@ void ShaderEffectSource::setHideSource(bool hide)
     emit hideSourceChanged();
 }
 
+bool ShaderEffectSource::mipmap() const
+{
+    return m_mipmap;
+}
+
+void ShaderEffectSource::setMipmap(bool enabled)
+{
+    if (enabled == m_mipmap)
+        return;
+    m_mipmap = enabled;
+    update();
+    emit mipmapChanged();
+}
+
 void ShaderEffectSource::grab()
 {
     if (!m_sourceItem)
@@ -357,6 +420,13 @@ Node *ShaderEffectSource::updatePaintNode(Node *oldNode, UpdatePaintNodeData *da
     tp->setLive(m_live);
     tp->setFormat(GLenum(m_format));
 
+    // If enabling mipmapping, the texture must be updated.
+    if (m_mipmap && tp->mipmap() == QSGTextureProvider::None)
+        tp->markDirtyTexture();
+    QSGTextureProvider::Filtering filtering = QSGItemPrivate::get(this)->smooth
+                                            ? QSGTextureProvider::Linear
+                                            : QSGTextureProvider::Nearest;
+    tp->setMipmap(m_mipmap ? filtering : QSGTextureProvider::None);
     return TextureItem::updatePaintNode(oldNode, data);
 }
 

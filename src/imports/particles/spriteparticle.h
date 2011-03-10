@@ -34,7 +34,6 @@ private:
     GeometryNode *m_node;
     SpriteParticlesMaterial *m_material;
 
-    int m_particle_count;
     int m_particle_duration;
     int m_last_particle;
     QTime m_timestamp;

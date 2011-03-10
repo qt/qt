@@ -44,6 +44,7 @@
 #include "qsgitem.h"
 
 #include "qsgcanvas.h"
+#include <QtScript/qscriptengine.h>
 #include "qsgcanvas_p.h"
 
 #include "qsgevents_p_p.h"
@@ -53,7 +54,6 @@
 #include <QtDeclarative/qdeclarativeview.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QtDeclarative/qdeclarativeinfo.h>
-#include <QtScript/qscriptengine.h>
 #include <QtGui/qgraphicstransform.h>
 #include <QtGui/qpen.h>
 #include <QtGui/qinputcontext.h>
@@ -1972,7 +1972,7 @@ void QSGItemPrivate::deliverHoverEvent(QGraphicsSceneHoverEvent *e)
     }
 }
 
-void QSGItem::itemChange(GraphicsItemChange change, const QVariant &value)
+void QSGItem::itemChange(ItemChange change, const ItemChangeData &value)
 {
     Q_UNUSED(change);
     Q_UNUSED(value);
@@ -2046,6 +2046,8 @@ void QSGItem::setRotation(qreal r)
     d->rotation = r;
 
     d->dirty(QSGItemPrivate::BasicTransform);
+
+    d->itemChange(ItemRotationHasChanged, r);
 
     emit rotationChanged();
 }
@@ -2310,25 +2312,37 @@ void QSGItemPrivate::derefFromEffectItem(bool unhide)
     }
 }
 
-void QSGItemPrivate::itemChange(QSGItem::GraphicsItemChange change, ChangeData data)
+void QSGItemPrivate::itemChange(QSGItem::ItemChange change, const QSGItem::ItemChangeData &data)
 {
     Q_Q(QSGItem);
     switch(change) {
     case QSGItem::ItemChildAddedChange:
-        q->itemChange(change, qVariantFromValue<QSGItem *>(data.item));
+        q->itemChange(change, data);
         if (_contents && componentComplete)
             _contents->childAdded(data.item);
+        for(int ii = 0; ii < changeListeners.count(); ++ii) {
+            const QSGItemPrivate::ChangeListener &change = changeListeners.at(ii);
+            if (change.types & QSGItemPrivate::Children) {
+                change.listener->itemChildAdded(q, data.item);
+            }
+        }
         break;
     case QSGItem::ItemChildRemovedChange:
-        q->itemChange(change, qVariantFromValue<QSGItem *>(data.item));
+        q->itemChange(change, data);
         if (_contents && componentComplete)
             _contents->childRemoved(data.item);
+        for(int ii = 0; ii < changeListeners.count(); ++ii) {
+            const QSGItemPrivate::ChangeListener &change = changeListeners.at(ii);
+            if (change.types & QSGItemPrivate::Children) {
+                change.listener->itemChildRemoved(q, data.item);
+            }
+        }
         break;
     case QSGItem::ItemSceneChange:
-        q->itemChange(change, qVariantFromValue<QSGCanvas *>(data.canvas));
+        q->itemChange(change, data);
         break;
     case QSGItem::ItemVisibleHasChanged:
-        q->itemChange(change, data.realValue);
+        q->itemChange(change, data);
         for(int ii = 0; ii < changeListeners.count(); ++ii) {
             const QSGItemPrivate::ChangeListener &change = changeListeners.at(ii);
             if (change.types & QSGItemPrivate::Visibility) {
@@ -2337,10 +2351,16 @@ void QSGItemPrivate::itemChange(QSGItem::GraphicsItemChange change, ChangeData d
         }
         break;
     case QSGItem::ItemParentHasChanged:
-        q->itemChange(change, qVariantFromValue<QSGItem *>(data.item));
+        q->itemChange(change, data);
+        for(int ii = 0; ii < changeListeners.count(); ++ii) {
+            const QSGItemPrivate::ChangeListener &change = changeListeners.at(ii);
+            if (change.types & QSGItemPrivate::Parent) {
+                change.listener->itemParentChanged(q, data.item);
+            }
+        }
         break;
     case QSGItem::ItemOpacityHasChanged:
-        q->itemChange(change, data.realValue);
+        q->itemChange(change, data);
         for(int ii = 0; ii < changeListeners.count(); ++ii) {
             const QSGItemPrivate::ChangeListener &change = changeListeners.at(ii);
             if (change.types & QSGItemPrivate::Opacity) {
@@ -2349,7 +2369,16 @@ void QSGItemPrivate::itemChange(QSGItem::GraphicsItemChange change, ChangeData d
         }
         break;
     case QSGItem::ItemActiveFocusHasChanged:
-        q->itemChange(change, data.boolValue);
+        q->itemChange(change, data);
+        break;
+    case QSGItem::ItemRotationHasChanged:
+        q->itemChange(change, data);
+        for(int ii = 0; ii < changeListeners.count(); ++ii) {
+            const QSGItemPrivate::ChangeListener &change = changeListeners.at(ii);
+            if (change.types & QSGItemPrivate::Rotation) {
+                change.listener->itemRotationChanged(q);
+            }
+        }
         break;
     }
 }

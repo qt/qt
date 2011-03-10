@@ -2,12 +2,13 @@
 #include <cmath>
 const qreal CONV = 0.017453292520444443;
 GravityAffector::GravityAffector(QObject *parent) :
-    ParticleAffector(parent), m_acceleration(10), m_angle(90), m_xAcc(0), m_yAcc(0)
+    ParticleAffector(parent), m_acceleration(-10), m_angle(90), m_xAcc(0), m_yAcc(0)
 {
     connect(this, SIGNAL(accelerationChanged(qreal)),
             this, SLOT(recalc()));
     connect(this, SIGNAL(angleChanged(qreal)),
             this, SLOT(recalc()));
+    recalc();
 }
 
 void GravityAffector::recalc()

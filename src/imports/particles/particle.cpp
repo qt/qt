@@ -15,6 +15,15 @@ void Particle::reload(ParticleData*)
 
 void Particle::setCount(int c)
 {
+    if(c == m_count)
+        return;
+    m_count = c;
+    emit countChanged();
+}
+
+int Particle::count()
+{
+    return m_count;
 }
 
 Node* Particle::buildParticleNode()

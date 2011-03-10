@@ -146,6 +146,7 @@ private slots:
     void signalWithUnknownTypes();
     void moduleApi();
     void importScripts();
+    void scarceResources();
 
     void bug1();
     void bug2();
@@ -2455,13 +2456,25 @@ void tst_qdeclarativeecmascript::moduleApi()
     QCOMPARE(object->property("qobjectParentedTest").toInt(), 26);
     delete object;
 
-    // test that caching of module apis works correcntly.
+    // test that caching of module apis works correctly.
     QDeclarativeComponent componentTwo(&engine, TEST_FILE("moduleApiCaching.qml"));
     object = componentTwo.create();
     QVERIFY(object != 0);
     QCOMPARE(object->property("existingUriTest").toInt(), 20);
     QCOMPARE(object->property("scriptTest").toInt(), 13);            // shouldn't have incremented.
     QCOMPARE(object->property("qobjectParentedTest").toInt(), 26);   // shouldn't have incremented.
+    delete object;
+
+    // test that writing to a property of module apis works correctly.
+    QDeclarativeComponent componentThree(&engine, TEST_FILE("moduleApiWriting.qml"));
+    object = componentThree.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("readOnlyProperty").toInt(), 20);
+    QCOMPARE(object->property("writableProperty").toInt(), 50);
+    QVERIFY(object->setProperty("firstProperty", QVariant(30))); // shouldn't affect value of readOnlyProperty
+    QVERIFY(object->setProperty("writableProperty", QVariant(30))); // SHOULD affect value of writableProperty
+    QCOMPARE(object->property("readOnlyProperty").toInt(), 20);
+    QCOMPARE(object->property("writableProperty").toInt(), 30);
     delete object;
 
     QDeclarativeComponent failOne(&engine, TEST_FILE("moduleApiMajorVersionFail.qml"));
@@ -2532,6 +2545,129 @@ void tst_qdeclarativeecmascript::importScripts()
     object = pragmaLibraryComponentTwo.create();
     QVERIFY(object != 0);
     QCOMPARE(object->property("testValue"), QVariant(0));
+    delete object;
+}
+
+void tst_qdeclarativeecmascript::scarceResources()
+{
+    QPixmap origPixmap(100, 100);
+    origPixmap.fill(Qt::blue);
+
+    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(&engine);
+    ScarceResourceObject *eo = 0;
+    QObject *object = 0;
+
+    // in the following three cases, the instance created from the component
+    // has a property which is a copy of the scarce resource; hence, the
+    // resource should NOT be detached prior to deletion of the object instance,
+    // unless the resource is destroyed explicitly.
+    QDeclarativeComponent component(&engine, TEST_FILE("scarceresources/scarceResourceCopy.qml"));
+    object = component.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->property("scarceResourceCopy").isValid());
+    QCOMPARE(object->property("scarceResourceCopy").value<QPixmap>(), origPixmap);
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(!eo->scarceResourceIsDetached()); // there are two copies of it in existence: the property of object, and the property of eo.
+    delete object;
+
+    QDeclarativeComponent componentTwo(&engine, TEST_FILE("scarceresources/scarceResourceCopyFromJs.qml"));
+    object = componentTwo.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->property("scarceResourceCopy").isValid());
+    QCOMPARE(object->property("scarceResourceCopy").value<QPixmap>(), origPixmap);
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(!eo->scarceResourceIsDetached()); // there are two copies of it in existence: the property of object, and the property of eo.
+    delete object;
+
+    QDeclarativeComponent componentThree(&engine, TEST_FILE("scarceresources/scarceResourceDestroyedCopy.qml"));
+    object = componentThree.create();
+    QVERIFY(object != 0);
+    QVERIFY(!(object->property("scarceResourceCopy").isValid())); // was manually released prior to being returned.
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(eo->scarceResourceIsDetached()); // should have explicitly been released during the evaluation of the binding.
+    delete object;
+
+    // in the following three cases, no other copy should exist in memory,
+    // and so it should be detached (unless explicitly preserved).
+    QDeclarativeComponent componentFour(&engine, TEST_FILE("scarceresources/scarceResourceTest.qml"));
+    object = componentFour.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->property("scarceResourceTest").isValid());
+    QCOMPARE(object->property("scarceResourceTest").toInt(), 100);
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(eo->scarceResourceIsDetached()); // the resource should have been released after the binding was evaluated.
+    delete object;
+
+    QDeclarativeComponent componentFive(&engine, TEST_FILE("scarceresources/scarceResourceTestPreserve.qml"));
+    object = componentFive.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->property("scarceResourceTest").isValid());
+    QCOMPARE(object->property("scarceResourceTest").toInt(), 100);
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(!eo->scarceResourceIsDetached()); // this won't be detached since we explicitly preserved it.
+    delete object;
+
+    QDeclarativeComponent componentSix(&engine, TEST_FILE("scarceresources/scarceResourceTestMultiple.qml"));
+    object = componentSix.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->property("scarceResourceTest").isValid());
+    QCOMPARE(object->property("scarceResourceTest").toInt(), 100);
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(eo->scarceResourceIsDetached()); // all resources were released manually or automatically released.
+    delete object;
+
+    // test that scarce resources are handled correctly for imports
+    QDeclarativeComponent componentSeven(&engine, TEST_FILE("scarceresources/scarceResourceCopyImportNoBinding.qml"));
+    object = componentSeven.create();
+    QVERIFY(object != 0); // the import should have caused the addition of a resource to the ScarceResources list
+    QVERIFY(ep->scarceResources == 0); // but they should have been released by this point.
+    delete object;
+
+    QDeclarativeComponent componentEight(&engine, TEST_FILE("scarceresources/scarceResourceCopyImportFail.qml"));
+    object = componentEight.create();
+    QVERIFY(object != 0);
+    QVERIFY(!object->property("scarceResourceCopy").isValid()); // wasn't preserved, so shouldn't be valid.
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
+    delete object;
+
+    QDeclarativeComponent componentNine(&engine, TEST_FILE("scarceresources/scarceResourceCopyImport.qml"));
+    object = componentNine.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->property("scarceResourceCopy").isValid()); // preserved, so should be valid.
+    QCOMPARE(object->property("scarceResourceCopy").value<QPixmap>(), origPixmap);
+    QVERIFY(object->property("scarceResourceAssignedCopyOne").isValid()); // assigned before destroy(), so should be valid.
+    QCOMPARE(object->property("scarceResourceAssignedCopyOne").value<QPixmap>(), origPixmap);
+    QVERIFY(!object->property("scarceResourceAssignedCopyTwo").isValid()); // assigned after destroy(), so should be invalid.
+    QVERIFY(ep->scarceResources == 0); // this will still be zero, because "preserve()" REMOVES it from this list.
+    delete object;
+
+    // test that scarce resources are handled properly in signal invocation
+    QDeclarativeComponent componentTen(&engine, TEST_FILE("scarceresources/scarceResourceSignal.qml"));
+    object = componentTen.create();
+    QVERIFY(object != 0);
+    QObject *srsc = object->findChild<QObject*>("srsc");
+    QVERIFY(srsc);
+    QVERIFY(!srsc->property("scarceResourceCopy").isValid()); // hasn't been instantiated yet.
+    QCOMPARE(srsc->property("width"), QVariant(5)); // default value is 5.
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(eo->scarceResourceIsDetached()); // should be no other copies of it at this stage.
+    QMetaObject::invokeMethod(srsc, "testSignal");
+    QVERIFY(!srsc->property("scarceResourceCopy").isValid()); // still hasn't been instantiated
+    QCOMPARE(srsc->property("width"), QVariant(10)); // but width was assigned to 10.
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(eo->scarceResourceIsDetached()); // should still be no other copies of it at this stage.
+    QMetaObject::invokeMethod(srsc, "testSignal2"); // assigns scarceResourceCopy to the scarce pixmap.
+    QVERIFY(srsc->property("scarceResourceCopy").isValid());
+    QCOMPARE(srsc->property("scarceResourceCopy").value<QPixmap>(), origPixmap);
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(!(eo->scarceResourceIsDetached())); // should be another copy of the resource now.
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
     delete object;
 }
 

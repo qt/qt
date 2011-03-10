@@ -836,7 +836,7 @@ void QSGCanvasPrivate::notifyFocusChangesRecur(QSGItem **items, int remaining)
 
         if (item && itemPrivate->notifiedActiveFocus != itemPrivate->activeFocus) {
             itemPrivate->notifiedActiveFocus = itemPrivate->activeFocus;
-            item->itemChange(QSGItem::ItemActiveFocusHasChanged, qVariantFromValue(itemPrivate->activeFocus));
+            itemPrivate->itemChange(QSGItem::ItemActiveFocusHasChanged, itemPrivate->activeFocus);
             emit item->activeFocusChanged(itemPrivate->activeFocus);
         }
     } 
@@ -1095,6 +1095,7 @@ bool QSGCanvasPrivate::deliverInitialMousePressEvent(QSGItem *item, QGraphicsSce
             q->sendEvent(item, event);
             if (event->isAccepted()) 
                 return true;
+            mouseGrabberItem->ungrabMouse();
             mouseGrabberItem = 0;
         }
     }

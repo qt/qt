@@ -209,22 +209,7 @@ TextureNodeInterface *QSGContext::createTextureNode()
  */
 GlyphNodeInterface *QSGContext::createGlyphNode()
 {
-    static QStringList args = qApp->arguments();
-
-    if (args.contains("--distancefield-text"))
-        return new DistanceFieldGlyphNode;
-    else
-        return new DefaultGlyphNode;
-}
-
-
-/*!
-    Factory function for scene graph backends of the Text elements;
- */
-GlyphNodeInterface *QSGContext::createGlyphNode(const QFont &font)
-{
-    static QStringList args = qApp->arguments();
-    if (args.contains("--distancefield-text") && DistanceFieldFontAtlas::useDistanceFieldForFont(font))
+    if (DistanceFieldFontAtlas::distanceFieldEnabled())
         return new DistanceFieldGlyphNode;
     else
         return new DefaultGlyphNode;

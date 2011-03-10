@@ -987,11 +987,11 @@ void QSGTextInput::focusInEvent(QFocusEvent *event)
     QSGPaintedItem::focusInEvent(event);
 }
 
-void QSGTextInput::itemChange(GraphicsItemChange change, const QVariant &value)
+void QSGTextInput::itemChange(ItemChange change, const ItemChangeData &value)
 {
     Q_D(QSGTextInput);
     if (change == ItemActiveFocusHasChanged) {
-        bool hasFocus = value.toBool();
+        bool hasFocus = value.boolValue;
         d->focused = hasFocus;
         setCursorVisible(hasFocus && d->canvas && d->canvas->hasFocus());
         if(echoMode() == QSGTextInput::PasswordEchoOnEdit && !hasFocus)

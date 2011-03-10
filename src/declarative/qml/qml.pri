@@ -43,6 +43,7 @@ SOURCES += \
     $$PWD/qdeclarativetypenamecache.cpp \
     $$PWD/qdeclarativescriptstring.cpp \
     $$PWD/qdeclarativeobjectscriptclass.cpp \
+    $$PWD/qdeclarativescarceresourcescriptclass.cpp \
     $$PWD/qdeclarativecontextscriptclass.cpp \
     $$PWD/qdeclarativeglobalscriptclass.cpp \
     $$PWD/qdeclarativevaluetypescriptclass.cpp \
@@ -55,7 +56,8 @@ SOURCES += \
     $$PWD/qdeclarativeextensionplugin.cpp \
     $$PWD/qdeclarativeimport.cpp \
     $$PWD/qdeclarativelist.cpp \ 
-    $$PWD/qperformancetimer.cpp
+    $$PWD/qperformancetimer.cpp \
+    $$PWD/qintrusivelist.cpp \
 
 HEADERS += \
     $$PWD/qdeclarativeparser_p.h \
@@ -116,6 +118,7 @@ HEADERS += \
     $$PWD/qdeclarativetypenamecache_p.h \
     $$PWD/qdeclarativescriptstring.h \
     $$PWD/qdeclarativeobjectscriptclass_p.h \
+    $$PWD/qdeclarativescarceresourcescriptclass_p.h \
     $$PWD/qdeclarativecontextscriptclass_p.h \
     $$PWD/qdeclarativeglobalscriptclass_p.h \
     $$PWD/qdeclarativevaluetypescriptclass_p.h \
@@ -129,7 +132,8 @@ HEADERS += \
     $$PWD/qdeclarativeextensioninterface.h \
     $$PWD/qdeclarativeimport_p.h \
     $$PWD/qdeclarativeextensionplugin.h \
-    $$PWD/qperformancetimer_p.h
+    $$PWD/qperformancetimer_p.h \
+    $$PWD/qintrusivelist_p.h \
 
 QT += sql
 include(parser/parser.pri)

@@ -357,13 +357,17 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
 
         } else {
             QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(d->context()->engine);
+            ep->referenceScarceResources(); // "hold" scarce resources in memory during evaluation.
 
             bool isUndefined = false;
             QVariant value;
 
             QScriptValue scriptValue = d->scriptValue(0, &isUndefined);
-            if (wasDeleted)
+
+            if (wasDeleted) {
+                ep->dereferenceScarceResources(); // "release" scarce resources if top-level expression evaluation is complete.
                 return;
+            }
 
             if (d->property.propertyTypeCategory() == QDeclarativeProperty::List) {
                 value = ep->scriptValueToVariant(scriptValue, qMetaTypeId<QList<QObject *> >());
@@ -420,8 +424,10 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
             } else if (d->property.object() &&
                        !QDeclarativePropertyPrivate::write(d->property, value, flags)) {
 
-                if (wasDeleted)
+                if (wasDeleted) {
+                    ep->dereferenceScarceResources(); // "release" scarce resources if top-level expression evaluation is complete.
                     return;
+                }
 
                 QUrl url = QUrl(d->url);
                 int line = d->line;
@@ -440,14 +446,21 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
                                         QLatin1String(QMetaType::typeName(d->property.propertyType())));
             }
 
-            if (wasDeleted)
+            if (wasDeleted) {
+                ep->dereferenceScarceResources(); // "release" scarce resources if top-level expression evaluation is complete.
                 return;
+            }
 
             if (d->error.isValid()) {
                if (!d->addError(ep)) ep->warning(this->error());
             } else {
                 d->removeError();
             }
+
+            // at this point, the binding has been evaluated.  If any scarce
+            // resources were copied during the evaluation of the binding,
+            // we need to release those copies.
+            ep->dereferenceScarceResources(); // "release" scarce resources if top-level expression evaluation is complete.
         }
 
         d->updating = false;

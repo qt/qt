@@ -16,6 +16,8 @@
 #include "zoneaffector.h"
 #include "toggleaffector.h"
 #include "spritegoalaffector.h"
+#include "swarmaffector.h"
+#include "turbulenceaffector.h"
 #include "particlesystem.h"
 #include "particleemitter.h"
 //#include "spriteemitter.h"
@@ -23,7 +25,10 @@
 #include "particle.h"
 #include "coloredparticle.h"
 #include "spriteparticle.h"
+#include "pairedparticle.h"
 #include "spriteimage.h"
+#include "followemitter.h"
+#include "followaffector.h"
 #include "V1/qdeclarativeparticles_p.h"
 
 void ParticlesPlugin::registerTypes(const char *uri)
@@ -44,9 +49,13 @@ void ParticlesPlugin::registerTypes(const char *uri)
     qmlRegisterType<Particle>(uri, 2, 0, "Particle");
     qmlRegisterType<ColoredParticle>(uri, 2, 0, "ColoredParticle");
     qmlRegisterType<SpriteParticle>(uri, 2, 0, "SpriteParticle");
+    qmlRegisterType<PairedParticle>(uri, 2, 0, "PairedParticle");
 
     qmlRegisterType<ParticleEmitter>(uri, 2, 0, "ParticleEmitter");
     qmlRegisterType<TrailsEmitter>(uri, 2, 0, "TrailEmitter");
+
+    qmlRegisterType<FollowEmitter>(uri, 2, 0, "FollowEmitter");
+    qmlRegisterType<FollowAffector>(uri, 2, 0, "Follow");
 
     qmlRegisterType<ParticleAffector>(uri, 2, 0, "ParticleAffector");
     qmlRegisterType<WanderAffector>(uri, 2, 0, "Wander");
@@ -63,6 +72,8 @@ void ParticlesPlugin::registerTypes(const char *uri)
     qmlRegisterType<ToggleAffector>(uri, 2, 0, "Toggle");
     qmlRegisterType<KillAffector>(uri, 2, 0, "Kill");
     qmlRegisterType<SpriteGoalAffector>(uri, 2, 0, "SpriteGoal");
+    qmlRegisterType<SwarmAffector>(uri, 2, 0 , "Swarm");
+    qmlRegisterType<TurbulenceAffector>(uri, 2, 0 , "Turbulence");
 }
 
 Q_EXPORT_PLUGIN2(Particles, ParticlesPlugin);
