@@ -157,7 +157,6 @@ static inline bool conversionLessFormat(QImage::Format format)
         case QImage::Format_RGB32: // EColor16MU
         case QImage::Format_ARGB32: // EColor16MA
         case QImage::Format_ARGB32_Premultiplied: // EColor16MAP
-        case QImage::Format_MonoLSB: // EGray2
         case QImage::Format_Indexed8: // EGray256, EColor256
             return true;
         default:
