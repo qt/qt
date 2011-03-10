@@ -289,6 +289,7 @@ private slots:
     void taskQTBUG_7863_paintIntoCacheWithTransparentParts();
     void taskQT_3674_doNotCrash();
     void taskQTBUG_15977_renderWithDeviceCoordinateCache();
+    void taskQTBUG_16401_focusItem();
 };
 
 void tst_QGraphicsScene::initTestCase()
@@ -4650,6 +4651,36 @@ void tst_QGraphicsScene::taskQTBUG_15977_renderWithDeviceCoordinateCache()
     p.end();
 
     QCOMPARE(image, expected);
+}
+
+void tst_QGraphicsScene::taskQTBUG_16401_focusItem()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    QGraphicsRectItem *rect = scene.addRect(0, 0, 100, 100);
+    rect->setFlag(QGraphicsItem::ItemIsFocusable);
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QApplication::setActiveWindow(&view);
+
+    QVERIFY(!scene.focusItem());
+
+    rect->setFocus();
+    QCOMPARE(scene.focusItem(), rect);
+    QFocusEvent focusOut(QEvent::FocusOut);
+    QApplication::sendEvent(&view, &focusOut);
+    QVERIFY(!scene.focusItem());
+    QFocusEvent focusIn(QEvent::FocusIn);
+    QApplication::sendEvent(&view, &focusIn);
+    QCOMPARE(scene.focusItem(), rect);
+
+    rect->clearFocus();
+    QVERIFY(!scene.focusItem());
+    QApplication::sendEvent(&view, &focusOut);
+    QVERIFY(!scene.focusItem());
+    QApplication::sendEvent(&view, &focusIn);
+    QVERIFY(!scene.focusItem());
 }
 
 QTEST_MAIN(tst_QGraphicsScene)
