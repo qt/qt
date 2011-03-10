@@ -30,14 +30,16 @@ SOURCES += \
     scenegraph/coreapi/qsggeometry.cpp
 
 # Convenience API
-HEADERS += $$PWD/convenience/areaallocator.h \
+HEADERS += \
+    $$PWD/convenience/qsgareaallocator_p.h \
     $$PWD/convenience/flatcolormaterial.h \
     $$PWD/convenience/solidrectnode.h \
     $$PWD/convenience/texturematerial.h \
     $$PWD/convenience/vertexcolormaterial.h \
     $$PWD/convenience/distancefieldfontatlas_p.h
 
-SOURCES += $$PWD/convenience/areaallocator.cpp \
+SOURCES += \
+    $$PWD/convenience/qsgareaallocator.cpp \
     $$PWD/convenience/flatcolormaterial.cpp \
     $$PWD/convenience/solidrectnode.cpp \
     $$PWD/convenience/texturematerial.cpp \
