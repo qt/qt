@@ -44,6 +44,7 @@
 #include "qsgitem.h"
 
 #include "qsgcanvas.h"
+#include <QtScript/qscriptengine.h>
 #include "qsgcanvas_p.h"
 
 #include "qsgevents_p_p.h"
@@ -53,7 +54,6 @@
 #include <QtDeclarative/qdeclarativeview.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QtDeclarative/qdeclarativeinfo.h>
-#include <QtScript/qscriptengine.h>
 #include <QtGui/qgraphicstransform.h>
 #include <QtGui/qpen.h>
 #include <QtGui/qinputcontext.h>
