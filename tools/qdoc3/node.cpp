@@ -779,6 +779,22 @@ void InnerNode::removeChild(Node *child)
   Sets the \a author.
  */
 
+/*! \fn QString InnerNode::publisher() const
+  Returns the publisher.
+ */
+
+/*! \fn void InnerNode::setPublisher(const QString& publisher)
+  Sets the \a publisher.
+ */
+
+/*! \fn QString InnerNode::permissions() const
+  Returns the permissions.
+ */
+
+/*! \fn void InnerNode::setPermissions(const QString& permissions)
+  Sets the \a permissions.
+ */
+
 /*!
   Find the module (QtCore, QtGui, etc.) to which the class belongs.
   We do this by obtaining the full path to the header file's location
