@@ -2333,6 +2333,7 @@ bool QVGPaintEngine::isDefaultClipRect(const QRect& rect)
 void QVGPaintEngine::clipEnabledChanged()
 {
 #if defined(QVG_SCISSOR_CLIP)
+    vgSeti(VG_MASKING, VG_FALSE); // disable mask fallback
     updateScissor();
 #else
     Q_D(QVGPaintEngine);
