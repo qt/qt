@@ -163,7 +163,7 @@ struct SpriteParticleVertices {
 };
 
 SpriteParticle::SpriteParticle(QObject *parent) :
-    Particle(parent)
+    ParticleType(parent)
     , m_node(0)
     , m_material(0)
     , m_spriteEngine(0)
@@ -188,7 +188,7 @@ void SpriteParticle::createEngine()
 
 void SpriteParticle::setCount(int c)
 {
-    Particle::setCount(c);
+    ParticleType::setCount(c);
     if(m_node)
         delete m_node;
     m_node = 0;

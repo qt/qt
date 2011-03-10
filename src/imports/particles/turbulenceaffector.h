@@ -13,6 +13,7 @@ class TurbulenceAffector : public ParticleAffector
     Q_PROPERTY(int size READ size WRITE setSize NOTIFY sizeChanged)
 public:
     explicit TurbulenceAffector(QObject *parent = 0);
+    ~TurbulenceAffector();
     virtual bool affect(ParticleData *d, qreal dt);
     virtual void reset(int systemIdx);
 
@@ -57,13 +58,7 @@ void setFrequency(int arg)
     }
 }
 
-void setSize(int arg)
-{
-    if (m_gridSize != arg) {
-        m_gridSize = arg;
-        emit sizeChanged(arg);
-    }
-}
+void setSize(int arg);
 
 private:
     void ensureInit(ParticleData* d);
@@ -74,9 +69,9 @@ private:
     qreal m_lastT;
     int m_frequency;
     int m_gridSize;
+    QPointF** m_field;
     QPointF m_spacing;
     qreal m_magSum;
-    QVector<QVector<QPointF> > m_field;
 };
 
 #endif // TURBULENCEAFFECTOR_H

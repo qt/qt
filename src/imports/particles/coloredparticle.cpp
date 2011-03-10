@@ -202,7 +202,7 @@ struct ColoredParticleVertices {
 
 
 ColoredParticle::ColoredParticle(QObject* parent)
-    : Particle(parent)
+    : ParticleType(parent)
     , m_do_reset(false)
     , m_color(Qt::white)
     , m_color_variation(0.5)
@@ -260,7 +260,7 @@ void ColoredParticle::setAdditive(qreal additive)
 
 void ColoredParticle::setCount(int c)
 {
-    Particle::setCount(c);
+    ParticleType::setCount(c);
     if(m_node)
         delete m_node;
     m_node = 0;//Force rebuild;

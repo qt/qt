@@ -4,7 +4,7 @@
 class ParticleTrailsMaterial;
 class GeometryNode;
 
-class ColoredParticle : public Particle
+class ColoredParticle : public ParticleType
 {
     Q_OBJECT
     Q_PROPERTY(QUrl image READ image WRITE setImage NOTIFY imageChanged)

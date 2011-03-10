@@ -8,7 +8,7 @@ class GeometryNode;
 class QSGContext;
 class SpriteParticlesMaterial;
 
-class SpriteParticle : public Particle
+class SpriteParticle : public ParticleType
 {
     Q_OBJECT
     Q_PROPERTY(QDeclarativeListProperty<SpriteState> sprites READ sprites)

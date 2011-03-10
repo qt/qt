@@ -7,7 +7,7 @@
 
 class ParticleAffector;
 class ParticleEmitter;
-class Particle;
+class ParticleType;
 class ParticleData;
 
 
@@ -15,7 +15,7 @@ struct EmitterData{
     int size;
     int start;
     int nextIdx;
-    QHash<Particle*, int> particleOffsets;
+    QHash<ParticleType*, int> particleOffsets;
 };
 
 class ParticleSystem : public QSGItem
@@ -24,7 +24,7 @@ class ParticleSystem : public QSGItem
     Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
     Q_PROPERTY(QDeclarativeListProperty<ParticleAffector> affectors READ affectors)
     Q_PROPERTY(QDeclarativeListProperty<ParticleEmitter> emitters READ emitters)
-    Q_PROPERTY(QDeclarativeListProperty<Particle> particles READ particles)
+    Q_PROPERTY(QDeclarativeListProperty<ParticleType> particles READ particles)
     Q_PROPERTY(int startTime READ startTime WRITE setStartTime NOTIFY startTimeChanged)
     Q_CLASSINFO("DefaultProperty", "particles")
 
@@ -38,7 +38,7 @@ bool isRunning() const
 
 QDeclarativeListProperty<ParticleEmitter> emitters();
 
-QDeclarativeListProperty<Particle> particles();
+QDeclarativeListProperty<ParticleType> particles();
 
 QDeclarativeListProperty<ParticleAffector> affectors()
 {
@@ -73,7 +73,7 @@ void setRunning(bool arg)
 }
 
 void emitParticle(ParticleData* p);
-ParticleData* newDatum(ParticleEmitter* e, Particle* p);
+ParticleData* newDatum(ParticleEmitter* e, ParticleType* p);
 
 void setStartTime(int arg)
 {
@@ -94,7 +94,7 @@ private:
     QTime m_timestamp;
     QList<ParticleEmitter*> m_emitters;
     QList<ParticleAffector*> m_affectors;
-    QList<Particle*> m_particles;
+    QList<ParticleType*> m_particles;
     QVector<ParticleData*> data;
     QList<EmitterData*> m_emitterData;//size, start
     int m_startTime;
@@ -143,7 +143,7 @@ public:
     qreal curY() const;
     qreal curSY() const;
 
-    Particle* p;
+    ParticleType* p;
     ParticleEmitter* e;
     int particleIndex;
     int systemIndex;

@@ -46,7 +46,7 @@ void ParticlesPlugin::registerTypes(const char *uri)
 
     qmlRegisterType<ParticleSystem>(uri, 2, 0, "ParticleSystem");
 
-    qmlRegisterType<Particle>(uri, 2, 0, "Particle");
+    qmlRegisterType<ParticleType>(uri, 2, 0, "Particle");
     qmlRegisterType<ColoredParticle>(uri, 2, 0, "ColoredParticle");
     qmlRegisterType<SpriteParticle>(uri, 2, 0, "SpriteParticle");
     qmlRegisterType<PairedParticle>(uri, 2, 0, "PairedParticle");

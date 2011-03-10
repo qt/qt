@@ -10,7 +10,7 @@ class ParticleEmitter : public QSGItem
     Q_OBJECT
     //###currently goes in emitters OR sets system. Pick one?
     Q_PROPERTY(ParticleSystem* system READ system WRITE setSystem NOTIFY systemChanged)
-    Q_PROPERTY(Particle* particle READ particle WRITE setParticle NOTIFY particleChanged)
+    Q_PROPERTY(ParticleType* particle READ particle WRITE setParticle NOTIFY particleChanged)
     Q_PROPERTY(bool emitting READ emitting WRITE setEmitting NOTIFY emittingChanged)
 
     Q_PROPERTY(int particlesPerSecond READ particlesPerSecond WRITE setParticlesPerSecond NOTIFY particlesPerSecondChanged)
@@ -21,7 +21,7 @@ public:
     virtual void emitWindow(int timeStamp);
 
     ParticleSystem* m_system;//###Needs to be set from classless function? Needed at all?
-    Particle* particle() {return m_particle;}
+    ParticleType* particle() {return m_particle;}
 
     bool emitting() const
     {
@@ -48,7 +48,7 @@ signals:
     void particleDurationChanged(int);
     void emittingChanged(bool);
 
-    void particleChanged(Particle* arg);
+    void particleChanged(ParticleType* arg);
 
     void systemChanged(ParticleSystem* arg);
 
@@ -72,7 +72,7 @@ public slots:
         }
     }
 
-    void setParticle(Particle* arg)
+    void setParticle(ParticleType* arg)
     {
         if (m_particle != arg) {
             m_particle = arg;
@@ -89,7 +89,7 @@ public slots:
     }
 
 protected:
-    Particle* m_particle;
+    ParticleType* m_particle;
     int m_particlesPerSecond;
     int m_particleDuration;
     bool m_emitting;

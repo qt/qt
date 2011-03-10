@@ -2,7 +2,7 @@
 #include <QDebug>
 
 PairedParticle::PairedParticle(QObject *parent) :
-    Particle(parent), m_count(0), m_particle(0)
+    ParticleType(parent), m_count(0), m_particle(0)
 {
     //TODO: null pointer safety with m_particle
     //TODO: Still seems sensitive to creation order.

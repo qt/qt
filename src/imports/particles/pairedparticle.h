@@ -4,10 +4,10 @@
 #include <QDeclarativeParserStatus>
 #include <QDeclarativeListProperty>
 
-class PairedParticle : public Particle, public QDeclarativeParserStatus
+class PairedParticle : public ParticleType, public QDeclarativeParserStatus
 {
     Q_OBJECT
-    Q_PROPERTY(Particle* particle READ particle WRITE particle NOTIFY particleChanged)
+    Q_PROPERTY(ParticleType* particle READ particle WRITE particle NOTIFY particleChanged)
     Q_PROPERTY(QDeclarativeListProperty<PairedParticle> pairs READ pairs)
     Q_CLASSINFO("DefaultProperty", "particle")
 public:
@@ -23,7 +23,7 @@ public:
     virtual void componentComplete();
     virtual void classBegin(){}
 
-    Particle* particle() const
+    ParticleType* particle() const
     {
         return m_particle;
     }
@@ -31,11 +31,11 @@ public:
     QDeclarativeListProperty<PairedParticle> pairs(){ return QDeclarativeListProperty<PairedParticle>(this, m_pairs); }
 signals:
 
-    void particleChanged(Particle* arg);
+    void particleChanged(ParticleType* arg);
 
 public slots:
 
-void particle(Particle* arg)
+void particle(ParticleType* arg)
 {
     if (m_particle != arg) {
         m_particle = arg;
@@ -45,7 +45,7 @@ void particle(Particle* arg)
 
 private:
     int m_count;
-    Particle* m_particle;
+    ParticleType* m_particle;
     QList<PairedParticle*> m_pairs;
     QList<QPointF> m_differences;
 

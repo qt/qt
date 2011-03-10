@@ -65,30 +65,30 @@ void ParticleSystem::registerEmitter(ParticleEmitter *emitter)
     emitterAppend(&tmp, emitter);
 }
 
-void particleAppend(QDeclarativeListProperty<Particle> *p, Particle* pe)
+void particleAppend(QDeclarativeListProperty<ParticleType> *p, ParticleType* pe)
 {
     pe->m_system = qobject_cast<ParticleSystem*>(p->object);
-    reinterpret_cast<QList<Particle  *> *>(p->data)->append(pe);
+    reinterpret_cast<QList<ParticleType  *> *>(p->data)->append(pe);
 }
 
-Particle* particleAt(QDeclarativeListProperty<Particle> *p, int idx)
+ParticleType* particleAt(QDeclarativeListProperty<ParticleType> *p, int idx)
 {
-    return reinterpret_cast<QList<Particle  *> *>(p->data)->at(idx);
+    return reinterpret_cast<QList<ParticleType  *> *>(p->data)->at(idx);
 }
 
-void particleClear(QDeclarativeListProperty<Particle> *p)
+void particleClear(QDeclarativeListProperty<ParticleType> *p)
 {
-    reinterpret_cast<QList<Particle  *> *>(p->data)->clear();
+    reinterpret_cast<QList<ParticleType  *> *>(p->data)->clear();
 }
 
-int particleCount(QDeclarativeListProperty<Particle> *p)
+int particleCount(QDeclarativeListProperty<ParticleType> *p)
 {
-    return reinterpret_cast<QList<Particle *> *>(p->data)->count();
+    return reinterpret_cast<QList<ParticleType *> *>(p->data)->count();
 }
 
-QDeclarativeListProperty<Particle> ParticleSystem::particles()
+QDeclarativeListProperty<ParticleType> ParticleSystem::particles()
 {
-    return QDeclarativeListProperty<Particle>(this, &m_particles, particleAppend, particleCount, particleAt, particleClear);
+    return QDeclarativeListProperty<ParticleType>(this, &m_particles, particleAppend, particleCount, particleAt, particleClear);
 }
 
 void ParticleSystem::countChanged()
@@ -125,7 +125,7 @@ void ParticleSystem::buildParticleNodes()
     if(m_particle_count > 16000)
         qWarning() << "Particle system contains a vast number of particles (>16000). Expect poor performance";
 
-    foreach(Particle* particle, m_particles){
+    foreach(ParticleType* particle, m_particles){
         int particleCount = 0;
         for(int i=0; i<m_emitters.count(); i++){
             if(m_emitters[i]->particle() == particle){
@@ -153,7 +153,7 @@ void ParticleSystem::reset()
 Node *ParticleSystem::updatePaintNode(Node *, UpdatePaintNodeData *)
 {
     if(m_do_reset){
-        foreach(Particle* particle, m_particles)
+        foreach(ParticleType* particle, m_particles)
             particle->reset();
         delete m_node;
         m_node = 0;
@@ -171,7 +171,7 @@ Node *ParticleSystem::updatePaintNode(Node *, UpdatePaintNodeData *)
     return m_node;
 }
 
-ParticleData* ParticleSystem::newDatum(ParticleEmitter* e, Particle* p)
+ParticleData* ParticleSystem::newDatum(ParticleEmitter* e, ParticleType* p)
 {
     //TODO: Keep datums within one emitter? And within one particle.
     ParticleData* ret;
@@ -220,7 +220,7 @@ void ParticleSystem::prepareNextFrame()
         return;
 
     bool nodeReset = false;
-    foreach(Particle* p, m_particles){
+    foreach(ParticleType* p, m_particles){
         if(p->wantsReset){
             nodeReset = true;
             p->wantsReset = false;
@@ -275,7 +275,7 @@ void ParticleSystem::prepareNextFrame()
                 (*iter)->p->reload(*iter);
         }
     }//TODO:Move particle positions along with element moves
-    foreach(Particle* particle, m_particles)
+    foreach(ParticleType* particle, m_particles)
         particle->prepareNextFrame(timeInt);
 }
 

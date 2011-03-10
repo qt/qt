@@ -6,7 +6,7 @@
 class FollowEmitter : public ParticleEmitter
 {
     Q_OBJECT
-    Q_PROPERTY(Particle* follow READ follow WRITE setFollow NOTIFY followChanged)
+    Q_PROPERTY(ParticleType* follow READ follow WRITE setFollow NOTIFY followChanged)
     Q_PROPERTY(int particlesPerParticlePerSecond READ particlesPerParticlePerSecond WRITE setParticlesPerParticlePerSecond NOTIFY particlesPerParticlePerSecondChanged)
 
     Q_PROPERTY(qreal emitterXVariation READ emitterXVariation WRITE setEmitterXVariation NOTIFY emitterXVariationChanged)
@@ -85,7 +85,7 @@ public:
         return m_yAccelVariation;
     }
 
-    Particle* follow() const
+    ParticleType* follow() const
     {
         return m_follow;
     }
@@ -129,7 +129,7 @@ signals:
 
     void yAccelVariationChanged(qreal arg);
 
-    void followChanged(Particle* arg);
+    void followChanged(ParticleType* arg);
 
     void particlesPerParticlePerSecondChanged(int arg);
 
@@ -226,7 +226,7 @@ public slots:
         }
     }
 
-    void setFollow(Particle* arg);
+    void setFollow(ParticleType* arg);
 
 
     void setParticlesPerParticlePerSecond(int arg)
@@ -268,7 +268,7 @@ private:
     qreal m_yAccel;
     qreal m_xAccelVariation;
     qreal m_yAccelVariation;
-    Particle* m_follow;
+    ParticleType* m_follow;
     QSet<ParticleData*> m_pending;
     QVector<qreal> m_lastEmission;
     int m_particlesPerParticlePerSecond;

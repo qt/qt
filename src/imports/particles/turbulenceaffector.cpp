@@ -1,11 +1,19 @@
 #include "turbulenceaffector.h"
 #include "particle.h"
 #include <cmath>
+#include <cstdlib>
 
 TurbulenceAffector::TurbulenceAffector(QObject *parent) :
     ParticleAffector(parent),
-    m_system(0), m_strength(10), m_lastT(0), m_frequency(1), m_gridSize(10)
+    m_system(0), m_strength(10), m_lastT(0), m_frequency(1), m_gridSize(10), m_field(0)
 {
+}
+
+TurbulenceAffector::~TurbulenceAffector()
+{
+    for(int i=0; i<m_gridSize; i++)
+        free(m_field[i]);
+    free(m_field);
 }
 
 static qreal magnitude(qreal x, qreal y)
@@ -13,17 +21,30 @@ static qreal magnitude(qreal x, qreal y)
     return sqrt(x*x + y*y);
 }
 
+void TurbulenceAffector::setSize(int arg)
+{
+    if (m_gridSize != arg) {
+        if(m_field){ //deallocate and then reallocate grid
+            for(int i=0; i<m_gridSize; i++)
+                free(m_field[i]);
+            free(m_field);
+            m_system = 0;
+        }
+        m_gridSize = arg;
+        emit sizeChanged(arg);
+    }
+}
+
 void TurbulenceAffector::ensureInit(ParticleData* d)
 {
     if(m_system == d->p->m_system)
         return;
     m_system = d->p->m_system;
-    m_field.resize(m_gridSize);
+    m_field = (QPointF**)malloc(m_gridSize * sizeof(QPointF*));
     for(int i=0; i<m_gridSize; i++)
-        m_field[i].resize(m_gridSize);
+        m_field[i]  = (QPointF*)malloc(m_gridSize * sizeof(QPointF));
     m_spacing = QPointF(m_system->width()/m_gridSize, m_system->height()/m_gridSize);
-    m_magSum = magnitude(m_spacing.x(), m_spacing.y())*2;
-    //TODO: Don't crash when system size changes
+    m_magSum = magnitude(m_spacing.x(), m_spacing.y())*2;//TODO: recalc these when system size changes
 }
 
 void TurbulenceAffector::tickAdvance(ParticleData *d)

@@ -1,19 +1,19 @@
 #include "particle.h"
 
-Particle::Particle(QObject *parent) :
+ParticleType::ParticleType(QObject *parent) :
     QObject(parent)
 {
 }
 
-void Particle::load(ParticleData*)
+void ParticleType::load(ParticleData*)
 {
 }
 
-void Particle::reload(ParticleData*)
+void ParticleType::reload(ParticleData*)
 {
 }
 
-void Particle::setCount(int c)
+void ParticleType::setCount(int c)
 {
     if(c == m_count)
         return;
@@ -21,20 +21,20 @@ void Particle::setCount(int c)
     emit countChanged();
 }
 
-int Particle::count()
+int ParticleType::count()
 {
     return m_count;
 }
 
-Node* Particle::buildParticleNode()
+Node* ParticleType::buildParticleNode()
 {
     return 0;
 }
 
-void Particle::reset()
+void ParticleType::reset()
 {
 }
 
-void Particle::prepareNextFrame(uint timeStamp)
+void ParticleType::prepareNextFrame(uint timeStamp)
 {
 }

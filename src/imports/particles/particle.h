@@ -4,11 +4,11 @@
 #include <QObject>
 #include "particlesystem.h"
 
-class Particle : public QObject
+class ParticleType : public QObject
 {
     Q_OBJECT
 public:
-    explicit Particle(QObject *parent = 0);
+    explicit ParticleType(QObject *parent = 0);
     virtual void load(ParticleData*);
     virtual void reload(ParticleData*);
     virtual void setCount(int c);

@@ -18,7 +18,7 @@ FollowEmitter::FollowEmitter(QSGItem *parent) :
   , m_follow(0)
   , m_lastTimeStamp(0)
 {
-    connect(this, SIGNAL(followChanged(Particle*)),
+    connect(this, SIGNAL(followChanged(ParticleType*)),
             this, SLOT(recalcParticlesPerSecond()));
     connect(this, SIGNAL(particleDurationChanged(int)),
             this, SLOT(recalcParticlesPerSecond()));
@@ -26,7 +26,7 @@ FollowEmitter::FollowEmitter(QSGItem *parent) :
             this, SLOT(recalcParticlesPerSecond()));
 }
 
-void FollowEmitter::setFollow(Particle *arg)
+void FollowEmitter::setFollow(ParticleType *arg)
 {
     if (m_follow != arg) {
         m_follow = arg;
