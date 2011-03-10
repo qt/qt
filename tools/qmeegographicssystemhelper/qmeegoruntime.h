@@ -63,7 +63,11 @@ public:
     static void* createFenceSync();
     static void destroyFenceSync(void *fs);
     static void invalidateLiveSurfaces();
+    static void switchToRaster();
+    static void switchToMeeGo();
+    static void enableSwitchEvents();
 
 private:
     static bool initialized;
+    static bool switchEventsEnabled;
 };
