@@ -405,16 +405,16 @@ void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
             if (rootItem)
                 rootItem->resetTransform();
         }
+    } else {
+        if (m_splitViewResizeBy)
+            gv->resize(gv->rect().width(), m_splitViewResizeBy);
     }
-
     // Resizing might have led to widget losing its original windowstate.
     // Restore previous window state.
 
     if (m_splitViewPreviousWindowStates != windowToMove->windowState())
         windowToMove->setWindowState(m_splitViewPreviousWindowStates);
 
-    if (m_splitViewResizeBy)
-        gv->updateGeometry();
     windowToMove->setUpdatesEnabled(true);
 
     gv->setAttribute(Qt::WA_Resized, userResize); //not a user resize
