@@ -93,6 +93,20 @@ void QSGTexture::setStatus(Status s)
     m_status = s;
 }
 
+/*!
+    Sets the texture subrect of this texture to \a subrect.
+
+    The subrect is specified in normalized coordinates, relative
+    to the texture size.
+
+    \sa setTextureSize(), subRect()
+ */
+
+void QSGTexture::setSubRect(const QRectF &subrect)
+{
+    m_sub_rect = subrect;
+}
+
 
 uint qHash(const QSGTextureCacheKey &key)
 {
@@ -132,20 +146,6 @@ int QSGTextureManager::maxTextureSize() const
     if (d->maxTextureSize < 0)
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &const_cast<QSGTextureManagerPrivate *>(d)->maxTextureSize);
     return d->maxTextureSize;
-}
-
-
-void QSGTextureManager::setContext(QSGContext *context)
-{
-    Q_D(QSGTextureManager);
-    Q_ASSERT(!d->context);
-    d->context = context;
-}
-
-QSGContext *QSGTextureManager::context() const
-{
-    Q_D(const QSGTextureManager);
-    return d->context;
 }
 
 

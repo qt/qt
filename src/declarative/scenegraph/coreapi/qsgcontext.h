@@ -86,7 +86,7 @@ public:
     virtual GlyphNodeInterface *createGlyphNode();
     virtual GlyphNodeInterface *createGlyphNode(const QFont &font);
     virtual Renderer *createRenderer();
-    virtual QSGTextureManager *createTextureManager();
+    virtual QSGTextureManager *createTextureManager(QSGContext *context);
 
     static QSGContext *createDefaultContext();
 

@@ -82,12 +82,16 @@ public:
     void setStatus(Status s);
     Status status() const { return m_status; }
 
+    QRectF subRect() const { return m_sub_rect; }
+    void setSubRect(const QRectF &subrect);
+
 public:
     Status m_status;
     int m_texture_id;
     mutable int m_ref_count;
 
     QSize m_texture_size;
+    QRectF m_sub_rect;
 
     uint m_has_alpha : 1;
     uint m_owns_texture : 1;
@@ -107,14 +111,12 @@ public:
 
     QSGTextureRef(const QSGTexture *texture, const QRectF &subrect = QRectF(0, 0, 1, 1))
         : m_texture(texture)
-        , m_sub_rect(subrect)
     {
         if (texture)
             ++texture->m_ref_count;
     }
 
     QSGTextureRef(const QSGTextureRef &other)
-        : m_sub_rect(other.m_sub_rect)
     {
         m_texture = other.m_texture;
         if (m_texture)
@@ -125,9 +127,6 @@ public:
     {
         deref();
     }
-
-    void setSubRect(const QRectF &subrect) { m_sub_rect = subrect; }
-    QRectF subRect() const { return m_sub_rect; }
 
     const QSGTexture *texture() const { return m_texture; }
     const QSGTexture *operator->() const { return m_texture; }
@@ -187,9 +186,6 @@ class Q_DECLARATIVE_EXPORT QSGTextureManager : public QObject
 
 public:
     QSGTextureManager();
-
-    virtual void setContext(QSGContext *context);
-    QSGContext *context() const;
 
     virtual QSGTextureRef upload(const QImage &image);
     virtual void requestUpload(QSGTextureUploadRequest *request);
