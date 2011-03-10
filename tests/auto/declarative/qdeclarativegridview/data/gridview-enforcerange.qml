@@ -1,4 +1,4 @@
-import QtQuick 1.0
+import QtQuick 1.1
 
 Rectangle {
     width: 240
@@ -48,6 +48,8 @@ Rectangle {
         model: testModel
         delegate: myDelegate
         highlight: myHighlight
+        flow: (testTopToBottom == true) ? GridView.TopToBottom : GridView.LeftToRight
+        layoutDirection: (testRightToLeft == true) ? Qt.RightToLeft : Qt.LeftToRight
         preferredHighlightBegin: 100
         preferredHighlightEnd: 100
         highlightRangeMode: "StrictlyEnforceRange"

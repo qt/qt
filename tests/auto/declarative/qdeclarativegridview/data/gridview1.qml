@@ -1,4 +1,4 @@
-import QtQuick 1.0
+import QtQuick 1.1
 
 Rectangle {
     id: root
@@ -55,7 +55,8 @@ Rectangle {
         height: 320
         cellWidth: 80
         cellHeight: 60
-        flow: (testTopToBottom == false) ? "LeftToRight" : "TopToBottom"
+        flow: (testTopToBottom == false) ? GridView.LeftToRight : GridView.TopToBottom
+        layoutDirection: (testRightToLeft == true) ? Qt.RightToLeft : Qt.LeftToRight
         model: testModel
         delegate: myDelegate
         header: root.showHeader ? headerFooter : null
