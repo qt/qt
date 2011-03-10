@@ -7479,7 +7479,7 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SVG"
 fi
 
-if [ "$CFG_WEBKIT" = "auto" ]; then
+if [ "$CFG_WEBKIT" != "no" ]; then
     CFG_WEBKIT="$canBuildWebKit"
 fi
 
