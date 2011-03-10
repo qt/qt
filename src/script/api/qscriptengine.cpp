@@ -914,10 +914,6 @@ v8::Handle<v8::Value> QScriptEnginePrivate::newQObject(QObject *object,
     Q_ASSERT(!templ.IsEmpty());
     v8::Handle<v8::ObjectTemplate> instanceTempl = templ->InstanceTemplate();
     Q_ASSERT(!instanceTempl.IsEmpty());
-    instanceTempl->SetNamedPropertyHandler(QtLazyPropertyGetter,
-                                           QtLazyPropertySetter,
-                                           0, 0, 0,
-                                           /*data=*/v8::External::Wrap(this));
     v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
     Q_ASSERT(instance->InternalFieldCount() == 1);
 
