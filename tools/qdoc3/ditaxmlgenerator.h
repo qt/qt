@@ -468,6 +468,8 @@ class DitaXmlGenerator : public PageGenerator
     QString projectDescription;
     QString projectUrl;
     QString navigationLinks;
+    QString version;
+    QStringList vrm;
     QStringList stylesheets;
     QStringList customHeadElements;
     const Tree* myTree;

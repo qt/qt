@@ -440,7 +440,8 @@ void DitaXmlGenerator::initializeGenerator(const Config &config)
                                               Config::dot +
                                               DITAXMLGENERATOR_CUSTOMHEADELEMENTS);
     codeIndent = config.getInt(CONFIG_CODEINDENT);
-
+    version = config.getString(CONFIG_VERSION);
+    vrm = version.split(".");
 }
 
 /*!
@@ -5536,10 +5537,10 @@ void DitaXmlGenerator::writeDitaMap()
 
   \list
     \o <audience>
-    \o <author>
+    \o <author> *
     \o <brand>
-    \o <category>
-    \o <compomnent>
+    \o <category> *
+    \o <compomnent> *
     \o <copyrholder>
     \o <copyright>
     \o <created>
@@ -5547,22 +5548,24 @@ void DitaXmlGenerator::writeDitaMap()
     \o <critdates>
     \o <keyword>
     \o <keywords>
-    \o <metadata>
+    \o <metadata> *
     \o <othermeta>
-    \o <permissions>
+    \o <permissions> *
     \o <platform>
-    \o <prodinfo>
-    \o <prodname>
-    \o <prolog>
-    \o <publisher>
+    \o <prodinfo> *
+    \o <prodname> *
+    \o <prolog> *
+    \o <publisher> *
     \o <resourceid>
     \o <revised>
     \o <source>
     \o <tm>
     \o <unknown>
-    \o <vrm>
-    \o <vrmlist>
+    \o <vrm> *
+    \o <vrmlist> *
   \endlist
+
+  \node * means the tag has been used.
   
  */
 void
@@ -5572,13 +5575,27 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
         return;
     writeStartTag(DT_prolog);
     
-    writeStartTag(DT_author);
     QString author = inner->author();
+    writeStartTag(DT_author);
     if (author.isEmpty())
         author = "Qt Development Frameworks";
     xmlWriter().writeCharacters(author);
     writeEndTag(); // <author>
-        
+
+    QString publisher = inner->publisher();
+    writeStartTag(DT_publisher);
+    if (publisher.isEmpty())
+        publisher = "Nokia";
+    xmlWriter().writeCharacters(publisher);
+    writeEndTag(); // <publisher>
+
+    QString permissions = inner->permissions();
+    writeStartTag(DT_permissions);
+    if (permissions.isEmpty())
+        permissions = "all";
+    xmlWriter().writeAttribute("view",permissions);
+    writeEndTag(); // <permissions>
+
     writeStartTag(DT_metadata);
     writeStartTag(DT_category);
     QString category = "Page";
@@ -5610,6 +5627,29 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
     }
     xmlWriter().writeCharacters(category);
     writeEndTag(); // <category>
+    if (vrm.size() > 0) {
+        writeStartTag(DT_prodinfo);
+        writeStartTag(DT_prodname);
+        xmlWriter().writeCharacters(projectDescription);
+        writeEndTag(); // <prodname>
+        writeStartTag(DT_vrmlist);
+        writeStartTag(DT_vrm);
+        if (vrm.size() > 0)
+            xmlWriter().writeAttribute("version",vrm[0]);
+        if (vrm.size() > 1)
+            xmlWriter().writeAttribute("release",vrm[1]);
+        if (vrm.size() > 2)
+            xmlWriter().writeAttribute("modification",vrm[2]);
+        writeEndTag(); // <vrm>
+        writeEndTag(); // <vrmlist>
+        QString component = inner->moduleName();
+        if (!component.isEmpty()) {
+            writeStartTag(DT_component);
+            xmlWriter().writeCharacters(component);
+            writeEndTag(); // <prodinfo>
+        }
+        writeEndTag(); // <prodinfo>
+    }
     writeEndTag(); // <metadata>
     writeEndTag(); // <prolog>
 }
