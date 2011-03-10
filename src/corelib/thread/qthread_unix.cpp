@@ -436,7 +436,7 @@ int QThread::idealThreadCount()
     if (QSysInfo::symbianVersion() >= QSysInfo::SV_SF_3) {
         TInt inumcpus;
         TInt err;
-        err = HAL::Get(QT_HALData_ENumCpus, inumcpus);
+        err = HAL::Get((HALData::TAttribute)QT_HALData_ENumCpus, inumcpus);
         if (err != KErrNone) {
             cores = 1;
         } else if ( inumcpus <= 0 ) {
