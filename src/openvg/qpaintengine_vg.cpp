@@ -4018,6 +4018,8 @@ VGImageFormat qt_vg_image_to_vg_format(QImage::Format format)
     switch (format) {
         case QImage::Format_MonoLSB:
             return VG_BW_1;
+        case QImage::Format_Indexed8:
+            return VG_sL_8;
         case QImage::Format_ARGB32_Premultiplied:
             return VG_sARGB_8888_PRE;
         case QImage::Format_RGB32:
@@ -4028,7 +4030,8 @@ VGImageFormat qt_vg_image_to_vg_format(QImage::Format format)
             return VG_sRGB_565;
         case QImage::Format_ARGB4444_Premultiplied:
             return VG_sARGB_4444;
-        default: break;
+        default:
+            break;
     }
     return VG_sARGB_8888;   // XXX
 }

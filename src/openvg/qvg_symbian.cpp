@@ -150,6 +150,21 @@ void QVGPixmapData::releaseNativeImageHandle()
     }
 }
 
+static inline bool conversionLessFormat(QImage::Format format)
+{
+    switch (format) {
+        case QImage::Format_RGB16: // EColor64K
+        case QImage::Format_RGB32: // EColor16MU
+        case QImage::Format_ARGB32: // EColor16MA
+        case QImage::Format_ARGB32_Premultiplied: // EColor16MAP
+        case QImage::Format_MonoLSB: // EGray2
+        case QImage::Format_Indexed8: // EGray256, EColor256
+            return true;
+        default:
+            return false;
+    }
+}
+
 void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
 {
     if (type == QPixmapData::SgImage && pixmap) {
@@ -178,9 +193,11 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         source = QVolatileImage(bitmap); // duplicates only, if possible
         if (source.isNull())
             return;
-        // Here we may need to copy if the formats do not match.
-        // (e.g. for display modes other than EColor16MAP and EColor16MU)
-        source.ensureFormat(idealFormat(&source.imageRef(), Qt::AutoColor));
+        if (!conversionLessFormat(source.format())) {
+            // Here we may need to copy if the formats do not match.
+            // (e.g. for display modes other than EColor16MAP and EColor16MU)
+            source.ensureFormat(idealFormat(&source.imageRef(), Qt::AutoColor));
+        }
         recreate = true;
     } else if (type == QPixmapData::VolatileImage && pixmap) {
         QVolatileImage *img = static_cast<QVolatileImage *>(pixmap);
