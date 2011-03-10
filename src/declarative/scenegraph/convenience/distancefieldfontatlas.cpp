@@ -77,13 +77,27 @@ struct DFVertex
 static void drawRectangle(float *bits, int width, int height, const DFVertex *v1, const DFVertex *v2, const DFVertex *v3, const DFVertex *v4)
 {
     float minY = qMin(qMin(v1->p.y, v2->p.y), qMin(v3->p.y, v4->p.y));
-    while (v1->p.y > minY) {
+    if (v2->p.y == minY) {
         const DFVertex *tmp = v1;
         v1 = v2;
         v2 = v3;
         v3 = v4;
         v4 = tmp;
+    } else if (v3->p.y == minY) {
+        const DFVertex *tmp1 = v1;
+        const DFVertex *tmp2 = v2;
+        v1 = v3;
+        v2 = v4;
+        v3 = tmp1;
+        v4 = tmp2;
+    } else if (v4->p.y == minY) {
+        const DFVertex *tmp = v4;
+        v4 = v3;
+        v3 = v2;
+        v2 = v1;
+        v1 = tmp;
     }
+
     //   v1
     //  /  \
     // v4  v2
@@ -188,12 +202,18 @@ static void drawRectangle(float *bits, int width, int height, const DFVertex *v1
 static void drawTriangle(float *bits, int width, int height, const DFVertex *v1, const DFVertex *v2, const DFVertex *v3)
 {
     float minY = qMin(qMin(v1->p.y, v2->p.y), v3->p.y);
-    while (v1->p.y > minY) {
+    if (v2->p.y == minY) {
         const DFVertex *tmp = v1;
         v1 = v2;
         v2 = v3;
         v3 = tmp;
+    } else if (v3->p.y == minY) {
+        const DFVertex *tmp = v3;
+        v3 = v2;
+        v2 = v1;
+        v1 = tmp;
     }
+
     //   v1
     //  /  \
     // v3--v2
