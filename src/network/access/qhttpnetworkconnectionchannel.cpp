@@ -502,6 +502,7 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
 // called when unexpectedly reading a -1 or when data is expected but socket is closed
 void QHttpNetworkConnectionChannel::handleUnexpectedEOF()
 {
+    Q_ASSERT(reply);
     if (reconnectAttempts <= 0) {
         // too many errors reading/receiving/parsing the status, close the socket and emit error
         requeueCurrentlyPipelinedRequests();
@@ -524,7 +525,8 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
 
     // resend this request after we receive the disconnected signal
     if (socketState == QAbstractSocket::ClosingState) {
-        resendCurrent = true;
+        if (reply)
+            resendCurrent = true;
         return false;
     }
 
@@ -646,6 +648,7 @@ bool QHttpNetworkConnectionChannel::expand(bool dataComplete)
 
 void QHttpNetworkConnectionChannel::allDone()
 {
+    Q_ASSERT(reply);
 #ifndef QT_NO_COMPRESS
     // expand the whole data.
     if (reply->d_func()->expectContent() && reply->d_func()->autoDecompress && !reply->d_func()->streamEnd) {
@@ -741,6 +744,7 @@ void QHttpNetworkConnectionChannel::allDone()
 
 void QHttpNetworkConnectionChannel::detectPipeliningSupport()
 {
+    Q_ASSERT(reply);
     // detect HTTP Pipelining support
     QByteArray serverHeaderField;
     if (
@@ -824,6 +828,7 @@ void QHttpNetworkConnectionChannel::handleStatus()
 
 bool QHttpNetworkConnectionChannel::resetUploadData()
 {
+    Q_ASSERT(reply);
     QNonContiguousByteDevice* uploadByteDevice = request.uploadByteDevice();
     if (!uploadByteDevice)
         return true;
@@ -881,7 +886,8 @@ void QHttpNetworkConnectionChannel::closeAndResendCurrentRequest()
 {
     requeueCurrentlyPipelinedRequests();
     close();
-    resendCurrent = true;
+    if (reply)
+        resendCurrent = true;
     if (qobject_cast<QHttpNetworkConnection*>(connection))
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
 }
@@ -983,10 +989,10 @@ void QHttpNetworkConnectionChannel::_q_connected()
     //channels[i].reconnectAttempts = 2;
     if (!pendingEncrypt) {
         state = QHttpNetworkConnectionChannel::IdleState;
+        if (!reply)
+            connection->d_func()->dequeueRequest(socket);
         if (reply)
             sendRequest();
-        else
-            close();
     }
 }
 
@@ -1040,6 +1046,9 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
     QPointer<QHttpNetworkConnection> that = connection;
     QString errorString = connection->d_func()->errorDetail(errorCode, socket, socket->errorString());
 
+    // Need to dequeu the request so that we can emit the error.
+    if (!reply)
+        connection->d_func()->dequeueRequest(socket);
     if (reply) {
         reply->d_func()->errorString = errorString;
         emit reply->finishedWithError(errorCode, errorString);
@@ -1054,7 +1063,11 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
 #ifndef QT_NO_NETWORKPROXY
 void QHttpNetworkConnectionChannel::_q_proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator* auth)
 {
-    connection->d_func()->emitProxyAuthenticationRequired(this, proxy, auth);
+    // Need to dequeue the request before we can emit the error.
+    if (!reply)
+        connection->d_func()->dequeueRequest(socket);
+    if (reply)
+        connection->d_func()->emitProxyAuthenticationRequired(this, proxy, auth);
 }
 #endif
 
@@ -1070,7 +1083,10 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
         return; // ### error
     state = QHttpNetworkConnectionChannel::IdleState;
     pendingEncrypt = false;
-    sendRequest();
+    if (!reply)
+        connection->d_func()->dequeueRequest(socket);
+    if (reply)
+        sendRequest();
 }
 
 void QHttpNetworkConnectionChannel::_q_sslErrors(const QList<QSslError> &errors)
@@ -1081,7 +1097,10 @@ void QHttpNetworkConnectionChannel::_q_sslErrors(const QList<QSslError> &errors)
     // Also pause the connection because socket notifiers may fire while an user
     // dialog is displaying
     connection->d_func()->pauseConnection();
-    emit reply->sslErrors(errors);
+    if (pendingEncrypt && !reply)
+        connection->d_func()->dequeueRequest(socket);
+    if (reply)
+        emit reply->sslErrors(errors);
     connection->d_func()->resumeConnection();
 }
 
