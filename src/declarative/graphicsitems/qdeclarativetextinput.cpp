@@ -1374,7 +1374,10 @@ QVariant QDeclarativeTextInput::inputMethodQuery(Qt::InputMethodQuery property) 
     case Qt::ImCursorPosition:
         return QVariant(d->control->cursor());
     case Qt::ImSurroundingText:
-        return QVariant(text());
+        if (d->control->echoMode() == PasswordEchoOnEdit && !d->control->passwordEchoEditing())
+            return QVariant(displayText());
+        else
+            return QVariant(text());
     case Qt::ImCurrentSelection:
         return QVariant(selectedText());
     case Qt::ImMaximumTextLength:
@@ -1867,6 +1870,8 @@ void QDeclarativeTextInputPrivate::init()
 #endif // QT_NO_CLIPBOARD
     q->connect(control, SIGNAL(updateMicroFocus()),
                q, SLOT(updateMicroFocus()));
+    q->connect(control, SIGNAL(displayTextChanged(QString)),
+               q, SLOT(updateRect()));
     q->updateSize();
     oldValidity = control->hasAcceptableInput();
     lastSelectionStart = 0;

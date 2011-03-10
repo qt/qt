@@ -1829,13 +1829,23 @@ void tst_qdeclarativetextinput::echoMode()
     QCOMPARE(input->inputMethodHints(), ref);
     QCOMPARE(input->text(), initial);
     QCOMPARE(input->displayText(), QLatin1String("QQQQQQQQ"));
+    QCOMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), QLatin1String("QQQQQQQQ"));
     QTest::keyPress(canvas, Qt::Key_A);//Clearing previous entry is part of PasswordEchoOnEdit
     QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
     QCOMPARE(input->text(), QLatin1String("a"));
     QCOMPARE(input->displayText(), QLatin1String("a"));
+    QCOMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), QLatin1String("a"));
     input->setFocus(false);
     QVERIFY(input->hasActiveFocus() == false);
     QCOMPARE(input->displayText(), QLatin1String("Q"));
+    QCOMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), QLatin1String("Q"));
+    input->setFocus(true);
+    QInputMethodEvent inputEvent;
+    inputEvent.setCommitString(initial);
+    QApplication::sendEvent(canvas, &inputEvent);
+    QCOMPARE(input->text(), initial);
+    QCOMPARE(input->displayText(), initial);
+    QCOMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), initial);
 
     delete canvas;
 }
