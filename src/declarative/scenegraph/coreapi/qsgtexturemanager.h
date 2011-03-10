@@ -109,7 +109,7 @@ public:
     {
     }
 
-    QSGTextureRef(const QSGTexture *texture, const QRectF &subrect = QRectF(0, 0, 1, 1))
+    QSGTextureRef(const QSGTexture *texture)
         : m_texture(texture)
     {
         if (texture)
@@ -137,7 +137,6 @@ public:
             ++other.m_texture->m_ref_count;
         deref();
         m_texture = other.m_texture;
-        m_sub_rect = other.m_sub_rect;
 
         return *this;
     }
@@ -154,7 +153,6 @@ private:
     }
 
     const QSGTexture *m_texture;
-    QRectF m_sub_rect;
 };
 
 class QSGTextureUploadRequestPrivate;

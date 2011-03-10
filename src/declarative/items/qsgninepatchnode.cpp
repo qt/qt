@@ -128,7 +128,7 @@ void QSGNinePatchNode::updateGeometry()
     y[4] = y[3] + 0.5;
     y[5] = m_targetRect.y() + m_targetRect.height();
 
-    QRectF src = m_texture.subRect();
+    QRectF src = m_texture->subRect();
     qreal pw = src.width() / m_texture->textureSize().width();
     qreal ph = src.height() / m_texture->textureSize().height();
 
