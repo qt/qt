@@ -291,14 +291,17 @@ void DefaultTextureNode::preprocess()
 void DefaultTextureNode::updateGeometry()
 {
     const QSGTextureRef t = m_texture->texture();
-    QRectF textureRect = t->subRect();
+    if (t.isNull()) {
+        QSGGeometry::updateTexturedRectGeometry(&m_geometry, QRectF(), QRectF());
+    } else {
+        QRectF textureRect = t->subRect();
+        QRectF sr(textureRect.x() + m_sourceRect.x() * textureRect.width(),
+                  textureRect.y() + m_sourceRect.y() * textureRect.height(),
+                  m_sourceRect.width() * textureRect.width(),
+                  m_sourceRect.height() * textureRect.height());
 
-    QRectF sr(textureRect.x() + m_sourceRect.x() * textureRect.width(),
-              textureRect.y() + m_sourceRect.y() * textureRect.height(),
-              m_sourceRect.width() * textureRect.width(),
-              m_sourceRect.height() * textureRect.height());
-
-    QSGGeometry::updateTexturedRectGeometry(&m_geometry, m_targetRect, sr);
+        QSGGeometry::updateTexturedRectGeometry(&m_geometry, m_targetRect, sr);
+    }
     markDirty(DirtyGeometry);
     m_dirtyGeometry = false;
 }
