@@ -96,11 +96,6 @@ QNetworkAccessBackend *QNetworkAccessManagerPrivate::findBackend(QNetworkAccessM
             QNetworkAccessBackend *backend = (*it)->create(op, request);
             if (backend) {
                 backend->manager = this;
-#ifndef QT_NO_BEARERMANAGEMENT
-                //copy network session down to the backend
-                if (networkSession)
-                    backend->setProperty("_q_networksession", QVariant::fromValue(networkSession));
-#endif
                 return backend; // found a factory that handled our request
             }
             ++it;
@@ -374,6 +369,8 @@ bool QNetworkAccessBackend::start()
 
     if (manager->networkSession->isOpen() &&
         manager->networkSession->state() == QNetworkSession::Connected) {
+        //copy network session down to the backend
+        setProperty("_q_networksession", QVariant::fromValue(manager->networkSession));
         open();
         return true;
     }
