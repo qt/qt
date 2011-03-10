@@ -330,26 +330,6 @@ bool QCoeFepInputContext::symbianFilterEvent(QWidget *keyWidget, const QSymbianE
         // This should also happen for commands.
         reset();
 
-    // We need to translate the window content when window becomes available. Changing the window while it is
-    // not yet ready with OpenVg graphicssystem results in operations silently failing.
-
-    if (event->windowServerEvent() && event->windowServerEvent()->Type() == EEventWindowVisibilityChanged) {
-        if (S60->splitViewLastWidget) {
-            QGraphicsView *gv = qobject_cast<QGraphicsView*>(S60->splitViewLastWidget);
-            const bool alwaysResize = (gv && gv->verticalScrollBarPolicy() != Qt::ScrollBarAlwaysOff);
-            TUint visibleFlags = event->windowServerEvent()->VisibilityChanged()->iFlags;
-            if (!alwaysResize) {
-                if (visibleFlags & TWsVisibilityChangedEvent::EPartiallyVisible) {
-                    if (!isWidgetVisible(S60->splitViewLastWidget)) {
-                        ensureFocusWidgetVisible(S60->splitViewLastWidget);
-                    }
-                } else if (visibleFlags & TWsVisibilityChangedEvent::ENotVisible) {
-                    resetSplitViewWidget(true);
-                }
-            }
-        }
-    }
-
     return false;
 }
 
