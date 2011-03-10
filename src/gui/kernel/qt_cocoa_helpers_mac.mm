@@ -184,7 +184,7 @@ struct dndenum_mapper
     bool Qt2Mac;
 };
 
-#ifdef QT_MAC_USE_COCOA && __OBJC__
+#if defined(QT_MAC_USE_COCOA) && defined(__OBJC__)
 
 static dndenum_mapper dnd_enums[] = {
     { NSDragOperationLink,  Qt::LinkAction, true },
@@ -1627,6 +1627,7 @@ void qt_mac_constructQIconFromIconRef(const IconRef icon, const IconRef overlayI
 #ifdef QT_MAC_USE_COCOA
 void qt_mac_menu_collapseSeparators(void */*NSMenu **/ theMenu, bool collapse)
 {
+    QMacCocoaAutoReleasePool pool;
     OSMenuRef menu = static_cast<OSMenuRef>(theMenu);
     if (collapse) {
         bool previousIsSeparator = true; // setting to true kills all the separators placed at the top.

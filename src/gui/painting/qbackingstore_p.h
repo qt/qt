@@ -209,8 +209,9 @@ private:
     {
 #ifdef Q_WS_QWS
         return tlw->frameGeometry();
-#endif
+#else
         return tlw->data->crect;
+#endif
     }
 
     inline void appendDirtyOnScreenWidget(QWidget *widget)

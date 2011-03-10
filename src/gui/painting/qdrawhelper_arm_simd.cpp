@@ -201,8 +201,8 @@ argb32constalpha_next_pixel
     uxtb16  r10, r9
     uxtb16  r6, r9, ror #8
 
-    // Negate r11 and extract src alpha
-    mvn     r9, r11 // bitwise not
+    // Negate r8 and extract src alpha
+    mvn     r9, r8 // bitwise not
     uxtb    r9, r9, ror #24
 
     mla     r10, r9, r10, r14

@@ -53,6 +53,10 @@ QT_BEGIN_NAMESPACE
 // before we perform a flick.
 static const int FlickThreshold = 20;
 
+// RetainGrabVelocity is the maxmimum instantaneous velocity that
+// will ensure the  Flickable retains the grab on consecutive flicks.
+static const int RetainGrabVelocity = 15;
+
 QDeclarativeFlickableVisibleArea::QDeclarativeFlickableVisibleArea(QDeclarativeFlickable *parent)
     : QObject(parent), flickable(parent), m_xPosition(0.), m_widthRatio(0.)
     , m_yPosition(0.), m_heightRatio(0.)
@@ -139,7 +143,7 @@ QDeclarativeFlickablePrivate::QDeclarativeFlickablePrivate()
     , stealMouse(false), pressed(false), interactive(true), calcVelocity(false)
     , deceleration(500), maxVelocity(2000), reportedVelocitySmoothing(100)
     , delayedPressEvent(0), delayedPressTarget(0), pressDelay(0), fixupDuration(600)
-    , vTime(0), visibleArea(0)
+    , fixupMode(Normal), vTime(0), visibleArea(0)
     , flickableDirection(QDeclarativeFlickable::AutoFlickDirection)
     , boundsBehavior(QDeclarativeFlickable::DragAndOvershootBounds)
 {
@@ -215,6 +219,7 @@ void QDeclarativeFlickablePrivate::flick(AxisData &data, qreal minExtent, qreal 
 {
     Q_Q(QDeclarativeFlickable);
     qreal maxDistance = -1;
+    data.fixingUp = false;
     bool overShoot = boundsBehavior == QDeclarativeFlickable::DragAndOvershootBounds;
     // -ve velocity means list is moving up
     if (velocity > 0) {
@@ -284,24 +289,45 @@ void QDeclarativeFlickablePrivate::fixup(AxisData &data, qreal minExtent, qreal 
     if (data.move.value() > minExtent || maxExtent > minExtent) {
         timeline.reset(data.move);
         if (data.move.value() != minExtent) {
-            if (fixupDuration) {
-                qreal dist = minExtent - data.move;
-                timeline.move(data.move, minExtent - dist/2, QEasingCurve(QEasingCurve::InQuad), fixupDuration/4);
-                timeline.move(data.move, minExtent, QEasingCurve(QEasingCurve::OutExpo), 3*fixupDuration/4);
-            } else {
+            switch (fixupMode) {
+            case Immediate:
                 timeline.set(data.move, minExtent);
+                break;
+            case ExtentChanged:
+                // The target has changed. Don't start from the beginning; just complete the
+                // second half of the animation using the new extent.
+                timeline.move(data.move, minExtent, QEasingCurve(QEasingCurve::OutExpo), 3*fixupDuration/4);
+                data.fixingUp = true;
+                break;
+            default: {
+                    qreal dist = minExtent - data.move;
+                    timeline.move(data.move, minExtent - dist/2, QEasingCurve(QEasingCurve::InQuad), fixupDuration/4);
+                    timeline.move(data.move, minExtent, QEasingCurve(QEasingCurve::OutExpo), 3*fixupDuration/4);
+                    data.fixingUp = true;
+                }
             }
         }
     } else if (data.move.value() < maxExtent) {
         timeline.reset(data.move);
-        if (fixupDuration) {
-            qreal dist = maxExtent - data.move;
-            timeline.move(data.move, maxExtent - dist/2, QEasingCurve(QEasingCurve::InQuad), fixupDuration/4);
-            timeline.move(data.move, maxExtent, QEasingCurve(QEasingCurve::OutExpo), 3*fixupDuration/4);
-        } else {
+        switch (fixupMode) {
+        case Immediate:
             timeline.set(data.move, maxExtent);
+            break;
+        case ExtentChanged:
+            // The target has changed. Don't start from the beginning; just complete the
+            // second half of the animation using the new extent.
+            timeline.move(data.move, maxExtent, QEasingCurve(QEasingCurve::OutExpo), 3*fixupDuration/4);
+            data.fixingUp = true;
+            break;
+        default: {
+                qreal dist = maxExtent - data.move;
+                timeline.move(data.move, maxExtent - dist/2, QEasingCurve(QEasingCurve::InQuad), fixupDuration/4);
+                timeline.move(data.move, maxExtent, QEasingCurve(QEasingCurve::OutExpo), 3*fixupDuration/4);
+                data.fixingUp = true;
+            }
         }
     }
+    fixupMode = Normal;
     vTime = timeline.time();
 }
 
@@ -672,7 +698,8 @@ void QDeclarativeFlickable::setFlickableDirection(FlickableDirection direction)
 void QDeclarativeFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_Q(QDeclarativeFlickable);
-    if (interactive && timeline.isActive() && (qAbs(hData.velocity) > 10 || qAbs(vData.velocity) > 10))
+    if (interactive && timeline.isActive()
+            && (qAbs(hData.smoothVelocity.value()) > RetainGrabVelocity || qAbs(vData.smoothVelocity.value()) > RetainGrabVelocity))
         stealMouse = true; // If we've been flicked then steal the click.
     else
         stealMouse = false;
@@ -683,6 +710,12 @@ void QDeclarativeFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEven
     vData.velocity = 0;
     hData.dragStartOffset = 0;
     vData.dragStartOffset = 0;
+    hData.dragMinBound = q->minXExtent();
+    vData.dragMinBound = q->minYExtent();
+    hData.dragMaxBound = q->maxXExtent();
+    vData.dragMaxBound = q->maxYExtent();
+    hData.fixingUp = false;
+    vData.fixingUp = false;
     lastPos = QPoint();
     QDeclarativeItemPrivate::start(lastPosTime);
     pressPos = event->pos();
@@ -711,8 +744,8 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
             if (!vMoved)
                 vData.dragStartOffset = dy;
             qreal newY = dy + vData.pressPos - vData.dragStartOffset;
-            const qreal minY = q->minYExtent();
-            const qreal maxY = q->maxYExtent();
+            const qreal minY = vData.dragMinBound;
+            const qreal maxY = vData.dragMaxBound;
             if (newY > minY)
                 newY = minY + (newY - minY) / 2;
             if (newY < maxY && maxY - minY <= 0)
@@ -743,8 +776,8 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
             if (!hMoved)
                 hData.dragStartOffset = dx;
             qreal newX = dx + hData.pressPos - hData.dragStartOffset;
-            const qreal minX = q->minXExtent();
-            const qreal maxX = q->maxXExtent();
+            const qreal minX = hData.dragMinBound;
+            const qreal maxX = hData.dragMaxBound;
             if (newX > minX)
                 newX = minX + (newX - minX) / 2;
             if (newX < maxX && maxX - minX <= 0)
@@ -840,7 +873,8 @@ void QDeclarativeFlickable::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeFlickable);
     if (d->interactive) {
-        d->handleMousePressEvent(event);
+        if (!d->pressed)
+            d->handleMousePressEvent(event);
         event->accept();
     } else {
         QDeclarativeItem::mousePressEvent(event);
@@ -905,10 +939,26 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
     }
 }
 
+bool QDeclarativeFlickablePrivate::isOutermostPressDelay() const
+{
+    Q_Q(const QDeclarativeFlickable);
+    QDeclarativeItem *item = q->parentItem();
+    while (item) {
+        QDeclarativeFlickable *flick = qobject_cast<QDeclarativeFlickable*>(item);
+        if (flick && flick->pressDelay() > 0 && flick->isInteractive())
+            return false;
+        item = item->parentItem();
+    }
+
+    return true;
+}
+
 void QDeclarativeFlickablePrivate::captureDelayedPress(QGraphicsSceneMouseEvent *event)
 {
     Q_Q(QDeclarativeFlickable);
     if (!q->scene() || pressDelay <= 0)
+        return;
+    if (!isOutermostPressDelay())
         return;
     delayedPressTarget = q->scene()->mouseGrabberItem();
     delayedPressEvent = new QGraphicsSceneMouseEvent(event->type());
@@ -965,9 +1015,10 @@ void QDeclarativeFlickable::timerEvent(QTimerEvent *event)
                 if (scene()->mouseGrabberItem() == d->delayedPressTarget)
                     d->delayedPressTarget->ungrabMouse();
                 //Use the event handler that will take care of finding the proper item to propagate the event
-                QApplication::sendEvent(scene(), d->delayedPressEvent);
+                QApplication::postEvent(scene(), d->delayedPressEvent);
+            } else {
+                delete d->delayedPressEvent;
             }
-            delete d->delayedPressEvent;
             d->delayedPressEvent = 0;
         }
     }
@@ -1042,10 +1093,8 @@ void QDeclarativeFlickable::geometryChanged(const QRectF &newGeometry,
         }
         // Make sure that we're entirely in view.
         if (!d->pressed && !d->movingHorizontally && !d->movingVertically) {
-            int oldDuration = d->fixupDuration;
-            d->fixupDuration = 0;
+            d->fixupMode = QDeclarativeFlickablePrivate::Immediate;
             d->fixupX();
-            d->fixupDuration = oldDuration;
         }
     }
     if (newGeometry.height() != oldGeometry.height()) {
@@ -1057,10 +1106,8 @@ void QDeclarativeFlickable::geometryChanged(const QRectF &newGeometry,
         }
         // Make sure that we're entirely in view.
         if (!d->pressed && !d->movingHorizontally && !d->movingVertically) {
-            int oldDuration = d->fixupDuration;
-            d->fixupDuration = 0;
+            d->fixupMode = QDeclarativeFlickablePrivate::Immediate;
             d->fixupY();
-            d->fixupDuration = oldDuration;
         }
     }
 
@@ -1214,10 +1261,11 @@ void QDeclarativeFlickable::setContentWidth(qreal w)
         d->contentItem->setWidth(w);
     // Make sure that we're entirely in view.
     if (!d->pressed && !d->movingHorizontally && !d->movingVertically) {
-        int oldDuration = d->fixupDuration;
-        d->fixupDuration = 0;
+        d->fixupMode = QDeclarativeFlickablePrivate::Immediate;
         d->fixupX();
-        d->fixupDuration = oldDuration;
+    } else if (!d->pressed && d->hData.fixingUp) {
+        d->fixupMode = QDeclarativeFlickablePrivate::ExtentChanged;
+        d->fixupX();
     }
     emit contentWidthChanged();
     d->updateBeginningEnd();
@@ -1241,10 +1289,11 @@ void QDeclarativeFlickable::setContentHeight(qreal h)
         d->contentItem->setHeight(h);
     // Make sure that we're entirely in view.
     if (!d->pressed && !d->movingHorizontally && !d->movingVertically) {
-        int oldDuration = d->fixupDuration;
-        d->fixupDuration = 0;
+        d->fixupMode = QDeclarativeFlickablePrivate::Immediate;
         d->fixupY();
-        d->fixupDuration = oldDuration;
+    } else if (!d->pressed && d->vData.fixingUp) {
+        d->fixupMode = QDeclarativeFlickablePrivate::ExtentChanged;
+        d->fixupY();
     }
     emit contentHeightChanged();
     d->updateBeginningEnd();
@@ -1253,10 +1302,9 @@ void QDeclarativeFlickable::setContentHeight(qreal h)
 /*!
     \qmlmethod Flickable::resizeContent(real width, real height, QPointF center)
     \preliminary
+    \since Quick 1.1
 
     Resizes the content to \a width x \a height about \a center.
-
-    \bold {This method was added in QtQuick 1.1.}
 
     This does not scale the contents of the Flickable - it only resizes the \l contentWidth
     and \l contentHeight.
@@ -1289,10 +1337,9 @@ void QDeclarativeFlickable::resizeContent(qreal w, qreal h, QPointF center)
 /*!
     \qmlmethod Flickable::returnToBounds()
     \preliminary
+    \since Quick 1.1
 
     Ensures the content is within legal bounds.
-
-    \bold {This method was added in QtQuick 1.1.}
 
     This may be called to ensure that the content is within legal bounds
     after manually positioning the content.
@@ -1338,6 +1385,22 @@ bool QDeclarativeFlickable::yflick() const
     return d->flickableDirection & QDeclarativeFlickable::VerticalFlick;
 }
 
+bool QDeclarativeFlickable::sceneEvent(QEvent *event)
+{
+    bool rv = QDeclarativeItem::sceneEvent(event);
+    if (event->type() == QEvent::UngrabMouse) {
+        Q_D(QDeclarativeFlickable);
+        if (d->pressed) {
+            // if our mouse grab has been removed (probably by another Flickable),
+            // fix our state
+            d->pressed = false;
+            d->stealMouse = false;
+            setKeepMouseGrab(false);
+        }
+    }
+    return rv;
+}
+
 bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeFlickable);
@@ -1365,7 +1428,7 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
             d->handleMouseMoveEvent(&mouseEvent);
             break;
         case QEvent::GraphicsSceneMousePress:
-            if (d->delayedPressEvent)
+            if (d->pressed) // we are already pressed - this is a delayed replay
                 return false;
 
             d->handleMousePressEvent(&mouseEvent);
@@ -1384,6 +1447,8 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
                 // We send the release
                 scene()->sendEvent(s->mouseGrabberItem(), event);
                 // And the event has been consumed
+                d->stealMouse = false;
+                d->pressed = false;
                 return true;
             }
             d->handleMouseReleaseEvent(&mouseEvent);
@@ -1406,6 +1471,7 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
         d->stealMouse = false;
         d->pressed = false;
     }
+
     return false;
 }
 
@@ -1504,6 +1570,9 @@ bool QDeclarativeFlickable::isFlickingVertically() const
     If the flickable is dragged/flicked before the delay times out
     the press event will not be delivered.  If the button is released
     within the timeout, both the press and release will be delivered.
+
+    Note that for nested Flickables with pressDelay set, the pressDelay of
+    inner Flickables is overridden by the outermost Flickable.
 */
 int QDeclarativeFlickable::pressDelay() const
 {
@@ -1596,6 +1665,7 @@ void QDeclarativeFlickable::movementXEnding()
                 emit movementEnded();
         }
     }
+    d->hData.fixingUp = false;
 }
 
 void QDeclarativeFlickable::movementYEnding()
@@ -1618,6 +1688,7 @@ void QDeclarativeFlickable::movementYEnding()
                 emit movementEnded();
         }
     }
+    d->vData.fixingUp = false;
 }
 
 void QDeclarativeFlickablePrivate::updateVelocity()

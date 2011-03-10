@@ -131,6 +131,7 @@ public:
     virtual void HandleViewDeactivation(const TVwsViewId &aViewIdToBeDeactivated, const TVwsViewId &aNewlyActivatedViewId);
     virtual void PrepareToExit();
     virtual void HandleTouchPaneSizeChange();
+    virtual TBool ProcessCommandParametersL(TApaCommand aCommand, TFileName &aDocumentName, const TDesC8 &aTail);
 
 protected:
     virtual void HandleScreenDeviceChangedL();

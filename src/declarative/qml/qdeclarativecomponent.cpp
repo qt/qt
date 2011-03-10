@@ -615,10 +615,11 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
 }
 
 /*!
-    \qmlmethod object Component::createObject(Item parent, Script valuemap = null)
+    \qmlmethod object Component::createObject(Item parent, object properties)
 
-    Creates and returns an object instance of this component that will have the given 
-    \a parent. Returns null if object creation fails.
+    Creates and returns an object instance of this component that will have
+    the given \a parent and \a properties. The \a properties argument is optional.
+    Returns null if object creation fails.
 
     The object will be created in the same context as the one in which the component
     was created. This function will always return null when called on components
@@ -630,14 +631,23 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
     property, or else the object will not be visible.
 
     If a \a parent is not provided to createObject(), a reference to the returned object must be held so that
-    it is not destroyed by the garbage collector.  This is regardless of Item.parent being set afterwards,
+    it is not destroyed by the garbage collector.  This is true regardless of whether \l{Item::parent} is set afterwards,
     since setting the Item parent does not change object ownership; only the graphical parent is changed.
 
-    Since QtQuick 1.1, a map of property values can be optionally passed to the method that applies values to the object's properties
-    before its creation is finalised. This will avoid binding issues that can occur when the object is
-    instantiated before property bindings have been set. For example:
+    As of QtQuick 1.1, this method accepts an optional \a properties argument that specifies a
+    map of initial property values for the created object. These values are applied before object
+    creation is finalized. (This is more efficient than setting property values after object creation,
+    particularly where large sets of property values are defined, and also allows property bindings
+    to be set up before the object is created.)
 
-    \code component.createObject(parent, {"x": 100, "y": 100, "specialProperty": someObject}); \endcode
+    The \a properties argument is specified as a map of property-value items. For example, the code
+    below creates an object with initial \c x and \c y values of 100 and 200, respectively:
+
+    \qml
+        var component = Qt.createComponent("Button.qml");
+        if (component.status == Component.Ready)
+            component.createObject(parent, {"x": 100, "y": 100});
+    \endqml
 
     Dynamically created instances can be deleted with the \c destroy() method.
     See \l {Dynamic Object Management in QML} for more information.
@@ -870,7 +880,6 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *parentCon
 
         state->bindValues = enginePriv->bindValues;
         state->parserStatus = enginePriv->parserStatus;
-        state->finalizedParserStatus = enginePriv->finalizedParserStatus;
         state->componentAttached = enginePriv->componentAttached;
         if (state->componentAttached)
             state->componentAttached->prev = &state->componentAttached;
@@ -878,7 +887,6 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *parentCon
         enginePriv->componentAttached = 0;
         enginePriv->bindValues.clear();
         enginePriv->parserStatus.clear();
-        enginePriv->finalizedParserStatus.clear();
         state->completePending = true;
         enginePriv->inProgressCreations++;
     }
@@ -909,7 +917,6 @@ void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeEnginePrivate *engi
 
         state->bindValues = enginePriv->bindValues;
         state->parserStatus = enginePriv->parserStatus;
-        state->finalizedParserStatus = enginePriv->finalizedParserStatus;
         state->componentAttached = enginePriv->componentAttached;
         if (state->componentAttached)
             state->componentAttached->prev = &state->componentAttached;
@@ -917,7 +924,6 @@ void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeEnginePrivate *engi
         enginePriv->componentAttached = 0;
         enginePriv->bindValues.clear();
         enginePriv->parserStatus.clear();
-        enginePriv->finalizedParserStatus.clear();
         state->completePending = true;
         enginePriv->inProgressCreations++;
     }
@@ -955,14 +961,17 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
             QDeclarativeEnginePrivate::clear(ps);
         }
 
-        for (int ii = 0; ii < state->finalizedParserStatus.count(); ++ii) {
-            QPair<QDeclarativeGuard<QObject>, int> status = state->finalizedParserStatus.at(ii);
-            QObject *obj = status.first;
-            if (obj) {
-                void *args[] = { 0 };
-                QMetaObject::metacall(obj, QMetaObject::InvokeMetaMethod,
-                                      status.second, args);
+        if (1 == enginePriv->inProgressCreations) {
+            for (int ii = 0; ii < enginePriv->finalizedParserStatus.count(); ++ii) {
+                QPair<QDeclarativeGuard<QObject>, int> status = enginePriv->finalizedParserStatus.at(ii);
+                QObject *obj = status.first;
+                if (obj) {
+                    void *args[] = { 0 };
+                    QMetaObject::metacall(obj, QMetaObject::InvokeMetaMethod,
+                                          status.second, args);
+                }
             }
+            enginePriv->finalizedParserStatus.clear();
         }
 
         while (state->componentAttached) {
@@ -977,7 +986,6 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
 
         state->bindValues.clear();
         state->parserStatus.clear();
-        state->finalizedParserStatus.clear();
         state->completePending = false;
 
         enginePriv->inProgressCreations--;
@@ -987,7 +995,6 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
                 enginePriv->erroredBindings->removeError();
             }
         }
-
     }
 }
 

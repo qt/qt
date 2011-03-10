@@ -76,7 +76,7 @@ To see the QML elements listed by functional area, see the
 \o \l {FocusScope} - Element that mediate keyboard focus changes
 \o \l {Flickable} - Provides a surface that can be "flicked"
 \o \l {Flipable} - Provides a surface that produces "flipping" effects
-\o \l {GestureArea} - Enables simple gesture handling
+\o \l {PinchArea} - Enables simple pinch gesture handling
 \endlist
 
 \section1 Positioners and Repeater

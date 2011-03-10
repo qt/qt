@@ -536,7 +536,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 t << "\n\t"
                   << "-$(MOVE) $(TARGET) " << destdir;
             if(!project->isEmpty("QMAKE_POST_LINK"))
-                t << "\n\t" << var("QMAKE_POST_LINK") << "\n\t";
+                t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
         } else if(!project->isEmpty("QMAKE_BUNDLE")) {
             t << "\n\t"

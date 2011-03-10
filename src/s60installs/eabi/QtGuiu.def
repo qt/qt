@@ -12227,10 +12227,10 @@ EXPORTS
 	_ZTV19QBlitterPaintEngine @ 12226 NONAME
 	_ZTV20QBlittablePixmapData @ 12227 NONAME
 	_Zls6QDebugPK13QSymbianEvent @ 12228 NONAME
-	_ZN13QS60MainAppUi25ProcessCommandParametersLE11TApaCommandR4TBufILi256EERK6TDesC8 @ 12229 NONAME ABSENT
-	_ZN14QFileOpenEventC1ERK5RFile @ 12230 NONAME ABSENT
-	_ZN14QFileOpenEventC2ERK5RFile @ 12231 NONAME ABSENT
-	_ZNK14QFileOpenEvent8openFileER5QFile6QFlagsIN9QIODevice12OpenModeFlagEE @ 12232 NONAME ABSENT
+	_ZN13QS60MainAppUi25ProcessCommandParametersLE11TApaCommandR4TBufILi256EERK6TDesC8 @ 12229 NONAME
+	_ZN14QFileOpenEventC1ERK5RFile @ 12230 NONAME
+	_ZN14QFileOpenEventC2ERK5RFile @ 12231 NONAME
+	_ZNK14QFileOpenEvent8openFileER5QFile6QFlagsIN9QIODevice12OpenModeFlagEE @ 12232 NONAME
 	_ZN11QFontEngine16alphaMapForGlyphEj6QFixed @ 12233 NONAME
 	_ZN11QFontEngine16alphaMapForGlyphEj6QFixedRK10QTransform @ 12234 NONAME
 	_Z32qGamma_correct_back_to_linear_csP6QImage @ 12235 NONAME
@@ -12337,4 +12337,59 @@ EXPORTS
 	_ZN12QTextControl23setWordSelectionEnabledEb @ 12336 NONAME
 	_ZNK12QTextControl13isDragEnabledEv @ 12337 NONAME
 	_ZNK12QTextControl22isWordSelectionEnabledEv @ 12338 NONAME
+	_ZN12QLineControl16updateMicroFocusEv @ 12339 NONAME
+	_ZN13QFontDatabase22resolveFontFamilyAliasERK7QString @ 12340 NONAME
+	_ZN14QVolatileImage11paintEngineEv @ 12341 NONAME
+	_ZN14QVolatileImage12ensureFormatEN6QImage6FormatE @ 12342 NONAME
+	_ZN14QVolatileImage15setAlphaChannelERK7QPixmap @ 12343 NONAME
+	_ZN14QVolatileImage4bitsEv @ 12344 NONAME
+	_ZN14QVolatileImage4fillEj @ 12345 NONAME
+	_ZN14QVolatileImage8copyFromEPS_RK5QRect @ 12346 NONAME
+	_ZN14QVolatileImage8imageRefEv @ 12347 NONAME
+	_ZN14QVolatileImageC1EPvS0_ @ 12348 NONAME
+	_ZN14QVolatileImageC1ERK6QImage @ 12349 NONAME
+	_ZN14QVolatileImageC1ERKS_ @ 12350 NONAME
+	_ZN14QVolatileImageC1EiiN6QImage6FormatE @ 12351 NONAME
+	_ZN14QVolatileImageC1Ev @ 12352 NONAME
+	_ZN14QVolatileImageC2EPvS0_ @ 12353 NONAME
+	_ZN14QVolatileImageC2ERK6QImage @ 12354 NONAME
+	_ZN14QVolatileImageC2ERKS_ @ 12355 NONAME
+	_ZN14QVolatileImageC2EiiN6QImage6FormatE @ 12356 NONAME
+	_ZN14QVolatileImageC2Ev @ 12357 NONAME
+	_ZN14QVolatileImageD1Ev @ 12358 NONAME
+	_ZN14QVolatileImageD2Ev @ 12359 NONAME
+	_ZN14QVolatileImageaSERKS_ @ 12360 NONAME
+	_ZN15QGraphicsSystem22releaseCachedResourcesEv @ 12361 NONAME
+	_ZN17QInternalMimeData11canReadDataERK7QString @ 12362 NONAME
+	_ZN17QInternalMimeData11qt_metacallEN11QMetaObject4CallEiPPv @ 12363 NONAME
+	_ZN17QInternalMimeData11qt_metacastEPKc @ 12364 NONAME
+	_ZN17QInternalMimeData13formatsHelperEPK9QMimeData @ 12365 NONAME
+	_ZN17QInternalMimeData15hasFormatHelperERK7QStringPK9QMimeData @ 12366 NONAME
+	_ZN17QInternalMimeData16renderDataHelperERK7QStringPK9QMimeData @ 12367 NONAME
+	_ZN17QInternalMimeData16staticMetaObjectE @ 12368 NONAME DATA 16
+	_ZN17QInternalMimeData19getStaticMetaObjectEv @ 12369 NONAME
+	_ZN17QInternalMimeDataC2Ev @ 12370 NONAME
+	_ZN17QInternalMimeDataD0Ev @ 12371 NONAME
+	_ZN17QInternalMimeDataD1Ev @ 12372 NONAME
+	_ZN17QInternalMimeDataD2Ev @ 12373 NONAME
+	_ZNK14QVolatileImage12bytesPerLineEv @ 12374 NONAME
+	_ZNK14QVolatileImage13endDataAccessEb @ 12375 NONAME
+	_ZNK14QVolatileImage15beginDataAccessEv @ 12376 NONAME
+	_ZNK14QVolatileImage15hasAlphaChannelEv @ 12377 NONAME
+	_ZNK14QVolatileImage20duplicateNativeImageEv @ 12378 NONAME
+	_ZNK14QVolatileImage5depthEv @ 12379 NONAME
+	_ZNK14QVolatileImage5widthEv @ 12380 NONAME
+	_ZNK14QVolatileImage6formatEv @ 12381 NONAME
+	_ZNK14QVolatileImage6heightEv @ 12382 NONAME
+	_ZNK14QVolatileImage6isNullEv @ 12383 NONAME
+	_ZNK14QVolatileImage7toImageEv @ 12384 NONAME
+	_ZNK14QVolatileImage9byteCountEv @ 12385 NONAME
+	_ZNK14QVolatileImage9constBitsEv @ 12386 NONAME
+	_ZNK14QWidgetPrivate20assignedInputContextEv @ 12387 NONAME
+	_ZNK17QInternalMimeData10metaObjectEv @ 12388 NONAME
+	_ZNK17QInternalMimeData12retrieveDataERK7QStringN8QVariant4TypeE @ 12389 NONAME
+	_ZNK17QInternalMimeData7formatsEv @ 12390 NONAME
+	_ZNK17QInternalMimeData9hasFormatERK7QString @ 12391 NONAME
+	_ZTI17QInternalMimeData @ 12392 NONAME
+	_ZTV17QInternalMimeData @ 12393 NONAME
 

@@ -213,6 +213,7 @@ public:
     int mapS60ScanCodesToQt(TUint s60key);
     int mapQtToS60Key(int qtKey);
     int mapQtToS60ScanCodes(int qtKey);
+    void updateInputLanguage();
 #endif
 };
 
