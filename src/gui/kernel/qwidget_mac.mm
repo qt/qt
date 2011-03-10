@@ -3214,6 +3214,8 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
             ReleaseIconRef(previousIcon);
 #else
         QMacCocoaAutoReleasePool pool;
+        if (icon.isNull())
+            return;
         NSButton *iconButton = [qt_mac_window_for(q) standardWindowButton:NSWindowDocumentIconButton];
         if (iconButton == nil) {
             QCFString string(q->windowTitle());
