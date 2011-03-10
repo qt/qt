@@ -669,7 +669,15 @@ bool QSymbianSocketEngine::bind(const QHostAddress &address, quint16 port)
 #endif
 
     if (err) {
-        d->setError(err);
+        switch (err) {
+        case KErrNotFound:
+            // the specified interface was not found - use the error code expected
+            d->setError(QAbstractSocket::SocketAddressNotAvailableError, QSymbianSocketEnginePrivate::AddressNotAvailableErrorString);
+            break;
+        default:
+            d->setError(err);
+            break;
+        }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
         qDebug("QSymbianSocketEngine::bind(%s, %i) == false (%s)",
