@@ -382,23 +382,19 @@ void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
         return;
     }
 
-    QSymbianControl *symControl = static_cast<QSymbianControl*>(S60->splitViewLastWidget->effectiveWinId());
+    QSymbianControl *symControl = static_cast<QSymbianControl*>(gv->effectiveWinId());
     symControl->CancelLongTapTimer();
 
-    const bool alwaysResize = (gv && gv->verticalScrollBarPolicy() != Qt::ScrollBarAlwaysOff);
-    QWidget *windowToMove = gv ? gv : symControl->widget();
-    if (!S60->splitViewLastWidget->isWindow())
-        windowToMove = S60->splitViewLastWidget->window();
+    const bool alwaysResize = (gv->verticalScrollBarPolicy() != Qt::ScrollBarAlwaysOff);
+    QWidget *windowToMove = gv->window();
 
-    bool userResize = S60->splitViewLastWidget->testAttribute(Qt::WA_Resized);
-    bool userMove = windowToMove->testAttribute(Qt::WA_Moved);
+    bool userResize = gv->testAttribute(Qt::WA_Resized);
 
-    if (gv)
-        windowToMove->setUpdatesEnabled(false);
+    windowToMove->setUpdatesEnabled(false);
 
-    if (gv && !alwaysResize) {
-        disconnect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
-        if (gv && gv->scene()) {
+    if (!alwaysResize) {
+        if (gv->scene()) {
+            disconnect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
             QGraphicsItem *rootItem;
             foreach (QGraphicsItem *item, gv->scene()->items()) {
                 if (!item->parentItem()) {
@@ -418,12 +414,10 @@ void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
         windowToMove->setWindowState(m_splitViewPreviousWindowStates);
 
     if (m_splitViewResizeBy)
-        S60->splitViewLastWidget->updateGeometry();
-    if (gv)
-        windowToMove->setUpdatesEnabled(true);
+        gv->updateGeometry();
+    windowToMove->setUpdatesEnabled(true);
 
-    S60->splitViewLastWidget->setAttribute(Qt::WA_Resized, userResize); //not a user resize
-    windowToMove->setAttribute(Qt::WA_Moved, userMove); //not a user move
+    gv->setAttribute(Qt::WA_Resized, userResize); //not a user resize
 
     m_splitViewResizeBy = 0;
     if (!keepInputWidget) {
@@ -496,50 +490,46 @@ void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
     int windowTop = widget->window()->pos().y();
 
     const bool userResize = widget->testAttribute(Qt::WA_Resized);
-    const bool userMove = windowToMove->testAttribute(Qt::WA_Moved);
 
     QRect splitViewRect = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect());
 
-    if (gv) {
 
-        // When resizing a window widget, it will lose its maximized window state.
-        // Native applications hide statuspane in splitview state, so lets move to
-        // fullscreen mode. This makes available area slightly bigger, which helps usability
-        // and greatly reduces event passing in orientation switch cases,
-        // as the statuspane size is not changing.
+    // When resizing a window widget, it will lose its maximized window state.
+    // Native applications hide statuspane in splitview state, so lets move to
+    // fullscreen mode. This makes available area slightly bigger, which helps usability
+    // and greatly reduces event passing in orientation switch cases,
+    // as the statuspane size is not changing.
 
-        if (!(windowToMove->windowState() & Qt::WindowFullScreen)) {
-            windowToMove->setWindowState(
-                (windowToMove->windowState() & ~(Qt::WindowMinimized | Qt::WindowFullScreen)) | Qt::WindowFullScreen);
+    if (!(windowToMove->windowState() & Qt::WindowFullScreen)) {
+        windowToMove->setWindowState(
+            (windowToMove->windowState() & ~(Qt::WindowMinimized | Qt::WindowFullScreen)) | Qt::WindowFullScreen);
+    }
+
+    if (alwaysResize) {
+        windowToMove->setUpdatesEnabled(false);
+        if (!moveWithinVisibleArea)
+            m_splitViewResizeBy = widget->height();
+
+        windowTop = widget->geometry().top();
+        widget->resize(widget->width(), splitViewRect.height() - windowTop);
+
+        if (gv->scene()) {
+            const QRectF microFocusRect = gv->scene()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
+            gv->ensureVisible(microFocusRect);
         }
-
-        if (alwaysResize) {
-            windowToMove->setUpdatesEnabled(false);
-            if (!moveWithinVisibleArea)
-                m_splitViewResizeBy = widget->height();
-
-            windowTop = widget->geometry().top();
-            widget->resize(widget->width(), splitViewRect.height() - windowTop);
-
-            if (gv && gv->scene()) {
-                const QRectF microFocusRect = gv->scene()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
-                gv->ensureVisible(microFocusRect);
-            }
-            windowToMove->setUpdatesEnabled(true);
-        } else {
-            if (!moveWithinVisibleArea) {
-                // Check if the widget contains cursorPositionChanged signal and connect to it.
-                const char *signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged())).constData();
-                int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal + 1); 
-                if (index != -1)
-                    connect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
-            }
-            translateInputWidget();
+        windowToMove->setUpdatesEnabled(true);
+    } else {
+        if (!moveWithinVisibleArea) {
+            // Check if the widget contains cursorPositionChanged signal and connect to it.
+            const char *signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged())).constData();
+            int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal + 1);
+            if (index != -1)
+                connect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
         }
+        translateInputWidget();
     }
 
     widget->setAttribute(Qt::WA_Resized, userResize); //not a user resize
-    windowToMove->setAttribute(Qt::WA_Moved, userMove); //not a user move
 }
 
 static QTextCharFormat qt_TCharFormat2QTextCharFormat(const TCharFormat &cFormat, bool validStyleColor)
@@ -836,7 +826,7 @@ void QCoeFepInputContext::translateInputWidget()
     // New Y position should be ideally at the center of the splitview area.
     // If that would expose unpainted canvas, limit the tranformation to the visible scene bottom.
 
-    const qreal maxY = gv->sceneRect().bottom() - splitViewRect.bottom() + m_transformation.height(); 
+    const qreal maxY = gv->sceneRect().bottom() - splitViewRect.bottom() + m_transformation.height();
     qreal dy = -(qMin(maxY, (cursor.bottom() - vkbRect.top() / 2)));
 
     // Do not allow transform above screen top.
