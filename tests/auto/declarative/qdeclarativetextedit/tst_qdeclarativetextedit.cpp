@@ -524,6 +524,7 @@ void tst_qdeclarativetextedit::hAlign_RightToLeft()
     QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignLeft);
     QVERIFY(textEdit->positionToRectangle(0).x() < canvas->width()/2);
 
+#ifndef Q_OS_MAC    // QTBUG-18040
     // empty text with implicit alignment follows the system locale-based
     // keyboard input direction from QApplication::keyboardInputDirection
     textEdit->setText("");
@@ -536,9 +537,11 @@ void tst_qdeclarativetextedit::hAlign_RightToLeft()
     textEdit->setHAlign(QDeclarativeTextEdit::AlignRight);
     QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
     QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
+#endif
 
     delete canvas;
 
+#ifndef Q_OS_MAC    // QTBUG-18040
     // alignment of TextEdit with no text set to it
     QString componentStr = "import QtQuick 1.0\nTextEdit {}";
     QDeclarativeComponent textComponent(&engine);
@@ -547,6 +550,7 @@ void tst_qdeclarativetextedit::hAlign_RightToLeft()
     QCOMPARE(textObject->hAlign(), QApplication::keyboardInputDirection() == Qt::LeftToRight ?
                                   QDeclarativeTextEdit::AlignLeft : QDeclarativeTextEdit::AlignRight);
     delete textObject;
+#endif
 }
 
 void tst_qdeclarativetextedit::vAlign()
