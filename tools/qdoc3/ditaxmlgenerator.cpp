@@ -5614,7 +5614,6 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
     xmlWriter().writeCharacters(category);
     writeEndTag(); // <category>
     if (vrm.size() > 0) {
-        qDebug() << "VRM" << vrm;
         writeStartTag(DT_prodinfo);
         writeStartTag(DT_prodname);
         xmlWriter().writeCharacters(projectDescription);
@@ -5629,6 +5628,12 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
             xmlWriter().writeAttribute("modification",vrm[2]);
         writeEndTag(); // <vrm>
         writeEndTag(); // <vrmlist>
+        QString component = inner->moduleName();
+        if (!component.isEmpty()) {
+            writeStartTag(DT_component);
+            xmlWriter().writeCharacters(component);
+            writeEndTag(); // <prodinfo>
+        }
         writeEndTag(); // <prodinfo>
     }
     writeEndTag(); // <metadata>
