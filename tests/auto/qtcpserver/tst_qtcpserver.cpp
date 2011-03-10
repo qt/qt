@@ -70,6 +70,9 @@
 Q_DECLARE_METATYPE(QNetworkProxy)
 Q_DECLARE_METATYPE(QList<QNetworkProxy>)
 
+#include <QNetworkSession>
+#include <QNetworkConfiguration>
+#include <QNetworkConfigurationManager>
 #include "../network-settings.h"
 
 //TESTED_CLASS=
@@ -86,6 +89,7 @@ public:
 
 public slots:
     void initTestCase_data();
+    void initTestCase();
     void init();
     void cleanup();
 private slots:
@@ -107,6 +111,11 @@ private slots:
     void proxyFactory();
 
     void qtbug14268_peek();
+
+private:
+#ifndef QT_NO_BEARERMANAGEMENT
+    QNetworkSession *networkSession;
+#endif
 };
 
 // Testing get/set functions
@@ -139,6 +148,16 @@ void tst_QTcpServer::initTestCase_data()
 
     QTest::newRow("WithoutProxy") << false << 0;
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
+}
+
+void tst_QTcpServer::initTestCase()
+{
+#ifndef QT_NO_BEARERMANAGEMENT
+    QNetworkConfigurationManager man;
+    networkSession = new QNetworkSession(man.defaultConfiguration(), this);
+    networkSession->open();
+    QVERIFY(networkSession->waitForOpened());
+#endif
 }
 
 void tst_QTcpServer::init()
@@ -190,7 +209,7 @@ void tst_QTcpServer::clientServerLoop()
     QTcpSocket client;
 
     QHostAddress serverAddress = QHostAddress::LocalHost;
-    if (!(server.serverAddress() == QHostAddress::Any))
+    if (!(server.serverAddress() == QHostAddress::Any) && !(server.serverAddress() == QHostAddress::AnyIPv6))
         serverAddress = server.serverAddress();
 
     client.connectToHost(serverAddress, server.serverPort());
@@ -222,9 +241,6 @@ void tst_QTcpServer::clientServerLoop()
 //----------------------------------------------------------------------------------
 void tst_QTcpServer::ipv6Server()
 {
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Symbian: IPv6 is not yet supported", SkipAll);
-#endif
     //### need to enter the event loop for the server to get the connection ?? ( windows)
     QTcpServer server;
     if (!server.listen(QHostAddress::LocalHostIPv6, 8944)) {
@@ -244,6 +260,8 @@ void tst_QTcpServer::ipv6Server()
 
     QTcpSocket *serverSocket = 0;
     QVERIFY((serverSocket = server.nextPendingConnection()));
+    serverSocket->close();
+    delete serverSocket;
 }
 
 //----------------------------------------------------------------------------------
@@ -379,7 +397,8 @@ void tst_QTcpServer::setSocketDescriptor()
     QTcpServer server;
     QVERIFY(!server.setSocketDescriptor(42));
     QCOMPARE(server.serverError(), QAbstractSocket::UnsupportedSocketOperationError);
-
+#ifndef Q_OS_SYMBIAN
+    //adopting Open C sockets is not supported, neither is adopting externally created RSocket
 #ifdef Q_OS_WIN
     // ensure winsock is started
     WSADATA wsaData;
@@ -401,6 +420,7 @@ void tst_QTcpServer::setSocketDescriptor()
 
 #ifdef Q_OS_WIN
     WSACleanup();
+#endif
 #endif
 }
 
@@ -493,6 +513,9 @@ void tst_QTcpServer::addressReusable()
 
 void tst_QTcpServer::setNewSocketDescriptorBlocking()
 {
+#ifdef Q_OS_SYMBIAN
+    QSKIP("open C ioctls on Qt sockets not supported", SkipAll);
+#else
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
         QFETCH_GLOBAL(int, proxyType);
@@ -507,6 +530,7 @@ void tst_QTcpServer::setNewSocketDescriptorBlocking()
     socket.connectToHost(QHostAddress::LocalHost, server.serverPort());
     QVERIFY(server.waitForNewConnection(5000));
     QVERIFY(server.ok);
+#endif
 }
 
 void tst_QTcpServer::invalidProxy_data()
