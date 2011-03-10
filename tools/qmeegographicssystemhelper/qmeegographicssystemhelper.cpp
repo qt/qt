@@ -111,6 +111,8 @@ void QMeeGoGraphicsSystemHelper::switchToRaster()
         QApplication *app = static_cast<QApplication *>(QCoreApplication::instance());
         app->setGraphicsSystem(QLatin1String("raster"));
 
+	QMeeGoRuntime::invalidateLiveSurfaces();
+
         QMeeGoSwitchEvent didSwitchEvent(QLatin1String("raster"), QMeeGoSwitchEvent::DidSwitch);
         foreach (QWidget *widget, QApplication::topLevelWidgets())
             QCoreApplication::sendEvent(widget, &didSwitchEvent);

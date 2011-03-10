@@ -2010,7 +2010,7 @@ void QPixmap::detach()
     }
 
     if (data->is_cached && data->ref == 1)
-        QImagePixmapCleanupHooks::executePixmapDataModificationHooks(pd);
+        QImagePixmapCleanupHooks::executePixmapDataModificationHooks(data.data());
 
 #if defined(Q_WS_MAC)
     QMacPixmapData *macData = id == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(pd) : 0;
