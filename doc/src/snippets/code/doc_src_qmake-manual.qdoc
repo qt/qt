@@ -1029,3 +1029,15 @@ DEPLOYMENT += dep_note
 //! [156]
 DEPLOYMENT.display_name = My Qt App
 //! [156]
+
+//! [157]
+packagesExist(sqlite3 QtNetwork QtDeclarative) {
+    DEFINES += USE_FANCY_UI
+}
+//! [157]
+
+//! [158]
+#ifdef USE_FANCY_UI
+    // Use the fancy UI, as we have extra packages available
+#endif
+//! [158]

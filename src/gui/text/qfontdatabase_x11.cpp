@@ -1972,17 +1972,6 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
 #ifndef QT_NO_FONTCONFIG
         } else if (X11->has_fontconfig) {
             fe = loadFc(d, script, req);
-            if (fe != 0 && fe->fontDef.pixelSize != req.pixelSize && mainThread && qt_is_gui_used) {
-                QFontEngine *xlfdFontEngine = loadXlfd(d->screen, script, req);
-                if (xlfdFontEngine->fontDef.family == fe->fontDef.family) {
-                    delete fe;
-                    fe = xlfdFontEngine;
-                } else {
-                    delete xlfdFontEngine;
-                }
-            }
-
-
 #endif
         } else if (mainThread && qt_is_gui_used) {
             fe = loadXlfd(d->screen, script, req);
@@ -2128,6 +2117,28 @@ bool QFontDatabase::supportsThreadedFontRendering()
     return false;
 #else
     return X11->has_fontconfig;
+#endif
+}
+
+QString QFontDatabase::resolveFontFamilyAlias(const QString &family)
+{
+#if defined(QT_NO_FONTCONFIG)
+    return family;
+#else
+    FcPattern *pattern = FcPatternCreate();
+    if (!pattern)
+        return family;
+
+    FcPatternAddString(pattern, FC_FAMILY, (const FcChar8 *) family.toUtf8().data());
+    FcConfigSubstitute(0, pattern, FcMatchPattern);
+    FcDefaultSubstitute(pattern);
+
+    FcChar8 *familyAfterSubstitution;
+    FcPatternGetString(pattern, FC_FAMILY, 0, &familyAfterSubstitution);
+    QString resolved = QString::fromUtf8((const char *) familyAfterSubstitution);
+    FcPatternDestroy(pattern);
+
+    return resolved;
 #endif
 }
 

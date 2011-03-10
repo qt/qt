@@ -167,17 +167,19 @@ QDeclarativeEngineDebugServer::propertyData(QObject *obj, int propIdx)
 QVariant QDeclarativeEngineDebugServer::valueContents(const QVariant &value) const
 {
     int userType = value.userType();
+
+    if (value.type() == QVariant::List) {
+        QVariantList contents;
+        QVariantList list = value.toList();
+        int count = list.size();
+        for (int i = 0; i < count; i++)
+            contents << valueContents(list.at(i));
+        return contents;
+    }
+
     if (QDeclarativeValueTypeFactory::isValueType(userType))
         return value;
 
-    /*
-    if (QDeclarativeMetaType::isList(userType)) {
-        int count = QDeclarativeMetaType::listCount(value);
-        QVariantList contents;
-        for (int i=0; i<count; i++)
-            contents << valueContents(QDeclarativeMetaType::listAt(value, i));
-        return contents;
-    } else */
     if (QDeclarativeMetaType::isQObject(userType)) {
         QObject *o = QDeclarativeMetaType::toQObject(value);
         if (o) {

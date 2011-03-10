@@ -106,12 +106,10 @@ QNetworkAccessBackend *QNetworkAccessManagerPrivate::findBackend(QNetworkAccessM
 
 QNonContiguousByteDevice* QNetworkAccessBackend::createUploadByteDevice()
 {
-    QNonContiguousByteDevice* device = 0;
-
     if (reply->outgoingDataBuffer)
-        device = QNonContiguousByteDeviceFactory::create(reply->outgoingDataBuffer);
+        uploadByteDevice = QSharedPointer<QNonContiguousByteDevice>(QNonContiguousByteDeviceFactory::create(reply->outgoingDataBuffer));
     else if (reply->outgoingData) {
-        device = QNonContiguousByteDeviceFactory::create(reply->outgoingData);
+        uploadByteDevice = QSharedPointer<QNonContiguousByteDevice>(QNonContiguousByteDeviceFactory::create(reply->outgoingData));
     } else {
         return 0;
     }
@@ -120,14 +118,13 @@ QNonContiguousByteDevice* QNetworkAccessBackend::createUploadByteDevice()
             reply->request.attribute(QNetworkRequest::DoNotBufferUploadDataAttribute,
                           QVariant(false)) == QVariant(true);
     if (bufferDisallowed)
-        device->disableReset();
+        uploadByteDevice->disableReset();
 
-    // make sure we delete this later
-    device->setParent(this);
+    // We want signal emissions only for normal asynchronous uploads
+    if (!isSynchronous())
+        connect(uploadByteDevice.data(), SIGNAL(readProgress(qint64,qint64)), this, SLOT(emitReplyUploadProgress(qint64,qint64)));
 
-    connect(device, SIGNAL(readProgress(qint64,qint64)), this, SLOT(emitReplyUploadProgress(qint64,qint64)));
-
-    return device;
+    return uploadByteDevice.data();
 }
 
 // need to have this function since the reply is a private member variable
@@ -325,11 +322,6 @@ void QNetworkAccessBackend::proxyAuthenticationRequired(const QNetworkProxy &pro
 void QNetworkAccessBackend::authenticationRequired(QAuthenticator *authenticator)
 {
     manager->authenticationRequired(this, authenticator);
-}
-
-void QNetworkAccessBackend::cacheCredentials(QAuthenticator *authenticator)
-{
-    manager->cacheCredentials(this->reply->url, authenticator);
 }
 
 void QNetworkAccessBackend::metaDataChanged()

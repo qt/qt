@@ -182,7 +182,18 @@ QVariant QDeclarativePropertyMap::value(const QString &key) const
 void QDeclarativePropertyMap::insert(const QString &key, const QVariant &value)
 {
     Q_D(QDeclarativePropertyMap);
-    d->mo->setValue(key.toUtf8(), value);
+    //The following strings shouldn't be used as property names
+    if (key != QLatin1String("keys")
+     && key != QLatin1String("valueChanged")
+     && key != QLatin1String("QObject")
+     && key != QLatin1String("destroyed")
+     && key != QLatin1String("deleteLater")) {
+        d->mo->setValue(key.toUtf8(), value);
+    } else {
+        qWarning() << "Creating property with name"
+                   << key
+                   << "is not permitted, conflicts with internal symbols.";
+    }
 }
 
 /*!
@@ -258,7 +269,7 @@ QVariant &QDeclarativePropertyMap::operator[](const QString &key)
     Q_D(QDeclarativePropertyMap);
     QByteArray utf8key = key.toUtf8();
     if (!d->keys.contains(key))
-        d->mo->setValue(utf8key, QVariant());   //force creation -- needed below
+        insert(key, QVariant());//force creation -- needed below
 
     return (*(d->mo))[utf8key];
 }

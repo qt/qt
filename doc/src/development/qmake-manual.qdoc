@@ -247,8 +247,7 @@
 
     Normally, variables are used to contain whitespace-separated lists
     of values. However, it is sometimes necessary to specify values containing
-    spaces. These must be quoted by using the
-    \l{qmake Function Reference#quote-string}{quote()} function in the following way:
+    spaces. These must be quoted by using double quotes:
 
     \snippet doc/src/snippets/qmake/quoting.pro 0
 
@@ -256,9 +255,7 @@
     the variable. A similar approach is used to deal with paths that contain
     spaces, particularly when defining the
     \l{qmake Variable Reference#INCLUDEPATH}{INCLUDEPATH} and
-    \l{qmake Variable Reference#LIBS}{LIBS} variables for the Windows platform.
-    In cases like these, the \l{qmake Function Reference#quote(string)}{quote()}
-    function can be used in the following way:
+    \l{qmake Variable Reference#LIBS}{LIBS} variables for the Windows platform:
 
     \snippet doc/src/snippets/qmake/spaces.pro quoting include paths with spaces
 
@@ -1650,8 +1647,7 @@
     \section1 INCLUDEPATH
 
     This variable specifies the #include directories which should be
-    searched when compiling the project. Use ';' or a space as the
-    directory separator.
+    searched when compiling the project.
 
     For example:
 
@@ -1659,9 +1655,7 @@
 
     To specify a path containing spaces, quote the path using the technique
     mentioned in the \l{qmake Project Files#Whitespace}{qmake Project Files}
-    document. For example, paths with spaces can be specified on Windows
-    and Unix platforms by using the \l{qmake Function Reference#quote-string}{quote()}
-    function in the following way:
+    document.
 
     \snippet doc/src/snippets/qmake/spaces.pro quoting include paths with spaces
 
@@ -1723,9 +1717,7 @@
 
     To specify a path containing spaces, quote the path using the technique
     mentioned in the \l{qmake Project Files#Whitespace}{qmake Project Files}
-    document. For example, paths with spaces can be specified on Windows
-    and Unix platforms by using the \l{qmake Function Reference#quote-string}{quote()}
-    function in the following way:
+    document.
 
     \snippet doc/src/snippets/qmake/spaces.pro quoting library paths with spaces
 
@@ -1901,8 +1893,17 @@
     \target PWD
     \section1 PWD
 
-    This variable contains the full path leading to the directory where
-    the \l {qmake}{ \c qmake} project file (project.pro) is located.
+    The \c PWD variable specifies the full path leading to the directory
+    containing the current file being parsed. This can be useful
+    to refer to files within the source tree when writing project files to
+    support shadow builds.
+
+    See also \l{#_PRO_FILE_PWD_}{_PRO_FILE_PWD_}.
+
+    \note IN_PWD is an alias for PWD.
+
+    \note Function calls have no effect on the value of PWD. PWD will refer to
+    the path of the calling file.
 
     \target OUT_PWD
     \section1 OUT_PWD
@@ -3399,6 +3400,19 @@
 
     \tableofcontents{2}
 
+    \section1 packagesExist(packages)
+
+    Uses the PKGCONFIG mechanism to determine whether or not the given packages
+    exist at the time of project parsing.
+
+    This can be useful to optionally enable or disable features. For example:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 157
+
+    And then, in the code:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 158
+
     \section1 basename(variablename)
 
     Returns the basename of the file specified. For example:
@@ -3592,10 +3606,7 @@
     \section1 quote(string)
 
     Converts a whole \e string into a single entity and returns the result.
-    Newlines, carriage returns, and tabs can be specified in the string
-    with \\n \\r and \\t. The return value does not contain either single
-    or double quotation marks unless you explicitly include them yourself,
-    but will be placed into a single entry (for literal expansion).
+    This is just a fancy way of enclosing the string into double quotes.
 
     \section1 replace(string, old_string, new_string)
 

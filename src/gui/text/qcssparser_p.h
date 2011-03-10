@@ -71,6 +71,9 @@
 #if defined(Q_OS_VXWORKS) && defined(NONE)
 #  undef NONE
 #endif
+#if defined(Q_OS_INTEGRITY)
+#  undef Value
+#endif
 
 QT_BEGIN_NAMESPACE
 

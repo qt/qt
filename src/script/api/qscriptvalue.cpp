@@ -254,6 +254,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, int val)
     : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate(QScriptEnginePrivate::get(engine)))
 {
     if (engine) {
+        QScript::APIShim shim(d_ptr->engine);
         JSC::ExecState *exec = d_ptr->engine->currentFrame;
         d_ptr->initFrom(JSC::jsNumber(exec, val));
     } else
@@ -271,6 +272,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, uint val)
     : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate(QScriptEnginePrivate::get(engine)))
 {
     if (engine) {
+        QScript::APIShim shim(d_ptr->engine);
         JSC::ExecState *exec = d_ptr->engine->currentFrame;
         d_ptr->initFrom(JSC::jsNumber(exec, val));
     } else
@@ -288,6 +290,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, qsreal val)
     : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate(QScriptEnginePrivate::get(engine)))
 {
     if (engine) {
+        QScript::APIShim shim(d_ptr->engine);
         JSC::ExecState *exec = d_ptr->engine->currentFrame;
         d_ptr->initFrom(JSC::jsNumber(exec, val));
     } else
@@ -305,6 +308,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, const QString &val)
     : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate(QScriptEnginePrivate::get(engine)))
 {
     if (engine) {
+        QScript::APIShim shim(d_ptr->engine);
         JSC::ExecState *exec = d_ptr->engine->currentFrame;
         d_ptr->initFrom(JSC::jsString(exec, val));
     } else {
@@ -325,6 +329,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, const char *val)
     : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate(QScriptEnginePrivate::get(engine)))
 {
     if (engine) {
+        QScript::APIShim shim(d_ptr->engine);
         JSC::ExecState *exec = d_ptr->engine->currentFrame;
         d_ptr->initFrom(JSC::jsString(exec, val));
     } else {
@@ -531,7 +536,12 @@ void QScriptValue::setPrototype(const QScriptValue &prototype)
     Q_D(QScriptValue);
     if (!d || !d->isObject())
         return;
-    if (prototype.isValid() && QScriptValuePrivate::getEngine(prototype)
+
+    JSC::JSValue other = d->engine->scriptValueToJSCValue(prototype);
+    if (!other || !(other.isObject() || other.isNull()))
+        return;
+
+    if (QScriptValuePrivate::getEngine(prototype)
         && (QScriptValuePrivate::getEngine(prototype) != d->engine)) {
         qWarning("QScriptValue::setPrototype() failed: "
                  "cannot set a prototype created in "
@@ -539,7 +549,6 @@ void QScriptValue::setPrototype(const QScriptValue &prototype)
         return;
     }
     JSC::JSObject *thisObject = JSC::asObject(d->jscValue);
-    JSC::JSValue other = d->engine->scriptValueToJSCValue(prototype);
 
     // check for cycle
     JSC::JSValue nextPrototypeValue = other;

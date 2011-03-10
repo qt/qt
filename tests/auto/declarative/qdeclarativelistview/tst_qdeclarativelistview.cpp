@@ -1078,6 +1078,65 @@ void tst_QDeclarativeListView::sectionsDelegate()
         QTRY_COMPARE(item->y(), qreal(i*20*6));
     }
 
+    // remove section boundary
+    model.removeItem(5);
+    qApp->processEvents();
+    for (int i = 0; i < 3; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem,
+                "sect_" + (i == 0 ? QString("aaa") : QString::number(i)));
+        QVERIFY(item);
+    }
+
+    // QTBUG-17606
+    QList<QDeclarativeItem*> items = findItems<QDeclarativeItem>(contentItem, "sect_1");
+    QCOMPARE(items.count(), 1);
+
+    // QTBUG-17759
+    model.modifyItem(0, "One", "aaa");
+    model.modifyItem(1, "One", "aaa");
+    model.modifyItem(2, "One", "aaa");
+    model.modifyItem(3, "Four", "aaa");
+    model.modifyItem(4, "Four", "aaa");
+    model.modifyItem(5, "Four", "aaa");
+    model.modifyItem(6, "Five", "aaa");
+    model.modifyItem(7, "Five", "aaa");
+    model.modifyItem(8, "Five", "aaa");
+    model.modifyItem(9, "Two", "aaa");
+    model.modifyItem(10, "Two", "aaa");
+    model.modifyItem(11, "Two", "aaa");
+    QTRY_COMPARE(findItems<QDeclarativeItem>(contentItem, "sect_aaa").count(), 1);
+    canvas->rootObject()->setProperty("sectionProperty", "name");
+    // ensure view has settled.
+    QTRY_COMPARE(findItems<QDeclarativeItem>(contentItem, "sect_Four").count(), 1);
+    for (int i = 0; i < 4; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem,
+                "sect_" + model.name(i*3));
+        QVERIFY(item);
+        QTRY_COMPARE(item->y(), qreal(i*20*4));
+    }
+
+    // QTBUG-17769
+    model.removeItems(10, 20);
+    // ensure view has settled.
+    QTRY_COMPARE(findItems<QDeclarativeItem>(contentItem, "wrapper").count(), 10);
+    // Drag view up beyond bounds
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(20,20)));
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(20,0)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(20,-50)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(20,-200)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(20,-200)));
+    // view should settle back at 0
+    QTRY_COMPARE(listview->contentY(), 0.0);
+
     delete canvas;
 }
 
@@ -2408,7 +2467,7 @@ QList<T*> tst_QDeclarativeListView::findItems(QGraphicsObject *parent, const QSt
     //qDebug() << parent->childItems().count() << "children";
     for (int i = 0; i < parent->childItems().count(); ++i) {
         QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(parent->childItems().at(i));
-        if(!item)
+        if(!item || !item->isVisible())
             continue;
         //qDebug() << "try" << item;
         if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName))

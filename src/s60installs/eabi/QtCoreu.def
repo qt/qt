@@ -1439,7 +1439,7 @@ EXPORTS
 	_ZN31QAbstractEventDispatcherPrivate4initEv @ 1438 NONAME
 	_ZN31QNonContiguousByteDeviceFactory4wrapEP24QNonContiguousByteDevice @ 1439 NONAME
 	_ZN31QNonContiguousByteDeviceFactory6createEP10QByteArray @ 1440 NONAME
-	_ZN31QNonContiguousByteDeviceFactory6createEP11QRingBuffer @ 1441 NONAME
+	_ZN31QNonContiguousByteDeviceFactory6createEP11QRingBuffer @ 1441 NONAME ABSENT
 	_ZN31QNonContiguousByteDeviceFactory6createEP9QIODevice @ 1442 NONAME
 	_ZN4QDir10setCurrentERK7QString @ 1443 NONAME
 	_ZN4QDir10setSortingE6QFlagsINS_8SortFlagEE @ 1444 NONAME
@@ -3806,4 +3806,7 @@ EXPORTS
 	_ZNK13QElapsedTimer12nsecsElapsedEv @ 3805 NONAME
 	_ZNK11QMetaMethod8revisionEv @ 3806 NONAME
 	_ZNK13QMetaProperty8revisionEv @ 3807 NONAME
+	_ZN16QAnimationDriverC1EP7QObject @ 3808 NONAME
+	_ZN16QAnimationDriverC1ER23QAnimationDriverPrivateP7QObject @ 3809 NONAME
+	_ZN31QNonContiguousByteDeviceFactory6createE14QSharedPointerI11QRingBufferE @ 3810 NONAME
 
