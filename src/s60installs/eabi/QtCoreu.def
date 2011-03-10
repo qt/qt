@@ -3806,4 +3806,7 @@ EXPORTS
 	_ZNK13QElapsedTimer12nsecsElapsedEv @ 3805 NONAME
 	_ZNK11QMetaMethod8revisionEv @ 3806 NONAME
 	_ZNK13QMetaProperty8revisionEv @ 3807 NONAME
+	_ZN16QAnimationDriverC1EP7QObject @ 3808 NONAME
+	_ZN16QAnimationDriverC1ER23QAnimationDriverPrivateP7QObject @ 3809 NONAME
+	_ZN31QNonContiguousByteDeviceFactory6createE14QSharedPointerI11QRingBufferE @ 3810 NONAME
 
