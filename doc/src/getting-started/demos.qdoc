@@ -60,10 +60,10 @@
     \l{external: Qt Mobility Manual}{Mobility} to create feature rich mobile
     applications.
     \list
-    \o \l{demos/mobile/guitartuner}{Guitar Tuner} - a guitar tuner made with a QML frontend and a Mobility based backend
-    \o \l{demos/mobile/quickhit}{Quick Hit} - a game that uses multimedia and Qt Quick
-    \o \l{demos/mobile/qtbubblelevel}{Qt Bubble Level} - a game that utilizes hardware sensors for effects
-    \o \l{demos/mobile/qcamera}{QCamera} - a camera application that accesses mobile contacts and networking
+    \o \l{Guitar Tuner Example}{Guitar Tuner} - a guitar tuner made with a QML frontend and a Mobility based backend
+    \o \l{Quick Hit Demo}{Quick Hit} - a game that uses multimedia and Qt Quick
+    \o \l{Qt Bubble Level Example}{Qt Bubble Level} - a game that utilizes hardware sensors for effects
+    \o \l{QCamera Example}{QCamera} - a camera application that accesses mobile contacts and networking
     \endlist
     \section1 Painting
 
