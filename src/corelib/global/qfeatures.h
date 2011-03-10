@@ -579,7 +579,7 @@
 #endif
 
 // Hyper Text Transfer Protocol
-#if !defined(QT_NO_HTTP) && (defined(QT_NO_HOSTINFO) || defined(QT_NO_NETWORKPROXY))
+#if !defined(QT_NO_HTTP) && defined(QT_NO_HOSTINFO)
 #define QT_NO_HTTP
 #endif
 

@@ -91,8 +91,10 @@ void QHttpNetworkConnectionChannel::init()
 #else
     socket = new QTcpSocket;
 #endif
+#ifndef QT_NO_NETWORKPROXY
     // Set by QNAM anyway, but let's be safe here
     socket->setProxy(QNetworkProxy::NoProxy);
+#endif
 
     QObject::connect(socket, SIGNAL(bytesWritten(qint64)),
                      this, SLOT(_q_bytesWritten(qint64)),
@@ -581,13 +583,15 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
 #endif
         } else {
             // In case of no proxy we can use the Unbuffered QTcpSocket
+#ifndef QT_NO_NETWORKPROXY
             if (connection->d_func()->networkProxy.type() == QNetworkProxy::NoProxy
                     && connection->cacheProxy().type() == QNetworkProxy::NoProxy
                     && connection->transparentProxy().type() == QNetworkProxy::NoProxy) {
+#endif
                 socket->connectToHost(connectHost, connectPort, QIODevice::ReadWrite | QIODevice::Unbuffered);
                 // For an Unbuffered QTcpSocket, the read buffer size has a special meaning.
                 socket->setReadBufferSize(1*1024);
-
+#ifndef QT_NO_NETWORKPROXY
             } else {
                 socket->connectToHost(connectHost, connectPort);
 
@@ -596,6 +600,7 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
                 // here and there.
                 socket->setReadBufferSize(64*1024);
             }
+#endif
         }
         return false;
     }
