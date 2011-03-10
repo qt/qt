@@ -1410,6 +1410,9 @@ void tst_QImageReader::readFromResources_data()
     QTest::newRow("corrupt-pixels.xpm") << QString("corrupt-pixels.xpm")
                                                << QByteArray("xpm") << QSize(0, 0)
                                                << QString("QImage: XPM pixels missing on image line 3");
+    QTest::newRow("corrupt-pixel-count.xpm") << QString("corrupt-pixel-count.xpm")
+                                             << QByteArray("xpm") << QSize(0, 0)
+                                             << QString("");
     QTest::newRow("marble.xpm") << QString("marble.xpm")
                                        << QByteArray("xpm") << QSize(240, 240)
                                        << QString("");

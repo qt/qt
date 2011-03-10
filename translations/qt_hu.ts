@@ -2619,7 +2619,7 @@ erre:
     </message>
     <message>
         <location line="+26"/>
-        <source>Illegal escape squence</source>
+        <source>Illegal escape sequence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

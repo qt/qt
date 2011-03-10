@@ -70,7 +70,7 @@ QVGPixmapData::QVGPixmapData(PixelType type)
     context = 0;
     qt_vg_register_pixmap(this);
 #endif
-    setSerialNumber(++qt_vg_pixmap_serial);
+    updateSerial();
 }
 
 QVGPixmapData::~QVGPixmapData()
@@ -138,25 +138,31 @@ bool QVGPixmapData::isValid() const
     return (w > 0 && h > 0);
 }
 
+void QVGPixmapData::updateSerial()
+{
+    setSerialNumber(++qt_vg_pixmap_serial);
+}
+
 void QVGPixmapData::resize(int wid, int ht)
 {
-    if (w == wid && h == ht)
+    if (w == wid && h == ht) {
+        updateSerial();
         return;
+    }
 
     w = wid;
     h = ht;
     d = 32; // We always use ARGB_Premultiplied for VG pixmaps.
     is_null = (w <= 0 || h <= 0);
-    source = QImage();
+    source = QVolatileImage();
     recreate = true;
 
-    setSerialNumber(++qt_vg_pixmap_serial);
+    updateSerial();
 }
 
-void QVGPixmapData::fromImage
-        (const QImage &image, Qt::ImageConversionFlags flags)
+void QVGPixmapData::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
 {
-    if(image.isNull())
+    if (image.isNull())
         return;
 
     QImage img = image;
@@ -200,26 +206,35 @@ bool QVGPixmapData::fromData(const uchar *buffer, uint len, const char *format,
     return !isNull();
 }
 
-void QVGPixmapData::createPixmapForImage(QImage &image, Qt::ImageConversionFlags flags, bool inPlace)
+QImage::Format QVGPixmapData::idealFormat(QImage *image, Qt::ImageConversionFlags flags) const
 {
-    if (image.size() == QSize(w, h))
-        setSerialNumber(++qt_vg_pixmap_serial);
-    else
-        resize(image.width(), image.height());
-
     QImage::Format format = sourceFormat();
-    int d = image.depth();
-    if (d == 1 || d == 16 || d == 24 || (d == 32 && !image.hasAlphaChannel()))
+    int d = image->depth();
+    if (d == 1 || d == 16 || d == 24 || (d == 32 && !image->hasAlphaChannel()))
         format = QImage::Format_RGB32;
-    else if (!(flags & Qt::NoOpaqueDetection) && const_cast<QImage &>(image).data_ptr()->checkForAlphaPixels())
+    else if (!(flags & Qt::NoOpaqueDetection) && image->data_ptr()->checkForAlphaPixels())
         format = sourceFormat();
     else
-        format = image.hasAlphaChannel() ? sourceFormat() : QImage::Format_RGB32;
+        format = image->hasAlphaChannel() ? sourceFormat() : QImage::Format_RGB32;
+    return format;
+}
 
-    if (inPlace && image.data_ptr()->convertInPlace(format, flags))
-        source = image;
-    else
-        source = image.convertToFormat(format);
+void QVGPixmapData::createPixmapForImage(QImage &image, Qt::ImageConversionFlags flags, bool inPlace)
+{
+    resize(image.width(), image.height());
+
+    QImage::Format format = idealFormat(&image, flags);
+
+    if (inPlace && image.data_ptr()->convertInPlace(format, flags)) {
+        source = QVolatileImage(image);
+    } else {
+        QImage convertedImage = image.convertToFormat(format);
+        // convertToFormat won't detach the image if format stays the
+        // same. Detaching is needed to prevent issues with painting
+        // onto this QPixmap later on.
+        convertedImage.detach();
+        source = QVolatileImage(convertedImage);
+    }
 
     recreate = true;
 }
@@ -230,12 +245,13 @@ void QVGPixmapData::fill(const QColor &color)
         return;
 
     if (source.isNull())
-        source = QImage(w, h, sourceFormat());
+        source = QVolatileImage(w, h, sourceFormat());
 
     if (source.depth() == 1) {
         // Pick the best approximate color in the image's colortable.
         int gray = qGray(color.rgba());
-        if (qAbs(qGray(source.color(0)) - gray) < qAbs(qGray(source.color(1)) - gray))
+        if (qAbs(qGray(source.imageRef().color(0)) - gray)
+            < qAbs(qGray(source.imageRef().color(1)) - gray))
             source.fill(0);
         else
             source.fill(1);
@@ -258,7 +274,7 @@ bool QVGPixmapData::hasAlphaChannel() const
 void QVGPixmapData::setAlphaChannel(const QPixmap &alphaChannel)
 {
     forceToImage();
-    source.setAlphaChannel(alphaChannel.toImage());
+    source.setAlphaChannel(alphaChannel);
 }
 
 QImage QVGPixmapData::toImage() const
@@ -267,17 +283,41 @@ QImage QVGPixmapData::toImage() const
         return QImage();
 
     if (source.isNull()) {
-        source = QImage(w, h, sourceFormat());
+        source = QVolatileImage(w, h, sourceFormat());
         recreate = true;
     }
 
-    return source;
+    return source.toImage();
+}
+
+void QVGPixmapData::copy(const QPixmapData *data, const QRect &rect)
+{
+    // toImage() is potentially expensive with QVolatileImage so provide a
+    // more efficient implementation of copy() that does not rely on it.
+    if (!data) {
+        return;
+    }
+    if (data->classId() != OpenVGClass) {
+        fromImage(data->toImage(rect), Qt::NoOpaqueDetection);
+        return;
+    }
+    const QVGPixmapData *pd = static_cast<const QVGPixmapData *>(data);
+    QRect r = rect;
+    if (r.isNull() || r.contains(QRect(0, 0, pd->w, pd->h))) {
+        r = QRect(0, 0, pd->w, pd->h);
+    }
+    resize(r.width(), r.height());
+    recreate = true;
+    if (!pd->source.isNull()) {
+        source = QVolatileImage(r.width(), r.height(), pd->source.format());
+        source.copyFrom(&pd->source, r);
+    }
 }
 
 QImage *QVGPixmapData::buffer()
 {
-    forceToImage();
-    return &source;
+    // Cannot be safely implemented and QVGPixmapData is not (must not be) RasterClass anyway.
+    return 0;
 }
 
 QPaintEngine* QVGPixmapData::paintEngine() const
@@ -321,10 +361,12 @@ VGImage QVGPixmapData::toVGImage()
     }
 
     if (!source.isNull() && recreate) {
+        source.beginDataAccess();
         vgImageSubData
             (vgImage,
              source.constBits(), source.bytesPerLine(),
              qt_vg_image_to_vg_format(source.format()), 0, 0, w, h);
+        source.endDataAccess(true);
     }
 
     recreate = false;
@@ -404,8 +446,8 @@ void QVGPixmapData::reclaimImages()
     destroyImages();
 }
 
-Q_DECL_IMPORT extern int qt_defaultDpiX();
-Q_DECL_IMPORT extern int qt_defaultDpiY();
+Q_GUI_EXPORT int qt_defaultDpiX();
+Q_GUI_EXPORT int qt_defaultDpiY();
 
 int QVGPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
@@ -434,14 +476,14 @@ int QVGPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
     }
 }
 
-// Force the pixmap data to be in QImage format.
+// Force the pixmap data to be backed by some valid data.
 void QVGPixmapData::forceToImage()
 {
     if (!isValid())
         return;
 
     if (source.isNull())
-        source = QImage(w, h, sourceFormat());
+        source = QVolatileImage(w, h, sourceFormat());
 
     recreate = true;
 }

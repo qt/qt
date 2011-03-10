@@ -1791,7 +1791,7 @@ static void convertFromGLImage(QImage &img, int w, int h, bool alpha_format, boo
 
 QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)
 {
-    QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32
+    QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32_Premultiplied
                                                      : QImage::Format_RGB32);
     int w = size.width();
     int h = size.height();
@@ -3772,24 +3772,7 @@ QGLWidget::QGLWidget(QWidget *parent, const QGLWidget* shareWidget, Qt::WindowFl
     setAttribute(Qt::WA_PaintOnScreen);
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoFillBackground(true); // for compatibility
-#ifdef Q_WS_QPA
-    QPlatformWindowFormat platformFormat = QGLFormat::toPlatformWindowFormat(QGLFormat::defaultFormat());
-    platformFormat.setUseDefaultSharedContext(false);
-    if (shareWidget && shareWidget->d_func()->glcx) {
-        QPlatformGLContext *sharedPlatformContext = shareWidget->d_func()->glcx->d_func()->platformContext;
-        platformFormat.setSharedContext(sharedPlatformContext);
-    }
-    setPlatformWindowFormat(platformFormat);
-    winId(); // create window;
-    QGLContext *glContext = 0;
-    if (platformWindow())
-        glContext = QGLContext::fromPlatformGLContext(platformWindow()->glContext());
-    if (glContext){
-        d->init(glContext,shareWidget);
-    }
-#else
     d->init(new QGLContext(QGLFormat::defaultFormat(), this), shareWidget);
-#endif
 }
 
 
@@ -3829,24 +3812,7 @@ QGLWidget::QGLWidget(const QGLFormat &format, QWidget *parent, const QGLWidget* 
     setAttribute(Qt::WA_PaintOnScreen);
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoFillBackground(true); // for compatibility
-#ifdef Q_WS_QPA
-    QPlatformWindowFormat platformFormat = QGLFormat::toPlatformWindowFormat(format);
-    platformFormat.setUseDefaultSharedContext(false);
-    if (shareWidget && shareWidget->d_func()->glcx) {
-        QPlatformGLContext *sharedPlatformContext = shareWidget->d_func()->glcx->d_func()->platformContext;
-        platformFormat.setSharedContext(sharedPlatformContext);
-    }
-    setPlatformWindowFormat(platformFormat);
-    winId(); // create window;
-    QGLContext *glContext = 0;
-    if (platformWindow())
-        glContext = QGLContext::fromPlatformGLContext(platformWindow()->glContext());
-    if (glContext){
-        d->init(glContext,shareWidget);
-    }
-#else
     d->init(new QGLContext(format, this), shareWidget);
-#endif
 }
 
 /*!

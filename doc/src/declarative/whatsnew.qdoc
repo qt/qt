@@ -29,7 +29,116 @@
 \title What's new in Qt Quick
 \page qtquick-whatsnew.html
 
-\section1 4.7.1
+\section1 Qt 4.7.3 includes QtQuick 1.1
+
+QtQuick 1.1 is a minor feature update.
+
+\section2 PinchArea
+
+PinchArea provides support for the common two finger pinch gesture.
+
+\section2 Text
+
+Added the following properties:
+\list
+\o \l {Text::}{lineHeight}
+\o \l {Text::}{lineCount}
+\o \l {Text::}{maximumLineCount}
+\o \l {Text::}{truncated}
+\endlist
+
+horizontalAlignment now accepts Text.AlignJustify alignment mode.
+
+\section2 TextEdit
+
+Added the following properties, methods and signal handlers:
+\list
+\o \l {TextEdit::}{canPaste}
+\o \l {TextEdit::}{lineCount}
+\o \l {TextEdit::}{deselect()}
+\o \l {TextEdit::}{moveCursorSelection()} to enable selection by word
+\o \l {TextEdit::}{onLinkActivated}
+\endlist
+
+\section2 TextInput
+
+Added the following properties and methods:
+\list
+\o \l{TextInput::}{canPaste}
+\o \l{TextInput::}{deselect()}
+\o \l{TextInput::}{moveCursorSelection()} to enable selection by word
+\endlist
+
+\section2 Image, BorderImage and AnimatedImage
+
+Added the following properties:
+\list
+\o \l{Image::}{cache}
+\o \l{Image::}{mirror}
+\endlist
+
+\section2 Item
+
+Added the following properties:
+\list
+\o \l{Item::}{implicitWidth} and \l{Item::}{implicitHeight}
+\endlist
+
+\section2 Flickable
+
+Added the following methods:
+\list
+\o \l{Flickable::}{resizeContent()}
+\o \l{Flickable::}{returnToBounds()}
+\endlist
+
+\section2 ListView and GridView
+
+Added the following methods:
+\list
+\o \l{ListView::}{positionViewAtBeginning()}
+\o \l{ListView::}{positionViewAtEnd()}
+\endlist
+
+\section2 Flow, Grid and Row
+
+Added the following properties:
+\list
+\o \l{Flow::}{layoutDirection}
+\endlist
+
+\section2 Repeater
+
+Added the following methods and signal handlers:
+\list
+\o \l{Repeater::}{onItemAdded}
+\o \l{Repeater::}{onItemRemoved}
+\o \l{Repeater::}{itemAt()}
+\endlist
+
+\section2 Component
+
+\list
+\o The \l{Component::}{createObject()} method now accepts a map of initial property values for
+the created object.
+\endlist
+
+\section2 Qt
+
+\list
+\o Added the \l {QML:Qt::application}{Qt.application} object to hold generic global application
+properties.
+\endlist
+
+\section2 Other changes
+
+\list
+\o Functions can be \l{Binding Properties from JavaScript}{assigned to properties from JavaScript}
+to create property bindings.
+\endlist
+
+
+\section1 Qt 4.7.1
 
 \section2 QtQuick namespace
 

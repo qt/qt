@@ -322,9 +322,8 @@
     \snippet examples/qws/svgalib/svgalibsurface.h 0
 
     We can implement most of the pure virtual functions inherited from
-    QWSWindowSurface as trivial inline functions, except the 
-    \l {QWindowSurface::}{scroll()} function that actually makes use
-    of some hardware acceleration:
+    QWSWindowSurface as trivial inline functions, except the scroll()
+    function that actually makes use of some hardware acceleration:
 
     \snippet examples/qws/svgalib/svgalibsurface.cpp 0
 

@@ -363,7 +363,6 @@ QGLWindowSurface::~QGLWindowSurface()
         *ctx = 0;
     }
 #endif
-
     delete d_ptr->pb;
     delete d_ptr->fbo;
     delete d_ptr;
@@ -402,11 +401,6 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     if (widgetPrivate->extraData()->glContext)
         return;
 
-#ifdef Q_WS_QPA
-    QGLContext *ctx = QGLContext::fromPlatformGLContext(widget->platformWindow()->glContext());
-    if (!d_ptr->fbo && d_ptr->tried_fbo)
-        d_ptr->ctx = ctx;
-#else
     QGLContext *ctx = NULL;
 
     // For translucent top-level widgets we need alpha in the format.
@@ -419,8 +413,7 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     } else
         ctx = new QGLContext(surfaceFormat, widget);
 
-    ctx->create(qt_gl_share_widget()->context());
-#endif
+    ctx->create(qt_gl_share_context());
 
 #ifndef QT_NO_EGL
     static bool checkedForNOKSwapRegion = false;
@@ -480,6 +473,8 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
 
 void QGLWindowSurface::beginPaint(const QRegion &)
 {
+    d_ptr->did_paint = true;
+
     if (!context())
         return;
 
@@ -494,8 +489,6 @@ void QGLWindowSurface::beginPaint(const QRegion &)
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(clearFlags);
     }
-
-    d_ptr->did_paint = true;
 }
 
 void QGLWindowSurface::endPaint(const QRegion &rgn)
@@ -818,20 +811,21 @@ void QGLWindowSurface::updateGeometry() {
         return;
     d_ptr->geometry_updated = false;
 
-#ifdef Q_WS_QPA
-    QSize surfSize = size();
-#else
-    QSize surfSize = geometry().size();
-#endif
+    bool hijack(true);
+    QWidgetPrivate *wd = window()->d_func();
+    if (wd->extraData() && wd->extraData()->glContext)
+        hijack = false; // we already have gl context for widget
 
-    hijackWindow(window());
-    QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
+    if (hijack)
+        hijackWindow(window());
+
+    QGLContext *ctx = reinterpret_cast<QGLContext *>(wd->extraData()->glContext);
 
 #ifdef Q_WS_MAC
     ctx->updatePaintDevice();
 #endif
 
-    const GLenum target = GL_TEXTURE_2D;
+    QSize surfSize = geometry().size();
 
     if (surfSize.width() <= 0 || surfSize.height() <= 0)
         return;
@@ -841,6 +835,27 @@ void QGLWindowSurface::updateGeometry() {
 
     d_ptr->size = surfSize;
 
+#ifdef Q_OS_SYMBIAN
+    if (!hijack) { // Symbian needs to recreate EGL surface when native window size changes
+        if (ctx->d_func()->eglSurface != EGL_NO_SURFACE) {
+            eglDestroySurface(ctx->d_func()->eglContext->display(),
+                                                    ctx->d_func()->eglSurface);
+        }
+
+        ctx->d_func()->eglSurface = QEgl::createSurface(ctx->device(),
+                                           ctx->d_func()->eglContext->config());
+
+#if !defined(QGL_NO_PRESERVED_SWAP)
+        eglGetError();  // Clear error state first.
+        eglSurfaceAttrib(QEgl::display(), ctx->d_func()->eglSurface,
+                                    EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
+        if (eglGetError() != EGL_SUCCESS) {
+            qWarning("QGLWindowSurface: could not restore preserved swap behaviour");
+        }
+#endif
+    }
+#endif
+
     if (d_ptr->ctx) {
 #ifndef QT_OPENGL_ES_2
         if (d_ptr->destructive_swap_buffers)
@@ -849,6 +864,7 @@ void QGLWindowSurface::updateGeometry() {
         return;
     }
 
+    const GLenum target = GL_TEXTURE_2D;
     if (d_ptr->destructive_swap_buffers
         && (QGLExtensions::glExtensions() & QGLExtensions::FramebufferObject)
         && (d_ptr->fbo || !d_ptr->tried_fbo)

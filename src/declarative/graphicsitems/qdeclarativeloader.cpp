@@ -48,7 +48,8 @@
 QT_BEGIN_NAMESPACE
 
 QDeclarativeLoaderPrivate::QDeclarativeLoaderPrivate()
-    : item(0), component(0), ownComponent(false), isComponentComplete(false)
+    : item(0), component(0), ownComponent(false), updatingSize(false),
+      itemWidthValid(false), itemHeightValid(false)
 {
 }
 
@@ -58,8 +59,13 @@ QDeclarativeLoaderPrivate::~QDeclarativeLoaderPrivate()
 
 void QDeclarativeLoaderPrivate::itemGeometryChanged(QDeclarativeItem *resizeItem, const QRectF &newGeometry, const QRectF &oldGeometry)
 {
-    if (resizeItem == item)
+    if (resizeItem == item) {
+        if (!updatingSize && newGeometry.width() != oldGeometry.width())
+            itemWidthValid = true;
+        if (!updatingSize && newGeometry.height() != oldGeometry.height())
+            itemHeightValid = true;
         _q_updateSize(false);
+    }
     QDeclarativeItemChangeListener::itemGeometryChanged(resizeItem, newGeometry, oldGeometry);
 }
 
@@ -99,6 +105,10 @@ void QDeclarativeLoaderPrivate::initResize()
         QDeclarativeItemPrivate *p =
                 static_cast<QDeclarativeItemPrivate *>(QGraphicsItemPrivate::get(qmlItem));
         p->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
+        // We may override the item's size, so we need to remember
+        // whether the item provided its own valid size.
+        itemWidthValid = p->widthValid;
+        itemHeightValid = p->heightValid;
     } else if (item && item->isWidget()) {
         QGraphicsWidget *widget = static_cast<QGraphicsWidget*>(item);
         widget->installEventFilter(q);
@@ -216,7 +226,7 @@ void QDeclarativeLoaderPrivate::initResize()
 */
 
 QDeclarativeLoader::QDeclarativeLoader(QDeclarativeItem *parent)
-  : QDeclarativeItem(*(new QDeclarativeLoaderPrivate), parent)
+  : QDeclarativeImplicitSizeItem(*(new QDeclarativeLoaderPrivate), parent)
 {
     Q_D(QDeclarativeLoader);
     d->flags |= QGraphicsItem::ItemIsFocusScope;
@@ -274,7 +284,7 @@ void QDeclarativeLoader::setSource(const QUrl &url)
     d->component = new QDeclarativeComponent(qmlEngine(this), d->source, this);
     d->ownComponent = true;
 
-    if (d->isComponentComplete)
+    if (isComponentComplete())
         d->load();
 }
 
@@ -325,7 +335,7 @@ void QDeclarativeLoader::setSourceComponent(QDeclarativeComponent *comp)
         return;
     }
 
-    if (d->isComponentComplete)
+    if (isComponentComplete())
         d->load();
 }
 
@@ -338,7 +348,7 @@ void QDeclarativeLoaderPrivate::load()
 {
     Q_Q(QDeclarativeLoader);
 
-    if (!isComponentComplete || !component)
+    if (!q->isComponentComplete() || !component)
         return;
 
     if (!component->isLoading()) {
@@ -472,7 +482,6 @@ void QDeclarativeLoader::componentComplete()
     Q_D(QDeclarativeLoader);
 
     QDeclarativeItem::componentComplete();
-    d->isComponentComplete = true;
     d->load();
 }
 
@@ -510,13 +519,21 @@ qreal QDeclarativeLoader::progress() const
 void QDeclarativeLoaderPrivate::_q_updateSize(bool loaderGeometryChanged)
 {
     Q_Q(QDeclarativeLoader);
-    if (!item)
+    if (!item || updatingSize)
         return;
+
+    updatingSize = true;
     if (QDeclarativeItem *qmlItem = qobject_cast<QDeclarativeItem*>(item)) {
-        q->setImplicitWidth(qmlItem->width());
+        if (!itemWidthValid)
+            q->setImplicitWidth(qmlItem->implicitWidth());
+        else
+            q->setImplicitWidth(qmlItem->width());
         if (loaderGeometryChanged && q->widthValid())
             qmlItem->setWidth(q->width());
-        q->setImplicitHeight(qmlItem->height());
+        if (!itemHeightValid)
+            q->setImplicitHeight(qmlItem->implicitHeight());
+        else
+            q->setImplicitHeight(qmlItem->height());
         if (loaderGeometryChanged && q->heightValid())
             qmlItem->setHeight(q->height());
     } else if (item && item->isWidget()) {
@@ -531,6 +548,7 @@ void QDeclarativeLoaderPrivate::_q_updateSize(bool loaderGeometryChanged)
         if (widget->size() != widgetSize)
             widget->resize(widgetSize);
     }
+    updatingSize = false;
 }
 
 /*!

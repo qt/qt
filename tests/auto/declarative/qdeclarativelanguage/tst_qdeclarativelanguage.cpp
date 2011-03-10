@@ -153,6 +153,9 @@ private slots:
     void customOnProperty();
     void variantNotify();
 
+    void revisions();
+    void revisionOverloads();
+
     // regression tests for crashes
     void crash1();
     void crash2();
@@ -421,6 +424,10 @@ void tst_qdeclarativelanguage::errors_data()
         << "incorrectCase.errors.sensitive.txt" 
 #endif
         << false;
+
+    QTest::newRow("metaobjectRevision.1") << "metaobjectRevision.1.qml" << "metaobjectRevision.1.errors.txt" << false;
+    QTest::newRow("metaobjectRevision.2") << "metaobjectRevision.2.qml" << "metaobjectRevision.2.errors.txt" << false;
+    QTest::newRow("metaobjectRevision.3") << "metaobjectRevision.3.qml" << "metaobjectRevision.3.errors.txt" << false;
 }
 
 
@@ -947,7 +954,7 @@ void tst_qdeclarativelanguage::aliasProperties()
         object->setProperty("value", QVariant(13));
         QCOMPARE(object->property("valueAlias").toInt(), 13);
 
-        // Write throught alias
+        // Write through alias
         object->setProperty("valueAlias", QVariant(19));
         QCOMPARE(object->property("valueAlias").toInt(), 19);
         QCOMPARE(object->property("value").toInt(), 19);
@@ -1109,7 +1116,7 @@ void tst_qdeclarativelanguage::aliasProperties()
         object->setProperty("rectProperty", QVariant(QRect(33, 12, 99, 100)));
         QCOMPARE(object->property("valueAlias").toRect(), QRect(33, 12, 99, 100));
 
-        // Write throught alias
+        // Write through alias
         object->setProperty("valueAlias", QVariant(QRect(3, 3, 4, 9)));
         QCOMPARE(object->property("valueAlias").toRect(), QRect(3, 3, 4, 9));
         QCOMPARE(object->property("rectProperty").toRect(), QRect(3, 3, 4, 9));
@@ -1129,7 +1136,7 @@ void tst_qdeclarativelanguage::aliasProperties()
         object->setProperty("rectProperty", QVariant(QRect(33, 8, 102, 111)));
         QCOMPARE(object->property("aliasProperty").toInt(), 33);
 
-        // Write throught alias
+        // Write through alias
         object->setProperty("aliasProperty", QVariant(4));
         QCOMPARE(object->property("aliasProperty").toInt(), 4);
         QCOMPARE(object->property("rectProperty").toRect(), QRect(4, 8, 102, 111));
@@ -1886,6 +1893,61 @@ void tst_qdeclarativelanguage::variantNotify()
     QCOMPARE(object->property("notifyCount").toInt(), 1);
 
     delete object;
+}
+
+void tst_qdeclarativelanguage::revisions()
+{
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("revisions11.qml"));
+
+        VERIFY_ERRORS(0);
+        MyRevisionedClass *object = qobject_cast<MyRevisionedClass*>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->prop2(), 10.0);
+
+        delete object;
+    }
+    {
+        QDeclarativeEngine myEngine;
+        QDeclarativeComponent component(&myEngine, TEST_FILE("revisionssub11.qml"));
+
+        VERIFY_ERRORS(0);
+        MyRevisionedSubclass *object = qobject_cast<MyRevisionedSubclass*>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->prop1(), 10.0);
+        QCOMPARE(object->prop2(), 10.0);
+        QCOMPARE(object->prop3(), 10.0);
+        QCOMPARE(object->prop4(), 10.0);
+
+        delete object;
+    }
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("versionedbase.qml"));
+        VERIFY_ERRORS(0);
+        MySubclass *object = qobject_cast<MySubclass*>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->prop1(), 10.0);
+        QCOMPARE(object->prop2(), 10.0);
+
+        delete object;
+    }
+}
+
+void tst_qdeclarativelanguage::revisionOverloads()
+{
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("allowedRevisionOverloads.qml"));
+    VERIFY_ERRORS(0);
+    }
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("disallowedRevisionOverloads.qml"));
+    QEXPECT_FAIL("", "QTBUG-13849", Abort);
+    QVERIFY(0);
+    VERIFY_ERRORS("disallowedRevisionOverloads.errors.txt");
+    }
 }
 
 void tst_qdeclarativelanguage::initTestCase()

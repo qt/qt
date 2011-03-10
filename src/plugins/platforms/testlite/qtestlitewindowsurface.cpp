@@ -46,6 +46,7 @@
 #include <QWindowSystemInterface>
 
 #include "qtestlitewindow.h"
+#include "qtestlitescreen.h"
 
 # include <sys/ipc.h>
 # include <sys/shm.h>
@@ -65,8 +66,6 @@ struct MyShmImageInfo {
     Display *display;
 };
 
-//void QTestLiteWindowSurface::flush()
-
 
 #ifndef DONT_USE_MIT_SHM
 void MyShmImageInfo::destroy()
@@ -80,20 +79,21 @@ void MyShmImageInfo::destroy()
 
 void QTestLiteWindowSurface::resizeShmImage(int width, int height)
 {
-    MyDisplay *xd = xw->xd;
 
 #ifdef DONT_USE_MIT_SHM
     shm_img = QImage(width, height, QImage::Format_RGB32);
 #else
+
+    QTestLiteScreen *screen = QTestLiteScreen::testLiteScreenForWidget(window());
     if (image_info)
         image_info->destroy();
     else
-        image_info = new MyShmImageInfo(xd->display);
+        image_info = new MyShmImageInfo(screen->display());
 
-    Visual *visual = DefaultVisual(xd->display, xd->screen);
+    Visual *visual = DefaultVisual(screen->display(), screen->xScreenNumber());
 
 
-    XImage *image = XShmCreateImage (xd->display, visual, 24, ZPixmap, 0,
+    XImage *image = XShmCreateImage (screen->display(), visual, 24, ZPixmap, 0,
                                      &image_info->shminfo, width, height);
 
 
@@ -105,7 +105,7 @@ void QTestLiteWindowSurface::resizeShmImage(int width, int height)
 
     image_info->image = image;
 
-    Status shm_attach_status = XShmAttach(xd->display, &image_info->shminfo);
+    Status shm_attach_status = XShmAttach(screen->display(), &image_info->shminfo);
 
     Q_ASSERT(shm_attach_status == True);
 
@@ -126,7 +126,7 @@ QSize QTestLiteWindowSurface::bufferSize() const
     return shm_img.size();
 }
 
-QTestLiteWindowSurface::QTestLiteWindowSurface (QTestLiteScreen */*screen*/, QWidget *window)
+QTestLiteWindowSurface::QTestLiteWindowSurface (QWidget *window)
     : QWindowSurface(window),
       painted(false), image_info(0)
 {
@@ -151,29 +151,27 @@ void QTestLiteWindowSurface::flush(QWidget *widget, const QRegion &region, const
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
-    //   qDebug() << "QTestLiteWindowSurface::flush:" << (long)this;
-
     if (!painted)
         return;
 
-    MyDisplay *xd = xw->xd;
-    GC gc = xw->gc;
-    Window window = xw->x_window;
+    QTestLiteScreen *screen = QTestLiteScreen::testLiteScreenForWidget(widget);
+    GC gc = xw->graphicsContext();
+    Window window = xw->xWindow();
 #ifdef DONT_USE_MIT_SHM
     // just convert the image every time...
     if (!shm_img.isNull()) {
-        Visual *visual = DefaultVisual(xd->display, xd->screen);
+        Visual *visual = DefaultVisual(screen->display(), screen->xScreenNumber());
 
         QImage image = shm_img;
         //img.convertToFormat(
-        XImage *xi = XCreateImage(xd->display, visual, 24, ZPixmap,
+        XImage *xi = XCreateImage(screen->display(), visual, 24, ZPixmap,
                                   0, (char *) image.scanLine(0), image.width(), image.height(),
                                   32, image.bytesPerLine());
 
         int x = 0;
         int y = 0;
 
-        /*int r =*/  XPutImage(xd->display, window, gc, xi, 0, 0, x, y, image.width(), image.height());
+        /*int r =*/  XPutImage(screen->display(), window, gc, xi, 0, 0, x, y, image.width(), image.height());
 
         xi->data = 0; // QImage owns these bits
         XDestroyImage(xi);
@@ -187,11 +185,11 @@ void QTestLiteWindowSurface::flush(QWidget *widget, const QRegion &region, const
 
         // We could set send_event to true, and then use the ShmCompletion to synchronize,
         // but let's do like Qt/11 and just use XSync
-        XShmPutImage (xd->display, window, gc, image_info->image, 0, 0,
+        XShmPutImage (screen->display(), window, gc, image_info->image, 0, 0,
                       x, y, image_info->image->width, image_info->image->height,
                       /*send_event*/ False);
 
-        XSync(xd->display, False);
+        XSync(screen->display(), False);
     }
 #endif
 }

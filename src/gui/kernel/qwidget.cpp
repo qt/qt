@@ -127,6 +127,10 @@
 #include "qtabwidget.h" // Needed in inTabWidget()
 #endif // QT_KEYPAD_NAVIGATION
 
+#ifdef Q_WS_S60
+#include <aknappui.h>
+#endif
+
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
 //#define ALIEN_DEBUG
@@ -142,6 +146,10 @@ Q_GUI_EXPORT void qt_x11_set_global_double_buffer(bool enable)
 {
     qt_enable_backingstore = enable;
 }
+#endif
+
+#if defined(QT_MAC_USE_COCOA)
+bool qt_mac_clearDirtyOnWidgetInsideDrawWidget = false;
 #endif
 
 static inline bool qRectIntersects(const QRect &r1, const QRect &r2)
@@ -300,11 +308,8 @@ QWidgetPrivate::QWidgetPrivate(int version)
   #endif
 #elif defined(Q_WS_MAC)
       , needWindowChange(0)
-      , hasAlienChildren(0)
       , window_event(0)
       , qd_hd(0)
-#elif defined (Q_WS_QPA)
-      , screenNumber(0)
 #endif
 {
     if (!qApp) {
@@ -324,6 +329,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
     hasOwnContext = false;
     isInUnifiedToolbar = false;
     unifiedSurface = 0;
+    touchEventsEnabled = false;
 #endif // QT_MAC_USE_COCOA
 #ifdef QWIDGET_EXTRA_DEBUG
     static int count = 0;
@@ -397,11 +403,24 @@ void QWidgetPrivate::scrollChildren(int dx, int dy)
     }
 }
 
+QInputContext *QWidgetPrivate::assignedInputContext() const
+{
+#ifndef QT_NO_IM
+    const QWidget *widget = q_func();
+    while (widget) {
+        if (QInputContext *qic = widget->d_func()->ic)
+            return qic;
+        widget = widget->parentWidget();
+    }
+#endif
+    return 0;
+}
+
 QInputContext *QWidgetPrivate::inputContext() const
 {
 #ifndef QT_NO_IM
-    if (ic)
-        return ic;
+    if (QInputContext *qic = assignedInputContext())
+        return qic;
     return qApp->inputContext();
 #else
     return 0;
@@ -1277,7 +1296,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     }
 #elif defined(Q_WS_QPA)
     if (desktopWidget) {
-        int screen = desktopWidget->d_func()->screenNumber;
+        int screen = desktopWidget->d_func()->topData()->screenIndex;
         QPlatformIntegration *platform = QApplicationPrivate::platformIntegration();
         platform->moveToScreen(q, screen);
     }
@@ -1305,9 +1324,9 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     if (f & Qt::MSWindowsOwnDC)
         q->setAttribute(Qt::WA_NativeWindow);
 
-#ifdef Q_WS_MAC
-    q->setAttribute(Qt::WA_NativeWindow);
-#endif
+//#ifdef Q_WS_MAC
+//    q->setAttribute(Qt::WA_NativeWindow);
+//#endif
 
     q->setAttribute(Qt::WA_QuitOnClose); // might be cleared in adjustQuitOnCloseAttribute()
     adjustQuitOnCloseAttribute();
@@ -1414,10 +1433,6 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
 
 #ifndef Q_WS_QPA
     if (QWidget *parent = parentWidget()) {
-#ifdef Q_WS_MAC
-        if (testAttribute(Qt::WA_NativeWindow) == false)
-            parent->d_func()->hasAlienChildren = true;
-#endif
         if (type & Qt::Window) {
             if (!parent->testAttribute(Qt::WA_WState_Created))
                 parent->createWinId();
@@ -1729,6 +1744,7 @@ void QWidgetPrivate::createTLExtra()
 #if defined(Q_WS_QPA)
         x->platformWindow = 0;
         x->platformWindowFormat = QPlatformWindowFormat::defaultFormat();
+        x->screenIndex = 0;
 #endif
     }
 }
@@ -5400,6 +5416,9 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
         return;
 
 #if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+    if (qt_mac_clearDirtyOnWidgetInsideDrawWidget)
+        dirtyOnWidget = QRegion();
+
     // We disable the rendering of QToolBar in the backingStore if
     // it's supposed to be in the unified toolbar on Mac OS X.
     if (backingStore && isInUnifiedToolbar)
@@ -5487,7 +5506,6 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 //paint the background
                 if ((asRoot || q->autoFillBackground() || onScreen || q->testAttribute(Qt::WA_StyledBackground))
                     && !q->testAttribute(Qt::WA_OpaquePaintEvent) && !q->testAttribute(Qt::WA_NoSystemBackground)) {
-
                     QPainter p(q);
                     paintBackground(&p, toBePainted, (asRoot || onScreen) ? flags | DrawAsRoot : 0);
                 }
@@ -5669,10 +5687,12 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
     QRect boundingRect;
     bool dirtyBoundingRect = true;
     const bool exludeOpaqueChildren = (flags & DontDrawOpaqueChildren);
+    const bool excludeNativeChildren = (flags & DontDrawNativeChildren);
 
     do {
         QWidget *x =  qobject_cast<QWidget*>(siblings.at(index));
-        if (x && !(exludeOpaqueChildren && x->d_func()->isOpaque) && !x->isHidden() && !x->isWindow()) {
+        if (x && !(exludeOpaqueChildren && x->d_func()->isOpaque) && !x->isHidden() && !x->isWindow()
+            && !(excludeNativeChildren && x->internalWinId())) {
             if (dirtyBoundingRect) {
                 boundingRect = rgn.boundingRect();
                 dirtyBoundingRect = false;
@@ -10076,7 +10096,13 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
 
 #if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_OS_SYMBIAN)
     if (newParent && parent && !desktopWidget) {
-        if (testAttribute(Qt::WA_NativeWindow) && !qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings))
+        if (testAttribute(Qt::WA_NativeWindow) && !qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings)
+#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+            // On Mac, toolbars inside the unified title bar will never overlap with
+            // siblings in the content view. So we skip enforce native siblings in that case
+            && !d->isInUnifiedToolbar && parentWidget() && parentWidget()->isWindow()
+#endif // Q_WS_MAC && QT_MAC_USE_COCOA
+        )
             parent->d_func()->enforceNativeChildren();
         else if (parent->d_func()->nativeChildrenForced() || parent->testAttribute(Qt::WA_PaintOnScreen))
             setAttribute(Qt::WA_NativeWindow);
@@ -10723,7 +10749,13 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
                 ic->setFocusWidget(0);
             }
         }
-        if (!qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget())
+        if (!qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget()
+#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+            // On Mac, toolbars inside the unified title bar will never overlap with
+            // siblings in the content view. So we skip enforce native siblings in that case
+            && !d->isInUnifiedToolbar && parentWidget()->isWindow()
+#endif // Q_WS_MAC && QT_MAC_USE_COCOA
+        )
             parentWidget()->d_func()->enforceNativeChildren();
         if (on && !internalWinId() && testAttribute(Qt::WA_WState_Created))
             d->createWinId();
@@ -10763,7 +10795,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     case Qt::WA_InputMethodEnabled: {
 #ifndef QT_NO_IM
         QWidget *focusWidget = d->effectiveFocusWidget();
-        QInputContext *ic = focusWidget->d_func()->ic;
+        QInputContext *ic = focusWidget->d_func()->assignedInputContext();
         if (!ic && (!on || hasFocus()))
             ic = focusWidget->d_func()->inputContext();
         if (ic) {
@@ -10856,6 +10888,42 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             d->registerTouchWindow();
 #endif
         break;
+    case Qt::WA_LockPortraitOrientation:
+    case Qt::WA_LockLandscapeOrientation:
+    case Qt::WA_AutoOrientation: {
+        const Qt::WidgetAttribute orientations[3] = {
+            Qt::WA_LockPortraitOrientation,
+            Qt::WA_LockLandscapeOrientation,
+            Qt::WA_AutoOrientation
+        };
+
+        if (on) {
+            // We can only have one of these set at a time
+            for (int i = 0; i < 3; ++i) {
+                if (orientations[i] != attribute)
+                    setAttribute_internal(orientations[i], false, data, d);
+            }
+        }
+
+#ifdef Q_WS_S60
+        CAknAppUiBase* appUi = static_cast<CAknAppUiBase*>(CEikonEnv::Static()->EikAppUi());
+        const CAknAppUiBase::TAppUiOrientation s60orientations[] = {
+            CAknAppUiBase::EAppUiOrientationPortrait,
+            CAknAppUiBase::EAppUiOrientationLandscape,
+            CAknAppUiBase::EAppUiOrientationAutomatic
+        };
+        CAknAppUiBase::TAppUiOrientation s60orientation = CAknAppUiBase::EAppUiOrientationUnspecified;
+        for (int i = 0; i < 3; ++i) {
+            if (testAttribute(orientations[i])) {
+                s60orientation = s60orientations[i];
+                break;
+            }
+        }
+        QT_TRAP_THROWING(appUi->SetOrientationL(s60orientation));
+        S60->orientationSet = true;
+#endif
+        break;
+    }
     default:
         break;
     }
@@ -11214,7 +11282,7 @@ void QWidget::updateMicroFocus()
 #if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN))
     Q_D(QWidget);
     // and optimization to update input context only it has already been created.
-    if (d->ic || qApp->d_func()->inputContext) {
+    if (d->assignedInputContext() || qApp->d_func()->inputContext) {
         QInputContext *ic = inputContext();
         if (ic)
             ic->update();

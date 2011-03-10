@@ -72,7 +72,6 @@ static void memberList(QDesignerFormEditorInterface *core,
 {
     if (!object)
         return;
-
     // 1) member sheet
     const QDesignerMemberSheetExtension *members = qt_extension<QDesignerMemberSheetExtension*>(core->extensionManager(), object);
     Q_ASSERT(members != 0);
@@ -118,15 +117,15 @@ static void memberList(QDesignerFormEditorInterface *core,
     if (!metaDataBase)
         return;
 
-    const qdesigner_internal::MetaDataBaseItem *mdbItem = metaDataBase->metaDataBaseItem(object);
-    Q_ASSERT(mdbItem);
-    const QStringList mdbFakeMethods =  member_type == qdesigner_internal::SlotMember ? mdbItem->fakeSlots() : mdbItem->fakeSignals();
-    if (!mdbFakeMethods.empty())
-        foreach (const QString &fakeMethod, mdbFakeMethods)
-            if (predicate(fakeMethod)) {
-                *it = ClassNameSignaturePair(className, fakeMethod);
-                ++it;
-            }
+    if (const qdesigner_internal::MetaDataBaseItem *mdbItem = metaDataBase->metaDataBaseItem(object)) {
+        const QStringList mdbFakeMethods =  member_type == qdesigner_internal::SlotMember ? mdbItem->fakeSlots() : mdbItem->fakeSignals();
+        if (!mdbFakeMethods.empty())
+            foreach (const QString &fakeMethod, mdbFakeMethods)
+                if (predicate(fakeMethod)) {
+                    *it = ClassNameSignaturePair(className, fakeMethod);
+                    ++it;
+                }
+    }
 }
 
 namespace {
@@ -245,10 +244,14 @@ namespace qdesigner_internal {
     ClassesMemberFunctions reverseClassesMemberFunctions(const QString &obj_name, MemberType member_type,
                                                          const QString &peer, QDesignerFormWindowInterface *form)
     {
-        QObject *object = form->findChild<QObject*>(obj_name);
+        QObject *object = 0;
+        if (obj_name == form->mainContainer()->objectName()) {
+            object = form->mainContainer();
+        } else {
+            object = form->mainContainer()->findChild<QObject*>(obj_name);
+        }
         if (!object)
             return ClassesMemberFunctions();
-
         QDesignerFormEditorInterface *core = form->core();
 
         ClassesMemberFunctions rc;

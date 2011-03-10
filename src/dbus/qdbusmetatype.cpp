@@ -127,6 +127,7 @@ void QDBusMetaTypeId::init()
         registerHelper<QLineF>();
         registerHelper<QVariantList>();
         registerHelper<QVariantMap>();
+        registerHelper<QVariantHash>();
 
         qDBusRegisterMetaType<QList<bool> >();
         qDBusRegisterMetaType<QList<short> >();

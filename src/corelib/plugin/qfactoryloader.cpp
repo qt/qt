@@ -155,9 +155,11 @@ void QFactoryLoader::update()
                     continue;
                 }
                 QObject *instance = library->instance();
-                if (!instance)
+                if (!instance) {
+                    library->release();
                     // ignore plugins that have a valid signature but cannot be loaded.
                     continue;
+                }
                 QFactoryInterface *factory = qobject_cast<QFactoryInterface*>(instance);
                 if (instance && factory && instance->qt_metacast(d->iid))
                     keys = factory->keys();

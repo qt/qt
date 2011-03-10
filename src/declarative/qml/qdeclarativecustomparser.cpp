@@ -131,7 +131,7 @@ QDeclarativeCustomParserNodePrivate::fromProperty(QDeclarativeParser::Property *
             prop.d->values << QVariant::fromValue(props.at(ii));
     } else {
         for(int ii = 0; ii < p->values.count(); ++ii) {
-            Value *v = p->values.at(ii);
+            QDeclarativeParser::Value *v = p->values.at(ii);
             v->type = QDeclarativeParser::Value::Literal;
 
             if(v->object) {
@@ -304,5 +304,14 @@ const QMetaObject *QDeclarativeCustomParser::resolveType(const QByteArray& name)
     return compiler->resolveType(name);
 }
 
+/*!
+    Rewrites \a expression and returns an identifier that can be
+    used to construct the binding later. \a name
+    is used as the name of the rewritten function.
+*/
+QDeclarativeBinding::Identifier QDeclarativeCustomParser::rewriteBinding(const QString& expression, const QByteArray& name)
+{
+    return compiler->rewriteBinding(expression, name);
+}
 
 QT_END_NAMESPACE

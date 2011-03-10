@@ -73,6 +73,7 @@ void QSystemSemaphorePrivate::setErrorString(const QString &function, int err)
     case KErrInUse:
         errorString = QCoreApplication::tr("%1: out of resources", "QSystemSemaphore").arg(function);
         error = QSystemSemaphore::OutOfResources;
+        break;
     case KErrPermissionDenied:
         errorString = QCoreApplication::tr("%1: permission denied", "QSystemSemaphore").arg(function);
         error = QSystemSemaphore::PermissionDenied;
@@ -97,8 +98,7 @@ int QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode)
     if (key.isEmpty())
         return 0;
 
-    QString safeName = makeKeyFileName();
-    TPtrC name(qt_QString2TPtrC(safeName));
+    TPtrC name(qt_QString2TPtrC(fileName));
     int err = KErrAlreadyExists;
     int tryCount = 10;
     // Sort out race conditions by retrying several times until existing handle is acquired.

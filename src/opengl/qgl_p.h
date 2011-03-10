@@ -373,6 +373,7 @@ public:
 
 #if defined(Q_WS_QPA)
     QPlatformGLContext *platformContext;
+    void setupSharing();
 #elif defined(Q_WS_X11) || defined(Q_WS_MAC)
     void* cx;
 #endif

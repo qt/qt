@@ -2744,6 +2744,7 @@ int QTreeView::indexRowSizeHint(const QModelIndex &index) const
 
     int start = -1;
     int end = -1;
+    int indexRow = index.row();
     int count = d->header->count();
     bool emptyHeader = (count == 0);
     QModelIndex parent = index.parent();
@@ -2780,7 +2781,7 @@ int QTreeView::indexRowSizeHint(const QModelIndex &index) const
         int logicalColumn = emptyHeader ? column : d->header->logicalIndex(column);
         if (d->header->isSectionHidden(logicalColumn))
             continue;
-        QModelIndex idx = d->model->index(index.row(), logicalColumn, parent);
+        QModelIndex idx = d->model->index(indexRow, logicalColumn, parent);
         if (idx.isValid()) {
             QWidget *editor = d->editorForIndex(idx).widget.data();
             if (editor && d->persistent.contains(editor)) {
@@ -3215,14 +3216,14 @@ int QTreeViewPrivate::itemHeight(int item) const
     if (viewItems.isEmpty())
         return 0;
     const QModelIndex &index = viewItems.at(item).index;
+    if (!index.isValid())
+        return 0;
     int height = viewItems.at(item).height;
-    if (height <= 0 && index.isValid()) {
+    if (height <= 0) {
         height = q_func()->indexRowSizeHint(index);
         viewItems[item].height = height;
     }
-    if (!index.isValid() || height < 0)
-        return 0;
-    return height;
+    return qMax(height, 0);
 }
 
 

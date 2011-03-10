@@ -76,7 +76,7 @@ class QEventLoop;
 
 #if !(defined(QT_NO_DRAGANDDROP) && defined(QT_NO_CLIPBOARD))
 
-class QInternalMimeData : public QMimeData
+class Q_GUI_EXPORT QInternalMimeData : public QMimeData
 {
     Q_OBJECT
 public:

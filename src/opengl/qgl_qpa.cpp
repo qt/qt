@@ -115,6 +115,16 @@ QPlatformWindowFormat QGLFormat::toPlatformWindowFormat(const QGLFormat &format)
     return retFormat;
 }
 
+void QGLContextPrivate::setupSharing() {
+    Q_Q(QGLContext);
+    QPlatformGLContext *sharedPlatformGLContext = platformContext->platformWindowFormat().sharedGLContext();
+    if (sharedPlatformGLContext) {
+        QGLContext *actualSharedContext = QGLContext::fromPlatformGLContext(sharedPlatformGLContext);
+        sharing = true;
+        QGLContextGroup::addShare(q,actualSharedContext);
+    }
+}
+
 bool QGLFormat::hasOpenGL()
 {
     return QApplicationPrivate::platformIntegration()->hasOpenGL();
@@ -151,19 +161,9 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         if (d->valid) {
             d->platformContext->setQGLContextHandle(this,qDeleteQGLContext);
         }
+        d->setupSharing();
     }
 
-    if (d->valid) {
-        QPlatformGLContext *sharedPlatformGLContext = d->platformContext->platformWindowFormat().sharedGLContext();
-        if (sharedPlatformGLContext) {
-            QGLContext *actualSharedContext = QGLContext::fromPlatformGLContext(sharedPlatformGLContext);
-            if (actualSharedContext == shareContext) {
-                d->sharing = true;//Will add combination in QGLContext::create
-            }else {
-                QGLContextGroup::addShare(this,actualSharedContext);
-            }
-        }
-    }
 
     return d->valid;
 }
@@ -325,11 +325,6 @@ void QGLWidget::setMouseTracking(bool enable)
 bool QGLWidget::event(QEvent *e)
 {
     Q_D(QGLWidget);
-    if (e->type() == QEvent::WinIdChange) {
-        if (platformWindow()) {
-            d->glcx = QGLContext::fromPlatformGLContext(platformWindow()->glContext());
-        }
-    }
     return QWidget::event(e);
 }
 
@@ -377,6 +372,9 @@ QGLContext::QGLContext(QPlatformGLContext *platformContext)
     Q_D(QGLContext);
     d->init(0,QGLFormat::fromPlatformWindowFormat(platformContext->platformWindowFormat()));
     d->platformContext = platformContext;
+    d->platformContext->setQGLContextHandle(this,qDeleteQGLContext);
+    d->valid = true;
+    d->setupSharing();
 }
 
 QGLContext *QGLContext::fromPlatformGLContext(QPlatformGLContext *platformContext)
@@ -389,11 +387,6 @@ QGLContext *QGLContext::fromPlatformGLContext(QPlatformGLContext *platformContex
     QGLContext *glContext = new QGLContext(platformContext);
     //Dont call create on context. This can cause the platformFormat to be set on the widget, which
     //will cause the platformWindow to be recreated.
-    glContext->d_func()->platformContext->setQGLContextHandle(glContext,qDeleteQGLContext);
-    QGLFormat format = QGLFormat::fromPlatformWindowFormat(platformContext->platformWindowFormat());
-    glContext->d_func()->glFormat = format;
-    glContext->d_func()->valid = true;
-
     return glContext;
 }
 

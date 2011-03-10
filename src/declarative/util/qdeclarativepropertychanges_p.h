@@ -75,19 +75,19 @@ public:
 
     virtual ActionList actions();
 
-    bool containsProperty(const QByteArray &name) const;
-    bool containsValue(const QByteArray &name) const;
-    bool containsExpression(const QByteArray &name) const;
-    void changeValue(const QByteArray &name, const QVariant &value);
-    void changeExpression(const QByteArray &name, const QString &expression);
-    void removeProperty(const QByteArray &name);
-    QVariant value(const QByteArray &name) const;
-    QString expression(const QByteArray &name) const;
+    bool containsProperty(const QString &name) const;
+    bool containsValue(const QString &name) const;
+    bool containsExpression(const QString &name) const;
+    void changeValue(const QString &name, const QVariant &value);
+    void changeExpression(const QString &name, const QString &expression);
+    void removeProperty(const QString &name);
+    QVariant value(const QString &name) const;
+    QString expression(const QString &name) const;
 
     void detachFromState();
     void attachToState();
 
-    QVariant property(const QByteArray &name) const;
+    QVariant property(const QString &name) const;
 };
 
 class QDeclarativePropertyChangesParser : public QDeclarativeCustomParser

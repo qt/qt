@@ -244,10 +244,13 @@ static inline unsigned int getChar(const QChar *str, int &i, const int len)
     return uc;
 }
 
+extern QString qt_symbian_fontNameWithAppFontMarker(const QString &fontName); // qfontdatabase_s60.cpp
+
 CFont *QFontEngineS60::fontWithSize(qreal size) const
 {
     CFont *result = 0;
-    TFontSpec fontSpec(qt_QString2TPtrC(QFontEngine::fontDef.family), TInt(size));
+    const QString family = qt_symbian_fontNameWithAppFontMarker(QFontEngine::fontDef.family);
+    TFontSpec fontSpec(qt_QString2TPtrC(family), TInt(size));
     fontSpec.iFontStyle.SetBitmapType(EAntiAliasedGlyphBitmap);
     fontSpec.iFontStyle.SetPosture(QFontEngine::fontDef.style == QFont::StyleNormal?EPostureUpright:EPostureItalic);
     fontSpec.iFontStyle.SetStrokeWeight(QFontEngine::fontDef.weight > QFont::Normal?EStrokeWeightBold:EStrokeWeightNormal);

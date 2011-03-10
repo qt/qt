@@ -142,6 +142,7 @@ void QDeclarativeFlipable::setFront(QGraphicsObject *front)
     d->front->setParentItem(this);
     if (Back == d->current)
         d->front->setOpacity(0.);
+    emit frontChanged();
 }
 
 QGraphicsObject *QDeclarativeFlipable::back()
@@ -165,6 +166,7 @@ void QDeclarativeFlipable::setBack(QGraphicsObject *back)
             this, SLOT(retransformBack()));
     connect(back, SIGNAL(heightChanged()),
             this, SLOT(retransformBack()));
+    emit backChanged();
 }
 
 void QDeclarativeFlipable::retransformBack()

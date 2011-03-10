@@ -103,6 +103,9 @@ private:
     // Constructs a flat list model for a worker agent
     QDeclarativeListModel(const QDeclarativeListModel *orig, QDeclarativeListModelWorkerAgent *parent);
 
+    void set(int index, const QScriptValue&, QList<int> *roles);
+    void setProperty(int index, const QString& property, const QVariant& value, QList<int> *roles);
+
     bool flatten();
     bool inWorkerThread() const;
 

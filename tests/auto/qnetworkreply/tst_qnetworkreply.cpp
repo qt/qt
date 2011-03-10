@@ -84,8 +84,6 @@ Q_DECLARE_METATYPE(QList<QNetworkProxy>)
 Q_DECLARE_METATYPE(QNetworkReply::NetworkError)
 Q_DECLARE_METATYPE(QBuffer*)
 
-const int SynchronousRequestAttribute = QNetworkRequest::DownloadBufferAttribute + 1;
-
 class QNetworkReplyPtr: public QSharedPointer<QNetworkReply>
 {
 public:
@@ -213,6 +211,7 @@ private Q_SLOTS:
     void ioGetFromBuiltinHttp();
     void ioGetFromHttpWithReuseParallel();
     void ioGetFromHttpWithReuseSequential();
+    void ioGetFromHttpWithAuth_data();
     void ioGetFromHttpWithAuth();
     void ioGetFromHttpWithAuthSynchronous();
     void ioGetFromHttpWithProxyAuth();
@@ -326,6 +325,7 @@ private Q_SLOTS:
 
     void ioGetFromHttpBrokenChunkedEncoding();
     void qtbug12908compressedHttpReply();
+    void compressedHttpReplyBrokenGzip();
 
     void getFromUnreachableIp();
 
@@ -339,7 +339,11 @@ private Q_SLOTS:
 
     void synchronousRequest_data();
     void synchronousRequest();
+#ifndef QT_NO_OPENSSL
     void synchronousRequestSslFailure();
+#endif
+
+    void httpAbort();
 
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
@@ -454,6 +458,7 @@ private:
     {
         //qDebug() << "connectSocketSignals" << client;
         connect(client, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
+        connect(client, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWrittenSlot()));
         connect(client, SIGNAL(error(QAbstractSocket::SocketError)),
                 this, SLOT(slotError(QAbstractSocket::SocketError)));
     }
@@ -481,15 +486,19 @@ public slots:
             if (multiple)
                 receivedData.remove(0, doubleEndlPos+4);
 
-            client->write(dataToTransmit);
-            while (client->bytesToWrite() > 0)
-                client->waitForBytesWritten();
+            // we need to emulate the bytesWrittenSlot call if the data is empty.
+            if (dataToTransmit.size() == 0)
+                QMetaObject::invokeMethod(this, "bytesWrittenSlot", Qt::QueuedConnection);
+            else
+                client->write(dataToTransmit);
+        }
+    }
 
-            if (doClose) {
-                client->disconnectFromHost();
-                disconnect(client, 0, this, 0);
-                client = 0;
-            }
+    void bytesWrittenSlot() {
+        if (doClose && client->bytesToWrite() == 0) {
+            client->disconnectFromHost();
+            disconnect(client, 0, this, 0);
+            client = 0;
         }
     }
 };
@@ -958,7 +967,9 @@ tst_QNetworkReply::tst_QNetworkReply()
     qRegisterMetaType<QNetworkReply *>(); // for QSignalSpy
     qRegisterMetaType<QAuthenticator *>();
     qRegisterMetaType<QNetworkProxy>();
+#ifndef QT_NO_OPENSSL
     qRegisterMetaType<QList<QSslError> >();
+#endif
 
     Q_SET_DEFAULT_IAP
 
@@ -1054,7 +1065,7 @@ QString tst_QNetworkReply::runSimpleRequest(QNetworkAccessManager::Operation op,
     returnCode = Timeout;
     int code = Success;
 
-    if (request.attribute(static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute)).toBool()) {
+    if (request.attribute(QNetworkRequest::SynchronousRequestAttribute).toBool()) {
         if (reply->isFinished())
             code = reply->error() != QNetworkReply::NoError ? Failure : Success;
         else
@@ -1491,6 +1502,12 @@ void tst_QNetworkReply::getErrors()
 {
     QFETCH(QString, url);
     QNetworkRequest request(url);
+
+#if defined(Q_OS_WIN) || defined (Q_OS_SYMBIAN)
+    if (qstrcmp(QTest::currentDataTag(), "empty-scheme-host") == 0)
+        QTest::ignoreMessage(QtWarningMsg, "QNetworkAccessFileBackendFactory: URL has no schema set, use file:// for files");
+#endif
+
     QNetworkReplyPtr reply = manager.get(request);
     reply->setParent(this);     // we have expect-fails
 
@@ -1505,6 +1522,9 @@ void tst_QNetworkReply::getErrors()
     //qDebug() << reply->errorString();
 
     QFETCH(int, error);
+#if defined(Q_OS_WIN) || defined (Q_OS_SYMBIAN)
+    QEXPECT_FAIL("empty-scheme-host", "this is expected to fail on Windows and Symbian, QTBUG-17731", Abort);
+#endif
     QEXPECT_FAIL("ftp-is-dir", "QFtp cannot provide enough detail", Abort);
     // the line below is not necessary
     QEXPECT_FAIL("ftp-dir-not-readable", "QFtp cannot provide enough detail", Abort);
@@ -1677,7 +1697,7 @@ void tst_QNetworkReply::putToHttpSynchronous()
     QFETCH(QByteArray, data);
 
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     RUN_REQUEST(runSimpleRequest(QNetworkAccessManager::PutOperation, request, reply, data));
@@ -1737,7 +1757,7 @@ void tst_QNetworkReply::postToHttpSynchronous()
     QNetworkRequest request(url);
 
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     QNetworkReplyPtr reply;
@@ -2178,15 +2198,27 @@ void tst_QNetworkReply::ioGetFromHttpWithReuseSequential()
     }
 }
 
+void tst_QNetworkReply::ioGetFromHttpWithAuth_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QByteArray>("expectedData");
+
+    QFile reference(SRCDIR "/rfc3252.txt");
+    reference.open(QIODevice::ReadOnly);
+    QByteArray referenceData = reference.readAll();
+    QTest::newRow("basic") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfcs-auth/rfc3252.txt") << referenceData;
+    QTest::newRow("digest") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/auth-digest/") << QByteArray("digest authentication successful\n");
+}
+
 void tst_QNetworkReply::ioGetFromHttpWithAuth()
 {
     // This test sends three requests
     // The first two in parallel
     // The third after the first two finished
-    QFile reference(SRCDIR "/rfc3252.txt");
-    QVERIFY(reference.open(QIODevice::ReadOnly));
 
-    QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfcs-auth/rfc3252.txt"));
+    QFETCH(QUrl, url);
+    QFETCH(QByteArray, expectedData);
+    QNetworkRequest request(url);
     {
         QNetworkReplyPtr reply1 = manager.get(request);
         QNetworkReplyPtr reply2 = manager.get(request);
@@ -2211,14 +2243,12 @@ void tst_QNetworkReply::ioGetFromHttpWithAuth()
 
         QCOMPARE(reply1->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
         QCOMPARE(reply2->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
-        QByteArray referenceData = reference.readAll();
-        QCOMPARE(reader1.data, referenceData);
-        QCOMPARE(reader2.data, referenceData);
+        QCOMPARE(reader1.data, expectedData);
+        QCOMPARE(reader2.data, expectedData);
 
         QCOMPARE(authspy.count(), 1);
     }
 
-    reference.seek(0);
     // rinse and repeat:
     {
         QNetworkReplyPtr reply = manager.get(request);
@@ -2234,16 +2264,15 @@ void tst_QNetworkReply::ioGetFromHttpWithAuth()
                            this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
         QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
-        QCOMPARE(reader.data, reference.readAll());
+        QCOMPARE(reader.data, expectedData);
 
         QCOMPARE(authspy.count(), 0);
     }
 
     // now check with synchronous calls:
-    reference.seek(0);
     {
         request.setAttribute(
-                static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+                QNetworkRequest::SynchronousRequestAttribute,
                 true);
 
         QSignalSpy authspy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
@@ -2256,7 +2285,7 @@ void tst_QNetworkReply::ioGetFromHttpWithAuth()
 
         // the only thing we check here is that the auth cache was used when using synchronous requests
         QCOMPARE(replySync->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
-        QCOMPARE(replySync->readAll(), reference.readAll());
+        QCOMPARE(replySync->readAll(), expectedData);
     }
 }
 
@@ -2267,7 +2296,7 @@ void tst_QNetworkReply::ioGetFromHttpWithAuthSynchronous()
 
     QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfcs-auth/rfc3252.txt"));
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     QSignalSpy authspy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
@@ -2352,7 +2381,7 @@ void tst_QNetworkReply::ioGetFromHttpWithProxyAuth()
     reference.seek(0);
     {
         request.setAttribute(
-                static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+                QNetworkRequest::SynchronousRequestAttribute,
                 true);
 
         QSignalSpy authspy(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
@@ -2378,7 +2407,7 @@ void tst_QNetworkReply::ioGetFromHttpWithProxyAuthSynchronous()
     QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt"));
     manager.setProxy(proxy);
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     QSignalSpy authspy(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
@@ -3491,7 +3520,7 @@ void tst_QNetworkReply::ioPostToHttpFromSocketSynchronous()
     QUrl url("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/md5sum.cgi");
     QNetworkRequest request(url);
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     QNetworkReplyPtr reply = manager.post(request, socketpair.endPoints[1]);
@@ -3683,12 +3712,12 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     incomingSocket->setReadBufferSize(1*1024);
     QTestEventLoop::instance().enterLoop(2);
     // some progress should have been made
+    QVERIFY(!spy.isEmpty());
     QList<QVariant> args = spy.last();
     qDebug() << "tst_QNetworkReply::ioPostToHttpsUploadProgress"
             << args.at(0).toLongLong()
             << sourceFile.size()
             << spy.size();
-    QVERIFY(!args.isEmpty());
     QVERIFY(args.at(0).toLongLong() > 0);
     // FIXME this is where it messes up
 
@@ -3699,16 +3728,16 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     incomingSocket->read(16*1024);
     QTestEventLoop::instance().enterLoop(2);
     // some more progress than before
+    QVERIFY(!spy.isEmpty());
     QList<QVariant> args2 = spy.last();
-    QVERIFY(!args2.isEmpty());
     QVERIFY(args2.at(0).toLongLong() > args.at(0).toLongLong());
 
     // set the read buffer to unlimited
     incomingSocket->setReadBufferSize(0);
     QTestEventLoop::instance().enterLoop(10);
     // progress should be finished
+    QVERIFY(!spy.isEmpty());
     QList<QVariant> args3 = spy.last();
-    QVERIFY(!args3.isEmpty());
     QVERIFY(args3.at(0).toLongLong() > args2.at(0).toLongLong());
     QCOMPARE(args3.at(0).toLongLong(), args3.at(1).toLongLong());
     QCOMPARE(args3.at(0).toLongLong(), sourceFile.size());
@@ -3798,6 +3827,8 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
     if (reader.data.size() < testData.size()) { // oops?
         QCOMPARE(reader.data, testData.mid(0, reader.data.size()));
         qDebug() << "The data is incomplete, the last" << testData.size() - reader.data.size() << "bytes are missing";
+        QEXPECT_FAIL("http+limited", "Limiting is broken right now, check QTBUG-15065", Abort);
+        QEXPECT_FAIL("https+limited", "Limiting is broken right now, check QTBUG-15065", Abort);
     }
     QCOMPARE(reader.data.size(), testData.size());
     QCOMPARE(reader.data, testData);
@@ -3810,8 +3841,8 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
         const int maxRate = rate * 1024 * (100+allowedDeviation) / 100;
         qDebug() << minRate << "<="<< server.transferRate << "<=" << maxRate << "?";
         QVERIFY(server.transferRate >= minRate);
-        QEXPECT_FAIL("http+limited", "Limiting is broken right now", Continue);
-        QEXPECT_FAIL("https+limited", "Limiting is broken right now", Continue);
+        QEXPECT_FAIL("http+limited", "Limiting is broken right now, check QTBUG-15065", Continue);
+        QEXPECT_FAIL("https+limited", "Limiting is broken right now, check QTBUG-15065", Continue);
         QVERIFY(server.transferRate <= maxRate);
     }
 }
@@ -3840,19 +3871,13 @@ void tst_QNetworkReply::ioPostToHttpUploadProgress()
     disconnect(&server, SIGNAL(newConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
     incomingSocket->setReadBufferSize(1*1024);
-    QTestEventLoop::instance().enterLoop(2);
+    QTestEventLoop::instance().enterLoop(5);
     // some progress should have been made
     QList<QVariant> args = spy.last();
     QVERIFY(!args.isEmpty());
     QVERIFY(args.at(0).toLongLong() > 0);
-
-    incomingSocket->setReadBufferSize(32*1024);
-    incomingSocket->read(16*1024);
-    QTestEventLoop::instance().enterLoop(2);
-    // some more progress than before
-    QList<QVariant> args2 = spy.last();
-    QVERIFY(!args2.isEmpty());
-    QVERIFY(args2.at(0).toLongLong() > args.at(0).toLongLong());
+    // but not everything!
+    QVERIFY(args.at(0).toLongLong() != sourceFile.size());
 
     // set the read buffer to unlimited
     incomingSocket->setReadBufferSize(0);
@@ -3860,8 +3885,10 @@ void tst_QNetworkReply::ioPostToHttpUploadProgress()
     // progress should be finished
     QList<QVariant> args3 = spy.last();
     QVERIFY(!args3.isEmpty());
-    QVERIFY(args3.at(0).toLongLong() > args2.at(0).toLongLong());
+    // More progress than before
+    QVERIFY(args3.at(0).toLongLong() > args.at(0).toLongLong());
     QCOMPARE(args3.at(0).toLongLong(), args3.at(1).toLongLong());
+    // And actually finished..
     QCOMPARE(args3.at(0).toLongLong(), sourceFile.size());
 
     // after sending this, the QNAM should emit finished()
@@ -4266,7 +4293,7 @@ void tst_QNetworkReply::receiveCookiesFromHttpSynchronous()
     QNetworkRequest request(url);
 
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     QNetworkReplyPtr reply;
@@ -4358,7 +4385,7 @@ void tst_QNetworkReply::sendCookiesSynchronous()
     QNetworkRequest request(url);
 
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     QNetworkReplyPtr reply;
@@ -4500,7 +4527,7 @@ void tst_QNetworkReply::httpProxyCommandsSynchronous()
 
     // send synchronous request
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     QNetworkReplyPtr reply = manager.get(request);
@@ -4560,7 +4587,7 @@ void tst_QNetworkReply::proxyChange()
     manager.setProxy(dummyProxy);
     QNetworkReplyPtr reply3 = manager.get(req);
     connect(reply3, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(1);
+    QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QVERIFY(int(reply3->error()) > 0);
@@ -5226,6 +5253,7 @@ void tst_QNetworkReply::qtbug12908compressedHttpReply()
     // dd if=/dev/zero of=qtbug-12908 bs=16384  count=1 && gzip qtbug-12908 && base64 -w 0 qtbug-12908.gz
     QString encodedFile("H4sICDdDaUwAA3F0YnVnLTEyOTA4AO3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA");
     QByteArray decodedFile = QByteArray::fromBase64(encodedFile.toAscii());
+    QCOMPARE(decodedFile.size(), 63);
 
     MiniHttpServer server(header.toAscii() + decodedFile);
     server.doClose = true;
@@ -5238,6 +5266,31 @@ void tst_QNetworkReply::qtbug12908compressedHttpReply()
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->size(), qint64(16384));
+    QCOMPARE(reply->readAll(), QByteArray(16384, '\0'));
+}
+
+void tst_QNetworkReply::compressedHttpReplyBrokenGzip()
+{
+    QString header("HTTP/1.0 200 OK\r\nContent-Encoding: gzip\r\nContent-Length: 63\r\n\r\n");
+
+    // dd if=/dev/zero of=qtbug-12908 bs=16384  count=1 && gzip qtbug-12908 && base64 -w 0 qtbug-12908.gz
+    // Then change "BMQ" to "BMX"
+    QString encodedFile("H4sICDdDaUwAA3F0YnVnLTEyOTA4AO3BMXEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA");
+    QByteArray decodedFile = QByteArray::fromBase64(encodedFile.toAscii());
+    QCOMPARE(decodedFile.size(), 63);
+
+    MiniHttpServer server(header.toAscii() + decodedFile);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(reply->error(), QNetworkReply::ProtocolFailure);
 }
 
 // TODO add similar test for FTP
@@ -5315,7 +5368,7 @@ void tst_QNetworkReply::qtbug13431replyThrottling()
     connect(&nam, SIGNAL(finished(QNetworkReply*)), &helper, SLOT(replyFinished(QNetworkReply*)));
 
     // Download a bigger file
-    QNetworkRequest netRequest(QUrl("http://qt-test-server/qtest/bigfile"));
+    QNetworkRequest netRequest(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile"));
     helper.m_reply = nam.get(netRequest);
     // Set the throttle
     helper.m_reply->setReadBufferSize(36000);
@@ -5446,7 +5499,7 @@ void tst_QNetworkReply::synchronousRequest()
 #endif
 
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     QNetworkReplyPtr reply;
@@ -5477,6 +5530,7 @@ void tst_QNetworkReply::synchronousRequest()
     reply->deleteLater();
 }
 
+#ifndef QT_NO_OPENSSL
 void tst_QNetworkReply::synchronousRequestSslFailure()
 {
     // test that SSL won't be accepted with self-signed certificate,
@@ -5486,7 +5540,7 @@ void tst_QNetworkReply::synchronousRequestSslFailure()
     QUrl url("https://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
     QNetworkRequest request(url);
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(SynchronousRequestAttribute),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
     QNetworkReplyPtr reply;
     QSignalSpy sslErrorsSpy(&manager, SIGNAL(sslErrors(QNetworkReply *, const QList<QSslError> &)));
@@ -5494,6 +5548,19 @@ void tst_QNetworkReply::synchronousRequestSslFailure()
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::SslHandshakeFailedError);
     QCOMPARE(sslErrorsSpy.count(), 0);
+}
+#endif
+
+void tst_QNetworkReply::httpAbort()
+{
+    // FIXME: Implement a test that aborts a big HTTP reply
+    // a) after the first readyRead()
+    // b) immediatly after the get()
+    // c) after the finished()
+    // The goal is no crash and no irrelevant signals after the abort
+
+    // FIXME Also implement one where we do a big upload and then abort().
+    // It must not crash either.
 }
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!

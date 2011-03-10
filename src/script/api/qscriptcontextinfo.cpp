@@ -157,21 +157,29 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
 
             JSC::Instruction *returnPC = rewindContext->returnPC();
             JSC::CodeBlock *codeBlock = frame->codeBlock();
-            if (returnPC && codeBlock) {
+            if (returnPC && codeBlock && QScriptEnginePrivate::hasValidCodeBlockRegister(frame)) {
 #if ENABLE(JIT)
-                unsigned bytecodeOffset = codeBlock->getBytecodeIndex(frame, JSC::ReturnAddressPtr(returnPC));
+                JSC::JITCode code = codeBlock->getJITCode();
+                unsigned jitOffset = code.offsetOf(JSC::ReturnAddressPtr(returnPC).value());
+                // We can only use the JIT code offset if it's smaller than the JIT size;
+                // otherwise calling getBytecodeIndex() is meaningless.
+                if (jitOffset < code.size()) {
+                    unsigned bytecodeOffset = codeBlock->getBytecodeIndex(frame, JSC::ReturnAddressPtr(returnPC));
 #else
                 unsigned bytecodeOffset = returnPC - codeBlock->instructions().begin();
 #endif
                 bytecodeOffset--; //because returnPC is on the next instruction. We want the current one
                 lineNumber = codeBlock->lineNumberForBytecodeOffset(const_cast<JSC::ExecState *>(frame), bytecodeOffset);
+#if ENABLE(JIT)
+                }
+#endif
             }
         }
     }
 
     // Get the filename and the scriptId:
     JSC::CodeBlock *codeBlock = frame->codeBlock();
-    if (codeBlock) {
+    if (codeBlock && QScriptEnginePrivate::hasValidCodeBlockRegister(frame)) {
            JSC::SourceProvider *source = codeBlock->source();
            scriptId = source->asID();
            fileName = source->url();
@@ -181,7 +189,8 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
     JSC::JSObject *callee = frame->callee();
     if (callee && callee->inherits(&JSC::InternalFunction::info))
         functionName = JSC::asInternalFunction(callee)->name(frame);
-    if (callee && callee->inherits(&JSC::JSFunction::info)) {
+    if (callee && callee->inherits(&JSC::JSFunction::info)
+        && !JSC::asFunction(callee)->isHostFunction()) {
         functionType = QScriptContextInfo::ScriptFunction;
         JSC::FunctionExecutable *body = JSC::asFunction(callee)->jsExecutable();
         functionStartLineNumber = body->lineNo();

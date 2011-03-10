@@ -17,15 +17,11 @@ function createSpriteObjects() {
 
 //![local]
     component = Qt.createComponent("Sprite.qml");
-    sprite = component.createObject(appWindow);
+    sprite = component.createObject(appWindow, {"x": 100, "y": 100});
 
     if (sprite == null) {
         // Error Handling
         console.log("Error creating object");
-    } else {
-        sprite.x = 100;
-        sprite.y = 100;
-        // ...
     }
 //![local]
 
@@ -36,13 +32,10 @@ function createSpriteObjects() {
 //![finishCreation]
 function finishCreation() {
     if (component.status == Component.Ready) {
-        sprite = component.createObject(appWindow);
+        sprite = component.createObject(appWindow, {"x": 100, "y": 100});
         if (sprite == null) {
             // Error Handling
-        } else {
-            sprite.x = 100;
-            sprite.y = 100;
-            // ...
+            console.log("Error creating object");
         }
     } else if (component.status == Component.Error) {
         // Error Handling

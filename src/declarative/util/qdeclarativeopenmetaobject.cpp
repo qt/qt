@@ -97,7 +97,6 @@ int QDeclarativeOpenMetaObjectType::createProperty(const QByteArray &name)
     int id = d->mob.propertyCount();
     d->mob.addSignal("__" + QByteArray::number(id) + "()");
     QMetaPropertyBuilder build = d->mob.addProperty(name, "QVariant", id);
-    build.setDynamic(true);
     propertyCreated(id, build);
     qFree(d->mem);
     d->mem = d->mob.toMetaObject();
@@ -290,17 +289,19 @@ void QDeclarativeOpenMetaObject::setValue(const QByteArray &name, const QVariant
 
     int id = -1;
     if (iter == d->type->d->names.end()) {
-        id = d->type->createProperty(name.constData()) - d->type->d->propertyOffset;
+        id = createProperty(name.constData(), "") - d->type->d->propertyOffset;
     } else {
         id = *iter;
     }
 
-    QVariant &dataVal = d->getData(id);
-    if (dataVal == val)
-        return;
+    if (id >= 0) {
+        QVariant &dataVal = d->getData(id);
+        if (dataVal == val)
+            return;
 
-    dataVal = val;
-    activate(d->object, id + d->type->d->signalOffset, 0);
+        dataVal = val;
+        activate(d->object, id + d->type->d->signalOffset, 0);
+    }
 }
 
 // returns true if this value has been initialized by a call to either value() or setValue()

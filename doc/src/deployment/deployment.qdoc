@@ -1550,8 +1550,8 @@
     \note If you want to have your application properly Symbian Signed for distribution,
     you will have to properly sign both the application and the application installer packages.
     Please see
-    \l{http://developer.symbian.org/wiki/index.php/Category:Symbian_Signed}
-    {Symbian Signed wiki} for more information about Symbian Signed.
+    \l{http://wiki.forum.nokia.com/index.php/Category:Symbian_Signed}
+    {Forum Nokia Wiki} for more information about Symbian Signed.
 
     For more information about creating a \c .sis file and installing it to device see also
     \l {The Symbian platform - Introduction to Qt#Installing your own applications}{here}.

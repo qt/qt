@@ -101,7 +101,6 @@ public:
         ConstructionState() : componentAttached(0), completePending(false) {}
         QList<QDeclarativeEnginePrivate::SimpleList<QDeclarativeAbstractBinding> > bindValues;
         QList<QDeclarativeEnginePrivate::SimpleList<QDeclarativeParserStatus> > parserStatus;
-        QList<QPair<QDeclarativeGuard<QObject>, int> > finalizedParserStatus;
         QDeclarativeComponentAttached *componentAttached;
         QList<QDeclarativeError> errors;
         bool completePending;
@@ -115,6 +114,8 @@ public:
     static void beginDeferred(QDeclarativeEnginePrivate *enginePriv, QObject *object, 
                               ConstructionState *state);
     static void complete(QDeclarativeEnginePrivate *enginePriv, ConstructionState *state);
+
+    QScriptValue createObject(QObject *publicParent, const QScriptValue valuemap);
 
     QDeclarativeEngine *engine;
     QDeclarativeGuardedContextData creationContext;
