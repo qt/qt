@@ -813,17 +813,21 @@ void QWidgetPrivate::s60UpdateIsOpaque()
     RWindow *const window = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
 
 #ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
-    window->SetSurfaceTransparency(!isOpaque);
-    extra->topextra->nativeWindowTransparencyEnabled = !isOpaque;
-#else
+    if (QApplicationPrivate::instance()->useTranslucentEGLSurfaces) {
+        window->SetSurfaceTransparency(!isOpaque);
+        extra->topextra->nativeWindowTransparencyEnabled = !isOpaque;
+        return;
+    }
+#endif
     if (!isOpaque) {
         const TDisplayMode displayMode = static_cast<TDisplayMode>(window->SetRequiredDisplayMode(EColor16MA));
         if (window->SetTransparencyAlphaChannel() == KErrNone) {
             window->SetBackgroundColor(TRgb(255, 255, 255, 0));
             extra->topextra->nativeWindowTransparencyEnabled = 1;
 
-            if (extra->topextra->backingStore.data() &&
-                    QApplicationPrivate::graphics_system_name == QLatin1String("openvg")) {
+            if (extra->topextra->backingStore.data() && (
+                    QApplicationPrivate::graphics_system_name == QLatin1String("openvg")
+                    || QApplicationPrivate::graphics_system_name == QLatin1String("opengl"))) {
                 // Semi-transparent EGL surfaces aren't supported. We need to
                 // recreate backing store to get translucent surface (raster surface).
                 extra->topextra->backingStore.create(q);
@@ -834,7 +838,6 @@ void QWidgetPrivate::s60UpdateIsOpaque()
         window->SetTransparentRegion(TRegionFix<1>());
         extra->topextra->nativeWindowTransparencyEnabled = 0;
     }
-#endif
 }
 
 void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
