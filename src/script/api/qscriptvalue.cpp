@@ -145,7 +145,7 @@
 
     \value PropertySetter The property is defined by a function which will be called to set the property value.
 
-    \value QObjectMember This flag is used to indicate that an existing property is a QObject member (a property or method).
+    \omitvalue QObjectMember This flag is used to indicate that an existing property is a QObject member (a property or method).
 
     \value KeepExistingFlags This value is used to indicate to setProperty() that the property's flags should be left unchanged. If the property doesn't exist, the default flags (0) will be used.
 
