@@ -1,7 +1,7 @@
 #include "driftaffector.h"
 #include "particlesystem.h"
 
-DriftAffector::DriftAffector(QObject *parent) :
+DriftAffector::DriftAffector(QSGItem *parent) :
     ParticleAffector(parent)
 {
 }
@@ -10,11 +10,7 @@ DriftAffector::~DriftAffector()
 {
 }
 
-void DriftAffector::reset(int idx)
-{
-}
-
-bool DriftAffector::affect(ParticleData *data, qreal dt)
+bool DriftAffector::affectParticle(ParticleData *data, qreal dt)
 {
     if(!m_xDrift && !m_yDrift)
         return false;

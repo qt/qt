@@ -3,6 +3,7 @@
 #include "particle.h"
 class ParticleTrailsMaterial;
 class GeometryNode;
+struct ColoredParticleVertex;
 
 class ColoredParticle : public ParticleType
 {
@@ -50,14 +51,13 @@ signals:
 
     void particleDurationChanged();
 public slots:
-
 protected:
     Node *updatePaintNode(Node *, UpdatePaintNodeData *);
     void reset();
     void prepareNextFrame();
     GeometryNode* buildParticleNode();
 private:
-
+    void vertexCopy(ColoredParticleVertex &b,const ParticleVertex& a);
     bool m_do_reset;
 
     QUrl m_image_name;

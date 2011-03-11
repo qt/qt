@@ -12,7 +12,6 @@ class ParticleTrailsMaterial : public AbstractMaterial
 public:
     ParticleTrailsMaterial()
         : timestamp(0)
-        , timelength(1)
     {
         setFlag(Blending, true);
     }
@@ -27,7 +26,6 @@ public:
     QSGTextureRef texture;
 
     qreal timestamp;
-    qreal timelength;
 };
 
 
@@ -68,7 +66,6 @@ public:
 
         m_program.setUniformValue(m_opacity_id, (float) renderer->renderOpacity());
         m_program.setUniformValue(m_timestamp_id, (float) m->timestamp);
-        m_program.setUniformValue(m_timelength_id, (float) m->timelength);
 
         if (updates & Renderer::UpdateMatrices)
             m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
@@ -78,7 +75,6 @@ public:
         m_matrix_id = m_program.uniformLocation("matrix");
         m_opacity_id = m_program.uniformLocation("opacity");
         m_timestamp_id = m_program.uniformLocation("timestamp");
-        m_timelength_id = m_program.uniformLocation("timelength");
     }
 
     virtual const char *vertexShader() const { return m_vertex_code.constData(); }
@@ -101,7 +97,6 @@ public:
     int m_matrix_id;
     int m_opacity_id;
     int m_timestamp_id;
-    int m_timelength_id;
 
     QByteArray m_vertex_code;
     QByteArray m_fragment_code;
@@ -183,9 +178,9 @@ struct ColoredParticleVertex {
     float tx;
     float ty;
     float t;
+    float lifeSpan;
     float size;
     float endSize;
-    float dt;
     float sx;
     float sy;
     float ax;
@@ -318,6 +313,7 @@ GeometryNode* ColoredParticle::buildParticleNode()
             vertices[i].x = 0;
             vertices[i].y = 0;
             vertices[i].t = -1;
+            vertices[i].lifeSpan = 0;
             vertices[i].size = 0;
             vertices[i].endSize = 0;
             vertices[i].sx = 0;
@@ -376,6 +372,7 @@ GeometryNode* ColoredParticle::buildParticleNode()
     m_node->setMaterial(m_material);
 
     m_last_particle = 0;
+
     return m_node;
 }
 
@@ -411,19 +408,18 @@ void ColoredParticle::prepareNextFrame()
     uint timeStamp = m_system->systemSync(this);
 
     qreal time = timeStamp / 1000.;
-    m_material->timelength = m_particleDuration / 1000.;
     m_material->timestamp = time;
 }
 
 
-void vertexCopy(ColoredParticleVertex &b,const ParticleVertex& a)
+void ColoredParticle::vertexCopy(ColoredParticleVertex &b,const ParticleVertex& a)
 {
-    b.x = a.x;
-    b.y = a.y;
+    b.x = a.x - m_systemOffset.x();
+    b.y = a.y - m_systemOffset.y();
     b.t = a.t;
+    b.lifeSpan = a.lifeSpan;
     b.size = a.size;
     b.endSize = a.endSize;
-    b.dt = a.dt;
     b.sx = a.sx;
     b.sy = a.sy;
     b.ax = a.ax;
@@ -437,7 +433,8 @@ void ColoredParticle::reload(ParticleData *d)
 
     ColoredParticleVertices *particles = (ColoredParticleVertices *) m_node->geometry()->vertexData();
 
-    int pos = d->particleIndex;
+    int pos = particleTypeIndex(d);
+
 
     ColoredParticleVertices &p = particles[pos];
 
@@ -453,7 +450,6 @@ void ColoredParticle::load(ParticleData *d)
     if (m_node == 0)
         return;
 
-    m_particleDuration = d->e->particleDuration();//XXX, only last particle so assumes they're all the same
     //Color initialization
     // Particle color
     Color4ub color;
@@ -462,7 +458,7 @@ void ColoredParticle::load(ParticleData *d)
     color.b = m_color.blue() * (1 - m_color_variation) + rand() % 256 * m_color_variation;
     color.a = (1 - m_additive) * m_color.alpha();
     ColoredParticleVertices *particles = (ColoredParticleVertices *) m_node->geometry()->vertexData();
-    ColoredParticleVertices &p = particles[d->particleIndex];
+    ColoredParticleVertices &p = particles[particleTypeIndex(d)];
     p.v1.color = p.v2.color = p.v3.color = p.v4.color = color;
 
     vertexCopy(p.v1, d->pv);
@@ -470,3 +466,4 @@ void ColoredParticle::load(ParticleData *d)
     vertexCopy(p.v3, d->pv);
     vertexCopy(p.v4, d->pv);
 }
+

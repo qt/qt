@@ -1,12 +1,12 @@
 #include "attractoraffector.h"
 #include <cmath>
 
-AttractorAffector::AttractorAffector(QObject *parent) :
+AttractorAffector::AttractorAffector(QSGItem *parent) :
     ParticleAffector(parent), m_strength(0.0), m_x(0), m_y(0)
 {
 }
 
-bool AttractorAffector::affect(ParticleData *d, qreal dt)
+bool AttractorAffector::affectParticle(ParticleData *d, qreal dt)
 {
     if(m_strength == 0.0)
         return false;

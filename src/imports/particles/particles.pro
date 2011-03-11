@@ -19,7 +19,7 @@ HEADERS += \
     coloredparticle.h \
     spriteparticle.h \
     spritegoalaffector.h \
-    zoneaffector.h \
+    #zoneaffector.h \
     frictionaffector.h \
     gravitationalsingularityaffector.h \
     killaffector.h \
@@ -28,12 +28,11 @@ HEADERS += \
     gravityaffector.h \
     attractoraffector.h \
     meanderaffector.h \
-    toggleaffector.h \
+    #toggleaffector.h \
     spriteimage.h \
     #pairedparticle.h \
     followemitter.h \
-    followaffector.h \
-    swarmaffector.h \
+    #swarmaffector.h \
     turbulenceaffector.h
 
 SOURCES += \
@@ -53,7 +52,7 @@ SOURCES += \
     coloredparticle.cpp \
     spriteparticle.cpp \
     spritegoalaffector.cpp \
-    zoneaffector.cpp \
+    #zoneaffector.cpp \
     frictionaffector.cpp \
     gravitationalsingularityaffector.cpp \
     killaffector.cpp \
@@ -62,12 +61,11 @@ SOURCES += \
     gravityaffector.cpp \
     attractoraffector.cpp \
     meanderaffector.cpp \
-    toggleaffector.cpp \
+    #toggleaffector.cpp \
     spriteimage.cpp \
     #pairedparticle.cpp \
     followemitter.cpp \
-    followaffector.cpp \
-    swarmaffector.cpp \
+    #swarmaffector.cpp \
     turbulenceaffector.cpp
 
 QT += declarative opengl

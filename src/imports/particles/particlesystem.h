@@ -4,6 +4,7 @@
 #include <QSGItem>
 #include <QTime>
 #include <QVector>
+#include <QHash>
 
 class ParticleAffector;
 class ParticleEmitter;
@@ -11,11 +12,11 @@ class ParticleType;
 class ParticleData;
 
 
-struct EmitterData{
+struct GroupData{
     int size;
     int start;
     int nextIdx;
-    QHash<ParticleType*, int> particleOffsets;
+    QList<ParticleType*> types;
 };
 
 class ParticleSystem : public QSGItem
@@ -46,7 +47,6 @@ void runningChanged(bool arg);
 void startTimeChanged(int arg);
 
 public slots:
-void pleaseUpdate(){if(this)update();}//XXX
 void reset();
 void prepareNextFrame();
 void setRunning(bool arg);
@@ -64,15 +64,18 @@ private slots:
     void countChanged();
 public://but only really for related class usage. Perhaps we should all be friends?
     void emitParticle(ParticleData* p);
-    ParticleData* newDatum(ParticleEmitter* e, ParticleType* p);
+    ParticleData* newDatum(int groupId);
     uint systemSync(ParticleType* p);
     QTime m_timestamp;
     QVector<ParticleData*> data;
-    QList<EmitterData*> m_emitterData;//size, start
+    QHash<QString, int> m_groupIds;
+    QHash<int, GroupData*> m_groupData;//id, size, start
+    uint m_timeInt;
 
     void registerParticleType(ParticleType* p);
     void registerParticleEmitter(ParticleEmitter* e);
     void registerParticleAffector(ParticleAffector* a);
+    void pleaseUpdate(){};//XXX first checking we can live without it
 private:
     void initializeSystem();
     int m_particle_count;
@@ -83,7 +86,7 @@ private:
     QList<ParticleType*> m_particles;
     QList<ParticleType*> m_syncList;
     int m_startTime;
-    uint m_timeInt;
+    int m_nextGroupId;
 };
 
 //TODO: Clean up all this into ParticleData
@@ -92,9 +95,9 @@ struct ParticleVertex {
     float x;
     float y;
     float t;
+    float lifeSpan;
     float size;
     float endSize;
-    float dt;
     float sx;
     float sy;
     float ax;
@@ -106,6 +109,7 @@ public:
     ParticleData();
 
     ParticleVertex pv;
+    bool needsReload;
 
     //Convenience functions for working backwards, because parameters are from the start of particle life
     //If setting multiple parameters at once, doing the conversion yourself will be faster.
@@ -129,10 +133,13 @@ public:
     qreal curY() const;
     qreal curSY() const;
 
-    ParticleType* p;
+    int group;
     ParticleEmitter* e;
+    ParticleSystem* system;
     int particleIndex;
     int systemIndex;
+
+    void debugDump();
 };
 
 #endif // PARTICLESYSTEM_H

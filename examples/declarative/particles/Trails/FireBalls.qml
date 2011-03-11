@@ -9,29 +9,23 @@ Rectangle {
 
     ParticleSystem{
         id: particles
-        particles: [smoke, smoke2, flame, flame2, fireball]
-        affectors:[
-            Follow{ emitter: fireballSmoke },
-            Zone{
-                width: root.width
-                height: 168
-                y: root.height - 196
-                Follow{ emitter: fireSmoke 
-                }
-                },
-            Follow{ emitter: fireballFlame }
-        ]
     }
 
     ColoredParticle{
-        id: smoke
-        image: "content/particle.png"
-        colorVariation: 0
-        color: "#111111"
+        id: fireball
+        anchors.fill: parent
+        particles: ["E"]
+        system: particles
+        image: "content/particleA.png"
+        colorVariation: 0.2
+        color: "#ff400f"
         additive: 1
     }
     ColoredParticle{
-        id: smoke2
+        id: smoke
+        system: particles
+        anchors.fill: parent
+        particles: ["A", "B"]
         image: "content/particle.png"
         colorVariation: 0
         color: "#111111"
@@ -39,29 +33,18 @@ Rectangle {
     }
     ColoredParticle{
         id: flame
+        anchors.fill: parent
+        system: particles
+        particles: ["C", "D"]
         image: "content/particle.png"
         colorVariation: 0.1
-        color: "#ff400f"
-        additive: 1
-    }
-    ColoredParticle{
-        id: flame2
-        image: "content/particle.png"
-        colorVariation: 0.1
-        color: "#ff400f"
-        additive: 1
-    }
-    ColoredParticle{
-        id: fireball
-        image: "content/particleA.png"
-        colorVariation: 0.2
         color: "#ff400f"
         additive: 1
     }
     TrailEmitter{
         id: fire
         system: particles
-        particle: flame
+        particle: "C"
 
         y: parent.height
         width: parent.width
@@ -80,9 +63,11 @@ Rectangle {
     }
     FollowEmitter{
         id: fireSmoke
+        particle: "B"
         system: particles
-        particle: smoke2
-        follow: flame
+        follow: "C"
+        width: root.width
+        height: root.height - 68
 
         particlesPerParticlePerSecond: 1
         particleDuration: 2000
@@ -98,9 +83,10 @@ Rectangle {
     }
     FollowEmitter{
         id: fireballFlame
+        anchors.fill: parent
         system: particles
-        particle: flame2
-        follow: fireball
+        particle: "D"
+        follow: "E"
 
         particlesPerParticlePerSecond: 48
         particleDuration: 360
@@ -109,11 +95,13 @@ Rectangle {
         particleSizeVariation: 4
         particleEndSize: 4
     }
+    
     FollowEmitter{
         id: fireballSmoke
+        anchors.fill: parent
         system: particles
-        particle: smoke
-        follow: fireball
+        particle: "A"
+        follow: "E"
 
         particlesPerParticlePerSecond: 128
         particleDuration: 2400
@@ -129,7 +117,7 @@ Rectangle {
     TrailEmitter{
         id: balls
         system: particles
-        particle: fireball
+        particle: "E"
 
         y: parent.height
         width: parent.width

@@ -7,14 +7,14 @@ class FrictionAffector : public ParticleAffector
     Q_OBJECT
     Q_PROPERTY(qreal factor READ factor WRITE setFactor NOTIFY factorChanged)
 public:
-    explicit FrictionAffector(QObject *parent = 0);
-    virtual bool affect(ParticleData *d, qreal dt);
+    explicit FrictionAffector(QSGItem *parent = 0);
 
     qreal factor() const
     {
         return m_factor;
     }
-
+protected:
+    virtual bool affectParticle(ParticleData *d, qreal dt);
 signals:
 
     void factorChanged(qreal arg);

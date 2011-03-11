@@ -1,9 +1,10 @@
 #include "wanderaffector.h"
 #include "particlesystem.h"//for ParticlesVertices
 
-WanderAffector::WanderAffector(QObject *parent) :
+WanderAffector::WanderAffector(QSGItem *parent) :
     ParticleAffector(parent)
 {
+    m_needsReset = true;
 }
 
 WanderAffector::~WanderAffector()
@@ -36,7 +37,7 @@ void WanderAffector::reset(int systemIdx)
     m_wanderData.remove(systemIdx);
 }
 
-bool WanderAffector::affect(ParticleData* data, qreal dt)
+bool WanderAffector::affectParticle(ParticleData* data, qreal dt)
 {
     WanderData* d = getData(data->systemIndex);
     if (m_xVariance != 0.) {

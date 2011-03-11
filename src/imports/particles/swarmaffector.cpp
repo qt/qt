@@ -3,15 +3,15 @@
 #include <cmath>
 
 SwarmAffector::SwarmAffector(QObject *parent) :
-    ParticleAffector(parent), m_system(0), m_strength(0)
+    ParticleAffector(parent), m_system(0), m_strength(0), m_inited(false)
 {
 }
 
 void SwarmAffector::ensureInit(ParticleData* d)
 {
-    if(m_system == d->p->system())
+    if(m_inited)
         return;
-    m_system = d->p->system();
+    m_inited = true;
     m_lastPos.resize(m_system->count());
 }
 

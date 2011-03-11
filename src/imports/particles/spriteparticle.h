@@ -5,8 +5,8 @@
 class SpriteState;
 class SpriteEngine;
 class GeometryNode;
-class QSGContext;
 class SpriteParticlesMaterial;
+class SpriteParticleVertex;
 
 class SpriteParticle : public ParticleType
 {
@@ -41,6 +41,8 @@ private:
 
     QList<SpriteState*> m_sprites;
     SpriteEngine* m_spriteEngine;
+
+    void vertexCopy(SpriteParticleVertex &b,const ParticleVertex& a);
 };
 
 #endif // SPRITEPARTICLE_H

@@ -15,10 +15,9 @@ FollowEmitter::FollowEmitter(QSGItem *parent) :
   , m_yAccel(0)
   , m_xAccelVariation(0)
   , m_yAccelVariation(0)
-  , m_follow(0)
   , m_lastTimeStamp(0)
 {
-    connect(this, SIGNAL(followChanged(ParticleType*)),
+    connect(this, SIGNAL(followChanged(QString)),
             this, SLOT(recalcParticlesPerSecond()));
     connect(this, SIGNAL(particleDurationChanged(int)),
             this, SLOT(recalcParticlesPerSecond()));
@@ -26,54 +25,60 @@ FollowEmitter::FollowEmitter(QSGItem *parent) :
             this, SLOT(recalcParticlesPerSecond()));
 }
 
-void FollowEmitter::setFollow(ParticleType *arg)
-{
-    if (m_follow != arg) {
-        m_follow = arg;
-        emit followChanged(arg);
-        connect(m_follow, SIGNAL(countChanged()),
-                this, SLOT(recalcParticlesPerSecond()));
-    }
-}
-
 void FollowEmitter::recalcParticlesPerSecond(){
-    if(!m_follow){
+    if(!m_system)
         return;
-    }else if(!m_follow->count()){//It hasn't been told how many it's emitting yet
-        setParticlesPerSecond(1000);//TODO: Fix this horrendous hack
+    m_followCount = m_system->m_groupData[m_system->m_groupIds[m_follow]]->size;
+    if(!m_followCount){
+        setParticlesPerSecond(1000);//XXX: Fix this horrendous hack, needed so they aren't turned off from start
     }else{
-        setParticlesPerSecond(m_particlesPerParticlePerSecond * m_follow->count());
-        m_lastEmission.resize(m_follow->count());
+        setParticlesPerSecond(m_particlesPerParticlePerSecond * m_followCount);
+        m_lastEmission.resize(m_followCount);
     }
 }
 
 void FollowEmitter::emitWindow(int timeStamp)
 {
-    if (m_system == 0 || m_follow == 0)
+    if (m_system == 0)
         return;
     if(!m_emitting)
         return;
-
+    if(m_followCount != m_system->m_groupData[m_system->m_groupIds[m_follow]]->size){
+        recalcParticlesPerSecond();
+        return;//system may need to update
+    }
     qreal time = timeStamp / 1000.;
     qreal particleRatio = 1. / m_particlesPerParticlePerSecond;
     qreal pt;
 
-    QPointF offset = this->mapFromItem(m_system, QPointF(0, 0));
     //Have to map it into this system, because particlesystem automaps it back
+    QPointF offset = this->mapFromItem(m_system, QPointF(0, 0));
     float sizeAtEnd = m_particleEndSize >= 0 ? m_particleEndSize : m_particleSize;
 
-    foreach(ParticleData* d, m_pending){
-        if(d->p != m_follow){//WTF?
-            m_pending.remove(d);
+    int gId = m_system->m_groupIds[m_follow];
+    int gId2 = m_system->m_groupIds[m_particle];
+    for(int i=0; i<m_system->m_groupData[gId]->size; i++){
+        pt = m_lastEmission[i];
+        ParticleData* d = m_system->data[i + m_system->m_groupData[gId]->start];
+        if(!d)
+            continue;
+        if(pt < d->pv.t)
+            pt = d->pv.t;
+        if(!QRect(offset.x(), offset.y(), width(), height()).contains(d->curX(), d->curY())){
+            m_lastEmission[i] = time;//jump over this time period without emitting, because it's outside
             continue;
         }
-        pt = m_lastEmission[d->particleIndex];
         while(pt < time){
-            ParticleData* datum = m_system->newDatum(this, m_particle);
+            ParticleData* datum = m_system->newDatum(gId2);
+            datum->e = this;//###useful?
             ParticleVertex &p = datum->pv;
 
             // Particle timestamp
-            p.t = p.dt = pt;
+            p.t = pt;
+            p.lifeSpan =
+                    (m_particleDuration
+                     + ((rand() % ((m_particleDurationVariation*2) + 1)) - m_particleDurationVariation))
+                    / 1000.0;
 
             // Particle position
             qreal followT =  pt - d->pv.t;
@@ -115,7 +120,7 @@ void FollowEmitter::emitWindow(int timeStamp)
             pt += particleRatio;
             m_system->emitParticle(datum);
         }
-        m_lastEmission[d->particleIndex] = pt;
+        m_lastEmission[i] = pt;
     }
 
     m_lastTimeStamp = time;

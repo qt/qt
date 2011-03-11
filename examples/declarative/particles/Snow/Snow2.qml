@@ -4,34 +4,32 @@ import Qt.labs.particles 2.0
 Rectangle{
     width: 360
     height: 540
-    ParticleSystem{
-        id: particles
+    ParticleSystem{ id: particles }
+    SpriteParticle{
+        system: particles
+        Sprite{
+            name: "snow"
+            source: "flake-01.png"
+            frames: 51
+            duration: 40
+        }
+    }
+    Drift{ 
+        system: particles
         anchors.fill: parent
-        particles:SpriteParticle{
-            sprites: Sprite{
-                name: "snow"
-                source: "flake-01.png"
-                frames: 51
-                duration: 40
-            }
-        }
-        affectors: Drift{ xDrift: 800; }
-        emitters:TrailEmitter{
-            particlesPerSecond: 20
-            particleDuration: 7000
-            emitting: true
-            xSpeed: 0
-            ySpeed: 80
-            xSpeedVariation: 20
-            ySpeedVariation: 40
-            xAccel: 0
-            yAccel: 4
-            particleSize: 20
-            particleSizeVariation: 10
-            emitterX: width/2
-            emitterY: 50
-            emitterXVariation: width/2
-            emitterYVariation: 50
-        }
+        xDrift: 800;
+    }
+    TrailEmitter{
+        system: particles
+        particlesPerSecond: 20
+        particleDuration: 7000
+        emitting: true
+        ySpeed: 80
+        ySpeedVariation: 40
+        yAccel: 4
+        particleSize: 20
+        particleSizeVariation: 10
+        width: parent.width
+        height: 100
     }
 }

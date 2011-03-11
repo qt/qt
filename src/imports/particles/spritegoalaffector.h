@@ -9,8 +9,7 @@ class SpriteGoalAffector : public ParticleAffector
     Q_PROPERTY(QString goalState READ goalState WRITE setGoalState NOTIFY goalStateChanged)
     Q_PROPERTY(bool jump READ jump WRITE setJump NOTIFY jumpChanged)
 public:
-    explicit SpriteGoalAffector(QObject *parent = 0);
-    virtual bool affect(ParticleData *d, qreal dt);
+    explicit SpriteGoalAffector(QSGItem *parent = 0);
 
     QString goalState() const
     {
@@ -21,7 +20,8 @@ public:
     {
         return m_jump;
     }
-
+protected:
+    virtual bool affectParticle(ParticleData *d, qreal dt);
 signals:
 
     void goalStateChanged(QString arg);

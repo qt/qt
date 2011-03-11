@@ -12,82 +12,42 @@ Rectangle{
         onClicked: cloneMode = !cloneMode;
     }
     ParticleSystem{
-        id: uncloned
-        width: 320
-        height: 480
+        id: sys
         startTime: 4000
-        visible: !cloneMode
-        PairedParticle{
-            id: pairC
-            pairs: [pairA, pairB]
-            SpriteParticle{
-                Sprite{
-                    source: "content/particle2.png"
-                }
-            }
-        }
-        data:[TrailEmitter{
-            system: uncloned
-            y:480
-            width: 320
-            particlesPerSecond: 200
-            particleDuration: 4000
-            ySpeed: -120
-        }]
     }
-    ParticleSystem{
-        id: cloneA
+    TrailEmitter{
+        system: sys
+        y:480
         width: 320
-        height: 480
+        particlesPerSecond: 200
+        particleDuration: 4000
+        ySpeed: -120
+    }
+    SpriteParticle{
+        system: sys
+        visible: !cloneMode
+        Sprite{
+            source: "content/particle2.png"
+        }
+    }
+    SpriteParticle{
+        system: sys
         visible: cloneMode
         z: 0
-        PairedParticle{
-            id: pairA
-            SpriteParticle{
-                Sprite{
-                    source: "content/particle3.png"
-                }
-            }
-        }
-        ColoredParticle{
-            id: dummy2
-            image: "content/particle3.png"
-        }
-        emitters:TrailEmitter{
-            particle: dummy2
-            particlesPerSecond: 1
-            particleDuration: 1000
-            emitterX: -100
-            emitterY: -100
+        Sprite{
+            source: "content/particle3.png"
         }
     }
-    ParticleSystem{
-        id: cloneB
+    SpriteParticle{
+        system: sys
         clip: true
-        y: 140
-        width: 320
-        height: 200
         visible: cloneMode
+        y: 120
+        height: 240
+        width: root.width
         z: 1
-        PairedParticle{
-            id: pairB
-            //pair: pairA 
-            SpriteParticle{
-                Sprite{
-                    source: "content/particle.png"
-                }
-            }
-        }
-        ColoredParticle{
-            id: dummy
-            image: "content/particle3.png"
-        }
-        emitters:TrailEmitter{
-            particle: dummy
-            particlesPerSecond: 1
-            particleDuration: 1000
-            emitterX: -100
-            emitterY: -100
+        Sprite{
+            source: "content/particle.png"
         }
     }
 }

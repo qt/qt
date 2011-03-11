@@ -224,7 +224,8 @@ void TrailsEmitter::emitWindow(int timeStamp)
     qreal emitter_y_offset = m_last_emitter.y() - y() + height()/2;
     while (pt < time) {
         //int pos = m_last_particle % m_particle_count;
-        ParticleData* datum = m_system->newDatum(this, m_particle);
+        ParticleData* datum = m_system->newDatum(m_system->m_groupIds[m_particle]);
+        datum->e = this;//###useful?
         ParticleVertex &p = datum->pv;
 
         qreal t = 1 - (pt - opt) / dt;
@@ -240,7 +241,11 @@ void TrailsEmitter::emitWindow(int timeStamp)
 
 
         // Particle timestamp
-        p.t = p.dt = pt;
+        p.t = pt;
+        p.lifeSpan =
+                (m_particleDuration
+                 + ((rand() % ((m_particleDurationVariation*2) + 1)) - m_particleDurationVariation))
+                / 1000.0;
 
         // Particle position
         p.x =

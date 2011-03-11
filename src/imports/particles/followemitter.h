@@ -6,7 +6,7 @@
 class FollowEmitter : public ParticleEmitter
 {
     Q_OBJECT
-    Q_PROPERTY(ParticleType* follow READ follow WRITE setFollow NOTIFY followChanged)
+    Q_PROPERTY(QString follow READ follow WRITE setFollow NOTIFY followChanged)
     Q_PROPERTY(int particlesPerParticlePerSecond READ particlesPerParticlePerSecond WRITE setParticlesPerParticlePerSecond NOTIFY particlesPerParticlePerSecondChanged)
 
     Q_PROPERTY(qreal emitterXVariation READ emitterXVariation WRITE setEmitterXVariation NOTIFY emitterXVariationChanged)
@@ -85,11 +85,6 @@ public:
         return m_yAccelVariation;
     }
 
-    ParticleType* follow() const
-    {
-        return m_follow;
-    }
-
     int particlesPerParticlePerSecond() const
     {
         return m_particlesPerParticlePerSecond;
@@ -103,6 +98,11 @@ public:
     qreal emitterYVariation() const
     {
         return m_emitterYVariation;
+    }
+
+    QString follow() const
+    {
+        return m_follow;
     }
 
 signals:
@@ -129,13 +129,13 @@ signals:
 
     void yAccelVariationChanged(qreal arg);
 
-    void followChanged(ParticleType* arg);
-
     void particlesPerParticlePerSecondChanged(int arg);
 
     void emitterXVariationChanged(qreal arg);
 
     void emitterYVariationChanged(qreal arg);
+
+    void followChanged(QString arg);
 
 public slots:
 
@@ -226,9 +226,6 @@ public slots:
         }
     }
 
-    void setFollow(ParticleType* arg);
-
-
     void setParticlesPerParticlePerSecond(int arg)
     {
         if (m_particlesPerParticlePerSecond != arg) {
@@ -252,6 +249,14 @@ public slots:
         }
     }
 
+    void setFollow(QString arg)
+    {
+        if (m_follow != arg) {
+            m_follow = arg;
+            emit followChanged(arg);
+        }
+    }
+
 private slots:
     void recalcParticlesPerSecond();
 
@@ -268,13 +273,14 @@ private:
     qreal m_yAccel;
     qreal m_xAccelVariation;
     qreal m_yAccelVariation;
-    ParticleType* m_follow;
     QSet<ParticleData*> m_pending;
     QVector<qreal> m_lastEmission;
     int m_particlesPerParticlePerSecond;
     qreal m_lastTimeStamp;
     qreal m_emitterXVariation;
     qreal m_emitterYVariation;
+    QString m_follow;
+    int m_followCount;
 };
 
 #endif // FOLLOWEMITTER_H

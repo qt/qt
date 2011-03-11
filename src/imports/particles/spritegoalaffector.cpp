@@ -4,7 +4,7 @@
 #include "spritestate.h"
 #include <QDebug>
 
-SpriteGoalAffector::SpriteGoalAffector(QObject *parent) :
+SpriteGoalAffector::SpriteGoalAffector(QSGItem *parent) :
     ParticleAffector(parent), m_goalIdx(-1), m_jump(false)
 {
 }
@@ -33,12 +33,14 @@ void SpriteGoalAffector::setGoalState(QString arg)
     }
 }
 
-bool SpriteGoalAffector::affect(ParticleData *d, qreal dt)
+bool SpriteGoalAffector::affectParticle(ParticleData *d, qreal dt)
 {
     Q_UNUSED(dt);
+    //TODO: Affect all engines
     SpriteEngine *engine = 0;
-    if(qobject_cast<SpriteParticle*>(d->p))
-        engine = qobject_cast<SpriteParticle*>(d->p)->spriteEngine();
+    foreach(ParticleType *p, m_system->m_groupData[d->group]->types)
+        if(qobject_cast<SpriteParticle*>(p))
+            engine = qobject_cast<SpriteParticle*>(p)->spriteEngine();
     if(!engine)
         return false;
 
@@ -48,5 +50,5 @@ bool SpriteGoalAffector::affect(ParticleData *d, qreal dt)
         engine->setGoal(m_goalIdx, d->particleIndex, m_jump);
         emit affected(QPointF(d->curX(), d->curY()));//###Expensive if unconnected?
     }
-    return true; //###Doesn't affect particle data
+    return false; //Doesn't affect particle data
 }

@@ -9,14 +9,15 @@ class SpeedLimitAffector : public ParticleAffector
 
 
 public:
-    explicit SpeedLimitAffector(QObject *parent = 0);
-    virtual bool affect(ParticleData *d, qreal dt);
+    explicit SpeedLimitAffector(QSGItem *parent = 0);
 
     qreal speedLimit() const
     {
         return m_speedLimit;
     }
 
+protected:
+    virtual bool affectParticle(ParticleData *d, qreal dt);
 signals:
 
     void speedLimitChanged(qreal arg);

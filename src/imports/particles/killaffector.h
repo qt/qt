@@ -6,8 +6,9 @@ class KillAffector : public ParticleAffector
 {
     Q_OBJECT
 public:
-    explicit KillAffector(QObject *parent = 0);
-    virtual bool affect(ParticleData *d, qreal dt);
+    explicit KillAffector(QSGItem *parent = 0);
+protected:
+    virtual bool affectParticle(ParticleData *d, qreal dt);
 signals:
 
 public slots:

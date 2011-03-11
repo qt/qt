@@ -2,7 +2,7 @@
 #include <cmath>
 #include <QDebug>
 
-GravitationalSingularityAffector::GravitationalSingularityAffector(QObject *parent) :
+GravitationalSingularityAffector::GravitationalSingularityAffector(QSGItem *parent) :
     ParticleAffector(parent), m_strength(0.0), m_x(0), m_y(0)
 {
 }
@@ -16,7 +16,7 @@ qreal limit(qreal val){
     }
 }
 
-bool GravitationalSingularityAffector::affect(ParticleData *d, qreal dt)
+bool GravitationalSingularityAffector::affectParticle(ParticleData *d, qreal dt)
 {
     if(!m_strength)
         return false;
@@ -45,7 +45,7 @@ bool GravitationalSingularityAffector::affect(ParticleData *d, qreal dt)
             subaffect(f, dt/parts, false);
 
         //Copy values from f, and turn into 'from start' values
-        qreal t = d->pv.dt - d->pv.t;
+        qreal t = (m_system->m_timeInt/1000.) - d->pv.t;
         qreal sy = limit(f->pv.sy) - t*f->pv.ay;
         qreal y = f->pv.y - t*sy - 0.5 * t*t*f->pv.ay;
         qreal sx = limit(f->pv.sx) - t*f->pv.ax;

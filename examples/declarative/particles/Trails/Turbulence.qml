@@ -15,40 +15,38 @@ Rectangle{
     }
     ParticleSystem{
         id: ps
-        anchors.fill: parent
-        clip: true
-        ColoredParticle{
-            id: smoke
-            image: "content/particle.png"
-            color: "#111111"
-            colorVariation: 0
-            additive: 1
-        }
-        ColoredParticle{
-            id: flame
-            image: "content/particle.png"
-            color: "#ff400f"
-            colorVariation: 0.1
-            additive: 1
-        }
-        affectors: [
-            Turbulence{ 
-                strength: 32;
-            }, Zone{
-                width: root.width
-                height: 232
-                Follow{ emitter: smoke1 }
-            }, Zone{
-                width: root.width
-                height: 248
-                Follow{ emitter: smoke2 }
-            }]
-
     }
+    Turbulence{
+        system: ps
+        height: (parent.height / 2)
+        width: parent.width / 2
+        x: parent. width / 4
+        anchors.fill: parent
+        strength: 16
+        frequency: 64
+        gridSize: 16
+    }
+    ColoredParticle{
+        particles: ["smoke"]
+        system: ps
+        image: "content/particle.png"
+        color: "#111111"
+        colorVariation: 0
+        additive: 1
+    }
+    ColoredParticle{
+        particles: ["flame"]
+        system: ps
+        image: "content/particle.png"
+        color: "#ff400f"
+        colorVariation: 0.1
+        additive: 1
+        }
     TrailEmitter{
         anchors.centerIn: parent
         system: ps
-        particle: flame
+        particle: "flame"
+        
         particlesPerSecond: 120
         particleDuration: 1200
         particleSize: 20
@@ -61,13 +59,15 @@ Rectangle{
     }
     FollowEmitter{
         id: smoke1
-        anchors.centerIn: parent
-        anchors.verticalCenterOffset: - 10
+        width: root.width
+        height: 232
         system: ps
-        particle: smoke
-        follow: flame
+        particle: "smoke"
+        follow: "flame"
+
         particlesPerParticlePerSecond: 4
         particleDuration: 2400
+        particleDurationVariation: 400
         particleSize: 16
         particleEndSize: 8
         particleSizeVariation: 8
@@ -78,11 +78,12 @@ Rectangle{
     }
     FollowEmitter{
         id: smoke2
-        anchors.centerIn: parent
-        anchors.verticalCenterOffset: - 10
+        width: root.width
+        height: 232
         system: ps
-        particle: smoke
-        follow: flame
+        particle: "smoke"
+        follow: "flame"
+        
         particlesPerParticlePerSecond: 1
         particleDuration: 2400
         particleSize: 36

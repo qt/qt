@@ -1,7 +1,7 @@
 #include "gravityaffector.h"
 #include <cmath>
 const qreal CONV = 0.017453292520444443;
-GravityAffector::GravityAffector(QObject *parent) :
+GravityAffector::GravityAffector(QSGItem *parent) :
     ParticleAffector(parent), m_acceleration(-10), m_angle(90), m_xAcc(0), m_yAcc(0)
 {
     connect(this, SIGNAL(accelerationChanged(qreal)),
@@ -18,7 +18,7 @@ void GravityAffector::recalc()
     m_yAcc = m_acceleration * sin(theta);
 }
 
-bool GravityAffector::affect(ParticleData *d, qreal dt)
+bool GravityAffector::affectParticle(ParticleData *d, qreal dt)
 {
     Q_UNUSED(dt);
     bool changed = false;

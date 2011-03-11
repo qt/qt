@@ -8,10 +8,8 @@ class DriftAffector : public ParticleAffector
     Q_PROPERTY(qreal xDrift READ xDrift WRITE setXDrift NOTIFY xDriftChanged)
     Q_PROPERTY(qreal yDrift READ yDrift WRITE setYDrift NOTIFY yDriftChanged)
 public:
-    explicit DriftAffector(QObject *parent = 0);
+    explicit DriftAffector(QSGItem *parent = 0);
     ~DriftAffector();
-    virtual bool affect(ParticleData *d, qreal dt);
-    virtual void reset(int idx);
     qreal yDrift() const
     {
         return m_yDrift;
@@ -21,6 +19,8 @@ public:
     {
         return m_xDrift;
     }
+protected:
+    virtual bool affectParticle(ParticleData *d, qreal dt);
 
 signals:
 

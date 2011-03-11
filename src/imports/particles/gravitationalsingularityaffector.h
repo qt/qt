@@ -9,9 +9,7 @@ class GravitationalSingularityAffector : public ParticleAffector
     Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
     Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)
 public:
-    explicit GravitationalSingularityAffector(QObject *parent = 0);
-    virtual bool affect(ParticleData *d, qreal dt);
-    void subaffect(ParticleData *d, qreal dt, bool first);
+    explicit GravitationalSingularityAffector(QSGItem *parent = 0);
 
     qreal strength() const
     {
@@ -27,7 +25,9 @@ public:
     {
         return m_y;
     }
-
+protected:
+    virtual bool affectParticle(ParticleData *d, qreal dt);
+    void subaffect(ParticleData *d, qreal dt, bool first);
 signals:
 
     void strengthChanged(qreal arg);

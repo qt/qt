@@ -8,6 +8,9 @@ class ParticleType : public QSGItem
 {
     Q_OBJECT
     Q_PROPERTY(ParticleSystem* system READ system WRITE setSystem NOTIFY systemChanged)
+    Q_PROPERTY(QStringList particles READ particles WRITE setParticles NOTIFY particlesChanged)
+
+
 public:
     explicit ParticleType(QSGItem *parent = 0);
     virtual void load(ParticleData*);
@@ -19,25 +22,41 @@ public:
         return m_system;
     }
 
+
+    QStringList particles() const
+    {
+        return m_particles;
+    }
+
+    int particleTypeIndex(ParticleData*);
 signals:
     void countChanged();
     void systemChanged(ParticleSystem* arg);
 
+    void particlesChanged(QStringList arg);
+
 public slots:
-void setSystem(ParticleSystem* arg)
+void setSystem(ParticleSystem* arg);
+
+void setParticles(QStringList arg)
 {
-    if (m_system != arg) {
-        m_system = arg;
-        m_system->registerParticleType(this);
-        emit systemChanged(arg);
+    if (m_particles != arg) {
+        m_particles = arg;
+        emit particlesChanged(arg);
     }
 }
-
+private slots:
+    void calcSystemOffset();
 protected:
     ParticleSystem* m_system;
     friend class ParticleSystem;
     int m_count;
     bool m_pleaseReset;
+    QStringList m_particles;
+    QHash<int,int> m_particleStarts;
+    int m_lastStart;
+    QPointF m_systemOffset;
+private:
 };
 
 #endif // PARTICLE_H

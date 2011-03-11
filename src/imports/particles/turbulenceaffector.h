@@ -3,19 +3,18 @@
 #include "particleaffector.h"
 #include <QDeclarativeListProperty>
 
-class Particle;
+class ParticleType;
 
 class TurbulenceAffector : public ParticleAffector
 {
     Q_OBJECT
     Q_PROPERTY(int strength READ strength WRITE setStrength NOTIFY strengthChanged)
     Q_PROPERTY(int frequency READ frequency WRITE setFrequency NOTIFY frequencyChanged)
-    Q_PROPERTY(int size READ size WRITE setSize NOTIFY sizeChanged)
+    Q_PROPERTY(int gridSize READ size WRITE setSize NOTIFY sizeChanged)
 public:
-    explicit TurbulenceAffector(QObject *parent = 0);
+    explicit TurbulenceAffector(QSGItem *parent = 0);
     ~TurbulenceAffector();
-    virtual bool affect(ParticleData *d, qreal dt);
-    virtual void reset(int systemIdx);
+    virtual void affectSystem(qreal dt);
 
     int strength() const
     {
@@ -61,10 +60,8 @@ void setFrequency(int arg)
 void setSize(int arg);
 
 private:
-    void ensureInit(ParticleData* d);
-    void tickAdvance(ParticleData* d);
+    void ensureInit();
     void mapUpdate();
-    ParticleSystem* m_system;
     int m_strength;
     qreal m_lastT;
     int m_frequency;
@@ -72,6 +69,7 @@ private:
     QPointF** m_field;
     QPointF m_spacing;
     qreal m_magSum;
+    bool m_inited;
 };
 
 #endif // TURBULENCEAFFECTOR_H

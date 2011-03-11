@@ -2,11 +2,13 @@
 #include "particle.h"
 #include <cmath>
 #include <cstdlib>
+#include <QDebug>
 
-TurbulenceAffector::TurbulenceAffector(QObject *parent) :
+TurbulenceAffector::TurbulenceAffector(QSGItem *parent) :
     ParticleAffector(parent),
-    m_system(0), m_strength(10), m_lastT(0), m_frequency(1), m_gridSize(10), m_field(0)
+    m_strength(10), m_lastT(0), m_frequency(1), m_gridSize(10), m_field(0), m_inited(false)
 {
+    //TODO: Update grid on size change
 }
 
 TurbulenceAffector::~TurbulenceAffector()
@@ -35,25 +37,16 @@ void TurbulenceAffector::setSize(int arg)
     }
 }
 
-void TurbulenceAffector::ensureInit(ParticleData* d)
+void TurbulenceAffector::ensureInit()
 {
-    if(m_system == d->p->system())
+    if(m_inited)
         return;
-    m_system = d->p->system();
+    m_inited = true;
     m_field = (QPointF**)malloc(m_gridSize * sizeof(QPointF*));
     for(int i=0; i<m_gridSize; i++)
         m_field[i]  = (QPointF*)malloc(m_gridSize * sizeof(QPointF));
-    m_spacing = QPointF(m_system->width()/m_gridSize, m_system->height()/m_gridSize);
-    m_magSum = magnitude(m_spacing.x(), m_spacing.y())*2;//TODO: recalc these when system size changes
-}
-
-void TurbulenceAffector::tickAdvance(ParticleData *d)
-{
-    if(d->pv.dt == m_lastT)
-        return;
-    m_lastT = d->pv.dt;
-    for(int i=0; i<m_frequency; i++)
-        mapUpdate();
+    m_spacing = QPointF(width()/m_gridSize, height()/m_gridSize);
+    m_magSum = magnitude(m_spacing.x(), m_spacing.y())*2;
 }
 
 void TurbulenceAffector::mapUpdate()
@@ -76,34 +69,43 @@ void TurbulenceAffector::mapUpdate()
 }
 
 
-bool TurbulenceAffector::affect(ParticleData *d, qreal dt)
+void TurbulenceAffector::affectSystem(qreal dt)
 {
-    ensureInit(d);
-    tickAdvance(d);
-    qreal fx = 0.0;
-    qreal fy = 0.0;
-    QPointF pos = QPointF(d->curX(), d->curY());
-    QPointF nodePos = QPointF(pos.x() / m_spacing.x(), pos.y() / m_spacing.y());
-    QSet<QPair<int, int> > nodes;
-    nodes << qMakePair((int)ceil(nodePos.x()), (int)ceil(nodePos.y()));
-    nodes << qMakePair((int)ceil(nodePos.x()), (int)floor(nodePos.y()));
-    nodes << qMakePair((int)floor(nodePos.x()), (int)ceil(nodePos.y()));
-    nodes << qMakePair((int)floor(nodePos.x()), (int)floor(nodePos.y()));
-    typedef QPair<int, int> intPair;
-    foreach(const intPair &p, nodes){
-        if(!QRect(0,0,m_gridSize-1,m_gridSize-1).contains(QPoint(p.first, p.second)))
-            continue;
-        qreal dist = magnitude(pos.x() - p.first*m_spacing.x(), pos.y() - p.second*m_spacing.y());
-        fx += m_field[p.first][p.second].x() * ((m_magSum - dist)/m_magSum);//Proportionally weight nodes
-        fy += m_field[p.first][p.second].y() * ((m_magSum - dist)/m_magSum);
+    if(!m_system || !m_active)
+        return;
+    ensureInit();
+    qreal period = 1.0/m_frequency;
+    qreal time = m_system->m_timeInt / 1000.0;
+    while( m_lastT < time ){
+        mapUpdate();
+        m_lastT += period;
     }
-    if(!fx && !fy)
-        return false;
-    d->setInstantaneousSX(d->curSX()+ fx * dt);
-    d->setInstantaneousSY(d->curSY()+ fy * dt);
-    return true;
+
+    foreach(ParticleData *d, m_system->data){
+        if(!d || !activeGroup(d->group))
+            return;
+        qreal fx = 0.0;
+        qreal fy = 0.0;
+        QPointF pos = QPointF(d->curX() - x(), d->curY() - y());//TODO: Offset
+        QPointF nodePos = QPointF(pos.x() / m_spacing.x(), pos.y() / m_spacing.y());
+        QSet<QPair<int, int> > nodes;
+        nodes << qMakePair((int)ceil(nodePos.x()), (int)ceil(nodePos.y()));
+        nodes << qMakePair((int)ceil(nodePos.x()), (int)floor(nodePos.y()));
+        nodes << qMakePair((int)floor(nodePos.x()), (int)ceil(nodePos.y()));
+        nodes << qMakePair((int)floor(nodePos.x()), (int)floor(nodePos.y()));
+        typedef QPair<int, int> intPair;
+        foreach(const intPair &p, nodes){
+            if(!QRect(0,0,m_gridSize-1,m_gridSize-1).contains(QPoint(p.first, p.second)))
+                continue;
+            qreal dist = magnitude(pos.x() - p.first*m_spacing.x(), pos.y() - p.second*m_spacing.y());
+            fx += m_field[p.first][p.second].x() * ((m_magSum - dist)/m_magSum);//Proportionally weight nodes
+            fy += m_field[p.first][p.second].y() * ((m_magSum - dist)/m_magSum);
+        }
+        if(fx || fy){
+            d->setInstantaneousSX(d->curSX()+ fx * dt);
+            d->setInstantaneousSY(d->curSY()+ fy * dt);
+            d->needsReload = true;
+        }
+    }
 }
 
-void TurbulenceAffector::reset(int systemIdx)
-{
-}

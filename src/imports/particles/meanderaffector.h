@@ -9,8 +9,7 @@ class MeanderAffector : public ParticleAffector
     Q_PROPERTY(qreal xDrift READ xDrift WRITE setXDrift NOTIFY xDriftChanged)
     Q_PROPERTY(qreal yDrift READ yDrift WRITE setYDrift NOTIFY yDriftChanged)
 public:
-    explicit MeanderAffector(QObject *parent = 0);
-    virtual bool affect(ParticleData *d, qreal dt);
+    explicit MeanderAffector(QSGItem *parent = 0);
 
     qreal xDrift() const
     {
@@ -21,7 +20,8 @@ public:
     {
         return m_yDrift;
     }
-
+protected:
+    virtual bool affectParticle(ParticleData *d, qreal dt);
 signals:
 
     void xDriftChanged(qreal arg);

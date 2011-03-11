@@ -42,6 +42,7 @@ private:
     ParticleSystem* m_system;
     QVector<QPointF> m_lastPos;
     qreal m_strength;
+    bool m_inited;
 };
 
 #endif // SWARMAFFECTOR_H

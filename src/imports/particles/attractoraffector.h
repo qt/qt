@@ -11,8 +11,7 @@ class AttractorAffector : public ParticleAffector
     Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
     Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)
 public:
-    explicit AttractorAffector(QObject *parent = 0);
-    virtual bool affect(ParticleData *d, qreal dt);
+    explicit AttractorAffector(QSGItem *parent = 0);
 
     qreal strength() const
     {
@@ -61,7 +60,8 @@ void setY(qreal arg)
         emit yChanged(arg);
     }
 }
-
+protected:
+    virtual bool affectParticle(ParticleData *d, qreal dt);
 private:
 qreal m_strength;
 qreal m_x;

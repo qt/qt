@@ -8,8 +8,7 @@ class GravityAffector : public ParticleAffector
     Q_PROPERTY(qreal acceleration READ acceleration WRITE setAcceleration NOTIFY accelerationChanged)
     Q_PROPERTY(qreal angle READ angle WRITE setAngle NOTIFY angleChanged)
 public:
-    explicit GravityAffector(QObject *parent = 0);
-    virtual bool affect(ParticleData *d, qreal dt);
+    explicit GravityAffector(QSGItem *parent = 0);
     qreal acceleration() const
     {
         return m_acceleration;
@@ -19,7 +18,8 @@ public:
     {
         return m_angle;
     }
-
+protected:
+    virtual bool affectParticle(ParticleData *d, qreal dt);
 signals:
 
     void accelerationChanged(qreal arg);

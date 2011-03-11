@@ -27,14 +27,12 @@ public:
     QSGTextureRef texture;
 
     qreal timestamp;
-    qreal timelength;
     int framecount;
     int animcount;
 };
 
 SpriteParticlesMaterial::SpriteParticlesMaterial()
     : timestamp(0)
-    , timelength(1)
     , framecount(1)
     , animcount(1)
 {
@@ -83,7 +81,6 @@ public:
 
         m_program.setUniformValue(m_opacity_id, (float) renderer->renderOpacity());
         m_program.setUniformValue(m_timestamp_id, (float) m->timestamp);
-        m_program.setUniformValue(m_timelength_id, (float) m->timelength);
         m_program.setUniformValue(m_framecount_id, (float) m->framecount);
         m_program.setUniformValue(m_animcount_id, (float) m->animcount);
 
@@ -95,7 +92,6 @@ public:
         m_matrix_id = m_program.uniformLocation("matrix");
         m_opacity_id = m_program.uniformLocation("opacity");
         m_timestamp_id = m_program.uniformLocation("timestamp");
-        m_timelength_id = m_program.uniformLocation("timelength");
         m_framecount_id = m_program.uniformLocation("framecount");
         m_animcount_id = m_program.uniformLocation("animcount");
     }
@@ -120,7 +116,6 @@ public:
     int m_matrix_id;
     int m_opacity_id;
     int m_timestamp_id;
-    int m_timelength_id;
     int m_framecount_id;
     int m_animcount_id;
 
@@ -142,9 +137,9 @@ struct SpriteParticleVertex {
     float tx;
     float ty;
     float t;
+    float lifeSpan;
     float size;
     float endSize;
-    float dt;
     float sx;
     float sy;
     float ax;
@@ -169,8 +164,7 @@ SpriteParticle::SpriteParticle(QSGItem *parent) :
     , m_spriteEngine(0)
 {
     setFlag(ItemHasContents);
-}
-
+ }
 QDeclarativeListProperty<SpriteState> SpriteParticle::sprites()
 {
     return QDeclarativeListProperty<SpriteState>(this, &m_sprites, spriteAppend, spriteCount, spriteAt, spriteClear);
@@ -255,9 +249,9 @@ GeometryNode* SpriteParticle::buildParticleNode()
             vertices[i].x = 0;
             vertices[i].y = 0;
             vertices[i].t = -1;
+            vertices[i].lifeSpan = -1;
             vertices[i].size = 0;
             vertices[i].endSize = 0;
-            vertices[i].dt = -1;
             vertices[i].sx = 0;
             vertices[i].sy = 0;
             vertices[i].ax = 0;
@@ -304,14 +298,14 @@ GeometryNode* SpriteParticle::buildParticleNode()
     return m_node;
 }
 
-void vertexCopy(SpriteParticleVertex &b,const ParticleVertex& a)
+void SpriteParticle::vertexCopy(SpriteParticleVertex &b,const ParticleVertex& a)
 {
-    b.x = a.x;
-    b.y = a.y;
+    b.x = a.x + m_systemOffset.x();
+    b.y = a.y + m_systemOffset.y();
     b.t = a.t;
+    b.lifeSpan = a.lifeSpan;
     b.size = a.size;
     b.endSize = a.endSize;
-    b.dt = a.dt;
     b.sx = a.sx;
     b.sy = a.sy;
     b.ax = a.ax;
@@ -324,7 +318,8 @@ void SpriteParticle::load(ParticleData *d)
         return;
 
     SpriteParticleVertices *particles = (SpriteParticleVertices *) m_node->geometry()->vertexData();
-    SpriteParticleVertices &p = particles[d->particleIndex];
+    int pos = particleTypeIndex(d);
+    SpriteParticleVertices &p = particles[pos];
 
     // Initial Sprite State
     p.v1.animT = p.v2.animT = p.v3.animT = p.v4.animT = p.v1.t;
@@ -332,14 +327,13 @@ void SpriteParticle::load(ParticleData *d)
     SpriteState* state = m_spriteEngine->state(0);
     p.v1.frameCount = p.v2.frameCount = p.v3.frameCount = p.v4.frameCount = state->frames();
     p.v1.frameDuration = p.v2.frameDuration = p.v3.frameDuration = p.v4.frameDuration = state->duration();
-    m_spriteEngine->startSprite(d->particleIndex);
+    m_spriteEngine->startSprite(pos);
 
     vertexCopy(p.v1, d->pv);
     vertexCopy(p.v2, d->pv);
     vertexCopy(p.v3, d->pv);
     vertexCopy(p.v4, d->pv);
 
-    m_particle_duration = d->e->particleDuration();
 }
 
 void SpriteParticle::reload(ParticleData *d)
@@ -348,7 +342,7 @@ void SpriteParticle::reload(ParticleData *d)
         return;
 
     SpriteParticleVertices *particles = (SpriteParticleVertices *) m_node->geometry()->vertexData();
-    int pos = d->particleIndex;
+    int pos = particleTypeIndex(d);
     SpriteParticleVertices &p = particles[pos];
 
     vertexCopy(p.v1, d->pv);
@@ -390,7 +384,6 @@ void SpriteParticle::prepareNextFrame()
 
 
     qreal time =  timeStamp / 1000.;
-    m_material->timelength = m_particle_duration / 1000.;
     m_material->timestamp = time;
     m_material->animcount = m_spriteEngine->stateCount();
 

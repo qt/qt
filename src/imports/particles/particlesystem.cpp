@@ -4,9 +4,10 @@
 #include "particleaffector.h"
 #include "particle.h"
 #include <cmath>
+#include <QDebug>
 
 ParticleData::ParticleData()
-    : p(0)
+    : group(0)
     , e(0)
     , particleIndex(0)
     , systemIndex(0)
@@ -25,6 +26,7 @@ ParticleData::ParticleData()
 ParticleSystem::ParticleSystem(QSGItem *parent) :
     QSGItem(parent), m_running(true) , m_startTime(0)
 {
+    m_groupIds = QHash<QString, int>();
 }
 
 void ParticleSystem::registerParticleType(ParticleType* p)
@@ -36,13 +38,17 @@ void ParticleSystem::registerParticleType(ParticleType* p)
 void ParticleSystem::registerParticleEmitter(ParticleEmitter* e)
 {
     m_emitters << e;//###How to get them out?
+    connect(e, SIGNAL(particlesPerSecondChanged(int)),
+            this, SLOT(countChanged()));
+    connect(e, SIGNAL(particleDurationChanged(int)),
+            this, SLOT(countChanged()));
     reset();
 }
 
 void ParticleSystem::registerParticleAffector(ParticleAffector* a)
 {
     m_affectors << a;
-    reset();//TODO: Slim down the huge batch of resets at the start
+    //reset();//TODO: Slim down the huge batch of resets at the start
 }
 
 void ParticleSystem::countChanged()
@@ -68,30 +74,54 @@ void ParticleSystem::componentComplete()
 void ParticleSystem::initializeSystem()
 {
     m_particle_count = 0;//TODO: Only when changed?
-    qDeleteAll(m_emitterData);
-    m_emitterData.clear();
+
+    for(QHash<int, GroupData*>::iterator iter = m_groupData.begin(); iter != m_groupData.end(); iter++)
+        delete (*iter);
+    m_groupData.clear();
+    m_groupIds.clear();
+
+    GroupData* gd = new GroupData;//Default group
+    gd->size = 0;
+    gd->start = -1;
+    gd->nextIdx = 0;
+    m_groupData.insert(0,gd);
+    m_groupIds.insert("",0);
+    m_nextGroupId = 1;
+
     if(!m_emitters.count() || !m_particles.count())
         return;
 
     foreach(ParticleEmitter* e, m_emitters){
-        if(!e->particle())
-            e->setParticle(m_particles[0]);
-        m_emitterData << new EmitterData;
-        m_emitterData.last()->size = ceil(e->particlesPerSecond()*(e->particleDuration()/1000.0));
-        m_emitterData.last()->start = m_particle_count;
-        m_emitterData.last()->nextIdx = 0;
-        m_particle_count += m_emitterData.last()->size;
-    }//TODO: Particle based, not emitter based, blocks?
-    data.resize(m_particle_count);
+        if(!m_groupIds.contains(e->particle())
+                || (!e->particle().isEmpty() && !m_groupIds[e->particle()])){//or it was accidentally inserted by a failed lookup earlier
+            GroupData* gd = new GroupData;
+            gd->size = 0;
+            gd->start = -1;
+            gd->nextIdx = 0;
+            int id = m_nextGroupId++;
+            m_groupIds.insert(e->particle(), id);
+            m_groupData.insert(id, gd);
+        }
+        m_groupData[m_groupIds[e->particle()]]->size += ceil(e->particlesPerSecond()*((e->particleDuration()+e->particleDurationVariation())/1000.0));
+    }
+
+    for(QHash<int, GroupData*>::iterator iter = m_groupData.begin(); iter != m_groupData.end(); iter++){
+        (*iter)->start = m_particle_count;
+        m_particle_count += (*iter)->size;
+    }
+        data.resize(m_particle_count);
     if(m_particle_count > 16000)
         qWarning() << "Particle system contains a vast number of particles (>16000). Expect poor performance";
 
     foreach(ParticleType* particle, m_particles){
         int particleCount = 0;
-        for(int i=0; i<m_emitters.count(); i++){
-            if(m_emitters[i]->particle() == particle){
-                m_emitterData[i]->particleOffsets.insert(particle, particleCount);
-                particleCount += m_emitterData[i]->size;
+        if(particle->particles().isEmpty()){//Uses default particle
+            particleCount += m_groupData[0]->size;
+            m_groupData[0]->types << particle;
+        }else{
+            foreach(const QString &group, particle->particles()){
+                particleCount += m_groupData[m_groupIds[group]]->size;
+                m_groupData[m_groupIds[group]]->types << particle;
             }
         }
         particle->setCount(particleCount);
@@ -111,15 +141,13 @@ void ParticleSystem::reset()
         p->update();
 }
 
-ParticleData* ParticleSystem::newDatum(ParticleEmitter* e, ParticleType* p)
+ParticleData* ParticleSystem::newDatum(int groupId)
 {
-    //TODO: Keep datums within one emitter? And within one particle.
-    ParticleData* ret;
-    int eIdx = m_emitters.indexOf(e);
-    int nextIdx = m_emitterData[eIdx]->start + m_emitterData[eIdx]->nextIdx++;
-    if( m_emitterData[eIdx]->nextIdx >= m_emitterData[eIdx]->size)
-        m_emitterData[eIdx]->nextIdx = 0;
+    int nextIdx = m_groupData[groupId]->start + m_groupData[groupId]->nextIdx++;
+    if( m_groupData[groupId]->nextIdx >= m_groupData[groupId]->size)
+        m_groupData[groupId]->nextIdx = 0;
 
+    ParticleData* ret;
     if(data[nextIdx]){//Recycle, it's faster. //###Reset?
         ret = data[nextIdx];
     }else{
@@ -127,31 +155,27 @@ ParticleData* ParticleSystem::newDatum(ParticleEmitter* e, ParticleType* p)
         data[nextIdx] = ret;
     }
 
+    ret->system = this;
     ret->systemIndex = nextIdx;
-    ret->particleIndex = nextIdx - m_emitterData[eIdx]->start + m_emitterData[eIdx]->particleOffsets[p];
-    ret->e = e;
-    ret->p = p;
+    ret->particleIndex = nextIdx - m_groupData[groupId]->start;
+    ret->group = groupId;
     return ret;
 }
-//TODO: Merge with newDatum
+
 void ParticleSystem::emitParticle(ParticleData* pd)
 {// called from prepareNextFrame()->emitWindow - enforce?
-    if(!pd->p){
-        if(m_particles.isEmpty())
-            return;
-        pd->p = m_particles.first();
-    }
-
     //Account for relative emitter position
     QPointF offset = this->mapFromItem(pd->e, QPointF(0, 0));
-    if(offset != QPointF(0,0)){
+    if(!offset.isNull()){
         pd->pv.x += offset.x();
         pd->pv.y += offset.y();
     }
 
     foreach(ParticleAffector *a, m_affectors)
-        a->reset(pd->systemIndex);
-    pd->p->load(pd);
+        if(a->m_needsReset)
+            a->reset(pd->systemIndex);
+    foreach(ParticleType* p, m_groupData[pd->group]->types)
+        p->load(pd);
 }
 
 
@@ -167,27 +191,20 @@ uint ParticleSystem::systemSync(ParticleType* p)
         m_syncList.clear();
 
         //### Elapsed time never shrinks - may cause problems if left emitting for weeks at a time.
+        qreal dt = m_timeInt / 1000.;
         m_timeInt = m_timestamp.elapsed() + m_startTime;
         qreal time =  m_timeInt / 1000.;
+        dt = time - dt;
         foreach(ParticleEmitter* emitter, m_emitters)
             emitter->emitWindow(m_timeInt);
-        if(m_affectors.count()){//Optimizes the common no-affectors case//TODO: Forced per-particle is restrictive. Give it all
-            for(QVector<ParticleData*>::iterator iter=data.begin(); iter != data.end(); iter++){
-                if(!(*iter))
-                    continue;
-                ParticleVertex* p = &((*iter)->pv);
-                qreal dt = time - p->dt;
-                p->dt = time;
-                bool modified = false;
-                foreach(ParticleAffector* a, m_affectors){
-                    if (a->affect(*iter, dt)){
-                        modified = true;
-                    }
-                }
-                if(modified)
-                    (*iter)->p->reload(*iter);
-            }
-        }//TODO:Move particle positions along with system element moves?
+        foreach(ParticleAffector* a, m_affectors)
+            a->affectSystem(dt);
+        //###Which is better - batched reloads (here, if needsReload) or no foreach loop (reloads in affectors)?
+        if(m_affectors.count())//only ones who can change it currently
+            foreach(ParticleData* d, data)
+                if(d && d->needsReload)
+                    foreach(ParticleType* p, m_groupData[d->group]->types)
+                        p->reload(d);
     }
     m_syncList << p;
     return m_timeInt;
@@ -196,7 +213,7 @@ uint ParticleSystem::systemSync(ParticleType* p)
 //sets the x accleration without affecting the instantaneous x velocity or position
 void ParticleData::setInstantaneousAX(qreal ax)
 {
-    qreal t = pv.dt - pv.t;
+    qreal t = (system->m_timeInt / 1000.0) - pv.t;
     qreal sx = (pv.sx + t*pv.ax) - t*ax;
     qreal ex = pv.x + pv.sx * t + 0.5 * pv.ax * t * t;
     qreal x = ex - t*sx - 0.5 * t*t*ax;
@@ -209,7 +226,7 @@ void ParticleData::setInstantaneousAX(qreal ax)
 //sets the x velocity without affecting the instantaneous x postion
 void ParticleData::setInstantaneousSX(qreal vx)
 {
-    qreal t = pv.dt - pv.t;
+    qreal t = (system->m_timeInt / 1000.0) - pv.t;
     qreal sx = vx - t*pv.ax;
     qreal ex = pv.x + pv.sx * t + 0.5 * pv.ax * t * t;
     qreal x = ex - t*sx - 0.5 * t*t*pv.ax;
@@ -221,14 +238,14 @@ void ParticleData::setInstantaneousSX(qreal vx)
 //sets the instantaneous x postion
 void ParticleData::setInstantaneousX(qreal x)
 {
-    qreal t = pv.dt - pv.t;
+    qreal t = (system->m_timeInt / 1000.0) - pv.t;
     pv.x = x - t*pv.sx - 0.5 * t*t*pv.ax;
 }
 
 //sets the y accleration without affecting the instantaneous y velocity or position
 void ParticleData::setInstantaneousAY(qreal ay)
 {
-    qreal t = pv.dt - pv.t;
+    qreal t = (system->m_timeInt / 1000.0) - pv.t;
     qreal sy = (pv.sy + t*pv.ay) - t*ay;
     qreal ey = pv.y + pv.sy * t + 0.5 * pv.ay * t * t;
     qreal y = ey - t*sy - 0.5 * t*t*ay;
@@ -241,7 +258,7 @@ void ParticleData::setInstantaneousAY(qreal ay)
 //sets the y velocity without affecting the instantaneous y position
 void ParticleData::setInstantaneousSY(qreal vy)
 {
-    qreal t = pv.dt - pv.t;
+    qreal t = (system->m_timeInt / 1000.0) - pv.t;
     qreal sy = vy - t*pv.ay;
     qreal ey = pv.y + pv.sy * t + 0.5 * pv.ay * t * t;
     qreal y = ey - t*sy - 0.5 * t*t*pv.ay;
@@ -253,30 +270,39 @@ void ParticleData::setInstantaneousSY(qreal vy)
 //sets the instantaneous Y position
 void ParticleData::setInstantaneousY(qreal y)
 {
-    qreal t = pv.dt - pv.t;
+    qreal t = (system->m_timeInt / 1000.0) - pv.t;
     pv.y = y - t*pv.sy - 0.5 * t*t*pv.ay;
 }
 
 qreal ParticleData::curX() const
 {
-    qreal t = pv.dt - pv.t;
+    qreal t = (system->m_timeInt / 1000.0) - pv.t;
     return pv.x + pv.sx * t + 0.5 * pv.ax * t * t;
 }
 
 qreal ParticleData::curSX() const
 {
-    qreal t = pv.dt - pv.t;
+    qreal t = (system->m_timeInt / 1000.0) - pv.t;
     return pv.sx + t*pv.ax;
 }
 
 qreal ParticleData::curY() const
 {
-    qreal t = pv.dt - pv.t;
+    qreal t = (system->m_timeInt / 1000.0) - pv.t;
     return pv.y + pv.sy * t + 0.5 * pv.ay * t * t;
 }
 
 qreal ParticleData::curSY() const
 {
-    qreal t = pv.dt - pv.t;
+    qreal t = (system->m_timeInt / 1000.0) - pv.t;
     return pv.sy + t*pv.ay;
+}
+
+void ParticleData::debugDump()
+{
+    qDebug() << "Particle" << group
+             << "Pos: " << pv.x << "," << pv.y
+             << "Vel: " << pv.sx << "," << pv.sy
+             << "Acc: " << pv.ax << "," << pv.ay
+             << "Time: " << pv.t << "," << (system->m_timeInt / 1000.0);
 }

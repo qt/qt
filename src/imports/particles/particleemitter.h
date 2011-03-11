@@ -10,17 +10,17 @@ class ParticleEmitter : public QSGItem
     Q_OBJECT
     //###currently goes in emitters OR sets system. Pick one?
     Q_PROPERTY(ParticleSystem* system READ system WRITE setSystem NOTIFY systemChanged)
-    Q_PROPERTY(ParticleType* particle READ particle WRITE setParticle NOTIFY particleChanged)
+    Q_PROPERTY(QString particle READ particle WRITE setParticle NOTIFY particleChanged)
     Q_PROPERTY(bool emitting READ emitting WRITE setEmitting NOTIFY emittingChanged)
 
     Q_PROPERTY(int particlesPerSecond READ particlesPerSecond WRITE setParticlesPerSecond NOTIFY particlesPerSecondChanged)
     Q_PROPERTY(int particleDuration READ particleDuration WRITE setParticleDuration NOTIFY particleDurationChanged)
+    Q_PROPERTY(int particleDurationVariation READ particleDurationVariation WRITE setParticleDurationVariation NOTIFY particleDurationVariationChanged)
+
 
 public:
     explicit ParticleEmitter(QSGItem *parent = 0);
     virtual void emitWindow(int timeStamp);
-
-    ParticleType* particle() {return m_particle;}
 
     bool emitting() const
     {
@@ -42,13 +42,26 @@ public:
         return m_system;
     }
 
+    QString particle() const
+    {
+        return m_particle;
+    }
+
+    int particleDurationVariation() const
+    {
+        return m_particleDurationVariation;
+    }
+
 signals:
     void particlesPerSecondChanged(int);
     void particleDurationChanged(int);
     void emittingChanged(bool);
 
-    void particleChanged(ParticleType* arg);
     void systemChanged(ParticleSystem* arg);
+
+    void particleChanged(QString arg);
+
+    void particleDurationVariationChanged(int arg);
 
 public slots:
 
@@ -70,29 +83,39 @@ public slots:
         }
     }
 
-    void setParticle(ParticleType* arg)
-    {
-        if (m_particle != arg) {
-            m_particle = arg;
-            emit particleChanged(arg);
-        }
-    }
-
-    void setSystem(ParticleSystem* arg)
+       void setSystem(ParticleSystem* arg)
     {
         if (m_system != arg) {
             m_system = arg;
             m_system->registerParticleEmitter(this);
             emit systemChanged(arg);
         }
-    }
+       }
+
+       void setParticle(QString arg)
+       {
+           if (m_particle != arg) {
+               m_particle = arg;
+               emit particleChanged(arg);
+           }
+       }
+
+       void setParticleDurationVariation(int arg)
+       {
+           if (m_particleDurationVariation != arg) {
+               m_particleDurationVariation = arg;
+               emit particleDurationVariationChanged(arg);
+           }
+       }
 
 protected:
-    ParticleType* m_particle;
     ParticleSystem* m_system;
     int m_particlesPerSecond;
     int m_particleDuration;
+    int m_particleDurationVariation;
     bool m_emitting;
+    QString m_particle;
+private:
 };
 
 #endif // PARTICLEEMITTER_H

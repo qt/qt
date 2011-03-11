@@ -22,9 +22,8 @@ class WanderAffector : public ParticleAffector
     Q_PROPERTY(qreal pace READ pace WRITE setPace NOTIFY paceChanged)
 
 public:
-    explicit WanderAffector(QObject *parent = 0);
+    explicit WanderAffector(QSGItem *parent = 0);
     ~WanderAffector();
-    virtual bool affect(ParticleData *d, qreal dt);
     virtual void reset(int systemIdx);
 
     qreal xVariance() const
@@ -41,7 +40,8 @@ public:
     {
         return m_pace;
     }
-
+protected:
+    virtual bool affectParticle(ParticleData *d, qreal dt);
 signals:
 
     void xVarianceChanged(qreal arg);

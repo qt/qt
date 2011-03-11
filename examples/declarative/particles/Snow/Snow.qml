@@ -5,23 +5,20 @@ Rectangle{
     width: 360
     height: 540
     id: page
-        TrailEmitter{
-            particle: sp
-            system: particles
-            particlesPerSecond: 20
-            particleDuration: 7000
-            emitting: true
-            xSpeed: 0
-            ySpeed: 80
-            xSpeedVariation: 20
-            ySpeedVariation: 40
-            xAccel: 0
-            yAccel: 4
-            particleSize: 20
-            particleSizeVariation: 10
-            anchors.fill: parent
-            anchors.bottomMargin: 200
-        }
+    TrailEmitter{
+        particle: sp
+        system: particles
+        particlesPerSecond: 20
+        particleDuration: 7000
+        emitting: true
+        ySpeed: 80
+        ySpeedVariation: 40
+        yAccel: 4
+        particleSize: 20
+        particleSizeVariation: 10
+        anchors.fill: parent
+        anchors.bottomMargin: 200
+    }
     ParticleSystem{
         id: particles
         anchors.fill: parent

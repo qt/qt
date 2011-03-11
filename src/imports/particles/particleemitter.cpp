@@ -2,9 +2,9 @@
 
 ParticleEmitter::ParticleEmitter(QSGItem *parent) :
     QSGItem(parent)
-  , m_particle(0)
   , m_particlesPerSecond(10)
   , m_particleDuration(1000)
+  , m_particleDurationVariation(0)
   , m_emitting(true)
 
 {

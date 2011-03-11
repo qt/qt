@@ -2,12 +2,12 @@
 #include <cmath>
 #include <QDebug>
 
-SpeedLimitAffector::SpeedLimitAffector(QObject *parent) :
+SpeedLimitAffector::SpeedLimitAffector(QSGItem *parent) :
     ParticleAffector(parent), m_speedLimit(-1)
 {
 }
 
-bool SpeedLimitAffector::affect(ParticleData *d, qreal dt){
+bool SpeedLimitAffector::affectParticle(ParticleData *d, qreal dt){
     Q_UNUSED(dt);
     if(m_speedLimit <= 0)
         return false;
