@@ -944,7 +944,10 @@ QComboBox::QComboBox(bool rw, QWidget *parent, const char *name)
     to set and get item data (e.g., setItemData() and itemText()). You
     can also set a new model and view (with setModel() and setView()).
     For the text and icon in the combobox label, the data in the model
-    that has the Qt::DisplayRole and Qt::DecorationRole is used.
+    that has the Qt::DisplayRole and Qt::DecorationRole is used.  Note
+    that you cannot alter the \l{QAbstractItemView::}{SelectionMode}
+    of the view(), e.g., by using
+    \l{QAbstractItemView::}{setSelectionMode()}.
 
     \image qstyle-comboboxes.png Comboboxes in the different built-in styles.
 
