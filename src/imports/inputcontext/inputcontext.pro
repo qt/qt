@@ -1,4 +1,4 @@
-TARGET  = qmlinputcontext
+TARGET  = qmlinputcontextplugin
 TARGETPATH = Qt/labs/inputcontext
 include(../qimportbase.pri)
 
@@ -24,4 +24,15 @@ target.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 qmldir.files += $$PWD/qmldir
 qmldir.path +=  $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 
+symbian:{
+    TARGET.UID3 = 0x20031E91
+
+    isEmpty(DESTDIR):importFiles.files = qmlinputcontextplugin{QT_LIBINFIX}.dll qmldir
+    else:importFiles.files = $$DESTDIR/qmlinputcontextplugin$${QT_LIBINFIX}.dll qmldir
+    importFiles.path = $$QT_IMPORTS_BASE_DIR/$$TARGETPATH
+
+    DEPLOYMENT = importFiles
+}
+
 INSTALLS += target qmldir
+
