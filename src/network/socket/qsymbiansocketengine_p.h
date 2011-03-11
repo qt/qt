@@ -162,10 +162,6 @@ public:
 
     void refresh();
 
-    void setReadNotifier(QReadNotifier *rn) { iReadN = rn; }
-    void setWriteNotifier(QWriteNotifier *wn) { iWriteN = wn; }
-    void setExceptionNotifier(QExceptionNotifier *en) { iExcN = en; }
-
 protected:
     void DoCancel();
     void RunL();
@@ -173,9 +169,6 @@ protected:
     TInt RunError(TInt aError);
 
 private:
-    QReadNotifier* iReadN;
-    QWriteNotifier* iWriteN;
-    QExceptionNotifier* iExcN;
     bool m_inSocketEvent;
     bool m_deleteLater;
     RSocket &m_socket;
@@ -198,7 +191,9 @@ public:
     RSocketServ& socketServer;
     mutable RTimer selectTimer;
 
-    QSocketNotifier *readNotifier, *writeNotifier, *exceptNotifier;
+    bool readNotificationsEnabled;
+    bool writeNotificationsEnabled;
+    bool exceptNotificationsEnabled;
     QAsyncSelect* asyncSelect;
 
     // FIXME this is duplicated from qnativesocketengine_p.h

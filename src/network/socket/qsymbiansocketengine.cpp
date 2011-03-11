@@ -70,8 +70,6 @@
 #include <private/qobject_p.h>
 #include <private/qsystemerror_p.h>
 
-#define QNATIVESOCKETENGINE_DEBUG
-
 #if defined QNATIVESOCKETENGINE_DEBUG
 #include <qstring.h>
 #include <ctype.h>
@@ -263,9 +261,9 @@ void QSymbianSocketEnginePrivate::setPortAndAddress(TInetAddr& nativeAddr, quint
 QSymbianSocketEnginePrivate::QSymbianSocketEnginePrivate() :
     socketDescriptor(-1),
     socketServer(QSymbianSocketManager::instance().getSocketServer()),
-    readNotifier(0),
-    writeNotifier(0),
-    exceptNotifier(0),
+    readNotificationsEnabled(false),
+    writeNotificationsEnabled(false),
+    exceptNotificationsEnabled(false),
     asyncSelect(0)
 {
 }
@@ -970,12 +968,9 @@ void QSymbianSocketEngine::close()
     qDebug("QSymbianSocketEngine::close()");
 #endif
 
-    if (d->readNotifier)
-        d->readNotifier->setEnabled(false);
-    if (d->writeNotifier)
-        d->writeNotifier->setEnabled(false);
-    if (d->exceptNotifier)
-        d->exceptNotifier->setEnabled(false);
+    d->readNotificationsEnabled = false;
+    d->writeNotificationsEnabled = false;
+    d->exceptNotificationsEnabled = false;
     if (d->asyncSelect) {
         d->asyncSelect->deleteLater();
         d->asyncSelect = 0;
@@ -1003,18 +998,6 @@ void QSymbianSocketEngine::close()
     d->localAddress.clear();
     d->peerPort = 0;
     d->peerAddress.clear();
-    if (d->readNotifier) {
-        qDeleteInEventHandler(d->readNotifier);
-        d->readNotifier = 0;
-    }
-    if (d->writeNotifier) {
-        qDeleteInEventHandler(d->writeNotifier);
-        d->writeNotifier = 0;
-    }
-    if (d->exceptNotifier) {
-        qDeleteInEventHandler(d->exceptNotifier);
-        d->exceptNotifier = 0;
-    }
 }
 
 qint64 QSymbianSocketEngine::write(const char *data, qint64 len)
@@ -1446,136 +1429,55 @@ void QSymbianSocketEnginePrivate::setError(TInt symbianError)
     hasSetSocketError = true;
 }
 
-class QReadNotifier : public QSocketNotifier
-{
-    friend class QAsyncSelect;
-public:
-    QReadNotifier(int fd, QSymbianSocketEngine *parent)
-        : QSocketNotifier(fd, QSocketNotifier::Read, parent)
-    { engine = parent; }
-protected:
-    bool event(QEvent *);
-
-    QSymbianSocketEngine *engine;
-};
-
-bool QReadNotifier::event(QEvent *e)
-{
-    if (e->type() == QEvent::SockAct) {
-        engine->readNotification();
-        return true;
-    }
-    return QSocketNotifier::event(e);
-}
-
 bool QSymbianSocketEngine::isReadNotificationEnabled() const
 {
     Q_D(const QSymbianSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::isReadNotificationEnabled(), false);
-    return d->readNotifier && d->readNotifier->isEnabled();
+    return d->readNotificationsEnabled;
 }
 
 void QSymbianSocketEngine::setReadNotificationEnabled(bool enable)
 {
     Q_D(QSymbianSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::setReadNotificationEnabled(), Q_VOID);
-    if (d->readNotifier) {
-        d->readNotifier->setEnabled(enable);
-    } else if (enable && d->threadData->eventDispatcher) {
-        QReadNotifier *rn = new QReadNotifier(d->socketDescriptor, this);
-        d->readNotifier = rn;
-        if (!d->asyncSelect)
-            d->asyncSelect = q_check_ptr(new QAsyncSelect(0, d->nativeSocket, this));
-        d->asyncSelect->setReadNotifier(rn);
-        d->readNotifier->setEnabled(true);
-    }
+#ifdef QNATIVESOCKETENGINE_DEBUG
+    qDebug() << "QSymbianSocketEngine::setReadNotificationEnabled" << enable << "socket" << d->socketDescriptor;
+#endif
+    d->readNotificationsEnabled = enable;
+    if (enable && d->threadData->eventDispatcher && !d->asyncSelect)
+        d->asyncSelect = q_check_ptr(new QAsyncSelect(0, d->nativeSocket, this));
     // TODO: what do we do if event dispatcher doesn't exist yet?
     if (d->asyncSelect)
         d->asyncSelect->IssueRequest();
-}
-
-
-class QWriteNotifier : public QSocketNotifier
-{
-    friend class QAsyncSelect;
-public:
-    QWriteNotifier(int fd, QSymbianSocketEngine *parent)
-        : QSocketNotifier(fd, QSocketNotifier::Write, parent)
-    { engine = parent; }
-protected:
-    bool event(QEvent *);
-
-    QSymbianSocketEngine *engine;
-};
-
-bool QWriteNotifier::event(QEvent *e)
-{
-    if (e->type() == QEvent::SockAct) {
-        if (engine->state() == QAbstractSocket::ConnectingState)
-            engine->connectionNotification();
-        else
-            engine->writeNotification();
-        return true;
-    }
-    return QSocketNotifier::event(e);
 }
 
 bool QSymbianSocketEngine::isWriteNotificationEnabled() const
 {
     Q_D(const QSymbianSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::isWriteNotificationEnabled(), false);
-    return d->writeNotifier && d->writeNotifier->isEnabled();
+    return d->writeNotificationsEnabled;
 }
 
 void QSymbianSocketEngine::setWriteNotificationEnabled(bool enable)
 {
     Q_D(QSymbianSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::setWriteNotificationEnabled(), Q_VOID);
-    if (d->writeNotifier) {
-        d->writeNotifier->setEnabled(enable);
-    } else if (enable && d->threadData->eventDispatcher) {
-        QWriteNotifier *wn = new QWriteNotifier(d->socketDescriptor, this);
-        d->writeNotifier = wn;
-        if (!(d->asyncSelect))
-            d->asyncSelect = q_check_ptr(new QAsyncSelect(d->threadData->eventDispatcher, d->nativeSocket, this));
-        d->asyncSelect->setWriteNotifier(wn);
-        d->writeNotifier->setEnabled(true);
-    }
+#ifdef QNATIVESOCKETENGINE_DEBUG
+    qDebug() << "QSymbianSocketEngine::setWriteNotificationEnabled" << enable << "socket" << d->socketDescriptor;
+#endif
+    d->writeNotificationsEnabled = enable;
+    if (enable && d->threadData->eventDispatcher && !d->asyncSelect)
+        d->asyncSelect = q_check_ptr(new QAsyncSelect(0, d->nativeSocket, this));
     // TODO: what do we do if event dispatcher doesn't exist yet?
     if (d->asyncSelect)
         d->asyncSelect->IssueRequest();
-}
-
-class QExceptionNotifier : public QSocketNotifier
-{
-    friend class QAsyncSelect;
-public:
-    QExceptionNotifier(int fd, QSymbianSocketEngine *parent)
-        : QSocketNotifier(fd, QSocketNotifier::Exception, parent) { engine = parent; }
-
-protected:
-    bool event(QEvent *);
-
-    QSymbianSocketEngine *engine;
-};
-
-bool QExceptionNotifier::event(QEvent *e)
-{
-    if (e->type() == QEvent::SockAct) {
-        if (engine->state() == QAbstractSocket::ConnectingState)
-            engine->connectionNotification();
-        else
-            engine->exceptionNotification();
-        return true;
-    }
-    return QSocketNotifier::event(e);
 }
 
 bool QSymbianSocketEngine::isExceptionNotificationEnabled() const
 {
     Q_D(const QSymbianSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::isExceptionNotificationEnabled(), false);
-    return d->exceptNotifier && d->exceptNotifier->isEnabled();
+    return d->exceptNotificationsEnabled;
     return false;
 }
 
@@ -1584,16 +1486,12 @@ void QSymbianSocketEngine::setExceptionNotificationEnabled(bool enable)
 {
     Q_D(QSymbianSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::setExceptionNotificationEnabled(), Q_VOID);
-    if (d->exceptNotifier) {
-        d->exceptNotifier->setEnabled(enable);
-    } else if (enable && d->threadData->eventDispatcher) {
-        QExceptionNotifier *en = new QExceptionNotifier(d->socketDescriptor, this);
-        d->exceptNotifier = en;
-        if (!(d->asyncSelect))
-            d->asyncSelect = q_check_ptr(new QAsyncSelect(d->threadData->eventDispatcher, d->nativeSocket, this));
-        d->asyncSelect->setExceptionNotifier(en);
-        d->writeNotifier->setEnabled(true);
-    }
+#ifdef QNATIVESOCKETENGINE_DEBUG
+    qDebug() << "QSymbianSocketEngine::setExceptionNotificationEnabled" << enable << "socket" << d->socketDescriptor;
+#endif
+    d->exceptNotificationsEnabled = enable;
+    if (enable && d->threadData->eventDispatcher && !d->asyncSelect)
+        d->asyncSelect = q_check_ptr(new QAsyncSelect(0, d->nativeSocket, this));
     if (d->asyncSelect)
         d->asyncSelect->IssueRequest();
 }
@@ -1692,7 +1590,7 @@ bool QSymbianSocketEngine::event(QEvent* ev)
     switch (ev->type()) {
     case QEvent::ThreadChange:
 #ifdef QNATIVESOCKETENGINE_DEBUG
-        qDebug() << "ThreadChange";
+        qDebug() << "ThreadChange" << d->readNotificationsEnabled << d->writeNotificationsEnabled << d->exceptNotificationsEnabled;
 #endif
         if (d->asyncSelect) {
             delete d->asyncSelect;
@@ -1704,22 +1602,11 @@ bool QSymbianSocketEngine::event(QEvent* ev)
         return true;
     case PostThreadChangeEvent:
 #ifdef QNATIVESOCKETENGINE_DEBUG
-        qDebug() << "PostThreadChangeEvent";
+        qDebug() << "PostThreadChangeEvent" << d->readNotificationsEnabled << d->writeNotificationsEnabled << d->exceptNotificationsEnabled;
 #endif
         // recreate select in new thread
         d->asyncSelect = q_check_ptr(new QAsyncSelect(0, d->nativeSocket, this));
-        if (d->readNotifier) {
-            d->asyncSelect->setReadNotifier(static_cast<QReadNotifier*>(d->readNotifier));
-            setReadNotificationEnabled(d->readNotifier->isEnabled());
-        }
-        if (d->writeNotifier) {
-            d->asyncSelect->setWriteNotifier(static_cast<QWriteNotifier*>(d->writeNotifier));
-            setReadNotificationEnabled(d->writeNotifier->isEnabled());
-        }
-        if (d->exceptNotifier) {
-            d->asyncSelect->setExceptionNotifier(static_cast<QExceptionNotifier*>(d->exceptNotifier));
-            setReadNotificationEnabled(d->exceptNotifier->isEnabled());
-        }
+        d->asyncSelect->IssueRequest();
         return true;
     }
     return QAbstractSocketEngine::event(ev);
@@ -1758,11 +1645,10 @@ TInt QAsyncSelect::RunError(TInt aError)
     if (engine) {
         QT_TRY {
             engine->d_func()->setError(aError);
-            QEvent e(QEvent::SockAct);
-            if (iExcN)
-                iExcN->event(&e);
-            if (iReadN)
-                iReadN->event(&e);
+            if (engine->isExceptionNotificationEnabled())
+                engine->exceptionNotification();
+            if (engine->isReadNotificationEnabled())
+                engine->readNotification();
         }
         QT_CATCH(...) {}
     }
@@ -1781,17 +1667,20 @@ void QAsyncSelect::run()
     m_selectBuf() &= m_selectFlags; //the select ioctl reports everything, so mask to only what we requested
     //KSockSelectReadContinuation is for reading datagrams in a mode that doesn't discard when the
     //datagram is larger than the read buffer - Qt doesn't need to use this.
-    if (iReadN && ((m_selectBuf() & KSockSelectRead) || iStatus != KErrNone)) {
-        QEvent e(QEvent::SockAct);
-        iReadN->event(&e);
+    if (engine && engine->isReadNotificationEnabled()
+        && ((m_selectBuf() & KSockSelectRead) || iStatus != KErrNone)) {
+        engine->readNotification();
     }
-    if (iWriteN && ((m_selectBuf() & KSockSelectWrite) || iStatus != KErrNone)) {
-        QEvent e(QEvent::SockAct);
-        iWriteN->event(&e);
+    if (engine && engine->isWriteNotificationEnabled()
+        && ((m_selectBuf() & KSockSelectWrite) || iStatus != KErrNone)) {
+        if (engine->state() == QAbstractSocket::ConnectingState)
+            engine->connectionNotification();
+        else
+            engine->writeNotification();
     }
-    if (iExcN && ((m_selectBuf() & KSockSelectExcept) || iStatus != KErrNone)) {
-        QEvent e(QEvent::SockAct);
-        iExcN->event(&e);
+    if (engine && engine->isExceptionNotificationEnabled()
+        && ((m_selectBuf() & KSockSelectExcept) || iStatus != KErrNone)) {
+        engine->exceptionNotification();
     }
     m_inSocketEvent = false;
     if (m_deleteLater) {
@@ -1805,9 +1694,6 @@ void QAsyncSelect::run()
 void QAsyncSelect::deleteLater()
 {
     if (m_inSocketEvent) {
-        iExcN = 0;
-        iReadN = 0;
-        iWriteN = 0;
         engine = 0;
         m_deleteLater = true;
     } else {
@@ -1820,13 +1706,16 @@ void QAsyncSelect::IssueRequest()
     if (m_inSocketEvent)
         return; //prevent thrashing during a callback - socket engine enables/disables multiple notifiers
     TUint selectFlags = 0;
-    if (iReadN && iReadN->isEnabled())
+    if (engine->isReadNotificationEnabled())
         selectFlags |= KSockSelectRead;
-    if (iWriteN && iWriteN->isEnabled())
+    if (engine->isWriteNotificationEnabled())
         selectFlags |= KSockSelectWrite;
-    if (iExcN && iExcN->isEnabled())
+    if (engine->isExceptionNotificationEnabled())
         selectFlags |= KSockSelectExcept;
     if (selectFlags != m_selectFlags) {
+#ifdef QNATIVESOCKETENGINE_DEBUG
+    qDebug() << "QAsyncSelect::IssueRequest() - select flags" << m_selectFlags << "->" << selectFlags;
+#endif
         Cancel();
         m_selectFlags = selectFlags;
     }
@@ -1836,6 +1725,9 @@ void QAsyncSelect::IssueRequest()
         m_socket.Ioctl(KIOctlSelect, iStatus, &m_selectBuf, KSOLSocket);
         SetActive();
     }
+#ifdef QNATIVESOCKETENGINE_DEBUG
+    qDebug() << "QAsyncSelect::IssueRequest() - IsActive" << IsActive();
+#endif
 }
 
 QT_END_NAMESPACE
