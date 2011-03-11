@@ -3846,7 +3846,7 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTime loopTime;
     loopTime.start();
-    QTestEventLoop::instance().enterLoop(11);
+    QTestEventLoop::instance().enterLoop(30);
     const int elapsedTime = loopTime.elapsed();
     server.wait();
     reader.wrapUp();
@@ -3878,10 +3878,9 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
         const int minRate = rate * 1024 * (100-allowedDeviation) / 100;
         const int maxRate = rate * 1024 * (100+allowedDeviation) / 100;
         qDebug() << minRate << "<="<< server.transferRate << "<=" << maxRate << "?";
-        QVERIFY(server.transferRate >= minRate);
         QEXPECT_FAIL("http+limited", "Limiting is broken right now, check QTBUG-15065", Continue);
         QEXPECT_FAIL("https+limited", "Limiting is broken right now, check QTBUG-15065", Continue);
-        QVERIFY(server.transferRate <= maxRate);
+        QVERIFY(server.transferRate >= minRate && server.transferRate <= maxRate);
     }
 }
 
