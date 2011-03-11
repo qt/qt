@@ -84,6 +84,8 @@ QWidget *QWidgetPrivate::mouseGrabber = 0;
 QWidget *QWidgetPrivate::keyboardGrabber = 0;
 CEikButtonGroupContainer *QS60Data::cba = 0;
 
+int qt_symbian_create_desktop_on_screen = -1;
+
 static bool isEqual(const QList<QAction*>& a, const QList<QAction*>& b)
 {
     if ( a.count() != b.count())
@@ -349,12 +351,18 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
     int sh = clientRect.Height();
 
     if (desktop) {
-        TSize screenSize = S60->screenDevice()->SizeInPixels();
+        symbianScreenNumber = qMax(qt_symbian_create_desktop_on_screen, 0);
+        TSize screenSize = S60->screenDevice(symbianScreenNumber)->SizeInPixels();
         data.crect.setRect(0, 0, screenSize.iWidth, screenSize.iHeight);
         q->setAttribute(Qt::WA_DontShowOnScreen);
     } else if (topLevel && !q->testAttribute(Qt::WA_Resized)){
         int width = sw;
         int height = sh;
+        if (symbianScreenNumber > 0) {
+            TSize screenSize = S60->screenDevice(symbianScreenNumber)->SizeInPixels();
+            width = screenSize.iWidth;
+            height = screenSize.iHeight;
+        }
         if (extra) {
             width = qMax(qMin(width, extra->maxw), extra->minw);
             height = qMax(qMin(height, extra->maxh), extra->minh);
@@ -644,7 +652,7 @@ void QWidgetPrivate::raise_sys()
 
         // If toplevel widget, raise app to foreground
         if (q->isWindow())
-            S60->wsSession().SetWindowGroupOrdinalPosition(S60->windowGroup().Identifier(), 0);
+            S60->wsSession().SetWindowGroupOrdinalPosition(S60->windowGroup(q).Identifier(), 0);
     }
 }
 
@@ -656,7 +664,7 @@ void QWidgetPrivate::lower_sys()
     if (q->internalWinId()) {
         // If toplevel widget, lower app to background
         if (q->isWindow())
-            S60->wsSession().SetWindowGroupOrdinalPosition(S60->windowGroup().Identifier(), -1);
+            S60->wsSession().SetWindowGroupOrdinalPosition(S60->windowGroup(q).Identifier(), -1);
         else
             q->internalWinId()->DrawableWindow()->SetOrdinalPosition(-1);
     }
@@ -725,6 +733,11 @@ void QWidgetPrivate::reparentChildren()
 void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
 {
     Q_Q(QWidget);
+
+    if (parent && parent->windowType() == Qt::Desktop) {
+        symbianScreenNumber = qt_widget_private(parent)->symbianScreenNumber;
+        parent = 0;
+    }
 
     bool wasCreated = q->testAttribute(Qt::WA_WState_Created);
 
@@ -804,17 +817,21 @@ void QWidgetPrivate::s60UpdateIsOpaque()
     RWindow *const window = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
 
 #ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
-    window->SetSurfaceTransparency(!isOpaque);
-    extra->topextra->nativeWindowTransparencyEnabled = !isOpaque;
-#else
+    if (QApplicationPrivate::instance()->useTranslucentEGLSurfaces) {
+        window->SetSurfaceTransparency(!isOpaque);
+        extra->topextra->nativeWindowTransparencyEnabled = !isOpaque;
+        return;
+    }
+#endif
     if (!isOpaque) {
         const TDisplayMode displayMode = static_cast<TDisplayMode>(window->SetRequiredDisplayMode(EColor16MA));
         if (window->SetTransparencyAlphaChannel() == KErrNone) {
             window->SetBackgroundColor(TRgb(255, 255, 255, 0));
             extra->topextra->nativeWindowTransparencyEnabled = 1;
 
-            if (extra->topextra->backingStore.data() &&
-                    QApplicationPrivate::graphics_system_name == QLatin1String("openvg")) {
+            if (extra->topextra->backingStore.data() && (
+                    QApplicationPrivate::graphics_system_name == QLatin1String("openvg")
+                    || QApplicationPrivate::graphics_system_name == QLatin1String("opengl"))) {
                 // Semi-transparent EGL surfaces aren't supported. We need to
                 // recreate backing store to get translucent surface (raster surface).
                 extra->topextra->backingStore.create(q);
@@ -825,7 +842,6 @@ void QWidgetPrivate::s60UpdateIsOpaque()
         window->SetTransparentRegion(TRegionFix<1>());
         extra->topextra->nativeWindowTransparencyEnabled = 0;
     }
-#endif
 }
 
 void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
@@ -1041,7 +1057,7 @@ int QWidget::metric(PaintDeviceMetric m) const
     } else if (m == PdmHeight) {
         val = data->crect.height();
     } else {
-        CWsScreenDevice *scr = S60->screenDevice();
+        CWsScreenDevice *scr = S60->screenDevice(this);
         switch(m) {
         case PdmDpiX:
         case PdmPhysicalDpiX:
@@ -1211,7 +1227,16 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         const bool cbaVisibilityHint = windowFlags() & Qt::WindowSoftkeysVisibleHint;
         if (newstate & Qt::WindowFullScreen && !cbaVisibilityHint) {
             setAttribute(Qt::WA_OutsideWSRange, false);
-            window->SetExtentToWholeScreen();
+            if (d->symbianScreenNumber > 0) {
+                int w = S60->screenWidthInPixelsForScreen[d->symbianScreenNumber];
+                int h = S60->screenHeightInPixelsForScreen[d->symbianScreenNumber];
+                if (w <= 0 || h <= 0)
+                    window->SetExtentToWholeScreen();
+                else
+                    window->SetExtent(TPoint(0, 0), TSize(w, h));
+            } else {
+                window->SetExtentToWholeScreen();
+            }
         } else if (newstate & Qt::WindowMaximized || ((newstate & Qt::WindowFullScreen) && cbaVisibilityHint)) {
             setAttribute(Qt::WA_OutsideWSRange, false);
             TRect maxExtent = qt_QRect2TRect(qApp->desktop()->availableGeometry(this));

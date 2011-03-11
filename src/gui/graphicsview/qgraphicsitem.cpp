@@ -5577,8 +5577,10 @@ void QGraphicsItemPrivate::setSubFocus(QGraphicsItem *rootItem, QGraphicsItem *s
         parent->d_ptr->subFocusItemChange();
     } while (!parent->isPanel() && (parent = parent->d_ptr->parent) && (visible || !parent->d_ptr->visible));
 
-    if (scene && !scene->isActive())
+    if (scene && !scene->isActive()) {
+        scene->d_func()->passiveFocusItem = subFocusItem;
         scene->d_func()->lastFocusItem = subFocusItem;
+    }
 }
 
 /*!
