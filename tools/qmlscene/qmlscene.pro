@@ -4,6 +4,9 @@ DESTDIR= ../../bin
 
 QT += declarative
 
+target.path = $$[QT_INSTALL_BINS]
+INSTALLS += target
+
 macx: CONFIG -= app_bundle
 
 SOURCES += main.cpp
