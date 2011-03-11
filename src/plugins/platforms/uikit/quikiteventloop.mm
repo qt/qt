@@ -68,9 +68,10 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    Q_UNUSED(launchOptions)
     foreach (QWidget *widget, qApp->topLevelWidgets()) {
         QRect geom = widget->geometry();
-        CGRect bar = [UIApplication sharedApplication].statusBarFrame;
+        CGRect bar = application.statusBarFrame;
         if (geom.y() <= bar.size.height) {
             geom.setY(bar.size.height);
             widget->setGeometry(geom);
@@ -87,6 +88,7 @@
 
 - (void)applicationWillTerminate:(UIApplication *)application
 {
+    Q_UNUSED(application)
     // TODO this isn't called for some reason
     qDebug() << "quit";
     qApp->quit();
@@ -98,7 +100,7 @@
 
 - (id)initWithEventLoopIntegration:(QUIKitEventLoop *)integration
 {
-    if (self = [self init]) {
+    if ((self = [self init])) {
         mIntegration = integration;
     }
     return self;

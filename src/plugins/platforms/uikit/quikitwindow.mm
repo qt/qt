@@ -83,6 +83,7 @@ UIWindow *QUIKitWindow::ensureNativeWindow()
         mWindow.frame = frame; // for some reason setting the screen resets frame.origin
         [mWindow setNeedsDisplay];
     }
+    return mWindow;
 }
 
 QT_END_NAMESPACE

@@ -20,25 +20,27 @@
 		D3CAA7F113264F52008BB877 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		D3CAA7F213264F52008BB877 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765A40DF7441C002DB57D /* CoreGraphics.framework */; };
 		D3CAA7FA13264F8A008BB877 /* libz.1.2.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA7F913264F8A008BB877 /* libz.1.2.3.dylib */; };
-		D3CAA80613264FD5008BB877 /* libQtCore_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA7FB13264FB9008BB877 /* libQtCore_debug.a */; };
-		D3CAA80713264FD5008BB877 /* libQtDeclarative_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA7FC13264FB9008BB877 /* libQtDeclarative_debug.a */; };
-		D3CAA80813264FD6008BB877 /* libQtGui_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA7FD13264FB9008BB877 /* libQtGui_debug.a */; };
-		D3CAA80913264FD6008BB877 /* libQtScript_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA7FE13264FB9008BB877 /* libQtScript_debug.a */; };
-		D3CAA80A13264FD7008BB877 /* libQtSql_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA7FF13264FB9008BB877 /* libQtSql_debug.a */; };
 		D3CAA81113264FF0008BB877 /* libz.1.2.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA7F913264F8A008BB877 /* libz.1.2.3.dylib */; };
-		D3CAA81313265005008BB877 /* libquikit_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA81213265005008BB877 /* libquikit_debug.a */; };
 		D3CAA81B13265056008BB877 /* libQtCore_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA81613265056008BB877 /* libQtCore_debug.a */; };
 		D3CAA81C13265056008BB877 /* libQtDeclarative_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA81713265056008BB877 /* libQtDeclarative_debug.a */; };
 		D3CAA81D13265056008BB877 /* libQtGui_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA81813265056008BB877 /* libQtGui_debug.a */; };
 		D3CAA81E13265056008BB877 /* libQtScript_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA81913265056008BB877 /* libQtScript_debug.a */; };
 		D3CAA81F13265056008BB877 /* libQtSql_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA81A13265056008BB877 /* libQtSql_debug.a */; };
 		D3CAA8211326507D008BB877 /* libquikit_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA8201326507D008BB877 /* libquikit_debug.a */; };
-		D3CAA8261326520A008BB877 /* libQtNetwork_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA8251326520A008BB877 /* libQtNetwork_debug.a */; };
 		D3CAA82813265220008BB877 /* libQtNetwork_debug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3CAA82713265220008BB877 /* libQtNetwork_debug.a */; };
 		D3CAA88A132652E5008BB877 /* fonts in Resources */ = {isa = PBXBuildFile; fileRef = D3CAA836132652E5008BB877 /* fonts */; };
 		D3CAA88B132652E5008BB877 /* fonts in Resources */ = {isa = PBXBuildFile; fileRef = D3CAA836132652E5008BB877 /* fonts */; };
 		D3CAA89113265310008BB877 /* qml in Resources */ = {isa = PBXBuildFile; fileRef = D3CAA88E13265310008BB877 /* qml */; };
 		D3CAA89213265310008BB877 /* qml in Resources */ = {isa = PBXBuildFile; fileRef = D3CAA88E13265310008BB877 /* qml */; };
+		D3D817B2132A2CFD00CDE422 /* libQtCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D817AA132A2CFD00CDE422 /* libQtCore.a */; };
+		D3D817B3132A2CFD00CDE422 /* libQtDeclarative.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D817AB132A2CFD00CDE422 /* libQtDeclarative.a */; };
+		D3D817B4132A2CFD00CDE422 /* libQtGui.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D817AC132A2CFD00CDE422 /* libQtGui.a */; };
+		D3D817B5132A2CFD00CDE422 /* libQtNetwork.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D817AD132A2CFD00CDE422 /* libQtNetwork.a */; };
+		D3D817B6132A2CFD00CDE422 /* libQtScript.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D817AE132A2CFD00CDE422 /* libQtScript.a */; };
+		D3D817B7132A2CFD00CDE422 /* libQtSql.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D817AF132A2CFD00CDE422 /* libQtSql.a */; };
+		D3D817B8132A2CFD00CDE422 /* libQtXml.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D817B0132A2CFD00CDE422 /* libQtXml.a */; };
+		D3D817B9132A2CFD00CDE422 /* libQtXmlPatterns.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D817B1132A2CFD00CDE422 /* libQtXmlPatterns.a */; };
+		D3D817BB132A2D0E00CDE422 /* libquikit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D817BA132A2D0E00CDE422 /* libquikit.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,22 +56,24 @@
 		D3CAA7E513264EA6008BB877 /* qmlapplicationviewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qmlapplicationviewer.h; path = qmlapplicationviewer/qmlapplicationviewer.h; sourceTree = "<group>"; };
 		D3CAA7F613264F52008BB877 /* qmltest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = qmltest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3CAA7F913264F8A008BB877 /* libz.1.2.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.2.3.dylib; path = usr/lib/libz.1.2.3.dylib; sourceTree = SDKROOT; };
-		D3CAA7FB13264FB9008BB877 /* libQtCore_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtCore_debug.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtCore_debug.a"; sourceTree = SOURCE_ROOT; };
-		D3CAA7FC13264FB9008BB877 /* libQtDeclarative_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtDeclarative_debug.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtDeclarative_debug.a"; sourceTree = SOURCE_ROOT; };
-		D3CAA7FD13264FB9008BB877 /* libQtGui_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtGui_debug.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtGui_debug.a"; sourceTree = SOURCE_ROOT; };
-		D3CAA7FE13264FB9008BB877 /* libQtScript_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtScript_debug.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtScript_debug.a"; sourceTree = SOURCE_ROOT; };
-		D3CAA7FF13264FB9008BB877 /* libQtSql_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtSql_debug.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtSql_debug.a"; sourceTree = SOURCE_ROOT; };
-		D3CAA81213265005008BB877 /* libquikit_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquikit_debug.a; path = "../../../../../../../qt-lighthouse-ios-device/plugins/platforms/libquikit_debug.a"; sourceTree = SOURCE_ROOT; };
 		D3CAA81613265056008BB877 /* libQtCore_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtCore_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtCore_debug.a"; sourceTree = SOURCE_ROOT; };
 		D3CAA81713265056008BB877 /* libQtDeclarative_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtDeclarative_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtDeclarative_debug.a"; sourceTree = SOURCE_ROOT; };
 		D3CAA81813265056008BB877 /* libQtGui_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtGui_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtGui_debug.a"; sourceTree = SOURCE_ROOT; };
 		D3CAA81913265056008BB877 /* libQtScript_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtScript_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtScript_debug.a"; sourceTree = SOURCE_ROOT; };
 		D3CAA81A13265056008BB877 /* libQtSql_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtSql_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtSql_debug.a"; sourceTree = SOURCE_ROOT; };
 		D3CAA8201326507D008BB877 /* libquikit_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquikit_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/plugins/platforms/libquikit_debug.a"; sourceTree = SOURCE_ROOT; };
-		D3CAA8251326520A008BB877 /* libQtNetwork_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtNetwork_debug.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtNetwork_debug.a"; sourceTree = SOURCE_ROOT; };
 		D3CAA82713265220008BB877 /* libQtNetwork_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtNetwork_debug.a; path = "../../../../../../../qt-lighthouse-ios-simulator/lib/libQtNetwork_debug.a"; sourceTree = SOURCE_ROOT; };
 		D3CAA836132652E5008BB877 /* fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fonts; path = ../../../../../../lib/fonts; sourceTree = SOURCE_ROOT; };
 		D3CAA88E13265310008BB877 /* qml */ = {isa = PBXFileReference; lastKnownFileType = folder; path = qml; sourceTree = SOURCE_ROOT; };
+		D3D817AA132A2CFD00CDE422 /* libQtCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtCore.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtCore.a"; sourceTree = SOURCE_ROOT; };
+		D3D817AB132A2CFD00CDE422 /* libQtDeclarative.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtDeclarative.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtDeclarative.a"; sourceTree = SOURCE_ROOT; };
+		D3D817AC132A2CFD00CDE422 /* libQtGui.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtGui.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtGui.a"; sourceTree = SOURCE_ROOT; };
+		D3D817AD132A2CFD00CDE422 /* libQtNetwork.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtNetwork.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtNetwork.a"; sourceTree = SOURCE_ROOT; };
+		D3D817AE132A2CFD00CDE422 /* libQtScript.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtScript.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtScript.a"; sourceTree = SOURCE_ROOT; };
+		D3D817AF132A2CFD00CDE422 /* libQtSql.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtSql.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtSql.a"; sourceTree = SOURCE_ROOT; };
+		D3D817B0132A2CFD00CDE422 /* libQtXml.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtXml.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtXml.a"; sourceTree = SOURCE_ROOT; };
+		D3D817B1132A2CFD00CDE422 /* libQtXmlPatterns.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libQtXmlPatterns.a; path = "../../../../../../../qt-lighthouse-ios-device/lib/libQtXmlPatterns.a"; sourceTree = SOURCE_ROOT; };
+		D3D817BA132A2D0E00CDE422 /* libquikit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquikit.a; path = "../../../../../../../qt-lighthouse-ios-device/plugins/platforms/libquikit.a"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,14 +102,16 @@
 				D3CAA7F013264F52008BB877 /* Foundation.framework in Frameworks */,
 				D3CAA7F113264F52008BB877 /* UIKit.framework in Frameworks */,
 				D3CAA7F213264F52008BB877 /* CoreGraphics.framework in Frameworks */,
-				D3CAA80613264FD5008BB877 /* libQtCore_debug.a in Frameworks */,
-				D3CAA80713264FD5008BB877 /* libQtDeclarative_debug.a in Frameworks */,
-				D3CAA80813264FD6008BB877 /* libQtGui_debug.a in Frameworks */,
-				D3CAA80913264FD6008BB877 /* libQtScript_debug.a in Frameworks */,
-				D3CAA80A13264FD7008BB877 /* libQtSql_debug.a in Frameworks */,
 				D3CAA81113264FF0008BB877 /* libz.1.2.3.dylib in Frameworks */,
-				D3CAA81313265005008BB877 /* libquikit_debug.a in Frameworks */,
-				D3CAA8261326520A008BB877 /* libQtNetwork_debug.a in Frameworks */,
+				D3D817B2132A2CFD00CDE422 /* libQtCore.a in Frameworks */,
+				D3D817B3132A2CFD00CDE422 /* libQtDeclarative.a in Frameworks */,
+				D3D817B4132A2CFD00CDE422 /* libQtGui.a in Frameworks */,
+				D3D817B5132A2CFD00CDE422 /* libQtNetwork.a in Frameworks */,
+				D3D817B6132A2CFD00CDE422 /* libQtScript.a in Frameworks */,
+				D3D817B7132A2CFD00CDE422 /* libQtSql.a in Frameworks */,
+				D3D817B8132A2CFD00CDE422 /* libQtXml.a in Frameworks */,
+				D3D817B9132A2CFD00CDE422 /* libQtXmlPatterns.a in Frameworks */,
+				D3D817BB132A2D0E00CDE422 /* libquikit.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -178,13 +184,15 @@
 		D3CAA8141326500A008BB877 /* Device */ = {
 			isa = PBXGroup;
 			children = (
-				D3CAA81213265005008BB877 /* libquikit_debug.a */,
-				D3CAA7FB13264FB9008BB877 /* libQtCore_debug.a */,
-				D3CAA7FC13264FB9008BB877 /* libQtDeclarative_debug.a */,
-				D3CAA7FD13264FB9008BB877 /* libQtGui_debug.a */,
-				D3CAA8251326520A008BB877 /* libQtNetwork_debug.a */,
-				D3CAA7FE13264FB9008BB877 /* libQtScript_debug.a */,
-				D3CAA7FF13264FB9008BB877 /* libQtSql_debug.a */,
+				D3D817BA132A2D0E00CDE422 /* libquikit.a */,
+				D3D817AA132A2CFD00CDE422 /* libQtCore.a */,
+				D3D817AB132A2CFD00CDE422 /* libQtDeclarative.a */,
+				D3D817AC132A2CFD00CDE422 /* libQtGui.a */,
+				D3D817AD132A2CFD00CDE422 /* libQtNetwork.a */,
+				D3D817AE132A2CFD00CDE422 /* libQtScript.a */,
+				D3D817AF132A2CFD00CDE422 /* libQtSql.a */,
+				D3D817B0132A2CFD00CDE422 /* libQtXml.a */,
+				D3D817B1132A2CFD00CDE422 /* libQtXmlPatterns.a */,
 			);
 			name = Device;
 			sourceTree = "<group>";
