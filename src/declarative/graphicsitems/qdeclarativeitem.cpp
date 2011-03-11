@@ -2317,6 +2317,8 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
   \qmlproperty real Item::anchors.verticalCenterOffset
   \qmlproperty real Item::anchors.baselineOffset
 
+  \qmlproperty bool Item::anchors.mirrored
+
   Anchors provide a way to position an item by specifying its
   relationship with other items.
 
@@ -2373,6 +2375,8 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
   four directional anchors.
 
   To clear an anchor value, set it to \c undefined.
+
+  \c anchors.mirrored returns true it the layout has been \l {LayoutMirroring}{mirrored}.
 
   \note You can only anchor an item to siblings or a parent.
 
