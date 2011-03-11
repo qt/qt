@@ -156,6 +156,13 @@
            whole lifetime. This attribute must be set before QApplication is
            constructed.
 
+    \omitvalue AA_S60DisablePartialScreenInputMode By default in Symbian^3,
+           a separate editing window is opened on top of an application. This is exactly
+           like editing on previous versions of Symbian behave. When this attribute
+           is true, a virtual keyboard window is shown on top of application and it
+           is ensured that the focused text widget is visible. This is only supported in
+           Symbian^3. (internal)
+
     \omitvalue AA_AttributeCount
 */
 
@@ -732,6 +739,10 @@
            until a non-opaque pixel is found, or if you want the pixmap to
            retain an alpha channel for some other reason. If the image has no
            alpha channel this flag has no effect.
+
+    \omitvalue NoFormatConversion Don't do any format conversions on the image.
+           Can be useful when converting a QImage to a QPixmap for a one-time
+           rendering operation for example.
 */
 
 /*! \enum Qt::GUIStyle

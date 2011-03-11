@@ -1,6 +1,7 @@
 import QtQuick 1.0
 
 Rectangle {
+    property string sectionProperty: "number"
     width: 240
     height: 320
     color: "#ffffff"
@@ -41,6 +42,11 @@ Rectangle {
                         text: wrapper.y
                     }
                 }
+                ListView.onRemove: SequentialAnimation {
+                    PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: true }
+                    NumberAnimation { target: wrapper; property: "height"; to: 0; duration: 100; easing.type: Easing.InOutQuad }
+                    PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: false }
+                }
             }
         }
     ]
@@ -51,7 +57,7 @@ Rectangle {
         height: 320
         model: testModel
         delegate: myDelegate
-        section.property: "number"
+        section.property: sectionProperty
         section.delegate: Rectangle {
             objectName: "sect_" + section
             color: "#99bb99"

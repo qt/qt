@@ -48,6 +48,8 @@
 #include <qgraphicsscene.h>
 #include <qgraphicswidget.h>
 #include <qsymbianevent.h>
+#include <qlayout.h>
+#include <qdesktopwidget.h>
 #include <private/qcore_symbian_p.h>
 
 #include <fepitfr.h>
@@ -67,7 +69,15 @@
 // that support text selection.
 #define QT_EAknEditorFlagSelectionVisible 0x100000
 
+// EAknEditorFlagEnablePartialScreen is only valid from Sym^3 onwards.
+#define QT_EAknEditorFlagEnablePartialScreen 0x200000
+
 QT_BEGIN_NAMESPACE
+
+Q_GUI_EXPORT void qt_s60_setPartialScreenInputMode(bool enable)
+{
+    S60->partial_keyboard = enable;
+}
 
 QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
     : QInputContext(parent),
@@ -80,13 +90,19 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_inlinePosition(0),
       m_formatRetriever(0),
       m_pointerHandler(0),
-      m_hasTempPreeditString(false)
+      m_hasTempPreeditString(false),
+      m_splitViewResizeBy(0),
+      m_splitViewPreviousWindowStates(Qt::WindowNoState)
 {
     m_fepState->SetObjectProvider(this);
-    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0)
-        m_fepState->SetFlags(EAknEditorFlagDefault | QT_EAknEditorFlagSelectionVisible);
-    else
-        m_fepState->SetFlags(EAknEditorFlagDefault);
+    int defaultFlags = EAknEditorFlagDefault;
+    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0) {
+        if (S60->partial_keyboard) {
+            defaultFlags |= QT_EAknEditorFlagEnablePartialScreen;
+        }
+        defaultFlags |= QT_EAknEditorFlagSelectionVisible;
+    }
+    m_fepState->SetFlags(defaultFlags);
     m_fepState->SetDefaultInputMode( EAknEditorTextInputMode );
     m_fepState->SetPermittedInputModes( EAknEditorAllInputModes );
     m_fepState->SetDefaultCase( EAknEditorTextCase );
@@ -210,6 +226,21 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         return false;
 
     switch (event->type()) {
+    case QEvent::MouseButtonPress:
+        // Alphanumeric keypad doesn't like it when we click and text is still getting displayed
+        // It ignores the mouse event, so we need to commit and send a selection event (which will get triggered
+        // after the commit)
+        if (!m_preeditString.isEmpty()) {
+            commitCurrentString(false);
+
+            int pos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
+
+            QList<QInputMethodEvent::Attribute> selectAttributes;
+            selectAttributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, pos, 0, QVariant());
+            QInputMethodEvent selectEvent(QLatin1String(""), selectAttributes);
+            sendEvent(selectEvent);
+    }
+        break;
     case QEvent::KeyPress:
         commitTemporaryPreeditString();
         // fall through intended
@@ -299,6 +330,26 @@ bool QCoeFepInputContext::symbianFilterEvent(QWidget *keyWidget, const QSymbianE
         // This should also happen for commands.
         reset();
 
+    // We need to translate the window content when window becomes available. Changing the window while it is
+    // not yet ready with OpenVg graphicssystem results in operations silently failing.
+
+    if (event->windowServerEvent() && event->windowServerEvent()->Type() == EEventWindowVisibilityChanged) {
+        if (S60->splitViewLastWidget) {
+            QGraphicsView *gv = qobject_cast<QGraphicsView*>(S60->splitViewLastWidget);
+            const bool alwaysResize = (gv && gv->verticalScrollBarPolicy() != Qt::ScrollBarAlwaysOff);
+            TUint visibleFlags = event->windowServerEvent()->VisibilityChanged()->iFlags;
+            if (!alwaysResize) {
+                if (visibleFlags & TWsVisibilityChangedEvent::EPartiallyVisible) {
+                    if (!isWidgetVisible(S60->splitViewLastWidget)) {
+                        ensureFocusWidgetVisible(S60->splitViewLastWidget);
+                    }
+                } else if (visibleFlags & TWsVisibilityChangedEvent::ENotVisible) {
+                    resetSplitViewWidget(true);
+                }
+            }
+        }
+    }
+
     return false;
 }
 
@@ -341,6 +392,174 @@ TCoeInputCapabilities QCoeFepInputContext::inputCapabilities()
     }
 
     return TCoeInputCapabilities(m_textCapabilities, this, 0);
+}
+
+void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
+{
+    QGraphicsView *gv = qobject_cast<QGraphicsView*>(S60->splitViewLastWidget);
+
+    if (!gv) {
+        return;
+    }
+
+    QSymbianControl *symControl = static_cast<QSymbianControl*>(S60->splitViewLastWidget->effectiveWinId());
+    symControl->CancelLongTapTimer();
+
+    const bool alwaysResize = (gv && gv->verticalScrollBarPolicy() != Qt::ScrollBarAlwaysOff);
+    QWidget *windowToMove = gv ? gv : symControl->widget();
+    if (!S60->splitViewLastWidget->isWindow())
+        windowToMove = S60->splitViewLastWidget->window();
+
+    bool userResize = S60->splitViewLastWidget->testAttribute(Qt::WA_Resized);
+    bool userMove = windowToMove->testAttribute(Qt::WA_Moved);
+
+    if (gv)
+        windowToMove->setUpdatesEnabled(false);
+
+    if (gv && !alwaysResize) {
+        disconnect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
+        if (gv && gv->scene()) {
+            QGraphicsItem *rootItem;
+            foreach (QGraphicsItem *item, gv->scene()->items()) {
+                if (!item->parentItem()) {
+                    rootItem = item;
+                    break;
+                }
+            }
+            if (rootItem)
+                rootItem->resetTransform();
+        }
+    }
+
+    // Resizing might have led to widget losing its original windowstate.
+    // Restore previous window state.
+
+    if (m_splitViewPreviousWindowStates != windowToMove->windowState())
+        windowToMove->setWindowState(m_splitViewPreviousWindowStates);
+
+    if (m_splitViewResizeBy)
+        S60->splitViewLastWidget->updateGeometry();
+    if (gv)
+        windowToMove->setUpdatesEnabled(true);
+
+    S60->splitViewLastWidget->setAttribute(Qt::WA_Resized, userResize); //not a user resize
+    windowToMove->setAttribute(Qt::WA_Moved, userMove); //not a user move
+
+    m_splitViewResizeBy = 0;
+    if (!keepInputWidget) {
+        m_splitViewPreviousWindowStates = Qt::WindowNoState;
+        S60->splitViewLastWidget = 0;
+    }
+}
+
+// Checks if a given widget is visible in the splitview rect. The offset
+// parameter can be used to validate if moving widget upwards or downwards
+// by the offset would make a difference for the visibility.
+
+bool QCoeFepInputContext::isWidgetVisible(QWidget *widget, int offset)
+{
+    bool visible = false;
+    if (widget) {
+        QRect splitViewRect = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect());
+        QWidget *window = QApplication::activeWindow();
+        QGraphicsView *gv = qobject_cast<QGraphicsView*>(widget);
+        if (gv && window) {
+            if (QGraphicsScene *scene = gv->scene()) {
+                if (QGraphicsItem *focusItem = scene->focusItem()) {
+                    QPoint cursorPos = window->mapToGlobal(focusItem->cursor().pos());
+                    cursorPos.setY(cursorPos.y() + offset);
+                    if (splitViewRect.contains(cursorPos)) {
+                        visible = true;
+                    }
+                }
+            }
+        }
+    }
+    return visible;
+}
+
+// Ensure that the input widget is visible in the splitview rect.
+
+void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
+{
+    // Native side opening and closing its virtual keyboard when it changes the keyboard layout,
+    // has an adverse impact on long tap timer. Cancel the timer when splitview opens to avoid this.
+    QSymbianControl *symControl = static_cast<QSymbianControl*>(widget->effectiveWinId());
+    symControl->CancelLongTapTimer();
+
+    // Graphicsviews that have vertical scrollbars should always be resized to the splitview area.
+    // Graphicsviews without scrollbars should be translated.
+
+    QGraphicsView *gv = qobject_cast<QGraphicsView*>(widget);
+    if (!gv)
+        return;
+
+    const bool alwaysResize = (gv && gv->verticalScrollBarPolicy() != Qt::ScrollBarAlwaysOff);
+    const bool moveWithinVisibleArea = (S60->splitViewLastWidget != 0);
+
+    QWidget *windowToMove = gv ? gv : symControl->widget();
+    if (!windowToMove->isWindow())
+        windowToMove = windowToMove->window();
+    if (!windowToMove) {
+        return;
+    }
+
+    // When opening the keyboard (not moving within the splitview area), save the original
+    // window state. In some cases, ensuring input widget visibility might lead to window
+    // states getting changed.
+
+    if (!moveWithinVisibleArea) {
+        S60->splitViewLastWidget = widget;
+        m_splitViewPreviousWindowStates = windowToMove->windowState();
+    }
+
+    int windowTop = widget->window()->pos().y();
+
+    const bool userResize = widget->testAttribute(Qt::WA_Resized);
+    const bool userMove = windowToMove->testAttribute(Qt::WA_Moved);
+
+    QRect splitViewRect = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect());
+
+    if (gv) {
+
+        // When resizing a window widget, it will lose its maximized window state.
+        // Native applications hide statuspane in splitview state, so lets move to
+        // fullscreen mode. This makes available area slightly bigger, which helps usability
+        // and greatly reduces event passing in orientation switch cases,
+        // as the statuspane size is not changing.
+
+        if (!(windowToMove->windowState() & Qt::WindowFullScreen)) {
+            widget->setWindowState(
+                (windowToMove->windowState() & ~(Qt::WindowMinimized | Qt::WindowFullScreen)) | Qt::WindowFullScreen);
+        }
+
+        if (alwaysResize) {
+            windowToMove->setUpdatesEnabled(false);
+            if (!moveWithinVisibleArea)
+                m_splitViewResizeBy = widget->height();
+
+            windowTop = widget->geometry().top();
+            widget->resize(widget->width(), splitViewRect.height() - windowTop);
+
+            if (gv && gv->scene()) {
+                const QRectF microFocusRect = gv->scene()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
+                gv->ensureVisible(microFocusRect);
+            }
+            windowToMove->setUpdatesEnabled(true);
+        } else {
+            if (!moveWithinVisibleArea) {
+                // Check if the widget contains cursorPositionChanged signal and connect to it.
+                const char *signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged())).constData();
+                int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal + 1); 
+                if (index != -1)
+                    connect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
+            }
+            translateInputWidget();
+        }
+    }
+
+    widget->setAttribute(Qt::WA_Resized, userResize); //not a user resize
+    windowToMove->setAttribute(Qt::WA_Moved, userMove); //not a user move
 }
 
 static QTextCharFormat qt_TCharFormat2QTextCharFormat(const TCharFormat &cFormat, bool validStyleColor)
@@ -474,10 +693,12 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     m_fepState->SetPermittedCases(flags);
     ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateCaseModeUpdate);
 
-    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0)
-        flags = QT_EAknEditorFlagSelectionVisible;
-    else 
-        flags = 0;
+    flags = 0;
+    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0) {
+        if (S60->partial_keyboard)
+            flags |= QT_EAknEditorFlagEnablePartialScreen;
+        flags |= QT_EAknEditorFlagSelectionVisible;
+    }
     if (hints & ImhUppercaseOnly && !(hints & ImhLowercaseOnly)
             || hints & ImhLowercaseOnly && !(hints & ImhUppercaseOnly)) {
         flags |= EAknEditorFlagFixedCase;
@@ -602,6 +823,47 @@ void QCoeFepInputContext::ensureInputCapabilitiesChanged()
     // but is synchronous, rather than asynchronous.
     CCoeEnv::Static()->SyncNotifyFocusObserversOfChangeInFocus();
     m_pendingInputCapabilitiesChanged = false;
+}
+
+void QCoeFepInputContext::translateInputWidget()
+{
+    QGraphicsView *gv = qobject_cast<QGraphicsView *>(S60->splitViewLastWidget);
+    QRect splitViewRect = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect());
+
+    QRectF cursor = gv->scene()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
+    QPolygon cursorP = gv->mapFromScene(cursor);
+    QRectF vkbRect = QRectF(splitViewRect.bottomLeft(), qApp->desktop()->rect().bottomRight());
+    if (cursor.isEmpty() || vkbRect.isEmpty())
+        return;
+
+    // Fetch root item (i.e. graphicsitem with no parent)
+    QGraphicsItem *rootItem;
+    foreach (QGraphicsItem *item, gv->scene()->items()) {
+        if (!item->parentItem()) {
+            rootItem = item;
+            break;
+        }
+    }
+    if (!rootItem)
+        return;
+
+    m_transformation = (rootItem->transform().isTranslating()) ? QRectF(0,0, gv->width(), rootItem->transform().dy()) : QRectF();
+
+    // Do nothing if the cursor is visible in the splitview area.
+    if (splitViewRect.contains(cursorP.boundingRect()))
+        return;
+
+    // New Y position should be ideally at the center of the splitview area.
+    // If that would expose unpainted canvas, limit the tranformation to the visible scene bottom.
+
+    const qreal maxY = gv->sceneRect().bottom() - splitViewRect.bottom() + m_transformation.height(); 
+    qreal dy = -(qMin(maxY, (cursor.bottom() - vkbRect.top() / 2)));
+
+    // Do not allow transform above screen top.
+    if (m_transformation.height() + dy > 0)
+        return;
+
+    rootItem->setTransform(QTransform::fromTranslate(0, dy), true);
 }
 
 void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
