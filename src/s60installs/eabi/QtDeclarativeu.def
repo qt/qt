@@ -1930,4 +1930,7 @@ EXPORTS
 	_ZN20QDeclarativeRefCountD2Ev @ 1929 NONAME
 	_ZTI20QDeclarativeRefCount @ 1930 NONAME
 	_ZTV20QDeclarativeRefCount @ 1931 NONAME
+	_ZN23QDeclarativeItemPrivate15setLayoutMirrorEb @ 1932 NONAME
+	_ZN23QDeclarativeItemPrivate19resolveLayoutMirrorEv @ 1933 NONAME
+	_ZN23QDeclarativeItemPrivate23setImplicitLayoutMirrorEbb @ 1934 NONAME
 
