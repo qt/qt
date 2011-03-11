@@ -103,6 +103,7 @@ private slots:
     void QTBUG_11105();
     void header();
     void footer();
+    void headerFooter();
     void resizeView();
     void sizeLessThan1();
     void QTBUG_14821();
@@ -1958,6 +1959,112 @@ void tst_QDeclarativeListView::footer()
     delete canvas;
 }
 
+class LVAccessor : public QDeclarativeListView
+{
+public:
+    qreal minY() const { return minYExtent(); }
+    qreal maxY() const { return maxYExtent(); }
+    qreal minX() const { return minXExtent(); }
+    qreal maxX() const { return maxXExtent(); }
+};
+
+void tst_QDeclarativeListView::headerFooter()
+{
+    {
+        // Vertical
+        QDeclarativeView *canvas = createView();
+
+        TestModel model;
+        QDeclarativeContext *ctxt = canvas->rootContext();
+        ctxt->setContextProperty("testModel", &model);
+
+        canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/headerfooter.qml"));
+        qApp->processEvents();
+
+        QDeclarativeListView *listview = qobject_cast<QDeclarativeListView*>(canvas->rootObject());
+        QTRY_VERIFY(listview != 0);
+
+        QDeclarativeItem *contentItem = listview->contentItem();
+        QTRY_VERIFY(contentItem != 0);
+
+        QDeclarativeItem *header = findItem<QDeclarativeItem>(contentItem, "header");
+        QVERIFY(header);
+        QCOMPARE(header->y(), 0.0);
+
+        QDeclarativeItem *footer = findItem<QDeclarativeItem>(contentItem, "footer");
+        QVERIFY(footer);
+        QCOMPARE(footer->y(), 20.0);
+
+        QVERIFY(static_cast<LVAccessor*>(listview)->minY() == 0);
+        QVERIFY(static_cast<LVAccessor*>(listview)->maxY() == 0);
+
+        delete canvas;
+    }
+    {
+        // Horizontal
+        QDeclarativeView *canvas = createView();
+
+        TestModel model;
+        QDeclarativeContext *ctxt = canvas->rootContext();
+        ctxt->setContextProperty("testModel", &model);
+
+        canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/headerfooter.qml"));
+        canvas->rootObject()->setProperty("horizontal", true);
+        qApp->processEvents();
+
+        QDeclarativeListView *listview = qobject_cast<QDeclarativeListView*>(canvas->rootObject());
+        QTRY_VERIFY(listview != 0);
+
+        QDeclarativeItem *contentItem = listview->contentItem();
+        QTRY_VERIFY(contentItem != 0);
+
+        QDeclarativeItem *header = findItem<QDeclarativeItem>(contentItem, "header");
+        QVERIFY(header);
+        QCOMPARE(header->x(), 0.0);
+
+        QDeclarativeItem *footer = findItem<QDeclarativeItem>(contentItem, "footer");
+        QVERIFY(footer);
+        QCOMPARE(footer->x(), 20.0);
+
+        QVERIFY(static_cast<LVAccessor*>(listview)->minX() == 0);
+        QVERIFY(static_cast<LVAccessor*>(listview)->maxX() == 0);
+
+        delete canvas;
+    }
+    {
+        // Horizontal RTL
+        QDeclarativeView *canvas = createView();
+
+        TestModel model;
+        QDeclarativeContext *ctxt = canvas->rootContext();
+        ctxt->setContextProperty("testModel", &model);
+
+        canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/headerfooter.qml"));
+        canvas->rootObject()->setProperty("horizontal", true);
+        canvas->rootObject()->setProperty("rtl", true);
+        qApp->processEvents();
+
+        QDeclarativeListView *listview = qobject_cast<QDeclarativeListView*>(canvas->rootObject());
+        QTRY_VERIFY(listview != 0);
+
+        QDeclarativeItem *contentItem = listview->contentItem();
+        QTRY_VERIFY(contentItem != 0);
+
+        QDeclarativeItem *header = findItem<QDeclarativeItem>(contentItem, "header");
+        QVERIFY(header);
+        QCOMPARE(header->x(), -20.0);
+
+        QDeclarativeItem *footer = findItem<QDeclarativeItem>(contentItem, "footer");
+        QVERIFY(footer);
+        QCOMPARE(footer->x(), -50.0);
+
+        QCOMPARE(static_cast<LVAccessor*>(listview)->minX(), 240.);
+        QCOMPARE(static_cast<LVAccessor*>(listview)->maxX(), 240.);
+
+        delete canvas;
+    }
+}
+
 void tst_QDeclarativeListView::resizeView()
 {
     QDeclarativeView *canvas = createView();
@@ -2360,6 +2467,7 @@ void tst_QDeclarativeListView::testQtQuick11Attributes_data()
 void tst_QDeclarativeListView::rightToLeft()
 {
     QDeclarativeView *canvas = createView();
+    canvas->setFixedSize(640,320);
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/rightToLeft.qml"));
     qApp->processEvents();
 
@@ -2375,6 +2483,9 @@ void tst_QDeclarativeListView::rightToLeft()
 
     QTRY_VERIFY(model->count() == 3);
     QTRY_COMPARE(listview->currentIndex(), 0);
+
+    // initial position at first item, right edge aligned
+    QCOMPARE(listview->contentX(), -640.);
 
     QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "item1");
     QTRY_VERIFY(item);
@@ -2394,6 +2505,12 @@ void tst_QDeclarativeListView::rightToLeft()
     text = findItem<QDeclarativeText>(contentItem, "text3");
     QTRY_VERIFY(text);
     QTRY_COMPARE(text->text(), QLatin1String("index: 2"));
+
+    QCOMPARE(listview->contentX(), -640.);
+
+    // Ensure resizing maintains position relative to right edge
+    qobject_cast<QDeclarativeItem*>(canvas->rootObject())->setWidth(600);
+    QTRY_COMPARE(listview->contentX(), -600.);
 
     delete canvas;
 }
