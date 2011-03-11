@@ -1374,7 +1374,10 @@ QVariant QDeclarativeTextInput::inputMethodQuery(Qt::InputMethodQuery property) 
     case Qt::ImCursorPosition:
         return QVariant(d->control->cursor());
     case Qt::ImSurroundingText:
-        return QVariant(text());
+        if (d->control->echoMode() == PasswordEchoOnEdit && !d->control->passwordEchoEditing())
+            return QVariant(displayText());
+        else
+            return QVariant(text());
     case Qt::ImCurrentSelection:
         return QVariant(selectedText());
     case Qt::ImMaximumTextLength:
@@ -1672,8 +1675,8 @@ void QDeclarativeTextInput::moveCursorSelection(int pos, SelectionMode mode)
             finder.setPosition(anchor);
 
             const QTextBoundaryFinder::BoundaryReasons reasons = finder.boundaryReasons();
-            if (anchor < text.length() && !(reasons & QTextBoundaryFinder::StartWord)
-                    || ((reasons & QTextBoundaryFinder::EndWord) && anchor > cursor)) {
+            if (anchor < text.length() && (!(reasons & QTextBoundaryFinder::StartWord)
+                    || ((reasons & QTextBoundaryFinder::EndWord) && anchor > cursor))) {
                 finder.toPreviousBoundary();
             }
             anchor = finder.position() != -1 ? finder.position() : 0;
@@ -1690,8 +1693,8 @@ void QDeclarativeTextInput::moveCursorSelection(int pos, SelectionMode mode)
             finder.setPosition(anchor);
 
             const QTextBoundaryFinder::BoundaryReasons reasons = finder.boundaryReasons();
-            if (anchor > 0 && !(reasons & QTextBoundaryFinder::EndWord)
-                    || ((reasons & QTextBoundaryFinder::StartWord) && anchor < cursor)) {
+            if (anchor > 0 && (!(reasons & QTextBoundaryFinder::EndWord)
+                    || ((reasons & QTextBoundaryFinder::StartWord) && anchor < cursor))) {
                 finder.toNextBoundary();
             }
             anchor = finder.position() != -1 ? finder.position() : text.length();
@@ -1821,7 +1824,7 @@ void QDeclarativeTextInput::focusInEvent(QFocusEvent *event)
 }
 
 /*!
-    \qmlproperty bool TextInput::isInputMethodComposing()
+    \qmlproperty bool TextInput::inputMethodComposing
 
     \since QtQuick 1.1
 
@@ -1867,6 +1870,8 @@ void QDeclarativeTextInputPrivate::init()
 #endif // QT_NO_CLIPBOARD
     q->connect(control, SIGNAL(updateMicroFocus()),
                q, SLOT(updateMicroFocus()));
+    q->connect(control, SIGNAL(displayTextChanged(QString)),
+               q, SLOT(updateRect()));
     q->updateSize();
     oldValidity = control->hasAcceptableInput();
     lastSelectionStart = 0;

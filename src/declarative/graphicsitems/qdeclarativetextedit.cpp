@@ -1508,7 +1508,7 @@ bool QDeclarativeTextEdit::canPaste() const
 }
 
 /*!
-    \qmlproperty bool TextEdit::isInputMethodComposing()
+    \qmlproperty bool TextEdit::inputMethodComposing
 
     \since QtQuick 1.1
 
