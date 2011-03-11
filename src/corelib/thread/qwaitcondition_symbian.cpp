@@ -45,7 +45,7 @@
 #include "qreadwritelock.h"
 #include "qatomic.h"
 #include "qstring.h"
-#include "qelapsedtimer"
+#include "qelapsedtimer.h"
 
 #include "qmutex_p.h"
 #include "qreadwritelock_p.h"
