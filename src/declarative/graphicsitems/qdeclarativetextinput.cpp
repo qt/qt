@@ -1824,7 +1824,7 @@ void QDeclarativeTextInput::focusInEvent(QFocusEvent *event)
 }
 
 /*!
-    \qmlproperty bool TextInput::isInputMethodComposing()
+    \qmlproperty bool TextInput::inputMethodComposing
 
     \since QtQuick 1.1
 
