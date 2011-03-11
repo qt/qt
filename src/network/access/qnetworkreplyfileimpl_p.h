@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -86,11 +86,9 @@ class QNetworkReplyFileImplPrivate: public QNetworkReplyPrivate
 {
 public:
     QNetworkReplyFileImplPrivate();
-    ~QNetworkReplyFileImplPrivate();
 
-    QAbstractFileEngine *fileEngine;
-    qint64 fileSize;
-    qint64 filePos;
+    QFile realFile;
+    qint64 realFileSize;
 
     Q_DECLARE_PUBLIC(QNetworkReplyFileImpl)
 };

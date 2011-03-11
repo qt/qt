@@ -184,7 +184,7 @@ struct dndenum_mapper
     bool Qt2Mac;
 };
 
-#ifdef QT_MAC_USE_COCOA && __OBJC__
+#if defined(QT_MAC_USE_COCOA) && defined(__OBJC__)
 
 static dndenum_mapper dnd_enums[] = {
     { NSDragOperationLink,  Qt::LinkAction, true },

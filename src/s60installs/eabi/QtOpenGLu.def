@@ -707,4 +707,36 @@ EXPORTS
 	_ZNK20QGLTextureGlyphCache16maxTextureHeightEv @ 706 NONAME
 	_ZThn8_NK20QGLTextureGlyphCache15maxTextureWidthEv @ 707 NONAME ABSENT
 	_ZThn8_NK20QGLTextureGlyphCache16maxTextureHeightEv @ 708 NONAME ABSENT
+	_Z28qt_resolve_buffer_extensionsP10QGLContext @ 709 NONAME
+	_ZN12QGLFunctions21initializeGLFunctionsEPK10QGLContext @ 710 NONAME
+	_ZN12QGLFunctionsC1EPK10QGLContext @ 711 NONAME
+	_ZN12QGLFunctionsC1Ev @ 712 NONAME
+	_ZN12QGLFunctionsC2EPK10QGLContext @ 713 NONAME
+	_ZN12QGLFunctionsC2Ev @ 714 NONAME
+	_ZN13QGLPixmapData12toNativeTypeEN11QPixmapData10NativeTypeE @ 715 NONAME
+	_ZN13QGLPixmapData14fromNativeTypeEPvN11QPixmapData10NativeTypeE @ 716 NONAME
+	_ZN13QGLPixmapData15fromImageReaderEP12QImageReader6QFlagsIN2Qt19ImageConversionFlagEE @ 717 NONAME
+	_ZN13QGLPixmapData20createPixmapForImageER6QImage6QFlagsIN2Qt19ImageConversionFlagEEb @ 718 NONAME
+	_ZN16QGLWindowSurface12swapBehaviorE @ 719 NONAME DATA 4
+	_ZN17QGLContextPrivate17qt_extensionFuncsE @ 720 NONAME DATA 60
+	_ZN20QGLTextureGlyphCache10setContextEPK10QGLContext @ 721 NONAME
+	_ZN20QGLTextureGlyphCache11fillTextureERKN18QTextureGlyphCache5CoordEj6QFixed @ 722 NONAME
+	_ZN20QGLTextureGlyphCacheC1EPK10QGLContextN21QFontEngineGlyphCache4TypeERK10QTransform @ 723 NONAME
+	_ZN20QGLTextureGlyphCacheC2EPK10QGLContextN21QFontEngineGlyphCache4TypeERK10QTransform @ 724 NONAME
+	_ZN26QGLFramebufferObjectFormat9setMipmapEb @ 725 NONAME
+	_ZN27QGLContextGroupResourceBase5valueEPK10QGLContext @ 726 NONAME
+	_ZN27QGLContextGroupResourceBase6insertEPK10QGLContextPv @ 727 NONAME
+	_ZN27QGLContextGroupResourceBase7cleanupEPK10QGLContextPv @ 728 NONAME
+	_ZN27QGLContextGroupResourceBaseC2Ev @ 729 NONAME
+	_ZN27QGLContextGroupResourceBaseD0Ev @ 730 NONAME
+	_ZN27QGLContextGroupResourceBaseD1Ev @ 731 NONAME
+	_ZN27QGLContextGroupResourceBaseD2Ev @ 732 NONAME
+	_ZNK12QGLFunctions14openGLFeaturesEv @ 733 NONAME
+	_ZNK12QGLFunctions16hasOpenGLFeatureENS_13OpenGLFeatureE @ 734 NONAME
+	_ZNK14QGLPaintDevice9isFlippedEv @ 735 NONAME
+	_ZNK26QGLFramebufferObjectFormat6mipmapEv @ 736 NONAME
+	_ZTI27QGLContextGroupResourceBase @ 737 NONAME
+	_ZTV27QGLContextGroupResourceBase @ 738 NONAME
+	_ZThn104_N20QGLTextureGlyphCacheD0Ev @ 739 NONAME
+	_ZThn104_N20QGLTextureGlyphCacheD1Ev @ 740 NONAME
 
