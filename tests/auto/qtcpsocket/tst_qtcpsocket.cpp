@@ -1432,7 +1432,7 @@ void tst_QTcpSocket::dontCloseOnTimeout()
     QVERIFY(server.listen());
 
     QHostAddress serverAddress = QHostAddress::LocalHost;
-    if (!(server.serverAddress() == QHostAddress::Any))
+    if (!(server.serverAddress() == QHostAddress::Any) && !(server.serverAddress() == QHostAddress::AnyIPv6))
         serverAddress = server.serverAddress();
 
     QTcpSocket *socket = newSocket();
