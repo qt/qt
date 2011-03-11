@@ -1560,6 +1560,11 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
                                v8::DEFAULT, attribute);
     }
 
+    instTempl->SetNamedPropertyHandler(QtLazyPropertyGetter,
+                                        QtLazyPropertySetter,
+                                        0, 0, 0,
+                                        /*data=*/v8::External::Wrap(engine));
+
     return handleScope.Close(funcTempl);
 }
 

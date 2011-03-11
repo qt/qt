@@ -661,20 +661,33 @@ v8::Handle<v8::Object> QScriptEnginePrivate::newVariant(const QVariant &value)
     return persistent;
 }
 
-static inline v8::Isolate *createEnterIsolate()
+v8::Isolate *QScriptEnginePrivate::Isolates::createEnterIsolate(QScriptEnginePrivate *engine)
 {
     v8::Isolate *isolate = v8::Isolate::New();
     isolate->Enter();
+    {
+        Isolates *i = isolates();
+        QMutexLocker lock(&(i->m_protector));
+        i->m_mapping.insert(isolate, engine);
+    }
     // FIXME It doesn't capture the stack, so backtrace test is failing.
     v8::V8::SetCaptureStackTraceForUncaughtExceptions(/* capture */ true, /* frame_limit */ 50);
     return isolate;
 }
 
+QScriptEnginePrivate *QScriptEnginePrivate::Isolates::engine(v8::Isolate *isolate)
+{
+    Isolates *i = isolates();
+    QMutexLocker lock(&(i->m_protector));
+    return i->m_mapping.value(isolate, 0);
+}
+
 QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine::ContextOwnership ownership)
-    : m_isolate(createEnterIsolate())
+    : m_isolate(Isolates::createEnterIsolate(this))
     , m_v8Context(ownership == QScriptEngine::AdoptCurrentContext ?
             v8::Persistent<v8::Context>::New(v8::Context::GetCurrent()) : v8::Context::New())
     , m_originalGlobalObject(this, m_v8Context)
+    , m_reportedAddtionalMemoryCost(-1)
     , m_currentQsContext(0)
     , m_state(Idle)
     , m_currentAgent(0)
@@ -914,10 +927,6 @@ v8::Handle<v8::Value> QScriptEnginePrivate::newQObject(QObject *object,
     Q_ASSERT(!templ.IsEmpty());
     v8::Handle<v8::ObjectTemplate> instanceTempl = templ->InstanceTemplate();
     Q_ASSERT(!instanceTempl.IsEmpty());
-    instanceTempl->SetNamedPropertyHandler(QtLazyPropertyGetter,
-                                           QtLazyPropertySetter,
-                                           0, 0, 0,
-                                           /*data=*/v8::External::Wrap(this));
     v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
     Q_ASSERT(instance->InternalFieldCount() == 1);
 
@@ -1203,6 +1212,16 @@ void QScriptEngine::reportAdditionalMemoryCost(int cost)
     d->reportAdditionalMemoryCost(cost);
 }
 
+void QScriptEnginePrivate::GCEpilogueCallback(v8::GCType type, v8::GCCallbackFlags flags)
+{
+    Q_UNUSED(type);
+    Q_UNUSED(flags);
+    QScriptEnginePrivate *engine = Isolates::engine(v8::Isolate::GetCurrent());
+    if (engine->m_reportedAddtionalMemoryCost) {
+        v8::V8::AdjustAmountOfExternalAllocatedMemory(-engine->m_reportedAddtionalMemoryCost);
+        engine->m_reportedAddtionalMemoryCost = 0;
+    }
+}
 
 /*!
     Evaluates \a program, using \a lineNumber as the base line number,
