@@ -149,7 +149,7 @@
 
     \value KeepExistingFlags This value is used to indicate to setProperty() that the property's flags should be left unchanged. If the property doesn't exist, the default flags (0) will be used.
 
-    \value UserRange Flags in this range are not used by Qt Script, and can be used for custom purposes.
+    \omitvalue UserRange Flags in this range are not used by Qt Script, and can be used for custom purposes.
 */
 
 /*!
