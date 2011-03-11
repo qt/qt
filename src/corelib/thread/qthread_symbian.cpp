@@ -45,7 +45,7 @@
 #include <private/qeventdispatcher_symbian_p.h>
 #include "qthreadstorage.h"
 #include "qthread_p.h"
-#include "qsystemerror_p.h"
+#include <private/qsystemerror_p.h>
 
 #include <sched.h>
 
@@ -462,7 +462,7 @@ void QThread::start(Priority priority)
         d->data->symbian_thread_handle.SetPriority(symPriority);
         d->data->symbian_thread_handle.Resume();
     } else {
-        qWarning("QThread::start: Thread creation error: %s", QSystemError(code, QSystemError::NativeError).toString());
+        qWarning("QThread::start: Thread creation error: %s", qPrintable(QSystemError(code, QSystemError::NativeError).toString()));
 
         d->running = false;
         d->finished = false;
