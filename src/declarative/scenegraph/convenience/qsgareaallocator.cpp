@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "areaallocator.h"
+#include "qsgareaallocator_p.h"
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qrect.h>
@@ -56,21 +56,21 @@ namespace
     static const int maxMargin = 2;
 }
 
-struct AreaAllocatorNode
+struct QSGAreaAllocatorNode
 {
-    AreaAllocatorNode(AreaAllocatorNode *parent);
-    ~AreaAllocatorNode();
+    QSGAreaAllocatorNode(QSGAreaAllocatorNode *parent);
+    ~QSGAreaAllocatorNode();
     inline bool isLeaf();
 
-    AreaAllocatorNode *parent;
-    AreaAllocatorNode *left;
-    AreaAllocatorNode *right;
+    QSGAreaAllocatorNode *parent;
+    QSGAreaAllocatorNode *left;
+    QSGAreaAllocatorNode *right;
     int split; // only valid for inner nodes.
     SplitType splitType;
     bool isOccupied; // only valid for leaf nodes.
 };
 
-AreaAllocatorNode::AreaAllocatorNode(AreaAllocatorNode *parent)
+QSGAreaAllocatorNode::QSGAreaAllocatorNode(QSGAreaAllocatorNode *parent)
     : parent(parent)
     , left(0)
     , right(0)
@@ -78,42 +78,42 @@ AreaAllocatorNode::AreaAllocatorNode(AreaAllocatorNode *parent)
 {
 }
 
-AreaAllocatorNode::~AreaAllocatorNode()
+QSGAreaAllocatorNode::~QSGAreaAllocatorNode()
 {
     delete left;
     delete right;
 }
 
-bool AreaAllocatorNode::isLeaf()
+bool QSGAreaAllocatorNode::isLeaf()
 {
     Q_ASSERT((left != 0) == (right != 0));
     return !left;
 }
 
 
-AreaAllocator::AreaAllocator(const QSize &size) : m_size(size)
+QSGAreaAllocator::QSGAreaAllocator(const QSize &size) : m_size(size)
 {
-    m_root = new AreaAllocatorNode(0);
+    m_root = new QSGAreaAllocatorNode(0);
 }
 
-AreaAllocator::~AreaAllocator()
+QSGAreaAllocator::~QSGAreaAllocator()
 {
     delete m_root;
 }
 
-QRect AreaAllocator::allocate(const QSize &size)
+QRect QSGAreaAllocator::allocate(const QSize &size)
 {
     QPoint point;
     bool result = allocateInNode(size, point, QRect(QPoint(0, 0), m_size), m_root);
     return result ? QRect(point, size) : QRect();
 }
 
-bool AreaAllocator::deallocate(const QRect &rect)
+bool QSGAreaAllocator::deallocate(const QRect &rect)
 {
     return deallocateInNode(rect.topLeft(), m_root);
 }
 
-bool AreaAllocator::allocateInNode(const QSize &size, QPoint &result, const QRect &currentRect, AreaAllocatorNode *node)
+bool QSGAreaAllocator::allocateInNode(const QSize &size, QPoint &result, const QRect &currentRect, QSGAreaAllocatorNode *node)
 {
     if (size.width() > currentRect.width() || size.height() > currentRect.height())
         return false;
@@ -129,8 +129,8 @@ bool AreaAllocator::allocateInNode(const QSize &size, QPoint &result, const QRec
         }
         // TODO: Reuse nodes.
         // Split node.
-        node->left = new AreaAllocatorNode(node);
-        node->right = new AreaAllocatorNode(node);
+        node->left = new QSGAreaAllocatorNode(node);
+        node->right = new QSGAreaAllocatorNode(node);
         QRect splitRect = currentRect;
         if ((currentRect.width() - size.width()) * currentRect.height() < (currentRect.height() - size.height()) * currentRect.width()) {
             node->splitType = HorizontalSplit;
@@ -162,7 +162,7 @@ bool AreaAllocator::allocateInNode(const QSize &size, QPoint &result, const QRec
     }
 }
 
-bool AreaAllocator::deallocateInNode(const QPoint &pos, AreaAllocatorNode *node)
+bool QSGAreaAllocator::deallocateInNode(const QPoint &pos, QSGAreaAllocatorNode *node)
 {
     while (!node->isLeaf()) {
         // Node has been split.
@@ -176,12 +176,12 @@ bool AreaAllocator::deallocateInNode(const QPoint &pos, AreaAllocatorNode *node)
     return true;
 }
 
-void AreaAllocator::mergeNodeWithNeighbors(AreaAllocatorNode *node)
+void QSGAreaAllocator::mergeNodeWithNeighbors(QSGAreaAllocatorNode *node)
 {
     bool done = false;
-    AreaAllocatorNode *parent = 0;
-    AreaAllocatorNode *current = 0;
-    AreaAllocatorNode *sibling;
+    QSGAreaAllocatorNode *parent = 0;
+    QSGAreaAllocatorNode *current = 0;
+    QSGAreaAllocatorNode *sibling;
     while (!done) {
         Q_ASSERT(node->isLeaf());
         Q_ASSERT(!node->isOccupied);
@@ -219,7 +219,7 @@ void AreaAllocator::mergeNodeWithNeighbors(AreaAllocatorNode *node)
             Q_ASSERT(current == parent->right);
             Q_ASSERT(parent->left);
 
-            AreaAllocatorNode *neighbor = parent->left;
+            QSGAreaAllocatorNode *neighbor = parent->left;
             while (neighbor->right && neighbor->splitType == splitType)
                 neighbor = neighbor->right;
 
@@ -229,7 +229,7 @@ void AreaAllocator::mergeNodeWithNeighbors(AreaAllocatorNode *node)
 
                 parent = neighbor->parent;
                 sibling = neighbor == parent->left ? parent->right : parent->left;
-                AreaAllocatorNode **nodeRef = &m_root;
+                QSGAreaAllocatorNode **nodeRef = &m_root;
                 if (parent->parent) {
                     if (parent == parent->parent->left)
                         nodeRef = &parent->parent->left;
@@ -257,7 +257,7 @@ void AreaAllocator::mergeNodeWithNeighbors(AreaAllocatorNode *node)
             Q_ASSERT(current == parent->left);
             Q_ASSERT(parent->right);
 
-            AreaAllocatorNode *neighbor = parent->right;
+            QSGAreaAllocatorNode *neighbor = parent->right;
             while (neighbor->left && neighbor->splitType == splitType)
                 neighbor = neighbor->left;
 
@@ -267,7 +267,7 @@ void AreaAllocator::mergeNodeWithNeighbors(AreaAllocatorNode *node)
 
                 parent = neighbor->parent;
                 sibling = neighbor == parent->left ? parent->right : parent->left;
-                AreaAllocatorNode **nodeRef = &m_root;
+                QSGAreaAllocatorNode **nodeRef = &m_root;
                 if (parent->parent) {
                     if (parent == parent->parent->left)
                         nodeRef = &parent->parent->left;

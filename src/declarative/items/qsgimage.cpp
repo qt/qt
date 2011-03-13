@@ -231,6 +231,10 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
 
     if (d->pixmapChanged) {
         d->textureProvider->setImage(d->pix.pixmap().toImage());
+        // force update the texture in the node to trigger reconstruction of
+        // geometry and the likes when a atlas segment has changed.
+        node->setTexture(0);
+        node->setTexture(d->textureProvider);
         d->pixmapChanged = false;
     }
 

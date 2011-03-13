@@ -51,8 +51,6 @@
 #include "distancefieldfontatlas_p.h"
 
 #include "qsgtexturemanager.h"
-#include "qsgpartialuploadtexturemanager.h"
-#include "qsgthreadedtexturemanager.h"
 
 #ifdef Q_WS_MAC
 #include "qsgmactexturemanager_mac_p.h"
@@ -149,7 +147,7 @@ void QSGContext::initialize(QGLContext *context)
     d->rootNode = new RootNode();
     d->renderer->setRootNode(d->rootNode);
 
-    d->textureManager = createTextureManager();
+    d->textureManager = createTextureManager(this);
 
     current = this;
 
@@ -236,31 +234,31 @@ Renderer *QSGContext::createRenderer()
 /*!
     Factory function for the texture manager to be used for this scene graph.
  */
-QSGTextureManager *QSGContext::createTextureManager()
+QSGTextureManager *QSGContext::createTextureManager(QSGContext *context)
 {
     QStringList args = qApp->arguments();
 
     QSGTextureManager *manager;
 
-    if (args.contains("--partial-texture-manager")) {
-        printf("QSGContext: Using partial upload texture manager\n");
-        manager = new QSGPartialUploadTextureManager;
+//    if (args.contains("--partial-texture-manager")) {
+//        printf("QSGContext: Using partial upload texture manager\n");
+//        manager = new QSGPartialUploadTextureManager;
 
-    } else if (args.contains("--basic-texture-manager")) {
-         printf("QSGContext: Using basic texture manager\n");
-         manager = new QSGTextureManager;
+//    } else if (args.contains("--basic-texture-manager")) {
+//         printf("QSGContext: Using basic texture manager\n");
+//         manager = new QSGTextureManager;
 
-    } else if (args.contains("--threaded-texture-manager")) {
-        printf("QSGContext: Using threaded texture manager\n");
-        manager = new QSGThreadedTextureManager;
+//    } else if (args.contains("--threaded-texture-manager")) {
+//        printf("QSGContext: Using threaded texture manager\n");
+//        manager = new QSGThreadedTextureManager;
 
-    } else {
+//    } else {
 #ifdef Q_WS_MAC
         manager = new QSGMacTextureManager;
 #else
         manager = new QSGTextureManager;
 #endif
-    }
+//    }
 
 //#if defined (Q_WS_MAC)
 //    printf("QSGContext:: Using Mac Texture manager\n");
@@ -272,8 +270,6 @@ QSGTextureManager *QSGContext::createTextureManager()
 //    printf("QSGContext:: Using EglFS Threaded Texture Manager\n");
 //    return new QSGEglFSThreadedTextureManager;
 //#endif
-
-    manager->setContext(this);
 
     return manager;
 }

@@ -298,7 +298,7 @@ void DefaultRectangleNode::updateGeometry()
     // Calculate from where in the texture to sample gradient colours.
     qreal gradientSourceX0 = 0, gradientSourceDX = 0, gradientSourceY = 0;
     if (m_gradient_texture.isReady()) {
-        QRectF src = m_gradient_texture.subRect();
+        QRectF src = m_gradient_texture->subRect();
         gradientSourceY = qreal(0.5) * (src.top() + src.bottom());
         gradientSourceDX = src.width() / stops.size();
         gradientSourceX0 = src.left() + qreal(0.5) * gradientSourceDX;

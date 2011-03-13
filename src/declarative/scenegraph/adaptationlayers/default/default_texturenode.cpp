@@ -267,10 +267,14 @@ void DefaultTextureNode::setTexture(QSGTextureProvider *texture)
 {
     if (texture == m_texture)
         return;
+
     m_texture = texture;
     m_material.setTexture(texture);
     m_materialO.setTexture(texture);
     markDirty(DirtyMaterial);
+
+    // Because the texture can be a different part of the atlas, we need to update it...
+    m_dirtyGeometry = true;
 }
 
 void DefaultTextureNode::update()
@@ -286,7 +290,18 @@ void DefaultTextureNode::preprocess()
 
 void DefaultTextureNode::updateGeometry()
 {
-    QSGGeometry::updateTexturedRectGeometry(&m_geometry, m_targetRect, m_sourceRect);
+    const QSGTextureRef t = m_texture->texture();
+    if (t.isNull()) {
+        QSGGeometry::updateTexturedRectGeometry(&m_geometry, QRectF(), QRectF());
+    } else {
+        QRectF textureRect = t->subRect();
+        QRectF sr(textureRect.x() + m_sourceRect.x() * textureRect.width(),
+                  textureRect.y() + m_sourceRect.y() * textureRect.height(),
+                  m_sourceRect.width() * textureRect.width(),
+                  m_sourceRect.height() * textureRect.height());
+
+        QSGGeometry::updateTexturedRectGeometry(&m_geometry, m_targetRect, sr);
+    }
     markDirty(DirtyGeometry);
     m_dirtyGeometry = false;
 }

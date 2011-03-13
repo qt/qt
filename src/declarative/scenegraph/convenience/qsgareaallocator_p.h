@@ -46,23 +46,23 @@
 
 class QRect;
 class QPoint;
-struct AreaAllocatorNode;
-class AreaAllocator
+struct QSGAreaAllocatorNode;
+class Q_DECLARATIVE_EXPORT QSGAreaAllocator
 {
 public:
-    AreaAllocator(const QSize &size);
-    ~AreaAllocator();
+    QSGAreaAllocator(const QSize &size);
+    ~QSGAreaAllocator();
 
     QRect allocate(const QSize &size);
     bool deallocate(const QRect &rect);
     bool isEmpty() const { return m_root == 0; }
     QSize size() const { return m_size; }
 private:
-    bool allocateInNode(const QSize &size, QPoint &result, const QRect &currentRect, AreaAllocatorNode *node);
-    bool deallocateInNode(const QPoint &pos, AreaAllocatorNode *node);
-    void mergeNodeWithNeighbors(AreaAllocatorNode *node);
+    bool allocateInNode(const QSize &size, QPoint &result, const QRect &currentRect, QSGAreaAllocatorNode *node);
+    bool deallocateInNode(const QPoint &pos, QSGAreaAllocatorNode *node);
+    void mergeNodeWithNeighbors(QSGAreaAllocatorNode *node);
 
-    AreaAllocatorNode *m_root;
+    QSGAreaAllocatorNode *m_root;
     QSize m_size;
 };
 

@@ -69,6 +69,7 @@ QSGTexture::QSGTexture()
     : m_status(Null)
     , m_texture_id(0)
     , m_ref_count(0)
+    , m_sub_rect(0, 0, 1, 1)
     , m_has_alpha(false)
     , m_owns_texture(true)
     , m_has_mipmaps(false)
@@ -91,6 +92,20 @@ void QSGTexture::setStatus(Status s)
         return;
     Q_ASSERT(s != Ready || (m_texture_id > 0 && !m_texture_size.isEmpty()));
     m_status = s;
+}
+
+/*!
+    Sets the texture subrect of this texture to \a subrect.
+
+    The subrect is specified in normalized coordinates, relative
+    to the texture size.
+
+    \sa setTextureSize(), subRect()
+ */
+
+void QSGTexture::setSubRect(const QRectF &subrect)
+{
+    m_sub_rect = subrect;
 }
 
 
@@ -132,20 +147,6 @@ int QSGTextureManager::maxTextureSize() const
     if (d->maxTextureSize < 0)
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &const_cast<QSGTextureManagerPrivate *>(d)->maxTextureSize);
     return d->maxTextureSize;
-}
-
-
-void QSGTextureManager::setContext(QSGContext *context)
-{
-    Q_D(QSGTextureManager);
-    Q_ASSERT(!d->context);
-    d->context = context;
-}
-
-QSGContext *QSGTextureManager::context() const
-{
-    Q_D(const QSGTextureManager);
-    return d->context;
 }
 
 

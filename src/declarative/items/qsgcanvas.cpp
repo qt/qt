@@ -90,6 +90,7 @@ have a scope focused item), and the other items will have their focus cleared.
 #ifdef FRAME_TIMING
 static QTime frameTimer;
 int sceneGraphRenderTime;
+int readbackTime;
 #endif
 
 
@@ -191,13 +192,14 @@ void QSGCanvas::paintEvent(QPaintEvent *)
         d->renderSceneGraph();
 
 #ifdef FRAME_TIMING
-        printf("FrameTimes, last=%d, animations=%d, polish=%d, makeCurrent=%d, sync=%d, sgrender=%d, total=%d\n",
+        printf("FrameTimes, last=%d, animations=%d, polish=%d, makeCurrent=%d, sync=%d, sgrender=%d, readback=%d, total=%d\n",
                lastFrame,
                animationTime,
                polishTime - animationTime,
                makecurrentTime - polishTime,
                syncTime - makecurrentTime,
                sceneGraphRenderTime - syncTime,
+               readbackTime - sceneGraphRenderTime,
                frameTimer.elapsed());
 #endif
 
@@ -242,7 +244,7 @@ void QSGCanvas::showEvent(QShowEvent *e)
     } else {
         makeCurrent();
 
-        if (!d->context) {
+        if (!d->context || !d->context->isReady()) {
             d->initializeSceneGraph();
             d->animationDriver = new QSGAnimationDriver(this, this);
         }
@@ -324,6 +326,13 @@ void QSGCanvasPrivate::renderSceneGraph()
 
 #ifdef FRAME_TIMING
     sceneGraphRenderTime = frameTimer.elapsed();
+#endif
+
+
+#ifdef FRAME_TIMING
+    int pixel;
+    glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &pixel);
+    readbackTime = frameTimer.elapsed();
 #endif
 
     glctx->swapBuffers();
