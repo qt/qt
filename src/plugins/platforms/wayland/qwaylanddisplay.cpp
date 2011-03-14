@@ -141,7 +141,12 @@ void QWaylandDisplay::displayHandleGlobal(struct wl_display *display,
     }
 }
 
-void QWaylandDisplay::eventDispatcher(void)
+void QWaylandDisplay::iterate()
+{
+    wl_display_iterate(mDisplay, WL_DISPLAY_READABLE | WL_DISPLAY_WRITABLE);
+}
+
+void QWaylandDisplay::readEvents(void)
 {
     wl_display_iterate(mDisplay, WL_DISPLAY_READABLE);
 }
@@ -189,7 +194,7 @@ QWaylandDisplay::QWaylandDisplay(void)
     mNativeEglDisplay = 0;
 #endif
 
-    eventDispatcher();
+    readEvents();
 
 #ifdef QT_WAYLAND_GL_SUPPORT
     mEglDisplay = eglGetDisplay((EGLNativeDisplayType)mNativeEglDisplay);
@@ -208,7 +213,7 @@ QWaylandDisplay::QWaylandDisplay(void)
     int fd = wl_display_get_fd(mDisplay, sourceUpdate, this);
     mReadNotifier = new QSocketNotifier(fd, QSocketNotifier::Read, this);
     connect(mReadNotifier,
-            SIGNAL(activated(int)), this, SLOT(eventDispatcher()));
+            SIGNAL(activated(int)), this, SLOT(readEvents()));
 
     mWriteNotifier = new QSocketNotifier(fd, QSocketNotifier::Write, this);
     connect(mWriteNotifier,

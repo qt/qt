@@ -111,7 +111,7 @@ QPaintDevice *QWaylandShmWindowSurface::paintDevice()
 void QWaylandShmWindowSurface::beginPaint(const QRegion &)
 {
     while (mWaitingForFrameSync) {
-        mDisplay->eventDispatcher();
+        mDisplay->iterate();
     }
 }
 

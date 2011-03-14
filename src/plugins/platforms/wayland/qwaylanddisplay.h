@@ -81,8 +81,10 @@ public:
     void syncCallback(wl_display_sync_func_t func, void *data);
     void frameCallback(wl_display_frame_func_t func, void *data);
 
+    void iterate();
+
 public slots:
-    void eventDispatcher(void);
+    void readEvents(void);
     void flushRequests(void);
 
 private:
