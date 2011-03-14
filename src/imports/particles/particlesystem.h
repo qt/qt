@@ -50,7 +50,6 @@ void startTimeChanged(int arg);
 
 public slots:
 void reset();
-void prepareNextFrame();
 void setRunning(bool arg);
 
 
