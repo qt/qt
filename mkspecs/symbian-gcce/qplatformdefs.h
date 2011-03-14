@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the qmake application of the Qt Toolkit.
+** This file is part of the mkspecs of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,50 +39,5 @@
 **
 ****************************************************************************/
 
-#ifndef MINGW_MAKE_H
-#define MINGW_MAKE_H
+#include "../common/symbian/qplatformdefs.h"
 
-#include "winmakefile.h"
-
-QT_BEGIN_NAMESPACE
-
-class MingwMakefileGenerator : public Win32MakefileGenerator
-{
-public:
-    MingwMakefileGenerator();
-    ~MingwMakefileGenerator();
-protected:
-    QString escapeDependencyPath(const QString &path) const;
-    QString getLibTarget();
-    bool writeMakefile(QTextStream &);
-    void init();
-private:
-    bool isWindowsShell() const;
-    void writeMingwParts(QTextStream &);
-    void writeIncPart(QTextStream &t);
-    void writeLibsPart(QTextStream &t);
-    void writeLibDirPart(QTextStream &t);
-    void writeObjectsPart(QTextStream &t);
-    void writeBuildRulesPart(QTextStream &t);
-    void writeRcFilePart(QTextStream &t);
-    void processPrlVariable(const QString &var, const QStringList &l);
-
-    QStringList &findDependencies(const QString &file);
-    
-    QString preCompHeaderOut;
-
-    virtual bool findLibraries();
-    bool findLibraries(const QString &where);
-    void fixTargetExt();
-
-    bool init_flag;
-    QString objectsLinkLine;
-    QString quote;
-};
-
-inline MingwMakefileGenerator::~MingwMakefileGenerator()
-{ }
-
-QT_END_NAMESPACE
-
-#endif // MINGW_MAKE_H
