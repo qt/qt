@@ -259,6 +259,7 @@ init_context:
     case QSsl::SslV3:
         ctx = q_SSL_CTX_new(client ? q_SSLv3_client_method() : q_SSLv3_server_method());
         break;
+    case QSsl::TlsV1SslV3: // TlsV1SslV3 will be disabled below
     case QSsl::AnyProtocol:
     default:
         ctx = q_SSL_CTX_new(client ? q_SSLv23_client_method() : q_SSLv23_server_method());
@@ -284,7 +285,11 @@ init_context:
     }
 
     // Enable all bug workarounds.
-    q_SSL_CTX_set_options(ctx, SSL_OP_ALL);
+    if (configuration.protocol == QSsl::TlsV1SslV3) {
+        q_SSL_CTX_set_options(ctx, SSL_OP_ALL|SSL_OP_NO_SSLv2);
+    } else {
+        q_SSL_CTX_set_options(ctx, SSL_OP_ALL);
+    }
 
     // Initialize ciphers
     QByteArray cipherString;
