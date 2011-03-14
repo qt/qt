@@ -1,0 +1,186 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qml-righttoleft.html
+\target righttoleft
+\title QML Right-to-left User Interfaces
+
+\section1 Overview
+
+This chapter discusses different approaches and options available for implementing right-to-left
+language support for Qt Quick applications. Some common right-to-left languages include Arabic, Hebrew,
+Persian and Urdu. Most changes include making sure that text translated to right-to-left languages
+is properly aligned to the right, and horizontally ordered content in views, lists and grids flows
+correctly from the right to left.
+
+In right-to-left language speaking cultures, people naturally scan and read graphic elements and text
+from the right to left. General rule of thumb is that the content like photos, videos, maps is not
+mirrored, but positioning of the content is, like application layouts and the flow of visual elements.
+Common use cases include photos shown in chronological order should flow right-to-left, the
+low end range of the horizontal sliders should be located at the right side of the slider, and the
+text lines should should be aligned to the right side of the available area. The location of visual
+elements should not be mirrored when the position is related to a content, for example when a
+position marker is shown to indicate a location on a map. Also, there are some special cases you may
+need to take into account where the right-to-left language speakers are used to the left-to-right
+positioning, for example when using number dialers in phones and media play, pause, rewind and
+forward buttons in music players.
+
+\section1 Text Alignment
+
+Applies to \l Text, \l TextInput and \l TextEdit.
+
+When the horizontal alignment of the text item is not explicitly set, the text element will be
+automatically aligned to the natural reading direction of the text. By default left-to-right text
+like English is aligned to the left side of the text area, and right-to-left text like Arabic is
+aligned to the right side of the text area. The alignment of a text element with empty text takes
+it's alignment cue from \l QApplication::keyboardInputDirection(), which is based on the active
+system locale. Explicitly setting property \c horizontalAlignment for the text will override any
+implicit locale-based alignment. Enabling layout mirroring using attached property
+\l LayoutMirroring causes any explicit left and right horizontal alignments to be mirrored.
+Note that \c horizontalAlignment property itself will remain unchanged. The effective alignment of
+the text element that takes the mirroring into account can be read from the
+\c effectiveHorizontalAlignment property.
+
+\snippet doc/src/snippets/declarative/righttoleft.qml 0
+
+\section1 Layout direction of positioners and views
+
+Applies to \l Row, \l Grid, \l Flow, \l ListView and \l GridView
+
+From Qt Quick 1.1 onwards horizontal positioners and model views have gained a \c layoutDirection
+property for controlling the horizontal direction of the layouts. Setting \c layoutDirection to
+\c Qt.RightToLeft causes items to be laid out from the right to left. By default Qt Quick follows
+the left-to-right layout direction.
+
+Enabling application layout mirroring using attached property \c LayoutMirroring causes the effective
+\c layoutDirection of positioners and views to be mirrored. Note that actual value of \c layoutDirection
+property will remain unchanged. The effective layout direction of positioners and views that takes the mirroring into account can be read from the \c effectiveLayoutDirection property.
+
+\snippet doc/src/snippets/declarative/righttoleft.qml 1
+
+\section1 Layout mirroring
+
+Attached property \l LayoutMirroring is provided as a convenience for easily implementing right-to-left
+support for existing left-to-right Qt Quick applications. It mirrors the behavior of \l {anchor-layout}
+{Item anchors}, the layout direction of \l{Using QML Positioner and Repeater Items}{positioners} and
+model views and the explicit text alignment of QML text elements.
+
+You can enable layout mirroring for a particular Item
+
+\snippet doc/src/snippets/declarative/righttoleft.qml 2
+
+or make all children elements also inherit the layout direction
+
+\snippet doc/src/snippets/declarative/righttoleft.qml 3
+
+Mirroring does not change the return value of the layout direction and horizontal alignment properties.
+Separate read-only property \c effectiveLayoutDirection can be used to query the effective layout
+direction of positioners and model views that takes the mirroring into account. Similarly \c Text,
+\c TextInput and \c TextEdit elements have gained read-only property \c effectiveHorizontalAlignment
+for querying what is the effective visual alignment of text.
+
+\c LayoutMirroring doesn't alter application layouts and animations done by using the \l x coordinate
+directly. Adding right-to-left support to those layouts requires some code changes to your application,
+especially in views that rely on both the anchors and x coordinate-based positioning.
+
+\snippet doc/src/snippets/declarative/righttoleft.qml 4
+
+Not all the layouts should be mirrored. There are cases where the visual element is positioned to
+the right side of the screen for better one-handed use, because most people are right-handed, and not
+because of the reading direction. In the case that a child element needs to be unaffected by the mirroring, set the \c LayoutMirroring.enabled property for that element to false. Qt Quick is designed
+for developing animated, fluid user interfaces. When mirroring your application, remember to test that
+the animations and transitions continue to work as expected. If you don't have resources to add
+right-to-left support for your application, it may be better to just keep the application layouts left
+aligned and just make sure that text is translated and aligned properly.
+
+\section1 Mirroring icons
+
+Applies to \l Image, \l BorderImage, \l AnimatedImage
+
+Most images don't need mirroring, but some directional icons should be mirrored. You can mirror the
+painting of these icons with a dedicated \l mirror property introduced in Qt Quick 1.1.
+
+\snippet doc/src/snippets/declarative/righttoleft.qml 5
+
+\section1 Default layout direction
+
+Property \l Qt.application.layoutDirection can be used to query the active layout direction of the
+application. It is based on QApplication::layoutDirection(), which most commonly determines the layout
+direction from the active language translation file.
+
+To define the layout direction for a particular locale, declare the dedicated string literal
+\c QT_LAYOUT_DIRECTION in context \c QApplication as either "LTR" or "RTL".
+
+You can do this by first introducing line
+
+\code
+QT_TRANSLATE_NOOP("QApplication", "QT_LAYOUT_DIRECTION");
+\endcode
+
+somewhere in your QML source code and calling \c lupdate to generate the translation source file.
+
+\code
+lupdate myapp.qml -ts myapp.ts
+\endcode
+
+This will append following declaration to the translation file, where you can fill either "LTR" or
+"RTL" as the translation for the locale.
+
+\code
+<context>
+    <name>QApplication</name>
+    <message>
+        <location filename="myapp.qml" line="33"/>
+        <source>QT_LAYOUT_DIRECTION</source>
+        <translation type="unfinished">RTL</translation>
+    </message>
+</context>
+\endcode
+
+You can test that the layout direction works as expected by running your Qt Quick application with
+the compiled translation file.
+
+\code
+qmlviewer myapp.qml -translation myapp.qm
+\endcode
+
+You can test your application in right-to-left layout direction simply by executing qmlviewer with a
+command-line parameter "-reverse".
+
+\code
+qmlviewer myapp.qml -reverse
+\endcode
+
+Layout direction can also be set from C++ by calling static function \l QApplication::setLayoutDirection().
+
+\code
+QApplication app(argc, argv);
+app.setLayoutDirection(Qt::RightToLeft);
+\endcode
+
+*/
