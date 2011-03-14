@@ -234,7 +234,8 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
                 int idx = rtlOffset + rtlSign * i;
                 outGlyphs[idx] = tmpGlyphs[i] | fontIndex;
                 outAdvances_x[idx] = QFixed::fromReal(tmpPoints[i + 1].x - tmpPoints[i].x);
-                outAdvances_y[idx] = QFixed::fromReal(tmpPoints[i + 1].y - tmpPoints[i].y);
+                // Use negative y advance for flipped coordinate system
+                outAdvances_y[idx] = QFixed::fromReal(tmpPoints[i].y - tmpPoints[i + 1].y);
 
                 if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
                     outAdvances_x[idx] = outAdvances_x[idx].round();
