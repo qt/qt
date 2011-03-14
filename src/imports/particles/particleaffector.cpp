@@ -10,6 +10,10 @@ void ParticleAffector::affectSystem(qreal dt)
 {
     if(!m_active)
         return;
+    if(!m_system){
+        qDebug() << "No system" << this;
+        return;
+    }
     //If not reimplemented, calls affect particle per particle
     //But only on particles in targeted system/area
     if(m_updateIntSet){
@@ -18,12 +22,13 @@ void ParticleAffector::affectSystem(qreal dt)
             m_groups << m_system->m_groupIds[p];//###Can this occur before group ids are properly assigned?
         m_updateIntSet = false;
     }
-    foreach(ParticleData* d, m_system->data){
+    foreach(ParticleData* d, m_system->m_data){
         if(!d)
             return;
         if(m_groups.isEmpty() || m_groups.contains(d->group))
-            if(QRectF(x(), y(), width(), height()).contains(d->curX(), d->curY()))//TODO: Offset
-                d->needsReload = affectParticle(d, dt) || d->needsReload;
+            if(width() == 0 || height() == 0 || QRectF(x(), y(), width(), height()).contains(d->curX(), d->curY()))//TODO: Offset
+                 if(affectParticle(d, dt))
+                     m_system->m_needsReset << d;
     }
 }
 

@@ -68,10 +68,11 @@ Rectangle{
         y: 20
         z:4
     }
-    ParticleSystem{
+    ParticleSystem{ id: sys }
+    SpriteParticle{
         anchors.fill: parent
-        particles:SpriteParticle{
         id: particles
+        system: sys
         sprites: [Sprite{
             name: "happy"
             source: "squarefacesprite2.png"
@@ -126,29 +127,28 @@ Rectangle{
             frames: 1
             duration: 10000
         }]
-        }
-        emitters: TrailEmitter{
-            particlesPerSecond: 16
-            particleDuration: 10000
-            emitting: true
-            xSpeed: 0
-            ySpeed: 60
-            xSpeedVariation: 10
-            ySpeedVariation: 10
-            xAccel: 0
-            yAccel: 10
-            particleSize: 30
-            particleSizeVariation: 10
-            emitterX: root.width/2
-            emitterY: 50
-            emitterXVariation: root.width/2
-            emitterYVariation: 50
-        }
-        affectors: Zone{
-            width: root.width;
-            height: root.height/2;
-            y: root.height/2;
-            affector: SpriteGoal{goalState:"dead"}
-        }
+    }
+    TrailEmitter{
+        system: sys
+        particlesPerSecond: 16
+        particleDuration: 10000
+        emitting: true
+        xSpeed: 0
+        ySpeed: 60
+        xSpeedVariation: 10
+        ySpeedVariation: 10
+        xAccel: 0
+        yAccel: 10
+        particleSize: 30
+        particleSizeVariation: 10
+        width: parent.width
+        height: 100
+    }
+    SpriteGoal{
+        system: sys
+        width: root.width;
+        height: root.height/2;
+        y: root.height/2;
+        goalState:"dead"
     }
 }

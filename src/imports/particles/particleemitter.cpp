@@ -21,6 +21,5 @@ void ParticleEmitter::setEmitting(bool arg)
     if (m_emitting != arg) {
         m_emitting = arg;
         emit emittingChanged(arg);
-        m_system->pleaseUpdate();
     }
 }

@@ -9,21 +9,27 @@ class SwarmAffector : public ParticleAffector
 {
     Q_OBJECT
     Q_PROPERTY(qreal strength READ strength WRITE setStrength NOTIFY strengthChanged)
-    Q_PROPERTY(QDeclarativeListProperty<ParticleType> leaders READ leaders)
+    Q_PROPERTY(QStringList leaders READ leaders WRITE setLeaders NOTIFY leadersChanged)
 public:
-    explicit SwarmAffector(QObject *parent = 0);
-    virtual bool affect(ParticleData *d, qreal dt);
+    explicit SwarmAffector(QSGItem *parent = 0);
+    virtual bool affectParticle(ParticleData *d, qreal dt);
     virtual void reset(int systemIdx);
 
-    QDeclarativeListProperty<ParticleType> leaders(){return QDeclarativeListProperty<ParticleType>(this, m_leaders);}
     qreal strength() const
     {
         return m_strength;
     }
 
+    QStringList leaders() const
+    {
+        return m_leaders;
+    }
+
 signals:
 
     void strengthChanged(qreal arg);
+
+    void leadersChanged(QStringList arg);
 
 public slots:
 
@@ -35,14 +41,24 @@ void setStrength(qreal arg)
     }
 }
 
+void setLeaders(QStringList arg)
+{
+    if (m_leaders != arg) {
+        m_leaders = arg;
+        emit leadersChanged(arg);
+    }
+}
+
 private:
-    void ensureInit(ParticleData* d);
+    void ensureInit();
     void mapUpdate(int idx, qreal strength);
-    QList<ParticleType*> m_leaders;
-    ParticleSystem* m_system;
     QVector<QPointF> m_lastPos;
     qreal m_strength;
     bool m_inited;
+    QStringList m_leaders;
+    QSet<int> m_leadGroups;
+private slots:
+    void updateGroupList();
 };
 
 #endif // SWARMAFFECTOR_H

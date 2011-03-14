@@ -11,13 +11,7 @@ Item {
         anchors.fill: parent
     }
 
-    SequentialAnimation {
-        running: true
-        PropertyAction { target: circleAnim1; property: "running"; value: true }
-        //PauseAnimation { duration: 70 }
-        //PropertyAction { target: circleAnim2; property: "running"; value: true }
-    }
-
+    ParticleSystem { id: sys }
     Image {
         source: "finalfrontier.png"
         transformOrigin: Item.Center
@@ -31,82 +25,77 @@ Item {
         }
 
     }
-    ParticleSystem{
-        particles: ColoredParticle {
-            image: "star.png"
-            colorVariation: 0.3
-            color: "white"
-            additive: 1
-        }
-        emitters: TrailEmitter {
-            id: starField
+    ColoredParticle {
+        system: sys
+        particles: ["starfield"]
+        image: "star.png"
+        colorVariation: 0.3
+        color: "white"
+        additive: 1
+    }
+    TrailEmitter {
+        id: starField
+        system: sys
+        particle: "starfield"
 
-            particlesPerSecond: 80
-            particleDuration: 2500
+        particlesPerSecond: 80
+        particleDuration: 2500
 
-            emitterY: root.height / 2
-            emitterX: root.width / 2
+        anchors.centerIn: parent
 
-            yAccelVariation: 100
-            xAccelVariation: 100;
+        yAccelVariation: 100
+        xAccelVariation: 100;
 
-            particleSize: 0
-            particleEndSize: 80
-            particleSizeVariation: 10
-        }
+        particleSize: 0
+        particleEndSize: 80
+        particleSizeVariation: 10
     }
     TrailEmitter{
-            system: meteorSystem
-            particlesPerSecond: 12
-            particleDuration: 5000
-            emitting: true
-            yAccelVariation: 80
-            xAccelVariation: 80;
-            particleSize: 15
-            particleEndSize: 300
-            anchors.centerIn: parent
+        system: sys
+        particle: "meteor"
+        particlesPerSecond: 12
+        particleDuration: 5000
+        emitting: true
+        yAccelVariation: 80
+        xAccelVariation: 80;
+        particleSize: 15
+        particleEndSize: 300
+        anchors.centerIn: parent
      }
-    ParticleSystem{
-        id: meteorSystem
-        anchors.fill: parent
-        particles: SpriteParticle{
-            id: particles
-            sprites:[Sprite{
-                    id: spinState
-                    name: "spinning"
-                    source: "meteor.png"
-                    frames: 35
-                    duration: 40
-                    speedModifiesDuration: -0.1
-                    to: {"explode":0, "spinning":1}
-                },Sprite{
-                    name: "explode"
-                    source: "_explo.png"
-                    frames: 22
-                    duration: 40
-                    speedModifiesDuration: -0.1
-                    to: {"nullFrame":1}
-                },Sprite{//Not sure if this is needed, but seemed easiest
-                    name: "nullFrame"
-                    source: "nullRock.png"
-                    frames: 1
-                    duration: 1000
-                }
-            ]
-        }
-         affectors: Toggle{
-            affecting: true
-            Zone{
-                x: holder.x - 30
-                y: holder.y - 30
-                width:  60
-                height: 60
-                SpriteGoal{
-                    goalState: "explode"
-                    jump: true
-                }
+    SpriteParticle{
+        system: sys
+        particles: ["meteor"]
+        sprites:[Sprite{
+                id: spinState
+                name: "spinning"
+                source: "meteor.png"
+                frames: 35
+                duration: 40
+                speedModifiesDuration: -0.1
+                to: {"explode":0, "spinning":1}
+            },Sprite{
+                name: "explode"
+                source: "_explo.png"
+                frames: 22
+                duration: 40
+                speedModifiesDuration: -0.1
+                to: {"nullFrame":1}
+            },Sprite{//Not sure if this is needed, but seemed easiest
+                name: "nullFrame"
+                source: "nullRock.png"
+                frames: 1
+                duration: 1000
             }
-        }
+        ]
+    }
+    SpriteGoal{
+        particles: ["meteor"]
+        system: sys
+        goalState: "explode"
+        jump: true
+        anchors.centerIn: holder//A bug in affectors currently isn't compensating for relative x,y. when that's fixed this can just anchors.fill: rocketShip
+        width: 60
+        height: 60
     }
     Image {
         id: rocketShip
@@ -132,7 +121,7 @@ Item {
         SequentialAnimation on percent {
             id: circleAnim1
             loops: Animation.Infinite
-            running: false
+            running: true
             NumberAnimation {
             duration: 4000
             from: 1
@@ -141,46 +130,48 @@ Item {
 
         }
     }
-    ParticleSystem {
-        z: 0
-        particles: ColoredParticle{
-            image: "particle4.png"
+    ColoredParticle{
+        z:0 
+        system: sys
+        particles: ["exhaust"]
+        image: "particle4.png"
 
-            color: "orange"
-            SequentialAnimation on color {
-                loops: Animation.Infinite
-                ColorAnimation {
-                    from: "red"
-                    to: "cyan"
-                    duration: 1000
-                }
-                ColorAnimation {
-                    from: "cyan"
-                    to: "red"
-                    duration: 1000
-                }
+        color: "orange"
+        SequentialAnimation on color {
+            loops: Animation.Infinite
+            ColorAnimation {
+                from: "red"
+                to: "cyan"
+                duration: 1000
             }
-
-            colorVariation: 0.2
+            ColorAnimation {
+                from: "cyan"
+                to: "red"
+                duration: 1000
+            }
         }
-        emitters: TrailEmitter{
-            id: trailsNormal2
 
-            particlesPerSecond: 300
-            particleDuration: 500
+        colorVariation: 0.2
+    }
+    TrailEmitter{
+        id: trailsNormal2
+        system: sys
+        particle: "exhaust"
 
-            emitterY: holder.y
-            emitterX: holder.x 
+        particlesPerSecond: 300
+        particleDuration: 500
 
-            xSpeedVariation: 40
-            ySpeedVariation: 40
-            speedFromMovement: 16
+        emitterY: holder.y
+        emitterX: holder.x 
 
-            yAccelVariation: 10
-            xAccelVariation: 10
+        xSpeedVariation: 40
+        ySpeedVariation: 40
+        speedFromMovement: 16
 
-            particleSize: 4
-            particleSizeVariation: 4
-        }
+        yAccelVariation: 10
+        xAccelVariation: 10
+
+        particleSize: 4
+        particleSizeVariation: 4
     }
 }

@@ -11,4 +11,5 @@ bool FrictionAffector::affectParticle(ParticleData *d, qreal dt)
         return false;
     d->setInstantaneousAX(d->pv.ax + (d->curSX() * m_factor * -1 * dt));
     d->setInstantaneousAY(d->pv.ay + (d->curSY() * m_factor * -1 * dt));
+    return true;
 }

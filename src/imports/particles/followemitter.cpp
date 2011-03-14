@@ -59,7 +59,7 @@ void FollowEmitter::emitWindow(int timeStamp)
     int gId2 = m_system->m_groupIds[m_particle];
     for(int i=0; i<m_system->m_groupData[gId]->size; i++){
         pt = m_lastEmission[i];
-        ParticleData* d = m_system->data[i + m_system->m_groupData[gId]->start];
+        ParticleData* d = m_system->m_data[i + m_system->m_groupData[gId]->start];
         if(!d)
             continue;
         if(pt < d->pv.t)

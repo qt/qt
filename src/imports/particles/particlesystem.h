@@ -42,9 +42,11 @@ int count(){ return m_particle_count; }
 
 signals:
 
+void systemInitialized();
 void runningChanged(bool arg);
 
 void startTimeChanged(int arg);
+
 
 public slots:
 void reset();
@@ -67,20 +69,20 @@ public://but only really for related class usage. Perhaps we should all be frien
     ParticleData* newDatum(int groupId);
     uint systemSync(ParticleType* p);
     QTime m_timestamp;
-    QVector<ParticleData*> data;
+    QVector<ParticleData*> m_data;
+    QSet<ParticleData*> m_needsReset;
     QHash<QString, int> m_groupIds;
     QHash<int, GroupData*> m_groupData;//id, size, start
     uint m_timeInt;
+    bool m_initialized;
 
     void registerParticleType(ParticleType* p);
     void registerParticleEmitter(ParticleEmitter* e);
     void registerParticleAffector(ParticleAffector* a);
-    void pleaseUpdate(){};//XXX first checking we can live without it
 private:
     void initializeSystem();
     int m_particle_count;
     bool m_running;
-    bool m_initialized;
     QList<ParticleEmitter*> m_emitters;
     QList<ParticleAffector*> m_affectors;
     QList<ParticleType*> m_particles;
@@ -109,7 +111,6 @@ public:
     ParticleData();
 
     ParticleVertex pv;
-    bool needsReload;
 
     //Convenience functions for working backwards, because parameters are from the start of particle life
     //If setting multiple parameters at once, doing the conversion yourself will be faster.

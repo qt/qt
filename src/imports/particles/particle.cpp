@@ -69,7 +69,7 @@ void ParticleType::calcSystemOffset()
         foreach(const QString &g, m_particles){
             int gId = m_system->m_groupIds[g];
             for(int i=0; i<m_system->m_groupData[gId]->size; i++)
-                reload(m_system->data[m_system->m_groupData[gId]->start + i]);
+                reload(m_system->m_data[m_system->m_groupData[gId]->start + i]);
         }
     }
 }

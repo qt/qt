@@ -32,191 +32,181 @@ Rectangle {
         }
     }
 
-    ParticleSystem{
-        particles: ColoredParticle{
-            image: "content/particle.png"
-            color: "cyan"
-            SequentialAnimation on color {
-                loops: Animation.Infinite
-                ColorAnimation {
-                    from: "cyan"
-                    to: "magenta"
-                    duration: 1000
-                }
-                ColorAnimation {
-                    from: "magenta"
-                    to: "blue"
-                    duration: 2000
-                }
-                ColorAnimation {
-                    from: "blue"
-                    to: "violet"
-                    duration: 2000
-                }
-                ColorAnimation {
-                    from: "violet"
-                    to: "cyan"
-                    duration: 2000
-                }
+    ParticleSystem{ id: sys1 }
+    ColoredParticle{
+        system: sys1
+        image: "content/particle.png"
+        color: "cyan"
+        SequentialAnimation on color {
+            loops: Animation.Infinite
+            ColorAnimation {
+                from: "cyan"
+                to: "magenta"
+                duration: 1000
             }
-            colorVariation: 0.3
+            ColorAnimation {
+                from: "magenta"
+                to: "blue"
+                duration: 2000
+            }
+            ColorAnimation {
+                from: "blue"
+                to: "violet"
+                duration: 2000
+            }
+            ColorAnimation {
+                from: "violet"
+                to: "cyan"
+                duration: 2000
+            }
         }
-        emitters: TrailEmitter{
-            id: trailsNormal
-
-            particlesPerSecond: 500
-            particleDuration: 2000
-
-
-            emitterY: mouseArea.pressed ? mouseArea.mouseY : circle.cy
-            emitterX: mouseArea.pressed ? mouseArea.mouseX : circle.cx
-            //        property real ex;
-            //        SequentialAnimation on ex {
-            //            NumberAnimation { from: 100; to: root.width - 100; duration: 1000; }
-            //            NumberAnimation { to: 100; duration: 1000; }
-            //            loops: Animation.Infinite
-            //            running: !mouseArea.pressed
-            //        }
-
-            xSpeedVariation: 4
-            ySpeedVariation: 4
-            speedFromMovement: 8
-
-            yAccelVariation: 10
-            xAccelVariation: 10
-
-            particleSize: 8
-            particleSizeVariation: 4
-        }
+        colorVariation: 0.3
     }
-    ParticleSystem {
-        particles: ColoredParticle{
-            color: "cyan"
-            SequentialAnimation on color {
-                loops: Animation.Infinite
-                ColorAnimation {
-                    from: "magenta"
-                    to: "cyan"
-                    duration: 1000
-                }
-                ColorAnimation {
-                    from: "cyan"
-                    to: "magenta"
-                    duration: 2000
-                }
-            }
-            colorVariation: 0.5
-            image: "content/star.png"
-        }
-        emitters: TrailEmitter{
-            id: trailsStars
+    TrailEmitter{
+        id: trailsNormal
+        system: sys1
 
-            particlesPerSecond: 100
-            particleDuration: 2200
+        particlesPerSecond: 500
+        particleDuration: 2000
 
 
-            emitterY: mouseArea.pressed ? mouseArea.mouseY : circle.cy
-            emitterX: mouseArea.pressed ? mouseArea.mouseX : circle.cx
-            //        property real ex;
-            //        SequentialAnimation on ex {
-            //            NumberAnimation { from: 100; to: root.width - 100; duration: 1000; }
-            //            NumberAnimation { to: 100; duration: 1000; }
-            //            loops: Animation.Infinite
-            //            running: !mouseArea.pressed
-            //        }
+        emitterY: mouseArea.pressed ? mouseArea.mouseY : circle.cy
+        emitterX: mouseArea.pressed ? mouseArea.mouseX : circle.cx
 
-            xSpeedVariation: 4
-            ySpeedVariation: 4
-            speedFromMovement: 8
+        xSpeedVariation: 4
+        ySpeedVariation: 4
+        speedFromMovement: 8
 
-            yAccelVariation: 10
-            xAccelVariation: 10
+        yAccelVariation: 10
+        xAccelVariation: 10
 
-            particleSize: 22
-            particleSizeVariation: 4
-        }
+        particleSize: 8
+        particleSizeVariation: 4
     }
-    ParticleSystem {
-        particles: ColoredParticle{
-            image: "content/particle.png"
-            color: "orange"
-            SequentialAnimation on color {
-                loops: Animation.Infinite
-                ColorAnimation {
-                    from: "red"
-                    to: "green"
-                    duration: 2000
-                }
-                ColorAnimation {
-                    from: "green"
-                    to: "red"
-                    duration: 2000
-                }
+    ParticleSystem { id: sys2 }
+    ColoredParticle{
+        color: "cyan"
+        system: sys2
+        SequentialAnimation on color {
+            loops: Animation.Infinite
+            ColorAnimation {
+                from: "magenta"
+                to: "cyan"
+                duration: 1000
             }
-
-            colorVariation: 0.2
-
+            ColorAnimation {
+                from: "cyan"
+                to: "magenta"
+                duration: 2000
+            }
         }
-        emitters: TrailEmitter{
-            id: trailsNormal2
-
-            particlesPerSecond: 300
-            particleDuration: 2000
-
-            emitterY: mouseArea.pressed ? mouseArea.mouseY : circle2.cy
-            emitterX: mouseArea.pressed ? mouseArea.mouseX : circle2.cx
-
-            xSpeedVariation: 4
-            ySpeedVariation: 4
-            speedFromMovement: 16
-
-            yAccelVariation: 10
-            xAccelVariation: 10
-
-            particleSize: 12
-            particleSizeVariation: 4
-        }
+        colorVariation: 0.5
+        image: "content/star.png"
     }
-    ParticleSystem {
-        particles: ColoredParticle{
-            image: "content/star.png"
-            color: "green"
-            SequentialAnimation on color {
-                loops: Animation.Infinite
-                ColorAnimation {
-                    from: "green"
-                    to: "red"
-                    duration: 2000
-                }
-                ColorAnimation {
-                    from: "red"
-                    to: "green"
-                    duration: 2000
-                }
+    TrailEmitter{
+        id: trailsStars
+        system: sys2
+
+        particlesPerSecond: 100
+        particleDuration: 2200
+
+
+        emitterY: mouseArea.pressed ? mouseArea.mouseY : circle.cy
+        emitterX: mouseArea.pressed ? mouseArea.mouseX : circle.cx
+
+        xSpeedVariation: 4
+        ySpeedVariation: 4
+        speedFromMovement: 8
+
+        yAccelVariation: 10
+        xAccelVariation: 10
+
+        particleSize: 22
+        particleSizeVariation: 4
+    }
+    ParticleSystem { id: sys3; }
+    ColoredParticle{
+        image: "content/particle.png"
+        system: sys3
+        color: "orange"
+        SequentialAnimation on color {
+            loops: Animation.Infinite
+            ColorAnimation {
+                from: "red"
+                to: "green"
+                duration: 2000
             }
-
-            colorVariation: 0.5
+            ColorAnimation {
+                from: "green"
+                to: "red"
+                duration: 2000
+            }
         }
-        emitters: TrailEmitter{
-            id: trailsStars2
 
-            particlesPerSecond: 50
-            particleDuration: 2200
+        colorVariation: 0.2
 
+    }
+    TrailEmitter{
+        id: trailsNormal2
+        system: sys3
 
-            emitterY: mouseArea.pressed ? mouseArea.mouseY : circle2.cy
-            emitterX: mouseArea.pressed ? mouseArea.mouseX : circle2.cx
+        particlesPerSecond: 300
+        particleDuration: 2000
 
-            xSpeedVariation: 2
-            ySpeedVariation: 2
-            speedFromMovement: 16
+        emitterY: mouseArea.pressed ? mouseArea.mouseY : circle2.cy
+        emitterX: mouseArea.pressed ? mouseArea.mouseX : circle2.cx
 
-            yAccelVariation: 10
-            xAccelVariation: 10
+        xSpeedVariation: 4
+        ySpeedVariation: 4
+        speedFromMovement: 16
 
-            particleSize: 22
-            particleSizeVariation: 4
+        yAccelVariation: 10
+        xAccelVariation: 10
+
+        particleSize: 12
+        particleSizeVariation: 4
+    }
+    ParticleSystem { id: sys4; }
+    ColoredParticle{
+        system: sys4
+        image: "content/star.png"
+        color: "green"
+        SequentialAnimation on color {
+            loops: Animation.Infinite
+            ColorAnimation {
+                from: "green"
+                to: "red"
+                duration: 2000
+            }
+            ColorAnimation {
+                from: "red"
+                to: "green"
+                duration: 2000
+            }
         }
+
+        colorVariation: 0.5
+    }
+    TrailEmitter{
+        id: trailsStars2
+        system: sys4
+
+        particlesPerSecond: 50
+        particleDuration: 2200
+
+
+        emitterY: mouseArea.pressed ? mouseArea.mouseY : circle2.cy
+        emitterX: mouseArea.pressed ? mouseArea.mouseX : circle2.cx
+
+        xSpeedVariation: 2
+        ySpeedVariation: 2
+        speedFromMovement: 16
+
+        yAccelVariation: 10
+        xAccelVariation: 10
+
+        particleSize: 22
+        particleSizeVariation: 4
     }
 
 

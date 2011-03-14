@@ -32,7 +32,7 @@ HEADERS += \
     spriteimage.h \
     #pairedparticle.h \
     followemitter.h \
-    #swarmaffector.h \
+    swarmaffector.h \
     turbulenceaffector.h
 
 SOURCES += \
@@ -65,7 +65,7 @@ SOURCES += \
     spriteimage.cpp \
     #pairedparticle.cpp \
     followemitter.cpp \
-    #swarmaffector.cpp \
+    swarmaffector.cpp \
     turbulenceaffector.cpp
 
 QT += declarative opengl

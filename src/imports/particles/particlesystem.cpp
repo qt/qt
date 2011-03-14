@@ -109,7 +109,7 @@ void ParticleSystem::initializeSystem()
         (*iter)->start = m_particle_count;
         m_particle_count += (*iter)->size;
     }
-        data.resize(m_particle_count);
+        m_data.resize(m_particle_count);
     if(m_particle_count > 16000)
         qWarning() << "Particle system contains a vast number of particles (>16000). Expect poor performance";
 
@@ -130,6 +130,7 @@ void ParticleSystem::initializeSystem()
 
     m_timestamp.start();
     m_initialized = true;
+    emit systemInitialized();
 }
 
 void ParticleSystem::reset()
@@ -148,11 +149,11 @@ ParticleData* ParticleSystem::newDatum(int groupId)
         m_groupData[groupId]->nextIdx = 0;
 
     ParticleData* ret;
-    if(data[nextIdx]){//Recycle, it's faster. //###Reset?
-        ret = data[nextIdx];
+    if(m_data[nextIdx]){//Recycle, it's faster. //###Reset?
+        ret = m_data[nextIdx];
     }else{
         ret = new ParticleData;
-        data[nextIdx] = ret;
+        m_data[nextIdx] = ret;
     }
 
     ret->system = this;
@@ -199,12 +200,9 @@ uint ParticleSystem::systemSync(ParticleType* p)
             emitter->emitWindow(m_timeInt);
         foreach(ParticleAffector* a, m_affectors)
             a->affectSystem(dt);
-        //###Which is better - batched reloads (here, if needsReload) or no foreach loop (reloads in affectors)?
-        if(m_affectors.count())//only ones who can change it currently
-            foreach(ParticleData* d, data)
-                if(d && d->needsReload)
-                    foreach(ParticleType* p, m_groupData[d->group]->types)
-                        p->reload(d);
+        foreach(ParticleData* d, m_needsReset)
+            foreach(ParticleType* p, m_groupData[d->group]->types)
+                p->reload(d);
     }
     m_syncList << p;
     return m_timeInt;
@@ -259,6 +257,7 @@ void ParticleData::setInstantaneousAY(qreal ay)
 void ParticleData::setInstantaneousSY(qreal vy)
 {
     qreal t = (system->m_timeInt / 1000.0) - pv.t;
+    //qDebug() << t << (system->m_timeInt/1000.0) << pv.x << pv.sx << pv.ax << pv.x + pv.sx * t + 0.5 * pv.ax * t * t;
     qreal sy = vy - t*pv.ay;
     qreal ey = pv.y + pv.sy * t + 0.5 * pv.ay * t * t;
     qreal y = ey - t*sy - 0.5 * t*t*pv.ay;

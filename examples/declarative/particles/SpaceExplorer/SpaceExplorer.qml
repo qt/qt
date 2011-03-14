@@ -36,7 +36,7 @@ Rectangle{
     property real fakeMovementDir: 0
 
     TrailEmitter{
-        particle: stars2
+        particle: "stars2"
         system: background
         particlesPerSecond: 60
         particleDuration: 4000
@@ -48,22 +48,21 @@ Rectangle{
         emitterXVariation: root.width/2
         emitterYVariation: root.height/2
     }
-    ParticleSystem{
-        id: background
+    ParticleSystem{ id: background }
+    ColoredParticle{
+        particles: ["stars2"]
+        system: background
         anchors.fill: parent
-        ColoredParticle{
-            id: stars2
-            image: "content/star.png"
-            color: "white"
-            colorVariation: 0.1
-            additive: 1
-        }
-        affectors:[
-            Gravity{
-                acceleration: fakeMoving?10:0
-                angle: fakeMovementDir
-            }
-        ]
+        image: "content/star.png"
+        color: "white"
+        colorVariation: 0.1
+        additive: 1
+    }
+    Gravity{
+        system: background
+        anchors.fill: parent
+        acceleration: fakeMoving?10:0
+        angle: fakeMovementDir
     }
     Text{
         color: "white"
@@ -161,118 +160,133 @@ Rectangle{
 
 
 
-    ParticleSystem{
-        id: foreground
+    ParticleSystem{ id: foreground }
+    ColoredParticle{
+        particles: ["stars"]
         anchors.fill: parent
-        ColoredParticle{
-            id: stars
-            image: "content/star.png"
-            color: "white"
-            colorVariation: 0.1
-            additive: 1
-        }
-        ColoredParticle{
-            id: shot
-            image: "content/star.png"
+        system: foreground
+        image: "content/star.png"
+        color: "white"
+        colorVariation: 0.1
+        additive: 1
+    }
+    ColoredParticle{
+        particles: ["shot"]
+        anchors.fill: parent
+        system: foreground
+        image: "content/star.png"
 
-            color: "orange"
-            colorVariation: 0.3
-        }
-        ColoredParticle{
-            id: engine
-            image: "content/particle4.png"
+        color: "orange"
+        colorVariation: 0.3
+    }
+    ColoredParticle{
+        id: engine
+        particles: ["engine"]
+        anchors.fill: parent
+        system: foreground
+        image: "content/particle4.png"
 
-            color: "orange"
-            SequentialAnimation on color {
-                loops: Animation.Infinite
-                ColorAnimation {
-                    from: "red"
-                    to: "cyan"
-                    duration: 1000
-                }
-                ColorAnimation {
-                    from: "cyan"
-                    to: "red"
-                    duration: 1000
-                }
+        color: "orange"
+        SequentialAnimation on color {
+            loops: Animation.Infinite
+            ColorAnimation {
+                from: "red"
+                to: "cyan"
+                duration: 1000
             }
-
-            colorVariation: 0.2
-            additive: 1
-        }
-        SpriteParticle{
-            id: powerups
-            Sprite{
-                name: "norm"
-                source: "content/powerupScore.png"
-                frames: 35
-                duration: 40
-                to: {"norm":1, "got":0}
-            }
-            Sprite{
-                name: "got"
-                source: "content/powerupScore_got.png"
-                frames: 22
-                duration: 40
-                to: {"null":1}
-            }
-            Sprite{
-                name: "null"
-                source: "content/powerupScore_gone.png"
-                frames: 1
+            ColorAnimation {
+                from: "cyan"
+                to: "red"
                 duration: 1000
             }
         }
-        affectors: [
-            Zone{
-                x: rocket.x - 30
-                y: rocket.y - 30
-                width: 60
-                height: 60
-                SpriteGoal{
-                    goalState: "got"
-                    jump: true
-                    onAffected: if(!gameOver) score += 1000
-                }
-            }, GravitationalSingularity{
-                id: gs1; x: vorteX; y: vorteY; strength: 800000;
-            }, Zone{
-                x: gs1.x - holeSize;
-                y: gs1.y - holeSize;
-                width: holeSize * 2
-                height: holeSize * 2
-                affector: Kill{}
-            },
-            GravitationalSingularity{
-                id: gs2; x: vorteX2; y: vorteY2; strength: 800000;
-            }, Zone{
-                x: gs2.x - holeSize;
-                y: gs2.y - holeSize;
-                width: holeSize * 2
-                height: holeSize * 2
-                affector: Kill{}
-            },
-            GravitationalSingularity{
-                id: gs3; x: vorteX3; y: vorteY3; strength: 800000;
-            }, Zone{
-                x: gs3.x - holeSize;
-                y: gs3.y - holeSize;
-                width: holeSize * 2
-                height: holeSize * 2
-                affector: Kill{}
-            },
-            GravitationalSingularity{
-                id: gs4; x: vorteX4; y: vorteY4; strength: 800000;
-            }, Zone{
-                x: gs4.x - holeSize;
-                y: gs4.y - holeSize;
-                width: holeSize * 2
-                height: holeSize * 2
-                affector: Kill{}
-            }        ]
+
+        colorVariation: 0.2
+        additive: 1
     }
+    SpriteParticle{
+        particles: ["powerups"]
+        anchors.fill: parent
+        system: foreground
+        Sprite{
+            name: "norm"
+            source: "content/powerupScore.png"
+            frames: 35
+            duration: 40
+            to: {"norm":1, "got":0}
+        }
+        Sprite{
+            name: "got"
+            source: "content/powerupScore_got.png"
+            frames: 22
+            duration: 40
+            to: {"null":1}
+        }
+        Sprite{
+            name: "null"
+            source: "content/powerupScore_gone.png"
+            frames: 1
+            duration: 1000
+        }
+    }
+    SpriteGoal{
+        x: rocket.x - 30
+        y: rocket.y - 30
+        width: 60
+        height: 60
+        goalState: "got"
+        jump: true
+        onAffected: if(!gameOver) score += 1000
+        system: foreground
+    }
+    GravitationalSingularity{
+        id: gs1; x: vorteX; y: vorteY; strength: 800000;
+        system: foreground
+    }
+    Kill{
+        x: gs1.x - holeSize;
+        y: gs1.y - holeSize;
+        width: holeSize * 2
+        height: holeSize * 2
+        system: foreground
+    }
+
+    GravitationalSingularity{
+        id: gs2; x: vorteX2; y: vorteY2; strength: 800000;
+        system: foreground
+    }
+    Kill{
+        x: gs2.x - holeSize;
+        y: gs2.y - holeSize;
+        width: holeSize * 2
+        height: holeSize * 2
+        system: foreground
+    }
+
+    GravitationalSingularity{
+        id: gs3; x: vorteX3; y: vorteY3; strength: 800000;
+        system: foreground
+    }
+    Kill{
+        x: gs3.x - holeSize;
+        y: gs3.y - holeSize;
+        width: holeSize * 2
+        height: holeSize * 2
+        system: foreground
+    }
+    GravitationalSingularity{
+        id: gs4; x: vorteX4; y: vorteY4; strength: 800000;
+        system: foreground
+    }
+    Kill{
+        x: gs4.x - holeSize;
+        y: gs4.y - holeSize;
+        width: holeSize * 2
+        height: holeSize * 2
+        system: foreground
+    }        
     TrailEmitter{
-        particle: powerups
+        particle: "powerups"
         system: foreground
         particlesPerSecond: 1
         particleDuration: 6000
@@ -282,7 +296,7 @@ Rectangle{
         anchors.fill: parent
     }
     TrailEmitter{
-        particle: stars
+        particle: "stars"
         system: foreground
         particlesPerSecond: 40
         particleDuration: 4000
@@ -328,7 +342,7 @@ Rectangle{
         },
         TrailEmitter{
             system: foreground
-            particle: engine
+            particle: "engine"
             particlesPerSecond: 100
             particleDuration: 1000
             emitting: !gameOver 
@@ -344,7 +358,7 @@ Rectangle{
         }, 
         TrailEmitter{
             system: foreground
-            particle: shot
+            particle: "shot"
             particlesPerSecond: 16
             particleDuration: 1600
             emitting: !gameOver && shoot

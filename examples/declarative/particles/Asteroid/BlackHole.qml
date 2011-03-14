@@ -8,6 +8,10 @@ Rectangle{
     color: "black"
     property bool spacePressed: false
     focus: true
+    Image{
+        source: "finalfrontier.png"
+        anchors.centerIn:parent
+    }
     Keys.onPressed: {
         if (event.key == Qt.Key_Space) {
             spacePressed = true;
@@ -22,7 +26,7 @@ Rectangle{
     }
 
     TrailEmitter{
-        particle: stars//TODO: Merge stars and roids
+        particle: "stars"
         system: particles
         particlesPerSecond: 40
         particleDuration: 4000
@@ -34,7 +38,7 @@ Rectangle{
         height: parent.height
     }
     TrailEmitter{
-        particle: roids//TODO: Merge stars and roids
+        particle: "roids"
         system: particles
         particlesPerSecond: 10
         particleDuration: 4000
@@ -48,60 +52,72 @@ Rectangle{
     ParticleSystem{
         id: particles
         anchors.fill: parent
-        particles: [ColoredParticle{
-            id: stars
-            image: "star.png"
-            color: "white"
-            colorVariation: 0.1
-            additive: 1
-        },SpriteParticle{
-            id: roids
-            sprites: Sprite{
-                id: spinState
-                name: "spinning"
-                source: "meteor.png"
-                frames: 35
-                duration: 60
-                speedModifiesDuration: -0.1
-            }
-        },ColoredParticle{
-            id: shot
-            image: "star.png"
+    }
+    ColoredParticle{
+        id: stars
+        particles: ["stars"]
+        system: particles
+        image: "star.png"
+        color: "white"
+        colorVariation: 0.1
+        additive: 1
+    }
+    SpriteParticle{
+        id: roids
+        particles: ["roids"]
+        system: particles
+        sprites: Sprite{
+            id: spinState
+            name: "spinning"
+            source: "meteor.png"
+            frames: 35
+            duration: 60
+            speedModifiesDuration: -0.1
+        }
+    }
+    ColoredParticle{
+        id: shot
+        particles: ["shot"]
+        system: particles
+        image: "star.png"
 
-            color: "orange"
-            colorVariation: 0.3
-        },ColoredParticle{
-            id: engine
-            image: "particle4.png"
+        color: "orange"
+        colorVariation: 0.3
+    }
+    ColoredParticle{
+        id: engine
+        particles: ["engine"]
+        system: particles
+        image: "particle4.png"
 
-            color: "orange"
-            SequentialAnimation on color {
-                loops: Animation.Infinite
-                ColorAnimation {
-                    from: "red"
-                    to: "cyan"
-                    duration: 1000
-                }
-                ColorAnimation {
-                    from: "cyan"
-                    to: "red"
-                    duration: 1000
-                }
+        color: "orange"
+        SequentialAnimation on color {
+            loops: Animation.Infinite
+            ColorAnimation {
+                from: "red"
+                to: "cyan"
+                duration: 1000
             }
+            ColorAnimation {
+                from: "cyan"
+                to: "red"
+                duration: 1000
+            }
+        }
 
-            colorVariation: 0.2
-            additive: 1
-        }]
-        affectors: [
-            GravitationalSingularity{id: gs; x: root.width/2; y: root.height/2; strength: 4000000;},
-            Zone{
-                x: gs.x - 8;
-                y: gs.y - 8;
-                width: 16
-                height: 16
-                affector: Kill{}
-            }
-        ]
+        colorVariation: 0.2
+        additive: 1
+    }
+    GravitationalSingularity{
+        id: gs; x: root.width/2; y: root.height/2; strength: 4000000;
+        system: particles
+    }
+    Kill{
+        system: particles
+        x: gs.x - 8;
+        y: gs.y - 8;
+        width: 16
+        height: 16
     }
     Image{
         source:"rocket2.png"
@@ -115,7 +131,7 @@ Rectangle{
             drag.target: ship
         }
         TrailEmitter{
-            particle: engine
+            particle: "engine"
             system: particles
             particlesPerSecond: 200
             particleDuration: 1000
@@ -129,7 +145,7 @@ Rectangle{
             width: 20
         }
         TrailEmitter{
-            particle: shot
+            particle: "shot"
             system: particles
             particlesPerSecond: 32
             particleDuration: 2000

@@ -1,29 +1,32 @@
 #include "swarmaffector.h"
 #include "particle.h"
 #include <cmath>
+#include <QDebug>
 
-SwarmAffector::SwarmAffector(QObject *parent) :
-    ParticleAffector(parent), m_system(0), m_strength(0), m_inited(false)
+SwarmAffector::SwarmAffector(QSGItem *parent) :
+    ParticleAffector(parent), m_strength(1), m_inited(false)
 {
+    connect(this, SIGNAL(leadersChanged(QStringList)),
+            this, SLOT(updateGroupList()));
 }
 
-void SwarmAffector::ensureInit(ParticleData* d)
+void SwarmAffector::ensureInit()
 {
     if(m_inited)
         return;
     m_inited = true;
+    updateGroupList();
     m_lastPos.resize(m_system->count());
 }
 
 const qreal epsilon = 0.0000001;
-bool SwarmAffector::affect(ParticleData *d, qreal dt)
+bool SwarmAffector::affectParticle(ParticleData *d, qreal dt)
 {
-    ensureInit(d);
-
+    ensureInit();
     QPointF curPos(d->curX(), d->curY());
-    if(m_leaders.isEmpty() || m_leaders.contains(d->p)){
+    if(m_leaders.isEmpty() || m_leadGroups.contains(d->group)){
         m_lastPos[d->systemIndex] = curPos;
-        if(m_leaders.contains(d->p))
+        if(m_leadGroups.contains(d->group))
             return false;
     }
 
@@ -56,4 +59,13 @@ void SwarmAffector::reset(int systemIdx)
         return;
     if(!m_lastPos[systemIdx].isNull())
         m_lastPos[systemIdx] = QPointF();
+}
+
+void SwarmAffector::updateGroupList()
+{
+    if(!m_system || !m_system->m_initialized)
+        return;
+    m_leadGroups.clear();
+    foreach(const QString &s, m_leaders)
+        m_leadGroups << m_system->m_groupIds[s];
 }

@@ -35,7 +35,6 @@ void TrailsEmitter::setParticleSize(qreal size)
         return;
     m_particle_size = size;
     emit particleSizeChanged();
-    m_system->pleaseUpdate();//XXX
 }
 
 void TrailsEmitter::setParticleEndSize(qreal size)
@@ -44,7 +43,6 @@ void TrailsEmitter::setParticleEndSize(qreal size)
         return;
     m_particle_end_size = size;
     emit particleEndSizeChanged();
-    m_system->pleaseUpdate();//XXX
 }
 
 void TrailsEmitter::setParticleSizeVariation(qreal var)
@@ -53,7 +51,7 @@ void TrailsEmitter::setParticleSizeVariation(qreal var)
         return;
     m_particle_size_variation = var;
     emit particleSizeVariationChanged();
-    m_system->pleaseUpdate();//XXX
+
 }
 
 
@@ -63,7 +61,6 @@ void TrailsEmitter::setEmitterX(qreal x)
         return;
     m_emitter_x = x;
     emit emitterXChanged();
-    m_system->pleaseUpdate();//XXX
 }
 
 
@@ -73,7 +70,6 @@ void TrailsEmitter::setEmitterY(qreal y)
         return;
     m_emitter_y = y;
     emit emitterYChanged();
-    m_system->pleaseUpdate();//XXX
 }
 
 void TrailsEmitter::setEmitterXVariation(qreal var)
@@ -82,7 +78,6 @@ void TrailsEmitter::setEmitterXVariation(qreal var)
         return;
     m_emitter_x_variation = var;
     emit emitterXVariationChanged();
-    m_system->pleaseUpdate();//XXX
 }
 
 void TrailsEmitter::setEmitterYVariation(qreal var)
@@ -91,7 +86,6 @@ void TrailsEmitter::setEmitterYVariation(qreal var)
         return;
     m_emitter_y_variation = var;
     emit emitterYVariationChanged();
-    m_system->pleaseUpdate();//XXX
 }
 
 void TrailsEmitter::setXSpeed(qreal x)
@@ -100,7 +94,6 @@ void TrailsEmitter::setXSpeed(qreal x)
         return;
     m_x_speed = x;
     emit xSpeedChanged();
-    m_system->pleaseUpdate();//XXX
 }
 
 void TrailsEmitter::setYSpeed(qreal y)
@@ -109,7 +102,6 @@ void TrailsEmitter::setYSpeed(qreal y)
         return;
     m_y_speed = y;
     emit ySpeedChanged();
-    m_system->pleaseUpdate();//XXX
 }
 
 void TrailsEmitter::setXSpeedVariation(qreal x)
@@ -118,7 +110,6 @@ void TrailsEmitter::setXSpeedVariation(qreal x)
         return;
     m_x_speed_variation = x;
     emit xSpeedVariationChanged();
-    m_system->pleaseUpdate();//XXX
 }
 
 
@@ -128,7 +119,6 @@ void TrailsEmitter::setYSpeedVariation(qreal y)
         return;
     m_y_speed_variation = y;
     emit ySpeedVariationChanged();
-    m_system->pleaseUpdate();//XXX
 }
 
 
@@ -138,7 +128,6 @@ void TrailsEmitter::setSpeedFromMovement(qreal t)
         return;
     m_speed_from_movement = t;
     emit speedFromMovementChanged();
-    m_system->pleaseUpdate();//XXX
 }
 
 
@@ -148,7 +137,6 @@ void TrailsEmitter::setXAccel(qreal x)
         return;
     m_x_accel = x;
     emit xAccelChanged();
-    m_system->pleaseUpdate();//XXX
 }
 
 void TrailsEmitter::setYAccel(qreal y)
@@ -157,7 +145,6 @@ void TrailsEmitter::setYAccel(qreal y)
         return;
     m_y_accel = y;
     emit yAccelChanged();
-    m_system->pleaseUpdate();//XXX
 }
 
 void TrailsEmitter::setXAccelVariation(qreal x)
@@ -166,7 +153,6 @@ void TrailsEmitter::setXAccelVariation(qreal x)
         return;
     m_x_accel_variation = x;
     emit xAccelVariationChanged();
-    m_system->pleaseUpdate();//XXX
 }
 
 
@@ -176,7 +162,6 @@ void TrailsEmitter::setYAccelVariation(qreal y)
         return;
     m_y_accel_variation = y;
     emit yAccelVariationChanged();
-    m_system->pleaseUpdate();//XXX
 }
 
 void TrailsEmitter::emitWindow(int timeStamp)
@@ -194,7 +179,6 @@ void TrailsEmitter::emitWindow(int timeStamp)
         m_reset_last = false;
     }
 
-    //TODO:track properly
     m_particle_count = m_particlesPerSecond * (m_particleDuration / 1000.);
 
     qreal time = timeStamp / 1000.;
@@ -205,6 +189,8 @@ void TrailsEmitter::emitWindow(int timeStamp)
 
     qreal opt = pt; // original particle time
     qreal dt = time - m_last_timestamp; // timestamp delta...
+    if(!dt)
+        dt = 0.000001;
 
     // emitter difference since last...
     qreal dex = (m_emitter_x + x() - m_last_emitter.x());
@@ -227,9 +213,7 @@ void TrailsEmitter::emitWindow(int timeStamp)
         ParticleData* datum = m_system->newDatum(m_system->m_groupIds[m_particle]);
         datum->e = this;//###useful?
         ParticleVertex &p = datum->pv;
-
         qreal t = 1 - (pt - opt) / dt;
-
         qreal vx =
           - 2 * ax * (1 - t)
           + 2 * bx * (1 - 2 * t)
@@ -283,6 +267,7 @@ void TrailsEmitter::emitWindow(int timeStamp)
 
         ++m_last_particle;
         pt = m_last_particle * particleRatio;
+
         m_system->emitParticle(datum);
     }
 
@@ -291,4 +276,5 @@ void TrailsEmitter::emitWindow(int timeStamp)
     m_last_emitter = QPointF(x() + m_emitter_x, y() + m_emitter_y);
     m_last_timestamp = time;
 }
+
 

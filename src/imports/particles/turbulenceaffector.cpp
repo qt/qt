@@ -81,7 +81,7 @@ void TurbulenceAffector::affectSystem(qreal dt)
         m_lastT += period;
     }
 
-    foreach(ParticleData *d, m_system->data){
+    foreach(ParticleData *d, m_system->m_data){
         if(!d || !activeGroup(d->group))
             return;
         qreal fx = 0.0;
@@ -104,7 +104,7 @@ void TurbulenceAffector::affectSystem(qreal dt)
         if(fx || fy){
             d->setInstantaneousSX(d->curSX()+ fx * dt);
             d->setInstantaneousSY(d->curSY()+ fy * dt);
-            d->needsReload = true;
+            m_system->m_needsReset << d;
         }
     }
 }

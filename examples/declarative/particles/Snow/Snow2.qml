@@ -17,7 +17,7 @@ Rectangle{
     Drift{ 
         system: particles
         anchors.fill: parent
-        xDrift: 800;
+        xDrift: 400;
     }
     TrailEmitter{
         system: particles

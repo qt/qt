@@ -5,8 +5,7 @@
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:BSD$
+** ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
 **
 ** "Redistribution and use in source and binary forms, with or without
@@ -49,15 +48,15 @@ import "content"
 Rectangle {
     width: 200; height: 300
     color: "black"
-    ParticleSystem{
-        id: particles
+    ParticleSystem{ id: particles }
+    ColoredParticle{
+        anchors.fill: parent
+        system: particles
         z: 10
-        ColoredParticle{
-            image: "content/star.png"
-            color: "white"
-            colorVariation: 0.0
-            additive: 0
-        }
+        image: "content/star.png"
+        color: "white"
+        colorVariation: 0.0
+        additive: 0
     }
 
     // Define a delegate component.  A component will be
