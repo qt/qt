@@ -94,7 +94,7 @@ DEFINE_BOOL_CONFIG_OPTION(enableImageCache, QML_ENABLE_TEXT_IMAGE_CACHE);
 QString QSGTextPrivate::elideChar = QString(0x2026);
 
 QSGTextPrivate::QSGTextPrivate()
-: color((QRgb)0), style(QSGText::Normal), hAlign(QSGText::AlignLeft), 
+: color((QRgb)0), style(QSGText::Normal), hAlign(QSGText::AlignLeft),
   vAlign(QSGText::AlignTop), elideMode(QSGText::ElideNone),
   format(QSGText::AutoText), wrapMode(QSGText::NoWrap), lineHeight(1),
   lineHeightMode(QSGText::ProportionalHeight),
@@ -115,7 +115,7 @@ void QSGTextPrivate::init()
     QObject::connect(textureProvider, SIGNAL(textureChanged()), q, SLOT(update()));
 }
 
-QSGTextDocumentWithImageResources::QSGTextDocumentWithImageResources(QSGText *parent) 
+QSGTextDocumentWithImageResources::QSGTextDocumentWithImageResources(QSGText *parent)
 : QTextDocument(parent), outstanding(0)
 {
     setUndoRedoEnabled(false);
@@ -123,7 +123,7 @@ QSGTextDocumentWithImageResources::QSGTextDocumentWithImageResources(QSGText *pa
 
 QSGTextDocumentWithImageResources::~QSGTextDocumentWithImageResources()
 {
-    if (!m_resources.isEmpty()) 
+    if (!m_resources.isEmpty())
         qDeleteAll(m_resources);
 }
 
@@ -537,7 +537,7 @@ QPixmap QSGTextPrivate::textLayoutImage(bool drawStyle)
 }
 
 /*!
-    Paints the QSGTextPrivate::layout QTextLayout into \a painter at \a pos.  If 
+    Paints the QSGTextPrivate::layout QTextLayout into \a painter at \a pos.  If
     \a drawStyle is true, the style color overrides all colors in the document.
 */
 void QSGTextPrivate::drawTextLayout(QPainter *painter, const QPointF &pos, bool drawStyle)
@@ -592,7 +592,7 @@ QPixmap QSGTextPrivate::textDocumentImage(bool drawStyle)
 /*!
     Mark the image cache as dirty.
 */
-void QSGTextPrivate::invalidateImageCache() 
+void QSGTextPrivate::invalidateImageCache()
 {
     Q_Q(QSGText);
 
@@ -649,13 +649,13 @@ void QSGTextPrivate::checkImageCache()
             break;
         }
 
-    } 
+    }
 
     imageCacheDirty = false;
 }
 
-/*! 
-    Ensures the QSGTextPrivate::doc variable is set to a valid text document 
+/*!
+    Ensures the QSGTextPrivate::doc variable is set to a valid text document
 */
 void QSGTextPrivate::ensureDoc()
 {
@@ -878,7 +878,7 @@ void QSGText::setWrapMode(WrapMode mode)
 
     d->wrapMode = mode;
     d->updateLayout();
-    
+
     emit wrapModeChanged();
 }
 
@@ -962,7 +962,7 @@ void QSGText::setElideMode(QSGText::TextElideMode mode)
 
     d->elideMode = mode;
     d->updateLayout();
-    
+
     emit elideModeChanged(d->elideMode);
 }
 
@@ -1044,7 +1044,7 @@ Node *QSGText::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     QRectF bounds = boundingRect();
 
     // XXX todo - some styled text can be done by the QSGTextNode
-    if (richTextAsImage || d->cacheAllTextAsImage || d->style != Normal) {
+    if (richTextAsImage || d->cacheAllTextAsImage || (!DistanceFieldFontAtlas::distanceFieldEnabled() && d->style != Normal)) {
         bool wasDirty = d->imageCacheDirty;
 
         d->checkImageCache();
@@ -1092,10 +1092,10 @@ Node *QSGText::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         if (d->richText) {
 
             d->ensureDoc();
-            node->addTextDocument(bounds.topLeft(), d->doc);
+            node->addTextDocument(bounds.topLeft(), d->doc, QColor(), d->style, d->styleColor);
 
         } else {
-            node->addTextLayout(QPoint(0, bounds.y()), &d->layout, d->color);
+            node->addTextLayout(QPoint(0, bounds.y()), &d->layout, d->color, d->style, d->styleColor);
             QMatrix4x4 m;
             m.translate(0, QFontMetricsF(d->font).ascent());
             node->setMatrix(m);

@@ -55,7 +55,6 @@ protected:
     virtual const char *vertexShader() const;
     virtual const char *fragmentShader() const;
 
-private:
     void updateAlphaRange();
 
     qreal m_fontScale;
@@ -200,4 +199,289 @@ int DistanceFieldTextMaterial::compare(const AbstractMaterial *o) const
     QRgb c1 = m_color.rgba();
     QRgb c2 = other->m_color.rgba();
     return int(c2 < c1) - int(c1 < c2);
+}
+
+
+class DistanceFieldStyledTextMaterialShader : public DistanceFieldTextMaterialShader
+{
+public:
+    DistanceFieldStyledTextMaterialShader();
+
+    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+
+protected:
+    virtual void initialize();
+    virtual const char *fragmentShader() const = 0;
+
+    void updateStyleRange();
+
+    int m_styleAlphaMin0_id;
+    int m_styleAlphaMin1_id;
+    int m_styleColor_id;
+    int m_pixelSize_id;
+};
+
+DistanceFieldStyledTextMaterialShader::DistanceFieldStyledTextMaterialShader()
+    : DistanceFieldTextMaterialShader()
+{
+}
+
+void DistanceFieldStyledTextMaterialShader::updateStyleRange()
+{
+    qreal styleLimit = 0.4;
+
+    qreal combinedScale = m_fontScale * m_matrixScale;
+    qreal alphaMin = qBound(0.0, 0.5 - 0.07 / combinedScale, 0.5);
+    qreal styleAlphaMin0 = qBound(0.0, styleLimit - 0.07 / combinedScale, styleLimit);
+    qreal styleAlphaMin1 = qBound(styleLimit, styleLimit + 0.07 / combinedScale, alphaMin);
+    m_program.setUniformValue(m_styleAlphaMin0_id, GLfloat(styleAlphaMin0));
+    m_program.setUniformValue(m_styleAlphaMin1_id, GLfloat(styleAlphaMin1));
+}
+
+void DistanceFieldStyledTextMaterialShader::initialize()
+{
+    DistanceFieldTextMaterialShader::initialize();
+    m_styleColor_id = m_program.uniformLocation("styleColor");
+    m_styleAlphaMin0_id = m_program.uniformLocation("styleAlphaMin0");
+    m_styleAlphaMin1_id = m_program.uniformLocation("styleAlphaMin1");
+    m_pixelSize_id = m_program.uniformLocation("pixelSize");
+}
+
+void DistanceFieldStyledTextMaterialShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+{
+    DistanceFieldTextMaterialShader::updateState(renderer, newEffect, oldEffect, updates);
+
+    Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
+    DistanceFieldOutlineTextMaterial *material = static_cast<DistanceFieldOutlineTextMaterial *>(newEffect);
+    DistanceFieldOutlineTextMaterial *oldMaterial = static_cast<DistanceFieldOutlineTextMaterial *>(oldEffect);
+
+    if (oldMaterial == 0
+           || material->styleColor() != oldMaterial->styleColor()
+           || (updates & Renderer::UpdateOpacity)) {
+        QVector4D color(material->styleColor().redF(), material->styleColor().greenF(),
+                        material->styleColor().blueF(), material->styleColor().alphaF());
+        color *= renderer->renderOpacity();
+        m_program.setUniformValue(m_styleColor_id, color);
+    }
+
+    if (oldMaterial == 0 || material->scale() != oldMaterial->scale() || updates & Renderer::UpdateMatrices)
+        updateStyleRange();
+
+    if (oldMaterial == 0
+            || oldMaterial->texture()->textureSize() != material->texture()->textureSize()) {
+        m_program.setUniformValue(m_pixelSize_id, GLfloat(1.0 / material->texture()->textureSize().height()));
+    }
+}
+
+DistanceFieldStyledTextMaterial::DistanceFieldStyledTextMaterial()
+    : DistanceFieldTextMaterial()
+{
+}
+
+DistanceFieldStyledTextMaterial::~DistanceFieldStyledTextMaterial()
+{
+}
+
+int DistanceFieldStyledTextMaterial::compare(const AbstractMaterial *o) const
+{
+    Q_ASSERT(o && type() == o->type());
+    const DistanceFieldStyledTextMaterial *other = static_cast<const DistanceFieldStyledTextMaterial *>(o);
+    if (m_styleColor != other->m_styleColor) {
+        QRgb c1 = m_styleColor.rgba();
+        QRgb c2 = other->m_styleColor.rgba();
+        return int(c2 < c1) - int(c1 < c2);
+    }
+    return DistanceFieldTextMaterial::compare(o);
+}
+
+
+class DistanceFieldOutlineTextMaterialShader : public DistanceFieldStyledTextMaterialShader
+{
+public:
+    DistanceFieldOutlineTextMaterialShader();
+
+protected:
+    virtual const char *fragmentShader() const;
+};
+
+const char *DistanceFieldOutlineTextMaterialShader::fragmentShader() const {
+    return
+            "varying highp vec2 sampleCoord;                                             \n"
+            "uniform sampler2D texture;                                                  \n"
+            "uniform lowp vec4 color;                                                    \n"
+            "uniform lowp vec4 styleColor;                                               \n"
+            "uniform highp float alphaMin;                                               \n"
+            "uniform highp float alphaMax;                                               \n"
+            "uniform highp float styleAlphaMin0;                                         \n"
+            "uniform highp float styleAlphaMin1;                                         \n"
+            "uniform highp float pixelSize;                                              \n"
+            "void main() {                                                               \n"
+            "    mediump float d = texture2D(texture, sampleCoord).a;                    \n"
+            "    highp vec4 o = color * smoothstep(alphaMin,alphaMax,d);                 \n"
+            "    if (d <= alphaMax && d >= styleAlphaMin0) {                             \n"
+            "        mediump float mu = 1.0;                                             \n"
+            "        if (d <= styleAlphaMin1) {                                          \n"
+            "            mu = smoothstep(styleAlphaMin0, styleAlphaMin1, d);             \n"
+            "            o = styleColor * mu;                                            \n"
+            "        } else {                                                            \n"
+            "            mu = smoothstep(alphaMax, alphaMin, d);                         \n"
+            "            o = mix(color, styleColor, mu);                                 \n"
+            "        }                                                                   \n"
+            "    }                                                                       \n"
+            "    gl_FragColor = o;                                                       \n"
+            "}";
+}
+
+DistanceFieldOutlineTextMaterialShader::DistanceFieldOutlineTextMaterialShader()
+    : DistanceFieldStyledTextMaterialShader()
+{
+}
+
+
+DistanceFieldOutlineTextMaterial::DistanceFieldOutlineTextMaterial()
+    : DistanceFieldStyledTextMaterial()
+{
+}
+
+DistanceFieldOutlineTextMaterial::~DistanceFieldOutlineTextMaterial()
+{
+}
+
+AbstractMaterialType *DistanceFieldOutlineTextMaterial::type() const
+{
+    static AbstractMaterialType type;
+    return &type;
+}
+
+AbstractMaterialShader *DistanceFieldOutlineTextMaterial::createShader() const
+{
+    return new DistanceFieldOutlineTextMaterialShader;
+}
+
+
+class DistanceFieldSunkenTextMaterialShader : public DistanceFieldStyledTextMaterialShader
+{
+public:
+    DistanceFieldSunkenTextMaterialShader();
+
+protected:
+    virtual const char *fragmentShader() const;
+};
+
+DistanceFieldSunkenTextMaterialShader::DistanceFieldSunkenTextMaterialShader()
+    : DistanceFieldStyledTextMaterialShader()
+{
+}
+
+const char *DistanceFieldSunkenTextMaterialShader::fragmentShader() const {
+    return
+            "varying highp vec2 sampleCoord;                                                   \n"
+            "uniform sampler2D texture;                                                        \n"
+            "uniform lowp vec4 color;                                                          \n"
+            "uniform lowp vec4 styleColor;                                                     \n"
+            "uniform highp float alphaMin;                                                     \n"
+            "uniform highp float alphaMax;                                                     \n"
+            "uniform highp float styleAlphaMin0;                                               \n"
+            "uniform highp float styleAlphaMin1;                                               \n"
+            "uniform highp float pixelSize;                                                    \n"
+            "void main() {                                                                     \n"
+            "    mediump float d = texture2D(texture, sampleCoord).a;                          \n"
+            "    highp vec4 o = color * smoothstep(alphaMin,alphaMax,d);                       \n"
+            "    mediump float outline = texture2D(texture, sampleCoord + vec2(0.0, pixelSize)).a; \n"
+            "    if (d <= alphaMax && d >= styleAlphaMin0 && outline >= 0.5) {                 \n"
+            "        mediump float mu = 1.0;                                                   \n"
+            "        if (d <= styleAlphaMin1) {                                                \n"
+            "            mu = smoothstep(styleAlphaMin0, styleAlphaMin1, d);                   \n"
+            "            o = styleColor * mu;                                                  \n"
+            "        } else {                                                                  \n"
+            "            mu = smoothstep(alphaMax, alphaMin, d);                               \n"
+            "            o = mix(color, styleColor, mu);                                       \n"
+            "        }                                                                         \n"
+            "    }                                                                             \n"
+            "    gl_FragColor = o;                                                             \n"
+            "}";
+}
+
+DistanceFieldSunkenTextMaterial::DistanceFieldSunkenTextMaterial()
+    : DistanceFieldStyledTextMaterial()
+{
+}
+
+DistanceFieldSunkenTextMaterial::~DistanceFieldSunkenTextMaterial()
+{
+}
+
+AbstractMaterialType *DistanceFieldSunkenTextMaterial::type() const
+{
+    static AbstractMaterialType type;
+    return &type;
+}
+
+AbstractMaterialShader *DistanceFieldSunkenTextMaterial::createShader() const
+{
+    return new DistanceFieldSunkenTextMaterialShader;
+}
+
+
+class DistanceFieldRaisedTextMaterialShader : public DistanceFieldStyledTextMaterialShader
+{
+public:
+    DistanceFieldRaisedTextMaterialShader();
+
+protected:
+    virtual const char *fragmentShader() const;
+};
+
+DistanceFieldRaisedTextMaterialShader::DistanceFieldRaisedTextMaterialShader()
+    : DistanceFieldStyledTextMaterialShader()
+{
+}
+
+const char *DistanceFieldRaisedTextMaterialShader::fragmentShader() const {
+    return
+            "varying highp vec2 sampleCoord;                                                   \n"
+            "uniform sampler2D texture;                                                        \n"
+            "uniform lowp vec4 color;                                                          \n"
+            "uniform lowp vec4 styleColor;                                                     \n"
+            "uniform highp float alphaMin;                                                     \n"
+            "uniform highp float alphaMax;                                                     \n"
+            "uniform highp float styleAlphaMin0;                                               \n"
+            "uniform highp float styleAlphaMin1;                                               \n"
+            "uniform highp float pixelSize;                                                    \n"
+            "void main() {                                                                     \n"
+            "    mediump float d = texture2D(texture, sampleCoord).a;                          \n"
+            "    highp vec4 o = color * smoothstep(alphaMin,alphaMax,d);                       \n"
+            "    mediump float outline = texture2D(texture, sampleCoord - vec2(0.0, pixelSize)).a; \n"
+            "    if (d <= alphaMax && d >= styleAlphaMin0 && outline >= 0.5) {                 \n"
+            "        mediump float mu = 1.0;                                                   \n"
+            "        if (d <= styleAlphaMin1) {                                                \n"
+            "            mu = smoothstep(styleAlphaMin0, styleAlphaMin1, d);                   \n"
+            "            o = styleColor * mu;                                                  \n"
+            "        } else {                                                                  \n"
+            "            mu = smoothstep(alphaMax, alphaMin, d);                               \n"
+            "            o = mix(color, styleColor, mu);                                       \n"
+            "        }                                                                         \n"
+            "    }                                                                             \n"
+            "    gl_FragColor = o;                                                             \n"
+            "}";
+}
+
+DistanceFieldRaisedTextMaterial::DistanceFieldRaisedTextMaterial()
+    : DistanceFieldStyledTextMaterial()
+{
+}
+
+DistanceFieldRaisedTextMaterial::~DistanceFieldRaisedTextMaterial()
+{
+}
+
+AbstractMaterialType *DistanceFieldRaisedTextMaterial::type() const
+{
+    static AbstractMaterialType type;
+    return &type;
+}
+
+AbstractMaterialShader *DistanceFieldRaisedTextMaterial::createShader() const
+{
+    return new DistanceFieldRaisedTextMaterialShader;
 }

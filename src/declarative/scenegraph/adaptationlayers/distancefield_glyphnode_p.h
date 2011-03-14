@@ -70,11 +70,58 @@ public:
         return oldDirty;
     }
 
-private:
+protected:
     QSGTextureRef m_texture;
     QColor m_color;
     qreal m_scale;
     bool m_dirtyTexture;
+};
+
+class DistanceFieldStyledTextMaterial : public DistanceFieldTextMaterial
+{
+public:
+    DistanceFieldStyledTextMaterial();
+    ~DistanceFieldStyledTextMaterial();
+
+    virtual AbstractMaterialType *type() const = 0;
+    virtual AbstractMaterialShader *createShader() const = 0;
+    virtual int compare(const AbstractMaterial *other) const;
+
+    void setStyleColor(const QColor &color) { m_styleColor = color; }
+    const QColor &styleColor() const { return m_styleColor; }
+
+protected:
+    QColor m_styleColor;
+};
+
+class DistanceFieldOutlineTextMaterial : public DistanceFieldStyledTextMaterial
+{
+public:
+    DistanceFieldOutlineTextMaterial();
+    ~DistanceFieldOutlineTextMaterial();
+
+    virtual AbstractMaterialType *type() const;
+    virtual AbstractMaterialShader *createShader() const;
+};
+
+class DistanceFieldRaisedTextMaterial : public DistanceFieldStyledTextMaterial
+{
+public:
+    DistanceFieldRaisedTextMaterial();
+    ~DistanceFieldRaisedTextMaterial();
+
+    virtual AbstractMaterialType *type() const;
+    virtual AbstractMaterialShader *createShader() const;
+};
+
+class DistanceFieldSunkenTextMaterial : public DistanceFieldStyledTextMaterial
+{
+public:
+    DistanceFieldSunkenTextMaterial();
+    ~DistanceFieldSunkenTextMaterial();
+
+    virtual AbstractMaterialType *type() const;
+    virtual AbstractMaterialShader *createShader() const;
 };
 
 #endif // DISTANCEFIELDTEXTMATERIAL_H

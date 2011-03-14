@@ -90,6 +90,7 @@ public:
     QImage renderDistanceFieldGlyph(glyph_t glyph) const;
 
     int glyphCount() const;
+    qreal glyphMargin() const;
 
     void populate(int count, const glyph_t *glyphs);
 
@@ -108,8 +109,6 @@ private:
     QString m_distanceFieldKey;
     int m_glyphCount;
     mutable QSize m_size;
-    float m_glyphMetricMargin;
-    float m_glyphTexMargin;
 
     QHash<glyph_t, Metrics> m_metrics;
     static QHash<TexCoordCacheKey, DistanceFieldFontAtlas::TexCoord> m_texCoords;

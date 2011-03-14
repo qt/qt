@@ -61,7 +61,6 @@ void qt_disableFontHinting(QFont &font)
 #define QT_DISTANCEFIELD_SCALE 16
 #define QT_DISTANCEFIELD_RADIUS 80
 #define QT_DISTANCEFIELD_MARGIN 50
-#define QT_DISTANCEFIELD_MARGIN_THRESHOLD 0.31
 
 struct DFPoint
 {
@@ -522,8 +521,11 @@ DistanceFieldFontAtlas::DistanceFieldFontAtlas(const QFont &font)
     m_distanceFieldKey = basename + bold + italic;
 
     m_glyphCount = m_fontEngine->glyphCount();
-    m_glyphMetricMargin = QT_DISTANCEFIELD_MARGIN / qreal(QT_DISTANCEFIELD_SCALE) * scaleRatioFromRefSize();
-    m_glyphTexMargin = QT_DISTANCEFIELD_MARGIN / qreal(QT_DISTANCEFIELD_SCALE);
+}
+
+qreal DistanceFieldFontAtlas::glyphMargin() const
+{
+    return QT_DISTANCEFIELD_MARGIN / qreal(QT_DISTANCEFIELD_SCALE);
 }
 
 QSGTextureRef DistanceFieldFontAtlas::texture()
@@ -585,15 +587,6 @@ DistanceFieldFontAtlas::Metrics DistanceFieldFontAtlas::glyphMetrics(glyph_t gly
         metric = m_metrics.insert(glyph, m);
     }
 
-    if (scaleRatioFromRefSize() <= QT_DISTANCEFIELD_MARGIN_THRESHOLD) {
-        Metrics m = metric.value();
-        m.width += m_glyphMetricMargin * 2;
-        m.height += m_glyphMetricMargin * 2;
-        m.baselineX -= m_glyphMetricMargin;
-        m.baselineY += m_glyphMetricMargin;
-        return m;
-    }
-
     return metric.value();
 }
 
@@ -621,15 +614,6 @@ DistanceFieldFontAtlas::TexCoord DistanceFieldFontAtlas::glyphTexCoord(glyph_t g
         c.height = path.boundingRect().height() / qreal(texSize.height());
 
         texCoord = m_texCoords.insert(key, c);
-    }
-
-    if (scaleRatioFromRefSize() <= QT_DISTANCEFIELD_MARGIN_THRESHOLD) {
-        TexCoord c = texCoord.value();
-        c.xMargin -= m_glyphTexMargin / atlasSize().width();
-        c.yMargin -= m_glyphTexMargin / atlasSize().height();
-        c.width += (m_glyphTexMargin * 2) / qreal(atlasSize().width());
-        c.height += (m_glyphTexMargin * 2) / qreal(atlasSize().height());
-        return c;
     }
 
     return texCoord.value();

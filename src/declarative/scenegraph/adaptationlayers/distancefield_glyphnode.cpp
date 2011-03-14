@@ -45,10 +45,13 @@
 
 #include <QtCore/qfileinfo.h>
 
+#define QT_DISTANCEFIELD_MARGIN_THRESHOLD 0.31
+
 DistanceFieldGlyphNode::DistanceFieldGlyphNode()
     : m_material(0)
     , m_glyph_atlas(0)
     , m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 0)
+    , m_style(QSGText::Normal)
 {
     m_geometry.setDrawingMode(GL_TRIANGLES);
     setGeometry(&m_geometry);
@@ -70,23 +73,27 @@ void DistanceFieldGlyphNode::setColor(const QColor &color)
 
 void DistanceFieldGlyphNode::setGlyphs(const QPointF &position, const QGlyphs &glyphs)
 {
-    if (m_material != 0)
-        delete m_material;
-
     QFontEngine *fe = QFontPrivate::get(glyphs.font())->engineForScript(QUnicodeTables::Common);
     m_position = QPointF(position.x(), position.y() - fe->ascent().toReal());
     m_glyphs = glyphs;
 
-    m_material = new DistanceFieldTextMaterial;
-    m_material->setColor(m_color);
-    setMaterial(m_material);
-
     updateFont();
     updateGeometry();
+    updateMaterial();
 
 #ifdef QML_RUNTIME_TESTING
     description = QLatin1String("glyphs");
 #endif
+}
+
+void DistanceFieldGlyphNode::setStyle(QSGText::TextStyle style)
+{
+    m_style = style;
+}
+
+void DistanceFieldGlyphNode::setStyleColor(const QColor &color)
+{
+    m_styleColor = color;
 }
 
 void DistanceFieldGlyphNode::updateGeometry()
@@ -109,6 +116,19 @@ void DistanceFieldGlyphNode::updateGeometry()
         quint32 glyphIndex = glyphIndexes.at(i);
         DistanceFieldFontAtlas::Metrics metrics = m_glyph_atlas->glyphMetrics(glyphIndex);
         DistanceFieldFontAtlas::TexCoord c = m_glyph_atlas->glyphTexCoord(glyphIndex);
+
+        if (m_glyph_atlas->scaleRatioFromRefSize() <= QT_DISTANCEFIELD_MARGIN_THRESHOLD
+                || m_style != QSGText::Normal) {
+            metrics.width += m_glyph_atlas->glyphMargin() * m_glyph_atlas->scaleRatioFromRefSize() * 2;
+            metrics.height += m_glyph_atlas->glyphMargin() * m_glyph_atlas->scaleRatioFromRefSize() * 2;
+            metrics.baselineX -= m_glyph_atlas->glyphMargin() * m_glyph_atlas->scaleRatioFromRefSize();
+            metrics.baselineY += m_glyph_atlas->glyphMargin() * m_glyph_atlas->scaleRatioFromRefSize();
+
+            c.xMargin -= m_glyph_atlas->glyphMargin() / m_glyph_atlas->atlasSize().width();
+            c.yMargin -= m_glyph_atlas->glyphMargin() / m_glyph_atlas->atlasSize().height();
+            c.width += (m_glyph_atlas->glyphMargin() * 2) / qreal(m_glyph_atlas->atlasSize().width());
+            c.height += (m_glyph_atlas->glyphMargin() * 2) / qreal(m_glyph_atlas->atlasSize().height());
+        }
 
         QPointF glyphPosition = m_glyphs.positions().at(i) + m_position;
         qreal x = glyphPosition.x() + metrics.baselineX;
@@ -152,12 +172,30 @@ void DistanceFieldGlyphNode::updateFont()
     m_glyph_atlas = DistanceFieldFontAtlas::get(m_glyphs.font());
 
     QSGTextureRef texture = m_glyph_atlas->texture();
-    if (texture.isNull()) {
+    if (texture.isNull())
         qWarning("Invalid distance-field texture for font %s", m_glyphs.font().family().toLatin1().constData());
-        return;
+}
+
+void DistanceFieldGlyphNode::updateMaterial()
+{
+    delete m_material;
+
+    if (m_style == QSGText::Normal) {
+        m_material = new DistanceFieldTextMaterial;
+    } else {
+        DistanceFieldStyledTextMaterial *material;
+        if (m_style == QSGText::Raised)
+            material = new DistanceFieldRaisedTextMaterial;
+        else if (m_style == QSGText::Outline)
+            material = new DistanceFieldOutlineTextMaterial;
+        else
+            material = new DistanceFieldSunkenTextMaterial;
+        material->setStyleColor(m_styleColor);
+        m_material = material;
     }
 
-    m_material->setTexture(texture);
+    m_material->setColor(m_color);
     m_material->setScale(m_glyph_atlas->scaleRatioFromRefSize());
+    m_material->setTexture(m_glyph_atlas->texture());
     setMaterial(m_material);
 }

@@ -42,6 +42,8 @@
 #include "qsgtextnode_p.h"
 #include "solidrectnode.h"
 #include "adaptationlayer.h"
+#include "distancefieldfontatlas_p.h"
+#include "distancefield_glyphnode.h"
 
 #include "qsgcontext.h"
 
@@ -146,9 +148,15 @@ void QSGTextNode::addTextDecorations(const QPointF &position, const QFont &font,
     }
 }
 
-GlyphNodeInterface *QSGTextNode::addGlyphs(const QPointF &position, const QGlyphs &glyphs, const QColor &color)
+GlyphNodeInterface *QSGTextNode::addGlyphs(const QPointF &position, const QGlyphs &glyphs, const QColor &color,
+                                           QSGText::TextStyle style, const QColor &styleColor)
 {
     GlyphNodeInterface *node = m_context->createGlyphNode();
+    if (DistanceFieldFontAtlas::distanceFieldEnabled()) {
+        DistanceFieldGlyphNode *dfNode = static_cast<DistanceFieldGlyphNode *>(node);
+        dfNode->setStyle(style);
+        dfNode->setStyleColor(styleColor);
+    }
     node->setGlyphs(position, glyphs);
     node->setColor(color);
 
@@ -157,23 +165,25 @@ GlyphNodeInterface *QSGTextNode::addGlyphs(const QPointF &position, const QGlyph
     return node;
 }
 
-void QSGTextNode::addTextDocument(const QPointF &position, QTextDocument *textDocument, const QColor &color)
+void QSGTextNode::addTextDocument(const QPointF &position, QTextDocument *textDocument, const QColor &color,
+                                  QSGText::TextStyle style, const QColor &styleColor)
 {
     QTextFrame *textFrame = textDocument->rootFrame();
     QPointF p = textDocument->documentLayout()->frameBoundingRect(textFrame).topLeft();
 
     QTextFrame::iterator it = textFrame->begin();
     while (!it.atEnd()) {
-        addTextBlock(p, textDocument, it.currentBlock(), color);
+        addTextBlock(p, textDocument, it.currentBlock(), color, style, styleColor);
         ++it;
     }
 }
 
-void QSGTextNode::addTextLayout(const QPointF &position, QTextLayout *textLayout, const QColor &color)
+void QSGTextNode::addTextLayout(const QPointF &position, QTextLayout *textLayout, const QColor &color,
+                                QSGText::TextStyle style, const QColor &styleColor)
 {
     QList<QGlyphs> glyphsList(textLayout->glyphs());
     for (int i=0; i<glyphsList.size(); ++i)
-        addGlyphs(position, glyphsList.at(i), color);
+        addGlyphs(position, glyphsList.at(i), color, style, styleColor);
 
     QFont font = textLayout->font();
     if (font.strikeOut() || font.underline() || font.overline())
@@ -318,7 +328,7 @@ bool QSGTextNode::isComplexRichText(QTextDocument *doc)
 }
 
 void QSGTextNode::addTextBlock(const QPointF &position, QTextDocument *textDocument, const QTextBlock &block,
-                               const QColor &overrideColor)
+                               const QColor &overrideColor, QSGText::TextStyle style, const QColor &styleColor)
 {
     if (!block.isValid())
         return;
@@ -340,7 +350,8 @@ void QSGTextNode::addTextBlock(const QPointF &position, QTextDocument *textDocum
             QList<QGlyphs> glyphsList = fragment.glyphs();
             for (int i=0; i<glyphsList.size(); ++i) {
                 QGlyphs glyphs = glyphsList.at(i);
-                GlyphNodeInterface *glyphNode = addGlyphs(position + blockPosition + ascent, glyphs, color);
+                GlyphNodeInterface *glyphNode = addGlyphs(position + blockPosition + ascent, glyphs,
+                                                          color, style, styleColor);
 
                 QFont font = glyphs.font();
                 QPointF baseLine = glyphNode->baseLine();
