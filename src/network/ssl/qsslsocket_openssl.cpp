@@ -398,7 +398,10 @@ init_context:
     }
 
 #if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
-    if (client && q_SSLeay() >= 0x00090806fL) {
+    if ((configuration.protocol == QSsl::TlsV1SslV3 ||
+        configuration.protocol == QSsl::TlsV1 ||
+        configuration.protocol == QSsl::AnyProtocol) &&
+        client && q_SSLeay() >= 0x00090806fL) {
         // Set server hostname on TLS extension. RFC4366 section 3.1 requires it in ACE format.
         QString tlsHostName = verificationPeerName.isEmpty() ? q->peerName() : verificationPeerName;
         if (tlsHostName.isEmpty())
