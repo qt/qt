@@ -2699,19 +2699,22 @@
 
     Roles describing appearance and meta data (with associated types):
 
-    \value FontRole            The font used for items rendered with the default
-                               delegate. (QFont)
-    \value TextAlignmentRole   The alignment of the text for items rendered with the
-                               default delegate. (Qt::AlignmentFlag)
-    \value BackgroundRole      The background brush used for items rendered with
-                               the default delegate. (QBrush)
-    \value BackgroundColorRole This role is obsolete. Use BackgroundRole instead.
-    \value ForegroundRole      The foreground brush (text color, typically)
-                               used for items rendered with the default delegate.
-                               (QBrush)
-    \value TextColorRole       This role is obsolete. Use ForegroundRole instead.
-    \value CheckStateRole      This role is used to obtain the checked state of
-                               an item. (Qt::CheckState)
+    \value FontRole             The font used for items rendered with the default
+                                delegate. (QFont)
+    \value TextAlignmentRole    The alignment of the text for items rendered with the
+                                default delegate. (Qt::AlignmentFlag)
+    \value BackgroundRole       The background brush used for items rendered with
+                                the default delegate. (QBrush)
+    \value BackgroundColorRole  This role is obsolete. Use BackgroundRole instead.
+    \value ForegroundRole       The foreground brush (text color, typically)
+                                used for items rendered with the default delegate.
+                                (QBrush)
+    \value TextColorRole        This role is obsolete. Use ForegroundRole instead.
+    \value CheckStateRole       This role is used to obtain the checked state of
+                                an item. (Qt::CheckState)
+    \value InitialSortOrderRole This role is used to obtain the initial sort order
+                                of a header view section. (Qt::SortOrder). This
+                                role was introduced in Qt 4.8.
 
     Accessibility roles (with associated types):
 

@@ -1628,6 +1628,7 @@ public:
         AccessibleDescriptionRole = 12,
         // More general purpose
         SizeHintRole = 13,
+        InitialSortOrderRole = 14,
         // Internal UiLib roles. Start worrying when public roles go that high.
         DisplayPropertyRole = 27,
         DecorationPropertyRole = 28,
