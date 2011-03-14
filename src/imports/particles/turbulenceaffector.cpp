@@ -6,7 +6,7 @@
 
 TurbulenceAffector::TurbulenceAffector(QSGItem *parent) :
     ParticleAffector(parent),
-    m_strength(10), m_lastT(0), m_frequency(1), m_gridSize(10), m_field(0), m_inited(false)
+    m_strength(10), m_lastT(0), m_frequency(64), m_gridSize(10), m_field(0), m_inited(false)
 {
     //TODO: Update grid on size change
 }

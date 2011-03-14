@@ -3,8 +3,8 @@ import Qt.labs.particles 2.0
 
 Rectangle{
     id: root
-    width: 320
-    height: 480
+    width: 360
+    height: 600
     color: "darkblue"
     property bool cloneMode: false
     MouseArea{
@@ -17,8 +17,8 @@ Rectangle{
     }
     TrailEmitter{
         system: sys
-        y:480
-        width: 320
+        y:root.height
+        width: root.width
         particlesPerSecond: 200
         particleDuration: 4000
         ySpeed: -120
