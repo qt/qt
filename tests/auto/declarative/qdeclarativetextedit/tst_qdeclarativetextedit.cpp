@@ -1305,6 +1305,8 @@ void tst_qdeclarativetextedit::mouseSelection_data()
     QTest::newRow("on") << SRCDIR "/data/mouseselection_true.qml" << true;
     QTest::newRow("off") << SRCDIR "/data/mouseselection_false.qml" << false;
     QTest::newRow("default") << SRCDIR "/data/mouseselection_default.qml" << false;
+    QTest::newRow("on word selection") << SRCDIR "/data/mouseselection_true_words.qml" << true;
+    QTest::newRow("off word selection") << SRCDIR "/data/mouseselection_false_words.qml" << false;
 }
 
 void tst_qdeclarativetextedit::mouseSelection()
