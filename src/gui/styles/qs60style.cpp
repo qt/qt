@@ -2643,10 +2643,13 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
             //native items have small empty areas at the beginning and end of menu item
             sz.setWidth(sz.width() + 2 * pixelMetric(PM_MenuHMargin) + 2 * QS60StylePrivate::pixelMetric(PM_FrameCornerWidth));
-            if (QS60StylePrivate::isTouchSupported())
+            if (QS60StylePrivate::isTouchSupported()) {
                 //Make itemview easier to use in touch devices
+                sz.setHeight(sz.height() + 2 * pixelMetric(PM_FocusFrameVMargin));
                 //QCommonStyle does not adjust height with horizontal margin, it only adjusts width
-                sz.setHeight(sz.height() + 2 * pixelMetric(PM_FocusFrameVMargin) - 8); //QCommonstyle adds 8 to height that this style handles through PM values
+                if (ct == CT_MenuItem)
+                    sz.setHeight(sz.height() - 8); //QCommonstyle adds 8 to height that this style handles through PM values
+            }
             break;
 #ifndef QT_NO_COMBOBOX
         case CT_ComboBox: {
