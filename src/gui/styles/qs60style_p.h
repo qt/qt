@@ -592,8 +592,6 @@ private:
     static QPixmap cachedFrame(SkinFrameElements frame, const QSize &size,
         SkinElementFlags flags = KDefaultSkinElementFlags);
 
-    static void refreshUI();
-
     // set S60 font for widget
     void setFont(QWidget *widget) const;
     void setThemePalette(QWidget *widget) const;

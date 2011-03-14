@@ -630,25 +630,6 @@ QPixmap QS60StylePrivate::cachedFrame(SkinFrameElements frame, const QSize &size
     return result;
 }
 
-void QS60StylePrivate::refreshUI()
-{
-    QList<QWidget *> widgets = QApplication::allWidgets();
-
-    for (int i = 0; i < widgets.size(); ++i) {
-        QWidget *widget = widgets.at(i);
-        if (widget == 0)
-            continue;
-
-        if (widget->style()) {
-            widget->style()->polish(widget);
-            QEvent event(QEvent::StyleChange);
-            qApp->sendEvent(widget, &event);
-        }
-        widget->update();
-        widget->updateGeometry();
-    }
-}
-
 void QS60StylePrivate::setFont(QWidget *widget) const
 {
     QS60StyleEnums::FontCategories fontCategory = QS60StyleEnums::FC_Undefined;
