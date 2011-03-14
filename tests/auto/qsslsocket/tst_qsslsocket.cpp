@@ -387,7 +387,7 @@ void tst_QSslSocket::constructing()
     QVERIFY(!socket.waitForConnected(10));
     QTest::ignoreMessage(QtWarningMsg, "QSslSocket::waitForDisconnected() is not allowed in UnconnectedState");
     QVERIFY(!socket.waitForDisconnected(10));
-    QCOMPARE(socket.protocol(), QSsl::TlsV1);
+    QCOMPARE(socket.protocol(), QSsl::SecureProtocols);
 
     QSslConfiguration savedDefault = QSslConfiguration::defaultConfiguration();
 
@@ -771,7 +771,7 @@ void tst_QSslSocket::protocol()
             this, SLOT(untrustedWorkaroundSlot(QList<QSslError>)));
 #endif
 
-    QCOMPARE(socket->protocol(), QSsl::TlsV1);
+    QCOMPARE(socket->protocol(), QSsl::SecureProtocols);
     {
         // Fluke allows SSLv3.
         socket->setProtocol(QSsl::SslV3);
@@ -906,31 +906,43 @@ void tst_QSslSocket::protocolServerSide_data()
     QTest::newRow("tls1-tls1") << QSsl::TlsV1 << QSsl::TlsV1 << true;
     QTest::newRow("tls1ssl3-tls1ssl3") << QSsl::TlsV1SslV3 << QSsl::TlsV1SslV3 << true;
     QTest::newRow("any-any") << QSsl::AnyProtocol << QSsl::AnyProtocol << true;
+    QTest::newRow("secure-secure") << QSsl::SecureProtocols << QSsl::SecureProtocols << true;
 
     QTest::newRow("ssl2-ssl3") << QSsl::SslV2 << QSsl::SslV3 << false;
     QTest::newRow("ssl2-tls1") << QSsl::SslV2 << QSsl::TlsV1 << false;
     QTest::newRow("ssl2-tls1ssl3") << QSsl::SslV2 << QSsl::TlsV1SslV3 << false;
+    QTest::newRow("ssl2-secure") << QSsl::SslV2 << QSsl::SecureProtocols << false;
     QTest::newRow("ssl2-any") << QSsl::SslV2 << QSsl::AnyProtocol << false; // no idea why it does not work, but we don't care about SSL 2
 
     QTest::newRow("ssl3-ssl2") << QSsl::SslV3 << QSsl::SslV2 << false;
     QTest::newRow("ssl3-tls1") << QSsl::SslV3 << QSsl::TlsV1 << false;
     QTest::newRow("ssl3-tls1ssl3") << QSsl::SslV3 << QSsl::TlsV1SslV3 << true;
+    QTest::newRow("ssl3-secure") << QSsl::SslV3 << QSsl::SecureProtocols << true;
     QTest::newRow("ssl3-any") << QSsl::SslV3 << QSsl::AnyProtocol << true;
 
     QTest::newRow("tls1-ssl2") << QSsl::TlsV1 << QSsl::SslV2 << false;
     QTest::newRow("tls1-ssl3") << QSsl::TlsV1 << QSsl::SslV3 << false;
     QTest::newRow("tls1-tls1ssl3") << QSsl::TlsV1 << QSsl::TlsV1SslV3 << true;
+    QTest::newRow("tls1-secure") << QSsl::TlsV1 << QSsl::SecureProtocols << true;
     QTest::newRow("tls1-any") << QSsl::TlsV1 << QSsl::AnyProtocol << true;
 
     QTest::newRow("tls1ssl3-ssl2") << QSsl::TlsV1SslV3 << QSsl::SslV2 << false;
     QTest::newRow("tls1ssl3-ssl3") << QSsl::TlsV1SslV3 << QSsl::SslV3 << true;
     QTest::newRow("tls1ssl3-tls1") << QSsl::TlsV1SslV3 << QSsl::TlsV1 << true;
-    QTest::newRow("tls1ssl3-tls1") << QSsl::TlsV1SslV3 << QSsl::AnyProtocol << true;
+    QTest::newRow("tls1ssl3-secure") << QSsl::TlsV1SslV3 << QSsl::SecureProtocols << true;
+    QTest::newRow("tls1ssl3-any") << QSsl::TlsV1SslV3 << QSsl::AnyProtocol << true;
+
+    QTest::newRow("secure-ssl2") << QSsl::SecureProtocols << QSsl::SslV2 << false;
+    QTest::newRow("secure-ssl3") << QSsl::SecureProtocols << QSsl::SslV3 << true;
+    QTest::newRow("secure-tls1") << QSsl::SecureProtocols << QSsl::TlsV1 << true;
+    QTest::newRow("secure-tls1ssl3") << QSsl::SecureProtocols << QSsl::TlsV1SslV3 << true;
+    QTest::newRow("secure-any") << QSsl::SecureProtocols << QSsl::AnyProtocol << true;
 
     QTest::newRow("any-ssl2") << QSsl::AnyProtocol << QSsl::SslV2 << false; // no idea why it does not work, but we don't care about SSL 2
     QTest::newRow("any-ssl3") << QSsl::AnyProtocol << QSsl::SslV3 << true;
     QTest::newRow("any-tls1") << QSsl::AnyProtocol << QSsl::TlsV1 << true;
     QTest::newRow("any-tls1ssl3") << QSsl::AnyProtocol << QSsl::TlsV1SslV3 << true;
+    QTest::newRow("any-secure") << QSsl::AnyProtocol << QSsl::SecureProtocols << true;
 }
 
 void tst_QSslSocket::protocolServerSide()
