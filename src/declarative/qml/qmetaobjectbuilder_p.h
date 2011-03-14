@@ -258,6 +258,8 @@ public:
     bool isUser() const;
     bool hasStdCppSet() const;
     bool isEnumOrFlag() const;
+    bool isConstant() const;
+    bool isFinal() const;
 
     void setReadable(bool value);
     void setWritable(bool value);
@@ -269,6 +271,8 @@ public:
     void setUser(bool value);
     void setStdCppSet(bool value);
     void setEnumOrFlag(bool value);
+    void setConstant(bool value);
+    void setFinal(bool value);
 
 private:
     const QMetaObjectBuilder *_mobj;
