@@ -47,7 +47,7 @@
 #include "qelapsedtimer.h"
 #include "qvarlengtharray.h"
 #include "qnetworkinterface.h"
-#include "qnetworksession_p.h"
+#include <private/qnetworksession_p.h>
 #include <es_sock.h>
 #include <in_sock.h>
 #include <net/if.h>
