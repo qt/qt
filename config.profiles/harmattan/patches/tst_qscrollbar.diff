@@ -1,0 +1,12 @@
+Index: qt-maemo-qtp/tests/auto/qscrollbar/tst_qscrollbar.cpp
+===================================================================
+--- qt-maemo-qtp.orig/tests/auto/qscrollbar/tst_qscrollbar.cpp
++++ qt-maemo-qtp/tests/auto/qscrollbar/tst_qscrollbar.cpp
+@@ -104,6 +104,7 @@
+ 
+ void tst_QScrollBar::task_209492()
+ {
++    QSKIP("Unstable test on Harmattan", SkipSingle);
+     class MyScrollArea : public QScrollArea
+     {
+     public:

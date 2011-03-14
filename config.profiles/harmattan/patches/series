@@ -1,0 +1,14 @@
+tst_qscrollbar.diff
+signon_authenticator4.diff
+pinch_gesture_sent_twice.diff
+no_read_pro_from_quilt_dir.diff
+tst_qvariant.diff
+icu.diff
+qgltexturecache.diff
+qwidget_x11.diff
+qwidget_x11_mapping.diff
+glshadercache.diff
+temppath.diff
+tst_qprogressbar.diff
+default_widget_size.diff
+runtime-window-geometry-revert.diff

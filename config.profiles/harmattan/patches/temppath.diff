@@ -1,0 +1,28 @@
+Index: qt-maemo-qtp/mkspecs/linux-g++-maemo/qplatformdefs.h
+===================================================================
+--- qt-maemo-qtp.orig/mkspecs/linux-g++-maemo/qplatformdefs.h
++++ qt-maemo-qtp/mkspecs/linux-g++-maemo/qplatformdefs.h
+@@ -43,3 +43,8 @@
+ 
+ #define QT_GUI_DOUBLE_CLICK_RADIUS 20
+ #define QT_GUI_DRAG_DISTANCE 16
++
++// TMPDIR sometimes points to /tmp and sometimes to /var/tmp
++// To guarantee native platform key generation for QSharedMemory and friends,
++// we must hard code the temp path to /var/tmp here.
++#define QT_UNIX_TEMP_PATH_OVERRIDE "/var/tmp"
+Index: qt-maemo-qtp/src/corelib/io/qfsfileengine_unix.cpp
+===================================================================
+--- qt-maemo-qtp.orig/src/corelib/io/qfsfileengine_unix.cpp
++++ qt-maemo-qtp/src/corelib/io/qfsfileengine_unix.cpp
+@@ -643,7 +643,9 @@
+ 
+ QString QFSFileEngine::tempPath()
+ {
+-#if defined(Q_OS_SYMBIAN)
++#if defined(QT_UNIX_TEMP_PATH_OVERRIDE)
++    QString temp = QLatin1String(QT_UNIX_TEMP_PATH_OVERRIDE);
++#elif defined(Q_OS_SYMBIAN)
+     TFileName symbianPath = PathInfo::PhoneMemoryRootPath();
+     QString temp = QDir::fromNativeSeparators(qt_TDesC2QString(symbianPath));
+     temp += QLatin1String( "temp/");

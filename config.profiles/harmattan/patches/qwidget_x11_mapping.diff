@@ -1,0 +1,17 @@
+Index: qt-maemo-qtp/src/gui/kernel/qwidget_x11.cpp
+===================================================================
+--- qt-maemo-qtp.orig/src/gui/kernel/qwidget_x11.cpp
++++ qt-maemo-qtp/src/gui/kernel/qwidget_x11.cpp
+@@ -1353,6 +1353,12 @@
+         //cannot trust that !isWindow() implies parentWidget() before create
+         return (q->isWindow() || !q->parentWidget()) ?  p : q->parentWidget()->d_func()->mapToGlobal(p);
+     }
++
++    // we're not embedded - use the client rect to compute the global position
++    if (!q->window()->d_func()->topData()->embedded)
++        return mapFromWS(QPoint(pos.x() - q->data->crect.left(), pos.y() - q->data->crect.top()));
++
++    // otherwise, go through the (slow-ish) X11 round-trip
+     int x, y;
+     Window child;
+     QPoint p = mapToWS(pos);

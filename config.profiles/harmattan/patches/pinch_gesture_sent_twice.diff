@@ -1,0 +1,56 @@
+Index: qt-maemo-qtp/src/gui/kernel/qstandardgestures.cpp
+===================================================================
+--- qt-maemo-qtp.orig/src/gui/kernel/qstandardgestures.cpp
++++ qt-maemo-qtp/src/gui/kernel/qstandardgestures.cpp
+@@ -66,6 +66,9 @@
+ #else
+         static_cast<QWidget *>(target)->setAttribute(Qt::WA_AcceptTouchEvents);
+ #endif
++    } else if (target) {
++        return 0; // this assumes the target is a QGraphicsObject, so we return
++                  // NULL to indicate that the recognizer doesn't support graphicsobject
+     }
+     return new QPanGesture;
+ }
+@@ -157,7 +160,11 @@
+ {
+     if (target && target->isWidgetType()) {
+         static_cast<QWidget *>(target)->setAttribute(Qt::WA_AcceptTouchEvents);
++    } else if (target) {
++        return 0; // this assumes the target is a QGraphicsObject, so we return
++                  // NULL to indicate that the recognizer doesn't support graphicsobject
+     }
++
+     return new QPinchGesture;
+ }
+ 
+@@ -286,6 +293,9 @@
+ {
+     if (target && target->isWidgetType()) {
+         static_cast<QWidget *>(target)->setAttribute(Qt::WA_AcceptTouchEvents);
++    } else if (target) {
++        return 0; // this assumes the target is a QGraphicsObject, so we return
++                  // NULL to indicate that the recognizer doesn't support graphicsobject
+     }
+     return new QSwipeGesture;
+ }
+@@ -424,6 +434,9 @@
+ {
+     if (target && target->isWidgetType()) {
+         static_cast<QWidget *>(target)->setAttribute(Qt::WA_AcceptTouchEvents);
++    } else if (target) {
++        return 0; // this assumes the target is a QGraphicsObject, so we return
++                  // NULL to indicate that the recognizer doesn't support graphicsobject
+     }
+     return new QTapGesture;
+ }
+@@ -495,6 +508,9 @@
+ {
+     if (target && target->isWidgetType()) {
+         static_cast<QWidget *>(target)->setAttribute(Qt::WA_AcceptTouchEvents);
++    } else if (target) {
++        return 0; // this assumes the target is a QGraphicsObject, so we return
++                  // NULL to indicate that the recognizer doesn't support graphicsobject
+     }
+     return new QTapAndHoldGesture;
+ }

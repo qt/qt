@@ -1,0 +1,230 @@
+Index: qt-maemo-qtp/src/3rdparty/signon/signon.pri
+===================================================================
+--- /dev/null
++++ qt-maemo-qtp/src/3rdparty/signon/signon.pri
+@@ -0,0 +1,2 @@
++# signon dependency
++CONFIG += qdbus
+Index: qt-maemo-qtp/src/network/access/access.pri
+===================================================================
+--- qt-maemo-qtp.orig/src/network/access/access.pri
++++ qt-maemo-qtp/src/network/access/access.pri
+@@ -61,3 +61,4 @@
+     access/qnetworkdiskcache.cpp
+ 
+ include($$PWD/../../3rdparty/zlib_dependency.pri)
++include($$PWD/../../3rdparty/signon/signon.pri)
+Index: qt-maemo-qtp/src/network/kernel/qauthenticator.cpp
+===================================================================
+--- qt-maemo-qtp.orig/src/network/kernel/qauthenticator.cpp
++++ qt-maemo-qtp/src/network/kernel/qauthenticator.cpp
+@@ -129,6 +129,9 @@
+   \sa QSslSocket
+ */
+ 
++#ifndef QT_NO_SIGNON
++#include <QtDBus/QtDBus>
++#endif //QT_NO_SIGNON
+ 
+ /*!
+   Constructs an empty authentication object
+@@ -421,17 +424,40 @@
+ {
+     QByteArray response;
+     const char *methodString = 0;
++#ifndef QT_NO_SIGNON
++    bool valid = false;
++    qint32 id = 0;
++#endif //QT_NO_SIGNON
++
+     switch(method) {
+     case QAuthenticatorPrivate::None:
+         methodString = "";
+         phase = Done;
+         break;
+     case QAuthenticatorPrivate::Plain:
++#ifndef QT_NO_SIGNON
++        id = this->options.value(QLatin1String("identity")).toInt(&valid);
++        if (valid) {
++             //get response from sso
++            QVariantMap signon = signonResponse(id, QLatin1String("password"),QVariantMap());
++            response = '\0' + signon.value(QLatin1String("UserName")).toString().toUtf8()
++                   + '\0' + signon.value(QLatin1String("Secret")).toString().toUtf8();
++    } else
++#endif //QT_NO_SIGNON
+         response = '\0' + user.toUtf8() + '\0' + password.toUtf8();
+         phase = Done;
+         break;
+     case QAuthenticatorPrivate::Basic:
+         methodString = "Basic ";
++#ifndef QT_NO_SIGNON
++        id = this->options.value(QLatin1String("identity")).toInt(&valid);
++        if (valid) {
++             //get response from sso
++            QVariantMap signon = signonResponse(id, QLatin1String("password"),QVariantMap());
++            response = signon.value(QLatin1String("UserName")).toString().toLatin1()
++                       + ':' + signon.value(QLatin1String("Secret")).toString().toLatin1();
++        } else
++#endif //QT_NO_SIGNON
+         response = user.toLatin1() + ':' + password.toLatin1();
+         response = response.toBase64();
+         phase = Done;
+@@ -613,6 +639,90 @@
+     return hash.result().toHex();
+ }
+ 
++#ifndef QT_NO_SIGNON
++
++static QVariantMap signonResponse(const quint32 id, const QString &method, QVariantMap args)
++{
++    //check dbus connection
++    QDBusConnection connection = QDBusConnection::sessionBus();
++    if (!QDBusConnection::sessionBus().isConnected()) {
++        qCritical() << "DBus connection failed";
++        return QVariantMap();
++    }
++
++    QDBusMessage msg =
++        QDBusMessage::createMethodCall(QLatin1String("com.nokia.SingleSignOn"),
++                           QLatin1String("/com/nokia/SingleSignOn") ,
++                           QLatin1String("com.nokia.SingleSignOn.AuthService"),
++                           QLatin1String("getAuthSessionObjectPath"));
++    msg << id << method;
++    QDBusReply<QString> pathReply = connection.call(msg);
++
++    QString sessionPath;
++    if (pathReply.isValid()) {
++        sessionPath = pathReply.value();
++    } else {
++        qDebug() << pathReply.error();
++        return QVariantMap();
++    }
++
++    //authenticate using auth session
++    msg = QDBusMessage::createMethodCall(QLatin1String("com.nokia.SingleSignOn"),
++                                  sessionPath, QString(),
++        QLatin1String("process"));
++    msg << args << method;
++    QDBusReply<QVariantMap> reply = connection.call(msg);
++
++    if (reply.isValid()) {
++        QVariantMap map = reply.value();
++        return map;
++    } else {
++        qDebug() << reply.error();
++        return QVariantMap();
++    }
++    return QVariantMap();
++}
++
++static QByteArray signonDigestMd5(
++    const quint32 id,
++    const QByteArray &alg,
++    QString &user,
++    const QByteArray &realm,
++    const QByteArray &nonce,       /* nonce from server */
++    QByteArray &nonceCount,  /* 8 hex digits */
++    QByteArray &cNonce,      /* client nonce */
++    const QByteArray &qop,         /* qop-value: "", "auth", "auth-int" */
++    const QByteArray &method,      /* method from the request */
++    const QByteArray &digestUri,   /* requested URL */
++    const QByteArray &hEntity       /* H(entity body) if qop="auth-int" */
++    )
++{
++    QByteArray digest = QByteArray();
++    nonceCount = "00000001";
++
++    QVariantMap args;
++    args.insert(QLatin1String("Algorithm"), alg);
++    args.insert(QLatin1String("Realm"), QLatin1String(realm));
++    args.insert(QLatin1String("nonce"), nonce);
++    args.insert(QLatin1String("nonceCount"), nonceCount);
++    args.insert(QLatin1String("cNonce"), cNonce);
++    args.insert(QLatin1String("qop"), qop);
++    args.insert(QLatin1String("method"), method);
++    args.insert(QLatin1String("digestUri"), digestUri);
++    args.insert(QLatin1String("Entity"), hEntity);
++
++    QVariantMap response = signonResponse(id, QLatin1String("digest"), args);
++
++    if (response.isEmpty())
++        return digest;
++    digest = response.value(QLatin1String("Digest")).toByteArray();
++    user = response.value(QLatin1String("UserName")).toString();
++    cNonce = response.value(QLatin1String("cNonce")).toByteArray();
++
++    return digest;
++}
++#endif //QT_NO_SIGNON
++
+ QByteArray QAuthenticatorPrivate::digestMd5Response(const QByteArray &challenge, const QByteArray &method, const QByteArray &path)
+ {
+     QHash<QByteArray,QByteArray> options = parseDigestAuthenticationChallenge(challenge);
+@@ -625,9 +735,23 @@
+     QByteArray nonce = options.value("nonce");
+     QByteArray opaque = options.value("opaque");
+     QByteArray qop = options.value("qop");
++    QByteArray response;
+ 
+ //    qDebug() << "calculating digest: method=" << method << "path=" << path;
+-    QByteArray response = digestMd5ResponseHelper(options.value("algorithm"), user.toLatin1(),
++
++#ifndef QT_NO_SIGNON
++    bool valid = false;
++    qint32 id = this->options.value(QLatin1String("identity")).toInt(&valid);
++    if (valid) {
++         //get response from sso
++        response = signonDigestMd5(id, options.value("algorithm"), user,
++                                           realm.toLatin1(),
++                                           nonce, nonceCountString,
++                                           cnonce, qop, method,
++                                           path, QByteArray());
++    } else
++#endif //QT_NO_SIGNON
++    response = digestMd5ResponseHelper(options.value("algorithm"), user.toLatin1(),
+                                               realm.toLatin1(), password.toLatin1(),
+                                               nonce, nonceCountString,
+                                               cnonce, qop, method,
+Index: qt-maemo-qtp/src/network/kernel/qauthenticator_p.h
+===================================================================
+--- qt-maemo-qtp.orig/src/network/kernel/qauthenticator_p.h
++++ qt-maemo-qtp/src/network/kernel/qauthenticator_p.h
+@@ -109,6 +109,23 @@
+ 
+ };
+ 
++#ifndef QT_NO_SIGNON
++    static QVariantMap signonResponse(const quint32 id, const QString &method, QVariantMap args);
++    static QByteArray signonDigestMd5(
++        const quint32 id,
++        const QByteArray &alg,
++        QString &user,
++        const QByteArray &realm,
++        const QByteArray &nonce,       /* nonce from server */
++        QByteArray &nonceCount,  /* 8 hex digits */
++        QByteArray &cNonce,      /* client nonce */
++        const QByteArray &qop,         /* qop-value: "", "auth", "auth-int" */
++        const QByteArray &method,      /* method from the request */
++        const QByteArray &digestUri,   /* requested URL */
++        const QByteArray &hEntity       /* H(entity body) if qop="auth-int" */
++        );
++#endif //QT_NO_SIGNON
++
+ 
+ QT_END_NAMESPACE
+ 
+Index: qt-maemo-qtp/src/src.pro
+===================================================================
+--- qt-maemo-qtp.orig/src/src.pro
++++ qt-maemo-qtp/src/src.pro
+@@ -4,8 +4,9 @@
+ unset(SRC_SUBDIRS)
+ win32:SRC_SUBDIRS += src_winmain
+ symbian:SRC_SUBDIRS += src_s60main
+-SRC_SUBDIRS += src_corelib src_xml src_network src_sql src_testlib
++SRC_SUBDIRS += src_corelib src_xml
+ !symbian:contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
++SRC_SUBDIRS += src_network src_sql src_testlib
+ !contains(QT_CONFIG, no-gui): SRC_SUBDIRS += src_gui
+ !wince*:!symbian:!vxworks:contains(QT_CONFIG, qt3support): SRC_SUBDIRS += src_qt3support
+ 

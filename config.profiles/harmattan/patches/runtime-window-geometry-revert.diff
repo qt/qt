@@ -1,0 +1,12 @@
+Index: qt-maemo-qtp/src/gui/painting/qgraphicssystem_runtime.cpp
+===================================================================
+--- qt-maemo-qtp.orig/src/gui/painting/qgraphicssystem_runtime.cpp
++++ qt-maemo-qtp/src/gui/painting/qgraphicssystem_runtime.cpp
+@@ -285,7 +285,6 @@
+ 
+ void QRuntimeWindowSurface::setGeometry(const QRect &rect)
+ {
+-    QWindowSurface::setGeometry(rect);
+     m_windowSurface->setGeometry(rect);
+ }
+ 
