@@ -197,6 +197,9 @@ Handle<JSArray> Isolate::CaptureCurrentStackTrace(
   Handle<String> column_key = factory()->LookupAsciiSymbol("column");
   Handle<String> line_key = factory()->LookupAsciiSymbol("lineNumber");
   Handle<String> script_key = factory()->LookupAsciiSymbol("scriptName");
+#ifdef QT_BUILD_SCRIPT_LIB
+  Handle<String> script_id_key = factory()->LookupAsciiSymbol("scriptId");
+#endif
   Handle<String> name_or_source_url_key =
       factory()->LookupAsciiSymbol("nameOrSourceURL");
   Handle<String> script_name_or_source_url_key =
@@ -248,6 +251,13 @@ Handle<JSArray> Isolate::CaptureCurrentStackTrace(
         Handle<Object> script_name(script->name(), this);
         SetLocalPropertyNoThrow(stackFrame, script_key, script_name);
       }
+
+#ifdef QT_BUILD_SCRIPT_LIB
+      if (options & StackTrace::kScriptId) {
+        Handle<Object> script_id(script->id());
+        SetLocalPropertyNoThrow(stackFrame, script_id_key, script_id);
+      }
+#endif
 
       if (options & StackTrace::kScriptNameOrSourceURL) {
         Handle<Object> script_name(script->name(), this);

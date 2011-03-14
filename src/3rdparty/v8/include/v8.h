@@ -773,7 +773,12 @@ class V8EXPORT StackTrace {
     kIsEval = 1 << 4,
     kIsConstructor = 1 << 5,
     kScriptNameOrSourceURL = 1 << 6,
+#ifdef QT_BUILD_SCRIPT_LIB
+    kScriptId = 1 << 7,
+    kOverview = kLineNumber | kColumnOffset | kScriptName | kFunctionName | kScriptId,
+#else
     kOverview = kLineNumber | kColumnOffset | kScriptName | kFunctionName,
+#endif
     kDetailed = kOverview | kIsEval | kIsConstructor | kScriptNameOrSourceURL
   };
 
@@ -832,6 +837,14 @@ class V8EXPORT StackFrame {
    * function for this StackFrame.
    */
   Local<String> GetScriptName() const;
+
+#ifdef QT_BUILD_SCRIPT_LIB
+  /**
+   * Returns the id of the resource that contains the script for the
+   * function for this StackFrame.
+   */
+  Local<Value> GetScriptId() const;
+#endif
 
   /**
    * Returns the name of the resource that contains the script for the
