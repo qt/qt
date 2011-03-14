@@ -703,8 +703,8 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
 
 
 #if !defined(QT_NO_DIRECTWRITE)
-    bool useDirectWrite = (request.hintingPreference & QFont::PreferNoHinting)
-                       || (request.hintingPreference & QFont::PreferVerticalHinting);
+    bool useDirectWrite = (request.hintingPreference == QFont::PreferNoHinting)
+                       || (request.hintingPreference == QFont::PreferVerticalHinting);
     IDWriteFont *directWriteFont = 0;
 #else
     bool useDirectWrite = false;
