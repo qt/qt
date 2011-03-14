@@ -250,12 +250,12 @@ export PATH
 
 //! [38]
 cd /home/user/qt/%VERSION%
-./configure -platform linux-g++ -xplatform symbian/linux-armcc
+./configure -platform linux-g++ -xplatform symbian-armcc
 //! [38]
 
 //! [39]
 cd /home/user/qt/%VERSION%
-./configure -platform linux-g++ -xplatform symbian/linux-gcce -no-webkit
+./configure -platform linux-g++ -xplatform symbian-gcce -no-webkit
 //! [39]
 
 //! [40]
