@@ -4877,6 +4877,13 @@ void V8::TerminateExecution(int thread_id) {
   }
 }
 
+#ifdef QT_BUILD_SCRIPT_LIB
+void V8::ExecuteUserCallback(UserCallback callback, void *data) {
+    i::Isolate* isolate = i::Isolate::Current();
+    if (IsDeadCheck(isolate, "v8::ExecuteUserCallback()")) return;
+    isolate->stack_guard()->ExecuteUserCallback(callback, data);
+}
+#endif
 
 void V8::TerminateExecution(Isolate* isolate) {
   // If no isolate is supplied, use the default isolate.

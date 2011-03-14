@@ -2484,6 +2484,8 @@ typedef void* (*CreateHistogramCallback)(const char* name,
 
 typedef void (*AddHistogramSampleCallback)(void* histogram, int sample);
 
+typedef void (*UserCallback)(void *data);
+
 // --- M e m o r y  A l l o c a t i o n   C a l l b a c k ---
   enum ObjectSpace {
     kObjectSpaceNewSpace = 1 << 0,
@@ -3059,6 +3061,15 @@ class V8EXPORT V8 {
    */
   static int ContextDisposedNotification();
 
+#ifdef QT_BUILD_SCRIPT_LIB
+  /**
+   * Will call the callback with the data as parameter as soon as possible
+   * from the thread running the script
+   * This method can be used by any thread even if that thread has not
+   * acquired the V8 lock with a Locker object.
+   */
+  static void ExecuteUserCallback(UserCallback Callback, void *data);
+#endif
  private:
   V8();
 
