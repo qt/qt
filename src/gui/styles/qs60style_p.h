@@ -555,6 +555,7 @@ public:
     static QPixmap frame(SkinFrameElements frame, const QSize &size,
         SkinElementFlags flags = KDefaultSkinElementFlags);
     static QPixmap backgroundTexture();
+    static QPixmap placeHolderTexture();
 
 #ifdef Q_WS_S60
     void handleDynamicLayoutVariantSwitch();
@@ -614,6 +615,9 @@ private:
 
     // Contains background texture.
     static QPixmap *m_background;
+    // Placeholder pixmap for the real background texture.
+    static QPixmap *m_placeHolderTexture;
+
     const static SkinElementFlags KDefaultSkinElementFlags;
     // defined theme palette
     static QPalette *m_themePalette;

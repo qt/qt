@@ -118,6 +118,7 @@ const short *QS60StylePrivate::m_pmPointer = QS60StylePrivate::data[0];
 
 // theme background texture
 QPixmap *QS60StylePrivate::m_background = 0;
+QPixmap *QS60StylePrivate::m_placeHolderTexture = 0;
 
 // theme palette
 QPalette *QS60StylePrivate::m_themePalette = 0;
@@ -155,6 +156,10 @@ const double KTabFontMul = 0.72;
 QS60StylePrivate::~QS60StylePrivate()
 {
     clearCaches(); //deletes also background image
+    if (m_placeHolderTexture) {
+        delete m_placeHolderTexture;
+        m_placeHolderTexture = 0;
+    }
     deleteThemePalette();
 #ifdef Q_WS_S60
     removeAnimations();
@@ -505,7 +510,10 @@ void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
 {
     Q_UNUSED(app)
     QPalette applicationPalette = QApplication::palette();
-    applicationPalette.setBrush(QPalette::Window, backgroundTexture());
+    // The initial QPalette::Window is just a placeHolder QPixmap to save RAM
+    // if the actual texture is not needed. The real texture is created just before
+    // painting it in qt_s60_fill_background().
+    applicationPalette.setBrush(QPalette::Window, placeHolderTexture());
     setThemePalette(&applicationPalette);
 }
 
@@ -700,8 +708,10 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
     palette->setColor(QPalette::LinkVisited, palette->color(QPalette::Link).darker());
     palette->setColor(QPalette::Highlight,
         s60Color(QS60StyleEnums::CL_QsnHighlightColors, 2, 0));
-    // set background image as a texture brush
-    palette->setBrush(QPalette::Window, backgroundTexture());
+    // The initial QPalette::Window is just a placeHolder QPixmap to save RAM
+    // if the actual texture is not needed. The real texture is created just before
+    // painting it in qt_s60_fill_background().
+    palette->setBrush(QPalette::Window, placeHolderTexture());
     // set as transparent so that styled full screen theme background is visible
     palette->setBrush(QPalette::Base, Qt::transparent);
     // set button color based on pixel colors
@@ -3529,9 +3539,11 @@ extern QPoint qt_s60_fill_background_offset(const QWidget *targetWidget);
 
 bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush)
 {
-    const QPixmap backgroundTexture(QS60StylePrivate::backgroundTexture());
-    if (backgroundTexture.cacheKey() != brush.texture().cacheKey())
+    const QPixmap placeHolder(QS60StylePrivate::placeHolderTexture());
+    if (placeHolder.cacheKey() != brush.texture().cacheKey())
         return false;
+
+    const QPixmap backgroundTexture(QS60StylePrivate::backgroundTexture());
 
     const QPaintDevice *target = painter->device();
     if (target->devType() == QInternal::Widget) {

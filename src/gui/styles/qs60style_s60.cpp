@@ -66,7 +66,6 @@
 #include <aknnavi.h>
 #include <gulicon.h>
 #include <AknBitmapAnimation.h>
-
 #include <centralrepository.h>
 
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
@@ -1408,10 +1407,21 @@ QPixmap QS60StylePrivate::backgroundTexture()
 
     if (createNewBackground) {
         QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen,
-                QSize(applicationRect.Width(), applicationRect.Height()), 0, SkinElementFlags());
+            QSize(applicationRect.Width(), applicationRect.Height()), 0, SkinElementFlags());
         m_background = new QPixmap(background);
     }
     return *m_background;
+}
+
+// Generates 1*1 red pixmap as a placeholder for real texture.
+// The actual theme texture is drawn in qt_s60_fill_background().
+QPixmap QS60StylePrivate::placeHolderTexture()
+{
+    if (!m_placeHolderTexture) {
+        m_placeHolderTexture = new QPixmap(1,1);
+        m_placeHolderTexture->fill(Qt::red);
+    }
+    return *m_placeHolderTexture;
 }
 
 QSize QS60StylePrivate::screenSize()
