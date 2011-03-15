@@ -169,9 +169,7 @@ void initProjectDeploySymbian(QMakeProject* project,
                               QStringList& generatedDirs,
                               QStringList& generatedFiles)
 {
-    QString targetPath = project->values("deploy.path").join(" ");
-    if (targetPath.isEmpty())
-        targetPath = testPath;
+    QString targetPath = testPath;
     if (targetPath.endsWith("/") || targetPath.endsWith("\\"))
         targetPath = targetPath.mid(0, targetPath.size() - 1);
 
