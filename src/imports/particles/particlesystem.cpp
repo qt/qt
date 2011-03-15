@@ -38,7 +38,7 @@ void ParticleSystem::registerParticleType(ParticleType* p)
 void ParticleSystem::registerParticleEmitter(ParticleEmitter* e)
 {
     m_emitters << e;//###How to get them out?
-    connect(e, SIGNAL(particlesPerSecondChanged(int)),
+    connect(e, SIGNAL(particlesPerSecondChanged(qreal)),
             this, SLOT(countChanged()));
     connect(e, SIGNAL(particleDurationChanged(int)),
             this, SLOT(countChanged()));
