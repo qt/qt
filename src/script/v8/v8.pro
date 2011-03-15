@@ -5,6 +5,7 @@ CONFIG += building-libs
 
 QT =
 
+include($$PWD/../../qbase.pri)
 include($$PWD/v8.pri)
 
 V8SOURCES = \

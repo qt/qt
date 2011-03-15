@@ -16,7 +16,11 @@ include($$PWD/../v8/v8base.pri)
 INCLUDEPATH += $$PWD
 
 INCLUDEPATH += $$V8DIR/include
-LIBS += -L. -L../v8/ -L../snapshot/ -lv8 -lsnapshot
+CONFIG(debug, debug|release) {
+    LIBS += -L. -L../v8/ -L../snapshot/ -lv8_debug -lsnapshot_debug
+} else {
+    LIBS += -L. -L../v8/ -L../snapshot/ -lv8 -lsnapshot
+}
 
 # Avoid qmake adding -lv8 et al as dependencies.
 CONFIG -= explicitlib
