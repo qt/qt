@@ -647,15 +647,15 @@ QSize QToolBarLayout::expandedSize(const QSize &size) const
 
 void QToolBarLayout::setExpanded(bool exp)
 {
-    if (exp == expanded)
+    QWidget *tb = qobject_cast<QToolBar*>(parentWidget());
+    if (!tb)
+        return;
+    if (exp == expanded && !tb->isWindow())
         return;
 
     expanded = exp;
     extension->setChecked(expanded);
 
-    QToolBar *tb = qobject_cast<QToolBar*>(parentWidget());
-    if (!tb)
-        return;
     if (QMainWindow *win = qobject_cast<QMainWindow*>(tb->parentWidget())) {
 #ifdef QT_NO_DOCKWIDGET
         animating = false;

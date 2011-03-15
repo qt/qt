@@ -1048,7 +1048,6 @@ QWidget *qt_mac_getTargetForKeyEvent(QWidget *widgetThatReceivedEvent)
 // events
 QWidget *qt_mac_getTargetForMouseEvent(
     // You can call this function without providing an event.
-    // If so, set returnGlobalPoint before the call.
     NSEvent *event,
     QEvent::Type eventType,
     QPoint &returnLocalPoint,
@@ -1057,7 +1056,8 @@ QWidget *qt_mac_getTargetForMouseEvent(
     QWidget **returnWidgetUnderMouse)
 {
     Q_UNUSED(event);
-    returnGlobalPoint = flipPoint([NSEvent mouseLocation]).toPoint();
+    NSPoint nsglobalpoint = event ? [[event window] convertBaseToScreen:[event locationInWindow]] : [NSEvent mouseLocation];
+    returnGlobalPoint = flipPoint(nsglobalpoint).toPoint();
     QWidget *mouseGrabber = QWidget::mouseGrabber();
     bool buttonDownNotBlockedByModal = qt_button_down && !QApplicationPrivate::isBlockedByModal(qt_button_down);
     QWidget *popup = QApplication::activePopupWidget();
