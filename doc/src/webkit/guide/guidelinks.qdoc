@@ -1,0 +1,444 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the Qt WebKit documentation.
+**
+** $QT_BEGIN_LICENSE:BSD$
+** You may use this file under the terms of the BSD license as follows:
+**
+** "Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are
+** met:
+**   * Redistributions of source code must retain the above copyright
+**     notice, this list of conditions and the following disclaimer.
+**   * Redistributions in binary form must reproduce the above copyright
+**     notice, this list of conditions and the following disclaimer in
+**     the documentation and/or other materials provided with the
+**     distribution.
+**   * Neither the name of Nokia Corporation and its Subsidiary(-ies) nor
+**     the names of its contributors may be used to endorse or promote
+**     products derived from this software without specific prior written
+**     permission.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+/*!
+\externalpage webkit-guide/storage.htm
+\title ex_storage
+*/
+
+/*!
+\externalpage webkit-guide/css/storage.css
+\title storage_css
+*/
+
+/*!
+\externalpage webkit-guide/js/storage.js
+\title storage_js
+*/
+
+/*!
+\externalpage webkit-guide/anim_accord.htm
+\title anim_accord
+*/
+
+/*!
+\externalpage webkit-guide/anim_demo-rotate.htm
+\title anim_demo-rotate
+*/
+
+/*!
+\externalpage webkit-guide/anim_demo-scale.htm
+\title anim_demo-scale
+*/
+
+/*!
+\externalpage webkit-guide/anim_demo-skew.htm
+\title anim_demo-skew
+*/
+
+/*!
+\externalpage webkit-guide/anim_gallery.htm
+\title anim_gallery
+*/
+
+/*!
+\externalpage webkit-guide/anim_panel.htm
+\title anim_panel
+*/
+
+/*!
+\externalpage webkit-guide/anim_pulse.htm
+\title anim_pulse
+*/
+
+/*!
+\externalpage webkit-guide/anim_skew.htm
+\title anim_skew
+*/
+
+/*!
+\externalpage webkit-guide/anim_slide1.htm
+\title anim_slide1
+*/
+
+/*!
+\externalpage webkit-guide/anim_tabbedSkew.htm
+\title anim_tabbedSkew
+*/
+
+/*!
+\externalpage webkit-guide/css3_backgrounds.htm
+\title css3_backgrounds
+*/
+
+/*!
+\externalpage webkit-guide/css3_border-img.htm
+\title css3_border-img
+*/
+
+/*!
+\externalpage webkit-guide/css3_grad-radial.htm
+\title css3_grad-radial
+*/
+
+/*!
+\externalpage webkit-guide/css3_gradientBack.htm
+\title css3_gradientBack
+*/
+
+/*!
+\externalpage webkit-guide/css3_gradientBackStop.htm
+\title css3_gradientBackStop
+*/
+
+/*!
+\externalpage webkit-guide/css3_gradientButton.htm
+\title css3_gradientButton
+*/
+
+/*!
+\externalpage webkit-guide/css3_mask-grad.htm
+\title css3_mask-grad
+*/
+
+/*!
+\externalpage webkit-guide/css3_mask-img.htm
+\title css3_mask-img
+*/
+
+/*!
+\externalpage webkit-guide/css3_multicol.htm
+\title css3_multicol
+*/
+
+/*!
+\externalpage webkit-guide/css3_reflect.htm
+\title css3_reflect
+*/
+
+/*!
+\externalpage webkit-guide/css3_scroll.htm
+\title css3_scroll
+*/
+
+/*!
+\externalpage webkit-guide/css3_sel-nth.htm
+\title css3_sel-nth
+*/
+
+/*!
+\externalpage webkit-guide/css3_text-overflow.htm
+\title css3_text-overflow
+*/
+
+/*!
+\externalpage webkit-guide/css3_text-shadow.htm
+\title css3_text-shadow
+*/
+
+/*!
+\externalpage webkit-guide/css3_text-stroke.htm
+\title css3_text-stroke
+*/
+
+/*!
+\externalpage webkit-guide/form_tapper.htm
+\title form_tapper
+*/
+
+/*!
+\externalpage webkit-guide/form_toggler.htm
+\title form_toggler
+*/
+
+/*!
+\externalpage webkit-guide/layout_link-fmt.htm
+\title layout_link-fmt
+*/
+
+/*!
+\externalpage webkit-guide/layout_tbl-keyhole.htm
+\title layout_tbl-keyhole
+*/
+
+/*!
+\externalpage webkit-guide/mob_condjs.htm
+\title mob_condjs
+*/
+
+/*!
+\externalpage webkit-guide/mob_layout.htm
+\title mob_layout
+*/
+
+/*!
+\externalpage webkit-guide/mob_mediaquery.htm
+\title mob_mediaquery
+*/
+
+/*!
+\externalpage webkit-guide/css/anim_accord.css
+\title anim_accord_css
+*/
+
+/*!
+\externalpage webkit-guide/js/anim_accord.js
+\title anim_accord_js
+*/
+
+/*!
+\externalpage webkit-guide/css/anim_demo-rotate.css
+\title anim_demo-rotate_css
+*/
+
+/*!
+\externalpage webkit-guide/css/anim_demo-scale.css
+\title anim_demo-scale_css
+*/
+
+/*!
+\externalpage webkit-guide/css/anim_demo-skew.css
+\title anim_demo-skew_css
+*/
+
+/*!
+\externalpage webkit-guide/css/anim_gallery.css
+\title anim_gallery_css
+*/
+
+/*!
+\externalpage webkit-guide/js/anim_gallery.js
+\title anim_gallery_js
+*/
+
+/*!
+\externalpage webkit-guide/css/anim_panel.css
+\title anim_panel_css
+*/
+
+/*!
+\externalpage webkit-guide/js/anim_panel.js
+\title anim_panel_js
+*/
+
+/*!
+\externalpage webkit-guide/css/anim_pulse.css
+\title anim_pulse_css
+*/
+
+/*!
+\externalpage webkit-guide/css/anim_skew.css
+\title anim_skew_css
+*/
+
+/*!
+\externalpage webkit-guide/js/anim_skew.js
+\title anim_skew_js
+*/
+
+/*!
+\externalpage webkit-guide/css/anim_slide.css
+\title anim_slide_css
+*/
+
+/*!
+\externalpage webkit-guide/css/anim_tabbedSkew.css
+\title anim_tabbedSkew_css
+*/
+
+/*!
+\externalpage webkit-guide/css/form_tapper.css
+\title form_tapper_css
+*/
+
+/*!
+\externalpage webkit-guide/css/form_toggler.css
+\title form_toggler_css
+*/
+
+/*!
+\externalpage webkit-guide/css/layout_link-fmt.css
+\title layout_link-fmt_css
+*/
+
+/*!
+\externalpage webkit-guide/css/layout_tbl-keyhole.css
+\title layout_tbl-keyhole_css
+*/
+
+/*!
+\externalpage webkit-guide/css/css3_backgrounds.css
+\title css3_backgrounds_css
+*/
+
+/*!
+\externalpage webkit-guide/js/css3_backgrounds.js
+\title css3_backgrounds_js
+*/
+
+/*!
+\externalpage webkit-guide/css/css3_border-img.css
+\title css3_border-img_css
+*/
+
+/*!
+\externalpage webkit-guide/css/css3_grad-radial.css
+\title css3_grad-radial_css
+*/
+
+/*!
+\externalpage webkit-guide/js/css3_grad-radial.js
+\title css3_grad-radial_js
+*/
+
+/*!
+\externalpage webkit-guide/css/css3_gradientBack.css
+\title css3_gradientBack_css
+*/
+
+/*!
+\externalpage webkit-guide/css/css3_gradientBackStop.css
+\title css3_gradientBackStop_css
+*/
+
+/*!
+\externalpage webkit-guide/css/css3_gradientButton.css
+\title css3_gradientButton_css
+*/
+
+/*!
+\externalpage webkit-guide/css/css3_mask-grad.css
+\title css3_mask-grad_css
+*/
+
+/*!
+\externalpage webkit-guide/js/css3_mask-grad.js
+\title css3_mask-grad_js
+*/
+
+/*!
+\externalpage webkit-guide/css/css3_mask-img.css
+\title css3_mask-img_css
+*/
+
+/*!
+\externalpage webkit-guide/css/css3_multicol.css
+\title css3_multicol_css
+*/
+
+/*!
+\externalpage webkit-guide/css/css3_reflect.css
+\title css3_reflect_css
+*/
+
+/*!
+\externalpage webkit-guide/css/css3_scroll.css
+\title css3_scroll_css
+*/
+
+/*!
+\externalpage webkit-guide/css/css3_sel-nth.css
+\title css3_sel-nth_css
+*/
+
+/*!
+\externalpage webkit-guide/css/css3_text-overflow.css
+\title css3_text-overflow_css
+*/
+
+/*!
+\externalpage webkit-guide/js/css3_text-overflow.js
+\title css3_text-overflow_js
+*/
+
+/*!
+\externalpage webkit-guide/css/css3_text-shadow.css
+\title css3_text-shadow_css
+*/
+
+/*!
+\externalpage webkit-guide/css/css3_text-stroke.css
+\title css3_text-stroke_css
+*/
+
+/*!
+\externalpage webkit-guide/css/mob_condjs.css
+\title mob_condjs_css
+*/
+
+/*!
+\externalpage webkit-guide/js/mob_condjs.js
+\title mob_condjs_js
+*/
+
+/*!
+\externalpage webkit-guide/css/mqlayout_desktop.css
+\title mqlayout_desktop_css
+*/
+
+/*!
+\externalpage webkit-guide/css/mqlayout_touch.css
+\title mqlayout_touch_css
+*/
+
+/*!
+\externalpage webkit-guide/css/mqlayout_mobile.css
+\title mqlayout_mobile_css
+*/
+
+/*!
+\externalpage webkit-guide/css/mq_desktop.css
+\title mq_desktop_css
+*/
+
+/*!
+\externalpage webkit-guide/css/mq_touch.css
+\title mq_touch_css
+*/
+
+/*!
+\externalpage webkit-guide/css/mq_mobile.css
+\title mq_mobile_css
+*/
+
+/*!
+\externalpage webkit-guide/css/mob_mediaquery.css
+\title mob_mediaquery_css
+*/
+
