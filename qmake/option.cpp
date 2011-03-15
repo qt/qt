@@ -635,7 +635,7 @@ Option::fixString(QString string, uchar flags)
     //fix the environment variables
     if(flags & Option::FixEnvVars) {
         int rep;
-        QRegExp reg_var("\\$\\(.*\\)");
+        static QRegExp reg_var("\\$\\(.*\\)");
         reg_var.setMinimal(true);
         while((rep = reg_var.indexIn(string)) != -1)
             string.replace(rep, reg_var.matchedLength(),
