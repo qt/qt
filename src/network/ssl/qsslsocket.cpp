@@ -56,7 +56,7 @@
     QSslSocket establishes a secure, encrypted TCP connection you can
     use for transmitting encrypted data. It can operate in both client
     and server mode, and it supports modern SSL protocols, including
-    SSLv3 and TLSv1. By default, QSslSocket uses SSLv3, but you can
+    SSLv3 and TLSv1. By default, QSslSocket uses TLSv1, but you can
     change the SSL protocol by calling setProtocol() as long as you do
     it before the handshake has started.
 
@@ -552,7 +552,7 @@ bool QSslSocket::isEncrypted() const
 }
 
 /*!
-    Returns the socket's SSL protocol. By default, \l QSsl::SslV3 is used.
+    Returns the socket's SSL protocol. By default, \l QSsl::SecureProtocols is used.
 
     \sa setProtocol()
 */
@@ -656,6 +656,34 @@ void QSslSocket::setPeerVerifyDepth(int depth)
         return;
     }
     d->configuration.peerVerifyDepth = depth;
+}
+
+/*!
+    \since 4.8
+
+    Returns the different hostname for the certificate validation, as set by
+    setPeerVerifyName or by connectToHostEncrypted.
+
+    \sa setPeerVerifyName(), connectToHostEncrypted()
+*/
+QString QSslSocket::peerVerifyName() const
+{
+    Q_D(const QSslSocket);
+    return d->verificationPeerName;
+}
+
+/*!
+    \since 4.8
+
+    Sets a different hostname for the certificate validation instead of the one used for the TCP
+    connection.
+
+    \sa connectToHostEncrypted()
+*/
+void QSslSocket::setPeerVerifyName(const QString &hostName)
+{
+    Q_D(QSslSocket);
+    d->verificationPeerName = hostName;
 }
 
 /*!
