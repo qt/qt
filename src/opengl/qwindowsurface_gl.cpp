@@ -257,6 +257,7 @@ void qt_destroy_gl_share_widget()
     _qt_gl_share_widget()->destroy();
 }
 
+#ifdef QGL_USE_TEXTURE_POOL
 void qt_gl_register_pixmap(QGLPixmapData *pd)
 {
     QGLGlobalShareWidget *shared = _qt_gl_share_widget();
@@ -291,6 +292,7 @@ void qt_gl_hibernate_pixmaps()
         pd = pd->next;
     }
 }
+#endif
 
 struct QGLWindowSurfacePrivate
 {
