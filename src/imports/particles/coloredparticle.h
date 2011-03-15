@@ -13,6 +13,7 @@ class ColoredParticle : public ParticleType
 
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
     Q_PROPERTY(qreal colorVariation READ colorVariation WRITE setColorVariation NOTIFY colorVariationChanged)
+    Q_PROPERTY(qreal alphaVariation READ alphaVariation WRITE setAlphaVariation NOTIFY alphaVariationChanged)
 
     Q_PROPERTY(qreal additive READ additive WRITE setAdditive NOTIFY additiveChanged)
 public:
@@ -40,6 +41,11 @@ public:
 
     qreal renderOpacity() const { return m_render_opacity; }
 
+    qreal alphaVariation() const
+    {
+        return m_alphaVariation;
+    }
+
 signals:
 
     void imageChanged();
@@ -50,7 +56,17 @@ signals:
     void additiveChanged();
 
     void particleDurationChanged();
+    void alphaVariationChanged(qreal arg);
+
 public slots:
+void setAlphaVariation(qreal arg)
+{
+    if (m_alphaVariation != arg) {
+        m_alphaVariation = arg;
+        emit alphaVariationChanged(arg);
+    }
+}
+
 protected:
     Node *updatePaintNode(Node *, UpdatePaintNodeData *);
     void reset();
@@ -76,6 +92,7 @@ private:
     int m_last_particle;
 
     qreal m_render_opacity;
+    qreal m_alphaVariation;
 };
 
 #endif // COLOREDPARTICLE_H
