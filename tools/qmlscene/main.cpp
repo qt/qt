@@ -397,6 +397,10 @@ static void usage()
 
 int main(int argc, char ** argv)
 {
+#ifdef Q_WS_X11
+    QApplication::setAttribute(Qt::AA_X11InitThreads);
+#endif
+
     Options options;
 
     QDeclarativeDebugHelper::enableDebugging();
