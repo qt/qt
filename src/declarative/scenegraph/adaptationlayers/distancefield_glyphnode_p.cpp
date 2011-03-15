@@ -106,8 +106,8 @@ DistanceFieldTextMaterialShader::DistanceFieldTextMaterialShader()
 void DistanceFieldTextMaterialShader::updateAlphaRange()
 {
     qreal combinedScale = m_fontScale * m_matrixScale;
-    qreal alphaMin = qBound(0.0, 0.5 - 0.07 / combinedScale, 0.5);
-    qreal alphaMax = qBound(0.5, 0.5 + 0.07 / combinedScale, 1.0);
+    qreal alphaMin = qMax(0.0, 0.5 - 0.07 / combinedScale);
+    qreal alphaMax = qMin(0.5 + 0.07 / combinedScale, 1.0);
     m_program.setUniformValue(m_alphaMin_id, GLfloat(alphaMin));
     m_program.setUniformValue(m_alphaMax_id, GLfloat(alphaMax));
 }
@@ -231,9 +231,9 @@ void DistanceFieldStyledTextMaterialShader::updateStyleRange()
     qreal styleLimit = 0.4;
 
     qreal combinedScale = m_fontScale * m_matrixScale;
-    qreal alphaMin = qBound(0.0, 0.5 - 0.07 / combinedScale, 0.5);
-    qreal styleAlphaMin0 = qBound(0.0, styleLimit - 0.07 / combinedScale, styleLimit);
-    qreal styleAlphaMin1 = qBound(styleLimit, styleLimit + 0.07 / combinedScale, alphaMin);
+    qreal alphaMin = qMax(0.0, 0.5 - 0.07 / combinedScale);
+    qreal styleAlphaMin0 = qMax(0.0, styleLimit - 0.07 / combinedScale);
+    qreal styleAlphaMin1 = qMin(qreal(styleLimit + 0.07 / combinedScale), alphaMin);
     m_program.setUniformValue(m_styleAlphaMin0_id, GLfloat(styleAlphaMin0));
     m_program.setUniformValue(m_styleAlphaMin1_id, GLfloat(styleAlphaMin1));
 }
