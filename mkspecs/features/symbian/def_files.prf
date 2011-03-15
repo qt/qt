@@ -7,6 +7,18 @@ CONFIG -= def_files_disabled
 equals(QMAKE_TARGET_PRODUCT, Qt4)|equals(QMAKE_TARGET_PRODUCT, QTestLib):clean_TARGET = $$replace(TARGET, "$${QT_LIBINFIX}$", "")
 else:clean_TARGET = $$TARGET
 
+defineTest(qtTestIfDirExists) {
+    contains(QMAKE_HOST.os,Windows) {
+        dirToTest = $$1
+        $$dirToTest ~= s,/,\\,
+        # Windows trick. Test for existence of nul, which every directory has.
+        retValue = $$system("if exist $$dirToTest\\nul echo true")
+        contains(retValue, true):return(true)|return(false)
+    } else {
+        system("test -d $$1"):return(true)|return(false)
+    }
+}
+
 symbian-abld|symbian-sbsv2 {
     # Firstly, if the MMP_RULES already contain a defBlock variable, don't generate another one
     # (this bit is slightly magic, because it depends upon everyone creating their DEFFILE statements
@@ -52,9 +64,11 @@ symbian-abld|symbian-sbsv2 {
     } else {
         defFile = .
     }
-    system("$$QMAKE_CHK_DIR_EXISTS $$_PRO_FILE_PWD_/$$defFile") {
+    qtTestIfDirExists($$_PRO_FILE_PWD_/$$defFile) {
         !exists("$$_PRO_FILE_PWD_/$$defFile/eabi") {
-            system("$$QMAKE_MKDIR $$_PRO_FILE_PWD_/$$defFile/eabi")
+            dirToCreate = $$_PRO_FILE_PWD_/$$defFile/eabi
+            contains(QMAKE_HOST.os,Windows):dirToCreate ~= s,/,\\,
+            system("$$QMAKE_MKDIR $$dirToCreate")
         }
         elf2e32FileToAdd = $$_PRO_FILE_PWD_/$$defFile/eabi/$$basename(clean_TARGET)u.def
     } else {
