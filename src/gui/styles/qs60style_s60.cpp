@@ -1428,6 +1428,7 @@ QS60Style::QS60Style()
 void QS60StylePrivate::handleDynamicLayoutVariantSwitch()
 {
     clearCaches(QS60StylePrivate::CC_LayoutChange);
+    setBackgroundTexture(qApp);
     setActiveLayout();
     foreach (QWidget *widget, QApplication::allWidgets())
         widget->ensurePolished();
