@@ -646,7 +646,7 @@ void DocParser::parse(const QString& source,
                         }
                         break;
                     case CMD_ENDCHAPTER:
-                        endSection(0, cmd);
+                        endSection(Doc::Chapter, cmd);
                         break;
                     case CMD_ENDCODE:
                         closeCommand(cmd);
@@ -1458,7 +1458,7 @@ void DocParser::parse(const QString& source,
         location().warning(tr("Missing '\\%1'").arg(cmdName(CMD_ENDIF)));
     }
 
-    while (currentSectioningUnit > Doc::Chapter) {
+    while (currentSectioningUnit >= Doc::Chapter) {
         int delta = currentSectioningUnit - priv->extra->sectioningUnit;
         append(Atom::SectionRight, QString::number(delta));
         currentSectioningUnit = Doc::SectioningUnit(int(currentSectioningUnit) - 1);
