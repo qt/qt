@@ -66,7 +66,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
         | XCB_EVENT_MASK_PROPERTY_CHANGE
     };
 
-    xcb_configure_window(xcb_connection(), screen->root, mask, values);
+    xcb_change_window_attributes(xcb_connection(), screen->root, mask, values);
 }
 
 QXcbScreen::~QXcbScreen()

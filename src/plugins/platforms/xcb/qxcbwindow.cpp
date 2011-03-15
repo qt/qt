@@ -155,11 +155,13 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
                           0,                               // border width
                           XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
                           m_screen->screen()->root_visual, // visual
-                          mask,                            // value mask
-                          values);                         // value list
+                          0,                               // value mask
+                          0);                              // value list
 
         printf("created regular window: %d\n", m_window);
     }
+
+    xcb_change_window_attributes(xcb_connection(), m_window, mask, values);
 
     xcb_atom_t properties[4];
     int propertyCount = 0;
