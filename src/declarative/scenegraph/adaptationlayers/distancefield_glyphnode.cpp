@@ -184,12 +184,16 @@ void DistanceFieldGlyphNode::updateMaterial()
         m_material = new DistanceFieldTextMaterial;
     } else {
         DistanceFieldStyledTextMaterial *material;
-        if (m_style == QSGText::Raised)
-            material = new DistanceFieldRaisedTextMaterial;
-        else if (m_style == QSGText::Outline)
+        if (m_style == QSGText::Outline) {
             material = new DistanceFieldOutlineTextMaterial;
-        else
-            material = new DistanceFieldSunkenTextMaterial;
+        } else {
+            DistanceFieldShiftedStyleTextMaterial *sMaterial = new DistanceFieldShiftedStyleTextMaterial;
+            if (m_style == QSGText::Raised)
+                sMaterial->setShift(QPointF(0.0, 1.0));
+            else
+                sMaterial->setShift(QPointF(0.0, -1.0));
+            material = sMaterial;
+        }
         material->setStyleColor(m_styleColor);
         m_material = material;
     }
