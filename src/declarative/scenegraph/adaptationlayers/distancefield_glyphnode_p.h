@@ -104,24 +104,20 @@ public:
     virtual AbstractMaterialShader *createShader() const;
 };
 
-class DistanceFieldRaisedTextMaterial : public DistanceFieldStyledTextMaterial
+class DistanceFieldShiftedStyleTextMaterial : public DistanceFieldStyledTextMaterial
 {
 public:
-    DistanceFieldRaisedTextMaterial();
-    ~DistanceFieldRaisedTextMaterial();
+    DistanceFieldShiftedStyleTextMaterial();
+    ~DistanceFieldShiftedStyleTextMaterial();
 
     virtual AbstractMaterialType *type() const;
     virtual AbstractMaterialShader *createShader() const;
-};
 
-class DistanceFieldSunkenTextMaterial : public DistanceFieldStyledTextMaterial
-{
-public:
-    DistanceFieldSunkenTextMaterial();
-    ~DistanceFieldSunkenTextMaterial();
+    void setShift(const QPointF &shift) { m_shift = shift; }
+    const QPointF &shift() const { return m_shift; }
 
-    virtual AbstractMaterialType *type() const;
-    virtual AbstractMaterialShader *createShader() const;
+protected:
+    QPointF m_shift;
 };
 
 #endif // DISTANCEFIELDTEXTMATERIAL_H

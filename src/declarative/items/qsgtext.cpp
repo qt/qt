@@ -596,7 +596,7 @@ void QSGTextPrivate::invalidateImageCache()
 {
     Q_Q(QSGText);
 
-    if(cacheAllTextAsImage || style != QSGText::Normal){//If actually using the image cache
+    if(cacheAllTextAsImage || (!DistanceFieldFontAtlas::distanceFieldEnabled() && style != QSGText::Normal)){//If actually using the image cache
         if (imageCacheDirty)
             return;
 
