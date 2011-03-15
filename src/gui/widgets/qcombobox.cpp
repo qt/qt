@@ -2348,7 +2348,7 @@ void QComboBox::showPopup()
     initStyleOption(&opt);
     QRect listRect(style->subControlRect(QStyle::CC_ComboBox, &opt,
                                          QStyle::SC_ComboBoxListBoxPopup, this));
-    QRect screen = d->popupGeometry(QApplication::desktop()->screenNumber(this));
+    QRect screen = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect());
     QPoint below = mapToGlobal(listRect.bottomLeft());
     int belowHeight = screen.bottom() - below.y();
     QPoint above = mapToGlobal(listRect.topLeft());
@@ -2476,18 +2476,10 @@ void QComboBox::showPopup()
             listRect.setWidth(listRect.height());
             //by default popup is centered on screen in landscape
             listRect.moveCenter(screen.center());
-            if (staConTopRect.IsEmpty()) {
-                TRect cbaRect = TRect();
-                AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EControlPane, cbaRect);
-                AknLayoutUtils::TAknCbaLocation cbaLocation = AknLayoutUtils::CbaLocation();
-                switch (cbaLocation) {
-                case AknLayoutUtils::EAknCbaLocationRight:
-                    listRect.setRight(screen.right());
-                    break;
-                case AknLayoutUtils::EAknCbaLocationLeft:
-                    listRect.setLeft(screen.left());
-                    break;
-                }
+            if (staConTopRect.IsEmpty() && AknLayoutUtils::CbaLocation() != AknLayoutUtils::EAknCbaLocationBottom) {
+                // landscape without stacon, menu should be at the right
+                (opt.direction == Qt::LeftToRight) ? listRect.setRight(screen.right()) :
+                                                     listRect.setLeft(screen.left());
             }
         }
 #endif
@@ -2706,7 +2698,7 @@ void QComboBox::changeEvent(QEvent *e)
             initStyleOption(&opt);
 
             if (style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, this)) {
-                const QRect screen = d->popupGeometry(QApplication::desktop()->screenNumber(this));
+                QRect screen = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect());
 
                 QRect listRect(style()->subControlRect(QStyle::CC_ComboBox, &opt,
                     QStyle::SC_ComboBoxListBoxPopup, this));
@@ -2721,13 +2713,13 @@ void QComboBox::changeEvent(QEvent *e)
                     listRect.setWidth(listRect.height());
                     //by default popup is centered on screen in landscape
                     listRect.moveCenter(screen.center());
-                    if (staConTopRect.IsEmpty()) {
+                    if (staConTopRect.IsEmpty() && AknLayoutUtils::CbaLocation() != AknLayoutUtils::EAknCbaLocationBottom) {
                         // landscape without stacon, menu should be at the right
                         (opt.direction == Qt::LeftToRight) ? listRect.setRight(screen.right()) :
                                                              listRect.setLeft(screen.left());
                     }
-                    d->container->setGeometry(listRect);
                 }
+                d->container->setGeometry(listRect);
             }
         }
 #endif
@@ -2760,6 +2752,10 @@ void QComboBox::changeEvent(QEvent *e)
 void QComboBox::resizeEvent(QResizeEvent *)
 {
     Q_D(QComboBox);
+#ifdef Q_WS_S60
+    if (d->viewContainer() && d->viewContainer()->isVisible())
+        showPopup();
+#endif
     d->updateLineEditGeometry();
 }
 
