@@ -80,7 +80,7 @@ class QSslConfigurationPrivate: public QSharedData
 {
 public:
     QSslConfigurationPrivate()
-        : protocol(QSsl::TlsV1SslV3),
+        : protocol(QSsl::SecureProtocols),
           peerVerifyMode(QSslSocket::AutoVerifyPeer),
           peerVerifyDepth(0)
     { }

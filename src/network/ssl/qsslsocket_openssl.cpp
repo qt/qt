@@ -259,7 +259,8 @@ init_context:
     case QSsl::SslV3:
         ctx = q_SSL_CTX_new(client ? q_SSLv3_client_method() : q_SSLv3_server_method());
         break;
-    case QSsl::TlsV1SslV3: // TlsV1SslV3 will be disabled below
+    case QSsl::SecureProtocols: // SslV2 will be disabled below
+    case QSsl::TlsV1SslV3: // SslV2 will be disabled below
     case QSsl::AnyProtocol:
     default:
         ctx = q_SSL_CTX_new(client ? q_SSLv23_client_method() : q_SSLv23_server_method());
@@ -285,7 +286,7 @@ init_context:
     }
 
     // Enable all bug workarounds.
-    if (configuration.protocol == QSsl::TlsV1SslV3) {
+    if (configuration.protocol == QSsl::TlsV1SslV3 || configuration.protocol == QSsl::SecureProtocols) {
         q_SSL_CTX_set_options(ctx, SSL_OP_ALL|SSL_OP_NO_SSLv2);
     } else {
         q_SSL_CTX_set_options(ctx, SSL_OP_ALL);
@@ -400,6 +401,7 @@ init_context:
 #if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
     if ((configuration.protocol == QSsl::TlsV1SslV3 ||
         configuration.protocol == QSsl::TlsV1 ||
+        configuration.protocol == QSsl::SecureProtocols ||
         configuration.protocol == QSsl::AnyProtocol) &&
         client && q_SSLeay() >= 0x00090806fL) {
         // Set server hostname on TLS extension. RFC4366 section 3.1 requires it in ACE format.

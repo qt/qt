@@ -110,8 +110,8 @@ QT_BEGIN_NAMESPACE
     \value TlsV1SslV3 On the client side, this will send
     a TLS 1.0 Client Hello, enabling TLSv1 and SSLv3 connections.
     On the server side, this will enable both SSLv3 and TLSv1 connections.
-    \value SecureProtocols The default option, using protocols known to be secure.
-    Currently set to TlsV1SslV3.
+    \value SecureProtocols The default option, using protocols known to be secure;
+    currently behaves like TlsV1SslV3.
 
     Note: most servers using SSL understand both versions (2 and 3),
     but it is recommended to use the latest version only for security

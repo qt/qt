@@ -78,7 +78,7 @@ namespace QSsl {
         TlsV1, // ### Qt 5: rename to TlsV1_0 or so
         AnyProtocol,
         TlsV1SslV3,
-        SecureProtocols = TlsV1SslV3,
+        SecureProtocols,
         UnknownProtocol = -1
     };
 }
