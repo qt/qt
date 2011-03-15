@@ -76,6 +76,7 @@ QNetworkSessionPrivateImpl::QNetworkSessionPrivateImpl(SymbianEngine *engine)
 
 void QNetworkSessionPrivateImpl::closeHandles()
 {
+    QMutexLocker lock(&mutex);
     // Cancel Connection Progress Notifications first.
     // Note: ConnectionNotifier must be destroyed before RConnection::Close()
     //       => deleting ipConnectionNotifier results RConnection::CancelProgressNotification()
@@ -317,6 +318,7 @@ QNetworkSession::SessionError QNetworkSessionPrivateImpl::error() const
 
 void QNetworkSessionPrivateImpl::open()
 {
+    QMutexLocker lock(&mutex);
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
         qDebug() << "QNS this : " << QString::number((uint)this) << " - "
                 << "open() called, session state is: " << state << " and isOpen is: "
@@ -526,6 +528,7 @@ void QNetworkSessionPrivateImpl::close(bool allowSignals)
 
 void QNetworkSessionPrivateImpl::stop()
 {
+    QMutexLocker lock(&mutex);
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
     qDebug() << "QNS this : " << QString::number((uint)this) << " - "
             << "stop() called, session state is: " << state << " and isOpen is : "

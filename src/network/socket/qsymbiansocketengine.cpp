@@ -189,21 +189,13 @@ bool QSymbianSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType so
     //Check if there is a user specified session
     RConnection *connection = 0;
     QVariant v(q->property("_q_networksession"));
+    TInt err;
     if (v.isValid()) {
         QSharedPointer<QNetworkSession> s = qvariant_cast<QSharedPointer<QNetworkSession> >(v);
-        connection = QNetworkSessionPrivate::nativeSession(*s);
+        err = QNetworkSessionPrivate::nativeOpenSocket(*s, nativeSocket, family, type, protocol);
 #ifdef QNATIVESOCKETENGINE_DEBUG
-        qDebug() << "QSymbianSocketEnginePrivate::createNewSocket - _q_networksession was set" << connection;
+        qDebug() << "QSymbianSocketEnginePrivate::createNewSocket - _q_networksession was set" << err;
 #endif
-    }
-    TInt err;
-    if (connection) {
-        if (connection->SubSessionHandle())
-            err = nativeSocket.Open(socketServer, family, type, protocol, *connection);
-        else {
-            setError(QAbstractSocket::NetworkError, SessionNotOpenErrorString);
-            return false;
-        }
     } else
         err = nativeSocket.Open(socketServer, family, type, protocol); //TODO: FIXME - deprecated API, make sure we always have a connection instead
 
