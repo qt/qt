@@ -1004,8 +1004,20 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
             } else {
                 errorCode = QNetworkReply::RemoteHostClosedError;
             }
+        } else if (state == QHttpNetworkConnectionChannel::ReadingState) {
+            if (!reply->d_func()->expectContent()) {
+                // No content expected, this is a valid way to have the connection closed by the server
+                return;
+            }
+            if (reply->contentLength() == -1 && !reply->d_func()->isChunked()) {
+                // There was no content-length header and it's not chunked encoding,
+                // so this is a valid way to have the connection closed by the server
+                return;
+            }
+            // ok, we got a disconnect even though we did not expect it
+            errorCode = QNetworkReply::RemoteHostClosedError;
         } else {
-            return;
+            errorCode = QNetworkReply::RemoteHostClosedError;
         }
         break;
     case QAbstractSocket::SocketTimeoutError:
@@ -1033,6 +1045,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
     if (reply) {
         reply->d_func()->errorString = errorString;
         emit reply->finishedWithError(errorCode, errorString);
+        reply = 0;
     }
     // send the next request
     QMetaObject::invokeMethod(that, "_q_startNextRequest", Qt::QueuedConnection);
