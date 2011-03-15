@@ -277,35 +277,21 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
 
 #ifdef Q_WS_MAC
 
+    Q_UNUSED(offset);
+
     // This is mainly done for native components like native "open file" dialog.
     if (widget->testAttribute(Qt::WA_DontShowOnScreen)) {
         return;
     }
 
 #ifdef QT_MAC_USE_COCOA
+
     this->needsFlush = true;
     this->regionToFlush += rgn;
 
     // The actual flushing will be processed in [view drawRect:rect]
     qt_mac_setNeedsDisplay(widget);
 
-    // Unified toolbar hack.
-    // We issue a flush call for each QToolBar so they get repainted right after
-    // the main window.
-    QMainWindow* mWindow = qobject_cast<QMainWindow*>(widget->window());
-    if (mWindow) {
-        QMainWindowLayout *mLayout = qobject_cast<QMainWindowLayout*>(mWindow->layout());
-        QList<QToolBar *> toolbarList = mLayout->qtoolbarsInUnifiedToolbarList;
-
-        for (int i = 0; i < toolbarList.size(); ++i) {
-            QToolBar* toolbar = toolbarList.at(i);
-            if (mLayout->toolBarArea(toolbar) == Qt::TopToolBarArea) {
-                QWidget* tbWidget = (QWidget*) toolbar;
-                if (tbWidget->d_func()->unifiedSurface)
-                    tbWidget->d_func()->unifiedSurface->flush(tbWidget, rgn, offset);
-            }
-        }
-    }
 #else
     // Get a context for the widget.
     CGContextRef context;

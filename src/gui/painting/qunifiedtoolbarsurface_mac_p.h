@@ -79,20 +79,20 @@ public:
     QUnifiedToolbarSurface(QWidget *widget);
     ~QUnifiedToolbarSurface();
 
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+    void flush(QWidget *widget);
     void setGeometry(const QRect &rect);
     void beginPaint(const QRegion &rgn);
     void insertToolbar(QWidget *toolbar, const QPoint &offset);
     void removeToolbar(QToolBar *toolbar);
     void updateToolbarOffset(QWidget *widget);
     void renderToolbar(QWidget *widget, bool forceFlush = false);
+    void recursiveRedirect(QObject *widget, QWidget *parent_toolbar, const QPoint &offset);
 
     QPaintDevice *paintDevice();
     CGContextRef imageContext();
 
 private:
     void prepareBuffer(QImage::Format format, QWidget *widget);
-    void recursiveRedirect(QObject *widget, QWidget *parent_toolbar, const QPoint &offset);
     void recursiveRemoval(QObject *object);
 
     Q_DECLARE_PRIVATE(QUnifiedToolbarSurface)
