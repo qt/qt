@@ -192,7 +192,7 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
         d->pixmapChanged = true;
         node = QSGContext::current->createTextureNode();
         if (!d->pix.textureProvider())
-            d->textureProvider = new QSGImageTextureProvider(this);
+            d->textureProvider = QSGContext::current->createImageTextureProvider(this);
         connect(textureProvider(), SIGNAL(textureChanged()), this, SLOT(update()));
     }
 
