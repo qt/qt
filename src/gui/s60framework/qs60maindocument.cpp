@@ -41,6 +41,9 @@
 
 #include "qs60mainappui.h"
 #include "qs60maindocument.h"
+#include "qcoreapplication.h"
+#include "qevent.h"
+#include "private/qcore_symbian_p.h"
 
 #include <exception>
 
@@ -108,9 +111,15 @@ CEikAppUi *QS60MainDocument::CreateAppUiL()
 /*!
   \internal
  */
-CFileStore *QS60MainDocument::OpenFileL(TBool aDoOpen, const TDesC &aFilename, RFs &aFs)
+CFileStore *QS60MainDocument::OpenFileL(TBool /*aDoOpen*/, const TDesC &aFilename, RFs &/*aFs*/)
 {
-    return QS60MainDocumentBase::OpenFileL(aDoOpen, aFilename, aFs);
+    QT_TRYCATCH_LEAVING( {
+        QCoreApplication* app = QCoreApplication::instance();
+        QString qname = qt_TDesC2QString(aFilename);
+        QFileOpenEvent* event = new QFileOpenEvent(qname);
+        app->postEvent(app, event);
+    })
+    return 0;
 }
 
 /*!
@@ -118,7 +127,12 @@ CFileStore *QS60MainDocument::OpenFileL(TBool aDoOpen, const TDesC &aFilename, R
  */
 void QS60MainDocument::OpenFileL(CFileStore *&aFileStore, RFile &aFile)
 {
-    QS60MainDocumentBase::OpenFileL(aFileStore, aFile);
+    QT_TRYCATCH_LEAVING( {
+        QCoreApplication* app = QCoreApplication::instance();
+        QFileOpenEvent* event = new QFileOpenEvent(aFile);
+        app->postEvent(app, event);
+        aFileStore = 0;
+    })
 }
 
 QT_END_NAMESPACE

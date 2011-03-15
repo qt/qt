@@ -69,11 +69,13 @@ class Q_AUTOTEST_EXPORT QDeclarativeGridView : public QDeclarativeFlickable
     Q_PROPERTY(bool highlightFollowsCurrentItem READ highlightFollowsCurrentItem WRITE setHighlightFollowsCurrentItem)
     Q_PROPERTY(int highlightMoveDuration READ highlightMoveDuration WRITE setHighlightMoveDuration NOTIFY highlightMoveDurationChanged)
 
-    Q_PROPERTY(qreal preferredHighlightBegin READ preferredHighlightBegin WRITE setPreferredHighlightBegin NOTIFY preferredHighlightBeginChanged)
-    Q_PROPERTY(qreal preferredHighlightEnd READ preferredHighlightEnd WRITE setPreferredHighlightEnd NOTIFY preferredHighlightEndChanged)
+    Q_PROPERTY(qreal preferredHighlightBegin READ preferredHighlightBegin WRITE setPreferredHighlightBegin NOTIFY preferredHighlightBeginChanged RESET resetPreferredHighlightBegin)
+    Q_PROPERTY(qreal preferredHighlightEnd READ preferredHighlightEnd WRITE setPreferredHighlightEnd NOTIFY preferredHighlightEndChanged RESET resetPreferredHighlightEnd)
     Q_PROPERTY(HighlightRangeMode highlightRangeMode READ highlightRangeMode WRITE setHighlightRangeMode NOTIFY highlightRangeModeChanged)
 
     Q_PROPERTY(Flow flow READ flow WRITE setFlow NOTIFY flowChanged)
+    Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection NOTIFY layoutDirectionChanged REVISION 1)
+    Q_PROPERTY(Qt::LayoutDirection effectiveLayoutDirection READ effectiveLayoutDirection NOTIFY effectiveLayoutDirectionChanged REVISION 1)
     Q_PROPERTY(bool keyNavigationWraps READ isWrapEnabled WRITE setWrapEnabled NOTIFY keyNavigationWrapsChanged)
     Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer NOTIFY cacheBufferChanged)
     Q_PROPERTY(int cellWidth READ cellWidth WRITE setCellWidth NOTIFY cellWidthChanged)
@@ -95,6 +97,7 @@ public:
     ~QDeclarativeGridView();
 
     QVariant model() const;
+    int modelCount() const;
     void setModel(const QVariant &);
 
     QDeclarativeComponent *delegate() const;
@@ -122,9 +125,15 @@ public:
 
     qreal preferredHighlightBegin() const;
     void setPreferredHighlightBegin(qreal);
+    void resetPreferredHighlightBegin();
 
     qreal preferredHighlightEnd() const;
     void setPreferredHighlightEnd(qreal);
+    void resetPreferredHighlightEnd();
+
+    Qt::LayoutDirection layoutDirection() const;
+    void setLayoutDirection(Qt::LayoutDirection);
+    Qt::LayoutDirection effectiveLayoutDirection() const;
 
     enum Flow { LeftToRight, TopToBottom };
     Flow flow() const;
@@ -158,7 +167,7 @@ public:
     enum PositionMode { Beginning, Center, End, Visible, Contain };
 
     Q_INVOKABLE void positionViewAtIndex(int index, int mode);
-    Q_INVOKABLE int indexAt(int x, int y) const;
+    Q_INVOKABLE int indexAt(qreal x, qreal y) const;
     Q_INVOKABLE Q_REVISION(1) void positionViewAtBeginning();
     Q_INVOKABLE Q_REVISION(1) void positionViewAtEnd();
 
@@ -184,6 +193,8 @@ Q_SIGNALS:
     void modelChanged();
     void delegateChanged();
     void flowChanged();
+    Q_REVISION(1) void layoutDirectionChanged();
+    Q_REVISION(1) void effectiveLayoutDirectionChanged();
     void keyNavigationWrapsChanged();
     void cacheBufferChanged();
     void snapModeChanged();

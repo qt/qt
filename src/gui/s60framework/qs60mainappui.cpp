@@ -49,6 +49,7 @@
 #include <avkon.rsg>
 #endif
 #include <barsread.h>
+#include <coeutils.h>
 #include <qconfig.h>
 
 #include "qs60mainappui.h"
@@ -399,6 +400,16 @@ void QS60MainAppUi::Reserved_MtsmObject()
 void QS60MainAppUi::HandleForegroundEventL(TBool aForeground)
 {
     QS60MainAppUiBase::HandleForegroundEventL(aForeground);
+}
+
+/*!
+  \internal
+*/
+TBool QS60MainAppUi::ProcessCommandParametersL(TApaCommand /*aCommand*/, TFileName &/*aDocumentName*/, const TDesC8 &/*aTail*/)
+{
+    // bypass CEikAppUi::ProcessCommandParametersL(..) which modifies aDocumentName, preventing apparc document opening from working.
+    // The return value is effectively unused in Qt apps (see QS60MainDocument::OpenFileL)
+    return EFalse;
 }
 
 #ifndef Q_WS_S60

@@ -180,6 +180,7 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativePinch>("QtQuick",1,1,"Pinch");
     qmlRegisterType<QDeclarativePinchEvent>();
     qmlRegisterType<QDeclarativeItem,1>("QtQuick",1,1,"Item");
+    qmlRegisterType<QDeclarativeMouseArea,1>("QtQuick",1,1,"MouseArea");
     qmlRegisterType<QDeclarativeFlickable,1>("QtQuick",1,1,"Flickable");
     qmlRegisterType<QDeclarativeListView,1>("QtQuick",1,1,"ListView");
     qmlRegisterType<QDeclarativeGridView,1>("QtQuick",1,1,"GridView");
@@ -197,6 +198,7 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterRevision<QDeclarativeImplicitSizeItem,1>("QtQuick",1,1);
     qmlRegisterRevision<QDeclarativeImplicitSizePaintedItem,0>("QtQuick",1,0);
     qmlRegisterRevision<QDeclarativeImplicitSizePaintedItem,1>("QtQuick",1,1);
+    qmlRegisterUncreatableType<QDeclarativeLayoutMirroringAttached>("QtQuick",1,1,"LayoutMirroring", QDeclarativeLayoutMirroringAttached::tr("LayoutMirroring is only available via attached properties"));
 
 #ifndef QT_NO_IMPORT_QT47_QML
 #ifdef QT_NO_MOVIE

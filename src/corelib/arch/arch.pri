@@ -12,6 +12,8 @@ symbian:HEADERS +=  arch/qatomic_symbian.h \
 
 vxworks:HEADERS += arch/qatomic_vxworks.h
 
+integrity:HEADERS += arch/qatomic_integrity.h
+
 !wince*:!win32:!mac:!symbian:HEADERS += arch/qatomic_alpha.h \
                        arch/qatomic_avr32.h \
                        arch/qatomic_ia64.h \

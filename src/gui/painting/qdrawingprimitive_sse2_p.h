@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
     pixelVectorAG = _mm_mullo_epi16(pixelVectorAG, alphaChannel); \
     pixelVectorRB = _mm_mullo_epi16(pixelVectorRB, alphaChannel); \
  \
-    /* 3. devide by 255, that's the tricky part. \
+    /* 3. divide by 255, that's the tricky part. \
        we do it like for BYTE_MUL(), with bit shift: X/255 ~= (X + X/256 + rounding)/256 */ \
     /** so first (X + X/256 + rounding) */\
     pixelVectorRB = _mm_add_epi16(pixelVectorRB, _mm_srli_epi16(pixelVectorRB, 8)); \
@@ -86,7 +86,7 @@ QT_BEGIN_NAMESPACE
     pixelVectorAG = _mm_add_epi16(pixelVectorAG, _mm_srli_epi16(pixelVectorAG, 8)); \
     pixelVectorAG = _mm_add_epi16(pixelVectorAG, half); \
  \
-    /** second devide by 256 */\
+    /** second divide by 256 */\
     pixelVectorRB = _mm_srli_epi16(pixelVectorRB, 8); \
     /** for AG, we could >> 8 to divide followed by << 8 to put the \
         bytes in the correct position. By masking instead, we execute \

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,46 +39,45 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKACCESSDATABACKEND_P_H
-#define QNETWORKACCESSDATABACKEND_P_H
+#ifndef QSCREENINTEGRITYFB_QWS_H
+#define QSCREENINTEGRITYFB_QWS_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of the Network Access API.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtGui/qscreen_qws.h>
 
-#include "qnetworkaccessbackend_p.h"
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkAccessDataBackend: public QNetworkAccessBackend
+QT_MODULE(Gui)
+
+#ifndef QT_NO_QWS_INTEGRITYFB
+
+class QIntfbScreenPrivate;
+
+class Q_GUI_EXPORT QIntfbScreen : public QScreen
 {
 public:
-    QNetworkAccessDataBackend();
-    virtual ~QNetworkAccessDataBackend();
+    explicit QIntfbScreen(int display_id);
+    virtual ~QIntfbScreen();
+    virtual bool initDevice();
+    virtual bool connect(const QString &displaySpec);
+    virtual void disconnect();
+    virtual void shutdownDevice();
+    virtual void save();
+    virtual void restore();
+    virtual void setMode(int nw,int nh,int nd);
+    virtual void setDirty(const QRect& r);
+    virtual void blank(bool);
+    static void setBrightness(int b);
 
-    virtual void open();
-    virtual void closeDownstreamChannel();
-    virtual void closeUpstreamChannel();
-    virtual bool waitForDownstreamReadyRead(int msecs);
-    virtual bool waitForUpstreamBytesWritten(int msecs);
-
-    virtual bool processRequestSynchronously();
+private:
+    QIntfbScreenPrivate *d_ptr;
 };
 
-class QNetworkAccessDataBackendFactory: public QNetworkAccessBackendFactory
-{
-public:
-    virtual QNetworkAccessBackend *create(QNetworkAccessManager::Operation op,
-                                          const QNetworkRequest &request) const;
-};
+#endif // QT_NO_QWS_INTEGRITYFB
 
 QT_END_NAMESPACE
 
-#endif
+QT_END_HEADER
+
+#endif // QSCREENINTEGRITYFB_QWS_H

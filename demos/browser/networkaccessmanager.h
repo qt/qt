@@ -60,6 +60,7 @@ private:
     qint64 requestFinishedFromCacheCount;
     qint64 requestFinishedPipelinedCount;
     qint64 requestFinishedSecureCount;
+    qint64 requestFinishedDownloadBufferCount;
 
 public slots:
     void loadSettings();

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -118,7 +118,7 @@ QDeclarativeDebugServerConnection *QDeclarativeDebugServerPrivate::loadConnectio
     QStringList pluginCandidates;
     const QStringList paths = QCoreApplication::libraryPaths();
     foreach (const QString &libPath, paths) {
-        const QDir dir(libPath + QLatin1String("/qmldebugging"));
+        const QDir dir(libPath + QLatin1String("/qmltooling"));
         if (dir.exists()) {
             QStringList plugins(dir.entryList(QDir::Files));
             foreach (const QString &pluginPath, plugins) {

@@ -8,6 +8,7 @@ HEADERS += \
     access/qhttpnetworkreply_p.h \
     access/qhttpnetworkconnection_p.h \
     access/qhttpnetworkconnectionchannel_p.h \
+    access/qnetworkaccessauthenticationmanager_p.h \
     access/qnetworkaccessmanager.h \
     access/qnetworkaccessmanager_p.h \
     access/qnetworkaccesscache_p.h \
@@ -32,7 +33,8 @@ HEADERS += \
     access/qabstractnetworkcache_p.h \
     access/qabstractnetworkcache.h \
     access/qnetworkdiskcache_p.h \
-    access/qnetworkdiskcache.h
+    access/qnetworkdiskcache.h \
+    access/qhttpthreaddelegate_p.h
 
 SOURCES += \
     access/qftp.cpp \
@@ -42,6 +44,7 @@ SOURCES += \
     access/qhttpnetworkreply.cpp \
     access/qhttpnetworkconnection.cpp \
     access/qhttpnetworkconnectionchannel.cpp \
+    access/qnetworkaccessauthenticationmanager.cpp \
     access/qnetworkaccessmanager.cpp \
     access/qnetworkaccesscache.cpp \
     access/qnetworkaccessbackend.cpp \
@@ -58,6 +61,7 @@ SOURCES += \
     access/qnetworkreplydataimpl.cpp \
     access/qnetworkreplyfileimpl.cpp \
     access/qabstractnetworkcache.cpp \
-    access/qnetworkdiskcache.cpp
+    access/qnetworkdiskcache.cpp \
+    access/qhttpthreaddelegate.cpp
 
 include($$PWD/../../3rdparty/zlib_dependency.pri)

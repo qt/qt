@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,46 +39,34 @@
 **
 ****************************************************************************/
 
-#ifndef QTCPSERVERCONNECTION_H
-#define QTCPSERVERCONNECTION_H
+#include <QtGui>
+#include <QApplication>
+#include <QEvent>
 
-#include <QtGui/QStylePlugin>
-#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
-
-QT_BEGIN_NAMESPACE
-
-class QDeclarativeDebugServer;
-class QTcpServerConnectionPrivate;
-class QTcpServerConnection : public QObject, public QDeclarativeDebugServerConnection
+struct MyApplication : public QApplication
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QTcpServerConnection)
-    Q_DISABLE_COPY(QTcpServerConnection)
-    Q_INTERFACES(QDeclarativeDebugServerConnection)
+    MyApplication(int& argc, char** argv)
+    : QApplication(argc, argv)
+    {}
 
-
-public:
-    QTcpServerConnection();
-    ~QTcpServerConnection();
-
-    void setServer(QDeclarativeDebugServer *server);
-    void setPort(int port, bool bock);
-
-    bool isConnected() const;
-    void send(const QByteArray &message);
-    void disconnect();
-
-    void listen();
-    void waitForConnection();
-
-private Q_SLOTS:
-    void readyRead();
-    void newConnection();
-
-private:
-    QTcpServerConnectionPrivate *d_ptr;
+    bool event(QEvent * event)
+    {
+        if (event->type() == QEvent::FileOpen) {
+            QFileOpenEvent* ev = static_cast<QFileOpenEvent *>(event);
+            QFile file;
+            bool ok = ev->openFile(file, QFile::Append | QFile::Unbuffered);
+            if (ok)
+                file.write(QByteArray("+external"));
+            return true;
+        } else {
+            return QApplication::event(event);
+        }
+    }
 };
 
-QT_END_NAMESPACE
-
-#endif // QTCPSERVERCONNECTION_H
+int main(int argc, char *argv[])
+{
+    MyApplication a(argc, argv);
+    a.sendPostedEvents(&a, QEvent::FileOpen);
+    return 0;
+}
