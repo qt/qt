@@ -485,12 +485,7 @@ QImage QFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPo
         uint *src = (uint*) im.scanLine(y);
         uchar *dst = indexed.scanLine(y);
         for (int x=0; x<im.width(); ++x) {
-            *dst = qGray(*src);
-            if (QNativeImage::systemFormat() == QImage::Format_RGB16)
-                *dst = 255 - qGray(*src);
-            else
-                *dst = 255 - (qt_pow_gamma[qGray(*src)] * 255. / 2047.);
-
+            *dst = 255 - (qt_pow_gamma[qGray(0xffffffff - *src)] * 255. / 2047.);
             ++dst;
             ++src;
         }
