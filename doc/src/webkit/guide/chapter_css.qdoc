@@ -518,11 +518,11 @@ selectors might be applied when formatting mobile interfaces.
     but offset by a specified number:
 
     \code
-    img			{ position: absolute }
-    img:nth-of-type(4n-3)	{ left: 2% }
-    img:nth-of-type(4n-2)	{ left: 27% }
-    img:nth-of-type(4n-1)	{ left: 52% }
-    img:nth-of-type(4n-0)	{ left: 77% }
+    img            { position: absolute }
+    img:nth-of-type(4n-3)    { left: 2% }
+    img:nth-of-type(4n-2)    { left: 27% }
+    img:nth-of-type(4n-1)    { left: 52% }
+    img:nth-of-type(4n-0)    { left: 77% }
     \endcode
 
     Alternately,
@@ -538,12 +538,12 @@ selectors might be applied when formatting mobile interfaces.
     values:
 
     \code
-    img:nth-of-type(n)	{ top: 5% }
-    img:nth-of-type(n+5)	{ top: 20% }
-    img:nth-of-type(n+9)	{ top: 35% }
-    img:nth-of-type(n+13)	{ top: 50% }
-    img:nth-of-type(n+17)	{ top: 65% }
-    img:nth-of-type(n+21)	{ top: 80% }
+    img:nth-of-type(n)    { top: 5% }
+    img:nth-of-type(n+5)    { top: 20% }
+    img:nth-of-type(n+9)    { top: 35% }
+    img:nth-of-type(n+13)    { top: 50% }
+    img:nth-of-type(n+17)    { top: 65% }
+    img:nth-of-type(n+21)    { top: 80% }
     \endcode
 
     Level 3 CSS defines the following positional selectors:
@@ -626,7 +626,7 @@ browser does not support gradients:
 \code
 background: #aaaaaa;
 background: -webkit-gradient(linear, center top, center bottom,
-	    from(#777777), color-stop(50%,#dddddd), to(#777777) );
+        from(#777777), color-stop(50%,#dddddd), to(#777777) );
 \endcode
 
 Note that many of the CSS properties discussed in this section were
@@ -647,10 +647,10 @@ It also shows the property\'s final name following the process of
 standardization:
 
 \code
--webkit-border-image	 : url(img/border-frame.gif) 10 stretch stretch;
--moz-border-image	 : url(img/border-frame.gif) 10 stretch stretch;
--o-border-image		 : url(img/border-frame.gif) 10 stretch stretch;
-border-image		 : url(img/border-frame.gif) 10 stretch stretch;
+-webkit-border-image     : url(img/border-frame.gif) 10 stretch stretch;
+-moz-border-image     : url(img/border-frame.gif) 10 stretch stretch;
+-o-border-image         : url(img/border-frame.gif) 10 stretch stretch;
+border-image         : url(img/border-frame.gif) 10 stretch stretch;
 \endcode
 
 In some cases,
@@ -723,8 +723,8 @@ property values.
 
     \code
     .rounded {
-        border-radius	: 1em;
-        padding		: 1em;
+        border-radius    : 1em;
+        padding        : 1em;
     }
     \endcode
 
@@ -857,9 +857,9 @@ property values.
     affecting their offset or whether each image repeats:
 
     \code
-    background-image	: url(img/select.png)	, url(img/gradient.jpg);
-    background-repeat	: no-repeat		, repeat-x;
-    background-position	: 12px 12px		, 0 0;
+    background-image    : url(img/select.png)    , url(img/gradient.jpg);
+    background-repeat    : no-repeat        , repeat-x;
+    background-position    : 12px 12px        , 0 0;
     \endcode
 
     In addition,
@@ -903,9 +903,9 @@ property values.
     property:
 
     \code
-    -webkit-text-stroke-color	: #000000;
-    -webkit-text-stroke-width	: 1px;
-    -webkit-text-fill-color		: purple;
+    -webkit-text-stroke-color    : #000000;
+    -webkit-text-stroke-width    : 1px;
+    -webkit-text-fill-color        : purple;
     \endcode
 
     \section2 Text Overflow
@@ -932,9 +932,9 @@ property values.
     and \c{white-space}:
 
     \code
-    text-overflow	: ellipsis;
-    overflow	: hidden;
-    white-space	: nowrap;
+    text-overflow    : ellipsis;
+    overflow    : hidden;
+    white-space    : nowrap;
     \endcode
 
     For \c{text-overflow} to work,
@@ -989,18 +989,18 @@ property values.
 
     \code
     ::-webkit-scrollbar-button:increment {
-        background-image	: url(img/arrow_right.png);
-        background-size	: contain;
-        background-repeat	: no-repeat;
-        width		: 3em;
-        height		: 3em;
+        background-image    : url(img/arrow_right.png);
+        background-size    : contain;
+        background-repeat    : no-repeat;
+        width        : 3em;
+        height        : 3em;
     }
     ::-webkit-scrollbar-button:decrement {
-        background-image	: url(img/arrow_left.png);
-        background-size	: contain;
-        background-repeat	: no-repeat;
-        width		: 3em;
-        height		: 3em;
+        background-image    : url(img/arrow_left.png);
+        background-size    : contain;
+        background-repeat    : no-repeat;
+        width        : 3em;
+        height        : 3em;
     }
     \endcode
 
@@ -1094,7 +1094,7 @@ property values.
 
     \code
     background: -webkit-gradient(linear, center top, center bottom,
-	        from(#777777), color-stop(50%, #dddddd), to(#777777) );
+            from(#777777), color-stop(50%, #dddddd), to(#777777) );
     \endcode
 
     Here is how the additional \c{color-stop} appears when applied to the
@@ -1136,7 +1136,7 @@ property values.
 
     \code
     background: -webkit-gradient(radial, 90 120, 5, 100 130, 48,
-	        from(#777777), color-stop(50%, #dddddd), to(#777777) );
+            from(#777777), color-stop(50%, #dddddd), to(#777777) );
     \endcode
 
     The use of \c{from} and \c{to} values and \c{color-stop} are same as
@@ -1327,8 +1327,8 @@ the examples provided here illustrate some CSS-only alternatives.
     while keeping it at its original bottom edge:
 
     \code
-    -webkit-transform		: scale(0.75);
-    -webkit-transform-origin	: bottom;
+    -webkit-transform        : scale(0.75);
+    -webkit-transform-origin    : bottom;
     \endcode
 
     The following example uses this scale transform to shrink icons that
@@ -1383,8 +1383,8 @@ the examples provided here illustrate some CSS-only alternatives.
 
     \code
     nav > a:nth-of-type(3) {
-        background-image	: url(img/S_google.jpg);
-        -webkit-transform	: rotate(-60deg) skew(-30deg) translate(1.7em, 0em);
+        background-image    : url(img/S_google.jpg);
+        -webkit-transform    : rotate(-60deg) skew(-30deg) translate(1.7em, 0em);
     }
     \endcode
 
@@ -1419,12 +1419,12 @@ the examples provided here illustrate some CSS-only alternatives.
 
     \code
     nav.expanded {
-        max-width		: 95%;
-        -webkit-transition	: max-width 0.5s ease-in-out;
+        max-width        : 95%;
+        -webkit-transition    : max-width 0.5s ease-in-out;
     }
     nav.collapsed {
-        max-width		: 10%;
-        -webkit-transition	: max-width 0.5s ease-in-out;
+        max-width        : 10%;
+        -webkit-transition    : max-width 0.5s ease-in-out;
     }
     \endcode
 
@@ -1433,16 +1433,16 @@ the examples provided here illustrate some CSS-only alternatives.
 
     \code
     nav.expanded {
-        max-width				: 95%;
-        -webkit-transition-property		: max-width;
-        -webkit-transition-duration		: 0.5s;
-        -webkit-transition-timing-function	: ease-in-out;
+        max-width                : 95%;
+        -webkit-transition-property        : max-width;
+        -webkit-transition-duration        : 0.5s;
+        -webkit-transition-timing-function    : ease-in-out;
     }
     nav.collapsed {
-        max-width				: 10%;
-        -webkit-transition-property		: max-width;
-        -webkit-transition-duration		: 0.5s;
-        -webkit-transition-timing-function	: ease-in-out;
+        max-width                : 10%;
+        -webkit-transition-property        : max-width;
+        -webkit-transition-duration        : 0.5s;
+        -webkit-transition-timing-function    : ease-in-out;
     }
     \endcode
 
@@ -1460,14 +1460,14 @@ the examples provided here illustrate some CSS-only alternatives.
 
     \code
     nav.expanded > .option {
-        opacity		: 1;
-        -webkit-transform	: scale(1.0);
-        -webkit-transition	: all 0.5s linear;
+        opacity        : 1;
+        -webkit-transform    : scale(1.0);
+        -webkit-transition    : all 0.5s linear;
     }
     nav.collapsed > .option {
-        opacity		: 0;
-        -webkit-transform	: scale(0.0);
-        -webkit-transition	: all 0.5s linear;
+        opacity        : 0;
+        -webkit-transform    : scale(0.0);
+        -webkit-transition    : all 0.5s linear;
     }
     \endcode
 
@@ -1526,18 +1526,18 @@ the examples provided here illustrate some CSS-only alternatives.
     #accordion.expanded {
         width: 80%;
         height: 90%;
-        -webkit-transition-property		: width		, height;
-        -webkit-transition-duration		: 0.5s		, 0.5s;
-        -webkit-transition-timing-function	: ease-in-out	, ease-in-out;
-        -webkit-transition-delay		: 0.0s		, 0.5s;
+        -webkit-transition-property        : width        , height;
+        -webkit-transition-duration        : 0.5s        , 0.5s;
+        -webkit-transition-timing-function    : ease-in-out    , ease-in-out;
+        -webkit-transition-delay        : 0.0s        , 0.5s;
     }
     #accordion.collapsed {
-        width				: 10%;
-        height				: 7%;
-        -webkit-transition-property		: height	, width;
-        -webkit-transition-duration		: 0.5s		, 0.5s;
-        -webkit-transition-timing-function	: ease-in-out	, ease-in-out;
-        -webkit-transition-delay		: 0.0s		, 0.5s;
+        width                : 10%;
+        height                : 7%;
+        -webkit-transition-property        : height    , width;
+        -webkit-transition-duration        : 0.5s        , 0.5s;
+        -webkit-transition-timing-function    : ease-in-out    , ease-in-out;
+        -webkit-transition-delay        : 0.0s        , 0.5s;
     }
     \endcode
 
@@ -1635,9 +1635,9 @@ the examples provided here illustrate some CSS-only alternatives.
     nav > a:target { -webkit-animation : pulse 1s infinite; }
 
     nav > a:target {
-        -webkit-animation-name		: pulse;
-        -webkit-animation-duration		: 1s;
-        -webkit-animation-iteration-count	: infinite;
+        -webkit-animation-name        : pulse;
+        -webkit-animation-duration        : 1s;
+        -webkit-animation-iteration-count    : infinite;
     }
     \endcode
 
@@ -1710,16 +1710,16 @@ the examples provided here illustrate some CSS-only alternatives.
 
     \code
     @-webkit-keyframes banner_scroll {
-        0% { left	: 0%; }
-        18% { left	: 0%; }
-        20% { left	: -100%; }
-        38% { left	: -100%; }
-        40% { left	: -200%; }
-        58% { left	: -200%; }
-        60% { left	: -300%; }
-        78% { left	: -300%; }
-        80% { left	: -400%; }
-        95% { left	: -400%; }
+        0% { left    : 0%; }
+        18% { left    : 0%; }
+        20% { left    : -100%; }
+        38% { left    : -100%; }
+        40% { left    : -200%; }
+        58% { left    : -200%; }
+        60% { left    : -300%; }
+        78% { left    : -300%; }
+        80% { left    : -400%; }
+        95% { left    : -400%; }
         100% { left : 0%; }
     }
     \endcode

@@ -187,14 +187,14 @@ you can combine to build complex shapes and graphic images.
 
     \code
     context.closePath();
-    context.moveTo(10,10);		// starting point
-    context.lineTo(30,30);		// specify first line
-    context.moveTo(30,30);		// move to end of first line
-    context.lineTo(60,10);		// specify second line
-    context.moveTo(60,10);		// move to end of second line
-    context.lineTo(10,10);		// specify third line to close triangle
-    context.strokeStyle("#000");	// use black color for lines
-    context.stroke();		// draws the triangle lines on the canvas
+    context.moveTo(10,10);        // starting point
+    context.lineTo(30,30);        // specify first line
+    context.moveTo(30,30);        // move to end of first line
+    context.lineTo(60,10);        // specify second line
+    context.moveTo(60,10);        // move to end of second line
+    context.lineTo(10,10);        // specify third line to close triangle
+    context.strokeStyle("#000");    // use black color for lines
+    context.stroke();        // draws the triangle lines on the canvas
     \endcode
 
     To fill the shape, use the \c{fillstyle} property and the \c{fill()}
@@ -795,9 +795,9 @@ There are no hexadecimal notations for RGBA and HSLA values.
 The following specifies varying levels of opacity for a blue shape:
 
 \code
-context.fillStyle = rgba(0, 0, 255, 0)		// transparent
-context.fillStyle = rgba(0, 0, 255, 0.5)	// semi-transparent
-context.fillStyle = rgba(0, 0, 255, 1)		// opaque
+context.fillStyle = rgba(0, 0, 255, 0)        // transparent
+context.fillStyle = rgba(0, 0, 255, 0.5)    // semi-transparent
+context.fillStyle = rgba(0, 0, 255, 1)        // opaque
 \endcode
 
 When you set the \c{context.strokeStyle} or \c{context.fillStyle}
@@ -955,13 +955,13 @@ until you set a new value.
     bottom right of a blue rectangle:
 
     \code
-    var context		= canvas.getContext("2d");
-    context.shadowOffsetX	= 5;
-    context.shadowOffsetY	= 5;
-    context.shadowBlur	= 10;
-    context.shadowColor	= "rgba(0,0,0,0.5)";
-    context.fillStyle	= "#0000FF";
-    context.fillRect	= (0,0,100,50)
+    var context        = canvas.getContext("2d");
+    context.shadowOffsetX    = 5;
+    context.shadowOffsetY    = 5;
+    context.shadowBlur    = 10;
+    context.shadowColor    = "rgba(0,0,0,0.5)";
+    context.fillStyle    = "#0000FF";
+    context.fillRect    = (0,0,100,50)
     \endcode
 
 \section1 Transforming Graphics

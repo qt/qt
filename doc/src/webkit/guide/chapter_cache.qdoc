@@ -237,15 +237,15 @@ duration of the browing session.
     numeric data:
 
     \code
-    var saveCardInfo = true;					// boolean
-    var shipMethod = 2;						// number
+    var saveCardInfo = true;                    // boolean
+    var shipMethod = 2;                        // number
     var db = window.localStorage;
 
     db.setItem("save_card_info", JSON.stringify(saveCardInfo));
     db.setItem("ship_method", JSON.stringify(shipMethod));
 
-    saveCardInfo = JSON.parse(db.getItem("save_card_info"));	// boolean
-    shipMethod = JSON.parse(db.getItem("ship_method"));		// number
+    saveCardInfo = JSON.parse(db.getItem("save_card_info"));    // boolean
+    shipMethod = JSON.parse(db.getItem("ship_method"));        // number
     \endcode
 
     Note that this simple approach may cause problems of its own. For
@@ -256,13 +256,13 @@ duration of the browing session.
     \code
     var db = window.localStorage;
     var obj = {
-        bool	: true,
-        str		: "true",
-        num		: 1
+        bool    : true,
+        str        : "true",
+        num        : 1
     };
-    db.setItem("appState", JSON.stringify(obj));	// to database...
+    db.setItem("appState", JSON.stringify(obj));    // to database...
     // "appState" is "{'bool':true,'num':1,'str':'true'}"
-    obj = JSON.parse(db.getItem("appState"));	// ...and back
+    obj = JSON.parse(db.getItem("appState"));    // ...and back
     // obj is same as initially defined.
     \endcode
 
@@ -278,19 +278,19 @@ duration of the browing session.
     cart.message = "From your loving uncle";
 
     cart.items.push({
-        description	: "Floor to Ceiling Shoe Rack",
-        id		: 203174676,
-        price	: 99.95,
-        quantity	: 1,
-        weight	: 20,
+        description    : "Floor to Ceiling Shoe Rack",
+        id        : 203174676,
+        price    : 99.95,
+        quantity    : 1,
+        weight    : 20,
     });
 
     cart.items.push({
-        description	: "Automatic Laser Toy for Cats",
-        id		: 203345371,
-        price	: 19.95,
-        quantity	: 2,
-        weight	: 0.5,
+        description    : "Automatic Laser Toy for Cats",
+        id        : 203345371,
+        price    : 19.95,
+        quantity    : 2,
+        weight    : 0.5,
     });
 
     // save all cumulative items:
