@@ -142,7 +142,7 @@ void QmlCodeParser::doneParsingSourceFiles(Tree *tree)
 }
 
 /*!
-  Returns the set of strings reopresenting the topic commands.
+  Returns the set of strings representing the topic commands.
  */
 QSet<QString> QmlCodeParser::topicCommands()
 {
