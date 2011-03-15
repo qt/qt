@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
 
-SUBDIRS += folderlistmodel particles gestures inputcontext
+SUBDIRS += folderlistmodel particles gestures inputcontext etcprovider
 
