@@ -51,6 +51,7 @@
 #include "distancefieldfontatlas_p.h"
 
 #include "qsgtexturemanager.h"
+#include "qsgimagetextureprovider_p.h"
 
 #ifdef Q_WS_MAC
 #include "qsgmactexturemanager_mac_p.h"
@@ -229,6 +230,12 @@ Renderer *QSGContext::createRenderer()
         renderer->setSortFrontToBackEnabled(true);
     }
     return renderer;
+}
+
+
+QSGImageTextureProvider *QSGContext::createImageTextureProvider()
+{
+    return new QSGImageTextureProvider();
 }
 
 /*!

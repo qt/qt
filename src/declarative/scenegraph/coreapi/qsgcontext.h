@@ -53,6 +53,7 @@ class TextureNodeInterface;
 class GlyphNodeInterface;
 class Renderer;
 class QSGTextureManager;
+class QSGImageTextureProvider;
 
 class QGLContext;
 
@@ -86,6 +87,7 @@ public:
     virtual GlyphNodeInterface *createGlyphNode();
     virtual Renderer *createRenderer();
     virtual QSGTextureManager *createTextureManager(QSGContext *context);
+    virtual QSGImageTextureProvider *createImageTextureProvider();
 
     static QSGContext *createDefaultContext();
 

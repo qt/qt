@@ -52,23 +52,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QSGImageTextureProvider::QSGImageTextureProvider(QObject *parent)
-    : QSGTextureProvider(parent)
-{
-}
-
-void QSGImageTextureProvider::setImage(const QImage &image)
-{
-    QSGTextureManager *tm = QSGContext::current->textureManager();
-    m_texture = tm->upload(image);
-}
-
-QSGTextureRef QSGImageTextureProvider::texture()
-{
-    return m_texture;
-}
-
-
 QSGImagePrivate::QSGImagePrivate()
     : fillMode(QSGImage::Stretch)
     , paintedWidth(0)
@@ -208,21 +191,15 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
     if (!node) { 
         d->pixmapChanged = true;
         node = QSGContext::current->createTextureNode();
-        if (d->pix.textureProvider()) {
-            connect(d->pix.textureProvider(), SIGNAL(textureChanged()), this, SLOT(update()));
-        } else {
+        if (!d->pix.textureProvider())
             d->textureProvider = new QSGImageTextureProvider(this);
-            connect(d->textureProvider, SIGNAL(textureChanged()), this, SLOT(update()));
-            d->textureProvider->setImage(d->pix.pixmap().toImage());
-        }
-
+        connect(textureProvider(), SIGNAL(textureChanged()), this, SLOT(update()));
     }
 
     if (d->pixmapChanged) {
         if (d->textureProvider)
             d->textureProvider->setImage(d->pix.pixmap().toImage());
-        else if (d->pix.textureProvider())
-            d->pix.textureProvider()->updateTexture();
+        textureProvider()->updateTexture();
         // force update the texture in the node to trigger reconstruction of
         // geometry and the likes when a atlas segment has changed.
         node->setTexture(0);
