@@ -69,6 +69,7 @@ private slots:
     void changed();
     void inserted();
     void removed();
+    void clear();
     void moved();
     void changeFlow();
     void currentIndex();
@@ -497,6 +498,44 @@ void tst_QDeclarativeGridView::removed()
 
     QTRY_COMPARE(gridview->currentIndex(), 7);
     QTRY_VERIFY(gridview->currentItem() == oldCurrent);
+
+    delete canvas;
+}
+
+void tst_QDeclarativeGridView::clear()
+{
+    QDeclarativeView *canvas = createView();
+
+    TestModel model;
+    for (int i = 0; i < 30; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testRightToLeft", QVariant(false));
+    ctxt->setContextProperty("testTopToBottom", QVariant(false));
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
+    qApp->processEvents();
+
+    QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
+    QVERIFY(gridview != 0);
+
+    QDeclarativeItem *contentItem = gridview->contentItem();
+    QVERIFY(contentItem != 0);
+
+    model.clear();
+
+    QVERIFY(gridview->count() == 0);
+    QVERIFY(gridview->currentItem() == 0);
+    QVERIFY(gridview->contentY() == 0);
+    QVERIFY(gridview->currentIndex() == -1);
+
+    // confirm sanity when adding an item to cleared list
+    model.addItem("New", "1");
+    QVERIFY(gridview->count() == 1);
+    QVERIFY(gridview->currentItem() != 0);
+    QVERIFY(gridview->currentIndex() == 0);
 
     delete canvas;
 }
