@@ -414,9 +414,13 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
     if (isGettingInput) {
         // If any text is being input, remove selected text.
         priorState = m_undoState;
+        if (echoMode() == QLineEdit::PasswordEchoOnEdit && !passwordEchoEditing()) {
+            updatePasswordEchoEditing(true);
+            m_selstart = 0;
+            m_selend = m_text.length();
+        }
         removeSelectedText();
     }
-
 
     int c = m_cursor; // cursor position after insertion of commit string
     if (event->replacementStart() <= 0)

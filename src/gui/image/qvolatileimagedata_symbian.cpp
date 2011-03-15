@@ -392,6 +392,9 @@ void QVolatileImageData::initWithBitmap(CFbsBitmap *source)
     } else if (needsCopy) {
         // Rasterize extended and compressed bitmaps.
         bitmap = rasterizeBitmap(source, EColor16MAP);
+    } else if (source->DisplayMode() == EGray2) {
+        // The pixels will be inverted, must make a copy.
+        bitmap = rasterizeBitmap(source, source->DisplayMode());
     } else {
         // Efficient path: no pixel data copying. Just duplicate. This of course
         // means the original bitmap's data may get modified, but that's fine

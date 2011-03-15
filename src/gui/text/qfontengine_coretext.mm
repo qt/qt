@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -119,14 +119,25 @@ uint QCoreTextFontEngineMulti::fontIndexForFont(CTFontRef id) const
     return engines.count() - 1;
 }
 
-bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags,
+bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags,
                   unsigned short *logClusters, const HB_CharAttributes *) const
 {
     QCFType<CFStringRef> cfstring = CFStringCreateWithCharactersNoCopy(0,
                                                                reinterpret_cast<const UniChar *>(str),
                                                                len, kCFAllocatorNull);
     QCFType<CFAttributedStringRef> attributedString = CFAttributedStringCreate(0, cfstring, attributeDict);
-    QCFType<CTTypesetterRef> typeSetter = CTTypesetterCreateWithAttributedString(attributedString);
+    QCFType<CTTypesetterRef> typeSetter;
+
+    if (flags & QTextEngine::RightToLeft) {
+        const void *optionKeys[] = { kCTTypesetterOptionForcedEmbeddingLevel };
+        const short rtlForcedEmbeddingLevelValue = 1;
+        const void *rtlOptionValues[] = { CFNumberCreate(kCFAllocatorDefault, kCFNumberShortType, &rtlForcedEmbeddingLevelValue) };
+        QCFType<CFDictionaryRef> options = CFDictionaryCreate(kCFAllocatorDefault, optionKeys, rtlOptionValues, 1,
+                                                              &kCFCopyStringDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        typeSetter = CTTypesetterCreateWithAttributedStringAndOptions(attributedString, options);
+    } else
+        typeSetter = CTTypesetterCreateWithAttributedString(attributedString);
+
     CFRange range = {0, 0};
     QCFType<CTLineRef> line = CTTypesetterCreateLine(typeSetter, range);
     CFArrayRef array = CTLineGetGlyphRuns(line);
