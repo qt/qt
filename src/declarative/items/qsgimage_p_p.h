@@ -56,24 +56,11 @@
 
 #include "qsgimagebase_p_p.h"
 #include "qsgimage_p.h"
-#include "qsgtextureprovider.h"
+#include "qsgimagetextureprovider_p.h"
 
 QT_BEGIN_NAMESPACE
 
 class QSGImagePrivate;
-class QSGImageTextureProvider : public QSGTextureProvider
-{
-public:
-    QSGImageTextureProvider(QObject *parent = 0);
-    void setImage(const QImage &image);
-    virtual QSGTextureRef texture();
-
-    QSize textureSize() const { return QSize(0, 0); }
-
-private:
-    QSGTextureRef m_texture;
-};
-
 
 class QSGImagePrivate : public QSGImageBasePrivate
 {

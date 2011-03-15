@@ -57,6 +57,17 @@ QSGTextureProvider::QSGTextureProvider(QObject *parent)
 {
 }
 
+/*!
+    \fn void QSGTextureProvider::updateTexture()
+
+    This function will be called on the renderer thread when the textures should
+    be updated.
+
+    The funciton might be called even though the textureChanged() signal has
+    not been emitted, so implementations should consider doing some caching.
+ */
+
+
 GLint QSGTextureProvider::glTextureWrapS() const
 {
     return m_hWrapMode == Repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE;

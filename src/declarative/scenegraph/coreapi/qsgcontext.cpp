@@ -51,6 +51,7 @@
 #include "distancefieldfontatlas_p.h"
 
 #include "qsgtexturemanager.h"
+#include "qsgimagetextureprovider_p.h"
 
 #ifdef Q_WS_MAC
 #include "qsgmactexturemanager_mac_p.h"
@@ -230,6 +231,58 @@ Renderer *QSGContext::createRenderer()
     }
     return renderer;
 }
+
+
+/*!
+    Returns the texture provider to be used for images for this scene graph context.
+
+    Pass in \a parent maintain object ownership.
+ */
+
+QSGImageTextureProvider *QSGContext::createImageTextureProvider(QObject *parent)
+{
+    return new QSGImageTextureProvider(parent);
+}
+
+
+/*!
+    Return true if the image provider supports direct decoding of images,
+    straight into textures without going through a QImage first.
+
+    If the implementation returns true from this function, the decodeImageToTexture() function
+    will be called to read data from a QIODevice, rather than QML decoding
+    the image using QImageReader and passing the result to setImage().
+
+    \warning This function will be called from outside the GUI and rendering threads
+    and must not make use of OpenGL.
+ */
+bool QSGContext::canDecodeImageToTexture() const
+{
+    return true;
+}
+
+
+/*!
+    Decode the data in \a dev directly to a texture provider of \a requestSize size.
+    The size of the decoded data should be written to \a impsize.
+
+    If the implementation fails to decode the image data, it should return 0. The
+    image data will then be decoded normally.
+
+    \warning This function will be called from outside the GUI and renderer threads
+    and must not make use of GL calls.
+ */
+QSGTextureProvider *QSGContext::decodeImageToTexture(QIODevice *dev,
+                                                     QSize *size,
+                                                     const QSize &requestSize)
+{
+    Q_UNUSED(dev);
+    Q_UNUSED(size);
+    Q_UNUSED(requestSize);
+    return 0;
+}
+
+
 
 /*!
     Factory function for the texture manager to be used for this scene graph.

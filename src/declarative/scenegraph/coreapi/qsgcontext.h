@@ -54,6 +54,9 @@ class GlyphNodeInterface;
 class Renderer;
 class QSGTextureManager;
 
+class QSGTextureProvider;
+class QSGImageTextureProvider;
+
 class QGLContext;
 
 class Q_DECLARATIVE_EXPORT QSGContext : public QObject
@@ -86,6 +89,12 @@ public:
     virtual GlyphNodeInterface *createGlyphNode();
     virtual Renderer *createRenderer();
     virtual QSGTextureManager *createTextureManager(QSGContext *context);
+    virtual QSGImageTextureProvider *createImageTextureProvider(QObject *parent = 0);
+
+    virtual bool canDecodeImageToTexture() const;
+    virtual QSGTextureProvider *decodeImageToTexture(QIODevice *dev,
+                                                     QSize *size,
+                                                     const QSize &requestSize);
 
     static QSGContext *createDefaultContext();
 

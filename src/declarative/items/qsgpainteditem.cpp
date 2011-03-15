@@ -43,6 +43,7 @@
 #include "qsgpainteditem_p.h"
 #include "qsgpainteditem_p_p.h"
 #include "qsgimage_p_p.h"
+#include "qsgimagetextureprovider_p.h"
 
 #include "qsgcontext.h"
 #include "adaptationlayer.h"
