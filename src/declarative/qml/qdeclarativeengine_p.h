@@ -113,6 +113,7 @@ class QDeclarativeDelayedError;
 class QDeclarativeWorkerScriptEngine;
 class QDeclarativeGlobalScriptClass;
 class QDir;
+class QSGTextureProvider;
 
 class QDeclarativeScriptEngine : public QScriptEngine
 {
@@ -237,6 +238,7 @@ public:
 
     QHash<QString,QSharedPointer<QDeclarativeImageProvider> > imageProviders;
     QDeclarativeImageProvider::ImageType getImageProviderType(const QUrl &url);
+    QSGTextureProvider *getTextureFromProvider(const QUrl &url, QSize *size, const QSize& req_size);
     QImage getImageFromProvider(const QUrl &url, QSize *size, const QSize& req_size);
     QPixmap getPixmapFromProvider(const QUrl &url, QSize *size, const QSize& req_size);
 

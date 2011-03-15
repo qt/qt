@@ -838,6 +838,18 @@ QDeclarativeImageProvider::ImageType QDeclarativeEnginePrivate::getImageProvider
     return static_cast<QDeclarativeImageProvider::ImageType>(-1);
 }
 
+QSGTextureProvider *QDeclarativeEnginePrivate::getTextureFromProvider(const QUrl &url, QSize *size, const QSize& req_size)
+{
+    QMutexLocker locker(&mutex);
+    QSharedPointer<QDeclarativeImageProvider> provider = imageProviders.value(url.host());
+    locker.unlock();
+    if (provider) {
+        QString imageId = url.toString(QUrl::RemoveScheme | QUrl::RemoveAuthority).mid(1);
+        return provider->requestTexture(imageId, size, req_size);
+    }
+    return 0;
+}
+
 QImage QDeclarativeEnginePrivate::getImageFromProvider(const QUrl &url, QSize *size, const QSize& req_size)
 {
     QMutexLocker locker(&mutex);

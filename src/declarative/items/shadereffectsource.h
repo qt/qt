@@ -80,6 +80,8 @@ public:
     QSize size() const { return m_size; }
     void setSize(const QSize &size);
 
+    QSize textureSize() const { return m_size; }
+
     GLenum format() const { return m_format; }
     void setFormat(GLenum format);
 

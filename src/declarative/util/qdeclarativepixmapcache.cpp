@@ -46,6 +46,7 @@
 #include <qdeclarativeengine.h>
 #include <private/qdeclarativeglobal_p.h>
 #include <private/qdeclarativeengine_p.h>
+#include <qsgtextureprovider.h>
 
 #include <QCoreApplication>
 #include <QImageReader>
@@ -186,28 +187,35 @@ class QDeclarativePixmapData
 public:
     QDeclarativePixmapData(const QUrl &u, const QSize &s, const QString &e)
     : refCount(1), inCache(false), pixmapStatus(QDeclarativePixmap::Error), 
-      url(u), errorString(e), requestSize(s), reply(0), prevUnreferenced(0),
+      url(u), errorString(e), requestSize(s), texture(0), reply(0), prevUnreferenced(0),
       prevUnreferencedPtr(0), nextUnreferenced(0)
     {
     }
 
     QDeclarativePixmapData(const QUrl &u, const QSize &r)
     : refCount(1), inCache(false), pixmapStatus(QDeclarativePixmap::Loading), 
-      url(u), requestSize(r), reply(0), prevUnreferenced(0), prevUnreferencedPtr(0), 
+      url(u), requestSize(r), texture(0), reply(0), prevUnreferenced(0), prevUnreferencedPtr(0),
       nextUnreferenced(0)
     {
     }
 
     QDeclarativePixmapData(const QUrl &u, const QPixmap &p, const QSize &s, const QSize &r)
-    : refCount(1), inCache(false), privatePixmap(false), pixmapStatus(QDeclarativePixmap::Ready), 
-      url(u), pixmap(p), implicitSize(s), requestSize(r), reply(0), prevUnreferenced(0),
+    : refCount(1), inCache(false), privatePixmap(false), pixmapStatus(QDeclarativePixmap::Ready),
+      url(u), pixmap(p), implicitSize(s), requestSize(r), texture(0), reply(0), prevUnreferenced(0),
+      prevUnreferencedPtr(0), nextUnreferenced(0)
+    {
+    }
+
+    QDeclarativePixmapData(const QUrl &u, QSGTextureProvider *t, const QSize &s, const QSize &r)
+    : refCount(1), inCache(false), privatePixmap(false), pixmapStatus(QDeclarativePixmap::Ready),
+      url(u), implicitSize(s), requestSize(r), texture(t), reply(0), prevUnreferenced(0),
       prevUnreferencedPtr(0), nextUnreferenced(0)
     {
     }
 
     QDeclarativePixmapData(const QPixmap &p)
     : refCount(1), inCache(false), privatePixmap(true), pixmapStatus(QDeclarativePixmap::Ready),
-      pixmap(p), implicitSize(p.size()), requestSize(p.size()), reply(0), prevUnreferenced(0),
+      pixmap(p), implicitSize(p.size()), requestSize(p.size()), texture(0), reply(0), prevUnreferenced(0),
       prevUnreferencedPtr(0), nextUnreferenced(0)
     {
     }
@@ -229,6 +237,8 @@ public:
     QPixmap pixmap;
     QSize implicitSize;
     QSize requestSize;
+
+    QSGTextureProvider *texture;
 
     QDeclarativePixmapReply *reply;
 
@@ -781,6 +791,15 @@ static QDeclarativePixmapData* createPixmapDataSync(QDeclarativeEngine *engine, 
         QDeclarativeImageProvider::ImageType imageType = ep->getImageProviderType(url);
 
         switch (imageType) {
+            case QDeclarativeImageProvider::Texture:
+            {
+                QSGTextureProvider *texture = ep->getTextureFromProvider(url, &readSize, requestSize);
+                if (texture) {
+                    *ok = true;
+                    return new QDeclarativePixmapData(url, texture, readSize, requestSize);
+                }
+            }
+
             case QDeclarativeImageProvider::Image:
             {
                 QImage image = ep->getImageFromProvider(url, &readSize, requestSize);
@@ -917,6 +936,11 @@ const QSize &QDeclarativePixmap::requestSize() const
         return nullPixmap()->size;
 }
 
+QSGTextureProvider *QDeclarativePixmap::textureProvider() const
+{
+    return d ? d->texture : 0;
+}
+
 const QPixmap &QDeclarativePixmap::pixmap() const
 {
     if (d) 
@@ -936,7 +960,7 @@ void QDeclarativePixmap::setPixmap(const QPixmap &p)
 int QDeclarativePixmap::width() const
 {
     if (d) 
-        return d->pixmap.width();
+        return d->texture ? d->texture->textureSize().width() : d->pixmap.width();
     else
         return 0;
 }
@@ -944,7 +968,7 @@ int QDeclarativePixmap::width() const
 int QDeclarativePixmap::height() const
 {
     if (d) 
-        return d->pixmap.height();
+        return d->texture ? d->texture->textureSize().height() : d->pixmap.height();
     else
         return 0;
 }
@@ -952,7 +976,7 @@ int QDeclarativePixmap::height() const
 QRect QDeclarativePixmap::rect() const
 {
     if (d)
-        return d->pixmap.rect();
+        return d->texture ? QRect(QPoint(), d->texture->textureSize()) : d->pixmap.rect();
     else
         return QRect();
 }

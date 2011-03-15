@@ -68,6 +68,8 @@ public:
     void setImage(const QImage &image);
     virtual QSGTextureRef texture();
 
+    QSize textureSize() const { return QSize(0, 0); }
+
 private:
     QSGTextureRef m_texture;
 };

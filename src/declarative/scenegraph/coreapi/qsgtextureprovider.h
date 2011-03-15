@@ -70,6 +70,8 @@ public:
     virtual void updateTexture() { }
     virtual QSGTextureRef texture() = 0;
 
+    virtual QSize textureSize() const = 0;
+
     bool opaque() const { return m_opaque; }
     void setOpaque(bool enabled) { m_opaque = enabled; }
 
