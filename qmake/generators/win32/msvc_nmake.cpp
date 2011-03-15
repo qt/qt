@@ -218,8 +218,10 @@ void NmakeMakefileGenerator::init()
         project->values("QMAKE_LIBS") += escapeFilePaths(project->values("RES_FILE"));
     }
 
-    if(!project->values("DEF_FILE").isEmpty())
-        project->values("QMAKE_LFLAGS").append(QString("/DEF:") + escapeFilePath(project->first("DEF_FILE")));
+    if (!project->values("DEF_FILE").isEmpty()) {
+        QString defFileName = fileFixify(project->values("DEF_FILE")).first();
+        project->values("QMAKE_LFLAGS").append(QString("/DEF:") + escapeFilePath(defFileName));
+    }
 
     if(!project->values("VERSION").isEmpty()) {
         QString version = project->values("VERSION")[0];
