@@ -604,6 +604,7 @@ public slots:
         serverSocket->flush();
         QCoreApplication::processEvents(QEventLoop::ExcludeSocketNotifiers);
         testResult = dataArrived;
+        QCoreApplication::processEvents(); //check the deferred event is processed
         serverSocket->close();
         QThread::currentThread()->exit(0);
     }
@@ -620,9 +621,11 @@ public:
         if (tester->init())
             exec();
         testResult = tester->testResult;
+        dataArrived = tester->dataArrived;
         delete tester;
     }
      bool testResult;
+     bool dataArrived;
 };
 
 void tst_QEventLoop::processEventsExcludeSocket()
@@ -631,6 +634,7 @@ void tst_QEventLoop::processEventsExcludeSocket()
     thread.start();
     QVERIFY(thread.wait());
     QVERIFY(!thread.testResult);
+    QVERIFY(thread.dataArrived);
 }
 
 class TimerReceiver : public QObject
