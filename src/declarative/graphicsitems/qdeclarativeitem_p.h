@@ -372,12 +372,12 @@ public:
     QDeclarativeItem *down;
     QDeclarativeItem *tab;
     QDeclarativeItem *backtab;
-    bool leftSet;
-    bool rightSet;
-    bool upSet;
-    bool downSet;
-    bool tabSet;
-    bool backtabSet;
+    bool leftSet : 1;
+    bool rightSet : 1;
+    bool upSet : 1;
+    bool downSet : 1;
+    bool tabSet : 1;
+    bool backtabSet : 1;
 };
 
 class QDeclarativeKeyNavigationAttached : public QObject, public QDeclarativeItemKeyFilter
