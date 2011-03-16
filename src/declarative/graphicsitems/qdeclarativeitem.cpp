@@ -507,8 +507,10 @@ void QDeclarativeKeyNavigationAttached::setLeft(QDeclarativeItem *i)
     d->leftSet = true;
     QDeclarativeKeyNavigationAttached* other =
             qobject_cast<QDeclarativeKeyNavigationAttached*>(qmlAttachedPropertiesObject<QDeclarativeKeyNavigationAttached>(i));
-    if(other && !other->d_func()->rightSet)
+    if(other && !other->d_func()->rightSet){
         other->d_func()->right = qobject_cast<QDeclarativeItem*>(parent());
+        emit other->rightChanged();
+    }
     emit leftChanged();
 }
 
@@ -527,8 +529,10 @@ void QDeclarativeKeyNavigationAttached::setRight(QDeclarativeItem *i)
     d->rightSet = true;
     QDeclarativeKeyNavigationAttached* other =
             qobject_cast<QDeclarativeKeyNavigationAttached*>(qmlAttachedPropertiesObject<QDeclarativeKeyNavigationAttached>(i));
-    if(other && !other->d_func()->leftSet)
+    if(other && !other->d_func()->leftSet){
         other->d_func()->left = qobject_cast<QDeclarativeItem*>(parent());
+        emit other->leftChanged();
+    }
     emit rightChanged();
 }
 
@@ -547,8 +551,10 @@ void QDeclarativeKeyNavigationAttached::setUp(QDeclarativeItem *i)
     d->upSet = true;
     QDeclarativeKeyNavigationAttached* other =
             qobject_cast<QDeclarativeKeyNavigationAttached*>(qmlAttachedPropertiesObject<QDeclarativeKeyNavigationAttached>(i));
-    if(other && !other->d_func()->downSet)
+    if(other && !other->d_func()->downSet){
         other->d_func()->down = qobject_cast<QDeclarativeItem*>(parent());
+        emit other->downChanged();
+    }
     emit upChanged();
 }
 
@@ -567,8 +573,10 @@ void QDeclarativeKeyNavigationAttached::setDown(QDeclarativeItem *i)
     d->downSet = true;
     QDeclarativeKeyNavigationAttached* other =
             qobject_cast<QDeclarativeKeyNavigationAttached*>(qmlAttachedPropertiesObject<QDeclarativeKeyNavigationAttached>(i));
-    if(other && !other->d_func()->upSet)
+    if(other && !other->d_func()->upSet){
         other->d_func()->up = qobject_cast<QDeclarativeItem*>(parent());
+        emit other->upChanged();
+    }
     emit downChanged();
 }
 
@@ -587,8 +595,10 @@ void QDeclarativeKeyNavigationAttached::setTab(QDeclarativeItem *i)
     d->tabSet = true;
     QDeclarativeKeyNavigationAttached* other =
             qobject_cast<QDeclarativeKeyNavigationAttached*>(qmlAttachedPropertiesObject<QDeclarativeKeyNavigationAttached>(i));
-    if(other && !other->d_func()->backtabSet)
+    if(other && !other->d_func()->backtabSet){
         other->d_func()->backtab = qobject_cast<QDeclarativeItem*>(parent());
+        emit other->backtabChanged();
+    }
     emit tabChanged();
 }
 
@@ -607,8 +617,10 @@ void QDeclarativeKeyNavigationAttached::setBacktab(QDeclarativeItem *i)
     d->backtabSet = true;
     QDeclarativeKeyNavigationAttached* other =
             qobject_cast<QDeclarativeKeyNavigationAttached*>(qmlAttachedPropertiesObject<QDeclarativeKeyNavigationAttached>(i));
-    if(other && !other->d_func()->tabSet)
+    if(other && !other->d_func()->tabSet){
         other->d_func()->tab = qobject_cast<QDeclarativeItem*>(parent());
+        emit other->tabChanged();
+    }
     emit backtabChanged();
 }
 
