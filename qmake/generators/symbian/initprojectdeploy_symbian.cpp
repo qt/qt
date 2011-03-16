@@ -223,7 +223,10 @@ void initProjectDeploySymbian(QMakeProject* project,
         } else {
             if (0 == platform.compare(QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM))) {
                 if (devicePathHasDriveLetter) {
-                    devicePath = qt_epocRoot() + "epoc32/winscw/" + devicePath.remove(1, 1);
+                    if (devicePath.startsWith("!"))
+                        devicePath = qt_epocRoot() + "epoc32/winscw/c" + devicePath.remove(0, 2);
+                    else
+                        devicePath = qt_epocRoot() + "epoc32/winscw/" + devicePath.remove(1, 1);
                 } else {
                     devicePath = qt_epocRoot() + "epoc32/winscw/c" + devicePath;
                 }
