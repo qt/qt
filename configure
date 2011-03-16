@@ -960,8 +960,8 @@ if [ "$CFG_EMBEDDED" = "nacl" ]; then
     PLATFORM_QPA=yes
     echo "-fast"
     OPT_FAST=yes
-    echo "-qconfig minimal-system-dependencies"
-    CFG_QCONFIG=minimal-system-dependencies
+    echo "-qconfig nacl"
+    CFG_QCONFIG=nacl
 
     if [ `uname` = "Linux" ]; then
         I_FLAGS="$I_FLAGS -I${CFG_NACL_PATH}/toolchain/linux_x86/sdk/nacl-sdk/include"
