@@ -43,6 +43,7 @@
 #define QSGTEXTNODE_P_H
 
 #include <node.h>
+#include <qsgtext_p.h>
 
 class QTextLayout;
 class GlyphNodeInterface;
@@ -62,13 +63,16 @@ public:
     static bool isComplexRichText(QTextDocument *);
 
     void deleteContent();
-    void addTextLayout(const QPointF &position, QTextLayout *textLayout, const QColor &color = QColor());
-    void addTextDocument(const QPointF &position, QTextDocument *textDocument, const QColor &color = QColor());
+    void addTextLayout(const QPointF &position, QTextLayout *textLayout, const QColor &color = QColor(),
+                       QSGText::TextStyle style = QSGText::Normal, const QColor &styleColor = QColor());
+    void addTextDocument(const QPointF &position, QTextDocument *textDocument, const QColor &color = QColor(),
+                         QSGText::TextStyle style = QSGText::Normal, const QColor &styleColor = QColor());
 
 private:
     void addTextBlock(const QPointF &position, QTextDocument *textDocument, const QTextBlock &block,
-                      const QColor &overrideColor);
-    GlyphNodeInterface *addGlyphs(const QPointF &position, const QGlyphs &glyphs, const QColor &color);
+                      const QColor &overrideColor, QSGText::TextStyle style = QSGText::Normal, const QColor &styleColor = QColor());
+    GlyphNodeInterface *addGlyphs(const QPointF &position, const QGlyphs &glyphs, const QColor &color,
+                                  QSGText::TextStyle style = QSGText::Normal, const QColor &styleColor = QColor());
     void addTextDecorations(const QPointF &position, const QFont &font, const QColor &color,
                             qreal width);
 

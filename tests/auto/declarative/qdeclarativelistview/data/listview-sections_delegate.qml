@@ -1,6 +1,7 @@
 import QtQuick 1.0
 
 Rectangle {
+    property string sectionProperty: "number"
     width: 240
     height: 320
     color: "#ffffff"
@@ -56,7 +57,7 @@ Rectangle {
         height: 320
         model: testModel
         delegate: myDelegate
-        section.property: "number"
+        section.property: sectionProperty
         section.delegate: Rectangle {
             objectName: "sect_" + section
             color: "#99bb99"

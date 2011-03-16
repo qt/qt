@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "distancefield_glyphnode_p.h"
+#include "distancefieldfontatlas_p.h"
 #include <qmath.h>
 
 class DistanceFieldTextMaterialShader : public AbstractMaterialShader
@@ -55,7 +56,6 @@ protected:
     virtual const char *vertexShader() const;
     virtual const char *fragmentShader() const;
 
-private:
     void updateAlphaRange();
 
     qreal m_fontScale;
@@ -107,8 +107,8 @@ DistanceFieldTextMaterialShader::DistanceFieldTextMaterialShader()
 void DistanceFieldTextMaterialShader::updateAlphaRange()
 {
     qreal combinedScale = m_fontScale * m_matrixScale;
-    qreal alphaMin = qBound(0.0, 0.5 - 0.07 / combinedScale, 0.5);
-    qreal alphaMax = qBound(0.5, 0.5 + 0.07 / combinedScale, 1.0);
+    qreal alphaMin = qMax(0.0, 0.5 - 0.07 / combinedScale);
+    qreal alphaMax = qMin(0.5 + 0.07 / combinedScale, 1.0);
     m_program.setUniformValue(m_alphaMin_id, GLfloat(alphaMin));
     m_program.setUniformValue(m_alphaMax_id, GLfloat(alphaMax));
 }
@@ -169,7 +169,7 @@ void DistanceFieldTextMaterialShader::updateState(Renderer *renderer, AbstractMa
 }
 
 DistanceFieldTextMaterial::DistanceFieldTextMaterial()
-    : m_texture(0), m_scale(1.0), m_dirtyTexture(false)
+    : m_texture(0), m_scale(1.0), m_dirtyTexture(false), m_atlas(0)
 {
    setFlag(Blending, true);
 }
@@ -200,4 +200,247 @@ int DistanceFieldTextMaterial::compare(const AbstractMaterial *o) const
     QRgb c1 = m_color.rgba();
     QRgb c2 = other->m_color.rgba();
     return int(c2 < c1) - int(c1 < c2);
+}
+
+
+class DistanceFieldStyledTextMaterialShader : public DistanceFieldTextMaterialShader
+{
+public:
+    DistanceFieldStyledTextMaterialShader();
+
+    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+
+protected:
+    virtual void initialize();
+    virtual const char *fragmentShader() const = 0;
+
+    int m_styleColor_id;
+};
+
+DistanceFieldStyledTextMaterialShader::DistanceFieldStyledTextMaterialShader()
+    : DistanceFieldTextMaterialShader()
+{
+}
+
+void DistanceFieldStyledTextMaterialShader::initialize()
+{
+    DistanceFieldTextMaterialShader::initialize();
+    m_styleColor_id = m_program.uniformLocation("styleColor");
+}
+
+void DistanceFieldStyledTextMaterialShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+{
+    DistanceFieldTextMaterialShader::updateState(renderer, newEffect, oldEffect, updates);
+
+    DistanceFieldStyledTextMaterial *material = static_cast<DistanceFieldStyledTextMaterial *>(newEffect);
+    DistanceFieldStyledTextMaterial *oldMaterial = static_cast<DistanceFieldStyledTextMaterial *>(oldEffect);
+
+    if (oldMaterial == 0
+           || material->styleColor() != oldMaterial->styleColor()
+           || (updates & Renderer::UpdateOpacity)) {
+        QVector4D color(material->styleColor().redF(), material->styleColor().greenF(),
+                        material->styleColor().blueF(), material->styleColor().alphaF());
+        color *= renderer->renderOpacity();
+        m_program.setUniformValue(m_styleColor_id, color);
+    }
+}
+
+DistanceFieldStyledTextMaterial::DistanceFieldStyledTextMaterial()
+    : DistanceFieldTextMaterial()
+{
+}
+
+DistanceFieldStyledTextMaterial::~DistanceFieldStyledTextMaterial()
+{
+}
+
+int DistanceFieldStyledTextMaterial::compare(const AbstractMaterial *o) const
+{
+    Q_ASSERT(o && type() == o->type());
+    const DistanceFieldStyledTextMaterial *other = static_cast<const DistanceFieldStyledTextMaterial *>(o);
+    if (m_styleColor != other->m_styleColor) {
+        QRgb c1 = m_styleColor.rgba();
+        QRgb c2 = other->m_styleColor.rgba();
+        return int(c2 < c1) - int(c1 < c2);
+    }
+    return DistanceFieldTextMaterial::compare(o);
+}
+
+
+class DistanceFieldOutlineTextMaterialShader : public DistanceFieldStyledTextMaterialShader
+{
+public:
+    DistanceFieldOutlineTextMaterialShader();
+
+    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+
+protected:
+    virtual void initialize();
+    virtual const char *fragmentShader() const;
+
+    void updateOutlineAlphaRange();
+
+    int m_outlineAlphaMax0_id;
+    int m_outlineAlphaMax1_id;
+};
+
+const char *DistanceFieldOutlineTextMaterialShader::fragmentShader() const {
+    return
+            "varying highp vec2 sampleCoord;                                                      \n"
+            "uniform sampler2D texture;                                                           \n"
+            "uniform lowp vec4 color;                                                             \n"
+            "uniform lowp vec4 styleColor;                                                        \n"
+            "uniform highp float alphaMin;                                                        \n"
+            "uniform highp float alphaMax;                                                        \n"
+            "uniform highp float outlineAlphaMax0;                                                \n"
+            "uniform highp float outlineAlphaMax1;                                                \n"
+            "void main() {                                                                        \n"
+            "    mediump float d = texture2D(texture, sampleCoord).a;                             \n"
+            "    gl_FragColor = mix(styleColor, color, smoothstep(alphaMin, alphaMax, d))         \n"
+            "                       * smoothstep(outlineAlphaMax0, outlineAlphaMax1, d);          \n"
+            "}";
+}
+
+DistanceFieldOutlineTextMaterialShader::DistanceFieldOutlineTextMaterialShader()
+    : DistanceFieldStyledTextMaterialShader()
+{
+}
+
+void DistanceFieldOutlineTextMaterialShader::initialize()
+{
+    DistanceFieldStyledTextMaterialShader::initialize();
+    m_outlineAlphaMax0_id = m_program.uniformLocation("outlineAlphaMax0");
+    m_outlineAlphaMax1_id = m_program.uniformLocation("outlineAlphaMax1");
+}
+
+void DistanceFieldOutlineTextMaterialShader::updateOutlineAlphaRange()
+{
+    qreal outlineLimit = 0.4;
+
+    qreal combinedScale = m_fontScale * m_matrixScale;
+    qreal alphaMin = qMax(0.0, 0.5 - 0.07 / combinedScale);
+    qreal styleAlphaMin0 = qMax(0.0, outlineLimit - 0.07 / combinedScale);
+    qreal styleAlphaMin1 = qMin(qreal(outlineLimit + 0.07 / combinedScale), alphaMin);
+    m_program.setUniformValue(m_outlineAlphaMax0_id, GLfloat(styleAlphaMin0));
+    m_program.setUniformValue(m_outlineAlphaMax1_id, GLfloat(styleAlphaMin1));
+}
+
+void DistanceFieldOutlineTextMaterialShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+{
+    DistanceFieldStyledTextMaterialShader::updateState(renderer, newEffect, oldEffect, updates);
+
+    DistanceFieldOutlineTextMaterial *material = static_cast<DistanceFieldOutlineTextMaterial *>(newEffect);
+    DistanceFieldOutlineTextMaterial *oldMaterial = static_cast<DistanceFieldOutlineTextMaterial *>(oldEffect);
+
+    if (oldMaterial == 0 || material->scale() != oldMaterial->scale() || updates & Renderer::UpdateMatrices)
+        updateOutlineAlphaRange();
+}
+
+
+DistanceFieldOutlineTextMaterial::DistanceFieldOutlineTextMaterial()
+    : DistanceFieldStyledTextMaterial()
+{
+}
+
+DistanceFieldOutlineTextMaterial::~DistanceFieldOutlineTextMaterial()
+{
+}
+
+AbstractMaterialType *DistanceFieldOutlineTextMaterial::type() const
+{
+    static AbstractMaterialType type;
+    return &type;
+}
+
+AbstractMaterialShader *DistanceFieldOutlineTextMaterial::createShader() const
+{
+    return new DistanceFieldOutlineTextMaterialShader;
+}
+
+
+class DistanceFieldShiftedStyleTextMaterialShader : public DistanceFieldStyledTextMaterialShader
+{
+public:
+    DistanceFieldShiftedStyleTextMaterialShader();
+
+    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+
+protected:
+    virtual void initialize();
+    virtual const char *fragmentShader() const;
+
+    void updateShift(const DistanceFieldFontAtlas *atlas, const QPointF& shift);
+
+    int m_shift_id;
+};
+
+DistanceFieldShiftedStyleTextMaterialShader::DistanceFieldShiftedStyleTextMaterialShader()
+    : DistanceFieldStyledTextMaterialShader()
+{
+}
+
+void DistanceFieldShiftedStyleTextMaterialShader::initialize()
+{
+    DistanceFieldStyledTextMaterialShader::initialize();
+    m_shift_id = m_program.uniformLocation("shift");
+}
+
+void DistanceFieldShiftedStyleTextMaterialShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+{
+    DistanceFieldStyledTextMaterialShader::updateState(renderer, newEffect, oldEffect, updates);
+
+    DistanceFieldShiftedStyleTextMaterial *material = static_cast<DistanceFieldShiftedStyleTextMaterial *>(newEffect);
+    DistanceFieldShiftedStyleTextMaterial *oldMaterial = static_cast<DistanceFieldShiftedStyleTextMaterial *>(oldEffect);
+
+    if (oldMaterial == 0
+            || oldMaterial->scale() != material->scale()
+            || oldMaterial->shift() != material->shift()
+            || oldMaterial->texture()->textureSize() != material->texture()->textureSize()) {
+        updateShift(material->atlas(), material->shift());
+    }
+}
+
+void DistanceFieldShiftedStyleTextMaterialShader::updateShift(const DistanceFieldFontAtlas *atlas, const QPointF &shift)
+{
+    m_program.setUniformValue(m_shift_id, atlas->pixelToTexel(shift));
+}
+
+const char *DistanceFieldShiftedStyleTextMaterialShader::fragmentShader() const {
+    return
+            "varying highp vec2 sampleCoord;                                                       \n"
+            "uniform sampler2D texture;                                                            \n"
+            "uniform lowp vec4 color;                                                              \n"
+            "uniform lowp vec4 styleColor;                                                         \n"
+            "uniform highp float alphaMin;                                                         \n"
+            "uniform highp float alphaMax;                                                         \n"
+            "uniform highp vec2 shift;                                                             \n"
+            "void main() {                                                                         \n"
+            "    highp float a = smoothstep(alphaMin, alphaMax, texture2D(texture, sampleCoord).a);\n"
+            "    highp vec4 glyph = color * a;                                                     \n"
+            "    highp vec4 shifted = styleColor * smoothstep(alphaMin,                            \n"
+            "                                                 alphaMax,                            \n"
+            "                                                 texture2D(texture, sampleCoord - shift).a); \n"
+            "    gl_FragColor = vec4(shifted.rgb * (1.0 - a) + glyph.rgb,                          \n"
+            "                        shifted.a * (1.0 - a) + glyph.a);                             \n"
+            "}";
+}
+
+DistanceFieldShiftedStyleTextMaterial::DistanceFieldShiftedStyleTextMaterial()
+    : DistanceFieldStyledTextMaterial()
+{
+}
+
+DistanceFieldShiftedStyleTextMaterial::~DistanceFieldShiftedStyleTextMaterial()
+{
+}
+
+AbstractMaterialType *DistanceFieldShiftedStyleTextMaterial::type() const
+{
+    static AbstractMaterialType type;
+    return &type;
+}
+
+AbstractMaterialShader *DistanceFieldShiftedStyleTextMaterial::createShader() const
+{
+    return new DistanceFieldShiftedStyleTextMaterialShader;
 }

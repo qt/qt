@@ -6,8 +6,8 @@ Rectangle {
         objectName: "filler"
         width: 50; height: 50; color: "blue"
         anchors.fill: parent;
-	anchors.margins: 10
-	anchors.leftMargin: 5
-	anchors.topMargin: 6
+        anchors.margins: 10
+        anchors.leftMargin: 5
+        anchors.topMargin: 6
     }
 }

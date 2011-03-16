@@ -150,16 +150,15 @@ SymbianEngine::~SymbianEngine()
 
     iConnectionMonitor.CancelNotifications();
     iConnectionMonitor.Close();
-    
-#ifdef SNAP_FUNCTIONALITY_AVAILABLE    
-    iCmManager.Close();
-#endif
-    
-    // CCommsDatabase destructor uses cleanup stack. Since QNetworkConfigurationManager
+
+    // CCommsDatabase destructor and RCmManager.Close() use cleanup stack. Since QNetworkConfigurationManager
     // is a global static, but the time we are here, E32Main() has been exited already and
     // the thread's default cleanup stack has been deleted. Without this line, a
     // 'E32USER-CBase 69' -panic will occur.
     CTrapCleanup* cleanup = CTrapCleanup::New();
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
+    iCmManager.Close();
+#endif
     delete ipCommsDB;
     delete cleanup;
 }
@@ -829,6 +828,7 @@ void SymbianEngine::updateStatesToSnaps()
                 discovered = true;
             }
         }
+        snapConfigLocker.unlock();
         if (active) {
             changeConfigurationStateTo(ptr, QNetworkConfiguration::Active);
         } else if (discovered) {

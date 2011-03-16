@@ -2,7 +2,8 @@
 #include <QDebug>
 
 ParticleType::ParticleType(QSGItem *parent) :
-    QSGItem(parent)
+    QSGItem(parent),
+    m_system(0)
 {
     connect(this, SIGNAL(xChanged()),
             this, SLOT(calcSystemOffset()));

@@ -310,6 +310,8 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , needWindowChange(0)
       , window_event(0)
       , qd_hd(0)
+#elif defined(Q_OS_SYMBIAN)
+      , symbianScreenNumber(0)
 #endif
 {
     if (!qApp) {
@@ -1293,6 +1295,10 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
         // make sure the widget is created on the same screen as the
         // programmer specified desktop widget
         xinfo = desktopWidget->d_func()->xinfo;
+    }
+#elif defined(Q_OS_SYMBIAN)
+    if (desktopWidget) {
+        symbianScreenNumber = qt_widget_private(desktopWidget)->symbianScreenNumber;
     }
 #elif defined(Q_WS_QPA)
     if (desktopWidget) {

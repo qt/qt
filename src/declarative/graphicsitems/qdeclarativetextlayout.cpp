@@ -99,7 +99,6 @@ class DrawTextItemRecorder: public QPaintEngine
                     needFreshCurrentItem = false;
 
                     last.numChars += ti.num_chars;
-                    last.numGlyphs += ti.glyphs.numGlyphs;
 
                 }
             } 
@@ -111,7 +110,7 @@ class DrawTextItemRecorder: public QPaintEngine
                 currentItem.font = ti.font();
                 currentItem.charOffset = charOffset;
                 currentItem.numChars = ti.num_chars;
-                currentItem.numGlyphs = ti.glyphs.numGlyphs;
+                currentItem.numGlyphs = 0;
                 currentItem.glyphOffset = glyphOffset;
                 currentItem.positionOffset = positionOffset;
                 currentItem.useBackendOptimizations = m_useBackendOptimizations;
@@ -121,6 +120,8 @@ class DrawTextItemRecorder: public QPaintEngine
                 m_inertText->items.append(currentItem);
             }
 
+            QStaticTextItem &currentItem = m_inertText->items.last();
+
             QTransform matrix = m_untransformedCoordinates ? QTransform() : state->transform();
             matrix.translate(position.x(), position.y());
 
@@ -129,18 +130,18 @@ class DrawTextItemRecorder: public QPaintEngine
             ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
             int size = glyphs.size();
-            Q_ASSERT(size == ti.glyphs.numGlyphs);
             Q_ASSERT(size == positions.size());
+            currentItem.numGlyphs += size;
 
             m_inertText->glyphs.resize(m_inertText->glyphs.size() + size);
             m_inertText->positions.resize(m_inertText->glyphs.size());
             m_inertText->chars.resize(m_inertText->chars.size() + ti.num_chars);
 
             glyph_t *glyphsDestination = m_inertText->glyphs.data() + glyphOffset;
-            qMemCopy(glyphsDestination, glyphs.constData(), sizeof(glyph_t) * ti.glyphs.numGlyphs);
+            qMemCopy(glyphsDestination, glyphs.constData(), sizeof(glyph_t) * size);
 
             QFixedPoint *positionsDestination = m_inertText->positions.data() + positionOffset;
-            qMemCopy(positionsDestination, positions.constData(), sizeof(QFixedPoint) * ti.glyphs.numGlyphs);
+            qMemCopy(positionsDestination, positions.constData(), sizeof(QFixedPoint) * size);
 
             QChar *charsDestination = m_inertText->chars.data() + charOffset;
             qMemCopy(charsDestination, ti.chars, sizeof(QChar) * ti.num_chars);

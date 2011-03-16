@@ -17,7 +17,6 @@ Rectangle{
         system: ps
         leaders: ["star2"]; 
         anchors.fill: parent
-        anchors.margins: 64
         strength: 128
     }
     QLP.TrailEmitter{
@@ -31,9 +30,9 @@ Rectangle{
         anchors.fill: parent
         system: ps
         particle: "star2"
-        particlesPerSecond: 1
-        particleDuration: 8000
-        particleSize: 32
-        particleEndSize: 8
+        particlesPerSecond: 0.4
+        particleDuration: 10000
+        particleSize: 64
+        particleEndSize: 32
     }
 }

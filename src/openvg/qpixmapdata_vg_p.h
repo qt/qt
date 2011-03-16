@@ -54,7 +54,8 @@
 //
 
 #include <QtGui/private/qpixmap_raster_p.h>
-#include <private/qvg_p.h>
+#include <QtGui/private/qvolatileimage_p.h>
+#include "qvg_p.h"
 
 #if defined(Q_OS_SYMBIAN)
 class RSGImage;
@@ -74,6 +75,8 @@ void qt_vg_register_pixmap(QVGPixmapData *pd);
 void qt_vg_unregister_pixmap(QVGPixmapData *pd);
 void qt_vg_hibernate_pixmaps(QVGSharedContext *context);
 #endif
+
+class QNativeImageHandleProvider;
 
 class Q_OPENVG_EXPORT QVGPixmapData : public QPixmapData
 {
@@ -99,6 +102,7 @@ public:
     bool hasAlphaChannel() const;
     void setAlphaChannel(const QPixmap &alphaChannel);
     QImage toImage() const;
+    void copy(const QPixmapData *data, const QRect &rect);
     QImage *buffer();
     QPaintEngine* paintEngine() const;
 
@@ -124,11 +128,21 @@ public:
     // VGImage objects to reuse storage.
     virtual void reclaimImages();
 
+    // If vgImage is valid but source is null, copies pixel data from GPU back
+    // into main memory and destroys vgImage. For a normal pixmap this function
+    // does nothing, however if the pixmap was created directly from a VGImage
+    // (e.g. via SgImage on Symbian) then by doing the readback this ensures
+    // that QImage-based functions can operate too.
+    virtual void ensureReadback(bool readOnly) const;
+
     QSize size() const { return QSize(w, h); }
 
 #if defined(Q_OS_SYMBIAN)
     void* toNativeType(NativeType type);
     void fromNativeType(void* pixmap, NativeType type);
+    bool initFromNativeImageHandle(void *handle, const QString &type);
+    void createFromNativeImageHandleProvider();
+    void releaseNativeImageHandle();
 #endif
 
 protected:
@@ -161,15 +175,23 @@ protected:
     VGImage vgImage;
     VGImage vgImageOpacity;
     qreal cachedOpacity;
-    mutable QImage source;
+    mutable QVolatileImage source;
     mutable bool recreate;
     bool inImagePool;
 #if !defined(QT_NO_EGL)
     mutable QEglContext *context;
 #endif
 
+#if defined(Q_OS_SYMBIAN)
+    mutable QNativeImageHandleProvider *nativeImageHandleProvider;
+    void *nativeImageHandle;
+    QString nativeImageType;
+#endif
+
     void forceToImage();
     QImage::Format sourceFormat() const;
+    QImage::Format idealFormat(QImage *image, Qt::ImageConversionFlags flags) const;
+    void updateSerial();
 
     void destroyImageAndContext();
     void destroyImages();

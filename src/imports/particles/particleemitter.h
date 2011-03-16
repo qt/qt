@@ -13,7 +13,7 @@ class ParticleEmitter : public QSGItem
     Q_PROPERTY(QString particle READ particle WRITE setParticle NOTIFY particleChanged)
     Q_PROPERTY(bool emitting READ emitting WRITE setEmitting NOTIFY emittingChanged)
 
-    Q_PROPERTY(int particlesPerSecond READ particlesPerSecond WRITE setParticlesPerSecond NOTIFY particlesPerSecondChanged)
+    Q_PROPERTY(qreal particlesPerSecond READ particlesPerSecond WRITE setParticlesPerSecond NOTIFY particlesPerSecondChanged)
     Q_PROPERTY(int particleDuration READ particleDuration WRITE setParticleDuration NOTIFY particleDurationChanged)
     Q_PROPERTY(int particleDurationVariation READ particleDurationVariation WRITE setParticleDurationVariation NOTIFY particleDurationVariationChanged)
 
@@ -27,7 +27,7 @@ public:
         return m_emitting;
     }
 
-    int particlesPerSecond() const
+    qreal particlesPerSecond() const
     {
         return m_particlesPerSecond;
     }
@@ -53,7 +53,7 @@ public:
     }
 
 signals:
-    void particlesPerSecondChanged(int);
+    void particlesPerSecondChanged(qreal);
     void particleDurationChanged(int);
     void emittingChanged(bool);
 
@@ -67,7 +67,7 @@ public slots:
 
     void setEmitting(bool arg);
 
-    void setParticlesPerSecond(int arg)
+    void setParticlesPerSecond(qreal arg)
     {
         if (m_particlesPerSecond != arg) {
             m_particlesPerSecond = arg;
@@ -110,7 +110,7 @@ public slots:
 
 protected:
     ParticleSystem* m_system;
-    int m_particlesPerSecond;
+    qreal m_particlesPerSecond;
     int m_particleDuration;
     int m_particleDurationVariation;
     bool m_emitting;
