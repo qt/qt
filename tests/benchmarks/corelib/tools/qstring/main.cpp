@@ -70,6 +70,8 @@ private slots:
     void ucstrncmp_data() const;
     void ucstrncmp() const;
     void fromUtf8() const;
+    void fromLatin1_data() const;
+    void fromLatin1() const;
 };
 
 void tst_QString::equals() const
@@ -1401,6 +1403,40 @@ void tst_QString::fromUtf8() const
 
     QBENCHMARK {
         QString::fromUtf8(d, size);
+    }
+}
+
+void tst_QString::fromLatin1_data() const
+{
+    QTest::addColumn<QByteArray>("latin1");
+
+    // make all the strings have the same length
+    QTest::newRow("ascii-only") << QByteArray("HelloWorld");
+    QTest::newRow("ascii+control") << QByteArray("Hello\1\r\n\x7f\t");
+    QTest::newRow("ascii+nul") << QByteArray("a\0zbc\0defg", 10);
+    QTest::newRow("non-ascii") << QByteArray("\x80\xc0\xff\x81\xc1\xfe\x90\xd0\xef\xa0");
+}
+
+void tst_QString::fromLatin1() const
+{
+    QFETCH(QByteArray, latin1);
+
+    while (latin1.length() < 128) {
+        latin1 += latin1;
+    }
+
+    QByteArray copy1 = latin1, copy2 = latin1, copy3 = latin1;
+    copy1.chop(1);
+    copy2.detach();
+    copy3 += latin1; // longer length
+    copy2.clear();
+
+    QBENCHMARK {
+        QString s1 = QString::fromLatin1(latin1);
+        QString s2 = QString::fromLatin1(latin1);
+        QString s3 = QString::fromLatin1(copy1);
+        QString s4 = QString::fromLatin1(copy3);
+        s3 = QString::fromLatin1(copy3);
     }
 }
 
