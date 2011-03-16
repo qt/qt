@@ -61,7 +61,7 @@
     \o{2,1} \l{A Quick Start to Qt Designer}{\bold{Qt Designer}}
     \o{2,1} \l{Qt Linguist Manual: Programmers#Tutorials}{\bold {Qt Linguist}}
     \row
-    \o \image designer-examples.png
+    \o \image designer-examples.png QtDesigner
     \o
     A quick guide through \QD showing the basic steps to create a
     form with this interactive tool.
