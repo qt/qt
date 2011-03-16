@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "distancefield_glyphnode_p.h"
+#include "distancefieldfontatlas_p.h"
 #include <qmath.h>
 
 class DistanceFieldTextMaterialShader : public AbstractMaterialShader
@@ -168,7 +169,7 @@ void DistanceFieldTextMaterialShader::updateState(Renderer *renderer, AbstractMa
 }
 
 DistanceFieldTextMaterial::DistanceFieldTextMaterial()
-    : m_texture(0), m_scale(1.0), m_dirtyTexture(false)
+    : m_texture(0), m_scale(1.0), m_dirtyTexture(false), m_atlas(0)
 {
    setFlag(Blending, true);
 }
@@ -368,7 +369,7 @@ protected:
     virtual void initialize();
     virtual const char *fragmentShader() const;
 
-    void updateShift(const QSize& texSize, const QPointF& shift);
+    void updateShift(const DistanceFieldFontAtlas *atlas, const QPointF& shift);
 
     int m_shift_id;
 };
@@ -393,19 +394,15 @@ void DistanceFieldShiftedStyleTextMaterialShader::updateState(Renderer *renderer
 
     if (oldMaterial == 0
             || oldMaterial->scale() != material->scale()
-            || updates & Renderer::UpdateMatrices
             || oldMaterial->shift() != material->shift()
             || oldMaterial->texture()->textureSize() != material->texture()->textureSize()) {
-        updateShift(material->texture()->textureSize(), material->shift());
+        updateShift(material->atlas(), material->shift());
     }
 }
 
-void DistanceFieldShiftedStyleTextMaterialShader::updateShift(const QSize &texSize, const QPointF &shift)
+void DistanceFieldShiftedStyleTextMaterialShader::updateShift(const DistanceFieldFontAtlas *atlas, const QPointF &shift)
 {
-    qreal pixelInTexelWidth = (1.0 / 64.0 / (m_fontScale * 0.8)) * (64.0 / texSize.width());
-    qreal pixelInTexelHeight = (1.0 / 64.0 / (m_fontScale * 0.8)) * (64.0 / texSize.height());
-    QPointF s(shift.x() * pixelInTexelWidth, shift.y() * pixelInTexelHeight);
-    m_program.setUniformValue(m_shift_id, s);
+    m_program.setUniformValue(m_shift_id, atlas->pixelToTexel(shift));
 }
 
 const char *DistanceFieldShiftedStyleTextMaterialShader::fragmentShader() const {
@@ -418,11 +415,13 @@ const char *DistanceFieldShiftedStyleTextMaterialShader::fragmentShader() const 
             "uniform highp float alphaMax;                                                         \n"
             "uniform highp vec2 shift;                                                             \n"
             "void main() {                                                                         \n"
-            "    mediump float d = texture2D(texture, sampleCoord).a;                              \n"
-            "    mediump float shifted = texture2D(texture, sampleCoord - shift).a;                \n"
-            "    highp float a = smoothstep(alphaMin, alphaMax, d);                                \n"
-            "    gl_FragColor = mix(styleColor * smoothstep(alphaMin, alphaMax, shifted),          \n"
-            "                       color * a, a);                                                 \n"
+            "    highp float a = smoothstep(alphaMin, alphaMax, texture2D(texture, sampleCoord).a);\n"
+            "    highp vec4 glyph = color * a;                                                     \n"
+            "    highp vec4 shifted = styleColor * smoothstep(alphaMin,                            \n"
+            "                                                 alphaMax,                            \n"
+            "                                                 texture2D(texture, sampleCoord - shift).a); \n"
+            "    gl_FragColor = vec4(shifted.rgb * (1.0 - a) + glyph.rgb,                          \n"
+            "                        shifted.a * (1.0 - a) + glyph.a);                             \n"
             "}";
 }
 

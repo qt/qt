@@ -112,18 +112,29 @@ void DistanceFieldGlyphNode::updateGeometry()
     QVector4D *vp = (QVector4D *)g->vertexData();
     ushort *ip = g->indexDataAsUShort();
 
+    QPointF margins(1, 1);
+    QPointF texMargins = m_glyph_atlas->pixelToTexel(margins);
+
     for (int i = 0; i < glyphIndexes.size(); ++i) {
         quint32 glyphIndex = glyphIndexes.at(i);
         DistanceFieldFontAtlas::Metrics metrics = m_glyph_atlas->glyphMetrics(glyphIndex);
         DistanceFieldFontAtlas::TexCoord c = m_glyph_atlas->glyphTexCoord(glyphIndex);
 
-        if (m_glyph_atlas->scaleRatioFromRefSize() <= QT_DISTANCEFIELD_MARGIN_THRESHOLD
-                || m_style != QSGText::Normal) {
+        if (m_style != QSGText::Normal) {
+            metrics.width += margins.x() * 2;
+            metrics.height += margins.y() * 2;
+            metrics.baselineX -= margins.x();
+            metrics.baselineY += margins.y();
+            c.xMargin -= texMargins.x();
+            c.yMargin -= texMargins.y();
+            c.width += texMargins.x() * 2;
+            c.height += texMargins.y() * 2;
+
+        } else if (m_glyph_atlas->scaleRatioFromRefSize() <= QT_DISTANCEFIELD_MARGIN_THRESHOLD) {
             metrics.width += m_glyph_atlas->glyphMargin() * m_glyph_atlas->scaleRatioFromRefSize() * 2;
             metrics.height += m_glyph_atlas->glyphMargin() * m_glyph_atlas->scaleRatioFromRefSize() * 2;
             metrics.baselineX -= m_glyph_atlas->glyphMargin() * m_glyph_atlas->scaleRatioFromRefSize();
             metrics.baselineY += m_glyph_atlas->glyphMargin() * m_glyph_atlas->scaleRatioFromRefSize();
-
             c.xMargin -= m_glyph_atlas->glyphMargin() / m_glyph_atlas->atlasSize().width();
             c.yMargin -= m_glyph_atlas->glyphMargin() / m_glyph_atlas->atlasSize().height();
             c.width += (m_glyph_atlas->glyphMargin() * 2) / qreal(m_glyph_atlas->atlasSize().width());
@@ -198,6 +209,7 @@ void DistanceFieldGlyphNode::updateMaterial()
         m_material = material;
     }
 
+    m_material->setAtlas(m_glyph_atlas);
     m_material->setColor(m_color);
     m_material->setScale(m_glyph_atlas->scaleRatioFromRefSize());
     m_material->setTexture(m_glyph_atlas->texture());

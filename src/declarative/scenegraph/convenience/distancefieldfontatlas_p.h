@@ -94,6 +94,8 @@ public:
 
     void populate(int count, const glyph_t *glyphs);
 
+    QPointF pixelToTexel(const QPointF &pixel) const;
+
     static bool distanceFieldEnabled();
 
 private:

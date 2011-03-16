@@ -683,3 +683,13 @@ int DistanceFieldFontAtlas::glyphCount() const
 {
     return m_glyphCount;
 }
+
+QPointF DistanceFieldFontAtlas::pixelToTexel(const QPointF &pixel) const
+{
+    const QSize texSize = atlasSize();
+    qreal glyphTexel = 1.0 / qreal(QT_DISTANCEFIELD_TILESIZE) / scaleRatioFromRefSize();
+    QPointF texel(glyphTexel * (qreal(QT_DISTANCEFIELD_TILESIZE) / texSize.width()),
+                  glyphTexel * (qreal(QT_DISTANCEFIELD_TILESIZE) / texSize.height()));
+
+    return QPointF(pixel.x() * texel.x(), pixel.y() * texel.y());
+}

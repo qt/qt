@@ -44,6 +44,8 @@
 
 #include <material.h>
 
+class DistanceFieldFontAtlas;
+
 class DistanceFieldTextMaterial: public AbstractMaterial
 {
 public:
@@ -63,6 +65,9 @@ public:
     void setScale(qreal scale) { m_scale = scale; }
     qreal scale() const { return m_scale; }
 
+    void setAtlas(DistanceFieldFontAtlas *a) { m_atlas = a; }
+    DistanceFieldFontAtlas *atlas() const { return m_atlas; }
+
     bool updateTextureFiltering()
     {
         bool oldDirty = m_dirtyTexture;
@@ -75,6 +80,7 @@ protected:
     QColor m_color;
     qreal m_scale;
     bool m_dirtyTexture;
+    DistanceFieldFontAtlas *m_atlas;
 };
 
 class DistanceFieldStyledTextMaterial : public DistanceFieldTextMaterial
