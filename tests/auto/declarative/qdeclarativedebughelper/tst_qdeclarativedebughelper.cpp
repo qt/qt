@@ -88,9 +88,9 @@ void tst_qdeclarativedebughelper::setAnimationSlowDownFactor()
     QCOMPARE(animation.updateCalled, 0);
     animation.start();
     QTest::qWait(animation.totalDuration() + 50);
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_MACX)
     if (animation.state() != QAbstractAnimation::Stopped)
-        QEXPECT_FAIL("", "On windows, consistent timing is not working properly due to bad timer resolution", Abort);
+        QEXPECT_FAIL("", "On windows, consistent timing is not working properly due to bad timer resolution. Something similar on Mac.", Abort);
 #endif
     QCOMPARE(animation.state(), QAbstractAnimation::Stopped);
     QVERIFY(animation.updateCalled > 1);
