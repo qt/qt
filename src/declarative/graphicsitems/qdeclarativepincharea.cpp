@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -300,9 +300,8 @@ void QDeclarativePinchArea::updatePinch()
             d->stealMouse = false;
             setKeepMouseGrab(false);
             d->inPinch = false;
-            const qreal rotationAngle = d->pinchStartAngle - d->pinchLastAngle;
             QPointF pinchCenter = mapFromScene(d->sceneLastCenter);
-            QDeclarativePinchEvent pe(pinchCenter, d->pinchLastScale, d->pinchLastAngle, rotationAngle);
+            QDeclarativePinchEvent pe(pinchCenter, d->pinchLastScale, d->pinchLastAngle, d->pinchRotation);
             pe.setStartCenter(d->pinchStartCenter);
             pe.setPreviousCenter(pinchCenter);
             pe.setPreviousAngle(d->pinchLastAngle);
@@ -349,6 +348,7 @@ void QDeclarativePinchArea::updatePinch()
                     d->pinchStartAngle = angle;
                     d->pinchLastScale = 1.0;
                     d->pinchLastAngle = angle;
+                    d->pinchRotation = 0.0;
                     d->lastPoint1 = d->touchPoints.at(0).pos();
                     d->lastPoint2 = d->touchPoints.at(1).pos();
                     QDeclarativePinchEvent pe(d->pinchStartCenter, 1.0, angle, 0.0);
@@ -380,11 +380,14 @@ void QDeclarativePinchArea::updatePinch()
                 }
             } else if (d->pinchStartDist > 0) {
                 qreal scale = dist / d->pinchStartDist;
-                qreal rotationAngle = d->pinchStartAngle - angle;
-                if (rotationAngle > 180)
-                    rotationAngle -= 360;
+                qreal da = d->pinchLastAngle - angle;
+                if (da > 180)
+                    da -= 360;
+                else if (da < -180)
+                    da += 360;
+                d->pinchRotation += da;
                 QPointF pinchCenter = mapFromScene(sceneCenter);
-                QDeclarativePinchEvent pe(pinchCenter, scale, angle, rotationAngle);
+                QDeclarativePinchEvent pe(pinchCenter, scale, angle, d->pinchRotation);
                 pe.setStartCenter(d->pinchStartCenter);
                 pe.setPreviousCenter(mapFromScene(d->sceneLastCenter));
                 pe.setPreviousAngle(d->pinchLastAngle);
@@ -422,7 +425,7 @@ void QDeclarativePinchArea::updatePinch()
                     }
                     if (d->pinchStartRotation >= pinch()->minimumRotation()
                             && d->pinchStartRotation <= pinch()->maximumRotation()) {
-                        qreal r = rotationAngle + d->pinchStartRotation;
+                        qreal r = d->pinchRotation + d->pinchStartRotation;
                         r = qMin(qMax(pinch()->minimumRotation(),r), pinch()->maximumRotation());
                         pinch()->target()->setRotation(r);
                     }

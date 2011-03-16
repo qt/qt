@@ -374,6 +374,8 @@ CFbsBitmap *QPixmap::toSymbianCFbsBitmap() const
     To be sure that QPixmap does not modify your original instance, you should
     make a copy of your \c CFbsBitmap before calling this function.
     If the CFbsBitmap is not valid this function will return a null QPixmap.
+    For performance reasons it is recommended to use a \a bitmap with a display
+    mode of EColor16MAP or EColor16MU whenever possible.
 
     \warning This function is only available on Symbian OS.
 
