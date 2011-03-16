@@ -905,15 +905,18 @@ bool QHttpNetworkConnectionChannel::isSocketReading() const
 //private slots
 void QHttpNetworkConnectionChannel::_q_readyRead()
 {
-    // We got a readyRead but no bytes are available..
-    // This happens for the Unbuffered QTcpSocket
-    // Also check if socket is in ConnectedState since
-    // this function may also be invoked via the event loop.
     if (socket->state() == QAbstractSocket::ConnectedState && socket->bytesAvailable() == 0) {
+        // We got a readyRead but no bytes are available..
+        // This happens for the Unbuffered QTcpSocket
+        // Also check if socket is in ConnectedState since
+        // this function may also be invoked via the event loop.
         char c;
         qint64  ret = socket->peek(&c, 1);
         if (ret < 0) {
-            socket->disconnectFromHost();
+            _q_error(socket->error());
+            // We still need to handle the reply so it emits its signals etc.
+            if (reply)
+                _q_receiveReply();
             return;
         }
     }
