@@ -1098,8 +1098,8 @@ bool QDeclarativeV4CompilerPrivate::blockNeedsSubscription(const QStringList &su
     QHash<int, quint32>::ConstIterator uiter = usedSubscriptionIds.find(*iter);
     if (uiter == usedSubscriptionIds.end())
         return true;
-    else 
-        return *uiter & currentBlockMask;
+    else
+        return !(*uiter & currentBlockMask);
 }
 
 int QDeclarativeV4CompilerPrivate::subscriptionIndex(const QStringList &sub)

@@ -75,6 +75,7 @@ private slots:
     void qtscript();
     void qtscript_data();
     void nestedObjectAccess();
+    void subscriptionsInConditionalExpressions();
 
 private:
     QDeclarativeEngine engine;
@@ -187,6 +188,21 @@ void tst_qdeclarativev4::nestedObjectAccess()
     QVERIFY(ro != 0);
 
     QCOMPARE(ro->result(), 37);
+
+    delete o;
+}
+
+void tst_qdeclarativev4::subscriptionsInConditionalExpressions()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("subscriptionsInConditionalExpressions.qml"));
+
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QObject *ro = qobject_cast<QObject *>(o);
+    QVERIFY(ro != 0);
+
+    QCOMPARE(ro->property("result").toReal(), qreal(2));
 
     delete o;
 }
