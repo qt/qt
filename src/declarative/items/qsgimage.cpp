@@ -56,7 +56,6 @@ QSGImagePrivate::QSGImagePrivate()
     : fillMode(QSGImage::Stretch)
     , paintedWidth(0)
     , paintedHeight(0)
-    , textureProvider(0)
     , pixmapChanged(false)
 {
 }
@@ -174,7 +173,7 @@ QRectF QSGImage::boundingRect() const
 QSGTextureProvider *QSGImage::textureProvider() const
 {
     Q_D(const QSGImage);
-    return d->pix.textureProvider() ? d->pix.textureProvider() : d->textureProvider;
+    return d->pix.textureProvider();
 }
 
 Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
@@ -182,7 +181,8 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
     Q_D(QSGImage);
     //XXX Support mirror property
 
-    if ((d->pix.pixmap().isNull() && !d->pix.textureProvider()) || width() <= 0 || height() <= 0) {
+    QSGTextureProvider *textureProvider = d->pix.textureProvider();
+    if (!textureProvider || width() <= 0 || height() <= 0) {
         delete oldNode;
         return 0;
     }
@@ -191,20 +191,16 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
     if (!node) { 
         d->pixmapChanged = true;
         node = QSGContext::current->createTextureNode();
-        if (!d->pix.textureProvider())
-            d->textureProvider = QSGContext::current->createImageTextureProvider(this);
-        if (!textureProvider()->isStaticTexture())
-            connect(textureProvider(), SIGNAL(textureChanged()), this, SLOT(update()));
+        if (!textureProvider->isStaticTexture())
+            connect(textureProvider, SIGNAL(textureChanged()), this, SLOT(update()));
     }
 
     if (d->pixmapChanged) {
-        if (d->textureProvider)
-            d->textureProvider->setImage(d->pix.pixmap().toImage());
-        textureProvider()->updateTexture();
+        textureProvider->updateTexture();
         // force update the texture in the node to trigger reconstruction of
         // geometry and the likes when a atlas segment has changed.
         node->setTexture(0);
-        node->setTexture(textureProvider());
+        node->setTexture(textureProvider);
         d->pixmapChanged = false;
     }
 
@@ -267,11 +263,9 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
                   sourceRect.width() / d->pix.width(),
                   sourceRect.height() / d->pix.height());
 
-    if (d->textureProvider) {
-        d->textureProvider->setHorizontalWrapMode(hWrap);
-        d->textureProvider->setVerticalWrapMode(vWrap);
-        d->textureProvider->setFiltering(d->smooth ? QSGTextureProvider::Linear : QSGTextureProvider::Nearest);
-    }
+    textureProvider->setHorizontalWrapMode(hWrap);
+    textureProvider->setVerticalWrapMode(vWrap);
+    textureProvider->setFiltering(d->smooth ? QSGTextureProvider::Linear : QSGTextureProvider::Nearest);
 
     node->setTargetRect(targetRect);
     node->setSourceRect(nsrect);

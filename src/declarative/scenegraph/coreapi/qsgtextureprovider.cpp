@@ -47,6 +47,14 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \class QSGTextureProvider
+    \brief The QSGTextureProvider class encapsulates texture based entities in QML.
+
+    The QSGTextureProvider objects are live primarily on the QML thread, aside from
+    the functions that are specified otherwise.
+ */
+
 QSGTextureProvider::QSGTextureProvider(QObject *parent)
     : QObject(parent)
     , m_opaque(false)

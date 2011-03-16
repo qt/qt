@@ -22,6 +22,8 @@ public:
 protected:
     QImage m_image;
     QSGTextureRef m_texture;
+
+    bool m_dirty_texture;
 };
 
 

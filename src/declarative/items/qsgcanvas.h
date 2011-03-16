@@ -71,9 +71,6 @@ public:
 
     bool sendEvent(QSGItem *, QEvent *);
 
-
-    void setSceneGraphContext(QSGContext *context);
-
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
 
 protected:

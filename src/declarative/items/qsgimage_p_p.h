@@ -72,7 +72,6 @@ public:
     QSGImage::FillMode fillMode;
     qreal paintedWidth;
     qreal paintedHeight;
-    QSGImageTextureProvider *textureProvider;
     void setPixmap(const QPixmap &pix);
 
     bool pixmapChanged : 1;
