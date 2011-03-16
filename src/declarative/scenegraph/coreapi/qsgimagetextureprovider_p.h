@@ -17,6 +17,8 @@ public:
 
     QSize textureSize() const;
 
+    bool isStaticTexture() const { return true; }
+
 protected:
     QImage m_image;
     QSGTextureRef m_texture;
