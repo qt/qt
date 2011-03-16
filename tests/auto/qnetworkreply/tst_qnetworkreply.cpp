@@ -498,7 +498,6 @@ public slots:
         if (doClose && client->bytesToWrite() == 0) {
             client->disconnectFromHost();
             disconnect(client, 0, this, 0);
-            client = 0;
         }
     }
 };

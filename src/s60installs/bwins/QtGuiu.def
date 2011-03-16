@@ -13149,3 +13149,58 @@ EXPORTS
 	?ProcessCommandParametersL@QS60MainAppUi@@UAEHW4TApaCommand@@AAV?$TBuf@$0BAA@@@ABVTDesC8@@@Z @ 13148 NONAME ; int QS60MainAppUi::ProcessCommandParametersL(enum TApaCommand, class TBuf<256> &, class TDesC8 const &)
 	?openFile@QFileOpenEvent@@QBE_NAAVQFile@@V?$QFlags@W4OpenModeFlag@QIODevice@@@@@Z @ 13149 NONAME ; bool QFileOpenEvent::openFile(class QFile &, class QFlags<enum QIODevice::OpenModeFlag>) const
 	??0QFileOpenEvent@@QAE@ABVRFile@@@Z @ 13150 NONAME ; QFileOpenEvent::QFileOpenEvent(class RFile const &)
+	?beginDataAccess@QVolatileImage@@QBEXXZ @ 13151 NONAME ; void QVolatileImage::beginDataAccess(void) const
+	??1QVolatileImage@@QAE@XZ @ 13152 NONAME ; QVolatileImage::~QVolatileImage(void)
+	?trUtf8@QInternalMimeData@@SA?AVQString@@PBD0@Z @ 13153 NONAME ; class QString QInternalMimeData::trUtf8(char const *, char const *)
+	??0QVolatileImage@@QAE@HHW4Format@QImage@@@Z @ 13154 NONAME ; QVolatileImage::QVolatileImage(int, int, enum QImage::Format)
+	?ensureFormat@QVolatileImage@@QAE_NW4Format@QImage@@@Z @ 13155 NONAME ; bool QVolatileImage::ensureFormat(enum QImage::Format)
+	?fill@QVolatileImage@@QAEXI@Z @ 13156 NONAME ; void QVolatileImage::fill(unsigned int)
+	?assignedInputContext@QWidgetPrivate@@QBEPAVQInputContext@@XZ @ 13157 NONAME ; class QInputContext * QWidgetPrivate::assignedInputContext(void) const
+	?retrieveData@QInternalMimeData@@MBE?AVQVariant@@ABVQString@@W4Type@2@@Z @ 13158 NONAME ; class QVariant QInternalMimeData::retrieveData(class QString const &, enum QVariant::Type) const
+	?formats@QInternalMimeData@@UBE?AVQStringList@@XZ @ 13159 NONAME ; class QStringList QInternalMimeData::formats(void) const
+	?isNull@QVolatileImage@@QBE_NXZ @ 13160 NONAME ; bool QVolatileImage::isNull(void) const
+	?toImage@QVolatileImage@@QBE?AVQImage@@XZ @ 13161 NONAME ; class QImage QVolatileImage::toImage(void) const
+	??0QVolatileImage@@QAE@ABVQImage@@@Z @ 13162 NONAME ; QVolatileImage::QVolatileImage(class QImage const &)
+	?tr@QInternalMimeData@@SA?AVQString@@PBD0H@Z @ 13163 NONAME ; class QString QInternalMimeData::tr(char const *, char const *, int)
+	?resolveFontFamilyAlias@QFontDatabase@@CA?AVQString@@ABV2@@Z @ 13164 NONAME ; class QString QFontDatabase::resolveFontFamilyAlias(class QString const &)
+	?hasFormat@QInternalMimeData@@UBE_NABVQString@@@Z @ 13165 NONAME ; bool QInternalMimeData::hasFormat(class QString const &) const
+	?format@QVolatileImage@@QBE?AW4Format@QImage@@XZ @ 13166 NONAME ; enum QImage::Format QVolatileImage::format(void) const
+	?renderDataHelper@QInternalMimeData@@SA?AVQByteArray@@ABVQString@@PBVQMimeData@@@Z @ 13167 NONAME ; class QByteArray QInternalMimeData::renderDataHelper(class QString const &, class QMimeData const *)
+	?endDataAccess@QVolatileImage@@QBEX_N@Z @ 13168 NONAME ; void QVolatileImage::endDataAccess(bool) const
+	?constBits@QVolatileImage@@QBEPBEXZ @ 13169 NONAME ; unsigned char const * QVolatileImage::constBits(void) const
+	?updateMicroFocus@QLineControl@@IAEXXZ @ 13170 NONAME ; void QLineControl::updateMicroFocus(void)
+	?height@QVolatileImage@@QBEHXZ @ 13171 NONAME ; int QVolatileImage::height(void) const
+	?duplicateNativeImage@QVolatileImage@@QBEPAXXZ @ 13172 NONAME ; void * QVolatileImage::duplicateNativeImage(void) const
+	?formatsHelper@QInternalMimeData@@SA?AVQStringList@@PBVQMimeData@@@Z @ 13173 NONAME ; class QStringList QInternalMimeData::formatsHelper(class QMimeData const *)
+	?qt_metacast@QInternalMimeData@@UAEPAXPBD@Z @ 13174 NONAME ; void * QInternalMimeData::qt_metacast(char const *)
+	?bits@QVolatileImage@@QAEPAEXZ @ 13175 NONAME ; unsigned char * QVolatileImage::bits(void)
+	?paintEngine@QVolatileImage@@QAEPAVQPaintEngine@@XZ @ 13176 NONAME ; class QPaintEngine * QVolatileImage::paintEngine(void)
+	?bytesPerLine@QVolatileImage@@QBEHXZ @ 13177 NONAME ; int QVolatileImage::bytesPerLine(void) const
+	?width@QVolatileImage@@QBEHXZ @ 13178 NONAME ; int QVolatileImage::width(void) const
+	?qt_metacall@QInternalMimeData@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 13179 NONAME ; int QInternalMimeData::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?lineHeightType@QTextBlockFormat@@QBEHXZ @ 13180 NONAME ; int QTextBlockFormat::lineHeightType(void) const
+	?trUtf8@QInternalMimeData@@SA?AVQString@@PBD0H@Z @ 13181 NONAME ; class QString QInternalMimeData::trUtf8(char const *, char const *, int)
+	?copyFrom@QVolatileImage@@QAEXPAV1@ABVQRect@@@Z @ 13182 NONAME ; void QVolatileImage::copyFrom(class QVolatileImage *, class QRect const &)
+	?lineHeight@QTextBlockFormat@@QBEMMM@Z @ 13183 NONAME ; float QTextBlockFormat::lineHeight(float, float) const
+	?canReadData@QInternalMimeData@@SA_NABVQString@@@Z @ 13184 NONAME ; bool QInternalMimeData::canReadData(class QString const &)
+	?releaseCachedResources@QGraphicsSystem@@UAEXXZ @ 13185 NONAME ; void QGraphicsSystem::releaseCachedResources(void)
+	??0QInternalMimeData@@QAE@XZ @ 13186 NONAME ; QInternalMimeData::QInternalMimeData(void)
+	?setLineHeight@QTextBlockFormat@@QAEXMH@Z @ 13187 NONAME ; void QTextBlockFormat::setLineHeight(float, int)
+	?imageRef@QVolatileImage@@QAEAAVQImage@@XZ @ 13188 NONAME ; class QImage & QVolatileImage::imageRef(void)
+	??0QVolatileImage@@QAE@PAX0@Z @ 13189 NONAME ; QVolatileImage::QVolatileImage(void *, void *)
+	??4QVolatileImage@@QAEAAV0@ABV0@@Z @ 13190 NONAME ; class QVolatileImage & QVolatileImage::operator=(class QVolatileImage const &)
+	??0QVolatileImage@@QAE@XZ @ 13191 NONAME ; QVolatileImage::QVolatileImage(void)
+	?getStaticMetaObject@QInternalMimeData@@SAABUQMetaObject@@XZ @ 13192 NONAME ; struct QMetaObject const & QInternalMimeData::getStaticMetaObject(void)
+	?lineHeight@QTextBlockFormat@@QBEMXZ @ 13193 NONAME ; float QTextBlockFormat::lineHeight(void) const
+	?tr@QInternalMimeData@@SA?AVQString@@PBD0@Z @ 13194 NONAME ; class QString QInternalMimeData::tr(char const *, char const *)
+	?hasAlphaChannel@QVolatileImage@@QBE_NXZ @ 13195 NONAME ; bool QVolatileImage::hasAlphaChannel(void) const
+	?setAlphaChannel@QVolatileImage@@QAEXABVQPixmap@@@Z @ 13196 NONAME ; void QVolatileImage::setAlphaChannel(class QPixmap const &)
+	??_EQInternalMimeData@@UAE@I@Z @ 13197 NONAME ; QInternalMimeData::~QInternalMimeData(unsigned int)
+	?byteCount@QVolatileImage@@QBEHXZ @ 13198 NONAME ; int QVolatileImage::byteCount(void) const
+	??0QVolatileImage@@QAE@ABV0@@Z @ 13199 NONAME ; QVolatileImage::QVolatileImage(class QVolatileImage const &)
+	?metaObject@QInternalMimeData@@UBEPBUQMetaObject@@XZ @ 13200 NONAME ; struct QMetaObject const * QInternalMimeData::metaObject(void) const
+	?depth@QVolatileImage@@QBEHXZ @ 13201 NONAME ; int QVolatileImage::depth(void) const
+	?hasFormatHelper@QInternalMimeData@@SA_NABVQString@@PBVQMimeData@@@Z @ 13202 NONAME ; bool QInternalMimeData::hasFormatHelper(class QString const &, class QMimeData const *)
+	??1QInternalMimeData@@UAE@XZ @ 13203 NONAME ; QInternalMimeData::~QInternalMimeData(void)
+	?staticMetaObject@QInternalMimeData@@2UQMetaObject@@B @ 13204 NONAME ; struct QMetaObject const QInternalMimeData::staticMetaObject
+

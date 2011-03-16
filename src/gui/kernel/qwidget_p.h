@@ -900,6 +900,7 @@ public:
 #elif defined(Q_OS_SYMBIAN) // <--------------------------------------------------------- SYMBIAN
     static QWidget *mouseGrabber;
     static QWidget *keyboardGrabber;
+    int symbianScreenNumber; // only valid for desktop widget and top-levels
     void s60UpdateIsOpaque();
     void reparentChildren();
     void registerTouchWindow();

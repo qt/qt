@@ -101,6 +101,15 @@ isEmpty(SYMBIAN_MATCHED_LANGUAGES) {
     matchSymbianLanguages()
 }
 
+# If there are translations that do not have Symbian language code defined for that exact
+# language + country combination, but have Symbian language code defined for just the language,
+# map the language + country combination to the same value as the plain language.
+for(language, SYMBIAN_UNMAPPED_LANGUAGES) {
+    languageVar = SYMBIAN_LANG.$${language}
+    fallbackLanguageVar = SYMBIAN_LANG.$$eval(SYMBIAN_LANGUAGE_FALLBACK.$$language)
+    $$languageVar = $$eval($$fallbackLanguageVar)
+}
+
 !isEmpty(SYMBIAN_MATCHED_TRANSLATIONS) {
     # Generate dependencies to .ts files for pkg files
     template_pkg_target.depends += $$SYMBIAN_MATCHED_TRANSLATIONS

@@ -110,6 +110,9 @@ private slots:
     void persistentSelection();
     void focusOnPress();
     void selection();
+    void isRightToLeft_data();
+    void isRightToLeft();
+    void keySelection();
     void moveCursorSelection_data();
     void moveCursorSelection();
     void moveCursorSelectionSequence_data();
@@ -130,6 +133,8 @@ private slots:
     void navigation();
     void readOnly();
     void copyAndPaste();
+    void canPaste();
+    void canPasteEmpty();
     void textInput();
     void openInputPanelOnClick();
     void openInputPanelOnFocus();
@@ -145,7 +150,7 @@ private slots:
     void inputMethodComposing();
 
 private:
-    void simulateKey(QDeclarativeView *, int key);
+    void simulateKey(QDeclarativeView *, int key, Qt::KeyboardModifiers modifiers = 0);
     QDeclarativeView *createView(const QString &filename);
 
     QStringList standard;
@@ -443,21 +448,109 @@ void tst_qdeclarativetextedit::hAlign_RightToLeft()
     QVERIFY(textEdit != 0);
     canvas->show();
 
+    // implicit alignment should follow the reading direction of text
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
     QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
 
-    // "Right" align
-    textEdit->setHAlign(QDeclarativeTextEdit::AlignRight);
-    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
+    // explicitly left aligned
+    textEdit->setHAlign(QDeclarativeTextEdit::AlignLeft);
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignLeft);
     QVERIFY(textEdit->positionToRectangle(0).x() < canvas->width()/2);
 
-    // Center align
-    // Note that position 0 is on the right-hand side
-    textEdit->setHAlign(QDeclarativeTextEdit::AlignHCenter);
-    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignHCenter);
-    QVERIFY(textEdit->positionToRectangle(0).x() - textEdit->width() < canvas->width()/2);
+    // explicitly right aligned
+    textEdit->setHAlign(QDeclarativeTextEdit::AlignRight);
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
     QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
 
+    QString textString = textEdit->text();
+    textEdit->setText(QString("<i>") + textString + QString("</i>"));
+    textEdit->resetHAlign();
+
+    // implicitly aligned rich text should follow the reading direction of RTL text
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
+    QCOMPARE(textEdit->effectiveHAlign(), textEdit->hAlign());
+    QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
+
+    // explicitly left aligned rich text
+    textEdit->setHAlign(QDeclarativeTextEdit::AlignLeft);
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignLeft);
+    QCOMPARE(textEdit->effectiveHAlign(), textEdit->hAlign());
+    QVERIFY(textEdit->positionToRectangle(0).x() < canvas->width()/2);
+
+    // explicitly right aligned rich text
+    textEdit->setHAlign(QDeclarativeTextEdit::AlignRight);
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
+    QCOMPARE(textEdit->effectiveHAlign(), textEdit->hAlign());
+    QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
+
+    textEdit->setText(textString);
+
+    // explicitly center aligned
+    textEdit->setHAlign(QDeclarativeTextEdit::AlignHCenter);
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignHCenter);
+    QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
+
+    // reseted alignment should go back to following the text reading direction
+    textEdit->resetHAlign();
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
+    QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
+
+    // mirror the text item
+    QDeclarativeItemPrivate::get(textEdit)->setLayoutMirror(true);
+
+    // mirrored implicit alignment should continue to follow the reading direction of the text
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
+    QCOMPARE(textEdit->effectiveHAlign(), QDeclarativeTextEdit::AlignRight);
+    QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
+
+    // mirrored explicitly right aligned behaves as left aligned
+    textEdit->setHAlign(QDeclarativeTextEdit::AlignRight);
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
+    QCOMPARE(textEdit->effectiveHAlign(), QDeclarativeTextEdit::AlignLeft);
+    QVERIFY(textEdit->positionToRectangle(0).x() < canvas->width()/2);
+
+    // mirrored explicitly left aligned behaves as right aligned
+    textEdit->setHAlign(QDeclarativeTextEdit::AlignLeft);
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignLeft);
+    QCOMPARE(textEdit->effectiveHAlign(), QDeclarativeTextEdit::AlignRight);
+    QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
+
+    // disable mirroring
+    QDeclarativeItemPrivate::get(textEdit)->setLayoutMirror(false);
+    textEdit->resetHAlign();
+
+    // English text should be implicitly left aligned
+    textEdit->setText("Hello world!");
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignLeft);
+    QVERIFY(textEdit->positionToRectangle(0).x() < canvas->width()/2);
+
+#ifndef Q_OS_MAC    // QTBUG-18040
+    // empty text with implicit alignment follows the system locale-based
+    // keyboard input direction from QApplication::keyboardInputDirection
+    textEdit->setText("");
+    QCOMPARE(textEdit->hAlign(), QApplication::keyboardInputDirection() == Qt::LeftToRight ?
+                                  QDeclarativeTextEdit::AlignLeft : QDeclarativeTextEdit::AlignRight);
+    if (QApplication::keyboardInputDirection() == Qt::LeftToRight)
+        QVERIFY(textEdit->positionToRectangle(0).x() < canvas->width()/2);
+    else
+        QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
+    textEdit->setHAlign(QDeclarativeTextEdit::AlignRight);
+    QCOMPARE(textEdit->hAlign(), QDeclarativeTextEdit::AlignRight);
+    QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
+#endif
+
     delete canvas;
+
+#ifndef Q_OS_MAC    // QTBUG-18040
+    // alignment of TextEdit with no text set to it
+    QString componentStr = "import QtQuick 1.0\nTextEdit {}";
+    QDeclarativeComponent textComponent(&engine);
+    textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeTextEdit *textObject = qobject_cast<QDeclarativeTextEdit*>(textComponent.create());
+    QCOMPARE(textObject->hAlign(), QApplication::keyboardInputDirection() == Qt::LeftToRight ?
+                                  QDeclarativeTextEdit::AlignLeft : QDeclarativeTextEdit::AlignRight);
+    delete textObject;
+#endif
 }
 
 void tst_qdeclarativetextedit::vAlign()
@@ -758,6 +851,113 @@ void tst_qdeclarativetextedit::selection()
     QVERIFY(textEditObject->selectedText().size() == 10);
     textEditObject->deselect();
     QVERIFY(textEditObject->selectedText().isNull());
+}
+
+void tst_qdeclarativetextedit::isRightToLeft_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<bool>("emptyString");
+    QTest::addColumn<bool>("firstCharacter");
+    QTest::addColumn<bool>("lastCharacter");
+    QTest::addColumn<bool>("middleCharacter");
+    QTest::addColumn<bool>("startString");
+    QTest::addColumn<bool>("midString");
+    QTest::addColumn<bool>("endString");
+
+    const quint16 arabic_str[] = { 0x0638, 0x0643, 0x00646, 0x0647, 0x0633, 0x0638, 0x0643, 0x00646, 0x0647, 0x0633, 0x0647};
+    QTest::newRow("Empty") << "" << false << false << false << false << false << false << false;
+    QTest::newRow("Neutral") << "23244242" << false << false << false << false << false << false << false;
+    QTest::newRow("LTR") << "Hello world" << false << false << false << false << false << false << false;
+    QTest::newRow("RTL") << QString::fromUtf16(arabic_str, 11) << false << true << true << true << true << true << true;
+    QTest::newRow("Bidi RTL + LTR + RTL") << QString::fromUtf16(arabic_str, 11) + QString("Hello world") + QString::fromUtf16(arabic_str, 11) << false << true << true << false << true << true << true;
+    QTest::newRow("Bidi LTR + RTL + LTR") << QString("Hello world") + QString::fromUtf16(arabic_str, 11) + QString("Hello world") << false << false << false << true << false << false << false;
+}
+
+void tst_qdeclarativetextedit::isRightToLeft()
+{
+    QFETCH(QString, text);
+    QFETCH(bool, emptyString);
+    QFETCH(bool, firstCharacter);
+    QFETCH(bool, lastCharacter);
+    QFETCH(bool, middleCharacter);
+    QFETCH(bool, startString);
+    QFETCH(bool, midString);
+    QFETCH(bool, endString);
+
+    QDeclarativeTextEdit textEdit;
+    textEdit.setText(text);
+
+    // first test that the right string is delivered to the QString::isRightToLeft()
+    QCOMPARE(textEdit.isRightToLeft(0,0), text.mid(0,0).isRightToLeft());
+    QCOMPARE(textEdit.isRightToLeft(0,1), text.mid(0,1).isRightToLeft());
+    QCOMPARE(textEdit.isRightToLeft(text.count()-2, text.count()-1), text.mid(text.count()-2, text.count()-1).isRightToLeft());
+    QCOMPARE(textEdit.isRightToLeft(text.count()/2, text.count()/2 + 1), text.mid(text.count()/2, text.count()/2 + 1).isRightToLeft());
+    QCOMPARE(textEdit.isRightToLeft(0,text.count()/4), text.mid(0,text.count()/4).isRightToLeft());
+    QCOMPARE(textEdit.isRightToLeft(text.count()/4,3*text.count()/4), text.mid(text.count()/4,3*text.count()/4).isRightToLeft());
+    if (text.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML TextEdit: isRightToLeft(start, end) called with the end property being smaller than the start.");
+    QCOMPARE(textEdit.isRightToLeft(3*text.count()/4,text.count()-1), text.mid(3*text.count()/4,text.count()-1).isRightToLeft());
+
+    // then test that the feature actually works
+    QCOMPARE(textEdit.isRightToLeft(0,0), emptyString);
+    QCOMPARE(textEdit.isRightToLeft(0,1), firstCharacter);
+    QCOMPARE(textEdit.isRightToLeft(text.count()-2, text.count()-1), lastCharacter);
+    QCOMPARE(textEdit.isRightToLeft(text.count()/2, text.count()/2 + 1), middleCharacter);
+    QCOMPARE(textEdit.isRightToLeft(0,text.count()/4), startString);
+    QCOMPARE(textEdit.isRightToLeft(text.count()/4,3*text.count()/4), midString);
+    if (text.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML TextEdit: isRightToLeft(start, end) called with the end property being smaller than the start.");
+    QCOMPARE(textEdit.isRightToLeft(3*text.count()/4,text.count()-1), endString);
+}
+
+void tst_qdeclarativetextedit::keySelection()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/navigation.qml");
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+    canvas->setFocus();
+
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeTextEdit *input = qobject_cast<QDeclarativeTextEdit *>(qvariant_cast<QObject *>(canvas->rootObject()->property("myInput")));
+
+    QVERIFY(input != 0);
+    QTRY_VERIFY(input->hasActiveFocus() == true);
+
+    QSignalSpy spy(input, SIGNAL(selectionChanged()));
+
+    simulateKey(canvas, Qt::Key_Right, Qt::ShiftModifier);
+    QVERIFY(input->hasActiveFocus() == true);
+    QCOMPARE(input->selectedText(), QString("a"));
+    QCOMPARE(spy.count(), 1);
+    simulateKey(canvas, Qt::Key_Right);
+    QVERIFY(input->hasActiveFocus() == true);
+    QCOMPARE(input->selectedText(), QString());
+    QCOMPARE(spy.count(), 2);
+    simulateKey(canvas, Qt::Key_Right);
+    QVERIFY(input->hasActiveFocus() == false);
+    QCOMPARE(input->selectedText(), QString());
+    QCOMPARE(spy.count(), 2);
+
+    simulateKey(canvas, Qt::Key_Left);
+    QVERIFY(input->hasActiveFocus() == true);
+    QCOMPARE(spy.count(), 2);
+    simulateKey(canvas, Qt::Key_Left, Qt::ShiftModifier);
+    QVERIFY(input->hasActiveFocus() == true);
+    QCOMPARE(input->selectedText(), QString("a"));
+    QCOMPARE(spy.count(), 3);
+    simulateKey(canvas, Qt::Key_Left);
+    QVERIFY(input->hasActiveFocus() == true);
+    QCOMPARE(input->selectedText(), QString());
+    QCOMPARE(spy.count(), 4);
+    simulateKey(canvas, Qt::Key_Left);
+    QVERIFY(input->hasActiveFocus() == false);
+    QCOMPARE(input->selectedText(), QString());
+    QCOMPARE(spy.count(), 4);
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextedit::moveCursorSelection_data()
@@ -1105,6 +1305,8 @@ void tst_qdeclarativetextedit::mouseSelection_data()
     QTest::newRow("on") << SRCDIR "/data/mouseselection_true.qml" << true;
     QTest::newRow("off") << SRCDIR "/data/mouseselection_false.qml" << false;
     QTest::newRow("default") << SRCDIR "/data/mouseselection_default.qml" << false;
+    QTest::newRow("on word selection") << SRCDIR "/data/mouseselection_true_words.qml" << true;
+    QTest::newRow("off word selection") << SRCDIR "/data/mouseselection_false_words.qml" << false;
 }
 
 void tst_qdeclarativetextedit::mouseSelection()
@@ -1478,6 +1680,8 @@ void tst_qdeclarativetextedit::navigation()
     simulateKey(canvas, Qt::Key_Right);
     QVERIFY(input->hasActiveFocus() == true);
     simulateKey(canvas, Qt::Key_Right);
+    QVERIFY(input->hasActiveFocus() == true);
+    simulateKey(canvas, Qt::Key_Right);
     QVERIFY(input->hasActiveFocus() == false);
     simulateKey(canvas, Qt::Key_Left);
     QVERIFY(input->hasActiveFocus() == true);
@@ -1545,6 +1749,42 @@ void tst_qdeclarativetextedit::copyAndPaste() {
 #endif
 }
 
+void tst_qdeclarativetextedit::canPaste() {
+#ifndef QT_NO_CLIPBOARD
+
+    QApplication::clipboard()->setText("Some text");
+
+    QString componentStr = "import QtQuick 1.0\nTextEdit { text: \"Hello world!\" }";
+    QDeclarativeComponent textEditComponent(&engine);
+    textEditComponent.setData(componentStr.toLatin1(), QUrl());
+    QDeclarativeTextEdit *textEdit = qobject_cast<QDeclarativeTextEdit*>(textEditComponent.create());
+    QVERIFY(textEdit != 0);
+
+    // check initial value - QTBUG-17765
+    QTextControl tc;
+    QCOMPARE(textEdit->canPaste(), tc.canPaste());
+
+#endif
+}
+
+void tst_qdeclarativetextedit::canPasteEmpty() {
+#ifndef QT_NO_CLIPBOARD
+
+    QApplication::clipboard()->clear();
+
+    QString componentStr = "import QtQuick 1.0\nTextEdit { text: \"Hello world!\" }";
+    QDeclarativeComponent textEditComponent(&engine);
+    textEditComponent.setData(componentStr.toLatin1(), QUrl());
+    QDeclarativeTextEdit *textEdit = qobject_cast<QDeclarativeTextEdit*>(textEditComponent.create());
+    QVERIFY(textEdit != 0);
+
+    // check initial value - QTBUG-17765
+    QTextControl tc;
+    QCOMPARE(textEdit->canPaste(), tc.canPaste());
+
+#endif
+}
+
 void tst_qdeclarativetextedit::readOnly()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/readOnly.qml");
@@ -1569,10 +1809,10 @@ void tst_qdeclarativetextedit::readOnly()
     delete canvas;
 }
 
-void tst_qdeclarativetextedit::simulateKey(QDeclarativeView *view, int key)
+void tst_qdeclarativetextedit::simulateKey(QDeclarativeView *view, int key, Qt::KeyboardModifiers modifiers)
 {
-    QKeyEvent press(QKeyEvent::KeyPress, key, 0);
-    QKeyEvent release(QKeyEvent::KeyRelease, key, 0);
+    QKeyEvent press(QKeyEvent::KeyPress, key, modifiers);
+    QKeyEvent release(QKeyEvent::KeyRelease, key, modifiers);
 
     QApplication::sendEvent(view, &press);
     QApplication::sendEvent(view, &release);

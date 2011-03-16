@@ -15,4 +15,4 @@ TEMPLATE = app
 SOURCES += tst_baselineexample.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
-include($$QT_SOURCE_TREE/tests/arthur/common/qbaselinetest.pri)
+include($$PWD/../../arthur/common/qbaselinetest.pri)
