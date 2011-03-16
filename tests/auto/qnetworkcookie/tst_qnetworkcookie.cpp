@@ -171,16 +171,16 @@ void tst_QNetworkCookie::parseSingleCookie_data()
     QTest::newRow("with-value7") << "a = b" << cookie;
     QTest::newRow("with-value8") << "a = b " << cookie;
 
-    cookie.setValue(",");
+    cookie.setValue("\",\"");
     QTest::newRow("with-value-with-special1") << "a = \",\" " << cookie;
-    cookie.setValue(";");
+    cookie.setValue("\";\"");
     QTest::newRow("with-value-with-special2") << "a = \";\" " << cookie;
-    cookie.setValue(" ");
+    cookie.setValue("\" \"");
     QTest::newRow("with-value-with-special3") << "a = \" \" " << cookie;
-    cookie.setValue("\"");
-    QTest::newRow("with-value-with-special3") << "a = \"\\\"\" " << cookie;
-    cookie.setValue("\"a, b; c\"");
-    QTest::newRow("with-value-with-special4") << "a = \"\\\"a, b; c\\\"\"" << cookie;
+    cookie.setValue("\"\\\"\"");
+    QTest::newRow("with-value-with-special4") << "a = \"\\\"\" " << cookie;
+    cookie.setValue("\"\\\"a, b; c\\\"\"");
+    QTest::newRow("with-value-with-special5") << "a = \"\\\"a, b; c\\\"\"" << cookie;
 
     cookie.setValue("b");
     cookie.setSecure(true);
@@ -568,10 +568,18 @@ void tst_QNetworkCookie::parseSingleCookie_data()
     cookie.setDomain("mail.yahoo.com");
     QTest::newRow("network3") << "YM.LC=v=2&m=9993_262838_159_1558_1063_0_5649_4012_3776161073,9426_260205_549_1295_1336_0_5141_4738_3922731647,6733_258196_952_1364_643_0_3560_-1_0,3677_237633_1294_1294_19267_0_3244_29483_4102206176,1315_235149_1693_1541_941_0_3224_1691_1861378060,1858_214311_2100_1298_19538_0_2873_30900_716411652,6258_212007_2506_1285_1017_0_2868_3606_4288540264,3743_207884_2895_1362_2759_0_2545_7114_3388520216,2654_205253_3257_1297_1332_0_2504_4682_3048534803,1891_184881_3660_1291_19079_0_978_29178_2592538685&f=1&n=20&s=date&o=down&e=1196548712&b=Inbox&u=removed; path=/; domain=mail.yahoo.com" << cookie;
 
-    cookie = QNetworkCookie("__ac", "c2hhdXNtYW46U2FTYW80Wm8%3D");
+    cookie = QNetworkCookie("__ac", "\"c2hhdXNtYW46U2FTYW80Wm8%3D\"");
     cookie.setPath("/");
     cookie.setExpirationDate(QDateTime(QDate(2008, 8, 30), QTime(20, 21, 49), Qt::UTC));
     QTest::newRow("network4") << "__ac=\"c2hhdXNtYW46U2FTYW80Wm8%3D\"; Path=/; Expires=Sat, 30 Aug 2008 20:21:49 +0000" << cookie;
+
+    // linkedin.com sends cookies in quotes and expects the cookie in quotes
+    cookie = QNetworkCookie("leo_auth_token", "\"GST:UroVXaxYA3sVSkoVjMNH9bj4dZxVzK2yekgrAUxMfUsyLTNyPjoP60:1298974875:b675566ae32ab36d7a708c0efbf446a5c22b9fca\"");
+    cookie.setPath("/");
+    cookie.setExpirationDate(QDateTime(QDate(2011, 3, 1), QTime(10, 51, 14), Qt::UTC));
+    QTest::newRow("network5") << "leo_auth_token=\"GST:UroVXaxYA3sVSkoVjMNH9bj4dZxVzK2yekgrAUxMfUsyLTNyPjoP60:1298974875:b675566ae32ab36d7a708c0efbf446a5c22b9fca\"; Version=1; Max-Age=1799; Expires=Tue, 01-Mar-2011 10:51:14 GMT; Path=/" << cookie;
+
+
 }
 
 void tst_QNetworkCookie::parseSingleCookie()

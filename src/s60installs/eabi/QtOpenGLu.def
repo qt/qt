@@ -707,4 +707,11 @@ EXPORTS
 	_ZNK20QGLTextureGlyphCache16maxTextureHeightEv @ 706 NONAME
 	_ZThn8_NK20QGLTextureGlyphCache15maxTextureWidthEv @ 707 NONAME
 	_ZThn8_NK20QGLTextureGlyphCache16maxTextureHeightEv @ 708 NONAME
+	_ZN13QGLPixmapData12toNativeTypeEN11QPixmapData10NativeTypeE @ 709 NONAME
+	_ZN13QGLPixmapData14fromNativeTypeEPvN11QPixmapData10NativeTypeE @ 710 NONAME
+	_ZN13QGLPixmapData15fromImageReaderEP12QImageReader6QFlagsIN2Qt19ImageConversionFlagEE @ 711 NONAME
+	_ZN13QGLPixmapData20createPixmapForImageER6QImage6QFlagsIN2Qt19ImageConversionFlagEEb @ 712 NONAME
+	_ZN16QGLWindowSurface12swapBehaviorE @ 713 NONAME DATA 4
+	_ZN20QGLTextureGlyphCache10setContextEP10QGLContext @ 714 NONAME
+	_ZN20QGLTextureGlyphCache5clearEv @ 715 NONAME
 

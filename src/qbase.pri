@@ -4,7 +4,7 @@ INCLUDEPATH *= $$QMAKE_INCDIR_QT/$$TARGET #just for today to have some compat
 isEmpty(QT_ARCH):!isEmpty(ARCH):QT_ARCH=$$ARCH #another compat that will rot for change #215700
 TEMPLATE	= lib
 isEmpty(QT_MAJOR_VERSION) {
-   VERSION=4.7.2
+   VERSION=4.7.3
 } else {
    VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 }
@@ -190,7 +190,7 @@ symbian {
         # Partial upgrade SIS file
         vendorinfo = \
             "; Localised Vendor name" \
-            "%{\"Nokia, Qt\"}" \
+            "%{\"Nokia\"}" \
             " " \
             "; Unique Vendor name" \
             ":\"Nokia, Qt\"" \

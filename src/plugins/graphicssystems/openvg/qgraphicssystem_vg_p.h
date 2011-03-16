@@ -64,6 +64,8 @@ public:
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QWindowSurface *createWindowSurface(QWidget *widget) const;
+
+    void releaseCachedResources();
 };
 
 QT_END_NAMESPACE

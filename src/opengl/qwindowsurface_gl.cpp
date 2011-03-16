@@ -776,32 +776,60 @@ void QGLWindowSurface::updateGeometry() {
         return;
     d_ptr->geometry_updated = false;
 
-    QRect rect = geometry();
-    hijackWindow(window());
-    QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
+    bool hijack(true);
+    QWidgetPrivate *wd = window()->d_func();
+    if (wd->extraData() && wd->extraData()->glContext)
+        hijack = false; // we already have gl context for widget
+
+    if (hijack)
+        hijackWindow(window());
+
+    QGLContext *ctx = reinterpret_cast<QGLContext *>(wd->extraData()->glContext);
 
 #ifdef Q_WS_MAC
     ctx->updatePaintDevice();
 #endif
 
-    const GLenum target = GL_TEXTURE_2D;
+    QSize surfSize = geometry().size();
 
-    if (rect.width() <= 0 || rect.height() <= 0)
+    if (surfSize.width() <= 0 || surfSize.height() <= 0)
         return;
 
-    if (d_ptr->size == rect.size())
+    if (d_ptr->size == surfSize)
         return;
 
-    d_ptr->size = rect.size();
+    d_ptr->size = surfSize;
+
+#ifdef Q_OS_SYMBIAN
+    if (!hijack) { // Symbian needs to recreate EGL surface when native window size changes
+        if (ctx->d_func()->eglSurface != EGL_NO_SURFACE) {
+            eglDestroySurface(ctx->d_func()->eglContext->display(),
+                                                    ctx->d_func()->eglSurface);
+        }
+
+        ctx->d_func()->eglSurface = QEgl::createSurface(ctx->device(),
+                                           ctx->d_func()->eglContext->config());
+
+#if !defined(QGL_NO_PRESERVED_SWAP)
+        eglGetError();  // Clear error state first.
+        eglSurfaceAttrib(QEgl::display(), ctx->d_func()->eglSurface,
+                                    EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
+        if (eglGetError() != EGL_SUCCESS) {
+            qWarning("QGLWindowSurface: could not restore preserved swap behaviour");
+        }
+#endif
+    }
+#endif
 
     if (d_ptr->ctx) {
 #ifndef QT_OPENGL_ES_2
         if (d_ptr->destructive_swap_buffers)
-            initializeOffscreenTexture(rect.size());
+            initializeOffscreenTexture(surfSize);
 #endif
         return;
     }
 
+    const GLenum target = GL_TEXTURE_2D;
     if (d_ptr->destructive_swap_buffers
         && (QGLExtensions::glExtensions() & QGLExtensions::FramebufferObject)
         && (d_ptr->fbo || !d_ptr->tried_fbo)
@@ -820,10 +848,10 @@ void QGLWindowSurface::updateGeometry() {
         if (QGLExtensions::glExtensions() & QGLExtensions::FramebufferBlit)
             format.setSamples(8);
 
-        d_ptr->fbo = new QGLFramebufferObject(rect.size(), format);
+        d_ptr->fbo = new QGLFramebufferObject(surfSize, format);
 
         if (d_ptr->fbo->isValid()) {
-            qDebug() << "Created Window Surface FBO" << rect.size()
+            qDebug() << "Created Window Surface FBO" << surfSize
                      << "with samples" << d_ptr->fbo->format().samples();
             return;
         } else {
@@ -844,7 +872,7 @@ void QGLWindowSurface::updateGeometry() {
 
         delete d_ptr->pb;
 
-        d_ptr->pb = new QGLPixelBuffer(rect.width(), rect.height(),
+        d_ptr->pb = new QGLPixelBuffer(surfSize.width(), surfSize.height(),
                                         QGLFormat(QGL::SampleBuffers | QGL::StencilBuffer | QGL::DepthBuffer),
                                         qt_gl_share_widget());
 
@@ -854,7 +882,7 @@ void QGLWindowSurface::updateGeometry() {
 
             glGenTextures(1, &d_ptr->pb_tex_id);
             glBindTexture(target, d_ptr->pb_tex_id);
-            glTexImage2D(target, 0, GL_RGBA, rect.width(), rect.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            glTexImage2D(target, 0, GL_RGBA, surfSize.width(), surfSize.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
             glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -878,7 +906,7 @@ void QGLWindowSurface::updateGeometry() {
 
 #ifndef QT_OPENGL_ES_2
     if (d_ptr->destructive_swap_buffers)
-        initializeOffscreenTexture(rect.size());
+        initializeOffscreenTexture(surfSize);
 #endif
 
     qDebug() << "QGLWindowSurface: Using plain widget as window surface" << this;;

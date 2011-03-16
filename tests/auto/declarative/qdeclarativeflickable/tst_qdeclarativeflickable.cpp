@@ -69,6 +69,7 @@ private slots:
     void maximumFlickVelocity();
     void flickDeceleration();
     void pressDelay();
+    void nestedPressDelay();
     void flickableDirection();
     void qgraphicswidget();
     void resizeContent();
@@ -244,6 +245,34 @@ void tst_qdeclarativeflickable::pressDelay()
     QCOMPARE(spy.count(),1);
     flickable->setPressDelay(200);
     QCOMPARE(spy.count(),1);
+}
+
+// QTBUG-17361
+void tst_qdeclarativeflickable::nestedPressDelay()
+{
+    QDeclarativeView *canvas = new QDeclarativeView;
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/nestedPressDelay.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeFlickable *outer = qobject_cast<QDeclarativeFlickable*>(canvas->rootObject());
+    QVERIFY(outer != 0);
+
+    QDeclarativeFlickable *inner = canvas->rootObject()->findChild<QDeclarativeFlickable*>("innerFlickable");
+    QVERIFY(inner != 0);
+
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(150, 150)));
+    // the MouseArea is not pressed immediately
+    QVERIFY(outer->property("pressed").toBool() == false);
+
+    // The outer pressDelay will prevail (50ms, vs. 10sec)
+    // QTRY_VERIFY() has 5sec timeout, so will timeout well within 10sec.
+    QTRY_VERIFY(outer->property("pressed").toBool() == true);
+
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(150, 150)));
+
+    delete canvas;
 }
 
 void tst_qdeclarativeflickable::flickableDirection()

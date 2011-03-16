@@ -721,6 +721,21 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     t << "END" << endl;
     t << endl;
 
+    // Handle QMAKE_CLEAN
+    QStringList cleanFiles = project->values("QMAKE_CLEAN");
+    if (!cleanFiles.isEmpty()) {
+        QStringList absoluteCleanFiles;
+        foreach (QString cleanFile, cleanFiles) {
+            QFileInfo fi(cleanFile);
+            QString fileName = QLatin1String("\"");
+            fileName.append(fi.absoluteFilePath());
+            fileName.append(QLatin1String("\""));
+            absoluteCleanFiles << fileName;   	
+        }
+        t << "START EXTENSION qt/qmake_clean" << endl;
+        t << "OPTION CLEAN_FILES " << absoluteCleanFiles.join(" ") << endl;
+        t << "END" << endl;
+    }
     t << endl;
 }
 

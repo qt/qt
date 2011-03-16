@@ -123,7 +123,7 @@ private slots:
     void testLineBreakingAllSpaces();
     void lineWidthFromBOM();
     void textWidthVsWIdth();
-
+    void textWidthWithStackedTextEngine();
 
 private:
     QFont testFont;
@@ -1388,6 +1388,16 @@ void tst_QTextLayout::textWidthVsWIdth()
     }
 }
 
+void tst_QTextLayout::textWidthWithStackedTextEngine()
+{
+    QString text = QString::fromUtf8("คลิก ถัดไป เพื่อดำเนินการต่อ");
+    QTextLayout layout(text);
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    layout.endLayout();
+    QFontMetricsF fm(layout.font());
+    QCOMPARE(line.naturalTextWidth(), fm.width(text));
+}
 
 QTEST_MAIN(tst_QTextLayout)
 #include "tst_qtextlayout.moc"
