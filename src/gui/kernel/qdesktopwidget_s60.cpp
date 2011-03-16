@@ -188,12 +188,14 @@ void QDesktopWidgetPrivate::cleanup()
 void QDesktopWidgetPrivate::init_sys()
 {
 #if defined(Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS)
-    CWsScreenDevice *dev = S60->screenDevice(1);
-    if (dev) {
-        displayControl = static_cast<MDisplayControl *>(
-                    dev->GetInterface(MDisplayControl::ETypeId));
-        if (displayControl) {
-            displayControl->EnableDisplayChangeEvents(ETrue);
+    if (S60->screenCount() > 1) {
+        CWsScreenDevice *dev = S60->screenDevice(1);
+        if (dev) {
+            displayControl = static_cast<MDisplayControl *>(
+                        dev->GetInterface(MDisplayControl::ETypeId));
+            if (displayControl) {
+                displayControl->EnableDisplayChangeEvents(ETrue);
+            }
         }
     }
 #endif

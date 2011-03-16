@@ -219,7 +219,7 @@ QImage* QMeeGoLivePixmapData::lock(EGLSyncKHR fenceSync)
         return &lockedImage;
     }
 
-    lockedImage = QImage((uchar *) data, width(), height(), format);
+    lockedImage = QImage((uchar *) data, width(), height(), pitch, format);
     return &lockedImage;
 }
 

@@ -97,14 +97,21 @@ public:
     */
     static bool isRunningRuntime();
 
+    //! Enables the sending of QMeeGoSwitchEvent's when the graphicssystem switches.
+    /*!
+      An application that wishes to start receive QMeegoSwitchEvents must call this function.
+    */
+    static void enableSwitchEvents();
+
     //! Switches to meego graphics system. 
     /*!
      When running with the 'runtime' graphics system, sets the currently active 
      system to 'meego'. The window surface and all the resources are automatically
      migrated to OpenGL. Will fail if the active graphics system is not 'runtime'.
      Calling this function will emit QMeeGoSwitchEvent to the top level widgets.
-     Two events will be emitted for each switch -- one before the switch (QMeeGoSwitchEvent::WillSwitch)
-     and one after the switch (QMeeGoSwitchEvent::DidSwitch).
+     If switch events are enabled, two events will be emitted for each switch --
+     one before the switch (QMeeGoSwitchEvent::WillSwitch) and one after the
+     switch (QMeeGoSwitchEvent::DidSwitch).
     */
     static void switchToMeeGo();
 
@@ -114,9 +121,9 @@ public:
      system to 'raster'. The window surface and the graphics resources (including the 
      EGL shared image resources) are automatically migrated back to the CPU. All OpenGL 
      resources (surface, context, cache, font cache) are automaticall anihilated.
-     Calling this function will emit QMeeGoSwitchEvent to the top level widgets.
-     Two events will be emitted for each switch -- one before the switch (QMeeGoSwitchEvent::WillSwitch)
-     and one after the switch (QMeeGoSwitchEvent::DidSwitch).
+     Calling this function will emit QMeeGoSwitchEvent to the top level widgets. If switch
+     events are enabled, two events will be emitted for each switch -- one before the
+     switch (QMeeGoSwitchEvent::WillSwitch) and one after the switch (QMeeGoSwitchEvent::DidSwitch).
     */
     static void switchToRaster();
 
