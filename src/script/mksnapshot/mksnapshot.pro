@@ -6,7 +6,7 @@ QT =
 DEPENDPATH += .
 INCLUDEPATH += .
 
-CONFIG(debug, debug|release) {
+macx:CONFIG(debug, debug|release) {
     TARGET = mksnapshot_debug
     LIBS += -L../v8/ -lv8_debug
 } else {

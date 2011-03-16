@@ -16,11 +16,12 @@ isEmpty(V8SNAPSHOT) {
 }
 
 contains(V8SNAPSHOT,yes) {
-    CONFIG(debug, debug|release) {
+    macx:CONFIG(debug, debug|release) {
         v8_mksnapshot.commands = ../mksnapshot/mksnapshot_debug ${QMAKE_FILE_OUT} --logfile $$V8_GENERATED_SOURCES_DIR/snapshot.log --log-snapshot-positions
         v8_mksnapshot.output = $$V8_GENERATED_SOURCES_DIR/snapshot_debug.cpp
     } else {
         v8_mksnapshot.commands = ../mksnapshot/mksnapshot ${QMAKE_FILE_OUT}
+        CONFIG(debug, debug|release) v8_mksnapshot.commands += --logfile $$V8_GENERATED_SOURCES_DIR/snapshot.log --log-snapshot-positions
         v8_mksnapshot.output = $$V8_GENERATED_SOURCES_DIR/snapshot.cpp
     }
     DUMMY_FILE = $$PWD/../api/qscriptengine.cpp

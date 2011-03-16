@@ -16,7 +16,7 @@ include($$PWD/../v8/v8base.pri)
 INCLUDEPATH += $$PWD
 
 INCLUDEPATH += $$V8DIR/include
-CONFIG(debug, debug|release) {
+macx:CONFIG(debug, debug|release) {
     LIBS += -L. -L../v8/ -L../snapshot/ -lv8_debug -lsnapshot_debug
 } else {
     LIBS += -L. -L../v8/ -L../snapshot/ -lv8 -lsnapshot
