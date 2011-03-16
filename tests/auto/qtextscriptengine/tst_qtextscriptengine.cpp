@@ -1194,6 +1194,9 @@ void tst_QTextScriptEngine::mirroredChars_data()
 
 void tst_QTextScriptEngine::mirroredChars()
 {
+#if defined(Q_WS_MAC)
+    QSKIP("Not supported on Mac", SkipAll);
+#endif
     QFETCH(int, hintingPreference);
 
     QFont font;

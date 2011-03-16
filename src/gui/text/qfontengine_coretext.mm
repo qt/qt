@@ -128,6 +128,7 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
     QCFType<CFAttributedStringRef> attributedString = CFAttributedStringCreate(0, cfstring, attributeDict);
     QCFType<CTTypesetterRef> typeSetter;
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
     if (flags & QTextEngine::RightToLeft) {
         const void *optionKeys[] = { kCTTypesetterOptionForcedEmbeddingLevel };
         const short rtlForcedEmbeddingLevelValue = 1;
@@ -136,6 +137,7 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
                                                               &kCFCopyStringDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
         typeSetter = CTTypesetterCreateWithAttributedStringAndOptions(attributedString, options);
     } else
+#endif
         typeSetter = CTTypesetterCreateWithAttributedString(attributedString);
 
     CFRange range = {0, 0};
