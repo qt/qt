@@ -40,8 +40,8 @@
 ** $QT_END_LICENSE$
 **
 *********************************************************************</comment>
- <class>MainWindowBase</class>
- <widget class="Q3MainWindow" name="MainWindowBase">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -54,20 +54,12 @@
    <string>Qt Configuration</string>
   </property>
   <widget class="QWidget" name="widget">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>26</y>
-     <width>815</width>
-     <height>690</height>
-    </rect>
-   </property>
    <layout class="QGridLayout" name="gridLayout">
     <property name="margin">
      <number>8</number>
     </property>
     <item row="0" column="0">
-     <widget class="QTextEdit" name="helpview">
+     <widget class="QTextEdit" name="helpView">
       <property name="minimumSize">
        <size>
         <width>200</width>
@@ -80,17 +72,17 @@
      </widget>
     </item>
     <item row="0" column="1">
-     <widget class="QTabWidget" name="TabWidget3">
+     <widget class="QTabWidget" name="mainTabWidget">
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="tab1">
+      <widget class="QWidget" name="appearanceTab">
        <attribute name="title">
         <string>Appearance</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_5">
         <item row="0" column="0">
-         <widget class="QGroupBox" name="GroupBox40">
+         <widget class="QGroupBox" name="guiStyleGroup">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
             <horstretch>0</horstretch>
@@ -114,7 +106,7 @@
             <number>8</number>
            </property>
            <item>
-            <widget class="QLabel" name="gstylebuddy">
+            <widget class="QLabel" name="guiStyleLabel">
              <property name="minimumSize">
               <size>
                <width>0</width>
@@ -125,18 +117,18 @@
               <string>Select GUI &amp;Style:</string>
              </property>
              <property name="buddy">
-              <cstring>gstylecombo</cstring>
+              <cstring>guiStyleCombo</cstring>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QComboBox" name="gstylecombo"/>
+            <widget class="QComboBox" name="guiStyleCombo"/>
            </item>
           </layout>
          </widget>
         </item>
         <item row="3" column="0">
-         <widget class="QGroupBox" name="groupPreview">
+         <widget class="QGroupBox" name="previewGroup">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
             <horstretch>0</horstretch>
@@ -148,7 +140,7 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_4">
            <item row="0" column="0">
-            <widget class="QLabel" name="TextLabel1">
+            <widget class="QLabel" name="paletteLabel">
              <property name="text">
               <string>Select &amp;Palette:</string>
              </property>
@@ -196,7 +188,7 @@
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QGroupBox" name="groupAutoPalette">
+         <widget class="QGroupBox" name="buildPaletteGroup">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
             <horstretch>0</horstretch>
@@ -222,7 +214,7 @@
               <item>
                <widget class="QLabel" name="labelMainColor">
                 <property name="text">
-                 <string>&amp;3-D Effects:</string>
+                 <string>&amp;Button Background:</string>
                 </property>
                 <property name="buddy">
                  <cstring>buttonMainColor</cstring>
@@ -233,7 +225,7 @@
                <widget class="ColorButton" name="buttonMainColor" native="true"/>
               </item>
               <item>
-               <widget class="QLabel" name="labelMainColor2">
+               <widget class="QLabel" name="labelWindowColor">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
                   <horstretch>0</horstretch>
@@ -262,12 +254,12 @@
                  <number>0</number>
                 </property>
                 <property name="buddy">
-                 <cstring>buttonMainColor2</cstring>
+                 <cstring>buttonWindowColor</cstring>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="ColorButton" name="buttonMainColor2" native="true"/>
+               <widget class="ColorButton" name="buttonWindowColor" native="true"/>
               </item>
               <item>
                <spacer name="spacer">
@@ -286,7 +278,7 @@
                </spacer>
               </item>
               <item>
-               <widget class="QPushButton" name="btnAdvanced">
+               <widget class="QPushButton" name="tunePaletteButton">
                 <property name="text">
                  <string>&amp;Tune Palette...</string>
                 </property>
@@ -296,7 +288,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="labelKDENote">
+            <widget class="QLabel" name="kdeNoteLabel">
              <property name="text">
               <string>Please use the KDE Control Center to set the palette.</string>
              </property>
@@ -307,13 +299,13 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab2">
+      <widget class="QWidget" name="fontsTab">
        <attribute name="title">
         <string>Fonts</string>
        </attribute>
        <layout class="QVBoxLayout">
         <item>
-         <widget class="QGroupBox" name="GroupBox1">
+         <widget class="QGroupBox" name="defaultFontGroup">
           <property name="title">
            <string>Default Font</string>
           </property>
@@ -325,7 +317,7 @@
             <number>4</number>
            </property>
            <item row="1" column="1">
-            <widget class="QComboBox" name="stylecombo">
+            <widget class="QComboBox" name="fontStyleCombo">
              <property name="autoCompletion">
               <bool>true</bool>
              </property>
@@ -335,7 +327,7 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QComboBox" name="familycombo">
+            <widget class="QComboBox" name="fontFamilyCombo">
              <property name="autoCompletion">
               <bool>true</bool>
              </property>
@@ -345,7 +337,7 @@
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QComboBox" name="psizecombo">
+            <widget class="QComboBox" name="pointSizeCombo">
              <property name="editable">
               <bool>true</bool>
              </property>
@@ -358,37 +350,37 @@
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QLabel" name="stylebuddy">
+            <widget class="QLabel" name="fontStyleLabel">
              <property name="text">
               <string>&amp;Style:</string>
              </property>
              <property name="buddy">
-              <cstring>stylecombo</cstring>
+              <cstring>fontStyleCombo</cstring>
              </property>
             </widget>
            </item>
            <item row="2" column="0">
-            <widget class="QLabel" name="psizebuddy">
+            <widget class="QLabel" name="pointSizeLabel">
              <property name="text">
               <string>&amp;Point Size:</string>
              </property>
              <property name="buddy">
-              <cstring>psizecombo</cstring>
+              <cstring>pointSizeCombo</cstring>
              </property>
             </widget>
            </item>
            <item row="0" column="0">
-            <widget class="QLabel" name="familybuddy">
+            <widget class="QLabel" name="fontFamilyLabel">
              <property name="text">
               <string>F&amp;amily:</string>
              </property>
              <property name="buddy">
-              <cstring>familycombo</cstring>
+              <cstring>fontFamilyCombo</cstring>
              </property>
             </widget>
            </item>
            <item row="3" column="0" colspan="2">
-            <widget class="QLineEdit" name="samplelineedit">
+            <widget class="QLineEdit" name="sampleLineEdit">
              <property name="text">
               <string>Sample Text</string>
              </property>
@@ -401,7 +393,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="GroupBox2">
+         <widget class="QGroupBox" name="fontSubstitutionGroup">
           <property name="title">
            <string>Font Substitution</string>
           </property>
@@ -421,17 +413,17 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QLabel" name="famsubbuddy">
+              <widget class="QLabel" name="familySubstitutionLabel">
                <property name="text">
                 <string>S&amp;elect or Enter a Family:</string>
                </property>
                <property name="buddy">
-                <cstring>familysubcombo</cstring>
+                <cstring>familySubstitutionCombo</cstring>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QComboBox" name="familysubcombo">
+              <widget class="QComboBox" name="familySubstitutionCombo">
                <property name="editable">
                 <bool>true</bool>
                </property>
@@ -459,14 +451,14 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="TextLabel5">
+            <widget class="QLabel" name="substitutionsLabel">
              <property name="text">
               <string>Current Substitutions:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="Q3ListBox" name="sublistbox"/>
+            <widget class="QListWidget" name="substitutionsListBox"/>
            </item>
            <item>
             <layout class="QHBoxLayout">
@@ -477,21 +469,21 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QPushButton" name="PushButton2">
+              <widget class="QPushButton" name="upSubstitutionButton">
                <property name="text">
                 <string>Up</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="PushButton3">
+              <widget class="QPushButton" name="downSubstitutionButton">
                <property name="text">
                 <string>Down</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="PushButton4">
+              <widget class="QPushButton" name="removeSubstitutionButton">
                <property name="text">
                 <string>Remove</string>
                </property>
@@ -521,17 +513,17 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QLabel" name="choosebuddy">
+              <widget class="QLabel" name="chooseSubstitutionLabel">
                <property name="text">
                 <string>Select s&amp;ubstitute Family:</string>
                </property>
                <property name="buddy">
-                <cstring>choosesubcombo</cstring>
+                <cstring>chooseSubstitutionCombo</cstring>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QComboBox" name="choosesubcombo">
+              <widget class="QComboBox" name="chooseSubstitutionCombo">
                <property name="autoCompletion">
                 <bool>true</bool>
                </property>
@@ -541,7 +533,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="PushButton1">
+              <widget class="QPushButton" name="addSubstitutionButton">
                <property name="text">
                 <string>Add</string>
                </property>
@@ -554,13 +546,13 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab">
+      <widget class="QWidget" name="interfaceTab">
        <attribute name="title">
         <string>Interface</string>
        </attribute>
        <layout class="QVBoxLayout">
         <item>
-         <widget class="QGroupBox" name="GroupBox4">
+         <widget class="QGroupBox" name="feelSettingsGroup">
           <property name="title">
            <string>Feel Settings</string>
           </property>
@@ -572,7 +564,7 @@
             <number>4</number>
            </property>
            <item row="0" column="1">
-            <widget class="QSpinBox" name="dcispin">
+            <widget class="QSpinBox" name="doubleClickIntervalSpinBox">
              <property name="suffix">
               <string> ms</string>
              </property>
@@ -585,17 +577,17 @@
             </widget>
            </item>
            <item row="0" column="0">
-            <widget class="QLabel" name="dcibuddy">
+            <widget class="QLabel" name="doubleClickIntervalLabel">
              <property name="text">
               <string>&amp;Double Click Interval:</string>
              </property>
              <property name="buddy">
-              <cstring>dcispin</cstring>
+              <cstring>doubleClickIntervalSpinBox</cstring>
              </property>
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QSpinBox" name="cfispin">
+            <widget class="QSpinBox" name="cursorFlashTimeSpinBox">
              <property name="specialValueText">
               <string>No blinking</string>
              </property>
@@ -611,17 +603,17 @@
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QLabel" name="cfibuddy">
+            <widget class="QLabel" name="cursorFlashTimeLabel">
              <property name="text">
               <string>&amp;Cursor Flash Time:</string>
              </property>
              <property name="buddy">
-              <cstring>cfispin</cstring>
+              <cstring>cursorFlashTimeSpinBox</cstring>
              </property>
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QSpinBox" name="wslspin">
+            <widget class="QSpinBox" name="wheelScrollLinesSpinBox">
              <property name="suffix">
               <string> lines</string>
              </property>
@@ -634,17 +626,17 @@
             </widget>
            </item>
            <item row="2" column="0">
-            <widget class="QLabel" name="wslbuddy">
+            <widget class="QLabel" name="wheelScrollLinesLabel">
              <property name="text">
               <string>Wheel &amp;Scroll Lines:</string>
              </property>
              <property name="buddy">
-              <cstring>wslspin</cstring>
+              <cstring>wheelScrollLinesSpinBox</cstring>
              </property>
             </widget>
            </item>
            <item row="3" column="0" colspan="2">
-            <widget class="QCheckBox" name="resolvelinks">
+            <widget class="QCheckBox" name="resolveLinksCheckBox">
              <property name="text">
               <string>Resolve symlinks in URLs</string>
              </property>
@@ -654,7 +646,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="GroupBox3">
+         <widget class="QGroupBox" name="guiEffectsGroup">
           <property name="title">
            <string>GUI Effects</string>
           </property>
@@ -666,7 +658,7 @@
             <number>8</number>
            </property>
            <item>
-            <widget class="QCheckBox" name="effectcheckbox">
+            <widget class="QCheckBox" name="effectsCheckBox">
              <property name="text">
               <string>&amp;Enable</string>
              </property>
@@ -676,62 +668,53 @@
             </widget>
            </item>
            <item>
-            <widget class="Q3Frame" name="effectbase">
-             <property name="frameShape">
-              <enum>QFrame::NoFrame</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Plain</enum>
-             </property>
+            <widget class="QFrame" name="effectsFrame">
              <layout class="QGridLayout">
-              <property name="margin">
-               <number>0</number>
-              </property>
               <property name="spacing">
                <number>4</number>
               </property>
               <item row="0" column="0">
-               <widget class="QLabel" name="meffectbuddy">
+               <widget class="QLabel" name="menuEffectLabel">
                 <property name="text">
                  <string>&amp;Menu Effect:</string>
                 </property>
                 <property name="buddy">
-                 <cstring>menueffect</cstring>
+                 <cstring>menuEffectCombo</cstring>
                 </property>
                </widget>
               </item>
               <item row="1" column="0">
-               <widget class="QLabel" name="ceffectbuddy">
+               <widget class="QLabel" name="comboEffectLabel">
                 <property name="text">
                  <string>C&amp;omboBox Effect:</string>
                 </property>
                 <property name="buddy">
-                 <cstring>comboeffect</cstring>
+                 <cstring>comboEffectCombo</cstring>
                 </property>
                </widget>
               </item>
               <item row="2" column="0">
-               <widget class="QLabel" name="teffectbuddy">
+               <widget class="QLabel" name="toolTipEffectLabel">
                 <property name="text">
                  <string>&amp;ToolTip Effect:</string>
                 </property>
                 <property name="buddy">
-                 <cstring>tooltipeffect</cstring>
+                 <cstring>toolTipEffectCombo</cstring>
                 </property>
                </widget>
               </item>
               <item row="3" column="0">
-               <widget class="QLabel" name="beffectbuddy">
+               <widget class="QLabel" name="toolBoxEffectLabel">
                 <property name="text">
                  <string>Tool&amp;Box Effect:</string>
                 </property>
                 <property name="buddy">
-                 <cstring>toolboxeffect</cstring>
+                 <cstring>toolBoxEffectCombo</cstring>
                 </property>
                </widget>
               </item>
               <item row="0" column="1">
-               <widget class="QComboBox" name="menueffect">
+               <widget class="QComboBox" name="menuEffectCombo">
                 <property name="currentIndex">
                  <number>0</number>
                 </property>
@@ -756,7 +739,7 @@
                </widget>
               </item>
               <item row="1" column="1">
-               <widget class="QComboBox" name="comboeffect">
+               <widget class="QComboBox" name="comboEffectCombo">
                 <item>
                  <property name="text">
                   <string>Disable</string>
@@ -770,7 +753,7 @@
                </widget>
               </item>
               <item row="2" column="1">
-               <widget class="QComboBox" name="tooltipeffect">
+               <widget class="QComboBox" name="toolTipEffectCombo">
                 <item>
                  <property name="text">
                   <string>Disable</string>
@@ -789,7 +772,7 @@
                </widget>
               </item>
               <item row="3" column="1">
-               <widget class="QComboBox" name="toolboxeffect">
+               <widget class="QComboBox" name="toolBoxEffectCombo">
                 <item>
                  <property name="text">
                   <string>Disable</string>
@@ -809,7 +792,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="GroupBox5">
+         <widget class="QGroupBox" name="globalStrutGroup">
           <property name="title">
            <string>Global Strut</string>
           </property>
@@ -821,27 +804,27 @@
             <number>4</number>
            </property>
            <item row="0" column="0">
-            <widget class="QLabel" name="swbuddy">
+            <widget class="QLabel" name="strutWidthLabel">
              <property name="text">
               <string>Minimum &amp;Width:</string>
              </property>
              <property name="buddy">
-              <cstring>strutwidth</cstring>
+              <cstring>strutWidthSpinBox</cstring>
              </property>
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QLabel" name="shbuddy">
+            <widget class="QLabel" name="strutHeightLabel">
              <property name="text">
               <string>Minimum Hei&amp;ght:</string>
              </property>
              <property name="buddy">
-              <cstring>strutheight</cstring>
+              <cstring>strutHeightSpinBox</cstring>
              </property>
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QSpinBox" name="strutwidth">
+            <widget class="QSpinBox" name="strutWidthSpinBox">
              <property name="suffix">
               <string> pixels</string>
              </property>
@@ -851,7 +834,7 @@
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QSpinBox" name="strutheight">
+            <widget class="QSpinBox" name="strutHeightSpinBox">
              <property name="suffix">
               <string> pixels</string>
              </property>
@@ -864,7 +847,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="rtlExtensions">
+         <widget class="QCheckBox" name="rtlExtensionsCheckBox">
           <property name="text">
            <string>Enhanced support for languages written right-to-left</string>
           </property>
@@ -878,7 +861,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="inputStyle">
+         <widget class="QComboBox" name="inputStyleCombo">
           <property name="currentIndex">
            <number>0</number>
           </property>
@@ -912,7 +895,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="inputMethod">
+         <widget class="QComboBox" name="inputMethodCombo">
           <property name="currentIndex">
            <number>-1</number>
           </property>
@@ -936,13 +919,13 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab3">
+      <widget class="QWidget" name="printerTab">
        <attribute name="title">
         <string>Printer</string>
        </attribute>
        <layout class="QVBoxLayout">
         <item>
-         <widget class="QCheckBox" name="fontembeddingcheckbox">
+         <widget class="QCheckBox" name="fontEmbeddingCheckBox">
           <property name="text">
            <string>Enable Font embedding</string>
           </property>
@@ -952,7 +935,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="GroupBox10">
+         <widget class="QGroupBox" name="fontPathsGroup">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
             <horstretch>0</horstretch>
@@ -978,28 +961,28 @@
               <number>4</number>
              </property>
              <item row="1" column="0">
-              <widget class="QPushButton" name="PushButton11">
+              <widget class="QPushButton" name="upFontpathButton">
                <property name="text">
                 <string>Up</string>
                </property>
               </widget>
              </item>
              <item row="1" column="2">
-              <widget class="QPushButton" name="PushButton13">
+              <widget class="QPushButton" name="removeFontpathButton">
                <property name="text">
                 <string>Remove</string>
                </property>
               </widget>
              </item>
              <item row="1" column="1">
-              <widget class="QPushButton" name="PushButton12">
+              <widget class="QPushButton" name="downFontpathButton">
                <property name="text">
                 <string>Down</string>
                </property>
               </widget>
              </item>
              <item row="0" column="0" colspan="3">
-              <widget class="Q3ListBox" name="fontpathlistbox"/>
+              <widget class="QListWidget" name="fontpathListBox"/>
              </item>
             </layout>
            </item>
@@ -1028,28 +1011,28 @@
               </spacer>
              </item>
              <item row="2" column="2">
-              <widget class="QPushButton" name="PushButton15">
+              <widget class="QPushButton" name="addFontPathButton">
                <property name="text">
                 <string>Add</string>
                </property>
               </widget>
              </item>
              <item row="2" column="1">
-              <widget class="QPushButton" name="PushButton14">
+              <widget class="QPushButton" name="browseFontPathButton">
                <property name="text">
                 <string>Browse...</string>
                </property>
               </widget>
              </item>
              <item row="0" column="0" colspan="3">
-              <widget class="QLabel" name="TextLabel15_2">
+              <widget class="QLabel" name="browseFontPathLabel">
                <property name="text">
                 <string>Press the &lt;b&gt;Browse&lt;/b&gt; button or enter a directory and press Enter to add them to the list.</string>
                </property>
               </widget>
              </item>
              <item row="1" column="0" colspan="3">
-              <widget class="QLineEdit" name="fontpathlineedit"/>
+              <widget class="QLineEdit" name="fontPathLineEdit"/>
              </item>
             </layout>
            </item>
@@ -1058,19 +1041,19 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab4">
+      <widget class="QWidget" name="phononTab">
        <attribute name="title">
         <string>Phonon</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QGroupBox" name="groupBox_4">
+         <widget class="QGroupBox" name="aboutPhononGroup">
           <property name="title">
            <string>About Phonon</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
            <item row="0" column="0">
-            <widget class="QLabel" name="label_7">
+            <widget class="QLabel" name="phononVersionBuddyLabel">
              <property name="text">
               <string>Current Version:</string>
              </property>
@@ -1084,20 +1067,16 @@
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QLabel" name="label_5">
+            <widget class="QLabel" name="phononWebsiteBuddyLabel">
              <property name="text">
               <string>Website:</string>
              </property>
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QLabel" name="gstversionLabel_3">
+            <widget class="QLabel" name="phononWebsiteLabel">
              <property name="text">
-              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://phonon.kde.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://phonon.kde.org&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;a href=&quot;http://phonon.kde.org&quot;&gt;http://phonon.kde.org/&lt;/a&gt;</string>
              </property>
              <property name="openExternalLinks">
               <bool>true</bool>
@@ -1108,40 +1087,36 @@ p, li { white-space: pre-wrap; }
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="groupBox_3">
+         <widget class="QGroupBox" name="aboutGStreamerGroup">
           <property name="title">
            <string>About GStreamer</string>
           </property>
           <layout class="QGridLayout">
            <item row="0" column="0">
-            <widget class="QLabel" name="label_3">
+            <widget class="QLabel" name="gstVersionBuddyLabel">
              <property name="text">
               <string>Current Version:</string>
              </property>
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QLabel" name="gstversionLabel">
+            <widget class="QLabel" name="gstVersionLabel">
              <property name="text">
               <string>Not available</string>
              </property>
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QLabel" name="label_4">
+            <widget class="QLabel" name="gstWebsiteBuddyLabel">
              <property name="text">
               <string>Website:</string>
              </property>
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QLabel" name="gstversionLabel_2">
+            <widget class="QLabel" name="gstWebsiteLabel">
              <property name="text">
-              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://gstreamer.freedesktop.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://gstreamer.freedesktop.org/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;a href=&quot;http://gstreamer.freedesktop.org/&quot;&gt;http://gstreamer.freedesktop.org/&lt;/a&gt;</string>
              </property>
              <property name="openExternalLinks">
               <bool>true</bool>
@@ -1152,13 +1127,13 @@ p, li { white-space: pre-wrap; }
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="groupBox">
+         <widget class="QGroupBox" name="gstBackendGroup">
           <property name="title">
            <string>GStreamer backend settings</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
            <item row="0" column="0">
-            <widget class="QLabel" name="label">
+            <widget class="QLabel" name="audiosinkLabel">
              <property name="text">
               <string>Preferred audio sink:</string>
              </property>
@@ -1171,7 +1146,7 @@ p, li { white-space: pre-wrap; }
             <widget class="QComboBox" name="audiosinkCombo"/>
            </item>
            <item row="1" column="0">
-            <widget class="QLabel" name="label_2">
+            <widget class="QLabel" name="videomodeLabel">
              <property name="text">
               <string>Preferred render method:</string>
              </property>
@@ -1184,7 +1159,7 @@ p, li { white-space: pre-wrap; }
             <widget class="QComboBox" name="videomodeCombo"/>
            </item>
            <item row="2" column="0" colspan="2">
-            <widget class="QLabel" name="label_6">
+            <widget class="QLabel" name="gstBackendNoteLabel">
              <property name="text">
               <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1235,41 +1210,38 @@ p, li { white-space: pre-wrap; }
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar">
+  <widget class="QMenuBar" name="mainMenu">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
      <width>815</width>
-     <height>26</height>
+     <height>19</height>
     </rect>
    </property>
-   <widget class="QMenu" name="PopupMenu">
+   <widget class="QMenu" name="fileMenu">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>123</width>
-      <height>92</height>
+      <x>203</x>
+      <y>114</y>
+      <width>161</width>
+      <height>110</height>
      </rect>
     </property>
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <action name=""/>
-    <action name=""/>
-    <action name=""/>
     <addaction name="fileSaveAction"/>
     <addaction name="separator"/>
     <addaction name="fileExitAction"/>
    </widget>
-   <widget class="QMenu" name="PopupMenu_2">
+   <widget class="QMenu" name="saveMenu">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>123</width>
-      <height>90</height>
+      <x>543</x>
+      <y>98</y>
+      <width>161</width>
+      <height>106</height>
      </rect>
     </property>
     <property name="title">
@@ -1278,12 +1250,9 @@ p, li { white-space: pre-wrap; }
     <addaction name="helpAboutAction"/>
     <addaction name="helpAboutQtAction"/>
    </widget>
-   <action name=""/>
-   <action name=""/>
-   <action name=""/>
-   <addaction name="PopupMenu"/>
+   <addaction name="fileMenu"/>
    <addaction name="separator"/>
-   <addaction name="PopupMenu_2"/>
+   <addaction name="saveMenu"/>
   </widget>
   <action name="fileSaveAction">
    <property name="text">
@@ -1304,7 +1273,7 @@ p, li { white-space: pre-wrap; }
     <string>Exit</string>
    </property>
    <property name="shortcut">
-    <string/>
+    <string>Ctrl+Q</string>
    </property>
   </action>
   <action name="helpAboutAction">
@@ -1329,23 +1298,6 @@ p, li { white-space: pre-wrap; }
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Q3Frame</class>
-   <extends>QFrame</extends>
-   <header>Qt3Support/Q3Frame</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>Q3MainWindow</class>
-   <extends>QWidget</extends>
-   <header>q3mainwindow.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>Q3ListBox</class>
-   <extends>Q3Frame</extends>
-   <header>q3listbox.h</header>
-  </customwidget>
-  <customwidget>
    <class>ColorButton</class>
    <extends></extends>
    <header>colorbutton.h</header>
@@ -1357,28 +1309,80 @@ p, li { white-space: pre-wrap; }
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>helpview</tabstop>
-  <tabstop>familycombo</tabstop>
-  <tabstop>stylecombo</tabstop>
-  <tabstop>psizecombo</tabstop>
-  <tabstop>samplelineedit</tabstop>
-  <tabstop>familysubcombo</tabstop>
-  <tabstop>PushButton2</tabstop>
-  <tabstop>PushButton3</tabstop>
-  <tabstop>PushButton4</tabstop>
-  <tabstop>choosesubcombo</tabstop>
-  <tabstop>PushButton1</tabstop>
-  <tabstop>dcispin</tabstop>
-  <tabstop>cfispin</tabstop>
-  <tabstop>wslspin</tabstop>
-  <tabstop>effectcheckbox</tabstop>
-  <tabstop>menueffect</tabstop>
-  <tabstop>comboeffect</tabstop>
-  <tabstop>tooltipeffect</tabstop>
-  <tabstop>strutwidth</tabstop>
-  <tabstop>strutheight</tabstop>
-  <tabstop>sublistbox</tabstop>
+  <tabstop>helpView</tabstop>
+  <tabstop>mainTabWidget</tabstop>
+  <tabstop>guiStyleCombo</tabstop>
+  <tabstop>tunePaletteButton</tabstop>
+  <tabstop>paletteCombo</tabstop>
+  <tabstop>fontFamilyCombo</tabstop>
+  <tabstop>fontStyleCombo</tabstop>
+  <tabstop>pointSizeCombo</tabstop>
+  <tabstop>sampleLineEdit</tabstop>
+  <tabstop>familySubstitutionCombo</tabstop>
+  <tabstop>substitutionsListBox</tabstop>
+  <tabstop>upSubstitutionButton</tabstop>
+  <tabstop>downSubstitutionButton</tabstop>
+  <tabstop>removeSubstitutionButton</tabstop>
+  <tabstop>chooseSubstitutionCombo</tabstop>
+  <tabstop>addSubstitutionButton</tabstop>
+  <tabstop>doubleClickIntervalSpinBox</tabstop>
+  <tabstop>cursorFlashTimeSpinBox</tabstop>
+  <tabstop>wheelScrollLinesSpinBox</tabstop>
+  <tabstop>resolveLinksCheckBox</tabstop>
+  <tabstop>effectsCheckBox</tabstop>
+  <tabstop>menuEffectCombo</tabstop>
+  <tabstop>comboEffectCombo</tabstop>
+  <tabstop>toolTipEffectCombo</tabstop>
+  <tabstop>toolBoxEffectCombo</tabstop>
+  <tabstop>strutWidthSpinBox</tabstop>
+  <tabstop>strutHeightSpinBox</tabstop>
+  <tabstop>rtlExtensionsCheckBox</tabstop>
+  <tabstop>inputStyleCombo</tabstop>
+  <tabstop>inputMethodCombo</tabstop>
+  <tabstop>fontEmbeddingCheckBox</tabstop>
+  <tabstop>fontpathListBox</tabstop>
+  <tabstop>upFontpathButton</tabstop>
+  <tabstop>downFontpathButton</tabstop>
+  <tabstop>removeFontpathButton</tabstop>
+  <tabstop>fontPathLineEdit</tabstop>
+  <tabstop>browseFontPathButton</tabstop>
+  <tabstop>addFontPathButton</tabstop>
+  <tabstop>audiosinkCombo</tabstop>
+  <tabstop>videomodeCombo</tabstop>
  </tabstops>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>effectsCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>effectsFrame</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>417</x>
+     <y>257</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>578</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fontEmbeddingCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>fontPathsGroup</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>449</x>
+     <y>69</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>447</x>
+     <y>94</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

@@ -1043,22 +1043,26 @@ void VcprojGenerator::initPreBuildEventTools()
 void VcprojGenerator::initPostBuildEventTools()
 {
     VCConfiguration &conf = vcProject.Configuration;
-    if(!project->values("QMAKE_POST_LINK").isEmpty()) {
+    if (!project->values("QMAKE_POST_LINK").isEmpty()) {
         QStringList cmdline = VCToolBase::fixCommandLine(var("QMAKE_POST_LINK"));
         conf.postBuild.CommandLine = cmdline;
         conf.postBuild.Description = cmdline.join(QLatin1String("\r\n"));
+        conf.postBuild.ExcludedFromBuild = _False;
     }
 
     QString signature = !project->isEmpty("SIGNATURE_FILE") ? var("SIGNATURE_FILE") : var("DEFAULT_SIGNATURE");
     bool useSignature = !signature.isEmpty() && !project->isActiveConfig("staticlib") &&
                         !project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH");
-    if(useSignature)
+    if (useSignature) {
         conf.postBuild.CommandLine.prepend(
                 QLatin1String("signtool sign /F ") + signature + QLatin1String(" \"$(TargetPath)\""));
+        conf.postBuild.ExcludedFromBuild = _False;
+    }
 
-    if(!project->values("MSVCPROJ_COPY_DLL").isEmpty()) {
+    if (!project->values("MSVCPROJ_COPY_DLL").isEmpty()) {
         conf.postBuild.Description += var("MSVCPROJ_COPY_DLL_DESC");
         conf.postBuild.CommandLine += var("MSVCPROJ_COPY_DLL");
+        conf.postBuild.ExcludedFromBuild = _False;
     }
 }
 
@@ -1189,6 +1193,7 @@ void VcprojGenerator::initPreLinkEventTools()
         QStringList cmdline = VCToolBase::fixCommandLine(var("QMAKE_PRE_LINK"));
         conf.preLink.CommandLine = cmdline;
         conf.preLink.Description = cmdline.join(QLatin1String("\r\n"));
+        conf.preLink.ExcludedFromBuild = _False;
     }
 }
 
