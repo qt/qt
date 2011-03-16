@@ -342,7 +342,7 @@ void tst_qdeclarativecontext::setContextProperty()
         QDeclarativeContext ctxt(engine.rootContext());
         ctxt.setContextProperty("ctxtProp", QVariant());
 
-        QTest::ignoreMessage(QtWarningMsg, "<Unknown File>:1: TypeError: Result of expression 'ctxtProp' [undefined] is not an object.");
+        QTest::ignoreMessage(QtWarningMsg, "<Unknown File>:1: TypeError: Cannot read property 'a' of undefined");
         QObject *obj = component.create(&ctxt);
 
         QVariant v = obj->property("obj");
