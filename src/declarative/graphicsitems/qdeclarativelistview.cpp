@@ -100,13 +100,21 @@ public:
     }
     ~FxListItem() {}
     qreal position() const {
-        if (section)
-            return (view->orientation() == QDeclarativeListView::Vertical ? section->y() : section->x());
-        else
-            return (view->orientation() == QDeclarativeListView::Vertical ? item->y() : item->x());
+        if (section) {
+            if (view->orientation() == QDeclarativeListView::Vertical)
+                return section->y();
+            else
+                return (view->effectiveLayoutDirection() == Qt::RightToLeft ? -section->width()-section->x() : section->x());
+        } else {
+            return itemPosition();
+        }
     }
+
     qreal itemPosition() const {
-        return (view->orientation() == QDeclarativeListView::Vertical ? item->y() : item->x());
+        if (view->orientation() == QDeclarativeListView::Vertical)
+            return item->y();
+        else
+            return (view->effectiveLayoutDirection() == Qt::RightToLeft ? -item->width()-item->x() : item->x());
     }
     qreal size() const {
         if (section)
@@ -123,9 +131,13 @@ public:
         return 0.0;
     }
     qreal endPosition() const {
-        return (view->orientation() == QDeclarativeListView::Vertical
-                                        ? item->y() + (item->height() >= 1.0 ? item->height() : 1)
-                                        : item->x() + (item->width() >= 1.0 ? item->width() : 1)) - 1;
+        if (view->orientation() == QDeclarativeListView::Vertical) {
+            return item->y() + (item->height() >= 1.0 ? item->height() : 1) - 1;
+        } else {
+            return (view->effectiveLayoutDirection() == Qt::RightToLeft
+                    ? -item->width()-item->x() + (item->width() >= 1.0 ? item->width() : 1)
+                    : item->x() + (item->width() >= 1.0 ? item->width() : 1)) - 1;
+        }
     }
     void setPosition(qreal pos) {
         if (view->orientation() == QDeclarativeListView::Vertical) {
@@ -135,11 +147,19 @@ public:
             }
             item->setY(pos);
         } else {
-            if (section) {
-                section->setX(pos);
-                pos += section->width();
+            if (view->effectiveLayoutDirection() == Qt::RightToLeft) {
+                if (section) {
+                    section->setX(-section->width()-pos);
+                    pos += section->width();
+                }
+                item->setX(-item->width()-pos);
+            } else {
+                if (section) {
+                    section->setX(pos);
+                    pos += section->width();
+                }
+                item->setX(pos);
             }
-            item->setX(pos);
         }
     }
     void setSize(qreal size) {
@@ -168,10 +188,11 @@ class QDeclarativeListViewPrivate : public QDeclarativeFlickablePrivate
 
 public:
     QDeclarativeListViewPrivate()
-        : currentItem(0), orient(QDeclarativeListView::Vertical)
+        : currentItem(0), orient(QDeclarativeListView::Vertical), layoutDirection(Qt::LeftToRight)
         , visiblePos(0), visibleIndex(0)
         , averageSize(100.0), currentIndex(-1), requestedIndex(-1)
         , itemCount(0), highlightRangeStart(0), highlightRangeEnd(0)
+        , highlightRangeStartValid(false), highlightRangeEndValid(false)
         , highlightComponent(0), highlight(0), trackedItem(0)
         , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0)
         , sectionCriteria(0), spacing(0.0)
@@ -204,7 +225,7 @@ public:
     }
 
     FxListItem *firstVisibleItem() const {
-        const qreal pos = position();
+        const qreal pos = isRightToLeft() ? -position()-size() : position();
         for (int i = 0; i < visibleItems.count(); ++i) {
             FxListItem *item = visibleItems.at(i);
             if (item->index != -1 && item->endPosition() > pos)
@@ -214,7 +235,7 @@ public:
     }
 
     FxListItem *nextVisibleItem() const {
-        const qreal pos = position();
+        const qreal pos = isRightToLeft() ? -position()-size() : position();
         bool foundFirst = false;
         for (int i = 0; i < visibleItems.count(); ++i) {
             FxListItem *item = visibleItems.at(i);
@@ -248,23 +269,65 @@ public:
         return 0;
     }
 
+    void regenerate() {
+        Q_Q(QDeclarativeListView);
+        if (q->isComponentComplete()) {
+            if (header) {
+                if (q->scene())
+                    q->scene()->removeItem(header->item);
+                header->item->deleteLater();
+                delete header;
+                header = 0;
+            }
+            if (footer) {
+                if (q->scene())
+                    q->scene()->removeItem(footer->item);
+                footer->item->deleteLater();
+                delete footer;
+                footer = 0;
+            }
+            updateHeader();
+            updateFooter();
+            clear();
+            setPosition(0);
+            q->refill();
+            updateCurrent(currentIndex);
+        }
+    }
+
+    void mirrorChange() {
+        Q_Q(QDeclarativeListView);
+        regenerate();
+        emit q->effectiveLayoutDirectionChanged();
+    }
+
+    bool isRightToLeft() const {
+        Q_Q(const QDeclarativeListView);
+        return orient == QDeclarativeListView::Horizontal && q->effectiveLayoutDirection() == Qt::RightToLeft;
+    }
+
     qreal position() const {
         Q_Q(const QDeclarativeListView);
         return orient == QDeclarativeListView::Vertical ? q->contentY() : q->contentX();
     }
+
     void setPosition(qreal pos) {
         Q_Q(QDeclarativeListView);
-        if (orient == QDeclarativeListView::Vertical)
+        if (orient == QDeclarativeListView::Vertical) {
             q->QDeclarativeFlickable::setContentY(pos);
-        else
-            q->QDeclarativeFlickable::setContentX(pos);
+        } else {
+            if (isRightToLeft())
+                q->QDeclarativeFlickable::setContentX(-pos-size());
+            else
+                q->QDeclarativeFlickable::setContentX(pos);
+        }
     }
     qreal size() const {
         Q_Q(const QDeclarativeListView);
         return orient == QDeclarativeListView::Vertical ? q->height() : q->width();
     }
 
-    qreal startPosition() const {
+    qreal originPosition() const {
         qreal pos = 0;
         if (!visibleItems.isEmpty()) {
             pos = (*visibleItems.constBegin())->position();
@@ -274,7 +337,7 @@ public:
         return pos;
     }
 
-    qreal endPosition() const {
+    qreal lastPosition() const {
         qreal pos = 0;
         if (!visibleItems.isEmpty()) {
             int invisibleCount = visibleItems.count() - visibleIndex;
@@ -289,6 +352,14 @@ public:
             pos = model->count() * averageSize + (model->count()-1) * spacing;
         }
         return pos;
+    }
+
+    qreal startPosition() const {
+        return isRightToLeft() ? -lastPosition()-1 : originPosition();
+    }
+
+    qreal endPosition() const {
+        return isRightToLeft() ? -originPosition()-1 : lastPosition();
     }
 
     qreal positionAt(int modelIndex) const {
@@ -312,6 +383,7 @@ public:
                 else
                     idx = visibleItems.at(idx)->index;
                 int count = modelIndex - idx - 1;
+
                 return (*(--visibleItems.constEnd()))->endPosition() + spacing + count * (averageSize + spacing) + 1;
             }
         }
@@ -368,7 +440,7 @@ public:
             } else if (pos > endPos)
                 return endPos + qRound((pos - endPos) / averageSize) * averageSize;
         }
-        return qRound((pos - startPosition()) / averageSize) * averageSize + startPosition();
+        return qRound((pos - originPosition()) / averageSize) * averageSize + originPosition();
     }
 
     FxListItem *snapItemAt(qreal pos) {
@@ -484,6 +556,7 @@ public:
     QHash<QDeclarativeItem*,int> unrequestedItems;
     FxListItem *currentItem;
     QDeclarativeListView::Orientation orient;
+    Qt::LayoutDirection layoutDirection;
     qreal visiblePos;
     int visibleIndex;
     qreal averageSize;
@@ -492,6 +565,8 @@ public:
     int itemCount;
     qreal highlightRangeStart;
     qreal highlightRangeEnd;
+    bool highlightRangeStartValid;
+    bool highlightRangeEndValid;
     QDeclarativeComponent *highlightComponent;
     FxListItem *highlight;
     FxListItem *trackedItem;
@@ -669,7 +744,6 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         if (visibleItems.at(i)->index != -1)
             modelIndex = visibleItems.at(i)->index + 1;
     }
-
     bool changed = false;
     FxListItem *item = 0;
     qreal pos = itemEnd + 1;
@@ -815,8 +889,12 @@ void QDeclarativeListViewPrivate::updateUnrequestedPositions()
                 if (item->y() + item->height() > pos && item->y() < pos + q->height())
                     item->setY(positionAt(*it));
             } else {
-                if (item->x() + item->width() > pos && item->x() < pos + q->width())
-                    item->setX(positionAt(*it));
+                if (item->x() + item->width() > pos && item->x() < pos + q->width()) {
+                    if (isRightToLeft())
+                        item->setX(-positionAt(*it)-item->width());
+                    else
+                        item->setX(positionAt(*it));
+                }
             }
         }
     }
@@ -907,7 +985,9 @@ void QDeclarativeListViewPrivate::updateHighlight()
         createHighlight();
     if (currentItem && autoHighlight && highlight && !movingHorizontally && !movingVertically) {
         // auto-update highlight
-        highlightPosAnimator->to = currentItem->itemPosition();
+        highlightPosAnimator->to = isRightToLeft()
+                ? -currentItem->itemPosition()-currentItem->itemSize()
+                : currentItem->itemPosition();
         highlightSizeAnimator->to = currentItem->itemSize();
         if (orient == QDeclarativeListView::Vertical) {
             if (highlight->item->width() == 0)
@@ -1125,7 +1205,7 @@ void QDeclarativeListViewPrivate::updateFooter()
     }
     if (footer) {
         if (visibleItems.count()) {
-            qreal endPos = endPosition() + 1;
+            qreal endPos = lastPosition() + 1;
             if (lastVisibleIndex() == model->count()-1) {
                 footer->setPosition(endPos);
             } else {
@@ -1165,7 +1245,7 @@ void QDeclarativeListViewPrivate::updateHeader()
     }
     if (header) {
         if (visibleItems.count()) {
-            qreal startPos = startPosition();
+            qreal startPos = originPosition();
             if (visibleIndex == 0) {
                 header->setPosition(startPos - header->size());
             } else {
@@ -1200,14 +1280,30 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
     correctFlick = false;
     fixupMode = moveReason == Mouse ? fixupMode : Immediate;
 
-    if (currentItem && haveHighlightRange && highlightRange == QDeclarativeListView::StrictlyEnforceRange) {
+    qreal highlightStart;
+    qreal highlightEnd;
+    qreal viewPos;
+    if (isRightToLeft()) {
+        // Handle Right-To-Left exceptions
+        viewPos = -position()-size();
+        highlightStart = highlightRangeStartValid ? size() - highlightRangeEnd : highlightRangeStart;
+        highlightEnd = highlightRangeEndValid ? size() - highlightRangeStart : highlightRangeEnd;
+    } else {
+        viewPos = position();
+        highlightStart = highlightRangeStart;
+        highlightEnd = highlightRangeEnd;
+    }
+
+    if (currentItem && haveHighlightRange && highlightRange == QDeclarativeListView::StrictlyEnforceRange
+            && moveReason != QDeclarativeListViewPrivate::SetIndex) {
         updateHighlight();
         qreal pos = currentItem->itemPosition();
-        qreal viewPos = position();
-        if (viewPos < pos + currentItem->itemSize() - highlightRangeEnd)
-            viewPos = pos + currentItem->itemSize() - highlightRangeEnd;
-        if (viewPos > pos - highlightRangeStart)
-            viewPos = pos - highlightRangeStart;
+        if (viewPos < pos + currentItem->itemSize() - highlightEnd)
+            viewPos = pos + currentItem->itemSize() - highlightEnd;
+        if (viewPos > pos - highlightStart)
+            viewPos = pos - highlightStart;
+        if (isRightToLeft())
+            viewPos = -viewPos-size();
 
         timeline.reset(data.move);
         if (viewPos != position()) {
@@ -1219,17 +1315,26 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
             }
         }
         vTime = timeline.time();
-    } else if (snapMode != QDeclarativeListView::NoSnap) {
-        FxListItem *topItem = snapItemAt(position()+highlightRangeStart);
-        FxListItem *bottomItem = snapItemAt(position()+highlightRangeEnd);
+    } else if (snapMode != QDeclarativeListView::NoSnap && moveReason != QDeclarativeListViewPrivate::SetIndex) {
+        qreal tempPosition = isRightToLeft() ? -position()-size() : position();
+        FxListItem *topItem = snapItemAt(tempPosition+highlightStart);
+        FxListItem *bottomItem = snapItemAt(tempPosition+highlightEnd);
         qreal pos;
-        if (topItem) {
-            if (topItem->index == 0 && header && position()+highlightRangeStart < header->position()+header->size()/2)
-                pos = header->position() - highlightRangeStart;
+        bool isInBounds = -position() > maxExtent && -position() < minExtent;
+        if (topItem && isInBounds) {
+            if (topItem->index == 0 && header && tempPosition+highlightStart < header->position()+header->size()/2) {
+                pos = isRightToLeft() ? - header->position() + highlightStart - size() : header->position() - highlightStart;
+            } else {
+                if (isRightToLeft())
+                    pos = qMax(qMin(-topItem->position() + highlightStart - size(), -maxExtent), -minExtent);
+                else
+                    pos = qMax(qMin(topItem->position() - highlightStart, -maxExtent), -minExtent);
+            }
+        } else if (bottomItem && isInBounds) {
+            if (isRightToLeft())
+                pos = qMax(qMin(-bottomItem->position() + highlightStart - size(), -maxExtent), -minExtent);
             else
-                pos = qMax(qMin(topItem->position() - highlightRangeStart, -maxExtent), -minExtent);
-        } else if (bottomItem) {
-           pos = qMax(qMin(bottomItem->position() - highlightRangeStart, -maxExtent), -minExtent);
+                pos = qMax(qMin(bottomItem->position() - highlightStart, -maxExtent), -minExtent);
         } else {
             QDeclarativeFlickablePrivate::fixup(data, minExtent, maxExtent);
             return;
@@ -1265,12 +1370,13 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
         return;
     }
     qreal maxDistance = 0;
+    qreal dataValue = isRightToLeft() ? -data.move.value()+size() : data.move.value();
     // -ve velocity means list is moving up/left
     if (velocity > 0) {
         if (data.move.value() < minExtent) {
             if (snapMode == QDeclarativeListView::SnapOneItem) {
-                if (FxListItem *item = firstVisibleItem())
-                    maxDistance = qAbs(item->position() + data.move.value());
+                if (FxListItem *item = isRightToLeft() ? nextVisibleItem() : firstVisibleItem())
+                    maxDistance = qAbs(item->position() + dataValue);
             } else {
                 maxDistance = qAbs(minExtent - data.move.value());
             }
@@ -1280,8 +1386,8 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     } else {
         if (data.move.value() > maxExtent) {
             if (snapMode == QDeclarativeListView::SnapOneItem) {
-                if (FxListItem *item = nextVisibleItem())
-                    maxDistance = qAbs(item->position() + data.move.value());
+                if (FxListItem *item = isRightToLeft() ? firstVisibleItem() : nextVisibleItem())
+                    maxDistance = qAbs(item->position() + dataValue);
             } else {
                 maxDistance = qAbs(maxExtent - data.move.value());
             }
@@ -1289,7 +1395,10 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
         if (snapMode == QDeclarativeListView::NoSnap && highlightRange != QDeclarativeListView::StrictlyEnforceRange)
             data.flickTarget = maxExtent;
     }
+
     bool overShoot = boundsBehavior == QDeclarativeFlickable::DragAndOvershootBounds;
+    qreal highlightStart = isRightToLeft() && highlightRangeStartValid ? size()-highlightRangeEnd : highlightRangeStart;
+
     if (maxDistance > 0 || overShoot) {
         // These modes require the list to stop exactly on an item boundary.
         // The initial flick will estimate the boundary to stop on.
@@ -1314,7 +1423,9 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             if (v > 0)
                 dist = -dist;
             if ((maxDistance > 0.0 && v2 / (2.0f * maxDistance) < accel) || snapMode == QDeclarativeListView::SnapOneItem) {
-                data.flickTarget = -snapPosAt(-(data.move.value() - highlightRangeStart) + dist) + highlightRangeStart;
+                qreal distTemp = isRightToLeft() ? -dist : dist;
+                data.flickTarget = -snapPosAt(-(dataValue - highlightStart) + distTemp) + highlightStart;
+                data.flickTarget = isRightToLeft() ? -data.flickTarget+size() : data.flickTarget;
                 if (overShoot) {
                     if (data.flickTarget >= minExtent) {
                         overshootDist = overShootDistance(v, vSize);
@@ -1347,6 +1458,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
                     data.flickTarget -= overshootDist;
                 }
             }
+
             timeline.reset(data.move);
             timeline.accel(data.move, v, accel, maxDistance + overshootDist);
             timeline.callback(QDeclarativeTimeLineCallback(&data.move, fixupCallback, this));
@@ -1366,8 +1478,11 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
         } else {
             // reevaluate the target boundary.
             qreal newtarget = data.flickTarget;
-            if (snapMode != QDeclarativeListView::NoSnap || highlightRange == QDeclarativeListView::StrictlyEnforceRange)
-                newtarget = -snapPosAt(-(data.flickTarget - highlightRangeStart)) + highlightRangeStart;
+            if (snapMode != QDeclarativeListView::NoSnap || highlightRange == QDeclarativeListView::StrictlyEnforceRange) {
+                qreal tempFlickTarget = isRightToLeft() ? -data.flickTarget+size() : data.flickTarget;
+                newtarget = -snapPosAt(-(tempFlickTarget - highlightStart)) + highlightStart;
+                newtarget = isRightToLeft() ? -newtarget+size() : newtarget;
+            }
             if (velocity < 0 && newtarget <= maxExtent)
                 newtarget = maxExtent - overshootDist;
             else if (velocity > 0 && newtarget >= minExtent)
@@ -1385,6 +1500,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
                 fixup(data, minExtent, maxExtent);
                 return;
             }
+
             timeline.reset(data.move);
             timeline.accelDistance(data.move, v, -dist);
             timeline.callback(QDeclarativeTimeLineCallback(&data.move, fixupCallback, this));
@@ -1883,10 +1999,21 @@ qreal QDeclarativeListView::preferredHighlightBegin() const
 void QDeclarativeListView::setPreferredHighlightBegin(qreal start)
 {
     Q_D(QDeclarativeListView);
+    d->highlightRangeStartValid = true;
     if (d->highlightRangeStart == start)
         return;
     d->highlightRangeStart = start;
     d->haveHighlightRange = d->highlightRange != NoHighlightRange && d->highlightRangeStart <= d->highlightRangeEnd;
+    emit preferredHighlightBeginChanged();
+}
+
+void QDeclarativeListView::resetPreferredHighlightBegin()
+{
+    Q_D(QDeclarativeListView);
+    d->highlightRangeStartValid = false;
+    if (d->highlightRangeStart == 0)
+        return;
+    d->highlightRangeStart = 0;
     emit preferredHighlightBeginChanged();
 }
 
@@ -1899,10 +2026,21 @@ qreal QDeclarativeListView::preferredHighlightEnd() const
 void QDeclarativeListView::setPreferredHighlightEnd(qreal end)
 {
     Q_D(QDeclarativeListView);
+    d->highlightRangeEndValid = true;
     if (d->highlightRangeEnd == end)
         return;
     d->highlightRangeEnd = end;
     d->haveHighlightRange = d->highlightRange != NoHighlightRange && d->highlightRangeStart <= d->highlightRangeEnd;
+    emit preferredHighlightEndChanged();
+}
+
+void QDeclarativeListView::resetPreferredHighlightEnd()
+{
+    Q_D(QDeclarativeListView);
+    d->highlightRangeEndValid = false;
+    if (d->highlightRangeEnd == 0)
+        return;
+    d->highlightRangeEnd = 0;
     emit preferredHighlightEndChanged();
 }
 
@@ -1984,12 +2122,60 @@ void QDeclarativeListView::setOrientation(QDeclarativeListView::Orientation orie
             setContentHeight(-1);
             setFlickableDirection(HorizontalFlick);
         }
-        d->clear();
-        d->setPosition(0);
-        refill();
+        d->regenerate();
         emit orientationChanged();
-        d->updateCurrent(d->currentIndex);
     }
+}
+
+/*!
+  \qmlproperty enumeration ListView::layoutDirection
+  This property holds the layout direction of the horizontal list.
+
+  Possible values:
+
+  \list
+  \o Qt.LeftToRight (default) - Items will be laid out from left to right.
+  \o Qt.RightToLeft - Items will be laid out from right to let.
+  \endlist
+
+  \sa ListView::effectiveLayoutDirection
+*/
+
+Qt::LayoutDirection QDeclarativeListView::layoutDirection() const
+{
+    Q_D(const QDeclarativeListView);
+    return d->layoutDirection;
+}
+
+void QDeclarativeListView::setLayoutDirection(Qt::LayoutDirection layoutDirection)
+{
+    Q_D(QDeclarativeListView);
+    if (d->layoutDirection != layoutDirection) {
+        d->layoutDirection = layoutDirection;
+        d->regenerate();
+        emit layoutDirectionChanged();
+        emit effectiveLayoutDirectionChanged();
+    }
+}
+
+/*!
+    \qmlproperty enumeration ListView::effectiveLayoutDirection
+    This property holds the effective layout direction of the horizontal list.
+
+    When using the attached property \l {LayoutMirroring::enabled}{LayoutMirroring::enabled} for locale layouts,
+    the visual layout direction of the horizontal list will be mirrored. However, the
+    property \l {ListView::layoutDirection}{layoutDirection} will remain unchanged.
+
+    \sa ListView::layoutDirection, {LayoutMirroring}{LayoutMirroring}
+*/
+
+Qt::LayoutDirection QDeclarativeListView::effectiveLayoutDirection() const
+{
+    Q_D(const QDeclarativeListView);
+    if (d->effectiveLayoutMirror)
+        return d->layoutDirection == Qt::RightToLeft ? Qt::LeftToRight : Qt::RightToLeft;
+    else
+        return d->layoutDirection;
 }
 
 /*!
@@ -2363,11 +2549,23 @@ void QDeclarativeListView::viewportMoved()
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange && d->highlight) {
             // reposition highlight
             qreal pos = d->highlight->position();
-            qreal viewPos = d->position();
-            if (pos > viewPos + d->highlightRangeEnd - d->highlight->size())
-                pos = viewPos + d->highlightRangeEnd - d->highlight->size();
-            if (pos < viewPos + d->highlightRangeStart)
-                pos = viewPos + d->highlightRangeStart;
+            qreal viewPos;
+            qreal highlightStart;
+            qreal highlightEnd;
+            if (d->isRightToLeft()) {
+                // Handle Right-To-Left exceptions
+                viewPos = -d->position()-d->size();
+                highlightStart = d->highlightRangeStartValid ? d->size()-d->highlightRangeEnd : d->highlightRangeStart;
+                highlightEnd = d->highlightRangeEndValid ? d->size()-d->highlightRangeStart : d->highlightRangeEnd;
+            } else {
+                viewPos = d->position();
+                highlightStart = d->highlightRangeStart;
+                highlightEnd = d->highlightRangeEnd;
+            }
+            if (pos > viewPos + highlightEnd - d->highlight->size())
+                pos = viewPos + highlightEnd - d->highlight->size();
+            if (pos < viewPos + highlightStart)
+                pos = viewPos + highlightStart;
             d->highlightPosAnimator->stop();
             d->highlight->setPosition(qRound(pos));
 
@@ -2405,13 +2603,15 @@ void QDeclarativeListView::viewportMoved()
                 if ((minX - d->hData.move.value() < width()/2 || d->hData.flickTarget - d->hData.move.value() < width()/2)
                     && minX != d->hData.flickTarget)
                     d->flickX(-d->hData.smoothVelocity.value());
-                d->bufferMode = QDeclarativeListViewPrivate::BufferBefore;
+                d->bufferMode = d->isRightToLeft()
+                        ? QDeclarativeListViewPrivate::BufferAfter : QDeclarativeListViewPrivate::BufferBefore;
             } else if (d->hData.velocity < 0) {
                 const qreal maxX = maxXExtent();
                 if ((d->hData.move.value() - maxX < width()/2 || d->hData.move.value() - d->hData.flickTarget < width()/2)
                     && maxX != d->hData.flickTarget)
                     d->flickX(-d->hData.smoothVelocity.value());
-                d->bufferMode = QDeclarativeListViewPrivate::BufferAfter;
+                d->bufferMode = d->isRightToLeft()
+                        ? QDeclarativeListViewPrivate::BufferBefore : QDeclarativeListViewPrivate::BufferAfter;
             }
         }
         d->inFlickCorrection = false;
@@ -2449,7 +2649,8 @@ qreal QDeclarativeListView::maxYExtent() const
         return height();
     if (d->maxExtentDirty) {
         if (!d->model || !d->model->count()) {
-            d->maxExtent = 0;
+            d->maxExtent = d->header ? -d->header->size() : 0;
+            d->maxExtent += height();
         } else if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
             d->maxExtent = -(d->positionAt(d->model->count()-1) - d->highlightRangeStart);
             if (d->highlightRangeEnd != d->highlightRangeStart)
@@ -2474,11 +2675,34 @@ qreal QDeclarativeListView::minXExtent() const
         return QDeclarativeFlickable::minXExtent();
     if (d->minExtentDirty) {
         d->minExtent = -d->startPosition();
-        if (d->header)
-            d->minExtent += d->header->size();
+
+        qreal highlightStart;
+        qreal highlightEnd;
+        qreal endPositionFirstItem = 0;
+        if (d->isRightToLeft()) {
+            if (d->model && d->model->count())
+                endPositionFirstItem = d->positionAt(d->model->count()-1);
+            else if (d->header)
+                d->minExtent += d->header->size();
+            highlightStart = d->highlightRangeStartValid
+                    ? d->highlightRangeStart - (d->lastPosition()-endPositionFirstItem)
+                    : d->size() - (d->lastPosition()-endPositionFirstItem);
+            highlightEnd = d->highlightRangeEndValid ? d->highlightRangeEnd : d->size();
+            if (d->footer)
+                d->minExtent += d->footer->size();
+            qreal maxX = maxXExtent();
+            if (d->minExtent < maxX)
+                d->minExtent = maxX;
+        } else {
+            endPositionFirstItem = d->endPositionAt(0);
+            highlightStart = d->highlightRangeStart;
+            highlightEnd = d->highlightRangeEnd;
+            if (d->header && d->visibleItems.count())
+                d->minExtent += d->header->size();
+        }
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
-            d->minExtent += d->highlightRangeStart;
-            d->minExtent = qMax(d->minExtent, -(d->endPositionAt(0) - d->highlightRangeEnd + 1));
+            d->minExtent += highlightStart;
+            d->minExtent = qMax(d->minExtent, -(endPositionFirstItem - highlightEnd + 1));
         }
         d->minExtentDirty = false;
     }
@@ -2492,23 +2716,46 @@ qreal QDeclarativeListView::maxXExtent() const
     if (d->orient == QDeclarativeListView::Vertical)
         return width();
     if (d->maxExtentDirty) {
+        qreal highlightStart;
+        qreal highlightEnd;
+        qreal lastItemPosition = 0;
+        d->maxExtent = 0;
+        if (d->isRightToLeft()) {
+            highlightStart = d->highlightRangeStartValid ? d->highlightRangeEnd : d->size();
+            highlightEnd = d->highlightRangeEndValid ? d->highlightRangeStart : d->size();
+            lastItemPosition = d->endPosition();
+        } else {
+            highlightStart = d->highlightRangeStart;
+            highlightEnd = d->highlightRangeEnd;
+            if (d->model && d->model->count())
+                lastItemPosition = d->positionAt(d->model->count()-1);
+        }
         if (!d->model || !d->model->count()) {
-            d->maxExtent = 0;
+            if (!d->isRightToLeft())
+                d->maxExtent = d->header ? -d->header->size() : 0;
+            d->maxExtent += width();
         } else if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
-            d->maxExtent = -(d->positionAt(d->model->count()-1) - d->highlightRangeStart);
-            if (d->highlightRangeEnd != d->highlightRangeStart)
-                d->maxExtent = qMin(d->maxExtent, -(d->endPosition() - d->highlightRangeEnd + 1));
+            d->maxExtent = -(lastItemPosition - highlightStart);
+            if (highlightEnd != highlightStart) {
+                d->maxExtent = d->isRightToLeft()
+                        ? qMax(d->maxExtent, -(d->endPosition() - highlightEnd + 1))
+                        : qMin(d->maxExtent, -(d->endPosition() - highlightEnd + 1));
+            }
         } else {
             d->maxExtent = -(d->endPosition() - width() + 1);
         }
-        if (d->footer)
-            d->maxExtent -= d->footer->size();
-        qreal minX = minXExtent();
-        if (d->maxExtent > minX)
-            d->maxExtent = minX;
+        if (d->isRightToLeft()) {
+            if (d->header && d->visibleItems.count())
+                d->maxExtent -= d->header->size();
+        } else {
+            if (d->footer)
+                d->maxExtent -= d->footer->size();
+            qreal minX = minXExtent();
+            if (d->maxExtent > minX)
+                d->maxExtent = minX;
+        }
         d->maxExtentDirty = false;
     }
-
     return d->maxExtent;
 }
 
@@ -2520,7 +2767,8 @@ void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
         return;
 
     if (d->model && d->model->count() && d->interactive) {
-        if ((d->orient == QDeclarativeListView::Horizontal && event->key() == Qt::Key_Left)
+        if ((!d->isRightToLeft() && event->key() == Qt::Key_Left)
+                    || (d->orient == QDeclarativeListView::Horizontal && d->isRightToLeft() && event->key() == Qt::Key_Right)
                     || (d->orient == QDeclarativeListView::Vertical && event->key() == Qt::Key_Up)) {
             if (currentIndex() > 0 || (d->wrap && !event->isAutoRepeat())) {
                 decrementCurrentIndex();
@@ -2530,7 +2778,8 @@ void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
                 event->accept();
                 return;
             }
-        } else if ((d->orient == QDeclarativeListView::Horizontal && event->key() == Qt::Key_Right)
+        } else if ((!d->isRightToLeft() && event->key() == Qt::Key_Right)
+                    || (d->orient == QDeclarativeListView::Horizontal && d->isRightToLeft() && event->key() == Qt::Key_Left)
                     || (d->orient == QDeclarativeListView::Vertical && event->key() == Qt::Key_Down)) {
             if (currentIndex() < d->model->count() - 1 || (d->wrap && !event->isAutoRepeat())) {
                 incrementCurrentIndex();
@@ -2552,6 +2801,11 @@ void QDeclarativeListView::geometryChanged(const QRectF &newGeometry,
     Q_D(QDeclarativeListView);
     d->maxExtentDirty = true;
     d->minExtentDirty = true;
+    if (d->isRightToLeft() && d->orient == Qt::Horizontal) {
+        // maintain position relative to the right edge
+        int dx = newGeometry.width() - oldGeometry.width();
+        setContentX(contentX() - dx);
+    }
     QDeclarativeFlickable::geometryChanged(newGeometry, oldGeometry);
 }
 
@@ -2607,9 +2861,14 @@ void QDeclarativeListViewPrivate::positionViewAtIndex(int index, int mode)
 
     if (layoutScheduled)
         layout();
-    qreal pos = position();
+    qreal pos = isRightToLeft() ? -position() - size() : position();
     FxListItem *item = visibleItem(idx);
-    qreal maxExtent = orient == QDeclarativeListView::Vertical ? -q->maxYExtent() : -q->maxXExtent();
+    qreal maxExtent;
+    if (orient == QDeclarativeListView::Vertical)
+        maxExtent = -q->maxYExtent();
+    else
+        maxExtent = isRightToLeft() ? q->minXExtent()-size(): -q->maxXExtent();
+
     if (!item) {
         int itemPos = positionAt(idx);
         // save the currently visible items in case any of them end up visible again
@@ -2652,7 +2911,12 @@ void QDeclarativeListViewPrivate::positionViewAtIndex(int index, int mode)
                 pos = itemPos;
         }
         pos = qMin(pos, maxExtent);
-        qreal minExtent = orient == QDeclarativeListView::Vertical ? -q->minYExtent() : -q->minXExtent();
+        qreal minExtent;
+        if (orient == QDeclarativeListView::Vertical) {
+            minExtent = -q->minYExtent();
+        } else {
+            minExtent = isRightToLeft() ? q->maxXExtent()-size(): -q->minXExtent();
+        }
         pos = qMax(pos, minExtent);
         moveReason = QDeclarativeListViewPrivate::Other;
         q->cancelFlick();
@@ -2810,7 +3074,10 @@ void QDeclarativeListView::updateSections()
 void QDeclarativeListView::refill()
 {
     Q_D(QDeclarativeListView);
-    d->refill(d->position(), d->position()+d->size()-1);
+    if (d->isRightToLeft())
+        d->refill(-d->position()-d->size()+1, -d->position());
+    else
+        d->refill(d->position(), d->position()+d->size()-1);
 }
 
 void QDeclarativeListView::trackedPositionChanged()
@@ -2825,26 +3092,37 @@ void QDeclarativeListView::trackedPositionChanged()
             trackedPos -= d->currentItem->sectionSize();
             trackedSize += d->currentItem->sectionSize();
         }
-        const qreal viewPos = d->position();
+        qreal viewPos;
+        qreal highlightStart;
+        qreal highlightEnd;
+        if (d->isRightToLeft()) {
+            viewPos = -d->position()-d->size();
+            highlightStart = d->highlightRangeStartValid ? d->size()-d->highlightRangeEnd : d->highlightRangeStart;
+            highlightEnd = d->highlightRangeEndValid ? d->size()-d->highlightRangeStart : d->highlightRangeEnd;
+        } else {
+            viewPos = d->position();
+            highlightStart = d->highlightRangeStart;
+            highlightEnd = d->highlightRangeEnd;
+        }
         qreal pos = viewPos;
         if (d->haveHighlightRange) {
             if (d->highlightRange == StrictlyEnforceRange) {
-                if (trackedPos > pos + d->highlightRangeEnd - d->trackedItem->size())
-                    pos = trackedPos - d->highlightRangeEnd + d->trackedItem->size();
-                if (trackedPos < pos + d->highlightRangeStart)
-                    pos = trackedPos - d->highlightRangeStart;
+                if (trackedPos > pos + highlightEnd - d->trackedItem->size())
+                    pos = trackedPos - highlightEnd + d->trackedItem->size();
+                if (trackedPos < pos + highlightStart)
+                    pos = trackedPos - highlightStart;
             } else {
-                if (trackedPos < d->startPosition() + d->highlightRangeStart) {
+                if (trackedPos < d->startPosition() + highlightStart) {
                     pos = d->startPosition();
-                } else if (d->trackedItem->endPosition() > d->endPosition() - d->size() + d->highlightRangeEnd) {
+                } else if (d->trackedItem->endPosition() > d->endPosition() - d->size() + highlightEnd) {
                     pos = d->endPosition() - d->size() + 1;
                     if (pos < d->startPosition())
                         pos = d->startPosition();
                 } else {
-                    if (trackedPos < viewPos + d->highlightRangeStart) {
-                        pos = trackedPos - d->highlightRangeStart;
-                    } else if (trackedPos > viewPos + d->highlightRangeEnd - trackedSize) {
-                        pos = trackedPos - d->highlightRangeEnd + trackedSize;
+                    if (trackedPos < viewPos + highlightStart) {
+                        pos = trackedPos - highlightStart;
+                    } else if (trackedPos > viewPos + highlightEnd - trackedSize) {
+                        pos = trackedPos - highlightEnd + trackedSize;
                     }
                 }
             }
@@ -2881,7 +3159,9 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
     d->updateUnrequestedIndexes();
     d->moveReason = QDeclarativeListViewPrivate::Other;
 
+    qreal tempPos = d->isRightToLeft() ? -d->position()-d->size() : d->position();
     int index = d->visibleItems.count() ? d->mapFromModel(modelIndex) : 0;
+
     if (index < 0) {
         int i = d->visibleItems.count() - 1;
         while (i > 0 && d->visibleItems.at(i)->index == -1)
@@ -2890,7 +3170,7 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
             // there are no visible items except items marked for removal
             index = d->visibleItems.count();
         } else if (d->visibleItems.at(i)->index + 1 == modelIndex
-            && d->visibleItems.at(i)->endPosition() < d->buffer+d->position()+d->size()-1) {
+            && d->visibleItems.at(i)->endPosition() < d->buffer+tempPos+d->size()-1) {
             // Special case of appending an item to the model.
             index = d->visibleItems.count();
         } else {
@@ -2935,7 +3215,7 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
         // Insert items before the visible item.
         int insertionIdx = index;
         int i = 0;
-        int from = d->position() - d->buffer;
+        int from = tempPos - d->buffer;
         for (i = count-1; i >= 0 && pos > from; --i) {
             if (!addedVisible) {
                 d->scheduleLayout();
@@ -2965,7 +3245,7 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
         }
     } else {
         int i = 0;
-        int to = d->buffer+d->position()+d->size()-1;
+        int to = d->buffer+tempPos+d->size()-1;
         for (i = 0; i < count && pos <= to; ++i) {
             if (!addedVisible) {
                 d->scheduleLayout();
@@ -3241,11 +3521,8 @@ void QDeclarativeListView::itemsChanged(int, int)
 void QDeclarativeListView::modelReset()
 {
     Q_D(QDeclarativeListView);
-    d->clear();
-    d->setPosition(0);
-    refill();
     d->moveReason = QDeclarativeListViewPrivate::SetIndex;
-    d->updateCurrent(d->currentIndex);
+    d->regenerate();
     if (d->highlight && d->currentItem) {
         if (d->autoHighlight)
             d->highlight->setPosition(d->currentItem->position());
@@ -3261,10 +3538,14 @@ void QDeclarativeListView::createdItem(int index, QDeclarativeItem *item)
     if (d->requestedIndex != index) {
         item->setParentItem(contentItem());
         d->unrequestedItems.insert(item, index);
-        if (d->orient == QDeclarativeListView::Vertical)
+        if (d->orient == QDeclarativeListView::Vertical) {
             item->setY(d->positionAt(index));
-        else
-            item->setX(d->positionAt(index));
+        } else {
+            if (d->isRightToLeft())
+                item->setX(-d->positionAt(index)-item->width());
+            else
+                item->setX(d->positionAt(index));
+        }
     }
 }
 

@@ -231,9 +231,18 @@ void QDeclarativeAnimatedImage::load()
 {
     Q_D(QDeclarativeAnimatedImage);
 
+    QDeclarativeImageBase::Status oldStatus = d->status;
+    qreal oldProgress = d->progress;
+
     if (d->url.isEmpty()) {
         delete d->_movie;
+        d->setPixmap(QPixmap());
+        d->progress = 0;
         d->status = Null;
+        if (d->status != oldStatus)
+            emit statusChanged(d->status);
+        if (d->progress != oldProgress)
+            emit progressChanged(d->progress);
     } else {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
         QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(d->url);
@@ -245,7 +254,8 @@ void QDeclarativeAnimatedImage::load()
                 delete d->_movie;
                 d->_movie = 0;
                 d->status = Error;
-                emit statusChanged(d->status);
+                if (d->status != oldStatus)
+                    emit statusChanged(d->status);
                 return;
             }
             connect(d->_movie, SIGNAL(stateChanged(QMovie::MovieState)),
@@ -262,20 +272,25 @@ void QDeclarativeAnimatedImage::load()
             d->setPixmap(d->_movie->currentPixmap());
             d->status = Ready;
             d->progress = 1.0;
-            emit statusChanged(d->status);
-            emit sourceChanged(d->url);
-            emit progressChanged(d->progress);
+            if (d->status != oldStatus)
+                emit statusChanged(d->status);
+            if (d->progress != oldProgress)
+                emit progressChanged(d->progress);
             return;
         }
 #endif
         d->status = Loading;
+        d->progress = 0;
+        emit statusChanged(d->status);
+        emit progressChanged(d->progress);
         QNetworkRequest req(d->url);
         req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
         d->reply = qmlEngine(this)->networkAccessManager()->get(req);
         QObject::connect(d->reply, SIGNAL(finished()),
                          this, SLOT(movieRequestFinished()));
+        QObject::connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
+                         this, SLOT(requestProgress(qint64,qint64)));
     }
-    emit statusChanged(d->status);
 }
 
 #define ANIMATEDIMAGE_MAXIMUM_REDIRECT_RECURSION 16

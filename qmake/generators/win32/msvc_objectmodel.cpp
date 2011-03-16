@@ -857,11 +857,11 @@ bool VCCLCompilerTool::parseOption(const char* option)
             break;
         case 'X':
             UsePrecompiledHeader = pchGenerateAuto;
-            PrecompiledHeaderFile = option+3;
+            PrecompiledHeaderThrough = option+3;
             break;
         case 'c':
             UsePrecompiledHeader = pchCreateUsingSpecific;
-            PrecompiledHeaderFile = option+3;
+            PrecompiledHeaderThrough = option+3;
             break;
         case 'd':
         case 'l':
@@ -869,7 +869,7 @@ bool VCCLCompilerTool::parseOption(const char* option)
             break;
         case 'u':
             UsePrecompiledHeader = pchUseUsingSpecific;
-            PrecompiledHeaderFile = option+3;
+            PrecompiledHeaderThrough = option+3;
             break;
         default:
             found = false; break;
@@ -2104,7 +2104,7 @@ void VCFilter::modifyPCHstage(QString str)
             break;
         }
     }
-    bool isHFile = str.endsWith(".h") && (str == Project->precompH);
+    bool isHFile = Option::hasFileExtension(str, Option::h_ext) && (str == Project->precompH);
     bool isCPPFile = pchThroughSourceFile && (str == Project->precompCPP);
 
     if(!isCFile && !isHFile && !isCPPFile)

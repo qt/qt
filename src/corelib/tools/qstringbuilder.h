@@ -270,10 +270,11 @@ template <> struct QConcatenable<QByteArray> : private QAbstractConcatenable
 {
     typedef QByteArray type;
     enum { ExactSize = false };
-    static int size(const QByteArray &ba) { return qstrnlen(ba.constData(), ba.size()); }
+    static int size(const QByteArray &ba) { return ba.size(); }
     static inline void appendTo(const QByteArray &ba, QChar *&out)
     {
-        QAbstractConcatenable::convertFromAscii(ba.constData(), -1, out);
+        // adding 1 because convertFromAscii expects the size including the null-termination
+        QAbstractConcatenable::convertFromAscii(ba.constData(), ba.size() + 1, out);
     }
 };
 #endif

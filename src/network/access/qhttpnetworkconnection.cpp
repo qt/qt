@@ -487,7 +487,7 @@ void QHttpNetworkConnectionPrivate::requeueRequest(const HttpMessagePair &pair)
     QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
 }
 
-void QHttpNetworkConnectionPrivate::dequeueAndSendRequest(QAbstractSocket *socket)
+bool QHttpNetworkConnectionPrivate::dequeueRequest(QAbstractSocket *socket)
 {
     Q_ASSERT(socket);
 
@@ -500,8 +500,7 @@ void QHttpNetworkConnectionPrivate::dequeueAndSendRequest(QAbstractSocket *socke
             prepareRequest(messagePair);
         channels[i].request = messagePair.first;
         channels[i].reply = messagePair.second;
-        channels[i].sendRequest();
-        return;
+        return true;
     }
 
     if (!lowPriorityQueue.isEmpty()) {
@@ -511,9 +510,9 @@ void QHttpNetworkConnectionPrivate::dequeueAndSendRequest(QAbstractSocket *socke
             prepareRequest(messagePair);
         channels[i].request = messagePair.first;
         channels[i].reply = messagePair.second;
-        channels[i].sendRequest();
-        return;
+        return true;
     }
+    return false;
 }
 
 // this is called from _q_startNextRequest and when a request has been sent down a socket from the channel
@@ -765,7 +764,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
 
     //resend the necessary ones.
     for (int i = 0; i < channelCount; ++i) {
-        if (channels[i].resendCurrent) {
+        if (channels[i].resendCurrent && (channels[i].state != QHttpNetworkConnectionChannel::ClosingState)) {
             channels[i].resendCurrent = false;
             channels[i].state = QHttpNetworkConnectionChannel::IdleState;
 
@@ -784,17 +783,8 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     // try to get a free AND connected socket
     for (int i = 0; i < channelCount; ++i) {
         if (!channels[i].reply && !channels[i].isSocketBusy() && channels[i].socket->state() == QAbstractSocket::ConnectedState) {
-            dequeueAndSendRequest(channels[i].socket);
-        }
-    }
-
-    // return fast if there is nothing to do
-    if (highPriorityQueue.isEmpty() && lowPriorityQueue.isEmpty())
-        return;
-    // try to get a free unconnected socket
-    for (int i = 0; i < channelCount; ++i) {
-        if (!channels[i].reply && !channels[i].isSocketBusy()) {
-            dequeueAndSendRequest(channels[i].socket);
+            if (dequeueRequest(channels[i].socket))
+                channels[i].sendRequest();
         }
     }
 
@@ -811,6 +801,21 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     for (int i = 0; i < channelCount; i++)
         if (channels[i].socket->state() == QAbstractSocket::ConnectedState)
             fillPipeline(channels[i].socket);
+
+    // If there is not already any connected channels we need to connect a new one.
+    // We do not pair the channel with the request until we know if it is 
+    // connected or not. This is to reuse connected channels before we connect new once.
+    int queuedRequest = highPriorityQueue.count() + lowPriorityQueue.count();
+    for (int i = 0; i < channelCount; ++i) {
+        if (channels[i].socket->state() == QAbstractSocket::ConnectingState)
+            queuedRequest--;
+        if ( queuedRequest <=0 )
+            break;
+        if (!channels[i].reply && !channels[i].isSocketBusy() && (channels[i].socket->state() == QAbstractSocket::UnconnectedState)) {
+            channels[i].ensureConnection();
+            queuedRequest--;
+        }
+    }
 }
 
 
