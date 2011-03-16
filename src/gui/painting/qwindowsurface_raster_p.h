@@ -105,6 +105,7 @@ public:
     void beginPaint(const QRegion &rgn);
     void setGeometry(const QRect &rect);
     bool scroll(const QRegion &area, int dx, int dy);
+    bool hasStaticContentsSupport() const;
 
 private:
 #if defined(Q_WS_X11) && !defined(QT_NO_MITSHM)

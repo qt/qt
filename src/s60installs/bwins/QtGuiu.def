@@ -9875,7 +9875,6 @@ EXPORTS
 	?setState@QPaintEngineEx@@UAEXPAVQPainterState@@@Z @ 9874 NONAME ; void QPaintEngineEx::setState(class QPainterState *)
 	?setState@TouchPoint@QTouchEvent@@QAEXV?$QFlags@W4TouchPointState@Qt@@@@@Z @ 9875 NONAME ; void QTouchEvent::TouchPoint::setState(class QFlags<enum Qt::TouchPointState>)
 	?setStaticContents@QWindowSurface@@QAEXABVQRegion@@@Z @ 9876 NONAME ; void QWindowSurface::setStaticContents(class QRegion const &)
-	?setStaticContentsSupport@QWindowSurface@@IAEX_N@Z @ 9877 NONAME ; void QWindowSurface::setStaticContentsSupport(bool)
 	?setStatus@QPictureIO@@QAEXH@Z @ 9878 NONAME ; void QPictureIO::setStatus(int)
 	?setStatusBar@QMainWindow@@QAEXPAVQStatusBar@@@Z @ 9879 NONAME ; void QMainWindow::setStatusBar(class QStatusBar *)
 	?setStatusTip@QAction@@QAEXABVQString@@@Z @ 9880 NONAME ; void QAction::setStatusTip(class QString const &)
@@ -12651,7 +12650,6 @@ EXPORTS
 	?toImage@QRuntimePixmapData@@UBE?AVQImage@@XZ @ 12650 NONAME ; class QImage QRuntimePixmapData::toImage(void) const
 	??0QAbstractScrollAreaPrivate@@QAE@XZ @ 12651 NONAME ; QAbstractScrollAreaPrivate::QAbstractScrollAreaPrivate(void)
 	?resizeEvent@QSplitterHandle@@MAEXPAVQResizeEvent@@@Z @ 12652 NONAME ; void QSplitterHandle::resizeEvent(class QResizeEvent *)
-	?setPartialUpdateSupport@QWindowSurface@@IAEX_N@Z @ 12653 NONAME ; void QWindowSurface::setPartialUpdateSupport(bool)
 	?HandleForegroundEventL@QS60MainAppUi@@MAEXH@Z @ 12654 NONAME ; void QS60MainAppUi::HandleForegroundEventL(int)
 	?curveThreshold@QStrokerOps@@QBEMXZ @ 12655 NONAME ; float QStrokerOps::curveThreshold(void) const
 	?createTextureData@QImageTextureGlyphCache@@UAEXHH@Z @ 12656 NONAME ; void QImageTextureGlyphCache::createTextureData(int, int)
