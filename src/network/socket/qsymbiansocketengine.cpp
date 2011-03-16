@@ -63,6 +63,7 @@
 #include <QCoreApplication>
 
 #include <qabstracteventdispatcher.h>
+#include <private/qeventdispatcher_symbian_p.h>
 #include <qsocketnotifier.h>
 #include <qnetworkinterface.h>
 
@@ -187,7 +188,6 @@ bool QSymbianSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType so
     TUint protocol = (socketType == QAbstractSocket::UdpSocket) ? KProtocolInetUdp : KProtocolInetTcp;
 
     //Check if there is a user specified session
-    RConnection *connection = 0;
     QVariant v(q->property("_q_networksession"));
     TInt err;
     if (v.isValid()) {
@@ -1437,7 +1437,9 @@ void QSymbianSocketEngine::setReadNotificationEnabled(bool enable)
 #endif
     d->readNotificationsEnabled = enable;
     if (enable && d->threadData->eventDispatcher && !d->asyncSelect)
-        d->asyncSelect = q_check_ptr(new QAsyncSelect(0, d->nativeSocket, this));
+        d->asyncSelect = q_check_ptr(
+            new QAsyncSelect(static_cast<QEventDispatcherSymbian*>(d->threadData->eventDispatcher),
+                d->nativeSocket, this));
     // TODO: what do we do if event dispatcher doesn't exist yet?
     if (d->asyncSelect)
         d->asyncSelect->IssueRequest();
@@ -1459,7 +1461,9 @@ void QSymbianSocketEngine::setWriteNotificationEnabled(bool enable)
 #endif
     d->writeNotificationsEnabled = enable;
     if (enable && d->threadData->eventDispatcher && !d->asyncSelect)
-        d->asyncSelect = q_check_ptr(new QAsyncSelect(0, d->nativeSocket, this));
+        d->asyncSelect = q_check_ptr(
+            new QAsyncSelect(static_cast<QEventDispatcherSymbian*>(d->threadData->eventDispatcher),
+                d->nativeSocket, this));
     // TODO: what do we do if event dispatcher doesn't exist yet?
     if (d->asyncSelect)
         d->asyncSelect->IssueRequest();
@@ -1483,7 +1487,9 @@ void QSymbianSocketEngine::setExceptionNotificationEnabled(bool enable)
 #endif
     d->exceptNotificationsEnabled = enable;
     if (enable && d->threadData->eventDispatcher && !d->asyncSelect)
-        d->asyncSelect = q_check_ptr(new QAsyncSelect(0, d->nativeSocket, this));
+        d->asyncSelect = q_check_ptr(
+            new QAsyncSelect(static_cast<QEventDispatcherSymbian*>(d->threadData->eventDispatcher),
+                d->nativeSocket, this));
     if (d->asyncSelect)
         d->asyncSelect->IssueRequest();
 }
@@ -1597,15 +1603,17 @@ bool QSymbianSocketEngine::event(QEvent* ev)
         qDebug() << "PostThreadChangeEvent" << d->readNotificationsEnabled << d->writeNotificationsEnabled << d->exceptNotificationsEnabled;
 #endif
         // recreate select in new thread
-        d->asyncSelect = q_check_ptr(new QAsyncSelect(0, d->nativeSocket, this));
+        d->asyncSelect = q_check_ptr(
+            new QAsyncSelect(static_cast<QEventDispatcherSymbian*>(d->threadData->eventDispatcher),
+                d->nativeSocket, this));
         d->asyncSelect->IssueRequest();
         return true;
     }
     return QAbstractSocketEngine::event(ev);
 }
 
-QAsyncSelect::QAsyncSelect(QAbstractEventDispatcher *dispatcher, RSocket& sock, QSymbianSocketEngine *parent)
-    : CActive(CActive::EPriorityStandard),
+QAsyncSelect::QAsyncSelect(QEventDispatcherSymbian *dispatcher, RSocket& sock, QSymbianSocketEngine *parent)
+    : QActiveObject(CActive::EPriorityStandard, dispatcher),
       m_inSocketEvent(false),
       m_deleteLater(false),
       m_socket(sock),
@@ -1652,9 +1660,9 @@ TInt QAsyncSelect::RunError(TInt aError)
 
 void QAsyncSelect::run()
 {
-    //TODO: block when event loop demands it
-    //if (maybeQueueForLater())
-    //    return;
+    //when event loop disabled socket events, defer until later
+    if (maybeDeferSocketEvent())
+        return;
     m_inSocketEvent = true;
     m_selectBuf() &= m_selectFlags; //the select ioctl reports everything, so mask to only what we requested
     //KSockSelectReadContinuation is for reading datagrams in a mode that doesn't discard when the

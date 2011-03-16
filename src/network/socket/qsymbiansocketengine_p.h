@@ -151,10 +151,10 @@ class QSocketNotifier;
 class QReadNotifier;
 class QWriteNotifier;
 class QExceptionNotifier;
-class QAsyncSelect : public CActive
+class QAsyncSelect : public QActiveObject
 {
 public:
-    QAsyncSelect(QAbstractEventDispatcher *dispatcher, RSocket& sock, QSymbianSocketEngine *parent);
+    QAsyncSelect(QEventDispatcherSymbian *dispatcher, RSocket& sock, QSymbianSocketEngine *parent);
     ~QAsyncSelect();
 
     void deleteLater();
