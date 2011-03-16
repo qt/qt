@@ -47,6 +47,7 @@
 #include <private/qdeclarativeglobal_p.h>
 #include <private/qdeclarativeengine_p.h>
 #include <qsgtextureprovider.h>
+#include <qsgimagetextureprovider_p.h>
 
 #include <QCoreApplication>
 #include <QImageReader>
@@ -393,10 +394,17 @@ void QDeclarativePixmapReader::networkRequestDone(QNetworkReply *reply)
             QByteArray all = reply->readAll();
             QBuffer buff(&all);
             buff.open(QIODevice::ReadOnly);
-            if (QSGContext::current && QSGContext::current->canDecodeImageToTexture())
-                provider = QSGContext::current->decodeImageToTexture(&buff, &readSize, job->requestSize);
-            if (!provider && !readImage(reply->url(), &buff, &image, &errorString, &readSize, job->requestSize)) {
-                error = QDeclarativePixmapReply::Decoding;
+            QSGContext *ctx = QDeclarativeEnginePrivate::get(engine)->sgContext;
+            if (ctx && ctx->canDecodeImageToTexture())
+                provider = ctx->decodeImageToTexture(&buff, &readSize, job->requestSize);
+            if (!provider) {
+                if (!readImage(reply->url(), &buff, &image, &errorString, &readSize, job->requestSize)) {
+                    error = QDeclarativePixmapReply::Decoding;
+                } else if (ctx) {
+                    QSGImageTextureProvider *p = ctx->createImageTextureProvider();
+                    p->setImage(image);
+                    provider = p;
+                }
             }
         }
         // send completion event to the QDeclarativePixmapReply
@@ -525,10 +533,18 @@ void QDeclarativePixmapReader::processJob(QDeclarativePixmapReply *runningJob, c
             QSize readSize;
             QSGTextureProvider *provider = 0;
             if (f.open(QIODevice::ReadOnly)) {
-                if (QSGContext::current && QSGContext::current->canDecodeImageToTexture())
-                    provider = QSGContext::current->decodeImageToTexture(&f, &readSize, requestSize);
-                if (!provider && !readImage(url, &f, &image, &errorStr, &readSize, requestSize))
-                    errorCode = QDeclarativePixmapReply::Loading;
+                QSGContext *ctx = QDeclarativeEnginePrivate::get(engine)->sgContext;
+                if (ctx && ctx->canDecodeImageToTexture())
+                    provider = ctx->decodeImageToTexture(&f, &readSize, requestSize);
+                if (!provider) {
+                    if (!readImage(url, &f, &image, &errorStr, &readSize, requestSize)) {
+                        errorCode = QDeclarativePixmapReply::Loading;
+                    } else if (ctx) {
+                        QSGImageTextureProvider *p = ctx->createImageTextureProvider();
+                        p->setImage(image);
+                        provider = p;
+                    }
+                }
             } else {
                 errorStr = QDeclarativePixmap::tr("Cannot open: %1").arg(url.toString());
                 errorCode = QDeclarativePixmapReply::Loading;
@@ -885,19 +901,31 @@ static QDeclarativePixmapData* createPixmapDataSync(QDeclarativeEngine *engine, 
     QString errorString;
 
     if (f.open(QIODevice::ReadOnly)) {
-        if (QSGContext::current && QSGContext::current->canDecodeImageToTexture()) {
-            QSGTextureProvider *provider = QSGContext::current->decodeImageToTexture(&f, &readSize, requestSize);
-            if (provider) {
+        QSGContext *ctx = QDeclarativeEnginePrivate::get(engine)->sgContext;
+        QSGTextureProvider *provider = 0;
+        QImage image;
+
+        if (ctx && ctx->canDecodeImageToTexture()) {
+            provider = ctx->decodeImageToTexture(&f, &readSize, requestSize);
+            *ok = true;
+        }
+
+        if (!provider) {
+            if (readImage(url, &f, &image, &errorString, &readSize, requestSize))
                 *ok = true;
-                return new QDeclarativePixmapData(url, provider, readSize, requestSize);
+
+            if (ok && ctx) {
+                QSGImageTextureProvider *p = ctx->createImageTextureProvider();
+                p->setImage(image);
+                provider = p;
             }
         }
 
-        QImage image;
-        if (readImage(url, &f, &image, &errorString, &readSize, requestSize)) {
-            *ok = true;
+        if (provider)
+            return new QDeclarativePixmapData(url, provider, readSize, requestSize);
+        else
             return new QDeclarativePixmapData(url, QPixmap::fromImage(image), readSize, requestSize);
-        }
+
     } else {
         errorString = QDeclarativePixmap::tr("Cannot open: %1").arg(url.toString());
     }

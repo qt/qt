@@ -2,14 +2,10 @@
 
 QSGImageTextureProvider::QSGImageTextureProvider(QObject *parent)
     : QSGTextureProvider(parent)
+    , m_dirty_texture(false)
 {
 }
 
-void QSGImageTextureProvider::setImage(const QImage &image)
-{
-    m_image = image;
-    m_texture = QSGTextureRef();
-}
 
 #ifdef QT_OPENGL_ES
 static void swizzleBGRAToRGBA(QImage *image)
@@ -24,26 +20,37 @@ static void swizzleBGRAToRGBA(QImage *image)
 }
 #endif
 
+
+void QSGImageTextureProvider::setImage(const QImage &image)
+{
+    m_image = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+#ifdef QT_OPENGL_ES
+    QSGTextureManager::swizzleBGRAToRGBA(&m_image);
+#endif
+    m_dirty_texture = true;
+}
+
 void QSGImageTextureProvider::updateTexture()
 {
-    if (m_texture.isReady())
+    if (!m_dirty_texture)
         return;
+
+    m_dirty_texture = false;
+
+    // Deref textures first to aid in releasing memory before allocating more.
+    m_texture = QSGTextureRef();
 
     GLuint id;
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
 
-    QImage i = m_image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-
-    int w = i.width();
-    int h = i.height();
-    int bpl = i.bytesPerLine();
+    int w = m_image.width();
+    int h = m_image.height();
 
 #ifdef QT_OPENGL_ES
-    QSGTextureManager::swizzleBGRAToRGBA(&i);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, i.constBits());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_image.constBits());
 #else
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_BGRA, GL_UNSIGNED_BYTE, i.constBits());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_BGRA, GL_UNSIGNED_BYTE, m_image.constBits());
 #endif
 
     QSGTexture *t = new QSGTexture();

@@ -1,11 +1,10 @@
-// Commit: ac5c099cc3c5b8c7eec7a49fdeb8a21037230350
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -40,43 +39,21 @@
 **
 ****************************************************************************/
 
-#ifndef QSGIMAGE_P_P_H
-#define QSGIMAGE_P_P_H
+#ifndef ETCPROVIDERPLUGIN_H
+#define ETCPROVIDERPLUGIN_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtDeclarative/qdeclarative.h>
+#include <QtDeclarative/QDeclarativeExtensionPlugin>
 
-#include "qsgimagebase_p_p.h"
-#include "qsgimage_p.h"
-#include "qsgimagetextureprovider_p.h"
-
-QT_BEGIN_NAMESPACE
-
-class QSGImagePrivate;
-
-class QSGImagePrivate : public QSGImageBasePrivate
+class EtcProviderPlugin : public QDeclarativeExtensionPlugin
 {
-    Q_DECLARE_PUBLIC(QSGImage)
+    Q_OBJECT
 
 public:
-    QSGImagePrivate();
+    void registerTypes(const char *uri);
+    void initializeEngine(QDeclarativeEngine *engine, const char *uri);
 
-    QSGImage::FillMode fillMode;
-    qreal paintedWidth;
-    qreal paintedHeight;
-    void setPixmap(const QPixmap &pix);
-
-    bool pixmapChanged : 1;
 };
 
-QT_END_NAMESPACE
+#endif // ETCPROVIDERPLUGIN_H
 
-#endif // QSGIMAGE_P_P_H

@@ -72,6 +72,8 @@ public:
 
     virtual QSize textureSize() const = 0;
 
+    virtual bool isStaticTexture() const;
+
     bool opaque() const { return m_opaque; }
     void setOpaque(bool enabled) { m_opaque = enabled; }
 
@@ -86,6 +88,7 @@ public:
 
     Filtering mipmap() const { return Filtering(m_mipmap); }
     void setMipmap(Filtering filtering) { m_mipmap = filtering; }
+
 
     GLint glTextureWrapS() const;
     GLint glTextureWrapT() const;

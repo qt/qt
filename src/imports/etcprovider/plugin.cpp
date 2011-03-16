@@ -1,11 +1,10 @@
-// Commit: ac5c099cc3c5b8c7eec7a49fdeb8a21037230350
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -40,43 +39,21 @@
 **
 ****************************************************************************/
 
-#ifndef QSGIMAGE_P_P_H
-#define QSGIMAGE_P_P_H
+#include "plugin.h"
+#include "qetcprovider.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QDeclarativeEngine>
 
-#include "qsgimagebase_p_p.h"
-#include "qsgimage_p.h"
-#include "qsgimagetextureprovider_p.h"
-
-QT_BEGIN_NAMESPACE
-
-class QSGImagePrivate;
-
-class QSGImagePrivate : public QSGImageBasePrivate
+void EtcProviderPlugin::registerTypes(const char *uri)
 {
-    Q_DECLARE_PUBLIC(QSGImage)
+    Q_UNUSED(uri)
+}
 
-public:
-    QSGImagePrivate();
+void EtcProviderPlugin::initializeEngine(QDeclarativeEngine *engine, const char *uri)
+{
+    qDebug () << uri;
+    engine->addImageProvider(QLatin1String("etc"), new QEtcProvider());
+    engine->rootContext()->setContextProperty("baseUrlHelper", new BaseUrlHelper());
+}
 
-    QSGImage::FillMode fillMode;
-    qreal paintedWidth;
-    qreal paintedHeight;
-    void setPixmap(const QPixmap &pix);
-
-    bool pixmapChanged : 1;
-};
-
-QT_END_NAMESPACE
-
-#endif // QSGIMAGE_P_P_H
+Q_EXPORT_PLUGIN2(qmletcproviderplugin, EtcProviderPlugin)

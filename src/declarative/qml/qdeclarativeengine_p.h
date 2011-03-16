@@ -114,6 +114,7 @@ class QDeclarativeWorkerScriptEngine;
 class QDeclarativeGlobalScriptClass;
 class QDir;
 class QSGTextureProvider;
+class QSGContext;
 
 class QDeclarativeScriptEngine : public QScriptEngine
 {
@@ -345,6 +346,8 @@ public:
     static void defineModule();
 
     static bool qml_debugging_enabled;
+
+    QSGContext *sgContext;
 };
 
 /*!
