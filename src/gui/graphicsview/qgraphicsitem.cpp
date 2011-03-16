@@ -417,6 +417,11 @@
     click focus to items underneath when being clicked on. This flag
     allows you create a non-focusable item that can be clicked on without
     changing the focus. \endomit
+
+    \omitvalue ItemStopsFocusHandling \omit Same as
+    ItemStopsClickFocusPropagation, but also suppresses focus-out. This flag
+    allows you to completely take over focus handling.
+    This flag was introduced in Qt 4.7.
 */
 
 /*!
@@ -11550,6 +11555,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemStopsClickFocusPropagation:
         str = "ItemStopsClickFocusPropagation";
+        break;
+    case QGraphicsItem::ItemStopsFocusHandling:
+        str = "ItemStopsFocusHandling";
         break;
     }
     debug << str;
