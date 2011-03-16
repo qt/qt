@@ -315,6 +315,11 @@ struct QWExtra {
          */
         ZeroFill,
 
+        /**
+         * Blit backing store, propagating alpha channel into the framebuffer.
+         */
+        BlitWriteAlpha,
+
         Default = Blit
     };
 
