@@ -216,6 +216,7 @@ void printXcbEvent(const char *message, xcb_generic_event_t *event)
 void QXcbConnection::eventDispatcher()
 {
     while (xcb_generic_event_t *event = xcb_poll_for_event(xcb_connection())) {
+        bool handled = true;
         switch (event->response_type & ~0x80) {
         case XCB_EXPOSE:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
@@ -245,10 +246,13 @@ void QXcbConnection::eventDispatcher()
             m_keyboard->handleMappingNotifyEvent((xcb_mapping_notify_event_t *)event);
             break;
         default:
-            printXcbEvent("Unhandled XCB event", event);
+            handled = false;
             return;
         }
-        printXcbEvent("Handled XCB event", event);
+        if (handled)
+            printXcbEvent("Handled XCB event", event);
+        else
+            printXcbEvent("Unhandled XCB event", event);
     }
 }
 
