@@ -395,11 +395,11 @@ void tst_qdeclarativeflickable::testQtQuick11Attributes_data()
     QTest::addColumn<QString>("error");
 
     QTest::newRow("resizeContent") << "Component.onCompleted: resizeContent(100,100,Qt.point(50,50))"
-            << "<Unknown File>:1: ReferenceError: Can't find variable: resizeContent"
+            << "<Unknown File>:1: ReferenceError: resizeContent is not defined"
             << "";
 
     QTest::newRow("returnToBounds") << "Component.onCompleted: returnToBounds()"
-            << "<Unknown File>:1: ReferenceError: Can't find variable: returnToBounds"
+            << "<Unknown File>:1: ReferenceError: returnToBounds is not defined"
             << "";
 
 }
