@@ -49,6 +49,8 @@
 #include "text.h"
 #include "tree.h"
 
+#include <ctype.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!

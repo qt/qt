@@ -73,7 +73,7 @@ INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/generated
 # This line copied from WebCore.pro
 DEFINES += WTF_USE_JAVASCRIPTCORE_BINDINGS=1 WTF_CHANGES=1
 
-DEFINES += NDEBUG
+CONFIG(release, debug|release):DEFINES += NDEBUG
 
 solaris-g++:isEqual(QT_ARCH,sparc) {
     CONFIG -= separate_debug_info

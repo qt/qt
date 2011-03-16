@@ -4621,6 +4621,13 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     tdi.attributes &= ~kThemeTrackShowThumb;
                 if (scrollBarLength < scrollButtonsCutoffSize(scrollButtonsCutoff, sizePolicy))
                     tdi.enableState = kThemeTrackNothingToScroll;
+            } else {
+                if (!(slider->subControls & SC_SliderHandle))
+                    tdi.attributes &= ~kThemeTrackShowThumb;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+                if (!(slider->subControls & SC_SliderGroove))
+                    tdi.attributes |= kThemeTrackHideTrack;
+#endif
             }
 
             HIThemeDrawTrack(&tdi, tracking ? 0 : &macRect, cg,

@@ -1174,6 +1174,7 @@ bool qSharedBuild()
     \value MV_10_4     Mac OS X 10.4
     \value MV_10_5     Mac OS X 10.5
     \value MV_10_6     Mac OS X 10.6
+    \value MV_10_7     Mac OS X 10.7
     \value MV_Unknown  An unknown and currently unsupported platform
 
     \value MV_CHEETAH  Apple codename for MV_10_0
@@ -1183,6 +1184,7 @@ bool qSharedBuild()
     \value MV_TIGER    Apple codename for MV_10_4
     \value MV_LEOPARD  Apple codename for MV_10_5
     \value MV_SNOWLEOPARD  Apple codename for MV_10_6
+    \value MV_LION     Apple codename for MV_10_7
 
     \sa WinVersion, SymbianVersion
 */

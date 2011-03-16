@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -310,7 +310,7 @@ bool BaselineProtocol::connect(const QString &testCase, bool *dryrun)
     }
 
     if (cmd == Abort) {
-        errMsg += QLS("Server aborted connection. Reason: ") + QString::fromLatin1(block);
+        errMsg += QLS("Server rejected connection. Reason: ") + QString::fromLatin1(block);
         return false;
     }
 

@@ -287,6 +287,8 @@ private slots:
     void setActivationOrder();
     void tabBetweenSubWindows();
     void setViewMode();
+    void setTabsClosable();
+    void setTabsMovable();
     void setTabShape();
     void setTabPosition_data();
     void setTabPosition();
@@ -2462,6 +2464,77 @@ void tst_QMdiArea::setViewMode()
     tabBar = qFindChild<QTabBar *>(&mdiArea);
     QVERIFY(!tabBar);
     QCOMPARE(mdiArea.viewMode(), QMdiArea::SubWindowView);
+}
+
+void tst_QMdiArea::setTabsClosable()
+{
+    QMdiArea mdiArea;
+    mdiArea.addSubWindow(new QWidget);
+
+    // test default
+    QCOMPARE(mdiArea.tabsClosable(), false);
+
+    // change value before tab bar exists
+    QTabBar *tabBar = qFindChild<QTabBar *>(&mdiArea);
+    QVERIFY(!tabBar);
+    mdiArea.setTabsClosable(true);
+    QCOMPARE(mdiArea.tabsClosable(), true);
+
+    // force tab bar creation
+    mdiArea.setViewMode(QMdiArea::TabbedView);
+    tabBar = qFindChild<QTabBar *>(&mdiArea);
+    QVERIFY(tabBar);
+
+    // value must've been propagated
+    QCOMPARE(tabBar->tabsClosable(), true);
+
+    // change value when tab bar exists
+    mdiArea.setTabsClosable(false);
+    QCOMPARE(mdiArea.tabsClosable(), false);
+    QCOMPARE(tabBar->tabsClosable(), false);
+}
+
+void tst_QMdiArea::setTabsMovable()
+{
+    QMdiArea mdiArea;
+    QMdiSubWindow *subWindow1 = mdiArea.addSubWindow(new QWidget);
+    QMdiSubWindow *subWindow2 = mdiArea.addSubWindow(new QWidget);
+    QMdiSubWindow *subWindow3 = mdiArea.addSubWindow(new QWidget);
+
+    // test default
+    QCOMPARE(mdiArea.tabsMovable(), false);
+
+    // change value before tab bar exists
+    QTabBar *tabBar = qFindChild<QTabBar *>(&mdiArea);
+    QVERIFY(!tabBar);
+    mdiArea.setTabsMovable(true);
+    QCOMPARE(mdiArea.tabsMovable(), true);
+
+    // force tab bar creation
+    mdiArea.setViewMode(QMdiArea::TabbedView);
+    tabBar = qFindChild<QTabBar *>(&mdiArea);
+    QVERIFY(tabBar);
+
+    // value must've been propagated
+    QCOMPARE(tabBar->isMovable(), true);
+
+    // test tab moving
+    QList<QMdiSubWindow *> subWindows;
+    subWindows << subWindow1 << subWindow2 << subWindow3;
+    QCOMPARE(mdiArea.subWindowList(QMdiArea::CreationOrder), subWindows);
+    tabBar->moveTab(1, 2); // 1,3,2
+    subWindows.clear();
+    subWindows << subWindow1 << subWindow3 << subWindow2;
+    QCOMPARE(mdiArea.subWindowList(QMdiArea::CreationOrder), subWindows);
+    tabBar->moveTab(0, 2); // 3,2,1
+    subWindows.clear();
+    subWindows << subWindow3 << subWindow2 << subWindow1;
+    QCOMPARE(mdiArea.subWindowList(QMdiArea::CreationOrder), subWindows);
+
+    // change value when tab bar exists
+    mdiArea.setTabsMovable(false);
+    QCOMPARE(mdiArea.tabsMovable(), false);
+    QCOMPARE(tabBar->isMovable(), false);
 }
 
 void tst_QMdiArea::setTabShape()

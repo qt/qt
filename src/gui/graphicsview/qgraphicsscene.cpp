@@ -306,6 +306,7 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       rectAdjust(2),
       focusItem(0),
       lastFocusItem(0),
+      passiveFocusItem(0),
       tabFocusFirst(0),
       activePanel(0),
       lastActivePanel(0),
@@ -630,6 +631,8 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
         focusItem = 0;
     if (item == lastFocusItem)
         lastFocusItem = 0;
+    if (item == passiveFocusItem)
+        passiveFocusItem = 0;
     if (item == activePanel) {
         // ### deactivate...
         activePanel = 0;
@@ -2980,7 +2983,7 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
 QGraphicsItem *QGraphicsScene::focusItem() const
 {
     Q_D(const QGraphicsScene);
-    return isActive() ? d->focusItem : d->lastFocusItem;
+    return isActive() ? d->focusItem : d->passiveFocusItem;
 }
 
 /*!
@@ -3054,6 +3057,7 @@ void QGraphicsScene::clearFocus()
     Q_D(QGraphicsScene);
     if (d->hasFocus) {
         d->hasFocus = false;
+        d->passiveFocusItem = d->focusItem;
         setFocusItem(0, Qt::OtherFocusReason);
     }
 }
@@ -3757,9 +3761,9 @@ void QGraphicsScene::focusInEvent(QFocusEvent *focusEvent)
             focusEvent->ignore();
         break;
     default:
-        if (d->lastFocusItem) {
+        if (d->passiveFocusItem) {
             // Set focus on the last focus item
-            setFocusItem(d->lastFocusItem, focusEvent->reason());
+            setFocusItem(d->passiveFocusItem, focusEvent->reason());
         }
         break;
     }
@@ -3778,6 +3782,7 @@ void QGraphicsScene::focusOutEvent(QFocusEvent *focusEvent)
 {
     Q_D(QGraphicsScene);
     d->hasFocus = false;
+    d->passiveFocusItem = d->focusItem;
     setFocusItem(0, focusEvent->reason());
 
     // Remove all popups when the scene loses focus.

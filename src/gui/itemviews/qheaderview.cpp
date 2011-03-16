@@ -3274,9 +3274,17 @@ void QHeaderViewPrivate::clear()
 void QHeaderViewPrivate::flipSortIndicator(int section)
 {
     Q_Q(QHeaderView);
-    bool ascending = (sortIndicatorSection != section
-                      || sortIndicatorOrder == Qt::DescendingOrder);
-    q->setSortIndicator(section, ascending ? Qt::AscendingOrder : Qt::DescendingOrder);
+    Qt::SortOrder sortOrder;
+    if (sortIndicatorSection == section) {
+        sortOrder = (sortIndicatorOrder == Qt::DescendingOrder) ? Qt::AscendingOrder : Qt::DescendingOrder;
+    } else {
+        const QVariant value = model->headerData(section, orientation, Qt::InitialSortOrderRole);
+        if (value.canConvert(QVariant::Int))
+            sortOrder = static_cast<Qt::SortOrder>(value.toInt());
+        else
+            sortOrder = Qt::AscendingOrder;
+    }
+    q->setSortIndicator(section, sortOrder);
 }
 
 void QHeaderViewPrivate::cascadingResize(int visual, int newSize)
