@@ -443,10 +443,12 @@ void QXcbConnection::initializeAllAtoms() {
         m_allAtoms[i] = xcb_intern_atom_reply(xcb_connection(), cookies[i], 0)->atom;
 }
 
+#if defined(XCB_USE_EGL)
 bool QXcbConnection::hasEgl() const
 {
     return m_has_egl;
 }
+#endif // defined(XCB_USE_EGL)
 
 #ifdef XCB_USE_DRI2
 void QXcbConnection::initializeDri2()
