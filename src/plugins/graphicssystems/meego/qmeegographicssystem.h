@@ -103,6 +103,7 @@ extern "C" {
     Q_DECL_EXPORT Qt::HANDLE qt_meego_live_texture_get_handle(QPixmap *pixmap);
     Q_DECL_EXPORT void* qt_meego_create_fence_sync(void);
     Q_DECL_EXPORT void qt_meego_destroy_fence_sync(void* fs);
+    Q_DECL_EXPORT void qt_meego_invalidate_live_surfaces(void);
 }
 
 #endif 

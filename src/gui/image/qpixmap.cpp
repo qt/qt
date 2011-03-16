@@ -130,8 +130,16 @@ void QPixmap::init(int w, int h, Type type)
     init(w, h, int(type));
 }
 
+extern QApplication::Type qt_appType;
+
 void QPixmap::init(int w, int h, int type)
 {
+    if (qt_appType == QApplication::Tty) {
+        qWarning("QPixmap: Cannot create a QPixmap when no GUI is being used");
+        data = 0;
+        return;
+    }
+
     if ((w > 0 && h > 0) || type == QPixmapData::BitmapType)
         data = QPixmapData::create(w, h, (QPixmapData::PixelType) type);
     else
@@ -1654,16 +1662,6 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     {Implicit Data Sharing} documentation. QPixmap objects can also be
     streamed.
 
-    Depending on the system, QPixmap is stored using a RGB32 or a
-    premultiplied alpha format. If the image has an alpha channel, and
-    if the system allows, the preferred format is premultiplied alpha.
-    Note also that QPixmap, unlike QImage, may be hardware dependent.
-    On X11, Mac and Symbian, a QPixmap is stored on the server side while
-    a QImage is stored on the client side (on Windows, these two classes
-    have an equivalent internal representation, i.e. both QImage and
-    QPixmap are stored on the client side and don't use any GDI
-    resources).
-
     Note that the pixel data in a pixmap is internal and is managed by
     the underlying window system. Because QPixmap is a QPaintDevice
     subclass, QPainter can be used to draw directly onto pixmaps.
@@ -2030,7 +2028,7 @@ void QPixmap::detach()
     }
 
     if (data->is_cached && data->ref == 1)
-        QImagePixmapCleanupHooks::executePixmapDataModificationHooks(pd);
+        QImagePixmapCleanupHooks::executePixmapDataModificationHooks(data.data());
 
 #if defined(Q_WS_MAC)
     QMacPixmapData *macData = id == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(pd) : 0;

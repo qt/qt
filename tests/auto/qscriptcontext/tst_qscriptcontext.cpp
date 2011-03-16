@@ -725,10 +725,7 @@ void tst_QScriptContext::backtrace_data()
 
            expected << "<native>('hey') at -1"
                     << "<eval>() at 3"
-                    << QString::fromLatin1("foo(arg1 = 'hello', arg2 = 456) at testfile:%0")
-               // interpreter unfortunately doesn't provide line number for eval()
-               .arg(qt_script_isJITEnabled() ? 2 : -1);
-           expected
+                    << "foo(arg1 = 'hello', arg2 = 456) at testfile:2"
                     << "<global>() at testfile:4";
 
             QTest::newRow("eval") << source << expected;
@@ -787,10 +784,7 @@ void tst_QScriptContext::backtrace_data()
 
            expected << "<native>('hey') at -1"
                     << "<eval>() at 3"
-                    << QString::fromLatin1("plop('hello', 456) at testfile:%0")
-               // interpreter unfortunately doesn't provide line number for eval()
-               .arg(qt_script_isJITEnabled() ? 3 : -1);
-           expected
+                    << "plop('hello', 456) at testfile:3"
                     << "<global>() at testfile:5";
 
             QTest::newRow("eval in member") << source << expected;
@@ -987,6 +981,8 @@ void tst_QScriptContext::backtrace()
     QVERIFY(!eng.hasUncaughtException());
     QVERIFY(ret.isArray());
     QStringList slist = qscriptvalue_cast<QStringList>(ret);
+    QEXPECT_FAIL("eval", "QTBUG-17842: Missing line number in backtrace when function calls eval()", Continue);
+    QEXPECT_FAIL("eval in member", "QTBUG-17842: Missing line number in backtrace when function calls eval()", Continue);
     QCOMPARE(slist, expectedbacktrace);
 }
 

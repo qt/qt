@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,14 +54,21 @@ Rectangle {
         PinchArea {
             width: Math.max(flick.contentWidth, flick.width)
             height: Math.max(flick.contentHeight, flick.height)
+
+            property real initialWidth
+            property real initialHeight
+            onPinchStarted: {
+                initialWidth = flick.contentWidth
+                initialHeight = flick.contentHeight
+            }
+
             onPinchUpdated: {
                 // adjust content pos due to drag
                 flick.contentX += pinch.previousCenter.x - pinch.center.x
                 flick.contentY += pinch.previousCenter.y - pinch.center.y
 
                 // resize content
-                var scale = 1.0 + pinch.scale - pinch.previousScale
-                flick.resizeContent(flick.contentWidth * scale, flick.contentHeight * scale, pinch.center)
+                flick.resizeContent(initialWidth * pinch.scale, initialHeight * pinch.scale, pinch.center)
             }
 
             onPinchFinished: {

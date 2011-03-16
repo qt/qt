@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,10 +41,13 @@
 import QtQuick 1.1
 
 Rectangle {
+    property bool mirror
+    property int direction: Qt.application.layoutDirection
+    LayoutMirroring.enabled: mirror
+    LayoutMirroring.childrenInherit: true
 
     width: column.width + 100
     height: column.height + 100
-    property int direction: Qt.application.layoutDirection
 
     Column {
         id: column
@@ -129,6 +132,23 @@ Rectangle {
                     } else {
                         direction = Qt.LeftToRight;
                     }
+                }
+                anchors.fill: parent
+            }
+        }
+        Rectangle {
+           height: 50; width: parent.width
+           color: mouseArea2.pressed ? "black" : "gray"
+           Text {
+                text: mirror ? "Mirrored" : "Normal"
+                color: "white"
+                font.pixelSize: 16
+                anchors.centerIn: parent
+            }
+            MouseArea {
+                id: mouseArea2
+                onClicked: {
+                    mirror = !mirror;
                 }
                 anchors.fill: parent
             }

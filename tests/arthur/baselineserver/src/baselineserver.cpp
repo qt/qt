@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -178,7 +178,7 @@ bool BaselineHandler::establishConnection()
     if (branch.isEmpty()) {
         // Not run by Pulse, i.e. ad hoc run: Ok.
     }
-    else if (branch != QLS("master-integration") || !plat.value(PI_GitCommit).contains(QLS("Merge branch 'master' of scm.dev.nokia.troll.no:qt/oslo-staging-2 into master-integration"))) {
+    else if (branch != QLS("master-integration") || !plat.value(PI_GitCommit).contains(QLS("Merge branch 'master' of scm.dev.nokia.troll.no:qt/qt-fire-staging into master-integration"))) {
         qDebug() << runId << logtime() << "Did not pass branch/staging repo filter, disconnecting.";
         proto.sendBlock(BaselineProtocol::Abort, QByteArray("This branch/staging repo is not assigned to be tested."));
         proto.socket.disconnectFromHost();
@@ -426,26 +426,24 @@ QString BaselineHandler::clearAllBaselines(const QString &context)
     return QString(QLS("%1 of %2 baselines cleared from context ")).arg((tot-failed)/2).arg(tot/2) + context;
 }
 
-QString BaselineHandler::updateSingleBaseline(const QString &oldBaseline, const QString &newBaseline)
+QString BaselineHandler::updateBaselines(const QString &context, const QString &mismatchContext, const QString &itemFile)
 {
-    QString res;
-    QString basePath(BaselineServer::storagePath() + QLC('/'));
-    QString srcBase(basePath + newBaseline.left(newBaseline.length() - 3));
-    QString dstDir(basePath + oldBaseline.left(oldBaseline.lastIndexOf(QLC('/'))));
-
-    QProcess proc;
-    proc.setProcessChannelMode(QProcess::MergedChannels);
-    proc.start(QLS("cp"), QStringList() << QLS("-f") << srcBase + QLS(FileFormat) << srcBase + QLS(MetadataFileExt) << dstDir);
-    proc.waitForFinished();
-    if (proc.exitCode() == 0)
-        res = QString("Successfully updated '%1'").arg(oldBaseline);
-    else
-        res = QString("Error updating baseline: %1<br>"
-                      "Command output: <pre>%2</pre>").arg(proc.errorString(), proc.readAll().constData());
-
-    return res;
+    int tot = 0;
+    int failed = 0;
+    QString storagePrefix = BaselineServer::storagePath() + QLC('/');
+    // If itemId is set, update just that one, otherwise, update all:
+    QString filter = itemFile.isEmpty() ? QLS("*_????.") : itemFile;
+    QDirIterator it(storagePrefix + mismatchContext, QStringList() << filter + QLS(FileFormat) << filter + QLS(MetadataFileExt));
+    while (it.hasNext()) {
+        tot++;
+        it.next();
+        QString oldFile = storagePrefix + context + QLC('/') + it.fileName();
+        QFile::remove(oldFile);                       // Remove existing baseline file
+        if (!QFile::copy(it.filePath(), oldFile))     // and replace it with the mismatch
+            failed++;
+    }
+    return QString(QLS("%1 of %2 baselines updated in context %3 from context %4")).arg((tot-failed)/2).arg(tot/2).arg(context, mismatchContext);
 }
-
 
 QString BaselineHandler::blacklistTest(const QString &context, const QString &itemId, bool removeFromBlacklist)
 {
