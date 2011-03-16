@@ -299,7 +299,7 @@ static int qCocoaViewCount = 0;
             } else {
 
                 QUnifiedToolbarSurface *unifiedSurface = qwidgetprivate->unifiedSurface;
-                if (!unifiedSurface || !qwidgetprivate->flushRequested) {
+                if (!unifiedSurface) {
                     qt_mac_release_graphics_context(context);
                     return;
                 }
