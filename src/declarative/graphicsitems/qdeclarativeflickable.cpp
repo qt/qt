@@ -1430,8 +1430,10 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
 
     QGraphicsScene *s = scene();
     QDeclarativeItem *grabber = s ? qobject_cast<QDeclarativeItem*>(s->mouseGrabberItem()) : 0;
+    QGraphicsItem *grabberItem = s ? s->mouseGrabberItem() : 0;
+    bool disabledItem = grabberItem && !grabberItem->isEnabled();
     bool stealThisEvent = d->stealMouse;
-    if ((stealThisEvent || myRect.contains(event->scenePos().toPoint())) && (!grabber || !grabber->keepMouseGrab())) {
+    if ((stealThisEvent || myRect.contains(event->scenePos().toPoint())) && (!grabber || !grabber->keepMouseGrab() || disabledItem)) {
         mouseEvent.setAccepted(false);
         for (int i = 0x1; i <= 0x10; i <<= 1) {
             if (event->buttons() & i) {
@@ -1478,12 +1480,12 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
             break;
         }
         grabber = qobject_cast<QDeclarativeItem*>(s->mouseGrabberItem());
-        if (grabber && stealThisEvent && !grabber->keepMouseGrab() && grabber != this) {
+        if ((grabber && stealThisEvent && !grabber->keepMouseGrab() && grabber != this) || disabledItem) {
             d->clearDelayedPress();
             grabMouse();
         }
 
-        return stealThisEvent || d->delayedPressEvent;
+        return stealThisEvent || d->delayedPressEvent || disabledItem;
     } else if (d->lastPosTime.isValid()) {
         d->lastPosTime.invalidate();
     }
