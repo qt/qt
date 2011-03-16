@@ -92,6 +92,16 @@ struct QScriptDeclarativeClassObject : QScriptV8ObjectWrapper<QScriptDeclarative
         return v8::Handle<v8::Value>();
     }
 
+    v8::Handle<v8::Value> property(uint32_t index)
+    {
+        return property(v8::Integer::New(index)->ToString());
+    }
+
+    v8::Handle<v8::Value> setProperty(uint32_t index, v8::Local<v8::Value> value)
+    {
+        return setProperty(v8::Integer::New(index)->ToString(), value);
+    }
+
     v8::Handle<v8::Value> call()
     {
         QScriptValue result = scriptClass->call(obj.data(), engine->currentContext()).toScriptValue(QScriptEnginePrivate::get(engine));
@@ -107,6 +117,7 @@ struct QScriptDeclarativeClassObject : QScriptV8ObjectWrapper<QScriptDeclarative
         instTempl->SetInternalFieldCount(1);
         instTempl->SetCallAsFunctionHandler(callAsFunction<QScriptDeclarativeClassObject>);
         instTempl->SetNamedPropertyHandler(namedPropertyGetter<QScriptDeclarativeClassObject>, namedPropertySetter<QScriptDeclarativeClassObject>);
+        instTempl->SetIndexedPropertyHandler(indexedPropertyGetter<QScriptDeclarativeClassObject>, indexedPropertySetter<QScriptDeclarativeClassObject>);
         return handleScope.Close(funcTempl);
     }
 
