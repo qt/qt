@@ -156,6 +156,14 @@ void QUnifiedToolbarSurface::updateToolbarOffset(QWidget *widget)
     mlayout->updateUnifiedToolbarOffset();
 }
 
+void QUnifiedToolbarSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
+{
+    Q_UNUSED(region);
+    Q_UNUSED(offset);
+
+    this->flush(widget);
+}
+
 void QUnifiedToolbarSurface::flush(QWidget *widget)
 {
     Q_D(QUnifiedToolbarSurface);

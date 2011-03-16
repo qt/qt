@@ -80,6 +80,7 @@ public:
     ~QUnifiedToolbarSurface();
 
     void flush(QWidget *widget);
+    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
     void setGeometry(const QRect &rect);
     void beginPaint(const QRegion &rgn);
     void insertToolbar(QWidget *toolbar, const QPoint &offset);
