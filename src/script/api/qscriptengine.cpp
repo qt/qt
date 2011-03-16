@@ -1692,8 +1692,7 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newArray(uint leng
     }
 
     v8::Persistent<v8::Array> array(v8::Persistent<v8::Array>::New(v8::Array::New(length)));
-    // FIXME hmm it seems that V8 Array constructor doesn't set the length attribute as it is done
-    // in JS. I'm not sure if it is bug or feature. It need to be investigated.
+    // FIXME: This is a workaround for http://code.google.com/p/v8/issues/detail?id=1256
     array->Set(v8::String::New("length"), v8::Number::New(length));
     return new QScriptValuePrivate(this, array);
 }
