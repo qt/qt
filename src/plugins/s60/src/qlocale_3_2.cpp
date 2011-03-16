@@ -42,7 +42,7 @@
 #include <exception>
 #include <e32std.h>
 #include <e32base.h>
-#include <NumberConversion.h>
+#include <numberconversion.h>
 
 EXPORT_C TPtrC defaultGetLongDateFormatSpec(TExtendedLocale& locale)
 {
