@@ -25,8 +25,7 @@
 #define QSCRIPTSYNTAXCHECKRESULT_H
 
 #include <QtCore/qobjectdefs.h>
-
-#include "qscriptshareddata_p.h"
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_HEADER
 
@@ -59,7 +58,7 @@ public:
 private:
     QScriptSyntaxCheckResult();
     QScriptSyntaxCheckResult(QScriptSyntaxCheckResultPrivate *d);
-    QScriptSharedDataPointer<QScriptSyntaxCheckResultPrivate> d_ptr;
+    QExplicitlySharedDataPointer<QScriptSyntaxCheckResultPrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptSyntaxCheckResult)
     friend class QScriptEngine;
