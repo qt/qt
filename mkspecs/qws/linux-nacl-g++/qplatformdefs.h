@@ -59,6 +59,8 @@
 #define PATH_MAX 256
 
 #include "../../common/posix/qplatformdefs.h"
+#include "qfunctions_nacl.h"
+#include <pthread.h>
 
 #undef QT_LSTAT
 #define QT_LSTAT                QT_STAT
