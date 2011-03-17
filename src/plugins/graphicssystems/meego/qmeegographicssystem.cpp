@@ -63,6 +63,8 @@ bool QMeeGoGraphicsSystem::surfaceWasCreated = false;
 
 QHash <Qt::HANDLE, QPixmap*> QMeeGoGraphicsSystem::liveTexturePixmaps;
 
+QList<QMeeGoSwitchCallback> QMeeGoGraphicsSystem::switchCallbacks;
+
 QMeeGoGraphicsSystem::QMeeGoGraphicsSystem()
 {
     qDebug("Using the meego graphics system");
@@ -74,6 +76,78 @@ QMeeGoGraphicsSystem::~QMeeGoGraphicsSystem()
     qt_destroy_gl_share_widget();
 }
 
+class QMeeGoGraphicsSystemSwitchHandler : public QObject
+{
+    Q_OBJECT
+public:
+    QMeeGoGraphicsSystemSwitchHandler();
+
+    void addWidget(QWidget *widget);
+    bool eventFilter(QObject *, QEvent *);
+
+private slots:
+    void removeWidget(QObject *object);
+
+private:
+    int visibleWidgets() const;
+
+private:
+    QList<QWidget *> m_widgets;
+};
+
+QMeeGoGraphicsSystemSwitchHandler::QMeeGoGraphicsSystemSwitchHandler()
+{
+}
+
+void QMeeGoGraphicsSystemSwitchHandler::addWidget(QWidget *widget)
+{
+    if (!m_widgets.contains(widget)) {
+        widget->installEventFilter(this);
+        connect(widget, SIGNAL(destroyed(QObject *)), this, SLOT(removeWidget(QObject *)));
+        m_widgets << widget;
+    }
+}
+
+void QMeeGoGraphicsSystemSwitchHandler::removeWidget(QObject *object)
+{
+    m_widgets.removeOne(static_cast<QWidget *>(object));
+}
+
+int QMeeGoGraphicsSystemSwitchHandler::visibleWidgets() const
+{
+    int count = 0;
+    for (int i = 0; i < m_widgets.size(); ++i)
+        count += m_widgets.at(i)->isVisible() && !(m_widgets.at(i)->windowState() & Qt::WindowMinimized);
+    return count;
+}
+
+bool QMeeGoGraphicsSystemSwitchHandler::eventFilter(QObject *object, QEvent *event)
+{
+    if (event->type() == QEvent::WindowStateChange) {
+        QWindowStateChangeEvent *change = static_cast<QWindowStateChangeEvent *>(event);
+        QWidget *widget = static_cast<QWidget *>(object);
+
+        Qt::WindowStates current = widget->windowState();
+        Qt::WindowStates old = change->oldState();
+
+        // did minimized flag change?
+        if ((current ^ old) & Qt::WindowMinimized) {
+            if (current & Qt::WindowMinimized) {
+                if (visibleWidgets() == 0)
+                    QMeeGoGraphicsSystem::switchToRaster();
+            } else {
+                if (visibleWidgets() == 1)
+                    QMeeGoGraphicsSystem::switchToMeeGo();
+            }
+        }
+    }
+
+    // resume processing of event
+    return false;
+}
+
+Q_GLOBAL_STATIC(QMeeGoGraphicsSystemSwitchHandler, switch_handler)
+
 QWindowSurface* QMeeGoGraphicsSystem::createWindowSurface(QWidget *widget) const
 {
     QGLWidget *shareWidget = qt_gl_share_widget();
@@ -82,6 +156,9 @@ QWindowSurface* QMeeGoGraphicsSystem::createWindowSurface(QWidget *widget) const
         return new QRasterWindowSurface(widget);
 
     QGLShareContextScope ctx(shareWidget->context());
+
+    if (QApplicationPrivate::instance()->graphics_system_name == QLatin1String("runtime"))
+        switch_handler()->addWidget(widget);
 
     QMeeGoGraphicsSystem::surfaceWasCreated = true;
     QWindowSurface *surface = new QGLWindowSurface(widget);
@@ -203,18 +280,7 @@ QPixmapData *QMeeGoGraphicsSystem::pixmapDataWithGLTexture(int w, int h)
 
 bool QMeeGoGraphicsSystem::meeGoRunning()
 {
-    if (! QApplicationPrivate::instance()) {
-        qWarning("Application not running just yet... hard to know what system running!");
-        return false;
-    }
-
-    QString name = QApplicationPrivate::instance()->graphics_system_name;
-    if (name == "runtime") {
-        QRuntimeGraphicsSystem *rsystem = (QRuntimeGraphicsSystem *) QApplicationPrivate::instance()->graphics_system;
-        name = rsystem->graphicsSystemName();
-    }
-
-    return (name == "meego");
+    return runningGraphicsSystemName() == "meego";
 }
 
 QPixmapData* QMeeGoGraphicsSystem::pixmapDataWithNewLiveTexture(int w, int h, QImage::Format format)
@@ -257,6 +323,69 @@ void QMeeGoGraphicsSystem::destroyFenceSync(void *fenceSync)
     QGLShareContextScope ctx(qt_gl_share_widget()->context());
     QMeeGoExtensions::ensureInitialized();
     QMeeGoExtensions::eglDestroySyncKHR(QEgl::display(), fenceSync);
+}
+
+QString QMeeGoGraphicsSystem::runningGraphicsSystemName()
+{
+    if (!QApplicationPrivate::instance()) {
+        qWarning("Querying graphics system but application not running yet!");
+        return QString();
+    }
+
+    QString name = QApplicationPrivate::instance()->graphics_system_name;
+    if (name == QLatin1String("runtime")) {
+        QRuntimeGraphicsSystem *rsystem = (QRuntimeGraphicsSystem *) QApplicationPrivate::instance()->graphics_system;
+        name = rsystem->graphicsSystemName();
+    }
+
+    return name;
+}
+
+void QMeeGoGraphicsSystem::switchToMeeGo()
+{
+    if (meeGoRunning())
+        return;
+
+    if (QApplicationPrivate::instance()->graphics_system_name != QLatin1String("runtime"))
+        qWarning("Can't switch to meego - switching only supported with 'runtime' graphics system.");
+    else {
+        triggerSwitchCallbacks(0, "meego");
+
+        QApplication *app = static_cast<QApplication *>(QCoreApplication::instance());
+        app->setGraphicsSystem(QLatin1String("meego"));
+
+        triggerSwitchCallbacks(1, "meego");
+    }
+}
+
+void QMeeGoGraphicsSystem::switchToRaster()
+{
+    if (runningGraphicsSystemName() == QLatin1String("raster"))
+        return;
+
+    if (QApplicationPrivate::instance()->graphics_system_name != QLatin1String("runtime"))
+        qWarning("Can't switch to raster - switching only supported with 'runtime' graphics system.");
+    else {
+        triggerSwitchCallbacks(0, "raster");
+
+        QApplication *app = static_cast<QApplication *>(QCoreApplication::instance());
+        app->setGraphicsSystem(QLatin1String("raster"));
+
+        QMeeGoLivePixmapData::invalidateSurfaces();
+
+        triggerSwitchCallbacks(1, "raster");
+    }
+}
+
+void QMeeGoGraphicsSystem::registerSwitchCallback(QMeeGoSwitchCallback callback)
+{
+    switchCallbacks << callback;
+}
+
+void QMeeGoGraphicsSystem::triggerSwitchCallbacks(int type, const char *name)
+{
+    for (int i = 0; i < switchCallbacks.size(); ++i)
+        switchCallbacks.at(i)(type, name);
 }
 
 /* C API */
@@ -340,3 +469,20 @@ void qt_meego_invalidate_live_surfaces(void)
 {
     return QMeeGoLivePixmapData::invalidateSurfaces();
 }
+
+void qt_meego_switch_to_raster(void)
+{
+    QMeeGoGraphicsSystem::switchToRaster();
+}
+
+void qt_meego_switch_to_meego(void)
+{
+    QMeeGoGraphicsSystem::switchToMeeGo();
+}
+
+void qt_meego_register_switch_callback(QMeeGoSwitchCallback callback)
+{
+    QMeeGoGraphicsSystem::registerSwitchCallback(callback);
+}
+
+#include "qmeegographicssystem.moc"

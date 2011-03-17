@@ -100,6 +100,9 @@
 #ifdef QT_OPENGL_ES
 #include <EGL/egl.h>
 #endif
+#ifdef QGL_USE_TEXTURE_POOL
+#include <private/qgltexturepool_p.h>
+#endif
 
 // #define QT_GL_CONTEXT_RESOURCE_DEBUG
 
@@ -2033,6 +2036,10 @@ struct DDSFormat {
     the pixmap/image that it stems from, e.g. installing destruction
     hooks in them.
 
+    \omitvalue TemporarilyCachedBindOption Used by paint engines on some
+    platforms to indicate that the pixmap or image texture is possibly
+    cached only temporarily and must be destroyed immediately after the use.
+
     \omitvalue InternalBindOption
 */
 
@@ -2537,8 +2544,18 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 #endif
 
     const QImage &constRef = img; // to avoid detach in bits()...
+#ifdef QGL_USE_TEXTURE_POOL
+    QGLTexturePool::instance()->createPermanentTexture(tx_id,
+                                                        target,
+                                                        0, internalFormat,
+                                                        img.width(), img.height(),
+                                                        externalFormat,
+                                                        pixel_type,
+                                                        constRef.bits());
+#else
     glTexImage2D(target, 0, internalFormat, img.width(), img.height(), 0, externalFormat,
                  pixel_type, constRef.bits());
+#endif
 #if defined(QT_OPENGL_ES_2)
     if (genMipmap)
         glGenerateMipmap(target);
@@ -2576,7 +2593,6 @@ QGLTexture *QGLContextPrivate::textureCacheLookup(const qint64 key, GLenum targe
     }
     return 0;
 }
-
 
 /*! \internal */
 QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target, GLint format, QGLContext::BindOptions options)

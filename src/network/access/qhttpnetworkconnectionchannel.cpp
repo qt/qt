@@ -915,15 +915,18 @@ bool QHttpNetworkConnectionChannel::isSocketReading() const
 //private slots
 void QHttpNetworkConnectionChannel::_q_readyRead()
 {
-    // We got a readyRead but no bytes are available..
-    // This happens for the Unbuffered QTcpSocket
-    // Also check if socket is in ConnectedState since
-    // this function may also be invoked via the event loop.
     if (socket->state() == QAbstractSocket::ConnectedState && socket->bytesAvailable() == 0) {
+        // We got a readyRead but no bytes are available..
+        // This happens for the Unbuffered QTcpSocket
+        // Also check if socket is in ConnectedState since
+        // this function may also be invoked via the event loop.
         char c;
         qint64  ret = socket->peek(&c, 1);
         if (ret < 0) {
-            socket->disconnectFromHost();
+            _q_error(socket->error());
+            // We still need to handle the reply so it emits its signals etc.
+            if (reply)
+                _q_receiveReply();
             return;
         }
     }
@@ -1020,8 +1023,20 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
             } else {
                 errorCode = QNetworkReply::RemoteHostClosedError;
             }
+        } else if (state == QHttpNetworkConnectionChannel::ReadingState) {
+            if (!reply->d_func()->expectContent()) {
+                // No content expected, this is a valid way to have the connection closed by the server
+                return;
+            }
+            if (reply->contentLength() == -1 && !reply->d_func()->isChunked()) {
+                // There was no content-length header and it's not chunked encoding,
+                // so this is a valid way to have the connection closed by the server
+                return;
+            }
+            // ok, we got a disconnect even though we did not expect it
+            errorCode = QNetworkReply::RemoteHostClosedError;
         } else {
-            return;
+            errorCode = QNetworkReply::RemoteHostClosedError;
         }
         break;
     case QAbstractSocket::SocketTimeoutError:
@@ -1052,6 +1067,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
     if (reply) {
         reply->d_func()->errorString = errorString;
         emit reply->finishedWithError(errorCode, errorString);
+        reply = 0;
     }
     // send the next request
     QMetaObject::invokeMethod(that, "_q_startNextRequest", Qt::QueuedConnection);
