@@ -147,8 +147,8 @@ void QDeclarativeImagePrivate::setPixmap(const QPixmap &pixmap)
 /*!
     \qmlproperty enumeration Image::fillMode
 
-    Set this property to define what happens when the image set for the item is smaller
-    than the size of the item.
+    Set this property to define what happens when the source image has a different size
+    than the item.
 
     \list
     \o Image.Stretch - the image is scaled to fit
@@ -233,6 +233,9 @@ void QDeclarativeImagePrivate::setPixmap(const QPixmap &pixmap)
     \endqml
 
     \endtable
+
+    Note that \c clip is \c false by default which means that the element might
+    paint outside its bounding rectangle even if the fillMode is set to \c PreserveAspectCrop.
 
     \sa {declarative/imageelements/image}{Image example}
 */
