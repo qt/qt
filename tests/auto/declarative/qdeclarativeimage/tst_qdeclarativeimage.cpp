@@ -89,6 +89,7 @@ private slots:
     void noLoading();
     void paintedWidthHeight();
     void sourceSize_QTBUG_14303();
+    void sourceSize_QTBUG_16389();
     void nullPixmapPaint();
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
@@ -638,6 +639,29 @@ void tst_qdeclarativeimage::sourceSize_QTBUG_14303()
     QTRY_COMPARE(obj->sourceSize().width(), 200);
     QTRY_COMPARE(obj->sourceSize().height(), 200);
     QTRY_COMPARE(sourceSizeSpy.count(), 2);
+}
+
+void tst_qdeclarativeimage::sourceSize_QTBUG_16389()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/qtbug_16389.qml"));
+    canvas->show();
+    qApp->processEvents();
+
+    QDeclarativeImage *image = findItem<QDeclarativeImage>(canvas->rootObject(), "iconImage");
+    QDeclarativeItem *handle = findItem<QDeclarativeItem>(canvas->rootObject(), "blueHandle");
+
+    QCOMPARE(image->sourceSize().width(), 200);
+    QCOMPARE(image->sourceSize().height(), 200);
+    QCOMPARE(image->paintedWidth(), 0.0);
+    QCOMPARE(image->paintedHeight(), 0.0);
+
+    handle->setY(20);
+
+    QCOMPARE(image->sourceSize().width(), 200);
+    QCOMPARE(image->sourceSize().height(), 200);
+    QCOMPARE(image->paintedWidth(), 20.0);
+    QCOMPARE(image->paintedHeight(), 20.0);
 }
 
 static int numberOfWarnings = 0;
