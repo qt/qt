@@ -61,10 +61,6 @@ QT_BEGIN_NAMESPACE
 
 #define COMMAND_VERSION                         Doc::alias("version")
 int DitaXmlGenerator::id = 0;
-bool DitaXmlGenerator::inApiDesc = false;
-bool DitaXmlGenerator::inSection = false;
-bool DitaXmlGenerator::inDetailedDescription = false;
-bool DitaXmlGenerator::inLegaleseText = false;
 
 QString DitaXmlGenerator::sinceTitles[] =
     {
@@ -303,6 +299,19 @@ void DitaXmlGenerator::addLink(const QString& href,
 }
 
 /*!
+  If there are no \c {<bodydiv>} or \c {<sectiondiv>} elements
+  open, start a \c {<title>} element. Otherwise, start a
+  \c {<p>} element.
+ */
+void DitaXmlGenerator::startTitle()
+{
+    if (divNestingLevel > 0)
+        writeStartTag(DT_p);
+    else
+        writeStartTag(DT_title);
+}
+
+/*!
   Push \a t onto the dita tag stack and write the appropriate
   start tag to the DITA XML file.
  */
@@ -334,22 +343,66 @@ DitaXmlGenerator::DitaTag DitaXmlGenerator::currentTag()
 }
 
 /*!
+  If the section nesting level is 0, output a \c{<section>}
+  element with an \e id attribute set to \a idText and
+  an \e outputclass attribute set to \a outputclass.
+  If \a idText is null, no \e id attribute is output.
+  If \a outputclass is empty, no \e outputclass attribute
+  is output.
+
+  The section level is incremented and then returned.
+ */
+int DitaXmlGenerator::enterSection(const QString& outputclass, QString* idText)
+{
+    if (sectionNestingLevel == 0) {
+        writeStartTag(DT_section);
+        if (idText)
+            writeGuidAttribute(*idText);
+        if (!outputclass.isEmpty())
+            xmlWriter().writeAttribute("outputclass",outputclass);
+    }
+    return ++sectionNestingLevel;
+}
+
+/*!
+  If the section nesting level is greater than 0, decrement
+  it. If it becomes 0, output a \c {</section>}. Return the
+  decremented section nesting level.
+ */
+int DitaXmlGenerator::leaveSection()
+{
+    if (sectionNestingLevel > 0) {
+        --sectionNestingLevel;
+        if (sectionNestingLevel == 0)
+            writeEndTag(); // </section>
+    }
+    return sectionNestingLevel;
+}
+
+/*!
   The default constructor.
  */
 DitaXmlGenerator::DitaXmlGenerator()
-    : inLink(false),
+    : inApiDesc(false),
       inContents(false),
+      inDetailedDescription(false),
+      inLegaleseText(false),
+      inLink(false),
+      inObsoleteLink(false),
       inSectionHeading(false),
       inTableHeader(false),
       inTableBody(false),
-      numTableRows(0),
-      threeColumnEnumValueTable(true),
-      offlineDocs(true),
-      funcLeftParen("\\S(\\()"),
-      myTree(0),
-      obsoleteLinks(false),
       noLinks(false),
-      tableColumnCount(0)
+      obsoleteLinks(false),
+      offlineDocs(true),
+      threeColumnEnumValueTable(true),
+      codeIndent(0),
+      numTableRows(0),
+      divNestingLevel(0),
+      sectionNestingLevel(0),
+      tableColumnCount(0),
+      funcLeftParen("\\S(\\()"),
+      myTree(0)
 {
     // nothing yet.
 }
@@ -644,7 +697,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         //skipAhead = skipAtoms(atom, Atom::BriefRight);
         //break;
         //}
-        if (inApiDesc || inSection) {
+        if (inApiDesc || inSection()) {
             writeStartTag(DT_p);
             xmlWriter().writeAttribute("outputclass","brief");
         }
@@ -726,10 +779,14 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         {
             attr = atom->string();
             DitaTag t = currentTag();
-            if ((t == DT_section) || (t == DT_sectiondiv))
+            if ((t == DT_section) || (t == DT_sectiondiv)) {
                 writeStartTag(DT_sectiondiv);
-            else if ((t == DT_body) || (t == DT_bodydiv))
+                divNestingLevel++;
+            }
+            else if ((t == DT_body) || (t == DT_bodydiv)) {
                 writeStartTag(DT_bodydiv);
+                divNestingLevel++;
+            }
             if (!attr.isEmpty()) {
                 if (attr.contains('=')) {
                     int index = 0;
@@ -756,8 +813,11 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         }
         break;
     case Atom::DivRight:
-        if ((currentTag() == DT_sectiondiv) || (currentTag() == DT_bodydiv))
+        if ((currentTag() == DT_sectiondiv) || (currentTag() == DT_bodydiv)) {
             writeEndTag(); // </sectiondiv>, </bodydiv>, or </p>
+            if (divNestingLevel > 0)
+                --divNestingLevel;
+        }
         break;
     case Atom::FootnoteLeft:
         // ### For now
@@ -1364,23 +1424,19 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         }
         break;
     case Atom::SectionLeft:
-        if (inSection || inApiDesc) {
+        if (inApiDesc) {
+            writeEndTag(); // </apiDesc>
             inApiDesc = false;
-            writeEndTag(); // </section> or </apiDesc>
         }
-        inSection = true;
-        writeStartTag(DT_section);
-        writeGuidAttribute(Doc::canonicalTitle(Text::sectionHeading(atom).toString()));
-        xmlWriter().writeAttribute("outputclass","details");
+        enterSection("details");
+        //writeGuidAttribute(Doc::canonicalTitle(Text::sectionHeading(atom).toString()));
         break;
     case Atom::SectionRight:
-        if (inSection) {
-            inSection = false;
-            writeEndTag(); // </section>
-        }
+        leaveSection();
         break;
     case Atom::SectionHeadingLeft:
-        writeStartTag(DT_title);
+        startTitle();
+        writeGuidAttribute(Doc::canonicalTitle(Text::sectionHeading(atom).toString()));
         hx = "h" + QString::number(atom->string().toInt() + hOffset(relative));
         xmlWriter().writeAttribute("outputclass",hx);
         inSectionHeading = true;
@@ -1662,46 +1718,43 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         bool needOtherSection = false;
         QList<Section> summarySections;
         summarySections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
-        s = summarySections.begin();
-        while (s != summarySections.end()) {
-            if (s->members.isEmpty() && s->reimpMembers.isEmpty()) {
-                if (!s->inherited.isEmpty())
-                    needOtherSection = true;
-            }
-            else {
-                QString attr;
-                if (!s->members.isEmpty()) {
-                    writeStartTag(DT_section);
-                    attr = cleanRef((*s).name).toLower() + " redundant";
-                    xmlWriter().writeAttribute("outputclass",attr);
-                    writeStartTag(DT_title);
-                    xmlWriter().writeAttribute("outputclass","h2");
-                    writeCharacters(protectEnc((*s).name));
-                    writeEndTag(); // </title>
-                    generateSection(s->members, inner, marker, CodeMarker::Summary);
-                    generateSectionInheritedList(*s, inner, marker);
-                    writeEndTag(); // </section>
+        if (!summarySections.isEmpty()) {
+            enterSection("redundant");
+            s = summarySections.begin();
+            while (s != summarySections.end()) {
+                if (s->members.isEmpty() && s->reimpMembers.isEmpty()) {
+                    if (!s->inherited.isEmpty())
+                        needOtherSection = true;
                 }
-                if (!s->reimpMembers.isEmpty()) {
-                    QString name = QString("Reimplemented ") + (*s).name;
-                    attr = cleanRef(name).toLower() + " redundant";
-                    writeStartTag(DT_section);
-                    xmlWriter().writeAttribute("outputclass",attr);
-                    writeStartTag(DT_title);
-                    xmlWriter().writeAttribute("outputclass","h2");
-                    writeCharacters(protectEnc(name));
-                    writeEndTag(); // </title>
-                    generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
-                    generateSectionInheritedList(*s, inner, marker);
-                    writeEndTag(); // </section>
+                else {
+                    QString attr;
+                    if (!s->members.isEmpty()) {
+                        startTitle();
+                        attr  = cleanRef((*s).name).toLower() + " h2"; 
+                        xmlWriter().writeAttribute("outputclass",attr);
+                        writeCharacters(protectEnc((*s).name));
+                        writeEndTag(); // </title>
+                        generateSection(s->members, inner, marker, CodeMarker::Summary);
+                        generateSectionInheritedList(*s, inner, marker);
+                    }
+                    if (!s->reimpMembers.isEmpty()) {
+                        QString name = QString("Reimplemented ") + (*s).name;
+                        attr = cleanRef(name).toLower() + " h2";
+                        startTitle();
+                        xmlWriter().writeAttribute("outputclass",attr);
+                        writeCharacters(protectEnc(name));
+                        writeEndTag(); // </title>
+                        generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
+                        generateSectionInheritedList(*s, inner, marker);
+                    }
                 }
+                ++s;
             }
-            ++s;
+            leaveSection();
         }
         if (needOtherSection) {
-            writeStartTag(DT_section);
-            xmlWriter().writeAttribute("outputclass","additional-inherited-members redundant");
-            writeStartTag(DT_title);
+            enterSection("additional-inherited-members redundant");
+            startTitle();
             xmlWriter().writeAttribute("outputclass","h3");
             xmlWriter().writeCharacters("Additional Inherited Members");
             writeEndTag(); // </title>
@@ -1711,7 +1764,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
                     generateSectionInheritedList(*s, inner, marker);
                 ++s;
             }
-            writeEndTag(); // </section>
+            leaveSection();
         }
         
         writeDetailedDescription(nsn, marker, false, QString("Detailed Description"));
@@ -1800,46 +1853,43 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         bool needOtherSection = false;
         QList<Section> summarySections;
         summarySections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
-        s = summarySections.begin();
-        while (s != summarySections.end()) {
-            if (s->members.isEmpty() && s->reimpMembers.isEmpty()) {
-                if (!s->inherited.isEmpty())
-                    needOtherSection = true;
-            }
-            else {
-                QString attr;
-                if (!s->members.isEmpty()) {
-                    writeStartTag(DT_section);
-                    attr = cleanRef((*s).name).toLower() + " redundant";
-                    xmlWriter().writeAttribute("outputclass",attr);
-                    writeStartTag(DT_title);
-                    xmlWriter().writeAttribute("outputclass","h2");
-                    writeCharacters(protectEnc((*s).name));
-                    writeEndTag(); // </title>
-                    generateSection(s->members, inner, marker, CodeMarker::Summary);
-                    generateSectionInheritedList(*s, inner, marker);
-                    writeEndTag(); // </section>
+        if (!summarySections.isEmpty()) {
+            enterSection("redundant");
+            s = summarySections.begin();
+            while (s != summarySections.end()) {
+                if (s->members.isEmpty() && s->reimpMembers.isEmpty()) {
+                    if (!s->inherited.isEmpty())
+                        needOtherSection = true;
                 }
-                if (!s->reimpMembers.isEmpty()) {
-                    QString name = QString("Reimplemented ") + (*s).name;
-                    attr = cleanRef(name).toLower() + " redundant";
-                    writeStartTag(DT_section);
-                    xmlWriter().writeAttribute("outputclass",attr);
-                    writeStartTag(DT_title);
-                    xmlWriter().writeAttribute("outputclass","h2");
-                    writeCharacters(protectEnc(name));
-                    writeEndTag(); // </title>
-                    generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
-                    generateSectionInheritedList(*s, inner, marker);
-                    writeEndTag(); // </section>
+                else {
+                    QString attr;
+                    if (!s->members.isEmpty()) {
+                        startTitle();
+                        attr = cleanRef((*s).name).toLower() + " h2";
+                        xmlWriter().writeAttribute("outputclass",attr);
+                        writeCharacters(protectEnc((*s).name));
+                        writeEndTag(); // </title>
+                        generateSection(s->members, inner, marker, CodeMarker::Summary);
+                        generateSectionInheritedList(*s, inner, marker);
+                    }
+                    if (!s->reimpMembers.isEmpty()) {
+                        QString name = QString("Reimplemented ") + (*s).name;
+                        attr = cleanRef(name).toLower() + " h2";
+                        startTitle();
+                        xmlWriter().writeAttribute("outputclass",attr);
+                        writeCharacters(protectEnc(name));
+                        writeEndTag(); // </title>
+                        generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
+                        generateSectionInheritedList(*s, inner, marker);
+                    }
                 }
+                ++s;
             }
-            ++s;
+            leaveSection();
         }
         if (needOtherSection) {
-            writeStartTag(DT_section);
-            xmlWriter().writeAttribute("outputclass","additional-inherited-members redundant");
-            writeStartTag(DT_title);
+            enterSection("additional-inherited-members redundant");
+            startTitle();
             xmlWriter().writeAttribute("outputclass","h3");
             xmlWriter().writeCharacters("Additional Inherited Members");
             writeEndTag(); // </title>
@@ -1849,7 +1899,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
                     generateSectionInheritedList(*s, inner, marker);
                 ++s;
             }
-            writeEndTag(); // </section>
+            leaveSection();
         }
         
         writeDetailedDescription(cn, marker, false, QString("Detailed Description"));
@@ -1922,46 +1972,43 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         bool needOtherSection = false;
         QList<Section> summarySections;
         summarySections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
-        s = summarySections.begin();
-        while (s != summarySections.end()) {
-            if (s->members.isEmpty() && s->reimpMembers.isEmpty()) {
-                if (!s->inherited.isEmpty())
-                    needOtherSection = true;
-            }
-            else {
-                QString attr;
-                if (!s->members.isEmpty()) {
-                    writeStartTag(DT_section);
-                    attr = cleanRef((*s).name).toLower() + " redundant";
-                    xmlWriter().writeAttribute("outputclass",attr);
-                    writeStartTag(DT_title);
-                    xmlWriter().writeAttribute("outputclass","h2");
-                    writeCharacters(protectEnc((*s).name));
-                    writeEndTag(); // </title>
-                    generateSection(s->members, inner, marker, CodeMarker::Summary);
-                    generateSectionInheritedList(*s, inner, marker);
-                    writeEndTag(); // </section>
+        if (!summarySections.isEmpty()) {
+            enterSection("redundant");
+            s = summarySections.begin();
+            while (s != summarySections.end()) {
+                if (s->members.isEmpty() && s->reimpMembers.isEmpty()) {
+                    if (!s->inherited.isEmpty())
+                        needOtherSection = true;
                 }
-                if (!s->reimpMembers.isEmpty()) {
-                    QString name = QString("Reimplemented ") + (*s).name;
-                    attr = cleanRef(name).toLower() + " redundant";
-                    writeStartTag(DT_section);
-                    xmlWriter().writeAttribute("outputclass",attr);
-                    writeStartTag(DT_title);
-                    xmlWriter().writeAttribute("outputclass","h2");
-                    writeCharacters(protectEnc(name));
-                    writeEndTag(); // </title>
-                    generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
-                    generateSectionInheritedList(*s, inner, marker);
-                    writeEndTag(); // </section>
+                else {
+                    QString attr;
+                    if (!s->members.isEmpty()) {
+                        startTitle();
+                        attr = cleanRef((*s).name).toLower() + " h2";
+                        xmlWriter().writeAttribute("outputclass",attr);
+                        writeCharacters(protectEnc((*s).name));
+                        writeEndTag(); // </title>
+                        generateSection(s->members, inner, marker, CodeMarker::Summary);
+                        generateSectionInheritedList(*s, inner, marker);
+                    }
+                    if (!s->reimpMembers.isEmpty()) {
+                        QString name = QString("Reimplemented ") + (*s).name;
+                        attr = cleanRef(name).toLower() + " h2";
+                        startTitle();
+                        xmlWriter().writeAttribute("outputclass",attr);
+                        writeCharacters(protectEnc(name));
+                        writeEndTag(); // </title>
+                        generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
+                        generateSectionInheritedList(*s, inner, marker);
+                    }
                 }
+                ++s;
             }
-            ++s;
+            leaveSection();
         }
         if (needOtherSection) {
-            writeStartTag(DT_section);
-            xmlWriter().writeAttribute("outputclass","additional-inherited-members redundant");
-            writeStartTag(DT_title);
+            enterSection("additional-inherited-members redundant");
+            startTitle();
             xmlWriter().writeAttribute("outputclass","h3");
             xmlWriter().writeCharacters("Additional Inherited Members");
             writeEndTag(); // </title>
@@ -1971,7 +2018,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
                     generateSectionInheritedList(*s, inner, marker);
                 ++s;
             }
-            writeEndTag(); // </section>
+            leaveSection();
         }
         
         writeDetailedDescription(fn, marker, false, QString("Detailed Description"));
@@ -2042,23 +2089,24 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         QList<Section> summarySections;
         summarySections = marker->qmlSections(qcn,CodeMarker::Summary,0);
-        s = summarySections.begin();
-        while (s != summarySections.end()) {
-            QString attr;
-            if (!s->members.isEmpty()) {
-                writeStartTag(DT_section);
-                attr = cleanRef((*s).name).toLower() + " redundant";
-                xmlWriter().writeAttribute("outputclass",attr);
-                writeStartTag(DT_title);
-                xmlWriter().writeAttribute("outputclass","h2");
-                writeCharacters(protectEnc((*s).name));
-                writeEndTag(); // </title>
-                generateQmlSummary(*s,qcn,marker);
-                //generateSection(s->members, inner, marker, CodeMarker::Summary);
-                //generateSectionInheritedList(*s, inner, marker);
-                writeEndTag(); // </section>
+        if (!summarySections.isEmpty()) {
+            enterSection("redundant");
+            s = summarySections.begin();
+            while (s != summarySections.end()) {
+                QString attr;
+                if (!s->members.isEmpty()) {
+                    startTitle();
+                    attr = cleanRef((*s).name).toLower() + " h2";
+                    xmlWriter().writeAttribute("outputclass",attr);
+                    writeCharacters(protectEnc((*s).name));
+                    writeEndTag(); // </title>
+                    generateQmlSummary(*s,qcn,marker);
+                    //generateSection(s->members, inner, marker, CodeMarker::Summary);
+                    //generateSectionInheritedList(*s, inner, marker);
+                }
+                ++s;
             }
-            ++s;
+            leaveSection();
         }
         
         writeDetailedDescription(qcn, marker, false, QString("Detailed Description"));
@@ -2067,29 +2115,27 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         QList<Section> detailSections;
         detailSections = marker->qmlSections(qcn,CodeMarker::Detailed,0);
-        s = detailSections.begin();
-        while (s != detailSections.end()) {
-            if (!s->members.isEmpty()) {
-                QString attr;
-                inSection = true;
-                writeStartTag(DT_section);
-                attr = cleanRef((*s).name).toLower();
-                xmlWriter().writeAttribute("outputclass",attr);
-                writeStartTag(DT_title);
-                xmlWriter().writeAttribute("outputclass","h2");
-                writeCharacters(protectEnc((*s).name));
-                writeEndTag(); // </title>
-                NodeList::ConstIterator m = (*s).members.begin();
-                while (m != (*s).members.end()) {
-                    generateDetailedQmlMember(*m, qcn, marker);
-                    ++m;
+        if (!detailSections.isEmpty()) {
+            enterSection("details");
+            s = detailSections.begin();
+            while (s != detailSections.end()) {
+                if (!s->members.isEmpty()) {
+                    QString attr;
+                    startTitle();
+                    attr = cleanRef((*s).name).toLower() + " h2";
+                    xmlWriter().writeAttribute("outputclass",attr);
+                    writeCharacters(protectEnc((*s).name));
+                    writeEndTag(); // </title>
+                    NodeList::ConstIterator m = (*s).members.begin();
+                    while (m != (*s).members.end()) {
+                        generateDetailedQmlMember(*m, qcn, marker);
+                        ++m;
+                    }
                 }
-                writeEndTag(); // </section>
-                inSection = false;
+                ++s;
             }
-            ++s;
+            leaveSection();
         }
-
         writeEndTag(); // </cxxClassDetail>        
         writeEndTag(); // </cxxClass>
     }
@@ -2139,24 +2185,22 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode* fake, CodeMarker* marker
     if (fake->subType() == Node::Module) {
         generateStatus(fake, marker);
         if (moduleNamespaceMap.contains(fake->name())) {
-            writeStartTag(DT_section);
-            xmlWriter().writeAttribute("outputclass","namespaces");
-            writeStartTag(DT_title);
+            enterSection("namespaces");
+            startTitle();
             xmlWriter().writeAttribute("outputclass","h2");
             xmlWriter().writeCharacters("Namespaces");
             writeEndTag(); // </title>
             generateAnnotatedList(fake, marker, moduleNamespaceMap[fake->name()]);
-            writeEndTag(); // </section>
+            leaveSection();
         }
         if (moduleClassMap.contains(fake->name())) {
-            writeStartTag(DT_section);
-            xmlWriter().writeAttribute("outputclass","classes");
-            writeStartTag(DT_title);
+            enterSection("classes");
+            startTitle();
             xmlWriter().writeAttribute("outputclass","h2");
             xmlWriter().writeCharacters("Classes");
             writeEndTag(); // </title>
             generateAnnotatedList(fake, marker, moduleClassMap[fake->name()]);
-            writeEndTag(); // </section>
+            leaveSection();
         }
     }
 
@@ -5333,6 +5377,7 @@ void DitaXmlGenerator::beginSubPage(const Location& location,
     writer->setAutoFormatting(true);
     writer->setAutoFormattingIndent(4);
     writer->writeStartDocument();
+    clearSectionNesting();
 }
 
 /*!
@@ -5342,6 +5387,8 @@ void DitaXmlGenerator::beginSubPage(const Location& location,
  */
 void DitaXmlGenerator::endSubPage()
 {
+    if (inSection())
+        qDebug() << "Missing </section> in" << outFileName() << sectionNestingLevel;
     xmlWriter().writeEndDocument();
     delete xmlWriterStack.pop();
     PageGenerator::endSubPage();
@@ -5387,19 +5434,17 @@ void DitaXmlGenerator::writeDetailedDescription(const Node* node,
             xmlWriter().writeAttribute("outputclass","details");
         }
         else {
-            inSection = true;
-            writeStartTag(DT_section);
-            if (!title.isEmpty()) {
-                writeGuidAttribute(title);
-                xmlWriter().writeAttribute("outputclass","details");
-                writeStartTag(DT_title);
+            QString t = title;
+            if (!t.isEmpty()) {
+                enterSection("details",&t); 
+                startTitle();
                 xmlWriter().writeAttribute("outputclass","h2");
                 writeCharacters(title);
                 writeEndTag(); // </title>
             }
             else {
-                writeGuidAttribute("Detailed Description");
-                xmlWriter().writeAttribute("outputclass","details");
+                t = "Detailed Description";
+                enterSection("details",&t); 
             }
         }
         generateBody(node, marker);
@@ -5407,9 +5452,8 @@ void DitaXmlGenerator::writeDetailedDescription(const Node* node,
             writeEndTag(); // </apiDesc>
             inApiDesc = false;
         }
-        else if (inSection) {
-            writeEndTag(); // </section>
-            inSection = false;
+        else if (inSection()) {
+            leaveSection();
         }
     }
     inDetailedDescription = false;
