@@ -5,6 +5,7 @@ CONFIG += building-libs
 
 QT =
 
+win32|mac:!macx-xcode:CONFIG += debug_and_release
 macx:CONFIG(debug, debug|release) {
     TARGET = v8_debug
 }

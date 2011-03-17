@@ -3,6 +3,7 @@ CONFIG += staticlib
 
 CONFIG += building-libs
 
+win32|mac:!macx-xcode:CONFIG += debug_and_release
 macx:CONFIG(debug, debug|release) {
     TARGET = snapshot_debug
 }
