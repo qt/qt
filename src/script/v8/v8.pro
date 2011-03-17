@@ -173,7 +173,7 @@ V8SOURCES += \
 }
 
 # FIXME Should we use QT_CONFIG instead? What about 32 bit Macs?
-arch_x86_64|equals(QMAKE_HOST.arch, x86_64) {
+arch_x86_64|contains(CONFIG, x86_64) {
 DEFINES += V8_TARGET_ARCH_X64
 V8SOURCES += \
     $$V8DIR/src/jump-target-heavy.cc \
