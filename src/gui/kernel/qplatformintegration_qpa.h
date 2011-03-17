@@ -98,7 +98,7 @@ public:
 //jl:XXX should it be hasGLContext and do we need it at all?
     virtual bool hasOpenGL() const;
 
-// Access native handles. The window handle is allready available from Wid;
+// Access native handles. The window handle is already available from Wid;
     virtual QPlatformNativeInterface *nativeInterface() const;
 };
 

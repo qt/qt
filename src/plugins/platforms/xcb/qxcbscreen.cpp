@@ -49,7 +49,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
     , m_number(number)
 {
     printf ("\n");
-    printf ("Informations of screen %d:\n", screen->root);
+    printf ("Information of screen %d:\n", screen->root);
     printf ("  width.........: %d\n", screen->width_in_pixels);
     printf ("  height........: %d\n", screen->height_in_pixels);
     printf ("  depth.........: %d\n", screen->root_depth);
