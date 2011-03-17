@@ -78,6 +78,8 @@ public:
 
     QPaintEngine *paintEngine() const;
 
+    bool hasStaticContentsSupport() const;
+
 protected:
     int metric(PaintDeviceMetric metric) const;
 

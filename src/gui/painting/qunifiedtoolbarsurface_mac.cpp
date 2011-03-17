@@ -55,7 +55,6 @@ QUnifiedToolbarSurface::QUnifiedToolbarSurface(QWidget *widget)
 {
     d_ptr->image = 0;
     d_ptr->inSetGeometry = false;
-    setStaticContentsSupport(true);
 
     setGeometry(QRect(QPoint(0, 0), QSize(widget->width(), 100))); // FIXME: Fix height.
 }

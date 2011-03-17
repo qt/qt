@@ -299,6 +299,8 @@ struct QGLWindowSurfacePrivate
     QList<QImage> buffers;
     QGLWindowSurfaceGLPaintDevice glDevice;
     QGLWindowSurface* q_ptr;
+
+    bool partialUpdateSupport;
 };
 
 QGLFormat QGLWindowSurface::surfaceFormat;
@@ -351,6 +353,7 @@ QGLWindowSurface::QGLWindowSurface(QWidget *window)
     d_ptr->q_ptr = this;
     d_ptr->geometry_updated = false;
     d_ptr->did_paint = false;
+    d_ptr->partialUpdateSupport = false;
 }
 
 QGLWindowSurface::~QGLWindowSurface()
@@ -429,11 +432,11 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 
     if (ctx->d_func()->eglContext->configAttrib(EGL_SWAP_BEHAVIOR) != EGL_BUFFER_PRESERVED &&
         ! haveNOKSwapRegion)
-        setPartialUpdateSupport(false); // Force full-screen updates
+        d_ptr->partialUpdateSupport = false; // Force full-screen updates
     else
-        setPartialUpdateSupport(true);
+        d_ptr->partialUpdateSupport = true;
 #else
-    setPartialUpdateSupport(false);
+    d_ptr->partialUpdateSupport = false;
 #endif
 
     widgetPrivate->extraData()->glContext = ctx;
@@ -1079,6 +1082,11 @@ QImage *QGLWindowSurface::buffer(const QWidget *widget)
     QImage subImage = image.copy(rect);
     d_ptr->buffers << subImage;
     return &d_ptr->buffers.last();
+}
+
+bool QGLWindowSurface::hasPartialUpdateSupport() const
+{
+    return d_ptr->partialUpdateSupport;
 }
 
 

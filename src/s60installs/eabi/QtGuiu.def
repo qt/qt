@@ -3164,7 +3164,6 @@ EXPORTS
 	_ZN14QWindowSurface10beginPaintERK7QRegion @ 3163 NONAME
 	_ZN14QWindowSurface11setGeometryERK5QRect @ 3164 NONAME
 	_ZN14QWindowSurface17setStaticContentsERK7QRegion @ 3165 NONAME
-	_ZN14QWindowSurface24setStaticContentsSupportEb @ 3166 NONAME
 	_ZN14QWindowSurface6bufferEPK7QWidget @ 3167 NONAME
 	_ZN14QWindowSurface6scrollERK7QRegionii @ 3168 NONAME
 	_ZN14QWindowSurface8endPaintERK7QRegion @ 3169 NONAME
@@ -11887,7 +11886,6 @@ EXPORTS
 	_ZN14QGraphicsScale13zScaleChangedEv @ 11886 NONAME
 	_ZN14QPaintEngineEx19drawPixmapFragmentsEPKN8QPainter14PixmapFragmentEiRK7QPixmap6QFlagsINS0_18PixmapFragmentHintEE @ 11887 NONAME
 	_ZN14QWidgetPrivate6renderEP12QPaintDeviceRK6QPointRK7QRegion6QFlagsIN7QWidget10RenderFlagEEb @ 11888 NONAME
-	_ZN14QWindowSurface23setPartialUpdateSupportEb @ 11889 NONAME
 	_ZN15QGraphicsObject12widthChangedEv @ 11890 NONAME
 	_ZN15QGraphicsObject13heightChangedEv @ 11891 NONAME
 	_ZN15QGraphicsObject15childrenChangedEv @ 11892 NONAME

@@ -90,8 +90,6 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
         data->fromSymbianBitmap(bitmap, true);
         d_ptr->device = QPixmap(data);
     }
-
-    setStaticContentsSupport(true);
 }
 
 QS60WindowSurface::~QS60WindowSurface()
@@ -229,6 +227,11 @@ void QS60WindowSurface::setGeometry(const QRect& rect)
     data->resize(rect.width(), rect.height());
 
     QWindowSurface::setGeometry(rect);
+}
+
+bool QS60WindowSurface::hasStaticContentsSupport() const
+{
+    return true;
 }
 
 CFbsBitmap* QS60WindowSurface::symbianBitmap() const

@@ -97,8 +97,8 @@ struct QFontDef
     uint stretch    : 12; // 0-400
 
     uint ignorePitch : 1;
-    uint fixedPitchComputed : 1; // for Mac OS X only
     uint hintingPreference : 2;
+    uint fixedPitchComputed : 1; // for Mac OS X only
     int reserved   : 14; // for future extensions
 
     bool exactMatch(const QFontDef &other) const;

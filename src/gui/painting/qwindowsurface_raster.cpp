@@ -103,7 +103,6 @@ QRasterWindowSurface::QRasterWindowSurface(QWidget *window, bool setDefaultSurfa
 #endif
     d_ptr->image = 0;
     d_ptr->inSetGeometry = false;
-    setStaticContentsSupport(true);
 }
 
 
@@ -423,6 +422,11 @@ bool QRasterWindowSurface::scroll(const QRegion &area, int dx, int dy)
 
     return true;
 #endif
+}
+
+bool QRasterWindowSurface::hasStaticContentsSupport() const
+{
+    return true;
 }
 
 

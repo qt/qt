@@ -90,7 +90,7 @@ public:
         NoAntialias         = 0x0100,
         OpenGLCompatible    = 0x0200,
         ForceIntegerMetrics = 0x0400,
-        NoFontMerging       = 0x8000,
+        NoFontMerging       = 0x8000
     };
 
     enum HintingPreference {
