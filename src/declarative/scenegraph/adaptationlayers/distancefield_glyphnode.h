@@ -43,6 +43,7 @@
 #define DISTANCEFIELD_GLYPHNODE_H
 
 #include "adaptationlayer.h"
+#include <qsgtext_p.h>
 
 class DistanceFieldFontAtlas;
 class DistanceFieldTextMaterial;
@@ -56,9 +57,13 @@ public:
     virtual void setGlyphs(const QPointF &position, const QGlyphs &glyphs);
     virtual void setColor(const QColor &color);
 
+    void setStyle(QSGText::TextStyle style);
+    void setStyleColor(const QColor &color);
+
 private:
     void updateGeometry();
     void updateFont();
+    void updateMaterial();
 
     QPointF m_baseLine;
     DistanceFieldTextMaterial *m_material;
@@ -66,6 +71,8 @@ private:
     QGlyphs m_glyphs;
     DistanceFieldFontAtlas *m_glyph_atlas;
     QSGGeometry m_geometry;
+    QSGText::TextStyle m_style;
+    QColor m_styleColor;
 };
 
 

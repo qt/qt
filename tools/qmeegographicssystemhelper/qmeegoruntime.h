@@ -62,6 +62,7 @@ public:
     static Qt::HANDLE getLiveTextureHandle(QPixmap *pixmap);
     static void* createFenceSync();
     static void destroyFenceSync(void *fs);
+    static void invalidateLiveSurfaces();
 
 private:
     static bool initialized;

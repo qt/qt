@@ -47,6 +47,14 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \class QSGTextureProvider
+    \brief The QSGTextureProvider class encapsulates texture based entities in QML.
+
+    The QSGTextureProvider objects are live primarily on the QML thread, aside from
+    the functions that are specified otherwise.
+ */
+
 QSGTextureProvider::QSGTextureProvider(QObject *parent)
     : QObject(parent)
     , m_opaque(false)
@@ -67,6 +75,17 @@ QSGTextureProvider::QSGTextureProvider(QObject *parent)
     not been emitted, so implementations should consider doing some caching.
  */
 
+/*!
+    Returns true if this texture provider contains a texture that might change content
+    over time.
+
+    The default implementation returns false, meaning the texture may change from
+    frame to frame.
+ */
+bool QSGTextureProvider::isStaticTexture() const
+{
+    return false;
+}
 
 GLint QSGTextureProvider::glTextureWrapS() const
 {

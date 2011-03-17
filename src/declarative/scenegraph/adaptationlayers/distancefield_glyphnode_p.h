@@ -44,6 +44,8 @@
 
 #include <material.h>
 
+class DistanceFieldFontAtlas;
+
 class DistanceFieldTextMaterial: public AbstractMaterial
 {
 public:
@@ -63,6 +65,9 @@ public:
     void setScale(qreal scale) { m_scale = scale; }
     qreal scale() const { return m_scale; }
 
+    void setAtlas(DistanceFieldFontAtlas *a) { m_atlas = a; }
+    DistanceFieldFontAtlas *atlas() const { return m_atlas; }
+
     bool updateTextureFiltering()
     {
         bool oldDirty = m_dirtyTexture;
@@ -70,11 +75,55 @@ public:
         return oldDirty;
     }
 
-private:
+protected:
     QSGTextureRef m_texture;
     QColor m_color;
     qreal m_scale;
     bool m_dirtyTexture;
+    DistanceFieldFontAtlas *m_atlas;
+};
+
+class DistanceFieldStyledTextMaterial : public DistanceFieldTextMaterial
+{
+public:
+    DistanceFieldStyledTextMaterial();
+    ~DistanceFieldStyledTextMaterial();
+
+    virtual AbstractMaterialType *type() const = 0;
+    virtual AbstractMaterialShader *createShader() const = 0;
+    virtual int compare(const AbstractMaterial *other) const;
+
+    void setStyleColor(const QColor &color) { m_styleColor = color; }
+    const QColor &styleColor() const { return m_styleColor; }
+
+protected:
+    QColor m_styleColor;
+};
+
+class DistanceFieldOutlineTextMaterial : public DistanceFieldStyledTextMaterial
+{
+public:
+    DistanceFieldOutlineTextMaterial();
+    ~DistanceFieldOutlineTextMaterial();
+
+    virtual AbstractMaterialType *type() const;
+    virtual AbstractMaterialShader *createShader() const;
+};
+
+class DistanceFieldShiftedStyleTextMaterial : public DistanceFieldStyledTextMaterial
+{
+public:
+    DistanceFieldShiftedStyleTextMaterial();
+    ~DistanceFieldShiftedStyleTextMaterial();
+
+    virtual AbstractMaterialType *type() const;
+    virtual AbstractMaterialShader *createShader() const;
+
+    void setShift(const QPointF &shift) { m_shift = shift; }
+    const QPointF &shift() const { return m_shift; }
+
+protected:
+    QPointF m_shift;
 };
 
 #endif // DISTANCEFIELDTEXTMATERIAL_H

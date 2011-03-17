@@ -56,7 +56,7 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/private/qfontengine_p.h>
 
-#include <qvg_p.h>
+#include "qvg_p.h"
 
 QT_BEGIN_NAMESPACE
 

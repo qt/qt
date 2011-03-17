@@ -320,6 +320,14 @@ Text {
 
 In the element documentation grouped properties are shown using the 'dot' notation.
 
+While you can bind the entire group at once, like below, note that setting any of the
+grouped properties will result in setting the group and thus invalidate the binding.
+\qml
+Text {
+    font: otherText.font
+}
+\endqml
+
 \section2 Attached Properties
 \target attached-properties
 

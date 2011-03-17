@@ -215,7 +215,7 @@ void qt_mac_update_cursor()
         widgetUnderMouse = qt_button_down;
     } else {
         QPoint localPoint;
-        QPoint globalPoint = QCursor::pos();
+        QPoint globalPoint;
         qt_mac_getTargetForMouseEvent(0, QEvent::None, localPoint, globalPoint, 0, &widgetUnderMouse);
     }
     qt_mac_updateCursorWithWidgetUnderMouse(widgetUnderMouse);

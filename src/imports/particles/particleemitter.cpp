@@ -6,6 +6,7 @@ ParticleEmitter::ParticleEmitter(QSGItem *parent) :
   , m_particleDuration(1000)
   , m_particleDurationVariation(0)
   , m_emitting(true)
+  , m_system(0)
 
 {
 }
