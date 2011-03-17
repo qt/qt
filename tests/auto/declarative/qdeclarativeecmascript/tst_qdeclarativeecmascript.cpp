@@ -2685,6 +2685,25 @@ void tst_qdeclarativeecmascript::scarceResources()
     QVERIFY(!(eo->scarceResourceIsDetached())); // should be another copy of the resource now.
     QVERIFY(ep->scarceResources == 0); // should have been released by this point.
     delete object;
+
+    // test that scarce resources are handled properly from js functions in qml files
+    QDeclarativeComponent componentEleven(&engine, TEST_FILE("scarceresources/scarceResourceFunction.qml"));
+    object = componentEleven.create();
+    QVERIFY(object != 0);
+    QVERIFY(!object->property("scarceResourceCopy").isValid()); // not yet assigned, so should not be valid
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(eo->scarceResourceIsDetached()); // should be no other copies of it at this stage.
+    QMetaObject::invokeMethod(object, "retrieveScarceResource");
+    QVERIFY(object->property("scarceResourceCopy").isValid()); // assigned, so should be valid.
+    QCOMPARE(object->property("scarceResourceCopy").value<QPixmap>(), origPixmap);
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(!eo->scarceResourceIsDetached()); // should be a copy of the resource at this stage.
+    QMetaObject::invokeMethod(object, "releaseScarceResource");
+    QVERIFY(!object->property("scarceResourceCopy").isValid()); // just released, so should not be valid
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(eo->scarceResourceIsDetached()); // should be no other copies of it at this stage.
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
+    delete object;
 }
 
 // Test that assigning a null object works 
