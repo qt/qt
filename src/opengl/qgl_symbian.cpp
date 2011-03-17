@@ -52,6 +52,7 @@
 #include <private/qwidget_p.h> // to access QWExtra
 #include "qgl_egl_p.h"
 #include "qpixmapdata_gl_p.h"
+#include "qgltexturepool_p.h"
 #include "qcolormap.h"
 #include <QDebug>
 
