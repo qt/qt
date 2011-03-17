@@ -47,6 +47,7 @@
 
 #include "qglframebufferobject.h"
 #include "qmath.h"
+#include "qsgtexture_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -186,9 +187,11 @@ void ShaderEffectTextureProvider::grab()
             format.setSamples(0);
             m_fbo = new QGLFramebufferObject(m_size, format);
 
-            QSGTexture *tex = new QSGTexture;
+            QSGPlainTexture *tex = new QSGPlainTexture;
+            tex->setTextureSize(QSize(m_fbo->size()));
             tex->setTextureId(m_fbo->texture());
             tex->setOwnsTexture(false);
+            tex->setHasMipmaps(mipmap);
             m_texture = QSGTextureRef(tex);
         } else {
             delete m_fbo;
@@ -197,9 +200,11 @@ void ShaderEffectTextureProvider::grab()
             format.setInternalTextureFormat(m_format);
             format.setMipmap(m_mipmap);
             m_fbo = new QGLFramebufferObject(m_size, format);
-            QSGTexture *tex = new QSGTexture;
+            QSGPlainTexture *tex = new QSGPlainTexture;
+            tex->setTextureSize(QSize(m_fbo->size()));
             tex->setTextureId(m_fbo->texture());
             tex->setOwnsTexture(false);
+            tex->setHasMipmaps(mipmap);
             m_texture = QSGTextureRef(tex);
         }
     }
@@ -241,7 +246,7 @@ void ShaderEffectTextureProvider::grab()
     }
 
     if (mipmap) {
-        m_renderer->setTexture(0, m_texture);
+        glBindTexture(GL_TEXTURE_2D, m_texture->textureId());
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 

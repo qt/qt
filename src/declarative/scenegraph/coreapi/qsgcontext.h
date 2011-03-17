@@ -52,10 +52,8 @@ class RectangleNodeInterface;
 class TextureNodeInterface;
 class GlyphNodeInterface;
 class Renderer;
-class QSGTextureManager;
 
-class QSGTextureProvider;
-class QSGImageTextureProvider;
+class QSGTexture;
 
 class QGLContext;
 
@@ -70,8 +68,6 @@ public:
     void initialize(QGLContext *context);
 
     Renderer *renderer() const;
-
-    QSGTextureManager *textureManager() const;
 
     void setRootNode(RootNode *node);
     RootNode *rootNode() const;
@@ -88,13 +84,12 @@ public:
     virtual TextureNodeInterface *createTextureNode();
     virtual GlyphNodeInterface *createGlyphNode();
     virtual Renderer *createRenderer();
-    virtual QSGTextureManager *createTextureManager(QSGContext *context);
-    virtual QSGImageTextureProvider *createImageTextureProvider(QObject *parent = 0);
 
     virtual bool canDecodeImageToTexture() const;
-    virtual QSGTextureProvider *decodeImageToTexture(QIODevice *dev,
+    virtual QSGTexture *decodeImageToTexture(QIODevice *dev,
                                                      QSize *size,
                                                      const QSize &requestSize);
+    virtual QSGTexture *createTexture() const;
 
     static QSGContext *createDefaultContext();
 

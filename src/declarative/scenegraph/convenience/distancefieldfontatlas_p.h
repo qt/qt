@@ -44,7 +44,7 @@
 
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
-#include <QtDeclarative/qsgtexturemanager.h>
+#include <QtDeclarative/qsgtexture.h>
 
 void qt_disableFontHinting(QFont &font);
 

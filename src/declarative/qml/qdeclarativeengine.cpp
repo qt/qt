@@ -105,6 +105,7 @@
 #include <private/qdeclarativeitemsmodule_p.h>
 #include <private/qdeclarativeutilmodule_p.h>
 #include <private/qsgitemsmodule_p.h>
+#include <qsgtexture.h>
 
 #ifdef Q_OS_WIN // for %APPDATA%
 #include <qt_windows.h>
@@ -839,7 +840,7 @@ QDeclarativeImageProvider::ImageType QDeclarativeEnginePrivate::getImageProvider
     return static_cast<QDeclarativeImageProvider::ImageType>(-1);
 }
 
-QSGTextureProvider *QDeclarativeEnginePrivate::getTextureFromProvider(const QUrl &url, QSize *size, const QSize& req_size)
+QSGTexture *QDeclarativeEnginePrivate::getTextureFromProvider(const QUrl &url, QSize *size, const QSize& req_size)
 {
     QMutexLocker locker(&mutex);
     QSharedPointer<QDeclarativeImageProvider> provider = imageProviders.value(url.host());

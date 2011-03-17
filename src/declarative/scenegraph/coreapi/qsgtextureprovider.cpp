@@ -65,6 +65,24 @@ QSGTextureProvider::QSGTextureProvider(QObject *parent)
 {
 }
 
+
+/*!
+    Propegate the state in the texture provider to the texture and
+    binds the texture.
+ */
+void QSGTextureProvider::bind(QSGTexture *oldTexture)
+{
+    QSGTexture *t = texture().texture();
+    t->setFiltering((QSGTexture::Filtering) filtering());
+    t->setMipmapFiltering((QSGTexture::Filtering) mipmap());
+    t->setHorizontalWrapMode((QSGTexture::WrapMode) horizontalWrapMode());
+    t->setVerticalWrapMode((QSGTexture::WrapMode) verticalWrapMode());
+    if (t != oldTexture)
+        t->bind();
+    else
+        t->updateBindOptions();
+}
+
 /*!
     \fn void QSGTextureProvider::updateTexture()
 

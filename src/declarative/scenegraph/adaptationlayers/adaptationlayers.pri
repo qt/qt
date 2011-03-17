@@ -18,13 +18,3 @@ SOURCES += \
     $$PWD/distancefield_glyphnode.cpp \
     $$PWD/distancefield_glyphnode_p.cpp
 
-macx:{
-    SOURCES += $$PWD/qsgmactexturemanager_mac.cpp
-    HEADERS += $$PWD/qsgmactexturemanager_mac_p.h
-}
-
-
-#contains(QT_CONFIG, qpa) {
-#    SOURCES += $$PWD/qsgeglfsthreadedtexturemanager.cpp
-#    HEADERS += $$PWD/qsgeglfsthreadedtexturemanager.h
-#}
