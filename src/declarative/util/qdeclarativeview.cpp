@@ -293,6 +293,13 @@ void QDeclarativeViewPrivate::init()
     q->setFocusPolicy(Qt::StrongFocus);
 
     q->scene()->setStickyFocus(true);  //### needed for correct focus handling
+
+#ifdef QDECLARATIVEVIEW_NOBACKGROUND
+    q->setAttribute(Qt::WA_OpaquePaintEvent);
+    q->setAttribute(Qt::WA_NoSystemBackground);
+    q->viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
+    q->viewport()->setAttribute(Qt::WA_NoSystemBackground);
+#endif
 }
 
 /*!
