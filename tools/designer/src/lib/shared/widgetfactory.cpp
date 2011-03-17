@@ -412,8 +412,10 @@ QWidget *WidgetFactory::createWidget(const QString &widgetName, QWidget *parentW
             // Currently happens in the case of Q3-Support widgets
             baseClass =fallBackBaseClass;
         }
-        w = createWidget(baseClass, parentWidget);
-        promoteWidget(core(),w,widgetName);
+        if (QWidget *promotedWidget = createWidget(baseClass, parentWidget)) {
+            promoteWidget(core(), promotedWidget, widgetName);
+            return promotedWidget;  // Do not initialize twice.
+        }
     } while (false);
 
     Q_ASSERT(w != 0);
