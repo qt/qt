@@ -360,6 +360,11 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
         return;
     }
 
+    // The disk cache API does not currently support partial content retrieval.
+    // That is why we don't use the disk cache for any such requests.
+    if (request().hasRawHeader("Range"))
+        return;
+
     QAbstractNetworkCache *nc = networkCache();
     if (!nc)
         return;                 // no local cache
