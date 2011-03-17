@@ -142,6 +142,7 @@ equals(GENERATE_SIS_TARGETS, true) {
                 && echo QT_SIS_TARGET ?= $(QT_SIS_TARGET) >> $$make_cache_name
 
             QMAKE_EXTRA_TARGETS += store_build_target
+            QMAKE_CLEAN += $$make_cache_name
         }
     } else {
         sis_destdir = $$DESTDIR
