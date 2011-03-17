@@ -107,18 +107,21 @@ struct QSystemLocalePrivate
 private:
     QByteArray langEnvVar;
 
-    // cached values:
-    LCID lcid;
-
-    QString getLocaleInfo(LCTYPE type, int maxlen = 0);
-    int getLocaleInfo_int(LCTYPE type, int maxlen = 0);
-    QChar getLocaleInfo_qchar(LCTYPE type);
-
     enum SubstitutionType {
+        SUnknown,
         SContext,
         SAlways,
         SNever
     };
+
+    // cached values:
+    LCID lcid;
+    SubstitutionType substitutionType;
+    QChar zeroDigit;
+
+    QString getLocaleInfo(LCTYPE type, int maxlen = 0);
+    int getLocaleInfo_int(LCTYPE type, int maxlen = 0);
+    QChar getLocaleInfo_qchar(LCTYPE type);
 
     SubstitutionType substitution();
     QString &substituteDigits(QString &string);
@@ -129,6 +132,7 @@ private:
 Q_GLOBAL_STATIC(QSystemLocalePrivate, systemLocalePrivate)
 
 QSystemLocalePrivate::QSystemLocalePrivate()
+    : substitutionType(SUnknown)
 {
     langEnvVar = qgetenv("LANG");
     lcid = GetUserDefaultLCID();
@@ -166,30 +170,37 @@ QChar QSystemLocalePrivate::getLocaleInfo_qchar(LCTYPE type)
 
 QSystemLocalePrivate::SubstitutionType QSystemLocalePrivate::substitution()
 {
-    wchar_t buf[8];
-    if (!GetLocaleInfo(lcid, LOCALE_IDIGITSUBSTITUTION, buf, 8)) // ###
-        return QSystemLocalePrivate::SNever;
-    if (buf[0] == '1')
-        return QSystemLocalePrivate::SNever;
-    if (buf[0] == '0')
-        return QSystemLocalePrivate::SContext;
-    if (buf[0] == '2')
-        return QSystemLocalePrivate::SAlways;
-    wchar_t digits[11];
-    if (!GetLocaleInfo(lcid, LOCALE_SNATIVEDIGITS, digits, 11))
-        return QSystemLocalePrivate::SNever;
-    const wchar_t zero = digits[0];
-    if (buf[0] == zero + 2)
-        return QSystemLocalePrivate::SAlways;
-    return QSystemLocalePrivate::SNever;
+    if (substitutionType == SUnknown) {
+        wchar_t buf[8];
+        if (!GetLocaleInfo(lcid, LOCALE_IDIGITSUBSTITUTION, buf, 8)) {
+            substitutionType = QSystemLocalePrivate::SNever;
+            return substitutionType;
+        }
+        if (buf[0] == '1')
+            substitutionType = QSystemLocalePrivate::SNever;
+        else if (buf[0] == '0')
+            substitutionType QSystemLocalePrivate::SContext;
+        else if (buf[0] == '2')
+            substitutionType = QSystemLocalePrivate::SAlways;
+        else {
+            wchar_t digits[11];
+            if (!GetLocaleInfo(lcid, LOCALE_SNATIVEDIGITS, digits, 11)) {
+                substitutionType = QSystemLocalePrivate::SNever;
+                return substitutionType;
+            }
+            const wchar_t zero = digits[0];
+            if (buf[0] == zero + 2)
+                substitutionType = QSystemLocalePrivate::SAlways;
+            else
+                substitutionType = QSystemLocalePrivate::SNever;
+        }
+    }
+    return substitutionType;
 }
 
 QString &QSystemLocalePrivate::substituteDigits(QString &string)
 {
-    wchar_t buf[11];
-    if (!GetLocaleInfo(lcid, LOCALE_SNATIVEDIGITS, buf, 11)) // ###
-        return string;
-    ushort zero = (ushort)buf[0];
+    ushort zero = zeroDigit();
     ushort *qch = (ushort *)string.data();
     for (ushort *end = qch + string.size(); qch != end; ++qch) {
         if (*qch >= '0' && *qch <= '9')
@@ -200,7 +211,9 @@ QString &QSystemLocalePrivate::substituteDigits(QString &string)
 
 QChar QSystemLocalePrivate::zeroDigit()
 {
-    return getLocaleInfo_qchar(LOCALE_SNATIVEDIGITS);
+    if (zeroDigit.isNull())
+        zeroDigit = getLocaleInfo_qchar(LOCALE_SNATIVEDIGITS);
+    return zeroDigit;
 }
 
 QChar QSystemLocalePrivate::decimalPoint()
@@ -551,6 +564,8 @@ QVariant QSystemLocalePrivate::uiLanguages()
 void QSystemLocalePrivate::update()
 {
     lcid = GetUserDefaultLCID();
+    substitutionType = SUnknown;
+    zeroDigit = QChar();
 }
 
 
