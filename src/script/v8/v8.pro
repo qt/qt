@@ -5,7 +5,10 @@ CONFIG += building-libs
 
 QT =
 
-include($$PWD/../../qbase.pri)
+macx:CONFIG(debug, debug|release) {
+    TARGET = v8_debug
+}
+
 include($$PWD/v8.pri)
 
 V8SOURCES = \

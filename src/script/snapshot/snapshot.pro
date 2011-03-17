@@ -3,7 +3,10 @@ CONFIG += staticlib
 
 CONFIG += building-libs
 
-include($$PWD/../../qbase.pri)
+macx:CONFIG(debug, debug|release) {
+    TARGET = snapshot_debug
+}
+
 include($$PWD/../v8/v8.pri)
 
 isEmpty(V8SNAPSHOT) {

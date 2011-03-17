@@ -10,7 +10,6 @@ macx:CONFIG(debug, debug|release) {
     TARGET = mksnapshot_debug
     LIBS += -L../v8/ -lv8_debug
 } else {
-    TARGET = mksnapshot
     LIBS += -L../v8/ -lv8
 }
 
