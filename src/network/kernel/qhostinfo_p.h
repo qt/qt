@@ -184,7 +184,7 @@ protected:
 };
 
 #ifndef Q_OS_SYMBIAN
-class QHostInfoLookupManager : public QAbstractInfoLookupManager
+class QHostInfoLookupManager : public QAbstractHostInfoLookupManger
 {
     Q_OBJECT
 public:
