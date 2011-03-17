@@ -333,6 +333,8 @@ private Q_SLOTS:
     void synchronousRequest();
     void synchronousRequestSslFailure();
 
+    void dontInsertPartialContentIntoTheCache();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 };
@@ -572,6 +574,63 @@ public:
 };
 Q_DECLARE_METATYPE(MyMemoryCache::CachedContent)
 Q_DECLARE_METATYPE(MyMemoryCache::CacheData)
+
+class MySpyMemoryCache: public QAbstractNetworkCache
+{
+public:
+    MySpyMemoryCache(QObject *parent) : QAbstractNetworkCache(parent) {}
+    ~MySpyMemoryCache()
+    {
+        qDeleteAll(m_buffers);
+        m_buffers.clear();
+    }
+
+    QHash<QUrl, QIODevice*> m_buffers;
+    QList<QUrl> m_insertedUrls;
+
+    QNetworkCacheMetaData metaData(const QUrl &)
+    {
+        return QNetworkCacheMetaData();
+    }
+
+    void updateMetaData(const QNetworkCacheMetaData &)
+    {
+    }
+
+    QIODevice *data(const QUrl &)
+    {
+        return 0;
+    }
+
+    bool remove(const QUrl &url)
+    {
+        delete m_buffers.take(url);
+        return m_insertedUrls.removeAll(url) > 0;
+    }
+
+    qint64 cacheSize() const
+    {
+        return 0;
+    }
+
+    QIODevice *prepare(const QNetworkCacheMetaData &metaData)
+    {
+        QBuffer* buffer = new QBuffer;
+        buffer->open(QIODevice::ReadWrite);
+        buffer->setProperty("url", metaData.url());
+        m_buffers.insert(metaData.url(), buffer);
+        return buffer;
+    }
+
+    void insert(QIODevice *buffer)
+    {
+        QUrl url = buffer->property("url").toUrl();
+        m_insertedUrls << url;
+        delete m_buffers.take(url);
+    }
+
+    void clear() { m_insertedUrls.clear(); }
+};
 
 class DataReader: public QObject
 {
@@ -5275,6 +5334,39 @@ void tst_QNetworkReply::synchronousRequestSslFailure()
     QCOMPARE(sslErrorsSpy.count(), 0);
 }
 
+void tst_QNetworkReply::dontInsertPartialContentIntoTheCache()
+{
+    QByteArray reply206 =
+            "HTTP/1.0 206\r\n"
+            "Connection: keep-alive\r\n"
+            "Content-Type: text/plain\r\n"
+            "Cache-control: no-cache\r\n"
+            "Content-Range: bytes 2-6/8\r\n"
+            "Content-length: 4\r\n"
+            "\r\n"
+            "load";
+
+    MiniHttpServer server(reply206);
+    server.doClose = false;
+
+    MySpyMemoryCache *memoryCache = new MySpyMemoryCache(&manager);
+    manager.setCache(memoryCache);
+
+    QUrl url = "http://localhost:" + QString::number(server.serverPort());
+    QNetworkRequest request(url);
+    request.setRawHeader("Range", "bytes=2-6");
+
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QVERIFY(server.totalConnections > 0);
+    QCOMPARE(reply->readAll().constData(), "load");
+    QCOMPARE(memoryCache->m_insertedUrls.count(), 0);
+}
+
 // NOTE: This test must be last testcase in tst_qnetworkreply!
 void tst_QNetworkReply::parentingRepliesToTheApp()
 {
@@ -5284,4 +5376,5 @@ void tst_QNetworkReply::parentingRepliesToTheApp()
 }
 
 QTEST_MAIN(tst_QNetworkReply)
+
 #include "tst_qnetworkreply.moc"
