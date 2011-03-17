@@ -660,6 +660,13 @@ int QDeclarativeVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                 }
 
                 QScriptValue rv = function.call(ep->objectClass->newQObject(object), args);
+                if (ep->scriptEngine.hasUncaughtException()) {
+                    QDeclarativeError error;
+                    QDeclarativeExpressionPrivate::exceptionToError(&ep->scriptEngine, error);
+                    if (error.isValid()) {
+                        ep->warning(error);
+                    }
+                }
 
                 if (a[0]) *reinterpret_cast<QVariant *>(a[0]) = ep->scriptValueToVariant(rv);
 
