@@ -711,8 +711,13 @@ void QNetworkAccessHttpBackend::replyDownloadData(QByteArray d)
 
     pendingDownloadData.append(d);
     d.clear();
-    writeDownstreamData(pendingDownloadData);
+    // We need to usa a copy for calling writeDownstreamData as we could
+    // possibly recurse into this this function when we call
+    // appendDownstreamDataSignalEmissions because the user might call
+    // processEvents() or spin an event loop when this occur.
+    QByteDataBuffer pendingDownloadDataCopy = pendingDownloadData;
     pendingDownloadData.clear();
+    writeDownstreamData(pendingDownloadDataCopy);
 }
 
 void QNetworkAccessHttpBackend::replyFinished()
