@@ -70,8 +70,8 @@ class Q_AUTOTEST_EXPORT QDeclarativeTextInput : public QDeclarativeImplicitSizeP
     Q_PROPERTY(QColor selectionColor READ selectionColor WRITE setSelectionColor NOTIFY selectionColorChanged)
     Q_PROPERTY(QColor selectedTextColor READ selectedTextColor WRITE setSelectedTextColor NOTIFY selectedTextColorChanged)
     Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY fontChanged)
-    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign NOTIFY horizontalAlignmentChanged)
-
+    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign RESET resetHAlign NOTIFY horizontalAlignmentChanged)
+    Q_PROPERTY(HAlignment effectiveHorizontalAlignment READ effectiveHAlign NOTIFY effectiveHorizontalAlignmentChanged REVISION 1)
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly NOTIFY readOnlyChanged)
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible NOTIFY cursorVisibleChanged)
     Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition NOTIFY cursorPositionChanged)
@@ -97,6 +97,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeTextInput : public QDeclarativeImplicitSizeP
     Q_PROPERTY(bool selectByMouse READ selectByMouse WRITE setSelectByMouse NOTIFY selectByMouseChanged)
     Q_PROPERTY(SelectionMode mouseSelectionMode READ mouseSelectionMode WRITE setMouseSelectionMode NOTIFY mouseSelectionModeChanged REVISION 1)
     Q_PROPERTY(bool canPaste READ canPaste NOTIFY canPasteChanged REVISION 1)
+    Q_PROPERTY(bool inputMethodComposing READ isInputMethodComposing NOTIFY inputMethodComposingChanged REVISION 1)
 
 public:
     QDeclarativeTextInput(QDeclarativeItem* parent=0);
@@ -127,7 +128,7 @@ public:
 
     //Auxilliary functions needed to control the TextInput from QML
     Q_INVOKABLE int positionAt(int x) const;
-    Q_INVOKABLE Q_REVISION(1) int positionAt(int x, CursorPosition position);
+    Q_INVOKABLE Q_REVISION(1) int positionAt(int x, CursorPosition position) const;
     Q_INVOKABLE QRectF positionToRectangle(int pos) const;
     Q_INVOKABLE void moveCursorSelection(int pos);
     Q_INVOKABLE Q_REVISION(1) void moveCursorSelection(int pos, SelectionMode mode);
@@ -152,6 +153,8 @@ public:
 
     HAlignment hAlign() const;
     void setHAlign(HAlignment align);
+    void resetHAlign();
+    HAlignment effectiveHAlign() const;
 
     bool isReadOnly() const;
     void setReadOnly(bool);
@@ -210,6 +213,8 @@ public:
     QRectF boundingRect() const;
     bool canPaste() const;
 
+    bool isInputMethodComposing() const;
+
 Q_SIGNALS:
     void textChanged();
     void cursorPositionChanged();
@@ -237,6 +242,8 @@ Q_SIGNALS:
     void selectByMouseChanged(bool selectByMouse);
     Q_REVISION(1) void mouseSelectionModeChanged(SelectionMode mode);
     Q_REVISION(1) void canPasteChanged();
+    Q_REVISION(1) void inputMethodComposingChanged();
+    Q_REVISION(1) void effectiveHorizontalAlignmentChanged();
 
 protected:
     virtual void geometryChanged(const QRectF &newGeometry,
@@ -257,6 +264,7 @@ public Q_SLOTS:
     void selectWord();
     void select(int start, int end);
     Q_REVISION(1) void deselect();
+    Q_REVISION(1) bool isRightToLeft(int start, int end);
 #ifndef QT_NO_CLIPBOARD
     void cut();
     void copy();

@@ -47,6 +47,7 @@
 #include "private/qt_s60_p.h"
 #include "private/qpixmap_s60_p.h"
 #include "private/qcore_symbian_p.h"
+#include "private/qvolatileimage_p.h"
 #include "qapplication.h"
 #include "qsettings.h"
 
@@ -65,7 +66,6 @@
 #include <aknnavi.h>
 #include <gulicon.h>
 #include <AknBitmapAnimation.h>
-
 #include <centralrepository.h>
 
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
@@ -637,9 +637,22 @@ QPixmap QS60StyleModeSpecifics::fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask
     if (error)
         return QPixmap();
 
-    QPixmap pixmap = QPixmap::fromSymbianCFbsBitmap(icon);
-    if (mask)
-        pixmap.setAlphaChannel(QPixmap::fromSymbianCFbsBitmap(mask));
+    QPixmap pixmap;
+    QScopedPointer<QPixmapData> pd(QPixmapData::create(0, 0, QPixmapData::PixmapType));
+    bool nativeMaskSupported = (pd->toNativeType(QPixmapData::VolatileImage) != 0);
+    if (mask && nativeMaskSupported) {
+        // Efficient path, less copying and conversion.
+        QVolatileImage img(icon, mask);
+        pd->fromNativeType(&img, QPixmapData::VolatileImage);
+        pixmap = QPixmap(pd.take());
+    } else {
+        // Potentially more expensive path.
+        pd->fromNativeType(icon, QPixmapData::FbsBitmap);
+        pixmap = QPixmap(pd.take());
+        if (mask) {
+            pixmap.setAlphaChannel(QPixmap::fromSymbianCFbsBitmap(mask));
+        }
+    }
 
     if ((flags & QS60StylePrivate::SF_PointEast) ||
         (flags & QS60StylePrivate::SF_PointSouth) ||
@@ -795,6 +808,8 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
         rotatedBy90or270 ? TSize(size.height(), size.width()) : qt_QSize2TSize(size);
 
     MAknsSkinInstance* skinInstance = AknsUtils::SkinInstance();
+    static const TDisplayMode displayMode = S60->supportsPremultipliedAlpha ? Q_SYMBIAN_ECOLOR16MAP : EColor16MA;
+    static const TInt drawParam = S60->supportsPremultipliedAlpha ? KAknsDrawParamDefault : KAknsDrawParamRGBOnly;
 
     QPixmap result;
 
@@ -833,7 +848,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
     //        QS60WindowSurface::unlockBitmapHeap();
             CFbsBitmap *background = new (ELeave) CFbsBitmap(); //offscreen
             CleanupStack::PushL(background);
-            User::LeaveIfError(background->Create(targetSize, EColor16MA));
+            User::LeaveIfError(background->Create(targetSize, displayMode));
 
             CFbsBitmapDevice *dev = CFbsBitmapDevice::NewL(background);
             CleanupStack::PushL(dev);
@@ -854,7 +869,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
                 *gc,
                 TPoint(),
                 targetSize,
-                KAknsDrawParamDefault | KAknsDrawParamRGBOnly);
+                drawParam);
 
             if (drawn)
                 result = fromFbsBitmap(background, NULL, flags, targetSize);
@@ -1392,10 +1407,21 @@ QPixmap QS60StylePrivate::backgroundTexture()
 
     if (createNewBackground) {
         QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen,
-                QSize(applicationRect.Width(), applicationRect.Height()), 0, SkinElementFlags());
+            QSize(applicationRect.Width(), applicationRect.Height()), 0, SkinElementFlags());
         m_background = new QPixmap(background);
     }
     return *m_background;
+}
+
+// Generates 1*1 red pixmap as a placeholder for real texture.
+// The actual theme texture is drawn in qt_s60_fill_background().
+QPixmap QS60StylePrivate::placeHolderTexture()
+{
+    if (!m_placeHolderTexture) {
+        m_placeHolderTexture = new QPixmap(1,1);
+        m_placeHolderTexture->fill(Qt::red);
+    }
+    return *m_placeHolderTexture;
 }
 
 QSize QS60StylePrivate::screenSize()
@@ -1412,8 +1438,8 @@ QS60Style::QS60Style()
 void QS60StylePrivate::handleDynamicLayoutVariantSwitch()
 {
     clearCaches(QS60StylePrivate::CC_LayoutChange);
+    setBackgroundTexture(qApp);
     setActiveLayout();
-    refreshUI();
     foreach (QWidget *widget, QApplication::allWidgets())
         widget->ensurePolished();
 }

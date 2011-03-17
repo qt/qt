@@ -49,7 +49,6 @@
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>
-#include <QTextCursor>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QAbstractTextDocumentLayout>
@@ -88,13 +87,12 @@ DEFINE_BOOL_CONFIG_OPTION(enableImageCache, QML_ENABLE_TEXT_IMAGE_CACHE);
 QString QDeclarativeTextPrivate::elideChar = QString(0x2026);
 
 QDeclarativeTextPrivate::QDeclarativeTextPrivate()
-: color((QRgb)0), style(QDeclarativeText::Normal), hAlign(QDeclarativeText::AlignLeft), 
+: color((QRgb)0), style(QDeclarativeText::Normal), hAlign(QDeclarativeText::AlignLeft),
   vAlign(QDeclarativeText::AlignTop), elideMode(QDeclarativeText::ElideNone),
   format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap), lineHeight(1),
-  lineHeightMode(QDeclarativeText::ProportionalHeight),
-  lineCount(1), truncated(false), maximumLineCount(INT_MAX),
+  lineHeightMode(QDeclarativeText::ProportionalHeight), lineCount(1), truncated(false), maximumLineCount(INT_MAX),
   maximumLineCountValid(false), imageCacheDirty(true), updateOnComponentComplete(true), richText(false), singleline(false),
-  cacheAllTextAsImage(true), internalWidthUpdate(false), requireImplicitWidth(false), naturalWidth(0), doc(0)
+  cacheAllTextAsImage(true), internalWidthUpdate(false), requireImplicitWidth(false),  hAlignImplicit(true), rightToLeftText(false), naturalWidth(0), doc(0)
 {
     cacheAllTextAsImage = enableImageCache();
     QGraphicsItemPrivate::acceptedMouseButtons = Qt::LeftButton;
@@ -260,18 +258,26 @@ void QDeclarativeTextPrivate::updateSize()
 
     //setup instance of QTextLayout for all cases other than richtext
     if (!richText) {
-        size = setupTextLayout();
-        if (layedOutTextSize != size) {
+        QRect textRect = setupTextLayout();
+        if (layedOutTextRect.size() != textRect.size())
             q->prepareGeometryChange();
-            layedOutTextSize = size;
-        }
+        layedOutTextRect = textRect;
+        size = textRect.size();
         dy -= size.height();
     } else {
         singleline = false; // richtext can't elide or be optimized for single-line case
         ensureDoc();
         doc->setDefaultFont(font);
+
+        QDeclarativeText::HAlignment horizontalAlignment = q->effectiveHAlign();
+        if (rightToLeftText) {
+            if (horizontalAlignment == QDeclarativeText::AlignLeft)
+                horizontalAlignment = QDeclarativeText::AlignRight;
+            else if (horizontalAlignment == QDeclarativeText::AlignRight)
+                horizontalAlignment = QDeclarativeText::AlignLeft;
+        }
         QTextOption option;
-        option.setAlignment((Qt::Alignment)int(hAlign | vAlign));
+        option.setAlignment((Qt::Alignment)int(horizontalAlignment | vAlign));
         option.setWrapMode(QTextOption::WrapMode(wrapMode));
         doc->setDefaultTextOption(option);
         if (requireImplicitWidth && q->widthValid()) {
@@ -284,9 +290,9 @@ void QDeclarativeTextPrivate::updateSize()
             doc->setTextWidth(doc->idealWidth()); // ### Text does not align if width is not set (QTextDoc bug)
         dy -= (int)doc->size().height();
         QSize dsize = doc->size().toSize();
-        if (dsize != layedOutTextSize) {
+        if (dsize != layedOutTextRect.size()) {
             q->prepareGeometryChange();
-            layedOutTextSize = dsize;
+            layedOutTextRect = QRect(QPoint(0,0), dsize);
         }
         size = QSize(int(doc->idealWidth()),dsize.height());
     }
@@ -321,45 +327,29 @@ void QDeclarativeTextPrivate::updateSize()
     Returns the size of the final text.  This can be used to position the text vertically (the text is
     already absolutely positioned horizontally).
 */
-QSize QDeclarativeTextPrivate::setupTextLayout()
+QRect QDeclarativeTextPrivate::setupTextLayout()
 {
     // ### text layout handling should be profiled and optimized as needed
     // what about QStackTextEngine engine(tmp, d->font.font()); QTextLayout textLayout(&engine);
     Q_Q(QDeclarativeText);
     layout.setCacheEnabled(true);
 
-    qreal height = 0;
-    qreal widthUsed = 0;
     qreal lineWidth = 0;
-    int visibleTextLength = 0;
     int visibleCount = 0;
 
     //set manual width
-    if ((wrapMode != QDeclarativeText::NoWrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid())
+    if (q->widthValid())
         lineWidth = q->width();
 
     QTextOption textOption = layout.textOption();
-    if (hAlign == QDeclarativeText::AlignJustify)
-        textOption.setAlignment(Qt::Alignment(hAlign));
+    textOption.setAlignment(Qt::Alignment(q->effectiveHAlign()));
     textOption.setWrapMode(QTextOption::WrapMode(wrapMode));
     layout.setTextOption(textOption);
-
-    QDeclarativeText::HAlignment hAlignment = hAlign;
-    if(text.isRightToLeft()) {
-        if ((hAlign == QDeclarativeText::AlignLeft) || (hAlign == QDeclarativeText::AlignJustify)) {
-            hAlignment = QDeclarativeText::AlignRight;
-        } else if (hAlign == QDeclarativeText::AlignRight) {
-            hAlignment = QDeclarativeText::AlignLeft;
-        } else {
-            hAlignment = hAlign;
-        }
-    }
 
     bool elideText = false;
     bool truncate = false;
 
     QFontMetrics fm(layout.font());
-    qreal elideWidth = fm.width(elideChar);
     elidePos = QPointF();
 
     if (requireImplicitWidth && q->widthValid()) {
@@ -371,47 +361,47 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
                 break;
         }
         layout.endLayout();
-        naturalWidth = 0;
+        QRectF br;
         for (int i = 0; i < layout.lineCount(); ++i) {
             QTextLine line = layout.lineAt(i);
-            naturalWidth = qMax(naturalWidth, line.naturalTextWidth());
+            br = br.united(line.naturalTextRect());
         }
+        naturalWidth = br.width();
     }
 
     if (maximumLineCountValid) {
         layout.beginLayout();
         if (!lineWidth)
             lineWidth = INT_MAX;
-        int y = 0;
         int linesLeft = maximumLineCount;
+        int visibleTextLength = 0;
         while (linesLeft > 0) {
             QTextLine line = layout.createLine();
             if (!line.isValid())
                 break;
 
             visibleCount++;
-            line.setLineWidth(lineWidth);
+            if (lineWidth)
+                line.setLineWidth(lineWidth);
             visibleTextLength += line.textLength();
 
             if (--linesLeft == 0) {
                 if (visibleTextLength < text.length()) {
                     truncate = true;
                     if (elideMode==QDeclarativeText::ElideRight && q->widthValid()) {
+                        qreal elideWidth = fm.width(elideChar);
                         // Need to correct for alignment
                         line.setLineWidth(lineWidth-elideWidth);
-                        int x = line.naturalTextWidth();
-                        if (hAlignment == QDeclarativeText::AlignRight) {
-                            x = q->width()-elideWidth;
-                        } else if (hAlignment == QDeclarativeText::AlignHCenter) {
-                            x = (q->width()+line.naturalTextWidth()-elideWidth)/2;
+                        if (layout.text().mid(line.textStart(), line.textLength()).isRightToLeft()) {
+                            line.setPosition(QPointF(line.position().x() + elideWidth, line.position().y()));
+                            elidePos.setX(line.naturalTextRect().left() - elideWidth);
+                        } else {
+                            elidePos.setX(line.naturalTextRect().right());
                         }
-                        elidePos = QPointF(x, y + fm.ascent());
                         elideText = true;
                     }
                 }
             }
-
-            y += line.height();
         }
         layout.endLayout();
 
@@ -433,36 +423,23 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
         layout.endLayout();
     }
 
+    qreal height = 0;
+    QRectF br;
     for (int i = 0; i < layout.lineCount(); ++i) {
         QTextLine line = layout.lineAt(i);
-        widthUsed = qMax(widthUsed, line.naturalTextWidth());
-    }
-
-    qreal layoutWidth = q->widthValid() ? q->width() : widthUsed;
-    if (!q->widthValid())
-        naturalWidth = layoutWidth;
-
-    qreal x = 0;
-    for (int i = 0; i < layout.lineCount(); ++i) {
-        QTextLine line = layout.lineAt(i);
-        line.setPosition(QPointF(0, height));
-        height += (lineHeightMode == QDeclarativeText::FixedHeight) ? lineHeight : line.height() * lineHeight;
-
-        if (!cacheAllTextAsImage) {
-            if ((hAlignment == QDeclarativeText::AlignLeft) || (hAlignment == QDeclarativeText::AlignJustify)) {
-                x = 0;
-            } else if (hAlignment == QDeclarativeText::AlignRight) {
-                x = layoutWidth - line.naturalTextWidth();
-                if (elideText && i == layout.lineCount()-1)
-                    x -= elideWidth; // Correct for when eliding multilines
-            } else if (hAlignment == QDeclarativeText::AlignHCenter) {
-                x = (layoutWidth - line.naturalTextWidth()) / 2;
-                if (elideText && i == layout.lineCount()-1)
-                    x -= elideWidth/2; // Correct for when eliding multilines
-            }
-            line.setPosition(QPointF(x, line.y()));
+        // set line spacing
+        line.setPosition(QPointF(line.position().x(), height));
+        if (elideText && i == layout.lineCount()-1) {
+            elidePos.setY(height + fm.ascent());
+            br = br.united(QRectF(elidePos, QSizeF(fm.width(elideChar), fm.ascent())));
         }
+        br = br.united(line.naturalTextRect());
+        height += (lineHeightMode == QDeclarativeText::FixedHeight) ? lineHeight : line.height() * lineHeight;
     }
+    br.setHeight(height);
+
+    if (!q->widthValid())
+        naturalWidth = br.width();
 
     //Update the number of visible lines
     if (lineCount != visibleCount) {
@@ -470,7 +447,7 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
         emit q->lineCountChanged();
     }
 
-    return QSize(qCeil(widthUsed), qCeil(height));
+    return QRect(qRound(br.x()), qRound(br.y()), qCeil(br.width()), qCeil(br.height()));
 }
 
 /*!
@@ -480,21 +457,7 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
 QPixmap QDeclarativeTextPrivate::textLayoutImage(bool drawStyle)
 {
     //do layout
-    QSize size = layedOutTextSize;
-
-    qreal x = 0;
-    for (int i = 0; i < layout.lineCount(); ++i) {
-        QTextLine line = layout.lineAt(i);
-        if ((hAlign == QDeclarativeText::AlignLeft) || (hAlign == QDeclarativeText::AlignJustify)) {
-            x = 0;
-        } else if (hAlign == QDeclarativeText::AlignRight) {
-            x = size.width() - line.naturalTextWidth();
-        } else if (hAlign == QDeclarativeText::AlignHCenter) {
-            x = (size.width() - line.naturalTextWidth()) / 2;
-        }
-        line.setPosition(QPointF(x, line.y()));
-    }
-
+    QSize size = layedOutTextRect.size();
     //paint text
     QPixmap img(size);
     if (!size.isEmpty()) {
@@ -507,7 +470,7 @@ QPixmap QDeclarativeTextPrivate::textLayoutImage(bool drawStyle)
 #ifdef Q_WS_MAC
         qt_applefontsmoothing_enabled = oldSmooth;
 #endif
-        drawTextLayout(&p, QPointF(0,0), drawStyle);
+        drawTextLayout(&p, QPointF(-layedOutTextRect.x(),0), drawStyle);
     }
     return img;
 }
@@ -525,7 +488,7 @@ void QDeclarativeTextPrivate::drawTextLayout(QPainter *painter, const QPointF &p
     painter->setFont(font);
     layout.draw(painter, pos);
     if (!elidePos.isNull())
-        painter->drawText(elidePos, elideChar);
+        painter->drawText(pos + elidePos, elideChar);
 }
 
 /*!
@@ -930,14 +893,18 @@ void QDeclarativeText::setText(const QString &n)
         return;
 
     d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(n));
-    if (d->richText && isComponentComplete()) {
-        d->ensureDoc();
-        d->doc->setText(n);
-    }
-
     d->text = n;
+    if (isComponentComplete()) {
+        if (d->richText) {
+            d->ensureDoc();
+            d->doc->setText(n);
+            d->rightToLeftText = d->doc->toPlainText().isRightToLeft();
+        } else {
+            d->rightToLeftText = d->text.isRightToLeft();
+        }
+        d->determineHorizontalAlignment();
+    }
     d->updateLayout();
-
     emit textChanged(d->text);
 }
 
@@ -1060,9 +1027,12 @@ void QDeclarativeText::setStyleColor(const QColor &color)
 /*!
     \qmlproperty enumeration Text::horizontalAlignment
     \qmlproperty enumeration Text::verticalAlignment
+    \qmlproperty enumeration Text::effectiveHorizontalAlignment
 
     Sets the horizontal and vertical alignment of the text within the Text items
-    width and height.  By default, the text is top-left aligned.
+    width and height. By default, the text is vertically aligned to the top. Horizontal
+    alignment follows the natural alignment of the text, for example text that is read
+    from left to right will be aligned to the left.
 
     The valid values for \c horizontalAlignment are \c Text.AlignLeft, \c Text.AlignRight, \c Text.AlignHCenter and
     \c Text.AlignJustify.  The valid values for \c verticalAlignment are \c Text.AlignTop, \c Text.AlignBottom
@@ -1072,6 +1042,11 @@ void QDeclarativeText::setStyleColor(const QColor &color)
     all alignments are equivalent. If you want the text to be, say, centered in its parent, then you will
     need to either modify the Item::anchors, or set horizontalAlignment to Text.AlignHCenter and bind the width to 
     that of the parent.
+
+    When using the attached property LayoutMirroring::enabled to mirror application
+    layouts, the horizontal alignment of text will also be mirrored. However, the property
+    \c horizontalAlignment will remain unchanged. To query the effective horizontal alignment
+    of Text, use the read-only property \c effectiveHorizontalAlignment.
 */
 QDeclarativeText::HAlignment QDeclarativeText::hAlign() const
 {
@@ -1082,16 +1057,78 @@ QDeclarativeText::HAlignment QDeclarativeText::hAlign() const
 void QDeclarativeText::setHAlign(HAlignment align)
 {
     Q_D(QDeclarativeText);
-    if (d->hAlign == align)
-        return;
+    bool forceAlign = d->hAlignImplicit && d->effectiveLayoutMirror;
+    d->hAlignImplicit = false;
+    if (d->setHAlign(align, forceAlign) && isComponentComplete())
+        d->updateLayout();
+}
 
-    if (isComponentComplete())
-        prepareGeometryChange();
+void QDeclarativeText::resetHAlign()
+{
+    Q_D(QDeclarativeText);
+    d->hAlignImplicit = true;
+    if (d->determineHorizontalAlignment() && isComponentComplete())
+        d->updateLayout();
+}
 
-    d->hAlign = align;
-    d->updateLayout();
+QDeclarativeText::HAlignment QDeclarativeText::effectiveHAlign() const
+{
+    Q_D(const QDeclarativeText);
+    QDeclarativeText::HAlignment effectiveAlignment = d->hAlign;
+    if (!d->hAlignImplicit && d->effectiveLayoutMirror) {
+        switch (d->hAlign) {
+        case QDeclarativeText::AlignLeft:
+            effectiveAlignment = QDeclarativeText::AlignRight;
+            break;
+        case QDeclarativeText::AlignRight:
+            effectiveAlignment = QDeclarativeText::AlignLeft;
+            break;
+        default:
+            break;
+        }
+    }
+    return effectiveAlignment;
+}
 
-    emit horizontalAlignmentChanged(align);
+bool QDeclarativeTextPrivate::setHAlign(QDeclarativeText::HAlignment alignment, bool forceAlign)
+{
+    Q_Q(QDeclarativeText);
+    if (hAlign != alignment || forceAlign) {
+        QDeclarativeText::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
+        hAlign = alignment;
+
+        emit q->horizontalAlignmentChanged(hAlign);
+        if (oldEffectiveHAlign != q->effectiveHAlign())
+            emit q->effectiveHorizontalAlignmentChanged();
+        return true;
+    }
+    return false;
+}
+
+bool QDeclarativeTextPrivate::determineHorizontalAlignment()
+{
+    Q_Q(QDeclarativeText);
+    if (hAlignImplicit && q->isComponentComplete()) {
+        bool alignToRight = text.isEmpty() ? QApplication::keyboardInputDirection() == Qt::RightToLeft : rightToLeftText;
+        return setHAlign(alignToRight ? QDeclarativeText::AlignRight : QDeclarativeText::AlignLeft);
+    }
+    return false;
+}
+
+void QDeclarativeTextPrivate::mirrorChange()
+{
+    Q_Q(QDeclarativeText);
+    if (q->isComponentComplete()) {
+        if (!hAlignImplicit && (hAlign == QDeclarativeText::AlignRight || hAlign == QDeclarativeText::AlignLeft)) {
+            updateLayout();
+            emit q->effectiveHorizontalAlignmentChanged();
+        }
+    }
+}
+
+QTextDocument *QDeclarativeTextPrivate::textDocument()
+{
+    return doc;
 }
 
 QDeclarativeText::VAlignment QDeclarativeText::vAlign() const
@@ -1345,44 +1382,25 @@ QRectF QDeclarativeText::boundingRect() const
 {
     Q_D(const QDeclarativeText);
 
-    int w = width();
-    int h = height();
-
-    int x = 0;
-    int y = 0;
-
-    QSize size = d->layedOutTextSize;
+    QRect rect = d->layedOutTextRect;
     if (d->style != Normal)
-        size += QSize(2,2);
+        rect.adjust(-1, 0, 1, 2);
 
     // Could include font max left/right bearings to either side of rectangle.
 
-    switch (d->hAlign) {
-    case AlignLeft:
-    case AlignJustify:
-        x = 0;
-        break;
-    case AlignRight:
-        x = w - size.width();
-        break;
-    case AlignHCenter:
-        x = (w - size.width()) / 2;
-        break;
-    }
-
+    int h = height();
     switch (d->vAlign) {
     case AlignTop:
-        y = 0;
         break;
     case AlignBottom:
-        y = h - size.height();
+        rect.setY(h - rect.height());
         break;
     case AlignVCenter:
-        y = (h - size.height()) / 2;
+        rect.setY((h - rect.height()) / 2);
         break;
     }
 
-    return QRectF(x,y,size.width(),size.height());
+    return QRectF(rect);
 }
 
 /*! \internal */
@@ -1528,8 +1546,8 @@ void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
     } else {
         QRectF bounds = boundingRect();
 
-        bool needClip = clip() && (d->layedOutTextSize.width() > width() ||
-                                   d->layedOutTextSize.height() > height());
+        bool needClip = clip() && (d->layedOutTextRect.width() > width() ||
+                                   d->layedOutTextRect.height() > height());
 
         if (needClip) {
             p->save();
@@ -1561,7 +1579,11 @@ void QDeclarativeText::componentComplete()
         if (d->richText) {
             d->ensureDoc();
             d->doc->setText(d->text);
+            d->rightToLeftText = d->doc->toPlainText().isRightToLeft();
+        } else {
+            d->rightToLeftText = d->text.isRightToLeft();
         }
+        d->determineHorizontalAlignment();
         d->updateLayout();
     }
 }

@@ -60,6 +60,12 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QLibrary> // for loading the security lib for the CA store
 
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+// Symbian does not seem to have the symbol for SNI defined
+#ifndef SSL_CTRL_SET_TLSEXT_HOSTNAME
+#define SSL_CTRL_SET_TLSEXT_HOSTNAME 55
+#endif
+#endif
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_OS_MAC)
@@ -80,6 +86,7 @@ QT_BEGIN_NAMESPACE
 
 bool QSslSocketPrivate::s_libraryLoaded = false;
 bool QSslSocketPrivate::s_loadedCiphersAndCerts = false;
+bool QSslSocketPrivate::s_loadRootCertsOnDemand = false;
 
 /* \internal
 
@@ -252,6 +259,8 @@ init_context:
     case QSsl::SslV3:
         ctx = q_SSL_CTX_new(client ? q_SSLv3_client_method() : q_SSLv3_server_method());
         break;
+    case QSsl::SecureProtocols: // SslV2 will be disabled below
+    case QSsl::TlsV1SslV3: // SslV2 will be disabled below
     case QSsl::AnyProtocol:
     default:
         ctx = q_SSL_CTX_new(client ? q_SSLv23_client_method() : q_SSLv23_server_method());
@@ -277,7 +286,11 @@ init_context:
     }
 
     // Enable all bug workarounds.
-    q_SSL_CTX_set_options(ctx, SSL_OP_ALL);
+    if (configuration.protocol == QSsl::TlsV1SslV3 || configuration.protocol == QSsl::SecureProtocols) {
+        q_SSL_CTX_set_options(ctx, SSL_OP_ALL|SSL_OP_NO_SSLv2);
+    } else {
+        q_SSL_CTX_set_options(ctx, SSL_OP_ALL);
+    }
 
     // Initialize ciphers
     QByteArray cipherString;
@@ -312,9 +325,25 @@ init_context:
             q_X509_STORE_add_cert(ctx->cert_store, (X509 *)caCertificate.handle());
         }
     }
+
+    bool addExpiredCerts = true;
+#if defined(Q_OS_MAC) && (MAC_OS_X_VERSION_MAX_ALLOWED == MAC_OS_X_VERSION_10_5)
+    //On Leopard SSL does not work if we add the expired certificates.
+    if (QSysInfo::MacintoshVersion == QSysInfo::MV_10_5)
+       addExpiredCerts = false;
+#endif
     // now add the expired certs
-    foreach (const QSslCertificate &caCertificate, expiredCerts) {
-        q_X509_STORE_add_cert(ctx->cert_store, (X509 *)caCertificate.handle());
+    if (addExpiredCerts) {
+        foreach (const QSslCertificate &caCertificate, expiredCerts) {
+            q_X509_STORE_add_cert(ctx->cert_store, (X509 *)caCertificate.handle());
+        }
+    }
+
+    if (s_loadRootCertsOnDemand && allowRootCertOnDemandLoading) {
+        // tell OpenSSL the directories where to look up the root certs on demand
+        QList<QByteArray> unixDirs = unixRootCertDirectories();
+        for (int a = 0; a < unixDirs.count(); ++a)
+            q_SSL_CTX_load_verify_locations(ctx, 0, unixDirs.at(a).constData());
     }
 
     // Register a custom callback to get all verification errors.
@@ -377,6 +406,24 @@ init_context:
         emit q->error(QAbstractSocket::UnknownSocketError);
         return false;
     }
+
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+    if ((configuration.protocol == QSsl::TlsV1SslV3 ||
+        configuration.protocol == QSsl::TlsV1 ||
+        configuration.protocol == QSsl::SecureProtocols ||
+        configuration.protocol == QSsl::AnyProtocol) &&
+        client && q_SSLeay() >= 0x00090806fL) {
+        // Set server hostname on TLS extension. RFC4366 section 3.1 requires it in ACE format.
+        QString tlsHostName = verificationPeerName.isEmpty() ? q->peerName() : verificationPeerName;
+        if (tlsHostName.isEmpty())
+            tlsHostName = hostName;
+        QByteArray ace = QUrl::toAce(tlsHostName);
+        if (!ace.isEmpty()) {
+            if (!q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, ace.constData()))
+                qWarning("could not set SSL_CTRL_SET_TLSEXT_HOSTNAME, Server Name Indication disabled");
+        }
+    }
+#endif
 
     // Clear the session.
     q_SSL_clear(ssl);
@@ -517,8 +564,22 @@ void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
     } else {
         qWarning("could not load crypt32 library"); // should never happen
     }
+#elif defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(Q_OS_MAC)
+    // check whether we can enable on-demand root-cert loading (i.e. check whether the sym links are there)
+    QList<QByteArray> dirs = unixRootCertDirectories();
+    QStringList symLinkFilter;
+    symLinkFilter << QLatin1String("[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].[0-9]");
+    for (int a = 0; a < dirs.count(); ++a) {
+        QDirIterator iterator(QLatin1String(dirs.at(a)), symLinkFilter, QDir::Files);
+        if (iterator.hasNext()) {
+            s_loadRootCertsOnDemand = true;
+            break;
+        }
+    }
 #endif
-    setDefaultCaCertificates(systemCaCertificates());
+    // if on-demand loading was not enabled, load the certs now
+    if (!s_loadRootCertsOnDemand)
+        setDefaultCaCertificates(systemCaCertificates());
 }
 
 /*!
@@ -814,15 +875,7 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
     }
 #elif defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     QSet<QString> certFiles;
-    QList<QByteArray> directories;
-    directories << "/etc/ssl/certs/"; // (K)ubuntu, OpenSUSE, Mandriva, MeeGo ...
-    directories << "/usr/lib/ssl/certs/"; // Gentoo, Mandrake
-    directories << "/usr/share/ssl/"; // Centos, Redhat, SuSE
-    directories << "/usr/local/ssl/"; // Normal OpenSSL Tarball
-    directories << "/var/ssl/certs/"; // AIX
-    directories << "/usr/local/ssl/certs/"; // Solaris
-    directories << "/opt/openssl/certs/"; // HP-UX
-
+    QList<QByteArray> directories = unixRootCertDirectories();
     QDir currentDir;
     QStringList nameFilters;
     nameFilters << QLatin1String("*.pem") << QLatin1String("*.crt");

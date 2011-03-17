@@ -42,7 +42,8 @@
 #include "qgraphicssystem_vg_p.h"
 #include <QtOpenVG/private/qpixmapdata_vg_p.h>
 #include <QtOpenVG/private/qwindowsurface_vg_p.h>
-#if defined(Q_OS_SYMBIAN) && !defined(Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE)
+#include <QtOpenVG/private/qvgimagepool_p.h>
+#if defined(Q_OS_SYMBIAN)
 #include <QtGui/private/qwidget_p.h>
 #endif
 #include <QtGui/private/qapplication_p.h>
@@ -69,12 +70,19 @@ QPixmapData *QVGGraphicsSystem::createPixmapData(QPixmapData::PixelType type) co
 
 QWindowSurface *QVGGraphicsSystem::createWindowSurface(QWidget *widget) const
 {
-#if defined(Q_OS_SYMBIAN) && !defined(Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE)
-    QWidgetPrivate *d = qt_widget_private(widget);
-    if (!d->isOpaque && widget->testAttribute(Qt::WA_TranslucentBackground))
-        return d->createDefaultWindowSurface_sys();
+#if defined(Q_OS_SYMBIAN)
+    if (!QApplicationPrivate::instance()->useTranslucentEGLSurfaces) {
+        QWidgetPrivate *d = qt_widget_private(widget);
+        if (!d->isOpaque && widget->testAttribute(Qt::WA_TranslucentBackground))
+            return d->createDefaultWindowSurface_sys();
+    }
 #endif
     return new QVGWindowSurface(widget);
+}
+
+void QVGGraphicsSystem::releaseCachedResources()
+{
+    QVGImagePool::instance()->hibernate();
 }
 
 QT_END_NAMESPACE

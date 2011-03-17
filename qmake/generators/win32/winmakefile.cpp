@@ -456,6 +456,10 @@ void Win32MakefileGenerator::processRcFileVar()
         ts << "\t\t\t\tVALUE \"ProductName\", \"" << productName << "\\0\"" << endl;
         ts << "\t\t\tEND" << endl;
         ts << "\t\tEND" << endl;
+        ts << "\t\tBLOCK \"VarFileInfo\"" << endl;
+        ts << "\t\tBEGIN" << endl;
+        ts << "\t\t\tVALUE \"Translation\", 0x409, 1200" << endl;
+        ts << "\t\tEND" << endl;
         ts << "\tEND" << endl;
         ts << "/* End of Version info */" << endl;
         ts << endl;
@@ -701,10 +705,10 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     if(project->isActiveConfig("shared") && !project->values("DLLDESTDIR").isEmpty()) {
         QStringList dlldirs = project->values("DLLDESTDIR");
         for (QStringList::Iterator dlldir = dlldirs.begin(); dlldir != dlldirs.end(); ++dlldir) {
-            t << "\n\t" << "-$(COPY_FILE) \"$(DESTDIR_TARGET)\" " << Option::fixPathToTargetOS(*dlldir, false);
+            t << "\t" << "-$(COPY_FILE) \"$(DESTDIR_TARGET)\" " << Option::fixPathToTargetOS(*dlldir, false) << endl;
         }
     }
-    t << endl << endl;
+    t << endl;
 
     writeRcFilePart(t);
 

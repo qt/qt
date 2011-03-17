@@ -346,7 +346,7 @@ Q_GUI_EXPORT void qt_x11_enforce_cursor(QWidget * w)
     qt_x11_enforce_cursor(w, false);
 }
 
-Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
+void qt_x11_wait_for_window_manager(QWidget *w, bool sendPostedEvents)
 {
     if (!w || (!w->isWindow() && !w->internalWinId()))
         return;
@@ -361,7 +361,8 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
     WId winid = w->internalWinId();
 
     // first deliver events that are already in the local queue
-    QApplication::sendPostedEvents();
+    if (sendPostedEvents)
+        QApplication::sendPostedEvents();
 
     // the normal sequence is:
     //  ... ConfigureNotify ... ReparentNotify ... MapNotify ... Expose
@@ -394,6 +395,11 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
         if (t.elapsed() > maximumWaitTime)
             return;
     } while(1);
+}
+
+Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget *w)
+{
+    qt_x11_wait_for_window_manager(w, true);
 }
 
 void qt_change_net_wm_state(const QWidget* w, bool set, Atom one, Atom two = 0)
@@ -1496,7 +1502,7 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
                 || !QX11Info::appDefaultColormap(xinfo.screen())) {
                 // unknown DE or non-default visual/colormap, use 1bpp bitmap
                 if (!forceReset || !topData->iconPixmap)
-                    topData->iconPixmap = new QBitmap(qt_toX11Pixmap(icon.pixmap(QSize(64,64))));
+                    topData->iconPixmap = new QPixmap(qt_toX11Pixmap(QBitmap(icon.pixmap(QSize(64,64)))));
                 pixmap_handle = topData->iconPixmap->handle();
             } else {
                 // default depth, use a normal pixmap (even though this

@@ -326,9 +326,12 @@ void QDeclarativeTextInput::setSelectedTextColor(const QColor &color)
 
 /*!
     \qmlproperty enumeration TextInput::horizontalAlignment
+    \qmlproperty enumeration TextInput::effectiveHorizontalAlignment
 
     Sets the horizontal alignment of the text within the TextInput item's
-    width and height.  By default, the text is left aligned.
+    width and height. By default, the text alignment follows the natural alignment
+    of the text, for example text that is read from left to right will be aligned to
+    the left.
 
     TextInput does not have vertical alignment, as the natural height is
     exactly the height of the single line of text. If you set the height
@@ -338,6 +341,11 @@ void QDeclarativeTextInput::setSelectedTextColor(const QColor &color)
 
     The valid values for \c horizontalAlignment are \c TextInput.AlignLeft, \c TextInput.AlignRight and
     \c TextInput.AlignHCenter.
+
+    When using the attached property LayoutMirroring::enabled to mirror application
+    layouts, the horizontal alignment of text will also be mirrored. However, the property
+    \c horizontalAlignment will remain unchanged. To query the effective horizontal alignment
+    of TextInput, use the read-only property \c effectiveHorizontalAlignment.
 */
 QDeclarativeTextInput::HAlignment QDeclarativeTextInput::hAlign() const
 {
@@ -348,12 +356,78 @@ QDeclarativeTextInput::HAlignment QDeclarativeTextInput::hAlign() const
 void QDeclarativeTextInput::setHAlign(HAlignment align)
 {
     Q_D(QDeclarativeTextInput);
-    if(align == d->hAlign)
-        return;
-    d->hAlign = align;
-    updateRect();
-    d->updateHorizontalScroll();
-    emit horizontalAlignmentChanged(d->hAlign);
+    bool forceAlign = d->hAlignImplicit && d->effectiveLayoutMirror;
+    d->hAlignImplicit = false;
+    if (d->setHAlign(align, forceAlign) && isComponentComplete()) {
+        updateRect();
+        d->updateHorizontalScroll();
+    }
+}
+
+void QDeclarativeTextInput::resetHAlign()
+{
+    Q_D(QDeclarativeTextInput);
+    d->hAlignImplicit = true;
+    if (d->determineHorizontalAlignment() && isComponentComplete()) {
+        updateRect();
+        d->updateHorizontalScroll();
+    }
+}
+
+QDeclarativeTextInput::HAlignment QDeclarativeTextInput::effectiveHAlign() const
+{
+    Q_D(const QDeclarativeTextInput);
+    QDeclarativeTextInput::HAlignment effectiveAlignment = d->hAlign;
+    if (!d->hAlignImplicit && d->effectiveLayoutMirror) {
+        switch (d->hAlign) {
+        case QDeclarativeTextInput::AlignLeft:
+            effectiveAlignment = QDeclarativeTextInput::AlignRight;
+            break;
+        case QDeclarativeTextInput::AlignRight:
+            effectiveAlignment = QDeclarativeTextInput::AlignLeft;
+            break;
+        default:
+            break;
+        }
+    }
+    return effectiveAlignment;
+}
+
+bool QDeclarativeTextInputPrivate::setHAlign(QDeclarativeTextInput::HAlignment alignment, bool forceAlign)
+{
+    Q_Q(QDeclarativeTextInput);
+    if ((hAlign != alignment || forceAlign) && alignment <= QDeclarativeTextInput::AlignHCenter) { // justify not supported
+        QDeclarativeTextInput::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
+        hAlign = alignment;
+        return true;
+        emit q->horizontalAlignmentChanged(alignment);
+        if (oldEffectiveHAlign != q->effectiveHAlign())
+            emit q->effectiveHorizontalAlignmentChanged();
+    }
+    return false;
+}
+
+bool QDeclarativeTextInputPrivate::determineHorizontalAlignment()
+{
+    if (hAlignImplicit) {
+        // if no explicit alignment has been set, follow the natural layout direction of the text
+        QString text = control->text();
+        bool isRightToLeft = text.isEmpty() ? QApplication::keyboardInputDirection() == Qt::RightToLeft : text.isRightToLeft();
+        return setHAlign(isRightToLeft ? QDeclarativeTextInput::AlignRight : QDeclarativeTextInput::AlignLeft);
+    }
+    return false;
+}
+
+void QDeclarativeTextInputPrivate::mirrorChange()
+{
+    Q_Q(QDeclarativeTextInput);
+    if (q->isComponentComplete()) {
+        if (!hAlignImplicit && (hAlign == QDeclarativeTextInput::AlignRight || hAlign == QDeclarativeTextInput::AlignLeft)) {
+            q->updateRect();
+            updateHorizontalScroll();
+            emit q->effectiveHorizontalAlignmentChanged();
+        }
+    }
 }
 
 /*!
@@ -482,6 +556,7 @@ QRect QDeclarativeTextInput::cursorRectangle() const
     Q_D(const QDeclarativeTextInput);
     QRect r = d->control->cursorRect();
     r.setHeight(r.height()-1); // Make consistent with TextEdit (QLineControl inexplicably adds 1)
+    r.moveLeft(r.x() - d->hscroll);
     return r;
 }
 
@@ -921,6 +996,8 @@ void QDeclarativeTextInput::moveCursor()
 QRectF QDeclarativeTextInput::positionToRectangle(int pos) const
 {
     Q_D(const QDeclarativeTextInput);
+    if (pos > d->control->cursorPosition())
+        pos += d->control->preeditAreaText().length();
     return QRectF(d->control->cursorToX(pos)-d->hscroll,
         0.0,
         d->control->cursorWidth(),
@@ -929,8 +1006,7 @@ QRectF QDeclarativeTextInput::positionToRectangle(int pos) const
 
 int QDeclarativeTextInput::positionAt(int x) const
 {
-    Q_D(const QDeclarativeTextInput);
-    return d->control->xToPos(x + d->hscroll);
+    return positionAt(x, CursorBetweenCharacters);
 }
 
 /*!
@@ -952,10 +1028,18 @@ int QDeclarativeTextInput::positionAt(int x) const
     \o TextInput.CursorOnCharacter - Returns the position before the character that is nearest x.
     \endlist
 */
-int QDeclarativeTextInput::positionAt(int x, CursorPosition position)
+int QDeclarativeTextInput::positionAt(int x, CursorPosition position) const
 {
     Q_D(const QDeclarativeTextInput);
-    return d->control->xToPos(x + d->hscroll, QTextLine::CursorPosition(position));
+    int pos = d->control->xToPos(x + d->hscroll, QTextLine::CursorPosition(position));
+    const int cursor = d->control->cursor();
+    if (pos > cursor) {
+        const int preeditLength = d->control->preeditAreaText().length();
+        pos = pos > cursor + preeditLength
+                ? pos - preeditLength
+                : cursor;
+    }
+    return pos;
 }
 
 void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
@@ -976,16 +1060,21 @@ void QDeclarativeTextInput::keyPressEvent(QKeyEvent* ev)
     keyPressPreHandler(ev);
     if (ev->isAccepted())
         return;
-    if (((ev->key() == Qt::Key_Up || ev->key() == Qt::Key_Down) && ev->modifiers() == Qt::NoModifier) // Don't allow MacOSX up/down support, and we don't allow a completer.
-        || (((d->control->cursor() == 0 && ev->key() == Qt::Key_Left)
-            || (d->control->cursor() == d->control->text().length()
-                && ev->key() == Qt::Key_Right))
-            && (d->lastSelectionStart == d->lastSelectionEnd)))
-    {
-        //ignore when moving off the end
-        //unless there is a selection, because then moving will do something (deselect)
+
+    // Don't allow MacOSX up/down support, and we don't allow a completer.
+    bool ignore = (ev->key() == Qt::Key_Up || ev->key() == Qt::Key_Down) && ev->modifiers() == Qt::NoModifier;
+    if (!ignore && (d->lastSelectionStart == d->lastSelectionEnd) && (ev->key() == Qt::Key_Right || ev->key() == Qt::Key_Left)) {
+        // Ignore when moving off the end unless there is a selection,
+        // because then moving will do something (deselect).
+        int cursorPosition = d->control->cursor();
+        if (cursorPosition == 0)
+            ignore = ev->key() == (d->control->layoutDirection() == Qt::LeftToRight ? Qt::Key_Left : Qt::Key_Right);
+        if (cursorPosition == d->control->text().length())
+            ignore = ev->key() == (d->control->layoutDirection() == Qt::LeftToRight ? Qt::Key_Right : Qt::Key_Left);
+    }
+    if (ignore) {
         ev->ignore();
-    }else{
+    } else {
         d->control->processKeyEvent(ev);
     }
     if (!ev->isAccepted())
@@ -996,18 +1085,22 @@ void QDeclarativeTextInput::inputMethodEvent(QInputMethodEvent *ev)
 {
     Q_D(QDeclarativeTextInput);
     ev->ignore();
+    const bool wasComposing = d->control->preeditAreaText().length() > 0;
     inputMethodPreHandler(ev);
-    if (ev->isAccepted())
-        return;
-    if (d->control->isReadOnly()) {
-        ev->ignore();
-    } else {
-        d->control->processInputMethodEvent(ev);
-        updateSize();
-        d->updateHorizontalScroll();
+    if (!ev->isAccepted()) {
+        if (d->control->isReadOnly()) {
+            ev->ignore();
+        } else {
+            d->control->processInputMethodEvent(ev);
+            updateSize();
+            d->updateHorizontalScroll();
+        }
     }
     if (!ev->isAccepted())
         QDeclarativePaintedItem::inputMethodEvent(ev);
+
+    if (wasComposing != (d->control->preeditAreaText().length() > 0))
+        emit inputMethodComposingChanged();
 }
 
 /*!
@@ -1061,7 +1154,7 @@ void QDeclarativeTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
     if (d->sendMouseEventToInputContext(event, QEvent::MouseMove))
-        event->setAccepted(true);
+        return;
     if (d->selectByMouse) {
         if (qAbs(int(event->pos().x() - d->pressPos.x())) > QApplication::startDragDistance())
             setKeepMouseGrab(true);
@@ -1190,11 +1283,12 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
     int cix = qRound(control->cursorToX(control->cursor() + preeditLength));
     QRect br(q->boundingRect().toRect());
     int widthUsed = calculateTextWidth();
-    Qt::Alignment va = QStyle::visualAlignment(control->layoutDirection(), QFlag(Qt::Alignment(hAlign)));
+
+    QDeclarativeTextInput::HAlignment effectiveHAlign = q->effectiveHAlign();
     if (autoScroll) {
         if (widthUsed <=  br.width()) {
             // text fits in br; use hscroll for alignment
-            switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
+            switch (effectiveHAlign & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
             case Qt::AlignRight:
                 hscroll = widthUsed - br.width() - 1;
                 break;
@@ -1226,11 +1320,11 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
                  hscroll = cix;
         }
     } else {
-        switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
-        case Qt::AlignRight:
+        switch (effectiveHAlign) {
+        case QDeclarativeTextInput::AlignRight:
             hscroll = q->width() - widthUsed;
             break;
-        case Qt::AlignHCenter:
+        case QDeclarativeTextInput::AlignHCenter:
             hscroll = (q->width() - widthUsed) / 2;
             break;
         default:
@@ -1274,13 +1368,16 @@ QVariant QDeclarativeTextInput::inputMethodQuery(Qt::InputMethodQuery property) 
     Q_D(const QDeclarativeTextInput);
     switch(property) {
     case Qt::ImMicroFocus:
-        return d->control->cursorRect();
+        return cursorRectangle();
     case Qt::ImFont:
         return font();
     case Qt::ImCursorPosition:
         return QVariant(d->control->cursor());
     case Qt::ImSurroundingText:
-        return QVariant(text());
+        if (d->control->echoMode() == PasswordEchoOnEdit && !d->control->passwordEchoEditing())
+            return QVariant(displayText());
+        else
+            return QVariant(text());
     case Qt::ImCurrentSelection:
         return QVariant(selectedText());
     case Qt::ImMaximumTextLength:
@@ -1318,6 +1415,23 @@ void QDeclarativeTextInput::selectAll()
 {
     Q_D(QDeclarativeTextInput);
     d->control->setSelection(0, d->control->text().length());
+}
+
+/*!
+    \qmlmethod void TextInput::isRightToLeft(int start, int end)
+
+    Returns true if the natural reading direction of the editor text
+    found between positions \a start and \a end is right to left.
+*/
+bool QDeclarativeTextInput::isRightToLeft(int start, int end)
+{
+    Q_D(QDeclarativeTextInput);
+    if (start > end) {
+        qmlInfo(this) << "isRightToLeft(start, end) called with the end property being smaller than the start.";
+        return false;
+    } else {
+        return d->control->text().mid(start, end - start).isRightToLeft();
+    }
 }
 
 #ifndef QT_NO_CLIPBOARD
@@ -1556,38 +1670,41 @@ void QDeclarativeTextInput::moveCursorSelection(int pos, SelectionMode mode)
             anchor = d->control->selectionStart();
 
         if (anchor < pos || (anchor == pos && cursor < pos)) {
-            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, d->control->text());
+            const QString text = d->control->text();
+            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, text);
             finder.setPosition(anchor);
 
             const QTextBoundaryFinder::BoundaryReasons reasons = finder.boundaryReasons();
-            if (!(reasons & QTextBoundaryFinder::StartWord)
-                    || ((reasons & QTextBoundaryFinder::EndWord) && anchor > cursor)) {
+            if (anchor < text.length() && (!(reasons & QTextBoundaryFinder::StartWord)
+                    || ((reasons & QTextBoundaryFinder::EndWord) && anchor > cursor))) {
                 finder.toPreviousBoundary();
             }
-            anchor = finder.position();
+            anchor = finder.position() != -1 ? finder.position() : 0;
 
             finder.setPosition(pos);
-            if (!finder.isAtBoundary())
+            if (pos > 0 && !finder.boundaryReasons())
                 finder.toNextBoundary();
+            const int cursor = finder.position() != -1 ? finder.position() : text.length();
 
-            d->control->setSelection(anchor, finder.position() - anchor);
+            d->control->setSelection(anchor, cursor - anchor);
         } else if (anchor > pos || (anchor == pos && cursor > pos)) {
-            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, d->control->text());
+            const QString text = d->control->text();
+            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, text);
             finder.setPosition(anchor);
 
             const QTextBoundaryFinder::BoundaryReasons reasons = finder.boundaryReasons();
-            if (!(reasons & QTextBoundaryFinder::EndWord)
-                    || ((reasons & QTextBoundaryFinder::StartWord) && anchor < cursor)) {
+            if (anchor > 0 && (!(reasons & QTextBoundaryFinder::EndWord)
+                    || ((reasons & QTextBoundaryFinder::StartWord) && anchor < cursor))) {
                 finder.toNextBoundary();
             }
-
-            anchor = finder.position();
+            anchor = finder.position() != -1 ? finder.position() : text.length();
 
             finder.setPosition(pos);
-            if (!finder.isAtBoundary())
+            if (pos < text.length() && !finder.boundaryReasons())
                  finder.toPreviousBoundary();
+            const int cursor = finder.position() != -1 ? finder.position() : 0;
 
-            d->control->setSelection(anchor, finder.position() - anchor);
+            d->control->setSelection(anchor, cursor - anchor);
         }
     }
 }
@@ -1706,6 +1823,25 @@ void QDeclarativeTextInput::focusInEvent(QFocusEvent *event)
     QDeclarativePaintedItem::focusInEvent(event);
 }
 
+/*!
+    \qmlproperty bool TextInput::inputMethodComposing
+
+    \since QtQuick 1.1
+
+    This property holds whether the TextInput has partial text input from an
+    input method.
+
+    While it is composing an input method may rely on mouse or key events from
+    the TextInput to edit or commit the partial text.  This property can be
+    used to determine when to disable events handlers that may interfere with
+    the correct operation of an input method.
+*/
+bool QDeclarativeTextInput::isInputMethodComposing() const
+{
+    Q_D(const QDeclarativeTextInput);
+    return d->control->preeditAreaText().length() > 0;
+}
+
 void QDeclarativeTextInputPrivate::init()
 {
     Q_Q(QDeclarativeTextInput);
@@ -1730,9 +1866,12 @@ void QDeclarativeTextInputPrivate::init()
             q, SLOT(q_canPasteChanged()));
     q->connect(QApplication::clipboard(), SIGNAL(dataChanged()),
             q, SLOT(q_canPasteChanged()));
+    canPaste = !control->isReadOnly() && QApplication::clipboard()->text().length() != 0;
 #endif // QT_NO_CLIPBOARD
     q->connect(control, SIGNAL(updateMicroFocus()),
                q, SLOT(updateMicroFocus()));
+    q->connect(control, SIGNAL(displayTextChanged(QString)),
+               q, SLOT(updateRect()));
     q->updateSize();
     oldValidity = control->hasAcceptableInput();
     lastSelectionStart = 0;
@@ -1740,6 +1879,7 @@ void QDeclarativeTextInputPrivate::init()
     QPalette p = control->palette();
     selectedTextColor = p.color(QPalette::HighlightedText);
     selectionColor = p.color(QPalette::Highlight);
+    determineHorizontalAlignment();
 }
 
 void QDeclarativeTextInput::cursorPosChanged()
@@ -1787,6 +1927,7 @@ void QDeclarativeTextInput::q_textChanged()
 {
     Q_D(QDeclarativeTextInput);
     updateSize();
+    d->determineHorizontalAlignment();
     d->updateHorizontalScroll();
     updateMicroFocus();
     emit textChanged();

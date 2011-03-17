@@ -76,6 +76,10 @@ public:
 
     void updateSize();
     void updateLayout();
+    bool determineHorizontalAlignment();
+    bool setHAlign(QDeclarativeText::HAlignment, bool forceAlign = false);
+    void mirrorChange();
+    QTextDocument *textDocument();
 
     QString text;
     QFont font;
@@ -110,8 +114,10 @@ public:
     bool cacheAllTextAsImage:1;
     bool internalWidthUpdate:1;
     bool requireImplicitWidth:1;
+    bool hAlignImplicit:1;
+    bool rightToLeftText:1;
 
-    QSize layedOutTextSize;
+    QRect layedOutTextRect;
     QSize paintedSize;
     qreal naturalWidth;
     virtual qreal implicitWidth() const;
@@ -119,7 +125,7 @@ public:
     QPixmap textDocumentImage(bool drawStyle);
     QTextDocumentWithImageResources *doc;
 
-    QSize setupTextLayout();
+    QRect setupTextLayout();
     QPixmap textLayoutImage(bool drawStyle);
     void drawTextLayout(QPainter *p, const QPointF &pos, bool drawStyle);
     QDeclarativeTextLayout layout;

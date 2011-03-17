@@ -15,6 +15,7 @@ Rectangle {
         KeyNavigation.right: lastItem
         KeyNavigation.up: firstItem
         KeyNavigation.down: lastItem
+        text: "a"
     }
     Item {
         id: lastItem 
