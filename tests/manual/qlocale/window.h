@@ -50,7 +50,7 @@
 #include "numberformats.h"
 #include "miscellaneous.h"
 
-class Window : public QWidget
+class Window : public QMainWindow
 {
     Q_OBJECT
 public:

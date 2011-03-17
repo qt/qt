@@ -83,7 +83,8 @@ Window::Window()
     headerLayout->addWidget(localeCombo);
     headerLayout->addWidget(localeName);
 
-    QVBoxLayout *l = new QVBoxLayout(this);
+    QWidget *central = new QWidget;
+    QVBoxLayout *l = new QVBoxLayout(central);
     l->addWidget(w);
     l->addWidget(tabWidget);
 
@@ -96,6 +97,8 @@ Window::Window()
 
     localeCombo->setCurrentIndex(0);
     systemLocaleChanged();
+
+    setCentralWidget(central);
 }
 
 void Window::systemLocaleChanged()
@@ -129,5 +132,5 @@ bool Window::event(QEvent *event)
     default:
         break;
     }
-    return QWidget::event(event);
+    return QMainWindow::event(event);
 }
