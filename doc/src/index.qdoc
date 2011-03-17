@@ -59,8 +59,8 @@
             \enddiv
             \list
             \o \l{Qt Demonstrations}{Application Gallery}
-            \o \l{Tutorials}
-            \o \l{Qt Examples}{Examples}
+            \o \l{Tutorials}{Step-by-Step Tutorials}
+            \o \l{Qt Examples}{Qt Example Code}
             \o \l{QML Examples and Demos}
             \endlist
         \enddiv
@@ -104,7 +104,7 @@
             \o \l{external: Setting Up Development Environment for Symbian}{Setting Up Development Environment for Symbian}
             \o \l{external: Setting Up Development Environment for Maemo}{Setting Up Development Environment for Maemo}
             \o \l{qt-mobile-demos}{Mobile Applications and Demos}
-            \o \l{external: Publishing Applications to Ovi Store}{Publishing Applications to Ovi Store}
+            \o \l{QtWebKit Guide}{QtWebKit Developer Guide}
             \endlist
             \list
             \o \l{Qt Development: The Steps from Challenge to Achievement}{The Steps from Challenge to Achievement}

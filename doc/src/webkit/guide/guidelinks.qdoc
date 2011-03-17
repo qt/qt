@@ -43,12 +43,12 @@
 */
 
 /*!
-\externalpage webkit-guide/css/storage.css
+\externalpage webkit-webkit-guide-css-storage-css.html
 \title storage_css
 */
 
 /*!
-\externalpage webkit-guide/js/storage.js
+\externalpage webkit-webkit-guide-js-storage-js.html
 \title storage_js
 */
 
@@ -213,232 +213,248 @@
 */
 
 /*!
-\externalpage webkit-guide/css/anim_accord.css
+\externalpage webkit-webkit-guide-css-anim-accord-css.html
 \title anim_accord_css
 */
 
 /*!
-\externalpage webkit-guide/js/anim_accord.js
+\externalpage wwebkit-webkit-guide-js-anim-accord-js.html
 \title anim_accord_js
 */
 
 /*!
-\externalpage webkit-guide/css/anim_demo-rotate.css
+\externalpage webkit-webkit-guide-css-anim-demo-rotate-css.html
 \title anim_demo-rotate_css
 */
 
 /*!
-\externalpage webkit-guide/css/anim_demo-scale.css
+\externalpage webkit-webkit-guide-css-anim-demo-scale-css.html
 \title anim_demo-scale_css
 */
 
 /*!
-\externalpage webkit-guide/css/anim_demo-skew.css
+\externalpage webkit-webkit-guide-css-anim-demo-skew-css.html
 \title anim_demo-skew_css
 */
 
 /*!
-\externalpage webkit-guide/css/anim_gallery.css
+\externalpage webkit-webkit-guide-css-anim-gallery-css.html
 \title anim_gallery_css
 */
 
 /*!
-\externalpage webkit-guide/js/anim_gallery.js
+\externalpage webkit-webkit-guide-js-anim-gallery-js.html
 \title anim_gallery_js
 */
 
 /*!
-\externalpage webkit-guide/css/anim_panel.css
+\externalpage webkit-webkit-guide-css-anim-panel-css.html
 \title anim_panel_css
 */
 
 /*!
-\externalpage webkit-guide/js/anim_panel.js
+\externalpage webkit-webkit-guide-js-anim-panel-js.html
 \title anim_panel_js
 */
 
 /*!
-\externalpage webkit-guide/css/anim_pulse.css
+\externalpage webkit-webkit-guide-css-anim-pulse-css.html
 \title anim_pulse_css
 */
 
 /*!
-\externalpage webkit-guide/css/anim_skew.css
+\externalpage webkit-webkit-guide-css-anim-skew-css.html
 \title anim_skew_css
 */
 
 /*!
-\externalpage webkit-guide/js/anim_skew.js
+\externalpage webkit-webkit-guide-js-anim-skew-js.html
 \title anim_skew_js
 */
 
 /*!
-\externalpage webkit-guide/css/anim_slide.css
+\externalpage webkit-webkit-guide-css-anim-slide-css.html
 \title anim_slide_css
 */
 
 /*!
-\externalpage webkit-guide/css/anim_tabbedSkew.css
+\externalpage webkit-webkit-guide-css-anim-tabbedskew-css.html
 \title anim_tabbedSkew_css
 */
 
 /*!
-\externalpage webkit-guide/css/form_tapper.css
+\externalpage webkit-webkit-guide-css-form-tapper-css.html
 \title form_tapper_css
 */
 
 /*!
-\externalpage webkit-guide/css/form_toggler.css
+\externalpage webkit-webkit-guide-css-form-toggler-css.html
 \title form_toggler_css
 */
 
 /*!
-\externalpage webkit-guide/css/layout_link-fmt.css
+\externalpage webkit-webkit-guide-css-layout-link-fmt-css.html
 \title layout_link-fmt_css
 */
 
 /*!
-\externalpage webkit-guide/css/layout_tbl-keyhole.css
+\externalpage webkit-webkit-guide-css-layout-tbl-keyhole-css.html
 \title layout_tbl-keyhole_css
 */
 
 /*!
-\externalpage webkit-guide/css/css3_backgrounds.css
+\externalpage webkit-webkit-guide-css-css3-backgrounds-css.html
 \title css3_backgrounds_css
 */
 
 /*!
-\externalpage webkit-guide/js/css3_backgrounds.js
+\externalpage webkit-webkit-guide-js-css3-backgrounds-js.html
 \title css3_backgrounds_js
 */
 
 /*!
-\externalpage webkit-guide/css/css3_border-img.css
+\externalpage webkit-webkit-guide-css-css3-border-img-css.html
 \title css3_border-img_css
 */
 
 /*!
-\externalpage webkit-guide/css/css3_grad-radial.css
+\externalpage webkit-webkit-guide-css-css3-grad-radial-css.html
 \title css3_grad-radial_css
 */
 
 /*!
-\externalpage webkit-guide/js/css3_grad-radial.js
+\externalpage webkit-webkit-guide-js-css3-grad-radial-js.html
 \title css3_grad-radial_js
 */
 
 /*!
-\externalpage webkit-guide/css/css3_gradientBack.css
+\externalpage webkit-webkit-guide-css-css3-gradientback-css.html
 \title css3_gradientBack_css
 */
 
 /*!
-\externalpage webkit-guide/css/css3_gradientBackStop.css
+\externalpage webkit-webkit-guide-css-css3-gradientbackstop-css.html
 \title css3_gradientBackStop_css
 */
 
 /*!
-\externalpage webkit-guide/css/css3_gradientButton.css
+\externalpage webkit-webkit-guide-css-css3-gradientbutton-css.html
 \title css3_gradientButton_css
 */
 
 /*!
-\externalpage webkit-guide/css/css3_mask-grad.css
+\externalpage webkit-guide/css/webkit-webkit-guide-css-css3-mask-grad-css.html
 \title css3_mask-grad_css
 */
 
 /*!
-\externalpage webkit-guide/js/css3_mask-grad.js
+\externalpage webkit-guide/js/webkit-webkit-guide-js-css3-mask-grad-js.html
 \title css3_mask-grad_js
 */
 
 /*!
-\externalpage webkit-guide/css/css3_mask-img.css
+\externalpage webkit-webkit-guide-css-css3-mask-img-css.html
 \title css3_mask-img_css
 */
 
 /*!
-\externalpage webkit-guide/css/css3_multicol.css
+\externalpage webkit-webkit-guide-css-css3-multicol-css.html
 \title css3_multicol_css
 */
 
 /*!
-\externalpage webkit-guide/css/css3_reflect.css
+\externalpage webkit-webkit-guide-css-css3-reflect-css.html
 \title css3_reflect_css
 */
 
 /*!
-\externalpage webkit-guide/css/css3_scroll.css
+\externalpage webkit-webkit-guide-css-css3-scroll-css.html
 \title css3_scroll_css
 */
 
 /*!
-\externalpage webkit-guide/css/css3_sel-nth.css
+\externalpage webkit-webkit-guide-css-css3-sel-nth-css.html
 \title css3_sel-nth_css
 */
 
 /*!
-\externalpage webkit-guide/css/css3_text-overflow.css
+\externalpage webkit-webkit-guide-css-css3-text-overflow-css.html
 \title css3_text-overflow_css
 */
 
 /*!
-\externalpage webkit-guide/js/css3_text-overflow.js
+\externalpage webkit-webkit-guide-js-css3-text-overflow-js.html
 \title css3_text-overflow_js
 */
 
 /*!
-\externalpage webkit-guide/css/css3_text-shadow.css
+\externalpage webkit-webkit-guide-css-css3-text-shadow-css.html
 \title css3_text-shadow_css
 */
 
 /*!
-\externalpage webkit-guide/css/css3_text-stroke.css
+\externalpage webkit-webkit-guide-css-css3-text-stroke-css.html
 \title css3_text-stroke_css
 */
 
 /*!
-\externalpage webkit-guide/css/mob_condjs.css
+\externalpage webkit-webkit-guide-css-mob-condjs-css.html
 \title mob_condjs_css
 */
 
 /*!
-\externalpage webkit-guide/js/mob_condjs.js
+\externalpage webkit-webkit-guide-js-mob-condjs-js.html
 \title mob_condjs_js
 */
 
 /*!
-\externalpage webkit-guide/css/mqlayout_desktop.css
+\externalpage webkit-webkit-guide-css-mqlayout-desktop-css.html
 \title mqlayout_desktop_css
 */
 
 /*!
-\externalpage webkit-guide/css/mqlayout_touch.css
+\externalpage webkit-webkit-guide-css-mqlayout-touch-css.html
 \title mqlayout_touch_css
 */
 
 /*!
-\externalpage webkit-guide/css/mqlayout_mobile.css
+\externalpage webkit-webkit-guide-css-mqlayout-mobile-css.html
 \title mqlayout_mobile_css
 */
 
 /*!
-\externalpage webkit-guide/css/mq_desktop.css
+\externalpage webkit-webkit-guide-css-mq-desktop-css.html
 \title mq_desktop_css
 */
 
 /*!
-\externalpage webkit-guide/css/mq_touch.css
+\externalpage webkit-webkit-guide-css-mq-touch-css.html
 \title mq_touch_css
 */
 
 /*!
-\externalpage webkit-guide/css/mq_mobile.css
+\externalpage webkit-webkit-guide-css-mq-mobile-css.html
 \title mq_mobile_css
 */
 
 /*!
-\externalpage webkit-guide/css/mob_mediaquery.css
+\externalpage webkit-webkit-guide-css-mob-mediaquery-css.html
 \title mob_mediaquery_css
+*/
+
+/*!
+\externalpage http://deviceatlas.com/
+\title DeviceAtlas
+*/
+
+/*!
+\externalpage http://wurfl.sourceforge.net/
+\title WURFL
+*/
+
+/*!
+\externalpage http://www.w3.org/TR/selectors-api/
+\title Selectors API
+
 */
 
