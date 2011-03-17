@@ -180,6 +180,10 @@ public:
     quint16 m_quotation_start, m_quotation_end;
     quint16 m_alternate_quotation_start, m_alternate_quotation_end;
 
+    quint16 m_list_pattern_part_start_idx, m_list_pattern_part_start_size;
+    quint16 m_list_pattern_part_mid_idx, m_list_pattern_part_mid_size;
+    quint16 m_list_pattern_part_end_idx, m_list_pattern_part_end_size;
+    quint16 m_list_pattern_part_two_idx, m_list_pattern_part_two_size;
     quint16 m_short_date_format_idx, m_short_date_format_size;
     quint16 m_long_date_format_idx, m_long_date_format_size;
     quint16 m_short_time_format_idx, m_short_time_format_size;

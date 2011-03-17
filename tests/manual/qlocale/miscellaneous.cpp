@@ -49,6 +49,7 @@ MiscWidget::MiscWidget()
     createLineEdit("Alternate quotes:", &alternateQuotedTextLabel, &alternateQuotedText);
     textToQuote->setText("some text");
     createLineEdit("Text direction:", &textDirectionLabel, &textDirection);
+    createLineEdit("List to seperated string:", &listToSeparatedStringLabel, &listToSeparatedStringText);
 
     l->addWidget(textToQuoteLabel, 0, 0);
     l->addWidget(textToQuote, 0, 1);
@@ -58,6 +59,8 @@ MiscWidget::MiscWidget()
     l->addWidget(alternateQuotedText, 1, 3);
     l->addWidget(textDirectionLabel, 2, 0);
     l->addWidget(textDirection, 2, 1, 1, 3);
+    l->addWidget(listToSeparatedStringLabel, 3, 0);
+    l->addWidget(listToSeparatedStringText, 3, 1, 1, 3);
 
     connect(textToQuote, SIGNAL(textChanged(QString)), this, SLOT(updateQuotedText(QString)));
 
@@ -72,10 +75,18 @@ void MiscWidget::updateQuotedText(QString str)
     alternateQuotedText->setText(locale().quoteString(str, QLocale::AlternateQuotation));
 }
 
+void MiscWidget::updateListToSeparatedStringText()
+{
+    QStringList test;
+    test << "aaa" << "bbb" << "ccc" << "ddd";
+    listToSeparatedStringText->setText(locale().createSeparatedList(test));
+}
+
 void MiscWidget::localeChanged(QLocale locale)
 {
     setLocale(locale);
     updateQuotedText(textToQuote->text());
+    updateListToSeparatedStringText();
     textDirection->setText(locale.textDirection() == Qt::LeftToRight ? "Left To Right" : "Right To Left");
 }
 

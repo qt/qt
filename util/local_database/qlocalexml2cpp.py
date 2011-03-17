@@ -251,6 +251,10 @@ class Locale:
         self.quotationEnd = ord(assertSingleChar(eltText(firstChildElt(elt, "quotationEnd"))))
         self.alternateQuotationStart = ord(assertSingleChar(eltText(firstChildElt(elt, "alternateQuotationStart"))))
         self.alternateQuotationEnd = ord(assertSingleChar(eltText(firstChildElt(elt, "alternateQuotationEnd"))))
+        self.listPatternPartStart = eltText(firstChildElt(elt, "listPatternPartStart"))
+        self.listPatternPartMiddle = eltText(firstChildElt(elt, "listPatternPartMiddle"))
+        self.listPatternPartEnd = eltText(firstChildElt(elt, "listPatternPartEnd"))
+        self.listPatternPartTwo = eltText(firstChildElt(elt, "listPatternPartTwo"))
         self.am = eltText(firstChildElt(elt, "am"))
         self.pm = eltText(firstChildElt(elt, "pm"))
         self.firstDayOfWeek = convertToQtDayOfWeek(eltText(firstChildElt(elt, "firstDayOfWeek")))
@@ -494,6 +498,7 @@ def main():
 
     data_temp_file.write("\n")
 
+    list_pattern_part_data = StringData()
     date_format_data = StringData()
     time_format_data = StringData()
     months_data = StringData()
@@ -507,7 +512,7 @@ def main():
 
     # Locale data
     data_temp_file.write("static const QLocalePrivate locale_data[] = {\n")
-    data_temp_file.write("//      lang   script terr    dec  group   list  prcnt   zero  minus  plus    exp quotStart quotEnd altQuotStart altQuotEnd sDtFmt lDtFmt sTmFmt lTmFmt ssMonth slMonth  sMonth lMonth  sDays  lDays  am,len      pm,len\n")
+    data_temp_file.write("//      lang   script terr    dec  group   list  prcnt   zero  minus  plus    exp quotStart quotEnd altQuotStart altQuotEnd lpStart lpMid lpEnd lpTwo sDtFmt lDtFmt sTmFmt lTmFmt ssMonth slMonth  sMonth lMonth  sDays  lDays  am,len      pm,len\n")
 
     locale_keys = locale_map.keys()
     compareLocaleKeys.default_map = default_map
@@ -516,7 +521,7 @@ def main():
 
     for key in locale_keys:
         l = locale_map[key]
-        data_temp_file.write("    { %6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, {%s}, %s,%s,%s,%s,%6d,%6d,%6d,%6d,%6d }, // %s/%s/%s\n" \
+        data_temp_file.write("    { %6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, {%s}, %s,%s,%s,%s,%6d,%6d,%6d,%6d,%6d }, // %s/%s/%s\n" \
                     % (key[0], key[1], key[2],
                         l.decimal,
                         l.group,
@@ -530,6 +535,10 @@ def main():
                         l.quotationEnd,
                         l.alternateQuotationStart,
                         l.alternateQuotationEnd,
+                        list_pattern_part_data.append(l.listPatternPartStart),
+                        list_pattern_part_data.append(l.listPatternPartMiddle),
+                        list_pattern_part_data.append(l.listPatternPartEnd),
+                        list_pattern_part_data.append(l.listPatternPartTwo),
                         date_format_data.append(l.shortDateFormat),
                         date_format_data.append(l.longDateFormat),
                         time_format_data.append(l.shortTimeFormat),
@@ -561,8 +570,16 @@ def main():
                         l.language,
                         l.script,
                         l.country))
-    data_temp_file.write("    {      0,      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,    0,0,    0,0,    0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0, {0,0,0}, 0,0, 0,0, 0,0, 0,0, 0, 0, 0, 0, 0 }  // trailing 0s\n")
+    data_temp_file.write("    {      0,      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,    0,0,    0,0,    0,0,   0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,    0,0,    0,0,    0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0, {0,0,0}, 0,0, 0,0, 0,0, 0,0, 0, 0, 0, 0, 0 }  // trailing 0s\n")
     data_temp_file.write("};\n")
+
+    data_temp_file.write("\n")
+
+    # List patterns data
+    #check_static_char_array_length("list_pattern_part", list_pattern_part_data.data)
+    data_temp_file.write("static const ushort list_pattern_part_data[] = {\n")
+    data_temp_file.write(wrap_list(list_pattern_part_data.data))
+    data_temp_file.write("\n};\n")
 
     data_temp_file.write("\n")
 
