@@ -448,6 +448,9 @@ namespace QT_NAMESPACE {}
 #  if __TARGET_ARCH_ARM >= 6
 #    define QT_HAVE_ARMV6
 #  endif
+/* work-around for missing compiler intrinsics */
+#  define __is_empty(X) false
+#  define __is_pod(X) false
 #elif defined(__GNUC__)
 #  define Q_CC_GNU
 #  define Q_C_CALLBACKS
@@ -457,7 +460,6 @@ namespace QT_NAMESPACE {}
 #  if defined(__INTEL_COMPILER)
 /* Intel C++ also masquerades as GCC 3.2.0 */
 #    define Q_CC_INTEL
-#    define Q_NO_TEMPLATE_FRIENDS
 #  endif
 #  if defined(__clang__)
 /* Clang also masquerades as GCC 4.2.1 */
@@ -758,6 +760,24 @@ namespace QT_NAMESPACE {}
 
 #else
 #  error "Qt has not been tested with this compiler - talk to qt-bugs@trolltech.com"
+#endif
+
+#ifdef Q_CC_INTEL
+#  if __INTEL_COMPILER < 1200
+#    define Q_NO_TEMPLATE_FRIENDS
+#  endif
+#  if defined(__GXX_EXPERIMENTAL_CXX0X__) || defined(__GXX_EXPERIMENTAL_CPP0X__)
+#    if __INTEL_COMPILER >= 1100
+#      define Q_COMPILER_RVALUE_REFS
+#      define Q_COMPILER_EXTERN_TEMPLATES
+#    elif __INTEL_COMPILER >= 1200
+#      define Q_COMPILER_VARIADIC_TEMPLATES
+#      define Q_COMPILER_AUTO_TYPE
+#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
+#      define Q_COMPILER_CLASS_ENUM
+#      define Q_COMPILER_LAMBDA
+#    endif
+#  endif
 #endif
 
 #ifndef Q_PACKED
@@ -1198,6 +1218,11 @@ class QDataStream;
 # include <QtCore/qfeatures.h>
 
 #define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
+
+#if defined(Q_OS_LINUX) && defined(Q_CC_RVCT)
+#  define Q_DECL_EXPORT     __attribute__((visibility("default")))
+#  define Q_DECL_IMPORT     __attribute__((visibility("default")))
+#endif
 
 #ifndef Q_DECL_EXPORT
 #  if defined(Q_OS_WIN) || defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)
@@ -1642,7 +1667,7 @@ inline void qUnused(T &x) { (void)x; }
 #endif
 
 #ifndef qPrintable
-#  define qPrintable(string) (string).toLocal8Bit().constData()
+#  define qPrintable(string) QString(string).toLocal8Bit().constData()
 #endif
 
 Q_CORE_EXPORT void qDebug(const char *, ...) /* print debug message */
@@ -2461,9 +2486,14 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #  define QT_SYMBIAN_SUPPORTS_SGIMAGE
 #endif
 
-#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#ifdef SYMBIAN_GRAPHICS_SET_SURFACE_TRANSPARENCY_AVAILABLE
 #  define Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
 #endif
+
+#ifdef SYMBIAN_GRAPHICS_TRANSITION_EFFECTS_SIGNALING_AVAILABLE
+#  define Q_SYMBIAN_TRANSITION_EFFECTS
+#endif
+
 #endif
 
 //Symbian does not support data imports from a DLL

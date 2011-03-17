@@ -43,8 +43,9 @@
 #define QT_HYBRIDHEAP_SYMBIAN_H
 
 #include <qglobal.h>
+#include <e32cmn.h>
 
-#if !defined(SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS) && !defined(__WINS__)
+#if !defined(__SYMBIAN_KERNEL_HYBRID_HEAP__) && !defined(__WINS__)
 //Enable the (backported) new allocator. When it is available in OS,
 //this flag should be disabled for that OS version onward
 #define QT_USE_NEW_SYMBIAN_ALLOCATOR

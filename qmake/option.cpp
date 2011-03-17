@@ -624,16 +624,18 @@ Option::fixString(QString string, uchar flags)
         qmakeAddCacheClear(qmakeDeleteCacheClear<QHash<FixStringCacheKey, QString> >, (void**)&cache);
     }
     FixStringCacheKey cacheKey(string, flags);
-    if(cache->contains(cacheKey)) {
-	const QString ret = cache->value(cacheKey);
-	//qDebug() << "Fix (cached) " << orig_string << "->" << ret;
-        return ret;
+
+    QHash<FixStringCacheKey, QString>::const_iterator it = cache->constFind(cacheKey);
+
+    if (it != cache->constEnd()) {
+        //qDebug() << "Fix (cached) " << orig_string << "->" << it.value();
+        return it.value();
     }
 
     //fix the environment variables
     if(flags & Option::FixEnvVars) {
         int rep;
-        QRegExp reg_var("\\$\\(.*\\)");
+        static QRegExp reg_var("\\$\\(.*\\)");
         reg_var.setMinimal(true);
         while((rep = reg_var.indexIn(string)) != -1)
             string.replace(rep, reg_var.matchedLength(),

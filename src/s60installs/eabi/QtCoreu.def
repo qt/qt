@@ -3804,4 +3804,6 @@ EXPORTS
 	_ZN23QCoreApplicationPrivate18symbianCommandLineEv @ 3803 NONAME
 	_ZNK16QXmlStreamWriter8hasErrorEv @ 3804 NONAME
 	_ZNK13QElapsedTimer12nsecsElapsedEv @ 3805 NONAME
+	_ZNK11QMetaMethod8revisionEv @ 3806 NONAME
+	_ZNK13QMetaProperty8revisionEv @ 3807 NONAME
 

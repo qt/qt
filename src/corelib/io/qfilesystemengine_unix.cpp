@@ -534,8 +534,7 @@ bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSyst
 {
     Q_UNUSED(source);
     Q_UNUSED(target);
-    // # we can implement this using sendfile(2)
-    //when this function returns false, block copy is used in QFile which sets the error code.
+    error = QSystemError(ENOSYS, QSystemError::StandardLibraryError); //Function not implemented
     return false;
 }
 

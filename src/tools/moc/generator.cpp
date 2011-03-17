@@ -181,9 +181,13 @@ void Generator::generateCode()
     int methodCount = cdef->signalList.count() + cdef->slotList.count() + cdef->methodList.count();
     fprintf(out, "    %4d, %4d, // methods\n", methodCount, methodCount ? index : 0);
     index += methodCount * 5;
+    if (cdef->revisionedMethods)
+        index += methodCount;
     fprintf(out, "    %4d, %4d, // properties\n", cdef->propertyList.count(), cdef->propertyList.count() ? index : 0);
     index += cdef->propertyList.count() * 3;
     if(cdef->notifyableProperties)
+        index += cdef->propertyList.count();
+    if (cdef->revisionedProperties)
         index += cdef->propertyList.count();
     fprintf(out, "    %4d, %4d, // enums/sets\n", cdef->enumList.count(), cdef->enumList.count() ? index : 0);
 
@@ -217,6 +221,14 @@ void Generator::generateCode()
 //
     generateFunctions(cdef->methodList, "method", MethodMethod);
 
+//
+// Build method version arrays
+//
+    if (cdef->revisionedMethods) {
+        generateFunctionRevisions(cdef->signalList, "signal");
+        generateFunctionRevisions(cdef->slotList, "slot");
+        generateFunctionRevisions(cdef->methodList, "method");
+    }
 
 //
 // Build property array
@@ -456,7 +468,7 @@ void Generator::generateFunctions(QList<FunctionDef>& list, const char *functype
         }
         sig += ')';
 
-        char flags = type;
+        unsigned char flags = type;
         if (f.access == FunctionDef::Private)
             flags |= AccessPrivate;
         else if (f.access == FunctionDef::Public)
@@ -475,8 +487,20 @@ void Generator::generateFunctions(QList<FunctionDef>& list, const char *functype
             flags |= MethodCloned;
         if (f.isScriptable)
             flags |= MethodScriptable;
+        if (f.revision > 0)
+            flags |= MethodRevisioned;
         fprintf(out, "    %4d, %4d, %4d, %4d, 0x%02x,\n", strreg(sig),
                 strreg(arguments), strreg(f.normalizedType), strreg(f.tag), flags);
+    }
+}
+
+void Generator::generateFunctionRevisions(QList<FunctionDef>& list, const char *functype)
+{
+    if (list.count())
+        fprintf(out, "\n // %ss: revision\n", functype);
+    for (int i = 0; i < list.count(); ++i) {
+        const FunctionDef &f = list.at(i);
+        fprintf(out, "    %4d,\n", f.revision);
     }
 }
 
@@ -537,6 +561,9 @@ void Generator::generateProperties()
         if (p.notifyId != -1)
             flags |= Notify;
 
+        if (p.revision > 0)
+            flags |= Revisioned;
+
         if (p.constant)
             flags |= Constant;
         if (p.final)
@@ -560,6 +587,13 @@ void Generator::generateProperties()
             else
                 fprintf(out, "    %4d,\n",
                         p.notifyId);
+        }
+    }
+    if (cdef->revisionedProperties) {
+        fprintf(out, "\n // properties: revision\n");
+        for (int i = 0; i < cdef->propertyList.count(); ++i) {
+            const PropertyDef &p = cdef->propertyList.at(i);
+            fprintf(out, "    %4d,\n", p.revision);
         }
     }
 }

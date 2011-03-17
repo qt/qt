@@ -77,7 +77,6 @@ class QDeclarativeEngine;
 class QDeclarativeExpression;
 class QDeclarativeExpressionPrivate;
 class QDeclarativeAbstractExpression;
-class QDeclarativeBinding_Id;
 class QDeclarativeCompiledBindings;
 class QDeclarativeContextData;
 

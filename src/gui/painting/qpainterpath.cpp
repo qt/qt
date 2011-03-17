@@ -240,12 +240,12 @@ static void qt_debug_path(const QPainterPath &path)
     provides two methods for filling paths:
 
     \table
-    \row
-    \o \inlineimage qt-fillrule-oddeven.png
-    \o \inlineimage qt-fillrule-winding.png
     \header
     \o Qt::OddEvenFill
     \o Qt::WindingFill
+    \row
+    \o \inlineimage qt-fillrule-oddeven.png
+    \o \inlineimage qt-fillrule-winding.png
     \endtable
 
     See the Qt::FillRule documentation for the definition of the
@@ -315,12 +315,12 @@ static void qt_debug_path(const QPainterPath &path)
     QPainterPath to draw text.
 
     \table
-    \row
-    \o \inlineimage qpainterpath-example.png
-    \o \inlineimage qpainterpath-demo.png
     \header
     \o \l {painting/painterpaths}{Painter Paths Example}
     \o \l {demos/deform}{Vector Deformation Demo}
+    \row
+    \o \inlineimage qpainterpath-example.png
+    \o \inlineimage qpainterpath-demo.png
     \endtable
 
     \sa QPainterPathStroker, QPainter, QRegion, {Painter Paths Example}
@@ -874,7 +874,7 @@ void QPainterPath::arcTo(const QRectF &rect, qreal startAngle, qreal sweepLength
            rect.x(), rect.y(), rect.width(), rect.height(), startAngle, sweepLength);
 #endif
 
-    if (!qt_is_finite(rect.x()) && !qt_is_finite(rect.y()) || !qt_is_finite(rect.width()) || !qt_is_finite(rect.height())
+    if ((!qt_is_finite(rect.x()) && !qt_is_finite(rect.y())) || !qt_is_finite(rect.width()) || !qt_is_finite(rect.height())
         || !qt_is_finite(startAngle) || !qt_is_finite(sweepLength)) {
 #ifndef QT_NO_DEBUG
         qWarning("QPainterPath::arcTo: Adding arc where a parameter is NaN or Inf, ignoring call");
@@ -1279,12 +1279,12 @@ Qt::FillRule QPainterPath::fillRule() const
     fillRule. Qt provides two methods for filling paths:
 
     \table
-    \row
-    \o \inlineimage qt-fillrule-oddeven.png
-    \o \inlineimage qt-fillrule-winding.png
     \header
     \o Qt::OddEvenFill (default)
     \o Qt::WindingFill
+    \row
+    \o \inlineimage qt-fillrule-oddeven.png
+    \o \inlineimage qt-fillrule-winding.png
     \endtable
 
     \sa fillRule()

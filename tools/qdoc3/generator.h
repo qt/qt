@@ -78,7 +78,7 @@ class Generator
     virtual void terminateGenerator();
     virtual QString format() = 0;
     virtual bool canHandleFormat(const QString &format) { return format == this->format(); }
-    virtual void generateTree(const Tree *tree, CodeMarker *marker) = 0;
+    virtual void generateTree(const Tree *tree) = 0;
 
     static void initialize(const Config& config);
     static void terminate();
@@ -114,7 +114,7 @@ class Generator
     void generateThreadSafeness(const Node *node, CodeMarker *marker);
     void generateSince(const Node *node, CodeMarker *marker);
     void generateStatus(const Node *node, CodeMarker *marker);
-    const Atom *generateAtomList(const Atom *atom, 
+    const Atom* generateAtomList(const Atom *atom, 
                                  const Node *relative,
                                  CodeMarker *marker, 
                                  bool generate,
@@ -129,6 +129,8 @@ class Generator
     virtual QString fullName(const Node *node, 
                              const Node *relative,
                              CodeMarker *marker) const;
+
+    virtual QString outFileName() { return QString(); }
 
     const QString& outputDir() { return outDir; }
     QString indent(int level, const QString& markedCode);
@@ -146,9 +148,9 @@ class Generator
     static QString trimmedTrailing(const QString &string);
     static bool matchAhead(const Atom *atom, Atom::Type expectedAtomType);
     static void supplementAlsoList(const Node *node, QList<Text> &alsoList);
+    static QString outputPrefix(const QString &nodeType);
 
  private:
-    void generateOverload(const Node *node, CodeMarker *marker);
     void generateReimplementedFrom(const FunctionNode *func,
                                    CodeMarker *marker);
     void appendFullName(Text& text, 
@@ -197,6 +199,7 @@ class Generator
     static QStringList styleDirs;
     static QString outDir;
     static QString project;
+    static QHash<QString, QString> outputPrefixes;
 };
 
 QT_END_NAMESPACE

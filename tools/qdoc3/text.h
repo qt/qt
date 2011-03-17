@@ -73,7 +73,7 @@ class Text
     QString toString() const;
     const Atom *firstAtom() const { return first; }
     const Atom *lastAtom() const { return last; }
-    Text subText(Atom::Type left, Atom::Type right, const Atom *from = 0) const;
+    Text subText(Atom::Type left, Atom::Type right, const Atom *from = 0, bool inclusive = false) const;
     void dump() const;
     void clear();
 

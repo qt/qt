@@ -127,6 +127,10 @@
 #include "qtabwidget.h" // Needed in inTabWidget()
 #endif // QT_KEYPAD_NAVIGATION
 
+#ifdef Q_WS_S60
+#include <aknappui.h>
+#endif
+
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
 //#define ALIEN_DEBUG
@@ -399,11 +403,24 @@ void QWidgetPrivate::scrollChildren(int dx, int dy)
     }
 }
 
+QInputContext *QWidgetPrivate::assignedInputContext() const
+{
+#ifndef QT_NO_IM
+    const QWidget *widget = q_func();
+    while (widget) {
+        if (QInputContext *qic = widget->d_func()->ic)
+            return qic;
+        widget = widget->parentWidget();
+    }
+#endif
+    return 0;
+}
+
 QInputContext *QWidgetPrivate::inputContext() const
 {
 #ifndef QT_NO_IM
-    if (ic)
-        return ic;
+    if (QInputContext *qic = assignedInputContext())
+        return qic;
     return qApp->inputContext();
 #else
     return 0;
@@ -10778,7 +10795,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     case Qt::WA_InputMethodEnabled: {
 #ifndef QT_NO_IM
         QWidget *focusWidget = d->effectiveFocusWidget();
-        QInputContext *ic = focusWidget->d_func()->ic;
+        QInputContext *ic = focusWidget->d_func()->assignedInputContext();
         if (!ic && (!on || hasFocus()))
             ic = focusWidget->d_func()->inputContext();
         if (ic) {
@@ -10871,6 +10888,42 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             d->registerTouchWindow();
 #endif
         break;
+    case Qt::WA_LockPortraitOrientation:
+    case Qt::WA_LockLandscapeOrientation:
+    case Qt::WA_AutoOrientation: {
+        const Qt::WidgetAttribute orientations[3] = {
+            Qt::WA_LockPortraitOrientation,
+            Qt::WA_LockLandscapeOrientation,
+            Qt::WA_AutoOrientation
+        };
+
+        if (on) {
+            // We can only have one of these set at a time
+            for (int i = 0; i < 3; ++i) {
+                if (orientations[i] != attribute)
+                    setAttribute_internal(orientations[i], false, data, d);
+            }
+        }
+
+#ifdef Q_WS_S60
+        CAknAppUiBase* appUi = static_cast<CAknAppUiBase*>(CEikonEnv::Static()->EikAppUi());
+        const CAknAppUiBase::TAppUiOrientation s60orientations[] = {
+            CAknAppUiBase::EAppUiOrientationPortrait,
+            CAknAppUiBase::EAppUiOrientationLandscape,
+            CAknAppUiBase::EAppUiOrientationAutomatic
+        };
+        CAknAppUiBase::TAppUiOrientation s60orientation = CAknAppUiBase::EAppUiOrientationUnspecified;
+        for (int i = 0; i < 3; ++i) {
+            if (testAttribute(orientations[i])) {
+                s60orientation = s60orientations[i];
+                break;
+            }
+        }
+        QT_TRAP_THROWING(appUi->SetOrientationL(s60orientation));
+        S60->orientationSet = true;
+#endif
+        break;
+    }
     default:
         break;
     }
@@ -11229,7 +11282,7 @@ void QWidget::updateMicroFocus()
 #if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN))
     Q_D(QWidget);
     // and optimization to update input context only it has already been created.
-    if (d->ic || qApp->d_func()->inputContext) {
+    if (d->assignedInputContext() || qApp->d_func()->inputContext) {
         QInputContext *ic = inputContext();
         if (ic)
             ic->update();

@@ -213,6 +213,11 @@ void QNetworkManagerEngine::connectToId(const QString &id)
             dbusDevicePath = devicePath.path();
             break;
         }
+        else if (device.deviceType() == DEVICE_TYPE_GSM &&
+                connectionType == QLatin1String("gsm")) {
+            dbusDevicePath = devicePath.path();
+            break;
+        }
     }
 
     const QString service = connection->connectionInterface()->service();

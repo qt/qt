@@ -179,6 +179,11 @@ QScriptDeclarativeClass::PersistentIdentifier::operator=(const PersistentIdentif
     return *this;
 }
 
+QString QScriptDeclarativeClass::PersistentIdentifier::toString() const
+{
+    return ((JSC::Identifier &)d).ustring();
+}
+
 QScriptDeclarativeClass::QScriptDeclarativeClass(QScriptEngine *engine)
 : d_ptr(new QScriptDeclarativeClassPrivate)
 {
@@ -466,6 +471,14 @@ QString QScriptDeclarativeClass::toString(const Identifier &identifier)
 {
     JSC::UString::Rep *r = (JSC::UString::Rep *)identifier;
     return QString((QChar *)r->data(), r->size());
+}
+
+bool QScriptDeclarativeClass::startsWithUpper(const Identifier &identifier)
+{
+    JSC::UString::Rep *r = (JSC::UString::Rep *)identifier;
+    if (r->size() < 1)
+        return false;
+    return QChar::category((ushort)(r->data()[0])) == QChar::Letter_Uppercase;
 }
 
 quint32 QScriptDeclarativeClass::toArrayIndex(const Identifier &identifier, bool *ok)

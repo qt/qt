@@ -335,7 +335,7 @@ class QMutableSetIterator
     typedef typename QSet<T>::iterator iterator;
     QSet<T> *c;
     iterator i, n;
-    inline bool item_exists() const { return n != c->constEnd(); }
+    inline bool item_exists() const { return c->constEnd() != n; }
 
 public:
     inline QMutableSetIterator(QSet<T> &container)

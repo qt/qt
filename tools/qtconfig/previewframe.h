@@ -42,8 +42,6 @@
 #ifndef PREVIEWFRAME_H
 #define PREVIEWFRAME_H
 
-#include "previewwidget.h"
-
 #include <QMdiArea>
 
 QT_BEGIN_NAMESPACE
@@ -54,28 +52,29 @@ class Workspace : public QMdiArea
     Q_OBJECT
 
 public:
-    Workspace( PreviewFrame* parent = 0, const char* name = 0 );
+    Workspace(PreviewFrame *parent = 0);
     ~Workspace() {}
 
 protected:
-    void paintEvent( QPaintEvent* );
+    void paintEvent(QPaintEvent *);
 private:
     PreviewFrame *previewFrame;
 };
 
+class PreviewWidget;
 class PreviewFrame : public QFrame
 {
     Q_OBJECT
 
 public:
-    PreviewFrame( QWidget *parent = 0, const char *name = 0 );
+    PreviewFrame(QWidget *parent = 0);
     void setPreviewPalette(QPalette);
     void setPreviewVisible(bool val);
     QString previewText() const;
     PreviewWidget *widget() const { return previewWidget; }
 private:
-    Workspace   *workspace;
-    PreviewWidget 	*previewWidget;
+    Workspace *workspace;
+    PreviewWidget *previewWidget;
     QString m_previewWindowText;
 };
 

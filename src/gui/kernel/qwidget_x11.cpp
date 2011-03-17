@@ -346,7 +346,7 @@ Q_GUI_EXPORT void qt_x11_enforce_cursor(QWidget * w)
     qt_x11_enforce_cursor(w, false);
 }
 
-Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
+void qt_x11_wait_for_window_manager(QWidget *w, bool sendPostedEvents)
 {
     if (!w || (!w->isWindow() && !w->internalWinId()))
         return;
@@ -361,7 +361,8 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
     WId winid = w->internalWinId();
 
     // first deliver events that are already in the local queue
-    QApplication::sendPostedEvents();
+    if (sendPostedEvents)
+        QApplication::sendPostedEvents();
 
     // the normal sequence is:
     //  ... ConfigureNotify ... ReparentNotify ... MapNotify ... Expose
@@ -394,6 +395,11 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
         if (t.elapsed() > maximumWaitTime)
             return;
     } while(1);
+}
+
+Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget *w)
+{
+    qt_x11_wait_for_window_manager(w, true);
 }
 
 void qt_change_net_wm_state(const QWidget* w, bool set, Atom one, Atom two = 0)
@@ -444,6 +450,7 @@ static QVector<Atom> getNetWmState(QWidget *w)
         && actualType == XA_ATOM && actualFormat == 32) {
         returnValue.resize(bytesLeft / 4);
         XFree((char*) propertyData);
+        propertyData = 0;
 
         // fetch all data
         if (XGetWindowProperty(X11->display, w->internalWinId(), ATOM(_NET_WM_STATE), 0,
@@ -458,7 +465,8 @@ static QVector<Atom> getNetWmState(QWidget *w)
         if (!returnValue.isEmpty()) {
             memcpy(returnValue.data(), propertyData, returnValue.size() * sizeof(Atom));
         }
-        XFree((char*) propertyData);
+        if (propertyData)
+            XFree((char*) propertyData);
     }
 
     return returnValue;
@@ -1325,40 +1333,12 @@ QPoint QWidgetPrivate::mapFromGlobal(const QPoint &pos) const
 QPoint QWidget::mapToGlobal(const QPoint &pos) const
 {
     Q_D(const QWidget);
-    QPoint offset = data->crect.topLeft();
-    const QWidget *w = this;
-    const QWidget *p = w->parentWidget();
-    while (!w->isWindow() && p) {
-        w = p;
-        p = p->parentWidget();
-        offset += w->data->crect.topLeft();
-    }
-
-    const QWidgetPrivate *wd = w->d_func();
-    QTLWExtra *tlw = wd->topData();
-    if (!tlw->embedded)
-        return pos + offset;
-
     return d->mapToGlobal(pos);
 }
 
 QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 {
     Q_D(const QWidget);
-    QPoint offset = data->crect.topLeft();
-    const QWidget *w = this;
-    const QWidget *p = w->parentWidget();
-    while (!w->isWindow() && p) {
-        w = p;
-        p = p->parentWidget();
-        offset += w->data->crect.topLeft();
-    }
-
-    const QWidgetPrivate *wd = w->d_func();
-    QTLWExtra *tlw = wd->topData();
-    if (!tlw->embedded)
-        return pos - offset;
-
     return d->mapFromGlobal(pos);
 }
 
@@ -1522,7 +1502,7 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
                 || !QX11Info::appDefaultColormap(xinfo.screen())) {
                 // unknown DE or non-default visual/colormap, use 1bpp bitmap
                 if (!forceReset || !topData->iconPixmap)
-                    topData->iconPixmap = new QBitmap(qt_toX11Pixmap(icon.pixmap(QSize(64,64))));
+                    topData->iconPixmap = new QPixmap(qt_toX11Pixmap(QBitmap(icon.pixmap(QSize(64,64)))));
                 pixmap_handle = topData->iconPixmap->handle();
             } else {
                 // default depth, use a normal pixmap (even though this

@@ -112,6 +112,8 @@ public:
     // that was used for connecting to.
     QString verificationPeerName;
 
+    bool allowRootCertOnDemandLoading;
+
     static bool supportsSsl();
     static void ensureInitialized();
     static void deinitialize();
@@ -168,6 +170,9 @@ private:
 
     static bool s_libraryLoaded;
     static bool s_loadedCiphersAndCerts;
+protected:
+    static bool s_loadRootCertsOnDemand;
+    static QList<QByteArray> unixRootCertDirectories();
 };
 
 QT_END_NAMESPACE

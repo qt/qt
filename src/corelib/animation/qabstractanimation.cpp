@@ -491,6 +491,7 @@ QDefaultAnimationDriver::QDefaultAnimationDriver(QUnifiedTimer *timer)
 void QDefaultAnimationDriver::timerEvent(QTimerEvent *e)
 {
     Q_ASSERT(e->timerId() == m_timer.timerId());
+    Q_UNUSED(e); // if the assertions are disabled
     advance();
 }
 

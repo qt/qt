@@ -56,6 +56,7 @@
 #include "Debugger.h"
 #include "ErrorInstance.h"
 #include "JSArray.h"
+#include "Executable.h"
 #include "Lexer.h"
 #include "RefPtr.h"
 #include "RegExpConstructor.h"
@@ -87,6 +88,7 @@ class QScriptEngineAgent;
 class QScriptEnginePrivate;
 class QScriptSyntaxCheckResult;
 class QScriptEngine;
+class QScriptProgramPrivate;
 
 namespace QScript
 {
@@ -230,6 +232,8 @@ public:
     static inline JSC::ExecState *frameForContext(QScriptContext *context);
     static inline const JSC::ExecState *frameForContext(const QScriptContext *context);
 
+    static inline bool hasValidCodeBlockRegister(JSC::ExecState *frame);
+
     JSC::JSGlobalObject *originalGlobalObject() const;
     JSC::JSObject *getOriginalGlobalObjectProxy();
     JSC::JSObject *customGlobalObject() const;
@@ -272,6 +276,10 @@ public:
 
     static QScriptSyntaxCheckResult checkSyntax(const QString &program);
     static bool canEvaluate(const QString &program);
+
+    inline void registerScriptProgram(QScriptProgramPrivate *program);
+    inline void unregisterScriptProgram(QScriptProgramPrivate *program);
+    void detachAllRegisteredScriptPrograms();
 
     inline QScriptValuePrivate *allocateScriptValuePrivate(size_t);
     inline void freeScriptValuePrivate(QScriptValuePrivate *p);
@@ -368,6 +376,7 @@ public:
     static const int maxFreeScriptValues = 256;
     int freeScriptValuesCount;
     QScriptStringPrivate *registeredScriptStrings;
+    QSet<QScriptProgramPrivate*> registeredScriptPrograms;
     QHash<int, QScriptTypeInfo*> m_typeInfos;
     int processEventsInterval;
     QScriptValue abortResult;
@@ -565,6 +574,18 @@ inline QByteArray convertToLatin1(const JSC::UString &str)
 }
 
 } // namespace QScript
+
+inline void QScriptEnginePrivate::registerScriptProgram(QScriptProgramPrivate *program)
+{
+    Q_ASSERT(!registeredScriptPrograms.contains(program));
+    registeredScriptPrograms.insert(program);
+}
+
+inline void QScriptEnginePrivate::unregisterScriptProgram(QScriptProgramPrivate *program)
+{
+    Q_ASSERT(registeredScriptPrograms.contains(program));
+    registeredScriptPrograms.remove(program);
+}
 
 inline QScriptValuePrivate *QScriptEnginePrivate::allocateScriptValuePrivate(size_t size)
 {
@@ -842,6 +863,21 @@ inline JSC::ExecState *QScriptEnginePrivate::frameForContext(QScriptContext *con
 inline const JSC::ExecState *QScriptEnginePrivate::frameForContext(const QScriptContext *context)
 {
     return reinterpret_cast<const JSC::ExecState*>(context);
+}
+
+inline bool QScriptEnginePrivate::hasValidCodeBlockRegister(JSC::ExecState *frame)
+{
+#if ENABLE(JIT)
+    // Frames created by the VM don't have their CodeBlock register
+    // initialized. We can detect such frames by checking if the
+    // callee is a host JSFunction.
+    JSC::JSObject *callee = frame->callee();
+    return !(callee && callee->inherits(&JSC::JSFunction::info)
+             && JSC::asFunction(callee)->isHostFunction());
+#else
+    Q_UNUSED(frame);
+    return true;
+#endif
 }
 
 inline JSC::ExecState *QScriptEnginePrivate::globalExec() const

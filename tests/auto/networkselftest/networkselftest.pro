@@ -12,6 +12,7 @@ wince*: {
     addFiles.files = rfc3252.txt
     addFiles.path = .
     DEPLOYMENT += addFiles
+    TARGET.CAPABILITY = NetworkServices ReadUserData
 } else:vxworks*: {
     DEFINES += SRCDIR=\\\"\\\"
 } else {

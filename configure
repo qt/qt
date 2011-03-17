@@ -934,6 +934,16 @@ if [ -d "$relpath/src/plugins/gfxdrivers" ]; then
   CFG_GFX_OFF="$CFG_GFX_AVAILABLE" # assume all off
 fi
 
+CFG_IMAGEFORMAT_PLUGIN_AVAILABLE=
+if [ -d "$relpath/src/plugins/imageformats" ]; then
+    for a in "$relpath/src/plugins/imageformats/"*; do
+        if [ -d "$a" ]; then
+            base_a=`basename "$a"`
+            CFG_IMAGEFORMAT_PLUGIN_AVAILABLE="${CFG_IMAGEFORMAT_PLUGIN_AVAILABLE} ${base_a}"
+        fi
+    done
+fi
+
 #-------------------------------------------------------------------------------
 # Set Default NaCl options
 #-------------------------------------------------------------------------------
@@ -2140,7 +2150,7 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    sql-*|gfx-*|decoration-*|kbd-*|mouse-*)
+    sql-*|gfx-*|decoration-*|kbd-*|mouse-*|imageformat-*)
         # if Qt style options were used, $VAL can be "no", "qt", or "plugin"
         # if autoconf style options were used, $VAL can be "yes" or "no"
         [ "$VAL" = "yes" ] && VAL=qt
@@ -2182,6 +2192,13 @@ while [ "$#" -gt 0 ]; do
 		avail="$CFG_MOUSE_PLUGIN_AVAILABLE"
 	    fi
             ;;
+        imageformat)
+            avail="$CFG_IMAGEFORMAT_PLUGIN_AVAILABLE"
+            if [ "$OPT" != "plugin" ]; then
+                # png is always built in
+                avail="$avail png"
+            fi
+            ;;
         *)
             avail=""
             echo "BUG: Unhandled type $VAR used in $CURRENT_OPT"
@@ -2201,6 +2218,11 @@ while [ "$#" -gt 0 ]; do
         if [ "$VAR" = "sql" ]; then
             # set the CFG_SQL_driver
             eval "CFG_SQL_$VAL=\$OPT"
+            continue
+        elif [ "$VAR" = "imageformat" ]; then
+            [ "$OPT" = "qt" ] && OPT=yes
+            VAL="`echo $VAL |tr a-z A-Z`"
+            eval "CFG_$VAL=$OPT"
             continue
         fi
 
@@ -6295,19 +6317,28 @@ if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
 
 fi # QWS
 
+EGL_VARIANT=none
 # EGL Support
 if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
     if [ "$CFG_EGL" != "no" ]; then
         # detect EGL support
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl4gles1" "EGL (GLES/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
-            # EGL specified by QMAKE_*_EGL, included with <GLES/egl.h>
-            CFG_EGL=yes
-            CFG_EGL_GLES_INCLUDES=yes
-        elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl" "EGL (EGL/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl" "EGL (EGL/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
             # EGL specified by QMAKE_*_EGL, included with <EGL/egl.h>
+            EGL_VARIANT=regular
             CFG_EGL=yes
-            CFG_EGL_GLES_INCLUDES=no
-        else
+        fi
+
+        # Prefer this variant for ES1
+        if [ "$CFG_OPENGL" = "es1" -o "$EGL_VARIANT" = "none" ]; then
+            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl4gles1" "EGL (GLES/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
+                # EGL specified by QMAKE_*_EGL, included with <GLES/egl.h>
+                EGL_VARIANT=gles
+                CFG_EGL=yes
+                CFG_EGL_GLES_INCLUDES=yes
+            fi
+        fi
+
+        if [ "$EGL_VARIANT" = "none" ]; then
             if [ "$CFG_EGL" = "yes" ]; then
                 echo "The EGL functionality test failed!"
                 echo " EGL is required for OpenGL ES to manage contexts & surfaces."
@@ -6671,6 +6702,8 @@ if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ] || [ "$CFG_JAVASCRIPTCORE_JIT" = "auto"
         if [ $? != "0" ]; then
            CFG_JAVASCRIPTCORE_JIT=no
         fi
+    elif [ "$XPLATFORM" = "symbian-gcce" ]; then
+        CFG_JAVASCRIPTCORE_JIT=no
     fi
 fi
 
@@ -7376,11 +7409,11 @@ EOF
         canBuildWebKit="no"
         canBuildQtConcurrent="no"
 	;;
-    symbian/*-gcce)
+    symbian-gcce)
         canBuildWebKit="no"
         canBuildQtConcurrent="no"
         ;;
-    symbian/*-armcc)
+    symbian-armcc)
         canBuildQtConcurrent="no"
         ;;
 esac

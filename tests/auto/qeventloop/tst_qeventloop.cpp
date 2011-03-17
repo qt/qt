@@ -112,6 +112,10 @@ signals:
 public:
     QMutex mutex;
     QWaitCondition cond;
+    volatile int result1;
+    volatile int result2;
+    MultipleExecThread() : result1(0xdead), result2(0xbeef) {}
+
     void run()
     {
         QMutexLocker locker(&mutex);
@@ -124,13 +128,13 @@ public:
         connect(&timer, SIGNAL(timeout()), SLOT(quit()), Qt::DirectConnection);
         timer.setInterval(1000);
         timer.start();
-        (void) exec();
+        result1 = exec();
 
         // this should return immediately, since exit() has been called
         cond.wakeOne();
         cond.wait(&mutex);
         QEventLoop eventLoop;
-        (void) eventLoop.exec();
+        result2 = eventLoop.exec();
     }
 };
 
@@ -197,7 +201,9 @@ private slots:
     void symbianNestedActiveSchedulerLoop();
     void processEvents();
     void exec();
+    void reexec();
     void exit();
+    void execAfterExit();
     void wakeUp();
     void quit();
     void processEventsExcludeSocket();
@@ -398,7 +404,9 @@ void tst_QEventLoop::exec()
     }
 
     {
-        // calling exec() after exit()/quit() should return immediately
+        // calling QEventLoop::exec() after a thread loop has exit()ed should return immediately
+        // Note: this behaviour differs from QCoreApplication and QEventLoop
+        // see tst_QCoreApplication::eventLoopExecAfterExit, tst_QEventLoop::reexec
         MultipleExecThread thread;
 
         // start thread and wait for checkpoint
@@ -411,6 +419,8 @@ void tst_QEventLoop::exec()
         thread.cond.wakeOne();
         thread.cond.wait(&thread.mutex);
         QVERIFY(spy.count() > 0);
+        int v = thread.result1;
+        QCOMPARE(v, 0);
 
         // exec should return immediately
         spy.clear();
@@ -418,6 +428,8 @@ void tst_QEventLoop::exec()
         thread.mutex.unlock();
         thread.wait();
         QCOMPARE(spy.count(), 0);
+        v = thread.result2;
+        QCOMPARE(v, -1);
     }
 
     {
@@ -462,8 +474,31 @@ void tst_QEventLoop::exec()
 #endif
 }
 
+void tst_QEventLoop::reexec()
+{
+    QEventLoop loop;
+
+    // exec once
+    QMetaObject::invokeMethod(&loop, "quit", Qt::QueuedConnection);
+    QCOMPARE(loop.exec(), 0);
+
+    // and again
+    QMetaObject::invokeMethod(&loop, "quit", Qt::QueuedConnection);
+    QCOMPARE(loop.exec(), 0);
+}
+
 void tst_QEventLoop::exit()
 { DEPENDS_ON(exec()); }
+
+void tst_QEventLoop::execAfterExit()
+{
+    QEventLoop loop;
+    EventLoopExiter obj(&loop);
+
+    QMetaObject::invokeMethod(&obj, "exit", Qt::QueuedConnection);
+    loop.exit(1);
+    QCOMPARE(loop.exec(), 0);
+}
 
 void tst_QEventLoop::wakeUp()
 {

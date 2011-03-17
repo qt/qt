@@ -118,54 +118,6 @@ struct FileInfoCacheKey
 inline uint qHash(const FileInfoCacheKey &f) { return f.hashCode(); }
 
 // -------------------------------------------------------------------------------------------------
-struct FileFixifyCacheKey
-{
-    mutable uint hash;
-    QString in_d, out_d;
-    QString file, pwd;
-    uint fixType;
-    bool canonicalize;
-    FileFixifyCacheKey(const QString &f, const QString &od, const QString &id,
-                       uint ft, bool c)
-    {
-        hash = 0;
-        pwd = qmake_getpwd();
-        file = f;
-        if(od.isNull())
-            out_d = Option::output_dir;
-        else
-            out_d = od;
-        if(id.isNull())
-            in_d = qmake_getpwd();
-        else
-            in_d = id;
-        fixType = ft;
-        canonicalize = c;
-    }
-    QString toString() const {
-        return file + "--" + in_d + "--" + out_d + "--" + pwd + "--" +
-            QString::number(fixType) + "--" + QString::number((int)canonicalize);
-    }
-    bool operator==(const FileFixifyCacheKey &f) const
-    {
-        return (f.canonicalize == canonicalize &&
-                f.fixType == fixType &&
-                f.file == file &&
-                f.in_d == in_d &&
-                f.out_d == out_d &&
-                f.pwd == pwd);
-    }
-    inline uint hashCode() const {
-        if(!hash)
-            hash = uint(canonicalize) | uint(fixType) |
-                   qHash(file) | qHash(in_d) | qHash(out_d) /*|qHash(pwd)*/;
-        return hash;
-    }
-};
-
-inline uint qHash(const FileFixifyCacheKey &f) { return f.hashCode(); }
-// -------------------------------------------------------------------------------------------------
-
 template <typename T>
 inline void qmakeDeleteCacheClear(void *i) { delete reinterpret_cast<T*>(i); }
 

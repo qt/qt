@@ -63,6 +63,7 @@
 #include <qwaitcondition.h>
 #include <qsocketnotifier.h>
 #include <qdatetime.h>
+#include <qelapsedtimer.h>
 
 #include <e32base.h>
 
@@ -284,7 +285,7 @@ private:
 
     int m_delay;
     int m_avgEventTime;
-    QTime m_lastIdleRequestTimer;
+    QElapsedTimer m_lastIdleRequestTimer;
 };
 
 #ifdef QT_DEBUG

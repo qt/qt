@@ -18,6 +18,8 @@ define command_fixer
 	THE_COMMAND:=$(POST_LINK_CMD)
 endef
 
+all_qmake_emulator_deployment_dependencies:: $(POST_LINK_TARGET)
+
 define qmake_post_link
 $(ALLTARGET):: $(POST_LINK_TARGET)
 
