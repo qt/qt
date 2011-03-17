@@ -796,6 +796,7 @@ void QDeclarativePathView::setPreferredHighlightBegin(qreal start)
         return;
     d->highlightRangeStart = start;
     d->haveHighlightRange = d->highlightRangeMode != NoHighlightRange && d->highlightRangeStart <= d->highlightRangeEnd;
+    refill();
     emit preferredHighlightBeginChanged();
 }
 
@@ -812,6 +813,7 @@ void QDeclarativePathView::setPreferredHighlightEnd(qreal end)
         return;
     d->highlightRangeEnd = end;
     d->haveHighlightRange = d->highlightRangeMode != NoHighlightRange && d->highlightRangeStart <= d->highlightRangeEnd;
+    refill();
     emit preferredHighlightEndChanged();
 }
 
