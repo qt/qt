@@ -356,10 +356,10 @@ void QMainWindowLayout::updateHIToolBarStatus()
         while (!qtoolbarsInUnifiedToolbarList.isEmpty()) {
             // Should shrink the list by one every time.
             QToolBar *toolbar = qtoolbarsInUnifiedToolbarList.first();
-            layoutState.mainWindow->addToolBar(Qt::TopToolBarArea, toolbar);
 #if defined(QT_MAC_USE_COCOA)
-            toolbar->d_func()->isInUnifiedToolbar = false;
+            unifiedSurface->removeToolbar(toolbar);
 #endif
+            layoutState.mainWindow->addToolBar(Qt::TopToolBarArea, toolbar);
         }
         macWindowToolbarSet(qt_mac_window_for(layoutState.mainWindow), 0);
     } else {
@@ -393,7 +393,7 @@ void QMainWindowLayout::insertIntoMacToolbar(QToolBar *before, QToolBar *toolbar
         return;
 
 #if defined(QT_MAC_USE_COCOA)
-    // toolbar will now become native (if not allready) since we need
+    // toolbar will now become native (if not already) since we need
     // an nsview for it inside the corresponding NSToolbarItem.
     // Setting isInUnifiedToolbar will (among other things) stop alien
     // siblings from becoming native when this happends since the toolbar

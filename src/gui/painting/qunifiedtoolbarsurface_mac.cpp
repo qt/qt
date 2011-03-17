@@ -70,7 +70,7 @@ QPaintDevice *QUnifiedToolbarSurface::paintDevice()
     return &d_ptr->image->image;
 }
 
-void QUnifiedToolbarSurface::recursiveRedirect(QObject *object, const QPoint &offset)
+void QUnifiedToolbarSurface::recursiveRedirect(QObject *object, QWidget *parent_toolbar, const QPoint &offset)
 {
     if (object != 0) {
         if (object->isWidgetType()) {
@@ -82,9 +82,10 @@ void QUnifiedToolbarSurface::recursiveRedirect(QObject *object, const QPoint &of
                 widget->d_func()->unifiedSurface = this;
                 widget->d_func()->isInUnifiedToolbar = true;
                 widget->d_func()->toolbar_offset = offset;
+                widget->d_func()->toolbar_ancestor = parent_toolbar;
 
                 for (int i = 0; i < object->children().size(); ++i) {
-                    recursiveRedirect(object->children().at(i), offset);
+                    recursiveRedirect(object->children().at(i), parent_toolbar, offset);
                 }
             }
         }
@@ -94,7 +95,35 @@ void QUnifiedToolbarSurface::recursiveRedirect(QObject *object, const QPoint &of
 void QUnifiedToolbarSurface::insertToolbar(QWidget *toolbar, const QPoint &offset)
 {
     setGeometry(QRect(QPoint(0, 0), QSize(offset.x() + toolbar->width(), 100))); // FIXME
-    recursiveRedirect(toolbar, offset);
+    recursiveRedirect(toolbar, toolbar, offset);
+}
+
+// We basically undo what we set in recursiveRedirect().
+void QUnifiedToolbarSurface::recursiveRemoval(QObject *object)
+{
+    if (object != 0) {
+        if (object->isWidgetType()) {
+            QWidget *widget = qobject_cast<QWidget *>(object);
+
+            // If it's a pop-up or something similar, we don't redirect it.
+            if (widget->windowType() & Qt::Window)
+                return;
+
+            widget->d_func()->unifiedSurface = 0;
+            widget->d_func()->isInUnifiedToolbar = false;
+            widget->d_func()->toolbar_offset = QPoint();
+            widget->d_func()->toolbar_ancestor = 0;
+        }
+
+        for (int i = 0; i < object->children().size(); ++i) {
+            recursiveRemoval(object->children().at(i));
+        }
+    }
+}
+
+void QUnifiedToolbarSurface::removeToolbar(QToolBar *toolbar)
+{
+    recursiveRemoval(toolbar);
 }
 
 void QUnifiedToolbarSurface::setGeometry(const QRect &rect)
@@ -126,70 +155,25 @@ void QUnifiedToolbarSurface::updateToolbarOffset(QWidget *widget)
     mlayout->updateUnifiedToolbarOffset();
 }
 
-void QUnifiedToolbarSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &offset)
+void QUnifiedToolbarSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
+{
+    Q_UNUSED(region);
+    Q_UNUSED(offset);
+
+    this->flush(widget);
+}
+
+void QUnifiedToolbarSurface::flush(QWidget *widget)
 {
     Q_D(QUnifiedToolbarSurface);
 
-    QRegion flushingRegion(widget->rect());
-
-    if (!d->image || rgn.rectCount() == 0) {
+    if (!d->image)
         return;
-    }
 
-    Q_UNUSED(offset);
-
-    // Get a context for the widget.
-    CGContextRef context;
-    if (!(widget->d_func()->hasOwnContext)) {
-        widget->d_func()->ut_rg = rgn;
-        widget->d_func()->ut_pt = offset;
+    if (widget->d_func()->flushRequested) {
+        // We call display: directly to avoid flickering in the toolbar.
         qt_mac_display(widget);
-        return;
-    } else {
-        // We render the content of the toolbar in the surface.
-        updateToolbarOffset(widget);
-        QRect beginPaintRect(widget->d_func()->toolbar_offset.x(), widget->d_func()->toolbar_offset.y(), widget->geometry().width(), widget->geometry().height());
-        QRegion beginPaintRegion(beginPaintRect);
-
-        context = widget->d_func()->cgContext;
-        beginPaint(beginPaintRegion);
-        widget->render(widget->d_func()->unifiedSurface->paintDevice(), widget->d_func()->toolbar_offset, QRegion(), QWidget::DrawChildren);
     }
-
-    CGContextSaveGState(context);
-
-    int areaX = widget->d_func()->toolbar_offset.x();
-    int areaY = widget->d_func()->toolbar_offset.y();
-    int areaWidth = widget->geometry().width();
-    int areaHeight = widget->geometry().height();
-    const CGRect area = CGRectMake(areaX, areaY, areaWidth, areaHeight);
-
-    // Clip to region.
-    const QVector<QRect> &rects = flushingRegion.rects();
-    for (int i = 0; i < rects.size(); ++i) {
-        const QRect &rect = rects.at(i);
-        CGContextAddRect(context, CGRectMake(rect.x(), rect.y(), rect.width(), rect.height()));
-    }
-    CGContextAddRect(context, area);
-    CGContextClip(context);
-
-
-    CGImageRef image = CGBitmapContextCreateImage(d->image->cg);
-    CGImageRef subImage = CGImageCreateWithImageInRect(image, area);
-
-    const CGRect drawingArea = CGRectMake(0, 0, areaWidth, areaHeight);
-    qt_mac_drawCGImage(context, &drawingArea, subImage);
-
-    CGImageRelease(subImage);
-    CGImageRelease(image);
-
-    CGContextFlush(context);
-
-    // Restore context.
-    CGContextRestoreGState(context);
-    CGContextRelease(context);
-    widget->d_func()->cgContext = 0;
-    widget->d_func()->hasOwnContext = false;
 }
 
 void QUnifiedToolbarSurface::prepareBuffer(QImage::Format format, QWidget *widget)
@@ -197,7 +181,7 @@ void QUnifiedToolbarSurface::prepareBuffer(QImage::Format format, QWidget *widge
     Q_D(QUnifiedToolbarSurface);
 
     int width = geometry().width();
-    int height = geometry().height();
+    int height = 100; // FIXME
     if (d->image) {
         width = qMax(d->image->width(), width);
         height = qMax(d->image->height(), height);
@@ -251,6 +235,28 @@ void QUnifiedToolbarSurface::prepareBuffer(QImage::Format format, QWidget *widge
     }
 
     delete oldImage;
+}
+
+CGContextRef QUnifiedToolbarSurface::imageContext()
+{
+    Q_D(QUnifiedToolbarSurface);
+    return d->image->cg;
+}
+
+void QUnifiedToolbarSurface::renderToolbar(QWidget *widget, bool forceFlush)
+{
+    QWidget *toolbar = widget->d_func()->toolbar_ancestor;
+
+    updateToolbarOffset(toolbar);
+    QRect beginPaintRect(toolbar->d_func()->toolbar_offset.x(), toolbar->d_func()->toolbar_offset.y(), toolbar->geometry().width(), toolbar->geometry().height());
+    QRegion beginPaintRegion(beginPaintRect);
+
+    beginPaint(beginPaintRegion);
+    toolbar->render(paintDevice(), toolbar->d_func()->toolbar_offset, QRegion(toolbar->geometry()), QWidget::DrawChildren);
+    toolbar->d_func()->flushRequested = true;
+
+    if (forceFlush)
+        flush(toolbar);
 }
 
 QT_END_NAMESPACE

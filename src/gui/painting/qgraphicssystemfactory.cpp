@@ -45,6 +45,7 @@
 #include "qmutex.h"
 
 #include "qapplication.h"
+#include <private/qapplication_p.h>
 #include "qgraphicssystem_raster_p.h"
 #include "qgraphicssystem_runtime_p.h"
 #include "qdebug.h"
@@ -79,6 +80,7 @@ QGraphicsSystem *QGraphicsSystemFactory::create(const QString& key)
     }
 #endif
 
+    QApplicationPrivate::graphics_system_name = system;
     if (system == QLatin1String("raster"))
         return new QRasterGraphicsSystem;
     else if (system == QLatin1String("runtime"))
