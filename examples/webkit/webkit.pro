@@ -6,7 +6,6 @@ SUBDIRS +=  domtraversal \
             simpleselector \
             imageanalyzer \
             framecapture \
-            webkit-guide
 
 contains(QT_CONFIG, openssl):SUBDIRS += googlechat
 
