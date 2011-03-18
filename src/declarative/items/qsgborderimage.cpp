@@ -48,7 +48,6 @@
 #include <QtCore/qfile.h>
 
 #include <private/qdeclarativeengine_p.h>
-#include "qsgtextureprovider.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -321,8 +320,7 @@ Node *QSGBorderImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 {
     Q_D(QSGBorderImage);
 
-    QSGTextureProvider *provider = d->pix.textureProvider();
-    if (!provider|| width() <= 0 || height() <= 0) {
+    if (d->pix.texture().isNull() || width() <= 0 || height() <= 0) {
         delete oldNode;
         return 0;
     }
@@ -334,10 +332,6 @@ Node *QSGBorderImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     }
     d->pixmapChanged = false;
 
-    provider->updateTexture();
-    if (!provider->texture().isReady())
-        return 0;
-
     // XXX Does not support mirror property
 
     if (!node) {
@@ -345,7 +339,7 @@ Node *QSGBorderImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         const QSGScaleGrid *border = d->getScaleGrid();
         QRect inner(border->left(), border->top(), d->pix.width() - border->right() - border->left(),
                     d->pix.height() - border->bottom() - border->top());
-        node = new QSGNinePatchNode(QRectF(0, 0, width(), height()), provider->texture(), inner, d->smooth);
+        node = new QSGNinePatchNode(QRectF(0, 0, width(), height()), d->pix.texture(), inner, d->smooth);
     } else {
         node->setRect(QRectF(0, 0, width(), height()));
         node->setLinearFiltering(d->smooth);

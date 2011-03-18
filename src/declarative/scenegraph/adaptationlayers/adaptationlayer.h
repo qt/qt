@@ -43,7 +43,7 @@
 #define ADAPTATIONINTERFACES_H
 
 #include "node.h"
-#include "qsgtexturemanager.h"
+#include "qsgtexture.h"
 
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>

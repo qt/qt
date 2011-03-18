@@ -42,7 +42,7 @@
 #ifndef QSGTEXTUREPROVIDER_H
 #define QSGTEXTUREPROVIDER_H
 
-#include "qsgtexturemanager.h"
+#include "qsgtexture.h"
 #include "qobject.h"
 
 QT_BEGIN_HEADER
@@ -70,9 +70,9 @@ public:
     virtual void updateTexture() { }
     virtual QSGTextureRef texture() = 0;
 
-    virtual QSize textureSize() const = 0;
-
     virtual bool isStaticTexture() const;
+
+    void bind(QSGTexture *oldTexture = 0);
 
     bool opaque() const { return m_opaque; }
     void setOpaque(bool enabled) { m_opaque = enabled; }
@@ -88,7 +88,6 @@ public:
 
     Filtering mipmap() const { return Filtering(m_mipmap); }
     void setMipmap(Filtering filtering) { m_mipmap = filtering; }
-
 
     GLint glTextureWrapS() const;
     GLint glTextureWrapT() const;

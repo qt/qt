@@ -266,7 +266,7 @@ QPixmap QDeclarativeImageProvider::requestPixmap(const QString &id, QSize *size,
     implementation of this method is reentrant.
 */
 
-QSGTextureProvider *QDeclarativeImageProvider::requestTexture(const QString &id, QSize *size, const QSize &requestedSize)
+QSGTexture *QDeclarativeImageProvider::requestTexture(const QString &id, QSize *size, const QSize &requestedSize)
 {
     Q_UNUSED(id);
     Q_UNUSED(size);

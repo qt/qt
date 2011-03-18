@@ -297,8 +297,8 @@ void DefaultRectangleNode::updateGeometry()
 
     // Calculate from where in the texture to sample gradient colours.
     qreal gradientSourceX0 = 0, gradientSourceDX = 0, gradientSourceY = 0;
-    if (m_gradient_texture.isReady()) {
-        QRectF src = m_gradient_texture->subRect();
+    if (!m_gradient_texture.isNull()) {
+        QRectF src = m_gradient_texture->textureSubRect();
         gradientSourceY = qreal(0.5) * (src.top() + src.bottom());
         gradientSourceDX = src.width() / stops.size();
         gradientSourceX0 = src.left() + qreal(0.5) * gradientSourceDX;
@@ -684,7 +684,9 @@ void DefaultRectangleNode::updateGradientTexture()
         line[i] = QColor::fromRgbF(c.redF() * c.alphaF(), c.greenF() * c.alphaF(), c.blueF() * c.alphaF(), c.alphaF()).rgba();
     }
 
-    m_gradient_texture = m_context->textureManager()->upload(image);
+    m_gradient_texture = m_context->createTexture();
+    m_gradient_texture->setFiltering(QSGTexture::Linear);
+    m_gradient_texture->setImage(image);
 
     Q_ASSERT(TextureMaterial::is(opaqueMaterial()) || TextureMaterialWithOpacity::is(material()));
 

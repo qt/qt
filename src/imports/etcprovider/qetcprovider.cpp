@@ -40,19 +40,33 @@ unsigned short getPaddedHeight(ETCHeader *pHeader)
 
 enum {GL_ETC1_RGB8_OES=0x8d64};
 
-void EtcTextureProvider::updateTexture ()
+EtcTexture::EtcTexture()
+    : m_texture_id(0)
 {
-    if (m_texture.isReady())
+
+}
+
+EtcTexture::~EtcTexture()
+{
+    if (m_texture_id)
+        glDeleteTextures(1, &m_texture_id);
+}
+
+
+void EtcTexture::bind()
+{
+    if (m_texture_id) {
+        glBindTexture(GL_TEXTURE_2D, m_texture_id);
         return;
+    }
 
 #ifdef ETC_DEBUG
     printf("EtcTextureProvider: about to update that texture...\n");
 #endif
 
-    GLuint id;
-    glGenTextures(1, &id);
+    glGenTextures(1, &m_texture_id);
 
-    glBindTexture(GL_TEXTURE_2D, id);
+    glBindTexture(GL_TEXTURE_2D, m_texture_id);
 
 #ifdef ETC_DEBUG
     qDebug() << "glCompressedTexImage2D, width: " << m_size.width() << "height" << m_size.height() <<
@@ -68,37 +82,21 @@ void EtcTextureProvider::updateTexture ()
     if (error != GL_NO_ERROR) {
         qDebug () << "Error: " << error;
         glBindTexture(GL_TEXTURE_2D, 0);
-        glDeleteTextures(1, &id);
+        glDeleteTextures(1, &m_texture_id);
+        m_texture_id = 0;
         return;
     }
-    QSGTexture *t = new QSGTexture();
-    t->setTextureId(id);
-    t->setTextureSize(m_size);
-    t->setAlphaChannel(false);
-    t->setOwnsTexture(true);
-    t->setStatus(QSGTexture::Ready);
-
-    m_texture = QSGTextureRef(t);
 }
 
-QSGTextureRef EtcTextureProvider::texture ()
-{
-#ifdef ETC_DEBUG
-    // printf("EtcTextureProvider: Someone is asking for my texture...\n");
-#endif
-    return m_texture;
-}
-
-
-QSize EtcTextureProvider::textureSize() const
+QSize EtcTexture::textureSize() const
 {
     return m_size;
 }
 
-QSGTextureProvider *QEtcProvider::requestTexture(const QString &id, QSize *size, const QSize &requestedSize)
+QSGTexture *QEtcProvider::requestTexture(const QString &id, QSize *size, const QSize &requestedSize)
 {
     Q_UNUSED(requestedSize);
-    EtcTextureProvider *ret = 0;
+    EtcTexture *ret = 0;
 
     size->setHeight(0);
     size->setWidth(0);
@@ -108,7 +106,7 @@ QSGTextureProvider *QEtcProvider::requestTexture(const QString &id, QSize *size,
     qDebug() << "requestTexture opening file: " << id;
 #endif
     if (file.open(QIODevice::ReadOnly)) {
-        ret = new EtcTextureProvider ();
+        ret = new EtcTexture();
         ret->m_data = file.readAll();
         if (!ret->m_data.isEmpty()) {
             ETCHeader *pETCHeader = NULL;

@@ -45,12 +45,31 @@
 
 #include "qsgcontext.h"
 #include "adaptationlayer.h"
-#include "qsgtexturemanager.h"
 #include "textureitem.h"
 
 #include <QtGui/qpainter.h>
 
 QT_BEGIN_NAMESPACE
+
+QSGImageTextureProvider::QSGImageTextureProvider(QObject *parent)
+    : QSGTextureProvider(parent)
+{
+}
+
+
+void QSGImageTextureProvider::setImage(const QImage &image)
+{
+    tex = QSGContext::current->createTexture();
+    tex->setImage(image);
+    emit textureChanged();
+}
+
+
+QSGTextureRef QSGImageTextureProvider::texture()
+{
+    return tex;
+}
+
 
 QSGImagePrivate::QSGImagePrivate()
     : fillMode(QSGImage::Stretch)
@@ -63,11 +82,15 @@ QSGImagePrivate::QSGImagePrivate()
 QSGImage::QSGImage(QSGItem *parent)
     : QSGImageBase(*(new QSGImagePrivate), parent)
 {
+    d_func()->textureProvider = new QSGImageTextureProvider(this);
+    connect(d_func()->textureProvider, SIGNAL(textureChanged()), this, SLOT(update()));
 }
 
 QSGImage::QSGImage(QSGImagePrivate &dd, QSGItem *parent)
     : QSGImageBase(dd, parent)
 {
+    d_func()->textureProvider = new QSGImageTextureProvider(this);
+    connect(d_func()->textureProvider, SIGNAL(textureChanged()), this, SLOT(update()));
 }
 
 QSGImage::~QSGImage()
@@ -173,7 +196,7 @@ QRectF QSGImage::boundingRect() const
 QSGTextureProvider *QSGImage::textureProvider() const
 {
     Q_D(const QSGImage);
-    return d->pix.textureProvider();
+    return d->textureProvider;
 }
 
 Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
@@ -181,8 +204,7 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
     Q_D(QSGImage);
     //XXX Support mirror property
 
-    QSGTextureProvider *textureProvider = d->pix.textureProvider();
-    if (!textureProvider || width() <= 0 || height() <= 0) {
+    if (d->pix.texture().isNull() || width() <= 0 || height() <= 0) {
         delete oldNode;
         return 0;
     }
@@ -191,16 +213,16 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
     if (!node) { 
         d->pixmapChanged = true;
         node = QSGContext::current->createTextureNode();
-        if (!textureProvider->isStaticTexture())
-            connect(textureProvider, SIGNAL(textureChanged()), this, SLOT(update()));
+        d->textureProvider->tex = d->pix.texture();
+        node->setTexture(d->textureProvider);
     }
 
     if (d->pixmapChanged) {
-        textureProvider->updateTexture();
         // force update the texture in the node to trigger reconstruction of
         // geometry and the likes when a atlas segment has changed.
+        d->textureProvider->tex = d->pix.texture();
         node->setTexture(0);
-        node->setTexture(textureProvider);
+        node->setTexture(d->textureProvider);
         d->pixmapChanged = false;
     }
 
@@ -263,9 +285,9 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
                   sourceRect.width() / d->pix.width(),
                   sourceRect.height() / d->pix.height());
 
-    textureProvider->setHorizontalWrapMode(hWrap);
-    textureProvider->setVerticalWrapMode(vWrap);
-    textureProvider->setFiltering(d->smooth ? QSGTextureProvider::Linear : QSGTextureProvider::Nearest);
+    d->textureProvider->setHorizontalWrapMode(hWrap);
+    d->textureProvider->setVerticalWrapMode(vWrap);
+    d->textureProvider->setFiltering(d->smooth ? QSGTextureProvider::Linear : QSGTextureProvider::Nearest);
 
     node->setTargetRect(targetRect);
     node->setSourceRect(nsrect);

@@ -39,35 +39,67 @@
 **
 ****************************************************************************/
 
+#ifndef QSGTEXTURE_P_H
+#define QSGTEXTURE_P_H
 
-#ifndef QSGPARTIALUPLOADTEXTUREMANAGER_H
-#define QSGPARTIALUPLOADTEXTUREMANAGER_H
+#include <private/qobject_p.h>
 
-#include "qsgtexturemanager.h"
+#include <QtOpenGL/qgl.h>
 
-class QSGPartialUploadTextureManagerPrivate;
-class QSGPartialUploadTexture;
+#include "qsgtexture.h"
 
-class QSGPartialUploadTextureManager : public QSGTextureManager
+class QSGTexturePrivate : public QObjectPrivate
 {
-    Q_DECLARE_PRIVATE(QSGPartialUploadTextureManager);
-    Q_OBJECT
+    Q_DECLARE_PUBLIC(QSGTexture);
 public:
-    QSGPartialUploadTextureManager();
+    QSGTexturePrivate();
 
-    void setContext(QSGContext *context);
+    uint wrapChanged : 1;
+    uint filteringChanged : 1;
 
-    QSGTextureRef upload(const QImage &image);
-    void requestUpload(QSGTextureUploadRequest *request);
-
-private slots:
-    void processAsyncTextures();
-
-protected:
-    void timerEvent(QTimerEvent *);
-
-private:
-    friend class QSGPartialUploadTexture;
+    uint horizontalWrap : 1;
+    uint verticalWrap : 1;
+    uint mipmapMode : 2;
+    uint filterMode : 2;
 };
 
-#endif // QSGPARTIALUPLOADTEXTUREMANAGER_H
+class QSGPlainTexture : public QSGTexture
+{
+public:
+    QSGPlainTexture();
+    ~QSGPlainTexture();
+
+    void setOwnsTexture(bool owns) { m_owns_texture = owns; }
+    bool ownsTexture() const { return m_owns_texture; }
+
+    void setTextureId(int id);
+    int textureId() const { return m_texture_id; }
+
+    void setTextureSize(const QSize &size) { m_texture_size = size; }
+    QSize textureSize() const { return m_texture_size; }
+
+    void setHasAlphaChannel(bool alpha) { m_has_alpha = alpha; }
+    bool hasAlphaChannel() const { return m_has_alpha; }
+
+    void setHasMipmaps(bool mm) { m_has_mipmaps = mm; }
+    bool hasMipmaps() const { return m_has_mipmaps; }
+
+    void setImage(const QImage &image);
+
+    void bind();
+
+private:
+    QImage m_image;
+
+    GLuint m_texture_id;
+    QSize m_texture_size;
+    QRectF m_texture_rect;
+
+    uint m_has_alpha : 1;
+    uint m_has_mipmaps : 1;
+    uint m_dirty_texture : 1;
+    uint m_owns_texture : 1;
+};
+
+
+#endif // QSGTEXTURE_P_H

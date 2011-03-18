@@ -12,11 +12,10 @@ HEADERS += \
     $$PWD/coreapi/qmlrenderer.h \
     $$PWD/coreapi/qsgcontext.h \
     $$PWD/coreapi/qsgcontextplugin.h \
-    $$PWD/coreapi/qsgtexturemanager.h \
-    $$PWD/coreapi/qsgtexturemanager_p.h \
     $$PWD/coreapi/qsgtextureprovider.h \
-    scenegraph/coreapi/qsggeometry.h \
-    scenegraph/coreapi/qsgimagetextureprovider_p.h
+    $$PWD/coreapi/qsggeometry.h \
+    $$PWD/coreapi/qsgtexture.h \
+    $$PWD/coreapi/qsgtexture_p.h
 
 SOURCES += \
     $$PWD/coreapi/material.cpp \
@@ -26,10 +25,9 @@ SOURCES += \
     $$PWD/coreapi/qmlrenderer.cpp \
     $$PWD/coreapi/qsgcontext.cpp \
     $$PWD/coreapi/qsgcontextplugin.cpp \
-    $$PWD/coreapi/qsgtexturemanager.cpp \
     $$PWD/coreapi/qsgtextureprovider.cpp \
-    scenegraph/coreapi/qsggeometry.cpp \
-    scenegraph/coreapi/qsgimagetextureprovider.cpp
+    $$PWD/coreapi/qsggeometry.cpp \
+    $$PWD/coreapi/qsgtexture.cpp
 
 # Convenience API
 HEADERS += \

@@ -53,7 +53,7 @@
 #include <qglshaderprogram.h>
 
 #include "node.h"
-#include "qsgtexturemanager.h"
+#include "qsgtexture.h"
 
 class AbstractMaterialShader;
 struct AbstractMaterialType;

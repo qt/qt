@@ -58,7 +58,6 @@
 
 #include <private/qdeclarativestyledtext_p.h>
 #include <private/qdeclarativepixmapcache_p.h>
-#include <qsgimagetextureprovider_p.h>
 
 #include <qmath.h>
 #include <limits.h>

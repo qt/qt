@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "textureitem.h"
-#include "qsgtexturemanager.h"
+#include "qsgtexture.h"
 #include "qsgitem_p.h"
 #include "adaptationlayer.h"
 #include "renderer.h"

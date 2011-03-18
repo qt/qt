@@ -47,6 +47,8 @@
 #include <private/qfontengine_p.h>
 #include <private/qglextensions_p.h>
 
+#include <qsgtexture_p.h>
+
 class TextMaskMaterialData : public AbstractMaterialShader
 {
 public:
@@ -297,10 +299,9 @@ bool TextMaskMaterial::ensureUpToDate()
 {
     QSize glyphCacheSize(glyphCache()->width(), glyphCache()->height());
     if (glyphCacheSize != m_size) {
-        QSGTexture *t = new QSGTexture();
+        QSGPlainTexture *t = new QSGPlainTexture();
         t->setTextureId(glyphCache()->texture());
         t->setTextureSize(QSize(glyphCache()->width(), glyphCache()->height()));
-        t->setStatus(QSGTexture::Ready);
         t->setOwnsTexture(false);
         m_texture = QSGTextureRef(t);
 

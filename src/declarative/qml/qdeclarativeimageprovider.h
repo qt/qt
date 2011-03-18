@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeImageProviderPrivate;
-class QSGTextureProvider;
+class QSGTexture;
 
 class Q_DECLARATIVE_EXPORT QDeclarativeImageProvider
 {
@@ -70,7 +70,7 @@ public:
 
     virtual QImage requestImage(const QString &id, QSize *size, const QSize& requestedSize);
     virtual QPixmap requestPixmap(const QString &id, QSize *size, const QSize& requestedSize);
-    virtual QSGTextureProvider *requestTexture(const QString &id, QSize *size, const QSize &requestedSize);
+    virtual QSGTexture *requestTexture(const QString &id, QSize *size, const QSize &requestedSize);
 
 private:
     QDeclarativeImageProviderPrivate *d;

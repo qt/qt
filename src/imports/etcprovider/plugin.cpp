@@ -53,7 +53,6 @@ void EtcProviderPlugin::initializeEngine(QDeclarativeEngine *engine, const char 
 {
     qDebug () << uri;
     engine->addImageProvider(QLatin1String("etc"), new QEtcProvider());
-    engine->rootContext()->setContextProperty("baseUrlHelper", new BaseUrlHelper());
 }
 
 Q_EXPORT_PLUGIN2(qmletcproviderplugin, EtcProviderPlugin)
