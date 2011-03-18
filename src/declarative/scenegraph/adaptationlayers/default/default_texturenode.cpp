@@ -273,6 +273,7 @@ void DefaultTextureNode::update()
 void DefaultTextureNode::preprocess()
 {
     m_texture->updateTexture();
+    updateGeometry();
 }
 
 void DefaultTextureNode::updateGeometry()
