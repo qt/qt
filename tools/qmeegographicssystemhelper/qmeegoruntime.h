@@ -42,6 +42,8 @@
 #include <QPixmap>
 #include <QImage>
 
+#include "qmeegographicssystemhelper.h"
+
 class QMeeGoRuntime
 {
 public:
@@ -66,6 +68,7 @@ public:
     static void switchToRaster();
     static void switchToMeeGo();
     static void enableSwitchEvents();
+    static void setSwitchPolicy(QMeeGoGraphicsSystemHelper::SwitchPolicy policy);
 
 private:
     static bool initialized;
