@@ -1479,22 +1479,39 @@ void fromLatin1_sse2_qt47(ushort *dst, const char *str, int size)
 
 void fromLatin1_prolog_unrolled(ushort *dst, const char *str, int size)
 {
-    switch (size) {
-    case 7:
-        dst[6] = (uchar)str[6];
-    case 6:
-        dst[5] = (uchar)str[5];
-    case 5:
-        dst[4] = (uchar)str[4];
-    case 4:
-        dst[3] = (uchar)str[3];
-    case 3:
-        dst[2] = (uchar)str[2];
-    case 2:
-        dst[1] = (uchar)str[1];
-    case 1:
-        dst[0] = (uchar)str[0];
-    }
+    // QString's data pointer is most often ending in 0x2 or 0xa
+    // that means the two most common values for size are (8-1)=7 and (8-5)=3
+    if (size == 7)
+        goto copy_7;
+    if (size == 3)
+        goto copy_3;
+
+    if (size == 6)
+        goto copy_6;
+    if (size == 5)
+        goto copy_5;
+    if (size == 4)
+        goto copy_4;
+    if (size == 2)
+        goto copy_2;
+    if (size == 1)
+        goto copy_1;
+    return;
+
+copy_7:
+    dst[6] = (uchar)str[6];
+copy_6:
+    dst[5] = (uchar)str[5];
+copy_5:
+    dst[4] = (uchar)str[4];
+copy_4:
+    dst[3] = (uchar)str[3];
+copy_3:
+    dst[2] = (uchar)str[2];
+copy_2:
+    dst[1] = (uchar)str[1];
+copy_1:
+    dst[0] = (uchar)str[0];
 }
 
 template<FromLatin1Function prologFunction>
