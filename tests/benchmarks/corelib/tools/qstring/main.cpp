@@ -284,7 +284,7 @@ static bool equals2_sse2_aligned(const ushort *p1, const ushort *p2, int len)
     return equals2_short_tail(p1, p2, len);
 }
 
-static bool __attribute__((optimize("no-unroll-loops"))) equals2_sse2(const ushort *p1, const ushort *p2, int len)
+static bool equals2_sse2(const ushort *p1, const ushort *p2, int len)
 {
     if (p1 == p2 || !len)
         return true;
@@ -391,7 +391,7 @@ static bool equals2_sse2_aligning(const ushort *p1, const ushort *p2, int len)
 }
 
 #ifdef __SSE3__
-static bool __attribute__((optimize("no-unroll-loops"))) equals2_sse3(const ushort *p1, const ushort *p2, int len)
+static bool equals2_sse3(const ushort *p1, const ushort *p2, int len)
 {
     if (p1 == p2 || !len)
         return true;
@@ -416,7 +416,7 @@ static bool __attribute__((optimize("no-unroll-loops"))) equals2_sse3(const usho
 }
 
 #ifdef __SSSE3__
-template<int N> static __attribute__((optimize("unroll-loops"))) inline bool equals2_ssse3_alignr(__m128i *m1, __m128i *m2, int len)
+template<int N> static inline bool equals2_ssse3_alignr(__m128i *m1, __m128i *m2, int len)
 {
     __m128i lower = _mm_load_si128(m1);
     while (len >= 8) {
@@ -439,7 +439,7 @@ template<int N> static __attribute__((optimize("unroll-loops"))) inline bool equ
     return len == 0 || equals2_short_tail((const ushort *)m1 + N / 2, (const ushort*)m2, len);
 }
 
-static inline __attribute__((optimize("unroll-loops"))) bool equals2_ssse3_aligned(__m128i *m1, __m128i *m2, int len)
+static inline bool equals2_ssse3_aligned(__m128i *m1, __m128i *m2, int len)
 {
     while (len >= 8) {
         __m128i q2 = _mm_lddqu_si128(m2);
@@ -930,7 +930,7 @@ static inline int bsf_nonzero(register long val)
 # endif
 }
 
-static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2(const ushort *a, const ushort *b, int len)
+static int ucstrncmp_sse2(const ushort *a, const ushort *b, int len)
 {
     qptrdiff counter = 0;
     while (len >= 8) {
@@ -950,7 +950,7 @@ static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2(const ush
     return ucstrncmp_short_tail(a + counter, b + counter, len);
 }
 
-static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_aligning(const ushort *a, const ushort *b, int len)
+static int ucstrncmp_sse2_aligning(const ushort *a, const ushort *b, int len)
 {
     if (len >= 8) {
         __m128i m1 = _mm_loadu_si128((__m128i *)a);
@@ -989,7 +989,7 @@ static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_aligning(
     return ucstrncmp_short_tail(a + counter, b + counter, len);
 }
 
-static inline __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_aligned(const ushort *a, const ushort *b, int len)
+static inline int ucstrncmp_sse2_aligned(const ushort *a, const ushort *b, int len)
 {
     quintptr counter = 0;
     while (len >= 8) {
@@ -1010,7 +1010,7 @@ static inline __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_al
 }
 
 #ifdef __SSSE3__
-static inline __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_ssse3_alignr_aligned(const ushort *a, const ushort *b, int len)
+static inline int ucstrncmp_ssse3_alignr_aligned(const ushort *a, const ushort *b, int len)
 {
     quintptr counter = 0;
     while (len >= 8) {
@@ -1033,7 +1033,7 @@ static inline __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_ssse3_a
 
 typedef __m128i (* MMLoadFunction)(const __m128i *);
 template<int N, MMLoadFunction LoadFunction>
-static inline __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_ssse3_alignr(const ushort *a, const ushort *b, int len)
+static inline int ucstrncmp_ssse3_alignr(const ushort *a, const ushort *b, int len)
 {
     qptrdiff counter = 0;
     __m128i lower, upper;
@@ -1138,7 +1138,7 @@ static int ucstrncmp_ssse3_aligning(const ushort *a, const ushort *b, int len)
     }
 }
 
-static inline __attribute__((optimize("no-unroll-loops")))
+static inline
 int ucstrncmp_ssse3_aligning2_aligned(const ushort *a, const ushort *b, int len, int garbage)
 {
     // len >= 8
@@ -1158,7 +1158,7 @@ int ucstrncmp_ssse3_aligning2_aligned(const ushort *a, const ushort *b, int len,
     return ucstrncmp_sse2_aligned(a + 8, b + 8, len);
 }
 
-template<int N> static inline __attribute__((optimize("no-unroll-loops"),always_inline))
+template<int N> static inline
 int ucstrncmp_ssse3_aligning2_alignr(const ushort *a, const ushort *b, int len, int garbage)
 {
     // len >= 8
