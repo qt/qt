@@ -217,14 +217,17 @@ QString QHostInfo::localDomainName()
 
 
 QSymbianHostResolver::QSymbianHostResolver(const QString &hostName, int identifier)
-    : CActive(CActive::EPriorityStandard), iId(identifier), iHostName(hostName),
-      iSocketServ(qt_symbianGetSocketServer())
+    : CActive(CActive::EPriorityStandard), iHostName(hostName),
+      iSocketServ(qt_symbianGetSocketServer()), iResults(identifier)
 {
     CActiveScheduler::Add(this);
 }
 
 QSymbianHostResolver::~QSymbianHostResolver()
 {
+#if defined(QHOSTINFO_DEBUG)
+    qDebug() << "QSymbianHostInfoLookupManger::~QSymbianHostResolver" << id();
+#endif
     Cancel();
     iHostResolver.Close();
 }
@@ -234,8 +237,8 @@ QHostInfo QSymbianHostResolver::requestHostLookup()
 {
 
 #if defined(QHOSTINFO_DEBUG)
-    qDebug("QHostInfoAgent::fromName(%s) looking up...",
-           hostName.toLatin1().constData());
+    qDebug("QSymbianHostResolver::requestHostLookup(%s) looking up... (id = %d)",
+        iHostName.toLatin1().constData(), id());
 #endif
 
     int err = iHostResolver.Open(iSocketServ, KAfInet, KProtocolInetUdp);
@@ -404,7 +407,7 @@ void QSymbianHostResolver::processAddressResults()
 
 int QSymbianHostResolver::id()
 {
-    return iId;
+    return iResults.lookupId();
 }
 
 QSymbianHostInfoLookupManger::QSymbianHostInfoLookupManger()
@@ -428,6 +431,9 @@ void QSymbianHostInfoLookupManger::lookupFinished(QSymbianHostResolver *r)
 {
     QMutexLocker locker(&mutex);
 
+#if defined(QHOSTINFO_DEBUG)
+    qDebug() << "QSymbianHostInfoLookupManger::lookupFinished" << r->id() << "current" << iCurrentLookups.Count() << "queued" << iScheduledLookups.Count();
+#endif
     // remove finished lookup from array and destroy
     TInt count = iCurrentLookups.Count();
     for (TInt i = 0; i < count; i++) {
@@ -442,6 +448,9 @@ void QSymbianHostInfoLookupManger::lookupFinished(QSymbianHostResolver *r)
 
 void QSymbianHostInfoLookupManger::runNextLookup()
 {
+#if defined(QHOSTINFO_DEBUG)
+    qDebug() << "QSymbianHostInfoLookupManger::runNextLookup" << "current" << iCurrentLookups.Count() << "queued" << iScheduledLookups.Count();
+#endif
     // check to see if there are any scheduled lookups
     if (iScheduledLookups.Count() > 0) {
         // if so, move one to the current lookups and run it
@@ -458,10 +467,16 @@ void QSymbianHostInfoLookupManger::scheduleLookup(QSymbianHostResolver* r)
 {
     QMutexLocker locker(&mutex);
 
+#if defined(QHOSTINFO_DEBUG)
+    qDebug() << "QSymbianHostInfoLookupManger::scheduleLookup" << r->id() << "current" << iCurrentLookups.Count() << "queued" << iScheduledLookups.Count();
+#endif
     // Check to see if we have space on the current lookups pool.
     if (iCurrentLookups.Count() >= KMaxConcurrentLookups) {
         // If no, schedule for later.
         iScheduledLookups.Append(r);
+#if defined(QHOSTINFO_DEBUG)
+    qDebug(" - scheduled");
+#endif
         return;
     } else {
         // If yes, add it to the current lookups.
@@ -476,6 +491,9 @@ void QSymbianHostInfoLookupManger::abortLookup(int id)
 {
     QMutexLocker locker(&mutex);
 
+#if defined(QHOSTINFO_DEBUG)
+    qDebug() << "QSymbianHostInfoLookupManger::abortLookup" << id << "current" << iCurrentLookups.Count() << "queued" << iScheduledLookups.Count();
+#endif
     int i = 0;
     // Find the aborted lookup by ID.
     // First in the current lookups.

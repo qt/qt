@@ -243,8 +243,6 @@ private:
     void processAddressResults();
 
 private:
-    int iId;
-
     const QString iHostName;
 
     RSocketServ& iSocketServ;
