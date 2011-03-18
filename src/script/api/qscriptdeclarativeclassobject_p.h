@@ -39,6 +39,8 @@
 #include "qscriptv8objectwrapper_p.h"
 #include "qscriptcontext_p.h"
 
+#include <QtCore/QScopedValueRollback>
+
 QT_BEGIN_NAMESPACE
 
 class QScriptDeclarativeClassPrivate
@@ -65,6 +67,10 @@ struct QScriptDeclarativeClassObject : QScriptV8ObjectWrapper<QScriptDeclarative
 
     v8::Handle<v8::Value> property(v8::Local<v8::String> property)
     {
+        QScriptDeclarativeClassPrivate* scriptDeclarativeClassP = QScriptDeclarativeClassPrivate::get(scriptClass);
+        QScopedValueRollback<QScriptContext *> saveContext(scriptDeclarativeClassP->context);
+        scriptDeclarativeClassP->context = engine->currentContext();
+
         QScriptDeclarativeClass::PersistentIdentifier identifier =
             scriptClass->createPersistentIdentifier(QScriptConverter::toString(property));
         QScriptClass::QueryFlags fl = scriptClass->queryProperty(obj.data(), identifier.identifier, QScriptClass::HandlesReadAccess);
@@ -78,6 +84,7 @@ struct QScriptDeclarativeClassObject : QScriptV8ObjectWrapper<QScriptDeclarative
     v8::Handle<v8::Value> setProperty(v8::Local<v8::String> property, v8::Local<v8::Value> value)
     {
         QScriptDeclarativeClassPrivate* scriptDeclarativeClassP = QScriptDeclarativeClassPrivate::get(scriptClass);
+        QScopedValueRollback<QScriptContext *> saveContext(scriptDeclarativeClassP->context);
         scriptDeclarativeClassP->context = engine->currentContext();
 
         QScriptDeclarativeClass::PersistentIdentifier identifier =
@@ -85,10 +92,8 @@ struct QScriptDeclarativeClassObject : QScriptV8ObjectWrapper<QScriptDeclarative
         QScriptClass::QueryFlags fl = scriptClass->queryProperty(obj.data(), identifier.identifier, QScriptClass::HandlesWriteAccess);
         if (fl & QScriptClass::HandlesWriteAccess) {
             scriptClass->setProperty(obj.data(), identifier.identifier, QScriptValuePrivate::get(new QScriptValuePrivate(engine, value)));
-            scriptDeclarativeClassP->context = 0;
             return value;
         }
-        scriptDeclarativeClassP->context = 0;
         return v8::Handle<v8::Value>();
     }
 
