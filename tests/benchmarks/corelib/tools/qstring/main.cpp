@@ -1514,6 +1514,17 @@ copy_1:
     dst[0] = (uchar)str[0];
 }
 
+void fromLatin1_prolog_sse2_overcommit(ushort *dst, const char *str, int)
+{
+    // do one iteration of conversion
+    const __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
+
+    // unpack only the first 8 bytes, padding with zeros
+    const __m128i nullMask = _mm_set1_epi32(0);
+    const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+    _mm_storeu_si128((__m128i*)dst, firstHalf); // store
+}
+
 template<FromLatin1Function prologFunction>
 void fromLatin1_sse2_withprolog(ushort *dst, const char *str, int size)
 {
@@ -1555,6 +1566,14 @@ void fromLatin1_sse2_withprolog(ushort *dst, const char *str, int size)
 
 }
 
+void fromLatin1_prolog_sse4_overcommit(ushort *dst, const char *str, int)
+{
+    // load 8 bytes and zero-extend them to 16
+    const __m128i chunk = _mm_cvtepu8_epi16(*(__m128i*)str); // load
+    _mm_storeu_si128((__m128i*)dst, chunk); // store
+}
+
+
 void tst_QString::fromLatin1Alternatives_data() const
 {
     QTest::addColumn<FromLatin1Function>("function");
@@ -1562,6 +1581,8 @@ void tst_QString::fromLatin1Alternatives_data() const
     QTest::newRow("sse2-qt4.7") << &fromLatin1_sse2_qt47;
     QTest::newRow("sse2-with-prolog-regular") << &fromLatin1_sse2_withprolog<&fromLatin1_regular>;
     QTest::newRow("sse2-with-prolog-unrolled") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_unrolled>;
+    QTest::newRow("sse2-with-prolog-sse2-overcommit") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_sse2_overcommit>;
+    QTest::newRow("sse2-with-prolog-sse4-overcommit") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_sse4_overcommit>;
 }
 
 extern StringData fromLatin1Data;
