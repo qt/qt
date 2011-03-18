@@ -6190,8 +6190,8 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
         QMAKE_LIBDIR_WAYLAND=`$PKG_CONFIG --variable=libdir wayland-client 2>/dev/null`
 
         if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xkbcommon 2>/dev/null; then
-            QMAKE_CFLAGS_WAYLAND=$QMAKE_CFLAGS_WAYLAND `$PKG_CONFIG --cflags xkbcommon 2>/dev/null`
-            QMAKE_LIBS_WAYLAND=$QMAKE_LIBS_WAYLAND `$PKG_CONFIG --libs xkbcommon 2>/dev/null`
+            QMAKE_CFLAGS_WAYLAND="$QMAKE_CFLAGS_WAYLAND `$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
+            QMAKE_LIBS_WAYLAND="$QMAKE_LIBS_WAYLAND `$PKG_CONFIG --libs xkbcommon 2>/dev/null`"
         else
             QMAKE_DEFINES_WAYLAND=QT_NO_WAYLAND_XKB
         fi
