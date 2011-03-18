@@ -1442,6 +1442,9 @@ void tst_QString::fromLatin1() const
     }
 }
 
+typedef void (* FromLatin1Function)(ushort *, const char *, int);
+Q_DECLARE_METATYPE(FromLatin1Function)
+
 void fromLatin1_regular(ushort *dst, const char *str, int size)
 {
     // from qstring.cpp:
@@ -1474,13 +1477,7 @@ void fromLatin1_sse2_qt47(ushort *dst, const char *str, int size)
         *dst++ = (uchar)*str++;
 }
 
-static inline void fromLatin1_prolog(ushort *dst, const char *str, uint size)
-{
-    while (size--) {
-        *dst++ = (uchar)*str++;
-    }
-}
-
+template<FromLatin1Function prologFunction>
 void fromLatin1_sse2_withprolog(ushort *dst, const char *str, int size)
 {
     // same as the Qt 4.7 code, but we attempt to align at the prolog
@@ -1490,7 +1487,7 @@ void fromLatin1_sse2_withprolog(ushort *dst, const char *str, int size)
         uint misalignment = uint(quintptr(dst) & 0xf);
         uint prologCount = (16 - misalignment) / 2;
 
-        fromLatin1_prolog(dst, str, prologCount);
+        prologFunction(dst, str, prologCount);
 
         size -= prologCount;
         dst += prologCount;
@@ -1521,15 +1518,12 @@ void fromLatin1_sse2_withprolog(ushort *dst, const char *str, int size)
 
 }
 
-typedef void (* FromLatin1Function)(ushort *, const char *, int);
-Q_DECLARE_METATYPE(FromLatin1Function)
-
 void tst_QString::fromLatin1Alternatives_data() const
 {
     QTest::addColumn<FromLatin1Function>("function");
     QTest::newRow("regular") << &fromLatin1_regular;
     QTest::newRow("sse2-qt4.7") << &fromLatin1_sse2_qt47;
-    QTest::newRow("sse2-with-prolog") << &fromLatin1_sse2_withprolog;
+    QTest::newRow("sse2-with-prolog") << &fromLatin1_sse2_withprolog<&fromLatin1_regular>;
 }
 
 static void fromLatin1Alternatives_internal(FromLatin1Function function, bool doVerify)
