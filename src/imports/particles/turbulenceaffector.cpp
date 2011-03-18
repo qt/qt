@@ -13,9 +13,11 @@ TurbulenceAffector::TurbulenceAffector(QSGItem *parent) :
 
 TurbulenceAffector::~TurbulenceAffector()
 {
-    for(int i=0; i<m_gridSize; i++)
-        free(m_field[i]);
-    free(m_field);
+    if (m_field) {
+        for(int i=0; i<m_gridSize; i++)
+            free(m_field[i]);
+        free(m_field);
+    }
 }
 
 static qreal magnitude(qreal x, qreal y)
