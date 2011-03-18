@@ -29,7 +29,7 @@
 \title What's new in Qt Quick
 \page qtquick-whatsnew.html
 
-\section1 Qt 4.7.3 includes QtQuick 1.1
+\section1 Qt 4.7.4 includes QtQuick 1.1
 
 QtQuick 1.1 is a minor feature update.  \e {import QtQuick 1.1} to use the new features.
 
