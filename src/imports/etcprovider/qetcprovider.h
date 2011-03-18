@@ -23,25 +23,6 @@ public:
     QSize m_paddedSize;
 };
 
-class BaseUrlHelper : public QObject
-{
-    Q_OBJECT
-public:
-    Q_INVOKABLE QString baseDir (QObject *obj)
-    {
-        QDeclarativeContext *ctx = QDeclarativeEngine::contextForObject(obj);
-        if (ctx) {
-            QFileInfo fi(ctx->baseUrl().toLocalFile());
-#ifdef ETC_DEBUG
-            qDebug () << "BaseDir: " << fi.absolutePath();
-#endif
-            return fi.absolutePath();
-        }
-        return QString();
-    }
-};
-
-
 class QEtcProvider : public QDeclarativeImageProvider
 {
 public:

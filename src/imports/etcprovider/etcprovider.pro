@@ -15,5 +15,4 @@ qmldir.path +=  $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 
 INSTALLS += target qmldir
 
-OTHER_FILES += \
-    Dummy.qml
+OTHER_FILES +=
