@@ -66,7 +66,6 @@ private slots:
     void getSetWindowSurface();
     void flushOutsidePaintEvent();
     void grabWidget();
-    void staticContentsAndPartialUpdateSupport();
 };
 
 class MyWindowSurface : public QWindowSurface
