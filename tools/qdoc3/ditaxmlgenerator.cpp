@@ -5667,9 +5667,19 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
         if (!component.isEmpty()) {
             writeStartTag(DT_component);
             xmlWriter().writeCharacters(component);
-            writeEndTag(); // <prodinfo>
+            writeEndTag(); // <component>
         }
         writeEndTag(); // <prodinfo>
+        if (inner->hasOtherMetadata()) {
+            const QMap<QString, QString>& omd = inner->otherMetadata();
+            QMapIterator<QString, QString> i(omd);
+            while (i.hasNext()) {
+                i.next();
+                writeStartTag(DT_othermeta);
+                xmlWriter().writeAttribute("name",i.key());
+                xmlWriter().writeAttribute("content",i.value());
+            }
+        }
     }
     writeEndTag(); // <metadata>
     writeEndTag(); // <prolog>
