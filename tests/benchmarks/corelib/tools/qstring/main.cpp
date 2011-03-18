@@ -1474,6 +1474,53 @@ void fromLatin1_sse2_qt47(ushort *dst, const char *str, int size)
         *dst++ = (uchar)*str++;
 }
 
+static inline void fromLatin1_prolog(ushort *dst, const char *str, uint size)
+{
+    while (size--) {
+        *dst++ = (uchar)*str++;
+    }
+}
+
+void fromLatin1_sse2_withprolog(ushort *dst, const char *str, int size)
+{
+    // same as the Qt 4.7 code, but we attempt to align at the prolog
+    // therefore, we issue aligned stores
+
+    if (size >= 16) {
+        uint misalignment = uint(quintptr(dst) & 0xf);
+        uint prologCount = (16 - misalignment) / 2;
+
+        fromLatin1_prolog(dst, str, prologCount);
+
+        size -= prologCount;
+        dst += prologCount;
+        str += prologCount;
+    }
+
+    if (size >= 16) {
+        int chunkCount = size >> 4; // divided by 16
+        const __m128i nullMask = _mm_set1_epi32(0);
+        for (int i = 0; i < chunkCount; ++i) {
+            const __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
+            str += 16;
+
+            // unpack the first 8 bytes, padding with zeros
+            const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+            _mm_store_si128((__m128i*)dst, firstHalf); // store
+            dst += 8;
+
+            // unpack the last 8 bytes, padding with zeros
+            const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+            _mm_store_si128((__m128i*)dst, secondHalf); // store
+            dst += 8;
+        }
+        size = size % 16;
+    }
+    while (size--)
+        *dst++ = (uchar)*str++;
+
+}
+
 typedef void (* FromLatin1Function)(ushort *, const char *, int);
 Q_DECLARE_METATYPE(FromLatin1Function)
 
@@ -1482,6 +1529,7 @@ void tst_QString::fromLatin1Alternatives_data() const
     QTest::addColumn<FromLatin1Function>("function");
     QTest::newRow("regular") << &fromLatin1_regular;
     QTest::newRow("sse2-qt4.7") << &fromLatin1_sse2_qt47;
+    QTest::newRow("sse2-with-prolog") << &fromLatin1_sse2_withprolog;
 }
 
 static void fromLatin1Alternatives_internal(FromLatin1Function function, bool doVerify)
