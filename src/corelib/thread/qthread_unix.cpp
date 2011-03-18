@@ -50,11 +50,6 @@
 
 #include <private/qeventdispatcher_unix_p.h>
 
-#ifdef Q_OS_SYMBIAN
-#include <hal.h>
-#include <hal_data.h>
-#endif
-
 #include "qthreadstorage.h"
 
 #include "qthread_p.h"
@@ -63,12 +58,6 @@
 
 #include <sched.h>
 #include <errno.h>
-
-// You only find these enumerations on Symbian^3 onwards, so we need to provide our own
-// to remain compatible with older releases. They won't be called by pre-Sym^3 SDKs.
-
-// HALData::ENumCpus
-#define QT_HALData_ENumCpus 119
 
 #ifdef Q_OS_BSD4
 #include <sys/sysctl.h>
@@ -378,21 +367,6 @@ int QThread::idealThreadCount()
 #elif defined(Q_OS_INTEGRITY)
     // as of aug 2008 Integrity only supports one single core CPU
     cores = 1;
-#elif defined(Q_OS_SYMBIAN)
-    if (QSysInfo::symbianVersion() >= QSysInfo::SV_SF_3) {
-        TInt inumcpus;
-        TInt err;
-        err = HAL::Get((HALData::TAttribute)QT_HALData_ENumCpus, inumcpus);
-        if (err != KErrNone) {
-            cores = 1;
-        } else if ( inumcpus <= 0 ) {
-            cores = 1;
-        } else {
-            cores = inumcpus;
-        }
-    } else {
-        cores = 1;
-    }
 #elif defined(Q_OS_VXWORKS)
     // VxWorks
 #  if defined(QT_VXWORKS_HAS_CPUSET)

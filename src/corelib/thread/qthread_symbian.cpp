@@ -48,7 +48,14 @@
 #include <private/qsystemerror_p.h>
 
 #include <sched.h>
+#include <hal.h>
+#include <hal_data.h>
 
+// You only find these enumerations on Symbian^3 onwards, so we need to provide our own
+// to remain compatible with older releases. They won't be called by pre-Sym^3 SDKs.
+
+// HALData::ENumCpus
+#define QT_HALData_ENumCpus 119
 
 QT_BEGIN_NAMESPACE
 
@@ -376,10 +383,16 @@ Qt::HANDLE QThread::currentThreadId()
 
 int QThread::idealThreadCount()
 {
-    int cores = -1;
+    int cores = 1;
 
-     // ### TODO - Get the number of cores from HAL? when multicore architectures (SMP) are supported
-    cores = 1;
+    if (QSysInfo::symbianVersion() >= QSysInfo::SV_SF_3) {
+        TInt inumcpus;
+        TInt err;
+        err = HAL::Get((HALData::TAttribute)QT_HALData_ENumCpus, inumcpus);
+        if (err == KErrNone) {
+            cores = qMax(inumcpus, 1);
+        }
+    }
 
     return cores;
 }
