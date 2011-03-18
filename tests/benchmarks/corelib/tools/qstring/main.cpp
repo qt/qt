@@ -1442,14 +1442,14 @@ void tst_QString::fromLatin1() const
     }
 }
 
-void fromLatin1_regular(QChar *dst, const char *str, int size)
+void fromLatin1_regular(ushort *dst, const char *str, int size)
 {
     // from qstring.cpp:
     while (size--)
         *dst++ = (uchar)*str++;
 }
 
-void fromLatin1_sse2_qt47(QChar *dst, const char *str, int size)
+void fromLatin1_sse2_qt47(ushort *dst, const char *str, int size)
 {
     if (size >= 16) {
         int chunkCount = size >> 4; // divided by 16
@@ -1474,7 +1474,7 @@ void fromLatin1_sse2_qt47(QChar *dst, const char *str, int size)
         *dst++ = (uchar)*str++;
 }
 
-typedef void (* FromLatin1Function)(QChar *, const char *, int);
+typedef void (* FromLatin1Function)(ushort *, const char *, int);
 Q_DECLARE_METATYPE(FromLatin1Function)
 
 void tst_QString::fromLatin1Alternatives_data() const
@@ -1501,7 +1501,7 @@ static void fromLatin1Alternatives_internal(FromLatin1Function function, bool do
 
         QString dst;
         dst.resize(len);
-        (function)(dst.data(), src, len);
+        (function)(&dst.data()->unicode(), src, len);
 
         if (doVerify) {
             QCOMPARE(dst, QString::fromLatin1(src, len));
