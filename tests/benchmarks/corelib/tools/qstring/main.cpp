@@ -72,6 +72,8 @@ private slots:
     void fromUtf8() const;
     void fromLatin1_data() const;
     void fromLatin1() const;
+    void fromLatin1Alternatives_data() const;
+    void fromLatin1Alternatives() const;
 };
 
 void tst_QString::equals() const
@@ -1437,6 +1439,56 @@ void tst_QString::fromLatin1() const
         QString s3 = QString::fromLatin1(copy1);
         QString s4 = QString::fromLatin1(copy3);
         s3 = QString::fromLatin1(copy3);
+    }
+}
+
+void fromLatin1_regular(QChar *dst, const char *str, int size)
+{
+    // from qstring.cpp:
+    while (size--)
+        *dst++ = (uchar)*str++;
+}
+
+typedef void (* FromLatin1Function)(QChar *, const char *, int);
+Q_DECLARE_METATYPE(FromLatin1Function)
+
+void tst_QString::fromLatin1Alternatives_data() const
+{
+    QTest::addColumn<FromLatin1Function>("function");
+    QTest::newRow("regular") << &fromLatin1_regular;
+}
+
+static void fromLatin1Alternatives_internal(FromLatin1Function function, bool doVerify)
+{
+    extern StringData fromLatin1Data;
+    struct Entry
+    {
+        int len;
+        int offset1, offset2;
+        int align1, align2;
+    };
+    const Entry *entries = reinterpret_cast<const Entry *>(fromLatin1Data.entries);
+
+    for (int i = 0; i < fromLatin1Data.entryCount; ++i) {
+        int len = entries[i].len;
+        const char *src = fromLatin1Data.charData + entries[i].offset1;
+
+        QString dst;
+        dst.resize(len);
+        (function)(dst.data(), src, len);
+
+        if (doVerify) {
+            QCOMPARE(dst, QString::fromLatin1(src, len));
+        }
+    }
+}
+
+void tst_QString::fromLatin1Alternatives() const
+{
+    QFETCH(FromLatin1Function, function);
+    fromLatin1Alternatives_internal(function, true);
+    QBENCHMARK {
+        fromLatin1Alternatives_internal(function, false);
     }
 }
 

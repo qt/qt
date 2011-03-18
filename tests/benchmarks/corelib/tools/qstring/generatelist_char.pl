@@ -90,10 +90,10 @@ sub printCharArray($$$) {
     print "        \"";
     for ($i = 0; $i < $len; $i++) {
         $c = substr($str, $i, 1);
-        if (ord($c) >= 0x20 && ord($c) <= 0x7f) {
-            print $c;
-        } else {
+        if (ord($c) < 0x20 || ord($c) > 0x7f || $c eq '"' || $c eq '\\') {
             printf "\\%o\"\"", ord($c);
+        } else {
+            print $c;
         }
     }
 
@@ -115,7 +115,7 @@ print "// This is a generated file - DO NOT EDIT\n\n";
 print "#include \"data.h\"\n\n";
 
 $varname = shift @ARGV;
-print "const char " . $varname . "Data[] __attribute__((aligned(64))) = {\n";
+print "static const char charData[] __attribute__((aligned(64))) = {\n";
 $count = 0;
 $offset = 0;
 $totalsize = 0;
@@ -169,23 +169,28 @@ while (1) {
 print "};\n";
 close IN;
 
-print "const struct StringCollection " . $varname . "[] = {\n";
+print "static const int intData[] = {\n";
 for $i (0..$count-1) {
-    print "    {",
+    print "    ",
         $data[$i]->{len}, ", ",
         $data[$i]->{offset1}, ", ",
         $data[$i]->{offset2}, ", ",
         $data[$i]->{align1}, ", ",
         $data[$i]->{align2},
-        "},     // #$i\n";
+        ",     // #$i\n";
     next if $data[$i]->{len} == 0;
     die if (($data[$i]->{offset1} & 0xf) != ($data[$i]->{align1} & 0xf));
     die if (($data[$i]->{offset2} & 0xf) != ($data[$i]->{align2} & 0xf));
 }
-print "};\n";
+print "};\n\n";
 
-print "const int " . $varname . "Count = $count;\n";
-print "const int " . $varname . "MaxLen = $maxlen;\n";
+print "struct StringData $varname = {\n" .
+    "    intData,\n" .
+    "    { charData },\n" .
+    "    $count, /* entryCount */\n" .
+    "    $maxlen /* maxLength */\n" .
+    "};\n\n";
+
 printf "// average comparison length: %.4f\n", ($totalsize * 1.0 / $count);
 printf "// cache-line crosses: %d (%.1f%%)\n",
     $cachelinecrosses, ($cachelinecrosses * 100.0 / $count / 2);
