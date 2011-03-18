@@ -89,7 +89,7 @@ public:
     virtual QSGTexture *decodeImageToTexture(QIODevice *dev,
                                                      QSize *size,
                                                      const QSize &requestSize);
-    virtual QSGTexture *createTexture() const;
+    virtual QSGTexture *createTexture(const QImage &image = QImage()) const;
 
     static QSGContext *createDefaultContext();
 

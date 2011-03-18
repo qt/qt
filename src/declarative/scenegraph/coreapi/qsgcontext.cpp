@@ -250,9 +250,14 @@ QSGTexture *QSGContext::decodeImageToTexture(QIODevice *dev,
 
 /*!
     Factory function for texture objects.
+
+    If \a image is a valid image, the QSGTexture::setImage function
+    will be called with \a image as argument.
  */
-QSGTexture *QSGContext::createTexture() const
+QSGTexture *QSGContext::createTexture(const QImage &image) const
 {
     QSGTexture *t = new QSGPlainTexture();
+    if (!image.isNull())
+        t->setImage(image);
     return t;
 }

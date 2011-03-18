@@ -490,6 +490,8 @@ void QDeclarativePixmapReader::processJobs()
 void QDeclarativePixmapReader::processJob(QDeclarativePixmapReply *runningJob, const QUrl &url, 
                                           const QSize &requestSize)
 {
+    QSGContext *sgContext = QDeclarativeEnginePrivate::get(engine)->sgContext;
+
     // fetch
     if (url.scheme() == QLatin1String("image")) {
         // Use QmlImageProvider
@@ -506,7 +508,12 @@ void QDeclarativePixmapReader::processJob(QDeclarativePixmapReply *runningJob, c
                 errorStr = QDeclarativePixmap::tr("Failed to get image from provider: %1").arg(url.toString());
             }
             mutex.lock();
-            if (!cancelled.contains(runningJob)) runningJob->postReply(errorCode, errorStr, readSize, image);
+            if (!cancelled.contains(runningJob)) {
+                if (sgContext)
+                    runningJob->postReply(errorCode, errorStr, readSize, sgContext->createTexture(image));
+                else
+                    runningJob->postReply(errorCode, errorStr, readSize, image);
+            }
             mutex.unlock();
         } else {
             QSGTexture *t = ep->getTextureFromProvider(url, &readSize, requestSize);
@@ -533,14 +540,13 @@ void QDeclarativePixmapReader::processJob(QDeclarativePixmapReply *runningJob, c
             QSize readSize;
             QSGTexture *texture = 0;
             if (f.open(QIODevice::ReadOnly)) {
-                QSGContext *ctx = QDeclarativeEnginePrivate::get(engine)->sgContext;
-                if (ctx && ctx->canDecodeImageToTexture())
-                    texture = ctx->decodeImageToTexture(&f, &readSize, requestSize);
+                if (sgContext && sgContext ->canDecodeImageToTexture())
+                    texture = sgContext->decodeImageToTexture(&f, &readSize, requestSize);
                 if (!texture) {
                     if (!readImage(url, &f, &image, &errorStr, &readSize, requestSize)) {
                         errorCode = QDeclarativePixmapReply::Loading;
-                    } else if (ctx) {
-                        texture = ctx->createTexture();
+                    } else if (sgContext) {
+                        texture = sgContext->createTexture();
                         texture->setImage(image);
                     }
                 }
@@ -853,6 +859,8 @@ void QDeclarativePixmapData::removeFromCache()
 
 static QDeclarativePixmapData* createPixmapDataSync(QDeclarativeEngine *engine, const QUrl &url, const QSize &requestSize, bool *ok)
 {
+    QSGContext *sgContext = QDeclarativeEnginePrivate::get(engine)->sgContext;
+
     if (url.scheme() == QLatin1String("image")) {
         QSize readSize;
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
@@ -873,6 +881,11 @@ static QDeclarativePixmapData* createPixmapDataSync(QDeclarativeEngine *engine, 
                 QImage image = ep->getImageFromProvider(url, &readSize, requestSize);
                 if (!image.isNull()) {
                     *ok = true;
+                    if (sgContext) {
+                        QSGTexture *t = sgContext->createTexture();
+                        t->setImage(image);
+                        return new QDeclarativePixmapData(url, QSGTextureRef(t), readSize, requestSize);
+                    }
                     return new QDeclarativePixmapData(url, QPixmap::fromImage(image), readSize, requestSize);
                 }
             }
@@ -881,6 +894,11 @@ static QDeclarativePixmapData* createPixmapDataSync(QDeclarativeEngine *engine, 
                 QPixmap pixmap = ep->getPixmapFromProvider(url, &readSize, requestSize);
                 if (!pixmap.isNull()) {
                     *ok = true;
+                    if (sgContext) {
+                        QSGTexture *t = sgContext->createTexture();
+                        t->setImage(pixmap.toImage());
+                        return new QDeclarativePixmapData(url, QSGTextureRef(t), readSize, requestSize);
+                    }
                     return new QDeclarativePixmapData(url, pixmap, readSize, requestSize);
                 }
             }
