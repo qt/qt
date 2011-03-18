@@ -431,30 +431,45 @@ class DitaXmlGenerator : public PageGenerator
     virtual void endSubPage();
     virtual void generateInnerNode(const InnerNode* node);
     QXmlStreamWriter& xmlWriter();
-    void writeDetailedDescription(const Node* node,
-                                  CodeMarker* marker,
-                                  bool apiDesc,
-                                  const QString& title);
+    void writeApiDesc(const Node* node, CodeMarker* marker, const QString& title);
     void addLink(const QString& href, const QStringRef& text);
     void writeDitaMap();
     void writeStartTag(DitaTag t);
     void writeEndTag(DitaTag t=DT_NONE);
     DitaTag currentTag();
+    void clearSectionNesting() { sectionNestingLevel = 0; } 
+    int enterApiDesc(const QString& outputclass, const QString& title);
+    int enterSection(const QString& outputclass, const QString& title);
+    int leaveSection();
+    bool inSection() const { return (sectionNestingLevel > 0); }
+    int currentSectionNestingLevel() const { return sectionNestingLevel; }
+    
 
  private:
-    QMap<QString, QString> refMap;
-    QMap<QString, QString> name2guidMap;
-    GuidMaps guidMaps;
-    int codeIndent;
+    /*
+      These flags indicate which elements the generator
+      is currently outputting.
+     */
+    bool inContents;
+    bool inDetailedDescription;
+    bool inLegaleseText;
     bool inLink;
     bool inObsoleteLink;
-    bool inContents;
     bool inSectionHeading;
     bool inTableHeader;
     bool inTableBody;
-    int numTableRows;
-    bool threeColumnEnumValueTable;
+
+    bool noLinks;
+    bool obsoleteLinks;
     bool offlineDocs;
+    bool threeColumnEnumValueTable;
+
+    int codeIndent;
+    int numTableRows;
+    int divNestingLevel;
+    int sectionNestingLevel;
+    int tableColumnCount;
+
     QString link;
     QStringList sectionNumber;
     QRegExp funcLeftParen;
@@ -473,9 +488,9 @@ class DitaXmlGenerator : public PageGenerator
     QStringList stylesheets;
     QStringList customHeadElements;
     const Tree* myTree;
-    bool obsoleteLinks;
-    bool noLinks;
-    int tableColumnCount;
+    QMap<QString, QString> refMap;
+    QMap<QString, QString> name2guidMap;
+    GuidMaps guidMaps;
     QMap<QString, NodeMap > moduleClassMap;
     QMap<QString, NodeMap > moduleNamespaceMap;
     NodeMap nonCompatClasses;
@@ -494,10 +509,6 @@ class DitaXmlGenerator : public PageGenerator
     NewClassMaps newClassMaps;
     NewClassMaps newQmlClassMaps;
     static int id;
-    static bool inApiDesc;
-    static bool inSection;
-    static bool inDetailedDescription;
-    static bool inLegaleseText;
     static QString ditaTags[];
     QStack<QXmlStreamWriter*> xmlWriterStack;
     QStack<DitaTag> tagStack;
