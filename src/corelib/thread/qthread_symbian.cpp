@@ -131,11 +131,7 @@ public:
     {
         data->symbian_thread_handle.LogonCancel(iStatus);
     }
-    void RunL()
-    {
-        data->deref();
-        delete this;
-    }
+    void RunL();
 private:
     QThreadData* data;
 };
@@ -177,6 +173,7 @@ public:
         for (int i=threadsToAdd.size()-1; i>=0; i--) {
             // Create an active object to monitor the thread
             new (ELeave) QCAdoptedThreadMonitor(threadsToAdd[i]);
+            count++;
             threadsToAdd.pop_back();
         }
         start();
@@ -193,6 +190,8 @@ public:
             User::WaitForRequest(started);
             monitorThread.Close();
         }
+        if (RThread().Id() == adoptedThreadAdder->monitorThread.Id())
+            return;
         adoptedThreadAdder->threadsToAdd.push_back(thread);
         if (adoptedThreadAdder->stat) {
             adoptedThreadAdder->monitorThread.RequestComplete(adoptedThreadAdder->stat, KErrNone);
@@ -204,15 +203,15 @@ public:
         CleanupStack::PushL(scheduler);
         CActiveScheduler::Install(scheduler);
 
-        adoptedThreadAdder =  new(ELeave) QCAddAdoptedThread();
+        adoptedThreadAdder = new(ELeave) QCAddAdoptedThread();
         CleanupStack::PushL(adoptedThreadAdder);
         adoptedThreadAdder->ConstructL();
+        QCAddAdoptedThread *adder = adoptedThreadAdder;
 
         RThread::Rendezvous(KErrNone);
         CActiveScheduler::Start();
 
-        CleanupStack::PopAndDestroy(adoptedThreadAdder);
-        adoptedThreadAdder = 0;
+        CleanupStack::PopAndDestroy(adder);
         CleanupStack::PopAndDestroy(scheduler);
     }
     static int monitorThreadFunc(void *)
@@ -224,17 +223,36 @@ public:
         delete cleanup;
         return ret;
     }
+    static void threadDied()
+    {
+        QMutexLocker adoptedThreadMonitorMutexlock(&adoptedThreadMonitorMutex);
+        if (adoptedThreadAdder) {
+            adoptedThreadAdder->count--;
+            if (adoptedThreadAdder->count <= 0 && adoptedThreadAdder->threadsToAdd.size() == 0) {
+                CActiveScheduler::Stop();
+                adoptedThreadAdder = 0;
+            }
+        }
+    }
 
 private:
     QVector<QThread*> threadsToAdd;
     RThread monitorThread;
     static QMutex adoptedThreadMonitorMutex;
-    static QCAddAdoptedThread* adoptedThreadAdder;
+    static QCAddAdoptedThread *adoptedThreadAdder;
+    int count;
     TRequestStatus *stat;
 };
 
 QMutex QCAddAdoptedThread::adoptedThreadMonitorMutex;
 QCAddAdoptedThread* QCAddAdoptedThread::adoptedThreadAdder = 0;
+
+void QCAdoptedThreadMonitor::RunL()
+{
+    data->deref();
+    QCAddAdoptedThread::threadDied();
+    delete this;
+}
 
 void QAdoptedThread::init()
 {
