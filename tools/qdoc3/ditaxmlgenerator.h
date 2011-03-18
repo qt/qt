@@ -431,18 +431,15 @@ class DitaXmlGenerator : public PageGenerator
     virtual void endSubPage();
     virtual void generateInnerNode(const InnerNode* node);
     QXmlStreamWriter& xmlWriter();
-    void writeDetailedDescription(const Node* node,
-                                  CodeMarker* marker,
-                                  bool apiDesc,
-                                  const QString& title);
+    void writeApiDesc(const Node* node, CodeMarker* marker, const QString& title);
     void addLink(const QString& href, const QStringRef& text);
     void writeDitaMap();
     void writeStartTag(DitaTag t);
-    void startTitle();
     void writeEndTag(DitaTag t=DT_NONE);
     DitaTag currentTag();
     void clearSectionNesting() { sectionNestingLevel = 0; } 
-    int enterSection(const QString& outputclass, QString* idText=0);
+    int enterApiDesc(const QString& outputclass, const QString& title);
+    int enterSection(const QString& outputclass, const QString& title);
     int leaveSection();
     bool inSection() const { return (sectionNestingLevel > 0); }
     int currentSectionNestingLevel() const { return sectionNestingLevel; }
@@ -453,7 +450,6 @@ class DitaXmlGenerator : public PageGenerator
       These flags indicate which elements the generator
       is currently outputting.
      */
-    bool inApiDesc;
     bool inContents;
     bool inDetailedDescription;
     bool inLegaleseText;

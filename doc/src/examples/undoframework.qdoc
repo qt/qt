@@ -199,8 +199,7 @@
 
     \snippet examples/tools/undoframework/commands.cpp 8
 
-    \c undo() removes the item from the scene. We need to update the
-    scene as ...(ask Andreas)
+    \c undo() removes the item from the scene.
 
     \snippet examples/tools/undoframework/commands.cpp 9
 
