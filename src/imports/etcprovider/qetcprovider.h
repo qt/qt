@@ -2,25 +2,34 @@
 #define QETCPROVIDER_H
 
 #include <QDeclarativeImageProvider>
-#include <QSGTextureProvider>
+#include <QSGTexture>
 #include <QDeclarativeEngine>
 #include <QDeclarativeContext>
 #include <QFileInfo>
 
 // #define ETC_DEBUG
 
-class EtcTextureProvider : public QSGTextureProvider
+class EtcTexture : public QSGTexture
 {
     Q_OBJECT
 public:
-    void updateTexture ();
-    QSGTextureRef texture ();
+    EtcTexture();
+    ~EtcTexture();
+
+    void bind();
     QSize textureSize() const;
 
+    int textureId() const { return m_texture_id; }
+
+    void setImage(const QImage &image) { Q_UNUSED(image); }
+
+    bool hasAlphaChannel() const { return false; }
+    bool hasMipmaps() const { return false; }
+
     QByteArray m_data;
-    QSGTextureRef m_texture;
     QSize m_size;
     QSize m_paddedSize;
+    GLuint m_texture_id;
 };
 
 class QEtcProvider : public QDeclarativeImageProvider
@@ -33,7 +42,7 @@ public:
         qDebug () << "Creating QEtcProvider.";
 #endif
     }
-    QSGTextureProvider *requestTexture(const QString &id, QSize *size, const QSize &requestedSize);
+    QSGTexture *requestTexture(const QString &id, QSize *size, const QSize &requestedSize);
 };
 
 
