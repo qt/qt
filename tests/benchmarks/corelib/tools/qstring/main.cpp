@@ -1477,6 +1477,26 @@ void fromLatin1_sse2_qt47(ushort *dst, const char *str, int size)
         *dst++ = (uchar)*str++;
 }
 
+void fromLatin1_prolog_unrolled(ushort *dst, const char *str, int size)
+{
+    switch (size) {
+    case 7:
+        *dst++ = (uchar)*str++;
+    case 6:
+        *dst++ = (uchar)*str++;
+    case 5:
+        *dst++ = (uchar)*str++;
+    case 4:
+        *dst++ = (uchar)*str++;
+    case 3:
+        *dst++ = (uchar)*str++;
+    case 2:
+        *dst++ = (uchar)*str++;
+    case 1:
+        *dst++ = (uchar)*str++;
+    }
+}
+
 template<FromLatin1Function prologFunction>
 void fromLatin1_sse2_withprolog(ushort *dst, const char *str, int size)
 {
@@ -1523,7 +1543,8 @@ void tst_QString::fromLatin1Alternatives_data() const
     QTest::addColumn<FromLatin1Function>("function");
     QTest::newRow("regular") << &fromLatin1_regular;
     QTest::newRow("sse2-qt4.7") << &fromLatin1_sse2_qt47;
-    QTest::newRow("sse2-with-prolog") << &fromLatin1_sse2_withprolog<&fromLatin1_regular>;
+    QTest::newRow("sse2-with-prolog-regular") << &fromLatin1_sse2_withprolog<&fromLatin1_regular>;
+    QTest::newRow("sse2-with-prolog-unrolled") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_unrolled>;
 }
 
 static void fromLatin1Alternatives_internal(FromLatin1Function function, bool doVerify)
