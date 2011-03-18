@@ -113,4 +113,4 @@ qch-docs.CONFIG += no_check_exist directory
 QMAKE_EXTRA_TARGETS += html-docs qch-docs
 
 target.path = $$[QT_INSTALL_BINS]
-INSTALLS += target qch-docs
+INSTALLS += target
