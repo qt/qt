@@ -51,6 +51,7 @@
 #include "qhostinfo_p.h"
 #include <private/qcore_symbian_p.h>
 #include <private/qsystemerror_p.h>
+#include <private/qnetworksession_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -216,9 +217,9 @@ QString QHostInfo::localDomainName()
 }
 
 
-QSymbianHostResolver::QSymbianHostResolver(const QString &hostName, int identifier)
+QSymbianHostResolver::QSymbianHostResolver(const QString &hostName, int identifier, QSharedPointer<QNetworkSession> networkSession)
     : CActive(CActive::EPriorityStandard), iHostName(hostName),
-      iSocketServ(qt_symbianGetSocketServer()), iResults(identifier)
+      iSocketServ(qt_symbianGetSocketServer()), iNetworkSession(networkSession), iResults(identifier)
 {
     CActiveScheduler::Add(this);
 }
@@ -241,7 +242,18 @@ void QSymbianHostResolver::requestHostLookup()
         iHostName.toLatin1().constData(), id());
 #endif
 
-    int err = iHostResolver.Open(iSocketServ, KAfInet, KProtocolInetUdp);
+    int err;
+    if (iNetworkSession) {
+        err = QNetworkSessionPrivate::nativeOpenHostResolver(*iNetworkSession, iHostResolver, KAfInet, KProtocolInetUdp);
+#if defined(QHOSTINFO_DEBUG)
+        qDebug("using resolver from session (err = %d)", err);
+#endif
+    } else {
+        err = iHostResolver.Open(iSocketServ, KAfInet, KProtocolInetUdp);
+#if defined(QHOSTINFO_DEBUG)
+        qDebug("using default resolver (err = %d)", err);
+#endif
+    }
     if (err) {
         // What are we doing with iResults??
         iResults.setError(QHostInfo::UnknownError);

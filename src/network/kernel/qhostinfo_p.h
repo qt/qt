@@ -225,7 +225,7 @@ private slots:
 class QSymbianHostResolver : public CActive
 {
 public:
-    QSymbianHostResolver(const QString &hostName, int id);
+    QSymbianHostResolver(const QString &hostName, int id, QSharedPointer<QNetworkSession> networkSession);
     ~QSymbianHostResolver();
 
     void requestHostLookup();
@@ -247,6 +247,7 @@ private:
 
     RSocketServ& iSocketServ;
     RHostResolver iHostResolver;
+    QSharedPointer<QNetworkSession> iNetworkSession;
 
     TRequestStatus iStatus;
 

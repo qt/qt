@@ -49,6 +49,7 @@
 #include <qstringlist.h>
 #include <qthread.h>
 #include <qurl.h>
+#include <private/qnetworksession_p.h>
 
 #ifdef Q_OS_UNIX
 #  include <unistd.h>
@@ -219,8 +220,15 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
         }
 
         // cache is not enabled or it was not in the cache, do normal lookup
+#ifndef QT_NO_BEARERMANAGEMENT
+        QSharedPointer<QNetworkSession> networkSession;
+        QVariant v(receiver->property("_q_networksession"));
+        if (v.isValid())
+            networkSession = qvariant_cast< QSharedPointer<QNetworkSession> >(v);
+#endif
+
         QSymbianHostResolver *symbianResolver = 0;
-        QT_TRAP_THROWING(symbianResolver = new QSymbianHostResolver(name, id));
+        QT_TRAP_THROWING(symbianResolver = new QSymbianHostResolver(name, id, networkSession));
         QObject::connect(&symbianResolver->resultEmitter, SIGNAL(resultsReady(QHostInfo)), receiver, member, Qt::QueuedConnection);
         manager->scheduleLookup(symbianResolver);
     }
