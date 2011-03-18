@@ -135,6 +135,10 @@ void ParticleSystem::initializeSystem()
 
 void ParticleSystem::reset()
 {
+    foreach(ParticleType* p, m_particles)
+        p->reset();
+    foreach(ParticleEmitter* e, m_emitters)
+        e->reset();
     if(!m_running)
         return;
     initializeSystem();

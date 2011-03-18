@@ -117,7 +117,8 @@ signals:
     void yAccelVariationChanged();
 
 public slots:
-
+public:
+    virtual void reset();
 protected:
 
 private:

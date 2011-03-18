@@ -48,6 +48,8 @@ void setParticles(QStringList arg)
 private slots:
     void calcSystemOffset();
 protected:
+    virtual void reset() {;}
+
     ParticleSystem* m_system;
     friend class ParticleSystem;
     int m_count;

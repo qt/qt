@@ -390,7 +390,8 @@ Node *ColoredParticle::updatePaintNode(Node *, UpdatePaintNodeData *)
         m_pleaseReset = false;
     }
 
-    prepareNextFrame();
+    if(m_system->isRunning())
+        prepareNextFrame();
     if (m_node){
         update();
         m_node->markDirty(Node::DirtyMaterial);

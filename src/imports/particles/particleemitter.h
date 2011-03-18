@@ -107,7 +107,8 @@ public slots:
                emit particleDurationVariationChanged(arg);
            }
        }
-
+public:
+       virtual void reset(){;}
 protected:
     ParticleSystem* m_system;
     qreal m_particlesPerSecond;
