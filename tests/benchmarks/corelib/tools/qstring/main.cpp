@@ -1564,9 +1564,9 @@ void tst_QString::fromLatin1Alternatives_data() const
     QTest::newRow("sse2-with-prolog-unrolled") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_unrolled>;
 }
 
-static void fromLatin1Alternatives_internal(FromLatin1Function function, bool doVerify)
+extern StringData fromLatin1Data;
+static void fromLatin1Alternatives_internal(FromLatin1Function function, QString &dst, bool doVerify)
 {
-    extern StringData fromLatin1Data;
     struct Entry
     {
         int len;
@@ -1579,16 +1579,18 @@ static void fromLatin1Alternatives_internal(FromLatin1Function function, bool do
         int len = entries[i].len;
         const char *src = fromLatin1Data.charData + entries[i].offset1;
 
-        QString dst(len + 16, QChar('x'));
-        (function)(&dst.data()->unicode() + 8, src, len);
+        if (!doVerify) {
+            (function)(&dst.data()->unicode(), src, len);
+        } else {
+            dst.fill(QChar('x'), dst.length());
 
-        if (doVerify) {
+            (function)(&dst.data()->unicode() + 8, src, len);
+
             QString zeroes(8, QChar('x'));
-            QString final = dst.mid(8);
-            final.chop(8);
+            QString final = dst.mid(8, len);
             QCOMPARE(final, QString::fromLatin1(src, len));
             QCOMPARE(dst.left(8), zeroes);
-            QCOMPARE(dst.right(8), zeroes);
+            QCOMPARE(dst.mid(len + 8, 8), zeroes);
         }
     }
 }
@@ -1596,9 +1598,12 @@ static void fromLatin1Alternatives_internal(FromLatin1Function function, bool do
 void tst_QString::fromLatin1Alternatives() const
 {
     QFETCH(FromLatin1Function, function);
-    fromLatin1Alternatives_internal(function, true);
+
+    QString dst(fromLatin1Data.maxLength + 16, QChar('x'));
+    fromLatin1Alternatives_internal(function, dst, true);
+
     QBENCHMARK {
-        fromLatin1Alternatives_internal(function, false);
+        fromLatin1Alternatives_internal(function, dst, false);
     }
 }
 
