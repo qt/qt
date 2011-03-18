@@ -59,6 +59,8 @@ public:
     void makeDefaultSharedContext();
 
     QPlatformWindowFormat platformWindowFormat() const;
+
+    EGLContext eglContext() const;
 private:
     EGLContext m_eglContext;
     EGLDisplay m_eglDisplay;

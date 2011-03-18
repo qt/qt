@@ -51,6 +51,7 @@
 #endif
 
 #include "private/qwidget_p.h"
+#include "private/qevent_p.h"
 
 #include "qgenericpluginfactory_qpa.h"
 #include "qplatformintegrationfactory_qpa_p.h"
@@ -816,8 +817,14 @@ void QApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyEven
     if (app_do_modal && !qt_try_modal(focusW, e->keyType))
         return;
 
-    QKeyEvent ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount);
-    QApplication::sendSpontaneousEvent(focusW, &ev);
+    if (e->nativeScanCode || e->nativeVirtualKey || e->nativeModifiers) {
+        QKeyEventEx ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount,
+                       e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers);
+        QApplication::sendSpontaneousEvent(focusW, &ev);
+    } else {
+        QKeyEvent ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount);
+        QApplication::sendSpontaneousEvent(focusW, &ev);
+    }
 }
 
 void QApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *e)

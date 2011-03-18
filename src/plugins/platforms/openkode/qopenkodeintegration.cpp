@@ -185,6 +185,15 @@ QOpenKODEIntegration::~QOpenKODEIntegration()
     delete mFontDb;
 }
 
+
+bool QOpenKODEIntegration::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+    case ThreadedPixmaps: return true;
+    default: return QPlatformIntegration::hasCapability(cap);
+    }
+}
+
 QPixmapData *QOpenKODEIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
     return new QGLPixmapData(type);

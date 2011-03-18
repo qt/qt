@@ -2722,10 +2722,6 @@ QT_LICENSED_MODULE(DBus)
 #  define QT_NO_PROCESS
 #endif
 
-#ifdef Q_OS_NACL
-#include <QtCore/qnaclunimplemented.h>
-#endif
-
 #if defined (__ELF__)
 #  if defined (Q_OS_LINUX) || defined (Q_OS_SOLARIS) || defined (Q_OS_FREEBSD) || defined (Q_OS_OPENBSD) || defined (Q_OS_IRIX)
 #    define Q_OF_ELF
