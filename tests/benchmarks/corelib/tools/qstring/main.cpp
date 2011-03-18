@@ -1477,6 +1477,63 @@ void fromLatin1_sse2_qt47(ushort *dst, const char *str, int size)
         *dst++ = (uchar)*str++;
 }
 
+static inline void fromLatin1_epilog(ushort *dst, const char *str, int size)
+{
+    if (!size) return;
+    dst[0] = (uchar)str[0];
+    if (!--size) return;
+    dst[1] = (uchar)str[1];
+    if (!--size) return;
+    dst[2] = (uchar)str[2];
+    if (!--size) return;
+    dst[3] = (uchar)str[3];
+    if (!--size) return;
+    dst[4] = (uchar)str[4];
+    if (!--size) return;
+    dst[5] = (uchar)str[5];
+    if (!--size) return;
+    dst[6] = (uchar)str[6];
+    if (!--size) return;
+    dst[7] = (uchar)str[7];
+    if (!--size) return;
+    dst[8] = (uchar)str[8];
+    if (!--size) return;
+    dst[9] = (uchar)str[9];
+    if (!--size) return;
+    dst[10] = (uchar)str[10];
+    if (!--size) return;
+    dst[11] = (uchar)str[11];
+    if (!--size) return;
+    dst[12] = (uchar)str[12];
+    if (!--size) return;
+    dst[13] = (uchar)str[13];
+    if (!--size) return;
+    dst[14] = (uchar)str[14];
+    if (!--size) return;
+    dst[15] = (uchar)str[15];
+}
+
+void fromLatin1_sse2_improved(ushort *dst, const char *str, int size)
+{
+    const __m128i nullMask = _mm_set1_epi32(0);
+    while (size >= 16) {
+        const __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
+
+        // unpack the first 8 bytes, padding with zeros
+        const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+        _mm_storeu_si128((__m128i*)dst, firstHalf); // store
+
+        // unpack the last 8 bytes, padding with zeros
+        const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + 8), secondHalf); // store
+
+        str += 16;
+        dst += 16;
+        size -= 16;
+    }
+    fromLatin1_epilog(dst, str, size);
+}
+
 void fromLatin1_prolog_unrolled(ushort *dst, const char *str, int size)
 {
     // QString's data pointer is most often ending in 0x2 or 0xa
@@ -1542,28 +1599,23 @@ void fromLatin1_sse2_withprolog(ushort *dst, const char *str, int size)
         str += prologCount;
     }
 
-    if (size >= 16) {
-        int chunkCount = size >> 4; // divided by 16
-        const __m128i nullMask = _mm_set1_epi32(0);
-        for (int i = 0; i < chunkCount; ++i) {
-            const __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
-            str += 16;
+    const __m128i nullMask = _mm_set1_epi32(0);
+    while (size >= 16) {
+        const __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
 
-            // unpack the first 8 bytes, padding with zeros
-            const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
-            _mm_store_si128((__m128i*)dst, firstHalf); // store
-            dst += 8;
+        // unpack the first 8 bytes, padding with zeros
+        const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+        _mm_store_si128((__m128i*)dst, firstHalf); // store
 
-            // unpack the last 8 bytes, padding with zeros
-            const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
-            _mm_store_si128((__m128i*)dst, secondHalf); // store
-            dst += 8;
-        }
-        size = size % 16;
+        // unpack the last 8 bytes, padding with zeros
+        const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+        _mm_store_si128((__m128i*)(dst + 8), secondHalf); // store
+
+        str += 16;
+        dst += 16;
+        size -= 16;
     }
-    while (size--)
-        *dst++ = (uchar)*str++;
-
+    fromLatin1_epilog(dst, str, size);
 }
 
 void fromLatin1_prolog_sse4_overcommit(ushort *dst, const char *str, int)
@@ -1579,6 +1631,7 @@ void tst_QString::fromLatin1Alternatives_data() const
     QTest::addColumn<FromLatin1Function>("function");
     QTest::newRow("regular") << &fromLatin1_regular;
     QTest::newRow("sse2-qt4.7") << &fromLatin1_sse2_qt47;
+    QTest::newRow("sse2-improved") << &fromLatin1_sse2_improved;
     QTest::newRow("sse2-with-prolog-regular") << &fromLatin1_sse2_withprolog<&fromLatin1_regular>;
     QTest::newRow("sse2-with-prolog-unrolled") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_unrolled>;
     QTest::newRow("sse2-with-prolog-sse2-overcommit") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_sse2_overcommit>;
