@@ -279,6 +279,14 @@ void QSGPlainTexture::bind()
     if (m_texture_id)
         glDeleteTextures(1, &m_texture_id);
 
+    if (m_image.isNull()) {
+        m_texture_id == 0;
+        m_texture_size = QSize();
+        m_has_mipmaps = false;
+        m_has_alpha = false;
+        return;
+    }
+
     glGenTextures(1, &m_texture_id);
     glBindTexture(GL_TEXTURE_2D, m_texture_id);
 
