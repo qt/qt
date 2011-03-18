@@ -1618,6 +1618,27 @@ void fromLatin1_sse2_withprolog(ushort *dst, const char *str, int size)
     fromLatin1_epilog(dst, str, size);
 }
 
+void fromLatin1_sse4_pmovzxbw(ushort *dst, const char *str, int size)
+{
+    while (size >= 16) {
+        __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
+
+        // unpack the first 8 bytes, padding with zeros
+        const __m128i firstHalf = _mm_cvtepu8_epi16(chunk);
+        _mm_storeu_si128((__m128i*)dst, firstHalf); // store
+
+        // unpack the last 8 bytes, padding with zeros
+        chunk = _mm_srli_si128(chunk, 8);
+        const __m128i secondHalf = _mm_cvtepu8_epi16(chunk);
+        _mm_storeu_si128((__m128i*)(dst + 8), secondHalf); // store
+
+        str += 16;
+        dst += 16;
+        size -= 16;
+    }
+    fromLatin1_epilog(dst, str, size);
+}
+
 void fromLatin1_prolog_sse4_overcommit(ushort *dst, const char *str, int)
 {
     // load 8 bytes and zero-extend them to 16
@@ -1636,6 +1657,7 @@ void tst_QString::fromLatin1Alternatives_data() const
     QTest::newRow("sse2-with-prolog-unrolled") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_unrolled>;
     QTest::newRow("sse2-with-prolog-sse2-overcommit") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_sse2_overcommit>;
     QTest::newRow("sse2-with-prolog-sse4-overcommit") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_sse4_overcommit>;
+    QTest::newRow("sse4-pmovzxbw") << &fromLatin1_sse4_pmovzxbw;
 }
 
 extern StringData fromLatin1Data;
