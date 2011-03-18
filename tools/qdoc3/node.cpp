@@ -858,6 +858,21 @@ void InnerNode::removeRelated(Node *pseudoChild)
     related.removeAll(pseudoChild);
 }
 
+/*! \fn bool InnerNode::hasOtherMetadata() const
+  Returns tru if the other metadata map is not empty.
+ */
+
+/*!
+  Insert the pair \a name and \a content into the other metadata map.
+ */
+void insertOtherMetadata(const QString& name, const QString& content)
+{
+}
+
+/*! \fn const QMap<QString, QString>& InnerNode::otherMetadata() cont
+  Returns the map containing pairs for output as \c {<othermetadata>}.
+ */
+
 /*!
   \class LeafNode
  */
