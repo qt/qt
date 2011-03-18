@@ -86,11 +86,6 @@ v8::Handle<v8::Value> QtNativeFunctionCallback(const v8::Arguments& arguments)
     QScriptEnginePrivate *engine = data->engine();
     QScriptContextPrivate qScriptContext(engine, &arguments);
 
-    // To match semantics of JSC, we must inherit the scope chain of the caller.
-    v8::Handle<v8::Context> inheritedScope = v8::Context::GetCallerContext();
-    if (!inheritedScope.IsEmpty())
-        qScriptContext.setInheritedScope(inheritedScope);
-
     // When 'v' gets out of scope, it'll delete 'result'.
     QScriptValue v = data->call(&qScriptContext);
     QScriptValuePrivate *result = QScriptValuePrivate::get(v);

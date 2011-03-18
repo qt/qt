@@ -52,6 +52,7 @@ inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args, v8::Handle<v8::Value> callee, v8::Handle<v8::Object> customThisObject)
     : q_ptr(this), engine(engine), arguments(args), accessorInfo(0),
       context(v8::Persistent<v8::Context>::New(v8::Context::NewFunctionContext())),
+      inheritedScope(v8::Persistent<v8::Context>::New(v8::Context::GetCallerContext())),
       parent(engine->setCurrentQSContext(this)), previous(0), m_thisObject(v8::Persistent<v8::Object>::New(customThisObject)),
       m_callee(v8::Persistent<v8::Value>::New(callee)), hasArgumentGetter(false)
 {
@@ -63,6 +64,7 @@ inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::AccessorInfo *accessor)
 : q_ptr(this), engine(engine), arguments(0), accessorInfo(accessor),
   context(v8::Persistent<v8::Context>::New(v8::Context::NewFunctionContext())),
+  inheritedScope(v8::Persistent<v8::Context>::New(v8::Context::GetCallerContext())),
   parent(engine->setCurrentQSContext(this)), previous(0), hasArgumentGetter(false)
 {
     Q_ASSERT(engine);
@@ -306,12 +308,6 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::popScope()
     scopeContext->Exit();
     scopeContext.Dispose();
     return new QScriptValuePrivate(engine, object);
-}
-
-inline void QScriptContextPrivate::setInheritedScope(v8::Handle<v8::Context> object)
-{
-    Q_ASSERT(inheritedScope.IsEmpty());
-    inheritedScope = v8::Persistent<v8::Context>::New(object);
 }
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::createArgumentsObject()

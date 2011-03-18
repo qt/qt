@@ -79,7 +79,6 @@ public:
     inline QScriptValueList scopeChain() const;
     inline void pushScope(QScriptValuePrivate *object);
     inline QScriptPassPointer<QScriptValuePrivate> popScope();
-    inline void setInheritedScope(v8::Handle<v8::Context>);
     inline QScriptPassPointer<QScriptValuePrivate> createArgumentsObject();
     inline void initializeArgumentsProperty();
 
