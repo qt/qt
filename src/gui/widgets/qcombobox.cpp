@@ -7,11 +7,11 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -25,16 +25,16 @@
 ** rights.  These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
-**
-**
-**
-**
-**
-**
-**
-**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -116,7 +116,7 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
 
     QPalette resolvedpalette = option.palette.resolve(QApplication::palette("QMenu"));
     QVariant value = index.data(Qt::ForegroundRole);
-    if (value.canConvert<QBrush>()) {
+    if (qVariantCanConvert<QBrush>(value)) {
         resolvedpalette.setBrush(QPalette::WindowText, qvariant_cast<QBrush>(value));
         resolvedpalette.setBrush(QPalette::ButtonText, qvariant_cast<QBrush>(value));
         resolvedpalette.setBrush(QPalette::Text, qvariant_cast<QBrush>(value));
@@ -152,7 +152,7 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
         menuOption.icon = qvariant_cast<QPixmap>(variant);
         break;
     }
-    if (index.data(Qt::BackgroundRole).canConvert<QBrush>()) {
+    if (qVariantCanConvert<QBrush>(index.data(Qt::BackgroundRole))) {
         menuOption.palette.setBrush(QPalette::All, QPalette::Background,
                                     qvariant_cast<QBrush>(index.data(Qt::BackgroundRole)));
     }
@@ -369,7 +369,6 @@ void QComboBoxPrivateContainer::timerEvent(QTimerEvent *timerEvent)
     if (timerEvent->timerId() == adjustSizeTimer.timerId()) {
         adjustSizeTimer.stop();
         if (combo->sizeAdjustPolicy() == QComboBox::AdjustToContents) {
-            combo->updateGeometry();
             combo->adjustSize();
             combo->update();
         }
@@ -1089,8 +1088,6 @@ void QComboBoxPrivate::updateViewContainerPaletteAndOpacity()
         container->setPalette(q->palette());
         container->setWindowOpacity(1.0);
     }
-    if (lineEdit)
-        lineEdit->setPalette(q->palette());
 }
 
 /*!
@@ -1301,7 +1298,7 @@ QComboBox::~QComboBox()
     By default, this property has a value of 10.
 
     \note This property is ignored for non-editable comboboxes in styles that returns
-    true for QStyle::SH_ComboBox_Popup such as the Mac style or the Gtk+ Style.
+    false for QStyle::SH_ComboBox_Popup such as the Mac style or the Gtk+ Style.
 */
 int QComboBox::maxVisibleItems() const
 {
@@ -2011,18 +2008,11 @@ void QComboBox::setCurrentIndex(int index)
 void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
 {
     Q_Q(QComboBox);
-
-    QModelIndex normalized;
-    if (mi.column() != modelColumn)
-        normalized = model->index(mi.row(), modelColumn, mi.parent());
-    if (!normalized.isValid())
-        normalized = mi;    // Fallback to passed index.
-
-    bool indexChanged = (normalized != currentIndex);
+    bool indexChanged = (mi != currentIndex);
     if (indexChanged)
-        currentIndex = QPersistentModelIndex(normalized);
+        currentIndex = QPersistentModelIndex(mi);
     if (lineEdit) {
-        QString newText = q->itemText(normalized.row());
+        QString newText = q->itemText(currentIndex.row());
         if (lineEdit->text() != newText)
             lineEdit->setText(newText);
         updateLineEditGeometry();
@@ -2358,7 +2348,9 @@ void QComboBox::showPopup()
     initStyleOption(&opt);
     QRect listRect(style->subControlRect(QStyle::CC_ComboBox, &opt,
                                          QStyle::SC_ComboBoxListBoxPopup, this));
-    QRect screen = d->popupGeometry(QApplication::desktop()->screenNumber(this));
+    //QRect screen = d->popupGeometry(QApplication::desktop()->screenNumber(this));
+    QRect screen = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect());
+    
     QPoint below = mapToGlobal(listRect.bottomLeft());
     int belowHeight = screen.bottom() - below.y();
     QPoint above = mapToGlobal(listRect.topLeft());
@@ -2486,18 +2478,10 @@ void QComboBox::showPopup()
             listRect.setWidth(listRect.height());
             //by default popup is centered on screen in landscape
             listRect.moveCenter(screen.center());
-            if (staConTopRect.IsEmpty()) {
-                TRect cbaRect = TRect();
-                AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EControlPane, cbaRect);
-                AknLayoutUtils::TAknCbaLocation cbaLocation = AknLayoutUtils::CbaLocation();
-                switch (cbaLocation) {
-                case AknLayoutUtils::EAknCbaLocationRight:
-                    listRect.setRight(screen.right());
-                    break;
-                case AknLayoutUtils::EAknCbaLocationLeft:
-                    listRect.setLeft(screen.left());
-                    break;
-                }
+            if (staConTopRect.IsEmpty() && AknLayoutUtils::CbaLocation() != AknLayoutUtils::EAknCbaLocationBottom) {
+                // landscape without stacon, menu should be at the right
+                (opt.direction == Qt::LeftToRight) ? listRect.setRight(screen.right()) :
+                                                     listRect.setLeft(screen.left());
             }
         }
 #endif
@@ -2716,8 +2700,9 @@ void QComboBox::changeEvent(QEvent *e)
             initStyleOption(&opt);
 
             if (style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, this)) {
-                const QRect screen = d->popupGeometry(QApplication::desktop()->screenNumber(this));
-
+                //const QRect screen = d->popupGeometry(QApplication::desktop()->screenNumber(this));
+                QRect screen = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect());
+                
                 QRect listRect(style()->subControlRect(QStyle::CC_ComboBox, &opt,
                     QStyle::SC_ComboBoxListBoxPopup, this));
                 listRect.setHeight(qMin(screen.height(), screen.width()));
@@ -2731,13 +2716,15 @@ void QComboBox::changeEvent(QEvent *e)
                     listRect.setWidth(listRect.height());
                     //by default popup is centered on screen in landscape
                     listRect.moveCenter(screen.center());
-                    if (staConTopRect.IsEmpty()) {
+                    if (staConTopRect.IsEmpty() && AknLayoutUtils::CbaLocation() != AknLayoutUtils::EAknCbaLocationBottom) {
                         // landscape without stacon, menu should be at the right
                         (opt.direction == Qt::LeftToRight) ? listRect.setRight(screen.right()) :
                                                              listRect.setLeft(screen.left());
                     }
-                    d->container->setGeometry(listRect);
+                    //d->container->setGeometry(listRect);
                 }
+                
+                d->container->setGeometry(listRect);
             }
         }
 #endif
@@ -2770,6 +2757,10 @@ void QComboBox::changeEvent(QEvent *e)
 void QComboBox::resizeEvent(QResizeEvent *)
 {
     Q_D(QComboBox);
+#ifdef Q_WS_S60
+    if (d->viewContainer() && d->viewContainer()->isVisible())
+        showPopup();
+#endif
     d->updateLineEditGeometry();
 }
 
