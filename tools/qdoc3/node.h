@@ -274,6 +274,9 @@ class InnerNode : public Node
     virtual void addPageKeywords(const QString& t) { pageKeywds << t; }
     virtual bool isAbstract() const { return false; }
     virtual void setAbstract(bool ) { }
+    bool hasOtherMetadata() const { return !otherMetadataMap.isEmpty(); }
+    void insertOtherMetadata(const QString& name, const QString& content);
+    const QMap<QString, QString>& otherMetadata() const { return otherMetadataMap; }
 
  protected:
     InnerNode(Type type, InnerNode* parent, const QString& name);
@@ -297,6 +300,7 @@ class InnerNode : public Node
     QMap<QString, Node*> childMap;
     QMap<QString, Node*> primaryFunctionMap;
     QMap<QString, NodeList> secondaryFunctionMap;
+    QMap<QString, QString> otherMetadataMap;
 };
 
 class LeafNode : public Node
