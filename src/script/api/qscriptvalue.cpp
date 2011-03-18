@@ -608,6 +608,9 @@ QVariant QScriptValue::toVariant() const
 {
     Q_D(const QScriptValue);
     QScriptIsolate api(d->engine());
+    QScriptDeclarativeClass *cls = QScriptDeclarativeClassObject::declarativeClass(d);
+    if (cls)
+        return cls->toVariant(QScriptDeclarativeClassObject::object(d));
     return d->toVariant();
 }
 
