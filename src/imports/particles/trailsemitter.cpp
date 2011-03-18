@@ -181,7 +181,7 @@ void TrailsEmitter::emitWindow(int timeStamp)
     if (m_reset_last) {
         m_last_emitter = m_last_last_emitter = QPointF(x() + m_emitter_x, y() + m_emitter_y);
         m_last_timestamp = timeStamp/1000.;
-        m_last_particle = 0;
+        m_last_particle = ceil(m_last_timestamp * m_particlesPerSecond);
         m_reset_last = false;
     }
 
