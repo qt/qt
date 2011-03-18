@@ -1499,12 +1499,16 @@ static void fromLatin1Alternatives_internal(FromLatin1Function function, bool do
         int len = entries[i].len;
         const char *src = fromLatin1Data.charData + entries[i].offset1;
 
-        QString dst;
-        dst.resize(len);
-        (function)(&dst.data()->unicode(), src, len);
+        QString dst(len + 16, QChar('x'));
+        (function)(&dst.data()->unicode() + 8, src, len);
 
         if (doVerify) {
-            QCOMPARE(dst, QString::fromLatin1(src, len));
+            QString zeroes(8, QChar('x'));
+            QString final = dst.mid(8);
+            final.chop(8);
+            QCOMPARE(final, QString::fromLatin1(src, len));
+            QCOMPARE(dst.left(8), zeroes);
+            QCOMPARE(dst.right(8), zeroes);
         }
     }
 }
