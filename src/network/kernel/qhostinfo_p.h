@@ -228,7 +228,7 @@ public:
     QSymbianHostResolver(const QString &hostName, int id);
     ~QSymbianHostResolver();
 
-    QHostInfo requestHostLookup();
+    void requestHostLookup();
     int id();
 
     QHostInfoResult resultEmitter;
@@ -258,7 +258,8 @@ private:
     enum {
         EIdle,
         EGetByName,
-        EGetByAddress
+        EGetByAddress,
+        EError
     } iState;
 };
 

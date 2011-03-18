@@ -233,7 +233,7 @@ QSymbianHostResolver::~QSymbianHostResolver()
 }
 
 // Async equivalent to QHostInfoAgent::fromName()
-QHostInfo QSymbianHostResolver::requestHostLookup()
+void QSymbianHostResolver::requestHostLookup()
 {
 
 #if defined(QHOSTINFO_DEBUG)
@@ -245,45 +245,51 @@ QHostInfo QSymbianHostResolver::requestHostLookup()
     if (err) {
         // What are we doing with iResults??
         iResults.setError(QHostInfo::UnknownError);
-        iResults.setErrorString(QObject::tr("Symbian error code: %1").arg(err));
-
-        iHostResolver.Close();
-        return iResults;
-    }
-
-    if (iAddress.setAddress(iHostName)) {
-        // Reverse lookup
-
-        TInetAddr IpAdd;
-        IpAdd.Input(qt_QString2TPtrC(iHostName));
-
-        // Asynchronous request.
-        iHostResolver.GetByAddress(IpAdd, iNameResult, iStatus); // <---- ASYNC
-        iState = EGetByAddress;
+        iResults.setErrorString(QSystemError(err, QSystemError::NativeError).toString());
 
     } else {
 
-        // IDN support
-        QByteArray aceHostname = QUrl::toAce(iHostName);
-        iResults.setHostName(iHostName);
-        if (aceHostname.isEmpty()) {
-            iResults.setError(QHostInfo::HostNotFound);
-            iResults.setErrorString(iHostName.isEmpty() ?
-                                   QCoreApplication::translate("QHostInfoAgent", "No host name given") :
-                                   QCoreApplication::translate("QHostInfoAgent", "Invalid hostname"));
+        if (iAddress.setAddress(iHostName)) {
+            // Reverse lookup
 
-            iHostResolver.Close();
-            return iResults;
+            TInetAddr IpAdd;
+            IpAdd.Input(qt_QString2TPtrC(iHostName));
+
+            // Asynchronous request.
+            iHostResolver.GetByAddress(IpAdd, iNameResult, iStatus); // <---- ASYNC
+            iState = EGetByAddress;
+
+        } else {
+
+            // IDN support
+            QByteArray aceHostname = QUrl::toAce(iHostName);
+            iResults.setHostName(iHostName);
+            if (aceHostname.isEmpty()) {
+                iResults.setError(QHostInfo::HostNotFound);
+                iResults.setErrorString(iHostName.isEmpty() ?
+                                       QCoreApplication::translate("QHostInfoAgent", "No host name given") :
+                                       QCoreApplication::translate("QHostInfoAgent", "Invalid hostname"));
+
+                err = KErrArgument;
+            } else {
+
+                // Asynchronous request.
+                iHostResolver.GetByName(qt_QString2TPtrC(QString::fromLatin1(aceHostname)), iNameResult, iStatus);
+                iState = EGetByName;
+            }
         }
-
-        // Asynchronous request.
-        iHostResolver.GetByName(qt_QString2TPtrC(QString::fromLatin1(aceHostname)), iNameResult, iStatus);
-        iState = EGetByName;
     }
-
     SetActive();
+    if (err) {
+        iHostResolver.Close();
 
-    return iResults;
+        //self complete so that RunL can inform manager without causing recursion
+        iState = EError;
+        iStatus = KRequestPending;
+        SetActive();
+        TRequestStatus* stat = &iStatus;
+        User::RequestComplete(stat, err);
+    }
 }
 
 void QSymbianHostResolver::DoCancel()
