@@ -1481,19 +1481,19 @@ void fromLatin1_prolog_unrolled(ushort *dst, const char *str, int size)
 {
     switch (size) {
     case 7:
-        *dst++ = (uchar)*str++;
+        dst[6] = (uchar)str[6];
     case 6:
-        *dst++ = (uchar)*str++;
+        dst[5] = (uchar)str[5];
     case 5:
-        *dst++ = (uchar)*str++;
+        dst[4] = (uchar)str[4];
     case 4:
-        *dst++ = (uchar)*str++;
+        dst[3] = (uchar)str[3];
     case 3:
-        *dst++ = (uchar)*str++;
+        dst[2] = (uchar)str[2];
     case 2:
-        *dst++ = (uchar)*str++;
+        dst[1] = (uchar)str[1];
     case 1:
-        *dst++ = (uchar)*str++;
+        dst[0] = (uchar)str[0];
     }
 }
 
