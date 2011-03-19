@@ -1963,6 +1963,95 @@ int fromUtf8_qt47_stateless(ushort *dst, const char *chars, int len)
     return qch - dst;
 }
 
+static inline uint utf8_multibyte_to_ucs4(const char *&chars, qptrdiff &counter, int &len)
+{
+    uchar ch = chars[counter];
+
+    // is it a leading or a continuation one?
+    if ((ch & 0xc0) == 0x80) {
+        // continuation character found without the leading
+        return QChar::ReplacementCharacter;
+    }
+
+    if ((ch & 0xe0) == 0xc0) {
+        // two-byte UTF-8 sequence
+        if (counter + 1 == len)
+            return QChar::ReplacementCharacter;
+
+        uchar ch2 = chars[counter + 1];
+        if ((ch2 & 0xc0) != 0x80)
+            return QChar::ReplacementCharacter;
+
+        ushort ucs = (ch & 0x1f);
+        ucs <<= 6;
+        ucs |= (ch2 & 0x3f);
+
+        // dst[counter] will correspond to chars[counter..counter+1], so adjust
+        ++chars;
+        --len;
+        return ucs >= 0x80 ? ucs : QChar::ReplacementCharacter;
+    }
+
+    if ((ch & 0xf0) == 0xe0) {
+        // three-byte UTF-8 sequence
+        if (counter + 2 >= len)
+            return QChar::ReplacementCharacter;
+
+        uchar ch2 = chars[counter + 1];
+        uchar ch3 = chars[counter + 2];
+        if ((ch2 & 0xc0) != 0x80 || (ch3 & 0xc0) != 0x80)
+            return QChar::ReplacementCharacter;
+
+        ushort ucs = (ch & 0x1f) << 12 | (ch2 & 0x3f) << 6 | (ch3 & 0x3f);
+
+        // dst[counter] will correspond to chars[counter..counter+2], so adjust
+        chars += 2;
+        len -= 2;
+        return ucs >= 0x800 ? ucs : QChar::ReplacementCharacter;
+    }
+
+    ++counter;
+    return QChar::ReplacementCharacter;
+}
+
+static inline void extract_utf8_multibyte(ushort *&dst, const char *&chars, qptrdiff &counter, int &len)
+{
+    uint ucs4 = utf8_multibyte_to_ucs4(chars, counter, len);
+    if (uint(ushort(ucs4)) != ucs4) {
+        // needs surrogate pair
+        dst[counter] = QChar::highSurrogate(ucs4);
+        dst[++counter] = QChar::lowSurrogate(ucs4);
+    } else {
+        dst[counter] = ucs4;
+    }
+    ++counter;
+}
+
+int fromUtf8_optimised_for_ascii(ushort *qch, const char *chars, int len)
+{
+    if (len > 3
+        && (uchar)chars[0] == 0xef && (uchar)chars[1] == 0xbb && (uchar)chars[2] == 0xbf) {
+        // starts with a byte order mark
+        chars += 3;
+        len -= 3;
+    }
+
+    qptrdiff counter = 0;
+    ushort *dst = qch;
+    while (counter < len) {
+        uchar ch = chars[counter];
+        if ((ch & 0x80) == 0) {
+            dst[counter] = ch;
+            ++counter;
+            continue;
+        }
+
+        // UTF-8 character found
+        extract_utf8_multibyte(dst, chars, counter, len);
+    }
+    return dst + counter - qch;
+}
+
 void tst_QString::fromUtf8Alternatives_data() const
 {
     QTest::addColumn<FromUtf8Function>("function");
@@ -1971,6 +2060,7 @@ void tst_QString::fromUtf8Alternatives_data() const
     QTest::newRow("latin1-qt4.7") << &fromUtf8_latin1_qt47;
     QTest::newRow("qt-4.7") << &fromUtf8_qt47;
     QTest::newRow("qt-4.7-stateless") << &fromUtf8_qt47_stateless;
+    QTest::newRow("optimised-for-ascii") << &fromUtf8_optimised_for_ascii;
 }
 
 extern StringData fromUtf8Data;
@@ -2004,10 +2094,12 @@ static void fromUtf8Alternatives_internal(FromUtf8Function function, QString &ds
             int utf8len = (function)(&dst.data()->unicode() + 8, src, len);
 
             QString expected = QString::fromUtf8(src, len);
-            QCOMPARE(utf8len, expected.length());
+            QString final = dst.mid(8, expected.length());
+            if (final != expected || utf8len != expected.length())
+                qDebug() << i << entries[i].offset1 << final << expected;
 
-            QString final = dst.mid(8, utf8len);
             QCOMPARE(final, expected);
+            QCOMPARE(utf8len, expected.length());
 
             QString zeroes(8, QChar('x'));
             QCOMPARE(dst.left(8), zeroes);
