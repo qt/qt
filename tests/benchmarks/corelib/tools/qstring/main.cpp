@@ -2052,6 +2052,58 @@ int fromUtf8_optimised_for_ascii(ushort *qch, const char *chars, int len)
     return dst + counter - qch;
 }
 
+int fromUtf8_sse2_optimised_for_ascii(ushort *qch, const char *chars, int len)
+{
+    if (len > 3
+        && (uchar)chars[0] == 0xef && (uchar)chars[1] == 0xbb && (uchar)chars[2] == 0xbf) {
+        // starts with a byte order mark
+        chars += 3;
+        len -= 3;
+    }
+
+    qptrdiff counter = 0;
+    ushort *dst = qch;
+
+    len -= 16;
+    const __m128i nullMask = _mm_set1_epi32(0);
+    while (counter < len) {
+        const __m128i chunk = _mm_loadu_si128((__m128i*)(chars + counter)); // load
+
+        // unpack the first 8 bytes, padding with zeros
+        const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + counter), firstHalf); // store
+
+        // unpack the last 8 bytes, padding with zeros
+        const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + counter + 8), secondHalf); // store
+
+        ushort highbytes = _mm_movemask_epi8(chunk);
+        if (!highbytes) {
+            counter += 16;
+            continue;
+        }
+
+        // UTF-8 character found
+        // which one?
+        counter += bsf_nonzero(highbytes);
+        extract_utf8_multibyte(dst, chars, counter, len);
+    }
+    len += 16;
+
+    while (counter < len) {
+        uchar ch = chars[counter];
+        if ((ch & 0x80) == 0) {
+            dst[counter] = ch;
+            ++counter;
+            continue;
+        }
+
+        // UTF-8 character found
+        extract_utf8_multibyte(dst, chars, counter, len);
+    }
+    return dst + counter - qch;
+}
+
 void tst_QString::fromUtf8Alternatives_data() const
 {
     QTest::addColumn<FromUtf8Function>("function");
@@ -2060,7 +2112,8 @@ void tst_QString::fromUtf8Alternatives_data() const
     QTest::newRow("latin1-qt4.7") << &fromUtf8_latin1_qt47;
     QTest::newRow("qt-4.7") << &fromUtf8_qt47;
     QTest::newRow("qt-4.7-stateless") << &fromUtf8_qt47_stateless;
-    QTest::newRow("optimised-for-ascii") << &fromUtf8_optimised_for_ascii;
+    QTest::newRow("optimized-for-ascii") << &fromUtf8_optimised_for_ascii;
+    QTest::newRow("sse2-optimized-for-ascii") << &fromUtf8_sse2_optimised_for_ascii;
 }
 
 extern StringData fromUtf8Data;
