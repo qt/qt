@@ -1865,6 +1865,104 @@ int fromUtf8_qt47(ushort *dst, const char *chars, int len)
     return qch - dst;
 }
 
+int fromUtf8_qt47_stateless(ushort *dst, const char *chars, int len)
+{
+    // This is the same code as above, but for stateless UTF-8 conversion
+    // no other improvements
+    bool headerdone = false;
+    const ushort replacement = QChar::ReplacementCharacter;
+    int need = 0;
+    int error = -1;
+    uint uc = 0;
+    uint min_uc = 0;
+
+    if (len > 3
+        && (uchar)chars[0] == 0xef && (uchar)chars[1] == 0xbb && (uchar)chars[2] == 0xbf) {
+        // starts with a byte order mark
+        chars += 3;
+        len -= 3;
+    }
+
+    // QString result(need + len + 1, Qt::Uninitialized); // worst case
+    // ushort *qch = (ushort *)result.unicode();
+    ushort *qch = dst;
+    uchar ch;
+    int invalid = 0;
+
+    for (int i = 0; i < len; ++i) {
+        ch = chars[i];
+        if (need) {
+            if ((ch&0xc0) == 0x80) {
+                uc = (uc << 6) | (ch & 0x3f);
+                --need;
+                if (!need) {
+                    // utf-8 bom composes into 0xfeff code point
+                    bool nonCharacter;
+                    if (!headerdone && uc == 0xfeff) {
+                        // don't do anything, just skip the BOM
+                    } else if (!(nonCharacter = isUnicodeNonCharacter(uc)) && uc > 0xffff && uc < 0x110000) {
+                        // surrogate pair
+                        //Q_ASSERT((qch - (ushort*)result.unicode()) + 2 < result.length());
+                        *qch++ = QChar::highSurrogate(uc);
+                        *qch++ = QChar::lowSurrogate(uc);
+                    } else if ((uc < min_uc) || (uc >= 0xd800 && uc <= 0xdfff) || nonCharacter || uc >= 0x110000) {
+                        // error: overlong sequence, UTF16 surrogate or non-character
+                        *qch++ = replacement;
+                        ++invalid;
+                    } else {
+                        *qch++ = uc;
+                    }
+                    headerdone = true;
+                }
+            } else {
+                // error
+                i = error;
+                *qch++ = replacement;
+                ++invalid;
+                need = 0;
+                headerdone = true;
+            }
+        } else {
+            if (ch < 128) {
+                *qch++ = ushort(ch);
+                headerdone = true;
+            } else if ((ch & 0xe0) == 0xc0) {
+                uc = ch & 0x1f;
+                need = 1;
+                error = i;
+                min_uc = 0x80;
+                headerdone = true;
+            } else if ((ch & 0xf0) == 0xe0) {
+                uc = ch & 0x0f;
+                need = 2;
+                error = i;
+                min_uc = 0x800;
+            } else if ((ch&0xf8) == 0xf0) {
+                uc = ch & 0x07;
+                need = 3;
+                error = i;
+                min_uc = 0x10000;
+                headerdone = true;
+            } else {
+                // error
+                *qch++ = replacement;
+                ++invalid;
+                headerdone = true;
+            }
+        }
+    }
+    if (need > 0) {
+        // unterminated UTF sequence
+        for (int i = error; i < len; ++i) {
+            *qch++ = replacement;
+            ++invalid;
+        }
+    }
+    //result.truncate(qch - (ushort *)result.unicode());
+    //return result;
+    return qch - dst;
+}
+
 void tst_QString::fromUtf8Alternatives_data() const
 {
     QTest::addColumn<FromUtf8Function>("function");
@@ -1872,6 +1970,7 @@ void tst_QString::fromUtf8Alternatives_data() const
     QTest::newRow("latin1-best") << &fromUtf8_latin1best;
     QTest::newRow("latin1-qt4.7") << &fromUtf8_latin1_qt47;
     QTest::newRow("qt-4.7") << &fromUtf8_qt47;
+    QTest::newRow("qt-4.7-stateless") << &fromUtf8_qt47_stateless;
 }
 
 extern StringData fromUtf8Data;
