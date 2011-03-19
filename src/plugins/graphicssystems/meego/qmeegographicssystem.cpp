@@ -59,6 +59,8 @@
 #include "qmeegographicssystem.h"
 #include "qmeegoextensions.h"
 
+#include <QTimer>
+
 bool QMeeGoGraphicsSystem::surfaceWasCreated = false;
 
 QHash <Qt::HANDLE, QPixmap*> QMeeGoGraphicsSystem::liveTexturePixmaps;
@@ -85,8 +87,12 @@ public:
     void addWidget(QWidget *widget);
     bool eventFilter(QObject *, QEvent *);
 
+    void handleMapNotify();
+
 private slots:
     void removeWidget(QObject *object);
+    void switchToRaster();
+    void switchToMeeGo();
 
 private:
     int visibleWidgets() const;
@@ -95,22 +101,46 @@ private:
     QList<QWidget *> m_widgets;
 };
 
+typedef bool(*QX11FilterFunction)(XEvent *event);
+Q_GUI_EXPORT void qt_installX11EventFilter(QX11FilterFunction func);
+
+static bool x11EventFilter(XEvent *event);
+
 QMeeGoGraphicsSystemSwitchHandler::QMeeGoGraphicsSystemSwitchHandler()
 {
+    qt_installX11EventFilter(x11EventFilter);
 }
 
 void QMeeGoGraphicsSystemSwitchHandler::addWidget(QWidget *widget)
 {
-    if (!m_widgets.contains(widget)) {
+    if (widget != qt_gl_share_widget() && !m_widgets.contains(widget)) {
         widget->installEventFilter(this);
         connect(widget, SIGNAL(destroyed(QObject *)), this, SLOT(removeWidget(QObject *)));
         m_widgets << widget;
     }
 }
 
+void QMeeGoGraphicsSystemSwitchHandler::handleMapNotify()
+{
+    if (m_widgets.isEmpty())
+        QTimer::singleShot(0, this, SLOT(switchToMeeGo()));
+}
+
 void QMeeGoGraphicsSystemSwitchHandler::removeWidget(QObject *object)
 {
     m_widgets.removeOne(static_cast<QWidget *>(object));
+    if (m_widgets.isEmpty())
+        QTimer::singleShot(0, this, SLOT(switchToRaster()));
+}
+
+void QMeeGoGraphicsSystemSwitchHandler::switchToRaster()
+{
+    QMeeGoGraphicsSystem::switchToRaster();
+}
+
+void QMeeGoGraphicsSystemSwitchHandler::switchToMeeGo()
+{
+    QMeeGoGraphicsSystem::switchToMeeGo();
 }
 
 int QMeeGoGraphicsSystemSwitchHandler::visibleWidgets() const
@@ -147,6 +177,13 @@ bool QMeeGoGraphicsSystemSwitchHandler::eventFilter(QObject *object, QEvent *eve
 }
 
 Q_GLOBAL_STATIC(QMeeGoGraphicsSystemSwitchHandler, switch_handler)
+
+bool x11EventFilter(XEvent *event)
+{
+    if (event->type == MapNotify)
+        switch_handler()->handleMapNotify();
+    return false;
+}
 
 QWindowSurface* QMeeGoGraphicsSystem::createWindowSurface(QWidget *widget) const
 {
