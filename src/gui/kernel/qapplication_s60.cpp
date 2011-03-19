@@ -1132,7 +1132,8 @@ void QSymbianControl::Draw(const TRect& controlRect) const
             // Do nothing
             break;
         case QWExtra::Blit:
-            if (qwidget->d_func()->isOpaque)
+        case QWExtra::BlitWriteAlpha:
+            if (qwidget->d_func()->isOpaque || nativePaintMode == QWExtra::BlitWriteAlpha)
                 gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
             gc.BitBlt(controlRect.iTl, bitmap, backingStoreRect);
             break;
