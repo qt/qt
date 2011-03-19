@@ -1517,7 +1517,8 @@ void fromLatin1_sse2_improved(ushort *dst, const char *str, int size)
 {
     const __m128i nullMask = _mm_set1_epi32(0);
     qptrdiff counter = 0;
-    while (size - counter >= 16) {
+    size -= 16;
+    while (size >= counter) {
         const __m128i chunk = _mm_loadu_si128((__m128i*)(str + counter)); // load
 
         // unpack the first 8 bytes, padding with zeros
@@ -1530,6 +1531,7 @@ void fromLatin1_sse2_improved(ushort *dst, const char *str, int size)
 
         counter += 16;
     }
+    size += 16;
     fromLatin1_epilog(dst + counter, str + counter, size - counter);
 }
 
@@ -1584,7 +1586,7 @@ void fromLatin1_prolog_sse2_overcommit(ushort *dst, const char *str, int)
 template<FromLatin1Function prologFunction>
 void fromLatin1_sse2_withprolog(ushort *dst, const char *str, int size)
 {
-    // same as the Qt 4.7 code, but we attempt to align at the prolog
+    // same as the improved code, but we attempt to align at the prolog
     // therefore, we issue aligned stores
 
     if (size >= 16) {
@@ -1599,43 +1601,45 @@ void fromLatin1_sse2_withprolog(ushort *dst, const char *str, int size)
     }
 
     const __m128i nullMask = _mm_set1_epi32(0);
-    while (size >= 16) {
-        const __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
+    qptrdiff counter = 0;
+    size -= 16;
+    while (size >= counter) {
+        const __m128i chunk = _mm_loadu_si128((__m128i*)(str + counter)); // load
 
         // unpack the first 8 bytes, padding with zeros
         const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
-        _mm_store_si128((__m128i*)dst, firstHalf); // store
+        _mm_store_si128((__m128i*)(dst + counter), firstHalf); // store
 
         // unpack the last 8 bytes, padding with zeros
         const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
-        _mm_store_si128((__m128i*)(dst + 8), secondHalf); // store
+        _mm_store_si128((__m128i*)(dst + counter + 8), secondHalf); // store
 
-        str += 16;
-        dst += 16;
-        size -= 16;
+        counter += 16;
     }
-    fromLatin1_epilog(dst, str, size);
+    size += 16;
+    fromLatin1_epilog(dst + counter, str + counter, size - counter);
 }
 
 void fromLatin1_sse4_pmovzxbw(ushort *dst, const char *str, int size)
 {
-    while (size >= 16) {
-        __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
+    qptrdiff counter = 0;
+    size -= 16;
+    while (size >= counter) {
+        __m128i chunk = _mm_loadu_si128((__m128i*)(str + counter)); // load
 
         // unpack the first 8 bytes, padding with zeros
         const __m128i firstHalf = _mm_cvtepu8_epi16(chunk);
-        _mm_storeu_si128((__m128i*)dst, firstHalf); // store
+        _mm_storeu_si128((__m128i*)(dst + counter), firstHalf); // store
 
         // unpack the last 8 bytes, padding with zeros
         chunk = _mm_srli_si128(chunk, 8);
         const __m128i secondHalf = _mm_cvtepu8_epi16(chunk);
-        _mm_storeu_si128((__m128i*)(dst + 8), secondHalf); // store
+        _mm_storeu_si128((__m128i*)(dst + counter + 8), secondHalf); // store
 
-        str += 16;
-        dst += 16;
-        size -= 16;
+        counter += 16;
     }
-    fromLatin1_epilog(dst, str, size);
+    size += 16;
+    fromLatin1_epilog(dst + counter, str + counter, size - counter);
 }
 
 void fromLatin1_prolog_sse4_overcommit(ushort *dst, const char *str, int)
