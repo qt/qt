@@ -1516,22 +1516,21 @@ static inline void fromLatin1_epilog(ushort *dst, const char *str, int size)
 void fromLatin1_sse2_improved(ushort *dst, const char *str, int size)
 {
     const __m128i nullMask = _mm_set1_epi32(0);
-    while (size >= 16) {
-        const __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
+    qptrdiff counter = 0;
+    while (size - counter >= 16) {
+        const __m128i chunk = _mm_loadu_si128((__m128i*)(str + counter)); // load
 
         // unpack the first 8 bytes, padding with zeros
         const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
-        _mm_storeu_si128((__m128i*)dst, firstHalf); // store
+        _mm_storeu_si128((__m128i*)(dst + counter), firstHalf); // store
 
         // unpack the last 8 bytes, padding with zeros
         const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
-        _mm_storeu_si128((__m128i*)(dst + 8), secondHalf); // store
+        _mm_storeu_si128((__m128i*)(dst + counter + 8), secondHalf); // store
 
-        str += 16;
-        dst += 16;
-        size -= 16;
+        counter += 16;
     }
-    fromLatin1_epilog(dst, str, size);
+    fromLatin1_epilog(dst + counter, str + counter, size - counter);
 }
 
 void fromLatin1_prolog_unrolled(ushort *dst, const char *str, int size)
