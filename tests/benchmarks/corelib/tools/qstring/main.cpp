@@ -2007,7 +2007,29 @@ static inline uint utf8_multibyte_to_ucs4(const char *&chars, qptrdiff &counter,
         // dst[counter] will correspond to chars[counter..counter+2], so adjust
         chars += 2;
         len -= 2;
-        return ucs >= 0x800 ? ucs : QChar::ReplacementCharacter;
+        return ucs < 0x800 || isUnicodeNonCharacter(ucs) || (ucs >= 0xd800 && ucs <= 0xdfff) ?
+            QChar::ReplacementCharacter : ucs;
+    }
+
+    if ((ch & 0xf8) == 0xf0) {
+        // four-byte UTF-8 sequence
+        // will require an UTF-16 surrogate pair
+        if (counter + 3 >= len)
+            return QChar::ReplacementCharacter;
+
+        uchar ch2 = chars[counter + 1];
+        uchar ch3 = chars[counter + 2];
+        uchar ch4 = chars[counter + 3];
+        if ((ch2 & 0xc0) != 0x80 || (ch3 & 0xc0) != 0x80 || (ch4 & 0xc0) != 0x80)
+            return QChar::ReplacementCharacter;
+
+        ushort ucs = (ch & 0x1f) << 18 | (ch2 & 0x3f) << 12
+                     | (ch3 & 0x3f) << 6 | (ch4 & 0x3f);
+
+        // dst[counter] will correspond to chars[counter..counter+2], so adjust
+        chars += 3;
+        len -= 3;
+        return ucs >= 0x10000 && ucs < 0x110000 && !isUnicodeNonCharacter(ucs) ? ucs : QChar::ReplacementCharacter;
     }
 
     ++counter;
