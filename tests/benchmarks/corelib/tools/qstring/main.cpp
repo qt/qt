@@ -2068,19 +2068,21 @@ int fromUtf8_sse2_optimised_for_ascii(ushort *qch, const char *chars, int len)
     const __m128i nullMask = _mm_set1_epi32(0);
     while (counter < len) {
         const __m128i chunk = _mm_loadu_si128((__m128i*)(chars + counter)); // load
+        ushort highbytes = _mm_movemask_epi8(chunk);
 
         // unpack the first 8 bytes, padding with zeros
         const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
         _mm_storeu_si128((__m128i*)(dst + counter), firstHalf); // store
 
-        // unpack the last 8 bytes, padding with zeros
-        const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
-        _mm_storeu_si128((__m128i*)(dst + counter + 8), secondHalf); // store
+        if (!uchar(highbytes)) {
+            // unpack the last 8 bytes, padding with zeros
+            const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+            _mm_storeu_si128((__m128i*)(dst + counter + 8), secondHalf); // store
 
-        ushort highbytes = _mm_movemask_epi8(chunk);
-        if (!highbytes) {
-            counter += 16;
-            continue;
+            if (!highbytes) {
+                counter += 16;
+                continue;
+            }
         }
 
         // UTF-8 character found
