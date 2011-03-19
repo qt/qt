@@ -1963,24 +1963,31 @@ int fromUtf8_qt47_stateless(ushort *dst, const char *chars, int len)
     return qch - dst;
 }
 
-static inline uint utf8_multibyte_to_ucs4(const char *&chars, qptrdiff &counter, int &len)
+template <bool trusted>
+static inline void extract_utf8_multibyte(ushort *&dst, const char *&chars, qptrdiff &counter, int &len)
 {
     uchar ch = chars[counter];
 
     // is it a leading or a continuation one?
-    if ((ch & 0xc0) == 0x80) {
+    if (!trusted && (ch & 0xc0) == 0x80) {
         // continuation character found without the leading
-        return QChar::ReplacementCharacter;
+        dst[counter++] = QChar::ReplacementCharacter;
+        return;
     }
 
     if ((ch & 0xe0) == 0xc0) {
         // two-byte UTF-8 sequence
-        if (counter + 1 == len)
-            return QChar::ReplacementCharacter;
+        if (!trusted && counter + 1 == len) {
+            dst[counter++] = QChar::ReplacementCharacter;
+            return;
+        }
 
         uchar ch2 = chars[counter + 1];
-        if ((ch2 & 0xc0) != 0x80)
-            return QChar::ReplacementCharacter;
+        if (!trusted)
+            if ((ch2 & 0xc0) != 0x80) {
+                dst[counter++] = QChar::ReplacementCharacter;
+                return;
+            }
 
         ushort ucs = (ch & 0x1f);
         ucs <<= 6;
@@ -1989,63 +1996,76 @@ static inline uint utf8_multibyte_to_ucs4(const char *&chars, qptrdiff &counter,
         // dst[counter] will correspond to chars[counter..counter+1], so adjust
         ++chars;
         --len;
-        return ucs >= 0x80 ? ucs : QChar::ReplacementCharacter;
+        if (trusted || ucs >= 0x80)
+            dst[counter] = ucs;
+        else
+            dst[counter] = QChar::ReplacementCharacter;
+        ++counter;
+        return;
     }
 
     if ((ch & 0xf0) == 0xe0) {
         // three-byte UTF-8 sequence
-        if (counter + 2 >= len)
-            return QChar::ReplacementCharacter;
+        if (!trusted && counter + 2 >= len) {
+            dst[counter++] = QChar::ReplacementCharacter;
+            return;
+        }
 
         uchar ch2 = chars[counter + 1];
         uchar ch3 = chars[counter + 2];
-        if ((ch2 & 0xc0) != 0x80 || (ch3 & 0xc0) != 0x80)
-            return QChar::ReplacementCharacter;
+        if (!trusted)
+            if ((ch2 & 0xc0) != 0x80 || (ch3 & 0xc0) != 0x80) {
+                dst[counter++] = QChar::ReplacementCharacter;
+                return;
+            }
 
         ushort ucs = (ch & 0x1f) << 12 | (ch2 & 0x3f) << 6 | (ch3 & 0x3f);
 
         // dst[counter] will correspond to chars[counter..counter+2], so adjust
         chars += 2;
         len -= 2;
-        return ucs < 0x800 || isUnicodeNonCharacter(ucs) || (ucs >= 0xd800 && ucs <= 0xdfff) ?
-            QChar::ReplacementCharacter : ucs;
+        if (!trusted &&
+            (ucs < 0x800 || isUnicodeNonCharacter(ucs) || (ucs >= 0xd800 && ucs <= 0xdfff)))
+            dst[counter] = QChar::ReplacementCharacter;
+        else
+            dst[counter] = ucs;
+        ++counter;
+        return;
     }
 
     if ((ch & 0xf8) == 0xf0) {
         // four-byte UTF-8 sequence
         // will require an UTF-16 surrogate pair
-        if (counter + 3 >= len)
-            return QChar::ReplacementCharacter;
+        if (!trusted && counter + 3 >= len) {
+            dst[counter++] = QChar::ReplacementCharacter;
+            return;
+        }
 
         uchar ch2 = chars[counter + 1];
         uchar ch3 = chars[counter + 2];
         uchar ch4 = chars[counter + 3];
-        if ((ch2 & 0xc0) != 0x80 || (ch3 & 0xc0) != 0x80 || (ch4 & 0xc0) != 0x80)
-            return QChar::ReplacementCharacter;
+        if (!trusted)
+            if ((ch2 & 0xc0) != 0x80 || (ch3 & 0xc0) != 0x80 || (ch4 & 0xc0) != 0x80) {
+                dst[counter++] = QChar::ReplacementCharacter;
+                return;
+            }
 
-        ushort ucs = (ch & 0x1f) << 18 | (ch2 & 0x3f) << 12
-                     | (ch3 & 0x3f) << 6 | (ch4 & 0x3f);
+        uint ucs = (ch & 0x1f) << 18 | (ch2 & 0x3f) << 12
+                   | (ch3 & 0x3f) << 6 | (ch4 & 0x3f);
 
         // dst[counter] will correspond to chars[counter..counter+2], so adjust
         chars += 3;
         len -= 3;
-        return ucs >= 0x10000 && ucs < 0x110000 && !isUnicodeNonCharacter(ucs) ? ucs : QChar::ReplacementCharacter;
+        if (trusted || (ucs >= 0x10000 && ucs < 0x110000 && !isUnicodeNonCharacter(ucs))) {
+            dst[counter + 0] = QChar::highSurrogate(ucs);
+            dst[counter + 1] = QChar::lowSurrogate(ucs);
+            counter += 2;
+        } else {
+            dst[counter++] = QChar::ReplacementCharacter;
+        }
+        return;
     }
 
-    ++counter;
-    return QChar::ReplacementCharacter;
-}
-
-static inline void extract_utf8_multibyte(ushort *&dst, const char *&chars, qptrdiff &counter, int &len)
-{
-    uint ucs4 = utf8_multibyte_to_ucs4(chars, counter, len);
-    if (uint(ushort(ucs4)) != ucs4) {
-        // needs surrogate pair
-        dst[counter] = QChar::highSurrogate(ucs4);
-        dst[++counter] = QChar::lowSurrogate(ucs4);
-    } else {
-        dst[counter] = ucs4;
-    }
     ++counter;
 }
 
@@ -2069,7 +2089,7 @@ int fromUtf8_optimised_for_ascii(ushort *qch, const char *chars, int len)
         }
 
         // UTF-8 character found
-        extract_utf8_multibyte(dst, chars, counter, len);
+        extract_utf8_multibyte<false>(dst, chars, counter, len);
     }
     return dst + counter - qch;
 }
@@ -2110,7 +2130,7 @@ int fromUtf8_sse2_optimised_for_ascii(ushort *qch, const char *chars, int len)
         // UTF-8 character found
         // which one?
         counter += bsf_nonzero(highbytes);
-        extract_utf8_multibyte(dst, chars, counter, len);
+        extract_utf8_multibyte<false>(dst, chars, counter, len);
     }
     len += 16;
 
@@ -2123,7 +2143,7 @@ int fromUtf8_sse2_optimised_for_ascii(ushort *qch, const char *chars, int len)
         }
 
         // UTF-8 character found
-        extract_utf8_multibyte(dst, chars, counter, len);
+        extract_utf8_multibyte<false>(dst, chars, counter, len);
     }
     return dst + counter - qch;
 }
