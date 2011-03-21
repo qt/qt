@@ -426,7 +426,8 @@ QGLWindowSurface::~QGLWindowSurface()
         if (!qt_gl_share_widget()->context()->isSharing())
             qt_destroy_gl_share_widget();
     }
-#endif
+#endif // QGL_USE_TEXTURE_POOL
+#endif // Q_WS_QPA
 }
 
 void QGLWindowSurface::deleted(QObject *object)
