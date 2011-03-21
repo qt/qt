@@ -2111,14 +2111,10 @@ QList<Qt::DayOfWeek> QLocale::weekdays() const
     QList<Qt::DayOfWeek> weekdays;
     quint16 weekendStart = d()->m_weekend_start;
     quint16 weekendEnd = d()->m_weekend_end;
-    for(int day = Qt::Monday; day <= Qt::Sunday; day++) {
-        if(weekendEnd > weekendStart) {
-            if(day < weekendStart || day > weekendEnd)
+    for (int day = Qt::Monday; day <= Qt::Sunday; day++) {
+        if ((weekendEnd >= weekendStart && (day < weekendStart || day > weekendEnd)) ||
+            (weekendEnd < weekendStart && (day > weekendEnd && day < weekendStart)))
                 weekdays << static_cast<Qt::DayOfWeek>(day);
-        } else {
-            if(day > weekendEnd && day < weekendStart)
-                weekdays << static_cast<Qt::DayOfWeek>(day);
-        }
     }
     return weekdays;
 }

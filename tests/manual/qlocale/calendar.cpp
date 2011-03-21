@@ -112,14 +112,8 @@ void CalendarWidget::maximumDateChanged(const QDate &date)
 }
 
 bool CalendarWidget::isWeekendDay(Qt::DayOfWeek day) {
-    Qt::DayOfWeek start = calendar->locale().weekendStart();
-    Qt::DayOfWeek end = calendar->locale().weekendEnd();
-
-    if (start <= day && day <= end)
-        return true;
-    if (start > end && (day >= start || day <= end))
-        return true;
-    return false;
+    QList<Qt::DayOfWeek> week = calendar->locale().weekdays();
+    return !week.contains(day);
 }
 
 void CalendarWidget::updateWeekendDays() {
