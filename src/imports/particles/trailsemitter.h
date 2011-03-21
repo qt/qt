@@ -13,17 +13,12 @@ class TrailsEmitter : public ParticleEmitter
 {
     Q_OBJECT
 
-    //XXXCurrently these are added to item props
-    Q_PROPERTY(qreal emitterX READ emitterX WRITE setEmitterX NOTIFY emitterXChanged)
-    Q_PROPERTY(qreal emitterY READ emitterY WRITE setEmitterY NOTIFY emitterYChanged)
-    Q_PROPERTY(qreal emitterXVariation READ emitterXVariation WRITE setEmitterXVariation NOTIFY emitterXVariationChanged)
-    Q_PROPERTY(qreal emitterYVariation READ emitterYVariation WRITE setEmitterYVariation NOTIFY emitterYVariationChanged)
-
     Q_PROPERTY(qreal speedFromMovement READ speedFromMovement WRITE setSpeedFromMovement NOTIFY speedFromMovementChanged)
     Q_PROPERTY(qreal particleSize READ particleSize WRITE setParticleSize NOTIFY particleSizeChanged)
     Q_PROPERTY(qreal particleEndSize READ particleEndSize WRITE setParticleEndSize NOTIFY particleEndSizeChanged)
     Q_PROPERTY(qreal particleSizeVariation READ particleSizeVariation WRITE setParticleSizeVariation NOTIFY particleSizeVariationChanged)
 
+    //TODO: Replace with QVector2D properties (so we can also construct from Angle)
     Q_PROPERTY(qreal xSpeed READ xSpeed WRITE setXSpeed NOTIFY xSpeedChanged)
     Q_PROPERTY(qreal ySpeed READ ySpeed WRITE setYSpeed NOTIFY ySpeedChanged)
     Q_PROPERTY(qreal xSpeedVariation READ xSpeedVariation WRITE setXSpeedVariation NOTIFY xSpeedVariationChanged)
@@ -48,19 +43,6 @@ public:
 
     qreal particleSizeVariation() const { return m_particle_size_variation; }
     void setParticleSizeVariation(qreal var);
-
-
-    qreal emitterX() const { return m_emitter_x; }
-    void setEmitterX(qreal x);
-
-    qreal emitterY() const { return m_emitter_y; }
-    void setEmitterY(qreal y);
-
-    qreal emitterXVariation() const { return m_emitter_x_variation; }
-    void setEmitterXVariation(qreal var);
-
-    qreal emitterYVariation() const { return m_emitter_y_variation; }
-    void setEmitterYVariation(qreal var);
 
     qreal xSpeed() const { return m_x_speed; }
     void setXSpeed(qreal x);
@@ -99,12 +81,6 @@ signals:
     void particleEndSizeChanged();
     void particleSizeVariationChanged();
 
-    void emitterXChanged();
-    void emitterYChanged();
-    void emitterXVariationChanged();
-    void emitterYVariationChanged();
-    void emittingChanged();
-
     void xSpeedChanged();
     void ySpeedChanged();
     void xSpeedVariationChanged();
@@ -126,11 +102,6 @@ private:
     qreal m_particle_size;
     qreal m_particle_end_size;
     qreal m_particle_size_variation;
-
-    qreal m_emitter_x;
-    qreal m_emitter_y;
-    qreal m_emitter_x_variation;
-    qreal m_emitter_y_variation;
 
     qreal m_x_speed;
     qreal m_y_speed;

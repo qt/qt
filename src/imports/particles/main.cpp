@@ -28,6 +28,9 @@
 //#include "pairedparticle.h"
 #include "spriteimage.h"
 #include "followemitter.h"
+#include "directedemitter.h"
+#include "particleextruder.h"
+#include "ellipseextruder.h"
 //#include "followaffector.h"
 #include "V1/qdeclarativeparticles_p.h"
 
@@ -53,8 +56,11 @@ void ParticlesPlugin::registerTypes(const char *uri)
 
     qmlRegisterType<ParticleEmitter>(uri, 2, 0, "ParticleEmitter");
     qmlRegisterType<TrailsEmitter>(uri, 2, 0, "TrailEmitter");
+    qmlRegisterType<DirectedEmitter>(uri, 2, 0, "DirectedEmitter");
 
     qmlRegisterType<FollowEmitter>(uri, 2, 0, "FollowEmitter");
+    qmlRegisterType<ParticleExtruder>(uri, 2, 0, "Box");
+    qmlRegisterType<EllipseExtruder>(uri, 2, 0, "Ellipse");
 
     qmlRegisterType<ParticleAffector>(uri, 2, 0, "ParticleAffector");
     qmlRegisterType<WanderAffector>(uri, 2, 0, "Wander");

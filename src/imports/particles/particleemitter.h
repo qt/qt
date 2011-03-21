@@ -4,6 +4,7 @@
 #include <QSGItem>
 #include <QDebug>
 #include "particlesystem.h"
+#include "particleextruder.h"
 
 class ParticleEmitter : public QSGItem
 {
@@ -11,6 +12,7 @@ class ParticleEmitter : public QSGItem
     //###currently goes in emitters OR sets system. Pick one?
     Q_PROPERTY(ParticleSystem* system READ system WRITE setSystem NOTIFY systemChanged)
     Q_PROPERTY(QString particle READ particle WRITE setParticle NOTIFY particleChanged)
+    Q_PROPERTY(ParticleExtruder* extruder READ extruder WRITE setExtruder NOTIFY extruderChanged)
     Q_PROPERTY(bool emitting READ emitting WRITE setEmitting NOTIFY emittingChanged)
 
     Q_PROPERTY(qreal particlesPerSecond READ particlesPerSecond WRITE setParticlesPerSecond NOTIFY particlesPerSecondChanged)
@@ -20,6 +22,7 @@ class ParticleEmitter : public QSGItem
 
 public:
     explicit ParticleEmitter(QSGItem *parent = 0);
+    virtual ~ParticleEmitter();
     virtual void emitWindow(int timeStamp);
 
     bool emitting() const
@@ -62,6 +65,8 @@ signals:
     void particleChanged(QString arg);
 
     void particleDurationVariationChanged(int arg);
+
+    void extruderChanged(ParticleExtruder* arg);
 
 public slots:
 
@@ -107,15 +112,31 @@ public slots:
                emit particleDurationVariationChanged(arg);
            }
        }
+       void setExtruder(ParticleExtruder* arg)
+{
+    if (m_extruder != arg) {
+    m_extruder = arg;
+emit extruderChanged(arg);
+}
+}
+
 public:
-       virtual void reset(){;}
+virtual void reset(){;}
+ParticleExtruder* extruder() const
+{
+    return m_extruder;
+}
+
 protected:
-    ParticleSystem* m_system;
     qreal m_particlesPerSecond;
     int m_particleDuration;
     int m_particleDurationVariation;
     bool m_emitting;
+    ParticleSystem* m_system;
     QString m_particle;
+    ParticleExtruder* m_extruder;
+    ParticleExtruder* m_defaultExtruder;
+    ParticleExtruder* effectiveExtruder();
 private:
 };
 
