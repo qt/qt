@@ -292,8 +292,6 @@ void QSymbianHostResolver::requestHostLookup()
 
         //self complete so that RunL can inform manager without causing recursion
         iState = EError;
-        iStatus = KRequestPending;
-        SetActive();
         TRequestStatus* stat = &iStatus;
         User::RequestComplete(stat, err);
     }
