@@ -70,6 +70,7 @@
 #include <QCache>
 
 #include <QNetworkSession>
+#include <QSharedPointer>
 
 #ifdef Q_OS_SYMBIAN
 // Symbian Headers
@@ -117,6 +118,10 @@ public:
           lookupId(0)
     {
     }
+#ifndef QT_NO_BEARERMANAGEMENT
+    //not a public API yet
+    static QHostInfo fromName(const QString &hostName, QSharedPointer<QNetworkSession> networkSession);
+#endif
 
     QHostInfo::HostInfoError err;
     QString errorStr;

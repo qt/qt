@@ -367,6 +367,7 @@
 #include "qabstractsocket_p.h"
 
 #include "private/qhostinfo_p.h"
+#include "private/qnetworksession_p.h"
 
 #include <qabstracteventdispatcher.h>
 #include <qhostaddress.h>
@@ -1786,6 +1787,14 @@ bool QAbstractSocket::waitForConnected(int msecs)
 #endif
         QHostInfo::abortHostLookup(d->hostLookupId);
         d->hostLookupId = -1;
+#ifndef QT_NO_BEARERMANAGEMENT
+        QSharedPointer<QNetworkSession> networkSession;
+        QVariant v(property("_q_networksession"));
+        if (v.isValid()) {
+            networkSession = qvariant_cast< QSharedPointer<QNetworkSession> >(v);
+            d->_q_startConnecting(QHostInfoPrivate::fromName(d->hostName, networkSession));
+        } else
+#endif
         d->_q_startConnecting(QHostInfo::fromName(d->hostName));
     }
     if (state() == UnconnectedState)

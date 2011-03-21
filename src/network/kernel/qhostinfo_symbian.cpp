@@ -66,16 +66,11 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetw
     RHostResolver hostResolver;
 
 
-    // TODO - check if networkSession is null
-    // RConnection connection = magicalApi(networkSession);
-    // int err = connection.Open(blah, blah);
-    // if (err) {
-    //          do something;
-    // }
-
-    // Will return both IPv4 and IPv6
-    // TODO: Pass RHostResolver.Open() the global RConnection
-    int err = hostResolver.Open(socketServ, KAfInet, KProtocolInetUdp);
+    int err;
+    if (networkSession)
+        err = QNetworkSessionPrivate::nativeOpenHostResolver(*networkSession, hostResolver, KAfInet, KProtocolInetUdp);
+    else
+        err = hostResolver.Open(socketServ, KAfInet, KProtocolInetUdp);
     if (err) {
         results.setError(QHostInfo::UnknownError);
         results.setErrorString(QSystemError(err,QSystemError::NativeError).toString());
