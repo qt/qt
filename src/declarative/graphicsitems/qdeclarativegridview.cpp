@@ -2834,11 +2834,9 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
         if (d->currentItem) {
             d->currentItem->index = d->currentIndex;
             d->currentItem->setPosition(d->colPosAt(d->currentIndex), d->rowPosAt(d->currentIndex));
-        } else if (!d->currentIndex || (d->currentIndex < 0 && !d->currentIndexCleared)) {
-            d->updateCurrent(0);
         }
         emit currentIndexChanged();
-    } else if (d->itemCount == 0 && d->currentIndex == -1) {
+    } else if (d->itemCount == 0 && (!d->currentIndex || (d->currentIndex < 0 && !d->currentIndexCleared))) {
         setCurrentIndex(0);
     }
 
@@ -2906,6 +2904,8 @@ void QDeclarativeGridView::itemsRemoved(int modelIndex, int count)
         d->currentIndex = -1;
         if (d->itemCount)
             d->updateCurrent(qMin(modelIndex, d->itemCount-1));
+        else
+            emit currentIndexChanged();
     }
 
     // update visibleIndex

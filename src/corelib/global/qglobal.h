@@ -1685,7 +1685,7 @@ inline void qUnused(T &x) { (void)x; }
 #endif
 
 #ifndef qPrintable
-#  define qPrintable(string) (string).toLocal8Bit().constData()
+#  define qPrintable(string) QString(string).toLocal8Bit().constData()
 #endif
 
 Q_CORE_EXPORT void qDebug(const char *, ...) /* print debug message */
@@ -2720,10 +2720,6 @@ QT_LICENSED_MODULE(DBus)
 #  define QT_NO_SHAREDMEMORY
 // QNX currently doesn't support forking in a thread, so disable QProcess
 #  define QT_NO_PROCESS
-#endif
-
-#ifdef Q_OS_NACL
-#include <QtCore/qnaclunimplemented.h>
 #endif
 
 #if defined (__ELF__)

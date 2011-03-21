@@ -90,6 +90,13 @@ mac:!nacl {
                 kernel/qcore_mac.cpp
 }
 
+nacl {
+    SOURCES += \
+        kernel/qfunctions_nacl.cpp
+    HEADERS += \
+        kernel/qfunctions_nacl.h
+}
+
 unix:!symbian {
         SOURCES += \
                 kernel/qcore_unix.cpp \

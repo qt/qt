@@ -79,6 +79,10 @@
 #include <openssl/x509_vfy.h>
 #include <openssl/dsa.h>
 #include <openssl/rsa.h>
+#include <openssl/crypto.h>
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+#include <openssl/tls1.h>
+#endif
 
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
 typedef _STACK STACK;

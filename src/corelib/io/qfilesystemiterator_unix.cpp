@@ -42,6 +42,8 @@
 #include "qplatformdefs.h"
 #include "qfilesystemiterator_p.h"
 
+#ifndef QT_NO_FILESYSTEMITERATOR
+
 #include <stdlib.h>
 #include <errno.h>
 
@@ -111,3 +113,5 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_FILESYSTEMITERATOR

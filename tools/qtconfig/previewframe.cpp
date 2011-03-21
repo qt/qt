@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "previewframe.h"
+#include "previewwidget.h"
 
 #include <QBoxLayout>
 #include <QPainter>
@@ -47,8 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
-PreviewFrame::PreviewFrame( QWidget *parent, const char *name )
-    : QFrame( parent, name )
+PreviewFrame::PreviewFrame(QWidget *parent)
+    : QFrame(parent)
 {
     setMinimumSize(200, 200);
     setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
@@ -82,23 +83,22 @@ void PreviewFrame::setPreviewVisible(bool visible)
     workspace->viewport()->update();
 }
 
-Workspace::Workspace(PreviewFrame* parent, const char* name)
+Workspace::Workspace(PreviewFrame *parent)
     : QMdiArea(parent)
 {
     previewFrame = parent;
     PreviewWidget *previewWidget = previewFrame->widget();
-    setObjectName(QLatin1String(name));
     QMdiSubWindow *frame = addSubWindow(previewWidget, Qt::Window);
-    frame->move(10,10);
+    frame->move(10, 10);
     frame->show();
 }
 
-void Workspace::paintEvent( QPaintEvent* )
+void Workspace::paintEvent(QPaintEvent *)
 {
-    QPainter p (viewport());
+    QPainter p(viewport());
     p.fillRect(rect(), palette().color(backgroundRole()).dark());
-    p.setPen( QPen( Qt::white ) );
-    p.drawText ( 0, height() / 2,  width(), height(), Qt::AlignHCenter, previewFrame->previewText());
+    p.setPen(QPen(Qt::white));
+    p.drawText(0, height() / 2,  width(), height(), Qt::AlignHCenter, previewFrame->previewText());
 }
 
 QT_END_NAMESPACE

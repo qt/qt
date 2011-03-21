@@ -324,20 +324,20 @@ void QGLWidget::setMouseTracking(bool enable)
 
 bool QGLWidget::event(QEvent *e)
 {
-    Q_D(QGLWidget);
     return QWidget::event(e);
 }
 
 void QGLWidget::resizeEvent(QResizeEvent *e)
 {
     Q_D(QGLWidget);
+
+    QWidget::resizeEvent(e);
     if (!isValid())
         return;
     makeCurrent();
     if (!d->glcx->initialized())
         glInit();
     resizeGL(width(), height());
-    return QWidget::resizeEvent(e);
 }
 
 
