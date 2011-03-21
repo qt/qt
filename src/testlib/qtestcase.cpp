@@ -1384,8 +1384,17 @@ static void qInvokeTestMethodDataEntry(char *slot)
              && (++i < QBenchmarkGlobalData::current->adjustMedianIterationCount()));
 
     if (QBenchmarkTestMethodData::current->isBenchmark()
-        && QBenchmarkTestMethodData::current->resultsAccepted())
-        QTestLog::addBenchmarkResult(qMedian(results));
+        && QBenchmarkTestMethodData::current->resultsAccepted()) {
+        QBenchmarkResult result = qMedian(results);
+
+        QBenchmarkResult *specialResults = QBenchmarkTestMethodData::current->specialResults;
+        if (QTestResult::currentTestData()) {
+            QTest::BenchmarkDataMode benchMode = QTestResult::currentTestData()->benchmarkSpecialData();
+            if (benchMode > QTest::Normal && benchMode < QTest::BenchmarkSpecialCount)
+                specialResults[benchMode] = result;
+        }
+        QTestLog::addBenchmarkResult(result, specialResults);
+    }
 }
 
 /*!
@@ -1452,6 +1461,8 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
                     return false;
                 }
             }
+
+            benchmarkData.clearSpecialResults();
 
             /* For each entry in the data table, do: */
             do {
@@ -2038,10 +2049,15 @@ void QTest::addColumnInternal(int id, const char *name)
 */
 QTestData &QTest::newRow(const char *dataTag)
 {
+    return newRow(dataTag, Normal);
+}
+
+QTestData &QTest::newRow(const char *dataTag, BenchmarkDataMode mode)
+{
     QTestTable *tbl = QTestTable::currentTestTable();
     QTEST_ASSERT_X(tbl, "QTest::addColumn()", "Cannot add testdata outside of a _data slot.");
 
-    return *tbl->newData(dataTag);
+    return *tbl->newData(dataTag, mode);
 }
 
 /*! \fn void QTest::addColumn(const char *name, T *dummy = 0)

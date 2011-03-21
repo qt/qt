@@ -66,10 +66,12 @@ public:
     const char *dataTag() const;
     QTestTable *parent() const;
     int dataCount() const;
+    QTest::BenchmarkDataMode benchmarkSpecialData() const;
 
 private:
     friend class QTestTable;
     QTestData(const char *tag = 0, QTestTable *parent = 0);
+    QTestData(const char *tag, QTest::BenchmarkDataMode mode, QTestTable *parent = 0);
 
     Q_DISABLE_COPY(QTestData)
 

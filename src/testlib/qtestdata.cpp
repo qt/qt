@@ -53,12 +53,13 @@ QT_BEGIN_NAMESPACE
 class QTestDataPrivate
 {
 public:
-    QTestDataPrivate(): tag(0), parent(0), data(0), dataCount(0) {}
+    QTestDataPrivate(): tag(0), parent(0), data(0), dataCount(0), benchmarkDataMode(QTest::Normal) {}
 
     char *tag;
     QTestTable *parent;
     void **data;
     int dataCount;
+    QTest::BenchmarkDataMode benchmarkDataMode;
 };
 
 QTestData::QTestData(const char *tag, QTestTable *parent)
@@ -69,6 +70,18 @@ QTestData::QTestData(const char *tag, QTestTable *parent)
     d->tag = qstrdup(tag);
     d->parent = parent;
     d->data = new void *[parent->elementCount()];
+    memset(d->data, 0, parent->elementCount() * sizeof(void*));
+}
+
+QTestData::QTestData(const char *tag, QTest::BenchmarkDataMode benchMode, QTestTable *parent)
+{
+    QTEST_ASSERT(tag);
+    QTEST_ASSERT(parent);
+    d = new QTestDataPrivate;
+    d->tag = qstrdup(tag);
+    d->parent = parent;
+    d->data = new void *[parent->elementCount()];
+    d->benchmarkDataMode = benchMode;
     memset(d->data, 0, parent->elementCount() * sizeof(void*));
 }
 
@@ -117,6 +130,11 @@ const char *QTestData::dataTag() const
 int QTestData::dataCount() const
 {
     return d->dataCount;
+}
+
+QTest::BenchmarkDataMode QTestData::benchmarkSpecialData() const
+{
+    return d->benchmarkDataMode;
 }
 
 QT_END_NAMESPACE

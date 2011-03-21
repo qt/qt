@@ -177,8 +177,10 @@ public:
     bool resultsAccepted() const { return resultAccepted; }
     int adjustIterationCount(int suggestion);
     void setResult(qreal value, QTest::QBenchmarkMetric metric, bool setByMacro = true);
+    void clearSpecialResults();
 
     QBenchmarkResult result;
+    QBenchmarkResult specialResults[QTest::BenchmarkSpecialCount];
     bool resultAccepted;
     bool runOnce;
     int iterationCount;

@@ -125,7 +125,6 @@ namespace QTest
         return 0;
     }
 
-
     Q_TESTLIB_EXPORT char *toHexRepresentation(const char *ba, int length);
     Q_TESTLIB_EXPORT char *toString(const char *);
     Q_TESTLIB_EXPORT char *toString(const void *);
@@ -168,6 +167,7 @@ namespace QTest
         addColumnInternal(qMetaTypeId<T>(), name);
     }
     Q_TESTLIB_EXPORT QTestData &newRow(const char *dataTag);
+    Q_TESTLIB_EXPORT QTestData &newRow(const char *dataTag, BenchmarkDataMode mode);
 
     template <typename T>
     inline bool qCompare(T const &t1, T const &t2, const char *actual, const char *expected,

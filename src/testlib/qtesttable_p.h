@@ -67,7 +67,7 @@ public:
     ~QTestTable();
 
     void addColumn(int elementType, const char *elementName);
-    QTestData *newData(const char *tag);
+    QTestData *newData(const char *tag, QTest::BenchmarkDataMode benchMode);
 
     int elementCount() const;
     int dataCount() const;

@@ -82,7 +82,7 @@ class QTestLogger : public QAbstractTestLogger
 
         void addIncident(IncidentTypes type, const char *description,
                      const char *file = 0, int line = 0);
-        void addBenchmarkResult(const QBenchmarkResult &result);
+        void addBenchmarkResult(const QBenchmarkResult &result, const QBenchmarkResult &correctedResult);
         void addTag(QTestElement* element);
 
         void addMessage(MessageTypes type, const char *message,

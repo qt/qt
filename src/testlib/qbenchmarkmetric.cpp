@@ -81,6 +81,8 @@ const char * QTest::benchmarkMetricName(QBenchmarkMetric metric)
         return "InstructionReads";
     case Events:
         return "Events";
+    case Percentage:
+        return "Percentage";
     default:
         return "";
     }
@@ -108,6 +110,7 @@ const char * QTest::benchmarkMetricUnit(QBenchmarkMetric metric)
         return "instruction reads";
     case Events:
         return "events";
+    case Percentage:
     default:
         return "";
     }

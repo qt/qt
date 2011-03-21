@@ -268,7 +268,7 @@ void QTestLogger::addIncident(IncidentTypes type, const char *description,
     }
 }
 
-void QTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
+void QTestLogger::addBenchmarkResult(const QBenchmarkResult &result, const QBenchmarkResult &)
 {
     QTestElement *benchmarkElement = new QTestElement(QTest::LET_Benchmark);
 //    printf("element %i", benchmarkElement->elementType());
