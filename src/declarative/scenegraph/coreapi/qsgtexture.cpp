@@ -248,11 +248,22 @@ QSGPlainTexture::~QSGPlainTexture()
 }
 
 
+void swizzleBGRAToRGBA(QImage *image)
+{
+    const int width = image->width();
+    const int height = image->height();
+    for (int i = 0; i < height; ++i) {
+        uint *p = (uint *) image->scanLine(i);
+        for (int x = 0; x < width; ++x)
+            p[x] = ((p[x] << 16) & 0xff0000) | ((p[x] >> 16) & 0xff) | (p[x] & 0xff00ff00);
+    }
+}
+
 void QSGPlainTexture::setImage(const QImage &image)
 {
     m_image = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
 #ifdef QT_OPENGL_ES
-    QSGTextureManager::swizzleBGRAToRGBA(&m_image);
+    swizzleBGRAToRGBA(&m_image);
 #endif
 
     m_texture_size = image.size();
