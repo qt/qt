@@ -878,22 +878,16 @@ void VcprojGenerator::initConfiguration()
         break;
     }
 
+    conf.OutputDirectory = project->first("DESTDIR");
+    if (conf.OutputDirectory.isEmpty())
+        conf.OutputDirectory = ".\\";
+    if (!conf.OutputDirectory.endsWith("\\"))
+        conf.OutputDirectory += '\\';
     if (conf.CompilerVersion >= NET2010) {
-        conf.OutputDirectory = project->first("DESTDIR");
-
-        if(conf.OutputDirectory.isEmpty())
-            conf.OutputDirectory = ".\\";
-
-        if(!conf.OutputDirectory.endsWith("\\"))
-            conf.OutputDirectory += '\\';
-
         // The target name could have been changed.
         conf.PrimaryOutput = project->first("TARGET");
         if ( !conf.PrimaryOutput.isEmpty() && !project->first("TARGET_VERSION_EXT").isEmpty() && project->isActiveConfig("shared"))
             conf.PrimaryOutput.append(project->first("TARGET_VERSION_EXT"));
-    } else {
-        conf.PrimaryOutput = project->first("PrimaryOutput");
-        conf.OutputDirectory = ".";
     }
 
     conf.Name = project->values("BUILD_NAME").join(" ");
@@ -982,13 +976,7 @@ void VcprojGenerator::initCompilerTool()
 void VcprojGenerator::initLibrarianTool()
 {
     VCConfiguration &conf = vcProject.Configuration;
-    conf.librarian.OutputFile = project->first("DESTDIR");
-    if(conf.librarian.OutputFile.isEmpty())
-        conf.librarian.OutputFile = ".\\";
-
-    if(!conf.librarian.OutputFile.endsWith("\\"))
-        conf.librarian.OutputFile += '\\';
-
+    conf.librarian.OutputFile = "$(OutDir)\\";
     conf.librarian.OutputFile += project->first("MSVCPROJ_TARGET");
     conf.librarian.AdditionalOptions += project->values("QMAKE_LIBFLAGS");
 }
@@ -1018,24 +1006,7 @@ void VcprojGenerator::initLinkerTool()
         }
     }
 
-    switch (projectTarget) {
-    case Application:
-        conf.linker.OutputFile = project->first("DESTDIR");
-        break;
-    case SharedLib:
-        conf.linker.parseOptions(project->values("MSVCPROJ_LIBOPTIONS"));
-        conf.linker.OutputFile = project->first("DESTDIR");
-        break;
-    case StaticLib: //unhandled - added to remove warnings..
-        break;
-    }
-
-    if(conf.linker.OutputFile.isEmpty())
-        conf.linker.OutputFile = ".\\";
-
-    if(!conf.linker.OutputFile.endsWith("\\"))
-        conf.linker.OutputFile += '\\';
-
+    conf.linker.OutputFile = "$(OutDir)\\";
     conf.linker.OutputFile += project->first("MSVCPROJ_TARGET");
 
     if(project->isActiveConfig("dll")){
@@ -1054,7 +1025,7 @@ void VcprojGenerator::initResourceTool()
     if(project->isActiveConfig("debug"))
         conf.resource.PreprocessorDefinitions += "_DEBUG";
     if(project->isActiveConfig("staticlib"))
-        conf.resource.ResourceOutputFileName = project->first("DESTDIR") + "/$(InputName).res";
+        conf.resource.ResourceOutputFileName = "$(OutDir)\\$(InputName).res";
 }
 
 void VcprojGenerator::initIDLTool()
@@ -1580,19 +1551,6 @@ QString VcprojGenerator::findTemplate(QString file)
         return "";
     debug_msg(1, "Generator: MSVC.NET: Found template \'%s\'", ret.toLatin1().constData());
     return ret;
-}
-
-void VcprojGenerator::processPrlVariable(const QString &var, const QStringList &l)
-{
-    if(var == "QMAKE_PRL_DEFINES") {
-        QStringList &out = project->values("MSVCPROJ_DEFINES");
-        for(QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
-            if(out.indexOf((*it)) == -1)
-                out.append((" /D " + *it));
-        }
-    } else {
-        MakefileGenerator::processPrlVariable(var, l);
-    }
 }
 
 void VcprojGenerator::outputVariables()

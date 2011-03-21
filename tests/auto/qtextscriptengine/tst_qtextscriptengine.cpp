@@ -56,7 +56,7 @@
 
 
 
-#if defined(Q_WS_X11)
+#if defined(Q_WS_X11) || defined(Q_WS_MAC)
 #define private public
 #include <private/qtextengine_p.h>
 #include <qtextlayout.h>
@@ -104,6 +104,7 @@ private slots:
     void khmer();
     void linearB();
     void controlInSyllable_qtbug14204();
+    void combiningMarks_qtbug15675();
 };
 
 tst_QTextScriptEngine::tst_QTextScriptEngine()
@@ -1130,6 +1131,28 @@ void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
     QVERIFY(e->layoutData->glyphLayout.advances_x[1] != 0);
 #else
     QSKIP("X11 specific test", SkipAll);
+#endif
+}
+
+void tst_QTextScriptEngine::combiningMarks_qtbug15675()
+{
+#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+    QString s;
+    s.append(QChar(0x0061));
+    s.append(QChar(0x0062));
+    s.append(QChar(0x0300));
+    s.append(QChar(0x0063));
+
+    QFont font("Monaco");
+    QTextLayout layout(s, font);
+    QTextEngine *e = layout.d;
+    e->itemize();
+    e->shape(0);
+
+    QVERIFY(e->layoutData->items[0].num_glyphs == 4);
+    QVERIFY(e->layoutData->glyphLayout.advances_y[2] > 0);
+#else
+    QSKIP("Mac specific test", SkipAll);
 #endif
 }
 

@@ -45,29 +45,21 @@
 #include "qwaylandwindow.h"
 #include "qwaylanddrmsurface.h"
 
+#include "../eglconvenience/qeglconvenience.h"
+
 #include <QtGui/QPlatformGLContext>
 #include <QtGui/QPlatformWindowFormat>
 
-#include <unistd.h>
-#include <fcntl.h>
-
-extern "C" {
-#include <xf86drm.h>
-}
-
-Q_GLOBAL_STATIC(QMutex,qt_defaultSharedContextMutex);
-
-EGLint QWaylandGLContext::contextAttibutes[] = {
-    EGL_CONTEXT_CLIENT_VERSION, 2,
-    EGL_NONE
-};
+Q_GLOBAL_STATIC(QMutex,qt_defaultSharedContextMutex)
 
 QWaylandGLContext::QWaylandGLContext(QWaylandDisplay *wd, const QPlatformWindowFormat &format)
     : QPlatformGLContext()
-    , mFormat(format)
     , mDisplay(wd)
+    , mSurface(EGL_NO_SURFACE)
+    , mConfig(q_configFromQPlatformWindowFormat(mDisplay->eglDisplay(),format,true))
+    , mFormat(qt_qPlatformWindowFormatFromConfig(mDisplay->eglDisplay(),mConfig))
 {
-    QPlatformGLContext *sharePlatformContext;
+    QPlatformGLContext *sharePlatformContext = 0;
     if (format.useDefaultSharedContext()) {
         if (!QPlatformGLContext::defaultSharedContext()) {
             if (qt_defaultSharedContextMutex()->tryLock()){
@@ -88,26 +80,22 @@ QWaylandGLContext::QWaylandGLContext(QWaylandDisplay *wd, const QPlatformWindowF
         shareEGLContext = static_cast<const QWaylandGLContext*>(sharePlatformContext)->mContext;
 
     eglBindAPI(EGL_OPENGL_ES_API);
-    mContext = eglCreateContext(mDisplay->eglDisplay(), NULL,
-                                shareEGLContext, contextAttibutes);
 
-    mFormat.setAccum(false);
-    mFormat.setAlphaBufferSize(8);
-    mFormat.setRedBufferSize(8);
-    mFormat.setGreenBufferSize(8);
-    mFormat.setBlueBufferSize(8);
-    mFormat.setDepth(false);
-//    mFormat.setDepthBufferSize(8);
-    mFormat.setStencil(false);
-//    mFormat.setStencilBufferSize(24);
-//    mFormat.setSampleBuffers(false);
+    QVector<EGLint> eglContextAttrs;
+    eglContextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
+    eglContextAttrs.append(2);
+    eglContextAttrs.append(EGL_NONE);
 
+    mContext = eglCreateContext(mDisplay->eglDisplay(), mConfig,
+                                shareEGLContext, eglContextAttrs.constData());
 }
 
 QWaylandGLContext::QWaylandGLContext()
     : QPlatformGLContext()
     , mDisplay(0)
     , mContext(EGL_NO_CONTEXT)
+    , mSurface(EGL_NO_SURFACE)
+    , mConfig(0)
 { }
 
 QWaylandGLContext::~QWaylandGLContext()
@@ -118,7 +106,10 @@ QWaylandGLContext::~QWaylandGLContext()
 void QWaylandGLContext::makeCurrent()
 {
     QPlatformGLContext::makeCurrent();
-    eglMakeCurrent(mDisplay->eglDisplay(), EGL_NO_SURFACE, EGL_NO_SURFACE, mContext);
+    if (mSurface == EGL_NO_SURFACE) {
+        qWarning("makeCurrent with EGL_NO_SURFACE");
+    }
+    eglMakeCurrent(mDisplay->eglDisplay(), mSurface, mSurface, mContext);
 }
 
 void QWaylandGLContext::doneCurrent()
@@ -129,6 +120,7 @@ void QWaylandGLContext::doneCurrent()
 
 void QWaylandGLContext::swapBuffers()
 {
+    eglSwapBuffers(mDisplay->eglDisplay(),mSurface);
 }
 
 void *QWaylandGLContext::getProcAddress(const QString &string)
@@ -138,10 +130,26 @@ void *QWaylandGLContext::getProcAddress(const QString &string)
 
 void QWaylandGLContext::createDefaultSharedContex(QWaylandDisplay *display)
 {
+    QVector<EGLint> eglContextAttrs;
+    eglContextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
+    eglContextAttrs.append(2);
+    eglContextAttrs.append(EGL_NONE);
+
     QWaylandGLContext *defaultSharedContext = new QWaylandGLContext;
     defaultSharedContext->mDisplay = display;
-    defaultSharedContext->mContext = eglCreateContext(mDisplay->eglDisplay(), NULL,
-                                                      EGL_NO_CONTEXT, contextAttibutes);
+    defaultSharedContext->mContext = eglCreateContext(mDisplay->eglDisplay(),mConfig,
+                                                      EGL_NO_CONTEXT, eglContextAttrs.constData());
     QPlatformGLContext::setDefaultSharedContext(defaultSharedContext);
+}
+
+void QWaylandGLContext::setEglSurface(EGLSurface surface)
+{
+    doneCurrent();
+    mSurface = surface;
+}
+
+EGLConfig QWaylandGLContext::eglConfig() const
+{
+    return mConfig;
 }
 

@@ -150,6 +150,13 @@ void tst_QFont::exactMatch()
     return;
 #endif
 
+#ifdef Q_WS_X11
+    QVERIFY(QFont("sans").exactMatch());
+    QVERIFY(QFont("sans-serif").exactMatch());
+    QVERIFY(QFont("serif").exactMatch());
+    QVERIFY(QFont("monospace").exactMatch());
+#endif
+
     QSKIP("This test is bogus on Unix with support for font aliases in fontconfig", SkipAll);
     return;
 

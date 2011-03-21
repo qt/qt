@@ -66,6 +66,12 @@ class QGLFramebufferObject;
 class QGLFramebufferObjectFormat;
 class QGLPixmapData;
 
+#ifdef QGL_USE_TEXTURE_POOL
+void qt_gl_register_pixmap(QGLPixmapData *pd);
+void qt_gl_unregister_pixmap(QGLPixmapData *pd);
+void qt_gl_hibernate_pixmaps();
+#endif
+
 class QGLFramebufferObjectPool
 {
 public:
@@ -129,7 +135,24 @@ public:
     GLuint bind(bool copyBack = true) const;
     QGLTexture *texture() const;
 
-#if defined(Q_OS_SYMBIAN)
+#ifdef QGL_USE_TEXTURE_POOL
+    void destroyTexture();
+    // Detach this image from the image pool.
+    void detachTextureFromPool();
+    // Release the GL resources associated with this pixmap and copy
+    // the pixmap's contents out of the GPU back into main memory.
+    // The GL resource will be automatically recreated the next time
+    // ensureCreated() is called.  Does nothing if the pixmap cannot be
+    // hibernated for some reason (e.g. texture is shared with another
+    // process via a SgImage).
+    void hibernate();
+    // Called when the QGLTexturePool wants to reclaim this pixmap's
+    // texture objects to reuse storage.
+    void reclaimTexture();
+    void forceToImage();
+#endif
+
+#ifdef Q_OS_SYMBIAN
     void* toNativeType(NativeType type);
     void fromNativeType(void* pixmap, NativeType type);
 #endif
@@ -175,6 +198,23 @@ private:
     mutable bool m_hasAlpha;
 
     mutable QGLPixmapGLPaintDevice m_glDevice;
+
+#ifdef QGL_USE_TEXTURE_POOL
+    QGLPixmapData *nextLRU;
+    QGLPixmapData *prevLRU;
+    mutable bool inLRU;
+    mutable bool failedToAlloc;
+    mutable bool inTexturePool;
+
+    QGLPixmapData *next;
+    QGLPixmapData *prev;
+
+    friend class QGLTexturePool;
+
+    friend void qt_gl_register_pixmap(QGLPixmapData *pd);
+    friend void qt_gl_unregister_pixmap(QGLPixmapData *pd);
+    friend void qt_gl_hibernate_pixmaps();
+#endif
 
     friend class QGLPixmapGLPaintDevice;
     friend class QMeeGoPixmapData;

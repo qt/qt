@@ -492,8 +492,10 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
     outImage->setDotsPerMeterX(png_get_x_pixels_per_meter(png_ptr,info_ptr));
     outImage->setDotsPerMeterY(png_get_y_pixels_per_meter(png_ptr,info_ptr));
 
+#ifndef QT_NO_IMAGE_TEXT
     for (int i = 0; i < readTexts.size()-1; i+=2)
         outImage->setText(readTexts.at(i), readTexts.at(i+1));
+#endif
 
     state = ReadingEnd;
     png_read_end(png_ptr, end_info);

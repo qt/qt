@@ -47,7 +47,6 @@
 #include <private/qpixmap_raster_p.h>
 #include <private/qwindowsurface_gl_p.h>
 #include "qmeegoruntime.h"
-#include "qmeegoswitchevent.h"
 
 QString QMeeGoGraphicsSystemHelper::runningGraphicsSystemName()
 {
@@ -77,44 +76,12 @@ bool QMeeGoGraphicsSystemHelper::isRunningRuntime()
 
 void QMeeGoGraphicsSystemHelper::switchToMeeGo()
 {
-    if (isRunningMeeGo())
-        return;
-
-    if (QApplicationPrivate::instance()->graphics_system_name != QLatin1String("runtime"))
-        qWarning("Can't switch to meego - switching only supported with 'runtime' graphics system.");
-    else {
-        QMeeGoSwitchEvent willSwitchEvent(QLatin1String("meego"), QMeeGoSwitchEvent::WillSwitch);
-        foreach (QWidget *widget, QApplication::topLevelWidgets())
-            QCoreApplication::sendEvent(widget, &willSwitchEvent);
-
-        QApplication *app = static_cast<QApplication *>(QCoreApplication::instance());
-        app->setGraphicsSystem(QLatin1String("meego"));
-
-        QMeeGoSwitchEvent didSwitchEvent(QLatin1String("meego"), QMeeGoSwitchEvent::DidSwitch);
-        foreach (QWidget *widget, QApplication::topLevelWidgets())
-            QCoreApplication::sendEvent(widget, &didSwitchEvent);
-    }
+    QMeeGoRuntime::switchToMeeGo();
 }
 
 void QMeeGoGraphicsSystemHelper::switchToRaster()
 {
-    if (runningGraphicsSystemName() == QLatin1String("raster"))
-        return;
-
-    if (QApplicationPrivate::instance()->graphics_system_name != QLatin1String("runtime"))
-        qWarning("Can't switch to raster - switching only supported with 'runtime' graphics system.");
-    else {
-        QMeeGoSwitchEvent willSwitchEvent(QLatin1String("raster"), QMeeGoSwitchEvent::WillSwitch);
-        foreach (QWidget *widget, QApplication::topLevelWidgets())
-            QCoreApplication::sendEvent(widget, &willSwitchEvent);
-
-        QApplication *app = static_cast<QApplication *>(QCoreApplication::instance());
-        app->setGraphicsSystem(QLatin1String("raster"));
-
-        QMeeGoSwitchEvent didSwitchEvent(QLatin1String("raster"), QMeeGoSwitchEvent::DidSwitch);
-        foreach (QWidget *widget, QApplication::topLevelWidgets())
-            QCoreApplication::sendEvent(widget, &didSwitchEvent);
-    }
+    QMeeGoRuntime::switchToRaster();
 }
 
 Qt::HANDLE QMeeGoGraphicsSystemHelper::imageToEGLSharedImage(const QImage &image)
@@ -167,4 +134,9 @@ void QMeeGoGraphicsSystemHelper::setSwapBehavior(SwapMode mode)
         QGLWindowSurface::swapBehavior = QGLWindowSurface::AlwaysPartialSwap;
     else if (mode == KillSwap)
         QGLWindowSurface::swapBehavior = QGLWindowSurface::KillSwap;
+}
+
+void QMeeGoGraphicsSystemHelper::enableSwitchEvents()
+{
+    QMeeGoRuntime::enableSwitchEvents();
 }
