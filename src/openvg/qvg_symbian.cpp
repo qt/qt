@@ -195,14 +195,16 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         if (!conversionLessFormat(source.format())) {
             // Here we may need to copy if the formats do not match.
             // (e.g. for display modes other than EColor16MAP and EColor16MU)
-            source.ensureFormat(idealFormat(&source.imageRef(), Qt::AutoColor));
+            source.beginDataAccess();
+            QImage::Format format = idealFormat(&source.imageRef(), Qt::AutoColor);
+            source.endDataAccess(true);
+            source.ensureFormat(format);
         }
         recreate = true;
     } else if (type == QPixmapData::VolatileImage && pixmap) {
         QVolatileImage *img = static_cast<QVolatileImage *>(pixmap);
         resize(img->width(), img->height());
         source = *img;
-        source.ensureFormat(idealFormat(&source.imageRef(), Qt::AutoColor));
         recreate = true;
     } else if (type == QPixmapData::NativeImageHandleProvider && pixmap) {
         destroyImages();
