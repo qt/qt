@@ -319,6 +319,16 @@ QPoint QRuntimeWindowSurface::offset(const QWidget *widget) const
     return m_windowSurface->offset(widget);
 }
 
+bool QRuntimeWindowSurface::hasStaticContentsSupport() const
+{
+    return m_windowSurface->hasStaticContentsSupport();
+}
+
+bool QRuntimeWindowSurface::hasPartialUpdateSupport() const
+{
+    return m_windowSurface->hasPartialUpdateSupport();
+}
+
 QRuntimeGraphicsSystem::QRuntimeGraphicsSystem()
     : m_windowSurfaceDestroyPolicy(DestroyImmediately),
       m_graphicsSystem(0)

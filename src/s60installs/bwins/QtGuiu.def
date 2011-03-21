@@ -5028,7 +5028,7 @@ EXPORTS
 	?hasSelection@QItemSelectionModel@@QBE_NXZ @ 5027 NONAME ; bool QItemSelectionModel::hasSelection(void) const
 	?hasSelection@QTextCursor@@QBE_NXZ @ 5028 NONAME ; bool QTextCursor::hasSelection(void) const
 	?hasStaticContents@QWindowSurface@@IBE_NXZ @ 5029 NONAME ; bool QWindowSurface::hasStaticContents(void) const
-	?hasStaticContentsSupport@QWindowSurface@@QBE_NXZ @ 5030 NONAME ; bool QWindowSurface::hasStaticContentsSupport(void) const
+	?hasStaticContentsSupport@QWindowSurface@@UBE_NXZ @ 5030 NONAME ; bool QWindowSurface::hasStaticContentsSupport(void) const
 	?hasThemeIcon@QIcon@@SA_NABVQString@@@Z @ 5031 NONAME ; bool QIcon::hasThemeIcon(class QString const &)
 	?hasTracking@QAbstractSlider@@QBE_NXZ @ 5032 NONAME ; bool QAbstractSlider::hasTracking(void) const
 	?hasTranslateOnlySceneTransform@QGraphicsItemPrivate@@QAE_NXZ @ 5033 NONAME ; bool QGraphicsItemPrivate::hasTranslateOnlySceneTransform(void)
@@ -9875,7 +9875,7 @@ EXPORTS
 	?setState@QPaintEngineEx@@UAEXPAVQPainterState@@@Z @ 9874 NONAME ; void QPaintEngineEx::setState(class QPainterState *)
 	?setState@TouchPoint@QTouchEvent@@QAEXV?$QFlags@W4TouchPointState@Qt@@@@@Z @ 9875 NONAME ; void QTouchEvent::TouchPoint::setState(class QFlags<enum Qt::TouchPointState>)
 	?setStaticContents@QWindowSurface@@QAEXABVQRegion@@@Z @ 9876 NONAME ; void QWindowSurface::setStaticContents(class QRegion const &)
-	?setStaticContentsSupport@QWindowSurface@@IAEX_N@Z @ 9877 NONAME ; void QWindowSurface::setStaticContentsSupport(bool)
+	?setStaticContentsSupport@QWindowSurface@@IAEX_N@Z @ 9877 NONAME ABSENT ; void QWindowSurface::setStaticContentsSupport(bool)
 	?setStatus@QPictureIO@@QAEXH@Z @ 9878 NONAME ; void QPictureIO::setStatus(int)
 	?setStatusBar@QMainWindow@@QAEXPAVQStatusBar@@@Z @ 9879 NONAME ; void QMainWindow::setStatusBar(class QStatusBar *)
 	?setStatusTip@QAction@@QAEXABVQString@@@Z @ 9880 NONAME ; void QAction::setStatusTip(class QString const &)
@@ -12651,7 +12651,7 @@ EXPORTS
 	?toImage@QRuntimePixmapData@@UBE?AVQImage@@XZ @ 12650 NONAME ; class QImage QRuntimePixmapData::toImage(void) const
 	??0QAbstractScrollAreaPrivate@@QAE@XZ @ 12651 NONAME ; QAbstractScrollAreaPrivate::QAbstractScrollAreaPrivate(void)
 	?resizeEvent@QSplitterHandle@@MAEXPAVQResizeEvent@@@Z @ 12652 NONAME ; void QSplitterHandle::resizeEvent(class QResizeEvent *)
-	?setPartialUpdateSupport@QWindowSurface@@IAEX_N@Z @ 12653 NONAME ; void QWindowSurface::setPartialUpdateSupport(bool)
+	?setPartialUpdateSupport@QWindowSurface@@IAEX_N@Z @ 12653 NONAME ABSENT ; void QWindowSurface::setPartialUpdateSupport(bool)
 	?HandleForegroundEventL@QS60MainAppUi@@MAEXH@Z @ 12654 NONAME ; void QS60MainAppUi::HandleForegroundEventL(int)
 	?curveThreshold@QStrokerOps@@QBEMXZ @ 12655 NONAME ; float QStrokerOps::curveThreshold(void) const
 	?createTextureData@QImageTextureGlyphCache@@UAEXHH@Z @ 12656 NONAME ; void QImageTextureGlyphCache::createTextureData(int, int)
@@ -12853,7 +12853,7 @@ EXPORTS
 	?updateAll@QGraphicsViewPrivate@@QAEXXZ @ 12852 NONAME ; void QGraphicsViewPrivate::updateAll(void)
 	?updateMicroFocus@QGraphicsItem@@IAEXXZ @ 12853 NONAME ; void QGraphicsItem::updateMicroFocus(void)
 	?populate@QTextureGlyphCache@@QAEXPAVQFontEngine@@HPBIPBUQFixedPoint@@@Z @ 12854 NONAME ABSENT ; void QTextureGlyphCache::populate(class QFontEngine *, int, unsigned int const *, struct QFixedPoint const *)
-	?hasPartialUpdateSupport@QWindowSurface@@QBE_NXZ @ 12855 NONAME ; bool QWindowSurface::hasPartialUpdateSupport(void) const
+	?hasPartialUpdateSupport@QWindowSurface@@UBE_NXZ @ 12855 NONAME ; bool QWindowSurface::hasPartialUpdateSupport(void) const
 	?scroll@QRuntimePixmapData@@UAE_NHHABVQRect@@@Z @ 12856 NONAME ; bool QRuntimePixmapData::scroll(int, int, class QRect const &)
 	?qt_draw_glyphs@@YAXPAVQPainter@@PBIPBVQPointF@@H@Z @ 12857 NONAME ; void qt_draw_glyphs(class QPainter *, unsigned int const *, class QPointF const *, int)
 	?nativeDisplay@QEgl@@YAHXZ @ 12858 NONAME ; int QEgl::nativeDisplay(void)
@@ -12905,302 +12905,470 @@ EXPORTS
 	?reactivateDeferredActiveObjects@QEventDispatcherS60@@UAEXXZ @ 12904 NONAME ; void QEventDispatcherS60::reactivateDeferredActiveObjects(void)
 	?userData@QStaticTextItem@@QBEPAVQStaticTextUserData@@XZ @ 12905 NONAME ; class QStaticTextUserData * QStaticTextItem::userData(void) const
 	?populate@QTextureGlyphCache@@QAE_NPAVQFontEngine@@HPBIPBUQFixedPoint@@@Z @ 12906 NONAME ; bool QTextureGlyphCache::populate(class QFontEngine *, int, unsigned int const *, struct QFixedPoint const *)
-	?clipEnabledChanged@QBlitterPaintEngine@@UAEXXZ @ 12907 NONAME ; void QBlitterPaintEngine::clipEnabledChanged(void)
-	?supportsSubPixelPositions@QFontEngine@@UBE_NXZ @ 12908 NONAME ; bool QFontEngine::supportsSubPixelPositions(void) const
-	?heightForWidth@QTabWidget@@UBEHH@Z @ 12909 NONAME ; int QTabWidget::heightForWidth(int) const
-	??0QRasterWindowSurface@@QAE@PAVQWidget@@_N@Z @ 12910 NONAME ; QRasterWindowSurface::QRasterWindowSurface(class QWidget *, bool)
-	?brushChanged@QBlitterPaintEngine@@UAEXXZ @ 12911 NONAME ; void QBlitterPaintEngine::brushChanged(void)
-	?clip@QBlitterPaintEngine@@UAEXABVQRect@@W4ClipOperation@Qt@@@Z @ 12912 NONAME ; void QBlitterPaintEngine::clip(class QRect const &, enum Qt::ClipOperation)
-	?detach@QGlyphs@@AAEXXZ @ 12913 NONAME ; void QGlyphs::detach(void)
-	?capabilities@QBlittable@@QBE?AV?$QFlags@W4Capability@QBlittable@@@@XZ @ 12914 NONAME ; class QFlags<enum QBlittable::Capability> QBlittable::capabilities(void) const
-	?swap@QBrush@@QAEXAAV1@@Z @ 12915 NONAME ; void QBrush::swap(class QBrush &)
-	?swap@QPixmap@@QAEXAAV1@@Z @ 12916 NONAME ; void QPixmap::swap(class QPixmap &)
-	??0QBlitterPaintEngine@@QAE@PAVQBlittablePixmapData@@@Z @ 12917 NONAME ; QBlitterPaintEngine::QBlitterPaintEngine(class QBlittablePixmapData *)
-	?numberPrefix@QTextListFormat@@QBE?AVQString@@XZ @ 12918 NONAME ; class QString QTextListFormat::numberPrefix(void) const
-	??MQItemSelectionRange@@QBE_NABV0@@Z @ 12919 NONAME ; bool QItemSelectionRange::operator<(class QItemSelectionRange const &) const
-	?setWidthForHeight@QSizePolicy@@QAEX_N@Z @ 12920 NONAME ; void QSizePolicy::setWidthForHeight(bool)
-	?qt_fontdata_from_index@@YA?AVQByteArray@@H@Z @ 12921 NONAME ; class QByteArray qt_fontdata_from_index(int)
-	?swap@QImage@@QAEXAAV1@@Z @ 12922 NONAME ; void QImage::swap(class QImage &)
-	?compositionModeChanged@QBlitterPaintEngine@@UAEXXZ @ 12923 NONAME ; void QBlitterPaintEngine::compositionModeChanged(void)
-	?drawRects@QBlitterPaintEngine@@UAEXPBVQRectF@@H@Z @ 12924 NONAME ; void QBlitterPaintEngine::drawRects(class QRectF const *, int)
-	??1QBlitterPaintEngine@@UAE@XZ @ 12925 NONAME ; QBlitterPaintEngine::~QBlitterPaintEngine(void)
-	?markRasterOverlay@QBlittablePixmapData@@QAEXPBVQRectF@@H@Z @ 12926 NONAME ; void QBlittablePixmapData::markRasterOverlay(class QRectF const *, int)
-	?drawTextItem@QBlitterPaintEngine@@UAEXABVQPointF@@ABVQTextItem@@@Z @ 12927 NONAME ; void QBlitterPaintEngine::drawTextItem(class QPointF const &, class QTextItem const &)
-	??8QGlyphs@@QBE_NABV0@@Z @ 12928 NONAME ; bool QGlyphs::operator==(class QGlyphs const &) const
-	?drawImage@QBlitterPaintEngine@@UAEXABVQRectF@@ABVQImage@@0V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12929 NONAME ; void QBlitterPaintEngine::drawImage(class QRectF const &, class QImage const &, class QRectF const &, class QFlags<enum Qt::ImageConversionFlag>)
-	?mimeTypes@QAbstractProxyModel@@UBE?AVQStringList@@XZ @ 12930 NONAME ; class QStringList QAbstractProxyModel::mimeTypes(void) const
-	?createState@QBlitterPaintEngine@@UBEPAVQPainterState@@PAV2@@Z @ 12931 NONAME ; class QPainterState * QBlitterPaintEngine::createState(class QPainterState *) const
-	?removeItem@QGraphicsGridLayout@@QAEXPAVQGraphicsLayoutItem@@@Z @ 12932 NONAME ; void QGraphicsGridLayout::removeItem(class QGraphicsLayoutItem *)
-	?clipBoundingRect@QPainter@@QBE?AVQRectF@@XZ @ 12933 NONAME ; class QRectF QPainter::clipBoundingRect(void) const
-	?raster@QBlitterPaintEngine@@ABEPAVQRasterPaintEngine@@XZ @ 12934 NONAME ; class QRasterPaintEngine * QBlitterPaintEngine::raster(void) const
-	?sort@QAbstractProxyModel@@UAEXHW4SortOrder@Qt@@@Z @ 12935 NONAME ; void QAbstractProxyModel::sort(int, enum Qt::SortOrder)
-	?d_func@QBlittable@@AAEPAVQBlittablePrivate@@XZ @ 12936 NONAME ; class QBlittablePrivate * QBlittable::d_func(void)
-	?type@QBlitterPaintEngine@@UBE?AW4Type@QPaintEngine@@XZ @ 12937 NONAME ; enum QPaintEngine::Type QBlitterPaintEngine::type(void) const
-	?buddy@QAbstractProxyModel@@UBE?AVQModelIndex@@ABV2@@Z @ 12938 NONAME ; class QModelIndex QAbstractProxyModel::buddy(class QModelIndex const &) const
-	?fill@QImage@@QAEXABVQColor@@@Z @ 12939 NONAME ; void QImage::fill(class QColor const &)
-	?fill@QImage@@QAEXW4GlobalColor@Qt@@@Z @ 12940 NONAME ; void QImage::fill(enum Qt::GlobalColor)
-	?canFetchMore@QAbstractProxyModel@@UBE_NABVQModelIndex@@@Z @ 12941 NONAME ; bool QAbstractProxyModel::canFetchMore(class QModelIndex const &) const
-	?setFont@QGlyphs@@QAEXABVQFont@@@Z @ 12942 NONAME ; void QGlyphs::setFont(class QFont const &)
-	?resize@QBlittablePixmapData@@UAEXHH@Z @ 12943 NONAME ; void QBlittablePixmapData::resize(int, int)
-	?getText@QInputDialog@@SA?AVQString@@PAVQWidget@@ABV2@1W4EchoMode@QLineEdit@@1PA_NV?$QFlags@W4WindowType@Qt@@@@V?$QFlags@W4InputMethodHint@Qt@@@@@Z @ 12944 NONAME ; class QString QInputDialog::getText(class QWidget *, class QString const &, class QString const &, enum QLineEdit::EchoMode, class QString const &, bool *, class QFlags<enum Qt::WindowType>, class QFlags<enum Qt::InputMethodHint>)
-	?hasWidthForHeight@QSizePolicy@@QBE_NXZ @ 12945 NONAME ; bool QSizePolicy::hasWidthForHeight(void) const
-	?transformChanged@QBlitterPaintEngine@@UAEXXZ @ 12946 NONAME ; void QBlitterPaintEngine::transformChanged(void)
-	??0QBlittablePixmapData@@QAE@XZ @ 12947 NONAME ; QBlittablePixmapData::QBlittablePixmapData(void)
-	?size@QBlittable@@QBE?AVQSize@@XZ @ 12948 NONAME ; class QSize QBlittable::size(void) const
-	?setBlittable@QBlittablePixmapData@@QAEXPAVQBlittable@@@Z @ 12949 NONAME ; void QBlittablePixmapData::setBlittable(class QBlittable *)
-	?opacityChanged@QBlitterPaintEngine@@UAEXXZ @ 12950 NONAME ; void QBlitterPaintEngine::opacityChanged(void)
-	?createExplicitFontWithName@QFontEngine@@IBE?AVQFont@@ABVQString@@@Z @ 12951 NONAME ; class QFont QFontEngine::createExplicitFontWithName(class QString const &) const
-	?setState@QBlitterPaintEngine@@UAEXPAVQPainterState@@@Z @ 12952 NONAME ; void QBlitterPaintEngine::setState(class QPainterState *)
-	?clip@QBlitterPaintEngine@@UAEXABVQRegion@@W4ClipOperation@Qt@@@Z @ 12953 NONAME ; void QBlitterPaintEngine::clip(class QRegion const &, enum Qt::ClipOperation)
-	?subPixelPositionForX@QTextureGlyphCache@@QBE?AUQFixed@@U2@@Z @ 12954 NONAME ; struct QFixed QTextureGlyphCache::subPixelPositionForX(struct QFixed) const
-	?hasAlphaChannel@QBlittablePixmapData@@UBE_NXZ @ 12955 NONAME ; bool QBlittablePixmapData::hasAlphaChannel(void) const
-	?numberSuffix@QTextListFormat@@QBE?AVQString@@XZ @ 12956 NONAME ; class QString QTextListFormat::numberSuffix(void) const
-	??HQGlyphs@@ABE?AV0@ABV0@@Z @ 12957 NONAME ; class QGlyphs QGlyphs::operator+(class QGlyphs const &) const
-	?end@QBlitterPaintEngine@@UAE_NXZ @ 12958 NONAME ; bool QBlitterPaintEngine::end(void)
-	?fill@QBlitterPaintEngine@@UAEXABVQVectorPath@@ABVQBrush@@@Z @ 12959 NONAME ; void QBlitterPaintEngine::fill(class QVectorPath const &, class QBrush const &)
-	?drawPixmap@QBlitterPaintEngine@@UAEXABVQRectF@@ABVQPixmap@@0@Z @ 12960 NONAME ; void QBlitterPaintEngine::drawPixmap(class QRectF const &, class QPixmap const &, class QRectF const &)
-	?glyphIndexes@QGlyphs@@QBE?AV?$QVector@I@@XZ @ 12961 NONAME ; class QVector<unsigned int> QGlyphs::glyphIndexes(void) const
-	?get@QFontPrivate@@SAPAV1@ABVQFont@@@Z @ 12962 NONAME ; class QFontPrivate * QFontPrivate::get(class QFont const &)
-	?fetchMore@QAbstractProxyModel@@UAEXABVQModelIndex@@@Z @ 12963 NONAME ; void QAbstractProxyModel::fetchMore(class QModelIndex const &)
-	?glyphs@QTextLine@@ABE?AV?$QList@VQGlyphs@@@@HH@Z @ 12964 NONAME ; class QList<class QGlyphs> QTextLine::glyphs(int, int) const
-	?alphaRGBMapForGlyph@QFontEngine@@UAE?AVQImage@@IUQFixed@@HABVQTransform@@@Z @ 12965 NONAME ; class QImage QFontEngine::alphaRGBMapForGlyph(unsigned int, struct QFixed, int, class QTransform const &)
-	?swap@QBitmap@@QAEXAAV1@@Z @ 12966 NONAME ; void QBitmap::swap(class QBitmap &)
-	??0QWindowSurface@@QAE@PAVQWidget@@_N@Z @ 12967 NONAME ; QWindowSurface::QWindowSurface(class QWidget *, bool)
-	?fill@QBlittablePixmapData@@UAEXABVQColor@@@Z @ 12968 NONAME ; void QBlittablePixmapData::fill(class QColor const &)
-	?metric@QBlittablePixmapData@@UBEHW4PaintDeviceMetric@QPaintDevice@@@Z @ 12969 NONAME ; int QBlittablePixmapData::metric(enum QPaintDevice::PaintDeviceMetric) const
-	?fillRect@QBlitterPaintEngine@@UAEXABVQRectF@@ABVQColor@@@Z @ 12970 NONAME ; void QBlitterPaintEngine::fillRect(class QRectF const &, class QColor const &)
-	??6@YA?AVQDebug@@V0@PBVQSymbianEvent@@@Z @ 12971 NONAME ; class QDebug operator<<(class QDebug, class QSymbianEvent const *)
-	??_EQBlittablePixmapData@@UAE@I@Z @ 12972 NONAME ; QBlittablePixmapData::~QBlittablePixmapData(unsigned int)
-	?mimeData@QAbstractProxyModel@@UBEPAVQMimeData@@ABV?$QList@VQModelIndex@@@@@Z @ 12973 NONAME ; class QMimeData * QAbstractProxyModel::mimeData(class QList<class QModelIndex> const &) const
-	?minimumSizeHint@QRadioButton@@UBE?AVQSize@@XZ @ 12974 NONAME ; class QSize QRadioButton::minimumSizeHint(void) const
-	?setPositions@QGlyphs@@QAEXABV?$QVector@VQPointF@@@@@Z @ 12975 NONAME ; void QGlyphs::setPositions(class QVector<class QPointF> const &)
-	?drawRects@QBlitterPaintEngine@@UAEXPBVQRect@@H@Z @ 12976 NONAME ; void QBlitterPaintEngine::drawRects(class QRect const *, int)
-	?fillInPendingGlyphs@QTextureGlyphCache@@QAEXXZ @ 12977 NONAME ; void QTextureGlyphCache::fillInPendingGlyphs(void)
-	?renderHintsChanged@QBlitterPaintEngine@@UAEXXZ @ 12978 NONAME ; void QBlitterPaintEngine::renderHintsChanged(void)
-	?supportedDropActions@QAbstractProxyModel@@UBE?AV?$QFlags@W4DropAction@Qt@@@@XZ @ 12979 NONAME ; class QFlags<enum Qt::DropAction> QAbstractProxyModel::supportedDropActions(void) const
-	?fillRect@QBlitterPaintEngine@@UAEXABVQRectF@@ABVQBrush@@@Z @ 12980 NONAME ; void QBlitterPaintEngine::fillRect(class QRectF const &, class QBrush const &)
-	?setGlyphIndexes@QGlyphs@@QAEXABV?$QVector@I@@@Z @ 12981 NONAME ; void QGlyphs::setGlyphIndexes(class QVector<unsigned int> const &)
-	?alphaMapBoundingBox@QFontEngine@@UAE?AUglyph_metrics_t@@IABVQTransform@@W4GlyphFormat@1@@Z @ 12982 NONAME ; struct glyph_metrics_t QFontEngine::alphaMapBoundingBox(unsigned int, class QTransform const &, enum QFontEngine::GlyphFormat)
-	?d_func@QBlittable@@ABEPBVQBlittablePrivate@@XZ @ 12983 NONAME ; class QBlittablePrivate const * QBlittable::d_func(void) const
-	?state@QBlitterPaintEngine@@QBEPBVQPainterState@@XZ @ 12984 NONAME ; class QPainterState const * QBlitterPaintEngine::state(void) const
-	?clear@QGlyphs@@QAEXXZ @ 12985 NONAME ; void QGlyphs::clear(void)
-	??1QBlittablePixmapData@@UAE@XZ @ 12986 NONAME ; QBlittablePixmapData::~QBlittablePixmapData(void)
-	?font@QGlyphs@@QBE?AVQFont@@XZ @ 12987 NONAME ; class QFont QGlyphs::font(void) const
-	?paintEngine@QBlittablePixmapData@@UBEPAVQPaintEngine@@XZ @ 12988 NONAME ; class QPaintEngine * QBlittablePixmapData::paintEngine(void) const
-	?hasChildren@QAbstractProxyModel@@UBE_NABVQModelIndex@@@Z @ 12989 NONAME ; bool QAbstractProxyModel::hasChildren(class QModelIndex const &) const
-	?swap@QPen@@QAEXAAV1@@Z @ 12990 NONAME ; void QPen::swap(class QPen &)
-	?span@QAbstractProxyModel@@UBE?AVQSize@@ABVQModelIndex@@@Z @ 12991 NONAME ; class QSize QAbstractProxyModel::span(class QModelIndex const &) const
-	?textureMapForGlyph@QTextureGlyphCache@@QBE?AVQImage@@IUQFixed@@@Z @ 12992 NONAME ; class QImage QTextureGlyphCache::textureMapForGlyph(unsigned int, struct QFixed) const
-	??0QGlyphs@@QAE@XZ @ 12993 NONAME ; QGlyphs::QGlyphs(void)
-	?begin@QBlitterPaintEngine@@UAE_NPAVQPaintDevice@@@Z @ 12994 NONAME ; bool QBlitterPaintEngine::begin(class QPaintDevice *)
-	?inFontUcs4@QFontMetricsF@@QBE_NI@Z @ 12995 NONAME ; bool QFontMetricsF::inFontUcs4(unsigned int) const
-	?markRasterOverlay@QBlittablePixmapData@@QAEXABVQRectF@@@Z @ 12996 NONAME ; void QBlittablePixmapData::markRasterOverlay(class QRectF const &)
-	?d_func@QBlitterPaintEngine@@AAEPAVQBlitterPaintEnginePrivate@@XZ @ 12997 NONAME ; class QBlitterPaintEnginePrivate * QBlitterPaintEngine::d_func(void)
-	?setNumberPrefix@QTextListFormat@@QAEXABVQString@@@Z @ 12998 NONAME ; void QTextListFormat::setNumberPrefix(class QString const &)
-	?getItem@QInputDialog@@SA?AVQString@@PAVQWidget@@ABV2@1ABVQStringList@@H_NPA_NV?$QFlags@W4WindowType@Qt@@@@V?$QFlags@W4InputMethodHint@Qt@@@@@Z @ 12999 NONAME ; class QString QInputDialog::getItem(class QWidget *, class QString const &, class QString const &, class QStringList const &, int, bool, bool *, class QFlags<enum Qt::WindowType>, class QFlags<enum Qt::InputMethodHint>)
-	?clip@QBlitterPaintEngine@@UAEXABVQVectorPath@@W4ClipOperation@Qt@@@Z @ 13000 NONAME ; void QBlitterPaintEngine::clip(class QVectorPath const &, enum Qt::ClipOperation)
-	?positions@QGlyphs@@QBE?AV?$QVector@VQPointF@@@@XZ @ 13001 NONAME ; class QVector<class QPointF> QGlyphs::positions(void) const
-	?glyphs@QTextLayout@@QBE?AV?$QList@VQGlyphs@@@@XZ @ 13002 NONAME ; class QList<class QGlyphs> QTextLayout::glyphs(void) const
-	?alphaMapForGlyph@QFontEngine@@UAE?AVQImage@@IUQFixed@@ABVQTransform@@@Z @ 13003 NONAME ; class QImage QFontEngine::alphaMapForGlyph(unsigned int, struct QFixed, class QTransform const &)
-	?fromImage@QBlittablePixmapData@@UAEXABVQImage@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 13004 NONAME ; void QBlittablePixmapData::fromImage(class QImage const &, class QFlags<enum Qt::ImageConversionFlag>)
-	??4QGlyphs@@QAEAAV0@ABV0@@Z @ 13005 NONAME ; class QGlyphs & QGlyphs::operator=(class QGlyphs const &)
-	??0QBlittable@@QAE@ABVQSize@@V?$QFlags@W4Capability@QBlittable@@@@@Z @ 13006 NONAME ; QBlittable::QBlittable(class QSize const &, class QFlags<enum QBlittable::Capability>)
-	?markRasterOverlay@QBlittablePixmapData@@QAEXPBVQRect@@H@Z @ 13007 NONAME ; void QBlittablePixmapData::markRasterOverlay(class QRect const *, int)
-	?calculateSubPixelPositionCount@QTextureGlyphCache@@IBEHI@Z @ 13008 NONAME ; int QTextureGlyphCache::calculateSubPixelPositionCount(unsigned int) const
-	?glyphs@QTextFragment@@QBE?AV?$QList@VQGlyphs@@@@XZ @ 13009 NONAME ; class QList<class QGlyphs> QTextFragment::glyphs(void) const
-	?resetInternalData@QAbstractProxyModel@@IAEXXZ @ 13010 NONAME ; void QAbstractProxyModel::resetInternalData(void)
-	?markRasterOverlay@QBlittablePixmapData@@QAEXABVQVectorPath@@@Z @ 13011 NONAME ; void QBlittablePixmapData::markRasterOverlay(class QVectorPath const &)
-	?clip@QBlitterPaintEngine@@QAEPBVQClipData@@XZ @ 13012 NONAME ; class QClipData const * QBlitterPaintEngine::clip(void)
-	?setNumberSuffix@QTextListFormat@@QAEXABVQString@@@Z @ 13013 NONAME ; void QTextListFormat::setNumberSuffix(class QString const &)
-	?swap@QPicture@@QAEXAAV1@@Z @ 13014 NONAME ; void QPicture::swap(class QPicture &)
-	?swap@QPainterPath@@QAEXAAV1@@Z @ 13015 NONAME ; void QPainterPath::swap(class QPainterPath &)
-	?minimumSizeHint@QCheckBox@@UBE?AVQSize@@XZ @ 13016 NONAME ; class QSize QCheckBox::minimumSizeHint(void) const
-	?createExplicitFont@QFontEngine@@UBE?AVQFont@@XZ @ 13017 NONAME ; class QFont QFontEngine::createExplicitFont(void) const
-	?alphaMapForGlyph@QFontEngine@@UAE?AVQImage@@IUQFixed@@@Z @ 13018 NONAME ; class QImage QFontEngine::alphaMapForGlyph(unsigned int, struct QFixed)
-	?fillTexture@QImageTextureGlyphCache@@UAEXABUCoord@QTextureGlyphCache@@IUQFixed@@@Z @ 13019 NONAME ; void QImageTextureGlyphCache::fillTexture(struct QTextureGlyphCache::Coord const &, unsigned int, struct QFixed)
-	?swap@QIcon@@QAEXAAV1@@Z @ 13020 NONAME ; void QIcon::swap(class QIcon &)
-	?unmarkRasterOverlay@QBlittablePixmapData@@QAEXABVQRectF@@@Z @ 13021 NONAME ; void QBlittablePixmapData::unmarkRasterOverlay(class QRectF const &)
-	?brushOriginChanged@QBlitterPaintEngine@@UAEXXZ @ 13022 NONAME ; void QBlitterPaintEngine::brushOriginChanged(void)
-	??0QApplicationPrivate@@QAE@AAHPAPADW4Type@QApplication@@H@Z @ 13023 NONAME ; QApplicationPrivate::QApplicationPrivate(int &, char * *, enum QApplication::Type, int)
-	?inFontUcs4@QFontMetrics@@QBE_NI@Z @ 13024 NONAME ; bool QFontMetrics::inFontUcs4(unsigned int) const
-	?unlock@QBlittable@@QAEXXZ @ 13025 NONAME ; void QBlittable::unlock(void)
-	?swap@QRegion@@QAEXAAV1@@Z @ 13026 NONAME ; void QRegion::swap(class QRegion &)
-	?setItemData@QAbstractProxyModel@@UAE_NABVQModelIndex@@ABV?$QMap@HVQVariant@@@@@Z @ 13027 NONAME ; bool QAbstractProxyModel::setItemData(class QModelIndex const &, class QMap<int, class QVariant> const &)
-	?swap@QPolygonF@@QAEXAAV1@@Z @ 13028 NONAME ; void QPolygonF::swap(class QPolygonF &)
-	?swap@QPolygon@@QAEXAAV1@@Z @ 13029 NONAME ; void QPolygon::swap(class QPolygon &)
-	?d_func@QBlitterPaintEngine@@ABEPBVQBlitterPaintEnginePrivate@@XZ @ 13030 NONAME ; class QBlitterPaintEnginePrivate const * QBlitterPaintEngine::d_func(void) const
-	?swap@QKeySequence@@QAEXAAV1@@Z @ 13031 NONAME ; void QKeySequence::swap(class QKeySequence &)
-	??1QGlyphs@@QAE@XZ @ 13032 NONAME ; QGlyphs::~QGlyphs(void)
-	?stroke@QBlitterPaintEngine@@UAEXABVQVectorPath@@ABVQPen@@@Z @ 13033 NONAME ; void QBlitterPaintEngine::stroke(class QVectorPath const &, class QPen const &)
-	??9QGlyphs@@QBE_NABV0@@Z @ 13034 NONAME ; bool QGlyphs::operator!=(class QGlyphs const &) const
-	??1QBlittable@@UAE@XZ @ 13035 NONAME ; QBlittable::~QBlittable(void)
-	??_EQBlitterPaintEngine@@UAE@I@Z @ 13036 NONAME ; QBlitterPaintEngine::~QBlitterPaintEngine(unsigned int)
-	?buffer@QBlittablePixmapData@@UAEPAVQImage@@XZ @ 13037 NONAME ; class QImage * QBlittablePixmapData::buffer(void)
-	?drawStaticTextItem@QBlitterPaintEngine@@UAEXPAVQStaticTextItem@@@Z @ 13038 NONAME ; void QBlitterPaintEngine::drawStaticTextItem(class QStaticTextItem *)
-	??0QGlyphs@@QAE@ABV0@@Z @ 13039 NONAME ; QGlyphs::QGlyphs(class QGlyphs const &)
-	?lock@QBlittable@@QAEPAVQImage@@XZ @ 13040 NONAME ; class QImage * QBlittable::lock(void)
-	?markRasterOverlay@QBlittablePixmapData@@QAEXABVQPointF@@ABVQTextItem@@@Z @ 13041 NONAME ; void QBlittablePixmapData::markRasterOverlay(class QPointF const &, class QTextItem const &)
-	??YQGlyphs@@AAEAAV0@ABV0@@Z @ 13042 NONAME ; class QGlyphs & QGlyphs::operator+=(class QGlyphs const &)
-	?drawEllipse@QBlitterPaintEngine@@UAEXABVQRectF@@@Z @ 13043 NONAME ; void QBlitterPaintEngine::drawEllipse(class QRectF const &)
-	?blittable@QBlittablePixmapData@@QBEPAVQBlittable@@XZ @ 13044 NONAME ; class QBlittable * QBlittablePixmapData::blittable(void) const
-	?resizeCache@QTextureGlyphCache@@QAEXHH@Z @ 13045 NONAME ; void QTextureGlyphCache::resizeCache(int, int)
-	?state@QBlitterPaintEngine@@QAEPAVQPainterState@@XZ @ 13046 NONAME ; class QPainterState * QBlitterPaintEngine::state(void)
-	?penChanged@QBlitterPaintEngine@@UAEXXZ @ 13047 NONAME ; void QBlitterPaintEngine::penChanged(void)
-	?hasHeightForWidth@QWidgetPrivate@@UBE_NXZ @ 13048 NONAME ; bool QWidgetPrivate::hasHeightForWidth(void) const
-	?toImage@QBlittablePixmapData@@UBE?AVQImage@@XZ @ 13049 NONAME ; class QImage QBlittablePixmapData::toImage(void) const
-	??_EQBlittable@@UAE@I@Z @ 13050 NONAME ; QBlittable::~QBlittable(unsigned int)
-	?qt_addBitmapToPath@@YAXMMPBEHHHPAVQPainterPath@@@Z @ 13051 NONAME ; void qt_addBitmapToPath(float, float, unsigned char const *, int, int, int, class QPainterPath *)
-	?drawGlyphs@QPainter@@QAEXABVQPointF@@ABVQGlyphs@@@Z @ 13052 NONAME ; void QPainter::drawGlyphs(class QPointF const &, class QGlyphs const &)
-	??0QFlickGesture@@QAE@PAVQObject@@W4MouseButton@Qt@@0@Z @ 13053 NONAME ; QFlickGesture::QFlickGesture(class QObject *, enum Qt::MouseButton, class QObject *)
-	??0QScrollEvent@@QAE@ABVQPointF@@0W4ScrollState@0@@Z @ 13054 NONAME ; QScrollEvent::QScrollEvent(class QPointF const &, class QPointF const &, enum QScrollEvent::ScrollState)
-	??0QScrollPrepareEvent@@QAE@ABVQPointF@@@Z @ 13055 NONAME ; QScrollPrepareEvent::QScrollPrepareEvent(class QPointF const &)
-	??0QScroller@@AAE@PAVQObject@@@Z @ 13056 NONAME ; QScroller::QScroller(class QObject *)
-	??0QScrollerProperties@@QAE@ABV0@@Z @ 13057 NONAME ; QScrollerProperties::QScrollerProperties(class QScrollerProperties const &)
-	??0QScrollerProperties@@QAE@XZ @ 13058 NONAME ; QScrollerProperties::QScrollerProperties(void)
-	??1QFlickGesture@@UAE@XZ @ 13059 NONAME ; QFlickGesture::~QFlickGesture(void)
-	??1QScrollEvent@@UAE@XZ @ 13060 NONAME ; QScrollEvent::~QScrollEvent(void)
-	??1QScrollPrepareEvent@@UAE@XZ @ 13061 NONAME ; QScrollPrepareEvent::~QScrollPrepareEvent(void)
-	??1QScroller@@EAE@XZ @ 13062 NONAME ; QScroller::~QScroller(void)
-	??1QScrollerProperties@@UAE@XZ @ 13063 NONAME ; QScrollerProperties::~QScrollerProperties(void)
-	??4QScrollerProperties@@QAEAAV0@ABV0@@Z @ 13064 NONAME ; class QScrollerProperties & QScrollerProperties::operator=(class QScrollerProperties const &)
-	??8QScrollerProperties@@QBE_NABV0@@Z @ 13065 NONAME ; bool QScrollerProperties::operator==(class QScrollerProperties const &) const
-	??9QScrollerProperties@@QBE_NABV0@@Z @ 13066 NONAME ; bool QScrollerProperties::operator!=(class QScrollerProperties const &) const
-	??_EQFlickGesture@@UAE@I@Z @ 13067 NONAME ; QFlickGesture::~QFlickGesture(unsigned int)
-	??_EQScrollEvent@@UAE@I@Z @ 13068 NONAME ; QScrollEvent::~QScrollEvent(unsigned int)
-	??_EQScrollPrepareEvent@@UAE@I@Z @ 13069 NONAME ; QScrollPrepareEvent::~QScrollPrepareEvent(unsigned int)
-	??_EQScroller@@UAE@I@Z @ 13070 NONAME ; QScroller::~QScroller(unsigned int)
-	??_EQScrollerProperties@@UAE@I@Z @ 13071 NONAME ; QScrollerProperties::~QScrollerProperties(unsigned int)
-	?activeScrollers@QScroller@@SA?AV?$QList@PAVQScroller@@@@XZ @ 13072 NONAME ; class QList<class QScroller *> QScroller::activeScrollers(void)
-	?canStartScrollingAt@QAbstractScrollAreaPrivate@@QAE_NABVQPoint@@@Z @ 13073 NONAME ; bool QAbstractScrollAreaPrivate::canStartScrollingAt(class QPoint const &)
-	?clearSubFocus@QGraphicsItemPrivate@@QAEXPAVQGraphicsItem@@0@Z @ 13074 NONAME ; void QGraphicsItemPrivate::clearSubFocus(class QGraphicsItem *, class QGraphicsItem *)
-	?contentPos@QScrollEvent@@QBE?AVQPointF@@XZ @ 13075 NONAME ; class QPointF QScrollEvent::contentPos(void) const
-	?contentPos@QScrollPrepareEvent@@QBE?AVQPointF@@XZ @ 13076 NONAME ; class QPointF QScrollPrepareEvent::contentPos(void) const
-	?contentPosRange@QScrollPrepareEvent@@QBE?AVQRectF@@XZ @ 13077 NONAME ; class QRectF QScrollPrepareEvent::contentPosRange(void) const
-	?d_func@QFlickGesture@@AAEPAVQFlickGesturePrivate@@XZ @ 13078 NONAME ; class QFlickGesturePrivate * QFlickGesture::d_func(void)
-	?d_func@QFlickGesture@@ABEPBVQFlickGesturePrivate@@XZ @ 13079 NONAME ; class QFlickGesturePrivate const * QFlickGesture::d_func(void) const
-	?d_func@QScrollEvent@@AAEPAVQScrollEventPrivate@@XZ @ 13080 NONAME ; class QScrollEventPrivate * QScrollEvent::d_func(void)
-	?d_func@QScrollEvent@@ABEPBVQScrollEventPrivate@@XZ @ 13081 NONAME ; class QScrollEventPrivate const * QScrollEvent::d_func(void) const
-	?d_func@QScrollPrepareEvent@@AAEPAVQScrollPrepareEventPrivate@@XZ @ 13082 NONAME ; class QScrollPrepareEventPrivate * QScrollPrepareEvent::d_func(void)
-	?d_func@QScrollPrepareEvent@@ABEPBVQScrollPrepareEventPrivate@@XZ @ 13083 NONAME ; class QScrollPrepareEventPrivate const * QScrollPrepareEvent::d_func(void) const
-	?d_func@QScroller@@AAEPAVQScrollerPrivate@@XZ @ 13084 NONAME ; class QScrollerPrivate * QScroller::d_func(void)
-	?d_func@QScroller@@ABEPBVQScrollerPrivate@@XZ @ 13085 NONAME ; class QScrollerPrivate const * QScroller::d_func(void) const
-	?ensureVisible@QScroller@@QAEXABVQRectF@@MM@Z @ 13086 NONAME ; void QScroller::ensureVisible(class QRectF const &, float, float)
-	?ensureVisible@QScroller@@QAEXABVQRectF@@MMH@Z @ 13087 NONAME ; void QScroller::ensureVisible(class QRectF const &, float, float, int)
-	?finalPosition@QScroller@@QBE?AVQPointF@@XZ @ 13088 NONAME ; class QPointF QScroller::finalPosition(void) const
-	?getStaticMetaObject@QFlickGesture@@SAABUQMetaObject@@XZ @ 13089 NONAME ; struct QMetaObject const & QFlickGesture::getStaticMetaObject(void)
-	?getStaticMetaObject@QScroller@@SAABUQMetaObject@@XZ @ 13090 NONAME ; struct QMetaObject const & QScroller::getStaticMetaObject(void)
-	?grabGesture@QScroller@@SA?AW4GestureType@Qt@@PAVQObject@@W4ScrollerGestureType@1@@Z @ 13091 NONAME ; enum Qt::GestureType QScroller::grabGesture(class QObject *, enum QScroller::ScrollerGestureType)
-	?grabbedGesture@QScroller@@SA?AW4GestureType@Qt@@PAVQObject@@@Z @ 13092 NONAME ; enum Qt::GestureType QScroller::grabbedGesture(class QObject *)
-	?handleInput@QScroller@@QAE_NW4Input@1@ABVQPointF@@_J@Z @ 13093 NONAME ; bool QScroller::handleInput(enum QScroller::Input, class QPointF const &, long long)
-	?hasScroller@QScroller@@SA_NPAVQObject@@@Z @ 13094 NONAME ; bool QScroller::hasScroller(class QObject *)
-	?metaObject@QFlickGesture@@UBEPBUQMetaObject@@XZ @ 13095 NONAME ; struct QMetaObject const * QFlickGesture::metaObject(void) const
-	?metaObject@QScroller@@UBEPBUQMetaObject@@XZ @ 13096 NONAME ; struct QMetaObject const * QScroller::metaObject(void) const
-	?overshootDistance@QScrollEvent@@QBE?AVQPointF@@XZ @ 13097 NONAME ; class QPointF QScrollEvent::overshootDistance(void) const
-	?pixelPerMeter@QScroller@@QBE?AVQPointF@@XZ @ 13098 NONAME ; class QPointF QScroller::pixelPerMeter(void) const
-	?qGamma_correct_back_to_linear_cs@@YAXPAVQImage@@@Z @ 13099 NONAME ; void qGamma_correct_back_to_linear_cs(class QImage *)
-	?qt_metacall@QFlickGesture@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 13100 NONAME ; int QFlickGesture::qt_metacall(enum QMetaObject::Call, int, void * *)
-	?qt_metacall@QScroller@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 13101 NONAME ; int QScroller::qt_metacall(enum QMetaObject::Call, int, void * *)
-	?qt_metacast@QFlickGesture@@UAEPAXPBD@Z @ 13102 NONAME ; void * QFlickGesture::qt_metacast(char const *)
-	?qt_metacast@QScroller@@UAEPAXPBD@Z @ 13103 NONAME ; void * QScroller::qt_metacast(char const *)
-	?resendPrepareEvent@QScroller@@QAEXXZ @ 13104 NONAME ; void QScroller::resendPrepareEvent(void)
-	?resetCursorBlinkTimer@QLineControl@@QAEXXZ @ 13105 NONAME ; void QLineControl::resetCursorBlinkTimer(void)
-	?scrollMetric@QScrollerProperties@@QBE?AVQVariant@@W4ScrollMetric@1@@Z @ 13106 NONAME ; class QVariant QScrollerProperties::scrollMetric(enum QScrollerProperties::ScrollMetric) const
-	?scrollState@QScrollEvent@@QBE?AW4ScrollState@1@XZ @ 13107 NONAME ; enum QScrollEvent::ScrollState QScrollEvent::scrollState(void) const
-	?scrollTo@QScroller@@QAEXABVQPointF@@@Z @ 13108 NONAME ; void QScroller::scrollTo(class QPointF const &)
-	?scrollTo@QScroller@@QAEXABVQPointF@@H@Z @ 13109 NONAME ; void QScroller::scrollTo(class QPointF const &, int)
-	?scroller@QScroller@@SAPAV1@PAVQObject@@@Z @ 13110 NONAME ; class QScroller * QScroller::scroller(class QObject *)
-	?scroller@QScroller@@SAPBV1@PBVQObject@@@Z @ 13111 NONAME ; class QScroller const * QScroller::scroller(class QObject const *)
-	?scrollerProperties@QScroller@@QBE?AVQScrollerProperties@@XZ @ 13112 NONAME ; class QScrollerProperties QScroller::scrollerProperties(void) const
-	?scrollerPropertiesChanged@QScroller@@IAEXABVQScrollerProperties@@@Z @ 13113 NONAME ; void QScroller::scrollerPropertiesChanged(class QScrollerProperties const &)
-	?setContentPos@QScrollPrepareEvent@@QAEXABVQPointF@@@Z @ 13114 NONAME ; void QScrollPrepareEvent::setContentPos(class QPointF const &)
-	?setContentPosRange@QScrollPrepareEvent@@QAEXABVQRectF@@@Z @ 13115 NONAME ; void QScrollPrepareEvent::setContentPosRange(class QRectF const &)
-	?setDefaultScrollerProperties@QScrollerProperties@@SAXABV1@@Z @ 13116 NONAME ; void QScrollerProperties::setDefaultScrollerProperties(class QScrollerProperties const &)
-	?setScrollMetric@QScrollerProperties@@QAEXW4ScrollMetric@1@ABVQVariant@@@Z @ 13117 NONAME ; void QScrollerProperties::setScrollMetric(enum QScrollerProperties::ScrollMetric, class QVariant const &)
-	?setScrollerProperties@QScroller@@QAEXABVQScrollerProperties@@@Z @ 13118 NONAME ; void QScroller::setScrollerProperties(class QScrollerProperties const &)
-	?setSnapPositionsX@QScroller@@QAEXABV?$QList@M@@@Z @ 13119 NONAME ; void QScroller::setSnapPositionsX(class QList<float> const &)
-	?setSnapPositionsX@QScroller@@QAEXMM@Z @ 13120 NONAME ; void QScroller::setSnapPositionsX(float, float)
-	?setSnapPositionsY@QScroller@@QAEXABV?$QList@M@@@Z @ 13121 NONAME ; void QScroller::setSnapPositionsY(class QList<float> const &)
-	?setSnapPositionsY@QScroller@@QAEXMM@Z @ 13122 NONAME ; void QScroller::setSnapPositionsY(float, float)
-	?setSubFocus@QGraphicsItemPrivate@@QAEXPAVQGraphicsItem@@0@Z @ 13123 NONAME ; void QGraphicsItemPrivate::setSubFocus(class QGraphicsItem *, class QGraphicsItem *)
-	?setViewportSize@QScrollPrepareEvent@@QAEXABVQSizeF@@@Z @ 13124 NONAME ; void QScrollPrepareEvent::setViewportSize(class QSizeF const &)
-	?startPos@QScrollPrepareEvent@@QBE?AVQPointF@@XZ @ 13125 NONAME ; class QPointF QScrollPrepareEvent::startPos(void) const
-	?state@QScroller@@QBE?AW4State@1@XZ @ 13126 NONAME ; enum QScroller::State QScroller::state(void) const
-	?stateChanged@QScroller@@IAEXW4State@1@@Z @ 13127 NONAME ; void QScroller::stateChanged(enum QScroller::State)
-	?stop@QScroller@@QAEXXZ @ 13128 NONAME ; void QScroller::stop(void)
-	?target@QScroller@@QBEPAVQObject@@XZ @ 13129 NONAME ; class QObject * QScroller::target(void) const
-	?tr@QFlickGesture@@SA?AVQString@@PBD0@Z @ 13130 NONAME ; class QString QFlickGesture::tr(char const *, char const *)
-	?tr@QFlickGesture@@SA?AVQString@@PBD0H@Z @ 13131 NONAME ; class QString QFlickGesture::tr(char const *, char const *, int)
-	?tr@QScroller@@SA?AVQString@@PBD0@Z @ 13132 NONAME ; class QString QScroller::tr(char const *, char const *)
-	?tr@QScroller@@SA?AVQString@@PBD0H@Z @ 13133 NONAME ; class QString QScroller::tr(char const *, char const *, int)
-	?trUtf8@QFlickGesture@@SA?AVQString@@PBD0@Z @ 13134 NONAME ; class QString QFlickGesture::trUtf8(char const *, char const *)
-	?trUtf8@QFlickGesture@@SA?AVQString@@PBD0H@Z @ 13135 NONAME ; class QString QFlickGesture::trUtf8(char const *, char const *, int)
-	?trUtf8@QScroller@@SA?AVQString@@PBD0@Z @ 13136 NONAME ; class QString QScroller::trUtf8(char const *, char const *)
-	?trUtf8@QScroller@@SA?AVQString@@PBD0H@Z @ 13137 NONAME ; class QString QScroller::trUtf8(char const *, char const *, int)
-	?ungrabGesture@QScroller@@SAXPAVQObject@@@Z @ 13138 NONAME ; void QScroller::ungrabGesture(class QObject *)
-	?unsetDefaultScrollerProperties@QScrollerProperties@@SAXXZ @ 13139 NONAME ; void QScrollerProperties::unsetDefaultScrollerProperties(void)
-	?velocity@QScroller@@QBE?AVQPointF@@XZ @ 13140 NONAME ; class QPointF QScroller::velocity(void) const
-	?viewportSize@QScrollPrepareEvent@@QBE?AVQSizeF@@XZ @ 13141 NONAME ; class QSizeF QScrollPrepareEvent::viewportSize(void) const
-	?staticMetaObject@QScroller@@2UQMetaObject@@B @ 13142 NONAME ; struct QMetaObject const QScroller::staticMetaObject
-	?staticMetaObject@QFlickGesture@@2UQMetaObject@@B @ 13143 NONAME ; struct QMetaObject const QFlickGesture::staticMetaObject
-	?isDragEnabled@QTextControl@@QBE_NXZ @ 13144 NONAME ; bool QTextControl::isDragEnabled(void) const
-	?setWordSelectionEnabled@QTextControl@@QAEX_N@Z @ 13145 NONAME ; void QTextControl::setWordSelectionEnabled(bool)
-	?setDragEnabled@QTextControl@@QAEX_N@Z @ 13146 NONAME ; void QTextControl::setDragEnabled(bool)
-	?isWordSelectionEnabled@QTextControl@@QBE_NXZ @ 13147 NONAME ; bool QTextControl::isWordSelectionEnabled(void) const
-	?ProcessCommandParametersL@QS60MainAppUi@@UAEHW4TApaCommand@@AAV?$TBuf@$0BAA@@@ABVTDesC8@@@Z @ 13148 NONAME ; int QS60MainAppUi::ProcessCommandParametersL(enum TApaCommand, class TBuf<256> &, class TDesC8 const &)
-	?openFile@QFileOpenEvent@@QBE_NAAVQFile@@V?$QFlags@W4OpenModeFlag@QIODevice@@@@@Z @ 13149 NONAME ; bool QFileOpenEvent::openFile(class QFile &, class QFlags<enum QIODevice::OpenModeFlag>) const
-	??0QFileOpenEvent@@QAE@ABVRFile@@@Z @ 13150 NONAME ; QFileOpenEvent::QFileOpenEvent(class RFile const &)
-	?beginDataAccess@QVolatileImage@@QBEXXZ @ 13151 NONAME ; void QVolatileImage::beginDataAccess(void) const
-	??1QVolatileImage@@QAE@XZ @ 13152 NONAME ; QVolatileImage::~QVolatileImage(void)
-	?trUtf8@QInternalMimeData@@SA?AVQString@@PBD0@Z @ 13153 NONAME ; class QString QInternalMimeData::trUtf8(char const *, char const *)
-	??0QVolatileImage@@QAE@HHW4Format@QImage@@@Z @ 13154 NONAME ; QVolatileImage::QVolatileImage(int, int, enum QImage::Format)
-	?ensureFormat@QVolatileImage@@QAE_NW4Format@QImage@@@Z @ 13155 NONAME ; bool QVolatileImage::ensureFormat(enum QImage::Format)
-	?fill@QVolatileImage@@QAEXI@Z @ 13156 NONAME ; void QVolatileImage::fill(unsigned int)
-	?assignedInputContext@QWidgetPrivate@@QBEPAVQInputContext@@XZ @ 13157 NONAME ; class QInputContext * QWidgetPrivate::assignedInputContext(void) const
-	?retrieveData@QInternalMimeData@@MBE?AVQVariant@@ABVQString@@W4Type@2@@Z @ 13158 NONAME ; class QVariant QInternalMimeData::retrieveData(class QString const &, enum QVariant::Type) const
-	?formats@QInternalMimeData@@UBE?AVQStringList@@XZ @ 13159 NONAME ; class QStringList QInternalMimeData::formats(void) const
-	?isNull@QVolatileImage@@QBE_NXZ @ 13160 NONAME ; bool QVolatileImage::isNull(void) const
-	?toImage@QVolatileImage@@QBE?AVQImage@@XZ @ 13161 NONAME ; class QImage QVolatileImage::toImage(void) const
-	??0QVolatileImage@@QAE@ABVQImage@@@Z @ 13162 NONAME ; QVolatileImage::QVolatileImage(class QImage const &)
-	?tr@QInternalMimeData@@SA?AVQString@@PBD0H@Z @ 13163 NONAME ; class QString QInternalMimeData::tr(char const *, char const *, int)
-	?resolveFontFamilyAlias@QFontDatabase@@CA?AVQString@@ABV2@@Z @ 13164 NONAME ; class QString QFontDatabase::resolveFontFamilyAlias(class QString const &)
-	?hasFormat@QInternalMimeData@@UBE_NABVQString@@@Z @ 13165 NONAME ; bool QInternalMimeData::hasFormat(class QString const &) const
-	?format@QVolatileImage@@QBE?AW4Format@QImage@@XZ @ 13166 NONAME ; enum QImage::Format QVolatileImage::format(void) const
-	?renderDataHelper@QInternalMimeData@@SA?AVQByteArray@@ABVQString@@PBVQMimeData@@@Z @ 13167 NONAME ; class QByteArray QInternalMimeData::renderDataHelper(class QString const &, class QMimeData const *)
-	?endDataAccess@QVolatileImage@@QBEX_N@Z @ 13168 NONAME ; void QVolatileImage::endDataAccess(bool) const
-	?constBits@QVolatileImage@@QBEPBEXZ @ 13169 NONAME ; unsigned char const * QVolatileImage::constBits(void) const
-	?updateMicroFocus@QLineControl@@IAEXXZ @ 13170 NONAME ; void QLineControl::updateMicroFocus(void)
-	?height@QVolatileImage@@QBEHXZ @ 13171 NONAME ; int QVolatileImage::height(void) const
-	?duplicateNativeImage@QVolatileImage@@QBEPAXXZ @ 13172 NONAME ; void * QVolatileImage::duplicateNativeImage(void) const
-	?formatsHelper@QInternalMimeData@@SA?AVQStringList@@PBVQMimeData@@@Z @ 13173 NONAME ; class QStringList QInternalMimeData::formatsHelper(class QMimeData const *)
-	?qt_metacast@QInternalMimeData@@UAEPAXPBD@Z @ 13174 NONAME ; void * QInternalMimeData::qt_metacast(char const *)
-	?bits@QVolatileImage@@QAEPAEXZ @ 13175 NONAME ; unsigned char * QVolatileImage::bits(void)
-	?paintEngine@QVolatileImage@@QAEPAVQPaintEngine@@XZ @ 13176 NONAME ; class QPaintEngine * QVolatileImage::paintEngine(void)
-	?bytesPerLine@QVolatileImage@@QBEHXZ @ 13177 NONAME ; int QVolatileImage::bytesPerLine(void) const
-	?width@QVolatileImage@@QBEHXZ @ 13178 NONAME ; int QVolatileImage::width(void) const
-	?qt_metacall@QInternalMimeData@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 13179 NONAME ; int QInternalMimeData::qt_metacall(enum QMetaObject::Call, int, void * *)
-	?lineHeightType@QTextBlockFormat@@QBEHXZ @ 13180 NONAME ; int QTextBlockFormat::lineHeightType(void) const
-	?trUtf8@QInternalMimeData@@SA?AVQString@@PBD0H@Z @ 13181 NONAME ; class QString QInternalMimeData::trUtf8(char const *, char const *, int)
-	?copyFrom@QVolatileImage@@QAEXPAV1@ABVQRect@@@Z @ 13182 NONAME ; void QVolatileImage::copyFrom(class QVolatileImage *, class QRect const &)
-	?lineHeight@QTextBlockFormat@@QBEMMM@Z @ 13183 NONAME ; float QTextBlockFormat::lineHeight(float, float) const
-	?canReadData@QInternalMimeData@@SA_NABVQString@@@Z @ 13184 NONAME ; bool QInternalMimeData::canReadData(class QString const &)
-	?releaseCachedResources@QGraphicsSystem@@UAEXXZ @ 13185 NONAME ; void QGraphicsSystem::releaseCachedResources(void)
-	??0QInternalMimeData@@QAE@XZ @ 13186 NONAME ; QInternalMimeData::QInternalMimeData(void)
-	?setLineHeight@QTextBlockFormat@@QAEXMH@Z @ 13187 NONAME ; void QTextBlockFormat::setLineHeight(float, int)
-	?imageRef@QVolatileImage@@QAEAAVQImage@@XZ @ 13188 NONAME ; class QImage & QVolatileImage::imageRef(void)
-	??0QVolatileImage@@QAE@PAX0@Z @ 13189 NONAME ; QVolatileImage::QVolatileImage(void *, void *)
-	??4QVolatileImage@@QAEAAV0@ABV0@@Z @ 13190 NONAME ; class QVolatileImage & QVolatileImage::operator=(class QVolatileImage const &)
-	??0QVolatileImage@@QAE@XZ @ 13191 NONAME ; QVolatileImage::QVolatileImage(void)
-	?getStaticMetaObject@QInternalMimeData@@SAABUQMetaObject@@XZ @ 13192 NONAME ; struct QMetaObject const & QInternalMimeData::getStaticMetaObject(void)
-	?lineHeight@QTextBlockFormat@@QBEMXZ @ 13193 NONAME ; float QTextBlockFormat::lineHeight(void) const
-	?tr@QInternalMimeData@@SA?AVQString@@PBD0@Z @ 13194 NONAME ; class QString QInternalMimeData::tr(char const *, char const *)
-	?hasAlphaChannel@QVolatileImage@@QBE_NXZ @ 13195 NONAME ; bool QVolatileImage::hasAlphaChannel(void) const
-	?setAlphaChannel@QVolatileImage@@QAEXABVQPixmap@@@Z @ 13196 NONAME ; void QVolatileImage::setAlphaChannel(class QPixmap const &)
-	??_EQInternalMimeData@@UAE@I@Z @ 13197 NONAME ; QInternalMimeData::~QInternalMimeData(unsigned int)
-	?byteCount@QVolatileImage@@QBEHXZ @ 13198 NONAME ; int QVolatileImage::byteCount(void) const
-	??0QVolatileImage@@QAE@ABV0@@Z @ 13199 NONAME ; QVolatileImage::QVolatileImage(class QVolatileImage const &)
-	?metaObject@QInternalMimeData@@UBEPBUQMetaObject@@XZ @ 13200 NONAME ; struct QMetaObject const * QInternalMimeData::metaObject(void) const
-	?depth@QVolatileImage@@QBEHXZ @ 13201 NONAME ; int QVolatileImage::depth(void) const
-	?hasFormatHelper@QInternalMimeData@@SA_NABVQString@@PBVQMimeData@@@Z @ 13202 NONAME ; bool QInternalMimeData::hasFormatHelper(class QString const &, class QMimeData const *)
-	??1QInternalMimeData@@UAE@XZ @ 13203 NONAME ; QInternalMimeData::~QInternalMimeData(void)
-	?staticMetaObject@QInternalMimeData@@2UQMetaObject@@B @ 13204 NONAME ; struct QMetaObject const QInternalMimeData::staticMetaObject
+	?resetCursorBlinkTimer@QLineControl@@QAEXXZ @ 12907 NONAME ; void QLineControl::resetCursorBlinkTimer(void)
+	?setSubFocus@QGraphicsItemPrivate@@QAEXPAVQGraphicsItem@@0@Z @ 12908 NONAME ; void QGraphicsItemPrivate::setSubFocus(class QGraphicsItem *, class QGraphicsItem *)
+	?clearSubFocus@QGraphicsItemPrivate@@QAEXPAVQGraphicsItem@@0@Z @ 12909 NONAME ; void QGraphicsItemPrivate::clearSubFocus(class QGraphicsItem *, class QGraphicsItem *)
+	?hitTest@QTextDocumentLayout@@UBEHABVQPointF@@W4HitTestAccuracy@Qt@@@Z @ 12910 NONAME ABSENT ; int QTextDocumentLayout::hitTest(class QPointF const &, enum Qt::HitTestAccuracy) const
+	?positionInlineObject@QTextDocumentLayout@@MAEXVQTextInlineObject@@HABVQTextFormat@@@Z @ 12911 NONAME ABSENT ; void QTextDocumentLayout::positionInlineObject(class QTextInlineObject, int, class QTextFormat const &)
+	?timerEvent@QTextDocumentLayout@@MAEXPAVQTimerEvent@@@Z @ 12912 NONAME ABSENT ; void QTextDocumentLayout::timerEvent(class QTimerEvent *)
+	?draw@QTextDocumentLayout@@UAEXPAVQPainter@@ABUPaintContext@QAbstractTextDocumentLayout@@@Z @ 12913 NONAME ABSENT ; void QTextDocumentLayout::draw(class QPainter *, struct QAbstractTextDocumentLayout::PaintContext const &)
+	?documentSize@QTextDocumentLayout@@UBE?AVQSizeF@@XZ @ 12914 NONAME ABSENT ; class QSizeF QTextDocumentLayout::documentSize(void) const
+	?drawInlineObject@QTextDocumentLayout@@MAEXPAVQPainter@@ABVQRectF@@VQTextInlineObject@@HABVQTextFormat@@@Z @ 12915 NONAME ABSENT ; void QTextDocumentLayout::drawInlineObject(class QPainter *, class QRectF const &, class QTextInlineObject, int, class QTextFormat const &)
+	?resizeInlineObject@QTextDocumentLayout@@MAEXVQTextInlineObject@@HABVQTextFormat@@@Z @ 12916 NONAME ABSENT ; void QTextDocumentLayout::resizeInlineObject(class QTextInlineObject, int, class QTextFormat const &)
+	?dynamicDocumentSize@QTextDocumentLayout@@QBE?AVQSizeF@@XZ @ 12917 NONAME ABSENT ; class QSizeF QTextDocumentLayout::dynamicDocumentSize(void) const
+	?metaObject@QTextDocumentLayout@@UBEPBUQMetaObject@@XZ @ 12918 NONAME ABSENT ; struct QMetaObject const * QTextDocumentLayout::metaObject(void) const
+	?getStaticMetaObject@QTextDocumentLayout@@SAABUQMetaObject@@XZ @ 12919 NONAME ABSENT ; struct QMetaObject const & QTextDocumentLayout::getStaticMetaObject(void)
+	?blockBoundingRect@QTextDocumentLayout@@UBE?AVQRectF@@ABVQTextBlock@@@Z @ 12920 NONAME ABSENT ; class QRectF QTextDocumentLayout::blockBoundingRect(class QTextBlock const &) const
+	?qt_metacall@QTextDocumentLayout@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 12921 NONAME ABSENT ; int QTextDocumentLayout::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?d_func@QTextDocumentLayout@@AAEPAVQTextDocumentLayoutPrivate@@XZ @ 12922 NONAME ABSENT ; class QTextDocumentLayoutPrivate * QTextDocumentLayout::d_func(void)
+	?isDragEnabled@QTextControl@@QBE_NXZ @ 12923 NONAME ; bool QTextControl::isDragEnabled(void) const
+	?staticMetaObject@QTextDocumentLayout@@2UQMetaObject@@B @ 12924 NONAME ABSENT ; struct QMetaObject const QTextDocumentLayout::staticMetaObject
+	?qt_metacast@QTextDocumentLayout@@UAEPAXPBD@Z @ 12925 NONAME ABSENT ; void * QTextDocumentLayout::qt_metacast(char const *)
+	?documentChanged@QTextDocumentLayout@@MAEXHHH@Z @ 12926 NONAME ABSENT ; void QTextDocumentLayout::documentChanged(int, int, int)
+	??1QTextDocumentLayout@@UAE@XZ @ 12927 NONAME ABSENT ; QTextDocumentLayout::~QTextDocumentLayout(void)
+	?layoutStatus@QTextDocumentLayout@@QBEHXZ @ 12928 NONAME ABSENT ; int QTextDocumentLayout::layoutStatus(void) const
+	?setDragEnabled@QTextControl@@QAEX_N@Z @ 12929 NONAME ; void QTextControl::setDragEnabled(bool)
+	?d_func@QTextDocumentLayout@@ABEPBVQTextDocumentLayoutPrivate@@XZ @ 12930 NONAME ABSENT ; class QTextDocumentLayoutPrivate const * QTextDocumentLayout::d_func(void) const
+	?idealWidth@QTextDocumentLayout@@QBEMXZ @ 12931 NONAME ABSENT ; float QTextDocumentLayout::idealWidth(void) const
+	?setFixedColumnWidth@QTextDocumentLayout@@QAEXH@Z @ 12932 NONAME ABSENT ; void QTextDocumentLayout::setFixedColumnWidth(int)
+	?cursorWidth@QTextDocumentLayout@@QBEHXZ @ 12933 NONAME ABSENT ; int QTextDocumentLayout::cursorWidth(void) const
+	?trUtf8@QTextDocumentLayout@@SA?AVQString@@PBD0H@Z @ 12934 NONAME ABSENT ; class QString QTextDocumentLayout::trUtf8(char const *, char const *, int)
+	?pageCount@QTextDocumentLayout@@UBEHXZ @ 12935 NONAME ABSENT ; int QTextDocumentLayout::pageCount(void) const
+	?setViewport@QTextDocumentLayout@@QAEXABVQRectF@@@Z @ 12936 NONAME ABSENT ; void QTextDocumentLayout::setViewport(class QRectF const &)
+	?contentHasAlignment@QTextDocumentLayout@@QBE_NXZ @ 12937 NONAME ABSENT ; bool QTextDocumentLayout::contentHasAlignment(void) const
+	?tr@QTextDocumentLayout@@SA?AVQString@@PBD0@Z @ 12938 NONAME ABSENT ; class QString QTextDocumentLayout::tr(char const *, char const *)
+	?setLineHeight@QTextDocumentLayout@@IAEXMW4LineHeightMode@1@@Z @ 12939 NONAME ABSENT ; void QTextDocumentLayout::setLineHeight(float, enum QTextDocumentLayout::LineHeightMode)
+	?tr@QTextDocumentLayout@@SA?AVQString@@PBD0H@Z @ 12940 NONAME ABSENT ; class QString QTextDocumentLayout::tr(char const *, char const *, int)
+	?trUtf8@QTextDocumentLayout@@SA?AVQString@@PBD0@Z @ 12941 NONAME ABSENT ; class QString QTextDocumentLayout::trUtf8(char const *, char const *)
+	?frameBoundingRect@QTextDocumentLayout@@UBE?AVQRectF@@PAVQTextFrame@@@Z @ 12942 NONAME ABSENT ; class QRectF QTextDocumentLayout::frameBoundingRect(class QTextFrame *) const
+	?setCursorWidth@QTextDocumentLayout@@QAEXH@Z @ 12943 NONAME ABSENT ; void QTextDocumentLayout::setCursorWidth(int)
+	??_EQTextDocumentLayout@@UAE@I@Z @ 12944 NONAME ABSENT ; QTextDocumentLayout::~QTextDocumentLayout(unsigned int)
+	??0QTextDocumentLayout@@QAE@PAVQTextDocument@@@Z @ 12945 NONAME ABSENT ; QTextDocumentLayout::QTextDocumentLayout(class QTextDocument *)
+	?doLayout@QTextDocumentLayout@@AAE?AVQRectF@@HHH@Z @ 12946 NONAME ABSENT ; class QRectF QTextDocumentLayout::doLayout(int, int, int)
+	?ensureLayouted@QTextDocumentLayout@@QAEXM@Z @ 12947 NONAME ABSENT ; void QTextDocumentLayout::ensureLayouted(float)
+	?layoutFinished@QTextDocumentLayout@@AAEXXZ @ 12948 NONAME ABSENT ; void QTextDocumentLayout::layoutFinished(void)
+	?dynamicPageCount@QTextDocumentLayout@@QBEHXZ @ 12949 NONAME ABSENT ; int QTextDocumentLayout::dynamicPageCount(void) const
+	?setWordSelectionEnabled@QTextControl@@QAEX_N@Z @ 12950 NONAME ; void QTextControl::setWordSelectionEnabled(bool)
+	?isWordSelectionEnabled@QTextControl@@QBE_NXZ @ 12951 NONAME ; bool QTextControl::isWordSelectionEnabled(void) const
+	?assignedInputContext@QWidgetPrivate@@QBEPAVQInputContext@@XZ @ 12952 NONAME ; class QInputContext * QWidgetPrivate::assignedInputContext(void) const
+	?updateMicroFocus@QLineControl@@IAEXXZ @ 12953 NONAME ; void QLineControl::updateMicroFocus(void)
+	?beginDataAccess@QVolatileImage@@QBEXXZ @ 12954 NONAME ; void QVolatileImage::beginDataAccess(void) const
+	??1QVolatileImage@@QAE@XZ @ 12955 NONAME ; QVolatileImage::~QVolatileImage(void)
+	??0QVolatileImage@@QAE@HHW4Format@QImage@@@Z @ 12956 NONAME ; QVolatileImage::QVolatileImage(int, int, enum QImage::Format)
+	?ensureFormat@QVolatileImage@@QAE_NW4Format@QImage@@@Z @ 12957 NONAME ; bool QVolatileImage::ensureFormat(enum QImage::Format)
+	?fill@QVolatileImage@@QAEXI@Z @ 12958 NONAME ; void QVolatileImage::fill(unsigned int)
+	?isNull@QVolatileImage@@QBE_NXZ @ 12959 NONAME ; bool QVolatileImage::isNull(void) const
+	?toImage@QVolatileImage@@QBE?AVQImage@@XZ @ 12960 NONAME ; class QImage QVolatileImage::toImage(void) const
+	??0QVolatileImage@@QAE@ABVQImage@@@Z @ 12961 NONAME ; QVolatileImage::QVolatileImage(class QImage const &)
+	?format@QVolatileImage@@QBE?AW4Format@QImage@@XZ @ 12962 NONAME ; enum QImage::Format QVolatileImage::format(void) const
+	?endDataAccess@QVolatileImage@@QBEX_N@Z @ 12963 NONAME ; void QVolatileImage::endDataAccess(bool) const
+	?constBits@QVolatileImage@@QBEPBEXZ @ 12964 NONAME ; unsigned char const * QVolatileImage::constBits(void) const
+	?height@QVolatileImage@@QBEHXZ @ 12965 NONAME ; int QVolatileImage::height(void) const
+	?duplicateNativeImage@QVolatileImage@@QBEPAXXZ @ 12966 NONAME ; void * QVolatileImage::duplicateNativeImage(void) const
+	?bits@QVolatileImage@@QAEPAEXZ @ 12967 NONAME ; unsigned char * QVolatileImage::bits(void)
+	?paintEngine@QVolatileImage@@QAEPAVQPaintEngine@@XZ @ 12968 NONAME ; class QPaintEngine * QVolatileImage::paintEngine(void)
+	?bytesPerLine@QVolatileImage@@QBEHXZ @ 12969 NONAME ; int QVolatileImage::bytesPerLine(void) const
+	?width@QVolatileImage@@QBEHXZ @ 12970 NONAME ; int QVolatileImage::width(void) const
+	?copyFrom@QVolatileImage@@QAEXPAV1@ABVQRect@@@Z @ 12971 NONAME ; void QVolatileImage::copyFrom(class QVolatileImage *, class QRect const &)
+	?imageRef@QVolatileImage@@QAEAAVQImage@@XZ @ 12972 NONAME ; class QImage & QVolatileImage::imageRef(void)
+	??0QVolatileImage@@QAE@PAX0@Z @ 12973 NONAME ; QVolatileImage::QVolatileImage(void *, void *)
+	??4QVolatileImage@@QAEAAV0@ABV0@@Z @ 12974 NONAME ; class QVolatileImage & QVolatileImage::operator=(class QVolatileImage const &)
+	??0QVolatileImage@@QAE@XZ @ 12975 NONAME ; QVolatileImage::QVolatileImage(void)
+	?hasAlphaChannel@QVolatileImage@@QBE_NXZ @ 12976 NONAME ; bool QVolatileImage::hasAlphaChannel(void) const
+	?setAlphaChannel@QVolatileImage@@QAEXABVQPixmap@@@Z @ 12977 NONAME ; void QVolatileImage::setAlphaChannel(class QPixmap const &)
+	?byteCount@QVolatileImage@@QBEHXZ @ 12978 NONAME ; int QVolatileImage::byteCount(void) const
+	??0QVolatileImage@@QAE@ABV0@@Z @ 12979 NONAME ; QVolatileImage::QVolatileImage(class QVolatileImage const &)
+	?depth@QVolatileImage@@QBEHXZ @ 12980 NONAME ; int QVolatileImage::depth(void) const
+	?releaseCachedResources@QGraphicsSystem@@UAEXXZ @ 12981 NONAME ; void QGraphicsSystem::releaseCachedResources(void)
+	?qt_s60_setPartialScreenInputMode@@YAX_N@Z @ 12982 NONAME ; void qt_s60_setPartialScreenInputMode(bool)
+	?clipEnabledChanged@QBlitterPaintEngine@@UAEXXZ @ 12983 NONAME ; void QBlitterPaintEngine::clipEnabledChanged(void)
+	?supportsSubPixelPositions@QFontEngine@@UBE_NXZ @ 12984 NONAME ; bool QFontEngine::supportsSubPixelPositions(void) const
+	??_EQScrollerProperties@@UAE@I@Z @ 12985 NONAME ; QScrollerProperties::~QScrollerProperties(unsigned int)
+	??_EQFontPrivate@@QAE@I@Z @ 12986 NONAME ; QFontPrivate::~QFontPrivate(unsigned int)
+	??0QMimeSource@@QAE@XZ @ 12987 NONAME ; QMimeSource::QMimeSource(void)
+	??0QStyleFactoryInterface@@QAE@XZ @ 12988 NONAME ; QStyleFactoryInterface::QStyleFactoryInterface(void)
+	?d_func@QScrollEvent@@AAEPAVQScrollEventPrivate@@XZ @ 12989 NONAME ; class QScrollEventPrivate * QScrollEvent::d_func(void)
+	??0QFileOpenEvent@@QAE@ABV0@@Z @ 12990 NONAME ; QFileOpenEvent::QFileOpenEvent(class QFileOpenEvent const &)
+	??4QStyleOptionViewItemV2@@QAEAAV0@ABV0@@Z @ 12991 NONAME ; class QStyleOptionViewItemV2 & QStyleOptionViewItemV2::operator=(class QStyleOptionViewItemV2 const &)
+	?heightForWidth@QTabWidget@@UBEHH@Z @ 12992 NONAME ; int QTabWidget::heightForWidth(int) const
+	??1QFlickGesture@@UAE@XZ @ 12993 NONAME ; QFlickGesture::~QFlickGesture(void)
+	??0QRasterWindowSurface@@QAE@PAVQWidget@@_N@Z @ 12994 NONAME ; QRasterWindowSurface::QRasterWindowSurface(class QWidget *, bool)
+	?brushChanged@QBlitterPaintEngine@@UAEXXZ @ 12995 NONAME ; void QBlitterPaintEngine::brushChanged(void)
+	?clip@QBlitterPaintEngine@@UAEXABVQRect@@W4ClipOperation@Qt@@@Z @ 12996 NONAME ; void QBlitterPaintEngine::clip(class QRect const &, enum Qt::ClipOperation)
+	?detach@QGlyphs@@AAEXXZ @ 12997 NONAME ; void QGlyphs::detach(void)
+	?trUtf8@QInternalMimeData@@SA?AVQString@@PBD0@Z @ 12998 NONAME ; class QString QInternalMimeData::trUtf8(char const *, char const *)
+	??0QShowEvent@@QAE@ABV0@@Z @ 12999 NONAME ; QShowEvent::QShowEvent(class QShowEvent const &)
+	??0QMouseEvent@@QAE@ABV0@@Z @ 13000 NONAME ; QMouseEvent::QMouseEvent(class QMouseEvent const &)
+	?setHintingPreference@QFont@@QAEXW4HintingPreference@1@@Z @ 13001 NONAME ; void QFont::setHintingPreference(enum QFont::HintingPreference)
+	??0QActionEvent@@QAE@ABV0@@Z @ 13002 NONAME ; QActionEvent::QActionEvent(class QActionEvent const &)
+	??0QTouchEvent@@QAE@ABV0@@Z @ 13003 NONAME ; QTouchEvent::QTouchEvent(class QTouchEvent const &)
+	?capabilities@QBlittable@@QBE?AV?$QFlags@W4Capability@QBlittable@@@@XZ @ 13004 NONAME ; class QFlags<enum QBlittable::Capability> QBlittable::capabilities(void) const
+	?setContentPosRange@QScrollPrepareEvent@@QAEXABVQRectF@@@Z @ 13005 NONAME ; void QScrollPrepareEvent::setContentPosRange(class QRectF const &)
+	??_EQImageData@@QAE@I@Z @ 13006 NONAME ; QImageData::~QImageData(unsigned int)
+	?swap@QBrush@@QAEXAAV1@@Z @ 13007 NONAME ; void QBrush::swap(class QBrush &)
+	?trUtf8@QFlickGesture@@SA?AVQString@@PBD0H@Z @ 13008 NONAME ; class QString QFlickGesture::trUtf8(char const *, char const *, int)
+	?fontHintingPreference@QTextCharFormat@@QBE?AW4HintingPreference@QFont@@XZ @ 13009 NONAME ; enum QFont::HintingPreference QTextCharFormat::fontHintingPreference(void) const
+	?swap@QPixmap@@QAEXAAV1@@Z @ 13010 NONAME ; void QPixmap::swap(class QPixmap &)
+	??0QBlitterPaintEngine@@QAE@PAVQBlittablePixmapData@@@Z @ 13011 NONAME ; QBlitterPaintEngine::QBlitterPaintEngine(class QBlittablePixmapData *)
+	?numberPrefix@QTextListFormat@@QBE?AVQString@@XZ @ 13012 NONAME ; class QString QTextListFormat::numberPrefix(void) const
+	?setSnapPositionsX@QScroller@@QAEXMM@Z @ 13013 NONAME ; void QScroller::setSnapPositionsX(float, float)
+	?scroller@QScroller@@SAPBV1@PBVQObject@@@Z @ 13014 NONAME ; class QScroller const * QScroller::scroller(class QObject const *)
+	?qt_metacall@QScroller@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 13015 NONAME ; int QScroller::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?tr@QFlickGesture@@SA?AVQString@@PBD0@Z @ 13016 NONAME ; class QString QFlickGesture::tr(char const *, char const *)
+	??4QBezier@@QAEAAV0@ABV0@@Z @ 13017 NONAME ; class QBezier & QBezier::operator=(class QBezier const &)
+	?setScrollerProperties@QScroller@@QAEXABVQScrollerProperties@@@Z @ 13018 NONAME ; void QScroller::setScrollerProperties(class QScrollerProperties const &)
+	??0QIconEngineV2@@QAE@XZ @ 13019 NONAME ; QIconEngineV2::QIconEngineV2(void)
+	??4iterator@QTextBlock@@QAEAAV01@ABV01@@Z @ 13020 NONAME ; class QTextBlock::iterator & QTextBlock::iterator::operator=(class QTextBlock::iterator const &)
+	??MQItemSelectionRange@@QBE_NABV0@@Z @ 13021 NONAME ; bool QItemSelectionRange::operator<(class QItemSelectionRange const &) const
+	?setWidthForHeight@QSizePolicy@@QAEX_N@Z @ 13022 NONAME ; void QSizePolicy::setWidthForHeight(bool)
+	?qt_fontdata_from_index@@YA?AVQByteArray@@H@Z @ 13023 NONAME ; class QByteArray qt_fontdata_from_index(int)
+	??0QIconEngineV2@@QAE@ABV0@@Z @ 13024 NONAME ; QIconEngineV2::QIconEngineV2(class QIconEngineV2 const &)
+	?swap@QImage@@QAEXAAV1@@Z @ 13025 NONAME ; void QImage::swap(class QImage &)
+	??0QIconEngineFactoryInterfaceV2@@QAE@XZ @ 13026 NONAME ; QIconEngineFactoryInterfaceV2::QIconEngineFactoryInterfaceV2(void)
+	??0QScroller@@AAE@PAVQObject@@@Z @ 13027 NONAME ; QScroller::QScroller(class QObject *)
+	?compositionModeChanged@QBlitterPaintEngine@@UAEXXZ @ 13028 NONAME ; void QBlitterPaintEngine::compositionModeChanged(void)
+	?contentPosRange@QScrollPrepareEvent@@QBE?AVQRectF@@XZ @ 13029 NONAME ; class QRectF QScrollPrepareEvent::contentPosRange(void) const
+	?grabGesture@QScroller@@SA?AW4GestureType@Qt@@PAVQObject@@W4ScrollerGestureType@1@@Z @ 13030 NONAME ; enum Qt::GestureType QScroller::grabGesture(class QObject *, enum QScroller::ScrollerGestureType)
+	??_EQFlickGesture@@UAE@I@Z @ 13031 NONAME ; QFlickGesture::~QFlickGesture(unsigned int)
+	?drawRects@QBlitterPaintEngine@@UAEXPBVQRectF@@H@Z @ 13032 NONAME ; void QBlitterPaintEngine::drawRects(class QRectF const *, int)
+	??4QTextLine@@QAEAAV0@ABV0@@Z @ 13033 NONAME ; class QTextLine & QTextLine::operator=(class QTextLine const &)
+	??0QToolBarChangeEvent@@QAE@ABV0@@Z @ 13034 NONAME ; QToolBarChangeEvent::QToolBarChangeEvent(class QToolBarChangeEvent const &)
+	??1QBlitterPaintEngine@@UAE@XZ @ 13035 NONAME ; QBlitterPaintEngine::~QBlitterPaintEngine(void)
+	?markRasterOverlay@QBlittablePixmapData@@QAEXPBVQRectF@@H@Z @ 13036 NONAME ; void QBlittablePixmapData::markRasterOverlay(class QRectF const *, int)
+	??0QResizeEvent@@QAE@ABV0@@Z @ 13037 NONAME ; QResizeEvent::QResizeEvent(class QResizeEvent const &)
+	??0QIconEngineFactoryInterface@@QAE@XZ @ 13038 NONAME ; QIconEngineFactoryInterface::QIconEngineFactoryInterface(void)
+	?drawTextItem@QBlitterPaintEngine@@UAEXABVQPointF@@ABVQTextItem@@@Z @ 13039 NONAME ; void QBlitterPaintEngine::drawTextItem(class QPointF const &, class QTextItem const &)
+	??0QPictureFormatInterface@@QAE@XZ @ 13040 NONAME ; QPictureFormatInterface::QPictureFormatInterface(void)
+	?trUtf8@QFlickGesture@@SA?AVQString@@PBD0@Z @ 13041 NONAME ; class QString QFlickGesture::trUtf8(char const *, char const *)
+	?stop@QScroller@@QAEXXZ @ 13042 NONAME ; void QScroller::stop(void)
+	?retrieveData@QInternalMimeData@@MBE?AVQVariant@@ABVQString@@W4Type@2@@Z @ 13043 NONAME ; class QVariant QInternalMimeData::retrieveData(class QString const &, enum QVariant::Type) const
+	??8QGlyphs@@QBE_NABV0@@Z @ 13044 NONAME ; bool QGlyphs::operator==(class QGlyphs const &) const
+	?drawImage@QBlitterPaintEngine@@UAEXABVQRectF@@ABVQImage@@0V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 13045 NONAME ; void QBlitterPaintEngine::drawImage(class QRectF const &, class QImage const &, class QRectF const &, class QFlags<enum Qt::ImageConversionFlag>)
+	?contentPos@QScrollEvent@@QBE?AVQPointF@@XZ @ 13046 NONAME ; class QPointF QScrollEvent::contentPos(void) const
+	?mimeTypes@QAbstractProxyModel@@UBE?AVQStringList@@XZ @ 13047 NONAME ; class QStringList QAbstractProxyModel::mimeTypes(void) const
+	?createState@QBlitterPaintEngine@@UBEPAVQPainterState@@PAV2@@Z @ 13048 NONAME ; class QPainterState * QBlitterPaintEngine::createState(class QPainterState *) const
+	?removeItem@QGraphicsGridLayout@@QAEXPAVQGraphicsLayoutItem@@@Z @ 13049 NONAME ; void QGraphicsGridLayout::removeItem(class QGraphicsLayoutItem *)
+	?clipBoundingRect@QPainter@@QBE?AVQRectF@@XZ @ 13050 NONAME ; class QRectF QPainter::clipBoundingRect(void) const
+	?formats@QInternalMimeData@@UBE?AVQStringList@@XZ @ 13051 NONAME ; class QStringList QInternalMimeData::formats(void) const
+	?stateChanged@QScroller@@IAEXW4State@1@@Z @ 13052 NONAME ; void QScroller::stateChanged(enum QScroller::State)
+	?raster@QBlitterPaintEngine@@ABEPAVQRasterPaintEngine@@XZ @ 13053 NONAME ; class QRasterPaintEngine * QBlitterPaintEngine::raster(void) const
+	?sort@QAbstractProxyModel@@UAEXHW4SortOrder@Qt@@@Z @ 13054 NONAME ; void QAbstractProxyModel::sort(int, enum Qt::SortOrder)
+	?d_func@QBlittable@@AAEPAVQBlittablePrivate@@XZ @ 13055 NONAME ; class QBlittablePrivate * QBlittable::d_func(void)
+	?setDefaultScrollerProperties@QScrollerProperties@@SAXABV1@@Z @ 13056 NONAME ; void QScrollerProperties::setDefaultScrollerProperties(class QScrollerProperties const &)
+	??_EQPolygon@@QAE@I@Z @ 13057 NONAME ; QPolygon::~QPolygon(unsigned int)
+	?type@QBlitterPaintEngine@@UBE?AW4Type@QPaintEngine@@XZ @ 13058 NONAME ; enum QPaintEngine::Type QBlitterPaintEngine::type(void) const
+	?qt_metacast@QScroller@@UAEPAXPBD@Z @ 13059 NONAME ; void * QScroller::qt_metacast(char const *)
+	??_EQImageReader@@QAE@I@Z @ 13060 NONAME ; QImageReader::~QImageReader(unsigned int)
+	?buddy@QAbstractProxyModel@@UBE?AVQModelIndex@@ABV2@@Z @ 13061 NONAME ; class QModelIndex QAbstractProxyModel::buddy(class QModelIndex const &) const
+	?tr@QScroller@@SA?AVQString@@PBD0H@Z @ 13062 NONAME ; class QString QScroller::tr(char const *, char const *, int)
+	?fill@QImage@@QAEXABVQColor@@@Z @ 13063 NONAME ; void QImage::fill(class QColor const &)
+	?scrollMetric@QScrollerProperties@@QBE?AVQVariant@@W4ScrollMetric@1@@Z @ 13064 NONAME ; class QVariant QScrollerProperties::scrollMetric(enum QScrollerProperties::ScrollMetric) const
+	?fill@QImage@@QAEXW4GlobalColor@Qt@@@Z @ 13065 NONAME ; void QImage::fill(enum Qt::GlobalColor)
+	??4QStyleOptionGraphicsItem@@QAEAAV0@ABV0@@Z @ 13066 NONAME ; class QStyleOptionGraphicsItem & QStyleOptionGraphicsItem::operator=(class QStyleOptionGraphicsItem const &)
+	?canFetchMore@QAbstractProxyModel@@UBE_NABVQModelIndex@@@Z @ 13067 NONAME ; bool QAbstractProxyModel::canFetchMore(class QModelIndex const &) const
+	??4QStyleOptionProgressBarV2@@QAEAAV0@ABV0@@Z @ 13068 NONAME ; class QStyleOptionProgressBarV2 & QStyleOptionProgressBarV2::operator=(class QStyleOptionProgressBarV2 const &)
+	??1QScroller@@EAE@XZ @ 13069 NONAME ; QScroller::~QScroller(void)
+	?setFont@QGlyphs@@QAEXABVQFont@@@Z @ 13070 NONAME ; void QGlyphs::setFont(class QFont const &)
+	?startPos@QScrollPrepareEvent@@QBE?AVQPointF@@XZ @ 13071 NONAME ; class QPointF QScrollPrepareEvent::startPos(void) const
+	?resize@QBlittablePixmapData@@UAEXHH@Z @ 13072 NONAME ; void QBlittablePixmapData::resize(int, int)
+	?setTabsClosable@QMdiArea@@QAEX_N@Z @ 13073 NONAME ; void QMdiArea::setTabsClosable(bool)
+	?ensureVisible@QScroller@@QAEXABVQRectF@@MM@Z @ 13074 NONAME ; void QScroller::ensureVisible(class QRectF const &, float, float)
+	?getText@QInputDialog@@SA?AVQString@@PAVQWidget@@ABV2@1W4EchoMode@QLineEdit@@1PA_NV?$QFlags@W4WindowType@Qt@@@@V?$QFlags@W4InputMethodHint@Qt@@@@@Z @ 13075 NONAME ; class QString QInputDialog::getText(class QWidget *, class QString const &, class QString const &, enum QLineEdit::EchoMode, class QString const &, bool *, class QFlags<enum Qt::WindowType>, class QFlags<enum Qt::InputMethodHint>)
+	?hasWidthForHeight@QSizePolicy@@QBE_NXZ @ 13076 NONAME ; bool QSizePolicy::hasWidthForHeight(void) const
+	?transformChanged@QBlitterPaintEngine@@UAEXXZ @ 13077 NONAME ; void QBlitterPaintEngine::transformChanged(void)
+	??0QDragEnterEvent@@QAE@ABV0@@Z @ 13078 NONAME ; QDragEnterEvent::QDragEnterEvent(class QDragEnterEvent const &)
+	??0QBlittablePixmapData@@QAE@XZ @ 13079 NONAME ; QBlittablePixmapData::QBlittablePixmapData(void)
+	??_EKey@QPixmapCache@@QAE@I@Z @ 13080 NONAME ; QPixmapCache::Key::~Key(unsigned int)
+	??_EQCursor@@QAE@I@Z @ 13081 NONAME ; QCursor::~QCursor(unsigned int)
+	?size@QBlittable@@QBE?AVQSize@@XZ @ 13082 NONAME ; class QSize QBlittable::size(void) const
+	??0QShortcutEvent@@QAE@ABV0@@Z @ 13083 NONAME ; QShortcutEvent::QShortcutEvent(class QShortcutEvent const &)
+	?setBlittable@QBlittablePixmapData@@QAEXPAVQBlittable@@@Z @ 13084 NONAME ; void QBlittablePixmapData::setBlittable(class QBlittable *)
+	?opacityChanged@QBlitterPaintEngine@@UAEXXZ @ 13085 NONAME ; void QBlitterPaintEngine::opacityChanged(void)
+	?tr@QFlickGesture@@SA?AVQString@@PBD0H@Z @ 13086 NONAME ; class QString QFlickGesture::tr(char const *, char const *, int)
+	??_EQTextCursor@@QAE@I@Z @ 13087 NONAME ; QTextCursor::~QTextCursor(unsigned int)
+	?createExplicitFontWithName@QFontEngine@@IBE?AVQFont@@ABVQString@@@Z @ 13088 NONAME ; class QFont QFontEngine::createExplicitFontWithName(class QString const &) const
+	?setState@QBlitterPaintEngine@@UAEXPAVQPainterState@@@Z @ 13089 NONAME ; void QBlitterPaintEngine::setState(class QPainterState *)
+	?clip@QBlitterPaintEngine@@UAEXABVQRegion@@W4ClipOperation@Qt@@@Z @ 13090 NONAME ; void QBlitterPaintEngine::clip(class QRegion const &, enum Qt::ClipOperation)
+	?subPixelPositionForX@QTextureGlyphCache@@QBE?AUQFixed@@U2@@Z @ 13091 NONAME ; struct QFixed QTextureGlyphCache::subPixelPositionForX(struct QFixed) const
+	?hasAlphaChannel@QBlittablePixmapData@@UBE_NXZ @ 13092 NONAME ; bool QBlittablePixmapData::hasAlphaChannel(void) const
+	?setSnapPositionsX@QScroller@@QAEXABV?$QList@M@@@Z @ 13093 NONAME ; void QScroller::setSnapPositionsX(class QList<float> const &)
+	?numberSuffix@QTextListFormat@@QBE?AVQString@@XZ @ 13094 NONAME ; class QString QTextListFormat::numberSuffix(void) const
+	??HQGlyphs@@ABE?AV0@ABV0@@Z @ 13095 NONAME ; class QGlyphs QGlyphs::operator+(class QGlyphs const &) const
+	??0QGradient@@QAE@ABV0@@Z @ 13096 NONAME ; QGradient::QGradient(class QGradient const &)
+	?tabsMovable@QMdiArea@@QBE_NXZ @ 13097 NONAME ; bool QMdiArea::tabsMovable(void) const
+	??4QInputMethodEvent@@QAEAAV0@ABV0@@Z @ 13098 NONAME ; class QInputMethodEvent & QInputMethodEvent::operator=(class QInputMethodEvent const &)
+	?contentPos@QScrollPrepareEvent@@QBE?AVQPointF@@XZ @ 13099 NONAME ; class QPointF QScrollPrepareEvent::contentPos(void) const
+	?getStaticMetaObject@QScroller@@SAABUQMetaObject@@XZ @ 13100 NONAME ; struct QMetaObject const & QScroller::getStaticMetaObject(void)
+	?end@QBlitterPaintEngine@@UAE_NXZ @ 13101 NONAME ; bool QBlitterPaintEngine::end(void)
+	??1QScrollerProperties@@UAE@XZ @ 13102 NONAME ; QScrollerProperties::~QScrollerProperties(void)
+	??0QFlickGesture@@QAE@PAVQObject@@W4MouseButton@Qt@@0@Z @ 13103 NONAME ; QFlickGesture::QFlickGesture(class QObject *, enum Qt::MouseButton, class QObject *)
+	?fill@QBlitterPaintEngine@@UAEXABVQVectorPath@@ABVQBrush@@@Z @ 13104 NONAME ; void QBlitterPaintEngine::fill(class QVectorPath const &, class QBrush const &)
+	?drawPixmap@QBlitterPaintEngine@@UAEXABVQRectF@@ABVQPixmap@@0@Z @ 13105 NONAME ; void QBlitterPaintEngine::drawPixmap(class QRectF const &, class QPixmap const &, class QRectF const &)
+	??0QVector2D@@QAE@ABV0@@Z @ 13106 NONAME ; QVector2D::QVector2D(class QVector2D const &)
+	?setSnapPositionsY@QScroller@@QAEXABV?$QList@M@@@Z @ 13107 NONAME ; void QScroller::setSnapPositionsY(class QList<float> const &)
+	??4QStyleOptionFocusRect@@QAEAAV0@ABV0@@Z @ 13108 NONAME ; class QStyleOptionFocusRect & QStyleOptionFocusRect::operator=(class QStyleOptionFocusRect const &)
+	??_EQPen@@QAE@I@Z @ 13109 NONAME ; QPen::~QPen(unsigned int)
+	??_EQKeySequence@@QAE@I@Z @ 13110 NONAME ; QKeySequence::~QKeySequence(unsigned int)
+	?tr@QInternalMimeData@@SA?AVQString@@PBD0H@Z @ 13111 NONAME ; class QString QInternalMimeData::tr(char const *, char const *, int)
+	?velocity@QScroller@@QBE?AVQPointF@@XZ @ 13112 NONAME ; class QPointF QScroller::velocity(void) const
+	?glyphIndexes@QGlyphs@@QBE?AV?$QVector@I@@XZ @ 13113 NONAME ; class QVector<unsigned int> QGlyphs::glyphIndexes(void) const
+	?get@QFontPrivate@@SAPAV1@ABVQFont@@@Z @ 13114 NONAME ; class QFontPrivate * QFontPrivate::get(class QFont const &)
+	?setScrollMetric@QScrollerProperties@@QAEXW4ScrollMetric@1@ABVQVariant@@@Z @ 13115 NONAME ; void QScrollerProperties::setScrollMetric(enum QScrollerProperties::ScrollMetric, class QVariant const &)
+	??4QGradient@@QAEAAV0@ABV0@@Z @ 13116 NONAME ; class QGradient & QGradient::operator=(class QGradient const &)
+	??0QScrollEvent@@QAE@ABVQPointF@@0W4ScrollState@0@@Z @ 13117 NONAME ; QScrollEvent::QScrollEvent(class QPointF const &, class QPointF const &, enum QScrollEvent::ScrollState)
+	?d_func@QFlickGesture@@AAEPAVQFlickGesturePrivate@@XZ @ 13118 NONAME ; class QFlickGesturePrivate * QFlickGesture::d_func(void)
+	?scrollState@QScrollEvent@@QBE?AW4ScrollState@1@XZ @ 13119 NONAME ; enum QScrollEvent::ScrollState QScrollEvent::scrollState(void) const
+	??0QTextTableFormat@@QAE@ABV0@@Z @ 13120 NONAME ; QTextTableFormat::QTextTableFormat(class QTextTableFormat const &)
+	??_EQImagePixmapCleanupHooks@@QAE@I@Z @ 13121 NONAME ; QImagePixmapCleanupHooks::~QImagePixmapCleanupHooks(unsigned int)
+	?fetchMore@QAbstractProxyModel@@UAEXABVQModelIndex@@@Z @ 13122 NONAME ; void QAbstractProxyModel::fetchMore(class QModelIndex const &)
+	?glyphs@QTextLine@@ABE?AV?$QList@VQGlyphs@@@@HH@Z @ 13123 NONAME ; class QList<class QGlyphs> QTextLine::glyphs(int, int) const
+	?getStaticMetaObject@QFlickGesture@@SAABUQMetaObject@@XZ @ 13124 NONAME ; struct QMetaObject const & QFlickGesture::getStaticMetaObject(void)
+	?setViewportSize@QScrollPrepareEvent@@QAEXABVQSizeF@@@Z @ 13125 NONAME ; void QScrollPrepareEvent::setViewportSize(class QSizeF const &)
+	??0QStatusTipEvent@@QAE@ABV0@@Z @ 13126 NONAME ; QStatusTipEvent::QStatusTipEvent(class QStatusTipEvent const &)
+	??0Value@QCss@@QAE@ABU01@@Z @ 13127 NONAME ; QCss::Value::Value(struct QCss::Value const &)
+	?d_func@QScrollPrepareEvent@@AAEPAVQScrollPrepareEventPrivate@@XZ @ 13128 NONAME ; class QScrollPrepareEventPrivate * QScrollPrepareEvent::d_func(void)
+	?overshootDistance@QScrollEvent@@QBE?AVQPointF@@XZ @ 13129 NONAME ; class QPointF QScrollEvent::overshootDistance(void) const
+	?resolveFontFamilyAlias@QFontDatabase@@CA?AVQString@@ABV2@@Z @ 13130 NONAME ; class QString QFontDatabase::resolveFontFamilyAlias(class QString const &)
+	?alphaRGBMapForGlyph@QFontEngine@@UAE?AVQImage@@IUQFixed@@HABVQTransform@@@Z @ 13131 NONAME ; class QImage QFontEngine::alphaRGBMapForGlyph(unsigned int, struct QFixed, int, class QTransform const &)
+	??4QSizePolicy@@QAEAAV0@ABV0@@Z @ 13132 NONAME ; class QSizePolicy & QSizePolicy::operator=(class QSizePolicy const &)
+	?swap@QBitmap@@QAEXAAV1@@Z @ 13133 NONAME ; void QBitmap::swap(class QBitmap &)
+	?hasFormat@QInternalMimeData@@UBE_NABVQString@@@Z @ 13134 NONAME ; bool QInternalMimeData::hasFormat(class QString const &) const
+	?renderDataHelper@QInternalMimeData@@SA?AVQByteArray@@ABVQString@@PBVQMimeData@@@Z @ 13135 NONAME ; class QByteArray QInternalMimeData::renderDataHelper(class QString const &, class QMimeData const *)
+	??_ETouchPoint@QTouchEvent@@QAE@I@Z @ 13136 NONAME ; QTouchEvent::TouchPoint::~TouchPoint(unsigned int)
+	??0QWindowSurface@@QAE@PAVQWidget@@_N@Z @ 13137 NONAME ; QWindowSurface::QWindowSurface(class QWidget *, bool)
+	?fill@QBlittablePixmapData@@UAEXABVQColor@@@Z @ 13138 NONAME ; void QBlittablePixmapData::fill(class QColor const &)
+	?metric@QBlittablePixmapData@@UBEHW4PaintDeviceMetric@QPaintDevice@@@Z @ 13139 NONAME ; int QBlittablePixmapData::metric(enum QPaintDevice::PaintDeviceMetric) const
+	??4QItemSelection@@QAEAAV0@ABV0@@Z @ 13140 NONAME ; class QItemSelection & QItemSelection::operator=(class QItemSelection const &)
+	?fillRect@QBlitterPaintEngine@@UAEXABVQRectF@@ABVQColor@@@Z @ 13141 NONAME ; void QBlitterPaintEngine::fillRect(class QRectF const &, class QColor const &)
+	??4QStyleOptionQ3ListView@@QAEAAV0@ABV0@@Z @ 13142 NONAME ; class QStyleOptionQ3ListView & QStyleOptionQ3ListView::operator=(class QStyleOptionQ3ListView const &)
+	??6@YA?AVQDebug@@V0@PBVQSymbianEvent@@@Z @ 13143 NONAME ; class QDebug operator<<(class QDebug, class QSymbianEvent const *)
+	??0QSizePolicy@@QAE@ABV0@@Z @ 13144 NONAME ; QSizePolicy::QSizePolicy(class QSizePolicy const &)
+	?ProcessCommandParametersL@QS60MainAppUi@@UAEHW4TApaCommand@@AAV?$TBuf@$0BAA@@@ABVTDesC8@@@Z @ 13145 NONAME ; int QS60MainAppUi::ProcessCommandParametersL(enum TApaCommand, class TBuf<256> &, class TDesC8 const &)
+	?scrollerProperties@QScroller@@QBE?AVQScrollerProperties@@XZ @ 13146 NONAME ; class QScrollerProperties QScroller::scrollerProperties(void) const
+	??_EQBlittablePixmapData@@UAE@I@Z @ 13147 NONAME ; QBlittablePixmapData::~QBlittablePixmapData(unsigned int)
+	?mimeData@QAbstractProxyModel@@UBEPAVQMimeData@@ABV?$QList@VQModelIndex@@@@@Z @ 13148 NONAME ; class QMimeData * QAbstractProxyModel::mimeData(class QList<class QModelIndex> const &) const
+	??4QStyleOptionFrameV2@@QAEAAV0@ABV0@@Z @ 13149 NONAME ; class QStyleOptionFrameV2 & QStyleOptionFrameV2::operator=(class QStyleOptionFrameV2 const &)
+	??_EQScroller@@UAE@I@Z @ 13150 NONAME ; QScroller::~QScroller(unsigned int)
+	??1QScrollPrepareEvent@@UAE@XZ @ 13151 NONAME ; QScrollPrepareEvent::~QScrollPrepareEvent(void)
+	??4QVector3D@@QAEAAV0@ABV0@@Z @ 13152 NONAME ; class QVector3D & QVector3D::operator=(class QVector3D const &)
+	?setTabsMovable@QMdiArea@@QAEX_N@Z @ 13153 NONAME ; void QMdiArea::setTabsMovable(bool)
+	?minimumSizeHint@QRadioButton@@UBE?AVQSize@@XZ @ 13154 NONAME ; class QSize QRadioButton::minimumSizeHint(void) const
+	??4QStyleOptionQ3DockWindow@@QAEAAV0@ABV0@@Z @ 13155 NONAME ; class QStyleOptionQ3DockWindow & QStyleOptionQ3DockWindow::operator=(class QStyleOptionQ3DockWindow const &)
+	?qt_metacast@QFlickGesture@@UAEPAXPBD@Z @ 13156 NONAME ; void * QFlickGesture::qt_metacast(char const *)
+	??_EQFont@@QAE@I@Z @ 13157 NONAME ; QFont::~QFont(unsigned int)
+	?setPositions@QGlyphs@@QAEXABV?$QVector@VQPointF@@@@@Z @ 13158 NONAME ; void QGlyphs::setPositions(class QVector<class QPointF> const &)
+	??4QStyleOptionDockWidget@@QAEAAV0@ABV0@@Z @ 13159 NONAME ; class QStyleOptionDockWidget & QStyleOptionDockWidget::operator=(class QStyleOptionDockWidget const &)
+	??0QPainterState@@QAE@ABV0@@Z @ 13160 NONAME ; QPainterState::QPainterState(class QPainterState const &)
+	??4QStyleOptionFrame@@QAEAAV0@ABV0@@Z @ 13161 NONAME ; class QStyleOptionFrame & QStyleOptionFrame::operator=(class QStyleOptionFrame const &)
+	?drawRects@QBlitterPaintEngine@@UAEXPBVQRect@@H@Z @ 13162 NONAME ; void QBlitterPaintEngine::drawRects(class QRect const *, int)
+	?fillInPendingGlyphs@QTextureGlyphCache@@QAEXXZ @ 13163 NONAME ; void QTextureGlyphCache::fillInPendingGlyphs(void)
+	?metaObject@QFlickGesture@@UBEPBUQMetaObject@@XZ @ 13164 NONAME ; struct QMetaObject const * QFlickGesture::metaObject(void) const
+	?renderHintsChanged@QBlitterPaintEngine@@UAEXXZ @ 13165 NONAME ; void QBlitterPaintEngine::renderHintsChanged(void)
+	?supportedDropActions@QAbstractProxyModel@@UBE?AV?$QFlags@W4DropAction@Qt@@@@XZ @ 13166 NONAME ; class QFlags<enum Qt::DropAction> QAbstractProxyModel::supportedDropActions(void) const
+	?hasStaticContentsSupport@QRasterWindowSurface@@UBE_NXZ @ 13167 NONAME ; bool QRasterWindowSurface::hasStaticContentsSupport(void) const
+	?fillRect@QBlitterPaintEngine@@UAEXABVQRectF@@ABVQBrush@@@Z @ 13168 NONAME ; void QBlitterPaintEngine::fillRect(class QRectF const &, class QBrush const &)
+	?setGlyphIndexes@QGlyphs@@QAEXABV?$QVector@I@@@Z @ 13169 NONAME ; void QGlyphs::setGlyphIndexes(class QVector<unsigned int> const &)
+	?alphaMapBoundingBox@QFontEngine@@UAE?AUglyph_metrics_t@@IABVQTransform@@W4GlyphFormat@1@@Z @ 13170 NONAME ; struct glyph_metrics_t QFontEngine::alphaMapBoundingBox(unsigned int, class QTransform const &, enum QFontEngine::GlyphFormat)
+	?resendPrepareEvent@QScroller@@QAEXXZ @ 13171 NONAME ; void QScroller::resendPrepareEvent(void)
+	??4QTextLength@@QAEAAV0@ABV0@@Z @ 13172 NONAME ; class QTextLength & QTextLength::operator=(class QTextLength const &)
+	??0QHelpEvent@@QAE@ABV0@@Z @ 13173 NONAME ; QHelpEvent::QHelpEvent(class QHelpEvent const &)
+	??0QContextMenuEvent@@QAE@ABV0@@Z @ 13174 NONAME ; QContextMenuEvent::QContextMenuEvent(class QContextMenuEvent const &)
+	?d_func@QBlittable@@ABEPBVQBlittablePrivate@@XZ @ 13175 NONAME ; class QBlittablePrivate const * QBlittable::d_func(void) const
+	?state@QBlitterPaintEngine@@QBEPBVQPainterState@@XZ @ 13176 NONAME ; class QPainterState const * QBlitterPaintEngine::state(void) const
+	??0QScrollPrepareEvent@@QAE@ABVQPointF@@@Z @ 13177 NONAME ; QScrollPrepareEvent::QScrollPrepareEvent(class QPointF const &)
+	??0QWhatsThisClickedEvent@@QAE@ABV0@@Z @ 13178 NONAME ; QWhatsThisClickedEvent::QWhatsThisClickedEvent(class QWhatsThisClickedEvent const &)
+	??4QStyleOptionTab@@QAEAAV0@ABV0@@Z @ 13179 NONAME ; class QStyleOptionTab & QStyleOptionTab::operator=(class QStyleOptionTab const &)
+	??0QTabletEvent@@QAE@ABV0@@Z @ 13180 NONAME ; QTabletEvent::QTabletEvent(class QTabletEvent const &)
+	?scrollTo@QScroller@@QAEXABVQPointF@@H@Z @ 13181 NONAME ; void QScroller::scrollTo(class QPointF const &, int)
+	?ungrabGesture@QScroller@@SAXPAVQObject@@@Z @ 13182 NONAME ; void QScroller::ungrabGesture(class QObject *)
+	??4QItemSelectionRange@@QAEAAV0@ABV0@@Z @ 13183 NONAME ; class QItemSelectionRange & QItemSelectionRange::operator=(class QItemSelectionRange const &)
+	?clear@QGlyphs@@QAEXXZ @ 13184 NONAME ; void QGlyphs::clear(void)
+	??_EQStyleOptionViewItemV4@@QAE@I@Z @ 13185 NONAME ; QStyleOptionViewItemV4::~QStyleOptionViewItemV4(unsigned int)
+	??1QBlittablePixmapData@@UAE@XZ @ 13186 NONAME ; QBlittablePixmapData::~QBlittablePixmapData(void)
+	?formatsHelper@QInternalMimeData@@SA?AVQStringList@@PBVQMimeData@@@Z @ 13187 NONAME ; class QStringList QInternalMimeData::formatsHelper(class QMimeData const *)
+	?qt_metacast@QInternalMimeData@@UAEPAXPBD@Z @ 13188 NONAME ; void * QInternalMimeData::qt_metacast(char const *)
+	?font@QGlyphs@@QBE?AVQFont@@XZ @ 13189 NONAME ; class QFont QGlyphs::font(void) const
+	?paintEngine@QBlittablePixmapData@@UBEPAVQPaintEngine@@XZ @ 13190 NONAME ; class QPaintEngine * QBlittablePixmapData::paintEngine(void) const
+	?unsetDefaultScrollerProperties@QScrollerProperties@@SAXXZ @ 13191 NONAME ; void QScrollerProperties::unsetDefaultScrollerProperties(void)
+	?hasChildren@QAbstractProxyModel@@UBE_NABVQModelIndex@@@Z @ 13192 NONAME ; bool QAbstractProxyModel::hasChildren(class QModelIndex const &) const
+	?swap@QPen@@QAEXAAV1@@Z @ 13193 NONAME ; void QPen::swap(class QPen &)
+	?span@QAbstractProxyModel@@UBE?AVQSize@@ABVQModelIndex@@@Z @ 13194 NONAME ; class QSize QAbstractProxyModel::span(class QModelIndex const &) const
+	??4QEglProperties@@QAEAAV0@ABV0@@Z @ 13195 NONAME ; class QEglProperties & QEglProperties::operator=(class QEglProperties const &)
+	??0QHoverEvent@@QAE@ABV0@@Z @ 13196 NONAME ; QHoverEvent::QHoverEvent(class QHoverEvent const &)
+	??0QPaintEngineState@@QAE@XZ @ 13197 NONAME ; QPaintEngineState::QPaintEngineState(void)
+	?setSnapPositionsY@QScroller@@QAEXMM@Z @ 13198 NONAME ; void QScroller::setSnapPositionsY(float, float)
+	?d_func@QScrollPrepareEvent@@ABEPBVQScrollPrepareEventPrivate@@XZ @ 13199 NONAME ; class QScrollPrepareEventPrivate const * QScrollPrepareEvent::d_func(void) const
+	?textureMapForGlyph@QTextureGlyphCache@@QBE?AVQImage@@IUQFixed@@@Z @ 13200 NONAME ; class QImage QTextureGlyphCache::textureMapForGlyph(unsigned int, struct QFixed) const
+	??0QKeyEvent@@QAE@ABV0@@Z @ 13201 NONAME ; QKeyEvent::QKeyEvent(class QKeyEvent const &)
+	??0QIconEngine@@QAE@ABV0@@Z @ 13202 NONAME ; QIconEngine::QIconEngine(class QIconEngine const &)
+	??4QStyleOptionToolBoxV2@@QAEAAV0@ABV0@@Z @ 13203 NONAME ; class QStyleOptionToolBoxV2 & QStyleOptionToolBoxV2::operator=(class QStyleOptionToolBoxV2 const &)
+	?qt_metacall@QInternalMimeData@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 13204 NONAME ; int QInternalMimeData::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?lineHeightType@QTextBlockFormat@@QBEHXZ @ 13205 NONAME ; int QTextBlockFormat::lineHeightType(void) const
+	?hintingPreference@QFont@@QBE?AW4HintingPreference@1@XZ @ 13206 NONAME ; enum QFont::HintingPreference QFont::hintingPreference(void) const
+	??0QGlyphs@@QAE@XZ @ 13207 NONAME ; QGlyphs::QGlyphs(void)
+	?trUtf8@QInternalMimeData@@SA?AVQString@@PBD0H@Z @ 13208 NONAME ; class QString QInternalMimeData::trUtf8(char const *, char const *, int)
+	??0QImageIOHandlerFactoryInterface@@QAE@XZ @ 13209 NONAME ; QImageIOHandlerFactoryInterface::QImageIOHandlerFactoryInterface(void)
+	??_EQRegion@@QAE@I@Z @ 13210 NONAME ; QRegion::~QRegion(unsigned int)
+	?begin@QBlitterPaintEngine@@UAE_NPAVQPaintDevice@@@Z @ 13211 NONAME ; bool QBlitterPaintEngine::begin(class QPaintDevice *)
+	?inFontUcs4@QFontMetricsF@@QBE_NI@Z @ 13212 NONAME ; bool QFontMetricsF::inFontUcs4(unsigned int) const
+	?viewportSize@QScrollPrepareEvent@@QBE?AVQSizeF@@XZ @ 13213 NONAME ; class QSizeF QScrollPrepareEvent::viewportSize(void) const
+	?markRasterOverlay@QBlittablePixmapData@@QAEXABVQRectF@@@Z @ 13214 NONAME ; void QBlittablePixmapData::markRasterOverlay(class QRectF const &)
+	?d_func@QBlitterPaintEngine@@AAEPAVQBlitterPaintEnginePrivate@@XZ @ 13215 NONAME ; class QBlitterPaintEnginePrivate * QBlitterPaintEngine::d_func(void)
+	?setNumberPrefix@QTextListFormat@@QAEXABVQString@@@Z @ 13216 NONAME ; void QTextListFormat::setNumberPrefix(class QString const &)
+	?lineHeight@QTextBlockFormat@@QBEMMM@Z @ 13217 NONAME ; float QTextBlockFormat::lineHeight(float, float) const
+	??4QStyleOptionComplex@@QAEAAV0@ABV0@@Z @ 13218 NONAME ; class QStyleOptionComplex & QStyleOptionComplex::operator=(class QStyleOptionComplex const &)
+	?getItem@QInputDialog@@SA?AVQString@@PAVQWidget@@ABV2@1ABVQStringList@@H_NPA_NV?$QFlags@W4WindowType@Qt@@@@V?$QFlags@W4InputMethodHint@Qt@@@@@Z @ 13219 NONAME ; class QString QInputDialog::getItem(class QWidget *, class QString const &, class QString const &, class QStringList const &, int, bool, bool *, class QFlags<enum Qt::WindowType>, class QFlags<enum Qt::InputMethodHint>)
+	??_EFileInfo@QZipReader@@QAE@I@Z @ 13220 NONAME ; QZipReader::FileInfo::~FileInfo(unsigned int)
+	?qGamma_correct_back_to_linear_cs@@YAXPAVQImage@@@Z @ 13221 NONAME ; void qGamma_correct_back_to_linear_cs(class QImage *)
+	??0QBitmap@@QAE@ABV0@@Z @ 13222 NONAME ; QBitmap::QBitmap(class QBitmap const &)
+	?clip@QBlitterPaintEngine@@UAEXABVQVectorPath@@W4ClipOperation@Qt@@@Z @ 13223 NONAME ; void QBlitterPaintEngine::clip(class QVectorPath const &, enum Qt::ClipOperation)
+	??1QScrollEvent@@UAE@XZ @ 13224 NONAME ; QScrollEvent::~QScrollEvent(void)
+	?state@QScroller@@QBE?AW4State@1@XZ @ 13225 NONAME ; enum QScroller::State QScroller::state(void) const
+	?positions@QGlyphs@@QBE?AV?$QVector@VQPointF@@@@XZ @ 13226 NONAME ; class QVector<class QPointF> QGlyphs::positions(void) const
+	?tr@QScroller@@SA?AVQString@@PBD0@Z @ 13227 NONAME ; class QString QScroller::tr(char const *, char const *)
+	?canReadData@QInternalMimeData@@SA_NABVQString@@@Z @ 13228 NONAME ; bool QInternalMimeData::canReadData(class QString const &)
+	?glyphs@QTextLayout@@QBE?AV?$QList@VQGlyphs@@@@XZ @ 13229 NONAME ; class QList<class QGlyphs> QTextLayout::glyphs(void) const
+	??_EQTextFormat@@QAE@I@Z @ 13230 NONAME ; QTextFormat::~QTextFormat(unsigned int)
+	??4QStyleOptionTabWidgetFrame@@QAEAAV0@ABV0@@Z @ 13231 NONAME ; class QStyleOptionTabWidgetFrame & QStyleOptionTabWidgetFrame::operator=(class QStyleOptionTabWidgetFrame const &)
+	?trUtf8@QScroller@@SA?AVQString@@PBD0H@Z @ 13232 NONAME ; class QString QScroller::trUtf8(char const *, char const *, int)
+	?d_func@QFlickGesture@@ABEPBVQFlickGesturePrivate@@XZ @ 13233 NONAME ; class QFlickGesturePrivate const * QFlickGesture::d_func(void) const
+	??4QMouseEvent@@QAEAAV0@ABV0@@Z @ 13234 NONAME ; class QMouseEvent & QMouseEvent::operator=(class QMouseEvent const &)
+	??_EQPainter@@QAE@I@Z @ 13235 NONAME ; QPainter::~QPainter(unsigned int)
+	??4QStyleOptionTabBarBaseV2@@QAEAAV0@ABV0@@Z @ 13236 NONAME ; class QStyleOptionTabBarBaseV2 & QStyleOptionTabBarBaseV2::operator=(class QStyleOptionTabBarBaseV2 const &)
+	??4QInputEvent@@QAEAAV0@ABV0@@Z @ 13237 NONAME ; class QInputEvent & QInputEvent::operator=(class QInputEvent const &)
+	?hasScroller@QScroller@@SA_NPAVQObject@@@Z @ 13238 NONAME ; bool QScroller::hasScroller(class QObject *)
+	?alphaMapForGlyph@QFontEngine@@UAE?AVQImage@@IUQFixed@@ABVQTransform@@@Z @ 13239 NONAME ; class QImage QFontEngine::alphaMapForGlyph(unsigned int, struct QFixed, class QTransform const &)
+	??_EQPainterPath@@QAE@I@Z @ 13240 NONAME ; QPainterPath::~QPainterPath(unsigned int)
+	??_EQGlyphs@@QAE@I@Z @ 13241 NONAME ; QGlyphs::~QGlyphs(unsigned int)
+	?fromImage@QBlittablePixmapData@@UAEXABVQImage@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 13242 NONAME ; void QBlittablePixmapData::fromImage(class QImage const &, class QFlags<enum Qt::ImageConversionFlag>)
+	??0QInternalMimeData@@QAE@XZ @ 13243 NONAME ; QInternalMimeData::QInternalMimeData(void)
+	??_EQScrollEvent@@UAE@I@Z @ 13244 NONAME ; QScrollEvent::~QScrollEvent(unsigned int)
+	??4QGlyphs@@QAEAAV0@ABV0@@Z @ 13245 NONAME ; class QGlyphs & QGlyphs::operator=(class QGlyphs const &)
+	??4QQuaternion@@QAEAAV0@ABV0@@Z @ 13246 NONAME ; class QQuaternion & QQuaternion::operator=(class QQuaternion const &)
+	??4Symbol@QCss@@QAEAAU01@ABU01@@Z @ 13247 NONAME ; struct QCss::Symbol & QCss::Symbol::operator=(struct QCss::Symbol const &)
+	??0QBlittable@@QAE@ABVQSize@@V?$QFlags@W4Capability@QBlittable@@@@@Z @ 13248 NONAME ; QBlittable::QBlittable(class QSize const &, class QFlags<enum QBlittable::Capability>)
+	??0QIconDragEvent@@QAE@ABV0@@Z @ 13249 NONAME ; QIconDragEvent::QIconDragEvent(class QIconDragEvent const &)
+	?scroller@QScroller@@SAPAV1@PAVQObject@@@Z @ 13250 NONAME ; class QScroller * QScroller::scroller(class QObject *)
+	??4QScrollerProperties@@QAEAAV0@ABV0@@Z @ 13251 NONAME ; class QScrollerProperties & QScrollerProperties::operator=(class QScrollerProperties const &)
+	?d_func@QScroller@@AAEPAVQScrollerPrivate@@XZ @ 13252 NONAME ; class QScrollerPrivate * QScroller::d_func(void)
+	?scrollerPropertiesChanged@QScroller@@IAEXABVQScrollerProperties@@@Z @ 13253 NONAME ; void QScroller::scrollerPropertiesChanged(class QScrollerProperties const &)
+	?markRasterOverlay@QBlittablePixmapData@@QAEXPBVQRect@@H@Z @ 13254 NONAME ; void QBlittablePixmapData::markRasterOverlay(class QRect const *, int)
+	?tabsClosable@QMdiArea@@QBE_NXZ @ 13255 NONAME ; bool QMdiArea::tabsClosable(void) const
+	?canStartScrollingAt@QAbstractScrollAreaPrivate@@QAE_NABVQPoint@@@Z @ 13256 NONAME ; bool QAbstractScrollAreaPrivate::canStartScrollingAt(class QPoint const &)
+	??0QScrollerProperties@@QAE@XZ @ 13257 NONAME ; QScrollerProperties::QScrollerProperties(void)
+	?setLineHeight@QTextBlockFormat@@QAEXMH@Z @ 13258 NONAME ; void QTextBlockFormat::setLineHeight(float, int)
+	?calculateSubPixelPositionCount@QTextureGlyphCache@@IBEHI@Z @ 13259 NONAME ; int QTextureGlyphCache::calculateSubPixelPositionCount(unsigned int) const
+	??0QTextImageFormat@@QAE@ABV0@@Z @ 13260 NONAME ; QTextImageFormat::QTextImageFormat(class QTextImageFormat const &)
+	??0QMoveEvent@@QAE@ABV0@@Z @ 13261 NONAME ; QMoveEvent::QMoveEvent(class QMoveEvent const &)
+	?glyphs@QTextFragment@@QBE?AV?$QList@VQGlyphs@@@@XZ @ 13262 NONAME ; class QList<class QGlyphs> QTextFragment::glyphs(void) const
+	??0QInputContextFactoryInterface@@QAE@XZ @ 13263 NONAME ; QInputContextFactoryInterface::QInputContextFactoryInterface(void)
+	??0QTextFrameFormat@@QAE@ABV0@@Z @ 13264 NONAME ; QTextFrameFormat::QTextFrameFormat(class QTextFrameFormat const &)
+	?resetInternalData@QAbstractProxyModel@@IAEXXZ @ 13265 NONAME ; void QAbstractProxyModel::resetInternalData(void)
+	??0Symbol@QCss@@QAE@ABU01@@Z @ 13266 NONAME ; QCss::Symbol::Symbol(struct QCss::Symbol const &)
+	?markRasterOverlay@QBlittablePixmapData@@QAEXABVQVectorPath@@@Z @ 13267 NONAME ; void QBlittablePixmapData::markRasterOverlay(class QVectorPath const &)
+	??4QStyleOptionFrameV3@@QAEAAV0@ABV0@@Z @ 13268 NONAME ; class QStyleOptionFrameV3 & QStyleOptionFrameV3::operator=(class QStyleOptionFrameV3 const &)
+	?scrollTo@QScroller@@QAEXABVQPointF@@@Z @ 13269 NONAME ; void QScroller::scrollTo(class QPointF const &)
+	??0QGraphicsSystem@@QAE@XZ @ 13270 NONAME ; QGraphicsSystem::QGraphicsSystem(void)
+	??4QStyleOptionViewItem@@QAEAAV0@ABV0@@Z @ 13271 NONAME ; class QStyleOptionViewItem & QStyleOptionViewItem::operator=(class QStyleOptionViewItem const &)
+	??4QStyleOptionProgressBar@@QAEAAV0@ABV0@@Z @ 13272 NONAME ; class QStyleOptionProgressBar & QStyleOptionProgressBar::operator=(class QStyleOptionProgressBar const &)
+	?clip@QBlitterPaintEngine@@QAEPBVQClipData@@XZ @ 13273 NONAME ; class QClipData const * QBlitterPaintEngine::clip(void)
+	?d_func@QScroller@@ABEPBVQScrollerPrivate@@XZ @ 13274 NONAME ; class QScrollerPrivate const * QScroller::d_func(void) const
+	?setNumberSuffix@QTextListFormat@@QAEXABVQString@@@Z @ 13275 NONAME ; void QTextListFormat::setNumberSuffix(class QString const &)
+	?swap@QPicture@@QAEXAAV1@@Z @ 13276 NONAME ; void QPicture::swap(class QPicture &)
+	?swap@QPainterPath@@QAEXAAV1@@Z @ 13277 NONAME ; void QPainterPath::swap(class QPainterPath &)
+	??4QStyleOptionRubberBand@@QAEAAV0@ABV0@@Z @ 13278 NONAME ; class QStyleOptionRubberBand & QStyleOptionRubberBand::operator=(class QStyleOptionRubberBand const &)
+	?minimumSizeHint@QCheckBox@@UBE?AVQSize@@XZ @ 13279 NONAME ; class QSize QCheckBox::minimumSizeHint(void) const
+	?createExplicitFont@QFontEngine@@UBE?AVQFont@@XZ @ 13280 NONAME ; class QFont QFontEngine::createExplicitFont(void) const
+	?alphaMapForGlyph@QFontEngine@@UAE?AVQImage@@IUQFixed@@@Z @ 13281 NONAME ; class QImage QFontEngine::alphaMapForGlyph(unsigned int, struct QFixed)
+	?fillTexture@QImageTextureGlyphCache@@UAEXABUCoord@QTextureGlyphCache@@IUQFixed@@@Z @ 13282 NONAME ; void QImageTextureGlyphCache::fillTexture(struct QTextureGlyphCache::Coord const &, unsigned int, struct QFixed)
+	?swap@QIcon@@QAEXAAV1@@Z @ 13283 NONAME ; void QIcon::swap(class QIcon &)
+	?unmarkRasterOverlay@QBlittablePixmapData@@QAEXABVQRectF@@@Z @ 13284 NONAME ; void QBlittablePixmapData::unmarkRasterOverlay(class QRectF const &)
+	??0QDragResponseEvent@@QAE@ABV0@@Z @ 13285 NONAME ; QDragResponseEvent::QDragResponseEvent(class QDragResponseEvent const &)
+	??0QIconEngine@@QAE@XZ @ 13286 NONAME ; QIconEngine::QIconEngine(void)
+	?brushOriginChanged@QBlitterPaintEngine@@UAEXXZ @ 13287 NONAME ; void QBlitterPaintEngine::brushOriginChanged(void)
+	?openFile@QFileOpenEvent@@QBE_NAAVQFile@@V?$QFlags@W4OpenModeFlag@QIODevice@@@@@Z @ 13288 NONAME ; bool QFileOpenEvent::openFile(class QFile &, class QFlags<enum QIODevice::OpenModeFlag>) const
+	??_EQBrush@@QAE@I@Z @ 13289 NONAME ; QBrush::~QBrush(unsigned int)
+	??0QApplicationPrivate@@QAE@AAHPAPADW4Type@QApplication@@H@Z @ 13290 NONAME ; QApplicationPrivate::QApplicationPrivate(int &, char * *, enum QApplication::Type, int)
+	?handleInput@QScroller@@QAE_NW4Input@1@ABVQPointF@@_J@Z @ 13291 NONAME ; bool QScroller::handleInput(enum QScroller::Input, class QPointF const &, long long)
+	??8QScrollerProperties@@QBE_NABV0@@Z @ 13292 NONAME ; bool QScrollerProperties::operator==(class QScrollerProperties const &) const
+	?inFontUcs4@QFontMetrics@@QBE_NI@Z @ 13293 NONAME ; bool QFontMetrics::inFontUcs4(unsigned int) const
+	??_EQTableWidgetSelectionRange@@QAE@I@Z @ 13294 NONAME ; QTableWidgetSelectionRange::~QTableWidgetSelectionRange(unsigned int)
+	??4QStyleOptionTabBarBase@@QAEAAV0@ABV0@@Z @ 13295 NONAME ; class QStyleOptionTabBarBase & QStyleOptionTabBarBase::operator=(class QStyleOptionTabBarBase const &)
+	??0QTextObjectInterface@@QAE@XZ @ 13296 NONAME ; QTextObjectInterface::QTextObjectInterface(void)
+	?unlock@QBlittable@@QAEXXZ @ 13297 NONAME ; void QBlittable::unlock(void)
+	?metaObject@QScroller@@UBEPBUQMetaObject@@XZ @ 13298 NONAME ; struct QMetaObject const * QScroller::metaObject(void) const
+	?d_func@QScrollEvent@@ABEPBVQScrollEventPrivate@@XZ @ 13299 NONAME ; class QScrollEventPrivate const * QScrollEvent::d_func(void) const
+	?swap@QRegion@@QAEXAAV1@@Z @ 13300 NONAME ; void QRegion::swap(class QRegion &)
+	??0QHideEvent@@QAE@ABV0@@Z @ 13301 NONAME ; QHideEvent::QHideEvent(class QHideEvent const &)
+	?ensureVisible@QScroller@@QAEXABVQRectF@@MMH@Z @ 13302 NONAME ; void QScroller::ensureVisible(class QRectF const &, float, float, int)
+	?qt_metacall@QFlickGesture@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 13303 NONAME ; int QFlickGesture::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?setItemData@QAbstractProxyModel@@UAE_NABVQModelIndex@@ABV?$QMap@HVQVariant@@@@@Z @ 13304 NONAME ; bool QAbstractProxyModel::setItemData(class QModelIndex const &, class QMap<int, class QVariant> const &)
+	?getStaticMetaObject@QInternalMimeData@@SAABUQMetaObject@@XZ @ 13305 NONAME ; struct QMetaObject const & QInternalMimeData::getStaticMetaObject(void)
+	?swap@QPolygonF@@QAEXAAV1@@Z @ 13306 NONAME ; void QPolygonF::swap(class QPolygonF &)
+	?swap@QPolygon@@QAEXAAV1@@Z @ 13307 NONAME ; void QPolygon::swap(class QPolygon &)
+	??_EQScrollPrepareEvent@@UAE@I@Z @ 13308 NONAME ; QScrollPrepareEvent::~QScrollPrepareEvent(unsigned int)
+	?d_func@QBlitterPaintEngine@@ABEPBVQBlitterPaintEnginePrivate@@XZ @ 13309 NONAME ; class QBlitterPaintEnginePrivate const * QBlitterPaintEngine::d_func(void) const
+	?pixelPerMeter@QScroller@@QBE?AVQPointF@@XZ @ 13310 NONAME ; class QPointF QScroller::pixelPerMeter(void) const
+	?target@QScroller@@QBEPAVQObject@@XZ @ 13311 NONAME ; class QObject * QScroller::target(void) const
+	?swap@QKeySequence@@QAEXAAV1@@Z @ 13312 NONAME ; void QKeySequence::swap(class QKeySequence &)
+	??1QGlyphs@@QAE@XZ @ 13313 NONAME ; QGlyphs::~QGlyphs(void)
+	?lineHeight@QTextBlockFormat@@QBEMXZ @ 13314 NONAME ; float QTextBlockFormat::lineHeight(void) const
+	?stroke@QBlitterPaintEngine@@UAEXABVQVectorPath@@ABVQPen@@@Z @ 13315 NONAME ; void QBlitterPaintEngine::stroke(class QVectorPath const &, class QPen const &)
+	?tr@QInternalMimeData@@SA?AVQString@@PBD0@Z @ 13316 NONAME ; class QString QInternalMimeData::tr(char const *, char const *)
+	??9QGlyphs@@QBE_NABV0@@Z @ 13317 NONAME ; bool QGlyphs::operator!=(class QGlyphs const &) const
+	??1QBlittable@@UAE@XZ @ 13318 NONAME ; QBlittable::~QBlittable(void)
+	??_EQBlitterPaintEngine@@UAE@I@Z @ 13319 NONAME ; QBlitterPaintEngine::~QBlitterPaintEngine(unsigned int)
+	??0QCloseEvent@@QAE@ABV0@@Z @ 13320 NONAME ; QCloseEvent::QCloseEvent(class QCloseEvent const &)
+	?grabbedGesture@QScroller@@SA?AW4GestureType@Qt@@PAVQObject@@@Z @ 13321 NONAME ; enum Qt::GestureType QScroller::grabbedGesture(class QObject *)
+	?buffer@QBlittablePixmapData@@UAEPAVQImage@@XZ @ 13322 NONAME ; class QImage * QBlittablePixmapData::buffer(void)
+	??0QTextFrameLayoutData@@QAE@XZ @ 13323 NONAME ; QTextFrameLayoutData::QTextFrameLayoutData(void)
+	?staticMetaObject@QFlickGesture@@2UQMetaObject@@B @ 13324 NONAME ; struct QMetaObject const QFlickGesture::staticMetaObject
+	?finalPosition@QScroller@@QBE?AVQPointF@@XZ @ 13325 NONAME ; class QPointF QScroller::finalPosition(void) const
+	??4QStyleOptionTabWidgetFrameV2@@QAEAAV0@ABV0@@Z @ 13326 NONAME ; class QStyleOptionTabWidgetFrameV2 & QStyleOptionTabWidgetFrameV2::operator=(class QStyleOptionTabWidgetFrameV2 const &)
+	?drawStaticTextItem@QBlitterPaintEngine@@UAEXPAVQStaticTextItem@@@Z @ 13327 NONAME ; void QBlitterPaintEngine::drawStaticTextItem(class QStaticTextItem *)
+	??0QGlyphs@@QAE@ABV0@@Z @ 13328 NONAME ; QGlyphs::QGlyphs(class QGlyphs const &)
+	?lock@QBlittable@@QAEPAVQImage@@XZ @ 13329 NONAME ; class QImage * QBlittable::lock(void)
+	?setFontHintingPreference@QTextCharFormat@@QAEXW4HintingPreference@QFont@@@Z @ 13330 NONAME ; void QTextCharFormat::setFontHintingPreference(enum QFont::HintingPreference)
+	??4QStyleOptionTabV2@@QAEAAV0@ABV0@@Z @ 13331 NONAME ; class QStyleOptionTabV2 & QStyleOptionTabV2::operator=(class QStyleOptionTabV2 const &)
+	??_EQInternalMimeData@@UAE@I@Z @ 13332 NONAME ; QInternalMimeData::~QInternalMimeData(unsigned int)
+	??4QTextListFormat@@QAEAAV0@ABV0@@Z @ 13333 NONAME ; class QTextListFormat & QTextListFormat::operator=(class QTextListFormat const &)
+	??_EQPalette@@QAE@I@Z @ 13334 NONAME ; QPalette::~QPalette(unsigned int)
+	??0QFocusEvent@@QAE@ABV0@@Z @ 13335 NONAME ; QFocusEvent::QFocusEvent(class QFocusEvent const &)
+	??4QStyleOptionQ3ListViewItem@@QAEAAV0@ABV0@@Z @ 13336 NONAME ; class QStyleOptionQ3ListViewItem & QStyleOptionQ3ListViewItem::operator=(class QStyleOptionQ3ListViewItem const &)
+	?markRasterOverlay@QBlittablePixmapData@@QAEXABVQPointF@@ABVQTextItem@@@Z @ 13337 NONAME ; void QBlittablePixmapData::markRasterOverlay(class QPointF const &, class QTextItem const &)
+	?trUtf8@QScroller@@SA?AVQString@@PBD0@Z @ 13338 NONAME ; class QString QScroller::trUtf8(char const *, char const *)
+	??_EQIcon@@QAE@I@Z @ 13339 NONAME ; QIcon::~QIcon(unsigned int)
+	??YQGlyphs@@AAEAAV0@ABV0@@Z @ 13340 NONAME ; class QGlyphs & QGlyphs::operator+=(class QGlyphs const &)
+	??9QScrollerProperties@@QBE_NABV0@@Z @ 13341 NONAME ; bool QScrollerProperties::operator!=(class QScrollerProperties const &) const
+	??0QTextListFormat@@QAE@ABV0@@Z @ 13342 NONAME ; QTextListFormat::QTextListFormat(class QTextListFormat const &)
+	?drawEllipse@QBlitterPaintEngine@@UAEXABVQRectF@@@Z @ 13343 NONAME ; void QBlitterPaintEngine::drawEllipse(class QRectF const &)
+	??0QGuiPlatformPluginInterface@@QAE@XZ @ 13344 NONAME ; QGuiPlatformPluginInterface::QGuiPlatformPluginInterface(void)
+	??_EQTextLayout@@QAE@I@Z @ 13345 NONAME ; QTextLayout::~QTextLayout(unsigned int)
+	??0QWheelEvent@@QAE@ABV0@@Z @ 13346 NONAME ; QWheelEvent::QWheelEvent(class QWheelEvent const &)
+	?blittable@QBlittablePixmapData@@QBEPAVQBlittable@@XZ @ 13347 NONAME ; class QBlittable * QBlittablePixmapData::blittable(void) const
+	?resizeCache@QTextureGlyphCache@@QAEXHH@Z @ 13348 NONAME ; void QTextureGlyphCache::resizeCache(int, int)
+	??0QScrollerProperties@@QAE@ABV0@@Z @ 13349 NONAME ; QScrollerProperties::QScrollerProperties(class QScrollerProperties const &)
+	??0QWindowStateChangeEvent@@QAE@ABV0@@Z @ 13350 NONAME ; QWindowStateChangeEvent::QWindowStateChangeEvent(class QWindowStateChangeEvent const &)
+	?metaObject@QInternalMimeData@@UBEPBUQMetaObject@@XZ @ 13351 NONAME ; struct QMetaObject const * QInternalMimeData::metaObject(void) const
+	?setContentPos@QScrollPrepareEvent@@QAEXABVQPointF@@@Z @ 13352 NONAME ; void QScrollPrepareEvent::setContentPos(class QPointF const &)
+	??_EQTextEngine@@QAE@I@Z @ 13353 NONAME ; QTextEngine::~QTextEngine(unsigned int)
+	??4QStyleOptionTitleBar@@QAEAAV0@ABV0@@Z @ 13354 NONAME ; class QStyleOptionTitleBar & QStyleOptionTitleBar::operator=(class QStyleOptionTitleBar const &)
+	??4Value@QCss@@QAEAAU01@ABU01@@Z @ 13355 NONAME ; struct QCss::Value & QCss::Value::operator=(struct QCss::Value const &)
+	?staticMetaObject@QScroller@@2UQMetaObject@@B @ 13356 NONAME ; struct QMetaObject const QScroller::staticMetaObject
+	?hasFormatHelper@QInternalMimeData@@SA_NABVQString@@PBVQMimeData@@@Z @ 13357 NONAME ; bool QInternalMimeData::hasFormatHelper(class QString const &, class QMimeData const *)
+	?state@QBlitterPaintEngine@@QAEPAVQPainterState@@XZ @ 13358 NONAME ; class QPainterState * QBlitterPaintEngine::state(void)
+	?penChanged@QBlitterPaintEngine@@UAEXXZ @ 13359 NONAME ; void QBlitterPaintEngine::penChanged(void)
+	??0QFileOpenEvent@@QAE@ABVRFile@@@Z @ 13360 NONAME ; QFileOpenEvent::QFileOpenEvent(class RFile const &)
+	?hasHeightForWidth@QWidgetPrivate@@UBE_NXZ @ 13361 NONAME ; bool QWidgetPrivate::hasHeightForWidth(void) const
+	??0QDragLeaveEvent@@QAE@ABV0@@Z @ 13362 NONAME ; QDragLeaveEvent::QDragLeaveEvent(class QDragLeaveEvent const &)
+	?toImage@QBlittablePixmapData@@UBE?AVQImage@@XZ @ 13363 NONAME ; class QImage QBlittablePixmapData::toImage(void) const
+	??_EQBlittable@@UAE@I@Z @ 13364 NONAME ; QBlittable::~QBlittable(unsigned int)
+	??4QBitmap@@QAEAAV0@ABV0@@Z @ 13365 NONAME ; class QBitmap & QBitmap::operator=(class QBitmap const &)
+	??1QInternalMimeData@@UAE@XZ @ 13366 NONAME ; QInternalMimeData::~QInternalMimeData(void)
+	??0QItemSelection@@QAE@ABV0@@Z @ 13367 NONAME ; QItemSelection::QItemSelection(class QItemSelection const &)
+	?qt_addBitmapToPath@@YAXMMPBEHHHPAVQPainterPath@@@Z @ 13368 NONAME ; void qt_addBitmapToPath(float, float, unsigned char const *, int, int, int, class QPainterPath *)
+	?staticMetaObject@QInternalMimeData@@2UQMetaObject@@B @ 13369 NONAME ; struct QMetaObject const QInternalMimeData::staticMetaObject
+	?activeScrollers@QScroller@@SA?AV?$QList@PAVQScroller@@@@XZ @ 13370 NONAME ; class QList<class QScroller *> QScroller::activeScrollers(void)
+	?drawGlyphs@QPainter@@QAEXABVQPointF@@ABVQGlyphs@@@Z @ 13371 NONAME ; void QPainter::drawGlyphs(class QPointF const &, class QGlyphs const &)
+	??4QTextFrameFormat@@QAEAAV0@ABV0@@Z @ 13372 NONAME ; class QTextFrameFormat & QTextFrameFormat::operator=(class QTextFrameFormat const &)
 
