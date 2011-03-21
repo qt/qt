@@ -299,8 +299,6 @@ void QSymbianHostResolver::requestHostLookup()
 
 void QSymbianHostResolver::DoCancel()
 {
-    QSymbianHostInfoLookupManger *manager = QSymbianHostInfoLookupManger::globalInstance();
-    manager->lookupFinished(this);
     iHostResolver.Cancel();
 }
 
@@ -512,7 +510,7 @@ void QSymbianHostInfoLookupManger::abortLookup(int id)
         if (id == iCurrentLookups[i]->id()) {
             QSymbianHostResolver* r = iCurrentLookups[i];
             iCurrentLookups.Remove(i);
-            r->Cancel();
+            delete r; //cancels via destructor
             runNextLookup();
             return;
         }
