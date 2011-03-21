@@ -101,7 +101,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetw
         hostResolver.GetByAddress(IpAdd, nameResult);
         if (err) {
             // TODO - Could there be other errors? Symbian docs don't say.
-            if (err = KErrNotFound) {
+            if (err == KErrNotFound) {
                 results.setError(QHostInfo::HostNotFound);
                 results.setErrorString(tr("Host not found"));
             } else {
@@ -136,7 +136,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetw
     err = hostResolver.GetByName(qt_QString2TPtrC(QString::fromLatin1(aceHostname)), nameResult);
     if (err) {
         // TODO - Could there be other errors? Symbian docs don't say.
-        if (err = KErrNotFound) {
+        if (err == KErrNotFound) {
             results.setError(QHostInfo::HostNotFound);
             results.setErrorString(tr("Host not found"));
         } else {
@@ -358,7 +358,7 @@ void QSymbianHostResolver::processNameResults()
     TInt err = iStatus.Int();
     if (err < 0) {
         // TODO - Could there be other errors? Symbian docs don't say.
-        if (err = KErrNotFound) {
+        if (err == KErrNotFound) {
             iResults.setError(QHostInfo::HostNotFound);
             iResults.setErrorString(QObject::tr("Host not found"));
         } else {
@@ -407,7 +407,7 @@ void QSymbianHostResolver::processAddressResults()
 
     if (err < 0) {
         // TODO - Could there be other errors? Symbian docs don't say.
-        if (err = KErrNotFound) {
+        if (err == KErrNotFound) {
             iResults.setError(QHostInfo::HostNotFound);
             iResults.setErrorString(QObject::tr("Host not found"));
         } else {
@@ -516,7 +516,7 @@ void QSymbianHostInfoLookupManger::abortLookup(int id)
     // Find the aborted lookup by ID.
     // First in the current lookups.
     for (i = 0; i < iCurrentLookups.Count(); i++) {
-        if (id = iCurrentLookups[i]->id()) {
+        if (id == iCurrentLookups[i]->id()) {
             QSymbianHostResolver* r = iCurrentLookups[i];
             iCurrentLookups.Remove(i);
             r->Cancel();
@@ -526,7 +526,7 @@ void QSymbianHostInfoLookupManger::abortLookup(int id)
     }
     // Then in the scheduled lookups.
     for (i = 0; i < iScheduledLookups.Count(); i++) {
-        if (id = iScheduledLookups[i]->id()) {
+        if (id == iScheduledLookups[i]->id()) {
             QSymbianHostResolver* r = iScheduledLookups[i];
             iScheduledLookups.Remove(i);
             delete r;
