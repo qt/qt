@@ -45,35 +45,38 @@
 #include <QtGui/QPlatformWindow>
 
 #include <stdint.h>
+#include "qwaylanddisplay.h"
 
 class QWaylandDisplay;
 class QWaylandBuffer;
+struct wl_egl_window;
 
 class QWaylandWindow : public QPlatformWindow
 {
 public:
+    enum WindowType {
+        Shm,
+        Egl
+    };
+
     QWaylandWindow(QWidget *window);
     ~QWaylandWindow();
-    struct wl_surface *surface() { return mSurface; }
 
+    virtual WindowType windowType() const = 0;
+    WId winId() const;
     void setVisible(bool visible);
+    void setParent(const QPlatformWindow *parent);
+
     void configure(uint32_t time, uint32_t edges,
                    int32_t x, int32_t y, int32_t width, int32_t height);
-    WId winId() const;
-    void setParent(const QPlatformWindow *parent);
-    QPlatformGLContext *glContext() const;
-    void attach(QWaylandBuffer *buffer);
-    QWaylandBuffer *getBuffer(void) { return mBuffer; }
-    QWaylandWindow *getParentWindow(void) { return mParentWindow; }
 
-private:
+protected:
     struct wl_surface *mSurface;
+    virtual void newSurfaceCreated() = 0;
     QWaylandDisplay *mDisplay;
-    QPlatformGLContext *mGLContext;
     WId mWindowId;
 
-    QWaylandBuffer *mBuffer;
-    QWaylandWindow *mParentWindow;
+
 };
 
 

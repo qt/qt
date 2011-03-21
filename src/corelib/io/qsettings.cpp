@@ -1004,7 +1004,7 @@ void QConfFileSettingsPrivate::initFormat()
     readFunc = 0;
     writeFunc = 0;
 #if defined(Q_OS_MAC)
-    caseSensitivity = (format == QSettings::NativeFormat) ? Qt::CaseSensitive : Qt::CaseInsensitive;
+    caseSensitivity = (format == QSettings::NativeFormat) ? Qt::CaseSensitive : IniCaseSensitivity;
 #else
     caseSensitivity = IniCaseSensitivity;
 #endif

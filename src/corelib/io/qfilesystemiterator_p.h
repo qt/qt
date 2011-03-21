@@ -54,6 +54,9 @@
 //
 
 #include <QtCore/qglobal.h>
+
+#ifndef QT_NO_FILESYSTEMITERATOR
+
 #include <QtCore/qdir.h>
 #include <QtCore/qdiriterator.h>
 #include <QtCore/qstringlist.h>
@@ -111,5 +114,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_FILESYSTEMITERATOR
 
 #endif // include guard
