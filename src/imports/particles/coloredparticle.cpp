@@ -57,11 +57,8 @@ public:
     virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *, Renderer::Updates updates)
     {
         ParticleTrailsMaterial *m = static_cast<ParticleTrailsMaterial *>(newEffect);
-        renderer->setTexture(0, m->texture);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        renderer->glActiveTexture(GL_TEXTURE0);
+        m->texture->bind();
 
         m_program.setUniformValue(m_opacity_id, (float) renderer->renderOpacity());
         m_program.setUniformValue(m_timestamp_id, (float) m->timestamp);
@@ -145,12 +142,7 @@ public:
         ParticleTrailsMaterialData::updateState(renderer, current, old, updates);
         ParticleTrailsMaterialCT *m = static_cast<ParticleTrailsMaterialCT *>(current);
         renderer->glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, m->colortable->textureId());
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        m->colortable->bind();
         m_program.setUniformValue(m_colortable_id, 1);
     }
 
