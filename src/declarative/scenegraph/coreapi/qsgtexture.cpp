@@ -42,6 +42,7 @@
 #define GL_GLEXT_PROTOTYPES
 
 #include "qsgtexture_p.h"
+#include "qsgtexturemanager.h"
 
 QSGTexturePrivate::QSGTexturePrivate()
     : wrapChanged(false)
