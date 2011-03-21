@@ -559,7 +559,7 @@ public:
     quint32 dirtyChildrenBoundingRect : 1;
 
     // Packed 32 bits
-    quint32 flags : 18;
+    quint32 flags : 19;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform : 1;
     quint32 geometryChanged : 1;
@@ -573,9 +573,9 @@ public:
     quint32 sceneTransformTranslateOnly : 1;
     quint32 notifyBoundingRectChanged : 1;
     quint32 notifyInvalidated : 1;
-    quint32 mouseSetsFocus : 1;
 
     // New 32 bits
+    quint32 mouseSetsFocus : 1;
     quint32 explicitActivate : 1;
     quint32 wantsActive : 1;
     quint32 holesInSiblingIndex : 1;
@@ -586,7 +586,7 @@ public:
     quint32 mayHaveChildWithGraphicsEffect : 1;
     quint32 isDeclarativeItem : 1;
     quint32 sendParentChangeNotification : 1;
-    quint32 padding : 22;
+    quint32 padding : 21;
 
     // Optional stacking order
     int globalStackingOrder;

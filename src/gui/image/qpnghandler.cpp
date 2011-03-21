@@ -507,8 +507,10 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
     png_read_end(png_ptr, end_info);
 
     readPngTexts(end_info);
+#ifndef QT_NO_IMAGE_TEXT
     for (int i = 0; i < readTexts.size()-1; i+=2)
         outImage->setText(readTexts.at(i), readTexts.at(i+1));
+#endif
 
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
     delete [] row_pointers;
