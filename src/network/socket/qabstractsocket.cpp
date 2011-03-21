@@ -752,11 +752,11 @@ bool QAbstractSocketPrivate::flush()
     if (written < 0) {
         socketError = socketEngine->error();
         q->setErrorString(socketEngine->errorString());
-        emit q->error(socketError);
-        // an unexpected error so close the socket.
 #if defined (QABSTRACTSOCKET_DEBUG)
         qDebug() << "QAbstractSocketPrivate::flush() write error, aborting." << socketEngine->errorString();
 #endif
+        emit q->error(socketError);
+        // an unexpected error so close the socket.
         q->abort();
         return false;
     }
