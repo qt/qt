@@ -457,17 +457,10 @@ static void convert_to_Format_Alpha(QImage *image)
     }
 }
 
-uint qHash(const TexCoordCacheKey &key)
-{
-    return (qHash(key.distfield) << 13) | (key.glyph & 0x1FFF);
-}
-
 DEFINE_BOOL_CONFIG_OPTION(enableDistanceField, QML_ENABLE_DISTANCEFIELD)
 
 QHash<QString, DistanceFieldFontAtlas *> DistanceFieldFontAtlas::m_atlases;
-QHash<TexCoordCacheKey, DistanceFieldFontAtlas::TexCoord> DistanceFieldFontAtlas::m_texCoords;
-QSet<TexCoordCacheKey> DistanceFieldFontAtlas::m_generatedGlyphs;
-QHash<QString, QSGTextureRef> DistanceFieldFontAtlas::m_textures;
+QHash<QString, DistanceFieldFontAtlas::DistanceFieldTextureData *> DistanceFieldFontAtlas::m_textures_data;
 
 static QString fontKey(const QFont &font)
 {
@@ -498,6 +491,14 @@ DistanceFieldFontAtlas *DistanceFieldFontAtlas::get(const QFont &font)
     return atlas.value();
 }
 
+DistanceFieldFontAtlas::DistanceFieldTextureData *DistanceFieldFontAtlas::textureData()
+{
+    QHash<QString, DistanceFieldTextureData *>::iterator data = m_textures_data.find(m_distanceFieldKey);
+    if (data == m_textures_data.end())
+        data = m_textures_data.insert(m_distanceFieldKey, new DistanceFieldTextureData);
+    return data.value();
+}
+
 DistanceFieldFontAtlas::DistanceFieldFontAtlas(const QFont &font)
 {
     m_font = font;
@@ -522,6 +523,7 @@ DistanceFieldFontAtlas::DistanceFieldFontAtlas(const QFont &font)
     QString italic = m_font.italic() ? QLatin1String("i") : QLatin1String("");
     QString bold = m_font.weight() > QFont::Normal ? QLatin1String("b") : QLatin1String("");
     m_distanceFieldKey = basename + bold + italic;
+    m_textureData = textureData();
 
     m_glyphCount = m_fontEngine->glyphCount();
 }
@@ -533,12 +535,10 @@ qreal DistanceFieldFontAtlas::glyphMargin() const
 
 QSGTextureRef DistanceFieldFontAtlas::texture()
 {
-    QHash<QString, QSGTextureRef>::iterator tex = m_textures.find(m_distanceFieldKey);
-    if (tex == m_textures.end()) {
-        tex = m_textures.insert(m_distanceFieldKey, createTexture());
-    }
+    if (m_textureData->texture.isNull())
+        m_textureData->texture = createTexture();
 
-    return tex.value();
+    return m_textureData->texture;
 }
 
 void DistanceFieldFontAtlas::populate(int count, const glyph_t *glyphs)
@@ -546,8 +546,7 @@ void DistanceFieldFontAtlas::populate(int count, const glyph_t *glyphs)
     glBindTexture(GL_TEXTURE_2D, texture()->textureId());
 
     for (int i = 0; i < count; ++i) {
-        TexCoordCacheKey key(m_distanceFieldKey, glyphs[i]);
-        if (m_generatedGlyphs.contains(key))
+        if (m_textureData->generatedGlyphs.contains(glyphs[i]))
             continue;
 
         QImage glyph = renderDistanceFieldGlyph(glyphs[i]);
@@ -558,25 +557,24 @@ void DistanceFieldFontAtlas::populate(int count, const glyph_t *glyphs)
 
         glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, glyph.width(), glyph.height(), GL_ALPHA, GL_UNSIGNED_BYTE, glyph.constBits());
 
-        m_generatedGlyphs.insert(key);
+        m_textureData->generatedGlyphs.insert(glyphs[i]);
     }
 }
 
 QSize DistanceFieldFontAtlas::atlasSize() const
 {
-    if (!m_size.isValid()) {
+    if (!m_textureData->size.isValid()) {
         const int texWidth = QT_DISTANCEFIELD_TEXTURESIZE;
         const int texHeight = ((glyphCount() * QT_DISTANCEFIELD_TILESIZE) / texWidth + 1) * QT_DISTANCEFIELD_TILESIZE;
-        m_size = QSize(texWidth, texHeight);
+        m_textureData->size = QSize(texWidth, texHeight);
     }
-    return m_size;
+    return m_textureData->size;
 }
 
 DistanceFieldFontAtlas::Metrics DistanceFieldFontAtlas::glyphMetrics(glyph_t glyph)
 {
     QHash<glyph_t, Metrics>::iterator metric = m_metrics.find(glyph);
     if (metric == m_metrics.end()) {
-        //XXX yoann temporary (and slow) solution to get metrics in float
         QPainterPath path;
         QFixedPoint p;
         m_fontEngine->addGlyphsToPath(&glyph, &p, 1, &path, 0);
@@ -598,12 +596,10 @@ DistanceFieldFontAtlas::TexCoord DistanceFieldFontAtlas::glyphTexCoord(glyph_t g
     if (glyph >= glyphCount())
         qWarning("Warning: distance-field glyph is not available with index %d", glyph);
 
-    TexCoordCacheKey key(m_distanceFieldKey, glyph);
-    QHash<TexCoordCacheKey, TexCoord>::iterator texCoord = m_texCoords.find(key);
-    if (texCoord == m_texCoords.end()) {
+    QHash<glyph_t, TexCoord>::iterator texCoord = m_textureData->texCoords.find(glyph);
+    if (texCoord == m_textureData->texCoords.end()) {
         const QSize texSize = atlasSize();
 
-        //XXX yoann temporary (and slow) solution to get metrics in float
         QPainterPath path;
         QFixedPoint p;
         m_referenceFontEngine->addGlyphsToPath(&glyph, &p, 1, &path, 0);
@@ -616,7 +612,7 @@ DistanceFieldFontAtlas::TexCoord DistanceFieldFontAtlas::glyphTexCoord(glyph_t g
         c.width = path.boundingRect().width() / qreal(texSize.width());
         c.height = path.boundingRect().height() / qreal(texSize.height());
 
-        texCoord = m_texCoords.insert(key, c);
+        texCoord = m_textureData->texCoords.insert(glyph, c);
     }
 
     return texCoord.value();
