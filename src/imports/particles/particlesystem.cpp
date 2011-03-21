@@ -73,12 +73,14 @@ void ParticleSystem::componentComplete()
 
 void ParticleSystem::initializeSystem()
 {
+    int oldCount = m_particle_count;
     m_particle_count = 0;//TODO: Only when changed?
 
-    foreach(ParticleData* d, m_data){
-        if(d){
-            delete d;
-            d = 0;
+    //### Reset the data too?
+    for(int i=0; i<oldCount; i++){
+        if(m_data[i]){
+            delete m_data[i];
+            m_data[i] = 0;
         }
     }
 
@@ -116,7 +118,10 @@ void ParticleSystem::initializeSystem()
         (*iter)->start = m_particle_count;
         m_particle_count += (*iter)->size;
     }
-        m_data.resize(m_particle_count);
+    m_data.resize(m_particle_count);
+    for(int i=oldCount; i<m_particle_count; i++)
+        m_data[i] = 0;//setup new ones
+
     if(m_particle_count > 16000)
         qWarning() << "Particle system contains a vast number of particles (>16000). Expect poor performance";
 
@@ -155,6 +160,7 @@ void ParticleSystem::reset()
 
 ParticleData* ParticleSystem::newDatum(int groupId)
 {
+    Q_ASSERT(groupId < m_groupData.count());//XXX shouldn't really be an assert
     int nextIdx = m_groupData[groupId]->start + m_groupData[groupId]->nextIdx++;
     if( m_groupData[groupId]->nextIdx >= m_groupData[groupId]->size)
         m_groupData[groupId]->nextIdx = 0;
@@ -207,6 +213,7 @@ uint ParticleSystem::systemSync(ParticleType* p)
         m_timeInt = m_timestamp.elapsed() + m_startTime;
         qreal time =  m_timeInt / 1000.;
         dt = time - dt;
+        m_needsReset.clear();
         foreach(ParticleEmitter* emitter, m_emitters)
             emitter->emitWindow(m_timeInt);
         foreach(ParticleAffector* a, m_affectors)
@@ -314,5 +321,5 @@ void ParticleData::debugDump()
              << "Pos: " << pv.x << "," << pv.y
              << "Vel: " << pv.sx << "," << pv.sy
              << "Acc: " << pv.ax << "," << pv.ay
-             << "Time: " << pv.t << "," << (system->m_timeInt / 1000.0);
+             << "Time: " << pv.t;// << "," << (system->m_timeInt / 1000.0);
 }
