@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QPainter>
 #include <QSet>
+#include <QtOpenGL>
 
 SpriteEngine::SpriteEngine(QObject *parent) :
     QObject(parent), m_timeOffset(0)
