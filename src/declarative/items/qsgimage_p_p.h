@@ -66,10 +66,9 @@ class QSGImageTextureProvider : public QSGTextureProvider
 public:
     QSGImageTextureProvider(QObject *parent = 0);
     void setImage(const QImage &image);
-    virtual QSGTextureRef texture();
+    QSGTextureRef texture();
 
-private:
-    QSGTextureRef m_texture;
+    QSGTextureRef tex;
 };
 
 

@@ -113,6 +113,8 @@ class QDeclarativeDelayedError;
 class QDeclarativeWorkerScriptEngine;
 class QDeclarativeGlobalScriptClass;
 class QDir;
+class QSGTexture;
+class QSGContext;
 
 class QDeclarativeScriptEngine : public QScriptEngine
 {
@@ -237,6 +239,7 @@ public:
 
     QHash<QString,QSharedPointer<QDeclarativeImageProvider> > imageProviders;
     QDeclarativeImageProvider::ImageType getImageProviderType(const QUrl &url);
+    QSGTexture *getTextureFromProvider(const QUrl &url, QSize *size, const QSize& req_size);
     QImage getImageFromProvider(const QUrl &url, QSize *size, const QSize& req_size);
     QPixmap getPixmapFromProvider(const QUrl &url, QSize *size, const QSize& req_size);
 
@@ -343,6 +346,8 @@ public:
     static void defineModule();
 
     static bool qml_debugging_enabled;
+
+    QSGContext *sgContext;
 };
 
 /*!

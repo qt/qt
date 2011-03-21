@@ -6,7 +6,7 @@
 #include <adaptationlayer.h>
 #include <node.h>
 #include <texturematerial.h>
-#include <qsgtexturemanager.h>
+#include <qsgtexture.h>
 #include <QFile>
 #include <cmath>
 #include <qmath.h>
@@ -72,12 +72,7 @@ public:
     virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *, Renderer::Updates updates)
     {
         SpriteParticlesMaterial *m = static_cast<SpriteParticlesMaterial *>(newEffect);
-        Q_ASSERT(m->texture.isReady());
-        renderer->setTexture(0, m->texture);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        m->texture->bind();
 
         m_program.setUniformValue(m_opacity_id, (float) renderer->renderOpacity());
         m_program.setUniformValue(m_timestamp_id, (float) m->timestamp);
@@ -233,7 +228,8 @@ GeometryNode* SpriteParticle::buildParticleNode()
     QImage image = m_spriteEngine->assembledImage();
     if(image.isNull())
         return 0;
-    m_material->texture = sg->textureManager()->upload(image);
+    m_material->texture = sg->createTexture();
+    m_material->texture->setImage(image);
     m_material->framecount = m_spriteEngine->maxFrames();
     m_spriteEngine->setCount(m_count);
 

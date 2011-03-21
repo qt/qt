@@ -45,7 +45,6 @@
 
 #include "qsgcontext.h"
 #include "adaptationlayer.h"
-#include "qsgtexturemanager.h"
 #include "textureitem.h"
 
 #include <QtGui/qpainter.h>
@@ -57,16 +56,18 @@ QSGImageTextureProvider::QSGImageTextureProvider(QObject *parent)
 {
 }
 
+
 void QSGImageTextureProvider::setImage(const QImage &image)
 {
-    QSGTextureManager *tm = QSGContext::current->textureManager();
-    m_texture = tm->upload(image);
+    tex = QSGContext::current->createTexture();
+    tex->setImage(image);
     emit textureChanged();
 }
 
+
 QSGTextureRef QSGImageTextureProvider::texture()
 {
-    return m_texture;
+    return tex;
 }
 
 
@@ -94,20 +95,6 @@ QSGImage::QSGImage(QSGImagePrivate &dd, QSGItem *parent)
 
 QSGImage::~QSGImage()
 {
-}
-
-QPixmap QSGImage::pixmap() const
-{
-    Q_D(const QSGImage);
-    return d->pix.pixmap();
-}
-
-void QSGImage::setPixmap(const QPixmap &pix)
-{
-    Q_D(QSGImage);
-    if (!d->url.isEmpty())
-        return;
-    d->setPixmap(pix);
 }
 
 void QSGImagePrivate::setPixmap(const QPixmap &pixmap)
@@ -217,7 +204,7 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
     Q_D(QSGImage);
     //XXX Support mirror property
 
-    if (d->pix.pixmap().isNull() || width() <= 0 || height() <= 0) {
+    if (d->pix.texture().isNull() || width() <= 0 || height() <= 0) {
         delete oldNode;
         return 0;
     }
@@ -226,13 +213,14 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
     if (!node) { 
         d->pixmapChanged = true;
         node = QSGContext::current->createTextureNode();
+        d->textureProvider->tex = d->pix.texture();
         node->setTexture(d->textureProvider);
     }
 
     if (d->pixmapChanged) {
-        d->textureProvider->setImage(d->pix.pixmap().toImage());
         // force update the texture in the node to trigger reconstruction of
         // geometry and the likes when a atlas segment has changed.
+        d->textureProvider->tex = d->pix.texture();
         node->setTexture(0);
         node->setTexture(d->textureProvider);
         d->pixmapChanged = false;

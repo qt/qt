@@ -178,7 +178,7 @@ Node *QSGPaintedItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         node->setTexture(d->textureProvider);
     }
 
-    QImage image(width(), height(), QImage::Format_ARGB32);
+    QImage image(width(), height(), QImage::Format_ARGB32_Premultiplied);
     if (!d->opaquePainting)
         image.fill(0);
 

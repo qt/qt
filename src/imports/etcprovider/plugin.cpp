@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,44 +39,20 @@
 **
 ****************************************************************************/
 
-#ifndef QSGTEXTUREMANAGER_P_H
-#define QSGTEXTUREMANAGER_P_H
+#include "plugin.h"
+#include "qetcprovider.h"
 
-#include "qsgtexturemanager.h"
+#include <QDeclarativeEngine>
 
-#include <private/qobject_p.h>
-
-struct QSGTextureCacheKey {
-    quint64 cacheKey;
-
-    bool operator==(const QSGTextureCacheKey &other) const {
-        return other.cacheKey == cacheKey;
-    }
-};
-
-uint qHash(const QSGTextureCacheKey &key);
-
-
-class QSGTextureManagerPrivate : public QObjectPrivate
+void EtcProviderPlugin::registerTypes(const char *uri)
 {
-public:
-    QSGTextureManagerPrivate()
-        : context(0), maxTextureSize(-1)
-    {
-    }
+    Q_UNUSED(uri)
+}
 
-    uint upload(const QImage &image, GLuint id);
-    QSGTextureRef upload(const QImage &image);
+void EtcProviderPlugin::initializeEngine(QDeclarativeEngine *engine, const char *uri)
+{
+    qDebug () << uri;
+    engine->addImageProvider(QLatin1String("etc"), new QEtcProvider());
+}
 
-    void removeTextureFromCache(QSGTexture *texture);
-
-    QSGContext *context;
-    QHash<QSGTextureCacheKey, QSGTexture *> cache;
-
-    int maxTextureSize;
-
-    QSGTextureManager *q;
-};
-
-
-#endif // QSGTEXTUREMANAGER_P_H
+Q_EXPORT_PLUGIN2(qmletcproviderplugin, EtcProviderPlugin)

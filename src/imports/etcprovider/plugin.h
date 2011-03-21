@@ -1,11 +1,10 @@
-// Commit: f4560ff1e42aa5655376490f601ae15a5058c3b9
 /****************************************************************************
 **
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -40,34 +39,21 @@
 **
 ****************************************************************************/
 
-#ifndef QSGTHREADEDTEXTUREMANAGER_H
-#define QSGTHREADEDTEXTUREMANAGER_H
+#ifndef ETCPROVIDERPLUGIN_H
+#define ETCPROVIDERPLUGIN_H
 
-#include "qsgtexturemanager.h"
+#include <QtDeclarative/qdeclarative.h>
+#include <QtDeclarative/QDeclarativeExtensionPlugin>
 
-class QSGThreadedTextureManagerThread;
-class QSGThreadedTextureManagerPrivate;
-class QSGThreadedTexture;
-
-class QSGThreadedTextureManager : public QSGTextureManager
+class EtcProviderPlugin : public QDeclarativeExtensionPlugin
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QSGThreadedTextureManager);
 
 public:
-    QSGThreadedTextureManager();
+    void registerTypes(const char *uri);
+    void initializeEngine(QDeclarativeEngine *engine, const char *uri);
 
-    QSGTextureRef upload(const QImage &image);
-    void requestUpload(QSGTextureUploadRequest *request);
-
-protected:
-    virtual void createThreadContext();
-    virtual void makeThreadContextCurrent();
-    virtual void uploadInThread(QSGTexture *texture, const QImage &image);
-
-private:
-    friend class QSGThreadedTextureManagerThread;
-    friend class QSGThreadedTexture;
 };
 
-#endif // QSGTHREADEDTEXTUREMANAGER_H
+#endif // ETCPROVIDERPLUGIN_H
+
