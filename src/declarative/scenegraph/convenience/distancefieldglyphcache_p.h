@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef DISTANCEFIELDFONTATLAS_H
-#define DISTANCEFIELDFONTATLAS_H
+#ifndef DISTANCEFIELDGLYPHCACHE_H
+#define DISTANCEFIELDGLYPHCACHE_H
 
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
@@ -50,10 +50,10 @@ QT_BEGIN_NAMESPACE
 
 void qt_disableFontHinting(QFont &font);
 
-class Q_DECLARATIVE_EXPORT DistanceFieldFontAtlas
+class Q_DECLARATIVE_EXPORT DistanceFieldGlyphCache
 {
 public:
-    static DistanceFieldFontAtlas *get(const QFont &font);
+    static DistanceFieldGlyphCache *get(const QFont &font);
 
     struct Metrics {
         qreal width;
@@ -74,7 +74,7 @@ public:
     TexCoord glyphTexCoord(glyph_t glyph);
 
     QSGTextureRef texture();
-    QSize atlasSize() const;
+    QSize textureSize() const;
     qreal scaleRatioFromRefSize() const;
     QImage renderDistanceFieldGlyph(glyph_t glyph) const;
 
@@ -88,11 +88,11 @@ public:
     static bool distanceFieldEnabled();
 
 private:
-    DistanceFieldFontAtlas(const QFont &font);
+    DistanceFieldGlyphCache(const QFont &font);
 
     QSGTextureRef createTexture();
 
-    static QHash<QString, DistanceFieldFontAtlas *> m_atlases;
+    static QHash<QString, DistanceFieldGlyphCache *> m_caches;
 
     QFont m_font;
     QFontEngine *m_fontEngine;
@@ -115,4 +115,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // DISTANCEFIELDFONTATLAS_H
+#endif // DISTANCEFIELDGLYPHCACHE_H

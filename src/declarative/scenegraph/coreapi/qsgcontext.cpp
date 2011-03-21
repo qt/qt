@@ -48,7 +48,7 @@
 #include "default/default_texturenode.h"
 #include "default/default_glyphnode.h"
 #include "distancefield_glyphnode.h"
-#include "distancefieldfontatlas_p.h"
+#include "distancefieldglyphcache_p.h"
 
 #include "qsgtexture_p.h"
 
@@ -185,7 +185,7 @@ TextureNodeInterface *QSGContext::createTextureNode()
  */
 GlyphNodeInterface *QSGContext::createGlyphNode()
 {
-    if (DistanceFieldFontAtlas::distanceFieldEnabled())
+    if (DistanceFieldGlyphCache::distanceFieldEnabled())
         return new DistanceFieldGlyphNode;
     else
         return new DefaultGlyphNode;

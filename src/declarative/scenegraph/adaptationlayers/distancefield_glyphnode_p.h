@@ -46,7 +46,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class DistanceFieldFontAtlas;
+class DistanceFieldGlyphCache;
 
 class DistanceFieldTextMaterial: public AbstractMaterial
 {
@@ -67,8 +67,8 @@ public:
     void setScale(qreal scale) { m_scale = scale; }
     qreal scale() const { return m_scale; }
 
-    void setAtlas(DistanceFieldFontAtlas *a) { m_atlas = a; }
-    DistanceFieldFontAtlas *atlas() const { return m_atlas; }
+    void setGlyphCache(DistanceFieldGlyphCache *a) { m_glyph_cache = a; }
+    DistanceFieldGlyphCache *glyphCache() const { return m_glyph_cache; }
 
     bool updateTextureFiltering()
     {
@@ -82,7 +82,7 @@ protected:
     QColor m_color;
     qreal m_scale;
     bool m_dirtyTexture;
-    DistanceFieldFontAtlas *m_atlas;
+    DistanceFieldGlyphCache *m_glyph_cache;
 };
 
 class DistanceFieldStyledTextMaterial : public DistanceFieldTextMaterial

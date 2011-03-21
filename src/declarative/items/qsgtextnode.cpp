@@ -42,7 +42,7 @@
 #include "qsgtextnode_p.h"
 #include "solidrectnode.h"
 #include "adaptationlayer.h"
-#include "distancefieldfontatlas_p.h"
+#include "distancefieldglyphcache_p.h"
 #include "distancefield_glyphnode.h"
 
 #include "qsgcontext.h"
@@ -154,7 +154,7 @@ GlyphNodeInterface *QSGTextNode::addGlyphs(const QPointF &position, const QGlyph
                                            QSGText::TextStyle style, const QColor &styleColor)
 {
     GlyphNodeInterface *node = m_context->createGlyphNode();
-    if (DistanceFieldFontAtlas::distanceFieldEnabled()) {
+    if (DistanceFieldGlyphCache::distanceFieldEnabled()) {
         DistanceFieldGlyphNode *dfNode = static_cast<DistanceFieldGlyphNode *>(node);
         dfNode->setStyle(style);
         dfNode->setStyleColor(styleColor);
