@@ -2097,35 +2097,30 @@ QLocale::MeasurementSystem QLocalePrivate::measurementSystem() const
 /*!
     \since 4.8
 
-    Returns the first day of the weekend according to the current locale.
+    Returns a list of days that are considered weekdays according to the current locale.
 */
-Qt::DayOfWeek QLocale::weekendStart() const
+QList<Qt::DayOfWeek> QLocale::weekdays() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d() == systemPrivate()) {
-        QVariant res = systemLocale()->query(QSystemLocale::WeekendStart, QVariant());
+        QVariant res = systemLocale()->query(QSystemLocale::Weekdays, QVariant());
         if (!res.isNull())
-            return static_cast<Qt::DayOfWeek>(res.toUInt());
+            return static_cast<QList<Qt::DayOfWeek> >(res.value<QList<Qt::DayOfWeek> >());
     }
 #endif
-    return static_cast<Qt::DayOfWeek>(d()->m_weekend_start);
-}
-
-/*!
-    \since 4.8
-
-    Returns the last day of the weekend according to the current locale.
-*/
-Qt::DayOfWeek QLocale::weekendEnd() const
-{
-#ifndef QT_NO_SYSTEMLOCALE
-    if (d() == systemPrivate()) {
-        QVariant res = systemLocale()->query(QSystemLocale::WeekendEnd, QVariant());
-        if (!res.isNull())
-            return static_cast<Qt::DayOfWeek>(res.toUInt());
+    QList<Qt::DayOfWeek> weekdays;
+    quint16 weekendStart = d()->m_weekend_start;
+    quint16 weekendEnd = d()->m_weekend_end;
+    for(int day = Qt::Monday; day <= Qt::Sunday; day++) {
+        if(weekendEnd > weekendStart) {
+            if(day < weekendStart || day > weekendEnd)
+                weekdays << static_cast<Qt::DayOfWeek>(day);
+        } else {
+            if(day > weekendEnd && day < weekendStart)
+                weekdays << static_cast<Qt::DayOfWeek>(day);
+        }
     }
-#endif
-    return static_cast<Qt::DayOfWeek>(d()->m_weekend_end);
+    return weekdays;
 }
 
 /*!

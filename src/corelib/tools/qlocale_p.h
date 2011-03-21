@@ -275,5 +275,6 @@ int repeatCount(const QString &s, int i);
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QStringRef)
+Q_DECLARE_METATYPE(QList<Qt::DayOfWeek>)
 
 #endif // QLOCALE_P_H

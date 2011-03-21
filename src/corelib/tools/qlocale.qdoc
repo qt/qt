@@ -762,8 +762,7 @@
   \value UILanguages a list of strings representing locale names that could be used for UI translation.
   \value StringToStandardQuotation a QString containing a quoted version of the string ref stored in the in variant using standard quotes.
   \value StringToAlternateQuotation a QString containing a quoted version of the string ref stored in the in variant using alternate quotes.
-  \value WeekendStart a Qt::DayOfWeek enum specifying the first day of the weekend
-  \value WeekendEnd a Qt::DayOfWeek enum specifying the last day of the weekend
+  \value Weekdays a QList<Qt::DayOfWeek> specifying the regular weekdays
 */
 
 /*!

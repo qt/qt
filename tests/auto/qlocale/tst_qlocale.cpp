@@ -1154,10 +1154,12 @@ void tst_QLocale::macDefaultLocale()
     QCOMPARE(locale.monthName(1), QString("January"));
     QCOMPARE(locale.monthName(12), QString("December"));
     QCOMPARE(locale.firstDayOfWeek(), Qt::Sunday);
-    QCOMPARE(locale.weekendStart(), Qt::Saturday);
-    QCOMPARE(locale.weekendEnd(), Qt::Sunday);
     QCOMPARE(locale.quoteString("string"), QString::fromUtf8("\xe2\x80\x9c" "string" "\xe2\x80\x9d"));
     QCOMPARE(locale.quoteString("string", QLocale::AlternateQuotation), QString::fromUtf8("\xe2\x80\x98" "string" "\xe2\x80\x99"));
+
+    QList<Qt::DayOfWeek> days;
+    days << Qt::Monday << Qt::Tuesday << Qt::Wednesday << Qt::Thursday << Qt::Friday;
+    QCOMPARE(locale.weekdays(), days);
 
 }
 
@@ -2233,8 +2235,9 @@ void tst_QLocale::uiLanguages()
 void tst_QLocale::weekendDays()
 {
     const QLocale c(QLocale::C);
-    QCOMPARE(c.weekendStart(), Qt::Saturday);
-    QCOMPARE(c.weekendEnd(), Qt::Sunday);
+    QList<Qt::DayOfWeek> days;
+    days << Qt::Monday << Qt::Tuesday << Qt::Wednesday << Qt::Thursday << Qt::Friday;
+    QCOMPARE(c.weekdays(), days);
 }
 
 void tst_QLocale::listPatterns()

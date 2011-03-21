@@ -106,8 +106,7 @@ public:
         AMText, // QString
         PMText, // QString
         FirstDayOfWeek, // Qt::DayOfWeek
-        WeekendStart, // Qt::DayOfWeek
-        WeekendEnd, // Qt::DayOfWeek
+        Weekdays, // QList<Qt::DayOfWeek>
         CurrencySymbol, // QString in: CurrencyToStringArgument
         CurrencyToString, // QString in: qlonglong, qulonglong or double
         UILanguages, // QStringList
@@ -712,8 +711,7 @@ public:
     QString standaloneDayName(int, FormatType format = LongFormat) const;
 
     Qt::DayOfWeek firstDayOfWeek() const;
-    Qt::DayOfWeek weekendStart() const;
-    Qt::DayOfWeek weekendEnd() const;
+    QList<Qt::DayOfWeek> weekdays() const;
 
     QString amText() const;
     QString pmText() const;
