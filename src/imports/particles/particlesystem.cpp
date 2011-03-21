@@ -75,6 +75,13 @@ void ParticleSystem::initializeSystem()
 {
     m_particle_count = 0;//TODO: Only when changed?
 
+    foreach(ParticleData* d, m_data){
+        if(d){
+            delete d;
+            d = 0;
+        }
+    }
+
     for(QHash<int, GroupData*>::iterator iter = m_groupData.begin(); iter != m_groupData.end(); iter++)
         delete (*iter);
     m_groupData.clear();

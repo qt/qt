@@ -47,6 +47,9 @@ void TurbulenceAffector::ensureInit()
     m_field = (QPointF**)malloc(m_gridSize * sizeof(QPointF*));
     for(int i=0; i<m_gridSize; i++)
         m_field[i]  = (QPointF*)malloc(m_gridSize * sizeof(QPointF));
+    for(int i=0; i<m_gridSize; i++)
+        for(int j=0; j<m_gridSize; j++)
+            m_field[i][j] = QPointF();
     m_spacing = QPointF(width()/m_gridSize, height()/m_gridSize);
     m_magSum = magnitude(m_spacing.x(), m_spacing.y())*2;
 }
@@ -99,7 +102,7 @@ void TurbulenceAffector::affectSystem(qreal dt)
         foreach(const intPair &p, nodes){
             if(!QRect(0,0,m_gridSize-1,m_gridSize-1).contains(QPoint(p.first, p.second)))
                 continue;
-            qreal dist = magnitude(pos.x() - p.first*m_spacing.x(), pos.y() - p.second*m_spacing.y());
+            qreal dist = magnitude(pos.x() - p.first*m_spacing.x(), pos.y() - p.second*m_spacing.y());//TODO: Mathematically valid
             fx += m_field[p.first][p.second].x() * ((m_magSum - dist)/m_magSum);//Proportionally weight nodes
             fy += m_field[p.first][p.second].y() * ((m_magSum - dist)/m_magSum);
         }
