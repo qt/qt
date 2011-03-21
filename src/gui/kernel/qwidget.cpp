@@ -366,9 +366,12 @@ QWindowSurface *QWidgetPrivate::createDefaultWindowSurface()
     Q_Q(QWidget);
 
     QWindowSurface *surface;
+#ifndef QT_NO_PROPERTIES
     if (q->property("_q_DummyWindowSurface").toBool()) {
         surface = new QDummyWindowSurface(q);
-    } else {
+    } else
+#endif
+    {
         if (QApplicationPrivate::graphicsSystem())
             surface = QApplicationPrivate::graphicsSystem()->createWindowSurface(q);
         else

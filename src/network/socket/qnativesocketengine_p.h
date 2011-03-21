@@ -101,7 +101,9 @@ union qt_sockaddr {
 };
 
 class QNativeSocketEnginePrivate;
+#ifndef QT_NO_NETWORKINTERFACE
 class QNetworkInterface;
+#endif
 
 class Q_AUTOTEST_EXPORT QNativeSocketEngine : public QAbstractSocketEngine
 {
@@ -124,12 +126,14 @@ public:
     int accept();
     void close();
 
+#ifndef QT_NO_NETWORKINTERFACE
     bool joinMulticastGroup(const QHostAddress &groupAddress,
                             const QNetworkInterface &iface);
     bool leaveMulticastGroup(const QHostAddress &groupAddress,
                              const QNetworkInterface &iface);
     QNetworkInterface multicastInterface() const;
     bool setMulticastInterface(const QNetworkInterface &iface);
+#endif
 
     qint64 bytesAvailable() const;
 
@@ -245,12 +249,14 @@ public:
     bool nativeBind(const QHostAddress &address, quint16 port);
     bool nativeListen(int backlog);
     int nativeAccept();
+#ifndef QT_NO_NETWORKINTERFACE
     bool nativeJoinMulticastGroup(const QHostAddress &groupAddress,
                                   const QNetworkInterface &iface);
     bool nativeLeaveMulticastGroup(const QHostAddress &groupAddress,
                                    const QNetworkInterface &iface);
     QNetworkInterface nativeMulticastInterface() const;
     bool nativeSetMulticastInterface(const QNetworkInterface &iface);
+#endif
     qint64 nativeBytesAvailable() const;
 
     bool nativeHasPendingDatagrams() const;
