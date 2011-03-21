@@ -248,7 +248,6 @@ QSGPlainTexture::~QSGPlainTexture()
 }
 
 
-
 static void swizzleBGRAToRGBA(QImage *image)
 {
     const int width = image->width();
