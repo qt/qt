@@ -1655,7 +1655,8 @@ void fromLatin1_prolog_sse4_overcommit(ushort *dst, const char *str, int)
 void tst_QString::fromLatin1Alternatives_data() const
 {
     QTest::addColumn<FromLatin1Function>("function");
-    QTest::newRow("regular") << &fromLatin1_regular;
+    QTest::newRow("empty", QTest::Zero) << FromLatin1Function(0);
+    QTest::newRow("regular", QTest::Baseline) << &fromLatin1_regular;
     QTest::newRow("sse2-qt4.7") << &fromLatin1_sse2_qt47;
     QTest::newRow("sse2-improved") << &fromLatin1_sse2_improved;
     QTest::newRow("sse2-with-prolog-regular") << &fromLatin1_sse2_withprolog<&fromLatin1_regular>;
@@ -1680,6 +1681,8 @@ static void fromLatin1Alternatives_internal(FromLatin1Function function, QString
         int len = entries[i].len;
         const char *src = fromLatin1Data.charData + entries[i].offset1;
 
+        if (!function)
+            continue;
         if (!doVerify) {
             (function)(&dst.data()->unicode(), src, len);
         } else {
@@ -1726,7 +1729,7 @@ int fromUtf8_latin1_qt47(ushort *dst, const char *chars, int len)
     return len;
 }
 
-int fromUtf8_latin1best(ushort *dst, const char *chars, int len)
+int fromUtf8_latin1_sse2_improved(ushort *dst, const char *chars, int len)
 {
     fromLatin1_sse2_improved(dst, chars, len);
     return len;
@@ -2198,14 +2201,16 @@ int fromUtf8_sse2_trusted_no_bom(ushort *qch, const char *chars, int len)
 void tst_QString::fromUtf8Alternatives_data() const
 {
     QTest::addColumn<FromUtf8Function>("function");
-    QTest::newRow("latin1-regular") << &fromUtf8_latin1_regular;
-    QTest::newRow("latin1-best") << &fromUtf8_latin1best;
-    QTest::newRow("latin1-qt4.7") << &fromUtf8_latin1_qt47;
-    QTest::newRow("qt-4.7") << &fromUtf8_qt47;
+    QTest::newRow("empty", QTest::Zero) << FromUtf8Function(0);
+    QTest::newRow("qt-4.7", QTest::Baseline) << &fromUtf8_qt47;
     QTest::newRow("qt-4.7-stateless") << &fromUtf8_qt47_stateless;
     QTest::newRow("optimized-for-ascii") << &fromUtf8_optimised_for_ascii;
     QTest::newRow("sse2-optimized-for-ascii") << &fromUtf8_sse2_optimised_for_ascii;
     QTest::newRow("sse2-trusted-no-bom") << &fromUtf8_sse2_trusted_no_bom;
+
+    QTest::newRow("latin1-generic") << &fromUtf8_latin1_regular;
+    QTest::newRow("latin1-sse2-qt4.7") << &fromUtf8_latin1_qt47;
+    QTest::newRow("latin1-sse2-improved") << &fromUtf8_latin1_sse2_improved;
 }
 
 extern StringData fromUtf8Data;
@@ -2231,6 +2236,8 @@ static void fromUtf8Alternatives_internal(FromUtf8Function function, QString &ds
         int len = entries[i].len;
         const char *src = fromUtf8Data.charData + entries[i].offset1;
 
+        if (!function)
+            continue;
         if (!doVerify) {
             (function)(&dst.data()->unicode(), src, len);
         } else {
