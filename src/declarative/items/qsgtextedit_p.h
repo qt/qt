@@ -1,4 +1,4 @@
-// Commit: ba63becc13221ca6538fb40c790275465dd47703
+// Commit: 27e4302b7f45f22180693d26747f419177c81e27
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -68,7 +68,8 @@ class Q_AUTOTEST_EXPORT QSGTextEdit : public QSGImplicitSizePaintedItem
     Q_PROPERTY(QColor selectionColor READ selectionColor WRITE setSelectionColor NOTIFY selectionColorChanged)
     Q_PROPERTY(QColor selectedTextColor READ selectedTextColor WRITE setSelectedTextColor NOTIFY selectedTextColorChanged)
     Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY fontChanged)
-    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign NOTIFY horizontalAlignmentChanged)
+    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign RESET resetHAlign NOTIFY horizontalAlignmentChanged)
+    Q_PROPERTY(HAlignment effectiveHorizontalAlignment READ effectiveHAlign NOTIFY effectiveHorizontalAlignmentChanged)
     Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign NOTIFY verticalAlignmentChanged)
     Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
     Q_PROPERTY(int lineCount READ lineCount NOTIFY lineCountChanged)
@@ -90,6 +91,7 @@ class Q_AUTOTEST_EXPORT QSGTextEdit : public QSGImplicitSizePaintedItem
     Q_PROPERTY(bool selectByMouse READ selectByMouse WRITE setSelectByMouse NOTIFY selectByMouseChanged)
     Q_PROPERTY(SelectionMode mouseSelectionMode READ mouseSelectionMode WRITE setMouseSelectionMode NOTIFY mouseSelectionModeChanged)
     Q_PROPERTY(bool canPaste READ canPaste NOTIFY canPasteChanged)
+    Q_PROPERTY(bool inputMethodComposing READ isInputMethodComposing NOTIFY inputMethodComposingChanged)
 
 public:
     QSGTextEdit(QSGItem *parent=0);
@@ -148,6 +150,8 @@ public:
 
     HAlignment hAlign() const;
     void setHAlign(HAlignment align);
+    void resetHAlign();
+    HAlignment effectiveHAlign() const;
 
     VAlignment vAlign() const;
     void setVAlign(VAlignment align);
@@ -211,6 +215,8 @@ public:
 
     QRectF boundingRect() const;
 
+    bool isInputMethodComposing() const;
+
 Q_SIGNALS:
     void textChanged(const QString &);
     void paintedSizeChanged();
@@ -238,12 +244,15 @@ Q_SIGNALS:
     void mouseSelectionModeChanged(SelectionMode mode);
     void linkActivated(const QString &link);
     void canPasteChanged();
+    void inputMethodComposingChanged();
+    void effectiveHorizontalAlignmentChanged();
 
 public Q_SLOTS:
     void selectAll();
     void selectWord();
     void select(int start, int end);
     void deselect();
+    bool isRightToLeft(int start, int end);
 #ifndef QT_NO_CLIPBOARD
     void cut();
     void copy();

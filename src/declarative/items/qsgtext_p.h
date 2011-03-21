@@ -1,4 +1,4 @@
-// Commit: ccd1b7dd5c8e6b1c4bf5b21354f7b9acaf881b00
+// Commit: 27e4302b7f45f22180693d26747f419177c81e27
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -71,7 +71,8 @@ class Q_DECLARATIVE_PRIVATE_EXPORT QSGText : public QSGImplicitSizeItem
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
     Q_PROPERTY(TextStyle style READ style WRITE setStyle NOTIFY styleChanged)
     Q_PROPERTY(QColor styleColor READ styleColor WRITE setStyleColor NOTIFY styleColorChanged)
-    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign NOTIFY horizontalAlignmentChanged)
+    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign RESET resetHAlign NOTIFY horizontalAlignmentChanged)
+    Q_PROPERTY(HAlignment effectiveHorizontalAlignment READ effectiveHAlign NOTIFY effectiveHorizontalAlignmentChanged)
     Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign NOTIFY verticalAlignmentChanged)
     Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
     Q_PROPERTY(int lineCount READ lineCount NOTIFY lineCountChanged)
@@ -135,6 +136,8 @@ public:
 
     HAlignment hAlign() const;
     void setHAlign(HAlignment align);
+    void resetHAlign();
+    HAlignment effectiveHAlign() const;
 
     VAlignment vAlign() const;
     void setVAlign(VAlignment align);
@@ -188,6 +191,7 @@ Q_SIGNALS:
     void paintedSizeChanged();
     void lineHeightChanged(qreal lineHeight);
     void lineHeightModeChanged(LineHeightMode mode);
+    void effectiveHorizontalAlignmentChanged();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
