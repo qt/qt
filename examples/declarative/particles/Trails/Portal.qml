@@ -24,10 +24,10 @@ Rectangle{
         anchors.fill: parent
         system: particles
         particlesPerSecond: 3000
-        particleDuration: 3000
+        particleDuration: 2400
         emitting: true
-        particleSize: 16
-        particleSizeVariation: 8
+        particleSize: 20
+        particleSizeVariation: 2
         particleEndSize: 0
         extruder: Ellipse{fill: false}
         targetX: parent.width/2
