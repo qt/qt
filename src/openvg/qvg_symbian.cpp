@@ -284,8 +284,6 @@ void* QVGPixmapData::toNativeType(NativeType type)
         }
         // Just duplicate the bitmap handle, no data copying happens.
         return source.duplicateNativeImage();
-    } else if (type == QPixmapData::VolatileImage) {
-        return &source;
     }
     return 0;
 }
