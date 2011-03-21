@@ -720,4 +720,5 @@ EXPORTS
 	_ZN13QGLPixmapData21detachTextureFromPoolEv @ 719 NONAME
 	_ZN13QGLPixmapData9hibernateEv @ 720 NONAME
 	_ZN17QGLGraphicsSystem22releaseCachedResourcesEv @ 721 NONAME
+	_ZN13QGLPixmapData11idealFormatER6QImage6QFlagsIN2Qt19ImageConversionFlagEE @ 722 NONAME
 
