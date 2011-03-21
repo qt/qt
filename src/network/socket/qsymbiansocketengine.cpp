@@ -1137,14 +1137,14 @@ int QSymbianSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool 
 #ifdef QNATIVESOCKETENGINE_DEBUG
     qDebug() << "QSymbianSocketEnginePrivate::nativeSelect: select status" << selectStat.Int() << (int)selectFlags();
 #endif
-    if (selectStat != KErrNone)
-        return selectStat.Int();
-    if (selectFlags() & KSockSelectExcept) {
-        TInt err;
+    TInt err = selectStat.Int();
+    if (!err && (selectFlags() & KSockSelectExcept)) {
         nativeSocket.GetOpt(KSOSelectLastError, KSOLSocket, err);
 #ifdef QNATIVESOCKETENGINE_DEBUG
         qDebug() << "QSymbianSocketEnginePrivate::nativeSelect: select last error" <<  err;
 #endif
+    }
+    if (err) {
         //TODO: avoidable cast?
         //set the error here, because read won't always return the same error again as select.
         const_cast<QSymbianSocketEnginePrivate*>(this)->setError(err);
