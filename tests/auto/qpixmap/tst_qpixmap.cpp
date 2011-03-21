@@ -52,6 +52,7 @@
 #include <qsplashscreen.h>
 
 #include <private/qpixmapdata_p.h>
+#include <private/qdrawhelper_p.h>
 
 #include <QSet>
 
@@ -1264,7 +1265,10 @@ void tst_QPixmap::fromSymbianCFbsBitmap()
         QCOMPARE(actualColor, color);
 
         QImage shouldBe(pixmap.width(), pixmap.height(), image.format());
-        shouldBe.fill(color.rgba());
+        if (image.format() == QImage::Format_RGB16)
+            shouldBe.fill(qrgb565(color.rgba()).rawValue());
+        else
+            shouldBe.fill(color.rgba());
         QCOMPARE(image, shouldBe);
     }
     __UHEAP_MARKEND;

@@ -47,9 +47,13 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
+extern "C" typedef void (*QMeeGoSwitchCallback)(int type, const char *name);
+
 class QMeeGoGraphicsSystem : public QGraphicsSystem
 {
 public:
+    enum SwitchPolicy { AutomaticSwitch, ManualSwitch, NoSwitch };
+
     QMeeGoGraphicsSystem();
     ~QMeeGoGraphicsSystem();
 
@@ -76,13 +80,23 @@ public:
     static void* createFenceSync();
     static void destroyFenceSync(void* fenceSync);
 
+    static void switchToRaster();
+    static void switchToMeeGo();
+    static QString runningGraphicsSystemName();
+
+    static void registerSwitchCallback(QMeeGoSwitchCallback callback);
+
+    static SwitchPolicy switchPolicy;
+
 private:
     static bool meeGoRunning();
     static EGLSurface getSurfaceForLiveTexturePixmap(QPixmap *pixmap);
     static void destroySurfaceForLiveTexturePixmap(QPixmapData* pmd);
+    static void triggerSwitchCallbacks(int type, const char *name);
 
     static bool surfaceWasCreated;
-    static QHash <Qt::HANDLE, QPixmap*> liveTexturePixmaps;
+    static QHash<Qt::HANDLE, QPixmap*> liveTexturePixmaps;
+    static QList<QMeeGoSwitchCallback> switchCallbacks;
 };
 
 /* C api */
@@ -95,7 +109,7 @@ extern "C" {
     Q_DECL_EXPORT bool qt_meego_destroy_egl_shared_image(Qt::HANDLE handle);
     Q_DECL_EXPORT void qt_meego_set_surface_fixed_size(int width, int height);
     Q_DECL_EXPORT void qt_meego_set_surface_scaling(int x, int y, int width, int height);
-    Q_DECL_EXPORT void qt_meego_set_translucent(bool translucent);    
+    Q_DECL_EXPORT void qt_meego_set_translucent(bool translucent);
     Q_DECL_EXPORT QPixmapData* qt_meego_pixmapdata_with_new_live_texture(int w, int h, QImage::Format format);
     Q_DECL_EXPORT QPixmapData* qt_meego_pixmapdata_from_live_texture_handle(Qt::HANDLE handle);
     Q_DECL_EXPORT QImage* qt_meego_live_texture_lock(QPixmap *pixmap, void *fenceSync);
@@ -104,6 +118,10 @@ extern "C" {
     Q_DECL_EXPORT void* qt_meego_create_fence_sync(void);
     Q_DECL_EXPORT void qt_meego_destroy_fence_sync(void* fs);
     Q_DECL_EXPORT void qt_meego_invalidate_live_surfaces(void);
+    Q_DECL_EXPORT void qt_meego_switch_to_raster(void);
+    Q_DECL_EXPORT void qt_meego_switch_to_meego(void);
+    Q_DECL_EXPORT void qt_meego_register_switch_callback(QMeeGoSwitchCallback callback);
+    Q_DECL_EXPORT void qt_meego_set_switch_policy(int policy);
 }
 
 #endif 

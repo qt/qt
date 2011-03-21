@@ -639,13 +639,14 @@ QPixmap QS60StyleModeSpecifics::fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask
 
     QPixmap pixmap;
     QScopedPointer<QPixmapData> pd(QPixmapData::create(0, 0, QPixmapData::PixmapType));
-    bool nativeMaskSupported = (pd->toNativeType(QPixmapData::VolatileImage) != 0);
-    if (mask && nativeMaskSupported) {
-        // Efficient path, less copying and conversion.
+    if (mask) {
+        // Try the efficient path with less copying and conversion.
         QVolatileImage img(icon, mask);
         pd->fromNativeType(&img, QPixmapData::VolatileImage);
-        pixmap = QPixmap(pd.take());
-    } else {
+        if (!pd->isNull())
+            pixmap = QPixmap(pd.take());
+    }
+    if (pixmap.isNull()) {
         // Potentially more expensive path.
         pd->fromNativeType(icon, QPixmapData::FbsBitmap);
         pixmap = QPixmap(pd.take());

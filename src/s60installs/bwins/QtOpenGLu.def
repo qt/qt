@@ -718,4 +718,5 @@ EXPORTS
 	?releaseCachedResources@QGLGraphicsSystem@@UAEXXZ @ 717 NONAME ; void QGLGraphicsSystem::releaseCachedResources(void)
 	?serialNumber@QGLTextureGlyphCache@@QBEHXZ @ 718 NONAME ; int QGLTextureGlyphCache::serialNumber(void) const
 	?forceToImage@QGLPixmapData@@QAEXXZ @ 719 NONAME ; void QGLPixmapData::forceToImage(void)
+	?idealFormat@QGLPixmapData@@QAE?AW4Format@QImage@@AAV3@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 720 NONAME ; enum QImage::Format QGLPixmapData::idealFormat(class QImage &, class QFlags<enum Qt::ImageConversionFlag>)
 
