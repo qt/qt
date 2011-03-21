@@ -405,6 +405,7 @@ QGLWindowSurface::~QGLWindowSurface()
     delete d_ptr->fbo;
     delete d_ptr;
 
+#ifndef Q_WS_QPA
     if (QGLGlobalShareWidget::cleanedUp)
         return;
 
@@ -424,7 +425,8 @@ QGLWindowSurface::~QGLWindowSurface()
         if (!qt_gl_share_widget()->context()->isSharing())
             qt_destroy_gl_share_widget();
     }
-#endif
+#endif // QGL_USE_TEXTURE_POOL
+#endif // Q_WS_QPA
 }
 
 void QGLWindowSurface::deleted(QObject *object)
@@ -474,8 +476,10 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 
     ctx->create(qt_gl_share_context());
 
+#ifndef Q_WS_QPA
     if (widget != qt_gl_share_widget())
         ++(_qt_gl_share_widget()->widgetRefCount);
+#endif
 
 #ifndef QT_NO_EGL
     static bool checkedForNOKSwapRegion = false;
