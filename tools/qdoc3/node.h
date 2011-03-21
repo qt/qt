@@ -264,12 +264,19 @@ class InnerNode : public Node
 
     QString author() const { return author_; }
     void setAuthor(const QString& author) { author_ = author; }
+    QString publisher() const { return publisher_; }
+    void setPublisher(const QString& publisher) { publisher_ = publisher; }
+    QString permissions() const { return permissions_; }
+    void setPermissions(const QString& permissions) { permissions_ = permissions; }
     QStringList primaryKeys();
     QStringList secondaryKeys();
     const QStringList& pageKeywords() const { return pageKeywds; }
     virtual void addPageKeywords(const QString& t) { pageKeywds << t; }
     virtual bool isAbstract() const { return false; }
     virtual void setAbstract(bool ) { }
+    bool hasOtherMetadata() const { return !otherMetadataMap.isEmpty(); }
+    void insertOtherMetadata(const QString& name, const QString& content);
+    const QMap<QString, QString>& otherMetadata() const { return otherMetadataMap; }
 
  protected:
     InnerNode(Type type, InnerNode* parent, const QString& name);
@@ -283,6 +290,8 @@ class InnerNode : public Node
     void removeRelated(Node* pseudoChild);
 
     QString author_;
+    QString publisher_;
+    QString permissions_;
     QStringList pageKeywds;
     QStringList inc;
     NodeList children;
@@ -291,6 +300,7 @@ class InnerNode : public Node
     QMap<QString, Node*> childMap;
     QMap<QString, Node*> primaryFunctionMap;
     QMap<QString, NodeList> secondaryFunctionMap;
+    QMap<QString, QString> otherMetadataMap;
 };
 
 class LeafNode : public Node
