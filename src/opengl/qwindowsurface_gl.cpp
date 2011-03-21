@@ -410,7 +410,6 @@ QGLWindowSurface::~QGLWindowSurface()
         return;
 
     --(_qt_gl_share_widget()->widgetRefCount);
-#endif
 
 #ifdef QGL_USE_TEXTURE_POOL
     if (_qt_gl_share_widget()->widgetRefCount <= 0) {
