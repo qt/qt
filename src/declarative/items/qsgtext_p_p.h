@@ -1,4 +1,4 @@
-// Commit: 7c1ab9b6a8e1b3d64c08a4f5067448884b068945
+// Commit: aeb330e3999ef3d7ae8d94b9330471f2a2a13554
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -78,6 +78,10 @@ public:
 
     void updateSize();
     void updateLayout();
+    bool determineHorizontalAlignment();
+    bool setHAlign(QSGText::HAlignment, bool forceAlign = false);
+    void mirrorChange();
+    QTextDocument *textDocument();
 
     QString text;
     QFont font;
@@ -113,8 +117,10 @@ public:
     bool internalWidthUpdate:1;
     bool requireImplicitWidth:1;
     bool truncated:1;
+    bool hAlignImplicit:1;
+    bool rightToLeftText:1;
 
-    QSize layedOutTextSize;
+    QRect layedOutTextRect;
     QSize paintedSize;
     qreal naturalWidth;
     virtual qreal getImplicitWidth() const;
@@ -123,7 +129,7 @@ public:
     QPixmap textDocumentImage(bool drawStyle);
     QSGTextDocumentWithImageResources *doc;
 
-    QSize setupTextLayout();
+    QRect setupTextLayout();
     QPixmap textLayoutImage(bool drawStyle);
     void drawTextLayout(QPainter *p, const QPointF &pos, bool drawStyle);
     QTextLayout layout;

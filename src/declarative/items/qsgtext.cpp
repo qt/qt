@@ -1,4 +1,4 @@
-// Commit: 72e0778c9b5bdae58596090b114d5d0e7092f911
+// Commit: 649e65519bef38948a818f282e3022d034dc80a5
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -55,6 +55,8 @@
 #include <QtGui/qpainter.h>
 #include <QtGui/qtextdocument.h>
 #include <QtGui/qtextobject.h>
+#include <QtGui/qtextcursor.h>
+#include <QtGui/qapplication.h>
 
 #include <private/qdeclarativestyledtext_p.h>
 #include <private/qdeclarativepixmapcache_p.h>
@@ -97,10 +99,10 @@ QSGTextPrivate::QSGTextPrivate()
 : color((QRgb)0), style(QSGText::Normal), hAlign(QSGText::AlignLeft),
   vAlign(QSGText::AlignTop), elideMode(QSGText::ElideNone),
   format(QSGText::AutoText), wrapMode(QSGText::NoWrap), lineHeight(1),
-  lineHeightMode(QSGText::ProportionalHeight),
-  lineCount(1), maximumLineCount(INT_MAX),
-  maximumLineCountValid(false), imageCacheDirty(true), updateOnComponentComplete(true), richText(false), singleline(false),
-  cacheAllTextAsImage(true), internalWidthUpdate(false), requireImplicitWidth(false), truncated(false),
+  lineHeightMode(QSGText::ProportionalHeight), lineCount(1), maximumLineCount(INT_MAX),
+  maximumLineCountValid(false), imageCacheDirty(true), updateOnComponentComplete(true),
+  richText(false), singleline(false), cacheAllTextAsImage(true), internalWidthUpdate(false),
+  requireImplicitWidth(false), truncated(false), hAlignImplicit(true), rightToLeftText(false),
   naturalWidth(0), doc(0)
 {
     cacheAllTextAsImage = enableImageCache();
@@ -285,17 +287,23 @@ void QSGTextPrivate::updateSize()
 
     //setup instance of QTextLayout for all cases other than richtext
     if (!richText) {
-        size = setupTextLayout();
-        if (layedOutTextSize != size) {
-            layedOutTextSize = size;
-        }
+        QRect textRect = setupTextLayout();
+        layedOutTextRect = textRect;
+        size = textRect.size();
         dy -= size.height();
     } else {
         singleline = false; // richtext can't elide or be optimized for single-line case
         ensureDoc();
         doc->setDefaultFont(font);
+        QSGText::HAlignment horizontalAlignment = q->effectiveHAlign();
+        if (rightToLeftText) {
+            if (horizontalAlignment == QSGText::AlignLeft)
+                horizontalAlignment = QSGText::AlignRight;
+            else if (horizontalAlignment == QSGText::AlignRight)
+                horizontalAlignment = QSGText::AlignLeft;
+        }
         QTextOption option;
-        option.setAlignment((Qt::Alignment)int(hAlign | vAlign));
+        option.setAlignment((Qt::Alignment)int(horizontalAlignment | vAlign));
         option.setWrapMode(QTextOption::WrapMode(wrapMode));
         doc->setDefaultTextOption(option);
         if (requireImplicitWidth && q->widthValid()) {
@@ -308,9 +316,7 @@ void QSGTextPrivate::updateSize()
             doc->setTextWidth(doc->idealWidth()); // ### Text does not align if width is not set (QTextDoc bug)
         dy -= (int)doc->size().height();
         QSize dsize = doc->size().toSize();
-        if (dsize != layedOutTextSize) {
-            layedOutTextSize = dsize;
-        }
+        layedOutTextRect = QRect(QPoint(0,0), dsize);
         size = QSize(int(doc->idealWidth()),dsize.height());
     }
     int yoff = 0;
@@ -345,45 +351,29 @@ void QSGTextPrivate::updateSize()
     Returns the size of the final text.  This can be used to position the text vertically (the text is
     already absolutely positioned horizontally).
 */
-QSize QSGTextPrivate::setupTextLayout()
+QRect QSGTextPrivate::setupTextLayout()
 {
     // ### text layout handling should be profiled and optimized as needed
     // what about QStackTextEngine engine(tmp, d->font.font()); QTextLayout textLayout(&engine);
     Q_Q(QSGText);
     layout.setCacheEnabled(true);
 
-    qreal height = 0;
-    qreal widthUsed = 0;
     qreal lineWidth = 0;
-    int visibleTextLength = 0;
     int visibleCount = 0;
 
     //set manual width
-    if ((wrapMode != QSGText::NoWrap || elideMode != QSGText::ElideNone) && q->widthValid())
+    if (q->widthValid())
         lineWidth = q->width();
 
     QTextOption textOption = layout.textOption();
-    if (hAlign == QSGText::AlignJustify)
-        textOption.setAlignment(Qt::Alignment(hAlign));
+    textOption.setAlignment(Qt::Alignment(q->effectiveHAlign()));
     textOption.setWrapMode(QTextOption::WrapMode(wrapMode));
     layout.setTextOption(textOption);
-
-    QSGText::HAlignment hAlignment = hAlign;
-    if(text.isRightToLeft()) {
-        if ((hAlign == QSGText::AlignLeft) || (hAlign == QSGText::AlignJustify)) {
-            hAlignment = QSGText::AlignRight;
-        } else if (hAlign == QSGText::AlignRight) {
-            hAlignment = QSGText::AlignLeft;
-        } else {
-            hAlignment = hAlign;
-        }
-    }
 
     bool elideText = false;
     bool truncate = false;
 
     QFontMetrics fm(layout.font());
-    qreal elideWidth = fm.width(elideChar);
     elidePos = QPointF();
 
     if (requireImplicitWidth && q->widthValid()) {
@@ -395,47 +385,47 @@ QSize QSGTextPrivate::setupTextLayout()
                 break;
         }
         layout.endLayout();
-        naturalWidth = 0;
+        QRectF br;
         for (int i = 0; i < layout.lineCount(); ++i) {
             QTextLine line = layout.lineAt(i);
-            naturalWidth = qMax(naturalWidth, line.naturalTextWidth());
+            br = br.united(line.naturalTextRect());
         }
+        naturalWidth = br.width();
     }
 
     if (maximumLineCountValid) {
         layout.beginLayout();
         if (!lineWidth)
             lineWidth = INT_MAX;
-        int y = 0;
         int linesLeft = maximumLineCount;
+        int visibleTextLength = 0;
         while (linesLeft > 0) {
             QTextLine line = layout.createLine();
             if (!line.isValid())
                 break;
 
             visibleCount++;
-            line.setLineWidth(lineWidth);
+            if (lineWidth)
+                line.setLineWidth(lineWidth);
             visibleTextLength += line.textLength();
 
             if (--linesLeft == 0) {
                 if (visibleTextLength < text.length()) {
                     truncate = true;
                     if (elideMode==QSGText::ElideRight && q->widthValid()) {
+                        qreal elideWidth = fm.width(elideChar);
                         // Need to correct for alignment
                         line.setLineWidth(lineWidth-elideWidth);
-                        int x = line.naturalTextWidth();
-                        if (hAlignment == QSGText::AlignRight) {
-                            x = q->width()-elideWidth;
-                        } else if (hAlignment == QSGText::AlignHCenter) {
-                            x = (q->width()+line.naturalTextWidth()-elideWidth)/2;
+                        if (layout.text().mid(line.textStart(), line.textLength()).isRightToLeft()) {
+                            line.setPosition(QPointF(line.position().x() + elideWidth, line.position().y()));
+                            elidePos.setX(line.naturalTextRect().left() - elideWidth);
+                        } else {
+                            elidePos.setX(line.naturalTextRect().right());
                         }
-                        elidePos = QPointF(x, y + fm.ascent());
                         elideText = true;
                     }
                 }
             }
-
-            y += line.height();
         }
         layout.endLayout();
 
@@ -457,36 +447,23 @@ QSize QSGTextPrivate::setupTextLayout()
         layout.endLayout();
     }
 
+    qreal height = 0;
+    QRectF br;
     for (int i = 0; i < layout.lineCount(); ++i) {
         QTextLine line = layout.lineAt(i);
-        widthUsed = qMax(widthUsed, line.naturalTextWidth());
-    }
-
-    qreal layoutWidth = q->widthValid() ? q->width() : widthUsed;
-    if (!q->widthValid())
-        naturalWidth = layoutWidth;
-
-    qreal x = 0;
-    for (int i = 0; i < layout.lineCount(); ++i) {
-        QTextLine line = layout.lineAt(i);
-        line.setPosition(QPointF(0, height));
-        height += (lineHeightMode == QSGText::FixedHeight) ? lineHeight : line.height() * lineHeight;
-
-        if (!cacheAllTextAsImage) {
-            if ((hAlignment == QSGText::AlignLeft) || (hAlignment == QSGText::AlignJustify)) {
-                x = 0;
-            } else if (hAlignment == QSGText::AlignRight) {
-                x = layoutWidth - line.naturalTextWidth();
-                if (elideText && i == layout.lineCount()-1)
-                    x -= elideWidth; // Correct for when eliding multilines
-            } else if (hAlignment == QSGText::AlignHCenter) {
-                x = (layoutWidth - line.naturalTextWidth()) / 2;
-                if (elideText && i == layout.lineCount()-1)
-                    x -= elideWidth/2; // Correct for when eliding multilines
-            }
-            line.setPosition(QPointF(x, line.y()));
+        // set line spacing
+        line.setPosition(QPointF(line.position().x(), height));
+        if (elideText && i == layout.lineCount()-1) {
+            elidePos.setY(height + fm.ascent());
+            br = br.united(QRectF(elidePos, QSizeF(fm.width(elideChar), fm.ascent())));
         }
+        br = br.united(line.naturalTextRect());
+        height += (lineHeightMode == QSGText::FixedHeight) ? lineHeight : line.height() * lineHeight;
     }
+    br.setHeight(height);
+
+    if (!q->widthValid())
+        naturalWidth = br.width();
 
     //Update the number of visible lines
     if (lineCount != visibleCount) {
@@ -494,7 +471,7 @@ QSize QSGTextPrivate::setupTextLayout()
         emit q->lineCountChanged();
     }
 
-    return QSize(qCeil(widthUsed), qCeil(height));
+    return QRect(qRound(br.x()), qRound(br.y()), qCeil(br.width()), qCeil(br.height()));
 }
 
 /*!
@@ -503,21 +480,7 @@ QSize QSGTextPrivate::setupTextLayout()
 */
 QPixmap QSGTextPrivate::textLayoutImage(bool drawStyle)
 {
-    //do layout
-    QSize size = layedOutTextSize;
-
-    qreal x = 0;
-    for (int i = 0; i < layout.lineCount(); ++i) {
-        QTextLine line = layout.lineAt(i);
-        if ((hAlign == QSGText::AlignLeft) || (hAlign == QSGText::AlignJustify)) {
-            x = 0;
-        } else if (hAlign == QSGText::AlignRight) {
-            x = size.width() - line.naturalTextWidth();
-        } else if (hAlign == QSGText::AlignHCenter) {
-            x = (size.width() - line.naturalTextWidth()) / 2;
-        }
-        line.setPosition(QPointF(x, line.y()));
-    }
+    QSize size = layedOutTextRect.size();
 
     //paint text
     QPixmap img(size);
@@ -531,7 +494,7 @@ QPixmap QSGTextPrivate::textLayoutImage(bool drawStyle)
 #ifdef Q_WS_MAC
         qt_applefontsmoothing_enabled = oldSmooth;
 #endif
-        drawTextLayout(&p, QPointF(0,0), drawStyle);
+        drawTextLayout(&p, QPointF(-layedOutTextRect.x(),0), drawStyle);
     }
     return img;
 }
@@ -549,7 +512,7 @@ void QSGTextPrivate::drawTextLayout(QPainter *painter, const QPointF &pos, bool 
     painter->setFont(font);
     layout.draw(painter, pos);
     if (!elidePos.isNull())
-        painter->drawText(elidePos, elideChar);
+        painter->drawText(pos + elidePos, elideChar);
 }
 
 /*!
@@ -765,14 +728,18 @@ void QSGText::setText(const QString &n)
         return;
 
     d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(n));
-    if (d->richText && isComponentComplete()) {
-        d->ensureDoc();
-        d->doc->setText(n);
-    }
-
     d->text = n;
+    if (isComponentComplete()) {
+        if (d->richText) {
+            d->ensureDoc();
+            d->doc->setText(n);
+            d->rightToLeftText = d->doc->toPlainText().isRightToLeft();
+        } else {
+            d->rightToLeftText = d->text.isRightToLeft();
+        }
+        d->determineHorizontalAlignment();
+    }
     d->updateLayout();
-
     emit textChanged(d->text);
 }
 
@@ -839,13 +806,78 @@ QSGText::HAlignment QSGText::hAlign() const
 void QSGText::setHAlign(HAlignment align)
 {
     Q_D(QSGText);
-    if (d->hAlign == align)
-        return;
+    bool forceAlign = d->hAlignImplicit && d->effectiveLayoutMirror;
+    d->hAlignImplicit = false;
+    if (d->setHAlign(align, forceAlign) && isComponentComplete())
+        d->updateLayout();
+}
 
-    d->hAlign = align;
-    d->updateLayout();
+void QSGText::resetHAlign()
+{
+    Q_D(QSGText);
+    d->hAlignImplicit = true;
+    if (d->determineHorizontalAlignment() && isComponentComplete())
+        d->updateLayout();
+}
 
-    emit horizontalAlignmentChanged(align);
+QSGText::HAlignment QSGText::effectiveHAlign() const
+{
+    Q_D(const QSGText);
+    QSGText::HAlignment effectiveAlignment = d->hAlign;
+    if (!d->hAlignImplicit && d->effectiveLayoutMirror) {
+        switch (d->hAlign) {
+        case QSGText::AlignLeft:
+            effectiveAlignment = QSGText::AlignRight;
+            break;
+        case QSGText::AlignRight:
+            effectiveAlignment = QSGText::AlignLeft;
+            break;
+        default:
+            break;
+        }
+    }
+    return effectiveAlignment;
+}
+
+bool QSGTextPrivate::setHAlign(QSGText::HAlignment alignment, bool forceAlign)
+{
+    Q_Q(QSGText);
+    if (hAlign != alignment || forceAlign) {
+        QSGText::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
+        hAlign = alignment;
+
+        emit q->horizontalAlignmentChanged(hAlign);
+        if (oldEffectiveHAlign != q->effectiveHAlign())
+            emit q->effectiveHorizontalAlignmentChanged();
+        return true;
+    }
+    return false;
+}
+
+bool QSGTextPrivate::determineHorizontalAlignment()
+{
+    Q_Q(QSGText);
+    if (hAlignImplicit && q->isComponentComplete()) {
+        bool alignToRight = text.isEmpty() ? QApplication::keyboardInputDirection() == Qt::RightToLeft : rightToLeftText;
+        return setHAlign(alignToRight ? QSGText::AlignRight : QSGText::AlignLeft);
+    }
+    return false;
+}
+
+void QSGTextPrivate::mirrorChange()
+{
+    Q_Q(QSGText);
+    if (q->isComponentComplete()) {
+        if (!hAlignImplicit && (hAlign == QSGText::AlignRight || hAlign == QSGText::AlignLeft)) {
+            updateLayout();
+            emit q->effectiveHorizontalAlignmentChanged();
+        }
+    }
+}
+
+QTextDocument *QSGTextPrivate::textDocument()
+{
+    return doc;
 }
 
 QSGText::VAlignment QSGText::vAlign() const
@@ -971,44 +1003,25 @@ QRectF QSGText::boundingRect() const
 {
     Q_D(const QSGText);
 
-    int w = width();
-    int h = height();
-
-    int x = 0;
-    int y = 0;
-
-    QSize size = d->layedOutTextSize;
+    QRect rect = d->layedOutTextRect;
     if (d->style != Normal)
-        size += QSize(2,2);
+        rect.adjust(-1, 0, 1, 2);
 
     // Could include font max left/right bearings to either side of rectangle.
 
-    switch (d->hAlign) {
-    case AlignLeft:
-    case AlignJustify:
-        x = 0;
-        break;
-    case AlignRight:
-        x = w - size.width();
-        break;
-    case AlignHCenter:
-        x = (w - size.width()) / 2;
-        break;
-    }
-
+    int h = height();
     switch (d->vAlign) {
     case AlignTop:
-        y = 0;
         break;
     case AlignBottom:
-        y = h - size.height();
+        rect.setY(h - rect.height());
         break;
     case AlignVCenter:
-        y = (h - size.height()) / 2;
+        rect.setY((h - rect.height()) / 2);
         break;
     }
 
-    return QRectF(x,y,size.width(),size.height());
+    return QRectF(rect);
 }
 
 /*! \internal */
@@ -1172,7 +1185,11 @@ void QSGText::componentComplete()
         if (d->richText) {
             d->ensureDoc();
             d->doc->setText(d->text);
+            d->rightToLeftText = d->doc->toPlainText().isRightToLeft();
+        } else {
+            d->rightToLeftText = d->text.isRightToLeft();
         }
+        d->determineHorizontalAlignment();
         d->updateLayout();
     }
 }

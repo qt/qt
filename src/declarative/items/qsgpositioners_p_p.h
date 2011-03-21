@@ -1,4 +1,4 @@
-// Commit: 6f78a6080b84cc3ef96b73a4ff58d1b5a72f08f4
+// Commit: 2c7cab4172f1acc86fd49345a2847417e162f2c3
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -75,7 +75,7 @@ public:
     QSGBasePositionerPrivate()
         : spacing(0), type(QSGBasePositioner::None)
         , moveTransition(0), addTransition(0), queuedPositioning(false)
-        , doingPositioning(false), anchorConflict(false)
+        , doingPositioning(false), anchorConflict(false), layoutDirection(Qt::LeftToRight)
     {
     }
 
@@ -100,6 +100,8 @@ public:
     bool doingPositioning : 1;
     bool anchorConflict : 1;
 
+    Qt::LayoutDirection layoutDirection;
+
     void schedulePositioning()
     {
         Q_Q(QSGBasePositioner);
@@ -107,6 +109,18 @@ public:
             QTimer::singleShot(0,q,SLOT(prePositioning()));
             queuedPositioning = true;
         }
+    }
+
+    void mirrorChange() {
+        Q_Q(QSGBasePositioner);
+        if (type != QSGBasePositioner::Vertical)
+            q->prePositioning();
+    }
+    bool isLeftToRight() const {
+        if (type == QSGBasePositioner::Vertical)
+            return true;
+        else
+            return effectiveLayoutMirror ? layoutDirection == Qt::RightToLeft : layoutDirection == Qt::LeftToRight;
     }
 
     virtual void itemSiblingOrderChanged(QSGItem* other)
@@ -138,6 +152,19 @@ public:
     {
         Q_Q(QSGBasePositioner);
         q->positionedItems.removeOne(QSGBasePositioner::PositionedItem(item));
+    }
+
+    static Qt::LayoutDirection getLayoutDirection(const QSGBasePositioner *positioner)
+    {
+        return positioner->d_func()->layoutDirection;
+    }
+
+    static Qt::LayoutDirection getEffectiveLayoutDirection(const QSGBasePositioner *positioner)
+    {
+        if (positioner->d_func()->effectiveLayoutMirror)
+            return positioner->d_func()->layoutDirection == Qt::RightToLeft ? Qt::LeftToRight : Qt::RightToLeft;
+        else
+            return positioner->d_func()->layoutDirection;
     }
 };
 

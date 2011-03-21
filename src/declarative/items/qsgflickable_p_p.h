@@ -1,4 +1,4 @@
-// Commit: 1bcddaaf318fc37c71c5191913f3487c49444ec6
+// Commit: cb0a6844705802564c81b581f24a76c5d5adf6d1
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -96,17 +96,21 @@ public:
     struct AxisData {
         AxisData(QSGFlickablePrivate *fp, void (QSGFlickablePrivate::*func)(qreal))
             : move(fp, func), viewSize(-1), smoothVelocity(fp), atEnd(false), atBeginning(true)
+            , fixingUp(false)
         {}
 
         QDeclarativeTimeLineValueProxy<QSGFlickablePrivate> move;
         qreal viewSize;
         qreal pressPos;
         qreal dragStartOffset;
+        qreal dragMinBound;
+        qreal dragMaxBound;
         qreal velocity;
         qreal flickTarget;
         QSGFlickablePrivate::Velocity smoothVelocity;
         bool atEnd : 1;
         bool atBeginning : 1;
+        bool fixingUp : 1;
     };
 
     void flickX(qreal velocity);
@@ -162,6 +166,9 @@ public:
     QBasicTimer delayedPressTimer;
     int pressDelay;
     int fixupDuration;
+
+    enum FixupMode { Normal, Immediate, ExtentChanged };
+    FixupMode fixupMode;
 
     static void fixupY_callback(void *);
     static void fixupX_callback(void *);

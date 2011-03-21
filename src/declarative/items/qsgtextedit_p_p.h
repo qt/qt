@@ -1,4 +1,4 @@
-// Commit: ba63becc13221ca6538fb40c790275465dd47703
+// Commit: 27e4302b7f45f22180693d26747f419177c81e27
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -73,6 +73,7 @@ public:
       imgDirty(true), dirty(false), richText(false), cursorVisible(false), focusOnPress(true),
       showInputPanelOnFocus(true), clickCausedFocus(false), persistentSelection(true),
       requireImplicitWidth(false), selectByMouse(false), canPaste(false),
+      hAlignImplicit(true), rightToLeftText(false),
       textMargin(0.0), lastSelectionStart(0), lastSelectionEnd(0), cursorComponent(0), cursor(0),
       format(QSGTextEdit::AutoText), document(0), wrapMode(QSGTextEdit::NoWrap),
       mouseSelectionMode(QSGTextEdit::SelectCharacters),
@@ -90,6 +91,9 @@ public:
     void updateDefaultTextOption();
     void relayoutDocument();
     void updateSelection();
+    bool determineHorizontalAlignment();
+    bool setHAlign(QSGTextEdit::HAlignment, bool forceAlign = false);
+    void mirrorChange();
     qreal getImplicitWidth() const;
 
     QString text;
@@ -104,6 +108,7 @@ public:
     QPixmap imgStyleCache;
     QSGTextEdit::HAlignment hAlign;
     QSGTextEdit::VAlignment vAlign;
+
     bool imgDirty : 1;
     bool dirty : 1;
     bool richText : 1;
@@ -115,6 +120,9 @@ public:
     bool requireImplicitWidth:1;
     bool selectByMouse:1;
     bool canPaste:1;
+    bool hAlignImplicit:1;
+    bool rightToLeftText:1;
+
     qreal textMargin;
     int lastSelectionStart;
     int lastSelectionEnd;

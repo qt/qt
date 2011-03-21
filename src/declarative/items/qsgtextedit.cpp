@@ -1,4 +1,4 @@
-// Commit: a99b6221f5296f97bfa29e0560943634ccc30c3f
+// Commit: 82ae515e52e3811d3b2aec588e0dd777350c1c33
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -54,6 +54,7 @@
 
 #include <private/qdeclarativeglobal_p.h>
 #include <private/qtextcontrol_p.h>
+#include <private/qtextengine_p.h>
 #include <private/qwidget_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -84,6 +85,7 @@ void QSGTextEdit::setText(const QString &text)
     Q_D(QSGTextEdit);
     if (QSGTextEdit::text() == text)
         return;
+
     d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(text));
     if (d->richText) {
 #ifndef QT_NO_TEXTHTMLPARSER
@@ -226,15 +228,80 @@ QSGTextEdit::HAlignment QSGTextEdit::hAlign() const
     return d->hAlign;
 }
 
-void QSGTextEdit::setHAlign(QSGTextEdit::HAlignment alignment)
+void QSGTextEdit::setHAlign(HAlignment align)
 {
     Q_D(QSGTextEdit);
-    if (alignment == d->hAlign)
-        return;
-    d->hAlign = alignment;
-    d->updateDefaultTextOption();
-    updateSize();
-    emit horizontalAlignmentChanged(d->hAlign);
+    bool forceAlign = d->hAlignImplicit && d->effectiveLayoutMirror;
+    d->hAlignImplicit = false;
+    if (d->setHAlign(align, forceAlign) && isComponentComplete()) {
+        d->updateDefaultTextOption();
+        updateSize();
+    }
+}
+
+void QSGTextEdit::resetHAlign()
+{
+    Q_D(QSGTextEdit);
+    d->hAlignImplicit = true;
+    if (d->determineHorizontalAlignment() && isComponentComplete()) {
+        d->updateDefaultTextOption();
+        updateSize();
+    }
+}
+
+QSGTextEdit::HAlignment QSGTextEdit::effectiveHAlign() const
+{
+    Q_D(const QSGTextEdit);
+    QSGTextEdit::HAlignment effectiveAlignment = d->hAlign;
+    if (!d->hAlignImplicit && d->effectiveLayoutMirror) {
+        switch (d->hAlign) {
+        case QSGTextEdit::AlignLeft:
+            effectiveAlignment = QSGTextEdit::AlignRight;
+            break;
+        case QSGTextEdit::AlignRight:
+            effectiveAlignment = QSGTextEdit::AlignLeft;
+            break;
+        default:
+            break;
+        }
+    }
+    return effectiveAlignment;
+}
+
+bool QSGTextEditPrivate::setHAlign(QSGTextEdit::HAlignment alignment, bool forceAlign)
+{
+    Q_Q(QSGTextEdit);
+    if (hAlign != alignment || forceAlign) {
+        QSGTextEdit::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
+        hAlign = alignment;
+        emit q->horizontalAlignmentChanged(alignment);
+        if (oldEffectiveHAlign != q->effectiveHAlign())
+            emit q->effectiveHorizontalAlignmentChanged();
+        return true;
+    }
+    return false;
+}
+
+bool QSGTextEditPrivate::determineHorizontalAlignment()
+{
+    Q_Q(QSGTextEdit);
+    if (hAlignImplicit && q->isComponentComplete()) {
+        bool alignToRight = text.isEmpty() ? QApplication::keyboardInputDirection() == Qt::RightToLeft : rightToLeftText;
+        return setHAlign(alignToRight ? QSGTextEdit::AlignRight : QSGTextEdit::AlignLeft);
+    }
+    return false;
+}
+
+void QSGTextEditPrivate::mirrorChange()
+{
+    Q_Q(QSGTextEdit);
+    if (q->isComponentComplete()) {
+        if (!hAlignImplicit && (hAlign == QSGTextEdit::AlignRight || hAlign == QSGTextEdit::AlignLeft)) {
+            updateDefaultTextOption();
+            q->updateSize();
+            emit q->effectiveHorizontalAlignmentChanged();
+        }
+    }
 }
 
 QSGTextEdit::VAlignment QSGTextEdit::vAlign() const
@@ -302,6 +369,22 @@ int QSGTextEdit::positionAt(int x, int y) const
 {
     Q_D(const QSGTextEdit);
     int r = d->document->documentLayout()->hitTest(QPoint(x,y-d->yoff), Qt::FuzzyHit);
+    QTextCursor cursor = d->control->textCursor();
+    if (r > cursor.position()) {
+        // The cursor position includes positions within the preedit text, but only positions in the
+        // same text block are offset so it is possible to get a position that is either part of the
+        // preedit or the next text block.
+        QTextLayout *layout = cursor.block().layout();
+        const int preeditLength = layout
+                ? layout->preeditAreaText().length()
+                : 0;
+        if (preeditLength > 0
+                && d->document->documentLayout()->blockBoundingRect(cursor.block()).contains(x,y-d->yoff)) {
+            r = r > cursor.position() + preeditLength
+                    ? r - preeditLength
+                    : cursor.position();
+        }
+    }
     return r;
 }
 
@@ -530,6 +613,8 @@ void QSGTextEdit::componentComplete()
     Q_D(QSGTextEdit);
     QSGPaintedItem::componentComplete();
     if (d->dirty) {
+        d->determineHorizontalAlignment();
+        d->updateDefaultTextOption();
         updateSize();
         d->dirty = false;
     }
@@ -686,6 +771,17 @@ void QSGTextEdit::select(int start, int end)
     updateSelectionMarkers();
 }
 
+bool QSGTextEdit::isRightToLeft(int start, int end)
+{
+    Q_D(QSGTextEdit);
+    if (start > end) {
+        qmlInfo(this) << "isRightToLeft(start, end) called with the end property being smaller than the start.";
+        return false;
+    } else {
+        return d->text.mid(start, end - start).isRightToLeft();
+    }
+}
+
 #ifndef QT_NO_CLIPBOARD
 void QSGTextEdit::cut()
 {
@@ -784,7 +880,10 @@ Handles the given input method \a event.
 void QSGTextEdit::inputMethodEvent(QInputMethodEvent *event)
 {
     Q_D(QSGTextEdit);
+    const bool wasComposing = isInputMethodComposing();
     d->control->processEvent(event, QPointF(0, -d->yoff));
+    if (wasComposing != isInputMethodComposing())
+        emit inputMethodComposingChanged();
 }
 
 void QSGTextEdit::itemChange(ItemChange change, const ItemChangeData &value)
@@ -849,6 +948,14 @@ bool QSGTextEdit::canPaste() const
     return d->canPaste;
 }
 
+bool QSGTextEdit::isInputMethodComposing() const
+{
+    Q_D(const QSGTextEdit);
+    if (QTextLayout *layout = d->control->textCursor().block().layout())
+        return layout->preeditAreaText().length() > 0;
+    return false;
+}
+
 void QSGTextEditPrivate::init()
 {
     Q_Q(QSGTextEdit);
@@ -897,6 +1004,9 @@ void QSGTextEdit::q_textChanged()
 {
     Q_D(QSGTextEdit);
     d->text = text();
+    d->rightToLeftText = d->document->begin().layout()->engine()->isRightToLeft();
+    d->determineHorizontalAlignment();
+    d->updateDefaultTextOption();
     updateSize();
     updateTotalLines();
     updateMicroFocus();
@@ -1059,9 +1169,18 @@ void QSGTextEdit::updateTotalLines()
 
 void QSGTextEditPrivate::updateDefaultTextOption()
 {
+    Q_Q(QSGTextEdit);
     QTextOption opt = document->defaultTextOption();
     int oldAlignment = opt.alignment();
-    opt.setAlignment((Qt::Alignment)(int)(hAlign | vAlign));
+
+    QSGTextEdit::HAlignment horizontalAlignment = q->effectiveHAlign();
+    if (rightToLeftText) {
+        if (horizontalAlignment == QSGTextEdit::AlignLeft)
+            horizontalAlignment = QSGTextEdit::AlignRight;
+        else if (horizontalAlignment == QSGTextEdit::AlignRight)
+            horizontalAlignment = QSGTextEdit::AlignLeft;
+    }
+    opt.setAlignment((Qt::Alignment)(int)(horizontalAlignment | vAlign));
 
     QTextOption::WrapMode oldWrapMode = opt.wrapMode();
     opt.setWrapMode(QTextOption::WrapMode(wrapMode));

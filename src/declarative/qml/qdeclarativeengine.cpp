@@ -2303,6 +2303,20 @@ void QDeclarativeEngine::setPluginPathList(const QStringList &paths)
   Imports the plugin named \a filePath with the \a uri provided.
   Returns true if the plugin was successfully imported; otherwise returns false.
 
+  On failure and if non-null, the \a errors list will have any errors which occurred prepended to it.
+
+  The plugin has to be a Qt plugin which implements the QDeclarativeExtensionPlugin interface.
+*/
+bool QDeclarativeEngine::importPlugin(const QString &filePath, const QString &uri, QList<QDeclarativeError> *errors)
+{
+    Q_D(QDeclarativeEngine);
+    return d->importDatabase.importPlugin(filePath, uri, errors);
+}
+
+/*!
+  Imports the plugin named \a filePath with the \a uri provided.
+  Returns true if the plugin was successfully imported; otherwise returns false.
+
   On failure and if non-null, *\a errorString will be set to a message describing the failure.
 
   The plugin has to be a Qt plugin which implements the QDeclarativeExtensionPlugin interface.
@@ -2310,7 +2324,18 @@ void QDeclarativeEngine::setPluginPathList(const QStringList &paths)
 bool QDeclarativeEngine::importPlugin(const QString &filePath, const QString &uri, QString *errorString)
 {
     Q_D(QDeclarativeEngine);
-    return d->importDatabase.importPlugin(filePath, uri, errorString);
+    QList<QDeclarativeError> errors;
+    bool retn = d->importDatabase.importPlugin(filePath, uri, &errors);
+    if (!errors.isEmpty()) {
+        QString builtError;
+        for (int i = 0; i < errors.size(); ++i) {
+            builtError = QString(QLatin1String("%1\n        %2"))
+                    .arg(builtError)
+                    .arg(errors.at(i).toString());
+        }
+        *errorString = builtError;
+    }
+    return retn;
 }
 
 /*!

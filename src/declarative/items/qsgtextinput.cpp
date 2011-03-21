@@ -1,4 +1,4 @@
-// Commit: bf9ca539dc4c5efff801856ad9d3f7e14dabad26
+// Commit: c422ed3b861ab92276c91a6672b313f037de6ff6
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -180,12 +180,78 @@ QSGTextInput::HAlignment QSGTextInput::hAlign() const
 void QSGTextInput::setHAlign(HAlignment align)
 {
     Q_D(QSGTextInput);
-    if(align == d->hAlign)
-        return;
-    d->hAlign = align;
-    updateRect();
-    d->updateHorizontalScroll();
-    emit horizontalAlignmentChanged(d->hAlign);
+    bool forceAlign = d->hAlignImplicit && d->effectiveLayoutMirror;
+    d->hAlignImplicit = false;
+    if (d->setHAlign(align, forceAlign) && isComponentComplete()) {
+        updateRect();
+        d->updateHorizontalScroll();
+    }
+}
+
+void QSGTextInput::resetHAlign()
+{
+    Q_D(QSGTextInput);
+    d->hAlignImplicit = true;
+    if (d->determineHorizontalAlignment() && isComponentComplete()) {
+        updateRect();
+        d->updateHorizontalScroll();
+    }
+}
+
+QSGTextInput::HAlignment QSGTextInput::effectiveHAlign() const
+{
+    Q_D(const QSGTextInput);
+    QSGTextInput::HAlignment effectiveAlignment = d->hAlign;
+    if (!d->hAlignImplicit && d->effectiveLayoutMirror) {
+        switch (d->hAlign) {
+        case QSGTextInput::AlignLeft:
+            effectiveAlignment = QSGTextInput::AlignRight;
+            break;
+        case QSGTextInput::AlignRight:
+            effectiveAlignment = QSGTextInput::AlignLeft;
+            break;
+        default:
+            break;
+        }
+    }
+    return effectiveAlignment;
+}
+
+bool QSGTextInputPrivate::setHAlign(QSGTextInput::HAlignment alignment, bool forceAlign)
+{
+    Q_Q(QSGTextInput);
+    if ((hAlign != alignment || forceAlign) && alignment <= QSGTextInput::AlignHCenter) { // justify not supported
+        QSGTextInput::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
+        hAlign = alignment;
+        return true;
+        emit q->horizontalAlignmentChanged(alignment);
+        if (oldEffectiveHAlign != q->effectiveHAlign())
+            emit q->effectiveHorizontalAlignmentChanged();
+    }
+    return false;
+}
+
+bool QSGTextInputPrivate::determineHorizontalAlignment()
+{
+    if (hAlignImplicit) {
+        // if no explicit alignment has been set, follow the natural layout direction of the text
+        QString text = control->text();
+        bool isRightToLeft = text.isEmpty() ? QApplication::keyboardInputDirection() == Qt::RightToLeft : text.isRightToLeft();
+        return setHAlign(isRightToLeft ? QSGTextInput::AlignRight : QSGTextInput::AlignLeft);
+    }
+    return false;
+}
+
+void QSGTextInputPrivate::mirrorChange()
+{
+    Q_Q(QSGTextInput);
+    if (q->isComponentComplete()) {
+        if (!hAlignImplicit && (hAlign == QSGTextInput::AlignRight || hAlign == QSGTextInput::AlignLeft)) {
+            q->updateRect();
+            updateHorizontalScroll();
+            emit q->effectiveHorizontalAlignmentChanged();
+        }
+    }
 }
 
 bool QSGTextInput::isReadOnly() const
@@ -262,6 +328,7 @@ QRect QSGTextInput::cursorRectangle() const
     Q_D(const QSGTextInput);
     QRect r = d->control->cursorRect();
     r.setHeight(r.height()-1); // Make consistent with TextEdit (QLineControl inexplicably adds 1)
+    r.moveLeft(r.x() - d->hscroll);
     return r;
 }
 
@@ -476,6 +543,8 @@ void QSGTextInput::moveCursor()
 QRectF QSGTextInput::positionToRectangle(int pos) const
 {
     Q_D(const QSGTextInput);
+    if (pos > d->control->cursorPosition())
+        pos += d->control->preeditAreaText().length();
     return QRectF(d->control->cursorToX(pos)-d->hscroll,
         0.0,
         d->control->cursorWidth(),
@@ -484,23 +553,40 @@ QRectF QSGTextInput::positionToRectangle(int pos) const
 
 int QSGTextInput::positionAt(int x) const
 {
+    return positionAt(x, CursorBetweenCharacters);
+}
+
+int QSGTextInput::positionAt(int x, CursorPosition position) const
+{
     Q_D(const QSGTextInput);
-    return d->control->xToPos(x + d->hscroll);
+    int pos = d->control->xToPos(x + d->hscroll, QTextLine::CursorPosition(position));
+    const int cursor = d->control->cursor();
+    if (pos > cursor) {
+        const int preeditLength = d->control->preeditAreaText().length();
+        pos = pos > cursor + preeditLength
+                ? pos - preeditLength
+                : cursor;
+    }
+    return pos;
 }
 
 void QSGTextInput::keyPressEvent(QKeyEvent* ev)
 {
     Q_D(QSGTextInput);
-    if (((ev->key() == Qt::Key_Up || ev->key() == Qt::Key_Down) && ev->modifiers() == Qt::NoModifier) // Don't allow MacOSX up/down support, and we don't allow a completer.
-        || (((d->control->cursor() == 0 && ev->key() == Qt::Key_Left)
-            || (d->control->cursor() == d->control->text().length()
-                && ev->key() == Qt::Key_Right))
-            && (d->lastSelectionStart == d->lastSelectionEnd)))
-    {
-        //ignore when moving off the end
-        //unless there is a selection, because then moving will do something (deselect)
+    // Don't allow MacOSX up/down support, and we don't allow a completer.
+    bool ignore = (ev->key() == Qt::Key_Up || ev->key() == Qt::Key_Down) && ev->modifiers() == Qt::NoModifier;
+    if (!ignore && (d->lastSelectionStart == d->lastSelectionEnd) && (ev->key() == Qt::Key_Right || ev->key() == Qt::Key_Left)) {
+        // Ignore when moving off the end unless there is a selection,
+        // because then moving will do something (deselect).
+        int cursorPosition = d->control->cursor();
+        if (cursorPosition == 0)
+            ignore = ev->key() == (d->control->layoutDirection() == Qt::LeftToRight ? Qt::Key_Left : Qt::Key_Right);
+        if (cursorPosition == d->control->text().length())
+            ignore = ev->key() == (d->control->layoutDirection() == Qt::LeftToRight ? Qt::Key_Right : Qt::Key_Left);
+    }
+    if (ignore) {
         ev->ignore();
-    }else{
+    } else {
         d->control->processKeyEvent(ev);
     }
     if (!ev->isAccepted())
@@ -511,15 +597,21 @@ void QSGTextInput::inputMethodEvent(QInputMethodEvent *ev)
 {
     Q_D(QSGTextInput);
     ev->ignore();
-    if (d->control->isReadOnly()) {
-        ev->ignore();
-    } else {
-        d->control->processInputMethodEvent(ev);
-        updateSize();
-        d->updateHorizontalScroll();
+    const bool wasComposing = d->control->preeditAreaText().length() > 0;
+    if (!ev->isAccepted()) {
+        if (d->control->isReadOnly()) {
+            ev->ignore();
+        } else {
+            d->control->processInputMethodEvent(ev);
+            updateSize();
+            d->updateHorizontalScroll();
+        }
     }
     if (!ev->isAccepted())
         QSGPaintedItem::inputMethodEvent(ev);
+
+    if (wasComposing != (d->control->preeditAreaText().length() > 0))
+        emit inputMethodComposingChanged();
 }
 
 void QSGTextInput::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
@@ -569,7 +661,7 @@ void QSGTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QSGTextInput);
     if (d->sendMouseEventToInputContext(event, QEvent::MouseMove))
-        event->setAccepted(true);
+        return;
     if (d->selectByMouse) {
         if (qAbs(int(event->pos().x() - d->pressPos.x())) > QApplication::startDragDistance())
             setKeepMouseGrab(true);
@@ -688,11 +780,12 @@ void QSGTextInputPrivate::updateHorizontalScroll()
     int cix = qRound(control->cursorToX(control->cursor() + preeditLength));
     QRect br(q->boundingRect().toRect());
     int widthUsed = calculateTextWidth();
-    Qt::Alignment va = QStyle::visualAlignment(control->layoutDirection(), QFlag(Qt::Alignment(hAlign)));
+
+    QSGTextInput::HAlignment effectiveHAlign = q->effectiveHAlign();
     if (autoScroll) {
         if (widthUsed <=  br.width()) {
             // text fits in br; use hscroll for alignment
-            switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
+            switch (effectiveHAlign & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
             case Qt::AlignRight:
                 hscroll = widthUsed - br.width() - 1;
                 break;
@@ -724,11 +817,11 @@ void QSGTextInputPrivate::updateHorizontalScroll()
                  hscroll = cix;
         }
     } else {
-        switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
-        case Qt::AlignRight:
+        switch (effectiveHAlign) {
+        case QSGTextInput::AlignRight:
             hscroll = q->width() - widthUsed;
             break;
-        case Qt::AlignHCenter:
+        case QSGTextInput::AlignHCenter:
             hscroll = (q->width() - widthUsed) / 2;
             break;
         default:
@@ -771,13 +864,16 @@ QVariant QSGTextInput::inputMethodQuery(Qt::InputMethodQuery property) const
     Q_D(const QSGTextInput);
     switch(property) {
     case Qt::ImMicroFocus:
-        return d->control->cursorRect();
+        return cursorRectangle();
     case Qt::ImFont:
         return font();
     case Qt::ImCursorPosition:
         return QVariant(d->control->cursor());
     case Qt::ImSurroundingText:
-        return QVariant(text());
+        if (d->control->echoMode() == PasswordEchoOnEdit && !d->control->passwordEchoEditing())
+            return QVariant(displayText());
+        else
+            return QVariant(text());
     case Qt::ImCurrentSelection:
         return QVariant(selectedText());
     case Qt::ImMaximumTextLength:
@@ -804,6 +900,17 @@ void QSGTextInput::selectAll()
 {
     Q_D(QSGTextInput);
     d->control->setSelection(0, d->control->text().length());
+}
+
+bool QSGTextInput::isRightToLeft(int start, int end)
+{
+    Q_D(QSGTextInput);
+    if (start > end) {
+        qmlInfo(this) << "isRightToLeft(start, end) called with the end property being smaller than the start.";
+        return false;
+    } else {
+        return d->control->text().mid(start, end - start).isRightToLeft();
+    }
 }
 
 #ifndef QT_NO_CLIPBOARD
@@ -919,38 +1026,42 @@ void QSGTextInput::moveCursorSelection(int pos, SelectionMode mode)
             anchor = d->control->selectionStart();
 
         if (anchor < pos || (anchor == pos && cursor < pos)) {
-            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, d->control->text());
+            const QString text = d->control->text();
+            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, text);
             finder.setPosition(anchor);
 
             const QTextBoundaryFinder::BoundaryReasons reasons = finder.boundaryReasons();
-            if (!(reasons & QTextBoundaryFinder::StartWord)
-                    || ((reasons & QTextBoundaryFinder::EndWord) && anchor > cursor)) {
+            if (anchor < text.length() && (!(reasons & QTextBoundaryFinder::StartWord)
+                    || ((reasons & QTextBoundaryFinder::EndWord) && anchor > cursor))) {
                 finder.toPreviousBoundary();
             }
-            anchor = finder.position();
+            anchor = finder.position() != -1 ? finder.position() : 0;
 
             finder.setPosition(pos);
-            if (!finder.isAtBoundary())
+            if (pos > 0 && !finder.boundaryReasons())
                 finder.toNextBoundary();
+            const int cursor = finder.position() != -1 ? finder.position() : text.length();
 
-            d->control->setSelection(anchor, finder.position() - anchor);
+            d->control->setSelection(anchor, cursor - anchor);
         } else if (anchor > pos || (anchor == pos && cursor > pos)) {
-            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, d->control->text());
+            const QString text = d->control->text();
+            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, text);
             finder.setPosition(anchor);
 
             const QTextBoundaryFinder::BoundaryReasons reasons = finder.boundaryReasons();
-            if (!(reasons & QTextBoundaryFinder::EndWord)
-                    || ((reasons & QTextBoundaryFinder::StartWord) && anchor < cursor)) {
+            if (anchor > 0 && (!(reasons & QTextBoundaryFinder::EndWord)
+                    || ((reasons & QTextBoundaryFinder::StartWord) && anchor < cursor))) {
                 finder.toNextBoundary();
             }
 
-            anchor = finder.position();
+            anchor = finder.position() != -1 ? finder.position() : text.length();
 
             finder.setPosition(pos);
-            if (!finder.isAtBoundary())
+            if (pos < text.length() && !finder.boundaryReasons())
                  finder.toPreviousBoundary();
+            const int cursor = finder.position() != -1 ? finder.position() : 0;
 
-            d->control->setSelection(anchor, finder.position() - anchor);
+            d->control->setSelection(anchor, cursor - anchor);
         }
     }
 }
@@ -1002,6 +1113,12 @@ void QSGTextInput::itemChange(ItemChange change, const ItemChangeData &value)
     QSGItem::itemChange(change, value);
 }
 
+bool QSGTextInput::isInputMethodComposing() const
+{
+    Q_D(const QSGTextInput);
+    return d->control->preeditAreaText().length() > 0;
+}
+
 void QSGTextInputPrivate::init()
 {
     Q_Q(QSGTextInput);
@@ -1025,9 +1142,12 @@ void QSGTextInputPrivate::init()
             q, SLOT(q_canPasteChanged()));
     q->connect(QApplication::clipboard(), SIGNAL(dataChanged()),
             q, SLOT(q_canPasteChanged()));
+    canPaste = !control->isReadOnly() && QApplication::clipboard()->text().length() != 0;
 #endif // QT_NO_CLIPBOARD
     q->connect(control, SIGNAL(updateMicroFocus()),
                q, SLOT(updateMicroFocus()));
+    q->connect(control, SIGNAL(displayTextChanged(QString)),
+               q, SLOT(updateRect()));
     q->updateSize();
     oldValidity = control->hasAcceptableInput();
     lastSelectionStart = 0;
@@ -1035,6 +1155,7 @@ void QSGTextInputPrivate::init()
     QPalette p = control->palette();
     selectedTextColor = p.color(QPalette::HighlightedText);
     selectionColor = p.color(QPalette::Highlight);
+    determineHorizontalAlignment();
 }
 
 void QSGTextInput::cursorPosChanged()
@@ -1085,6 +1206,7 @@ void QSGTextInput::q_textChanged()
 {
     Q_D(QSGTextInput);
     updateSize();
+    d->determineHorizontalAlignment();
     d->updateHorizontalScroll();
     updateMicroFocus();
     emit textChanged();
