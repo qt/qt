@@ -278,6 +278,8 @@
     of the text and by the layout mirrroring. Click on the gray buttons
     shown at the bottom of the example to toggle between different
     horizontal alignment options.
+
+    \sa {QML Right-to-left User Interfaces}
 */
 
 /*!
@@ -290,6 +292,8 @@
     to toggle the layout direction of the shown elements.
 
     \image qml-righttoleft-layoutdirection-example.png
+
+    \sa {QML Right-to-left User Interfaces}
 */
 
 
@@ -303,6 +307,8 @@
     layout mirroring.
 
     \image qml-righttoleft-layoutmirroring-example.png
+
+    \sa {QML Right-to-left User Interfaces}
 */
 
 /*!

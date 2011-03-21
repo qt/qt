@@ -47,7 +47,7 @@ Rectangle {
     LayoutMirroring.childrenInherit: true
     width: 400
     height: 875
-    color: "lightblue"
+    color: "lightsteelblue"
 
     Column {
         spacing: 10
@@ -287,13 +287,13 @@ Rectangle {
             Column {
                 anchors.centerIn: parent
                 Text {
-                    text: root.mirror ? "Mirrored" : "Normal"
+                    text: root.mirror ? "Mirrored" : "Not mirrored"
                     color: "white"
                     font.pixelSize: 16
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
                 Text {
-                    text: "(click here)"
+                    text: "(click here to toggle)"
                     color: "white"
                     font.pixelSize: 10
                     font.italic: true

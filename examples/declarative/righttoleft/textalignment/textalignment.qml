@@ -115,13 +115,13 @@ Rectangle {
                 Column {
                     anchors.centerIn: parent
                     Text {
-                        text: root.mirror ? "Mirrored" : "Normal"
+                        text: root.mirror ? "Mirrored" : "Not mirrored"
                         color: "white"
                         font.pixelSize: 16
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
                     Text {
-                        text: "(click here)"
+                        text: "(click here to toggle)"
                         color: "white"
                         font.pixelSize: 10
                         font.italic: true
@@ -161,7 +161,7 @@ Rectangle {
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
                     Text {
-                        text: "(click here)"
+                        text: "(click here to toggle)"
                         color: "white"
                         font.pixelSize: 10
                         font.italic: true

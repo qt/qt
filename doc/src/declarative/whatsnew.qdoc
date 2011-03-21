@@ -37,7 +37,7 @@ QtQuick 1.1 is a minor feature update.  \e {import QtQuick 1.1} to use the new f
 
 PinchArea provides support for the common two finger pinch gesture.
 
-\section2 LayoutMirroring
+\section2 LayoutMirroring attached property
 
 \l {LayoutMirroring}{Layout mirroring} is useful when you need to support both left-to-right and right-to-left layout versions of your application that target different language areas.
 

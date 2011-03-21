@@ -44,13 +44,13 @@ import "righttoleft"
 Column {
     width: 200
 //![0]
-// aligned to the left
+// automatically aligned to the left
 Text {
     text: "Phone"
     width: 200
 }
 
-// aligned to the right
+// automatically aligned to the right
 Text {
     text: "خامل"
     width: 200
@@ -73,20 +73,20 @@ Text {
 //![0]
 
 //![1]
-// by default positions child items from the left to right
+// by default child items are positioned from left to right
 Row {
     Child {}
     Child {}
 }
 
-// positions child items from the right to left
+// position child items from right to left
 Row {
     layoutDirection: Qt.RightToLeft
     Child {}
     Child {}
 }
 
-// positions child items from the left to right
+// position child items from left to right
 Row {
     LayoutMirroring.enabled: true
     layoutDirection: Qt.RightToLeft
@@ -97,12 +97,13 @@ Row {
 
 //![2]
 Item {
-    // anchor left becomes right
     height: 50; width: 150
+
     LayoutMirroring.enabled: true
-    anchors.left: parent.left
+    anchors.left: parent.left   // anchor left becomes right
+
     Row {
-        // flows from the left to right
+        // items flow from left to right (as per default)
         Child {}
         Child {}
         Child {}
@@ -112,13 +113,15 @@ Item {
 
 //![3]
 Item {
-    // anchor left becomes right
     height: 50; width: 150
+
     LayoutMirroring.enabled: true
     LayoutMirroring.childrenInherit: true
-    anchors.left: parent.left
+    anchors.left: parent.left   // anchor left becomes right
+
     Row {
-        // flows from the right to left
+        // setting childrenInherit in the parent causes these
+        // items to flow from right to left instead
         Child {}
         Child {}
         Child {}
