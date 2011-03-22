@@ -416,8 +416,8 @@ public:
 
     QByteArray code() const { return d; }
     const char *constData() const { return d.constData(); }
-    const int size() const { return d.size(); }
-    const int count() const { return d.count(); }
+    int size() const { return d.size(); }
+    int count() const { return d.count(); }
     void clear() { d.clear(); }
     bool isEmpty() const { return d.isEmpty(); }
     void append(const Instr &instr);

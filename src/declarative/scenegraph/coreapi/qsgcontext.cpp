@@ -200,7 +200,7 @@ GlyphNodeInterface *QSGContext::createGlyphNode()
 Renderer *QSGContext::createRenderer()
 {
     QMLRenderer *renderer = new QMLRenderer;
-    if (qApp->arguments().contains("--opaque-front-to-back")) {
+    if (qApp->arguments().contains(QLatin1String("--opaque-front-to-back"))) {
         printf("QSGContext: Sorting opaque nodes front to back...\n");
         renderer->setSortFrontToBackEnabled(true);
     }

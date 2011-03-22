@@ -92,7 +92,7 @@ bool QSGPaintedItem::opaquePainting() const
     return d->opaquePainting;
 }
 
-void QSGPaintedItem::setOpaquePainting(bool opaque)
+void QSGPaintedItem::setOpaquePainting(bool)
 {
     // XXX todo
 }
@@ -130,7 +130,7 @@ int QSGPaintedItem::pixelCacheSize() const
     return 0;
 }
 
-void QSGPaintedItem::setPixelCacheSize(int pixels)
+void QSGPaintedItem::setPixelCacheSize(int)
 {
     // XXX todo
 }
@@ -141,7 +141,7 @@ bool QSGPaintedItem::smoothCache() const
     return false;
 }
 
-void QSGPaintedItem::setSmoothCache(bool on)
+void QSGPaintedItem::setSmoothCache(bool)
 {
     // XXX todo
 }
@@ -167,6 +167,7 @@ void QSGPaintedItem::geometryChanged(const QRectF &newGeometry, const QRectF &ol
 Node *QSGPaintedItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 {
     // XXX todo - highly inefficient.  Should use the FBO approach used in QxPainterNode.
+    Q_UNUSED(data);
     Q_D(QSGPaintedItem);
 
     if (width() <= 0 || height() <= 0) {

@@ -1046,6 +1046,7 @@ void QSGText::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeomet
 
 Node *QSGText::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 {
+    Q_UNUSED(data);
     Q_D(QSGText);
 
     bool richTextAsImage = false;

@@ -170,6 +170,7 @@ GlyphNodeInterface *QSGTextNode::addGlyphs(const QPointF &position, const QGlyph
 void QSGTextNode::addTextDocument(const QPointF &position, QTextDocument *textDocument, const QColor &color,
                                   QSGText::TextStyle style, const QColor &styleColor)
 {
+    Q_UNUSED(position)
     QTextFrame *textFrame = textDocument->rootFrame();
     QPointF p = textDocument->documentLayout()->frameBoundingRect(textFrame).topLeft();
 

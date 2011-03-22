@@ -159,8 +159,8 @@ QMLRenderer::QMLRenderer()
 {
     QStringList args = qApp->arguments();
 #if defined(QML_RUNTIME_TESTING)
-    m_render_opaque_nodes = !args.contains("--no-opaque-nodes");
-    m_render_alpha_nodes = !args.contains("--no-alpha-nodes");
+    m_render_opaque_nodes = !args.contains(QLatin1String("--no-opaque-nodes"));
+    m_render_alpha_nodes = !args.contains(QLatin1String("--no-alpha-nodes"));
 #endif
 }
 
@@ -180,7 +180,7 @@ void QMLRenderer::nodeChanged(Node *node, Node::DirtyFlags flags)
 void QMLRenderer::render()
 {
 #if defined (QML_RUNTIME_TESTING)
-    static bool dumpTree = qApp->arguments().contains("--dump-tree");
+    static bool dumpTree = qApp->arguments().contains(QLatin1String("--dump-tree"));
     if (dumpTree) {
         printf("\n\n");
         NodeDumper::dump(rootNode());
@@ -320,7 +320,7 @@ void QMLRenderer::buildLists(Node *node)
 #ifdef FORCE_NO_REORDER
     static bool reorder = false;
 #else
-    static bool reorder = !qApp->arguments().contains("--no-reorder");
+    static bool reorder = !qApp->arguments().contains(QLatin1String("--no-reorder"));
 #endif
 
     if (reorder && count > 1 && (node->flags() & Node::ChildrenDoNotOverloap)) {
@@ -376,7 +376,7 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
         Updates updates(0);
 
 #if defined (QML_RUNTIME_TESTING)
-        static bool dumpTree = qApp->arguments().contains("--dump-tree");
+        static bool dumpTree = qApp->arguments().contains(QLatin1String("--dump-tree"));
         if (dumpTree)
             qDebug() << geomNode;
 #endif
