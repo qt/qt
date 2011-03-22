@@ -2,6 +2,13 @@
 #define SPRITEPARTICLE_H
 #include "particle.h"
 #include <QDeclarativeListProperty>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class SpriteState;
 class SpriteEngine;
 class GeometryNode;
@@ -45,4 +52,5 @@ private:
     void vertexCopy(SpriteParticleVertex &b,const ParticleVertex& a);
 };
 
+QT_END_NAMESPACE
 #endif // SPRITEPARTICLE_H

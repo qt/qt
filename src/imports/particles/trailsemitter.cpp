@@ -1,6 +1,7 @@
 #include "trailsemitter.h"
 #include "particlesystem.h"
 #include "particle.h"
+QT_BEGIN_NAMESPACE
 
 TrailsEmitter::TrailsEmitter(QSGItem* parent)
     : ParticleEmitter(parent)
@@ -243,3 +244,4 @@ void TrailsEmitter::emitWindow(int timeStamp)
 }
 
 
+QT_END_NAMESPACE

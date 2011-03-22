@@ -3,6 +3,13 @@
 #include "particleemitter.h"
 #include "particleaffector.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class FollowEmitter : public ParticleEmitter
 {
     Q_OBJECT
@@ -283,4 +290,5 @@ private:
     int m_followCount;
 };
 
+QT_END_NAMESPACE
 #endif // FOLLOWEMITTER_H

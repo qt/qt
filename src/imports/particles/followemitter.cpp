@@ -1,7 +1,7 @@
 #include "followemitter.h"
 #include "particle.h"
 #include <cmath>
-
+QT_BEGIN_NAMESPACE
 FollowEmitter::FollowEmitter(QSGItem *parent) :
     ParticleEmitter(parent)
   , m_particleSize(16)
@@ -125,3 +125,4 @@ void FollowEmitter::emitWindow(int timeStamp)
 
     m_lastTimeStamp = time;
 }
+QT_END_NAMESPACE

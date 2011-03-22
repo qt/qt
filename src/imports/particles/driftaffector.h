@@ -2,6 +2,13 @@
 #define DRIFTAFFECTOR_H
 #include "particleaffector.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class DriftAffector : public ParticleAffector
 {
     Q_OBJECT
@@ -51,4 +58,5 @@ private:
     qreal m_xDrift;
 };
 
+QT_END_NAMESPACE
 #endif // DRIFTAFFECTOR_H

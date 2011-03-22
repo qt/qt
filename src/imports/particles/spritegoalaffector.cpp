@@ -3,6 +3,7 @@
 #include "spriteengine.h"
 #include "spritestate.h"
 #include <QDebug>
+QT_BEGIN_NAMESPACE
 
 SpriteGoalAffector::SpriteGoalAffector(QSGItem *parent) :
     ParticleAffector(parent), m_goalIdx(-1), m_jump(false)
@@ -52,3 +53,4 @@ bool SpriteGoalAffector::affectParticle(ParticleData *d, qreal dt)
     }
     return false; //Doesn't affect particle data
 }
+QT_END_NAMESPACE

@@ -1,7 +1,7 @@
 #include "maskextruder.h"
 #include <QImage>
 #include <QDebug>
-
+QT_BEGIN_NAMESPACE
 MaskExtruder::MaskExtruder(QObject *parent) :
     ParticleExtruder(parent)
   , m_lastWidth(-1)
@@ -41,3 +41,4 @@ void MaskExtruder::ensureInitialized(const QRectF &r)
         }
     }
 }
+QT_END_NAMESPACE

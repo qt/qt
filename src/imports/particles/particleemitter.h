@@ -6,6 +6,13 @@
 #include "particlesystem.h"
 #include "particleextruder.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class ParticleEmitter : public QSGItem
 {
     Q_OBJECT
@@ -140,4 +147,5 @@ protected:
 private:
 };
 
+QT_END_NAMESPACE
 #endif // PARTICLEEMITTER_H

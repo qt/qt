@@ -6,6 +6,7 @@
 #include <QFile>
 #include "coloredparticle.h"
 #include "particleemitter.h"
+QT_BEGIN_NAMESPACE
 
 class ParticleTrailsMaterial : public AbstractMaterial
 {
@@ -463,3 +464,4 @@ void ColoredParticle::load(ParticleData *d)
     vertexCopy(p.v4, d->pv);
 }
 
+QT_END_NAMESPACE

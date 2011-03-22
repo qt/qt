@@ -1,6 +1,13 @@
 #ifndef SPRITEGOALAFFECTOR_H
 #define SPRITEGOALAFFECTOR_H
 #include "particleaffector.h"
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class SpriteEngine;
 
 class SpriteGoalAffector : public ParticleAffector
@@ -49,4 +56,5 @@ private:
     bool m_jump;
 };
 
+QT_END_NAMESPACE
 #endif // SPRITEGOALAFFECTOR_H

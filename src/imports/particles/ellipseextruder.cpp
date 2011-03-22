@@ -1,6 +1,6 @@
 #include "ellipseextruder.h"
 #include <cmath>
-
+QT_BEGIN_NAMESPACE
 EllipseExtruder::EllipseExtruder(QObject *parent) :
     ParticleExtruder(parent)
   , m_fill(true)
@@ -14,3 +14,4 @@ QPointF EllipseExtruder::extrude(const QRectF & r)
     return QPointF(r.x() + r.width()/2 + mag * (r.width()/2) * cos(theta),
                    r.y() + r.height()/2 + mag * (r.height()/2) * sin(theta));
 }
+QT_END_NAMESPACE

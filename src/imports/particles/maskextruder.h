@@ -3,6 +3,13 @@
 #include "particleextruder.h"
 #include <QUrl>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class MaskExtruder : public ParticleExtruder
 {
     Q_OBJECT
@@ -40,4 +47,5 @@ private:
     QList<QPointF> m_mask;//TODO: More memory efficient datastructures
 };
 
+QT_END_NAMESPACE
 #endif // MASKEXTRUDER_H

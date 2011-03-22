@@ -5,6 +5,7 @@
 #include "particle.h"
 #include <cmath>
 #include <QDebug>
+QT_BEGIN_NAMESPACE
 
 ParticleData::ParticleData()
     : group(0)
@@ -323,3 +324,4 @@ void ParticleData::debugDump()
              << "Acc: " << pv.ax << "," << pv.ay
              << "Time: " << pv.t;// << "," << (system->m_timeInt / 1000.0);
 }
+QT_END_NAMESPACE

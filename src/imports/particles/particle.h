@@ -4,6 +4,13 @@
 #include <QObject>
 #include "particlesystem.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class ParticleType : public QSGItem
 {
     Q_OBJECT
@@ -61,4 +68,5 @@ protected:
 private:
 };
 
+QT_END_NAMESPACE
 #endif // PARTICLE_H

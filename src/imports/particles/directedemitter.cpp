@@ -1,5 +1,6 @@
 #include "directedemitter.h"
 #include <cmath>
+QT_BEGIN_NAMESPACE
 
 DirectedEmitter::DirectedEmitter(QSGItem *parent) :
     ParticleEmitter(parent)
@@ -110,3 +111,4 @@ void DirectedEmitter::emitWindow(int timeStamp)
     m_lastTarget = QPointF(m_targetX, m_targetY);
     m_lastTimestamp = time;
 }
+QT_END_NAMESPACE

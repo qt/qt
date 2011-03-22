@@ -5,6 +5,13 @@
 #include <QUrl>
 #include <QVariantMap>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class SpriteState : public QObject
 {
     Q_OBJECT
@@ -140,4 +147,5 @@ private:
     int m_durationVariance;
 };
 
+QT_END_NAMESPACE
 #endif // SPRITESTATE_H

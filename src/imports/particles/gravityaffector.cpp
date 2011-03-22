@@ -1,5 +1,6 @@
 #include "gravityaffector.h"
 #include <cmath>
+QT_BEGIN_NAMESPACE
 const qreal CONV = 0.017453292520444443;
 GravityAffector::GravityAffector(QSGItem *parent) :
     ParticleAffector(parent), m_acceleration(-10), m_angle(90), m_xAcc(0), m_yAcc(0)
@@ -32,3 +33,4 @@ bool GravityAffector::affectParticle(ParticleData *d, qreal dt)
     }
     return changed;
 }
+QT_END_NAMESPACE

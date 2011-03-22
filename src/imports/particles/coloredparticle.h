@@ -1,6 +1,13 @@
 #ifndef COLOREDPARTICLE_H
 #define COLOREDPARTICLE_H
 #include "particle.h"
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class ParticleTrailsMaterial;
 class GeometryNode;
 struct ColoredParticleVertex;
@@ -95,4 +102,5 @@ private:
     qreal m_alphaVariation;
 };
 
+QT_END_NAMESPACE
 #endif // COLOREDPARTICLE_H

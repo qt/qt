@@ -1,5 +1,6 @@
 #include "wanderaffector.h"
 #include "particlesystem.h"//for ParticlesVertices
+QT_BEGIN_NAMESPACE
 
 WanderAffector::WanderAffector(QSGItem *parent) :
     ParticleAffector(parent)
@@ -65,3 +66,4 @@ bool WanderAffector::affectParticle(ParticleData* data, qreal dt)
     p->y += dy;
     return true;
 }
+QT_END_NAMESPACE

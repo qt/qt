@@ -2,6 +2,13 @@
 #define DIRECTEDEMITTER_H
 #include "particleemitter.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class DirectedEmitter : public ParticleEmitter
 {
     Q_OBJECT
@@ -173,4 +180,5 @@ private:
 
 };
 
+QT_END_NAMESPACE
 #endif // DIRECTEDEMITTER_H

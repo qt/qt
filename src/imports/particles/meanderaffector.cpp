@@ -1,5 +1,5 @@
 #include "meanderaffector.h"
-
+QT_BEGIN_NAMESPACE
 MeanderAffector::MeanderAffector(QSGItem *parent) :
     ParticleAffector(parent)
 {
@@ -18,3 +18,4 @@ bool MeanderAffector::affectParticle(ParticleData *data, qreal dt)
 
     return true;
 }
+QT_END_NAMESPACE

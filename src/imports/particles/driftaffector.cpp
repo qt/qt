@@ -1,6 +1,6 @@
 #include "driftaffector.h"
 #include "particlesystem.h"
-
+QT_BEGIN_NAMESPACE
 DriftAffector::DriftAffector(QSGItem *parent) :
     ParticleAffector(parent)
 {
@@ -23,3 +23,4 @@ bool DriftAffector::affectParticle(ParticleData *data, qreal dt)
 
     return true;
 }
+QT_END_NAMESPACE

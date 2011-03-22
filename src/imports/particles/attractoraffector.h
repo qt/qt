@@ -2,6 +2,12 @@
 #define ATTRACTORAFFECTOR_H
 #include "particleaffector.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class AttractorAffector : public ParticleAffector
 {
     Q_OBJECT
@@ -68,4 +74,5 @@ qreal m_x;
 qreal m_y;
 };
 
+QT_END_NAMESPACE
 #endif // ATTRACTORAFFECTOR_H

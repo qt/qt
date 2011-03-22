@@ -4,6 +4,13 @@
 #include <QObject>
 #include "particlesystem.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class ParticleAffector : public QSGItem
 {
     Q_OBJECT
@@ -78,4 +85,5 @@ private:
     bool m_updateIntSet;
 };
 
+QT_END_NAMESPACE
 #endif // PARTICLEAFFECTOR_H

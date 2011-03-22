@@ -6,6 +6,13 @@
 #include <QVector>
 #include <QHash>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class ParticleAffector;
 class ParticleEmitter;
 class ParticleType;
@@ -142,5 +149,6 @@ public:
     void debugDump();
 };
 
+QT_END_NAMESPACE
 #endif // PARTICLESYSTEM_H
 

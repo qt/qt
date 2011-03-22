@@ -10,7 +10,7 @@
 #include <cmath>
 #include <qmath.h>
 #include <QDebug>
-
+QT_BEGIN_NAMESPACE
 
 class SpriteMaterial : public AbstractMaterial
 {
@@ -310,3 +310,4 @@ void SpriteImage::prepareNextFrame()
     }
 }
 
+QT_END_NAMESPACE

@@ -1,5 +1,5 @@
 #include "particleemitter.h"
-
+QT_BEGIN_NAMESPACE
 ParticleEmitter::ParticleEmitter(QSGItem *parent) :
     QSGItem(parent)
   , m_particlesPerSecond(10)
@@ -42,3 +42,4 @@ ParticleExtruder* ParticleEmitter::effectiveExtruder()
         m_defaultExtruder = new ParticleExtruder;
     return m_defaultExtruder;
 }
+QT_END_NAMESPACE

@@ -3,6 +3,13 @@
 #include "particleaffector.h"
 #include <QDeclarativeListProperty>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class ParticleType;
 
 class TurbulenceAffector : public ParticleAffector
@@ -72,4 +79,5 @@ private:
     bool m_inited;
 };
 
+QT_END_NAMESPACE
 #endif // TURBULENCEAFFECTOR_H

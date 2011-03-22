@@ -107,4 +107,5 @@ qreal m_height;
 ParticleAffector* m_affector;
 };
 
+QT_END_NAMESPACE
 #endif // ZONEAFFECTOR_H

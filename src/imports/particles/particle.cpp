@@ -1,6 +1,6 @@
 #include "particle.h"
 #include <QDebug>
-
+QT_BEGIN_NAMESPACE
 ParticleType::ParticleType(QSGItem *parent) :
     QSGItem(parent),
     m_system(0)
@@ -74,3 +74,4 @@ void ParticleType::calcSystemOffset()
         }
     }
 }
+QT_END_NAMESPACE
