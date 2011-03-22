@@ -3028,17 +3028,17 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
         if(!Option::user_template.isEmpty()) {
             var = ".BUILTIN.USER." + var;
             place[var] =  QStringList(Option::user_template);
-        } else if(!place[var].isEmpty()) {
-            QString orig_template = place["TEMPLATE"].first(), real_template;
+        } else {
+            QString orig_template, real_template;
+            if(!place[var].isEmpty())
+                orig_template = place[var].first();
+            real_template = orig_template.isEmpty() ? "app" : orig_template;
             if(!Option::user_template_prefix.isEmpty() && !orig_template.startsWith(Option::user_template_prefix))
-                real_template = Option::user_template_prefix + orig_template;
-            if(!real_template.isEmpty()) {
+                real_template.prepend(Option::user_template_prefix);
+            if(real_template != orig_template) {
                 var = ".BUILTIN." + var;
                 place[var] = QStringList(real_template);
             }
-        } else {
-            var = ".BUILTIN." + var;
-            place[var] =  QStringList("app");
         }
     } else if(var.startsWith(QLatin1String("QMAKE_HOST."))) {
         QString ret, type = var.mid(11);
