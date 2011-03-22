@@ -494,7 +494,7 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     bool swapBehaviourPreserved = (ctx->d_func()->eglContext->configAttrib(EGL_SWAP_BEHAVIOR) != EGL_BUFFER_PRESERVED)
         || (ctx->d_func()->eglContext->configAttrib(EGL_SURFACE_TYPE)&EGL_SWAP_BEHAVIOR_PRESERVED_BIT);
     if (!swapBehaviourPreserved && !haveNOKSwapRegion)
-        setPartialUpdateSupport(false); // Force full-screen updates
+        d_ptr->partialUpdateSupport = false; // Force full-screen updates
     else
         d_ptr->partialUpdateSupport = true;
 #else
