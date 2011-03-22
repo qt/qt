@@ -3,6 +3,8 @@
 #include <QtDebug>
 #include <QFile>
 
+QT_BEGIN_NAMESPACE
+
 typedef struct {
     char aName[6];
     unsigned short iBlank;
@@ -133,3 +135,4 @@ QSGTexture *QEtcProvider::requestTexture(const QString &id, QSize *size, const Q
     return ret;
 }
 
+QT_END_NAMESPACE

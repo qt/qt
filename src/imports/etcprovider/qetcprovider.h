@@ -7,6 +7,12 @@
 #include <QDeclarativeContext>
 #include <QFileInfo>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 // #define ETC_DEBUG
 
 class EtcTexture : public QSGTexture
@@ -45,5 +51,8 @@ public:
     QSGTexture *requestTexture(const QString &id, QSize *size, const QSize &requestedSize);
 };
 
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // QETCPROVIDER_H

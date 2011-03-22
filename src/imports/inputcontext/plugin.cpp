@@ -46,6 +46,8 @@
 #include <QtDeclarative/qdeclarativeextensionplugin.h>
 #include <QtGui/qapplication.h>
 
+QT_BEGIN_NAMESPACE
+
 static QObject *createContext(QDeclarativeEngine *, QScriptEngine *)
 {
     return new InputContextModule;
@@ -70,6 +72,8 @@ public:
     }
 };
 
-Q_EXPORT_PLUGIN2(InputContext, InputContextQmlPlugin);
+QT_END_NAMESPACE
+
+Q_EXPORT_PLUGIN2(InputContext, QT_PREPEND_NAMESPACE(InputContextQmlPlugin));
 
 #include "plugin.moc"

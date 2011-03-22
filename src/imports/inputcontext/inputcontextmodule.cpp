@@ -48,6 +48,8 @@
 #include <QtGui/qevent.h>
 #include <QtGui/qtextformat.h>
 
+QT_BEGIN_NAMESPACE
+
 /*!
     \qmlmodule Qt.labs.inputcontext InputContextModule
 
@@ -407,3 +409,5 @@ void InputContextModule::update()
 {
     emit contextUpdated();
 }
+
+QT_END_NAMESPACE

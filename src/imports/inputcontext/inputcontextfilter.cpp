@@ -45,6 +45,8 @@
 
 #include <QtGui/qapplication.h>
 
+QT_BEGIN_NAMESPACE
+
 /*!
     \qmlclass KeyEvent InputContextKeyEvent
 
@@ -346,3 +348,5 @@ void InputContextKeyFilter::processEvent(QEvent::Type type, InputContextKeyEvent
         break;
     }
 }
+
+QT_END_NAMESPACE
