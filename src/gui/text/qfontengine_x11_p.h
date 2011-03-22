@@ -157,6 +157,7 @@ private:
 class Q_GUI_EXPORT QFontEngineX11FT : public QFontEngineFT
 {
 public:
+    explicit QFontEngineX11FT(const QFontDef &fontDef) : QFontEngineFT(fontDef) {}
     explicit QFontEngineX11FT(FcPattern *pattern, const QFontDef &fd, int screen);
     ~QFontEngineX11FT();
 

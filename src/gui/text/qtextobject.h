@@ -316,7 +316,9 @@ public:
     int charFormatIndex() const;
     QString text() const;
 
+#if !defined(QT_NO_RAWFONT)
     QList<QGlyphs> glyphs() const;
+#endif
 
 private:
     const QTextDocumentPrivate *p;
