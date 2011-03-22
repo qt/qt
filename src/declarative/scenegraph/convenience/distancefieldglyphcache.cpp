@@ -44,9 +44,9 @@
 #include <qmath.h>
 #include <private/qtriangulator_p.h>
 #include <private/qdeclarativeglobal_p.h>
-#include <private/qsgtexture_p.h>
 #include <qglshaderprogram.h>
 #include <private/qglengineshadersource_p.h>
+#include <qsgcontext.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -502,7 +502,8 @@ DistanceFieldGlyphCache::DistanceFieldTextureData *DistanceFieldGlyphCache::text
 }
 
 DistanceFieldGlyphCache::DistanceFieldGlyphCache(const QFont &font)
-    : m_blitProgram(0)
+    : m_maxTextureSize(0)
+    , m_blitProgram(0)
 {
     m_font = font;
     m_fontEngine = QFontPrivate::get(m_font)->engineForScript(QUnicodeTables::Common);
@@ -564,6 +565,13 @@ GLuint DistanceFieldGlyphCache::texture()
 QSize DistanceFieldGlyphCache::textureSize() const
 {
     return m_textureData->size;
+}
+
+int DistanceFieldGlyphCache::maxTextureSize() const
+{
+    if (!m_maxTextureSize)
+        glGetIntegerv(GL_MAX_TEXTURE_SIZE, &m_maxTextureSize);
+    return m_maxTextureSize;
 }
 
 DistanceFieldGlyphCache::Metrics DistanceFieldGlyphCache::glyphMetrics(glyph_t glyph)
@@ -647,7 +655,7 @@ void DistanceFieldGlyphCache::populate(int count, const glyph_t *glyphs)
         c.height = path.boundingRect().height();
 
         m_textureData->currX += QT_DISTANCEFIELD_TILESIZE;
-        if (m_textureData->currX >= QSGContext::current->textureManager()->maxTextureSize()) {
+        if (m_textureData->currX >= maxTextureSize()) {
             m_textureData->currX = 0;
             m_textureData->currY += QT_DISTANCEFIELD_TILESIZE;
         }
@@ -775,7 +783,7 @@ void DistanceFieldGlyphCache::updateCache()
     if (m_textureData->pendingGlyphs.isEmpty())
         return;
 
-    int requiredWidth = m_textureData->currY == 0 ? m_textureData->currX : QSGContext::current->textureManager()->maxTextureSize();
+    int requiredWidth = m_textureData->currY == 0 ? m_textureData->currX : maxTextureSize();
     int requiredHeight = m_textureData->currY + QT_DISTANCEFIELD_TILESIZE;
 
     resizeTexture(requiredWidth, requiredHeight);

@@ -41,6 +41,7 @@
 
 #include "distancefield_glyphnode_p.h"
 #include "distancefieldglyphcache_p.h"
+#include <qsgtexture_p.h>
 #include <qmath.h>
 
 QT_BEGIN_NAMESPACE
@@ -203,10 +204,9 @@ bool DistanceFieldTextMaterial::updateTexture()
 {
     QSize glyphCacheSize = m_glyph_cache->textureSize();
     if (glyphCacheSize != m_size) {
-        QSGTexture *t = new QSGTexture();
+        QSGPlainTexture *t = new QSGPlainTexture;
         t->setTextureId(m_glyph_cache->texture());
         t->setTextureSize(glyphCacheSize);
-        t->setStatus(QSGTexture::Ready);
         t->setOwnsTexture(false);
         m_texture = QSGTextureRef(t);
 
