@@ -65,9 +65,14 @@ QByteArray QDeclarativeDebugData::toByteArray() const
 
 QDeclarativeDebugTrace::QDeclarativeDebugTrace()
 : QDeclarativeDebugService(QLatin1String("CanvasFrameRate")),
-  m_enabled(false), m_deferredSend(true)
+  m_enabled(false), m_deferredSend(true), m_messageReceived(false)
 {
     m_timer.start();
+    if (status() == Enabled) {
+        // wait for first message indicating whether to trace or not
+        while (!m_messageReceived)
+            waitForMessage();
+    }
 }
 
 void QDeclarativeDebugTrace::addEvent(EventType t)
@@ -212,6 +217,8 @@ void QDeclarativeDebugTrace::messageReceived(const QByteArray &message)
     QDataStream stream(&rwData, QIODevice::ReadOnly);
 
     stream >> m_enabled;
+
+    m_messageReceived = true;
 
     if (!m_enabled)
         sendMessages();
