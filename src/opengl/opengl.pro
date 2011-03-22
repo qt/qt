@@ -148,7 +148,7 @@ embedded {
 }
 
 symbian {
-    DEFINES += QGL_USE_TEXTURE_POOL
+    DEFINES += QGL_USE_TEXTURE_POOL QGL_NO_PRESERVED_SWAP
     SOURCES -= qpixmapdata_gl.cpp
     SOURCES += qgl_symbian.cpp \
                qpixmapdata_poolgl.cpp \
