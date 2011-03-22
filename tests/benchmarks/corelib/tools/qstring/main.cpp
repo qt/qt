@@ -1716,8 +1716,8 @@ void fromLatin1_neon_handwritten(ushort *dst, const char *str, int len)
 void tst_QString::fromLatin1Alternatives_data() const
 {
     QTest::addColumn<FromLatin1Function>("function");
-    QTest::newRow("empty", QTest::Zero) << FromLatin1Function(0);
-    QTest::newRow("regular", QTest::Baseline) << &fromLatin1_regular;
+    QTest::newRow("empty") << FromLatin1Function(0);
+    QTest::newRow("regular") << &fromLatin1_regular;
 #ifdef __SSE2__
     QTest::newRow("sse2-qt4.7") << &fromLatin1_sse2_qt47;
     QTest::newRow("sse2-improved") << &fromLatin1_sse2_improved;
@@ -2400,8 +2400,8 @@ int fromUtf8_neon_trusted(ushort *qch, const char *chars, int len)
 void tst_QString::fromUtf8Alternatives_data() const
 {
     QTest::addColumn<FromUtf8Function>("function");
-    QTest::newRow("empty", QTest::Zero) << FromUtf8Function(0);
-    QTest::newRow("qt-4.7", QTest::Baseline) << &fromUtf8_qt47;
+    QTest::newRow("empty") << FromUtf8Function(0);
+    QTest::newRow("qt-4.7") << &fromUtf8_qt47;
     QTest::newRow("qt-4.7-stateless") << &fromUtf8_qt47_stateless;
     QTest::newRow("optimized-for-ascii") << &fromUtf8_optimised_for_ascii;
 #ifdef __SSE2__
