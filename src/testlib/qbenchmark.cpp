@@ -181,12 +181,6 @@ void QBenchmarkTestMethodData::setResult(
         QBenchmarkGlobalData::current->context, value, iterationCount, metric, setByMacro);
 }
 
-void QBenchmarkTestMethodData::clearSpecialResults()
-{
-    for (int i = 0; i < QTest::BenchmarkSpecialCount; ++i)
-        specialResults[i] = QBenchmarkResult();
-}
-
 /*!
     \class QTest::QBenchmarkIterationController
     \internal

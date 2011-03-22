@@ -190,9 +190,9 @@ bool QTestTable::isEmpty() const
     return !d->list;
 }
 
-QTestData *QTestTable::newData(const char *tag, QTest::BenchmarkDataMode benchMode)
+QTestData *QTestTable::newData(const char *tag)
 {
-    QTestData *dt = new QTestData(tag, benchMode, this);
+    QTestData *dt = new QTestData(tag, this);
     d->append(dt);
     return dt;
 }

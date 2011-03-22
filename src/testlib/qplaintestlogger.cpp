@@ -315,7 +315,7 @@ namespace QTest {
     }
 
 //    static void printBenchmarkResult(const char *bmtag, int value, int iterations)
-    static void printBenchmarkResult(const QBenchmarkResult &result, const QBenchmarkResult &corrected)
+    static void printBenchmarkResult(const QBenchmarkResult &result)
     {
         const char *bmtag = QTest::benchmarkResult2String();
 
@@ -333,36 +333,13 @@ namespace QTest {
             QTest::qt_snprintf(bufTag, sizeof(bufTag), ":\"%s\"", tag.data());
         }
 
+
         char fillFormat[8];
         int fillLength = 5;
         QTest::qt_snprintf(
             fillFormat, sizeof(fillFormat), ":\n%%%ds", fillLength);
         char fill[1024];
         QTest::qt_snprintf(fill, sizeof(fill), fillFormat, "");
-
-        char buf1_[1024];
-        buf1_[0] = 0;
-        if (corrected.valid) {
-            if (corrected.metric == QTest::Percentage) {
-                if (corrected.value <= 3 && corrected.value >= -1)
-                    QTest::qt_snprintf(
-                        buf1_, sizeof(buf1_), "%.1f%% (of baseline), actual: ", corrected.value * 100);
-                else
-                    QTest::qt_snprintf(
-                        buf1_, sizeof(buf1_), "%.2fx (of baseline), actual: ", corrected.value);
-            } else {
-                const char * unitText = QTest::benchmarkMetricUnit(corrected.metric);
-
-                qreal valuePerIteration = qreal(corrected.value) / qreal(corrected.iterations);
-                char resultBuffer[100] = "";
-                formatResult(resultBuffer, 100, valuePerIteration, countSignificantDigits(corrected.value));
-
-                QTest::qt_snprintf(
-                    buf1_, sizeof(buf1_), "%s %s (corrected), actual: ",
-                    resultBuffer,
-                    unitText);
-            }
-        }
 
         const char * unitText = QTest::benchmarkMetricUnit(result.metric);
 
@@ -372,9 +349,17 @@ namespace QTest {
 
         char buf2[1024];
         QTest::qt_snprintf(
-            buf2, sizeof(buf2), "%s %s per iteration",
+            buf2, sizeof(buf2), "%s %s",
             resultBuffer,
             unitText);
+
+        char buf2_[1024];
+        QByteArray iterationText = " per iteration";
+        Q_ASSERT(result.iterations > 0);
+        QTest::qt_snprintf(
+            buf2_,
+            sizeof(buf2_), "%s",
+            iterationText.data());
 
         char buf3[1024];
         Q_ASSERT(result.iterations > 0);
@@ -388,9 +373,9 @@ namespace QTest {
 
         if (result.setByMacro) {
             QTest::qt_snprintf(
-                buf, sizeof(buf), "%s%s%s%s%s%s\n", buf1, bufTag, fill, buf1_, buf2, buf3);
+                buf, sizeof(buf), "%s%s%s%s%s%s\n", buf1, bufTag, fill, buf2, buf2_, buf3);
         } else {
-            QTest::qt_snprintf(buf, sizeof(buf), "%s%s%s%s%s\n", buf1, bufTag, fill, buf1_, buf2);
+            QTest::qt_snprintf(buf, sizeof(buf), "%s%s%s%s\n", buf1, bufTag, fill, buf2);
         }
 
         memcpy(buf, bmtag, strlen(bmtag));
@@ -486,10 +471,10 @@ void QPlainTestLogger::addIncident(IncidentTypes type, const char *description,
     QTest::printMessage(QTest::incidentType2String(type), description, file, line);
 }
 
-void QPlainTestLogger::addBenchmarkResult(const QBenchmarkResult &result, const QBenchmarkResult &corrected)
+void QPlainTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
 {
 //    QTest::printBenchmarkResult(QTest::benchmarkResult2String(), value, iterations);
-    QTest::printBenchmarkResult(result, corrected);
+    QTest::printBenchmarkResult(result);
 }
 
 void QPlainTestLogger::addMessage(MessageTypes type, const char *message,

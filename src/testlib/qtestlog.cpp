@@ -46,7 +46,6 @@
 #include "QtTest/private/qabstracttestlogger_p.h"
 #include "QtTest/private/qplaintestlogger_p.h"
 #include "QtTest/private/qxmltestlogger_p.h"
-#include "QtTest/private/qbenchmark_p.h"
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
 
@@ -286,38 +285,10 @@ void QTestLog::addSkip(const char *msg, QTest::SkipMode /*mode*/,
     QTest::testLogger->addMessage(QAbstractTestLogger::Skip, msg, file, line);
 }
 
-void QTestLog::addBenchmarkResult(const QBenchmarkResult &result, const QBenchmarkResult *specialResults)
+void QTestLog::addBenchmarkResult(const QBenchmarkResult &result)
 {
     QTEST_ASSERT(QTest::testLogger);
-    QTEST_ASSERT(specialResults);
-
-    QBenchmarkResult corrected;
-    const QBenchmarkResult &zero = specialResults[QTest::Zero];
-    if (zero.valid && zero.metric == result.metric) {
-        // subtract the zero result
-        corrected = result;
-        if (zero.iterations == corrected.iterations)
-            corrected.value -= zero.value;
-        else
-            corrected.value -= zero.value / zero.iterations * corrected.iterations;
-    }
-
-    const QBenchmarkResult &baseline = specialResults[QTest::Baseline];
-    if (baseline.valid && baseline.metric == result.metric) {
-        // divide by the baseline
-        if (!corrected.valid)
-            corrected = result;
-        corrected.value /= corrected.iterations;
-        corrected.iterations = 1;
-        corrected.metric = QTest::Percentage;
-
-        qreal subtract = 0;
-        if (zero.valid && zero.metric == baseline.metric)
-            subtract = zero.value / zero.iterations;
-        corrected.value /= baseline.value / baseline.iterations - subtract;
-    }
-
-    QTest::testLogger->addBenchmarkResult(result, corrected);
+    QTest::testLogger->addBenchmarkResult(result);
 }
 
 void QTestLog::startLogging(unsigned int randomSeed)

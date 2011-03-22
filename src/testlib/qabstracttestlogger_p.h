@@ -90,7 +90,7 @@ public:
 
     virtual void addIncident(IncidentTypes type, const char *description,
                              const char *file = 0, int line = 0) = 0;
-    virtual void addBenchmarkResult(const QBenchmarkResult &result, const QBenchmarkResult &correctedResult) = 0;
+    virtual void addBenchmarkResult(const QBenchmarkResult &result) = 0;
 
     virtual void addMessage(MessageTypes type, const char *message,
                             const char *file = 0, int line = 0) = 0;

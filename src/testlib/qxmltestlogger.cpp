@@ -246,7 +246,7 @@ void QXmlTestLogger::addIncident(IncidentTypes type, const char *description,
     outputString(buf.constData());
 }
 
-void QXmlTestLogger::addBenchmarkResult(const QBenchmarkResult &result, const QBenchmarkResult &)
+void QXmlTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
 {
     QTestCharBuffer buf;
     QTestCharBuffer quotedMetric;

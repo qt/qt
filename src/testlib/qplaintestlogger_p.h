@@ -71,7 +71,7 @@ public:
 
     void addIncident(IncidentTypes type, const char *description,
                      const char *file = 0, int line = 0);
-    void addBenchmarkResult(const QBenchmarkResult &result, const QBenchmarkResult &corrected);
+    void addBenchmarkResult(const QBenchmarkResult &result);
 
     void addMessage(MessageTypes type, const char *message,
                     const char *file = 0, int line = 0);
