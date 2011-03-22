@@ -2205,7 +2205,9 @@ int fromUtf8_sse2_optimised_for_ascii(ushort *qch, const char *chars, int len)
         // UTF-8 character found
         // which one?
         counter += bsf_nonzero(highbytes);
+        len += 16;
         extract_utf8_multibyte<false>(dst, chars, counter, len);
+        len -= 16;
     }
     len += 16;
 
@@ -2252,7 +2254,9 @@ int fromUtf8_sse2_trusted_no_bom(ushort *qch, const char *chars, int len)
         // UTF-8 character found
         // which one?
         counter += bsf_nonzero(highbytes);
+        len += 16;
         extract_utf8_multibyte<true>(dst, chars, counter, len);
+        len -= 16;
     }
     len += 16;
 
