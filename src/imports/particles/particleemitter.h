@@ -19,7 +19,7 @@ class ParticleEmitter : public QSGItem
     //###currently goes in emitters OR sets system. Pick one?
     Q_PROPERTY(ParticleSystem* system READ system WRITE setSystem NOTIFY systemChanged)
     Q_PROPERTY(QString particle READ particle WRITE setParticle NOTIFY particleChanged)
-    Q_PROPERTY(ParticleExtruder* extruder READ extruder WRITE setExtruder NOTIFY extruderChanged)
+    Q_PROPERTY(ParticleExtruder* shape READ extruder WRITE setExtruder NOTIFY extruderChanged)
     Q_PROPERTY(bool emitting READ emitting WRITE setEmitting NOTIFY emittingChanged)
 
     Q_PROPERTY(qreal particlesPerSecond READ particlesPerSecond WRITE setParticlesPerSecond NOTIFY particlesPerSecondChanged)

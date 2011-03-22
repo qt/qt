@@ -43,7 +43,7 @@ Rectangle{
         xSpeed: 0
         ySpeed: 0
         particleSize: 10
-        extruder: mask
+        shape: mask
     }
     TrailEmitter{
         system: sys
@@ -59,7 +59,7 @@ Rectangle{
         ySpeedVariation: 10
         particleSize: 30
         particleSizeVariation: 10
-        extruder: mask
+        shape: mask
     }
     ParticleSystem{
         id: sys

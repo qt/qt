@@ -29,7 +29,7 @@ Rectangle{
         particleSize: 20
         particleSizeVariation: 2
         particleEndSize: 0
-        extruder: Ellipse{fill: false}
+        shape: Ellipse{fill: false}
         targetX: parent.width/2
         targetY: parent.height/2
         speed: 40
