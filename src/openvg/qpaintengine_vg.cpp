@@ -3181,6 +3181,8 @@ void QVGPaintEngine::drawImage
          Qt::ImageConversionFlags flags)
 {
     Q_D(QVGPaintEngine);
+    if (image.isNull())
+        return;
     VGImage vgImg;
     if (d->simpleTransform || d->opacity == 1.0f)
         vgImg = toVGImageSubRect(image, sr.toRect(), flags);
@@ -3226,6 +3228,8 @@ void QVGPaintEngine::drawImage
 void QVGPaintEngine::drawImage(const QPointF &pos, const QImage &image)
 {
     Q_D(QVGPaintEngine);
+    if (image.isNull())
+        return;
     VGImage vgImg;
     if (canVgWritePixels(image)) {
         // Optimization for straight blits, no blending

@@ -1391,7 +1391,7 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size, Skin
     return result;
 }
 
-QPixmap QS60StylePrivate::backgroundTexture()
+QPixmap QS60StylePrivate::backgroundTexture(bool skipCreation)
 {
     bool createNewBackground = false;
     TRect applicationRect = (static_cast<CEikAppUi*>(S60->appUi())->ApplicationRect());
@@ -1406,21 +1406,36 @@ QPixmap QS60StylePrivate::backgroundTexture()
         }
     }
 
-    if (createNewBackground) {
+    if (createNewBackground && !skipCreation) {
         QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen,
             QSize(applicationRect.Width(), applicationRect.Height()), 0, SkinElementFlags());
         m_background = new QPixmap(background);
+
+        // Notify all widgets that palette is updated with the actual background texture.
+        QPalette pal = QApplication::palette();
+        pal.setBrush(QPalette::Window, *m_background);
+        QApplication::setPalette(pal);
+        setThemePaletteHash(&pal);
+        storeThemePalette(&pal);
+        foreach (QWidget *widget, QApplication::allWidgets()){
+            QEvent e(QEvent::PaletteChange);
+            QApplication::sendEvent(widget, &e);
+            setThemePalette(widget);
+            widget->ensurePolished();
+        }
     }
+    if (!m_background)
+        return QPixmap();
     return *m_background;
 }
 
-// Generates 1*1 red pixmap as a placeholder for real texture.
+// Generates 1*1 white pixmap as a placeholder for real texture.
 // The actual theme texture is drawn in qt_s60_fill_background().
 QPixmap QS60StylePrivate::placeHolderTexture()
 {
     if (!m_placeHolderTexture) {
         m_placeHolderTexture = new QPixmap(1,1);
-        m_placeHolderTexture->fill(Qt::red);
+        m_placeHolderTexture->fill(Qt::white);
     }
     return *m_placeHolderTexture;
 }

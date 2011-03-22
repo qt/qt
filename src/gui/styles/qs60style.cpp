@@ -667,7 +667,7 @@ void QS60StylePrivate::setFont(QWidget *widget) const
     }
 }
 
-void QS60StylePrivate::setThemePalette(QWidget *widget) const
+void QS60StylePrivate::setThemePalette(QWidget *widget)
 {
     if(!widget)
         return;
@@ -752,7 +752,7 @@ void QS60StylePrivate::storeThemePalette(QPalette *palette)
 }
 
 // set widget specific palettes
-void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
+void QS60StylePrivate::setThemePaletteHash(QPalette *palette)
 {
     if (!palette)
         return;
@@ -3539,8 +3539,14 @@ extern QPoint qt_s60_fill_background_offset(const QWidget *targetWidget);
 
 bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush)
 {
+    // Check if the widget's palette matches placeholder or actual background texture.
+    // When accessing backgroundTexture, use parameter value 'true' to avoid creating
+    // the texture, if it is not already created.
+
     const QPixmap placeHolder(QS60StylePrivate::placeHolderTexture());
-    if (placeHolder.cacheKey() != brush.texture().cacheKey())
+    const QPixmap bg(QS60StylePrivate::backgroundTexture(true));
+    if (placeHolder.cacheKey() != brush.texture().cacheKey()
+        && bg.cacheKey() != brush.texture().cacheKey())
         return false;
 
     const QPixmap backgroundTexture(QS60StylePrivate::backgroundTexture());
