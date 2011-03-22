@@ -50,6 +50,8 @@ QT_BEGIN_NAMESPACE
 
 void qt_disableFontHinting(QFont &font);
 
+class QGLShaderProgram;
+
 class Q_DECLARATIVE_EXPORT DistanceFieldGlyphCache
 {
 public:
@@ -70,27 +72,29 @@ public:
         qreal height;
         qreal xMargin;
         qreal yMargin;
+
+        TexCoord() : x(0), y(0), width(0), height(0), xMargin(0), yMargin(0) { }
     };
     TexCoord glyphTexCoord(glyph_t glyph);
 
-    QSGTextureRef texture();
+    GLuint texture();
     QSize textureSize() const;
-    qreal scaleRatioFromRefSize() const;
+    qreal fontScale() const;
     QImage renderDistanceFieldGlyph(glyph_t glyph) const;
 
     int glyphCount() const;
     qreal glyphMargin() const;
 
     void populate(int count, const glyph_t *glyphs);
-
-    QPointF pixelToTexel(const QPointF &pixel) const;
+    void updateCache();
 
     static bool distanceFieldEnabled();
 
 private:
     DistanceFieldGlyphCache(const QFont &font);
 
-    QSGTextureRef createTexture();
+    void createTexture(int width, int height);
+    void resizeTexture(int width, int height);
 
     static QHash<QString, DistanceFieldGlyphCache *> m_caches;
 
@@ -102,14 +106,29 @@ private:
     QHash<glyph_t, Metrics> m_metrics;
 
     struct DistanceFieldTextureData {
-        QSGTextureRef texture;
+        GLuint texture;
+        GLuint fbo;
         QSize size;
         QHash<glyph_t, TexCoord> texCoords;
-        QSet<glyph_t> generatedGlyphs;
+        QSet<glyph_t> pendingGlyphs;
+        int currX;
+        int currY;
+
+        DistanceFieldTextureData()
+            : texture(0)
+            , fbo(0)
+            , currX(0)
+            , currY(0)
+        { }
     };
     DistanceFieldTextureData *textureData();
     DistanceFieldTextureData *m_textureData;
     static QHash<QString, DistanceFieldTextureData *> m_textures_data;
+
+    const QGLContext *ctx;
+    QGLShaderProgram *m_blitProgram;
+    GLfloat m_vertexCoordinateArray[8];
+    GLfloat m_textureCoordinateArray[8];
 
 };
 

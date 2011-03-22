@@ -64,6 +64,7 @@ protected:
     qreal m_matrixScale;
 
     int m_matrix_id;
+    int m_textureScale_id;
     int m_alphaMin_id;
     int m_alphaMax_id;
     int m_color_id;
@@ -72,11 +73,12 @@ protected:
 const char *DistanceFieldTextMaterialShader::vertexShader() const {
     return
         "uniform highp mat4 matrix;                     \n"
+        "uniform highp vec2 textureScale;               \n"
         "attribute highp vec4 vCoord;                   \n"
         "attribute highp vec2 tCoord;                   \n"
         "varying highp vec2 sampleCoord;                \n"
         "void main() {                                  \n"
-        "     sampleCoord = tCoord;                     \n"
+        "     sampleCoord = tCoord * textureScale;      \n"
         "     gl_Position = matrix * vCoord;            \n"
         "}";
 }
@@ -119,6 +121,7 @@ void DistanceFieldTextMaterialShader::initialize()
 {
     AbstractMaterialShader::initialize();
     m_matrix_id = m_program.uniformLocation("matrix");
+    m_textureScale_id = m_program.uniformLocation("textureScale");
     m_color_id = m_program.uniformLocation("color");
     m_alphaMin_id = m_program.uniformLocation("alphaMin");
     m_alphaMax_id = m_program.uniformLocation("alphaMax");
@@ -140,8 +143,9 @@ void DistanceFieldTextMaterialShader::updateState(Renderer *renderer, AbstractMa
     }
 
     bool updateRange = false;
-    if (oldMaterial == 0 || material->scale() != oldMaterial->scale()) {
-        m_fontScale = material->scale();
+    if (oldMaterial == 0
+            || material->glyphCache()->fontScale() != oldMaterial->glyphCache()->fontScale()) {
+        m_fontScale = material->glyphCache()->fontScale();
         updateRange = true;
     }
     if (updates & Renderer::UpdateMatrices) {
@@ -152,14 +156,18 @@ void DistanceFieldTextMaterialShader::updateState(Renderer *renderer, AbstractMa
     if (updateRange)
         updateAlphaRange();
 
+    bool updated = material->updateTexture();
     Q_ASSERT(!material->texture().isNull());
 
     Q_ASSERT(oldMaterial == 0 || !oldMaterial->texture().isNull());
-    if (oldMaterial == 0
+    if (updated
+            || oldMaterial == 0
             || oldMaterial->texture()->textureId() != material->texture()->textureId()) {
+        m_program.setUniformValue(m_textureScale_id, QVector2D(1.0 / material->glyphCache()->textureSize().width(),
+                                                               1.0 / material->glyphCache()->textureSize().height()));
         renderer->setTexture(0, material->texture());
 
-        if (material->updateTextureFiltering()) {
+        if (updated) {
             // Set the mag/min filters to be linear. We only need to do this when the texture
             // has been recreated.
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -171,7 +179,7 @@ void DistanceFieldTextMaterialShader::updateState(Renderer *renderer, AbstractMa
 }
 
 DistanceFieldTextMaterial::DistanceFieldTextMaterial()
-    : m_texture(0), m_scale(1.0), m_dirtyTexture(false), m_glyph_cache(0)
+    : m_texture(0), m_glyph_cache(0)
 {
    setFlag(Blending, true);
 }
@@ -191,12 +199,32 @@ AbstractMaterialShader *DistanceFieldTextMaterial::createShader() const
     return new DistanceFieldTextMaterialShader;
 }
 
+bool DistanceFieldTextMaterial::updateTexture()
+{
+    QSize glyphCacheSize = m_glyph_cache->textureSize();
+    if (glyphCacheSize != m_size) {
+        QSGTexture *t = new QSGTexture();
+        t->setTextureId(m_glyph_cache->texture());
+        t->setTextureSize(glyphCacheSize);
+        t->setStatus(QSGTexture::Ready);
+        t->setOwnsTexture(false);
+        m_texture = QSGTextureRef(t);
+
+        m_size = glyphCacheSize;
+
+        return true;
+    } else {
+        return false;
+    }
+}
+
 int DistanceFieldTextMaterial::compare(const AbstractMaterial *o) const
 {
     Q_ASSERT(o && type() == o->type());
     const DistanceFieldTextMaterial *other = static_cast<const DistanceFieldTextMaterial *>(o);
-    if (m_scale != other->m_scale) {
-        qreal s1 = m_scale, s2 = other->m_scale;
+    if (m_glyph_cache->fontScale() != other->m_glyph_cache->fontScale()) {
+        qreal s1 = m_glyph_cache->fontScale();
+        qreal s2 = other->m_glyph_cache->fontScale();
         return int(s2 < s1) - int(s1 < s2);
     }
     QRgb c1 = m_color.rgba();
@@ -334,7 +362,9 @@ void DistanceFieldOutlineTextMaterialShader::updateState(Renderer *renderer, Abs
     DistanceFieldOutlineTextMaterial *material = static_cast<DistanceFieldOutlineTextMaterial *>(newEffect);
     DistanceFieldOutlineTextMaterial *oldMaterial = static_cast<DistanceFieldOutlineTextMaterial *>(oldEffect);
 
-    if (oldMaterial == 0 || material->scale() != oldMaterial->scale() || updates & Renderer::UpdateMatrices)
+    if (oldMaterial == 0
+            || material->glyphCache()->fontScale() != oldMaterial->glyphCache()->fontScale()
+            || updates & Renderer::UpdateMatrices)
         updateOutlineAlphaRange();
 }
 
@@ -395,7 +425,7 @@ void DistanceFieldShiftedStyleTextMaterialShader::updateState(Renderer *renderer
     DistanceFieldShiftedStyleTextMaterial *oldMaterial = static_cast<DistanceFieldShiftedStyleTextMaterial *>(oldEffect);
 
     if (oldMaterial == 0
-            || oldMaterial->scale() != material->scale()
+            || oldMaterial->glyphCache()->fontScale() != material->glyphCache()->fontScale()
             || oldMaterial->shift() != material->shift()
             || oldMaterial->texture()->textureSize() != material->texture()->textureSize()) {
         updateShift(material->glyphCache(), material->shift());
@@ -404,7 +434,9 @@ void DistanceFieldShiftedStyleTextMaterialShader::updateState(Renderer *renderer
 
 void DistanceFieldShiftedStyleTextMaterialShader::updateShift(const DistanceFieldGlyphCache *cache, const QPointF &shift)
 {
-    m_program.setUniformValue(m_shift_id, cache->pixelToTexel(shift));
+    QPointF texel(1.0 / cache->fontScale() / cache->textureSize().width() * shift.x(),
+                  1.0 / cache->fontScale() / cache->textureSize().height() * shift.y());
+    m_program.setUniformValue(m_shift_id, texel);
 }
 
 const char *DistanceFieldShiftedStyleTextMaterialShader::fragmentShader() const {

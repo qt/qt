@@ -57,6 +57,7 @@ DistanceFieldGlyphNode::DistanceFieldGlyphNode()
 {
     m_geometry.setDrawingMode(GL_TRIANGLES);
     setGeometry(&m_geometry);
+    setFlag(Node::UsePreprocess);
 }
 
 DistanceFieldGlyphNode::~DistanceFieldGlyphNode()
@@ -98,6 +99,12 @@ void DistanceFieldGlyphNode::setStyleColor(const QColor &color)
     m_styleColor = color;
 }
 
+void DistanceFieldGlyphNode::preprocess()
+{
+    Q_ASSERT(m_glyph_cache);
+    m_glyph_cache->updateCache();
+}
+
 void DistanceFieldGlyphNode::updateGeometry()
 {
     Q_ASSERT(m_glyph_cache);
@@ -115,32 +122,34 @@ void DistanceFieldGlyphNode::updateGeometry()
     ushort *ip = g->indexDataAsUShort();
 
     QPointF margins(1, 1);
-    QPointF texMargins = m_glyph_cache->pixelToTexel(margins);
+    QPointF texMargins = margins / m_glyph_cache->fontScale();
 
     for (int i = 0; i < glyphIndexes.size(); ++i) {
         quint32 glyphIndex = glyphIndexes.at(i);
         DistanceFieldGlyphCache::Metrics metrics = m_glyph_cache->glyphMetrics(glyphIndex);
         DistanceFieldGlyphCache::TexCoord c = m_glyph_cache->glyphTexCoord(glyphIndex);
 
-        if (m_style != QSGText::Normal) {
-            metrics.width += margins.x() * 2;
-            metrics.height += margins.y() * 2;
-            metrics.baselineX -= margins.x();
-            metrics.baselineY += margins.y();
-            c.xMargin -= texMargins.x();
-            c.yMargin -= texMargins.y();
-            c.width += texMargins.x() * 2;
-            c.height += texMargins.y() * 2;
+        if (metrics.width > 0 && metrics.height > 0) {
+            if (m_style != QSGText::Normal) {
+                metrics.width += margins.x() * 2;
+                metrics.height += margins.y() * 2;
+                metrics.baselineX -= margins.x();
+                metrics.baselineY += margins.y();
+                c.xMargin -= texMargins.x();
+                c.yMargin -= texMargins.y();
+                c.width += texMargins.x() * 2;
+                c.height += texMargins.y() * 2;
 
-        } else if (m_glyph_cache->scaleRatioFromRefSize() <= QT_DISTANCEFIELD_MARGIN_THRESHOLD) {
-            metrics.width += m_glyph_cache->glyphMargin() * m_glyph_cache->scaleRatioFromRefSize() * 2;
-            metrics.height += m_glyph_cache->glyphMargin() * m_glyph_cache->scaleRatioFromRefSize() * 2;
-            metrics.baselineX -= m_glyph_cache->glyphMargin() * m_glyph_cache->scaleRatioFromRefSize();
-            metrics.baselineY += m_glyph_cache->glyphMargin() * m_glyph_cache->scaleRatioFromRefSize();
-            c.xMargin -= m_glyph_cache->glyphMargin() / m_glyph_cache->textureSize().width();
-            c.yMargin -= m_glyph_cache->glyphMargin() / m_glyph_cache->textureSize().height();
-            c.width += (m_glyph_cache->glyphMargin() * 2) / qreal(m_glyph_cache->textureSize().width());
-            c.height += (m_glyph_cache->glyphMargin() * 2) / qreal(m_glyph_cache->textureSize().height());
+            } else if (m_glyph_cache->fontScale() <= QT_DISTANCEFIELD_MARGIN_THRESHOLD) {
+                metrics.width += m_glyph_cache->glyphMargin() * m_glyph_cache->fontScale() * 2;
+                metrics.height += m_glyph_cache->glyphMargin() * m_glyph_cache->fontScale() * 2;
+                metrics.baselineX -= m_glyph_cache->glyphMargin() * m_glyph_cache->fontScale();
+                metrics.baselineY += m_glyph_cache->glyphMargin() * m_glyph_cache->fontScale();
+                c.xMargin -= m_glyph_cache->glyphMargin();
+                c.yMargin -= m_glyph_cache->glyphMargin();
+                c.width += m_glyph_cache->glyphMargin() * 2;
+                c.height += m_glyph_cache->glyphMargin() * 2;
+            }
         }
 
         QPointF glyphPosition = m_glyphs.positions().at(i) + m_position;
@@ -183,10 +192,6 @@ void DistanceFieldGlyphNode::updateGeometry()
 void DistanceFieldGlyphNode::updateFont()
 {
     m_glyph_cache = DistanceFieldGlyphCache::get(m_glyphs.font());
-
-    QSGTextureRef texture = m_glyph_cache->texture();
-    if (texture.isNull())
-        qWarning("Invalid distance-field texture for font %s", m_glyphs.font().family().toLatin1().constData());
 }
 
 void DistanceFieldGlyphNode::updateMaterial()
@@ -213,8 +218,6 @@ void DistanceFieldGlyphNode::updateMaterial()
 
     m_material->setGlyphCache(m_glyph_cache);
     m_material->setColor(m_color);
-    m_material->setScale(m_glyph_cache->scaleRatioFromRefSize());
-    m_material->setTexture(m_glyph_cache->texture());
     setMaterial(m_material);
 }
 
