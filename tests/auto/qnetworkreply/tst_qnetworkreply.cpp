@@ -1542,7 +1542,7 @@ void tst_QNetworkReply::getErrors()
     QNetworkRequest request(url);
 
 #if defined(Q_OS_WIN) || defined (Q_OS_SYMBIAN)
-    if (qstrcmp(QTest::currentDataTag(), "empty-scheme-host") == 0)
+    if (qstrcmp(QTest::currentDataTag(), "empty-scheme-host") == 0 && QFileInfo(url).isAbsolute())
         QTest::ignoreMessage(QtWarningMsg, "QNetworkAccessFileBackendFactory: URL has no schema set, use file:// for files");
 #endif
 
@@ -1561,7 +1561,8 @@ void tst_QNetworkReply::getErrors()
 
     QFETCH(int, error);
 #if defined(Q_OS_WIN) || defined (Q_OS_SYMBIAN)
-    QEXPECT_FAIL("empty-scheme-host", "this is expected to fail on Windows and Symbian, QTBUG-17731", Abort);
+    if (QFileInfo(url).isAbsolute())
+        QEXPECT_FAIL("empty-scheme-host", "this is expected to fail on Windows and Symbian, QTBUG-17731", Abort);
 #endif
     QEXPECT_FAIL("ftp-is-dir", "QFtp cannot provide enough detail", Abort);
     // the line below is not necessary
@@ -3210,8 +3211,7 @@ void tst_QNetworkReply::ioPutToFileFromLocalSocket()
     QString socketname = "networkreplytest";
     QLocalServer server;
     if (!server.listen(socketname)) {
-        if (QFile::exists(server.fullServerName()))
-            QFile::remove(server.fullServerName());
+        QLocalServer::removeServer(socketname);
         QVERIFY(server.listen(socketname));
     }
     QLocalSocket active;
@@ -3256,7 +3256,7 @@ void tst_QNetworkReply::ioPutToFileFromProcess()
 {
 #if defined(Q_OS_WINCE) || defined (Q_OS_SYMBIAN)
     QSKIP("Currently no stdin/out supported for Windows CE / Symbian OS", SkipAll);
-#endif
+#else
 
 #ifdef Q_OS_WIN
     if (qstrcmp(QTest::currentDataTag(), "small") == 0)
@@ -3293,6 +3293,7 @@ void tst_QNetworkReply::ioPutToFileFromProcess()
     QCOMPARE(file.size(), qint64(data.size()));
     QByteArray contents = file.readAll();
     QCOMPARE(contents, data);
+#endif
 #endif
 }
 
@@ -5088,7 +5089,7 @@ void tst_QNetworkReply::getFromHttpIntoBuffer()
 
 // FIXME we really need to consolidate all those server implementations
 class GetFromHttpIntoBuffer2Server : QObject {
-    Q_OBJECT;
+    Q_OBJECT
     qint64 dataSize;
     qint64 dataSent;
     QTcpServer server;
