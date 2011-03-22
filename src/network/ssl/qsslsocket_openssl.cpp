@@ -418,7 +418,8 @@ init_context:
         if (tlsHostName.isEmpty())
             tlsHostName = hostName;
         QByteArray ace = QUrl::toAce(tlsHostName);
-        if (!ace.isEmpty()) {
+        // only send the SNI header if the URL is valid and not an IP
+        if (!ace.isEmpty() && !QHostAddress().setAddress(tlsHostName)) {
             if (!q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, ace.constData()))
                 qWarning("could not set SSL_CTRL_SET_TLSEXT_HOSTNAME, Server Name Indication disabled");
         }

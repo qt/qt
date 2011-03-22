@@ -918,13 +918,15 @@ void tst_QSslSocket::protocolServerSide_data()
     QTest::newRow("ssl3-tls1") << QSsl::SslV3 << QSsl::TlsV1 << false;
     QTest::newRow("ssl3-tls1ssl3") << QSsl::SslV3 << QSsl::TlsV1SslV3 << true;
     QTest::newRow("ssl3-secure") << QSsl::SslV3 << QSsl::SecureProtocols << true;
-    QTest::newRow("ssl3-any") << QSsl::SslV3 << QSsl::AnyProtocol << true;
+    QTest::newRow("ssl3-any") << QSsl::SslV3 << QSsl::AnyProtocol << false; // we wont set a SNI header here because we connect to a
+                                                                            // numerical IP, so OpenSSL will send a SSL 2 handshake
 
     QTest::newRow("tls1-ssl2") << QSsl::TlsV1 << QSsl::SslV2 << false;
     QTest::newRow("tls1-ssl3") << QSsl::TlsV1 << QSsl::SslV3 << false;
     QTest::newRow("tls1-tls1ssl3") << QSsl::TlsV1 << QSsl::TlsV1SslV3 << true;
     QTest::newRow("tls1-secure") << QSsl::TlsV1 << QSsl::SecureProtocols << true;
-    QTest::newRow("tls1-any") << QSsl::TlsV1 << QSsl::AnyProtocol << true;
+    QTest::newRow("tls1-any") << QSsl::TlsV1 << QSsl::AnyProtocol << false; // we wont set a SNI header here because we connect to a
+                                                                            // numerical IP, so OpenSSL will send a SSL 2 handshake
 
     QTest::newRow("tls1ssl3-ssl2") << QSsl::TlsV1SslV3 << QSsl::SslV2 << false;
     QTest::newRow("tls1ssl3-ssl3") << QSsl::TlsV1SslV3 << QSsl::SslV3 << true;
