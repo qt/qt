@@ -117,7 +117,7 @@ private:
     // cached values:
     LCID lcid;
     SubstitutionType substitutionType;
-    QChar zeroDigit;
+    QChar zero;
 
     QString getLocaleInfo(LCTYPE type, int maxlen = 0);
     int getLocaleInfo_int(LCTYPE type, int maxlen = 0);
@@ -179,7 +179,7 @@ QSystemLocalePrivate::SubstitutionType QSystemLocalePrivate::substitution()
         if (buf[0] == '1')
             substitutionType = QSystemLocalePrivate::SNever;
         else if (buf[0] == '0')
-            substitutionType QSystemLocalePrivate::SContext;
+            substitutionType = QSystemLocalePrivate::SContext;
         else if (buf[0] == '2')
             substitutionType = QSystemLocalePrivate::SAlways;
         else {
@@ -200,7 +200,7 @@ QSystemLocalePrivate::SubstitutionType QSystemLocalePrivate::substitution()
 
 QString &QSystemLocalePrivate::substituteDigits(QString &string)
 {
-    ushort zero = zeroDigit();
+    ushort zero = zeroDigit().unicode();
     ushort *qch = (ushort *)string.data();
     for (ushort *end = qch + string.size(); qch != end; ++qch) {
         if (*qch >= '0' && *qch <= '9')
@@ -211,9 +211,9 @@ QString &QSystemLocalePrivate::substituteDigits(QString &string)
 
 QChar QSystemLocalePrivate::zeroDigit()
 {
-    if (zeroDigit.isNull())
-        zeroDigit = getLocaleInfo_qchar(LOCALE_SNATIVEDIGITS);
-    return zeroDigit;
+    if (zero.isNull())
+        zero = getLocaleInfo_qchar(LOCALE_SNATIVEDIGITS);
+    return zero;
 }
 
 QChar QSystemLocalePrivate::decimalPoint()
@@ -565,44 +565,7 @@ void QSystemLocalePrivate::update()
 {
     lcid = GetUserDefaultLCID();
     substitutionType = SUnknown;
-    zeroDigit = QChar();
-}
-
-
-static QByteArray getWinLocaleName(LCID id)
-{
-    QByteArray result;
-    if (id == LOCALE_USER_DEFAULT) {
-        static QByteArray langEnvVar = qgetenv("LANG");
-        result = langEnvVar;
-        QString lang, script, cntry;
-        if ( result == "C" || (!result.isEmpty()
-                && splitLocaleName(QString::fromLocal8Bit(result), lang, script, cntry)) ) {
-            long id = 0;
-            bool ok = false;
-            id = qstrtoll(result.data(), 0, 0, &ok);
-            if ( !ok || id == 0 || id < INT_MIN || id > INT_MAX )
-                return result;
-            else
-                return winLangCodeToIsoName( (int)id );
-        }
-    }
-
-#if defined(Q_OS_WINCE)
-    result = winLangCodeToIsoName(id != LOCALE_USER_DEFAULT ? id : GetUserDefaultLCID());
-#else
-    if (id == LOCALE_USER_DEFAULT)
-        id = GetUserDefaultLCID();
-    QString resultuage = winIso639LangName(id);
-    QString country = winIso3116CtryName(id);
-    result = resultuage.toLatin1();
-    if (!country.isEmpty()) {
-        result += '_';
-        result += country.toLatin1();
-    }
-#endif
-
-    return result;
+    zero = QChar();
 }
 
 QString QSystemLocalePrivate::winToQtFormat(const QString &sys_fmt)
@@ -952,6 +915,42 @@ static QString winIso3116CtryName(LCID id)
     wchar_t out[256];
     if (GetLocaleInfo(id, LOCALE_SISO3166CTRYNAME, out, 255))
         result = QString::fromWCharArray(out);
+
+    return result;
+}
+
+static QByteArray getWinLocaleName(LCID id)
+{
+    QByteArray result;
+    if (id == LOCALE_USER_DEFAULT) {
+        static QByteArray langEnvVar = qgetenv("LANG");
+        result = langEnvVar;
+        QString lang, script, cntry;
+        if ( result == "C" || (!result.isEmpty()
+                && splitLocaleName(QString::fromLocal8Bit(result), lang, script, cntry)) ) {
+            long id = 0;
+            bool ok = false;
+            id = qstrtoll(result.data(), 0, 0, &ok);
+            if ( !ok || id == 0 || id < INT_MIN || id > INT_MAX )
+                return result;
+            else
+                return winLangCodeToIsoName( (int)id );
+        }
+    }
+
+#if defined(Q_OS_WINCE)
+    result = winLangCodeToIsoName(id != LOCALE_USER_DEFAULT ? id : GetUserDefaultLCID());
+#else
+    if (id == LOCALE_USER_DEFAULT)
+        id = GetUserDefaultLCID();
+    QString resultuage = winIso639LangName(id);
+    QString country = winIso3116CtryName(id);
+    result = resultuage.toLatin1();
+    if (!country.isEmpty()) {
+        result += '_';
+        result += country.toLatin1();
+    }
+#endif
 
     return result;
 }
