@@ -42,6 +42,8 @@
 #include <QPixmap>
 #include <QImage>
 
+#include "qmeegographicssystemhelper.h"
+
 class QMeeGoRuntime
 {
 public:
@@ -62,7 +64,13 @@ public:
     static Qt::HANDLE getLiveTextureHandle(QPixmap *pixmap);
     static void* createFenceSync();
     static void destroyFenceSync(void *fs);
+    static void invalidateLiveSurfaces();
+    static void switchToRaster();
+    static void switchToMeeGo();
+    static void enableSwitchEvents();
+    static void setSwitchPolicy(QMeeGoGraphicsSystemHelper::SwitchPolicy policy);
 
 private:
     static bool initialized;
+    static bool switchEventsEnabled;
 };
