@@ -37,35 +37,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-//![0]
-import QtQuick 1.1
+
+import QtQuick 1.0
 
 Rectangle {
-    LayoutMirroring.enabled: true
-    LayoutMirroring.childrenInherit: true
-
-    width: 300; height: 50
-    color: "yellow"
-    border.width: 1
-
-    Row {
-        anchors { left: parent.left; margins: 5 }
-        y: 5; spacing: 5
-
-        Repeater {
-            model: 5
-
-            Rectangle {
-                color: "red"
-                opacity: (5 - index) / 5
-                width: 40; height: 40
-
-                Text {
-                    text: index + 1
-                    anchors.centerIn: parent
-                }
-            }
-        }
+    width: 50; height: 50
+    color: "black"
+    Text {
+        color: "white"
+        text: String.fromCharCode(65 + Math.floor(26*Math.random()))
+        anchors.centerIn: parent
     }
 }
-//![0]
