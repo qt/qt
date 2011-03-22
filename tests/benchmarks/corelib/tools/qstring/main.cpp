@@ -1454,6 +1454,7 @@ void fromLatin1_regular(ushort *dst, const char *str, int size)
         *dst++ = (uchar)*str++;
 }
 
+#ifdef __SSE2__
 void fromLatin1_sse2_qt47(ushort *dst, const char *str, int size)
 {
     if (size >= 16) {
@@ -1622,6 +1623,7 @@ void fromLatin1_sse2_withprolog(ushort *dst, const char *str, int size)
     fromLatin1_epilog(dst + counter, str + counter, size - counter);
 }
 
+#ifdef __SSE4_1__
 void fromLatin1_sse4_pmovzxbw(ushort *dst, const char *str, int size)
 {
     qptrdiff counter = 0;
@@ -1650,6 +1652,8 @@ void fromLatin1_prolog_sse4_overcommit(ushort *dst, const char *str, int)
     const __m128i chunk = _mm_cvtepu8_epi16(*(__m128i*)str); // load
     _mm_storeu_si128((__m128i*)dst, chunk); // store
 }
+#endif
+#endif
 
 
 void tst_QString::fromLatin1Alternatives_data() const
@@ -1657,13 +1661,17 @@ void tst_QString::fromLatin1Alternatives_data() const
     QTest::addColumn<FromLatin1Function>("function");
     QTest::newRow("empty", QTest::Zero) << FromLatin1Function(0);
     QTest::newRow("regular", QTest::Baseline) << &fromLatin1_regular;
+#ifdef __SSE2__
     QTest::newRow("sse2-qt4.7") << &fromLatin1_sse2_qt47;
     QTest::newRow("sse2-improved") << &fromLatin1_sse2_improved;
     QTest::newRow("sse2-with-prolog-regular") << &fromLatin1_sse2_withprolog<&fromLatin1_regular>;
     QTest::newRow("sse2-with-prolog-unrolled") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_unrolled>;
     QTest::newRow("sse2-with-prolog-sse2-overcommit") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_sse2_overcommit>;
+#ifdef __SSE4_1__
     QTest::newRow("sse2-with-prolog-sse4-overcommit") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_sse4_overcommit>;
     QTest::newRow("sse4-pmovzxbw") << &fromLatin1_sse4_pmovzxbw;
+#endif
+#endif
 }
 
 extern StringData fromLatin1Data;
@@ -1723,6 +1731,7 @@ int fromUtf8_latin1_regular(ushort *dst, const char *chars, int len)
     return len;
 }
 
+#ifdef __SSE2__
 int fromUtf8_latin1_qt47(ushort *dst, const char *chars, int len)
 {
     fromLatin1_sse2_qt47(dst, chars, len);
@@ -1734,6 +1743,7 @@ int fromUtf8_latin1_sse2_improved(ushort *dst, const char *chars, int len)
     fromLatin1_sse2_improved(dst, chars, len);
     return len;
 }
+#endif
 
 static inline bool isUnicodeNonCharacter(uint ucs4)
 {
@@ -2097,6 +2107,7 @@ int fromUtf8_optimised_for_ascii(ushort *qch, const char *chars, int len)
     return dst + counter - qch;
 }
 
+#ifdef __SSE2__
 int fromUtf8_sse2_optimised_for_ascii(ushort *qch, const char *chars, int len)
 {
     if (len > 3
@@ -2197,6 +2208,8 @@ int fromUtf8_sse2_trusted_no_bom(ushort *qch, const char *chars, int len)
     }
     return dst + counter - qch;
 }
+#endif
+
 
 void tst_QString::fromUtf8Alternatives_data() const
 {
@@ -2205,12 +2218,16 @@ void tst_QString::fromUtf8Alternatives_data() const
     QTest::newRow("qt-4.7", QTest::Baseline) << &fromUtf8_qt47;
     QTest::newRow("qt-4.7-stateless") << &fromUtf8_qt47_stateless;
     QTest::newRow("optimized-for-ascii") << &fromUtf8_optimised_for_ascii;
+#ifdef __SSE2__
     QTest::newRow("sse2-optimized-for-ascii") << &fromUtf8_sse2_optimised_for_ascii;
     QTest::newRow("sse2-trusted-no-bom") << &fromUtf8_sse2_trusted_no_bom;
+#endif
 
     QTest::newRow("latin1-generic") << &fromUtf8_latin1_regular;
+#ifdef __SSE2__
     QTest::newRow("latin1-sse2-qt4.7") << &fromUtf8_latin1_qt47;
     QTest::newRow("latin1-sse2-improved") << &fromUtf8_latin1_sse2_improved;
+#endif
 }
 
 extern StringData fromUtf8Data;
@@ -2248,7 +2265,7 @@ static void fromUtf8Alternatives_internal(FromUtf8Function function, QString &ds
             QString expected = QString::fromUtf8(src, len);
             QString final = dst.mid(8, expected.length());
             if (final != expected || utf8len != expected.length())
-                qDebug() << i << entries[i].offset1 << final << expected;
+                qDebug() << i << entries[i].offset1 << utf8len << final << expected.length() << expected;
 
             QCOMPARE(final, expected);
             QCOMPARE(utf8len, expected.length());
