@@ -154,7 +154,7 @@ static QString symbianErrorString(int errorCode)
     case KErrInUse:
         return QLatin1String("in use");
     case KErrNotReady:
-        return QLatin1String("not ready (e.g. FS dismounted, no memory card)");
+        return QLatin1String("not ready (e.g. FS dismounted, network down)");
     case KErrCorrupt:
         return QLatin1String("corrupt");
     case KErrAccessDenied:
@@ -190,7 +190,7 @@ static QString symbianErrorString(int errorCode)
     case KErrPermissionDenied:
         return QLatin1String("permission denied");
     default:
-        return QString(QLatin1String("symbian error %d")).arg(errorCode);
+        return QString(QLatin1String("symbian error %1")).arg(errorCode);
     }    
 }
 #endif
