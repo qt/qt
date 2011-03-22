@@ -308,7 +308,7 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size,
     return result;
 }
 
-QPixmap QS60StylePrivate::backgroundTexture()
+QPixmap QS60StylePrivate::backgroundTexture(bool /*skipCreation*/)
 {
     if (!m_background) {
         const QSize size = QApplication::desktop()->screen()->size();
