@@ -1485,18 +1485,20 @@ MakefileGenerator::createObjectList(const QStringList &sources)
 
 ReplaceExtraCompilerCacheKey::ReplaceExtraCompilerCacheKey(const QString &v, const QStringList &i, const QStringList &o)
 {
+    static QString doubleColon = QLatin1String("::");
+
     hash = 0;
     pwd = qmake_getpwd();
     var = v;
     {
         QStringList il = i;
         il.sort();
-        in = il.join("::");
+        in = il.join(doubleColon);
     }
     {
         QStringList ol = o;
         ol.sort();
-        out = ol.join("::");
+        out = ol.join(doubleColon);
     }
 }
 
