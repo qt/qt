@@ -232,7 +232,7 @@ QString QLocalePrivate::bcp47Name() const
     return name;
 }
 
-const QLocalePrivate *findLocale(QLocale::Language language, QLocale::Script script, QLocale::Country country)
+const QLocalePrivate *QLocalePrivate::findLocale(QLocale::Language language, QLocale::Script script, QLocale::Country country)
 {
     const unsigned language_id = language;
     const unsigned script_id = script;
@@ -293,7 +293,7 @@ static bool parse_locale_tag(const QString &input, int &i, QString *result, cons
     return true;
 }
 
-bool splitLocaleName(const QString &name, QString &lang, QString &script, QString &cntry)
+bool qt_splitLocaleName(const QString &name, QString &lang, QString &script, QString &cntry)
 {
     const int length = name.length();
 
@@ -358,7 +358,7 @@ void QLocalePrivate::getLangAndCountry(const QString &name, QLocale::Language &l
     QString lang_code;
     QString script_code;
     QString cntry_code;
-    if (!splitLocaleName(name, lang_code, script_code, cntry_code))
+    if (!qt_splitLocaleName(name, lang_code, script_code, cntry_code))
         return;
 
     lang = QLocalePrivate::codeToLanguage(lang_code);
@@ -368,17 +368,17 @@ void QLocalePrivate::getLangAndCountry(const QString &name, QLocale::Language &l
     cntry = QLocalePrivate::codeToCountry(cntry_code);
 }
 
-const QLocalePrivate *findLocale(const QString &name)
+static const QLocalePrivate *findLocale(const QString &name)
 {
     QLocale::Language lang;
     QLocale::Script script;
     QLocale::Country cntry;
     QLocalePrivate::getLangAndCountry(name, lang, script, cntry);
 
-    return findLocale(lang, script, cntry);
+    return QLocalePrivate::findLocale(lang, script, cntry);
 }
 
-QString readEscapedFormatString(const QString &format, int *idx)
+QString qt_readEscapedFormatString(const QString &format, int *idx)
 {
     int &i = *idx;
 
@@ -412,7 +412,7 @@ QString readEscapedFormatString(const QString &format, int *idx)
     return result;
 }
 
-int repeatCount(const QString &s, int i)
+int qt_repeatCount(const QString &s, int i)
 {
     QChar c = s.at(i);
     int j = i + 1;
@@ -686,7 +686,7 @@ QLocale::QLocale()
 QLocale::QLocale(Language language, Country country)
     : v(0)
 {
-    const QLocalePrivate *d = findLocale(language, QLocale::AnyScript, country);
+    const QLocalePrivate *d = QLocalePrivate::findLocale(language, QLocale::AnyScript, country);
 
     // If not found, should default to system
     if (d->languageId() == QLocale::C && language != QLocale::C) {
@@ -725,7 +725,7 @@ QLocale::QLocale(Language language, Country country)
 QLocale::QLocale(Language language, Script script, Country country)
     : v(0)
 {
-    const QLocalePrivate *d = findLocale(language, script, country);
+    const QLocalePrivate *d = QLocalePrivate::findLocale(language, script, country);
 
     // If not found, should default to system
     if (d->languageId() == QLocale::C && language != QLocale::C) {
@@ -1304,7 +1304,7 @@ static bool timeFormatContainsAP(const QString &format)
     int i = 0;
     while (i < format.size()) {
         if (format.at(i).unicode() == '\'') {
-            readEscapedFormatString(format, &i);
+            qt_readEscapedFormatString(format, &i);
             continue;
         }
 
@@ -2226,12 +2226,12 @@ QString QLocalePrivate::dateTimeToString(const QString &format, const QDate *dat
     int i = 0;
     while (i < format.size()) {
         if (format.at(i).unicode() == '\'') {
-            result.append(readEscapedFormatString(format, &i));
+            result.append(qt_readEscapedFormatString(format, &i));
             continue;
         }
 
         const QChar c = format.at(i);
-        int repeat = repeatCount(format, i);
+        int repeat = qt_repeatCount(format, i);
         bool used = false;
         if (date) {
             switch (c.unicode()) {

@@ -573,7 +573,7 @@ QString QSystemLocalePrivate::winToQtFormat(const QString &sys_fmt)
 
     while (i < sys_fmt.size()) {
         if (sys_fmt.at(i).unicode() == QLatin1Char('\'')) {
-            QString text = readEscapedFormatString(sys_fmt, &i);
+            QString text = qt_readEscapedFormatString(sys_fmt, &i);
             if (text == QLatin1String("'"))
                 result += QLatin1String("''");
             else
@@ -582,7 +582,7 @@ QString QSystemLocalePrivate::winToQtFormat(const QString &sys_fmt)
         }
 
         QChar c = sys_fmt.at(i);
-        int repeat = repeatCount(sys_fmt, i);
+        int repeat = qt_repeatCount(sys_fmt, i);
 
         switch (c.unicode()) {
             // Date
@@ -925,7 +925,7 @@ static QByteArray getWinLocaleName(LCID id)
         result = langEnvVar;
         QString lang, script, cntry;
         if ( result == "C" || (!result.isEmpty()
-                && splitLocaleName(QString::fromLocal8Bit(result), lang, script, cntry)) ) {
+                && qt_splitLocaleName(QString::fromLocal8Bit(result), lang, script, cntry)) ) {
             long id = 0;
             bool ok = false;
             id = qstrtoll(result.data(), 0, 0, &ok);

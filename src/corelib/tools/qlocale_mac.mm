@@ -75,7 +75,7 @@ static QByteArray getMacLocaleName()
 
     QString lang, script, cntry;
     if (result.isEmpty() || result != "C"
-            && !splitLocaleName(QString::fromLocal8Bit(result), lang, script, cntry)) {
+            && !qt_splitLocaleName(QString::fromLocal8Bit(result), lang, script, cntry)) {
         QCFType<CFLocaleRef> l = CFLocaleCopyCurrent();
         CFStringRef locale = CFLocaleGetIdentifier(l);
         result = QCFString::toQString(locale).toUtf8();
@@ -173,7 +173,7 @@ static QString macToQtFormat(const QString &sys_fmt)
 
     while (i < sys_fmt.size()) {
         if (sys_fmt.at(i).unicode() == '\'') {
-            QString text = readEscapedFormatString(sys_fmt, &i);
+            QString text = qt_readEscapedFormatString(sys_fmt, &i);
             if (text == QLatin1String("'"))
                 result += QLatin1String("''");
             else
@@ -182,7 +182,7 @@ static QString macToQtFormat(const QString &sys_fmt)
         }
 
         QChar c = sys_fmt.at(i);
-        int repeat = repeatCount(sys_fmt, i);
+        int repeat = qt_repeatCount(sys_fmt, i);
 
         switch (c.unicode()) {
             case 'G': // Qt doesn't support these :(
@@ -439,7 +439,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         getMacPreferredLanguageAndCountry(&preferredLanguage, &preferredCountry);
         QLocale::Language languageCode = (preferredLanguage.isEmpty() ? QLocale::C : QLocalePrivate::codeToLanguage(preferredLanguage));
         QLocale::Country countryCode = (preferredCountry.isEmpty() ? QLocale::AnyCountry : QLocalePrivate::codeToCountry(preferredCountry));
-        const QLocalePrivate *d = findLocale(languageCode, QLocale::AnyScript, countryCode);
+        const QLocalePrivate *d = QLocalePrivate::findLocale(languageCode, QLocale::AnyScript, countryCode);
         if (type == LanguageId)
             return (QLocale::Language)d->languageId();
         return (QLocale::Country)d->countryId();

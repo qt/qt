@@ -192,7 +192,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
             for (int i = 0; i < lst.size();) {
                 const QString &name = lst.at(i);
                 QString lang, script, cntry;
-                if (name.isEmpty() || !splitLocaleName(name, lang, script, cntry))
+                if (name.isEmpty() || !qt_splitLocaleName(name, lang, script, cntry))
                     lst.removeAt(i);
                 else
                     ++i;
@@ -201,7 +201,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         }
         if (!d->lc_messages_var.isEmpty()) {
             QString lang, script, cntry;
-            if (splitLocaleName(QString::fromLatin1(d->lc_messages_var.constData(), d->lc_messages_var.size()),
+            if (qt_splitLocaleName(QString::fromLatin1(d->lc_messages_var.constData(), d->lc_messages_var.size()),
                                 lang, script, cntry)) {
                 if (!cntry.length() && lang.length())
                     return QStringList(lang);

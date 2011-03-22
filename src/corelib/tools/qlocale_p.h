@@ -91,6 +91,10 @@ public:
     static QLocale::Country codeToCountry(const QString &code);
     static void getLangAndCountry(const QString &name, QLocale::Language &lang,
                                   QLocale::Script &script, QLocale::Country &cntry);
+    static const QLocalePrivate *findLocale(QLocale::Language language,
+                                            QLocale::Script script,
+                                            QLocale::Country country);
+
 
     QLocale::MeasurementSystem measurementSystem() const;
 
@@ -264,13 +268,9 @@ private:
 };
 #endif
 
-const QLocalePrivate *findLocale(QLocale::Language language,
-                                 QLocale::Script script,
-                                 QLocale::Country country);
-const QLocalePrivate *findLocale(const QString &name);
-QString readEscapedFormatString(const QString &format, int *idx);
-bool splitLocaleName(const QString &name, QString &lang, QString &script, QString &cntry);
-int repeatCount(const QString &s, int i);
+QString qt_readEscapedFormatString(const QString &format, int *idx);
+bool qt_splitLocaleName(const QString &name, QString &lang, QString &script, QString &cntry);
+int qt_repeatCount(const QString &s, int i);
 
 QT_END_NAMESPACE
 
