@@ -2293,7 +2293,6 @@ int fromUtf8_neon(ushort *qch, const char *chars, int len)
 
     ushort *dst = qch;
     const uint8x8_t highBit = vdup_n_u8(0x80);
-    const uint8x8_t bitMask = { 128, 64, 32, 16, 8, 4, 2, 1 };
     while (len >= 8) {
         // load 8 bytes into one doubleword Neon register
         const uint8x8_t chunk = vld1_u8((uint8_t *)chars);
@@ -2301,27 +2300,26 @@ int fromUtf8_neon(ushort *qch, const char *chars, int len)
         vst1q_u16(dst, expanded);
 
         uint8x8_t highBits = vtst_u8(chunk, highBit);
-        highBits = vand_u8(highBits, bitMask);
-        highBits = vpadd_u8(highBits, highBits);
-        highBits = vpadd_u8(highBits, highBits);
-        highBits = vpadd_u8(highBits, highBits);
+        // we need to find the lowest byte set
+        int mask_low = vget_lane_u32(vreinterpret_u32_u8(highBits), 0);
+        int mask_high = vget_lane_u32(vreinterpret_u32_u8(highBits), 1);
 
-        int mask = vget_lane_u8(highBits, 0);
-
-        // find the first bit set in mask
-        // sets pos to 32 if no bits are found
-        qptrdiff pos;
-        asm ("rbit      %0, %1\n"
-             "clz       %0, %0"
-             : "=r" (pos) : "r" (mask));
-
-        if (__builtin_expect(pos > 8, 1)) {
+        if (__builtin_expect(mask_low == 0 && mask_high == 0, 1)) {
             chars += 8;
             dst += 8;
             len -= 8;
         } else {
             // UTF-8 character found
             // which one?
+            qptrdiff pos;
+            asm ("rbit  %0, %1\n"
+                 "clz   %1, %1\n"
+               : "=r" (pos)
+               : "r" (mask_low ? mask_low : mask_high));
+            // now mask_low contains the number of leading zeroes
+            // or the value 32 (0x20) if no zeroes were found
+            // the number of leading zeroes is 8*pos
+            pos /= 8;
 
             extract_utf8_multibyte<false>(dst, chars, pos, len);
             chars += pos;
@@ -2338,7 +2336,6 @@ int fromUtf8_neon(ushort *qch, const char *chars, int len)
             ++counter;
             continue;
         }
-
         // UTF-8 character found
         extract_utf8_multibyte<false>(dst, chars, counter, len);
     }
