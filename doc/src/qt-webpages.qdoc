@@ -202,7 +202,7 @@
 */
 
 /*!
-    \externalpage qthelp://com.nokia.qtcreator.210/doc/creator-qml-application.html
+    \externalpage http://doc.qt.nokia.com/qtcreator/creator-qml-application.html
     \title external: Developing Qt Quick Applications with Creator
 */
 /*!
@@ -218,35 +218,35 @@
     \title Qt Whitepaper
 */
 /*!
-    \externalpage qthelp://com.nokia.qtcreator.210/doc/creator-visual-editor.html
+    \externalpage http://doc.qt.nokia.com/qtcreator/creator-visual-editor.html
     \title external: Developing Qt Quick Applications
 */
 /*!
-    \externalpage qthelp://com.nokia.qtcreator.210/doc/creator-publish-ovi.html
+    \externalpage http://doc.qt.nokia.com/qtcreator/creator-publish-ovi.html
     \title external: Publishing Applications to Ovi Store
 */
 /*!
-    \externalpage qthelp://com.nokia.qtcreator.210/doc/index.html
+    \externalpage http://doc.qt.nokia.com/qtcreator/index.html
     \title external: Qt Creator Manual
 */
 /*!
-    \externalpage qthelp://com.nokia.qtcreator.210/doc/creator-developing-symbian.html
+    \externalpage http://doc.qt.nokia.com/qtcreator/creator-developing-symbian.html
     \title external: Setting Up Development Environment for Symbian
 */
 /*!
-    \externalpage qthelp://com.nokia.qtcreator.210/doc/creator-developing-maemo.html
+    \externalpage http://doc.qt.nokia.com/qtcreator/creator-developing-maemo.html
     \title external: Setting Up Development Environment for Maemo
 */
 /*!
-    \externalpage qthelp://com.nokia.qtmobility.120/mobility/index.html
+    \externalpage http://doc.qt.nokia.com/qtmobility/index.html
     \title external: Qt Mobility Manual
 */
 /*!
-    \externalpage qthelp://com.nokia.qtmobility.120/mobility/qml-plugins.html
+    \externalpage http://doc.qt.nokia.com/qtmobility/qml-plugins.html
     \title external: Qt Mobility QML Plugins
 */
 /*!
-    \externalpage qthelp://com.nokia.qt.simulator.110/doc/index.html
+    \externalpage http://doc.qt.nokia.com/qtsimulator/index.html
     \title external: Qt Simulator Manual
 */
 /*!
@@ -254,47 +254,47 @@
     \title external: Qt SDK Manual
 */
 /*!
-    \externalpage qthelp://com.nokia.qtcreator.210/doc/creator-project-managing.html
+    \externalpage http://doc.qt.nokia.com/qtcreator/creator-project-managing.html
     \title external: Creating Qt Projects in Creator
 */
 /*!
-    \externalpage qthelp://com.nokia.qtcreator.210/doc/creator-building-running.html
+    \externalpage http://doc.qt.nokia.com/qtcreator/creator-building-running.html
     \title external: Building and Running Applications in Creator
 */
 /*!
-    \externalpage qthelp://com.nokia.qtcreator.210/doc/creator-running-targets.html
+    \externalpage http://doc.qt.nokia.com/qtcreator/creator-running-targets.html
     \title external: Set Compiler Targets in Creator
 */
 /*!
-    \externalpage qthelp://com.nokia.qtcreator.210/doc/creator-build-settings.html
+    \externalpage http://doc.qt.nokia.com/qtcreator/creator-build-settings.html
     \title external: Build Settings in Creator
 */
 /*!
-    \externalpage qthelp://com.nokia.qtcreator.210/doc/creator-run-settings.html
+    \externalpage http://doc.qt.nokia.com/qtcreator/creator-run-settings.html
     \title external: Run Settings in Creator
 */
 /*!
-    \externalpage qthelp://com.nokia.qtcreator.210/doc/creator-using-qt-designer.html
+    \externalpage http://doc.qt.nokia.com/qtcreator/creator-using-qt-designer.html
     \title external: Designer in Creator
 */
 /*!
-    \externalpage qthelp://com.nokia.qtcreator.210/doc/creator-debugging.html
+    \externalpage http://doc.qt.nokia.com/qtcreator/creator-debugging.html
     \title external: Debugging Applications in Creator
 */
 /*!
-    \externalpage qthelp://com.nokia.qtcreator.210/doc/creator-deployment-symbian.html
+    \externalpage http://doc.qt.nokia.com/qtcreator/creator-deployment-symbian.html
     \title external: Symbian Deployment in Creator
 */
 /*!
-    \externalpage qthelp://com.nokia.qtcreator.210/doc/creator-deployment-maemo.html
+    \externalpage http://doc.qt.nokia.com/qtcreator/creator-deployment-maemo.html
     \title external: Maemo Deployment in Creator
 */
 /*!
-    \externalpage qthelp://com.nokia.qtmobility.120/mobility/multimedia.html
+    \externalpage http://doc.qt.nokia.com/qtmobility/multimedia.html
     \title external: Mobility Multimedia
 */
 /*!
-    \externalpage qthelp://com.nokia.qtmobility.120/mobility/location-overview.html
+    \externalpage http://doc.qt.nokia.com/qtmobility/location-overview.html
     \title external: Mobility Location
 */
 /*!
