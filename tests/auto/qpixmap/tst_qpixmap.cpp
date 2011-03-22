@@ -52,6 +52,7 @@
 #include <qsplashscreen.h>
 
 #include <private/qpixmapdata_p.h>
+#include <private/qdrawhelper_p.h>
 
 #include <QSet>
 
@@ -68,6 +69,10 @@
 #include <fbs.h>
 #include <gdi.h>
 #include <bitdev.h>
+#if !defined(QT_NO_OPENVG)
+#include <QtOpenVG/qvg.h>
+#include <QtOpenVG/private/qpixmapdata_vg_p.h>
+#endif
 #endif
 
 #ifdef Q_WS_X11
@@ -185,6 +190,10 @@ private slots:
     void toImageDeepCopy();
 
     void loadAsBitmapOrPixmap();
+
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_OPENVG)
+    void vgImageReadBack();
+#endif
 };
 
 static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
@@ -632,9 +641,12 @@ void tst_QPixmap::mask()
 
     QVERIFY(!pm.isNull());
     QVERIFY(!bm.isNull());
-    // hw: todo: this will fail if the default pixmap format is
-    // argb32_premultiplied. The mask will be all 1's
-    QVERIFY(pm.mask().isNull());
+    if (!pm.hasAlphaChannel()) {
+        // This would fail if the default pixmap format is
+        // argb32_premultiplied. The mask will be all 1's.
+        // Therefore this is skipped when the alpha channel is present.
+        QVERIFY(pm.mask().isNull());
+    }
 
     QImage img = bm.toImage();
     QVERIFY(img.format() == QImage::Format_MonoLSB
@@ -1256,7 +1268,10 @@ void tst_QPixmap::fromSymbianCFbsBitmap()
         QCOMPARE(actualColor, color);
 
         QImage shouldBe(pixmap.width(), pixmap.height(), image.format());
-        shouldBe.fill(color.rgba());
+        if (image.format() == QImage::Format_RGB16)
+            shouldBe.fill(qrgb565(color.rgba()).rawValue());
+        else
+            shouldBe.fill(color.rgba());
         QCOMPARE(image, shouldBe);
     }
     __UHEAP_MARKEND;
@@ -1767,6 +1782,104 @@ void tst_QPixmap::toImageDeepCopy()
     QVERIFY(first != second);
 }
 
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_OPENVG)
+Q_OPENVG_EXPORT VGImage qPixmapToVGImage(const QPixmap& pixmap);
+class FriendlyVGPixmapData : public QVGPixmapData
+{
+public:
+    FriendlyVGPixmapData(PixelType type) : QVGPixmapData(type) { }
+    bool sourceIsNull() { return source.isNull(); }
+    friend QPixmap pixmapFromVGImage(VGImage image);
+};
+QPixmap pixmapFromVGImage(VGImage image)
+{
+    if (image != VG_INVALID_HANDLE) {
+        int w = vgGetParameteri(image, VG_IMAGE_WIDTH);
+        int h = vgGetParameteri(image, VG_IMAGE_HEIGHT);
+        FriendlyVGPixmapData *pd = new FriendlyVGPixmapData(QPixmapData::PixmapType);
+        pd->resize(w, h);
+        pd->vgImage = image;
+        pd->recreate = false;
+        pd->prevSize = QSize(pd->w, pd->h);
+        return QPixmap(pd);
+    }
+    return QPixmap();
+}
+class Content : public QWidget
+{
+public:
+    void paintEvent(QPaintEvent *) {
+        QPainter painter(this);
+        QColor testPixel(qRgb(200, 150, 100));
+        if (pm.isNull()) { // first phase: create a VGImage
+            painter.beginNativePainting();
+            vgimage = vgCreateImage(VG_sARGB_8888_PRE, w, h, VG_IMAGE_QUALITY_FASTER);
+            QImage img(20, 10, QImage::Format_ARGB32_Premultiplied);
+            img.fill(qRgb(0, 0, 0));
+            QPainter p(&img);
+            p.fillRect(0, 0, img.width(), img.height(), testPixel);
+            p.end();
+            vgImageSubData(vgimage, img.bits(), img.bytesPerLine(), VG_sARGB_8888_PRE, 0, 0, img.width(), img.height());
+            // Now the area 0,0 20x10 (in OpenVG coords) is filled with some color.
+            painter.endNativePainting();
+        } else { // second phase: check if readback works
+            painter.drawPixmap(0, 0, pm);
+            // Drawing should not cause readback, this is important for performance;
+            noreadback_ok = static_cast<FriendlyVGPixmapData *>(pm.pixmapData())->sourceIsNull();
+            // However toImage() requires readback.
+            QImage img = pm.toImage();
+            readback_ok = img.width() == pm.width();
+            readback_ok &= img.height() == pm.height();
+            readback_ok &= !static_cast<FriendlyVGPixmapData *>(pm.pixmapData())->sourceIsNull();
+            uint pix = img.pixel(1, 1);
+            content_ok = qRed(pix) == testPixel.red();
+            content_ok &= qGreen(pix) == testPixel.green();
+            content_ok &= qBlue(pix) == testPixel.blue();
+            pix = img.pixel(img.width() - 1, img.height() - 1);
+            content_ok &= qRed(pix) == 0;
+            content_ok &= qGreen(pix) == 0;
+            content_ok &= qBlue(pix) == 0;
+        }
+    }
+    int w;
+    int h;
+    VGImage vgimage;
+    QPixmap pm;
+    bool noreadback_ok;
+    bool readback_ok;
+    bool content_ok;
+};
+void tst_QPixmap::vgImageReadBack()
+{
+    QPixmap tmp(10, 20);
+    if (tmp.pixmapData()->classId() == QPixmapData::OpenVGClass) {
+        Content c;
+        c.w = 50;
+        c.h = 60;
+        c.vgimage = VG_INVALID_HANDLE;
+        c.noreadback_ok = c.readback_ok = c.content_ok = false;
+        c.showFullScreen();
+        QTest::qWaitForWindowShown(&c);
+        QVERIFY(c.vgimage != VG_INVALID_HANDLE);
+        QPixmap pm = pixmapFromVGImage(c.vgimage);
+        QVERIFY(!pm.isNull());
+        QCOMPARE(pm.width(), c.w);
+        QCOMPARE(pm.height(), c.h);
+        QVERIFY(qPixmapToVGImage(pm) == c.vgimage);
+        QVERIFY(static_cast<FriendlyVGPixmapData *>(pm.pixmapData())->sourceIsNull());
+        c.pm = pm;
+        // Make sure the second phase in paintEvent is executed too.
+        c.hide();
+        c.showFullScreen();
+        QTest::qWaitForWindowShown(&c);
+        QVERIFY(c.noreadback_ok);
+        QVERIFY(c.readback_ok);
+        QVERIFY(c.content_ok);
+    } else {
+        QSKIP("Not using openvg graphicssystem", SkipSingle);
+    }
+}
+#endif // Symbian & OpenVG
 
 QTEST_MAIN(tst_QPixmap)
 #include "tst_qpixmap.moc"

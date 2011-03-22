@@ -1654,7 +1654,6 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
         if(file.indexOf(Option::dir_sep) == -1 || !QFile::exists(file)) {
             static QStringList *feature_roots = 0;
             if(!feature_roots) {
-                validateModes();
                 feature_roots = new QStringList(qmake_feature_paths(prop));
                 qmakeAddCacheClear(qmakeDeleteCacheClear_QStringList, (void**)&feature_roots);
             }

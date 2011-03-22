@@ -41,6 +41,11 @@
 
 #include "qmeegoruntime.h"
 
+#include "qmeegoswitchevent.h"
+
+#include <QtGui/QApplication>
+#include <QtGui/QWidget>
+
 #include <private/qlibrary_p.h>
 #include <private/qfactoryloader_p.h>
 #include <private/qgraphicssystemplugin_p.h>
@@ -49,6 +54,7 @@
 #define ENSURE_INITIALIZED {if (!initialized) initialize();}
 
 bool QMeeGoRuntime::initialized = false;
+bool QMeeGoRuntime::switchEventsEnabled = false;
 
 typedef int (*QMeeGoImageToEglSharedImageFunc) (const QImage&);
 typedef QPixmapData* (*QMeeGoPixmapDataFromEglSharedImageFunc) (Qt::HANDLE handle, const QImage&);
@@ -66,6 +72,10 @@ typedef Qt::HANDLE (*QMeeGoLiveTextureGetHandleFunc) (QPixmap*);
 typedef void* (*QMeeGoCreateFenceSyncFunc) (void);
 typedef void (*QMeeGoDestroyFenceSyncFunc) (void *fs);
 typedef void (*QMeeGoInvalidateLiveSurfacesFunc) (void);
+typedef void (*QMeeGoSwitchToRasterFunc) (void);
+typedef void (*QMeeGoSwitchToMeeGoFunc) (void);
+typedef void (*QMeeGoRegisterSwitchCallbackFunc) (void (*callback)(int type, const char *name));
+typedef void (*QMeeGoSetSwitchPolicyFunc) (int policy);
 
 static QMeeGoImageToEglSharedImageFunc qt_meego_image_to_egl_shared_image = NULL;
 static QMeeGoPixmapDataFromEglSharedImageFunc qt_meego_pixmapdata_from_egl_shared_image = NULL;
@@ -83,6 +93,17 @@ static QMeeGoLiveTextureGetHandleFunc qt_meego_live_texture_get_handle = NULL;
 static QMeeGoCreateFenceSyncFunc qt_meego_create_fence_sync = NULL;
 static QMeeGoDestroyFenceSyncFunc qt_meego_destroy_fence_sync = NULL;
 static QMeeGoInvalidateLiveSurfacesFunc qt_meego_invalidate_live_surfaces = NULL;
+static QMeeGoSwitchToRasterFunc qt_meego_switch_to_raster = NULL;
+static QMeeGoSwitchToMeeGoFunc qt_meego_switch_to_meego = NULL;
+static QMeeGoRegisterSwitchCallbackFunc qt_meego_register_switch_callback = NULL;
+static QMeeGoSetSwitchPolicyFunc qt_meego_set_switch_policy = NULL;
+
+extern "C" void handleSwitch(int type, const char *name)
+{
+    QMeeGoSwitchEvent switchEvent((QLatin1String(name)), QMeeGoSwitchEvent::State(type));
+    foreach (QWidget *widget, QApplication::topLevelWidgets())
+        QCoreApplication::sendEvent(widget, &switchEvent);
+}
 
 void QMeeGoRuntime::initialize()
 {
@@ -112,13 +133,19 @@ void QMeeGoRuntime::initialize()
         qt_meego_create_fence_sync = (QMeeGoCreateFenceSyncFunc) library.resolve("qt_meego_create_fence_sync");
         qt_meego_destroy_fence_sync = (QMeeGoDestroyFenceSyncFunc) library.resolve("qt_meego_destroy_fence_sync");
         qt_meego_invalidate_live_surfaces = (QMeeGoInvalidateLiveSurfacesFunc) library.resolve("qt_meego_invalidate_live_surfaces");
+        qt_meego_switch_to_raster = (QMeeGoSwitchToRasterFunc) library.resolve("qt_meego_switch_to_raster");
+        qt_meego_switch_to_meego = (QMeeGoSwitchToMeeGoFunc) library.resolve("qt_meego_switch_to_meego");
+        qt_meego_register_switch_callback = (QMeeGoRegisterSwitchCallbackFunc) library.resolve("qt_meego_register_switch_callback");
+        qt_meego_set_switch_policy = (QMeeGoSetSwitchPolicyFunc) library.resolve("qt_meego_set_switch_policy");
 
         if (qt_meego_image_to_egl_shared_image && qt_meego_pixmapdata_from_egl_shared_image && 
             qt_meego_pixmapdata_with_gl_texture && qt_meego_destroy_egl_shared_image && qt_meego_update_egl_shared_image_pixmap && 
             qt_meego_set_surface_fixed_size && qt_meego_set_surface_scaling && qt_meego_set_translucent && 
             qt_meego_pixmapdata_with_new_live_texture && qt_meego_pixmapdata_from_live_texture_handle &&
             qt_meego_live_texture_lock && qt_meego_live_texture_release && qt_meego_live_texture_get_handle &&
-            qt_meego_create_fence_sync && qt_meego_destroy_fence_sync && qt_meego_invalidate_live_surfaces)
+            qt_meego_create_fence_sync && qt_meego_destroy_fence_sync && qt_meego_invalidate_live_surfaces &&
+            qt_meego_switch_to_raster && qt_meego_switch_to_meego && qt_meego_register_switch_callback &&
+            qt_meego_set_switch_policy)
         {
             qDebug("Successfully resolved MeeGo graphics system: %s %s\n", qPrintable(libraryPrivate->fileName), qPrintable(libraryPrivate->fullVersion));
         } else {
@@ -241,4 +268,35 @@ void QMeeGoRuntime::invalidateLiveSurfaces()
     ENSURE_INITIALIZED;
     Q_ASSERT(qt_meego_invalidate_live_surfaces);
     qt_meego_invalidate_live_surfaces();
+}
+
+void QMeeGoRuntime::switchToRaster()
+{
+    ENSURE_INITIALIZED;
+    Q_ASSERT(qt_meego_switch_to_raster);
+    qt_meego_switch_to_raster();
+}
+
+void QMeeGoRuntime::switchToMeeGo()
+{
+    ENSURE_INITIALIZED;
+    Q_ASSERT(qt_meego_switch_to_meego);
+    qt_meego_switch_to_meego();
+}
+
+void QMeeGoRuntime::enableSwitchEvents()
+{
+    ENSURE_INITIALIZED;
+    if (!switchEventsEnabled) {
+        Q_ASSERT(qt_meego_register_switch_callback);
+        qt_meego_register_switch_callback(handleSwitch);
+        switchEventsEnabled = true;
+    }
+}
+
+void QMeeGoRuntime::setSwitchPolicy(QMeeGoGraphicsSystemHelper::SwitchPolicy policy)
+{
+    ENSURE_INITIALIZED;
+    Q_ASSERT(qt_meego_set_switch_policy);
+    qt_meego_set_switch_policy(int(policy));
 }

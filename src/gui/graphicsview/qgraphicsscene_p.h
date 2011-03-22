@@ -150,6 +150,7 @@ public:
     quint32 rectAdjust;
     QGraphicsItem *focusItem;
     QGraphicsItem *lastFocusItem;
+    QGraphicsItem *passiveFocusItem;
     QGraphicsWidget *tabFocusFirst;
     QGraphicsItem *activePanel;
     QGraphicsItem *lastActivePanel;

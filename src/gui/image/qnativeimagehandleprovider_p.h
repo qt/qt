@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the mkspecs of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,5 +39,31 @@
 **
 ****************************************************************************/
 
-#include "../../common/symbian/qplatformdefs.h"
+#ifndef QNATIVEIMAGEHANDLEPROVIDER_P_H
+#define QNATIVEIMAGEHANDLEPROVIDER_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtCore/qstring.h>
+
+QT_BEGIN_NAMESPACE
+
+class QNativeImageHandleProvider
+{
+public:
+    virtual void get(void **handle, QString *type) = 0;
+    virtual void release(void *handle, const QString &type) = 0;
+};
+
+QT_END_NAMESPACE
+
+#endif // QNATIVEIMAGEHANDLEPROVIDER_P_H

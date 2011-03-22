@@ -29,6 +29,8 @@ symbian: {
     LIBS += -lefsrv
 }
 
+linux-g++-maemo:DEFINES += QDECLARATIVEVIEW_NOBACKGROUND
+
 DEFINES += QT_NO_OPENTYPE
 INCLUDEPATH += ../3rdparty/harfbuzz/src
 
