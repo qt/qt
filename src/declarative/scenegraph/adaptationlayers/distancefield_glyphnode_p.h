@@ -61,17 +61,27 @@ public:
     void setColor(const QColor &color) { m_color = color; }
     const QColor &color() const { return m_color; }
 
+    void setTexture(QSGTextureRef t) { m_dirtyTexture = true; m_texture = t; }
     const QSGTextureRef &texture() const { return m_texture; }
+
+    void setScale(qreal scale) { m_scale = scale; }
+    qreal scale() const { return m_scale; }
 
     void setGlyphCache(DistanceFieldGlyphCache *a) { m_glyph_cache = a; }
     DistanceFieldGlyphCache *glyphCache() const { return m_glyph_cache; }
 
-    bool updateTexture();
+    bool updateTextureFiltering()
+    {
+        bool oldDirty = m_dirtyTexture;
+        m_dirtyTexture = false;
+        return oldDirty;
+    }
 
 protected:
     QSGTextureRef m_texture;
-    QSize m_size;
     QColor m_color;
+    qreal m_scale;
+    bool m_dirtyTexture;
     DistanceFieldGlyphCache *m_glyph_cache;
 };
 
