@@ -378,18 +378,18 @@ static void usage()
     qWarning("Usage: qmlscene [options] <filename>");
     qWarning(" ");
     qWarning(" options:");
-    qWarning("  --maximized................................ run maximized");
-    qWarning("  --fullscreen............................... run fullscreen");
-    qWarning("  --original-qml............................. run using QGraphicsView instead of scenegraph (OpenGL engine)");
-    qWarning("  --original-qml-raster...................... run using QGraphicsView instead of scenegraph (Raster engine)");
-    qWarning("  --no-multisample........................... Disable multisampling (anti-aliasing)");
-    qWarning("  --continuous-update........................ Continuously render the scene");
-    qWarning("  --nonblocking-swap......................... Do not wait for v-sync to swap buffers");
-    qWarning("  --stereo................................... Enable stereo on the GL context");
+    qWarning("  --maximized ............................... run maximized");
+    qWarning("  --fullscreen .............................. run fullscreen");
+    qWarning("  --original-qml ............................ run using QGraphicsView instead of scenegraph (OpenGL engine)");
+    qWarning("  --original-qml-raster ..................... run using QGraphicsView instead of scenegraph (Raster engine)");
+    qWarning("  --no-multisample .......................... Disable multisampling (anti-aliasing)");
+    qWarning("  --continuous-update ....................... Continuously render the scene");
+    qWarning("  --nonblocking-swap ........................ Do not wait for v-sync to swap buffers");
+    qWarning("  --stereo .................................. Enable stereo on the GL context");
 #ifndef QT_NO_SCENEGRAPHITEM
-    qWarning("  --sg-on-gv [--clip]........................ Scenegraph on graphicsview (and clip to item)");
+    qWarning("  --sg-on-gv [--clip] ....................... Scenegraph on graphicsview (and clip to item)");
 #endif
-    qWarning("  --no-vbo................................... Do not use vertex buffers for geometry data");
+    qWarning("  --no-vbo .................................. Do not use vertex buffers for geometry data");
 
     qWarning(" ");
     exit(1);
