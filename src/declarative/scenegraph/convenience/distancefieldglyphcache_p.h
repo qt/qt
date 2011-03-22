@@ -44,7 +44,7 @@
 
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
-#include <QtDeclarative/qsgtexture.h>
+#include <qsgtexture.h>
 
 QT_BEGIN_NAMESPACE
 

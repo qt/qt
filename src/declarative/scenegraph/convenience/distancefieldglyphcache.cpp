@@ -44,7 +44,7 @@
 #include <qmath.h>
 #include <private/qtriangulator_p.h>
 #include <private/qdeclarativeglobal_p.h>
-#include <private/qsgtexture_p.h>
+#include <qsgtexture_p.h>
 
 QT_BEGIN_NAMESPACE
 
