@@ -42,14 +42,11 @@ The QtWebKit Module has a QML element, \l{WebView} for displaying web content
 from a \c URL.
 
 Import the QtWebKit module before declaring a \c WebView element:
-\qml
-import QtWebKit 1.0
-\endqml
+\snippet doc/src/snippets/declarative/webview/webview.qml import
 
 \section1 Simple Usage
 \snippet doc/src/snippets/declarative/webview/webview.qml document
 \image webview.png
 
 \sa {Models and Views: WebView Example}{WebView Example}, {QML Web Browser}
-
 */
