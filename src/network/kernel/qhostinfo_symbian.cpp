@@ -300,7 +300,16 @@ void QSymbianHostResolver::requestHostLookup()
 
 void QSymbianHostResolver::DoCancel()
 {
-    iHostResolver.Cancel();
+#if defined(QHOSTINFO_DEBUG)
+    qDebug() << "QSymbianHostResolver::DoCancel" << QThread::currentThreadId() << id() << (int)iState << this;
+#endif
+    if (iState == EGetByAddress || iState == EGetByName) {
+        //these states have made an async request to host resolver
+        iHostResolver.Cancel();
+    } else {
+        //for the self completing states there is nothing to cancel
+        Q_ASSERT(iState == EError);
+    }
 }
 
 void QSymbianHostResolver::RunL()
