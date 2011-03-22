@@ -425,6 +425,20 @@ private:
     v8::Persistent<v8::Object> m_receiver;
 };
 
+union QScriptMetaMethodInfo {
+    QScriptMetaMethodInfo(): intData(0)
+    { }
+
+    uint32_t intData;
+    struct {
+        uint index: 28;
+        uint resolveMode: 1;
+        uint overloaded: 1;
+        uint voidvoid: 1;
+        uint padding: 1; // Make sure the struct fits in an SMI
+    };
+};
+
 template <typename T, v8::Persistent<v8::FunctionTemplate> QScriptEnginePrivate::*functionTemplate>
 class QScriptGenericMetaMethodData : public QScriptV8ObjectWrapper<T, functionTemplate> {
 public:
@@ -433,10 +447,8 @@ public:
         ResolvedBySignature = 1
     };
 
-    QScriptGenericMetaMethodData(QScriptEnginePrivate *eng, v8::Handle<v8::Object> object, int index,
-                                 ResolveMode mode , bool overload, bool voidvoid)
-        : m_object(v8::Persistent<v8::Object>::New(object)), m_index(index), m_resolveMode(mode)
-        , m_overloaded(overload) , m_voidvoid(voidvoid)
+    QScriptGenericMetaMethodData(QScriptEnginePrivate *eng, v8::Handle<v8::Object> object, QScriptMetaMethodInfo info)
+        : m_object(v8::Persistent<v8::Object>::New(object)), m_info(info)
     {
         this->engine = eng;
         // We cannot keep a persistant reference to the object, else it would never be garbage collected.
@@ -454,18 +466,15 @@ public:
     { return m_object; }
 
     int index() const
-    { return m_index; }
+    { return m_info.index; }
 
     ResolveMode resolveMode() const
-    { return ResolveMode(m_resolveMode); }
+    { return ResolveMode(m_info.resolveMode); }
 
     v8::Handle<v8::Value> call();
 
     v8::Persistent<v8::Object> m_object;
-    uint m_index:29;
-    uint m_resolveMode:1;
-    uint m_overloaded : 1;
-    uint m_voidvoid : 1;
+    QScriptMetaMethodInfo m_info;
 private:
     static void objectDestroyed(v8::Persistent<v8::Value> object, void *data) {
         QScriptGenericMetaMethodData *that = static_cast<QScriptGenericMetaMethodData *>(data);
@@ -481,9 +490,8 @@ class QScriptMetaMethodData : public QScriptGenericMetaMethodData<QScriptMetaMet
 {
     typedef QScriptGenericMetaMethodData<QScriptMetaMethodData, &QScriptEnginePrivate::metaMethodTemplate> Base;
 public:
-    QScriptMetaMethodData(QScriptEnginePrivate *engine, v8::Handle<v8::Object> object, int index,
-                     ResolveMode mode, bool overload, bool voidvoid)
-    : Base(engine, object, index, mode, overload, voidvoid)
+    QScriptMetaMethodData(QScriptEnginePrivate *engine, v8::Handle<v8::Object> object, QScriptMetaMethodInfo info)
+    : Base(engine, object, info)
     { }
 
     static v8::Handle<v8::FunctionTemplate> createFunctionTemplate(QScriptEnginePrivate *engine);
@@ -516,9 +524,8 @@ class QScriptSignalData : public QScriptGenericMetaMethodData<QScriptSignalData,
     typedef QScriptGenericMetaMethodData<QScriptSignalData, &QScriptEnginePrivate::signalTemplate> Base;
 public:
 
-    QScriptSignalData(QScriptEnginePrivate *engine, v8::Handle<v8::Object> object, int index,
-                 ResolveMode mode, bool overload, bool voidvoid)
-        : Base(engine, object, index, mode, overload, voidvoid)
+    QScriptSignalData(QScriptEnginePrivate *engine, v8::Handle<v8::Object> object, QScriptMetaMethodInfo info)
+        : Base(engine, object, info)
     { }
 
     ~QScriptSignalData()
@@ -640,12 +647,12 @@ v8::Handle<v8::Value> QScriptGenericMetaMethodData<T, functionTemplate>::call()
     const QMetaObject *meta = qobject->metaObject();
     const v8::Arguments *args = this->engine->currentContext()->arguments;
 
-    int methodIndex = m_index;
-    if (m_overloaded)
+    int methodIndex = m_info.index;
+    if (m_info.overloaded)
         methodIndex = resolveOverloadedQtMetaMethodCall(this->engine, meta, methodIndex, *args);
 
     if (methodIndex < 0) { // Ambiguous call.
-        return throwAmbiguousError(meta, meta->method(m_index).signature(), QString::fromLatin1("ambiguous call of overloaded function"));
+        return throwAmbiguousError(meta, meta->method(m_info.index).signature(), QString::fromLatin1("ambiguous call of overloaded function"));
     }
 
     QScriptEnginePrivate *oldEngine = 0;
@@ -654,7 +661,7 @@ v8::Handle<v8::Value> QScriptGenericMetaMethodData<T, functionTemplate>::call()
         oldEngine = QScriptablePrivate::get(scriptable)->swapEngine(instance->engine());
 
     v8::Handle<v8::Value> result;
-    if (m_voidvoid) {
+    if (m_info.voidvoid) {
         QMetaObject::metacall(qobject, QMetaObject::InvokeMetaMethod, methodIndex, 0);
     } else {
         result = callQtMetaMethod(this->engine, qobject, meta, methodIndex, *args);
@@ -1345,23 +1352,16 @@ static v8::Handle<v8::Value> QtGetMetaMethod(v8::Local<v8::String> property, con
         return error;
 
     const QMetaObject *meta = qobject->metaObject();
-    uint intData = v8::Uint32::Cast(*dataArray->Get(1))->Value();
-    int methodIndex = intData & 0x3fffffff;
-    bool overload = intData & (1 << 30);
-    bool voidvoid = intData & (1 << 31);
-
-    const QMetaMethod method = meta->method(methodIndex);
+    QScriptMetaMethodInfo mmInfo;
+    mmInfo.intData = v8::Uint32::Cast(*dataArray->Get(1))->Value();
+    const QMetaMethod &method = meta->method(mmInfo.index);
 
     v8::Handle<v8::Object> result;
     if (method.methodType() == QMetaMethod::Signal) {
-        QScriptSignalData *data = new QScriptSignalData(engine, self, methodIndex,
-                                              (intData & 0x40000000) ? QScriptSignalData::ResolvedBySignature : QScriptSignalData::ResolvedByName,
-                                              overload, voidvoid);
+        QScriptSignalData *data = new QScriptSignalData(engine, self, mmInfo);
         result = QScriptSignalData::createInstance(data);
     } else {
-        QScriptMetaMethodData *data = new QScriptMetaMethodData(engine, self, methodIndex,
-                                                      (intData & 0x40000000) ? QScriptMetaMethodData::ResolvedBySignature : QScriptMetaMethodData::ResolvedByName,
-                                                      overload, voidvoid);
+        QScriptMetaMethodData *data = new QScriptMetaMethodData(engine, self, mmInfo);
         result = QScriptMetaMethodData::createInstance(data);
     }
 
@@ -1504,25 +1504,27 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
         for (it = ownMethodNameToIndexes.constBegin(); it != ownMethodNameToIndexes.constEnd(); ++it) {
             QByteArray name = it.key();
             QList<int> indexes = it.value();
-            bool overloaded = methodNameToIndexes[name].size() > 1;
 
             // Choose appropriate callback based on return type and parameter types.
-            bool voidvoid = false;
             QMetaMethod method;
             foreach(int methodIndex, indexes) {
                 method = mo->method(methodIndex);
-                voidvoid = !method.typeName()[0] && method.parameterTypes().isEmpty();
-                quint32 data = (methodIndex & 0x3ffffff) | (voidvoid << 31) | (1 << 29);
+                QScriptMetaMethodInfo info;
+                info.index = methodIndex;
+                info.voidvoid = !method.typeName()[0] && method.parameterTypes().isEmpty();
+                info.resolveMode = 1;
                 v8::Local<v8::Array> dataArray = v8::Array::New(2);
                 dataArray->Set(0, v8::External::Wrap(engine));
-                dataArray->Set(1, v8::Uint32::New(data));
+                dataArray->Set(1, v8::Uint32::New(info.intData));
                 instTempl->SetAccessor(v8::String::New(method.signature()), QtGetMetaMethod, 0, dataArray, v8::DEFAULT, methodAttributes);
             }
-            int methodIndex = indexes.last(); // The largest index by that name.
-            quint32 data = (methodIndex & 0x3ffffff) | (voidvoid << 31) | (overloaded << 30);
+            QScriptMetaMethodInfo info;
+            info.index = indexes.last(); // The largest index by that name.
+            info.voidvoid = !method.typeName()[0] && method.parameterTypes().isEmpty();
+            info.overloaded = methodNameToIndexes[name].size() > 1;
             v8::Local<v8::Array> dataArray = v8::Array::New(2);
             dataArray->Set(0, v8::External::Wrap(engine));
-            dataArray->Set(1, v8::Uint32::New(data));
+            dataArray->Set(1, v8::Uint32::New(info.intData));
             instTempl->SetAccessor(v8::String::New(name), QtGetMetaMethod, 0, dataArray, v8::DEFAULT, v8::DontEnum);
 
         }
