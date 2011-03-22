@@ -45,6 +45,7 @@
 #include <QDebug>
 #include "qmlruntime.h"
 #include <QDeclarativeView>
+#include <QSGView>
 #include <QDeclarativeError>
 
 #ifdef Q_OS_SYMBIAN
@@ -61,10 +62,11 @@ public:
 private slots:
     void examples_data();
     void examples();
+    void sgexamples_data();
+    void sgexamples();
 
     void namingConvention();
 private:
-    QString qmlruntime;
     QStringList excludedDirs;
 
     void namingConvention(const QDir &);
@@ -73,17 +75,6 @@ private:
 
 tst_examples::tst_examples()
 {
-    QString binaries = QLibraryInfo::location(QLibraryInfo::BinariesPath);
-
-#if defined(Q_WS_MAC)
-    qmlruntime = QDir(binaries).absoluteFilePath("qml.app/Contents/MacOS/qml");
-#elif defined(Q_WS_WIN)
-    qmlruntime = QDir(binaries).absoluteFilePath("qml.exe");
-#else
-    qmlruntime = QDir(binaries).absoluteFilePath("qml");
-#endif
-
-
     // Add directories you want excluded here
     excludedDirs << "doc/src/snippets/declarative/visualdatamodel_rootindex";
     excludedDirs << "doc/src/snippets/declarative/qtbinding";
@@ -225,6 +216,31 @@ void tst_examples::examples()
     viewer.show();
 
     QTest::qWaitForWindowShown(&viewer);
+}
+
+void tst_examples::sgexamples_data()
+{
+    examples_data();
+}
+
+void tst_examples::sgexamples()
+{
+    qputenv("QMLSCENE_IMPORT_NAME", "quick1");
+    QFETCH(QString, file);
+
+    QSGView view;
+
+    QtMsgHandler old = qInstallMsgHandler(silentErrorsMsgHandler);
+    view.setSource(file);
+    qInstallMsgHandler(old);
+
+    if (view.status() == QSGView::Error)
+        qWarning() << view.errors();
+
+    QCOMPARE(view.status(), QSGView::Ready);
+    view.show();
+
+    QTest::qWaitForWindowShown(&view);
 }
 
 QTEST_MAIN(tst_examples)
