@@ -36,7 +36,8 @@ HEADERS += \
     turbulenceaffector.h \
     particleextruder.h \
     ellipseextruder.h \
-    directedemitter.h
+    directedemitter.h \
+    maskextruder.h
 
 SOURCES += \
     V1/qdeclarativeparticles.cpp \
@@ -72,7 +73,8 @@ SOURCES += \
     turbulenceaffector.cpp \
     particleextruder.cpp \
     ellipseextruder.cpp \
-    directedemitter.cpp
+    directedemitter.cpp \
+    maskextruder.cpp
 
 QT += declarative opengl
 

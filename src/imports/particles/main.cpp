@@ -31,6 +31,7 @@
 #include "directedemitter.h"
 #include "particleextruder.h"
 #include "ellipseextruder.h"
+#include "maskextruder.h"
 //#include "followaffector.h"
 #include "V1/qdeclarativeparticles_p.h"
 
@@ -61,6 +62,7 @@ void ParticlesPlugin::registerTypes(const char *uri)
     qmlRegisterType<FollowEmitter>(uri, 2, 0, "FollowEmitter");
     qmlRegisterType<ParticleExtruder>(uri, 2, 0, "Box");
     qmlRegisterType<EllipseExtruder>(uri, 2, 0, "Ellipse");
+    qmlRegisterType<MaskExtruder>(uri, 2, 0, "Mask");
 
     qmlRegisterType<ParticleAffector>(uri, 2, 0, "ParticleAffector");
     qmlRegisterType<WanderAffector>(uri, 2, 0, "Wander");

@@ -161,8 +161,8 @@ Item {
         particlesPerSecond: 300
         particleDuration: 500
 
-        emitterY: holder.y
-        emitterX: holder.x 
+        y: holder.y
+        x: holder.x 
 
         xSpeedVariation: 40
         ySpeedVariation: 40
