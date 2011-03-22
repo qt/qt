@@ -140,11 +140,14 @@ public:
 
     virtual void updateState(Renderer *renderer, AbstractMaterial *current, AbstractMaterial *old, Renderer::Updates updates)
     {
-        ParticleTrailsMaterialData::updateState(renderer, current, old, updates);
+        // Bind the texture to unit 1 before calling the base class, so that the
+        // base class can set active texture back to 0.
         ParticleTrailsMaterialCT *m = static_cast<ParticleTrailsMaterialCT *>(current);
         renderer->glActiveTexture(GL_TEXTURE1);
         m->colortable->bind();
         m_program.setUniformValue(m_colortable_id, 1);
+
+        ParticleTrailsMaterialData::updateState(renderer, current, old, updates);
     }
 
     int m_colortable_id;
@@ -350,9 +353,7 @@ GeometryNode* ColoredParticle::buildParticleNode()
         QImage table(m_colortable_name.toLocalFile());
         if (!table.isNull()) {
             m_material = new ParticleTrailsMaterialCT();
-            QSGTexture *t = sg->createTexture();
-            t->setImage(table);
-            static_cast<ParticleTrailsMaterialCT *>(m_material)->colortable = t;
+            static_cast<ParticleTrailsMaterialCT *>(m_material)->colortable = sg->createTexture(table);
         }
     }
 
@@ -360,8 +361,7 @@ GeometryNode* ColoredParticle::buildParticleNode()
         m_material = new ParticleTrailsMaterial();
 
 
-    m_material->texture = sg->createTexture();
-    m_material->texture->setImage(image);
+    m_material->texture = sg->createTexture(image);
 
     m_node = new GeometryNode();
     m_node->setGeometry(g);
