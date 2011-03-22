@@ -48,6 +48,8 @@
 
 #include "qsgtexture.h"
 
+QT_BEGIN_NAMESPACE
+
 class QSGTexturePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QSGTexture);
@@ -101,5 +103,6 @@ private:
     uint m_owns_texture : 1;
 };
 
+QT_END_NAMESPACE
 
 #endif // QSGTEXTURE_P_H

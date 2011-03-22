@@ -98,6 +98,10 @@ private slots:
     void global_property_qml_js();
 
     void scriptfile_property();
+
+    void enums();
+    void namespacedEnums();
+    void scriptCall();
 };
 
 inline QUrl TEST_FILE(const QString &filename)
@@ -696,6 +700,60 @@ void tst_script::scriptfile_property()
     }
 
     delete rect;
+}
+
+void tst_script::enums()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, TEST_FILE("enums.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    int index = o->metaObject()->indexOfMethod("runtest()");
+    QVERIFY(index != -1);
+    QMetaMethod method = o->metaObject()->method(index);
+
+    QBENCHMARK {
+        method.invoke(o, Qt::DirectConnection);
+    }
+
+    delete o;
+}
+
+void tst_script::namespacedEnums()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, TEST_FILE("namespacedEnums.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    int index = o->metaObject()->indexOfMethod("runtest()");
+    QVERIFY(index != -1);
+    QMetaMethod method = o->metaObject()->method(index);
+
+    QBENCHMARK {
+        method.invoke(o, Qt::DirectConnection);
+    }
+
+    delete o;
+}
+
+void tst_script::scriptCall()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, TEST_FILE("scriptCall.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    int index = o->metaObject()->indexOfMethod("runtest()");
+    QVERIFY(index != -1);
+    QMetaMethod method = o->metaObject()->method(index);
+
+    QBENCHMARK {
+        method.invoke(o, Qt::DirectConnection);
+    }
+
+    delete o;
 }
 
 QTEST_MAIN(tst_script)

@@ -42,6 +42,7 @@
 #include "solidrectnode.h"
 #include "flatcolormaterial.h"
 
+QT_BEGIN_NAMESPACE
 
 SolidRectNode::SolidRectNode(const QRectF &rect, const QColor &color)
     : m_geometry(QSGGeometry::defaultAttributes_Point2D(), 4)
@@ -72,5 +73,4 @@ void SolidRectNode::setColor(const QColor &color)
     }
 }
 
-
-
+QT_END_NAMESPACE

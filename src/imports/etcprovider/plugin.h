@@ -45,6 +45,12 @@
 #include <QtDeclarative/qdeclarative.h>
 #include <QtDeclarative/QDeclarativeExtensionPlugin>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class EtcProviderPlugin : public QDeclarativeExtensionPlugin
 {
     Q_OBJECT
@@ -52,8 +58,11 @@ class EtcProviderPlugin : public QDeclarativeExtensionPlugin
 public:
     void registerTypes(const char *uri);
     void initializeEngine(QDeclarativeEngine *engine, const char *uri);
-
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // ETCPROVIDERPLUGIN_H
 

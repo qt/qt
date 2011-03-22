@@ -57,6 +57,8 @@
 
 #include <private/qobject_p.h>
 
+QT_BEGIN_NAMESPACE
+
 class QSGContextPrivate : public QObjectPrivate
 {
 public:
@@ -261,3 +263,5 @@ QSGTexture *QSGContext::createTexture(const QImage &image) const
         t->setImage(image);
     return t;
 }
+
+QT_END_NAMESPACE

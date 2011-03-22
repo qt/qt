@@ -46,6 +46,8 @@
 #include <qgltexture2d.h>
 #include <qglframebufferobject.h>
 
+QT_BEGIN_NAMESPACE
+
 EffectSubtreeNode::EffectSubtreeNode()
     : m_margins(0, 0)
     , m_dirty(false)
@@ -188,3 +190,5 @@ void EffectSubtreeNode::preprocess()
 
     m_dirty = false;
 }
+
+QT_END_NAMESPACE

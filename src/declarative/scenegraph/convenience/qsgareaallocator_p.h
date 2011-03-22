@@ -44,6 +44,8 @@
 
 #include <QtCore/qsize.h>
 
+QT_BEGIN_NAMESPACE
+
 class QRect;
 class QPoint;
 struct QSGAreaAllocatorNode;
@@ -65,5 +67,7 @@ private:
     QSGAreaAllocatorNode *m_root;
     QSize m_size;
 };
+
+QT_END_NAMESPACE
 
 #endif

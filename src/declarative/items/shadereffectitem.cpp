@@ -52,6 +52,8 @@
 #include <QtCore/qsignalmapper.h>
 #include <QtOpenGL/qglframebufferobject.h>
 
+QT_BEGIN_NAMESPACE
+
 static const char qt_default_vertex_code[] =
     "uniform highp mat4 qt_ModelViewProjectionMatrix;               \n"
     "attribute highp vec4 qt_Vertex;                                \n"
@@ -392,3 +394,4 @@ Node *ShaderEffectItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
     return node;
 }
 
+QT_END_NAMESPACE

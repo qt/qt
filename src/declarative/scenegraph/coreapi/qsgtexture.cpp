@@ -43,6 +43,8 @@
 
 #include "qsgtexture_p.h"
 
+QT_BEGIN_NAMESPACE
+
 QSGTexturePrivate::QSGTexturePrivate()
     : wrapChanged(false)
     , filteringChanged(false)
@@ -320,3 +322,5 @@ void QSGPlainTexture::bind()
 
     updateBindOptions(true);
  }
+
+QT_END_NAMESPACE

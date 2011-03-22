@@ -46,6 +46,8 @@
 
 #include <QtCore/qdebug.h>
 
+QT_BEGIN_NAMESPACE
+
 DeclarativeInputContext::DeclarativeInputContext(QObject *parent)
     : QInputContext(parent)
     , m_module(0)
@@ -193,3 +195,5 @@ void DeclarativeInputContext::keyFilterDestroyed(QObject *filter)
 {
     m_keyFilters.removeAll(static_cast<InputContextKeyFilter *>(filter));
 }
+
+QT_END_NAMESPACE

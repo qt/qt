@@ -45,6 +45,12 @@
 #include <QtDeclarative/qdeclarative.h>
 #include <QtGui/qevent.h>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class InputContextKeyEvent : public QObject
 {
     Q_OBJECT
@@ -71,8 +77,6 @@ public:
 private:
     QKeyEvent event;
 };
-
-QML_DECLARE_TYPE(InputContextKeyEvent)
 
 class InputContextMouseEvent : public QObject
 {
@@ -101,8 +105,6 @@ private:
     QMouseEvent event;
 };
 
-QML_DECLARE_TYPE(InputContextMouseEvent)
-
 class InputContextMouseHandler : public QObject
 {
     Q_OBJECT
@@ -117,8 +119,6 @@ signals:
     void doubleClicked(int cursor, InputContextMouseEvent *mouse);
     void positionChanged(int cursor, InputContextMouseEvent *mouse);
 };
-
-QML_DECLARE_TYPE(InputContextMouseHandler)
 
 class InputContextMouseFilter : public QObject
 {
@@ -135,8 +135,6 @@ signals:
     void positionChanged(InputContextMouseEvent *mouse);
 };
 
-QML_DECLARE_TYPE(InputContextMouseFilter)
-
 class InputContextKeyFilter : public QObject
 {
     Q_OBJECT
@@ -150,6 +148,15 @@ signals:
     void released(InputContextKeyEvent *event);
 };
 
+
+QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(InputContextKeyEvent)
+QML_DECLARE_TYPE(InputContextMouseEvent)
+QML_DECLARE_TYPE(InputContextMouseHandler)
+QML_DECLARE_TYPE(InputContextMouseFilter)
 QML_DECLARE_TYPE(InputContextKeyFilter)
+
+QT_END_HEADER
 
 #endif

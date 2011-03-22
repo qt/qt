@@ -667,7 +667,7 @@ TransformNode *QSGItemPrivate::itemNode()
         itemNodeInstance = createTransformNode();
 #ifdef QML_RUNTIME_TESTING
         Q_Q(QSGItem);
-        itemNodeInstance->description = QString::fromLatin1("QSGItem(%1)").arg(q->metaObject()->className());
+        itemNodeInstance->description = QString::fromLatin1("QSGItem(%1)").arg(QString::fromLatin1(q->metaObject()->className()));
 #endif
     }
     return itemNodeInstance; 

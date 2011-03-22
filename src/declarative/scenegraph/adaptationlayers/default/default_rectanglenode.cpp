@@ -51,6 +51,8 @@
 
 #include <QtCore/qmath.h>
 
+QT_BEGIN_NAMESPACE
+
 DefaultRectangleNode::DefaultRectangleNode(MaterialPreference preference, QSGContext *context)
     : m_material_preference(preference)
     , m_border(0)
@@ -693,3 +695,5 @@ void DefaultRectangleNode::updateGradientTexture()
     static_cast<TextureMaterial *>(opaqueMaterial())->setTexture(m_gradient_texture, m_gradient_is_opaque);
     static_cast<TextureMaterialWithOpacity *>(material())->setTexture(m_gradient_texture, m_gradient_is_opaque);
 }
+
+QT_END_NAMESPACE

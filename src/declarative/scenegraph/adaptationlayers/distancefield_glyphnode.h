@@ -45,6 +45,12 @@
 #include "adaptationlayer.h"
 #include <qsgtext_p.h>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class DistanceFieldFontAtlas;
 class DistanceFieldTextMaterial;
 class DistanceFieldGlyphNode: public GlyphNodeInterface
@@ -75,5 +81,8 @@ private:
     QColor m_styleColor;
 };
 
+QT_END_HEADER
+
+QT_END_NAMESPACE
 
 #endif // DISTANCEFIELD_GLYPHNODE_H

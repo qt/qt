@@ -46,6 +46,8 @@
 #include <private/qdeclarativeglobal_p.h>
 #include <private/qsgtexture_p.h>
 
+QT_BEGIN_NAMESPACE
+
 void qt_disableFontHinting(QFont &font)
 {
     QFontEngine *fontEngine = QFontPrivate::get(font)->engineForScript(QUnicodeTables::Common);
@@ -692,3 +694,5 @@ QPointF DistanceFieldFontAtlas::pixelToTexel(const QPointF &pixel) const
 
     return QPointF(pixel.x() * texel.x(), pixel.y() * texel.y());
 }
+
+QT_END_NAMESPACE

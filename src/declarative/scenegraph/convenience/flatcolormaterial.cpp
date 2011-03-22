@@ -43,6 +43,8 @@
 
 #include <qglshaderprogram.h>
 
+QT_BEGIN_NAMESPACE
+
 class FlatColorMaterialShader : public AbstractMaterialShader
 {
 public:
@@ -140,3 +142,4 @@ bool FlatColorMaterial::is(const AbstractMaterial *effect)
     return effect->type() == &FlatColorMaterialShader::type;
 }
 
+QT_END_NAMESPACE

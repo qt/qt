@@ -44,6 +44,12 @@
 
 #include <QtOpenGL/qgl.h>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class Q_DECLARATIVE_EXPORT QSGGeometry
 {
 public:
@@ -222,5 +228,9 @@ inline const QSGGeometry::ColoredPoint2D *QSGGeometry::vertexDataAsColoredPoint2
     Q_ASSERT(m_attributes.attributes[1].type == GL_UNSIGNED_BYTE);
     return (const ColoredPoint2D *) m_data;
 }
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // QSGGEOMETRY_H

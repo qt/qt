@@ -51,7 +51,7 @@
 
 //#define FORCE_NO_REORDER
 
-
+QT_BEGIN_NAMESPACE
 
 static bool nodeLessThan(GeometryNode *a, GeometryNode *b)
 {
@@ -453,3 +453,5 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
     //    clipChangeCount, programChangeCount, materialChangeCount,
     //    &list == &m_transparentNodes ? "transparent" : "opaque");
 }
+
+QT_END_NAMESPACE

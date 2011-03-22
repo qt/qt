@@ -46,6 +46,8 @@
 #include <private/qfontengine_p.h>
 #include <QtDeclarative/qsgtexture.h>
 
+QT_BEGIN_NAMESPACE
+
 void qt_disableFontHinting(QFont &font);
 
 struct TexCoordCacheKey {
@@ -118,5 +120,7 @@ private:
 
     static QHash<QString, QSGTextureRef> m_textures;
 };
+
+QT_END_NAMESPACE
 
 #endif // DISTANCEFIELDFONTATLAS_H

@@ -71,7 +71,6 @@ public:
     QSGTextureRef tex;
 };
 
-
 class QSGImagePrivate : public QSGImageBasePrivate
 {
     Q_DECLARE_PUBLIC(QSGImage)

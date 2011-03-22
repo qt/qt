@@ -44,6 +44,8 @@
 
 #include <QDeclarativeEngine>
 
+QT_BEGIN_NAMESPACE
+
 void EtcProviderPlugin::registerTypes(const char *uri)
 {
     Q_UNUSED(uri)
@@ -55,4 +57,6 @@ void EtcProviderPlugin::initializeEngine(QDeclarativeEngine *engine, const char 
     engine->addImageProvider(QLatin1String("etc"), new QEtcProvider());
 }
 
-Q_EXPORT_PLUGIN2(qmletcproviderplugin, EtcProviderPlugin)
+QT_END_NAMESPACE
+
+Q_EXPORT_PLUGIN2(qmletcproviderplugin, QT_PREPEND_NAMESPACE(EtcProviderPlugin))
