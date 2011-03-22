@@ -256,7 +256,7 @@ QSGTexture *QSGContext::decodeImageToTexture(QIODevice *dev,
  */
 QSGTexture *QSGContext::createTexture(const QImage &image) const
 {
-    QSGTexture *t = new QSGPlainTexture();
+    QSGPlainTexture *t = new QSGPlainTexture();
     if (!image.isNull())
         t->setImage(image);
     return t;

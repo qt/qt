@@ -59,8 +59,7 @@ QSGImageTextureProvider::QSGImageTextureProvider(QObject *parent)
 
 void QSGImageTextureProvider::setImage(const QImage &image)
 {
-    tex = QSGContext::current->createTexture();
-    tex->setImage(image);
+    tex = QSGContext::current->createTexture(image);
     emit textureChanged();
 }
 

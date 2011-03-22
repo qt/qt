@@ -684,9 +684,8 @@ void DefaultRectangleNode::updateGradientTexture()
         line[i] = QColor::fromRgbF(c.redF() * c.alphaF(), c.greenF() * c.alphaF(), c.blueF() * c.alphaF(), c.alphaF()).rgba();
     }
 
-    m_gradient_texture = m_context->createTexture();
+    m_gradient_texture = m_context->createTexture(image);
     m_gradient_texture->setFiltering(QSGTexture::Linear);
-    m_gradient_texture->setImage(image);
 
     Q_ASSERT(TextureMaterial::is(opaqueMaterial()) || TextureMaterialWithOpacity::is(material()));
 

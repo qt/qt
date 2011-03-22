@@ -228,8 +228,7 @@ GeometryNode* SpriteParticle::buildParticleNode()
     QImage image = m_spriteEngine->assembledImage();
     if(image.isNull())
         return 0;
-    m_material->texture = sg->createTexture();
-    m_material->texture->setImage(image);
+    m_material->texture = sg->createTexture(image);
     m_material->framecount = m_spriteEngine->maxFrames();
     m_spriteEngine->setCount(m_count);
 

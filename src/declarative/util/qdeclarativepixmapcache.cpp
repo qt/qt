@@ -402,8 +402,7 @@ void QDeclarativePixmapReader::networkRequestDone(QNetworkReply *reply)
                 if (!readImage(reply->url(), &buff, &image, &errorString, &readSize, job->requestSize)) {
                     error = QDeclarativePixmapReply::Decoding;
                 } else if (ctx) {
-                    texture = ctx->createTexture();
-                    texture->setImage(image);
+                    texture = ctx->createTexture(image);
                 }
             }
         }
@@ -546,8 +545,7 @@ void QDeclarativePixmapReader::processJob(QDeclarativePixmapReply *runningJob, c
                     if (!readImage(url, &f, &image, &errorStr, &readSize, requestSize)) {
                         errorCode = QDeclarativePixmapReply::Loading;
                     } else if (sgContext) {
-                        texture = sgContext->createTexture();
-                        texture->setImage(image);
+                        texture = sgContext->createTexture(image);
                     }
                 }
             } else {
@@ -882,8 +880,7 @@ static QDeclarativePixmapData* createPixmapDataSync(QDeclarativeEngine *engine, 
                 if (!image.isNull()) {
                     *ok = true;
                     if (sgContext) {
-                        QSGTexture *t = sgContext->createTexture();
-                        t->setImage(image);
+                        QSGTexture *t = sgContext->createTexture(image);
                         return new QDeclarativePixmapData(url, QSGTextureRef(t), readSize, requestSize);
                     }
                     return new QDeclarativePixmapData(url, QPixmap::fromImage(image), readSize, requestSize);
@@ -895,8 +892,7 @@ static QDeclarativePixmapData* createPixmapDataSync(QDeclarativeEngine *engine, 
                 if (!pixmap.isNull()) {
                     *ok = true;
                     if (sgContext) {
-                        QSGTexture *t = sgContext->createTexture();
-                        t->setImage(pixmap.toImage());
+                        QSGTexture *t = sgContext->createTexture(pixmap.toImage());
                         return new QDeclarativePixmapData(url, QSGTextureRef(t), readSize, requestSize);
                     }
                     return new QDeclarativePixmapData(url, pixmap, readSize, requestSize);
@@ -932,8 +928,7 @@ static QDeclarativePixmapData* createPixmapDataSync(QDeclarativeEngine *engine, 
                 *ok = true;
 
             if (ok && ctx) {
-                texture = ctx->createTexture();
-                texture->setImage(image);
+                texture = ctx->createTexture(image);
             }
         }
 
