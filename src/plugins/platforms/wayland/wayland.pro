@@ -47,11 +47,6 @@ contains(QT_CONFIG, opengles2) {
     DEFINES += QT_WAYLAND_GL_SUPPORT
 }
 
-unix:isEmpty(QMAKE_INCDIR_WAYLAND) {
-	CONFIG += link_pkgconfig
-	PKGCONFIG += libdrm
-}
-
 include (../fontdatabases/genericunix/genericunix.pri)
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms

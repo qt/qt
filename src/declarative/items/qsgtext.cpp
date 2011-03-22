@@ -43,7 +43,7 @@
 #include "qsgtext_p.h"
 #include "qsgtext_p_p.h"
 
-#include "distancefieldfontatlas_p.h"
+#include "distancefieldglyphcache_p.h"
 #include "qsgcontext.h"
 #include "adaptationlayer.h"
 #include "qsgtextnode_p.h"
@@ -559,7 +559,7 @@ void QSGTextPrivate::invalidateImageCache()
 {
     Q_Q(QSGText);
 
-    if(cacheAllTextAsImage || (!DistanceFieldFontAtlas::distanceFieldEnabled() && style != QSGText::Normal)){//If actually using the image cache
+    if(cacheAllTextAsImage || (!DistanceFieldGlyphCache::distanceFieldEnabled() && style != QSGText::Normal)){//If actually using the image cache
         if (imageCacheDirty)
             return;
 
@@ -700,7 +700,7 @@ void QSGText::setFont(const QFont &font)
     d->sourceFont = font;
     QFont oldFont = d->font;
     d->font = font;
-    if (DistanceFieldFontAtlas::distanceFieldEnabled())
+    if (DistanceFieldGlyphCache::distanceFieldEnabled())
         qt_disableFontHinting(d->font);
 
     if (d->font.pointSizeF() != -1) {
@@ -1058,7 +1058,7 @@ Node *QSGText::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     QRectF bounds = boundingRect();
 
     // XXX todo - some styled text can be done by the QSGTextNode
-    if (richTextAsImage || d->cacheAllTextAsImage || (!DistanceFieldFontAtlas::distanceFieldEnabled() && d->style != Normal)) {
+    if (richTextAsImage || d->cacheAllTextAsImage || (!DistanceFieldGlyphCache::distanceFieldEnabled() && d->style != Normal)) {
         bool wasDirty = d->imageCacheDirty;
 
         d->checkImageCache();

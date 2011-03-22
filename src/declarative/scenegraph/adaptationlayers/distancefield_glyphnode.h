@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class DistanceFieldFontAtlas;
+class DistanceFieldGlyphCache;
 class DistanceFieldTextMaterial;
 class DistanceFieldGlyphNode: public GlyphNodeInterface
 {
@@ -75,7 +75,7 @@ private:
     DistanceFieldTextMaterial *m_material;
     QPointF m_position;
     QGlyphs m_glyphs;
-    DistanceFieldFontAtlas *m_glyph_atlas;
+    DistanceFieldGlyphCache *m_glyph_cache;
     QSGGeometry m_geometry;
     QSGText::TextStyle m_style;
     QColor m_styleColor;
