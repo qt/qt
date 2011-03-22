@@ -66,6 +66,7 @@ public:
     bool isConnected() const;
     void send(const QByteArray &message);
     void disconnect();
+    bool waitForMessage();
 
     void listen();
     void waitForConnection();

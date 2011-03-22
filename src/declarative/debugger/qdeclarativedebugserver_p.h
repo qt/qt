@@ -75,10 +75,13 @@ public:
     void sendMessage(QDeclarativeDebugService *service, const QByteArray &message);
     void receiveMessage(const QByteArray &message);
 
+    bool waitForMessage(QDeclarativeDebugService *service);
+
 private:
     friend class QDeclarativeDebugService;
     friend class QDeclarativeDebugServicePrivate;
     QDeclarativeDebugServer();
+    Q_PRIVATE_SLOT(d_func(), void _q_deliverMessage(QString, QByteArray))
 };
 
 QT_END_NAMESPACE
