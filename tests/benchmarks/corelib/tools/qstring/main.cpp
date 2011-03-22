@@ -1655,6 +1655,63 @@ void fromLatin1_prolog_sse4_overcommit(ushort *dst, const char *str, int)
 #endif
 #endif
 
+#ifdef __ARM_NEON__
+static inline void fromLatin1_epilog(ushort *dst, const char *str, int size)
+{
+    if (!size) return;
+    dst[0] = (uchar)str[0];
+    if (!--size) return;
+    dst[1] = (uchar)str[1];
+    if (!--size) return;
+    dst[2] = (uchar)str[2];
+    if (!--size) return;
+    dst[3] = (uchar)str[3];
+    if (!--size) return;
+    dst[4] = (uchar)str[4];
+    if (!--size) return;
+    dst[5] = (uchar)str[5];
+    if (!--size) return;
+    dst[6] = (uchar)str[6];
+    if (!--size) return;
+    dst[7] = (uchar)str[7];
+    if (!--size) return;
+}
+
+void fromLatin1_neon_improved(ushort *dst, const char *str, int len)
+{
+    while (len >= 8) {
+        // load 8 bytes into one doubleword Neon register
+        const uint8x8_t chunk = vld1_u8((uint8_t *)str);
+        str += 8;
+
+        // expand 8 bytes into 16 bytes in a quadword register
+        const uint16x8_t expanded = vmovl_u8(chunk);
+        vst1q_u16(dst, expanded); // store
+        dst += 8;
+
+        len -= 8;
+    }
+    fromLatin1_epilog(dst, str, len);
+}
+
+void fromLatin1_neon_handwritten(ushort *dst, const char *str, int len)
+{
+    // same as above, but handwritten Neon
+    while (len >= 8) {
+        uint16x8_t chunk;
+        asm (
+            "vld1.8     %[chunk], [%[str]]!\n"
+            "vmovl.u8   %q[chunk], %[chunk]\n"
+            "vst1.16    %h[chunk], [%[dst]]!\n"
+            : [dst] "+r" (dst),
+              [str] "+r" (str),
+              [chunk] "=w" (chunk));
+        len -= 8;
+    }
+
+    fromLatin1_epilog(dst, str, len);
+}
+#endif
 
 void tst_QString::fromLatin1Alternatives_data() const
 {
@@ -1671,6 +1728,10 @@ void tst_QString::fromLatin1Alternatives_data() const
     QTest::newRow("sse2-with-prolog-sse4-overcommit") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_sse4_overcommit>;
     QTest::newRow("sse4-pmovzxbw") << &fromLatin1_sse4_pmovzxbw;
 #endif
+#endif
+#ifdef __ARM_NEON__
+    QTest::newRow("neon-improved") << &fromLatin1_neon_improved;
+    QTest::newRow("neon-handwritten") << &fromLatin1_neon_handwritten;
 #endif
 }
 
@@ -2210,6 +2271,130 @@ int fromUtf8_sse2_trusted_no_bom(ushort *qch, const char *chars, int len)
 }
 #endif
 
+#ifdef __ARM_NEON__
+int fromUtf8_latin1_neon(ushort *dst, const char *chars, int len)
+{
+    fromLatin1_neon_improved(dst, chars, len);
+    return len;
+}
+
+int fromUtf8_neon(ushort *qch, const char *chars, int len)
+{
+    if (len > 3
+        && (uchar)chars[0] == 0xef && (uchar)chars[1] == 0xbb && (uchar)chars[2] == 0xbf) {
+        // starts with a byte order mark
+        chars += 3;
+        len -= 3;
+    }
+
+    ushort *dst = qch;
+    const uint8x8_t highBit = vdup_n_u8(0x80);
+    const uint8x8_t bitMask = { 128, 64, 32, 16, 8, 4, 2, 1 };
+    while (len >= 8) {
+        // load 8 bytes into one doubleword Neon register
+        const uint8x8_t chunk = vld1_u8((uint8_t *)chars);
+        const uint16x8_t expanded = vmovl_u8(chunk);
+        vst1q_u16(dst, expanded);
+
+        uint8x8_t highBits = vtst_u8(chunk, highBit);
+        highBits = vand_u8(highBits, bitMask);
+        highBits = vpadd_u8(highBits, highBits);
+        highBits = vpadd_u8(highBits, highBits);
+        highBits = vpadd_u8(highBits, highBits);
+
+        int mask = vget_lane_u8(highBits, 0);
+
+        // find the first bit set in mask
+        // sets pos to 32 if no bits are found
+        qptrdiff pos;
+        asm ("rbit      %0, %1\n"
+             "clz       %0, %0"
+             : "=r" (pos) : "r" (mask));
+
+        if (__builtin_expect(pos > 8, 1)) {
+            chars += 8;
+            dst += 8;
+            len -= 8;
+        } else {
+            // UTF-8 character found
+            // which one?
+
+            extract_utf8_multibyte<false>(dst, chars, pos, len);
+            chars += pos;
+            dst += pos;
+            len -= pos;
+        }
+    }
+
+    qptrdiff counter = 0;
+    while (counter < len) {
+        uchar ch = chars[counter];
+        if ((ch & 0x80) == 0) {
+            dst[counter] = ch;
+            ++counter;
+            continue;
+        }
+
+        // UTF-8 character found
+        extract_utf8_multibyte<false>(dst, chars, counter, len);
+    }
+    return dst + counter - qch;
+}
+
+int fromUtf8_neon_trusted(ushort *qch, const char *chars, int len)
+{
+    ushort *dst = qch;
+    const uint8x8_t highBit = vdup_n_u8(0x80);
+    while (len >= 8) {
+        // load 8 bytes into one doubleword Neon register
+        const uint8x8_t chunk = vld1_u8((uint8_t *)chars);
+        const uint16x8_t expanded = vmovl_u8(chunk);
+        vst1q_u16(dst, expanded);
+
+        uint8x8_t highBits = vtst_u8(chunk, highBit);
+        // we need to find the lowest byte set
+        int mask_low = vget_lane_u32(vreinterpret_u32_u8(highBits), 0);
+        int mask_high = vget_lane_u32(vreinterpret_u32_u8(highBits), 1);
+
+        if (__builtin_expect(mask_low == 0 && mask_high == 0, 1)) {
+            chars += 8;
+            dst += 8;
+            len -= 8;
+        } else {
+            // UTF-8 character found
+            // which one?
+            qptrdiff pos;
+            asm ("rbit  %0, %1\n"
+                 "clz   %1, %1\n"
+               : "=r" (pos)
+               : "r" (mask_low ? mask_low : mask_high));
+            // now mask_low contains the number of leading zeroes
+            // or the value 32 (0x20) if no zeroes were found
+            // the number of leading zeroes is 8*pos
+            pos /= 8;
+
+            extract_utf8_multibyte<true>(dst, chars, pos, len);
+            chars += pos;
+            dst += pos;
+            len -= pos;
+        }
+    }
+
+    qptrdiff counter = 0;
+    while (counter < len) {
+        uchar ch = chars[counter];
+        if ((ch & 0x80) == 0) {
+            dst[counter] = ch;
+            ++counter;
+            continue;
+        }
+
+        // UTF-8 character found
+        extract_utf8_multibyte<true>(dst, chars, counter, len);
+    }
+    return dst + counter - qch;
+}
+#endif
 
 void tst_QString::fromUtf8Alternatives_data() const
 {
@@ -2222,11 +2407,18 @@ void tst_QString::fromUtf8Alternatives_data() const
     QTest::newRow("sse2-optimized-for-ascii") << &fromUtf8_sse2_optimised_for_ascii;
     QTest::newRow("sse2-trusted-no-bom") << &fromUtf8_sse2_trusted_no_bom;
 #endif
+#ifdef __ARM_NEON__
+    QTest::newRow("neon") << &fromUtf8_neon;
+    QTest::newRow("neon-trusted-no-bom") << &fromUtf8_neon_trusted;
+#endif
 
     QTest::newRow("latin1-generic") << &fromUtf8_latin1_regular;
 #ifdef __SSE2__
     QTest::newRow("latin1-sse2-qt4.7") << &fromUtf8_latin1_qt47;
     QTest::newRow("latin1-sse2-improved") << &fromUtf8_latin1_sse2_improved;
+#endif
+#ifdef __ARM_NEON__
+    QTest::newRow("latin1-neon-improved") << &fromUtf8_latin1_neon;
 #endif
 }
 
