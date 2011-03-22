@@ -259,7 +259,6 @@ void QSymbianHostResolver::requestHostLookup()
         if (iAddress.setAddress(iHostName)) {
             // Reverse lookup
 
-            TInetAddr IpAdd;
             IpAdd.Input(qt_QString2TPtrC(iHostName));
 
             // Asynchronous request.
@@ -279,9 +278,11 @@ void QSymbianHostResolver::requestHostLookup()
 
                 err = KErrArgument;
             } else {
+                iEncodedHostName = QString::fromLatin1(aceHostname);
+                iHostNamePtr.Set(qt_QString2TPtrC(iEncodedHostName));
 
                 // Asynchronous request.
-                iHostResolver.GetByName(qt_QString2TPtrC(QString::fromLatin1(aceHostname)), iNameResult, iStatus);
+                iHostResolver.GetByName(iHostNamePtr, iNameResult, iStatus);
                 iState = EGetByName;
             }
         }

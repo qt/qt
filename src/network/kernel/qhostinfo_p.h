@@ -249,12 +249,16 @@ private:
 
 private:
     const QString iHostName;
+    QString iEncodedHostName;
+    TPtrC iHostNamePtr;
 
     RSocketServ& iSocketServ;
     RHostResolver iHostResolver;
     QSharedPointer<QNetworkSession> iNetworkSession;
 
     TNameEntry iNameResult;
+    TInetAddr IpAdd;
+
     QHostAddress iAddress;
 
     QHostInfo iResults;
