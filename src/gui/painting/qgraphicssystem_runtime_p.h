@@ -129,6 +129,9 @@ public:
 
     virtual QPoint offset(const QWidget *widget) const;
 
+    virtual bool hasStaticContentsSupport() const;
+    virtual bool hasPartialUpdateSupport() const;
+
     QScopedPointer<QWindowSurface> m_windowSurface;
     QScopedPointer<QWindowSurface> m_pendingWindowSurface;
 

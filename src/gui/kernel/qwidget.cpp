@@ -328,9 +328,10 @@ QWidgetPrivate::QWidgetPrivate(int version)
     drawRectOriginalAdded = false;
     originalDrawMethod = true;
     changeMethods = false;
-    hasOwnContext = false;
     isInUnifiedToolbar = false;
     unifiedSurface = 0;
+    toolbar_ancestor = 0;
+    flushRequested = false;
     touchEventsEnabled = false;
 #endif // QT_MAC_USE_COCOA
 #ifdef QWIDGET_EXTRA_DEBUG
@@ -1388,6 +1389,16 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     QApplication::postEvent(q, new QEvent(QEvent::PolishRequest));
 
     extraPaintEngine = 0;
+
+#ifdef QT_MAC_USE_COCOA
+    // If we add a child to the unified toolbar, we have to redirect the painting.
+    if (parentWidget && parentWidget->d_func() && parentWidget->d_func()->isInUnifiedToolbar) {
+        if (parentWidget->d_func()->unifiedSurface) {
+            QWidget *toolbar = parentWidget->d_func()->toolbar_ancestor;
+            parentWidget->d_func()->unifiedSurface->recursiveRedirect(toolbar, toolbar, toolbar->d_func()->toolbar_offset);
+        }
+    }
+#endif // QT_MAC_USE_COCOA
 }
 
 
@@ -2101,6 +2112,11 @@ void QWidgetPrivate::subtractOpaqueSiblings(QRegion &sourceRegion, bool *hasDirt
     static int disableSubtractOpaqueSiblings = qgetenv("QT_NO_SUBTRACTOPAQUESIBLINGS").toInt();
     if (disableSubtractOpaqueSiblings || q->isWindow())
         return;
+
+#ifdef QT_MAC_USE_COCOA
+    if (q->d_func()->isInUnifiedToolbar)
+        return;
+#endif // QT_MAC_USE_COCOA
 
     QRect clipBoundingRect;
     bool dirtyClipBoundingRect = true;
@@ -10394,6 +10410,12 @@ void QWidget::repaint(const QRect &rect)
         return;
 
     if (hasBackingStoreSupport()) {
+#ifdef QT_MAC_USE_COCOA
+        if (qt_widget_private(this)->isInUnifiedToolbar) {
+            qt_widget_private(this)->unifiedSurface->renderToolbar(this, true);
+            return;
+        }
+#endif // QT_MAC_USE_COCOA
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
             tlwExtra->inRepaint = true;
@@ -10423,6 +10445,12 @@ void QWidget::repaint(const QRegion &rgn)
         return;
 
     if (hasBackingStoreSupport()) {
+#ifdef QT_MAC_USE_COCOA
+        if (qt_widget_private(this)->isInUnifiedToolbar) {
+            qt_widget_private(this)->unifiedSurface->renderToolbar(this, true);
+            return;
+        }
+#endif // QT_MAC_USE_COCOA
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
             tlwExtra->inRepaint = true;
@@ -10480,6 +10508,12 @@ void QWidget::update(const QRect &rect)
     }
 
     if (hasBackingStoreSupport()) {
+#ifdef QT_MAC_USE_COCOA
+        if (qt_widget_private(this)->isInUnifiedToolbar) {
+            qt_widget_private(this)->unifiedSurface->renderToolbar(this, true);
+            return;
+        }
+#endif // QT_MAC_USE_COCOA
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
             tlwExtra->backingStore->markDirty(rect, this);
@@ -10504,6 +10538,12 @@ void QWidget::update(const QRegion &rgn)
     }
 
     if (hasBackingStoreSupport()) {
+#ifdef QT_MAC_USE_COCOA
+        if (qt_widget_private(this)->isInUnifiedToolbar) {
+            qt_widget_private(this)->unifiedSurface->renderToolbar(this, true);
+            return;
+        }
+#endif // QT_MAC_USE_COCOA
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
             tlwExtra->backingStore->markDirty(rgn, this);

@@ -73,7 +73,11 @@ contains(QT_CONFIG, freetype) {
                    $$QT_SOURCE_TREE/src/3rdparty/freetype/src \
                    $$QT_SOURCE_TREE/src/3rdparty/freetype/include
 
-               DEFINES += FT2_BUILD_LIBRARY FT_CONFIG_OPTION_SYSTEM_ZLIB
+               DEFINES += FT2_BUILD_LIBRARY
+               contains(QT_CONFIG, system-zlib) {
+                    DEFINES += FT_CONFIG_OPTION_SYSTEM_ZLIB
+               }
+
     } else:contains(QT_CONFIG, system-freetype) {
         # pull in the proper freetype2 include directory
         include($$QT_SOURCE_TREE/config.tests/unix/freetype/freetype.pri)

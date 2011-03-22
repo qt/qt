@@ -60,11 +60,18 @@ class QWidget;
 class QPlatformEventLoopIntegration;
 class QPlatformFontDatabase;
 class QPlatformClipboard;
+class QPlatformNativeInterface;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
 public:
+    enum Capability {
+        ThreadedPixmaps = 1,
+    };
+
     virtual ~QPlatformIntegration() { }
+
+    virtual bool hasCapability(Capability cap) const;
 
 // GraphicsSystem functions
     virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
@@ -79,7 +86,9 @@ public:
 
 //Deeper window system integrations
     virtual QPlatformFontDatabase *fontDatabase() const;
+#ifndef QT_NO_CLIPBOARD
     virtual QPlatformClipboard *clipboard() const;
+#endif
 
 // Experimental in mainthread eventloop integration
 // This should only be used if it is only possible to do window system event processing in
@@ -89,7 +98,8 @@ public:
 //jl:XXX should it be hasGLContext and do we need it at all?
     virtual bool hasOpenGL() const;
 
-
+// Access native handles. The window handle is already available from Wid;
+    virtual QPlatformNativeInterface *nativeInterface() const;
 };
 
 QT_END_NAMESPACE
