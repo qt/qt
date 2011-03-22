@@ -42,9 +42,9 @@
 #ifndef DISTANCEFIELDGLYPHCACHE_H
 #define DISTANCEFIELDGLYPHCACHE_H
 
-#include <qgl.h>
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
+#include <QtDeclarative/qsgtexture.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -79,7 +79,6 @@ public:
 
     GLuint texture();
     QSize textureSize() const;
-    int maxTextureSize() const;
     qreal fontScale() const;
     QImage renderDistanceFieldGlyph(glyph_t glyph) const;
 
@@ -105,7 +104,6 @@ private:
     QString m_distanceFieldKey;
     int m_glyphCount;
     QHash<glyph_t, Metrics> m_metrics;
-    mutable int m_maxTextureSize;
 
     struct DistanceFieldTextureData {
         GLuint texture;
