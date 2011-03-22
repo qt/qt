@@ -88,6 +88,7 @@ void EtcTexture::bind()
         m_texture_id = 0;
         return;
     }
+    updateBindOptions(true);
 }
 
 QSize EtcTexture::textureSize() const
