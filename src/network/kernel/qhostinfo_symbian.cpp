@@ -435,15 +435,18 @@ QSymbianHostInfoLookupManger::QSymbianHostInfoLookupManger()
 
 QSymbianHostInfoLookupManger::~QSymbianHostInfoLookupManger()
 {
-    iCurrentLookups.Close();
-    iScheduledLookups.Close();
 }
 
 void QSymbianHostInfoLookupManger::clear()
 {
     QMutexLocker locker(&mutex);
-    iCurrentLookups.ResetAndDestroy();
-    iScheduledLookups.ResetAndDestroy();
+#if defined(QHOSTINFO_DEBUG)
+    qDebug() << "QSymbianHostInfoLookupManger::clear" << QThread::currentThreadId();
+#endif
+    //TODO: these aren't deleted because of thread unsafety, but that is a behaviour difference
+    //qDeleteAll(iCurrentLookups);
+    //qDeleteAll(iScheduledLookups);
+    cache.clear();
 }
 
 void QSymbianHostInfoLookupManger::lookupFinished(QSymbianHostResolver *r)
@@ -451,13 +454,13 @@ void QSymbianHostInfoLookupManger::lookupFinished(QSymbianHostResolver *r)
     QMutexLocker locker(&mutex);
 
 #if defined(QHOSTINFO_DEBUG)
-    qDebug() << "QSymbianHostInfoLookupManger::lookupFinished" << r->id() << "current" << iCurrentLookups.Count() << "queued" << iScheduledLookups.Count();
+    qDebug() << "QSymbianHostInfoLookupManger::lookupFinished" << QThread::currentThreadId() << r->id() << "current" << iCurrentLookups.count() << "queued" << iScheduledLookups.count();
 #endif
     // remove finished lookup from array and destroy
-    TInt count = iCurrentLookups.Count();
+    TInt count = iCurrentLookups.count();
     for (TInt i = 0; i < count; i++) {
         if (iCurrentLookups[i]->id() == r->id()) {
-            iCurrentLookups.Remove(i);
+            iCurrentLookups.removeAt(i);
             break;
         }
     }
@@ -468,15 +471,14 @@ void QSymbianHostInfoLookupManger::lookupFinished(QSymbianHostResolver *r)
 void QSymbianHostInfoLookupManger::runNextLookup()
 {
 #if defined(QHOSTINFO_DEBUG)
-    qDebug() << "QSymbianHostInfoLookupManger::runNextLookup" << "current" << iCurrentLookups.Count() << "queued" << iScheduledLookups.Count();
+    qDebug() << "QSymbianHostInfoLookupManger::runNextLookup" << QThread::currentThreadId() << "current" << iCurrentLookups.count() << "queued" << iScheduledLookups.count();
 #endif
     // check to see if there are any scheduled lookups
-    if (iScheduledLookups.Count() > 0) {
+    if (iScheduledLookups.count() > 0) {
         // if so, move one to the current lookups and run it
         // FIFO
-        QSymbianHostResolver* hostResolver = iScheduledLookups[0];
-        iCurrentLookups.Append(hostResolver);
-        iScheduledLookups.Remove(0);
+        QSymbianHostResolver* hostResolver = iScheduledLookups.takeFirst();
+        iCurrentLookups.append(hostResolver);
         hostResolver->requestHostLookup();
     }
 }
@@ -487,19 +489,19 @@ void QSymbianHostInfoLookupManger::scheduleLookup(QSymbianHostResolver* r)
     QMutexLocker locker(&mutex);
 
 #if defined(QHOSTINFO_DEBUG)
-    qDebug() << "QSymbianHostInfoLookupManger::scheduleLookup" << r->id() << "current" << iCurrentLookups.Count() << "queued" << iScheduledLookups.Count();
+    qDebug() << "QSymbianHostInfoLookupManger::scheduleLookup" << QThread::currentThreadId() << r->id() << "current" << iCurrentLookups.count() << "queued" << iScheduledLookups.count();
 #endif
     // Check to see if we have space on the current lookups pool.
-    if (iCurrentLookups.Count() >= KMaxConcurrentLookups) {
+    if (iCurrentLookups.count() >= KMaxConcurrentLookups) {
         // If no, schedule for later.
-        iScheduledLookups.Append(r);
+        iScheduledLookups.append(r);
 #if defined(QHOSTINFO_DEBUG)
     qDebug(" - scheduled");
 #endif
         return;
     } else {
         // If yes, add it to the current lookups.
-        iCurrentLookups.Append(r);
+        iCurrentLookups.append(r);
 
         // ... and trigger the async call.
         r->requestHostLookup();
@@ -511,31 +513,30 @@ void QSymbianHostInfoLookupManger::abortLookup(int id)
     QMutexLocker locker(&mutex);
 
 #if defined(QHOSTINFO_DEBUG)
-    qDebug() << "QSymbianHostInfoLookupManger::abortLookup" << id << "current" << iCurrentLookups.Count() << "queued" << iScheduledLookups.Count();
+    qDebug() << "QSymbianHostInfoLookupManger::abortLookup" << QThread::currentThreadId() << id << "current" << iCurrentLookups.count() << "queued" << iScheduledLookups.count();
 #endif
     int i = 0;
     // Find the aborted lookup by ID.
     // First in the current lookups.
-    for (i = 0; i < iCurrentLookups.Count(); i++) {
+    for (i = 0; i < iCurrentLookups.count(); i++) {
         if (id == iCurrentLookups[i]->id()) {
-            QSymbianHostResolver* r = iCurrentLookups[i];
-            iCurrentLookups.Remove(i);
+            QSymbianHostResolver* r = iCurrentLookups.at(i);
+            iCurrentLookups.removeAt(i);
             delete r; //cancels via destructor
             runNextLookup();
             return;
         }
     }
     // Then in the scheduled lookups.
-    for (i = 0; i < iScheduledLookups.Count(); i++) {
+    for (i = 0; i < iScheduledLookups.count(); i++) {
         if (id == iScheduledLookups[i]->id()) {
-            QSymbianHostResolver* r = iScheduledLookups[i];
-            iScheduledLookups.Remove(i);
+            QSymbianHostResolver* r = iScheduledLookups.at(i);
+            iScheduledLookups.removeAt(i);
             delete r;
             return;
         }
     }
 }
-
 
 QSymbianHostInfoLookupManger* QSymbianHostInfoLookupManger::globalInstance()
 {

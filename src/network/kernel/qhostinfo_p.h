@@ -295,9 +295,8 @@ private:
 
     static const int KMaxConcurrentLookups = 5;
 
-    RPointerArray<QSymbianHostResolver> iCurrentLookups;
-    RPointerArray<QSymbianHostResolver> iScheduledLookups;
-    RPointerArray<QSymbianHostResolver> iFinishedLookups;
+    QList<QSymbianHostResolver*> iCurrentLookups;
+    QList<QSymbianHostResolver*> iScheduledLookups;
 
     QMutex mutex;
 };
