@@ -45,7 +45,9 @@
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qpoint.h>
-#include <QtGui/qfont.h>
+#include <QtGui/qrawfont.h>
+
+#if !defined(QT_NO_RAWFONT)
 
 QT_BEGIN_HEADER
 
@@ -61,8 +63,8 @@ public:
     QGlyphs(const QGlyphs &other);
     ~QGlyphs();
 
-    QFont font() const;
-    void setFont(const QFont &font);
+    QRawFont font() const;
+    void setFont(const QRawFont &font);
 
     QVector<quint32> glyphIndexes() const;
     void setGlyphIndexes(const QVector<quint32> &glyphIndexes);
@@ -76,6 +78,15 @@ public:
     bool operator==(const QGlyphs &other) const;
     bool operator!=(const QGlyphs &other) const;
 
+    void setOverline(bool overline);
+    bool overline() const;
+
+    void setUnderline(bool underline);
+    bool underline() const;
+
+    void setStrikeOut(bool strikeOut);
+    bool strikeOut() const;
+
 private:
     friend class QGlyphsPrivate;
     friend class QTextLine;
@@ -85,12 +96,12 @@ private:
 
     void detach();
     QExplicitlySharedDataPointer<QGlyphsPrivate> d;
-
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
+#endif // QT_NO_RAWFONT
 
 #endif // QGLYPHS_H

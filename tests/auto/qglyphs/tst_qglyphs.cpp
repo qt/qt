@@ -46,6 +46,8 @@
 #include <qtextlayout.h>
 #include <qfontdatabase.h>
 
+#if !defined(QT_NO_RAWFONT)
+
 // #define DEBUG_SAVE_IMAGE
 
 class tst_QGlyphs: public QObject
@@ -116,7 +118,7 @@ static QGlyphs make_dummy_indexes()
     positions.append(QPointF(3, 4));
     positions.append(QPointF(5, 6));
 
-    glyphs.setFont(font);
+    glyphs.setFont(QRawFont::fromFont(font));
     glyphs.setGlyphIndexes(glyphIndexes);
     glyphs.setPositions(positions);
 
@@ -141,7 +143,7 @@ void tst_QGlyphs::copyConstructor()
         positions.append(QPointF(3, 4));
         positions.append(QPointF(5, 6));
 
-        glyphs.setFont(font);
+        glyphs.setFont(QRawFont::fromFont(font));
         glyphs.setGlyphIndexes(glyphIndexes);
         glyphs.setPositions(positions);
     }
@@ -180,14 +182,16 @@ void tst_QGlyphs::equalsOperator_data()
         positions[2] += QPointF(1, 1);
         busted.setPositions(positions);
 
+
         QTest::newRow("Different positions") << one << busted << false;
     }
 
     {
         QGlyphs busted(two);
-        QFont font = busted.font();
-        font.setPointSize(font.pointSize() * 2);
-        busted.setFont(font);
+
+        QFont font;
+        font.setPixelSize(busted.font().pixelSize() * 2);
+        busted.setFont(QRawFont::fromFont(font));
 
         QTest::newRow("Different fonts") << one << busted << false;
     }
@@ -288,7 +292,7 @@ void tst_QGlyphs::drawNonExistentGlyphs()
     QGlyphs glyphs;
     glyphs.setGlyphIndexes(glyphIndexes);
     glyphs.setPositions(glyphPositions);
-    glyphs.setFont(m_testFont);
+    glyphs.setFont(QRawFont::fromFont(m_testFont));
 
     QPixmap image(1000, 1000);
     image.fill(Qt::white);
@@ -571,3 +575,4 @@ void tst_QGlyphs::drawRightToLeft()
 QTEST_MAIN(tst_QGlyphs)
 #include "tst_qglyphs.moc"
 
+#endif // QT_NO_RAWFONT
