@@ -10,6 +10,8 @@
 
 #include <qdatetime.h>
 
+QT_BEGIN_NAMESPACE
+
 #ifndef GL_BGRA
 #define GL_BGRA 0x80E1
 #endif
@@ -186,3 +188,5 @@ void QSGThreadedTextureManager::uploadInThread(TextureReference *texture, const 
     texture->setMipmaps(hints & TextureManager::GenerateMipmapUploadHint);
     texture->setStatus(TextureReference::Uploaded);
 }
+
+QT_END_NAMESPACE

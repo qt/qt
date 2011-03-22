@@ -53,6 +53,8 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+QT_MODULE(Declarative)
+
 #if defined(Q_DECL_ALIGN) && defined(Q_ALIGNOF)
 
 #if defined(Q_CC_GNU) && (__GNUC__ >= 4 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3))

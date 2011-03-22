@@ -47,6 +47,12 @@
 
 #include "texturematerial.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class TextureProviderMaterial : public AbstractMaterial
 {
 public:
@@ -103,5 +109,9 @@ private:
 
     QSGGeometry m_geometry;
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif

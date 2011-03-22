@@ -52,6 +52,12 @@
 #include <QtGui/qglyphs.h>
 #include <QtCore/qurl.h>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class Node;
 class QImage;
 class TextureReference;
@@ -147,5 +153,9 @@ protected:
 
     QRectF m_bounding_rect;
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif

@@ -45,6 +45,8 @@
 
 #include "qsgitem.h"
 
+QT_BEGIN_NAMESPACE
+
 class QSGPaintedItemPrivate;
 class Q_DECLARATIVE_EXPORT QSGPaintedItem : public QSGItem
 {
@@ -97,5 +99,7 @@ private:
     Q_DISABLE_COPY(QSGPaintedItem);
     Q_DECLARE_PRIVATE(QSGPaintedItem);
 };
+
+QT_END_NAMESPACE
 
 #endif // QSGPAINTEDITEM_P_H

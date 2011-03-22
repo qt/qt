@@ -45,6 +45,8 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qpoint.h>
 
+QT_BEGIN_NAMESPACE
+
 namespace
 {
     enum SplitType
@@ -284,3 +286,5 @@ void QSGAreaAllocator::mergeNodeWithNeighbors(QSGAreaAllocatorNode *node)
         }
     } // end while(!done)
 }
+
+QT_END_NAMESPACE

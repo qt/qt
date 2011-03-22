@@ -47,6 +47,8 @@
 #include "qsgcontext.h"
 #include "adaptationlayer.h"
 
+QT_BEGIN_NAMESPACE
+
 QSGPaintedItemPrivate::QSGPaintedItemPrivate()
 : geometryDirty(false), contentsDirty(false), opaquePainting(false)
 {
@@ -197,3 +199,4 @@ Node *QSGPaintedItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     return node;
 }
 
+QT_END_NAMESPACE

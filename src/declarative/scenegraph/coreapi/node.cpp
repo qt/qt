@@ -46,6 +46,8 @@
 
 #include "limits.h"
 
+QT_BEGIN_NAMESPACE
+
 Node::Node()
     : m_parent(0)
     , m_nodeFlags(0)
@@ -718,3 +720,5 @@ void NodeDumper::visitChildren(Node *n)
 }
 
 #endif
+
+QT_END_NAMESPACE

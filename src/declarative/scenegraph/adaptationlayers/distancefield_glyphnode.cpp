@@ -45,6 +45,8 @@
 
 #include <QtCore/qfileinfo.h>
 
+QT_BEGIN_NAMESPACE
+
 #define QT_DISTANCEFIELD_MARGIN_THRESHOLD 0.31
 
 DistanceFieldGlyphNode::DistanceFieldGlyphNode()
@@ -215,3 +217,5 @@ void DistanceFieldGlyphNode::updateMaterial()
     m_material->setTexture(m_glyph_atlas->texture());
     setMaterial(m_material);
 }
+
+QT_END_NAMESPACE

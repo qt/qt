@@ -45,6 +45,12 @@
 #include "node.h"
 #include "texturematerial.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class PixmapNode : public GeometryNode
 {
 public:
@@ -91,5 +97,9 @@ public:
     }
 };
 
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // PIXMAPNODE_H

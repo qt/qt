@@ -44,6 +44,12 @@
 
 #include <node.h>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class QuadNode : public GeometryNode
 {
 public:
@@ -53,5 +59,9 @@ public:
     virtual NodeSubType subType() const { return QuadNodeSubType; }
 };
 
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // QUADNODE_H

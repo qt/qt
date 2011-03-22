@@ -45,6 +45,8 @@
 #include <material.h>
 #include <qshareddata.h>
 
+QT_BEGIN_NAMESPACE
+
 class QFontEngineGlyphCache;
 class QGLTextureGlyphCache;
 class QFontEngine;
@@ -86,5 +88,7 @@ private:
     QColor m_color;
     QSize m_size;
 };
+
+QT_END_NAMESPACE
 
 #endif // TEXTMASKMATERIAL_H

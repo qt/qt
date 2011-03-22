@@ -41,6 +41,8 @@
 
 #include "material.h"
 
+QT_BEGIN_NAMESPACE
+
 AbstractMaterialShader::AbstractMaterialShader()
     : m_compiled(false)
 {
@@ -161,3 +163,5 @@ int AbstractMaterial::compare(const AbstractMaterial *other) const
     Q_ASSERT(other && type() == other->type());
     return qint64(this) - qint64(other);
 }
+
+QT_END_NAMESPACE
