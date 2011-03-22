@@ -1694,13 +1694,13 @@ void QFontEngineFT::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlag
             g = loadGlyph(glyphs->glyphs[i], 0, Format_None, true);
             glyphs->advances_x[i] = design ? QFixed::fromFixed(face->glyph->linearHoriAdvance >> 10)
                                            : QFixed::fromFixed(face->glyph->metrics.horiAdvance).round();
-            if (face)
-                unlockFace();
         }
         if (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
             glyphs->advances_x[i] = glyphs->advances_x[i].round();
         glyphs->advances_y[i] = 0;
     }
+    if (face)
+        unlockFace();
 }
 
 glyph_metrics_t QFontEngineFT::boundingBox(const QGlyphLayout &glyphs)
