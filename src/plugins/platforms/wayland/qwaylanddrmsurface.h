@@ -43,75 +43,10 @@
 #define QWAYLANDDRMSURFACE_H
 
 #include "qwaylanddisplay.h"
-#include "qwaylandbuffer.h"
 
 #include <QtGui/private/qwindowsurface_p.h>
-#include <QtCore/QVarLengthArray>
-#include <QtOpenGL/private/qglpaintdevice_p.h>
 
-#define GL_GLEXT_PROTOTYPES
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-
-#define QT_RESET_GLERROR()                                \
-{                                                         \
-    while (glGetError() != GL_NO_ERROR) {}                \
-}
-#define QT_CHECK_GLERROR()                                \
-{                                                         \
-    GLenum err = glGetError();                            \
-    if (err != GL_NO_ERROR) {                             \
-        qDebug("[%s line %d] GL Error: 0x%x",             \
-               __FILE__, __LINE__, (int)err);             \
-    }                                                     \
-}
-
-class QWaylandDrmBuffer : public QWaylandBuffer {
-public:
-    QWaylandDrmBuffer(QWaylandDisplay *display,
-                       const QSize &size, QImage::Format format);
-    ~QWaylandDrmBuffer();
-
-    void bindToCurrentFbo();
-    QSize size() const { return mSize; }
-
-private:
-    EGLImageKHR mImage;
-    QWaylandDisplay *mDisplay;
-    QSize mSize;
-    GLuint mTexture;
-
-};
-
-class QWaylandPaintDevice : public QGLPaintDevice
-{
-public:
-    QWaylandPaintDevice(QWaylandDisplay *display, QWindowSurface *windowSurface, QPlatformGLContext *context);
-    ~QWaylandPaintDevice();
-
-    QSize size() const;
-    QGLContext *context() const;
-    QPaintEngine *paintEngine() const;
-
-    void beginPaint();
-
-    bool isFlipped()const;
-
-    void resize(const QSize &size);
-
-    QWaylandDrmBuffer *currentDrmBuffer() const;
-    QWaylandDrmBuffer *currentDrmBufferAndSwap();
-
-private:
-    QWaylandDisplay *mDisplay;
-    QPlatformGLContext  *mPlatformGLContext;
-    QWindowSurface *mWindowSurface;
-    QVarLengthArray<QWaylandDrmBuffer *> mBufferList;
-    int mCurrentPaintBuffer;
-    GLuint mDepthStencil;
-    QSize mSize;
-
-};
+class QGLFramebufferObject;
 
 class QWaylandDrmWindowSurface : public QWindowSurface
 {
@@ -123,12 +58,13 @@ public:
 
     QPaintDevice *paintDevice();
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+
     void resize(const QSize &size);
 
 private:
 
     QWaylandDisplay *mDisplay;
-    QWaylandPaintDevice *mPaintDevice;
+    QGLFramebufferObject *mPaintDevice;
 };
 
 #endif // QWAYLANDDRMSURFACE_H

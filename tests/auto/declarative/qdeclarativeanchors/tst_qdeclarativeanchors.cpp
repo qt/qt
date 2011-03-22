@@ -65,13 +65,10 @@ class tst_qdeclarativeanchors : public QObject
 public:
     tst_qdeclarativeanchors() {}
 
-    template<typename T>
-    T *findItem(QGraphicsObject *parent, const QString &id);
-    QGraphicsObject *findObject(QGraphicsObject *parent, const QString &objectName);
-
 private slots:
     void basicAnchors();
     void basicAnchorsQGraphicsWidget();
+    void basicAnchorsRTL();
     void loops();
     void illegalSets();
     void illegalSets_data();
@@ -82,16 +79,20 @@ private slots:
     void nullItem_data();
     void crash1();
     void centerIn();
+    void centerInRTL();
     void hvCenter();
+    void hvCenterRTL();
     void fill();
+    void fillRTL();
     void margins();
+    void marginsRTL();
 };
 
 /*
    Find an item with the specified id.
 */
 template<typename T>
-T *tst_qdeclarativeanchors::findItem(QGraphicsObject *parent, const QString &objectName)
+T *findItem(QGraphicsObject *parent, const QString &objectName)
 {
     const QMetaObject &mo = T::staticMetaObject;
     QList<QGraphicsItem *> children = parent->childItems();
@@ -110,7 +111,7 @@ T *tst_qdeclarativeanchors::findItem(QGraphicsObject *parent, const QString &obj
     return 0;
 }
 
-QGraphicsObject *tst_qdeclarativeanchors::findObject(QGraphicsObject *parent, const QString &objectName)
+QGraphicsObject *findObject(QGraphicsObject *parent, const QString &objectName)
 {
     QList<QGraphicsItem *> children = parent->childItems();
     for (int i = 0; i < children.count(); ++i) {
@@ -258,6 +259,105 @@ void tst_qdeclarativeanchors::basicAnchorsQGraphicsWidget()
     //baseline
     QDeclarativeText *text1 = findItem<QDeclarativeText>(view->rootObject(), QLatin1String("text1"));
     QDeclarativeText *text2 = findItem<QDeclarativeText>(view->rootObject(), QLatin1String("text2"));
+    QCOMPARE(text1->y(), text2->y());
+
+    delete view;
+}
+
+QDeclarativeItem* childItem(QDeclarativeItem *parentItem, const char * itemString) {
+    return findItem<QDeclarativeItem>(parentItem, QLatin1String(itemString));
+}
+
+qreal offsetMasterRTL(QDeclarativeItem *rootItem, const char * itemString) {
+    QDeclarativeItem* masterItem = findItem<QDeclarativeItem>(rootItem,  QLatin1String("masterRect"));
+    return masterItem->width()+2*masterItem->x()-findItem<QDeclarativeItem>(rootItem,  QLatin1String(itemString))->width();
+}
+
+qreal offsetParentRTL(QDeclarativeItem *rootItem, const char * itemString) {
+    return rootItem->width()+2*rootItem->x()-findItem<QDeclarativeItem>(rootItem,  QLatin1String(itemString))->width();
+}
+
+void mirrorAnchors(QDeclarativeItem *item) {
+    QDeclarativeItemPrivate *itemPrivate = QDeclarativeItemPrivate::get(item);
+    itemPrivate->setLayoutMirror(true);
+}
+
+void tst_qdeclarativeanchors::basicAnchorsRTL()
+{
+    QDeclarativeView *view = new QDeclarativeView;
+    view->setSource(QUrl::fromLocalFile(SRCDIR "/data/anchors.qml"));
+
+    qApp->processEvents();
+
+    QDeclarativeItem* rootItem = qobject_cast<QDeclarativeItem*>(view->rootObject());
+    foreach(QObject *child, rootItem->children()) {
+        bool mirrored = QDeclarativeItemPrivate::get(qobject_cast<QDeclarativeItem*>(child))->anchors()->property("mirrored").toBool();
+        QCOMPARE(mirrored, false);
+    }
+
+    foreach(QObject *child, rootItem->children())
+        mirrorAnchors(qobject_cast<QDeclarativeItem*>(child));
+
+    foreach(QObject *child, rootItem->children()) {
+        bool mirrored = QDeclarativeItemPrivate::get(qobject_cast<QDeclarativeItem*>(child))->anchors()->property("mirrored").toBool();
+        QCOMPARE(mirrored, true);
+    }
+
+    //sibling horizontal
+    QCOMPARE(childItem(rootItem, "rect1")->x(), offsetMasterRTL(rootItem, "rect1")-26.0);
+    QCOMPARE(childItem(rootItem, "rect2")->x(), offsetMasterRTL(rootItem, "rect2")-122.0);
+    QCOMPARE(childItem(rootItem, "rect3")->x(), offsetMasterRTL(rootItem, "rect3")-74.0);
+    QCOMPARE(childItem(rootItem, "rect4")->x(), offsetMasterRTL(rootItem, "rect4")-16.0);
+    QCOMPARE(childItem(rootItem, "rect5")->x(), offsetMasterRTL(rootItem, "rect5")-112.0);
+    QCOMPARE(childItem(rootItem, "rect6")->x(), offsetMasterRTL(rootItem, "rect6")-64.0);
+
+    //parent horizontal
+    QCOMPARE(childItem(rootItem, "rect7")->x(), offsetParentRTL(rootItem, "rect7")-0.0);
+    QCOMPARE(childItem(rootItem, "rect8")->x(), offsetParentRTL(rootItem, "rect8")-240.0);
+    QCOMPARE(childItem(rootItem, "rect9")->x(), offsetParentRTL(rootItem, "rect9")-120.0);
+    QCOMPARE(childItem(rootItem, "rect10")->x(), offsetParentRTL(rootItem, "rect10")+10.0);
+    QCOMPARE(childItem(rootItem, "rect11")->x(), offsetParentRTL(rootItem, "rect11")-230.0);
+    QCOMPARE(childItem(rootItem, "rect12")->x(), offsetParentRTL(rootItem, "rect12")-110.0);
+
+    //vertical
+    QCOMPARE(childItem(rootItem, "rect13")->y(), 20.0);
+    QCOMPARE(childItem(rootItem, "rect14")->y(), 155.0);
+
+    //stretch
+    QCOMPARE(childItem(rootItem, "rect15")->x(), offsetMasterRTL(rootItem, "rect15")-26.0);
+    QCOMPARE(childItem(rootItem, "rect15")->width(), 96.0);
+    QCOMPARE(childItem(rootItem, "rect16")->x(), offsetMasterRTL(rootItem, "rect16")-26.0);
+    QCOMPARE(childItem(rootItem, "rect16")->width(), 192.0);
+    QCOMPARE(childItem(rootItem, "rect17")->x(), offsetMasterRTL(rootItem, "rect17")+70.0);
+    QCOMPARE(childItem(rootItem, "rect17")->width(), 192.0);
+
+    //vertical stretch
+    QCOMPARE(childItem(rootItem, "rect18")->y(), 20.0);
+    QCOMPARE(childItem(rootItem, "rect18")->height(), 40.0);
+
+    //more parent horizontal
+    QCOMPARE(childItem(rootItem, "rect19")->x(), offsetParentRTL(rootItem, "rect19")-115.0);
+    QCOMPARE(childItem(rootItem, "rect20")->x(), offsetParentRTL(rootItem, "rect20")-235.0);
+    QCOMPARE(childItem(rootItem, "rect21")->x(), offsetParentRTL(rootItem, "rect21")+5.0);
+
+    //centerIn
+    QCOMPARE(childItem(rootItem, "rect22")->x(), offsetMasterRTL(rootItem, "rect22")-69.0);
+    QCOMPARE(childItem(rootItem, "rect22")->y(), 5.0);
+
+     //margins
+    QCOMPARE(childItem(rootItem, "rect23")->x(), offsetMasterRTL(rootItem, "rect23")-31.0);
+    QCOMPARE(childItem(rootItem, "rect23")->y(), 5.0);
+    QCOMPARE(childItem(rootItem, "rect23")->width(), 86.0);
+    QCOMPARE(childItem(rootItem, "rect23")->height(), 10.0);
+
+    // offsets
+    QCOMPARE(childItem(rootItem, "rect24")->x(), offsetMasterRTL(rootItem, "rect24")-26.0);
+    QCOMPARE(childItem(rootItem, "rect25")->y(), 60.0);
+    QCOMPARE(childItem(rootItem, "rect26")->y(), 5.0);
+
+    //baseline
+    QDeclarativeText *text1 = findItem<QDeclarativeText>(rootItem, QLatin1String("text1"));
+    QDeclarativeText *text2 = findItem<QDeclarativeText>(rootItem, QLatin1String("text2"));
     QCOMPARE(text1->y(), text2->y());
 
     delete view;
@@ -514,6 +614,31 @@ void tst_qdeclarativeanchors::fill()
     delete view;
 }
 
+void tst_qdeclarativeanchors::fillRTL()
+{
+    QDeclarativeView *view = new QDeclarativeView(QUrl::fromLocalFile(SRCDIR "/data/fill.qml"));
+
+    qApp->processEvents();
+    QDeclarativeRectangle* rect = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("filler"));
+    QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
+    mirrorAnchors(rect);
+
+    QCOMPARE(rect->x(), 0.0 + 20.0);
+    QCOMPARE(rect->y(), 0.0 + 30.0);
+    QCOMPARE(rect->width(), 200.0 - 10.0 - 20.0);
+    QCOMPARE(rect->height(), 200.0 - 30.0 - 40.0);
+    //Alter Offsets (tests QTBUG-6631)
+    rectPrivate->anchors()->setLeftMargin(20.0);
+    rectPrivate->anchors()->setRightMargin(0.0);
+    rectPrivate->anchors()->setBottomMargin(0.0);
+    rectPrivate->anchors()->setTopMargin(10.0);
+    QCOMPARE(rect->x(), 0.0 + 0.0);
+    QCOMPARE(rect->y(), 0.0 + 10.0);
+    QCOMPARE(rect->width(), 200.0 - 20.0);
+    QCOMPARE(rect->height(), 200.0 - 10.0);
+
+    delete view;
+}
 void tst_qdeclarativeanchors::centerIn()
 {
     QDeclarativeView *view = new QDeclarativeView(QUrl::fromLocalFile(SRCDIR "/data/centerin.qml"));
@@ -521,12 +646,34 @@ void tst_qdeclarativeanchors::centerIn()
     qApp->processEvents();
     QDeclarativeRectangle* rect = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("centered"));
     QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
+
     QCOMPARE(rect->x(), 75.0 + 10);
     QCOMPARE(rect->y(), 75.0 + 30);
     //Alter Offsets (tests QTBUG-6631)
     rectPrivate->anchors()->setHorizontalCenterOffset(-20.0);
     rectPrivate->anchors()->setVerticalCenterOffset(-10.0);
     QCOMPARE(rect->x(), 75.0 - 20.0);
+    QCOMPARE(rect->y(), 75.0 - 10.0);
+
+    delete view;
+}
+
+
+void tst_qdeclarativeanchors::centerInRTL()
+{
+    QDeclarativeView *view = new QDeclarativeView(QUrl::fromLocalFile(SRCDIR "/data/centerin.qml"));
+
+    qApp->processEvents();
+    QDeclarativeRectangle* rect = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("centered"));
+    QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
+    mirrorAnchors(rect);
+
+    QCOMPARE(rect->x(), 75.0 - 10);
+    QCOMPARE(rect->y(), 75.0 + 30);
+    //Alter Offsets (tests QTBUG-6631)
+    rectPrivate->anchors()->setHorizontalCenterOffset(-20.0);
+    rectPrivate->anchors()->setVerticalCenterOffset(-10.0);
+    QCOMPARE(rect->x(), 75.0 + 20.0);
     QCOMPARE(rect->y(), 75.0 - 10.0);
 
     delete view;
@@ -539,12 +686,39 @@ void tst_qdeclarativeanchors::hvCenter()
     qApp->processEvents();
     QDeclarativeRectangle* rect = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("centered"));
     QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
+
     // test QTBUG-10999
     QCOMPARE(rect->x(), 10.0);
     QCOMPARE(rect->y(), 19.0);
+
+    rectPrivate->anchors()->setHorizontalCenterOffset(-5.0);
+    rectPrivate->anchors()->setVerticalCenterOffset(5.0);
+    QCOMPARE(rect->x(), 10.0 - 5.0);
+    QCOMPARE(rect->y(), 19.0 + 5.0);
+
     delete view;
 }
 
+void tst_qdeclarativeanchors::hvCenterRTL()
+{
+    QDeclarativeView *view = new QDeclarativeView(QUrl::fromLocalFile(SRCDIR "/data/hvCenter.qml"));
+
+    qApp->processEvents();
+    QDeclarativeRectangle* rect = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("centered"));
+    QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
+    mirrorAnchors(rect);
+
+    // test QTBUG-10999
+    QCOMPARE(rect->x(), 10.0);
+    QCOMPARE(rect->y(), 19.0);
+
+    rectPrivate->anchors()->setHorizontalCenterOffset(-5.0);
+    rectPrivate->anchors()->setVerticalCenterOffset(5.0);
+    QCOMPARE(rect->x(), 10.0 + 5.0);
+    QCOMPARE(rect->y(), 19.0 + 5.0);
+
+    delete view;
+}
 void tst_qdeclarativeanchors::margins()
 {
     QDeclarativeView *view = new QDeclarativeView(QUrl::fromLocalFile(SRCDIR "/data/margins.qml"));
@@ -567,6 +741,31 @@ void tst_qdeclarativeanchors::margins()
 
     delete view;
 }
+
+void tst_qdeclarativeanchors::marginsRTL()
+{
+    QDeclarativeView *view = new QDeclarativeView(QUrl::fromLocalFile(SRCDIR "/data/margins.qml"));
+
+    QDeclarativeRectangle* rect = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("filler"));
+    QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
+    mirrorAnchors(rect);
+
+    QCOMPARE(rect->x(), 10.0);
+    QCOMPARE(rect->y(), 6.0);
+    QCOMPARE(rect->width(), 200.0 - 5.0 - 10.0);
+    QCOMPARE(rect->height(), 200.0 - 6.0 - 10.0);
+
+    rectPrivate->anchors()->setTopMargin(0.0);
+    rectPrivate->anchors()->setMargins(20.0);
+
+    QCOMPARE(rect->x(), 20.0);
+    QCOMPARE(rect->y(), 20.0);
+    QCOMPARE(rect->width(), 200.0 - 5.0 - 20.0);
+    QCOMPARE(rect->height(), 200.0 - 20.0 - 20.0);
+
+    delete view;
+}
+
 
 QTEST_MAIN(tst_qdeclarativeanchors)
 

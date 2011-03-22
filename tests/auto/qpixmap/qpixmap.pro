@@ -25,6 +25,7 @@ wince*: {
    LIBS += -lfbscli.dll -lbitgdi.dll -lgdi.dll
    contains(QT_CONFIG, openvg) {
        LIBS += $$QMAKE_LIBS_OPENVG
+       QT *= openvg
    }
 } else {
    DEFINES += SRCDIR=\\\"$$PWD\\\"

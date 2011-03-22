@@ -209,7 +209,7 @@ void tst_QSslSocket_onDemandCertificates_member::onDemandRootCertLoadingMemberMe
     QSslSocketPtr socket = newSocket();
     this->socket = socket;
     socket->connectToHostEncrypted(host, 443);
-    QVERIFY(socket->waitForEncrypted());
+    QVERIFY2(socket->waitForEncrypted(), qPrintable(socket->errorString()));
 
     // not using any root certs again -> should not work
     QSslSocketPtr socket3 = newSocket();

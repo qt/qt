@@ -64,5 +64,6 @@
         <file>images/corrupt.svg</file>
         <file>images/corrupt.svgz</file>
         <file>images/qtbug13653-no_eoi.jpg</file>
+        <file>images/txts.png</file>
     </qresource>
 </RCC>

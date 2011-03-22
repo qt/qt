@@ -602,6 +602,69 @@
     problem, it probably is a good idea to turn off precompiled headers.
     Also, consider filing a bug report with Apple so that they can
     improve support for this feature.
+
+    \section2 Attributes
+    The following lists a set of useful attributes that can be used to tweak applications
+    on Mac:
+
+    Qt::AA_MacPluginApplication, Qt::AA_DontUseNativeMenuBar, Qt::AA_MacDontSwapCtrlAndMeta
+    Qt::WA_MacNoClickThrough, Qt::WA_MacOpaqueSizeGrip, Qt::WA_MacShowFocusRect,
+    Qt::WA_MacNormalSize, Qt::WA_MacSmallSize, Qt::WA_MacMiniSize, Qt::WA_MacVariableSize,
+    Qt::WA_MacBrushedMetal, Qt::WA_MacAlwaysShowToolWindow, Qt::WA_MacFrameworkScaled,
+    Qt::WA_MacNoShadow, Qt::Sheet, Qt::Drawer, Qt::MacWindowToolBarButtonHint, 
+    QMainWindow::unifiedTitleAndToolBarOnMac
+
+    \section2 Mixing Qt with native code
+    Two classes are awailable for either adding native Cocoa views/controls
+    inside a Qt application, or the opposite, embedding Qt into a native
+    Cocoa application:
+
+    QMacCocoaViewContainer, QMacNativeWidget 
+
+    \section3 Using native Cocoa panels
+    Launching native Cocoa panels from within a Qt application can sometimes
+    be problematic. The reason is that Qt's event dispatcher is more flexible
+    than what Cocoa offers, and lets the user spin the event dispatcher (and
+    running QEventLoop::exec) without having to think about whether or not modal
+    dialogs are showing on screen (which is a difference to Cocoa). Therefore
+    we need to do special bookkeeping in Qt to handle this correctly, which
+    unfortunately make mixing in native panels hard. The best way at the moment
+    to do this, is to follow the pattern below, where we post the call to the
+    function with native code rather than calling it directly. Then we now that
+    Qt has cleanly updated any pending event loop recursions before the native 
+    panel is shown:
+
+    \code
+        #include <QtGui>
+
+        class NativeProxyObject : public QObject
+        {
+            Q_OBJECT
+        public slots:
+            void execNativeDialogLater()
+            {
+                QMetaObject::invokeMethod(this, "execNativeDialogNow", Qt::QueuedConnection);
+            }
+
+            void execNativeDialogNow()
+            {
+                NSRunAlertPanel(@"A Native dialog", @"", @"OK", @"", @"");
+            }
+
+        };
+
+        #include "main.moc"
+
+        int main(int argc, char **argv){
+            QApplication app(argc, argv);
+            NativeProxyObject proxy;
+            QPushButton button("Show native dialog");
+            QObject::connect(&button, SIGNAL(clicked()), &proxy, SLOT(execNativeDialogLater()));
+            button.show();
+            return app.exec();
+        }
+
+    \endcode
 */
 
 /*!

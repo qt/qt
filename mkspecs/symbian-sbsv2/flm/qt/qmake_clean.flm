@@ -13,6 +13,6 @@ SINGLETON:=$(call sanitise,QMAKE_CLEAN_SINGLETON_$(EXTENSION_ROOT))
 ifeq ($($(SINGLETON)),)
 # Prevent duplicate targets from being created
 $(SINGLETON):=1
-$(eval $(call GenerateStandardCleanTarget,$(CLEAN_FILES),''))
+$(eval $(call GenerateStandardCleanTarget,$(wildcard $(patsubst "%",%,$(CLEAN_FILES)))))
 endif
 

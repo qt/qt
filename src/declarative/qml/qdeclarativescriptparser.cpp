@@ -776,7 +776,10 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
             f = f->finish();
         }
 
-        QString body = textAt(funDecl->lbraceToken, funDecl->rbraceToken);
+        AST::SourceLocation loc = funDecl->rparenToken;
+        loc.offset = loc.end();
+        loc.startColumn += 1;
+        QString body = textAt(loc, funDecl->rbraceToken);
         slot.name = funDecl->name->asString().toUtf8();
         slot.body = body;
         obj->dynamicSlots << slot;
@@ -937,7 +940,7 @@ QDeclarativeParser::Object::ScriptBlock::Pragmas QDeclarativeScriptParser::extra
         if (l.currentLineNo() == startLine)
             return rv;
 
-        if (pragmaValue == QLatin1String("library")) {
+        if (pragmaValue == library) {
             rv |= QDeclarativeParser::Object::ScriptBlock::Shared;
             replaceWithSpace(script, startOffset, endOffset - startOffset);
         } else {

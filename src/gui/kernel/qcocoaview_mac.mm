@@ -51,6 +51,8 @@
 #include <private/qmacinputcontext_p.h>
 #include <private/qevent_p.h>
 #include <private/qbackingstore_p.h>
+#include <private/qwindowsurface_raster_p.h>
+#include <private/qunifiedtoolbarsurface_mac_p.h>
 
 #include <qscrollarea.h>
 #include <qhash.h>
@@ -246,8 +248,79 @@ static int qCocoaViewCount = 0;
 {
     if (!qwidget)
         return;
-    if (QApplicationPrivate::graphicsSystem() != 0 && !qwidgetprivate->isInUnifiedToolbar) {
-        // INVARIANT: We use a different graphics system.
+
+    // Getting context.
+    CGContextRef context = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+    qt_mac_retain_graphics_context(context);
+
+    // We use a different graphics system.
+    if (QApplicationPrivate::graphicsSystem() != 0) {
+
+        // Raster engine.
+        if (QApplicationPrivate::graphics_system_name == QLatin1String("raster")) {
+
+            if (!qwidgetprivate->isInUnifiedToolbar) {
+
+                // Qt handles the painting occuring inside the window.
+                // Cocoa also keeps track of all widgets as NSView and therefore might
+                // ask for a repainting of a widget even if Qt is already taking care of it.
+                //
+                // The only valid reason for Cocoa to call drawRect: is for window manipulation
+                // (ie. resize, ...).
+                //
+                // Qt will then forward the update to the children.
+                if (!qwidget->isWindow()) {
+                    qt_mac_release_graphics_context(context);
+                    return;
+                }
+
+                QRasterWindowSurface *winSurface = dynamic_cast<QRasterWindowSurface *>(qwidget->windowSurface());
+                if (!winSurface || !winSurface->needsFlush) {
+                    qt_mac_release_graphics_context(context);
+                    return;
+                }
+
+                // Clip to region.
+                const QVector<QRect> &rects = winSurface->regionToFlush.rects();
+                for (int i = 0; i < rects.size(); ++i) {
+                    const QRect &rect = rects.at(i);
+                    CGContextAddRect(context, CGRectMake(rect.x(), rect.y(), rect.width(), rect.height()));
+                }
+                CGContextClip(context);
+
+                QRect r = winSurface->regionToFlush.boundingRect();
+                const CGRect area = CGRectMake(r.x(), r.y(), r.width(), r.height());
+
+                qt_mac_draw_image(context, winSurface->imageContext(), area, area);
+
+                winSurface->needsFlush = false;
+                winSurface->regionToFlush = QRegion();
+
+            } else {
+
+                QUnifiedToolbarSurface *unifiedSurface = qwidgetprivate->unifiedSurface;
+                if (!unifiedSurface) {
+                    qt_mac_release_graphics_context(context);
+                    return;
+                }
+
+                int areaX = qwidgetprivate->toolbar_offset.x();
+                int areaY = qwidgetprivate->toolbar_offset.y();
+                int areaWidth = qwidget->geometry().width();
+                int areaHeight = qwidget->geometry().height();
+                const CGRect area = CGRectMake(areaX, areaY, areaWidth, areaHeight);
+                const CGRect drawingArea = CGRectMake(0, 0, areaWidth, areaHeight);
+
+                qt_mac_draw_image(context, unifiedSurface->imageContext(), area, drawingArea);
+
+                qwidgetprivate->flushRequested = false;
+
+            }
+
+            CGContextFlush(context);
+            qt_mac_release_graphics_context(context);
+            return;
+        }
 
         // Qt handles the painting occuring inside the window.
         // Cocoa also keeps track of all widgets as NSView and therefore might
@@ -263,25 +336,14 @@ static int qCocoaViewCount = 0;
         }
 
         // Since we don't want to use the native engine, we must exit, however
-        // widgets that are set to paint on screen, spesifically QGLWidget,
+        // widgets that are set to paint on screen, specifically QGLWidget,
         // requires the following code to execute in order to be drawn.
         if (!qwidget->testAttribute(Qt::WA_PaintOnScreen))
             return;
     }
 
-    CGContextRef cg = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
-    CGContextRetain(cg);
-    qwidgetprivate->hd = cg;
-
-    // We steal the CGContext for flushing in the unified toolbar with the raster engine.
-    if (QApplicationPrivate::graphicsSystem() != 0 && qwidgetprivate->isInUnifiedToolbar && qwidgetprivate->unifiedSurface) {
-        qwidgetprivate->cgContext = cg;
-        qwidgetprivate->hasOwnContext = true;
-        qwidgetprivate->unifiedSurface->flush(qwidget, qwidgetprivate->ut_rg, qwidgetprivate->ut_pt);
-        return;
-    }
-
-    CGContextSaveGState(cg);
+    // Native engine.
+    qwidgetprivate->hd = context;
 
     if (qwidget->isVisible() && qwidget->updatesEnabled()) { //process the actual paint event.
         if (qwidget->testAttribute(Qt::WA_WState_InPaintEvent))
@@ -316,18 +378,18 @@ static int qCocoaViewCount = 0;
             engine->setSystemClip(qrgn);
         if (qwidgetprivate->extra && qwidgetprivate->extra->hasMask) {
             CGRect widgetRect = CGRectMake(0, 0, qwidget->width(), qwidget->height());
-            CGContextTranslateCTM (cg, 0, widgetRect.size.height);
-            CGContextScaleCTM(cg, 1, -1);
+            CGContextTranslateCTM (context, 0, widgetRect.size.height);
+            CGContextScaleCTM(context, 1, -1);
             if (qwidget->isWindow())
-                CGContextClearRect(cg, widgetRect);
-            CGContextClipToMask(cg, widgetRect, qwidgetprivate->extra->imageMask);
-            CGContextScaleCTM(cg, 1, -1);
-            CGContextTranslateCTM (cg, 0, -widgetRect.size.height);
+                CGContextClearRect(context, widgetRect);
+            CGContextClipToMask(context, widgetRect, qwidgetprivate->extra->imageMask);
+            CGContextScaleCTM(context, 1, -1);
+            CGContextTranslateCTM (context, 0, -widgetRect.size.height);
         }
 
         if (qwidget->isWindow() && !qwidgetprivate->isOpaque
             && !qwidget->testAttribute(Qt::WA_MacBrushedMetal)) {
-            CGContextClearRect(cg, NSRectToCGRect(aRect));
+            CGContextClearRect(context, NSRectToCGRect(aRect));
         }
 
         qwidget->setAttribute(Qt::WA_WState_InPaintEvent, false);
@@ -358,8 +420,7 @@ static int qCocoaViewCount = 0;
             " widget outside of the PaintEvent");
     }
     qwidgetprivate->hd = 0;
-    CGContextRestoreGState(cg);
-    CGContextRelease(cg);
+    qt_mac_release_graphics_context(context);
 }
 
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
@@ -983,7 +1044,7 @@ static int qCocoaViewCount = 0;
     QString qtText;
     // Cursor position is retrived from the range.
     QList<QInputMethodEvent::Attribute> attrs;
-    attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, selRange.location, 1, QVariant());
+    attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, selRange.location + selRange.length, 1, QVariant());
     if ([aString isKindOfClass:[NSAttributedString class]]) {
         qtText = QCFString::toQString(reinterpret_cast<CFStringRef>([aString string]));
         composingLength = qtText.length();

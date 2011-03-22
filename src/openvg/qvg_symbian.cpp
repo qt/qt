@@ -41,6 +41,7 @@
 
 #include "qpixmapdata_vg_p.h"
 #include "qvgfontglyphcache_p.h"
+#include <QtGui/private/qnativeimagehandleprovider_p.h>
 #include <private/qt_s60_p.h>
 
 #include <fbs.h>
@@ -111,6 +112,58 @@ void QVGPixmapData::cleanup()
     source = QVolatileImage();
 }
 
+bool QVGPixmapData::initFromNativeImageHandle(void *handle, const QString &type)
+{
+    if (type == QLatin1String("RSgImage")) {
+        fromNativeType(handle, QPixmapData::SgImage);
+        return true;
+    } else if (type == QLatin1String("CFbsBitmap")) {
+        fromNativeType(handle, QPixmapData::FbsBitmap);
+        return true;
+    }
+    return false;
+}
+
+void QVGPixmapData::createFromNativeImageHandleProvider()
+{
+    void *handle = 0;
+    QString type;
+    nativeImageHandleProvider->get(&handle, &type);
+    if (handle) {
+        if (initFromNativeImageHandle(handle, type)) {
+            nativeImageHandle = handle;
+            nativeImageType = type;
+        } else {
+            qWarning("QVGPixmapData: Unknown native image type '%s'", qPrintable(type));
+        }
+    } else {
+        qWarning("QVGPixmapData: Native handle is null");
+    }
+}
+
+void QVGPixmapData::releaseNativeImageHandle()
+{
+    if (nativeImageHandleProvider && nativeImageHandle) {
+        nativeImageHandleProvider->release(nativeImageHandle, nativeImageType);
+        nativeImageHandle = 0;
+        nativeImageType = QString();
+    }
+}
+
+static inline bool conversionLessFormat(QImage::Format format)
+{
+    switch (format) {
+        case QImage::Format_RGB16: // EColor64K
+        case QImage::Format_RGB32: // EColor16MU
+        case QImage::Format_ARGB32: // EColor16MA
+        case QImage::Format_ARGB32_Premultiplied: // EColor16MAP
+        case QImage::Format_Indexed8: // EGray256, EColor256
+            return true;
+        default:
+            return false;
+    }
+}
+
 void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
 {
     if (type == QPixmapData::SgImage && pixmap) {
@@ -127,7 +180,7 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         }
 
         is_null = (w <= 0 || h <= 0);
-        source = QVolatileImage(); // vgGetImageSubData() some day?
+        source = QVolatileImage(); // readback will be done later, only when needed
         recreate = false;
         prevSize = QSize(w, h);
         updateSerial();
@@ -139,9 +192,11 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         source = QVolatileImage(bitmap); // duplicates only, if possible
         if (source.isNull())
             return;
-        // Here we may need to copy if the formats do not match.
-        // (e.g. for display modes other than EColor16MAP and EColor16MU)
-        source.ensureFormat(idealFormat(&source.imageRef(), Qt::AutoColor));
+        if (!conversionLessFormat(source.format())) {
+            // Here we may need to copy if the formats do not match.
+            // (e.g. for display modes other than EColor16MAP and EColor16MU)
+            source.ensureFormat(idealFormat(&source.imageRef(), Qt::AutoColor));
+        }
         recreate = true;
     } else if (type == QPixmapData::VolatileImage && pixmap) {
         QVolatileImage *img = static_cast<QVolatileImage *>(pixmap);
@@ -149,6 +204,11 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         source = *img;
         source.ensureFormat(idealFormat(&source.imageRef(), Qt::AutoColor));
         recreate = true;
+    } else if (type == QPixmapData::NativeImageHandleProvider && pixmap) {
+        destroyImages();
+        nativeImageHandleProvider = static_cast<QNativeImageHandleProvider *>(pixmap);
+        // Cannot defer the retrieval, we need at least the size right away.
+        createFromNativeImageHandleProvider();
     }
 }
 
@@ -216,6 +276,7 @@ void* QVGPixmapData::toNativeType(NativeType type)
         return reinterpret_cast<void*>(sgImage.take());
 #endif
     } else if (type == QPixmapData::FbsBitmap && isValid()) {
+        ensureReadback(true);
         if (source.isNull()) {
             source = QVolatileImage(w, h, sourceFormat());
         }
