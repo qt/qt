@@ -254,8 +254,6 @@ private:
     RHostResolver iHostResolver;
     QSharedPointer<QNetworkSession> iNetworkSession;
 
-    TRequestStatus iStatus;
-
     TNameEntry iNameResult;
     QHostAddress iAddress;
 
