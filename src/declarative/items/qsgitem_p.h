@@ -1,4 +1,4 @@
-// Commit: 6f78a6080b84cc3ef96b73a4ff58d1b5a72f08f4
+// Commit: 5c783d0a9a912816813945387903857a314040b5
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -80,6 +80,7 @@ QT_BEGIN_NAMESPACE
 
 class QNetworkReply;
 class QSGItemKeyFilter;
+class QSGLayoutMirroringAttached;
 
 //### merge into private?
 class QSGContents : public QObject, public QSGItemChangeListener
@@ -246,7 +247,12 @@ public:
     bool explicitEnable:1;
     bool effectiveEnable:1;
     bool polishScheduled:1;
-    quint32 dummy:7;
+    bool inheritedLayoutMirror:1;
+    bool effectiveLayoutMirror:1;
+    bool isMirrorImplicit:1;
+    bool inheritMirrorFromParent:1;
+    bool inheritMirrorFromItem:1;
+    quint32 dummy:2;
 
     QSGCanvas *canvas;
     QSGItem *parentItem;
@@ -284,6 +290,8 @@ public:
     qreal rotation;
     qreal opacity;
 
+    QSGLayoutMirroringAttached* attachedLayoutDirection;
+
     Qt::MouseButtons acceptedMouseButtons;
     Qt::InputMethodHints imHints;
 
@@ -291,6 +299,13 @@ public:
     virtual qreal getImplicitHeight() const;
     virtual void implicitWidthChanged();
     virtual void implicitHeightChanged();
+
+    void resolveLayoutMirror();
+    void setImplicitLayoutMirror(bool mirror, bool inherit);
+    void setLayoutMirror(bool mirror);
+    bool isMirrored() const {
+        return effectiveLayoutMirror;
+    }
 
     QPointF computeTransformOrigin() const;
     QList<QSGTransform *> transforms;
@@ -380,6 +395,8 @@ public:
 
     void itemChange(QSGItem::ItemChange, const QSGItem::ItemChangeData &);
 
+    virtual void mirrorChange() {}
+
     static qint64 consistentTime;
     static void setConsistentTime(qint64 t);
     static void start(QElapsedTimer &);
@@ -415,7 +432,10 @@ class QSGKeyNavigationAttachedPrivate : public QObjectPrivate
 {
 public:
     QSGKeyNavigationAttachedPrivate()
-        : QObjectPrivate(), left(0), right(0), up(0), down(0), tab(0), backtab(0) {}
+        : QObjectPrivate(),
+          left(0), right(0), up(0), down(0), tab(0), backtab(0),
+          leftSet(false), rightSet(false), upSet(false), downSet(false),
+          tabSet(false), backtabSet(false) {}
 
     QSGItem *left;
     QSGItem *right;
@@ -423,6 +443,12 @@ public:
     QSGItem *down;
     QSGItem *tab;
     QSGItem *backtab;
+    bool leftSet : 1;
+    bool rightSet : 1;
+    bool upSet : 1;
+    bool downSet : 1;
+    bool tabSet : 1;
+    bool backtabSet : 1;
 };
 
 class QSGKeyNavigationAttached : public QObject, public QSGItemKeyFilter
@@ -475,6 +501,31 @@ private:
     virtual void keyPressed(QKeyEvent *event, bool post);
     virtual void keyReleased(QKeyEvent *event, bool post);
     void setFocusNavigation(QSGItem *currentItem, const char *dir);
+};
+
+class QSGLayoutMirroringAttached : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled RESET resetEnabled NOTIFY enabledChanged)
+    Q_PROPERTY(bool childrenInherit READ childrenInherit WRITE setChildrenInherit NOTIFY childrenInheritChanged)
+
+public:
+    explicit QSGLayoutMirroringAttached(QObject *parent = 0);
+
+    bool enabled() const;
+    void setEnabled(bool);
+    void resetEnabled();
+
+    bool childrenInherit() const;
+    void setChildrenInherit(bool);
+
+    static QSGLayoutMirroringAttached *qmlAttachedProperties(QObject *);
+Q_SIGNALS:
+    void enabledChanged();
+    void childrenInheritChanged();
+private:
+    friend class QSGItemPrivate;
+    QSGItemPrivate *itemPrivate;
 };
 
 class QSGKeysAttachedPrivate : public QObjectPrivate
@@ -616,7 +667,7 @@ TransformNode *QSGItemPrivate::itemNode()
         itemNodeInstance = createTransformNode();
 #ifdef QML_RUNTIME_TESTING
         Q_Q(QSGItem);
-        itemNodeInstance->description = QString::fromLatin1("QSGItem(%1)").arg(q->metaObject()->className());
+        itemNodeInstance->description = QString::fromLatin1("QSGItem(%1)").arg(QString::fromLatin1(q->metaObject()->className()));
 #endif
     }
     return itemNodeInstance; 
@@ -649,5 +700,7 @@ QML_DECLARE_TYPE(QSGKeysAttached)
 QML_DECLARE_TYPEINFO(QSGKeysAttached, QML_HAS_ATTACHED_PROPERTIES)
 QML_DECLARE_TYPE(QSGKeyNavigationAttached)
 QML_DECLARE_TYPEINFO(QSGKeyNavigationAttached, QML_HAS_ATTACHED_PROPERTIES)
+QML_DECLARE_TYPE(QSGLayoutMirroringAttached)
+QML_DECLARE_TYPEINFO(QSGLayoutMirroringAttached, QML_HAS_ATTACHED_PROPERTIES)
 
 #endif // QSGITEM_P_H

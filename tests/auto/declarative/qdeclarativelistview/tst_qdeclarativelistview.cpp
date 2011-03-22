@@ -745,6 +745,13 @@ void tst_QDeclarativeListView::clear()
     QTRY_VERIFY(listview->count() == 0);
     QTRY_VERIFY(listview->currentItem() == 0);
     QTRY_VERIFY(listview->contentY() == 0);
+    QVERIFY(listview->currentIndex() == -1);
+
+    // confirm sanity when adding an item to cleared list
+    model.addItem("New", "1");
+    QTRY_VERIFY(listview->count() == 1);
+    QVERIFY(listview->currentItem() != 0);
+    QVERIFY(listview->currentIndex() == 0);
 
     delete canvas;
     delete testObject;

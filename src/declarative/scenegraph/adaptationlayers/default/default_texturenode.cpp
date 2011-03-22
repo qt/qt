@@ -42,6 +42,8 @@
 #include "default_texturenode.h"
 #include "qsgtextureprovider.h"
 
+QT_BEGIN_NAMESPACE
+
 static const char qt_material_vertex_code[] =
     "uniform highp mat4 qt_Matrix;                      \n"
     "attribute highp vec4 qt_Vertex;                    \n"
@@ -56,7 +58,7 @@ static const char qt_material_fragment_code[] =
     "varying highp vec2 qt_TexCoord0;                   \n"
     "uniform sampler2D qt_Texture;                      \n"
     "void main() {                                      \n"
-    "    gl_FragColor = texture2D(qt_Texture, qt_TexCoord0);\n"
+    "    gl_FragColor = texture2D(qt_Texture, qt_TexCoord0); \n"
     "}";
 
 static const char qt_material_opacity_fragment_code[] =
@@ -118,20 +120,7 @@ void TextureProviderMaterialShader::updateState(Renderer *renderer, AbstractMate
     QSGTextureProvider *tx = static_cast<TextureProviderMaterial *>(newEffect)->texture();
     QSGTextureProvider *oldTx = oldEffect ? static_cast<TextureProviderMaterial *>(oldEffect)->texture() : 0;
 
-    if (oldEffect == 0 || tx->texture().texture() != oldTx->texture().texture()) {
-        renderer->setTexture(0, tx->texture());
-        oldEffect = 0; // Force filtering update.
-    }
-
-    if (oldEffect == 0 || tx->filtering() != oldTx->filtering() || tx->mipmap() != oldTx->mipmap()) {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, tx->glMinFilter());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, tx->glMagFilter());
-    }
-
-    if (oldEffect == 0 || tx->horizontalWrapMode() != oldTx->horizontalWrapMode())
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, tx->glTextureWrapS());
-    if (oldEffect == 0 || tx->verticalWrapMode() != oldTx->verticalWrapMode())
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tx->glTextureWrapT());
+    tx->bind(oldTx ? oldTx->texture().texture() : 0);
 
     if (updates & Renderer::UpdateMatrices)
         m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
@@ -286,6 +275,7 @@ void DefaultTextureNode::update()
 void DefaultTextureNode::preprocess()
 {
     m_texture->updateTexture();
+    updateGeometry();
 }
 
 void DefaultTextureNode::updateGeometry()
@@ -294,7 +284,7 @@ void DefaultTextureNode::updateGeometry()
     if (t.isNull()) {
         QSGGeometry::updateTexturedRectGeometry(&m_geometry, QRectF(), QRectF());
     } else {
-        QRectF textureRect = t->subRect();
+        QRectF textureRect = t->textureSubRect();
         QRectF sr(textureRect.x() + m_sourceRect.x() * textureRect.width(),
                   textureRect.y() + m_sourceRect.y() * textureRect.height(),
                   m_sourceRect.width() * textureRect.width(),
@@ -305,3 +295,5 @@ void DefaultTextureNode::updateGeometry()
     markDirty(DirtyGeometry);
     m_dirtyGeometry = false;
 }
+
+QT_END_NAMESPACE

@@ -47,6 +47,8 @@
 
 #include <qsgattributevalue.h>
 
+QT_BEGIN_NAMESPACE
+
 TrivialRenderer::TrivialRenderer()
 {
 }
@@ -132,3 +134,5 @@ void TrivialRenderer::renderNode(Node *node)
         renderNode(node->childAtIndex(i));
     }
 }
+
+QT_END_NAMESPACE

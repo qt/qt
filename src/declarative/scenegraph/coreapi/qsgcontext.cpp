@@ -50,24 +50,14 @@
 #include "distancefield_glyphnode.h"
 #include "distancefieldfontatlas_p.h"
 
-#include "qsgtexturemanager.h"
-
-#ifdef Q_WS_MAC
-#include "qsgmactexturemanager_mac_p.h"
-#endif
+#include "qsgtexture_p.h"
 
 #include <QApplication>
 #include <QGLContext>
 
-//#ifdef Q_WS_MAC
-//#include "mactexturemanager.h"
-//#endif
-
-//#ifdef Q_WS_QPA
-//#include "qsgeglfsthreadedtexturemanager.h"
-//#endif
-
 #include <private/qobject_p.h>
+
+QT_BEGIN_NAMESPACE
 
 class QSGContextPrivate : public QObjectPrivate
 {
@@ -81,7 +71,6 @@ public:
 
     RootNode *rootNode;
     Renderer *renderer;
-    QSGTextureManager *textureManager;
 
     QGLContext *gl;
 };
@@ -147,22 +136,9 @@ void QSGContext::initialize(QGLContext *context)
     d->rootNode = new RootNode();
     d->renderer->setRootNode(d->rootNode);
 
-    d->textureManager = createTextureManager(this);
-
     current = this;
 
     emit ready();
-}
-
-/*!
-    Returns the texture manager for this scene graphc context. The
-    texture manager is constructed through one call to createTextureManager()
-    during the scene graph context's initialization
- */
-QSGTextureManager *QSGContext::textureManager() const
-{
-    Q_D(const QSGContext);
-    return d->textureManager;
 }
 
 
@@ -231,45 +207,61 @@ Renderer *QSGContext::createRenderer()
     return renderer;
 }
 
+
+
 /*!
-    Factory function for the texture manager to be used for this scene graph.
+    Return true if the image provider supports direct decoding of images,
+    straight into textures without going through a QImage first.
+
+    If the implementation returns true from this function, the decodeImageToTexture() function
+    will be called to read data from a QIODevice, rather than QML decoding
+    the image using QImageReader and passing the result to setImage().
+
+    \warning This function will be called from outside the GUI and rendering threads
+    and must not make use of OpenGL.
  */
-QSGTextureManager *QSGContext::createTextureManager(QSGContext *context)
+
+bool QSGContext::canDecodeImageToTexture() const
 {
-    QStringList args = qApp->arguments();
-
-    QSGTextureManager *manager;
-
-//    if (args.contains("--partial-texture-manager")) {
-//        printf("QSGContext: Using partial upload texture manager\n");
-//        manager = new QSGPartialUploadTextureManager;
-
-//    } else if (args.contains("--basic-texture-manager")) {
-//         printf("QSGContext: Using basic texture manager\n");
-//         manager = new QSGTextureManager;
-
-//    } else if (args.contains("--threaded-texture-manager")) {
-//        printf("QSGContext: Using threaded texture manager\n");
-//        manager = new QSGThreadedTextureManager;
-
-//    } else {
-#ifdef Q_WS_MAC
-        manager = new QSGMacTextureManager;
-#else
-        manager = new QSGTextureManager;
-#endif
-//    }
-
-//#if defined (Q_WS_MAC)
-//    printf("QSGContext:: Using Mac Texture manager\n");
-//    return new QSGMacTextureManager;
-//#elif defined (Q_WS_WIN)
-//    printf("QSGContext:: Using Threaded Texture Manager\n");
-//    return new QSGThreadedTextureManager;
-//#elif defined (Q_WS_QPA)
-//    printf("QSGContext:: Using EglFS Threaded Texture Manager\n");
-//    return new QSGEglFSThreadedTextureManager;
-//#endif
-
-    return manager;
+    return true;
 }
+
+
+
+/*!
+    Decode the data in \a dev directly to a texture provider of \a requestSize size.
+    The size of the decoded data should be written to \a impsize.
+
+    If the implementation fails to decode the image data, it should return 0. The
+    image data will then be decoded normally.
+
+    \warning This function will be called from outside the GUI and renderer threads
+    and must not make use of GL calls.
+ */
+
+QSGTexture *QSGContext::decodeImageToTexture(QIODevice *dev,
+                                             QSize *size,
+                                             const QSize &requestSize)
+{
+    Q_UNUSED(dev);
+    Q_UNUSED(size);
+    Q_UNUSED(requestSize);
+    return 0;
+}
+
+
+/*!
+    Factory function for texture objects.
+
+    If \a image is a valid image, the QSGTexture::setImage function
+    will be called with \a image as argument.
+ */
+QSGTexture *QSGContext::createTexture(const QImage &image) const
+{
+    QSGTexture *t = new QSGPlainTexture();
+    if (!image.isNull())
+        t->setImage(image);
+    return t;
+}
+
+QT_END_NAMESPACE

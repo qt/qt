@@ -44,6 +44,9 @@
 #include <qmath.h>
 #include <private/qtriangulator_p.h>
 #include <private/qdeclarativeglobal_p.h>
+#include <private/qsgtexture_p.h>
+
+QT_BEGIN_NAMESPACE
 
 void qt_disableFontHinting(QFont &font)
 {
@@ -664,14 +667,12 @@ QSGTextureRef DistanceFieldFontAtlas::createTexture()
         return QSGTextureRef();
     }
 
-    QSGTexture *texture = new QSGTexture;
+    QSGPlainTexture *texture = new QSGPlainTexture;
     texture->setTextureId(id);
     texture->setTextureSize(size);
-    texture->setAlphaChannel(true);
-    texture->setStatus(QSGTexture::Ready);
+    texture->setHasAlphaChannel(true);
 
-    QSGTextureRef ref(texture);
-    return ref;
+    return QSGTextureRef(texture);
 }
 
 bool DistanceFieldFontAtlas::distanceFieldEnabled()
@@ -693,3 +694,5 @@ QPointF DistanceFieldFontAtlas::pixelToTexel(const QPointF &pixel) const
 
     return QPointF(pixel.x() * texel.x(), pixel.y() * texel.y());
 }
+
+QT_END_NAMESPACE

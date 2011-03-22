@@ -1724,7 +1724,7 @@ static void qt_painterpath_isect_line(const QPointF &p1,
 }
 
 static void qt_painterpath_isect_curve(const QBezier &bezier, const QPointF &pt,
-                                       int *winding)
+                                       int *winding, int depth = 0)
 {
     qreal y = pt.y();
     qreal x = pt.x();
@@ -1739,7 +1739,7 @@ static void qt_painterpath_isect_curve(const QBezier &bezier, const QPointF &pt,
         // hit lower limit... This is a rough threshold, but its a
         // tradeoff between speed and precision.
         const qreal lower_bound = qreal(.001);
-        if (bounds.width() < lower_bound && bounds.height() < lower_bound) {
+        if (depth == 32 || (bounds.width() < lower_bound && bounds.height() < lower_bound)) {
             // We make the assumption here that the curve starts to
             // approximate a line after while (i.e. that it doesn't
             // change direction drastically during its slope)
@@ -1752,8 +1752,8 @@ static void qt_painterpath_isect_curve(const QBezier &bezier, const QPointF &pt,
         // split curve and try again...
         QBezier first_half, second_half;
         bezier.split(&first_half, &second_half);
-        qt_painterpath_isect_curve(first_half, pt, winding);
-        qt_painterpath_isect_curve(second_half, pt, winding);
+        qt_painterpath_isect_curve(first_half, pt, winding, depth + 1);
+        qt_painterpath_isect_curve(second_half, pt, winding, depth + 1);
     }
 }
 

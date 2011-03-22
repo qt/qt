@@ -7,8 +7,16 @@ ParticleEmitter::ParticleEmitter(QSGItem *parent) :
   , m_particleDurationVariation(0)
   , m_emitting(true)
   , m_system(0)
+  , m_extruder(0)
+  , m_defaultExtruder(0)
 
 {
+}
+
+ParticleEmitter::~ParticleEmitter()
+{
+    if(m_defaultExtruder)
+        delete m_defaultExtruder;
 }
 
 void ParticleEmitter::emitWindow(int timeStamp)
@@ -23,4 +31,14 @@ void ParticleEmitter::setEmitting(bool arg)
         m_emitting = arg;
         emit emittingChanged(arg);
     }
+}
+
+
+ParticleExtruder* ParticleEmitter::effectiveExtruder()
+{
+    if(m_extruder)
+        return m_extruder;
+    if(!m_defaultExtruder)
+        m_defaultExtruder = new ParticleExtruder;
+    return m_defaultExtruder;
 }

@@ -56,6 +56,8 @@
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
 
+QT_BEGIN_NAMESPACE
+
 /*!
   Creates an empty QSGTextNode
 */
@@ -443,3 +445,5 @@ void QSGTextNode::updateNodes()
     }
 }
 #endif
+
+QT_END_NAMESPACE

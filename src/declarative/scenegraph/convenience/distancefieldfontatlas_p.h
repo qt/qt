@@ -44,7 +44,9 @@
 
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
-#include <QtDeclarative/qsgtexturemanager.h>
+#include <QtDeclarative/qsgtexture.h>
+
+QT_BEGIN_NAMESPACE
 
 void qt_disableFontHinting(QFont &font);
 
@@ -118,5 +120,7 @@ private:
 
     static QHash<QString, QSGTextureRef> m_textures;
 };
+
+QT_END_NAMESPACE
 
 #endif // DISTANCEFIELDFONTATLAS_H

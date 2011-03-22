@@ -43,6 +43,8 @@
 
 #include <qglshaderprogram.h>
 
+QT_BEGIN_NAMESPACE
+
 const char qt_scenegraph_texture_material_vertex_code[] =
     "uniform highp mat4 qt_Matrix;                      \n"
     "attribute highp vec4 qt_VertexPosition;            \n"
@@ -90,22 +92,30 @@ void TextureMaterialShader::updateState(Renderer *renderer, AbstractMaterial *ne
     TextureMaterial *tx = static_cast<TextureMaterial *>(newEffect);
     TextureMaterial *oldTx = static_cast<TextureMaterial *>(oldEffect);
 
+    QSGTexture *t = tx->texture().texture();
+
+    t->setFiltering(tx->linearFiltering() ? QSGTexture::Linear : QSGTexture::Nearest);
+    t->setHorizontalWrapMode(tx->clampToEdge() ? QSGTexture::ClampToEdge : QSGTexture::Repeat);
+    t->setVerticalWrapMode(tx->clampToEdge() ? QSGTexture::ClampToEdge : QSGTexture::Repeat);
+
+    tx->texture()->bind();
+
     if (oldEffect == 0 || tx->texture().texture() != oldTx->texture().texture()) {
         renderer->setTexture(0, tx->texture());
         oldEffect = 0; // Force filtering update.
     }
 
-    if (oldEffect == 0 || tx->linearFiltering() != oldTx->linearFiltering()) {
-        int filtering = tx->linearFiltering() ? GL_LINEAR : GL_NEAREST;
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtering);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtering);
-    }
+//    if (oldEffect == 0 || tx->linearFiltering() != oldTx->linearFiltering()) {
+//        int filtering = tx->linearFiltering() ? GL_LINEAR : GL_NEAREST;
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtering);
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtering);
+//    }
 
-    if (oldEffect == 0 || tx->clampToEdge() != oldTx->clampToEdge()) {
-        int wrapMode = tx->clampToEdge() ? GL_CLAMP_TO_EDGE : GL_REPEAT;
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
-    }
+//    if (oldEffect == 0 || tx->clampToEdge() != oldTx->clampToEdge()) {
+//        int wrapMode = tx->clampToEdge() ? GL_CLAMP_TO_EDGE : GL_REPEAT;
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
+//    }
 
     if (updates & Renderer::UpdateMatrices)
         m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
@@ -199,3 +209,5 @@ void TextureMaterialWithOpacityShader::initialize()
     TextureMaterialShader::initialize();
     m_opacity_id = m_program.uniformLocation("opacity");
 }
+
+QT_END_NAMESPACE

@@ -1,4 +1,4 @@
-// Commit: ac5c099cc3c5b8c7eec7a49fdeb8a21037230350
+// Commit: 2c7cab4172f1acc86fd49345a2847417e162f2c3
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -40,8 +40,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEANCHORS_P_H
-#define QDECLARATIVEANCHORS_P_H
+#ifndef QSGANCHORS_P_H
+#define QSGANCHORS_P_H
 
 #include <qdeclarative.h>
 
@@ -79,6 +79,7 @@ class Q_DECLARATIVE_PRIVATE_EXPORT QSGAnchors : public QObject
     Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged)
     Q_PROPERTY(QSGItem *fill READ fill WRITE setFill RESET resetFill NOTIFY fillChanged)
     Q_PROPERTY(QSGItem *centerIn READ centerIn WRITE setCenterIn RESET resetCenterIn NOTIFY centerInChanged)
+    Q_PROPERTY(bool mirrored READ mirrored NOTIFY mirroredChanged)
 
 public:
     QSGAnchors(QSGItem *item, QObject *parent=0);
@@ -159,6 +160,8 @@ public:
 
     Anchors usedAnchors() const;
 
+    bool mirrored();
+
     void classBegin();
     void componentComplete();
 
@@ -180,8 +183,10 @@ Q_SIGNALS:
     void verticalCenterOffsetChanged();
     void horizontalCenterOffsetChanged();
     void baselineOffsetChanged();
+    void mirroredChanged();
 
 private:
+    friend class QSGItemPrivate;
     Q_DISABLE_COPY(QSGAnchors)
     Q_DECLARE_PRIVATE(QSGAnchors)
 };
@@ -193,4 +198,4 @@ QML_DECLARE_TYPE(QSGAnchors)
 
 QT_END_HEADER
 
-#endif // QDECLARATIVEANCHORS_P_H
+#endif // QSGANCHORS_P_H

@@ -105,6 +105,7 @@
 #include <private/qdeclarativeitemsmodule_p.h>
 #include <private/qdeclarativeutilmodule_p.h>
 #include <private/qsgitemsmodule_p.h>
+#include <qsgtexture.h>
 
 #ifdef Q_OS_WIN // for %APPDATA%
 #include <qt_windows.h>
@@ -351,7 +352,8 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
   objectClass(0), valueTypeClass(0), globalClass(0), cleanup(0), erroredBindings(0),
   inProgressCreations(0), scriptEngine(this), workerScriptEngine(0), componentAttached(0),
   inBeginCreate(false), networkAccessManager(0), networkAccessManagerFactory(0),
-  scarceResources(0), scarceResourcesRefCount(0), typeLoader(e), importDatabase(e), uniqueId(1)
+  scarceResources(0), scarceResourcesRefCount(0), typeLoader(e), importDatabase(e), uniqueId(1),
+  sgContext(0)
 {
     if (!qt_QmlQtModule_registered) {
         qt_QmlQtModule_registered = true;
@@ -836,6 +838,18 @@ QDeclarativeImageProvider::ImageType QDeclarativeEnginePrivate::getImageProvider
     if (provider)
         return provider->imageType();
     return static_cast<QDeclarativeImageProvider::ImageType>(-1);
+}
+
+QSGTexture *QDeclarativeEnginePrivate::getTextureFromProvider(const QUrl &url, QSize *size, const QSize& req_size)
+{
+    QMutexLocker locker(&mutex);
+    QSharedPointer<QDeclarativeImageProvider> provider = imageProviders.value(url.host());
+    locker.unlock();
+    if (provider) {
+        QString imageId = url.toString(QUrl::RemoveScheme | QUrl::RemoveAuthority).mid(1);
+        return provider->requestTexture(imageId, size, req_size);
+    }
+    return 0;
 }
 
 QImage QDeclarativeEnginePrivate::getImageFromProvider(const QUrl &url, QSize *size, const QSize& req_size)
@@ -2303,6 +2317,20 @@ void QDeclarativeEngine::setPluginPathList(const QStringList &paths)
   Imports the plugin named \a filePath with the \a uri provided.
   Returns true if the plugin was successfully imported; otherwise returns false.
 
+  On failure and if non-null, the \a errors list will have any errors which occurred prepended to it.
+
+  The plugin has to be a Qt plugin which implements the QDeclarativeExtensionPlugin interface.
+*/
+bool QDeclarativeEngine::importPlugin(const QString &filePath, const QString &uri, QList<QDeclarativeError> *errors)
+{
+    Q_D(QDeclarativeEngine);
+    return d->importDatabase.importPlugin(filePath, uri, errors);
+}
+
+/*!
+  Imports the plugin named \a filePath with the \a uri provided.
+  Returns true if the plugin was successfully imported; otherwise returns false.
+
   On failure and if non-null, *\a errorString will be set to a message describing the failure.
 
   The plugin has to be a Qt plugin which implements the QDeclarativeExtensionPlugin interface.
@@ -2310,7 +2338,18 @@ void QDeclarativeEngine::setPluginPathList(const QStringList &paths)
 bool QDeclarativeEngine::importPlugin(const QString &filePath, const QString &uri, QString *errorString)
 {
     Q_D(QDeclarativeEngine);
-    return d->importDatabase.importPlugin(filePath, uri, errorString);
+    QList<QDeclarativeError> errors;
+    bool retn = d->importDatabase.importPlugin(filePath, uri, &errors);
+    if (!errors.isEmpty()) {
+        QString builtError;
+        for (int i = 0; i < errors.size(); ++i) {
+            builtError = QString(QLatin1String("%1\n        %2"))
+                    .arg(builtError)
+                    .arg(errors.at(i).toString());
+        }
+        *errorString = builtError;
+    }
+    return retn;
 }
 
 /*!

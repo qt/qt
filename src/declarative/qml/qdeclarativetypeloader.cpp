@@ -920,14 +920,31 @@ void QDeclarativeTypeData::resolveTypes()
     // For local urls, add an implicit import "." as first (most overridden) lookup. 
     // This will also trigger the loading of the qmldir and the import of any native 
     // types from available plugins.
+    QList<QDeclarativeError> errors;
     if (QDeclarativeQmldirData *qmldir = qmldirForUrl(finalUrl().resolved(QUrl(QLatin1String("./qmldir"))))) {
         m_imports.addImport(importDatabase, QLatin1String("."),
                             QString(), -1, -1, QDeclarativeScriptParser::Import::File, 
-                            qmldir->dirComponents(), 0);
+                            qmldir->dirComponents(), &errors);
     } else {
         m_imports.addImport(importDatabase, QLatin1String("."), 
                             QString(), -1, -1, QDeclarativeScriptParser::Import::File, 
-                            QDeclarativeDirComponents(), 0);
+                            QDeclarativeDirComponents(), &errors);
+    }
+
+    // remove any errors which are due to the implicit import which aren't real errors.
+    // for example, if the implicitly included qmldir file doesn't exist, that is not an error.
+    QList<QDeclarativeError> realErrors;
+    for (int i = 0; i < errors.size(); ++i) {
+        if (errors.at(i).description() != QDeclarativeImportDatabase::tr("import \".\" has no qmldir and no namespace")
+                && errors.at(i).description() != QDeclarativeImportDatabase::tr("\".\": no such directory")) {
+            realErrors.prepend(errors.at(i)); // this is a real error.
+        }
+    }
+
+    // report any real errors which occurred during plugin loading or qmldir parsing.
+    if (!realErrors.isEmpty()) {
+        setError(realErrors);
+        return;
     }
 
     foreach (const QDeclarativeScriptParser::Import &import, scriptParser.imports()) {
@@ -945,16 +962,23 @@ void QDeclarativeTypeData::resolveTypes()
         int vmin = -1;
         import.extractVersion(&vmaj, &vmin);
 
-        QString errorString;
+        QList<QDeclarativeError> errors;
         if (!m_imports.addImport(importDatabase, import.uri, import.qualifier,
-                                 vmaj, vmin, import.type, qmldircomponentsnetwork, &errorString)) {
+                                 vmaj, vmin, import.type, qmldircomponentsnetwork, &errors)) {
             QDeclarativeError error;
+            if (errors.size()) {
+                error = errors.takeFirst();
+            } else {
+                // this should not be possible!
+                // Description should come from error provided by addImport() function.
+                error.setDescription(QDeclarativeTypeLoader::tr("Unreported error adding script import to import database"));
+            }
             error.setUrl(m_imports.baseUrl());
-            error.setDescription(errorString);
             error.setLine(import.location.start.line);
             error.setColumn(import.location.start.column);
+            errors.prepend(error); // put it back on the list after filling out information.
 
-            setError(error);
+            setError(errors);
             return;
         }
     }
@@ -968,29 +992,38 @@ void QDeclarativeTypeData::resolveTypes()
         int majorVersion;
         int minorVersion;
         QDeclarativeImportedNamespace *typeNamespace = 0;
-        QString errorString;
+        QList<QDeclarativeError> errors;
 
         if (!m_imports.resolveType(typeName, &ref.type, &url, &majorVersion, &minorVersion,
-                                   &typeNamespace, &errorString) || typeNamespace) {
+                                   &typeNamespace, &errors) || typeNamespace) {
             // Known to not be a type:
             //  - known to be a namespace (Namespace {})
             //  - type with unknown namespace (UnknownNamespace.SomeType {})
             QDeclarativeError error;
-            error.setUrl(m_imports.baseUrl());
             QString userTypeName = parserRef->name;
             userTypeName.replace(QLatin1Char('/'),QLatin1Char('.'));
-            if (typeNamespace)
+            if (typeNamespace) {
                 error.setDescription(QDeclarativeTypeLoader::tr("Namespace %1 cannot be used as a type").arg(userTypeName));
-            else
-                error.setDescription(QDeclarativeTypeLoader::tr("%1 %2").arg(userTypeName).arg(errorString));
+            } else {
+                if (errors.size()) {
+                    error = errors.takeFirst();
+                } else {
+                    // this should not be possible!
+                    // Description should come from error provided by addImport() function.
+                    error.setDescription(QDeclarativeTypeLoader::tr("Unreported error adding script import to import database"));
+                }
+                error.setUrl(m_imports.baseUrl());
+                error.setDescription(QDeclarativeTypeLoader::tr("%1 %2").arg(userTypeName).arg(error.description()));
+            }
 
             if (!parserRef->refObjects.isEmpty()) {
                 QDeclarativeParser::Object *obj = parserRef->refObjects.first();
                 error.setLine(obj->location.start.line);
                 error.setColumn(obj->location.start.column);
             }
-            
-            setError(error);
+
+            errors.prepend(error);
+            setError(errors);
             return;
         }
 
@@ -1119,16 +1152,17 @@ void QDeclarativeScriptBlob::dataReceived(const QByteArray &data)
             int vmin = -1;
             import.extractVersion(&vmaj, &vmin);
 
-            QString errorString;
+            QList<QDeclarativeError> errors;
             if (!m_imports.addImport(importDatabase, import.uri, import.qualifier, vmaj, vmin,
-                                     import.type, QDeclarativeDirComponents(), &errorString)) {
-                QDeclarativeError error;
+                                     import.type, QDeclarativeDirComponents(), &errors)) {
+                QDeclarativeError error = errors.takeFirst();
+                // description should be set by addImport().
                 error.setUrl(m_imports.baseUrl());
-                error.setDescription(errorString);
                 error.setLine(import.location.start.line);
                 error.setColumn(import.location.start.column);
+                errors.prepend(error);
 
-                setError(error);
+                setError(errors);
                 return;
             }
         }

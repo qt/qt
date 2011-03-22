@@ -44,19 +44,22 @@
 #include "qwaylanddisplay.h"
 #include "qwaylandshmsurface.h"
 #include "qwaylanddrmsurface.h"
-#include "qwaylandwindow.h"
+#include "qwaylandshmwindow.h"
+#include "qwaylandeglwindow.h"
 
-#include "qfontconfigdatabase.h"
+#include "qgenericunixfontdatabase.h"
 
 #include <QtGui/QWindowSystemInterface>
 #include <QtGui/QPlatformCursor>
 #include <QtGui/QPlatformWindowFormat>
 
 #include <QtGui/private/qpixmap_raster_p.h>
+#ifdef QT_WAYLAND_GL_SUPPORT
 #include <QtOpenGL/private/qpixmapdata_gl_p.h>
+#endif
 
 QWaylandIntegration::QWaylandIntegration(bool useOpenGL)
-    : mFontDb(new QFontconfigDatabase())
+    : mFontDb(new QGenericUnixFontDatabase())
     , mDisplay(new QWaylandDisplay())
     , mUseOpenGL(useOpenGL)
 {
@@ -78,24 +81,31 @@ bool QWaylandIntegration::hasCapability(QPlatformIntegration::Capability cap) co
 
 QPixmapData *QWaylandIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
+#ifdef QT_WAYLAND_GL_SUPPORT
     if (mUseOpenGL)
         return new QGLPixmapData(type);
+#endif
     return new QRasterPixmapData(type);
 }
 
 QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWidget *widget, WId winId) const
 {
     Q_UNUSED(winId);
-    return new QWaylandWindow(widget);
+    bool useOpenGL = mUseOpenGL || (widget->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL);
+    if (useOpenGL)
+        return new QWaylandEglWindow(widget);
+
+    return new QWaylandShmWindow(widget);
 }
 
 QWindowSurface *QWaylandIntegration::createWindowSurface(QWidget *widget, WId winId) const
 {
     Q_UNUSED(winId);
     Q_UNUSED(winId);
-
-    if (mUseOpenGL)
+    bool useOpenGL = mUseOpenGL || (widget->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL);
+    if (useOpenGL)
         return new QWaylandDrmWindowSurface(widget);
+
     return new QWaylandShmWindowSurface(widget);
 }
 

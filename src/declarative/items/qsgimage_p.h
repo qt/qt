@@ -73,9 +73,6 @@ public:
     FillMode fillMode() const;
     void setFillMode(FillMode);
 
-    QPixmap pixmap() const;
-    void setPixmap(const QPixmap &);
-
     qreal paintedWidth() const;
     qreal paintedHeight() const;
 

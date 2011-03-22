@@ -7,10 +7,6 @@ TrailsEmitter::TrailsEmitter(QSGItem* parent)
     , m_particle_size(16)
     , m_particle_end_size(-1)
     , m_particle_size_variation(0)
-    , m_emitter_x(0)
-    , m_emitter_y(0)
-    , m_emitter_x_variation(0)
-    , m_emitter_y_variation(0)
     , m_x_speed(0)
     , m_y_speed(0)
     , m_x_speed_variation(0)
@@ -52,40 +48,6 @@ void TrailsEmitter::setParticleSizeVariation(qreal var)
     m_particle_size_variation = var;
     emit particleSizeVariationChanged();
 
-}
-
-
-void TrailsEmitter::setEmitterX(qreal x)
-{
-    if (x == m_emitter_x)
-        return;
-    m_emitter_x = x;
-    emit emitterXChanged();
-}
-
-
-void TrailsEmitter::setEmitterY(qreal y)
-{
-    if (y == m_emitter_y)
-        return;
-    m_emitter_y = y;
-    emit emitterYChanged();
-}
-
-void TrailsEmitter::setEmitterXVariation(qreal var)
-{
-    if (var == m_emitter_x_variation)
-        return;
-    m_emitter_x_variation = var;
-    emit emitterXVariationChanged();
-}
-
-void TrailsEmitter::setEmitterYVariation(qreal var)
-{
-    if (var == m_emitter_y_variation)
-        return;
-    m_emitter_y_variation = var;
-    emit emitterYVariationChanged();
 }
 
 void TrailsEmitter::setXSpeed(qreal x)
@@ -179,9 +141,9 @@ void TrailsEmitter::emitWindow(int timeStamp)
     }
 
     if (m_reset_last) {
-        m_last_emitter = m_last_last_emitter = QPointF(x() + m_emitter_x, y() + m_emitter_y);
+        m_last_emitter = m_last_last_emitter = QPointF(x(), y());
         m_last_timestamp = timeStamp/1000.;
-        m_last_particle = 0;
+        m_last_particle = ceil(m_last_timestamp * m_particlesPerSecond);
         m_reset_last = false;
     }
 
@@ -199,21 +161,19 @@ void TrailsEmitter::emitWindow(int timeStamp)
         dt = 0.000001;
 
     // emitter difference since last...
-    qreal dex = (m_emitter_x + x() - m_last_emitter.x());
-    qreal dey = (m_emitter_y + y() - m_last_emitter.y());
+    qreal dex = (x() - m_last_emitter.x());
+    qreal dey = (y() - m_last_emitter.y());
 
     qreal ax = (m_last_last_emitter.x() + m_last_emitter.x()) / 2;
     qreal bx = m_last_emitter.x();
-    qreal cx = (m_emitter_x + m_last_emitter.x()) / 2;
+    qreal cx = (x() + m_last_emitter.x()) / 2;
     qreal ay = (m_last_last_emitter.y() + m_last_emitter.y()) / 2;
     qreal by = m_last_emitter.y();
-    qreal cy = (m_emitter_y + m_last_emitter.y()) / 2;
+    qreal cy = (y() + m_last_emitter.y()) / 2;
 
     float sizeAtEnd = m_particle_end_size >= 0 ? m_particle_end_size : m_particle_size;
-    qreal emitter_x_variation = m_emitter_x_variation + width()/2;
-    qreal emitter_y_variation = m_emitter_y_variation + height()/2;
-    qreal emitter_x_offset = m_last_emitter.x() - x() + width()/2;
-    qreal emitter_y_offset = m_last_emitter.y() - y() + height()/2;
+    qreal emitter_x_offset = m_last_emitter.x() - x();
+    qreal emitter_y_offset = m_last_emitter.y() - y();
     while (pt < time) {
         //int pos = m_last_particle % m_particle_count;
         ParticleData* datum = m_system->newDatum(m_system->m_groupIds[m_particle]);
@@ -238,12 +198,11 @@ void TrailsEmitter::emitWindow(int timeStamp)
                 / 1000.0;
 
         // Particle position
-        p.x =
-                emitter_x_offset + dex * (pt - opt) / dt
-                - emitter_x_variation + rand() / float(RAND_MAX) * emitter_x_variation * 2;
-        p.y =
-                emitter_y_offset + dey * (pt - opt) / dt
-                - emitter_y_variation + rand() / float(RAND_MAX) * emitter_y_variation * 2;
+        QRectF boundsRect(emitter_x_offset + dex * (pt - opt) / dt, emitter_y_offset + dey * (pt - opt) / dt
+                          , width(), height());
+        QPointF newPos = effectiveExtruder()->extrude(boundsRect);
+        p.x = newPos.x();
+        p.y = newPos.y();
 
         // Particle speed
         p.sx =
@@ -279,7 +238,7 @@ void TrailsEmitter::emitWindow(int timeStamp)
 
     m_last_last_last_emitter = m_last_last_emitter;
     m_last_last_emitter = m_last_emitter;
-    m_last_emitter = QPointF(x() + m_emitter_x, y() + m_emitter_y);
+    m_last_emitter = QPointF(x(), y());
     m_last_timestamp = time;
 }
 

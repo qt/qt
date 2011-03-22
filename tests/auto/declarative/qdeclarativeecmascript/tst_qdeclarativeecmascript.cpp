@@ -1144,6 +1144,16 @@ void tst_qdeclarativeecmascript::functionErrors()
     QObject *object = component.create();
     QVERIFY(object != 0);
     delete object;
+
+    // test that if an exception occurs while invoking js function from cpp, it is reported as expected.
+    QDeclarativeComponent componentTwo(&engine, TEST_FILE("scarceresources/scarceResourceFunctionFail.qml"));
+    url = componentTwo.url().toString();
+    object = componentTwo.create();
+    QVERIFY(object != 0);
+    warning = url + QLatin1String(":16: TypeError: Result of expression 'scarceResourceProvider.scarceResource' [[object Object]] is not a function.");
+    QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData()); // we expect a meaningful warning to be printed.
+    QMetaObject::invokeMethod(object, "retrieveScarceResource");
+    delete object;
 }
 
 /*
@@ -2700,6 +2710,22 @@ void tst_qdeclarativeecmascript::scarceResources()
     QVERIFY(!eo->scarceResourceIsDetached()); // should be a copy of the resource at this stage.
     QMetaObject::invokeMethod(object, "releaseScarceResource");
     QVERIFY(!object->property("scarceResourceCopy").isValid()); // just released, so should not be valid
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(eo->scarceResourceIsDetached()); // should be no other copies of it at this stage.
+    QVERIFY(ep->scarceResources == 0); // should have been released by this point.
+    delete object;
+
+    // test that if an exception occurs while invoking js function from cpp, that the resources are released.
+    QDeclarativeComponent componentTwelve(&engine, TEST_FILE("scarceresources/scarceResourceFunctionFail.qml"));
+    object = componentTwelve.create();
+    QVERIFY(object != 0);
+    QVERIFY(!object->property("scarceResourceCopy").isValid()); // not yet assigned, so should not be valid
+    eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
+    QVERIFY(eo->scarceResourceIsDetached()); // should be no other copies of it at this stage.
+    QString expectedWarning = QLatin1String("file://") + TEST_FILE("scarceresources/scarceResourceFunctionFail.qml").toLocalFile() + QLatin1String(":16: TypeError: Result of expression 'scarceResourceProvider.scarceResource' [[object Object]] is not a function.");
+    QTest::ignoreMessage(QtWarningMsg, expectedWarning.toAscii().constData()); // we expect a meaningful warning to be printed.
+    QMetaObject::invokeMethod(object, "retrieveScarceResource");
+    QVERIFY(!object->property("scarceResourceCopy").isValid()); // due to exception, assignment will NOT have occurred.
     eo = qobject_cast<ScarceResourceObject*>(QDeclarativeProperty::read(object, "a").value<QObject*>());
     QVERIFY(eo->scarceResourceIsDetached()); // should be no other copies of it at this stage.
     QVERIFY(ep->scarceResources == 0); // should have been released by this point.

@@ -84,7 +84,7 @@ public:
                      QDeclarativeType** type_return, QUrl* url_return,
                      int *version_major, int *version_minor,
                      QDeclarativeImportedNamespace** ns_return,
-                     QString *errorString = 0) const;
+                     QList<QDeclarativeError> *errors = 0) const;
     bool resolveType(QDeclarativeImportedNamespace*, 
                      const QByteArray& type,
                      QDeclarativeType** type_return, QUrl* url_return,
@@ -94,7 +94,7 @@ public:
                    const QString& uri, const QString& prefix, int vmaj, int vmin, 
                    QDeclarativeScriptParser::Import::Type importType,
                    const QDeclarativeDirComponents &qmldircomponentsnetwork, 
-                   QString *errorString);
+                   QList<QDeclarativeError> *errors);
 
     void populateCache(QDeclarativeTypeNameCache *cache, QDeclarativeEngine *) const;
 
@@ -110,7 +110,7 @@ public:
     QDeclarativeImportDatabase(QDeclarativeEngine *);
     ~QDeclarativeImportDatabase();
 
-    bool importPlugin(const QString &filePath, const QString &uri, QString *errorString);
+    bool importPlugin(const QString &filePath, const QString &uri, QList<QDeclarativeError> *errors);
 
     QStringList importPathList() const;
     void setImportPathList(const QStringList &paths);

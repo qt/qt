@@ -1,4 +1,4 @@
-// Commit: 521a9bba59fe198ec7b1afe9bb25a9d3334675cf
+// Commit: 27e4302b7f45f22180693d26747f419177c81e27
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -73,9 +73,9 @@ public:
                  color((QRgb)0), style(QSGText::Normal),
                  styleColor((QRgb)0), hAlign(QSGTextInput::AlignLeft),
                  mouseSelectionMode(QSGTextInput::SelectCharacters),
-                 hscroll(0), oldScroll(0), focused(false), focusOnPress(true),
+                 hscroll(0), oldScroll(0), oldValidity(false), focused(false), focusOnPress(true),
                  showInputPanelOnFocus(true), clickCausedFocus(false), cursorVisible(false),
-                 autoScroll(true), selectByMouse(false), canPaste(false)
+                 autoScroll(true), selectByMouse(false), canPaste(false), hAlignImplicit(true)
     {
 #ifdef Q_OS_SYMBIAN
         if (QSysInfo::symbianVersion() == QSysInfo::SV_SF_1 || QSysInfo::symbianVersion() == QSysInfo::SV_SF_3) {
@@ -101,6 +101,9 @@ public:
     void init();
     void startCreatingCursor();
     void updateHorizontalScroll();
+    bool determineHorizontalAlignment();
+    bool setHAlign(QSGTextInput::HAlignment, bool forceAlign = false);
+    void mirrorChange();
     int calculateTextWidth();
     bool sendMouseEventToInputContext(QGraphicsSceneMouseEvent *event, QEvent::Type eventType);
 
@@ -135,6 +138,7 @@ public:
     bool autoScroll:1;
     bool selectByMouse:1;
     bool canPaste:1;
+    bool hAlignImplicit:1;
 
     static inline QSGTextInputPrivate *get(QSGTextInput *t) {
         return t->d_func();

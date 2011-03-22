@@ -45,6 +45,8 @@
 #include <QtCore/private/qfactoryloader_p.h>
 #include <QtCore/qlibraryinfo.h>
 
+QT_BEGIN_NAMESPACE
+
 QSGContextPlugin::QSGContextPlugin(QObject *parent)
     : QObject(parent)
 {
@@ -98,3 +100,5 @@ QSGContext *QSGContext::createDefaultContext()
 
     return new QSGContext();
 }
+
+QT_END_NAMESPACE

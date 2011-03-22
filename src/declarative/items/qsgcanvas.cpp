@@ -489,6 +489,8 @@ void QSGCanvasPrivate::init(QSGCanvas *c)
     rootItemPrivate->focus = true;
     rootItemPrivate->activeFocus = true;
     activeFocusItem = rootItem;
+
+    context = QSGContext::createDefaultContext();
 }
 
 void QSGCanvasPrivate::sceneMouseEventForTransform(QGraphicsSceneMouseEvent &sceneEvent,
@@ -930,18 +932,6 @@ QSGCanvas::~QSGCanvas()
 
     delete d->rootItem; d->rootItem = 0;
     d->cleanupNodes();
-}
-
-void QSGCanvas::setSceneGraphContext(QSGContext *context)
-{
-    Q_D(QSGCanvas);
-
-    if (d->contextInThread || d->context) {
-        qWarning("QSGCanvas::setSceneGraphContext: Context already exists.");
-        return;
-    }
-
-    d->context = context;
 }
 
 QSGItem *QSGCanvas::rootItem() const

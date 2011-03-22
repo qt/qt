@@ -47,12 +47,19 @@
 
 #include "node.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class QSGContextPrivate;
 class RectangleNodeInterface;
 class TextureNodeInterface;
 class GlyphNodeInterface;
 class Renderer;
-class QSGTextureManager;
+
+class QSGTexture;
 
 class QGLContext;
 
@@ -64,11 +71,9 @@ class Q_DECLARATIVE_EXPORT QSGContext : public QObject
 public:
     explicit QSGContext(QObject *parent = 0);
 
-    void initialize(QGLContext *context);
+    virtual void initialize(QGLContext *context);
 
     Renderer *renderer() const;
-
-    QSGTextureManager *textureManager() const;
 
     void setRootNode(RootNode *node);
     RootNode *rootNode() const;
@@ -85,7 +90,12 @@ public:
     virtual TextureNodeInterface *createTextureNode();
     virtual GlyphNodeInterface *createGlyphNode();
     virtual Renderer *createRenderer();
-    virtual QSGTextureManager *createTextureManager(QSGContext *context);
+
+    virtual bool canDecodeImageToTexture() const;
+    virtual QSGTexture *decodeImageToTexture(QIODevice *dev,
+                                                     QSize *size,
+                                                     const QSize &requestSize);
+    virtual QSGTexture *createTexture(const QImage &image = QImage()) const;
 
     static QSGContext *createDefaultContext();
 
@@ -94,5 +104,9 @@ signals:
 
     void aboutToRenderNextFrame();
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // QSGCONTEXT_H

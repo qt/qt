@@ -43,6 +43,8 @@
 #include "distancefieldfontatlas_p.h"
 #include <qmath.h>
 
+QT_BEGIN_NAMESPACE
+
 class DistanceFieldTextMaterialShader : public AbstractMaterialShader
 {
 public:
@@ -444,3 +446,5 @@ AbstractMaterialShader *DistanceFieldShiftedStyleTextMaterial::createShader() co
 {
     return new DistanceFieldShiftedStyleTextMaterialShader;
 }
+
+QT_END_NAMESPACE

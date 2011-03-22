@@ -208,6 +208,7 @@ private slots:
     void seek();
     void pos();
     void pos2();
+    void pos3LargeFile();
     void readStdin();
     void readAllFromStdin();
     void readLineFromStdin();
@@ -1499,6 +1500,41 @@ void tst_QTextStream::pos2()
     stream >> str;
     QCOMPARE(str, QString("ghijkl"));
     QCOMPARE(stream.pos(), qint64(14));
+}
+
+// ------------------------------------------------------------------------------
+void tst_QTextStream::pos3LargeFile()
+{
+    {
+        QFile file(TestFileName);
+        file.open(QIODevice::WriteOnly | QIODevice::Text);
+        QTextStream out( &file );
+        // NOTE: The unusual spacing is to ensure non-1-character whitespace.
+        QString lineString = " 0  1  2\t3  4\t \t5  6  7  8   9 \n";
+        // Approximate 50kb text file
+        const int NbLines = (50*1024) / lineString.length() + 1;
+        for (int line = 0; line < NbLines; ++line)
+            out << lineString;
+        // File is automatically flushed and closed on destruction.
+    }
+    QFile file(TestFileName);
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    QTextStream in( &file );
+    const int testValues[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    int value;
+    while (true) {
+        in.pos();
+        for ( int i = 0; i < 10; ++i ) {
+            in >> value;
+            if (in.status() != QTextStream::Ok) {
+                // End case, i == 0 && eof reached.
+                QCOMPARE(i, 0);
+                QCOMPARE(in.status(), QTextStream::ReadPastEnd);
+                return;
+            }
+            QCOMPARE(value, testValues[i]);
+        }
+    }
 }
 
 // ------------------------------------------------------------------------------

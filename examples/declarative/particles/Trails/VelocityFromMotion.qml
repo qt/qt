@@ -70,8 +70,8 @@ Rectangle {
         particleDuration: 2000
 
 
-        emitterY: mouseArea.pressed ? mouseArea.mouseY : circle.cy
-        emitterX: mouseArea.pressed ? mouseArea.mouseX : circle.cx
+        y: mouseArea.pressed ? mouseArea.mouseY : circle.cy
+        x: mouseArea.pressed ? mouseArea.mouseX : circle.cx
 
         xSpeedVariation: 4
         ySpeedVariation: 4
@@ -111,8 +111,8 @@ Rectangle {
         particleDuration: 2200
 
 
-        emitterY: mouseArea.pressed ? mouseArea.mouseY : circle.cy
-        emitterX: mouseArea.pressed ? mouseArea.mouseX : circle.cx
+        y: mouseArea.pressed ? mouseArea.mouseY : circle.cy
+        x: mouseArea.pressed ? mouseArea.mouseX : circle.cx
 
         xSpeedVariation: 4
         ySpeedVariation: 4
@@ -153,8 +153,8 @@ Rectangle {
         particlesPerSecond: 300
         particleDuration: 2000
 
-        emitterY: mouseArea.pressed ? mouseArea.mouseY : circle2.cy
-        emitterX: mouseArea.pressed ? mouseArea.mouseX : circle2.cx
+        y: mouseArea.pressed ? mouseArea.mouseY : circle2.cy
+        x: mouseArea.pressed ? mouseArea.mouseX : circle2.cx
 
         xSpeedVariation: 4
         ySpeedVariation: 4
@@ -195,8 +195,8 @@ Rectangle {
         particleDuration: 2200
 
 
-        emitterY: mouseArea.pressed ? mouseArea.mouseY : circle2.cy
-        emitterX: mouseArea.pressed ? mouseArea.mouseX : circle2.cx
+        y: mouseArea.pressed ? mouseArea.mouseY : circle2.cy
+        x: mouseArea.pressed ? mouseArea.mouseX : circle2.cx
 
         xSpeedVariation: 2
         ySpeedVariation: 2

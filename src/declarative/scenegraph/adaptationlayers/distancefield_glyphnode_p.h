@@ -44,6 +44,8 @@
 
 #include <material.h>
 
+QT_BEGIN_NAMESPACE
+
 class DistanceFieldFontAtlas;
 
 class DistanceFieldTextMaterial: public AbstractMaterial
@@ -125,5 +127,7 @@ public:
 protected:
     QPointF m_shift;
 };
+
+QT_END_NAMESPACE
 
 #endif // DISTANCEFIELDTEXTMATERIAL_H

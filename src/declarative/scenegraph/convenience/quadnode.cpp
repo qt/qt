@@ -43,6 +43,7 @@
 #include "utilities.h"
 #include "adaptationlayer.h"
 
+QT_BEGIN_NAMESPACE
 
 QuadNode::QuadNode(const QRectF &t, const QRectF &sourceRect)
 {
@@ -126,3 +127,5 @@ QuadNode::QuadNode(const QRectF &t, const QRectF &sourceRect, qreal z, int meshS
         markDirty(DirtyGeometry);
     }
 }
+
+QT_END_NAMESPACE

@@ -46,6 +46,8 @@
 
 #include "qgltexture2d_p.h"
 
+QT_BEGIN_NAMESPACE
+
 #ifndef GL_UNSIGNED_SHORT_5_6_5
 #define GL_UNSIGNED_SHORT_5_6_5 0x8363
 #endif
@@ -134,3 +136,5 @@ void DefaultTextureAtlas::deallocate(const QRect &rect)
 {
     m_allocator.deallocate(rect.adjusted(-1, -1, 1, 1));
 }
+
+QT_END_NAMESPACE

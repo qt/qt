@@ -2,7 +2,7 @@
 #include <adaptationlayer.h>
 #include <node.h>
 #include <texturematerial.h>
-#include <qsgtexturemanager.h>
+#include <qsgtexture.h>
 #include <QFile>
 #include "coloredparticle.h"
 #include "particleemitter.h"
@@ -57,12 +57,8 @@ public:
     virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *, Renderer::Updates updates)
     {
         ParticleTrailsMaterial *m = static_cast<ParticleTrailsMaterial *>(newEffect);
-        Q_ASSERT(m->texture.isReady());
-        renderer->setTexture(0, m->texture);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        renderer->glActiveTexture(GL_TEXTURE0);
+        m->texture->bind();
 
         m_program.setUniformValue(m_opacity_id, (float) renderer->renderOpacity());
         m_program.setUniformValue(m_timestamp_id, (float) m->timestamp);
@@ -145,14 +141,8 @@ public:
     {
         ParticleTrailsMaterialData::updateState(renderer, current, old, updates);
         ParticleTrailsMaterialCT *m = static_cast<ParticleTrailsMaterialCT *>(current);
-        Q_ASSERT(m->colortable.isReady());
         renderer->glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, m->colortable->textureId());
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        m->colortable->bind();
         m_program.setUniformValue(m_colortable_id, 1);
     }
 
@@ -359,14 +349,18 @@ GeometryNode* ColoredParticle::buildParticleNode()
         QImage table(m_colortable_name.toLocalFile());
         if (!table.isNull()) {
             m_material = new ParticleTrailsMaterialCT();
-            static_cast<ParticleTrailsMaterialCT *>(m_material)->colortable = sg->textureManager()->upload(table);
+            QSGTexture *t = sg->createTexture();
+            t->setImage(table);
+            static_cast<ParticleTrailsMaterialCT *>(m_material)->colortable = t;
         }
     }
 
     if (!m_material)
         m_material = new ParticleTrailsMaterial();
 
-    m_material->texture = sg->textureManager()->upload(image);
+
+    m_material->texture = sg->createTexture();
+    m_material->texture->setImage(image);
 
     m_node = new GeometryNode();
     m_node->setGeometry(g);

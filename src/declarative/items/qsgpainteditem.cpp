@@ -47,6 +47,8 @@
 #include "qsgcontext.h"
 #include "adaptationlayer.h"
 
+QT_BEGIN_NAMESPACE
+
 QSGPaintedItemPrivate::QSGPaintedItemPrivate()
 : geometryDirty(false), contentsDirty(false), opaquePainting(false)
 {
@@ -178,7 +180,7 @@ Node *QSGPaintedItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         node->setTexture(d->textureProvider);
     }
 
-    QImage image(width(), height(), QImage::Format_ARGB32);
+    QImage image(width(), height(), QImage::Format_ARGB32_Premultiplied);
     if (!d->opaquePainting)
         image.fill(0);
 
@@ -197,3 +199,4 @@ Node *QSGPaintedItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
     return node;
 }
 
+QT_END_NAMESPACE

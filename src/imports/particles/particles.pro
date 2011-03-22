@@ -33,7 +33,11 @@ HEADERS += \
     #pairedparticle.h \
     followemitter.h \
     swarmaffector.h \
-    turbulenceaffector.h
+    turbulenceaffector.h \
+    particleextruder.h \
+    ellipseextruder.h \
+    directedemitter.h \
+    maskextruder.h
 
 SOURCES += \
     V1/qdeclarativeparticles.cpp \
@@ -66,7 +70,11 @@ SOURCES += \
     #pairedparticle.cpp \
     followemitter.cpp \
     swarmaffector.cpp \
-    turbulenceaffector.cpp
+    turbulenceaffector.cpp \
+    particleextruder.cpp \
+    ellipseextruder.cpp \
+    directedemitter.cpp \
+    maskextruder.cpp
 
 QT += declarative opengl
 

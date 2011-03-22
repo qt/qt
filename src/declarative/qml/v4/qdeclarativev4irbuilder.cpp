@@ -43,6 +43,7 @@
 
 #include <private/qdeclarativeglobalscriptclass_p.h> // For illegalNames
 #include <private/qdeclarativeanchors_p_p.h> // For AnchorLine
+#include <private/qsganchors_p_p.h> // For AnchorLine
 #include <private/qdeclarativetypenamecache_p.h>
 
 DEFINE_BOOL_CONFIG_OPTION(qmlVerboseCompiler, QML_VERBOSE_COMPILER)
@@ -72,8 +73,8 @@ static IR::Type irTypeFromVariantType(int t, QDeclarativeEnginePrivate *engine, 
     default:
         if (t == qMetaTypeId<QDeclarativeAnchorLine>())
             return IR::AnchorLineType;
-//        if (t == qMetaTypeId<QSGAnchorLine>())
-//            return IR::AnchorLineType;
+        else if (t == qMetaTypeId<QSGAnchorLine>())
+            return IR::SGAnchorLineType;
         else if (const QMetaObject *m = engine->metaObjectForType(t)) {
             meta = m;
             return IR::ObjectType;
@@ -500,7 +501,7 @@ bool QDeclarativeV4IRBuilder::visit(AST::IdentifierExpression *ast)
             } 
         }
 
-        if (!found && qmlVerboseCompiler()) 
+        if (!found && qmlVerboseCompiler())
             qWarning() << "*** unknown symbol:" << name;
     }
 

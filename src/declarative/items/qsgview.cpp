@@ -49,6 +49,7 @@
 #include <private/qdeclarativedebugtrace_p.h>
 
 #include <QtDeclarative/qdeclarativeengine.h>
+#include <private/qdeclarativeengine_p.h>
 #include <QtCore/qbasictimer.h>
 
 // XXX todo - This whole class should probably be merged with QDeclarativeView for 
@@ -70,6 +71,9 @@ public:
     void initResize();
     void updateSize();
     void setRootObject(QObject *);
+
+    void init();
+
     QSize rootObjectSize() const;
 
     QPointer<QSGItem> root;
@@ -83,8 +87,13 @@ public:
     QSGView::ResizeMode resizeMode;
     QSize initialSize;
     QElapsedTimer frameTimer;
-
 };
+
+void QSGViewPrivate::init()
+{
+    q_func()->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+    QDeclarativeEnginePrivate::get(&engine)->sgContext = QSGCanvasPrivate::context;
+}
 
 QSGViewPrivate::QSGViewPrivate()
 : root(0), component(0), resizeMode(QSGView::SizeViewToRootObject), initialSize(0,0) 
@@ -131,26 +140,26 @@ void QSGViewPrivate::itemGeometryChanged(QSGItem *resizeItem, const QRectF &newG
 QSGView::QSGView(QWidget *parent, Qt::WindowFlags f)
 : QSGCanvas(*(new QSGViewPrivate), parent, f)
 {
-    setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+    d_func()->init();
 }
 
 QSGView::QSGView(const QGLFormat &format, QWidget *parent, Qt::WindowFlags f)
 : QSGCanvas(*(new QSGViewPrivate), format, parent, f)
 {
-    setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+    d_func()->init();
 }
 
 QSGView::QSGView(const QUrl &source, QWidget *parent, Qt::WindowFlags f)
 : QSGCanvas(*(new QSGViewPrivate), parent, f)
 {
-    setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+    d_func()->init();
     setSource(source);
 }
 
 QSGView::QSGView(const QUrl &source, const QGLFormat &format, QWidget *parent, Qt::WindowFlags f)
 : QSGCanvas(*(new QSGViewPrivate), format, parent, f)
 {
-    setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+    d_func()->init();
     setSource(source);
 }
 

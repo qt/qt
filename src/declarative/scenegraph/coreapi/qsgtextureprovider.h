@@ -42,7 +42,7 @@
 #ifndef QSGTEXTUREPROVIDER_H
 #define QSGTEXTUREPROVIDER_H
 
-#include "qsgtexturemanager.h"
+#include "qsgtexture.h"
 #include "qobject.h"
 
 QT_BEGIN_HEADER
@@ -69,6 +69,10 @@ public:
     QSGTextureProvider(QObject *parent = 0);
     virtual void updateTexture() { }
     virtual QSGTextureRef texture() = 0;
+
+    virtual bool isStaticTexture() const;
+
+    void bind(QSGTexture *oldTexture = 0);
 
     bool opaque() const { return m_opaque; }
     void setOpaque(bool enabled) { m_opaque = enabled; }
@@ -109,7 +113,6 @@ public:
     virtual QSGTextureProvider *textureProvider() const = 0;
 };
 Q_DECLARE_INTERFACE(QSGTextureProviderInterface, "QSGTextureProviderInterface")
-
 
 QT_END_NAMESPACE
 

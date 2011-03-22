@@ -1,4 +1,4 @@
-// Commit: f018d9236647b687e03dd9d2e1867944b4f4058b
+// Commit: 39013a4a8238d522ed1d13adb25e702da9e25fc9
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -320,7 +320,7 @@ Node *QSGBorderImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 {
     Q_D(QSGBorderImage);
 
-    if (d->pix.pixmap().isNull() || width() <= 0 || height() <= 0) {
+    if (d->pix.texture().isNull() || width() <= 0 || height() <= 0) {
         delete oldNode;
         return 0;
     }
@@ -339,10 +339,7 @@ Node *QSGBorderImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
         const QSGScaleGrid *border = d->getScaleGrid();
         QRect inner(border->left(), border->top(), d->pix.width() - border->right() - border->left(),
                     d->pix.height() - border->bottom() - border->top());
-        QSGTextureManager *tm = QSGContext::current->textureManager();
-        QSGTextureRef ref = tm->upload(d->pix.pixmap().toImage());
-
-        node = new QSGNinePatchNode(QRectF(0, 0, width(), height()), ref, inner, d->smooth);
+        node = new QSGNinePatchNode(QRectF(0, 0, width(), height()), d->pix.texture(), inner, d->smooth);
     } else {
         node->setRect(QRectF(0, 0, width(), height()));
         node->setLinearFiltering(d->smooth);

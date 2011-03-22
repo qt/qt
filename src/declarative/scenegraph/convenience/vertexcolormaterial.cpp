@@ -43,6 +43,8 @@
 
 #include <qglshaderprogram.h>
 
+QT_BEGIN_NAMESPACE
+
 class VertexColorMaterialShader : public AbstractMaterialShader
 {
 public:
@@ -130,3 +132,5 @@ bool VertexColorMaterial::is(const AbstractMaterial *effect)
 {
     return effect->type() == &VertexColorMaterialShader::type;
 }
+
+QT_END_NAMESPACE

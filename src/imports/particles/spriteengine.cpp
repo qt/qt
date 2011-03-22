@@ -3,8 +3,7 @@
 #include <QDebug>
 #include <QPainter>
 #include <QSet>
-
-#include <QSGTextureManager>
+#include <QtOpenGL>
 
 SpriteEngine::SpriteEngine(QObject *parent) :
     QObject(parent), m_timeOffset(0)
@@ -57,7 +56,9 @@ QImage SpriteEngine::assembledImage()
     int frameHeight = 0;
     int frameWidth = 0;
     m_maxFrames = 0;
-    int maxSize = QSGTextureManager().maxTextureSize();
+
+    int maxSize;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxSize);
 
     foreach(SpriteState* state, m_states){
         if(state->frames() > m_maxFrames)

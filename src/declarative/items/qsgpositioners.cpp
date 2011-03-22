@@ -1,4 +1,4 @@
-// Commit: f018d9236647b687e03dd9d2e1867944b4f4058b
+// Commit: cc6408ccd5453d1bed9f98b9caa14861cea5742b
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -321,26 +321,34 @@ void QSGColumn::reportConflictingAnchors()
 }
 
 QSGRow::QSGRow(QSGItem *parent)
-: QSGBasePositioner(Horizontal, parent), m_layoutDirection(Qt::LeftToRight)
+: QSGBasePositioner(Horizontal, parent)
 {
 }
 
 Qt::LayoutDirection QSGRow::layoutDirection() const
 {
-    return m_layoutDirection;
+    return QSGBasePositionerPrivate::getLayoutDirection(this);
 }
 
 void QSGRow::setLayoutDirection(Qt::LayoutDirection layoutDirection)
 {
-    if (m_layoutDirection != layoutDirection) {
-        m_layoutDirection = layoutDirection;
+    QSGBasePositionerPrivate *d = static_cast<QSGBasePositionerPrivate* >(QSGBasePositionerPrivate::get(this));
+    if (d->layoutDirection != layoutDirection) {
+        d->layoutDirection = layoutDirection;
         prePositioning();
         emit layoutDirectionChanged();
+        emit effectiveLayoutDirectionChanged();
     }
+}
+
+Qt::LayoutDirection QSGRow::effectiveLayoutDirection() const
+{
+    return QSGBasePositionerPrivate::getEffectiveLayoutDirection(this);
 }
 
 void QSGRow::doPositioning(QSizeF *contentSize)
 {
+    QSGBasePositionerPrivate *d = static_cast<QSGBasePositionerPrivate* >(QSGBasePositionerPrivate::get(this));
     int hoffset = 0;
 
     QList<int> hoffsets;
@@ -349,10 +357,10 @@ void QSGRow::doPositioning(QSizeF *contentSize)
         if (!child.item || !child.isVisible)
             continue;
 
-        if(m_layoutDirection == Qt::LeftToRight){
-            if(child.item->x() != hoffset)
+        if (d->isLeftToRight()) {
+            if (child.item->x() != hoffset)
                 positionX(hoffset, child);
-        }else{
+        } else {
             hoffsets << hoffset;
         }
 
@@ -364,12 +372,12 @@ void QSGRow::doPositioning(QSizeF *contentSize)
 
     contentSize->setWidth(hoffset - spacing());
 
-    if(m_layoutDirection == Qt::LeftToRight)
+    if (d->isLeftToRight())
         return;
 
     //Right to Left layout
     int end = 0;
-    if(!widthValid())
+    if (!widthValid())
         end = contentSize->width();
     else
         end = width();
@@ -380,7 +388,7 @@ void QSGRow::doPositioning(QSizeF *contentSize)
         if (!child.item || !child.isVisible)
             continue;
         hoffset = end - hoffsets[acc++] - child.item->width();
-        if(child.item->x() != hoffset)
+        if (child.item->x() != hoffset)
             positionX(hoffset, child);
     }
 }
@@ -409,7 +417,7 @@ void QSGRow::reportConflictingAnchors()
 }
 
 QSGGrid::QSGGrid(QSGItem *parent) :
-    QSGBasePositioner(Both, parent), m_rows(-1), m_columns(-1), m_flow(LeftToRight), m_layoutDirection(Qt::LeftToRight)
+    QSGBasePositioner(Both, parent), m_rows(-1), m_columns(-1), m_flow(LeftToRight)
 {
 }
 
@@ -447,21 +455,28 @@ void QSGGrid::setFlow(Flow flow)
 
 Qt::LayoutDirection QSGGrid::layoutDirection() const
 {
-    return m_layoutDirection;
+    return QSGBasePositionerPrivate::getLayoutDirection(this);
 }
 
 void QSGGrid::setLayoutDirection(Qt::LayoutDirection layoutDirection)
 {
-    if (m_layoutDirection != layoutDirection) {
-        m_layoutDirection = layoutDirection;
+    QSGBasePositionerPrivate *d = static_cast<QSGBasePositionerPrivate*>(QSGBasePositionerPrivate::get(this));
+    if (d->layoutDirection != layoutDirection) {
+        d->layoutDirection = layoutDirection;
         prePositioning();
         emit layoutDirectionChanged();
+        emit effectiveLayoutDirectionChanged();
     }
+}
+
+Qt::LayoutDirection QSGGrid::effectiveLayoutDirection() const
+{
+    return QSGBasePositionerPrivate::getEffectiveLayoutDirection(this);
 }
 
 void QSGGrid::doPositioning(QSizeF *contentSize)
 {
-
+    QSGBasePositionerPrivate *d = static_cast<QSGBasePositionerPrivate*>(QSGBasePositionerPrivate::get(this));
     int c = m_columns;
     int r = m_rows;
     //Is allocating the extra QPODVector too much overhead?
@@ -549,7 +564,7 @@ void QSGGrid::doPositioning(QSizeF *contentSize)
         end = widthSum;
 
     int xoffset=0;
-    if (m_layoutDirection == Qt::RightToLeft)
+    if (!d->isLeftToRight())
         xoffset = end;
     int yoffset=0;
     int curRow =0;
@@ -557,7 +572,7 @@ void QSGGrid::doPositioning(QSizeF *contentSize)
     for (int i = 0; i < visibleItems.count(); ++i) {
         const PositionedItem &child = visibleItems.at(i);
         int childXOffset = xoffset;
-        if (m_layoutDirection == Qt::RightToLeft)
+        if (!d->isLeftToRight())
             childXOffset -= child.item->width();
         if ((child.item->x() != childXOffset) || (child.item->y() != yoffset)){
             positionX(childXOffset, child);
@@ -565,7 +580,7 @@ void QSGGrid::doPositioning(QSizeF *contentSize)
         }
 
         if (m_flow == LeftToRight) {
-            if (m_layoutDirection == Qt::LeftToRight)
+            if (d->isLeftToRight())
                 xoffset += maxColWidth[curCol]+spacing();
             else
                 xoffset -= maxColWidth[curCol]+spacing();
@@ -573,7 +588,7 @@ void QSGGrid::doPositioning(QSizeF *contentSize)
             curCol%=c;
             if (!curCol){
                 yoffset += maxRowHeight[curRow]+spacing();
-                if (m_layoutDirection == Qt::LeftToRight)
+                if (d->isLeftToRight())
                     xoffset = 0;
                 else
                     xoffset = end;
@@ -586,7 +601,7 @@ void QSGGrid::doPositioning(QSizeF *contentSize)
             curRow++;
             curRow%=r;
             if (!curRow){
-                if (m_layoutDirection == Qt::LeftToRight)
+                if (d->isLeftToRight())
                     xoffset += maxColWidth[curCol]+spacing();
                 else
                     xoffset -= maxColWidth[curCol]+spacing();
@@ -622,12 +637,10 @@ class QSGFlowPrivate : public QSGBasePositionerPrivate
 
 public:
     QSGFlowPrivate()
-        : QSGBasePositionerPrivate(), flow(QSGFlow::LeftToRight),
-          layoutDirection(Qt::LeftToRight)
+        : QSGBasePositionerPrivate(), flow(QSGFlow::LeftToRight)
     {}
 
     QSGFlow::Flow flow;
-    Qt::LayoutDirection layoutDirection;
 };
 
 QSGFlow::QSGFlow(QSGItem *parent)
@@ -667,7 +680,13 @@ void QSGFlow::setLayoutDirection(Qt::LayoutDirection layoutDirection)
         d->layoutDirection = layoutDirection;
         prePositioning();
         emit layoutDirectionChanged();
+        emit effectiveLayoutDirectionChanged();
     }
+}
+
+Qt::LayoutDirection QSGFlow::effectiveLayoutDirection() const
+{
+    return QSGBasePositionerPrivate::getEffectiveLayoutDirection(this);
 }
 
 void QSGFlow::doPositioning(QSizeF *contentSize)
@@ -698,7 +717,7 @@ void QSGFlow::doPositioning(QSizeF *contentSize)
             }
         }
 
-        if (d->layoutDirection == Qt::LeftToRight){
+        if (d->isLeftToRight()) {
             if (child.item->x() != hoffset)
                 positionX(hoffset, child);
         } else {
@@ -720,7 +739,7 @@ void QSGFlow::doPositioning(QSizeF *contentSize)
             linemax = qMax(linemax, qCeil(child.item->width()));
         }
     }
-    if (d->layoutDirection == Qt::LeftToRight)
+    if (d->isLeftToRight())
         return;
 
     int end;

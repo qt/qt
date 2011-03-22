@@ -5,8 +5,20 @@ Rectangle{
     color: "goldenrod"
     width: 400
     height: 400
+    ColoredParticle{
+        id: test
+        particles: ["Test"]
+        image: "particle.png"
+        system: sys
+        z: 2
+        anchors.fill: parent
+        color: "lightsteelblue"
+        colorVariation: 0.0
+        additive: 0.6
+    }
     SpriteParticle{
         id: single
+        particles: ["Face"]
         system: sys
         z: 2
         anchors.fill: parent
@@ -16,34 +28,38 @@ Rectangle{
             duration: 120
         }
     }
-    Rectangle{
-        id: rect
-        width: 40
-        height: 40
-        x: 180
-        y: 180
-        color: "lightsteelblue"
-        TrailEmitter{
-            system: sys
-            anchors.centerIn: parent
-            id: particles
-                particlesPerSecond: 6
-                particleDuration: 5000
-                emitting: true
-                xSpeed: 0
-                ySpeed: 0
-                xSpeedVariation: 100
-                ySpeedVariation: 100
-                particleSize: 30
-                particleSizeVariation: 10
-        }
-        z: 1
-        MouseArea{
-            id: ma
-            anchors.fill: parent
-            drag.target: rect
-            drag.axis: Drag.XandYAxis
-        }
+    Mask{
+        id: mask
+        source: "smileMask.png"
+    }
+    TrailEmitter{
+        system: sys
+        particle: "Test"
+        anchors.fill: parent
+        id: particles2
+        particlesPerSecond: 6000
+        particleDuration: 720
+        emitting: true
+        xSpeed: 0
+        ySpeed: 0
+        particleSize: 10
+        extruder: mask
+    }
+    TrailEmitter{
+        system: sys
+        particle: "Face"
+        anchors.fill: parent
+        id: particles
+        particlesPerSecond: 60
+        particleDuration: 1440
+        emitting: true
+        xSpeed: 0
+        ySpeed: 0
+        xSpeedVariation: 10
+        ySpeedVariation: 10
+        particleSize: 30
+        particleSizeVariation: 10
+        extruder: mask
     }
     ParticleSystem{
         id: sys

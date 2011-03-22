@@ -102,6 +102,9 @@ QPlatformFontDatabase *QPlatformIntegration::fontDatabase() const
     \sa QPlatformClipboard
 
 */
+
+#ifndef QT_NO_CLIPBOARD
+
 QPlatformClipboard *QPlatformIntegration::clipboard() const
 {
     static QPlatformClipboard *clipboard = 0;
@@ -109,6 +112,13 @@ QPlatformClipboard *QPlatformIntegration::clipboard() const
         clipboard = new QPlatformClipboard;
     }
     return clipboard;
+}
+
+#endif
+
+QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
+{
+    return 0;
 }
 
 /*!

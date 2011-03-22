@@ -143,6 +143,7 @@ enum Type {
     StringType,
     UrlType,
     AnchorLineType,
+    SGAnchorLineType,
     AttachType,
     ObjectType,
 

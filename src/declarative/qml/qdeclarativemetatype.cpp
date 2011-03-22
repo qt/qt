@@ -756,6 +756,9 @@ bool QDeclarativeMetaType::isModule(const QByteArray &module, int versionMajor, 
         }
     }
 
+    // If no Types nor ModuleAPis introduced, return true, otherwise false
+    if (!data->modules.contains(module) && data->moduleApis.value(module).moduleApis.count() == 0) return true;
+
     return false;
 }
 

@@ -1,4 +1,4 @@
-// Commit: 57676c237992e0aa5a93a4e8fa66b3e7b90c2c90
+// Commit: 2c7cab4172f1acc86fd49345a2847417e162f2c3
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
@@ -160,6 +160,7 @@ static void qt_sgitems_defineModule(const char *uri, int major, int minor)
 
     qmlRegisterUncreatableType<QSGKeyNavigationAttached>(uri,major,minor,"KeyNavigation",QSGKeyNavigationAttached::tr("KeyNavigation is only available via attached properties"));
     qmlRegisterUncreatableType<QSGKeysAttached>(uri,major,minor,"Keys",QSGKeysAttached::tr("Keys is only available via attached properties"));
+    qmlRegisterUncreatableType<QSGLayoutMirroringAttached>(uri,major,minor,"LayoutMirroring", QSGLayoutMirroringAttached::tr("LayoutMirroring is only available via attached properties"));
 
     qmlRegisterType<QSGPinchArea>(uri,major,minor,"PinchArea");
     qmlRegisterType<QSGPinch>(uri,major,minor,"Pinch");

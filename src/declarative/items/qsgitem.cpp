@@ -1,4 +1,4 @@
-// Commit: f018d9236647b687e03dd9d2e1867944b4f4058b
+// Commit: 5c783d0a9a912816813945387903857a314040b5
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -40,7 +40,6 @@
 **
 ****************************************************************************/
 
-#include "qsgitem_p.h"
 #include "qsgitem.h"
 
 #include "qsgcanvas.h"
@@ -66,6 +65,7 @@
 #include <private/qdeclarativeopenmetaobject_p.h>
 #include <private/qdeclarativestate_p.h>
 #include <private/qlistmodelinterface_p.h>
+#include <private/qsgitem_p.h>
 
 #include <float.h>
 
@@ -309,6 +309,13 @@ void QSGKeyNavigationAttached::setLeft(QSGItem *i)
     if (d->left == i)
         return;
     d->left = i;
+    d->leftSet = true;
+    QSGKeyNavigationAttached* other =
+            qobject_cast<QSGKeyNavigationAttached*>(qmlAttachedPropertiesObject<QSGKeyNavigationAttached>(i));
+    if (other && !other->d_func()->rightSet){
+        other->d_func()->right = qobject_cast<QSGItem*>(parent());
+        emit other->rightChanged();
+    }
     emit leftChanged();
 }
 
@@ -324,6 +331,13 @@ void QSGKeyNavigationAttached::setRight(QSGItem *i)
     if (d->right == i)
         return;
     d->right = i;
+    d->rightSet = true;
+    QSGKeyNavigationAttached* other =
+            qobject_cast<QSGKeyNavigationAttached*>(qmlAttachedPropertiesObject<QSGKeyNavigationAttached>(i));
+    if (other && !other->d_func()->leftSet){
+        other->d_func()->left = qobject_cast<QSGItem*>(parent());
+        emit other->leftChanged();
+    }
     emit rightChanged();
 }
 
@@ -339,6 +353,13 @@ void QSGKeyNavigationAttached::setUp(QSGItem *i)
     if (d->up == i)
         return;
     d->up = i;
+    d->upSet = true;
+    QSGKeyNavigationAttached* other =
+            qobject_cast<QSGKeyNavigationAttached*>(qmlAttachedPropertiesObject<QSGKeyNavigationAttached>(i));
+    if (other && !other->d_func()->downSet){
+        other->d_func()->down = qobject_cast<QSGItem*>(parent());
+        emit other->downChanged();
+    }
     emit upChanged();
 }
 
@@ -354,6 +375,13 @@ void QSGKeyNavigationAttached::setDown(QSGItem *i)
     if (d->down == i)
         return;
     d->down = i;
+    d->downSet = true;
+    QSGKeyNavigationAttached* other =
+            qobject_cast<QSGKeyNavigationAttached*>(qmlAttachedPropertiesObject<QSGKeyNavigationAttached>(i));
+    if(other && !other->d_func()->upSet){
+        other->d_func()->up = qobject_cast<QSGItem*>(parent());
+        emit other->upChanged();
+    }
     emit downChanged();
 }
 
@@ -369,6 +397,13 @@ void QSGKeyNavigationAttached::setTab(QSGItem *i)
     if (d->tab == i)
         return;
     d->tab = i;
+    d->tabSet = true;
+    QSGKeyNavigationAttached* other =
+            qobject_cast<QSGKeyNavigationAttached*>(qmlAttachedPropertiesObject<QSGKeyNavigationAttached>(i));
+    if(other && !other->d_func()->backtabSet){
+        other->d_func()->backtab = qobject_cast<QSGItem*>(parent());
+        emit other->backtabChanged();
+    }
     emit tabChanged();
 }
 
@@ -384,6 +419,13 @@ void QSGKeyNavigationAttached::setBacktab(QSGItem *i)
     if (d->backtab == i)
         return;
     d->backtab = i;
+    d->backtabSet = true;
+    QSGKeyNavigationAttached* other =
+            qobject_cast<QSGKeyNavigationAttached*>(qmlAttachedPropertiesObject<QSGKeyNavigationAttached>(i));
+    if(other && !other->d_func()->tabSet){
+        other->d_func()->tab = qobject_cast<QSGItem*>(parent());
+        emit other->tabChanged();
+    }
     emit backtabChanged();
 }
 
@@ -411,19 +453,28 @@ void QSGKeyNavigationAttached::keyPressed(QKeyEvent *event, bool post)
         return;
     }
 
+    bool mirror = false;
     switch(event->key()) {
-    case Qt::Key_Left:
-        if (d->left) {
-            setFocusNavigation(d->left, "left");
+    case Qt::Key_Left: {
+        if (QSGItem *parentItem = qobject_cast<QSGItem*>(parent()))
+            mirror = QSGItemPrivate::get(parentItem)->effectiveLayoutMirror;
+        QSGItem* leftItem = mirror ? d->right : d->left;
+        if (leftItem) {
+            setFocusNavigation(leftItem, mirror ? "right" : "left");
             event->accept();
         }
         break;
-    case Qt::Key_Right:
-        if (d->right) {
-            setFocusNavigation(d->right, "right");
+    }
+    case Qt::Key_Right: {
+        if (QSGItem *parentItem = qobject_cast<QSGItem*>(parent()))
+            mirror = QSGItemPrivate::get(parentItem)->effectiveLayoutMirror;
+        QSGItem* rightItem = mirror ? d->left : d->right;
+        if (rightItem) {
+            setFocusNavigation(rightItem, mirror ? "left" : "right");
             event->accept();
         }
         break;
+    }
     case Qt::Key_Up:
         if (d->up) {
             setFocusNavigation(d->up, "up");
@@ -465,16 +516,19 @@ void QSGKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
         return;
     }
 
+    bool mirror = false;
     switch(event->key()) {
     case Qt::Key_Left:
-        if (d->left) {
+        if (QSGItem *parentItem = qobject_cast<QSGItem*>(parent()))
+            mirror = QSGItemPrivate::get(parentItem)->effectiveLayoutMirror;
+        if (mirror ? d->right : d->left)
             event->accept();
-        }
         break;
     case Qt::Key_Right:
-        if (d->right) {
+        if (QSGItem *parentItem = qobject_cast<QSGItem*>(parent()))
+            mirror = QSGItemPrivate::get(parentItem)->effectiveLayoutMirror;
+        if (mirror ? d->left : d->right)
             event->accept();
-        }
         break;
     case Qt::Key_Up:
         if (d->up) {
@@ -722,6 +776,110 @@ QSGKeysAttached *QSGKeysAttached::qmlAttachedProperties(QObject *obj)
     return new QSGKeysAttached(obj);
 }
 
+
+QSGLayoutMirroringAttached::QSGLayoutMirroringAttached(QObject *parent) : QObject(parent), itemPrivate(0)
+{
+    if (QSGItem *item = qobject_cast<QSGItem*>(parent)) {
+        itemPrivate = QSGItemPrivate::get(item);
+        itemPrivate->attachedLayoutDirection = this;
+    } else
+        qmlInfo(parent) << tr("LayoutDirection attached property only works with Items");
+}
+
+QSGLayoutMirroringAttached * QSGLayoutMirroringAttached::qmlAttachedProperties(QObject *object)
+{
+    return new QSGLayoutMirroringAttached(object);
+}
+
+bool QSGLayoutMirroringAttached::enabled() const
+{
+    return itemPrivate ? itemPrivate->effectiveLayoutMirror : false;
+}
+
+void QSGLayoutMirroringAttached::setEnabled(bool enabled)
+{
+    if (!itemPrivate)
+        return;
+
+    itemPrivate->isMirrorImplicit = false;
+    if (enabled != itemPrivate->effectiveLayoutMirror) {
+        itemPrivate->setLayoutMirror(enabled);
+        if (itemPrivate->inheritMirrorFromItem)
+             itemPrivate->resolveLayoutMirror();
+    }
+}
+
+void QSGLayoutMirroringAttached::resetEnabled()
+{
+    if (itemPrivate && !itemPrivate->isMirrorImplicit) {
+        itemPrivate->isMirrorImplicit = true;
+        itemPrivate->resolveLayoutMirror();
+    }
+}
+
+bool QSGLayoutMirroringAttached::childrenInherit() const
+{
+    return itemPrivate ? itemPrivate->inheritMirrorFromItem : false;
+}
+
+void QSGLayoutMirroringAttached::setChildrenInherit(bool childrenInherit) {
+    if (itemPrivate && childrenInherit != itemPrivate->inheritMirrorFromItem) {
+        itemPrivate->inheritMirrorFromItem = childrenInherit;
+        itemPrivate->resolveLayoutMirror();
+        childrenInheritChanged();
+    }
+}
+
+void QSGItemPrivate::resolveLayoutMirror()
+{
+    Q_Q(QSGItem);
+    if (QSGItem *parentItem = q->parentItem()) {
+        QSGItemPrivate *parentPrivate = QSGItemPrivate::get(parentItem);
+        setImplicitLayoutMirror(parentPrivate->inheritedLayoutMirror, parentPrivate->inheritMirrorFromParent);
+    } else {
+        setImplicitLayoutMirror(isMirrorImplicit ? false : effectiveLayoutMirror, inheritMirrorFromItem);
+    }
+}
+
+void QSGItemPrivate::setImplicitLayoutMirror(bool mirror, bool inherit)
+{
+    inherit = inherit || inheritMirrorFromItem;
+    if (!isMirrorImplicit && inheritMirrorFromItem)
+        mirror = effectiveLayoutMirror;
+    if (mirror == inheritedLayoutMirror && inherit == inheritMirrorFromParent)
+        return;
+
+    inheritMirrorFromParent = inherit;
+    inheritedLayoutMirror = inheritMirrorFromParent ? mirror : false;
+
+    if (isMirrorImplicit)
+        setLayoutMirror(inherit ? inheritedLayoutMirror : false);
+    for (int i = 0; i < childItems.count(); ++i) {
+        if (QSGItem *child = qobject_cast<QSGItem *>(childItems.at(i))) {
+            QSGItemPrivate *childPrivate = QSGItemPrivate::get(child);
+            childPrivate->setImplicitLayoutMirror(inheritedLayoutMirror, inheritMirrorFromParent);
+        }
+    }
+}
+
+void QSGItemPrivate::setLayoutMirror(bool mirror)
+{
+    if (mirror != effectiveLayoutMirror) {
+        effectiveLayoutMirror = mirror;
+        if (_anchors) {
+            QSGAnchorsPrivate *anchor_d = QSGAnchorsPrivate::get(_anchors);
+            anchor_d->fillChanged();
+            anchor_d->centerInChanged();
+            anchor_d->updateHorizontalAnchors();
+            emit _anchors->mirroredChanged();
+        }
+        mirrorChange();
+        if (attachedLayoutDirection) {
+            emit attachedLayoutDirection->enabledChanged();
+        }
+    }
+}
+
 QSGItem::QSGItem(QSGItem* parent)
 : QObject(*(new QSGItemPrivate), parent)
 {
@@ -837,6 +995,8 @@ void QSGItem::setParentItem(QSGItem *parentItem)
                                                               QSGCanvasPrivate::DontChangeFocusProperty);
         }
     }
+
+    d->resolveLayoutMirror();
 
     d->itemChange(ItemParentHasChanged, d->parentItem);
 
@@ -1093,6 +1253,8 @@ QSGItemPrivate::QSGItemPrivate()
   keepMouse(false), hoverEnabled(false), smooth(false), focus(false), activeFocus(false), notifiedFocus(false),
   notifiedActiveFocus(false), filtersChildMouseEvents(false), explicitVisible(true), 
   effectiveVisible(true), explicitEnable(true), effectiveEnable(true), polishScheduled(false),
+  inheritedLayoutMirror(false), effectiveLayoutMirror(false), isMirrorImplicit(true),
+  inheritMirrorFromParent(false), inheritMirrorFromItem(false),
 
   canvas(0), parentItem(0),
 
@@ -1101,7 +1263,7 @@ QSGItemPrivate::QSGItemPrivate()
   x(0), y(0), width(0), height(0), implicitWidth(0), implicitHeight(0), 
   z(0), scale(1), rotation(0), opacity(1),
 
-  acceptedMouseButtons(0),
+  attachedLayoutDirection(0), acceptedMouseButtons(0),
   imHints(Qt::ImhNone),
   
   keyHandler(0),
@@ -1118,8 +1280,11 @@ void QSGItemPrivate::init(QSGItem *parent)
     Q_Q(QSGItem);
     baselineOffset.invalidate();
 
-    if (parent) 
+    if (parent) {
         q->setParentItem(parent);
+        QSGItemPrivate *parentPrivate = QSGItemPrivate::get(parent);
+        setImplicitLayoutMirror(parentPrivate->inheritedLayoutMirror, parentPrivate->inheritMirrorFromParent);
+    }
 }
 
 void QSGItemPrivate::data_append(QDeclarativeListProperty<QObject> *prop, QObject *o)

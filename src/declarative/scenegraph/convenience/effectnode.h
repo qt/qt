@@ -100,4 +100,8 @@ protected:
     bool m_dirty;
 };
 
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
 #endif // EFFECTNODE_H

@@ -47,6 +47,8 @@
 
 #include <qalgorithms.h>
 
+QT_BEGIN_NAMESPACE
+
 #ifdef Q_WS_WIN
 #include <private/qglextensions_p.h>
 #include <private/qgl_p.h>
@@ -528,3 +530,5 @@ void LayeredRenderer::mergeAndDraw(NodeList::const_iterator first, NodeList::con
     glDrawElements(GL_TRIANGLE_STRIP, m_indices.size(), GL_UNSIGNED_SHORT, m_indices.constData());
 
 }
+
+QT_END_NAMESPACE
