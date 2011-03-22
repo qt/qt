@@ -41,10 +41,10 @@
 
 #include "qpixmapdata_vg_p.h"
 #include "qvgfontglyphcache_p.h"
+#include <QtGui/private/qnativeimagehandleprovider_p.h>
 #include <private/qt_s60_p.h>
 
 #include <fbs.h>
-#include <bitdev.h>
 
 #ifdef QT_SYMBIAN_SUPPORTS_SGIMAGE
 #  include <sgresource/sgimage.h>
@@ -74,33 +74,6 @@ VGImage QVG::vgCreateEGLImageTargetKHR(VGeglImageKHR eglImage)
 }
 
 extern int qt_vg_pixmap_serial;
-
-static CFbsBitmap* createBlitCopy(CFbsBitmap* bitmap)
-{
-    CFbsBitmap *copy = q_check_ptr(new CFbsBitmap);
-    if(!copy)
-        return 0;
-
-    if (copy->Create(bitmap->SizeInPixels(), bitmap->DisplayMode()) != KErrNone) {
-        delete copy;
-        copy = 0;
-
-        return 0;
-    }
-
-    CFbsBitmapDevice* bitmapDevice = 0;
-    CFbsBitGc *bitmapGc = 0;
-    QT_TRAP_THROWING(bitmapDevice = CFbsBitmapDevice::NewL(copy));
-    QT_TRAP_THROWING(bitmapGc = CFbsBitGc::NewL());
-    bitmapGc->Activate(bitmapDevice);
-
-    bitmapGc->BitBlt(TPoint(), bitmap);
-
-    delete bitmapGc;
-    delete bitmapDevice;
-
-    return copy;
-}
 
 #ifdef QT_SYMBIAN_SUPPORTS_SGIMAGE
 static VGImage sgImageToVGImage(QEglContext *context, const RSgImage &sgImage)
@@ -136,7 +109,59 @@ void QVGPixmapData::cleanup()
 {
     is_null = w = h = 0;
     recreate = false;
-    source = QImage();
+    source = QVolatileImage();
+}
+
+bool QVGPixmapData::initFromNativeImageHandle(void *handle, const QString &type)
+{
+    if (type == QLatin1String("RSgImage")) {
+        fromNativeType(handle, QPixmapData::SgImage);
+        return true;
+    } else if (type == QLatin1String("CFbsBitmap")) {
+        fromNativeType(handle, QPixmapData::FbsBitmap);
+        return true;
+    }
+    return false;
+}
+
+void QVGPixmapData::createFromNativeImageHandleProvider()
+{
+    void *handle = 0;
+    QString type;
+    nativeImageHandleProvider->get(&handle, &type);
+    if (handle) {
+        if (initFromNativeImageHandle(handle, type)) {
+            nativeImageHandle = handle;
+            nativeImageType = type;
+        } else {
+            qWarning("QVGPixmapData: Unknown native image type '%s'", qPrintable(type));
+        }
+    } else {
+        qWarning("QVGPixmapData: Native handle is null");
+    }
+}
+
+void QVGPixmapData::releaseNativeImageHandle()
+{
+    if (nativeImageHandleProvider && nativeImageHandle) {
+        nativeImageHandleProvider->release(nativeImageHandle, nativeImageType);
+        nativeImageHandle = 0;
+        nativeImageType = QString();
+    }
+}
+
+static inline bool conversionLessFormat(QImage::Format format)
+{
+    switch (format) {
+        case QImage::Format_RGB16: // EColor64K
+        case QImage::Format_RGB32: // EColor16MU
+        case QImage::Format_ARGB32: // EColor16MA
+        case QImage::Format_ARGB32_Premultiplied: // EColor16MAP
+        case QImage::Format_Indexed8: // EGray256, EColor256
+            return true;
+        default:
+            return false;
+    }
 }
 
 void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
@@ -155,55 +180,37 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         }
 
         is_null = (w <= 0 || h <= 0);
-        source = QImage(); // vgGetImageSubData() some day?
+        source = QVolatileImage(); // readback will be done later, only when needed
         recreate = false;
         prevSize = QSize(w, h);
-        //setSerialNumber(++qt_vg_pixmap_serial);
+        updateSerial();
 #endif
-    } else if (type == QPixmapData::FbsBitmap) {
-        CFbsBitmap *bitmap = reinterpret_cast<CFbsBitmap*>(pixmap);
-
-        bool deleteSourceBitmap = false;
-#ifdef Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
-
-        // Rasterize extended bitmaps
-
-        TUid extendedBitmapType = bitmap->ExtendedBitmapType();
-        if (extendedBitmapType != KNullUid) {
-            bitmap = createBlitCopy(bitmap);
-            deleteSourceBitmap = true;
+    } else if (type == QPixmapData::FbsBitmap && pixmap) {
+        CFbsBitmap *bitmap = reinterpret_cast<CFbsBitmap *>(pixmap);
+        QSize size(bitmap->SizeInPixels().iWidth, bitmap->SizeInPixels().iHeight);
+        resize(size.width(), size.height());
+        source = QVolatileImage(bitmap); // duplicates only, if possible
+        if (source.isNull())
+            return;
+        if (!conversionLessFormat(source.format())) {
+            // Here we may need to copy if the formats do not match.
+            // (e.g. for display modes other than EColor16MAP and EColor16MU)
+            source.beginDataAccess();
+            QImage::Format format = idealFormat(&source.imageRef(), Qt::AutoColor);
+            source.endDataAccess(true);
+            source.ensureFormat(format);
         }
-#endif
-
-        if (bitmap->IsCompressedInRAM()) {
-            bitmap = createBlitCopy(bitmap);
-            deleteSourceBitmap = true;
-        }
-
-        TDisplayMode displayMode = bitmap->DisplayMode();
-        QImage::Format format = qt_TDisplayMode2Format(displayMode);
-
-        TSize size = bitmap->SizeInPixels();
-        int bytesPerLine = bitmap->ScanLineLength(size.iWidth, displayMode);
-
-        bitmap->BeginDataAccess();
-        uchar *bytes = (uchar*)bitmap->DataAddress();
-        QImage img = QImage(bytes, size.iWidth, size.iHeight, bytesPerLine, format);
-        img = img.copy();
-        bitmap->EndDataAccess();
-
-        if(displayMode == EGray2) {
-            //Symbian thinks set pixels are white/transparent, Qt thinks they are foreground/solid
-            //So invert mono bitmaps so that masks work correctly.
-            img.invertPixels();
-        } else if(displayMode == EColor16M) {
-            img = img.rgbSwapped(); // EColor16M is BGR
-        }
-
-        fromImage(img, Qt::AutoColor);
-
-        if(deleteSourceBitmap)
-            delete bitmap;
+        recreate = true;
+    } else if (type == QPixmapData::VolatileImage && pixmap) {
+        QVolatileImage *img = static_cast<QVolatileImage *>(pixmap);
+        resize(img->width(), img->height());
+        source = *img;
+        recreate = true;
+    } else if (type == QPixmapData::NativeImageHandleProvider && pixmap) {
+        destroyImages();
+        nativeImageHandleProvider = static_cast<QNativeImageHandleProvider *>(pixmap);
+        // Cannot defer the retrieval, we need at least the size right away.
+        createFromNativeImageHandleProvider();
     }
 }
 
@@ -270,26 +277,13 @@ void* QVGPixmapData::toNativeType(NativeType type)
         driver.Close();
         return reinterpret_cast<void*>(sgImage.take());
 #endif
-    } else if (type == QPixmapData::FbsBitmap) {
-                CFbsBitmap *bitmap = q_check_ptr(new CFbsBitmap);
-
-        if (bitmap) {
-            if (bitmap->Create(TSize(source.width(), source.height()),
-                              EColor16MAP) == KErrNone) {
-                const uchar *sptr = const_cast<const QImage&>(source).bits();
-                bitmap->BeginDataAccess();
-
-                uchar *dptr = (uchar*)bitmap->DataAddress();
-                Mem::Copy(dptr, sptr, source.byteCount());
-
-                bitmap->EndDataAccess();
-            } else {
-                delete bitmap;
-                bitmap = 0;
-            }
+    } else if (type == QPixmapData::FbsBitmap && isValid()) {
+        ensureReadback(true);
+        if (source.isNull()) {
+            source = QVolatileImage(w, h, sourceFormat());
         }
-
-        return reinterpret_cast<void*>(bitmap);
+        // Just duplicate the bitmap handle, no data copying happens.
+        return source.duplicateNativeImage();
     }
     return 0;
 }

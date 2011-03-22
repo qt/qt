@@ -93,6 +93,9 @@ public:
 
     TCoeInputCapabilities inputCapabilities();
 
+    void resetSplitViewWidget(bool keepInputWidget = false);
+    void ensureFocusWidgetVisible(QWidget *widget);
+
 protected:
     void timerEvent(QTimerEvent *timerEvent);
 
@@ -104,9 +107,11 @@ private:
     void queueInputCapabilitiesChanged();
     bool needsInputPanel();
     void commitTemporaryPreeditString();
+    bool isWidgetVisible(QWidget *widget, int offset = 0);
 
 private Q_SLOTS:
     void ensureInputCapabilitiesChanged();
+    void translateInputWidget();
 
     // From MCoeFepAwareTextEditor
 public:
@@ -155,8 +160,14 @@ private:
     QBasicTimer m_tempPreeditStringTimeout;
     bool m_hasTempPreeditString;
 
+    int m_splitViewResizeBy;
+    Qt::WindowStates m_splitViewPreviousWindowStates;
+    QRectF m_transformation;
+
     friend class tst_QInputContext;
 };
+
+Q_GUI_EXPORT void qt_s60_setPartialScreenInputMode(bool enable);
 
 QT_END_NAMESPACE
 

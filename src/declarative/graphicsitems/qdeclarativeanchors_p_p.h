@@ -133,6 +133,7 @@ public:
     bool checkVAnchorValid(QDeclarativeAnchorLine anchor) const;
     bool calcStretch(const QDeclarativeAnchorLine &edge1, const QDeclarativeAnchorLine &edge2, qreal offset1, qreal offset2, QDeclarativeAnchorLine::AnchorLine line, qreal &stretch);
 
+    bool isMirrored() const;
     void updateHorizontalAnchors();
     void updateVerticalAnchors();
     void fillChanged();

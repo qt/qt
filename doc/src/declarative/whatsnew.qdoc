@@ -29,22 +29,35 @@
 \title What's new in Qt Quick
 \page qtquick-whatsnew.html
 
-\section1 Qt 4.7.3 includes QtQuick 1.1
+\section1 Qt 4.7.4 includes QtQuick 1.1
 
-QtQuick 1.1 is a minor feature update.
+QtQuick 1.1 is a minor feature update.  \e {import QtQuick 1.1} to use the new features.
 
 \section2 PinchArea
 
 PinchArea provides support for the common two finger pinch gesture.
 
+\section2 LayoutMirroring attached property
+
+\l {LayoutMirroring}{Layout mirroring} is useful when you need to support both left-to-right and right-to-left layout versions of your application that target different language areas.
+
+\section2 Anchors
+
+Added the following property:
+\list
+\o \l {Item::}{anchors.mirrored}
+\endlist
+
 \section2 Text
 
 Added the following properties:
 \list
-\o lineSpacing
-\o lineCount
-\o maximumLineCount
-\o truncated
+\o \l {Text::}{lineHeight}
+\o \l {Text::}{lineHeightMode}
+\o \l {Text::}{lineCount}
+\o \l {Text::}{maximumLineCount}
+\o \l {Text::}{truncated}
+\o \l {Text::}{effectiveHorizontalAlignment}
 \endlist
 
 horizontalAlignment now accepts Text.AlignJustify alignment mode.
@@ -53,85 +66,107 @@ horizontalAlignment now accepts Text.AlignJustify alignment mode.
 
 Added the following properties, methods and signal handlers:
 \list
-\o canPaste
-\o lineCount
-\o deselect()
-\o moveCursorSelection(int pos, SelectionMode mode) to enable selection by word
-\o onLinkActivated(string link) 
+\o \l {TextEdit::}{canPaste}
+\o \l {TextEdit::}{lineCount}
+\o \l {TextEdit::}{inputMethodComposing}
+\o \l {TextEdit::}{mouseSelectionMode}
+\o \l {TextEdit::}{effectiveHorizontalAlignment}
+\o \l {TextEdit::}{deselect()}
+\o \l {TextEdit::}{isRightToLeft()}
+\o \l {TextEdit::}{moveCursorSelection()} to enable selection by word
+\o \l {TextEdit::}{onLinkActivated}
 \endlist
 
 \section2 TextInput
 
 Added the following properties and methods:
 \list
-\o canPaste
-\o deselect()
-\o moveCursorSelection(int pos, SelectionMode mode) to enable selection by word
+\o \l {TextInput::}{canPaste}
+\o \l {TextInput::}{inputMethodComposing}
+\o \l {TextInput::}{mouseSelectionMode}
+\o \l {TextInput::}{effectiveHorizontalAlignment}
+\o \l {TextInput::}{deselect()}
+\o \l {TextInput::}{isRightToLeft()}
+\o \l {TextInput::}{moveCursorSelection()} to enable selection by word
 \endlist
 
 \section2 Image, BorderImage and AnimatedImage
 
 Added the following properties:
 \list
-\o cache
-\o mirror
+\o \l{Image::}{cache}
+\o \l{Image::}{mirror}
 \endlist
 
 \section2 Item
 
 Added the following properties:
 \list
-\o implicitWidth and implicitHeight
+\o \l{Item::}{implicitWidth} and \l{Item::}{implicitHeight}
 \endlist
 
 \section2 Flickable
 
 Added the following methods:
 \list
-\o resizeContent(qreal w, qreal h, QPointF center)
-\o returnToBounds() 
+\o \l{Flickable::}{resizeContent()}
+\o \l{Flickable::}{returnToBounds()}
+\endlist
+
+\section2 MouseArea
+
+Added the following property:
+\list
+\o \l{MouseArea::}{preventStealing}
 \endlist
 
 \section2 ListView and GridView
 
-Added the following methods:
+Added the following properties and methods:
 \list
-\o positionViewAtBeginning()
-\o positionViewAtEnd() 
+\o \l{ListView::}{layoutDirection}
+\o \l{ListView::}{effectiveLayoutDirection}
+\o \l{ListView::}{positionViewAtBeginning()}
+\o \l{ListView::}{positionViewAtEnd()}
 \endlist
 
-\section2 Flow, Grid, Row
+\section2 Flow, Grid and Row
 
 Added the following properties:
 \list
-\o layoutDirection
+\o \l{Flow::}{layoutDirection}
+\o \l{Flow::}{effectiveLayoutDirection}
 \endlist
 
 \section2 Repeater
 
 Added the following methods and signal handlers:
 \list
-\o onItemAdded()
-\o onItemRemoved()
-\o itemAt(int index)
+\o \l{Repeater::}{onItemAdded}
+\o \l{Repeater::}{onItemRemoved}
+\o \l{Repeater::}{itemAt()}
 \endlist
 
 \section2 Component
 
-The createObject() method now accepts a map of initial property values for the created object.
+\list
+\o The \l{Component::}{createObject()} method now accepts a map of initial property values for
+the created object.
+\endlist
 
 \section2 Qt
 
-Added the following properties and methods:
 \list
-\o application.layoutDirection
-\o application.active
+\o Added the \l {QML:Qt::application}{Qt.application} object to hold generic global application
+properties.
 \endlist
 
 \section2 Other changes
 
 \list
-\o Functions can be assigned to properties from JavaScript to create property bindings
+\o Functions can be \l{Binding Properties from JavaScript}{assigned to properties from JavaScript}
+to create property bindings.
+\o QtQuick now supports Right to Left layout in positioners, views, anchors and text elements.
 \endlist
 
 

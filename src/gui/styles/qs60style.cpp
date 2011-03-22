@@ -118,6 +118,7 @@ const short *QS60StylePrivate::m_pmPointer = QS60StylePrivate::data[0];
 
 // theme background texture
 QPixmap *QS60StylePrivate::m_background = 0;
+QPixmap *QS60StylePrivate::m_placeHolderTexture = 0;
 
 // theme palette
 QPalette *QS60StylePrivate::m_themePalette = 0;
@@ -155,6 +156,10 @@ const double KTabFontMul = 0.72;
 QS60StylePrivate::~QS60StylePrivate()
 {
     clearCaches(); //deletes also background image
+    if (m_placeHolderTexture) {
+        delete m_placeHolderTexture;
+        m_placeHolderTexture = 0;
+    }
     deleteThemePalette();
 #ifdef Q_WS_S60
     removeAnimations();
@@ -505,7 +510,10 @@ void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
 {
     Q_UNUSED(app)
     QPalette applicationPalette = QApplication::palette();
-    applicationPalette.setBrush(QPalette::Window, backgroundTexture());
+    // The initial QPalette::Window is just a placeHolder QPixmap to save RAM
+    // if the actual texture is not needed. The real texture is created just before
+    // painting it in qt_s60_fill_background().
+    applicationPalette.setBrush(QPalette::Window, placeHolderTexture());
     setThemePalette(&applicationPalette);
 }
 
@@ -630,25 +638,6 @@ QPixmap QS60StylePrivate::cachedFrame(SkinFrameElements frame, const QSize &size
     return result;
 }
 
-void QS60StylePrivate::refreshUI()
-{
-    QList<QWidget *> widgets = QApplication::allWidgets();
-
-    for (int i = 0; i < widgets.size(); ++i) {
-        QWidget *widget = widgets.at(i);
-        if (widget == 0)
-            continue;
-
-        if (widget->style()) {
-            widget->style()->polish(widget);
-            QEvent event(QEvent::StyleChange);
-            qApp->sendEvent(widget, &event);
-        }
-        widget->update();
-        widget->updateGeometry();
-    }
-}
-
 void QS60StylePrivate::setFont(QWidget *widget) const
 {
     QS60StyleEnums::FontCategories fontCategory = QS60StyleEnums::FC_Undefined;
@@ -678,7 +667,7 @@ void QS60StylePrivate::setFont(QWidget *widget) const
     }
 }
 
-void QS60StylePrivate::setThemePalette(QWidget *widget) const
+void QS60StylePrivate::setThemePalette(QWidget *widget)
 {
     if(!widget)
         return;
@@ -719,8 +708,10 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
     palette->setColor(QPalette::LinkVisited, palette->color(QPalette::Link).darker());
     palette->setColor(QPalette::Highlight,
         s60Color(QS60StyleEnums::CL_QsnHighlightColors, 2, 0));
-    // set background image as a texture brush
-    palette->setBrush(QPalette::Window, backgroundTexture());
+    // The initial QPalette::Window is just a placeHolder QPixmap to save RAM
+    // if the actual texture is not needed. The real texture is created just before
+    // painting it in qt_s60_fill_background().
+    palette->setBrush(QPalette::Window, placeHolderTexture());
     // set as transparent so that styled full screen theme background is visible
     palette->setBrush(QPalette::Base, Qt::transparent);
     // set button color based on pixel colors
@@ -761,7 +752,7 @@ void QS60StylePrivate::storeThemePalette(QPalette *palette)
 }
 
 // set widget specific palettes
-void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
+void QS60StylePrivate::setThemePaletteHash(QPalette *palette)
 {
     if (!palette)
         return;
@@ -2643,10 +2634,13 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
             //native items have small empty areas at the beginning and end of menu item
             sz.setWidth(sz.width() + 2 * pixelMetric(PM_MenuHMargin) + 2 * QS60StylePrivate::pixelMetric(PM_FrameCornerWidth));
-            if (QS60StylePrivate::isTouchSupported())
+            if (QS60StylePrivate::isTouchSupported()) {
                 //Make itemview easier to use in touch devices
+                sz.setHeight(sz.height() + 2 * pixelMetric(PM_FocusFrameVMargin));
                 //QCommonStyle does not adjust height with horizontal margin, it only adjusts width
-                sz.setHeight(sz.height() + 2 * pixelMetric(PM_FocusFrameVMargin) - 8); //QCommonstyle adds 8 to height that this style handles through PM values
+                if (ct == CT_MenuItem)
+                    sz.setHeight(sz.height() - 8); //QCommonstyle adds 8 to height that this style handles through PM values
+            }
             break;
 #ifndef QT_NO_COMBOBOX
         case CT_ComboBox: {
@@ -3545,9 +3539,17 @@ extern QPoint qt_s60_fill_background_offset(const QWidget *targetWidget);
 
 bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush)
 {
-    const QPixmap backgroundTexture(QS60StylePrivate::backgroundTexture());
-    if (backgroundTexture.cacheKey() != brush.texture().cacheKey())
+    // Check if the widget's palette matches placeholder or actual background texture.
+    // When accessing backgroundTexture, use parameter value 'true' to avoid creating
+    // the texture, if it is not already created.
+
+    const QPixmap placeHolder(QS60StylePrivate::placeHolderTexture());
+    const QPixmap bg(QS60StylePrivate::backgroundTexture(true));
+    if (placeHolder.cacheKey() != brush.texture().cacheKey()
+        && bg.cacheKey() != brush.texture().cacheKey())
         return false;
+
+    const QPixmap backgroundTexture(QS60StylePrivate::backgroundTexture());
 
     const QPaintDevice *target = painter->device();
     if (target->devType() == QInternal::Widget) {

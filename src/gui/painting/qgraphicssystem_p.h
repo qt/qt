@@ -72,6 +72,8 @@ public:
     //### Remove this & change qpixmap.cpp & qbitmap.cpp once every platform is gaurenteed
     //    to have a graphics system.
     static QPixmapData *createDefaultPixmapData(QPixmapData::PixelType type);
+
+    virtual void releaseCachedResources();
 };
 
 QT_END_NAMESPACE

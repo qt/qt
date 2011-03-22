@@ -89,6 +89,10 @@ public:
     \warning Elements in the Qt.labs module are not guaranteed to remain compatible
     in future versions.
 
+    \warning GestureArea is an experimental element whose development has
+    been discontinued.  PinchArea is available in QtQuick 1.1 and handles
+    two finger gesture input.
+
     \note This element is only functional on devices with touch input.
 
     \qml
