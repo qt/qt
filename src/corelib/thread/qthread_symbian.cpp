@@ -48,7 +48,14 @@
 #include <private/qsystemerror_p.h>
 
 #include <sched.h>
+#include <hal.h>
+#include <hal_data.h>
 
+// You only find these enumerations on Symbian^3 onwards, so we need to provide our own
+// to remain compatible with older releases. They won't be called by pre-Sym^3 SDKs.
+
+// HALData::ENumCpus
+#define QT_HALData_ENumCpus 119
 
 QT_BEGIN_NAMESPACE
 
@@ -131,11 +138,7 @@ public:
     {
         data->symbian_thread_handle.LogonCancel(iStatus);
     }
-    void RunL()
-    {
-        data->deref();
-        delete this;
-    }
+    void RunL();
 private:
     QThreadData* data;
 };
@@ -177,6 +180,7 @@ public:
         for (int i=threadsToAdd.size()-1; i>=0; i--) {
             // Create an active object to monitor the thread
             new (ELeave) QCAdoptedThreadMonitor(threadsToAdd[i]);
+            count++;
             threadsToAdd.pop_back();
         }
         start();
@@ -193,6 +197,8 @@ public:
             User::WaitForRequest(started);
             monitorThread.Close();
         }
+        if (RThread().Id() == adoptedThreadAdder->monitorThread.Id())
+            return;
         adoptedThreadAdder->threadsToAdd.push_back(thread);
         if (adoptedThreadAdder->stat) {
             adoptedThreadAdder->monitorThread.RequestComplete(adoptedThreadAdder->stat, KErrNone);
@@ -204,15 +210,15 @@ public:
         CleanupStack::PushL(scheduler);
         CActiveScheduler::Install(scheduler);
 
-        adoptedThreadAdder =  new(ELeave) QCAddAdoptedThread();
+        adoptedThreadAdder = new(ELeave) QCAddAdoptedThread();
         CleanupStack::PushL(adoptedThreadAdder);
         adoptedThreadAdder->ConstructL();
+        QCAddAdoptedThread *adder = adoptedThreadAdder;
 
         RThread::Rendezvous(KErrNone);
         CActiveScheduler::Start();
 
-        CleanupStack::PopAndDestroy(adoptedThreadAdder);
-        adoptedThreadAdder = 0;
+        CleanupStack::PopAndDestroy(adder);
         CleanupStack::PopAndDestroy(scheduler);
     }
     static int monitorThreadFunc(void *)
@@ -224,17 +230,36 @@ public:
         delete cleanup;
         return ret;
     }
+    static void threadDied()
+    {
+        QMutexLocker adoptedThreadMonitorMutexlock(&adoptedThreadMonitorMutex);
+        if (adoptedThreadAdder) {
+            adoptedThreadAdder->count--;
+            if (adoptedThreadAdder->count <= 0 && adoptedThreadAdder->threadsToAdd.size() == 0) {
+                CActiveScheduler::Stop();
+                adoptedThreadAdder = 0;
+            }
+        }
+    }
 
 private:
     QVector<QThread*> threadsToAdd;
     RThread monitorThread;
     static QMutex adoptedThreadMonitorMutex;
-    static QCAddAdoptedThread* adoptedThreadAdder;
+    static QCAddAdoptedThread *adoptedThreadAdder;
+    int count;
     TRequestStatus *stat;
 };
 
 QMutex QCAddAdoptedThread::adoptedThreadMonitorMutex;
 QCAddAdoptedThread* QCAddAdoptedThread::adoptedThreadAdder = 0;
+
+void QCAdoptedThreadMonitor::RunL()
+{
+    data->deref();
+    QCAddAdoptedThread::threadDied();
+    delete this;
+}
 
 void QAdoptedThread::init()
 {
@@ -358,10 +383,16 @@ Qt::HANDLE QThread::currentThreadId()
 
 int QThread::idealThreadCount()
 {
-    int cores = -1;
+    int cores = 1;
 
-     // ### TODO - Get the number of cores from HAL? when multicore architectures (SMP) are supported
-    cores = 1;
+    if (QSysInfo::symbianVersion() >= QSysInfo::SV_SF_3) {
+        TInt inumcpus;
+        TInt err;
+        err = HAL::Get((HALData::TAttribute)QT_HALData_ENumCpus, inumcpus);
+        if (err == KErrNone) {
+            cores = qMax(inumcpus, 1);
+        }
+    }
 
     return cores;
 }
