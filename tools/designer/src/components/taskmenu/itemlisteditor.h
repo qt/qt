@@ -53,6 +53,7 @@ class QtProperty;
 class QtVariantProperty;
 class QtTreePropertyBrowser;
 class QSplitter;
+class QVBoxLayout;
 
 namespace qdesigner_internal {
 
@@ -72,12 +73,12 @@ private:
     bool reset;
 };
 
-class AbstractItemEditor: public QDialog
+class AbstractItemEditor: public QWidget
 {
     Q_OBJECT
 
 public:
-    AbstractItemEditor(QDesignerFormWindowInterface *form, QWidget *parent);
+    explicit AbstractItemEditor(QDesignerFormWindowInterface *form, QWidget *parent);
     ~AbstractItemEditor();
 
     DesignerIconCache *iconCache() const { return m_iconCache; }
@@ -95,7 +96,6 @@ private slots:
     void cacheReloaded();
 
 protected:
-    void keyPressEvent(QKeyEvent *e);
     void setupProperties(PropertyDefinition *propDefs);
     void setupObject(QWidget *object);
     void setupEditor(QWidget *object, PropertyDefinition *propDefs);
@@ -120,7 +120,7 @@ class ItemListEditor: public AbstractItemEditor
     Q_OBJECT
 
 public:
-    ItemListEditor(QDesignerFormWindowInterface *form, QWidget *parent);
+    explicit ItemListEditor(QDesignerFormWindowInterface *form, QWidget *parent);
 
     void setupEditor(QWidget *object, PropertyDefinition *propDefs);
     QListWidget *listWidget() const { return ui.listWidget; }
@@ -150,6 +150,8 @@ protected:
     virtual void setItemData(int role, const QVariant &v);
     virtual QVariant getItemData(int role) const;
 
+private:
+    void setPropertyBrowserVisible(bool v);
     void updateEditor();
     Ui::ItemListEditor ui;
     bool m_updating;
