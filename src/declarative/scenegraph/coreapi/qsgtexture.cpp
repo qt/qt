@@ -57,6 +57,7 @@ QSGTexturePrivate::QSGTexturePrivate()
 
 QSGTexture::QSGTexture()
     : QObject(*(new QSGTexturePrivate))
+    , m_ref_count(0)
 {
 
 }
