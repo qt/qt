@@ -535,6 +535,11 @@ inline void QScriptEnginePrivate::invalidateAllScripts()
     m_scripts.forEach(deleter);
 }
 
+inline bool QScriptEnginePrivate::hasDemarshalFunction(int metaTypeId) const
+{
+    return m_typeInfos.value(metaTypeId).demarshal;
+}
+
 inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newQObject(QScriptValuePrivate *scriptObject,
                                                                          QObject *qtobject,
                                                                          QScriptEngine::ValueOwnership ownership,
