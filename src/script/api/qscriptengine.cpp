@@ -1565,7 +1565,7 @@ void QScriptEnginePrivate::setGlobalObject(QScriptValuePrivate* newGlobalObjectV
     m_v8Context->SetSecurityToken(securityToken);
     v8::Handle<v8::Object> global = globalObject();
     global->SetPrototype(*newGlobalObjectValue);
-    newGlobalObjectValue->reinitialize(this, globalObject());
+    newGlobalObjectValue->reinitialize(this, global);
 }
 
 /*!
