@@ -114,6 +114,7 @@ public:
     static void GCEpilogueCallback(v8::GCType type, v8::GCCallbackFlags flags);
     inline void reportAdditionalMemoryCost(int cost);
     inline void abortEvaluation(v8::Handle<v8::Value> result);
+    inline void updateGlobalObjectCache();
     inline v8::Handle<v8::Object> globalObject() const;
     void setGlobalObject(QScriptValuePrivate* newGlobalObjectValue);
 
@@ -297,6 +298,7 @@ private:
     v8::Persistent<v8::Context> m_v8Context;
     Exception m_exception;
     QScriptOriginalGlobalObject m_originalGlobalObject;
+    v8::Persistent<v8::Object> m_currentGlobalObject;
     v8::Persistent<v8::String> m_qtDataId;
     int m_reportedAddtionalMemoryCost;
 

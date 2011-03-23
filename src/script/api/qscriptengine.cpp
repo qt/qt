@@ -695,6 +695,10 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine::ContextOwnership owner
     , m_processEventInterval(-1)
     , m_shouldAbort(false)
 {
+    {
+        v8::HandleScope scope;
+        updateGlobalObjectCache();
+    }
     qMetaTypeId<QScriptValue>();
     qMetaTypeId<QList<int> >();
     qMetaTypeId<QObjectList>();
@@ -829,6 +833,7 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
 
     m_typeInfos.clear();
     clearExceptions();
+    m_currentGlobalObject.Dispose();
     m_originalGlobalObject.destroy();
 
     m_v8Context->Exit(); // Exit the context that was entered in QScriptOriginalGlobalObject ctor.
@@ -1563,6 +1568,7 @@ void QScriptEnginePrivate::setGlobalObject(QScriptValuePrivate* newGlobalObjectV
     m_v8Context = v8::Context::New();
     m_v8Context->Enter();
     m_v8Context->SetSecurityToken(securityToken);
+    updateGlobalObjectCache();
     v8::Handle<v8::Object> global = globalObject();
     global->SetPrototype(*newGlobalObjectValue);
     newGlobalObjectValue->reinitialize(this, global);

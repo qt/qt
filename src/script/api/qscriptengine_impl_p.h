@@ -280,11 +280,18 @@ inline QScriptContextPrivate* QScriptEnginePrivate::setCurrentQSContext(QScriptC
     return ctx;
 }
 
-inline v8::Handle<v8::Object> QScriptEnginePrivate::globalObject() const
+inline void QScriptEnginePrivate::updateGlobalObjectCache()
 {
+    m_currentGlobalObject.Dispose();
     //in V8, the Global object is a proxy to the prototype, which is the real global object.
     // See http://code.google.com/p/v8/issues/detail?id=1078
-    return v8::Handle<v8::Object>::Cast(m_v8Context->Global()->GetPrototype());
+    m_currentGlobalObject = v8::Persistent<v8::Object>::New(v8::Handle<v8::Object>::Cast(m_v8Context->Global()->GetPrototype()));
+}
+
+inline v8::Handle<v8::Object> QScriptEnginePrivate::globalObject() const
+{
+    Q_ASSERT_X(!m_currentGlobalObject.IsEmpty(), Q_FUNC_INFO, "Global Object handle hasn't been initialized");
+    return m_currentGlobalObject;
 }
 
 inline QScriptEnginePrivate::Exception::Exception() {}
