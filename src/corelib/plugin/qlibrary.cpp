@@ -475,6 +475,8 @@ bool QLibraryPrivate::loadPlugin()
         libraryUnloadCount.ref();
         return true;
     }
+    if (pluginState == IsNotAPlugin)
+        return false;
     if (load()) {
         instance = (QtPluginInstanceFunction)resolve("qt_plugin_instance");
 #if defined(Q_OS_SYMBIAN)
@@ -487,6 +489,9 @@ bool QLibraryPrivate::loadPlugin()
 #endif
         return instance;
     }
+    if (qt_debug_component())
+        qWarning() << "QLibraryPrivate::loadPlugin failed on" << fileName << ":" << errorString;
+    pluginState = IsNotAPlugin;
     return false;
 }
 
@@ -606,7 +611,7 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
                      .arg((QT_VERSION & 0xff00) >> 8)
                      .arg(QLIBRARY_AS_DEBUG ? QLatin1String("debug") : QLatin1String("false"))
                      .arg(fileName);
-#ifdef Q_WS_MAC    
+#ifdef Q_WS_MAC
     // On Mac, add the application arch to the reg key in order to
     // cache plugin information separately for each arch. This prevents
     // Qt from wrongly caching plugin load failures when the archs
@@ -621,7 +626,7 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
     regkey += QLatin1String("-ppc");
 #endif
 #endif // Q_WS_MAC
-    
+
     QStringList reg;
 #ifndef QT_NO_SETTINGS
     if (!settings) {
