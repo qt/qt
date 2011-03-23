@@ -36,7 +36,6 @@ HEADERS += \
     turbulenceaffector.h \
     particleextruder.h \
     ellipseextruder.h \
-    directedemitter.h \
     maskextruder.h \
     varyingvector.h \
     pointvector.h \
@@ -77,7 +76,6 @@ SOURCES += \
     turbulenceaffector.cpp \
     particleextruder.cpp \
     ellipseextruder.cpp \
-    directedemitter.cpp \
     maskextruder.cpp \
     varyingvector.cpp \
     pointvector.cpp \
