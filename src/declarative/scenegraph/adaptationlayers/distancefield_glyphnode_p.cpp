@@ -345,7 +345,7 @@ void DistanceFieldOutlineTextMaterialShader::initialize()
 
 void DistanceFieldOutlineTextMaterialShader::updateOutlineAlphaRange()
 {
-    qreal outlineLimit = 0.4;
+    qreal outlineLimit = qMax(qreal(0.1), 0.5 - 0.1 / m_fontScale);
 
     qreal combinedScale = m_fontScale * m_matrixScale;
     qreal alphaMin = qMax(0.0, 0.5 - 0.07 / combinedScale);
