@@ -85,7 +85,7 @@ QT_BEGIN_NAMESPACE
     \snippet doc/src/snippets/code/src_network_access_qhttppart.cpp 2
 
     Be aware that QHttpPart does not take ownership of the device when set, so
-    it is the developer's responsability to destroy it when it is not needed anymore.
+    it is the developer's responsibility to destroy it when it is not needed anymore.
     A good idea might be to set the multipart message as parent object for the device,
     as documented at the documentation for QHttpMultiPart.
 
