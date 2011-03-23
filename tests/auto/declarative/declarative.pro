@@ -76,11 +76,6 @@ contains(QT_CONFIG, private_tests) {
            qdeclarativeworkerscript \
            qdeclarativexmllistmodel \
            qpacketprotocol
-
-contains(QT_CONFIG, webkit) {
-    SUBDIRS += \
-           qdeclarativewebview
-}
 }
 
 # Tests which should run in Pulse
