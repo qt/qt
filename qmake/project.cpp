@@ -2773,6 +2773,20 @@ QMakeProject::expand(const QString &str)
     return QStringList();
 }
 
+QString
+QMakeProject::expand(const QString &str, const QString &file, int line)
+{
+    bool ok;
+    parser_info pi = parser;
+    parser.file = file;
+    parser.line_no = line;
+    parser.from_file = false;
+    QMap<QString, QStringList> tmp = vars;
+    const QStringList ret = doVariableReplaceExpand(str, tmp, &ok);
+    parser = pi;
+    return ok ? ret.join(QString(Option::field_sep)) : QString();
+}
+
 QStringList
 QMakeProject::expand(const QString &func, const QList<QStringList> &args)
 {

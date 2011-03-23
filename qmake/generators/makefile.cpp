@@ -545,7 +545,7 @@ MakefileGenerator::init()
                         else
                             state.pop();
                     } else if(state.isEmpty() || state.top() == IN_CONDITION) {
-                        contents += project->expand(line).join(QString(Option::field_sep));
+                        contents += project->expand(line, in.fileName(), count);
                     }
                 }
                 if(out.exists() && out.open(QFile::ReadOnly)) {
