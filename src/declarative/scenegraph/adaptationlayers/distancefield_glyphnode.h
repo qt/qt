@@ -66,6 +66,8 @@ public:
     void setStyle(QSGText::TextStyle style);
     void setStyleColor(const QColor &color);
 
+    void preprocess();
+
 private:
     void updateGeometry();
     void updateFont();
