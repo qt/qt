@@ -83,29 +83,30 @@ void FollowEmitter::emitWindow(int timeStamp)
             // Particle position
             qreal followT =  pt - d->pv.t;
             qreal followT2 = followT * followT * 0.5;
-            qreal halfCurSize = d->pv.size / 2;//TODO: Actually cur size
-            p.x = d->pv.x + d->pv.sx * followT + d->pv.ax * followT2
-                    + offset.x()
-                    - halfCurSize + rand() / float(RAND_MAX) * halfCurSize * 2;
-                    //- m_emitterXVariation + rand() / float(RAND_MAX) * m_emitterXVariation * 2;
-            p.y = d->pv.y + d->pv.sy * followT + d->pv.ay * followT2
-                    + offset.y()
-                    - halfCurSize + rand() / float(RAND_MAX) * halfCurSize * 2;
-                    //- m_emitterYVariation + rand() / float(RAND_MAX) * m_emitterYVariation * 2;
+            qreal sizeOffset = d->pv.size/2;//TODO: Current size
+            //TODO: Set variations
+//            QRectF boundsRect(d->pv.x + d->pv.sx * followT + d->pv.ax * followT2 + offset.x() - m_emitterXVariation/2,
+//                              d->pv.y + d->pv.sy * followT + d->pv.ay * followT2 + offset.y() - m_emitterYVariation/2,
+//                              m_emitterXVariation,
+//                              m_emitterYVariation);
+            QRectF boundsRect(d->pv.x + d->pv.sx * followT + d->pv.ax * followT2 + offset.x() - sizeOffset,
+                              d->pv.y + d->pv.sy * followT + d->pv.ay * followT2 + offset.y() - sizeOffset,
+                              sizeOffset*2,
+                              sizeOffset*2);
+
+            const QPointF &newPos = effectiveExtruder()->extrude(boundsRect);
+            p.x = newPos.x();
+            p.y = newPos.y();
 
             // Particle speed
-            p.sx =
-                    m_xSpeed
-                    - m_xSpeedVariation + rand() / float(RAND_MAX) * m_xSpeedVariation * 2;
-            p.sy =
-                    m_ySpeed
-                    - m_ySpeedVariation + rand() / float(RAND_MAX) * m_ySpeedVariation * 2;
+            const QPointF &speed = m_speed->sample(newPos);
+            p.sx = speed.x();
+            p.sy = speed.y();
 
             // Particle acceleration
-            p.ax =
-                    m_xAccel - m_xAccelVariation + rand() / float(RAND_MAX) * m_xAccelVariation * 2;
-            p.ay =
-                    m_yAccel - m_yAccelVariation + rand() / float(RAND_MAX) * m_yAccelVariation * 2;
+            const QPointF &accel = m_acceleration->sample(newPos);
+            p.ax = accel.x();
+            p.ay = accel.y();
 
             // Particle size
             float sizeVariation = -m_particleSizeVariation

@@ -40,8 +40,6 @@ Rectangle{
         particlesPerSecond: 6000
         particleDuration: 720
         emitting: true
-        xSpeed: 0
-        ySpeed: 0
         particleSize: 10
         shape: mask
     }
@@ -53,10 +51,7 @@ Rectangle{
         particlesPerSecond: 60
         particleDuration: 1440
         emitting: true
-        xSpeed: 0
-        ySpeed: 0
-        xSpeedVariation: 10
-        ySpeedVariation: 10
+        speed: PointVector{xVariation: 10; yVariation: 10;}
         particleSize: 30
         particleSizeVariation: 10
         shape: mask

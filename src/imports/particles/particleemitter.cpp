@@ -9,8 +9,14 @@ ParticleEmitter::ParticleEmitter(QSGItem *parent) :
   , m_system(0)
   , m_extruder(0)
   , m_defaultExtruder(0)
+  , m_speed(&m_nullVector)
+  , m_acceleration(&m_nullVector)
+  , m_particleSize(16)
+  , m_particleEndSize(-1)
+  , m_particleSizeVariation(0)
 
 {
+    //TODO: Reset speed/acc back to null vector? Or allow null pointer?
 }
 
 ParticleEmitter::~ParticleEmitter()

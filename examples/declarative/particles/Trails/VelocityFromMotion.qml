@@ -17,6 +17,7 @@ Rectangle {
         id: mouseArea
         anchors.fill: root
 
+/*
         onPressed: stopAndStart()
         onReleased: stopAndStart()
         function stopAndStart() {
@@ -30,6 +31,7 @@ Rectangle {
             trailsStars2.emitting = true;
             print("stop and start")
         }
+*/
     }
 
     ParticleSystem{ id: sys1 }
@@ -73,12 +75,9 @@ Rectangle {
         y: mouseArea.pressed ? mouseArea.mouseY : circle.cy
         x: mouseArea.pressed ? mouseArea.mouseX : circle.cx
 
-        xSpeedVariation: 4
-        ySpeedVariation: 4
+        speed: PointVector{xVariation: 4; yVariation: 4;}
+        acceleration: PointVector{xVariation: 10; yVariation: 10;}
         speedFromMovement: 8
-
-        yAccelVariation: 10
-        xAccelVariation: 10
 
         particleSize: 8
         particleSizeVariation: 4
@@ -114,12 +113,9 @@ Rectangle {
         y: mouseArea.pressed ? mouseArea.mouseY : circle.cy
         x: mouseArea.pressed ? mouseArea.mouseX : circle.cx
 
-        xSpeedVariation: 4
-        ySpeedVariation: 4
+        speed: PointVector{xVariation: 4; yVariation: 4;}
+        acceleration: PointVector{xVariation: 10; yVariation: 10;}
         speedFromMovement: 8
-
-        yAccelVariation: 10
-        xAccelVariation: 10
 
         particleSize: 22
         particleSizeVariation: 4
@@ -156,12 +152,10 @@ Rectangle {
         y: mouseArea.pressed ? mouseArea.mouseY : circle2.cy
         x: mouseArea.pressed ? mouseArea.mouseX : circle2.cx
 
-        xSpeedVariation: 4
-        ySpeedVariation: 4
         speedFromMovement: 16
 
-        yAccelVariation: 10
-        xAccelVariation: 10
+        speed: PointVector{xVariation: 4; yVariation: 4;}
+        acceleration: PointVector{xVariation: 10; yVariation: 10;}
 
         particleSize: 12
         particleSizeVariation: 4
@@ -198,12 +192,9 @@ Rectangle {
         y: mouseArea.pressed ? mouseArea.mouseY : circle2.cy
         x: mouseArea.pressed ? mouseArea.mouseX : circle2.cx
 
-        xSpeedVariation: 2
-        ySpeedVariation: 2
         speedFromMovement: 16
-
-        yAccelVariation: 10
-        xAccelVariation: 10
+        speed: PointVector{xVariation: 2; yVariation: 2;}
+        acceleration: PointVector{xVariation: 10; yVariation: 10;}
 
         particleSize: 22
         particleSizeVariation: 4

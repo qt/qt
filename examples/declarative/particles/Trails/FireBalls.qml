@@ -52,10 +52,8 @@ Rectangle {
         particlesPerSecond: 350
         particleDuration: 3500
 
-        yAccel: -17
-        xAccelVariation: 3
-
-        xSpeedVariation: 3
+        acceleration: PointVector{ y: -17; xVariation: 3 }
+        speed: PointVector{xVariation: 3}
 
         particleSize: 24
         particleSizeVariation: 8
@@ -72,10 +70,8 @@ Rectangle {
         particlesPerParticlePerSecond: 1
         particleDuration: 2000
 
-        ySpeed: -17 * 6
-        ySpeedVariation: -17
-        xAccelVariation: 3
-        xSpeedVariation: 3
+        speed: PointVector{y:-17*6; yVariation: -17; xVariation: 3}
+        acceleration: PointVector{xVariation: 3}
 
         particleSize: 36
         particleSizeVariation: 8
@@ -90,6 +86,8 @@ Rectangle {
 
         particlesPerParticlePerSecond: 48
         particleDuration: 360
+        emitterXVariation: 8
+        emitterYVariation: 8
 
         particleSize: 16
         particleSizeVariation: 4
@@ -105,10 +103,11 @@ Rectangle {
 
         particlesPerParticlePerSecond: 128
         particleDuration: 2400
+        emitterXVariation: 16
+        emitterYVariation: 16
 
-        yAccel: -16
-        ySpeedVariation: 16
-        xSpeedVariation: 16
+        speed: PointVector{yVariation: 16; xVariation: 16}
+        acceleration: PointVector{y: -16}
 
         particleSize: 24
         particleSizeVariation: 8
@@ -125,10 +124,8 @@ Rectangle {
         particlesPerSecond: 2
         particleDuration: 7000
 
-        ySpeed: -17*4*2
-        yAccel: 17* 2
-        xAccelVariation: 6 * 6
-        xSpeedVariation: 6 * 6
+        speed: PointVector{y:-17*4*2; xVariation: 6*6}
+        acceleration: PointVector{y: 17*2; xVariation: 6*6}
 
         particleSize: 8
         particleSizeVariation: 8

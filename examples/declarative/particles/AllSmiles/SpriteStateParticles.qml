@@ -133,12 +133,8 @@ Rectangle{
         particlesPerSecond: 16
         particleDuration: 10000
         emitting: true
-        xSpeed: 0
-        ySpeed: 60
-        xSpeedVariation: 10
-        ySpeedVariation: 10
-        xAccel: 0
-        yAccel: 10
+        speed: AngleVector{angle: 90; magnitude: 60; angleVariation: 5}
+        acceleration: PointVector{ y: 10 }
         particleSize: 30
         particleSizeVariation: 10
         width: parent.width

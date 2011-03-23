@@ -52,10 +52,8 @@ Rectangle{
         particleSize: 20
         particleEndSize: 10
         particleSizeVariation: 10
-        yAccel: -40
-        ySpeed: -20
-        ySpeedVariation: 10
-        xSpeedVariation: 20
+        acceleration: PointVector{ y: -40 }
+        speed: AngleVector{ angle: 270; magnitude: 20; angleVariation: 22; magnitudeVariation: 5 }
     }
     FollowEmitter{
         id: smoke1
@@ -71,10 +69,8 @@ Rectangle{
         particleSize: 16
         particleEndSize: 8
         particleSizeVariation: 8
-        yAccel: -40
-        ySpeed: -40
-        ySpeedVariation: 10
-        xSpeedVariation: 20
+        acceleration: PointVector{ y: -40 }
+        speed: AngleVector{ angle: 270; magnitude: 40; angleVariation: 22; magnitudeVariation: 5 }
     }
     FollowEmitter{
         id: smoke2
@@ -89,9 +85,7 @@ Rectangle{
         particleSize: 36
         particleEndSize: 24
         particleSizeVariation: 8
-        yAccel: -40
-        ySpeed: -40
-        ySpeedVariation: 10
-        xSpeedVariation: 20
+        acceleration: PointVector{ y: -40 }
+        speed: AngleVector{ angle: 270; magnitude: 40; angleVariation: 22; magnitudeVariation: 5 }
     }
 }

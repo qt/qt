@@ -33,8 +33,7 @@ Rectangle{
         emitting: true
         particleSize: 30
         particleSizeVariation: 10
-        xSpeed: 220
-        xSpeedVariation: 40
+        speed: PointVector{ x: 220; xVariation: 40 }
         height: parent.height
     }
     TrailEmitter{
@@ -45,8 +44,7 @@ Rectangle{
         emitting: true
         particleSize: 30
         particleSizeVariation: 10
-        xSpeed: 220
-        xSpeedVariation: 40
+        speed: PointVector{ x: 220; xVariation: 40 }
         height: parent.height
     }
     ParticleSystem{
@@ -139,8 +137,7 @@ Rectangle{
             particleSize: 10
             particleEndSize: 4
             particleSizeVariation: 4
-            xSpeed: -128
-            xSpeedVariation: 32
+            speed: PointVector{ x: -128; xVariation: 32 }
             height: parent.height
             width: 20
         }
@@ -151,7 +148,7 @@ Rectangle{
             particleDuration: 2000
             emitting: spacePressed
             particleSize: 40
-            xSpeed: 256
+            speed: PointVector{ x: 256; }
             x: parent.width
             y: parent.height/2
         }

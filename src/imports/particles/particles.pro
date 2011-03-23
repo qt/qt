@@ -37,7 +37,11 @@ HEADERS += \
     particleextruder.h \
     ellipseextruder.h \
     directedemitter.h \
-    maskextruder.h
+    maskextruder.h \
+    varyingvector.h \
+    pointvector.h \
+    angledvector.h \
+    directedvector.h
 
 SOURCES += \
     V1/qdeclarativeparticles.cpp \
@@ -74,7 +78,11 @@ SOURCES += \
     particleextruder.cpp \
     ellipseextruder.cpp \
     directedemitter.cpp \
-    maskextruder.cpp
+    maskextruder.cpp \
+    varyingvector.cpp \
+    pointvector.cpp \
+    angledvector.cpp \
+    directedvector.cpp
 
 QT += declarative opengl
 

@@ -59,20 +59,14 @@ Rectangle{
         particlesPerSecond: 16
         particleDuration: 8000
         emitting: true
-        xSpeed: 0
-        ySpeed: 500
-        xSpeedVariation: 10
-        ySpeedVariation: 100
+        speed: AngleVector{angle: 90; magnitude: 300; magnitudeVariation: 100; angleVariation: 5}
+        acceleration: PointVector{ y: 10 }
         particleSize: 30
         particleSizeVariation: 10
     }
-    Gravity{
-        system: sys
-        acceleration: 40; angle: 270
-    }//Note that constant gravity could have been in the emitter
     Binding{
         target: particleEmitter
-        property: "emitterY"
+        property: "y"
         value: ma.mouseY
         when: ma.mouseX !=0 || ma.mouseY!=0
     }
