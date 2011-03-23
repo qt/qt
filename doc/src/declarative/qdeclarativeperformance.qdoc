@@ -136,4 +136,15 @@ The QML Viewer uses the raster graphics system by default for X11 and OS X. It a
 includes a \c -opengl command line option which sets a QGLWidget as the viewport of the
 view. On OS X, a QGLWidget is always used.
 
+You can also prevent QDeclarativeView from painting its window background if
+you will provide the background of your application using QML, e.g.
+
+\code
+QDeclarativeView window;
+window.setAttribute(Qt::WA_OpaquePaintEvent);
+window.setAttribute(Qt::WA_NoSystemBackground);
+window.viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
+window.viewport()->setAttribute(Qt::WA_NoSystemBackground);
+\endcode
+
 */

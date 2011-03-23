@@ -284,7 +284,7 @@ bool QTextControlPrivate::cursorMoveKeyEvent(QKeyEvent *e)
         if (cursor.position() != oldCursorPos)
             emit q->cursorPositionChanged();
         emit q->microFocusChanged();
-    } else if (ignoreNavigationEvents && isNavigationEvent) {
+    } else if (ignoreNavigationEvents && isNavigationEvent && oldSelection.anchor() == cursor.anchor()) {
         return false;
     }
 
@@ -1607,7 +1607,10 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
     if (!(buttons & Qt::LeftButton))
         return;
 
-    if (!((interactionFlags & Qt::TextSelectableByMouse) || (interactionFlags & Qt::TextEditable)))
+    const bool selectable = interactionFlags & Qt::TextSelectableByMouse;
+    const bool editable = interactionFlags & Qt::TextEditable;
+
+    if (!selectable && !editable)
         return;
 
     if (!(mousePressed
@@ -1623,6 +1626,10 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
             startDrag();
         return;
     }
+
+    if (!selectable)
+        return;
+
     const qreal mouseX = qreal(mousePos.x());
 
     int newCursorPos = q->hitTest(mousePos, Qt::FuzzyHit);
@@ -1638,7 +1645,7 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
         extendBlockwiseSelection(newCursorPos);
     else if (selectedWordOnDoubleClick.hasSelection())
         extendWordwiseSelection(newCursorPos, mouseX);
-    else if (interactionFlags & Qt::TextSelectableByMouse)
+    else
         setCursorPosition(newCursorPos, QTextCursor::KeepAnchor);
 
     if (interactionFlags & Qt::TextEditable) {
@@ -1649,8 +1656,10 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
             emit q->cursorPositionChanged();
         _q_updateCurrentCharFormatAndSelection();
 #ifndef QT_NO_IM
-        if (QInputContext *ic = inputContext()) {
-            ic->update();
+        if (contextWidget) {
+            if (QInputContext *ic = inputContext()) {
+                ic->update();
+            }
         }
 #endif //QT_NO_IM
     } else {

@@ -48,9 +48,9 @@ short lsb_littleendian[] = { 0x0000, 0x654c, 0x7361, 0x5374, 0x6769, 0x696e, 0x6
 int main(int, char **)
 {
     // make sure the linker doesn't throw away the arrays
-    char *msb_bigendian_string = (char *) msb_bigendian;
-    char *lsb_littleendian_string = (char *) lsb_littleendian;
-    (void) msb_bigendian_string;
-    (void) lsb_littleendian_string;
+    void (*msb_bigendian_string)() = (void (*)())msb_bigendian;
+    void (*lsb_littleendian_string)() = (void (*)())lsb_littleendian;
+    (void)msb_bigendian_string();
+    (void)lsb_littleendian_string();
     return msb_bigendian[1] == lsb_littleendian[1];
 }

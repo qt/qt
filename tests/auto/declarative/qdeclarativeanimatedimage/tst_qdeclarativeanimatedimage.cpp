@@ -46,6 +46,7 @@
 #include <private/qdeclarativeimage_p.h>
 #include <private/qdeclarativeanimatedimage_p.h>
 #include <QSignalSpy>
+#include <QtDeclarative/qdeclarativecontext.h>
 
 #include "../shared/testhttpserver.h"
 #include "../../../shared/util.h"
@@ -76,6 +77,7 @@ private slots:
     void sourceSizeReadOnly();
     void invalidSource();
     void qtbug_16520();
+    void progressAndStatusChanges();
 
 private:
     QPixmap grabScene(QGraphicsScene *scene, int width, int height);
@@ -331,6 +333,53 @@ void tst_qdeclarativeanimatedimage::qtbug_16520()
     QTRY_VERIFY(anim->opacity() == 1);
 
     delete anim;
+}
+
+void tst_qdeclarativeanimatedimage::progressAndStatusChanges()
+{
+    TestHTTPServer server(14449);
+    QVERIFY(server.isValid());
+    server.serveDirectory(SRCDIR "/data");
+
+    QDeclarativeEngine engine;
+    QString componentStr = "import QtQuick 1.0\nAnimatedImage { source: srcImage }";
+    QDeclarativeContext *ctxt = engine.rootContext();
+    ctxt->setContextProperty("srcImage", QUrl::fromLocalFile(SRCDIR "/data/stickman.gif"));
+    QDeclarativeComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
+    QVERIFY(obj != 0);
+    QVERIFY(obj->status() == QDeclarativeImage::Ready);
+    QTRY_VERIFY(obj->progress() == 1.0);
+
+    QSignalSpy sourceSpy(obj, SIGNAL(sourceChanged(const QUrl &)));
+    QSignalSpy progressSpy(obj, SIGNAL(progressChanged(qreal)));
+    QSignalSpy statusSpy(obj, SIGNAL(statusChanged(QDeclarativeImageBase::Status)));
+
+    // Loading local file
+    ctxt->setContextProperty("srcImage", QUrl::fromLocalFile(SRCDIR "/data/colors.gif"));
+    QTRY_VERIFY(obj->status() == QDeclarativeImage::Ready);
+    QTRY_VERIFY(obj->progress() == 1.0);
+    QTRY_COMPARE(sourceSpy.count(), 1);
+    QTRY_COMPARE(progressSpy.count(), 0);
+    QTRY_COMPARE(statusSpy.count(), 0);
+
+    // Loading remote file
+    ctxt->setContextProperty("srcImage", "http://127.0.0.1:14449/stickman.gif");
+    QTRY_VERIFY(obj->status() == QDeclarativeImage::Loading);
+    QTRY_VERIFY(obj->progress() == 0.0);
+    QTRY_VERIFY(obj->status() == QDeclarativeImage::Ready);
+    QTRY_VERIFY(obj->progress() == 1.0);
+    QTRY_COMPARE(sourceSpy.count(), 2);
+    QTRY_VERIFY(progressSpy.count() > 1);
+    QTRY_COMPARE(statusSpy.count(), 2);
+
+    ctxt->setContextProperty("srcImage", "");
+    QTRY_VERIFY(obj->status() == QDeclarativeImage::Null);
+    QTRY_VERIFY(obj->progress() == 0.0);
+    QTRY_COMPARE(sourceSpy.count(), 3);
+    QTRY_VERIFY(progressSpy.count() > 2);
+    QTRY_COMPARE(statusSpy.count(), 3);
 }
 
 QTEST_MAIN(tst_qdeclarativeanimatedimage)

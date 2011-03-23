@@ -49,6 +49,8 @@
 #include <private/qpixmap_x11_p.h>
 #include <stdio.h>
 
+static QMeeGoLivePixmapDataList all_live_pixmaps;
+
 static EGLint lock_attribs[] = {
     EGL_MAP_PRESERVE_PIXELS_KHR, EGL_TRUE,
     EGL_LOCK_USAGE_HINT_KHR, EGL_READ_SURFACE_BIT_KHR | EGL_WRITE_SURFACE_BIT_KHR,
@@ -118,21 +120,29 @@ QMeeGoLivePixmapData::QMeeGoLivePixmapData(int w, int h, QImage::Format format) 
     backingX11Pixmap = new QPixmap(pmd);
 
     initializeThroughEGLImage();
+
+    pos = all_live_pixmaps.insert(all_live_pixmaps.begin(), this);
 }
 
 QMeeGoLivePixmapData::QMeeGoLivePixmapData(Qt::HANDLE h) : QGLPixmapData(QPixmapData::PixmapType)
 {
     backingX11Pixmap = new QPixmap(QPixmap::fromX11Pixmap(h));
     initializeThroughEGLImage();
+
+    pos = all_live_pixmaps.insert(all_live_pixmaps.begin(), this);
 }
 
 QMeeGoLivePixmapData::~QMeeGoLivePixmapData()
 {
     delete backingX11Pixmap;
+    all_live_pixmaps.erase(pos);
 }
 
 void QMeeGoLivePixmapData::initializeThroughEGLImage()
 {
+    if (texture()->id != 0)
+        return;
+
     QGLShareContextScope ctx(qt_gl_share_widget()->context());
     QMeeGoExtensions::ensureInitialized();
 
@@ -209,7 +219,7 @@ QImage* QMeeGoLivePixmapData::lock(EGLSyncKHR fenceSync)
         return &lockedImage;
     }
 
-    lockedImage = QImage((uchar *) data, width(), height(), format);
+    lockedImage = QImage((uchar *) data, width(), height(), pitch, format);
     return &lockedImage;
 }
 
@@ -245,6 +255,8 @@ bool QMeeGoLivePixmapData::scroll(int dx, int dy, const QRect &rect)
 
 EGLSurface QMeeGoLivePixmapData::getSurfaceForBackingPixmap()
 {
+    initializeThroughEGLImage();
+
     // This code is a crative remix of the stuff that can be found in the
     // Qt's TFP implementation in /src/opengl/qgl_x11egl.cpp ::bindiTextureFromNativePixmap
     QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(backingX11Pixmap->data_ptr().data());
@@ -287,6 +299,15 @@ void QMeeGoLivePixmapData::destroySurfaceForPixmapData(QPixmapData* pmd)
     QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pmd);
     if (pixmapData->gl_surface) {
         eglDestroySurface(QEgl::display(), (EGLSurface)pixmapData->gl_surface);
+        pixmapData->gl_surface = 0;
+    }
+}
+
+void QMeeGoLivePixmapData::invalidateSurfaces()
+{
+    foreach (QMeeGoLivePixmapData *data, all_live_pixmaps) {
+        QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(data->backingX11Pixmap->data_ptr().data());
+        *data->texture() = QGLTexture();
         pixmapData->gl_surface = 0;
     }
 }

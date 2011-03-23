@@ -109,6 +109,7 @@ private slots:
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
 
+    void qtbug_14734();
 private:
     QStringList standard;
     QStringList richText;
@@ -517,20 +518,112 @@ void tst_qdeclarativetext::horizontalAlignment_RightToLeft()
     QDeclarativeTextPrivate *textPrivate = QDeclarativeTextPrivate::get(text);
     QVERIFY(textPrivate != 0);
 
-    QVERIFY(textPrivate->layout.lineAt(0).x() > canvas->width()/2);
+    // implicit alignment should follow the reading direction of RTL text
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+    QCOMPARE(text->effectiveHAlign(), text->hAlign());
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() > canvas->width()/2);
 
-    // "Right" aligned
+    // explicitly left aligned text
+    text->setHAlign(QDeclarativeText::AlignLeft);
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignLeft);
+    QCOMPARE(text->effectiveHAlign(), text->hAlign());
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() < canvas->width()/2);
+
+    // explicitly right aligned text
     text->setHAlign(QDeclarativeText::AlignRight);
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
-    QVERIFY(textPrivate->layout.lineAt(0).x() < canvas->width()/2);
+    QCOMPARE(text->effectiveHAlign(), text->hAlign());
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() > canvas->width()/2);
 
-    // Center aligned
+    // change to rich text
+    QString textString = text->text();
+    text->setText(QString("<i>") + textString + QString("</i>"));
+    text->setTextFormat(QDeclarativeText::RichText);
+    text->resetHAlign();
+
+    // implicitly aligned rich text should follow the reading direction of text
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+    QCOMPARE(text->effectiveHAlign(), text->hAlign());
+    QVERIFY(textPrivate->textDocument()->defaultTextOption().alignment() & Qt::AlignLeft);
+
+    // explicitly left aligned rich text
+    text->setHAlign(QDeclarativeText::AlignLeft);
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignLeft);
+    QCOMPARE(text->effectiveHAlign(), text->hAlign());
+    QVERIFY(textPrivate->textDocument()->defaultTextOption().alignment() & Qt::AlignRight);
+
+    // explicitly right aligned rich text
+    text->setHAlign(QDeclarativeText::AlignRight);
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+    QCOMPARE(text->effectiveHAlign(), text->hAlign());
+    QVERIFY(textPrivate->textDocument()->defaultTextOption().alignment() & Qt::AlignLeft);
+
+    text->setText(textString);
+    text->setTextFormat(QDeclarativeText::PlainText);
+
+    // explicitly center aligned
     text->setHAlign(QDeclarativeText::AlignHCenter);
     QCOMPARE(text->hAlign(), QDeclarativeText::AlignHCenter);
-    QVERIFY(textPrivate->layout.lineAt(0).x() < canvas->width()/2);
-    QVERIFY(textPrivate->layout.lineAt(0).x() + textPrivate->layout.lineAt(0).width() > canvas->width()/2);
+    QCOMPARE(text->effectiveHAlign(), text->hAlign());
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() < canvas->width()/2);
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().right() > canvas->width()/2);
+
+    // reseted alignment should go back to following the text reading direction
+    text->resetHAlign();
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() > canvas->width()/2);
+
+    // mirror the text item
+    QDeclarativeItemPrivate::get(text)->setLayoutMirror(true);
+
+    // mirrored implicit alignment should continue to follow the reading direction of the text
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+    QCOMPARE(text->effectiveHAlign(), QDeclarativeText::AlignRight);
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() > canvas->width()/2);
+
+    // mirrored explicitly right aligned behaves as left aligned
+    text->setHAlign(QDeclarativeText::AlignRight);
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+    QCOMPARE(text->effectiveHAlign(), QDeclarativeText::AlignLeft);
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() < canvas->width()/2);
+
+    // mirrored explicitly left aligned behaves as right aligned
+    text->setHAlign(QDeclarativeText::AlignLeft);
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignLeft);
+    QCOMPARE(text->effectiveHAlign(), QDeclarativeText::AlignRight);
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() > canvas->width()/2);
+
+    // disable mirroring
+    QDeclarativeItemPrivate::get(text)->setLayoutMirror(false);
+    text->resetHAlign();
+
+    // English text should be implicitly left aligned
+    text->setText("Hello world!");
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignLeft);
+    QVERIFY(textPrivate->layout.lineAt(0).naturalTextRect().left() < canvas->width()/2);
+
+#ifndef Q_OS_MAC    // QTBUG-18040
+    // empty text with implicit alignment follows the system locale-based
+    // keyboard input direction from QApplication::keyboardInputDirection
+    text->setText("");
+    QCOMPARE(text->hAlign(), QApplication::keyboardInputDirection() == Qt::LeftToRight ?
+                                  QDeclarativeText::AlignLeft : QDeclarativeText::AlignRight);
+    text->setHAlign(QDeclarativeText::AlignRight);
+    QCOMPARE(text->hAlign(), QDeclarativeText::AlignRight);
+#endif
 
     delete canvas;
+
+#ifndef Q_OS_MAC    // QTBUG-18040
+    // alignment of Text with no text set to it
+    QString componentStr = "import QtQuick 1.0\nText {}";
+    QDeclarativeComponent textComponent(&engine);
+    textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeText *textObject = qobject_cast<QDeclarativeText*>(textComponent.create());
+    QCOMPARE(textObject->hAlign(), QApplication::keyboardInputDirection() == Qt::LeftToRight ?
+                                  QDeclarativeText::AlignLeft : QDeclarativeText::AlignRight);
+    delete textObject;
+#endif
 }
 
 void tst_qdeclarativetext::verticalAlignment()
@@ -1113,13 +1206,13 @@ void tst_qdeclarativetext::lineHeight()
     myText->setLineHeightMode(QDeclarativeText::ProportionalHeight);
     myText->setLineHeight(1.0);
 
-    //qreal h2 = myText->height();
+    qreal h2 = myText->height();
     myText->setLineHeight(2.0);
-    //QVERIFY(myText->height() == h2 * 2.0);
+    QVERIFY(myText->height() == h2 * 2.0);
 
     myText->setLineHeightMode(QDeclarativeText::FixedHeight);
     myText->setLineHeight(10);
-    //QCOMPARE(myText->height(), myText->lineCount() * 10.0);
+    QCOMPARE(myText->height(), myText->lineCount() * 10.0);
 
     delete canvas;
 }
@@ -1200,6 +1293,19 @@ void tst_qdeclarativetext::testQtQuick11Attributes_data()
     QTest::newRow("truncated") << "property bool foo: truncated"
         << "<Unknown File>:1: ReferenceError: Can't find variable: truncated"
         << "";
+}
+
+void tst_qdeclarativetext::qtbug_14734()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/qtbug_14734.qml");
+    QVERIFY(canvas);
+
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    delete canvas;
 }
 
 QTEST_MAIN(tst_qdeclarativetext)

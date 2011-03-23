@@ -48,6 +48,7 @@
 
 #include <QtCore/qmath.h>
 
+#include <private/qtextengine_p.h>
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>
@@ -249,6 +250,7 @@ void QDeclarativeTextEdit::setText(const QString &text)
     Q_D(QDeclarativeTextEdit);
     if (QDeclarativeTextEdit::text() == text)
         return;
+
     d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(text));
     if (d->richText) {
 #ifndef QT_NO_TEXTHTMLPARSER
@@ -457,9 +459,12 @@ void QDeclarativeTextEdit::setSelectedTextColor(const QColor &color)
 /*!
     \qmlproperty enumeration TextEdit::horizontalAlignment
     \qmlproperty enumeration TextEdit::verticalAlignment
+    \qmlproperty enumeration TextEdit::effectiveHorizontalAlignment
 
     Sets the horizontal and vertical alignment of the text within the TextEdit item's
-    width and height.  By default, the text is top-left aligned.
+    width and height. By default, the text alignment follows the natural alignment
+    of the text, for example text that is read from left to right will be aligned to
+    the left.
 
     Valid values for \c horizontalAlignment are:
     \list
@@ -473,8 +478,13 @@ void QDeclarativeTextEdit::setSelectedTextColor(const QColor &color)
     \list
     \o TextEdit.AlignTop (default)
     \o TextEdit.AlignBottom
-    \c TextEdit.AlignVCenter
+    \o TextEdit.AlignVCenter
     \endlist
+
+    When using the attached property LayoutMirroring::enabled to mirror application
+    layouts, the horizontal alignment of text will also be mirrored. However, the property
+    \c horizontalAlignment will remain unchanged. To query the effective horizontal alignment
+    of TextEdit, use the read-only property \c effectiveHorizontalAlignment.
 */
 QDeclarativeTextEdit::HAlignment QDeclarativeTextEdit::hAlign() const
 {
@@ -482,15 +492,80 @@ QDeclarativeTextEdit::HAlignment QDeclarativeTextEdit::hAlign() const
     return d->hAlign;
 }
 
-void QDeclarativeTextEdit::setHAlign(QDeclarativeTextEdit::HAlignment alignment)
+void QDeclarativeTextEdit::setHAlign(HAlignment align)
 {
     Q_D(QDeclarativeTextEdit);
-    if (alignment == d->hAlign)
-        return;
-    d->hAlign = alignment;
-    d->updateDefaultTextOption();
-    updateSize();
-    emit horizontalAlignmentChanged(d->hAlign);
+    bool forceAlign = d->hAlignImplicit && d->effectiveLayoutMirror;
+    d->hAlignImplicit = false;
+    if (d->setHAlign(align, forceAlign) && isComponentComplete()) {
+        d->updateDefaultTextOption();
+        updateSize();
+    }
+}
+
+void QDeclarativeTextEdit::resetHAlign()
+{
+    Q_D(QDeclarativeTextEdit);
+    d->hAlignImplicit = true;
+    if (d->determineHorizontalAlignment() && isComponentComplete()) {
+        d->updateDefaultTextOption();
+        updateSize();
+    }
+}
+
+QDeclarativeTextEdit::HAlignment QDeclarativeTextEdit::effectiveHAlign() const
+{
+    Q_D(const QDeclarativeTextEdit);
+    QDeclarativeTextEdit::HAlignment effectiveAlignment = d->hAlign;
+    if (!d->hAlignImplicit && d->effectiveLayoutMirror) {
+        switch (d->hAlign) {
+        case QDeclarativeTextEdit::AlignLeft:
+            effectiveAlignment = QDeclarativeTextEdit::AlignRight;
+            break;
+        case QDeclarativeTextEdit::AlignRight:
+            effectiveAlignment = QDeclarativeTextEdit::AlignLeft;
+            break;
+        default:
+            break;
+        }
+    }
+    return effectiveAlignment;
+}
+
+bool QDeclarativeTextEditPrivate::setHAlign(QDeclarativeTextEdit::HAlignment alignment, bool forceAlign)
+{
+    Q_Q(QDeclarativeTextEdit);
+    if (hAlign != alignment || forceAlign) {
+        QDeclarativeTextEdit::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
+        hAlign = alignment;
+        emit q->horizontalAlignmentChanged(alignment);
+        if (oldEffectiveHAlign != q->effectiveHAlign())
+            emit q->effectiveHorizontalAlignmentChanged();
+        return true;
+    }
+    return false;
+}
+
+bool QDeclarativeTextEditPrivate::determineHorizontalAlignment()
+{
+    Q_Q(QDeclarativeTextEdit);
+    if (hAlignImplicit && q->isComponentComplete()) {
+        bool alignToRight = text.isEmpty() ? QApplication::keyboardInputDirection() == Qt::RightToLeft : rightToLeftText;
+        return setHAlign(alignToRight ? QDeclarativeTextEdit::AlignRight : QDeclarativeTextEdit::AlignLeft);
+    }
+    return false;
+}
+
+void QDeclarativeTextEditPrivate::mirrorChange()
+{
+    Q_Q(QDeclarativeTextEdit);
+    if (q->isComponentComplete()) {
+        if (!hAlignImplicit && (hAlign == QDeclarativeTextEdit::AlignRight || hAlign == QDeclarativeTextEdit::AlignLeft)) {
+            updateDefaultTextOption();
+            q->updateSize();
+            emit q->effectiveHorizontalAlignmentChanged();
+        }
+    }
 }
 
 QDeclarativeTextEdit::VAlignment QDeclarativeTextEdit::vAlign() const
@@ -544,6 +619,7 @@ void QDeclarativeTextEdit::setWrapMode(WrapMode mode)
 
 /*!
     \qmlproperty int TextEdit::lineCount
+    \since Quick 1.1
 
     Returns the total number of lines in the textEdit item.
 */
@@ -605,6 +681,22 @@ int QDeclarativeTextEdit::positionAt(int x, int y) const
 {
     Q_D(const QDeclarativeTextEdit);
     int r = d->document->documentLayout()->hitTest(QPoint(x,y-d->yoff), Qt::FuzzyHit);
+    QTextCursor cursor = d->control->textCursor();
+    if (r > cursor.position()) {
+        // The cursor position includes positions within the preedit text, but only positions in the
+        // same text block are offset so it is possible to get a position that is either part of the
+        // preedit or the next text block.
+        QTextLayout *layout = cursor.block().layout();
+        const int preeditLength = layout
+                ? layout->preeditAreaText().length()
+                : 0;
+        if (preeditLength > 0
+                && d->document->documentLayout()->blockBoundingRect(cursor.block()).contains(x,y-d->yoff)) {
+            r = r > cursor.position() + preeditLength
+                    ? r - preeditLength
+                    : cursor.position();
+        }
+    }
     return r;
 }
 
@@ -950,6 +1042,8 @@ void QDeclarativeTextEdit::componentComplete()
     Q_D(QDeclarativeTextEdit);
     QDeclarativePaintedItem::componentComplete();
     if (d->dirty) {
+        d->determineHorizontalAlignment();
+        d->updateDefaultTextOption();
         updateSize();
         d->dirty = false;
     }
@@ -1134,6 +1228,7 @@ void QDeclarativeTextEditPrivate::focusChanged(bool hasFocus)
 
 /*!
     \qmlmethod void TextEdit::deselect()
+    \since Quick 1.1
 
     Removes active text selection.
 */
@@ -1196,6 +1291,23 @@ void QDeclarativeTextEdit::select(int start, int end)
 
     // QTBUG-11100
     updateSelectionMarkers();
+}
+
+/*!
+    \qmlmethod void TextEdit::isRightToLeft(int start, int end)
+
+    Returns true if the natural reading direction of the editor text
+    found between positions \a start and \a end is right to left.
+*/
+bool QDeclarativeTextEdit::isRightToLeft(int start, int end)
+{
+    Q_D(QDeclarativeTextEdit);
+    if (start > end) {
+        qmlInfo(this) << "isRightToLeft(start, end) called with the end property being smaller than the start.";
+        return false;
+    } else {
+        return d->text.mid(start, end - start).isRightToLeft();
+    }
 }
 
 #ifndef QT_NO_CLIPBOARD
@@ -1316,7 +1428,10 @@ Handles the given input method \a event.
 void QDeclarativeTextEdit::inputMethodEvent(QInputMethodEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
+    const bool wasComposing = isInputMethodComposing();
     d->control->processEvent(event, QPointF(0, -d->yoff));
+    if (wasComposing != isInputMethodComposing())
+        emit inputMethodComposingChanged();
 }
 
 /*!
@@ -1381,17 +1496,36 @@ void QDeclarativeTextEdit::updateImgCache(const QRectF &rf)
 
 /*!
     \qmlproperty bool TextEdit::canPaste
+    \since QtQuick 1.1
 
     Returns true if the TextEdit is writable and the content of the clipboard is
     suitable for pasting into the TextEdit.
-
-    \since QtQuick 1.1
 */
-
 bool QDeclarativeTextEdit::canPaste() const
 {
     Q_D(const QDeclarativeTextEdit);
     return d->canPaste;
+}
+
+/*!
+    \qmlproperty bool TextEdit::inputMethodComposing
+
+    \since QtQuick 1.1
+
+    This property holds whether the TextEdit has partial text input from an
+    input method.
+
+    While it is composing an input method may rely on mouse or key events from
+    the TextEdit to edit or commit the partial text.  This property can be used
+    to determine when to disable events handlers that may interfere with the
+    correct operation of an input method.
+*/
+bool QDeclarativeTextEdit::isInputMethodComposing() const
+{
+    Q_D(const QDeclarativeTextEdit);
+    if (QTextLayout *layout = d->control->textCursor().block().layout())
+        return layout->preeditAreaText().length() > 0;
+    return false;
 }
 
 void QDeclarativeTextEditPrivate::init()
@@ -1429,6 +1563,7 @@ void QDeclarativeTextEditPrivate::init()
 #ifndef QT_NO_CLIPBOARD
     QObject::connect(q, SIGNAL(readOnlyChanged(bool)), q, SLOT(q_canPasteChanged()));
     QObject::connect(QApplication::clipboard(), SIGNAL(dataChanged()), q, SLOT(q_canPasteChanged()));
+    canPaste = control->canPaste();
 #endif
 
     document = control->document();
@@ -1443,6 +1578,9 @@ void QDeclarativeTextEdit::q_textChanged()
 {
     Q_D(QDeclarativeTextEdit);
     d->text = text();
+    d->rightToLeftText = d->document->begin().layout()->engine()->isRightToLeft();
+    d->determineHorizontalAlignment();
+    d->updateDefaultTextOption();
     updateSize();
     updateTotalLines();
     updateMicroFocus();
@@ -1607,9 +1745,18 @@ void QDeclarativeTextEdit::updateTotalLines()
 
 void QDeclarativeTextEditPrivate::updateDefaultTextOption()
 {
+    Q_Q(QDeclarativeTextEdit);
     QTextOption opt = document->defaultTextOption();
     int oldAlignment = opt.alignment();
-    opt.setAlignment((Qt::Alignment)(int)(hAlign | vAlign));
+
+    QDeclarativeTextEdit::HAlignment horizontalAlignment = q->effectiveHAlign();
+    if (rightToLeftText) {
+        if (horizontalAlignment == QDeclarativeTextEdit::AlignLeft)
+            horizontalAlignment = QDeclarativeTextEdit::AlignRight;
+        else if (horizontalAlignment == QDeclarativeTextEdit::AlignRight)
+            horizontalAlignment = QDeclarativeTextEdit::AlignLeft;
+    }
+    opt.setAlignment((Qt::Alignment)(int)(horizontalAlignment | vAlign));
 
     QTextOption::WrapMode oldWrapMode = opt.wrapMode();
     opt.setWrapMode(QTextOption::WrapMode(wrapMode));

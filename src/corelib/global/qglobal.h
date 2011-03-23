@@ -44,11 +44,11 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "4.7.2"
+#define QT_VERSION_STR   "4.7.4"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x040702
+#define QT_VERSION 0x040704
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -284,7 +284,7 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
-#if defined(Q_OS_MAC64) && !defined(QT_MAC_USE_COCOA) && !defined(QT_BUILD_QMAKE)
+#if defined(Q_OS_MAC64) && !defined(QT_MAC_USE_COCOA) && !defined(QT_BUILD_QMAKE) && !defined(QT_BOOTSTRAPPED)
 #error "You are building a 64-bit application, but using a 32-bit version of Qt. Check your build configuration."
 #endif
 
@@ -2453,7 +2453,10 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #ifdef SYMBIAN_GRAPHICS_TRANSITION_EFFECTS_SIGNALING_AVAILABLE
 #  define Q_SYMBIAN_TRANSITION_EFFECTS
 #endif
+#endif
 
+#ifdef SYMBIAN_WSERV_AND_CONE_MULTIPLE_SCREENS
+#define Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS
 #endif
 
 //Symbian does not support data imports from a DLL
