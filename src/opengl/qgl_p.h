@@ -687,6 +687,7 @@ public:
     virtual ~QGLContextGroupResourceBase();
     void insert(const QGLContext *context, void *value);
     void *value(const QGLContext *context);
+    void cleanup(const QGLContext *context);
     void cleanup(const QGLContext *context, void *value);
     virtual void freeResource(void *value) = 0;
 

@@ -5606,6 +5606,21 @@ void *QGLContextGroupResourceBase::value(const QGLContext *context)
     return group->m_resources.value(this, 0);
 }
 
+void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx)
+{
+    void *resource = value(ctx);
+
+    if (resource != 0) {
+        QGLShareContextScope scope(ctx);
+        freeResource(resource);
+
+        QGLContextGroup *group = QGLContextPrivate::contextGroup(ctx);
+        group->m_resources.remove(this);
+        m_groups.removeOne(group);
+        active.deref();
+    }
+}
+
 void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx, void *value)
 {
 #ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
