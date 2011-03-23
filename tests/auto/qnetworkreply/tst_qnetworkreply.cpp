@@ -1768,6 +1768,7 @@ void tst_QNetworkReply::postToHttp()
     QUrl url("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/md5sum.cgi");
 
     QNetworkRequest request(url);
+    request.setRawHeader("Content-Type", "application/octet-stream");
     QNetworkReplyPtr reply;
 
     QFETCH(QByteArray, data);
@@ -1794,6 +1795,7 @@ void tst_QNetworkReply::postToHttpSynchronous()
     QUrl url("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/md5sum.cgi");
 
     QNetworkRequest request(url);
+    request.setRawHeader("Content-Type", "application/octet-stream");
 
     request.setAttribute(
             QNetworkRequest::SynchronousRequestAttribute,
@@ -3408,6 +3410,8 @@ void tst_QNetworkReply::ioPostToHttpFromFile()
 
     QUrl url("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/md5sum.cgi");
     QNetworkRequest request(url);
+    request.setRawHeader("Content-Type", "application/octet-stream");
+
     QNetworkReplyPtr reply = manager.post(request, &sourceFile);
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
@@ -3484,8 +3488,10 @@ void tst_QNetworkReply::ioPostToHttpFromSocket()
     socketpair.endPoints[0]->write(data);
 
     QNetworkRequest request(url);
+    request.setRawHeader("Content-Type", "application/octet-stream");
+
     manager.setProxy(proxy);
-    QNetworkReplyPtr reply = manager.post(QNetworkRequest(url), socketpair.endPoints[1]);
+    QNetworkReplyPtr reply = manager.post(request, socketpair.endPoints[1]);
     socketpair.endPoints[0]->close();
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
@@ -3558,6 +3564,7 @@ void tst_QNetworkReply::ioPostToHttpFromSocketSynchronous()
 
     QUrl url("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/md5sum.cgi");
     QNetworkRequest request(url);
+    request.setRawHeader("Content-Type", "application/octet-stream");
     request.setAttribute(
             QNetworkRequest::SynchronousRequestAttribute,
             true);
@@ -3587,7 +3594,8 @@ void tst_QNetworkReply::ioPostToHttpFromMiddleOfFileToEnd()
 
     QUrl url = "http://" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi";
     QNetworkRequest request(url);
-    QNetworkReplyPtr reply = manager.post(QNetworkRequest(url), &sourceFile);
+    request.setRawHeader("Content-Type", "application/octet-stream");
+    QNetworkReplyPtr reply = manager.post(request, &sourceFile);
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
@@ -3613,6 +3621,7 @@ void tst_QNetworkReply::ioPostToHttpFromMiddleOfFileFiveBytes()
 
     QUrl url = "http://" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi";
     QNetworkRequest request(url);
+    request.setRawHeader("Content-Type", "application/octet-stream");
     // only send 5 bytes
     request.setHeader(QNetworkRequest::ContentLengthHeader, 5);
     QVERIFY(request.header(QNetworkRequest::ContentLengthHeader).isValid());
@@ -3673,6 +3682,7 @@ void tst_QNetworkReply::ioPostToHttpNoBufferFlag()
 
     QUrl url = "http://" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi";
     QNetworkRequest request(url);
+    request.setRawHeader("Content-Type", "application/octet-stream");
     // disallow buffering
     request.setAttribute(QNetworkRequest::DoNotBufferUploadDataAttribute, true);
     request.setHeader(QNetworkRequest::ContentLengthHeader, data.size());
@@ -3735,6 +3745,7 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     // create the request
     QUrl url = QUrl(QString("https://127.0.0.1:%1/").arg(server.serverPort()));
     QNetworkRequest request(url);
+    request.setRawHeader("Content-Type", "application/octet-stream");
     QNetworkReplyPtr reply = manager.post(request, &sourceFile);
     QSignalSpy spy(reply, SIGNAL(uploadProgress(qint64,qint64)));
     connect(&server, SIGNAL(newEncryptedConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
@@ -3956,6 +3967,7 @@ void tst_QNetworkReply::ioPostToHttpEmptyUploadProgress()
     // create the request
     QUrl url = QUrl(QString("http://127.0.0.1:%1/").arg(server.serverPort()));
     QNetworkRequest request(url);
+    request.setRawHeader("Content-Type", "application/octet-stream");
     QNetworkReplyPtr reply = manager.post(request, &buffer);
     QSignalSpy spy(reply, SIGNAL(uploadProgress(qint64,qint64)));
     connect(&server, SIGNAL(newConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
@@ -4302,6 +4314,7 @@ void tst_QNetworkReply::receiveCookiesFromHttp()
     QByteArray data = cookieString.toLatin1() + '\n';
     QUrl url("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/set-cookie.cgi");
     QNetworkRequest request(url);
+    request.setRawHeader("Content-Type", "application/octet-stream");
     QNetworkReplyPtr reply;
     RUN_REQUEST(runSimpleRequest(QNetworkAccessManager::PostOperation, request, reply, data));
 
@@ -4329,7 +4342,7 @@ void tst_QNetworkReply::receiveCookiesFromHttpSynchronous()
     QUrl url("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/set-cookie.cgi");
 
     QNetworkRequest request(url);
-
+    request.setRawHeader("Content-Type", "application/octet-stream");
     request.setAttribute(
             QNetworkRequest::SynchronousRequestAttribute,
             true);
