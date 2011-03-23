@@ -281,6 +281,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "DECLARATIVE" ]     = "auto";
     dictionary[ "DECLARATIVE_DEBUG" ]= "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
+    dictionary[ "DIRECTWRITE" ]     = "no";
 
     QString version;
     QFile qglobal_h(sourcePath + "/src/corelib/global/qglobal.h");
@@ -1229,6 +1230,12 @@ void Configure::parseCmdLine()
             }
         }
 
+        else if (configCmdLine.at(i) == "-directwrite") {
+            dictionary["DIRECTWRITE"] = "yes";
+        } else if (configCmdLine.at(i) == "-no-directwrite") {
+            dictionary["DIRECTWRITE"] = "no";
+        }
+
         else {
             dictionary[ "HELP" ] = "yes";
             cout << "Unknown option " << configCmdLine.at(i) << endl;
@@ -1684,7 +1691,9 @@ bool Configure::displayHelp()
                     "[-phonon] [-no-phonon-backend] [-phonon-backend]\n"
                     "[-no-multimedia] [-multimedia] [-no-audio-backend] [-audio-backend]\n"
                     "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
-                    "[-no-webkit] [-webkit] [-webkit-debug] [-graphicssystem raster|opengl|openvg]\n\n", 0, 7);
+                    "[-no-webkit] [-webkit] [-webkit-debug]\n"
+                    "[-graphicssystem raster|opengl|openvg]\n"
+                    "[-no-directwrite] [-directwrite]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
 
@@ -1881,6 +1890,8 @@ bool Configure::displayHelp()
         desc("DECLARATIVE", "yes",   "-declarative",    "Build the declarative module");
         desc("DECLARATIVE_DEBUG", "no",    "-no-declarative-debug", "Do not build the declarative debugging support");
         desc("DECLARATIVE_DEBUG", "yes",   "-declarative-debug",    "Build the declarative debugging support");
+        desc("DIRECTWRITE", "no", "-no-directwrite", "Do not build support for DirectWrite font rendering");
+        desc("DIRECTWRITE", "yes", "-directwrite", "Build support for DirectWrite font rendering (experimental, requires DirectWrite availability on target systems, e.g. Windows Vista with Platform Update, Windows 7, etc.)");
 
         desc(                   "-arch <arch>",         "Specify an architecture.\n"
                                                         "Available values for <arch>:");
@@ -2244,6 +2255,8 @@ bool Configure::checkAvailability(const QString &part)
                 available = false;
             }
         }
+    } else if (part == "DIRECTWRITE") {
+        available = findFile("dwrite.h") && findFile("d2d1.h") && findFile("dwrite.lib");
     }
 
     return available;
@@ -2397,6 +2410,15 @@ bool Configure::verifyConfiguration()
             exit(0);      // Exit cleanly for Ctrl+C
 
         dictionary["SCRIPT"] = "yes";
+    }
+
+    if (dictionary["DIRECTWRITE"] == "yes" && !checkAvailability("DIRECTWRITE")) {
+        cout << "WARNING: To be able to compile the DirectWrite font engine you will" << endl
+             << "need the Microsoft DirectWrite and Microsoft Direct2D development" << endl
+             << "files such as headers and libraries." << endl
+             << "(Press any key to continue..)";
+        if (_getch() == 3) // _Any_ keypress w/no echo(eat <Enter> for stdout)
+            exit(0);      // Exit cleanly for Ctrl+C
     }
 
     return true;
@@ -2755,6 +2777,9 @@ void Configure::generateOutputVars()
         qtConfig += "declarative";
     }
 
+    if (dictionary["DIRECTWRITE"] == "yes")
+        qtConfig += "directwrite";
+
     if (dictionary[ "NATIVE_GESTURES" ] == "yes")
         qtConfig += "native-gestures";
 
@@ -2986,6 +3011,10 @@ void Configure::generateCachefile()
                 configStream << " def_files_disabled";
             }
         }
+
+        if (dictionary["DIRECTWRITE"] == "yes")
+            configStream << "directwrite";
+
         configStream << endl;
         configStream << "QT_ARCH = " << dictionary[ "ARCHITECTURE" ] << endl;
         if (dictionary["QT_EDITION"].contains("OPENSOURCE"))
@@ -3454,7 +3483,8 @@ void Configure::displayConfig()
     cout << "QtScript support............" << dictionary[ "SCRIPT" ] << endl;
     cout << "QtScriptTools support......." << dictionary[ "SCRIPTTOOLS" ] << endl;
     cout << "Graphics System............." << dictionary[ "GRAPHICS_SYSTEM" ] << endl;
-    cout << "Qt3 compatibility..........." << dictionary[ "QT3SUPPORT" ] << endl << endl;
+    cout << "Qt3 compatibility..........." << dictionary[ "QT3SUPPORT" ] << endl;
+    cout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl << endl;
 
     cout << "Third Party Libraries:" << endl;
     cout << "    ZLIB support............" << dictionary[ "ZLIB" ] << endl;

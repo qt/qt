@@ -43,10 +43,6 @@
 
 #include "qwaylanddisplay.h"
 #include "qwaylandscreen.h"
-#include "qwaylandglcontext.h"
-#include "qwaylandbuffer.h"
-
-#include "qwaylanddrmsurface.h"
 
 #include <QtGui/QWidget>
 #include <QtGui/QWindowSystemInterface>
@@ -56,8 +52,6 @@
 QWaylandWindow::QWaylandWindow(QWidget *window)
     : QPlatformWindow(window)
     , mDisplay(QWaylandScreen::waylandScreenFromWidget(window)->display())
-    , mGLContext(0)
-    , mBuffer(0)
 {
     static WId id = 1;
     mWindowId = id++;
@@ -67,8 +61,6 @@ QWaylandWindow::QWaylandWindow(QWidget *window)
 
 QWaylandWindow::~QWaylandWindow()
 {
-    if (mGLContext)
-        delete mGLContext;
 }
 
 WId QWaylandWindow::winId() const
@@ -78,26 +70,23 @@ WId QWaylandWindow::winId() const
 
 void QWaylandWindow::setParent(const QPlatformWindow *parent)
 {
-    QWaylandWindow *wParent = (QWaylandWindow *)parent;
-
-    mParentWindow = wParent;
+    Q_UNUSED(parent);
+    qWarning("Trying to add a raster window as a sub-window");
 }
 
 void QWaylandWindow::setVisible(bool visible)
 {
+    if (!mSurface) {
+        mSurface = mDisplay->createSurface();
+        newSurfaceCreated();
+    }
+
     if (visible) {
         wl_surface_set_user_data(mSurface, this);
         wl_surface_map_toplevel(mSurface);
     } else {
         wl_surface_destroy(mSurface);
         mSurface = NULL;
-    }
-}
-
-void QWaylandWindow::attach(QWaylandBuffer *buffer)
-{
-    if (mSurface) {
-        wl_surface_attach(mSurface, buffer->buffer(),0,0);
     }
 }
 
@@ -109,15 +98,7 @@ void QWaylandWindow::configure(uint32_t time, uint32_t edges,
     Q_UNUSED(edges);
     QRect geometry = QRect(x, y, width, height);
 
+    setGeometry(geometry);
+
     QWindowSystemInterface::handleGeometryChange(widget(), geometry);
-}
-
-QPlatformGLContext *QWaylandWindow::glContext() const
-{
-    if (!mGLContext) {
-        QWaylandWindow *that = const_cast<QWaylandWindow *>(this);
-        that->mGLContext = new QWaylandGLContext(mDisplay, widget()->platformWindowFormat());
-    }
-
-    return mGLContext;
 }

@@ -741,7 +741,10 @@ QWidget *QDesignerResource::load(QIODevice *dev, QWidget *parentWidget)
     case LoadPreCheckOk:
         break;
     }
-    return QEditorFormBuilder::load(dev, parentWidget);
+    QWidget *w = QEditorFormBuilder::load(dev, parentWidget);
+    if (w) // Store the class name as 'reset' value for the main container's object name.
+        w->setProperty("_q_classname", w->objectName());
+    return w;
 }
 
 bool QDesignerResource::saveRelative() const
@@ -1194,7 +1197,7 @@ QWidget *QDesignerResource::createWidget(const QString &widgetName, QWidget *par
             parentWidget->setProperty("_q_widgetOrder", QVariant::fromValue(list));
             QList<QWidget *> zOrder = qvariant_cast<QWidgetList>(parentWidget->property("_q_zOrder"));
             zOrder.append(w);
-            parentWidget->setProperty("_q_zOrder", QVariant::fromValue(list));
+            parentWidget->setProperty("_q_zOrder", QVariant::fromValue(zOrder));
         }
     } else {
         core()->metaDataBase()->add(w);
