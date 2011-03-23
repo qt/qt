@@ -49,7 +49,7 @@ MiscWidget::MiscWidget()
     createLineEdit("Alternate quotes:", &alternateQuotedTextLabel, &alternateQuotedText);
     textToQuote->setText("some text");
     createLineEdit("Text direction:", &textDirectionLabel, &textDirection);
-    createLineEdit("List to seperated string:", &listToSeparatedStringLabel, &listToSeparatedStringText);
+    createLineEdit("List to separated string:", &listToSeparatedStringLabel, &listToSeparatedStringText);
 
     l->addWidget(textToQuoteLabel, 0, 0);
     l->addWidget(textToQuote, 0, 1);
