@@ -39,7 +39,7 @@ symbian {
     TARGET.CAPABILITY = NetworkServices ReadUserData
 
     # Deploy plugin for remote debugging
-    qmldebuggingplugin.sources = $$QT_BUILD_TREE/plugins/qmltooling/qmldbgtcp$${QT_LIBINFIX}.dll
+    qmldebuggingplugin.sources = $$QT_BUILD_TREE/plugins/qmltooling/qmldbg_tcp$${QT_LIBINFIX}.dll  $$QT_BUILD_TREE/plugins/qmltooling/qmldbg_ost$${QT_LIBINFIX}.dll 
     qmldebuggingplugin.path = c:$$QT_PLUGINS_BASE_DIR/qmltooling
     DEPLOYMENT +=  qmldebuggingplugin
 }
