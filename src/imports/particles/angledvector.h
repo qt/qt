@@ -88,4 +88,5 @@ qreal m_magnitudeVariation;
 };
 
 QT_END_NAMESPACE
+QT_END_HEADER
 #endif // ANGLEDVECTOR_H

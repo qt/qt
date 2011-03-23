@@ -41,4 +41,5 @@ qreal m_factor;
 };
 
 QT_END_NAMESPACE
+QT_END_HEADER
 #endif // FRICTIONAFFECTOR_H

@@ -108,4 +108,5 @@ ParticleAffector* m_affector;
 };
 
 QT_END_NAMESPACE
+QT_END_HEADER
 #endif // ZONEAFFECTOR_H

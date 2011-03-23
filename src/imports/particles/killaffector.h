@@ -23,4 +23,5 @@ public slots:
 };
 
 QT_END_NAMESPACE
+QT_END_HEADER
 #endif // KILLAFFECTOR_H
