@@ -320,8 +320,10 @@ void QSGPlainTexture::bind()
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_BGRA, GL_UNSIGNED_BYTE, m_image.constBits());
 #endif
 
-    if (m_has_mipmaps)
+    if (m_has_mipmaps) {
+        const QGLContext *ctx = QSGContext::current->glContext();
         glGenerateMipmap(GL_TEXTURE_2D);
+    }
 
     m_texture_size = QSize(w, h);
     m_texture_rect = QRectF(0, 0, 1, 1);
