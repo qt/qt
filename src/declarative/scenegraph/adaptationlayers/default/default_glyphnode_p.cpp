@@ -173,11 +173,21 @@ void TextMaskMaterial::init()
     QFontEngineGlyphCache::Type type = QFontEngineGlyphCache::Raster_A8;
     setFlag(Blending, true);
 
-    m_glyphCache = m_fontEngine->glyphCache(0, type, QTransform());
+    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
+    Q_ASSERT(ctx != 0);
+
+    m_glyphCache = m_fontEngine->glyphCache(ctx, type, QTransform());
     if (!m_glyphCache || m_glyphCache->cacheType() != type) {
-        m_glyphCache = new QGLTextureGlyphCache(0, type, QTransform());
-        m_fontEngine->setGlyphCache(0, m_glyphCache.data());
+        m_glyphCache = new QGLTextureGlyphCache(ctx, type, QTransform());
+        m_fontEngine->setGlyphCache(ctx, m_glyphCache.data());
     }
+
+#if !defined(QT_OPENGL_ES_2)
+    bool success = qt_resolve_version_2_0_functions(ctx)
+                   && qt_resolve_buffer_extensions(ctx);
+    Q_ASSERT(success);
+    Q_UNUSED(success);
+#endif
 }
 
 void TextMaskMaterial::populate(const QPointF &p,
@@ -195,6 +205,7 @@ void TextMaskMaterial::populate(const QPointF &p,
 
     cache->populate(m_fontEngine, glyphIndexes.size(), glyphIndexes.constData(),
                            fixedPointPositions.data());
+    cache->fillInPendingGlyphs();
 
     int margin = cache->glyphMargin();
 
@@ -273,28 +284,6 @@ int TextMaskMaterial::compare(const AbstractMaterial *o) const
     QRgb c1 = m_color.rgba();
     QRgb c2 = other->m_color.rgba();
     return int(c2 < c1) - int(c1 < c2);
-}
-
-void TextMaskMaterial::updateGlyphCache(const QGLContext *context)
-{
-    QGLTextureGlyphCache *cache = glyphCache();
-    if (cache->context() != 0 && cache->context() != context) {
-        // ### Clean up and change context?
-        qWarning("TextMaskMaterial::setContext: Glyph cache already belongs to different context");
-    } else {
-#if !defined(QT_OPENGL_ES_2)
-        QGLContext *ctx = const_cast<QGLContext *>(context);
-        bool success = qt_resolve_version_2_0_functions(ctx)
-                       && qt_resolve_buffer_extensions(ctx);
-        Q_ASSERT(success);
-        Q_UNUSED(success);
-#endif
-
-        if (cache->context() == 0)
-            cache->setContext(context);
-
-        cache->fillInPendingGlyphs();
-    }
 }
 
 bool TextMaskMaterial::ensureUpToDate()
