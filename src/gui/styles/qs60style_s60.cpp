@@ -1402,6 +1402,7 @@ QPixmap QS60StylePrivate::backgroundTexture(bool skipCreation)
         if (m_background->width() != applicationRect.Width() ||
             m_background->height() != applicationRect.Height()) {
             delete m_background;
+            m_background = 0;
             createNewBackground = true;
         }
     }
