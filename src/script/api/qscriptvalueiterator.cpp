@@ -126,11 +126,11 @@ inline QScriptValueIteratorPrivate::QScriptValueIteratorPrivate(const QScriptVal
     , m_usingClassIterator(false)
 {
     Q_ASSERT(value);
+    QScriptEnginePrivate *engine = m_object->engine();
+    QScriptIsolate api(engine);
     if (!m_object->isObject())
         m_object = 0;
     else {
-        QScriptEnginePrivate *engine = m_object->engine();
-        QScriptIsolate api(engine, QScriptIsolate::NotNullEngine);
         v8::HandleScope scope;
         Handle<Value> tmp = *value;
         Handle<Object> obj = Handle<Object>::Cast(tmp);
