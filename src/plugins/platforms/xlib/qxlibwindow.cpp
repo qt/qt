@@ -87,9 +87,9 @@ QXlibWindow::QXlibWindow(QWidget *window)
 #else
         QPlatformWindowFormat windowFormat = correctColorBuffers(window->platformWindowFormat());
 
-        EGLDisplay eglDisplay = eglGetDisplay(mScreen->display()->nativeDisplay());
+        EGLDisplay eglDisplay = mScreen->eglDisplay();
         EGLConfig eglConfig = q_configFromQPlatformWindowFormat(eglDisplay,windowFormat);
-        VisualID id = QXlibEglIntegration::getCompatibleVisualId(mScreen->display()->nativeDisplay(),eglConfig);
+        VisualID id = QXlibEglIntegration::getCompatibleVisualId(mScreen->display()->nativeDisplay(), eglDisplay, eglConfig);
 
         XVisualInfo visualInfoTemplate;
         memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
@@ -663,7 +663,7 @@ QPlatformGLContext *QXlibWindow::glContext() const
 #if !defined(QT_OPENGL_ES_2)
         that->mGLContext = new QGLXContext(x_window, mScreen,widget()->platformWindowFormat());
 #else
-        EGLDisplay display = eglGetDisplay(mScreen->display()->nativeDisplay());
+        EGLDisplay display = mScreen->eglDisplay();
 
         QPlatformWindowFormat windowFormat = correctColorBuffers(widget()->platformWindowFormat());
 
