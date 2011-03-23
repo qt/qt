@@ -238,6 +238,11 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
             }
         }
 
+        if (maxTextureHeight() > 0 && m_cy + c.h > maxTextureHeight()) {
+            // We can't make a cache of the required size, so we bail out
+            return false;
+        }
+
         c.x = m_cx;
         c.y = m_cy;
 
