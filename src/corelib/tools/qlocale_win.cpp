@@ -336,7 +336,7 @@ QVariant QSystemLocalePrivate::toString(const QDate &date, QLocale::FormatType t
     return QString();
 }
 
-QVariant QSystemLocalePrivate::toString(const QTime &time, QLocale::FormatType type)
+QVariant QSystemLocalePrivate::toString(const QTime &time, QLocale::FormatType)
 {
     SYSTEMTIME st;
     memset(&st, 0, sizeof(SYSTEMTIME));
@@ -346,8 +346,6 @@ QVariant QSystemLocalePrivate::toString(const QTime &time, QLocale::FormatType t
     st.wMilliseconds = 0;
 
     DWORD flags = 0;
-    if (type != QLocale::LongFormat && QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7)
-        flags = 2; // TIME_NOSECONDS
 
     wchar_t buf[255];
     if (GetTimeFormat(lcid, flags, &st, NULL, buf, 255)) {
