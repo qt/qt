@@ -190,7 +190,7 @@ QWaylandDisplay::QWaylandDisplay(void)
                                    QWaylandDisplay::displayHandleGlobal, this);
 
 #ifdef QT_WAYLAND_GL_SUPPORT
-    mEglIntegration = QWaylandGLIntegration::createEglIntegration(this);
+    mEglIntegration = QWaylandGLIntegration::createGLIntegration(this);
 #endif
 
     readEvents();

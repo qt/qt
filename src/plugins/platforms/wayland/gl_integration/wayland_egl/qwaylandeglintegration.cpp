@@ -44,7 +44,7 @@ wl_egl_display * QWaylandEglIntegration::nativeDisplay() const
     return mNativeEglDisplay;
 }
 
-QWaylandGLIntegration *QWaylandGLIntegration::createEglIntegration(QWaylandDisplay *waylandDisplay)
+QWaylandGLIntegration *QWaylandGLIntegration::createGLIntegration(QWaylandDisplay *waylandDisplay)
 {
     return new QWaylandEglIntegration(waylandDisplay->wl_display());
 }

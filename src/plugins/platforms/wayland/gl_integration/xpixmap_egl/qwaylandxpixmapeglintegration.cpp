@@ -21,7 +21,7 @@ QWaylandXPixmapEglIntegration::~QWaylandXPixmapEglIntegration()
 }
 
 
-QWaylandGLIntegration *QWaylandGLIntegration::createEglIntegration(QWaylandDisplay *waylandDisplay)
+QWaylandGLIntegration *QWaylandGLIntegration::createGLIntegration(QWaylandDisplay *waylandDisplay)
 {
     return new QWaylandXPixmapEglIntegration(waylandDisplay);
 }

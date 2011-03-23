@@ -15,7 +15,7 @@ public:
 
     virtual QWaylandWindow *createEglWindow(QWidget *widget) = 0;
 
-    static QWaylandGLIntegration *createEglIntegration(QWaylandDisplay *waylandDisplay);
+    static QWaylandGLIntegration *createGLIntegration(QWaylandDisplay *waylandDisplay);
 };
 
 #endif // QWAYLANDGLINTEGRATION_H
