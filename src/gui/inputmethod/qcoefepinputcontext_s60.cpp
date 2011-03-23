@@ -330,18 +330,20 @@ bool QCoeFepInputContext::symbianFilterEvent(QWidget *keyWidget, const QSymbianE
         // This should also happen for commands.
         reset();
 
-    if (event->windowServerEvent() && event->windowServerEvent()->Type() == EEventWindowVisibilityChanged) {
-        if (S60->splitViewLastWidget) {
-            QGraphicsView *gv = qobject_cast<QGraphicsView*>(S60->splitViewLastWidget);
-            const bool alwaysResize = (gv && gv->verticalScrollBarPolicy() != Qt::ScrollBarAlwaysOff);
+    if (event->type() == QSymbianEvent::WindowServerEvent
+        && event->windowServerEvent()
+        && event->windowServerEvent()->Type() == EEventWindowVisibilityChanged
+        && S60->splitViewLastWidget) {
 
-            if (alwaysResize) {
-                TUint visibleFlags = event->windowServerEvent()->VisibilityChanged()->iFlags;
-                if (visibleFlags & TWsVisibilityChangedEvent::EPartiallyVisible)
-                    ensureFocusWidgetVisible(S60->splitViewLastWidget);
-                if (visibleFlags & TWsVisibilityChangedEvent::ENotVisible)
-                    resetSplitViewWidget(true);
-            }
+        QGraphicsView *gv = qobject_cast<QGraphicsView*>(S60->splitViewLastWidget);
+        const bool alwaysResize = (gv && gv->verticalScrollBarPolicy() != Qt::ScrollBarAlwaysOff);
+
+        if (alwaysResize) {
+            TUint visibleFlags = event->windowServerEvent()->VisibilityChanged()->iFlags;
+            if (visibleFlags & TWsVisibilityChangedEvent::EPartiallyVisible)
+                ensureFocusWidgetVisible(S60->splitViewLastWidget);
+            if (visibleFlags & TWsVisibilityChangedEvent::ENotVisible)
+                resetSplitViewWidget(true);
         }
     }
 
