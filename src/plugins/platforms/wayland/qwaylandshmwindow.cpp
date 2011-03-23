@@ -43,6 +43,8 @@
 
 #include "qwaylandbuffer.h"
 
+#include <QtCore/QVector>
+
 QWaylandShmWindow::QWaylandShmWindow(QWidget *widget)
     : QWaylandWindow(widget)
     , mBuffer(0)

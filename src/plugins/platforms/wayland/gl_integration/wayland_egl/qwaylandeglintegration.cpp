@@ -1,5 +1,7 @@
 #include "qwaylandeglintegration.h"
 
+#include "gl_integration/qwaylandglintegration.h"
+
 #include "qwaylandeglwindow.h"
 
 QWaylandEglIntegration::QWaylandEglIntegration(struct wl_display *waylandDisplay)
@@ -42,7 +44,7 @@ wl_egl_display * QWaylandEglIntegration::nativeDisplay() const
     return mNativeEglDisplay;
 }
 
-QWaylandGLIntegration *QWaylandGLIntegration::createEglIntegration(wl_display *waylandDisplay)
+QWaylandGLIntegration *QWaylandGLIntegration::createEglIntegration(QWaylandDisplay *waylandDisplay)
 {
-    return new QWaylandEglIntegration(waylandDisplay);
+    return new QWaylandEglIntegration(waylandDisplay->wl_display());
 }

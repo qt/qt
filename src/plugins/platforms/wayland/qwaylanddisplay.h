@@ -81,6 +81,7 @@ public:
 
     void iterate();
 
+    struct wl_display *wl_display() const { return mDisplay; }
 public slots:
     void readEvents(void);
     void flushRequests(void);

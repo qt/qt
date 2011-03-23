@@ -43,6 +43,7 @@
 #define QWAYLANDSHMWINDOW_H
 
 #include "qwaylandwindow.h"
+#include <QtGui/QRegion>
 
 class QWaylandShmWindow : public QWaylandWindow
 {
