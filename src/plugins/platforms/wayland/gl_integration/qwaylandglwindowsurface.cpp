@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qwaylanddrmsurface.h"
+#include "qwaylandglwindowsurface.h"
 
 #include "qwaylanddisplay.h"
 #include "qwaylandwindow.h"
@@ -51,8 +51,6 @@
 #include <QtOpenGL/private/qglengineshadermanager_p.h>
 
 QT_BEGIN_NAMESPACE
-
-
 
 static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize, const QRectF &br)
 {
@@ -132,7 +130,7 @@ static void blitTexture(QGLContext *ctx, GLuint texture, const QSize &viewport, 
     drawTexture(r, texture, texSize, sourceRect);
 }
 
-QWaylandDrmWindowSurface::QWaylandDrmWindowSurface(QWidget *window)
+QWaylandGLWindowSurface::QWaylandGLWindowSurface(QWidget *window)
     : QWindowSurface(window)
     , mDisplay(QWaylandScreen::waylandScreenFromWidget(window)->display())
     , mPaintDevice(0)
@@ -140,24 +138,24 @@ QWaylandDrmWindowSurface::QWaylandDrmWindowSurface(QWidget *window)
 
 }
 
-QWaylandDrmWindowSurface::~QWaylandDrmWindowSurface()
+QWaylandGLWindowSurface::~QWaylandGLWindowSurface()
 {
     delete mPaintDevice;
 }
 
-QPaintDevice *QWaylandDrmWindowSurface::paintDevice()
+QPaintDevice *QWaylandGLWindowSurface::paintDevice()
 {
     return mPaintDevice;
 }
 
-void QWaylandDrmWindowSurface::beginPaint(const QRegion &)
+void QWaylandGLWindowSurface::beginPaint(const QRegion &)
 {
     window()->platformWindow()->glContext()->makeCurrent();
     glClearColor(0,0,0,0xff);
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void QWaylandDrmWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
+void QWaylandGLWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(offset);
     Q_UNUSED(region);
@@ -172,7 +170,7 @@ void QWaylandDrmWindowSurface::flush(QWidget *widget, const QRegion &region, con
     ww->glContext()->swapBuffers();
 }
 
-void QWaylandDrmWindowSurface::resize(const QSize &size)
+void QWaylandGLWindowSurface::resize(const QSize &size)
 {
     QWindowSurface::resize(size);
     window()->platformWindow()->glContext()->makeCurrent();

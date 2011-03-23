@@ -44,18 +44,15 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QRect>
-#include <QtCore/QDataStream>
-#include <QtCore/QTextStream>
-#include <QtCore/QMetaType>
-#include <QtGui>
 
-#include "qwaylandinclude.h"
+#include <wayland-client.h>
 
 class QWaylandInputDevice;
 class QSocketNotifier;
 class QWaylandBuffer;
 class QPlatformScreen;
 class QWaylandScreen;
+class QWaylandGLIntegration;
 
 class QWaylandDisplay : public QObject {
     Q_OBJECT
@@ -73,9 +70,10 @@ public:
     struct wl_visual *rgbVisual();
     struct wl_visual *argbVisual();
     struct wl_visual *argbPremultipliedVisual();
-    struct wl_egl_display *nativeDisplay();
-    EGLDisplay eglDisplay() { return mEglDisplay; }
 
+#ifdef QT_WAYLAND_GL_SUPPORT
+    QWaylandGLIntegration *eglIntegration();
+#endif
     void setCursor(QWaylandBuffer *buffer, int32_t x, int32_t y);
 
     void syncCallback(wl_display_sync_func_t func, void *data);
@@ -98,8 +96,9 @@ private:
     QList<QWaylandInputDevice *> mInputDevices;
     QSocketNotifier *mReadNotifier;
     QSocketNotifier *mWriteNotifier;
-    EGLDisplay mEglDisplay;
-    struct wl_egl_display *mNativeEglDisplay;
+#ifdef QT_WAYLAND_GL_SUPPORT
+    QWaylandGLIntegration *mEglIntegration;
+#endif
 
     static void displayHandleGlobal(struct wl_display *display,
                                     uint32_t id,

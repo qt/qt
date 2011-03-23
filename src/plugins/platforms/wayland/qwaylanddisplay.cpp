@@ -46,6 +46,10 @@
 #include "qwaylandcursor.h"
 #include "qwaylandinputdevice.h"
 
+#ifdef QT_WAYLAND_GL_SUPPORT
+#include "gl_integration/qwaylandglintegration.h"
+#endif
+
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -78,9 +82,9 @@ struct wl_visual *QWaylandDisplay::argbPremultipliedVisual()
     return wl_display_get_premultiplied_argb_visual(mDisplay);
 }
 
-struct wl_egl_display *QWaylandDisplay::nativeDisplay()
+QWaylandGLIntegration * QWaylandDisplay::eglIntegration()
 {
-    return mNativeEglDisplay;
+    return mEglIntegration;
 }
 
 void QWaylandDisplay::shellHandleConfigure(void *data, struct wl_shell *shell,
@@ -176,9 +180,6 @@ void QWaylandDisplay::flushRequests(void)
 QWaylandDisplay::QWaylandDisplay(void)
     : mWriteNotifier(0)
 {
-#ifdef QT_WAYLAND_GL_SUPPORT
-    EGLint major, minor;
-#endif
     mDisplay = wl_display_connect(NULL);
     if (mDisplay == NULL) {
         fprintf(stderr, "failed to create display: %m\n");
@@ -189,25 +190,13 @@ QWaylandDisplay::QWaylandDisplay(void)
                                    QWaylandDisplay::displayHandleGlobal, this);
 
 #ifdef QT_WAYLAND_GL_SUPPORT
-    mNativeEglDisplay = wl_egl_display_create(mDisplay);
-#else
-    mNativeEglDisplay = 0;
+    mEglIntegration = QWaylandGLIntegration::createEglIntegration(mDisplay);
 #endif
 
     readEvents();
 
 #ifdef QT_WAYLAND_GL_SUPPORT
-    mEglDisplay = eglGetDisplay((EGLNativeDisplayType)mNativeEglDisplay);
-    if (mEglDisplay == NULL) {
-        qWarning("EGL not available");
-    } else {
-	if (!eglInitialize(mEglDisplay, &major, &minor)) {
-	    qWarning("failed to initialize EGL display");
-	    return;
-	}
-    }
-#else
-    mEglDisplay = 0;
+    mEglIntegration->initialize();
 #endif
 
     int fd = wl_display_get_fd(mDisplay, sourceUpdate, this);
@@ -225,7 +214,7 @@ QWaylandDisplay::~QWaylandDisplay(void)
 {
     close(mFd);
 #ifdef QT_WAYLAND_GL_SUPPORT
-    eglTerminate(mEglDisplay);
+    delete mEglIntegration;
 #endif
     wl_display_destroy(mDisplay);
 }
@@ -245,3 +234,4 @@ void QWaylandDisplay::frameCallback(wl_display_frame_func_t func, void *data)
 {
     wl_display_frame_callback(mDisplay, func, data);
 }
+

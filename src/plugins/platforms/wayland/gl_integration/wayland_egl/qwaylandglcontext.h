@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,25 +39,43 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDINCLUDE_H
-#define QWAYLANDINCLUDE_H
+#ifndef QWAYLANDGLCONTEXT_H
+#define QWAYLANDGLCONTEXT_H
 
-#include <wayland-client.h>
+#include "qwaylanddisplay.h"
 
-#ifdef QT_WAYLAND_GL_SUPPORT
-#include <wayland-egl.h>
+#include <QtGui/QPlatformGLContext>
 
-#define GL_GLEXT_PROTOTYPES
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
+#include "qwaylandeglinclude.h"
 
-#define EGL_EGLEXT_PROTOTYPES
- #include <EGL/egl.h>
- #include <EGL/eglext.h>
+class QWaylandWindow;
+class QWaylandGLWindowSurface;
 
-#else
-typedef void* EGLDisplay;
-typedef void* EGLConfig;
-#endif
+class QWaylandGLContext : public QPlatformGLContext {
+public:
+    QWaylandGLContext(EGLDisplay eglDisplay, const QPlatformWindowFormat &format);
+    ~QWaylandGLContext();
+    void makeCurrent();
+    void doneCurrent();
+    void swapBuffers();
+    void* getProcAddress(const QString&);
 
-#endif // QWAYLANDINCLUDE_H
+    QPlatformWindowFormat platformWindowFormat() const { return mFormat; }
+
+    void setEglSurface(EGLSurface surface);
+    EGLConfig eglConfig() const;
+private:
+    EGLDisplay mEglDisplay;
+
+    EGLContext mContext;
+    EGLSurface mSurface;
+    EGLConfig mConfig;
+    QPlatformWindowFormat mFormat;
+
+    void createDefaultSharedContex(EGLDisplay eglDisplay);
+    QWaylandGLContext();
+
+};
+
+
+#endif // QWAYLANDGLCONTEXT_H
