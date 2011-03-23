@@ -237,6 +237,7 @@ void QSGCanvas::showEvent(QShowEvent *e)
         if (!d->animationDriver)
             d->animationDriver = new QSGThreadedRendererAnimationDriver(d, this);
         d->animationDriver->install();
+        d->animationDriverInstalled = true;
         d->mutex.lock();
         d->thread->start();
         d->wait.wait(&d->mutex);
@@ -250,6 +251,7 @@ void QSGCanvas::showEvent(QShowEvent *e)
         }
 
         d->animationDriver->install();
+        d->animationDriverInstalled = true;
     }
 }
 
@@ -268,6 +270,7 @@ void QSGCanvas::hideEvent(QHideEvent *e)
     }
 
     d->animationDriver->uninstall();
+    d->animationDriverInstalled = false;
 
     QGLWidget::hideEvent(e);
 }
@@ -463,6 +466,7 @@ QSGCanvasPrivate::QSGCanvasPrivate()
     , idle(false)
     , needsRepaint(true)
     , renderThreadAwakened(false)
+    , animationDriverInstalled(false)
     , thread(new MyThread(this))
     , animationDriver(0)
 {
@@ -471,6 +475,8 @@ QSGCanvasPrivate::QSGCanvasPrivate()
 
 QSGCanvasPrivate::~QSGCanvasPrivate()
 {
+    if (animationDriver && animationDriverInstalled)
+        animationDriver->uninstall();
 }
 
 void QSGCanvasPrivate::init(QSGCanvas *c)
