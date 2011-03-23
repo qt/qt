@@ -121,7 +121,7 @@ void DistanceFieldGlyphNode::updateGeometry()
     QVector4D *vp = (QVector4D *)g->vertexData();
     ushort *ip = g->indexDataAsUShort();
 
-    QPointF margins(1, 1);
+    QPointF margins(1.5, 1.5);
     QPointF texMargins = margins / m_glyph_cache->fontScale();
 
     for (int i = 0; i < glyphIndexes.size(); ++i) {
