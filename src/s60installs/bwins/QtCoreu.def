@@ -1380,7 +1380,7 @@ EXPORTS
 	?create@QAbstractFileEngine@@SAPAV1@ABVQString@@@Z @ 1379 NONAME ; class QAbstractFileEngine * QAbstractFileEngine::create(class QString const &)
 	?create@QNonContiguousByteDeviceFactory@@SAPAVQNonContiguousByteDevice@@PAVQByteArray@@@Z @ 1380 NONAME ; class QNonContiguousByteDevice * QNonContiguousByteDeviceFactory::create(class QByteArray *)
 	?create@QNonContiguousByteDeviceFactory@@SAPAVQNonContiguousByteDevice@@PAVQIODevice@@@Z @ 1381 NONAME ; class QNonContiguousByteDevice * QNonContiguousByteDeviceFactory::create(class QIODevice *)
-	?create@QNonContiguousByteDeviceFactory@@SAPAVQNonContiguousByteDevice@@PAVQRingBuffer@@@Z @ 1382 NONAME ; class QNonContiguousByteDevice * QNonContiguousByteDeviceFactory::create(class QRingBuffer *)
+	?create@QNonContiguousByteDeviceFactory@@SAPAVQNonContiguousByteDevice@@PAVQRingBuffer@@@Z @ 1382 NONAME ABSENT ; class QNonContiguousByteDevice * QNonContiguousByteDeviceFactory::create(class QRingBuffer *)
 	?create@QSharedMemory@@QAE_NHW4AccessMode@1@@Z @ 1383 NONAME ; bool QSharedMemory::create(int, enum QSharedMemory::AccessMode)
 	?create@QTextCodecPlugin@@EAEPAVQTextCodec@@ABVQString@@@Z @ 1384 NONAME ; class QTextCodec * QTextCodecPlugin::create(class QString const &)
 	?create@QVariant@@IAEXHPBX@Z @ 1385 NONAME ; void QVariant::create(int, void const *)
@@ -3572,7 +3572,7 @@ EXPORTS
 	?skipWhiteSpace@QTextStream@@QAEXXZ @ 3571 NONAME ; void QTextStream::skipWhiteSpace(void)
 	?sleep@QThread@@KAXK@Z @ 3572 NONAME ; void QThread::sleep(unsigned long)
 	?socket@QSocketNotifier@@QBEHXZ @ 3573 NONAME ; int QSocketNotifier::socket(void) const
-	?socketFired@QEventDispatcherSymbian@@QAEXPAVQSocketActiveObject@@@Z @ 3574 NONAME ; void QEventDispatcherSymbian::socketFired(class QSocketActiveObject *)
+	?socketFired@QEventDispatcherSymbian@@QAEXPAVQSocketActiveObject@@@Z @ 3574 NONAME ABSENT ; void QEventDispatcherSymbian::socketFired(class QSocketActiveObject *)
 	?sort@QAbstractItemModel@@UAEXHW4SortOrder@Qt@@@Z @ 3575 NONAME ; void QAbstractItemModel::sort(int, enum Qt::SortOrder)
 	?sorting@QDir@@QBE?AV?$QFlags@W4SortFlag@QDir@@@@XZ @ 3576 NONAME ; class QFlags<enum QDir::SortFlag> QDir::sorting(void) const
 	?sourceState@QAbstractTransition@@QBEPAVQState@@XZ @ 3577 NONAME ; class QState * QAbstractTransition::sourceState(void) const
@@ -4605,4 +4605,28 @@ EXPORTS
 	?hasError@QXmlStreamWriter@@QBE_NXZ @ 4604 NONAME ; bool QXmlStreamWriter::hasError(void) const
 	?revision@QMetaProperty@@QBEHXZ @ 4605 NONAME ; int QMetaProperty::revision(void) const
 	?revision@QMetaMethod@@QBEHXZ @ 4606 NONAME ; int QMetaMethod::revision(void) const
+	gzungetc @ 4607 NONAME
+	?addSocket@QSymbianSocketManager@@QAEHABVRSocket@@@Z @ 4608 NONAME ; int QSymbianSocketManager::addSocket(class RSocket const &)
+	??0QActiveObject@@QAE@HPAVQEventDispatcherSymbian@@@Z @ 4609 NONAME ; QActiveObject::QActiveObject(int, class QEventDispatcherSymbian *)
+	?setDefaultConnection@QSymbianSocketManager@@QAEXPAVRConnection@@@Z @ 4610 NONAME ; void QSymbianSocketManager::setDefaultConnection(class RConnection *)
+	?reactivateAndComplete@QActiveObject@@QAEXXZ @ 4611 NONAME ; void QActiveObject::reactivateAndComplete(void)
+	?defaultConnection@QSymbianSocketManager@@QBEPAVRConnection@@XZ @ 4612 NONAME ; class RConnection * QSymbianSocketManager::defaultConnection(void) const
+	?qt_symbianGetSocketServer@@YAAAVRSocketServ@@XZ @ 4613 NONAME ; class RSocketServ & qt_symbianGetSocketServer(void)
+	?maybeQueueForLater@QActiveObject@@QAE_NXZ @ 4614 NONAME ; bool QActiveObject::maybeQueueForLater(void)
+	??_EQActiveObject@@UAE@I@Z @ 4615 NONAME ; QActiveObject::~QActiveObject(unsigned int)
+	?lookupSocket@QSymbianSocketManager@@QBE_NHAAVRSocket@@@Z @ 4616 NONAME ; bool QSymbianSocketManager::lookupSocket(int, class RSocket &) const
+	?wait@QActiveObject@@SA_NPAVCActive@@H@Z @ 4617 NONAME ; bool QActiveObject::wait(class CActive *, int)
+	?instance@QSymbianSocketManager@@SAAAV1@XZ @ 4618 NONAME ; class QSymbianSocketManager & QSymbianSocketManager::instance(void)
+	??0QSymbianSocketManager@@QAE@XZ @ 4619 NONAME ; QSymbianSocketManager::QSymbianSocketManager(void)
+	?create@QNonContiguousByteDeviceFactory@@SAPAVQNonContiguousByteDevice@@V?$QSharedPointer@VQRingBuffer@@@@@Z @ 4620 NONAME ; class QNonContiguousByteDevice * QNonContiguousByteDeviceFactory::create(class QSharedPointer<class QRingBuffer>)
+	??1QSymbianSocketManager@@QAE@XZ @ 4621 NONAME ; QSymbianSocketManager::~QSymbianSocketManager(void)
+	?isResetDisabled@QNonContiguousByteDevice@@QAE_NXZ @ 4622 NONAME ; bool QNonContiguousByteDevice::isResetDisabled(void)
+	??1QActiveObject@@UAE@XZ @ 4623 NONAME ; QActiveObject::~QActiveObject(void)
+	?wait@QActiveObject@@SA_NV?$QList@PAVCActive@@@@H@Z @ 4624 NONAME ; bool QActiveObject::wait(class QList<class CActive *>, int)
+	?maybeDeferSocketEvent@QActiveObject@@QAE_NXZ @ 4625 NONAME ; bool QActiveObject::maybeDeferSocketEvent(void)
+	?lookupSocket@QSymbianSocketManager@@QBEHABVRSocket@@@Z @ 4626 NONAME ; int QSymbianSocketManager::lookupSocket(class RSocket const &) const
+	?areSocketEventsBlocked@QEventDispatcherSymbian@@QBE_NXZ @ 4627 NONAME ; bool QEventDispatcherSymbian::areSocketEventsBlocked(void) const
+	?addDeferredSocketActiveObject@QEventDispatcherSymbian@@QAEXPAVQActiveObject@@@Z @ 4628 NONAME ; void QEventDispatcherSymbian::addDeferredSocketActiveObject(class QActiveObject *)
+	?getSocketServer@QSymbianSocketManager@@QAEAAVRSocketServ@@XZ @ 4629 NONAME ; class RSocketServ & QSymbianSocketManager::getSocketServer(void)
+	?removeSocket@QSymbianSocketManager@@QAE_NABVRSocket@@@Z @ 4630 NONAME ; bool QSymbianSocketManager::removeSocket(class RSocket const &)
 

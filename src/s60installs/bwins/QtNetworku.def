@@ -1159,4 +1159,9 @@ EXPORTS
 	?engines@QNetworkConfigurationManagerPrivate@@QBE?AV?$QList@PAVQBearerEngine@@@@XZ @ 1158 NONAME ; class QList<class QBearerEngine *> QNetworkConfigurationManagerPrivate::engines(void) const
 	?isOnline@QNetworkConfigurationManagerPrivate@@QBE_NXZ @ 1159 NONAME ; bool QNetworkConfigurationManagerPrivate::isOnline(void) const
 	?startPolling@QNetworkConfigurationManagerPrivate@@AAEXXZ @ 1160 NONAME ; void QNetworkConfigurationManagerPrivate::startPolling(void)
+	?peerVerifyName@QSslSocket@@QBE?AVQString@@XZ @ 1161 NONAME ; class QString QSslSocket::peerVerifyName(void) const
+	?setPeerVerifyName@QSslSocket@@QAEXABVQString@@@Z @ 1162 NONAME ; void QSslSocket::setPeerVerifyName(class QString const &)
+	?nativeSession@QNetworkSessionPrivate@@SAPAVRConnection@@AAVQNetworkSession@@@Z @ 1163 NONAME ; class RConnection * QNetworkSessionPrivate::nativeSession(class QNetworkSession &)
+	?nativeOpenSocket@QNetworkSessionPrivate@@SAHAAVQNetworkSession@@AAVRSocket@@III@Z @ 1164 NONAME ; int QNetworkSessionPrivate::nativeOpenSocket(class QNetworkSession &, class RSocket &, unsigned int, unsigned int, unsigned int)
+	?nativeOpenHostResolver@QNetworkSessionPrivate@@SAHAAVQNetworkSession@@AAVRHostResolver@@II@Z @ 1165 NONAME ; int QNetworkSessionPrivate::nativeOpenHostResolver(class QNetworkSession &, class RHostResolver &, unsigned int, unsigned int)
 

@@ -1282,7 +1282,7 @@ EXPORTS
 	_ZN23QEventDispatcherSymbian10startingUpEv @ 1281 NONAME
 	_ZN23QEventDispatcherSymbian10timerFiredEi @ 1282 NONAME
 	_ZN23QEventDispatcherSymbian11closingDownEv @ 1283 NONAME
-	_ZN23QEventDispatcherSymbian11socketFiredEP19QSocketActiveObject @ 1284 NONAME
+	_ZN23QEventDispatcherSymbian11socketFiredEP19QSocketActiveObject @ 1284 NONAME ABSENT
 	_ZN23QEventDispatcherSymbian13processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE @ 1285 NONAME
 	_ZN23QEventDispatcherSymbian13registerTimerEiiP7QObject @ 1286 NONAME
 	_ZN23QEventDispatcherSymbian15unregisterTimerEi @ 1287 NONAME
@@ -1439,7 +1439,7 @@ EXPORTS
 	_ZN31QAbstractEventDispatcherPrivate4initEv @ 1438 NONAME
 	_ZN31QNonContiguousByteDeviceFactory4wrapEP24QNonContiguousByteDevice @ 1439 NONAME
 	_ZN31QNonContiguousByteDeviceFactory6createEP10QByteArray @ 1440 NONAME
-	_ZN31QNonContiguousByteDeviceFactory6createEP11QRingBuffer @ 1441 NONAME
+	_ZN31QNonContiguousByteDeviceFactory6createEP11QRingBuffer @ 1441 NONAME ABSENT
 	_ZN31QNonContiguousByteDeviceFactory6createEP9QIODevice @ 1442 NONAME
 	_ZN4QDir10setCurrentERK7QString @ 1443 NONAME
 	_ZN4QDir10setSortingE6QFlagsINS_8SortFlagEE @ 1444 NONAME
@@ -3806,4 +3806,30 @@ EXPORTS
 	_ZNK13QElapsedTimer12nsecsElapsedEv @ 3805 NONAME
 	_ZNK11QMetaMethod8revisionEv @ 3806 NONAME
 	_ZNK13QMetaProperty8revisionEv @ 3807 NONAME
+	_Z25qt_symbianGetSocketServerv @ 3808 NONAME
+	_ZN13QActiveObject18maybeQueueForLaterEv @ 3809 NONAME
+	_ZN13QActiveObject21maybeDeferSocketEventEv @ 3810 NONAME
+	_ZN13QActiveObject21reactivateAndCompleteEv @ 3811 NONAME
+	_ZN13QActiveObject4waitE5QListIP7CActiveEi @ 3812 NONAME
+	_ZN13QActiveObject4waitEP7CActivei @ 3813 NONAME
+	_ZN13QActiveObjectC2EiP23QEventDispatcherSymbian @ 3814 NONAME
+	_ZN13QActiveObjectD0Ev @ 3815 NONAME
+	_ZN13QActiveObjectD1Ev @ 3816 NONAME
+	_ZN13QActiveObjectD2Ev @ 3817 NONAME
+	_ZN21QSymbianSocketManager12removeSocketERK7RSocket @ 3818 NONAME
+	_ZN21QSymbianSocketManager15getSocketServerEv @ 3819 NONAME
+	_ZN21QSymbianSocketManager20setDefaultConnectionEP11RConnection @ 3820 NONAME
+	_ZN21QSymbianSocketManager8instanceEv @ 3821 NONAME
+	_ZN21QSymbianSocketManager9addSocketERK7RSocket @ 3822 NONAME
+	_ZN21QSymbianSocketManagerC1Ev @ 3823 NONAME
+	_ZN21QSymbianSocketManagerC2Ev @ 3824 NONAME
+	_ZN21QSymbianSocketManagerD1Ev @ 3825 NONAME
+	_ZN21QSymbianSocketManagerD2Ev @ 3826 NONAME
+	_ZN31QNonContiguousByteDeviceFactory6createE14QSharedPointerI11QRingBufferE @ 3827 NONAME
+	_ZNK21QSymbianSocketManager12lookupSocketERK7RSocket @ 3828 NONAME
+	_ZNK21QSymbianSocketManager12lookupSocketEiR7RSocket @ 3829 NONAME
+	_ZNK21QSymbianSocketManager17defaultConnectionEv @ 3830 NONAME
+	_ZTI13QActiveObject @ 3831 NONAME
+	_ZTV13QActiveObject @ 3832 NONAME
+	gzungetc @ 3833 NONAME
 

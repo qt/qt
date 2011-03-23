@@ -13149,3 +13149,29 @@ EXPORTS
 	?ProcessCommandParametersL@QS60MainAppUi@@UAEHW4TApaCommand@@AAV?$TBuf@$0BAA@@@ABVTDesC8@@@Z @ 13148 NONAME ; int QS60MainAppUi::ProcessCommandParametersL(enum TApaCommand, class TBuf<256> &, class TDesC8 const &)
 	?openFile@QFileOpenEvent@@QBE_NAAVQFile@@V?$QFlags@W4OpenModeFlag@QIODevice@@@@@Z @ 13149 NONAME ; bool QFileOpenEvent::openFile(class QFile &, class QFlags<enum QIODevice::OpenModeFlag>) const
 	??0QFileOpenEvent@@QAE@ABVRFile@@@Z @ 13150 NONAME ; QFileOpenEvent::QFileOpenEvent(class RFile const &)
+	?tr@QInternalMimeData@@SA?AVQString@@PBD0H@Z @ 13151 NONAME ; class QString QInternalMimeData::tr(char const *, char const *, int)
+	?assignedInputContext@QWidgetPrivate@@QBEPAVQInputContext@@XZ @ 13152 NONAME ; class QInputContext * QWidgetPrivate::assignedInputContext(void) const
+	?formatsHelper@QInternalMimeData@@SA?AVQStringList@@PBVQMimeData@@@Z @ 13153 NONAME ; class QStringList QInternalMimeData::formatsHelper(class QMimeData const *)
+	??_EQInternalMimeData@@UAE@I@Z @ 13154 NONAME ; QInternalMimeData::~QInternalMimeData(unsigned int)
+	?hasFormatHelper@QInternalMimeData@@SA_NABVQString@@PBVQMimeData@@@Z @ 13155 NONAME ; bool QInternalMimeData::hasFormatHelper(class QString const &, class QMimeData const *)
+	?renderDataHelper@QInternalMimeData@@SA?AVQByteArray@@ABVQString@@PBVQMimeData@@@Z @ 13156 NONAME ; class QByteArray QInternalMimeData::renderDataHelper(class QString const &, class QMimeData const *)
+	?setLineHeight@QTextBlockFormat@@QAEXMH@Z @ 13157 NONAME ; void QTextBlockFormat::setLineHeight(float, int)
+	?trUtf8@QInternalMimeData@@SA?AVQString@@PBD0H@Z @ 13158 NONAME ; class QString QInternalMimeData::trUtf8(char const *, char const *, int)
+	?staticMetaObject@QInternalMimeData@@2UQMetaObject@@B @ 13159 NONAME ; struct QMetaObject const QInternalMimeData::staticMetaObject
+	?lineHeight@QTextBlockFormat@@QBEMMM@Z @ 13160 NONAME ; float QTextBlockFormat::lineHeight(float, float) const
+	?qt_metacast@QInternalMimeData@@UAEPAXPBD@Z @ 13161 NONAME ; void * QInternalMimeData::qt_metacast(char const *)
+	?lineHeightType@QTextBlockFormat@@QBEHXZ @ 13162 NONAME ; int QTextBlockFormat::lineHeightType(void) const
+	?qt_metacall@QInternalMimeData@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 13163 NONAME ; int QInternalMimeData::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?getStaticMetaObject@QInternalMimeData@@SAABUQMetaObject@@XZ @ 13164 NONAME ; struct QMetaObject const & QInternalMimeData::getStaticMetaObject(void)
+	??0QInternalMimeData@@QAE@XZ @ 13165 NONAME ; QInternalMimeData::QInternalMimeData(void)
+	?updateMicroFocus@QLineControl@@IAEXXZ @ 13166 NONAME ; void QLineControl::updateMicroFocus(void)
+	?formats@QInternalMimeData@@UBE?AVQStringList@@XZ @ 13167 NONAME ; class QStringList QInternalMimeData::formats(void) const
+	?lineHeight@QTextBlockFormat@@QBEMXZ @ 13168 NONAME ; float QTextBlockFormat::lineHeight(void) const
+	?trUtf8@QInternalMimeData@@SA?AVQString@@PBD0@Z @ 13169 NONAME ; class QString QInternalMimeData::trUtf8(char const *, char const *)
+	??1QInternalMimeData@@UAE@XZ @ 13170 NONAME ; QInternalMimeData::~QInternalMimeData(void)
+	?hasFormat@QInternalMimeData@@UBE_NABVQString@@@Z @ 13171 NONAME ; bool QInternalMimeData::hasFormat(class QString const &) const
+	?canReadData@QInternalMimeData@@SA_NABVQString@@@Z @ 13172 NONAME ; bool QInternalMimeData::canReadData(class QString const &)
+	?tr@QInternalMimeData@@SA?AVQString@@PBD0@Z @ 13173 NONAME ; class QString QInternalMimeData::tr(char const *, char const *)
+	?metaObject@QInternalMimeData@@UBEPBUQMetaObject@@XZ @ 13174 NONAME ; struct QMetaObject const * QInternalMimeData::metaObject(void) const
+	?retrieveData@QInternalMimeData@@MBE?AVQVariant@@ABVQString@@W4Type@2@@Z @ 13175 NONAME ; class QVariant QInternalMimeData::retrieveData(class QString const &, enum QVariant::Type) const
+

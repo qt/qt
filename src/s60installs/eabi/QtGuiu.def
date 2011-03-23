@@ -12337,4 +12337,24 @@ EXPORTS
 	_ZN12QTextControl23setWordSelectionEnabledEb @ 12336 NONAME
 	_ZNK12QTextControl13isDragEnabledEv @ 12337 NONAME
 	_ZNK12QTextControl22isWordSelectionEnabledEv @ 12338 NONAME
+	_ZN12QLineControl16updateMicroFocusEv @ 12339 NONAME
+	_ZN17QInternalMimeData11canReadDataERK7QString @ 12340 NONAME
+	_ZN17QInternalMimeData11qt_metacallEN11QMetaObject4CallEiPPv @ 12341 NONAME
+	_ZN17QInternalMimeData11qt_metacastEPKc @ 12342 NONAME
+	_ZN17QInternalMimeData13formatsHelperEPK9QMimeData @ 12343 NONAME
+	_ZN17QInternalMimeData15hasFormatHelperERK7QStringPK9QMimeData @ 12344 NONAME
+	_ZN17QInternalMimeData16renderDataHelperERK7QStringPK9QMimeData @ 12345 NONAME
+	_ZN17QInternalMimeData16staticMetaObjectE @ 12346 NONAME DATA 16
+	_ZN17QInternalMimeData19getStaticMetaObjectEv @ 12347 NONAME
+	_ZN17QInternalMimeDataC2Ev @ 12348 NONAME
+	_ZN17QInternalMimeDataD0Ev @ 12349 NONAME
+	_ZN17QInternalMimeDataD1Ev @ 12350 NONAME
+	_ZN17QInternalMimeDataD2Ev @ 12351 NONAME
+	_ZNK14QWidgetPrivate20assignedInputContextEv @ 12352 NONAME
+	_ZNK17QInternalMimeData10metaObjectEv @ 12353 NONAME
+	_ZNK17QInternalMimeData12retrieveDataERK7QStringN8QVariant4TypeE @ 12354 NONAME
+	_ZNK17QInternalMimeData7formatsEv @ 12355 NONAME
+	_ZNK17QInternalMimeData9hasFormatERK7QString @ 12356 NONAME
+	_ZTI17QInternalMimeData @ 12357 NONAME
+	_ZTV17QInternalMimeData @ 12358 NONAME
 
