@@ -2825,9 +2825,6 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
         return cacheVal;
 
     //do the fixin'
-    QString pwd = qmake_getpwd();
-    if (!pwd.endsWith('/'))
-        pwd += '/';
     QString orig_file = ret;
     if(ret.startsWith(QLatin1Char('~'))) {
         if(ret.startsWith(QLatin1String("~/")))
@@ -2836,12 +2833,16 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
             warn_msg(WarnLogic, "Unable to expand ~ in %s", ret.toLatin1().constData());
     }
     if(fix == FileFixifyAbsolute || (fix == FileFixifyDefault && project->isActiveConfig("no_fixpath"))) {
-        if(fix == FileFixifyAbsolute && QDir::isRelativePath(ret)) //already absolute
+        if(fix == FileFixifyAbsolute && QDir::isRelativePath(ret)) { //already absolute
+            QString pwd = qmake_getpwd();
+            if (!pwd.endsWith(QLatin1Char('/')))
+                pwd += QLatin1Char('/');
             ret.prepend(pwd);
+        }
         ret = Option::fixPathToTargetOS(ret, false, canon);
     } else { //fix it..
         QString out_dir = QDir(Option::output_dir).absoluteFilePath(out_d);
-        QString in_dir  = QDir(pwd).absoluteFilePath(in_d);
+        QString in_dir  = QDir(qmake_getpwd()).absoluteFilePath(in_d);
         {
             QFileInfo in_fi(fileInfo(in_dir));
             if(in_fi.exists())
@@ -2907,7 +2908,7 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
         ret = ".";
     debug_msg(3, "Fixed[%d,%d] %s :: to :: %s [%s::%s] [%s::%s]", fix, canon, orig_file.toLatin1().constData(),
               ret.toLatin1().constData(), in_d.toLatin1().constData(), out_d.toLatin1().constData(),
-              pwd.toLatin1().constData(), Option::output_dir.toLatin1().constData());
+              qmake_getpwd().toLatin1().constData(), Option::output_dir.toLatin1().constData());
     cache->insert(cacheKey, ret);
     return ret;
 }
