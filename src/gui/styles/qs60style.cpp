@@ -3353,9 +3353,9 @@ bool QS60Style::event(QEvent *e)
 QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
     const QStyleOption *option, const QWidget *widget) const
 {
-    const int iconDimension = QS60StylePrivate::pixelMetric(PM_ToolBarIconSize);
-    const QRect iconSize = (!option) ? QRect(0, 0, iconDimension, iconDimension) : option->rect;
     QS60StyleEnums::SkinParts part;
+    qreal iconHeightMultiplier = 1.0;
+    qreal iconWidthMultiplier = 1.0;
     QS60StylePrivate::SkinElementFlags adjustedFlags;
     if (option)
         adjustedFlags = (option->state & State_Enabled || option->state == 0) ?
@@ -3364,15 +3364,20 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
 
     switch(standardIcon) {
         case SP_MessageBoxWarning:
+            // By default, S60 messagebox icons have 4:3 ratio. Value is from S60 LAF documentation.
+            iconHeightMultiplier = 1.33;
             part = QS60StyleEnums::SP_QgnNoteWarning;
             break;
         case SP_MessageBoxInformation:
+            iconHeightMultiplier = 1.33;
             part = QS60StyleEnums::SP_QgnNoteInfo;
             break;
         case SP_MessageBoxCritical:
+            iconHeightMultiplier = 1.33;
             part = QS60StyleEnums::SP_QgnNoteError;
             break;
         case SP_MessageBoxQuestion:
+            iconHeightMultiplier = 1.33;
             part = QS60StyleEnums::SP_QgnNoteQuery;
             break;
         case SP_ArrowRight:
@@ -3427,11 +3432,13 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
             adjustedFlags |= QS60StylePrivate::SF_PointEast;
             part = QS60StyleEnums::SP_QgnIndiSubmenu;
             break;
-
         default:
             return QCommonStyle::standardIconImplementation(standardIcon, option, widget);
     }
     const QS60StylePrivate::SkinElementFlags flags = adjustedFlags;
+    const int iconDimension = QS60StylePrivate::pixelMetric(PM_ToolBarIconSize);
+    const QRect iconSize = (!option) ? 
+        QRect(0, 0, iconDimension * iconWidthMultiplier, iconDimension * iconHeightMultiplier) : option->rect;
     const QPixmap cachedPixMap(QS60StylePrivate::cachedPart(part, iconSize.size(), 0, flags));
     return cachedPixMap.isNull() ?
         QCommonStyle::standardIconImplementation(standardIcon, option, widget) : QIcon(cachedPixMap);
