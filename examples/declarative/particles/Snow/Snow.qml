@@ -25,9 +25,8 @@ Rectangle{
         particlesPerSecond: 20
         particleDuration: 7000
         emitting: true
-        ySpeed: 80
-        ySpeedVariation: 40
-        yAccel: 4
+        speed: PointVector{ y:80; yVariation: 40; }
+        acceleration: PointVector{ y: 4 }
         particleSize: 20
         particleSizeVariation: 10
         width: parent.width

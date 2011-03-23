@@ -36,7 +36,7 @@ HEADERS += \
     $$PWD/convenience/solidrectnode.h \
     $$PWD/convenience/texturematerial.h \
     $$PWD/convenience/vertexcolormaterial.h \
-    $$PWD/convenience/distancefieldfontatlas_p.h
+    $$PWD/convenience/distancefieldglyphcache_p.h
 
 SOURCES += \
     $$PWD/convenience/qsgareaallocator.cpp \
@@ -44,7 +44,7 @@ SOURCES += \
     $$PWD/convenience/solidrectnode.cpp \
     $$PWD/convenience/texturematerial.cpp \
     $$PWD/convenience/vertexcolormaterial.cpp \
-    $$PWD/convenience/distancefieldfontatlas.cpp
+    $$PWD/convenience/distancefieldglyphcache.cpp
 
 
 # 3D API (duplicates with qt3d)

@@ -41,6 +41,8 @@
 
 #include "nodeupdater_p.h"
 
+QT_BEGIN_NAMESPACE
+
 // #define QSG_UPDATER_DEBUG
 
 NodeUpdater::NodeUpdater()
@@ -219,3 +221,5 @@ void NodeUpdater::visitNode(Node *n)
         n->clearDirty();
     }
 }
+
+QT_END_NAMESPACE

@@ -52,6 +52,8 @@
 
 #include <qdatetime.h>
 
+QT_BEGIN_NAMESPACE
+
 //#define RENDERER_DEBUG
 //#define QT_GL_NO_SCISSOR_TEST
 
@@ -542,3 +544,5 @@ void Renderer::bindGeometry(AbstractMaterialShader *material, const QSGGeometry 
         offset += a.tupleSize * size_of_type(a.type);
     }
 }
+
+QT_END_NAMESPACE

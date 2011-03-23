@@ -21,8 +21,8 @@ Rectangle {
         particlesPerSecond: 500
         particleDuration: 2000
 
-        emitterY: root.height / 2 + Math.sin(t * 2) * root.height * 0.3
-        emitterX: root.width / 2 + Math.cos(t) * root.width * 0.3
+        y: root.height / 2 + Math.sin(t * 2) * root.height * 0.3
+        x: root.width / 2 + Math.cos(t) * root.width * 0.3
         property real t;
 
         NumberAnimation on t {
@@ -31,11 +31,8 @@ Rectangle {
 
         speedFromMovement: 20
 
-        xAccelVariation: 5
-        yAccelVariation: 5
-
-        xSpeedVariation: 5
-        ySpeedVariation: 5
+        speed: PointVector{ xVariation: 5; yVariation: 5;}
+        acceleration: PointVector{ xVariation: 5; yVariation: 5;}
 
         particleSize: 2
         particleEndSize: 8

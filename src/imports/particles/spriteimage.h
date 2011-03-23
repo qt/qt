@@ -4,6 +4,13 @@
 #include <QSGItem>
 #include <QTime>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class QSGContext;
 class SpriteState;
 class SpriteEngine;
@@ -60,4 +67,5 @@ private:
     bool m_running;
 };
 
+QT_END_NAMESPACE
 #endif // SPRITEIMAGE_H

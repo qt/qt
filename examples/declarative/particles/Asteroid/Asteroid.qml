@@ -43,8 +43,8 @@ Item {
 
         anchors.centerIn: parent
 
-        yAccelVariation: 100
-        xAccelVariation: 100;
+        //acceleration: AngleVector{angleVariation: 360; magnitude: 200}//Is this a better effect, more consistent speed?
+        acceleration: PointVector{ xVariation: 200; yVariation: 200; }
 
         particleSize: 0
         particleEndSize: 80
@@ -56,8 +56,7 @@ Item {
         particlesPerSecond: 12
         particleDuration: 5000
         emitting: true
-        yAccelVariation: 80
-        xAccelVariation: 80;
+        acceleration: PointVector{ xVariation: 80; yVariation: 80; }
         particleSize: 15
         particleEndSize: 300
         anchors.centerIn: parent
@@ -161,15 +160,13 @@ Item {
         particlesPerSecond: 300
         particleDuration: 500
 
-        emitterY: holder.y
-        emitterX: holder.x 
+        y: holder.y
+        x: holder.x 
 
-        xSpeedVariation: 40
-        ySpeedVariation: 40
+        speed: PointVector{ xVariation: 40; yVariation: 40; }
         speedFromMovement: 16
 
-        yAccelVariation: 10
-        xAccelVariation: 10
+        acceleration: PointVector{ xVariation: 10; yVariation: 10; }
 
         particleSize: 4
         particleSizeVariation: 4

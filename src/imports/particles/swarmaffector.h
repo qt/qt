@@ -3,6 +3,13 @@
 #include "particleaffector.h"
 #include <QDeclarativeListProperty>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class ParticleType;
 
 class SwarmAffector : public ParticleAffector
@@ -61,4 +68,5 @@ private slots:
     void updateGroupList();
 };
 
+QT_END_NAMESPACE
 #endif // SWARMAFFECTOR_H

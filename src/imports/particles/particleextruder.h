@@ -5,6 +5,13 @@
 #include <QRectF>
 #include <QPointF>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class ParticleExtruder : public QObject
 {
     Q_OBJECT
@@ -17,4 +24,5 @@ public slots:
 
 };
 
+QT_END_NAMESPACE
 #endif // PARTICLEEXTRUDER_H

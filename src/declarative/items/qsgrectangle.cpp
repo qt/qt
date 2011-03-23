@@ -240,6 +240,7 @@ void QSGRectangle::setColor(const QColor &c)
 
 Node *QSGRectangle::updatePaintNode(Node *oldNode, UpdatePaintNodeData *data)
 {
+    Q_UNUSED(data);
     Q_D(QSGRectangle);
 
     if (width() <= 0 || height() <= 0) {

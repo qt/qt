@@ -3,6 +3,13 @@
 #include <QHash>
 #include "particleaffector.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class SpriteEmitter;
 
 struct WanderData{
@@ -83,4 +90,5 @@ private:
     qreal m_pace;
 };
 
+QT_END_NAMESPACE
 #endif // WANDERAFFECTOR_H

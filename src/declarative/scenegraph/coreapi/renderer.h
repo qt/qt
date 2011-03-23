@@ -55,6 +55,12 @@
 #include "node.h"
 #include "qsgtexture.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class AbstractMaterialShader;
 struct AbstractMaterialType;
 class QGLFramebufferObject;
@@ -186,5 +192,9 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Renderer::Updates)
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // RENDERER_H

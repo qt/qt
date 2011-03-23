@@ -114,7 +114,6 @@ public:
 };
 Q_DECLARE_INTERFACE(QSGTextureProviderInterface, "QSGTextureProviderInterface")
 
-
 QT_END_NAMESPACE
 
 QT_END_HEADER

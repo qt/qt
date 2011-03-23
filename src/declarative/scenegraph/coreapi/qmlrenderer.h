@@ -44,6 +44,12 @@
 
 #include "renderer.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class QMLRenderer : public Renderer
 {
     Q_OBJECT
@@ -82,5 +88,9 @@ private:
     bool m_render_alpha_nodes;
 #endif
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // QMLRENDERER_H

@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <QDebug>
+QT_BEGIN_NAMESPACE
 
 TurbulenceAffector::TurbulenceAffector(QSGItem *parent) :
     ParticleAffector(parent),
@@ -114,3 +115,4 @@ void TurbulenceAffector::affectSystem(qreal dt)
     }
 }
 
+QT_END_NAMESPACE

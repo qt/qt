@@ -50,6 +50,12 @@
 
 #include <QtCore/qpointer.h>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class QSGContext;
 class QSignalMapper;
 class CustomMaterialShader;
@@ -123,5 +129,9 @@ private:
 
     uint m_programDirty : 1;
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // SHADEREFFECTITEM_H

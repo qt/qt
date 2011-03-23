@@ -45,6 +45,12 @@
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class QSGContext;
 
 struct Q_DECLARATIVE_EXPORT QSGContextFactoryInterface : public QFactoryInterface
@@ -67,5 +73,9 @@ public:
     virtual QStringList keys() const = 0;
     virtual QSGContext *create(const QString &key) const = 0;
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // QSGCONTEXTPLUGIN_H

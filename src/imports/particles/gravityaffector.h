@@ -2,6 +2,13 @@
 #define GRAVITYAFFECTOR_H
 #include "particleaffector.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class GravityAffector : public ParticleAffector
 {
     Q_OBJECT
@@ -53,4 +60,5 @@ private:
     qreal m_yAcc;
 };
 
+QT_END_NAMESPACE
 #endif // GRAVITYAFFECTOR_H

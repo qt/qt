@@ -49,6 +49,8 @@
 
 #include <qsgtexture_p.h>
 
+QT_BEGIN_NAMESPACE
+
 class TextMaskMaterialData : public AbstractMaterialShader
 {
 public:
@@ -322,3 +324,5 @@ int TextMaskMaterial::cacheTextureHeight() const
 {
     return glyphCache()->height();
 }
+
+QT_END_NAMESPACE

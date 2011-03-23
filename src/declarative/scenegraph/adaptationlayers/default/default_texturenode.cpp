@@ -42,6 +42,8 @@
 #include "default_texturenode.h"
 #include "qsgtextureprovider.h"
 
+QT_BEGIN_NAMESPACE
+
 static const char qt_material_vertex_code[] =
     "uniform highp mat4 qt_Matrix;                      \n"
     "attribute highp vec4 qt_Vertex;                    \n"
@@ -293,3 +295,5 @@ void DefaultTextureNode::updateGeometry()
     markDirty(DirtyGeometry);
     m_dirtyGeometry = false;
 }
+
+QT_END_NAMESPACE

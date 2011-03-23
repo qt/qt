@@ -50,4 +50,5 @@ bool m_affecting;
 ParticleAffector* m_affector;
 };
 
+QT_END_NAMESPACE
 #endif // TOGGLEAFFECTOR_H

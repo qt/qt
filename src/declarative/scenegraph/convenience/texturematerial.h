@@ -44,6 +44,12 @@
 
 #include "material.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class Q_DECLARATIVE_EXPORT TextureMaterial : public AbstractMaterial
 {
 public:
@@ -107,5 +113,8 @@ public:
     static bool is(const AbstractMaterial *effect);
 };
 
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // TEXTUREMATERIAL_H

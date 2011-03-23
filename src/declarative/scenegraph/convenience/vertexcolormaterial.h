@@ -44,6 +44,12 @@
 
 #include <material.h>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class VertexColorMaterial : public AbstractMaterial
 {
 public:
@@ -59,5 +65,9 @@ public:
 private:
     bool m_opaque;
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // VERTEXCOLORMATERIAL_H

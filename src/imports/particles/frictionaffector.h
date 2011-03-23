@@ -2,6 +2,13 @@
 #define FRICTIONAFFECTOR_H
 #include "particleaffector.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class FrictionAffector : public ParticleAffector
 {
     Q_OBJECT
@@ -33,4 +40,5 @@ private:
 qreal m_factor;
 };
 
+QT_END_NAMESPACE
 #endif // FRICTIONAFFECTOR_H

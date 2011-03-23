@@ -47,6 +47,12 @@
 
 #include <qobject.h>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class QGLFramebufferObject;
 
 class EffectSubtreeNode : public QObject, public GeometryNode
@@ -99,5 +105,9 @@ protected:
 
     bool m_dirty;
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // EFFECTNODE_H

@@ -1,7 +1,7 @@
 #include "gravitationalsingularityaffector.h"
 #include <cmath>
 #include <QDebug>
-
+QT_BEGIN_NAMESPACE
 GravitationalSingularityAffector::GravitationalSingularityAffector(QSGItem *parent) :
     ParticleAffector(parent), m_strength(0.0), m_x(0), m_y(0)
 {
@@ -135,3 +135,4 @@ void GravitationalSingularityAffector::subaffect(ParticleData *d, qreal dt, bool
     d->pv.sx = d->pv.sx + dx;
     d->pv.sy = d->pv.sy + dy;
 }
+QT_END_NAMESPACE

@@ -963,19 +963,19 @@ void QSGFlickablePrivate::data_append(QDeclarativeListProperty<QObject> *prop, Q
     }
 }
 
-int QSGFlickablePrivate::data_count(QDeclarativeListProperty<QObject> *prop)
+int QSGFlickablePrivate::data_count(QDeclarativeListProperty<QObject> *)
 {
     // XXX todo
     return 0;
 }
 
-QObject *QSGFlickablePrivate::data_at(QDeclarativeListProperty<QObject> *prop, int i)
+QObject *QSGFlickablePrivate::data_at(QDeclarativeListProperty<QObject> *, int)
 {
     // XXX todo
     return 0;
 }
 
-void QSGFlickablePrivate::data_clear(QDeclarativeListProperty<QObject> *prop)
+void QSGFlickablePrivate::data_clear(QDeclarativeListProperty<QObject> *)
 {
     // XXX todo
 }

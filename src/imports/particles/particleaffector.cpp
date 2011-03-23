@@ -1,6 +1,6 @@
 #include "particleaffector.h"
 #include <QDebug>
-
+QT_BEGIN_NAMESPACE
 ParticleAffector::ParticleAffector(QSGItem *parent) :
     QSGItem(parent), m_needsReset(false), m_system(false), m_active(true), m_updateIntSet(false)
 {
@@ -43,3 +43,4 @@ void ParticleAffector::reset(int idx)
 {
     Q_UNUSED(idx);
 }
+QT_END_NAMESPACE

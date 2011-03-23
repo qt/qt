@@ -46,6 +46,8 @@
 #include "qsgmatrix4x4stack.h"
 #include <qstack.h>
 
+QT_BEGIN_NAMESPACE
+
 class Q_DECLARATIVE_EXPORT NodeUpdater : public NodeVisitor
 {
 public:
@@ -74,5 +76,7 @@ protected:
 
     int m_force_update;
 };
+
+QT_END_NAMESPACE
 
 #endif // NODEUPDATER_P_H

@@ -46,6 +46,12 @@
 #include <QtCore/qrect.h>
 #include <QtGui/qfont.h>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class DeclarativeInputContext;
 
 class InputContextModule : public QObject
@@ -107,5 +113,9 @@ private:
     QWidget *m_focusWidget;
     bool m_visible;
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif

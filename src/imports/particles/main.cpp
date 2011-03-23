@@ -28,12 +28,16 @@
 //#include "pairedparticle.h"
 #include "spriteimage.h"
 #include "followemitter.h"
-#include "directedemitter.h"
 #include "particleextruder.h"
 #include "ellipseextruder.h"
+#include "maskextruder.h"
+#include "varyingvector.h"
+#include "pointvector.h"
+#include "angledvector.h"
+#include "directedvector.h"
 //#include "followaffector.h"
 #include "V1/qdeclarativeparticles_p.h"
-
+QT_BEGIN_NAMESPACE
 void ParticlesPlugin::registerTypes(const char *uri)
 {
     Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.labs.particles"));
@@ -56,11 +60,16 @@ void ParticlesPlugin::registerTypes(const char *uri)
 
     qmlRegisterType<ParticleEmitter>(uri, 2, 0, "ParticleEmitter");
     qmlRegisterType<TrailsEmitter>(uri, 2, 0, "TrailEmitter");
-    qmlRegisterType<DirectedEmitter>(uri, 2, 0, "DirectedEmitter");
 
     qmlRegisterType<FollowEmitter>(uri, 2, 0, "FollowEmitter");
     qmlRegisterType<ParticleExtruder>(uri, 2, 0, "Box");
     qmlRegisterType<EllipseExtruder>(uri, 2, 0, "Ellipse");
+    qmlRegisterType<MaskExtruder>(uri, 2, 0, "Mask");
+
+    qmlRegisterType<VaryingVector>(uri, 2, 0, "NullVector");
+    qmlRegisterType<PointVector>(uri, 2, 0, "PointVector");
+    qmlRegisterType<AngledVector>(uri, 2, 0, "AngleVector");
+    qmlRegisterType<DirectedVector>(uri, 2, 0, "DirectedVector");
 
     qmlRegisterType<ParticleAffector>(uri, 2, 0, "ParticleAffector");
     qmlRegisterType<WanderAffector>(uri, 2, 0, "Wander");
@@ -83,3 +92,4 @@ void ParticlesPlugin::registerTypes(const char *uri)
 
 Q_EXPORT_PLUGIN2(Particles, ParticlesPlugin);
 
+QT_END_NAMESPACE

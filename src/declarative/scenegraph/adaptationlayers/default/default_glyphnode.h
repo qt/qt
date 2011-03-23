@@ -45,6 +45,12 @@
 #include "adaptationlayer.h"
 #include <node.h>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class QGlyphs;
 class TextMaskMaterial;
 class DefaultGlyphNode: public GlyphNodeInterface
@@ -66,5 +72,8 @@ private:
     QSGGeometry m_geometry;
 };
 
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // DEFAULT_GLYPHNODE_H

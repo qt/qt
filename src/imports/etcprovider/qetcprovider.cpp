@@ -3,6 +3,8 @@
 #include <QtDebug>
 #include <QFile>
 
+QT_BEGIN_NAMESPACE
+
 typedef struct {
     char aName[6];
     unsigned short iBlank;
@@ -86,6 +88,7 @@ void EtcTexture::bind()
         m_texture_id = 0;
         return;
     }
+    updateBindOptions(true);
 }
 
 QSize EtcTexture::textureSize() const
@@ -133,3 +136,4 @@ QSGTexture *QEtcProvider::requestTexture(const QString &id, QSize *size, const Q
     return ret;
 }
 
+QT_END_NAMESPACE

@@ -1,21 +1,11 @@
 #include "trailsemitter.h"
 #include "particlesystem.h"
 #include "particle.h"
+QT_BEGIN_NAMESPACE
 
 TrailsEmitter::TrailsEmitter(QSGItem* parent)
     : ParticleEmitter(parent)
-    , m_particle_size(16)
-    , m_particle_end_size(-1)
-    , m_particle_size_variation(0)
-    , m_x_speed(0)
-    , m_y_speed(0)
-    , m_x_speed_variation(0)
-    , m_y_speed_variation(0)
     , m_speed_from_movement(0)
-    , m_x_accel(0)
-    , m_y_accel(0)
-    , m_x_accel_variation(0)
-    , m_y_accel_variation(0)
     , m_particle_count(0)
     , m_reset_last(true)
     , m_last_timestamp(0)
@@ -24,106 +14,12 @@ TrailsEmitter::TrailsEmitter(QSGItem* parent)
 //    setFlag(ItemHasContents);
 }
 
-
-void TrailsEmitter::setParticleSize(qreal size)
-{
-    if (size == m_particle_size)
-        return;
-    m_particle_size = size;
-    emit particleSizeChanged();
-}
-
-void TrailsEmitter::setParticleEndSize(qreal size)
-{
-    if (size == m_particle_end_size)
-        return;
-    m_particle_end_size = size;
-    emit particleEndSizeChanged();
-}
-
-void TrailsEmitter::setParticleSizeVariation(qreal var)
-{
-    if (var == m_particle_size_variation)
-        return;
-    m_particle_size_variation = var;
-    emit particleSizeVariationChanged();
-
-}
-
-void TrailsEmitter::setXSpeed(qreal x)
-{
-    if (x == m_x_speed)
-        return;
-    m_x_speed = x;
-    emit xSpeedChanged();
-}
-
-void TrailsEmitter::setYSpeed(qreal y)
-{
-    if (y == m_y_speed)
-        return;
-    m_y_speed = y;
-    emit ySpeedChanged();
-}
-
-void TrailsEmitter::setXSpeedVariation(qreal x)
-{
-    if (x == m_x_speed_variation)
-        return;
-    m_x_speed_variation = x;
-    emit xSpeedVariationChanged();
-}
-
-
-void TrailsEmitter::setYSpeedVariation(qreal y)
-{
-    if (y == m_y_speed_variation)
-        return;
-    m_y_speed_variation = y;
-    emit ySpeedVariationChanged();
-}
-
-
 void TrailsEmitter::setSpeedFromMovement(qreal t)
 {
     if (t == m_speed_from_movement)
         return;
     m_speed_from_movement = t;
     emit speedFromMovementChanged();
-}
-
-
-void TrailsEmitter::setXAccel(qreal x)
-{
-    if (x == m_x_accel)
-        return;
-    m_x_accel = x;
-    emit xAccelChanged();
-}
-
-void TrailsEmitter::setYAccel(qreal y)
-{
-    if (y == m_y_accel)
-        return;
-    m_y_accel = y;
-    emit yAccelChanged();
-}
-
-void TrailsEmitter::setXAccelVariation(qreal x)
-{
-    if (x == m_x_accel_variation)
-        return;
-    m_x_accel_variation = x;
-    emit xAccelVariationChanged();
-}
-
-
-void TrailsEmitter::setYAccelVariation(qreal y)
-{
-    if (y == m_y_accel_variation)
-        return;
-    m_y_accel_variation = y;
-    emit yAccelVariationChanged();
 }
 
 void TrailsEmitter::reset()
@@ -171,7 +67,7 @@ void TrailsEmitter::emitWindow(int timeStamp)
     qreal by = m_last_emitter.y();
     qreal cy = (y() + m_last_emitter.y()) / 2;
 
-    float sizeAtEnd = m_particle_end_size >= 0 ? m_particle_end_size : m_particle_size;
+    float sizeAtEnd = m_particleEndSize >= 0 ? m_particleEndSize : m_particleSize;
     qreal emitter_x_offset = m_last_emitter.x() - x();
     qreal emitter_y_offset = m_last_emitter.y() - y();
     while (pt < time) {
@@ -192,7 +88,7 @@ void TrailsEmitter::emitWindow(int timeStamp)
 
         // Particle timestamp
         p.t = pt;
-        p.lifeSpan =
+        p.lifeSpan = //Promote to base class?
                 (m_particleDuration
                  + ((rand() % ((m_particleDurationVariation*2) + 1)) - m_particleDurationVariation))
                 / 1000.0;
@@ -205,26 +101,22 @@ void TrailsEmitter::emitWindow(int timeStamp)
         p.y = newPos.y();
 
         // Particle speed
-        p.sx =
-                m_x_speed
-                - m_x_speed_variation + rand() / float(RAND_MAX) * m_x_speed_variation * 2
+        const QPointF &speed = m_speed->sample(newPos);
+        p.sx = speed.x()
                 + m_speed_from_movement * vx;
-        p.sy =
-                m_y_speed
-                - m_y_speed_variation + rand() / float(RAND_MAX) * m_y_speed_variation * 2
+        p.sy = speed.y()
                 + m_speed_from_movement * vy;
 
         // Particle acceleration
-        p.ax =
-                m_x_accel - m_x_accel_variation + rand() / float(RAND_MAX) * m_x_accel_variation * 2;
-        p.ay =
-                m_y_accel - m_y_accel_variation + rand() / float(RAND_MAX) * m_y_accel_variation * 2;
+        const QPointF &accel = m_acceleration->sample(newPos);
+        p.ax = accel.x();
+        p.ay = accel.y();
 
         // Particle size
-        float sizeVariation = -m_particle_size_variation
-                + rand() / float(RAND_MAX) * m_particle_size_variation * 2;
+        float sizeVariation = -m_particleSizeVariation
+                + rand() / float(RAND_MAX) * m_particleSizeVariation * 2;
 
-        float size = m_particle_size + sizeVariation;
+        float size = m_particleSize + sizeVariation;
         float endSize = sizeAtEnd + sizeVariation;
 
         p.size = size * float(m_emitting);
@@ -243,3 +135,4 @@ void TrailsEmitter::emitWindow(int timeStamp)
 }
 
 
+QT_END_NAMESPACE

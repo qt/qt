@@ -17,11 +17,11 @@ Rectangle{
     }
     TrailEmitter{
         system: sys
-        y:root.height
+        y:root.height + 20
         width: root.width
         particlesPerSecond: 200
         particleDuration: 4000
-        ySpeed: -120
+        speed: PointVector{ y: -120; }
     }
     SpriteParticle{
         system: sys

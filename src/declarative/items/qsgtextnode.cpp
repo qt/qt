@@ -42,7 +42,7 @@
 #include "qsgtextnode_p.h"
 #include "solidrectnode.h"
 #include "adaptationlayer.h"
-#include "distancefieldfontatlas_p.h"
+#include "distancefieldglyphcache_p.h"
 #include "distancefield_glyphnode.h"
 
 #include "qsgcontext.h"
@@ -55,6 +55,8 @@
 #include <private/qdeclarativestyledtext_p.h>
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
+
+QT_BEGIN_NAMESPACE
 
 /*!
   Creates an empty QSGTextNode
@@ -152,7 +154,7 @@ GlyphNodeInterface *QSGTextNode::addGlyphs(const QPointF &position, const QGlyph
                                            QSGText::TextStyle style, const QColor &styleColor)
 {
     GlyphNodeInterface *node = m_context->createGlyphNode();
-    if (DistanceFieldFontAtlas::distanceFieldEnabled()) {
+    if (DistanceFieldGlyphCache::distanceFieldEnabled()) {
         DistanceFieldGlyphNode *dfNode = static_cast<DistanceFieldGlyphNode *>(node);
         dfNode->setStyle(style);
         dfNode->setStyleColor(styleColor);
@@ -168,6 +170,7 @@ GlyphNodeInterface *QSGTextNode::addGlyphs(const QPointF &position, const QGlyph
 void QSGTextNode::addTextDocument(const QPointF &position, QTextDocument *textDocument, const QColor &color,
                                   QSGText::TextStyle style, const QColor &styleColor)
 {
+    Q_UNUSED(position)
     QTextFrame *textFrame = textDocument->rootFrame();
     QPointF p = textDocument->documentLayout()->frameBoundingRect(textFrame).topLeft();
 
@@ -443,3 +446,5 @@ void QSGTextNode::updateNodes()
     }
 }
 #endif
+
+QT_END_NAMESPACE

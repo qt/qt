@@ -44,6 +44,8 @@
 #include "shadereffectitem.h" // XXX todo
 #include "qsgtextureprovider.h"
 
+QT_BEGIN_NAMESPACE
+
 class CustomMaterialShader : public AbstractMaterialShader
 {
 public:
@@ -343,3 +345,5 @@ void ShaderEffectNode::preprocess()
     Q_ASSERT(material());
     static_cast<ShaderEffectMaterial *>(material())->updateTextures();
 }
+
+QT_END_NAMESPACE

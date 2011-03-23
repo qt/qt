@@ -11,6 +11,7 @@
 #include <cmath>
 #include <qmath.h>
 #include <QDebug>
+QT_BEGIN_NAMESPACE
 
 class SpriteParticlesMaterial : public AbstractMaterial
 {
@@ -401,3 +402,4 @@ void SpriteParticle::reset()
 {
     m_pleaseReset = true;
 }
+QT_END_NAMESPACE

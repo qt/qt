@@ -10,6 +10,13 @@
 #include <QImage>
 #include <QPair>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class SpriteState;
 
 class SpriteEngine : public QObject
@@ -102,4 +109,5 @@ inline int spriteCount(QDeclarativeListProperty<SpriteState> *p)
 }
 
 
+QT_END_NAMESPACE
 #endif // SPRITEENGINE_H

@@ -98,7 +98,6 @@ public:
 
     void setPaintMargin(qreal margin)
     {
-        Q_Q(QSGRectangle);
         if (margin == paintmargin)
             return;
         paintmargin = margin;

@@ -43,6 +43,8 @@
 
 #include <qglshaderprogram.h>
 
+QT_BEGIN_NAMESPACE
+
 const char qt_scenegraph_texture_material_vertex_code[] =
     "uniform highp mat4 qt_Matrix;                      \n"
     "attribute highp vec4 qt_VertexPosition;            \n"
@@ -207,3 +209,5 @@ void TextureMaterialWithOpacityShader::initialize()
     TextureMaterialShader::initialize();
     m_opacity_id = m_program.uniformLocation("opacity");
 }
+
+QT_END_NAMESPACE

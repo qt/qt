@@ -1235,6 +1235,18 @@ void QDeclarativeXMLHttpRequest::downloadProgress(qint64 bytes)
     }
 }
 
+static const char *errorToString(QNetworkReply::NetworkError error)
+{
+    int idx = QNetworkReply::staticMetaObject.indexOfEnumerator("NetworkError");
+    if (idx == -1) return "EnumLookupFailed";
+
+    QMetaEnum e = QNetworkReply::staticMetaObject.enumerator(idx);
+
+    const char *name = e.valueToKey(error);
+    if (!name) return "EnumLookupFailed";
+    else return name;
+}
+
 void QDeclarativeXMLHttpRequest::error(QNetworkReply::NetworkError error)
 {
     Q_UNUSED(error)
@@ -1248,6 +1260,11 @@ void QDeclarativeXMLHttpRequest::error(QNetworkReply::NetworkError error)
     m_request = QNetworkRequest();
     m_data.clear();
     destroyNetwork();
+
+    if (xhrDump()) {
+        qWarning().nospace() << "XMLHttpRequest: ERROR " << qPrintable(m_url.toString());
+        qWarning().nospace() << "    " << error << " " << errorToString(error) << " " << m_statusText;
+    }
 
     if (error == QNetworkReply::ContentAccessDenied ||
         error == QNetworkReply::ContentOperationNotPermittedError ||

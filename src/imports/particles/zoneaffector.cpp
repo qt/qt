@@ -22,3 +22,4 @@ void ZoneAffector::reset(int systemIdx)
     if(m_affector)
         m_affector->reset(systemIdx);
 }
+QT_END_NAMESPACE

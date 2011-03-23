@@ -2,6 +2,7 @@
 #include "particle.h"
 #include <cmath>
 #include <QDebug>
+QT_BEGIN_NAMESPACE
 
 SwarmAffector::SwarmAffector(QSGItem *parent) :
     ParticleAffector(parent), m_strength(1), m_inited(false)
@@ -69,3 +70,4 @@ void SwarmAffector::updateGroupList()
     foreach(const QString &s, m_leaders)
         m_leadGroups << m_system->m_groupIds[s];
 }
+QT_END_NAMESPACE

@@ -46,6 +46,12 @@
 #include "areaallocator.h"
 #include "qgltexture2d.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class DefaultTextureAtlas : public TextureAtlasInterface
 {
 public:
@@ -58,5 +64,9 @@ private:
     QGLTexture2DPtr m_texture;
     AreaAllocator m_allocator;
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif

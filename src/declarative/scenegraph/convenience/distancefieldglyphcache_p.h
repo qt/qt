@@ -39,32 +39,21 @@
 **
 ****************************************************************************/
 
-#ifndef DISTANCEFIELDFONTATLAS_H
-#define DISTANCEFIELDFONTATLAS_H
+#ifndef DISTANCEFIELDGLYPHCACHE_H
+#define DISTANCEFIELDGLYPHCACHE_H
 
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
-#include <QtDeclarative/qsgtexture.h>
+#include <qsgtexture.h>
+
+QT_BEGIN_NAMESPACE
 
 void qt_disableFontHinting(QFont &font);
 
-struct TexCoordCacheKey {
-    QString distfield;
-    glyph_t glyph;
-
-    TexCoordCacheKey(const QString &df, glyph_t g) : distfield(df), glyph(g) { }
-
-    bool operator==(const TexCoordCacheKey &other) const {
-        return other.distfield == distfield && other.glyph == glyph;
-    }
-};
-
-uint qHash(const TexCoordCacheKey &key);
-
-class Q_DECLARATIVE_EXPORT DistanceFieldFontAtlas
+class Q_DECLARATIVE_EXPORT DistanceFieldGlyphCache
 {
 public:
-    static DistanceFieldFontAtlas *get(const QFont &font);
+    static DistanceFieldGlyphCache *get(const QFont &font);
 
     struct Metrics {
         qreal width;
@@ -85,7 +74,7 @@ public:
     TexCoord glyphTexCoord(glyph_t glyph);
 
     QSGTextureRef texture();
-    QSize atlasSize() const;
+    QSize textureSize() const;
     qreal scaleRatioFromRefSize() const;
     QImage renderDistanceFieldGlyph(glyph_t glyph) const;
 
@@ -99,24 +88,31 @@ public:
     static bool distanceFieldEnabled();
 
 private:
-    DistanceFieldFontAtlas(const QFont &font);
+    DistanceFieldGlyphCache(const QFont &font);
 
     QSGTextureRef createTexture();
 
-    static QHash<QString, DistanceFieldFontAtlas *> m_atlases;
+    static QHash<QString, DistanceFieldGlyphCache *> m_caches;
 
     QFont m_font;
     QFontEngine *m_fontEngine;
     QFontEngine *m_referenceFontEngine;
     QString m_distanceFieldKey;
     int m_glyphCount;
-    mutable QSize m_size;
-
     QHash<glyph_t, Metrics> m_metrics;
-    static QHash<TexCoordCacheKey, DistanceFieldFontAtlas::TexCoord> m_texCoords;
-    static QSet<TexCoordCacheKey> m_generatedGlyphs;
 
-    static QHash<QString, QSGTextureRef> m_textures;
+    struct DistanceFieldTextureData {
+        QSGTextureRef texture;
+        QSize size;
+        QHash<glyph_t, TexCoord> texCoords;
+        QSet<glyph_t> generatedGlyphs;
+    };
+    DistanceFieldTextureData *textureData();
+    DistanceFieldTextureData *m_textureData;
+    static QHash<QString, DistanceFieldTextureData *> m_textures_data;
+
 };
 
-#endif // DISTANCEFIELDFONTATLAS_H
+QT_END_NAMESPACE
+
+#endif // DISTANCEFIELDGLYPHCACHE_H

@@ -49,6 +49,12 @@
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qpointer.h>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 struct ShaderEffectMaterialKey {
     QByteArray vertexCode;
     QByteArray fragmentCode;
@@ -142,5 +148,9 @@ private:
 
     bool m_dirty_geometry : 1;
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // SHADEREFFECTNODE_H

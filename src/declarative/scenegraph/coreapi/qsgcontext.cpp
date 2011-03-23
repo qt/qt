@@ -48,7 +48,7 @@
 #include "default/default_texturenode.h"
 #include "default/default_glyphnode.h"
 #include "distancefield_glyphnode.h"
-#include "distancefieldfontatlas_p.h"
+#include "distancefieldglyphcache_p.h"
 
 #include "qsgtexture_p.h"
 
@@ -56,6 +56,8 @@
 #include <QGLContext>
 
 #include <private/qobject_p.h>
+
+QT_BEGIN_NAMESPACE
 
 class QSGContextPrivate : public QObjectPrivate
 {
@@ -183,7 +185,7 @@ TextureNodeInterface *QSGContext::createTextureNode()
  */
 GlyphNodeInterface *QSGContext::createGlyphNode()
 {
-    if (DistanceFieldFontAtlas::distanceFieldEnabled())
+    if (DistanceFieldGlyphCache::distanceFieldEnabled())
         return new DistanceFieldGlyphNode;
     else
         return new DefaultGlyphNode;
@@ -198,7 +200,7 @@ GlyphNodeInterface *QSGContext::createGlyphNode()
 Renderer *QSGContext::createRenderer()
 {
     QMLRenderer *renderer = new QMLRenderer;
-    if (qApp->arguments().contains("--opaque-front-to-back")) {
+    if (qApp->arguments().contains(QLatin1String("--opaque-front-to-back"))) {
         printf("QSGContext: Sorting opaque nodes front to back...\n");
         renderer->setSortFrontToBackEnabled(true);
     }
@@ -261,3 +263,5 @@ QSGTexture *QSGContext::createTexture(const QImage &image) const
         t->setImage(image);
     return t;
 }
+
+QT_END_NAMESPACE

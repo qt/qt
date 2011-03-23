@@ -3,6 +3,8 @@
 
 #include "adaptationlayer.h"
 
+QT_BEGIN_NAMESPACE
+
 class QSGThreadedTextureManagerPrivate;
 
 class QSGThreadedTextureManager : public TextureManager
@@ -19,5 +21,7 @@ public:
 private:
     QSGThreadedTextureManagerPrivate *d;
 };
+
+QT_END_NAMESPACE
 
 #endif // THREADEDTEXTUREMANAGER_H

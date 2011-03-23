@@ -47,6 +47,11 @@
 #include <QObject>
 #include <QImage>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
 
 class QSGTexturePrivate;
 class Q_DECLARATIVE_EXPORT QSGTexture : public QObject
@@ -151,6 +156,8 @@ private:
     QSGTexture *m_texture;
 };
 
+QT_END_NAMESPACE
 
+QT_END_HEADER
 
 #endif

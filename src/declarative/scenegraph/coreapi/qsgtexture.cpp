@@ -43,6 +43,13 @@
 
 #include "qsgtexture_p.h"
 
+#ifdef Q_WS_WIN
+#include <private/qglextensions_p.h>
+#include <private/qgl_p.h>
+#endif
+
+QT_BEGIN_NAMESPACE
+
 QSGTexturePrivate::QSGTexturePrivate()
     : wrapChanged(false)
     , filteringChanged(false)
@@ -293,7 +300,7 @@ void QSGPlainTexture::bind()
         glDeleteTextures(1, &m_texture_id);
 
     if (m_image.isNull()) {
-        m_texture_id == 0;
+        m_texture_id = 0;
         m_texture_size = QSize();
         m_has_mipmaps = false;
         m_has_alpha = false;
@@ -313,11 +320,15 @@ void QSGPlainTexture::bind()
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_BGRA, GL_UNSIGNED_BYTE, m_image.constBits());
 #endif
 
-    if (m_has_mipmaps)
+    if (m_has_mipmaps) {
+        const QGLContext *ctx = QSGContext::current->glContext();
         glGenerateMipmap(GL_TEXTURE_2D);
+    }
 
     m_texture_size = QSize(w, h);
     m_texture_rect = QRectF(0, 0, 1, 1);
 
     updateBindOptions(true);
  }
+
+QT_END_NAMESPACE

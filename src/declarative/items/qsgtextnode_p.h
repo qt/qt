@@ -45,6 +45,8 @@
 #include <node.h>
 #include <qsgtext_p.h>
 
+QT_BEGIN_NAMESPACE
+
 class QTextLayout;
 class GlyphNodeInterface;
 class QTextBlock;
@@ -78,5 +80,7 @@ private:
 
     QSGContext *m_context;
 };
+
+QT_END_NAMESPACE
 
 #endif // QSGTEXTNODE_P_H

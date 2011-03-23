@@ -5,6 +5,13 @@
 #include <QtDeclarative/QDeclarativeExtensionPlugin>
 
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class ParticlesPlugin : public QDeclarativeExtensionPlugin
 {
     Q_OBJECT
@@ -12,4 +19,5 @@ public:
     virtual void registerTypes(const char *uri);
 };
 
+QT_END_NAMESPACE
 #endif // PLUGINMAIN_H

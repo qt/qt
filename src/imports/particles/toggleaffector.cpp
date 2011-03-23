@@ -12,3 +12,4 @@ bool ToggleAffector::affect(ParticleData *d, qreal dt)
     else
         return false;
 }
+QT_END_NAMESPACE

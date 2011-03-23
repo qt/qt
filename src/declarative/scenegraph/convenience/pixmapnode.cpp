@@ -43,6 +43,8 @@
 #include "utilities.h"
 #include "texturematerial.h"
 
+QT_BEGIN_NAMESPACE
+
 PixmapNode::PixmapNode(const QRectF &t, const QPixmap &pixmap, const QRectF &sourceRect)
     : m_target_rect(t)
     , m_pixmap(pixmap)
@@ -93,3 +95,4 @@ void PixmapNode::updateGeometry()
     setBoundingRect(m_target_rect);
 }
 
+QT_END_NAMESPACE

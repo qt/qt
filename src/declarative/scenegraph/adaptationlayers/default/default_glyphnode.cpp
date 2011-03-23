@@ -45,6 +45,8 @@
 #include <qglshaderprogram.h>
 #include <private/qfont_p.h>
 
+QT_BEGIN_NAMESPACE
+
 DefaultGlyphNode::DefaultGlyphNode()
     : m_material(0)
     , m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 0)
@@ -91,3 +93,5 @@ void DefaultGlyphNode::setGlyphs(const QPointF &position, const QGlyphs &glyphs)
     description = QLatin1String("glyphs");
 #endif
 }
+
+QT_END_NAMESPACE

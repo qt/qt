@@ -3,28 +3,23 @@
 #include "particleemitter.h"
 #include "particleaffector.h"
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+
 class FollowEmitter : public ParticleEmitter
 {
     Q_OBJECT
     Q_PROPERTY(QString follow READ follow WRITE setFollow NOTIFY followChanged)
     Q_PROPERTY(int particlesPerParticlePerSecond READ particlesPerParticlePerSecond WRITE setParticlesPerParticlePerSecond NOTIFY particlesPerParticlePerSecondChanged)
 
+    //TODO: Document that FollowEmitter's box is where it follows. It emits in a rect centered on the followed particle
+    //TODO: A set of properties that can involve the particle size of the followed
     Q_PROPERTY(qreal emitterXVariation READ emitterXVariation WRITE setEmitterXVariation NOTIFY emitterXVariationChanged)
     Q_PROPERTY(qreal emitterYVariation READ emitterYVariation WRITE setEmitterYVariation NOTIFY emitterYVariationChanged)
-
-    Q_PROPERTY(qreal particleSize READ particleSize WRITE setParticleSize NOTIFY particleSizeChanged)
-    Q_PROPERTY(qreal particleEndSize READ particleEndSize WRITE setParticleEndSize NOTIFY particleEndSizeChanged)
-    Q_PROPERTY(qreal particleSizeVariation READ particleSizeVariation WRITE setParticleSizeVariation NOTIFY particleSizeVariationChanged)
-
-    Q_PROPERTY(qreal xSpeed READ xSpeed WRITE setXSpeed NOTIFY xSpeedChanged)
-    Q_PROPERTY(qreal ySpeed READ ySpeed WRITE setYSpeed NOTIFY ySpeedChanged)
-    Q_PROPERTY(qreal xSpeedVariation READ xSpeedVariation WRITE setXSpeedVariation NOTIFY xSpeedVariationChanged)
-    Q_PROPERTY(qreal ySpeedVariation READ ySpeedVariation WRITE setYSpeedVariation NOTIFY ySpeedVariationChanged)
-
-    Q_PROPERTY(qreal xAccel READ xAccel WRITE setXAccel NOTIFY xAccelChanged)
-    Q_PROPERTY(qreal yAccel READ yAccel WRITE setYAccel NOTIFY yAccelChanged)
-    Q_PROPERTY(qreal xAccelVariation READ xAccelVariation WRITE setXAccelVariation NOTIFY xAccelVariationChanged)
-    Q_PROPERTY(qreal yAccelVariation READ yAccelVariation WRITE setYAccelVariation NOTIFY yAccelVariationChanged)
 
 public:
     explicit FollowEmitter(QSGItem *parent = 0);
@@ -283,4 +278,5 @@ private:
     int m_followCount;
 };
 
+QT_END_NAMESPACE
 #endif // FOLLOWEMITTER_H

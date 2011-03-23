@@ -45,6 +45,8 @@
 
 #include "qsgitem_p.h"
 
+QT_BEGIN_NAMESPACE
+
 class QSGImageTextureProvider;
 class QSGPaintedItemPrivate : public QSGItemPrivate
 {
@@ -56,5 +58,7 @@ public:
     bool contentsDirty : 1;
     bool opaquePainting: 1;
 };
+
+QT_END_NAMESPACE
 
 #endif // QSGPAINTEDITEM_P_P_H

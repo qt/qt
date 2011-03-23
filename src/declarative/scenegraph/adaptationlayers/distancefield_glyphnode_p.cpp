@@ -40,8 +40,10 @@
 ****************************************************************************/
 
 #include "distancefield_glyphnode_p.h"
-#include "distancefieldfontatlas_p.h"
+#include "distancefieldglyphcache_p.h"
 #include <qmath.h>
+
+QT_BEGIN_NAMESPACE
 
 class DistanceFieldTextMaterialShader : public AbstractMaterialShader
 {
@@ -169,7 +171,7 @@ void DistanceFieldTextMaterialShader::updateState(Renderer *renderer, AbstractMa
 }
 
 DistanceFieldTextMaterial::DistanceFieldTextMaterial()
-    : m_texture(0), m_scale(1.0), m_dirtyTexture(false), m_atlas(0)
+    : m_texture(0), m_scale(1.0), m_dirtyTexture(false), m_glyph_cache(0)
 {
    setFlag(Blending, true);
 }
@@ -369,7 +371,7 @@ protected:
     virtual void initialize();
     virtual const char *fragmentShader() const;
 
-    void updateShift(const DistanceFieldFontAtlas *atlas, const QPointF& shift);
+    void updateShift(const DistanceFieldGlyphCache *cache, const QPointF& shift);
 
     int m_shift_id;
 };
@@ -396,13 +398,13 @@ void DistanceFieldShiftedStyleTextMaterialShader::updateState(Renderer *renderer
             || oldMaterial->scale() != material->scale()
             || oldMaterial->shift() != material->shift()
             || oldMaterial->texture()->textureSize() != material->texture()->textureSize()) {
-        updateShift(material->atlas(), material->shift());
+        updateShift(material->glyphCache(), material->shift());
     }
 }
 
-void DistanceFieldShiftedStyleTextMaterialShader::updateShift(const DistanceFieldFontAtlas *atlas, const QPointF &shift)
+void DistanceFieldShiftedStyleTextMaterialShader::updateShift(const DistanceFieldGlyphCache *cache, const QPointF &shift)
 {
-    m_program.setUniformValue(m_shift_id, atlas->pixelToTexel(shift));
+    m_program.setUniformValue(m_shift_id, cache->pixelToTexel(shift));
 }
 
 const char *DistanceFieldShiftedStyleTextMaterialShader::fragmentShader() const {
@@ -444,3 +446,5 @@ AbstractMaterialShader *DistanceFieldShiftedStyleTextMaterial::createShader() co
 {
     return new DistanceFieldShiftedStyleTextMaterialShader;
 }
+
+QT_END_NAMESPACE
