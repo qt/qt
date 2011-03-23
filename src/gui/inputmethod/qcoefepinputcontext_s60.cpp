@@ -410,8 +410,11 @@ void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
     windowToMove->setUpdatesEnabled(false);
 
     if (!alwaysResize) {
-        if (gv->scene()) {
-            if (gv->scene()->focusItem())
+        if (gv->scene() && gv->scene()->focusItem()) {
+            // Check if the widget contains cursorPositionChanged signal and disconnect from it.
+            QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
+            int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
+            if (index != -1)
                 disconnect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
             QGraphicsItem *rootItem;
             foreach (QGraphicsItem *item, gv->scene()->items()) {
@@ -501,6 +504,13 @@ void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
     // states getting changed.
 
     if (!moveWithinVisibleArea) {
+        // Check if the widget contains cursorPositionChanged signal and connect to it.
+        QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
+        if (gv->scene() && gv->scene()->focusItem()) {
+            int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
+            if (index != -1)
+                connect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
+        }
         S60->splitViewLastWidget = widget;
         m_splitViewPreviousWindowStates = windowToMove->windowState();
     }
@@ -537,13 +547,6 @@ void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
         }
         windowToMove->setUpdatesEnabled(true);
     } else {
-        if (!moveWithinVisibleArea) {
-            // Check if the widget contains cursorPositionChanged signal and connect to it.
-            const char *signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged())).constData();
-            int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal + 1);
-            if (index != -1)
-                connect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
-        }
         translateInputWidget();
     }
 
