@@ -81,6 +81,12 @@ win32 {
 	HEADERS += text/qfontengine_win_p.h
 }
 
+contains(QT_CONFIG, directwrite) {
+    LIBS_PRIVATE += -ldwrite
+    HEADERS += text/qfontenginedirectwrite_p.h
+    SOURCES += text/qfontenginedirectwrite.cpp
+}
+
 unix:x11 {
 	HEADERS += \
 		text/qfontengine_x11_p.h \

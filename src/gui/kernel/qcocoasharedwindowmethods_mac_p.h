@@ -533,22 +533,6 @@ QT_END_NAMESPACE
     return de.isAccepted();
 }
 
-- (void)displayIfNeeded
-{
-
-    QWidget *qwidget = [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] qt_qwidgetForWindow:self];
-    if (qwidget == 0) {
-        [super displayIfNeeded];
-        return;
-    }
-
-    if (QApplicationPrivate::graphicsSystem() != 0) {
-        if (QWidgetBackingStore *bs = qt_widget_private(qwidget)->maybeBackingStore())
-            bs->sync(qwidget, qwidget->rect());
-    }
-    [super displayIfNeeded];
-}
-
 // This is a hack and it should be removed once we find the real cause for
 // the painting problems.
 // We have a static variable that signals if we have been called before or not.

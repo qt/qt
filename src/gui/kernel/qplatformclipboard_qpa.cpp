@@ -40,6 +40,8 @@
 ****************************************************************************/
 #include "qplatformclipboard_qpa.h"
 
+#ifndef QT_NO_CLIPBOARD
+
 QT_BEGIN_NAMESPACE
 
 class QClipboardData
@@ -99,3 +101,5 @@ bool QPlatformClipboard::supportsMode(QClipboard::Mode mode) const
 }
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_CLIPBOARD

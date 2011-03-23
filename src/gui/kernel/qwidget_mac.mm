@@ -2476,6 +2476,8 @@ void QWidgetPrivate::createWindow_sys()
 void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyOldWindow)
 {
     Q_Q(QWidget);
+    QMacCocoaAutoReleasePool pool;
+
     OSViewRef destroyid = 0;
 #ifndef QT_MAC_USE_COCOA
     window_event = 0;
@@ -3239,6 +3241,8 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
             ReleaseIconRef(previousIcon);
 #else
         QMacCocoaAutoReleasePool pool;
+        if (icon.isNull())
+            return;
         NSButton *iconButton = [qt_mac_window_for(q) standardWindowButton:NSWindowDocumentIconButton];
         if (iconButton == nil) {
             QCFString string(q->windowTitle());
@@ -4421,6 +4425,8 @@ void QWidgetPrivate::adjustWithinMaxAndMinSize(int &w, int &h)
 void QWidgetPrivate::applyMaxAndMinSizeOnWindow()
 {
     Q_Q(QWidget);
+    QMacCocoaAutoReleasePool pool;
+
     const float max_f(20000);
 #ifndef QT_MAC_USE_COCOA
 #define SF(x) ((x > max_f) ? max_f : x)

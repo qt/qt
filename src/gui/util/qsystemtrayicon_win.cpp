@@ -305,6 +305,7 @@ bool QSystemTrayIconSys::winEvent( MSG *m, long *result )
             case WM_CONTEXTMENU:
                 if (q->contextMenu()) {
                     q->contextMenu()->popup(gpos);
+                    q->contextMenu()->activateWindow();
                 }
                 emit q->activated(QSystemTrayIcon::Context);
                 break;

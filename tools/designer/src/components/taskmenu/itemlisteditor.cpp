@@ -80,7 +80,7 @@ private:
 
 ////////////////// Item editor ///////////////
 AbstractItemEditor::AbstractItemEditor(QDesignerFormWindowInterface *form, QWidget *parent)
-    : QDialog(parent),
+    : QWidget(parent),
       m_iconCache(qobject_cast<FormWindowBase *>(form)->iconCache()),
       m_updatingBrowser(false)
 {
@@ -102,15 +102,6 @@ AbstractItemEditor::AbstractItemEditor(QDesignerFormWindowInterface *form, QWidg
 AbstractItemEditor::~AbstractItemEditor()
 {
     m_propertyBrowser->unsetFactoryForManager(m_propertyManager);
-}
-
-void AbstractItemEditor::keyPressEvent(QKeyEvent *e)
-{
-    // Avoid that embedded dialogs react to enter and escape keys.
-    if (this == window())
-        QDialog::keyPressEvent(e);
-    else
-        QWidget::keyPressEvent(e);
 }
 
 static const char * const itemFlagNames[] = {
@@ -304,7 +295,7 @@ ItemListEditor::ItemListEditor(QDesignerFormWindowInterface *form, QWidget *pare
     injectPropertyBrowser(this, ui.widget);
     connect(ui.showPropertiesButton, SIGNAL(clicked()),
             this, SLOT(togglePropertyBrowser()));
-    togglePropertyBrowser();
+    setPropertyBrowserVisible(false);
 
     QIcon upIcon = createIconSet(QString::fromUtf8("up.png"));
     QIcon downIcon = createIconSet(QString::fromUtf8("down.png"));
@@ -417,15 +408,13 @@ void ItemListEditor::on_listWidget_itemChanged(QListWidgetItem *item)
 
 void ItemListEditor::togglePropertyBrowser()
 {
-    // Always hide in case parent widget is not visible -> on startup
-    const bool isVisible =
-            !this->isVisible() ? true : m_propertyBrowser->isVisible();
-    if (isVisible)
-        ui.showPropertiesButton->setText(tr("Properties &<<"));
-    else
-        ui.showPropertiesButton->setText(tr("Properties &>>"));
+    setPropertyBrowserVisible(!m_propertyBrowser->isVisible());
+}
 
-    m_propertyBrowser->setVisible(!isVisible);
+void ItemListEditor::setPropertyBrowserVisible(bool v)
+{
+    ui.showPropertiesButton->setText(v ? tr("Properties &>>") : tr("Properties &<<"));
+    m_propertyBrowser->setVisible(v);
 }
 
 void ItemListEditor::setItemData(int role, const QVariant &v)
@@ -484,6 +473,6 @@ void ItemListEditor::updateEditor()
     else
         m_propertyBrowser->clear();
 }
-}
+} // namespace qdesigner_internal
 
 QT_END_NAMESPACE

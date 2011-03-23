@@ -79,6 +79,8 @@ public:
 
     void setGeometry(const QRect &rect);
 
+    bool hasStaticContentsSupport() const;
+
     CFbsBitmap *symbianBitmap() const;
 
 private:
