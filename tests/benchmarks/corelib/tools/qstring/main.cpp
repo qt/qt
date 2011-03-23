@@ -1694,10 +1694,76 @@ void fromLatin1_neon_improved(ushort *dst, const char *str, int len)
     fromLatin1_epilog(dst, str, len);
 }
 
+void fromLatin1_neon_improved2(ushort *dst, const char *str, int len)
+{
+    while (len >= 16) {
+        // load 16 bytes into one quadword Neon register
+        const uint8x16_t chunk = vld1q_u8((uint8_t *)str);
+        str += 16;
+
+        // expand each doubleword of the quadword register into a quadword
+        const uint16x8_t expanded_low = vmovl_u8(vget_low_u8(chunk));
+        vst1q_u16(dst, expanded_low); // store
+        dst += 8;
+        const uint16x8_t expanded_high = vmovl_u8(vget_high_u8(chunk));
+        vst1q_u16(dst, expanded_high); // store
+        dst += 8;
+
+        len -= 16;
+    }
+
+    if (len >= 8) {
+        // load 8 bytes into one doubleword Neon register
+        const uint8x8_t chunk = vld1_u8((uint8_t *)str);
+        str += 8;
+
+        // expand 8 bytes into 16 bytes in a quadword register
+        const uint16x8_t expanded = vmovl_u8(chunk);
+        vst1q_u16(dst, expanded); // store
+        dst += 8;
+
+        len -= 8;
+    }
+    fromLatin1_epilog(dst, str, len);
+}
+
 void fromLatin1_neon_handwritten(ushort *dst, const char *str, int len)
 {
     // same as above, but handwritten Neon
     while (len >= 8) {
+        uint16x8_t chunk;
+        asm (
+            "vld1.8     %[chunk], [%[str]]!\n"
+            "vmovl.u8   %q[chunk], %[chunk]\n"
+            "vst1.16    %h[chunk], [%[dst]]!\n"
+            : [dst] "+r" (dst),
+              [str] "+r" (str),
+              [chunk] "=w" (chunk));
+        len -= 8;
+    }
+
+    fromLatin1_epilog(dst, str, len);
+}
+
+void fromLatin1_neon_handwritten2(ushort *dst, const char *str, int len)
+{
+    // same as above, but handwritten Neon
+    while (len >= 16) {
+        uint16x8_t chunk1, chunk2;
+        asm (
+            "vld1.8     %h[chunk1], [%[str]]!\n"
+            "vmovl.u8   %q[chunk2], %f[chunk1]\n"
+            "vmovl.u8   %q[chunk1], %e[chunk1]\n"
+            "vst1.16    %h[chunk1], [%[dst]]!\n"
+            "vst1.16    %h[chunk2], [%[dst]]!\n"
+          : [dst] "+r" (dst),
+            [str] "+r" (str),
+            [chunk1] "=w" (chunk1),
+            [chunk2] "=w" (chunk2));
+        len -= 16;
+    }
+
+    if (len >= 8) {
         uint16x8_t chunk;
         asm (
             "vld1.8     %[chunk], [%[str]]!\n"
@@ -1731,7 +1797,9 @@ void tst_QString::fromLatin1Alternatives_data() const
 #endif
 #ifdef __ARM_NEON__
     QTest::newRow("neon-improved") << &fromLatin1_neon_improved;
+    QTest::newRow("neon-improved2") << &fromLatin1_neon_improved2;
     QTest::newRow("neon-handwritten") << &fromLatin1_neon_handwritten;
+    QTest::newRow("neon-handwritten2") << &fromLatin1_neon_handwritten2;
 #endif
 }
 
