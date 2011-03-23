@@ -3076,65 +3076,147 @@ void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx
         blend(current, spans, &s->penData);
 }
 
-void QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
+bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
                                           const QFixedPoint *positions, QFontEngine *fontEngine)
 {
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
 
-    QFontEngineGlyphCache::Type glyphType = fontEngine->glyphFormat >= 0 ? QFontEngineGlyphCache::Type(fontEngine->glyphFormat) : d->glyphCacheType;
+#if !defined(QT_NO_FREETYPE)
+    if (fontEngine->type() == QFontEngine::Freetype) {
+        QFontEngineFT *fe = static_cast<QFontEngineFT *>(fontEngine);
+        QFontEngineFT::GlyphFormat neededFormat = fe->defaultGlyphFormat();
 
-    QImageTextureGlyphCache *cache =
-        static_cast<QImageTextureGlyphCache *>(fontEngine->glyphCache(0, glyphType, s->matrix));
-    if (!cache) {
-        cache = new QImageTextureGlyphCache(glyphType, s->matrix);
-        fontEngine->setGlyphCache(0, cache);
+        if (d_func()->mono_surface
+            || fe->isBitmapFont() // alphaPenBlt can handle mono, too
+            )
+            neededFormat = QFontEngineFT::Format_Mono;
+
+        if (neededFormat == QFontEngineFT::Format_None)
+            neededFormat = QFontEngineFT::Format_A8;
+
+        QFontEngineFT::QGlyphSet *gset = fe->defaultGlyphs();
+        if (s->matrix.type() >= QTransform::TxScale) {
+            if (s->matrix.isAffine())
+                gset = fe->loadTransformedGlyphSet(s->matrix);
+            else
+                gset = 0;
+        }
+
+        if (!gset || gset->outline_drawing
+            || !fe->loadGlyphs(gset, glyphs, numGlyphs, positions, neededFormat))
+            return false;
+
+        FT_Face lockedFace = 0;
+
+        int depth;
+        switch (neededFormat) {
+        case QFontEngineFT::Format_Mono:
+            depth = 1;
+            break;
+        case QFontEngineFT::Format_A8:
+            depth = 8;
+            break;
+        case QFontEngineFT::Format_A32:
+            depth = 32;
+            break;
+        default:
+            Q_ASSERT(false);
+            depth = 0;
+        };
+
+        for (int i = 0; i < numGlyphs; i++) {
+            QFixed spp = fe->subPixelPositionForX(positions[i].x);
+            QFontEngineFT::Glyph *glyph = gset->getGlyph(glyphs[i], spp);
+
+            if (!glyph || glyph->format != neededFormat) {
+                if (!lockedFace)
+                    lockedFace = fe->lockFace();
+                glyph = fe->loadGlyph(gset, glyphs[i], spp, neededFormat);
+            }
+
+            if (!glyph || !glyph->data)
+                continue;
+
+            int pitch;
+            switch (neededFormat) {
+            case QFontEngineFT::Format_Mono:
+                pitch = ((glyph->width + 31) & ~31) >> 3;
+                break;
+            case QFontEngineFT::Format_A8:
+                pitch = (glyph->width + 3) & ~3;
+                break;
+            case QFontEngineFT::Format_A32:
+                pitch = glyph->width * 4;
+                break;
+            default:
+                Q_ASSERT(false);
+                pitch = 0;
+            };
+
+            alphaPenBlt(glyph->data, pitch, depth,
+                        qFloor(positions[i].x) + glyph->x,
+                        qFloor(positions[i].y) - glyph->y,
+                        glyph->width, glyph->height);
+        }
+        if (lockedFace)
+            fe->unlockFace();
+    } else
+#endif
+    {
+        QFontEngineGlyphCache::Type glyphType = fontEngine->glyphFormat >= 0 ? QFontEngineGlyphCache::Type(fontEngine->glyphFormat) : d->glyphCacheType;
+
+        QImageTextureGlyphCache *cache =
+            static_cast<QImageTextureGlyphCache *>(fontEngine->glyphCache(0, glyphType, s->matrix));
+        if (!cache) {
+            cache = new QImageTextureGlyphCache(glyphType, s->matrix);
+            fontEngine->setGlyphCache(0, cache);
+        }
+
+        cache->populate(fontEngine, numGlyphs, glyphs, positions);
+        cache->fillInPendingGlyphs();
+
+        const QImage &image = cache->image();
+        int bpl = image.bytesPerLine();
+
+        int depth = image.depth();
+        int rightShift = 0;
+        int leftShift = 0;
+        if (depth == 32)
+            leftShift = 2; // multiply by 4
+        else if (depth == 1)
+            rightShift = 3; // divide by 8
+
+        int margin = cache->glyphMargin();
+
+        bool supportsSubPixelPositions = fontEngine->supportsSubPixelPositions();
+
+        const uchar *bits = image.bits();
+        for (int i=0; i<numGlyphs; ++i) {
+
+            QFixed subPixelPosition;
+            if (supportsSubPixelPositions)
+                subPixelPosition = cache->subPixelPositionForX(positions[i].x);
+            QTextureGlyphCache::GlyphAndSubPixelPosition glyph(glyphs[i], subPixelPosition);
+            const QTextureGlyphCache::Coord &c = cache->coords[glyph];
+            if (c.isNull())
+                continue;
+
+            int x = qFloor(positions[i].x) + c.baseLineX - margin;
+            int y = qFloor(positions[i].y) - c.baseLineY - margin;
+
+            // printf("drawing [%d %d %d %d] baseline [%d %d], glyph: %d, to: %d %d, pos: %d %d\n",
+            //        c.x, c.y,
+            //        c.w, c.h,
+            //        c.baseLineX, c.baseLineY,
+            //        glyphs[i],
+            //        x, y,
+            //        positions[i].x.toInt(), positions[i].y.toInt());
+
+            alphaPenBlt(bits + ((c.x << leftShift) >> rightShift) + c.y * bpl, bpl, depth, x, y, c.w, c.h);
+        }
     }
-
-    cache->populate(fontEngine, numGlyphs, glyphs, positions);
-    cache->fillInPendingGlyphs();
-
-    const QImage &image = cache->image();
-    int bpl = image.bytesPerLine();
-
-    int depth = image.depth();
-    int rightShift = 0;
-    int leftShift = 0;
-    if (depth == 32)
-        leftShift = 2; // multiply by 4
-    else if (depth == 1)
-        rightShift = 3; // divide by 8
-
-    int margin = cache->glyphMargin();
-
-    bool supportsSubPixelPositions = fontEngine->supportsSubPixelPositions();
-
-    const uchar *bits = image.bits();
-    for (int i=0; i<numGlyphs; ++i) {
-
-        QFixed subPixelPosition;
-        if (supportsSubPixelPositions)
-            subPixelPosition = cache->subPixelPositionForX(positions[i].x);
-        QTextureGlyphCache::GlyphAndSubPixelPosition glyph(glyphs[i], subPixelPosition);
-        const QTextureGlyphCache::Coord &c = cache->coords[glyph];
-        if (c.isNull())
-            continue;
-
-        int x = qFloor(positions[i].x) + c.baseLineX - margin;
-        int y = qFloor(positions[i].y) - c.baseLineY - margin;
-
-//         printf("drawing [%d %d %d %d] baseline [%d %d], glyph: %d, to: %d %d, pos: %d %d\n",
-//                c.x, c.y,
-//                c.w, c.h,
-//                c.baseLineX, c.baseLineY,
-//                glyphs[i],
-//                x, y,
-//                positions[i].x.toInt(), positions[i].y.toInt());
-
-        alphaPenBlt(bits + ((c.x << leftShift) >> rightShift) + c.y * bpl, bpl, depth, x, y, c.w, c.h);
-    }
-
-    return;
+    return true;
 }
 
 #if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
@@ -3445,92 +3527,10 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     if (glyphs.size() == 0)
         return;
 
-    // only use subpixel antialiasing when drawing to widgets
-    QFontEngineFT::GlyphFormat neededFormat =
-        painter()->device()->devType() == QInternal::Widget
-        ? fe->defaultGlyphFormat()
-        : QFontEngineFT::Format_A8;
-
-    if (d_func()->mono_surface
-        || fe->isBitmapFont() // alphaPenBlt can handle mono, too
-        )
-        neededFormat = QFontEngineFT::Format_Mono;
-
-    if (neededFormat == QFontEngineFT::Format_None)
-        neededFormat = QFontEngineFT::Format_A8;
-
-    QFontEngineFT::QGlyphSet *gset = fe->defaultGlyphs();
-    if (s->matrix.type() >= QTransform::TxScale) {
-        if (s->matrix.isAffine())
-            gset = fe->loadTransformedGlyphSet(s->matrix);
-        else
-            gset = 0;
-
-    }
-
-    if (!gset || gset->outline_drawing
-        || !fe->loadGlyphs(gset, glyphs.data(), glyphs.size(), positions, neededFormat))
-    {
+    if (!drawCachedGlyphs(glyphs.size(), glyphs.constData(), positions.constData(), ti.fontEngine))
         QPaintEngine::drawTextItem(p, ti);
-        return;
-    }
 
-    FT_Face lockedFace = 0;
-
-    int depth;
-    switch (neededFormat) {
-    case QFontEngineFT::Format_Mono:
-        depth = 1;
-        break;
-    case QFontEngineFT::Format_A8:
-        depth = 8;
-        break;
-    case QFontEngineFT::Format_A32:
-        depth = 32;
-        break;
-    default:
-        Q_ASSERT(false);
-        depth = 0;
-    };
-
-    for(int i = 0; i < glyphs.size(); i++) {
-        QFixed spp = fe->subPixelPositionForX(positions[i].x);
-        QFontEngineFT::Glyph *glyph = gset->getGlyph(glyphs[i], spp);
-
-        if (!glyph || glyph->format != neededFormat) {
-            if (!lockedFace)
-                lockedFace = fe->lockFace();
-            glyph = fe->loadGlyph(gset, glyphs[i], spp, neededFormat);
-        }
-
-        if (!glyph || !glyph->data)
-            continue;
-
-        int pitch;
-        switch (neededFormat) {
-        case QFontEngineFT::Format_Mono:
-            pitch = ((glyph->width + 31) & ~31) >> 3;
-            break;
-        case QFontEngineFT::Format_A8:
-            pitch = (glyph->width + 3) & ~3;
-            break;
-        case QFontEngineFT::Format_A32:
-            pitch = glyph->width * 4;
-            break;
-        default:
-            Q_ASSERT(false);
-            pitch = 0;
-        };
-
-        alphaPenBlt(glyph->data, pitch, depth,
-                    qFloor(positions[i].x) + glyph->x,
-                    qFloor(positions[i].y) - glyph->y,
-                    glyph->width, glyph->height);
-    }
-    if (lockedFace)
-        fe->unlockFace();
     return;
-
 #endif
 #endif
 

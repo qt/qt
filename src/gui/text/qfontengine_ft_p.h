@@ -254,7 +254,7 @@ private:
     virtual glyph_metrics_t boundingBox(glyph_t glyph, const QTransform &matrix);
 
     virtual void recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags flags) const;
-    virtual QImage alphaMapForGlyph(glyph_t);
+    virtual QImage alphaMapForGlyph(glyph_t, QFixed);
     virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
     virtual glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, const QTransform &matrix,
                                                 QFontEngine::GlyphFormat format);
@@ -286,8 +286,8 @@ private:
 
     QGlyphSet *loadTransformedGlyphSet(const QTransform &matrix);
     QFixed subPixelPositionForX(QFixed x);
-    bool loadGlyphs(QGlyphSet *gs, glyph_t *glyphs, int num_glyphs,
-                    QVarLengthArray<QFixedPoint> &positions,
+    bool loadGlyphs(QGlyphSet *gs, const glyph_t *glyphs, int num_glyphs,
+                    const QFixedPoint *positions,
                     GlyphFormat format = Format_Render);
 
 #if defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)

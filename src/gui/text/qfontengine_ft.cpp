@@ -944,7 +944,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     FT_Face face = freetype->face;
 
     FT_Vector v;
-    v.x = FT_Pos((subPixelPosition).toReal() * 64);
+    v.x = format == Format_Mono ? 0 : FT_Pos(subPixelPosition.toReal() * 64);
     v.y = 0;
     FT_Set_Transform(face, &freetype->matrix, &v);
 
@@ -1049,7 +1049,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
 
     int hpixels = TRUNC(right - left);
     // subpixel position requires one more pixel
-    if (subPixelPosition > 0)
+    if (subPixelPosition > 0 && format != Format_Mono)
         hpixels++;
 
     if (hsubpixel)
@@ -1440,8 +1440,8 @@ QFixed QFontEngineFT::subPixelPositionForX(QFixed x)
     return subPixelPosition;
 }
 
-bool QFontEngineFT::loadGlyphs(QGlyphSet *gs, glyph_t *glyphs, int num_glyphs,
-                               QVarLengthArray<QFixedPoint> &positions,
+bool QFontEngineFT::loadGlyphs(QGlyphSet *gs, const glyph_t *glyphs, int num_glyphs,
+                               const QFixedPoint *positions,
                                GlyphFormat format)
 {
     FT_Face face = 0;
@@ -1866,16 +1866,16 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, const QTransfo
     return overall;
 }
 
-QImage QFontEngineFT::alphaMapForGlyph(glyph_t g)
+QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition)
 {
     lockFace();
 
     GlyphFormat glyph_format = antialias ? Format_A8 : Format_Mono;
 
-    Glyph *glyph = defaultGlyphSet.outline_drawing ? 0 : loadGlyph(g, 0, glyph_format);
+    Glyph *glyph = defaultGlyphSet.outline_drawing ? 0 : loadGlyph(g, subPixelPosition, glyph_format);
     if (!glyph) {
         unlockFace();
-        return QFontEngine::alphaMapForGlyph(g);
+        return QFontEngine::alphaMapForGlyph(g, subPixelPosition);
     }
 
     const int pitch = antialias ? (glyph->width + 3) & ~3 : ((glyph->width + 31)/32) * 4;

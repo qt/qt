@@ -2385,7 +2385,7 @@ void QX11PaintEngine::drawFreetype(const QPointF &p, const QTextItemInt &ti)
         set = ft->loadTransformedGlyphSet(d->matrix);
 
     if (!set || set->outline_drawing
-        || !ft->loadGlyphs(set, glyphs.data(), glyphs.size(), positions, QFontEngineFT::Format_Render))
+        || !ft->loadGlyphs(set, glyphs.constData(), glyphs.size(), positions.constData(), QFontEngineFT::Format_Render))
     {
         QPaintEngine::drawTextItem(p, ti);
         return;
