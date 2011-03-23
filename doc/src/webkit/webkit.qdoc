@@ -94,10 +94,10 @@ technologies to create mobile applications with QtWebKit.
 
 Contents:
 \list
-\o \l{Level 3 CSS}{Level 3 CSS: media queries, selectors, visual
+\o \l{QtWebKit Guide - Level 3 CSS}{Level 3 CSS: media queries, selectors, visual
 effects, transforms, transitions, and animations}
 \o \l{Canvas Graphics}{HTML5 canvas element}
-\o \l{Client Storage}
+\o \l{QtWebKit Guide - Client Storage}{Client Storage}
 \endlist
 */
 

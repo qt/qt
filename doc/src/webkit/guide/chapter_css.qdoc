@@ -42,11 +42,11 @@
 
 \page qtwebkit-guide-css.html
 
-\title Level 3 CSS
+\title QtWebKit Guide - Level 3 CSS
 
 \chapter Level 3 CSS
-This section of the Qt WebKit Guide serves as an introduction to various Level 3 CSS features
-supported by QtWebKit:
+This section of the \l{QtWebKit Guide} serves as an introduction to various
+Level 3 CSS features supported by QtWebKit:
 
 \list
 
@@ -1504,6 +1504,10 @@ examples provided here illustrate some CSS-only alternatives.
     manipulate a series of panels. Separate \c{-webkit-animation-delay} settings
     for each panel control the sequence of each presentation.
 
+
+\list
+\o \l{QtWebKit Guide} -back to the main page
+\endlist
 */
 
 /*!

@@ -218,7 +218,7 @@
 */
 
 /*!
-\externalpage webkit-webkit-guide-js-anim-accord-js.html
+\externalpage wwebkit-webkit-guide-js-anim-accord-js.html
 \title anim_accord_js
 */
 
@@ -343,12 +343,12 @@
 */
 
 /*!
-\externalpage webkit-webkit-guide-css-css3-mask-grad-css.html
+\externalpage webkit-guide/css/webkit-webkit-guide-css-css3-mask-grad-css.html
 \title css3_mask-grad_css
 */
 
 /*!
-\externalpage webkit-webkit-guide-js-css3-mask-grad-js.html
+\externalpage webkit-guide/js/webkit-webkit-guide-js-css3-mask-grad-js.html
 \title css3_mask-grad_js
 */
 
@@ -455,6 +455,34 @@
 /*!
 \externalpage http://www.w3.org/TR/selectors-api/
 \title Selectors API
-
 */
 
+/*!
+\externalpage http://dev.w3.org/html5/webstorage/
+\title HTML5 Web Storage
+*/
+
+/*!
+\externalpage http://html5doctor.com/introducing-web-sql-databases
+\title HTML5 Doctor: Introducing Web SQL Databases
+*/
+
+/*!
+\externalpage http://dev.w3.org/html5/canvas-api/canvas-2d-api.html
+\title HTML5 Canvas API
+*/
+
+/*!
+\externalpage http://www.w3schools.com/css/css_colors.asp
+\title CSS Color Value
+*/
+
+/*!
+\externalpage http://www.w3.org/TR/2003/CR-css3-color-20030514/#numerical
+\title CSS3 Color Module specification
+*/
+
+/*!
+\externalpage http://www.canvasdemos.com/2009/10/09/html-5-canvas-animation
+\title CanvasDemos.com: animated cartoon
+*/
