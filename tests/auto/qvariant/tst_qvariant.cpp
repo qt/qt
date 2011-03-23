@@ -275,6 +275,8 @@ private slots:
     void variantInVariant();
 
     void colorInteger();
+
+    void forwardDeclare();
 };
 
 Q_DECLARE_METATYPE(QDate)
@@ -3438,6 +3440,17 @@ void tst_QVariant::colorInteger()
     QCOMPARE(v.type(), QVariant::Color);
     QCOMPARE(v.value<QColor>(), QColor(Qt::yellow));
 }
+
+class Forward;
+Q_DECLARE_METATYPE(Forward*);
+
+void tst_QVariant::forwardDeclare()
+{
+    Forward *f = 0;
+    QVariant v = QVariant::fromValue(f);
+    QCOMPARE(qvariant_cast<Forward*>(v), f);
+}
+
 
 QTEST_MAIN(tst_QVariant)
 #include "tst_qvariant.moc"
