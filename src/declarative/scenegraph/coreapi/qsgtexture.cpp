@@ -43,6 +43,11 @@
 
 #include "qsgtexture_p.h"
 
+#ifdef Q_WS_WIN
+#include <private/qglextensions_p.h>
+#include <private/qgl_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QSGTexturePrivate::QSGTexturePrivate()
