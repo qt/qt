@@ -60,6 +60,7 @@ QSGImageTextureProvider::QSGImageTextureProvider(QObject *parent)
 void QSGImageTextureProvider::setImage(const QImage &image)
 {
     tex = QSGContext::current->createTexture(image);
+    setOpaque(!image.hasAlphaChannel());
     emit textureChanged();
 }
 
@@ -212,14 +213,20 @@ Node *QSGImage::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
     if (!node) { 
         d->pixmapChanged = true;
         node = QSGContext::current->createTextureNode();
-        d->textureProvider->tex = d->pix.texture();
+        QSGTextureRef t = d->pix.texture();
+        d->textureProvider->tex = t;
+        if (!t.isNull())
+            d->textureProvider->setOpaque(!t->hasAlphaChannel());
         node->setTexture(d->textureProvider);
     }
 
     if (d->pixmapChanged) {
         // force update the texture in the node to trigger reconstruction of
         // geometry and the likes when a atlas segment has changed.
-        d->textureProvider->tex = d->pix.texture();
+        QSGTextureRef t = d->pix.texture();
+        d->textureProvider->tex = t;
+        if (!t.isNull())
+            d->textureProvider->setOpaque(!t->hasAlphaChannel());
         node->setTexture(0);
         node->setTexture(d->textureProvider);
         d->pixmapChanged = false;
