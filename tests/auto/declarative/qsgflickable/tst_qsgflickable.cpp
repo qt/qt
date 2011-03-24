@@ -45,7 +45,6 @@
 #include <QtDeclarative/qsgview.h>
 #include <private/qsgflickable_p.h>
 #include <private/qdeclarativevaluetype_p.h>
-#include <QtGui/qgraphicswidget.h>
 #include <math.h>
 #include "../../../shared/util.h"
 
@@ -72,11 +71,8 @@ private slots:
     void disabledContent();
     void nestedPressDelay();
     void flickableDirection();
-    void qgraphicswidget();
     void resizeContent();
     void returnToBounds();
-    void testQtQuick11Attributes();
-    void testQtQuick11Attributes_data();
     void wheel();
 
 private:
@@ -171,7 +167,7 @@ void tst_qsgflickable::properties()
 void tst_qsgflickable::boundsBehavior()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import QtQuick 1.0; Flickable { boundsBehavior: Flickable.StopAtBounds }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 2.0; Flickable { boundsBehavior: Flickable.StopAtBounds }", QUrl::fromLocalFile(""));
     QSGFlickable *flickable = qobject_cast<QSGFlickable*>(component.create());
     QSignalSpy spy(flickable, SIGNAL(boundsBehaviorChanged()));
 
@@ -200,7 +196,7 @@ void tst_qsgflickable::boundsBehavior()
 void tst_qsgflickable::maximumFlickVelocity()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import QtQuick 1.0; Flickable { maximumFlickVelocity: 1.0; }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 2.0; Flickable { maximumFlickVelocity: 1.0; }", QUrl::fromLocalFile(""));
     QSGFlickable *flickable = qobject_cast<QSGFlickable*>(component.create());
     QSignalSpy spy(flickable, SIGNAL(maximumFlickVelocityChanged()));
 
@@ -217,7 +213,7 @@ void tst_qsgflickable::maximumFlickVelocity()
 void tst_qsgflickable::flickDeceleration()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import QtQuick 1.0; Flickable { flickDeceleration: 1.0; }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 2.0; Flickable { flickDeceleration: 1.0; }", QUrl::fromLocalFile(""));
     QSGFlickable *flickable = qobject_cast<QSGFlickable*>(component.create());
     QSignalSpy spy(flickable, SIGNAL(flickDecelerationChanged()));
 
@@ -234,7 +230,7 @@ void tst_qsgflickable::flickDeceleration()
 void tst_qsgflickable::pressDelay()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import QtQuick 1.0; Flickable { pressDelay: 100; }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 2.0; Flickable { pressDelay: 100; }", QUrl::fromLocalFile(""));
     QSGFlickable *flickable = qobject_cast<QSGFlickable*>(component.create());
     QSignalSpy spy(flickable, SIGNAL(pressDelayChanged()));
 
@@ -263,24 +259,24 @@ void tst_qsgflickable::disabledContent()
     QVERIFY(flickable->contentX() == 0);
     QVERIFY(flickable->contentY() == 0);
 
-    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(50, 50)));
+    QTest::mousePress(canvas, Qt::LeftButton, 0, QPoint(50, 50));
     {
-        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(70,70)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas->viewport(), &mv);
+        QMouseEvent mv(QEvent::MouseMove, QPoint(70,70), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas, &mv);
     }
     {
-        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(90,90)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas->viewport(), &mv);
+        QMouseEvent mv(QEvent::MouseMove, QPoint(90,90), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas, &mv);
     }
     {
-        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(100,100)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas->viewport(), &mv);
+        QMouseEvent mv(QEvent::MouseMove, QPoint(100,100), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas, &mv);
     }
 
     QVERIFY(flickable->contentX() < 0);
     QVERIFY(flickable->contentY() < 0);
 
-    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(90, 90)));
+    QTest::mouseRelease(canvas, Qt::LeftButton, 0, QPoint(90, 90));
 
     delete canvas;
 }
@@ -301,7 +297,7 @@ void tst_qsgflickable::nestedPressDelay()
     QSGFlickable *inner = canvas->rootObject()->findChild<QSGFlickable*>("innerFlickable");
     QVERIFY(inner != 0);
 
-    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(150, 150)));
+    QTest::mousePress(canvas, Qt::LeftButton, 0, QPoint(150, 150));
     // the MouseArea is not pressed immediately
     QVERIFY(outer->property("pressed").toBool() == false);
 
@@ -309,7 +305,7 @@ void tst_qsgflickable::nestedPressDelay()
     // QTRY_VERIFY() has 5sec timeout, so will timeout well within 10sec.
     QTRY_VERIFY(outer->property("pressed").toBool() == true);
 
-    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(150, 150)));
+    QTest::mouseRelease(canvas, Qt::LeftButton, 0, QPoint(150, 150));
 
     delete canvas;
 }
@@ -317,7 +313,7 @@ void tst_qsgflickable::nestedPressDelay()
 void tst_qsgflickable::flickableDirection()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import QtQuick 1.0; Flickable { flickableDirection: Flickable.VerticalFlick; }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 2.0; Flickable { flickableDirection: Flickable.VerticalFlick; }", QUrl::fromLocalFile(""));
     QSGFlickable *flickable = qobject_cast<QSGFlickable*>(component.create());
     QSignalSpy spy(flickable, SIGNAL(flickableDirectionChanged()));
 
@@ -339,17 +335,6 @@ void tst_qsgflickable::flickableDirection()
     flickable->setFlickableDirection(QSGFlickable::HorizontalFlick);
     QCOMPARE(flickable->flickableDirection(), QSGFlickable::HorizontalFlick);
     QCOMPARE(spy.count(),3);
-}
-
-void tst_qsgflickable::qgraphicswidget()
-{
-    QDeclarativeEngine engine;
-    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/flickableqgraphicswidget.qml"));
-    QSGFlickable *flickable = qobject_cast<QSGFlickable*>(c.create());
-
-    QVERIFY(flickable != 0);
-    QGraphicsWidget *widget = findItem<QGraphicsWidget>(flickable->contentItem(), "widget1");
-    QVERIFY(widget);
 }
 
 // QtQuick 1.1
@@ -403,46 +388,6 @@ void tst_qsgflickable::returnToBounds()
     delete root;
 }
 
-void tst_qsgflickable::testQtQuick11Attributes()
-{
-    QFETCH(QString, code);
-    QFETCH(QString, warning);
-    QFETCH(QString, error);
-
-    QDeclarativeEngine engine;
-    QObject *obj;
-
-    QDeclarativeComponent invalid(&engine);
-    invalid.setData("import QtQuick 1.0; Flickable { " + code.toUtf8() + " }", QUrl(""));
-    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
-    obj = invalid.create();
-    QCOMPARE(invalid.errorString(), error);
-    delete obj;
-
-    QDeclarativeComponent valid(&engine);
-    valid.setData("import QtQuick 1.1; Flickable { " + code.toUtf8() + " }", QUrl(""));
-    obj = valid.create();
-    QVERIFY(obj);
-    QVERIFY(valid.errorString().isEmpty());
-    delete obj;
-}
-
-void tst_qsgflickable::testQtQuick11Attributes_data()
-{
-    QTest::addColumn<QString>("code");
-    QTest::addColumn<QString>("warning");
-    QTest::addColumn<QString>("error");
-
-    QTest::newRow("resizeContent") << "Component.onCompleted: resizeContent(100,100,Qt.point(50,50))"
-            << "<Unknown File>:1: ReferenceError: Can't find variable: resizeContent"
-            << "";
-
-    QTest::newRow("returnToBounds") << "Component.onCompleted: returnToBounds()"
-            << "<Unknown File>:1: ReferenceError: Can't find variable: returnToBounds"
-            << "";
-
-}
-
 void tst_qsgflickable::wheel()
 {
     QSGView *canvas = new QSGView;
@@ -454,13 +399,11 @@ void tst_qsgflickable::wheel()
     QSGFlickable *flick = canvas->rootObject()->findChild<QSGFlickable*>("flick");
     QVERIFY(flick != 0);
 
-    QGraphicsScene *scene = canvas->scene();
-    QGraphicsSceneWheelEvent event(QEvent::GraphicsSceneWheel);
-    event.setScenePos(QPointF(200, 200));
-    event.setDelta(-120);
-    event.setOrientation(Qt::Vertical);
-    event.setAccepted(false);
-    QApplication::sendEvent(scene, &event);
+    {
+        QWheelEvent event(QPoint(200, 200), -120, Qt::NoButton, Qt::NoModifier, Qt::Vertical);
+        event.setAccepted(false);
+        QApplication::sendEvent(canvas, &event);
+    }
 
     QTRY_VERIFY(flick->contentY() > 0);
     QVERIFY(flick->contentX() == 0);
@@ -468,11 +411,11 @@ void tst_qsgflickable::wheel()
     flick->setContentY(0);
     QVERIFY(flick->contentY() == 0);
 
-    event.setScenePos(QPointF(200, 200));
-    event.setDelta(-120);
-    event.setOrientation(Qt::Horizontal);
-    event.setAccepted(false);
-    QApplication::sendEvent(scene, &event);
+    {
+        QWheelEvent event(QPoint(200, 200), -120, Qt::NoButton, Qt::NoModifier, Qt::Horizontal);
+        event.setAccepted(false);
+        QApplication::sendEvent(canvas, &event);
+    }
 
     QTRY_VERIFY(flick->contentX() > 0);
     QVERIFY(flick->contentY() == 0);
