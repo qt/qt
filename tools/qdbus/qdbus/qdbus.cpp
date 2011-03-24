@@ -50,6 +50,10 @@
 #include <QtDBus/QtDBus>
 #include <private/qdbusutil_p.h>
 
+QT_BEGIN_NAMESPACE
+Q_DBUS_EXPORT extern bool qt_dbus_metaobject_skip_annotations;
+QT_END_NAMESPACE
+
 static QDBusConnection connection(QLatin1String(""));
 static bool printArgumentsLiterally = false;
 
@@ -99,7 +103,7 @@ static void printArg(const QVariant &v)
         else if (arg.currentSignature() == QLatin1String("a{sv}"))
             printArg(qdbus_cast<QVariantMap>(arg));
         else
-            printf("qdbus: I don't know how to display an argument of type '%s'\n",
+            printf("qdbus: I don't know how to display an argument of type '%s', run with --literal.\n",
                    qPrintable(arg.currentSignature()));
     } else {
         printf("%s\n", qPrintable(v.toString()));
@@ -311,7 +315,11 @@ static int placeCall(const QString &service, const QString &path, const QString 
                 int id = QVariant::nameToType(types.at(i));
                 if (id == QVariant::UserType)
                     id = QMetaType::type(types.at(i));
-                Q_ASSERT(id);
+                if (!id) {
+                    fprintf(stderr, "Cannot call method '%s' because type '%s' is unknown to this tool\n",
+                            qPrintable(member), types.at(i).constData());
+                    return 1;
+                }
 
                 QVariant p;
                 QString argument;
@@ -435,6 +443,7 @@ static void printAllServices(QDBusConnectionInterface *bus)
 
 int main(int argc, char **argv)
 {
+    QT_PREPEND_NAMESPACE(qt_dbus_metaobject_skip_annotations) = true;
     QCoreApplication app(argc, argv);
     QStringList args = app.arguments();
     args.takeFirst();

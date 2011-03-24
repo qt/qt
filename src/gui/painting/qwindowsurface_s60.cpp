@@ -61,13 +61,10 @@ struct QS60WindowSurfacePrivate
     QList<QImage*> bufferImages;
 };
 
-QS60WindowSurface::QS60WindowSurface(QWidget* widget)
-    : QWindowSurface(widget), d_ptr(new QS60WindowSurfacePrivate)
+TDisplayMode displayMode(bool opaque)
 {
-
     TDisplayMode mode = S60->screenDevice()->DisplayMode();
-    bool isOpaque = qt_widget_private(widget)->isOpaque;
-    if (isOpaque) {
+    if (opaque) {
         mode = EColor16MU;
     } else  {
         if (QSysInfo::symbianVersion() >= QSysInfo::SV_SF_3)
@@ -75,7 +72,21 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
         else
             mode = EColor16MA; // Symbian prior to Symbian^3 sw accelerates EColor16MA
     }
+    return mode;
+}
 
+bool blitWriteAlpha(QWidgetPrivate *widgetPrivate)
+{
+    QWExtra *extra = widgetPrivate->extraData();
+    return extra ? extra->nativePaintMode == QWExtra::BlitWriteAlpha : false;
+}
+
+QS60WindowSurface::QS60WindowSurface(QWidget* widget)
+    : QWindowSurface(widget), d_ptr(new QS60WindowSurfacePrivate)
+{
+    QWidgetPrivate *widgetPrivate = qt_widget_private(widget);
+    const bool opaque = widgetPrivate->isOpaque && !blitWriteAlpha(widgetPrivate);
+    TDisplayMode mode = displayMode(opaque);
     // We create empty CFbsBitmap here -> it will be resized in setGeometry
     CFbsBitmap *bitmap = new CFbsBitmap;	// CBase derived object needs check on new
     Q_CHECK_PTR(bitmap);
@@ -86,8 +97,6 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
         data->fromSymbianBitmap(bitmap, true);
         d_ptr->device = QPixmap(data);
     }
-
-    setStaticContentsSupport(true);
 }
 
 QS60WindowSurface::~QS60WindowSurface()
@@ -120,16 +129,24 @@ void QS60WindowSurface::beginPaint(const QRegion &rgn)
     S60->wsSession().Finish();
 #endif
 
-    if (!qt_widget_private(window())->isOpaque) {
+    QWidgetPrivate *windowPrivate = qt_widget_private(window());
+    if (!windowPrivate->isOpaque || blitWriteAlpha(windowPrivate)) {
         QS60PixmapData *pixmapData = static_cast<QS60PixmapData *>(d_ptr->device.data_ptr().data());
+
+        TDisplayMode mode = displayMode(false);
+        if (pixmapData->cfbsBitmap->DisplayMode() != mode)
+            pixmapData->convertToDisplayMode(mode);
+
         pixmapData->beginDataAccess();
 
-        QPainter p(&pixmapData->image);
-        p.setCompositionMode(QPainter::CompositionMode_Source);
-        const QVector<QRect> rects = rgn.rects();
-        const QColor blank = Qt::transparent;
-        for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
-            p.fillRect(*it, blank);
+        if (!windowPrivate->isOpaque) {
+            QPainter p(&pixmapData->image);
+            p.setCompositionMode(QPainter::CompositionMode_Source);
+            const QVector<QRect> rects = rgn.rects();
+            const QColor blank = Qt::transparent;
+            for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
+                p.fillRect(*it, blank);
+            }
         }
 
         pixmapData->endDataAccess();
@@ -220,6 +237,11 @@ void QS60WindowSurface::setGeometry(const QRect& rect)
     data->resize(rect.width(), rect.height());
 
     QWindowSurface::setGeometry(rect);
+}
+
+bool QS60WindowSurface::hasStaticContentsSupport() const
+{
+    return true;
 }
 
 CFbsBitmap* QS60WindowSurface::symbianBitmap() const

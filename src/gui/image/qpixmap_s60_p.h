@@ -107,6 +107,8 @@ public:
     void* toNativeType(NativeType type);
     void fromNativeType(void* pixmap, NativeType type);
 
+    void convertToDisplayMode(int mode);
+
 private:
     void release();
     void fromSymbianBitmap(CFbsBitmap* bitmap, bool lockFormat=false);

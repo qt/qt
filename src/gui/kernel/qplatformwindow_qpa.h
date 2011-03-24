@@ -80,6 +80,7 @@ public:
     virtual void lower();
 
     virtual void setOpacity(qreal level);
+    virtual void requestActivateWindow();
 
     virtual QPlatformGLContext *glContext() const;
 protected:

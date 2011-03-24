@@ -156,13 +156,13 @@ protected:
 
 private:
     friend class QNetworkReplyImplPrivate;
+    friend class QNetworkAccessHttpBackend;
+
     Q_DECLARE_PRIVATE(QNetworkAccessManager)
     Q_PRIVATE_SLOT(d_func(), void _q_replyFinished())
     Q_PRIVATE_SLOT(d_func(), void _q_replySslErrors(QList<QSslError>))
 #if !defined(QT_NO_BEARERMANAGEMENT) && !defined(QT_MOBILITY_BEARER)
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionClosed())
-    Q_PRIVATE_SLOT(d_func(), void _q_networkSessionNewConfigurationActivated())
-    Q_PRIVATE_SLOT(d_func(), void _q_networkSessionPreferredConfigurationChanged(QNetworkConfiguration,bool))
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionStateChanged(QNetworkSession::State))
 #endif
 };

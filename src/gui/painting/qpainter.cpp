@@ -1126,14 +1126,14 @@ void QPainterPrivate::updateState(QPainterState *newState)
     the range of available patterns.
 
     \table
-    \row
-    \o \inlineimage qpainter-vectordeformation.png
-    \o \inlineimage qpainter-gradients.png
-    \o \inlineimage qpainter-pathstroking.png
     \header
     \o \l {demos/deform}{Vector Deformation}
     \o \l {demos/gradients}{Gradients}
     \o \l {demos/pathstroke}{Path Stroking}
+    \row
+    \o \inlineimage qpainter-vectordeformation.png
+    \o \inlineimage qpainter-gradients.png
+    \o \inlineimage qpainter-pathstroking.png
     \endtable
 
 
@@ -1206,13 +1206,13 @@ void QPainterPrivate::updateState(QPainterState *newState)
     coordinate transformations.
 
     \table
+    \header
+    \o  nop \o rotate() \o scale() \o translate()
     \row
     \o \inlineimage qpainter-clock.png
     \o \inlineimage qpainter-rotation.png
     \o \inlineimage qpainter-scale.png
     \o \inlineimage qpainter-translation.png
-    \header
-    \o  nop \o rotate() \o scale() \o translate()
     \endtable
 
     The most commonly used transformations are scaling, rotation,
@@ -9234,7 +9234,7 @@ void QPainter::drawPixmapFragments(const PixmapFragment *fragments, int fragment
     QPainter::drawPixmapFragments() function. The variables \a x, \a y, \a
     width and \a height are used to calculate the target rectangle that is
     drawn. \a x and \a y denotes the center of the target rectangle. The \a
-    width and \a heigth in the target rectangle is scaled by the \a scaleX and
+    width and \a height in the target rectangle is scaled by the \a scaleX and
     \a scaleY values. The resulting target rectangle is then rotated \a
     rotation degrees around the \a x, \a y center point.
 

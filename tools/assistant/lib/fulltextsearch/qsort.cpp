@@ -84,7 +84,7 @@ void QCLuceneSort::setSort(const QStringList &fieldNames)
 
     for (int i = 0; i < fieldNames.count(); ++i)
         delete [] nameArray[i];
-    delete nameArray;
+    delete [] nameArray;
 }
 
 void QCLuceneSort::setSort(const QString &field, bool reverse)

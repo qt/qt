@@ -181,15 +181,17 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format,bool /* 
     if (ok) {
         xshmimg->data = (char*)shmat(xshminfo.shmid, 0, 0);
         xshminfo.shmaddr = xshmimg->data;
-        if (shmctl(xshminfo.shmid, IPC_RMID, 0) == -1)
-            qWarning() << "Error while marking the shared memory segment to be destroyed";
         ok = (xshminfo.shmaddr != (char*)-1);
         if (ok)
             image = QImage((uchar *)xshmimg->data, width, height, format);
     }
     xshminfo.readOnly = false;
-    if (ok)
+    if (ok) {
         ok = XShmAttach(X11->display, &xshminfo);
+        XSync(X11->display, False);
+        if (shmctl(xshminfo.shmid, IPC_RMID, 0) == -1)
+            qWarning() << "Error while marking the shared memory segment to be destroyed";
+    }
     if (!ok) {
         qWarning() << "QNativeImage: Unable to attach to shared memory segment.";
         if (xshmimg->data) {

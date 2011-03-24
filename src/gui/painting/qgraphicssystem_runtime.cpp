@@ -285,6 +285,7 @@ void QRuntimeWindowSurface::flush(QWidget *widget, const QRegion &region,
 
 void QRuntimeWindowSurface::setGeometry(const QRect &rect)
 {
+    QWindowSurface::setGeometry(rect);
     m_windowSurface->setGeometry(rect);
 }
 
@@ -318,11 +319,20 @@ QPoint QRuntimeWindowSurface::offset(const QWidget *widget) const
     return m_windowSurface->offset(widget);
 }
 
+bool QRuntimeWindowSurface::hasStaticContentsSupport() const
+{
+    return m_windowSurface->hasStaticContentsSupport();
+}
+
+bool QRuntimeWindowSurface::hasPartialUpdateSupport() const
+{
+    return m_windowSurface->hasPartialUpdateSupport();
+}
+
 QRuntimeGraphicsSystem::QRuntimeGraphicsSystem()
     : m_windowSurfaceDestroyPolicy(DestroyImmediately),
       m_graphicsSystem(0)
 {
-    QApplicationPrivate::graphics_system_name = QLatin1String("runtime");
     QApplicationPrivate::runtime_graphics_system = true;
 
 #ifdef QT_DEFAULT_RUNTIME_SYSTEM
@@ -336,6 +346,8 @@ QRuntimeGraphicsSystem::QRuntimeGraphicsSystem()
 #endif
 
     m_graphicsSystem = QGraphicsSystemFactory::create(m_graphicsSystemName);
+
+    QApplicationPrivate::graphics_system_name = QLatin1String("runtime");
 }
 
 
@@ -392,7 +404,10 @@ void QRuntimeGraphicsSystem::setGraphicsSystem(const QString &name)
         if(m_windowSurfaceDestroyPolicy == DestroyAfterFirstFlush)
             proxy->m_pendingWindowSurface.reset(proxy->m_windowSurface.take());
 
-        proxy->m_windowSurface.reset(m_graphicsSystem->createWindowSurface(widget));
+        QWindowSurface *newWindowSurface = m_graphicsSystem->createWindowSurface(widget);
+        newWindowSurface->setGeometry(proxy->geometry());
+
+        proxy->m_windowSurface.reset(newWindowSurface);
         qt_widget_private(widget)->invalidateBuffer(widget->rect());
     }
 

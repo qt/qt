@@ -374,6 +374,8 @@ CFbsBitmap *QPixmap::toSymbianCFbsBitmap() const
     To be sure that QPixmap does not modify your original instance, you should
     make a copy of your \c CFbsBitmap before calling this function.
     If the CFbsBitmap is not valid this function will return a null QPixmap.
+    For performance reasons it is recommended to use a \a bitmap with a display
+    mode of EColor16MAP or EColor16MU whenever possible.
 
     \warning This function is only available on Symbian OS.
 
@@ -599,6 +601,9 @@ bool QS60PixmapData::scroll(int dx, int dy, const QRect &rect)
     return res;
 }
 
+Q_GUI_EXPORT int qt_defaultDpiX();
+Q_GUI_EXPORT int qt_defaultDpiY();
+
 int QS60PixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
     if (!cfbsBitmap)
@@ -609,28 +614,18 @@ int QS60PixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
         return cfbsBitmap->SizeInPixels().iWidth;
     case QPaintDevice::PdmHeight:
         return cfbsBitmap->SizeInPixels().iHeight;
-    case QPaintDevice::PdmWidthMM: {
-        TInt twips = cfbsBitmap->SizeInTwips().iWidth;
-        return (int)(twips * (25.4/KTwipsPerInch));
-    }
-    case QPaintDevice::PdmHeightMM: {
-        TInt twips = cfbsBitmap->SizeInTwips().iHeight;
-        return (int)(twips * (25.4/KTwipsPerInch));
-    }
+    case QPaintDevice::PdmWidthMM:
+        return qRound(cfbsBitmap->SizeInPixels().iWidth * 25.4 / qt_defaultDpiX());
+    case QPaintDevice::PdmHeightMM:
+        return qRound(cfbsBitmap->SizeInPixels().iHeight * 25.4 / qt_defaultDpiY());
     case QPaintDevice::PdmNumColors:
         return TDisplayModeUtils::NumDisplayModeColors(cfbsBitmap->DisplayMode());
     case QPaintDevice::PdmDpiX:
-    case QPaintDevice::PdmPhysicalDpiX: {
-        TReal inches = cfbsBitmap->SizeInTwips().iWidth / (TReal)KTwipsPerInch;
-        TInt pixels = cfbsBitmap->SizeInPixels().iWidth;
-        return pixels / inches;
-    }
+    case QPaintDevice::PdmPhysicalDpiX:
+        return qt_defaultDpiX();
     case QPaintDevice::PdmDpiY:
-    case QPaintDevice::PdmPhysicalDpiY: {
-        TReal inches = cfbsBitmap->SizeInTwips().iHeight / (TReal)KTwipsPerInch;
-        TInt pixels = cfbsBitmap->SizeInPixels().iHeight;
-        return pixels / inches;
-    }
+    case QPaintDevice::PdmPhysicalDpiY:
+        return qt_defaultDpiY();
     case QPaintDevice::PdmDepth:
         return TDisplayModeUtils::NumDisplayModeBitsPerPixel(cfbsBitmap->DisplayMode());
     default:
@@ -1010,6 +1005,33 @@ void QS60PixmapData::fromNativeType(void* pixmap, NativeType nativeType)
                 delete sourceBitmap;
         }
     }
+}
+
+void QS60PixmapData::convertToDisplayMode(int mode)
+{
+    const TDisplayMode displayMode = static_cast<TDisplayMode>(mode);
+    if (!cfbsBitmap || cfbsBitmap->DisplayMode() == displayMode)
+        return;
+    if (image.depth() != TDisplayModeUtils::NumDisplayModeBitsPerPixel(displayMode)) {
+        qWarning("Cannot convert display mode due to depth mismatch");
+        return;
+    }
+
+    const TSize size = cfbsBitmap->SizeInPixels();
+    QScopedPointer<CFbsBitmap> newBitmap(createSymbianCFbsBitmap(size, displayMode));
+
+    const uchar *sptr = const_cast<const QImage &>(image).bits();
+    symbianBitmapDataAccess->beginDataAccess(newBitmap.data());
+    uchar *dptr = (uchar*)newBitmap->DataAddress();
+    Mem::Copy(dptr, sptr, image.byteCount());
+    symbianBitmapDataAccess->endDataAccess(newBitmap.data());
+
+    QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
+    delete cfbsBitmap;
+    lock.relock();
+    cfbsBitmap = newBitmap.take();
+    setSerialNumber(cfbsBitmap->Handle());
+    UPDATE_BUFFER();
 }
 
 QPixmapData *QS60PixmapData::createCompatiblePixmapData() const

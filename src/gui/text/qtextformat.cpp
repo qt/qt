@@ -411,6 +411,9 @@ void QTextFormatPrivate::recalcFont() const
             case QTextFormat::FontStyleHint:
                 f.setStyleHint(static_cast<QFont::StyleHint>(props.at(i).value.toInt()), f.styleStrategy());
                 break;
+            case QTextFormat::FontHintingPreference:
+                f.setHintingPreference(static_cast<QFont::HintingPreference>(props.at(i).value.toInt()));
+                break;
             case QTextFormat::FontStyleStrategy:
                 f.setStyleStrategy(static_cast<QFont::StyleStrategy>(props.at(i).value.toInt()));
                 break;
@@ -541,6 +544,8 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \value TabPositions     Specifies the tab positions.  The tab positions are structs of QTextOption::Tab which are stored in
                             a QList (internally, in a QList<QVariant>).
     \value BlockIndent
+    \value LineHeight
+    \value LineHeightType
     \value BlockNonBreakableLines
     \value BlockTrailingHorizontalRulerWidth The width of a horizontal ruler element.
 
@@ -1563,6 +1568,25 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
     \sa font()
 */
 
+/*!
+    \since 4.8
+
+    \fn void QTextCharFormat::setFontHintingPreference(QFont::HintingPreference hintingPreference)
+
+    Sets the hinting preference of the text format's font to be \a hintingPreference.
+
+    \sa setFont(), QFont::setHintingPreference()
+*/
+
+/*!
+    \since 4.8
+
+    \fn QFont::HintingPreference QTextCharFormat::fontHintingPreference() const
+
+    Returns the hinting preference set for this text format.
+
+    \sa font(), QFont::hintingPreference()
+*/
 
 /*!
     \fn QPen QTextCharFormat::textOutline() const
@@ -1856,6 +1880,10 @@ QFont QTextCharFormat::font() const
     indentation is set with setIndent(), the indentation of the first
     line with setTextIndent().
 
+    Line spacing is set with setLineHeight() and retrieved via lineHeight()
+    and lineHeightType(). The types of line spacing available are in the
+    LineHeightTypes enum.
+
     Line breaking can be enabled and disabled with setNonBreakableLines().
 
     The brush used to paint the paragraph's background
@@ -1869,6 +1897,22 @@ QFont QTextCharFormat::font() const
     is accessible with the listFormat() function.
 
     \sa QTextBlock, QTextCharFormat
+*/
+
+/*!
+    \since 4.8
+    \enum QTextBlockFormat::LineHeightTypes
+
+    This enum describes the various types of line spacing support paragraphs can have.
+
+    \value SingleHeight This is the default line height: single spacing.
+    \value ProportionalHeight This sets the spacing proportional to the line (in percentage).
+                              For example, set to 200 for double spacing.
+    \value FixedHeight This sets the line height to a fixed line height (in pixels).
+    \value MinimumHeight This sets the minimum line height (in pixels).
+    \value LineDistanceHeight This adds the specified height between lines (in pixels).
+
+    \sa lineHeight(), lineHeightType(), setLineHeight()
 */
 
 /*!
@@ -2085,6 +2129,51 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     Returns the paragraph's indent.
 
     \sa setIndent()
+*/
+
+
+/*!
+    \fn void QTextBlockFormat::setLineHeight(qreal height, int heightType)
+    \since 4.8
+
+    This sets the line height for the paragraph to the value in height
+    which is dependant on heightType, described by the LineHeightTypes enum.
+
+    \sa LineHeightTypes, lineHeight(), lineHeightType()
+*/
+
+
+/*!
+    \fn qreal QTextBlockFormat::lineHeight(qreal scriptLineHeight, qreal scaling) const
+    \since 4.8
+
+    This returns what the height of the lines in the paragraph will be depending
+    on the given height of the script line and the scaling. The value that is returned
+    is also dependant on the given LineHeightType of the paragraph as well as the LineHeight
+    setting that has been set for the paragraph. The scaling is needed for the heights
+    that include a fixed number of pixels, to scale them appropriately for printing.
+
+    \sa LineHeightTypes, setLineHeight(), lineHeightType()
+*/
+
+
+/*!
+    \fn qreal QTextBlockFormat::lineHeight() const
+    \since 4.8
+
+    This returns the LineHeight property for the paragraph.
+
+    \sa LineHeightTypes, setLineHeight(), lineHeightType()
+*/
+
+
+/*!
+    \fn qreal QTextBlockFormat::lineHeightType() const
+    \since 4.8
+
+    This returns the LineHeightType property of the paragraph.
+
+    \sa LineHeightTypes, setLineHeight(), lineHeight()
 */
 
 

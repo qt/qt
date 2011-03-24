@@ -908,7 +908,7 @@ void QDateTimeEdit::setDisplayFormat(const QString &format)
 
 /*!
     \property QDateTimeEdit::calendarPopup
-    \brief the current calender pop-up showing mode.
+    \brief the current calendar pop-up showing mode.
     \since 4.2
 
     The calendar pop-up will be shown upon clicking the arrow button.

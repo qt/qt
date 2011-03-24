@@ -239,7 +239,7 @@ public:
 
 #ifndef QT_NO_COMPLETER
     QCompleter *completer() const { return m_completer; }
-    /* Note that you must set the widget for the completer seperately */
+    /* Note that you must set the widget for the completer separately */
     void setCompleter(const QCompleter *c) { m_completer = const_cast<QCompleter*>(c); }
     void complete(int key);
 #endif
@@ -425,6 +425,7 @@ Q_SIGNALS:
     void textEdited(const QString &);
 
     void resetInputContext();
+    void updateMicroFocus();
 
     void accepted();
     void editingFinished();

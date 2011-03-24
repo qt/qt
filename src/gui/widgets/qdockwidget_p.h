@@ -169,7 +169,7 @@ private:
     QRect _titleArea;
 };
 
-/* The size hints of a QDockWidget will depend on wether it is docked or not.
+/* The size hints of a QDockWidget will depend on whether it is docked or not.
    This layout item always returns the size hints as if the dock widget was docked. */
 
 class QDockWidgetItem : public QWidgetItem

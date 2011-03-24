@@ -41,9 +41,9 @@
 
     现在您已经编写了一些小型可用的应用程序，并对 Qt 编程有更加广泛的了解。您可以直接着手做自己的项目，但我们建议您阅读以下一些关键简介以加深您对 Qt 的了解：\l{Qt Object Model}Qt 对象模型}和\l{Signals and Slots}{信号和槽}。
 
-    \beginfloatleft
+    \div {float-left}
     \inlineimage qtdemo-small.png
-    \endfloat
+    \enddiv
 
     \section1 了解概况
 

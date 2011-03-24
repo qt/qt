@@ -48,8 +48,13 @@
 
 QT_BEGIN_NAMESPACE
 
+QDeclarativeImageBase::QDeclarativeImageBase(QDeclarativeItem *parent)
+  : QDeclarativeImplicitSizeItem(*(new QDeclarativeImageBasePrivate), parent)
+{
+}
+
 QDeclarativeImageBase::QDeclarativeImageBase(QDeclarativeImageBasePrivate &dd, QDeclarativeItem *parent)
-  : QDeclarativeItem(dd, parent)
+  : QDeclarativeImplicitSizeItem(dd, parent)
 {
 }
 
@@ -125,7 +130,45 @@ QSize QDeclarativeImageBase::sourceSize() const
 
     int width = d->sourcesize.width();
     int height = d->sourcesize.height();
-    return QSize(width != -1 ? width : implicitWidth(), height != -1 ? height : implicitHeight());
+    return QSize(width != -1 ? width : d->pix.width(), height != -1 ? height : d->pix.height());
+}
+
+bool QDeclarativeImageBase::cache() const
+{
+    Q_D(const QDeclarativeImageBase);
+    return d->cache;
+}
+
+void QDeclarativeImageBase::setCache(bool cache)
+{
+    Q_D(QDeclarativeImageBase);
+    if (d->cache == cache)
+        return;
+
+    d->cache = cache;
+    emit cacheChanged();
+    if (isComponentComplete())
+        load();
+}
+
+void QDeclarativeImageBase::setMirror(bool mirror)
+{
+    Q_D(QDeclarativeImageBase);
+    if (mirror == d->mirror)
+        return;
+
+    d->mirror = mirror;
+
+    if (isComponentComplete())
+        update();
+
+    emit mirrorChanged();
+}
+
+bool QDeclarativeImageBase::mirror() const
+{
+    Q_D(const QDeclarativeImageBase);
+    return d->mirror;
 }
 
 void QDeclarativeImageBase::load()
@@ -143,7 +186,12 @@ void QDeclarativeImageBase::load()
         pixmapChange();
         update();
     } else {
-        d->pix.load(qmlEngine(this), d->url, d->explicitSourceSize ? sourceSize() : QSize(), d->async);
+        QDeclarativePixmap::Options options;
+        if (d->async)
+            options |= QDeclarativePixmap::Asynchronous;
+        if (d->cache)
+            options |= QDeclarativePixmap::Cache;
+        d->pix.load(qmlEngine(this), d->url, d->explicitSourceSize ? sourceSize() : QSize(), options);
 
         if (d->pix.isLoading()) {
             d->progress = 0.0;

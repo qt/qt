@@ -963,9 +963,6 @@ bool QProcessPrivate::_q_canWrite()
         destroyPipe(stdinChannel.pipe);
         processError = QProcess::WriteError;
         q->setErrorString(QProcess::tr("Error writing to process"));
-#if defined(QPROCESS_DEBUG) && !defined(Q_OS_WINCE)
-        qDebug("QProcessPrivate::canWrite(), failed to write (%s)", strerror(errno));
-#endif
         emit q->error(processError);
         return false;
     }
@@ -974,11 +971,13 @@ bool QProcessPrivate::_q_canWrite()
     qDebug("QProcessPrivate::canWrite(), wrote %d bytes to the process input", int(written));
 #endif
 
-    writeBuffer.free(written);
-    if (!emittedBytesWritten) {
-        emittedBytesWritten = true;
-        emit q->bytesWritten(written);
-        emittedBytesWritten = false;
+    if (written != 0) {
+        writeBuffer.free(written);
+        if (!emittedBytesWritten) {
+            emittedBytesWritten = true;
+            emit q->bytesWritten(written);
+            emittedBytesWritten = false;
+        }
     }
     if (stdinChannel.notifier && !writeBuffer.isEmpty())
         stdinChannel.notifier->setEnabled(true);
@@ -2233,10 +2232,10 @@ bool QProcess::startDetached(const QString &program)
 }
 
 QT_BEGIN_INCLUDE_NAMESPACE
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
 # include <crt_externs.h>
 # define environ (*_NSGetEnviron())
-#elif defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#elif defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN) || (defined(Q_OS_MAC) && defined(QT_NO_CORESERVICES))
   static char *qt_empty_environ[] = { 0 };
 #define environ qt_empty_environ
 #elif !defined(Q_OS_WIN)

@@ -279,7 +279,11 @@ QVariant QSqlQueryModel::headerData(int section, Qt::Orientation orientation, in
             val = d->headers.value(section).value(Qt::EditRole);
         if (val.isValid())
             return val;
-        if (role == Qt::DisplayRole && d->rec.count() > section)
+
+        // See if it's an inserted column (iiq.column() != -1)
+        QModelIndex dItem = indexInQuery(createIndex(0, section));
+
+        if (role == Qt::DisplayRole && d->rec.count() > section && dItem.column() != -1)
             return d->rec.fieldName(section);
     }
     return QAbstractItemModel::headerData(section, orientation, role);
@@ -305,6 +309,8 @@ void QSqlQueryModel::queryChange()
 
     lastError() can be used to retrieve verbose information if there
     was an error setting the query.
+
+    \note Calling setQuery() will remove any inserted columns.
 
     \sa query(), QSqlQuery::isActive(), QSqlQuery::setForwardOnly(), lastError()
 */
@@ -370,7 +376,8 @@ void QSqlQueryModel::setQuery(const QSqlQuery &query)
 /*! \overload
 
     Executes the query \a query for the given database connection \a
-    db. If no database is specified, the default connection is used.
+    db. If no database (or an invalid database) is specified, the
+    default connection is used.
 
     lastError() can be used to retrieve verbose information if there
     was an error setting the query.

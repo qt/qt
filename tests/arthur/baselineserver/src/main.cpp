@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     }
 
     if (a.arguments().contains(QLatin1String("-testmapping"))) {
-        BaselineHandler h;
+        BaselineHandler h(QLS("SomeRunId"));
         h.testPathMapping();
         return 0;
     }

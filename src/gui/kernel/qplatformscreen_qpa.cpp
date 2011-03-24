@@ -41,7 +41,11 @@
 
 #include "qplatformscreen_qpa.h"
 #include <QtGui/qapplication.h>
+#include <QtGui/private/qapplication_p.h>
 #include <QtGui/qdesktopwidget.h>
+#include <QtGui/qplatformintegration_qpa.h>
+#include <QtGui/qwidget.h>
+#include <QtGui/private/qwidget_p.h>
 
 /*!
     Return the given top level widget for a given position.
@@ -75,6 +79,17 @@ QSize QPlatformScreen::physicalSize() const
     int width = geometry().width() / dpi * qreal(25.4) ;
     int height = geometry().height() / dpi * qreal(25.4) ;
     return QSize(width,height);
+}
+
+Q_GUI_EXPORT extern QWidgetPrivate *qt_widget_private(QWidget *widget);
+QPlatformScreen * QPlatformScreen::platformScreenForWidget(const QWidget *widget)
+{
+    QWidget *window = widget->window();
+    QWidgetPrivate *windowPrivate = qt_widget_private(window);
+    QTLWExtra * topData = windowPrivate->topData();
+    QPlatformIntegration *integration =
+            QApplicationPrivate::platformIntegration();
+    return integration->screens()[topData->screenIndex];
 }
 
 /*!

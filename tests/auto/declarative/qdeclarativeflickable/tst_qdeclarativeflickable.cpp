@@ -42,10 +42,12 @@
 #include <QtTest/QSignalSpy>
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
+#include <QtDeclarative/qdeclarativeview.h>
 #include <private/qdeclarativeflickable_p.h>
 #include <private/qdeclarativevaluetype_p.h>
 #include <QtGui/qgraphicswidget.h>
 #include <math.h>
+#include "../../../shared/util.h"
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -67,8 +69,15 @@ private slots:
     void maximumFlickVelocity();
     void flickDeceleration();
     void pressDelay();
+    void disabledContent();
+    void nestedPressDelay();
     void flickableDirection();
     void qgraphicswidget();
+    void resizeContent();
+    void returnToBounds();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
+    void wheel();
 
 private:
     QDeclarativeEngine engine;
@@ -239,6 +248,72 @@ void tst_qdeclarativeflickable::pressDelay()
     QCOMPARE(spy.count(),1);
 }
 
+// QT-4677
+void tst_qdeclarativeflickable::disabledContent()
+{
+    QDeclarativeView *canvas = new QDeclarativeView;
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/disabledcontent.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeFlickable *flickable = qobject_cast<QDeclarativeFlickable*>(canvas->rootObject());
+    QVERIFY(flickable != 0);
+
+    QVERIFY(flickable->contentX() == 0);
+    QVERIFY(flickable->contentY() == 0);
+
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(50, 50)));
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(70,70)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(90,90)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(100,100)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+
+    QVERIFY(flickable->contentX() < 0);
+    QVERIFY(flickable->contentY() < 0);
+
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(90, 90)));
+
+    delete canvas;
+}
+
+
+// QTBUG-17361
+void tst_qdeclarativeflickable::nestedPressDelay()
+{
+    QDeclarativeView *canvas = new QDeclarativeView;
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/nestedPressDelay.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeFlickable *outer = qobject_cast<QDeclarativeFlickable*>(canvas->rootObject());
+    QVERIFY(outer != 0);
+
+    QDeclarativeFlickable *inner = canvas->rootObject()->findChild<QDeclarativeFlickable*>("innerFlickable");
+    QVERIFY(inner != 0);
+
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(150, 150)));
+    // the MouseArea is not pressed immediately
+    QVERIFY(outer->property("pressed").toBool() == false);
+
+    // The outer pressDelay will prevail (50ms, vs. 10sec)
+    // QTRY_VERIFY() has 5sec timeout, so will timeout well within 10sec.
+    QTRY_VERIFY(outer->property("pressed").toBool() == true);
+
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(150, 150)));
+
+    delete canvas;
+}
+
 void tst_qdeclarativeflickable::flickableDirection()
 {
     QDeclarativeComponent component(&engine);
@@ -276,6 +351,135 @@ void tst_qdeclarativeflickable::qgraphicswidget()
     QGraphicsWidget *widget = findItem<QGraphicsWidget>(flickable->contentItem(), "widget1");
     QVERIFY(widget);
 }
+
+// QtQuick 1.1
+void tst_qdeclarativeflickable::resizeContent()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/resize.qml"));
+    QDeclarativeItem *root = qobject_cast<QDeclarativeItem*>(c.create());
+    QDeclarativeFlickable *obj = findItem<QDeclarativeFlickable>(root, "flick");
+
+    QVERIFY(obj != 0);
+    QCOMPARE(obj->contentX(), 0.);
+    QCOMPARE(obj->contentY(), 0.);
+    QCOMPARE(obj->contentWidth(), 300.);
+    QCOMPARE(obj->contentHeight(), 300.);
+
+    QMetaObject::invokeMethod(root, "resizeContent");
+
+    QCOMPARE(obj->contentX(), 100.);
+    QCOMPARE(obj->contentY(), 100.);
+    QCOMPARE(obj->contentWidth(), 600.);
+    QCOMPARE(obj->contentHeight(), 600.);
+
+    delete root;
+}
+
+// QtQuick 1.1
+void tst_qdeclarativeflickable::returnToBounds()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/resize.qml"));
+    QDeclarativeItem *root = qobject_cast<QDeclarativeItem*>(c.create());
+    QDeclarativeFlickable *obj = findItem<QDeclarativeFlickable>(root, "flick");
+
+    QVERIFY(obj != 0);
+    QCOMPARE(obj->contentX(), 0.);
+    QCOMPARE(obj->contentY(), 0.);
+    QCOMPARE(obj->contentWidth(), 300.);
+    QCOMPARE(obj->contentHeight(), 300.);
+
+    obj->setContentX(100);
+    obj->setContentY(400);
+    QTRY_COMPARE(obj->contentX(), 100.);
+    QTRY_COMPARE(obj->contentY(), 400.);
+
+    QMetaObject::invokeMethod(root, "returnToBounds");
+
+    QTRY_COMPARE(obj->contentX(), 0.);
+    QTRY_COMPARE(obj->contentY(), 0.);
+
+    delete root;
+}
+
+void tst_qdeclarativeflickable::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; Flickable { " + code.toUtf8() + " }", QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; Flickable { " + code.toUtf8() + " }", QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+}
+
+void tst_qdeclarativeflickable::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("resizeContent") << "Component.onCompleted: resizeContent(100,100,Qt.point(50,50))"
+            << "<Unknown File>:1: ReferenceError: Can't find variable: resizeContent"
+            << "";
+
+    QTest::newRow("returnToBounds") << "Component.onCompleted: returnToBounds()"
+            << "<Unknown File>:1: ReferenceError: Can't find variable: returnToBounds"
+            << "";
+
+}
+
+void tst_qdeclarativeflickable::wheel()
+{
+    QDeclarativeView *canvas = new QDeclarativeView;
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/wheel.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeFlickable *flick = canvas->rootObject()->findChild<QDeclarativeFlickable*>("flick");
+    QVERIFY(flick != 0);
+
+    QGraphicsScene *scene = canvas->scene();
+    QGraphicsSceneWheelEvent event(QEvent::GraphicsSceneWheel);
+    event.setScenePos(QPointF(200, 200));
+    event.setDelta(-120);
+    event.setOrientation(Qt::Vertical);
+    event.setAccepted(false);
+    QApplication::sendEvent(scene, &event);
+
+    QTRY_VERIFY(flick->contentY() > 0);
+    QVERIFY(flick->contentX() == 0);
+
+    flick->setContentY(0);
+    QVERIFY(flick->contentY() == 0);
+
+    event.setScenePos(QPointF(200, 200));
+    event.setDelta(-120);
+    event.setOrientation(Qt::Horizontal);
+    event.setAccepted(false);
+    QApplication::sendEvent(scene, &event);
+
+    QTRY_VERIFY(flick->contentX() > 0);
+    QVERIFY(flick->contentY() == 0);
+
+    delete canvas;
+}
+
 
 template<typename T>
 T *tst_qdeclarativeflickable::findItem(QGraphicsObject *parent, const QString &objectName)

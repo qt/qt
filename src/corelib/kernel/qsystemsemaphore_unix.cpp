@@ -50,11 +50,11 @@
 
 #include <sys/types.h>
 #include <sys/ipc.h>
+#include <sys/sem.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <sys/shm.h>
 
-#include <sys/sem.h>
+#include "private/qcore_unix_p.h"
 
 // OpenBSD 4.2 doesn't define EIDRM, see BUGS section:
 // http://www.openbsd.org/cgi-bin/man.cgi?query=semop&manpath=OpenBSD+4.2
@@ -218,7 +218,10 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
     operation.sem_num = 0;
     operation.sem_op = count;
     operation.sem_flg = SEM_UNDO;
-    if (-1 == semop(semaphore, &operation, 1)) {
+
+    register int res;
+    EINTR_LOOP(res, semop(semaphore, &operation, 1));
+    if (-1 == res) {
         // If the semaphore was removed be nice and create it and then modifySemaphore again
         if (errno == EINVAL || errno == EIDRM) {
             semaphore = -1;

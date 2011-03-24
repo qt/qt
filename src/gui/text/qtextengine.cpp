@@ -894,16 +894,16 @@ void QTextEngine::shapeText(int item) const
                 if (letterSpacingIsAbsolute)
                     glyphs.advances_x[i-1] += letterSpacing;
                 else {
-                    const QFixed advance = glyphs.advances_x[i-1];
-                    glyphs.advances_x[i-1] += (letterSpacing - 100) * advance / 100;
+                    QFixed &advance = glyphs.advances_x[i-1];
+                    advance += (letterSpacing - 100) * advance / 100;
                 }
             }
         }
         if (letterSpacingIsAbsolute)
             glyphs.advances_x[si.num_glyphs-1] += letterSpacing;
         else {
-            const QFixed advance = glyphs.advances_x[si.num_glyphs-1];
-            glyphs.advances_x[si.num_glyphs-1] += (letterSpacing - 100) * advance / 100;
+            QFixed &advance = glyphs.advances_x[si.num_glyphs-1];
+            advance += (letterSpacing - 100) * advance / 100;
         }
     }
     if (wordSpacing != 0) {
@@ -1385,6 +1385,15 @@ void QTextEngine::shape(int item) const
     }
 }
 
+static inline void releaseCachedFontEngine(QFontEngine *fontEngine)
+{
+    if (fontEngine) {
+        fontEngine->ref.deref();
+        if (fontEngine->cache_count == 0 && fontEngine->ref == 0)
+            delete fontEngine;
+    }
+}
+
 void QTextEngine::invalidate()
 {
     freeMemory();
@@ -1392,6 +1401,9 @@ void QTextEngine::invalidate()
     maxWidth = 0;
     if (specialData)
         specialData->resolvedFormatIndices.clear();
+
+    releaseCachedFontEngine(feCache.prevFontEngine);
+    releaseCachedFontEngine(feCache.prevScaledFontEngine);
     feCache.reset();
 }
 
@@ -1824,7 +1836,11 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
                 scaledEngine = font.d->engineForScript(script);
             }
             feCache.prevFontEngine = engine;
+            if (engine)
+                engine->ref.ref();
             feCache.prevScaledFontEngine = scaledEngine;
+            if (scaledEngine)
+                scaledEngine->ref.ref();
             feCache.prevScript = script;
             feCache.prevPosition = si.position;
             feCache.prevLength = length(&si);
@@ -1835,6 +1851,8 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
         else {
             engine = font.d->engineForScript(script);
             feCache.prevFontEngine = engine;
+            if (engine)
+                engine->ref.ref();
             feCache.prevScript = script;
             feCache.prevPosition = -1;
             feCache.prevLength = -1;
@@ -1909,7 +1927,7 @@ void QTextEngine::justify(const QScriptLine &line)
         if (end == layoutData->string.length())
             return; // no justification at end of paragraph
         if (end && layoutData->items[findItem(end-1)].analysis.flags == QScriptAnalysis::LineOrParagraphSeparator)
-            return; // no justification at the end of an explicitely separated line
+            return; // no justification at the end of an explicitly separated line
     }
 
     // justify line
@@ -2550,14 +2568,14 @@ void QTextEngine::setBoundary(int strPos) const
         return;
 
     int itemToSplit = 0;
-    while (itemToSplit < layoutData->items.size() && layoutData->items[itemToSplit].position <= strPos)
+    while (itemToSplit < layoutData->items.size() && layoutData->items.at(itemToSplit).position <= strPos)
         itemToSplit++;
     itemToSplit--;
-    if (layoutData->items[itemToSplit].position == strPos) {
+    if (layoutData->items.at(itemToSplit).position == strPos) {
         // already a split at the requested position
         return;
     }
-    splitItem(itemToSplit, strPos - layoutData->items[itemToSplit].position);
+    splitItem(itemToSplit, strPos - layoutData->items.at(itemToSplit).position);
 }
 
 void QTextEngine::splitItem(int item, int pos) const

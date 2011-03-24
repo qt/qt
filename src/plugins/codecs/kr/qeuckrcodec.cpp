@@ -67,11 +67,6 @@
 
 #include "qeuckrcodec.h"
 #include "cp949codetbl.h"
-#include <stdlib.h>
-
-#if defined(Q_OS_WINCE)
-#  include <qfunctions_wince.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -3402,11 +3397,6 @@ QByteArray QCP949Codec::_name()
   return "cp949";
 }
 
-int compare_ushort(const void *a, const void *b)
-{
-    return *(unsigned short *)a - *(unsigned short *)b;
-}
-
 /*!
   \reimp
 */
@@ -3434,10 +3424,8 @@ QByteArray QCP949Codec::convertFromUnicode(const QChar *uc, int len, ConverterSt
             *cursor++ = (j >> 8)   | 0x80;
             *cursor++ = (j & 0xff) | 0x80;
         } else {
-            unsigned short *ptr = (unsigned short *)bsearch(&ch, cp949_icode_to_unicode, 8822, 
-                sizeof(unsigned short), compare_ushort);
-
-            if(!ptr) {
+            const unsigned short *ptr = qBinaryFind(cp949_icode_to_unicode, cp949_icode_to_unicode + 8822, ch);
+            if (ptr == cp949_icode_to_unicode + 8822) {
                 // Error
                 *cursor++ = replacement;
                 ++invalid;

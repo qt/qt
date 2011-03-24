@@ -110,7 +110,7 @@ void tst_SunSpider::benchmark_data()
 void tst_SunSpider::benchmark()
 {
     QFETCH(QString, testName);
-    QString testContents = readFile(testsDir.absoluteFilePath(testName + ".js"));
+    QString testContents = readFile(testsDir.filePath(testName + ".js"));
     QVERIFY(!testContents.isEmpty());
 
     QScriptEngine engine;

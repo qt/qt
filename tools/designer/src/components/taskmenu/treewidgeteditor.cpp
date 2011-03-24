@@ -60,18 +60,18 @@ QT_BEGIN_NAMESPACE
 
 namespace qdesigner_internal {
 
-TreeWidgetEditor::TreeWidgetEditor(QDesignerFormWindowInterface *form, QWidget *parent)
-    : AbstractItemEditor(form, parent), m_updatingBrowser(false)
+TreeWidgetEditor::TreeWidgetEditor(QDesignerFormWindowInterface *form, QDialog *dialog)
+    : AbstractItemEditor(form, 0), m_updatingBrowser(false)
 {
     m_columnEditor = new ItemListEditor(form, this);
     m_columnEditor->setObjectName(QLatin1String("columnEditor"));
     m_columnEditor->setNewItemText(tr("New Column"));
-    ui.setupUi(this);
+    ui.setupUi(dialog);
 
     injectPropertyBrowser(ui.itemsTab, ui.widget);
     connect(ui.showPropertiesButton, SIGNAL(clicked()),
             this, SLOT(togglePropertyBrowser()));
-    togglePropertyBrowser();
+    setPropertyBrowserVisible(false);
 
     ui.tabWidget->insertTab(0, m_columnEditor, tr("&Columns"));
     ui.tabWidget->setCurrentIndex(0);
@@ -86,6 +86,30 @@ TreeWidgetEditor::TreeWidgetEditor(QDesignerFormWindowInterface *form, QWidget *
     ui.moveItemLeftButton->setIcon(createIconSet(QString::fromUtf8("levelup.png")));
 
     ui.treeWidget->header()->setMovable(false);
+
+    connect(ui.newItemButton, SIGNAL(clicked()), this, SLOT(on_newItemButton_clicked()));
+    connect(ui.newSubItemButton, SIGNAL(clicked()), this, SLOT(on_newSubItemButton_clicked()));
+    connect(ui.moveItemUpButton, SIGNAL(clicked()), this, SLOT(on_moveItemUpButton_clicked()));
+    connect(ui.moveItemDownButton, SIGNAL(clicked()), this, SLOT(on_moveItemDownButton_clicked()));
+    connect(ui.moveItemRightButton, SIGNAL(clicked()), this, SLOT(on_moveItemRightButton_clicked()));
+    connect(ui.moveItemLeftButton, SIGNAL(clicked()), this, SLOT(on_moveItemLeftButton_clicked()));
+    connect(ui.treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
+            this, SLOT(on_treeWidget_currentItemChanged()));
+    connect(ui.treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
+            this, SLOT(on_treeWidget_itemChanged(QTreeWidgetItem*,int)));
+
+    connect(m_columnEditor, SIGNAL(indexChanged(int)),
+            this, SLOT(on_columnEditor_indexChanged(int)));
+    connect(m_columnEditor, SIGNAL(itemChanged(int,int,QVariant)),
+            this, SLOT(on_columnEditor_itemChanged(int,int,QVariant)));
+    connect(m_columnEditor, SIGNAL(itemInserted(int)),
+            this, SLOT(on_columnEditor_itemInserted(int)));
+    connect(m_columnEditor, SIGNAL(itemDeleted(int)),
+            this, SLOT(on_columnEditor_itemDeleted(int)));
+    connect(m_columnEditor, SIGNAL(itemMovedUp(int)),
+            this, SLOT(on_columnEditor_itemMovedUp(int)));
+    connect(m_columnEditor, SIGNAL(itemMovedDown(int)),
+            this, SLOT(on_columnEditor_itemMovedDown(int)));
 
     connect(iconCache(), SIGNAL(reloaded()), this, SLOT(cacheReloaded()));
 }
@@ -386,15 +410,13 @@ void TreeWidgetEditor::on_moveItemRightButton_clicked()
 
 void TreeWidgetEditor::togglePropertyBrowser()
 {
-    // Always hide in case parent widget is not visible -> on startup
-    const bool isVisible =
-            !this->isVisible() ? true : m_propertyBrowser->isVisible();
-    if (isVisible)
-        ui.showPropertiesButton->setText(tr("Properties &<<"));
-    else
-        ui.showPropertiesButton->setText(tr("Properties &>>"));
+    setPropertyBrowserVisible(!m_propertyBrowser->isVisible());
+}
 
-    m_propertyBrowser->setVisible(!isVisible);
+void TreeWidgetEditor::setPropertyBrowserVisible(bool v)
+{
+    ui.showPropertiesButton->setText(v ? tr("Properties &>>") : tr("Properties &<<"));
+    m_propertyBrowser->setVisible(v);
 }
 
 void TreeWidgetEditor::on_treeWidget_currentItemChanged()
@@ -599,5 +621,22 @@ void TreeWidgetEditor::cacheReloaded()
     reloadIconResources(iconCache(), ui.treeWidget);
 }
 
+TreeWidgetEditorDialog::TreeWidgetEditorDialog(QDesignerFormWindowInterface *form, QWidget *parent) :
+    QDialog(parent), m_editor(form, this)
+{
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 }
+
+TreeWidgetContents TreeWidgetEditorDialog::fillContentsFromTreeWidget(QTreeWidget *treeWidget)
+{
+    return m_editor.fillContentsFromTreeWidget(treeWidget);
+}
+
+TreeWidgetContents TreeWidgetEditorDialog::contents() const
+{
+    return m_editor.contents();
+}
+
+} // namespace qdesigner_internal
+
 QT_END_NAMESPACE

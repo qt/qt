@@ -41,6 +41,7 @@
 
 #include "qplatformwindow_qpa.h"
 
+#include <QtGui/qwindowsysteminterface_qpa.h>
 #include <QtGui/qwidget.h>
 
 class QPlatformWindowPrivate
@@ -168,6 +169,24 @@ void QPlatformWindow::setOpacity(qreal level)
 {
     Q_UNUSED(level);
     qWarning("This plugin does not support setting window opacity");
+}
+
+/*!
+  Reimplement to let Qt be able to request activation/focus for a window
+
+  Some window systems will probably not have callbacks for this functionality,
+  and then calling QWindowSystemInterface::handleWindowActivated(QWidget *w)
+  would be sufficient.
+
+  If the window system has some event handling/callbacks then call
+  QWindowSystemInterface::handleWindowActivated(QWidget *w) when the window system
+  gives the notification.
+
+  Default implementation calls QWindowSystem::handleWindowActivated(QWidget *w)
+*/
+void QPlatformWindow::requestActivateWindow()
+{
+    QWindowSystemInterface::handleWindowActivated(widget());
 }
 
 /*!

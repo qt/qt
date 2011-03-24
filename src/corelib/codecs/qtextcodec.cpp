@@ -64,7 +64,7 @@
 #ifndef QT_NO_CODECS
 #  include "qtsciicodec_p.h"
 #  include "qisciicodec_p.h"
-#ifndef Q_OS_SYMBIAN
+#if !defined(Q_OS_SYMBIAN) && !defined(Q_OS_INTEGRITY)
 #  if defined(QT_NO_ICONV) && !defined(QT_BOOTSTRAPPED)
 // no iconv(3) support, must build all codecs into the library
 #    include "../../plugins/codecs/cn/qgb18030codec.h"
@@ -772,7 +772,7 @@ static void setup()
 #  endif // Q_WS_X11
 
 
-#ifndef Q_OS_SYMBIAN
+#if !defined(Q_OS_SYMBIAN) && !defined(Q_OS_INTEGRITY)
 #  if defined(QT_NO_ICONV) && !defined(QT_BOOTSTRAPPED)
     // no asian codecs when bootstrapping, sorry
     (void)new QGb18030Codec;
@@ -805,7 +805,7 @@ static void setup()
     (void)new QLatin1Codec;
     (void)new QUtf8Codec;
 
-#ifndef Q_OS_SYMBIAN
+#if !defined(Q_OS_SYMBIAN) && !defined(Q_OS_INTEGRITY)
 #if defined(Q_OS_UNIX) && !defined(QT_NO_ICONV) && !defined(QT_BOOTSTRAPPED)
     // QIconvCodec depends on the UTF-16 codec, so it needs to be created last
     (void) new QIconvCodec();
@@ -1090,8 +1090,11 @@ QTextCodec* QTextCodec::codecForMib(int mib)
     QByteArray key = "MIB: " + QByteArray::number(mib);
     QTextCodecCache *cache = qTextCodecCache();
     QTextCodec *codec;
-    if (cache)
+    if (cache) {
         codec = cache->value(key);
+        if (codec)
+            return codec;
+    }
 
     QList<QTextCodec*>::ConstIterator i;
     for (int i = 0; i < all->size(); ++i) {

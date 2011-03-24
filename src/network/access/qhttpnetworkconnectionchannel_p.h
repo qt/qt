@@ -95,7 +95,8 @@ public:
         WritingState = 2,       // writing the data
         WaitingState = 4,       // waiting for reply
         ReadingState = 8,       // reading the reply
-        BusyState = (ConnectingState|WritingState|WaitingState|ReadingState)
+        ClosingState = 16,
+        BusyState = (ConnectingState|WritingState|WaitingState|ReadingState|ClosingState)
     };
     QAbstractSocket *socket;
     bool ssl;

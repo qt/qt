@@ -41,15 +41,16 @@
 
 
 #include "qgl.h"
-#include <coemain.h>
-#include <coecntrl.h>
-#include <w32std.h>
+#include <fbs.h>
+#include <private/qt_s60_p.h>
 #include <private/qpixmap_s60_p.h>
 #include <private/qimagepixmapcleanuphooks_p.h>
 #include <private/qgl_p.h>
 #include <private/qpaintengine_opengl_p.h>
 #include <private/qwidget_p.h> // to access QWExtra
 #include "qgl_egl_p.h"
+#include "qpixmapdata_gl_p.h"
+#include "qgltexturepool_p.h"
 #include "qcolormap.h"
 #include <QDebug>
 
@@ -68,6 +69,8 @@ QT_BEGIN_NAMESPACE
 #define QGL_NO_PRESERVED_SWAP 1
 #endif
 #endif
+
+extern int qt_gl_pixmap_serial;
 
 /*
     QGLTemporaryContext implementation
@@ -358,5 +361,61 @@ void QGLWidgetPrivate::recreateEglSurface()
     eglSurfaceWindowId = currentId;
 }
 
-QT_END_NAMESPACE
+static inline bool knownGoodFormat(QImage::Format format)
+{
+    switch (format) {
+        case QImage::Format_RGB16: // EColor64K
+        case QImage::Format_RGB32: // EColor16MU
+        case QImage::Format_ARGB32_Premultiplied: // EColor16MAP
+            return true;
+        default:
+            return false;
+    }
+}
 
+void QGLPixmapData::fromNativeType(void* pixmap, NativeType type)
+{
+    if (type == QPixmapData::FbsBitmap) {
+        CFbsBitmap *bitmap = reinterpret_cast<CFbsBitmap *>(pixmap);
+        QSize size(bitmap->SizeInPixels().iWidth, bitmap->SizeInPixels().iHeight);
+        if (size.width() == w && size.height() == h)
+            setSerialNumber(++qt_gl_pixmap_serial);
+        resize(size.width(), size.height());
+        m_source = QVolatileImage(bitmap);
+        if (pixelType() == BitmapType) {
+            m_source.ensureFormat(QImage::Format_MonoLSB);
+        } else if (!knownGoodFormat(m_source.format())) {
+            m_source.beginDataAccess();
+            QImage::Format format = idealFormat(m_source.imageRef(), Qt::AutoColor);
+            m_source.endDataAccess(true);
+            m_source.ensureFormat(format);
+        }
+        m_hasAlpha = m_source.hasAlphaChannel();
+        m_hasFillColor = false;
+        m_dirty = true;
+
+    } else if (type == QPixmapData::VolatileImage && pixmap) {
+        // Support QS60Style in more efficient skin graphics retrieval.
+        QVolatileImage *img = static_cast<QVolatileImage *>(pixmap);
+        if (img->width() == w && img->height() == h)
+            setSerialNumber(++qt_gl_pixmap_serial);
+        resize(img->width(), img->height());
+        m_source = *img;
+        m_hasAlpha = m_source.hasAlphaChannel();
+        m_hasFillColor = false;
+        m_dirty = true;
+    }
+}
+
+void* QGLPixmapData::toNativeType(NativeType type)
+{
+    if (type == QPixmapData::FbsBitmap) {
+        if (m_source.isNull())
+            m_source = QVolatileImage(w, h, QImage::Format_ARGB32_Premultiplied);
+        return m_source.duplicateNativeImage();
+    }
+
+    return 0;
+}
+
+QT_END_NAMESPACE

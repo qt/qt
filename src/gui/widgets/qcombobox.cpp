@@ -2486,10 +2486,18 @@ void QComboBox::showPopup()
             listRect.setWidth(listRect.height());
             //by default popup is centered on screen in landscape
             listRect.moveCenter(screen.center());
-            if (staConTopRect.IsEmpty() && AknLayoutUtils::CbaLocation() != AknLayoutUtils::EAknCbaLocationBottom) {
-                // landscape without stacon, menu should be at the right
-                (opt.direction == Qt::LeftToRight) ? listRect.setRight(screen.right()) :
-                                                     listRect.setLeft(screen.left());
+            if (staConTopRect.IsEmpty()) {
+                TRect cbaRect = TRect();
+                AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EControlPane, cbaRect);
+                AknLayoutUtils::TAknCbaLocation cbaLocation = AknLayoutUtils::CbaLocation();
+                switch (cbaLocation) {
+                case AknLayoutUtils::EAknCbaLocationRight:
+                    listRect.setRight(screen.right());
+                    break;
+                case AknLayoutUtils::EAknCbaLocationLeft:
+                    listRect.setLeft(screen.left());
+                    break;
+                }
             }
         }
 #endif

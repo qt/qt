@@ -138,7 +138,7 @@ template <typename T>
 void *qMetaTypeConstructHelper(const T *t)
 {
     if (!t)
-        return new T;
+        return new T();
     return new T(*static_cast<const T*>(t));
 }
 

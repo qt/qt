@@ -332,7 +332,7 @@ void QPanGesture::setAcceleration(qreal value)
 /*!
     \class QPinchGesture
     \since 4.6
-    \brief The QPinchGesture class describes a pinch gesture made my the user.
+    \brief The QPinchGesture class describes a pinch gesture made by the user.
     \ingroup touch
     \ingroup gestures
 

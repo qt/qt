@@ -89,14 +89,17 @@ public:
     struct TypeReference 
     {
         TypeReference()
-        : type(0), component(0) {}
+        : type(0), typePropertyCache(0), component(0) {}
 
         QByteArray className;
         QDeclarativeType *type;
+        QDeclarativePropertyCache *typePropertyCache;
         QDeclarativeCompiledData *component;
 
         QObject *createInstance(QDeclarativeContextData *, const QBitField &, QList<QDeclarativeError> *) const;
         const QMetaObject *metaObject() const;
+        QDeclarativePropertyCache *propertyCache() const;
+        QDeclarativePropertyCache *createPropertyCache(QDeclarativeEngine *);
     };
     QList<TypeReference> types;
     struct CustomTypeData
@@ -161,6 +164,7 @@ public:
 
     int evaluateEnum(const QByteArray& script) const; // for QDeclarativeCustomParser::evaluateEnum
     const QMetaObject *resolveType(const QByteArray& name) const; // for QDeclarativeCustomParser::resolveType
+    int rewriteBinding(const QString& expression, const QByteArray& name); // for QDeclarativeCustomParser::rewriteBinding
 
 private:
     static void reset(QDeclarativeCompiledData *);
@@ -276,6 +280,8 @@ private:
     bool canCoerce(int to, QDeclarativeParser::Object *from);
 
     QStringList deferredProperties(QDeclarativeParser::Object *);
+    int indexOfProperty(QDeclarativeParser::Object *, const QByteArray &, bool *notInRevision = 0);
+    int indexOfSignal(QDeclarativeParser::Object *, const QByteArray &, bool *notInRevision = 0);
 
     void addId(const QString &, QDeclarativeParser::Object *);
 

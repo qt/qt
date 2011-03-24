@@ -150,7 +150,7 @@ private:
 class QFontEngineMultiWin : public QFontEngineMulti
 {
 public:
-    QFontEngineMultiWin(QFontEngineWin *first, const QStringList &fallbacks);
+    QFontEngineMultiWin(QFontEngine *first, const QStringList &fallbacks);
     void loadEngine(int at);
 
     QStringList fallbacks;

@@ -43,7 +43,9 @@
 #include <private/qpaintengine_raster_p.h>
 #include <private/qpainter_p.h>
 #include <private/qdrawhelper_x86_p.h>
+#ifdef QT_HAVE_ARM_SIMD
 #include <private/qdrawhelper_arm_simd_p.h>
+#endif
 #include <private/qdrawhelper_neon_p.h>
 #include <private/qmath_p.h>
 #include <qmath.h>

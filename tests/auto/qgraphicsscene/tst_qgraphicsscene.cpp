@@ -289,6 +289,7 @@ private slots:
     void taskQTBUG_7863_paintIntoCacheWithTransparentParts();
     void taskQT_3674_doNotCrash();
     void taskQTBUG_15977_renderWithDeviceCoordinateCache();
+    void taskQTBUG_16401_focusItem();
 };
 
 void tst_QGraphicsScene::initTestCase()
@@ -3838,6 +3839,23 @@ public:
     mutable int queryCalls;
 };
 
+class TestInputContext : public QInputContext
+{
+public:
+    TestInputContext() {}
+
+    QString identifierName() { return QString(); }
+    QString language() { return QString(); }
+
+    void reset() {
+        ++resetCalls;
+        sendEvent(QInputMethodEvent()); }
+
+    bool isComposing() const { return false; }
+
+    int resetCalls;
+};
+
 void tst_QGraphicsScene::inputMethod()
 {
     QFETCH(int, flags);
@@ -3847,14 +3865,22 @@ void tst_QGraphicsScene::inputMethod()
     item->setFlags((QGraphicsItem::GraphicsItemFlags)flags);
 
     QGraphicsScene scene;
-    QEvent activate(QEvent::WindowActivate);
-    QApplication::sendEvent(&scene, &activate);
+    QGraphicsView view(&scene);
+    TestInputContext inputContext;
+    view.setInputContext(&inputContext);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    view.setFocus();
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
+    inputContext.resetCalls = 0;
     scene.addItem(item);
     QInputMethodEvent event;
 
     scene.setFocusItem(item);
     QCOMPARE(!!(item->flags() & QGraphicsItem::ItemIsFocusable), scene.focusItem() == item);
+    QCOMPARE(inputContext.resetCalls, 0);
 
     item->eventCalls = 0;
     qApp->sendEvent(&scene, &event);
@@ -3865,6 +3891,9 @@ void tst_QGraphicsScene::inputMethod()
     QCOMPARE(item->queryCalls, callFocusItem ? 1 : 0);
 
     scene.setFocusItem(0);
+    // the input context is reset twice, once because an item has lost focus and again because
+    // the Qt::WA_InputMethodEnabled flag is cleared because no item has focus.
+    QCOMPARE(inputContext.resetCalls, callFocusItem ? 2 : 0);
     QCOMPARE(item->eventCalls, callFocusItem ? 2 : 0); // verify correct delivery of "reset" event
     QCOMPARE(item->queryCalls, callFocusItem ? 1 : 0); // verify that value is unaffected
 
@@ -4650,6 +4679,36 @@ void tst_QGraphicsScene::taskQTBUG_15977_renderWithDeviceCoordinateCache()
     p.end();
 
     QCOMPARE(image, expected);
+}
+
+void tst_QGraphicsScene::taskQTBUG_16401_focusItem()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    QGraphicsRectItem *rect = scene.addRect(0, 0, 100, 100);
+    rect->setFlag(QGraphicsItem::ItemIsFocusable);
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QApplication::setActiveWindow(&view);
+
+    QVERIFY(!scene.focusItem());
+
+    rect->setFocus();
+    QCOMPARE(scene.focusItem(), rect);
+    QFocusEvent focusOut(QEvent::FocusOut);
+    QApplication::sendEvent(&view, &focusOut);
+    QVERIFY(!scene.focusItem());
+    QFocusEvent focusIn(QEvent::FocusIn);
+    QApplication::sendEvent(&view, &focusIn);
+    QCOMPARE(scene.focusItem(), rect);
+
+    rect->clearFocus();
+    QVERIFY(!scene.focusItem());
+    QApplication::sendEvent(&view, &focusOut);
+    QVERIFY(!scene.focusItem());
+    QApplication::sendEvent(&view, &focusIn);
+    QVERIFY(!scene.focusItem());
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

@@ -49,12 +49,20 @@ Rectangle {
 
     signal clicked                                          // signal declarations
 
-    function doSomething(x) {                               // javascript functions
+    function doSomething(x)                                 // javascript functions
+    {                               
         return x + photoImage.width
     }
 
-    x: 20; y: 20; width: 200; height: 150                   // object properties
-    color: "gray"                                           // try to group related properties together
+    color: "gray"                                           // object properties
+    x: 20; y: 20; height: 150                               // try to group related properties together
+    width: {                                                // large bindings
+        if(photoImage.width > 200){
+	    photoImage.width;
+	}else{
+	    200;
+	}
+    }
 
     Rectangle {                                             // child objects
         id: border

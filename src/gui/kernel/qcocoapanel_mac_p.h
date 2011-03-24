@@ -50,20 +50,34 @@
 // We mean it.
 //
 
+#ifndef QCOCOAPANEL_MAC_P
+#define QCOCOAPANEL_MAC_P
+
 #include "qmacdefines_mac.h"
 #ifdef QT_MAC_USE_COCOA
 #import <Cocoa/Cocoa.h>
 
 QT_FORWARD_DECLARE_CLASS(QStringList);
+QT_FORWARD_DECLARE_CLASS(QCocoaDropData);
+
+@interface NSPanel (QtIntegration)
+- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender;
+- (NSDragOperation)draggingUpdated:(id <NSDraggingInfo>)sender;
+- (void)draggingExited:(id <NSDraggingInfo>)sender;
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender;
+@end
 
 @interface QT_MANGLE_NAMESPACE(QCocoaPanel) : NSPanel {
-    bool leftButtonIsRightButton;
     QStringList *currentCustomDragTypes;
+    QCocoaDropData *dropData;
+    NSInteger dragEnterSequence;
 }
 
 + (Class)frameViewClassForStyleMask:(NSUInteger)styleMask;
 - (void)registerDragTypes;
+- (void)drawRectOriginal:(NSRect)rect;
 
 @end
 #endif
 
+#endif

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -94,9 +94,19 @@ QCocoaIntegration::~QCocoaIntegration()
     delete mPool;
 }
 
+bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+    case ThreadedPixmaps: return true;
+    default: return QPlatformIntegration::hasCapability(cap);
+    }
+}
+
+
+
 QPixmapData *QCocoaIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
-        return new QRasterPixmapData(type);
+    return new QRasterPixmapData(type);
 }
 
 QPlatformWindow *QCocoaIntegration::createPlatformWindow(QWidget *widget, WId winId) const

@@ -331,7 +331,7 @@ void tst_QAbstractNetworkCache::checkSynchronous()
     QNetworkRequest request(realUrl);
 
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(QNetworkRequest::DownloadBufferAttribute + 1),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     // prime the cache

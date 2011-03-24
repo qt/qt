@@ -62,10 +62,18 @@ To dynamically load a component defined in a QML file, call the
 This function takes the URL of the QML file as its only argument and creates
 a \l Component object from this URL.
 
-Once you have a \l Component, you can call its \l {Component::createObject()}{createObject()} method to create an instance of
-the component. This function takes exactly one argument, which is the parent for the new item. Since graphical items will
-not appear on the scene without a parent, it is recommended that you set the parent this way. However, if you wish to set
-the parent later you can safely pass \c null to this function.
+Once you have a \l Component, you can call its \l {Component::createObject()}{createObject()} method to create an instance of 
+the component. This function can take one or two arguments:
+\list
+\o The first is the parent for the new item. Since graphical items will not appear on the scene without a parent, it is 
+  recommended that you set the parent this way. However, if you wish to set the parent later you can safely pass \c null to 
+  this function. 
+\o The second is optional and is a map of property-value items that define initial any property values for the item.
+  Property values specified by this argument are applied to the object before its creation is finalized, avoiding
+  binding errors that may occur if particular properties must be initialized to enable other property bindings.
+  when certain properties have been bound to before they have been set by the code. Additionally, there are small
+  performance benefits when compared to defining property values and bindings after the object is created.
+\endlist
 
 Here is an example. First there is \c Sprite.qml, which defines a simple QML component:
 
@@ -184,7 +192,9 @@ Note also that if a \c SelfDestroyingRect instance was created statically like t
 
 \qml
 Item {
-    SelfDestroyingRect { ... }
+    SelfDestroyingRect {
+        // ...
+    }
 }
 \endqml
 

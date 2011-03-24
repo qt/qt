@@ -213,7 +213,7 @@ namespace ns {
 }
 
 // ...
-qApp->setSytleSheet("ns--MyPushButton { background: yellow; }");
+qApp->setStyleSheet("ns--MyPushButton { background: yellow; }");
 //! [27]
 
 

@@ -173,7 +173,7 @@ void tst_QNativeSocketEngine::simpleConnectToIMAP()
     QVERIFY(socketDevice.read(array.data(), array.size()) == available);
 
     // Check that the greeting is what we expect it to be
-    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());
+    QVERIFY2(QtNetworkSettings::compareReplyIMAP(array), array.constData());
 
     // Write a logout message
     QByteArray array2 = "ZZZ LOGOUT\r\n";

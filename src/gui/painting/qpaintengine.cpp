@@ -992,7 +992,7 @@ void QPaintEngine::setSystemRect(const QRect &rect)
 /*!
     \internal
 
-    Retreives the rect for drawing within the backing store. This
+    Retrieves the rect for drawing within the backing store. This
     function should ONLY be used by the backing store.
  */
 QRect QPaintEngine::systemRect() const

@@ -116,7 +116,7 @@ QEventDispatcherUNIXPrivate::QEventDispatcherUNIXPrivate()
    // do nothing.
 #elif defined(Q_OS_INTEGRITY)
     // INTEGRITY doesn't like a "select" on pipes, so use socketpair instead
-    if (socketpair(AF_INET, SOCK_STREAM, PF_INET, thread_pipe) == -1) {
+    if (socketpair(AF_INET, SOCK_STREAM, 0, thread_pipe) == -1) {
         perror("QEventDispatcherUNIXPrivate(): Unable to create socket pair");
         pipefail = true;
     } else {
@@ -343,7 +343,7 @@ timeval QTimerInfoList::updateCurrentTime()
     return (currentTime = qt_gettime());
 }
 
-#if ((_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC)) || defined(QT_BOOTSTRAPPED)
+#if ((_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC) && !defined(Q_OS_INTEGRITY)) || defined(QT_BOOTSTRAPPED)
 
 template <>
 timeval qAbs(const timeval &t)
@@ -509,7 +509,6 @@ bool QTimerInfoList::unregisterTimer(int timerId)
         }
     }
     // id not found
-    qWarning("Application asked to unregister timer 0x%x which is not registered in this thread. Fix application.", timerId);
     return false;
 }
 

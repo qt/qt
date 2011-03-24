@@ -47,9 +47,10 @@
 #import <private/qcocoaview_mac_p.h>
 #import <private/qcocoawindowcustomthemeframe_mac_p.h>
 #import <private/qcocoaapplication_mac_p.h>
-#include <private/qapplication_p.h>
-#include <private/qbackingstore_p.h>
-
+#import <private/qmultitouch_mac_p.h>
+#import <private/qapplication_p.h>
+#import <private/qbackingstore_p.h>
+#import <private/qdnd_p.h>
 
 #include <QtGui/QWidget>
 

@@ -1146,7 +1146,7 @@ lupdate - це частина набору програм Qt Linguist. Вона 
         <translation>Незакритий рядок в кінці файлу</translation>
     </message>
     <message>
-        <source>Illegal escape squence</source>
+        <source>Illegal escape sequence</source>
         <translation>Неприпустима керуюча послідовність</translation>
     </message>
     <message>

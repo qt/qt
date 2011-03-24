@@ -387,7 +387,6 @@ private: //data members
 class QFocusFrame;
 class QProgressBar;
 class QS60StyleAnimation;
-class TactileFeedbackInterface;
 
 // Private class
 #ifdef Q_OS_SYMBIAN
@@ -555,7 +554,8 @@ public:
 
     static QPixmap frame(SkinFrameElements frame, const QSize &size,
         SkinElementFlags flags = KDefaultSkinElementFlags);
-    static QPixmap backgroundTexture();
+    static QPixmap backgroundTexture(bool skipCreation = false);
+    static QPixmap placeHolderTexture();
 
 #ifdef Q_WS_S60
     void handleDynamicLayoutVariantSwitch();
@@ -576,8 +576,6 @@ public:
     void stopAnimation(QS60StyleEnums::SkinParts animation);
     static QS60StyleAnimation* animationDefinition(QS60StyleEnums::SkinParts part);
     static void removeAnimations();
-    //No support for tactile feedback in emulated style
-    void touchFeedback(QEvent *event, const QWidget *widget);
 
 #endif
 
@@ -595,13 +593,11 @@ private:
     static QPixmap cachedFrame(SkinFrameElements frame, const QSize &size,
         SkinElementFlags flags = KDefaultSkinElementFlags);
 
-    static void refreshUI();
-
     // set S60 font for widget
     void setFont(QWidget *widget) const;
-    void setThemePalette(QWidget *widget) const;
+    static void setThemePalette(QWidget *widget);
     void setThemePalette(QPalette *palette) const;
-    void setThemePaletteHash(QPalette *palette) const;
+    static void setThemePaletteHash(QPalette *palette);
     static void storeThemePalette(QPalette *palette);
     static void deleteThemePalette();
     static bool equalToThemePalette(QColor color, QPalette::ColorRole role);
@@ -619,6 +615,9 @@ private:
 
     // Contains background texture.
     static QPixmap *m_background;
+    // Placeholder pixmap for the real background texture.
+    static QPixmap *m_placeHolderTexture;
+
     const static SkinElementFlags KDefaultSkinElementFlags;
     // defined theme palette
     static QPalette *m_themePalette;
@@ -632,7 +631,6 @@ private:
 #ifdef Q_WS_S60
     //list of progress bars having animation running
     QList<QProgressBar *> m_bars;
-    TactileFeedbackInterface *m_feedbackPlugin;
 #endif
 
 };

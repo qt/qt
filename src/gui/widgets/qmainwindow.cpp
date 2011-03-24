@@ -1516,22 +1516,28 @@ void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool set)
     if (!isWindow() || d->useHIToolBar == set || QSysInfo::MacintoshVersion < QSysInfo::MV_10_3)
         return;
 
-    // ### Disable when using alien widgets
-    if (testAttribute(Qt::WA_NativeWindow) == false) {
-        return;
-    }
-
     d->useHIToolBar = set;
     createWinId(); // We need the hiview for down below.
 
 #ifdef QT_MAC_USE_COCOA
     // Activate the unified toolbar with the raster engine.
-    if (windowSurface()) {
+    if (windowSurface() && set) {
         d->layout->unifiedSurface = new QUnifiedToolbarSurface(this);
     }
 #endif // QT_MAC_USE_COCOA
 
     d->layout->updateHIToolBarStatus();
+
+#ifdef QT_MAC_USE_COCOA
+    // Deactivate the unified toolbar with the raster engine.
+    if (windowSurface() && !set) {
+        if (d->layout->unifiedSurface) {
+            delete d->layout->unifiedSurface;
+            d->layout->unifiedSurface = 0;
+        }
+    }
+#endif // QT_MAC_USE_COCOA
+
     // Enabling the unified toolbar clears the opaque size grip setting, update it.
     d->macUpdateOpaqueSizeGrip();
 #else

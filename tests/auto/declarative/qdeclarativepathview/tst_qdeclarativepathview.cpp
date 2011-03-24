@@ -53,6 +53,7 @@
 #include <QtDeclarative/private/qdeclarativevaluetype_p.h>
 #include <QAbstractListModel>
 #include <QStringListModel>
+#include <QStandardItemModel>
 #include <QFile>
 
 #include "../../../shared/util.h"
@@ -61,6 +62,25 @@
 // In Symbian OS test data is located in applications private dir
 #define SRCDIR "."
 #endif
+
+static void initStandardTreeModel(QStandardItemModel *model)
+{
+    QStandardItem *item;
+    item = new QStandardItem(QLatin1String("Row 1 Item"));
+    model->insertRow(0, item);
+
+    item = new QStandardItem(QLatin1String("Row 2 Item"));
+    item->setCheckable(true);
+    model->insertRow(1, item);
+
+    QStandardItem *childItem = new QStandardItem(QLatin1String("Row 2 Child Item"));
+    item->setChild(0, childItem);
+
+    item = new QStandardItem(QLatin1String("Row 3 Item"));
+    item->setIcon(QIcon());
+    model->insertRow(2, item);
+}
+
 
 class tst_QDeclarativePathView : public QObject
 {
@@ -89,6 +109,9 @@ private slots:
     void pathUpdate();
     void visualDataModel();
     void undefinedPath();
+    void mouseDrag();
+    void treeModel();
+    void changePreferredHighlight();
 
 private:
     QDeclarativeView *createView();
@@ -865,6 +888,104 @@ void tst_QDeclarativePathView::undefinedPath()
     QCOMPARE(obj->count(), 3);
 
     delete obj;
+}
+
+void tst_QDeclarativePathView::mouseDrag()
+{
+    QDeclarativeView *canvas = createView();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/dragpath.qml"));
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QDeclarativePathView *pathview = qobject_cast<QDeclarativePathView*>(canvas->rootObject());
+    QVERIFY(pathview != 0);
+
+    int current = pathview->currentIndex();
+
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(10,100)));
+
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(30,100)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(90,100)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+
+    QVERIFY(pathview->currentIndex() != current);
+
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(40,100)));
+
+    delete canvas;
+}
+
+void tst_QDeclarativePathView::treeModel()
+{
+    QDeclarativeView *canvas = createView();
+
+    QStandardItemModel model;
+    initStandardTreeModel(&model);
+    canvas->engine()->rootContext()->setContextProperty("myModel", &model);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/treemodel.qml"));
+
+    QDeclarativePathView *pathview = qobject_cast<QDeclarativePathView*>(canvas->rootObject());
+    QVERIFY(pathview != 0);
+    QCOMPARE(pathview->count(), 3);
+
+    QDeclarativeText *item = findItem<QDeclarativeText>(pathview, "wrapper", 0);
+    QVERIFY(item);
+    QCOMPARE(item->text(), QLatin1String("Row 1 Item"));
+
+    QVERIFY(QMetaObject::invokeMethod(pathview, "setRoot", Q_ARG(QVariant, 1)));
+    QCOMPARE(pathview->count(), 1);
+
+    QTRY_VERIFY(item = findItem<QDeclarativeText>(pathview, "wrapper", 0));
+    QTRY_COMPARE(item->text(), QLatin1String("Row 2 Child Item"));
+
+    delete canvas;
+}
+
+void tst_QDeclarativePathView::changePreferredHighlight()
+{
+    QDeclarativeView *canvas = createView();
+    canvas->setFixedSize(400,200);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/dragpath.qml"));
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QDeclarativePathView *pathview = qobject_cast<QDeclarativePathView*>(canvas->rootObject());
+    QVERIFY(pathview != 0);
+
+    int current = pathview->currentIndex();
+    QCOMPARE(current, 0);
+
+    QDeclarativeRectangle *firstItem = findItem<QDeclarativeRectangle>(pathview, "wrapper", 0);
+    QVERIFY(firstItem);
+    QDeclarativePath *path = qobject_cast<QDeclarativePath*>(pathview->path());
+    QVERIFY(path);
+    QPointF start = path->pointAt(0.5);
+    start.setX(qRound(start.x()));
+    start.setY(qRound(start.y()));
+    QPointF offset;//Center of item is at point, but pos is from corner
+    offset.setX(firstItem->width()/2);
+    offset.setY(firstItem->height()/2);
+    QTRY_COMPARE(firstItem->pos() + offset, start);
+
+    pathview->setPreferredHighlightBegin(0.8);
+    pathview->setPreferredHighlightEnd(0.8);
+    start = path->pointAt(0.8);
+    start.setX(qRound(start.x()));
+    start.setY(qRound(start.y()));
+    QTRY_COMPARE(firstItem->pos() + offset, start);
+    QCOMPARE(pathview->currentIndex(), 0);
+
+    delete canvas;
 }
 
 QDeclarativeView *tst_QDeclarativePathView::createView()

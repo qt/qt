@@ -147,8 +147,8 @@ void QDeclarativeImagePrivate::setPixmap(const QPixmap &pixmap)
 /*!
     \qmlproperty enumeration Image::fillMode
 
-    Set this property to define what happens when the image set for the item is smaller
-    than the size of the item.
+    Set this property to define what happens when the source image has a different size
+    than the item.
 
     \list
     \o Image.Stretch - the image is scaled to fit
@@ -233,6 +233,9 @@ void QDeclarativeImagePrivate::setPixmap(const QPixmap &pixmap)
     \endqml
 
     \endtable
+
+    Note that \c clip is \c false by default which means that the element might
+    paint outside its bounding rectangle even if the fillMode is set to \c PreserveAspectCrop.
 
     \sa {declarative/imageelements/image}{Image example}
 */
@@ -386,14 +389,16 @@ void QDeclarativeImage::updatePaintedGeometry()
     if (d->fillMode == PreserveAspectFit) {
         if (!d->pix.width() || !d->pix.height())
             return;
-        qreal widthScale = width() / qreal(d->pix.width());
-        qreal heightScale = height() / qreal(d->pix.height());
+        qreal w = widthValid() ? width() : d->pix.width();
+        qreal widthScale = w / qreal(d->pix.width());
+        qreal h = heightValid() ? height() : d->pix.height();
+        qreal heightScale = h / qreal(d->pix.height());
         if (widthScale <= heightScale) {
-            d->paintedWidth = width();
+            d->paintedWidth = w;
             d->paintedHeight = widthScale * qreal(d->pix.height());
         } else if(heightScale < widthScale) {
             d->paintedWidth = heightScale * qreal(d->pix.width());
-            d->paintedHeight = height();
+            d->paintedHeight = h;
         }
         if (widthValid() && !heightValid()) {
             setImplicitHeight(d->paintedHeight);
@@ -458,84 +463,102 @@ QRectF QDeclarativeImage::boundingRect() const
     are always loaded asynchonously.
 */
 
+/*!
+    \qmlproperty bool Image::cache
+    \since Quick 1.1
+
+    Specifies whether the image should be cached. The default value is
+    true. Setting \a cache to false is useful when dealing with large images,
+    to make sure that they aren't cached at the expense of small 'ui element' images.
+*/
+
+/*!
+    \qmlproperty bool Image::mirror
+    \since Quick 1.1
+
+    This property holds whether the image should be horizontally inverted
+    (effectively displaying a mirrored image).
+
+    The default value is false.
+*/
+
+
 void QDeclarativeImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QDeclarativeImage);
     if (d->pix.pixmap().isNull() )
         return;
 
-    bool oldAA = p->testRenderHint(QPainter::Antialiasing);
-    bool oldSmooth = p->testRenderHint(QPainter::SmoothPixmapTransform);
-    if (d->smooth)
-        p->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
+    int drawWidth = width();
+    int drawHeight = height();
+    bool doClip = false;
+    QTransform transform;
+    qreal widthScale = width() / qreal(d->pix.width());
+    qreal heightScale = height() / qreal(d->pix.height());
 
     if (width() != d->pix.width() || height() != d->pix.height()) {
         if (d->fillMode >= Tile) {
-            if (d->fillMode == Tile) {
-                p->drawTiledPixmap(QRectF(0,0,width(),height()), d->pix);
-            } else {
-                qreal widthScale = width() / qreal(d->pix.width());
-                qreal heightScale = height() / qreal(d->pix.height());
-
-                QTransform scale;
-                if (d->fillMode == TileVertically) {
-                    scale.scale(widthScale, 1.0);
-                    QTransform old = p->transform();
-                    p->setWorldTransform(scale * old);
-                    p->drawTiledPixmap(QRectF(0,0,d->pix.width(),height()), d->pix);
-                    p->setWorldTransform(old);
-                } else {
-                    scale.scale(1.0, heightScale);
-                    QTransform old = p->transform();
-                    p->setWorldTransform(scale * old);
-                    p->drawTiledPixmap(QRectF(0,0,width(),d->pix.height()), d->pix);
-                    p->setWorldTransform(old);
-                }
+            if (d->fillMode == TileVertically) {
+                transform.scale(widthScale, 1.0);
+                drawWidth = d->pix.width();
+            } else if (d->fillMode == TileHorizontally) {
+                transform.scale(1.0, heightScale);
+                drawHeight = d->pix.height();
             }
         } else {
-            qreal widthScale = width() / qreal(d->pix.width());
-            qreal heightScale = height() / qreal(d->pix.height());
-
-            QTransform scale;
-
             if (d->fillMode == PreserveAspectFit) {
                 if (widthScale <= heightScale) {
                     heightScale = widthScale;
-                    scale.translate(0, (height() - heightScale * d->pix.height()) / 2);
+                    transform.translate(0, (height() - heightScale * d->pix.height()) / 2);
                 } else if(heightScale < widthScale) {
                     widthScale = heightScale;
-                    scale.translate((width() - widthScale * d->pix.width()) / 2, 0);
+                    transform.translate((width() - widthScale * d->pix.width()) / 2, 0);
                 }
             } else if (d->fillMode == PreserveAspectCrop) {
                 if (widthScale < heightScale) {
                     widthScale = heightScale;
-                    scale.translate((width() - widthScale * d->pix.width()) / 2, 0);
+                    transform.translate((width() - widthScale * d->pix.width()) / 2, 0);
                 } else if(heightScale < widthScale) {
                     heightScale = widthScale;
-                    scale.translate(0, (height() - heightScale * d->pix.height()) / 2);
+                    transform.translate(0, (height() - heightScale * d->pix.height()) / 2);
                 }
             }
-            if (clip()) {
-                p->save();
-                p->setClipRect(QRectF(0, 0, d->mWidth, d->mHeight), Qt::IntersectClip);
-            }
-            scale.scale(widthScale, heightScale);
-            QTransform old = p->transform();
-            p->setWorldTransform(scale * old);
-            p->drawPixmap(0, 0, d->pix);
-            p->setWorldTransform(old);
-            if (clip()) {
-                p->restore();
-            }
+            transform.scale(widthScale, heightScale);
+            drawWidth = d->pix.width();
+            drawHeight = d->pix.height();
+            doClip = clip();
         }
-    } else {
-        p->drawPixmap(0, 0, d->pix);
     }
+
+    QTransform oldTransform;
+    bool oldAA = p->testRenderHint(QPainter::Antialiasing);
+    bool oldSmooth = p->testRenderHint(QPainter::SmoothPixmapTransform);
+    if (d->smooth)
+        p->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
+    if (doClip) {
+        p->save();
+        p->setClipRect(QRectF(0, 0, d->mWidth, d->mHeight), Qt::IntersectClip);
+    }
+    if (d->mirror)
+        transform.translate(drawWidth, 0).scale(-1.0, 1.0);
+    if (!transform.isIdentity()) {
+        oldTransform = p->transform();
+        p->setWorldTransform(transform * oldTransform);
+    }
+
+    if (d->fillMode >= Tile)
+        p->drawTiledPixmap(QRectF(0, 0, drawWidth, drawHeight), d->pix);
+    else
+        p->drawPixmap(QRectF(0, 0, drawWidth, drawHeight), d->pix, QRectF(0, 0, drawWidth, drawHeight));
 
     if (d->smooth) {
         p->setRenderHint(QPainter::Antialiasing, oldAA);
         p->setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
     }
+    if (doClip)
+        p->restore();
+    if (!transform.isIdentity())
+        p->setWorldTransform(oldTransform);
 }
 
 void QDeclarativeImage::pixmapChange()

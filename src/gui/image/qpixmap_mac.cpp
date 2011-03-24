@@ -413,7 +413,11 @@ void QMacPixmapData::fill(const QColor &fillColor)
                 *(dptr + i) = colr;
         }
     }
-    macSetHasAlpha(fillColor.alpha() != 255);
+
+    // If we had an alpha channel from before, don't
+    // switch it off. Only go from no alpha to alpha:
+    if (fillColor.alpha() != 255)
+        macSetHasAlpha(true);
 }
 
 QPixmap QMacPixmapData::alphaChannel() const

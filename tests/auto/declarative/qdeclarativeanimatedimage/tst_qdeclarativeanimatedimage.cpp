@@ -45,6 +45,8 @@
 #include <private/qdeclarativerectangle_p.h>
 #include <private/qdeclarativeimage_p.h>
 #include <private/qdeclarativeanimatedimage_p.h>
+#include <QSignalSpy>
+#include <QtDeclarative/qdeclarativecontext.h>
 
 #include "../shared/testhttpserver.h"
 #include "../../../shared/util.h"
@@ -66,12 +68,29 @@ private slots:
     void stopped();
     void setFrame();
     void frameCount();
+    void mirror_running();
+    void mirror_notRunning();
+    void mirror_notRunning_data();
     void remote();
     void remote_data();
     void sourceSize();
     void sourceSizeReadOnly();
     void invalidSource();
+    void qtbug_16520();
+    void progressAndStatusChanges();
+
+private:
+    QPixmap grabScene(QGraphicsScene *scene, int width, int height);
 };
+
+QPixmap tst_qdeclarativeanimatedimage::grabScene(QGraphicsScene *scene, int width, int height)
+{
+    QPixmap screenshot(width, height);
+    screenshot.fill();
+    QPainter p_screenshot(&screenshot);
+    scene->render(&p_screenshot, QRect(0, 0, width, height), QRect(0, 0, width, height));
+    return screenshot;
+}
 
 void tst_qdeclarativeanimatedimage::play()
 {
@@ -130,6 +149,93 @@ void tst_qdeclarativeanimatedimage::frameCount()
     QCOMPARE(anim->frameCount(), 3);
 
     delete anim;
+}
+
+void tst_qdeclarativeanimatedimage::mirror_running()
+{
+    // test where mirror is set to true after animation has started
+
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/hearts.qml"));
+    QDeclarativeAnimatedImage *anim = qobject_cast<QDeclarativeAnimatedImage *>(component.create());
+    QVERIFY(anim);
+
+    QGraphicsScene scene;
+    int width = anim->property("width").toInt();
+    int height = anim->property("height").toInt();
+    scene.addItem(qobject_cast<QGraphicsObject *>(anim));
+
+    QCOMPARE(anim->currentFrame(), 0);
+    QPixmap frame0 = grabScene(&scene, width, height);
+    anim->setCurrentFrame(1);
+    QPixmap frame1 = grabScene(&scene, width, height);
+
+    anim->setCurrentFrame(0);
+
+    QSignalSpy spy(anim, SIGNAL(frameChanged()));
+    anim->setPlaying(true);
+
+    QTRY_VERIFY(spy.count() == 1); spy.clear();
+    anim->setProperty("mirror", true);
+
+    QCOMPARE(anim->currentFrame(), 1);
+    QPixmap frame1_flipped = grabScene(&scene, width, height);
+
+    QTRY_VERIFY(spy.count() == 1); spy.clear();
+    QCOMPARE(anim->currentFrame(), 0);  // animation only has 2 frames, should cycle back to first
+    QPixmap frame0_flipped = grabScene(&scene, width, height);
+
+    QTransform transform;
+    transform.translate(width, 0).scale(-1, 1.0);
+    QPixmap frame0_expected = frame0.transformed(transform);
+    QPixmap frame1_expected = frame1.transformed(transform);
+
+    QCOMPARE(frame0_flipped, frame0_expected);
+    QCOMPARE(frame1_flipped, frame1_expected);
+}
+
+void tst_qdeclarativeanimatedimage::mirror_notRunning()
+{
+    QFETCH(QUrl, fileUrl);
+
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, fileUrl);
+    QDeclarativeAnimatedImage *anim = qobject_cast<QDeclarativeAnimatedImage *>(component.create());
+    QVERIFY(anim);
+
+    QGraphicsScene scene;
+    int width = anim->property("width").toInt();
+    int height = anim->property("height").toInt();
+    scene.addItem(qobject_cast<QGraphicsObject *>(anim));
+    QPixmap screenshot = grabScene(&scene, width, height);
+
+    QTransform transform;
+    transform.translate(width, 0).scale(-1, 1.0);
+    QPixmap expected = screenshot.transformed(transform);
+
+    int frame = anim->currentFrame();
+    bool playing = anim->isPlaying();
+    bool paused = anim->isPlaying();
+
+    anim->setProperty("mirror", true);
+    screenshot = grabScene(&scene, width, height);
+
+    QCOMPARE(screenshot, expected);
+
+    // mirroring should not change the current frame or playing status
+    QCOMPARE(anim->currentFrame(), frame);
+    QCOMPARE(anim->isPlaying(), playing);
+    QCOMPARE(anim->isPaused(), paused);
+
+    delete anim;
+}
+
+void tst_qdeclarativeanimatedimage::mirror_notRunning_data()
+{
+    QTest::addColumn<QUrl>("fileUrl");
+
+    QTest::newRow("paused") << QUrl::fromLocalFile(SRCDIR "/data/stickmanpause.qml");
+    QTest::newRow("stopped") << QUrl::fromLocalFile(SRCDIR "/data/stickmanstopped.qml");
 }
 
 void tst_qdeclarativeanimatedimage::remote()
@@ -204,6 +310,76 @@ void tst_qdeclarativeanimatedimage::invalidSource()
     QVERIFY(!anim->isPaused());
     QCOMPARE(anim->currentFrame(), 0);
     QCOMPARE(anim->frameCount(), 0);
+    QTRY_VERIFY(anim->status() == 3);
+}
+
+void tst_qdeclarativeanimatedimage::qtbug_16520()
+{
+    TestHTTPServer server(14449);
+    QVERIFY(server.isValid());
+    server.serveDirectory(SRCDIR "/data");
+
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/qtbug-16520.qml"));
+    QTRY_VERIFY(component.isReady());
+
+    QDeclarativeRectangle *root = qobject_cast<QDeclarativeRectangle *>(component.create());
+    QVERIFY(root);
+    QDeclarativeAnimatedImage *anim = root->findChild<QDeclarativeAnimatedImage*>("anim");
+
+    anim->setProperty("source", "http://127.0.0.1:14449/stickman.gif");
+
+    QTRY_VERIFY(anim->opacity() == 0);
+    QTRY_VERIFY(anim->opacity() == 1);
+
+    delete anim;
+}
+
+void tst_qdeclarativeanimatedimage::progressAndStatusChanges()
+{
+    TestHTTPServer server(14449);
+    QVERIFY(server.isValid());
+    server.serveDirectory(SRCDIR "/data");
+
+    QDeclarativeEngine engine;
+    QString componentStr = "import QtQuick 1.0\nAnimatedImage { source: srcImage }";
+    QDeclarativeContext *ctxt = engine.rootContext();
+    ctxt->setContextProperty("srcImage", QUrl::fromLocalFile(SRCDIR "/data/stickman.gif"));
+    QDeclarativeComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
+    QVERIFY(obj != 0);
+    QVERIFY(obj->status() == QDeclarativeImage::Ready);
+    QTRY_VERIFY(obj->progress() == 1.0);
+
+    QSignalSpy sourceSpy(obj, SIGNAL(sourceChanged(const QUrl &)));
+    QSignalSpy progressSpy(obj, SIGNAL(progressChanged(qreal)));
+    QSignalSpy statusSpy(obj, SIGNAL(statusChanged(QDeclarativeImageBase::Status)));
+
+    // Loading local file
+    ctxt->setContextProperty("srcImage", QUrl::fromLocalFile(SRCDIR "/data/colors.gif"));
+    QTRY_VERIFY(obj->status() == QDeclarativeImage::Ready);
+    QTRY_VERIFY(obj->progress() == 1.0);
+    QTRY_COMPARE(sourceSpy.count(), 1);
+    QTRY_COMPARE(progressSpy.count(), 0);
+    QTRY_COMPARE(statusSpy.count(), 0);
+
+    // Loading remote file
+    ctxt->setContextProperty("srcImage", "http://127.0.0.1:14449/stickman.gif");
+    QTRY_VERIFY(obj->status() == QDeclarativeImage::Loading);
+    QTRY_VERIFY(obj->progress() == 0.0);
+    QTRY_VERIFY(obj->status() == QDeclarativeImage::Ready);
+    QTRY_VERIFY(obj->progress() == 1.0);
+    QTRY_COMPARE(sourceSpy.count(), 2);
+    QTRY_VERIFY(progressSpy.count() > 1);
+    QTRY_COMPARE(statusSpy.count(), 2);
+
+    ctxt->setContextProperty("srcImage", "");
+    QTRY_VERIFY(obj->status() == QDeclarativeImage::Null);
+    QTRY_VERIFY(obj->progress() == 0.0);
+    QTRY_COMPARE(sourceSpy.count(), 3);
+    QTRY_VERIFY(progressSpy.count() > 2);
+    QTRY_COMPARE(statusSpy.count(), 3);
 }
 
 QTEST_MAIN(tst_qdeclarativeanimatedimage)

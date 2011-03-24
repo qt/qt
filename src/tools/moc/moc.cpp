@@ -335,6 +335,23 @@ bool Moc::testFunctionAttribute(Token tok, FunctionDef *def)
     return false;
 }
 
+bool Moc::testFunctionRevision(FunctionDef *def)
+{
+    if (test(Q_REVISION_TOKEN)) {
+        next(LPAREN);
+        QByteArray revision = lexemUntil(RPAREN);
+        revision.remove(0, 1);
+        revision.chop(1);
+        bool ok = false;
+        def->revision = revision.toInt(&ok);
+        if (!ok || def->revision < 0)
+            error("Invalid revision");
+        return true;
+    }
+
+    return false;
+}
+
 // returns false if the function should be ignored
 bool Moc::parseFunction(FunctionDef *def, bool inMacro)
 {
@@ -342,7 +359,7 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
     //skip modifiers and attributes
     while (test(INLINE) || test(STATIC) ||
         (test(VIRTUAL) && (def->isVirtual = true)) //mark as virtual
-        || testFunctionAttribute(def)) {}
+        || testFunctionAttribute(def) || testFunctionRevision(def)) {}
     bool templateFunction = (lookup() == TEMPLATE);
     def->type = parseType();
     if (def->type.name.isEmpty()) {
@@ -433,7 +450,7 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
     //skip modifiers and attributes
     while (test(EXPLICIT) || test(INLINE) || test(STATIC) ||
         (test(VIRTUAL) && (def->isVirtual = true)) //mark as virtual
-        || testFunctionAttribute(def)) {}
+        || testFunctionAttribute(def) || testFunctionRevision(def)) {}
     bool tilde = test(TILDE);
     def->type = parseType();
     if (def->type.name.isEmpty())
@@ -668,10 +685,13 @@ void Moc::parse()
                     if (parseEnum(&enumDef))
                         def.enumList += enumDef;
                 } break;
+                case SEMIC:
+                case COLON:
+                    break;
                 default:
                     FunctionDef funcDef;
                     funcDef.access = access;
-                    int rewind = index;
+                    int rewind = index--;
                     if (parseMaybeFunction(&def, &funcDef)) {
                         if (funcDef.isConstructor) {
                             if ((access == FunctionDef::Public) && funcDef.isInvokable) {
@@ -694,6 +714,8 @@ void Moc::parse()
                                     funcDef.arguments.removeLast();
                                     def.slotList += funcDef;
                                 }
+                                if (funcDef.revision > 0)
+                                    ++def.revisionedMethods;
                             } else if (funcDef.isSignal) {
                                 def.signalList += funcDef;
                                 while (funcDef.arguments.size() > 0 && funcDef.arguments.last().isDefault) {
@@ -701,6 +723,8 @@ void Moc::parse()
                                     funcDef.arguments.removeLast();
                                     def.signalList += funcDef;
                                 }
+                                if (funcDef.revision > 0)
+                                    ++def.revisionedMethods;
                             } else if (funcDef.isInvokable) {
                                 def.methodList += funcDef;
                                 while (funcDef.arguments.size() > 0 && funcDef.arguments.last().isDefault) {
@@ -708,6 +732,8 @@ void Moc::parse()
                                     funcDef.arguments.removeLast();
                                     def.methodList += funcDef;
                                 }
+                                if (funcDef.revision > 0)
+                                    ++def.revisionedMethods;
                             }
                         }
                     } else {
@@ -806,6 +832,18 @@ QList<QMetaObject*> Moc::generate(bool ignoreProperties)
 
 void Moc::parseSlots(ClassDef *def, FunctionDef::Access access)
 {
+    int defaultRevision = -1;
+    if (test(Q_REVISION_TOKEN)) {
+        next(LPAREN);
+        QByteArray revision = lexemUntil(RPAREN);
+        revision.remove(0, 1);
+        revision.chop(1);
+        bool ok = false;
+        defaultRevision = revision.toInt(&ok);
+        if (!ok || defaultRevision < 0)
+            error("Invalid revision");
+    }
+
     next(COLON);
     while (inClass(def) && hasNext()) {
         switch (next()) {
@@ -831,6 +869,12 @@ void Moc::parseSlots(ClassDef *def, FunctionDef::Access access)
         funcDef.access = access;
         if (!parseFunction(&funcDef))
             continue;
+        if (funcDef.revision > 0) {
+            ++def->revisionedMethods;
+        } else if (defaultRevision != -1) {
+            funcDef.revision = defaultRevision;
+            ++def->revisionedMethods;
+        }
         def->slotList += funcDef;
         while (funcDef.arguments.size() > 0 && funcDef.arguments.last().isDefault) {
             funcDef.wasCloned = true;
@@ -842,6 +886,18 @@ void Moc::parseSlots(ClassDef *def, FunctionDef::Access access)
 
 void Moc::parseSignals(ClassDef *def)
 {
+    int defaultRevision = -1;
+    if (test(Q_REVISION_TOKEN)) {
+        next(LPAREN);
+        QByteArray revision = lexemUntil(RPAREN);
+        revision.remove(0, 1);
+        revision.chop(1);
+        bool ok = false;
+        defaultRevision = revision.toInt(&ok);
+        if (!ok || defaultRevision < 0)
+            error("Invalid revision");
+    }
+
     next(COLON);
     while (inClass(def) && hasNext()) {
         switch (next()) {
@@ -869,6 +925,12 @@ void Moc::parseSignals(ClassDef *def)
             warning("Signals cannot be declared virtual");
         if (funcDef.inlineCode)
             error("Not a signal declaration");
+        if (funcDef.revision > 0) {
+            ++def->revisionedMethods;
+        } else if (defaultRevision != -1) {
+            funcDef.revision = defaultRevision;
+            ++def->revisionedMethods;
+        }
         def->signalList += funcDef;
         while (funcDef.arguments.size() > 0 && funcDef.arguments.last().isDefault) {
             funcDef.wasCloned = true;
@@ -911,7 +973,6 @@ void Moc::createPropertyDef(PropertyDef &propDef)
     propDef.name = lexem();
     while (test(IDENTIFIER)) {
         QByteArray l = lexem();
-
         if (l[0] == 'C' && l == "CONSTANT") {
             propDef.constant = true;
             continue;
@@ -923,6 +984,10 @@ void Moc::createPropertyDef(PropertyDef &propDef)
         QByteArray v, v2;
         if (test(LPAREN)) {
             v = lexemUntil(RPAREN);
+        } else if (test(INTEGER_LITERAL)) {
+            v = lexem();
+            if (l != "REVISION")
+                error(1);
         } else {
             next(IDENTIFIER);
             v = lexem();
@@ -937,7 +1002,12 @@ void Moc::createPropertyDef(PropertyDef &propDef)
                 propDef.read = v;
             else if (l == "RESET")
                 propDef.reset = v + v2;
-            else
+            else if (l == "REVISION") {
+                bool ok = false;
+                propDef.revision = v.toInt(&ok);
+                if (!ok || propDef.revision < 0)
+                    error(1);
+            } else
                 error(2);
             break;
         case 'S':
@@ -1002,6 +1072,8 @@ void Moc::parseProperty(ClassDef *def)
 
     if(!propDef.notify.isEmpty())
         def->notifyableProperties++;
+    if (propDef.revision > 0)
+        ++def->revisionedProperties;
     def->propertyList += propDef;
 }
 
@@ -1028,6 +1100,8 @@ void Moc::parsePrivateProperty(ClassDef *def)
 
     if(!propDef.notify.isEmpty())
         def->notifyableProperties++;
+    if (propDef.revision > 0)
+        ++def->revisionedProperties;
 
     def->propertyList += propDef;
 }
@@ -1177,6 +1251,9 @@ void Moc::parseSlotInPrivate(ClassDef *def, FunctionDef::Access access)
         funcDef.arguments.removeLast();
         def->slotList += funcDef;
     }
+    if (funcDef.revision > 0)
+        ++def->revisionedMethods;
+
 }
 
 QByteArray Moc::lexemUntil(Token target)

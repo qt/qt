@@ -79,9 +79,9 @@ public:
 
     void copyDataTo(T *values) const;
 
-    T *data() { return m[0]; }
-    const T *data() const { return m[0]; }
-    const T *constData() const { return m[0]; }
+    T *data() { return *m; }
+    const T *data() const { return *m; }
+    const T *constData() const { return *m; }
 
 #if !defined(Q_NO_TEMPLATE_FRIENDS)
     template<int NN, int MM, typename TT>
@@ -198,52 +198,58 @@ Q_OUTOFLINE_TEMPLATE QGenericMatrix<M, N, T> QGenericMatrix<N, M, T>::transposed
 template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T>& QGenericMatrix<N, M, T>::operator+=(const QGenericMatrix<N, M, T>& other)
 {
-    for (int index = 0; index < N * M; ++index)
-        m[0][index] += other.m[0][index];
+    for (int row = 0; row < M; ++row)
+        for (int col = 0; col < N; ++col)
+            m[col][row] += other.m[col][row];
     return *this;
 }
 
 template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T>& QGenericMatrix<N, M, T>::operator-=(const QGenericMatrix<N, M, T>& other)
 {
-    for (int index = 0; index < N * M; ++index)
-        m[0][index] -= other.m[0][index];
+    for (int row = 0; row < M; ++row)
+        for (int col = 0; col < N; ++col)
+            m[col][row] -= other.m[col][row];
     return *this;
 }
 
 template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T>& QGenericMatrix<N, M, T>::operator*=(T factor)
 {
-    for (int index = 0; index < N * M; ++index)
-        m[0][index] *= factor;
+    for (int row = 0; row < M; ++row)
+        for (int col = 0; col < N; ++col)
+            m[col][row] *= factor;
     return *this;
 }
 
 template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE bool QGenericMatrix<N, M, T>::operator==(const QGenericMatrix<N, M, T>& other) const
 {
-    for (int index = 0; index < N * M; ++index) {
-        if (m[0][index] != other.m[0][index])
-            return false;
-    }
+    for (int row = 0; row < M; ++row)
+        for (int col = 0; col < N; ++col)  {
+            if (m[col][row] != other.m[col][row])
+                return false;
+        }
     return true;
 }
 
 template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE bool QGenericMatrix<N, M, T>::operator!=(const QGenericMatrix<N, M, T>& other) const
 {
-    for (int index = 0; index < N * M; ++index) {
-        if (m[0][index] != other.m[0][index])
-            return true;
-    }
+    for (int row = 0; row < M; ++row)
+        for (int col = 0; col < N; ++col) {
+            if (m[col][row] != other.m[col][row])
+                return true;
+        }
     return false;
 }
 
 template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T>& QGenericMatrix<N, M, T>::operator/=(T divisor)
 {
-    for (int index = 0; index < N * M; ++index)
-        m[0][index] /= divisor;
+    for (int row = 0; row < M; ++row)
+        for (int col = 0; col < N; ++col)
+            m[col][row] /= divisor;
     return *this;
 }
 
@@ -251,8 +257,9 @@ template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T> operator+(const QGenericMatrix<N, M, T>& m1, const QGenericMatrix<N, M, T>& m2)
 {
     QGenericMatrix<N, M, T> result(1);
-    for (int index = 0; index < N * M; ++index)
-        result.m[0][index] = m1.m[0][index] + m2.m[0][index];
+    for (int row = 0; row < M; ++row)
+        for (int col = 0; col < N; ++col)
+            result.m[col][row] = m1.m[col][row] + m2.m[col][row];
     return result;
 }
 
@@ -260,8 +267,9 @@ template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T> operator-(const QGenericMatrix<N, M, T>& m1, const QGenericMatrix<N, M, T>& m2)
 {
     QGenericMatrix<N, M, T> result(1);
-    for (int index = 0; index < N * M; ++index)
-        result.m[0][index] = m1.m[0][index] - m2.m[0][index];
+    for (int row = 0; row < M; ++row)
+        for (int col = 0; col < N; ++col)
+            result.m[col][row] = m1.m[col][row] - m2.m[col][row];
     return result;
 }
 
@@ -284,8 +292,9 @@ template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T> operator-(const QGenericMatrix<N, M, T>& matrix)
 {
     QGenericMatrix<N, M, T> result(1);
-    for (int index = 0; index < N * M; ++index)
-        result.m[0][index] = -matrix.m[0][index];
+    for (int row = 0; row < M; ++row)
+        for (int col = 0; col < N; ++col)
+            result.m[col][row] = -matrix.m[col][row];
     return result;
 }
 
@@ -293,8 +302,9 @@ template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T> operator*(T factor, const QGenericMatrix<N, M, T>& matrix)
 {
     QGenericMatrix<N, M, T> result(1);
-    for (int index = 0; index < N * M; ++index)
-        result.m[0][index] = matrix.m[0][index] * factor;
+    for (int row = 0; row < M; ++row)
+        for (int col = 0; col < N; ++col)
+            result.m[col][row] = matrix.m[col][row] * factor;
     return result;
 }
 
@@ -302,8 +312,9 @@ template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T> operator*(const QGenericMatrix<N, M, T>& matrix, T factor)
 {
     QGenericMatrix<N, M, T> result(1);
-    for (int index = 0; index < N * M; ++index)
-        result.m[0][index] = matrix.m[0][index] * factor;
+    for (int row = 0; row < M; ++row)
+        for (int col = 0; col < N; ++col)
+            result.m[col][row] = matrix.m[col][row] * factor;
     return result;
 }
 
@@ -311,8 +322,9 @@ template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T> operator/(const QGenericMatrix<N, M, T>& matrix, T divisor)
 {
     QGenericMatrix<N, M, T> result(1);
-    for (int index = 0; index < N * M; ++index)
-        result.m[0][index] = matrix.m[0][index] / divisor;
+    for (int row = 0; row < M; ++row)
+        for (int col = 0; col < N; ++col)
+            result.m[col][row] = matrix.m[col][row] / divisor;
     return result;
 }
 

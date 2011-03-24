@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 // This file is auto-generated, do not edit!
+// (Generated using util/xkbdatagen)
 
 static struct {
     const char *layout;

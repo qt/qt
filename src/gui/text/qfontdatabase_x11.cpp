@@ -1018,6 +1018,13 @@ static void loadFontConfig()
     QFontDatabasePrivate *db = privateDb();
     FcFontSet  *fonts;
 
+    FcPattern *pattern = FcPatternCreate();
+    FcDefaultSubstitute(pattern);
+    FcChar8 *lang = 0;
+    if (FcPatternGetString(pattern, FC_LANG, 0, &lang) == FcResultMatch)
+        db->systemLang = QString::fromUtf8((const char *) lang);
+    FcPatternDestroy(pattern);
+
     QString familyName;
     FcChar8 *value = 0;
     int weight_value;
@@ -1965,17 +1972,6 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
 #ifndef QT_NO_FONTCONFIG
         } else if (X11->has_fontconfig) {
             fe = loadFc(d, script, req);
-            if (fe != 0 && fe->fontDef.pixelSize != req.pixelSize && mainThread && qt_is_gui_used) {
-                QFontEngine *xlfdFontEngine = loadXlfd(d->screen, script, req);
-                if (xlfdFontEngine->fontDef.family == fe->fontDef.family) {
-                    delete fe;
-                    fe = xlfdFontEngine;
-                } else {
-                    delete xlfdFontEngine;
-                }
-            }
-
-
 #endif
         } else if (mainThread && qt_is_gui_used) {
             fe = loadXlfd(d->screen, script, req);
@@ -2037,6 +2033,7 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
     int count = 0;
 
     QStringList families;
+    QFontDatabasePrivate *db = privateDb();
 
     FcPattern *pattern = 0;
     do {
@@ -2048,8 +2045,19 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
         FcPatternDel(pattern, FC_FILE);
         FcPatternAddString(pattern, FC_FILE, (const FcChar8 *)fnt->fileName.toUtf8().constData());
 
-        FcChar8 *fam = 0;
-        if (FcPatternGetString(pattern, FC_FAMILY, 0, &fam) == FcResultMatch) {
+        FcChar8 *fam = 0, *familylang = 0;
+        int i, n = 0;
+        for (i = 0; ; i++) {
+            if (FcPatternGetString(pattern, FC_FAMILYLANG, i, &familylang) != FcResultMatch)
+                break;
+            QString familyLang = QString::fromUtf8((const char *) familylang);
+            if (familyLang.compare(db->systemLang, Qt::CaseInsensitive) == 0) {
+                n = i;
+                break;
+            }
+        }
+
+        if (FcPatternGetString(pattern, FC_FAMILY, n, &fam) == FcResultMatch) {
             QString family = QString::fromUtf8(reinterpret_cast<const char *>(fam));
             families << family;
         }
@@ -2109,6 +2117,28 @@ bool QFontDatabase::supportsThreadedFontRendering()
     return false;
 #else
     return X11->has_fontconfig;
+#endif
+}
+
+QString QFontDatabase::resolveFontFamilyAlias(const QString &family)
+{
+#if defined(QT_NO_FONTCONFIG)
+    return family;
+#else
+    FcPattern *pattern = FcPatternCreate();
+    if (!pattern)
+        return family;
+
+    FcPatternAddString(pattern, FC_FAMILY, (const FcChar8 *) family.toUtf8().data());
+    FcConfigSubstitute(0, pattern, FcMatchPattern);
+    FcDefaultSubstitute(pattern);
+
+    FcChar8 *familyAfterSubstitution;
+    FcPatternGetString(pattern, FC_FAMILY, 0, &familyAfterSubstitution);
+    QString resolved = QString::fromUtf8((const char *) familyAfterSubstitution);
+    FcPatternDestroy(pattern);
+
+    return resolved;
 #endif
 }
 

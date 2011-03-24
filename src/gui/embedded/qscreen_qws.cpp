@@ -1768,7 +1768,7 @@ QImage::Format QScreenPrivate::preferredImageFormat() const
     This function is called by every \l{Qt for Embedded Linux}
     application on startup, and must be implemented to map in the
     framebuffer and the accelerated drivers that the graphics card
-    control registers.  Note that coonnect must be called \e before
+    control registers.  Note that connect must be called \e before
     the initDevice() function.
 
     Ensure that true is returned if a connection to the screen device

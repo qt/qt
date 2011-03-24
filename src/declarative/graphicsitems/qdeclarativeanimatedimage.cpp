@@ -86,6 +86,25 @@ QT_BEGIN_NAMESPACE
     \sa BorderImage, Image
 */
 
+/*!
+    \qmlproperty bool AnimatedImage::cache
+    \since Quick 1.1
+
+    Specifies whether the image should be cached. The default value is
+    true. Setting \a cache to false is useful when dealing with large images,
+    to make sure that they aren't cached at the expense of small 'ui element' images.
+*/
+
+/*!
+    \qmlproperty bool AnimatedImage::mirror
+    \since Quick 1.1
+
+    This property holds whether the image should be horizontally inverted
+    (effectively displaying a mirrored image).
+
+    The default value is false.
+*/
+
 QDeclarativeAnimatedImage::QDeclarativeAnimatedImage(QDeclarativeItem *parent)
     : QDeclarativeImage(*(new QDeclarativeAnimatedImagePrivate), parent)
 {
@@ -126,7 +145,7 @@ void QDeclarativeAnimatedImage::setPaused(bool pause)
   \qmlproperty bool AnimatedImage::playing
   This property holds whether the animated image is playing.
 
-  By defaults, this property is true, meaning that the animation
+  By default, this property is true, meaning that the animation
   will start playing immediately.
 */
 bool QDeclarativeAnimatedImage::isPlaying() const
@@ -202,13 +221,31 @@ void QDeclarativeAnimatedImage::setSource(const QUrl &url)
     }
 
     d->url = url;
+    emit sourceChanged(d->url);
 
-    if (url.isEmpty()) {
+    if (isComponentComplete())
+        load();
+}
+
+void QDeclarativeAnimatedImage::load()
+{
+    Q_D(QDeclarativeAnimatedImage);
+
+    QDeclarativeImageBase::Status oldStatus = d->status;
+    qreal oldProgress = d->progress;
+
+    if (d->url.isEmpty()) {
         delete d->_movie;
+        d->setPixmap(QPixmap());
+        d->progress = 0;
         d->status = Null;
+        if (d->status != oldStatus)
+            emit statusChanged(d->status);
+        if (d->progress != oldProgress)
+            emit progressChanged(d->progress);
     } else {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
-        QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
+        QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(d->url);
         if (!lf.isEmpty()) {
             //### should be unified with movieRequestFinished
             d->_movie = new QMovie(lf);
@@ -216,6 +253,9 @@ void QDeclarativeAnimatedImage::setSource(const QUrl &url)
                 qmlInfo(this) << "Error Reading Animated Image File " << d->url.toString();
                 delete d->_movie;
                 d->_movie = 0;
+                d->status = Error;
+                if (d->status != oldStatus)
+                    emit statusChanged(d->status);
                 return;
             }
             connect(d->_movie, SIGNAL(stateChanged(QMovie::MovieState)),
@@ -232,21 +272,25 @@ void QDeclarativeAnimatedImage::setSource(const QUrl &url)
             d->setPixmap(d->_movie->currentPixmap());
             d->status = Ready;
             d->progress = 1.0;
-            emit statusChanged(d->status);
-            emit sourceChanged(d->url);
-            emit progressChanged(d->progress);
+            if (d->status != oldStatus)
+                emit statusChanged(d->status);
+            if (d->progress != oldProgress)
+                emit progressChanged(d->progress);
             return;
         }
 #endif
         d->status = Loading;
+        d->progress = 0;
+        emit statusChanged(d->status);
+        emit progressChanged(d->progress);
         QNetworkRequest req(d->url);
         req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
         d->reply = qmlEngine(this)->networkAccessManager()->get(req);
         QObject::connect(d->reply, SIGNAL(finished()),
                          this, SLOT(movieRequestFinished()));
+        QObject::connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
+                         this, SLOT(requestProgress(qint64,qint64)));
     }
-
-    emit statusChanged(d->status);
 }
 
 #define ANIMATEDIMAGE_MAXIMUM_REDIRECT_RECURSION 16
@@ -275,6 +319,8 @@ void QDeclarativeAnimatedImage::movieRequestFinished()
 #endif
         delete d->_movie;
         d->_movie = 0;
+        d->status = Error;
+        emit statusChanged(d->status);
         return;
     }
     connect(d->_movie, SIGNAL(stateChanged(QMovie::MovieState)),
@@ -291,6 +337,8 @@ void QDeclarativeAnimatedImage::movieRequestFinished()
     if(d->paused)
         d->_movie->setPaused(true);
     d->setPixmap(d->_movie->currentPixmap());
+    d->status = Ready;
+    emit statusChanged(d->status);
 }
 
 void QDeclarativeAnimatedImage::movieUpdate()
@@ -317,6 +365,8 @@ void QDeclarativeAnimatedImage::componentComplete()
 {
     Q_D(QDeclarativeAnimatedImage);
     QDeclarativeItem::componentComplete(); // NOT QDeclarativeImage
+    if (d->url.isValid())
+        load();
     if (!d->reply) {
         setCurrentFrame(d->preset_currentframe);
         d->preset_currentframe = 0;

@@ -1046,7 +1046,7 @@ QGifHandler::QGifHandler()
 {
     gifFormat = new QGIFFormat;
     nextDelay = 100;
-    loopCnt = 1;
+    loopCnt = -1;
     frameNumber = -1;
     scanIsCached = false;
 }
@@ -1192,7 +1192,13 @@ int QGifHandler::loopCount() const
         QGIFFormat::scan(device(), &imageSizes, &loopCnt);
         scanIsCached = true;
     }
-    return loopCnt-1; // In GIF, loop count is iteration count, so subtract one
+
+    if (loopCnt == 0)
+        return -1;
+    else if (loopCnt == -1)
+        return 0;
+    else
+        return loopCnt;
 }
 
 int QGifHandler::currentImageNumber() const

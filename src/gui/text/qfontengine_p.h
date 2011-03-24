@@ -117,6 +117,8 @@ public:
         // S60 types
         S60FontEngine, // Cannot be simply called "S60". Reason is qt_s60Data.h
 
+        DirectWrite,
+
         TestFontEngine = 0x1000
     };
 
@@ -193,7 +195,7 @@ public:
     void addBitmapFontToPath(qreal x, qreal y, const QGlyphLayout &, QPainterPath *, QTextItem::RenderFlags);
     /**
      * Create a qimage with the alpha values for the glyph.
-     * Returns an image indexed_8 with index values ranging from 0=fully transparant to 255=opaque
+     * Returns an image indexed_8 with index values ranging from 0=fully transparent to 255=opaque
      */
     virtual QImage alphaMapForGlyph(glyph_t);
     virtual QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition);
