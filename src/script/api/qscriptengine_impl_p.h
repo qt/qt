@@ -119,7 +119,7 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(const QSt
     // http://bugreports.qt.nokia.com/browse/QTBUG-17878
     if (m_baseQsContext.data() == m_currentQsContext // no pushContext
             && m_currentQsContext->scopes.empty()    // no pushScope
-            && globalObject()->StrictEquals(static_cast<v8::Local<v8::Object> >(m_originalGlobalObject)->GetPrototype()) // no setGlobalObject
+            && m_originalGlobalObject.strictlyEquals(globalObject()) // no setGlobalObject
             ) {
         script = v8::Script::Compile(QScriptConverter::toString(program), &scriptOrigin);
     } else {
