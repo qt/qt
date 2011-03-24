@@ -67,6 +67,7 @@ typedef QList<QSslError::SslError> SslErrorList;
 Q_DECLARE_METATYPE(SslErrorList)
 Q_DECLARE_METATYPE(QSslError)
 Q_DECLARE_METATYPE(QSsl::SslProtocol)
+Q_DECLARE_METATYPE(QSslConfiguration)
 #endif
 
 #if defined Q_OS_HPUX && defined Q_CC_GNU
@@ -152,6 +153,8 @@ private slots:
     void setLocalCertificate();
     void setPrivateKey();
     void setSocketDescriptor();
+    void setSslConfiguration_data();
+    void setSslConfiguration();
     void waitForEncrypted();
     void waitForConnectedEncryptedReadyRead();
     void startClientEncryption();
@@ -1036,6 +1039,39 @@ void tst_QSslSocket::setSocketDescriptor()
     QVERIFY(client->peerPort() != 0);
     QVERIFY(!client->localAddress().isNull());
     QVERIFY(client->localPort() != 0);
+}
+
+void tst_QSslSocket::setSslConfiguration_data()
+{
+    QTest::addColumn<QSslConfiguration>("configuration");
+    QTest::addColumn<bool>("works");
+
+    QTest::newRow("empty") << QSslConfiguration() << false;
+    QSslConfiguration conf = QSslConfiguration::defaultConfiguration();
+    QTest::newRow("default") << conf << false; // does not contain test server cert
+    QList<QSslCertificate> testServerCert = QSslCertificate::fromPath(SRCDIR "certs/qt-test-server-cacert.pem");
+    conf.setCaCertificates(testServerCert);
+    QTest::newRow("set-root-cert") << conf << true;
+    conf.setProtocol(QSsl::SecureProtocols);
+    QTest::newRow("secure") << conf << true;
+}
+
+void tst_QSslSocket::setSslConfiguration()
+{
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QSslSocketPtr socket = newSocket();
+    QFETCH(QSslConfiguration, configuration);
+    socket->setSslConfiguration(configuration);
+    this->socket = socket;
+    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+    QFETCH(bool, works);
+    QCOMPARE(socket->waitForEncrypted(10000), works);
+    if (works) {
+        socket->disconnectFromHost();
+        QVERIFY2(socket->waitForDisconnected(), qPrintable(socket->errorString()));
+    }
 }
 
 void tst_QSslSocket::waitForEncrypted()
@@ -1950,8 +1986,9 @@ void tst_QSslSocket::setEmptyDefaultConfiguration()
     QSslConfiguration::setDefaultConfiguration(emptyConf);
 
     QSslSocketPtr socket = newSocket();
+    connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(ignoreErrorSlot()));
     socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
-
+    QVERIFY2(!socket->waitForEncrypted(4000), qPrintable(socket->errorString()));
 }
 
 #endif // QT_NO_OPENSSL
