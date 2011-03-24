@@ -211,12 +211,8 @@ void tst_QSGMouseArea::dragging()
 
     QVERIFY(!drag->active());
 
-    QGraphicsScene *scene = canvas->scene();
-    QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
-    pressEvent.setScenePos(QPointF(100, 100));
-    pressEvent.setButton(Qt::LeftButton);
-    pressEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &pressEvent);
+    QMouseEvent pressEvent(QEvent::MouseButtonPress, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &pressEvent);
 
     QVERIFY(!drag->active());
     QCOMPARE(blackRect->x(), 50.0);
@@ -224,26 +220,17 @@ void tst_QSGMouseArea::dragging()
 
     // First move event triggers drag, second is acted upon.
     // This is due to possibility of higher stacked area taking precedence.
-    QGraphicsSceneMouseEvent moveEvent(QEvent::GraphicsSceneMouseMove);
-    moveEvent.setScenePos(QPointF(106, 106));
-    moveEvent.setButton(Qt::LeftButton);
-    moveEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &moveEvent);
-
-    moveEvent.setScenePos(QPointF(110, 110));
-    moveEvent.setButton(Qt::LeftButton);
-    moveEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &moveEvent);
+    QMouseEvent moveEvent(QEvent::MouseMove, QPoint(106, 106), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &moveEvent);
+    moveEvent = QMouseEvent(QEvent::MouseMove, QPoint(110, 110), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &moveEvent);
 
     QVERIFY(drag->active());
     QCOMPARE(blackRect->x(), 60.0);
     QCOMPARE(blackRect->y(), 60.0);
 
-    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
-    releaseEvent.setScenePos(QPointF(110, 110));
-    releaseEvent.setButton(Qt::LeftButton);
-    releaseEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &releaseEvent);
+    QMouseEvent releaseEvent(QEvent::MouseButtonRelease, QPoint(110, 110), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &releaseEvent);
 
     QVERIFY(!drag->active());
     QCOMPARE(blackRect->x(), 60.0);
@@ -277,12 +264,8 @@ void tst_QSGMouseArea::updateMouseAreaPosOnClick()
     QCOMPARE(mouseRegion->mouseX(), rect->x());
     QCOMPARE(mouseRegion->mouseY(), rect->y());
 
-    QGraphicsScene *scene = canvas->scene();
-    QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
-    event.setScenePos(QPointF(100, 100));
-    event.setButton(Qt::LeftButton);
-    event.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &event);
+    QMouseEvent event(QEvent::MouseButtonPress, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &event);
 
     QCOMPARE(mouseRegion->mouseX(), 100.0);
     QCOMPARE(mouseRegion->mouseY(), 100.0);
@@ -310,12 +293,8 @@ void tst_QSGMouseArea::updateMouseAreaPosOnResize()
     QCOMPARE(mouseRegion->mouseX(), 0.0);
     QCOMPARE(mouseRegion->mouseY(), 0.0);
 
-    QGraphicsScene *scene = canvas->scene();
-    QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
-    event.setScenePos(rect->pos());
-    event.setButton(Qt::LeftButton);
-    event.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &event);
+    QMouseEvent event(QEvent::MouseButtonPress, rect->pos().toPoint(), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &event);
 
     QVERIFY(!mouseRegion->property("emitPositionChanged").toBool());
     QVERIFY(mouseRegion->property("mouseMatchesPos").toBool());
@@ -341,23 +320,16 @@ void tst_QSGMouseArea::noOnClickedWithPressAndHold()
     canvas->setFocus();
     QVERIFY(canvas->rootObject() != 0);
 
-    QGraphicsScene *scene = canvas->scene();
-    QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
-    pressEvent.setScenePos(QPointF(100, 100));
-    pressEvent.setButton(Qt::LeftButton);
-    pressEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &pressEvent);
+    QMouseEvent pressEvent(QEvent::MouseButtonPress, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &pressEvent);
 
     QVERIFY(!canvas->rootObject()->property("clicked").toBool());
     QVERIFY(!canvas->rootObject()->property("held").toBool());
 
     QTest::qWait(1000);
 
-    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
-    releaseEvent.setScenePos(QPointF(100, 100));
-    releaseEvent.setButton(Qt::LeftButton);
-    releaseEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &releaseEvent);
+    QMouseEvent releaseEvent(QEvent::MouseButtonRelease, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &releaseEvent);
 
     QVERIFY(!canvas->rootObject()->property("clicked").toBool());
     QVERIFY(canvas->rootObject()->property("held").toBool());
@@ -381,12 +353,8 @@ void tst_QSGMouseArea::onMousePressRejected()
     QVERIFY(!canvas->rootObject()->property("mr2_released").toBool());
     QVERIFY(!canvas->rootObject()->property("mr2_canceled").toBool());
 
-    QGraphicsScene *scene = canvas->scene();
-    QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
-    pressEvent.setScenePos(QPointF(100, 100));
-    pressEvent.setButton(Qt::LeftButton);
-    pressEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &pressEvent);
+    QMouseEvent pressEvent(QEvent::MouseButtonPress, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &pressEvent);
 
     QVERIFY(canvas->rootObject()->property("mr1_pressed").toBool());
     QVERIFY(!canvas->rootObject()->property("mr1_released").toBool());
@@ -397,11 +365,8 @@ void tst_QSGMouseArea::onMousePressRejected()
 
     QTest::qWait(200);
 
-    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
-    releaseEvent.setScenePos(QPointF(100, 100));
-    releaseEvent.setButton(Qt::LeftButton);
-    releaseEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &releaseEvent);
+    QMouseEvent releaseEvent(QEvent::MouseButtonRelease, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &releaseEvent);
 
     QVERIFY(canvas->rootObject()->property("mr1_released").toBool());
     QVERIFY(!canvas->rootObject()->property("mr1_canceled").toBool());
@@ -418,28 +383,18 @@ void tst_QSGMouseArea::doubleClick()
     canvas->setFocus();
     QVERIFY(canvas->rootObject() != 0);
 
-    QGraphicsScene *scene = canvas->scene();
-    QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
-    pressEvent.setScenePos(QPointF(100, 100));
-    pressEvent.setButton(Qt::LeftButton);
-    pressEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &pressEvent);
+    QMouseEvent pressEvent(QEvent::MouseButtonPress, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &pressEvent);
 
-    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
-    releaseEvent.setScenePos(QPointF(100, 100));
-    releaseEvent.setButton(Qt::LeftButton);
-    releaseEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &releaseEvent);
+    QMouseEvent releaseEvent(QEvent::MouseButtonRelease, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &releaseEvent);
 
     QCOMPARE(canvas->rootObject()->property("released").toInt(), 1);
 
-    QGraphicsSceneMouseEvent dblClickEvent(QEvent::GraphicsSceneMouseDoubleClick);
-    dblClickEvent.setScenePos(QPointF(100, 100));
-    dblClickEvent.setButton(Qt::LeftButton);
-    dblClickEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &dblClickEvent);
+    pressEvent = QMouseEvent(QEvent::MouseButtonDblClick, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &pressEvent);
 
-    QApplication::sendEvent(scene, &releaseEvent);
+    QApplication::sendEvent(canvas, &releaseEvent);
 
     QCOMPARE(canvas->rootObject()->property("clicked").toInt(), 1);
     QCOMPARE(canvas->rootObject()->property("doubleClicked").toInt(), 1);
@@ -457,31 +412,21 @@ void tst_QSGMouseArea::clickTwice()
     canvas->setFocus();
     QVERIFY(canvas->rootObject() != 0);
 
-    QGraphicsScene *scene = canvas->scene();
-    QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
-    pressEvent.setScenePos(QPointF(100, 100));
-    pressEvent.setButton(Qt::LeftButton);
-    pressEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &pressEvent);
+    QMouseEvent pressEvent(QEvent::MouseButtonPress, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &pressEvent);
 
-    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
-    releaseEvent.setScenePos(QPointF(100, 100));
-    releaseEvent.setButton(Qt::LeftButton);
-    releaseEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &releaseEvent);
+    QMouseEvent releaseEvent(QEvent::MouseButtonRelease, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &releaseEvent);
 
     QCOMPARE(canvas->rootObject()->property("pressed").toInt(), 1);
     QCOMPARE(canvas->rootObject()->property("released").toInt(), 1);
     QCOMPARE(canvas->rootObject()->property("clicked").toInt(), 1);
 
-    QGraphicsSceneMouseEvent dblClickEvent(QEvent::GraphicsSceneMouseDoubleClick);
-    dblClickEvent.setScenePos(QPointF(100, 100));
-    dblClickEvent.setButton(Qt::LeftButton);
-    dblClickEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &dblClickEvent);
+    pressEvent = QMouseEvent(QEvent::MouseButtonDblClick, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &pressEvent);
 
-    QApplication::sendEvent(scene, &pressEvent);
-    QApplication::sendEvent(scene, &releaseEvent);
+    QApplication::sendEvent(canvas, &pressEvent);
+    QApplication::sendEvent(canvas, &releaseEvent);
 
     QCOMPARE(canvas->rootObject()->property("pressed").toInt(), 2);
     QCOMPARE(canvas->rootObject()->property("released").toInt(), 2);
@@ -500,24 +445,17 @@ void tst_QSGMouseArea::pressedOrdering()
 
     QCOMPARE(canvas->rootObject()->property("value").toString(), QLatin1String("base"));
 
-    QGraphicsScene *scene = canvas->scene();
-    QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
-    pressEvent.setScenePos(QPointF(100, 100));
-    pressEvent.setButton(Qt::LeftButton);
-    pressEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &pressEvent);
+    QMouseEvent pressEvent(QEvent::MouseButtonPress, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &pressEvent);
 
     QCOMPARE(canvas->rootObject()->property("value").toString(), QLatin1String("pressed"));
 
-    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
-    releaseEvent.setScenePos(QPointF(100, 100));
-    releaseEvent.setButton(Qt::LeftButton);
-    releaseEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &releaseEvent);
+    QMouseEvent releaseEvent(QEvent::MouseButtonRelease, QPoint(100, 100), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &releaseEvent);
 
     QCOMPARE(canvas->rootObject()->property("value").toString(), QLatin1String("toggled"));
 
-    QApplication::sendEvent(scene, &pressEvent);
+    QApplication::sendEvent(canvas, &pressEvent);
 
     QCOMPARE(canvas->rootObject()->property("value").toString(), QLatin1String("pressed"));
 
@@ -539,28 +477,21 @@ void tst_QSGMouseArea::preventStealing()
     QSGMouseArea *mouseArea = canvas->rootObject()->findChild<QSGMouseArea*>("mousearea");
     QVERIFY(mouseArea != 0);
 
-    QSignalSpy mousePositionSpy(mouseArea, SIGNAL(positionChanged(QDeclarativeMouseEvent*)));
+    QSignalSpy mousePositionSpy(mouseArea, SIGNAL(positionChanged(QSGMouseEvent*)));
 
-    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(80, 80)));
+    QTest::mousePress(canvas, Qt::LeftButton, 0, QPoint(80, 80));
 
     // Without preventStealing, mouse movement over MouseArea would
     // cause the Flickable to steal mouse and trigger content movement.
-    QGraphicsScene *scene = canvas->scene();
-    QGraphicsSceneMouseEvent moveEvent(QEvent::GraphicsSceneMouseMove);
-    moveEvent.setScenePos(QPointF(70, 70));
-    moveEvent.setButton(Qt::LeftButton);
-    moveEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &moveEvent);
 
-    moveEvent.setScenePos(QPointF(60, 60));
-    moveEvent.setButton(Qt::LeftButton);
-    moveEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &moveEvent);
+    QMouseEvent moveEvent(QEvent::MouseMove, QPoint(70, 70), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &moveEvent);
 
-    moveEvent.setScenePos(QPointF(50, 50));
-    moveEvent.setButton(Qt::LeftButton);
-    moveEvent.setButtons(Qt::LeftButton);
-    QApplication::sendEvent(scene, &moveEvent);
+    moveEvent = QMouseEvent(QEvent::MouseMove, QPoint(60, 60), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &moveEvent);
+
+    moveEvent = QMouseEvent(QEvent::MouseMove, QPoint(50, 50), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &moveEvent);
 
     // We should have received all three move events
     QCOMPARE(mousePositionSpy.count(), 3);
@@ -570,23 +501,23 @@ void tst_QSGMouseArea::preventStealing()
     QCOMPARE(flickable->contentX(), 0.);
     QCOMPARE(flickable->contentY(), 0.);
 
-    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(50, 50)));
+    QTest::mouseRelease(canvas, Qt::LeftButton, 0, QPoint(50, 50));
 
     // Now allow stealing and confirm Flickable does its thing.
     canvas->rootObject()->setProperty("stealing", false);
 
-    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(80, 80)));
+    QTest::mousePress(canvas, Qt::LeftButton, 0, QPoint(80, 80));
 
     // Without preventStealing, mouse movement over MouseArea would
     // cause the Flickable to steal mouse and trigger content movement.
-    moveEvent.setScenePos(QPointF(70, 70));
-    QApplication::sendEvent(scene, &moveEvent);
+    moveEvent = QMouseEvent(QEvent::MouseMove, QPoint(70, 70), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &moveEvent);
 
-    moveEvent.setScenePos(QPointF(60, 60));
-    QApplication::sendEvent(scene, &moveEvent);
+    moveEvent = QMouseEvent(QEvent::MouseMove, QPoint(60, 60), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &moveEvent);
 
-    moveEvent.setScenePos(QPointF(50, 50));
-    QApplication::sendEvent(scene, &moveEvent);
+    moveEvent = QMouseEvent(QEvent::MouseMove, QPoint(50, 50), Qt::LeftButton, Qt::LeftButton, 0);
+    QApplication::sendEvent(canvas, &moveEvent);
 
     // We should only have received the first move event
     QCOMPARE(mousePositionSpy.count(), 4);
@@ -597,7 +528,7 @@ void tst_QSGMouseArea::preventStealing()
     QCOMPARE(flickable->contentX(), 10.);
     QCOMPARE(flickable->contentY(), 10.);
 
-    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(50, 50)));
+    QTest::mouseRelease(canvas, Qt::LeftButton, 0, QPoint(50, 50));
 
     delete canvas;
 }
