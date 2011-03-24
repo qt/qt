@@ -167,7 +167,7 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
     int propertyCount = 0;
     properties[propertyCount++] = atom(QXcbAtom::WM_DELETE_WINDOW);
     properties[propertyCount++] = atom(QXcbAtom::WM_TAKE_FOCUS);
-    properties[propertyCount++] = atom(QXcbAtom::_NET_WM_PING);
+//    properties[propertyCount++] = atom(QXcbAtom::_NET_WM_PING);
 
     if (tlw->windowFlags() & Qt::WindowContextHelpButtonHint)
         properties[propertyCount++] = atom(QXcbAtom::_NET_WM_CONTEXT_HELP);
