@@ -24,10 +24,6 @@ QPlatformGLContext *QWaylandXPixmapWindow::glContext() const
     return mContext;
 }
 
-void QWaylandXPixmapWindow::newSurfaceCreated()
-{
-}
-
 void QWaylandXPixmapWindow::setGeometry(const QRect &rect)
 {
     QPlatformWindow::setGeometry(rect);

@@ -16,8 +16,6 @@ public:
     QPlatformGLContext *glContext() const;
 
     void setGeometry(const QRect &rect);
-protected:
-    void newSurfaceCreated();
 
 private:
     QWaylandXPixmapEglIntegration *mEglIntegration;

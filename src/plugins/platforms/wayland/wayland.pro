@@ -31,12 +31,18 @@ QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_WAYLAND
 
 INCLUDEPATH += $$PWD
 
-contains(QT_CONFIG, opengles2) {
+contains(QT_CONFIG, opengl) {
     DEFINES += QT_WAYLAND_GL_SUPPORT
     QT += opengl
 
-    CONFIG += wayland_egl
-#    CONFIG += xpixmap_egl
+    contains(QT_CONFIG, opengles2) {
+        CONFIG += wayland_egl
+        #CONFIG += xpixmap_egl
+    } else {
+        message("HELLO")
+        CONFIG += xpixmap_glx    
+    }
+
     include ($$PWD/gl_integration/gl_integration.pri)
 }
 

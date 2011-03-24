@@ -54,6 +54,9 @@ QT_BEGIN_NAMESPACE
 
 static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize, const QRectF &br)
 {
+#if !defined(QT_OPENGL_ES_2)
+    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
+#endif
     const GLenum target = GL_TEXTURE_2D;
     QRectF src = br.isEmpty()
         ? QRectF(QPointF(), texSize)
