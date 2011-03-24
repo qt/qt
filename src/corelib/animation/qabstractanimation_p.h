@@ -181,6 +181,7 @@ public:
 
     void installAnimationDriver(QAnimationDriver *driver);
     void uninstallAnimationDriver(QAnimationDriver *driver);
+    bool canUninstallAnimationDriver(QAnimationDriver *driver);
 
     void restartAnimationTimer();
     void updateAnimationsTime();

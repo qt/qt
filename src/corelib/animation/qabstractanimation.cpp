@@ -423,6 +423,15 @@ void QUnifiedTimer::uninstallAnimationDriver(QAnimationDriver *d)
     }
 }
 
+/*!
+    Returns true if \a d is the currently installed animation driver
+    and is not the default animation driver (which can never be uninstalled).
+*/
+bool QUnifiedTimer::canUninstallAnimationDriver(QAnimationDriver *d)
+{
+    return d == driver && driver != &defaultDriver;
+}
+
 
 /*!
    \class QAnimationDriver
@@ -446,6 +455,12 @@ QAnimationDriver::QAnimationDriver(QAnimationDriverPrivate &dd, QObject *parent)
 {
 }
 
+QAnimationDriver::~QAnimationDriver()
+{
+    QUnifiedTimer *timer = QUnifiedTimer::instance(true);
+    if (timer->canUninstallAnimationDriver(this))
+        uninstall();
+}
 
 /*!
     Advances the animation based on the current time. This function should
