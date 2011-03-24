@@ -87,10 +87,7 @@ private slots:
     void test_flow_resize_rightToLeft();
     void test_flow_implicit_resize();
     void test_conflictinganchors();
-    void test_vertical_qgraphicswidget();
     void test_mirroring();
-    void testQtQuick11Attributes();
-    void testQtQuick11Attributes_data();
 private:
     QSGView *createView(const QString &filename);
 };
@@ -1174,48 +1171,6 @@ void tst_QDeclarativePositioners::test_conflictinganchors()
     delete item;
 }
 
-void tst_QDeclarativePositioners::test_vertical_qgraphicswidget()
-{
-    QSGView *canvas = createView(SRCDIR "/data/verticalqgraphicswidget.qml");
-
-    QGraphicsWidget *one = canvas->rootObject()->findChild<QGraphicsWidget*>("one");
-    QVERIFY(one != 0);
-
-    QGraphicsWidget *two = canvas->rootObject()->findChild<QGraphicsWidget*>("two");
-    QVERIFY(two != 0);
-
-    QGraphicsWidget *three = canvas->rootObject()->findChild<QGraphicsWidget*>("three");
-    QVERIFY(three != 0);
-
-    QCOMPARE(one->x(), 0.0);
-    QCOMPARE(one->y(), 0.0);
-    QCOMPARE(two->x(), 0.0);
-    QCOMPARE(two->y(), 50.0);
-    QCOMPARE(three->x(), 0.0);
-    QCOMPARE(three->y(), 60.0);
-
-    QSGItem *column = canvas->rootObject()->findChild<QSGItem*>("column");
-    QVERIFY(column);
-    QCOMPARE(column->height(), 80.0);
-    QCOMPARE(column->width(), 50.0);
-
-    two->resize(QSizeF(two->size().width(), 20.0));
-    QCOMPARE(three->x(), 0.0);
-    QCOMPARE(three->y(), 70.0);
-
-    two->setOpacity(0.0);
-    QCOMPARE(one->x(), 0.0);
-    QCOMPARE(one->y(), 0.0);
-    QCOMPARE(three->x(), 0.0);
-    QCOMPARE(three->y(), 50.0);
-
-    one->setVisible(false);
-    QCOMPARE(three->x(), 0.0);
-    QCOMPARE(three->y(), 0.0);
-
-    delete canvas;
-}
-
 void tst_QDeclarativePositioners::test_mirroring()
 {
     QList<QString> qmlFiles;
@@ -1274,49 +1229,6 @@ void tst_QDeclarativePositioners::test_mirroring()
         delete canvasA;
         delete canvasB;
     }
-}
-
-void tst_QDeclarativePositioners::testQtQuick11Attributes()
-{
-    QFETCH(QString, code);
-    QFETCH(QString, warning);
-    QFETCH(QString, error);
-
-    QDeclarativeEngine engine;
-    QObject *obj;
-
-    QDeclarativeComponent valid(&engine);
-    valid.setData("import QtQuick 1.1; " + code.toUtf8(), QUrl(""));
-    obj = valid.create();
-    QVERIFY(obj);
-    QVERIFY(valid.errorString().isEmpty());
-    delete obj;
-
-    QDeclarativeComponent invalid(&engine);
-    invalid.setData("import QtQuick 2.0; " + code.toUtf8(), QUrl(""));
-    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
-    obj = invalid.create();
-    QCOMPARE(invalid.errorString(), error);
-    delete obj;
-}
-
-void tst_QDeclarativePositioners::testQtQuick11Attributes_data()
-{
-    QTest::addColumn<QString>("code");
-    QTest::addColumn<QString>("warning");
-    QTest::addColumn<QString>("error");
-
-    QTest::newRow("Flow.layoutDirection") << "Flow { layoutDirection: Qt.LeftToRight }"
-        << "QDeclarativeComponent: Component is not ready"
-        << ":1 \"Flow.layoutDirection\" is not available in QtQuick 2.0.\n";
-
-    QTest::newRow("Row.layoutDirection") << "Row { layoutDirection: Qt.LeftToRight }"
-        << "QDeclarativeComponent: Component is not ready"
-        << ":1 \"Row.layoutDirection\" is not available in QtQuick 2.0.\n";
-
-    QTest::newRow("Grid.layoutDirection") << "Grid { layoutDirection: Qt.LeftToRight }"
-        << "QDeclarativeComponent: Component is not ready"
-        << ":1 \"Grid.layoutDirection\" is not available in QtQuick 2.0.\n";
 }
 
 QSGView *tst_QDeclarativePositioners::createView(const QString &filename)
