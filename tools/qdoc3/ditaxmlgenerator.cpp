@@ -5618,7 +5618,7 @@ QString DitaXmlGenerator::getMetadataElement(const InnerNode* inner, DitaXmlGene
   function writes one or more of these elements:
 
   \list
-    \o <audience>
+    \o <audience> *
     \o <author> *
     \o <brand>
     \o <category> *
@@ -5658,7 +5658,23 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
     writeStartTag(DT_prolog);
     writeMetadataElement(inner,DT_author);
     writeMetadataElement(inner,DT_publisher);
-    QString s = getMetadataElement(inner,DT_permissions);
+    QString s = getMetadataElement(inner,DT_copyryear);
+    if (s.isEmpty()) {
+        s = "2011"; // zzz
+    }
+    QString t = getMetadataElement(inner,DT_copyrholder);
+    if (t.isEmpty()) {
+        t = "Nokia"; // zzz
+    }
+    writeStartTag(DT_copyright);
+    writeStartTag(DT_copyryear);
+    xmlWriter().writeAttribute("year",s);
+    writeEndTag(); // </copyryear>
+    writeStartTag(DT_copyrholder);
+    xmlWriter().writeCharacters(t);
+    writeEndTag(); // </copyrholder>
+    writeEndTag(); // </copyright>
+    s = getMetadataElement(inner,DT_permissions);
     if (s.isEmpty())
         s = "all";
     writeStartTag(DT_permissions);
@@ -5677,7 +5693,7 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
         if (inner->type() == Node::Class)
             category = "Class reference";
         else if (inner->type() == Node::Namespace)
-            category = "C++ Namespace";
+            category = "Namespace";
         else if (inner->type() == Node::Fake) {
             if (inner->subType() == Node::QmlClass)
                 category = "QML Element Reference";
