@@ -51,6 +51,7 @@
 #include <QMessageBox>
 #include <QAtomicInt>
 #include "qdeclarativetester.h"
+#include <private/qdeclarativedebughelper_p.h>
 
 QT_USE_NAMESPACE
 
@@ -520,6 +521,8 @@ QDeclarativeViewer *openFile(const QString &fileName)
 
 int main(int argc, char ** argv)
 {
+    QDeclarativeDebugHelper::enableDebugging();
+
     systemMsgOutput = qInstallMsgHandler(myMessageOutput);
 
 #if defined (Q_WS_X11) || defined (Q_WS_MAC)
