@@ -3,6 +3,9 @@
 #include <QtDebug>
 #include <QFile>
 
+#include <private/qgl_p.h>
+#include <private/qglextensions_p.h>
+
 QT_BEGIN_NAMESPACE
 
 typedef struct {
@@ -74,10 +77,15 @@ void EtcTexture::bind()
     qDebug() << "glCompressedTexImage2D, width: " << m_size.width() << "height" << m_size.height() <<
                 "paddedWidth: " << m_paddedSize.width() << "paddedHeight: " << m_paddedSize.height();
 #endif
-    glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_ETC1_RGB8_OES,
-                           m_size.width(), m_size.height(), 0,
-                           (m_paddedSize.width() * m_paddedSize.height()) >> 1,
-                           m_data.data() + 16);
+
+    {
+        QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
+        Q_ASSERT(ctx != 0);
+        glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_ETC1_RGB8_OES,
+                               m_size.width(), m_size.height(), 0,
+                               (m_paddedSize.width() * m_paddedSize.height()) >> 1,
+                               m_data.data() + 16);
+    }
 
     // Gracefully fail in case of an error...
     GLuint error = glGetError();

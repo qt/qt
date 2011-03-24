@@ -28,7 +28,6 @@ SUBDIRS += \
 
 SUBDIRS += \
            qsgitem \
-           texturemanager \
 
 contains(QT_CONFIG, private_tests) {
     SUBDIRS += \

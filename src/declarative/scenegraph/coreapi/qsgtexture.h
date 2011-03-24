@@ -81,8 +81,6 @@ public:
 
     virtual QRectF textureSubRect() const;
 
-    virtual void setImage(const QImage &image) = 0;
-
     virtual bool isAtlasTexture() const;
     virtual void removeFromAtlas();
 

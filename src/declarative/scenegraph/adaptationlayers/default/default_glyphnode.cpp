@@ -81,11 +81,9 @@ void DefaultGlyphNode::setGlyphs(const QPointF &position, const QGlyphs &glyphs)
     QRectF boundingRect;
     m_material->populate(position, glyphs.glyphIndexes(), glyphs.positions(), geometry(),
                          &boundingRect, &m_baseLine);
+
     setMaterial(m_material);
     setBoundingRect(boundingRect);
-
-    Q_ASSERT(QGLContext::currentContext());
-    m_material->updateGlyphCache(QGLContext::currentContext());
 
     markDirty(DirtyGeometry);
 
