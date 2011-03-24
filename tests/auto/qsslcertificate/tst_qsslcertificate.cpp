@@ -111,6 +111,8 @@ private slots:
     void nulInSan();
     void largeSerialNumber();
     void largeExpirationDate();
+    void blacklistedCertificates();
+
 // ### add tests for certificate bundles (multiple certificates concatenated into a single
 //     structure); both PEM and DER formatted
 #endif
@@ -815,6 +817,15 @@ void tst_QSslCertificate::largeExpirationDate() // QTBUG-12489
     QCOMPARE(cert.effectiveDate().toUTC(), QDateTime(QDate(2010, 8, 4), QTime(9, 53, 41), Qt::UTC));
     // if the date is larger than 2049, then the generalized time format is used
     QCOMPARE(cert.expiryDate().toUTC(), QDateTime(QDate(2051, 8, 29), QTime(9, 53, 41), Qt::UTC));
+}
+
+void tst_QSslCertificate::blacklistedCertificates()
+{
+    QList<QSslCertificate> blacklistedCerts = QSslCertificate::fromPath(SRCDIR "more-certificates/blacklisted*.pem", QSsl::Pem, QRegExp::Wildcard);
+    QVERIFY(blacklistedCerts.count() > 0);
+    for (int a = 0; a < blacklistedCerts.count(); a++) {
+        QVERIFY(! blacklistedCerts.at(a).isValid());
+    }
 }
 
 #endif // QT_NO_OPENSSL
