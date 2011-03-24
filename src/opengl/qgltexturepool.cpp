@@ -135,8 +135,11 @@ void QGLTexturePool::releaseTexture(QGLPixmapData *data, GLuint texture)
     if (data)
         removeFromLRU(data);
 
-    QGLShareContextScope ctx(qt_gl_share_widget()->context());
-    glDeleteTextures(1, &texture);
+    QGLWidget *shareWidget = qt_gl_share_widget();
+    if (shareWidget) {
+        QGLShareContextScope ctx(shareWidget->context());
+        glDeleteTextures(1, &texture);
+    }
 }
 
 void QGLTexturePool::useTexture(QGLPixmapData *data)
