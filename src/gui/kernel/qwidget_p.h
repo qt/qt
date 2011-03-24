@@ -883,6 +883,7 @@ public:
     static QWidget *mouseGrabber;
     static QWidget *keyboardGrabber;
     int symbianScreenNumber; // only valid for desktop widget and top-levels
+    bool fixNativeOrientationCalled;
     void s60UpdateIsOpaque();
     void reparentChildren();
     void registerTouchWindow();

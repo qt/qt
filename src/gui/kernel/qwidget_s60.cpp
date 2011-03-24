@@ -278,6 +278,8 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
             q->internalWinId()->SetRect(TRect(TPoint(x, y), TSize(w, h)));
             topData()->normalGeometry = data.crect;
         }
+        QSymbianControl *window = static_cast<QSymbianControl *>(q->internalWinId());
+        window->ensureFixNativeOrientation();
     } else {
         data.crect.setRect(x, y, w, h);
 
@@ -1272,6 +1274,12 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
 
     if (newstate & Qt::WindowActive)
         activateWindow();
+
+    if (isWindow()) {
+        // Now that the new state is set, fix the display memory layout, if needed.
+        QSymbianControl *window = static_cast<QSymbianControl *>(effectiveWinId());
+        window->ensureFixNativeOrientation();
+    }
 
     QWindowStateChangeEvent e(oldstate);
     QApplication::sendEvent(this, &e);

@@ -2459,6 +2459,10 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #define Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS
 #endif
 
+#ifdef SYMBIAN_GRAPHICS_FIXNATIVEORIENTATION
+#define Q_SYMBIAN_SUPPORTS_FIXNATIVEORIENTATION
+#endif
+
 //Symbian does not support data imports from a DLL
 #define Q_NO_DATA_RELOCATION
 

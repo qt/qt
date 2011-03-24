@@ -1455,6 +1455,35 @@ bool QSymbianControl::isControlActive()
     return IsActivated() ? true : false;
 }
 
+void QSymbianControl::ensureFixNativeOrientation()
+{
+#if defined(Q_SYMBIAN_SUPPORTS_FIXNATIVEORIENTATION)
+    // Call FixNativeOrientation() for fullscreen QDeclarativeViews that
+    // have a locked orientation matching the native orientation of the device.
+    // This avoids unnecessary window rotation on wserv level.
+    if (!qwidget->isWindow() || qwidget->windowType() == Qt::Desktop
+        || !qwidget->inherits("QDeclarativeView")
+        || S60->screenNumberForWidget(qwidget) > 0)
+        return;
+    const bool isFullScreen = qwidget->windowState().testFlag(Qt::WindowFullScreen);
+    const bool isFixed = qwidget->d_func()->fixNativeOrientationCalled;
+    const bool matchesNative = qwidget->testAttribute(
+        S60->nativeOrientationIsPortrait ? Qt::WA_LockPortraitOrientation
+            : Qt::WA_LockLandscapeOrientation);
+    if (isFullScreen && matchesNative) {
+        if (!isFixed) {
+            Window().FixNativeOrientation();
+            qwidget->d_func()->fixNativeOrientationCalled = true;
+        }
+    } else if (isFixed) {
+        qwidget->d_func()->fixNativeOrientationCalled = false;
+        qwidget->hide();
+        qwidget->d_func()->create_sys(0, false, true);
+        qwidget->show();
+    }
+#endif
+}
+
 /*!
     \typedef QApplication::QS60MainApplicationFactory
     \since 4.6
