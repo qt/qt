@@ -8,3 +8,5 @@ SOURCES += \
     $$PWD/qwaylandxpixmapglxintegration.cpp \
     gl_integration/xpixmap_glx/qwaylandxpixmapglxwindow.cpp \
     gl_integration/xpixmap_glx/qwaylandxpixmapglxcontext.cpp
+
+LIBS += -lX11

@@ -39,7 +39,6 @@ contains(QT_CONFIG, opengl) {
         CONFIG += wayland_egl
         #CONFIG += xpixmap_egl
     } else {
-        message("HELLO")
         CONFIG += xpixmap_glx    
     }
 
