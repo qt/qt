@@ -58,6 +58,7 @@
 #if !defined(QT_NO_OPENGL)
 #if !defined(QT_OPENGL_ES_2)
 #include "qglxintegration.h"
+#include "qglxconvenience.h"
 #else
 #include "../eglconvenience/qeglconvenience.h"
 #include "../eglconvenience/qeglplatformcontext.h"
@@ -83,7 +84,7 @@ QXlibWindow::QXlibWindow(QWidget *window)
             && QApplicationPrivate::platformIntegration()->hasOpenGL() ) {
 #if !defined(QT_NO_OPENGL)
 #if !defined(QT_OPENGL_ES_2)
-        XVisualInfo *visualInfo = QGLXContext::findVisualInfo(mScreen,window->platformWindowFormat());
+        XVisualInfo *visualInfo = qglx_findVisualInfo(mScreen->display()->nativeDisplay(),mScreen->xScreenNumber(),window->platformWindowFormat());
 #else
         QPlatformWindowFormat windowFormat = correctColorBuffers(window->platformWindowFormat());
 

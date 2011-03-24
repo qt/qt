@@ -63,6 +63,7 @@
 
 #if defined(XCB_USE_GLX)
 #include "qglxintegration.h"
+#include "qglxconvenience.h"
 #elif defined(XCB_USE_EGL)
 #include "../eglconvenience/qeglplatformcontext.h"
 #include "../eglconvenience/qeglconvenience.h"
@@ -112,7 +113,7 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
     if (tlw->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
        && QApplicationPrivate::platformIntegration()->hasOpenGL() ) {
 #if defined(XCB_USE_GLX)
-            XVisualInfo *visualInfo = QGLXContext::findVisualInfo(m_screen, tlw->platformWindowFormat());
+            XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), tlw->platformWindowFormat());
 #elif defined(XCB_USE_EGL)
         EGLDisplay eglDisplay = connection()->egl_display();
         EGLConfig eglConfig = q_configFromQPlatformWindowFormat(eglDisplay,tlw->platformWindowFormat(),true);

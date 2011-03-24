@@ -66,14 +66,7 @@ public:
 
     QPlatformWindowFormat platformWindowFormat() const;
 
-    static XVisualInfo *findVisualInfo(const QXcbScreen *xd, const QPlatformWindowFormat &format);
-
 private:
-    static GLXFBConfig findConfig(const QXcbScreen *xd,const QPlatformWindowFormat &format);
-    static QVector<int> buildSpec(const QPlatformWindowFormat &format);
-    static QPlatformWindowFormat platformWindowFromGLXFBConfig(Display *display, GLXFBConfig config, GLXContext context);
-    static QPlatformWindowFormat reducePlatformWindowFormat(const QPlatformWindowFormat &format, bool *reduced);
-
     QXcbScreen *m_screen;
     Drawable m_drawable;
     GLXContext m_context;

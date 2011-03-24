@@ -33,7 +33,7 @@ QWaylandXPixmapGLXContext::QWaylandXPixmapGLXContext(QWaylandXPixmapGLXIntegrati
     , mWindow(window)
     , mBuffer(0)
     , mPixmap(0)
-    , mConfig(findConfig(glxIntegration->xDisplay(),glxIntegration->screen(),window->widget()->platformWindowFormat()))
+    , mConfig(qglx_findConfig(glxIntegration->xDisplay(),glxIntegration->screen(),window->widget()->platformWindowFormat()))
     , mGlxPixmap(0)
 {
     XVisualInfo *visualInfo = glXGetVisualFromFBConfig(glxIntegration->xDisplay(),mConfig);
@@ -92,7 +92,7 @@ void * QWaylandXPixmapGLXContext::getProcAddress(const QString &procName)
 
 QPlatformWindowFormat QWaylandXPixmapGLXContext::platformWindowFormat() const
 {
-    return platformWindowFromGLXFBConfig(mGlxIntegration->xDisplay(),mConfig,mContext);
+    return qglx_platformWindowFromGLXFBConfig(mGlxIntegration->xDisplay(),mConfig,mContext);
 }
 
 void QWaylandXPixmapGLXContext::geometryChanged()

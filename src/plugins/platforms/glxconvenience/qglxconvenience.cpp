@@ -25,7 +25,7 @@ enum {
 #undef FontChange
 #endif
 
-QVector<int> buildSpec(const QPlatformWindowFormat &format)
+QVector<int> qglx_buildSpec(const QPlatformWindowFormat &format)
 {
     QVector<int> spec(48);
     int i = 0;
@@ -77,13 +77,13 @@ QVector<int> buildSpec(const QPlatformWindowFormat &format)
     return spec;
 }
 
-GLXFBConfig findConfig(Display *display, int screen , const QPlatformWindowFormat &format)
+GLXFBConfig qglx_findConfig(Display *display, int screen , const QPlatformWindowFormat &format)
 {
     bool reduced = true;
     GLXFBConfig chosenConfig = 0;
     QPlatformWindowFormat reducedFormat = format;
     while (!chosenConfig && reduced) {
-        QVector<int> spec = buildSpec(reducedFormat);
+        QVector<int> spec = qglx_buildSpec(reducedFormat);
         int confcount = 0;
         GLXFBConfig *configs;
         configs = glXChooseFBConfig(display, screen,spec.constData(),&confcount);
@@ -104,7 +104,7 @@ GLXFBConfig findConfig(Display *display, int screen , const QPlatformWindowForma
 
             XFree(configs);
         }
-        reducedFormat = reducePlatformWindowFormat(reducedFormat,&reduced);
+        reducedFormat = qglx_reducePlatformWindowFormat(reducedFormat,&reduced);
     }
 
     if (!chosenConfig)
@@ -113,14 +113,14 @@ GLXFBConfig findConfig(Display *display, int screen , const QPlatformWindowForma
     return chosenConfig;
 }
 
-XVisualInfo *findVisualInfo(Display *display, int screen, const QPlatformWindowFormat &format)
+XVisualInfo *qglx_findVisualInfo(Display *display, int screen, const QPlatformWindowFormat &format)
 {
-    GLXFBConfig config = findConfig(display,screen,format);
+    GLXFBConfig config = qglx_findConfig(display,screen,format);
     XVisualInfo *visualInfo = glXGetVisualFromFBConfig(display,config);
     return visualInfo;
 }
 
-QPlatformWindowFormat platformWindowFromGLXFBConfig(Display *display, GLXFBConfig config, GLXContext ctx)
+QPlatformWindowFormat qglx_platformWindowFromGLXFBConfig(Display *display, GLXFBConfig config, GLXContext ctx)
 {
     QPlatformWindowFormat format;
     int redSize     = 0;
@@ -176,7 +176,7 @@ QPlatformWindowFormat platformWindowFromGLXFBConfig(Display *display, GLXFBConfi
     return format;
 }
 
-QPlatformWindowFormat reducePlatformWindowFormat(const QPlatformWindowFormat &format, bool *reduced)
+QPlatformWindowFormat qglx_reducePlatformWindowFormat(const QPlatformWindowFormat &format, bool *reduced)
 {
     QPlatformWindowFormat retFormat = format;
     *reduced = true;
