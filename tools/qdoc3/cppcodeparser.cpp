@@ -97,6 +97,22 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_QMLBASICTYPE            Doc::alias("qmlbasictype")
 #endif
 
+#define COMMAND_AUDIENCE                Doc::alias("audience")
+#define COMMAND_CATEGORY                Doc::alias("category")
+#define COMMAND_PRODNAME                Doc::alias("prodname")
+#define COMMAND_COMPONENT               Doc::alias("component")
+#define COMMAND_AUTHOR                  Doc::alias("author")
+#define COMMAND_PUBLISHER               Doc::alias("publisher")
+#define COMMAND_COPYRYEAR               Doc::alias("copyryear")
+#define COMMAND_COPYRHOLDER             Doc::alias("copyrholder")
+#define COMMAND_PERMISSIONS             Doc::alias("permissions")
+#define COMMAND_LIFECYCLEVERSION        Doc::alias("lifecycleversion")
+#define COMMAND_LIFECYCLEWSTATUS        Doc::alias("lifecyclestatus")
+#define COMMAND_LICENSEYEAR             Doc::alias("licenseyear")
+#define COMMAND_LICENSENAME             Doc::alias("licensename")
+#define COMMAND_LICENSEDESCRIPTION      Doc::alias("licensedescription")
+#define COMMAND_RELEASEDATE             Doc::alias("releasedate")
+
 QStringList CppCodeParser::exampleFiles;
 QStringList CppCodeParser::exampleDirs;
 
@@ -1811,7 +1827,7 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
              !match(Tok_QDOC_PROPERTY)) {
         return false;
     }
-    
+
     if (!match(expected_tok))
         return false;
 
@@ -1893,9 +1909,9 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
                 property->setRuntimeScrFunc(value);
             }
         }
-        else if (key == "CONSTANT") 
+        else if (key == "CONSTANT")
             property->setConstant();
-        else if (key == "FINAL") 
+        else if (key == "FINAL")
             property->setFinal();
     }
     match(Tok_RightParen);
