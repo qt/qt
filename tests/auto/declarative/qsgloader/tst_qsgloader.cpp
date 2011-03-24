@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 #include <qtest.h>
-#include <QtGui/QGraphicsWidget>
-#include <QtGui/QGraphicsScene>
 
 #include <QSignalSpy>
 #include <QtDeclarative/qdeclarativeengine.h>
@@ -78,9 +76,6 @@ private slots:
     void sizeLoaderToItem();
     void sizeItemToLoader();
     void noResize();
-    void sizeLoaderToGraphicsWidget();
-    void sizeGraphicsWidgetToLoader();
-    void noResizeGraphicsWidget();
     void networkRequestUrl();
     void failNetworkRequest();
 //    void networkComponent();
@@ -114,7 +109,7 @@ void tst_QSGLoader::sourceOrComponent()
 
     QDeclarativeComponent component(&engine);
     component.setData(QByteArray(
-            "import QtQuick 1.0\n"
+            "import QtQuick 2.0\n"
             "Loader {\n"
             "   property int onItemChangedCount: 0\n"
             "   property int onSourceChangedCount: 0\n"
@@ -138,10 +133,10 @@ void tst_QSGLoader::sourceOrComponent()
     QCOMPARE(loader->progress(), 1.0);
 
     QCOMPARE(loader->status(), error ? QSGLoader::Error : QSGLoader::Ready);
-    QCOMPARE(static_cast<QSGItem*>(loader)->children().count(), error ? 0: 1);
+    QCOMPARE(static_cast<QSGItem*>(loader)->childItems().count(), error ? 0: 1);
 
     if (!error) {
-        QDeclarativeComponent *c = qobject_cast<QDeclarativeComponent*>(loader->QSGItem::children().at(0));
+        QDeclarativeComponent *c = qobject_cast<QDeclarativeComponent*>(loader->children().at(0));
         QVERIFY(c);
         QCOMPARE(loader->sourceComponent(), c);
     }
@@ -174,7 +169,7 @@ void tst_QSGLoader::clear()
     {
         QDeclarativeComponent component(&engine);
         component.setData(QByteArray(
-                    "import QtQuick 1.0\n"
+                    "import QtQuick 2.0\n"
                     " Loader { id: loader\n"
                     "  source: 'Rect120x60.qml'\n"
                     "  Timer { interval: 200; running: true; onTriggered: loader.source = '' }\n"
@@ -184,12 +179,12 @@ void tst_QSGLoader::clear()
         QVERIFY(loader != 0);
         QVERIFY(loader->item());
         QCOMPARE(loader->progress(), 1.0);
-        QCOMPARE(static_cast<QSGItem*>(loader)->children().count(), 1);
+        QCOMPARE(static_cast<QSGItem*>(loader)->childItems().count(), 1);
 
         QTRY_VERIFY(loader->item() == 0);
         QCOMPARE(loader->progress(), 0.0);
         QCOMPARE(loader->status(), QSGLoader::Null);
-        QCOMPARE(static_cast<QSGItem*>(loader)->children().count(), 0);
+        QCOMPARE(static_cast<QSGItem*>(loader)->childItems().count(), 0);
 
         delete loader;
     }
@@ -198,18 +193,18 @@ void tst_QSGLoader::clear()
         QSGItem *item = qobject_cast<QSGItem*>(component.create());
         QVERIFY(item);
 
-        QSGLoader *loader = qobject_cast<QSGLoader*>(item->QSGItem::children().at(1)); 
+        QSGLoader *loader = qobject_cast<QSGLoader*>(item->QSGItem::childItems().at(0));
         QVERIFY(loader);
         QVERIFY(loader->item());
         QCOMPARE(loader->progress(), 1.0);
-        QCOMPARE(static_cast<QSGItem*>(loader)->children().count(), 1);
+        QCOMPARE(static_cast<QSGItem*>(loader)->childItems().count(), 1);
 
         loader->setSourceComponent(0);
 
         QVERIFY(loader->item() == 0);
         QCOMPARE(loader->progress(), 0.0);
         QCOMPARE(loader->status(), QSGLoader::Null);
-        QCOMPARE(static_cast<QSGItem*>(loader)->children().count(), 0);
+        QCOMPARE(static_cast<QSGItem*>(loader)->childItems().count(), 0);
 
         delete item;
     }
@@ -218,18 +213,18 @@ void tst_QSGLoader::clear()
         QSGItem *item = qobject_cast<QSGItem*>(component.create());
         QVERIFY(item);
 
-        QSGLoader *loader = qobject_cast<QSGLoader*>(item->QSGItem::children().at(1)); 
+        QSGLoader *loader = qobject_cast<QSGLoader*>(item->QSGItem::childItems().at(0)); 
         QVERIFY(loader);
         QVERIFY(loader->item());
         QCOMPARE(loader->progress(), 1.0);
-        QCOMPARE(static_cast<QSGItem*>(loader)->children().count(), 1);
+        QCOMPARE(static_cast<QSGItem*>(loader)->childItems().count(), 1);
 
         QMetaObject::invokeMethod(item, "clear");
 
         QVERIFY(loader->item() == 0);
         QCOMPARE(loader->progress(), 0.0);
         QCOMPARE(loader->status(), QSGLoader::Null);
-        QCOMPARE(static_cast<QSGItem*>(loader)->children().count(), 0);
+        QCOMPARE(static_cast<QSGItem*>(loader)->childItems().count(), 0);
 
         delete item;
     }
@@ -238,7 +233,7 @@ void tst_QSGLoader::clear()
 void tst_QSGLoader::urlToComponent()
 {
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import QtQuick 1.0\n"
+    component.setData(QByteArray("import QtQuick 2.0\n"
                 "Loader {\n"
                 " id: loader\n"
                 " Component { id: myComp; Rectangle { width: 10; height: 10 } }\n"
@@ -251,7 +246,7 @@ void tst_QSGLoader::urlToComponent()
     QTRY_VERIFY(loader != 0);
     QVERIFY(loader->item());
     QCOMPARE(loader->progress(), 1.0);
-    QCOMPARE(static_cast<QSGItem*>(loader)->children().count(), 1);
+    QCOMPARE(static_cast<QSGItem*>(loader)->childItems().count(), 1);
     QCOMPARE(loader->width(), 10.0);
     QCOMPARE(loader->height(), 10.0);
 
@@ -264,16 +259,16 @@ void tst_QSGLoader::componentToUrl()
     QSGItem *item = qobject_cast<QSGItem*>(component.create());
     QVERIFY(item);
 
-    QSGLoader *loader = qobject_cast<QSGLoader*>(item->QSGItem::children().at(1)); 
+    QSGLoader *loader = qobject_cast<QSGLoader*>(item->QSGItem::childItems().at(0)); 
     QVERIFY(loader);
     QVERIFY(loader->item());
     QCOMPARE(loader->progress(), 1.0);
-    QCOMPARE(static_cast<QSGItem*>(loader)->children().count(), 1);
+    QCOMPARE(static_cast<QSGItem*>(loader)->childItems().count(), 1);
 
     loader->setSource(TEST_FILE("/Rect120x60.qml"));
     QVERIFY(loader->item());
     QCOMPARE(loader->progress(), 1.0);
-    QCOMPARE(static_cast<QSGItem*>(loader)->children().count(), 1);
+    QCOMPARE(static_cast<QSGItem*>(loader)->childItems().count(), 1);
     QCOMPARE(loader->width(), 120.0);
     QCOMPARE(loader->height(), 60.0);
 
@@ -383,79 +378,6 @@ void tst_QSGLoader::noResize()
     delete item;
 }
 
-void tst_QSGLoader::sizeLoaderToGraphicsWidget()
-{
-    QDeclarativeComponent component(&engine, TEST_FILE("/SizeLoaderToGraphicsWidget.qml"));
-    QSGLoader *loader = qobject_cast<QSGLoader*>(component.create());
-    QGraphicsScene scene;
-    scene.addItem(loader);
-
-    QVERIFY(loader != 0);
-    QCOMPARE(loader->width(), 250.0);
-    QCOMPARE(loader->height(), 250.0);
-
-    // Check resize
-    QGraphicsWidget *widget = qobject_cast<QGraphicsWidget*>(loader->item());
-    QVERIFY(widget);
-    widget->resize(QSizeF(150,45));
-    QCOMPARE(loader->width(), 150.0);
-    QCOMPARE(loader->height(), 45.0);
-
-    // Switch mode
-    loader->setWidth(180);
-    loader->setHeight(30);
-    QCOMPARE(widget->size().width(), 180.0);
-    QCOMPARE(widget->size().height(), 30.0);
-
-    delete loader;
-}
-
-void tst_QSGLoader::sizeGraphicsWidgetToLoader()
-{
-    QDeclarativeComponent component(&engine, TEST_FILE("/SizeGraphicsWidgetToLoader.qml"));
-    QSGLoader *loader = qobject_cast<QSGLoader*>(component.create());
-    QGraphicsScene scene;
-    scene.addItem(loader);
-
-    QVERIFY(loader != 0);
-    QCOMPARE(loader->width(), 200.0);
-    QCOMPARE(loader->height(), 80.0);
-
-    QGraphicsWidget *widget = qobject_cast<QGraphicsWidget*>(loader->item());
-    QVERIFY(widget);
-    QCOMPARE(widget->size().width(), 200.0);
-    QCOMPARE(widget->size().height(), 80.0);
-
-    // Check resize
-    loader->setWidth(180);
-    loader->setHeight(30);
-    QCOMPARE(widget->size().width(), 180.0);
-    QCOMPARE(widget->size().height(), 30.0);
-
-    // Switch mode
-    loader->resetWidth(); // reset explicit size
-    loader->resetHeight();
-    widget->resize(QSizeF(160,45));
-    QCOMPARE(loader->width(), 160.0);
-    QCOMPARE(loader->height(), 45.0);
-
-    delete loader;
-}
-
-void tst_QSGLoader::noResizeGraphicsWidget()
-{
-    QDeclarativeComponent component(&engine, TEST_FILE("/NoResizeGraphicsWidget.qml"));
-    QSGItem *item = qobject_cast<QSGItem*>(component.create());
-    QGraphicsScene scene;
-    scene.addItem(item);
-
-    QVERIFY(item != 0);
-    QCOMPARE(item->width(), 200.0);
-    QCOMPARE(item->height(), 80.0);
-
-    delete item;
-}
-
 void tst_QSGLoader::networkRequestUrl()
 {
     TestHTTPServer server(SERVER_PORT);
@@ -463,7 +385,7 @@ void tst_QSGLoader::networkRequestUrl()
     server.serveDirectory(SRCDIR "/data");
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import QtQuick 1.0\nLoader { property int signalCount : 0; source: \"http://127.0.0.1:14450/Rect120x60.qml\"; onLoaded: signalCount += 1 }"), QUrl::fromLocalFile(SRCDIR "/dummy.qml"));
+    component.setData(QByteArray("import QtQuick 2.0\nLoader { property int signalCount : 0; source: \"http://127.0.0.1:14450/Rect120x60.qml\"; onLoaded: signalCount += 1 }"), QUrl::fromLocalFile(SRCDIR "/dummy.qml"));
     if (component.isError())
         qDebug() << component.errors();
     QSGLoader *loader = qobject_cast<QSGLoader*>(component.create());
@@ -474,7 +396,7 @@ void tst_QSGLoader::networkRequestUrl()
     QVERIFY(loader->item());
     QCOMPARE(loader->progress(), 1.0);
     QCOMPARE(loader->property("signalCount").toInt(), 1);
-    QCOMPARE(static_cast<QSGItem*>(loader)->children().count(), 1);
+    QCOMPARE(static_cast<QSGItem*>(loader)->childItems().count(), 1);
 
     delete loader;
 }
@@ -488,7 +410,7 @@ void tst_QSGLoader::networkComponent()
 
     QDeclarativeComponent component(&engine);
     component.setData(QByteArray(
-                "import QtQuick 1.0\n"
+                "import QtQuick 2.0\n"
                 "import \"http://127.0.0.1:14450/\" as NW\n"
                 "Item {\n"
                 " Component { id: comp; NW.SlowRect {} }\n"
@@ -520,7 +442,7 @@ void tst_QSGLoader::failNetworkRequest()
     QTest::ignoreMessage(QtWarningMsg, "http://127.0.0.1:14450/IDontExist.qml: File not found");
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import QtQuick 1.0\nLoader { property int did_load: 123; source: \"http://127.0.0.1:14450/IDontExist.qml\"; onLoaded: did_load=456 }"), QUrl::fromLocalFile("http://127.0.0.1:14450/dummy.qml"));
+    component.setData(QByteArray("import QtQuick 2.0\nLoader { property int did_load: 123; source: \"http://127.0.0.1:14450/IDontExist.qml\"; onLoaded: did_load=456 }"), QUrl::fromLocalFile("http://127.0.0.1:14450/dummy.qml"));
     QSGLoader *loader = qobject_cast<QSGLoader*>(component.create());
     QVERIFY(loader != 0);
 
@@ -529,7 +451,7 @@ void tst_QSGLoader::failNetworkRequest()
     QVERIFY(loader->item() == 0);
     QCOMPARE(loader->progress(), 0.0);
     QCOMPARE(loader->property("did_load").toInt(), 123);
-    QCOMPARE(static_cast<QSGItem*>(loader)->children().count(), 0);
+    QCOMPARE(static_cast<QSGItem*>(loader)->childItems().count(), 0);
 
     delete loader;
 }
@@ -543,13 +465,13 @@ void tst_QSGLoader::deleteComponentCrash()
 
     item->metaObject()->invokeMethod(item, "setLoaderSource");
 
-    QSGLoader *loader = qobject_cast<QSGLoader*>(item->QSGItem::children().at(0));
+    QSGLoader *loader = qobject_cast<QSGLoader*>(item->QSGItem::childItems().at(0));
     QVERIFY(loader);
     QVERIFY(loader->item());
     QCOMPARE(loader->item()->objectName(), QLatin1String("blue"));
     QCOMPARE(loader->progress(), 1.0);
     QCOMPARE(loader->status(), QSGLoader::Ready);
-    QCOMPARE(static_cast<QSGItem*>(loader)->children().count(), 1);
+    QCOMPARE(static_cast<QSGItem*>(loader)->childItems().count(), 1);
     QVERIFY(loader->source() == QUrl::fromLocalFile(SRCDIR "/data/BlueRect.qml"));
 
     delete item;
