@@ -736,7 +736,6 @@ public:
     inline bool operator!=(const QLocale &other) const;
 
     static QString languageToString(Language language);
-    static QString languageToString(Language language, Script script);
     static QString countryToString(Country country);
     static QString scriptToString(Script script);
     static void setDefault(const QLocale &locale);

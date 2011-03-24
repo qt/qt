@@ -763,6 +763,8 @@
   \value StringToStandardQuotation a QString containing a quoted version of the string ref stored in the in variant using standard quotes.
   \value StringToAlternateQuotation a QString containing a quoted version of the string ref stored in the in variant using alternate quotes.
   \value Weekdays a QList<Qt::DayOfWeek> specifying the regular weekdays
+  \value LocaleChanged this type is queried whenever the system locale is changed.
+  \value ListToSeparatedString a string that represents a join of a given QStringList with a locale-defined separator.
 */
 
 /*!
