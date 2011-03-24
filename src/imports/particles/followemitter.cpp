@@ -41,12 +41,21 @@ void FollowEmitter::emitWindow(int timeStamp)
 {
     if (m_system == 0)
         return;
-    if(!m_emitting)
+    if(!m_emitting && !m_burstLeft)
         return;
     if(m_followCount != m_system->m_groupData[m_system->m_groupIds[m_follow]]->size){
         recalcParticlesPerSecond();
         return;//system may need to update
     }
+
+    if(m_burstLeft){
+        m_burstLeft -= timeStamp - m_lastTimeStamp * 1000.;
+        if(m_burstLeft < 0){
+            timeStamp += m_burstLeft;
+            m_burstLeft = 0;
+        }
+    }
+
     qreal time = timeStamp / 1000.;
     qreal particleRatio = 1. / m_particlesPerParticlePerSecond;
     qreal pt;

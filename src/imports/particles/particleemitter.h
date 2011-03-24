@@ -92,6 +92,7 @@ void speedChanged(VaryingVector * arg);
 void accelerationChanged(VaryingVector * arg);
 
 public slots:
+    void burst(qreal seconds);
 
     void setEmitting(bool arg);
 
@@ -230,6 +231,8 @@ protected:
        qreal m_particleSizeVariation;
        VaryingVector * m_speed;
        VaryingVector * m_acceleration;
+
+       int m_burstLeft;
 private:
        VaryingVector m_nullVector;
 };

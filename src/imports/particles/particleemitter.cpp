@@ -48,4 +48,11 @@ ParticleExtruder* ParticleEmitter::effectiveExtruder()
         m_defaultExtruder = new ParticleExtruder;
     return m_defaultExtruder;
 }
+
+void ParticleEmitter::burst(qreal seconds)
+{
+    if(!m_emitting)
+        m_burstLeft = seconds*1000.0;
+}
+
 QT_END_NAMESPACE
