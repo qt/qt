@@ -316,6 +316,10 @@ class DitaXmlGenerator : public PageGenerator
     void writeRelatedLinks(const FakeNode* fake, CodeMarker* marker);
     void writeLink(const Node* node, const QString& tex, const QString& role);
     void writeProlog(const InnerNode* inner, CodeMarker* marker);
+    bool writeMetadataElement(const InnerNode* inner, 
+                              DitaXmlGenerator::DitaTag t, 
+                              bool force=true);
+    QString getMetadataElement(const InnerNode* inner, DitaXmlGenerator::DitaTag t);
 
  private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };
