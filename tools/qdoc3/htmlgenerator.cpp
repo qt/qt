@@ -487,7 +487,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::CaptionRight:
         endLink();
         if (in_para) {
-            out() << "</p\n";
+            out() << "</p>\n";
             in_para = false;
         }
         break;

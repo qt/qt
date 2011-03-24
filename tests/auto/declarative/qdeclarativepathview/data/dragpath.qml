@@ -9,7 +9,7 @@ PathView {
         startX: 0; startY: 100
         PathLine { x: 400; y: 100 }
     }
-    delegate: Rectangle { height: 100; width: 1; color: PathView.isCurrentItem?"red" : "black" }
+    delegate: Rectangle { objectName: "wrapper"; height: 100; width: 2; color: PathView.isCurrentItem?"red" : "black" }
     dragMargin: 100
     preferredHighlightBegin: 0.5
     preferredHighlightEnd: 0.5

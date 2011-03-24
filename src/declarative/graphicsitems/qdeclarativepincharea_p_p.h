@@ -68,7 +68,9 @@ class QDeclarativePinchAreaPrivate : public QDeclarativeItemPrivate
 public:
     QDeclarativePinchAreaPrivate()
       : absorb(true), stealMouse(false), inPinch(false)
-      , pinchRejected(false), pinch(0), pinchStartDist(0)
+      , pinchRejected(false), pinch(0), pinchStartDist(0), pinchStartScale(1.0)
+      , pinchLastScale(1.0), pinchStartRotation(0.0), pinchStartAngle(0.0)
+      , pinchLastAngle(0.0), pinchRotation(0.0)
     {
     }
 
@@ -97,6 +99,7 @@ public:
     qreal pinchStartRotation;
     qreal pinchStartAngle;
     qreal pinchLastAngle;
+    qreal pinchRotation;
     QPointF sceneStartCenter;
     QPointF pinchStartCenter;
     QPointF sceneLastCenter;

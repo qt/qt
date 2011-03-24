@@ -1827,7 +1827,7 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
              !match(Tok_QDOC_PROPERTY)) {
         return false;
     }
-    
+
     if (!match(expected_tok))
         return false;
 
@@ -1909,9 +1909,9 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
                 property->setRuntimeScrFunc(value);
             }
         }
-        else if (key == "CONSTANT") 
+        else if (key == "CONSTANT")
             property->setConstant();
-        else if (key == "FINAL") 
+        else if (key == "FINAL")
             property->setFinal();
     }
     match(Tok_RightParen);

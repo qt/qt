@@ -380,6 +380,9 @@ int QRasterPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 void QRasterPixmapData::createPixmapForImage(QImage &sourceImage, Qt::ImageConversionFlags flags, bool inPlace)
 {
     QImage::Format format;
+    if (flags & Qt::NoFormatConversion)
+        format = sourceImage.format();
+    else
 #ifdef Q_WS_QWS
     if (pixelType() == BitmapType) {
         format = QImage::Format_Mono;

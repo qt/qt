@@ -79,6 +79,7 @@ private slots:
     void messaging_sendQObjectList();
     void messaging_sendJsObject();
     void script_with_pragma();
+    void script_included();
     void scriptError_onLoad();
     void scriptError_onCall();
 
@@ -221,6 +222,24 @@ void tst_QDeclarativeWorkerScript::script_with_pragma()
 
     const QMetaObject *mo = worker->metaObject();
     QCOMPARE(mo->property(mo->indexOfProperty("response")).read(worker).value<QVariant>(), value);
+
+    qApp->processEvents();
+    delete worker;
+}
+
+void tst_QDeclarativeWorkerScript::script_included()
+{
+    QDeclarativeComponent component(&m_engine, SRCDIR "/data/worker_include.qml");
+    QDeclarativeWorkerScript *worker = qobject_cast<QDeclarativeWorkerScript*>(component.create());
+    QVERIFY(worker != 0);
+
+    QString value("Hello");
+
+    QVERIFY(QMetaObject::invokeMethod(worker, "testSend", Q_ARG(QVariant, value)));
+    waitForEchoMessage(worker);
+
+    const QMetaObject *mo = worker->metaObject();
+    QCOMPARE(mo->property(mo->indexOfProperty("response")).read(worker).toString(), value + " World");
 
     qApp->processEvents();
     delete worker;

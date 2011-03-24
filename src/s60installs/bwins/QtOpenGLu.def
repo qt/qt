@@ -711,4 +711,12 @@ EXPORTS
 	?createPixmapForImage@QGLPixmapData@@AAEXAAVQImage@@V?$QFlags@W4ImageConversionFlag@Qt@@@@_N@Z @ 710 NONAME ; void QGLPixmapData::createPixmapForImage(class QImage &, class QFlags<enum Qt::ImageConversionFlag>, bool)
 	?fromImageReader@QGLPixmapData@@UAEXPAVQImageReader@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 711 NONAME ; void QGLPixmapData::fromImageReader(class QImageReader *, class QFlags<enum Qt::ImageConversionFlag>)
 	?setContext@QGLTextureGlyphCache@@QAEXPAVQGLContext@@@Z @ 712 NONAME ; void QGLTextureGlyphCache::setContext(class QGLContext *)
+	?hibernate@QGLPixmapData@@QAEXXZ @ 713 NONAME ; void QGLPixmapData::hibernate(void)
+	?detachTextureFromPool@QGLPixmapData@@QAEXXZ @ 714 NONAME ; void QGLPixmapData::detachTextureFromPool(void)
+	?reclaimTexture@QGLPixmapData@@QAEXXZ @ 715 NONAME ; void QGLPixmapData::reclaimTexture(void)
+	?destroyTexture@QGLPixmapData@@QAEXXZ @ 716 NONAME ; void QGLPixmapData::destroyTexture(void)
+	?releaseCachedResources@QGLGraphicsSystem@@UAEXXZ @ 717 NONAME ; void QGLGraphicsSystem::releaseCachedResources(void)
+	?serialNumber@QGLTextureGlyphCache@@QBEHXZ @ 718 NONAME ; int QGLTextureGlyphCache::serialNumber(void) const
+	?forceToImage@QGLPixmapData@@QAEXXZ @ 719 NONAME ; void QGLPixmapData::forceToImage(void)
+	?idealFormat@QGLPixmapData@@QAE?AW4Format@QImage@@AAV3@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 720 NONAME ; enum QImage::Format QGLPixmapData::idealFormat(class QImage &, class QFlags<enum Qt::ImageConversionFlag>)
 

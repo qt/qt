@@ -702,6 +702,8 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                 }
             } else {
                 // Find a contents node and navigate from there, using the NextLink values.
+                QSet<QString> visited;
+
                 foreach (const Node *node, subproject.nodes) {
                     QString nextTitle = node->links().value(Node::NextLink).first;
                     if (!nextTitle.isEmpty() &&
@@ -715,9 +717,10 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                         while (nextPage) {
                             writeNode(project, writer, nextPage);
                             nextTitle = nextPage->links().value(Node::NextLink).first;
-                            if(nextTitle.isEmpty())
+                            if (nextTitle.isEmpty() || visited.contains(nextTitle))
                                 break;
                             nextPage = const_cast<FakeNode *>(tree->findFakeNodeByTitle(nextTitle));
+                            visited.insert(nextTitle);
                         }
                         break;
                     }
