@@ -8149,6 +8149,10 @@ start_lengthVariant:
     engine.option.setTextDirection(layout_direction);
     if (tf & Qt::AlignJustify)
         engine.option.setAlignment(Qt::AlignJustify);
+    else if (tf & Qt::AlignRight)
+        engine.option.setAlignment(Qt::AlignRight);
+    else if (tf & Qt::AlignHCenter)
+        engine.option.setAlignment(Qt::AlignHCenter);
     else
         engine.option.setAlignment(Qt::AlignLeft); // do not do alignment twice
 
@@ -8244,14 +8248,7 @@ start_lengthVariant:
 
         for (int i = 0; i < textLayout.lineCount(); i++) {
             QTextLine line = textLayout.lineAt(i);
-
-            qreal advance = line.horizontalAdvance();
-            if (tf & Qt::AlignRight)
-                xoff = r.width() - advance;
-            else if (tf & Qt::AlignHCenter)
-                xoff = (r.width() - advance)/2;
-
-            line.draw(painter, QPointF(r.x() + xoff + line.x(), r.y() + yoff));
+            line.draw(painter, QPointF(r.x(), r.y() + yoff));
         }
 
         if (restore) {
