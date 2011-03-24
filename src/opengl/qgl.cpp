@@ -97,8 +97,11 @@
 #include "qlibrary.h"
 #include <qmutex.h>
 
-#ifdef QT_OPENGL_ES
+#if defined(QT_OPENGL_ES) && !defined(QT_NO_EGL)
 #include <EGL/egl.h>
+#endif
+#ifdef QGL_USE_TEXTURE_POOL
+#include <private/qgltexturepool_p.h>
 #endif
 
 // #define QT_GL_CONTEXT_RESOURCE_DEBUG
@@ -1735,6 +1738,9 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     workaround_brokenTextureFromPixmap = false;
     workaround_brokenTextureFromPixmap_init = false;
 
+    workaround_brokenAlphaTexSubImage = false;
+    workaround_brokenAlphaTexSubImage_init = false;
+
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
         vertexAttributeArraysEnabledState[i] = false;
 }
@@ -1791,7 +1797,7 @@ static void convertFromGLImage(QImage &img, int w, int h, bool alpha_format, boo
 
 QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)
 {
-    QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32
+    QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32_Premultiplied
                                                      : QImage::Format_RGB32);
     int w = size.width();
     int h = size.height();
@@ -2032,6 +2038,10 @@ struct DDSFormat {
     indicate that the pixmap should be memory managed along side with
     the pixmap/image that it stems from, e.g. installing destruction
     hooks in them.
+
+    \omitvalue TemporarilyCachedBindOption Used by paint engines on some
+    platforms to indicate that the pixmap or image texture is possibly
+    cached only temporarily and must be destroyed immediately after the use.
 
     \omitvalue InternalBindOption
 */
@@ -2537,8 +2547,18 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 #endif
 
     const QImage &constRef = img; // to avoid detach in bits()...
+#ifdef QGL_USE_TEXTURE_POOL
+    QGLTexturePool::instance()->createPermanentTexture(tx_id,
+                                                        target,
+                                                        0, internalFormat,
+                                                        img.width(), img.height(),
+                                                        externalFormat,
+                                                        pixel_type,
+                                                        constRef.bits());
+#else
     glTexImage2D(target, 0, internalFormat, img.width(), img.height(), 0, externalFormat,
                  pixel_type, constRef.bits());
+#endif
 #if defined(QT_OPENGL_ES_2)
     if (genMipmap)
         glGenerateMipmap(target);
@@ -2576,7 +2596,6 @@ QGLTexture *QGLContextPrivate::textureCacheLookup(const qint64 key, GLenum targe
     }
     return 0;
 }
-
 
 /*! \internal */
 QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target, GLint format, QGLContext::BindOptions options)
@@ -3310,8 +3329,10 @@ bool QGLContext::create(const QGLContext* shareContext)
         QWidgetPrivate *wd = qt_widget_private(static_cast<QWidget *>(d->paintDevice));
         wd->usesDoubleBufferedGLContext = d->glFormat.doubleBuffer();
     }
+#ifndef Q_WS_QPA //We do this in choose context->setupSharing()
     if (d->sharing)  // ok, we managed to share
         QGLContextGroup::addShare(this, shareContext);
+#endif
     return d->valid;
 }
 
@@ -3772,24 +3793,7 @@ QGLWidget::QGLWidget(QWidget *parent, const QGLWidget* shareWidget, Qt::WindowFl
     setAttribute(Qt::WA_PaintOnScreen);
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoFillBackground(true); // for compatibility
-#ifdef Q_WS_QPA
-    QPlatformWindowFormat platformFormat = QGLFormat::toPlatformWindowFormat(QGLFormat::defaultFormat());
-    platformFormat.setUseDefaultSharedContext(false);
-    if (shareWidget && shareWidget->d_func()->glcx) {
-        QPlatformGLContext *sharedPlatformContext = shareWidget->d_func()->glcx->d_func()->platformContext;
-        platformFormat.setSharedContext(sharedPlatformContext);
-    }
-    setPlatformWindowFormat(platformFormat);
-    winId(); // create window;
-    QGLContext *glContext = 0;
-    if (platformWindow())
-        glContext = QGLContext::fromPlatformGLContext(platformWindow()->glContext());
-    if (glContext){
-        d->init(glContext,shareWidget);
-    }
-#else
     d->init(new QGLContext(QGLFormat::defaultFormat(), this), shareWidget);
-#endif
 }
 
 
@@ -3829,24 +3833,7 @@ QGLWidget::QGLWidget(const QGLFormat &format, QWidget *parent, const QGLWidget* 
     setAttribute(Qt::WA_PaintOnScreen);
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoFillBackground(true); // for compatibility
-#ifdef Q_WS_QPA
-    QPlatformWindowFormat platformFormat = QGLFormat::toPlatformWindowFormat(format);
-    platformFormat.setUseDefaultSharedContext(false);
-    if (shareWidget && shareWidget->d_func()->glcx) {
-        QPlatformGLContext *sharedPlatformContext = shareWidget->d_func()->glcx->d_func()->platformContext;
-        platformFormat.setSharedContext(sharedPlatformContext);
-    }
-    setPlatformWindowFormat(platformFormat);
-    winId(); // create window;
-    QGLContext *glContext = 0;
-    if (platformWindow())
-        glContext = QGLContext::fromPlatformGLContext(platformWindow()->glContext());
-    if (glContext){
-        d->init(glContext,shareWidget);
-    }
-#else
     d->init(new QGLContext(format, this), shareWidget);
-#endif
 }
 
 /*!

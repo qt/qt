@@ -77,8 +77,8 @@ static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
 
 #if !defined(QVG_NO_DRAW_GLYPHS)
 
-Q_DECL_IMPORT extern int qt_defaultDpiX();
-Q_DECL_IMPORT extern int qt_defaultDpiY();
+Q_GUI_EXPORT int qt_defaultDpiX();
+Q_GUI_EXPORT int qt_defaultDpiY();
 
 class QVGPaintEnginePrivate;
 
@@ -526,7 +526,7 @@ void QVGPaintEnginePrivate::setTransform
     vgLoadMatrix(mat);
 }
 
-Q_DECL_IMPORT extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
+Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
 
 void QVGPaintEnginePrivate::updateTransform(QPaintDevice *pdev)
 {
@@ -994,7 +994,7 @@ VGPath QVGPaintEnginePrivate::roundedRectPath(const QRectF &rect, qreal xRadius,
     return vgpath;
 }
 
-Q_DECL_IMPORT extern QImage qt_imageForBrush(int style, bool invert);
+Q_GUI_EXPORT QImage qt_imageForBrush(int style, bool invert);
 
 static QImage colorizeBitmap(const QImage &image, const QColor &color)
 {
@@ -1472,7 +1472,7 @@ void QVGPaintEnginePrivate::draw
     (VGPath path, const QPen& pen, const QBrush& brush, VGint rule)
 {
     VGbitfield mode = 0;
-    if (pen.style() != Qt::NoPen) {
+    if (qpen_style(pen) != Qt::NoPen && qbrush_style(qpen_brush(pen)) != Qt::NoBrush) {
         ensurePen(pen);
         mode |= VG_STROKE_PATH;
     }
@@ -2201,6 +2201,12 @@ void QVGPaintEngine::updateScissor()
 #if defined(QVG_SCISSOR_CLIP)
     // Using the scissor to do clipping, so combine the systemClip
     // with the current painting clipRegion.
+
+    if (d->maskValid) {
+        vgSeti(VG_MASKING, VG_FALSE);
+        d->maskValid = false;
+    }
+
     QVGPainterState *s = state();
     if (s->clipEnabled) {
         if (region.isEmpty())
@@ -2250,8 +2256,33 @@ void QVGPaintEngine::updateScissor()
 
     QVector<QRect> rects = region.rects();
     int count = rects.count();
-    if (count > d->maxScissorRects)
-        count = d->maxScissorRects;
+    if (count > d->maxScissorRects) {
+#if !defined(QVG_SCISSOR_CLIP)
+         count = d->maxScissorRects;
+#else
+        // Use masking
+        int width = paintDevice()->width();
+        int height = paintDevice()->height();
+        vgMask(VG_INVALID_HANDLE, VG_CLEAR_MASK,
+                   0, 0, width, height);
+        for (int i = 0; i < rects.size(); ++i) {
+            vgMask(VG_INVALID_HANDLE, VG_FILL_MASK,
+                   rects[i].x(), height - rects[i].y() - rects[i].height(),
+                   rects[i].width(), rects[i].height());
+        }
+
+        vgSeti(VG_SCISSORING, VG_FALSE);
+        vgSeti(VG_MASKING, VG_TRUE);
+        d->maskValid = true;
+        d->maskIsSet = false;
+        d->scissorMask = false;
+        d->scissorActive = false;
+        d->scissorDirty = false;
+        d->scissorRegion = region;
+        return;
+#endif
+    }
+
     QVarLengthArray<VGint> params(count * 4);
     int height = paintDevice()->height();
     for (int i = 0; i < count; ++i) {
@@ -2302,6 +2333,7 @@ bool QVGPaintEngine::isDefaultClipRect(const QRect& rect)
 void QVGPaintEngine::clipEnabledChanged()
 {
 #if defined(QVG_SCISSOR_CLIP)
+    vgSeti(VG_MASKING, VG_FALSE); // disable mask fallback
     updateScissor();
 #else
     Q_D(QVGPaintEngine);
@@ -3103,9 +3135,13 @@ void QVGPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF
         if (pm.size().width() <= screenSize.width()
             && pm.size().height() <= screenSize.height())
             vgpd->failedToAlloc = false;
-    }
 
-    drawImage(r, *(pd->buffer()), sr, Qt::AutoColor);
+        vgpd->source.beginDataAccess();
+        drawImage(r, vgpd->source.imageRef(), sr, Qt::AutoColor);
+        vgpd->source.endDataAccess(true);
+    } else {
+        drawImage(r, *(pd->buffer()), sr, Qt::AutoColor);
+    }
 }
 
 void QVGPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pm)
@@ -3131,9 +3167,13 @@ void QVGPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pm)
         if (pm.size().width() <= screenSize.width()
             && pm.size().height() <= screenSize.height())
             vgpd->failedToAlloc = false;
-    }
 
-    drawImage(pos, *(pd->buffer()));
+        vgpd->source.beginDataAccess();
+        drawImage(pos, vgpd->source.imageRef());
+        vgpd->source.endDataAccess();
+    } else {
+        drawImage(pos, *(pd->buffer()));
+    }
 }
 
 void QVGPaintEngine::drawImage
@@ -3141,6 +3181,8 @@ void QVGPaintEngine::drawImage
          Qt::ImageConversionFlags flags)
 {
     Q_D(QVGPaintEngine);
+    if (image.isNull())
+        return;
     VGImage vgImg;
     if (d->simpleTransform || d->opacity == 1.0f)
         vgImg = toVGImageSubRect(image, sr.toRect(), flags);
@@ -3186,6 +3228,8 @@ void QVGPaintEngine::drawImage
 void QVGPaintEngine::drawImage(const QPointF &pos, const QImage &image)
 {
     Q_D(QVGPaintEngine);
+    if (image.isNull())
+        return;
     VGImage vgImg;
     if (canVgWritePixels(image)) {
         // Optimization for straight blits, no blending
@@ -3539,8 +3583,8 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     QVarLengthArray<VGfloat> adjustments_x(numGlyphs);
     QVarLengthArray<VGfloat> adjustments_y(numGlyphs);
     for (int i = 1; i < numGlyphs; ++i) {
-        adjustments_x[i-1] = (positions[i].x - positions[i-1].x).toReal();
-        adjustments_y[i-1] = (positions[i].y - positions[i-1].y).toReal();
+        adjustments_x[i-1] = (positions[i].x - positions[i-1].x).round().toReal();
+        adjustments_y[i-1] = (positions[i].y - positions[i-1].y).round().toReal();
     }
 
     // Set the glyph drawing origin.
@@ -3979,6 +4023,8 @@ VGImageFormat qt_vg_image_to_vg_format(QImage::Format format)
     switch (format) {
         case QImage::Format_MonoLSB:
             return VG_BW_1;
+        case QImage::Format_Indexed8:
+            return VG_sL_8;
         case QImage::Format_ARGB32_Premultiplied:
             return VG_sARGB_8888_PRE;
         case QImage::Format_RGB32:
@@ -3989,7 +4035,8 @@ VGImageFormat qt_vg_image_to_vg_format(QImage::Format format)
             return VG_sRGB_565;
         case QImage::Format_ARGB4444_Premultiplied:
             return VG_sARGB_4444;
-        default: break;
+        default:
+            break;
     }
     return VG_sARGB_8888;   // XXX
 }

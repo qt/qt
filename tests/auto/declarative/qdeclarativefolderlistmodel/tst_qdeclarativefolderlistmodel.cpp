@@ -62,14 +62,24 @@ class tst_qdeclarativefolderlistmodel : public QObject
 {
     Q_OBJECT
 public:
-    tst_qdeclarativefolderlistmodel() {}
+    tst_qdeclarativefolderlistmodel() : removeStart(0), removeEnd(0) {}
+
+public slots:
+    void removed(const QModelIndex &, int start, int end) {
+        removeStart = start;
+        removeEnd = end;
+    }
 
 private slots:
     void basicProperties();
+    void refresh();
 
 private:
     void checkNoErrors(const QDeclarativeComponent& component);
     QDeclarativeEngine engine;
+
+    int removeStart;
+    int removeEnd;
 };
 
 void tst_qdeclarativefolderlistmodel::checkNoErrors(const QDeclarativeComponent& component)
@@ -113,6 +123,28 @@ void tst_qdeclarativefolderlistmodel::basicProperties()
     
     flm->setProperty("folder",QUrl::fromLocalFile(""));
     QCOMPARE(flm->property("folder").toUrl(), QUrl::fromLocalFile(""));
+}
+
+void tst_qdeclarativefolderlistmodel::refresh()
+{
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/basic.qml"));
+    checkNoErrors(component);
+
+    QAbstractListModel *flm = qobject_cast<QAbstractListModel*>(component.create());
+    QVERIFY(flm != 0);
+
+    flm->setProperty("folder",QUrl::fromLocalFile(SRCDIR "/data"));
+    QTRY_COMPARE(flm->property("count").toInt(),2); // wait for refresh
+
+    int count = flm->rowCount();
+
+    connect(flm, SIGNAL(rowsRemoved(const QModelIndex&,int,int)),
+            this, SLOT(removed(const QModelIndex&,int,int)));
+
+    flm->setProperty("sortReversed", true);
+
+    QCOMPARE(removeStart, 0);
+    QCOMPARE(removeEnd, count-1);
 }
 
 QTEST_MAIN(tst_qdeclarativefolderlistmodel)

@@ -67,7 +67,8 @@ public:
 private:
     void write();
     void writeFunctionResults(const ImageItemList &list);
-    void writeItem(const QString &baseline, const QString &rendered, const ImageItem &item, const QString &ctx);
+    void writeItem(const QString &baseline, const QString &rendered, const ImageItem &item,
+                   const QString &itemFile, const QString &ctx, const QString &misCtx, const QString &metadata);
     void writeHeader();
     void writeFooter();
     QString generateCompared(const QString &baseline, const QString &rendered, bool fuzzy = false);

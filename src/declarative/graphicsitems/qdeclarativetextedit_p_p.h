@@ -54,7 +54,7 @@
 //
 
 #include "qdeclarativeitem.h"
-#include "private/qdeclarativepainteditem_p_p.h"
+#include "private/qdeclarativeimplicitsizeitem_p_p.h"
 
 #include <qdeclarative.h>
 
@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 class QTextLayout;
 class QTextDocument;
 class QTextControl;
-class QDeclarativeTextEditPrivate : public QDeclarativePaintedItemPrivate
+class QDeclarativeTextEditPrivate : public QDeclarativeImplicitSizePaintedItemPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeTextEdit)
 
@@ -70,10 +70,10 @@ public:
     QDeclarativeTextEditPrivate()
       : color("black"), hAlign(QDeclarativeTextEdit::AlignLeft), vAlign(QDeclarativeTextEdit::AlignTop),
       imgDirty(true), dirty(false), richText(false), cursorVisible(false), focusOnPress(true),
-      showInputPanelOnFocus(true), clickCausedFocus(false), persistentSelection(true), textMargin(0.0),
-      lastSelectionStart(0), lastSelectionEnd(0), cursorComponent(0), cursor(0),
-      format(QDeclarativeTextEdit::AutoText), document(0), wrapMode(QDeclarativeTextEdit::NoWrap),
-      selectByMouse(false),
+      showInputPanelOnFocus(true), clickCausedFocus(false), persistentSelection(true), requireImplicitWidth(false),
+      hAlignImplicit(true), rightToLeftText(false), textMargin(0.0), lastSelectionStart(0), lastSelectionEnd(0),
+      cursorComponent(0), cursor(0), format(QDeclarativeTextEdit::AutoText), document(0), wrapMode(QDeclarativeTextEdit::NoWrap),
+      mouseSelectionMode(QDeclarativeTextEdit::SelectCharacters), selectByMouse(false), canPaste(false),
       yoff(0)
     {
 #ifdef Q_OS_SYMBIAN
@@ -88,10 +88,15 @@ public:
     void updateDefaultTextOption();
     void relayoutDocument();
     void updateSelection();
+    bool determineHorizontalAlignment();
+    bool setHAlign(QDeclarativeTextEdit::HAlignment, bool forceAlign = false);
+    void mirrorChange();
+    qreal implicitWidth() const;
     void focusChanged(bool);
 
     QString text;
     QFont font;
+    QFont sourceFont;
     QColor  color;
     QColor  selectionColor;
     QColor  selectedTextColor;
@@ -109,6 +114,9 @@ public:
     bool showInputPanelOnFocus : 1;
     bool clickCausedFocus : 1;
     bool persistentSelection : 1;
+    bool requireImplicitWidth:1;
+    bool hAlignImplicit:1;
+    bool rightToLeftText:1;
     qreal textMargin;
     int lastSelectionStart;
     int lastSelectionEnd;
@@ -118,8 +126,12 @@ public:
     QTextDocument *document;
     QTextControl *control;
     QDeclarativeTextEdit::WrapMode wrapMode;
+    QDeclarativeTextEdit::SelectionMode mouseSelectionMode;
+    int lineCount;
     bool selectByMouse;
+    bool canPaste;
     int yoff;
+    QSize paintedSize;
 };
 
 QT_END_NAMESPACE

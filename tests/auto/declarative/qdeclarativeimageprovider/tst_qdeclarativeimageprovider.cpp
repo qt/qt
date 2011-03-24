@@ -180,6 +180,10 @@ void tst_qdeclarativeimageprovider::fillRequestTestsData(const QString &id)
             << "image://test/" + fileName << fileName << "" << QSize(100,100) << "";
 
     fileName = newImageFileName();
+    QTest::newRow(QTest::toString(id + " simple test with capitalization"))//As it's a URL, should make no difference
+            << "image://Test/" + fileName << fileName << "" << QSize(100,100) << "";
+
+    fileName = newImageFileName();
     QTest::newRow(QTest::toString(id + " url with no id"))
         << "image://test/" + fileName << "" + fileName << "" << QSize(100,100) << "";
 

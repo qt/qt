@@ -1073,8 +1073,11 @@ void QMenuBar::paintEvent(QPaintEvent *e)
 void QMenuBar::setVisible(bool visible)
 {
 #if defined(Q_WS_MAC) || defined(Q_OS_WINCE) || defined(Q_WS_S60)
-    if (isNativeMenuBar())
+    if (isNativeMenuBar()) {
+        if (!visible)
+            QWidget::setVisible(false);
         return;
+    }
 #endif
     QWidget::setVisible(visible);
 }

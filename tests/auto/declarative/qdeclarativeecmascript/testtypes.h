@@ -152,6 +152,11 @@ public:
     MyQmlObject *myinvokableObject;
     Q_INVOKABLE MyQmlObject *returnme() { return this; }
 
+    struct MyType {
+        int value;
+    };
+    QVariant variant() const { return m_variant; }
+    
 signals:
     void basicSignal();
     void argumentSignal(int a, QString b, qreal c);
@@ -159,6 +164,7 @@ signals:
     void objectChanged();
     void anotherBasicSignal();
     void thirdBasicSignal();
+    void signalWithUnknownType(const MyQmlObject::MyType &arg);
 
 public slots:
     void deleteMe() { delete this; }
@@ -166,6 +172,7 @@ public slots:
     void method(int a) { if(a == 163) m_methodIntCalled = true; }
     void setString(const QString &s) { m_string = s; }
     void myinvokable(MyQmlObject *o) { myinvokableObject = o; }
+    void variantMethod(const QVariant &v) { m_variant = v; }
 
 private:
     friend class tst_qdeclarativeecmascript;
@@ -178,6 +185,7 @@ private:
     int m_value;
     int m_resetProperty;
     QRegExp m_regExp;
+    QVariant m_variant;
 };
 
 QML_DECLARE_TYPEINFO(MyQmlObject, QML_HAS_ATTACHED_PROPERTIES)
@@ -624,6 +632,8 @@ public:
 
     Q_INVOKABLE int method_default(int a, int b = 19) { invoke(20); m_actuals << a << b; return b; }
 
+    Q_INVOKABLE void method_QVariant(QVariant a, QVariant b = QVariant()) { invoke(21); m_actuals << a << b; }
+
 private:
     friend class MyInvokableBaseObject;
     void invoke(int idx) { if (m_invoked != -1) m_invokedError = true; m_invoked = idx;}
@@ -735,6 +745,168 @@ class OverrideDefaultPropertyObject : public DefaultPropertyExtendedObject
 public:
     OverrideDefaultPropertyObject() {}
 };
+
+class MyRevisionedBaseClassRegistered : public QObject
+{
+Q_OBJECT
+    Q_PROPERTY(qreal propA READ propA WRITE setPropA NOTIFY propAChanged)
+    Q_PROPERTY(qreal propB READ propB WRITE setPropB NOTIFY propBChanged REVISION 1)
+
+public:
+    MyRevisionedBaseClassRegistered() : m_pa(1), m_pb(2) {}
+
+    qreal propA() const { return m_pa; }
+    void setPropA(qreal p) {
+        if (p != m_pa) {
+            m_pa = p;
+            emit propAChanged();
+        }
+    }
+    qreal propB() const { return m_pb; }
+    void setPropB(qreal p) {
+        if (p != m_pb) {
+            m_pb = p;
+            emit propBChanged();
+        }
+    }
+
+    Q_INVOKABLE void methodA() { }
+    Q_INVOKABLE Q_REVISION(1) void methodB() { }
+
+signals:
+    void propAChanged();
+    void propBChanged();
+
+    void signalA();
+    Q_REVISION(1) void signalB();
+
+protected:
+    qreal m_pa;
+    qreal m_pb;
+};
+
+class MyRevisionedBaseClassUnregistered : public MyRevisionedBaseClassRegistered
+{
+Q_OBJECT
+    Q_PROPERTY(qreal propC READ propC WRITE setPropC NOTIFY propCChanged)
+    Q_PROPERTY(qreal propD READ propD WRITE setPropD NOTIFY propDChanged REVISION 1)
+
+public:
+    MyRevisionedBaseClassUnregistered() : m_pc(1), m_pd(2) {}
+
+    qreal propC() const { return m_pc; }
+    void setPropC(qreal p) {
+        if (p != m_pc) {
+            m_pc = p;
+            emit propCChanged();
+        }
+    }
+    qreal propD() const { return m_pd; }
+    void setPropD(qreal p) {
+        if (p != m_pd) {
+            m_pd = p;
+            emit propDChanged();
+        }
+    }
+
+    Q_INVOKABLE void methodC() { }
+    Q_INVOKABLE Q_REVISION(1) void methodD() { }
+
+signals:
+    void propCChanged();
+    void propDChanged();
+
+    void signalC();
+    Q_REVISION(1) void signalD();
+
+protected:
+    qreal m_pc;
+    qreal m_pd;
+};
+
+class MyRevisionedClass : public MyRevisionedBaseClassUnregistered
+{
+    Q_OBJECT
+    Q_PROPERTY(qreal prop1 READ prop1 WRITE setProp1 NOTIFY prop1Changed)
+    Q_PROPERTY(qreal prop2 READ prop2 WRITE setProp2 NOTIFY prop2Changed REVISION 1)
+
+public:
+    MyRevisionedClass() {}
+
+    qreal prop1() const { return m_p1; }
+    void setProp1(qreal p) {
+        if (p != m_p1) {
+            m_p1 = p;
+            emit prop1Changed();
+        }
+    }
+    qreal prop2() const { return m_p2; }
+    void setProp2(qreal p) {
+        if (p != m_p2) {
+            m_p2 = p;
+            emit prop2Changed();
+        }
+    }
+
+    Q_INVOKABLE void method1() { }
+    Q_INVOKABLE Q_REVISION(1) void method2() { }
+
+signals:
+    void prop1Changed();
+    void prop2Changed();
+
+    void signal1();
+    Q_REVISION(1) void signal2();
+
+protected:
+    qreal m_p1;
+    qreal m_p2;
+};
+
+class MyRevisionedSubclass : public MyRevisionedClass
+{
+    Q_OBJECT
+    Q_PROPERTY(qreal prop3 READ prop3 WRITE setProp3 NOTIFY prop3Changed)
+    Q_PROPERTY(qreal prop4 READ prop4 WRITE setProp4 NOTIFY prop4Changed REVISION 1)
+
+public:
+    MyRevisionedSubclass() : m_p3(3), m_p4(4) {}
+
+    qreal prop3() const { return m_p3; }
+    void setProp3(qreal p) {
+        if (p != m_p3) {
+            m_p3 = p;
+            emit prop3Changed();
+        }
+    }
+    qreal prop4() const { return m_p4; }
+    void setProp4(qreal p) {
+        if (p != m_p4) {
+            m_p4 = p;
+            emit prop4Changed();
+        }
+    }
+
+    Q_INVOKABLE void method3() { }
+    Q_INVOKABLE Q_REVISION(1) void method4() { }
+
+signals:
+    void prop3Changed();
+    void prop4Changed();
+
+    void signal3();
+    Q_REVISION(1) void signal4();
+
+protected:
+    qreal m_p3;
+    qreal m_p4;
+};
+
+QML_DECLARE_TYPE(MyRevisionedBaseClassRegistered)
+QML_DECLARE_TYPE(MyRevisionedBaseClassUnregistered)
+QML_DECLARE_TYPE(MyRevisionedClass)
+QML_DECLARE_TYPE(MyRevisionedSubclass)
+Q_DECLARE_METATYPE(MyQmlObject::MyType)
 
 void registerTypes();
 

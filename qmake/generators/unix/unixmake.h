@@ -51,10 +51,6 @@ class UnixMakefileGenerator : public MakefileGenerator
     bool init_flag, include_deps;
     QString libtoolFileName(bool fixify=true);
     void writeLibtoolFile();     // for libtool
-    QString pkgConfigPrefix() const;
-    QString pkgConfigFileName(bool fixify=true);
-    QString pkgConfigFixPath(QString) const;
-    void writePkgConfigFile();   // for pkg-config
     void writePrlFile(QTextStream &);
 
 public:

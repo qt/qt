@@ -825,7 +825,7 @@ int QZipReader::count() const
 
 /*!
     Returns a FileInfo of an entry in the zipfile.
-    The \a index is the index into the directoy listing of the zipfile.
+    The \a index is the index into the directory listing of the zipfile.
     Returns an invalid FileInfo if \a index is out of boundaries.
 
     \sa fileInfoList()

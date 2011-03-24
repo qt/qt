@@ -134,7 +134,7 @@ int MMF::AudioPlayer::openFile(RFile& file)
     return err;
 }
 
-int MMF::AudioPlayer::openUrl(const QString& /*url*/)
+int MMF::AudioPlayer::openUrl(const QString& /*url*/, int /*iap*/)
 {
     // Streaming playback is generally not supported by the implementation
     // of the audio player API, so we use CVideoPlayerUtility for both

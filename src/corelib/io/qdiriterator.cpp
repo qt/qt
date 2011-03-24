@@ -142,7 +142,9 @@ public:
 #endif
 
     QDirIteratorPrivateIteratorStack<QAbstractFileEngineIterator> fileEngineIterators;
+#ifndef QT_NO_FILESYSTEMITERATOR
     QDirIteratorPrivateIteratorStack<QFileSystemIterator> nativeIterators;
+#endif
 
     QFileInfo currentFileInfo;
     QFileInfo nextFileInfo;
@@ -204,9 +206,11 @@ void QDirIteratorPrivate::pushDirectory(const QFileInfo &fileInfo)
             // No iterator; no entry list.
         }
     } else {
+#ifndef QT_NO_FILESYSTEMITERATOR
         QFileSystemIterator *it = new QFileSystemIterator(fileInfo.d_ptr->fileEntry,
             filters, nameFilters, iteratorFlags);
         nativeIterators << it;
+#endif
     }
 }
 
@@ -244,6 +248,7 @@ void QDirIteratorPrivate::advance()
             delete it;
         }
     } else {
+#ifndef QT_NO_FILESYSTEMITERATOR
         QFileSystemEntry nextEntry;
         QFileSystemMetaData nextMetaData;
 
@@ -260,6 +265,7 @@ void QDirIteratorPrivate::advance()
             nativeIterators.pop();
             delete it;
         }
+#endif
     }
 
     currentFileInfo = nextFileInfo;
@@ -500,7 +506,11 @@ bool QDirIterator::hasNext() const
     if (d->engine)
         return !d->fileEngineIterators.isEmpty();
     else
+#ifndef QT_NO_FILESYSTEMITERATOR
         return !d->nativeIterators.isEmpty();
+#else
+        return false;
+#endif
 }
 
 /*!

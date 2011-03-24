@@ -1174,6 +1174,7 @@ bool qSharedBuild()
     \value MV_10_4     Mac OS X 10.4
     \value MV_10_5     Mac OS X 10.5
     \value MV_10_6     Mac OS X 10.6
+    \value MV_10_7     Mac OS X 10.7
     \value MV_Unknown  An unknown and currently unsupported platform
 
     \value MV_CHEETAH  Apple codename for MV_10_0
@@ -1183,6 +1184,7 @@ bool qSharedBuild()
     \value MV_TIGER    Apple codename for MV_10_4
     \value MV_LEOPARD  Apple codename for MV_10_5
     \value MV_SNOWLEOPARD  Apple codename for MV_10_6
+    \value MV_LION     Apple codename for MV_10_7
 
     \sa WinVersion, SymbianVersion
 */
@@ -1738,7 +1740,7 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
     if (winver)
         return winver;
     winver = QSysInfo::WV_NT;
-    OSVERSIONINFOW osver;
+    OSVERSIONINFO osver;
     osver.dwOSVersionInfoSize = sizeof(osver);
     GetVersionEx(&osver);
 #ifdef Q_OS_WINCE
@@ -1874,7 +1876,7 @@ QSysInfo::SymbianVersion QSysInfo::symbianVersion()
                 else if (minor == 1) {
                     return cachedSymbianVersion = SV_SF_2;
                 }
-                else if (minor == 2) {
+                else if (minor >= 2) {
                     return cachedSymbianVersion = SV_SF_3;
                 }
             }
@@ -2589,7 +2591,7 @@ bool qputenv(const char *varName, const QByteArray& value)
 #endif
 }
 
-#if (defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_THREAD)
 
 #  if defined(Q_OS_INTEGRITY) && defined(__GHS_VERSION_NUMBER) && (__GHS_VERSION_NUMBER < 500)
 // older versions of INTEGRITY used a long instead of a uint for the seed.
@@ -2620,7 +2622,7 @@ Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
 */
 void qsrand(uint seed)
 {
-#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_THREAD)
     SeedStorage *seedStorage = randTLS();
     if (seedStorage) {
         SeedStorageType *pseed = seedStorage->localData();
@@ -2628,10 +2630,10 @@ void qsrand(uint seed)
             seedStorage->setLocalData(pseed = new SeedStorageType);
         *pseed = seed;
     } else {
-        //golbal static seed storage should always exist,
+        //global static seed storage should always exist,
         //except after being deleted by QGlobalStaticDeleter.
         //But since it still can be called from destructor of another
-        //global static object, fallback to sqrand(seed)
+        //global static object, fallback to srand(seed)
         srand(seed);
     }
 #else
@@ -2659,7 +2661,7 @@ void qsrand(uint seed)
 */
 int qrand()
 {
-#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_THREAD)
     SeedStorage *seedStorage = randTLS();
     if (seedStorage) {
         SeedStorageType *pseed = seedStorage->localData();
@@ -2669,10 +2671,10 @@ int qrand()
         }
         return rand_r(pseed);
     } else {
-        //golbal static seed storage should always exist,
+        //global static seed storage should always exist,
         //except after being deleted by QGlobalStaticDeleter.
         //But since it still can be called from destructor of another
-        //global static object, fallback to qrand()
+        //global static object, fallback to rand()
         return rand();
     }
 #else

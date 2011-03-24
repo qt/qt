@@ -121,7 +121,7 @@ QT_BEGIN_NAMESPACE
 
     If a scroll area is used to display the contents of a widget that
     contains child widgets arranged in a layout, it is important to
-    realise that the size policy of the layout will also determine the
+    realize that the size policy of the layout will also determine the
     size of the widget. This is especially useful to know if you intend
     to dynamically change the contents of the layout. In such cases,
     setting the layout's \l{QLayout::sizeConstraint}{size constraint}

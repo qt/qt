@@ -19,7 +19,7 @@ if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
     win32:qclucene = $${qclucene}d
 }
 linux-lsb-g++:LIBS_PRIVATE += --lsb-shared-libs=$$qclucene
-unix:QMAKE_PKGCONFIG_REQUIRES += QtNetwork \
+unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES += QtNetwork \
     QtSql \
     QtXml
 LIBS_PRIVATE += -l$$qclucene

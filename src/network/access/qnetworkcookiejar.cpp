@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qnetworkcookiejar.h"
+#include "qnetworkcookiejartlds_p.h"
 #include "qnetworkcookiejar_p.h"
 
 #include "QtNetwork/qnetworkcookie.h"
@@ -157,7 +158,8 @@ static inline bool isParentDomain(QString domain, QString reference)
     jar. Default values for path and domain are taken from the \a
     url object.
 
-    Returns true if one or more cookes are set for url otherwise false.
+    Returns true if one or more cookies are set for \a url,
+    otherwise false.
 
     If a cookie already exists in the cookie jar, it will be
     overridden by those in \a cookieList.
@@ -208,16 +210,14 @@ bool QNetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieLis
 
             QString domain = cookie.domain();
             if (!(isParentDomain(domain, defaultDomain)
-                || isParentDomain(defaultDomain, domain))) {
-                    continue;           // not accepted
-            }
+                || isParentDomain(defaultDomain, domain)))
+                continue; // not accepted
 
-            // reject if domain is like ".com"
-            // (i.e., reject if domain does not contain embedded dots, see RFC 2109 section 4.3.2)
-            // this is just a rudimentary check and does not cover all cases
-            if (domain.lastIndexOf(QLatin1Char('.')) == 0)
-                continue;           // not accepted
-
+            // the check for effective TLDs makes the "embedded dot" rule from RFC 2109 section 4.3.2
+            // redundant; the "leading dot" rule has been relaxed anyway, see above
+            // we remove the leading dot for this check
+            if (QNetworkCookieJarPrivate::isEffectiveTLD(domain.remove(0, 1)))
+                continue; // not accepted
         }
 
         QList<QNetworkCookie>::Iterator it = d->allCookies.begin(),
@@ -250,7 +250,7 @@ bool QNetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieLis
     If more than one cookie with the same name is found, but with
     differing paths, the one with longer path is returned before the
     one with shorter path. In other words, this function returns
-    cookies sorted by path length.
+    cookies sorted decreasingly by path length.
 
     The default QNetworkCookieJar class implements only a very basic
     security policy (it makes sure that the cookies' domain and path
@@ -302,6 +302,45 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
     }
 
     return result;
+}
+
+bool QNetworkCookieJarPrivate::isEffectiveTLD(const QString &domain)
+{
+    // for domain 'foo.bar.com':
+    // 1. return if TLD table contains 'foo.bar.com'
+    if (containsTLDEntry(domain))
+        return true;
+
+    if (domain.contains(QLatin1Char('.'))) {
+        int count = domain.size() - domain.indexOf(QLatin1Char('.'));
+        QString wildCardDomain;
+        wildCardDomain.reserve(count + 1);
+        wildCardDomain.append(QLatin1Char('*'));
+        wildCardDomain.append(domain.right(count));
+        // 2. if table contains '*.bar.com',
+        // test if table contains '!foo.bar.com'
+        if (containsTLDEntry(wildCardDomain)) {
+            QString exceptionDomain;
+            exceptionDomain.reserve(domain.size() + 1);
+            exceptionDomain.append(QLatin1Char('!'));
+            exceptionDomain.append(domain);
+            return (! containsTLDEntry(exceptionDomain));
+        }
+    }
+    return false;
+}
+
+bool QNetworkCookieJarPrivate::containsTLDEntry(const QString &entry)
+{
+    int index = qHash(entry) % tldCount;
+    int currentDomainIndex = tldIndices[index];
+    while (currentDomainIndex < tldIndices[index+1]) {
+        QString currentEntry = QString::fromUtf8(tldData + currentDomainIndex);
+        if (currentEntry == entry)
+            return true;
+        currentDomainIndex += qstrlen(tldData + currentDomainIndex) + 1; // +1 for the ending \0
+    }
+    return false;
 }
 
 QT_END_NAMESPACE

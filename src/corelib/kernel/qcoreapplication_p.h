@@ -65,8 +65,11 @@ QT_BEGIN_NAMESPACE
 
 typedef QList<QTranslator*> QTranslatorList;
 
-#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
+#if defined(Q_OS_SYMBIAN)
+#  if !defined(QT_NO_SYSTEMLOCALE)
 class QEnvironmentChangeNotifier;
+#  endif
+class CApaCommandLine;
 #endif
 class QAbstractEventDispatcher;
 
@@ -81,8 +84,6 @@ public:
     bool sendThroughApplicationEventFilters(QObject *, QEvent *);
     bool sendThroughObjectEventFilters(QObject *, QEvent *);
     bool notify_helper(QObject *, QEvent *);
-
-    void _q_initializeProcessManager();
 
     virtual QString appName() const;
     virtual void createEventDispatcher();
@@ -118,9 +119,12 @@ public:
     bool aboutToQuitEmitted;
     QString cachedApplicationDirPath;
     QString cachedApplicationFilePath;
-#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
+#if defined(Q_OS_SYMBIAN)
+#  if !defined(QT_NO_SYSTEMLOCALE)
     QScopedPointer<QEnvironmentChangeNotifier> environmentChangeNotifier;
     void symbianInit();
+#  endif
+    static CApaCommandLine* symbianCommandLine();
 #endif
 
     static bool isTranslatorInstalled(QTranslator *translator);

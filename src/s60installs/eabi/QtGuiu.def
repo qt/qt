@@ -3164,7 +3164,7 @@ EXPORTS
 	_ZN14QWindowSurface10beginPaintERK7QRegion @ 3163 NONAME
 	_ZN14QWindowSurface11setGeometryERK5QRect @ 3164 NONAME
 	_ZN14QWindowSurface17setStaticContentsERK7QRegion @ 3165 NONAME
-	_ZN14QWindowSurface24setStaticContentsSupportEb @ 3166 NONAME
+	_ZN14QWindowSurface24setStaticContentsSupportEb @ 3166 NONAME ABSENT
 	_ZN14QWindowSurface6bufferEPK7QWidget @ 3167 NONAME
 	_ZN14QWindowSurface6scrollERK7QRegionii @ 3168 NONAME
 	_ZN14QWindowSurface8endPaintERK7QRegion @ 3169 NONAME
@@ -11887,7 +11887,7 @@ EXPORTS
 	_ZN14QGraphicsScale13zScaleChangedEv @ 11886 NONAME
 	_ZN14QPaintEngineEx19drawPixmapFragmentsEPKN8QPainter14PixmapFragmentEiRK7QPixmap6QFlagsINS0_18PixmapFragmentHintEE @ 11887 NONAME
 	_ZN14QWidgetPrivate6renderEP12QPaintDeviceRK6QPointRK7QRegion6QFlagsIN7QWidget10RenderFlagEEb @ 11888 NONAME
-	_ZN14QWindowSurface23setPartialUpdateSupportEb @ 11889 NONAME
+	_ZN14QWindowSurface23setPartialUpdateSupportEb @ 11889 NONAME ABSENT
 	_ZN15QGraphicsObject12widthChangedEv @ 11890 NONAME
 	_ZN15QGraphicsObject13heightChangedEv @ 11891 NONAME
 	_ZN15QGraphicsObject15childrenChangedEv @ 11892 NONAME
@@ -12105,232 +12105,332 @@ EXPORTS
 	_ZN15QStaticTextItemD1Ev @ 12104 NONAME
 	_ZN15QStaticTextItemD2Ev @ 12105 NONAME
 	_ZN19QEventDispatcherS6031reactivateDeferredActiveObjectsEv @ 12106 NONAME
-	_Z18qt_addBitmapToPathffPKhiiiP12QPainterPath @ 12107 NONAME
-	_Z22qt_fontdata_from_indexi @ 12108 NONAME
-	_ZN10QBlittable4lockEv @ 12109 NONAME
-	_ZN10QBlittable6unlockEv @ 12110 NONAME
-	_ZN10QBlittableC2ERK5QSize6QFlagsINS_10CapabilityEE @ 12111 NONAME
-	_ZN10QBlittableD0Ev @ 12112 NONAME
-	_ZN10QBlittableD1Ev @ 12113 NONAME
-	_ZN10QBlittableD2Ev @ 12114 NONAME
-	_ZN11QFontEngine19alphaRGBMapForGlyphEj6QFixediRK10QTransform @ 12115 NONAME
-	_ZN12QInputDialog7getItemEP7QWidgetRK7QStringS4_RK11QStringListibPb6QFlagsIN2Qt10WindowTypeEES9_INSA_15InputMethodHintEE @ 12116 NONAME
-	_ZN12QInputDialog7getTextEP7QWidgetRK7QStringS4_N9QLineEdit8EchoModeES4_Pb6QFlagsIN2Qt10WindowTypeEES8_INS9_15InputMethodHintEE @ 12117 NONAME
-	_ZN14QWindowSurfaceC2EP7QWidgetb @ 12118 NONAME
-	_ZN18QTextureGlyphCache19fillInPendingGlyphsEv @ 12119 NONAME
-	_ZN19QAbstractProxyModel11setItemDataERK11QModelIndexRK4QMapIi8QVariantE @ 12120 NONAME
-	_ZN19QAbstractProxyModel17resetInternalDataEv @ 12121 NONAME
-	_ZN19QAbstractProxyModel4sortEiN2Qt9SortOrderE @ 12122 NONAME
-	_ZN19QAbstractProxyModel9fetchMoreERK11QModelIndex @ 12123 NONAME
-	_ZN19QApplicationPrivateC1ERiPPcN12QApplication4TypeEi @ 12124 NONAME
-	_ZN19QApplicationPrivateC2ERiPPcN12QApplication4TypeEi @ 12125 NONAME
-	_ZN19QBlitterPaintEngine10drawPixmapERK6QRectFRK7QPixmapS2_ @ 12126 NONAME
-	_ZN19QBlitterPaintEngine10penChangedEv @ 12127 NONAME
-	_ZN19QBlitterPaintEngine11drawEllipseERK6QRectF @ 12128 NONAME
-	_ZN19QBlitterPaintEngine12brushChangedEv @ 12129 NONAME
-	_ZN19QBlitterPaintEngine12drawTextItemERK7QPointFRK9QTextItem @ 12130 NONAME
-	_ZN19QBlitterPaintEngine14opacityChangedEv @ 12131 NONAME
-	_ZN19QBlitterPaintEngine16transformChangedEv @ 12132 NONAME
-	_ZN19QBlitterPaintEngine18brushOriginChangedEv @ 12133 NONAME
-	_ZN19QBlitterPaintEngine18clipEnabledChangedEv @ 12134 NONAME
-	_ZN19QBlitterPaintEngine18drawStaticTextItemEP15QStaticTextItem @ 12135 NONAME
-	_ZN19QBlitterPaintEngine18renderHintsChangedEv @ 12136 NONAME
-	_ZN19QBlitterPaintEngine22compositionModeChangedEv @ 12137 NONAME
-	_ZN19QBlitterPaintEngine3endEv @ 12138 NONAME
-	_ZN19QBlitterPaintEngine4clipERK11QVectorPathN2Qt13ClipOperationE @ 12139 NONAME
-	_ZN19QBlitterPaintEngine4clipERK5QRectN2Qt13ClipOperationE @ 12140 NONAME
-	_ZN19QBlitterPaintEngine4clipERK7QRegionN2Qt13ClipOperationE @ 12141 NONAME
-	_ZN19QBlitterPaintEngine4fillERK11QVectorPathRK6QBrush @ 12142 NONAME
-	_ZN19QBlitterPaintEngine5beginEP12QPaintDevice @ 12143 NONAME
-	_ZN19QBlitterPaintEngine6strokeERK11QVectorPathRK4QPen @ 12144 NONAME
-	_ZN19QBlitterPaintEngine8fillRectERK6QRectFRK6QBrush @ 12145 NONAME
-	_ZN19QBlitterPaintEngine8fillRectERK6QRectFRK6QColor @ 12146 NONAME
-	_ZN19QBlitterPaintEngine8setStateEP13QPainterState @ 12147 NONAME
-	_ZN19QBlitterPaintEngine9drawImageERK6QRectFRK6QImageS2_6QFlagsIN2Qt19ImageConversionFlagEE @ 12148 NONAME
-	_ZN19QBlitterPaintEngine9drawRectsEPK5QRecti @ 12149 NONAME
-	_ZN19QBlitterPaintEngine9drawRectsEPK6QRectFi @ 12150 NONAME
-	_ZN19QBlitterPaintEngineC1EP20QBlittablePixmapData @ 12151 NONAME
-	_ZN19QBlitterPaintEngineC2EP20QBlittablePixmapData @ 12152 NONAME
-	_ZN19QBlitterPaintEngineD0Ev @ 12153 NONAME
-	_ZN19QBlitterPaintEngineD1Ev @ 12154 NONAME
-	_ZN19QBlitterPaintEngineD2Ev @ 12155 NONAME
-	_ZN19QGraphicsGridLayout10removeItemEP19QGraphicsLayoutItem @ 12156 NONAME
-	_ZN20QBlittablePixmapData12setBlittableEP10QBlittable @ 12157 NONAME
-	_ZN20QBlittablePixmapData4fillERK6QColor @ 12158 NONAME
-	_ZN20QBlittablePixmapData6bufferEv @ 12159 NONAME
-	_ZN20QBlittablePixmapData6resizeEii @ 12160 NONAME
-	_ZN20QBlittablePixmapData9fromImageERK6QImage6QFlagsIN2Qt19ImageConversionFlagEE @ 12161 NONAME
-	_ZN20QBlittablePixmapDataC2Ev @ 12162 NONAME
-	_ZN20QBlittablePixmapDataD0Ev @ 12163 NONAME
-	_ZN20QBlittablePixmapDataD1Ev @ 12164 NONAME
-	_ZN20QBlittablePixmapDataD2Ev @ 12165 NONAME
-	_ZN20QRasterWindowSurfaceC1EP7QWidgetb @ 12166 NONAME
-	_ZN20QRasterWindowSurfaceC2EP7QWidgetb @ 12167 NONAME
-	_ZN23QImageTextureGlyphCache11fillTextureERKN18QTextureGlyphCache5CoordEj6QFixed @ 12168 NONAME
-	_ZN6QImage4fillEN2Qt11GlobalColorE @ 12169 NONAME
-	_ZN6QImage4fillERK6QColor @ 12170 NONAME
-	_ZN7QGlyphs12setPositionsERK7QVectorI7QPointFE @ 12171 NONAME
-	_ZN7QGlyphs15setGlyphIndexesERK7QVectorIjE @ 12172 NONAME
-	_ZN7QGlyphs5clearEv @ 12173 NONAME
-	_ZN7QGlyphs6detachEv @ 12174 NONAME
-	_ZN7QGlyphs7setFontERK5QFont @ 12175 NONAME
-	_ZN7QGlyphsC1ERKS_ @ 12176 NONAME
-	_ZN7QGlyphsC1Ev @ 12177 NONAME
-	_ZN7QGlyphsC2ERKS_ @ 12178 NONAME
-	_ZN7QGlyphsC2Ev @ 12179 NONAME
-	_ZN7QGlyphsD1Ev @ 12180 NONAME
-	_ZN7QGlyphsD2Ev @ 12181 NONAME
-	_ZN7QGlyphsaSERKS_ @ 12182 NONAME
-	_ZN7QGlyphspLERKS_ @ 12183 NONAME
-	_ZN8QPainter10drawGlyphsERK7QPointFRK7QGlyphs @ 12184 NONAME
-	_ZNK10QBlittable12capabilitiesEv @ 12185 NONAME
-	_ZNK10QBlittable4sizeEv @ 12186 NONAME
-	_ZNK10QTabWidget14heightForWidthEi @ 12187 NONAME
-	_ZNK11QFontEngine18createExplicitFontEv @ 12188 NONAME
-	_ZNK11QFontEngine26createExplicitFontWithNameERK7QString @ 12189 NONAME
-	_ZNK11QTextLayout6glyphsEv @ 12190 NONAME
-	_ZNK12QFontMetrics10inFontUcs4Ej @ 12191 NONAME
-	_ZNK12QRadioButton15minimumSizeHintEv @ 12192 NONAME
-	_ZNK13QFontMetricsF10inFontUcs4Ej @ 12193 NONAME
-	_ZNK13QTextFragment6glyphsEv @ 12194 NONAME
-	_ZNK14QWidgetPrivate17hasHeightForWidthEv @ 12195 NONAME
-	_ZNK16QFileSystemModel5rmdirERK11QModelIndex @ 12196 NONAME
-	_ZNK18QTextureGlyphCache18textureMapForGlyphEj6QFixed @ 12197 NONAME
-	_ZNK18QTextureGlyphCache20subPixelPositionForXE6QFixed @ 12198 NONAME
-	_ZNK18QTextureGlyphCache30calculateSubPixelPositionCountEj @ 12199 NONAME
-	_ZNK19QAbstractProxyModel11hasChildrenERK11QModelIndex @ 12200 NONAME
-	_ZNK19QAbstractProxyModel12canFetchMoreERK11QModelIndex @ 12201 NONAME
-	_ZNK19QAbstractProxyModel20supportedDropActionsEv @ 12202 NONAME
-	_ZNK19QAbstractProxyModel4spanERK11QModelIndex @ 12203 NONAME
-	_ZNK19QAbstractProxyModel5buddyERK11QModelIndex @ 12204 NONAME
-	_ZNK19QAbstractProxyModel8mimeDataERK5QListI11QModelIndexE @ 12205 NONAME
-	_ZNK19QAbstractProxyModel9mimeTypesEv @ 12206 NONAME
-	_ZNK19QBlitterPaintEngine11createStateEP13QPainterState @ 12207 NONAME
-	_ZNK20QBlittablePixmapData11paintEngineEv @ 12208 NONAME
-	_ZNK20QBlittablePixmapData15hasAlphaChannelEv @ 12209 NONAME
-	_ZNK20QBlittablePixmapData6metricEN12QPaintDevice17PaintDeviceMetricE @ 12210 NONAME
-	_ZNK20QBlittablePixmapData7toImageEv @ 12211 NONAME
-	_ZNK20QBlittablePixmapData9blittableEv @ 12212 NONAME
-	_ZNK7QGlyphs12glyphIndexesEv @ 12213 NONAME
-	_ZNK7QGlyphs4fontEv @ 12214 NONAME
-	_ZNK7QGlyphs9positionsEv @ 12215 NONAME
-	_ZNK7QGlyphseqERKS_ @ 12216 NONAME
-	_ZNK7QGlyphsneERKS_ @ 12217 NONAME
-	_ZNK7QGlyphsplERKS_ @ 12218 NONAME
-	_ZNK8QPainter16clipBoundingRectEv @ 12219 NONAME
-	_ZNK9QCheckBox15minimumSizeHintEv @ 12220 NONAME
-	_ZNK9QTextLine6glyphsEii @ 12221 NONAME
-	_ZTI10QBlittable @ 12222 NONAME
-	_ZTI19QBlitterPaintEngine @ 12223 NONAME
-	_ZTI20QBlittablePixmapData @ 12224 NONAME
-	_ZTV10QBlittable @ 12225 NONAME
-	_ZTV19QBlitterPaintEngine @ 12226 NONAME
-	_ZTV20QBlittablePixmapData @ 12227 NONAME
-	_Zls6QDebugPK13QSymbianEvent @ 12228 NONAME
-	_ZN13QS60MainAppUi25ProcessCommandParametersLE11TApaCommandR4TBufILi256EERK6TDesC8 @ 12229 NONAME ABSENT
-	_ZN14QFileOpenEventC1ERK5RFile @ 12230 NONAME ABSENT
-	_ZN14QFileOpenEventC2ERK5RFile @ 12231 NONAME ABSENT
-	_ZNK14QFileOpenEvent8openFileER5QFile6QFlagsIN9QIODevice12OpenModeFlagEE @ 12232 NONAME ABSENT
-	_ZN11QFontEngine16alphaMapForGlyphEj6QFixed @ 12233 NONAME
-	_ZN11QFontEngine16alphaMapForGlyphEj6QFixedRK10QTransform @ 12234 NONAME
-	_Z32qGamma_correct_back_to_linear_csP6QImage @ 12235 NONAME
-	_ZN12QLineControl21resetCursorBlinkTimerEv @ 12236 NONAME
-	_ZN12QScrollEvent6d_funcEv @ 12237 NONAME
-	_ZN12QScrollEventC1ERK7QPointFS2_NS_11ScrollStateE @ 12238 NONAME
-	_ZN12QScrollEventC2ERK7QPointFS2_NS_11ScrollStateE @ 12239 NONAME
-	_ZN12QScrollEventD0Ev @ 12240 NONAME
-	_ZN12QScrollEventD1Ev @ 12241 NONAME
-	_ZN12QScrollEventD2Ev @ 12242 NONAME
-	_ZN13QFlickGesture11qt_metacallEN11QMetaObject4CallEiPPv @ 12243 NONAME
-	_ZN13QFlickGesture11qt_metacastEPKc @ 12244 NONAME
-	_ZN13QFlickGesture16staticMetaObjectE @ 12245 NONAME DATA 16
-	_ZN13QFlickGesture19getStaticMetaObjectEv @ 12246 NONAME
-	_ZN13QFlickGestureC1EP7QObjectN2Qt11MouseButtonES1_ @ 12247 NONAME
-	_ZN13QFlickGestureC2EP7QObjectN2Qt11MouseButtonES1_ @ 12248 NONAME
-	_ZN13QFlickGestureD0Ev @ 12249 NONAME
-	_ZN13QFlickGestureD1Ev @ 12250 NONAME
-	_ZN13QFlickGestureD2Ev @ 12251 NONAME
-	_ZN19QScrollPrepareEvent13setContentPosERK7QPointF @ 12252 NONAME
-	_ZN19QScrollPrepareEvent15setViewportSizeERK6QSizeF @ 12253 NONAME
-	_ZN19QScrollPrepareEvent18setContentPosRangeERK6QRectF @ 12254 NONAME
-	_ZN19QScrollPrepareEvent6d_funcEv @ 12255 NONAME
-	_ZN19QScrollPrepareEventC1ERK7QPointF @ 12256 NONAME
-	_ZN19QScrollPrepareEventC2ERK7QPointF @ 12257 NONAME
-	_ZN19QScrollPrepareEventD0Ev @ 12258 NONAME
-	_ZN19QScrollPrepareEventD1Ev @ 12259 NONAME
-	_ZN19QScrollPrepareEventD2Ev @ 12260 NONAME
-	_ZN19QScrollerProperties15setScrollMetricENS_12ScrollMetricERK8QVariant @ 12261 NONAME
-	_ZN19QScrollerProperties28setDefaultScrollerPropertiesERKS_ @ 12262 NONAME
-	_ZN19QScrollerProperties30unsetDefaultScrollerPropertiesEv @ 12263 NONAME
-	_ZN19QScrollerPropertiesC1ERKS_ @ 12264 NONAME
-	_ZN19QScrollerPropertiesC1Ev @ 12265 NONAME
-	_ZN19QScrollerPropertiesC2ERKS_ @ 12266 NONAME
-	_ZN19QScrollerPropertiesC2Ev @ 12267 NONAME
-	_ZN19QScrollerPropertiesD0Ev @ 12268 NONAME
-	_ZN19QScrollerPropertiesD1Ev @ 12269 NONAME
-	_ZN19QScrollerPropertiesD2Ev @ 12270 NONAME
-	_ZN19QScrollerPropertiesaSERKS_ @ 12271 NONAME
-	_ZN20QGraphicsItemPrivate11setSubFocusEP13QGraphicsItemS1_ @ 12272 NONAME
-	_ZN20QGraphicsItemPrivate13clearSubFocusEP13QGraphicsItemS1_ @ 12273 NONAME
-	_ZN26QAbstractScrollAreaPrivate19canStartScrollingAtERK6QPoint @ 12274 NONAME
-	_ZN9QScroller11grabGestureEP7QObjectNS_19ScrollerGestureTypeE @ 12275 NONAME
-	_ZN9QScroller11handleInputENS_5InputERK7QPointFx @ 12276 NONAME
-	_ZN9QScroller11hasScrollerEP7QObject @ 12277 NONAME
-	_ZN9QScroller11qt_metacallEN11QMetaObject4CallEiPPv @ 12278 NONAME
-	_ZN9QScroller11qt_metacastEPKc @ 12279 NONAME
-	_ZN9QScroller12stateChangedENS_5StateE @ 12280 NONAME
-	_ZN9QScroller13ensureVisibleERK6QRectFff @ 12281 NONAME
-	_ZN9QScroller13ensureVisibleERK6QRectFffi @ 12282 NONAME
-	_ZN9QScroller13ungrabGestureEP7QObject @ 12283 NONAME
-	_ZN9QScroller14grabbedGestureEP7QObject @ 12284 NONAME
-	_ZN9QScroller15activeScrollersEv @ 12285 NONAME
-	_ZN9QScroller16staticMetaObjectE @ 12286 NONAME DATA 16
-	_ZN9QScroller17setSnapPositionsXERK5QListIfE @ 12287 NONAME
-	_ZN9QScroller17setSnapPositionsXEff @ 12288 NONAME
-	_ZN9QScroller17setSnapPositionsYERK5QListIfE @ 12289 NONAME
-	_ZN9QScroller17setSnapPositionsYEff @ 12290 NONAME
-	_ZN9QScroller18resendPrepareEventEv @ 12291 NONAME
-	_ZN9QScroller19getStaticMetaObjectEv @ 12292 NONAME
-	_ZN9QScroller21setScrollerPropertiesERK19QScrollerProperties @ 12293 NONAME
-	_ZN9QScroller25scrollerPropertiesChangedERK19QScrollerProperties @ 12294 NONAME
-	_ZN9QScroller4stopEv @ 12295 NONAME
-	_ZN9QScroller8scrollToERK7QPointF @ 12296 NONAME
-	_ZN9QScroller8scrollToERK7QPointFi @ 12297 NONAME
-	_ZN9QScroller8scrollerEP7QObject @ 12298 NONAME
-	_ZN9QScroller8scrollerEPK7QObject @ 12299 NONAME
-	_ZN9QScrollerC1EP7QObject @ 12300 NONAME
-	_ZN9QScrollerC2EP7QObject @ 12301 NONAME
-	_ZN9QScrollerD0Ev @ 12302 NONAME
-	_ZN9QScrollerD1Ev @ 12303 NONAME
-	_ZN9QScrollerD2Ev @ 12304 NONAME
-	_ZNK12QScrollEvent10contentPosEv @ 12305 NONAME
-	_ZNK12QScrollEvent11scrollStateEv @ 12306 NONAME
-	_ZNK12QScrollEvent17overshootDistanceEv @ 12307 NONAME
-	_ZNK12QScrollEvent6d_funcEv @ 12308 NONAME
-	_ZNK13QFlickGesture10metaObjectEv @ 12309 NONAME
-	_ZNK19QScrollPrepareEvent10contentPosEv @ 12310 NONAME
-	_ZNK19QScrollPrepareEvent12viewportSizeEv @ 12311 NONAME
-	_ZNK19QScrollPrepareEvent15contentPosRangeEv @ 12312 NONAME
-	_ZNK19QScrollPrepareEvent6d_funcEv @ 12313 NONAME
-	_ZNK19QScrollPrepareEvent8startPosEv @ 12314 NONAME
-	_ZNK19QScrollerProperties12scrollMetricENS_12ScrollMetricE @ 12315 NONAME
-	_ZNK19QScrollerPropertieseqERKS_ @ 12316 NONAME
-	_ZNK19QScrollerPropertiesneERKS_ @ 12317 NONAME
-	_ZNK9QScroller10metaObjectEv @ 12318 NONAME
-	_ZNK9QScroller13finalPositionEv @ 12319 NONAME
-	_ZNK9QScroller13pixelPerMeterEv @ 12320 NONAME
-	_ZNK9QScroller18scrollerPropertiesEv @ 12321 NONAME
-	_ZNK9QScroller5stateEv @ 12322 NONAME
-	_ZNK9QScroller6targetEv @ 12323 NONAME
-	_ZNK9QScroller8velocityEv @ 12324 NONAME
-	_ZTI12QScrollEvent @ 12325 NONAME
-	_ZTI13QFlickGesture @ 12326 NONAME
-	_ZTI19QScrollPrepareEvent @ 12327 NONAME
-	_ZTI19QScrollerProperties @ 12328 NONAME
-	_ZTI9QScroller @ 12329 NONAME
-	_ZTV12QScrollEvent @ 12330 NONAME
-	_ZTV13QFlickGesture @ 12331 NONAME
-	_ZTV19QScrollPrepareEvent @ 12332 NONAME
-	_ZTV19QScrollerProperties @ 12333 NONAME
-	_ZTV9QScroller @ 12334 NONAME
+	_ZN20QGraphicsItemPrivate11setSubFocusEP13QGraphicsItemS1_ @ 12107 NONAME
+	_ZN20QGraphicsItemPrivate13clearSubFocusEP13QGraphicsItemS1_ @ 12108 NONAME
+	_ZN12QLineControl21resetCursorBlinkTimerEv @ 12109 NONAME
+	_ZN12QTextControl14setDragEnabledEb @ 12110 NONAME
+	_ZN19QTextDocumentLayout10timerEventEP11QTimerEvent @ 12111 NONAME ABSENT
+	_ZN19QTextDocumentLayout11qt_metacallEN11QMetaObject4CallEiPPv @ 12112 NONAME ABSENT
+	_ZN19QTextDocumentLayout11qt_metacastEPKc @ 12113 NONAME ABSENT
+	_ZN19QTextDocumentLayout11setViewportERK6QRectF @ 12114 NONAME ABSENT
+	_ZN19QTextDocumentLayout13setLineHeightEfNS_14LineHeightModeE @ 12115 NONAME ABSENT
+	_ZN19QTextDocumentLayout14ensureLayoutedEf @ 12116 NONAME ABSENT
+	_ZN19QTextDocumentLayout14layoutFinishedEv @ 12117 NONAME ABSENT
+	_ZN19QTextDocumentLayout14setCursorWidthEi @ 12118 NONAME ABSENT
+	_ZN19QTextDocumentLayout15documentChangedEiii @ 12119 NONAME ABSENT
+	_ZN19QTextDocumentLayout16drawInlineObjectEP8QPainterRK6QRectF17QTextInlineObjectiRK11QTextFormat @ 12120 NONAME ABSENT
+	_ZN19QTextDocumentLayout16staticMetaObjectE @ 12121 NONAME DATA 16 ABSENT
+	_ZN19QTextDocumentLayout18resizeInlineObjectE17QTextInlineObjectiRK11QTextFormat @ 12122 NONAME ABSENT
+	_ZN19QTextDocumentLayout19getStaticMetaObjectEv @ 12123 NONAME ABSENT
+	_ZN19QTextDocumentLayout19setFixedColumnWidthEi @ 12124 NONAME ABSENT
+	_ZN19QTextDocumentLayout20positionInlineObjectE17QTextInlineObjectiRK11QTextFormat @ 12125 NONAME ABSENT
+	_ZN19QTextDocumentLayout4drawEP8QPainterRKN27QAbstractTextDocumentLayout12PaintContextE @ 12126 NONAME ABSENT
+	_ZN19QTextDocumentLayout8doLayoutEiii @ 12127 NONAME ABSENT
+	_ZN19QTextDocumentLayoutC1EP13QTextDocument @ 12128 NONAME ABSENT
+	_ZN19QTextDocumentLayoutC2EP13QTextDocument @ 12129 NONAME ABSENT
+	_ZNK12QTextControl13isDragEnabledEv @ 12130 NONAME
+	_ZNK19QTextDocumentLayout10idealWidthEv @ 12131 NONAME ABSENT
+	_ZNK19QTextDocumentLayout10metaObjectEv @ 12132 NONAME ABSENT
+	_ZNK19QTextDocumentLayout11cursorWidthEv @ 12133 NONAME ABSENT
+	_ZNK19QTextDocumentLayout12documentSizeEv @ 12134 NONAME ABSENT
+	_ZNK19QTextDocumentLayout12layoutStatusEv @ 12135 NONAME ABSENT
+	_ZNK19QTextDocumentLayout16dynamicPageCountEv @ 12136 NONAME ABSENT
+	_ZNK19QTextDocumentLayout17blockBoundingRectERK10QTextBlock @ 12137 NONAME ABSENT
+	_ZNK19QTextDocumentLayout17frameBoundingRectEP10QTextFrame @ 12138 NONAME ABSENT
+	_ZNK19QTextDocumentLayout19contentHasAlignmentEv @ 12139 NONAME ABSENT
+	_ZNK19QTextDocumentLayout19dynamicDocumentSizeEv @ 12140 NONAME ABSENT
+	_ZNK19QTextDocumentLayout7hitTestERK7QPointFN2Qt15HitTestAccuracyE @ 12141 NONAME ABSENT
+	_ZNK19QTextDocumentLayout9pageCountEv @ 12142 NONAME ABSENT
+	_ZTI19QTextDocumentLayout @ 12143 NONAME ABSENT
+	_ZTV19QTextDocumentLayout @ 12144 NONAME ABSENT
+	_ZN12QTextControl23setWordSelectionEnabledEb @ 12145 NONAME
+	_ZNK12QTextControl22isWordSelectionEnabledEv @ 12146 NONAME
+	_ZN12QLineControl16updateMicroFocusEv @ 12147 NONAME
+	_ZNK14QWidgetPrivate20assignedInputContextEv @ 12148 NONAME
+	_ZN14QVolatileImage11paintEngineEv @ 12149 NONAME
+	_ZN14QVolatileImage12ensureFormatEN6QImage6FormatE @ 12150 NONAME
+	_ZN14QVolatileImage15setAlphaChannelERK7QPixmap @ 12151 NONAME
+	_ZN14QVolatileImage4bitsEv @ 12152 NONAME
+	_ZN14QVolatileImage4fillEj @ 12153 NONAME
+	_ZN14QVolatileImage8copyFromEPS_RK5QRect @ 12154 NONAME
+	_ZN14QVolatileImage8imageRefEv @ 12155 NONAME
+	_ZN14QVolatileImageC1EPvS0_ @ 12156 NONAME
+	_ZN14QVolatileImageC1ERK6QImage @ 12157 NONAME
+	_ZN14QVolatileImageC1ERKS_ @ 12158 NONAME
+	_ZN14QVolatileImageC1EiiN6QImage6FormatE @ 12159 NONAME
+	_ZN14QVolatileImageC1Ev @ 12160 NONAME
+	_ZN14QVolatileImageC2EPvS0_ @ 12161 NONAME
+	_ZN14QVolatileImageC2ERK6QImage @ 12162 NONAME
+	_ZN14QVolatileImageC2ERKS_ @ 12163 NONAME
+	_ZN14QVolatileImageC2EiiN6QImage6FormatE @ 12164 NONAME
+	_ZN14QVolatileImageC2Ev @ 12165 NONAME
+	_ZN14QVolatileImageD1Ev @ 12166 NONAME
+	_ZN14QVolatileImageD2Ev @ 12167 NONAME
+	_ZN14QVolatileImageaSERKS_ @ 12168 NONAME
+	_ZNK14QVolatileImage12bytesPerLineEv @ 12169 NONAME
+	_ZNK14QVolatileImage13endDataAccessEb @ 12170 NONAME
+	_ZNK14QVolatileImage15beginDataAccessEv @ 12171 NONAME
+	_ZNK14QVolatileImage15hasAlphaChannelEv @ 12172 NONAME
+	_ZNK14QVolatileImage20duplicateNativeImageEv @ 12173 NONAME
+	_ZNK14QVolatileImage5depthEv @ 12174 NONAME
+	_ZNK14QVolatileImage5widthEv @ 12175 NONAME
+	_ZNK14QVolatileImage6formatEv @ 12176 NONAME
+	_ZNK14QVolatileImage6heightEv @ 12177 NONAME
+	_ZNK14QVolatileImage6isNullEv @ 12178 NONAME
+	_ZNK14QVolatileImage7toImageEv @ 12179 NONAME
+	_ZNK14QVolatileImage9byteCountEv @ 12180 NONAME
+	_ZNK14QVolatileImage9constBitsEv @ 12181 NONAME
+	_ZN15QGraphicsSystem22releaseCachedResourcesEv @ 12182 NONAME
+	_Z32qt_s60_setPartialScreenInputModeb @ 12183 NONAME
+	_Z18qt_addBitmapToPathffPKhiiiP12QPainterPath @ 12184 NONAME
+	_Z22qt_fontdata_from_indexi @ 12185 NONAME
+	_Z32qGamma_correct_back_to_linear_csP6QImage @ 12186 NONAME
+	_ZN10QBlittable4lockEv @ 12187 NONAME
+	_ZN10QBlittable6unlockEv @ 12188 NONAME
+	_ZN10QBlittableC2ERK5QSize6QFlagsINS_10CapabilityEE @ 12189 NONAME
+	_ZN10QBlittableD0Ev @ 12190 NONAME
+	_ZN10QBlittableD1Ev @ 12191 NONAME
+	_ZN10QBlittableD2Ev @ 12192 NONAME
+	_ZN11QFontEngine16alphaMapForGlyphEj6QFixed @ 12193 NONAME
+	_ZN11QFontEngine16alphaMapForGlyphEj6QFixedRK10QTransform @ 12194 NONAME
+	_ZN11QFontEngine19alphaRGBMapForGlyphEj6QFixediRK10QTransform @ 12195 NONAME
+	_ZN12QInputDialog7getItemEP7QWidgetRK7QStringS4_RK11QStringListibPb6QFlagsIN2Qt10WindowTypeEES9_INSA_15InputMethodHintEE @ 12196 NONAME
+	_ZN12QInputDialog7getTextEP7QWidgetRK7QStringS4_N9QLineEdit8EchoModeES4_Pb6QFlagsIN2Qt10WindowTypeEES8_INS9_15InputMethodHintEE @ 12197 NONAME
+	_ZN12QScrollEvent6d_funcEv @ 12198 NONAME
+	_ZN12QScrollEventC1ERK7QPointFS2_NS_11ScrollStateE @ 12199 NONAME
+	_ZN12QScrollEventC2ERK7QPointFS2_NS_11ScrollStateE @ 12200 NONAME
+	_ZN12QScrollEventD0Ev @ 12201 NONAME
+	_ZN12QScrollEventD1Ev @ 12202 NONAME
+	_ZN12QScrollEventD2Ev @ 12203 NONAME
+	_ZN13QFlickGesture11qt_metacallEN11QMetaObject4CallEiPPv @ 12204 NONAME
+	_ZN13QFlickGesture11qt_metacastEPKc @ 12205 NONAME
+	_ZN13QFlickGesture16staticMetaObjectE @ 12206 NONAME DATA 16
+	_ZN13QFlickGesture19getStaticMetaObjectEv @ 12207 NONAME
+	_ZN13QFlickGestureC1EP7QObjectN2Qt11MouseButtonES1_ @ 12208 NONAME
+	_ZN13QFlickGestureC2EP7QObjectN2Qt11MouseButtonES1_ @ 12209 NONAME
+	_ZN13QFlickGestureD0Ev @ 12210 NONAME
+	_ZN13QFlickGestureD1Ev @ 12211 NONAME
+	_ZN13QFlickGestureD2Ev @ 12212 NONAME
+	_ZN13QFontDatabase22resolveFontFamilyAliasERK7QString @ 12213 NONAME
+	_ZN13QS60MainAppUi25ProcessCommandParametersLE11TApaCommandR4TBufILi256EERK6TDesC8 @ 12214 NONAME
+	_ZN14QFileOpenEventC1ERK5RFile @ 12215 NONAME
+	_ZN14QFileOpenEventC2ERK5RFile @ 12216 NONAME
+	_ZN14QWindowSurfaceC2EP7QWidgetb @ 12217 NONAME
+	_ZN17QInternalMimeData11canReadDataERK7QString @ 12218 NONAME
+	_ZN17QInternalMimeData11qt_metacallEN11QMetaObject4CallEiPPv @ 12219 NONAME
+	_ZN17QInternalMimeData11qt_metacastEPKc @ 12220 NONAME
+	_ZN17QInternalMimeData13formatsHelperEPK9QMimeData @ 12221 NONAME
+	_ZN17QInternalMimeData15hasFormatHelperERK7QStringPK9QMimeData @ 12222 NONAME
+	_ZN17QInternalMimeData16renderDataHelperERK7QStringPK9QMimeData @ 12223 NONAME
+	_ZN17QInternalMimeData16staticMetaObjectE @ 12224 NONAME DATA 16
+	_ZN17QInternalMimeData19getStaticMetaObjectEv @ 12225 NONAME
+	_ZN17QInternalMimeDataC2Ev @ 12226 NONAME
+	_ZN17QInternalMimeDataD0Ev @ 12227 NONAME
+	_ZN17QInternalMimeDataD1Ev @ 12228 NONAME
+	_ZN17QInternalMimeDataD2Ev @ 12229 NONAME
+	_ZN18QTextureGlyphCache19fillInPendingGlyphsEv @ 12230 NONAME
+	_ZN19QAbstractProxyModel11setItemDataERK11QModelIndexRK4QMapIi8QVariantE @ 12231 NONAME
+	_ZN19QAbstractProxyModel17resetInternalDataEv @ 12232 NONAME
+	_ZN19QAbstractProxyModel4sortEiN2Qt9SortOrderE @ 12233 NONAME
+	_ZN19QAbstractProxyModel9fetchMoreERK11QModelIndex @ 12234 NONAME
+	_ZN19QApplicationPrivateC1ERiPPcN12QApplication4TypeEi @ 12235 NONAME
+	_ZN19QApplicationPrivateC2ERiPPcN12QApplication4TypeEi @ 12236 NONAME
+	_ZN19QBlitterPaintEngine10drawPixmapERK6QRectFRK7QPixmapS2_ @ 12237 NONAME
+	_ZN19QBlitterPaintEngine10penChangedEv @ 12238 NONAME
+	_ZN19QBlitterPaintEngine11drawEllipseERK6QRectF @ 12239 NONAME
+	_ZN19QBlitterPaintEngine12brushChangedEv @ 12240 NONAME
+	_ZN19QBlitterPaintEngine12drawTextItemERK7QPointFRK9QTextItem @ 12241 NONAME
+	_ZN19QBlitterPaintEngine14opacityChangedEv @ 12242 NONAME
+	_ZN19QBlitterPaintEngine16transformChangedEv @ 12243 NONAME
+	_ZN19QBlitterPaintEngine18brushOriginChangedEv @ 12244 NONAME
+	_ZN19QBlitterPaintEngine18clipEnabledChangedEv @ 12245 NONAME
+	_ZN19QBlitterPaintEngine18drawStaticTextItemEP15QStaticTextItem @ 12246 NONAME
+	_ZN19QBlitterPaintEngine18renderHintsChangedEv @ 12247 NONAME
+	_ZN19QBlitterPaintEngine22compositionModeChangedEv @ 12248 NONAME
+	_ZN19QBlitterPaintEngine3endEv @ 12249 NONAME
+	_ZN19QBlitterPaintEngine4clipERK11QVectorPathN2Qt13ClipOperationE @ 12250 NONAME
+	_ZN19QBlitterPaintEngine4clipERK5QRectN2Qt13ClipOperationE @ 12251 NONAME
+	_ZN19QBlitterPaintEngine4clipERK7QRegionN2Qt13ClipOperationE @ 12252 NONAME
+	_ZN19QBlitterPaintEngine4fillERK11QVectorPathRK6QBrush @ 12253 NONAME
+	_ZN19QBlitterPaintEngine5beginEP12QPaintDevice @ 12254 NONAME
+	_ZN19QBlitterPaintEngine6strokeERK11QVectorPathRK4QPen @ 12255 NONAME
+	_ZN19QBlitterPaintEngine8fillRectERK6QRectFRK6QBrush @ 12256 NONAME
+	_ZN19QBlitterPaintEngine8fillRectERK6QRectFRK6QColor @ 12257 NONAME
+	_ZN19QBlitterPaintEngine8setStateEP13QPainterState @ 12258 NONAME
+	_ZN19QBlitterPaintEngine9drawImageERK6QRectFRK6QImageS2_6QFlagsIN2Qt19ImageConversionFlagEE @ 12259 NONAME
+	_ZN19QBlitterPaintEngine9drawRectsEPK5QRecti @ 12260 NONAME
+	_ZN19QBlitterPaintEngine9drawRectsEPK6QRectFi @ 12261 NONAME
+	_ZN19QBlitterPaintEngineC1EP20QBlittablePixmapData @ 12262 NONAME
+	_ZN19QBlitterPaintEngineC2EP20QBlittablePixmapData @ 12263 NONAME
+	_ZN19QBlitterPaintEngineD0Ev @ 12264 NONAME
+	_ZN19QBlitterPaintEngineD1Ev @ 12265 NONAME
+	_ZN19QBlitterPaintEngineD2Ev @ 12266 NONAME
+	_ZN19QGraphicsGridLayout10removeItemEP19QGraphicsLayoutItem @ 12267 NONAME
+	_ZN19QScrollPrepareEvent13setContentPosERK7QPointF @ 12268 NONAME
+	_ZN19QScrollPrepareEvent15setViewportSizeERK6QSizeF @ 12269 NONAME
+	_ZN19QScrollPrepareEvent18setContentPosRangeERK6QRectF @ 12270 NONAME
+	_ZN19QScrollPrepareEvent6d_funcEv @ 12271 NONAME
+	_ZN19QScrollPrepareEventC1ERK7QPointF @ 12272 NONAME
+	_ZN19QScrollPrepareEventC2ERK7QPointF @ 12273 NONAME
+	_ZN19QScrollPrepareEventD0Ev @ 12274 NONAME
+	_ZN19QScrollPrepareEventD1Ev @ 12275 NONAME
+	_ZN19QScrollPrepareEventD2Ev @ 12276 NONAME
+	_ZN19QScrollerProperties15setScrollMetricENS_12ScrollMetricERK8QVariant @ 12277 NONAME
+	_ZN19QScrollerProperties28setDefaultScrollerPropertiesERKS_ @ 12278 NONAME
+	_ZN19QScrollerProperties30unsetDefaultScrollerPropertiesEv @ 12279 NONAME
+	_ZN19QScrollerPropertiesC1ERKS_ @ 12280 NONAME
+	_ZN19QScrollerPropertiesC1Ev @ 12281 NONAME
+	_ZN19QScrollerPropertiesC2ERKS_ @ 12282 NONAME
+	_ZN19QScrollerPropertiesC2Ev @ 12283 NONAME
+	_ZN19QScrollerPropertiesD0Ev @ 12284 NONAME
+	_ZN19QScrollerPropertiesD1Ev @ 12285 NONAME
+	_ZN19QScrollerPropertiesD2Ev @ 12286 NONAME
+	_ZN19QScrollerPropertiesaSERKS_ @ 12287 NONAME
+	_ZN20QBlittablePixmapData12setBlittableEP10QBlittable @ 12288 NONAME
+	_ZN20QBlittablePixmapData4fillERK6QColor @ 12289 NONAME
+	_ZN20QBlittablePixmapData6bufferEv @ 12290 NONAME
+	_ZN20QBlittablePixmapData6resizeEii @ 12291 NONAME
+	_ZN20QBlittablePixmapData9fromImageERK6QImage6QFlagsIN2Qt19ImageConversionFlagEE @ 12292 NONAME
+	_ZN20QBlittablePixmapDataC2Ev @ 12293 NONAME
+	_ZN20QBlittablePixmapDataD0Ev @ 12294 NONAME
+	_ZN20QBlittablePixmapDataD1Ev @ 12295 NONAME
+	_ZN20QBlittablePixmapDataD2Ev @ 12296 NONAME
+	_ZN20QRasterWindowSurfaceC1EP7QWidgetb @ 12297 NONAME
+	_ZN20QRasterWindowSurfaceC2EP7QWidgetb @ 12298 NONAME
+	_ZN23QImageTextureGlyphCache11fillTextureERKN18QTextureGlyphCache5CoordEj6QFixed @ 12299 NONAME
+	_ZN26QAbstractScrollAreaPrivate19canStartScrollingAtERK6QPoint @ 12300 NONAME
+	_ZN5QFont20setHintingPreferenceENS_17HintingPreferenceE @ 12301 NONAME
+	_ZN6QImage4fillEN2Qt11GlobalColorE @ 12302 NONAME
+	_ZN6QImage4fillERK6QColor @ 12303 NONAME
+	_ZN7QGlyphs12setPositionsERK7QVectorI7QPointFE @ 12304 NONAME
+	_ZN7QGlyphs15setGlyphIndexesERK7QVectorIjE @ 12305 NONAME
+	_ZN7QGlyphs5clearEv @ 12306 NONAME
+	_ZN7QGlyphs6detachEv @ 12307 NONAME
+	_ZN7QGlyphs7setFontERK5QFont @ 12308 NONAME
+	_ZN7QGlyphsC1ERKS_ @ 12309 NONAME
+	_ZN7QGlyphsC1Ev @ 12310 NONAME
+	_ZN7QGlyphsC2ERKS_ @ 12311 NONAME
+	_ZN7QGlyphsC2Ev @ 12312 NONAME
+	_ZN7QGlyphsD1Ev @ 12313 NONAME
+	_ZN7QGlyphsD2Ev @ 12314 NONAME
+	_ZN7QGlyphsaSERKS_ @ 12315 NONAME
+	_ZN7QGlyphspLERKS_ @ 12316 NONAME
+	_ZN8QMdiArea14setTabsMovableEb @ 12317 NONAME
+	_ZN8QMdiArea15setTabsClosableEb @ 12318 NONAME
+	_ZN8QPainter10drawGlyphsERK7QPointFRK7QGlyphs @ 12319 NONAME
+	_ZN9QScroller11grabGestureEP7QObjectNS_19ScrollerGestureTypeE @ 12320 NONAME
+	_ZN9QScroller11handleInputENS_5InputERK7QPointFx @ 12321 NONAME
+	_ZN9QScroller11hasScrollerEP7QObject @ 12322 NONAME
+	_ZN9QScroller11qt_metacallEN11QMetaObject4CallEiPPv @ 12323 NONAME
+	_ZN9QScroller11qt_metacastEPKc @ 12324 NONAME
+	_ZN9QScroller12stateChangedENS_5StateE @ 12325 NONAME
+	_ZN9QScroller13ensureVisibleERK6QRectFff @ 12326 NONAME
+	_ZN9QScroller13ensureVisibleERK6QRectFffi @ 12327 NONAME
+	_ZN9QScroller13ungrabGestureEP7QObject @ 12328 NONAME
+	_ZN9QScroller14grabbedGestureEP7QObject @ 12329 NONAME
+	_ZN9QScroller15activeScrollersEv @ 12330 NONAME
+	_ZN9QScroller16staticMetaObjectE @ 12331 NONAME DATA 16
+	_ZN9QScroller17setSnapPositionsXERK5QListIfE @ 12332 NONAME
+	_ZN9QScroller17setSnapPositionsXEff @ 12333 NONAME
+	_ZN9QScroller17setSnapPositionsYERK5QListIfE @ 12334 NONAME
+	_ZN9QScroller17setSnapPositionsYEff @ 12335 NONAME
+	_ZN9QScroller18resendPrepareEventEv @ 12336 NONAME
+	_ZN9QScroller19getStaticMetaObjectEv @ 12337 NONAME
+	_ZN9QScroller21setScrollerPropertiesERK19QScrollerProperties @ 12338 NONAME
+	_ZN9QScroller25scrollerPropertiesChangedERK19QScrollerProperties @ 12339 NONAME
+	_ZN9QScroller4stopEv @ 12340 NONAME
+	_ZN9QScroller8scrollToERK7QPointF @ 12341 NONAME
+	_ZN9QScroller8scrollToERK7QPointFi @ 12342 NONAME
+	_ZN9QScroller8scrollerEP7QObject @ 12343 NONAME
+	_ZN9QScroller8scrollerEPK7QObject @ 12344 NONAME
+	_ZN9QScrollerC1EP7QObject @ 12345 NONAME
+	_ZN9QScrollerC2EP7QObject @ 12346 NONAME
+	_ZN9QScrollerD0Ev @ 12347 NONAME
+	_ZN9QScrollerD1Ev @ 12348 NONAME
+	_ZN9QScrollerD2Ev @ 12349 NONAME
+	_ZNK10QBlittable12capabilitiesEv @ 12350 NONAME
+	_ZNK10QBlittable4sizeEv @ 12351 NONAME
+	_ZNK10QTabWidget14heightForWidthEi @ 12352 NONAME
+	_ZNK11QFontEngine18createExplicitFontEv @ 12353 NONAME
+	_ZNK11QFontEngine26createExplicitFontWithNameERK7QString @ 12354 NONAME
+	_ZNK11QTextLayout6glyphsEv @ 12355 NONAME
+	_ZNK12QFontMetrics10inFontUcs4Ej @ 12356 NONAME
+	_ZNK12QRadioButton15minimumSizeHintEv @ 12357 NONAME
+	_ZNK12QScrollEvent10contentPosEv @ 12358 NONAME
+	_ZNK12QScrollEvent11scrollStateEv @ 12359 NONAME
+	_ZNK12QScrollEvent17overshootDistanceEv @ 12360 NONAME
+	_ZNK12QScrollEvent6d_funcEv @ 12361 NONAME
+	_ZNK13QFlickGesture10metaObjectEv @ 12362 NONAME
+	_ZNK13QFontMetricsF10inFontUcs4Ej @ 12363 NONAME
+	_ZNK13QTextFragment6glyphsEv @ 12364 NONAME
+	_ZNK14QFileOpenEvent8openFileER5QFile6QFlagsIN9QIODevice12OpenModeFlagEE @ 12365 NONAME
+	_ZNK14QWidgetPrivate17hasHeightForWidthEv @ 12366 NONAME
+	_ZNK16QFileSystemModel5rmdirERK11QModelIndex @ 12367 NONAME
+	_ZNK17QInternalMimeData10metaObjectEv @ 12368 NONAME
+	_ZNK17QInternalMimeData12retrieveDataERK7QStringN8QVariant4TypeE @ 12369 NONAME
+	_ZNK17QInternalMimeData7formatsEv @ 12370 NONAME
+	_ZNK17QInternalMimeData9hasFormatERK7QString @ 12371 NONAME
+	_ZNK18QTextureGlyphCache18textureMapForGlyphEj6QFixed @ 12372 NONAME
+	_ZNK18QTextureGlyphCache20subPixelPositionForXE6QFixed @ 12373 NONAME
+	_ZNK18QTextureGlyphCache30calculateSubPixelPositionCountEj @ 12374 NONAME
+	_ZNK19QAbstractProxyModel11hasChildrenERK11QModelIndex @ 12375 NONAME
+	_ZNK19QAbstractProxyModel12canFetchMoreERK11QModelIndex @ 12376 NONAME
+	_ZNK19QAbstractProxyModel20supportedDropActionsEv @ 12377 NONAME
+	_ZNK19QAbstractProxyModel4spanERK11QModelIndex @ 12378 NONAME
+	_ZNK19QAbstractProxyModel5buddyERK11QModelIndex @ 12379 NONAME
+	_ZNK19QAbstractProxyModel8mimeDataERK5QListI11QModelIndexE @ 12380 NONAME
+	_ZNK19QAbstractProxyModel9mimeTypesEv @ 12381 NONAME
+	_ZNK19QBlitterPaintEngine11createStateEP13QPainterState @ 12382 NONAME
+	_ZNK19QScrollPrepareEvent10contentPosEv @ 12383 NONAME
+	_ZNK19QScrollPrepareEvent12viewportSizeEv @ 12384 NONAME
+	_ZNK19QScrollPrepareEvent15contentPosRangeEv @ 12385 NONAME
+	_ZNK19QScrollPrepareEvent6d_funcEv @ 12386 NONAME
+	_ZNK19QScrollPrepareEvent8startPosEv @ 12387 NONAME
+	_ZNK19QScrollerProperties12scrollMetricENS_12ScrollMetricE @ 12388 NONAME
+	_ZNK19QScrollerPropertieseqERKS_ @ 12389 NONAME
+	_ZNK19QScrollerPropertiesneERKS_ @ 12390 NONAME
+	_ZNK20QBlittablePixmapData11paintEngineEv @ 12391 NONAME
+	_ZNK20QBlittablePixmapData15hasAlphaChannelEv @ 12392 NONAME
+	_ZNK20QBlittablePixmapData6metricEN12QPaintDevice17PaintDeviceMetricE @ 12393 NONAME
+	_ZNK20QBlittablePixmapData7toImageEv @ 12394 NONAME
+	_ZNK20QBlittablePixmapData9blittableEv @ 12395 NONAME
+	_ZNK20QRasterWindowSurface24hasStaticContentsSupportEv @ 12396 NONAME
+	_ZNK5QFont17hintingPreferenceEv @ 12397 NONAME
+	_ZNK7QGlyphs12glyphIndexesEv @ 12398 NONAME
+	_ZNK7QGlyphs4fontEv @ 12399 NONAME
+	_ZNK7QGlyphs9positionsEv @ 12400 NONAME
+	_ZNK7QGlyphseqERKS_ @ 12401 NONAME
+	_ZNK7QGlyphsneERKS_ @ 12402 NONAME
+	_ZNK7QGlyphsplERKS_ @ 12403 NONAME
+	_ZNK8QMdiArea11tabsMovableEv @ 12404 NONAME
+	_ZNK8QMdiArea12tabsClosableEv @ 12405 NONAME
+	_ZNK8QPainter16clipBoundingRectEv @ 12406 NONAME
+	_ZNK9QCheckBox15minimumSizeHintEv @ 12407 NONAME
+	_ZNK9QScroller10metaObjectEv @ 12408 NONAME
+	_ZNK9QScroller13finalPositionEv @ 12409 NONAME
+	_ZNK9QScroller13pixelPerMeterEv @ 12410 NONAME
+	_ZNK9QScroller18scrollerPropertiesEv @ 12411 NONAME
+	_ZNK9QScroller5stateEv @ 12412 NONAME
+	_ZNK9QScroller6targetEv @ 12413 NONAME
+	_ZNK9QScroller8velocityEv @ 12414 NONAME
+	_ZNK9QTextLine6glyphsEii @ 12415 NONAME
+	_ZTI10QBlittable @ 12416 NONAME
+	_ZTI12QScrollEvent @ 12417 NONAME
+	_ZTI13QFlickGesture @ 12418 NONAME
+	_ZTI17QInternalMimeData @ 12419 NONAME
+	_ZTI19QBlitterPaintEngine @ 12420 NONAME
+	_ZTI19QScrollPrepareEvent @ 12421 NONAME
+	_ZTI19QScrollerProperties @ 12422 NONAME
+	_ZTI20QBlittablePixmapData @ 12423 NONAME
+	_ZTI9QScroller @ 12424 NONAME
+	_ZTV10QBlittable @ 12425 NONAME
+	_ZTV12QScrollEvent @ 12426 NONAME
+	_ZTV13QFlickGesture @ 12427 NONAME
+	_ZTV17QInternalMimeData @ 12428 NONAME
+	_ZTV19QBlitterPaintEngine @ 12429 NONAME
+	_ZTV19QScrollPrepareEvent @ 12430 NONAME
+	_ZTV19QScrollerProperties @ 12431 NONAME
+	_ZTV20QBlittablePixmapData @ 12432 NONAME
+	_ZTV9QScroller @ 12433 NONAME
+	_Zls6QDebugPK13QSymbianEvent @ 12434 NONAME
 

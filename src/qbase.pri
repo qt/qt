@@ -151,6 +151,14 @@ unix:!symbian {
    QMAKE_PKGCONFIG_INSTALL_REPLACE += include_replace lib_replace prefix_replace
 }
 
+win32-g++* {
+   CONFIG += create_pc
+   QMAKE_PKGCONFIG_LIBDIR = $$[QT_INSTALL_LIBS]
+   QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS]/$$TARGET
+   QMAKE_PKGCONFIG_CFLAGS = -I$$[QT_INSTALL_HEADERS]
+   QMAKE_PKGCONFIG_DESTDIR = pkgconfig
+}
+
 contains(QT_PRODUCT, OpenSource.*):DEFINES *= QT_OPENSOURCE
 DEFINES *= QT_NO_CAST_TO_ASCII QT_ASCII_CAST_WARNINGS
 contains(QT_CONFIG, qt3support):DEFINES *= QT3_SUPPORT
@@ -189,7 +197,7 @@ symbian {
         # Partial upgrade SIS file
         vendorinfo = \
             "; Localised Vendor name" \
-            "%{\"Nokia, Qt\"}" \
+            "%{\"Nokia\"}" \
             " " \
             "; Unique Vendor name" \
             ":\"Nokia, Qt\"" \

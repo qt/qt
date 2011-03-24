@@ -95,7 +95,7 @@ QT_END_NAMESPACE
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qlist.h>
-#include <qmap.h>
+#include <qhash.h>
 #include <qmutex.h>
 #include <qsemaphore.h>
 #include <qsocketnotifier.h>
@@ -163,33 +163,23 @@ public:
 
 private:
     QMutex mutex;
-    QMap<int, QProcessInfo *> children;
+    QHash<int, QProcessInfo *> children;
 };
 
 
 Q_GLOBAL_STATIC(QMutex, processManagerGlobalMutex)
 
-static QProcessManager *processManagerInstance = 0;
-
-static QProcessManager *processManager()
-{
+static QProcessManager *processManager() {
     // The constructor of QProcessManager should be called only once
     // so we cannot use Q_GLOBAL_STATIC directly for QProcessManager
     QMutex *mutex = processManagerGlobalMutex();
     QMutexLocker locker(mutex);
-
-    if (!processManagerInstance)
-        QProcessPrivate::initializeProcessManager();
-
-    Q_ASSERT(processManagerInstance);
-    return processManagerInstance;
+    static QProcessManager processManager;
+    return &processManager;
 }
 
 QProcessManager::QProcessManager()
 {
-    // can only be called from main thread
-    Q_ASSERT(!qApp || qApp->thread() == QThread::currentThread());
-
 #if defined (QPROCESS_DEBUG)
     qDebug() << "QProcessManager::QProcessManager()";
 #endif
@@ -208,8 +198,6 @@ QProcessManager::QProcessManager()
     ::sigaction(SIGCHLD, &action, &oldAction);
     if (oldAction.sa_handler != qt_sa_sigchld_handler)
 	qt_sa_old_sigchld_handler = oldAction.sa_handler;
-
-    processManagerInstance = this;
 }
 
 QProcessManager::~QProcessManager()
@@ -238,8 +226,6 @@ QProcessManager::~QProcessManager()
     if (oldAction.sa_handler != qt_sa_sigchld_handler) {
         ::sigaction(SIGCHLD, &oldAction, 0);
     }
-
-    processManagerInstance = 0;
 }
 
 void QProcessManager::run()
@@ -281,7 +267,7 @@ void QProcessManager::catchDeadChildren()
 
     // try to catch all children whose pid we have registered, and whose
     // deathPipe is still valid (i.e, we have not already notified it).
-    QMap<int, QProcessInfo *>::Iterator it = children.begin();
+    QHash<int, QProcessInfo *>::Iterator it = children.begin();
     while (it != children.end()) {
         // notify all children that they may have died. they need to run
         // waitpid() in their own thread.
@@ -320,15 +306,11 @@ void QProcessManager::remove(QProcess *process)
     QMutexLocker locker(&mutex);
 
     int serial = process->d_func()->serial;
-    QProcessInfo *info = children.value(serial);
-    if (!info)
-        return;
-
+    QProcessInfo *info = children.take(serial);
 #if defined (QPROCESS_DEBUG)
-    qDebug() << "QProcessManager::remove() removing pid" << info->pid << "process" << info->process;
+    if (info)
+        qDebug() << "QProcessManager::remove() removing pid" << info->pid << "process" << info->process;
 #endif
-
-    children.remove(serial);
     delete info;
 }
 
@@ -663,7 +645,7 @@ void QProcessPrivate::startProcess()
     if (childPid < 0) {
         // Cleanup, report error and return
 #if defined (QPROCESS_DEBUG)
-        qDebug("qt_fork failed: %s", qt_error_string(lastForkErrno));
+        qDebug("qt_fork failed: %s", qPrintable(qt_error_string(lastForkErrno)));
 #endif
         processManager()->unlock();
         q->setProcessState(QProcess::NotRunning);
@@ -866,7 +848,14 @@ qint64 QProcessPrivate::writeToStdin(const char *data, qint64 maxlen)
 #if defined QPROCESS_DEBUG
     qDebug("QProcessPrivate::writeToStdin(%p \"%s\", %lld) == %lld",
            data, qt_prettyDebug(data, maxlen, 16).constData(), maxlen, written);
+    if (written == -1)
+        qDebug("QProcessPrivate::writeToStdin(), failed to write (%s)", qPrintable(qt_error_string(errno)));
 #endif
+    // If the O_NONBLOCK flag is set and If some data can be written without blocking
+    // the process, write() will transfer what it can and return the number of bytes written.
+    // Otherwise, it will return -1 and set errno to EAGAIN
+    if (written == -1 && errno == EAGAIN)
+        written = 0;
     return written;
 }
 
@@ -1303,15 +1292,7 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
 
 void QProcessPrivate::initializeProcessManager()
 {
-    if (qApp && qApp->thread() != QThread::currentThread()) {
-        // The process manager must be initialized in the main thread
-        // Note: The call below will re-enter this function, but in the right thread,
-        // so the else statement below will be executed.
-        QMetaObject::invokeMethod(qApp, "_q_initializeProcessManager", Qt::BlockingQueuedConnection);
-    } else {
-        static QProcessManager processManager;
-        Q_UNUSED(processManager);
-    }
+    (void) processManager();
 }
 
 QT_END_NAMESPACE

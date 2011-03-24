@@ -54,7 +54,7 @@
 //
 
 #include "qdeclarativeitem.h"
-#include "private/qdeclarativeitem_p.h"
+#include "private/qdeclarativeimplicitsizeitem_p_p.h"
 #include "private/qdeclarativetextlayout_p.h"
 
 #include <qdeclarative.h>
@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 class QTextLayout;
 class QTextDocumentWithImageResources;
 
-class QDeclarativeTextPrivate : public QDeclarativeItemPrivate
+class Q_AUTOTEST_EXPORT QDeclarativeTextPrivate : public QDeclarativeImplicitSizeItemPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeText)
 public:
@@ -76,9 +76,14 @@ public:
 
     void updateSize();
     void updateLayout();
+    bool determineHorizontalAlignment();
+    bool setHAlign(QDeclarativeText::HAlignment, bool forceAlign = false);
+    void mirrorChange();
+    QTextDocument *textDocument();
 
     QString text;
     QFont font;
+    QFont sourceFont;
     QColor  color;
     QDeclarativeText::TextStyle style;
     QColor  styleColor;
@@ -88,6 +93,15 @@ public:
     QDeclarativeText::TextElideMode elideMode;
     QDeclarativeText::TextFormat format;
     QDeclarativeText::WrapMode wrapMode;
+    qreal lineHeight;
+    QDeclarativeText::LineHeightMode lineHeightMode;
+    int lineCount;
+    bool truncated;
+    int maximumLineCount;
+    int maximumLineCountValid;
+    QPointF elidePos;
+
+    static QString elideChar;
 
     void invalidateImageCache();
     void checkImageCache();
@@ -99,14 +113,19 @@ public:
     bool singleline:1;
     bool cacheAllTextAsImage:1;
     bool internalWidthUpdate:1;
+    bool requireImplicitWidth:1;
+    bool hAlignImplicit:1;
+    bool rightToLeftText:1;
 
-    QSize layedOutTextSize;
-    
+    QRect layedOutTextRect;
+    QSize paintedSize;
+    qreal naturalWidth;
+    virtual qreal implicitWidth() const;
     void ensureDoc();
     QPixmap textDocumentImage(bool drawStyle);
     QTextDocumentWithImageResources *doc;
 
-    QSize setupTextLayout();
+    QRect setupTextLayout();
     QPixmap textLayoutImage(bool drawStyle);
     void drawTextLayout(QPainter *p, const QPointF &pos, bool drawStyle);
     QDeclarativeTextLayout layout;

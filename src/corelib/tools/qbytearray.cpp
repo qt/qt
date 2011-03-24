@@ -492,7 +492,7 @@ QByteArray qCompress(const uchar* data, int nbytes, int compressionLevel)
 #endif
 
 /*!
-    \fn QByteArray qUncompress(const QByteArray& data)
+    \fn QByteArray qUncompress(const QByteArray &data)
 
     \relates QByteArray
 
@@ -506,10 +506,10 @@ QByteArray qCompress(const uchar* data, int nbytes, int compressionLevel)
     feature was added.
 
     \bold{Note:} If you want to use this function to uncompress external
-    data compressed using zlib, you first need to prepend four bytes to the
-    byte array that contain the expected length (as an unsigned integer)
-    of the uncompressed data encoded in big-endian order (most significant
-    byte first).
+    data that was compressed using zlib, you first need to prepend a four
+    byte header to the byte array containing the data. The header must
+    contain the expected length (in bytes) of the uncompressed data,
+    expressed as an unsigned, big-endian, 32-bit integer.
 
     \sa qCompress()
 */
@@ -687,12 +687,12 @@ QByteArray::Data QByteArray::shared_empty = { Q_BASIC_ATOMIC_INITIALIZER(1),
     values. To set all the bytes to a particular value, call fill().
 
     To obtain a pointer to the actual character data, call data() or
-    constData(). These functions return a pointer to the beginning of
-    the data. The pointer is guaranteed to remain valid until a
-    non-const function is called on the QByteArray. It is also
-    guaranteed that the data ends with a '\\0' byte. This '\\0' byte
-    is automatically provided by QByteArray and is not counted in
-    size().
+    constData(). These functions return a pointer to the beginning of the data.
+    The pointer is guaranteed to remain valid until a non-const function is
+    called on the QByteArray. It is also guaranteed that the data ends with a
+    '\\0' byte unless the QByteArray was created from a \l{fromRawData()}{raw
+    data}. This '\\0' byte is automatically provided by QByteArray and is not
+    counted in size().
 
     QByteArray provides the following basic functions for modifying
     the byte data: append(), prepend(), insert(), replace(), and
@@ -925,11 +925,13 @@ QByteArray &QByteArray::operator=(const char *str)
 
     Returns the number of bytes in this byte array.
 
-    The last byte in the byte array is at position size() - 1. In
-    addition, QByteArray ensures that the byte at position size() is
-    always '\\0', so that you can use the return value of data() and
-    constData() as arguments to functions that expect '\\0'-terminated
-    strings.
+    The last byte in the byte array is at position size() - 1. In addition,
+    QByteArray ensures that the byte at position size() is always '\\0', so
+    that you can use the return value of data() and constData() as arguments to
+    functions that expect '\\0'-terminated strings. If the QByteArray object
+    was created from a \l{fromRawData()}{raw data} that didn't include the
+    trailing null-termination character then QByteArray doesn't add it
+    automaticall unless the \l{deep copy} is created.
 
     Example:
     \snippet doc/src/snippets/code/src_corelib_tools_qbytearray.cpp 6
@@ -1060,10 +1062,11 @@ QByteArray &QByteArray::operator=(const char *str)
 
 /*! \fn const char *QByteArray::constData() const
 
-    Returns a pointer to the data stored in the byte array. The
-    pointer can be used to access the bytes that compose the array.
-    The data is '\\0'-terminated. The pointer remains valid as long
-    as the byte array isn't reallocated or destroyed.
+    Returns a pointer to the data stored in the byte array. The pointer can be
+    used to access the bytes that compose the array. The data is
+    '\\0'-terminated unless the QByteArray object was created from raw data.
+    The pointer remains valid as long as the byte array isn't reallocated or
+    destroyed.
 
     This function is mostly useful to pass a byte array to a function
     that accepts a \c{const char *}.
@@ -1072,7 +1075,7 @@ QByteArray &QByteArray::operator=(const char *str)
     but most functions that take \c{char *} arguments assume that the
     data ends at the first '\\0' they encounter.
 
-    \sa data(), operator[]()
+    \sa data(), operator[](), fromRawData()
 */
 
 /*! \fn void QByteArray::detach()

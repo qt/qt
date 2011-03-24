@@ -65,6 +65,7 @@
 #include <QInputContext>
 #include <QPushButton>
 #include <QLineEdit>
+#include <QGraphicsLinearLayout>
 
 #include "../../shared/util.h"
 
@@ -446,7 +447,8 @@ private slots:
     void updateMicroFocus();
     void textItem_shortcuts();
     void scroll();
-    void stopClickFocusPropagation();
+    void focusHandling_data();
+    void focusHandling();
     void deviceCoordinateCache_simpleRotations();
 
     // task specific tests below me
@@ -469,6 +471,7 @@ private slots:
     void itemDiesDuringDraggingOperation();
     void QTBUG_12112_focusItem();
     void QTBUG_13473_sceneposchange();
+    void QTBUG_16374_crashInDestructor();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -10535,8 +10538,39 @@ void tst_QGraphicsItem::scroll()
     QCOMPARE(item2->lastExposedRect, expectedItem2Expose);
 }
 
-void tst_QGraphicsItem::stopClickFocusPropagation()
+Q_DECLARE_METATYPE(QGraphicsItem::GraphicsItemFlag);
+
+void tst_QGraphicsItem::focusHandling_data()
 {
+    QTest::addColumn<QGraphicsItem::GraphicsItemFlag>("focusFlag");
+    QTest::addColumn<bool>("useStickyFocus");
+    QTest::addColumn<int>("expectedFocusItem"); // 0: none, 1: focusableUnder, 2: itemWithFocus
+
+    QTest::newRow("Focus goes through.")
+        << static_cast<QGraphicsItem::GraphicsItemFlag>(0x0) << false << 1;
+
+    QTest::newRow("Focus goes through, even with sticky scene.")
+        << static_cast<QGraphicsItem::GraphicsItemFlag>(0x0) << true  << 1;
+
+    QTest::newRow("With ItemStopsClickFocusPropagation, we cannot focus the item beneath the flagged one (but can still focus-out).")
+        << QGraphicsItem::ItemStopsClickFocusPropagation << false << 0;
+
+    QTest::newRow("With ItemStopsClickFocusPropagation, we cannot focus the item beneath the flagged one (and cannot focus-out if scene is sticky).")
+        << QGraphicsItem::ItemStopsClickFocusPropagation << true << 2;
+
+    QTest::newRow("With ItemStopsFocusHandling, focus cannot be changed by presses.")
+        << QGraphicsItem::ItemStopsFocusHandling << false << 2;
+
+    QTest::newRow("With ItemStopsFocusHandling, focus cannot be changed by presses (even if scene is sticky).")
+        << QGraphicsItem::ItemStopsFocusHandling << true << 2;
+}
+
+void tst_QGraphicsItem::focusHandling()
+{
+    QFETCH(QGraphicsItem::GraphicsItemFlag, focusFlag);
+    QFETCH(bool, useStickyFocus);
+    QFETCH(int, expectedFocusItem);
+
     class MyItem : public QGraphicsRectItem
     {
     public:
@@ -10547,12 +10581,9 @@ void tst_QGraphicsItem::stopClickFocusPropagation()
         }
     };
 
-    QGraphicsScene scene(-50, -50, 400, 400);
-    scene.setStickyFocus(true);
-
     QGraphicsRectItem *noFocusOnTop = new MyItem;
+    noFocusOnTop->setFlag(QGraphicsItem::ItemIsFocusable, false);
     noFocusOnTop->setBrush(Qt::yellow);
-    noFocusOnTop->setFlag(QGraphicsItem::ItemStopsClickFocusPropagation);
 
     QGraphicsRectItem *focusableUnder = new MyItem;
     focusableUnder->setBrush(Qt::blue);
@@ -10564,9 +10595,13 @@ void tst_QGraphicsItem::stopClickFocusPropagation()
     itemWithFocus->setFlag(QGraphicsItem::ItemIsFocusable);
     itemWithFocus->setPos(250, 10);
 
+    QGraphicsScene scene(-50, -50, 400, 400);
     scene.addItem(noFocusOnTop);
     scene.addItem(focusableUnder);
     scene.addItem(itemWithFocus);
+    scene.setStickyFocus(useStickyFocus);
+
+    noFocusOnTop->setFlag(focusFlag);
     focusableUnder->stackBefore(noFocusOnTop);
     itemWithFocus->setFocus();
 
@@ -10578,14 +10613,28 @@ void tst_QGraphicsItem::stopClickFocusPropagation()
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
     QVERIFY(itemWithFocus->hasFocus());
 
-    QPointF mousePressPoint = noFocusOnTop->mapToScene(QPointF());
-    mousePressPoint.rx() += 60;
-    mousePressPoint.ry() += 60;
+    const QPointF mousePressPoint = noFocusOnTop->mapToScene(noFocusOnTop->boundingRect().center());
     const QList<QGraphicsItem *> itemsAtMousePressPosition = scene.items(mousePressPoint);
-    QVERIFY(itemsAtMousePressPosition.contains(focusableUnder));
+    QVERIFY(itemsAtMousePressPosition.contains(noFocusOnTop));
 
     sendMousePress(&scene, mousePressPoint);
-    QVERIFY(itemWithFocus->hasFocus());
+
+    switch (expectedFocusItem) {
+    case 0:
+        QCOMPARE(scene.focusItem(), static_cast<QGraphicsRectItem *>(0));
+        break;
+    case 1:
+        QCOMPARE(scene.focusItem(), focusableUnder);
+        break;
+    case 2:
+        QCOMPARE(scene.focusItem(), itemWithFocus);
+        break;
+    }
+
+    // Sanity check - manually setting the focus must work regardless of our
+    // focus handling flags:
+    focusableUnder->setFocus();
+    QCOMPARE(scene.focusItem(), focusableUnder);
 }
 
 void tst_QGraphicsItem::deviceCoordinateCache_simpleRotations()
@@ -11077,5 +11126,56 @@ void tst_QGraphicsItem::QTBUG_13473_sceneposchange()
     QCOMPARE(child->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 2);
 }
 
+class MyGraphicsWidget : public QGraphicsWidget {
+Q_OBJECT
+public:
+    MyGraphicsWidget()
+        : QGraphicsWidget(0)
+    {
+        QGraphicsLinearLayout *lay = new QGraphicsLinearLayout(Qt::Vertical);
+        QLatin1String wiseWords("AZ BUKI VEDI");
+        QString sentence(wiseWords);
+        QStringList words = sentence.split(QLatin1Char(' '), QString::SkipEmptyParts);
+        for (int i = 0; i < words.count(); ++i) {
+            QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget(this);
+            QLabel *label = new QLabel(words.at(i));
+            proxy->setWidget(label);
+            proxy->setFocusPolicy(Qt::StrongFocus);
+            proxy->setFlag(QGraphicsItem::ItemAcceptsInputMethod, true);
+            if (i%2 == 0)
+                proxy->setVisible(false);
+            proxy->setFocus();
+            lay->addItem(proxy);
+        }
+        setLayout(lay);
+    }
+
+};
+
+class MyWidgetWindow : public QGraphicsWidget
+{
+public:
+    MyWidgetWindow()
+        : QGraphicsWidget(0, Qt::Window)
+    {
+        QGraphicsLinearLayout *lay = new QGraphicsLinearLayout(Qt::Vertical);
+        MyGraphicsWidget *widget = new MyGraphicsWidget();
+        lay->addItem(widget);
+        setLayout(lay);
+    }
+};
+
+void tst_QGraphicsItem::QTBUG_16374_crashInDestructor()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+
+    MyWidgetWindow win;
+    scene.addItem(&win);
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+}
+    
 QTEST_MAIN(tst_QGraphicsItem)
 #include "tst_qgraphicsitem.moc"

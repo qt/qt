@@ -209,8 +209,6 @@ public:
     bool canWait;
     QVector<void *> tls;
 
-    QMutex mutex;
-
 # ifdef Q_OS_SYMBIAN
     RThread symbian_thread_handle;
 # endif

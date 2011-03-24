@@ -54,6 +54,7 @@
 
 // #seconds between update checks
 #define HEARTBEAT 10
+#define MetadataFileExt "metadata"
 
 class BaselineServer : public QTcpServer
 {
@@ -74,7 +75,10 @@ private slots:
 private:
     QTimer *heartbeatTimer;
     QDateTime meLastMod;
+    QString lastRunId;
+    int lastRunIdIdx;
     static QString storage;
+    static QString url;
 };
 
 
@@ -84,10 +88,11 @@ class BaselineThread : public QThread
     Q_OBJECT
 
 public:
-    BaselineThread(int socketDescriptor, QObject *parent);
+    BaselineThread(const QString &runId, int socketDescriptor, QObject *parent);
     void run();
 
 private:
+    QString runId;
     int socketDescriptor;
 };
 
@@ -97,14 +102,14 @@ class BaselineHandler : public QObject
     Q_OBJECT
 
 public:
-    BaselineHandler(int socketDescriptor = -1);
+    BaselineHandler(const QString &runId, int socketDescriptor = -1);
     void testPathMapping();
     QString pathForItem(const ImageItem &item, bool isBaseline = true, bool absolute = true) const;
 
     // CGI callbacks:
     static QString view(const QString &baseline, const QString &rendered, const QString &compared);
     static QString clearAllBaselines(const QString &context);
-    static QString updateSingleBaseline(const QString &oldBaseline, const QString &newBaseline);
+    static QString updateBaselines(const QString &context, const QString &mismatchContext, const QString &itemFile);
     static QString blacklistTest(const QString &context, const QString &itemId, bool removeFromBlacklist = false);
 
 private slots:
@@ -115,6 +120,8 @@ private:
     bool establishConnection();
     void provideBaselineChecksums(const QByteArray &itemListBlock);
     void storeImage(const QByteArray &itemBlock, bool isBaseline);
+    void storeItemMetadata(const PlatformInfo &metadata, const QString &path);
+    PlatformInfo fetchItemMetadata(const QString &path);
     void mapPlatformInfo() const;
     const char *logtime();
     QString computeMismatchScore(const QImage& baseline, const QImage& rendered);
@@ -122,8 +129,8 @@ private:
     BaselineProtocol proto;
     PlatformInfo plat;
     mutable PlatformInfo mapped;
-    bool connectionEstablished;
     QString runId;
+    bool connectionEstablished;
     Report report;
 };
 

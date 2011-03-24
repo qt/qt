@@ -165,6 +165,7 @@ QT_BEGIN_NAMESPACE
 //for qt_mac.h
 QPaintDevice *qt_mac_safe_pdev = 0;
 QList<QMacWindowChangeEvent*> *QMacWindowChangeEvent::change_events = 0;
+QPointer<QWidget> topLevelAt_cache = 0;
 
 /*****************************************************************************
   Internal variables and functions
@@ -192,7 +193,6 @@ static bool qt_mac_previous_press_in_popup_mode = false;
 static bool qt_mac_no_click_through_mode = false;
 static int tablet_button_state = 0;
 #endif
-QPointer<QWidget> qt_mouseover;
 #if defined(QT_DEBUG)
 static bool        appNoGrab        = false;        // mouse/keyboard grabbing
 #endif
@@ -216,11 +216,12 @@ extern bool qt_mac_can_clickThrough(const QWidget *); //qwidget_mac.cpp
 extern bool qt_mac_is_macdrawer(const QWidget *); //qwidget_mac.cpp
 extern OSWindowRef qt_mac_window_for(const QWidget*); //qwidget_mac.cpp
 extern QWidget *qt_mac_find_window(OSWindowRef); //qwidget_mac.cpp
-extern void qt_mac_set_cursor(const QCursor *, const QPoint &); //qcursor_mac.cpp
+extern void qt_mac_set_cursor(const QCursor *); //qcursor_mac.cpp
 extern bool qt_mac_is_macsheet(const QWidget *); //qwidget_mac.cpp
 extern QString qt_mac_from_pascal_string(const Str255); //qglobal.cpp
 extern void qt_mac_command_set_enabled(MenuRef, UInt32, bool); //qmenu_mac.cpp
 extern bool qt_sendSpontaneousEvent(QObject *obj, QEvent *event); // qapplication.cpp
+extern void qt_mac_update_cursor(); // qcursor_mac.mm
 
 // Forward Decls
 void onApplicationWindowChangedActivation( QWidget*widget, bool activated );
@@ -1364,43 +1365,16 @@ void QApplication::setMainWidget(QWidget *mainWidget)
 /*****************************************************************************
   QApplication cursor stack
  *****************************************************************************/
-#ifdef QT_MAC_USE_COCOA
-void QApplicationPrivate::disableUsageOfCursorRects(bool disable)
-{
-    // In Cocoa there are two competing ways of setting the cursor; either
-    // by using cursor rects (see qcocoaview_mac.mm), or by pushing/popping
-    // the cursor manually. When we use override cursors, it makes most sense
-    // to use the latter. But then we need to tell cocoa to stop using the
-    // first approach so it doesn't change the cursor back when hovering over
-    // a cursor rect:
-    QWidgetList topLevels = qApp->topLevelWidgets();
-    for (int i=0; i<topLevels.size(); ++i) {
-        if (NSWindow *window = qt_mac_window_for(topLevels.at(i)))
-            disable ? [window disableCursorRects] : [window enableCursorRects];
-    }
-}
-
-void QApplicationPrivate::updateOverrideCursor()
-{
-    // Sometimes Cocoa forgets that we have set a Cursor
-    // manually. In those cases, remind it again:
-    if (QCursor *override = qApp->overrideCursor())
-        [static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(*override)) set];
-}
-#endif
 
 void QApplication::setOverrideCursor(const QCursor &cursor)
 {
     qApp->d_func()->cursor_list.prepend(cursor);
 
 #ifdef QT_MAC_USE_COCOA
-    QMacCocoaAutoReleasePool pool;
-    if (qApp->d_func()->cursor_list.size() == 1)
-        qApp->d_func()->disableUsageOfCursorRects(true);
-    [static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(cursor)) push];
+    qt_mac_update_cursor();
 #else
     if (qApp && qApp->activeWindow())
-        qt_mac_set_cursor(&qApp->d_func()->cursor_list.first(), QCursor::pos());
+        qt_mac_set_cursor(&qApp->d_func()->cursor_list.first());
 #endif
 }
 
@@ -1411,14 +1385,11 @@ void QApplication::restoreOverrideCursor()
     qApp->d_func()->cursor_list.removeFirst();
 
 #ifdef QT_MAC_USE_COCOA
-    QMacCocoaAutoReleasePool pool;
-    [NSCursor pop];
-    if (qApp->d_func()->cursor_list.isEmpty())
-        qApp->d_func()->disableUsageOfCursorRects(false);
+    qt_mac_update_cursor();
 #else
     if (qApp && qApp->activeWindow()) {
         const QCursor def(Qt::ArrowCursor);
-        qt_mac_set_cursor(qApp->d_func()->cursor_list.isEmpty() ? &def : &qApp->d_func()->cursor_list.first(), QCursor::pos());
+        qt_mac_set_cursor(qApp->d_func()->cursor_list.isEmpty() ? &def : &qApp->d_func()->cursor_list.first());
     }
 #endif
 }
@@ -1431,30 +1402,54 @@ QWidget *QApplication::topLevelAt(const QPoint &p)
     qt_mac_window_at(p.x(), p.y(), &widget);
     return widget;
 #else
+    // Use a cache to avoid iterate through the whole list of windows for all
+    // calls to to topLevelAt. We e.g. do this for each and every mouse
+    // move since we need to find the widget under mouse:
+    if (topLevelAt_cache && topLevelAt_cache->frameGeometry().contains(p))
+        return topLevelAt_cache;
+
+    // INVARIANT: Cache miss. Go through the list if windows instead:
+    QMacCocoaAutoReleasePool pool;
+    NSPoint cocoaPoint = flipPoint(p);
     NSInteger windowCount;
     NSCountWindows(&windowCount);
     if (windowCount <= 0)
         return 0;  // There's no window to find!
-    QMacCocoaAutoReleasePool pool;
-    NSPoint cocoaPoint = flipPoint(p);
+
     QVarLengthArray<NSInteger> windowList(windowCount);
     NSWindowList(windowCount, windowList.data());
+    int firstQtWindowFound = -1;
     for (int i = 0; i < windowCount; ++i) {
         NSWindow *window = [NSApp windowWithWindowNumber:windowList[i]];
-        if (window && NSPointInRect(cocoaPoint, [window frame])) {
+        if (window) {
             QWidget *candidateWindow = [window QT_MANGLE_NAMESPACE(qt_qwidget)];
-            // Check to see if there's a hole in the window where the mask is.
-            // If there is, we should just continue to see if there is a window below.
-            if (candidateWindow && !candidateWindow->mask().isEmpty()) {
-                QPoint localPoint = candidateWindow->mapFromGlobal(p);
-                if (!candidateWindow->mask().contains(localPoint)) {
-                    continue;
+            if (candidateWindow && firstQtWindowFound == -1)
+                firstQtWindowFound = i;
+
+            if (NSPointInRect(cocoaPoint, [window frame])) {
+                // Check to see if there's a hole in the window where the mask is.
+                // If there is, we should just continue to see if there is a window below.
+                if (candidateWindow && !candidateWindow->mask().isEmpty()) {
+                    QPoint localPoint = candidateWindow->mapFromGlobal(p);
+                    if (!candidateWindow->mask().contains(localPoint))
+                        continue;
+                    else
+                        return candidateWindow;
+                } else {
+                    if (i == firstQtWindowFound) {
+                        // The cache will only work when the window under mouse is
+                        // top most (that is, not partially obscured by other windows.
+                        // And we only set it if no mask is present to optimize for the common case:
+                        topLevelAt_cache = candidateWindow;
+                    }
+                    return candidateWindow;
                 }
             }
-            return candidateWindow;
         }
     }
-    return 0; // Couldn't find a window at this point
+
+    topLevelAt_cache = 0;
+    return 0;
 #endif
 }
 
@@ -1480,8 +1475,8 @@ void QApplicationPrivate::enterModal_sys(QWidget *widget)
     if (!qt_modal_stack)
         qt_modal_stack = new QWidgetList;
 
-    dispatchEnterLeave(0, qt_mouseover);
-    qt_mouseover = 0;
+    dispatchEnterLeave(0, qt_last_mouse_receiver);
+    qt_last_mouse_receiver = 0;
 
     qt_modal_stack->insert(0, widget);
     if (!app_do_modal)
@@ -1512,8 +1507,8 @@ void QApplicationPrivate::leaveModal_sys(QWidget *widget)
                 w = grabber;
             else
                 w = QApplication::widgetAt(p.x(), p.y());
-            dispatchEnterLeave(w, qt_mouseover); // send synthetic enter event
-            qt_mouseover = w;
+            dispatchEnterLeave(w, qt_last_mouse_receiver); // send synthetic enter event
+            qt_last_mouse_receiver = w;
         }
 #ifdef QT_MAC_USE_COCOA
         if (!qt_mac_is_macsheet(widget))
@@ -1938,7 +1933,7 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
                     }
                 }
             }
-            qt_mac_set_cursor(&cursor, QPoint(where.h, where.v));
+            qt_mac_set_cursor(&cursor);
         }
 
         //This mouse button state stuff looks like this on purpose
@@ -2132,20 +2127,20 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
             QWidget * const enterLeaveWidget = (inPopupMode || ekind == kEventMouseUp) ?
                     QApplication::widgetAt(where.h, where.v) :  static_cast<QWidget*>(widget);
 
-            if ((QWidget *) qt_mouseover != enterLeaveWidget || inNonClientArea) {
+            if ((QWidget *) qt_last_mouse_receiver != enterLeaveWidget || inNonClientArea) {
 #ifdef DEBUG_MOUSE_MAPS
                 qDebug("Entering: %p - %s (%s), Leaving %s (%s)", (QWidget*)enterLeaveWidget,
                        enterLeaveWidget ? enterLeaveWidget->metaObject()->className() : "none",
                        enterLeaveWidget ? enterLeaveWidget->objectName().toLocal8Bit().constData() : "",
-                       qt_mouseover ? qt_mouseover->metaObject()->className() : "none",
-                       qt_mouseover ? qt_mouseover->objectName().toLocal8Bit().constData() : "");
+                       qt_last_mouse_receiver ? qt_last_mouse_receiver->metaObject()->className() : "none",
+                       qt_last_mouse_receiver ? qt_last_mouse_receiver->objectName().toLocal8Bit().constData() : "");
 #endif
 
                 QWidget * const mouseGrabber = QWidget::mouseGrabber();
 
                 if (inPopupMode) {
                     QWidget *enter = enterLeaveWidget;
-                    QWidget *leave = qt_mouseover;
+                    QWidget *leave = qt_last_mouse_receiver;
                     if (mouseGrabber) {
                         QWidget * const popupWidget = qApp->activePopupWidget();
                         if (leave == popupWidget)
@@ -2155,15 +2150,15 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
                         if ((enter == mouseGrabber && leave == popupWidget)
                             || (leave == mouseGrabber  && enter == popupWidget)) {
                             QApplicationPrivate::dispatchEnterLeave(enter, leave);
-                            qt_mouseover = enter;
+                            qt_last_mouse_receiver = enter;
                         }
                     } else {
                         QApplicationPrivate::dispatchEnterLeave(enter, leave);
-                        qt_mouseover = enter;
+                        qt_last_mouse_receiver = enter;
                     }
-                } else if ((!qt_button_down || !qt_mouseover) && !mouseGrabber && !leaveAfterRelease) {
-                    QApplicationPrivate::dispatchEnterLeave(enterLeaveWidget, qt_mouseover);
-                    qt_mouseover = enterLeaveWidget;
+                } else if ((!qt_button_down || !qt_last_mouse_receiver) && !mouseGrabber && !leaveAfterRelease) {
+                    QApplicationPrivate::dispatchEnterLeave(enterLeaveWidget, qt_last_mouse_receiver);
+                    qt_last_mouse_receiver = enterLeaveWidget;
                 }
             }
             break; }
@@ -2240,7 +2235,7 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
             if (leaveAfterRelease) {
                 QWidget *enter = QApplication::widgetAt(where.h, where.v);
                 QApplicationPrivate::dispatchEnterLeave(enter, leaveAfterRelease);
-                qt_mouseover = enter;
+                qt_last_mouse_receiver = enter;
                 leaveAfterRelease = 0;
             }
 
@@ -2503,7 +2498,7 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
 void QApplicationPrivate::qt_initAfterNSAppStarted()
 {
     setupAppleEvents();
-    updateOverrideCursor();
+    qt_mac_update_cursor();
 }
 
 void QApplicationPrivate::setupAppleEvents()
@@ -3080,7 +3075,7 @@ void onApplicationWindowChangedActivation(QWidget *widget, bool activated)
     }
 
     QMenuBar::macUpdateMenuBar();
-    QApplicationPrivate::updateOverrideCursor();
+    qt_mac_update_cursor();
 #else
     Q_UNUSED(widget);
     Q_UNUSED(activated);
@@ -3115,6 +3110,7 @@ void onApplicationChangedActivation( bool activated )
                 app->setActiveWindow(tmp_w);
         }
         QMenuBar::macUpdateMenuBar();
+        qt_mac_update_cursor();
     } else { // de-activated
         QApplicationPrivate *priv = [[QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate] qAppPrivate];
         while (priv->inPopupMode())

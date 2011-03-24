@@ -314,7 +314,8 @@ void Win32MakefileGenerator::processVars()
 
     // TARGET_VERSION_EXT will be used to add a version number onto the target name
     if (project->values("TARGET_VERSION_EXT").isEmpty()
-        && !project->values("VER_MAJ").isEmpty())
+        && !project->values("VER_MAJ").isEmpty()
+        && project->values("QMAKE_SYMBIAN_SHLIB").isEmpty())
         project->values("TARGET_VERSION_EXT").append(project->values("VER_MAJ").first());
 
     if(project->isEmpty("QMAKE_COPY_FILE"))
@@ -342,16 +343,43 @@ void Win32MakefileGenerator::processVars()
     if(!(*libDir_it).isEmpty())
         (*libDir_it) = Option::fixPathToTargetOS((*libDir_it), false, false);
     }
+
+    if (project->values("TEMPLATE").contains("app")) {
+        project->values("QMAKE_CFLAGS") += project->values("QMAKE_CFLAGS_APP");
+        project->values("QMAKE_CXXFLAGS") += project->values("QMAKE_CXXFLAGS_APP");
+        project->values("QMAKE_LFLAGS") += project->values("QMAKE_LFLAGS_APP");
+    } else if (project->values("TEMPLATE").contains("lib") && project->isActiveConfig("dll")) {
+        if(!project->isActiveConfig("plugin") || !project->isActiveConfig("plugin_no_share_shlib_cflags")) {
+            project->values("QMAKE_CFLAGS") += project->values("QMAKE_CFLAGS_SHLIB");
+            project->values("QMAKE_CXXFLAGS") += project->values("QMAKE_CXXFLAGS_SHLIB");
+        }
+        if (project->isActiveConfig("plugin")) {
+            project->values("QMAKE_CFLAGS") += project->values("QMAKE_CFLAGS_PLUGIN");
+            project->values("QMAKE_CXXFLAGS") += project->values("QMAKE_CXXFLAGS_PLUGIN");
+            project->values("QMAKE_LFLAGS") += project->values("QMAKE_LFLAGS_PLUGIN");
+        } else {
+            project->values("QMAKE_LFLAGS") += project->values("QMAKE_LFLAGS_SHLIB");
+        }
+    }
 }
 
 void Win32MakefileGenerator::fixTargetExt()
 {
-    if (!project->values("QMAKE_APP_FLAG").isEmpty())
+    if (project->isEmpty("QMAKE_EXTENSION_STATICLIB"))
+        project->values("QMAKE_EXTENSION_STATICLIB").append("lib");
+    if (project->isEmpty("QMAKE_EXTENSION_SHLIB"))
+        project->values("QMAKE_EXTENSION_SHLIB").append("dll");
+
+    if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
         project->values("TARGET_EXT").append(".exe");
-    else if (project->isActiveConfig("shared"))
-        project->values("TARGET_EXT").append(project->first("TARGET_VERSION_EXT") + ".dll");
-    else
-        project->values("TARGET_EXT").append(".lib");
+    } else if (project->isActiveConfig("shared")) {
+        project->values("TARGET_EXT").append(project->first("TARGET_VERSION_EXT") + "."
+                + project->first("QMAKE_EXTENSION_SHLIB"));
+        project->values("TARGET").first() = project->first("QMAKE_PREFIX_SHLIB") + project->first("TARGET");
+    } else {
+        project->values("TARGET_EXT").append("." + project->first("QMAKE_EXTENSION_STATICLIB"));
+        project->values("TARGET").first() = project->first("QMAKE_PREFIX_STATICLIB") + project->first("TARGET");
+    }
 }
 
 void Win32MakefileGenerator::processRcFileVar()
@@ -427,6 +455,10 @@ void Win32MakefileGenerator::processRcFileVar()
         ts << "\t\t\t\tVALUE \"OriginalFilename\", \"" << originalName << "\\0\"" << endl;
         ts << "\t\t\t\tVALUE \"ProductName\", \"" << productName << "\\0\"" << endl;
         ts << "\t\t\tEND" << endl;
+        ts << "\t\tEND" << endl;
+        ts << "\t\tBLOCK \"VarFileInfo\"" << endl;
+        ts << "\t\tBEGIN" << endl;
+        ts << "\t\t\tVALUE \"Translation\", 0x409, 1200" << endl;
         ts << "\t\tEND" << endl;
         ts << "\tEND" << endl;
         ts << "/* End of Version info */" << endl;
@@ -673,10 +705,10 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     if(project->isActiveConfig("shared") && !project->values("DLLDESTDIR").isEmpty()) {
         QStringList dlldirs = project->values("DLLDESTDIR");
         for (QStringList::Iterator dlldir = dlldirs.begin(); dlldir != dlldirs.end(); ++dlldir) {
-            t << "\n\t" << "-$(COPY_FILE) \"$(DESTDIR_TARGET)\" " << Option::fixPathToTargetOS(*dlldir, false);
+            t << "\t" << "-$(COPY_FILE) \"$(DESTDIR_TARGET)\" " << Option::fixPathToTargetOS(*dlldir, false) << endl;
         }
     }
-    t << endl << endl;
+    t << endl;
 
     writeRcFilePart(t);
 
@@ -808,6 +840,18 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
             if(!uninst.isEmpty())
                 uninst.append("\n\t");
             uninst.append("-$(DEL_FILE) \"" + dst_prl + "\"");
+        }
+        if(project->isActiveConfig("create_pc")) {
+            QString dst_pc = pkgConfigFileName(false);
+            if (!dst_pc.isEmpty()) {
+                dst_pc = filePrefixRoot(root, targetdir + dst_pc);
+                if(!ret.isEmpty())
+                    ret += "\n\t";
+                ret += "-$(INSTALL_FILE) \"" + pkgConfigFileName(true) + "\" \"" + dst_pc + "\"";
+                if(!uninst.isEmpty())
+                    uninst.append("\n\t");
+                uninst.append("-$(DEL_FILE) \"" + dst_pc + "\"");
+            }
         }
         if(project->isActiveConfig("shared") && !project->isActiveConfig("plugin")) {
             QString lib_target = getLibTarget();

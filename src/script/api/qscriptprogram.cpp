@@ -27,6 +27,7 @@
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
 
+#include "SamplingTool.h"
 #include "Executable.h"
 
 QT_BEGIN_NAMESPACE
@@ -64,6 +65,7 @@ QScriptProgramPrivate::~QScriptProgramPrivate()
     if (engine) {
         QScript::APIShim shim(engine);
         _executable.clear();
+        engine->unregisterScriptProgram(this);
     }
 }
 
@@ -78,7 +80,10 @@ JSC::EvalExecutable *QScriptProgramPrivate::executable(JSC::ExecState *exec,
     if (_executable) {
         if (eng == engine)
             return _executable.get();
-        _executable = 0;
+        // "Migrating" to another engine; clean up old state
+        QScript::APIShim shim(engine);
+        _executable.clear();
+        engine->unregisterScriptProgram(this);
     }
     WTF::PassRefPtr<QScript::UStringSourceProviderWithFeedback> provider
         = QScript::UStringSourceProviderWithFeedback::create(sourceCode, fileName, firstLineNumber, eng);
@@ -86,8 +91,17 @@ JSC::EvalExecutable *QScriptProgramPrivate::executable(JSC::ExecState *exec,
     JSC::SourceCode source(provider, firstLineNumber); //after construction of SourceCode provider variable will be null.
     _executable = JSC::EvalExecutable::create(exec, source);
     engine = eng;
+    engine->registerScriptProgram(this);
     isCompiled = false;
     return _executable.get();
+}
+
+void QScriptProgramPrivate::detachFromEngine()
+{
+    _executable.clear();
+    sourceId = -1;
+    isCompiled = false;
+    engine = 0;
 }
 
 /*!
@@ -122,9 +136,6 @@ QScriptProgram::QScriptProgram(const QScriptProgram &other)
 */
 QScriptProgram::~QScriptProgram()
 {
-    //    Q_D(QScriptProgram);
-    //    if (d->engine && (d->ref == 1))
-    //      d->engine->unregisterScriptProgram(d);
 }
 
 /*!
@@ -132,9 +143,6 @@ QScriptProgram::~QScriptProgram()
 */
 QScriptProgram &QScriptProgram::operator=(const QScriptProgram &other)
 {
-  //    if (d_func() && d_func()->engine && (d_func()->ref == 1))
-      //        d_func()->engine->unregisterScriptProgram(d_func());
-  //    }
     d_ptr = other.d_ptr;
     return *this;
 }

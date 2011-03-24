@@ -124,8 +124,9 @@ private slots:
     void testLineBreakingAllSpaces();
     void lineWidthFromBOM();
     void textWidthVsWIdth();
-
     void textWithSurrogates_qtbug15679();
+    void textWidthWithStackedTextEngine();
+    void textWidthWithLineSeparator();
 
 private:
     QFont testFont;
@@ -1430,6 +1431,33 @@ void tst_QTextLayout::textWithSurrogates_qtbug15679()
     // are surrogate pairs, we need to add two for each
     // character)
     QCOMPARE(x[2] - x[0], x[5] - x[3]);
+}
+
+void tst_QTextLayout::textWidthWithStackedTextEngine()
+{
+    QString text = QString::fromUtf8("คลิก ถัดไป เพื่อดำเนินการต่อ");
+    QTextLayout layout(text);
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    layout.endLayout();
+    QFontMetricsF fm(layout.font());
+    QCOMPARE(line.naturalTextWidth(), fm.width(text));
+}
+
+void tst_QTextLayout::textWidthWithLineSeparator()
+{
+    QString s1("Save Project"), s2("Save Project\ntest");
+    s2.replace('\n', QChar::LineSeparator);
+
+    QTextLayout layout1(s1), layout2(s2);
+    layout1.beginLayout();
+    layout2.beginLayout();
+
+    QTextLine line1 = layout1.createLine();
+    QTextLine line2 = layout2.createLine();
+    line1.setLineWidth(0x1000);
+    line2.setLineWidth(0x1000);
+    QCOMPARE(line1.naturalTextWidth(), line2.naturalTextWidth());
 }
 
 QTEST_MAIN(tst_QTextLayout)

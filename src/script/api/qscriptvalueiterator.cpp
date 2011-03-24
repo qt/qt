@@ -162,7 +162,7 @@ QScriptValueIterator::~QScriptValueIterator()
 bool QScriptValueIterator::hasNext() const
 {
     Q_D(const QScriptValueIterator);
-    if (!d)
+    if (!d || !d->engine())
         return false;
 
     const_cast<QScriptValueIteratorPrivate*>(d)->ensureInitialized();
@@ -198,7 +198,7 @@ void QScriptValueIterator::next()
 bool QScriptValueIterator::hasPrevious() const
 {
     Q_D(const QScriptValueIterator);
-    if (!d)
+    if (!d || !d->engine())
         return false;
 
     const_cast<QScriptValueIteratorPrivate*>(d)->ensureInitialized();

@@ -75,7 +75,7 @@
 #include <net/if.h>
 #endif
 
-#include "../common/posix/qplatformdefs.h"
+#include "../posix/qplatformdefs.h"
 
 #undef QT_OPEN_LARGEFILE
 #undef QT_SOCKLEN_T

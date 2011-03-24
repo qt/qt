@@ -15,7 +15,7 @@ symbian: {
     webkitlibs.path = /sys/bin
     vendorinfo = \
         "; Localised Vendor name" \
-        "%{\"Nokia, Qt\"}" \
+        "%{\"Nokia\"}" \
         " " \
         "; Unique Vendor name" \
         ":\"Nokia, Qt\"" \
@@ -86,9 +86,7 @@ moduleFile=$$PWD/../WebKit/qt/qt_webkit_version.pri
 isEmpty(QT_BUILD_TREE):include($$moduleFile)
 VERSION = $${QT_WEBKIT_MAJOR_VERSION}.$${QT_WEBKIT_MINOR_VERSION}.$${QT_WEBKIT_PATCH_VERSION}
 
-unix {
-    QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui QtNetwork
-}
+unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui QtNetwork
 
 unix:!mac:*-g++*:QMAKE_CXXFLAGS += -ffunction-sections -fdata-sections 
 unix:!mac:*-g++*:QMAKE_LFLAGS += -Wl,--gc-sections

@@ -47,12 +47,9 @@
 #include "private/qt_s60_p.h"
 #include "private/qpixmap_s60_p.h"
 #include "private/qcore_symbian_p.h"
+#include "private/qvolatileimage_p.h"
 #include "qapplication.h"
 #include "qsettings.h"
-
-#include "qpluginloader.h"
-#include "qlibraryinfo.h"
-#include "private/qs60style_feedbackinterface_p.h"
 
 #include <w32std.h>
 #include <AknsConstants.h>
@@ -69,7 +66,6 @@
 #include <aknnavi.h>
 #include <gulicon.h>
 #include <AknBitmapAnimation.h>
-
 #include <centralrepository.h>
 
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
@@ -641,9 +637,23 @@ QPixmap QS60StyleModeSpecifics::fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask
     if (error)
         return QPixmap();
 
-    QPixmap pixmap = QPixmap::fromSymbianCFbsBitmap(icon);
-    if (mask)
-        pixmap.setAlphaChannel(QPixmap::fromSymbianCFbsBitmap(mask));
+    QPixmap pixmap;
+    QScopedPointer<QPixmapData> pd(QPixmapData::create(0, 0, QPixmapData::PixmapType));
+    if (mask) {
+        // Try the efficient path with less copying and conversion.
+        QVolatileImage img(icon, mask);
+        pd->fromNativeType(&img, QPixmapData::VolatileImage);
+        if (!pd->isNull())
+            pixmap = QPixmap(pd.take());
+    }
+    if (pixmap.isNull()) {
+        // Potentially more expensive path.
+        pd->fromNativeType(icon, QPixmapData::FbsBitmap);
+        pixmap = QPixmap(pd.take());
+        if (mask) {
+            pixmap.setAlphaChannel(QPixmap::fromSymbianCFbsBitmap(mask));
+        }
+    }
 
     if ((flags & QS60StylePrivate::SF_PointEast) ||
         (flags & QS60StylePrivate::SF_PointSouth) ||
@@ -799,6 +809,8 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
         rotatedBy90or270 ? TSize(size.height(), size.width()) : qt_QSize2TSize(size);
 
     MAknsSkinInstance* skinInstance = AknsUtils::SkinInstance();
+    static const TDisplayMode displayMode = S60->supportsPremultipliedAlpha ? Q_SYMBIAN_ECOLOR16MAP : EColor16MA;
+    static const TInt drawParam = S60->supportsPremultipliedAlpha ? KAknsDrawParamDefault : KAknsDrawParamRGBOnly;
 
     QPixmap result;
 
@@ -837,7 +849,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
     //        QS60WindowSurface::unlockBitmapHeap();
             CFbsBitmap *background = new (ELeave) CFbsBitmap(); //offscreen
             CleanupStack::PushL(background);
-            User::LeaveIfError(background->Create(targetSize, EColor16MA));
+            User::LeaveIfError(background->Create(targetSize, displayMode));
 
             CFbsBitmapDevice *dev = CFbsBitmapDevice::NewL(background);
             CleanupStack::PushL(dev);
@@ -858,7 +870,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
                 *gc,
                 TPoint(),
                 targetSize,
-                KAknsDrawParamDefault | KAknsDrawParamRGBOnly);
+                drawParam);
 
             if (drawn)
                 result = fromFbsBitmap(background, NULL, flags, targetSize);
@@ -1221,25 +1233,13 @@ void QS60StylePrivate::setActiveLayout()
 
 Q_GLOBAL_STATIC(QList<QS60StyleAnimation *>, m_animations)
 
-QS60StylePrivate::QS60StylePrivate() : m_feedbackPlugin(0)
+QS60StylePrivate::QS60StylePrivate()
 {
     //Animation defaults need to be created when style is instantiated
     QS60StyleAnimation* progressBarAnimation = new QS60StyleAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim, 7, 100);
     m_animations()->append(progressBarAnimation);
     // No need to set active layout, if dynamic metrics API is available
     setActiveLayout();
-
-    //Tactile feedback plugin is only available for touch devices.
-    if (isTouchSupported()) {
-        QString pluginsPath = QLibraryInfo::location(QLibraryInfo::PluginsPath);
-        pluginsPath += QLatin1String("/feedback/qtactilefeedback.dll");
-
-        // Create plugin loader
-        QPluginLoader pluginLoader(pluginsPath);
-        // Load plugin and store pointer to the plugin implementation
-        if (pluginLoader.load())
-            m_feedbackPlugin = qobject_cast<TactileFeedbackInterface*>(pluginLoader.instance());
-    }
 }
 
 void QS60StylePrivate::removeAnimations()
@@ -1391,26 +1391,53 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size, Skin
     return result;
 }
 
-QPixmap QS60StylePrivate::backgroundTexture()
+QPixmap QS60StylePrivate::backgroundTexture(bool skipCreation)
 {
     bool createNewBackground = false;
+    TRect applicationRect = (static_cast<CEikAppUi*>(S60->appUi())->ApplicationRect());
     if (!m_background) {
         createNewBackground = true;
     } else {
         //if background brush does not match screensize, re-create it
-        if (m_background->width() != S60->screenWidthInPixels ||
-            m_background->height() != S60->screenHeightInPixels) {
+        if (m_background->width() != applicationRect.Width() ||
+            m_background->height() != applicationRect.Height()) {
             delete m_background;
             createNewBackground = true;
         }
     }
 
-    if (createNewBackground) {
+    if (createNewBackground && !skipCreation) {
         QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen,
-            QSize(S60->screenWidthInPixels, S60->screenHeightInPixels), 0, SkinElementFlags());
+            QSize(applicationRect.Width(), applicationRect.Height()), 0, SkinElementFlags());
         m_background = new QPixmap(background);
+
+        // Notify all widgets that palette is updated with the actual background texture.
+        QPalette pal = QApplication::palette();
+        pal.setBrush(QPalette::Window, *m_background);
+        QApplication::setPalette(pal);
+        setThemePaletteHash(&pal);
+        storeThemePalette(&pal);
+        foreach (QWidget *widget, QApplication::allWidgets()){
+            QEvent e(QEvent::PaletteChange);
+            QApplication::sendEvent(widget, &e);
+            setThemePalette(widget);
+            widget->ensurePolished();
+        }
     }
+    if (!m_background)
+        return QPixmap();
     return *m_background;
+}
+
+// Generates 1*1 white pixmap as a placeholder for real texture.
+// The actual theme texture is drawn in qt_s60_fill_background().
+QPixmap QS60StylePrivate::placeHolderTexture()
+{
+    if (!m_placeHolderTexture) {
+        m_placeHolderTexture = new QPixmap(1,1);
+        m_placeHolderTexture->fill(Qt::white);
+    }
+    return *m_placeHolderTexture;
 }
 
 QSize QS60StylePrivate::screenSize()
@@ -1429,7 +1456,6 @@ void QS60StylePrivate::handleDynamicLayoutVariantSwitch()
     clearCaches(QS60StylePrivate::CC_LayoutChange);
     setBackgroundTexture(qApp);
     setActiveLayout();
-    refreshUI();
     foreach (QWidget *widget, QApplication::allWidgets())
         widget->ensurePolished();
 }
@@ -1527,12 +1553,6 @@ void QS60StylePrivate::stopAnimation(QS60StyleEnums::SkinParts animationPart)
         }
         animation->resetToDefaults();
     }
-}
-
-void QS60StylePrivate::touchFeedback(QEvent *event, const QWidget *widget)
-{
-    if (m_feedbackPlugin)
-        m_feedbackPlugin->touchFeedback(event, widget);
 }
 
 QVariant QS60StyleModeSpecifics::themeDefinition(

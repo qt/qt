@@ -93,7 +93,8 @@ private slots:
     void constructWithParent();
     void currentContext();
     void pushPopContext();
-    void getSetDefaultPrototype();
+    void getSetDefaultPrototype_int();
+    void getSetDefaultPrototype_customType();
     void newFunction();
     void newFunctionWithArg();
     void newFunctionWithProto();
@@ -109,7 +110,9 @@ private slots:
     void newVariant_promoteNonObject();
     void newVariant_promoteNonQScriptObject();
     void newRegExp();
+    void jsRegExp();
     void newDate();
+    void jsParseDate();
     void newQObject();
     void newQObject_ownership();
     void newQObject_promoteObject();
@@ -121,6 +124,7 @@ private slots:
     void newActivationObject();
     void getSetGlobalObject();
     void globalObjectProperties();
+    void globalObjectProperties_enumerate();
     void createGlobalObjectProperty();
     void globalObjectGetterSetterProperty();
     void customGlobalObjectWithPrototype();
@@ -136,7 +140,14 @@ private slots:
     void nestedEvaluate();
     void uncaughtException();
     void errorMessage_QT679();
-    void valueConversion();
+    void valueConversion_basic();
+    void valueConversion_customType();
+    void valueConversion_sequence();
+    void valueConversion_QVariant();
+    void valueConversion_hooliganTask248802();
+    void valueConversion_basic2();
+    void valueConversion_dateTime();
+    void valueConversion_regExp();
     void qScriptValueFromValue_noEngine();
     void importExtension();
     void infiniteRecursion();
@@ -146,38 +157,59 @@ private slots:
     void reportAdditionalMemoryCost();
     void gcWithNestedDataStructure();
     void processEventsWhileRunning();
+    void throwErrorFromProcessEvents_data();
     void throwErrorFromProcessEvents();
     void disableProcessEventsInterval();
     void stacktrace();
     void numberParsing_data();
     void numberParsing();
     void automaticSemicolonInsertion();
+    void abortEvaluation_notEvaluating();
+    void abortEvaluation_data();
     void abortEvaluation();
+    void abortEvaluation_tryCatch();
+    void abortEvaluation_fromNative();
     void abortEvaluation_QTBUG9433();
-    void isEvaluating();
+    void isEvaluating_notEvaluating();
+    void isEvaluating_fromNative();
+    void isEvaluating_fromEvent();
     void printFunctionWithCustomHandler();
     void printThrowsException();
     void errorConstructors();
-    void argumentsProperty();
-    void numberClass();
-    void forInStatement();
-    void functionExpression();
+    void argumentsProperty_globalContext();
+    void argumentsProperty_JS();
+    void argumentsProperty_evaluateInNativeFunction();
+    void jsNumberClass();
+    void jsForInStatement_simple();
+    void jsForInStatement_prototypeProperties();
+    void jsForInStatement_mutateWhileIterating();
+    void jsForInStatement_arrays();
+    void jsForInStatement_nullAndUndefined();
+    void jsFunctionDeclarationAsStatement();
     void stringObjects();
+    void jsStringPrototypeReplaceBugs();
     void getterSetterThisObject_global();
     void getterSetterThisObject_plain();
     void getterSetterThisObject_prototypeChain();
     void getterSetterThisObject_activation();
-    void continueInSwitch();
-    void readOnlyPrototypeProperty();
+    void jsContinueInSwitch();
+    void jsShadowReadOnlyPrototypeProperty();
     void toObject();
-    void reservedWords_data();
-    void reservedWords();
-    void futureReservedWords_data();
-    void futureReservedWords();
-    void throwInsideWithStatement();
-    void getSetAgent();
-    void reentrancy();
-    void incDecNonObjectProperty();
+    void jsReservedWords_data();
+    void jsReservedWords();
+    void jsFutureReservedWords_data();
+    void jsFutureReservedWords();
+    void jsThrowInsideWithStatement();
+    void getSetAgent_ownership();
+    void getSetAgent_deleteAgent();
+    void getSetAgent_differentEngine();
+    void reentrancy_stringHandles();
+    void reentrancy_processEventsInterval();
+    void reentrancy_typeConversion();
+    void reentrancy_globalObjectProperties();
+    void reentrancy_Array();
+    void reentrancy_objectCreation();
+    void jsIncDecNonObjectProperty();
     void installTranslatorFunctions_data();
     void installTranslatorFunctions();
     void translateScript_data();
@@ -195,6 +227,7 @@ private slots:
     void translateScriptUnicode();
     void translateScriptUnicodeIdBased_data();
     void translateScriptUnicodeIdBased();
+    void translateFromBuiltinCallback();
     void functionScopes();
     void nativeFunctionScopes();
     void evaluateProgram();
@@ -204,6 +237,7 @@ private slots:
     void evaluateProgram_multipleEngines();
     void evaluateProgram_empty();
     void collectGarbageAfterConnect();
+    void collectGarbageAfterNativeArguments();
     void promoteThisObjectToQObjectInConstructor();
     void scriptValueFromQMetaObject();
 
@@ -314,8 +348,8 @@ void tst_QScriptEngine::newFunction()
             QScriptValue prot = fun.property("prototype", QScriptValue::ResolveLocal);
             QVERIFY(prot.isObject());
             QVERIFY(prot.property("constructor").strictlyEquals(fun));
-            QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable);
-            QCOMPARE(prot.propertyFlags("constructor"), QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+            QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+            QCOMPARE(prot.propertyFlags("constructor"), QScriptValue::SkipInEnumeration);
         }
         // prototype should be Function.prototype
         QCOMPARE(fun.prototype().isValid(), true);
@@ -339,8 +373,8 @@ void tst_QScriptEngine::newFunctionWithArg()
             QScriptValue prot = fun.property("prototype", QScriptValue::ResolveLocal);
             QVERIFY(prot.isObject());
             QVERIFY(prot.property("constructor").strictlyEquals(fun));
-            QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable);
-            QCOMPARE(prot.propertyFlags("constructor"), QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+            QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+            QCOMPARE(prot.propertyFlags("constructor"), QScriptValue::SkipInEnumeration);
         }
         // prototype should be Function.prototype
         QCOMPARE(fun.prototype().isValid(), true);
@@ -367,10 +401,9 @@ void tst_QScriptEngine::newFunctionWithProto()
         QCOMPARE(fun.prototype().strictlyEquals(eng.evaluate("Function.prototype")), true);
         // public prototype should be the one we passed
         QCOMPARE(fun.property("prototype").strictlyEquals(proto), true);
-        QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable);
+        QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
         QCOMPARE(proto.property("constructor").strictlyEquals(fun), true);
-        QCOMPARE(proto.propertyFlags("constructor"),
-                 QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+        QCOMPARE(proto.propertyFlags("constructor"), QScriptValue::SkipInEnumeration);
 
         QCOMPARE(fun.call().isNull(), true);
         QCOMPARE(fun.construct().isObject(), true);
@@ -440,10 +473,10 @@ void tst_QScriptEngine::newArray_HooliganTask233836()
 {
     QScriptEngine eng;
     {
+        // According to ECMA-262, this should cause a RangeError.
         QScriptValue ret = eng.evaluate("a = new Array(4294967295); a.push('foo')");
-        QVERIFY(ret.isNumber());
-        QCOMPARE(ret.toInt32(), 0);
-        QCOMPARE(eng.evaluate("a[4294967295]").toString(), QString::fromLatin1("foo"));
+        QEXPECT_FAIL("", "ECMA compliance bug in Array.prototype.push: https://bugs.webkit.org/show_bug.cgi?id=55033", Continue);
+        QVERIFY(ret.isError() && ret.toString().contains(QLatin1String("RangeError")));
     }
     {
         QScriptValue ret = eng.newArray(0xFFFFFFFF);
@@ -609,54 +642,66 @@ void tst_QScriptEngine::newRegExp()
 
         QCOMPARE(rexp.toRegExp().pattern(), QRegExp("foo").pattern());
     }
-    {
-        QScriptValue r = eng.evaluate("/foo/gim");
-        QVERIFY(r.isRegExp());
-        QCOMPARE(r.toString(), QString::fromLatin1("/foo/gim"));
+}
 
-        QScriptValue rxCtor = eng.globalObject().property("RegExp");
-        QScriptValue r2 = rxCtor.call(QScriptValue(), QScriptValueList() << r);
-        QVERIFY(r2.isRegExp());
-        QVERIFY(r2.strictlyEquals(r));
+void tst_QScriptEngine::jsRegExp()
+{
+    // See ECMA-262 Section 15.10, "RegExp Objects".
+    // These should really be JS-only tests, as they test the implementation's
+    // ECMA-compliance, not the C++ API. Compliance should already be covered
+    // by the Mozilla tests (qscriptjstestsuite).
+    // We can consider updating the expected results of this test if the
+    // RegExp implementation changes.
 
-        QScriptValue r3 = rxCtor.call(QScriptValue(), QScriptValueList() << r << "gim");
-        QVERIFY(r3.isError());
-        QCOMPARE(r3.toString(), QString::fromLatin1("TypeError: Cannot supply flags when constructing one RegExp from another."));
+    QScriptEngine eng;
+    QScriptValue r = eng.evaluate("/foo/gim");
+    QVERIFY(r.isRegExp());
+    QCOMPARE(r.toString(), QString::fromLatin1("/foo/gim"));
 
-        QScriptValue r4 = rxCtor.call(QScriptValue(), QScriptValueList() << "foo" << "gim");
-        QVERIFY(r4.isRegExp());
+    QScriptValue rxCtor = eng.globalObject().property("RegExp");
+    QScriptValue r2 = rxCtor.call(QScriptValue(), QScriptValueList() << r);
+    QVERIFY(r2.isRegExp());
+    QVERIFY(r2.strictlyEquals(r));
 
-        QScriptValue r5 = rxCtor.construct(QScriptValueList() << r);
-        QVERIFY(r5.isRegExp());
-        QCOMPARE(r5.toString(), QString::fromLatin1("/foo/gim"));
-        // In JSC, constructing a RegExp from another produces the same identical object.
-        // This is different from SpiderMonkey and old back-end.
-        QVERIFY(r5.strictlyEquals(r));
+    QScriptValue r3 = rxCtor.call(QScriptValue(), QScriptValueList() << r << "gim");
+    QVERIFY(r3.isError());
+    QVERIFY(r3.toString().contains(QString::fromLatin1("TypeError"))); // Cannot supply flags when constructing one RegExp from another
 
-        QScriptValue r6 = rxCtor.construct(QScriptValueList() << "foo" << "bar");
-        QVERIFY(r6.isError());
-        QCOMPARE(r6.toString(), QString::fromLatin1("SyntaxError: Invalid regular expression: invalid regular expression flag"));
+    QScriptValue r4 = rxCtor.call(QScriptValue(), QScriptValueList() << "foo" << "gim");
+    QVERIFY(r4.isRegExp());
 
-        QScriptValue r7 = eng.evaluate("/foo/gimp");
-        QVERIFY(r7.isError());
-        QCOMPARE(r7.toString(), QString::fromLatin1("SyntaxError: Invalid regular expression: invalid regular expression flag"));
+    QScriptValue r5 = rxCtor.construct(QScriptValueList() << r);
+    QVERIFY(r5.isRegExp());
+    QCOMPARE(r5.toString(), QString::fromLatin1("/foo/gim"));
+    // In JSC, constructing a RegExp from another produces the same identical object.
+    // This is different from SpiderMonkey and old back-end.
+    QEXPECT_FAIL("", "RegExp copy-constructor should return a new object: https://bugs.webkit.org/show_bug.cgi?id=55040", Continue);
+    QVERIFY(!r5.strictlyEquals(r));
 
-        QScriptValue r8 = eng.evaluate("/foo/migmigmig");
-        QVERIFY(r8.isRegExp());
-        QCOMPARE(r8.toString(), QString::fromLatin1("/foo/gim"));
+    QScriptValue r6 = rxCtor.construct(QScriptValueList() << "foo" << "bar");
+    QVERIFY(r6.isError());
+    QVERIFY(r6.toString().contains(QString::fromLatin1("SyntaxError"))); // Invalid regular expression flag
 
-        QScriptValue r9 = rxCtor.construct();
-        QVERIFY(r9.isRegExp());
-        QCOMPARE(r9.toString(), QString::fromLatin1("/(?:)/"));
+    QScriptValue r7 = eng.evaluate("/foo/gimp");
+    QVERIFY(r7.isError());
+    QVERIFY(r7.toString().contains(QString::fromLatin1("SyntaxError"))); // Invalid regular expression flag
 
-        QScriptValue r10 = rxCtor.construct(QScriptValueList() << "" << "gim");
-        QVERIFY(r10.isRegExp());
-        QCOMPARE(r10.toString(), QString::fromLatin1("/(?:)/gim"));
+    // JSC doesn't complain about duplicate flags.
+    QScriptValue r8 = eng.evaluate("/foo/migmigmig");
+    QVERIFY(r8.isRegExp());
+    QCOMPARE(r8.toString(), QString::fromLatin1("/foo/gim"));
 
-        QScriptValue r11 = rxCtor.construct(QScriptValueList() << "{1.*}" << "g");
-        QVERIFY(r11.isRegExp());
-        QCOMPARE(r11.toString(), QString::fromLatin1("/{1.*}/g"));
-    }
+    QScriptValue r9 = rxCtor.construct();
+    QVERIFY(r9.isRegExp());
+    QCOMPARE(r9.toString(), QString::fromLatin1("/(?:)/"));
+
+    QScriptValue r10 = rxCtor.construct(QScriptValueList() << "" << "gim");
+    QVERIFY(r10.isRegExp());
+    QCOMPARE(r10.toString(), QString::fromLatin1("/(?:)/gim"));
+
+    QScriptValue r11 = rxCtor.construct(QScriptValueList() << "{1.*}" << "g");
+    QVERIFY(r11.isRegExp());
+    QCOMPARE(r11.toString(), QString::fromLatin1("/{1.*}/g"));
 }
 
 void tst_QScriptEngine::newDate()
@@ -695,7 +740,11 @@ void tst_QScriptEngine::newDate()
         // toDateTime() result should be in local time
         QCOMPARE(date.toDateTime(), dt.toLocalTime());
     }
+}
 
+void tst_QScriptEngine::jsParseDate()
+{
+    QScriptEngine eng;
     // Date.parse() should return NaN when it fails
     {
         QScriptValue ret = eng.evaluate("Date.parse()");
@@ -1196,6 +1245,8 @@ static QScriptValue getSetFoo(QScriptContext *ctx, QScriptEngine *)
 
 void tst_QScriptEngine::globalObjectProperties()
 {
+    // See ECMA-262 Section 15.1, "The Global Object".
+
     QScriptEngine eng;
     QScriptValue global = eng.globalObject();
 
@@ -1269,10 +1320,15 @@ void tst_QScriptEngine::globalObjectProperties()
     QCOMPARE(global.propertyFlags("URIError"), QScriptValue::SkipInEnumeration);
     QVERIFY(global.property("Math").isObject());
     QVERIFY(!global.property("Math").isFunction());
-    QEXPECT_FAIL("", "[ECMA compliance] JSC sets DontDelete flag for Math object", Continue);
+    QEXPECT_FAIL("", "[ECMA compliance] JSC sets DontDelete flag for Math object: https://bugs.webkit.org/show_bug.cgi?id=55034", Continue);
     QCOMPARE(global.propertyFlags("Math"), QScriptValue::SkipInEnumeration);
+}
 
-    // enumeration
+void tst_QScriptEngine::globalObjectProperties_enumerate()
+{
+    QScriptEngine eng;
+    QScriptValue global = eng.globalObject();
+
     QSet<QString> expectedNames;
     expectedNames
         << "isNaN"
@@ -1500,7 +1556,7 @@ void tst_QScriptEngine::globalObjectWithCustomPrototype()
     {
         QScriptValue ret = engine.evaluate("this.__proto__ = { 'a': 123 }; a");
         QVERIFY(ret.isNumber());
-        QEXPECT_FAIL("", "QTBUG-9737", Continue);
+        QEXPECT_FAIL("", "QTBUG-9737: Prototype change in JS not reflected on C++ side", Continue);
         QVERIFY(ret.strictlyEquals(global.property("a")));
     }
 }
@@ -1510,7 +1566,9 @@ void tst_QScriptEngine::builtinFunctionNames_data()
     QTest::addColumn<QString>("expression");
     QTest::addColumn<QString>("expectedName");
 
-    QTest::newRow("print") << QString("print") << QString("print");
+    // See ECMA-262 Chapter 15, "Standard Built-in ECMAScript Objects".
+
+    QTest::newRow("print") << QString("print") << QString("print"); // QtScript extension.
     QTest::newRow("parseInt") << QString("parseInt") << QString("parseInt");
     QTest::newRow("parseFloat") << QString("parseFloat") << QString("parseFloat");
     QTest::newRow("isNaN") << QString("isNaN") << QString("isNaN");
@@ -1521,8 +1579,8 @@ void tst_QScriptEngine::builtinFunctionNames_data()
     QTest::newRow("encodeURIComponent") << QString("encodeURIComponent") << QString("encodeURIComponent");
     QTest::newRow("escape") << QString("escape") << QString("escape");
     QTest::newRow("unescape") << QString("unescape") << QString("unescape");
-    QTest::newRow("version") << QString("version") << QString("version");
-    QTest::newRow("gc") << QString("gc") << QString("gc");
+    QTest::newRow("version") << QString("version") << QString("version"); // QtScript extension.
+    QTest::newRow("gc") << QString("gc") << QString("gc"); // QtScript extension.
 
     QTest::newRow("Array") << QString("Array") << QString("Array");
     QTest::newRow("Array.prototype.toString") << QString("Array.prototype.toString") << QString("toString");
@@ -1673,6 +1731,7 @@ void tst_QScriptEngine::builtinFunctionNames()
     QFETCH(QString, expression);
     QFETCH(QString, expectedName);
     QScriptEngine eng;
+    // The "name" property is actually non-standard, but JSC supports it.
     QScriptValue ret = eng.evaluate(QString::fromLatin1("%0.name").arg(expression));
     QVERIFY(ret.isString());
     QCOMPARE(ret.toString(), expectedName);
@@ -1894,22 +1953,24 @@ static QScriptValue eval_nested(QScriptContext *ctx, QScriptEngine *eng)
     return result;
 }
 
+// Tests that nested evaluate uses the "this" that was passed.
 void tst_QScriptEngine::nestedEvaluate()
 {
     QScriptEngine eng;
     QScriptValue fun = eng.newFunction(eval_nested);
     eng.globalObject().setProperty("fun", fun);
+    // From JS function call
     {
         QScriptValue result = eng.evaluate("o = { id:'foo'}; o.fun = fun; o.fun()");
         QCOMPARE(result.property("local_bar").toString(), QString("local"));
         QCOMPARE(result.property("thisObjectIdBefore").toString(), QString("foo"));
         QCOMPARE(result.property("thisObjectIdAfter").toString(), QString("foo"));
         QCOMPARE(result.property("evaluatedThisObjectId").toString(), QString("foo"));
-        QScriptValue bar = eng.evaluate("bar");
+        QScriptValue bar = eng.evaluate("bar"); // Was introduced in local scope.
         QVERIFY(bar.isError());
-        QCOMPARE(bar.toString(), QString::fromLatin1("ReferenceError: Can't find variable: bar"));
+        QVERIFY(bar.toString().contains(QString::fromLatin1("ReferenceError")));
     }
-
+    // From QScriptValue::call()
     {
         QScriptValue result = fun.call(eng.evaluate("p = { id:'foo' }") , QScriptValueList() );
         QCOMPARE(result.property("local_bar").toString(), QString("local"));
@@ -1918,7 +1979,7 @@ void tst_QScriptEngine::nestedEvaluate()
         QCOMPARE(result.property("evaluatedThisObjectId").toString(), QString("foo"));
         QScriptValue bar = eng.evaluate("bar");
         QVERIFY(bar.isError());
-        QCOMPARE(bar.toString(), QString::fromLatin1("ReferenceError: Can't find variable: bar"));
+        QVERIFY(bar.toString().contains(QString::fromLatin1("ReferenceError")));
     }
 }
 
@@ -1985,6 +2046,7 @@ void tst_QScriptEngine::errorMessage_QT679()
     engine.globalObject().setProperty("foo", 15);
     QScriptValue error = engine.evaluate("'hello world';\nfoo.bar.blah");
     QVERIFY(error.isError());
+    // The exact message is back-end specific and subject to change.
     QCOMPARE(error.toString(), QString::fromLatin1("TypeError: Result of expression 'foo.bar' [undefined] is not an object."));
 }
 
@@ -1997,37 +2059,40 @@ public:
 Q_DECLARE_METATYPE(Foo)
 Q_DECLARE_METATYPE(Foo*)
 
-void tst_QScriptEngine::getSetDefaultPrototype()
+void tst_QScriptEngine::getSetDefaultPrototype_int()
 {
     QScriptEngine eng;
-    {
-        QScriptValue object = eng.newObject();
-        QCOMPARE(eng.defaultPrototype(qMetaTypeId<int>()).isValid(), false);
-        eng.setDefaultPrototype(qMetaTypeId<int>(), object);
-        QCOMPARE(eng.defaultPrototype(qMetaTypeId<int>()).strictlyEquals(object), true);
-        QScriptValue value = eng.newVariant(int(123));
-        QCOMPARE(value.prototype().isObject(), true);
-        QCOMPARE(value.prototype().strictlyEquals(object), true);
 
-        eng.setDefaultPrototype(qMetaTypeId<int>(), QScriptValue());
-        QCOMPARE(eng.defaultPrototype(qMetaTypeId<int>()).isValid(), false);
-        QScriptValue value2 = eng.newVariant(int(123));
-        QCOMPARE(value2.prototype().strictlyEquals(object), false);
-    }
-    {
-        QScriptValue object = eng.newObject();
-        QCOMPARE(eng.defaultPrototype(qMetaTypeId<Foo>()).isValid(), false);
-        eng.setDefaultPrototype(qMetaTypeId<Foo>(), object);
-        QCOMPARE(eng.defaultPrototype(qMetaTypeId<Foo>()).strictlyEquals(object), true);
-        QScriptValue value = eng.newVariant(qVariantFromValue(Foo()));
-        QCOMPARE(value.prototype().isObject(), true);
-        QCOMPARE(value.prototype().strictlyEquals(object), true);
+    QScriptValue object = eng.newObject();
+    QCOMPARE(eng.defaultPrototype(qMetaTypeId<int>()).isValid(), false);
+    eng.setDefaultPrototype(qMetaTypeId<int>(), object);
+    QCOMPARE(eng.defaultPrototype(qMetaTypeId<int>()).strictlyEquals(object), true);
+    QScriptValue value = eng.newVariant(int(123));
+    QCOMPARE(value.prototype().isObject(), true);
+    QCOMPARE(value.prototype().strictlyEquals(object), true);
 
-        eng.setDefaultPrototype(qMetaTypeId<Foo>(), QScriptValue());
-        QCOMPARE(eng.defaultPrototype(qMetaTypeId<Foo>()).isValid(), false);
-        QScriptValue value2 = eng.newVariant(qVariantFromValue(Foo()));
-        QCOMPARE(value2.prototype().strictlyEquals(object), false);
-    }
+    eng.setDefaultPrototype(qMetaTypeId<int>(), QScriptValue());
+    QCOMPARE(eng.defaultPrototype(qMetaTypeId<int>()).isValid(), false);
+    QScriptValue value2 = eng.newVariant(int(123));
+    QCOMPARE(value2.prototype().strictlyEquals(object), false);
+}
+
+void tst_QScriptEngine::getSetDefaultPrototype_customType()
+{
+    QScriptEngine eng;
+
+    QScriptValue object = eng.newObject();
+    QCOMPARE(eng.defaultPrototype(qMetaTypeId<Foo>()).isValid(), false);
+    eng.setDefaultPrototype(qMetaTypeId<Foo>(), object);
+    QCOMPARE(eng.defaultPrototype(qMetaTypeId<Foo>()).strictlyEquals(object), true);
+    QScriptValue value = eng.newVariant(qVariantFromValue(Foo()));
+    QCOMPARE(value.prototype().isObject(), true);
+    QCOMPARE(value.prototype().strictlyEquals(object), true);
+
+    eng.setDefaultPrototype(qMetaTypeId<Foo>(), QScriptValue());
+    QCOMPARE(eng.defaultPrototype(qMetaTypeId<Foo>()).isValid(), false);
+    QScriptValue value2 = eng.newVariant(qVariantFromValue(Foo()));
+    QCOMPARE(value2.prototype().strictlyEquals(object), false);
 }
 
 static QScriptValue fooToScriptValue(QScriptEngine *eng, const Foo &foo)
@@ -2061,7 +2126,7 @@ Q_DECLARE_METATYPE(QStack<int>)
 Q_DECLARE_METATYPE(QQueue<char>)
 Q_DECLARE_METATYPE(QLinkedList<QStack<int> >)
 
-void tst_QScriptEngine::valueConversion()
+void tst_QScriptEngine::valueConversion_basic()
 {
     QScriptEngine eng;
     {
@@ -2123,7 +2188,11 @@ void tst_QScriptEngine::valueConversion()
         QCOMPARE(qScriptValueToValue<QChar>(code), c);
         QCOMPARE(qScriptValueToValue<QChar>(qScriptValueFromValue(&eng, c)), c);
     }
+}
 
+void tst_QScriptEngine::valueConversion_customType()
+{
+    QScriptEngine eng;
     {
         // a type that we don't have built-in conversion of
         // (it's stored as a variant)
@@ -2169,7 +2238,11 @@ void tst_QScriptEngine::valueConversion()
         QVERIFY(fooVal2.property("x").strictlyEquals(QScriptValue(&eng, 56)));
         QVERIFY(fooVal2.property("y").strictlyEquals(QScriptValue(&eng, 78)));
     }
+}
 
+void tst_QScriptEngine::valueConversion_sequence()
+{
+    QScriptEngine eng;
     qScriptRegisterSequenceMetaType<QLinkedList<QString> >(&eng);
 
     {
@@ -2248,7 +2321,11 @@ void tst_QScriptEngine::valueConversion()
 
         QCOMPARE(qscriptvalue_cast<QObjectList>(val), lst);
     }
+}
 
+void tst_QScriptEngine::valueConversion_QVariant()
+{
+    QScriptEngine eng;
     // qScriptValueFromValue() should be "smart" when the argument is a QVariant
     {
         QScriptValue val = qScriptValueFromValue(&eng, QVariant());
@@ -2325,7 +2402,12 @@ void tst_QScriptEngine::valueConversion()
         QCOMPARE(val.toVariant(), var);
     }
 
-    // task 248802
+    QCOMPARE(qscriptvalue_cast<QVariant>(QScriptValue(123)), QVariant(123));
+}
+
+void tst_QScriptEngine::valueConversion_hooliganTask248802()
+{
+    QScriptEngine eng;
     qScriptRegisterMetaType<Foo>(&eng, fooToScriptValueV2, fooFromScriptValueV2);
     {
         QScriptValue num(&eng, 123);
@@ -2343,6 +2425,11 @@ void tst_QScriptEngine::valueConversion()
         QCOMPARE(foo.x, 123);
     }
 
+}
+
+void tst_QScriptEngine::valueConversion_basic2()
+{
+    QScriptEngine eng;
     // more built-in types
     {
         QScriptValue val = qScriptValueFromValue(&eng, uint(123));
@@ -2379,6 +2466,11 @@ void tst_QScriptEngine::valueConversion()
         QVERIFY(val.isNumber());
         QCOMPARE(val.toInt32(), 123);
     }
+}
+
+void tst_QScriptEngine::valueConversion_dateTime()
+{
+    QScriptEngine eng;
     {
         QDateTime in = QDateTime::currentDateTime();
         QScriptValue val = qScriptValueFromValue(&eng, in);
@@ -2391,6 +2483,11 @@ void tst_QScriptEngine::valueConversion()
         QVERIFY(val.isDate());
         QCOMPARE(val.toDateTime().date(), in);
     }
+}
+
+void tst_QScriptEngine::valueConversion_regExp()
+{
+    QScriptEngine eng;
     {
         QRegExp in = QRegExp("foo");
         QScriptValue val = qScriptValueFromValue(&eng, in);
@@ -2416,8 +2513,6 @@ void tst_QScriptEngine::valueConversion()
         QEXPECT_FAIL("", "QTBUG-6136: JSC-based back-end doesn't preserve QRegExp::minimal (always false)", Continue);
         QCOMPARE(val.toRegExp().isMinimal(), in.isMinimal());
     }
-
-    QCOMPARE(qscriptvalue_cast<QVariant>(QScriptValue(123)), QVariant(123));
 }
 
 void tst_QScriptEngine::qScriptValueFromValue_noEngine()
@@ -2522,7 +2617,7 @@ void tst_QScriptEngine::importExtension()
             QEXPECT_FAIL("", "JSC throws syntax error eagerly", Continue);
             QCOMPARE(eng.uncaughtExceptionLineNumber(), 4);
             QVERIFY(ret.isError());
-            QCOMPARE(ret.property("message").toString(), QLatin1String("Parse error"));
+            QVERIFY(ret.toString().contains(QLatin1String("SyntaxError")));
         }
         QStringList imp = eng.importedExtensions();
         QCOMPARE(imp.size(), 2);
@@ -2548,6 +2643,9 @@ static QScriptValue recurse2(QScriptContext *ctx, QScriptEngine *eng)
 
 void tst_QScriptEngine::infiniteRecursion()
 {
+    // Infinite recursion in JS should cause the VM to throw an error
+    // when the JS stack is exhausted.
+    // The exact error is back-end specific and subject to change.
     const QString stackOverflowError = QString::fromLatin1("RangeError: Maximum call stack size exceeded.");
     QScriptEngine eng;
     {
@@ -2610,6 +2708,8 @@ void tst_QScriptEngine::castWithPrototypeChain()
     baz2.b = 456;
     QScriptValue baz2Value = qScriptValueFromValue(&eng, &baz2);
     {
+        // qscriptvalue_cast() does magic; if the QScriptValue contains
+        // t of type T, and the target type is T*, &t is returned.
         Baz *pbaz = qscriptvalue_cast<Baz*>(baz2Value);
         QVERIFY(pbaz != 0);
         QCOMPARE(pbaz->b, baz2.b);
@@ -2632,6 +2732,13 @@ void tst_QScriptEngine::castWithPrototypeChain()
         }
 
         // establish chain -- now casting should work
+        // Why? because qscriptvalue_cast() does magic again.
+        // It the instance itself is not of type T, qscriptvalue_cast()
+        // searches the prototype chain for T, and if it finds one, it infers
+        // that the instance can also be casted to that type. This cast is
+        // _not_ safe and thus relies on the developer doing the right thing.
+        // This is an undocumented feature to enable qscriptvalue_cast() to
+        // be used by prototype functions to cast the JS this-object to C++.
         bazProto.setPrototype(barProto);
 
         {
@@ -2740,6 +2847,9 @@ void tst_QScriptEngine::collectGarbage()
 void tst_QScriptEngine::reportAdditionalMemoryCost()
 {
     QScriptEngine eng;
+    // There isn't any reliable way to test whether calling
+    // this function affects garbage collection responsiveness;
+    // the best we can do is call it with a few different values.
     for (int x = 0; x < 1000; ++x) {
         eng.reportAdditionalMemoryCost(0);
         eng.reportAdditionalMemoryCost(10);
@@ -2757,6 +2867,8 @@ void tst_QScriptEngine::reportAdditionalMemoryCost()
 
 void tst_QScriptEngine::gcWithNestedDataStructure()
 {
+    // The GC must be able to traverse deeply nested objects, otherwise this
+    // test would crash.
     QScriptEngine eng;
     eng.evaluate(
         "function makeList(size)"
@@ -2778,6 +2890,7 @@ void tst_QScriptEngine::gcWithNestedDataStructure()
         if (x == 1)
             eng.evaluate("gc()");
         QScriptValue l = head;
+        // Make sure all the nodes are still alive.
         for (int i = 0; i < 200; ++i) {
             QCOMPARE(l.property("data").toString(), QString::number(i));
             l = l.property("next");
@@ -2807,6 +2920,8 @@ void tst_QScriptEngine::processEventsWhileRunning()
         if (x == 0)
             eng.pushContext();
 
+        // This is running for a silly amount of time just to make sure
+        // the script doesn't finish before event processing is triggered.
         QString script = QString::fromLatin1(
             "var end = Number(new Date()) + 2000;"
             "var x = 0;"
@@ -2849,17 +2964,42 @@ public:
     QScriptEngine *engine;
 };
 
+void tst_QScriptEngine::throwErrorFromProcessEvents_data()
+{
+    QTest::addColumn<QString>("script");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("while (1)")
+        << QString::fromLatin1("while (1) { }")
+        << QString::fromLatin1("Error: Killed");
+    QTest::newRow("while (1) i++")
+        << QString::fromLatin1("i = 0; while (1) { i++; }")
+        << QString::fromLatin1("Error: Killed");
+    // Unlike abortEvaluation(), scripts should be able to catch the
+    // exception.
+    QTest::newRow("try catch")
+        << QString::fromLatin1("try {"
+                               "    while (1) { }"
+                               "} catch(e) {"
+                               "    throw new Error('Caught');"
+                               "}")
+        << QString::fromLatin1("Error: Caught");
+}
+
 void tst_QScriptEngine::throwErrorFromProcessEvents()
 {
+    QFETCH(QString, script);
+    QFETCH(QString, error);
+
     QScriptEngine eng;
 
     EventReceiver2 receiver(&eng);
     QCoreApplication::postEvent(&receiver, new QEvent(QEvent::Type(QEvent::User+1)));
 
     eng.setProcessEventsInterval(100);
-    QScriptValue ret = eng.evaluate(QString::fromLatin1("while (1) { }"));
+    QScriptValue ret = eng.evaluate(script);
     QVERIFY(ret.isError());
-    QCOMPARE(ret.toString(), QString::fromLatin1("Error: Killed"));
+    QCOMPARE(ret.toString(), error);
 }
 
 void tst_QScriptEngine::disableProcessEventsInterval()
@@ -3012,13 +3152,15 @@ void tst_QScriptEngine::numberParsing()
 }
 
 // see ECMA-262, section 7.9
+// This is testing ECMA compliance, not our C++ API, but it's important that
+// the back-end is conformant in this regard.
 void tst_QScriptEngine::automaticSemicolonInsertion()
 {
     QScriptEngine eng;
     {
         QScriptValue ret = eng.evaluate("{ 1 2 } 3");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("SyntaxError: Parse error"));
+        QVERIFY(ret.toString().contains("SyntaxError"));
     }
     {
         QScriptValue ret = eng.evaluate("{ 1\n2 } 3");
@@ -3028,7 +3170,7 @@ void tst_QScriptEngine::automaticSemicolonInsertion()
     {
         QScriptValue ret = eng.evaluate("for (a; b\n)");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("SyntaxError: Parse error"));
+        QVERIFY(ret.toString().contains("SyntaxError"));
     }
     {
         QScriptValue ret = eng.evaluate("(function() { return\n1 + 2 })()");
@@ -3043,7 +3185,7 @@ void tst_QScriptEngine::automaticSemicolonInsertion()
     {
         QScriptValue ret = eng.evaluate("if (a > b)\nelse c = d");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("SyntaxError: Parse error"));
+        QVERIFY(ret.toString().contains("SyntaxError"));
     }
     {
         eng.evaluate("function c() { return { foo: function() { return 5; } } }");
@@ -3055,7 +3197,7 @@ void tst_QScriptEngine::automaticSemicolonInsertion()
     {
         QScriptValue ret = eng.evaluate("throw\n1");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("SyntaxError: Parse error"));
+        QVERIFY(ret.toString().contains("SyntaxError"));
     }
     {
         QScriptValue ret = eng.evaluate("a = Number(1)\n++a");
@@ -3257,7 +3399,7 @@ static QScriptValue myFunctionAbortingEvaluation(QScriptContext *, QScriptEngine
     return eng->nullValue(); // should be ignored
 }
 
-void tst_QScriptEngine::abortEvaluation()
+void tst_QScriptEngine::abortEvaluation_notEvaluating()
 {
     QScriptEngine eng;
 
@@ -3270,14 +3412,36 @@ void tst_QScriptEngine::abortEvaluation()
         QVERIFY(ret.isString());
         QCOMPARE(ret.toString(), QString::fromLatin1("ciao"));
     }
+}
 
+void tst_QScriptEngine::abortEvaluation_data()
+{
+    QTest::addColumn<QString>("script");
+
+    QTest::newRow("while (1)")
+        << QString::fromLatin1("while (1) { }");
+    QTest::newRow("while (1) i++")
+        << QString::fromLatin1("i = 0; while (1) { i++; }");
+    QTest::newRow("try catch")
+        << QString::fromLatin1("try {"
+                               "    while (1) { }"
+                               "} catch(e) {"
+                               "    throw new Error('Caught');"
+                               "}");
+}
+
+void tst_QScriptEngine::abortEvaluation()
+{
+    QFETCH(QString, script);
+
+    QScriptEngine eng;
     EventReceiver3 receiver(&eng);
 
     eng.setProcessEventsInterval(100);
     for (int x = 0; x < 4; ++x) {
         QCoreApplication::postEvent(&receiver, new QEvent(QEvent::Type(QEvent::User+1)));
         receiver.resultType = EventReceiver3::AbortionResult(x);
-        QScriptValue ret = eng.evaluate(QString::fromLatin1("while (1) { }"));
+        QScriptValue ret = eng.evaluate(script);
         switch (receiver.resultType) {
         case EventReceiver3::None:
             QVERIFY(!eng.hasUncaughtException());
@@ -3301,6 +3465,13 @@ void tst_QScriptEngine::abortEvaluation()
         }
     }
 
+}
+
+void tst_QScriptEngine::abortEvaluation_tryCatch()
+{
+    QScriptEngine eng;
+    EventReceiver3 receiver(&eng);
+    eng.setProcessEventsInterval(100);
     // scripts cannot intercept the abortion with try/catch
     for (int y = 0; y < 4; ++y) {
         QCoreApplication::postEvent(&receiver, new QEvent(QEvent::Type(QEvent::User+1)));
@@ -3334,13 +3505,15 @@ void tst_QScriptEngine::abortEvaluation()
             break;
         }
     }
+}
 
-    {
-        QScriptValue fun = eng.newFunction(myFunctionAbortingEvaluation);
-        eng.globalObject().setProperty("myFunctionAbortingEvaluation", fun);
-        QScriptValue ret = eng.evaluate("myFunctionAbortingEvaluation()");
-        QVERIFY(!ret.isValid());
-    }
+void tst_QScriptEngine::abortEvaluation_fromNative()
+{
+    QScriptEngine eng;
+    QScriptValue fun = eng.newFunction(myFunctionAbortingEvaluation);
+    eng.globalObject().setProperty("myFunctionAbortingEvaluation", fun);
+    QScriptValue ret = eng.evaluate("myFunctionAbortingEvaluation()");
+    QVERIFY(!ret.isValid());
 }
 
 class ThreadedEngine : public QThread {
@@ -3407,7 +3580,7 @@ public:
     bool wasEvaluating;
 };
 
-void tst_QScriptEngine::isEvaluating()
+void tst_QScriptEngine::isEvaluating_notEvaluating()
 {
     QScriptEngine eng;
 
@@ -3419,30 +3592,34 @@ void tst_QScriptEngine::isEvaluating()
     QVERIFY(!eng.isEvaluating());
     eng.evaluate("0 = 0");
     QVERIFY(!eng.isEvaluating());
+}
 
-    {
-        QScriptValue fun = eng.newFunction(myFunctionReturningIsEvaluating);
-        eng.globalObject().setProperty("myFunctionReturningIsEvaluating", fun);
-        QScriptValue ret = eng.evaluate("myFunctionReturningIsEvaluating()");
-        QVERIFY(ret.isBoolean());
-        QVERIFY(ret.toBoolean());
-    }
+void tst_QScriptEngine::isEvaluating_fromNative()
+{
+    QScriptEngine eng;
+    QScriptValue fun = eng.newFunction(myFunctionReturningIsEvaluating);
+    eng.globalObject().setProperty("myFunctionReturningIsEvaluating", fun);
+    QScriptValue ret = eng.evaluate("myFunctionReturningIsEvaluating()");
+    QVERIFY(ret.isBoolean());
+    QVERIFY(ret.toBoolean());
+}
 
-    {
-        EventReceiver4 receiver(&eng);
-        QCoreApplication::postEvent(&receiver, new QEvent(QEvent::Type(QEvent::User+1)));
+void tst_QScriptEngine::isEvaluating_fromEvent()
+{
+    QScriptEngine eng;
+    EventReceiver4 receiver(&eng);
+    QCoreApplication::postEvent(&receiver, new QEvent(QEvent::Type(QEvent::User+1)));
 
-        QString script = QString::fromLatin1(
-            "var end = Number(new Date()) + 1000;"
-            "var x = 0;"
-            "while (Number(new Date()) < end) {"
-            "    ++x;"
-            "}");
+    QString script = QString::fromLatin1(
+        "var end = Number(new Date()) + 1000;"
+        "var x = 0;"
+        "while (Number(new Date()) < end) {"
+        "    ++x;"
+        "}");
 
-        eng.setProcessEventsInterval(100);
-        eng.evaluate(script);
-        QVERIFY(receiver.wasEvaluating);
-    }
+    eng.setProcessEventsInterval(100);
+    eng.evaluate(script);
+    QVERIFY(receiver.wasEvaluating);
 }
 
 static QtMsgType theMessageType;
@@ -3456,24 +3633,33 @@ static void myMsgHandler(QtMsgType type, const char *msg)
 
 void tst_QScriptEngine::printFunctionWithCustomHandler()
 {
+    // The built-in print() function passes the output to Qt's message
+    // handler. By installing a custom message handler, the output can be
+    // redirected without changing the print() function itself.
+    // This behavior is not documented.
     QScriptEngine eng;
     QtMsgHandler oldHandler = qInstallMsgHandler(myMsgHandler);
     QVERIFY(eng.globalObject().property("print").isFunction());
+
     theMessageType = QtSystemMsg;
     QVERIFY(theMessage.isEmpty());
     QVERIFY(eng.evaluate("print('test')").isUndefined());
     QCOMPARE(theMessageType, QtDebugMsg);
     QCOMPARE(theMessage, QString::fromLatin1("test"));
+
     theMessageType = QtSystemMsg;
     theMessage.clear();
     QVERIFY(eng.evaluate("print(3, true, 'little pigs')").isUndefined());
     QCOMPARE(theMessageType, QtDebugMsg);
     QCOMPARE(theMessage, QString::fromLatin1("3 true little pigs"));
+
     qInstallMsgHandler(oldHandler);
 }
 
 void tst_QScriptEngine::printThrowsException()
 {
+    // If an argument to print() causes an exception to be thrown when
+    // it's converted to a string, print() should propagate the exception.
     QScriptEngine eng;
     QScriptValue ret = eng.evaluate("print({ toString: function() { throw 'foo'; } });");
     QVERIFY(eng.hasUncaughtException());
@@ -3506,32 +3692,28 @@ void tst_QScriptEngine::errorConstructors()
     }
 }
 
-static QScriptValue argumentsProperty_fun(QScriptContext *, QScriptEngine *eng)
+void tst_QScriptEngine::argumentsProperty_globalContext()
 {
-    eng->evaluate("var a = arguments[0];");
-    eng->evaluate("arguments[0] = 200;");
-    return eng->evaluate("a + arguments[0]");
+    QScriptEngine eng;
+    {
+        // Unlike function calls, the global context doesn't have an
+        // arguments property.
+        QScriptValue ret = eng.evaluate("arguments");
+        QVERIFY(ret.isError());
+        QVERIFY(ret.toString().contains(QString::fromLatin1("ReferenceError")));
+    }
+    eng.evaluate("arguments = 10");
+    {
+        QScriptValue ret = eng.evaluate("arguments");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toInt32(), 10);
+    }
+    QVERIFY(eng.evaluate("delete arguments").toBoolean());
+    QVERIFY(!eng.globalObject().property("arguments").isValid());
 }
 
-
-void tst_QScriptEngine::argumentsProperty()
+void tst_QScriptEngine::argumentsProperty_JS()
 {
-    {
-        QScriptEngine eng;
-        {
-            QScriptValue ret = eng.evaluate("arguments");
-            QVERIFY(ret.isError());
-            QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: Can't find variable: arguments"));
-        }
-        eng.evaluate("arguments = 10");
-        {
-            QScriptValue ret = eng.evaluate("arguments");
-            QVERIFY(ret.isNumber());
-            QCOMPARE(ret.toInt32(), 10);
-        }
-        QVERIFY(eng.evaluate("delete arguments").toBoolean());
-        QVERIFY(!eng.globalObject().property("arguments").isValid());
-    }
     {
         QScriptEngine eng;
         eng.evaluate("o = { arguments: 123 }");
@@ -3542,24 +3724,39 @@ void tst_QScriptEngine::argumentsProperty()
     {
         QScriptEngine eng;
         QVERIFY(!eng.globalObject().property("arguments").isValid());
+        // This is testing ECMA-262 compliance. In function calls, "arguments"
+        // appears like a local variable, and it can be replaced.
         QScriptValue ret = eng.evaluate("(function() { arguments = 456; return arguments; })()");
         QVERIFY(ret.isNumber());
         QCOMPARE(ret.toInt32(), 456);
         QVERIFY(!eng.globalObject().property("arguments").isValid());
     }
-
-    {
-        QScriptEngine eng;
-        QScriptValue fun = eng.newFunction(argumentsProperty_fun);
-        eng.globalObject().setProperty("fun", eng.newFunction(argumentsProperty_fun));
-        QScriptValue result = eng.evaluate("fun(18)");
-        QVERIFY(result.isNumber());
-        QCOMPARE(result.toInt32(), 218);
-    }
 }
 
-void tst_QScriptEngine::numberClass()
+static QScriptValue argumentsProperty_fun(QScriptContext *, QScriptEngine *eng)
 {
+    // Since evaluate() is done in the current context, "arguments" should
+    // refer to currentContext()->argumentsObject().
+    // This is for consistency with the built-in JS eval() function.
+    eng->evaluate("var a = arguments[0];");
+    eng->evaluate("arguments[0] = 200;");
+    return eng->evaluate("a + arguments[0]");
+}
+
+void tst_QScriptEngine::argumentsProperty_evaluateInNativeFunction()
+{
+    QScriptEngine eng;
+    QScriptValue fun = eng.newFunction(argumentsProperty_fun);
+    eng.globalObject().setProperty("fun", eng.newFunction(argumentsProperty_fun));
+    QScriptValue result = eng.evaluate("fun(18)");
+    QVERIFY(result.isNumber());
+    QCOMPARE(result.toInt32(), 200+18);
+}
+
+void tst_QScriptEngine::jsNumberClass()
+{
+    // See ECMA-262 Section 15.7, "Number Objects".
+
     QScriptEngine eng;
 
     QScriptValue ctor = eng.globalObject().property("Number");
@@ -3669,7 +3866,7 @@ void tst_QScriptEngine::numberClass()
     }
 }
 
-void tst_QScriptEngine::forInStatement()
+void tst_QScriptEngine::jsForInStatement_simple()
 {
     QScriptEngine eng;
     {
@@ -3692,8 +3889,11 @@ void tst_QScriptEngine::forInStatement()
         QCOMPARE(lst.at(0), QString::fromLatin1("p"));
         QCOMPARE(lst.at(1), QString::fromLatin1("q"));
     }
+}
 
-    // properties in prototype
+void tst_QScriptEngine::jsForInStatement_prototypeProperties()
+{
+    QScriptEngine eng;
     {
         QScriptValue ret = eng.evaluate("o = { }; o.__proto__ = { p: 123 }; r = [];"
                                         "for (var p in o) r[r.length] = p; r");
@@ -3718,6 +3918,11 @@ void tst_QScriptEngine::forInStatement()
         QCOMPARE(lst.at(0), QString::fromLatin1("p"));
     }
 
+}
+
+void tst_QScriptEngine::jsForInStatement_mutateWhileIterating()
+{
+    QScriptEngine eng;
     // deleting property during enumeration
     {
         QScriptValue ret = eng.evaluate("o = { p: 123 }; r = [];"
@@ -3743,7 +3948,11 @@ void tst_QScriptEngine::forInStatement()
         QCOMPARE(lst.at(0), QString::fromLatin1("p"));
     }
 
-    // arrays
+}
+
+void tst_QScriptEngine::jsForInStatement_arrays()
+{
+    QScriptEngine eng;
     {
         QScriptValue ret = eng.evaluate("a = [123, 456]; r = [];"
                                         "for (var p in a) r[r.length] = p; r");
@@ -3774,10 +3983,11 @@ void tst_QScriptEngine::forInStatement()
         QCOMPARE(lst.at(3), QString::fromLatin1("2"));
         QCOMPARE(lst.at(4), QString::fromLatin1("bar"));
     }
+}
 
-    // null and undefined
-    // according to the spec, we should throw an exception; however, for
-    // compability with the real world, we don't
+void tst_QScriptEngine::jsForInStatement_nullAndUndefined()
+{
+    QScriptEngine eng;
     {
         QScriptValue ret = eng.evaluate("r = true; for (var p in undefined) r = false; r");
         QVERIFY(ret.isBool());
@@ -3790,9 +4000,17 @@ void tst_QScriptEngine::forInStatement()
     }
 }
 
-void tst_QScriptEngine::functionExpression()
+void tst_QScriptEngine::jsFunctionDeclarationAsStatement()
 {
-    // task 175679
+    // ECMA-262 does not allow function declarations to be used as statements,
+    // but several popular implementations (including JSC) do. See the NOTE
+    // at the beginning of chapter 12 in ECMA-262 5th edition, where it's
+    // recommended that implementations either disallow this usage or issue
+    // a warning.
+    // Since we had a bug report long ago about QtScript not supporting this
+    // "feature" (and thus deviating from other implementations), we still
+    // check this behavior.
+
     QScriptEngine eng;
     QVERIFY(!eng.globalObject().property("bar").isValid());
     eng.evaluate("function foo(arg) {\n"
@@ -3825,6 +4043,8 @@ void tst_QScriptEngine::functionExpression()
 
 void tst_QScriptEngine::stringObjects()
 {
+    // See ECMA-262 Section 15.5, "String Objects".
+
     QScriptEngine eng;
     QString str("ciao");
     // in C++
@@ -3886,7 +4106,11 @@ void tst_QScriptEngine::stringObjects()
         QVERIFY(ret7.isBoolean());
         QVERIFY(ret7.toBoolean());
     }
+}
 
+void tst_QScriptEngine::jsStringPrototypeReplaceBugs()
+{
+    QScriptEngine eng;
     // task 212440
     {
         QScriptValue ret = eng.evaluate("replace_args = []; \"a a a\".replace(/(a)/g, function() { replace_args.push(arguments); }); replace_args");
@@ -4024,7 +4248,8 @@ void tst_QScriptEngine::getterSetterThisObject_activation()
         // read
         eng.evaluate("act.__defineGetter__('x', function() { return this; })");
         QVERIFY(eng.evaluate("x === act").toBoolean());
-        QEXPECT_FAIL("", "Exotic overload (don't care for now)", Continue);
+        QEXPECT_FAIL("", "QTBUG-17605: Not possible to implement local variables as getter/setter properties", Abort);
+        QVERIFY(!eng.hasUncaughtException());
         QVERIFY(eng.evaluate("with (act) x").equals("foo"));
         QVERIFY(eng.evaluate("(function() { with (act) return x; })() === act").toBoolean());
         eng.evaluate("q = {}; with (act) with (q) x").equals(eng.evaluate("act"));
@@ -4038,8 +4263,10 @@ void tst_QScriptEngine::getterSetterThisObject_activation()
     }
 }
 
-void tst_QScriptEngine::continueInSwitch()
+void tst_QScriptEngine::jsContinueInSwitch()
 {
+    // This is testing ECMA-262 compliance, not C++ API.
+
     QScriptEngine eng;
     // switch - continue
     {
@@ -4116,35 +4343,17 @@ void tst_QScriptEngine::continueInSwitch()
     }
 }
 
-void tst_QScriptEngine::readOnlyPrototypeProperty()
+void tst_QScriptEngine::jsShadowReadOnlyPrototypeProperty()
 {
-    QSKIP("JSC semantics differ from old back-end and SpiderMonkey", SkipAll);
+    // SpiderMonkey has different behavior than JSC and V8; it disallows
+    // creating a property on the instance if there's a property with the
+    // same name in the prototype, and that property is read-only. We
+    // adopted that behavior in the old (4.5) QtScript back-end, but it
+    // just seems weird -- and non-compliant. Adopt the JSC behavior instead.
     QScriptEngine eng;
-    QCOMPARE(eng.evaluate("o = {}; o.__proto__ = parseInt; o.length").toInt32(), 2);
-    QCOMPARE(eng.evaluate("o.length = 4; o.length").toInt32(), 2);
-    QVERIFY(!eng.evaluate("o.hasOwnProperty('length')").toBoolean());
-    QCOMPARE(eng.evaluate("o.length *= 2; o.length").toInt32(), 2);
-    QCOMPARE(eng.evaluate("o.length /= 2; o.length").toInt32(), 2);
-    QCOMPARE(eng.evaluate("o.length %= 2; o.length").toInt32(), 2);
-    QCOMPARE(eng.evaluate("o.length += 2; o.length").toInt32(), 2);
-    QCOMPARE(eng.evaluate("o.length -= 2; o.length").toInt32(), 2);
-    QCOMPARE(eng.evaluate("o.length <<= 2; o.length").toInt32(), 2);
-    QCOMPARE(eng.evaluate("o.length >>= 2; o.length").toInt32(), 2);
-    QCOMPARE(eng.evaluate("o.length >>>= 2; o.length").toInt32(), 2);
-    QCOMPARE(eng.evaluate("o.length &= 0; o.length").toInt32(), 2);
-    QCOMPARE(eng.evaluate("o.length ^= 255; o.length").toInt32(), 2);
-    QCOMPARE(eng.evaluate("o.length |= 255; o.length").toInt32(), 2);
-
-    {
-        QScriptValue ret = eng.evaluate("o.__defineGetter__('length', function() {})");
-        QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("Error: cannot redefine read-only property"));
-    }
-    {
-        QScriptValue ret = eng.evaluate("o.__defineSetter__('length', function() {})");
-        QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("Error: cannot redefine read-only property"));
-    }
+    QVERIFY(eng.evaluate("o = {}; o.__proto__ = parseInt; o.length").isNumber());
+    QCOMPARE(eng.evaluate("o.length = 123; o.length").toInt32(), 123);
+    QVERIFY(eng.evaluate("o.hasOwnProperty('length')").toBoolean());
 }
 
 void tst_QScriptEngine::toObject()
@@ -4226,7 +4435,7 @@ void tst_QScriptEngine::toObject()
     QVERIFY(stringValue.isString());
 }
 
-void tst_QScriptEngine::reservedWords_data()
+void tst_QScriptEngine::jsReservedWords_data()
 {
     QTest::addColumn<QString>("word");
     QTest::newRow("break") << QString("break");
@@ -4259,8 +4468,13 @@ void tst_QScriptEngine::reservedWords_data()
     QTest::newRow("with") << QString("with");
 }
 
-void tst_QScriptEngine::reservedWords()
+void tst_QScriptEngine::jsReservedWords()
 {
+    // See ECMA-262 Section 7.6.1, "Reserved Words".
+    // We prefer that the implementation is less strict than the spec; e.g.
+    // it's good to allow reserved words as identifiers in object literals,
+    // and when accessing properties using dot notation.
+
     QFETCH(QString, word);
     {
         QScriptEngine eng;
@@ -4298,7 +4512,7 @@ void tst_QScriptEngine::reservedWords()
     }
 }
 
-void tst_QScriptEngine::futureReservedWords_data()
+void tst_QScriptEngine::jsFutureReservedWords_data()
 {
     QTest::addColumn<QString>("word");
     QTest::addColumn<bool>("allowed");
@@ -4335,8 +4549,12 @@ void tst_QScriptEngine::futureReservedWords_data()
     QTest::newRow("volatile") << QString("volatile") << true;
 }
 
-void tst_QScriptEngine::futureReservedWords()
+void tst_QScriptEngine::jsFutureReservedWords()
 {
+    // See ECMA-262 Section 7.6.1.2, "Future Reserved Words".
+    // In real-world implementations, most of these words are
+    // actually allowed as normal identifiers.
+
     QFETCH(QString, word);
     QFETCH(bool, allowed);
     {
@@ -4364,8 +4582,10 @@ void tst_QScriptEngine::futureReservedWords()
     }
 }
 
-void tst_QScriptEngine::throwInsideWithStatement()
+void tst_QScriptEngine::jsThrowInsideWithStatement()
 {
+    // This is testing ECMA-262 compliance, not C++ API.
+
     // task 209988
     QScriptEngine eng;
     {
@@ -4379,7 +4599,7 @@ void tst_QScriptEngine::throwInsideWithStatement()
             "  bad;"
             "}");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: Can't find variable: bad"));
+        QVERIFY(ret.toString().contains(QString::fromLatin1("ReferenceError")));
     }
     {
         QScriptValue ret = eng.evaluate(
@@ -4392,7 +4612,7 @@ void tst_QScriptEngine::throwInsideWithStatement()
             "  bad;"
             "}");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: Can't find variable: bad"));
+        QVERIFY(ret.toString().contains(QString::fromLatin1("ReferenceError")));
     }
     {
         eng.clearExceptions();
@@ -4419,7 +4639,7 @@ void tst_QScriptEngine::throwInsideWithStatement()
         QVERIFY(ret.isNumber());
         QScriptValue ret2 = eng.evaluate("bug");
         QVERIFY(ret2.isError());
-        QCOMPARE(ret2.toString(), QString::fromLatin1("ReferenceError: Can't find variable: bug"));
+        QVERIFY(ret2.toString().contains(QString::fromLatin1("ReferenceError")));
     }
 }
 
@@ -4429,106 +4649,116 @@ public:
     TestAgent(QScriptEngine *engine) : QScriptEngineAgent(engine) {}
 };
 
-void tst_QScriptEngine::getSetAgent()
+void tst_QScriptEngine::getSetAgent_ownership()
 {
-    // case 1: engine deleted before agent --> agent deleted too
-    {
-        QScriptEngine *eng = new QScriptEngine;
-        QCOMPARE(eng->agent(), (QScriptEngineAgent*)0);
-        TestAgent *agent = new TestAgent(eng);
-        eng->setAgent(agent);
-        QCOMPARE(eng->agent(), (QScriptEngineAgent*)agent);
-        eng->setAgent(0); // the engine maintains ownership of the old agent
-        QCOMPARE(eng->agent(), (QScriptEngineAgent*)0);
-        delete eng;
-    }
-    // case 2: agent deleted before engine --> engine's agent should become 0
-    {
-        QScriptEngine *eng = new QScriptEngine;
-        TestAgent *agent = new TestAgent(eng);
-        eng->setAgent(agent);
-        QCOMPARE(eng->agent(), (QScriptEngineAgent*)agent);
-        delete agent;
-        QCOMPARE(eng->agent(), (QScriptEngineAgent*)0);
-        eng->evaluate("(function(){ return 123; })()");
-        delete eng;
-    }
-    {
-        QScriptEngine eng;
-        QScriptEngine eng2;
-        TestAgent *agent = new TestAgent(&eng);
-        QTest::ignoreMessage(QtWarningMsg, "QScriptEngine::setAgent(): cannot set agent belonging to different engine");
-        eng2.setAgent(agent);
-        QCOMPARE(eng2.agent(), (QScriptEngineAgent*)0);
-    }
+    // engine deleted before agent --> agent deleted too
+    QScriptEngine *eng = new QScriptEngine;
+    QCOMPARE(eng->agent(), (QScriptEngineAgent*)0);
+    TestAgent *agent = new TestAgent(eng);
+    eng->setAgent(agent);
+    QCOMPARE(eng->agent(), (QScriptEngineAgent*)agent);
+    eng->setAgent(0); // the engine maintains ownership of the old agent
+    QCOMPARE(eng->agent(), (QScriptEngineAgent*)0);
+    delete eng;
 }
 
-void tst_QScriptEngine::reentrancy()
+void tst_QScriptEngine::getSetAgent_deleteAgent()
 {
-    {
-        QScriptEngine eng1;
-        QScriptEngine eng2;
-        QScriptString s1 = eng1.toStringHandle("foo");
-        QScriptString s2 = eng2.toStringHandle("foo");
-        QVERIFY(s1 != s2);
-    }
-    {
-        QScriptEngine eng1;
-        QScriptEngine eng2;
-        eng1.setProcessEventsInterval(123);
-        QCOMPARE(eng2.processEventsInterval(), -1);
-        eng2.setProcessEventsInterval(456);
-        QCOMPARE(eng1.processEventsInterval(), 123);
-    }
-    {
-        QScriptEngine eng1;
-        QScriptEngine eng2;
-        qScriptRegisterMetaType<Foo>(&eng1, fooToScriptValue, fooFromScriptValue);
-        Foo foo;
-        foo.x = 12;
-        foo.y = 34;
-        {
-            QScriptValue fooVal = qScriptValueFromValue(&eng1, foo);
-            QVERIFY(fooVal.isObject());
-            QVERIFY(!fooVal.isVariant());
-            QCOMPARE(fooVal.property("x").toInt32(), 12);
-            QCOMPARE(fooVal.property("y").toInt32(), 34);
-            fooVal.setProperty("x", 56);
-            fooVal.setProperty("y", 78);
+    // agent deleted before engine --> engine's agent should become 0
+    QScriptEngine *eng = new QScriptEngine;
+    TestAgent *agent = new TestAgent(eng);
+    eng->setAgent(agent);
+    QCOMPARE(eng->agent(), (QScriptEngineAgent*)agent);
+    delete agent;
+    QCOMPARE(eng->agent(), (QScriptEngineAgent*)0);
+    eng->evaluate("(function(){ return 123; })()");
+    delete eng;
+}
 
-            Foo foo2 = qScriptValueToValue<Foo>(fooVal);
-            QCOMPARE(foo2.x, 56);
-            QCOMPARE(foo2.y, 78);
-        }
-        {
-            QScriptValue fooVal = qScriptValueFromValue(&eng2, foo);
-            QVERIFY(fooVal.isVariant());
+void tst_QScriptEngine::getSetAgent_differentEngine()
+{
+    QScriptEngine eng;
+    QScriptEngine eng2;
+    TestAgent *agent = new TestAgent(&eng);
+    QTest::ignoreMessage(QtWarningMsg, "QScriptEngine::setAgent(): cannot set agent belonging to different engine");
+    eng2.setAgent(agent);
+    QCOMPARE(eng2.agent(), (QScriptEngineAgent*)0);
+}
 
-            Foo foo2 = qScriptValueToValue<Foo>(fooVal);
-            QCOMPARE(foo2.x, 12);
-            QCOMPARE(foo2.y, 34);
-        }
-        QVERIFY(!eng1.defaultPrototype(qMetaTypeId<Foo>()).isValid());
-        QVERIFY(!eng2.defaultPrototype(qMetaTypeId<Foo>()).isValid());
-        QScriptValue proto1 = eng1.newObject();
-        eng1.setDefaultPrototype(qMetaTypeId<Foo>(), proto1);
-        QVERIFY(!eng2.defaultPrototype(qMetaTypeId<Foo>()).isValid());
-        QScriptValue proto2 = eng2.newObject();
-        eng2.setDefaultPrototype(qMetaTypeId<Foo>(), proto2);
-        QVERIFY(eng2.defaultPrototype(qMetaTypeId<Foo>()).isValid());
-        QVERIFY(eng1.defaultPrototype(qMetaTypeId<Foo>()).strictlyEquals(proto1));
+void tst_QScriptEngine::reentrancy_stringHandles()
+{
+    QScriptEngine eng1;
+    QScriptEngine eng2;
+    QScriptString s1 = eng1.toStringHandle("foo");
+    QScriptString s2 = eng2.toStringHandle("foo");
+    QVERIFY(s1 != s2);
+}
+
+void tst_QScriptEngine::reentrancy_processEventsInterval()
+{
+    QScriptEngine eng1;
+    QScriptEngine eng2;
+    eng1.setProcessEventsInterval(123);
+    QCOMPARE(eng2.processEventsInterval(), -1);
+    eng2.setProcessEventsInterval(456);
+    QCOMPARE(eng1.processEventsInterval(), 123);
+}
+
+void tst_QScriptEngine::reentrancy_typeConversion()
+{
+    QScriptEngine eng1;
+    QScriptEngine eng2;
+    qScriptRegisterMetaType<Foo>(&eng1, fooToScriptValue, fooFromScriptValue);
+    Foo foo;
+    foo.x = 12;
+    foo.y = 34;
+    {
+        QScriptValue fooVal = qScriptValueFromValue(&eng1, foo);
+        QVERIFY(fooVal.isObject());
+        QVERIFY(!fooVal.isVariant());
+        QCOMPARE(fooVal.property("x").toInt32(), 12);
+        QCOMPARE(fooVal.property("y").toInt32(), 34);
+        fooVal.setProperty("x", 56);
+        fooVal.setProperty("y", 78);
+
+        Foo foo2 = qScriptValueToValue<Foo>(fooVal);
+        QCOMPARE(foo2.x, 56);
+        QCOMPARE(foo2.y, 78);
     }
     {
-        QScriptEngine eng1;
-        QScriptEngine eng2;
-        QVERIFY(!eng2.globalObject().property("a").isValid());
-        eng1.evaluate("a = 10");
-        QVERIFY(eng1.globalObject().property("a").isNumber());
-        QVERIFY(!eng2.globalObject().property("a").isValid());
-        eng2.evaluate("a = 20");
-        QVERIFY(eng2.globalObject().property("a").isNumber());
-        QCOMPARE(eng1.globalObject().property("a").toInt32(), 10);
+        QScriptValue fooVal = qScriptValueFromValue(&eng2, foo);
+        QVERIFY(fooVal.isVariant());
+
+        Foo foo2 = qScriptValueToValue<Foo>(fooVal);
+        QCOMPARE(foo2.x, 12);
+        QCOMPARE(foo2.y, 34);
     }
+    QVERIFY(!eng1.defaultPrototype(qMetaTypeId<Foo>()).isValid());
+    QVERIFY(!eng2.defaultPrototype(qMetaTypeId<Foo>()).isValid());
+    QScriptValue proto1 = eng1.newObject();
+    eng1.setDefaultPrototype(qMetaTypeId<Foo>(), proto1);
+    QVERIFY(!eng2.defaultPrototype(qMetaTypeId<Foo>()).isValid());
+    QScriptValue proto2 = eng2.newObject();
+    eng2.setDefaultPrototype(qMetaTypeId<Foo>(), proto2);
+    QVERIFY(eng2.defaultPrototype(qMetaTypeId<Foo>()).isValid());
+    QVERIFY(eng1.defaultPrototype(qMetaTypeId<Foo>()).strictlyEquals(proto1));
+}
+
+void tst_QScriptEngine::reentrancy_globalObjectProperties()
+{
+    QScriptEngine eng1;
+    QScriptEngine eng2;
+    QVERIFY(!eng2.globalObject().property("a").isValid());
+    eng1.evaluate("a = 10");
+    QVERIFY(eng1.globalObject().property("a").isNumber());
+    QVERIFY(!eng2.globalObject().property("a").isValid());
+    eng2.evaluate("a = 20");
+    QVERIFY(eng2.globalObject().property("a").isNumber());
+    QCOMPARE(eng1.globalObject().property("a").toInt32(), 10);
+}
+
+void tst_QScriptEngine::reentrancy_Array()
+{
     // weird bug with JSC backend
     {
         QScriptEngine eng;
@@ -4540,79 +4770,82 @@ void tst_QScriptEngine::reentrancy()
         QScriptEngine eng;
         QCOMPARE(eng.evaluate("Array()").toString(), QString());
     }
+}
 
+void tst_QScriptEngine::reentrancy_objectCreation()
+{
+    QScriptEngine eng1;
+    QScriptEngine eng2;
     {
-        QScriptEngine eng1;
-        QScriptEngine eng2;
-        {
-            QScriptValue d1 = eng1.newDate(0);
-            QScriptValue d2 = eng2.newDate(0);
-            QCOMPARE(d1.toDateTime(), d2.toDateTime());
-            QCOMPARE(d2.toDateTime(), d1.toDateTime());
-        }
-        {
-            QScriptValue r1 = eng1.newRegExp("foo", "gim");
-            QScriptValue r2 = eng2.newRegExp("foo", "gim");
-            QCOMPARE(r1.toRegExp(), r2.toRegExp());
-            QCOMPARE(r2.toRegExp(), r1.toRegExp());
-        }
-        {
-            QScriptValue o1 = eng1.newQObject(this);
-            QScriptValue o2 = eng2.newQObject(this);
-            QCOMPARE(o1.toQObject(), o2.toQObject());
-            QCOMPARE(o2.toQObject(), o1.toQObject());
-        }
-        {
-            QScriptValue mo1 = eng1.newQMetaObject(&staticMetaObject);
-            QScriptValue mo2 = eng2.newQMetaObject(&staticMetaObject);
-            QCOMPARE(mo1.toQMetaObject(), mo2.toQMetaObject());
-            QCOMPARE(mo2.toQMetaObject(), mo1.toQMetaObject());
-        }
+        QScriptValue d1 = eng1.newDate(0);
+        QScriptValue d2 = eng2.newDate(0);
+        QCOMPARE(d1.toDateTime(), d2.toDateTime());
+        QCOMPARE(d2.toDateTime(), d1.toDateTime());
+    }
+    {
+        QScriptValue r1 = eng1.newRegExp("foo", "gim");
+        QScriptValue r2 = eng2.newRegExp("foo", "gim");
+        QCOMPARE(r1.toRegExp(), r2.toRegExp());
+        QCOMPARE(r2.toRegExp(), r1.toRegExp());
+    }
+    {
+        QScriptValue o1 = eng1.newQObject(this);
+        QScriptValue o2 = eng2.newQObject(this);
+        QCOMPARE(o1.toQObject(), o2.toQObject());
+        QCOMPARE(o2.toQObject(), o1.toQObject());
+    }
+    {
+        QScriptValue mo1 = eng1.newQMetaObject(&staticMetaObject);
+        QScriptValue mo2 = eng2.newQMetaObject(&staticMetaObject);
+        QCOMPARE(mo1.toQMetaObject(), mo2.toQMetaObject());
+        QCOMPARE(mo2.toQMetaObject(), mo1.toQMetaObject());
     }
 }
 
-void tst_QScriptEngine:: incDecNonObjectProperty()
+void tst_QScriptEngine::jsIncDecNonObjectProperty()
 {
+    // This is testing ECMA-262 compliance, not C++ API.
+
     QScriptEngine eng;
     {
         QScriptValue ret = eng.evaluate("var a; a.n++");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'a' [undefined] is not an object."));
+        QVERIFY(ret.toString().contains(QString::fromLatin1("TypeError")));
     }
     {
         QScriptValue ret = eng.evaluate("var a; a.n--");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'a' [undefined] is not an object."));
+        QVERIFY(ret.toString().contains(QString::fromLatin1("TypeError")));
     }
     {
         QScriptValue ret = eng.evaluate("var a = null; a.n++");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'a' [null] is not an object."));
+        QVERIFY(ret.toString().contains(QString::fromLatin1("TypeError")));
     }
     {
         QScriptValue ret = eng.evaluate("var a = null; a.n--");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'a' [null] is not an object."));
+        QVERIFY(ret.toString().contains(QString::fromLatin1("TypeError")));
     }
     {
         QScriptValue ret = eng.evaluate("var a; ++a.n");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'a' [null] is not an object."));
+        QVERIFY(ret.toString().contains(QString::fromLatin1("TypeError")));
     }
     {
         QScriptValue ret = eng.evaluate("var a; --a.n");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'a' [null] is not an object."));
+        QVERIFY(ret.toString().contains(QString::fromLatin1("TypeError")));
     }
     {
         QScriptValue ret = eng.evaluate("var a; a.n += 1");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'a' [null] is not an object."));
+        QVERIFY(ret.toString().contains(QString::fromLatin1("TypeError")));
     }
     {
         QScriptValue ret = eng.evaluate("var a; a.n -= 1");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'a' [null] is not an object."));
+        QVERIFY(ret.toString().contains(QString::fromLatin1("TypeError")));
     }
     {
         QScriptValue ret = eng.evaluate("var a = 'ciao'; a.length++");
@@ -5125,6 +5358,21 @@ void tst_QScriptEngine::translateScriptUnicodeIdBased()
     QVERIFY(!engine.hasUncaughtException());
 }
 
+void tst_QScriptEngine::translateFromBuiltinCallback()
+{
+    QScriptEngine eng;
+    eng.installTranslatorFunctions();
+
+    // Callback has no translation context.
+    eng.evaluate("function foo() { qsTr('foo'); }");
+
+    // Stack at translation time will be:
+    // qsTr, foo, forEach, global
+    // qsTr() needs to walk to the outer-most (global) frame before it finds
+    // a translation context, and this should not crash.
+    eng.evaluate("[10,20].forEach(foo)", "script.js");
+}
+
 void tst_QScriptEngine::functionScopes()
 {
     QScriptEngine eng;
@@ -5132,7 +5380,7 @@ void tst_QScriptEngine::functionScopes()
         // top-level functions have only the global object in their scope
         QScriptValue fun = eng.evaluate("(function() {})");
         QVERIFY(fun.isFunction());
-        QEXPECT_FAIL("", "Function scope proxying is not implemented", Abort);
+        QEXPECT_FAIL("", "QScriptValue::scope() is internal, not implemented", Abort);
         QVERIFY(fun.scope().isObject());
         QVERIFY(fun.scope().strictlyEquals(eng.globalObject()));
         QVERIFY(!eng.globalObject().scope().isValid());
@@ -5436,8 +5684,19 @@ void tst_QScriptEngine::collectGarbageAfterConnect()
             .isUndefined());
     QVERIFY(widget != 0);
     engine.evaluate("widget = null;");
+    // The connection should not keep the widget alive.
     collectGarbage_helper(engine);
     QVERIFY(widget == 0);
+}
+
+void tst_QScriptEngine::collectGarbageAfterNativeArguments()
+{
+    // QTBUG-17788
+    QScriptEngine eng;
+    QScriptContext *ctx = eng.pushContext();
+    QScriptValue arguments = ctx->argumentsObject();
+    // Shouldn't crash when marking the arguments object.
+    collectGarbage_helper(eng);
 }
 
 static QScriptValue constructQObjectFromThisObject(QScriptContext *ctx, QScriptEngine *eng)
@@ -5599,6 +5858,17 @@ void tst_QScriptEngine::reentrency()
 
 void tst_QScriptEngine::newFixedStaticScopeObject()
 {
+    // "Static scope objects" is an optimization we do for QML.
+    // It enables the creation of JS objects that can guarantee to the
+    // compiler that no properties will be added or removed. This enables
+    // the compiler to generate a very simple (fast) property access, as
+    // opposed to a full virtual lookup. Due to the inherent use of scope
+    // chains in QML, this can make a huge difference (10x improvement for
+    // benchmark in QTBUG-8576).
+    // Ideally we would not need a special object type for this, and the
+    // VM would dynamically optimize it to be fast...
+    // See also QScriptEngine benchmark.
+
     QScriptEngine eng;
     static const int propertyCount = 4;
     QString names[] = { "foo", "bar", "baz", "Math" };
@@ -5739,6 +6009,11 @@ void tst_QScriptEngine::newFixedStaticScopeObject()
 
 void tst_QScriptEngine::newGrowingStaticScopeObject()
 {
+    // The main use case for a growing static scope object is to set it as
+    // the activation object of a QScriptContext, so that all JS variable
+    // declarations end up in that object. It needs to be "growable" since
+    // we don't know in advance how many variables a script will declare.
+
     QScriptEngine eng;
     QScriptValue scope = QScriptDeclarativeClass::newStaticScopeObject(&eng);
 
@@ -5826,10 +6101,10 @@ void tst_QScriptEngine::newGrowingStaticScopeObject()
     {
         QScriptValue fun = eng.evaluate("(function() { return futureProperty; })");
         QVERIFY(fun.isFunction());
-        QCOMPARE(fun.call().toString(), QString::fromLatin1("ReferenceError: Can't find variable: futureProperty"));
+        QVERIFY(fun.call().toString().contains(QString::fromLatin1("ReferenceError")));
         scope.setProperty("futureProperty", "added after the function was compiled");
         // If scope were dynamic, this would return the new property.
-        QCOMPARE(fun.call().toString(), QString::fromLatin1("ReferenceError: Can't find variable: futureProperty"));
+        QVERIFY(fun.call().toString().contains(QString::fromLatin1("ReferenceError")));
     }
 
     eng.popContext();

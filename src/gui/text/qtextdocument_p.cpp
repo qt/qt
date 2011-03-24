@@ -91,7 +91,7 @@ QT_BEGIN_NAMESPACE
   END_OF_PARA/START_OF_FRAME/END_OF_FRAME (see below).
 
   Lists are not in here, as they are treated specially. A list is just
-  a collection of (not neccessarily connected) blocks, that share the
+  a collection of (not necessarily connected) blocks, that share the
   same objectIndex() in the format that refers to the list format and
   object.
 
@@ -663,7 +663,8 @@ void QTextDocumentPrivate::move(int pos, int to, int length, QTextUndoCommand::O
 
     Q_ASSERT(blocks.length() == fragments.length());
 
-    finishEdit();
+    if (!blockCursorAdjustment)
+        finishEdit();
 }
 
 void QTextDocumentPrivate::remove(int pos, int length, QTextUndoCommand::Operation op)
@@ -678,6 +679,7 @@ void QTextDocumentPrivate::remove(int pos, int length, QTextUndoCommand::Operati
             curs->changed = true;
         }
     }
+    finishEdit();
 }
 
 void QTextDocumentPrivate::setCharFormat(int pos, int length, const QTextCharFormat &newFormat, FormatChangeMode mode)

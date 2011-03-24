@@ -138,7 +138,7 @@ void QPlatformGLContext::setDefaultSharedContext(QPlatformGLContext *sharedConte
     Default shared context is intended to be a globally awailable pointer to a context which can
     be used for sharing resources when creating new contexts. Its default value is 0;
 */
-const QPlatformGLContext *QPlatformGLContext::defaultSharedContext()
+QPlatformGLContext *QPlatformGLContext::defaultSharedContext()
 {
     return QPlatformGLContextPrivate::staticSharedContext;
 }

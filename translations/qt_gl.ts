@@ -5,7 +5,7 @@
     <name>CloseButton</name>
     <message>
         <source>Close Tab</source>
-        <translation>Pechar a lingüeta</translation>
+        <translation>Pechar a lapela</translation>
     </message>
 </context>
 <context>
@@ -48,30 +48,6 @@
     <message>
         <source>About %1</source>
         <translation>Acerca de %1</translation>
-    </message>
-</context>
-<context>
-    <name>QApplication</name>
-    <message>
-        <source>QT_LAYOUT_DIRECTION</source>
-        <comment>Translate this string to the string &apos;LTR&apos; in left-to-right languages or to &apos;RTL&apos; in right-to-left languages (such as Hebrew and Arabic) to get proper widget layout.</comment>
-        <translation>LTR</translation>
-    </message>
-    <message>
-        <source>Activate</source>
-        <translation>Activar</translation>
-    </message>
-    <message>
-        <source>Activates the program&apos;s main window</source>
-        <translation>Activa a fiestra principal do programa</translation>
-    </message>
-    <message>
-        <source>Executable &apos;%1&apos; requires Qt %2, found Qt %3.</source>
-        <translation>O executábel «%1» require de Qt %2, e achouse Qt %3.</translation>
-    </message>
-    <message>
-        <source>Incompatible Qt Library Error</source>
-        <translation>Erro de bibliotecas Qt incompatíbeis</translation>
     </message>
 </context>
 <context>
@@ -134,7 +110,7 @@ máis preferencia ou está configurado especificamente para este fluxo.&lt;/html
     <message>
         <source>Warning: You do not seem to have the base GStreamer plugins installed.
           All audio and video support has been disabled</source>
-        <translation>Aviso: Non semella ter instaladas as extensións básicas de GStreamer.
+        <translation>Aviso: Non semella ter instalados os complementos básicos de GStreamer.
           Desactivouse todo o soporte de son e vídeo</translation>
     </message>
 </context>
@@ -155,7 +131,7 @@ Comprobe a instalación de GStreamer e verifique que ten instalado libgstreamer-
     </message>
     <message>
         <source>Plugin codec installation failed for codec: %0</source>
-        <translation>Fallou a instalación da extensión dun códec: %0</translation>
+        <translation>Fallou a instalación do complemento dun códec: %0</translation>
     </message>
     <message>
         <source>A required codec is missing. You need to install the following codec(s) to play this content: %0</source>
@@ -172,7 +148,7 @@ reproducir este contido: %0</translation>
     </message>
     <message>
         <source>Could not locate media source.</source>
-        <translation>Non foi posíbel localizar a orixe do medio.</translation>
+        <translation>Non foi posíbel atopar a orixe do medio.</translation>
     </message>
     <message>
         <source>Could not open audio device. The device is already in use.</source>
@@ -223,7 +199,7 @@ reproducir este contido: %0</translation>
     </message>
     <message>
         <source>Path not found</source>
-        <translation>Non se atopou a rota</translation>
+        <translation>Non se atopou a ruta</translation>
     </message>
     <message>
         <source>In use</source>
@@ -348,6 +324,10 @@ reproducir este contido: %0</translation>
         <source>Playback complete</source>
         <translation>Completouse a reprodución</translation>
     </message>
+    <message>
+        <source>Download error</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Phonon::MMF::AbstractVideoPlayer</name>
@@ -466,6 +446,10 @@ reproducir este contido: %0</translation>
     <message>
         <source>Error opening source: media type could not be determined</source>
         <translation>Erro ao abrir a fonte: non foi posíbel determinar o tipo de medio</translation>
+    </message>
+    <message>
+        <source>Failed to set requested IAP</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -752,7 +736,7 @@ reproducir este contido: %0</translation>
     </message>
     <message>
         <source>Find Directory</source>
-        <translation>Procurar un cartafol</translation>
+        <translation>Buscar un cartafol</translation>
     </message>
     <message>
         <source>Directories</source>
@@ -772,7 +756,7 @@ File not found.
 Check path and filename.</source>
         <translation>%1
 Non se atopou o ficheiro.
-Verifique a rota e o nome do ficheiro.</translation>
+Verifique a ruta e o nome do ficheiro.</translation>
     </message>
     <message>
         <source>All Files (*.*)</source>
@@ -936,31 +920,31 @@ para
     </message>
     <message>
         <source>Contains commands to manipulate the window</source>
-        <translation>Contén ordes para manipular a fiestra</translation>
+        <translation>Contén ordes para manipular a xanela</translation>
     </message>
     <message>
         <source>Puts a minimized window back to normal</source>
-        <translation>Volta unha fiestra minimizada ao tamaño normal</translation>
+        <translation>Volta unha xanela minimizada ao tamaño normal</translation>
     </message>
     <message>
         <source>Moves the window out of the way</source>
-        <translation>Vota a un lado a fiestra</translation>
+        <translation>Vota a un lado a xanela</translation>
     </message>
     <message>
         <source>Puts a maximized window back to normal</source>
-        <translation>Volta unha fiestra maximizada ao tamaño normal</translation>
+        <translation>Volta unha xanela maximizada ao tamaño normal</translation>
     </message>
     <message>
         <source>Makes the window full screen</source>
-        <translation>Pon a fiestra a pantalla completa</translation>
+        <translation>Pon a xanela a pantalla completa</translation>
     </message>
     <message>
         <source>Closes the window</source>
-        <translation>Pecha a fiestra</translation>
+        <translation>Pecha a xanela</translation>
     </message>
     <message>
         <source>Displays the name of the window and contains controls to manipulate it</source>
-        <translation>Mostra o nome da fiestra e contén controles para manipulala</translation>
+        <translation>Mostra o nome da xanela e contén controles para manipulala</translation>
     </message>
 </context>
 <context>
@@ -1064,176 +1048,6 @@ para
     </message>
 </context>
 <context>
-    <name>QHttp</name>
-    <message>
-        <source>Connection refused</source>
-        <translation>Rexeitouse a conexión</translation>
-    </message>
-    <message>
-        <source>Connection closed</source>
-        <translation>Pechouse a conexión</translation>
-    </message>
-    <message>
-        <source>Proxy requires authentication</source>
-        <translation>O proxy require autenticación</translation>
-    </message>
-    <message>
-        <source>Host requires authentication</source>
-        <translation>O servidor require autenticación</translation>
-    </message>
-    <message>
-        <source>Data corrupted</source>
-        <translation>Datos corrompidos</translation>
-    </message>
-    <message>
-        <source>Unknown protocol specified</source>
-        <translation>Especificouse un protocolo descoñecido</translation>
-    </message>
-    <message>
-        <source>SSL handshake failed</source>
-        <translation>Fallou a negociación de SSL</translation>
-    </message>
-    <message>
-        <source>HTTPS connection requested but SSL support not compiled in</source>
-        <translation>Pediuse unha conexión HTTPS pero non se compilou con soporte de SSL</translation>
-    </message>
-    <message>
-        <source>Unknown error</source>
-        <translation>Erro descoñecido</translation>
-    </message>
-    <message>
-        <source>Request aborted</source>
-        <translation>Pedido abortado</translation>
-    </message>
-    <message>
-        <source>No server set to connect to</source>
-        <translation>Non se indicou ningún servidor co que conectar</translation>
-    </message>
-    <message>
-        <source>Wrong content length</source>
-        <translation>Longitude do contido incorrecta</translation>
-    </message>
-    <message>
-        <source>Server closed connection unexpectedly</source>
-        <translation>O servidor pechou a conexión inesperadamente</translation>
-    </message>
-    <message>
-        <source>Connection refused (or timed out)</source>
-        <translation>Rexeitouse a conexión (ou esgouto o tempo-límite)</translation>
-    </message>
-    <message>
-        <source>Host %1 not found</source>
-        <translation>Non se atopou o servidor %1</translation>
-    </message>
-    <message>
-        <source>HTTP request failed</source>
-        <translation>O pedido HTTP fallou</translation>
-    </message>
-    <message>
-        <source>Invalid HTTP response header</source>
-        <translation>A cabeceira da resposta HTTP non é válida</translation>
-    </message>
-    <message>
-        <source>Unknown authentication method</source>
-        <translation>Método descoñecido de autenticación</translation>
-    </message>
-    <message>
-        <source>Proxy authentication required</source>
-        <translation>Requírese de autenticación no proxy</translation>
-    </message>
-    <message>
-        <source>Authentication required</source>
-        <translation>Requírese de autenticación</translation>
-    </message>
-    <message>
-        <source>Invalid HTTP chunked body</source>
-        <translation>Corpo HTTP en pedazos non válido</translation>
-    </message>
-    <message>
-        <source>Error writing response to device</source>
-        <translation>Erro ao escribir a resposta no dispositivo</translation>
-    </message>
-    <message>
-        <source>Host %1 found</source>
-        <translation>Atopouse o servidor %1</translation>
-    </message>
-    <message>
-        <source>Connected to host %1</source>
-        <translation>Conectado co servidor %1</translation>
-    </message>
-    <message>
-        <source>Connection to %1 closed</source>
-        <translation>Pechouse a conexión con %1</translation>
-    </message>
-    <message>
-        <source>Host found</source>
-        <translation>Atopouse un servidor</translation>
-    </message>
-    <message>
-        <source>Connected to host</source>
-        <translation>Conectado co servidor</translation>
-    </message>
-</context>
-<context>
-    <name>QSocks5SocketEngine</name>
-    <message>
-        <source>Connection to proxy refused</source>
-        <translation>A conexión co proxy foi rexeitada</translation>
-    </message>
-    <message>
-        <source>Connection to proxy closed prematurely</source>
-        <translation>A conexión co proxy pechouse antes de tempo</translation>
-    </message>
-    <message>
-        <source>Proxy host not found</source>
-        <translation>Non se atopou o servidor proxy</translation>
-    </message>
-    <message>
-        <source>Connection to proxy timed out</source>
-        <translation>A conexión co proxy esgotou o tempo-límite</translation>
-    </message>
-    <message>
-        <source>Proxy authentication failed</source>
-        <translation>Fallou a autenticación co proxy</translation>
-    </message>
-    <message>
-        <source>Proxy authentication failed: %1</source>
-        <translation>Fallou a autenticación no proxy: %1</translation>
-    </message>
-    <message>
-        <source>SOCKS version 5 protocol error</source>
-        <translation>Erro do protocolo SOCKS versión 5</translation>
-    </message>
-    <message>
-        <source>General SOCKSv5 server failure</source>
-        <translation>Fallo xeral do servidor SOCKSv5</translation>
-    </message>
-    <message>
-        <source>Connection not allowed by SOCKSv5 server</source>
-        <translation>O servidor SOCKSv5 non permitiu a conexión</translation>
-    </message>
-    <message>
-        <source>TTL expired</source>
-        <translation>Esgotouse o TTL</translation>
-    </message>
-    <message>
-        <source>SOCKSv5 command not supported</source>
-        <translation>A orde SOCKSv5 non está soportada</translation>
-    </message>
-    <message>
-        <source>Address type not supported</source>
-        <translation>Tipo de enderezo non soportado</translation>
-    </message>
-    <message>
-        <source>Unknown SOCKSv5 proxy error code 0x%1</source>
-        <translation>Código de erro descoñecido (0x%1) do proxy SOCKSv5</translation>
-    </message>
-    <message>
-        <source>Network operation timed out</source>
-        <translation>A operación de rede esgotou o tempo-límite</translation>
-    </message>
-</context>
-<context>
     <name>QAbstractSpinBox</name>
     <message>
         <source>&amp;Select All</source>
@@ -1256,43 +1070,27 @@ para
     </message>
 </context>
 <context>
-    <name>QCheckBox</name>
+    <name>QApplication</name>
     <message>
-        <source>Uncheck</source>
-        <translation>Desmarcar</translation>
+        <source>QT_LAYOUT_DIRECTION</source>
+        <comment>Translate this string to the string &apos;LTR&apos; in left-to-right languages or to &apos;RTL&apos; in right-to-left languages (such as Hebrew and Arabic) to get proper widget layout.</comment>
+        <translation>LTR</translation>
     </message>
     <message>
-        <source>Check</source>
-        <translation>Marcar</translation>
+        <source>Activate</source>
+        <translation>Activar</translation>
     </message>
     <message>
-        <source>Toggle</source>
-        <translation>Conmutar</translation>
-    </message>
-</context>
-<context>
-    <name>QPushButton</name>
-    <message>
-        <source>Open</source>
-        <translation>Abrir</translation>
-    </message>
-</context>
-<context>
-    <name>QRadioButton</name>
-    <message>
-        <source>Check</source>
-        <translation>Marcar</translation>
-    </message>
-</context>
-<context>
-    <name>QToolButton</name>
-    <message>
-        <source>Press</source>
-        <translation>Premer</translation>
+        <source>Activates the program&apos;s main window</source>
+        <translation>Activa a xanela principal do programa</translation>
     </message>
     <message>
-        <source>Open</source>
-        <translation>Abrir</translation>
+        <source>Executable &apos;%1&apos; requires Qt %2, found Qt %3.</source>
+        <translation>O executábel «%1» require de Qt %2, e atopouse Qt %3.</translation>
+    </message>
+    <message>
+        <source>Incompatible Qt Library Error</source>
+        <translation>Erro de bibliotecas Qt incompatíbeis</translation>
     </message>
 </context>
 <context>
@@ -1312,6 +1110,21 @@ para
     <message>
         <source>COM &amp;Object:</source>
         <translation>&amp;Obxecto COM:</translation>
+    </message>
+</context>
+<context>
+    <name>QCheckBox</name>
+    <message>
+        <source>Uncheck</source>
+        <translation>Desmarcar</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>Marcar</translation>
+    </message>
+    <message>
+        <source>Toggle</source>
+        <translation>Conmutar</translation>
     </message>
 </context>
 <context>
@@ -1381,17 +1194,6 @@ para
     </message>
 </context>
 <context>
-    <name>QTabBar</name>
-    <message>
-        <source>Scroll Left</source>
-        <translation>Desprazar cara a esquerda</translation>
-    </message>
-    <message>
-        <source>Scroll Right</source>
-        <translation>Desprazar cara a dereita</translation>
-    </message>
-</context>
-<context>
     <name>QCoreApplication</name>
     <message>
         <source>%1: already exists</source>
@@ -1407,6 +1209,11 @@ para
         <source>%1: out of resources</source>
         <comment>QSystemSemaphore</comment>
         <translation>%1: esgotou os recursos</translation>
+    </message>
+    <message>
+        <source>%1: permission denied</source>
+        <comment>QSystemSemaphore</comment>
+        <translation type="unfinished">%1: negouse o permiso</translation>
     </message>
     <message>
         <source>%1: unknown error %2</source>
@@ -1427,29 +1234,6 @@ para
         <source>%1: ftok failed</source>
         <comment>QSystemSemaphore</comment>
         <translation>%1: fallou ftok</translation>
-    </message>
-</context>
-<context>
-    <name>QSystemSemaphore</name>
-    <message>
-        <source>%1: permission denied</source>
-        <translation>%1: negouse o permiso</translation>
-    </message>
-    <message>
-        <source>%1: already exists</source>
-        <translation>%1: xa existe</translation>
-    </message>
-    <message>
-        <source>%1: does not exist</source>
-        <translation>%1: non existe</translation>
-    </message>
-    <message>
-        <source>%1: out of resources</source>
-        <translation>%1: esgotou os recursos</translation>
-    </message>
-    <message>
-        <source>%1: unknown error %2</source>
-        <translation>%1: erro descoñecido %2</translation>
     </message>
 </context>
 <context>
@@ -1499,46 +1283,6 @@ para
     </message>
 </context>
 <context>
-    <name>QODBCResult</name>
-    <message>
-        <source>Unable to fetch last</source>
-        <translation>Non foi posíbel acadar o último</translation>
-    </message>
-    <message>
-        <source>QODBCResult::reset: Unable to set &apos;SQL_CURSOR_STATIC&apos; as statement attribute. Please check your ODBC driver configuration</source>
-        <translation>QODBCResult::reset: Non foi posíbel estabelecer «SQL_CURSOR_STATIC» como 
-atributo da sentenza. Verifique a configuración do controlador ODBC</translation>
-    </message>
-    <message>
-        <source>Unable to execute statement</source>
-        <translation>Non foi posíbel executar a sentenza</translation>
-    </message>
-    <message>
-        <source>Unable to fetch</source>
-        <translation>Non foi posíbel acadar</translation>
-    </message>
-    <message>
-        <source>Unable to fetch next</source>
-        <translation>Non foi posíbel acadar o seguinte</translation>
-    </message>
-    <message>
-        <source>Unable to fetch first</source>
-        <translation>Non foi posíbel acadar o primeiro</translation>
-    </message>
-    <message>
-        <source>Unable to fetch previous</source>
-        <translation>Non foi posíbel acadar o anterior</translation>
-    </message>
-    <message>
-        <source>Unable to prepare statement</source>
-        <translation>Non foi posíbel preparar a sentenza</translation>
-    </message>
-    <message>
-        <source>Unable to bind variable</source>
-        <translation>Non foi posíbel asociar a variábel</translation>
-    </message>
-</context>
-<context>
     <name>QDateTimeEdit</name>
     <message>
         <source>AM</source>
@@ -1561,11 +1305,11 @@ atributo da sentenza. Verifique a configuración do controlador ODBC</translatio
     <name>QDeclarativeAbstractAnimation</name>
     <message>
         <source>Cannot animate non-existent property &quot;%1&quot;</source>
-        <translation>Non se pode animar a propriedade inexistente «%1»</translation>
+        <translation>Non se pode animar a propiedade inexistente «%1»</translation>
     </message>
     <message>
         <source>Cannot animate read-only property &quot;%1&quot;</source>
-        <translation>Non se pode animar a propriedade só para lectura «%1»</translation>
+        <translation>Non se pode animar a propiedade só para lectura «%1»</translation>
     </message>
     <message>
         <source>Animation is an abstract class</source>
@@ -1577,42 +1321,6 @@ atributo da sentenza. Verifique a configuración do controlador ODBC</translatio
     <message>
         <source>Cannot set a duration of &lt; 0</source>
         <translation>Non se pode indicar unha duración &lt; 0</translation>
-    </message>
-</context>
-<context>
-    <name>QDeclarativeParentAnimation</name>
-    <message>
-        <source>Unable to preserve appearance under complex transform</source>
-        <translation>Non é posíbel conservar a aparencia con transformación complexa</translation>
-    </message>
-    <message>
-        <source>Unable to preserve appearance under non-uniform scale</source>
-        <translation>Non é posíbel conservar a aparencia con escalado non uniforme</translation>
-    </message>
-    <message>
-        <source>Unable to preserve appearance under scale of 0</source>
-        <translation>Non é posíbel conservar a aparencia con escala de 0</translation>
-    </message>
-</context>
-<context>
-    <name>QDeclarativePauseAnimation</name>
-    <message>
-        <source>Cannot set a duration of &lt; 0</source>
-        <translation>Non se pode indicar unha duración &lt; 0</translation>
-    </message>
-</context>
-<context>
-    <name>QDeclarativePropertyAnimation</name>
-    <message>
-        <source>Cannot set a duration of &lt; 0</source>
-        <translation>Non se pode indicar unha duración &lt; 0</translation>
-    </message>
-</context>
-<context>
-    <name>QDeclarativeXmlListModel</name>
-    <message>
-        <source>Qt was built without support for xmlpatterns</source>
-        <translation>Qt construíuse sen soporte para xmlpatterns</translation>
     </message>
 </context>
 <context>
@@ -1675,20 +1383,6 @@ superior, inferior nin vcenter.</translation>
     </message>
 </context>
 <context>
-    <name>QDeclarativeKeyNavigationAttached</name>
-    <message>
-        <source>KeyNavigation is only available via attached properties</source>
-        <translation>KeyNavigation só está dispoñíbel mediante as propriedades anexadas</translation>
-    </message>
-</context>
-<context>
-    <name>QDeclarativeKeysAttached</name>
-    <message>
-        <source>Keys is only available via attached properties</source>
-        <translation>Keys só está dispoñíbel mediante as propriedades anexadas</translation>
-    </message>
-</context>
-<context>
     <name>QDeclarativeBehavior</name>
     <message>
         <source>Cannot change the animation assigned to a Behavior.</source>
@@ -1699,85 +1393,85 @@ superior, inferior nin vcenter.</translation>
     <name>QDeclarativeBinding</name>
     <message>
         <source>Binding loop detected for property &quot;%1&quot;</source>
-        <translation>Detectouse un ciclo de unión para a propriedade «%1»</translation>
+        <translation>Detectouse un ciclo de unión para a propiedade «%1»</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeCompiledBindings</name>
     <message>
         <source>Binding loop detected for property &quot;%1&quot;</source>
-        <translation>Detectouse un ciclo de unión para a propriedade «%1»</translation>
+        <translation>Detectouse un ciclo de unión para a propiedade «%1»</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeCompiler</name>
     <message>
         <source>Invalid property assignment: &quot;%1&quot; is a read-only property</source>
-        <translation>Asignación de propriedade non válida: «%1» é unha propriedade só para lectura</translation>
+        <translation>Asignación de propiedade non válida: «%1» é unha propiedade só para lectura</translation>
     </message>
     <message>
         <source>Invalid property assignment: unknown enumeration</source>
-        <translation>Asignación de propriedade non válida: enumeración descoñecida</translation>
+        <translation>Asignación de propiedade non válida: enumeración descoñecida</translation>
     </message>
     <message>
         <source>Invalid property assignment: string expected</source>
-        <translation>Asignación de propriedade non válida: agardábase unha cadea</translation>
+        <translation>Asignación de propiedade non válida: agardábase unha cadea</translation>
     </message>
     <message>
         <source>Invalid property assignment: url expected</source>
-        <translation>Asignación de propriedade non válida: agardábase un URL</translation>
+        <translation>Asignación de propiedade non válida: agardábase un URL</translation>
     </message>
     <message>
         <source>Invalid property assignment: unsigned int expected</source>
-        <translation>Asignación de propriedade non válida: agardábase un unsigned int</translation>
+        <translation>Asignación de propiedade non válida: agardábase un unsigned int</translation>
     </message>
     <message>
         <source>Invalid property assignment: int expected</source>
-        <translation>Asignación de propriedade non válida: agardábase un int</translation>
+        <translation>Asignación de propiedade non válida: agardábase un int</translation>
     </message>
     <message>
         <source>Invalid property assignment: number expected</source>
-        <translation>Asignación de propriedade non válida: agardábase un número</translation>
+        <translation>Asignación de propiedade non válida: agardábase un número</translation>
     </message>
     <message>
         <source>Invalid property assignment: color expected</source>
-        <translation>Asignación de propriedade non válida: agardábase unha cor</translation>
+        <translation>Asignación de propiedade non válida: agardábase unha cor</translation>
     </message>
     <message>
         <source>Invalid property assignment: date expected</source>
-        <translation>Asignación de propriedade non válida: agardábase unha date</translation>
+        <translation>Asignación de propiedade non válida: agardábase unha date</translation>
     </message>
     <message>
         <source>Invalid property assignment: time expected</source>
-        <translation>Asignación de propriedade non válida: agardábase un time</translation>
+        <translation>Asignación de propiedade non válida: agardábase un time</translation>
     </message>
     <message>
         <source>Invalid property assignment: datetime expected</source>
-        <translation>Asignación de propriedade non válida: agardábase un datetime</translation>
+        <translation>Asignación de propiedade non válida: agardábase un datetime</translation>
     </message>
     <message>
         <source>Invalid property assignment: point expected</source>
-        <translation>Asignación de propriedade non válida: agardábase un punto</translation>
+        <translation>Asignación de propiedade non válida: agardábase un punto</translation>
     </message>
     <message>
         <source>Invalid property assignment: size expected</source>
-        <translation>Asignación de propriedade non válida: agardábase un tamaño</translation>
+        <translation>Asignación de propiedade non válida: agardábase un tamaño</translation>
     </message>
     <message>
         <source>Invalid property assignment: rect expected</source>
-        <translation>Asignación de propriedade non válida: agardábase un rect</translation>
+        <translation>Asignación de propiedade non válida: agardábase un rect</translation>
     </message>
     <message>
         <source>Invalid property assignment: boolean expected</source>
-        <translation>Asignación de propriedade non válida: agardábase un booleano</translation>
+        <translation>Asignación de propiedade non válida: agardábase un booleano</translation>
     </message>
     <message>
         <source>Invalid property assignment: 3D vector expected</source>
-        <translation>Asignación de propriedade non válida: agardábase un vector 3D</translation>
+        <translation>Asignación de propiedade non válida: agardábase un vector 3D</translation>
     </message>
     <message>
         <source>Invalid property assignment: unsupported type &quot;%1&quot;</source>
-        <translation>Asignación de propriedade non válida: tipo non soportado «%1»</translation>
+        <translation>Asignación de propiedade non válida: tipo non soportado «%1»</translation>
     </message>
     <message>
         <source>Element is not creatable.</source>
@@ -1785,7 +1479,7 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Component elements may not contain properties other than id</source>
-        <translation>Os elementos compoñentes non poden conter máis propriedades que o id</translation>
+        <translation>Os elementos compoñentes non poden conter máis propiedades que o id</translation>
     </message>
     <message>
         <source>Invalid component id specification</source>
@@ -1801,7 +1495,7 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Component objects cannot declare new properties.</source>
-        <translation>Os obxectos compoñentes non poden declarar novas propriedades.</translation>
+        <translation>Os obxectos compoñentes non poden declarar novas propiedades.</translation>
     </message>
     <message>
         <source>Component objects cannot declare new signals.</source>
@@ -1829,15 +1523,15 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Empty property assignment</source>
-        <translation>Asignación baleira de propriedade</translation>
+        <translation>Asignación baleira de propiedade</translation>
     </message>
     <message>
         <source>Attached properties cannot be used here</source>
-        <translation>As propriedades anexas non se poden empregar aquí</translation>
+        <translation>As propiedades anexas non se poden empregar aquí</translation>
     </message>
     <message>
         <source>Non-existent attached object</source>
-        <translation>Anexáronse propriedades inexistentes</translation>
+        <translation>Anexáronse propiedades inexistentes</translation>
     </message>
     <message>
         <source>Invalid attached object assignment</source>
@@ -1845,11 +1539,11 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Cannot assign to non-existent default property</source>
-        <translation>Non se pode asignar a unha propriedade predeterminada inexistente</translation>
+        <translation>Non se pode asignar a unha propiedade predeterminada inexistente</translation>
     </message>
     <message>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
-        <translation>Non se pode asignar a unha propriedade inexistente «%1»</translation>
+        <translation>Non se pode asignar a unha propiedade inexistente «%1»</translation>
     </message>
     <message>
         <source>Invalid use of namespace</source>
@@ -1857,35 +1551,35 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Not an attached property name</source>
-        <translation>Non é un nome de propriedade anexa</translation>
+        <translation>Non é un nome de propiedade anexa</translation>
     </message>
     <message>
         <source>Invalid use of id property</source>
-        <translation>Uso non válido da propriedade id</translation>
+        <translation>Uso non válido da propiedade id</translation>
     </message>
     <message>
         <source>Property has already been assigned a value</source>
-        <translation>Xa se lle asignou un valor a esta propriedade</translation>
+        <translation>Xa se lle asignou un valor a esta propiedade</translation>
     </message>
     <message>
         <source>Invalid grouped property access</source>
-        <translation>Acceso non válido a unha propriedade agrupada</translation>
+        <translation>Acceso non válido a unha propiedade agrupada</translation>
     </message>
     <message>
         <source>Cannot assign a value directly to a grouped property</source>
-        <translation>Non se pode asignar directamente un valor a unha propriedade agrupada</translation>
+        <translation>Non se pode asignar directamente un valor a unha propiedade agrupada</translation>
     </message>
     <message>
         <source>Invalid property use</source>
-        <translation>Uso non válido da propriedade</translation>
+        <translation>Uso non válido da propiedade</translation>
     </message>
     <message>
         <source>Property assignment expected</source>
-        <translation>Agardábase unha asignación de propriedade</translation>
+        <translation>Agardábase unha asignación de propiedade</translation>
     </message>
     <message>
         <source>Single property assignment expected</source>
-        <translation>Agardábase unha única asignación a propriedade</translation>
+        <translation>Agardábase unha única asignación a propiedade</translation>
     </message>
     <message>
         <source>Unexpected object assignment</source>
@@ -1905,15 +1599,19 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Cannot assign multiple values to a script property</source>
-        <translation>Non se poden asignar varios valores a unha propriedade de script</translation>
+        <translation>Non se poden asignar varios valores a unha propiedade de script</translation>
     </message>
     <message>
         <source>Invalid property assignment: script expected</source>
-        <translation>Asignación de propriedade non válida: agardábase un script</translation>
+        <translation>Asignación de propiedade non válida: agardábase un script</translation>
+    </message>
+    <message>
+        <source>Cannot assign multiple values to a singular property</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Cannot assign object to property</source>
-        <translation>Non se pode asignar un obxecto a unha propriedade</translation>
+        <translation>Non se pode asignar un obxecto a unha propiedade</translation>
     </message>
     <message>
         <source>&quot;%1&quot; cannot operate on &quot;%2&quot;</source>
@@ -1921,19 +1619,19 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Duplicate default property</source>
-        <translation>Propriedade predeterminada duplicada</translation>
+        <translation>Propiedade predeterminada duplicada</translation>
     </message>
     <message>
         <source>Duplicate property name</source>
-        <translation>Nome de propriedade duplicado</translation>
+        <translation>Nome de propiedade duplicado</translation>
     </message>
     <message>
         <source>Property names cannot begin with an upper case letter</source>
-        <translation>Os nomes das propriedades non poden comezar por maiúscula</translation>
+        <translation>Os nomes das propiedades non poden comezar por maiúscula</translation>
     </message>
     <message>
         <source>Illegal property name</source>
-        <translation>Nome ilegal de propriedade</translation>
+        <translation>Nome ilegal de propiedade</translation>
     </message>
     <message>
         <source>Duplicate signal name</source>
@@ -1961,19 +1659,19 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Property value set multiple times</source>
-        <translation>O valor dunha propriedade indicouse varias veces</translation>
+        <translation>O valor dunha propiedade indicouse varias veces</translation>
     </message>
     <message>
         <source>Invalid property nesting</source>
-        <translation>Aniñamento non válido de propriedade</translation>
+        <translation>Aniñamento non válido de propiedade</translation>
     </message>
     <message>
         <source>Cannot override FINAL property</source>
-        <translation>Non se pode sobrescribir a propriedade FINAL</translation>
+        <translation>Non se pode sobrescribir a propiedade FINAL</translation>
     </message>
     <message>
         <source>Invalid property type</source>
-        <translation>Tipo de propriedade non válido</translation>
+        <translation>Tipo de propiedade non válido</translation>
     </message>
     <message>
         <source>Invalid empty ID</source>
@@ -1993,23 +1691,31 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>ID illegally masks global JavaScript property</source>
-        <translation>O ID enmascara ilegalmente unha propriedade JavaScript global</translation>
+        <translation>O ID enmascara ilegalmente unha propiedade JavaScript global</translation>
     </message>
     <message>
         <source>No property alias location</source>
-        <translation>Falta a localización dun alcume dunha propriedade</translation>
+        <translation>Falta a localización dun alcume dunha propiedade</translation>
     </message>
     <message>
         <source>Invalid alias location</source>
         <translation>Localización non válida dun alcume</translation>
     </message>
     <message>
+        <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt;, &lt;id&gt;.&lt;property&gt; or &lt;id&gt;.&lt;value property&gt;.&lt;property&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Alias property exceeds alias bounds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt; or &lt;id&gt;.&lt;property&gt;</source>
-        <translation>Referencianon válida a un alcume. Unha referencia a un alcume debe indicarse como &lt;id&gt; ou como &lt;id&gt;.&lt;propriedade&gt;</translation>
+        <translation type="obsolete">Referencia non válida a un alcume. Unha referencia a un alcume debe indicarse como &lt;id&gt; ou como &lt;id&gt;.&lt;propiedade&gt;</translation>
     </message>
     <message>
         <source>Invalid alias reference. Unable to find id &quot;%1&quot;</source>
-        <translation>Referencia non válida a un alcume. Non foi posíbel achar o id «%1»</translation>
+        <translation>Referencia non válida a un alcume. Non foi posíbel atopar o id «%1»</translation>
     </message>
 </context>
 <context>
@@ -2023,26 +1729,26 @@ superior, inferior nin vcenter.</translation>
     <name>QDeclarativeCompositeTypeManager</name>
     <message>
         <source>Resource %1 unavailable</source>
-        <translation>O recurso %1 non está dispoñíbel</translation>
+        <translation type="obsolete">O recurso %1 non está dispoñíbel</translation>
     </message>
     <message>
         <source>Namespace %1 cannot be used as a type</source>
-        <translation>O espazo de nomes %1 non se pode empregar como un tipo</translation>
+        <translation type="obsolete">O espazo de nomes %1 non se pode empregar como un tipo</translation>
     </message>
     <message>
         <source>%1 %2</source>
-        <translation>%1 %2</translation>
+        <translation type="obsolete">%1 %2</translation>
     </message>
     <message>
         <source>Type %1 unavailable</source>
-        <translation>O tipo %1 non está dispoñíbel</translation>
+        <translation type="obsolete">O tipo %1 non está dispoñíbel</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeConnections</name>
     <message>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
-        <translation>Non é posíbel asignar a unha propriedade non existente «%1»</translation>
+        <translation>Non é posíbel asignar a unha propiedade non existente «%1»</translation>
     </message>
     <message>
         <source>Connections: nested objects not allowed</source>
@@ -2069,7 +1775,7 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Version mismatch: expected %1, found %2</source>
-        <translation>Non se corresponden as versións: agardábase a %1 pero achouse a %2</translation>
+        <translation>Non se corresponden as versións: agardábase a %1 pero atopouse a %2</translation>
     </message>
     <message>
         <source>SQL transaction failed</source>
@@ -2088,26 +1794,30 @@ superior, inferior nin vcenter.</translation>
     <name>QDeclarativeFlipable</name>
     <message>
         <source>front is a write-once property</source>
-        <translation>front é unha propriedade só para escrita</translation>
+        <translation>front é unha propiedade só para escrita</translation>
     </message>
     <message>
         <source>back is a write-once property</source>
-        <translation>bach é unha propriedade só para escrita</translation>
+        <translation>back é unha propiedade só para escrita</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeImportDatabase</name>
+    <message>
+        <source>cannot load module &quot;%1&quot;: File name case mismatch for &quot;%2&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message>
         <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
         <translation>a definición «%2» no módulo «%1» non é lexíbel</translation>
     </message>
     <message>
         <source>plugin cannot be loaded for module &quot;%1&quot;: %2</source>
-        <translation>non foi posíbel cargar a extensión para o módulo «%1»: %2</translation>
+        <translation>non foi posíbel cargar o complemento para o módulo «%1»: %2</translation>
     </message>
     <message>
         <source>module &quot;%1&quot; plugin &quot;%2&quot; not found</source>
-        <translation>non se atopou a extensión «%2» do módulo «%1»</translation>
+        <translation>non se atopou o complemento «%2» do módulo «%1»</translation>
     </message>
     <message>
         <source>module &quot;%1&quot; version %2.%3 is not installed</source>
@@ -2139,7 +1849,7 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>is ambiguous. Found in %1 and in %2</source>
-        <translation>é ambíguo. Atopouse en %1 e en %2</translation>
+        <translation>é ambiguo. Atopouse en %1 e en %2</translation>
     </message>
     <message>
         <source>is ambiguous. Found in %1 in version %2.%3 and %4.%5</source>
@@ -2152,6 +1862,24 @@ superior, inferior nin vcenter.</translation>
     <message>
         <source>is not a type</source>
         <translation>non é un tipo</translation>
+    </message>
+    <message>
+        <source>File name case mismatch for &quot;%2&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeKeyNavigationAttached</name>
+    <message>
+        <source>KeyNavigation is only available via attached properties</source>
+        <translation>KeyNavigation só está dispoñíbel mediante as propiedades anexadas</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeKeysAttached</name>
+    <message>
+        <source>Keys is only available via attached properties</source>
+        <translation>Keys só está dispoñíbel mediante as propiedades anexadas</translation>
     </message>
 </context>
 <context>
@@ -2190,15 +1918,15 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>ListElement: cannot use reserved &quot;id&quot; property</source>
-        <translation>Elemento de lista: non pode empregar a propriedade «id» porque está reservada</translation>
+        <translation>Elemento de lista: non pode empregar a propiedade «id» porque está reservada</translation>
     </message>
     <message>
         <source>ListElement: cannot use script for property value</source>
-        <translation>Elemento de lista: non pode empregar script como valor de propriedade</translation>
+        <translation>Elemento de lista: non pode empregar script como valor de propiedade</translation>
     </message>
     <message>
         <source>ListModel: undefined property &apos;%1&apos;</source>
-        <translation>Modelo de lista: a propriedade «%1» non está definida</translation>
+        <translation>Modelo de lista: a propiedade «%1» non está definida</translation>
     </message>
 </context>
 <context>
@@ -2206,6 +1934,21 @@ superior, inferior nin vcenter.</translation>
     <message>
         <source>Loader does not support loading non-visual elements.</source>
         <translation>O cargador non permite cargar elementos non visuais.</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeParentAnimation</name>
+    <message>
+        <source>Unable to preserve appearance under complex transform</source>
+        <translation>Non é posíbel conservar a aparencia con transformación complexa</translation>
+    </message>
+    <message>
+        <source>Unable to preserve appearance under non-uniform scale</source>
+        <translation>Non é posíbel conservar a aparencia con escalado non uniforme</translation>
+    </message>
+    <message>
+        <source>Unable to preserve appearance under scale of 0</source>
+        <translation>Non é posíbel conservar a aparencia con escala de 0</translation>
     </message>
 </context>
 <context>
@@ -2231,7 +1974,7 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Illegal character</source>
-        <translation>Caracter ilegal</translation>
+        <translation>Carácter ilegal</translation>
     </message>
     <message>
         <source>Unclosed string at end of line</source>
@@ -2239,6 +1982,10 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Illegal escape squence</source>
+        <translation type="obsolete">Secuencia de escape ilegal</translation>
+    </message>
+    <message>
+        <source>Illegal escape sequence</source>
         <translation>Secuencia de escape ilegal</translation>
     </message>
     <message>
@@ -2263,7 +2010,7 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Unterminated regular expression backslash sequence</source>
-        <translation>Secuencia de expresión regular non terminda con contrabarra</translation>
+        <translation>Secuencia de expresión regular non terminada con contrabarra</translation>
     </message>
     <message>
         <source>Unterminated regular expression class</source>
@@ -2283,7 +2030,7 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Property value set multiple times</source>
-        <translation>O valor da propriedade estabeleceuse varias veces</translation>
+        <translation>O valor da propiedade estabeleceuse varias veces</translation>
     </message>
     <message>
         <source>Expected type name</source>
@@ -2291,19 +2038,19 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Invalid import qualifier ID</source>
-        <translation>ID do calificador de importación non válido</translation>
+        <translation>ID do cualificador de importación non válido</translation>
     </message>
     <message>
         <source>Reserved name &quot;Qt&quot; cannot be used as an qualifier</source>
-        <translation>O nome reservado «Qt» non se pode empregar como calificador</translation>
+        <translation>O nome reservado «Qt» non se pode empregar como cualificador</translation>
     </message>
     <message>
         <source>Script import qualifiers must be unique.</source>
-        <translation>Os calificadores de importación de script deben ser únicos.</translation>
+        <translation>Os cualificadores de importación de script deben ser únicos.</translation>
     </message>
     <message>
         <source>Script import requires a qualifier</source>
-        <translation>A importación de script require dun calificador</translation>
+        <translation>A importación de script require dun cualificador</translation>
     </message>
     <message>
         <source>Library import requires a version</source>
@@ -2315,23 +2062,30 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Invalid property type modifier</source>
-        <translation>Modificador de tipo da propriedade non válido</translation>
+        <translation>Modificador de tipo da propiedade non válido</translation>
     </message>
     <message>
         <source>Unexpected property type modifier</source>
-        <translation>Modificador do tipo da propriedade non agardado</translation>
+        <translation>Modificador do tipo da propiedade non agardado</translation>
     </message>
     <message>
         <source>Expected property type</source>
-        <translation>Agardábase o tipo dunha propriedade</translation>
+        <translation>Agardábase o tipo dunha propiedade</translation>
     </message>
     <message>
         <source>Readonly not yet supported</source>
-        <translation>Aínda non se soporta o só para leitura</translation>
+        <translation>Aínda non se soporta o só para lectura</translation>
     </message>
     <message>
         <source>JavaScript declaration outside Script element</source>
         <translation>Declaración de JavaScript fora dun elemento Script</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativePauseAnimation</name>
+    <message>
+        <source>Cannot set a duration of &lt; 0</source>
+        <translation>Non se pode indicar unha duración &lt; 0</translation>
     </message>
 </context>
 <context>
@@ -2350,6 +2104,13 @@ superior, inferior nin vcenter.</translation>
     </message>
 </context>
 <context>
+    <name>QDeclarativePropertyAnimation</name>
+    <message>
+        <source>Cannot set a duration of &lt; 0</source>
+        <translation>Non se pode indicar unha duración &lt; 0</translation>
+    </message>
+</context>
+<context>
     <name>QDeclarativePropertyChanges</name>
     <message>
         <source>PropertyChanges does not support creating state-specific objects.</source>
@@ -2357,11 +2118,11 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
-        <translation>Non é posíbel asignar á propriedade inexistente «%1»</translation>
+        <translation>Non é posíbel asignar á propiedade inexistente «%1»</translation>
     </message>
     <message>
         <source>Cannot assign to read-only property &quot;%1&quot;</source>
-        <translation>Non é posíbel asignar a unha propriedade só para lectura «%1»</translation>
+        <translation>Non é posíbel asignar a unha propiedade só para lectura «%1»</translation>
     </message>
 </context>
 <context>
@@ -2376,6 +2137,25 @@ superior, inferior nin vcenter.</translation>
     </message>
 </context>
 <context>
+    <name>QDeclarativeTypeLoader</name>
+    <message>
+        <source>Script %1 unavailable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type %1 unavailable</source>
+        <translation type="unfinished">O tipo %1 non está dispoñíbel</translation>
+    </message>
+    <message>
+        <source>Namespace %1 cannot be used as a type</source>
+        <translation type="unfinished">O espazo de nomes %1 non se pode empregar como un tipo</translation>
+    </message>
+    <message>
+        <source>%1 %2</source>
+        <translation type="unfinished">%1 %2</translation>
+    </message>
+</context>
+<context>
     <name>QDeclarativeVME</name>
     <message>
         <source>Unable to create object of type %1</source>
@@ -2383,7 +2163,7 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Cannot assign value %1 to property %2</source>
-        <translation>Non é posíbel asignar o valor %1 á propriedade %2</translation>
+        <translation>Non é posíbel asignar o valor %1 á propiedade %2</translation>
     </message>
     <message>
         <source>Cannot assign object type %1 with no default method</source>
@@ -2395,7 +2175,7 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Cannot assign an object to signal property %1</source>
-        <translation>Non é posíbel asignar un obxecto á propriedade de sinal %1</translation>
+        <translation>Non é posíbel asignar un obxecto á propiedade de sinal %1</translation>
     </message>
     <message>
         <source>Cannot assign object to list</source>
@@ -2403,7 +2183,7 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Cannot assign object to interface property</source>
-        <translation>Non é posíbel asignar un obxecto a unha propriedade dunha interface</translation>
+        <translation>Non é posíbel asignar un obxecto a unha propiedade dunha interface</translation>
     </message>
     <message>
         <source>Unable to create attached object</source>
@@ -2411,14 +2191,21 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Cannot set properties on %1 as it is null</source>
-        <translation>Non se poden definir propriedades de %1 porque é nulo</translation>
+        <translation>Non se poden definir propiedades de %1 porque é nulo</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeVisualDataModel</name>
     <message>
         <source>Delegate component must be Item type.</source>
-        <translation>O componente delegado debe ser do tipo Item.</translation>
+        <translation>O compoñente delegado debe ser do tipo Item.</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeXmlListModel</name>
+    <message>
+        <source>Qt was built without support for xmlpatterns</source>
+        <translation>Qt construíuse sen soporte para xmlpatterns</translation>
     </message>
 </context>
 <context>
@@ -2436,21 +2223,6 @@ superior, inferior nin vcenter.</translation>
     </message>
 </context>
 <context>
-    <name>QObject</name>
-    <message>
-        <source>&quot;%1&quot; duplicates a previous role name and will be disabled.</source>
-        <translation>«%1» duplica un nome de rol anterior e desactivarase.</translation>
-    </message>
-    <message>
-        <source>invalid query: &quot;%1&quot;</source>
-        <translation>pescuda non válida: «%1»</translation>
-    </message>
-    <message>
-        <source>PulseAudio Sound Server</source>
-        <translation>Servidor de son PulseAudio</translation>
-    </message>
-</context>
-<context>
     <name>QDial</name>
     <message>
         <source>QDial</source>
@@ -2463,118 +2235,6 @@ superior, inferior nin vcenter.</translation>
     <message>
         <source>SliderHandle</source>
         <translation>Asa da barra deslizante</translation>
-    </message>
-</context>
-<context>
-    <name>QDoubleSpinBox</name>
-    <message>
-        <source>More</source>
-        <translation>Máis</translation>
-    </message>
-    <message>
-        <source>Less</source>
-        <translation>Menos</translation>
-    </message>
-</context>
-<context>
-    <name>QScrollBar</name>
-    <message>
-        <source>Line up</source>
-        <translation>Aliñar en riba</translation>
-    </message>
-    <message>
-        <source>Position</source>
-        <translation>Posición</translation>
-    </message>
-    <message>
-        <source>Line down</source>
-        <translation>Aliñar en baixo</translation>
-    </message>
-    <message>
-        <source>Scroll here</source>
-        <translation>Desprazar cara aquí</translation>
-    </message>
-    <message>
-        <source>Left edge</source>
-        <translation>Borde esquerdo</translation>
-    </message>
-    <message>
-        <source>Top</source>
-        <translation>Cume</translation>
-    </message>
-    <message>
-        <source>Right edge</source>
-        <translation>Borde dereito</translation>
-    </message>
-    <message>
-        <source>Bottom</source>
-        <translation>Fondo</translation>
-    </message>
-    <message>
-        <source>Page left</source>
-        <translation>Páxina á esquerda</translation>
-    </message>
-    <message>
-        <source>Page up</source>
-        <translation>Páxina en riba</translation>
-    </message>
-    <message>
-        <source>Page right</source>
-        <translation>Páxina á dereita</translation>
-    </message>
-    <message>
-        <source>Page down</source>
-        <translation>Páxina en baixo</translation>
-    </message>
-    <message>
-        <source>Scroll left</source>
-        <translation>Desprazar cara á esquerda</translation>
-    </message>
-    <message>
-        <source>Scroll up</source>
-        <translation>Desprazar cara arriba</translation>
-    </message>
-    <message>
-        <source>Scroll right</source>
-        <translation>Desprazar cara á dereita</translation>
-    </message>
-    <message>
-        <source>Scroll down</source>
-        <translation>Desprazar cara abaixo</translation>
-    </message>
-</context>
-<context>
-    <name>QSlider</name>
-    <message>
-        <source>Page left</source>
-        <translation>Páxina á esquerda</translation>
-    </message>
-    <message>
-        <source>Page up</source>
-        <translation>Páxina en riba</translation>
-    </message>
-    <message>
-        <source>Position</source>
-        <translation>Posición</translation>
-    </message>
-    <message>
-        <source>Page right</source>
-        <translation>Páxina á dereita</translation>
-    </message>
-    <message>
-        <source>Page down</source>
-        <translation>Páxina en baixo</translation>
-    </message>
-</context>
-<context>
-    <name>QSpinBox</name>
-    <message>
-        <source>More</source>
-        <translation>Máis</translation>
-    </message>
-    <message>
-        <source>Less</source>
-        <translation>Menos</translation>
     </message>
 </context>
 <context>
@@ -2688,45 +2348,6 @@ superior, inferior nin vcenter.</translation>
     </message>
 </context>
 <context>
-    <name>QMessageBox</name>
-    <message>
-        <source>Show Details...</source>
-        <translation>Mostrar os detalles...</translation>
-    </message>
-    <message>
-        <source>Hide Details...</source>
-        <translation>Agochar os detalles...</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation>Aceptar</translation>
-    </message>
-    <message>
-        <source>Help</source>
-        <translation>Axuda</translation>
-    </message>
-    <message>
-        <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;</source>
-        <translation>&lt;h3&gt;Acerca de Qt&lt;/h3&gt;&lt;p&gt;Este programa emprega a versión %1 de Qt.&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;&lt;p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Qt é un toolkit de C++ para o desenvolvemento de programas multiplataforma.&lt;/p&gt; &lt;p&gt;Qt fornece portabilidade entre MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux e as principais variantes comerciais de Unix cun único código fonte. Qt tamén está dispoñíbel para dispositivos incrustados como Qt para Embedded Linux e Qt para Windows CE.&lt;/p&gt;
-&lt;p&gt;Qt está dispoñíbel en tres opcións de licenzas diferentes deseñadas para adaptarse ás necesidades dos diferentes usuarios.&lt;/p&gt;
-&lt;/p&gt;Qt distribuída sob o acordo de licenza comercial é adecuado para o desenvolvemento de software proprietario 
-ou comercial onde non é preciso compartir ningún código fonte con terceiras partes ou que non poden cumprir os termos das licenzas GNU LGPL versión 2.1 nin da versión 3.0.&lt;/p&gt;
-&lt;p&gt;Qt sob a licenza GNU General Public License versión 2.1 é apropriada para o desenvolvemento de programas Qt (proprietario ou de fontes abertas) supoñendo que poda cumprir cos termos e condicións da licenza GNU GPL versión 2.1.&lt;/p&gt;
-&lt;p&gt;Qt sob a licenza GNU General Public License versión 3.0 é apropriada para o desenvolvemento de programas Qt onde desexe empregar tales programas en combinación con software suxeito aos termos da GNU GPL versión 3.0 ou onde desexe cumprir cos termos da GNU GPL versión 3.0.&lt;/p&gt;
-&lt;p&gt;Consulte &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; para ler un resumo das licenzas de Qt.&lt;/p&gt;
-&lt;p&gt;Copyright (C) 2011 Nokia Corporation ou as súas subsidiarias.&lt;/p&gt;
-&lt;p&gt;Qt é un produto de Nokia. Consulte &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; para máis información.&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <source>About Qt</source>
-        <translation>Acerca de Qt</translation>
-    </message>
-</context>
-<context>
     <name>QDirModel</name>
     <message>
         <source>Name</source>
@@ -2749,6 +2370,86 @@ ou comercial onde non é preciso compartir ningún código fonte con terceiras p
     <message>
         <source>Date Modified</source>
         <translation>Data de modificación</translation>
+    </message>
+</context>
+<context>
+    <name>QDockWidget</name>
+    <message>
+        <source>Close</source>
+        <translation>Pechar</translation>
+    </message>
+    <message>
+        <source>Dock</source>
+        <translation>Acoplar</translation>
+    </message>
+    <message>
+        <source>Float</source>
+        <translation>Flutuante</translation>
+    </message>
+</context>
+<context>
+    <name>QDoubleSpinBox</name>
+    <message>
+        <source>More</source>
+        <translation>Máis</translation>
+    </message>
+    <message>
+        <source>Less</source>
+        <translation>Menos</translation>
+    </message>
+</context>
+<context>
+    <name>QErrorMessage</name>
+    <message>
+        <source>Debug Message:</source>
+        <translation>Mensaxe de depuración:</translation>
+    </message>
+    <message>
+        <source>Warning:</source>
+        <translation>Aviso:</translation>
+    </message>
+    <message>
+        <source>Fatal Error:</source>
+        <translation>Erro fatal:</translation>
+    </message>
+    <message>
+        <source>&amp;Show this message again</source>
+        <translation>&amp;Mostrar esta mensaxe de novo</translation>
+    </message>
+    <message>
+        <source>&amp;OK</source>
+        <translation>&amp;Aceptar</translation>
+    </message>
+</context>
+<context>
+    <name>QFile</name>
+    <message>
+        <source>Destination file exists</source>
+        <translation>O ficheiro de destino xa existe</translation>
+    </message>
+    <message>
+        <source>Will not rename sequential file using block copy</source>
+        <translation>Non se mudará o nome do ficheiro secuencial empregando a copia de bloques</translation>
+    </message>
+    <message>
+        <source>Cannot remove source file</source>
+        <translation>Non é posíbel eliminar o ficheiro de orixe</translation>
+    </message>
+    <message>
+        <source>Cannot open %1 for input</source>
+        <translation>Non é posíbel abrir %1 como entrada</translation>
+    </message>
+    <message>
+        <source>Cannot open for output</source>
+        <translation>Non foi posíbel abrir o ficheiro de saída</translation>
+    </message>
+    <message>
+        <source>Failure to write block</source>
+        <translation>Non foi posíbel escribir o bloque</translation>
+    </message>
+    <message>
+        <source>Cannot create %1 for output</source>
+        <translation>Non foi posíbel crear %1 para a saída</translation>
     </message>
 </context>
 <context>
@@ -2815,7 +2516,7 @@ ou comercial onde non é preciso compartir ningún código fonte con terceiras p
     </message>
     <message>
         <source>Find Directory</source>
-        <translation>Procurar un cartafol</translation>
+        <translation>Buscar un cartafol</translation>
     </message>
     <message>
         <source>Open</source>
@@ -2878,7 +2579,7 @@ ou comercial onde non é preciso compartir ningún código fonte con terceiras p
 Directory not found.
 Please verify the correct directory name was given.</source>
         <translation>%1
-Non se achou o cartafol.
+Non se atopou o cartafol.
 Verifique que se indicase o nome correcto.</translation>
     </message>
     <message>
@@ -3021,75 +2722,6 @@ Desexa aínda así borralo?</translation>
     <message>
         <source>Computer</source>
         <translation>Ordenador</translation>
-    </message>
-</context>
-<context>
-    <name>QDockWidget</name>
-    <message>
-        <source>Close</source>
-        <translation>Pechar</translation>
-    </message>
-    <message>
-        <source>Dock</source>
-        <translation>Acoplar</translation>
-    </message>
-    <message>
-        <source>Float</source>
-        <translation>Flutuante</translation>
-    </message>
-</context>
-<context>
-    <name>QErrorMessage</name>
-    <message>
-        <source>Debug Message:</source>
-        <translation>Mensaxe de depuración:</translation>
-    </message>
-    <message>
-        <source>Warning:</source>
-        <translation>Aviso:</translation>
-    </message>
-    <message>
-        <source>Fatal Error:</source>
-        <translation>Erro fatal:</translation>
-    </message>
-    <message>
-        <source>&amp;Show this message again</source>
-        <translation>&amp;Mostrar esta mensaxe de novo</translation>
-    </message>
-    <message>
-        <source>&amp;OK</source>
-        <translation>&amp;Aceptar</translation>
-    </message>
-</context>
-<context>
-    <name>QFile</name>
-    <message>
-        <source>Destination file exists</source>
-        <translation>O ficheiro de destino xa existe</translation>
-    </message>
-    <message>
-        <source>Will not rename sequential file using block copy</source>
-        <translation>Non se mudará o nome do ficheiro secuencial empregando a copia de bloques</translation>
-    </message>
-    <message>
-        <source>Cannot remove source file</source>
-        <translation>Non é posíbel eliminar o ficheiro de orixe</translation>
-    </message>
-    <message>
-        <source>Cannot open %1 for input</source>
-        <translation>Non é posíbel abrir %1 como entrada</translation>
-    </message>
-    <message>
-        <source>Cannot open for output</source>
-        <translation>Non foi posíbel abrir o ficheiro de saída</translation>
-    </message>
-    <message>
-        <source>Failure to write block</source>
-        <translation>Non foi posíbel escribir o bloque</translation>
-    </message>
-    <message>
-        <source>Cannot create %1 for output</source>
-        <translation>Non foi posíbel crear %1 para a saída</translation>
     </message>
 </context>
 <context>
@@ -3442,6 +3074,117 @@ Desexa aínda así borralo?</translation>
     </message>
 </context>
 <context>
+    <name>QHttp</name>
+    <message>
+        <source>Connection refused</source>
+        <translation>Rexeitouse a conexión</translation>
+    </message>
+    <message>
+        <source>Connection closed</source>
+        <translation>Pechouse a conexión</translation>
+    </message>
+    <message>
+        <source>Proxy requires authentication</source>
+        <translation>O proxy require autenticación</translation>
+    </message>
+    <message>
+        <source>Host requires authentication</source>
+        <translation>O servidor require autenticación</translation>
+    </message>
+    <message>
+        <source>Data corrupted</source>
+        <translation>Datos corrompidos</translation>
+    </message>
+    <message>
+        <source>Unknown protocol specified</source>
+        <translation>Especificouse un protocolo descoñecido</translation>
+    </message>
+    <message>
+        <source>SSL handshake failed</source>
+        <translation>Fallou a negociación de SSL</translation>
+    </message>
+    <message>
+        <source>HTTPS connection requested but SSL support not compiled in</source>
+        <translation>Pediuse unha conexión HTTPS pero non se compilou con soporte de SSL</translation>
+    </message>
+    <message>
+        <source>Unknown error</source>
+        <translation>Erro descoñecido</translation>
+    </message>
+    <message>
+        <source>Request aborted</source>
+        <translation>Pedido abortado</translation>
+    </message>
+    <message>
+        <source>No server set to connect to</source>
+        <translation>Non se indicou ningún servidor co que conectar</translation>
+    </message>
+    <message>
+        <source>Wrong content length</source>
+        <translation>Lonxitude do contido incorrecta</translation>
+    </message>
+    <message>
+        <source>Server closed connection unexpectedly</source>
+        <translation>O servidor pechou a conexión inesperadamente</translation>
+    </message>
+    <message>
+        <source>Connection refused (or timed out)</source>
+        <translation>Rexeitouse a conexión (ou esgotou o tempo-límite)</translation>
+    </message>
+    <message>
+        <source>Host %1 not found</source>
+        <translation>Non se atopou o servidor %1</translation>
+    </message>
+    <message>
+        <source>HTTP request failed</source>
+        <translation>O pedido HTTP fallou</translation>
+    </message>
+    <message>
+        <source>Invalid HTTP response header</source>
+        <translation>A cabeceira da resposta HTTP non é válida</translation>
+    </message>
+    <message>
+        <source>Unknown authentication method</source>
+        <translation>Método descoñecido de autenticación</translation>
+    </message>
+    <message>
+        <source>Proxy authentication required</source>
+        <translation>Requírese de autenticación no proxy</translation>
+    </message>
+    <message>
+        <source>Authentication required</source>
+        <translation>Requírese de autenticación</translation>
+    </message>
+    <message>
+        <source>Invalid HTTP chunked body</source>
+        <translation>Corpo HTTP en pedazos non válido</translation>
+    </message>
+    <message>
+        <source>Error writing response to device</source>
+        <translation>Erro ao escribir a resposta no dispositivo</translation>
+    </message>
+    <message>
+        <source>Host %1 found</source>
+        <translation>Atopouse o servidor %1</translation>
+    </message>
+    <message>
+        <source>Connected to host %1</source>
+        <translation>Conectado co servidor %1</translation>
+    </message>
+    <message>
+        <source>Connection to %1 closed</source>
+        <translation>Pechouse a conexión con %1</translation>
+    </message>
+    <message>
+        <source>Host found</source>
+        <translation>Atopouse un servidor</translation>
+    </message>
+    <message>
+        <source>Connected to host</source>
+        <translation>Conectado co servidor</translation>
+    </message>
+</context>
+<context>
     <name>QHttpSocketEngine</name>
     <message>
         <source>Did not receive HTTP response from proxy</source>
@@ -3631,15 +3374,15 @@ Desexa aínda así borralo?</translation>
     <name>QLibrary</name>
     <message>
         <source>Could not mmap &apos;%1&apos;: %2</source>
-        <translation>Non foi posíbel mmap «%1»: %2</translation>
+        <translation type="obsolete">Non foi posíbel mmap «%1»: %2</translation>
     </message>
     <message>
         <source>Plugin verification data mismatch in &apos;%1&apos;</source>
-        <translation>Erro de concordancia na verificación dos datos da extensión en «%1»</translation>
+        <translation>Erro de concordancia na verificación dos datos do complemento en «%1»</translation>
     </message>
     <message>
         <source>Could not unmap &apos;%1&apos;: %2</source>
-        <translation>Non foi posíbel unmap «%1»: %2</translation>
+        <translation type="obsolete">Non foi posíbel unmap «%1»: %2</translation>
     </message>
     <message>
         <source>The shared library was not found.</source>
@@ -3647,21 +3390,20 @@ Desexa aínda así borralo?</translation>
     </message>
     <message>
         <source>The file &apos;%1&apos; is not a valid Qt plugin.</source>
-        <translation>O ficheiro «%1» non é unha extensión válida de Qt.</translation>
+        <translation>O ficheiro «%1» non é un complemento válido de Qt.</translation>
     </message>
     <message>
         <source>The plugin &apos;%1&apos; uses incompatible Qt library. (%2.%3.%4) [%5]</source>
-        <translation>A extensión «%1» utiliza unha biblioteca Qt non compatíbel. (%2.%3.%4) [%5]</translation>
+        <translation>O complemento «%1» utiliza unha biblioteca Qt non compatíbel. (%2.%3.%4) [%5]</translation>
     </message>
     <message>
         <source>The plugin &apos;%1&apos; uses incompatible Qt library. Expected build key &quot;%2&quot;, got &quot;%3&quot;</source>
-        <translation>A extensión «%1» utiliza unha biblioteca Qt non compatíbel. Agardábase a 
+        <translation>O complemento «%1» utiliza unha biblioteca Qt non compatíbel. Agardábase a 
 chave de compilación «%2», obtívose a «%3»</translation>
     </message>
     <message>
         <source>The plugin &apos;%1&apos; uses incompatible Qt library. (Cannot mix debug and release libraries.)</source>
-        <translation>A extensión «%1» utiliza unha biblioteca Qt non compatíbel (Non é posíbel 
-misturar as bibliotecas de depuración coas publicadas).</translation>
+        <translation>O complemento «%1» utiliza unha biblioteca Qt non compatíbel (Non é posíbel mesturar as bibliotecas de depuración coas publicadas).</translation>
     </message>
     <message>
         <source>Unknown error</source>
@@ -3952,6 +3694,57 @@ misturar as bibliotecas de depuración coas publicadas).</translation>
     </message>
 </context>
 <context>
+    <name>QMessageBox</name>
+    <message>
+        <source>Show Details...</source>
+        <translation>Mostrar os detalles...</translation>
+    </message>
+    <message>
+        <source>Hide Details...</source>
+        <translation>Acochar os detalles...</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Aceptar</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Axuda</translation>
+    </message>
+    <message>
+        <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;</source>
+        <translation>&lt;h3&gt;Acerca de Qt&lt;/h3&gt;&lt;p&gt;Este programa emprega a versión %1 de Qt.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;&lt;p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Qt é un toolkit de C++ para o desenvolvemento de programas multiplataforma.&lt;/p&gt; &lt;p&gt;Qt fornece portabilidade entre MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux e as principais variantes comerciais de Unix cun único código fonte. Qt tamén está dispoñíbel para dispositivos incrustados como Qt para Embedded Linux e Qt para Windows CE.&lt;/p&gt;
+&lt;p&gt;Qt está dispoñíbel en tres opcións de licenzas diferentes deseñadas para adaptarse ás necesidades dos diferentes usuarios.&lt;/p&gt;
+&lt;/p&gt;Qt distribuída sob o acordo de licenza comercial é adecuado para o desenvolvemento de software proprietario 
+ou comercial onde non é preciso compartir ningún código fonte con terceiras partes ou que non poden cumprir os termos das licenzas GNU LGPL versión 2.1 nin da versión 3.0.&lt;/p&gt;
+&lt;p&gt;Qt sob a licenza GNU General Public License versión 2.1 é apropriada para o desenvolvemento de programas Qt (proprietario ou de fontes abertas) supoñendo que poda cumprir cos termos e condicións da licenza GNU GPL versión 2.1.&lt;/p&gt;
+&lt;p&gt;Qt sob a licenza GNU General Public License versión 3.0 é apropriada para o desenvolvemento de programas Qt onde desexe empregar tales programas en combinación con software suxeito aos termos da GNU GPL versión 3.0 ou onde desexe cumprir cos termos da GNU GPL versión 3.0.&lt;/p&gt;
+&lt;p&gt;Consulte &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; para ler un resumo das licenzas de Qt.&lt;/p&gt;
+&lt;p&gt;Copyright (C) 2011 Nokia Corporation ou as súas subsidiarias.&lt;/p&gt;
+&lt;p&gt;Qt é un produto de Nokia. Consulte &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; para máis información.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;&lt;p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
+        <translation type="obsolete">&lt;p&gt;Qt é un toolkit de C++ para o desenvolvemento de programas multiplataforma.&lt;/p&gt; &lt;p&gt;Qt fornece portabilidade entre MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux e as principais variantes comerciais de Unix cun único código fonte. Qt tamén está dispoñíbel para dispositivos incrustados como Qt para Embedded Linux e Qt para Windows CE.&lt;/p&gt;
+&lt;p&gt;Qt está dispoñíbel en tres opcións de licenzas diferentes deseñadas para adaptarse ás necesidades dos diferentes usuarios.&lt;/p&gt;
+&lt;/p&gt;Qt distribuída sob o acordo de licenza comercial é adecuado para o desenvolvemento de software propietario 
+ou comercial onde non é preciso compartir ningún código fonte con terceiras partes ou que non poden cumprir os termos das licenzas GNU LGPL versión 2.1 nin da versión 3.0.&lt;/p&gt;
+&lt;p&gt;Qt sob a licenza GNU General Public License versión 2.1 é apropiada para o desenvolvemento de programas Qt (propietario ou de fontes abertas) supoñendo que poda cumprir cos termos e condicións da licenza GNU GPL versión 2.1.&lt;/p&gt;
+&lt;p&gt;Qt sob a licenza GNU General Public License versión 3.0 é apropiada para o desenvolvemento de programas Qt onde desexe empregar tales programas en combinación con software suxeito aos termos da GNU GPL versión 3.0 ou onde desexe cumprir cos termos da GNU GPL versión 3.0.&lt;/p&gt;
+&lt;p&gt;Consulte &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; para ler un resumo das licenzas de Qt.&lt;/p&gt;
+&lt;p&gt;Copyright (C) 2011 Nokia Corporation ou as súas subsidiarias.&lt;/p&gt;
+&lt;p&gt;Qt é un produto de Nokia. Consulte &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; para máis información.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>About Qt</source>
+        <translation>Acerca de Qt</translation>
+    </message>
+</context>
+<context>
     <name>QMultiInputContext</name>
     <message>
         <source>Select IM</source>
@@ -4118,7 +3911,7 @@ texto</translation>
     </message>
     <message>
         <source>Cannot open %1: Path is a directory</source>
-        <translation>Non é posíbel abrir %1: A rota é un directorio</translation>
+        <translation>Non é posíbel abrir %1: A ruta é un directorio</translation>
     </message>
     <message>
         <source>Error opening %1: %2</source>
@@ -4164,6 +3957,13 @@ texto</translation>
     </message>
 </context>
 <context>
+    <name>QNetworkAccessManager</name>
+    <message>
+        <source>Network access is disabled.</source>
+        <translation>O acceso á rede está desactivado.</translation>
+    </message>
+</context>
+<context>
     <name>QNetworkReply</name>
     <message>
         <source>Error downloading %1 - server replied: %2</source>
@@ -4180,13 +3980,6 @@ texto</translation>
     <message>
         <source>Temporary network failure.</source>
         <translation>Fallo temporal da rede.</translation>
-    </message>
-</context>
-<context>
-    <name>QNetworkAccessManager</name>
-    <message>
-        <source>Network access is disabled.</source>
-        <translation>O acceso á rede está desactivado.</translation>
     </message>
 </context>
 <context>
@@ -4325,6 +4118,61 @@ texto</translation>
     </message>
 </context>
 <context>
+    <name>QODBCResult</name>
+    <message>
+        <source>Unable to fetch last</source>
+        <translation>Non foi posíbel acadar o último</translation>
+    </message>
+    <message>
+        <source>QODBCResult::reset: Unable to set &apos;SQL_CURSOR_STATIC&apos; as statement attribute. Please check your ODBC driver configuration</source>
+        <translation>QODBCResult::reset: Non foi posíbel estabelecer «SQL_CURSOR_STATIC» como 
+atributo da sentenza. Verifique a configuración do controlador ODBC</translation>
+    </message>
+    <message>
+        <source>Unable to execute statement</source>
+        <translation>Non foi posíbel executar a sentenza</translation>
+    </message>
+    <message>
+        <source>Unable to fetch</source>
+        <translation>Non foi posíbel acadar</translation>
+    </message>
+    <message>
+        <source>Unable to fetch next</source>
+        <translation>Non foi posíbel acadar o seguinte</translation>
+    </message>
+    <message>
+        <source>Unable to fetch first</source>
+        <translation>Non foi posíbel acadar o primeiro</translation>
+    </message>
+    <message>
+        <source>Unable to fetch previous</source>
+        <translation>Non foi posíbel acadar o anterior</translation>
+    </message>
+    <message>
+        <source>Unable to prepare statement</source>
+        <translation>Non foi posíbel preparar a sentenza</translation>
+    </message>
+    <message>
+        <source>Unable to bind variable</source>
+        <translation>Non foi posíbel asociar a variábel</translation>
+    </message>
+</context>
+<context>
+    <name>QObject</name>
+    <message>
+        <source>&quot;%1&quot; duplicates a previous role name and will be disabled.</source>
+        <translation>«%1» duplica un nome de rol anterior e desactivarase.</translation>
+    </message>
+    <message>
+        <source>invalid query: &quot;%1&quot;</source>
+        <translation>pescuda non válida: «%1»</translation>
+    </message>
+    <message>
+        <source>PulseAudio Sound Server</source>
+        <translation>Servidor de son PulseAudio</translation>
+    </message>
+</context>
+<context>
     <name>QPPDOptionsModel</name>
     <message>
         <source>Name</source>
@@ -4333,6 +4181,138 @@ texto</translation>
     <message>
         <source>Value</source>
         <translation>Valor</translation>
+    </message>
+</context>
+<context>
+    <name>QPSQLDriver</name>
+    <message>
+        <source>Unable to connect</source>
+        <translation>Non foi posíbel conectar</translation>
+    </message>
+    <message>
+        <source>Could not begin transaction</source>
+        <translation>Non foi posíbel comezar a transacción</translation>
+    </message>
+    <message>
+        <source>Could not commit transaction</source>
+        <translation>Non foi posíbel entregar a transacción</translation>
+    </message>
+    <message>
+        <source>Could not rollback transaction</source>
+        <translation>Non foi posíbel anular a transacción</translation>
+    </message>
+    <message>
+        <source>Unable to subscribe</source>
+        <translation>Non foi posíbel subscribirse</translation>
+    </message>
+    <message>
+        <source>Unable to unsubscribe</source>
+        <translation>Non foi posíbel anular a subscrición</translation>
+    </message>
+</context>
+<context>
+    <name>QPSQLResult</name>
+    <message>
+        <source>Unable to create query</source>
+        <translation>Non foi posíbel crear a consulta</translation>
+    </message>
+    <message>
+        <source>Unable to prepare statement</source>
+        <translation>Non foi posíbel preparar a sentenza</translation>
+    </message>
+</context>
+<context>
+    <name>QPageSetupWidget</name>
+    <message>
+        <source>Form</source>
+        <translation>Formulario</translation>
+    </message>
+    <message>
+        <source>Paper</source>
+        <translation>Papel</translation>
+    </message>
+    <message>
+        <source>Page size:</source>
+        <translation>Tamaño da páxina:</translation>
+    </message>
+    <message>
+        <source>Width:</source>
+        <translation>Largura:</translation>
+    </message>
+    <message>
+        <source>Height:</source>
+        <translation>Altura:</translation>
+    </message>
+    <message>
+        <source>Paper source:</source>
+        <translation>Fonte do papel:</translation>
+    </message>
+    <message>
+        <source>Orientation</source>
+        <translation>Orientación</translation>
+    </message>
+    <message>
+        <source>Portrait</source>
+        <translation>Retrato</translation>
+    </message>
+    <message>
+        <source>Landscape</source>
+        <translation>Apaisado</translation>
+    </message>
+    <message>
+        <source>Reverse landscape</source>
+        <translation>Apaisado invertido</translation>
+    </message>
+    <message>
+        <source>Reverse portrait</source>
+        <translation>Retrato invertido</translation>
+    </message>
+    <message>
+        <source>Margins</source>
+        <translation>Marxes</translation>
+    </message>
+    <message>
+        <source>top margin</source>
+        <translation>marxe superior</translation>
+    </message>
+    <message>
+        <source>left margin</source>
+        <translation>marxe esquerda</translation>
+    </message>
+    <message>
+        <source>right margin</source>
+        <translation>marxe dereita</translation>
+    </message>
+    <message>
+        <source>bottom margin</source>
+        <translation>marxe inferior</translation>
+    </message>
+    <message>
+        <source>Centimeters (cm)</source>
+        <translation>Centímetros (cm)</translation>
+    </message>
+    <message>
+        <source>Millimeters (mm)</source>
+        <translation>Milímetros (mm)</translation>
+    </message>
+    <message>
+        <source>Inches (in)</source>
+        <translation>Polgadas (pol)</translation>
+    </message>
+    <message>
+        <source>Points (pt)</source>
+        <translation>Puntos (pt)</translation>
+    </message>
+</context>
+<context>
+    <name>QPluginLoader</name>
+    <message>
+        <source>The plugin was not loaded.</source>
+        <translation>O complemento non se cargou.</translation>
+    </message>
+    <message>
+        <source>Unknown error</source>
+        <translation>Erro descoñecido</translation>
     </message>
 </context>
 <context>
@@ -4681,138 +4661,6 @@ Desexa sobrescribilo?</translation>
     </message>
 </context>
 <context>
-    <name>QPSQLDriver</name>
-    <message>
-        <source>Unable to connect</source>
-        <translation>Non foi posíbel conectar</translation>
-    </message>
-    <message>
-        <source>Could not begin transaction</source>
-        <translation>Non foi posíbel comezar a transacción</translation>
-    </message>
-    <message>
-        <source>Could not commit transaction</source>
-        <translation>Non foi posíbel entregar a transacción</translation>
-    </message>
-    <message>
-        <source>Could not rollback transaction</source>
-        <translation>Non foi posíbel anular a transacción</translation>
-    </message>
-    <message>
-        <source>Unable to subscribe</source>
-        <translation>Non foi posíbel subscribirse</translation>
-    </message>
-    <message>
-        <source>Unable to unsubscribe</source>
-        <translation>Non foi posíbel anular a subscrición</translation>
-    </message>
-</context>
-<context>
-    <name>QPSQLResult</name>
-    <message>
-        <source>Unable to create query</source>
-        <translation>Non foi posíbel crear a consulta</translation>
-    </message>
-    <message>
-        <source>Unable to prepare statement</source>
-        <translation>Non foi posíbel preparar a sentenza</translation>
-    </message>
-</context>
-<context>
-    <name>QPageSetupWidget</name>
-    <message>
-        <source>Form</source>
-        <translation>Formulario</translation>
-    </message>
-    <message>
-        <source>Paper</source>
-        <translation>Papel</translation>
-    </message>
-    <message>
-        <source>Page size:</source>
-        <translation>Tamaño da páxina:</translation>
-    </message>
-    <message>
-        <source>Width:</source>
-        <translation>Largura:</translation>
-    </message>
-    <message>
-        <source>Height:</source>
-        <translation>Altura:</translation>
-    </message>
-    <message>
-        <source>Paper source:</source>
-        <translation>Fonte do papel:</translation>
-    </message>
-    <message>
-        <source>Orientation</source>
-        <translation>Orientación</translation>
-    </message>
-    <message>
-        <source>Portrait</source>
-        <translation>Retrato</translation>
-    </message>
-    <message>
-        <source>Landscape</source>
-        <translation>Apaisado</translation>
-    </message>
-    <message>
-        <source>Reverse landscape</source>
-        <translation>Apaisado invertido</translation>
-    </message>
-    <message>
-        <source>Reverse portrait</source>
-        <translation>Retrato invertido</translation>
-    </message>
-    <message>
-        <source>Margins</source>
-        <translation>Marxes</translation>
-    </message>
-    <message>
-        <source>top margin</source>
-        <translation>marxe superior</translation>
-    </message>
-    <message>
-        <source>left margin</source>
-        <translation>marxe esquerda</translation>
-    </message>
-    <message>
-        <source>right margin</source>
-        <translation>marxe dereita</translation>
-    </message>
-    <message>
-        <source>bottom margin</source>
-        <translation>marxe inferior</translation>
-    </message>
-    <message>
-        <source>Centimeters (cm)</source>
-        <translation>Centímetros (cm)</translation>
-    </message>
-    <message>
-        <source>Millimeters (mm)</source>
-        <translation>Milímetros (mm)</translation>
-    </message>
-    <message>
-        <source>Inches (in)</source>
-        <translation>Polgadas (pol)</translation>
-    </message>
-    <message>
-        <source>Points (pt)</source>
-        <translation>Puntos (pt)</translation>
-    </message>
-</context>
-<context>
-    <name>QPluginLoader</name>
-    <message>
-        <source>The plugin was not loaded.</source>
-        <translation>A extensión non se cargou.</translation>
-    </message>
-    <message>
-        <source>Unknown error</source>
-        <translation>Erro descoñecido</translation>
-    </message>
-</context>
-<context>
     <name>QPrintPreviewDialog</name>
     <message>
         <source>Page Setup</source>
@@ -5013,11 +4861,11 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>P&amp;roperties</source>
-        <translation>P&amp;ropriedades</translation>
+        <translation>P&amp;ropiedades</translation>
     </message>
     <message>
         <source>Location:</source>
-        <translation>Localización:</translation>
+        <translation>Lugar:</translation>
     </message>
     <message>
         <source>Preview</source>
@@ -5080,6 +4928,20 @@ Desexa sobrescribilo?</translation>
     <message>
         <source>Cancel</source>
         <translation>Cancelar</translation>
+    </message>
+</context>
+<context>
+    <name>QPushButton</name>
+    <message>
+        <source>Open</source>
+        <translation>Abrir</translation>
+    </message>
+</context>
+<context>
+    <name>QRadioButton</name>
+    <message>
+        <source>Check</source>
+        <translation>Marcar</translation>
     </message>
 </context>
 <context>
@@ -5248,13 +5110,6 @@ Desexa sobrescribilo?</translation>
     </message>
 </context>
 <context>
-    <name>QScriptNewBreakpointWidget</name>
-    <message>
-        <source>Close</source>
-        <translation>Pechar</translation>
-    </message>
-</context>
-<context>
     <name>QScriptDebugger</name>
     <message>
         <source>Go to Line</source>
@@ -5338,7 +5193,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>&amp;Find in Script...</source>
-        <translation>Procurar no &amp;script...</translation>
+        <translation>Buscar no &amp;script...</translation>
     </message>
     <message>
         <source>Ctrl+F</source>
@@ -5346,7 +5201,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Find &amp;Next</source>
-        <translation>Procurar o &amp;seguinte</translation>
+        <translation>Buscar o &amp;seguinte</translation>
     </message>
     <message>
         <source>F3</source>
@@ -5354,7 +5209,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Find &amp;Previous</source>
-        <translation>Procurar o &amp;anterior</translation>
+        <translation>Buscar o &amp;anterior</translation>
     </message>
     <message>
         <source>Shift+F3</source>
@@ -5393,7 +5248,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>&lt;img src=&quot;:/qt/scripttools/debugging/images/wrap.png&quot;&gt;&amp;nbsp;Search wrapped</source>
-        <translation>&lt;img src=&quot;:/qt/scripttools/debugging/images/wrap.png&quot;&gt;&amp;nbsp;A procura retornou</translation>
+        <translation>&lt;img src=&quot;:/qt/scripttools/debugging/images/wrap.png&quot;&gt;&amp;nbsp;A busca retornou</translation>
     </message>
 </context>
 <context>
@@ -5469,11 +5324,11 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Error Log</source>
-        <translation>Rexisto de erros</translation>
+        <translation>Rexistro de erros</translation>
     </message>
     <message>
         <source>Search</source>
-        <translation>Procurar</translation>
+        <translation>Buscar</translation>
     </message>
     <message>
         <source>View</source>
@@ -5482,6 +5337,80 @@ Desexa sobrescribilo?</translation>
     <message>
         <source>Qt Script Debugger</source>
         <translation>Depurador de Qt Script</translation>
+    </message>
+</context>
+<context>
+    <name>QScriptNewBreakpointWidget</name>
+    <message>
+        <source>Close</source>
+        <translation>Pechar</translation>
+    </message>
+</context>
+<context>
+    <name>QScrollBar</name>
+    <message>
+        <source>Line up</source>
+        <translation>Aliñar en riba</translation>
+    </message>
+    <message>
+        <source>Position</source>
+        <translation>Posición</translation>
+    </message>
+    <message>
+        <source>Line down</source>
+        <translation>Aliñar en baixo</translation>
+    </message>
+    <message>
+        <source>Scroll here</source>
+        <translation>Desprazar cara aquí</translation>
+    </message>
+    <message>
+        <source>Left edge</source>
+        <translation>Borde esquerdo</translation>
+    </message>
+    <message>
+        <source>Top</source>
+        <translation>Cume</translation>
+    </message>
+    <message>
+        <source>Right edge</source>
+        <translation>Borde dereito</translation>
+    </message>
+    <message>
+        <source>Bottom</source>
+        <translation>Fondo</translation>
+    </message>
+    <message>
+        <source>Page left</source>
+        <translation>Páxina á esquerda</translation>
+    </message>
+    <message>
+        <source>Page up</source>
+        <translation>Páxina en riba</translation>
+    </message>
+    <message>
+        <source>Page right</source>
+        <translation>Páxina á dereita</translation>
+    </message>
+    <message>
+        <source>Page down</source>
+        <translation>Páxina en baixo</translation>
+    </message>
+    <message>
+        <source>Scroll left</source>
+        <translation>Desprazar cara á esquerda</translation>
+    </message>
+    <message>
+        <source>Scroll up</source>
+        <translation>Desprazar cara arriba</translation>
+    </message>
+    <message>
+        <source>Scroll right</source>
+        <translation>Desprazar cara á dereita</translation>
+    </message>
+    <message>
+        <source>Scroll down</source>
+        <translation>Desprazar cara abaixo</translation>
     </message>
 </context>
 <context>
@@ -5556,7 +5485,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>%1: not attached</source>
-        <translation>%1: non adxuntado</translation>
+        <translation>%1: non anexado</translation>
     </message>
     <message>
         <source>%1: size query failed</source>
@@ -5754,7 +5683,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Search</source>
-        <translation>Procurar</translation>
+        <translation>Buscar</translation>
     </message>
     <message>
         <source>Standby</source>
@@ -6046,7 +5975,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Rotate Windows</source>
-        <translation>Xirar as fiestras</translation>
+        <translation>Xirar as xanelas</translation>
     </message>
     <message>
         <source>Rotation PB</source>
@@ -6206,7 +6135,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Page Down</source>
-        <translation>Página Abaixo</translation>
+        <translation>Páxina Abaixo</translation>
     </message>
     <message>
         <source>Caps Lock</source>
@@ -6277,7 +6206,7 @@ Desexa sobrescribilo?</translation>
     <message>
         <source>Toggle Call/Hangup</source>
         <extracomment>Button that will hang up if we&apos;re in call, or make a call if we&apos;re not.</extracomment>
-        <translation>Comutar chamar/colgar</translation>
+        <translation>Conmutar chamar/colgar</translation>
     </message>
     <message>
         <source>Flip</source>
@@ -6285,7 +6214,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Voice Dial</source>
-        <extracomment>Button to trigger voice dialling</extracomment>
+        <extracomment>Button to trigger voice dialing</extracomment>
         <translation>Chamar mediante voz</translation>
     </message>
     <message>
@@ -6449,6 +6378,88 @@ Desexa sobrescribilo?</translation>
     </message>
 </context>
 <context>
+    <name>QSlider</name>
+    <message>
+        <source>Page left</source>
+        <translation>Páxina á esquerda</translation>
+    </message>
+    <message>
+        <source>Page up</source>
+        <translation>Páxina en riba</translation>
+    </message>
+    <message>
+        <source>Position</source>
+        <translation>Posición</translation>
+    </message>
+    <message>
+        <source>Page right</source>
+        <translation>Páxina á dereita</translation>
+    </message>
+    <message>
+        <source>Page down</source>
+        <translation>Páxina en baixo</translation>
+    </message>
+</context>
+<context>
+    <name>QSocks5SocketEngine</name>
+    <message>
+        <source>Connection to proxy refused</source>
+        <translation>A conexión co proxy foi rexeitada</translation>
+    </message>
+    <message>
+        <source>Connection to proxy closed prematurely</source>
+        <translation>A conexión co proxy pechouse antes de tempo</translation>
+    </message>
+    <message>
+        <source>Proxy host not found</source>
+        <translation>Non se atopou o servidor proxy</translation>
+    </message>
+    <message>
+        <source>Connection to proxy timed out</source>
+        <translation>A conexión co proxy esgotou o tempo-límite</translation>
+    </message>
+    <message>
+        <source>Proxy authentication failed</source>
+        <translation>Fallou a autenticación co proxy</translation>
+    </message>
+    <message>
+        <source>Proxy authentication failed: %1</source>
+        <translation>Fallou a autenticación no proxy: %1</translation>
+    </message>
+    <message>
+        <source>SOCKS version 5 protocol error</source>
+        <translation>Erro do protocolo SOCKS versión 5</translation>
+    </message>
+    <message>
+        <source>General SOCKSv5 server failure</source>
+        <translation>Fallo xeral do servidor SOCKSv5</translation>
+    </message>
+    <message>
+        <source>Connection not allowed by SOCKSv5 server</source>
+        <translation>O servidor SOCKSv5 non permitiu a conexión</translation>
+    </message>
+    <message>
+        <source>TTL expired</source>
+        <translation>Esgotouse o TTL</translation>
+    </message>
+    <message>
+        <source>SOCKSv5 command not supported</source>
+        <translation>A orde SOCKSv5 non está soportada</translation>
+    </message>
+    <message>
+        <source>Address type not supported</source>
+        <translation>Tipo de enderezo non soportado</translation>
+    </message>
+    <message>
+        <source>Unknown SOCKSv5 proxy error code 0x%1</source>
+        <translation>Código de erro descoñecido (0x%1) do proxy SOCKSv5</translation>
+    </message>
+    <message>
+        <source>Network operation timed out</source>
+        <translation>A operación de rede esgotou o tempo-límite</translation>
+    </message>
+</context>
+<context>
     <name>QSoftKeyManager</name>
     <message>
         <source>Ok</source>
@@ -6473,6 +6484,17 @@ Desexa sobrescribilo?</translation>
     <message>
         <source>Exit</source>
         <translation>Saír</translation>
+    </message>
+</context>
+<context>
+    <name>QSpinBox</name>
+    <message>
+        <source>More</source>
+        <translation>Máis</translation>
+    </message>
+    <message>
+        <source>Less</source>
+        <translation>Menos</translation>
     </message>
 </context>
 <context>
@@ -6578,11 +6600,11 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>The basicConstraints path length parameter has been exceeded</source>
-        <translation>Superouse a lonxitude da rota do parámetro basicConstraints</translation>
+        <translation>Superouse a lonxitude da ruta do parámetro basicConstraints</translation>
     </message>
     <message>
         <source>The supplied certificate is unsuitable for this purpose</source>
-        <translation>O certificado fornecido non é apropriada para este propósito</translation>
+        <translation>O certificado fornecido non é apropiada para este propósito</translation>
     </message>
     <message>
         <source>The root CA certificate is not trusted for this purpose</source>
@@ -6594,11 +6616,11 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>The current candidate issuer certificate was rejected because its subject name did not match the issuer name of the current certificate</source>
-        <translation>O certificado emisor do candidado actual rexeitouse porque o nome do asunto non coincide co do emisor do certificado actual</translation>
+        <translation>O certificado emisor do candidato actual rexeitouse porque o nome do asunto non coincide co do emisor do certificado actual</translation>
     </message>
     <message>
         <source>The current candidate issuer certificate was rejected because its issuer name and serial number was present and did not match the authority key identifier of the current certificate</source>
-        <translation>O certificado emisor do candidado actual rexeitouse porque o nome do emisor e o número de serie están presentes pero non coinciden co identificador da autoridade da chave do certificado actual</translation>
+        <translation>O certificado emisor do candidato actual rexeitouse porque o nome do emisor e o número de serie están presentes pero non coinciden co identificador da autoridade da chave do certificado actual</translation>
     </message>
     <message>
         <source>The peer did not present any certificate</source>
@@ -6681,6 +6703,29 @@ Desexa sobrescribilo?</translation>
     </message>
 </context>
 <context>
+    <name>QSystemSemaphore</name>
+    <message>
+        <source>%1: permission denied</source>
+        <translation>%1: negouse o permiso</translation>
+    </message>
+    <message>
+        <source>%1: already exists</source>
+        <translation>%1: xa existe</translation>
+    </message>
+    <message>
+        <source>%1: does not exist</source>
+        <translation>%1: non existe</translation>
+    </message>
+    <message>
+        <source>%1: out of resources</source>
+        <translation>%1: esgotou os recursos</translation>
+    </message>
+    <message>
+        <source>%1: unknown error %2</source>
+        <translation>%1: erro descoñecido %2</translation>
+    </message>
+</context>
+<context>
     <name>QTDSDriver</name>
     <message>
         <source>Unable to open connection</source>
@@ -6689,6 +6734,17 @@ Desexa sobrescribilo?</translation>
     <message>
         <source>Unable to use database</source>
         <translation>Non foi posíbel empregar a base de datos</translation>
+    </message>
+</context>
+<context>
+    <name>QTabBar</name>
+    <message>
+        <source>Scroll Left</source>
+        <translation>Desprazar cara a esquerda</translation>
+    </message>
+    <message>
+        <source>Scroll Right</source>
+        <translation>Desprazar cara a dereita</translation>
     </message>
 </context>
 <context>
@@ -6731,6 +6787,53 @@ Desexa sobrescribilo?</translation>
     <message>
         <source>Select All</source>
         <translation>Escoller todo</translation>
+    </message>
+</context>
+<context>
+    <name>QToolButton</name>
+    <message>
+        <source>Press</source>
+        <translation>Premer</translation>
+    </message>
+    <message>
+        <source>Open</source>
+        <translation>Abrir</translation>
+    </message>
+</context>
+<context>
+    <name>QUdpSocket</name>
+    <message>
+        <source>This platform does not support IPv6</source>
+        <translation>Esta plataforma non admite IPv6</translation>
+    </message>
+</context>
+<context>
+    <name>QUndoGroup</name>
+    <message>
+        <source>Undo</source>
+        <translation>Desfacer</translation>
+    </message>
+    <message>
+        <source>Redo</source>
+        <translation>Facer de novo</translation>
+    </message>
+</context>
+<context>
+    <name>QUndoModel</name>
+    <message>
+        <source>&lt;empty&gt;</source>
+        <translation>&lt;baleiro&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>QUndoStack</name>
+    <message>
+        <source>Undo</source>
+        <translation>Desfacer</translation>
+    </message>
+    <message>
+        <source>Redo</source>
+        <translation>Facer de novo</translation>
     </message>
 </context>
 <context>
@@ -6778,42 +6881,6 @@ Desexa sobrescribilo?</translation>
     <message>
         <source>Insert Unicode control character</source>
         <translation>Inserir un carácter de control Unicode</translation>
-    </message>
-</context>
-<context>
-    <name>QUdpSocket</name>
-    <message>
-        <source>This platform does not support IPv6</source>
-        <translation>Esta plataforma non admite IPv6</translation>
-    </message>
-</context>
-<context>
-    <name>QUndoGroup</name>
-    <message>
-        <source>Undo</source>
-        <translation>Desfacer</translation>
-    </message>
-    <message>
-        <source>Redo</source>
-        <translation>Facer de novo</translation>
-    </message>
-</context>
-<context>
-    <name>QUndoModel</name>
-    <message>
-        <source>&lt;empty&gt;</source>
-        <translation>&lt;baleiro&gt;</translation>
-    </message>
-</context>
-<context>
-    <name>QUndoStack</name>
-    <message>
-        <source>Undo</source>
-        <translation>Desfacer</translation>
-    </message>
-    <message>
-        <source>Redo</source>
-        <translation>Facer de novo</translation>
     </message>
 </context>
 <context>
@@ -6879,7 +6946,7 @@ Desexa sobrescribilo?</translation>
     <message>
         <source>This is a searchable index. Enter search keywords: </source>
         <comment>text that appears at the start of nearly-obsolete web pages in the form of a &apos;searchable index&apos;</comment>
-        <translation>Este é un índice con capacidade de procura. Introduza as palabras chave da procura: </translation>
+        <translation>Este é un índice con capacidade de busca. Introduza as palabras chave da busca: </translation>
     </message>
     <message>
         <source>Choose File</source>
@@ -6894,7 +6961,7 @@ Desexa sobrescribilo?</translation>
     <message>
         <source>Open in New Window</source>
         <comment>Open in New Window context menu item</comment>
-        <translation>Abrir nunha fiestra nova</translation>
+        <translation>Abrir nunha xanela nova</translation>
     </message>
     <message>
         <source>Save Link...</source>
@@ -6964,7 +7031,7 @@ Desexa sobrescribilo?</translation>
     <message>
         <source>No Guesses Found</source>
         <comment>No Guesses Found context menu item</comment>
-        <translation>Non se acharon conxecturas</translation>
+        <translation>Non se atoparon conxecturas</translation>
     </message>
     <message>
         <source>Ignore</source>
@@ -6979,7 +7046,7 @@ Desexa sobrescribilo?</translation>
     <message>
         <source>Search The Web</source>
         <comment>Search The Web context menu item</comment>
-        <translation>Procurar na web</translation>
+        <translation>Buscar na web</translation>
     </message>
     <message>
         <source>Look Up In Dictionary</source>
@@ -7084,22 +7151,22 @@ Desexa sobrescribilo?</translation>
     <message>
         <source>No recent searches</source>
         <comment>Label for only item in menu that appears when clicking on the search field image, when no searches have been performed</comment>
-        <translation>Non se procurou nada</translation>
+        <translation>Non se buscou nada</translation>
     </message>
     <message>
         <source>Recent searches</source>
         <comment>label for first item in the menu that appears when clicking on the search field image, used as embedded menu title</comment>
-        <translation>Procuras recentes</translation>
+        <translation>Buscas recentes</translation>
     </message>
     <message>
         <source>Clear recent searches</source>
         <comment>menu item in Recent Searches menu that empties menu&apos;s contents</comment>
-        <translation>Limpar as procuras recentes</translation>
+        <translation>Limpar as buscas recentes</translation>
     </message>
     <message>
         <source>Missing Plug-in</source>
         <comment>Label text to be used when a plug-in is missing</comment>
-        <translation>Falta a extensión</translation>
+        <translation>Falta o complemento</translation>
     </message>
     <message>
         <source>Unknown</source>
@@ -7129,7 +7196,7 @@ Desexa sobrescribilo?</translation>
     <message>
         <source>Video Element</source>
         <comment>Media controller element</comment>
-        <translation>Elemento de video</translation>
+        <translation>Elemento de vídeo</translation>
     </message>
     <message>
         <source>Mute Button</source>
@@ -7239,7 +7306,7 @@ Desexa sobrescribilo?</translation>
     <message>
         <source>Movie time scrubber thumb</source>
         <comment>Media controller element</comment>
-        <translation>Minuatura do cursor de posición do filme</translation>
+        <translation>Miniatura do cursor de posición do filme</translation>
     </message>
     <message>
         <source>Rewind movie</source>
@@ -7881,7 +7948,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Start tag expected.</source>
-        <translation>Agardábase unha etiquera de inicio.</translation>
+        <translation>Agardábase unha etiqueta de inicio.</translation>
     </message>
     <message>
         <source>NDATA in parameter entity declaration.</source>
@@ -7893,7 +7960,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>%1 is an invalid processing instruction name.</source>
-        <translation>%1 é un nome non válido de intrucción de procesamento.</translation>
+        <translation>%1 é un nome non válido de instrución de procesamento.</translation>
     </message>
     <message>
         <source>Invalid processing instruction name.</source>
@@ -7925,7 +7992,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Invalid character reference.</source>
-        <translation>Referencia a un caracter non válido.</translation>
+        <translation>Referencia a un carácter non válido.</translation>
     </message>
 </context>
 <context>
@@ -8124,15 +8191,16 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>The target name in a processing instruction cannot be %1 in any combination of upper and lower case. Therefore, %2 is invalid.</source>
-        <translation type="unfinished"></translation>
+        <translation>O nome de destino nunha instrución de procesamento non pode ser %1 en ningunha combinación de maiúsculas nin minúsculas, polo que
+%2 non é válido.</translation>
     </message>
     <message>
         <source>%1 is not a valid target name in a processing instruction. It must be a %2 value, e.g. %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 non é un nome válido de destino dunha instrución de procesamento. Debe ser un valor %2, p. ex. %3.</translation>
     </message>
     <message>
         <source>The last step in a path must contain either nodes or atomic values. It cannot be a mixture between the two.</source>
-        <translation>O último paso nunha rota debe conter ou nodos ou valores atómicos. Non pode ser unha mistura dos dous.</translation>
+        <translation>O último paso nunha ruta debe conter ou nodos ou valores atómicos. Non pode ser unha mistura dos dous.</translation>
     </message>
     <message>
         <source>The data of a processing instruction cannot contain the string %1</source>
@@ -8202,1627 +8270,1555 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>%1 must be followed by %2 or %3, not at the end of the replacement string.</source>
-        <translation type="unfinished">%1 debe estar seguido por %2 ou %3, non na fin da cadea substituta.</translation>
+        <translation>%1 debe estar seguido por %2 ou %3, non na fin da cadea substituta.</translation>
     </message>
     <message>
         <source>In the replacement string, %1 must be followed by at least one digit when not escaped.</source>
-        <translation type="unfinished">Na cadea substituta, %1 debe ir seguido de cando menos un díxito cando non 
-estea escapada.</translation>
+        <translation>Na cadea substituta, %1 debe ir seguido de cando menos un díxito cando non estea escapada.</translation>
     </message>
     <message>
         <source>In the replacement string, %1 can only be used to escape itself or %2, not %3</source>
-        <translation type="unfinished">Na cadea substituta, %1 só pode ser usado para escaparse a si mesmo ou %2, 
-non %3.</translation>
+        <translation>Na cadea substituta %1 só pode ser usado para escaparse a si mesmo ou a %2, non a %3.</translation>
     </message>
     <message>
         <source>%1 matches newline characters</source>
-        <translation type="unfinished">%1 casa con caracteres de nova liña</translation>
+        <translation>%1 casa con caracteres de nova liña</translation>
     </message>
     <message>
         <source>%1 and %2 match the start and end of a line.</source>
-        <translation type="unfinished">%1 e %2 casan con comezo e fin de liña</translation>
+        <translation>%1 e %2 casan con comezo e fin de liña.</translation>
     </message>
     <message>
         <source>Matches are case insensitive</source>
-        <translation type="unfinished">As concordancias non son sensíbeis á capitalización</translation>
+        <translation>As concordancias non son sensíbeis á capitalización</translation>
     </message>
     <message>
         <source>Whitespace characters are removed, except when they appear in character classes</source>
-        <translation type="unfinished">Os espazos en branco son eliminados, excepto se aparecen en clases de 
-caracteres</translation>
+        <translation>Os espazos en branco son eliminados, excepto se aparecen en clases de caracteres</translation>
     </message>
     <message>
         <source>%1 is an invalid regular expression pattern: %2</source>
-        <translation type="unfinished">%1 é un padrón non válido de expresión regular: %2</translation>
+        <translation>%1 é un padrón non válido de expresión regular: %2</translation>
     </message>
     <message>
         <source>%1 is an invalid flag for regular expressions. Valid flags are:</source>
-        <translation type="unfinished">%1 é unha bandeira non válida de expresión regular. As valedoiras son:</translation>
+        <translation>%1 é unha bandeira non válida de expresión regular. As valedoiras son:</translation>
     </message>
     <message>
         <source>If the first argument is the empty sequence or a zero-length string (no namespace), a prefix cannot be specified. Prefix %1 was specified.</source>
-        <translation type="unfinished">Se o primeiro argumento é a secuencia baleira ou unha cadea de lonxitude 
-cero (sen espazo de nomes), non se pode especificar un prefixo. 
-Especificouse o prefixo %1.</translation>
+        <translation>Se o primeiro argumento é a secuencia baleira ou unha cadea de lonxitude cero (sen espazo de nomes), non se pode especificar un prefixo. Especificouse o prefixo %1.</translation>
     </message>
     <message>
         <source>It will not be possible to retrieve %1.</source>
-        <translation type="unfinished">Non será posíbel acadar %1.</translation>
+        <translation>Non será posíbel acadar %1.</translation>
     </message>
     <message>
         <source>The default collection is undefined</source>
-        <translation type="unfinished">Non se definiu a colección predeterminada.</translation>
+        <translation>Non se definiu a colección predeterminada</translation>
     </message>
     <message>
         <source>%1 cannot be retrieved</source>
-        <translation type="unfinished">Non é posíbel acadar %1</translation>
+        <translation>Non é posíbel acadar %1</translation>
     </message>
     <message>
         <source>The normalization form %1 is unsupported. The supported forms are %2, %3, %4, and %5, and none, i.e. the empty string (no normalization).</source>
-        <translation type="unfinished">A forma de normalización %1 non está soportada. As formas soportadas son %2, 
-%3, %4, %5 e ningunha, i.e. a cadea en branco (sen normalización).</translation>
+        <translation>A forma de normalización %1 non está soportada. As formas soportadas son %2, %3, %4, %5 e ningunha, i.e. a cadea en branco (sen normalización).</translation>
     </message>
     <message>
         <source>A zone offset must be in the range %1..%2 inclusive. %3 is out of range.</source>
-        <translation type="unfinished">O desprazamento de zona debe estar no intervalo %1..%2 inclusive. %3 está 
-fora de intervalo.</translation>
+        <translation>O desprazamento de zona debe estar no intervalo %1..%2 inclusive. %3 está fora de intervalo.</translation>
     </message>
     <message>
         <source>%1 is not a whole number of minutes.</source>
-        <translation type="unfinished">%1 non é un número absoluto de minutos.</translation>
+        <translation>%1 non é un número absoluto de minutos.</translation>
     </message>
     <message>
         <source>The URI cannot have a fragment</source>
-        <translation type="unfinished">A URI non pode ter un anaco</translation>
+        <translation>A URI non pode ter un anaco</translation>
     </message>
     <message>
         <source>Required cardinality is %1; got cardinality %2.</source>
-        <translation type="unfinished">A cardinalidade requirida é %1; obtívose a cardinalidade %2.</translation>
+        <translation>A cardinalidade requirida é %1; obtívose a cardinalidade %2.</translation>
     </message>
     <message>
         <source>The item %1 did not match the required type %2.</source>
-        <translation type="unfinished">O ítem %1 non é do tipo requirido %2.</translation>
+        <translation>O elemento %1 non é do tipo requirido %2.</translation>
     </message>
     <message>
         <source>The variable %1 is unused</source>
-        <translation type="unfinished">A variábel %1 non é usada</translation>
+        <translation>A variábel %1 non é usada</translation>
     </message>
     <message>
         <source>W3C XML Schema identity constraint selector</source>
-        <translation type="unfinished">Selector de restrición de identidade do esquema XML do W3C</translation>
+        <translation>Selector de restrición de identidade do esquema XML do W3C</translation>
     </message>
     <message>
         <source>W3C XML Schema identity constraint field</source>
-        <translation type="unfinished">Campo de restrición de identidade do esquema XML do W3C</translation>
+        <translation>Campo de restrición de identidade do esquema XML do W3C</translation>
     </message>
     <message>
         <source>A construct was encountered which is disallowed in the current language(%1).</source>
-        <translation type="unfinished">Atopouse unha construción que non está permitida na linguaxe actual (%1).</translation>
+        <translation>Atopouse unha construción que non está permitida na linguaxe actual (%1).</translation>
     </message>
     <message>
         <source>%1 is an unknown schema type.</source>
-        <translation type="unfinished">%1 é un tipo de esquema descoñecido.</translation>
+        <translation>%1 é un tipo de esquema descoñecido.</translation>
     </message>
     <message>
         <source>A template with name %1 has already been declared.</source>
-        <translation type="unfinished">Xa se declarou un modelo co nome %1.</translation>
+        <translation>Xa se declarou un modelo co nome %1.</translation>
     </message>
     <message>
         <source>%1 is not a valid numeric literal.</source>
-        <translation type="unfinished">%1 non é un texto numérico válido.</translation>
+        <translation>%1 non é un texto numérico válido.</translation>
     </message>
     <message>
         <source>Only one %1 declaration can occur in the query prolog.</source>
-        <translation type="unfinished">Só pode haber unha declaración de %1 no prólogo da procura.</translation>
+        <translation>Só pode haber unha declaración de %1 no prólogo da procura.</translation>
     </message>
     <message>
         <source>The initialization of variable %1 depends on itself</source>
-        <translation type="unfinished">A inicialización da variábel %1 depende de si mesma</translation>
+        <translation>A inicialización da variábel %1 depende de si mesma</translation>
     </message>
     <message>
         <source>No variable with name %1 exists</source>
-        <translation type="unfinished">Non hai ningunha variábel chamada %1</translation>
+        <translation>Non hai ningunha variábel chamada %1</translation>
     </message>
     <message>
         <source>Version %1 is not supported. The supported XQuery version is 1.0.</source>
-        <translation type="unfinished">Non está soportada a versión %1. A versión soportada de XQuery é a 1.0.</translation>
+        <translation>Non está soportada a versión %1. A versión soportada de XQuery é a 1.0.</translation>
     </message>
     <message>
         <source>The encoding %1 is invalid. It must contain Latin characters only, must not contain whitespace, and must match the regular expression %2.</source>
-        <translation type="unfinished">A codificación %1 non é válida. Só debe conter caracteres Latinos, non pode 
-conter espazos, e debe casar coa expresión regular %2.</translation>
+        <translation>A codificación %1 non é válida. Só debe conter caracteres Latinos, non pode conter espazos, e debe casar coa expresión regular %2.</translation>
     </message>
     <message>
         <source>No function with signature %1 is available</source>
-        <translation type="unfinished">Non está dispoñíbel ningunha función coa sinatura %1</translation>
+        <translation>Non está dispoñíbel ningunha función coa sinatura %1</translation>
     </message>
     <message>
         <source>A default namespace declaration must occur before function, variable, and option declarations.</source>
-        <translation type="unfinished">Debe haber unha declaración dun espazo de nomes predeterminado antes das 
-declaracións de funcións, variábeis e opcións.</translation>
+        <translation>Debe haber unha declaración dun espazo de nomes predeterminado antes das declaracións de funcións, variábeis e opcións.</translation>
     </message>
     <message>
         <source>Namespace declarations must occur before function, variable, and option declarations.</source>
-        <translation type="unfinished">Debe haber declaracións dun espazo de nomes antes das declaracións de 
-funcións, variábeis e opcións.</translation>
+        <translation>Debe haber declaracións dun espazo de nomes antes das declaracións de funcións, variábeis e opcións.</translation>
     </message>
     <message>
         <source>Module imports must occur before function, variable, and option declarations.</source>
-        <translation type="unfinished">As importacións de módulos deben estar antes das declaracións de funcións, 
-variábeis e opcións.</translation>
+        <translation>As importacións de módulos deben estar antes das declaracións de funcións, variábeis e opcións.</translation>
     </message>
     <message>
         <source>The keyword %1 cannot occur with any other mode name.</source>
-        <translation type="unfinished">A palabra-chave %1 só pode aparecer con calquera outro nome de modo.</translation>
+        <translation>A palabra-chave %1 só pode aparecer con calquera outro nome de modo.</translation>
     </message>
     <message>
         <source>The value of attribute %1 must be of type %2, which %3 isn&apos;t.</source>
-        <translation type="unfinished">O valor do atributo %1 debe ser do tipo %2 e %3 non o é.</translation>
+        <translation>O valor do atributo %1 debe ser do tipo %2 e %3 non o é.</translation>
     </message>
     <message>
         <source>It is not possible to redeclare prefix %1.</source>
-        <translation type="unfinished">Non é posíbel declarar de novo o prefixo %1.</translation>
+        <translation>Non é posíbel declarar de novo o prefixo %1.</translation>
     </message>
     <message>
         <source>The prefix %1 cannot be bound. By default, it is already bound to the namespace %2.</source>
-        <translation type="unfinished">Non foi posíbel atopar o prefixo %1. Por omisión, xa está vinculado co 
-espazo de nomes %2.</translation>
+        <translation>Non foi posíbel vincular o prefixo %1. Por omisión, xa está vinculado co espazo de nomes %2.</translation>
     </message>
     <message>
         <source>Prefix %1 is already declared in the prolog.</source>
-        <translation type="unfinished">O prefixo %1 xa está declarado no prólogo.</translation>
+        <translation>O prefixo %1 xa está declarado no prólogo.</translation>
     </message>
     <message>
         <source>The name of an option must have a prefix. There is no default namespace for options.</source>
-        <translation type="unfinished">O nome dunha opción debe ter un prefixo. Non hai un espazo de nomes 
-predeterminado para as opcións.</translation>
+        <translation>O nome dunha opción debe ter un prefixo. Non hai un espazo de nomes predeterminado para as opcións.</translation>
     </message>
     <message>
         <source>The Schema Import feature is not supported, and therefore %1 declarations cannot occur.</source>
-        <translation type="unfinished">A funcionalidade de Importación de Esquema non está soportada, polo tanto 
-non pode haber declaracións %1.</translation>
+        <translation>A funcionalidade de Importación de Esquema non está soportada, polo tanto non pode haber declaracións %1.</translation>
     </message>
     <message>
         <source>The target namespace of a %1 cannot be empty.</source>
-        <translation type="unfinished">O espazo de nomes de destino dun %1 non pode estar en branco.</translation>
+        <translation>O espazo de nomes de destino dun %1 non pode estar en branco.</translation>
     </message>
     <message>
         <source>The module import feature is not supported</source>
-        <translation type="unfinished">A funcionalidade de importación de módulos non está soportada</translation>
+        <translation>A funcionalidade de importación de módulos non está soportada</translation>
     </message>
     <message>
         <source>A variable with name %1 has already been declared.</source>
-        <translation type="unfinished">Xa foi declarada unha variábel co nome %1.</translation>
+        <translation>Xa foi declarada unha variábel co nome %1.</translation>
     </message>
     <message>
         <source>No value is available for the external variable with name %1.</source>
-        <translation type="unfinished">Non se dispón de ningún valor para a variábel externa chamada %1.</translation>
+        <translation>Non se dispón de ningún valor para a variábel externa chamada %1.</translation>
     </message>
     <message>
         <source>A stylesheet function must have a prefixed name.</source>
-        <translation type="unfinished">As funcións de folla de estilo deben ter un nome con prefixo.</translation>
+        <translation>As funcións de folla de estilo deben ter un nome con prefixo.</translation>
     </message>
     <message>
         <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1 which exists for cases like this)</source>
-        <translation type="unfinished">O espazo de nomes das funcións definidas polo usuario non pode estar en 
-branco (probe co prefixo predefinido %1, que está para casos como este)</translation>
+        <translation>O espazo de nomes das funcións definidas polo usuario non pode estar en branco (probe co prefixo predefinido %1, que está para casos como este)</translation>
     </message>
     <message>
         <source>The namespace %1 is reserved; therefore user defined functions may not use it. Try the predefined prefix %2, which exists for these cases.</source>
-        <translation type="unfinished">O espazo de nomes %1 está reservado; polo tanto as funcións definidas polo 
-usuario non poden usalo. Ténteo co prefixo predefinido %2, que está para 
-casos como este.</translation>
+        <translation>O espazo de nomes %1 está reservado; polo tanto as funcións definidas polo usuario non poden usalo. Ténteo co prefixo predefinido %2, que está para casos como este.</translation>
     </message>
     <message>
         <source>The namespace of a user defined function in a library module must be equivalent to the module namespace. In other words, it should be %1 instead of %2</source>
-        <translation type="unfinished">O espazo de nomes dunha función definida polo usuario nun módulo de 
-biblioteca debe ser equivalente ao espazo de nomes do módulo. Con outras 
-verbas: debe ser %1 no canto de %2</translation>
+        <translation>O espazo de nomes dunha función definida polo usuario nun módulo de biblioteca debe ser equivalente ao espazo de nomes do módulo. Con outras verbas: debe ser %1 no canto de %2</translation>
     </message>
     <message>
         <source>A function already exists with the signature %1.</source>
-        <translation type="unfinished">Xa existe unha función coa sinatura %1.</translation>
+        <translation>Xa existe unha función coa sinatura %1.</translation>
     </message>
     <message>
         <source>No external functions are supported. All supported functions can be used directly, without first declaring them as external</source>
-        <translation type="unfinished">Non se soportan as funcións externas. Todas as funcións soportadas poden ser 
-usadas directamente, non fai falla declaralas como externas</translation>
+        <translation>Non se soportan as funcións externas. Todas as funcións soportadas poden ser usadas directamente, non fai falla declaralas como externas</translation>
     </message>
     <message>
         <source>An argument with name %1 has already been declared. Every argument name must be unique.</source>
-        <translation type="unfinished">Xa foi declarado un argumento co nome %1. O nome de cada argumento debe ser 
-único.</translation>
+        <translation>Xa foi declarado un argumento co nome %1. O nome de cada argumento debe ser único.</translation>
     </message>
     <message>
         <source>When function %1 is used for matching inside a pattern, the argument must be a variable reference or a string literal.</source>
-        <translation type="unfinished">Cando se emprega unha función %1 para procurar nun patrón, o argumento debe 
-ser unha referencia variábel ou unha cadea literal.</translation>
+        <translation>Cando se emprega unha función %1 para procurar nun patrón, o argumento debe ser unha referencia variábel ou unha cadea literal.</translation>
     </message>
     <message>
         <source>In an XSL-T pattern, the first argument to function %1 must be a string literal, when used for matching.</source>
-        <translation type="unfinished">Nun patrón XSL-T, o primeiro argumento da función %1 cando sexa empregada 
-para facer procuras debe ser unha cadea de texto.</translation>
+        <translation>Nun patrón XSL-T, o primeiro argumento da función %1 cando sexa empregada para facer procuras debe ser unha cadea de texto.</translation>
     </message>
     <message>
         <source>In an XSL-T pattern, the first argument to function %1 must be a literal or a variable reference, when used for matching.</source>
-        <translation type="unfinished">Nun patrón XSL-T, o primeiro argumento da función %1 cando sexa empregada 
-para facer procuras debe ser unha cadea de texto ou unha referencia variábel.</translation>
+        <translation>Nun patrón XSL-T, o primeiro argumento da función %1 cando sexa empregada para facer procuras debe ser unha cadea de texto ou unha referencia variábel.</translation>
     </message>
     <message>
         <source>In an XSL-T pattern, function %1 cannot have a third argument.</source>
-        <translation type="unfinished">Nun patrón XSL-T, a función %1 non pode ter un terceiro argumento.</translation>
+        <translation>Nun patrón XSL-T, a función %1 non pode ter un terceiro argumento.</translation>
     </message>
     <message>
         <source>In an XSL-T pattern, only function %1 and %2, not %3, can be used for matching.</source>
-        <translation type="unfinished">Nun patrón XSL-T, só pode empregar para procuras as funcións %1 e %2, non a %
-3.</translation>
+        <translation>Nun patrón XSL-T, só pode empregar para procuras as funcións %1 e %2, non a %3.</translation>
     </message>
     <message>
         <source>In an XSL-T pattern, axis %1 cannot be used, only axis %2 or %3 can.</source>
-        <translation type="unfinished">Nun patrón XSL-T non pode empregarse o eixo %1, só os %2 e %3.</translation>
+        <translation>Nun patrón XSL-T non pode empregarse o eixo %1, só os %2 e %3.</translation>
     </message>
     <message>
         <source>%1 is an invalid template mode name.</source>
-        <translation type="unfinished">%1 non é un nome de modo válido do modelo.</translation>
+        <translation>%1 non é un nome de modo válido do modelo.</translation>
     </message>
     <message>
         <source>The name of a variable bound in a for-expression must be different from the positional variable. Hence, the two variables named %1 collide.</source>
-        <translation type="unfinished">O nome dunha variábel asociada a unha expresión for debe ser diferente da 
-variábel posicional. Por isto, as dúas variábeis chamadas %1 chocan.</translation>
+        <translation>O nome dunha variábel asociada a unha expresión for debe ser diferente da variábel posicional. Por isto, as dúas variábeis chamadas %1 chocan.</translation>
     </message>
     <message>
         <source>The Schema Validation Feature is not supported. Hence, %1-expressions may not be used.</source>
-        <translation type="unfinished">Non está soportada a funcionalidade de Validación do Esquema. Polo tanto, as 
-expresións %1 non poden ser usadas.</translation>
+        <translation>Non está soportada a funcionalidade de Validación do Esquema. Polo tanto, as expresións %1 non poden ser usadas.</translation>
     </message>
     <message>
         <source>None of the pragma expressions are supported. Therefore, a fallback expression must be present</source>
-        <translation type="unfinished">Non está soportada ningunha das expresións pragma. Polo tanto, debe haber 
-presente unha expresión de reserva</translation>
+        <translation>Non está soportada ningunha das expresións pragma. Polo tanto, debe haber presente unha expresión de reserva</translation>
     </message>
     <message>
         <source>Each name of a template parameter must be unique; %1 is duplicated.</source>
-        <translation type="unfinished">Os nomes dos parámetros do modelo deben ser únicos, %1 está duplicado.</translation>
+        <translation>Os nomes dos parámetros do modelo deben ser únicos, %1 está duplicado.</translation>
     </message>
     <message>
         <source>The %1-axis is unsupported in XQuery</source>
-        <translation type="unfinished">Non está soportado o eixo %1 en XQuery</translation>
+        <translation>Non está soportado o eixo %1 en XQuery</translation>
     </message>
     <message>
         <source>No function with name %1 is available.</source>
-        <translation type="unfinished">Non hai ningunha función chamada %1.</translation>
+        <translation>Non hai ningunha función chamada %1.</translation>
     </message>
     <message>
         <source>The namespace URI cannot be the empty string when binding to a prefix, %1.</source>
-        <translation type="unfinished">A URI do espazo de nomes non pode ser unha cadea valeira cando se estexa a 
-asociar cun prefixo, %1.</translation>
+        <translation>A URI do espazo de nomes non pode ser unha cadea valeira cando se estea a asociar cun prefixo, %1.</translation>
     </message>
     <message>
         <source>%1 is an invalid namespace URI.</source>
-        <translation type="unfinished">%1 non é unha URI válida de espazo de nomes.</translation>
+        <translation>%1 non é unha URI válida de espazo de nomes.</translation>
     </message>
     <message>
         <source>It is not possible to bind to the prefix %1</source>
-        <translation type="unfinished">Non é posíbel asociar co prefixo %1</translation>
+        <translation>Non é posíbel asociar co prefixo %1</translation>
     </message>
     <message>
         <source>Namespace %1 can only be bound to %2 (and it is, in either case, pre-declared).</source>
-        <translation type="unfinished">O espazo de nomes %1 só pode estar vinculado a %2 (e está, en calquera caso, 
-predeclarado).</translation>
+        <translation>O espazo de nomes %1 só pode estar vinculado a %2 (e está, en calquera caso, predeclarado).</translation>
     </message>
     <message>
         <source>Prefix %1 can only be bound to %2 (and it is, in either case, pre-declared).</source>
-        <translation type="unfinished">O prefixo %1 só pode estar vinculado a %2 (e está, en calquera caso, 
-predeclarado).</translation>
+        <translation>O prefixo %1 só pode estar vinculado a %2 (e está, en calquera caso, predeclarado).</translation>
     </message>
     <message>
         <source>Two namespace declaration attributes have the same name: %1.</source>
-        <translation type="unfinished">Dous atributos na declaración dun espazo de nomes teñen o mesmo nome: %1.</translation>
+        <translation>Dous atributos na declaración dun espazo de nomes teñen o mesmo nome: %1.</translation>
     </message>
     <message>
         <source>The namespace URI must be a constant and cannot use enclosed expressions.</source>
-        <translation type="unfinished">A URI do espazo de nomes debe ser constante e non pode conter expresións.</translation>
+        <translation>A URI do espazo de nomes debe ser constante e non pode conter expresións.</translation>
     </message>
     <message>
         <source>An attribute with name %1 has already appeared on this element.</source>
-        <translation type="unfinished">Xa apareceu un atributo co nome %1 neste elemento.</translation>
+        <translation>Xa apareceu un atributo co nome %1 neste elemento.</translation>
     </message>
     <message>
         <source>A direct element constructor is not well-formed. %1 is ended with %2.</source>
-        <translation type="unfinished">Hai un construtor directo dun elemento que non está ben formado. %1 remata 
-con %2.</translation>
+        <translation>Hai un construtor directo dun elemento que non está ben formado. %1 remata con %2.</translation>
     </message>
     <message>
         <source>The name %1 does not refer to any schema type.</source>
-        <translation type="unfinished">O nome %1 non se refire a ningún tipo de esquema.</translation>
+        <translation>O nome %1 non se refire a ningún tipo de esquema.</translation>
     </message>
     <message>
         <source>%1 is an complex type. Casting to complex types is not possible. However, casting to atomic types such as %2 works.</source>
-        <translation type="unfinished">%1 é un tipo complexo. Non é posíbel converter a tipos complexos. Porén, si 
-que pode converter a tipos atómicos como %2.</translation>
+        <translation>%1 é un tipo complexo. Non é posíbel converter a tipos complexos. Porén, si que pode converter a tipos atómicos como %2.</translation>
     </message>
     <message>
         <source>%1 is not an atomic type. Casting is only possible to atomic types.</source>
-        <translation type="unfinished">%1 non é un tipo atómico. Só é posíbel converter a tipos atómicos.</translation>
+        <translation>%1 non é un tipo atómico. Só é posíbel converter a tipos atómicos.</translation>
     </message>
     <message>
         <source>%1 is not a valid name for a processing-instruction.</source>
-        <translation type="unfinished">%1 non é un nome válido para unha instrución de procesamento.</translation>
+        <translation>%1 non é un nome válido para unha instrución de procesamento.</translation>
     </message>
     <message>
         <source>%1 is not in the in-scope attribute declarations. Note that the schema import feature is not supported.</source>
-        <translation type="unfinished">%1 non está nas declaracións de atributos ao alcance. Lembre que non está 
-soportada a funcionalidade de importación de esquemas.</translation>
+        <translation>%1 non está nas declaracións de atributos ao alcance. Lembre que non está soportada a funcionalidade de importación de esquemas.</translation>
     </message>
     <message>
         <source>The name of an extension expression must be in a namespace.</source>
-        <translation type="unfinished">O nome dunha expresión de extensión debe estar nun espazo de nomes.</translation>
+        <translation>O nome dunha expresión de extensión debe estar nun espazo de nomes.</translation>
     </message>
     <message>
         <source>Element %1 is not allowed at this location.</source>
-        <translation type="unfinished">Neste lugar non se permite o elemento %1.</translation>
+        <translation>Neste lugar non se permite o elemento %1.</translation>
     </message>
     <message>
         <source>Text nodes are not allowed at this location.</source>
-        <translation type="unfinished">Neste lugar non se permiten nodos de texto.</translation>
+        <translation>Neste lugar non se permiten nodos de texto.</translation>
     </message>
     <message>
         <source>Parse error: %1</source>
-        <translation type="unfinished">Erro de procesamento: %1</translation>
+        <translation>Erro de procesamento: %1</translation>
     </message>
     <message>
         <source>The value of the XSL-T version attribute must be a value of type %1, which %2 isn&apos;t.</source>
-        <translation type="unfinished">O valor do atributo da versión de XSL-T debe ser un valor do tipo %1, e %2 
-non o é.</translation>
+        <translation>O valor do atributo da versión de XSL-T debe ser un valor do tipo %1, e %2 non o é.</translation>
     </message>
     <message>
         <source>Running an XSL-T 1.0 stylesheet with a 2.0 processor.</source>
-        <translation type="unfinished">A executar unha folla de estilos XSL-T 1.0 cun procesador 2.0.</translation>
+        <translation>A executar unha folla de estilos XSL-T 1.0 cun procesador 2.0.</translation>
     </message>
     <message>
         <source>Unknown XSL-T attribute %1.</source>
-        <translation type="unfinished">Non se coñece o atributo XSL-T %1.</translation>
+        <translation>Non se coñece o atributo XSL-T %1.</translation>
     </message>
     <message>
         <source>Attribute %1 and %2 are mutually exclusive.</source>
-        <translation type="unfinished">Os atributos %1 e %2 exclúense mutuamente.</translation>
+        <translation>Os atributos %1 e %2 exclúense mutuamente.</translation>
     </message>
     <message>
         <source>In a simplified stylesheet module, attribute %1 must be present.</source>
-        <translation type="unfinished">Nun módulo de folla de estilos simplificada debe estar presente o atributo %
-1.</translation>
+        <translation>Nun módulo de folla de estilos simplificada debe estar presente o atributo %1.</translation>
     </message>
     <message>
         <source>If element %1 has no attribute %2, it cannot have attribute %3 or %4.</source>
-        <translation type="unfinished">Se o elemento %1 non ten o atributo %2 non pode ter os atributos %3 nin %4.</translation>
+        <translation>Se o elemento %1 non ten o atributo %2 non pode ter os atributos %3 nin %4.</translation>
     </message>
     <message>
         <source>Element %1 must have at least one of the attributes %2 or %3.</source>
-        <translation type="unfinished">O elemento %1 debe ter polo menos un dos atributos %2 ou %3.</translation>
+        <translation>O elemento %1 debe ter polo menos un dos atributos %2 ou %3.</translation>
     </message>
     <message>
         <source>At least one mode must be specified in the %1-attribute on element %2.</source>
-        <translation type="unfinished">Debe especificarse polo menos un modo no atributo %1 do elemento %2.</translation>
+        <translation>Debe especificarse polo menos un modo no atributo %1 do elemento %2.</translation>
     </message>
     <message>
         <source>Element %1 must come last.</source>
-        <translation type="unfinished">O elemento %1 debe ir o último.</translation>
+        <translation>O elemento %1 debe ir o último.</translation>
     </message>
     <message>
         <source>At least one %1-element must occur before %2.</source>
-        <translation type="unfinished">Debe estar presente polo menos un elemento %1 antes de %2.</translation>
+        <translation>Debe estar presente polo menos un elemento %1 antes de %2.</translation>
     </message>
     <message>
         <source>Only one %1-element can appear.</source>
-        <translation type="unfinished">Só pode aparecer un elemento %1.</translation>
+        <translation>Só pode aparecer un elemento %1.</translation>
     </message>
     <message>
         <source>At least one %1-element must occur inside %2.</source>
-        <translation type="unfinished">Debe estar presente polo menos un elemento %1 dentro de %2.</translation>
+        <translation>Debe estar presente polo menos un elemento %1 dentro de %2.</translation>
     </message>
     <message>
         <source>When attribute %1 is present on %2, a sequence constructor cannot be used.</source>
-        <translation type="unfinished">Non se pode empregar un construtor de secuencia cando o atributo %1 está 
-presente en %2.</translation>
+        <translation>Non se pode empregar un construtor de secuencia cando o atributo %1 está presente en %2.</translation>
     </message>
     <message>
         <source>Element %1 must have either a %2-attribute or a sequence constructor.</source>
-        <translation type="unfinished">O elemento %1 debe ter ou un atributo %2 ou un construtor de secuencia.</translation>
+        <translation>O elemento %1 debe ter ou un atributo %2 ou un construtor de secuencia.</translation>
     </message>
     <message>
         <source>When a parameter is required, a default value cannot be supplied through a %1-attribute or a sequence constructor.</source>
-        <translation type="unfinished">Non se pode subministrar un valor predeterminado mediante un atributo %1 nin 
-un construtor de secuencia cando se require un parámetro.</translation>
+        <translation>Non se pode subministrar un valor predeterminado mediante un atributo %1 nin un construtor de secuencia cando se require un parámetro.</translation>
     </message>
     <message>
         <source>Element %1 cannot have children.</source>
-        <translation type="unfinished">O elemento %1 non pode ter fillos.</translation>
+        <translation>O elemento %1 non pode ter fillos.</translation>
     </message>
     <message>
         <source>Element %1 cannot have a sequence constructor.</source>
-        <translation type="unfinished">O elemento %1 non pode ter un construtor de secuencia.</translation>
+        <translation>O elemento %1 non pode ter un construtor de secuencia.</translation>
     </message>
     <message>
         <source>The attribute %1 cannot appear on %2, when it is a child of %3.</source>
-        <translation type="unfinished">O atributo %1 non pode aparecer en %2 cando é filla de %3.</translation>
+        <translation>O atributo %1 non pode aparecer en %2 cando é filla de %3.</translation>
     </message>
     <message>
         <source>A parameter in a function cannot be declared to be a tunnel.</source>
-        <translation type="unfinished">Non se pode declarar como túnel un parámetro nunha función.</translation>
+        <translation>Non se pode declarar como túnel un parámetro nunha función.</translation>
     </message>
     <message>
         <source>This processor is not Schema-aware and therefore %1 cannot be used.</source>
-        <translation type="unfinished">Este procesador non é coñecedor do Schema e polo tanto %1 non pode 
-empregarse.</translation>
+        <translation>Este procesador non é coñecedor do Schema e polo tanto %1 non pode empregarse.</translation>
     </message>
     <message>
         <source>Top level stylesheet elements must be in a non-null namespace, which %1 isn&apos;t.</source>
-        <translation type="unfinished">Os elementos da folla de estilo de máximo nivel debe estar nun espazo de 
-nomes non nulo, e %1 non o é.</translation>
+        <translation>Os elementos da folla de estilo de máximo nivel debe estar nun espazo de nomes non nulo, e %1 non o é.</translation>
     </message>
     <message>
         <source>The value for attribute %1 on element %2 must either be %3 or %4, not %5.</source>
-        <translation type="unfinished">O valor do atributo %1 no elemento %2 debe ser %3 ou %4, non %5.</translation>
+        <translation>O valor do atributo %1 no elemento %2 debe ser %3 ou %4, non %5.</translation>
     </message>
     <message>
         <source>Attribute %1 cannot have the value %2.</source>
-        <translation type="unfinished">O atributo %1 non pode ter o valor %2.</translation>
+        <translation>O atributo %1 non pode ter o valor %2.</translation>
     </message>
     <message>
         <source>The attribute %1 can only appear on the first %2 element.</source>
-        <translation type="unfinished">O atributo %1 só pode aparecer no primeiro elemento %2.</translation>
+        <translation>O atributo %1 só pode aparecer no primeiro elemento %2.</translation>
     </message>
     <message>
         <source>At least one %1 element must appear as child of %2.</source>
-        <translation type="unfinished">Debe aparecer cando menos un elemento %1 como fillo de %2.</translation>
+        <translation>Debe aparecer cando menos un elemento %1 como fillo de %2.</translation>
     </message>
     <message>
         <source>Empty particle cannot be derived from non-empty particle.</source>
-        <translation type="unfinished">Unha partícula baleira non pode derivarse dunha non baleira.</translation>
+        <translation>Unha partícula baleira non pode derivarse dunha non baleira.</translation>
     </message>
     <message>
         <source>Derived particle is missing element %1.</source>
-        <translation type="unfinished">Na partícula derivada falta o elemento %1.</translation>
+        <translation>Na partícula derivada falta o elemento %1.</translation>
     </message>
     <message>
         <source>Derived element %1 is missing value constraint as defined in base particle.</source>
-        <translation type="unfinished">No elemento derivado %1 falta a restrición aos valores definida na partícula 
-de base.</translation>
+        <translation>No elemento derivado %1 falta a restrición aos valores definida na partícula de base.</translation>
     </message>
     <message>
         <source>Derived element %1 has weaker value constraint than base particle.</source>
-        <translation type="unfinished">O elemento derivado %1 ten unha restrición aos valores máis feble do que a 
-da súa partícula de base.</translation>
+        <translation>O elemento derivado %1 ten unha restrición aos valores máis feble do que a da súa partícula de base.</translation>
     </message>
     <message>
         <source>Fixed value constraint of element %1 differs from value constraint in base particle.</source>
-        <translation type="unfinished">A restrición de valor fixo do elemento %1 é diferente da de valor da 
-partícula base.</translation>
+        <translation>A restrición de valor fixo do elemento %1 é diferente da de valor da partícula base.</translation>
     </message>
     <message>
         <source>Derived element %1 cannot be nillable as base element is not nillable.</source>
-        <translation type="unfinished">O elemento derivado %1 non se pode anular porque o elemento de base non se 
-pode anular.</translation>
+        <translation>O elemento derivado %1 non se pode anular porque o elemento de base non se pode anular.</translation>
     </message>
     <message>
         <source>Block constraints of derived element %1 must not be more weaker than in the base element.</source>
-        <translation type="unfinished">O bloque de restricións do elemento derivado %1 non pode ser máis feble do 
-que son as do elemento de base.</translation>
+        <translation>O bloque de restricións do elemento derivado %1 non pode ser máis feble do que son as do elemento de base.</translation>
     </message>
     <message>
         <source>Simple type of derived element %1 cannot be validly derived from base element.</source>
-        <translation type="unfinished">O tipo simple do elemento derivado %1 non se pode derivar con validez a 
-partir do elemento de base.</translation>
+        <translation>O tipo simple do elemento derivado %1 non se pode derivar con validez a partir do elemento de base.</translation>
     </message>
     <message>
         <source>Complex type of derived element %1 cannot be validly derived from base element.</source>
-        <translation type="unfinished">O tipo complexo do elemento derivado %1 non se pode derivar con validez a 
-partir do elemento de base.</translation>
+        <translation>O tipo complexo do elemento derivado %1 non se pode derivar con validez a partir do elemento de base.</translation>
     </message>
     <message>
         <source>Element %1 is missing in derived particle.</source>
-        <translation type="unfinished">Falta o elemento %1 na partícula derivada.</translation>
+        <translation>Falta o elemento %1 na partícula derivada.</translation>
     </message>
     <message>
         <source>Element %1 does not match namespace constraint of wildcard in base particle.</source>
-        <translation type="unfinished">O elemento %1 non casa coa restrición do espazo de nomes de comodín na 
-partícula de base.</translation>
+        <translation>O elemento %1 non casa coa restrición do espazo de nomes de comodín na partícula de base.</translation>
     </message>
     <message>
         <source>Wildcard in derived particle is not a valid subset of wildcard in base particle.</source>
-        <translation type="unfinished">O comodín da partícula derivada non é un subconxunto válido do da partícula 
-de base.</translation>
+        <translation>O carácter de substitución da partícula derivada non é un subconxunto válido do da partícula de base.</translation>
     </message>
     <message>
         <source>processContent of wildcard in derived particle is weaker than wildcard in base particle.</source>
-        <translation type="unfinished">O processContent do comodín na partícula derivada é máis feble que o do 
-comodín na partícula de base.</translation>
+        <translation>O processContent do comodín na partícula derivada é máis feble que o do comodín na partícula de base.</translation>
     </message>
     <message>
         <source>Derived particle allows content that is not allowed in the base particle.</source>
-        <translation type="unfinished">A partícula derivada permite contido non permitido na partícula de base.</translation>
+        <translation>A partícula derivada permite contido non permitido na partícula de base.</translation>
     </message>
     <message>
         <source>%1 has inheritance loop in its base type %2.</source>
-        <translation type="unfinished">%1 ten un bucle de herdanza no seu tipo base %2.</translation>
+        <translation>%1 ten un bucle de herdanza no seu tipo base %2.</translation>
     </message>
     <message>
         <source>Circular inheritance of base type %1.</source>
-        <translation type="unfinished">Herdanza circular do tipo de base %1.</translation>
+        <translation>Herdanza circular do tipo de base %1.</translation>
     </message>
     <message>
         <source>Circular inheritance of union %1.</source>
-        <translation type="unfinished">Herdanza circular da unión %1.</translation>
+        <translation>Herdanza circular da unión %1.</translation>
     </message>
     <message>
         <source>%1 is not allowed to derive from %2 by restriction as the latter defines it as final.</source>
-        <translation type="unfinished">Non se permite que %1 derive de %2 debido a unha restrición xa que o este 
-defíneo como final.</translation>
+        <translation>Non se permite que %1 derive de %2 debido a unha restrición xa que o este defíneo como final.</translation>
     </message>
     <message>
         <source>%1 is not allowed to derive from %2 by extension as the latter defines it as final.</source>
-        <translation type="unfinished">Non se permite que %1 derive de %2 por extensión debido a unha restrición xa 
-que o este defíneo como final.</translation>
+        <translation>Non se permite que %1 derive de %2 por extensión debido a unha restrición xa que o este defíneo como final.</translation>
     </message>
     <message>
         <source>Base type of simple type %1 cannot be complex type %2.</source>
-        <translation type="unfinished">O tipo base do tipo simple %1 non pode ser do tipo complexo %2.</translation>
+        <translation>O tipo base do tipo simple %1 non pode ser do tipo complexo %2.</translation>
     </message>
     <message>
         <source>Simple type %1 cannot have direct base type %2.</source>
-        <translation type="unfinished">O tipo simple %1 non pode ter unha base directa do tipo %2.</translation>
+        <translation>O tipo simple %1 non pode ter unha base directa do tipo %2.</translation>
     </message>
     <message>
         <source>Simple type %1 is not allowed to have base type %2.</source>
-        <translation type="unfinished">Ao tipo simple %1 non se lle permite ter unha base do tipo %2.</translation>
+        <translation>Ao tipo simple %1 non se lle permite ter unha base do tipo %2.</translation>
     </message>
     <message>
         <source>Simple type %1 can only have simple atomic type as base type.</source>
-        <translation type="unfinished">O tipo simple %1 só pode ter un tipo atómico simple como tipo de base.</translation>
+        <translation>O tipo simple %1 só pode ter un tipo atómico simple como tipo de base.</translation>
     </message>
     <message>
         <source>Simple type %1 cannot derive from %2 as the latter defines restriction as final.</source>
-        <translation type="unfinished">O tipo simple %1 non pode derivar do %2 xa que este define a restrición como 
-final.</translation>
+        <translation>O tipo simple %1 non pode derivar do %2 xa que este define a restrición como final.</translation>
     </message>
     <message>
         <source>Variety of item type of %1 must be either atomic or union.</source>
-        <translation type="unfinished">A variedade do tipo de elemento de %1 debe ser ou ou atómico ou unión.</translation>
+        <translation>A variedade do tipo de elemento de %1 debe ser ou ou atómico ou unión.</translation>
     </message>
     <message>
         <source>Variety of member types of %1 must be atomic.</source>
-        <translation type="unfinished">A variedade dos tipos membro de %1 debe sen atómica.</translation>
+        <translation>A variedade dos tipos membro de %1 debe sen atómica.</translation>
     </message>
     <message>
         <source>%1 is not allowed to derive from %2 by list as the latter defines it as final.</source>
-        <translation type="unfinished">Non se permite que %1 derive de %2 por lista xa que esta defínea como final.</translation>
+        <translation>Non se permite que %1 derive de %2 por lista xa que esta defínea como final.</translation>
     </message>
     <message>
         <source>Simple type %1 is only allowed to have %2 facet.</source>
-        <translation type="unfinished">Só se permite que o tipo simple %1 teña a faceta %2.</translation>
+        <translation>Só se permite que o tipo simple %1 teña a faceta %2.</translation>
     </message>
     <message>
         <source>Base type of simple type %1 must have variety of type list.</source>
-        <translation type="unfinished">O tipo base do tipo simple %1 debe ser variedade do tipo lista.</translation>
+        <translation>O tipo base do tipo simple %1 debe ser variedade do tipo lista.</translation>
     </message>
     <message>
         <source>Base type of simple type %1 has defined derivation by restriction as final.</source>
-        <translation type="unfinished">O tipo base do tipo simple %1 definiu a derivación por restrición como final.</translation>
+        <translation>O tipo base do tipo simple %1 definiu a derivación por restrición como final.</translation>
     </message>
     <message>
         <source>Item type of base type does not match item type of %1.</source>
-        <translation type="unfinished">O tipo de elemento do tipo de base non casa co tipo de elemento de %1.</translation>
+        <translation>O tipo de elemento do tipo de base non casa co tipo de elemento de %1.</translation>
     </message>
     <message>
         <source>Simple type %1 contains not allowed facet type %2.</source>
-        <translation type="unfinished">O tipo simple %1 contén unha faceta non permitida do tipo %2.</translation>
+        <translation>O tipo simple %1 contén unha faceta non permitida do tipo %2.</translation>
     </message>
     <message>
         <source>%1 is not allowed to derive from %2 by union as the latter defines it as final.</source>
-        <translation type="unfinished">Non se permite que %1 derive de %2 por unión xa que este defínea como final.</translation>
+        <translation>Non se permite que %1 derive de %2 por unión xa que este defínea como final.</translation>
     </message>
     <message>
         <source>%1 is not allowed to have any facets.</source>
-        <translation type="unfinished">%1 non pode ter ningunha faceta.</translation>
+        <translation>%1 non pode ter ningunha faceta.</translation>
     </message>
     <message>
         <source>Base type %1 of simple type %2 must have variety of union.</source>
-        <translation type="unfinished">O tipo de base %1 do tipo simple %2 debe ser unha variedade de unión.</translation>
+        <translation>O tipo de base %1 do tipo simple %2 debe ser unha variedade de unión.</translation>
     </message>
     <message>
         <source>Base type %1 of simple type %2 is not allowed to have restriction in %3 attribute.</source>
-        <translation type="unfinished">Non se permite que o tipo base %1 do tipo simple %2 teña restrición no 
-atributo %3.</translation>
+        <translation>Non se permite que o tipo base %1 do tipo simple %2 teña restrición no atributo %3.</translation>
     </message>
     <message>
         <source>Member type %1 cannot be derived from member type %2 of %3&apos;s base type %4.</source>
-        <translation type="unfinished">O tipo membro %1 non se pode derivar do tipo membro %2 do tipo base %4 de %3.</translation>
+        <translation>O tipo membro %1 non se pode derivar do tipo membro %2 do tipo base %4 de %3.</translation>
     </message>
     <message>
         <source>Derivation method of %1 must be extension because the base type %2 is a simple type.</source>
-        <translation type="unfinished">O método de derivación  de %1 debe ser por extensión porque o tipo base %2 é 
-un tipo simple.</translation>
+        <translation>O método de derivación  de %1 debe ser por extensión porque o tipo base %2 é un tipo simple.</translation>
     </message>
     <message>
         <source>Complex type %1 has duplicated element %2 in its content model.</source>
-        <translation type="unfinished">O tipo complexo %1 contén por duplicado o elemento %2 no seu modelo de 
-contido.</translation>
+        <translation>O tipo complexo %1 contén por duplicado o elemento %2 no seu modelo de contido.</translation>
     </message>
     <message>
         <source>Complex type %1 has non-deterministic content.</source>
-        <translation type="unfinished">O tipo complexo %1 ten contido non determinista.</translation>
+        <translation>O tipo complexo %1 ten contido non determinista.</translation>
     </message>
     <message>
         <source>Attributes of complex type %1 are not a valid extension of the attributes of base type %2: %3.</source>
-        <translation type="unfinished">Os atributos do tipo complexo %1 non son unha extensión válida dos atributos 
-do tipo base %2: %3.</translation>
+        <translation>Os atributos do tipo complexo %1 non son unha extensión válida dos atributos do tipo base %2: %3.</translation>
     </message>
     <message>
         <source>Content model of complex type %1 is not a valid extension of content model of %2.</source>
-        <translation type="unfinished">O modelo de contido do tipo complexo %1 non é unha extensión válida do 
-modelo de contido de %2.</translation>
+        <translation>O modelo de contido do tipo complexo %1 non é unha extensión válida do modelo de contido de %2.</translation>
     </message>
     <message>
         <source>Complex type %1 must have simple content.</source>
-        <translation type="unfinished">O tipo complexo %1 debe ter contido simple.</translation>
+        <translation>O tipo complexo %1 debe ter contido simple.</translation>
     </message>
     <message>
         <source>Complex type %1 must have the same simple type as its base class %2.</source>
-        <translation type="unfinished">O tipo complexo %1 debe ter o mesmo tipo simple que a súa clase de base %2.</translation>
+        <translation>O tipo complexo %1 debe ter o mesmo tipo simple que a súa clase de base %2.</translation>
     </message>
     <message>
         <source>Complex type %1 cannot be derived from base type %2%3.</source>
-        <translation type="unfinished">O tipo complexo %1 non pode derivarse do tipo de base %2%3.</translation>
+        <translation>O tipo complexo %1 non pode derivarse do tipo de base %2%3.</translation>
     </message>
     <message>
         <source>Attributes of complex type %1 are not a valid restriction from the attributes of base type %2: %3.</source>
-        <translation type="unfinished">Os atributos do tipo complexo %1 non son unha restrición válida baseada nos 
-atributos do tipo base %2: %3.</translation>
+        <translation>Os atributos do tipo complexo %1 non son unha restrición válida baseada nos atributos do tipo base %2: %3.</translation>
     </message>
     <message>
         <source>Complex type %1 with simple content cannot be derived from complex base type %2.</source>
-        <translation type="unfinished">O tipo complexo %1 con contido simple non se pode derivar do tipo de base 
-complexo %2.</translation>
+        <translation>O tipo complexo %1 con contido simple non se pode derivar do tipo de base complexo %2.</translation>
     </message>
     <message>
         <source>Item type of simple type %1 cannot be a complex type.</source>
-        <translation type="unfinished">O tipo de elemento do tipo simple %1 non pode ser un tipo complexo.</translation>
+        <translation>O tipo de elemento do tipo simple %1 non pode ser un tipo complexo.</translation>
     </message>
     <message>
         <source>Member type of simple type %1 cannot be a complex type.</source>
-        <translation type="unfinished">O tipo membro do tipo simple %1 non pode ser un tipo complexo.</translation>
+        <translation>O tipo membro do tipo simple %1 non pode ser un tipo complexo.</translation>
     </message>
     <message>
         <source>%1 is not allowed to have a member type with the same name as itself.</source>
-        <translation type="unfinished">Non se permite que %1 teña un tipo membro co mesmo nome ca el.</translation>
+        <translation>Non se permite que %1 teña un tipo membro co mesmo nome ca el.</translation>
     </message>
     <message>
         <source>%1 facet collides with %2 facet.</source>
-        <translation type="unfinished">A faceta %1 entra en conflito doa %2.</translation>
+        <translation>A faceta %1 entra en conflito doa %2.</translation>
     </message>
     <message>
         <source>%1 facet must have the same value as %2 facet of base type.</source>
-        <translation type="unfinished">A faceta %1 debe ter o mesmo valor que a %2 do tipo de base.</translation>
+        <translation>A faceta %1 debe ter o mesmo valor que a %2 do tipo de base.</translation>
     </message>
     <message>
         <source>%1 facet must be equal or greater than %2 facet of base type.</source>
-        <translation type="unfinished">A faceta %1 debe ser maior ou igual que a %2 do tipo de base.</translation>
+        <translation>A faceta %1 debe ser maior ou igual que a %2 do tipo de base.</translation>
     </message>
     <message>
         <source>%1 facet must be less than or equal to %2 facet of base type.</source>
-        <translation type="unfinished">A faceta %1 debe ser menor que ou igual que a %2  do tipo de base.</translation>
+        <translation>A faceta %1 debe ser menor que ou igual que a %2 do tipo de base.</translation>
     </message>
     <message>
         <source>%1 facet contains invalid regular expression</source>
-        <translation type="unfinished">A faceta %1 contén unha expresión regular non válida</translation>
+        <translation>A faceta %1 contén unha expresión regular non válida</translation>
     </message>
     <message>
         <source>Unknown notation %1 used in %2 facet.</source>
-        <translation type="unfinished">Empregouse a notación non válida %1 na faceta %2.</translation>
+        <translation>Empregouse a notación non válida %1 na faceta %2.</translation>
     </message>
     <message>
         <source>%1 facet contains invalid value %2: %3.</source>
-        <translation type="unfinished">A faceta %1 contén o valor non válido %2: %3.</translation>
+        <translation>A faceta %1 contén o valor non válido %2: %3.</translation>
     </message>
     <message>
         <source>%1 facet cannot be %2 or %3 if %4 facet of base type is %5.</source>
-        <translation type="unfinished">A faceta %1 non pode ser %2 nin %3 se a faceta %4 do tipo de base é %5.</translation>
+        <translation>A faceta %1 non pode ser %2 nin %3 se a faceta %4 do tipo de base é %5.</translation>
     </message>
     <message>
         <source>%1 facet cannot be %2 if %3 facet of base type is %4.</source>
-        <translation type="unfinished">A faceta %1 non pode ser %2 se a faceta %3 do tipo de base é %4.</translation>
+        <translation>A faceta %1 non pode ser %2 se a faceta %3 do tipo de base é %4.</translation>
     </message>
     <message>
         <source>%1 facet must be less than or equal to %2 facet.</source>
-        <translation type="unfinished">A faceta %1 debe ser menor que ou igual que a %2.</translation>
+        <translation>A faceta %1 debe ser menor que ou igual que a %2.</translation>
     </message>
     <message>
         <source>%1 facet must be less than %2 facet of base type.</source>
-        <translation type="unfinished">A faceta %1 debe ser menor que a faceta %2 do tipo de base.</translation>
+        <translation>A faceta %1 debe ser menor que a faceta %2 do tipo de base.</translation>
     </message>
     <message>
         <source>%1 facet and %2 facet cannot appear together.</source>
-        <translation type="unfinished">As facetas %1 e %2 non poden aparecer xuntas.</translation>
+        <translation>As facetas %1 e %2 non poden aparecer xuntas.</translation>
     </message>
     <message>
         <source>%1 facet must be greater than %2 facet of base type.</source>
-        <translation type="unfinished">A faceta %1 debe ser maior que a faceta %2 do tipo de base.</translation>
+        <translation>A faceta %1 debe ser maior que a faceta %2 do tipo de base.</translation>
     </message>
     <message>
         <source>%1 facet must be less than %2 facet.</source>
-        <translation type="unfinished">A faceta %1 debe ser menor que a %2.</translation>
+        <translation>A faceta %1 debe ser menor que a %2.</translation>
     </message>
     <message>
         <source>%1 facet must be greater than or equal to %2 facet of base type.</source>
-        <translation type="unfinished">A faceta %1 deber ser maior ou igual que a faceta %2 do tipo de base.</translation>
+        <translation>A faceta %1 deber ser maior ou igual que a faceta %2 do tipo de base.</translation>
     </message>
     <message>
         <source>Simple type contains not allowed facet %1.</source>
-        <translation type="unfinished">O tipo simple contén a faceta non permitida %1.</translation>
+        <translation>O tipo simple contén a faceta non permitida %1.</translation>
     </message>
     <message>
         <source>%1, %2, %3, %4, %5 and %6 facets are not allowed when derived by list.</source>
-        <translation type="unfinished">As facetas %1, %2, %3, %4, %5 e %6 non están permitidas cando se deriva por 
-lista.</translation>
+        <translation>As facetas %1, %2, %3, %4, %5 e %6 non están permitidas cando se deriva por lista.</translation>
     </message>
     <message>
         <source>Only %1 and %2 facets are allowed when derived by union.</source>
-        <translation type="unfinished">Só se permiten as facetas %1 e %2 cando se deriva por unión.</translation>
+        <translation>Só se permiten as facetas %1 e %2 cando se deriva por unión.</translation>
     </message>
     <message>
         <source>%1 contains %2 facet with invalid data: %3.</source>
-        <translation type="unfinished">%1 contén a faceta %2 con datos non válidos: %3.</translation>
+        <translation>%1 contén a faceta %2 con datos non válidos: %3.</translation>
     </message>
     <message>
         <source>Attribute group %1 contains attribute %2 twice.</source>
-        <translation type="unfinished">O grupo de atributos %1 contén o atributo %2 dúas veces.</translation>
+        <translation>O grupo de atributos %1 contén o atributo %2 dúas veces.</translation>
     </message>
     <message>
         <source>Attribute group %1 contains two different attributes that both have types derived from %2.</source>
-        <translation type="unfinished">O grupo de atributos %1 contén dous atributos diferentes con tipos derivados 
-de %2</translation>
+        <translation>O grupo de atributos %1 contén dous atributos diferentes con tipos derivados de %2.</translation>
     </message>
     <message>
         <source>Attribute group %1 contains attribute %2 that has value constraint but type that inherits from %3.</source>
-        <translation type="unfinished">O grupo de atributos %1 contén o atributo %2, que ten restrición de valores 
-pero un tipo que herda de %3.</translation>
+        <translation>O grupo de atributos %1 contén o atributo %2, que ten restrición de valores pero un tipo que herda de %3.</translation>
     </message>
     <message>
         <source>Complex type %1 contains attribute %2 twice.</source>
-        <translation type="unfinished">O tipo complexo %1 contén o atributo %2 dúas veces.</translation>
+        <translation>O tipo complexo %1 contén o atributo %2 dúas veces.</translation>
     </message>
     <message>
         <source>Complex type %1 contains two different attributes that both have types derived from %2.</source>
-        <translation type="unfinished">O tipo complexo %1 contén dous atributos diferentes con tipos derivados de %2.</translation>
+        <translation>O tipo complexo %1 contén dous atributos diferentes con tipos derivados de %2.</translation>
     </message>
     <message>
         <source>Complex type %1 contains attribute %2 that has value constraint but type that inherits from %3.</source>
-        <translation type="unfinished">O tipo complexo %1 contén o atributo %2, que ten restrición de valores pero 
-un tipo que herda de %3.</translation>
+        <translation>O tipo complexo %1 contén o atributo %2, que ten restrición de valores pero un tipo que herda de %3.</translation>
     </message>
     <message>
         <source>Element %1 is not allowed to have a value constraint if its base type is complex.</source>
-        <translation type="unfinished">O elemento %1 non se lle permite ter unha restrición de valores se o seu tipo 
-de base 
-é complexo.</translation>
+        <translation>O elemento %1 non se lle permite ter unha restrición de valores se o seu tipo de base é complexo.</translation>
     </message>
     <message>
         <source>Element %1 is not allowed to have a value constraint if its type is derived from %2.</source>
-        <translation type="unfinished">O elemento %1 non se lle permite ter unha restrición de valores se o seu tipo 
-deriva de %2.</translation>
+        <translation>O elemento %1 non se lle permite ter unha restrición de valores se o seu tipo deriva de %2.</translation>
     </message>
     <message>
         <source>Value constraint of element %1 is not of elements type: %2.</source>
-        <translation type="unfinished">A restrición aos valores do elemento %1 non é do tipo elementos: %2.</translation>
+        <translation>A restrición aos valores do elemento %1 non é do tipo elementos: %2.</translation>
     </message>
     <message>
         <source>Element %1 is not allowed to have substitution group affiliation as it is no global element.</source>
-        <translation type="unfinished">Non se permite que o elemento %1 teña afiliación a grupo de substitución xa 
-que 
-non é un elemento global.</translation>
+        <translation>Non se permite que o elemento %1 teña afiliación a grupo de substitución xa que non é un elemento global.</translation>
     </message>
     <message>
         <source>Type of element %1 cannot be derived from type of substitution group affiliation.</source>
-        <translation type="unfinished">O tipo do elemento %1 non pode derivarse do tipo de afiliación ao grupo de 
-substitución.</translation>
+        <translation>O tipo do elemento %1 non pode derivarse do tipo de afiliación ao grupo de substitución.</translation>
     </message>
     <message>
         <source>Value constraint of attribute %1 is not of attributes type: %2.</source>
-        <translation type="unfinished">A restrición aos valores do atributo %1 non é ao tipo do atributo: %2.</translation>
+        <translation>A restrición aos valores do atributo %1 non é ao tipo do atributo: %2.</translation>
     </message>
     <message>
         <source>Attribute %1 has value constraint but has type derived from %2.</source>
-        <translation type="unfinished">O atributo %1 ten restrición de valores pero ten tipo derivado de %2.</translation>
+        <translation>O atributo %1 ten restrición de valores pero ten tipo derivado de %2.</translation>
     </message>
     <message>
         <source>%1 attribute in derived complex type must be %2 like in base type.</source>
-        <translation type="unfinished"></translation>
+        <translation>O atributo %1 no tipo complexo derivado debe ser %2 como no tipo de base.</translation>
     </message>
     <message>
         <source>Attribute %1 in derived complex type must have %2 value constraint like in base type.</source>
-        <translation type="unfinished">O atributo %1 do tipo complexo derivado debe ter unha restrición de valores 
-%2 
-como no tipo de base.</translation>
+        <translation>O atributo %1 do tipo complexo derivado debe ter unha restrición de valores %2 como no tipo de base.</translation>
     </message>
     <message>
         <source>Attribute %1 in derived complex type must have the same %2 value constraint like in base type.</source>
-        <translation type="unfinished"></translation>
+        <translation>O atributo %1 do tipo complexo derivado debe ter a mesma restrición a valores %2 como no tipo de base.</translation>
     </message>
     <message>
         <source>Attribute %1 in derived complex type must have %2 value constraint.</source>
-        <translation type="unfinished"></translation>
+        <translation>O atributo %1 no tipo complexo derivado debe ter a restrición a valores %2.</translation>
     </message>
     <message>
         <source>processContent of base wildcard must be weaker than derived wildcard.</source>
-        <translation type="unfinished"></translation>
+        <translation>O processContent do comodín de base debe ser máis feble que o do comodín de derivado.</translation>
     </message>
     <message>
         <source>Element %1 exists twice with different types.</source>
-        <translation type="unfinished"></translation>
+        <translation>O elemento %1 existe dúas veces con tipos diferentes.</translation>
     </message>
     <message>
         <source>Particle contains non-deterministic wildcards.</source>
-        <translation type="unfinished"></translation>
+        <translation>A partícula contén caracteres de substitución non deterministas.</translation>
     </message>
     <message>
         <source>Base attribute %1 is required but derived attribute is not.</source>
-        <translation type="unfinished"></translation>
+        <translation>Requírese o atributo de base %1 pero non o derivado.</translation>
     </message>
     <message>
         <source>Type of derived attribute %1 cannot be validly derived from type of base attribute.</source>
-        <translation type="unfinished"></translation>
+        <translation>O tipo do atributo derivado %1 non se pode derivar con validez a partir do tipo do atributo de base.</translation>
     </message>
     <message>
         <source>Value constraint of derived attribute %1 does not match value constraint of base attribute.</source>
-        <translation type="unfinished"></translation>
+        <translation>A restrición de valores do atributo derivado %1 non casa coa do atributo de base.</translation>
     </message>
     <message>
         <source>Derived attribute %1 does not exist in the base definition.</source>
-        <translation type="unfinished"></translation>
+        <translation>O atributo derivado %1 non existe na definición da base.</translation>
     </message>
     <message>
         <source>Derived attribute %1 does not match the wildcard in the base definition.</source>
-        <translation type="unfinished"></translation>
+        <translation>O atributo derivado %1 non casa co carácter de substitución na definición da base.</translation>
     </message>
     <message>
         <source>Base attribute %1 is required but missing in derived definition.</source>
-        <translation type="unfinished"></translation>
+        <translation>Requírese o atributo de base %1 pero falta na definición derivada.</translation>
     </message>
     <message>
         <source>Derived definition contains an %1 element that does not exists in the base definition</source>
-        <translation type="unfinished"></translation>
+        <translation>A definición derivada contén un elemento %1 que non existe na definición da base</translation>
     </message>
     <message>
         <source>Derived wildcard is not a subset of the base wildcard.</source>
-        <translation type="unfinished"></translation>
+        <translation>O carácter de substitución derivado non é un conxunto do de base.</translation>
     </message>
     <message>
         <source>%1 of derived wildcard is not a valid restriction of %2 of base wildcard</source>
-        <translation type="unfinished"></translation>
+        <translation>O %1 do comodín derivado non é unha restrición válido do %2 do comodín base</translation>
     </message>
     <message>
         <source>Attribute %1 from base type is missing in derived type.</source>
-        <translation type="unfinished"></translation>
+        <translation>O atributo %1 do tipo base falta no tipo derivado.</translation>
     </message>
     <message>
         <source>Type of derived attribute %1 differs from type of base attribute.</source>
-        <translation type="unfinished"></translation>
+        <translation>O tipo do atributo derivado %1 é diferente do tipo do atributo base.</translation>
     </message>
     <message>
         <source>Base definition contains an %1 element that is missing in the derived definition</source>
-        <translation type="unfinished"></translation>
+        <translation>A definición base contén un elemento %1 que falta na definición derivada</translation>
     </message>
     <message>
         <source>Can not process unknown element %1, expected elements are: %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>Non se pode procesar o elemento %1, os elementos agardados son: %2.</translation>
     </message>
     <message>
         <source>Element %1 is not allowed in this scope, possible elements are: %2.</source>
-        <translation type="unfinished">Non se permite o elemento %1 neste ámbito, os elementos posíbeis son: %2.</translation>
+        <translation>Non se permite o elemento %1 neste ámbito, os elementos posíbeis son: %2.</translation>
     </message>
     <message>
         <source>Child element is missing in that scope, possible child elements are: %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>O elemento fillo falta nese ámbito, os posíbeis son: %1.</translation>
     </message>
     <message>
         <source>Document is not a XML schema.</source>
-        <translation type="unfinished"></translation>
+        <translation>O documento non é un esquema XML.</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element contains invalid content: {%3} is not a value of type %4.</source>
-        <translation type="unfinished"></translation>
+        <translation>O atributo %1 do elemento %2 ten contido non válido: {%3} non é un valor do tipo %4.</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element contains invalid content: {%3}.</source>
-        <translation type="unfinished"></translation>
+        <translation>O atributo %1 do elemento %2 ten contido non válido: {%3}.</translation>
     </message>
     <message>
         <source>Target namespace %1 of included schema is different from the target namespace %2 as defined by the including schema.</source>
-        <translation type="unfinished"></translation>
+        <translation>O espazo de nomes de destino %1 do esquema incluído é diferente do %2, que se especificou no esquema incluínte.</translation>
     </message>
     <message>
         <source>Target namespace %1 of imported schema is different from the target namespace %2 as defined by the importing schema.</source>
-        <translation type="unfinished"></translation>
+        <translation>O espazo de nomes de destino %1 do esquema importado é diferente do %2, que se especificou no esquema importador.</translation>
     </message>
     <message>
         <source>%1 element is not allowed to have the same %2 attribute value as the target namespace %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>Non se permite que o elemento %1 teña o mesmo valor do atributo %2 que o espazo de nomes de destino %3.</translation>
     </message>
     <message>
         <source>%1 element without %2 attribute is not allowed inside schema without target namespace.</source>
-        <translation type="unfinished"></translation>
+        <translation>Non se permite un elemento %1 sen o atributo %2 dentro dun esquema sen espazo de nomes de destino.</translation>
     </message>
     <message>
         <source>%1 element is not allowed inside %2 element if %3 attribute is present.</source>
-        <translation type="unfinished"></translation>
+        <translation>Non se permite o elemento %1 dentro do elemento %2 se está presente o atributo %3.</translation>
     </message>
     <message>
         <source>%1 element has neither %2 attribute nor %3 child element.</source>
-        <translation type="unfinished">O elemento %1 non ten nin o atributo %2 nin o elemento fillo %3.</translation>
+        <translation>O elemento %1 non ten nin o atributo %2 nin o elemento fillo %3.</translation>
     </message>
     <message>
         <source>%1 element with %2 child element must not have a %3 attribute.</source>
-        <translation type="unfinished"></translation>
+        <translation>Un elemento %1 cun elemento fillo %2 non pode ter un atributo %3.</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element must be %3 or %4.</source>
-        <translation type="unfinished">O atributo %1 do elemento %2 debe ser %3 ou %4.</translation>
+        <translation>O atributo %1 do elemento %2 debe ser %3 ou %4.</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element must have a value of %3.</source>
-        <translation type="unfinished">O atributo %1 do elemento %2 debe ter un valor de %3.</translation>
+        <translation>O atributo %1 do elemento %2 debe ter un valor de %3.</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element must have a value of %3 or %4.</source>
-        <translation type="unfinished">O atributo %1 do elemento %2 debe ter un valor de %3 ou %4.</translation>
+        <translation>O atributo %1 do elemento %2 debe ter un valor de %3 ou %4.</translation>
     </message>
     <message>
         <source>%1 element must not have %2 and %3 attribute together.</source>
-        <translation type="unfinished">O elemento %1 non debe ter á vez os atributos %2 e %3.</translation>
+        <translation>O elemento %1 non debe ter á vez os atributos %2 e %3.</translation>
     </message>
     <message>
         <source>Content of %1 attribute of %2 element must not be from namespace %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do atributo %1 do elemento %2 non debe proceder do espazo de nomes %3.</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element must not be %3.</source>
-        <translation type="unfinished">O atributo %1 do elemento %2 non debe ser %3.</translation>
+        <translation>O atributo %1 do elemento %2 non debe ser %3.</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element must have the value %3 because the %4 attribute is set.</source>
-        <translation type="unfinished"></translation>
+        <translation>O atributo %1 do elemento %2 debe ter o mesmo valor %3 porque se indicou o atributo %4.</translation>
     </message>
     <message>
         <source>Specifying use=&apos;prohibited&apos; inside an attribute group has no effect.</source>
-        <translation type="unfinished">Indicar use=&apos;prohibited&apos; dentro dun grupo de atributos non ten efecto.</translation>
+        <translation>Indicar use=&apos;prohibited&apos; dentro dun grupo de atributos non ten efecto.</translation>
     </message>
     <message>
         <source>%1 element must have either %2 or %3 attribute.</source>
-        <translation type="unfinished">O elemento %1 debe ter o do atributo %2 ou o %3.</translation>
+        <translation>O elemento %1 debe ter o do atributo %2 ou o %3.</translation>
     </message>
     <message>
         <source>%1 element must have either %2 attribute or %3 or %4 as child element.</source>
-        <translation type="unfinished">O elemento %1 debe ter ou o atributo %2 ou un elemento fillo %3 ou %4.</translation>
+        <translation>O elemento %1 debe ter ou o atributo %2 ou un elemento fillo %3 ou %4.</translation>
     </message>
     <message>
         <source>%1 element requires either %2 or %3 attribute.</source>
-        <translation type="unfinished">O elemento %1 require o atributo %2 ou o %3.</translation>
+        <translation>O elemento %1 require o atributo %2 ou o %3.</translation>
     </message>
     <message>
         <source>Text or entity references not allowed inside %1 element</source>
-        <translation type="unfinished">Non se permite referencias nin texto nin a entidades dentro dun elemento %1</translation>
+        <translation>Non se permite referencias nin texto nin a entidades dentro dun elemento %1</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element must contain %3, %4 or a list of URIs.</source>
-        <translation type="unfinished"></translation>
+        <translation>O atributo %1 do elemento %2 debe conter %3, %4 ou unha listaxe de URI.</translation>
     </message>
     <message>
         <source>%1 element is not allowed in this context.</source>
-        <translation type="unfinished"></translation>
+        <translation>Non se permite o elemento %1 neste contexto.</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element has larger value than %3 attribute.</source>
-        <translation type="unfinished"></translation>
+        <translation>O atributo %1 do elemento %2 ten un valor maior do que o atributo %3.</translation>
     </message>
     <message>
         <source>Prefix of qualified name %1 is not defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>Non se definiu o prefixo do nome cualificado %1.</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element must either contain %3 or the other values.</source>
-        <translation type="unfinished"></translation>
+        <translation>O atributo %1 do elemento %2 debe conter %3 ou os outros valores.</translation>
     </message>
     <message>
         <source>Component with ID %1 has been defined previously.</source>
-        <translation type="unfinished"></translation>
+        <translation>Xa se definiu anteriormente unha compoñente co ID %1.</translation>
     </message>
     <message>
         <source>Element %1 already defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>Xa se definiu o elemento %1.</translation>
     </message>
     <message>
         <source>Attribute %1 already defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>Xa se definiu o atributo %1.</translation>
     </message>
     <message>
         <source>Type %1 already defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>Xa se definiu o tipo %1.</translation>
     </message>
     <message>
         <source>Attribute group %1 already defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>Xa se definiu o grupo de atributos %1.</translation>
     </message>
     <message>
         <source>Element group %1 already defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>Xa se definiu o grupo de elementos %1.</translation>
     </message>
     <message>
         <source>Notation %1 already defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>Xa se definiu a notación %1.</translation>
     </message>
     <message>
         <source>Identity constraint %1 already defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>Xa se definiu a restrición de identidade %1.</translation>
     </message>
     <message>
         <source>Duplicated facets in simple type %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hai facetas duplicadas no tipo simple %1.</translation>
     </message>
     <message>
         <source>%1 references unknown %2 or %3 element %4.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 fai referencia a un %4 dun elemento %2 ou %3 descoñecido.</translation>
     </message>
     <message>
         <source>%1 references identity constraint %2 that is no %3 or %4 element.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 fai referencia á restrición de identidade %2 que non é nin un elemento %3 nin %4.</translation>
     </message>
     <message>
         <source>%1 has a different number of fields from the identity constraint %2 that it references.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ten unha cantidade diferentes de campos que a restrición de identidade %2 á que fai referencia.</translation>
     </message>
     <message>
         <source>Base type %1 of %2 element cannot be resolved.</source>
-        <translation type="unfinished"></translation>
+        <translation>O tipo base %1 do elemento %2 non se pode resolver.</translation>
     </message>
     <message>
         <source>Item type %1 of %2 element cannot be resolved.</source>
-        <translation type="unfinished"></translation>
+        <translation>O tipo de elemento %1 de %2 non se pode resolver.</translation>
     </message>
     <message>
         <source>Member type %1 of %2 element cannot be resolved.</source>
-        <translation type="unfinished"></translation>
+        <translation>O tipo de membro %1 de %2 non se pode resolver.</translation>
     </message>
     <message>
         <source>Type %1 of %2 element cannot be resolved.</source>
-        <translation type="unfinished"></translation>
+        <translation>O tipo %1 do elemento %2 non se pode resolver.</translation>
     </message>
     <message>
         <source>Base type %1 of complex type cannot be resolved.</source>
-        <translation type="unfinished"></translation>
+        <translation>O tipo base %1 do tipo complexo non se pode resolver.</translation>
     </message>
     <message>
         <source>%1 cannot have complex base type that has a %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 non pode ter un tipo de base complexo que teña un %2.</translation>
     </message>
     <message>
         <source>Content model of complex type %1 contains %2 element so it cannot be derived by extension from a non-empty type.</source>
-        <translation type="unfinished"></translation>
+        <translation>O modelo de contido do tipo complexo %1 contén un elemento %2 polo que non se pode derivar por extensión a partir dun tipo non baleiro.</translation>
     </message>
     <message>
         <source>Complex type %1 cannot be derived by extension from %2 as the latter contains %3 element in its content model.</source>
-        <translation type="unfinished"></translation>
+        <translation>Non se pode derivar o tipo complexo %1 mediante extensión de %2 xa que este contén elementos %3 no seu modelo de contido.</translation>
     </message>
     <message>
         <source>Type of %1 element must be a simple type, %2 is not.</source>
-        <translation type="unfinished"></translation>
+        <translation>O tipo do elemento %1 debe ser un tipo simple, e %2 non o é.</translation>
     </message>
     <message>
         <source>Substitution group %1 of %2 element cannot be resolved.</source>
-        <translation type="unfinished"></translation>
+        <translation>Non se pode resolver o grupo de substitución %1 do elemento %2.</translation>
     </message>
     <message>
         <source>Substitution group %1 has circular definition.</source>
-        <translation type="unfinished"></translation>
+        <translation>O grupo de substitución %1 ten unha definición circular.</translation>
     </message>
     <message>
         <source>Duplicated element names %1 in %2 element.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hai nomes de elementos %1 duplicados no elemento %2.</translation>
     </message>
     <message>
         <source>Reference %1 of %2 element cannot be resolved.</source>
-        <translation type="unfinished"></translation>
+        <translation>A referencia %1 do elemento %2 non se pode resolver.</translation>
     </message>
     <message>
         <source>Circular group reference for %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Grupo de referencias circulares para %1.</translation>
     </message>
     <message>
         <source>%1 element is not allowed in this scope</source>
-        <translation type="unfinished"></translation>
+        <translation>Non se permite o elemento %1 neste ámbito</translation>
     </message>
     <message>
         <source>%1 element cannot have %2 attribute with value other than %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>O elemento %1 non pode ter o atributo %2 cun valor diferente de %3.</translation>
     </message>
     <message>
         <source>%1 element cannot have %2 attribute with value other than %3 or %4.</source>
-        <translation type="unfinished"></translation>
+        <translation>O elemento %1 non pode ter o atributo %2 cun valor diferente de %3 ou de %4.</translation>
     </message>
     <message>
         <source>%1 or %2 attribute of reference %3 does not match with the attribute declaration %4.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nin atributo %1 nin o %2 da referencia %2 casan coa declaración do atributo %3.</translation>
     </message>
     <message>
         <source>Attribute group %1 has circular reference.</source>
-        <translation type="unfinished"></translation>
+        <translation>O grupo de atributo %1 ten unha referencia circular.</translation>
     </message>
     <message>
         <source>%1 attribute in %2 must have %3 use like in base type %4.</source>
-        <translation type="unfinished"></translation>
+        <translation>O atributo %1 en %2 debe ter un uso de %3 como no tipo base %4.</translation>
     </message>
     <message>
         <source>Attribute wildcard of %1 is not a valid restriction of attribute wildcard of base type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>O carácter de substitución de atributo de %1 non é unha restrición válida de carácter de substitución de atributo do tipo de base %2.</translation>
     </message>
     <message>
         <source>%1 has attribute wildcard but its base type %2 has not.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ten un carácter de substitución de atributo pero o seu tipo de base %2 non o ten.</translation>
     </message>
     <message>
         <source>Union of attribute wildcard of type %1 and attribute wildcard of its base type %2 is not expressible.</source>
-        <translation type="unfinished"></translation>
+        <translation>A unión do carácter de substitución de atributo do tipo %1 e o do seu tipo de base %2 é inexpresábel.</translation>
     </message>
     <message>
         <source>Enumeration facet contains invalid content: {%1} is not a value of type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>A faceta de enumeración ten contido non válido: {%1} non é un valor do tipo %2.</translation>
     </message>
     <message>
         <source>Namespace prefix of qualified name %1 is not defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>Non está á definido o prefixo do espazo de nomes do nome cualificado %1.</translation>
     </message>
     <message>
         <source>%1 element %2 is not a valid restriction of the %3 element it redefines: %4.</source>
-        <translation type="unfinished"></translation>
+        <translation>O elemento %1 %2 non é unha restrición válida do elemento %3 que redefine: %4.</translation>
     </message>
     <message>
         <source>%1 is not valid according to %2.</source>
-        <translation type="unfinished">%1 non é válido segundo %2.</translation>
+        <translation>%1 non é válido segundo %2.</translation>
     </message>
     <message>
         <source>String content does not match the length facet.</source>
-        <translation type="unfinished">O contido da cadea non coincide coa faceta «length».</translation>
+        <translation>O contido da cadea non coincide coa faceta «length».</translation>
     </message>
     <message>
         <source>String content does not match the minLength facet.</source>
-        <translation type="unfinished">O contido da cadea non coincide coa faceta «minLength».</translation>
+        <translation>O contido da cadea non coincide coa faceta «minLength».</translation>
     </message>
     <message>
         <source>String content does not match the maxLength facet.</source>
-        <translation type="unfinished">O contido da cadea non coincide coa faceta «maxLength».</translation>
+        <translation>O contido da cadea non coincide coa faceta «maxLength».</translation>
     </message>
     <message>
         <source>String content does not match pattern facet.</source>
-        <translation type="unfinished">O contido da cadea non coincide coa faceta «pattern».</translation>
+        <translation>O contido da cadea non coincide coa faceta «pattern».</translation>
     </message>
     <message>
         <source>String content is not listed in the enumeration facet.</source>
-        <translation type="unfinished">O contido da cadea non está enumerado na enumeración de facetas.</translation>
+        <translation>O contido da cadea non está enumerado na enumeración de facetas.</translation>
     </message>
     <message>
         <source>Signed integer content does not match the maxInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número enteiro con signo non casa coa faceta maxInclusive.</translation>
     </message>
     <message>
         <source>Signed integer content does not match the maxExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número enteiro con signo non casa coa faceta maxExclusive.</translation>
     </message>
     <message>
         <source>Signed integer content does not match the minInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número enteiro con signo non casa coa faceta minInclusive.</translation>
     </message>
     <message>
         <source>Signed integer content does not match the minExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número enteiro con signo non casa coa faceta minExclusive.</translation>
     </message>
     <message>
         <source>Signed integer content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número enteiro con signo non está na faceta de enumeración.</translation>
     </message>
     <message>
         <source>Signed integer content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número enteiro con signo non casa coa faceta padrón.</translation>
     </message>
     <message>
         <source>Signed integer content does not match in the totalDigits facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número enteiro con signo non casa coa faceta totalDigits.</translation>
     </message>
     <message>
         <source>Unsigned integer content does not match the maxInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número enteiro sen signo non casa coa faceta maxInclusive.</translation>
     </message>
     <message>
         <source>Unsigned integer content does not match the maxExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número enteiro sen signo non casa coa faceta maxExclusive.</translation>
     </message>
     <message>
         <source>Unsigned integer content does not match the minInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número enteiro sen signo non casa coa faceta minInclusive.</translation>
     </message>
     <message>
         <source>Unsigned integer content does not match the minExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número enteiro sen signo non casa coa faceta minExclusive.</translation>
     </message>
     <message>
         <source>Unsigned integer content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número enteiro sen signo non está na faceta de enumeración.</translation>
     </message>
     <message>
         <source>Unsigned integer content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número enteiro sen signo non casa coa faceta padrón.</translation>
     </message>
     <message>
         <source>Unsigned integer content does not match in the totalDigits facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número enteiro sen signo non casa coa faceta totalDigits.</translation>
     </message>
     <message>
         <source>Double content does not match the maxInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número de lonxitude dupla non casa coa faceta maxInclusive.</translation>
     </message>
     <message>
         <source>Double content does not match the maxExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número de lonxitude dupla non casa coa faceta maxExclusive.</translation>
     </message>
     <message>
         <source>Double content does not match the minInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número de lonxitude dupla non casa coa faceta minInclusive.</translation>
     </message>
     <message>
         <source>Double content does not match the minExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número de lonxitude dupla non casa coa faceta minExclusive.</translation>
     </message>
     <message>
         <source>Double content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número de lonxitude dupla non está na faceta de enumeración.</translation>
     </message>
     <message>
         <source>Double content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número de lonxitude dupla non casa coa faceta padrón.</translation>
     </message>
     <message>
         <source>Decimal content does not match in the fractionDigits facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número decimal non casa coa faceta fractionDigits.</translation>
     </message>
     <message>
         <source>Decimal content does not match in the totalDigits facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do número decimal non casa coa faceta totalDigits.</translation>
     </message>
     <message>
         <source>Date time content does not match the maxInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da data e hora non casa coa faceta maxInclusive.</translation>
     </message>
     <message>
         <source>Date time content does not match the maxExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da data e hora non casa coa faceta maxExclusive.</translation>
     </message>
     <message>
         <source>Date time content does not match the minInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da data e hora non casa coa faceta minInclusive.</translation>
     </message>
     <message>
         <source>Date time content does not match the minExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da data e hora non casa coa faceta minExclusive.</translation>
     </message>
     <message>
         <source>Date time content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da data e hora non está na faceta de enumeración.</translation>
     </message>
     <message>
         <source>Date time content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da data e hora non casa coa faceta padrón.</translation>
     </message>
     <message>
         <source>Duration content does not match the maxInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da duración non casa coa faceta maxInclusive.</translation>
     </message>
     <message>
         <source>Duration content does not match the maxExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da duración non casa coa faceta maxExclusive.</translation>
     </message>
     <message>
         <source>Duration content does not match the minInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da duración non casa coa faceta minInclusive.</translation>
     </message>
     <message>
         <source>Duration content does not match the minExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da duración non casa coa faceta minExclusive.</translation>
     </message>
     <message>
         <source>Duration content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da duración non está na faceta de enumeración.</translation>
     </message>
     <message>
         <source>Duration content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da duración non casa coa faceta padrón.</translation>
     </message>
     <message>
         <source>Boolean content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido booleano non casa coa faceta padrón.</translation>
     </message>
     <message>
         <source>Binary content does not match the length facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido binario coa faceta «length».</translation>
     </message>
     <message>
         <source>Binary content does not match the minLength facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido binario coa faceta «minLength».</translation>
     </message>
     <message>
         <source>Binary content does not match the maxLength facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido binario coa faceta «maxLength».</translation>
     </message>
     <message>
         <source>Binary content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido binario non está na faceta de enumeración.</translation>
     </message>
     <message>
         <source>Invalid QName content: %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Contido non válido do QName: %1</translation>
     </message>
     <message>
         <source>QName content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do QName non está na faceta de enumeración.</translation>
     </message>
     <message>
         <source>QName content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do QName non casa coa faceta padrón.</translation>
     </message>
     <message>
         <source>Notation content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da notación non está na faceta de enumeración</translation>
     </message>
     <message>
         <source>List content does not match length facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da lista non coincide coa faceta «length».</translation>
     </message>
     <message>
         <source>List content does not match minLength facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da lista non coincide coa faceta «minLength».</translation>
     </message>
     <message>
         <source>List content does not match maxLength facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da lista non coincide coa faceta «maxLength».</translation>
     </message>
     <message>
         <source>List content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da lista non está na faceta de enumeración.</translation>
     </message>
     <message>
         <source>List content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da lista non casa coa faceta padrón.</translation>
     </message>
     <message>
         <source>Union content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da unión non está na faceta de enumeración.</translation>
     </message>
     <message>
         <source>Union content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido da unión non casa coa faceta padrón.</translation>
     </message>
     <message>
         <source>Data of type %1 are not allowed to be empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>Non se permite que os datos do tipo %1 esteas baleiros.</translation>
     </message>
     <message>
         <source>Element %1 is missing child element.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ao elemento %1 fáltalle un elemento fillo.</translation>
     </message>
     <message>
         <source>There is one IDREF value with no corresponding ID: %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hai un valor IDREF sen o ID correspondente: %1.</translation>
     </message>
     <message>
         <source>Loaded schema file is invalid.</source>
-        <translation type="unfinished"></translation>
+        <translation>O ficheiro de esquema que se cargou non é válido.</translation>
     </message>
     <message>
         <source>%1 contains invalid data.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 contén datos non válidos.</translation>
     </message>
     <message>
         <source>xsi:schemaLocation namespace %1 has already appeared earlier in the instance document.</source>
-        <translation type="unfinished"></translation>
+        <translation>O espazo de nomes %1 de xsi:schemaLocation xa apareceu antes no documento de instancia.</translation>
     </message>
     <message>
         <source>xsi:noNamespaceSchemaLocation cannot appear after the first no-namespace element or attribute.</source>
-        <translation type="unfinished"></translation>
+        <translation>xsi:noNamespaceSchemaLocation non pode aparecer despois do primeiro elemento ou atributo que non sexa un espazo de nomes.</translation>
     </message>
     <message>
         <source>No schema defined for validation.</source>
-        <translation type="unfinished"></translation>
+        <translation>Non se definiu ningún esquema para a validación.</translation>
     </message>
     <message>
         <source>No definition for element %1 available.</source>
-        <translation type="unfinished"></translation>
+        <translation>Non hai dispoñíbel ningunha definición do elemento %1.</translation>
     </message>
     <message>
         <source>Specified type %1 is not known to the schema.</source>
-        <translation type="unfinished"></translation>
+        <translation>O tipo especificado %1 non se coñece neste esquema.</translation>
     </message>
     <message>
         <source>Element %1 is not defined in this scope.</source>
-        <translation type="unfinished"></translation>
+        <translation>O elemento %1 non está definido neste ámbito.</translation>
     </message>
     <message>
         <source>Declaration for element %1 does not exist.</source>
-        <translation type="unfinished"></translation>
+        <translation>Non existe a declaración do elemento %1.</translation>
     </message>
     <message>
         <source>Element %1 contains invalid content.</source>
-        <translation type="unfinished"></translation>
+        <translation>O elemento %1 ten contido non válido.</translation>
     </message>
     <message>
         <source>Element %1 is declared as abstract.</source>
-        <translation type="unfinished"></translation>
+        <translation>O elemento %1 declarouse como abstracto.</translation>
     </message>
     <message>
         <source>Element %1 is not nillable.</source>
-        <translation type="unfinished"></translation>
+        <translation>O elemento %1 non é anulábel.</translation>
     </message>
     <message>
         <source>Attribute %1 contains invalid data: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>O atributo %1 contén datos non válidos: %2</translation>
     </message>
     <message>
         <source>Element contains content although it is nillable.</source>
-        <translation type="unfinished"></translation>
+        <translation>O elemento ten contido a pesar de ser anulábel.</translation>
     </message>
     <message>
         <source>Fixed value constraint not allowed if element is nillable.</source>
-        <translation type="unfinished"></translation>
+        <translation>Non se permite a restrición de valor fixo se o elemento é anulábel.</translation>
     </message>
     <message>
         <source>Specified type %1 is not validly substitutable with element type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>O tipo especificado %1 non se pode substituír dun xeito válido por elementos do tipo %2.</translation>
     </message>
     <message>
         <source>Complex type %1 is not allowed to be abstract.</source>
-        <translation type="unfinished"></translation>
+        <translation>Non se permite que o tipo complexo %1 sexa abstracto.</translation>
     </message>
     <message>
         <source>Element %1 contains not allowed attributes.</source>
-        <translation type="unfinished"></translation>
+        <translation>O elemento %1 contén atributos non permitidos.</translation>
     </message>
     <message>
         <source>Element %1 contains not allowed child element.</source>
-        <translation type="unfinished"></translation>
+        <translation>O elemento %1 contén un elemento fillo non permitido.</translation>
     </message>
     <message>
         <source>Content of element %1 does not match its type definition: %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do elemento %1 non casa coa definición do tipo: %2.</translation>
     </message>
     <message>
         <source>Content of element %1 does not match defined value constraint.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do elemento %1 non casa coa restrición de valores definida.</translation>
     </message>
     <message>
         <source>Element %1 contains not allowed child content.</source>
-        <translation type="unfinished"></translation>
+        <translation>O elemento %1 ten contido fillo non permitido.</translation>
     </message>
     <message>
         <source>Element %1 contains not allowed text content.</source>
-        <translation type="unfinished"></translation>
+        <translation>O elemento %1 ten contido de texto non permitido.</translation>
     </message>
     <message>
         <source>Element %1 cannot contain other elements, as it has a fixed content.</source>
-        <translation type="unfinished"></translation>
+        <translation>O elemento %1 non pode conter outros elementos xa que ten un contido fixo.</translation>
     </message>
     <message>
         <source>Element %1 is missing required attribute %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ao elemento %1 fáltalle o atributo requirido %2.</translation>
     </message>
     <message>
         <source>Attribute %1 does not match the attribute wildcard.</source>
-        <translation type="unfinished"></translation>
+        <translation>O atributo %1 non casa co carácter de substitución do atributo.</translation>
     </message>
     <message>
         <source>Declaration for attribute %1 does not exist.</source>
-        <translation type="unfinished"></translation>
+        <translation>Non existe a declaración do atributo %1.</translation>
     </message>
     <message>
         <source>Element %1 contains two attributes of type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>O elemento %1 contén dous atributos do tipo %2.</translation>
     </message>
     <message>
         <source>Attribute %1 contains invalid content.</source>
-        <translation type="unfinished"></translation>
+        <translation>O atributo %1 ten contido non válido.</translation>
     </message>
     <message>
         <source>Element %1 contains unknown attribute %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>O elemento %1 contén o atributo descoñecido %2.</translation>
     </message>
     <message>
         <source>Content of attribute %1 does not match its type definition: %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do atributo %1 non casa coa definición do tipo: %2.</translation>
     </message>
     <message>
         <source>Content of attribute %1 does not match defined value constraint.</source>
-        <translation type="unfinished"></translation>
+        <translation>O contido do atributo %1 non casa coa restrición de valores definida.</translation>
     </message>
     <message>
         <source>Non-unique value found for constraint %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Atopouse un valor non único para a restrición %1.</translation>
     </message>
     <message>
         <source>Key constraint %1 contains absent fields.</source>
-        <translation type="unfinished"></translation>
+        <translation>A restrición de chave %1 contén campos ausentes.</translation>
     </message>
     <message>
         <source>Key constraint %1 contains references nillable element %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>A restrición de chave %1 contén referencias ao elemento anulábel %2.</translation>
     </message>
     <message>
         <source>No referenced value found for key reference %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Non se atopou ningún valor referenciado para a referencia de chave %1.</translation>
     </message>
     <message>
         <source>More than one value found for field %1.</source>
-        <translation type="unfinished">Atopouse máis dun valor para o campo %1.</translation>
+        <translation>Atopouse máis dun valor para o campo %1.</translation>
     </message>
     <message>
         <source>Field %1 has no simple type.</source>
-        <translation type="unfinished">O campo %1 non ten un tipo simple.</translation>
+        <translation>O campo %1 non ten un tipo simple.</translation>
     </message>
     <message>
         <source>ID value &apos;%1&apos; is not unique.</source>
-        <translation type="unfinished">O valor do ID «%1» non é único.</translation>
+        <translation>O valor do ID «%1» non é único.</translation>
     </message>
     <message>
         <source>&apos;%1&apos; attribute contains invalid QName content: %2.</source>
-        <translation type="unfinished">O atributo «%1» contén contido non válido para un QName: %2.</translation>
+        <translation>O atributo «%1» contén contido non válido para un QName: %2.</translation>
     </message>
     <message>
         <source>empty</source>
-        <translation type="unfinished">baleiro</translation>
+        <translation>baleiro</translation>
     </message>
     <message>
         <source>zero or one</source>
-        <translation type="unfinished">cero ou un</translation>
+        <translation>cero ou un</translation>
     </message>
     <message>
         <source>exactly one</source>
-        <translation type="unfinished">exactamente un</translation>
+        <translation>exactamente un</translation>
     </message>
     <message>
         <source>one or more</source>
-        <translation type="unfinished">un ou máis</translation>
+        <translation>un ou máis</translation>
     </message>
     <message>
         <source>zero or more</source>
-        <translation type="unfinished">cero ou máis</translation>
+        <translation>cero ou máis</translation>
     </message>
     <message>
         <source>Required type is %1, but %2 was found.</source>
-        <translation type="unfinished">O tipo requirido é %1, pero atopouse %2.</translation>
+        <translation>O tipo requirido é %1, pero atopouse %2.</translation>
     </message>
     <message>
         <source>Promoting %1 to %2 may cause loss of precision.</source>
-        <translation type="unfinished">Converter de %1 a %2 pode causar perda de precisión.</translation>
+        <translation>Converter de %1 a %2 pode causar perda de precisión.</translation>
     </message>
     <message>
         <source>The focus is undefined.</source>
-        <translation type="unfinished">O foco non está definido.</translation>
+        <translation>O foco non está definido.</translation>
     </message>
     <message>
         <source>It&apos;s not possible to add attributes after any other kind of node.</source>
-        <translation type="unfinished">Non é posíbel engadir atributos tras calquera outro tipo de nodo.</translation>
+        <translation>Non é posíbel engadir atributos tras calquera outro tipo de nodo.</translation>
     </message>
     <message>
         <source>An attribute by name %1 has already been created.</source>
-        <translation type="unfinished">Xa se creou un atributo co nome %1.</translation>
+        <translation>Xa se creou un atributo co nome %1.</translation>
     </message>
     <message>
         <source>Only the Unicode Codepoint Collation is supported(%1). %2 is unsupported.</source>
-        <translation type="unfinished"></translation>
+        <translation>Só está soportado o Unicode Codepoint Collation (%1). %2 non se admite.</translation>
     </message>
 </context>
 </TS>

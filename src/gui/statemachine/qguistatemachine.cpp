@@ -404,6 +404,7 @@ static QEvent *cloneEvent(QEvent *e)
         we2->setButtons(we->buttons());
         we2->setModifiers(we->modifiers());
         we2->setOrientation(we->orientation());
+        we2->setDelta(we->delta());
         return we2;
     }
 #endif

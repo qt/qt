@@ -54,8 +54,6 @@
 #define SRCDIR "."
 #endif
 
-static const QLatin1String scriptsDir(SRCDIR "/scripts/");
-
 class tst_Lancelot : public QObject
 {
 Q_OBJECT
@@ -80,6 +78,7 @@ private:
     ImageItemList baseList;
     QHash<QString, QStringList> scripts;
     bool dryRunMode;
+    QString scriptsDir;
 
 private slots:
     void initTestCase();
@@ -116,6 +115,11 @@ void tst_Lancelot::initTestCase()
     if (!proto.connect(QLatin1String("tst_Lancelot"), &dryRunMode))
         QSKIP(qPrintable(proto.errorMessage()), SkipAll);
 
+#if defined(USE_RUNTIME_DIR)
+    scriptsDir = QCoreApplication::applicationDirPath() + "/scripts/";
+#else
+    scriptsDir = SRCDIR "/scripts/";
+#endif
     QDir qpsDir(scriptsDir);
     QStringList files = qpsDir.entryList(QStringList() << QLatin1String("*.qps"), QDir::Files | QDir::Readable);
     if (files.isEmpty()) {

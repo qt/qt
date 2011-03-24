@@ -406,6 +406,8 @@ void tst_NetworkSelfTest::serverReachability()
 void tst_NetworkSelfTest::remotePortsOpen_data()
 {
     QTest::addColumn<int>("portNumber");
+    QTest::newRow("echo") << 7;
+    QTest::newRow("daytime") << 13;
     QTest::newRow("ftp") << 21;
     QTest::newRow("ssh") << 22;
     QTest::newRow("imap") << 143;
@@ -965,7 +967,7 @@ void tst_NetworkSelfTest::smbServer()
     QVERIFY2(f, qt_error_string().toLocal8Bit());
 
     char buf[128];
-    size_t ret = fread(buf, sizeof buf, 1, f);
+    size_t ret = fread(buf, 1, sizeof buf, f);
     fclose(f);
 
     QCOMPARE(ret, strlen(contents));

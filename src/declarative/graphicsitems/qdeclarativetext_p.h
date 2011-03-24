@@ -43,7 +43,7 @@
 #define QDECLARATIVETEXT_H
 
 #include <QtGui/qtextoption.h>
-#include "qdeclarativeitem.h"
+#include "qdeclarativeimplicitsizeitem_p.h"
 
 #include <private/qdeclarativeglobal_p.h>
 
@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 class QDeclarativeTextPrivate;
-class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeText : public QDeclarativeItem
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeText : public QDeclarativeImplicitSizeItem
 {
     Q_OBJECT
     Q_ENUMS(HAlignment)
@@ -62,19 +62,27 @@ class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeText : public QDeclarativeItem
     Q_ENUMS(TextFormat)
     Q_ENUMS(TextElideMode)
     Q_ENUMS(WrapMode)
+    Q_ENUMS(LineHeightMode)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY fontChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
     Q_PROPERTY(TextStyle style READ style WRITE setStyle NOTIFY styleChanged)
     Q_PROPERTY(QColor styleColor READ styleColor WRITE setStyleColor NOTIFY styleColorChanged)
-    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign NOTIFY horizontalAlignmentChanged)
+    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign RESET resetHAlign NOTIFY horizontalAlignmentChanged)
+    Q_PROPERTY(HAlignment effectiveHorizontalAlignment READ effectiveHAlign NOTIFY effectiveHorizontalAlignmentChanged REVISION 1)
     Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign NOTIFY verticalAlignmentChanged)
     Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
+    Q_PROPERTY(int lineCount READ lineCount NOTIFY lineCountChanged REVISION 1)
+    Q_PROPERTY(bool truncated READ truncated NOTIFY truncatedChanged REVISION 1)
+    Q_PROPERTY(int maximumLineCount READ maximumLineCount WRITE setMaximumLineCount NOTIFY maximumLineCountChanged RESET resetMaximumLineCount REVISION 1)
+
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat NOTIFY textFormatChanged)
     Q_PROPERTY(TextElideMode elide READ elideMode WRITE setElideMode NOTIFY elideModeChanged) //### elideMode?
     Q_PROPERTY(qreal paintedWidth READ paintedWidth NOTIFY paintedSizeChanged)
     Q_PROPERTY(qreal paintedHeight READ paintedHeight NOTIFY paintedSizeChanged)
+    Q_PROPERTY(qreal lineHeight READ lineHeight WRITE setLineHeight NOTIFY lineHeightChanged REVISION 1)
+    Q_PROPERTY(LineHeightMode lineHeightMode READ lineHeightMode WRITE setLineHeightMode NOTIFY lineHeightModeChanged REVISION 1)
 
 public:
     QDeclarativeText(QDeclarativeItem *parent=0);
@@ -82,7 +90,8 @@ public:
 
     enum HAlignment { AlignLeft = Qt::AlignLeft,
                        AlignRight = Qt::AlignRight,
-                       AlignHCenter = Qt::AlignHCenter };
+                       AlignHCenter = Qt::AlignHCenter,
+                       AlignJustify = Qt::AlignJustify }; // ### VERSIONING: Only in QtQuick 1.1
     enum VAlignment { AlignTop = Qt::AlignTop,
                        AlignBottom = Qt::AlignBottom,
                        AlignVCenter = Qt::AlignVCenter };
@@ -106,6 +115,8 @@ public:
                     Wrap = QTextOption::WrapAtWordBoundaryOrAnywhere
                   };
 
+    enum LineHeightMode { ProportionalHeight, FixedHeight };
+
     QString text() const;
     void setText(const QString &);
 
@@ -123,6 +134,8 @@ public:
 
     HAlignment hAlign() const;
     void setHAlign(HAlignment align);
+    void resetHAlign();
+    HAlignment effectiveHAlign() const;
 
     VAlignment vAlign() const;
     void setVAlign(VAlignment align);
@@ -130,11 +143,24 @@ public:
     WrapMode wrapMode() const;
     void setWrapMode(WrapMode w);
 
+    int lineCount() const;
+    bool truncated() const;
+
+    int maximumLineCount() const;
+    void setMaximumLineCount(int lines);
+    void resetMaximumLineCount();
+
     TextFormat textFormat() const;
     void setTextFormat(TextFormat format);
 
     TextElideMode elideMode() const;
     void setElideMode(TextElideMode);
+
+    qreal lineHeight() const;
+    void setLineHeight(qreal lineHeight);
+
+    LineHeightMode lineHeightMode() const;
+    void setLineHeightMode(LineHeightMode);
 
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
@@ -157,9 +183,15 @@ Q_SIGNALS:
     void horizontalAlignmentChanged(HAlignment alignment);
     void verticalAlignmentChanged(VAlignment alignment);
     void wrapModeChanged();
+    Q_REVISION(1) void lineCountChanged();
+    Q_REVISION(1) void truncatedChanged();
+    Q_REVISION(1) void maximumLineCountChanged();
     void textFormatChanged(TextFormat textFormat);
     void elideModeChanged(TextElideMode mode);
     void paintedSizeChanged();
+    Q_REVISION(1) void lineHeightChanged(qreal lineHeight);
+    Q_REVISION(1) void lineHeightModeChanged(LineHeightMode mode);
+    Q_REVISION(1) void effectiveHorizontalAlignmentChanged();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);

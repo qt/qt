@@ -43,7 +43,7 @@
 #define QDECLARATIVETEXTINPUT_H
 
 #include "private/qdeclarativetext_p.h"
-#include "private/qdeclarativepainteditem_p.h"
+#include "private/qdeclarativeimplicitsizeitem_p.h"
 
 #include <QGraphicsSceneMouseEvent>
 #include <QIntValidator>
@@ -58,19 +58,20 @@ QT_MODULE(Declarative)
 
 class QDeclarativeTextInputPrivate;
 class QValidator;
-class Q_AUTOTEST_EXPORT QDeclarativeTextInput : public QDeclarativePaintedItem
+class Q_AUTOTEST_EXPORT QDeclarativeTextInput : public QDeclarativeImplicitSizePaintedItem
 {
     Q_OBJECT
     Q_ENUMS(HAlignment)
     Q_ENUMS(EchoMode)
+    Q_ENUMS(SelectionMode)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
     Q_PROPERTY(QColor selectionColor READ selectionColor WRITE setSelectionColor NOTIFY selectionColorChanged)
     Q_PROPERTY(QColor selectedTextColor READ selectedTextColor WRITE setSelectedTextColor NOTIFY selectedTextColorChanged)
     Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY fontChanged)
-    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign NOTIFY horizontalAlignmentChanged)
-
+    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign RESET resetHAlign NOTIFY horizontalAlignmentChanged)
+    Q_PROPERTY(HAlignment effectiveHorizontalAlignment READ effectiveHAlign NOTIFY effectiveHorizontalAlignmentChanged REVISION 1)
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly NOTIFY readOnlyChanged)
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible NOTIFY cursorVisibleChanged)
     Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition NOTIFY cursorPositionChanged)
@@ -94,6 +95,9 @@ class Q_AUTOTEST_EXPORT QDeclarativeTextInput : public QDeclarativePaintedItem
     Q_PROPERTY(QString displayText READ displayText NOTIFY displayTextChanged)
     Q_PROPERTY(bool autoScroll READ autoScroll WRITE setAutoScroll NOTIFY autoScrollChanged)
     Q_PROPERTY(bool selectByMouse READ selectByMouse WRITE setSelectByMouse NOTIFY selectByMouseChanged)
+    Q_PROPERTY(SelectionMode mouseSelectionMode READ mouseSelectionMode WRITE setMouseSelectionMode NOTIFY mouseSelectionModeChanged REVISION 1)
+    Q_PROPERTY(bool canPaste READ canPaste NOTIFY canPasteChanged REVISION 1)
+    Q_PROPERTY(bool inputMethodComposing READ isInputMethodComposing NOTIFY inputMethodComposingChanged REVISION 1)
 
 public:
     QDeclarativeTextInput(QDeclarativeItem* parent=0);
@@ -112,10 +116,22 @@ public:
         AlignHCenter = Qt::AlignHCenter
     };
 
+    enum SelectionMode {
+        SelectCharacters,
+        SelectWords
+    };
+
+    enum CursorPosition {
+        CursorBetweenCharacters,
+        CursorOnCharacter
+    };
+
     //Auxilliary functions needed to control the TextInput from QML
     Q_INVOKABLE int positionAt(int x) const;
+    Q_INVOKABLE Q_REVISION(1) int positionAt(int x, CursorPosition position) const;
     Q_INVOKABLE QRectF positionToRectangle(int pos) const;
     Q_INVOKABLE void moveCursorSelection(int pos);
+    Q_INVOKABLE Q_REVISION(1) void moveCursorSelection(int pos, SelectionMode mode);
 
     Q_INVOKABLE void openSoftwareInputPanel();
     Q_INVOKABLE void closeSoftwareInputPanel();
@@ -137,6 +153,8 @@ public:
 
     HAlignment hAlign() const;
     void setHAlign(HAlignment align);
+    void resetHAlign();
+    HAlignment effectiveHAlign() const;
 
     bool isReadOnly() const;
     void setReadOnly(bool);
@@ -184,12 +202,18 @@ public:
     bool selectByMouse() const;
     void setSelectByMouse(bool);
 
+    SelectionMode mouseSelectionMode() const;
+    void setMouseSelectionMode(SelectionMode mode);
+
     bool hasAcceptableInput() const;
 
     void drawContents(QPainter *p,const QRect &r);
     QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
 
     QRectF boundingRect() const;
+    bool canPaste() const;
+
+    bool isInputMethodComposing() const;
 
 Q_SIGNALS:
     void textChanged();
@@ -216,6 +240,10 @@ Q_SIGNALS:
     void activeFocusOnPressChanged(bool activeFocusOnPress);
     void autoScrollChanged(bool autoScroll);
     void selectByMouseChanged(bool selectByMouse);
+    Q_REVISION(1) void mouseSelectionModeChanged(SelectionMode mode);
+    Q_REVISION(1) void canPasteChanged();
+    Q_REVISION(1) void inputMethodComposingChanged();
+    Q_REVISION(1) void effectiveHorizontalAlignmentChanged();
 
 protected:
     virtual void geometryChanged(const QRectF &newGeometry,
@@ -225,6 +253,7 @@ protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
+    bool sceneEvent(QEvent *event);
     void keyPressEvent(QKeyEvent* ev);
     void inputMethodEvent(QInputMethodEvent *);
     bool event(QEvent *e);
@@ -234,6 +263,8 @@ public Q_SLOTS:
     void selectAll();
     void selectWord();
     void select(int start, int end);
+    Q_REVISION(1) void deselect();
+    Q_REVISION(1) bool isRightToLeft(int start, int end);
 #ifndef QT_NO_CLIPBOARD
     void cut();
     void copy();
@@ -248,6 +279,7 @@ private Q_SLOTS:
     void moveCursor();
     void cursorPosChanged();
     void updateRect(const QRect &r = QRect());
+    void q_canPasteChanged();
 
 private:
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeTextInput)

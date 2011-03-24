@@ -1683,6 +1683,7 @@ static bool indic_shape_syllable(HB_Bool openType, HB_ShaperItem *item, bool inv
                 }
                 item->glyphs[j] = item->glyphs[i];
                 item->attributes[j] = item->attributes[i];
+                item->advances[j] = item->advances[i];
                 ++i;
                 ++j;
             }

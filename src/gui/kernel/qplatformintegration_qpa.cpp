@@ -42,6 +42,7 @@
 #include "qplatformintegration_qpa.h"
 
 #include <QtGui/QPlatformFontDatabase>
+#include <QtGui/QPlatformClipboard>
 
 QT_BEGIN_NAMESPACE
 
@@ -91,6 +92,33 @@ QPlatformFontDatabase *QPlatformIntegration::fontDatabase() const
         db = new QPlatformFontDatabase;
     }
     return db;
+}
+
+/*!
+    Accessor for the platform integrations clipboard.
+
+    Default implementation returns a default QPlatformClipboard.
+
+    \sa QPlatformClipboard
+
+*/
+
+#ifndef QT_NO_CLIPBOARD
+
+QPlatformClipboard *QPlatformIntegration::clipboard() const
+{
+    static QPlatformClipboard *clipboard = 0;
+    if (!clipboard) {
+        clipboard = new QPlatformClipboard;
+    }
+    return clipboard;
+}
+
+#endif
+
+QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
+{
+    return 0;
 }
 
 /*!
@@ -192,5 +220,15 @@ QPlatformFontDatabase *QPlatformIntegration::fontDatabase() const
     Returnes the content of the window specified with the WId handle within the boundaries of
     QRect(x,y,width,height).
 */
+
+
+bool QPlatformIntegration::hasCapability(Capability cap) const
+{
+    return false;
+}
+
+
+
+
 
 QT_END_NAMESPACE

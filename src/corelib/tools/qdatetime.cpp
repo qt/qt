@@ -3426,8 +3426,9 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
         QString tz = parts.at(5);
         if (!tz.startsWith(QLatin1String("GMT"), Qt::CaseInsensitive))
             return QDateTime();
-        int tzoffset = 0;
+        QDateTime dt(date, time, Qt::UTC);
         if (tz.length() > 3) {
+            int tzoffset = 0;
             QChar sign = tz.at(3);
             if ((sign != QLatin1Char('+'))
                 && (sign != QLatin1Char('-'))) {
@@ -3442,8 +3443,9 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
             tzoffset = (tzhour*60 + tzminute) * 60;
             if (sign == QLatin1Char('-'))
                 tzoffset = -tzoffset;
+            dt.setUtcOffset(tzoffset);
         }
-        return QDateTime(date, time, Qt::UTC).addSecs(-tzoffset).toLocalTime();
+        return dt.toLocalTime();
     }
 #endif //QT_NO_TEXTDATE
     }

@@ -414,13 +414,17 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
     if (isGettingInput) {
         // If any text is being input, remove selected text.
         priorState = m_undoState;
+        if (echoMode() == QLineEdit::PasswordEchoOnEdit && !passwordEchoEditing()) {
+            updatePasswordEchoEditing(true);
+            m_selstart = 0;
+            m_selend = m_text.length();
+        }
         removeSelectedText();
     }
 
-
     int c = m_cursor; // cursor position after insertion of commit string
     if (event->replacementStart() <= 0)
-        c += event->commitString().length() + qMin(-event->replacementStart(), event->replacementLength());
+        c += event->commitString().length() - qMin(-event->replacementStart(), event->replacementLength());
 
     m_cursor += event->replacementStart();
 
@@ -456,6 +460,7 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
 #ifndef QT_NO_IM
     setPreeditArea(m_cursor, event->preeditString());
 #endif //QT_NO_IM
+    const int oldPreeditCursor = m_preeditCursor;
     m_preeditCursor = event->preeditString().length();
     m_hideCursor = false;
     QList<QTextLayout::FormatRange> formats;
@@ -479,6 +484,8 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
     updateDisplayText(/*force*/ true);
     if (cursorPositionChanged)
         emitCursorPositionChanged();
+    else if (m_preeditCursor != oldPreeditCursor)
+        emit updateMicroFocus();
     if (isGettingInput)
         finishChange(priorState);
 }
@@ -541,10 +548,13 @@ void QLineControl::draw(QPainter *painter, const QPoint &offset, const QRect &cl
 */
 void QLineControl::selectWordAtPos(int cursor)
 {
-    int c = m_textLayout.previousCursorPosition(cursor, QTextLayout::SkipWords);
+    int next = cursor + 1;
+    if(next > end())
+        --next;
+    int c = m_textLayout.previousCursorPosition(next, QTextLayout::SkipWords);
     moveCursor(c, false);
     // ## text layout should support end of words.
-    int end = m_textLayout.nextCursorPosition(cursor, QTextLayout::SkipWords);
+    int end = m_textLayout.nextCursorPosition(c, QTextLayout::SkipWords);
     while (end > cursor && m_text[end-1].isSpace())
         --end;
     moveCursor(end, true);

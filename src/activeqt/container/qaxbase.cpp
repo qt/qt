@@ -1671,12 +1671,11 @@ private:
         QVariant::Type vartype = QVariant::nameToType(prop.type);
         switch(vartype) {
         case QVariant::Invalid:
+        case QVariant::UserType:
             if (prop.type == "QVariant") {
                 prop.typeId |= 0xff << 24;
                 break;
             }
-            // fall through
-        case QVariant::UserType:
             if (QMetaType::type(prop.type) == -1)
                 qWarning("QAxBase: Unsupported property type: %s", prop.type.data());
             break;

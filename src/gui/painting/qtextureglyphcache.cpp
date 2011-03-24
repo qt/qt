@@ -175,11 +175,16 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
                metrics.yoff.toReal(),
                metrics.x.toReal(),
                metrics.y.toReal());
-#endif
+#endif        
+        GlyphAndSubPixelPosition key(glyph, subPixelPosition);
         int glyph_width = metrics.width.ceil().toInt();
         int glyph_height = metrics.height.ceil().toInt();
-        if (glyph_height == 0 || glyph_width == 0)
+        if (glyph_height == 0 || glyph_width == 0) {
+            // Avoid multiple calls to boundingBox() for non-printable characters
+            Coord c = { 0, 0, 0, 0, 0, 0 };
+            coords.insert(key, c);
             continue;
+        }
         glyph_width += margin * 2 + 4;
         glyph_height += margin * 2 + 4;
         // align to 8-bit boundary
@@ -192,7 +197,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
                     metrics.x.round().truncate(),
                     -metrics.y.truncate() }; // baseline for horizontal scripts
 
-        listItemCoordinates.insert(GlyphAndSubPixelPosition(glyph, subPixelPosition), c);
+        listItemCoordinates.insert(key, c);
         rowHeight = qMax(rowHeight, glyph_height);
     }
     if (listItemCoordinates.isEmpty())

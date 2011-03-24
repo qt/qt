@@ -88,7 +88,7 @@ void QCLuceneIndexWriter::addIndexes(const QList<QCLuceneIndexReader*> &readers)
         readerArray[i] = (readers.at(i))->d->reader;
 
     d->writer->addIndexes(readerArray);
-    delete readerArray; 
+    delete [] readerArray;
 }
 
 void QCLuceneIndexWriter::addDocument(QCLuceneDocument &doc, 

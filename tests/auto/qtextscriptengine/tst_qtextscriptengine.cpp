@@ -56,11 +56,14 @@
 
 
 
-#if defined(Q_WS_X11)
+#if defined(Q_WS_X11) || defined(Q_WS_MAC)
 #define private public
 #include <private/qtextengine_p.h>
 #include <qtextlayout.h>
 #undef private
+#else
+#include <private/qtextengine_p.h>
+#include <qtextlayout.h>
 #endif
 
 #include <qfontdatabase.h>
@@ -103,6 +106,11 @@ private slots:
 
     void khmer();
     void linearB();
+    void controlInSyllable_qtbug14204();
+    void combiningMarks_qtbug15675();
+
+    void mirroredChars_data();
+    void mirroredChars();
 };
 
 tst_QTextScriptEngine::tst_QTextScriptEngine()
@@ -1111,6 +1119,125 @@ void tst_QTextScriptEngine::greek()
 #endif
 }
 
+void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
+{
+#if defined(Q_WS_X11)
+    QString s;
+    s.append(QChar(0x0915));
+    s.append(QChar(0x094d));
+    s.append(QChar(0x200d));
+    s.append(QChar(0x0915));
+
+    QTextLayout layout(s);
+    QTextEngine *e = layout.d;
+    e->itemize();
+    e->shape(0);
+
+    QVERIFY(e->layoutData->items[0].num_glyphs == 2);
+    QVERIFY(e->layoutData->glyphLayout.advances_x[1] != 0);
+#else
+    QSKIP("X11 specific test", SkipAll);
+#endif
+}
+
+void tst_QTextScriptEngine::combiningMarks_qtbug15675()
+{
+#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+    QString s;
+    s.append(QChar(0x0061));
+    s.append(QChar(0x0062));
+    s.append(QChar(0x0300));
+    s.append(QChar(0x0063));
+
+    QFont font("Monaco");
+    QTextLayout layout(s, font);
+    QTextEngine *e = layout.d;
+    e->itemize();
+    e->shape(0);
+
+    QVERIFY(e->layoutData->items[0].num_glyphs == 4);
+    QVERIFY(e->layoutData->glyphLayout.advances_y[2] > 0);
+#elif defined(Q_WS_X11)
+    QFontDatabase db;
+
+    if (!db.families().contains("DejaVu Sans Mono")) {
+        QSKIP("Required font (DejaVu Sans Mono) doesn't exist, skip test.", SkipAll);
+        return;
+    }
+
+    QString s;
+    s.append(QChar(0x0062));
+    s.append(QChar(0x0332));
+    s.append(QChar(0x0063));
+
+    QTextLayout layout(s, QFont("DejaVu Sans Mono"));
+    QTextEngine *e = layout.d;
+    e->itemize();
+    e->shape(0);
+
+    QVERIFY(e->layoutData->items[0].num_glyphs == 3);
+    QVERIFY(e->layoutData->glyphLayout.advances_x[1] == 0);
+#else
+    QSKIP("X11/Mac specific test", SkipAll);
+#endif
+}
+
+void tst_QTextScriptEngine::mirroredChars_data()
+{
+    QTest::addColumn<int>("hintingPreference");
+
+    QTest::newRow("Default hinting") << int(QFont::PreferDefaultHinting);
+    QTest::newRow("No hinting") << int(QFont::PreferNoHinting);
+    QTest::newRow("Vertical hinting") << int(QFont::PreferVerticalHinting);
+    QTest::newRow("Full hinting") << int(QFont::PreferFullHinting);
+}
+
+void tst_QTextScriptEngine::mirroredChars()
+{
+#if defined(Q_WS_MAC)
+    QSKIP("Not supported on Mac", SkipAll);
+#endif
+    QFETCH(int, hintingPreference);
+
+    QFont font;
+    font.setHintingPreference(QFont::HintingPreference(hintingPreference));
+
+    QString s;
+    s.append(QLatin1Char('('));
+    s.append(QLatin1Char(')'));
+
+    HB_Glyph leftParenthesis;
+    HB_Glyph rightParenthesis;
+    {
+        QTextLayout layout(s);
+        layout.beginLayout();
+        layout.createLine();
+        layout.endLayout();
+
+        QTextEngine *e = layout.engine();
+        e->itemize();
+        e->shape(0);
+        QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(2));
+
+        const QGlyphLayout &glyphLayout = e->layoutData->glyphLayout;
+        leftParenthesis = glyphLayout.glyphs[0];
+        rightParenthesis = glyphLayout.glyphs[1];
+    }
+
+    {
+        QTextLayout layout(s);
+        layout.setFlags(Qt::TextForceRightToLeft);
+
+        QTextEngine *e = layout.engine();
+        e->itemize();
+        e->shape(0);
+        QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(2));
+
+        const QGlyphLayout &glyphLayout = e->layoutData->glyphLayout;
+        QCOMPARE(glyphLayout.glyphs[0], rightParenthesis);
+        QCOMPARE(glyphLayout.glyphs[1], leftParenthesis);
+    }
+}
 
 QTEST_MAIN(tst_QTextScriptEngine)
 #include "tst_qtextscriptengine.moc"

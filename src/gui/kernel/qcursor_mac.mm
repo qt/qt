@@ -50,6 +50,7 @@
 #include <AppKit/NSCursor.h>
 #include <qpainter.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
+#include <private/qapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -60,6 +61,7 @@ extern QCursorData *qt_cursorTable[Qt::LastCursor + 1];
 extern OSWindowRef qt_mac_window_for(const QWidget *); //qwidget_mac.cpp
 extern GrafPtr qt_mac_qd_context(const QPaintDevice *); //qpaintdevice_mac.cpp
 extern bool qt_sendSpontaneousEvent(QObject *, QEvent *); //qapplication_mac.cpp
+extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
 
 /*****************************************************************************
   Internal QCursorData class
@@ -95,18 +97,19 @@ protected:
     }
 };
 
-void *qt_mac_nsCursorForQCursor(const QCursor &c)
+inline void *qt_mac_nsCursorForQCursor(const QCursor &c)
 {
     c.d->update();
     return [[static_cast<NSCursor *>(c.d->curs.cp.nscursor) retain] autorelease];
 }
 
 static QCursorData *currentCursor = 0; //current cursor
-void qt_mac_set_cursor(const QCursor *c, const QPoint &)
+
+void qt_mac_set_cursor(const QCursor *c)
 {
 #ifdef QT_MAC_USE_COCOA
-    Q_UNUSED(c);
-    return;
+    QMacCocoaAutoReleasePool pool;
+    [static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(*c)) set];
 #else
     if (!c) {
         currentCursor = 0;
@@ -128,35 +131,122 @@ void qt_mac_set_cursor(const QCursor *c, const QPoint &)
             c->d->curs.tc.anim->start(c->d->curs.tc.curs);
         }
     }
+
     currentCursor = c->d;
 #endif
 }
 
-void qt_mac_update_cursor_at_global_pos(const QPoint &globalPos)
+static QPointer<QWidget> lastWidgetUnderMouse = 0;
+static QPointer<QWidget> lastMouseCursorWidget = 0;
+static bool qt_button_down_on_prev_call = false;
+static QCursor *grabCursor = 0;
+
+void qt_mac_updateCursorWithWidgetUnderMouse(QWidget *widgetUnderMouse)
 {
-#ifdef QT_MAC_USE_COCOA
-    Q_UNUSED(globalPos);
-    return;
-#else
     QCursor cursor(Qt::ArrowCursor);
+    if (qt_button_down) {
+        // The widget that is currently pressed
+        // grabs the mouse cursor:
+        widgetUnderMouse = qt_button_down;
+        qt_button_down_on_prev_call = true;
+    } else if (qt_button_down_on_prev_call) {
+        // Grab has been released, so do
+        // a full check:
+        qt_button_down_on_prev_call = false;
+        lastWidgetUnderMouse = 0;
+        lastMouseCursorWidget = 0;
+    }
+
     if (QApplication::overrideCursor()) {
         cursor = *QApplication::overrideCursor();
-    } else {
-        for(QWidget *w = QApplication::widgetAt(globalPos); w; w = w->parentWidget()) {
-            if(w->testAttribute(Qt::WA_SetCursor)) {
-                cursor = w->cursor();
-                break;
+    } else if (grabCursor) {
+        cursor = *grabCursor;
+    } else if (widgetUnderMouse) {
+        if (widgetUnderMouse == lastWidgetUnderMouse) {
+            // Optimization that should hit when the widget under
+            // the mouse does not change as the mouse moves:
+            if (lastMouseCursorWidget)
+                cursor = lastMouseCursorWidget->cursor();
+        } else {
+            QWidget *w = widgetUnderMouse;
+            for (; w; w = w->parentWidget()) {
+                if (w->testAttribute(Qt::WA_SetCursor)) {
+                    cursor = w->cursor();
+                    break;
+                }
+                if (w->isWindow())
+                    break;
             }
+            // One final check in case we ran out of parents in the loop:
+            if (w && !w->testAttribute(Qt::WA_SetCursor))
+                w = 0;
+
+            lastWidgetUnderMouse = widgetUnderMouse;
+            lastMouseCursorWidget = w;
         }
     }
-    qt_mac_set_cursor(&cursor, globalPos);
+
+#ifdef QT_MAC_USE_COCOA
+    cursor.d->update();
+    NSCursor *nsCursor = static_cast<NSCursor *>(cursor.d->curs.cp.nscursor);
+    if ([NSCursor currentCursor] != nsCursor) {
+        QMacCocoaAutoReleasePool pool;
+        [nsCursor set];
+    }
+#else
+    qt_mac_set_cursor(&cursor);
 #endif
 }
 
 void qt_mac_update_cursor()
 {
-    qt_mac_update_cursor_at_global_pos(QCursor::pos());
+    // This function is similar to qt_mac_updateCursorWithWidgetUnderMouse
+    // except that is clears the optimization cache, and finds the widget
+    // under mouse itself. Clearing the cache is useful in cases where the
+    // application has been deactivated/activated etc.
+    // NB: since we dont have any true native widget, the call to
+    // qt_mac_getTargetForMouseEvent will fail when the mouse is over QMacNativeWidgets.
+#ifdef QT_MAC_USE_COCOA
+    lastWidgetUnderMouse = 0;
+    lastMouseCursorWidget = 0;
+    QWidget *widgetUnderMouse = 0;
+
+    if (qt_button_down) {
+        widgetUnderMouse = qt_button_down;
+    } else {
+        QPoint localPoint;
+        QPoint globalPoint;
+        qt_mac_getTargetForMouseEvent(0, QEvent::None, localPoint, globalPoint, 0, &widgetUnderMouse);
+    }
+    qt_mac_updateCursorWithWidgetUnderMouse(widgetUnderMouse);
+#else
+    qt_mac_updateCursorWithWidgetUnderMouse(QApplication::widgetAt(QCursor::pos()));
+#endif
 }
+
+void qt_mac_setMouseGrabCursor(bool set, QCursor *const cursor = 0)
+{
+    if (grabCursor) {
+        delete grabCursor;
+        grabCursor = 0;
+    }
+    if (set) {
+        if (cursor)
+            grabCursor = new QCursor(*cursor);
+        else if (lastMouseCursorWidget)
+            grabCursor = new QCursor(lastMouseCursorWidget->cursor());
+        else
+            grabCursor = new QCursor(Qt::ArrowCursor);
+    }
+    qt_mac_update_cursor();
+}
+
+#ifndef QT_MAC_USE_COCOA
+void qt_mac_update_cursor_at_global_pos(const QPoint &globalPos)
+{
+    qt_mac_updateCursorWithWidgetUnderMouse(QApplication::widgetAt(globalPos));
+}
+#endif
 
 static int nextCursorId = Qt::BitmapCursor;
 
@@ -427,7 +517,8 @@ void QCursorData::update()
         break;
     case Qt::DragCopyCursor:
         type = QCursorData::TYPE_ThemeCursor;
-        curs.cp.nscursor = [NSCursor dragCopyCursor];
+        if ([NSCursor respondsToSelector:@selector(dragCopyCursor)])
+            curs.cp.nscursor = [NSCursor performSelector:@selector(dragCopyCursor)];
         break;
     case Qt::DragMoveCursor:
         type = QCursorData::TYPE_ThemeCursor;
@@ -435,7 +526,8 @@ void QCursorData::update()
         break;
     case Qt::DragLinkCursor:
         type = QCursorData::TYPE_ThemeCursor;
-        curs.cp.nscursor = [NSCursor dragLinkCursor];
+        if ([NSCursor respondsToSelector:@selector(dragLinkCursor)])
+            curs.cp.nscursor = [NSCursor performSelector:@selector(dragLinkCursor)];
         break;
 #define QT_USE_APPROXIMATE_CURSORS
 #ifdef QT_USE_APPROXIMATE_CURSORS

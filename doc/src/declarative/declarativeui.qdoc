@@ -91,7 +91,7 @@ Module.
 \list
 \o \l{QML Documents}
 \o \l{Property Binding}
-\o \l{Anchor-based Layout in QML}
+\o \l{Anchor-Based Layout in QML}
 \o \l{Writing QML Components: Properties, Methods and Signals}
 \o \l{QML Scope}
 \o \l{QML Modules}
@@ -140,6 +140,7 @@ Module.
 \o \l{QML Basic Types}
 \o \l{QML Global Object}
 \o \l{QML Internationalization}
+\o \l{QML Right-to-left User Interfaces}
 \o \l{QML Security}
 \o \l{Qt Declarative Module}
 \o \l{Debugging QML}
