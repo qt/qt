@@ -110,4 +110,5 @@ inline int spriteCount(QDeclarativeListProperty<SpriteState> *p)
 
 
 QT_END_NAMESPACE
+QT_END_HEADER
 #endif // SPRITEENGINE_H

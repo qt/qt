@@ -28,7 +28,6 @@ SUBDIRS += \
 
 SUBDIRS += \
            qsgitem \
-           texturemanager \
 
 contains(QT_CONFIG, private_tests) {
     SUBDIRS += \
@@ -80,7 +79,8 @@ contains(QT_CONFIG, private_tests) {
            qdeclarativeworkerscript \
            qdeclarativexmllistmodel \
            qpacketprotocol \
-           qdeclarativev4
+           qdeclarativev4 \
+           qsgmousearea
 
 contains(QT_CONFIG, webkit) {
     SUBDIRS += \

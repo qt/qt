@@ -66,8 +66,6 @@ public:
 
     const QSGTextureRef &texture() const { return m_texture; }
 
-    void updateGlyphCache(const QGLContext *context);
-
     int cacheTextureWidth() const;
     int cacheTextureHeight() const;
 

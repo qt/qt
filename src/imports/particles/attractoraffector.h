@@ -75,4 +75,5 @@ qreal m_y;
 };
 
 QT_END_NAMESPACE
+QT_END_HEADER
 #endif // ATTRACTORAFFECTOR_H

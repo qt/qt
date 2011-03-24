@@ -42,13 +42,15 @@
 #ifndef DISTANCEFIELDGLYPHCACHE_H
 #define DISTANCEFIELDGLYPHCACHE_H
 
+#include <qgl.h>
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
-#include <qsgtexture.h>
 
 QT_BEGIN_NAMESPACE
 
 void qt_disableFontHinting(QFont &font);
+
+class QGLShaderProgram;
 
 class Q_DECLARATIVE_EXPORT DistanceFieldGlyphCache
 {
@@ -60,6 +62,8 @@ public:
         qreal height;
         qreal baselineX;
         qreal baselineY;
+
+        bool isNull() const { return width == 0 || height == 0; }
     };
     Metrics glyphMetrics(glyph_t glyph);
 
@@ -70,27 +74,35 @@ public:
         qreal height;
         qreal xMargin;
         qreal yMargin;
+
+        TexCoord() : x(0), y(0), width(0), height(0), xMargin(0), yMargin(0) { }
+
+        bool isNull() const { return width == 0 || height == 0; }
     };
     TexCoord glyphTexCoord(glyph_t glyph);
 
-    QSGTextureRef texture();
+    GLuint texture();
     QSize textureSize() const;
-    qreal scaleRatioFromRefSize() const;
+    int maxTextureSize() const;
+    qreal fontScale() const;
     QImage renderDistanceFieldGlyph(glyph_t glyph) const;
 
     int glyphCount() const;
     qreal glyphMargin() const;
 
     void populate(int count, const glyph_t *glyphs);
+    void derefGlyphs(int count, const glyph_t *glyphs);
+    void updateCache();
 
-    QPointF pixelToTexel(const QPointF &pixel) const;
+    bool cacheIsFull() const { return m_textureData->currY >= maxTextureSize(); }
 
     static bool distanceFieldEnabled();
 
 private:
     DistanceFieldGlyphCache(const QFont &font);
 
-    QSGTextureRef createTexture();
+    void createTexture(int width, int height);
+    void resizeTexture(int width, int height);
 
     static QHash<QString, DistanceFieldGlyphCache *> m_caches;
 
@@ -100,16 +112,35 @@ private:
     QString m_distanceFieldKey;
     int m_glyphCount;
     QHash<glyph_t, Metrics> m_metrics;
+    mutable int m_maxTextureSize;
 
     struct DistanceFieldTextureData {
-        QSGTextureRef texture;
+        GLuint texture;
+        GLuint fbo;
         QSize size;
         QHash<glyph_t, TexCoord> texCoords;
-        QSet<glyph_t> generatedGlyphs;
+        QSet<glyph_t> pendingGlyphs;
+        QHash<glyph_t, quint32> glyphRefCount;
+        QSet<glyph_t> unusedGlyphs;
+        int currX;
+        int currY;
+        QImage image;
+
+        DistanceFieldTextureData()
+            : texture(0)
+            , fbo(0)
+            , currX(0)
+            , currY(0)
+        { }
     };
     DistanceFieldTextureData *textureData();
     DistanceFieldTextureData *m_textureData;
     static QHash<QString, DistanceFieldTextureData *> m_textures_data;
+
+    const QGLContext *ctx;
+    QGLShaderProgram *m_blitProgram;
+    GLfloat m_vertexCoordinateArray[8];
+    GLfloat m_textureCoordinateArray[8];
 
 };
 

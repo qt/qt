@@ -14,6 +14,18 @@ Rectangle{
         additive: 1
     }
     TrailEmitter{
+    //burst on click
+        id: bursty
+        system: sys
+        emitting: false
+        particlesPerSecond: 2000
+        particleDuration: 500
+        acceleration: AngleVector{ angle: 90; angleVariation: 360; magnitude: 640; }
+        particleSize: 8
+        particleEndSize: 16
+        particleSizeVariation: 4
+    }
+    TrailEmitter{
         system: sys
         speedFromMovement: 4.0
         emitting: ma.pressed
@@ -29,5 +41,7 @@ Rectangle{
     MouseArea{
         id: ma
         anchors.fill: parent
+        onPressed: {bursty.x = mouse.x; bursty.y = mouse.y; bursty.burst(0.1);}
+        onReleased: {bursty.x = mouse.x; bursty.y = mouse.y; bursty.burst(0.1);}
     }
 }

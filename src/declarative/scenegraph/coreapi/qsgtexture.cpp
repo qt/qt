@@ -42,11 +42,7 @@
 #define GL_GLEXT_PROTOTYPES
 
 #include "qsgtexture_p.h"
-
-#ifdef Q_WS_WIN
-#include <private/qglextensions_p.h>
-#include <private/qgl_p.h>
-#endif
+#include <qglfunctions.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -132,7 +128,7 @@ QRectF QSGTexture::textureSubRect() const
 void QSGTexture::setMipmapFiltering(Filtering filter)
 {
     Q_D(QSGTexture);
-    if (d->mipmapMode != filter) {
+    if (d->mipmapMode != (uint) filter) {
         d->mipmapMode = filter;
         d->filteringChanged = true;
     }
@@ -151,7 +147,7 @@ QSGTexture::Filtering QSGTexture::mipmapFiltering() const
 void QSGTexture::setFiltering(QSGTexture::Filtering filter)
 {
     Q_D(QSGTexture);
-    if (d->filterMode != filter) {
+    if (d->filterMode != (uint) filter) {
         d->filterMode = filter;
         d->filteringChanged = true;
     }
@@ -167,7 +163,7 @@ QSGTexture::Filtering QSGTexture::filtering() const
 void QSGTexture::setHorizontalWrapMode(WrapMode hwrap)
 {
     Q_D(QSGTexture);
-    if (hwrap != d->horizontalWrap) {
+    if ((uint) hwrap != d->horizontalWrap) {
         d->horizontalWrap = hwrap;
         d->wrapChanged = true;
     }
@@ -183,7 +179,7 @@ QSGTexture::WrapMode QSGTexture::horizontalWrapMode() const
 void QSGTexture::setVerticalWrapMode(WrapMode vwrap)
 {
     Q_D(QSGTexture);
-    if (vwrap != d->verticalWrap) {
+    if ((uint) vwrap != d->verticalWrap) {
         d->verticalWrap = vwrap;
         d->wrapChanged = true;
     }
@@ -321,8 +317,8 @@ void QSGPlainTexture::bind()
 #endif
 
     if (m_has_mipmaps) {
-        const QGLContext *ctx = QSGContext::current->glContext();
-        glGenerateMipmap(GL_TEXTURE_2D);
+        const QGLContext *ctx = QGLContext::currentContext();
+        ctx->functions()->glGenerateMipmap(GL_TEXTURE_2D);
     }
 
     m_texture_size = QSize(w, h);

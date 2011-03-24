@@ -1,6 +1,7 @@
 TARGET  = qmletcproviderplugin
 TARGETPATH = Qt/labs/etcprovider
 include(../qimportbase.pri)
+!contains(QT_CONFIG, egl):DEFINES += QT_NO_EGL
 
 QT += declarative opengl
 

@@ -299,6 +299,8 @@ Q_OPENGL_EXPORT bool operator!=(const QGLFormat&, const QGLFormat&);
 Q_OPENGL_EXPORT QDebug operator<<(QDebug, const QGLFormat &);
 #endif
 
+class QGLFunctions;
+
 class Q_OPENGL_EXPORT QGLContext
 {
     Q_DECLARE_PRIVATE(QGLContext)
@@ -323,6 +325,8 @@ public:
     virtual void doneCurrent();
 
     virtual void swapBuffers() const;
+
+    QGLFunctions *functions() const;
 
     enum BindOption {
         NoBindOption                            = 0x0000,
@@ -458,6 +462,7 @@ private:
     friend class QX11GLPixmapData;
     friend class QX11GLSharedContexts;
     friend class QGLContextResourceBase;
+    friend class DistanceFieldGlyphCache;
 private:
     Q_DISABLE_COPY(QGLContext)
 };

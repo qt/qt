@@ -11,6 +11,7 @@ Rectangle {
         id: particles
     }
 
+    /*
     ColoredParticle{
         id: fireball
         anchors.fill: parent
@@ -21,6 +22,7 @@ Rectangle {
         color: "#ff400f"
         additive: 1
     }
+    */
     ColoredParticle{
         id: smoke
         system: particles
@@ -84,8 +86,8 @@ Rectangle {
         particle: "D"
         follow: "E"
 
-        particlesPerParticlePerSecond: 48
-        particleDuration: 360
+        particlesPerParticlePerSecond: 120
+        particleDuration: 180
         emitterXVariation: 8
         emitterYVariation: 8
 
@@ -127,8 +129,8 @@ Rectangle {
         speed: PointVector{y:-17*4*2; xVariation: 6*6}
         acceleration: PointVector{y: 17*2; xVariation: 6*6}
 
-        particleSize: 8
-        particleSizeVariation: 8
+        particleSize: 12
+        particleSizeVariation: 4
     }
 
 }

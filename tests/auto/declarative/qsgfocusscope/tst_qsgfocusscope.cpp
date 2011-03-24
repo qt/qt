@@ -458,14 +458,15 @@ void tst_qsgfocusscope::forceActiveFocus()
     // First, walk the focus from item-a1 down to item-a2 and back again
     itemA1->forceActiveFocus();
     QVERIFY(itemA1->hasActiveFocus());
-    QCOMPARE(rootSpy.count(), 1);
+    QVERIFY(!rootObject->hasActiveFocus());
+    QCOMPARE(rootSpy.count(), 0);
     QCOMPARE(scopeSpy.count(), 1);
 
     scopeA->forceActiveFocus();
     QVERIFY(!itemA1->hasActiveFocus());
     QVERIFY(scopeA->hasActiveFocus());
     QCOMPARE(scopeASpy.count(), 1);
-    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(rootSpy.count(), 0);
     QCOMPARE(scopeSpy.count(), 1);
 
     itemA2->forceActiveFocus();
@@ -473,7 +474,7 @@ void tst_qsgfocusscope::forceActiveFocus()
     QVERIFY(itemA2->hasActiveFocus());
     QVERIFY(scopeA->hasActiveFocus());
     QCOMPARE(scopeASpy.count(), 1);
-    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(rootSpy.count(), 0);
     QCOMPARE(scopeSpy.count(), 1);
 
     scopeA->forceActiveFocus();
@@ -481,7 +482,7 @@ void tst_qsgfocusscope::forceActiveFocus()
     QVERIFY(itemA2->hasActiveFocus());
     QVERIFY(scopeA->hasActiveFocus());
     QCOMPARE(scopeASpy.count(), 1);
-    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(rootSpy.count(), 0);
     QCOMPARE(scopeSpy.count(), 1);
 
     itemA1->forceActiveFocus();
@@ -489,13 +490,13 @@ void tst_qsgfocusscope::forceActiveFocus()
     QVERIFY(!scopeA->hasActiveFocus());
     QVERIFY(!itemA2->hasActiveFocus());
     QCOMPARE(scopeASpy.count(), 2);
-    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(rootSpy.count(), 0);
     QCOMPARE(scopeSpy.count(), 1);
 
     // Then jump back and forth between branch 'a' and 'b'
     itemB1->forceActiveFocus();
     QVERIFY(itemB1->hasActiveFocus());
-    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(rootSpy.count(), 0);
     QCOMPARE(scopeSpy.count(), 1);
 
     scopeA->forceActiveFocus();
@@ -503,7 +504,7 @@ void tst_qsgfocusscope::forceActiveFocus()
     QVERIFY(!itemB1->hasActiveFocus());
     QVERIFY(scopeA->hasActiveFocus());
     QCOMPARE(scopeASpy.count(), 3);
-    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(rootSpy.count(), 0);
     QCOMPARE(scopeSpy.count(), 1);
 
     scopeB->forceActiveFocus();
@@ -512,7 +513,7 @@ void tst_qsgfocusscope::forceActiveFocus()
     QVERIFY(scopeB->hasActiveFocus());
     QCOMPARE(scopeASpy.count(), 4);
     QCOMPARE(scopeBSpy.count(), 1);
-    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(rootSpy.count(), 0);
     QCOMPARE(scopeSpy.count(), 1);
 
     itemA2->forceActiveFocus();
@@ -520,7 +521,7 @@ void tst_qsgfocusscope::forceActiveFocus()
     QVERIFY(itemA2->hasActiveFocus());
     QCOMPARE(scopeASpy.count(), 5);
     QCOMPARE(scopeBSpy.count(), 2);
-    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(rootSpy.count(), 0);
     QCOMPARE(scopeSpy.count(), 1);
 
     itemB2->forceActiveFocus();
@@ -528,7 +529,7 @@ void tst_qsgfocusscope::forceActiveFocus()
     QVERIFY(itemB2->hasActiveFocus());
     QCOMPARE(scopeASpy.count(), 6);
     QCOMPARE(scopeBSpy.count(), 3);
-    QCOMPARE(rootSpy.count(), 1);
+    QCOMPARE(rootSpy.count(), 0);
     QCOMPARE(scopeSpy.count(), 1);
 
     delete view;
