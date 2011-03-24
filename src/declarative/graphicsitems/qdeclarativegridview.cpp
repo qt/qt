@@ -2237,6 +2237,7 @@ qreal QDeclarativeGridView::maxXExtent() const
     } else {
         highlightStart = d->highlightRangeStart;
         highlightEnd = d->highlightRangeEnd;
+        lastItemPosition = 0;
         if (d->model && d->model->count())
             lastItemPosition = d->rowPosAt(d->model->count()-1);
     }

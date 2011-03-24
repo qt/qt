@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the QtTest module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,45 +39,14 @@
 **
 ****************************************************************************/
 
-#ifndef QSHAREDNETWORKSESSIONPRIVATE_H
-#define QSHAREDNETWORKSESSIONPRIVATE_H
+#include <QString>
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qnetworksession.h"
-#include "qnetworkconfiguration.h"
-#include <QHash>
-#include <QSharedPointer>
-#include <QWeakPointer>
-#include <QMutex>
-
-#ifndef QT_NO_BEARERMANAGEMENT
-
-QT_BEGIN_NAMESPACE
-
-uint qHash(const QNetworkConfiguration& config);
-
-class QSharedNetworkSessionManager
+struct String : QString
 {
-public:
-    static QSharedPointer<QNetworkSession> getSession(QNetworkConfiguration config);
-    static void setSession(QNetworkConfiguration config, QSharedPointer<QNetworkSession> session);
-private:
-    QHash<QNetworkConfiguration, QWeakPointer<QNetworkSession> > sessions;
+    String() {}
+    String(const QString &s) : QString(s) {}
 };
 
+QT_BEGIN_NAMESPACE
+uint qHash(const String &);
 QT_END_NAMESPACE
-
-#endif // QT_NO_BEARERMANAGEMENT
-
-#endif //QSHAREDNETWORKSESSIONPRIVATE_H
-

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the QtTest module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,45 +39,52 @@
 **
 ****************************************************************************/
 
-#ifndef QSHAREDNETWORKSESSIONPRIVATE_H
-#define QSHAREDNETWORKSESSIONPRIVATE_H
+#include "qhash_string.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+static void doHash(const unsigned short *p, uint &h)
+{
+#if 1
+    // Copied from static uint hash(const QChar *p, int n).
+    // Possibly not the cheapest way.
+    h = (h << 4) + (*p++);
+    h ^= (h & 0xf0000000) >> 23;
+    h &= 0x0fffffff;
 
-#include "qnetworksession.h"
-#include "qnetworkconfiguration.h"
-#include <QHash>
-#include <QSharedPointer>
-#include <QWeakPointer>
-#include <QMutex>
+    h = (h << 4) + (*p++);
+    h ^= (h & 0xf0000000) >> 23;
+    h &= 0x0fffffff;
 
-#ifndef QT_NO_BEARERMANAGEMENT
+    h = (h << 4) + (*p++);
+    h ^= (h & 0xf0000000) >> 23;
+    h &= 0x0fffffff;
+
+    h = (h << 4) + (*p++);
+    h ^= (h & 0xf0000000) >> 23;
+    h &= 0x0fffffff;
+#else
+    // Faster, but probably less spread.
+    h ^= *(unsigned int *)p;
+#endif
+}
 
 QT_BEGIN_NAMESPACE
 
-uint qHash(const QNetworkConfiguration& config);
-
-class QSharedNetworkSessionManager
+uint qHash(const String &str)
 {
-public:
-    static QSharedPointer<QNetworkSession> getSession(QNetworkConfiguration config);
-    static void setSession(QNetworkConfiguration config, QSharedPointer<QNetworkSession> session);
-private:
-    QHash<QNetworkConfiguration, QWeakPointer<QNetworkSession> > sessions;
-};
+    const unsigned short *p = (unsigned short *)str.constData();
+    const int s = str.size();
+    switch (s) {
+        case 0: return 0;
+        case 1: return *p;
+        case 2: return *(unsigned int *)p;
+        case 3: return (*(unsigned int *)p) ^ *(p + 2);
+        //case 3: return (*p << 11) + (*(p + 1) << 22) + *(p + 2);
+    }
+    uint h = 0;
+    doHash(p, h);
+    doHash(p + s / 2 - 2, h);
+    doHash(p + s - 4, h);
+    return h;
+}
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_BEARERMANAGEMENT
-
-#endif //QSHAREDNETWORKSESSIONPRIVATE_H
-
