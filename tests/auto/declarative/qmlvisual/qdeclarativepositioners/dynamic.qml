@@ -1,9 +1,9 @@
 import QtQuick 1.0
 
 Item {
-    property string skip: "Expected to fail until QTBUG-14839 is resolved"
     width: 120; height: 60;
     property int step: 0
+    property int tickTime: 250;
     function tick()
     {
         step++;
@@ -30,7 +30,7 @@ Item {
 
     //Tests base positioner functionality, so don't need them all.
     Column{
-        move: Transition{NumberAnimation{properties:"y"}}
+        move: Transition{NumberAnimation{properties:"y"; duration: tickTime}}
         Row{
             id: row1
             height: childrenRect.height
@@ -41,18 +41,19 @@ Item {
         Row{
             id: row2
             height: childrenRect.height
-            move: Transition{NumberAnimation{properties:"x"}}
+            move: Transition{NumberAnimation{properties:"x"; duration: tickTime}}
+            add: Transition{NumberAnimation{properties:"x"; duration: tickTime}}
             Repeater{ 
                 id: repeater 
                 model: 0; 
-                delegate: Component{ Rectangle { color: "yellow"; width:20; height:20;}}
+                delegate: Component{ Rectangle { color: "yellow"; x:20; width:20; height:20;}}
             }
             Rectangle{id: r2a; width:20; height:20; color: "red"}
             Rectangle{id: r2b; width:20; height:20; color: "green"}
             Rectangle{id: r2c; width:20; height:20; color: "blue"}
         }
         Row{
-            move: Transition{NumberAnimation{properties:"x"}}
+            move: Transition{NumberAnimation{properties:"x"; duration: tickTime}}
             id: row3
             height: childrenRect.height
             Rectangle{id: r3a; width:20; height:20; color: "red"}
@@ -61,7 +62,7 @@ Item {
         }
     }
     Timer{
-        interval: 250;
+        interval: tickTime;
         running: true;
         repeat: true;
         onTriggered: tick();
