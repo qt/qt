@@ -62,6 +62,8 @@ public:
         qreal height;
         qreal baselineX;
         qreal baselineY;
+
+        bool isNull() const { return width == 0 || height == 0; }
     };
     Metrics glyphMetrics(glyph_t glyph);
 
@@ -74,6 +76,8 @@ public:
         qreal yMargin;
 
         TexCoord() : x(0), y(0), width(0), height(0), xMargin(0), yMargin(0) { }
+
+        bool isNull() const { return width == 0 || height == 0; }
     };
     TexCoord glyphTexCoord(glyph_t glyph);
 
@@ -87,7 +91,10 @@ public:
     qreal glyphMargin() const;
 
     void populate(int count, const glyph_t *glyphs);
+    void derefGlyphs(int count, const glyph_t *glyphs);
     void updateCache();
+
+    bool cacheIsFull() const { return m_textureData->currY >= maxTextureSize(); }
 
     static bool distanceFieldEnabled();
 
@@ -113,6 +120,8 @@ private:
         QSize size;
         QHash<glyph_t, TexCoord> texCoords;
         QSet<glyph_t> pendingGlyphs;
+        QHash<glyph_t, quint32> glyphRefCount;
+        QSet<glyph_t> unusedGlyphs;
         int currX;
         int currY;
         QImage image;

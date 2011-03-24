@@ -63,6 +63,10 @@ DistanceFieldGlyphNode::DistanceFieldGlyphNode()
 DistanceFieldGlyphNode::~DistanceFieldGlyphNode()
 {
     delete m_material;
+    if (m_glyph_cache) {
+        const QVector<quint32> &glyphIndexes = m_glyphs.glyphIndexes();
+        m_glyph_cache->derefGlyphs(glyphIndexes.count(), glyphIndexes.constData());
+    }
 }
 
 void DistanceFieldGlyphNode::setColor(const QColor &color)
@@ -129,7 +133,7 @@ void DistanceFieldGlyphNode::updateGeometry()
         DistanceFieldGlyphCache::Metrics metrics = m_glyph_cache->glyphMetrics(glyphIndex);
         DistanceFieldGlyphCache::TexCoord c = m_glyph_cache->glyphTexCoord(glyphIndex);
 
-        if (metrics.width > 0 && metrics.height > 0) {
+        if (!metrics.isNull() && !c.isNull()) {
             if (m_style != QSGText::Normal) {
                 metrics.width += margins.x() * 2;
                 metrics.height += margins.y() * 2;

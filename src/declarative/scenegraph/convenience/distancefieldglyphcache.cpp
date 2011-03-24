@@ -634,7 +634,11 @@ void DistanceFieldGlyphCache::populate(int count, const glyph_t *glyphs)
             continue;
         }
 
-        if (m_textureData->texCoords.contains(glyphIndex))
+        if (++m_textureData->glyphRefCount[glyphIndex] == 1)
+            m_textureData->unusedGlyphs.remove(glyphIndex);
+
+        if (m_textureData->texCoords.contains(glyphIndex)
+                || cacheIsFull() && m_textureData->unusedGlyphs.isEmpty())
             continue;
 
         QPainterPath path;
@@ -654,15 +658,36 @@ void DistanceFieldGlyphCache::populate(int count, const glyph_t *glyphs)
         c.width = path.boundingRect().width();
         c.height = path.boundingRect().height();
 
-        m_textureData->currX += QT_DISTANCEFIELD_TILESIZE;
-        if (m_textureData->currX >= maxTextureSize()) {
-            m_textureData->currX = 0;
-            m_textureData->currY += QT_DISTANCEFIELD_TILESIZE;
+        if (!cacheIsFull()) {
+            m_textureData->currX += QT_DISTANCEFIELD_TILESIZE;
+            if (m_textureData->currX >= maxTextureSize()) {
+                m_textureData->currX = 0;
+                m_textureData->currY += QT_DISTANCEFIELD_TILESIZE;
+            }
+        } else {
+            // Recycle glyphs
+            if (!m_textureData->unusedGlyphs.isEmpty()) {
+                glyph_t unusedGlyph = *m_textureData->unusedGlyphs.constBegin();
+                TexCoord unusedCoord = glyphTexCoord(unusedGlyph);
+                c.x = unusedCoord.x;
+                c.y = unusedCoord.y;
+                m_textureData->unusedGlyphs.remove(unusedGlyph);
+                m_textureData->texCoords.remove(unusedGlyph);
+            }
         }
 
-        m_textureData->texCoords.insert(glyphIndex, c);
-        m_textureData->pendingGlyphs.insert(glyphIndex);
+        if (c.y < maxTextureSize()) {
+            m_textureData->texCoords.insert(glyphIndex, c);
+            m_textureData->pendingGlyphs.insert(glyphIndex);
+        }
     }
+}
+
+void DistanceFieldGlyphCache::derefGlyphs(int count, const glyph_t *glyphs)
+{
+    for (int i = 0; i < count; ++i)
+        if (--m_textureData->glyphRefCount[glyphs[i]] == 0 && !glyphTexCoord(glyphs[i]).isNull())
+            m_textureData->unusedGlyphs.insert(glyphs[i]);
 }
 
 void DistanceFieldGlyphCache::createTexture(int width, int height)
@@ -796,7 +821,7 @@ void DistanceFieldGlyphCache::updateCache()
         return;
 
     int requiredWidth = m_textureData->currY == 0 ? m_textureData->currX : maxTextureSize();
-    int requiredHeight = m_textureData->currY + QT_DISTANCEFIELD_TILESIZE;
+    int requiredHeight = qMin(maxTextureSize(), m_textureData->currY + QT_DISTANCEFIELD_TILESIZE);
 
     resizeTexture(requiredWidth, requiredHeight);
     glBindTexture(GL_TEXTURE_2D, m_textureData->texture);
