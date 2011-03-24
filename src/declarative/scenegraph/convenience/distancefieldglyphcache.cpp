@@ -47,6 +47,7 @@
 #include <qglshaderprogram.h>
 #include <private/qglengineshadersource_p.h>
 #include <qsgcontext.h>
+#include <qglfunctions.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -736,8 +737,8 @@ void DistanceFieldGlyphCache::resizeTexture(int width, int height)
     }
 
     if (!m_textureData->fbo)
-        glGenFramebuffers(1, &m_textureData->fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_textureData->fbo);
+        ctx->functions()->glGenFramebuffers(1, &m_textureData->fbo);
+    ctx->functions()->glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_textureData->fbo);
 
     GLuint tmp_texture;
     glGenTextures(1, &tmp_texture);
@@ -749,8 +750,8 @@ void DistanceFieldGlyphCache::resizeTexture(int width, int height)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glBindTexture(GL_TEXTURE_2D, 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                           GL_TEXTURE_2D, tmp_texture, 0);
+    ctx->functions()->glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                                             GL_TEXTURE_2D, tmp_texture, 0);
 
     glBindTexture(GL_TEXTURE_2D, oldTexture);
 
@@ -792,8 +793,8 @@ void DistanceFieldGlyphCache::resizeTexture(int width, int height)
         m_blitProgram->link();
     }
 
-    glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, m_vertexCoordinateArray);
-    glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, m_textureCoordinateArray);
+    ctx->functions()->glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, m_vertexCoordinateArray);
+    ctx->functions()->glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, m_textureCoordinateArray);
 
     m_blitProgram->bind();
     m_blitProgram->enableAttributeArray(int(QT_VERTEX_COORDS_ATTR));
@@ -807,12 +808,12 @@ void DistanceFieldGlyphCache::resizeTexture(int width, int height)
 
     glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, oldWidth, oldHeight);
 
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                              GL_RENDERBUFFER_EXT, 0);
+    ctx->functions()->glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                                                GL_RENDERBUFFER_EXT, 0);
     glDeleteTextures(1, &tmp_texture);
     glDeleteTextures(1, &oldTexture);
 
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
+    ctx->functions()->glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
 }
 
 void DistanceFieldGlyphCache::updateCache()
