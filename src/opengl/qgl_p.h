@@ -435,6 +435,8 @@ public:
     QHash<QGLContextResourceBase *, void *> m_resources;
     QGLTextureDestroyer *texture_destroyer;
 
+    QGLFunctions *functions;
+
     bool vertexAttributeArraysEnabledState[QT_GL_VERTEX_ARRAY_TRACKED_COUNT];
 
     static inline QGLContextGroup *contextGroup(const QGLContext *ctx) { return ctx->d_ptr->group; }

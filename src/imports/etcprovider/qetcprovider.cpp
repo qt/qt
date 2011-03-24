@@ -3,8 +3,7 @@
 #include <QtDebug>
 #include <QFile>
 
-#include <private/qgl_p.h>
-#include <private/qglextensions_p.h>
+#include <qglfunctions.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -79,12 +78,12 @@ void EtcTexture::bind()
 #endif
 
     {
-        QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
+        const QGLContext *ctx = QGLContext::currentContext();
         Q_ASSERT(ctx != 0);
-        glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_ETC1_RGB8_OES,
-                               m_size.width(), m_size.height(), 0,
-                               (m_paddedSize.width() * m_paddedSize.height()) >> 1,
-                               m_data.data() + 16);
+        ctx->functions()->glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_ETC1_RGB8_OES,
+                                                 m_size.width(), m_size.height(), 0,
+                                                 (m_paddedSize.width() * m_paddedSize.height()) >> 1,
+                                                 m_data.data() + 16);
     }
 
     // Gracefully fail in case of an error...
