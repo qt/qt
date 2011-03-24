@@ -385,6 +385,7 @@ void tst_qsgvisualdatamodel::modelProperties()
         QVERIFY(contentItem != 0);
 
         QSGItem *delegate = findItem<QSGItem>(contentItem, "delegate", 1);
+        QVERIFY(delegate);
         QCOMPARE(delegate->property("test1").toString(),QString("two"));
         QCOMPARE(delegate->property("test2").toString(),QString("two"));
         QCOMPARE(delegate->property("test3").toString(),QString("two"));
@@ -417,6 +418,7 @@ void tst_qsgvisualdatamodel::modelProperties()
         QVERIFY(contentItem != 0);
 
         QSGItem *delegate = findItem<QSGItem>(contentItem, "delegate", 1);
+        QVERIFY(delegate);
         QCOMPARE(delegate->property("test1").toString(),QString("Item 2"));
         QEXPECT_FAIL("", "QTBUG-13576", Continue);
         QCOMPARE(delegate->property("test2").toString(),QString("Item 2"));
@@ -459,6 +461,7 @@ void tst_qsgvisualdatamodel::modelProperties()
         QVERIFY(contentItem != 0);
 
         QSGItem *delegate = findItem<QSGItem>(contentItem, "delegate", 1);
+        QVERIFY(delegate);
         QCOMPARE(delegate->property("test1").toString(),QString("Row 2 Item"));
         QCOMPARE(delegate->property("test2").toString(),QString("Row 2 Item"));
         QVERIFY(!delegate->property("test3").isValid());
