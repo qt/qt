@@ -5,6 +5,28 @@
 
 #include <QtCore/QDebug>
 
+static inline void qgl_byteSwapImage(QImage &img, GLenum pixel_type)
+{
+    const int width = img.width();
+    const int height = img.height();
+
+    if (pixel_type == GL_UNSIGNED_INT_8_8_8_8_REV
+        || (pixel_type == GL_UNSIGNED_BYTE && QSysInfo::ByteOrder == QSysInfo::LittleEndian))
+    {
+        for (int i = 0; i < height; ++i) {
+            uint *p = (uint *) img.scanLine(i);
+            for (int x = 0; x < width; ++x)
+                p[x] = ((p[x] << 16) & 0xff0000) | ((p[x] >> 16) & 0xff) | (p[x] & 0xff00ff00);
+        }
+    } else {
+        for (int i = 0; i < height; ++i) {
+            uint *p = (uint *) img.scanLine(i);
+            for (int x = 0; x < width; ++x)
+                p[x] = (p[x] << 8) | ((p[x] >> 24) & 0xff);
+        }
+    }
+}
+
 QWaylandXPixmapGLXContext::QWaylandXPixmapGLXContext(QWaylandXPixmapGLXIntegration *glxIntegration, QWaylandXPixmapGLXWindow *window)
     : QPlatformGLContext()
     , mGlxIntegration(glxIntegration)
@@ -51,6 +73,7 @@ void QWaylandXPixmapGLXContext::swapBuffers()
     glReadPixels(0,0, size.width(), size.height(), GL_RGBA,GL_UNSIGNED_BYTE, pixels);
 
     img = img.mirrored();
+    qgl_byteSwapImage(img,GL_UNSIGNED_INT_8_8_8_8_REV);
     constBits = img.bits();
 
     const uchar *constDstBits = mBuffer->image()->bits();
@@ -74,15 +97,20 @@ QPlatformWindowFormat QWaylandXPixmapGLXContext::platformWindowFormat() const
 
 void QWaylandXPixmapGLXContext::geometryChanged()
 {
+    QSize size(mWindow->geometry().size());
+    if (size.isEmpty()) {
+        //QGLWidget wants a context for a window without geometry
+        size = QSize(1,1);
+    }
+
     while (mWindow->waitingForFrameSync())
         mGlxIntegration->waylandDisplay()->iterate();
 
-    QSize size(mWindow->geometry().size());
     delete mBuffer;
-    if (mPixmap)
+    //XFreePixmap deletes the glxPixmap as well
+    if (mPixmap) {
         XFreePixmap(mGlxIntegration->xDisplay(),mPixmap);
-    if (mGlxPixmap)
-        glXDestroyPixmap(mGlxIntegration->xDisplay(),mGlxPixmap);
+    }
 
     mBuffer = new QWaylandShmBuffer(mGlxIntegration->waylandDisplay(),size,QImage::Format_ARGB32);
     mWindow->attach(mBuffer);
