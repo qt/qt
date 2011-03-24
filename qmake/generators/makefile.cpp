@@ -2896,6 +2896,7 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
                         //prepend
                         for(int o = 0; o < i; o++)
                             dot_prefix += ".." + Option::dir_sep;
+                        break;
                     }
                 }
                 ret.prepend(dot_prefix);
