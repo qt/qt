@@ -475,6 +475,8 @@ QSGCanvasPrivate::QSGCanvasPrivate()
 
 QSGCanvasPrivate::~QSGCanvasPrivate()
 {
+    if (animationDriver && animationDriverInstalled)
+        animationDriver->uninstall();
 }
 
 void QSGCanvasPrivate::init(QSGCanvas *c)
@@ -933,9 +935,6 @@ QSGCanvas::QSGCanvas(QSGCanvasPrivate &dd, const QGLFormat &format, QWidget *par
 QSGCanvas::~QSGCanvas()
 {
     Q_D(QSGCanvas);
-
-    if (d->animationDriver && d->animationDriverInstalled)
-        d->animationDriver->uninstall();
 
     delete d->rootItem; d->rootItem = 0;
     d->cleanupNodes();
