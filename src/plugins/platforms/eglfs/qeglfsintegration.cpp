@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -63,6 +63,14 @@ QEglFSIntegration::QEglFSIntegration()
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglIntegration\n");
 #endif
+}
+
+bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+    case ThreadedPixmaps: return true;
+    default: return QPlatformIntegration::hasCapability(cap);
+    }
 }
 
 QPixmapData *QEglFSIntegration::createPixmapData(QPixmapData::PixelType type) const

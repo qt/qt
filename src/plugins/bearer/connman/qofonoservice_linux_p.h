@@ -65,6 +65,9 @@
 #include <QtDBus/QDBusContext>
 #include <QMap>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_DBUS
+
 #define OFONO_SERVICE	                         "org.ofono"
 #define OFONO_MANAGER_INTERFACE                  "org.ofono.Manager"
 #define OFONO_MANAGER_PATH                       "/"
@@ -330,5 +333,8 @@ Q_SIGNALS:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif //QOFONOSERVICE_H

@@ -81,6 +81,10 @@
 #  define FM_DEBUG if (false) qDebug
 #endif
 
+#if defined(Q_WS_WIN) && !defined(QT_NO_DIRECTWRITE)
+#  include <dwrite.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #define SMOOTH_SCALABLE 0xffff
@@ -643,12 +647,23 @@ public:
 #if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
           , symbianExtras(0)
 #endif
+#if defined(Q_WS_WIN) && !defined(QT_NO_DIRECTWRITE)
+          , directWriteFactory(0)
+          , directWriteGdiInterop(0)
+#endif
     { }
+
     ~QFontDatabasePrivate() {
         free();
 #if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
         if (symbianExtras)
             delete symbianExtras;
+#endif
+#if defined(Q_WS_WIN) && !defined(QT_NO_DIRECTWRITE)
+    if (directWriteGdiInterop)
+        directWriteGdiInterop->Release();
+    if (directWriteFactory != 0)
+        directWriteFactory->Release();
 #endif
     }
     QtFontFamily *family(const QString &f, bool = false);
@@ -666,6 +681,12 @@ public:
     QString systemLang;
 #endif
     QtFontFamily **families;
+
+#if defined(Q_WS_WIN) && !defined(QT_NO_DIRECTWRITE)
+    IDWriteFactory *directWriteFactory;
+    IDWriteGdiInterop *directWriteGdiInterop;
+#endif
+
 
     struct ApplicationFont {
         QString fileName;

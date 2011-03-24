@@ -316,6 +316,9 @@ long q_SSL_get_verify_result(SSL *a);
 int q_SSL_library_init();
 void q_SSL_load_error_strings();
 SSL *q_SSL_new(SSL_CTX *a);
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+long q_SSL_ctrl(SSL *ssl,int cmd, long larg, const void *parg);
+#endif
 int q_SSL_read(SSL *a, void *b, int c);
 void q_SSL_set_bio(SSL *a, BIO *b, BIO *c);
 void q_SSL_set_accept_state(SSL *a);
@@ -413,6 +416,7 @@ DSA *q_d2i_DSAPrivateKey(DSA **a, unsigned char **pp, long length);
 void q_OPENSSL_add_all_algorithms_noconf();
 void q_OPENSSL_add_all_algorithms_conf();
 int q_SSL_CTX_load_verify_locations(SSL_CTX *ctx, const char *CAfile, const char *CApath);
+long q_SSLeay();
 
 // Helper function
 class QDateTime;

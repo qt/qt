@@ -183,6 +183,9 @@ private slots:
     void saveFormat_data();
     void saveFormat();
 
+    void readText_data();
+    void readText();
+
     void preserveTexts_data();
     void preserveTexts();
 };
@@ -1965,6 +1968,31 @@ void tst_QImageReader::saveFormat()
     stored = stored.convertToFormat(QImage::Format_ARGB32);
     converted = converted.convertToFormat(QImage::Format_ARGB32);
     QCOMPARE(stored, converted);
+}
+
+
+void tst_QImageReader::readText_data()
+{
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<QString>("key");
+    QTest::addColumn<QString>("text");
+
+    QTest::newRow("png, tEXt before img") << "txts.png" << "Title" << "PNG";
+    QTest::newRow("png, zTXt before img") << "txts.png" << "Comment" << "Some compressed text.";
+    QTest::newRow("png, tEXt after img") << "txts.png" << "Disclaimer" << "For testing only.";
+    QTest::newRow("png, zTXt after img") << "txts.png" << "Description" << "Rendered by Persistence of Vision (tm) Ray Tracer";
+}
+
+
+void tst_QImageReader::readText()
+{
+    QFETCH(QString, fileName);
+    QFETCH(QString, key);
+    QFETCH(QString, text);
+
+    QImage img(prefix + fileName);
+    QVERIFY(img.textKeys().contains(key));
+    QCOMPARE(img.text(key), text);
 }
 
 

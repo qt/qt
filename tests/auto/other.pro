@@ -34,7 +34,8 @@ SUBDIRS=\
            qvariant \
            qwidget \
            qworkspace \
-           windowsmobile
+           windowsmobile \
+           nativeimagehandleprovider
 
 contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
 mac: {

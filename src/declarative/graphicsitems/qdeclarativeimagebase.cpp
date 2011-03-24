@@ -130,7 +130,7 @@ QSize QDeclarativeImageBase::sourceSize() const
 
     int width = d->sourcesize.width();
     int height = d->sourcesize.height();
-    return QSize(width != -1 ? width : implicitWidth(), height != -1 ? height : implicitHeight());
+    return QSize(width != -1 ? width : d->pix.width(), height != -1 ? height : d->pix.height());
 }
 
 bool QDeclarativeImageBase::cache() const

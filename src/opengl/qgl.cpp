@@ -97,8 +97,11 @@
 #include "qlibrary.h"
 #include <qmutex.h>
 
-#ifdef QT_OPENGL_ES
+#if defined(QT_OPENGL_ES) && !defined(QT_NO_EGL)
 #include <EGL/egl.h>
+#endif
+#ifdef QGL_USE_TEXTURE_POOL
+#include <private/qgltexturepool_p.h>
 #endif
 
 // #define QT_GL_CONTEXT_RESOURCE_DEBUG
@@ -1735,6 +1738,9 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     workaround_brokenTextureFromPixmap = false;
     workaround_brokenTextureFromPixmap_init = false;
 
+    workaround_brokenAlphaTexSubImage = false;
+    workaround_brokenAlphaTexSubImage_init = false;
+
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
         vertexAttributeArraysEnabledState[i] = false;
 }
@@ -2032,6 +2038,10 @@ struct DDSFormat {
     indicate that the pixmap should be memory managed along side with
     the pixmap/image that it stems from, e.g. installing destruction
     hooks in them.
+
+    \omitvalue TemporarilyCachedBindOption Used by paint engines on some
+    platforms to indicate that the pixmap or image texture is possibly
+    cached only temporarily and must be destroyed immediately after the use.
 
     \omitvalue InternalBindOption
 */
@@ -2537,8 +2547,18 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 #endif
 
     const QImage &constRef = img; // to avoid detach in bits()...
+#ifdef QGL_USE_TEXTURE_POOL
+    QGLTexturePool::instance()->createPermanentTexture(tx_id,
+                                                        target,
+                                                        0, internalFormat,
+                                                        img.width(), img.height(),
+                                                        externalFormat,
+                                                        pixel_type,
+                                                        constRef.bits());
+#else
     glTexImage2D(target, 0, internalFormat, img.width(), img.height(), 0, externalFormat,
                  pixel_type, constRef.bits());
+#endif
 #if defined(QT_OPENGL_ES_2)
     if (genMipmap)
         glGenerateMipmap(target);
@@ -2576,7 +2596,6 @@ QGLTexture *QGLContextPrivate::textureCacheLookup(const qint64 key, GLenum targe
     }
     return 0;
 }
-
 
 /*! \internal */
 QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target, GLint format, QGLContext::BindOptions options)
@@ -3310,8 +3329,10 @@ bool QGLContext::create(const QGLContext* shareContext)
         QWidgetPrivate *wd = qt_widget_private(static_cast<QWidget *>(d->paintDevice));
         wd->usesDoubleBufferedGLContext = d->glFormat.doubleBuffer();
     }
+#ifndef Q_WS_QPA //We do this in choose context->setupSharing()
     if (d->sharing)  // ok, we managed to share
         QGLContextGroup::addShare(this, shareContext);
+#endif
     return d->valid;
 }
 

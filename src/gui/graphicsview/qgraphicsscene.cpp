@@ -306,6 +306,7 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       rectAdjust(2),
       focusItem(0),
       lastFocusItem(0),
+      passiveFocusItem(0),
       tabFocusFirst(0),
       activePanel(0),
       lastActivePanel(0),
@@ -630,6 +631,8 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
         focusItem = 0;
     if (item == lastFocusItem)
         lastFocusItem = 0;
+    if (item == passiveFocusItem)
+        passiveFocusItem = 0;
     if (item == activePanel) {
         // ### deactivate...
         activePanel = 0;
@@ -1317,8 +1320,10 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
 
     // Set focus on the topmost enabled item that can take focus.
     bool setFocus = false;
+
     foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
-        if (item->isBlockedByModalPanel()) {
+        if (item->isBlockedByModalPanel()
+            || (item->d_ptr->flags & QGraphicsItem::ItemStopsFocusHandling)) {
             // Make sure we don't clear focus.
             setFocus = true;
             break;
@@ -1331,9 +1336,9 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
                 break;
             }
         }
-        if (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation)
-            break;
         if (item->isPanel())
+            break;
+        if (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation)
             break;
     }
 
@@ -2980,7 +2985,7 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
 QGraphicsItem *QGraphicsScene::focusItem() const
 {
     Q_D(const QGraphicsScene);
-    return isActive() ? d->focusItem : d->lastFocusItem;
+    return isActive() ? d->focusItem : d->passiveFocusItem;
 }
 
 /*!
@@ -3054,6 +3059,7 @@ void QGraphicsScene::clearFocus()
     Q_D(QGraphicsScene);
     if (d->hasFocus) {
         d->hasFocus = false;
+        d->passiveFocusItem = d->focusItem;
         setFocusItem(0, Qt::OtherFocusReason);
     }
 }
@@ -3757,9 +3763,9 @@ void QGraphicsScene::focusInEvent(QFocusEvent *focusEvent)
             focusEvent->ignore();
         break;
     default:
-        if (d->lastFocusItem) {
+        if (d->passiveFocusItem) {
             // Set focus on the last focus item
-            setFocusItem(d->lastFocusItem, focusEvent->reason());
+            setFocusItem(d->passiveFocusItem, focusEvent->reason());
         }
         break;
     }
@@ -3778,6 +3784,7 @@ void QGraphicsScene::focusOutEvent(QFocusEvent *focusEvent)
 {
     Q_D(QGraphicsScene);
     d->hasFocus = false;
+    d->passiveFocusItem = d->focusItem;
     setFocusItem(0, focusEvent->reason());
 
     // Remove all popups when the scene loses focus.
@@ -5908,6 +5915,7 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
 
     // Set focus on the topmost enabled item that can take focus.
     bool setFocus = false;
+
     foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
         if (item->isEnabled() && ((item->flags() & QGraphicsItem::ItemIsFocusable) && item->d_ptr->mouseSetsFocus)) {
             if (!item->isWidget() || ((QGraphicsWidget *)item)->focusPolicy() & Qt::ClickFocus) {
@@ -5921,6 +5929,11 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
             break;
         if (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation)
             break;
+        if (item->d_ptr->flags & QGraphicsItem::ItemStopsFocusHandling) {
+            // Make sure we don't clear focus.
+            setFocus = true;
+            break;
+        }
     }
 
     // If nobody could take focus, clear it.
@@ -5953,7 +5966,8 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
         }
         if (item && item->isPanel())
             break;
-        if (item && (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation))
+        if (item && (item->d_ptr->flags
+                     & (QGraphicsItem::ItemStopsClickFocusPropagation | QGraphicsItem::ItemStopsFocusHandling)))
             break;
     }
 

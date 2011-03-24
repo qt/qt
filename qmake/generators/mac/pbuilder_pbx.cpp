@@ -1272,6 +1272,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     plist_in_text = plist_in_text.replace("@EXECUTABLE@", project->first("QMAKE_ORIG_TARGET"));
                 } else {
                     plist_in_text = plist_in_text.replace("@LIBRARY@", project->first("QMAKE_ORIG_TARGET"));
+                }
+                if (!project->values("VERSION").isEmpty()) {
                     plist_in_text = plist_in_text.replace("@SHORT_VERSION@", project->first("VER_MAJ") + "." +
                                                           project->first("VER_MIN"));
                 }

@@ -75,7 +75,7 @@ public:
     QDeclarativeBasePositionerPrivate()
         : spacing(0), type(QDeclarativeBasePositioner::None)
         , moveTransition(0), addTransition(0), queuedPositioning(false)
-        , doingPositioning(false), anchorConflict(false)
+        , doingPositioning(false), anchorConflict(false), layoutDirection(Qt::LeftToRight)
     {
     }
 
@@ -100,6 +100,9 @@ public:
     bool doingPositioning : 1;
     bool anchorConflict : 1;
 
+    Qt::LayoutDirection layoutDirection;
+
+
     void schedulePositioning()
     {
         Q_Q(QDeclarativeBasePositioner);
@@ -107,6 +110,18 @@ public:
             QTimer::singleShot(0,q,SLOT(prePositioning()));
             queuedPositioning = true;
         }
+    }
+
+    void mirrorChange() {
+        Q_Q(QDeclarativeBasePositioner);
+        if (type != QDeclarativeBasePositioner::Vertical)
+            q->prePositioning();
+    }
+    bool isLeftToRight() const {
+        if (type == QDeclarativeBasePositioner::Vertical)
+            return true;
+        else
+            return effectiveLayoutMirror ? layoutDirection == Qt::RightToLeft : layoutDirection == Qt::LeftToRight;
     }
 
     virtual void itemSiblingOrderChanged(QDeclarativeItem* other)
@@ -138,6 +153,19 @@ public:
     {
         Q_Q(QDeclarativeBasePositioner);
         q->positionedItems.removeOne(QDeclarativeBasePositioner::PositionedItem(item));
+    }
+
+    static Qt::LayoutDirection getLayoutDirection(const QDeclarativeBasePositioner *positioner)
+    {
+        return positioner->d_func()->layoutDirection;
+    }
+
+    static Qt::LayoutDirection getEffectiveLayoutDirection(const QDeclarativeBasePositioner *positioner)
+    {
+        if (positioner->d_func()->effectiveLayoutMirror)
+            return positioner->d_func()->layoutDirection == Qt::RightToLeft ? Qt::LeftToRight : Qt::RightToLeft;
+        else
+            return positioner->d_func()->layoutDirection;
     }
 };
 

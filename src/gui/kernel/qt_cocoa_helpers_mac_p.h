@@ -301,7 +301,39 @@ public:
 
 void qt_mac_post_retranslateAppMenu();
 
+#ifdef QT_MAC_USE_COCOA
 void qt_mac_display(QWidget *widget);
+void qt_mac_setNeedsDisplay(QWidget *widget);
+void qt_mac_setNeedsDisplayInRect(QWidget *widget, QRegion region);
+#endif // QT_MAC_USE_COCOA
+
+
+// Utility functions to ease the use of Core Graphics contexts.
+
+inline void qt_mac_retain_graphics_context(CGContextRef context)
+{
+    CGContextRetain(context);
+    CGContextSaveGState(context);
+}
+
+inline void qt_mac_release_graphics_context(CGContextRef context)
+{
+    CGContextRestoreGState(context);
+    CGContextRelease(context);
+}
+
+inline void qt_mac_draw_image(CGContextRef context, CGContextRef imageContext, CGRect area, CGRect drawingArea)
+{
+    CGImageRef image = CGBitmapContextCreateImage(imageContext);
+    CGImageRef subImage = CGImageCreateWithImageInRect(image, area);
+
+    CGContextTranslateCTM (context, 0, drawingArea.origin.y + CGRectGetMaxY(drawingArea));
+    CGContextScaleCTM(context, 1, -1);
+    CGContextDrawImage(context, drawingArea, subImage);
+
+    CGImageRelease(subImage);
+    CGImageRelease(image);
+}
 
 QT_END_NAMESPACE
 
