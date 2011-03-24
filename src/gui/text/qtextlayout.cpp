@@ -64,23 +64,6 @@ QT_BEGIN_NAMESPACE
 #define SuppressText 0x5012
 #define SuppressBackground 0x513
 
-static inline QFixed leadingSpaceWidth(QTextEngine *eng, const QScriptLine &line)
-{
-    if (!line.hasTrailingSpaces
-        || (eng->option.flags() & QTextOption::IncludeTrailingSpaces)
-        || !(eng->option.alignment() & Qt::AlignRight)
-        || !eng->isRightToLeft())
-        return QFixed();
-
-    int pos = line.length;
-    const HB_CharAttributes *attributes = eng->attributes();
-    if (!attributes)
-        return QFixed();
-    while (pos > 0 && attributes[line.from + pos - 1].whiteSpace)
-        --pos;
-    return eng->width(line.from + pos, line.length - pos);
-}
-
 static QFixed alignLine(QTextEngine *eng, const QScriptLine &line)
 {
     QFixed x = 0;
@@ -91,7 +74,7 @@ static QFixed alignLine(QTextEngine *eng, const QScriptLine &line)
         if (align & Qt::AlignJustify && eng->isRightToLeft())
             align = Qt::AlignRight;
         if (align & Qt::AlignRight)
-            x = line.width - (line.textAdvance + leadingSpaceWidth(eng, line));
+            x = line.width - (line.textAdvance + eng->leadingSpaceWidth(line));
         else if (align & Qt::AlignHCenter)
             x = (line.width - line.textAdvance)/2;
     }

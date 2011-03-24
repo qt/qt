@@ -8097,12 +8097,16 @@ start_lengthVariant:
             QTextLine line = textLayout.lineAt(i);
 
             qreal advance = line.horizontalAdvance();
-            if (tf & Qt::AlignRight)
-                xoff = r.width() - advance;
+            xoff = 0;
+            if (tf & Qt::AlignRight) {
+                QTextEngine *eng = textLayout.engine();
+                xoff = r.width() - advance -
+                    eng->leadingSpaceWidth(eng->lines[line.lineNumber()]).toReal();
+            }
             else if (tf & Qt::AlignHCenter)
-                xoff = (r.width() - advance)/2;
+                xoff = (r.width() - advance) / 2;
 
-            line.draw(painter, QPointF(r.x() + xoff + line.x(), r.y() + yoff));
+            line.draw(painter, QPointF(r.x() + xoff, r.y() + yoff));
         }
 
         if (restore) {
