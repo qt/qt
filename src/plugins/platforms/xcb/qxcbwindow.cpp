@@ -195,6 +195,7 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
 
 QXcbWindow::~QXcbWindow()
 {
+    delete m_context;
     xcb_destroy_window(xcb_connection(), m_window);
 }
 
