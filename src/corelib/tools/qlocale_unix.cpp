@@ -94,9 +94,9 @@ Q_GLOBAL_STATIC(QSystemLocaleData, qSystemLocaleData)
 QLocale QSystemLocale::fallbackLocale() const
 {
     QByteArray lang = qgetenv("LC_ALL");
-    if (lang.isNull())
+    if (lang.isEmpty())
         lang = qgetenv("LC_NUMERIC");
-    if (lang.isNull())
+    if (lang.isEmpty())
         lang = qgetenv("LANG");
     return QLocale(QLatin1String(lang));
 }

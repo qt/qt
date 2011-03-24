@@ -61,9 +61,9 @@ static QByteArray envVarLocale()
     static QByteArray lang = 0;
 #ifdef Q_OS_UNIX
     lang = qgetenv("LC_ALL");
-    if (lang.isNull())
+    if (lang.isEmpty())
         lang = qgetenv("LC_NUMERIC");
-    if (lang.isNull())
+    if (lang.isEmpty())
 #endif
         lang = qgetenv("LANG");
     return lang;
