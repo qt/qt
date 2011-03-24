@@ -1,4 +1,4 @@
-import QtQuick 1.1
+import QtQuick 2.0
 
 Rectangle {
     width: 400
@@ -16,6 +16,10 @@ Rectangle {
             width: flick.contentWidth
             height: flick.contentHeight
             color: "red"
+            Rectangle {
+                width: 50; height: 50; color: "blue"
+                anchors.centerIn: parent
+            }
         }
     }
 }
