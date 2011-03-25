@@ -81,6 +81,7 @@ private slots:
     void voidConversions();
 #ifndef QT_NO_EXCEPTIONS
     void exceptions();
+    void exceptions_QTBUG18149();
 #endif
 };
 
@@ -1430,6 +1431,33 @@ void tst_QFuture::exceptions()
 }
 
 }
+
+
+void tst_QFuture::exceptions_QTBUG18149()
+{
+    class MyClass
+    {
+    public:
+        ~MyClass()
+        {
+            QFuture<void> f = createExceptionFuture();
+            bool caught = false;
+            try {
+                f.waitForFinished();
+            } catch (Exception &) {
+                caught = true;
+            }
+            QVERIFY(caught);
+        }
+    };
+
+    try {
+        MyClass m;
+        throw 0;
+    } catch (int) {}
+
+}
+
 
 #endif // QT_NO_EXCEPTIONS
 
