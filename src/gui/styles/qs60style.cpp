@@ -1866,20 +1866,26 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 
             //In Sym^3, native menu items have "lines" between them
             if (QS60StylePrivate::isSingleClickUi()) {
-                const QColor lineColorAlpha = QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors, 15, 0);
-                const int spacing = QS60StylePrivate::pixelMetric(PM_FrameCornerWidth);
-                //native platform sets each color byte to same value for "line 16" which just defines alpha for
-                //menuitem lines; lets use first byte "red".
-                QColor lineColor = optionMenuItem.palette.text().color();
-                if (lineColorAlpha.isValid())
-                    lineColor.setAlpha(lineColorAlpha.red());
-                painter->save();
-                painter->setPen(lineColor);
+                int diff = widget->geometry().bottom() - optionMenuItem.rect.bottom();
+                if (const QComboBox *cb = qobject_cast<const QComboBox*>(widget))
+                    diff = cb->view()->geometry().bottom() - optionMenuItem.rect.bottom();
 
-                const int lineStartX = optionMenuItem.rect.left() + (QS60StylePrivate::pixelMetric(PM_FrameCornerWidth) - 2) + spacing;
-                const int lineEndX = optionMenuItem.rect.right() - (QS60StylePrivate::pixelMetric(PM_FrameCornerWidth) - 2) - spacing;
-                painter->drawLine(QPoint(lineStartX, optionMenuItem.rect.bottom()), QPoint(lineEndX, optionMenuItem.rect.bottom()));
-                painter->restore();
+                // Skip drawing the horizontal line for the last menu item.
+                if (diff > optionMenuItem.rect.height()) {
+                    const QColor lineColorAlpha = QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors, 15, 0);
+                    //native platform sets each color byte to same value for "line 16" which just defines alpha for
+                    //menuitem lines; lets use first byte "red".
+                    QColor lineColor = optionMenuItem.palette.text().color();
+                    if (lineColorAlpha.isValid())
+                        lineColor.setAlpha(lineColorAlpha.red());
+                    painter->save();
+                    painter->setPen(lineColor);
+                    const int horizontalMargin = 2 * QS60StylePrivate::pixelMetric(PM_FrameCornerWidth) - QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
+                    const int lineStartX = optionMenuItem.rect.left() + horizontalMargin;
+                    const int lineEndX = optionMenuItem.rect.right() - horizontalMargin;
+                    painter->drawLine(QPoint(lineStartX, optionMenuItem.rect.bottom()), QPoint(lineEndX, optionMenuItem.rect.bottom()));
+                    painter->restore();
+                }
             }
             if (!enabled)
                 painter->restore();
@@ -2274,13 +2280,15 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 #endif //QT_NO_MENU
             ) {
             //Need extra check since dialogs have their own theme background
-            if (QS60StylePrivate::canDrawThemeBackground(option->palette.base(), widget) &&
-                QS60StylePrivate::equalToThemePalette(option->palette.window().texture().cacheKey(), QPalette::Window))
-                //todo: for combobox listviews, the background should include area for menu scrollers,
-                //but this produces drawing issues as we need to turn clipping off.
-                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_PopupBackground, painter, option->rect, flags);
-            else
+            if (QS60StylePrivate::canDrawThemeBackground(option->palette.base(), widget)
+                && QS60StylePrivate::equalToThemePalette(option->palette.window().texture().cacheKey(), QPalette::Window)) {
+                    // Add margin area to the background, to avoid background being cut for first and last item.
+                    const int verticalMenuAdjustment = QS60StylePrivate::pixelMetric(PM_MenuVMargin);
+                    const QRect adjustedMenuRect = option->rect.adjusted(0, -verticalMenuAdjustment, 0, verticalMenuAdjustment);
+                    QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_PopupBackground, painter, adjustedMenuRect, flags);
+            } else {
                 commonStyleDraws = true;
+            }
         }
         break;
     case PE_FrameWindow:
