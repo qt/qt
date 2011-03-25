@@ -460,7 +460,7 @@ static void convert_to_Format_Alpha(QImage *image)
     }
 }
 
-DEFINE_BOOL_CONFIG_OPTION(enableDistanceField, QML_ENABLE_DISTANCEFIELD)
+DEFINE_BOOL_CONFIG_OPTION(disableDistanceField, QML_DISABLE_DISTANCEFIELD)
 
 QHash<QString, DistanceFieldGlyphCache *> DistanceFieldGlyphCache::m_caches;
 QHash<QString, DistanceFieldGlyphCache::DistanceFieldTextureData *> DistanceFieldGlyphCache::m_textures_data;
@@ -847,7 +847,7 @@ void DistanceFieldGlyphCache::updateCache()
 
 bool DistanceFieldGlyphCache::distanceFieldEnabled()
 {
-    return enableDistanceField();
+    return !disableDistanceField();
 }
 
 int DistanceFieldGlyphCache::glyphCount() const
