@@ -148,7 +148,16 @@ static void destroy_current_thread_data(void *p)
     // this destructor function, so we need to set it back to the
     // right value...
     pthread_setspecific(current_thread_data_key, p);
-    reinterpret_cast<QThreadData *>(p)->deref();
+    QThreadData *data = static_cast<QThreadData *>(p);
+    if (data->isAdopted) {
+        QThread *thread = data->thread;
+        Q_ASSERT(thread);
+        QThreadPrivate *thread_p = static_cast<QThreadPrivate *>(QObjectPrivate::get(thread));
+        Q_ASSERT(!thread_p->finished);
+        thread_p->finish(thread);
+    }
+    data->deref();
+
     // ... but we must reset it to zero before returning so we aren't
     // called again (POSIX allows implementations to call destructor
     // functions repeatedly until all values are zero)
@@ -251,6 +260,7 @@ QThreadData *QThreadData::current()
             }
             data->deref();
         }
+        data->isAdopted = true;
         if (!QCoreApplicationPrivate::theMainThread)
             QCoreApplicationPrivate::theMainThread = data->thread;
     }
@@ -376,7 +386,6 @@ void QThreadPrivate::finish(void *arg)
 #else
     QMutexLocker locker(&d->mutex);
 #endif
-
     d->isInFinish = true;
     d->priority = QThread::InheritPriority;
     bool terminated = d->terminated;

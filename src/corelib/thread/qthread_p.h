@@ -208,6 +208,7 @@ public:
     QPostEventList postEventList;
     bool canWait;
     QVector<void *> tls;
+    bool isAdopted;
 
 # ifdef Q_OS_SYMBIAN
     RThread symbian_thread_handle;

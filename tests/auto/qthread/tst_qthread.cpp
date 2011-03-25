@@ -103,6 +103,7 @@ private slots:
     void adoptedThreadExit();
     void adoptedThreadExec();
     void adoptedThreadFinished();
+    void adoptedThreadExecFinished();
     void adoptMultipleThreads();
 
     void QTBUG13810_exitAndStart();
@@ -895,6 +896,21 @@ void tst_QThread::adoptedThreadFinished()
     QVERIFY(!QTestEventLoop::instance().timeout());
 }
 
+void tst_QThread::adoptedThreadExecFinished()
+{
+    NativeThreadWrapper nativeThread;
+    nativeThread.setWaitForStop();
+    nativeThread.startAndWait(adoptedThreadExecFunction);
+
+    QObject::connect(nativeThread.qthread, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+    nativeThread.stop();
+    nativeThread.join();
+
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+}
+
 void tst_QThread::adoptMultipleThreads()
 {
 #if defined(Q_OS_WIN)
@@ -929,6 +945,7 @@ void tst_QThread::adoptMultipleThreads()
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(int(recorder.activationCount), numThreads);
+    qDeleteAll(nativeThreads);
 }
 
 void tst_QThread::stressTest()
