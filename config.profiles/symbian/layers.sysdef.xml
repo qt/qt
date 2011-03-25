@@ -30,12 +30,6 @@
             <module name="qtexamples">
                 <unit unitID="qtdo.qt.examples" mrp="" bldFile="&layer_real_source_path;/examples" name="qtexamples" proFile="examples.pro" qmakeArgs="-r" filter="qtexamples"/>
             </module>
-            <module name="qttestsauto">
-                <unit unitID="qtdo.qt.testsauto" mrp="" bldFile="&layer_real_source_path;/tests/auto" name="qttestsauto" proFile="qtpauto.pro" qmakeArgs="-r" filter="qttestsauto"/>
-            </module>
-            <module name="qttestsbenchmarks">
-                <unit unitID="qtdo.qt.testsbenchmarks" mrp="" bldFile="&layer_real_source_path;/tests/benchmarks" name="qttestsbenchmarks" proFile="benchmarks.pro" qmakeArgs="-r" filter="qttestsbenchmarks"/>
-            </module>
         </layer>
     </systemModel>
 </SystemDefinition>
