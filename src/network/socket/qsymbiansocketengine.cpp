@@ -1105,39 +1105,46 @@ int QSymbianSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool 
         selectFlags() |= KSockSelectRead;
     if (checkWrite)
         selectFlags() |= KSockSelectWrite;
-    TRequestStatus selectStat;
-    nativeSocket.Ioctl(KIOctlSelect, selectStat, &selectFlags, KSOLSocket);
+    TInt err;
+    if (timeout == 0) {
+        //if timeout is zero, poll
+        err = nativeSocket.GetOpt(KSOSelectPoll, KSOLSocket, selectFlags);
+    } else {
+        TRequestStatus selectStat;
+        nativeSocket.Ioctl(KIOctlSelect, selectStat, &selectFlags, KSOLSocket);
 
-    if (timeout < 0)
-        User::WaitForRequest(selectStat); //negative means no timeout
-    else {
-        if (!selectTimer.Handle())
-            qt_symbian_throwIfError(selectTimer.CreateLocal());
-        TRequestStatus timerStat;
-        selectTimer.HighRes(timerStat, timeout * 1000);
-        User::WaitForRequest(timerStat, selectStat);
-        if (selectStat == KRequestPending) {
-            nativeSocket.CancelIoctl();
-            //CancelIoctl completes the request (most likely with KErrCancel)
-            //We need to wait for this to keep the thread semaphore balanced (or active scheduler will panic)
-            User::WaitForRequest(selectStat);
-            //restart asynchronous notifier (only one IOCTL allowed at a time)
-            if (asyncSelect)
-                asyncSelect->IssueRequest();
-#ifdef QNATIVESOCKETENGINE_DEBUG
-            qDebug() << "QSymbianSocketEnginePrivate::nativeSelect: select timeout";
-#endif
-            return 0; //timeout
-        } else {
-            selectTimer.Cancel();
-            User::WaitForRequest(timerStat);
+        if (timeout < 0)
+            User::WaitForRequest(selectStat); //negative means no timeout
+        else {
+            if (!selectTimer.Handle())
+                qt_symbian_throwIfError(selectTimer.CreateLocal());
+            TRequestStatus timerStat;
+            selectTimer.HighRes(timerStat, timeout * 1000);
+            User::WaitForRequest(timerStat, selectStat);
+            if (selectStat == KRequestPending) {
+                nativeSocket.CancelIoctl();
+                //CancelIoctl completes the request (most likely with KErrCancel)
+                //We need to wait for this to keep the thread semaphore balanced (or active scheduler will panic)
+                User::WaitForRequest(selectStat);
+                //restart asynchronous notifier (only one IOCTL allowed at a time)
+                if (asyncSelect)
+                    asyncSelect->IssueRequest();
+    #ifdef QNATIVESOCKETENGINE_DEBUG
+                qDebug() << "QSymbianSocketEnginePrivate::nativeSelect: select timeout";
+    #endif
+                return 0; //timeout
+            } else {
+                selectTimer.Cancel();
+                User::WaitForRequest(timerStat);
+            }
         }
+
+    #ifdef QNATIVESOCKETENGINE_DEBUG
+        qDebug() << "QSymbianSocketEnginePrivate::nativeSelect: select status" << selectStat.Int() << (int)selectFlags();
+    #endif
+        err = selectStat.Int();
     }
 
-#ifdef QNATIVESOCKETENGINE_DEBUG
-    qDebug() << "QSymbianSocketEnginePrivate::nativeSelect: select status" << selectStat.Int() << (int)selectFlags();
-#endif
-    TInt err = selectStat.Int();
     if (!err && (selectFlags() & KSockSelectExcept)) {
         nativeSocket.GetOpt(KSOSelectLastError, KSOLSocket, err);
 #ifdef QNATIVESOCKETENGINE_DEBUG
