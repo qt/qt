@@ -80,7 +80,14 @@ contains(QT_CONFIG, private_tests) {
            qdeclarativexmllistmodel \
            qpacketprotocol \
            qdeclarativev4 \
-           qsgmousearea
+           qsgflickable \
+           qsgflipable \
+           qsgfocusscope \
+           qsgloader \
+           qsgmousearea \
+           qsgpositioners \
+           qsgrepeater
+
 
 contains(QT_CONFIG, webkit) {
     SUBDIRS += \
