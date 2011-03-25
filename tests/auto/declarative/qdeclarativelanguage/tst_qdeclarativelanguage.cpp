@@ -173,7 +173,7 @@ private:
         QVERIFY(component.errors().isEmpty()); \
     } else { \
         QFile file(QLatin1String(SRCDIR) + QLatin1String("/data/") + QLatin1String(errorfile)); \
-        QVERIFY(file.open(QIODevice::ReadOnly)); \
+        QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text)); \
         QByteArray data = file.readAll(); \
         file.close(); \
         QList<QByteArray> expected = data.split('\n'); \
