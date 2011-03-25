@@ -263,12 +263,6 @@ public:
         : QVector<QObjectPrivate::ConnectionList>(), orphaned(false), dirty(false), inUse(0)
     { }
 
-    const QObjectPrivate::ConnectionList &at(int at) const
-    {
-        if (at < 0)
-            return allsignals;
-        return QVector<QObjectPrivate::ConnectionList>::at(at);
-    }
     QObjectPrivate::ConnectionList &operator[](int at)
     {
         if (at < 0)
@@ -3489,16 +3483,20 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
         return;
     }
     ++connectionLists->inUse;
-    if (signal_index >= connectionLists->count()) {
-        signal_index = -2; //for "all signals";
-    }
+
+
+    const QObjectPrivate::ConnectionList *list;
+    if (signal_index < connectionLists->count())
+        list = &connectionLists->at(signal_index);
+    else
+        list = &connectionLists->allsignals;
 
     do {
-        QObjectPrivate::Connection *c = connectionLists->at(signal_index).first;
+        QObjectPrivate::Connection *c = list->first;
         if (!c) continue;
         // We need to check against last here to ensure that signals added
         // during the signal emission are not emitted in this emission.
-        QObjectPrivate::Connection *last = connectionLists->at(signal_index).last;
+        QObjectPrivate::Connection *last = list->last;
 
         do {
             if (!c->receiver)
@@ -3582,7 +3580,9 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
 
         if (connectionLists->orphaned)
             break;
-    } while (signal_index >= 0 && (signal_index = -1)); //start over for -1 (all signal)
+    } while (list != &connectionLists->allsignals &&
+        //start over for all signals;
+        ((list = &connectionLists->allsignals), true));
 
     --connectionLists->inUse;
     Q_ASSERT(connectionLists->inUse >= 0);
