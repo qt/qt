@@ -140,7 +140,7 @@ typedef PNG_CONST png_uint_16p FAR * png_const_uint_16pp;
     defined(PNG_FLOATING_ARITHMETIC_SUPPORTED)
    /* png.c requires the following ANSI-C constants if the conversion of
     * floating point to ASCII is implemented therein:
-    * 
+    *
     *  DBL_DIG  Maximum number of decimal digits (can be set to any constant)
     *  DBL_MIN  Smallest normalized fp number (can be set to an arbitrary value)
     *  DBL_MAX  Maximum floating point number (can be set to an arbitrary value)
@@ -175,7 +175,9 @@ typedef PNG_CONST png_uint_16p FAR * png_const_uint_16pp;
 
 #if defined(WIN32) || defined(_Windows) || defined(_WINDOWS) || \
     defined(_WIN32) || defined(__WIN32__)
-#  include <windows.h>  /* defines _WINDOWS_ macro */
+#  if !defined(__SYMBIAN32__)
+#    include <windows.h>  /* defines _WINDOWS_ macro */
+#  endif
 #endif
 
 /* Moved here around 1.5.0beta36 from pngconf.h */
@@ -185,7 +187,7 @@ typedef PNG_CONST png_uint_16p FAR * png_const_uint_16pp;
 
 /* Memory model/platform independent fns */
 #ifndef PNG_ABORT
-#  ifdef _WINDOWS_
+#  if defined(_WINDOWS_) || defined(_WIN32_WCE)
 #    define PNG_ABORT() ExitProcess(0)
 #  else
 #    define PNG_ABORT() abort()

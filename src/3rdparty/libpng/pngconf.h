@@ -34,7 +34,7 @@
  * because this file defines png_memcpy and so on the base APIs must
  * be defined here.
  */
-#ifdef BSD
+#if defined(BSD) && !defined(VXWORKS)
 #  include <strings.h>
 #else
 #  include <string.h>
@@ -195,7 +195,7 @@
 #    define PNGCAPI __watcall
 #  endif
 
-#  if defined(__GNUC__) || (defined (_MSC_VER) && (_MSC_VER >= 800))
+#  if defined(__GNUC__) || (defined (_MSC_VER) && (_MSC_VER >= 800)) || defined(__WINSCW__)
 #    define PNGCAPI __cdecl
 #    if PNG_API_RULE == 1
 #      define PNGAPI __stdcall
@@ -276,6 +276,13 @@
 #      define PNG_IMPEXP PNG_DLL_IMPORT
 #    endif
 #  endif
+
+#   if !defined(PNG_IMPEXP)
+#       include <qconfig.h>
+#       if defined(QT_VISIBILITY_AVAILABLE)
+#           define PNG_IMPEXP __attribute__((visibility("default")))
+#       endif
+#   endif
 
 #  ifndef PNG_IMPEXP
 #    define PNG_IMPEXP
