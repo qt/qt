@@ -135,6 +135,7 @@ private slots:
     void preeditMicroFocus();
     void inputContextMouseHandler();
     void inputMethodComposing();
+    void cursorRectangleSize();
 
 private:
     void simulateKey(QDeclarativeView *, int key);
@@ -1628,12 +1629,11 @@ void tst_qdeclarativetextinput::cursorDelegate()
     //Test Delegate gets moved
     for(int i=0; i<= textInputObject->text().length(); i++){
         textInputObject->setCursorPosition(i);
-        //+5 is because the TextInput cursorRectangle is just a 10xHeight area centered on cursor position
-        QCOMPARE(textInputObject->cursorRectangle().x() + 5, qRound(delegateObject->x()));
+        QCOMPARE(textInputObject->cursorRectangle().x(), qRound(delegateObject->x()));
         QCOMPARE(textInputObject->cursorRectangle().y(), qRound(delegateObject->y()));
     }
     textInputObject->setCursorPosition(0);
-    QCOMPARE(textInputObject->cursorRectangle().x()+5, qRound(delegateObject->x()));
+    QCOMPARE(textInputObject->cursorRectangle().x(), qRound(delegateObject->x()));
     QCOMPARE(textInputObject->cursorRectangle().y(), qRound(delegateObject->y()));
     //Test Delegate gets deleted
     textInputObject->setCursorDelegate(0);
@@ -1722,13 +1722,20 @@ void tst_qdeclarativetextinput::cursorRectangle()
 
     QRect r;
 
+    // some tolerance for different fonts.
+#ifdef Q_OS_LINUX
+    const int error = 2;
+#else
+    const int error = 5;
+#endif
+
     for (int i = 0; i <= 5; ++i) {
         input.setCursorPosition(i);
         r = input.cursorRectangle();
         int textWidth = fm.width(text.mid(0, i));
 
-        QVERIFY(r.left() < textWidth);
-        QVERIFY(r.right() > textWidth);
+        QVERIFY(r.left() < textWidth + error);
+        QVERIFY(r.right() > textWidth - error);
         QCOMPARE(input.inputMethodQuery(Qt::ImMicroFocus).toRect(), r);
     }
 
@@ -2482,6 +2489,26 @@ void tst_qdeclarativetextinput::inputMethodComposing()
     ic.sendEvent(QInputMethodEvent());
     QCOMPARE(input.isInputMethodComposing(), false);
     QCOMPARE(spy.count(), 2);
+}
+
+void tst_qdeclarativetextinput::cursorRectangleSize()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/positionAt.qml");
+    QVERIFY(canvas->rootObject() != 0);
+    canvas->show();
+    canvas->setFocus();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+
+    QDeclarativeTextInput *textInput = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
+    QVERIFY(textInput != 0);
+    textInput->setFocus(Qt::OtherFocusReason);
+    QRectF cursorRect = textInput->positionToRectangle(textInput->cursorPosition());
+    QRectF microFocusFromScene = canvas->scene()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
+    QRectF microFocusFromApp= QApplication::focusWidget()->inputMethodQuery(Qt::ImMicroFocus).toRectF();
+
+    QCOMPARE(microFocusFromScene.size(), cursorRect.size());
+    QCOMPARE(microFocusFromApp.size(), cursorRect.size());
 }
 
 QTEST_MAIN(tst_qdeclarativetextinput)
