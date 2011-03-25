@@ -95,7 +95,6 @@ class QDeclarativeImportDatabase;
 class QDeclarativeObjectScriptClass;
 class QDeclarativeTypeNameScriptClass;
 class QDeclarativeValueTypeScriptClass;
-class QScriptEngineDebugger;
 class QNetworkReply;
 class QNetworkAccessManager;
 class QDeclarativeNetworkAccessManagerFactory;

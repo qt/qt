@@ -39,45 +39,75 @@
 **
 ****************************************************************************/
 
-#ifndef QTCPSERVERCONNECTION_H
-#define QTCPSERVERCONNECTION_H
+#ifndef ZOOMTOOL_H
+#define ZOOMTOOL_H
 
-#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
+#include "abstractliveedittool_p.h"
+#include "liverubberbandselectionmanipulator_p.h"
+
+QT_FORWARD_DECLARE_CLASS(QAction)
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeDebugServer;
-class QTcpServerConnectionPrivate;
-class QTcpServerConnection : public QObject, public QDeclarativeDebugServerConnection
+QT_MODULE(Declarative)
+
+class ZoomTool : public AbstractLiveEditTool
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QTcpServerConnection)
-    Q_DISABLE_COPY(QTcpServerConnection)
-    Q_INTERFACES(QDeclarativeDebugServerConnection)
-
 
 public:
-    QTcpServerConnection();
-    ~QTcpServerConnection();
+    enum ZoomDirection {
+        ZoomIn,
+        ZoomOut
+    };
 
-    void setServer(QDeclarativeDebugServer *server);
-    void setPort(int port, bool bock);
+    explicit ZoomTool(QDeclarativeViewObserver *view);
 
-    bool isConnected() const;
-    void send(const QByteArray &message);
-    void disconnect();
+    virtual ~ZoomTool();
 
-    void listen();
-    void waitForConnection();
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+    void mouseDoubleClickEvent(QMouseEvent *event);
 
-private Q_SLOTS:
-    void readyRead();
-    void newConnection();
+    void hoverMoveEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
+
+    void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *keyEvent);
+    void itemsAboutToRemoved(const QList<QGraphicsItem*> &itemList);
+
+    void clear();
+
+protected:
+    void selectedItemsChanged(const QList<QGraphicsItem*> &itemList);
+
+private slots:
+    void zoomTo100();
+    void zoomIn();
+    void zoomOut();
 
 private:
-    QTcpServerConnectionPrivate *d_ptr;
+    qreal nextZoomScale(ZoomDirection direction) const;
+    void scaleView(const QPointF &centerPos);
+
+private:
+    bool m_dragStarted;
+    QPoint m_mousePos; // in view coords
+    QPointF m_dragBeginPos;
+    QAction *m_zoomTo100Action;
+    QAction *m_zoomInAction;
+    QAction *m_zoomOutAction;
+    LiveRubberBandSelectionManipulator *m_rubberbandManipulator;
+
+    qreal m_smoothZoomMultiplier;
+    qreal m_currentScale;
 };
 
 QT_END_NAMESPACE
 
-#endif // QTCPSERVERCONNECTION_H
+QT_END_HEADER
+
+#endif // ZOOMTOOL_H

@@ -41,6 +41,7 @@
 
 #include "qtcpserverconnection.h"
 
+#include <QtCore/qplugin.h>
 #include <QtNetwork/qtcpserver.h>
 #include <QtNetwork/qtcpsocket.h>
 

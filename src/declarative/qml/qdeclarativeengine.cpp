@@ -71,6 +71,7 @@
 #include "private/qdeclarativenotifier_p.h"
 #include "private/qdeclarativedebugtrace_p.h"
 #include "private/qdeclarativeapplication_p.h"
+#include "private/qjsdebugservice_p.h"
 
 #include <QtCore/qmetaobject.h>
 #include <QScriptClass>
@@ -583,6 +584,7 @@ void QDeclarativeEnginePrivate::init()
         QDeclarativeEngineDebugServer::isDebuggingEnabled()) {
         isDebugging = true;
         QDeclarativeEngineDebugServer::instance()->addEngine(q);
+        QJSDebugService::instance()->addEngine(q);
     }
 }
 
@@ -645,8 +647,10 @@ QDeclarativeEngine::QDeclarativeEngine(QObject *parent)
 QDeclarativeEngine::~QDeclarativeEngine()
 {
     Q_D(QDeclarativeEngine);
-    if (d->isDebugging)
+    if (d->isDebugging) {
         QDeclarativeEngineDebugServer::instance()->remEngine(this);
+        QJSDebugService::instance()->removeEngine(this);
+    }
 }
 
 /*! \fn void QDeclarativeEngine::quit()

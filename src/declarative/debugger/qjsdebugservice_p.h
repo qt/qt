@@ -39,45 +39,61 @@
 **
 ****************************************************************************/
 
-#ifndef QTCPSERVERCONNECTION_H
-#define QTCPSERVERCONNECTION_H
+#ifndef QJSDEBUGSERVICE_P_H
+#define QJSDEBUGSERVICE_P_H
 
-#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtCore/QPointer>
+
+#include "private/qdeclarativedebugservice_p.h"
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeDebugServer;
-class QTcpServerConnectionPrivate;
-class QTcpServerConnection : public QObject, public QDeclarativeDebugServerConnection
+QT_MODULE(Declarative)
+
+class QDeclarativeEngine;
+class QJSDebuggerAgent;
+
+class QJSDebugService : public QDeclarativeDebugService
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QTcpServerConnection)
-    Q_DISABLE_COPY(QTcpServerConnection)
-    Q_INTERFACES(QDeclarativeDebugServerConnection)
-
 
 public:
-    QTcpServerConnection();
-    ~QTcpServerConnection();
+    QJSDebugService(QObject *parent = 0);
+    ~QJSDebugService();
 
-    void setServer(QDeclarativeDebugServer *server);
-    void setPort(int port, bool bock);
+    static QJSDebugService *instance();
 
-    bool isConnected() const;
-    void send(const QByteArray &message);
-    void disconnect();
+    void addEngine(QDeclarativeEngine *);
+    void removeEngine(QDeclarativeEngine *);
 
-    void listen();
-    void waitForConnection();
+protected:
+    void statusChanged(Status status);
+    void messageReceived(const QByteArray &);
 
 private Q_SLOTS:
-    void readyRead();
-    void newConnection();
+    void executionStopped(bool becauseOfException,
+                          const QString &exception);
 
 private:
-    QTcpServerConnectionPrivate *d_ptr;
+    QList<QDeclarativeEngine *> m_engines;
+    QPointer<QJSDebuggerAgent> m_agent;
 };
 
 QT_END_NAMESPACE
 
-#endif // QTCPSERVERCONNECTION_H
+QT_END_HEADER
+
+#endif // QJSDEBUGSERVICE_P_H

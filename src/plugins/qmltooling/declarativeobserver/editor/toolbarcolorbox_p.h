@@ -39,45 +39,49 @@
 **
 ****************************************************************************/
 
-#ifndef QTCPSERVERCONNECTION_H
-#define QTCPSERVERCONNECTION_H
+#ifndef TOOLBARCOLORBOX_H
+#define TOOLBARCOLORBOX_H
 
-#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
+#include <QtGui/QLabel>
+#include <QtGui/QColor>
+#include <QtCore/QPoint>
+
+QT_FORWARD_DECLARE_CLASS(QContextMenuEvent)
+QT_FORWARD_DECLARE_CLASS(QAction)
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeDebugServer;
-class QTcpServerConnectionPrivate;
-class QTcpServerConnection : public QObject, public QDeclarativeDebugServerConnection
+QT_MODULE(Declarative)
+
+class ToolBarColorBox : public QLabel
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QTcpServerConnection)
-    Q_DISABLE_COPY(QTcpServerConnection)
-    Q_INTERFACES(QDeclarativeDebugServerConnection)
-
 
 public:
-    QTcpServerConnection();
-    ~QTcpServerConnection();
+    explicit ToolBarColorBox(QWidget *parent = 0);
+    void setColor(const QColor &color);
 
-    void setServer(QDeclarativeDebugServer *server);
-    void setPort(int port, bool bock);
-
-    bool isConnected() const;
-    void send(const QByteArray &message);
-    void disconnect();
-
-    void listen();
-    void waitForConnection();
-
-private Q_SLOTS:
-    void readyRead();
-    void newConnection();
+protected:
+    void contextMenuEvent(QContextMenuEvent *ev);
+    void mousePressEvent(QMouseEvent *ev);
+    void mouseMoveEvent(QMouseEvent *ev);
+private slots:
+    void copyColorToClipboard();
 
 private:
-    QTcpServerConnectionPrivate *d_ptr;
+    QPixmap createDragPixmap(int size = 24) const;
+
+private:
+    bool m_dragStarted;
+    QPoint m_dragBeginPoint;
+    QAction *m_copyHexColor;
+    QColor m_color;
 };
 
 QT_END_NAMESPACE
 
-#endif // QTCPSERVERCONNECTION_H
+QT_END_HEADER
+
+#endif // TOOLBARCOLORBOX_H

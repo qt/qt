@@ -39,45 +39,54 @@
 **
 ****************************************************************************/
 
-#ifndef QTCPSERVERCONNECTION_H
-#define QTCPSERVERCONNECTION_H
+#include "livelayeritem_p.h"
 
-#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
+#include "../qmlobserverconstants_p.h"
+
+#include <QGraphicsScene>
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeDebugServer;
-class QTcpServerConnectionPrivate;
-class QTcpServerConnection : public QObject, public QDeclarativeDebugServerConnection
+LiveLayerItem::LiveLayerItem(QGraphicsScene* scene)
+    : QGraphicsObject()
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QTcpServerConnection)
-    Q_DISABLE_COPY(QTcpServerConnection)
-    Q_INTERFACES(QDeclarativeDebugServerConnection)
+    scene->addItem(this);
+    setZValue(1);
+    setFlag(QGraphicsItem::ItemIsMovable, false);
+}
 
+LiveLayerItem::~LiveLayerItem()
+{
+}
 
-public:
-    QTcpServerConnection();
-    ~QTcpServerConnection();
+void LiveLayerItem::paint(QPainter * /*painter*/, const QStyleOptionGraphicsItem * /*option*/,
+                          QWidget * /*widget*/)
+{
+}
 
-    void setServer(QDeclarativeDebugServer *server);
-    void setPort(int port, bool bock);
+int LiveLayerItem::type() const
+{
+    return Constants::EditorItemType;
+}
 
-    bool isConnected() const;
-    void send(const QByteArray &message);
-    void disconnect();
+QRectF LiveLayerItem::boundingRect() const
+{
+    return childrenBoundingRect();
+}
 
-    void listen();
-    void waitForConnection();
+QList<QGraphicsItem*> LiveLayerItem::findAllChildItems() const
+{
+    return findAllChildItems(this);
+}
 
-private Q_SLOTS:
-    void readyRead();
-    void newConnection();
+QList<QGraphicsItem*> LiveLayerItem::findAllChildItems(const QGraphicsItem *item) const
+{
+    QList<QGraphicsItem*> itemList(item->childItems());
 
-private:
-    QTcpServerConnectionPrivate *d_ptr;
-};
+    foreach (QGraphicsItem *childItem, item->childItems())
+        itemList += findAllChildItems(childItem);
+
+    return itemList;
+}
 
 QT_END_NAMESPACE
-
-#endif // QTCPSERVERCONNECTION_H

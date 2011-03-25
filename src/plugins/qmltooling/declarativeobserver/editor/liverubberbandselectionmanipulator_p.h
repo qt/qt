@@ -39,45 +39,64 @@
 **
 ****************************************************************************/
 
-#ifndef QTCPSERVERCONNECTION_H
-#define QTCPSERVERCONNECTION_H
+#ifndef RUBBERBANDSELECTIONMANIPULATOR_H
+#define RUBBERBANDSELECTIONMANIPULATOR_H
 
-#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
+#include "liveselectionrectangle_p.h"
+
+#include <QtCore/QPointF>
+
+QT_FORWARD_DECLARE_CLASS(QGraphicsItem)
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeDebugServer;
-class QTcpServerConnectionPrivate;
-class QTcpServerConnection : public QObject, public QDeclarativeDebugServerConnection
+QT_MODULE(Declarative)
+
+class QDeclarativeViewObserver;
+
+class LiveRubberBandSelectionManipulator
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QTcpServerConnection)
-    Q_DISABLE_COPY(QTcpServerConnection)
-    Q_INTERFACES(QDeclarativeDebugServerConnection)
-
-
 public:
-    QTcpServerConnection();
-    ~QTcpServerConnection();
+    enum SelectionType {
+        ReplaceSelection,
+        AddToSelection,
+        RemoveFromSelection
+    };
 
-    void setServer(QDeclarativeDebugServer *server);
-    void setPort(int port, bool bock);
+    LiveRubberBandSelectionManipulator(QGraphicsObject *layerItem,
+                                       QDeclarativeViewObserver *editorView);
 
-    bool isConnected() const;
-    void send(const QByteArray &message);
-    void disconnect();
+    void setItems(const QList<QGraphicsItem*> &itemList);
 
-    void listen();
-    void waitForConnection();
+    void begin(const QPointF& beginPoint);
+    void update(const QPointF& updatePoint);
+    void end();
 
-private Q_SLOTS:
-    void readyRead();
-    void newConnection();
+    void clear();
+
+    void select(SelectionType selectionType);
+
+    QPointF beginPoint() const;
+
+    bool isActive() const;
+
+protected:
+    QGraphicsItem *topFormEditorItem(const QList<QGraphicsItem*> &itemList);
 
 private:
-    QTcpServerConnectionPrivate *d_ptr;
+    QList<QGraphicsItem*> m_itemList;
+    QList<QGraphicsItem*> m_oldSelectionList;
+    LiveSelectionRectangle m_selectionRectangleElement;
+    QPointF m_beginPoint;
+    QDeclarativeViewObserver *m_editorView;
+    QGraphicsItem *m_beginFormEditorItem;
+    bool m_isActive;
 };
 
 QT_END_NAMESPACE
 
-#endif // QTCPSERVERCONNECTION_H
+QT_END_HEADER
+
+#endif // RUBBERBANDSELECTIONMANIPULATOR_H

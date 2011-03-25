@@ -39,45 +39,53 @@
 **
 ****************************************************************************/
 
-#ifndef QTCPSERVERCONNECTION_H
-#define QTCPSERVERCONNECTION_H
+#ifndef QDECLARATIVEOBSERVERSERVICE_H
+#define QDECLARATIVEOBSERVERSERVICE_H
 
-#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
+#include "private/qdeclarativedebugservice_p.h"
+#include <private/qdeclarativeglobal_p.h>
+
+#include <QtCore/QList>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeDebugServer;
-class QTcpServerConnectionPrivate;
-class QTcpServerConnection : public QObject, public QDeclarativeDebugServerConnection
+QT_MODULE(Declarative)
+
+class QDeclarativeView;
+class QDeclarativeObserverInterface;
+
+class Q_DECLARATIVE_EXPORT QDeclarativeObserverService : public QDeclarativeDebugService
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QTcpServerConnection)
-    Q_DISABLE_COPY(QTcpServerConnection)
-    Q_INTERFACES(QDeclarativeDebugServerConnection)
-
 
 public:
-    QTcpServerConnection();
-    ~QTcpServerConnection();
+    QDeclarativeObserverService();
+    static QDeclarativeObserverService *instance();
 
-    void setServer(QDeclarativeDebugServer *server);
-    void setPort(int port, bool bock);
+    void addView(QDeclarativeView *);
+    void removeView(QDeclarativeView *);
+    QList<QDeclarativeView*> views() const { return m_views; }
 
-    bool isConnected() const;
-    void send(const QByteArray &message);
-    void disconnect();
+    void sendMessage(const QByteArray &message);
 
-    void listen();
-    void waitForConnection();
+Q_SIGNALS:
+    void gotMessage(const QByteArray &message);
 
-private Q_SLOTS:
-    void readyRead();
-    void newConnection();
+protected:
+    virtual void statusChanged(Status status);
+    virtual void messageReceived(const QByteArray &);
 
 private:
-    QTcpServerConnectionPrivate *d_ptr;
+    static QDeclarativeObserverInterface *loadObserverPlugin();
+
+    QList<QDeclarativeView*> m_views;
+    QDeclarativeObserverInterface *m_observer;
 };
 
 QT_END_NAMESPACE
 
-#endif // QTCPSERVERCONNECTION_H
+QT_END_HEADER
+
+#endif // QDECLARATIVEOBSERVERSERVICE_H
