@@ -2453,12 +2453,7 @@ void QComboBox::showPopup()
         // available screen geometry.This may override the vertical position, but it is more
         // important to show as much as possible of the popup.
         const int height = !boundToScreen ? listRect.height() : qMin(listRect.height(), screen.height());
-#ifdef Q_WS_S60
-        //popup needs to be stretched with screen minimum dimension
-        listRect.setHeight(qMin(screen.height(), screen.width()));
-#else
         listRect.setHeight(height);
-#endif
 
         if (boundToScreen) {
             if (listRect.top() < screen.top())
