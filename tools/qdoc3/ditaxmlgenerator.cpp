@@ -482,6 +482,7 @@ void DitaXmlGenerator::initializeGenerator(const Config &config)
     if (naturalLanguage.isEmpty())
         naturalLanguage = QLatin1String("en");
 
+    config.subVarsAndValues("dita.metadata.default",metadataDefaults);
     QSet<QString> editionNames = config.subVars(CONFIG_EDITION);
     QSet<QString>::ConstIterator edition = editionNames.begin();
     while (edition != editionNames.end()) {
@@ -5577,7 +5578,7 @@ bool DitaXmlGenerator::writeMetadataElement(const InnerNode* inner,
     QStringMap& metaTagMap = const_cast<QStringMap&>(inner->doc().metaTagMap());
     QStringMap::iterator i = metaTagMap.find(ditaTags[t]);
     if (i == metaTagMap.end()) {
-        // get the default author, if there is one.
+        s = metadataDefault(t);
     }
     else {
         s = i.value();
@@ -5610,7 +5611,19 @@ QString DitaXmlGenerator::getMetadataElement(const InnerNode* inner, DitaXmlGene
         s = i.value();
         metaTagMap.erase(i);
     }
+    else {
+        s = metadataDefault(t);
+    }
     return s;
+}
+
+/*!
+  Returns the value of key \a t or an empty string
+  if \a t is not found in the map.
+ */
+QString DitaXmlGenerator::metadataDefault(DitaTag t) const
+{
+    return metadataDefaults.value(ditaTags[t]);
 }
 
 /*!
@@ -5625,10 +5638,10 @@ QString DitaXmlGenerator::getMetadataElement(const InnerNode* inner, DitaXmlGene
     \o <brand>
     \o <category> *
     \o <compomnent> *
-    \o <copyrholder>
-    \o <copyright>
+    \o <copyrholder> *
+    \o <copyright> *
     \o <created>
-    \o <copyryear>
+    \o <copyryear> *
     \o <critdates>
     \o <keyword>
     \o <keywords>
@@ -5661,24 +5674,18 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner, CodeMarker* marker)
     writeMetadataElement(inner,DT_author);
     writeMetadataElement(inner,DT_publisher);
     QString s = getMetadataElement(inner,DT_copyryear);
-    if (s.isEmpty()) {
-        s = "2011"; // zzz
-    }
     QString t = getMetadataElement(inner,DT_copyrholder);
-    if (t.isEmpty()) {
-        t = "Nokia"; // zzz
-    }
     writeStartTag(DT_copyright);
     writeStartTag(DT_copyryear);
-    xmlWriter().writeAttribute("year",s);
+    if (!s.isEmpty())
+        xmlWriter().writeAttribute("year",s);
     writeEndTag(); // </copyryear>
     writeStartTag(DT_copyrholder);
-    xmlWriter().writeCharacters(t);
+    if (!s.isEmpty())
+        xmlWriter().writeCharacters(t);
     writeEndTag(); // </copyrholder>
     writeEndTag(); // </copyright>
     s = getMetadataElement(inner,DT_permissions);
-    if (s.isEmpty())
-        s = "all";
     writeStartTag(DT_permissions);
     xmlWriter().writeAttribute("view",s);
     writeEndTag(); // </permissions>
