@@ -213,7 +213,7 @@ bool QSslConfiguration::isNull() const
 */
 QSsl::SslProtocol QSslConfiguration::protocol() const
 {
-    return d ? d->protocol : QSsl::TlsV1;
+    return d ? d->protocol : QSsl::SecureProtocols;
 }
 
 /*!
@@ -518,7 +518,7 @@ void QSslConfiguration::setCaCertificates(const QList<QSslCertificate> &certific
 
     \list
       \o no local certificate and no private key
-      \o protocol TlsV1
+      \o protocol SecureProtocols (meaning either TLS 1.0 or SSL 3 will be used)
       \o the system's default CA certificate list
       \o the cipher list equal to the list of the SSL libraries'
          supported SSL ciphers

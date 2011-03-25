@@ -142,13 +142,23 @@ public:
     public:
         KeyEvent(QWidget *w, ulong time, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1)
             :UserEvent(w, time, Key), key(k), unicode(text), repeat(autorep),
-             repeatCount(count), modifiers(mods), keyType(t) { }
+             repeatCount(count), modifiers(mods), keyType(t),
+             nativeScanCode(0), nativeVirtualKey(0), nativeModifiers(0) { }
+        KeyEvent(QWidget *w, ulong time, QEvent::Type t, int k, Qt::KeyboardModifiers mods,
+                 quint32 nativeSC, quint32 nativeVK, quint32 nativeMods,
+                 const QString & text = QString(), bool autorep = false, ushort count = 1)
+            :UserEvent(w, time, Key), key(k), unicode(text), repeat(autorep),
+             repeatCount(count), modifiers(mods), keyType(t),
+             nativeScanCode(nativeSC), nativeVirtualKey(nativeVK), nativeModifiers(nativeMods) { }
         int key;
         QString unicode;
         bool repeat;
         ushort repeatCount;
         Qt::KeyboardModifiers modifiers;
         QEvent::Type keyType;
+        quint32 nativeScanCode;
+        quint32 nativeVirtualKey;
+        quint32 nativeModifiers;
     };
 
     class TouchEvent : public UserEvent {

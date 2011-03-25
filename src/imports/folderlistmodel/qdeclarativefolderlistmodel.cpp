@@ -365,7 +365,7 @@ void QDeclarativeFolderListModel::refresh()
 {
     d->folderIndex = QModelIndex();
     if (d->count) {
-        emit beginRemoveRows(QModelIndex(), 0, d->count);
+        emit beginRemoveRows(QModelIndex(), 0, d->count-1);
         d->count = 0;
         emit endRemoveRows();
     }

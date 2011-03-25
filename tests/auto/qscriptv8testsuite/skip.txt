@@ -1,0 +1,17 @@
+# testcase | message
+debug-* | not applicable
+mirror-* | not applicable
+array-concat | Hangs on JSC backend
+array-splice | Hangs on JSC backend
+sparse-array-reverse | Hangs on JSC backend
+string-case | V8-specific behavior? (Doesn't pass on SpiderMonkey either)
+
+[Q_OS_WINCE]
+deep-recursion | Demands too much memory on WinCE
+nested-repetition-count-overflow | Demands too much memory on WinCE
+unicode-test | Demands too much memory on WinCE
+mul-exhaustive | Demands too much memory on WinCE
+
+[Q_OS_SYMBIAN]
+nested-repetition-count-overflow | Demands too much memory on Symbian
+unicode-test | Demands too much memory on Symbian

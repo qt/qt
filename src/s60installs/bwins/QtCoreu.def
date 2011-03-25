@@ -4629,4 +4629,5 @@ EXPORTS
 	?addDeferredSocketActiveObject@QEventDispatcherSymbian@@QAEXPAVQActiveObject@@@Z @ 4628 NONAME ; void QEventDispatcherSymbian::addDeferredSocketActiveObject(class QActiveObject *)
 	?getSocketServer@QSymbianSocketManager@@QAEAAVRSocketServ@@XZ @ 4629 NONAME ; class RSocketServ & QSymbianSocketManager::getSocketServer(void)
 	?removeSocket@QSymbianSocketManager@@QAE_NABVRSocket@@@Z @ 4630 NONAME ; bool QSymbianSocketManager::removeSocket(class RSocket const &)
-
+	?started@QAnimationDriver@@MAEXXZ @ 4631 NONAME ; void QAnimationDriver::started(void)
+	?stopped@QAnimationDriver@@MAEXXZ @ 4632 NONAME ; void QAnimationDriver::stopped(void)

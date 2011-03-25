@@ -2225,6 +2225,8 @@ qint64 QAbstractSocket::readData(char *data, qint64 maxSize)
         } else if (readBytes < 0) {
             d->socketError = d->socketEngine->error();
             setErrorString(d->socketEngine->errorString());
+            d->resetSocketLayer();
+            d->state = QAbstractSocket::UnconnectedState;
         } else if (!d->socketEngine->isReadNotificationEnabled()) {
             // Only do this when there was no error
             d->socketEngine->setReadNotificationEnabled(true);

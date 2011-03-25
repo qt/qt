@@ -234,6 +234,11 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
         return;
     }
 
+    // The disk cache API does not currently support partial content retrieval.
+    // That is why we don't use the disk cache for any such requests.
+    if (request().hasRawHeader("Range"))
+        return;
+
     QAbstractNetworkCache *nc = networkCache();
     if (!nc)
         return;                 // no local cache
@@ -717,8 +722,13 @@ void QNetworkAccessHttpBackend::replyDownloadData(QByteArray d)
 
     pendingDownloadData.append(d);
     d.clear();
-    writeDownstreamData(pendingDownloadData);
+    // We need to usa a copy for calling writeDownstreamData as we could
+    // possibly recurse into this this function when we call
+    // appendDownstreamDataSignalEmissions because the user might call
+    // processEvents() or spin an event loop when this occur.
+    QByteDataBuffer pendingDownloadDataCopy = pendingDownloadData;
     pendingDownloadData.clear();
+    writeDownstreamData(pendingDownloadDataCopy);
 }
 
 void QNetworkAccessHttpBackend::replyFinished()

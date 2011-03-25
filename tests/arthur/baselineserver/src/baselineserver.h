@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -109,7 +109,7 @@ public:
     // CGI callbacks:
     static QString view(const QString &baseline, const QString &rendered, const QString &compared);
     static QString clearAllBaselines(const QString &context);
-    static QString updateSingleBaseline(const QString &oldBaseline, const QString &newBaseline);
+    static QString updateBaselines(const QString &context, const QString &mismatchContext, const QString &itemFile);
     static QString blacklistTest(const QString &context, const QString &itemId, bool removeFromBlacklist = false);
 
 private slots:

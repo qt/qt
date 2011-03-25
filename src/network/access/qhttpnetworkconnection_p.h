@@ -167,7 +167,7 @@ public:
 
     QHttpNetworkReply *queueRequest(const QHttpNetworkRequest &request);
     void requeueRequest(const HttpMessagePair &pair); // e.g. after pipeline broke
-    void dequeueAndSendRequest(QAbstractSocket *socket);
+    bool dequeueRequest(QAbstractSocket *socket);
     void prepareRequest(HttpMessagePair &request);
 
     void fillPipeline(QAbstractSocket *socket);

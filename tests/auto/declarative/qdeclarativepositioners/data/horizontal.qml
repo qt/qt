@@ -4,7 +4,6 @@ Item {
     width: 640
     height: 480
     property bool testRightToLeft: false
-
     Row {
         objectName: "row"
         layoutDirection: testRightToLeft ? Qt.RightToLeft : Qt.LeftToRight

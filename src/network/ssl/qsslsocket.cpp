@@ -552,7 +552,7 @@ bool QSslSocket::isEncrypted() const
 }
 
 /*!
-    Returns the socket's SSL protocol. By default, \l QSsl::TLSv1 is used.
+    Returns the socket's SSL protocol. By default, \l QSsl::SecureProtocols is used.
 
     \sa setProtocol()
 */

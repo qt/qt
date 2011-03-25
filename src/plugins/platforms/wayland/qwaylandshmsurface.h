@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtOpenVG module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -71,10 +71,14 @@ public:
     QPaintDevice *paintDevice();
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
     void resize(const QSize &size);
+    void beginPaint(const QRegion &);
 
 private:
+    static void frameCallback(void *data, uint32_t time);\
+
     QWaylandShmBuffer *mBuffer;
     QWaylandDisplay *mDisplay;
+    bool mWaitingForFrameSync;
 };
 
 QT_END_NAMESPACE

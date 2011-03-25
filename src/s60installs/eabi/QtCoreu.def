@@ -3832,4 +3832,5 @@ EXPORTS
 	_ZTI13QActiveObject @ 3831 NONAME
 	_ZTV13QActiveObject @ 3832 NONAME
 	gzungetc @ 3833 NONAME
-
+	_ZN16QAnimationDriverC1EP7QObject @ 3834 NONAME
+	_ZN16QAnimationDriverC1ER23QAnimationDriverPrivateP7QObject @ 3835 NONAME

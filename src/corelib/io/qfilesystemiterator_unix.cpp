@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,6 +41,8 @@
 
 #include "qplatformdefs.h"
 #include "qfilesystemiterator_p.h"
+
+#ifndef QT_NO_FILESYSTEMITERATOR
 
 #include <stdlib.h>
 #include <errno.h>
@@ -111,3 +113,5 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_FILESYSTEMITERATOR

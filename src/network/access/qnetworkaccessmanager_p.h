@@ -120,6 +120,8 @@ public:
     void _q_networkSessionStateChanged(QNetworkSession::State state);
 #endif
 
+    QNetworkRequest prepareMultipart(const QNetworkRequest &request, QHttpMultiPart *multiPart);
+
     // this is the cache for storing downloaded files
     QAbstractNetworkCache *networkCache;
 
