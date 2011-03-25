@@ -51,8 +51,6 @@
 
 #if !defined(Q_OS_WINCE)
 #  include <errno.h>
-#  include <sys/stat.h>
-#  include <sys/types.h>
 #endif
 
 #include <stdlib.h>
@@ -65,10 +63,6 @@
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 # include <process.h>
-#endif
-
-#if defined(Q_OS_WINCE)
-#  include <types.h>
 #endif
 
 #if defined(Q_OS_VXWORKS)
@@ -108,8 +102,6 @@ QT_BEGIN_NAMESPACE
 static int _gettemp(char *path, int slen)
 {
     char *start, *trv, *suffp;
-    QT_STATBUF sbuf;
-    int rval;
 #if defined(Q_OS_WIN)
     int pid;
 #else
@@ -137,10 +129,6 @@ static int _gettemp(char *path, int slen)
         pid /= 10;
     }
 
-#ifndef S_ISDIR
-#  define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
-#endif
-
     while (trv >= path && *trv == 'X') {
         char c;
 
@@ -153,29 +141,6 @@ static int _gettemp(char *path, int slen)
         *trv-- = c;
     }
     start = trv + 1;
-
-#ifndef Q_OS_WIN
-    /*
-     * check the target directory; if you have six X's and it
-     * doesn't exist this runs for a *very* long time.
-     */
-    for (;; --trv) {
-        if (trv <= path)
-            break;
-        if (*trv == '/') {
-            *trv = '\0';
-            rval = QT_STAT(path, &sbuf);
-            *trv = '/';
-            if (rval != 0)
-                return -1;
-            if (!S_ISDIR(sbuf.st_mode)) {
-                errno = ENOTDIR;
-                return -1;
-            }
-            break;
-        }
-    }
-#endif
 
     for (;;) {
 #ifndef Q_OS_WIN
