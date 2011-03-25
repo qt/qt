@@ -61,12 +61,8 @@
 # include "private/qcore_unix_p.h"      // overrides QT_OPEN
 #endif
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-# include <process.h>
-#endif
-
-#if defined(Q_OS_VXWORKS)
-#  include <taskLib.h>
+#if defined(QT_BUILD_CORE_LIB)
+#include "qcoreapplication.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -115,23 +111,13 @@ static int _gettemp(char *path, int slen)
 
     // Initialize placeholder with random chars + PID.
     {
-#if defined(Q_OS_WIN)
-        int pid;
-#else
-        pid_t pid;
-#endif
-
-#if defined(Q_OS_WIN) && defined(_MSC_VER) && _MSC_VER >= 1400
-        pid = _getpid();
-#elif defined(Q_OS_VXWORKS)
-        pid = (pid_t) taskIdCurrent;
-#else
-        pid = getpid();
-#endif
+#if defined(QT_BUILD_CORE_LIB)
+        qint64 pid = QCoreApplication::applicationPid();
         while (trv >= path && *trv == 'X' && pid != 0) {
             *trv-- = (pid % 10) + '0';
             pid /= 10;
         }
+#endif
 
         while (trv >= path && *trv == 'X') {
             char c;
