@@ -160,13 +160,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetw
 
         // Ensure that record is valid (not an alias and with length greater than 0)
         if (!(nameResult().iFlags & TNameRecord::EAlias) && (ipAddr.Length() > 0)) {
-           if (nameResult().iAddr.Family() == KAfInet) {
-                // IPv4 - prepend
-                hostAddresses.prepend(QHostAddress(qt_TDesC2QString(ipAddr)));
-            } else {
-                // IPv6 - append
-                hostAddresses.append(QHostAddress(qt_TDesC2QString(ipAddr)));
-            }
+            hostAddresses.append(QHostAddress(qt_TDesC2QString(ipAddr)));
         }
     }
 
@@ -389,13 +383,7 @@ void QSymbianHostResolver::processNameResults()
 
         // Ensure that record is valid (not an alias and with length greater than 0)
         if (!(iNameResult().iFlags & TNameRecord::EAlias) && (ipAddr.Length() > 0)) {
-           if (iNameResult().iAddr.Family() == KAfInet) {
-                // IPv4 - prepend
-                hostAddresses.prepend(QHostAddress(qt_TDesC2QString(ipAddr)));
-            } else {
-                // IPv6 - append
-                hostAddresses.append(QHostAddress(qt_TDesC2QString(ipAddr)));
-            }
+            hostAddresses.append(QHostAddress(qt_TDesC2QString(ipAddr)));
         }
     }
 
