@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -119,14 +119,27 @@ uint QCoreTextFontEngineMulti::fontIndexForFont(CTFontRef id) const
     return engines.count() - 1;
 }
 
-bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags,
+bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags,
                   unsigned short *logClusters, const HB_CharAttributes *) const
 {
     QCFType<CFStringRef> cfstring = CFStringCreateWithCharactersNoCopy(0,
                                                                reinterpret_cast<const UniChar *>(str),
                                                                len, kCFAllocatorNull);
     QCFType<CFAttributedStringRef> attributedString = CFAttributedStringCreate(0, cfstring, attributeDict);
-    QCFType<CTTypesetterRef> typeSetter = CTTypesetterCreateWithAttributedString(attributedString);
+    QCFType<CTTypesetterRef> typeSetter;
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+    if (flags & QTextEngine::RightToLeft) {
+        const void *optionKeys[] = { kCTTypesetterOptionForcedEmbeddingLevel };
+        const short rtlForcedEmbeddingLevelValue = 1;
+        const void *rtlOptionValues[] = { CFNumberCreate(kCFAllocatorDefault, kCFNumberShortType, &rtlForcedEmbeddingLevelValue) };
+        QCFType<CFDictionaryRef> options = CFDictionaryCreate(kCFAllocatorDefault, optionKeys, rtlOptionValues, 1,
+                                                              &kCFCopyStringDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        typeSetter = CTTypesetterCreateWithAttributedStringAndOptions(attributedString, options);
+    } else
+#endif
+        typeSetter = CTTypesetterCreateWithAttributedString(attributedString);
+
     CFRange range = {0, 0};
     QCFType<CTLineRef> line = CTTypesetterCreateLine(typeSetter, range);
     CFArrayRef array = CTLineGetGlyphRuns(line);
@@ -234,7 +247,8 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
                 int idx = rtlOffset + rtlSign * i;
                 outGlyphs[idx] = tmpGlyphs[i] | fontIndex;
                 outAdvances_x[idx] = QFixed::fromReal(tmpPoints[i + 1].x - tmpPoints[i].x);
-                outAdvances_y[idx] = QFixed::fromReal(tmpPoints[i + 1].y - tmpPoints[i].y);
+                // Use negative y advance for flipped coordinate system
+                outAdvances_y[idx] = QFixed::fromReal(tmpPoints[i].y - tmpPoints[i + 1].y);
 
                 if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
                     outAdvances_x[idx] = outAdvances_x[idx].round();

@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "private/qdeclarativeitem_p.h"
 #include "qdeclarativeitem.h"
 
 #include "private/qdeclarativeevents_p_p.h"
 #include <private/qdeclarativeengine_p.h>
 #include <private/qgraphicsitem_p.h>
+#include <QtDeclarative/private/qdeclarativeitem_p.h>
 
 #include <qdeclarativeengine.h>
 #include <qdeclarativeopenmetaobject_p.h>
@@ -615,19 +615,28 @@ void QDeclarativeKeyNavigationAttached::keyPressed(QKeyEvent *event, bool post)
         return;
     }
 
+    bool mirror = false;
     switch(event->key()) {
-    case Qt::Key_Left:
-        if (d->left) {
-            setFocusNavigation(d->left, "left");
+    case Qt::Key_Left: {
+        if (QDeclarativeItem *parentItem = qobject_cast<QDeclarativeItem*>(parent()))
+            mirror = QDeclarativeItemPrivate::get(parentItem)->effectiveLayoutMirror;
+        QDeclarativeItem* leftItem = mirror ? d->right : d->left;
+        if (leftItem) {
+            setFocusNavigation(leftItem, mirror ? "right" : "left");
             event->accept();
         }
         break;
-    case Qt::Key_Right:
-        if (d->right) {
-            setFocusNavigation(d->right, "right");
+    }
+    case Qt::Key_Right: {
+        if (QDeclarativeItem *parentItem = qobject_cast<QDeclarativeItem*>(parent()))
+            mirror = QDeclarativeItemPrivate::get(parentItem)->effectiveLayoutMirror;
+        QDeclarativeItem* rightItem = mirror ? d->left : d->right;
+        if (rightItem) {
+            setFocusNavigation(rightItem, mirror ? "left" : "right");
             event->accept();
         }
         break;
+    }
     case Qt::Key_Up:
         if (d->up) {
             setFocusNavigation(d->up, "up");
@@ -669,16 +678,19 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
         return;
     }
 
+    bool mirror = false;
     switch(event->key()) {
     case Qt::Key_Left:
-        if (d->left) {
+        if (QDeclarativeItem *parentItem = qobject_cast<QDeclarativeItem*>(parent()))
+            mirror = QDeclarativeItemPrivate::get(parentItem)->effectiveLayoutMirror;
+        if (mirror ? d->right : d->left)
             event->accept();
-        }
         break;
     case Qt::Key_Right:
-        if (d->right) {
+        if (QDeclarativeItem *parentItem = qobject_cast<QDeclarativeItem*>(parent()))
+            mirror = QDeclarativeItemPrivate::get(parentItem)->effectiveLayoutMirror;
+        if (mirror ? d->left : d->right)
             event->accept();
-        }
         break;
     case Qt::Key_Up:
         if (d->up) {
@@ -728,6 +740,171 @@ void QDeclarativeKeyNavigationAttached::setFocusNavigation(QDeclarativeItem *cur
         }
     }
     while (currentItem != initialItem && isNextItem);
+}
+
+/*!
+    \qmlclass LayoutMirroring QDeclarativeLayoutMirroringAttached
+    \since QtQuick 1.1
+    \ingroup qml-utility-elements
+    \brief The LayoutMirroring attached property is used to mirror layout behavior.
+
+    The LayoutMirroring attached property is used to horizontally mirror \l {anchor-layout}{Item anchors},
+    \l{Using QML Positioner and Repeater Items}{positioner} elements (such as \l Row and \l Grid)
+    and views (such as \l GridView and horizontal \l ListView). Mirroring is a visual change: left
+    anchors become right anchors, and positioner elements like \l Grid and \l Row reverse the
+    horizontal layout of child items.
+
+    Mirroring is enabled for an item by setting the \l enabled property to true. By default, this
+    only affects the item itself; setting the \l childrenInherit property to true propagates the mirroring
+    behavior to all child elements as well. If the \c LayoutMirroring attached property has not been defined
+    for an item, mirroring is not enabled.
+
+    The following example shows mirroring in action. The \l Row below is specified as being anchored
+    to the left of its parent. However, since mirroring has been enabled, the anchor is horizontally
+    reversed and it is now anchored to the right. Also, since items in a \l Row are positioned
+    from left to right by default, they are now positioned from right to left instead, as demonstrated
+    by the numbering and opacity of the items:
+
+    \snippet doc/src/snippets/declarative/layoutmirroring.qml 0
+
+    \image layoutmirroring.png
+
+    Layout mirroring is useful when it is necessary to support both left-to-right and right-to-left
+    layout versions of an application to target different language areas. The \l childrenInherit
+    property allows layout mirroring to be applied without manually setting layout configurations
+    for every item in an application. Keep in mind, however, that mirroring does not affect any
+    positioning that is defined by the \l Item \l {Item::}{x} coordinate value, so even with
+    mirroring enabled, it will often be necessary to apply some layout fixes to support the
+    desired layout direction. Also, it may be necessary to disable the mirroring of individual
+    child items (by setting \l {enabled}{LayoutMirroring.enabled} to false for such items) if
+    mirroring is not the desired behavior, or if the child item already implements mirroring in
+    some custom way.
+
+    See \l {QML Right-to-left User Interfaces} for further details on using \c LayoutMirroring and
+    other related features to implement right-to-left support for an application.
+*/
+
+/*!
+    \qmlproperty bool LayoutMirroring::enabled
+
+    This property holds whether the item's layout is mirrored horizontally. Setting this to true
+    horizontally reverses \l {anchor-layout}{anchor} settings such that left anchors become right,
+    and right anchors become left. For \l{Using QML Positioner and Repeater Items}{positioner} elements
+    (such as \l Row and \l Grid) and view elements (such as \l {GridView}{GridView} and \l {ListView}{ListView})
+    this also mirrors the horizontal layout direction of the item.
+
+    The default value is false.
+*/
+
+/*!
+    \qmlproperty bool LayoutMirroring::childrenInherit
+
+    This property holds whether the \l {enabled}{LayoutMirroring.enabled} value for this item
+    is inherited by its children.
+
+    The default value is false.
+*/
+
+QDeclarativeLayoutMirroringAttached::QDeclarativeLayoutMirroringAttached(QObject *parent) : QObject(parent), itemPrivate(0)
+{
+    if (QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(parent)) {
+        itemPrivate = QDeclarativeItemPrivate::get(item);
+        itemPrivate->attachedLayoutDirection = this;
+    } else
+        qmlInfo(parent) << tr("LayoutDirection attached property only works with Items");
+}
+
+QDeclarativeLayoutMirroringAttached * QDeclarativeLayoutMirroringAttached::qmlAttachedProperties(QObject *object)
+{
+    return new QDeclarativeLayoutMirroringAttached(object);
+}
+
+bool QDeclarativeLayoutMirroringAttached::enabled() const
+{
+    return itemPrivate ? itemPrivate->effectiveLayoutMirror : false;
+}
+
+void QDeclarativeLayoutMirroringAttached::setEnabled(bool enabled)
+{
+    if (!itemPrivate)
+        return;
+
+    itemPrivate->isMirrorImplicit = false;
+    if (enabled != itemPrivate->effectiveLayoutMirror) {
+        itemPrivate->setLayoutMirror(enabled);
+        if (itemPrivate->inheritMirrorFromItem)
+             itemPrivate->resolveLayoutMirror();
+    }
+}
+
+void QDeclarativeLayoutMirroringAttached::resetEnabled()
+{
+    if (itemPrivate && !itemPrivate->isMirrorImplicit) {
+        itemPrivate->isMirrorImplicit = true;
+        itemPrivate->resolveLayoutMirror();
+    }
+}
+
+bool QDeclarativeLayoutMirroringAttached::childrenInherit() const
+{
+    return itemPrivate ? itemPrivate->inheritMirrorFromItem : false;
+}
+
+void QDeclarativeLayoutMirroringAttached::setChildrenInherit(bool childrenInherit) {
+    if (itemPrivate && childrenInherit != itemPrivate->inheritMirrorFromItem) {
+        itemPrivate->inheritMirrorFromItem = childrenInherit;
+        itemPrivate->resolveLayoutMirror();
+        childrenInheritChanged();
+    }
+}
+
+void QDeclarativeItemPrivate::resolveLayoutMirror()
+{
+    Q_Q(QDeclarativeItem);
+    if (QDeclarativeItem *parentItem = q->parentItem()) {
+        QDeclarativeItemPrivate *parentPrivate = QDeclarativeItemPrivate::get(parentItem);
+        setImplicitLayoutMirror(parentPrivate->inheritedLayoutMirror, parentPrivate->inheritMirrorFromParent);
+    } else {
+        setImplicitLayoutMirror(isMirrorImplicit ? false : effectiveLayoutMirror, inheritMirrorFromItem);
+    }
+}
+
+void QDeclarativeItemPrivate::setImplicitLayoutMirror(bool mirror, bool inherit)
+{
+    inherit = inherit || inheritMirrorFromItem;
+    if (!isMirrorImplicit && inheritMirrorFromItem)
+        mirror = effectiveLayoutMirror;
+    if (mirror == inheritedLayoutMirror && inherit == inheritMirrorFromParent)
+        return;
+
+    inheritMirrorFromParent = inherit;
+    inheritedLayoutMirror = inheritMirrorFromParent ? mirror : false;
+
+    if (isMirrorImplicit)
+        setLayoutMirror(inherit ? inheritedLayoutMirror : false);
+    for (int i = 0; i < children.count(); ++i) {
+        if (QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i))) {
+            QDeclarativeItemPrivate *childPrivate = QDeclarativeItemPrivate::get(child);
+            childPrivate->setImplicitLayoutMirror(inheritedLayoutMirror, inheritMirrorFromParent);
+        }
+    }
+}
+
+void QDeclarativeItemPrivate::setLayoutMirror(bool mirror)
+{
+    if (mirror != effectiveLayoutMirror) {
+        effectiveLayoutMirror = mirror;
+        if (_anchors) {
+            _anchors->d_func()->fillChanged();
+            _anchors->d_func()->centerInChanged();
+            _anchors->d_func()->updateHorizontalAnchors();
+            emit _anchors->mirroredChanged();
+        }
+        mirrorChange();
+        if (attachedLayoutDirection) {
+            emit attachedLayoutDirection->enabledChanged();
+        }
+    }
 }
 
 /*!
@@ -1397,6 +1574,11 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
     \endqml
 
     See the \l {Keys}{Keys} attached property for detailed documentation.
+
+    \section1 Layout Mirroring
+
+    Item layouts can be mirrored using the \l {LayoutMirroring}{LayoutMirroring} attached property.
+
 */
 
 /*!
@@ -2154,6 +2336,8 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
   \qmlproperty real Item::anchors.verticalCenterOffset
   \qmlproperty real Item::anchors.baselineOffset
 
+  \qmlproperty bool Item::anchors.mirrored
+
   Anchors provide a way to position an item by specifying its
   relationship with other items.
 
@@ -2210,6 +2394,8 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
   four directional anchors.
 
   To clear an anchor value, set it to \c undefined.
+
+  \c anchors.mirrored returns true it the layout has been \l {LayoutMirroring}{mirrored}.
 
   \note You can only anchor an item to siblings or a parent.
 
@@ -2812,6 +2998,7 @@ QVariant QDeclarativeItem::itemChange(GraphicsItemChange change,
     Q_D(QDeclarativeItem);
     switch (change) {
     case ItemParentHasChanged:
+        d->resolveLayoutMirror();
         emit parentChanged(parentItem());
         d->parentNotifier.notify();
         break;

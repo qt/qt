@@ -90,10 +90,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_SYMBIAN)
-#define QT_GL_NO_SCISSOR_TEST
-#endif
-
 #if defined(Q_WS_WIN)
 extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 #endif
@@ -1349,11 +1345,14 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
     ensureActive();
     d->transferMode(ImageDrawingMode);
 
+    QGLContext::BindOptions bindOptions = QGLContext::InternalBindOption|QGLContext::CanFlipNativePixmapBindOption;
+#ifdef QGL_USE_TEXTURE_POOL
+    bindOptions |= QGLContext::TemporarilyCachedBindOption;
+#endif
+
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     QGLTexture *texture =
-        ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA,
-                                   QGLContext::InternalBindOption
-                                   | QGLContext::CanFlipNativePixmapBindOption);
+        ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, bindOptions);
 
     GLfloat top = texture->options & QGLContext::InvertedYBindOption ? (pixmap.height() - src.top()) : src.top();
     GLfloat bottom = texture->options & QGLContext::InvertedYBindOption ? (pixmap.height() - src.bottom()) : src.bottom();
@@ -1365,6 +1364,12 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, texture->id);
     d->drawTexture(dest, srcRect, pixmap.size(), isOpaque, isBitmap);
+
+    if (texture->options&QGLContext::TemporarilyCachedBindOption) {
+        // pixmap was temporarily cached as a QImage texture by pooling system
+        // and should be destroyed immediately
+        QGLTextureCache::instance()->remove(ctx, texture->id);
+    }
 }
 
 void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const QRectF& src,
@@ -1389,12 +1394,23 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
 
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
 
-    QGLTexture *texture = ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
+    QGLContext::BindOptions bindOptions = QGLContext::InternalBindOption;
+#ifdef QGL_USE_TEXTURE_POOL
+    bindOptions |= QGLContext::TemporarilyCachedBindOption;
+#endif
+
+    QGLTexture *texture = ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, bindOptions);
     GLuint id = texture->id;
 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, id);
     d->drawTexture(dest, src, image.size(), !image.hasAlphaChannel());
+
+    if (texture->options&QGLContext::TemporarilyCachedBindOption) {
+        // image was temporarily cached by texture pooling system
+        // and should be destroyed immediately
+        QGLTextureCache::instance()->remove(ctx, texture->id);
+    }
 }
 
 void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
@@ -1623,8 +1639,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
             if (c.isNull())
                 continue;
 
-            int x = staticTextItem->glyphPositions[i].x.toInt() + c.baseLineX - margin;
-            int y = staticTextItem->glyphPositions[i].y.toInt() - c.baseLineY - margin;
+            int x = qFloor(staticTextItem->glyphPositions[i].x) + c.baseLineX - margin;
+            int y = qFloor(staticTextItem->glyphPositions[i].y) - c.baseLineY - margin;
 
             vertexCoordinates->addQuad(QRectF(x, y, c.w, c.h));
             textureCoordinates->addQuad(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));

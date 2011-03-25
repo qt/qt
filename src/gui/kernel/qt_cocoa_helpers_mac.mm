@@ -1048,7 +1048,6 @@ QWidget *qt_mac_getTargetForKeyEvent(QWidget *widgetThatReceivedEvent)
 // events
 QWidget *qt_mac_getTargetForMouseEvent(
     // You can call this function without providing an event.
-    // If so, set returnGlobalPoint before the call.
     NSEvent *event,
     QEvent::Type eventType,
     QPoint &returnLocalPoint,
@@ -1057,7 +1056,8 @@ QWidget *qt_mac_getTargetForMouseEvent(
     QWidget **returnWidgetUnderMouse)
 {
     Q_UNUSED(event);
-    returnGlobalPoint = flipPoint([NSEvent mouseLocation]).toPoint();
+    NSPoint nsglobalpoint = event ? [[event window] convertBaseToScreen:[event locationInWindow]] : [NSEvent mouseLocation];
+    returnGlobalPoint = flipPoint(nsglobalpoint).toPoint();
     QWidget *mouseGrabber = QWidget::mouseGrabber();
     bool buttonDownNotBlockedByModal = qt_button_down && !QApplicationPrivate::isBlockedByModal(qt_button_down);
     QWidget *popup = QApplication::activePopupWidget();
@@ -1794,7 +1794,29 @@ void qt_mac_display(QWidget *widget)
 {
     NSView *theNSView = qt_mac_nativeview_for(widget);
     [theNSView display];
-    return;
+}
+
+void qt_mac_setNeedsDisplay(QWidget *widget)
+{
+    NSView *theNSView = qt_mac_nativeview_for(widget);
+    [theNSView setNeedsDisplay:YES];
+}
+
+void qt_mac_setNeedsDisplayInRect(QWidget *widget, QRegion region)
+{
+    NSView *theNSView = qt_mac_nativeview_for(widget);
+    if (region.isEmpty()) {
+        [theNSView setNeedsDisplay:YES];
+        return;
+    }
+
+    QVector<QRect> rects = region.rects();
+    for (int i = 0; i < rects.count(); ++i) {
+        const QRect &rect = rects.at(i);
+        NSRect nsrect = NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
+        [theNSView setNeedsDisplayInRect:nsrect];
+    }
+
 }
 
 #endif // QT_MAC_USE_COCOA

@@ -179,4 +179,8 @@ EXPORTS
 	?updateSerial@QVGPixmapData@@IAEXXZ @ 178 NONAME ; void QVGPixmapData::updateSerial(void)
 	?copy@QVGPixmapData@@UAEXPBVQPixmapData@@ABVQRect@@@Z @ 179 NONAME ; void QVGPixmapData::copy(class QPixmapData const *, class QRect const &)
 	?idealFormat@QVGPixmapData@@IBE?AW4Format@QImage@@PAV3@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 180 NONAME ; enum QImage::Format QVGPixmapData::idealFormat(class QImage *, class QFlags<enum Qt::ImageConversionFlag>) const
+	?ensureReadback@QVGPixmapData@@UBEX_N@Z @ 181 NONAME ; void QVGPixmapData::ensureReadback(bool) const
+	?initFromNativeImageHandle@QVGPixmapData@@QAE_NPAXABVQString@@@Z @ 182 NONAME ; bool QVGPixmapData::initFromNativeImageHandle(void *, class QString const &)
+	?createFromNativeImageHandleProvider@QVGPixmapData@@QAEXXZ @ 183 NONAME ; void QVGPixmapData::createFromNativeImageHandleProvider(void)
+	?releaseNativeImageHandle@QVGPixmapData@@QAEXXZ @ 184 NONAME ; void QVGPixmapData::releaseNativeImageHandle(void)
 

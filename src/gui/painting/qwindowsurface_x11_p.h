@@ -80,6 +80,7 @@ public:
     bool scroll(const QRegion &area, int dx, int dy);
     QPixmap grabWidget(const QWidget *widget,
                        const QRect& rectangle = QRect()) const;
+    bool hasStaticContentsSupport() const;
 private:
     QX11WindowSurfacePrivate *d_ptr;
     GC gc;

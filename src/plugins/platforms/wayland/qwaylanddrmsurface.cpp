@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtOpenVG module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,191 +38,104 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include "qwaylanddrmsurface.h"
 
 #include "qwaylanddisplay.h"
 #include "qwaylandwindow.h"
 #include "qwaylandscreen.h"
 
-#include <QtCore/qdebug.h>
-#include <QtGui/private/qapplication_p.h>
-#include <QtOpenGL/private/qgl_p.h>
-#include <QtGui/private/qpaintengine_p.h>
+#include <QtOpenGL/QGLFramebufferObject>
+#include <QtOpenGL/QGLContext>
 
-#include <wayland-client.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <sys/mman.h>
+#include <QtOpenGL/private/qglengineshadermanager_p.h>
 
 QT_BEGIN_NAMESPACE
 
-/*
- * Shared DRM surface for GL based drawing
- */
-QWaylandDrmBuffer::QWaylandDrmBuffer(QWaylandDisplay *display,
-				     const QSize &size, QImage::Format format)
-    : mDisplay(display)
-    , mSize(size)
+
+
+static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize, const QRectF &br)
 {
-    struct wl_visual *visual;
-    EGLint name, stride;
-    EGLint imageAttribs[] = {
-        EGL_WIDTH,			size.width(),
-        EGL_HEIGHT,			size.height(),
-	EGL_DRM_BUFFER_FORMAT_MESA,	EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
-        EGL_DRM_BUFFER_USE_MESA,	EGL_DRM_BUFFER_USE_SCANOUT_MESA,
-	EGL_NONE
+    const GLenum target = GL_TEXTURE_2D;
+    QRectF src = br.isEmpty()
+        ? QRectF(QPointF(), texSize)
+        : QRectF(QPointF(br.x(), texSize.height() - br.bottom()), br.size());
+
+    if (target == GL_TEXTURE_2D) {
+        qreal width = texSize.width();
+        qreal height = texSize.height();
+
+        src.setLeft(src.left() / width);
+        src.setRight(src.right() / width);
+        src.setTop(src.top() / height);
+        src.setBottom(src.bottom() / height);
+    }
+
+    const GLfloat tx1 = src.left();
+    const GLfloat tx2 = src.right();
+    const GLfloat ty1 = src.top();
+    const GLfloat ty2 = src.bottom();
+
+    GLfloat texCoordArray[4*2] = {
+        tx1, ty2, tx2, ty2, tx2, ty1, tx1, ty1
     };
 
-    mImage = eglCreateDRMImageMESA(mDisplay->eglDisplay(), imageAttribs);
+    GLfloat vertexArray[4*2];
+    vertexArray[0] = rect.left(); vertexArray[1] = rect.top();
+    vertexArray[2] = rect.right(); vertexArray[3] = rect.top();
+    vertexArray[4] = rect.right(); vertexArray[5] = rect.bottom();
+    vertexArray[6] = rect.left(); vertexArray[7] = rect.bottom();
 
-    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, mImage);
-    glGenTextures(1, &mTexture);
-    glBindTexture(GL_TEXTURE_2D, mTexture);
-    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, mImage);
+    glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexArray);
+    glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, texCoordArray);
 
-    eglExportDRMImageMESA(mDisplay->eglDisplay(),
-                          mImage, &name, NULL, &stride);
+    glBindTexture(target, tex_id);
 
-    switch (format) {
-    case QImage::Format_ARGB32:
-	visual = display->argbVisual();
-	break;
-    case QImage::Format_ARGB32_Premultiplied:
-	visual = display->argbPremultipliedVisual();
-	break;
-    default:
-	qDebug("unsupported buffer format %d requested\n", format);
-	visual = display->argbVisual();
-	break;
-    }
+    glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+    glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+    glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
 
-    mBuffer = display->createDrmBuffer(name, size.width(), size.height(),
-				       stride, visual);
+    glBindTexture(target, 0);
 }
 
-QWaylandDrmBuffer::~QWaylandDrmBuffer(void)
+static void blitTexture(QGLContext *ctx, GLuint texture, const QSize &viewport, const QSize &texSize, const QRect &targetRect, const QRect &sourceRect)
 {
-    glDeleteTextures(1, &mTexture);
-    eglDestroyImageKHR(mDisplay->eglDisplay(), mImage);
-    wl_buffer_destroy(mBuffer);
-}
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_SCISSOR_TEST);
+    glDisable(GL_BLEND);
+    glViewport(0, 0, viewport.width(), viewport.height());
 
-void QWaylandDrmBuffer::bindToCurrentFbo()
-{
-    Q_ASSERT(QPlatformGLContext::currentContext());
-    glBindTexture(GL_TEXTURE_2D, mTexture);
-    glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0,
-                           GL_TEXTURE_2D, mTexture, 0);
-    QT_CHECK_GLERROR();
-}
+    QGLShaderProgram *blitProgram =
+        QGLEngineSharedShaders::shadersForContext(ctx)->blitProgram();
+    blitProgram->bind();
+    blitProgram->setUniformValue("imageTexture", 0 /*QT_IMAGE_TEXTURE_UNIT*/);
 
-QWaylandPaintDevice::QWaylandPaintDevice(QWaylandDisplay *display, QWindowSurface *windowSurface, QPlatformGLContext *context)
-    : QGLPaintDevice()
-    , mDisplay(display)
-    , mPlatformGLContext(context)
-    , mWindowSurface(windowSurface)
-    , mBufferList(1)
-    , mCurrentPaintBuffer(0)
-    , mDepthStencil(0)
-{
-    for (int i = 0; i < mBufferList.size(); i++) {
-        mBufferList[i] = 0;
-    }
+    // The shader manager's blit program does not multiply the
+    // vertices by the pmv matrix, so we need to do the effect
+    // of the orthographic projection here ourselves.
+    QRectF r;
+    qreal w = viewport.width();
+    qreal h = viewport.height();
+    r.setLeft((targetRect.left() / w) * 2.0f - 1.0f);
+    if (targetRect.right() == (viewport.width() - 1))
+        r.setRight(1.0f);
+    else
+        r.setRight((targetRect.right() / w) * 2.0f - 1.0f);
+    r.setBottom((targetRect.top() / h) * 2.0f - 1.0f);
+    if (targetRect.bottom() == (viewport.height() - 1))
+        r.setTop(1.0f);
+    else
+        r.setTop((targetRect.bottom() / w) * 2.0f - 1.0f);
 
-    mPlatformGLContext->makeCurrent();
-    glGenFramebuffers(1, &m_thisFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_thisFBO);
-
-    if (windowSurface->size().isValid())
-        resize(windowSurface->size());
-}
-
-QWaylandPaintDevice::~QWaylandPaintDevice()
-{
-    for(int i = 0; i < mBufferList.size(); i++) {
-        delete mBufferList[i];
-    }
-    glDeleteRenderbuffers(1,&mDepthStencil);
-    glDeleteFramebuffers(1,&m_thisFBO);
-}
-
-QSize QWaylandPaintDevice::size() const
-{
-    return mSize;
-}
-QGLContext *QWaylandPaintDevice::context() const
-{
-    return QGLContext::fromPlatformGLContext(mPlatformGLContext);
-}
-QPaintEngine *QWaylandPaintDevice::paintEngine() const
-{
-    return qt_qgl_paint_engine();
-}
-
-void QWaylandPaintDevice::beginPaint()
-{
-    QGLPaintDevice::beginPaint();
-    currentDrmBuffer()->bindToCurrentFbo();
-}
-
-bool QWaylandPaintDevice::isFlipped()const
-{
-    return true;
-}
-
-void QWaylandPaintDevice::resize(const QSize &size)
-{
-    QImage::Format format = QPlatformScreen::platformScreenForWidget(mWindowSurface->window())->format();
-    mPlatformGLContext->makeCurrent();
-    mSize = size;
-    for (int i = 0; i < mBufferList.size(); i++) {
-        if (!mBufferList.at(i) || mBufferList.at(i)->size() != size) {
-            delete mBufferList[i];
-            mBufferList[i] = new QWaylandDrmBuffer(mDisplay, size, format);
-        }
-    }
-
-    glDeleteRenderbuffers(1,&mDepthStencil);
-    glGenRenderbuffers(1,&mDepthStencil);
-    glBindRenderbuffer(GL_RENDERBUFFER_EXT,mDepthStencil);
-    glRenderbufferStorage(GL_RENDERBUFFER_EXT,
-                          GL_DEPTH24_STENCIL8_EXT, size.width(), size.height());
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                              GL_RENDERBUFFER_EXT, mDepthStencil);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-                              GL_RENDERBUFFER_EXT, mDepthStencil);
-
-    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER_EXT);
-
-    switch(status) {
-    case GL_NO_ERROR:
-    case GL_FRAMEBUFFER_COMPLETE_EXT:
-        qDebug() << "fbo ok";
-        break;
-    default:
-        qDebug() <<"QWaylandDrmBuffer error: "<< status;
-        break;
-    }
-    QT_CHECK_GLERROR();
-}
-
-QWaylandDrmBuffer *QWaylandPaintDevice::currentDrmBuffer() const
-{
-    return mBufferList[mCurrentPaintBuffer];
-}
-QWaylandDrmBuffer *QWaylandPaintDevice::currentDrmBufferAndSwap()
-{
-    QWaylandDrmBuffer *currentDrmBuffer = mBufferList[mCurrentPaintBuffer];
-    mCurrentPaintBuffer = (mCurrentPaintBuffer +1) % mBufferList.size();
-    return currentDrmBuffer;
+    drawTexture(r, texture, texSize, sourceRect);
 }
 
 QWaylandDrmWindowSurface::QWaylandDrmWindowSurface(QWidget *window)
     : QWindowSurface(window)
     , mDisplay(QWaylandScreen::waylandScreenFromWidget(window)->display())
-    , mPaintDevice(new QWaylandPaintDevice(mDisplay, this,window->platformWindow()->glContext()))
+    , mPaintDevice(0)
 {
 
 }
@@ -232,40 +145,39 @@ QWaylandDrmWindowSurface::~QWaylandDrmWindowSurface()
     delete mPaintDevice;
 }
 
-void QWaylandDrmWindowSurface::beginPaint(const QRegion &)
-{
-    window()->platformWindow()->glContext()->makeCurrent();
-}
-
 QPaintDevice *QWaylandDrmWindowSurface::paintDevice()
 {
     return mPaintDevice;
 }
 
+void QWaylandDrmWindowSurface::beginPaint(const QRegion &)
+{
+    window()->platformWindow()->glContext()->makeCurrent();
+    glClearColor(0,0,0,0xff);
+    glClear(GL_COLOR_BUFFER_BIT);
+}
+
 void QWaylandDrmWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(offset);
+    Q_UNUSED(region);
     QWaylandWindow *ww = (QWaylandWindow *) widget->platformWindow();
 
-    ww->attach(mPaintDevice->currentDrmBufferAndSwap());
+    if (mPaintDevice->isBound())
+        mPaintDevice->release();
 
-    QVector<QRect> rects = region.rects();
-    for (int i = 0; i < rects.size(); i++) {
-        QRect r = rects.at(i);
-        wl_surface_damage(ww->surface(),
-                          r.x(), r.y(), r.width(), r.height());
-    }
+    QRect rect(0,0,size().width(),size().height());
+    QGLContext *ctx = QGLContext::fromPlatformGLContext(ww->glContext());
+    blitTexture(ctx,mPaintDevice->texture(),size(),mPaintDevice->size(),rect,rect);
+    ww->glContext()->swapBuffers();
 }
 
-void QWaylandDrmWindowSurface::resize(const QSize &requestedSize)
+void QWaylandDrmWindowSurface::resize(const QSize &size)
 {
-    QWindowSurface::resize(requestedSize);
-    QWaylandWindow *ww = (QWaylandWindow *) window()->platformWindow();
-
-    ww->glContext()->makeCurrent();
-
-    mPaintDevice->resize(requestedSize);
-    ww->attach(mPaintDevice->currentDrmBuffer());
+    QWindowSurface::resize(size);
+    window()->platformWindow()->glContext()->makeCurrent();
+    delete mPaintDevice;
+    mPaintDevice = new QGLFramebufferObject(size,QGLFramebufferObject::CombinedDepthStencil,GL_TEXTURE_2D,GL_RGBA);
 }
 
 QT_END_NAMESPACE

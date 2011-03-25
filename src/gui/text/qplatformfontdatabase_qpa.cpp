@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -214,7 +214,7 @@ QFontEngine *QPlatformFontDatabase::fontEngine(const QFontDef &fontDef, QUnicode
     Q_UNUSED(handle);
     QByteArray *fileDataPtr = static_cast<QByteArray *>(handle);
     QFontEngineQPA *engine = new QFontEngineQPA(fontDef,*fileDataPtr);
-    qDebug() << fontDef.pixelSize << fontDef.weight << fontDef.style << fontDef.stretch << fontDef.styleHint << fontDef.styleStrategy << fontDef.family << script;
+    //qDebug() << fontDef.pixelSize << fontDef.weight << fontDef.style << fontDef.stretch << fontDef.styleHint << fontDef.styleStrategy << fontDef.family << script;
     return engine;
 }
 

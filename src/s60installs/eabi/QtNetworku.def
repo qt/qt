@@ -1181,4 +1181,6 @@ EXPORTS
 	_ZNK35QNetworkConfigurationManagerPrivate27configurationFromIdentifierERK7QString @ 1180 NONAME
 	_ZNK35QNetworkConfigurationManagerPrivate7enginesEv @ 1181 NONAME
 	_ZNK35QNetworkConfigurationManagerPrivate8isOnlineEv @ 1182 NONAME
+	_ZN10QSslSocket17setPeerVerifyNameERK7QString @ 1183 NONAME
+	_ZNK10QSslSocket14peerVerifyNameEv @ 1184 NONAME
 

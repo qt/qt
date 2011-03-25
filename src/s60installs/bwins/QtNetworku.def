@@ -1159,4 +1159,6 @@ EXPORTS
 	?engines@QNetworkConfigurationManagerPrivate@@QBE?AV?$QList@PAVQBearerEngine@@@@XZ @ 1158 NONAME ; class QList<class QBearerEngine *> QNetworkConfigurationManagerPrivate::engines(void) const
 	?isOnline@QNetworkConfigurationManagerPrivate@@QBE_NXZ @ 1159 NONAME ; bool QNetworkConfigurationManagerPrivate::isOnline(void) const
 	?startPolling@QNetworkConfigurationManagerPrivate@@AAEXXZ @ 1160 NONAME ; void QNetworkConfigurationManagerPrivate::startPolling(void)
+	?setPeerVerifyName@QSslSocket@@QAEXABVQString@@@Z @ 1161 NONAME ; void QSslSocket::setPeerVerifyName(class QString const &)
+	?peerVerifyName@QSslSocket@@QBE?AVQString@@XZ @ 1162 NONAME ; class QString QSslSocket::peerVerifyName(void) const
 

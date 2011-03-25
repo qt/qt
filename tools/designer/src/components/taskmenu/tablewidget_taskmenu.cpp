@@ -94,7 +94,7 @@ void TableWidgetTaskMenu::editItems()
 
     Q_ASSERT(m_tableWidget != 0);
 
-    TableWidgetEditor dlg(m_formWindow, m_tableWidget->window());
+    TableWidgetEditorDialog dlg(m_formWindow, m_tableWidget->window());
     TableWidgetContents oldCont = dlg.fillContentsFromTableWidget(m_tableWidget);
     if (dlg.exec() == QDialog::Accepted) {
         TableWidgetContents newCont = dlg.contents();

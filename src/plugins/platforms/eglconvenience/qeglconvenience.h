@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,12 +46,16 @@
 #include <QtGui/QPlatformWindowFormat>
 #include <QtCore/QVector>
 
+#ifdef Q_PLATFORM_WAYLAND
+#include "qwaylandinclude.h"
+#else
 #include <EGL/egl.h>
+#endif
 QT_BEGIN_NAMESPACE
 
 QVector<EGLint> q_createConfigAttributesFromFormat(const QPlatformWindowFormat &format);
 bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes);
-EGLConfig q_configFromQPlatformWindowFormat(EGLDisplay display, const QPlatformWindowFormat &format);
+EGLConfig q_configFromQPlatformWindowFormat(EGLDisplay display, const QPlatformWindowFormat &format, bool highestPixelFormat = false);
 QPlatformWindowFormat qt_qPlatformWindowFormatFromConfig(EGLDisplay display, const EGLConfig config);
 bool q_hasEglExtension(EGLDisplay display,const char* extensionName);
 

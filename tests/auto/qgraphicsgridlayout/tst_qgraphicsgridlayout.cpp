@@ -2541,7 +2541,7 @@ void tst_QGraphicsGridLayout::geometries_data()
                                 << QRectF(0, 0, 50,10) << QRectF(50, 0, 50,10)
                                 << QRectF(0, 10, 50,100) << QRectF(50, 10, 50,400)
                             );
-#if 0
+
     QTest::newRow("hfw-100x470") << (ItemList()
                                     << ItemDesc(0,0)
                                         .minSize(QSizeF(1,1))
@@ -2556,9 +2556,9 @@ void tst_QGraphicsGridLayout::geometries_data()
                                         .preferredSize(QSizeF(50,10))
                                         .maxSize(QSizeF(100, 100))
                                     << ItemDesc(1,1)
-                                        .minSize(QSizeF(40,40))
-                                        .preferredSize(QSizeF(50,400))
-                                        .maxSize(QSizeF(500, 500))
+                                        .sizeHint(Qt::MinimumSize, QSizeF(40,40))
+                                        .sizeHint(Qt::PreferredSize, QSizeF(50,400))
+                                        .sizeHint(Qt::MaximumSize, QSizeF(500,500))
                                         .dynamicConstraint(hfw1, Qt::Vertical)
                                 )
                             << QSizeF(100, 470)
@@ -2566,7 +2566,6 @@ void tst_QGraphicsGridLayout::geometries_data()
                                 << QRectF(0, 0, 50,70) << QRectF(50, 0, 50,70)
                                 << QRectF(0, 70, 50,100) << QRectF(50, 70, 50,400)
                             );
-
 
     // change layout width and verify
     QTest::newRow("hfw-100x401") << (ItemList()
@@ -2583,9 +2582,9 @@ void tst_QGraphicsGridLayout::geometries_data()
                                         .preferredSize(QSizeF(50,10))
                                         .maxSize(QSizeF(100, 100))
                                     << ItemDesc(1,1)
-                                        .minSize(QSizeF(40,40))
-                                        .preferredSize(QSizeF(50,400))
-                                        .maxSize(QSizeF(5000, 5000))
+                                        .minSize(QSizeF(-1,-1))
+                                        .preferredSize(QSizeF(-1,-1))
+                                        .maxSize(QSizeF(-1, -1))
                                         .dynamicConstraint(hfw1, Qt::Vertical)
                                 )
                             << QSizeF(100, 401)
@@ -2594,7 +2593,7 @@ void tst_QGraphicsGridLayout::geometries_data()
                                 << QRectF( 0, 1,  50, 100) << QRectF( 50,  1,  50, 400)
                             );
 
-    QTest::newRow("hfw-160x400") << (ItemList()
+    QTest::newRow("hfw-160x350") << (ItemList()
                                     << ItemDesc(0,0)
                                         .minSize(QSizeF(1,1))
                                         .preferredSize(QSizeF(50,10))
@@ -2608,17 +2607,16 @@ void tst_QGraphicsGridLayout::geometries_data()
                                         .preferredSize(QSizeF(50,10))
                                         .maxSize(QSizeF(100, 100))
                                     << ItemDesc(1,1)
-                                        .minSize(QSizeF(40,40))
-                                        .preferredSize(QSizeF(50,400))
-                                        .maxSize(QSizeF(5000, 5000))
-                                        .dynamicConstraint(hfw1, Qt::Vertical)
+                                        .sizeHint(Qt::MinimumSize, QSizeF(40,40))
+                                        .sizeHint(Qt::PreferredSize, QSizeF(50,400))
+                                        .sizeHint(Qt::MaximumSize, QSizeF(5000,5000))
+                                       .dynamicConstraint(hfw1, Qt::Vertical)
                                 )
-                            << QSizeF(160, 400)
+                            << QSizeF(160, 350)
                             << (RectList()
                                 << QRectF( 0,   0,  80, 100) << QRectF( 80,   0,  80, 100)
                                 << QRectF( 0, 100,  80, 100) << QRectF( 80, 100,  80, 250)
                             );
-
 
     QTest::newRow("hfw-160x300") << (ItemList()
                                     << ItemDesc(0,0)
@@ -2634,9 +2632,9 @@ void tst_QGraphicsGridLayout::geometries_data()
                                         .preferredSize(QSizeF(50,10))
                                         .maxSize(QSizeF(100, 100))
                                     << ItemDesc(1,1)
-                                        .minSize(QSizeF(40,40))
-                                        .preferredSize(QSizeF(50,400))
-                                        .maxSize(QSizeF(5000, 5000))
+                                        .sizeHint(Qt::MinimumSize, QSizeF(40,40))
+                                        .sizeHint(Qt::PreferredSize, QSizeF(50,400))
+                                        .sizeHint(Qt::MaximumSize, QSizeF(5000, 5000))
                                         .dynamicConstraint(hfw1, Qt::Vertical)
                                 )
                             << QSizeF(160, 300)
@@ -2647,11 +2645,11 @@ void tst_QGraphicsGridLayout::geometries_data()
 
     QTest::newRow("hfw-20x40") << (ItemList()
                                     << ItemDesc(0,0)
-                                        .minSize(QSizeF(1,1))
+                                        .minSize(QSizeF(1,10))
                                         .preferredSize(QSizeF(50,50))
                                         .maxSize(QSizeF(100, 100))
                                     << ItemDesc(0,1)
-                                        .minSize(QSizeF(1,10))
+                                        .minSize(QSizeF(1,1))
                                         .preferredSize(QSizeF(50,50))
                                         .maxSize(QSizeF(100, 100))
                                     << ItemDesc(1,0)
@@ -2659,9 +2657,9 @@ void tst_QGraphicsGridLayout::geometries_data()
                                         .preferredSize(QSizeF(50,50))
                                         .maxSize(QSizeF(100, 100))
                                     << ItemDesc(1,1)
-                                        .minSize(QSizeF(1,1))
-                                        .preferredSize(QSizeF(50,50))
-                                        .maxSize(QSizeF(100, 100))
+                                        .sizeHint(Qt::MinimumSize, QSizeF(1, 1))
+                                        .sizeHint(Qt::PreferredSize, QSizeF(50, 50))
+                                        .sizeHint(Qt::MaximumSize, QSizeF(100, 100))
                                         .dynamicConstraint(hfw3, Qt::Vertical)
                                 )
                             << QSizeF(20, 40)
@@ -2684,9 +2682,9 @@ void tst_QGraphicsGridLayout::geometries_data()
                                         .preferredSize(QSizeF(10,50))
                                         .maxSize(QSizeF(100, 100))
                                     << ItemDesc(1,1)
-                                        .minSize(QSizeF(10,10))
-                                        .preferredSize(QSizeF(400,50))
-                                        .maxSize(QSizeF(5000, 5000))
+                                        .sizeHint(Qt::MinimumSize, QSizeF(10,10))
+                                        .sizeHint(Qt::PreferredSize, QSizeF(400,50))
+                                        .sizeHint(Qt::MaximumSize, QSizeF(5000, 5000))
                                         .dynamicConstraint(wfh1, Qt::Horizontal)
                                 )
                             << QSizeF(300, 160)
@@ -2711,9 +2709,9 @@ void tst_QGraphicsGridLayout::geometries_data()
                                         .preferredSize(QSizeF(50,50))
                                         .maxSize(QSizeF(100, 100))
                                     << ItemDesc(1,1)
-                                        .minSize(QSizeF(1,1))
-                                        .preferredSize(QSizeF(50,50))
-                                        .maxSize(QSizeF(100, 100))
+                                        .sizeHint(Qt::MinimumSize, QSizeF(1,1))
+                                        .sizeHint(Qt::PreferredSize, QSizeF(50,50))
+                                        .sizeHint(Qt::MaximumSize, QSizeF(100, 100))
                                         .dynamicConstraint(wfh2, Qt::Horizontal)
                                 )
                             << QSizeF(40, 20)
@@ -2736,9 +2734,9 @@ void tst_QGraphicsGridLayout::geometries_data()
                                         .preferredSize(QSizeF(50,50))
                                         .maxSize(QSizeF(100, 100))
                                     << ItemDesc(1,1)
-                                        .minSize(QSizeF(1,1))
-                                        .preferredSize(QSizeF(50,50))
-                                        .maxSize(QSizeF(100, 100))
+                                        .sizeHint(Qt::MinimumSize, QSizeF(1,1))
+                                        .sizeHint(Qt::PreferredSize, QSizeF(50,50))
+                                        .sizeHint(Qt::MaximumSize, QSizeF(100, 100))
                                         .dynamicConstraint(wfh2, Qt::Horizontal)
                                 )
 
@@ -2767,9 +2765,9 @@ void tst_QGraphicsGridLayout::geometries_data()
                                         .preferredSize(QSizeF(10,50))
                                         .maxSize(QSizeF(100, 100))
                                     << ItemDesc(1,1)
-                                        .minSize(QSizeF(1,1))
-                                        .preferredSize(QSizeF(10,50))
-                                        .maxSize(QSizeF(500, 500))
+                                        .sizeHint(Qt::MinimumSize, QSizeF(1,1))
+                                        .sizeHint(Qt::PreferredSize, QSizeF(10,50))
+                                        .sizeHint(Qt::MaximumSize, QSizeF(500, 500))
                                         .dynamicConstraint(wfh2, Qt::Horizontal)
                                 )
                             << QSizeF(160, 100)
@@ -2777,7 +2775,6 @@ void tst_QGraphicsGridLayout::geometries_data()
                                 << QRectF(0,  0,  80,  50) << QRectF( 80,  0,  80,  50)
                                 << QRectF(0, 50,  80,  50) << QRectF( 80, 50,  50,  50)
                             );
-#endif
 
     QTest::newRow("hfw-h470") << (ItemList()
                                     << ItemDesc(0,0)
@@ -2803,7 +2800,6 @@ void tst_QGraphicsGridLayout::geometries_data()
                                 << QRectF(0, 0, 50,70) << QRectF(50, 0, 50,70)
                                 << QRectF(0, 70, 50,100) << QRectF(50, 70, 50,400)
                             );
-
 
     // change layout width and verify
     QTest::newRow("hfw-w100") << (ItemList()
@@ -3069,25 +3065,24 @@ void tst_QGraphicsGridLayout::heightForWidth()
     layout->setSpacing(0);
     RectWidget *w00 = new RectWidget;
     w00->setSizeHint(Qt::MinimumSize, QSizeF(1,1));
-    w00->setSizeHint(Qt::PreferredSize, QSizeF(50,50));
+    w00->setSizeHint(Qt::PreferredSize, QSizeF(10,10));
     w00->setSizeHint(Qt::MaximumSize, QSizeF(100,100));
     layout->addItem(w00, 0, 0);
 
     RectWidget *w01 = new RectWidget;
     w01->setSizeHint(Qt::MinimumSize, QSizeF(1,1));
-    w01->setSizeHint(Qt::PreferredSize, QSizeF(50,50));
+    w01->setSizeHint(Qt::PreferredSize, QSizeF(10,10));
     w01->setSizeHint(Qt::MaximumSize, QSizeF(100,100));
     layout->addItem(w01, 0, 1);
 
     RectWidget *w10 = new RectWidget;
     w10->setSizeHint(Qt::MinimumSize, QSizeF(1,1));
-    w10->setSizeHint(Qt::PreferredSize, QSizeF(50,50));
+    w10->setSizeHint(Qt::PreferredSize, QSizeF(10,10));
     w10->setSizeHint(Qt::MaximumSize, QSizeF(100,100));
     layout->addItem(w10, 1, 0);
 
     RectWidget *w11 = new RectWidget;
     w11->setSizeHint(Qt::MinimumSize, QSizeF(1,1));
-    w11->setSizeHint(Qt::PreferredSize, QSizeF(50,400));
     w11->setSizeHint(Qt::MaximumSize, QSizeF(30000,30000));
     w11->setConstraintFunction(hfw);
     QSizePolicy sp(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -3096,34 +3091,37 @@ void tst_QGraphicsGridLayout::heightForWidth()
     layout->addItem(w11, 1, 1);
 
     QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(-1, -1)), QSizeF(2, 2));
-    QEXPECT_FAIL("", "QTBUG-14693", Continue);
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(-1, -1)), QSizeF(210, 110));
     QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(-1, -1)), QSizeF(30100, 30100));
 
     QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(2, -1)), QSizeF(2, 20001));
-    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(2, -1)), QSizeF(2, 20050));
+    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(2, -1)), QSizeF(2, 20010));
     QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(2, -1)), QSizeF(2, 20100));
 
-    QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(20, -1)), QSizeF(20, 1 + 2000));
-    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(20, -1)), QSizeF(20, 50 + 2000));
-    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(20, -1)), QSizeF(20, 100 + 2000));
+    // Since 20 is somewhere between "minimum width hint" (2) and
+    // "preferred width hint" (210), it will try to do distribution by
+    // stretching them with different factors.
+    // Since column 1 has a "preferred width" of 200 it means that
+    // column 1 will be a bit wider than column 0. Thus it will also be a bit
+    // shorter than 2001, (the expected height if all columns had width=10)
+    QSizeF sh = layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(20, -1));
+    // column 1 cannot be wider than 19, which means that it must be taller than 20000/19~=1052
+    QVERIFY(sh.height() < 2000 + 1 && sh.height() > 1052 + 1);
 
-    QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(300, -1)), QSizeF(300, 1 + 100));
-    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(300, -1)), QSizeF(300, 50 + 100));
-    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(300, -1)), QSizeF(300, 100 + 100));
+    sh = layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(20, -1));
+    QVERIFY(sh.height() < 2000 + 10 && sh.height() > 1052 + 10);
+
+    sh = layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(20, -1));
+    QVERIFY(sh.height() < 2000 + 100 && sh.height() > 1052 + 100);
 
     // the height of the hfw widget is shorter than the one to the left, which is 100, so
     // the total height of the last row is 100 (which leaves the layout height to be 200)
     QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(500, -1)), QSizeF(500, 100 + 100));
 
-    // hfw item size: (500, 40) -> preferred size is maxed up to preferred size of item w10 (50)
-    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(600, -1)), QSizeF(600, 50 + 50));
-
 }
 
 void tst_QGraphicsGridLayout::widthForHeight()
 {
-#if 0
     QGraphicsWidget *widget = new QGraphicsWidget;
     QGraphicsGridLayout *layout = new QGraphicsGridLayout;
     widget->setLayout(layout);
@@ -3150,9 +3148,10 @@ void tst_QGraphicsGridLayout::widthForHeight()
     layout->addItem(w10, 1, 0);
 
     RectWidget *w11 = new RectWidget;
-    w11->setMinimumSize(1,1);
-    w11->setPreferredSize(50, 50);
-    w11->setMaximumSize(30000,30000);
+    w11->setSizeHint(Qt::MinimumSize, QSizeF(1,1));
+    w11->setSizeHint(Qt::PreferredSize, QSizeF(50,50));
+    w11->setSizeHint(Qt::MaximumSize, QSizeF(30000,30000));
+
     // This will make sure its always square.
     w11->setConstraintFunction(wfh);
     QSizePolicy sp(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -3196,7 +3195,6 @@ void tst_QGraphicsGridLayout::widthForHeight()
     QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(-1, 300)), QSizeF(1 + 200, 300));
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(-1, 300)), QSizeF(50 + 200, 300));
     QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(-1, 300)), QSizeF(100 + 200, 300));
-#endif
 }
 
 void tst_QGraphicsGridLayout::heightForWidthWithSpanning()
