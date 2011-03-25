@@ -74,7 +74,7 @@ QGLXContext::QGLXContext(Window window, QXlibScreen *screen, const QPlatformWind
     if (format.useDefaultSharedContext()) {
         if (!QPlatformGLContext::defaultSharedContext()) {
             if (m_defaultSharedContextMutex.tryLock()){
-                createDefaultSharedContex(screen);
+                createDefaultSharedContext(screen);
                 m_defaultSharedContextMutex.unlock();
             } else {
                 m_defaultSharedContextMutex.lock(); //wait to the the shared context is created
@@ -112,7 +112,7 @@ QGLXContext::~QGLXContext()
     }
 }
 
-void QGLXContext::createDefaultSharedContex(QXlibScreen *screen)
+void QGLXContext::createDefaultSharedContext(QXlibScreen *screen)
 {
     int x = 0;
     int y = 0;

@@ -70,7 +70,7 @@ QGLXContext::QGLXContext(Window window, QXcbScreen *screen, const QPlatformWindo
     if (format.useDefaultSharedContext()) {
         if (!QPlatformGLContext::defaultSharedContext()) {
             if (m_defaultSharedContextMutex.tryLock()){
-                createDefaultSharedContex(screen);
+                createDefaultSharedContext(screen);
                 m_defaultSharedContextMutex.unlock();
             } else {
                 m_defaultSharedContextMutex.lock(); //wait to the the shared context is created
@@ -102,7 +102,7 @@ QGLXContext::~QGLXContext()
         glXDestroyContext(DISPLAY_FROM_XCB(m_screen), m_context);
 }
 
-void QGLXContext::createDefaultSharedContex(QXcbScreen *screen)
+void QGLXContext::createDefaultSharedContext(QXcbScreen *screen)
 {
     int x = 0;
     int y = 0;

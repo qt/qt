@@ -72,7 +72,7 @@ private:
     EGLConfig mConfig;
     QPlatformWindowFormat mFormat;
 
-    void createDefaultSharedContex(EGLDisplay eglDisplay);
+    void createDefaultSharedContext(EGLDisplay eglDisplay);
     QWaylandGLContext();
 
 };

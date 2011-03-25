@@ -63,7 +63,7 @@ QWaylandGLContext::QWaylandGLContext(EGLDisplay eglDisplay, const QPlatformWindo
     if (format.useDefaultSharedContext()) {
         if (!QPlatformGLContext::defaultSharedContext()) {
             if (qt_defaultSharedContextMutex()->tryLock()){
-                createDefaultSharedContex(eglDisplay);
+                createDefaultSharedContext(eglDisplay);
                 qt_defaultSharedContextMutex()->unlock();
             } else {
                 qt_defaultSharedContextMutex()->lock(); //wait to the the shared context is created
@@ -128,7 +128,7 @@ void *QWaylandGLContext::getProcAddress(const QString &string)
     return (void *) eglGetProcAddress(string.toLatin1().data());
 }
 
-void QWaylandGLContext::createDefaultSharedContex(EGLDisplay display)
+void QWaylandGLContext::createDefaultSharedContext(EGLDisplay display)
 {
     QVector<EGLint> eglContextAttrs;
     eglContextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);

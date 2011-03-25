@@ -74,7 +74,7 @@ private:
 
     QGLXContext (QXcbScreen *screen, Drawable drawable, GLXContext context);
     static QMutex m_defaultSharedContextMutex;
-    static void createDefaultSharedContex(QXcbScreen *xd);
+    static void createDefaultSharedContext(QXcbScreen *xd);
 };
 
 #endif
