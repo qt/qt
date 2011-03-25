@@ -3085,7 +3085,10 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
 #if !defined(QT_NO_FREETYPE)
     if (fontEngine->type() == QFontEngine::Freetype) {
         QFontEngineFT *fe = static_cast<QFontEngineFT *>(fontEngine);
-        QFontEngineFT::GlyphFormat neededFormat = fe->defaultGlyphFormat();
+        QFontEngineFT::GlyphFormat neededFormat =
+            painter()->device()->devType() == QInternal::Widget
+            ? fe->defaultGlyphFormat()
+            : QFontEngineFT::Format_A8;
 
         if (d_func()->mono_surface
             || fe->isBitmapFont() // alphaPenBlt can handle mono, too
@@ -3527,7 +3530,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     if (glyphs.size() == 0)
         return;
 
-    if (!drawCachedGlyphs(glyphs.size(), glyphs.constData(), positions.constData(), ti.fontEngine))
+    if (!drawCachedGlyphs(glyphs.size(), glyphs.constData(), positions.constData(), fontEngine))
         QPaintEngine::drawTextItem(p, ti);
 
     return;

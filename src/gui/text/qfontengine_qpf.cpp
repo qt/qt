@@ -306,6 +306,7 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
     glyphMapEntries = 0;
     glyphDataOffset = 0;
     glyphDataSize = 0;
+    glyphFormat = renderingFontEngine->glyphFormat;
     kerning_pairs_loaded = false;
     readOnly = true;
 
