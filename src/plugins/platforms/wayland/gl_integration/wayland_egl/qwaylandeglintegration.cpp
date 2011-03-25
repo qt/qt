@@ -4,11 +4,15 @@
 
 #include "qwaylandeglwindow.h"
 
+#include <QtCore/QDebug>
+
 QWaylandEglIntegration::QWaylandEglIntegration(struct wl_display *waylandDisplay)
     : mWaylandDisplay(waylandDisplay)
     , mNativeEglDisplay(wl_egl_display_create(mWaylandDisplay))
 {
+    qDebug() << "Using Wayland-EGL";
 }
+
 
 QWaylandEglIntegration::~QWaylandEglIntegration()
 {

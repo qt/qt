@@ -8,6 +8,7 @@ QWaylandXPixmapEglIntegration::QWaylandXPixmapEglIntegration(QWaylandDisplay *di
     : QWaylandGLIntegration()
     , mWaylandDisplay(display)
 {
+    qDebug() << "Using Wayland XPixmap-EGL";
     char *display_name = getenv("DISPLAY");
     mDisplay = XOpenDisplay(display_name);
     mScreen = XDefaultScreen(mDisplay);

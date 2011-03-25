@@ -2,10 +2,13 @@
 
 #include "qwaylandxpixmapglxwindow.h"
 
+#include <QtCore/QDebug>
+
 QWaylandXPixmapGLXIntegration::QWaylandXPixmapGLXIntegration(QWaylandDisplay * waylandDispaly)
     : QWaylandGLIntegration()
     , mWaylandDisplay(waylandDispaly)
 {
+    qDebug() << "Using Wayland XPixmap-GLX";
     char *display_name = getenv("DISPLAY");
     mDisplay = XOpenDisplay(display_name);
     mScreen = XDefaultScreen(mDisplay);

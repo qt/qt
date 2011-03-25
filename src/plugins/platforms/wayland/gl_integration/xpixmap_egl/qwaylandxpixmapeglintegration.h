@@ -12,7 +12,6 @@
 #include <X11/Xlib.h>
 
 #include <EGL/egl.h>
-//#include <EGL
 
 class QWaylandXPixmapEglIntegration : public QWaylandGLIntegration
 {
