@@ -1,5 +1,5 @@
 TEMPLATE = lib
-TARGET = $$qtLibraryTarget(QtUiTools)
+TARGET = QtUiTools
 QT += xml
 CONFIG += qt staticlib
 DESTDIR = ../../../../lib
@@ -43,3 +43,5 @@ unix {
    QMAKE_PKGCONFIG_DESTDIR = pkgconfig
    QMAKE_PKGCONFIG_REQUIRES += QtXml
 }
+
+TARGET = $$qtLibraryTarget($$TARGET$$QT_LIBINFIX) #do this towards the end
