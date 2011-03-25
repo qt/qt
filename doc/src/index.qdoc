@@ -73,14 +73,15 @@
                 Develop with Qt
             \enddiv
             \list
-            \o \l{Getting Started Guides}{Getting Started with Qt}
             \o \l{Develop with Qt}{Steps to Programming Qt Applications}
             \o \l{qt-creator-configure-target}{Configure Qt and Creator for Platforms}
             \o \l{qt-technologies}{Qt Features and Technologies}
             \o \l{qt-utilities}{Utilities and Testing}
             \o \l{qt-deployment}{Deploying and Publishing Applications to Ovi Store}
             \endlist
-
+            \list
+            \o \l{Getting Started Guides}{Qt and Qt Quick Programming Guides}
+            \endlist
         \enddiv
         \div {class="sectionlist normallist"}
             \div {class="heading"}
