@@ -821,8 +821,8 @@ void tst_QSslCertificate::largeExpirationDate() // QTBUG-12489
 
 void tst_QSslCertificate::blacklistedCertificates()
 {
-    QList<QSslCertificate> blacklistedCerts = QSslCertificate::fromPath(SRCDIR "more-certificates/blacklisted*.pem", QSsl::Pem, QRegExp::Wildcard);
-    QVERIFY(blacklistedCerts.count() > 0);
+    QList<QSslCertificate> blacklistedCerts = QSslCertificate::fromPath("more-certificates/blacklisted*.pem", QSsl::Pem, QRegExp::Wildcard);
+    QVERIFY2(blacklistedCerts.count() > 0, "Please run this test from the source directory");
     for (int a = 0; a < blacklistedCerts.count(); a++) {
         QVERIFY(! blacklistedCerts.at(a).isValid());
     }
