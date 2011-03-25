@@ -1945,6 +1945,9 @@ inline void QGLFunctions::glVertexAttribPointer(GLuint indx, GLint size, GLenum 
 #ifndef GL_RGBA4
 #define GL_RGBA4 0x8056
 #endif
+#ifndef GL_BGRA
+#define GL_BGRA 0x80E1
+#endif
 #ifndef GL_SAMPLE_ALPHA_TO_COVERAGE
 #define GL_SAMPLE_ALPHA_TO_COVERAGE 0x809E
 #endif
