@@ -1743,15 +1743,25 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             QStyleOptionMenuItem optionMenuItem = *menuItem;
 
             bool drawSubMenuIndicator = false;
+            bool drawSeparator = false;
             switch(menuItem->menuItemType) {
-                case QStyleOptionMenuItem::Scroller:
                 case QStyleOptionMenuItem::Separator:
-                    return; // no separators or scrollers in S60 menus
+                    drawSeparator = true;
+                    break;
+                case QStyleOptionMenuItem::Scroller:
+                    return; // no scrollers in S60 menus
                 case QStyleOptionMenuItem::SubMenu:
                     drawSubMenuIndicator = true;
                     break;
                 default:
                     break;
+            }
+            if (drawSeparator) {
+                painter->save();
+                painter->setPen(QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors, 10, 0));
+                painter->drawLine(optionMenuItem.rect.topLeft(), optionMenuItem.rect.bottomRight());
+                painter->restore();
+                return;
             }
             const bool enabled = optionMenuItem.state & State_Enabled;
             const bool checkable = optionMenuItem.checkType != QStyleOptionMenuItem::NotCheckable;
@@ -2627,7 +2637,7 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         case CT_ItemViewItem:
             if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
                 if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
-                    sz = QSize();
+                    sz = QSize(menuItem->rect.width(), 1);
                     break;
                 }
             }
