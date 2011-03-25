@@ -602,6 +602,7 @@ public slots:
         QTcpSocket *serverSocket = server->nextPendingConnection();
         serverSocket->write(data, size);
         serverSocket->flush();
+        QTest::qSleep(200); //allow the TCP/IP stack time to loopback the data, so our socket is ready to read
         QCoreApplication::processEvents(QEventLoop::ExcludeSocketNotifiers);
         testResult = dataArrived;
         QCoreApplication::processEvents(); //check the deferred event is processed
