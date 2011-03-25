@@ -202,7 +202,13 @@ QAudioInput::~QAudioInput()
 /*!
      Uses the \a device as the QIODevice to transfer data.
      Passing a QIODevice allows the data to be transferred without any extra code.
-     All that is required is to open the QIODevice.
+     All that is required is to open the QIODevice. QAudioInput does not take
+     ownership of \a device.
+
+     The QAudioInput will write to the device when new data is available. You can
+     subclass QIODevice and reimplement \l{QIODevice::}{writeData()} if you wish to
+     access the data. If you simply want to save data to a file, you can pass a
+     QFile to this function.
 
      If able to successfully get audio data from the systems audio device the
      state() is set to either QAudio::ActiveState or QAudio::IdleState,
@@ -222,9 +228,12 @@ void QAudioInput::start(QIODevice* device)
 }
 
 /*!
-    Returns a pointer to the QIODevice being used to handle the data
-    transfer. This QIODevice can be used to read() audio data
-    directly.
+
+    Returns a pointer to a new QIODevice that will be used to handle the data transfer.
+    This QIODevice can be used to \l{QIODevice::}{read()} audio data directly.
+    You will typically connect to the \l{QIODevice::}{readyRead()} signal, and
+    read from the device in the slot you connect to. QAudioInput keeps ownership
+    of the device.
 
     If able to access the systems audio device the state() is set to
     QAudio::IdleState, error() is set to QAudio::NoError
