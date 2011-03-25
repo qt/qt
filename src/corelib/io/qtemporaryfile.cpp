@@ -49,7 +49,6 @@
 #include "private/qabstractfileengine_p.h"
 #include "private/qfsfileengine_p.h"
 
-#include <stdlib.h>
 #if !defined(Q_OS_WINCE)
 #  include <errno.h>
 #  include <sys/stat.h>
