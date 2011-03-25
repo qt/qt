@@ -1193,7 +1193,8 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 fileName = QLatin1String("images/") + protectEnc(atom->string());
             }
 
-            writeStartTag(DT_fig);
+            if (currentTag() != DT_xref)
+                writeStartTag(DT_fig);
             writeStartTag(DT_image);
             xmlWriter().writeAttribute("href",protectEnc(fileName));
             if (atom->type() == Atom::InlineImage)
@@ -1208,7 +1209,8 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 writeEndTag(); // </alt>
             }
             writeEndTag(); // </image>
-            writeEndTag(); // </fig>
+            if (currentTag() != DT_xref)
+                writeEndTag(); // </fig>
         }
         break;
     case Atom::ImageText:

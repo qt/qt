@@ -88,7 +88,7 @@ SOURCES += atom.cpp \
 
 INCLUDEPATH += $$QT_BUILD_TREE/include/QtDeclarative
 
-include($$QT_SOURCE_TREE/src/declarative/qml/parser/parser.pri)
+include(declarativeparser/parser.pri)
 
 ### Documentation for qdoc3 ###
 
