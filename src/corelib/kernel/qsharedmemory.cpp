@@ -458,11 +458,7 @@ bool QSharedMemory::detach()
         return false;
 #endif
 
-    if (d->detach()) {
-        d->size = 0;
-        return true;
-    }
-    return false;
+    return d->detach();
 }
 
 /*!

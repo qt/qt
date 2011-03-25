@@ -142,6 +142,8 @@ private:
 
 #ifndef QT_MOBILITY_BEARER
 QT_END_NAMESPACE
+Q_DECLARE_METATYPE(QNetworkSession::State)
+Q_DECLARE_METATYPE(QNetworkSession::SessionError)
 #else
 QTM_END_NAMESPACE
 #endif

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,8 +60,8 @@ QString tst_QNetworkProxyFactory::formatProxyName(const QNetworkProxy & proxy) c
     QString proxyName;
     if (!proxy.user().isNull())
         proxyName.append("%1:%2@").arg(proxy.user(), proxy.password());
-    proxyName.append("%1:%2").arg(proxy.hostName(), proxy.port());
-    proxyName.append(" (type=%1, capabilities=%2)").arg(proxy.type(), proxy.capabilities());
+    proxyName.append(QString("%1:%2").arg(proxy.hostName()).arg(proxy.port()));
+    proxyName.append(QString(" (type=%1, capabilities=%2)").arg(proxy.type()).arg(proxy.capabilities()));
 
     return proxyName;
 }

@@ -213,24 +213,6 @@ void QAuthenticator::setUser(const QString &user)
     int separatorPosn = 0;
 
     switch(d->method) {
-    case QAuthenticatorPrivate::DigestMd5:
-        if((separatorPosn = user.indexOf(QLatin1String("\\"))) != -1) {
-            //domain name is present
-	    d->userDomain.clear();
-            d->realm = user.left(separatorPosn);
-            d->user = user.mid(separatorPosn + 1);
-        } else if((separatorPosn = user.indexOf(QLatin1String("@"))) != -1) {
-            //domain name is present
-	    d->userDomain.clear();
-            d->realm = user.mid(separatorPosn + 1);
-            d->user = user.left(separatorPosn);
-        } else {
-            d->user = user;
-            d->realm.clear();
-            d->userDomain.clear();
-        }
-        break;
-
     case QAuthenticatorPrivate::Ntlm:
         if((separatorPosn = user.indexOf(QLatin1String("\\"))) != -1) {
             //domain name is present
@@ -253,6 +235,7 @@ void QAuthenticator::setUser(const QString &user)
         break;
     default:
         d->user = user;
+        d->userDomain.clear();
         break;
     }
 }

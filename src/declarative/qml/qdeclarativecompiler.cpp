@@ -589,6 +589,18 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
                     err = tr( "Element is not creatable.");
                 COMPILE_EXCEPTION(parserRef->refObjects.first(), err);
             }
+            
+            if (ref.type->containsRevisionedAttributes()) {
+                QDeclarativeError cacheError;
+                ref.typePropertyCache = 
+                    QDeclarativeEnginePrivate::get(engine)->cache(ref.type, resolvedTypes.at(ii).minorVersion, cacheError);
+
+                if (!ref.typePropertyCache) {
+                    COMPILE_EXCEPTION(parserRef->refObjects.first(), cacheError.description());
+                }
+                ref.typePropertyCache->addref();
+            }
+
         } else if (tref.typeData) {
             ref.component = tref.typeData->compiledData();
         }
@@ -596,7 +608,7 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
         out->types << ref;
     }
 
-    Object *root = unit->parser().tree();
+    QDeclarativeParser::Object *root = unit->parser().tree();
     Q_ASSERT(root);
 
     this->engine = engine;
@@ -625,7 +637,7 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
     return !isError();
 }
 
-void QDeclarativeCompiler::compileTree(Object *tree)
+void QDeclarativeCompiler::compileTree(QDeclarativeParser::Object *tree)
 {
     compileState.root = tree;
     componentStat.lineNumber = tree->location.start.line;
@@ -703,14 +715,14 @@ void QDeclarativeCompiler::compileTree(Object *tree)
         enginePrivate->registerCompositeType(output);
 }
 
-static bool ValuePtrLessThan(const Value *t1, const Value *t2) 
+static bool ValuePtrLessThan(const QDeclarativeParser::Value *t1, const QDeclarativeParser::Value *t2)
 {
     return t1->location.start.line < t2->location.start.line ||
            (t1->location.start.line == t2->location.start.line &&
             t1->location.start.column < t2->location.start.column);
 }
 
-bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
+bool QDeclarativeCompiler::buildObject(QDeclarativeParser::Object *obj, const BindingContext &ctxt)
 {
     componentStat.objects++;
 
@@ -787,7 +799,7 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
 
                 defaultProperty->values  = obj->defaultProperty->values;
                 defaultProperty->values += explicitProperty->values;
-                foreach(Value *value, defaultProperty->values)
+                foreach(QDeclarativeParser::Value *value, defaultProperty->values)
                     value->addref();
                 qSort(defaultProperty->values.begin(), defaultProperty->values.end(), ValuePtrLessThan);
 
@@ -886,8 +898,7 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
 
 void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
 {
-    const QDeclarativeCompiledData::TypeReference &tr =
-        output->types.at(obj->type);
+    QDeclarativeCompiledData::TypeReference &tr = output->types[obj->type];
     if (tr.type && obj->metatype == &QDeclarativeComponent::staticMetaObject) {
         genComponent(obj);
         return;
@@ -902,6 +913,7 @@ void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
         create.line = obj->location.start.line;
         create.createSimple.create = output->types.at(obj->type).type->createFunction();
         create.createSimple.typeSize = output->types.at(obj->type).type->createSize();
+        create.createSimple.type = obj->type;
         create.createSimple.column = obj->location.start.column;
         output->bytecode << create;
 
@@ -935,16 +947,10 @@ void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
         meta.storeMeta.data = output->indexForByteArray(obj->metadata);
         meta.storeMeta.aliasData = output->indexForByteArray(obj->synthdata);
         meta.storeMeta.propertyCache = output->propertyCaches.count();
-        // ### Surely the creation of this property cache could be more efficient
-        QDeclarativePropertyCache *propertyCache = 0;
-        if (tr.component)
-            propertyCache = tr.component->rootPropertyCache->copy();
-        else
-            propertyCache = enginePrivate->cache(obj->metaObject()->superClass())->copy();
 
-        propertyCache->append(engine, obj->metaObject(), QDeclarativePropertyCache::Data::NoFlags,
-                              QDeclarativePropertyCache::Data::IsVMEFunction, 
-                              QDeclarativePropertyCache::Data::IsVMESignal);
+        QDeclarativePropertyCache *propertyCache = obj->synthCache;
+        Q_ASSERT(propertyCache);
+        propertyCache->addref();
 
         // Add flag for alias properties
         if (!obj->synthdata.isEmpty()) {
@@ -964,11 +970,7 @@ void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
         output->propertyCaches << propertyCache;
         output->bytecode << meta;
     } else if (obj == unitRoot) {
-        if (tr.component)
-            output->rootPropertyCache = tr.component->rootPropertyCache;
-        else
-            output->rootPropertyCache = enginePrivate->cache(obj->metaObject());
-
+        output->rootPropertyCache = tr.createPropertyCache(engine);
         output->rootPropertyCache->addref();
     }
 
@@ -1103,15 +1105,7 @@ void QDeclarativeCompiler::genObjectBody(QDeclarativeParser::Object *obj)
             meta.line = 0;
             meta.storeMeta.data = output->indexForByteArray(prop->value->metadata);
             meta.storeMeta.aliasData = output->indexForByteArray(prop->value->synthdata);
-            meta.storeMeta.propertyCache = output->propertyCaches.count();
-            // ### Surely the creation of this property cache could be more efficient
-            QDeclarativePropertyCache *propertyCache =
-                enginePrivate->cache(prop->value->metaObject()->superClass())->copy();
-            propertyCache->append(engine, prop->value->metaObject(), QDeclarativePropertyCache::Data::NoFlags,
-                                  QDeclarativePropertyCache::Data::IsVMEFunction,
-                                  QDeclarativePropertyCache::Data::IsVMESignal);
-
-            output->propertyCaches << propertyCache;
+            meta.storeMeta.propertyCache = -1;
             output->bytecode << meta;
         }
 
@@ -1268,7 +1262,7 @@ bool QDeclarativeCompiler::buildComponent(QDeclarativeParser::Object *obj,
     if (!obj->dynamicSlots.isEmpty())
         COMPILE_EXCEPTION(obj, tr("Component objects cannot declare new functions."));
 
-    Object *root = 0;
+    QDeclarativeParser::Object *root = 0;
     if (obj->defaultProperty && obj->defaultProperty->values.count())
         root = obj->defaultProperty->values.first()->object;
 
@@ -1308,7 +1302,7 @@ bool QDeclarativeCompiler::buildComponentFromRoot(QDeclarativeParser::Object *ob
 // Build a sub-object.  A sub-object is one that was not created directly by
 // QML - such as a grouped property object, or an attached object.  Sub-object's
 // can't have an id, involve a custom parser, have attached properties etc.
-bool QDeclarativeCompiler::buildSubObject(Object *obj, const BindingContext &ctxt)
+bool QDeclarativeCompiler::buildSubObject(QDeclarativeParser::Object *obj, const BindingContext &ctxt)
 {
     Q_ASSERT(obj->metatype);
     Q_ASSERT(!obj->defaultProperty);
@@ -1351,9 +1345,21 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
     if(name[0] >= 'A' && name[0] <= 'Z')
         name[0] = name[0] - 'A' + 'a';
 
-    int sigIdx = QDeclarativePropertyPrivate::findSignalByName(obj->metaObject(), name).methodIndex();
+    bool notInRevision = false;
+    int sigIdx = indexOfSignal(obj, name, &notInRevision);
 
     if (sigIdx == -1) {
+
+        if (notInRevision && -1 == indexOfProperty(obj, prop->name, 0)) {
+            Q_ASSERT(obj->type != -1);
+            const QList<QDeclarativeTypeData::TypeReference>  &resolvedTypes = unit->resolvedTypes();
+            const QDeclarativeTypeData::TypeReference &type = resolvedTypes.at(obj->type);
+            if (type.type) {
+                COMPILE_EXCEPTION(prop, tr("\"%1.%2\" is not available in %3 %4.%5.").arg(QString::fromUtf8(obj->className)).arg(QString::fromUtf8(prop->name)).arg(QString::fromUtf8(type.type->module())).arg(type.majorVersion).arg(type.minorVersion));
+            } else {
+                COMPILE_EXCEPTION(prop, tr("\"%1.%2\" is not available due to component versioning.").arg(QString::fromUtf8(obj->className)).arg(QString::fromUtf8(prop->name)));
+            }
+        }
 
         // If the "on<Signal>" name doesn't resolve into a signal, try it as a
         // property.
@@ -1403,7 +1409,7 @@ bool QDeclarativeCompiler::doesPropertyExist(QDeclarativeParser::Property *prop,
             QMetaProperty p = QDeclarativeMetaType::defaultProperty(mo);
             return p.name() != 0;
         } else {
-            int idx = mo->indexOfProperty(prop->name.constData());
+            int idx = indexOfProperty(obj, prop->name);
             return idx != -1 && mo->property(idx).isScriptable();
         }
     }
@@ -1464,7 +1470,17 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
             }
 
         } else {
-            prop->index = metaObject->indexOfProperty(prop->name.constData());
+            bool notInRevision = false;
+            prop->index = indexOfProperty(obj, prop->name, &notInRevision);
+            if (prop->index == -1 && notInRevision) {
+                const QList<QDeclarativeTypeData::TypeReference>  &resolvedTypes = unit->resolvedTypes();
+                const QDeclarativeTypeData::TypeReference &type = resolvedTypes.at(obj->type);
+                if (type.type) {
+                    COMPILE_EXCEPTION(prop, tr("\"%1.%2\" is not available in %3 %4.%5.").arg(QString::fromUtf8(obj->className)).arg(QString::fromUtf8(prop->name)).arg(QString::fromUtf8(type.type->module())).arg(type.majorVersion).arg(type.minorVersion));
+                } else {
+                    COMPILE_EXCEPTION(prop, tr("\"%1.%2\" is not available due to component versioning.").arg(QString::fromUtf8(obj->className)).arg(QString::fromUtf8(prop->name)));
+                }
+            }
 
             if (prop->index != -1) {
                 p = metaObject->property(prop->index);
@@ -1479,9 +1495,8 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
 
         // We can't error here as the "id" property does not require a
         // successful index resolution
-        if (p.name()) {
+        if (p.name()) 
             prop->type = p.userType();
-        }
 
         // Check if this is an alias
         if (prop->index != -1 && 
@@ -1600,7 +1615,7 @@ void QDeclarativeCompiler::genListProperty(QDeclarativeParser::Property *prop,
     output->bytecode << fetch;
 
     for (int ii = 0; ii < prop->values.count(); ++ii) {
-        Value *v = prop->values.at(ii);
+        QDeclarativeParser::Value *v = prop->values.at(ii);
 
         if (v->type == Value::CreatedObject) {
 
@@ -1888,20 +1903,28 @@ bool QDeclarativeCompiler::buildValueTypeProperty(QObject *type,
         if (prop->values.count() > 1) {
             COMPILE_EXCEPTION(prop, tr("Single property assignment expected"));
         } else if (prop->values.count()) {
-            Value *value = prop->values.at(0);
+            QDeclarativeParser::Value *value = prop->values.at(0);
 
             if (value->object) {
                 COMPILE_EXCEPTION(prop, tr("Unexpected object assignment"));
             } else if (value->value.isScript()) {
                 // ### Check for writability
-                BindingReference reference;
-                reference.expression = value->value;
-                reference.property = prop;
-                reference.value = value;
-                reference.bindingContext = ctxt;
-                reference.bindingContext.owner++;
-                addBindingReference(reference);
-                value->type = Value::PropertyBinding;
+
+                //optimization for <Type>.<EnumValue> enum assignments
+                bool isEnumAssignment = false;
+                COMPILE_CHECK(testQualifiedEnumAssignment(p, obj, value, &isEnumAssignment));
+                if (isEnumAssignment) {
+                    value->type = Value::Literal;
+                } else {
+                    BindingReference reference;
+                    reference.expression = value->value;
+                    reference.property = prop;
+                    reference.value = value;
+                    reference.bindingContext = ctxt;
+                    reference.bindingContext.owner++;
+                    addBindingReference(reference);
+                    value->type = Value::PropertyBinding;
+                }
             } else  {
                 COMPILE_CHECK(testLiteralAssignment(p, value));
                 value->type = Value::Literal;
@@ -1909,7 +1932,7 @@ bool QDeclarativeCompiler::buildValueTypeProperty(QObject *type,
         }
 
         for (int ii = 0; ii < prop->onValues.count(); ++ii) {
-            Value *v = prop->onValues.at(ii);
+            QDeclarativeParser::Value *v = prop->onValues.at(ii);
             Q_ASSERT(v->object);
 
             COMPILE_CHECK(buildPropertyOnAssignment(prop, obj, baseObj, v, ctxt)); 
@@ -1939,7 +1962,7 @@ bool QDeclarativeCompiler::buildListProperty(QDeclarativeParser::Property *prop,
 
     bool assignedBinding = false;
     for (int ii = 0; ii < prop->values.count(); ++ii) {
-        Value *v = prop->values.at(ii);
+        QDeclarativeParser::Value *v = prop->values.at(ii);
         if (v->object) {
             v->type = Value::CreatedObject;
             COMPILE_CHECK(buildObject(v->object, ctxt));
@@ -1994,7 +2017,7 @@ bool QDeclarativeCompiler::buildPropertyAssignment(QDeclarativeParser::Property 
         COMPILE_EXCEPTION(prop->values.at(0), tr( "Cannot assign multiple values to a singular property") );
 
     for (int ii = 0; ii < prop->values.count(); ++ii) {
-        Value *v = prop->values.at(ii);
+        QDeclarativeParser::Value *v = prop->values.at(ii);
         if (v->object) {
 
             COMPILE_CHECK(buildPropertyObjectAssignment(prop, obj, v, ctxt));
@@ -2007,7 +2030,7 @@ bool QDeclarativeCompiler::buildPropertyAssignment(QDeclarativeParser::Property 
     }
 
     for (int ii = 0; ii < prop->onValues.count(); ++ii) {
-        Value *v = prop->onValues.at(ii);
+        QDeclarativeParser::Value *v = prop->onValues.at(ii);
 
         Q_ASSERT(v->object);
         COMPILE_CHECK(buildPropertyOnAssignment(prop, obj, obj, v, ctxt));
@@ -2196,7 +2219,15 @@ bool QDeclarativeCompiler::testQualifiedEnumAssignment(const QMetaProperty &prop
     QDeclarativeType *type = 0;
     unit->imports().resolveType(typeName.toUtf8(), &type, 0, 0, 0, 0);
 
-    if (!type || obj->typeName != type->qmlTypeName())
+    //handle enums on value types (where obj->typeName is empty)
+    QByteArray objTypeName = obj->typeName;
+    if (objTypeName.isEmpty()) {
+        QDeclarativeType *objType = toQmlType(obj);
+        if (objType)
+            objTypeName = objType->qmlTypeName();
+    }
+
+    if (!type || objTypeName != type->qmlTypeName())
         return true;
 
     QString enumValue = parts.at(1);
@@ -2246,6 +2277,35 @@ const QMetaObject *QDeclarativeCompiler::resolveType(const QByteArray& name) con
     return qmltype->metaObject();
 }
 
+// similar to logic of completeComponentBuild, but also sticks data
+// into datas at the end
+int QDeclarativeCompiler::rewriteBinding(const QString& expression, const QByteArray& name)
+{
+    QDeclarativeRewrite::RewriteBinding rewriteBinding;
+    rewriteBinding.setName('$' + name.mid(name.lastIndexOf('.') + 1));
+    bool isSharable = false;
+    QString rewrite = rewriteBinding(expression, 0, &isSharable);
+
+    quint32 length = rewrite.length();
+    quint32 pc;
+
+    if (isSharable) {
+        pc = output->cachedClosures.count();
+        pc |= 0x80000000;
+        output->cachedClosures.append(0);
+    } else {
+        pc = output->cachedPrograms.length();
+        output->cachedPrograms.append(0);
+    }
+
+    QByteArray compiledData =
+        QByteArray((const char *)&pc, sizeof(quint32)) +
+        QByteArray((const char *)&length, sizeof(quint32)) +
+        QByteArray((const char *)rewrite.constData(),
+                   rewrite.length() * sizeof(QChar));
+
+    return output->indexForByteArray(compiledData);
+}
 
 // Ensures that the dynamic meta specification on obj is valid
 bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
@@ -2325,7 +2385,7 @@ bool QDeclarativeCompiler::mergeDynamicMetaProperties(QDeclarativeParser::Object
             COMPILE_EXCEPTION(property, tr("Invalid property nesting"));
 
         for (int ii = 0; ii < p.defaultValue->values.count(); ++ii) {
-            Value *v = p.defaultValue->values.at(ii);
+            QDeclarativeParser::Value *v = p.defaultValue->values.at(ii);
             v->addref();
             property->values.append(v);
         }
@@ -2370,8 +2430,7 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
     for (int ii = 0; ii < obj->dynamicProperties.count(); ++ii) {
         const Object::DynamicProperty &p = obj->dynamicProperties.at(ii);
 
-        int propIdx =
-            obj->metaObject()->indexOfProperty(p.name.constData());
+        int propIdx = obj->metaObject()->indexOfProperty(p.name.constData());
         if (-1 != propIdx) {
             QMetaProperty prop = obj->metaObject()->property(propIdx);
             if (prop.isFinal())
@@ -2556,6 +2615,19 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
 
     obj->synthdata = dynamicData;
 
+    if (obj->synthCache) {
+        obj->synthCache->release();
+        obj->synthCache = 0;
+    }
+
+    if (obj->type != -1) {
+        QDeclarativePropertyCache *cache = output->types[obj->type].createPropertyCache(engine)->copy();
+        cache->append(engine, &obj->extObject, QDeclarativePropertyCache::Data::NoFlags,
+                      QDeclarativePropertyCache::Data::IsVMEFunction, 
+                      QDeclarativePropertyCache::Data::IsVMESignal);
+        obj->synthCache = cache;
+    }
+
     return true;
 }
 
@@ -2605,9 +2677,9 @@ static QStringList astNodeToStringList(QDeclarativeJS::AST::Node *node)
 }
 
 bool QDeclarativeCompiler::compileAlias(QMetaObjectBuilder &builder,
-                               QByteArray &data,
-                               Object *obj,
-                               const Object::DynamicProperty &prop)
+                                        QByteArray &data,
+                                        QDeclarativeParser::Object *obj,
+                                        const Object::DynamicProperty &prop)
 {
     if (!prop.defaultValue)
         COMPILE_EXCEPTION(obj, tr("No property alias location"));
@@ -2629,7 +2701,7 @@ bool QDeclarativeCompiler::compileAlias(QMetaObjectBuilder &builder,
     if (!compileState.ids.contains(alias.at(0)))
         COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias reference. Unable to find id \"%1\"").arg(alias.at(0)));
 
-    Object *idObject = compileState.ids[alias.at(0)];
+    QDeclarativeParser::Object *idObject = compileState.ids[alias.at(0)];
 
     QByteArray typeName;
 
@@ -2637,7 +2709,7 @@ bool QDeclarativeCompiler::compileAlias(QMetaObjectBuilder &builder,
     int flags = 0;
     bool writable = false;
     if (alias.count() == 2 || alias.count() == 3) {
-        propIdx = idObject->metaObject()->indexOfProperty(alias.at(1).toUtf8().constData());
+        propIdx = indexOfProperty(idObject, alias.at(1).toUtf8());
 
         if (-1 == propIdx) {
             COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias location"));
@@ -2812,7 +2884,7 @@ bool QDeclarativeCompiler::completeComponentBuild()
     componentStat.ids = compileState.ids.count();
 
     for (int ii = 0; ii < compileState.aliasingObjects.count(); ++ii) {
-        Object *aliasObject = compileState.aliasingObjects.at(ii);
+        QDeclarativeParser::Object *aliasObject = compileState.aliasingObjects.at(ii);
         COMPILE_CHECK(buildDynamicMeta(aliasObject, ResolveAliases));
     }
 
@@ -2849,13 +2921,10 @@ bool QDeclarativeCompiler::completeComponentBuild()
         // Pre-rewrite the expression
         QString expression = binding.expression.asScript();
 
-        // ### Optimize
-        QDeclarativeRewrite::SharedBindingTester sharableTest;
-        bool isSharable = sharableTest.isSharable(expression);
-        
         QDeclarativeRewrite::RewriteBinding rewriteBinding;
         rewriteBinding.setName('$'+binding.property->name);
-        expression = rewriteBinding(expression);
+        bool isSharable = false;
+        expression = rewriteBinding(binding.expression.asAST(), expression, &isSharable);
 
         quint32 length = expression.length();
         quint32 pc; 
@@ -2979,6 +3048,76 @@ QStringList QDeclarativeCompiler::deferredProperties(QDeclarativeParser::Object 
     QMetaClassInfo classInfo = mo->classInfo(idx);
     QStringList rv = QString::fromUtf8(classInfo.value()).split(QLatin1Char(','));
     return rv;
+}
+
+// This code must match the semantics of QDeclarativePropertyPrivate::findSignalByName
+int QDeclarativeCompiler::indexOfSignal(QDeclarativeParser::Object *object, const QByteArray &name, 
+                                        bool *notInRevision)
+{
+    if (notInRevision) *notInRevision = false;
+
+    if (object->synthCache || (object->type != -1 && output->types.at(object->type).propertyCache())) {
+        // XXX fromUtf8
+        QString strName(QString::fromUtf8(name));
+        QDeclarativePropertyCache *cache = 
+            object->synthCache?object->synthCache:output->types.at(object->type).propertyCache();
+
+        QDeclarativePropertyCache::Data *d = cache->property(strName);
+        if (notInRevision) *notInRevision = false;
+
+        while (d && !(d->flags & QDeclarativePropertyCache::Data::IsFunction))
+            d = cache->overrideData(d);
+
+        if (d && !cache->isAllowedInRevision(d)) {
+            if (notInRevision) *notInRevision = true;
+            return -1;
+        } else if (d) {
+            return d->coreIndex;
+        }
+
+        if (name.endsWith("Changed")) {
+            QByteArray propName = name.mid(0, name.length() - 7);
+
+            int propIndex = indexOfProperty(object, propName, notInRevision);
+            if (propIndex != -1) {
+                d = cache->property(propIndex);
+                return d->notifyIndex;
+            }
+        }
+
+        return -1;
+    } else {
+        return QDeclarativePropertyPrivate::findSignalByName(object->metaObject(), name).methodIndex();
+    }
+
+}
+
+int QDeclarativeCompiler::indexOfProperty(QDeclarativeParser::Object *object, const QByteArray &name, 
+                                          bool *notInRevision)
+{
+    if (notInRevision) *notInRevision = false;
+
+    if (object->synthCache || (object->type != -1 && output->types.at(object->type).propertyCache())) {
+        // XXX fromUtf8
+        QString strName(QString::fromUtf8(name));
+        QDeclarativePropertyCache *cache = 
+            object->synthCache?object->synthCache:output->types.at(object->type).propertyCache();
+
+        QDeclarativePropertyCache::Data *d = cache->property(strName);
+        // Find the first property
+        while (d && d->flags & QDeclarativePropertyCache::Data::IsFunction) 
+            d = cache->overrideData(d);
+
+        if (d && !cache->isAllowedInRevision(d)) {
+            if (notInRevision) *notInRevision = true;
+            return -1;
+        } else {
+            return d?d->coreIndex:-1;
+        }
+    } else {
+        const QMetaObject *mo = object->metaObject();
+        return mo->indexOfProperty(name.constData());
+    }
 }
 
 QT_END_NAMESPACE

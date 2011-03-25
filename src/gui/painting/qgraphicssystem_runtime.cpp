@@ -285,6 +285,7 @@ void QRuntimeWindowSurface::flush(QWidget *widget, const QRegion &region,
 
 void QRuntimeWindowSurface::setGeometry(const QRect &rect)
 {
+    QWindowSurface::setGeometry(rect);
     m_windowSurface->setGeometry(rect);
 }
 
@@ -316,6 +317,16 @@ QPixmap QRuntimeWindowSurface::grabWidget(const QWidget *widget, const QRect& re
 QPoint QRuntimeWindowSurface::offset(const QWidget *widget) const
 {
     return m_windowSurface->offset(widget);
+}
+
+bool QRuntimeWindowSurface::hasStaticContentsSupport() const
+{
+    return m_windowSurface->hasStaticContentsSupport();
+}
+
+bool QRuntimeWindowSurface::hasPartialUpdateSupport() const
+{
+    return m_windowSurface->hasPartialUpdateSupport();
 }
 
 QRuntimeGraphicsSystem::QRuntimeGraphicsSystem()
@@ -393,7 +404,10 @@ void QRuntimeGraphicsSystem::setGraphicsSystem(const QString &name)
         if(m_windowSurfaceDestroyPolicy == DestroyAfterFirstFlush)
             proxy->m_pendingWindowSurface.reset(proxy->m_windowSurface.take());
 
-        proxy->m_windowSurface.reset(m_graphicsSystem->createWindowSurface(widget));
+        QWindowSurface *newWindowSurface = m_graphicsSystem->createWindowSurface(widget);
+        newWindowSurface->setGeometry(proxy->geometry());
+
+        proxy->m_windowSurface.reset(newWindowSurface);
         qt_widget_private(widget)->invalidateBuffer(widget->rect());
     }
 

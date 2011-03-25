@@ -143,11 +143,6 @@ CONFIG -= qt
 
 ### installations ####
 
-#translations
-translations.path=$$[QT_INSTALL_TRANSLATIONS]
-translations.files = $$QT_SOURCE_TREE/translations/*.qm
-INSTALLS += translations
-
 #qmake
 qmake.path=$$[QT_INSTALL_BINS]
 win32 {

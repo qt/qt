@@ -2510,6 +2510,7 @@ static inline void getLineHeightParams(const QTextBlockFormat &blockFormat, cons
                                        QFixed *lineAdjustment, QFixed *lineBreakHeight, QFixed *lineHeight)
 {
     *lineHeight = QFixed::fromReal(blockFormat.lineHeight(line.height(), scaling));
+
     if (blockFormat.lineHeightType() == QTextBlockFormat::FixedHeight || blockFormat.lineHeightType() == QTextBlockFormat::MinimumHeight) {
         *lineBreakHeight = *lineHeight;
         if (blockFormat.lineHeightType() == QTextBlockFormat::FixedHeight)
@@ -3159,7 +3160,7 @@ QRectF QTextDocumentLayoutPrivate::frameBoundingRectInternal(QTextFrame *frame) 
 QRectF QTextDocumentLayout::blockBoundingRect(const QTextBlock &block) const
 {
     Q_D(const QTextDocumentLayout);
-    if (d->docPrivate->pageSize.isNull())
+    if (d->docPrivate->pageSize.isNull() || !block.isValid())
         return QRectF();
     d->ensureLayoutedByPosition(block.position() + block.length());
     QTextFrame *frame = d->document->frameAt(block.position());

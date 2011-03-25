@@ -37,6 +37,7 @@
 
     \ingroup frameworks-technologies
     \ingroup qt-basic-concepts
+	\ingroup best-practices
 	
     \nextpage Rich Text Document Structure
 

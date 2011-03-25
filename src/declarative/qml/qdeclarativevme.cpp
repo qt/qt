@@ -127,6 +127,22 @@ void QDeclarativeVME::runDeferred(QObject *object)
     run(stack, ctxt, comp, start, count, QBitField());
 }
 
+inline bool fastHasBinding(QObject *o, int index) 
+{
+    QDeclarativeData *ddata = static_cast<QDeclarativeData *>(QObjectPrivate::get(o)->declarativeData);
+
+    return ddata && (ddata->bindingBitsSize > index) && 
+           (ddata->bindingBits[index / 32] & (1 << (index % 32)));
+}
+
+static void removeBindingOnProperty(QObject *o, int index)
+{
+    QDeclarativeAbstractBinding *binding = QDeclarativePropertyPrivate::setBinding(o, index, -1, 0);
+    if (binding) binding->destroy();
+}
+
+#define CLEAN_PROPERTY(o, index) if (fastHasBinding(o, index)) removeBindingOnProperty(o, index)
+
 QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, 
                               QDeclarativeContextData *ctxt, 
                               QDeclarativeCompiledData *comp, 
@@ -247,8 +263,12 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
                 ::memset(o, 0, instr.createSimple.typeSize + sizeof(QDeclarativeData));
                 instr.createSimple.create(o);
 
-                QDeclarativeData *ddata = 
-                    (QDeclarativeData *)(((const char *)o) + instr.createSimple.typeSize);
+                QDeclarativeData *ddata = (QDeclarativeData *)(((const char *)o) + instr.createSimple.typeSize);
+                const QDeclarativeCompiledData::TypeReference &ref = types.at(instr.createSimple.type);
+                if (!ddata->propertyCache && ref.typePropertyCache) {
+                    ddata->propertyCache = ref.typePropertyCache;
+                    ddata->propertyCache->addref();
+                }
                 ddata->lineNumber = instr.line;
                 ddata->columnNumber = instr.createSimple.column;
 
@@ -320,16 +340,20 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
 
                 (void)new QDeclarativeVMEMetaObject(target, &mo, data, comp);
 
-                QDeclarativeData *ddata = QDeclarativeData::get(target, true);
-                if (ddata->propertyCache) ddata->propertyCache->release();
-                ddata->propertyCache = propertyCaches.at(instr.storeMeta.propertyCache);
-                ddata->propertyCache->addref();
+                if (instr.storeMeta.propertyCache != -1) {
+                    QDeclarativeData *ddata = QDeclarativeData::get(target, true);
+                    if (ddata->propertyCache) ddata->propertyCache->release();
+                    ddata->propertyCache = propertyCaches.at(instr.storeMeta.propertyCache);
+                    ddata->propertyCache->addref();
+                }
             }
             break;
 
         case QDeclarativeInstruction::StoreVariant:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeString.propertyIndex);
+
                 // XXX - can be more efficient
                 QVariant v = QDeclarativeStringConverters::variantFromString(primitives.at(instr.storeString.value));
                 void *a[] = { &v, 0, &status, &flags };
@@ -341,6 +365,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreVariantInteger:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeString.propertyIndex);
+
                 QVariant v(instr.storeInteger.value);
                 void *a[] = { &v, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
@@ -351,6 +377,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreVariantDouble:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeString.propertyIndex);
+
                 QVariant v(instr.storeDouble.value);
                 void *a[] = { &v, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
@@ -361,6 +389,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreVariantBool:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeString.propertyIndex);
+
                 QVariant v(instr.storeBool.value);
                 void *a[] = { &v, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
@@ -371,6 +401,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreString:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeString.propertyIndex);
+
                 void *a[] = { (void *)&primitives.at(instr.storeString.value), 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeString.propertyIndex, a);
@@ -380,6 +412,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreUrl:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeUrl.propertyIndex);
+
                 void *a[] = { (void *)&urls.at(instr.storeUrl.value), 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeUrl.propertyIndex, a);
@@ -389,6 +423,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreFloat:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeFloat.propertyIndex);
+
                 float f = instr.storeFloat.value;
                 void *a[] = { &f, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty,
@@ -399,6 +435,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreDouble:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeDouble.propertyIndex);
+
                 double d = instr.storeDouble.value;
                 void *a[] = { &d, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty,
@@ -409,6 +447,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreBool:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeBool.propertyIndex);
+
                 void *a[] = { (void *)&instr.storeBool.value, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeBool.propertyIndex, a);
@@ -418,6 +458,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreInteger:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeInteger.propertyIndex);
+
                 void *a[] = { (void *)&instr.storeInteger.value, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeInteger.propertyIndex, a);
@@ -427,6 +469,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreColor:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeColor.propertyIndex);
+
                 QColor c = QColor::fromRgba(instr.storeColor.value);
                 void *a[] = { &c, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
@@ -437,6 +481,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreDate:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeDate.propertyIndex);
+
                 QDate d = QDate::fromJulianDay(instr.storeDate.value);
                 void *a[] = { &d, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
@@ -447,6 +493,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreTime:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeTime.propertyIndex);
+
                 QTime t;
                 t.setHMS(intData.at(instr.storeTime.valueIndex),
                          intData.at(instr.storeTime.valueIndex+1),
@@ -461,6 +509,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreDateTime:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeDateTime.propertyIndex);
+
                 QTime t;
                 t.setHMS(intData.at(instr.storeDateTime.valueIndex+1),
                          intData.at(instr.storeDateTime.valueIndex+2),
@@ -476,6 +526,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StorePoint:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeRealPair.propertyIndex);
+
                 QPoint p = QPointF(floatData.at(instr.storeRealPair.valueIndex),
                                    floatData.at(instr.storeRealPair.valueIndex+1)).toPoint();
                 void *a[] = { &p, 0, &status, &flags };
@@ -487,6 +539,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StorePointF:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeRealPair.propertyIndex);
+
                 QPointF p(floatData.at(instr.storeRealPair.valueIndex),
                           floatData.at(instr.storeRealPair.valueIndex+1));
                 void *a[] = { &p, 0, &status, &flags };
@@ -498,6 +552,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreSize:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeRealPair.propertyIndex);
+
                 QSize p = QSizeF(floatData.at(instr.storeRealPair.valueIndex),
                                  floatData.at(instr.storeRealPair.valueIndex+1)).toSize();
                 void *a[] = { &p, 0, &status, &flags };
@@ -509,6 +565,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreSizeF:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeRealPair.propertyIndex);
+
                 QSizeF s(floatData.at(instr.storeRealPair.valueIndex),
                          floatData.at(instr.storeRealPair.valueIndex+1));
                 void *a[] = { &s, 0, &status, &flags };
@@ -520,6 +578,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreRect:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeRect.propertyIndex);
+
                 QRect r = QRectF(floatData.at(instr.storeRect.valueIndex),
                                  floatData.at(instr.storeRect.valueIndex+1),
                                  floatData.at(instr.storeRect.valueIndex+2),
@@ -533,6 +593,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreRectF:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeRect.propertyIndex);
+
                 QRectF r(floatData.at(instr.storeRect.valueIndex),
                          floatData.at(instr.storeRect.valueIndex+1),
                          floatData.at(instr.storeRect.valueIndex+2),
@@ -546,6 +608,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreVector3D:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeVector3D.propertyIndex);
+
                 QVector3D p(floatData.at(instr.storeVector3D.valueIndex),
                             floatData.at(instr.storeVector3D.valueIndex+1),
                             floatData.at(instr.storeVector3D.valueIndex+2));
@@ -559,6 +623,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
             {
                 QObject *assignObj = stack.pop();
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeObject.propertyIndex);
 
                 void *a[] = { (void *)&assignObj, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
@@ -570,6 +635,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::AssignCustomType:
             {
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.assignCustomType.propertyIndex);
+
                 QDeclarativeCompiledData::CustomTypeData data = customTypeData.at(instr.assignCustomType.valueIndex);
                 const QString &primitive = primitives.at(data.index);
                 QDeclarativeMetaType::StringConverter converter = 
@@ -774,6 +841,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
             {
                 QObject *assign = stack.pop();
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeObject.propertyIndex);
 
                 QVariant v = QVariant::fromValue(assign);
                 void *a[] = { &v, 0, &status, &flags };
@@ -786,6 +854,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
             {
                 QObject *assign = stack.pop();
                 QObject *target = stack.top();
+                CLEAN_PROPERTY(target, instr.storeObject.propertyIndex);
 
                 int coreIdx = instr.storeObject.propertyIndex;
                 QMetaProperty prop = target->metaObject()->property(coreIdx);
@@ -932,7 +1001,6 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
 
         QDeclarativeEnginePrivate::clear(bindValues);
         QDeclarativeEnginePrivate::clear(parserStatus);
-        ep->finalizedParserStatus.clear();
         return 0;
     }
 
@@ -973,6 +1041,11 @@ QDeclarativeCompiledData::TypeReference::createInstance(QDeclarativeContextData 
         QDeclarativeData *ddata = new (memory) QDeclarativeData;
         ddata->ownMemory = false;
         QObjectPrivate::get(rv)->declarativeData = ddata;
+
+        if (typePropertyCache && !ddata->propertyCache) {
+            ddata->propertyCache = typePropertyCache;
+            ddata->propertyCache->addref();
+        }
 
         return rv;
     } else {

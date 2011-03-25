@@ -51,6 +51,7 @@
 #endif
 
 #include "private/qwidget_p.h"
+#include "private/qevent_p.h"
 
 #include "qgenericpluginfactory_qpa.h"
 #include "qplatformintegrationfactory_qpa_p.h"
@@ -79,7 +80,6 @@ int qt_last_x = 0;
 int qt_last_y = 0;
 QPointer<QWidget> qt_last_mouse_receiver = 0;
 
-static Qt::KeyboardModifiers modifiers = Qt::NoModifier;
 static Qt::MouseButtons buttons = Qt::NoButton;
 static ulong mousePressTime;
 static Qt::MouseButton mousePressButton = Qt::NoButton;
@@ -110,6 +110,9 @@ void QApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePrivate
         break;
     case QWindowSystemInterfacePrivate::Leave:
         QApplicationPrivate::processLeaveEvent(static_cast<QWindowSystemInterfacePrivate::LeaveEvent *>(e));
+        break;
+    case QWindowSystemInterfacePrivate::ActivatedWindow:
+        QApplicationPrivate::processActivatedEvent(static_cast<QWindowSystemInterfacePrivate::ActivatedWindowEvent *>(e));
         break;
     case QWindowSystemInterfacePrivate::Close:
         QApplicationPrivate::processCloseEvent(
@@ -441,11 +444,11 @@ void QApplication::alert(QWidget *, int)
 {
 }
 
-static void init_platform(const QString &name)
+static void init_platform(const QString &name, const QString &platformPluginPath)
 {
-    QApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name);
+    QApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name, platformPluginPath);
     if (!QApplicationPrivate::platform_integration) {
-        QStringList keys = QPlatformIntegrationFactory::keys();
+        QStringList keys = QPlatformIntegrationFactory::keys(platformPluginPath);
         QString fatalMessage =
             QString::fromLatin1("Failed to load platform plugin \"%1\". Available platforms are: \n").arg(name);
         foreach(QString key, keys) {
@@ -510,6 +513,7 @@ void qt_init(QApplicationPrivate *priv, int type)
     }
 
     QList<QByteArray> pluginList;
+    QString platformPluginPath = QLatin1String(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
     QString platformName = QLatin1String(qgetenv("QT_QPA_PLATFORM"));
 
     // Get command line params
@@ -524,6 +528,9 @@ void qt_init(QApplicationPrivate *priv, int type)
         if (arg == "-fn" || arg == "-font") {
             if (++i < argc)
                 appFont = QString::fromLocal8Bit(argv[i]);
+        } else if (arg == "-platformpluginpath") {
+            if (++i < argc)
+                platformPluginPath = QLatin1String(argv[i]);
         } else if (arg == "-platform") {
             if (++i < argc)
                 platformName = QLatin1String(argv[i]);
@@ -547,7 +554,7 @@ void qt_init(QApplicationPrivate *priv, int type)
     }
 #endif
 
-    init_platform(platformName);
+    init_platform(platformName, platformPluginPath);
     init_plugins(pluginList);
 
     QColormap::initialize();
@@ -724,7 +731,7 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
 
     // qDebug() << "sending mouse ev." << ev.type() << localPoint << globalPoint << ev.button() << ev.buttons() << mouseWidget << "mouse grabber" << implicit_mouse_grabber;
 
-    QMouseEvent ev(type, localPoint, globalPoint, button, buttons, modifiers);
+    QMouseEvent ev(type, localPoint, globalPoint, button, buttons, QApplication::keyboardModifiers());
 
     QList<QWeakPointer<QPlatformCursor> > cursors = QPlatformCursorPrivate::getInstances();
     foreach (QWeakPointer<QPlatformCursor> cursor, cursors) {
@@ -732,7 +739,15 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
             cursor.data()->pointerEvent(ev);
     }
 
+    int oldOpenPopupCount = openPopupCount;
     QApplication::sendSpontaneousEvent(mouseWidget, &ev);
+
+#ifndef QT_NO_CONTEXTMENU
+    if (type == QEvent::MouseButtonPress && button == Qt::RightButton && (openPopupCount == oldOpenPopupCount)) {
+        QContextMenuEvent e(QContextMenuEvent::Mouse, localPoint, globalPoint, QApplication::keyboardModifiers());
+        QApplication::sendSpontaneousEvent(mouseWidget, &e);
+    }
+#endif // QT_NO_CONTEXTMENU
 }
 
 
@@ -771,7 +786,7 @@ void QApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wheel
          p = mouseWidget->mapFromGlobal(globalPoint);
      }
 
-     QWheelEvent ev(p, globalPoint, e->delta, buttons, modifiers,
+     QWheelEvent ev(p, globalPoint, e->delta, buttons, QApplication::keyboardModifiers(),
                    e->orient);
      QApplication::sendSpontaneousEvent(mouseWidget, &ev);
 }
@@ -802,9 +817,14 @@ void QApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyEven
     if (app_do_modal && !qt_try_modal(focusW, e->keyType))
         return;
 
-    modifiers = e->modifiers;
-    QKeyEvent ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount);
-    QApplication::sendSpontaneousEvent(focusW, &ev);
+    if (e->nativeScanCode || e->nativeVirtualKey || e->nativeModifiers) {
+        QKeyEventEx ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount,
+                       e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers);
+        QApplication::sendSpontaneousEvent(focusW, &ev);
+    } else {
+        QKeyEvent ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount);
+        QApplication::sendSpontaneousEvent(focusW, &ev);
+    }
 }
 
 void QApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *e)
@@ -823,6 +843,10 @@ void QApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Leave
 
 }
 
+void QApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e)
+{
+    QApplication::setActiveWindow(e->activated.data());
+}
 
 void QApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePrivate::GeometryChangeEvent *e)
 {

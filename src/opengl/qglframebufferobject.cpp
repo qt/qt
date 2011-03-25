@@ -712,7 +712,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     as a texture, you first need to copy from it to a regular framebuffer
     object using QGLContext::blitFramebuffer().
 
-    \section Threading
+    \section1 Threading
 
     As of Qt 4.8, it's possible to draw into a QGLFramebufferObject
     using a QPainter in a separate thread. Note that OpenGL 2.0 or
@@ -1216,8 +1216,8 @@ void QGLFramebufferObject::drawTexture(const QPointF &point, QMacCompatGLuint te
 }
 #endif
 
-Q_DECL_IMPORT extern int qt_defaultDpiX();
-Q_DECL_IMPORT extern int qt_defaultDpiY();
+Q_GUI_EXPORT int qt_defaultDpiX();
+Q_GUI_EXPORT int qt_defaultDpiY();
 
 /*! \reimp */
 int QGLFramebufferObject::metric(PaintDeviceMetric metric) const

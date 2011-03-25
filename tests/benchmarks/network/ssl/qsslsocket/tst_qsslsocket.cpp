@@ -46,7 +46,7 @@
 #include <qsslsocket.h>
 
 
-// #include "../../../../auto/network-settings.h"
+#include "../../../../auto/network-settings.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -65,6 +65,7 @@ public slots:
     void init();
     void cleanup();
 private slots:
+    void rootCertLoading();
     void systemCaCertificates();
 };
 
@@ -89,6 +90,16 @@ void tst_QSslSocket::cleanup()
 }
 
 //----------------------------------------------------------------------------------
+
+void tst_QSslSocket::rootCertLoading()
+{
+    QBENCHMARK_ONCE {
+        QSslSocket socket;
+        socket.connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+        socket.waitForEncrypted();
+    }
+}
+
 void tst_QSslSocket::systemCaCertificates()
 {
   // The results of this test change if the benchmarking system changes too much.

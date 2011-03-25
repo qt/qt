@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -206,7 +206,7 @@ bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes)
     return false;
 }
 
-EGLConfig q_configFromQPlatformWindowFormat(EGLDisplay display, const QPlatformWindowFormat &format)
+EGLConfig q_configFromQPlatformWindowFormat(EGLDisplay display, const QPlatformWindowFormat &format, bool highestPixelFormat)
 {
     EGLConfig cfg = 0;
     QVector<EGLint> configureAttributes = q_createConfigAttributesFromFormat(format);
@@ -227,14 +227,14 @@ EGLConfig q_configFromQPlatformWindowFormat(EGLDisplay display, const QPlatformW
         if (!eglChooseConfig(display, configureAttributes.constData(), 0, 0, &matching) || !matching)
             continue;
 
-//        // If we want the best pixel format, then return the first
-//        // matching configuration.
-//        if (match == QEgl::BestPixelFormat) {
-//            eglChooseConfig(display, props.properties(), &cfg, 1, &matching);
-//            if (matching < 1)
-//                continue;
-//            return cfg;
-//        }
+        // If we want the best pixel format, then return the first
+        // matching configuration.
+        if (highestPixelFormat) {
+            eglChooseConfig(display, configureAttributes.constData(), &cfg, 1, &matching);
+            if (matching < 1)
+                continue;
+            return cfg;
+        }
 
         // Fetch all of the matching configurations and find the
         // first that matches the pixel format we wanted.
@@ -311,6 +311,14 @@ QPlatformWindowFormat qt_qPlatformWindowFormatFromConfig(EGLDisplay display, con
     eglGetError();
 
     return format;
+}
+
+bool q_hasEglExtension(EGLDisplay display, const char* extensionName)
+{
+    QList<QByteArray> extensions =
+        QByteArray(reinterpret_cast<const char *>
+            (eglQueryString(display, EGL_EXTENSIONS))).split(' ');
+    return extensions.contains(extensionName);
 }
 
 QT_END_NAMESPACE

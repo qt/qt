@@ -51,10 +51,10 @@
 namespace Maemo {
 
 /*!
-    \class DBusDispatcher
+    \class Maemo::DBusDispatcher
 
-    \brief DBusDispatcher is a class, which is able to send DBUS method call
-    messages and receive unicast signals from DBUS object.
+    \brief DBusDispatcher is a class that can send DBUS method call
+    messages and receive unicast signals from DBUS objects.
 */
 
 class DBusDispatcherPrivate
@@ -194,18 +194,21 @@ static bool appendVariantToDBusMessage(const QVariant& argument,
                                            &int32_data);
             break;
 
-        case QVariant::String:
-            str_data = argument.toString().toLatin1().data();
+        case QVariant::String: {
+            QByteArray data = argument.toString().toLatin1();
+            str_data = data.data();
             dbus_message_iter_append_basic(dbus_iter, DBUS_TYPE_STRING,
                                            &str_data);
             break;
+        }
 
         case QVariant::StringList:
             str_list = argument.toStringList();
             dbus_message_iter_open_container(dbus_iter, DBUS_TYPE_ARRAY,
                                              "s", &array_iter);
             for (idx = 0; idx < str_list.size(); idx++) {
-                str_data = str_list.at(idx).toLatin1().data();
+                QByteArray data = str_list.at(idx).toLatin1();
+                str_data = data.data();
                 dbus_message_iter_append_basic(&array_iter,
                                                DBUS_TYPE_STRING,
                                                &str_data);
@@ -468,7 +471,7 @@ void DBusDispatcher::setupDBus()
         d_ptr->signal_vtable.message_function = signalHandler;
 
 	dbus_connection_set_exit_on_disconnect(d_ptr->connection, FALSE);
-        dbus_connection_setup_with_g_main(d_ptr->connection, NULL);
+        dbus_connection_setup_with_g_main(d_ptr->connection, g_main_context_get_thread_default());
         dbus_connection_register_object_path(d_ptr->connection, 
                                              d_ptr->signalPath.toLatin1(),
                                              &d_ptr->signal_vtable,

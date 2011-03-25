@@ -77,7 +77,7 @@ extern Q_GUI_EXPORT bool qt_applefontsmoothing_enabled;
 class QDeclarativeScene : public QGraphicsScene
 {
 public:
-    QDeclarativeScene();
+    QDeclarativeScene(QObject *parent = 0);
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);
@@ -88,7 +88,7 @@ protected:
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *);
 };
 
-QDeclarativeScene::QDeclarativeScene()
+QDeclarativeScene::QDeclarativeScene(QObject *parent) : QGraphicsScene(parent)
 {
 }
 
@@ -132,7 +132,8 @@ class QDeclarativeViewPrivate : public QGraphicsViewPrivate, public QDeclarative
     Q_DECLARE_PUBLIC(QDeclarativeView)
 public:
     QDeclarativeViewPrivate()
-        : root(0), declarativeItemRoot(0), graphicsWidgetRoot(0), component(0), resizeMode(QDeclarativeView::SizeViewToRootObject), initialSize(0,0) {}
+        : root(0), declarativeItemRoot(0), graphicsWidgetRoot(0), component(0),
+          resizeMode(QDeclarativeView::SizeViewToRootObject), initialSize(0,0) {}
     ~QDeclarativeViewPrivate() { delete root; delete engine; }
     void execute();
     void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry);
@@ -155,8 +156,6 @@ public:
     QElapsedTimer frameTimer;
 
     void init();
-
-    QDeclarativeScene scene;
 };
 
 void QDeclarativeViewPrivate::execute()
@@ -234,6 +233,9 @@ void QDeclarativeViewPrivate::itemGeometryChanged(QDeclarativeItem *resizeItem, 
     you can connect to the statusChanged() signal and monitor for QDeclarativeView::Error.
     The errors are available via QDeclarativeView::errors().
 
+    If you're using your own QGraphicsScene-based scene with QDeclarativeView, remember to
+    enable scene's sticky focus mode and to set itemIndexMethod to QGraphicsScene::NoIndex.
+
     \sa {Integrating QML with existing Qt UI code}, {Using QML in C++ Applications}
 */
 
@@ -277,7 +279,7 @@ void QDeclarativeViewPrivate::init()
 {
     Q_Q(QDeclarativeView);
     engine = new QDeclarativeEngine();
-    q->setScene(&scene);
+    q->setScene(new QDeclarativeScene(q));
 
     q->setOptimizationFlags(QGraphicsView::DontSavePainterState);
     q->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -286,11 +288,18 @@ void QDeclarativeViewPrivate::init()
 
     // These seem to give the best performance
     q->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    scene.setItemIndexMethod(QGraphicsScene::NoIndex);
+    q->scene()->setItemIndexMethod(QGraphicsScene::NoIndex);
     q->viewport()->setFocusPolicy(Qt::NoFocus);
     q->setFocusPolicy(Qt::StrongFocus);
 
-    scene.setStickyFocus(true);  //### needed for correct focus handling
+    q->scene()->setStickyFocus(true);  //### needed for correct focus handling
+
+#ifdef QDECLARATIVEVIEW_NOBACKGROUND
+    q->setAttribute(Qt::WA_OpaquePaintEvent);
+    q->setAttribute(Qt::WA_NoSystemBackground);
+    q->viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
+    q->viewport()->setAttribute(Qt::WA_NoSystemBackground);
+#endif
 }
 
 /*!
@@ -557,14 +566,14 @@ void QDeclarativeView::continueExecute()
 void QDeclarativeView::setRootObject(QObject *obj)
 {
     Q_D(QDeclarativeView);
-    if (d->root == obj)
+    if (d->root == obj || !scene())
         return;
     if (QDeclarativeItem *declarativeItem = qobject_cast<QDeclarativeItem *>(obj)) {
-        d->scene.addItem(declarativeItem);
+        scene()->addItem(declarativeItem);
         d->root = declarativeItem;
         d->declarativeItemRoot = declarativeItem;
     } else if (QGraphicsObject *graphicsObject = qobject_cast<QGraphicsObject *>(obj)) {
-        d->scene.addItem(graphicsObject);
+        scene()->addItem(graphicsObject);
         d->root = graphicsObject;
         if (graphicsObject->isWidget()) {
             d->graphicsWidgetRoot = static_cast<QGraphicsWidget*>(graphicsObject);

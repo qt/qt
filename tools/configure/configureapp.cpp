@@ -281,6 +281,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "DECLARATIVE" ]     = "auto";
     dictionary[ "DECLARATIVE_DEBUG" ]= "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
+    dictionary[ "DIRECTWRITE" ]     = "no";
 
     QString version;
     QFile qglobal_h(sourcePath + "/src/corelib/global/qglobal.h");
@@ -437,6 +438,7 @@ void Configure::parseCmdLine()
 {
     int argCount = configCmdLine.size();
     int i = 0;
+    const QStringList imageFormats = QStringList() << "gif" << "png" << "mng" << "jpeg" << "tiff";
 
 #if !defined(EVAL)
     if (argCount < 1) // skip rest if no arguments
@@ -829,6 +831,17 @@ void Configure::parseCmdLine()
             dictionary[ "SQL_IBASE" ] = "plugin";
         else if (configCmdLine.at(i) == "-no-sql-ibase")
             dictionary[ "SQL_IBASE" ] = "no";
+
+        // Image formats --------------------------------------------
+        else if (configCmdLine.at(i).startsWith("-qt-imageformat-") &&
+                 imageFormats.contains(configCmdLine.at(i).section('-', 3)))
+            dictionary[ configCmdLine.at(i).section('-', 3).toUpper() ] = "yes";
+        else if (configCmdLine.at(i).startsWith("-plugin-imageformat-") &&
+                 imageFormats.contains(configCmdLine.at(i).section('-', 3)))
+            dictionary[ configCmdLine.at(i).section('-', 3).toUpper() ] = "plugin";
+        else if (configCmdLine.at(i).startsWith("-no-imageformat-") &&
+                 imageFormats.contains(configCmdLine.at(i).section('-', 3)))
+            dictionary[ configCmdLine.at(i).section('-', 3).toUpper() ] = "no";
 #endif
         // IDE project generation -----------------------------------
         else if (configCmdLine.at(i) == "-no-dsp")
@@ -1029,6 +1042,8 @@ void Configure::parseCmdLine()
                     QString("\\resource\\qt%1\\plugins").arg(dictionary[ "QT_LIBINFIX" ]);
                 dictionary[ "QT_INSTALL_IMPORTS" ] =
                     QString("\\resource\\qt%1\\imports").arg(dictionary[ "QT_LIBINFIX" ]);
+                dictionary[ "QT_INSTALL_TRANSLATIONS" ] =
+                    QString("\\resource\\qt%1\\translations").arg(dictionary[ "QT_LIBINFIX" ]);
             }
         } else if (configCmdLine.at(i) == "-D") {
             ++i;
@@ -1213,6 +1228,12 @@ void Configure::parseCmdLine()
                     break;
                 }
             }
+        }
+
+        else if (configCmdLine.at(i) == "-directwrite") {
+            dictionary["DIRECTWRITE"] = "yes";
+        } else if (configCmdLine.at(i) == "-no-directwrite") {
+            dictionary["DIRECTWRITE"] = "no";
         }
 
         else {
@@ -1670,7 +1691,9 @@ bool Configure::displayHelp()
                     "[-phonon] [-no-phonon-backend] [-phonon-backend]\n"
                     "[-no-multimedia] [-multimedia] [-no-audio-backend] [-audio-backend]\n"
                     "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
-                    "[-no-webkit] [-webkit] [-webkit-debug] [-graphicssystem raster|opengl|openvg]\n\n", 0, 7);
+                    "[-no-webkit] [-webkit] [-webkit-debug]\n"
+                    "[-graphicssystem raster|opengl|openvg]\n"
+                    "[-no-directwrite] [-directwrite]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
 
@@ -1867,6 +1890,8 @@ bool Configure::displayHelp()
         desc("DECLARATIVE", "yes",   "-declarative",    "Build the declarative module");
         desc("DECLARATIVE_DEBUG", "no",    "-no-declarative-debug", "Do not build the declarative debugging support");
         desc("DECLARATIVE_DEBUG", "yes",   "-declarative-debug",    "Build the declarative debugging support");
+        desc("DIRECTWRITE", "no", "-no-directwrite", "Do not build support for DirectWrite font rendering");
+        desc("DIRECTWRITE", "yes", "-directwrite", "Build support for DirectWrite font rendering (experimental, requires DirectWrite availability on target systems, e.g. Windows Vista with Platform Update, Windows 7, etc.)");
 
         desc(                   "-arch <arch>",         "Specify an architecture.\n"
                                                         "Available values for <arch>:");
@@ -2230,6 +2255,8 @@ bool Configure::checkAvailability(const QString &part)
                 available = false;
             }
         }
+    } else if (part == "DIRECTWRITE") {
+        available = findFile("dwrite.h") && findFile("d2d1.h") && findFile("dwrite.lib");
     }
 
     return available;
@@ -2383,6 +2410,15 @@ bool Configure::verifyConfiguration()
             exit(0);      // Exit cleanly for Ctrl+C
 
         dictionary["SCRIPT"] = "yes";
+    }
+
+    if (dictionary["DIRECTWRITE"] == "yes" && !checkAvailability("DIRECTWRITE")) {
+        cout << "WARNING: To be able to compile the DirectWrite font engine you will" << endl
+             << "need the Microsoft DirectWrite and Microsoft Direct2D development" << endl
+             << "files such as headers and libraries." << endl
+             << "(Press any key to continue..)";
+        if (_getch() == 3) // _Any_ keypress w/no echo(eat <Enter> for stdout)
+            exit(0);      // Exit cleanly for Ctrl+C
     }
 
     return true;
@@ -2741,6 +2777,9 @@ void Configure::generateOutputVars()
         qtConfig += "declarative";
     }
 
+    if (dictionary["DIRECTWRITE"] == "yes")
+        qtConfig += "directwrite";
+
     if (dictionary[ "NATIVE_GESTURES" ] == "yes")
         qtConfig += "native-gestures";
 
@@ -2972,6 +3011,10 @@ void Configure::generateCachefile()
                 configStream << " def_files_disabled";
             }
         }
+
+        if (dictionary["DIRECTWRITE"] == "yes")
+            configStream << "directwrite";
+
         configStream << endl;
         configStream << "QT_ARCH = " << dictionary[ "ARCHITECTURE" ] << endl;
         if (dictionary["QT_EDITION"].contains("OPENSOURCE"))
@@ -3251,8 +3294,7 @@ void Configure::generateConfigfiles()
     }
 
     // Copy configured mkspec to default directory, but remove the old one first, if there is any
-    QString mkspecsPath = buildPath + "/mkspecs";
-    QString defSpec = mkspecsPath + "/default";
+    QString defSpec = buildPath + "/mkspecs/default";
     QFileInfo defSpecInfo(defSpec);
     if (defSpecInfo.exists()) {
         if (!Environment::rmdir(defSpec)) {
@@ -3262,30 +3304,13 @@ void Configure::generateConfigfiles()
         }
     }
 
-    QDir mkspecsDir(mkspecsPath);
-    if (!mkspecsDir.mkdir("default")) {
-        cout << "Couldn't create default mkspec dir!" << endl;
-        dictionary["DONE"] = "error";
-        return;
-    }
-
     QString spec = dictionary.contains("XQMAKESPEC") ? dictionary["XQMAKESPEC"] : dictionary["QMAKESPEC"];
     QString pltSpec = sourcePath + "/mkspecs/" + spec;
-    outName = defSpec + "/qmake.conf";
-    QFile qmakeConfFile(outName);
-    if (qmakeConfFile.open(QFile::WriteOnly | QFile::Text)) {
-        QTextStream qmakeConfStream;
-        qmakeConfStream.setDevice(&qmakeConfFile);
-        // While QMAKESPEC_ORIGINAL being relative or absolute doesn't matter for the
-        // primary use of this variable by qmake to identify the original mkspec, the
-        // variable is also used for few special cases where the absolute path is required.
-        // Conversely, the include of the original qmake.conf must be done using relative path,
-        // as some Qt binary deployments are done in a manner that doesn't allow for patching
-        // the paths at the installation time.
-        qmakeConfStream << "QMAKESPEC_ORIGINAL=" << pltSpec << endl << endl;
-        qmakeConfStream << "include(" << "../" << spec << "/qmake.conf)" << endl << endl;
-        qmakeConfStream.flush();
-        qmakeConfFile.close();
+    QString includeSpec = buildPath + "/mkspecs/" + spec;
+    if (!Environment::cpdir(pltSpec, defSpec, includeSpec)) {
+        cout << "Couldn't update default mkspec! Does " << qPrintable(pltSpec) << " exist?" << endl;
+        dictionary["DONE"] = "error";
+        return;
     }
 
     // Generate the new qconfig.cpp file
@@ -3449,12 +3474,17 @@ void Configure::displayConfig()
             webkit = "yes (debug)";
         cout << "WebKit support.............." << webkit << endl;
     }
-    cout << "Declarative support........." << dictionary[ "DECLARATIVE" ] << endl;
-    cout << "Declarative debugging......." << dictionary[ "DECLARATIVE_DEBUG" ] << endl;
+    {
+        QString declarative = dictionary[ "DECLARATIVE" ];
+        cout << "Declarative support........." << declarative << endl;
+        if (declarative == "yes")
+            cout << "Declarative debugging......." << dictionary[ "DECLARATIVE_DEBUG" ] << endl;
+    }
     cout << "QtScript support............" << dictionary[ "SCRIPT" ] << endl;
     cout << "QtScriptTools support......." << dictionary[ "SCRIPTTOOLS" ] << endl;
     cout << "Graphics System............." << dictionary[ "GRAPHICS_SYSTEM" ] << endl;
-    cout << "Qt3 compatibility..........." << dictionary[ "QT3SUPPORT" ] << endl << endl;
+    cout << "Qt3 compatibility..........." << dictionary[ "QT3SUPPORT" ] << endl;
+    cout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl << endl;
 
     cout << "Third Party Libraries:" << endl;
     cout << "    ZLIB support............" << dictionary[ "ZLIB" ] << endl;
@@ -3581,7 +3611,11 @@ void Configure::generateHeaders()
         QStringList env;
         env += QString("QTDIR=" + sourcePath);
         env += QString("PATH=" + buildPath + "/bin/;" + qgetenv("PATH"));
-        Environment::execute(args, env, QStringList());
+        int retc = Environment::execute(args, env, QStringList());
+        if (retc) {
+            cout << "syncqt failed, return code " << retc << endl << endl;
+            dictionary["DONE"] = "error";
+        }
     }
 }
 

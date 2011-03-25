@@ -81,6 +81,10 @@
 #  define FM_DEBUG if (false) qDebug
 #endif
 
+#if defined(Q_WS_WIN) && !defined(QT_NO_DIRECTWRITE)
+#  include <dwrite.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #define SMOOTH_SCALABLE 0xffff
@@ -643,9 +647,24 @@ public:
 #if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
           , symbianExtras(0)
 #endif
+#if defined(Q_WS_WIN) && !defined(QT_NO_DIRECTWRITE)
+          , directWriteFactory(0)
+          , directWriteGdiInterop(0)
+#endif
     { }
+
     ~QFontDatabasePrivate() {
         free();
+#if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
+        if (symbianExtras)
+            delete symbianExtras;
+#endif
+#if defined(Q_WS_WIN) && !defined(QT_NO_DIRECTWRITE)
+    if (directWriteGdiInterop)
+        directWriteGdiInterop->Release();
+    if (directWriteFactory != 0)
+        directWriteFactory->Release();
+#endif
     }
     QtFontFamily *family(const QString &f, bool = false);
     void free() {
@@ -654,12 +673,6 @@ public:
         ::free(families);
         families = 0;
         count = 0;
-#if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
-        if (symbianExtras) {
-            delete symbianExtras;
-            symbianExtras = 0;
-        }
-#endif
         // don't clear the memory fonts!
     }
 
@@ -668,6 +681,12 @@ public:
     QString systemLang;
 #endif
     QtFontFamily **families;
+
+#if defined(Q_WS_WIN) && !defined(QT_NO_DIRECTWRITE)
+    IDWriteFactory *directWriteFactory;
+    IDWriteGdiInterop *directWriteGdiInterop;
+#endif
+
 
     struct ApplicationFont {
         QString fileName;
@@ -678,6 +697,10 @@ public:
         QVector<FONTSIGNATURE> signatures;
 #elif defined(Q_WS_MAC)
         ATSFontContainerRef handle;
+#elif defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
+        QString temporaryFileName;
+        TInt screenDeviceFontFileId;
+        TUid fontStoreFontFileUid;
 #endif
         QStringList families;
     };
@@ -704,7 +727,7 @@ public:
 #if defined(Q_WS_QWS)
     QDataStream *stream;
 #elif defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
-    const QSymbianFontDatabaseExtras *symbianExtras;
+    QSymbianFontDatabaseExtras *symbianExtras;
 #endif
 #if defined(Q_WS_QWS) || defined(Q_WS_QPA)
     QStringList fallbackFamilies;
@@ -1084,6 +1107,12 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #  include "qfontdatabase_qpa.cpp"
 #elif defined(Q_OS_SYMBIAN)
 #  include "qfontdatabase_s60.cpp"
+#endif
+#if !defined(Q_WS_X11)
+QString QFontDatabase::resolveFontFamilyAlias(const QString &family)
+{
+    return family;
+}
 #endif
 QT_END_INCLUDE_NAMESPACE
 
@@ -2573,6 +2602,8 @@ bool QFontDatabasePrivate::isApplicationFont(const QString &fileName)
     \note Adding application fonts on Unix/X11 platforms without fontconfig is
     currently not supported.
 
+    \note On Symbian, the font family names get truncated to a length of 20 characters.
+
     \sa addApplicationFontFromData(), applicationFontFamilies(), removeApplicationFont()
 */
 int QFontDatabase::addApplicationFont(const QString &fileName)
@@ -2602,6 +2633,8 @@ int QFontDatabase::addApplicationFont(const QString &fileName)
 
     \bold{Note:} Adding application fonts on Unix/X11 platforms without fontconfig is
     currently not supported.
+
+    \note On Symbian, the font family names get truncated to a length of 20 characters.
 
     \sa addApplicationFont(), applicationFontFamilies(), removeApplicationFont()
 */

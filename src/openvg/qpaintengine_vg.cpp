@@ -77,8 +77,8 @@ static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
 
 #if !defined(QVG_NO_DRAW_GLYPHS)
 
-Q_DECL_IMPORT extern int qt_defaultDpiX();
-Q_DECL_IMPORT extern int qt_defaultDpiY();
+Q_GUI_EXPORT int qt_defaultDpiX();
+Q_GUI_EXPORT int qt_defaultDpiY();
 
 class QVGPaintEnginePrivate;
 
@@ -526,7 +526,7 @@ void QVGPaintEnginePrivate::setTransform
     vgLoadMatrix(mat);
 }
 
-Q_DECL_IMPORT extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
+Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
 
 void QVGPaintEnginePrivate::updateTransform(QPaintDevice *pdev)
 {
@@ -994,7 +994,7 @@ VGPath QVGPaintEnginePrivate::roundedRectPath(const QRectF &rect, qreal xRadius,
     return vgpath;
 }
 
-Q_DECL_IMPORT extern QImage qt_imageForBrush(int style, bool invert);
+Q_GUI_EXPORT QImage qt_imageForBrush(int style, bool invert);
 
 static QImage colorizeBitmap(const QImage &image, const QColor &color)
 {
@@ -1472,7 +1472,7 @@ void QVGPaintEnginePrivate::draw
     (VGPath path, const QPen& pen, const QBrush& brush, VGint rule)
 {
     VGbitfield mode = 0;
-    if (pen.style() != Qt::NoPen) {
+    if (qpen_style(pen) != Qt::NoPen && qbrush_style(qpen_brush(pen)) != Qt::NoBrush) {
         ensurePen(pen);
         mode |= VG_STROKE_PATH;
     }
@@ -2201,6 +2201,12 @@ void QVGPaintEngine::updateScissor()
 #if defined(QVG_SCISSOR_CLIP)
     // Using the scissor to do clipping, so combine the systemClip
     // with the current painting clipRegion.
+
+    if (d->maskValid) {
+        vgSeti(VG_MASKING, VG_FALSE);
+        d->maskValid = false;
+    }
+
     QVGPainterState *s = state();
     if (s->clipEnabled) {
         if (region.isEmpty())
@@ -2250,8 +2256,33 @@ void QVGPaintEngine::updateScissor()
 
     QVector<QRect> rects = region.rects();
     int count = rects.count();
-    if (count > d->maxScissorRects)
-        count = d->maxScissorRects;
+    if (count > d->maxScissorRects) {
+#if !defined(QVG_SCISSOR_CLIP)
+         count = d->maxScissorRects;
+#else
+        // Use masking
+        int width = paintDevice()->width();
+        int height = paintDevice()->height();
+        vgMask(VG_INVALID_HANDLE, VG_CLEAR_MASK,
+                   0, 0, width, height);
+        for (int i = 0; i < rects.size(); ++i) {
+            vgMask(VG_INVALID_HANDLE, VG_FILL_MASK,
+                   rects[i].x(), height - rects[i].y() - rects[i].height(),
+                   rects[i].width(), rects[i].height());
+        }
+
+        vgSeti(VG_SCISSORING, VG_FALSE);
+        vgSeti(VG_MASKING, VG_TRUE);
+        d->maskValid = true;
+        d->maskIsSet = false;
+        d->scissorMask = false;
+        d->scissorActive = false;
+        d->scissorDirty = false;
+        d->scissorRegion = region;
+        return;
+#endif
+    }
+
     QVarLengthArray<VGint> params(count * 4);
     int height = paintDevice()->height();
     for (int i = 0; i < count; ++i) {
@@ -2302,6 +2333,7 @@ bool QVGPaintEngine::isDefaultClipRect(const QRect& rect)
 void QVGPaintEngine::clipEnabledChanged()
 {
 #if defined(QVG_SCISSOR_CLIP)
+    vgSeti(VG_MASKING, VG_FALSE); // disable mask fallback
     updateScissor();
 #else
     Q_D(QVGPaintEngine);
@@ -3039,6 +3071,95 @@ static void drawVGImage(QVGPaintEnginePrivate *d,
     vgDrawImage(vgImg);
 }
 
+static void drawImageTiled(QVGPaintEnginePrivate *d,
+                           const QRectF &r,
+                           const QImage &image,
+                           const QRectF &sr = QRectF())
+{
+    const int minTileSize = 16;
+    int tileWidth = 512;
+    int tileHeight = tileWidth;
+
+    VGImageFormat tileFormat = qt_vg_image_to_vg_format(image.format());
+    VGImage tile = VG_INVALID_HANDLE;
+    QVGImagePool *pool = QVGImagePool::instance();
+    while (tile == VG_INVALID_HANDLE && tileWidth >= minTileSize) {
+        tile = pool->createPermanentImage(tileFormat, tileWidth, tileHeight,
+            VG_IMAGE_QUALITY_FASTER);
+        if (tile == VG_INVALID_HANDLE) {
+            tileWidth /= 2;
+            tileHeight /= 2;
+        }
+    }
+    if (tile == VG_INVALID_HANDLE) {
+        qWarning("drawImageTiled: Failed to create %dx%d tile, giving up", tileWidth, tileHeight);
+        return;
+    }
+
+    VGfloat opacityMatrix[20] = {
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, d->opacity,
+        0.0f, 0.0f, 0.0f, 0.0f
+    };
+    VGImage tileWithOpacity = VG_INVALID_HANDLE;
+    if (d->opacity != 1) {
+        tileWithOpacity = pool->createPermanentImage(VG_sARGB_8888_PRE,
+            tileWidth, tileHeight, VG_IMAGE_QUALITY_FASTER);
+        if (tileWithOpacity == VG_INVALID_HANDLE)
+            qWarning("drawImageTiled: Failed to create extra tile, ignoring opacity");
+    }
+
+    QRect sourceRect = sr.toRect();
+    if (sourceRect.isNull())
+        sourceRect = QRect(0, 0, image.width(), image.height());
+
+    VGfloat scaleX = r.width() / sourceRect.width();
+    VGfloat scaleY = r.height() / sourceRect.height();
+
+    d->setImageOptions();
+
+    for (int y = sourceRect.y(); y < sourceRect.height(); y += tileHeight) {
+        int h = qMin(tileHeight, sourceRect.height() - y);
+        if (h < 1)
+            break;
+        for (int x = sourceRect.x(); x < sourceRect.width(); x += tileWidth) {
+            int w = qMin(tileWidth, sourceRect.width() - x);
+            if (w < 1)
+                break;
+
+            int bytesPerPixel = image.depth() / 8;
+            const uchar *sptr = image.constBits() + x * bytesPerPixel + y * image.bytesPerLine();
+            vgImageSubData(tile, sptr, image.bytesPerLine(), tileFormat, 0, 0, w, h);
+
+            QTransform transform(d->imageTransform);
+            transform.translate(r.x() + x, r.y() + y);
+            transform.scale(scaleX, scaleY);
+            d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
+
+            VGImage actualTile = tile;
+            if (tileWithOpacity != VG_INVALID_HANDLE) {
+                vgColorMatrix(tileWithOpacity, actualTile, opacityMatrix);
+                if (w < tileWidth || h < tileHeight)
+                    actualTile = vgChildImage(tileWithOpacity, 0, 0, w, h);
+                else
+                    actualTile = tileWithOpacity;
+            } else if (w < tileWidth || h < tileHeight) {
+                actualTile = vgChildImage(tile, 0, 0, w, h);
+            }
+            vgDrawImage(actualTile);
+
+            if (actualTile != tile && actualTile != tileWithOpacity)
+                vgDestroyImage(actualTile);
+        }
+    }
+
+    vgDestroyImage(tile);
+    if (tileWithOpacity != VG_INVALID_HANDLE)
+        vgDestroyImage(tileWithOpacity);
+}
+
 // Used by qpixmapfilter_vg.cpp to draw filtered VGImage's.
 void qt_vg_drawVGImage(QPainter *painter, const QPointF& pos, VGImage vgImg)
 {
@@ -3103,9 +3224,13 @@ void QVGPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF
         if (pm.size().width() <= screenSize.width()
             && pm.size().height() <= screenSize.height())
             vgpd->failedToAlloc = false;
-    }
 
-    drawImage(r, *(pd->buffer()), sr, Qt::AutoColor);
+        vgpd->source.beginDataAccess();
+        drawImage(r, vgpd->source.imageRef(), sr, Qt::AutoColor);
+        vgpd->source.endDataAccess(true);
+    } else {
+        drawImage(r, *(pd->buffer()), sr, Qt::AutoColor);
+    }
 }
 
 void QVGPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pm)
@@ -3131,9 +3256,13 @@ void QVGPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pm)
         if (pm.size().width() <= screenSize.width()
             && pm.size().height() <= screenSize.height())
             vgpd->failedToAlloc = false;
-    }
 
-    drawImage(pos, *(pd->buffer()));
+        vgpd->source.beginDataAccess();
+        drawImage(pos, vgpd->source.imageRef());
+        vgpd->source.endDataAccess(true);
+    } else {
+        drawImage(pos, *(pd->buffer()));
+    }
 }
 
 void QVGPaintEngine::drawImage
@@ -3141,6 +3270,8 @@ void QVGPaintEngine::drawImage
          Qt::ImageConversionFlags flags)
 {
     Q_D(QVGPaintEngine);
+    if (image.isNull())
+        return;
     VGImage vgImg;
     if (d->simpleTransform || d->opacity == 1.0f)
         vgImg = toVGImageSubRect(image, sr.toRect(), flags);
@@ -3177,7 +3308,10 @@ void QVGPaintEngine::drawImage
         } else {
             // Monochrome images need to use the vgChildImage() path.
             vgImg = toVGImage(image, flags);
-            drawVGImage(d, r, vgImg, image.size(), sr);
+            if (vgImg == VG_INVALID_HANDLE)
+                drawImageTiled(d, r, image, sr);
+            else
+                drawVGImage(d, r, vgImg, image.size(), sr);
         }
     }
     vgDestroyImage(vgImg);
@@ -3186,6 +3320,8 @@ void QVGPaintEngine::drawImage
 void QVGPaintEngine::drawImage(const QPointF &pos, const QImage &image)
 {
     Q_D(QVGPaintEngine);
+    if (image.isNull())
+        return;
     VGImage vgImg;
     if (canVgWritePixels(image)) {
         // Optimization for straight blits, no blending
@@ -3202,7 +3338,10 @@ void QVGPaintEngine::drawImage(const QPointF &pos, const QImage &image)
     } else {
         vgImg = toVGImageWithOpacity(image, d->opacity);
     }
-    drawVGImage(d, pos, vgImg);
+    if (vgImg == VG_INVALID_HANDLE)
+        drawImageTiled(d, QRectF(pos, image.size()), image);
+    else
+        drawVGImage(d, pos, vgImg);
     vgDestroyImage(vgImg);
 }
 
@@ -3979,6 +4118,8 @@ VGImageFormat qt_vg_image_to_vg_format(QImage::Format format)
     switch (format) {
         case QImage::Format_MonoLSB:
             return VG_BW_1;
+        case QImage::Format_Indexed8:
+            return VG_sL_8;
         case QImage::Format_ARGB32_Premultiplied:
             return VG_sARGB_8888_PRE;
         case QImage::Format_RGB32:
@@ -3989,7 +4130,8 @@ VGImageFormat qt_vg_image_to_vg_format(QImage::Format format)
             return VG_sRGB_565;
         case QImage::Format_ARGB4444_Premultiplied:
             return VG_sARGB_4444;
-        default: break;
+        default:
+            break;
     }
     return VG_sARGB_8888;   // XXX
 }

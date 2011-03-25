@@ -210,7 +210,7 @@ public:
             // That's why we create only small textures.
             width = 50;
             height = 20;
-#else
+#endif
             QImage image(width, height, QImage::Format_RGB32);
             QPainter p(&image);
             p.fillRect(image.rect(), QColor(rand() % 256, rand() % 256, rand() % 256));

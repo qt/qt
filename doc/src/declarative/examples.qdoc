@@ -197,13 +197,20 @@ The examples can be found in Qt's \c examples/declarative directory.
 \o \l{declarative/i18n}{Example}
 \endlist
 
+\section2 Right-to-left User Interfaces
+\list
+\o \l{declarative/righttoleft/layoutmirroring}{Layout mirroring}
+\o \l{declarative/righttoleft/layoutdirection}{Layout direction}
+\o \l{declarative/righttoleft/textalignment}{Text alignment}
+\endlist
+
 \section2 Threading
 \list
 \o \l{declarative/threading/threadedlistmodel}{Threaded ListModel}
 \o \l{declarative/threading/workerscript}{WorkerScript}
 \endlist
 
-\section2 Screen orientation
+\section2 Screen Orientation
 \list
 \o \l{declarative/screenorientation}{Example}
 \endlist

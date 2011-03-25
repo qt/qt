@@ -51,6 +51,7 @@
 #include <QDir>
 #include <QVariant>
 #include <QDebug>
+#include <QSqlTableModel>
 
 #include <QtTest/QtTest>
 
@@ -159,6 +160,29 @@ public:
 
             if ( driverPrefix.isEmpty() || db.driverName().startsWith( driverPrefix ) ) {
                 QTest::newRow( dbNames.at( i ).toLatin1() ) << dbNames.at( i );
+                ++count;
+            }
+        }
+
+        return count;
+    }
+
+    int fillTestTableWithStrategies( const QString& driverPrefix = QString() ) const
+    {
+        QTest::addColumn<QString>( "dbName" );
+        QTest::addColumn<int>("submitpolicy_i");
+        int count = 0;
+
+        for ( int i = 0; i < dbNames.count(); ++i ) {
+            QSqlDatabase db = QSqlDatabase::database( dbNames.at( i ) );
+
+            if ( !db.isValid() )
+                continue;
+
+            if ( driverPrefix.isEmpty() || db.driverName().startsWith( driverPrefix ) ) {
+                QTest::newRow( QString("%1 [field]").arg(dbNames.at( i )).toLatin1() ) << dbNames.at( i ) << (int)QSqlTableModel::OnFieldChange;
+                QTest::newRow( QString("%1 [row]").arg(dbNames.at( i )).toLatin1() ) << dbNames.at( i ) << (int)QSqlTableModel::OnRowChange;
+                QTest::newRow( QString("%1 [manual]").arg(dbNames.at( i )).toLatin1() ) << dbNames.at( i ) << (int)QSqlTableModel::OnManualSubmit;
                 ++count;
             }
         }

@@ -536,7 +536,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 t << "\n\t"
                   << "-$(MOVE) $(TARGET) " << destdir;
             if(!project->isEmpty("QMAKE_POST_LINK"))
-                t << "\n\t" << var("QMAKE_POST_LINK") << "\n\t";
+                t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
         } else if(!project->isEmpty("QMAKE_BUNDLE")) {
             t << "\n\t"
@@ -712,11 +712,18 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         t << info_plist_out << ": " << "\n\t";
         if(!destdir.isEmpty())
             t << mkdir_p_asstring(destdir) << "\n\t";
+        QStringList commonSedArgs;
+        if (!project->values("VERSION").isEmpty())
+            commonSedArgs << "-e \"s,@SHORT_VERSION@," << project->first("VER_MAJ") << "." << project->first("VER_MIN") << ",g\" ";
+        commonSedArgs << "-e \"s,@TYPEINFO@,"<< (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
+                   QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" ";
         if(project->first("TEMPLATE") == "app") {
             QString icon = fileFixify(var("ICON"));
             t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
-              << "@sed "
-              << "-e \"s,@ICON@," << icon.section(Option::dir_sep, -1) << ",g\" "
+              << "@sed ";
+            foreach (const QString &arg, commonSedArgs)
+                t << arg;
+            t << "-e \"s,@ICON@," << icon.section(Option::dir_sep, -1) << ",g\" "
               << "-e \"s,@EXECUTABLE@," << var("QMAKE_ORIG_TARGET") << ",g\" "
               << "-e \"s,@TYPEINFO@,"<< (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
                          QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" "
@@ -732,9 +739,10 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             }
         } else {
             t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
-              << "@sed "
-              << "-e \"s,@LIBRARY@," << var("QMAKE_ORIG_TARGET") << ",g\" "
-              << "-e \"s,@SHORT_VERSION@," << project->first("VER_MAJ") << "." << project->first("VER_MIN") << ",g\" "
+              << "@sed ";
+            foreach (const QString &arg, commonSedArgs)
+                t << arg;
+            t << "-e \"s,@LIBRARY@," << var("QMAKE_ORIG_TARGET") << ",g\" "
               << "-e \"s,@TYPEINFO@,"
               << (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
                   QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" "

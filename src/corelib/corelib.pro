@@ -20,14 +20,13 @@ include(statemachine/statemachine.pri)
 include(xml/xml.pri)
 
 !qpa:mac|darwin:LIBS_PRIVATE += -framework ApplicationServices
-qpa:mac|darwin {
-  contains(QT_CONFIG, coreservices) {
-    LIBS_PRIVATE += -framework CoreServices
-  } else {
-    LIBS_PRIVATE += -framework CoreFoundation
-  }
+qpa {
+    contains(QT_CONFIG, coreservices) {
+        LIBS_PRIVATE += -framework CoreServices
+    }
+} else:mac|darwin {
+        LIBS_PRIVATE += -framework CoreFoundation
 }
-
 mac:lib_bundle:DEFINES += QT_NO_DEBUG_PLUGIN_CHECK
 win32:DEFINES-=QT_NO_CAST_TO_ASCII
 
@@ -40,7 +39,10 @@ contains(DEFINES,QT_EVAL):include(eval.pri)
 symbian: {
     TARGET.UID3=0x2001B2DC
 
-    # Workaroud for problems with paging this dll
-    MMP_RULES -= PAGED
-    MMP_RULES *= UNPAGED
+    # Problems using data exports from this DLL mean that we can't page it on releases that don't support
+    # data exports (currently that's any release before Symbian^3)
+    pagingBlock = "$${LITERAL_HASH}ifndef SYMBIAN_DLL_DATA_EXPORTS_SUPPORTED" \
+                  "UNPAGED" \
+                  "$${LITERAL_HASH}endif"
+    MMP_RULES += pagingBlock
 }

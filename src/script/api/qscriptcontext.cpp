@@ -268,8 +268,14 @@ QScriptValue QScriptContext::argument(int index) const
 QScriptValue QScriptContext::callee() const
 {
     const JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
-    QScript::APIShim shim(QScript::scriptEngineFromExec(frame));
-    return QScript::scriptEngineFromExec(frame)->scriptValueFromJSCValue(frame->callee());
+    QScriptEnginePrivate *eng = QScript::scriptEngineFromExec(frame);
+    QScript::APIShim shim(eng);
+    if (frame->callee() == eng->originalGlobalObject()) {
+        // This is a pushContext()-created context; the callee is a lie.
+        Q_ASSERT(QScriptEnginePrivate::contextFlags(const_cast<JSC::CallFrame*>(frame)) & QScriptEnginePrivate::NativeContext);
+        return QScriptValue();
+    }
+    return eng->scriptValueFromJSCValue(frame->callee());
 }
 
 /*!
@@ -299,6 +305,12 @@ QScriptValue QScriptContext::argumentsObject() const
 
     //for a js function
     if (frame->codeBlock() && frame->callee()) {
+        if (!QScriptEnginePrivate::hasValidCodeBlockRegister(frame)) {
+            // We have a built-in JS host call.
+            // codeBlock is needed by retrieveArguments(), but since it
+            // contains junk, we would crash. Return an invalid value for now.
+            return QScriptValue();
+        }
         JSC::JSValue result = frame->interpreter()->retrieveArguments(frame, JSC::asFunction(frame->callee()));
         return QScript::scriptEngineFromExec(frame)->scriptValueFromJSCValue(result);
     }
@@ -309,7 +321,8 @@ QScriptValue QScriptContext::argumentsObject() const
     }
 
     //for a native function
-    if (!frame->optionalCalleeArguments()) {
+    if (!frame->optionalCalleeArguments()
+        && QScriptEnginePrivate::hasValidCodeBlockRegister(frame)) { // Make sure we don't go here for host JSFunctions
         Q_ASSERT(frame->argumentCount() > 0); //we need at least 'this' otherwise we'll crash later
         JSC::Arguments* arguments = new (&frame->globalData())JSC::Arguments(frame, JSC::Arguments::NoParameters);
         frame->setCalleeArguments(arguments);

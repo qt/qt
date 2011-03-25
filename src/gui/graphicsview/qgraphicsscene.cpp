@@ -130,7 +130,7 @@
     item on the scene gains focus, the scene automatically gains focus. If the
     scene has focus, hasFocus() will return true, and key events will be
     forwarded to the focus item, if any. If the scene loses focus, (i.e.,
-    someone calls clearFocus(),) while an item has focus, the scene will
+    someone calls clearFocus()) while an item has focus, the scene will
     maintain its item focus information, and once the scene regains focus, it
     will make sure the last focus item regains focus.
 
@@ -306,6 +306,7 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       rectAdjust(2),
       focusItem(0),
       lastFocusItem(0),
+      passiveFocusItem(0),
       tabFocusFirst(0),
       activePanel(0),
       lastActivePanel(0),
@@ -630,6 +631,8 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
         focusItem = 0;
     if (item == lastFocusItem)
         lastFocusItem = 0;
+    if (item == passiveFocusItem)
+        passiveFocusItem = 0;
     if (item == activePanel) {
         // ### deactivate...
         activePanel = 0;
@@ -806,28 +809,23 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
     }
 
     if (focusItem) {
-        QFocusEvent event(QEvent::FocusOut, focusReason);
         lastFocusItem = focusItem;
-        focusItem = 0;
-        sendEvent(lastFocusItem, &event);
 
 #ifndef QT_NO_IM
         if (lastFocusItem
             && (lastFocusItem->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
-            // Reset any visible preedit text
-            QInputMethodEvent imEvent;
-            sendEvent(lastFocusItem, &imEvent);
-
             // Close any external input method panel. This happens
             // automatically by removing WA_InputMethodEnabled on
             // the views, but if we are changing focus, we have to
             // do it ourselves.
-            if (item) {
-                for (int i = 0; i < views.size(); ++i)
-                    if (views.at(i)->inputContext())
-                        views.at(i)->inputContext()->reset();
-            }
+            for (int i = 0; i < views.size(); ++i)
+                if (views.at(i)->inputContext())
+                    views.at(i)->inputContext()->reset();
         }
+
+        focusItem = 0;
+        QFocusEvent event(QEvent::FocusOut, focusReason);
+        sendEvent(lastFocusItem, &event);
 #endif //QT_NO_IM
     }
 
@@ -1322,8 +1320,10 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
 
     // Set focus on the topmost enabled item that can take focus.
     bool setFocus = false;
+
     foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
-        if (item->isBlockedByModalPanel()) {
+        if (item->isBlockedByModalPanel()
+            || (item->d_ptr->flags & QGraphicsItem::ItemStopsFocusHandling)) {
             // Make sure we don't clear focus.
             setFocus = true;
             break;
@@ -1336,9 +1336,9 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
                 break;
             }
         }
-        if (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation)
-            break;
         if (item->isPanel())
+            break;
+        if (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation)
             break;
     }
 
@@ -2985,7 +2985,7 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
 QGraphicsItem *QGraphicsScene::focusItem() const
 {
     Q_D(const QGraphicsScene);
-    return isActive() ? d->focusItem : d->lastFocusItem;
+    return isActive() ? d->focusItem : d->passiveFocusItem;
 }
 
 /*!
@@ -3059,6 +3059,7 @@ void QGraphicsScene::clearFocus()
     Q_D(QGraphicsScene);
     if (d->hasFocus) {
         d->hasFocus = false;
+        d->passiveFocusItem = d->focusItem;
         setFocusItem(0, Qt::OtherFocusReason);
     }
 }
@@ -3104,8 +3105,8 @@ bool QGraphicsScene::stickyFocus() const
     \list
     \o If the item receives a mouse release event when there are no other
     buttons pressed, it loses the mouse grab.
-    \o If the item becomes invisible (i.e., someone calls \c {item->setVisible(false))},
-    or if it becomes disabled (i.e., someone calls \c {item->setEnabled(false))},
+    \o If the item becomes invisible (i.e., someone calls \c {item->setVisible(false)}),
+    or if it becomes disabled (i.e., someone calls \c {item->setEnabled(false)}),
     it loses the mouse grab.
     \o If the item is removed from the scene, it loses the mouse grab.
     \endlist
@@ -3762,9 +3763,9 @@ void QGraphicsScene::focusInEvent(QFocusEvent *focusEvent)
             focusEvent->ignore();
         break;
     default:
-        if (d->lastFocusItem) {
+        if (d->passiveFocusItem) {
             // Set focus on the last focus item
-            setFocusItem(d->lastFocusItem, focusEvent->reason());
+            setFocusItem(d->passiveFocusItem, focusEvent->reason());
         }
         break;
     }
@@ -3783,6 +3784,7 @@ void QGraphicsScene::focusOutEvent(QFocusEvent *focusEvent)
 {
     Q_D(QGraphicsScene);
     d->hasFocus = false;
+    d->passiveFocusItem = d->focusItem;
     setFocusItem(0, focusEvent->reason());
 
     // Remove all popups when the scene loses focus.
@@ -5913,6 +5915,7 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
 
     // Set focus on the topmost enabled item that can take focus.
     bool setFocus = false;
+
     foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
         if (item->isEnabled() && ((item->flags() & QGraphicsItem::ItemIsFocusable) && item->d_ptr->mouseSetsFocus)) {
             if (!item->isWidget() || ((QGraphicsWidget *)item)->focusPolicy() & Qt::ClickFocus) {
@@ -5924,6 +5927,13 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
         }
         if (item->isPanel())
             break;
+        if (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation)
+            break;
+        if (item->d_ptr->flags & QGraphicsItem::ItemStopsFocusHandling) {
+            // Make sure we don't clear focus.
+            setFocus = true;
+            break;
+        }
     }
 
     // If nobody could take focus, clear it.
@@ -5955,6 +5965,9 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
             break;
         }
         if (item && item->isPanel())
+            break;
+        if (item && (item->d_ptr->flags
+                     & (QGraphicsItem::ItemStopsClickFocusPropagation | QGraphicsItem::ItemStopsFocusHandling)))
             break;
     }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -69,10 +69,13 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_GESTURES
 class QFlickGestureRecognizer;
+#endif
 
+#ifndef QT_NO_ANIMATION
 class QScrollTimer;
-
+#endif
 class QScrollerPrivate : public QObject
 {
     Q_OBJECT
@@ -98,7 +101,8 @@ public:
         qreal startPos;
         qreal deltaPos;
         QEasingCurve curve;
-        qreal maxProgress;
+        qreal stopProgress; // whatever is..
+        qreal stopPos;      // ..reached first
         ScrollType type;
     };
 
@@ -122,7 +126,7 @@ public:
     void setDpiFromWidget(QWidget *widget);
 
     void updateVelocity(const QPointF &deltaPixelRaw, qint64 deltaTime);
-    void pushSegment(ScrollType type, qreal deltaTime, qreal startPos, qreal endPos, QEasingCurve::Type curve, Qt::Orientation orientation, qreal maxProgress = 1.0);
+    void pushSegment(ScrollType type, qreal deltaTime, qreal stopProgress, qreal startPos, qreal deltaPos, qreal stopPos, QEasingCurve::Type curve, Qt::Orientation orientation);
     void recalcScrollingSegments(bool forceRecalc = false);
     qreal scrollingSegmentsEndPos(Qt::Orientation orientation) const;
     bool scrollingSegmentsValid(Qt::Orientation orientation);
@@ -151,8 +155,10 @@ public:
     // non static
     QObject *target;
     QScrollerProperties properties;
+#ifndef QT_NO_GESTURES
     QFlickGestureRecognizer *recognizer;
     Qt::GestureType recognizerType;
+#endif
 
     // scroller state:
 
@@ -193,7 +199,9 @@ public:
     QElapsedTimer monotonicTimer;
 
     QPointF releaseVelocity; // the starting velocity of the scrolling state
+#ifndef QT_NO_ANIMATION
     QScrollTimer *scrollTimer;
+#endif
 
     QScroller *q_ptr;
 };

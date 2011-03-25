@@ -37,12 +37,11 @@ symbian {
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     TARGET.EPOCHEAPSIZE = 0x20000 0x4000000
     TARGET.CAPABILITY = NetworkServices ReadUserData
-    !contains(S60_VERSION, 3.1):!contains(S60_VERSION, 3.2) {
-        LIBS += -lsensrvclient -lsensrvutil
-    }
-    contains(QT_CONFIG, s60): {
-        LIBS += -lavkon -lcone
-    }
+
+    # Deploy plugin for remote debugging
+    qmldebuggingplugin.sources = $$QT_BUILD_TREE/plugins/qmltooling/tcpserver$${QT_LIBINFIX}.dll
+    qmldebuggingplugin.path = c:$$QT_PLUGINS_BASE_DIR/qmltooling
+    DEPLOYMENT +=  qmldebuggingplugin
 }
 mac {
     QMAKE_INFO_PLIST=Info_mac.plist

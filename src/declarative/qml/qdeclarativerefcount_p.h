@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class Q_AUTOTEST_EXPORT QDeclarativeRefCount
+class Q_DECLARATIVE_EXPORT QDeclarativeRefCount
 {
 public:
     QDeclarativeRefCount();

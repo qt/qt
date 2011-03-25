@@ -15,7 +15,7 @@ CXX	    =	g++
 CFLAGS	    =	-c -o$@ -O \
 		-I. -Igenerators -Igenerators/unix \
 		-Igenerators/win32 -Igenerators/mac \
-		-Igenerators/symbian \
+		-Igenerators/symbian -Igenerators/integrity \
 		-I$(BUILD_PATH)/include -I$(BUILD_PATH)/include/QtCore \
 		-I$(SOURCE_PATH)/include -I$(SOURCE_PATH)/include/QtCore \
 		-I$(BUILD_PATH)/src/corelib/global \
@@ -39,7 +39,7 @@ OBJS        = project.o main.o makefile.o unixmake.o unixmake2.o mingw_make.o \
               makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
               borland_bmake.o msvc_nmake.o msvc_vcproj.o msvc_vcxproj.o \
               msvc_objectmodel.o msbuild_objectmodel.o symmake.o initprojectdeploy_symbian.o \
-              symmake_abld.o symmake_sbsv2.o symbiancommon.o registry.o epocroot.o
+              symmake_abld.o symmake_sbsv2.o symbiancommon.o registry.o epocroot.o gbuild.o
 
 ifdef QMAKE_OPENSOURCE_EDITION
 CFLAGS      += -DQMAKE_OPENSOURCE_EDITION
@@ -309,6 +309,10 @@ registry.o: $(SOURCE_PATH)/tools/shared/windows/registry.cpp
 
 epocroot.o: $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
+
+gbuild.o: $(SOURCE_PATH)/qmake/generators/integrity/gbuild.cpp
+	$(CXX) $(CXXFLAGS) generators/integrity/gbuild.cpp
+
 
 project.o: $(SOURCE_PATH)/qmake/project.cpp $(SOURCE_PATH)/qmake/project.h $(SOURCE_PATH)/qmake/option.h
 	$(CXX) $(CXXFLAGS) project.cpp

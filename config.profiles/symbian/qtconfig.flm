@@ -60,7 +60,7 @@ $(SOURCEDIR)/qmake$(DOTEXE): $(EXTENSION_ROOT)/$(QT_ROOT)/$(CONFIGURE_APP)
 	$(call endrule,qtconf)
 	$(call startrule,headerexport) \
 	cd $(EXTENSION_ROOT)/$(QT_ROOT)/config.profiles/symbian && \
-	perl headerexport -base-dir $(EXTENSION_ROOT)/$(QT_ROOT) -copy -oneway -outdir $(EPOCROOT)/epoc32/include/ -outsubdir mw
+	perl headerexport -base-dir $(EXTENSION_ROOT)/$(QT_ROOT) -outdir $(EPOCROOT)/epoc32/include/
 	$(call endrule,headerexport)
 	$(call startrule,mkspecexport) \
 	$(GNUCP) -R $(EXTENSION_ROOT)/$(QT_ROOT)/mkspecs $(MKSPECDIR)

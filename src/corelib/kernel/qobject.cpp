@@ -2419,20 +2419,22 @@ int QObject::receivers(const char *signal) const
     This helper function calculates signal and method index for the given
     member in the specified class.
 
-    \li If member.mobj is 0 then both signalIndex and methodIndex are set to -1.
+    \list
+    \o If member.mobj is 0 then both signalIndex and methodIndex are set to -1.
 
-    \li If specified member is not a member of obj instance class (or one of
+    \o If specified member is not a member of obj instance class (or one of
     its parent classes) then both signalIndex and methodIndex are set to -1.
+    \endlist
 
     This function is used by QObject::connect and QObject::disconnect which
     are working with QMetaMethod.
 
-    \param[out] signalIndex is set to the signal index of member. If the member
+    \a signalIndex is set to the signal index of member. If the member
     specified is not signal this variable is set to -1.
 
-    \param[out] methodIndex is set to the method index of the member. If the
-    member is not a method of the object specified by obj param this variable
-    is set to -1.
+    \a methodIndex is set to the method index of the member. If the
+    member is not a method of the object specified by the \a obj argument this
+    variable is set to -1.
 */
 void QMetaObjectPrivate::memberIndexes(const QObject *obj,
                                        const QMetaMethod &member,
@@ -2686,9 +2688,9 @@ bool QObject::connect(const QObject *sender, const char *signal,
             Qt::ConnectionType type)
     but it uses QMetaMethod to specify signal and method.
 
-    \see connect(const QObject *sender, const char *signal,
-                 const QObject *receiver, const char *method,
-                 Qt::ConnectionType type)
+    \sa connect(const QObject *sender, const char *signal,
+                const QObject *receiver, const char *method,
+                Qt::ConnectionType type)
  */
 bool QObject::connect(const QObject *sender, const QMetaMethod &signal,
                       const QObject *receiver, const QMetaMethod &method,

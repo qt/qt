@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -279,14 +279,18 @@ protected:
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
-    bool useTouch = (app.arguments().contains(QLatin1String("--touch")));
-    MainWindow mw(useTouch);
+    QApplication a(argc, argv);
+    bool touch = (a.arguments().contains(QLatin1String("--touch")));
+    MainWindow mw(touch);
+#ifdef Q_WS_S60
+    mw.showMaximized();
+#else
     mw.show();
+#endif
 #ifdef Q_WS_MAC
     mw.raise();
 #endif
-    return app.exec();
+    return a.exec();
 }
 
 #include "main.moc"

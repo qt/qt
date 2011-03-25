@@ -705,11 +705,13 @@ void QComboBoxPrivateContainer::hideEvent(QHideEvent *)
 {
     emit resetButton();
     combo->update();
+#ifndef QT_NO_GRAPHICSVIEW
     // QGraphicsScenePrivate::removePopup closes the combo box popup, it hides it non-explicitly.
     // Hiding/showing the QComboBox after this will unexpectedly show the popup as well.
     // Re-hiding the popup container makes sure it is explicitly hidden.
     if (QGraphicsProxyWidget *proxy = graphicsProxyWidget())
         proxy->hide();
+#endif
 }
 
 void QComboBoxPrivateContainer::mousePressEvent(QMouseEvent *e)
@@ -2486,10 +2488,18 @@ void QComboBox::showPopup()
             listRect.setWidth(listRect.height());
             //by default popup is centered on screen in landscape
             listRect.moveCenter(screen.center());
-            if (staConTopRect.IsEmpty() && AknLayoutUtils::CbaLocation() != AknLayoutUtils::EAknCbaLocationBottom) {
-                // landscape without stacon, menu should be at the right
-                (opt.direction == Qt::LeftToRight) ? listRect.setRight(screen.right()) :
-                                                     listRect.setLeft(screen.left());
+            if (staConTopRect.IsEmpty()) {
+                TRect cbaRect = TRect();
+                AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EControlPane, cbaRect);
+                AknLayoutUtils::TAknCbaLocation cbaLocation = AknLayoutUtils::CbaLocation();
+                switch (cbaLocation) {
+                case AknLayoutUtils::EAknCbaLocationRight:
+                    listRect.setRight(screen.right());
+                    break;
+                case AknLayoutUtils::EAknCbaLocationLeft:
+                    listRect.setLeft(screen.left());
+                    break;
+                }
             }
         }
 #endif

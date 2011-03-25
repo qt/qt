@@ -115,6 +115,8 @@ class QVector
     };
 
 public:
+    // ### Qt 5: Consider making QVector non-shared to get at least one
+    // "really fast" container. See tests/benchmarks/corelib/tools/qvector/
     inline QVector() : d(&QVectorData::shared_null) { d->ref.ref(); }
     explicit QVector(int size);
     QVector(int size, const T &t);

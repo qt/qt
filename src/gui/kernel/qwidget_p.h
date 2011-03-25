@@ -113,6 +113,8 @@ class QWidgetItemV2;
 
 class QStyle;
 
+class QUnifiedToolbarSurface;
+
 class Q_AUTOTEST_EXPORT QWidgetBackingStoreTracker
 {
 
@@ -233,6 +235,7 @@ struct QTLWExtra {
 #elif defined(Q_WS_QPA)
     QPlatformWindow *platformWindow;
     QPlatformWindowFormat platformWindowFormat;
+    quint32 screenIndex; // index in qplatformscreenlist
 #endif
 };
 
@@ -321,6 +324,11 @@ struct QWExtra {
          */
         ZeroFill,
 
+        /**
+         * Blit backing store, propagating alpha channel into the framebuffer.
+         */
+        BlitWriteAlpha,
+
         Default = Blit
     };
 
@@ -360,7 +368,8 @@ public:
         DrawInvisible = 0x08,
         DontSubtractOpaqueChildren = 0x10,
         DontSetCompositionMode = 0x20,
-        DontDrawOpaqueChildren = 0x40
+        DontDrawOpaqueChildren = 0x40,
+        DontDrawNativeChildren = 0x80
     };
 
     enum CloseMode {
@@ -566,6 +575,7 @@ public:
     // sub-classes that their internals are about to be released.
     virtual void aboutToDestroy() {}
 
+    QInputContext *assignedInputContext() const;
     QInputContext *inputContext() const;
     inline QWidget *effectiveFocusWidget() {
         QWidget *w = q_func();
@@ -774,6 +784,8 @@ public:
     void x11UpdateIsOpaque();
     bool isBackgroundInherited() const;
     void updateX11AcceptFocus();
+    QPoint mapToGlobal(const QPoint &pos) const;
+    QPoint mapFromGlobal(const QPoint &pos) const;
 #elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
     uint noPaintOnScreen : 1; // see qwidget_win.cpp ::paintEngine()
 #ifndef QT_NO_GESTURES
@@ -792,7 +804,6 @@ public:
 #elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC
     // This is new stuff
     uint needWindowChange : 1;
-    uint hasAlienChildren : 1;
 
     // Each wiget keeps a list of all its child and grandchild OpenGL widgets.
     // This list is used to update the gl context whenever a parent and a granparent
@@ -823,6 +834,7 @@ public:
     void macUpdateIgnoreMouseEvents();
     void macUpdateMetalAttribute();
     void macUpdateIsOpaque();
+    void macSetNeedsDisplay(QRegion region);
     void setEnabled_helper_sys(bool enable);
     bool isRealWindow() const;
     void adjustWithinMaxAndMinSize(int &w, int &h);
@@ -851,14 +863,15 @@ public:
     bool originalDrawMethod;
     // Do we need to change the methods?
     bool changeMethods;
-    bool hasOwnContext;
-    CGContextRef cgContext;
-    QRegion ut_rg;
-    QPoint ut_pt;
+
+    // Unified toolbar variables
     bool isInUnifiedToolbar;
-    QWindowSurface *unifiedSurface;
+    QUnifiedToolbarSurface *unifiedSurface;
     QPoint toolbar_offset;
-#endif
+    QWidget *toolbar_ancestor;
+    bool flushRequested;
+    bool touchEventsEnabled;
+#endif // QT_MAC_USE_COCOA
     void determineWindowClass();
     void transferChildren();
     bool qt_mac_dnd_event(uint, DragRef);
@@ -870,7 +883,7 @@ public:
     static OSStatus qt_window_event(EventHandlerCallRef er, EventRef event, void *);
     static OSStatus qt_widget_event(EventHandlerCallRef er, EventRef event, void *);
     static bool qt_widget_rgn(QWidget *, short, RgnHandle, bool);
-    void registerTouchWindow();
+    void registerTouchWindow(bool enable = true);
 #elif defined(Q_WS_QWS) // <--------------------------------------------------------- QWS
     void setMaxWindowState_helper();
     void setFullScreenSize_helper();
@@ -885,17 +898,16 @@ public:
     void updateCursor() const;
 #endif
     QScreen* getScreen() const;
-#elif defined(Q_WS_QPA)
+#elif defined(Q_WS_QPA) // <--------------------------------------------------------- QPA
     void setMaxWindowState_helper();
     void setFullScreenSize_helper();
-
-    int screenNumber; // screen the widget should be displayed on
 #ifndef QT_NO_CURSOR
     void updateCursor() const;
 #endif
 #elif defined(Q_OS_SYMBIAN) // <--------------------------------------------------------- SYMBIAN
     static QWidget *mouseGrabber;
     static QWidget *keyboardGrabber;
+    int symbianScreenNumber; // only valid for desktop widget and top-levels
     void s60UpdateIsOpaque();
     void reparentChildren();
     void registerTouchWindow();

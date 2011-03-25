@@ -68,7 +68,7 @@
     \title Animation: States Example
     \example declarative/animation/states
 
-    These examples show how to use \l{States}{states} and \l{Transitions}{transitions}.
+    These examples show how to use \l{State}{states} and \l{Transition}{transitions}.
 
     The \c states.qml example shows how an item can change between states, and \c transitions.qml
     shows how these state changes can be animated.
@@ -270,10 +270,52 @@
 */
 
 /*!
+    \title Right-to-left User Interfaces: Text Alignment Example
+    \example declarative/righttoleft/textalignment
+
+    This example shows how the horizontal alignment of \l Text,
+    \l TextInput and \l TextEdit is affected by the reading direction
+    of the text and by the layout mirrroring. Click on the gray buttons
+    shown at the bottom of the example to toggle between different
+    horizontal alignment options.
+
+    \sa {QML Right-to-left User Interfaces}
+*/
+
+/*!
+    \title Right-to-left User Interfaces: Layout Direction Example
+    \example declarative/righttoleft/layoutdirection
+
+    This example shows how to control the horizontal layout direction of 
+    \l Row, \l Grid and \l Flow positioners, and \l ListView and \l GridView
+    model views. Click on the gray buttons shown at the bottom of the example
+    to toggle the layout direction of the shown elements.
+
+    \image qml-righttoleft-layoutdirection-example.png
+
+    \sa {QML Right-to-left User Interfaces}
+*/
+
+
+/*!
+    \title Right-to-left User Interfaces: Layout Mirroring Example
+    \example declarative/righttoleft/layoutmirroring
+
+    This example shows how to mirror the application layouts
+    using \l LayoutMirroring attached property. Click on the grey button
+    shown at the bottom of the example to enable or disable the
+    layout mirroring.
+
+    \image qml-righttoleft-layoutmirroring-example.png
+
+    \sa {QML Right-to-left User Interfaces}
+*/
+
+/*!
     \title Positioners Example
     \example declarative/positioners
 
-    This example shows how to use positioner elements such as \l Row, \l Column,
+    This example shows how to use the positioner elements such as \l Row, \l Column,
     \l Grid and \l Flow.
 
     \image qml-positioners-example.png
@@ -446,7 +488,7 @@
 
 
 /*!
-    \title Screen orientation
+    \title Screen Orientation
     \example declarative/screenorientation
 
     This example shows how to implement screen orientation support for your application.
@@ -664,7 +706,7 @@
 
     This example shows how to create a tab widget. It also demonstrates how
     \l {Property aliases}{property aliases} and
-    \l {Default Properties}{default properties} can be used to collect and
+    \l {Introduction to the QML Language#Default Properties}{default properties} can be used to collect and
     assemble the child items declared within an \l Item.
 
     \image qml-tabwidget-example.png

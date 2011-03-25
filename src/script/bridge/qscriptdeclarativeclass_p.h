@@ -107,6 +107,7 @@ public:
         PersistentIdentifier(const PersistentIdentifier &other);
         PersistentIdentifier &operator=(const PersistentIdentifier &other);
 
+        QString toString() const;
     private:
         friend class QScriptDeclarativeClass;
         PersistentIdentifier(QScriptEnginePrivate *e) : identifier(0), engine(e), d(0) {}
@@ -126,6 +127,7 @@ public:
     PersistentIdentifier createPersistentIdentifier(const Identifier &);
 
     QString toString(const Identifier &);
+    bool startsWithUpper(const Identifier &);
     quint32 toArrayIndex(const Identifier &, bool *ok);
 
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 

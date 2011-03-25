@@ -27,7 +27,16 @@ include(debugger/debugger.pri)
 symbian: {
     TARGET.UID3=0x2001E623
     LIBS += -lefsrv
+
+    contains(QT_CONFIG, freetype) {
+        DEFINES += QT_NO_FONTCONFIG
+        INCLUDEPATH += \
+            ../3rdparty/freetype/src \
+            ../3rdparty/freetype/include
+    }
 }
+
+linux-g++-maemo:DEFINES += QDECLARATIVEVIEW_NOBACKGROUND
 
 DEFINES += QT_NO_OPENTYPE
 INCLUDEPATH += ../3rdparty/harfbuzz/src

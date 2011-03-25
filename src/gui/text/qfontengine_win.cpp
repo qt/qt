@@ -1286,7 +1286,7 @@ QImage QFontEngineWin::alphaRGBMapForGlyph(glyph_t glyph, QFixed, int margin, co
 
 // -------------------------------------- Multi font engine
 
-QFontEngineMultiWin::QFontEngineMultiWin(QFontEngineWin *first, const QStringList &fallbacks)
+QFontEngineMultiWin::QFontEngineMultiWin(QFontEngine *first, const QStringList &fallbacks)
         : QFontEngineMulti(fallbacks.size()+1),
           fallbacks(fallbacks)
 {

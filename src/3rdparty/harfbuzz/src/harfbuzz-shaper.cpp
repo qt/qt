@@ -1232,7 +1232,7 @@ HB_Bool HB_OpenTypePosition(HB_ShaperItem *item, int availableGlyphs, HB_Bool do
     }
 
     if (!face->glyphs_substituted && !glyphs_positioned) {
-        HB_GetGlyphAdvances(item);
+        HB_HeuristicPosition(item);
         return true; // nothing to do for us
     }
 

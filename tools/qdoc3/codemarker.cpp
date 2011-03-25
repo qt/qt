@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include <QMetaObject>
-#include <QDebug>
 #include "codemarker.h"
 #include "config.h"
 #include "node.h"
@@ -60,7 +59,6 @@ QList<CodeMarker *> CodeMarker::markers;
   been read.
  */
 CodeMarker::CodeMarker()
-    : slow(false)
 {
     markers.prepend(this);
 }
@@ -75,14 +73,11 @@ CodeMarker::~CodeMarker()
 }
 
 /*!
-  The only thing a code market initializes is its \e{slow}
-  flag. The \e{slow} flag indicates whether the operations
-  that slow down qdoc are to be performed or not. It is
-  turned off by default. 
+  A code market performs no initialization by default. Marker-specific
+  initialization is performed in subclasses.
  */
 void CodeMarker::initializeMarker(const Config &config)
 {
-    slow = config.getBool(QLatin1String(CONFIG_SLOW));
 }
 
 /*!

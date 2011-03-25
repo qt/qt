@@ -78,12 +78,12 @@ QT_BEGIN_NAMESPACE
     names.
 
     \table
+    \header
+    \o RGB \o HSV \o CMYK
     \row
     \o \inlineimage qcolor-rgb.png
     \o \inlineimage qcolor-hsv.png
     \o \inlineimage qcolor-cmyk.png
-    \header
-    \o RGB \o HSV \o CMYK
     \endtable
 
     The QColor constructor creates the color based on RGB values.  To
@@ -1781,7 +1781,7 @@ QColor QColor::toHsl() const
     color.ct.ahsl.lightness = qRound(lightness * USHRT_MAX);
     if (qFuzzyIsNull(delta)) {
         // achromatic case, hue is undefined
-        color.ct.ahsl.hue = 0;
+        color.ct.ahsl.hue = USHRT_MAX;
         color.ct.ahsl.saturation = 0;
     } else {
         // chromatic case

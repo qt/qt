@@ -81,6 +81,12 @@ win32 {
 	HEADERS += text/qfontengine_win_p.h
 }
 
+contains(QT_CONFIG, directwrite) {
+    LIBS_PRIVATE += -ldwrite
+    HEADERS += text/qfontenginedirectwrite_p.h
+    SOURCES += text/qfontenginedirectwrite.cpp
+}
+
 unix:x11 {
 	HEADERS += \
 		text/qfontengine_x11_p.h \
@@ -147,8 +153,8 @@ symbian {
 			text/qfontengine_s60.cpp
 		HEADERS += \
 			text/qfontengine_s60_p.h
-		LIBS += -lfntstr -lecom
 	}
+	LIBS += -lfntstr -lecom
 }
 
 !qpa {

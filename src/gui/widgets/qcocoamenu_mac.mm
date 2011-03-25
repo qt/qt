@@ -48,6 +48,7 @@
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qapplication_p.h>
 #include <private/qaction_p.h>
+#include <private/qcocoaapplication_mac_p.h>
 
 #include <QtGui/QMenu>
 

@@ -76,6 +76,40 @@ void tst_QDeclarativePropertyMap::insert()
 
     map.insert(QLatin1String("key1"),"Hello World");
     QCOMPARE(map.value(QLatin1String("key1")), QVariant("Hello World"));
+
+    //inserting property names same with existing method(signal, slot, method) names is not allowed
+    //QDeclarativePropertyMap has an invokable keys() method
+    QTest::ignoreMessage(QtWarningMsg, "Creating property with name \"keys\" is not permitted, conflicts with internal symbols. ");
+    map.insert(QLatin1String("keys"), 1);
+    QVERIFY(map.keys().count() == 2);
+    QVERIFY(!map.contains(QLatin1String("keys")));
+    QVERIFY(map.value(QLatin1String("keys")).isNull());
+
+    //QDeclarativePropertyMap has a deleteLater() slot
+    QTest::ignoreMessage(QtWarningMsg, "Creating property with name \"deleteLater\" is not permitted, conflicts with internal symbols. ");
+    map.insert(QLatin1String("deleteLater"), 1);
+    QVERIFY(map.keys().count() == 2);
+    QVERIFY(!map.contains(QLatin1String("deleteLater")));
+    QVERIFY(map.value(QLatin1String("deleteLater")).isNull());
+
+    //QDeclarativePropertyMap has an valueChanged() signal
+    QTest::ignoreMessage(QtWarningMsg, "Creating property with name \"valueChanged\" is not permitted, conflicts with internal symbols. ");
+    map.insert(QLatin1String("valueChanged"), 1);
+    QVERIFY(map.keys().count() == 2);
+    QVERIFY(!map.contains(QLatin1String("valueChanged")));
+    QVERIFY(map.value(QLatin1String("valueChanged")).isNull());
+
+    //but 'valueChange' should be ok
+    map.insert(QLatin1String("valueChange"), 1);
+    QVERIFY(map.keys().count() == 3);
+    QVERIFY(map.contains(QLatin1String("valueChange")));
+    QCOMPARE(map.value(QLatin1String("valueChange")), QVariant(1));
+
+    //'valueCHANGED' should be ok, too
+    map.insert(QLatin1String("valueCHANGED"), 1);
+    QVERIFY(map.keys().count() == 4);
+    QVERIFY(map.contains(QLatin1String("valueCHANGED")));
+    QCOMPARE(map.value(QLatin1String("valueCHANGED")), QVariant(1));
 }
 
 void tst_QDeclarativePropertyMap::operatorInsert()

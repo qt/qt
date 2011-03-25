@@ -87,7 +87,7 @@
 #include <hal.h>
 #include <hal_data.h>
 
-#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#ifdef Q_SYMBIAN_TRANSITION_EFFECTS
 #include <graphics/wstfxconst.h>
 #endif
 
@@ -96,6 +96,9 @@ QT_BEGIN_NAMESPACE
 // Goom Events through Window Server
 static const int KGoomMemoryLowEvent = 0x10282DBF;
 static const int KGoomMemoryGoodEvent = 0x20026790;
+// Split view open/close events from AVKON
+static const int KSplitViewOpenEvent = 0x2001E2C0;
+static const int KSplitViewCloseEvent = 0x2001E2C1;
 
 #if defined(QT_DEBUG)
 static bool        appNoGrab        = false;        // Grabbing enabled
@@ -401,6 +404,7 @@ QSymbianControl::QSymbianControl(QWidget *w)
     , m_longTapDetector(0)
     , m_ignoreFocusChanged(0)
     , m_symbianPopupIsOpen(0)
+    , m_inExternalScreenOverride(false)
 {
 }
 
@@ -408,9 +412,11 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
 {
     if (!desktop)
     {
-        if (isWindowOwning || !qwidget->parentWidget())
-            CreateWindowL(S60->windowGroup());
-        else
+        if (isWindowOwning || !qwidget->parentWidget()
+            || qwidget->parentWidget()->windowType() == Qt::Desktop) {
+            RWindowGroup &wg(S60->windowGroup(qwidget));
+            CreateWindowL(wg);
+        } else {
             /**
              * TODO: in order to avoid creating windows for all ancestors of
              * this widget up to the root window, the parameter passed to
@@ -420,6 +426,7 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
              * is created for a widget between this one and the root window.
              */
             CreateWindowL(qwidget->parentWidget()->winId());
+        }
 
         // Necessary in order to be able to track the activation status of
         // the control's window
@@ -432,7 +439,7 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
         DrawableWindow()->SetPointerGrab(ETrue);
     }
 
-#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#ifdef Q_SYMBIAN_TRANSITION_EFFECTS
     if (OwnsWindow()) {
         TTfxWindowPurpose windowPurpose(ETfxPurposeNone);
         switch (qwidget->windowType()) {
@@ -452,7 +459,7 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
             windowPurpose = ETfxPurposeSplashScreenWindow;
             break;
         default:
-            windowPurpose = (isWindowOwning || !qwidget->parentWidget())
+            windowPurpose = (isWindowOwning || !qwidget->parentWidget() || qwidget->parentWidget()->windowType() == Qt::Desktop)
                             ? ETfxPurposeWindow : ETfxPurposeChildWindow;
             break;
         }
@@ -983,14 +990,15 @@ TKeyResponse QSymbianControl::handleVirtualMouse(const TKeyEvent& keyEvent,TEven
                 }
             }
             //clip to screen size (window server allows a sprite hotspot to be outside the screen)
+            int screenNumber = S60->screenNumberForWidget(qwidget);
             if (x < 0)
                 x = 0;
-            else if (x >= S60->screenWidthInPixels)
-                x = S60->screenWidthInPixels - 1;
+            else if (x >= S60->screenWidthInPixelsForScreen[screenNumber])
+                x = S60->screenWidthInPixelsForScreen[screenNumber] - 1;
             if (y < 0)
                 y = 0;
-            else if (y >= S60->screenHeightInPixels)
-                y = S60->screenHeightInPixels - 1;
+            else if (y >= S60->screenHeightInPixelsForScreen[screenNumber])
+                y = S60->screenHeightInPixelsForScreen[screenNumber] - 1;
             TPoint epos(x, y);
             TPoint cpos = epos - PositionRelativeToScreen();
             fakeEvent.iPosition = cpos;
@@ -1124,7 +1132,8 @@ void QSymbianControl::Draw(const TRect& controlRect) const
             // Do nothing
             break;
         case QWExtra::Blit:
-            if (qwidget->d_func()->isOpaque)
+        case QWExtra::BlitWriteAlpha:
+            if (qwidget->d_func()->isOpaque || nativePaintMode == QWExtra::BlitWriteAlpha)
                 gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
             gc.BitBlt(controlRect.iTl, bitmap, backingStoreRect);
             break;
@@ -1167,6 +1176,18 @@ void QSymbianControl::SizeChanged()
     QSize newSize(Size().iWidth, Size().iHeight);
 
     if (oldSize != newSize) {
+        const bool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
+        const int screenNumber = S60->screenNumberForWidget(qwidget);
+        if (!m_inExternalScreenOverride && isFullscreen && screenNumber > 0) {
+            int screenWidth = S60->screenWidthInPixelsForScreen[screenNumber];
+            int screenHeight = S60->screenHeightInPixelsForScreen[screenNumber];
+            TSize screenSize(screenWidth, screenHeight);
+            if (screenWidth > 0 && screenHeight > 0 && screenSize != Size()) {
+                m_inExternalScreenOverride = true;
+                SetExtent(TPoint(0, 0), screenSize);
+                return;
+            }
+        }
         QRect cr = qwidget->geometry();
         cr.setSize(newSize);
         qwidget->data->crect = cr;
@@ -1188,6 +1209,8 @@ void QSymbianControl::SizeChanged()
             }
         }
     }
+
+    m_inExternalScreenOverride = false;
 
     // CCoeControl::SetExtent calls SizeChanged, but does not call
     // PositionChanged, so we call it here to ensure that the widget's
@@ -1224,6 +1247,11 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
     if (m_ignoreFocusChanged || (qwidget->windowType() & Qt::WindowType_Mask) == Qt::Desktop)
         return;
 
+#ifdef Q_WS_S60
+    if (S60->splitViewLastWidget)
+        return;
+#endif
+
     // Popups never get focused, but still receive the FocusChanged when they are hidden.
     if (QApplicationPrivate::popupWidgets != 0
             || (qwidget->windowType() & Qt::Popup) == Qt::Popup)
@@ -1245,12 +1273,14 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
 #ifdef Q_WS_S60
         // If widget is fullscreen/minimized, hide status pane and button container otherwise show them.
         QWidget *const window = qwidget->window();
-        const bool visible = !(window->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
-        const bool statusPaneVisibility = visible;
-        const bool isFullscreen = window->windowState() & Qt::WindowFullScreen;
-        const bool cbaVisibilityHint = window->windowFlags() & Qt::WindowSoftkeysVisibleHint;
-        const bool buttonGroupVisibility = (visible || (isFullscreen && cbaVisibilityHint));
-        S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
+        if (!window->parentWidget()) { // Only top level native windows have control over cba/status pane
+            const bool decorationsVisible = !(window->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
+            const bool statusPaneVisibility = decorationsVisible;
+            const bool isFullscreen = window->windowState() & Qt::WindowFullScreen;
+            const bool cbaVisibilityHint = window->windowFlags() & Qt::WindowSoftkeysVisibleHint;
+            const bool buttonGroupVisibility = (decorationsVisible || (isFullscreen && cbaVisibilityHint));
+            S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
+        }
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
         bool focusedControlFound = false;
@@ -1300,9 +1330,56 @@ void QSymbianControl::handleClientAreaChange()
     }
 }
 
+bool QSymbianControl::isSplitViewWidget(QWidget *widget) {
+    bool returnValue = true;
+    //Ignore events sent to non-active windows, not visible widgets and not parents of input widget.
+    if (!qwidget->isActiveWindow()
+        || !qwidget->isVisible()
+        || !qwidget->isAncestorOf(widget)) {
+
+        returnValue = false;
+    }
+    return returnValue;
+}
+
 void QSymbianControl::HandleResourceChange(int resourceType)
 {
     switch (resourceType) {
+    case KSplitViewCloseEvent: //intentional fall-through
+    case KSplitViewOpenEvent: {
+#if !defined(QT_NO_IM) && defined(Q_WS_S60)
+
+        //Fetch widget getting the text input
+        QWidget *widget = QWidget::keyboardGrabber();
+        if (!widget) {
+            if (QApplicationPrivate::popupWidgets) {
+                widget = QApplication::activePopupWidget()->focusWidget();
+                if (!widget) {
+                    widget = QApplication::activePopupWidget();
+                }
+            } else {
+                widget = QApplicationPrivate::focus_widget;
+                if (!widget) {
+                    widget = qwidget;
+                }
+            }
+        }
+        if (widget) {
+            QCoeFepInputContext *ic = qobject_cast<QCoeFepInputContext *>(widget->inputContext());
+            if (!ic) {
+                ic = qobject_cast<QCoeFepInputContext *>(qApp->inputContext());
+            }
+            if (ic && isSplitViewWidget(widget)) {
+                if (resourceType == KSplitViewCloseEvent) {
+                    ic->resetSplitViewWidget();
+                } else {
+                    ic->ensureFocusWidgetVisible(widget);
+                }
+            }
+        }
+#endif // !defined(QT_NO_IM) && defined(Q_WS_S60)
+    }
+    break;
     case KInternalStatusPaneChange:
         handleClientAreaChange();
         if (IsFocused() && IsVisible()) {
@@ -1545,6 +1622,8 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     repository = 0;
 #endif
 
+    qt_keymapper_private()->updateInputLanguage();
+
 #ifdef QT_KEYPAD_NAVIGATION
     if (touch) {
         QApplicationPrivate::navigationMode = Qt::NavigationModeNone;
@@ -1584,10 +1663,36 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     systemFont.setFamily(systemFont.defaultFamily());
     QApplicationPrivate::setSystemFont(systemFont);
 
-#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#ifdef Q_SYMBIAN_TRANSITION_EFFECTS
     QObject::connect(qApp, SIGNAL(aboutToQuit()), qApp, SLOT(_q_aboutToQuit()));
 #endif
 
+#ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
+    QApplicationPrivate::instance()->useTranslucentEGLSurfaces = true;
+
+    const TUid KIvePropertyCat = {0x2726beef};
+    enum TIvePropertyChipType {
+        EVCBCM2727B1 = 0x00000000,
+        EVCBCM2763A0 = 0x04000100,
+        EVCBCM2763B0 = 0x04000102,
+        EVCBCM2763C0 = 0x04000103,
+        EVCBCM2763C1 = 0x04000104,
+        EVCBCMUnknown = 0x7fffffff
+    };
+
+    TInt chipType = EVCBCMUnknown;
+    if (RProperty::Get(KIvePropertyCat, 0 /*chip type*/, chipType) == KErrNone) {
+        if (chipType == EVCBCM2727B1) {
+            // We have only 32MB GPU memory. Use raster surfaces
+            // for transparent TLWs.
+            QApplicationPrivate::instance()->useTranslucentEGLSurfaces = false;
+        }
+    } else {
+        QApplicationPrivate::instance()->useTranslucentEGLSurfaces = false;
+    }
+#else
+    QApplicationPrivate::instance()->useTranslucentEGLSurfaces = false;
+#endif
 /*
  ### Commented out for now as parameter handling not needed in SOS(yet). Code below will break testlib with -o flag
     int argc = priv->argc;
@@ -1616,7 +1721,9 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     qRegisterMetaType<WId>("WId");
 }
 
-extern void qt_cleanup_symbianFontDatabaseExtras(); // qfontdatabase_s60.cpp
+#ifdef QT_NO_FREETYPE
+extern void qt_cleanup_symbianFontDatabase(); // qfontdatabase_s60.cpp
+#endif
 
 /*****************************************************************************
   qt_cleanup() - cleans up when the application is finished
@@ -1633,7 +1740,9 @@ void qt_cleanup()
     QFontCache::cleanup(); // Has to happen now, since QFontEngineS60 has FBS handles
     QPixmapCache::clear(); // Has to happen now, since QS60PixmapData has FBS handles
 
-    qt_cleanup_symbianFontDatabaseExtras();
+#ifdef QT_NO_FREETYPE
+    qt_cleanup_symbianFontDatabase();
+#endif
 // S60 structure and window server session are freed in eventdispatcher destructor as they are needed there
 
     // It's important that this happens here, before the event dispatcher gets
@@ -1687,7 +1796,7 @@ bool QApplicationPrivate::modalState()
 
 void QApplicationPrivate::enterModal_sys(QWidget *widget)
 {
-#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#ifdef Q_SYMBIAN_TRANSITION_EFFECTS
     S60->wsSession().SendEffectCommand(ETfxCmdAppModalModeEnter);
 #endif
     if (widget) {
@@ -1705,7 +1814,7 @@ void QApplicationPrivate::enterModal_sys(QWidget *widget)
 
 void QApplicationPrivate::leaveModal_sys(QWidget *widget)
 {
-#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#ifdef Q_SYMBIAN_TRANSITION_EFFECTS
     S60->wsSession().SendEffectCommand(ETfxCmdAppModalModeExit);
 #endif
     if (widget) {
@@ -1980,7 +2089,10 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
             return 1;
         }
         break;
-    case EEventScreenDeviceChanged:
+    case EEventScreenDeviceChanged: // fallthrough
+#if defined(Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS)
+    case EEventDisplayChanged:
+#endif
         if (callSymbianEventFilters(symbianEvent))
             return 1;
         if (S60)
@@ -2018,6 +2130,9 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
 #endif
                 S60->wsSession().SetPointerCursorMode(EPointerCursorNormal);
         }
+#endif
+#ifdef QT_SOFTKEYS_ENABLED
+        QSoftKeyManager::updateSoftKeys();
 #endif
         break;
     case EEventFocusLost:
@@ -2085,6 +2200,13 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
         }
         break;
 #endif
+
+#ifdef Q_WS_S60
+    case KEikInputLanguageChange:
+        qt_keymapper_private()->updateInputLanguage();
+        break;
+#endif
+
     default:
         break;
     }
@@ -2383,7 +2505,7 @@ void QApplication::restoreOverrideCursor()
 
 void QApplicationPrivate::_q_aboutToQuit()
 {
-#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#ifdef Q_SYMBIAN_TRANSITION_EFFECTS
     // Send the shutdown tfx command
     S60->wsSession().SendEffectCommand(ETfxCmdAppShutDown);
 #endif

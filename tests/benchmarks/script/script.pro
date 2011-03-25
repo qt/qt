@@ -1,6 +1,8 @@
 TEMPLATE = subdirs
 SUBDIRS = \
+        context2d \
         qscriptclass \
+        qscriptclass_bytearray \
         qscriptengine \
         qscriptvalue \
         sunspider \
@@ -11,6 +13,8 @@ SUBDIRS = \
 TRUSTED_BENCHMARKS += \
     qscriptclass \
     qscriptvalue \
-    qscriptengine
+    qscriptengine \
+    qscriptobject \
+    context2d
 
 include(../trusted-benchmarks.pri)

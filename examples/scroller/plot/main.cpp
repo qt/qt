@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -208,15 +208,14 @@ int main(int argc, char **argv)
     if (a.arguments().contains(QLatin1String("--touch")))
         touch = true;
 
-    MainWindow *mw = new MainWindow(smallscreen, touch);
+    MainWindow mw(smallscreen, touch);
     if (smallscreen)
-        mw->showMaximized();
+        mw.showMaximized();
     else
-        mw->show();
+        mw.show();
 #if defined(Q_WS_MAC)
-    mw->raise();
+    mw.raise();
 #endif
-
     return a.exec();
 }
 

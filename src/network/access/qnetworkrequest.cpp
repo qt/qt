@@ -226,6 +226,8 @@ QT_BEGIN_NAMESPACE
 
     \omitvalue DownloadBufferAttribute
 
+    \omitvalue SynchronousRequestAttribute
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default
@@ -529,8 +531,9 @@ QSslConfiguration QNetworkRequest::sslConfiguration() const
 /*!
     Sets this network request's SSL configuration to be \a config. The
     settings that apply are the private key, the local certificate,
-    the SSL protocol (SSLv2, SSLv3, TLSv1 where applicable) and the
-    ciphers that the SSL backend is allowed to use.
+    the SSL protocol (SSLv2, SSLv3, TLSv1 where applicable), the CA
+    certificates and the ciphers that the SSL backend is allowed to
+    use.
 
     By default, no SSL configuration is set, which allows the backends
     to choose freely what configuration is best for them.

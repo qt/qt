@@ -209,8 +209,9 @@ private:
     {
 #ifdef Q_WS_QWS
         return tlw->frameGeometry();
-#endif
+#else
         return tlw->data->crect;
+#endif
     }
 
     inline void appendDirtyOnScreenWidget(QWidget *widget)
@@ -261,7 +262,8 @@ private:
     }
 
     inline bool hasStaticContents() const
-    { return !staticWidgets.isEmpty() && windowSurface->hasStaticContentsSupport(); }
+    { return !staticWidgets.isEmpty() && windowSurface->hasStaticContentsSupport()
+        && windowSurface->hasPartialUpdateSupport(); }
 
     friend QRegion qt_dirtyRegion(QWidget *);
     friend class QWidgetPrivate;

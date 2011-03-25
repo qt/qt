@@ -43,3 +43,13 @@ wince*: {
 
     DEFINES += QT_LOCALSOCKET_TCP
 }
+
+integrity: {
+    SOURCES -= socket/qlocalsocket_unix.cpp \
+               socket/qlocalserver_unix.cpp
+    SOURCES += socket/qlocalsocket_tcp.cpp \
+               socket/qlocalserver_tcp.cpp \
+	       socket/qnativesocketengine_unix.cpp
+
+    DEFINES += QT_LOCALSOCKET_TCP
+}

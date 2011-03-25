@@ -90,10 +90,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_SYMBIAN)
-#define QT_GL_NO_SCISSOR_TEST
-#endif
-
 #if defined(Q_WS_WIN)
 extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 #endif
@@ -102,7 +98,7 @@ extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 extern bool qt_applefontsmoothing_enabled;
 #endif
 
-Q_DECL_IMPORT extern QImage qt_imageForBrush(int brushStyle, bool invert);
+Q_GUI_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert);
 
 ////////////////////////////////// Private Methods //////////////////////////////////////////
 
@@ -337,7 +333,13 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
         matrix.translate(brushOrigin.x(), brushOrigin.y());
 
         QTransform translate(1, 0, 0, 1, -translationPoint.x(), -translationPoint.y());
-        QTransform gl_to_qt(1, 0, 0, -1, 0, height);
+        qreal m22 = -1;
+        qreal dy = height;
+        if (device->isFlipped()) {
+            m22 = 1;
+            dy = 0;
+        }
+        QTransform gl_to_qt(1, 0, 0, m22, 0, dy);
         QTransform inv_matrix;
         if (style == Qt::TexturePattern && textureInvertedY == -1)
             inv_matrix = gl_to_qt * (QTransform(1, 0, 0, -1, 0, currentBrush.texture().height()) * brushQTransform * matrix).inverted() * translate;
@@ -376,9 +378,15 @@ void QGL2PaintEngineExPrivate::updateMatrix()
     // NOTE: The resultant matrix is also transposed, as GL expects column-major matracies
 
     const GLfloat wfactor = 2.0f / width;
-    const GLfloat hfactor = -2.0f / height;
+    GLfloat hfactor = -2.0f / height;
+
     GLfloat dx = transform.dx();
     GLfloat dy = transform.dy();
+
+    if (device->isFlipped()) {
+        hfactor *= -1;
+        dy -= height;
+    }
 
     // Non-integer translates can have strange effects for some rendering operations such as
     // anti-aliased text rendering. In such cases, we snap the translate to the pixel grid.
@@ -1162,7 +1170,7 @@ void QGL2PaintEngineEx::fill(const QVectorPath &path, const QBrush &brush)
     d->fill(path);
 }
 
-extern Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
+Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
 
 
 void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
@@ -1337,11 +1345,14 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
     ensureActive();
     d->transferMode(ImageDrawingMode);
 
+    QGLContext::BindOptions bindOptions = QGLContext::InternalBindOption|QGLContext::CanFlipNativePixmapBindOption;
+#ifdef QGL_USE_TEXTURE_POOL
+    bindOptions |= QGLContext::TemporarilyCachedBindOption;
+#endif
+
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     QGLTexture *texture =
-        ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA,
-                                   QGLContext::InternalBindOption
-                                   | QGLContext::CanFlipNativePixmapBindOption);
+        ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, bindOptions);
 
     GLfloat top = texture->options & QGLContext::InvertedYBindOption ? (pixmap.height() - src.top()) : src.top();
     GLfloat bottom = texture->options & QGLContext::InvertedYBindOption ? (pixmap.height() - src.bottom()) : src.bottom();
@@ -1353,6 +1364,12 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, texture->id);
     d->drawTexture(dest, srcRect, pixmap.size(), isOpaque, isBitmap);
+
+    if (texture->options&QGLContext::TemporarilyCachedBindOption) {
+        // pixmap was temporarily cached as a QImage texture by pooling system
+        // and should be destroyed immediately
+        QGLTextureCache::instance()->remove(ctx, texture->id);
+    }
 }
 
 void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const QRectF& src,
@@ -1377,12 +1394,23 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
 
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
 
-    QGLTexture *texture = ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
+    QGLContext::BindOptions bindOptions = QGLContext::InternalBindOption;
+#ifdef QGL_USE_TEXTURE_POOL
+    bindOptions |= QGLContext::TemporarilyCachedBindOption;
+#endif
+
+    QGLTexture *texture = ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, bindOptions);
     GLuint id = texture->id;
 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, id);
     d->drawTexture(dest, src, image.size(), !image.hasAlphaChannel());
+
+    if (texture->options&QGLContext::TemporarilyCachedBindOption) {
+        // image was temporarily cached by texture pooling system
+        // and should be destroyed immediately
+        QGLTextureCache::instance()->remove(ctx, texture->id);
+    }
 }
 
 void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
@@ -1491,7 +1519,7 @@ namespace {
     {
     public:
         QOpenGLStaticTextUserData()
-            : QStaticTextUserData(OpenGLUserData), cacheSize(0, 0)
+            : QStaticTextUserData(OpenGLUserData), cacheSize(0, 0), cacheSerialNumber(0)
         {
         }
 
@@ -1503,6 +1531,7 @@ namespace {
         QGL2PEXVertexArray vertexCoordinateArray;
         QGL2PEXVertexArray textureCoordinateArray;
         QFontEngineGlyphCache::Type glyphType;
+        int cacheSerialNumber;
     };
 
 }
@@ -1526,8 +1555,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         staticTextItem->fontEngine()->setGlyphCache(cacheKey, cache);
         cache->insert(ctx, cache);
         recreateVertexArrays = true;
-    } else if (cache->context() == 0) { // Old context has been destroyed, new context has same ptr value
-        cache->setContext(ctx);
     }
 
     if (staticTextItem->userDataNeedsUpdate) {
@@ -1538,8 +1565,11 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         recreateVertexArrays = true;
     } else {
         QOpenGLStaticTextUserData *userData = static_cast<QOpenGLStaticTextUserData *>(staticTextItem->userData());
-        if (userData->glyphType != glyphType)
+        if (userData->glyphType != glyphType) {
             recreateVertexArrays = true;
+        } else if (userData->cacheSerialNumber != cache->serialNumber()) {
+            recreateVertexArrays = true;
+        }
     }
 
     // We only need to update the cache with new glyphs if we are actually going to recreate the vertex arrays.
@@ -1580,6 +1610,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         }
 
         userData->glyphType = glyphType;
+        userData->cacheSerialNumber = cache->serialNumber();
 
         // Use cache if backend optimizations is turned on
         vertexCoordinates = &userData->vertexCoordinateArray;
@@ -1608,8 +1639,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
             if (c.isNull())
                 continue;
 
-            int x = staticTextItem->glyphPositions[i].x.toInt() + c.baseLineX - margin;
-            int y = staticTextItem->glyphPositions[i].y.toInt() - c.baseLineY - margin;
+            int x = qFloor(staticTextItem->glyphPositions[i].x) + c.baseLineX - margin;
+            int y = qFloor(staticTextItem->glyphPositions[i].y) - c.baseLineY - margin;
 
             vertexCoordinates->addQuad(QRectF(x, y, c.w, c.h));
             textureCoordinates->addQuad(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));
@@ -2063,7 +2094,10 @@ void QGL2PaintEngineExPrivate::setScissor(const QRect &rect)
 {
     const int left = rect.left();
     const int width = rect.width();
-    const int bottom = height - (rect.top() + rect.height());
+    int bottom = height - (rect.top() + rect.height());
+    if (device->isFlipped()) {
+        bottom = rect.top();
+    }
     const int height = rect.height();
 
     glScissor(left, bottom, width, height);

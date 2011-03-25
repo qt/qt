@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -80,9 +80,9 @@ Q_GUI_EXPORT  void qt_registerFont(const QString &familyName, const QString &fou
         size->handle = handle;
 }
 
-static QStringList fallbackFamilies(const QString &family, const QFont::Style &style, const QUnicodeTables::Script &script)
+static QStringList fallbackFamilies(const QString &family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script)
 {
-    QStringList retList = QApplicationPrivate::platformIntegration()->fontDatabase()->fallbacksForFamily(family,style,script);
+    QStringList retList = QApplicationPrivate::platformIntegration()->fontDatabase()->fallbacksForFamily(family,style,styleHint,script);
     QFontDatabasePrivate *db = privateDb();
 
     QStringList::iterator i;
@@ -177,7 +177,11 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
         && !(request.styleStrategy & QFont::NoFontMerging) && !engine->symbol ) {
 
         if (family && !family->askedForFallback) {
-            family->fallbackFamilies = fallbackFamilies(family->name,QFont::Style(style->key.style),QUnicodeTables::Script(script));
+            QFont::Style fontStyle = QFont::Style(style->key.style);
+            QFont::StyleHint styleHint = QFont::StyleHint(request.styleHint);
+            if (styleHint == QFont::AnyStyle && request.fixedPitch)
+                styleHint = QFont::TypeWriter;
+            family->fallbackFamilies = fallbackFamilies(family->name,fontStyle,styleHint,QUnicodeTables::Script(script));
 
             family->askedForFallback = true;
         }
@@ -287,7 +291,7 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
 
     if (!engine) {
         if (!request.family.isEmpty()) {
-            QStringList fallbacks = fallbackFamilies(request.family,QFont::Style(request.style),QUnicodeTables::Script(script));
+            QStringList fallbacks = fallbackFamilies(request.family,QFont::Style(request.style),QFont::StyleHint(request.styleHint),QUnicodeTables::Script(script));
             for (int i = 0; i < fallbacks.size(); i++) {
                 QFontDef def = request;
                 def.family = fallbacks.at(i);

@@ -346,7 +346,7 @@ Q_GUI_EXPORT void qt_x11_enforce_cursor(QWidget * w)
     qt_x11_enforce_cursor(w, false);
 }
 
-Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
+void qt_x11_wait_for_window_manager(QWidget *w, bool sendPostedEvents)
 {
     if (!w || (!w->isWindow() && !w->internalWinId()))
         return;
@@ -361,7 +361,8 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
     WId winid = w->internalWinId();
 
     // first deliver events that are already in the local queue
-    QApplication::sendPostedEvents();
+    if (sendPostedEvents)
+        QApplication::sendPostedEvents();
 
     // the normal sequence is:
     //  ... ConfigureNotify ... ReparentNotify ... MapNotify ... Expose
@@ -394,6 +395,11 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
         if (t.elapsed() > maximumWaitTime)
             return;
     } while(1);
+}
+
+Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget *w)
+{
+    qt_x11_wait_for_window_manager(w, true);
 }
 
 void qt_change_net_wm_state(const QWidget* w, bool set, Atom one, Atom two = 0)
@@ -444,6 +450,7 @@ static QVector<Atom> getNetWmState(QWidget *w)
         && actualType == XA_ATOM && actualFormat == 32) {
         returnValue.resize(bytesLeft / 4);
         XFree((char*) propertyData);
+        propertyData = 0;
 
         // fetch all data
         if (XGetWindowProperty(X11->display, w->internalWinId(), ATOM(_NET_WM_STATE), 0,
@@ -458,7 +465,8 @@ static QVector<Atom> getNetWmState(QWidget *w)
         if (!returnValue.isEmpty()) {
             memcpy(returnValue.data(), propertyData, returnValue.size() * sizeof(Atom));
         }
-        XFree((char*) propertyData);
+        if (propertyData)
+            XFree((char*) propertyData);
     }
 
     return returnValue;
@@ -1289,39 +1297,49 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
 #endif
 }
 
-
-QPoint QWidget::mapToGlobal(const QPoint &pos) const
+QPoint QWidgetPrivate::mapToGlobal(const QPoint &pos) const
 {
-    Q_D(const QWidget);
-    if (!testAttribute(Qt::WA_WState_Created) || !internalWinId()) {
-        QPoint p = pos + data->crect.topLeft();
+    Q_Q(const QWidget);
+    if (!q->testAttribute(Qt::WA_WState_Created) || !q->internalWinId()) {
+        QPoint p = pos + q->data->crect.topLeft();
         //cannot trust that !isWindow() implies parentWidget() before create
-        return (isWindow() || !parentWidget()) ?  p : parentWidget()->mapToGlobal(p);
+        return (q->isWindow() || !q->parentWidget()) ?  p : q->parentWidget()->d_func()->mapToGlobal(p);
     }
-    int           x, y;
+    int x, y;
     Window child;
-    QPoint p = d->mapToWS(pos);
-    XTranslateCoordinates(X11->display, internalWinId(),
-                          QApplication::desktop()->screen(d->xinfo.screen())->internalWinId(),
+    QPoint p = mapToWS(pos);
+    XTranslateCoordinates(X11->display, q->internalWinId(),
+                          QApplication::desktop()->screen(xinfo.screen())->internalWinId(),
                           p.x(), p.y(), &x, &y, &child);
     return QPoint(x, y);
 }
 
+QPoint QWidgetPrivate::mapFromGlobal(const QPoint &pos) const
+{
+    Q_Q(const QWidget);
+    if (!q->testAttribute(Qt::WA_WState_Created) || !q->internalWinId()) {
+        //cannot trust that !isWindow() implies parentWidget() before create
+        QPoint p = (q->isWindow() || !q->parentWidget()) ?  pos : q->parentWidget()->d_func()->mapFromGlobal(pos);
+        return p - q->data->crect.topLeft();
+    }
+    int x, y;
+    Window child;
+    XTranslateCoordinates(X11->display,
+                          QApplication::desktop()->screen(xinfo.screen())->internalWinId(),
+                          q->internalWinId(), pos.x(), pos.y(), &x, &y, &child);
+    return mapFromWS(QPoint(x, y));
+}
+
+QPoint QWidget::mapToGlobal(const QPoint &pos) const
+{
+    Q_D(const QWidget);
+    return d->mapToGlobal(pos);
+}
 
 QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 {
     Q_D(const QWidget);
-    if (!testAttribute(Qt::WA_WState_Created) || !internalWinId()) {
-        //cannot trust that !isWindow() implies parentWidget() before create
-        QPoint p = (isWindow() || !parentWidget()) ?  pos : parentWidget()->mapFromGlobal(pos);
-        return p - data->crect.topLeft();
-    }
-    int           x, y;
-    Window child;
-    XTranslateCoordinates(X11->display,
-                          QApplication::desktop()->screen(d->xinfo.screen())->internalWinId(),
-                          internalWinId(), pos.x(), pos.y(), &x, &y, &child);
-    return d->mapFromWS(QPoint(x, y));
+    return d->mapFromGlobal(pos);
 }
 
 void QWidgetPrivate::updateSystemBackground()
@@ -1484,7 +1502,7 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
                 || !QX11Info::appDefaultColormap(xinfo.screen())) {
                 // unknown DE or non-default visual/colormap, use 1bpp bitmap
                 if (!forceReset || !topData->iconPixmap)
-                    topData->iconPixmap = new QBitmap(qt_toX11Pixmap(icon.pixmap(QSize(64,64))));
+                    topData->iconPixmap = new QPixmap(qt_toX11Pixmap(QBitmap(icon.pixmap(QSize(64,64)))));
                 pixmap_handle = topData->iconPixmap->handle();
             } else {
                 // default depth, use a normal pixmap (even though this

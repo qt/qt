@@ -417,6 +417,11 @@
     click focus to items underneath when being clicked on. This flag
     allows you create a non-focusable item that can be clicked on without
     changing the focus. \endomit
+
+    \omitvalue ItemStopsFocusHandling \omit Same as
+    ItemStopsClickFocusPropagation, but also suppresses focus-out. This flag
+    allows you to completely take over focus handling.
+    This flag was introduced in Qt 4.7.
 */
 
 /*!
@@ -5577,8 +5582,10 @@ void QGraphicsItemPrivate::setSubFocus(QGraphicsItem *rootItem, QGraphicsItem *s
         parent->d_ptr->subFocusItemChange();
     } while (!parent->isPanel() && (parent = parent->d_ptr->parent) && (visible || !parent->d_ptr->visible));
 
-    if (scene && !scene->isActive())
+    if (scene && !scene->isActive()) {
+        scene->d_func()->passiveFocusItem = subFocusItem;
         scene->d_func()->lastFocusItem = subFocusItem;
+    }
 }
 
 /*!
@@ -7689,11 +7696,13 @@ void QGraphicsObject::updateMicroFocus()
 
 void QGraphicsItemPrivate::children_append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item)
 {
-    QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(list->object);
-    if (QGraphicsItemPrivate::get(graphicsObject)->sendParentChangeNotification) {
-        item->setParentItem(graphicsObject);
-    } else {
-        QGraphicsItemPrivate::get(item)->setParentItemHelper(graphicsObject, 0, 0);
+    if (item) {
+        QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(list->object);
+        if (QGraphicsItemPrivate::get(graphicsObject)->sendParentChangeNotification) {
+            item->setParentItem(graphicsObject);
+        } else {
+            QGraphicsItemPrivate::get(item)->setParentItemHelper(graphicsObject, 0, 0);
+        }
     }
 }
 
@@ -11552,6 +11561,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemStopsClickFocusPropagation:
         str = "ItemStopsClickFocusPropagation";
+        break;
+    case QGraphicsItem::ItemStopsFocusHandling:
+        str = "ItemStopsFocusHandling";
         break;
     }
     debug << str;

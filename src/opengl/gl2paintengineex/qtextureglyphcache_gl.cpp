@@ -53,12 +53,15 @@ QT_BEGIN_NAMESPACE
 extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 #endif
 
+QBasicAtomicInt qgltextureglyphcache_serial_number = Q_BASIC_ATOMIC_INITIALIZER(1);
+
 QGLTextureGlyphCache::QGLTextureGlyphCache(const QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix)
     : QImageTextureGlyphCache(type, matrix), QGLContextGroupResourceBase()
     , ctx(0)
     , pex(0)
     , m_blitProgram(0)
     , m_filterMode(Nearest)
+    , m_serialNumber(qgltextureglyphcache_serial_number.fetchAndAddRelaxed(1))
 {
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
     qDebug(" -> QGLTextureGlyphCache() %p for context %p.", this, ctx);
@@ -336,8 +339,19 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed sub
         // by converting it to a format with four bytes per pixel. Another is to copy one line at a
         // time.
 
-        for (int i = 0; i < maskHeight; ++i)
-            glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y + i, maskWidth, 1, GL_ALPHA, GL_UNSIGNED_BYTE, mask.scanLine(i));
+        if (!ctx->d_ptr->workaround_brokenAlphaTexSubImage_init) {
+            // don't know which driver versions exhibit this bug, so be conservative for now
+            const QByteArray versionString(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+            ctx->d_ptr->workaround_brokenAlphaTexSubImage = versionString.indexOf("NVIDIA") >= 0;
+            ctx->d_ptr->workaround_brokenAlphaTexSubImage_init = true;
+        }
+
+        if (ctx->d_ptr->workaround_brokenAlphaTexSubImage) {
+            for (int i = 0; i < maskHeight; ++i)
+                glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y + i, maskWidth, 1, GL_ALPHA, GL_UNSIGNED_BYTE, mask.scanLine(i));
+        } else {
+            glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_ALPHA, GL_UNSIGNED_BYTE, mask.bits());
+        }
     }
 }
 

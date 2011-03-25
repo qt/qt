@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,6 +54,14 @@ QMinimalIntegration::QMinimalIntegration()
     mPrimaryScreen->mFormat = QImage::Format_RGB16;
 
     mScreens.append(mPrimaryScreen);
+}
+
+bool QMinimalIntegration::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+    case ThreadedPixmaps: return true;
+    default: return QPlatformIntegration::hasCapability(cap);
+    }
 }
 
 QPixmapData *QMinimalIntegration::createPixmapData(QPixmapData::PixelType type) const

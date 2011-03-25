@@ -198,7 +198,7 @@ QDesignerWorkbench::QDesignerWorkbench()  :
     // Build main menu bar
     addMenu(m_globalMenuBar, tr("&File"), m_actionManager->fileActions()->actions());
 
-    QMenu *editMenu = addMenu(m_globalMenuBar, tr("Edit"), m_actionManager->editActions()->actions());
+    QMenu *editMenu = addMenu(m_globalMenuBar, tr("&Edit"), m_actionManager->editActions()->actions());
     editMenu->addSeparator();
     addActionsToMenu(editMenu, m_actionManager->toolActions()->actions());
 
@@ -966,7 +966,9 @@ QDesignerFormWindow * QDesignerWorkbench::loadForm(const QString &fileName,
         return 0;
     }
     *uic3Converted = editor->fileName().isEmpty();
-    editor->setDirty(false);
+    // Did user specify another (missing) resource path -> set dirty.
+    const bool dirty = editor->property("_q_resourcepathchanged").toBool();
+    editor->setDirty(dirty);
     resizeForm(formWindow, editor->mainContainer());
     formWindowManager->setActiveFormWindow(editor);
     return formWindow;
