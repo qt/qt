@@ -75,7 +75,7 @@ private:
     QByteArray content;
     qint64 offset;
     QStringList units;
-};    
+};
 //! [class definition]
 
 #endif

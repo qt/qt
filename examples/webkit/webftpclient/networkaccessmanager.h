@@ -50,7 +50,7 @@ class NetworkAccessManager : public QNetworkAccessManager
 public:
     NetworkAccessManager(QNetworkAccessManager *oldManager, QObject *parent = 0);
 
-protected:    
+protected:
     QNetworkReply *createRequest(Operation operation, const QNetworkRequest &request, QIODevice *device);
 };
 

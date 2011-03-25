@@ -58,7 +58,7 @@ class Downloader : public QObject
 public:
     Downloader(QWidget *parentWidget, QNetworkAccessManager *manager);
 
-public slots:    
+public slots:
     QString chooseSaveFile(const QUrl &url);
     void startDownload(const QNetworkRequest &request);
     void saveFile(QNetworkReply *reply);

@@ -76,7 +76,7 @@ void CSVView::updateModel()
                 charset = right;
         }
     }
-    
+
     QTextStream stream(reply);
     stream.setCodec(QTextCodec::codecForName(charset.toLatin1()));
 
