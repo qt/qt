@@ -1,0 +1,11 @@
+Source: quickhit
+Section: user/games
+Priority: extra
+Maintainer: Antonio Aloisio <antonio.aloisio@nokia.com>
+Standards-Version: 3.7.2
+
+Package: quickhit
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: QuickHit
+ Qt Quick Game example
