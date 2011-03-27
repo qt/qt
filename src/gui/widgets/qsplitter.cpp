@@ -1016,7 +1016,7 @@ QSplitterLayoutStruct *QSplitterPrivate::insertWidget(int index, QWidget *w)
 
 /*!
     Constructs a horizontal splitter with the \a parent
-    arguments is passed on to the QFrame constructor.
+    argument passed on to the QFrame constructor.
 
     \sa setOrientation()
 */

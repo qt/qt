@@ -194,9 +194,9 @@ void QDeclarativeViewPrivate::itemGeometryChanged(QDeclarativeItem *resizeItem, 
     \since 4.7
     \brief The QDeclarativeView class provides a widget for displaying a Qt Declarative user interface.
 
-    QDeclarativeItem objects can be placed on a standard QGraphicsScene and 
-    displayed with QGraphicsView. QDeclarativeView is a QGraphicsView subclass 
-    provided as a convenience for displaying QML files, and connecting between 
+    QDeclarativeItem objects can be placed on a standard QGraphicsScene and
+    displayed with QGraphicsView. QDeclarativeView is a QGraphicsView subclass
+    provided as a convenience for displaying QML files, and connecting between
     QML and C++ Qt objects.
 
     QDeclarativeView provides:
@@ -236,7 +236,7 @@ void QDeclarativeViewPrivate::itemGeometryChanged(QDeclarativeItem *resizeItem, 
     If you're using your own QGraphicsScene-based scene with QDeclarativeView, remember to
     enable scene's sticky focus mode and to set itemIndexMethod to QGraphicsScene::NoIndex.
 
-    \sa {Integrating QML with existing Qt UI code}, {Using QML in C++ Applications}
+    \sa {Integrating QML Code with Existing Qt UI Code}, {Using QML Bindings in C++ Applications}
 */
 
 
@@ -250,7 +250,7 @@ void QDeclarativeViewPrivate::itemGeometryChanged(QDeclarativeItem *resizeItem, 
 
 /*!
   \fn QDeclarativeView::QDeclarativeView(QWidget *parent)
-  
+
   Constructs a QDeclarativeView with the given \a parent.
 */
 QDeclarativeView::QDeclarativeView(QWidget *parent)
@@ -704,7 +704,7 @@ void QDeclarativeView::paintEvent(QPaintEvent *event)
     QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Painting);
 
     int time = 0;
-    if (frameRateDebug()) 
+    if (frameRateDebug())
         time = d->frameTimer.restart();
 
 #ifdef Q_WS_MAC

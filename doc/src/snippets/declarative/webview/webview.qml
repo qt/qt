@@ -39,7 +39,9 @@
 ****************************************************************************/
 
 //! [document]
+//! [import]
 import QtWebKit 1.0
+//! [import]
 
 WebView {
     url: "http://www.nokia.com"
