@@ -146,6 +146,7 @@ public:
 #else
     static void finish(void *);
 #endif
+
 #endif // Q_OS_UNIX
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
@@ -201,6 +202,7 @@ public:
     void deref();
 
     QThread *thread;
+    Qt::HANDLE threadId;
     bool quitNow;
     int loopLevel;
     QAbstractEventDispatcher *eventDispatcher;

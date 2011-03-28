@@ -3478,7 +3478,7 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
                                                          argv ? argv : empty_argv);
     }
 
-    QThreadData *currentThreadData = QThreadData::current();
+    Qt::HANDLE currentThreadId = QThread::currentThreadId();
 
     QMutexLocker locker(signalSlotLock(sender));
     QObjectConnectionListVector *connectionLists = sender->d_func()->connectionLists;
@@ -3506,7 +3506,7 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
 
             QObject * const receiver = c->receiver;
             const int method = c->method;
-            const bool receiverInSameThread = currentThreadData == receiver->d_func()->threadData;
+            const bool receiverInSameThread = currentThreadId == receiver->d_func()->threadData->threadId;
 
             // determine if this connection should be sent immediately or
             // put into the event queue

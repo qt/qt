@@ -125,6 +125,7 @@ QThreadData *QThreadData::current()
             threadData->deref();
         }
         threadData->isAdopted = true;
+        threadData->threadId = (Qt::HANDLE)GetCurrentThreadId();
 
         if (!QCoreApplicationPrivate::theMainThread) {
             QCoreApplicationPrivate::theMainThread = threadData->thread;
@@ -306,6 +307,7 @@ unsigned int __stdcall QThreadPrivate::start(void *arg)
 
     qt_create_tls();
     TlsSetValue(qt_current_thread_data_tls_index, data);
+    data->threadId = (Qt::HANDLE)GetCurrentThreadId();
 
     QThread::setTerminationEnabled(false);
 

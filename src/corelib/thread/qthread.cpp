@@ -77,7 +77,7 @@ QT_BEGIN_NAMESPACE
 */
 
 QThreadData::QThreadData(int initialRefCount)
-    : _ref(initialRefCount), thread(0),
+    : _ref(initialRefCount), thread(0), threadId(0),
       quitNow(false), loopLevel(0), eventDispatcher(0), canWait(true), isAdopted(false)
 {
     // fprintf(stderr, "QThreadData %p created\n", this);
