@@ -743,7 +743,7 @@ public:
     static QLocale c() { return QLocale(C); }
     static QLocale system();
 
-    static QStringList matchingLocales(QLocale::Language language, QLocale::Script script, QLocale::Country country);
+    static QList<QLocale> matchingLocales(QLocale::Language language, QLocale::Script script, QLocale::Country country);
     static QList<Country> countriesForLanguage(Language lang);
 
     void setNumberOptions(NumberOptions options);

@@ -1815,21 +1815,21 @@ QLocale QLocale::system()
 /*!
     \since 4.8
 
-    Returns the list of valid locale names that match the given \a language, \a
+    Returns a list of valid locale objects that match the given \a language, \a
     script and \a country.
 
     Getting a list of all locales:
-    QStringList allLocales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript, QLocale::AnyCountry);
+    QList<QLocale> allLocales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript, QLocale::AnyCountry);
 */
-QStringList QLocale::matchingLocales(QLocale::Language language,
-                                     QLocale::Script script,
-                                     QLocale::Country country)
+QList<QLocale> QLocale::matchingLocales(QLocale::Language language,
+                                        QLocale::Script script,
+                                        QLocale::Country country)
 {
     if (uint(language) > QLocale::LastLanguage || uint(script) > QLocale::LastScript ||
             uint(country) > QLocale::LastCountry)
-        return QStringList();
+        return QList<QLocale>();
 
-    QStringList result;
+    QList<QLocale> result;
     const QLocalePrivate *d = locale_data;
     if (language == QLocale::AnyLanguage && script == QLocale::AnyScript && country == QLocale::AnyCountry)
         result.reserve(locale_data_size);
@@ -1837,7 +1837,9 @@ QStringList QLocale::matchingLocales(QLocale::Language language,
         d += locale_index[language];
     while ( (d != locale_data + locale_data_size)
             && (language == QLocale::AnyLanguage || d->m_language_id == uint(language))) {
-        result.append(d->bcp47Name());
+        QLocale locale(QLocale::C);
+        locale.p.index = localePrivateIndex(d);
+        result.append(locale);
         ++d;
     }
     return result;
