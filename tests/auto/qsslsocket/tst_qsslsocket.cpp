@@ -188,7 +188,7 @@ private slots:
     void ignoreSslErrorsListWithSlot();
     void readFromClosedSocket();
     void writeBigChunk();
-    void blacklist();
+    void blacklistedCertificates();
     void setEmptyDefaultConfiguration();
 
     static void exitLoop()
@@ -1983,7 +1983,7 @@ void tst_QSslSocket::writeBigChunk()
     socket->close();
 }
 
-void tst_QSslSocket::blacklist()
+void tst_QSslSocket::blacklistedCertificates()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
@@ -2004,14 +2004,15 @@ void tst_QSslSocket::blacklist()
     QVERIFY(sender->state() == QAbstractSocket::ConnectedState);
     receiver->setObjectName("receiver");
     sender->setObjectName("sender");
-    receiver->ignoreSslErrors();
     receiver->startClientEncryption();
 
-    connect(receiver, SIGNAL(error(QAbstractSocket::SocketError)), SLOT(exitLoop()));
+    connect(receiver, SIGNAL(sslErrors(QList<QSslError>)), SLOT(exitLoop()));
     connect(receiver, SIGNAL(encrypted()), SLOT(exitLoop()));
     enterLoop(1);
-    QCOMPARE(receiver->error(), QAbstractSocket::SslHandshakeFailedError);
-    QCOMPARE(receiver->errorString(), QString("The peer certificate is blacklisted"));
+    QList<QSslError> sslErrors = receiver->sslErrors();
+    QVERIFY(sslErrors.count() > 0);
+    // there are more errors (self signed cert and hostname mismatch), but we only care about the blacklist error
+    QCOMPARE(sslErrors.at(0).error(), QSslError::CertificateBlacklisted);
 }
 
 void tst_QSslSocket::setEmptyDefaultConfiguration()
