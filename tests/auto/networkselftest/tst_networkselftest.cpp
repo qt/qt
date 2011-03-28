@@ -495,7 +495,8 @@ void tst_NetworkSelfTest::fileLineEndingTest()
 
 static QList<Chat> ftpChat(const QByteArray &userSuffix = QByteArray())
 {
-    return QList<Chat>() << Chat::expect("220")
+    QList<Chat> rv;
+    rv << Chat::expect("220")
             << Chat::discardUntil("\r\n")
             << Chat::send("USER anonymous" + userSuffix + "\r\n")
             << Chat::expect("331")
@@ -530,10 +531,15 @@ static QList<Chat> ftpChat(const QByteArray &userSuffix = QByteArray())
 //            << Chat::send("SIZE nonASCII/german_\344\366\374\304\326\334\337\r\n")
 //            << Chat::expect("213 40\r\n")
 
-            << Chat::send("QUIT\r\n")
-            << Chat::expect("221")
-            << Chat::discardUntil("\r\n")
-            << Chat::RemoteDisconnect;
+            << Chat::send("QUIT\r\n");
+#ifdef Q_OS_SYMBIAN
+    if (userSuffix.length() == 0) // received but unacknowledged packets are discarded by TCP RST, so this doesn't work with frox proxy
+#endif
+        rv  << Chat::expect("221")
+            << Chat::discardUntil("\r\n");
+
+    rv << Chat::RemoteDisconnect;
+    return rv;
 }
 
 void tst_NetworkSelfTest::ftpServer()
