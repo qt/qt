@@ -102,11 +102,6 @@ QT_BEGIN_NAMESPACE
 static int _gettemp(char *path, int slen)
 {
     char *start, *trv, *suffp;
-#if defined(Q_OS_WIN)
-    int pid;
-#else
-    pid_t pid;
-#endif
 
     for (trv = path; *trv; ++trv)
         ;
@@ -117,32 +112,43 @@ static int _gettemp(char *path, int slen)
         errno = EINVAL;
         return -1;
     }
-#if defined(Q_OS_WIN) && defined(_MSC_VER) && _MSC_VER >= 1400
-    pid = _getpid();
-#elif defined(Q_OS_VXWORKS)
-    pid = (pid_t) taskIdCurrent;
+
+    // Initialize placeholder with random chars + PID.
+    {
+#if defined(Q_OS_WIN)
+        int pid;
 #else
-    pid = getpid();
+        pid_t pid;
 #endif
-    while (trv >= path && *trv == 'X' && pid != 0) {
-        *trv-- = (pid % 10) + '0';
-        pid /= 10;
-    }
 
-    while (trv >= path && *trv == 'X') {
-        char c;
+#if defined(Q_OS_WIN) && defined(_MSC_VER) && _MSC_VER >= 1400
+        pid = _getpid();
+#elif defined(Q_OS_VXWORKS)
+        pid = (pid_t) taskIdCurrent;
+#else
+        pid = getpid();
+#endif
+        while (trv >= path && *trv == 'X' && pid != 0) {
+            *trv-- = (pid % 10) + '0';
+            pid /= 10;
+        }
 
-        // CHANGE arc4random() -> random()
-        pid = (qrand() & 0xffff) % (26+26);
-        if (pid < 26)
-            c = pid + 'A';
-        else
-            c = (pid - 26) + 'a';
-        *trv-- = c;
+        while (trv >= path && *trv == 'X') {
+            char c;
+
+            // CHANGE arc4random() -> random()
+            int pid = (qrand() & 0xffff) % (26+26);
+            if (pid < 26)
+                c = pid + 'A';
+            else
+                c = (pid - 26) + 'a';
+            *trv-- = c;
+        }
+        start = trv + 1;
     }
-    start = trv + 1;
 
     for (;;) {
+        // Atomically create file and obtain handle
 #ifndef Q_OS_WIN
         {
             int fd = QT_OPEN(path, QT_OPEN_CREAT | O_EXCL | QT_OPEN_RDWR | QT_OPEN_LARGEFILE, 0600);
@@ -158,6 +164,8 @@ static int _gettemp(char *path, int slen)
 
         /* tricky little algorwwithm for backward compatibility */
         for (trv = start;;) {
+            // Character progression: [0-9] => 'a' ... 'z' => 'A' .. 'Z'
+            // String progression: "ZZaiC" => "aabiC"
             if (!*trv)
                 return -1;
             if (*trv == 'Z') {
