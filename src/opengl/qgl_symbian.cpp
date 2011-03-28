@@ -228,13 +228,20 @@ bool QGLContext::chooseContext(const QGLContext* shareContext) // almost same as
 
         d->eglSurface = QEgl::createSurface(device(), d->eglContext->config());
 
-#if !defined(QGL_NO_PRESERVED_SWAP)
-        eglGetError();  // Clear error state first.
-        eglSurfaceAttrib(QEgl::display(), d->eglSurface,
-                EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
-        if (eglGetError() != EGL_SUCCESS) {
-            qWarning("QGLContext: could not enable preserved swap");
-        }
+    eglGetError();  // Clear error state first.
+
+#ifdef QGL_NO_PRESERVED_SWAP
+    eglSurfaceAttrib(QEgl::display(), d->eglSurface,
+            EGL_SWAP_BEHAVIOR, EGL_BUFFER_DESTROYED);
+
+    if (eglGetError() != EGL_SUCCESS)
+        qWarning("QGLContext: could not enable destroyed swap behaviour");
+#else
+    eglSurfaceAttrib(QEgl::display(), d->eglSurface,
+            EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
+
+    if (eglGetError() != EGL_SUCCESS)
+        qWarning("QGLContext: could not enable preserved swap behaviour");
 #endif
 
         setWindowCreated(true);
