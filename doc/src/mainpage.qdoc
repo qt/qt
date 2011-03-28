@@ -171,6 +171,7 @@ Testing and debugging are part of the development process and Qt offers the
 developer multiple methods of testing their code.
 \list
 \o \l{external: Debugging Applications in Creator}{Debugging Applications in Creator} - various debugging options in Creator
+\o \l{Debugging Techniques} - essential techniques for debugging Qt code
 \o \l{external: Qt Simulator Manual}{Simulator} - testing mobile applications by simulating a mobile environment
 \o \l{QML Viewer} - an executable that is able to run QML files
 \o \l{QTestLib Manual}{QTestLib} - a unit testing framework built into Qt
