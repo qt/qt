@@ -55,11 +55,11 @@
 #define SRCDIR "."
 #endif
 
-class tst_QDeclarativePositioners : public QObject
+class tst_qsgpositioners : public QObject
 {
     Q_OBJECT
 public:
-    tst_QDeclarativePositioners();
+    tst_qsgpositioners();
 
 private slots:
     void test_horizontal();
@@ -92,11 +92,11 @@ private:
     QSGView *createView(const QString &filename);
 };
 
-tst_QDeclarativePositioners::tst_QDeclarativePositioners()
+tst_qsgpositioners::tst_qsgpositioners()
 {
 }
 
-void tst_QDeclarativePositioners::test_horizontal()
+void tst_qsgpositioners::test_horizontal()
 {
     QSGView *canvas = createView(SRCDIR "/data/horizontal.qml");
 
@@ -125,7 +125,7 @@ void tst_QDeclarativePositioners::test_horizontal()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_horizontal_rtl()
+void tst_qsgpositioners::test_horizontal_rtl()
 {
     QSGView *canvas = createView(SRCDIR "/data/horizontal.qml");
 
@@ -154,7 +154,7 @@ void tst_QDeclarativePositioners::test_horizontal_rtl()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_horizontal_spacing()
+void tst_qsgpositioners::test_horizontal_spacing()
 {
     QSGView *canvas = createView(SRCDIR "/data/horizontal-spacing.qml");
 
@@ -183,7 +183,7 @@ void tst_QDeclarativePositioners::test_horizontal_spacing()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_horizontal_spacing_rightToLeft()
+void tst_qsgpositioners::test_horizontal_spacing_rightToLeft()
 {
     QSGView *canvas = createView(SRCDIR "/data/horizontal-spacing.qml");
 
@@ -212,7 +212,7 @@ void tst_QDeclarativePositioners::test_horizontal_spacing_rightToLeft()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_horizontal_animated()
+void tst_qsgpositioners::test_horizontal_animated()
 {
     QSGView *canvas = createView(SRCDIR "/data/horizontal-animated.qml");
 
@@ -266,7 +266,7 @@ void tst_QDeclarativePositioners::test_horizontal_animated()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_horizontal_animated_rightToLeft()
+void tst_qsgpositioners::test_horizontal_animated_rightToLeft()
 {
     QSGView *canvas = createView(SRCDIR "/data/horizontal-animated.qml");
 
@@ -320,7 +320,7 @@ void tst_QDeclarativePositioners::test_horizontal_animated_rightToLeft()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_vertical()
+void tst_qsgpositioners::test_vertical()
 {
     QSGView *canvas = createView(SRCDIR "/data/vertical.qml");
 
@@ -348,7 +348,7 @@ void tst_QDeclarativePositioners::test_vertical()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_vertical_spacing()
+void tst_qsgpositioners::test_vertical_spacing()
 {
     QSGView *canvas = createView(SRCDIR "/data/vertical-spacing.qml");
 
@@ -375,7 +375,7 @@ void tst_QDeclarativePositioners::test_vertical_spacing()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_vertical_animated()
+void tst_qsgpositioners::test_vertical_animated()
 {
     QSGView *canvas = createView(SRCDIR "/data/vertical-animated.qml");
 
@@ -423,7 +423,7 @@ void tst_QDeclarativePositioners::test_vertical_animated()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_grid()
+void tst_qsgpositioners::test_grid()
 {
     QSGView *canvas = createView(SRCDIR "/data/gridtest.qml");
 
@@ -457,7 +457,7 @@ void tst_QDeclarativePositioners::test_grid()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_grid_topToBottom()
+void tst_qsgpositioners::test_grid_topToBottom()
 {
     QSGView *canvas = createView(SRCDIR "/data/grid-toptobottom.qml");
 
@@ -491,7 +491,7 @@ void tst_QDeclarativePositioners::test_grid_topToBottom()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_grid_rightToLeft()
+void tst_qsgpositioners::test_grid_rightToLeft()
 {
     QSGView *canvas = createView(SRCDIR "/data/gridtest.qml");
 
@@ -527,7 +527,7 @@ void tst_QDeclarativePositioners::test_grid_rightToLeft()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_grid_spacing()
+void tst_qsgpositioners::test_grid_spacing()
 {
     QSGView *canvas = createView(SRCDIR "/data/grid-spacing.qml");
 
@@ -560,7 +560,7 @@ void tst_QDeclarativePositioners::test_grid_spacing()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_grid_animated()
+void tst_qsgpositioners::test_grid_animated()
 {
     QSGView *canvas = createView(SRCDIR "/data/grid-animated.qml");
 
@@ -643,7 +643,7 @@ void tst_QDeclarativePositioners::test_grid_animated()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_grid_animated_rightToLeft()
+void tst_qsgpositioners::test_grid_animated_rightToLeft()
 {
     QSGView *canvas = createView(SRCDIR "/data/grid-animated.qml");
 
@@ -726,7 +726,7 @@ void tst_QDeclarativePositioners::test_grid_animated_rightToLeft()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_grid_zero_columns()
+void tst_qsgpositioners::test_grid_zero_columns()
 {
     QSGView *canvas = createView(SRCDIR "/data/gridzerocolumns.qml");
 
@@ -759,7 +759,7 @@ void tst_QDeclarativePositioners::test_grid_zero_columns()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_propertychanges()
+void tst_qsgpositioners::test_propertychanges()
 {
     QSGView *canvas = createView(SRCDIR "/data/propertychangestest.qml");
 
@@ -818,7 +818,7 @@ void tst_QDeclarativePositioners::test_propertychanges()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_repeater()
+void tst_qsgpositioners::test_repeater()
 {
     QSGView *canvas = createView(SRCDIR "/data/repeatertest.qml");
 
@@ -841,7 +841,7 @@ void tst_QDeclarativePositioners::test_repeater()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_flow()
+void tst_qsgpositioners::test_flow()
 {
     QSGView *canvas = createView(SRCDIR "/data/flowtest.qml");
 
@@ -877,7 +877,7 @@ void tst_QDeclarativePositioners::test_flow()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_flow_rightToLeft()
+void tst_qsgpositioners::test_flow_rightToLeft()
 {
     QSGView *canvas = createView(SRCDIR "/data/flowtest.qml");
 
@@ -913,7 +913,7 @@ void tst_QDeclarativePositioners::test_flow_rightToLeft()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_flow_topToBottom()
+void tst_qsgpositioners::test_flow_topToBottom()
 {
     QSGView *canvas = createView(SRCDIR "/data/flowtest-toptobottom.qml");
 
@@ -966,7 +966,7 @@ void tst_QDeclarativePositioners::test_flow_topToBottom()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_flow_resize()
+void tst_qsgpositioners::test_flow_resize()
 {
     QSGView *canvas = createView(SRCDIR "/data/flowtest.qml");
 
@@ -1000,7 +1000,7 @@ void tst_QDeclarativePositioners::test_flow_resize()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_flow_resize_rightToLeft()
+void tst_qsgpositioners::test_flow_resize_rightToLeft()
 {
     QSGView *canvas = createView(SRCDIR "/data/flowtest.qml");
 
@@ -1034,7 +1034,7 @@ void tst_QDeclarativePositioners::test_flow_resize_rightToLeft()
     delete canvas;
 }
 
-void tst_QDeclarativePositioners::test_flow_implicit_resize()
+void tst_qsgpositioners::test_flow_implicit_resize()
 {
     QSGView *canvas = createView(SRCDIR "/data/flow-testimplicitsize.qml");
     QVERIFY(canvas->rootObject() != 0);
@@ -1071,7 +1071,7 @@ void interceptWarnings(QtMsgType type, const char *msg)
     warningMessage = msg;
 }
 
-void tst_QDeclarativePositioners::test_conflictinganchors()
+void tst_qsgpositioners::test_conflictinganchors()
 {
     QtMsgHandler oldMsgHandler = qInstallMsgHandler(interceptWarnings);
     QDeclarativeEngine engine;
@@ -1171,7 +1171,7 @@ void tst_QDeclarativePositioners::test_conflictinganchors()
     delete item;
 }
 
-void tst_QDeclarativePositioners::test_mirroring()
+void tst_qsgpositioners::test_mirroring()
 {
     QList<QString> qmlFiles;
     qmlFiles << "horizontal.qml" << "gridtest.qml" << "flowtest.qml";
@@ -1231,7 +1231,7 @@ void tst_QDeclarativePositioners::test_mirroring()
     }
 }
 
-QSGView *tst_QDeclarativePositioners::createView(const QString &filename)
+QSGView *tst_qsgpositioners::createView(const QString &filename)
 {
     QSGView *canvas = new QSGView(0);
 
@@ -1241,6 +1241,6 @@ QSGView *tst_QDeclarativePositioners::createView(const QString &filename)
 }
 
 
-QTEST_MAIN(tst_QDeclarativePositioners)
+QTEST_MAIN(tst_qsgpositioners)
 
 #include "tst_qsgpositioners.moc"
