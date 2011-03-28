@@ -1184,17 +1184,41 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         }
 
 #ifdef Q_WS_S60
-        bool decorationsVisible(false);
-        if (!parentWidget()) { // Only top level native windows have control over cba/status pane
-            // Hide window decoration when switching to fullscreen / minimized otherwise show decoration.
-            // The window decoration visibility has to be changed before doing actual window state
-            // change since in that order the availableGeometry will return directly the right size and
-            // we will avoid unnecessary redraws
-            decorationsVisible = !(newstate & (Qt::WindowFullScreen | Qt::WindowMinimized));
-            const bool statusPaneVisibility = decorationsVisible;
-            const bool buttonGroupVisibility = (decorationsVisible || (isFullscreen && cbaRequested));
-            S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
+        // Hide window decoration when switching to fullscreen / minimized otherwise show decoration.
+        // The window decoration visibility has to be changed before doing actual window state
+        // change since in that order the availableGeometry will return directly the right size and
+        // we will avoid unnecessary redraws
+        Qt::WindowStates comparisonState = newstate;
+        QWidget *parentWindow = parentWidget();
+        if (parentWindow) {
+            while (parentWindow->parentWidget())
+                parentWindow = parentWindow->parentWidget();
+            comparisonState = parentWindow->windowState();
+        } else {
+            parentWindow = this;
         }
+
+        const bool decorationsVisible = !(comparisonState & (Qt::WindowFullScreen | Qt::WindowMinimized));
+        const bool parentIsFullscreen = comparisonState & Qt::WindowFullScreen;
+        const bool parentCbaVisibilityHint = parentWindow->windowFlags() & Qt::WindowSoftkeysVisibleHint;
+        bool buttonGroupVisibility = (decorationsVisible || (parentIsFullscreen && parentCbaVisibilityHint));
+
+        // For non-toplevel normal and maximized windows, show cba if window has softkey
+        // actions even if topmost parent is not showing cba. Do the same for fullscreen
+        // windows that request it.
+        if (!buttonGroupVisibility
+            && parentWidget()
+            && !(newstate & Qt::WindowMinimized)
+            && ((windowFlags() & Qt::WindowSoftkeysVisibleHint) || !(newstate & Qt::WindowFullScreen))) {
+            for (int i = 0; i < actions().size(); ++i) {
+                if (actions().at(i)->softKeyRole() != QAction::NoSoftKey) {
+                    buttonGroupVisibility = true;
+                    break;
+                }
+            }
+        }
+        S60->setStatusPaneAndButtonGroupVisibility(decorationsVisible, buttonGroupVisibility);
+
 #endif // Q_WS_S60
 
         // Ensure the initial size is valid, since we store it as normalGeometry below.
