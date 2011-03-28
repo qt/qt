@@ -216,6 +216,91 @@ bool QSGMouseAreaPrivate::isDoubleClickConnected()
     return QObjectPrivate::get(q)->isSignalConnected(idx);
 }
 
+bool QSGMouseAreaPrivate::isClickConnected()
+{
+    Q_Q(QSGMouseArea);
+    static int idx = QObjectPrivate::get(q)->signalIndex("clicked(QSGMouseEvent*)");
+    return QObjectPrivate::get(q)->isSignalConnected(idx);
+}
+
+void QSGMouseAreaPrivate::propagate(QSGMouseEvent* event, PropagateType t)
+{
+    Q_Q(QSGMouseArea);
+    QPointF scenePos = q->mapToScene(QPointF(event->x(), event->y()));
+    propagateHelper(event, canvas->rootItem(), scenePos, t);
+}
+
+bool QSGMouseAreaPrivate::propagateHelper(QSGMouseEvent *ev, QSGItem *item,const QPointF &sp, PropagateType sig)
+{
+    //Based off of QSGCanvas::deliverInitialMousePressEvent
+    //But specific to MouseArea, so doesn't belong in canvas
+    Q_Q(const QSGMouseArea);
+    QSGItemPrivate *itemPrivate = QSGItemPrivate::get(item);
+    if (itemPrivate->opacity == 0.0)
+        return false;
+
+    if (itemPrivate->flags & QSGItem::ItemClipsChildrenToShape) {
+        QPointF p = item->mapFromScene(sp);
+        if (!QRectF(0, 0, item->width(), item->height()).contains(p))
+            return false;
+    }
+
+    QList<QSGItem *> children = itemPrivate->paintOrderChildItems();
+    for (int ii = children.count() - 1; ii >= 0; --ii) {
+        QSGItem *child = children.at(ii);
+        if (!child->isVisible() || !child->isEnabled())
+            continue;
+        if (propagateHelper(ev, child, sp, sig))
+            return true;
+    }
+
+    QSGMouseArea* ma = qobject_cast<QSGMouseArea*>(item);
+    if (ma && ma != q && itemPrivate->acceptedMouseButtons & ev->button()) {
+        switch(sig){
+        case Click:
+            if (!ma->d_func()->isClickConnected())
+                return false;
+            break;
+        case DoubleClick:
+            if (!ma->d_func()->isDoubleClickConnected())
+                return false;
+            break;
+        case PressAndHold:
+            if (!ma->d_func()->isPressAndHoldConnected())
+                return false;
+            break;
+        }
+        QPointF p = item->mapFromScene(sp);
+        if (QRectF(0, 0, item->width(), item->height()).contains(p)) {
+            ev->setX(p.x());
+            ev->setY(p.y());
+            ev->setAccepted(true);//It is connected, they have to explicitly ignore to let it slide
+            switch(sig){
+            case Click: emit ma->clicked(ev); break;
+            case DoubleClick: emit ma->doubleClicked(ev); break;
+            case PressAndHold: emit ma->pressAndHold(ev); break;
+            }
+            if (ev->isAccepted())
+                return true;
+        }
+    }
+    return false;
+
+}
+
+/*
+  Behavioral Change in QtQuick 2.0
+
+  From QtQuick 2.0, the signals clicked, doubleClicked and pressAndHold have a different interaction
+  model with regards to the delivery of events to multiple overlapping MouseAreas. These signals will now propagate
+  to all MouseAreas in the area, in painting order, until accepted by one of them. A signal is accepted by
+  default if there is a signal handler for it, use mouse.accepted = false; to ignore. This propagation
+  can send the signal to MouseAreas other than the one which accepted the press event, although that MouseArea
+  will receive the signal first.
+
+  Note that to get the same behavior as a QtQuick 1.0 MouseArea{} with regard to absorbing all mouse events, you will
+  now need to add empty signal handlers for these three signals.
+ */
 QSGMouseArea::QSGMouseArea(QSGItem *parent)
   : QSGItem(*(new QSGMouseAreaPrivate), parent)
 {
@@ -294,9 +379,7 @@ void QSGMouseArea::mousePressEvent(QGraphicsSceneMouseEvent *event)
             d->drag->setActive(false);
         setHovered(true);
         d->startScene = event->scenePos();
-        // we should only start timer if pressAndHold is connected to.
-        if (d->isPressAndHoldConnected())
-            d->pressAndHoldTimer.start(PressAndHoldDelay, this);
+        d->pressAndHoldTimer.start(PressAndHoldDelay, this);
         setKeepMouseGrab(d->stealMouse);
         event->setAccepted(setPressed(true));
     }
@@ -406,12 +489,13 @@ void QSGMouseArea::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     if (!d->absorb) {
         QSGItem::mouseDoubleClickEvent(event);
     } else {
-        if (d->isDoubleClickConnected())
-            d->doubleClick = true;
         d->saveEvent(event);
         QSGMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, true, false);
         me.setAccepted(d->isDoubleClickConnected());
         emit this->doubleClicked(&me);
+        if (!me.isAccepted())
+            d->propagate(&me, QSGMouseAreaPrivate::DoubleClick);
+        d->doubleClick = d->isDoubleClickConnected() || me.isAccepted();
         QSGItem::mouseDoubleClickEvent(event);
     }
 }
@@ -555,7 +639,10 @@ void QSGMouseArea::timerEvent(QTimerEvent *event)
         if (d->pressed && dragged == false && d->hovered == true) {
             d->longPress = true;
             QSGMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, false, d->longPress);
+            me.setAccepted(d->isPressAndHoldConnected());
             emit pressAndHold(&me);
+            if (!me.isAccepted())
+                d->propagate(&me, QSGMouseAreaPrivate::PressAndHold);
         }
     }
 }
@@ -660,8 +747,12 @@ bool QSGMouseArea::setPressed(bool p)
             me.setX(d->lastPos.x());
             me.setY(d->lastPos.y());
             emit pressedChanged();
-            if (isclick && !d->longPress && !d->doubleClick)
+            if (isclick && !d->longPress && !d->doubleClick){
+                me.setAccepted(d->isClickConnected());
                 emit clicked(&me);
+                if (!me.isAccepted())
+                    d->propagate(&me, QSGMouseAreaPrivate::Click);
+            }
         }
 
         return me.isAccepted();
