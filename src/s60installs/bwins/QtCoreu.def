@@ -1375,7 +1375,7 @@ EXPORTS
 	?count@QStringRef@@QBEHXZ @ 1374 NONAME ; int QStringRef::count(void) const
 	?countriesForLanguage@QLocale@@SA?AV?$QList@W4Country@QLocale@@@@W4Language@1@@Z @ 1375 NONAME ; class QList<enum QLocale::Country> QLocale::countriesForLanguage(enum QLocale::Language)
 	?country@QLocale@@QBE?AW4Country@1@XZ @ 1376 NONAME ; enum QLocale::Country QLocale::country(void) const
-	?countryId@QLocalePrivate@@QBEIXZ @ 1377 NONAME ; unsigned int QLocalePrivate::countryId(void) const
+	?countryId@QLocalePrivate@@QBEIXZ @ 1377 NONAME ABSENT ; unsigned int QLocalePrivate::countryId(void) const
 	?countryToString@QLocale@@SA?AVQString@@W4Country@1@@Z @ 1378 NONAME ; class QString QLocale::countryToString(enum QLocale::Country)
 	?create@QAbstractFileEngine@@SAPAV1@ABVQString@@@Z @ 1379 NONAME ; class QAbstractFileEngine * QAbstractFileEngine::create(class QString const &)
 	?create@QNonContiguousByteDeviceFactory@@SAPAVQNonContiguousByteDevice@@PAVQByteArray@@@Z @ 1380 NONAME ; class QNonContiguousByteDevice * QNonContiguousByteDeviceFactory::create(class QByteArray *)
@@ -2331,7 +2331,7 @@ EXPORTS
 	?killTimer@QObject@@QAEXH@Z @ 2330 NONAME ; void QObject::killTimer(int)
 	?killTimer@QTimer@@AAEXH@Z @ 2331 NONAME ; void QTimer::killTimer(int)
 	?language@QLocale@@QBE?AW4Language@1@XZ @ 2332 NONAME ; enum QLocale::Language QLocale::language(void) const
-	?languageId@QLocalePrivate@@QBEIXZ @ 2333 NONAME ; unsigned int QLocalePrivate::languageId(void) const
+	?languageId@QLocalePrivate@@QBEIXZ @ 2333 NONAME ABSENT ; unsigned int QLocalePrivate::languageId(void) const
 	?languageToString@QLocale@@SA?AVQString@@W4Language@1@@Z @ 2334 NONAME ; class QString QLocale::languageToString(enum QLocale::Language)
 	?lastIndexIn@QRegExp@@QBEHABVQString@@HW4CaretMode@1@@Z @ 2335 NONAME ; int QRegExp::lastIndexIn(class QString const &, int, enum QRegExp::CaretMode) const
 	?lastIndexOf@QByteArray@@QBEHABV1@H@Z @ 2336 NONAME ; int QByteArray::lastIndexOf(class QByteArray const &, int) const
@@ -4631,3 +4631,39 @@ EXPORTS
 	?removeSocket@QSymbianSocketManager@@QAE_NABVRSocket@@@Z @ 4630 NONAME ; bool QSymbianSocketManager::removeSocket(class RSocket const &)
 	?started@QAnimationDriver@@MAEXXZ @ 4631 NONAME ; void QAnimationDriver::started(void)
 	?stopped@QAnimationDriver@@MAEXXZ @ 4632 NONAME ; void QAnimationDriver::stopped(void)
+	?toCurrencyString@QLocale@@QBE?AVQString@@NABV2@@Z @ 4633 NONAME ; class QString QLocale::toCurrencyString(double, class QString const &) const
+	?quoteString@QLocale@@QBE?AVQString@@ABVQStringRef@@W4QuotationStyle@1@@Z @ 4634 NONAME ; class QString QLocale::quoteString(class QStringRef const &, enum QLocale::QuotationStyle) const
+	?toCurrencyString@QLocale@@QBE?AVQString@@FABV2@@Z @ 4635 NONAME ; class QString QLocale::toCurrencyString(short, class QString const &) const
+	?countryCode@QLocalePrivate@@QBE?AVQString@@XZ @ 4636 NONAME ; class QString QLocalePrivate::countryCode(void) const
+	?toCurrencyString@QLocale@@QBE?AVQString@@IABV2@@Z @ 4637 NONAME ; class QString QLocale::toCurrencyString(unsigned int, class QString const &) const
+	?longLongToString@QLocalePrivate@@SA?AVQString@@VQChar@@000_JHHHI@Z @ 4638 NONAME ; class QString QLocalePrivate::longLongToString(class QChar, class QChar, class QChar, class QChar, long long, int, int, int, unsigned int)
+	?codeToScript@QLocalePrivate@@SA?AW4Script@QLocale@@ABVQString@@@Z @ 4639 NONAME ; enum QLocale::Script QLocalePrivate::codeToScript(class QString const &)
+	?bcp47Name@QLocale@@QBE?AVQString@@XZ @ 4640 NONAME ; class QString QLocale::bcp47Name(void) const
+	?quoteString@QLocale@@QBE?AVQString@@ABV2@W4QuotationStyle@1@@Z @ 4641 NONAME ; class QString QLocale::quoteString(class QString const &, enum QLocale::QuotationStyle) const
+	?unsLongLongToString@QLocalePrivate@@SA?AVQString@@VQChar@@00_KHHHI@Z @ 4642 NONAME ; class QString QLocalePrivate::unsLongLongToString(class QChar, class QChar, class QChar, unsigned long long, int, int, int, unsigned int)
+	?toCurrencyString@QLocale@@QBE?AVQString@@_KABV2@@Z @ 4643 NONAME ; class QString QLocale::toCurrencyString(unsigned long long, class QString const &) const
+	?firstDayOfWeek@QLocale@@QBE?AW4DayOfWeek@Qt@@XZ @ 4644 NONAME ; enum Qt::DayOfWeek QLocale::firstDayOfWeek(void) const
+	?createSeparatedList@QLocale@@QBE?AVQString@@ABVQStringList@@@Z @ 4645 NONAME ; class QString QLocale::createSeparatedList(class QStringList const &) const
+	?codeToCountry@QLocalePrivate@@SA?AW4Country@QLocale@@ABVQString@@@Z @ 4646 NONAME ; enum QLocale::Country QLocalePrivate::codeToCountry(class QString const &)
+	?scriptCode@QLocalePrivate@@QBE?AVQString@@XZ @ 4647 NONAME ; class QString QLocalePrivate::scriptCode(void) const
+	?scriptToString@QLocale@@SA?AVQString@@W4Script@1@@Z @ 4648 NONAME ; class QString QLocale::scriptToString(enum QLocale::Script)
+	?script@QLocale@@QBE?AW4Script@1@XZ @ 4649 NONAME ; enum QLocale::Script QLocale::script(void) const
+	?codeToLanguage@QLocalePrivate@@SA?AW4Language@QLocale@@ABVQString@@@Z @ 4650 NONAME ; enum QLocale::Language QLocalePrivate::codeToLanguage(class QString const &)
+	?weekdays@QLocale@@QBE?AV?$QList@W4DayOfWeek@Qt@@@@XZ @ 4651 NONAME ; class QList<enum Qt::DayOfWeek> QLocale::weekdays(void) const
+	?getLangAndCountry@QLocalePrivate@@SAXABVQString@@AAW4Language@QLocale@@AAW4Script@4@AAW4Country@4@@Z @ 4652 NONAME ; void QLocalePrivate::getLangAndCountry(class QString const &, enum QLocale::Language &, enum QLocale::Script &, enum QLocale::Country &)
+	?bcp47Name@QLocalePrivate@@QBE?AVQString@@XZ @ 4653 NONAME ; class QString QLocalePrivate::bcp47Name(void) const
+	?toCurrencyString@QLocale@@QBE?AVQString@@HABV2@@Z @ 4654 NONAME ; class QString QLocale::toCurrencyString(int, class QString const &) const
+	?matchingLocales@QLocale@@SA?AVQStringList@@W4Language@1@W4Script@1@W4Country@1@@Z @ 4655 NONAME ; class QStringList QLocale::matchingLocales(enum QLocale::Language, enum QLocale::Script, enum QLocale::Country)
+	?languageCode@QLocalePrivate@@QBE?AVQString@@XZ @ 4656 NONAME ; class QString QLocalePrivate::languageCode(void) const
+	?toCurrencyString@QLocale@@QBE?AVQString@@GABV2@@Z @ 4657 NONAME ; class QString QLocale::toCurrencyString(unsigned short, class QString const &) const
+	?doubleToString@QLocalePrivate@@SA?AVQString@@VQChar@@00000NHW4DoubleForm@1@HI@Z @ 4658 NONAME ; class QString QLocalePrivate::doubleToString(class QChar, class QChar, class QChar, class QChar, class QChar, class QChar, double, int, enum QLocalePrivate::DoubleForm, int, unsigned int)
+	?currencySymbol@QLocale@@QBE?AVQString@@W4CurrencySymbolFormat@1@@Z @ 4659 NONAME ; class QString QLocale::currencySymbol(enum QLocale::CurrencySymbolFormat) const
+	?uiLanguages@QLocale@@QBE?AVQStringList@@XZ @ 4660 NONAME ; class QStringList QLocale::uiLanguages(void) const
+	?findLocale@QLocalePrivate@@SAPBU1@W4Language@QLocale@@W4Script@3@W4Country@3@@Z @ 4661 NONAME ; struct QLocalePrivate const * QLocalePrivate::findLocale(enum QLocale::Language, enum QLocale::Script, enum QLocale::Country)
+	?load@QTranslator@@QAE_NABVQLocale@@ABVQString@@111@Z @ 4662 NONAME ; bool QTranslator::load(class QLocale const &, class QString const &, class QString const &, class QString const &, class QString const &)
+	??0QLocale@@QAE@W4Language@0@W4Script@0@W4Country@0@@Z @ 4663 NONAME ; QLocale::QLocale(enum QLocale::Language, enum QLocale::Script, enum QLocale::Country)
+	?languageId@QLocalePrivate@@QBEGXZ @ 4664 NONAME ; unsigned short QLocalePrivate::languageId(void) const
+	?countryId@QLocalePrivate@@QBEGXZ @ 4665 NONAME ; unsigned short QLocalePrivate::countryId(void) const
+	?toCurrencyString@QLocale@@QBE?AVQString@@_JABV2@@Z @ 4666 NONAME ; class QString QLocale::toCurrencyString(long long, class QString const &) const
+	?toCurrencyString@QLocale@@QBE?AVQString@@MABV2@@Z @ 4667 NONAME ; class QString QLocale::toCurrencyString(float, class QString const &) const
+

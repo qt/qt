@@ -13203,3 +13203,9 @@ EXPORTS
 	?byteCount@QVolatileImage@@QBEHXZ @ 13202 NONAME ; int QVolatileImage::byteCount(void) const
 	??0QVolatileImage@@QAE@ABV0@@Z @ 13203 NONAME ; QVolatileImage::QVolatileImage(class QVolatileImage const &)
 	?depth@QVolatileImage@@QBEHXZ @ 13204 NONAME ; int QVolatileImage::depth(void) const
+	?setTabsClosable@QMdiArea@@QAEX_N@Z @ 13205 NONAME ; void QMdiArea::setTabsClosable(bool)
+	?qt_s60_setPartialScreenInputMode@@YAX_N@Z @ 13206 NONAME ; void qt_s60_setPartialScreenInputMode(bool)
+	?setTabsMovable@QMdiArea@@QAEX_N@Z @ 13207 NONAME ; void QMdiArea::setTabsMovable(bool)
+	?tabsMovable@QMdiArea@@QBE_NXZ @ 13208 NONAME ; bool QMdiArea::tabsMovable(void) const
+	?tabsClosable@QMdiArea@@QBE_NXZ @ 13209 NONAME ; bool QMdiArea::tabsClosable(void) const
+

@@ -12360,17 +12360,41 @@ EXPORTS
 	_ZN14QVolatileImageD2Ev @ 12359 NONAME
 	_ZN14QVolatileImageaSERKS_ @ 12360 NONAME
 	_ZN15QGraphicsSystem22releaseCachedResourcesEv @ 12361 NONAME
-	_ZNK14QVolatileImage12bytesPerLineEv @ 12374 NONAME
-	_ZNK14QVolatileImage13endDataAccessEb @ 12375 NONAME
-	_ZNK14QVolatileImage15beginDataAccessEv @ 12376 NONAME
-	_ZNK14QVolatileImage15hasAlphaChannelEv @ 12377 NONAME
-	_ZNK14QVolatileImage20duplicateNativeImageEv @ 12378 NONAME
-	_ZNK14QVolatileImage5depthEv @ 12379 NONAME
-	_ZNK14QVolatileImage5widthEv @ 12380 NONAME
-	_ZNK14QVolatileImage6formatEv @ 12381 NONAME
-	_ZNK14QVolatileImage6heightEv @ 12382 NONAME
-	_ZNK14QVolatileImage6isNullEv @ 12383 NONAME
-	_ZNK14QVolatileImage7toImageEv @ 12384 NONAME
-	_ZNK14QVolatileImage9byteCountEv @ 12385 NONAME
-	_ZNK14QVolatileImage9constBitsEv @ 12386 NONAME
+	_Z32qt_s60_setPartialScreenInputModeb @ 12362 NONAME
+	_ZN17QInternalMimeData11canReadDataERK7QString @ 12363 NONAME
+	_ZN17QInternalMimeData11qt_metacallEN11QMetaObject4CallEiPPv @ 12364 NONAME
+	_ZN17QInternalMimeData11qt_metacastEPKc @ 12365 NONAME
+	_ZN17QInternalMimeData13formatsHelperEPK9QMimeData @ 12366 NONAME
+	_ZN17QInternalMimeData15hasFormatHelperERK7QStringPK9QMimeData @ 12367 NONAME
+	_ZN17QInternalMimeData16renderDataHelperERK7QStringPK9QMimeData @ 12368 NONAME
+	_ZN17QInternalMimeData16staticMetaObjectE @ 12369 NONAME DATA 16
+	_ZN17QInternalMimeData19getStaticMetaObjectEv @ 12370 NONAME
+	_ZN17QInternalMimeDataC2Ev @ 12371 NONAME
+	_ZN17QInternalMimeDataD0Ev @ 12372 NONAME
+	_ZN17QInternalMimeDataD1Ev @ 12373 NONAME
+	_ZN17QInternalMimeDataD2Ev @ 12374 NONAME
+	_ZN8QMdiArea14setTabsMovableEb @ 12375 NONAME
+	_ZN8QMdiArea15setTabsClosableEb @ 12376 NONAME
+	_ZNK14QVolatileImage12bytesPerLineEv @ 12377 NONAME
+	_ZNK14QVolatileImage13endDataAccessEb @ 12378 NONAME
+	_ZNK14QVolatileImage15beginDataAccessEv @ 12379 NONAME
+	_ZNK14QVolatileImage15hasAlphaChannelEv @ 12380 NONAME
+	_ZNK14QVolatileImage20duplicateNativeImageEv @ 12381 NONAME
+	_ZNK14QVolatileImage5depthEv @ 12382 NONAME
+	_ZNK14QVolatileImage5widthEv @ 12383 NONAME
+	_ZNK14QVolatileImage6formatEv @ 12384 NONAME
+	_ZNK14QVolatileImage6heightEv @ 12385 NONAME
+	_ZNK14QVolatileImage6isNullEv @ 12386 NONAME
+	_ZNK14QVolatileImage7toImageEv @ 12387 NONAME
+	_ZNK14QVolatileImage9byteCountEv @ 12388 NONAME
+	_ZNK14QVolatileImage9constBitsEv @ 12389 NONAME
+	_ZNK14QWidgetPrivate20assignedInputContextEv @ 12390 NONAME
+	_ZNK17QInternalMimeData10metaObjectEv @ 12391 NONAME
+	_ZNK17QInternalMimeData12retrieveDataERK7QStringN8QVariant4TypeE @ 12392 NONAME
+	_ZNK17QInternalMimeData7formatsEv @ 12393 NONAME
+	_ZNK17QInternalMimeData9hasFormatERK7QString @ 12394 NONAME
+	_ZNK8QMdiArea11tabsMovableEv @ 12395 NONAME
+	_ZNK8QMdiArea12tabsClosableEv @ 12396 NONAME
+	_ZTI17QInternalMimeData @ 12397 NONAME
+	_ZTV17QInternalMimeData @ 12398 NONAME
 

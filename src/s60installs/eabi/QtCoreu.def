@@ -3834,3 +3834,33 @@ EXPORTS
 	gzungetc @ 3833 NONAME
 	_ZN16QAnimationDriverC1EP7QObject @ 3834 NONAME
 	_ZN16QAnimationDriverC1ER23QAnimationDriverPrivateP7QObject @ 3835 NONAME
+	_ZN11QTranslator4loadERK7QLocaleRK7QStringS5_S5_S5_ @ 3836 NONAME
+	_ZN14QLocalePrivate10findLocaleEN7QLocale8LanguageENS0_6ScriptENS0_7CountryE @ 3837 NONAME
+	_ZN14QLocalePrivate12codeToScriptERK7QString @ 3838 NONAME
+	_ZN14QLocalePrivate13codeToCountryERK7QString @ 3839 NONAME
+	_ZN14QLocalePrivate14codeToLanguageERK7QString @ 3840 NONAME
+	_ZN14QLocalePrivate14doubleToStringE5QCharS0_S0_S0_S0_S0_diNS_10DoubleFormEij @ 3841 NONAME
+	_ZN14QLocalePrivate16longLongToStringE5QCharS0_S0_S0_xiiij @ 3842 NONAME
+	_ZN14QLocalePrivate17getLangAndCountryERK7QStringRN7QLocale8LanguageERNS3_6ScriptERNS3_7CountryE @ 3843 NONAME
+	_ZN14QLocalePrivate19unsLongLongToStringE5QCharS0_S0_yiiij @ 3844 NONAME
+	_ZN7QLocale14scriptToStringENS_6ScriptE @ 3845 NONAME
+	_ZN7QLocale15matchingLocalesENS_8LanguageENS_6ScriptENS_7CountryE @ 3846 NONAME
+	_ZN7QLocaleC1ENS_8LanguageENS_6ScriptENS_7CountryE @ 3847 NONAME
+	_ZN7QLocaleC2ENS_8LanguageENS_6ScriptENS_7CountryE @ 3848 NONAME
+	_ZNK14QLocalePrivate10scriptCodeEv @ 3849 NONAME
+	_ZNK14QLocalePrivate11countryCodeEv @ 3850 NONAME
+	_ZNK14QLocalePrivate12languageCodeEv @ 3851 NONAME
+	_ZNK14QLocalePrivate9bcp47NameEv @ 3852 NONAME
+	_ZNK7QLocale11quoteStringERK10QStringRefNS_14QuotationStyleE @ 3853 NONAME
+	_ZNK7QLocale11quoteStringERK7QStringNS_14QuotationStyleE @ 3854 NONAME
+	_ZNK7QLocale11uiLanguagesEv @ 3855 NONAME
+	_ZNK7QLocale14currencySymbolENS_20CurrencySymbolFormatE @ 3856 NONAME
+	_ZNK7QLocale14firstDayOfWeekEv @ 3857 NONAME
+	_ZNK7QLocale16toCurrencyStringEdRK7QString @ 3858 NONAME
+	_ZNK7QLocale16toCurrencyStringExRK7QString @ 3859 NONAME
+	_ZNK7QLocale16toCurrencyStringEyRK7QString @ 3860 NONAME
+	_ZNK7QLocale19createSeparatedListERK11QStringList @ 3861 NONAME
+	_ZNK7QLocale6scriptEv @ 3862 NONAME
+	_ZNK7QLocale8weekdaysEv @ 3863 NONAME
+	_ZNK7QLocale9bcp47NameEv @ 3864 NONAME
+

@@ -1164,4 +1164,35 @@ EXPORTS
 	?nativeSession@QNetworkSessionPrivate@@SAPAVRConnection@@AAVQNetworkSession@@@Z @ 1163 NONAME ; class RConnection * QNetworkSessionPrivate::nativeSession(class QNetworkSession &)
 	?nativeOpenSocket@QNetworkSessionPrivate@@SAHAAVQNetworkSession@@AAVRSocket@@III@Z @ 1164 NONAME ; int QNetworkSessionPrivate::nativeOpenSocket(class QNetworkSession &, class RSocket &, unsigned int, unsigned int, unsigned int)
 	?nativeOpenHostResolver@QNetworkSessionPrivate@@SAHAAVQNetworkSession@@AAVRHostResolver@@II@Z @ 1165 NONAME ; int QNetworkSessionPrivate::nativeOpenHostResolver(class QNetworkSession &, class RHostResolver &, unsigned int, unsigned int)
+	??_EQHttpMultiPart@@UAE@I@Z @ 1166 NONAME ; QHttpMultiPart::~QHttpMultiPart(unsigned int)
+	??1QHttpPart@@QAE@XZ @ 1167 NONAME ; QHttpPart::~QHttpPart(void)
+	?trUtf8@QHttpMultiPart@@SA?AVQString@@PBD0@Z @ 1168 NONAME ; class QString QHttpMultiPart::trUtf8(char const *, char const *)
+	??0QHttpPart@@QAE@ABV0@@Z @ 1169 NONAME ; QHttpPart::QHttpPart(class QHttpPart const &)
+	?setBody@QHttpPart@@QAEXABVQByteArray@@@Z @ 1170 NONAME ; void QHttpPart::setBody(class QByteArray const &)
+	?trUtf8@QHttpMultiPart@@SA?AVQString@@PBD0H@Z @ 1171 NONAME ; class QString QHttpMultiPart::trUtf8(char const *, char const *, int)
+	?staticMetaObject@QHttpMultiPart@@2UQMetaObject@@B @ 1172 NONAME ; struct QMetaObject const QHttpMultiPart::staticMetaObject
+	??4QHttpPart@@QAEAAV0@ABV0@@Z @ 1173 NONAME ; class QHttpPart & QHttpPart::operator=(class QHttpPart const &)
+	?append@QHttpMultiPart@@QAEXABVQHttpPart@@@Z @ 1174 NONAME ; void QHttpMultiPart::append(class QHttpPart const &)
+	?setContentType@QHttpMultiPart@@QAEXW4ContentType@1@@Z @ 1175 NONAME ; void QHttpMultiPart::setContentType(enum QHttpMultiPart::ContentType)
+	?d_func@QHttpMultiPart@@AAEPAVQHttpMultiPartPrivate@@XZ @ 1176 NONAME ; class QHttpMultiPartPrivate * QHttpMultiPart::d_func(void)
+	??9QHttpPart@@QBE_NABV0@@Z @ 1177 NONAME ; bool QHttpPart::operator!=(class QHttpPart const &) const
+	??0QHttpMultiPart@@QAE@W4ContentType@0@PAVQObject@@@Z @ 1178 NONAME ; QHttpMultiPart::QHttpMultiPart(enum QHttpMultiPart::ContentType, class QObject *)
+	??0QHttpPart@@QAE@XZ @ 1179 NONAME ; QHttpPart::QHttpPart(void)
+	?post@QNetworkAccessManager@@QAEPAVQNetworkReply@@ABVQNetworkRequest@@PAVQHttpMultiPart@@@Z @ 1180 NONAME ; class QNetworkReply * QNetworkAccessManager::post(class QNetworkRequest const &, class QHttpMultiPart *)
+	??0QHttpMultiPart@@QAE@PAVQObject@@@Z @ 1181 NONAME ; QHttpMultiPart::QHttpMultiPart(class QObject *)
+	??8QHttpPart@@QBE_NABV0@@Z @ 1182 NONAME ; bool QHttpPart::operator==(class QHttpPart const &) const
+	?setBodyDevice@QHttpPart@@QAEXPAVQIODevice@@@Z @ 1183 NONAME ; void QHttpPart::setBodyDevice(class QIODevice *)
+	?getStaticMetaObject@QHttpMultiPart@@SAABUQMetaObject@@XZ @ 1184 NONAME ; struct QMetaObject const & QHttpMultiPart::getStaticMetaObject(void)
+	?qt_metacast@QHttpMultiPart@@UAEPAXPBD@Z @ 1185 NONAME ; void * QHttpMultiPart::qt_metacast(char const *)
+	?put@QNetworkAccessManager@@QAEPAVQNetworkReply@@ABVQNetworkRequest@@PAVQHttpMultiPart@@@Z @ 1186 NONAME ; class QNetworkReply * QNetworkAccessManager::put(class QNetworkRequest const &, class QHttpMultiPart *)
+	?tr@QHttpMultiPart@@SA?AVQString@@PBD0@Z @ 1187 NONAME ; class QString QHttpMultiPart::tr(char const *, char const *)
+	?qt_metacall@QHttpMultiPart@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 1188 NONAME ; int QHttpMultiPart::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?boundary@QHttpMultiPart@@QBE?AVQByteArray@@XZ @ 1189 NONAME ; class QByteArray QHttpMultiPart::boundary(void) const
+	?setRawHeader@QHttpPart@@QAEXABVQByteArray@@0@Z @ 1190 NONAME ; void QHttpPart::setRawHeader(class QByteArray const &, class QByteArray const &)
+	?metaObject@QHttpMultiPart@@UBEPBUQMetaObject@@XZ @ 1191 NONAME ; struct QMetaObject const * QHttpMultiPart::metaObject(void) const
+	?setHeader@QHttpPart@@QAEXW4KnownHeaders@QNetworkRequest@@ABVQVariant@@@Z @ 1192 NONAME ; void QHttpPart::setHeader(enum QNetworkRequest::KnownHeaders, class QVariant const &)
+	??1QHttpMultiPart@@UAE@XZ @ 1193 NONAME ; QHttpMultiPart::~QHttpMultiPart(void)
+	?d_func@QHttpMultiPart@@ABEPBVQHttpMultiPartPrivate@@XZ @ 1194 NONAME ; class QHttpMultiPartPrivate const * QHttpMultiPart::d_func(void) const
+	?tr@QHttpMultiPart@@SA?AVQString@@PBD0H@Z @ 1195 NONAME ; class QString QHttpMultiPart::tr(char const *, char const *, int)
+	?setBoundary@QHttpMultiPart@@QAEXABVQByteArray@@@Z @ 1196 NONAME ; void QHttpMultiPart::setBoundary(class QByteArray const &)
 
