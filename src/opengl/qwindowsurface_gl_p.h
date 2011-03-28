@@ -108,6 +108,8 @@ public:
 
     QImage *buffer(const QWidget *widget);
 
+    bool hasPartialUpdateSupport() const;
+
     QGLContext *context() const;
 
     static QGLFormat surfaceFormat;

@@ -339,8 +339,19 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed sub
         // by converting it to a format with four bytes per pixel. Another is to copy one line at a
         // time.
 
-        for (int i = 0; i < maskHeight; ++i)
-            glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y + i, maskWidth, 1, GL_ALPHA, GL_UNSIGNED_BYTE, mask.scanLine(i));
+        if (!ctx->d_ptr->workaround_brokenAlphaTexSubImage_init) {
+            // don't know which driver versions exhibit this bug, so be conservative for now
+            const QByteArray versionString(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+            ctx->d_ptr->workaround_brokenAlphaTexSubImage = versionString.indexOf("NVIDIA") >= 0;
+            ctx->d_ptr->workaround_brokenAlphaTexSubImage_init = true;
+        }
+
+        if (ctx->d_ptr->workaround_brokenAlphaTexSubImage) {
+            for (int i = 0; i < maskHeight; ++i)
+                glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y + i, maskWidth, 1, GL_ALPHA, GL_UNSIGNED_BYTE, mask.scanLine(i));
+        } else {
+            glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_ALPHA, GL_UNSIGNED_BYTE, mask.bits());
+        }
     }
 }
 

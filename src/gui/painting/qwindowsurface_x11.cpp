@@ -70,9 +70,6 @@ QX11WindowSurface::QX11WindowSurface(QWidget *widget)
 #ifndef QT_NO_XRENDER
     d_ptr->translucentBackground = X11->use_xrender
         && widget->x11Info().depth() == 32;
-    setStaticContentsSupport(!d_ptr->translucentBackground);
-#else
-    setStaticContentsSupport(true);
 #endif
 }
 
@@ -251,6 +248,15 @@ QPixmap QX11WindowSurface::grabWidget(const QWidget *widget,
     XFreeGC(X11->display, tmpGc);
 
     return px;
+}
+
+bool QX11WindowSurface::hasStaticContentsSupport() const
+{
+#ifndef QT_NO_XRENDER
+    return !d_ptr->translucentBackground;
+#else
+    return true;
+#endif
 }
 
 QT_END_NAMESPACE

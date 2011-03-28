@@ -73,6 +73,10 @@
 #   include <private/qt_cocoa_helpers_mac_p.h>
 #endif
 
+#ifdef QT_NO_DOCKWIDGET
+extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
+#endif
+
 #ifdef Q_DEBUG_MAINWINDOW_LAYOUT
 #   include <QTextStream>
 #endif

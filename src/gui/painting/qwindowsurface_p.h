@@ -100,16 +100,14 @@ public:
     virtual QPoint offset(const QWidget *widget) const;
     inline QRect rect(const QWidget *widget) const;
 
-    bool hasStaticContentsSupport() const;
-    bool hasPartialUpdateSupport() const;
+    virtual bool hasStaticContentsSupport() const;
+    virtual bool hasPartialUpdateSupport() const;
 
     void setStaticContents(const QRegion &region);
     QRegion staticContents() const;
 
 protected:
     bool hasStaticContents() const;
-    void setStaticContentsSupport(bool enable);
-    void setPartialUpdateSupport(bool enable);
 
 private:
     QWindowSurfacePrivate *d_ptr;

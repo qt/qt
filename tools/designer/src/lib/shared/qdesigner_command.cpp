@@ -2094,12 +2094,12 @@ void AddContainerWidgetPageCommand::init(QWidget *containerWidget, ContainerType
         case PageContainer:
             setText(QApplication::translate("Command", "Insert Page"));
             m_widget = new QDesignerWidget(formWindow(), m_containerWidget);
-            m_widget->setObjectName(QApplication::translate("Command", "page"));
+            m_widget->setObjectName(QLatin1String("page"));
             break;
         case MdiContainer:
             setText(QApplication::translate("Command", "Insert Subwindow"));
             m_widget = new QDesignerWidget(formWindow(), m_containerWidget);
-            m_widget->setObjectName(QApplication::translate("Command", "subwindow"));
+            m_widget->setObjectName(QLatin1String("subwindow"));
             setPropertySheetWindowTitle(core, m_widget, QApplication::translate("Command", "Subwindow"));
             break;
         case WizardContainer: // Apply style, don't manage
