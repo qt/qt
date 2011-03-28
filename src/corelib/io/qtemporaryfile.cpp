@@ -95,9 +95,12 @@ QT_BEGIN_NAMESPACE
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+static int createFileFromTemplate(char *const path,
+        char *const placeholderStart, char *const placeholderEnd);
+
 static int _gettemp(char *path, int slen)
 {
-    char *start, *trv, *suffp;
+    char *trv, *suffp;
 
     for (trv = path; *trv; ++trv)
         ;
@@ -109,28 +112,51 @@ static int _gettemp(char *path, int slen)
         return -1;
     }
 
+    while (trv >= path && *trv == 'X')
+        --trv;
+
+    char *const placeholderStart = trv + 1;
+    char *const placeholderEnd = suffp;
+
+    return createFileFromTemplate(path, placeholderStart, placeholderEnd);
+}
+
+/*!
+    \internal
+
+    Generates a unique file path and returns a native handle to the open file.
+    \a path is used as a template when generating unique paths,
+    \a placeholderStart and \a placeholderEnd delimit the sub-string that will
+    be randomized.
+
+    Returns an open handle to the newly created file if successful, an invalid
+    handle otherwise. In both cases, the string in \a path will be changed and
+    contain the generated path name.
+*/
+static int createFileFromTemplate(char *const path,
+        char *const placeholderStart, char *const placeholderEnd)
+{
+    Q_ASSERT(placeholderEnd > placeholderStart);
+
     // Initialize placeholder with random chars + PID.
     {
+        char *rIter = placeholderEnd;
+
 #if defined(QT_BUILD_CORE_LIB)
         qint64 pid = QCoreApplication::applicationPid();
-        while (trv >= path && *trv == 'X' && pid != 0) {
-            *trv-- = (pid % 10) + '0';
+        do {
+            *--rIter = (pid % 10) + '0';
             pid /= 10;
-        }
+        } while (rIter != placeholderStart && pid != 0);
 #endif
 
-        while (trv >= path && *trv == 'X') {
-            char c;
-
-            // CHANGE arc4random() -> random()
-            int pid = (qrand() & 0xffff) % (26+26);
-            if (pid < 26)
-                c = pid + 'A';
+        while (rIter != placeholderStart) {
+            char ch = char((qrand() & 0xffff) % (26 + 26));
+            if (ch < 26)
+                *--rIter = ch + 'A';
             else
-                c = (pid - 26) + 'a';
-            *trv-- = c;
+                *--rIter = ch - 26 + 'a';
         }
-        start = trv + 1;
     }
 
     for (;;) {
@@ -149,24 +175,24 @@ static int _gettemp(char *path, int slen)
 #endif
 
         /* tricky little algorwwithm for backward compatibility */
-        for (trv = start;;) {
+        for (char *iter = placeholderStart;;) {
             // Character progression: [0-9] => 'a' ... 'z' => 'A' .. 'Z'
             // String progression: "ZZaiC" => "aabiC"
-            if (!*trv)
+            if (!*iter)
                 return -1;
-            if (*trv == 'Z') {
-                if (trv == suffp)
+            if (*iter == 'Z') {
+                if (iter == placeholderEnd)
                     return -1;
-                *trv++ = 'a';
+                *iter++ = 'a';
             } else {
-                if (isdigit(*trv))
-                    *trv = 'a';
-                else if (*trv == 'z') /* inc from z to A */
-                    *trv = 'A';
+                if (isdigit(*iter))
+                    *iter = 'a';
+                else if (*iter == 'z') /* inc from z to A */
+                    *iter = 'A';
                 else {
-                    if (trv == suffp)
+                    if (iter == placeholderEnd)
                         return -1;
-                    ++*trv;
+                    ++*iter;
                 }
                 break;
             }
