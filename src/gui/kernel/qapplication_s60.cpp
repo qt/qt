@@ -1271,15 +1271,36 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         qwidget->d_func()->setWindowIcon_sys(true);
         qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
 #ifdef Q_WS_S60
-        // If widget is fullscreen/minimized, hide status pane and button container otherwise show them.
-        QWidget *const window = qwidget->window();
-        if (!window->parentWidget()) { // Only top level native windows have control over cba/status pane
-            const bool decorationsVisible = !(window->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
-            const bool statusPaneVisibility = decorationsVisible;
-            const bool isFullscreen = window->windowState() & Qt::WindowFullScreen;
-            const bool cbaVisibilityHint = window->windowFlags() & Qt::WindowSoftkeysVisibleHint;
-            const bool buttonGroupVisibility = (decorationsVisible || (isFullscreen && cbaVisibilityHint));
-            S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
+        if (qwidget->isWindow()) {
+            QWidget *const window = qwidget->window();
+            QWidget *parentWindow = window->parentWidget();
+            if (parentWindow) {
+                while (parentWindow->parentWidget())
+                    parentWindow = parentWindow->parentWidget();
+            } else {
+                parentWindow = window;
+            }
+
+            const bool parentDecorationsVisible = !(parentWindow->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
+            const bool parentIsFullscreen = parentWindow->windowState() & Qt::WindowFullScreen;
+            const bool parentCbaVisibilityHint = parentWindow->windowFlags() & Qt::WindowSoftkeysVisibleHint;
+            bool buttonGroupVisibility = (parentDecorationsVisible || (parentIsFullscreen && parentCbaVisibilityHint));
+
+            // For non-toplevel normal and maximized windows, show cba if window has softkey
+            // actions even if topmost parent is not showing cba. Do the same for fullscreen
+            // windows that request it.
+            if (!buttonGroupVisibility
+                && window->parentWidget()
+                && !(window->windowState() & Qt::WindowMinimized)
+                && ((window->windowFlags() & Qt::WindowSoftkeysVisibleHint) || !(window->windowState() & Qt::WindowFullScreen))) {
+                for (int i = 0; i < window->actions().size(); ++i) {
+                    if (window->actions().at(i)->softKeyRole() != QAction::NoSoftKey) {
+                        buttonGroupVisibility = true;
+                        break;
+                    }
+                }
+            }
+            S60->setStatusPaneAndButtonGroupVisibility(parentDecorationsVisible, buttonGroupVisibility);
         }
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
