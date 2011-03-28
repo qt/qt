@@ -383,12 +383,12 @@ void tst_qsgtextedit::alignments()
     QFETCH(int, vAlign);
     QFETCH(QString, expectfile);
 
-    QSGView *canvas = createView(SRCDIR "/data/alignments.qml");
+    QScopedPointer<QSGView> canvas(createView(SRCDIR "/data/alignments.qml"));
 
     canvas->show();
-    QApplication::setActiveWindow(canvas);
-    QTest::qWaitForWindowShown(canvas);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+    QApplication::setActiveWindow(canvas.data());
+    QTest::qWaitForWindowShown(canvas.data());
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas.data()));
 
     QObject *ob = canvas->rootObject();
     QVERIFY(ob != 0);
@@ -405,8 +405,6 @@ void tst_qsgtextedit::alignments()
     QImage expect(expectfile);
 
     QCOMPARE(actual,expect);
-
-    delete canvas;
 }
 
 
@@ -447,7 +445,7 @@ void tst_qsgtextedit::hAlign()
 
 void tst_qsgtextedit::hAlign_RightToLeft()
 {
-    QSGView *canvas = createView(SRCDIR "/data/horizontalAlignment_RightToLeft.qml");
+    QScopedPointer<QSGView> canvas(createView(SRCDIR "/data/horizontalAlignment_RightToLeft.qml"));
     QSGTextEdit *textEdit = canvas->rootObject()->findChild<QSGTextEdit*>("text");
     QVERIFY(textEdit != 0);
     canvas->show();
@@ -542,8 +540,6 @@ void tst_qsgtextedit::hAlign_RightToLeft()
     QCOMPARE(textEdit->hAlign(), QSGTextEdit::AlignRight);
     QVERIFY(textEdit->positionToRectangle(0).x() > canvas->width()/2);
 #endif
-
-    delete canvas;
 
 #ifndef Q_OS_MAC    // QTBUG-18040
     // alignment of TextEdit with no text set to it
@@ -916,11 +912,11 @@ void tst_qsgtextedit::isRightToLeft()
 
 void tst_qsgtextedit::keySelection()
 {
-    QSGView *canvas = createView(SRCDIR "/data/navigation.qml");
+    QScopedPointer<QSGView> canvas(createView(SRCDIR "/data/navigation.qml"));
     canvas->show();
-    QApplication::setActiveWindow(canvas);
-    QTest::qWaitForWindowShown(canvas);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+    QApplication::setActiveWindow(canvas.data());
+    QTest::qWaitForWindowShown(canvas.data());
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas.data()));
     canvas->setFocus();
 
     QVERIFY(canvas->rootObject() != 0);
@@ -932,36 +928,34 @@ void tst_qsgtextedit::keySelection()
 
     QSignalSpy spy(input, SIGNAL(selectionChanged()));
 
-    simulateKey(canvas, Qt::Key_Right, Qt::ShiftModifier);
+    simulateKey(canvas.data(), Qt::Key_Right, Qt::ShiftModifier);
     QVERIFY(input->hasActiveFocus() == true);
     QCOMPARE(input->selectedText(), QString("a"));
     QCOMPARE(spy.count(), 1);
-    simulateKey(canvas, Qt::Key_Right);
+    simulateKey(canvas.data(), Qt::Key_Right);
     QVERIFY(input->hasActiveFocus() == true);
     QCOMPARE(input->selectedText(), QString());
     QCOMPARE(spy.count(), 2);
-    simulateKey(canvas, Qt::Key_Right);
+    simulateKey(canvas.data(), Qt::Key_Right);
     QVERIFY(input->hasActiveFocus() == false);
     QCOMPARE(input->selectedText(), QString());
     QCOMPARE(spy.count(), 2);
 
-    simulateKey(canvas, Qt::Key_Left);
+    simulateKey(canvas.data(), Qt::Key_Left);
     QVERIFY(input->hasActiveFocus() == true);
     QCOMPARE(spy.count(), 2);
-    simulateKey(canvas, Qt::Key_Left, Qt::ShiftModifier);
+    simulateKey(canvas.data(), Qt::Key_Left, Qt::ShiftModifier);
     QVERIFY(input->hasActiveFocus() == true);
     QCOMPARE(input->selectedText(), QString("a"));
     QCOMPARE(spy.count(), 3);
-    simulateKey(canvas, Qt::Key_Left);
+    simulateKey(canvas.data(), Qt::Key_Left);
     QVERIFY(input->hasActiveFocus() == true);
     QCOMPARE(input->selectedText(), QString());
     QCOMPARE(spy.count(), 4);
-    simulateKey(canvas, Qt::Key_Left);
+    simulateKey(canvas.data(), Qt::Key_Left);
     QVERIFY(input->hasActiveFocus() == false);
     QCOMPARE(input->selectedText(), QString());
     QCOMPARE(spy.count(), 4);
-
-    delete canvas;
 }
 
 void tst_qsgtextedit::moveCursorSelection_data()
@@ -1318,12 +1312,12 @@ void tst_qsgtextedit::mouseSelection()
     QFETCH(QString, qmlfile);
     QFETCH(bool, expectSelection);
 
-    QSGView *canvas = createView(qmlfile);
+    QScopedPointer<QSGView> canvas(createView(qmlfile));
 
     canvas->show();
-    QApplication::setActiveWindow(canvas);
-    QTest::qWaitForWindowShown(canvas);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+    QApplication::setActiveWindow(canvas.data());
+    QTest::qWaitForWindowShown(canvas.data());
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas.data()));
 
     QVERIFY(canvas->rootObject() != 0);
     QSGTextEdit *textEditObject = qobject_cast<QSGTextEdit *>(canvas->rootObject());
@@ -1333,67 +1327,59 @@ void tst_qsgtextedit::mouseSelection()
     int x1 = 10;
     int x2 = 70;
     int y = textEditObject->height()/2;
-    QTest::mousePress(canvas, Qt::LeftButton, 0, QPoint(x1,y));
+    QTest::mousePress(canvas.data(), Qt::LeftButton, 0, QPoint(x1,y));
     //QTest::mouseMove(canvas, QPoint(x2,y)); // doesn't work
     QMouseEvent mv(QEvent::MouseMove, QPoint(x2,y), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-    QApplication::sendEvent(canvas, &mv);
-    QTest::mouseRelease(canvas, Qt::LeftButton, 0, QPoint(x2,y));
+    QApplication::sendEvent(canvas.data(), &mv);
+    QTest::mouseRelease(canvas.data(), Qt::LeftButton, 0, QPoint(x2,y));
     QString str = textEditObject->selectedText();
     if (expectSelection)
         QVERIFY(str.length() > 3); // don't reallly care *what* was selected (and it's too sensitive to platform)
     else
         QVERIFY(str.isEmpty());
-
-    delete canvas;
 }
 
 void tst_qsgtextedit::dragMouseSelection()
 {
-    QFAIL("Test needs to be ported");
-    //XXX
-    /*QString qmlfile = SRCDIR "/data/mouseselection_true.qml";
+    QString qmlfile = SRCDIR "/data/mouseselection_true.qml";
 
-    QSGView *canvas = createView(qmlfile);
+    QScopedPointer<QSGView> canvas(createView(qmlfile));
 
     canvas->show();
-    QApplication::setActiveWindow(canvas);
-    QTest::qWaitForWindowShown(canvas);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+    QApplication::setActiveWindow(canvas.data());
+    QTest::qWaitForWindowShown(canvas.data());
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas.data()));
 
     QVERIFY(canvas->rootObject() != 0);
     QSGTextEdit *textEditObject = qobject_cast<QSGTextEdit *>(canvas->rootObject());
     QVERIFY(textEditObject != 0);
 
-    textEditObject->setAcceptDrops(true);
-
     // press-and-drag-and-release from x1 to x2
     int x1 = 10;
     int x2 = 70;
     int y = textEditObject->height()/2;
-    QTest::mousePress(canvas, Qt::LeftButton, 0, QPoint(x1,y));
+    QTest::mousePress(canvas.data(), Qt::LeftButton, 0, QPoint(x1,y));
     {
         QMouseEvent mv(QEvent::MouseMove, QPoint(x2,y), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas, &mv);
+        QApplication::sendEvent(canvas.data(), &mv);
     }
-    QTest::mouseRelease(canvas, Qt::LeftButton, 0, QPoint(x2,y));
+    QTest::mouseRelease(canvas.data(), Qt::LeftButton, 0, QPoint(x2,y));
     QString str1 = textEditObject->selectedText();
     QVERIFY(str1.length() > 3);
 
     // press and drag the current selection.
     x1 = 40;
     x2 = 100;
-    QTest::mousePress(canvas, Qt::LeftButton, 0, QPoint(x1,y));
+    QTest::mousePress(canvas.data(), Qt::LeftButton, 0, QPoint(x1,y));
     {
         QMouseEvent mv(QEvent::MouseMove, QPoint(x2,y), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas, &mv);
+        QApplication::sendEvent(canvas.data(), &mv);
     }
-    QTest::mouseRelease(canvas, Qt::LeftButton, 0, QPoint(x2,y));
+    QTest::mouseRelease(canvas.data(), Qt::LeftButton, 0, QPoint(x2,y));
     QString str2 = textEditObject->selectedText();
     QVERIFY(str2.length() > 3);
 
-    QVERIFY(str1 != str2); // Verify the second press and drag is a new selection and doesn't not the first moved.
-
-    delete canvas;*/
+    QVERIFY(str1 != str2); // Verify the second press and drag is a new selection and not the first moved.
 }
 
 void tst_qsgtextedit::mouseSelectionMode_data()
@@ -1414,12 +1400,12 @@ void tst_qsgtextedit::mouseSelectionMode()
 
     QString text = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    QSGView *canvas = createView(qmlfile);
+    QScopedPointer<QSGView> canvas(createView(qmlfile));
 
     canvas->show();
-    QApplication::setActiveWindow(canvas);
-    QTest::qWaitForWindowShown(canvas);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+    QApplication::setActiveWindow(canvas.data());
+    QTest::qWaitForWindowShown(canvas.data());
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas.data()));
 
     QVERIFY(canvas->rootObject() != 0);
     QSGTextEdit *textEditObject = qobject_cast<QSGTextEdit *>(canvas->rootObject());
@@ -1429,11 +1415,11 @@ void tst_qsgtextedit::mouseSelectionMode()
     int x1 = 10;
     int x2 = 70;
     int y = textEditObject->height()/2;
-    QTest::mousePress(canvas, Qt::LeftButton, 0, QPoint(x1,y));
+    QTest::mousePress(canvas.data(), Qt::LeftButton, 0, QPoint(x1,y));
     //QTest::mouseMove(canvas, QPoint(x2,y)); // doesn't work
     QMouseEvent mv(QEvent::MouseMove, QPoint(x2,y), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-    QApplication::sendEvent(canvas, &mv);
-    QTest::mouseRelease(canvas, Qt::LeftButton, 0, QPoint(x2,y));
+    QApplication::sendEvent(canvas.data(), &mv);
+    QTest::mouseRelease(canvas.data(), Qt::LeftButton, 0, QPoint(x2,y));
     QString str = textEditObject->selectedText();
     if (selectWords) {
         QCOMPARE(str, text);
@@ -1441,13 +1427,11 @@ void tst_qsgtextedit::mouseSelectionMode()
         QVERIFY(str.length() > 3);
         QVERIFY(str != text);
     }
-
-    delete canvas;
 }
 
 void tst_qsgtextedit::inputMethodHints()
 {
-    QSGView *canvas = createView(SRCDIR "/data/inputmethodhints.qml");
+    QScopedPointer<QSGView> canvas(createView(SRCDIR "/data/inputmethodhints.qml"));
     canvas->show();
     canvas->setFocus();
 
@@ -1457,18 +1441,16 @@ void tst_qsgtextedit::inputMethodHints()
     QVERIFY(textEditObject->inputMethodHints() & Qt::ImhNoPredictiveText);
     textEditObject->setInputMethodHints(Qt::ImhUppercaseOnly);
     QVERIFY(textEditObject->inputMethodHints() & Qt::ImhUppercaseOnly);
-
-    delete canvas;
 }
 
 void tst_qsgtextedit::positionAt()
 {
-    QSGView *canvas = createView(SRCDIR "/data/positionAt.qml");
+    QScopedPointer<QSGView> canvas(createView(SRCDIR "/data/positionAt.qml"));
     QVERIFY(canvas->rootObject() != 0);
     canvas->show();
     canvas->setFocus();
-    QApplication::setActiveWindow(canvas);
-    QTest::qWaitForWindowShown(canvas);
+    QApplication::setActiveWindow(canvas.data());
+    QTest::qWaitForWindowShown(canvas.data());
 
     QSGTextEdit *texteditObject = qobject_cast<QSGTextEdit *>(canvas->rootObject());
     QVERIFY(texteditObject != 0);
@@ -1495,7 +1477,7 @@ void tst_qsgtextedit::positionAt()
     texteditObject->setCursorPosition(0);
 
     QInputMethodEvent inputEvent(preeditText, QList<QInputMethodEvent::Attribute>());
-    QApplication::sendEvent(canvas, &inputEvent);
+    QApplication::sendEvent(canvas.data(), &inputEvent);
 
     // Check all points within the preedit text return the same position.
     QCOMPARE(texteditObject->positionAt(0, y0), 0);
@@ -1507,13 +1489,11 @@ void tst_qsgtextedit::positionAt()
     QCOMPARE(texteditObject->positionToRectangle(1).x(), x1);
 
     QVERIFY(texteditObject->positionAt(x0 / 2, y1) > 0);
-
-    delete canvas;
 }
 
 void tst_qsgtextedit::cursorDelegate()
 {
-    QSGView* view = createView(SRCDIR "/data/cursorTest.qml");
+    QScopedPointer<QSGView> view(createView(SRCDIR "/data/cursorTest.qml"));
     view->show();
     view->setFocus();
     QSGTextEdit *textEditObject = view->rootObject()->findChild<QSGTextEdit*>("textEditObject");
@@ -1535,8 +1515,6 @@ void tst_qsgtextedit::cursorDelegate()
     //Test Delegate gets deleted
     textEditObject->setCursorDelegate(0);
     QVERIFY(!textEditObject->findChild<QSGItem*>("cursorInstance"));
-
-    delete view;
 }
 
 void tst_qsgtextedit::cursorVisible()
@@ -1629,7 +1607,7 @@ void tst_qsgtextedit::delegateLoading()
     server.serveDirectory(SRCDIR "/data/httpslow", TestHTTPServer::Delay);
     server.serveDirectory(SRCDIR "/data/http");
 
-    QSGView* view = new QSGView(0);
+    QScopedPointer<QSGView> view(new QSGView(0));
 
     view->setSource(QUrl(QLatin1String("http://localhost:42332/") + qmlfile));
     view->show();
@@ -1660,8 +1638,6 @@ void tst_qsgtextedit::delegateLoading()
     //###This was only needed for code coverage, and could be a case of overzealous defensive programming
     //delegate = view->rootObject()->findChild<QSGItem*>("delegateErrorB");
     //QVERIFY(!delegate);
-
-    delete view;
 }
 
 /*
@@ -1670,7 +1646,7 @@ the extent of the text, then they should ignore the keys.
 */
 void tst_qsgtextedit::navigation()
 {
-    QSGView *canvas = createView(SRCDIR "/data/navigation.qml");
+    QScopedPointer<QSGView> canvas(createView(SRCDIR "/data/navigation.qml"));
     canvas->show();
     canvas->setFocus();
 
@@ -1680,18 +1656,16 @@ void tst_qsgtextedit::navigation()
 
     QVERIFY(input != 0);
     QTRY_VERIFY(input->hasActiveFocus() == true);
-    simulateKey(canvas, Qt::Key_Left);
+    simulateKey(canvas.data(), Qt::Key_Left);
     QVERIFY(input->hasActiveFocus() == false);
-    simulateKey(canvas, Qt::Key_Right);
+    simulateKey(canvas.data(), Qt::Key_Right);
     QVERIFY(input->hasActiveFocus() == true);
-    simulateKey(canvas, Qt::Key_Right);
+    simulateKey(canvas.data(), Qt::Key_Right);
     QVERIFY(input->hasActiveFocus() == true);
-    simulateKey(canvas, Qt::Key_Right);
+    simulateKey(canvas.data(), Qt::Key_Right);
     QVERIFY(input->hasActiveFocus() == false);
-    simulateKey(canvas, Qt::Key_Left);
+    simulateKey(canvas.data(), Qt::Key_Left);
     QVERIFY(input->hasActiveFocus() == true);
-
-    delete canvas;
 }
 
 void tst_qsgtextedit::copyAndPaste() {
@@ -1792,7 +1766,7 @@ void tst_qsgtextedit::canPasteEmpty() {
 
 void tst_qsgtextedit::readOnly()
 {
-    QSGView *canvas = createView(SRCDIR "/data/readOnly.qml");
+    QScopedPointer<QSGView> canvas(createView(SRCDIR "/data/readOnly.qml"));
     canvas->show();
     canvas->setFocus();
 
@@ -1805,13 +1779,11 @@ void tst_qsgtextedit::readOnly()
     QVERIFY(edit->isReadOnly() == true);
     QString initial = edit->text();
     for(int k=Qt::Key_0; k<=Qt::Key_Z; k++)
-        simulateKey(canvas, k);
-    simulateKey(canvas, Qt::Key_Return);
-    simulateKey(canvas, Qt::Key_Space);
-    simulateKey(canvas, Qt::Key_Escape);
+        simulateKey(canvas.data(), k);
+    simulateKey(canvas.data(), Qt::Key_Return);
+    simulateKey(canvas.data(), Qt::Key_Space);
+    simulateKey(canvas.data(), Qt::Key_Escape);
     QCOMPARE(edit->text(), initial);
-
-    delete canvas;
 }
 
 void tst_qsgtextedit::simulateKey(QSGView *view, int key, Qt::KeyboardModifiers modifiers)
@@ -2166,7 +2138,7 @@ void tst_qsgtextedit::testQtQuick11Attributes()
     delete obj;
 
     QDeclarativeComponent invalid(&engine);
-    invalid.setData("import QtQuick 2.0; TextEdit { " + code.toUtf8() + " }", QUrl(""));
+    invalid.setData("import QtQuick 1.0; TextEdit { " + code.toUtf8() + " }", QUrl(""));
     QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
     obj = invalid.create();
     QCOMPARE(invalid.errorString(), error);
@@ -2197,7 +2169,7 @@ void tst_qsgtextedit::testQtQuick11Attributes_data()
 
     QTest::newRow("onLinkActivated") << "onLinkActivated: {}"
         << "QDeclarativeComponent: Component is not ready"
-        << ":1 \"TextEdit.onLinkActivated\" is not available in QtQuick 2.0.\n";
+        << ":1 \"TextEdit.onLinkActivated\" is not available in QtQuick 1.0.\n";
 }
 
 void tst_qsgtextedit::preeditMicroFocus()
