@@ -171,7 +171,7 @@ void tst_qsgtextinput::text()
 {
     {
         QDeclarativeComponent textinputComponent(&engine);
-        textinputComponent.setData("import QtQuick 1.0\nTextInput {  text: \"\"  }", QUrl());
+        textinputComponent.setData("import QtQuick 2.0\nTextInput {  text: \"\"  }", QUrl());
         QSGTextInput *textinputObject = qobject_cast<QSGTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
@@ -182,7 +182,7 @@ void tst_qsgtextinput::text()
 
     for (int i = 0; i < standard.size(); i++)
     {
-        QString componentStr = "import QtQuick 1.0\nTextInput { text: \"" + standard.at(i) + "\" }";
+        QString componentStr = "import QtQuick 2.0\nTextInput { text: \"" + standard.at(i) + "\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QSGTextInput *textinputObject = qobject_cast<QSGTextInput*>(textinputComponent.create());
@@ -200,7 +200,7 @@ void tst_qsgtextinput::width()
     // uses Font metrics to find the width for standard
     {
         QDeclarativeComponent textinputComponent(&engine);
-        textinputComponent.setData("import QtQuick 1.0\nTextInput {  text: \"\" }", QUrl());
+        textinputComponent.setData("import QtQuick 2.0\nTextInput {  text: \"\" }", QUrl());
         QSGTextInput *textinputObject = qobject_cast<QSGTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
@@ -215,7 +215,7 @@ void tst_qsgtextinput::width()
         QFontMetricsF fm(f);
         qreal metricWidth = fm.width(standard.at(i));
 
-        QString componentStr = "import QtQuick 1.0\nTextInput { text: \"" + standard.at(i) + "\" }";
+        QString componentStr = "import QtQuick 2.0\nTextInput { text: \"" + standard.at(i) + "\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QSGTextInput *textinputObject = qobject_cast<QSGTextInput*>(textinputComponent.create());
@@ -232,7 +232,7 @@ void tst_qsgtextinput::font()
 {
     //test size, then bold, then italic, then family
     { 
-        QString componentStr = "import QtQuick 1.0\nTextInput {  font.pointSize: 40; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nTextInput {  font.pointSize: 40; text: \"Hello World\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QSGTextInput *textinputObject = qobject_cast<QSGTextInput*>(textinputComponent.create());
@@ -246,7 +246,7 @@ void tst_qsgtextinput::font()
     }
 
     { 
-        QString componentStr = "import QtQuick 1.0\nTextInput {  font.bold: true; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nTextInput {  font.bold: true; text: \"Hello World\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QSGTextInput *textinputObject = qobject_cast<QSGTextInput*>(textinputComponent.create());
@@ -259,7 +259,7 @@ void tst_qsgtextinput::font()
     }
 
     { 
-        QString componentStr = "import QtQuick 1.0\nTextInput {  font.italic: true; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nTextInput {  font.italic: true; text: \"Hello World\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QSGTextInput *textinputObject = qobject_cast<QSGTextInput*>(textinputComponent.create());
@@ -272,7 +272,7 @@ void tst_qsgtextinput::font()
     }
  
     { 
-        QString componentStr = "import QtQuick 1.0\nTextInput {  font.family: \"Helvetica\"; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nTextInput {  font.family: \"Helvetica\"; text: \"Hello World\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QSGTextInput *textinputObject = qobject_cast<QSGTextInput*>(textinputComponent.create());
@@ -286,7 +286,7 @@ void tst_qsgtextinput::font()
     }
 
     { 
-        QString componentStr = "import QtQuick 1.0\nTextInput {  font.family: \"\"; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nTextInput {  font.family: \"\"; text: \"Hello World\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QSGTextInput *textinputObject = qobject_cast<QSGTextInput*>(textinputComponent.create());
@@ -303,7 +303,7 @@ void tst_qsgtextinput::color()
     //test color
     for (int i = 0; i < colorStrings.size(); i++)
     { 
-        QString componentStr = "import QtQuick 1.0\nTextInput {  color: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nTextInput {  color: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QSGTextInput *textinputObject = qobject_cast<QSGTextInput*>(textinputComponent.create());
@@ -316,7 +316,7 @@ void tst_qsgtextinput::color()
     //test selection color
     for (int i = 0; i < colorStrings.size(); i++)
     {
-        QString componentStr = "import QtQuick 1.0\nTextInput {  selectionColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nTextInput {  selectionColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QSGTextInput *textinputObject = qobject_cast<QSGTextInput*>(textinputComponent.create());
@@ -329,7 +329,7 @@ void tst_qsgtextinput::color()
     //test selected text color
     for (int i = 0; i < colorStrings.size(); i++)
     { 
-        QString componentStr = "import QtQuick 1.0\nTextInput {  selectedTextColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nTextInput {  selectedTextColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QSGTextInput *textinputObject = qobject_cast<QSGTextInput*>(textinputComponent.create());
@@ -344,7 +344,7 @@ void tst_qsgtextinput::color()
         QColor testColor("#001234");
         testColor.setAlpha(170);
 
-        QString componentStr = "import QtQuick 1.0\nTextInput {  color: \"" + colorStr + "\"; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 2.0\nTextInput {  color: \"" + colorStr + "\"; text: \"Hello World\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QSGTextInput *textinputObject = qobject_cast<QSGTextInput*>(textinputComponent.create());
@@ -359,7 +359,7 @@ void tst_qsgtextinput::color()
 void tst_qsgtextinput::selection()
 {
     QString testStr = standard[0];
-    QString componentStr = "import QtQuick 1.0\nTextInput {  text: \""+ testStr +"\"; }";
+    QString componentStr = "import QtQuick 2.0\nTextInput {  text: \""+ testStr +"\"; }";
     QDeclarativeComponent textinputComponent(&engine);
     textinputComponent.setData(componentStr.toLatin1(), QUrl());
     QSGTextInput *textinputObject = qobject_cast<QSGTextInput*>(textinputComponent.create());
@@ -679,7 +679,7 @@ void tst_qsgtextinput::moveCursorSelection()
     QFETCH(int, selectionEnd);
     QFETCH(bool, reversible);
 
-    QString componentStr = "import QtQuick 1.1\nTextInput {  text: \""+ testStr +"\"; }";
+    QString componentStr = "import QtQuick 2.0\nTextInput {  text: \""+ testStr +"\"; }";
     QDeclarativeComponent textinputComponent(&engine);
     textinputComponent.setData(componentStr.toLatin1(), QUrl());
     QSGTextInput *textinputObject = qobject_cast<QSGTextInput*>(textinputComponent.create());
@@ -889,7 +889,7 @@ void tst_qsgtextinput::moveCursorSelectionSequence()
     QFETCH(int, selection2Start);
     QFETCH(int, selection2End);
 
-    QString componentStr = "import QtQuick 1.1\nTextInput {  text: \""+ testStr +"\"; }";
+    QString componentStr = "import QtQuick 2.0\nTextInput {  text: \""+ testStr +"\"; }";
     QDeclarativeComponent textinputComponent(&engine);
     textinputComponent.setData(componentStr.toLatin1(), QUrl());
     QSGTextInput *textinputObject = qobject_cast<QSGTextInput*>(textinputComponent.create());
@@ -914,12 +914,12 @@ void tst_qsgtextinput::dragMouseSelection()
 {
     QString qmlfile = SRCDIR "/data/mouseselection_true.qml";
 
-    QSGView *canvas = createView(qmlfile);
+    QScopedPointer<QSGView> canvas(createView(qmlfile));
 
     canvas->show();
-    QApplication::setActiveWindow(canvas);
-    QTest::qWaitForWindowShown(canvas);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+    QApplication::setActiveWindow(canvas.data());
+    QTest::qWaitForWindowShown(canvas.data());
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas.data()));
 
     QVERIFY(canvas->rootObject() != 0);
     QSGTextInput *textInputObject = qobject_cast<QSGTextInput *>(canvas->rootObject());
@@ -929,12 +929,12 @@ void tst_qsgtextinput::dragMouseSelection()
     int x1 = 10;
     int x2 = 70;
     int y = textInputObject->height()/2;
-    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x1,y)));
+    QTest::mousePress(canvas.data(), Qt::LeftButton, 0, QPoint(x1,y));
     {
-        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(x2,y)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas->viewport(), &mv);
+        QMouseEvent mv(QEvent::MouseMove, QPoint(x2,y), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas.data(), &mv);
     }
-    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x2,y)));
+    QTest::mouseRelease(canvas.data(), Qt::LeftButton, 0, QPoint(x2,y));
 
     QString str1 = textInputObject->selectedText();
     QVERIFY(str1.length() > 3);
@@ -942,17 +942,16 @@ void tst_qsgtextinput::dragMouseSelection()
     // press and drag the current selection.
     x1 = 40;
     x2 = 100;
-    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x1,y)));
+    QTest::mousePress(canvas.data(), Qt::LeftButton, 0, QPoint(x1,y));
     {
-        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(x2,y)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(canvas->viewport(), &mv);
+        QMouseEvent mv(QEvent::MouseMove, QPoint(x2,y), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas.data(), &mv);
     }
-        QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x2,y)));
+        QTest::mouseRelease(canvas.data(), Qt::LeftButton, 0, QPoint(x2,y));
     QString str2 = textInputObject->selectedText();
     QVERIFY(str2.length() > 3);
 
     QVERIFY(str1 != str2); // Verify the second press and drag is a new selection and doesn't not the first moved.
-    delete canvas;
 }
 
 void tst_qsgtextinput::mouseSelectionMode_data()
@@ -973,12 +972,12 @@ void tst_qsgtextinput::mouseSelectionMode()
 
     QString text = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    QSGView *canvas = createView(qmlfile);
+    QScopedPointer<QSGView> canvas(createView(qmlfile));
 
     canvas->show();
-    QApplication::setActiveWindow(canvas);
-    QTest::qWaitForWindowShown(canvas);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+    QApplication::setActiveWindow(canvas.data());
+    QTest::qWaitForWindowShown(canvas.data());
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas.data()));
 
     QVERIFY(canvas->rootObject() != 0);
     QSGTextInput *textInputObject = qobject_cast<QSGTextInput *>(canvas->rootObject());
@@ -988,11 +987,11 @@ void tst_qsgtextinput::mouseSelectionMode()
     int x1 = 10;
     int x2 = 70;
     int y = textInputObject->height()/2;
-    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x1,y)));
-    //QTest::mouseMove(canvas->viewport(), canvas->mapFromScene(QPoint(x2,y))); // doesn't work
-    QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(x2,y)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-    QApplication::sendEvent(canvas->viewport(), &mv);
-    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x2,y)));
+    QTest::mousePress(canvas.data(), Qt::LeftButton, 0, QPoint(x1,y));
+    //QTest::mouseMove(canvas.data(), canvas->mapFromScene(QPoint(x2,y))); // doesn't work
+    QMouseEvent mv(QEvent::MouseMove, QPoint(x2,y), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+    QApplication::sendEvent(canvas.data(), &mv);
+    QTest::mouseRelease(canvas.data(), Qt::LeftButton, 0, QPoint(x2,y));
     QString str = textInputObject->selectedText();
     if (selectWords) {
         QCOMPARE(str, text);
@@ -1000,8 +999,6 @@ void tst_qsgtextinput::mouseSelectionMode()
         QVERIFY(str.length() > 3);
         QVERIFY(str != text);
     }
-
-    delete canvas;
 }
 
 void tst_qsgtextinput::horizontalAlignment_data()
@@ -1019,12 +1016,12 @@ void tst_qsgtextinput::horizontalAlignment()
     QFETCH(int, hAlign);
     QFETCH(QString, expectfile);
 
-    QSGView *canvas = createView(SRCDIR "/data/horizontalAlignment.qml");
+    QScopedPointer<QSGView> canvas(createView(SRCDIR "/data/horizontalAlignment.qml"));
 
     canvas->show();
-    QApplication::setActiveWindow(canvas);
-    QTest::qWaitForWindowShown(canvas);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+    QApplication::setActiveWindow(canvas.data());
+    QTest::qWaitForWindowShown(canvas.data());
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas.data()));
     QObject *ob = canvas->rootObject();
     QVERIFY(ob != 0);
     ob->setProperty("horizontalAlignment",hAlign);
@@ -1040,13 +1037,11 @@ void tst_qsgtextinput::horizontalAlignment()
     QImage expect(expectfile);
 
     QCOMPARE(actual,expect);
-
-    delete canvas;
 }
 
 void tst_qsgtextinput::horizontalAlignment_RightToLeft()
 {
-    QSGView *canvas = createView(SRCDIR "/data/horizontalAlignment_RightToLeft.qml");
+    QScopedPointer<QSGView> canvas(createView(SRCDIR "/data/horizontalAlignment_RightToLeft.qml"));
     QSGTextInput *textInput = canvas->rootObject()->findChild<QSGTextInput*>("text");
     QVERIFY(textInput != 0);
     canvas->show();
@@ -1077,7 +1072,7 @@ void tst_qsgtextinput::horizontalAlignment_RightToLeft()
     QCOMPARE(textInput->effectiveHAlign(), textInput->hAlign());
     QCOMPARE(textInput->hAlign(), QSGTextInput::AlignHCenter);
     QVERIFY(-textInputPrivate->hscroll < canvas->width()/2);
-    QVERIFY(-textInputPrivate->hscroll + textInputPrivate->width() > canvas->width()/2);
+    QVERIFY(-textInputPrivate->hscroll + textInputPrivate->width > canvas->width()/2);
 
     // reseted alignment should go back to following the text reading direction
     textInput->resetHAlign();
@@ -1130,11 +1125,9 @@ void tst_qsgtextinput::horizontalAlignment_RightToLeft()
     QVERIFY(-textInputPrivate->hscroll > canvas->width()/2);
 #endif
 
-    delete canvas;
-
 #ifndef Q_OS_MAC    // QTBUG-18040
     // alignment of TextInput with no text set to it
-    QString componentStr = "import QtQuick 1.0\nTextInput {}";
+    QString componentStr = "import QtQuick 2.0\nTextInput {}";
     QDeclarativeComponent textComponent(&engine);
     textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QSGTextInput *textObject = qobject_cast<QSGTextInput*>(textComponent.create());
@@ -1146,12 +1139,12 @@ void tst_qsgtextinput::horizontalAlignment_RightToLeft()
 
 void tst_qsgtextinput::positionAt()
 {
-    QSGView *canvas = createView(SRCDIR "/data/positionAt.qml");
+    QScopedPointer<QSGView> canvas(createView(SRCDIR "/data/positionAt.qml"));
     QVERIFY(canvas->rootObject() != 0);
     canvas->show();
     canvas->setFocus();
-    QApplication::setActiveWindow(canvas);
-    QTest::qWaitForWindowShown(canvas);
+    QApplication::setActiveWindow(canvas.data());
+    QTest::qWaitForWindowShown(canvas.data());
 
     QSGTextInput *textinputObject = qobject_cast<QSGTextInput *>(canvas->rootObject());
     QVERIFY(textinputObject != 0);
@@ -1197,7 +1190,7 @@ void tst_qsgtextinput::positionAt()
     textinputObject->setCursorPosition(0);
 
     QInputMethodEvent inputEvent(preeditText, QList<QInputMethodEvent::Attribute>());
-    QApplication::sendEvent(canvas, &inputEvent);
+    QApplication::sendEvent(canvas.data(), &inputEvent);
 
     // Check all points within the preedit text return the same position.
     QCOMPARE(textinputObject->positionAt(0), 0);
@@ -1207,18 +1200,16 @@ void tst_qsgtextinput::positionAt()
     // Verify positioning returns to normal after the preedit text.
     QCOMPARE(textinputObject->positionAt(x1), 1);
     QCOMPARE(textinputObject->positionToRectangle(1).x(), x1);
-
-    delete canvas;
 }
 
 void tst_qsgtextinput::maxLength()
 {
-    QSGView *canvas = createView(SRCDIR "/data/maxLength.qml");
+    QScopedPointer<QSGView> canvas(createView(SRCDIR "/data/maxLength.qml"));
     QVERIFY(canvas->rootObject() != 0);
     canvas->show();
     canvas->setFocus();
-    QApplication::setActiveWindow(canvas);
-    QTest::qWaitForWindowShown(canvas);
+    QApplication::setActiveWindow(canvas.data());
+    QTest::qWaitForWindowShown(canvas.data());
 
     QSGTextInput *textinputObject = qobject_cast<QSGTextInput *>(canvas->rootObject());
     QVERIFY(textinputObject != 0);
@@ -1234,19 +1225,17 @@ void tst_qsgtextinput::maxLength()
     QTRY_VERIFY(textinputObject->hasActiveFocus() == true);
     for(int i=0; i<20; i++){
         QCOMPARE(textinputObject->text().length(), qMin(i,10));
-        //simulateKey(canvas, Qt::Key_A);
-        QTest::keyPress(canvas, Qt::Key_A);
-        QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
+        //simulateKey(canvas.data(), Qt::Key_A);
+        QTest::keyPress(canvas.data(), Qt::Key_A);
+        QTest::keyRelease(canvas.data(), Qt::Key_A, Qt::NoModifier ,10);
     }
-
-    delete canvas;
 }
 
 void tst_qsgtextinput::masks()
 {
     //Not a comprehensive test of the possible masks, that's done elsewhere (QLineEdit)
-    //QString componentStr = "import QtQuick 1.0\nTextInput {  inputMask: 'HHHHhhhh'; }";
-    QSGView *canvas = createView(SRCDIR "/data/masks.qml");
+    //QString componentStr = "import QtQuick 2.0\nTextInput {  inputMask: 'HHHHhhhh'; }";
+    QScopedPointer<QSGView> canvas(createView(SRCDIR "/data/masks.qml"));
     canvas->show();
     canvas->setFocus();
     QVERIFY(canvas->rootObject() != 0);
@@ -1258,12 +1247,10 @@ void tst_qsgtextinput::masks()
     for(int i=0; i<10; i++){
         QCOMPARE(qMin(i,8), textinputObject->text().length());
         QCOMPARE(i>=4, textinputObject->hasAcceptableInput());
-        //simulateKey(canvas, Qt::Key_A);
-        QTest::keyPress(canvas, Qt::Key_A);
-        QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
+        //simulateKey(canvas.data(), Qt::Key_A);
+        QTest::keyPress(canvas.data(), Qt::Key_A);
+        QTest::keyRelease(canvas.data(), Qt::Key_A, Qt::NoModifier ,10);
     }
-
-    delete canvas;
 }
 
 void tst_qsgtextinput::validators()
@@ -1272,7 +1259,7 @@ void tst_qsgtextinput::validators()
     // so you may need to run their tests first. All validators are checked
     // here to ensure that their exposure to QML is working.
 
-    QSGView *canvas = createView(SRCDIR "/data/validators.qml");
+    QScopedPointer<QSGView> canvas(createView(SRCDIR "/data/validators.qml"));
     canvas->show();
     canvas->setFocus();
 
@@ -1282,20 +1269,20 @@ void tst_qsgtextinput::validators()
     QVERIFY(intInput);
     intInput->setFocus(true);
     QTRY_VERIFY(intInput->hasActiveFocus());
-    QTest::keyPress(canvas, Qt::Key_1);
-    QTest::keyRelease(canvas, Qt::Key_1, Qt::NoModifier ,10);
+    QTest::keyPress(canvas.data(), Qt::Key_1);
+    QTest::keyRelease(canvas.data(), Qt::Key_1, Qt::NoModifier ,10);
     QCOMPARE(intInput->text(), QLatin1String("1"));
     QCOMPARE(intInput->hasAcceptableInput(), false);
-    QTest::keyPress(canvas, Qt::Key_2);
-    QTest::keyRelease(canvas, Qt::Key_2, Qt::NoModifier ,10);
+    QTest::keyPress(canvas.data(), Qt::Key_2);
+    QTest::keyRelease(canvas.data(), Qt::Key_2, Qt::NoModifier ,10);
     QCOMPARE(intInput->text(), QLatin1String("1"));
     QCOMPARE(intInput->hasAcceptableInput(), false);
-    QTest::keyPress(canvas, Qt::Key_1);
-    QTest::keyRelease(canvas, Qt::Key_1, Qt::NoModifier ,10);
+    QTest::keyPress(canvas.data(), Qt::Key_1);
+    QTest::keyRelease(canvas.data(), Qt::Key_1, Qt::NoModifier ,10);
     QCOMPARE(intInput->text(), QLatin1String("11"));
     QCOMPARE(intInput->hasAcceptableInput(), true);
-    QTest::keyPress(canvas, Qt::Key_0);
-    QTest::keyRelease(canvas, Qt::Key_0, Qt::NoModifier ,10);
+    QTest::keyPress(canvas.data(), Qt::Key_0);
+    QTest::keyRelease(canvas.data(), Qt::Key_0, Qt::NoModifier ,10);
     QCOMPARE(intInput->text(), QLatin1String("11"));
     QCOMPARE(intInput->hasAcceptableInput(), true);
 
@@ -1303,28 +1290,28 @@ void tst_qsgtextinput::validators()
     QTRY_VERIFY(dblInput);
     dblInput->setFocus(true);
     QVERIFY(dblInput->hasActiveFocus() == true);
-    QTest::keyPress(canvas, Qt::Key_1);
-    QTest::keyRelease(canvas, Qt::Key_1, Qt::NoModifier ,10);
+    QTest::keyPress(canvas.data(), Qt::Key_1);
+    QTest::keyRelease(canvas.data(), Qt::Key_1, Qt::NoModifier ,10);
     QCOMPARE(dblInput->text(), QLatin1String("1"));
     QCOMPARE(dblInput->hasAcceptableInput(), false);
-    QTest::keyPress(canvas, Qt::Key_2);
-    QTest::keyRelease(canvas, Qt::Key_2, Qt::NoModifier ,10);
+    QTest::keyPress(canvas.data(), Qt::Key_2);
+    QTest::keyRelease(canvas.data(), Qt::Key_2, Qt::NoModifier ,10);
     QCOMPARE(dblInput->text(), QLatin1String("12"));
     QCOMPARE(dblInput->hasAcceptableInput(), true);
-    QTest::keyPress(canvas, Qt::Key_Period);
-    QTest::keyRelease(canvas, Qt::Key_Period, Qt::NoModifier ,10);
+    QTest::keyPress(canvas.data(), Qt::Key_Period);
+    QTest::keyRelease(canvas.data(), Qt::Key_Period, Qt::NoModifier ,10);
     QCOMPARE(dblInput->text(), QLatin1String("12."));
     QCOMPARE(dblInput->hasAcceptableInput(), true);
-    QTest::keyPress(canvas, Qt::Key_1);
-    QTest::keyRelease(canvas, Qt::Key_1, Qt::NoModifier ,10);
+    QTest::keyPress(canvas.data(), Qt::Key_1);
+    QTest::keyRelease(canvas.data(), Qt::Key_1, Qt::NoModifier ,10);
     QCOMPARE(dblInput->text(), QLatin1String("12.1"));
     QCOMPARE(dblInput->hasAcceptableInput(), true);
-    QTest::keyPress(canvas, Qt::Key_1);
-    QTest::keyRelease(canvas, Qt::Key_1, Qt::NoModifier ,10);
+    QTest::keyPress(canvas.data(), Qt::Key_1);
+    QTest::keyRelease(canvas.data(), Qt::Key_1, Qt::NoModifier ,10);
     QCOMPARE(dblInput->text(), QLatin1String("12.11"));
     QCOMPARE(dblInput->hasAcceptableInput(), true);
-    QTest::keyPress(canvas, Qt::Key_1);
-    QTest::keyRelease(canvas, Qt::Key_1, Qt::NoModifier ,10);
+    QTest::keyPress(canvas.data(), Qt::Key_1);
+    QTest::keyRelease(canvas.data(), Qt::Key_1, Qt::NoModifier ,10);
     QCOMPARE(dblInput->text(), QLatin1String("12.11"));
     QCOMPARE(dblInput->hasAcceptableInput(), true);
 
@@ -1332,41 +1319,39 @@ void tst_qsgtextinput::validators()
     QTRY_VERIFY(strInput);
     strInput->setFocus(true);
     QVERIFY(strInput->hasActiveFocus() == true);
-    QTest::keyPress(canvas, Qt::Key_1);
-    QTest::keyRelease(canvas, Qt::Key_1, Qt::NoModifier ,10);
+    QTest::keyPress(canvas.data(), Qt::Key_1);
+    QTest::keyRelease(canvas.data(), Qt::Key_1, Qt::NoModifier ,10);
     QCOMPARE(strInput->text(), QLatin1String(""));
     QCOMPARE(strInput->hasAcceptableInput(), false);
-    QTest::keyPress(canvas, Qt::Key_A);
-    QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
+    QTest::keyPress(canvas.data(), Qt::Key_A);
+    QTest::keyRelease(canvas.data(), Qt::Key_A, Qt::NoModifier ,10);
     QCOMPARE(strInput->text(), QLatin1String("a"));
     QCOMPARE(strInput->hasAcceptableInput(), false);
-    QTest::keyPress(canvas, Qt::Key_A);
-    QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
+    QTest::keyPress(canvas.data(), Qt::Key_A);
+    QTest::keyRelease(canvas.data(), Qt::Key_A, Qt::NoModifier ,10);
     QCOMPARE(strInput->text(), QLatin1String("aa"));
     QCOMPARE(strInput->hasAcceptableInput(), true);
-    QTest::keyPress(canvas, Qt::Key_A);
-    QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
+    QTest::keyPress(canvas.data(), Qt::Key_A);
+    QTest::keyRelease(canvas.data(), Qt::Key_A, Qt::NoModifier ,10);
     QCOMPARE(strInput->text(), QLatin1String("aaa"));
     QCOMPARE(strInput->hasAcceptableInput(), true);
-    QTest::keyPress(canvas, Qt::Key_A);
-    QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
+    QTest::keyPress(canvas.data(), Qt::Key_A);
+    QTest::keyRelease(canvas.data(), Qt::Key_A, Qt::NoModifier ,10);
     QCOMPARE(strInput->text(), QLatin1String("aaaa"));
     QCOMPARE(strInput->hasAcceptableInput(), true);
-    QTest::keyPress(canvas, Qt::Key_A);
-    QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
+    QTest::keyPress(canvas.data(), Qt::Key_A);
+    QTest::keyRelease(canvas.data(), Qt::Key_A, Qt::NoModifier ,10);
     QCOMPARE(strInput->text(), QLatin1String("aaaa"));
     QCOMPARE(strInput->hasAcceptableInput(), true);
-
-    delete canvas;
 }
 
 void tst_qsgtextinput::inputMethods()
 {
-    QSGView *canvas = createView(SRCDIR "/data/inputmethods.qml");
+    QScopedPointer<QSGView> canvas(createView(SRCDIR "/data/inputmethods.qml"));
     canvas->show();
     canvas->setFocus();
-    QApplication::setActiveWindow(canvas);
-    QTest::qWaitForWindowShown(canvas);
+    QApplication::setActiveWindow(canvas.data());
+    QTest::qWaitForWindowShown(canvas.data());
 
     // test input method hints
     QVERIFY(canvas->rootObject() != 0);
@@ -1383,28 +1368,26 @@ void tst_qsgtextinput::inputMethods()
     // test that input method event is committed
     QInputMethodEvent event;
     event.setCommitString( "My ", -12, 0);
-    QApplication::sendEvent(canvas, &event);
+    QApplication::sendEvent(canvas.data(), &event);
     QCOMPARE(input->text(), QString("My Hello world!"));
 
     input->setCursorPosition(2);
     event.setCommitString("Your", -2, 2);
-    QApplication::sendEvent(canvas, &event);
+    QApplication::sendEvent(canvas.data(), &event);
     QCOMPARE(input->text(), QString("Your Hello world!"));
     QCOMPARE(input->cursorPosition(), 4);
 
     input->setCursorPosition(7);
     event.setCommitString("Goodbye", -2, 5);
-    QApplication::sendEvent(canvas, &event);
+    QApplication::sendEvent(canvas.data(), &event);
     QCOMPARE(input->text(), QString("Your Goodbye world!"));
     QCOMPARE(input->cursorPosition(), 12);
 
     input->setCursorPosition(8);
     event.setCommitString("Our", -8, 4);
-    QApplication::sendEvent(canvas, &event);
+    QApplication::sendEvent(canvas.data(), &event);
     QCOMPARE(input->text(), QString("Our Goodbye world!"));
     QCOMPARE(input->cursorPosition(), 7);
-
-    delete canvas;
 }
 
 /*
@@ -1414,7 +1397,7 @@ the extent of the text, then they should ignore the keys.
 */
 void tst_qsgtextinput::navigation()
 {
-    QSGView *canvas = createView(SRCDIR "/data/navigation.qml");
+    QScopedPointer<QSGView> canvas(createView(SRCDIR "/data/navigation.qml"));
     canvas->show();
     canvas->setFocus();
 
@@ -1425,37 +1408,35 @@ void tst_qsgtextinput::navigation()
     QVERIFY(input != 0);
     input->setCursorPosition(0);
     QTRY_VERIFY(input->hasActiveFocus() == true);
-    simulateKey(canvas, Qt::Key_Left);
+    simulateKey(canvas.data(), Qt::Key_Left);
     QVERIFY(input->hasActiveFocus() == false);
-    simulateKey(canvas, Qt::Key_Right);
+    simulateKey(canvas.data(), Qt::Key_Right);
     QVERIFY(input->hasActiveFocus() == true);
     //QT-2944: If text is selected, ensure we deselect upon cursor motion
     input->setCursorPosition(input->text().length());
     input->select(0,input->text().length());
     QVERIFY(input->selectionStart() != input->selectionEnd());
-    simulateKey(canvas, Qt::Key_Right);
+    simulateKey(canvas.data(), Qt::Key_Right);
     QVERIFY(input->selectionStart() == input->selectionEnd());
     QVERIFY(input->selectionStart() == input->text().length());
     QVERIFY(input->hasActiveFocus() == true);
-    simulateKey(canvas, Qt::Key_Right);
+    simulateKey(canvas.data(), Qt::Key_Right);
     QVERIFY(input->hasActiveFocus() == false);
-    simulateKey(canvas, Qt::Key_Left);
+    simulateKey(canvas.data(), Qt::Key_Left);
     QVERIFY(input->hasActiveFocus() == true);
 
     // Up and Down should NOT do Home/End, even on Mac OS X (QTBUG-10438).
     input->setCursorPosition(2);
     QCOMPARE(input->cursorPosition(),2);
-    simulateKey(canvas, Qt::Key_Up);
+    simulateKey(canvas.data(), Qt::Key_Up);
     QCOMPARE(input->cursorPosition(),2);
-    simulateKey(canvas, Qt::Key_Down);
+    simulateKey(canvas.data(), Qt::Key_Down);
     QCOMPARE(input->cursorPosition(),2);
-
-    delete canvas;
 }
 
 void tst_qsgtextinput::navigation_RTL()
 {
-    QSGView *canvas = createView(SRCDIR "/data/navigation.qml");
+    QScopedPointer<QSGView> canvas(createView(SRCDIR "/data/navigation.qml"));
     canvas->show();
     canvas->setFocus();
 
@@ -1471,25 +1452,23 @@ void tst_qsgtextinput::navigation_RTL()
     QTRY_VERIFY(input->hasActiveFocus() == true);
 
     // move off
-    simulateKey(canvas, Qt::Key_Right);
+    simulateKey(canvas.data(), Qt::Key_Right);
     QVERIFY(input->hasActiveFocus() == false);
 
     // move back
-    simulateKey(canvas, Qt::Key_Left);
+    simulateKey(canvas.data(), Qt::Key_Left);
     QVERIFY(input->hasActiveFocus() == true);
 
     input->setCursorPosition(input->text().length());
     QVERIFY(input->hasActiveFocus() == true);
 
     // move off
-    simulateKey(canvas, Qt::Key_Left);
+    simulateKey(canvas.data(), Qt::Key_Left);
     QVERIFY(input->hasActiveFocus() == false);
 
     // move back
-    simulateKey(canvas, Qt::Key_Right);
+    simulateKey(canvas.data(), Qt::Key_Right);
     QVERIFY(input->hasActiveFocus() == true);
-
-    delete canvas;
 }
 
 void tst_qsgtextinput::copyAndPaste() {
@@ -1506,7 +1485,7 @@ void tst_qsgtextinput::copyAndPaste() {
     }
 #endif
 
-    QString componentStr = "import QtQuick 1.0\nTextInput { text: \"Hello world!\" }";
+    QString componentStr = "import QtQuick 2.0\nTextInput { text: \"Hello world!\" }";
     QDeclarativeComponent textInputComponent(&engine);
     textInputComponent.setData(componentStr.toLatin1(), QUrl());
     QSGTextInput *textInput = qobject_cast<QSGTextInput*>(textInputComponent.create());
@@ -1578,7 +1557,7 @@ void tst_qsgtextinput::canPasteEmpty() {
 
     QApplication::clipboard()->clear();
 
-    QString componentStr = "import QtQuick 1.0\nTextInput { text: \"Hello world!\" }";
+    QString componentStr = "import QtQuick 2.0\nTextInput { text: \"Hello world!\" }";
     QDeclarativeComponent textInputComponent(&engine);
     textInputComponent.setData(componentStr.toLatin1(), QUrl());
     QSGTextInput *textInput = qobject_cast<QSGTextInput*>(textInputComponent.create());
@@ -1596,7 +1575,7 @@ void tst_qsgtextinput::canPaste() {
 
     QApplication::clipboard()->setText("Some text");
 
-    QString componentStr = "import QtQuick 1.0\nTextInput { text: \"Hello world!\" }";
+    QString componentStr = "import QtQuick 2.0\nTextInput { text: \"Hello world!\" }";
     QDeclarativeComponent textInputComponent(&engine);
     textInputComponent.setData(componentStr.toLatin1(), QUrl());
     QSGTextInput *textInput = qobject_cast<QSGTextInput*>(textInputComponent.create());
@@ -1611,7 +1590,7 @@ void tst_qsgtextinput::canPaste() {
 
 void tst_qsgtextinput::passwordCharacter()
 {
-    QString componentStr = "import QtQuick 1.0\nTextInput { text: \"Hello world!\"; font.family: \"Helvetica\"; echoMode: TextInput.Password }";
+    QString componentStr = "import QtQuick 2.0\nTextInput { text: \"Hello world!\"; font.family: \"Helvetica\"; echoMode: TextInput.Password }";
     QDeclarativeComponent textInputComponent(&engine);
     textInputComponent.setData(componentStr.toLatin1(), QUrl());
     QSGTextInput *textInput = qobject_cast<QSGTextInput*>(textInputComponent.create());
@@ -1628,7 +1607,7 @@ void tst_qsgtextinput::passwordCharacter()
 
 void tst_qsgtextinput::cursorDelegate()
 {
-    QSGView* view = createView(SRCDIR "/data/cursorTest.qml");
+    QScopedPointer<QSGView> view(createView(SRCDIR "/data/cursorTest.qml"));
     view->show();
     view->setFocus();
     QSGTextInput *textInputObject = view->rootObject()->findChild<QSGTextInput*>("textInputObject");
@@ -1651,14 +1630,11 @@ void tst_qsgtextinput::cursorDelegate()
     //Test Delegate gets deleted
     textInputObject->setCursorDelegate(0);
     QVERIFY(!textInputObject->findChild<QSGItem*>("cursorInstance"));
-
-    delete view;
 }
 
 void tst_qsgtextinput::cursorVisible()
 {
-    QGraphicsScene scene;
-    QGraphicsView view(&scene);
+    QSGView view;
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
@@ -1681,7 +1657,7 @@ void tst_qsgtextinput::cursorVisible()
     QCOMPARE(input.isCursorVisible(), false);
     QCOMPARE(spy.count(), 2);
 
-    scene.addItem(&input);
+    input.setParentItem(view.rootObject());
     QCOMPARE(input.isCursorVisible(), true);
     QCOMPARE(spy.count(), 3);
 
@@ -1693,11 +1669,11 @@ void tst_qsgtextinput::cursorVisible()
     QCOMPARE(input.isCursorVisible(), true);
     QCOMPARE(spy.count(), 5);
 
-    scene.clearFocus();
+    view.clearFocus();
     QCOMPARE(input.isCursorVisible(), false);
     QCOMPARE(spy.count(), 6);
 
-    scene.setFocus();
+    view.setFocus();
     QCOMPARE(input.isCursorVisible(), true);
     QCOMPARE(spy.count(), 7);
 
@@ -1765,7 +1741,7 @@ void tst_qsgtextinput::cursorRectangle()
 
 void tst_qsgtextinput::readOnly()
 {
-    QSGView *canvas = createView(SRCDIR "/data/readOnly.qml");
+    QScopedPointer<QSGView> canvas(createView(SRCDIR "/data/readOnly.qml"));
     canvas->show();
     canvas->setFocus();
 
@@ -1778,23 +1754,21 @@ void tst_qsgtextinput::readOnly()
     QVERIFY(input->isReadOnly() == true);
     QString initial = input->text();
     for(int k=Qt::Key_0; k<=Qt::Key_Z; k++)
-        simulateKey(canvas, k);
-    simulateKey(canvas, Qt::Key_Return);
-    simulateKey(canvas, Qt::Key_Space);
-    simulateKey(canvas, Qt::Key_Escape);
+        simulateKey(canvas.data(), k);
+    simulateKey(canvas.data(), Qt::Key_Return);
+    simulateKey(canvas.data(), Qt::Key_Space);
+    simulateKey(canvas.data(), Qt::Key_Escape);
     QCOMPARE(input->text(), initial);
-
-    delete canvas;
 }
 
 void tst_qsgtextinput::echoMode()
 {
-    QSGView *canvas = createView(SRCDIR "/data/echoMode.qml");
+    QScopedPointer<QSGView> canvas(createView(SRCDIR "/data/echoMode.qml"));
     canvas->show();
     canvas->setFocus();
-    QApplication::setActiveWindow(canvas);
-    QTest::qWaitForWindowShown(canvas);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+    QApplication::setActiveWindow(canvas.data());
+    QTest::qWaitForWindowShown(canvas.data());
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas.data()));
 
     QVERIFY(canvas->rootObject() != 0);
 
@@ -1838,8 +1812,8 @@ void tst_qsgtextinput::echoMode()
     QCOMPARE(input->text(), initial);
     QCOMPARE(input->displayText(), QLatin1String("QQQQQQQQ"));
     QCOMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), QLatin1String("QQQQQQQQ"));
-    QTest::keyPress(canvas, Qt::Key_A);//Clearing previous entry is part of PasswordEchoOnEdit
-    QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
+    QTest::keyPress(canvas.data(), Qt::Key_A);//Clearing previous entry is part of PasswordEchoOnEdit
+    QTest::keyRelease(canvas.data(), Qt::Key_A, Qt::NoModifier ,10);
     QCOMPARE(input->text(), QLatin1String("a"));
     QCOMPARE(input->displayText(), QLatin1String("a"));
     QCOMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), QLatin1String("a"));
@@ -1850,12 +1824,10 @@ void tst_qsgtextinput::echoMode()
     input->setFocus(true);
     QInputMethodEvent inputEvent;
     inputEvent.setCommitString(initial);
-    QApplication::sendEvent(canvas, &inputEvent);
+    QApplication::sendEvent(canvas.data(), &inputEvent);
     QCOMPARE(input->text(), initial);
     QCOMPARE(input->displayText(), initial);
     QCOMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), initial);
-
-    delete canvas;
 }
 
 void tst_qsgtextinput::simulateKey(QSGView *view, int key)
@@ -1934,15 +1906,14 @@ public:
 
 void tst_qsgtextinput::openInputPanelOnClick()
 {
-    QGraphicsScene scene;
-    QGraphicsView view(&scene);
+    QSGView view;
     MyInputContext ic;
     view.setInputContext(&ic);
     QSGTextInput input;
     QSignalSpy focusOnPressSpy(&input, SIGNAL(activeFocusOnPressChanged(bool)));
     input.setText("Hello world");
-    input.setPos(0, 0);
-    scene.addItem(&input);
+    input.setPos(QPointF(0, 0));
+    input.setParentItem(view.rootItem());
     view.show();
     qApp->setAutoSipEnabled(true);
     QApplication::setActiveWindow(&view);
@@ -1957,11 +1928,11 @@ void tst_qsgtextinput::openInputPanelOnClick()
 
     QStyle::RequestSoftwareInputPanel behavior = QStyle::RequestSoftwareInputPanel(
             view.style()->styleHint(QStyle::SH_RequestSoftwareInputPanel));
-    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
+    QTest::mouseClick(&view, Qt::LeftButton, 0, input.pos().toPoint());
     QApplication::processEvents();
     if (behavior == QStyle::RSIP_OnMouseClickAndAlreadyFocused) {
         QCOMPARE(ic.openInputPanelReceived, false);
-        QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
+        QTest::mouseClick(&view, Qt::LeftButton, 0, input.pos().toPoint());
         QApplication::processEvents();
         QCOMPARE(ic.openInputPanelReceived, true);
     } else if (behavior == QStyle::RSIP_OnMouseClick) {
@@ -1981,15 +1952,14 @@ void tst_qsgtextinput::openInputPanelOnClick()
 
 void tst_qsgtextinput::openInputPanelOnFocus()
 {
-    QGraphicsScene scene;
-    QGraphicsView view(&scene);
+    QSGView view;
     MyInputContext ic;
     view.setInputContext(&ic);
     QSGTextInput input;
     QSignalSpy focusOnPressSpy(&input, SIGNAL(activeFocusOnPressChanged(bool)));
     input.setText("Hello world");
-    input.setPos(0, 0);
-    scene.addItem(&input);
+    input.setPos(QPointF(0, 0));
+    input.setParentItem(view.rootItem());
     view.show();
     qApp->setAutoSipEnabled(true);
     QApplication::setActiveWindow(&view);
@@ -2006,20 +1976,20 @@ void tst_qsgtextinput::openInputPanelOnFocus()
     QCOMPARE(ic.closeInputPanelReceived, false);
 
     // focus on press, input panel on focus
-    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
+    QTest::mousePress(&view, Qt::LeftButton, 0, input.pos().toPoint());
     QApplication::processEvents();
     QVERIFY(input.hasActiveFocus());
     QCOMPARE(ic.openInputPanelReceived, true);
     ic.openInputPanelReceived = false;
 
     // no events on release
-    QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
+    QTest::mouseRelease(&view, Qt::LeftButton, 0, input.pos().toPoint());
     QCOMPARE(ic.openInputPanelReceived, false);
     ic.openInputPanelReceived = false;
 
     // if already focused, input panel can be opened on press
     QVERIFY(input.hasActiveFocus());
-    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
+    QTest::mousePress(&view, Qt::LeftButton, 0, input.pos().toPoint());
     QApplication::processEvents();
     QCOMPARE(ic.openInputPanelReceived, true);
     ic.openInputPanelReceived = false;
@@ -2027,7 +1997,7 @@ void tst_qsgtextinput::openInputPanelOnFocus()
     // input method should stay enabled if focus
     // is lost to an item that also accepts inputs
     QSGTextInput anotherInput;
-    scene.addItem(&anotherInput);
+    anotherInput.setParentItem(view.rootItem());
     anotherInput.setFocus(true);
     QApplication::processEvents();
     QCOMPARE(ic.openInputPanelReceived, true);
@@ -2038,7 +2008,7 @@ void tst_qsgtextinput::openInputPanelOnFocus()
     // input method should be disabled if focus
     // is lost to an item that doesn't accept inputs
     QSGItem item;
-    scene.addItem(&item);
+    item.setParentItem(view.rootItem());
     item.setFocus(true);
     QApplication::processEvents();
     QCOMPARE(ic.openInputPanelReceived, false);
@@ -2053,8 +2023,8 @@ void tst_qsgtextinput::openInputPanelOnFocus()
     QCOMPARE(focusOnPressSpy.count(),1);
     input.setFocus(false);
     input.setFocus(true);
-    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
-    QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
+    QTest::mousePress(&view, Qt::LeftButton, 0, input.pos().toPoint());
+    QTest::mouseRelease(&view, Qt::LeftButton, 0, input.pos().toPoint());
     QApplication::processEvents();
     QCOMPARE(ic.openInputPanelReceived, false);
     QCOMPARE(ic.closeInputPanelReceived, false);
@@ -2117,21 +2087,20 @@ public:
     {
         nbPaint = 0;
     }
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    void paint(QPainter *painter)
     {
        nbPaint++;
-       QSGTextInput::paint(painter, option, widget);
+       QSGTextInput::paint(painter);
     }
     int nbPaint;
 };
 
 void tst_qsgtextinput::setHAlignClearCache()
 {
-    QGraphicsScene scene;
-    QGraphicsView view(&scene);
+    QSGView view;
     MyTextInput input;
     input.setText("Hello world");
-    scene.addItem(&input);
+    input.setParentItem(view.rootItem());
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
@@ -2144,14 +2113,13 @@ void tst_qsgtextinput::setHAlignClearCache()
 
 void tst_qsgtextinput::focusOutClearSelection()
 {
-    QGraphicsScene scene;
-    QGraphicsView view(&scene);
+    QSGView view;
     QSGTextInput input;
     QSGTextInput input2;
     input.setText(QLatin1String("Hello world"));
     input.setFocus(true);
-    scene.addItem(&input2);
-    scene.addItem(&input);
+    input2.setParentItem(view.rootItem());
+    input.setParentItem(view.rootItem());
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
@@ -2184,7 +2152,7 @@ void tst_qsgtextinput::testQtQuick11Attributes()
     QObject *obj;
 
     QDeclarativeComponent valid(&engine);
-    valid.setData("import QtQuick 1.1; TextInput { " + code.toUtf8() + " }", QUrl(""));
+    valid.setData("import QtQuick 2.0; TextInput { " + code.toUtf8() + " }", QUrl(""));
     obj = valid.create();
     QVERIFY(obj);
     QVERIFY(valid.errorString().isEmpty());
@@ -2222,17 +2190,16 @@ void tst_qsgtextinput::preeditAutoScroll()
     QString committedText = "super";
     QString preeditText = "califragisiticexpialidocious!";
 
-    QGraphicsScene scene;
-    QGraphicsView view(&scene);
+    QSGView view;
     MyInputContext ic;
     view.setInputContext(&ic);
     QSGTextInput input;
     QFontMetricsF fm(input.font());
     input.setWidth(fm.width(committedText));
     input.setText(committedText);
-    input.setPos(0, 0);
+    input.setPos(QPointF(0, 0));
     input.setFocus(true);
-    scene.addItem(&input);
+    input.setParentItem(view.rootItem());
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
@@ -2290,15 +2257,14 @@ void tst_qsgtextinput::preeditMicroFocus()
 {
     QString preeditText = "super";
 
-    QGraphicsScene scene;
-    QGraphicsView view(&scene);
+    QSGView view;
     MyInputContext ic;
     view.setInputContext(&ic);
     QSGTextInput input;
-    input.setPos(0, 0);
+    input.setPos(QPointF(0, 0));
     input.setAutoScroll(false);
     input.setFocus(true);
-    scene.addItem(&input);
+    input.setParentItem(view.rootItem());
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
@@ -2346,17 +2312,16 @@ void tst_qsgtextinput::inputContextMouseHandler()
 {
     QString text = "supercalifragisiticexpialidocious!";
 
-    QGraphicsScene scene;
-    QGraphicsView view(&scene);
+    QSGView view;
     MyInputContext ic;
     view.setInputContext(&ic);
     QSGTextInput input;
     input.setWidth(200);
     input.setText(text.mid(0, 12));
     input.setCursorPosition(12);
-    input.setPos(0, 0);
+    input.setPos(QPointF(0, 0));
     input.setFocus(true);
-    scene.addItem(&input);
+    input.setParentItem(view.rootItem());
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
@@ -2365,18 +2330,18 @@ void tst_qsgtextinput::inputContextMouseHandler()
     QFontMetricsF fm(input.font());
     const qreal y = fm.height() / 2;
 
-    QPoint position2 = view.mapFromScene(input.mapToScene(QPointF(fm.width(text.mid(0, 2)), y)));
-    QPoint position8 = view.mapFromScene(input.mapToScene(QPointF(fm.width(text.mid(0, 8)), y)));
-    QPoint position20 = view.mapFromScene(input.mapToScene(QPointF(fm.width(text.mid(0, 20)), y)));
-    QPoint position27 = view.mapFromScene(input.mapToScene(QPointF(fm.width(text.mid(0, 27)), y)));
-    QPoint globalPosition2 = view.viewport()->mapToGlobal(position2);
-    QPoint globalposition8 = view.viewport()->mapToGlobal(position8);
-    QPoint globalposition20 = view.viewport()->mapToGlobal(position20);
-    QPoint globalposition27 = view.viewport()->mapToGlobal(position27);
+    QPoint position2 = input.mapToScene(QPointF(fm.width(text.mid(0, 2)), y)).toPoint();
+    QPoint position8 = input.mapToScene(QPointF(fm.width(text.mid(0, 8)), y)).toPoint();
+    QPoint position20 = input.mapToScene(QPointF(fm.width(text.mid(0, 20)), y)).toPoint();
+    QPoint position27 = input.mapToScene(QPointF(fm.width(text.mid(0, 27)), y)).toPoint();
+    QPoint globalPosition2 = view.mapToGlobal(position2);
+    QPoint globalposition8 = view.mapToGlobal(position8);
+    QPoint globalposition20 = view.mapToGlobal(position20);
+    QPoint globalposition27 = view.mapToGlobal(position27);
 
     ic.sendEvent(QInputMethodEvent(text.mid(12), QList<QInputMethodEvent::Attribute>()));
 
-    QTest::mouseDClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, position2);
+    QTest::mouseDClick(&view, Qt::LeftButton, Qt::NoModifier, position2);
     QCOMPARE(ic.eventType, QEvent::MouseButtonDblClick);
     QCOMPARE(ic.eventPosition, position2);
     QCOMPARE(ic.eventGlobalPosition, globalPosition2);
@@ -2385,7 +2350,7 @@ void tst_qsgtextinput::inputContextMouseHandler()
     QVERIFY(ic.cursor < 0);
     ic.eventType = QEvent::None;
 
-    QTest::mousePress(view.viewport(), Qt::LeftButton, Qt::NoModifier, position2);
+    QTest::mousePress(&view, Qt::LeftButton, Qt::NoModifier, position2);
     QCOMPARE(ic.eventType, QEvent::MouseButtonPress);
     QCOMPARE(ic.eventPosition, position2);
     QCOMPARE(ic.eventGlobalPosition, globalPosition2);
@@ -2395,11 +2360,11 @@ void tst_qsgtextinput::inputContextMouseHandler()
     ic.eventType = QEvent::None;
 
     {   QMouseEvent mv(QEvent::MouseMove, position8, globalposition8, Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(view.viewport(), &mv); }
+        QApplication::sendEvent(&view, &mv); }
     QCOMPARE(ic.eventType, QEvent::None);
 
     {   QMouseEvent mv(QEvent::MouseMove, position27, globalposition27, Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
-        QApplication::sendEvent(view.viewport(), &mv); }
+        QApplication::sendEvent(&view, &mv); }
     QCOMPARE(ic.eventType, QEvent::MouseMove);
     QCOMPARE(ic.eventPosition, position27);
     QCOMPARE(ic.eventGlobalPosition, globalposition27);
@@ -2408,7 +2373,7 @@ void tst_qsgtextinput::inputContextMouseHandler()
     QVERIFY(ic.cursor >= 14 && ic.cursor <= 16);    // 15 is expected but some platforms may be off by one.
     ic.eventType = QEvent::None;
 
-    QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::NoModifier, position27);
+    QTest::mouseRelease(&view, Qt::LeftButton, Qt::NoModifier, position27);
     QCOMPARE(ic.eventType, QEvent::MouseButtonRelease);
     QCOMPARE(ic.eventPosition, position27);
     QCOMPARE(ic.eventGlobalPosition, globalposition27);
@@ -2418,7 +2383,7 @@ void tst_qsgtextinput::inputContextMouseHandler()
     ic.eventType = QEvent::None;
 
     // And in the other direction.
-    QTest::mouseDClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, position27);
+    QTest::mouseDClick(&view, Qt::LeftButton, Qt::ControlModifier, position27);
     QCOMPARE(ic.eventType, QEvent::MouseButtonDblClick);
     QCOMPARE(ic.eventPosition, position27);
     QCOMPARE(ic.eventGlobalPosition, globalposition27);
@@ -2427,7 +2392,7 @@ void tst_qsgtextinput::inputContextMouseHandler()
     QVERIFY(ic.cursor >= 14 && ic.cursor <= 16);
     ic.eventType = QEvent::None;
 
-    QTest::mousePress(view.viewport(), Qt::RightButton, Qt::ControlModifier, position27);
+    QTest::mousePress(&view, Qt::RightButton, Qt::ControlModifier, position27);
     QCOMPARE(ic.eventType, QEvent::MouseButtonPress);
     QCOMPARE(ic.eventPosition, position27);
     QCOMPARE(ic.eventGlobalPosition, globalposition27);
@@ -2437,7 +2402,7 @@ void tst_qsgtextinput::inputContextMouseHandler()
     ic.eventType = QEvent::None;
 
     {   QMouseEvent mv(QEvent::MouseMove, position20, globalposition20, Qt::RightButton, Qt::RightButton,Qt::ControlModifier);
-        QApplication::sendEvent(view.viewport(), &mv); }
+        QApplication::sendEvent(&view, &mv); }
     QCOMPARE(ic.eventType, QEvent::MouseMove);
     QCOMPARE(ic.eventPosition, position20);
     QCOMPARE(ic.eventGlobalPosition, globalposition20);
@@ -2447,10 +2412,10 @@ void tst_qsgtextinput::inputContextMouseHandler()
     ic.eventType = QEvent::None;
 
     {   QMouseEvent mv(QEvent::MouseMove, position2, globalPosition2, Qt::RightButton, Qt::RightButton,Qt::ControlModifier);
-        QApplication::sendEvent(view.viewport(), &mv); }
+        QApplication::sendEvent(&view, &mv); }
     QCOMPARE(ic.eventType, QEvent::None);
 
-    QTest::mouseRelease(view.viewport(), Qt::RightButton, Qt::ControlModifier, position2);
+    QTest::mouseRelease(&view, Qt::RightButton, Qt::ControlModifier, position2);
     QCOMPARE(ic.eventType, QEvent::MouseButtonRelease);
     QCOMPARE(ic.eventPosition, position2);
     QCOMPARE(ic.eventGlobalPosition, globalPosition2);
@@ -2464,17 +2429,16 @@ void tst_qsgtextinput::inputMethodComposing()
 {
     QString text = "supercalifragisiticexpialidocious!";
 
-    QGraphicsScene scene;
-    QGraphicsView view(&scene);
+    QSGView view;
     MyInputContext ic;
     view.setInputContext(&ic);
     QSGTextInput input;
     input.setWidth(200);
     input.setText(text.mid(0, 12));
     input.setCursorPosition(12);
-    input.setPos(0, 0);
+    input.setPos(QPointF(0, 0));
     input.setFocus(true);
-    scene.addItem(&input);
+    input.setParentItem(view.rootItem());
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
