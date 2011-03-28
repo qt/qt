@@ -162,7 +162,9 @@ typedef short INT16;
 #ifndef _BASETSD_H_		/* Microsoft defines it in basetsd.h */
 #ifndef _BASETSD_H		/* MinGW is slightly different */
 #ifndef QGLOBAL_H		/* Qt defines it in qglobal.h */
+#ifndef VXWORKS
 typedef long INT32;
+#endif
 #endif
 #endif
 #endif
@@ -186,6 +188,10 @@ typedef unsigned int JDIMENSION;
  * Another application is to make all functions global for use with debuggers
  * or code profilers that require it.
  */
+
+#if defined(VXWORKS) && defined(LOCAL)
+#undef LOCAL
+#endif
 
 /* a function called through method pointers: */
 #define METHODDEF(type)		static type
