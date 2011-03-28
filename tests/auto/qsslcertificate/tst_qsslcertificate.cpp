@@ -817,6 +817,15 @@ void tst_QSslCertificate::largeExpirationDate() // QTBUG-12489
     QCOMPARE(cert.expiryDate().toUTC(), QDateTime(QDate(2051, 8, 29), QTime(9, 53, 41), Qt::UTC));
 }
 
+void tst_QSslCertificate::blacklistedCertificates()
+{
+    QList<QSslCertificate> blacklistedCerts = QSslCertificate::fromPath("more-certificates/blacklisted*.pem", QSsl::Pem, QRegExp::Wildcard);
+    QVERIFY2(blacklistedCerts.count() > 0, "Please run this test from the source directory");
+    for (int a = 0; a < blacklistedCerts.count(); a++) {
+        QVERIFY(! blacklistedCerts.at(a).isValid());
+    }
+}
+
 #endif // QT_NO_OPENSSL
 
 QTEST_MAIN(tst_QSslCertificate)
