@@ -80,13 +80,17 @@ contains(QT_CONFIG, private_tests) {
            qdeclarativexmllistmodel \
            qpacketprotocol \
            qdeclarativev4 \
+           qsgcanvas \
            qsgflickable \
            qsgflipable \
            qsgfocusscope \
            qsgloader \
            qsgmousearea \
+           qsgpincharea \
            qsgpositioners \
-           qsgrepeater
+           qsgrepeater \
+           qsgtextedit \
+           qsgvisualdatamodel
 
 
 contains(QT_CONFIG, webkit) {

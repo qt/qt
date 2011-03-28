@@ -1349,7 +1349,7 @@ void tst_qsgtextedit::mouseSelection()
 
 void tst_qsgtextedit::dragMouseSelection()
 {
-    QEXPECT_FAIL("", "Test needs to be ported", Abort);
+    QFAIL("Test needs to be ported");
     //XXX
     /*QString qmlfile = SRCDIR "/data/mouseselection_true.qml";
 

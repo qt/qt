@@ -88,8 +88,6 @@ private slots:
 
     void transformCrash();
     void implicitSize();
-    void testQtQuick11Attributes();
-    void testQtQuick11Attributes_data();
     void qtbug_16871();
 private:
     QDeclarativeEngine engine;
@@ -557,7 +555,7 @@ void tst_QSGItem::layoutMirroring()
 void tst_QSGItem::layoutMirroringIllegalParent()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import QtQuick 1.1; QtObject { LayoutMirroring.enabled: true; LayoutMirroring.childrenInherit: true }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 2.0; QtObject { LayoutMirroring.enabled: true; LayoutMirroring.childrenInherit: true }", QUrl::fromLocalFile(""));
     QTest::ignoreMessage(QtWarningMsg, "file::1:21: QML QtObject: LayoutDirection attached property only works with Items");
     QObject *object = component.create();
     QVERIFY(object != 0);
@@ -902,7 +900,7 @@ void tst_QSGItem::keyNavigation_implicitSetting()
 void tst_QSGItem::smooth()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import QtQuick 1.0; Item { smooth: false; }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 2.0; Item { smooth: false; }", QUrl::fromLocalFile(""));
     QSGItem *item = qobject_cast<QSGItem*>(component.create());
     QSignalSpy spy(item, SIGNAL(smoothChanged(bool)));
 
@@ -931,7 +929,7 @@ void tst_QSGItem::smooth()
 void tst_QSGItem::clip()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import QtQuick 1.0\nItem { clip: false\n }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 2.0\nItem { clip: false\n }", QUrl::fromLocalFile(""));
     QSGItem *item = qobject_cast<QSGItem*>(component.create());
     QSignalSpy spy(item, SIGNAL(clipChanged(bool)));
 
@@ -980,19 +978,19 @@ void tst_QSGItem::mapCoordinates()
 
     QVERIFY(QMetaObject::invokeMethod(root, "mapAToB",
             Q_RETURN_ARG(QVariant, result), Q_ARG(QVariant, x), Q_ARG(QVariant, y)));
-    QCOMPARE(result.value<QPointF>(), qobject_cast<QSGItem*>(a)->mapToItem(b, x, y));
+    QCOMPARE(result.value<QPointF>(), qobject_cast<QSGItem*>(a)->mapToItem(b, QPointF(x, y)));
 
     QVERIFY(QMetaObject::invokeMethod(root, "mapAFromB",
             Q_RETURN_ARG(QVariant, result), Q_ARG(QVariant, x), Q_ARG(QVariant, y)));
-    QCOMPARE(result.value<QPointF>(), qobject_cast<QSGItem*>(a)->mapFromItem(b, x, y));
+    QCOMPARE(result.value<QPointF>(), qobject_cast<QSGItem*>(a)->mapFromItem(b, QPointF(x, y)));
 
     QVERIFY(QMetaObject::invokeMethod(root, "mapAToNull",
             Q_RETURN_ARG(QVariant, result), Q_ARG(QVariant, x), Q_ARG(QVariant, y)));
-    QCOMPARE(result.value<QPointF>(), qobject_cast<QSGItem*>(a)->mapToScene(x, y));
+    QCOMPARE(result.value<QPointF>(), qobject_cast<QSGItem*>(a)->mapToScene(QPointF(x, y)));
 
     QVERIFY(QMetaObject::invokeMethod(root, "mapAFromNull",
             Q_RETURN_ARG(QVariant, result), Q_ARG(QVariant, x), Q_ARG(QVariant, y)));
-    QCOMPARE(result.value<QPointF>(), qobject_cast<QSGItem*>(a)->mapFromScene(x, y));
+    QCOMPARE(result.value<QPointF>(), qobject_cast<QSGItem*>(a)->mapFromScene(QPointF(x, y)));
 
     QString warning1 = QUrl::fromLocalFile(SRCDIR "/data/mapCoordinates.qml").toString() + ":7:5: QML Item: mapToItem() given argument \"1122\" which is neither null nor an Item";
     QString warning2 = QUrl::fromLocalFile(SRCDIR "/data/mapCoordinates.qml").toString() + ":7:5: QML Item: mapFromItem() given argument \"1122\" which is neither null nor an Item";
@@ -1035,13 +1033,14 @@ void tst_QSGItem::transforms_data()
 
 void tst_QSGItem::transforms()
 {
-    QFETCH(QByteArray, qml);
+    QFAIL("This test has not been ported yet");
+    /*QFETCH(QByteArray, qml);
     QFETCH(QMatrix, matrix);
     QDeclarativeComponent component(&engine);
-    component.setData("import QtQuick 1.0\nItem { transform: "+qml+"}", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 2.0\nItem { transform: "+qml+"}", QUrl::fromLocalFile(""));
     QSGItem *item = qobject_cast<QSGItem*>(component.create());
     QVERIFY(item);
-    QCOMPARE(item->sceneMatrix(), matrix);
+    QCOMPARE(item->sceneMatrix(), matrix);*/
 }
 
 void tst_QSGItem::childrenProperty()
@@ -1089,13 +1088,13 @@ void tst_QSGItem::mouseFocus()
     QVERIFY(item);
     QSignalSpy focusSpy(item, SIGNAL(activeFocusChanged(bool)));
 
-    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(item->scenePos()));
+    QTest::mouseClick(canvas, Qt::LeftButton, 0, item->mapToScene(QPointF(0,0)).toPoint());
     QApplication::processEvents();
     QCOMPARE(focusSpy.count(), 1);
     QVERIFY(item->hasActiveFocus());
 
     // make sure focusable graphics widget underneath does not steal focus
-    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(item->scenePos()));
+    QTest::mouseClick(canvas, Qt::LeftButton, 0, item->mapToScene(QPointF(0,0)).toPoint());
     QApplication::processEvents();
     QCOMPARE(focusSpy.count(), 1);
     QVERIFY(item->hasActiveFocus());
@@ -1308,53 +1307,6 @@ void tst_QSGItem::implicitSize()
     QCOMPARE(item->height(), qreal(80));
 
     delete canvas;
-}
-
-void tst_QSGItem::testQtQuick11Attributes()
-{
-    QFETCH(QString, code);
-    QFETCH(QString, warning);
-    QFETCH(QString, error);
-
-    QDeclarativeEngine engine;
-    QObject *obj;
-
-    QDeclarativeComponent valid(&engine);
-    valid.setData("import QtQuick 1.1; Item { " + code.toUtf8() + " }", QUrl(""));
-    obj = valid.create();
-    QVERIFY(obj);
-    QVERIFY(valid.errorString().isEmpty());
-    delete obj;
-
-    QDeclarativeComponent invalid(&engine);
-    invalid.setData("import QtQuick 1.0; Item { " + code.toUtf8() + " }", QUrl(""));
-    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
-    obj = invalid.create();
-    QCOMPARE(invalid.errorString(), error);
-    delete obj;
-}
-
-void tst_QSGItem::testQtQuick11Attributes_data()
-{
-    QTest::addColumn<QString>("code");
-    QTest::addColumn<QString>("warning");
-    QTest::addColumn<QString>("error");
-
-    QTest::newRow("implicitWidth") << "implicitWidth: 100"
-        << "QDeclarativeComponent: Component is not ready"
-        << ":1 \"Item.implicitWidth\" is not available in QtQuick 1.0.\n";
-
-    QTest::newRow("implicitHeight") << "implicitHeight: 100"
-        << "QDeclarativeComponent: Component is not ready"
-        << ":1 \"Item.implicitHeight\" is not available in QtQuick 1.0.\n";
-
-    QTest::newRow("onImplicitWidthChanged") << "onImplicitWidthChanged: x"
-        << "QDeclarativeComponent: Component is not ready"
-        << ":1 \"Item.onImplicitWidthChanged\" is not available in QtQuick 1.0.\n";
-
-    QTest::newRow("onImplicitHeightChanged") << "onImplicitHeightChanged: x"
-        << "QDeclarativeComponent: Component is not ready"
-        << ":1 \"Item.onImplicitHeightChanged\" is not available in QtQuick 1.0.\n";
 }
 
 void tst_QSGItem::qtbug_16871()
