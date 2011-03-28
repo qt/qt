@@ -56,7 +56,7 @@ class TextMaskMaterialData : public AbstractMaterialShader
 public:
     TextMaskMaterialData();
 
-    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual void updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect);
     virtual char const *const *attributeNames() const;
 private:
     virtual void initialize();
@@ -108,16 +108,16 @@ void TextMaskMaterialData::initialize()
     m_textureScale_id = m_program.uniformLocation("textureScale");
 }
 
-void TextMaskMaterialData::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+void TextMaskMaterialData::updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect)
 {
     Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
     TextMaskMaterial *material = static_cast<TextMaskMaterial *>(newEffect);
     TextMaskMaterial *oldMaterial = static_cast<TextMaskMaterial *>(oldEffect);
 
-    if (oldMaterial == 0 || material->color() != oldMaterial->color() || (updates & Renderer::UpdateOpacity)) {
+    if (oldMaterial == 0 || material->color() != oldMaterial->color() || state.isOpacityDirty()) {
         QVector4D color(material->color().redF(), material->color().greenF(),
                         material->color().blueF(), material->color().alphaF());
-        color *= renderer->renderOpacity();
+        color *= state.opacity();
         m_program.setUniformValue(m_color_id, color);
     }
 
@@ -130,7 +130,7 @@ void TextMaskMaterialData::updateState(Renderer *renderer, AbstractMaterial *new
             || oldMaterial->texture()->textureId() != material->texture()->textureId()) {
         m_program.setUniformValue(m_textureScale_id, QVector2D(1.0 / material->cacheTextureWidth(),
                                                                1.0 / material->cacheTextureHeight()));
-        renderer->setTexture(0, material->texture());
+        glBindTexture(GL_TEXTURE_2D, material->texture()->textureId());
 
         // Set the mag/min filters to be linear. We only need to do this when the texture
         // has been recreated.
@@ -140,8 +140,8 @@ void TextMaskMaterialData::updateState(Renderer *renderer, AbstractMaterial *new
         }
     }
 
-    if (updates & Renderer::UpdateMatrices)
-        m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
+    if (state.isMatrixDirty())
+        m_program.setUniformValue(m_matrix_id, state.combinedMatrix());
 }
 
 TextMaskMaterial::TextMaskMaterial(QFontEngine *fontEngine)

@@ -86,7 +86,7 @@ void TextureMaterialShader::initialize()
     m_matrix_id = m_program.uniformLocation("qt_Matrix");
 }
 
-void TextureMaterialShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+void TextureMaterialShader::updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect)
 {
     Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
     TextureMaterial *tx = static_cast<TextureMaterial *>(newEffect);
@@ -98,27 +98,13 @@ void TextureMaterialShader::updateState(Renderer *renderer, AbstractMaterial *ne
     t->setHorizontalWrapMode(tx->clampToEdge() ? QSGTexture::ClampToEdge : QSGTexture::Repeat);
     t->setVerticalWrapMode(tx->clampToEdge() ? QSGTexture::ClampToEdge : QSGTexture::Repeat);
 
-    tx->texture()->bind();
+    if (oldTx == 0 || oldTx->texture()->textureId() != t->textureId())
+        t->bind();
+    else
+        t->updateBindOptions();
 
-    if (oldEffect == 0 || tx->texture().texture() != oldTx->texture().texture()) {
-        renderer->setTexture(0, tx->texture());
-        oldEffect = 0; // Force filtering update.
-    }
-
-//    if (oldEffect == 0 || tx->linearFiltering() != oldTx->linearFiltering()) {
-//        int filtering = tx->linearFiltering() ? GL_LINEAR : GL_NEAREST;
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtering);
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtering);
-//    }
-
-//    if (oldEffect == 0 || tx->clampToEdge() != oldTx->clampToEdge()) {
-//        int wrapMode = tx->clampToEdge() ? GL_CLAMP_TO_EDGE : GL_REPEAT;
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
-//    }
-
-    if (updates & Renderer::UpdateMatrices)
-        m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
+    if (state.isMatrixDirty())
+        m_program.setUniformValue(m_matrix_id, state.combinedMatrix());
 }
 
 
@@ -168,7 +154,7 @@ static const char qt_scenegraph_texture_material_opacity_fragment[] =
 class TextureMaterialWithOpacityShader : public TextureMaterialShader
 {
 public:
-    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual void updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect);
     virtual void initialize();
 
     static AbstractMaterialType type;
@@ -195,13 +181,13 @@ AbstractMaterialShader *TextureMaterialWithOpacity::createShader() const
     return new TextureMaterialWithOpacityShader;
 }
 
-void TextureMaterialWithOpacityShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+void TextureMaterialWithOpacityShader::updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect)
 {
     Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
-    if (updates & Renderer::UpdateOpacity)
-        m_program.setUniformValue(m_opacity_id, (GLfloat) renderer->renderOpacity());
+    if (state.isOpacityDirty())
+        m_program.setUniformValue(m_opacity_id, state.opacity());
 
-    TextureMaterialShader::updateState(renderer, newEffect, oldEffect, updates);
+    TextureMaterialShader::updateState(state, newEffect, oldEffect);
 }
 
 void TextureMaterialWithOpacityShader::initialize()

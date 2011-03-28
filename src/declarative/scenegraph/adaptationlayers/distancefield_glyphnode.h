@@ -43,6 +43,7 @@
 #define DISTANCEFIELD_GLYPHNODE_H
 
 #include "adaptationlayer.h"
+#include "qsgtexture.h"
 #include <qsgtext_p.h>
 
 QT_BEGIN_HEADER

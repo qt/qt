@@ -44,6 +44,7 @@
 #include "qsgitem_p.h"
 #include "qsgcanvas_p.h"
 #include "adaptationlayer.h"
+#include "renderer.h"
 
 #include "qglframebufferobject.h"
 #include "qmath.h"
@@ -247,7 +248,7 @@ void ShaderEffectTextureProvider::grab()
 
     if (mipmap) {
         glBindTexture(GL_TEXTURE_2D, m_texture->textureId());
-        glGenerateMipmap(GL_TEXTURE_2D);
+        ctx->functions()->glGenerateMipmap(GL_TEXTURE_2D);
     }
 
     root->markDirty(dirty | Node::DirtyNodeAdded); // Force matrix, clip and render list update.

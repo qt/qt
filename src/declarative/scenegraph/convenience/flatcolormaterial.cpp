@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 class FlatColorMaterialShader : public AbstractMaterialShader
 {
 public:
-    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual void updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect);
     virtual char const *const *attributeNames() const;
 
     static AbstractMaterialType type;
@@ -64,7 +64,7 @@ private:
 
 AbstractMaterialType FlatColorMaterialShader::type;
 
-void FlatColorMaterialShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+void FlatColorMaterialShader::updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect)
 {
     Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
 
@@ -73,8 +73,8 @@ void FlatColorMaterialShader::updateState(Renderer *renderer, AbstractMaterial *
 
     const QColor &c = newMaterial->color();
 
-    if (oldMaterial == 0 || c != oldMaterial->color() || (updates & Renderer::UpdateOpacity)) {
-        qreal opacity = renderer->renderOpacity();
+    if (oldMaterial == 0 || c != oldMaterial->color() || state.isOpacityDirty()) {
+        qreal opacity = state.opacity();
         QVector4D v(c.redF() * c.alphaF() * opacity,
                     c.greenF() * c.alphaF() * opacity,
                     c.blueF() * c.alphaF() * opacity,
@@ -82,8 +82,8 @@ void FlatColorMaterialShader::updateState(Renderer *renderer, AbstractMaterial *
         m_program.setUniformValue(m_color_id, v);
     }
 
-    if (updates & Renderer::UpdateMatrices)
-        m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
+    if (state.isMatrixDirty())
+        m_program.setUniformValue(m_matrix_id, state.combinedMatrix());
 }
 
 char const *const *FlatColorMaterialShader::attributeNames() const

@@ -123,6 +123,7 @@ Renderer::Renderer()
     , m_mirrored(false)
     , m_is_rendering(false)
     , m_bindable(0)
+    , m_context(QGLContext::currentContext())
 {
     Q_ASSERT(QGLContext::currentContext());
     initializeGLFunctions();
@@ -261,23 +262,6 @@ void Renderer::setProjectMatrix(const QMatrix4x4 &matrix)
 void Renderer::setClearColor(const QColor &color)
 {
     m_clear_color = color;
-}
-
-void Renderer::setTexture(int unit, const QSGTextureRef &texture)
-{
-    if (unit < 0)
-        return;
-
-    // Select the texture unit and bind the texture.
-    glActiveTexture(GL_TEXTURE0 + unit);
-    if (texture.isNull()) {
-        glBindTexture(GL_TEXTURE_2D, 0);
-    } else {
-        glBindTexture(GL_TEXTURE_2D, texture->textureId());
-    }
-
-    if (unit != 0)
-        glActiveTexture(GL_TEXTURE0);
 }
 
 AbstractMaterialShader *Renderer::prepareMaterial(AbstractMaterial *material)
@@ -544,5 +528,31 @@ void Renderer::bindGeometry(AbstractMaterialShader *material, const QSGGeometry 
         offset += a.tupleSize * size_of_type(a.type);
     }
 }
+
+
+float AbstractMaterialShader::RenderState::opacity() const
+{
+    Q_ASSERT(m_data);
+    return static_cast<const Renderer *>(m_data)->renderOpacity();
+}
+
+
+QMatrix4x4 AbstractMaterialShader::RenderState::combinedMatrix() const
+{
+    Q_ASSERT(m_data);
+    return static_cast<const Renderer *>(m_data)->combinedMatrix();
+}
+
+QMatrix4x4 AbstractMaterialShader::RenderState::modelViewMatrix() const
+{
+    Q_ASSERT(m_data);
+    return const_cast<Renderer *>(static_cast<const Renderer *>(m_data))->modelViewMatrix().top();
+}
+
+const QGLContext *AbstractMaterialShader::RenderState::context() const
+{
+    return static_cast<const Renderer *>(m_data)->context();
+}
+
 
 QT_END_NAMESPACE

@@ -42,7 +42,6 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include "renderer.h"
 #include <qglshaderprogram.h>
 
 QT_BEGIN_HEADER
@@ -56,12 +55,38 @@ class AbstractMaterial;
 class Q_DECLARATIVE_EXPORT AbstractMaterialShader
 {
 public:
+    class RenderState {
+    public:
+        enum DirtyState
+        {
+            DirtyMatrix         = 0x0001,
+            DirtyOpacity        = 0x0002
+        };
+        Q_DECLARE_FLAGS(DirtyStates, DirtyState)
+
+        inline DirtyStates dirtyState() const { return m_dirty; }
+
+        inline bool isMatrixDirty() const { return m_dirty & DirtyMatrix; }
+        inline bool isOpacityDirty() const { return m_dirty & DirtyOpacity; }
+
+        float opacity() const;
+        QMatrix4x4 combinedMatrix() const;
+        QMatrix4x4 modelViewMatrix() const;
+
+        const QGLContext *context() const;
+
+    private:
+        friend class Renderer;
+        DirtyStates m_dirty;
+        const void *m_data;
+    };
+
     AbstractMaterialShader();
 
     virtual void activate();
     virtual void deactivate();
     // First time a material is used, oldMaterial is null.
-    virtual void updateState(Renderer *renderer, AbstractMaterial *newMaterial, AbstractMaterial *oldMaterial, Renderer::Updates updates);
+    virtual void updateState(const RenderState &state, AbstractMaterial *newMaterial, AbstractMaterial *oldMaterial);
     virtual char const *const *attributeNames() const = 0; // Array must end with null.
 
 protected:
@@ -73,6 +98,7 @@ protected:
 
     QGLShaderProgram m_program;
     bool m_compiled;
+    void *m_reserved;
 };
 
 struct AbstractMaterialType { };
@@ -103,7 +129,8 @@ private:
     Q_DISABLE_COPY(AbstractMaterial)
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(AbstractMaterial::Flags);
+Q_DECLARE_OPERATORS_FOR_FLAGS(AbstractMaterial::Flags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(AbstractMaterialShader::RenderState::DirtyStates)
 
 QT_END_NAMESPACE
 

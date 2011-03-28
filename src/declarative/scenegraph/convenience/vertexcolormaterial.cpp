@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 class VertexColorMaterialShader : public AbstractMaterialShader
 {
 public:
-    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual void updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect);
     virtual char const *const *attributeNames() const;
 
     static AbstractMaterialType type;
@@ -64,13 +64,13 @@ private:
 
 AbstractMaterialType VertexColorMaterialShader::type;
 
-void VertexColorMaterialShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+void VertexColorMaterialShader::updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *)
 {
-    if (!(newEffect->flags() & AbstractMaterial::Blending) || updates & Renderer::UpdateOpacity)
-        m_program.setUniformValue(m_opacity_id, GLfloat(renderer->renderOpacity()));
+    if (!(newEffect->flags() & AbstractMaterial::Blending) || state.isOpacityDirty())
+        m_program.setUniformValue(m_opacity_id, state.opacity());
 
-    if (updates & Renderer::UpdateMatrices)
-        m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
+    if (state.isMatrixDirty())
+        m_program.setUniformValue(m_matrix_id, state.combinedMatrix());
 }
 
 char const *const *VertexColorMaterialShader::attributeNames() const

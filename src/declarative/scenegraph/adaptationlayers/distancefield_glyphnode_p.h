@@ -43,6 +43,7 @@
 #define DISTANCEFIELDTEXTMATERIAL_H
 
 #include <material.h>
+#include <distancefield_glyphnode.h>
 
 QT_BEGIN_NAMESPACE
 

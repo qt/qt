@@ -73,7 +73,7 @@ static const char qt_material_opacity_fragment_code[] =
 class TextureProviderMaterialShader : public AbstractMaterialShader
 {
 public:
-    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual void updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect);
     virtual char const *const *attributeNames() const;
 
     static AbstractMaterialType type;
@@ -114,7 +114,7 @@ void TextureProviderMaterialShader::initialize()
     }
 }
 
-void TextureProviderMaterialShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+void TextureProviderMaterialShader::updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect)
 {
     Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
     QSGTextureProvider *tx = static_cast<TextureProviderMaterial *>(newEffect)->texture();
@@ -122,8 +122,8 @@ void TextureProviderMaterialShader::updateState(Renderer *renderer, AbstractMate
 
     tx->bind(oldTx ? oldTx->texture().texture() : 0);
 
-    if (updates & Renderer::UpdateMatrices)
-        m_program.setUniformValue(m_matrix_id, renderer->combinedMatrix());
+    if (state.isMatrixDirty())
+        m_program.setUniformValue(m_matrix_id, state.combinedMatrix());
 }
 
 
@@ -170,7 +170,7 @@ bool TextureProviderMaterial::is(const AbstractMaterial *effect)
 class TextureProviderMaterialWithOpacityShader : public TextureProviderMaterialShader
 {
 public:
-    virtual void updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates);
+    virtual void updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect);
     virtual void initialize();
 
     static AbstractMaterialType type;
@@ -204,14 +204,14 @@ AbstractMaterialShader *TextureProviderMaterialWithOpacity::createShader() const
     return new TextureProviderMaterialWithOpacityShader;
 }
 
-void TextureProviderMaterialWithOpacityShader::updateState(Renderer *renderer, AbstractMaterial *newEffect, AbstractMaterial *oldEffect, Renderer::Updates updates)
+void TextureProviderMaterialWithOpacityShader::updateState(const RenderState &state, AbstractMaterial *newEffect, AbstractMaterial *oldEffect)
 {
     Q_ASSERT(oldEffect == 0 || newEffect->type() == oldEffect->type());
 
-    if (updates & Renderer::UpdateOpacity)
-        m_program.setUniformValue(m_opacity_id, GLfloat(renderer->renderOpacity()));
+    if (state.isOpacityDirty())
+        m_program.setUniformValue(m_opacity_id, state.opacity());
 
-    TextureProviderMaterialShader::updateState(renderer, newEffect, oldEffect, updates);
+    TextureProviderMaterialShader::updateState(state, newEffect, oldEffect);
 }
 
 void TextureProviderMaterialWithOpacityShader::initialize()

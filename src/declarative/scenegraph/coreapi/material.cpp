@@ -70,7 +70,7 @@ void AbstractMaterialShader::deactivate()
     }
 }
 
-void AbstractMaterialShader::updateState(Renderer *, AbstractMaterial *, AbstractMaterial *, Renderer::Updates)
+void AbstractMaterialShader::updateState(const RenderState &, AbstractMaterial *, AbstractMaterial *)
 {
 }
 
@@ -144,11 +144,6 @@ AbstractMaterial::~AbstractMaterial()
         qDebug("Material destroyed after qt_print_material_count() was called.");
 #endif
 }
-
-//int AbstractMaterial::compare(const AbstractMaterial *other) const
-//{
-//    return this - other;
-//}
 
 void AbstractMaterial::setFlag(Flags flags, bool set)
 {

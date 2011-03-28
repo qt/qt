@@ -43,6 +43,7 @@
 #define TEXTMASKMATERIAL_H
 
 #include <material.h>
+#include <qsgtexture.h>
 #include <qshareddata.h>
 
 QT_BEGIN_NAMESPACE
