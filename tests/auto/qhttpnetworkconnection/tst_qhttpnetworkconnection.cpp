@@ -195,8 +195,8 @@ void tst_QHttpNetworkConnection::head()
 
     QCOMPARE(reply->statusCode(), statusCode);
     QCOMPARE(reply->reasonPhrase(), statusString);
-    // only check it if it is set
-    if (reply->contentLength() != -1)
+    // only check it if it is set and expected
+    if (reply->contentLength() != -1 && contentLength != -1)
         QCOMPARE(reply->contentLength(), qint64(contentLength));
 
     QVERIFY(reply->isFinished());
@@ -219,8 +219,8 @@ void tst_QHttpNetworkConnection::get_data()
     QTest::newRow("success-internal") << "http://" << QtNetworkSettings::serverName() << "/qtest/rfc3252.txt" << ushort(80) << false << 200 << "OK" << 25962 << 25962;
     QTest::newRow("success-external") << "http://" << "www.ietf.org" << "/rfc/rfc3252.txt" << ushort(80) << false << 200 << "OK" << 25962 << 25962;
 
-    QTest::newRow("failure-path") << "http://" << QtNetworkSettings::serverName() << "/t" << ushort(80) << false << 404 << "Not Found" << -1 << 997 + QtNetworkSettings::serverName().size();
-    QTest::newRow("failure-protocol") << "" << QtNetworkSettings::serverName() << "/qtest/rfc3252.txt" << ushort(80) << false << 400 << "Bad Request" << -1 << 930 + QtNetworkSettings::serverName().size();
+    QTest::newRow("failure-path") << "http://" << QtNetworkSettings::serverName() << "/t" << ushort(80) << false << 404 << "Not Found" << -1 << -1;
+    QTest::newRow("failure-protocol") << "" << QtNetworkSettings::serverName() << "/qtest/rfc3252.txt" << ushort(80) << false << 400 << "Bad Request" << -1 << -1;
 }
 
 void tst_QHttpNetworkConnection::get()
@@ -255,8 +255,8 @@ void tst_QHttpNetworkConnection::get()
 
     QCOMPARE(reply->statusCode(), statusCode);
     QCOMPARE(reply->reasonPhrase(), statusString);
-    // only check it if it is set
-    if (reply->contentLength() != -1)
+    // only check it if it is set and expected
+    if (reply->contentLength() != -1 && contentLength != -1)
         QCOMPARE(reply->contentLength(), qint64(contentLength));
 
     stopWatch.start();
@@ -270,7 +270,12 @@ void tst_QHttpNetworkConnection::get()
     } while (!reply->isFinished());
 
     QVERIFY(reply->isFinished());
-    QCOMPARE(ba.size(), downloadSize);
+    //do not require server generated error pages to be a fixed size
+    if (downloadSize != -1)
+        QCOMPARE(ba.size(), downloadSize);
+    //but check against content length if it was sent
+    if (reply->contentLength() != -1)
+        QCOMPARE(ba.size(), (int)reply->contentLength());
 
     delete reply;
 }
@@ -385,7 +390,7 @@ void tst_QHttpNetworkConnection::post_data()
     QTest::addColumn<int>("downloadSize");
 
     QTest::newRow("success-internal") << "http://" << QtNetworkSettings::serverName() << "/qtest/cgi-bin/echo.cgi" << ushort(80) << false << "7 bytes" << 200 << "OK" << 7 << 7;
-    QTest::newRow("failure-internal") << "http://" << QtNetworkSettings::serverName() << "/t" << ushort(80) << false << "Hello World" << 404 << "Not Found" << -1 << 997 + QtNetworkSettings::serverName().size();
+    QTest::newRow("failure-internal") << "http://" << QtNetworkSettings::serverName() << "/t" << ushort(80) << false << "Hello World" << 404 << "Not Found" << -1 << -1;
 }
 
 void tst_QHttpNetworkConnection::post()
@@ -429,13 +434,16 @@ void tst_QHttpNetworkConnection::post()
     QCOMPARE(reply->reasonPhrase(), statusString);
 
     qint64 cLen = reply->contentLength();
-    if (cLen==-1) {
-        // HTTP 1.1 server may respond with chunked encoding and in that
-        // case contentLength is not present in reply -> verify that it is the case
-        QByteArray transferEnc = reply->headerField("Transfer-Encoding");
-        QCOMPARE(transferEnc, QByteArray("chunked"));
-    } else {
-        QCOMPARE(cLen, qint64(contentLength));
+    if (contentLength != -1) {
+        // only check the content length if test expected it to be set
+        if (cLen==-1) {
+            // HTTP 1.1 server may respond with chunked encoding and in that
+            // case contentLength is not present in reply -> verify that it is the case
+            QByteArray transferEnc = reply->headerField("Transfer-Encoding");
+            QCOMPARE(transferEnc, QByteArray("chunked"));
+        } else {
+            QCOMPARE(cLen, qint64(contentLength));
+        }
     }
 
     stopWatch.start();
@@ -449,7 +457,12 @@ void tst_QHttpNetworkConnection::post()
     } while (!reply->isFinished());
 
     QVERIFY(reply->isFinished());
-    QCOMPARE(ba.size(), downloadSize);
+    //don't require fixed size for generated error pages
+    if (downloadSize != -1)
+        QCOMPARE(ba.size(), downloadSize);
+    //but do compare with content length if possible
+    if (cLen != -1)
+        QCOMPARE(ba.size(), (int)cLen);
 
     delete reply;
 }
@@ -630,7 +643,8 @@ void tst_QHttpNetworkConnection::compression()
     QCOMPARE(reply->statusCode(), statusCode);
     QCOMPARE(reply->reasonPhrase(), statusString);
     bool isLengthOk = (reply->contentLength() == qint64(contentLength)
-    				  || reply->contentLength() == qint64(downloadSize));
+                      || reply->contentLength() == qint64(downloadSize)
+                      || reply->contentLength() == -1); //apache2 does not send content-length for compressed pages
 
     QVERIFY(isLengthOk);
 
