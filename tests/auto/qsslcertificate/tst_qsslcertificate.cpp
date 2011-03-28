@@ -111,6 +111,8 @@ private slots:
     void nulInSan();
     void largeSerialNumber();
     void largeExpirationDate();
+    void blacklistedCertificates();
+
 // ### add tests for certificate bundles (multiple certificates concatenated into a single
 //     structure); both PEM and DER formatted
 #endif
