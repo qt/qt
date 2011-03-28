@@ -137,7 +137,7 @@ QXlibWindow::QXlibWindow(QWidget *window)
     int n = 0;
     protocols[n++] = QXlibStatic::atom(QXlibStatic::WM_DELETE_WINDOW);        // support del window protocol
     protocols[n++] = QXlibStatic::atom(QXlibStatic::WM_TAKE_FOCUS);                // support take focus window protocol
-    protocols[n++] = QXlibStatic::atom(QXlibStatic::_NET_WM_PING);                // support _NET_WM_PING protocol
+//    protocols[n++] = QXlibStatic::atom(QXlibStatic::_NET_WM_PING);                // support _NET_WM_PING protocol
 #ifndef QT_NO_XSYNC
     protocols[n++] = QXlibStatic::atom(QXlibStatic::_NET_WM_SYNC_REQUEST);        // support _NET_WM_SYNC_REQUEST protocol
 #endif // QT_NO_XSYNC
