@@ -1875,7 +1875,7 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition)
     Glyph *glyph = defaultGlyphSet.outline_drawing ? 0 : loadGlyph(g, subPixelPosition, glyph_format);
     if (!glyph) {
         unlockFace();
-        return QFontEngine::alphaMapForGlyph(g, subPixelPosition);
+        return QFontEngine::alphaMapForGlyph(g);
     }
 
     const int pitch = antialias ? (glyph->width + 3) & ~3 : ((glyph->width + 31)/32) * 4;
