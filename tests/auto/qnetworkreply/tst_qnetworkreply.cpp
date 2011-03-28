@@ -143,7 +143,7 @@ class tst_QNetworkReply: public QObject
     QSslConfiguration storedSslConfiguration;
     QList<QSslError> storedExpectedSslErrors;
 #endif
-#ifndef QT_NO_BEARER_MANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT
     QNetworkConfigurationManager *netConfMan;
     QNetworkConfiguration networkConfiguration;
     QScopedPointer<QNetworkSession> networkSession;

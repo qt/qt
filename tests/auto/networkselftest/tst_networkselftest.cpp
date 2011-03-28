@@ -44,6 +44,12 @@
 
 #include <time.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+#include <QtNetwork/qnetworkconfigmanager.h>
+#include <QtNetwork/qnetworkconfiguration.h>
+#include <QtNetwork/qnetworksession.h>
+#endif
+
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
 // Current path (C:\private\<UID>) contains only ascii chars
@@ -64,6 +70,7 @@ public:
     QHostAddress serverIpAddress();
 
 private slots:
+    void initTestCase();
     void hostTest();
     void dnsResolution_data();
     void dnsResolution();
@@ -91,6 +98,12 @@ private slots:
 
     // ssl supported test
     void supportsSsl();
+private:
+#ifndef QT_NO_BEARERMANAGEMENT
+    QNetworkConfigurationManager *netConfMan;
+    QNetworkConfiguration networkConfiguration;
+    QScopedPointer<QNetworkSession> networkSession;
+#endif
 };
 
 class Chat
@@ -352,6 +365,19 @@ QHostAddress tst_NetworkSelfTest::serverIpAddress()
         cachedIpAddress = resolved.addresses().first();
     }
     return cachedIpAddress;
+}
+
+void tst_NetworkSelfTest::initTestCase()
+{
+#ifndef QT_NO_BEARERMANAGEMENT
+    netConfMan = new QNetworkConfigurationManager(this);
+    networkConfiguration = netConfMan->defaultConfiguration();
+    networkSession.reset(new QNetworkSession(networkConfiguration));
+    if (!networkSession->isOpen()) {
+        networkSession->open();
+        QVERIFY(networkSession->waitForOpened(30000));
+    }
+#endif
 }
 
 void tst_NetworkSelfTest::hostTest()
