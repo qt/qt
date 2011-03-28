@@ -66,7 +66,7 @@ static const char qt_default_vertex_code[] =
 
 static const char qt_default_fragment_code[] =
     "varying highp vec2 qt_TexCoord0;                       \n"
-    "uniform lowp sampler2D source;                         \n"
+    "uniform sampler2D source;                              \n"
     "void main() {                                          \n"
     "    gl_FragColor = texture2D(source, qt_TexCoord0);    \n"
     "}";

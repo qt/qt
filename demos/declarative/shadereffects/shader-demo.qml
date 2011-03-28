@@ -73,7 +73,7 @@ Image {
                 "uniform highp float amplitude;" +
                 "uniform highp float frequency;" +
                 "uniform highp float time;" +
-                "uniform lowp sampler2D source;" +
+                "uniform sampler2D source;" +
                 "varying highp vec2 qt_TexCoord0;" +
                 "void main() {" +
                 "    highp vec2 p = sin(time + frequency * qt_TexCoord0);" +
@@ -105,7 +105,7 @@ Image {
                             property variant delta: Qt.size(1.0 / width, 0.0)
                             property variant source: theSource
                             fragmentShader: "
-                                uniform lowp sampler2D source;
+                                uniform sampler2D source;
                                 uniform highp vec2 delta;
                                 varying highp vec2 qt_TexCoord0;
                                 void main() {
@@ -118,7 +118,7 @@ Image {
                         }
                     }
                     fragmentShader: "
-                        uniform lowp sampler2D source;
+                        uniform sampler2D source;
                         uniform highp vec2 delta;
                         varying highp vec2 qt_TexCoord0;
                         void main() {
@@ -161,7 +161,7 @@ Image {
             property variant source: theSource
             property variant delta: Qt.size(0.5 / width, 0.5 / height)
             fragmentShader: "
-                uniform lowp sampler2D source;
+                uniform sampler2D source;
                 uniform highp vec2 delta;
                 uniform highp float qt_Opacity;
                 varying highp vec2 qt_TexCoord0;
@@ -182,7 +182,7 @@ Image {
             property variant source: theSource
             property color tint: sliderToColor(colorizeSlider.value)
             fragmentShader: "
-                uniform lowp sampler2D source;
+                uniform sampler2D source;
                 uniform lowp vec4 tint;
                 uniform lowp float qt_Opacity;
                 varying highp vec2 qt_TexCoord0;
