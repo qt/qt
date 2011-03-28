@@ -141,13 +141,16 @@
         \c {/current/dir$ ../../bin/qdoc3 ./config.qdocconf}
     \endquotation
 
-    \c{config.qdocconf} is your \l{The QDoc Configuration File} {QDoc
-    configuration file}. The configuration file is where tell QDoc
-    where to find the source files from which it will extract the QDoc
-    comments it will use to generate the documentation. It is also
-    where you tell QDoc what kind of output to generate (HTML, DITA
-    XML,...), and where to put the generated output. The configuration
-    file also contains other information for QDoc.
+    In the command line above, \c{config.qdocconf} is a \l{The QDoc
+    Configuration File} {QDoc configuration file}. The configuration
+    file is where you tell QDoc where to find the source files that
+    contain the QDoc comments that will become the documentation. It
+    is also where you tell QDoc what kind of output to generate (HTML,
+    DITA XML,...), and where to put the generated output. The
+    configuration file also contains other information for QDoc.
+
+    See \l{The QDoc Configuration File} for a instructions on how ro
+    build a Qdoc configuration file.
 
     \section1 Command Types
 
@@ -6740,59 +6743,41 @@
 
     \title The QDoc Configuration File
 
-    Before running QDoc to to extract and format your QDOC comments,
-    you must create a QDoc configuration file to tell QDoc where to find 
-    them.
+    Before running QDoc, you must create a QDoc configuration file to
+    tell QDoc where to find the source files that contain the QDoc
+    comments. The pathname to your configuration file is passed to
+    QDoc on the command line:
 
-    \list
-    \o \l {Supporting Derived Projects}
-    \o \l {Compatibility Issues}
-    \endlist
-
-    When running QDoc to generate the documentation, you must specify
-    a configuration file on the command line:
+    \quotation
+        \c {/current/dir$ ../../bin/qdoc3 ./config.qdocconf}
+    \endquotation
 
     \section1 General Description
 
-    The configuration file is a list of entries of entries of the form
-    \e {"variable = value"}. Using the configuration variables, you
-    can define where QDoc should find the various source files, images
-    and examples, where to put generated documentation etc. The
+    The configuration file is a list of entries of the form \e
+    {"variable = value"}. Using the configuration variables, you can
+    define where QDoc should find the various source files, images and
+    examples, where to put generated documentation etc. The
     configuration file can also contain directives like \c
     include. For an example, see the \l minimum.qdocconf file.
 
-    In addition, you can use some particular configuration variables
-    to make QDoc support derived projects, i.e make the projects, for
-    example Qt Solutions, contain links to the online Qt
-    documentation. These variables are documented in the \l
-    {Supporting Derived projects} section. In this section you can
-    also find out how to use these variables to support your derived
-    projects.
+    You can also use configuration variables to get QDoc to support
+    \l{Supporting Derived Projects} {derived projects}, i.e QDoc can
+    generate links in your project's documentation to elements in the
+    Qt online documentation. See the \l {Supporting Derived projects}
+    section. 
 
-    If some of the variable keys have the same values, they can be set
-    at the same time.
+    The value of a configuration variable can be set using either '='
+    or '+='. The difference is that '=' overrides the previous value,
+    while '+=' adds a new value to the current one.
 
-    \code
-    {header, source}dirs = kernel
-    \endcode
-
-    is equivalent to
-
-    \code
-    headerdirs = kernel
-    sourcedirs = kernel
-    \endcode
-
-    A variable's value can be set using either '=' or '+='. The
-    difference is that '=' overrides any previously set value, while
-    '+=' only adds the value to the previously set ones.
-
-    In general, some of the variables accepts a list of strings as
-    their value, while others only accept a single string. If you
-    provide a variable of the latter type with several strings they
-    will simply be concatenated. The quotes around the value string
-    are optional. But applying them allows you to use special
-    characters like '=' and ' \" ' within the string.
+    Some configuration variables accept a list of strings as their
+    value, e.g. 
+    \l {22-qdoc-configuration-generalvariables.html#sourcedirs-variable}
+    {\c{sourcedirs}}, while others accept only a single string. Double
+    quotes around a value string are optional, but including them allows 
+    you to use special characters like '=' and ' \" ' within the valuem
+    string, e.g.:
 
     \code
     HTML.postheader = "<a href=\"index.html\">Home</a>"
