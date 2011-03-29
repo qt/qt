@@ -72,7 +72,7 @@ public:
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
     void resize (const QSize &size);
 
-    QImageView *nativeView() const { return mView; }
+    UIView *nativeView() const { return mView; }
 private:
     QImage *mImage;
     QImageView *mView;
