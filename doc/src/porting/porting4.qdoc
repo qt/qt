@@ -760,7 +760,7 @@
     function. The solution is to reimplement QWidget::paintEvent() in
     your QAbstractButton subclass as follows:
 
-    \snippet doc/src/snippets/code/doc_src_porting4.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_porting4.cpp 0
 
     \table
     \header \o Q3Button function \o QAbstractButton equivalent
@@ -860,11 +860,11 @@
     \o  QMemArray::at() returned a non-const reference, whereas the
         new QByteArray::at() returns a const value. Code like
 
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 1
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 1
 
         will no longer compile. Instead, use QByteArray::operator[]:
 
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 2
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 2
 
     \o  The QMemArray::contains(char) function has been renamed
         QByteArray::count(char). In addition, there now exists a
@@ -935,11 +935,11 @@
         function returns \c void and either adds it to the cache or
         deletes it right away. Old code like
 
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 3
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 3
 
     becomes
 
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 4
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 4
 
     \o  The new QCache class \e always takes ownership of the items
         it stores (i.e. auto-delete is always on). If you use Q3Cache
@@ -950,11 +950,11 @@
         pointers, not the objects that the pointers refer to. For
         example,
 
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 5
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 5
 
         becomes
 
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 6
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 6
 
         An alternative is to stick to using Q3Cache.
     \endlist
@@ -1051,7 +1051,7 @@
 
     you can simply replace colorGroup() with palette():
 
-    \snippet doc/src/snippets/code/doc_src_porting4.qdoc 7
+    \snippet doc/src/snippets/code/doc_src_porting4.cpp 7
 
     \section1 QColorDrag
 
@@ -1089,7 +1089,7 @@
     '\\0' issue is handled by having QByteArray allocate one extra
     byte that it always sets to '\\0'. For example:
 
-    \snippet doc/src/snippets/code/doc_src_porting4.qdoc 8
+    \snippet doc/src/snippets/code/doc_src_porting4.cpp 8
 
     The Qt3Support library contains a class called
     Q3CString that inherits from the new QByteArray class and that
@@ -1416,26 +1416,26 @@
     \header \o Q3Dict idiom \o QMultiHash idiom
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 9
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 9
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 10
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 10
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 11
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 11
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 12
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 12
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 13
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 13
 
         (also called from Q3Dict's destructor)
 
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 14
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 14
 
         In 99% of cases, the following idiom also works:
 
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 15
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 15
 
         However, it may lead to crashes if \c hash is referenced from
         the value type's destructor, because \c hash contains
@@ -1471,11 +1471,11 @@
     Be aware that QHashIterator has a different way of iterating than
     Q3DictIterator. A typical loop with Q3DictIterator looks like this:
 
-    \snippet doc/src/snippets/code/doc_src_porting4.qdoc 16
+    \snippet doc/src/snippets/code/doc_src_porting4.cpp 16
 
     Here's the equivalent QHashIterator loop:
 
-    \snippet doc/src/snippets/code/doc_src_porting4.qdoc 17
+    \snippet doc/src/snippets/code/doc_src_porting4.cpp 17
 
     See \l{Java-style iterators} for details.
 
@@ -2377,7 +2377,7 @@
     Use QObject::findChildren() (or qFindChildren() if you need MSVC 6
     compatibility) instead of QObject::queryList(). For example:
 
-    \snippet doc/src/snippets/code/doc_src_porting4.qdoc 18
+    \snippet doc/src/snippets/code/doc_src_porting4.cpp 18
 
     QObject::killTimers() has been removed because it was unsafe to
     use in subclass. (A subclass normally doesn't know whether the
@@ -2712,48 +2712,48 @@
     \header \o QPtrList idiom \o QList idiom
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 19
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 19
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 20
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 20
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 21
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 21
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 22
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 22
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 23
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 23
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 24
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 24
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 25
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 25
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 26
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 26
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 27
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 27
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 28
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 28
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 29
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 29
         (removes the current item)
 
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 30
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 30
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 31
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 31
 
         (also called from QPtrList's destructor)
 
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 32
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 32
 
         In 99% of cases, the following idiom also works:
 
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 33
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 33
 
         However, it may lead to crashes if \c list is referenced from
         the value type's destructor, because \c list contains
@@ -2790,11 +2790,11 @@
     Be aware that QListIterator has a different way of iterating than
     QPtrList. A typical loop with QPtrList looks like this:
 
-    \snippet doc/src/snippets/code/doc_src_porting4.qdoc 34
+    \snippet doc/src/snippets/code/doc_src_porting4.cpp 34
 
     Here's the equivalent QListIterator loop:
 
-    \snippet doc/src/snippets/code/doc_src_porting4.qdoc 35
+    \snippet doc/src/snippets/code/doc_src_porting4.cpp 35
 
     Finally, QPtrListIterator<T> must also be ported. There are no
     fewer than four iterator classes that can be used as a
@@ -2821,11 +2821,11 @@
     iterating than QPtrList. A typical loop with QPtrList looks like
     this:
 
-    \snippet doc/src/snippets/code/doc_src_porting4.qdoc 36
+    \snippet doc/src/snippets/code/doc_src_porting4.cpp 36
 
     Here's the equivalent QListIterator loop:
 
-    \snippet doc/src/snippets/code/doc_src_porting4.qdoc 37
+    \snippet doc/src/snippets/code/doc_src_porting4.cpp 37
 
     Finally, QPtrListStdIterator<T> must also be ported. This is
     easy, because QList also provides STL-style iterators
@@ -2864,26 +2864,26 @@
     \header \o QPtrQueue idiom \o QQueue idiom
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 38
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 38
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 39
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 39
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 40
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 40
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 41
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 41
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 42
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 42
 
         (also called from QPtrQueue's destructor)
 
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 43
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 43
 
         In 99% of cases, the following idiom also works:
 
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 44
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 44
 
         However, it may lead to crashes if \c queue is referenced
         from the value type's destructor, because \c queue contains
@@ -2923,26 +2923,26 @@
     \header \o QPtrStack idiom \o QStack idiom
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 45
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 45
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 46
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 46
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 47
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 47
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 48
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 48
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 49
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 49
 
         (also called from QPtrStack's destructor)
 
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 50
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 50
 
         In 99% of cases, the following idiom also works:
 
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 51
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 51
 
         However, it may lead to crashes if \c stack is referenced
         from the value type's destructor, because \c stack contains
@@ -3024,36 +3024,36 @@
     \header \o QPtrVector idiom \o QVector idiom
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 52
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 52
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 53
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 53
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 54
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 54
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 55
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 55
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 56
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 56
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 57
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 57
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 58
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 58
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 59
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 59
     \row
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 60
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 60
 
         (also called from QPtrVector's destructor)
 
         \o
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 61
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 61
 
         In 99% of cases, the following idiom also works:
 
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 62
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 62
 
         However, it may lead to crashes if \c vect is referenced from
         the value type's destructor, because \c vect contains
@@ -3193,7 +3193,7 @@
     An easy way of porting to Qt 4 is to include this class into your
     project and to use it instead of \c QShared:
 
-    \snippet doc/src/snippets/code/doc_src_porting4.qdoc 63
+    \snippet doc/src/snippets/code/doc_src_porting4.cpp 63
 
     If possible, we recommend that you use QSharedData and
     QSharedDataPointer instead. They provide thread-safe reference
@@ -3217,11 +3217,11 @@
 
     Previously, you would do the following with Q3SimpleRichText:
 
-    \snippet doc/src/snippets/code/doc_src_porting4.qdoc 63a
+    \snippet doc/src/snippets/code/doc_src_porting4.cpp 63a
 
     However, with QTextDocument, you use the following code instead:
 
-    \snippet doc/src/snippets/code/doc_src_porting4.qdoc 63b
+    \snippet doc/src/snippets/code/doc_src_porting4.cpp 63b
 
     See \l{Rich Text Processing} for an overview of the Qt 4 rich
     text classes.
@@ -3233,7 +3233,7 @@
 
     The slider's rect can now be retrieved using the code snippet below:
 
-    \snippet doc/src/snippets/code/doc_src_porting4.qdoc 63c
+    \snippet doc/src/snippets/code/doc_src_porting4.cpp 63c
 
     In addition, the direction of a vertical QSlider has changed,
     i.e. the bottom is now the minimum, and the top the maximum. You
@@ -3454,7 +3454,7 @@
         byte array; you should avoid taking a pointer to the data
         contained in temporary objects.
 
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 64
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 64
 
         In the above example, the \c goodData pointer is valid for the lifetime
         of the \c asciiData byte array. If you need to keep a copy of the data
@@ -3464,11 +3464,11 @@
     \o  QString::at() returned a non-const reference, whereas the
         new QString::at() returns a const value. Code like
 
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 65
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 65
 
         will no longer compile. Instead, use QString::operator[]:
 
-        \snippet doc/src/snippets/code/doc_src_porting4.qdoc 66
+        \snippet doc/src/snippets/code/doc_src_porting4.cpp 66
 
     \o  The QString::contains(\e x) function (where \e x is a
         character or a string) has been renamed QString::count(\e x).

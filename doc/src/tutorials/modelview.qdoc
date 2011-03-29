@@ -27,7 +27,7 @@
 
 /*!
     \page modelview.html
-
+    \ingroup tutorials
     \startpage {index.html}{Qt Reference Documentation}
 
     \title Model/View Tutorial

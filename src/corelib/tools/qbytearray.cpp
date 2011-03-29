@@ -1363,7 +1363,7 @@ QByteArray::QByteArray(int size, Qt::Initialization)
     If \a size is less than the current size, bytes are removed from
     the end.
 
-    \sa size()
+    \sa size(), truncate()
 */
 
 void QByteArray::resize(int size)

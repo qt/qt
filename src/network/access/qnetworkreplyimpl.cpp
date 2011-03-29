@@ -505,6 +505,13 @@ void QNetworkReplyImplPrivate::initCacheSaveDevice()
 {
     Q_Q(QNetworkReplyImpl);
 
+    // The disk cache does not support partial content, so don't even try to
+    // save any such content into the cache.
+    if (q->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 206) {
+        cacheEnabled = false;
+        return;
+    }
+
     // save the meta data
     QNetworkCacheMetaData metaData;
     metaData.setUrl(url);
