@@ -640,15 +640,29 @@ void tst_qdeclarativeecmascript::overrideExtensionProperties()
 
 void tst_qdeclarativeecmascript::attachedProperties()
 {
-    QDeclarativeComponent component(&engine, TEST_FILE("attachedProperty.qml"));
-    QObject *object = component.create();
-    QVERIFY(object != 0);
-    QCOMPARE(object->property("a").toInt(), 19);
-    QCOMPARE(object->property("b").toInt(), 19);
-    QCOMPARE(object->property("c").toInt(), 19);
-    QCOMPARE(object->property("d").toInt(), 19);
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("attachedProperty.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+        QCOMPARE(object->property("a").toInt(), 19);
+        QCOMPARE(object->property("b").toInt(), 19);
+        QCOMPARE(object->property("c").toInt(), 19);
+        QCOMPARE(object->property("d").toInt(), 19);
+    }
 
-    // ### Need to test attached property assignment
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("writeAttachedProperty.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QMetaObject::invokeMethod(object, "writeValue2");
+
+        MyQmlAttachedObject *attached =
+            qobject_cast<MyQmlAttachedObject *>(qmlAttachedPropertiesObject<MyQmlObject>(object));
+        QVERIFY(attached != 0);
+
+        QCOMPARE(attached->value2(), 9);
+    }
 }
 
 void tst_qdeclarativeecmascript::enums()
