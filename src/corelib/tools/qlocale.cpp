@@ -3224,4 +3224,44 @@ QStringList QLocale::uiLanguages() const
     return QStringList(bcp47Name());
 }
 
+/*!
+    \since 4.8
+
+    Returns a native name of the language for the locale. For example
+    "Schwiizertüütsch" for Swiss-German locale.
+
+    \sa nativeCountryName(), languageToString()
+*/
+QString QLocale::nativeLanguageName() const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::NativeLanguageName, QVariant());
+        if (!res.isNull())
+            return res.toString();
+    }
+#endif
+    return getLocaleData(endonyms_data + d()->m_language_endonym_idx, d()->m_language_endonym_size);
+}
+
+/*!
+    \since 4.8
+
+    Returns a native name of the country for the locale. For example
+    "España" for Spanish/Spain locale.
+
+    \sa nativeLanguageName(), countryToString()
+*/
+QString QLocale::nativeCountryName() const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::NativeCountryName, QVariant());
+        if (!res.isNull())
+            return res.toString();
+    }
+#endif
+    return getLocaleData(endonyms_data + d()->m_country_endonym_idx, d()->m_country_endonym_size);
+}
+
 QT_END_NAMESPACE

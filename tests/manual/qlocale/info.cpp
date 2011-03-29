@@ -38,45 +38,55 @@
 **
 ****************************************************************************/
 
-#ifndef WINDOW_H
-#define WINDOW_H
-
-#include <QtGui>
-
-#include "calendar.h"
-#include "currency.h"
-#include "languages.h"
-#include "dateformats.h"
-#include "numberformats.h"
-#include "miscellaneous.h"
 #include "info.h"
 
-class Window : public QMainWindow
+InfoWidget::InfoWidget()
 {
-    Q_OBJECT
-public:
-    Window();
+    scrollArea = new QScrollArea;
+    scrollAreaWidget = new QWidget;
+    scrollArea->setWidget(scrollAreaWidget);
+    scrollArea->setWidgetResizable(true);
+    layout = new QGridLayout();
+    QVBoxLayout *v = new QVBoxLayout(scrollAreaWidget);
+    v->addLayout(layout);
+    v->addStretch();
 
-    QLabel *localeName;
-    QComboBox *localeCombo;
-    QTabWidget *tabWidget;
-    CalendarWidget *calendar;
-    CurrencyWidget *currency;
-    LanguagesWidget *languages;
-    DateFormatsWidget *dateFormats;
-    NumberFormatsWidget *numberFormats;
-    MiscWidget *miscellaneous;
-    InfoWidget *info;
+    QVBoxLayout *l = new QVBoxLayout(this);
+    l->addWidget(scrollArea);
 
-private:
-    bool event(QEvent *);
-    void systemLocaleChanged();
+    name = addItem("Name:");
+    bcp47Name = addItem("Bcp47 name:");
+    languageName = addItem("Language name:");
+    nativeLanguageName = addItem("Native language name:");
+    scriptName = addItem("Script name:");
+    countryName = addItem("Country name:");
+    nativeCountryName = addItem("Native country name:");
+}
 
-signals:
-    void localeChanged(QLocale);
+void InfoWidget::localeChanged(QLocale locale)
+{
+    setLocale(locale);
+    name->setText(locale.name());
+    bcp47Name->setText(locale.bcp47Name());
+    languageName->setText(QLocale::languageToString(locale.language()));
+    nativeLanguageName->setText(locale.nativeLanguageName());
+    scriptName->setText(QLocale::scriptToString(locale.script()));
+    countryName->setText(QLocale::countryToString(locale.country()));
+    nativeCountryName->setText(locale.nativeCountryName());
+}
 
-private slots:
-    void localeChanged(int);
-};
+void InfoWidget::addItem(const QString &label, QWidget *w)
+{
+    QLabel *lbl = new QLabel(label);
+    int row = layout->rowCount();
+    layout->addWidget(lbl, row, 0);
+    layout->addWidget(w, row, 1, 1, 2);
+}
 
-#endif
+QLineEdit *InfoWidget::addItem(const QString &label)
+{
+    QLineEdit *le = new QLineEdit;
+    le->setReadOnly(true);
+    addItem(label, le);
+    return le;
+}

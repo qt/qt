@@ -211,11 +211,14 @@ public:
     quint16 m_currency_display_name_idx, m_currency_display_name_size;
     quint8 m_currency_format_idx, m_currency_format_size;
     quint8 m_currency_negative_format_idx, m_currency_negative_format_size;
+    quint16 m_language_endonym_idx, m_language_endonym_size;
+    quint16 m_country_endonym_idx, m_country_endonym_size;
     quint16 m_currency_digits : 2;
     quint16 m_currency_rounding : 3;
     quint16 m_first_day_of_week : 3;
     quint16 m_weekend_start : 3;
     quint16 m_weekend_end : 3;
+
 };
 
 inline char QLocalePrivate::digitToCLocale(const QChar &in) const

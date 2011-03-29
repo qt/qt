@@ -237,8 +237,10 @@ def assertSingleChar(string):
 class Locale:
     def __init__(self, elt):
         self.language = eltText(firstChildElt(elt, "language"))
+        self.languageEndonym = eltText(firstChildElt(elt, "languageEndonym"))
         self.script = eltText(firstChildElt(elt, "script"))
         self.country = eltText(firstChildElt(elt, "country"))
+        self.countryEndonym = eltText(firstChildElt(elt, "countryEndonym"))
         self.decimal = int(eltText(firstChildElt(elt, "decimal")))
         self.group = int(eltText(firstChildElt(elt, "group")))
         self.listDelim = int(eltText(firstChildElt(elt, "list")))
@@ -509,6 +511,7 @@ def main():
     currency_symbol_data = StringData()
     currency_display_name_data = StringData()
     currency_format_data = StringData()
+    endonyms_data = StringData()
 
     # Locale data
     data_temp_file.write("static const QLocalePrivate locale_data[] = {\n")
@@ -521,7 +524,7 @@ def main():
 
     for key in locale_keys:
         l = locale_map[key]
-        data_temp_file.write("    { %6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, {%s}, %s,%s,%s,%s,%6d,%6d,%6d,%6d,%6d }, // %s/%s/%s\n" \
+        data_temp_file.write("    { %6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, {%s}, %s,%s,%s,%s,%s,%s,%6d,%6d,%6d,%6d,%6d }, // %s/%s/%s\n" \
                     % (key[0], key[1], key[2],
                         l.decimal,
                         l.group,
@@ -562,6 +565,8 @@ def main():
                         currency_display_name_data.append(l.currencyDisplayName),
                         currency_format_data.append(l.currencyFormat),
                         currency_format_data.append(l.currencyNegativeFormat),
+                        endonyms_data.append(l.languageEndonym),
+                        endonyms_data.append(l.countryEndonym),
                         l.currencyDigits,
                         l.currencyRounding,
                         l.firstDayOfWeek,
@@ -570,7 +575,7 @@ def main():
                         l.language,
                         l.script,
                         l.country))
-    data_temp_file.write("    {      0,      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,    0,0,    0,0,    0,0,   0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,    0,0,    0,0,    0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0, {0,0,0}, 0,0, 0,0, 0,0, 0,0, 0, 0, 0, 0, 0 }  // trailing 0s\n")
+    data_temp_file.write("    {      0,      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,    0,0,    0,0,    0,0,   0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,    0,0,    0,0,    0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0, {0,0,0}, 0,0, 0,0, 0,0, 0,0, 0, 0, 0, 0, 0, 0,0, 0,0 }  // trailing 0s\n")
     data_temp_file.write("};\n")
 
     data_temp_file.write("\n")
@@ -659,6 +664,12 @@ def main():
     #check_static_char_array_length("currency_format", currency_format_data.data)
     data_temp_file.write("static const ushort currency_format_data[] = {\n")
     data_temp_file.write(wrap_list(currency_format_data.data))
+    data_temp_file.write("\n};\n")
+
+    # Endonyms data
+    #check_static_char_array_length("endonyms", endonyms_data.data)
+    data_temp_file.write("static const ushort endonyms_data[] = {\n")
+    data_temp_file.write(wrap_list(endonyms_data.data))
     data_temp_file.write("\n};\n")
 
     data_temp_file.write("\n")

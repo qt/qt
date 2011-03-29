@@ -234,6 +234,18 @@ def generateLocaleInfo(path):
     result['longTimeFormat'] = convert_date(findEntry(path, "dates/calendars/calendar[gregorian]/timeFormats/timeFormatLength[full]/timeFormat/pattern"))
     result['shortTimeFormat'] = convert_date(findEntry(path, "dates/calendars/calendar[gregorian]/timeFormats/timeFormatLength[short]/timeFormat/pattern"))
 
+    endonym = None
+    if country_code and script_code:
+        endonym = findEntryDef(path, "localeDisplayNames/languages/language[type=%s_%s_%s]" % (language_code, script_code, country_code))
+    if not endonym and script_code:
+        endonym = findEntryDef(path, "localeDisplayNames/languages/language[type=%s_%s]" % (language_code, script_code))
+    if not endonym and country_code:
+        endonym = findEntryDef(path, "localeDisplayNames/languages/language[type=%s_%s]" % (language_code, country_code))
+    if not endonym:
+        endonym = findEntryDef(path, "localeDisplayNames/languages/language[type=%s]" % (language_code))
+    result['language_endonym'] = endonym
+    result['country_endonym'] = findEntryDef(path, "localeDisplayNames/territories/territory[type=%s]" % (country_code))
+
     currency_format = get_number_in_system(path, "numbers/currencyFormats/currencyFormatLength/currencyFormat/pattern", numbering_system)
     currency_format = parse_number_format(currency_format, result)
     result['currencyFormat'] = currency_format[0]
@@ -687,8 +699,10 @@ print "    <localeList>"
 print \
 "        <locale>\n\
             <language>C</language>\n\
+            <languageEndonym></languageEndonym>\n\
             <script>AnyScript</script>\n\
             <country>AnyCountry</country>\n\
+            <countryEndonym></countryEndonym>\n\
             <decimal>46</decimal>\n\
             <group>44</group>\n\
             <list>59</list>\n\
@@ -740,8 +754,10 @@ for key in locale_keys:
 
     print "        <locale>"
     print "            <language>" + l['language']        + "</language>"
+    print "            <languageEndonym>" + l['language_endonym'].encode('utf-8') + "</languageEndonym>"
     print "            <script>" + l['script']        + "</script>"
     print "            <country>"  + l['country']         + "</country>"
+    print "            <countryEndonym>"  + l['country_endonym'].encode('utf-8') + "</countryEndonym>"
     print "            <languagecode>" + l['language_code']        + "</languagecode>"
     print "            <scriptcode>" + l['script_code']        + "</scriptcode>"
     print "            <countrycode>"  + l['country_code']         + "</countrycode>"

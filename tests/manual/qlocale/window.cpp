@@ -62,6 +62,8 @@ Window::Window()
             this, SLOT(localeChanged(int)));
 
     tabWidget = new QTabWidget;
+    info = new InfoWidget;
+    connect(this, SIGNAL(localeChanged(QLocale)), info, SLOT(localeChanged(QLocale)));
     calendar = new CalendarWidget;
     connect(this, SIGNAL(localeChanged(QLocale)), calendar, SLOT(localeChanged(QLocale)));
     currency = new CurrencyWidget;
@@ -87,6 +89,7 @@ Window::Window()
     l->addWidget(w);
     l->addWidget(tabWidget);
 
+    tabWidget->addTab(info, "Info");
     tabWidget->addTab(calendar, "Calendar");
     tabWidget->addTab(currency, "Currency");
     tabWidget->addTab(languages, "Languages");
