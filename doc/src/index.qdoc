@@ -80,7 +80,7 @@
             \o \l{qt-deployment}{Deploying and Publishing Applications to Ovi Store}
             \endlist
             \list
-            \o \l{Getting Started Guides}{Qt and Qt Quick Programming Guides}
+            \o \l{Getting Started Guides}{Qt and Qt Quick Programming Tutorials}
             \endlist
         \enddiv
         \div {class="sectionlist normallist"}
@@ -135,8 +135,6 @@ innovative solutions using Qt.
         \div {class="sectionlist normallist"}
             \list
             \o \l{QML Elements}
-            \endlist
-            \list
             \o \l{external: Qt Mobility Manual}{Qt Mobility APIs}
             \o \l{external: Qt Mobility QML Plugins}{Mobility QML Plugins}
             \endlist
