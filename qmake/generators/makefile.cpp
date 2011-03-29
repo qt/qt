@@ -782,7 +782,7 @@ MakefileGenerator::init()
     }
 
     { //get the output_dir into the pwd
-        if(fileFixify(Option::output_dir) != fileFixify(qmake_getpwd()))
+        if(Option::output_dir != qmake_getpwd())
             project->values("INCLUDEPATH").append(fileFixify(Option::output_dir,
                                                                   Option::output_dir,
                                                                   Option::output_dir));
