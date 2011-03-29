@@ -44,6 +44,7 @@
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
+#include "qmutex.h"
 
 #include <xcb/shm.h>
 #include <xcb/xcb_image.h>
@@ -64,6 +65,9 @@ public:
     void put(xcb_window_t window, const QPoint &dst, const QRect &source);
     void preparePaint(const QRegion &region);
 
+    void lock() { m_surfaceLock.lock(); }
+    void unlock() { m_surfaceLock.unlock(); }
+
 private:
     void destroy();
 
@@ -77,6 +81,7 @@ private:
     xcb_window_t m_gc_window;
 
     QRegion m_dirty;
+    QMutex m_surfaceLock;
 };
 
 QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size)
@@ -174,7 +179,13 @@ QPaintDevice *QXcbWindowSurface::paintDevice()
 
 void QXcbWindowSurface::beginPaint(const QRegion &region)
 {
+    m_image->lock();
     m_image->preparePaint(region);
+}
+
+void QXcbWindowSurface::endPaint(const QRegion &)
+{
+    m_image->unlock();
 }
 
 void QXcbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
@@ -187,9 +198,13 @@ void QXcbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoi
     extern QWidgetData* qt_widget_data(QWidget *);
     QPoint widgetOffset = qt_qwidget_data(widget)->wrect.topLeft();
 
+    m_image->lock();
+
     QVector<QRect> rects = region.rects();
     for (int i = 0; i < rects.size(); ++i)
         m_image->put(window->window(), rects.at(i).topLeft() - widgetOffset, rects.at(i).translated(offset));
+
+    m_image->unlock();
 }
 
 void QXcbWindowSurface::resize(const QSize &size)
@@ -197,6 +212,9 @@ void QXcbWindowSurface::resize(const QSize &size)
     QWindowSurface::resize(size);
 
     QXcbScreen *screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(window()));
+
+    if (m_image)
+        m_image->lock();
 
     delete m_image;
     m_image = new QXcbShmImage(screen, size);

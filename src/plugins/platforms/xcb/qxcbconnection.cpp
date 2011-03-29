@@ -76,6 +76,7 @@ extern "C" {
 
 QXcbConnection::QXcbConnection(const char *displayName)
     : m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
+    , m_enabled(true)
 #ifdef XCB_USE_DRI2
     , m_dri2_major(0)
     , m_dri2_minor(0)
@@ -112,8 +113,11 @@ QXcbConnection::QXcbConnection(const char *displayName)
         xcb_screen_next(&it);
     }
 
-    QSocketNotifier *socket = new QSocketNotifier(xcb_get_file_descriptor(xcb_connection()), QSocketNotifier::Read, this);
-    connect(socket, SIGNAL(activated(int)), this, SLOT(eventDispatcher()));
+    m_connectionEventListener = xcb_generate_id(xcb_connection());
+    xcb_create_window(xcb_connection(), XCB_COPY_FROM_PARENT,
+                      m_connectionEventListener, m_screens.at(0)->root(),
+                      0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY,
+                      m_screens.at(0)->screen()->root_visual, 0, 0);
 
     m_keyboard = new QXcbKeyboard(this);
 
@@ -122,10 +126,47 @@ QXcbConnection::QXcbConnection(const char *displayName)
 #ifdef XCB_USE_DRI2
     initializeDri2();
 #endif
+
+    start();
+}
+
+void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom atom)
+{
+    xcb_client_message_event_t event;
+    memset(&event, 0, sizeof(event));
+
+    event.response_type = XCB_CLIENT_MESSAGE;
+    event.format = 32;
+    event.sequence = 0;
+    event.window = m_connectionEventListener;
+    event.type = atom;
+
+    xcb_send_event(xcb_connection(), false, m_connectionEventListener, XCB_EVENT_MASK_NO_EVENT, (const char *)&event);
+
+    xcb_flush(xcb_connection());
+}
+
+void QXcbConnection::setEventProcessingEnabled(bool enabled)
+{
+    if (enabled == m_enabled)
+        return;
+
+    if (!enabled) {
+        m_connectionLock.lock();
+        sendConnectionEvent(QXcbAtom::_QT_PAUSE_CONNECTION);
+    } else {
+        m_connectionLock.unlock();
+    }
+
+    m_enabled = enabled;
 }
 
 QXcbConnection::~QXcbConnection()
 {
+    sendConnectionEvent(QXcbAtom::_QT_CLOSE_CONNECTION);
+    wait();
+
+    xcb_destroy_window(xcb_connection(), m_connectionEventListener);
     qDeleteAll(m_screens);
 
 #ifdef XCB_USE_XLIB
@@ -168,7 +209,7 @@ void printXcbEvent(const char *message, xcb_generic_event_t *event)
 #ifdef XCB_EVENT_DEBUG
 #define PRINT_XCB_EVENT(event) \
     case event: \
-        printf("%s: %d - %s\n", message, event, #event); \
+        printf("%s: %d - %s\n", message, int(event), #event); \
         break;
 
     switch (event->response_type & ~0x80) {
@@ -205,7 +246,7 @@ void printXcbEvent(const char *message, xcb_generic_event_t *event)
     PRINT_XCB_EVENT(XCB_CLIENT_MESSAGE);
     PRINT_XCB_EVENT(XCB_MAPPING_NOTIFY);
     default:
-        printf("%s: %d - %s\n", message, event->response_type, "unknown");
+        printf("%s: unknown event - response_type: %d - sequence: %d\n", message, int(event->response_type & ~0x80), int(event->sequence));
     }
 #else
     Q_UNUSED(message);
@@ -213,11 +254,185 @@ void printXcbEvent(const char *message, xcb_generic_event_t *event)
 #endif
 }
 
-void QXcbConnection::eventDispatcher()
+const char *xcb_errors[] =
 {
-    while (xcb_generic_event_t *event = xcb_poll_for_event(xcb_connection())) {
+    "Success",
+    "BadRequest",
+    "BadValue",
+    "BadWindow",
+    "BadPixmap",
+    "BadAtom",
+    "BadCursor",
+    "BadFont",
+    "BadMatch",
+    "BadDrawable",
+    "BadAccess",
+    "BadAlloc",
+    "BadColor",
+    "BadGC",
+    "BadIDChoice",
+    "BadName",
+    "BadLength",
+    "BadImplementation",
+    "Unknown"
+};
+
+const char *xcb_protocol_request_codes[] =
+{
+    "CreateWindow",
+    "ChangeWindowAttributes",
+    "GetWindowAttributes",
+    "DestroyWindow",
+    "DestroySubwindows",
+    "ChangeSaveSet",
+    "ReparentWindow",
+    "MapWindow",
+    "MapSubwindows",
+    "UnmapWindow",
+    "UnmapSubwindows",
+    "ConfigureWindow",
+    "CirculateWindow",
+    "GetGeometry",
+    "QueryTree",
+    "InternAtom",
+    "GetAtomName",
+    "ChangeProperty",
+    "DeleteProperty",
+    "GetProperty",
+    "ListProperties",
+    "SetSelectionOwner",
+    "GetSelectionOwner",
+    "ConvertSelection",
+    "SendEvent",
+    "GrabPointer",
+    "UngrabPointer",
+    "GrabButton",
+    "UngrabButton",
+    "ChangeActivePointerGrab",
+    "GrabKeyboard",
+    "UngrabKeyboard",
+    "GrabKey",
+    "UngrabKey",
+    "AllowEvents",
+    "GrabServer",
+    "UngrabServer",
+    "QueryPointer",
+    "GetMotionEvents",
+    "TranslateCoords",
+    "WarpPointer",
+    "SetInputFocus",
+    "GetInputFocus",
+    "QueryKeymap",
+    "OpenFont",
+    "CloseFont",
+    "QueryFont",
+    "QueryTextExtents",
+    "ListFonts",
+    "ListFontsWithInfo",
+    "SetFontPath",
+    "GetFontPath",
+    "CreatePixmap",
+    "FreePixmap",
+    "CreateGC",
+    "ChangeGC",
+    "CopyGC",
+    "SetDashes",
+    "SetClipRectangles",
+    "FreeGC",
+    "ClearArea",
+    "CopyArea",
+    "CopyPlane",
+    "PolyPoint",
+    "PolyLine",
+    "PolySegment",
+    "PolyRectangle",
+    "PolyArc",
+    "FillPoly",
+    "PolyFillRectangle",
+    "PolyFillArc",
+    "PutImage",
+    "GetImage",
+    "PolyText8",
+    "PolyText16",
+    "ImageText8",
+    "ImageText16",
+    "CreateColormap",
+    "FreeColormap",
+    "CopyColormapAndFree",
+    "InstallColormap",
+    "UninstallColormap",
+    "ListInstalledColormaps",
+    "AllocColor",
+    "AllocNamedColor",
+    "AllocColorCells",
+    "AllocColorPlanes",
+    "FreeColors",
+    "StoreColors",
+    "StoreNamedColor",
+    "QueryColors",
+    "LookupColor",
+    "CreateCursor",
+    "CreateGlyphCursor",
+    "FreeCursor",
+    "RecolorCursor",
+    "QueryBestSize",
+    "QueryExtension",
+    "ListExtensions",
+    "ChangeKeyboardMapping",
+    "GetKeyboardMapping",
+    "ChangeKeyboardControl",
+    "GetKeyboardControl",
+    "Bell",
+    "ChangePointerControl",
+    "GetPointerControl",
+    "SetScreenSaver",
+    "GetScreenSaver",
+    "ChangeHosts",
+    "ListHosts",
+    "SetAccessControl",
+    "SetCloseDownMode",
+    "KillClient",
+    "RotateProperties",
+    "ForceScreenSaver",
+    "SetPointerMapping",
+    "GetPointerMapping",
+    "SetModifierMapping",
+    "GetModifierMapping",
+    "NoOperation",
+    "Unknown"
+};
+
+void QXcbConnection::run()
+{
+    while (xcb_generic_event_t *event = xcb_wait_for_event(xcb_connection())) {
         bool handled = true;
-        switch (event->response_type & ~0x80) {
+
+        uint response_type = event->response_type & ~0x80;
+
+        if (!response_type) {
+            xcb_generic_error_t *error = (xcb_generic_error_t *)event;
+
+            uint clamped_error_code = qMin<uint>(error->error_code, (sizeof(xcb_errors) / sizeof(xcb_errors[0])) - 1);
+            uint clamped_major_code = qMin<uint>(error->major_code, (sizeof(xcb_protocol_request_codes) / sizeof(xcb_protocol_request_codes[0])) - 1);
+
+            printf("XCB error: %d (%s), resource id: %d, major code: %d (%s), minor code: %d\n",
+                   int(error->error_code), xcb_errors[clamped_error_code], int(error->resource_id),
+                   int(error->major_code), xcb_protocol_request_codes[clamped_major_code],
+                   int(error->minor_code));
+            continue;
+        }
+
+        if (response_type == XCB_CLIENT_MESSAGE
+            && ((xcb_client_message_event_t *)event)->type == QXcbAtom::_QT_CLOSE_CONNECTION)
+            return;
+
+        if (response_type == XCB_CLIENT_MESSAGE
+            && ((xcb_client_message_event_t *)event)->type == QXcbAtom::_QT_PAUSE_CONNECTION)
+        {
+            QMutexLocker locker(&m_connectionLock);
+        }
+
+        switch (response_type) {
         case XCB_EXPOSE:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
         case XCB_BUTTON_PRESS:
@@ -254,6 +469,7 @@ void QXcbConnection::eventDispatcher()
         else
             printXcbEvent("Unhandled XCB event", event);
     }
+    fprintf(stderr, "I/O error in xcb_wait_for_event\n");
 }
 
 static const char * xcb_atomnames = {
@@ -294,6 +510,9 @@ static const char * xcb_atomnames = {
 
     "_QT_SCROLL_DONE\0"
     "_QT_INPUT_ENCODING\0"
+
+    "_QT_CLOSE_CONNECTION\0"
+    "_QT_PAUSE_CONNECTION\0"
 
     "_MOTIF_WM_HINTS\0"
 

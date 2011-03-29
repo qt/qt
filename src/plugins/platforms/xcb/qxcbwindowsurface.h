@@ -62,6 +62,7 @@ public:
     bool scroll(const QRegion &area, int dx, int dy);
 
     void beginPaint(const QRegion &);
+    void endPaint(const QRegion &);
 
 private:
     QXcbShmImage *m_image;

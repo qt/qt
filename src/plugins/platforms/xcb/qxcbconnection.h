@@ -45,7 +45,8 @@
 #include <xcb/xcb.h>
 
 #include <QList>
-#include <QObject>
+#include <QMutex>
+#include <QThread>
 
 class QXcbScreen;
 
@@ -88,6 +89,10 @@ namespace QXcbAtom {
 
         _QT_SCROLL_DONE,
         _QT_INPUT_ENCODING,
+
+        // Qt/XCB specific
+        _QT_CLOSE_CONNECTION,
+        _QT_PAUSE_CONNECTION,
 
         _MOTIF_WM_HINTS,
 
@@ -214,7 +219,7 @@ namespace QXcbAtom {
 
 class QXcbKeyboard;
 
-class QXcbConnection : public QObject
+class QXcbConnection : public QThread
 {
     Q_OBJECT
 public:
@@ -232,6 +237,8 @@ public:
 
     QXcbKeyboard *keyboard() const { return m_keyboard; }
 
+    void setEventProcessingEnabled(bool enabled);
+
 #ifdef XCB_USE_XLIB
     void *xlib_display() const { return m_xlib_display; }
 #endif
@@ -247,11 +254,12 @@ public:
     void *egl_display() const { return m_egl_display; }
 #endif
 
-private slots:
-    void eventDispatcher();
+protected:
+    void run();
 
 private:
     void initializeAllAtoms();
+    void sendConnectionEvent(QXcbAtom::Atom atom);
 #ifdef XCB_USE_DRI2
     void initializeDri2();
 #endif
@@ -265,6 +273,10 @@ private:
     xcb_atom_t m_allAtoms[QXcbAtom::NAtoms];
 
     QByteArray m_displayName;
+
+    xcb_window_t m_connectionEventListener;
+    QMutex m_connectionLock;
+    bool m_enabled;
 
     QXcbKeyboard *m_keyboard;
 

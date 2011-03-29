@@ -111,9 +111,11 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
 
 #if defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
     if (tlw->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
-       && QApplicationPrivate::platformIntegration()->hasOpenGL() ) {
+        && QApplicationPrivate::platformIntegration()->hasOpenGL())
+    {
+        connection()->setEventProcessingEnabled(false);
 #if defined(XCB_USE_GLX)
-            XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), tlw->platformWindowFormat());
+        XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), tlw->platformWindowFormat());
 #elif defined(XCB_USE_EGL)
         EGLDisplay eglDisplay = connection()->egl_display();
         EGLConfig eglConfig = q_configFromQPlatformWindowFormat(eglDisplay,tlw->platformWindowFormat(),true);
@@ -127,19 +129,20 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
         int matchingCount = 0;
         visualInfo = XGetVisualInfo(DISPLAY_FROM_XCB(this), VisualIDMask, &visualInfoTemplate, &matchingCount);
 #endif //XCB_USE_GLX
-            if (visualInfo) {
-                Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(this), m_screen->root(), visualInfo->visual, AllocNone);
+        if (visualInfo) {
+            Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(this), m_screen->root(), visualInfo->visual, AllocNone);
 
-                XSetWindowAttributes a;
-                a.colormap = cmap;
-                m_window = XCreateWindow(DISPLAY_FROM_XCB(this), m_screen->root(), tlw->x(), tlw->y(), tlw->width(), tlw->height(),
-                                          0, visualInfo->depth, InputOutput, visualInfo->visual,
-                                          CWColormap, &a);
+            XSetWindowAttributes a;
+            a.colormap = cmap;
+            m_window = XCreateWindow(DISPLAY_FROM_XCB(this), m_screen->root(), tlw->x(), tlw->y(), tlw->width(), tlw->height(),
+                                      0, visualInfo->depth, InputOutput, visualInfo->visual,
+                                      CWColormap, &a);
 
-                printf("created GL window: %d\n", m_window);
-            } else {
-                qFatal("no window!");
-            }
+            printf("created GL window: %d\n", m_window);
+        } else {
+            qFatal("no window!");
+        }
+        connection()->setEventProcessingEnabled(true);
     } else
 #endif //defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
     {
@@ -428,13 +431,12 @@ QPlatformGLContext *QXcbWindow::glContext() const
         printf("no opengl\n");
         return 0;
     }
-#if defined(XCB_USE_GLX)
     if (!m_context) {
+        connection()->setEventProcessingEnabled(false);
+#if defined(XCB_USE_GLX)
         QXcbWindow *that = const_cast<QXcbWindow *>(this);
         that->m_context = new QGLXContext(m_window, m_screen, widget()->platformWindowFormat());
-    }
 #elif defined(XCB_USE_EGL)
-    if (!m_context) {
         EGLDisplay display = connection()->egl_display();
         EGLConfig config = q_configFromQPlatformWindowFormat(display,widget()->platformWindowFormat(),true);
         QVector<EGLint> eglContextAttrs;
@@ -445,14 +447,12 @@ QPlatformGLContext *QXcbWindow::glContext() const
         EGLSurface eglSurface = eglCreateWindowSurface(display,config,(EGLNativeWindowType)m_window,0);
         QXcbWindow *that = const_cast<QXcbWindow *>(this);
         that->m_context = new QEGLPlatformContext(display, config, eglContextAttrs.data(), eglSurface, EGL_OPENGL_ES_API);
-    }
 #elif defined(XCB_USE_DRI2)
-    if (!m_context) {
         QXcbWindow *that = const_cast<QXcbWindow *>(this);
         that->m_context = new QDri2Context(that);
-    }
-
 #endif
+        connection()->setEventProcessingEnabled(true);
+    }
     return m_context;
 }
 
