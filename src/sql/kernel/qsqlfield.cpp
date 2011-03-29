@@ -162,6 +162,7 @@ public:
 QSqlField::QSqlField(const QString& fieldName, QVariant::Type type)
 {
     d = new QSqlFieldPrivate(fieldName, type);
+    val = QVariant(type);
 }
 
 /*!
@@ -389,6 +390,8 @@ void QSqlField::setType(QVariant::Type type)
 {
     detach();
     d->type = type;
+    if (!val.isValid())
+        val = QVariant(type);
 }
 
 
