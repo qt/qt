@@ -163,8 +163,10 @@ public: \
     virtual void *qt_metacast(const char *); \
     QT_TR_FUNCTIONS \
     virtual int qt_metacall(QMetaObject::Call, int, void **); \
-    static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); \
-private:
+private: \
+    Q_DECL_HIDDEN static const QMetaObjectExtraData staticMetaObjectExtraData; \
+    Q_DECL_HIDDEN static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **);
+
 /* tmake ignore Q_OBJECT */
 #define Q_OBJECT_FAKE Q_OBJECT
 /* tmake ignore Q_GADGET */
@@ -480,8 +482,10 @@ struct QMetaObjectExtraData
 #else
     const QMetaObject **objects;
 #endif
-    void (*static_metacall)(QObject *, QMetaObject::Call, int, void **); //from revision 6
-    //int (*static_metacall)(QMetaObject::Call, int, void **); //used from revison 2 until revison 5
+
+    typedef void (*StaticMetacallFunction)(QObject *, QMetaObject::Call, int, void **); //from revision 6
+    //typedef int (*StaticMetaCall)(QMetaObject::Call, int, void **); //used from revison 2 until revison 5
+    StaticMetacallFunction static_metacall;
 };
 
 inline const char *QMetaObject::className() const

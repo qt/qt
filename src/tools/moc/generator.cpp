@@ -330,15 +330,15 @@ void Generator::generateCode()
 
     bool hasExtraData = (cdef->hasQObject && !isQt) || !extraList.isEmpty();
     if (hasExtraData) {
-        fprintf(out, "static const QMetaObjectExtraData qt_meta_extradata2_%s = {\n    ",
-                qualifiedClassNameIdentifier.constData());
+        fprintf(out, "const QMetaObjectExtraData %s::staticMetaObjectExtraData = {\n    ",
+                cdef->qualified.constData());
         if (extraList.isEmpty())
             fprintf(out, "0, ");
         else
             fprintf(out, "qt_meta_extradata_%s, ", qualifiedClassNameIdentifier.constData());
 
         if (cdef->hasQObject && !isQt)
-            fprintf(out, " %s::qt_static_metacall", cdef->qualified.constData());
+            fprintf(out, " qt_static_metacall");
         else
             fprintf(out, " 0");
         fprintf(out, " \n};\n\n");
@@ -363,7 +363,7 @@ void Generator::generateCode()
     if (!hasExtraData)
         fprintf(out, "0 }\n");
     else
-        fprintf(out, "&qt_meta_extradata2_%s }\n", qualifiedClassNameIdentifier.constData());
+        fprintf(out, "&staticMetaObjectExtraData }\n");
     fprintf(out, "};\n");
 
     if(isQt)
