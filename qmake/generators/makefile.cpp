@@ -783,9 +783,7 @@ MakefileGenerator::init()
 
     { //get the output_dir into the pwd
         if(Option::output_dir != qmake_getpwd())
-            project->values("INCLUDEPATH").append(fileFixify(Option::output_dir,
-                                                                  Option::output_dir,
-                                                                  Option::output_dir));
+            project->values("INCLUDEPATH").append(".");
     }
 
     //fix up the target deps
