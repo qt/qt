@@ -596,16 +596,13 @@ void QSGTextInput::keyPressEvent(QKeyEvent* ev)
 void QSGTextInput::inputMethodEvent(QInputMethodEvent *ev)
 {
     Q_D(QSGTextInput);
-    ev->ignore();
     const bool wasComposing = d->control->preeditAreaText().length() > 0;
-    if (!ev->isAccepted()) {
-        if (d->control->isReadOnly()) {
-            ev->ignore();
-        } else {
-            d->control->processInputMethodEvent(ev);
-            updateSize();
-            d->updateHorizontalScroll();
-        }
+    if (d->control->isReadOnly()) {
+        ev->ignore();
+    } else {
+        d->control->processInputMethodEvent(ev);
+        updateSize();
+        d->updateHorizontalScroll();
     }
     if (!ev->isAccepted())
         QSGPaintedItem::inputMethodEvent(ev);
