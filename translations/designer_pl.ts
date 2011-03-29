@@ -25,6 +25,49 @@
     </message>
 </context>
 <context>
+    <name>AbstractItemEditor</name>
+    <message>
+        <source>Selectable</source>
+        <translation>Do wyboru</translation>
+    </message>
+    <message>
+        <source>Editable</source>
+        <translation>Do edycji</translation>
+    </message>
+    <message>
+        <source>DragEnabled</source>
+        <translation>Do przeciągania</translation>
+    </message>
+    <message>
+        <source>DropEnabled</source>
+        <translation>Do upuszczania</translation>
+    </message>
+    <message>
+        <source>UserCheckable</source>
+        <translation>Do zaznaczania</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>Włączony</translation>
+    </message>
+    <message>
+        <source>Tristate</source>
+        <translation>Trójstanowy</translation>
+    </message>
+    <message>
+        <source>Unchecked</source>
+        <translation>Niezaznaczony</translation>
+    </message>
+    <message>
+        <source>PartiallyChecked</source>
+        <translation>Częściowo zaznaczony</translation>
+    </message>
+    <message>
+        <source>Checked</source>
+        <translation>Zaznaczony</translation>
+    </message>
+</context>
+<context>
     <name>AddLinkDialog</name>
     <message>
         <source>Insert Link</source>
@@ -852,6 +895,7 @@ Parsing grid layout minimum size values</extracomment>
     <name>FormEditorOptionsPage</name>
     <message>
         <source>%1 %</source>
+        <extracomment>Zoom percentage</extracomment>
         <translation>%1 %</translation>
     </message>
     <message>
@@ -2512,6 +2556,10 @@ Empty class name passed to widget factory method</extracomment>
 </context>
 <context>
     <name>QtLocalePropertyManager</name>
+    <message>
+        <source>&lt;Invalid&gt;</source>
+        <translation>&lt;Niepoprawny&gt;</translation>
+    </message>
     <message>
         <source>%1, %2</source>
         <translation>%1, %2</translation>
@@ -4654,7 +4702,7 @@ Wybierz inną nazwę.</translation>
     </message>
     <message>
         <source>Disabled</source>
-        <translation>Wyszarzony</translation>
+        <translation>Wyłączony</translation>
     </message>
     <message>
         <source>Inactive</source>
@@ -4680,15 +4728,15 @@ Wybierz inną nazwę.</translation>
     </message>
     <message>
         <source>Active</source>
-        <translation>Aktywna</translation>
+        <translation>Aktywny</translation>
     </message>
     <message>
         <source>Inactive</source>
-        <translation>Nieaktywna</translation>
+        <translation>Nieaktywny</translation>
     </message>
     <message>
         <source>Disabled</source>
-        <translation>Wyszarzona</translation>
+        <translation>Wyłączony</translation>
     </message>
 </context>
 <context>
@@ -4730,6 +4778,14 @@ Wybierz inną nazwę.</translation>
     <message>
         <source>Plugin Information</source>
         <translation>Informacje o wtyczkach</translation>
+    </message>
+    <message>
+        <source>Loaded Plugins</source>
+        <translation>Załadowane wtyczki</translation>
+    </message>
+    <message>
+        <source>Failed Plugins</source>
+        <translation>Wtyczki których nie można załadować</translation>
     </message>
     <message>
         <source>Qt Designer couldn&apos;t find any plugins</source>
