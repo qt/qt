@@ -102,6 +102,7 @@ public:
 
     virtual bool hasStaticContentsSupport() const;
     virtual bool hasPartialUpdateSupport() const;
+    virtual bool hasPreservedContents() const;
 
     void setStaticContents(const QRegion &region);
     QRegion staticContents() const;

@@ -1143,9 +1143,9 @@ void QWidgetBackingStore::sync(QWidget *exposedWidget, const QRegion &exposedReg
         return;
     }
 
-    // If there's no partial update support we always need
+    // If there's no preserved contents support we always need
     // to do a full repaint before flushing
-    if (!windowSurface->hasPartialUpdateSupport())
+    if (!windowSurface->hasPreservedContents())
         fullUpdatePending = true;
 
     // Nothing to repaint.

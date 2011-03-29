@@ -332,6 +332,16 @@ bool QWindowSurface::hasPartialUpdateSupport() const
     return true;
 }
 
+/*!
+  Says whether the window surface's contents are preserved on flush.
+  If not, the window surface contents need to be fully repainted before the
+  next flush.
+*/
+bool QWindowSurface::hasPreservedContents() const
+{
+    return hasPartialUpdateSupport();
+}
+
 #ifdef Q_WS_QPA
 #define Q_EXPORT_SCROLLRECT Q_GUI_EXPORT
 #else
