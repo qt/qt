@@ -73,6 +73,8 @@ public:
     Renderer *renderer;
 
     QGLContext *gl;
+
+    QHash<AbstractMaterialType *, AbstractMaterialShader *> materials;
 };
 
 
@@ -199,7 +201,7 @@ GlyphNodeInterface *QSGContext::createGlyphNode()
  */
 Renderer *QSGContext::createRenderer()
 {
-    QMLRenderer *renderer = new QMLRenderer;
+    QMLRenderer *renderer = new QMLRenderer(this);
     if (qApp->arguments().contains(QLatin1String("--opaque-front-to-back"))) {
         printf("QSGContext: Sorting opaque nodes front to back...\n");
         renderer->setSortFrontToBackEnabled(true);
@@ -263,5 +265,25 @@ QSGTexture *QSGContext::createTexture(const QImage &image) const
         t->setImage(image);
     return t;
 }
+
+
+/*!
+    Returns a material shader for the given material.
+ */
+AbstractMaterialShader *QSGContext::prepareMaterial(AbstractMaterial *material)
+{
+    Q_D(QSGContext);
+    AbstractMaterialType *type = material->type();
+    AbstractMaterialShader *shader = d->materials.value(type);
+    if (shader)
+        return shader;
+
+    shader = material->createShader();
+    d->materials[type] = shader;
+    return shader;
+}
+
+
+
 
 QT_END_NAMESPACE

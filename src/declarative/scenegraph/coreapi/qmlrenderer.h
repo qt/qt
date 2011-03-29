@@ -54,7 +54,7 @@ class QMLRenderer : public Renderer
 {
     Q_OBJECT
 public:
-    QMLRenderer();
+    QMLRenderer(QSGContext *context);
 
     void render();
 

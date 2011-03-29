@@ -114,7 +114,7 @@ void BindableFbo::bind() const
  */
 
 
-Renderer::Renderer()
+Renderer::Renderer(QSGContext *context)
     : QObject()
     , m_clear_color(Qt::transparent)
     , m_root_node(0)
@@ -123,9 +123,8 @@ Renderer::Renderer()
     , m_mirrored(false)
     , m_is_rendering(false)
     , m_bindable(0)
-    , m_context(QGLContext::currentContext())
+    , m_context(context)
 {
-    Q_ASSERT(QGLContext::currentContext());
     initializeGLFunctions();
 }
 
@@ -135,6 +134,19 @@ Renderer::~Renderer()
     setRootNode(0);
     delete m_node_updater;
 }
+
+/*!
+    Returns the scene graph context for this renderer.
+
+    \internal
+ */
+
+QSGContext *Renderer::context()
+{
+    return m_context;
+}
+
+
 
 
 /*!
@@ -262,18 +274,6 @@ void Renderer::setProjectMatrix(const QMatrix4x4 &matrix)
 void Renderer::setClearColor(const QColor &color)
 {
     m_clear_color = color;
-}
-
-AbstractMaterialShader *Renderer::prepareMaterial(AbstractMaterial *material)
-{
-    AbstractMaterialType *type = material->type();
-    AbstractMaterialShader *shader = m_materials.value(type);
-    if (shader)
-        return shader;
-
-    shader = material->createShader();
-    m_materials[type] = shader;
-    return shader;
 }
 
 void Renderer::nodeChanged(Node *node, Node::DirtyFlags flags)
@@ -551,7 +551,7 @@ QMatrix4x4 AbstractMaterialShader::RenderState::modelViewMatrix() const
 
 const QGLContext *AbstractMaterialShader::RenderState::context() const
 {
-    return static_cast<const Renderer *>(m_data)->context();
+    return static_cast<const Renderer *>(m_data)->glContext();
 }
 
 

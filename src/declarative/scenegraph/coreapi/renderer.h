@@ -99,7 +99,7 @@ public:
         StencilClip
     };
 
-    Renderer();
+    Renderer(QSGContext *context);
     virtual ~Renderer();
 
     void setRootNode(RootNode *node);
@@ -127,7 +127,9 @@ public:
 
     void setClearColor(const QColor &color);
 
-    const QGLContext *context() const { return m_context; }
+    const QGLContext *glContext() const { Q_ASSERT(m_context); return m_context->glContext(); }
+
+    QSGContext *context();
 
     void renderScene();
     void renderScene(const Bindable &bindable);
@@ -152,7 +154,6 @@ protected:
 
     const Bindable *bindable() const { return m_bindable; }
 
-    AbstractMaterialShader *prepareMaterial(AbstractMaterial *material);
     virtual void preprocess();
 
     void addNodesToPreprocess(Node *node);
@@ -163,6 +164,8 @@ protected:
     QSGMatrix4x4Stack m_modelViewMatrix;
     qreal m_render_opacity;
 
+    QSGContext *m_context;
+
 private:
     RootNode *m_root_node;
     NodeUpdater *m_node_updater;
@@ -170,7 +173,6 @@ private:
     QRect m_device_rect;
     QRect m_viewport_rect;
 
-    QHash<AbstractMaterialType *, AbstractMaterialShader *> m_materials;
     QSet<Node *> m_nodes_to_preprocess;
 
     QMatrix4x4 m_projection_matrix;
@@ -182,8 +184,6 @@ private:
     bool m_is_rendering;
 
     const Bindable *m_bindable;
-
-    const QGLContext *m_context;
 };
 
 AbstractMaterialShader::RenderState Renderer::state(AbstractMaterialShader::RenderState::DirtyStates dirty) const

@@ -150,8 +150,8 @@ T Heap<T, prealloc>::pop()
 }
 
 
-QMLRenderer::QMLRenderer()
-    : Renderer()
+QMLRenderer::QMLRenderer(QSGContext *context)
+    : Renderer(context)
     , m_rebuild_lists(false)
     , m_needs_sorting(false)
     , m_sort_front_to_back(false)
@@ -402,7 +402,7 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
         Q_ASSERT(geomNode->activeMaterial());
 
         AbstractMaterial *material = geomNode->activeMaterial();
-        AbstractMaterialShader *program = prepareMaterial(material);
+        AbstractMaterialShader *program = m_context->prepareMaterial(material);
 
         bool changeClip = geomNode->clipList() != m_currentClip;
         Renderer::ClipType clipType = Renderer::NoClip;
