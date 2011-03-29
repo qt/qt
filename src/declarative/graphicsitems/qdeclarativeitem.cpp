@@ -794,44 +794,63 @@ void QDeclarativeKeyNavigationAttached::setFocusNavigation(QDeclarativeItem *cur
     \qmlclass LayoutMirroring QDeclarativeLayoutMirroringAttached
     \since QtQuick 1.1
     \ingroup qml-utility-elements
-    \brief The LayoutMirroring is used for mirroring the Qt Quick application layouts.
+    \brief The LayoutMirroring attached property is used to mirror layout behavior.
 
-    LayoutMirroring \l enabled property can be used to horizontally mirror \l {anchor-layout}{Item anchors},
-    \l{Using QML Positioner and Repeater Items}{Positioner} elements and QML views like \l {GridView}{GridView}
-    and horizontal \l {ListView}{ListView}. Mirroring is a visual change, left anchors will become
-    right anchors and left-to-right positioner will instead position child items from right to left.
-    By default setting the \l enabled property to true only affects the item in question. You can set property
-    LayoutDirection \l childrenInherit to true if you want the item children also inherit the mirror setting.
-    If no attached property has been defined, mirroring is disabled.
+    The LayoutMirroring attached property is used to horizontally mirror \l {anchor-layout}{Item anchors},
+    \l{Using QML Positioner and Repeater Items}{positioner} elements (such as \l Row and \l Grid)
+    and views (such as \l GridView and horizontal \l ListView). Mirroring is a visual change: left
+    anchors become right anchors, and positioner elements like \l Grid and \l Row reverse the
+    horizontal layout of child items.
 
-    The following example shows mirroring in action. When \l enabled is set to true, left anchor
-    becomes right, and \l {Row}{Row} starts positioning items in a reverse order:
+    Mirroring is enabled for an item by setting the \l enabled property to true. By default, this
+    only affects the item itself; setting the \l childrenInherit property to true propagates the mirroring
+    behavior to all child elements as well. If the \c LayoutMirroring attached property has not been defined
+    for an item, mirroring is not enabled.
+
+    The following example shows mirroring in action. The \l Row below is specified as being anchored
+    to the left of its parent. However, since mirroring has been enabled, the anchor is horizontally
+    reversed and it is now anchored to the right. Also, since items in a \l Row are positioned
+    from left to right by default, they are now positioned from right to left instead, as demonstrated
+    by the numbering and opacity of the items:
 
     \snippet doc/src/snippets/declarative/layoutmirroring.qml 0
 
-    Layout mirroring is useful when you need to support both left-to-right and right-to-left
-    layout versions of your application that target different language areas. Inheritance saves
-    you from having to mirror the layouts manually for each layout item in your application. Keep
-    in mind however that the mirroring does not affect the positioning done by modifying Item's x
-    co-ordinate directly, so even with the mirroring enabled you will often need to do some layout
-    fixes to support the other reading direction. Also, there are cases where you need to disable
-    mirroring of individual child items, either because mirroring is not the wanted behavior or
-    because the item already implements mirroring in some custom way.
+    \image layoutmirroring.png
+
+    Layout mirroring is useful when it is necessary to support both left-to-right and right-to-left
+    layout versions of an application to target different language areas. The \l childrenInherit
+    property allows layout mirroring to be applied without manually setting layout configurations
+    for every item in an application. Keep in mind, however, that mirroring does not affect any
+    positioning that is defined by the \l Item \l {Item::}{x} coordinate value, so even with
+    mirroring enabled, it will often be necessary to apply some layout fixes to support the
+    desired layout direction. Also, it may be necessary to disable the mirroring of individual
+    child items (by setting \l {enabled}{LayoutMirroring.enabled} to false for such items) if
+    mirroring is not the desired behavior, or if the child item already implements mirroring in
+    some custom way.
+
+    See \l {QML Right-to-left User Interfaces} for further details on using \c LayoutMirroring and
+    other related features to implement right-to-left support for an application.
 */
 
 /*!
     \qmlproperty bool LayoutMirroring::enabled
 
-    Setting this property to true mirrors item's layout horizontally, whether the layout is done
-    using \l {anchor-layout}{anchors}, \l{Using QML Positioner and Repeater Items}{Positioners}
-    or as a QML view \l {GridView}{GridView} or \l {ListView}{ListView}.
+    This property holds whether the item's layout is mirrored horizontally. Setting this to true
+    horizontally reverses \l {anchor-layout}{anchor} settings such that left anchors become right,
+    and right anchors become left. For \l{Using QML Positioner and Repeater Items}{positioner} elements
+    (such as \l Row and \l Grid) and view elements (such as \l {GridView}{GridView} and \l {ListView}{ListView})
+    this also mirrors the horizontal layout direction of the item.
+
+    The default value is false.
 */
 
 /*!
     \qmlproperty bool LayoutMirroring::childrenInherit
 
-    This property can be set to true if you want the item children
-    to inherit the item's mirror setting.
+    This property holds whether the \l {enabled}{LayoutMirroring.enabled} value for this item
+    is inherited by its children.
+
+    The default value is false.
 */
 
 QDeclarativeLayoutMirroringAttached::QDeclarativeLayoutMirroringAttached(QObject *parent) : QObject(parent), itemPrivate(0)
@@ -1606,7 +1625,7 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 
     \section1 Layout Mirroring
 
-    Item layouts can be mirrored using \l {LayoutMirroring}{LayoutMirroring} attached property.
+    Item layouts can be mirrored using the \l {LayoutMirroring}{LayoutMirroring} attached property.
 
 */
 

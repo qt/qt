@@ -276,8 +276,11 @@ bool TestConfigParser::isKnownSymbol(const QString &symbol)
             << "Q_OS_SOLARIS"
             << "Q_OS_WINCE"
             << "Q_OS_SYMBIAN"
+            << "Q_OS_MAC"
+            << "Q_OS_WIN"
             << "Q_CC_MSVC"
             << "Q_CC_MINGW"
+            << "Q_CC_INTEL"
             ;
     }
     return knownSymbols.contains(symbol);
@@ -299,11 +302,20 @@ bool TestConfigParser::isDefined(const QString &symbol)
 #ifdef Q_OS_SYMBIAN
             << "Q_OS_SYMBIAN"
 #endif
+#ifdef Q_OS_MAC
+            << "Q_OS_MAC"
+#endif
+#ifdef Q_OS_WIN
+            << "Q_OS_WIN"
+#endif
 #ifdef Q_CC_MSVC
             << "Q_CC_MSVC"
 #endif
 #ifdef Q_CC_MINGW
             << "Q_CC_MINGW"
+#endif
+#ifdef Q_CC_INTEL
+            << "Q_CC_INTEL"
 #endif
             ;
     }

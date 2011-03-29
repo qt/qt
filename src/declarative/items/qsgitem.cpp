@@ -1,4 +1,4 @@
-// Commit: 5c783d0a9a912816813945387903857a314040b5
+// Commit: 4a43b36160a76c4482a8693d421534df4a9bfc6e
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -270,7 +270,10 @@ void QSGItemKeyFilter::keyReleased(QKeyEvent *event, bool post)
 
 void QSGItemKeyFilter::inputMethodEvent(QInputMethodEvent *event, bool post)
 {
-    if (m_next) m_next->inputMethodEvent(event, post);
+    if (m_next)
+        m_next->inputMethodEvent(event, post);
+    else
+        event->ignore();
 }
 
 QVariant QSGItemKeyFilter::inputMethodQuery(Qt::InputMethodQuery query) const
@@ -750,7 +753,7 @@ void QSGKeysAttached::inputMethodEvent(QInputMethodEvent *event, bool post)
         }
         d->inIM = false;
     }
-    if (!event->isAccepted()) QSGItemKeyFilter::inputMethodEvent(event, post);
+    QSGItemKeyFilter::inputMethodEvent(event, post);
 }
 
 QVariant QSGKeysAttached::inputMethodQuery(Qt::InputMethodQuery query) const

@@ -504,6 +504,7 @@ DistanceFieldGlyphCache::DistanceFieldTextureData *DistanceFieldGlyphCache::text
 
 DistanceFieldGlyphCache::DistanceFieldGlyphCache(const QFont &font)
     : m_maxTextureSize(0)
+    , ctx(0)
     , m_blitProgram(0)
 {
     m_font = font;
@@ -549,8 +550,6 @@ DistanceFieldGlyphCache::DistanceFieldGlyphCache(const QFont &font)
     m_textureCoordinateArray[5] = 1.0f;
     m_textureCoordinateArray[6] = 0.0f;
     m_textureCoordinateArray[7] = 1.0f;
-
-    ctx = QSGContext::current->glContext();
 }
 
 qreal DistanceFieldGlyphCache::glyphMargin() const
@@ -820,6 +819,9 @@ void DistanceFieldGlyphCache::updateCache()
 {
     if (m_textureData->pendingGlyphs.isEmpty())
         return;
+
+    if (!ctx)
+        ctx = QSGContext::current->glContext();
 
     int requiredWidth = m_textureData->currY == 0 ? m_textureData->currX : maxTextureSize();
     int requiredHeight = qMin(maxTextureSize(), m_textureData->currY + QT_DISTANCEFIELD_TILESIZE);

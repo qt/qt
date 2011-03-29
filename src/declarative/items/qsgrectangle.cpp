@@ -1,4 +1,4 @@
-// Commit: 3d769613d5efc642ebfd8d5fe7c149834132fe65
+// Commit: 77342ad3e7beecb75c136ee26c0c77cd1a41b415
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -67,7 +67,7 @@ QColor QSGPen::color() const
 void QSGPen::setColor(const QColor &c)
 {
     _color = c;
-    _valid = _color.alpha() ? true : false;
+    _valid = (_color.alpha() && _width >= 1) ? true : false;
     emit penChanged();
 }
 
@@ -82,7 +82,7 @@ void QSGPen::setWidth(int w)
         return;
 
     _width = w;
-    _valid = (_width < 1) ? false : true;
+    _valid = (_color.alpha() && _width >= 1) ? true : false;
     emit penChanged();
 }
 

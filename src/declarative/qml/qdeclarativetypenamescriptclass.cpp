@@ -177,7 +177,7 @@ QDeclarativeTypeNameScriptClass::property(Object *obj, const Identifier &name)
     }
 }
 
-void QDeclarativeTypeNameScriptClass::setProperty(Object *o, const Identifier &n, const QScriptValue &v)
+void QDeclarativeTypeNameScriptClass::setProperty(Object *, const Identifier &n, const QScriptValue &v)
 {
     Q_ASSERT(!type);
 
@@ -187,7 +187,7 @@ void QDeclarativeTypeNameScriptClass::setProperty(Object *o, const Identifier &n
         ep->objectClass->setProperty(api->qobjectApi, n, v, context());
     } else {
         Q_ASSERT(object);
-        ep->objectClass->setProperty(((TypeNameData *)o)->object, n, v, context());
+        ep->objectClass->setProperty(object, n, v, context());
     }
 }
 

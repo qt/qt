@@ -68,6 +68,7 @@ QVolatileImageData::QVolatileImageData(void *, void *)
 }
 
 QVolatileImageData::QVolatileImageData(const QVolatileImageData &other)
+    : QSharedData()
 {
     image = other.image;
     // The detach is not mandatory here but we do it nonetheless in order to

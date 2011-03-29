@@ -1,4 +1,4 @@
-// Commit: 649e65519bef38948a818f282e3022d034dc80a5
+// Commit: a5c3c11e3e2204da6c8be9af98b38929366fafb8
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -1014,10 +1014,10 @@ QRectF QSGText::boundingRect() const
     case AlignTop:
         break;
     case AlignBottom:
-        rect.setY(h - rect.height());
+        rect.moveTop(h - rect.height());
         break;
     case AlignVCenter:
-        rect.setY((h - rect.height()) / 2);
+        rect.moveTop((h - rect.height()) / 2);
         break;
     }
 
