@@ -66,6 +66,10 @@ public:
     virtual NodeSubType subType() const { return GlyphNodeSubType; }
 
 private:
+    QGlyphs m_glyphs;
+    QPointF m_position;
+    QColor m_color;
+
     QPointF m_baseLine;
     TextMaskMaterial *m_material;
 

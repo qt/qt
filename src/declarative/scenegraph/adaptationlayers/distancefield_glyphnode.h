@@ -74,6 +74,7 @@ private:
     void updateFont();
     void updateMaterial();
 
+    QColor m_color;
     QPointF m_baseLine;
     DistanceFieldTextMaterial *m_material;
     QPointF m_position;
