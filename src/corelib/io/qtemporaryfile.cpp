@@ -181,17 +181,15 @@ static int createFileFromTemplate(char *const path,
             if (!*iter)
                 return -1;
             if (*iter == 'Z') {
+                *iter++ = 'a';
                 if (iter == placeholderEnd)
                     return -1;
-                *iter++ = 'a';
             } else {
                 if (isdigit(*iter))
                     *iter = 'a';
                 else if (*iter == 'z') /* inc from z to A */
                     *iter = 'A';
                 else {
-                    if (iter == placeholderEnd)
-                        return -1;
                     ++*iter;
                 }
                 break;
