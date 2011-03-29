@@ -251,7 +251,7 @@ QSGPlainTexture::~QSGPlainTexture()
         glDeleteTextures(1, &m_texture_id);
 }
 
-
+#ifdef QT_OPENGL_ES
 static void swizzleBGRAToRGBA(QImage *image)
 {
     const int width = image->width();
@@ -262,6 +262,7 @@ static void swizzleBGRAToRGBA(QImage *image)
             p[x] = ((p[x] << 16) & 0xff0000) | ((p[x] >> 16) & 0xff) | (p[x] & 0xff00ff00);
     }
 }
+#endif
 
 void QSGPlainTexture::setImage(const QImage &image)
 {
