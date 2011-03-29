@@ -1747,7 +1747,7 @@ MakefileGenerator::writeExtraTargets(QTextStream &t)
             deps += " " + escapeDependencyPath(dep);
         }
         if(project->values((*it) + ".CONFIG").indexOf("fix_target") != -1)
-            targ = fileFixify(targ);
+            targ = fileFixify(targ, Option::output_dir, Option::output_dir);
         if(project->isEmpty("QMAKE_NOFORCE") &&
            project->values((*it) + ".CONFIG").indexOf("phony") != -1)
             deps += QString(" ") + "FORCE";
