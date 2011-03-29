@@ -247,7 +247,7 @@ void QXcbConnection::eventDispatcher()
             break;
         default:
             handled = false;
-            return;
+            break;
         }
         if (handled)
             printXcbEvent("Handled XCB event", event);
