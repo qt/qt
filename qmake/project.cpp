@@ -1345,10 +1345,10 @@ QMakeProject::read(uchar cmd)
             }
 
             if(QDir::isRelativePath(qmakespec)) {
-                if (QFile::exists(qmakespec+"/qmake.conf")) {
-                    Option::mkfile::qmakespec = QFileInfo(Option::mkfile::qmakespec).absoluteFilePath();
-                } else if (QFile::exists(Option::output_dir+"/"+qmakespec+"/qmake.conf")) {
+                if (QFile::exists(Option::output_dir+"/"+qmakespec+"/qmake.conf")) {
                     qmakespec = Option::mkfile::qmakespec = QFileInfo(Option::output_dir+"/"+qmakespec).absoluteFilePath();
+                } else if (QFile::exists(qmakespec+"/qmake.conf")) {
+                    Option::mkfile::qmakespec = QFileInfo(Option::mkfile::qmakespec).absoluteFilePath();
                 } else {
                     bool found_mkspec = false;
                     for(QStringList::ConstIterator it = mkspec_roots.begin(); it != mkspec_roots.end(); ++it) {
