@@ -492,7 +492,14 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
             qDebug() << "Found EGL_NOK_swap_region2 extension. Using partial updates.";
     }
 
-    d_ptr->destructive_swap_buffers = !swapBehaviourPreserved;
+    d_ptr->destructive_swap_buffers = true;
+    if (ctx->d_func()->eglContext->configAttrib(EGL_SURFACE_TYPE)&EGL_SWAP_BEHAVIOR_PRESERVED_BIT) {
+        EGLint swapBehavior;
+        if (eglQuerySurface(ctx->d_func()->eglContext->display(), ctx->d_func()->eglSurface
+                            , EGL_SWAP_BEHAVIOR, &swapBehavior)) {
+            d_ptr->destructive_swap_buffers = (swapBehavior != EGL_BUFFER_PRESERVED);
+        }
+    }
 
     d_ptr->swap_region_support = haveNOKSwapRegion;
 #endif
@@ -910,7 +917,7 @@ void QGLWindowSurface::updateGeometry() {
                                            ctx->d_func()->eglContext->config());
 
         eglGetError();  // Clear error state.
-        if (hasPartialUpdateSupport()) {
+        if (!d_ptr->destructive_swap_buffers) {
             eglSurfaceAttrib(ctx->d_func()->eglContext->display(),
                                             ctx->d_func()->eglSurface,
                                             EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
