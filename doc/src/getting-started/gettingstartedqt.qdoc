@@ -105,12 +105,13 @@
 
     This will leave an executable in the \c part1 directory (note that
     on Windows, you may have to use \c nmake instead of \c make. Also,
-    the executable will be placed in part1/debug or part1/release). \c
-    qmake is Qt's build tool, which takes a configuration file. \c
-    qmake generates this for us when given the \c{-project} argument.
-    Given the configuration file (suffixed .pro), \c qmake produces a
-    \c make file that will build the program for you. We will look
-    into writing our own \c .pro files later.
+    the executable will be placed in part1\\debug or part1\\release
+    (these directories are created when you run \c make). \c qmake is
+    Qt's build tool, which takes a configuration file. \c qmake
+    generates this for us when given the \c{-project} argument. Given
+    the configuration file (suffixed .pro), \c qmake produces a \c
+    make file that will build the program for you. We will look into
+    writing our own \c .pro files later.
 
     \section2 Learn More
 
@@ -245,28 +246,28 @@
     parameter types and invoke it.
 
     Line 13 declares the slot \c quit(). This is easy using the \c
-    slots macro. The \c quit() slot can now be connected to signals
-    with a matching signature (any signal that takes no parameters).
+    slots macro. The \c quit() slot can now be connected to signals.
+    We will do that later.
 
     Instead of setting up the GUI and connecting the slot in the \c
     main() function, we now use \c{Notepad}'s constructor. 
 
     \code
-        Notepad::Notepad()
-        {
-            textEdit = new QTextEdit;
-            quitButton = new QPushButton(tr("Quit"));
-
-            connect(quitButton, SIGNAL(clicked()), this, SLOT(quit()));
-
-            QVBoxLayout *layout = new QVBoxLayout;
-            layout->addWidget(textEdit);
-            layout->addWidget(quitButton);
-
-            setLayout(layout);
-
-            setWindowTitle(tr("Notepad"));
-        }
+20        Notepad::Notepad()
+21        {
+22            textEdit = new QTextEdit;
+23            quitButton = new QPushButton(tr("Quit"));
+24
+25            connect(quitButton, SIGNAL(clicked()), this, SLOT(quit()));
+26
+27            QVBoxLayout *layout = new QVBoxLayout;
+28            layout->addWidget(textEdit);
+29            layout->addWidget(quitButton);
+30
+31            setLayout(layout);
+32
+33            setWindowTitle(tr("Notepad"));
+34        }
     \endcode
 
     As you saw in the class definition, we use pointers to our \l
@@ -277,7 +278,9 @@
     visible strings. This function is necessary when you want to
     provide your application in more than one language (e.g.  English
     and Chinese). We will not go into details here, but you can follow
-    the \c {Qt Linguist} link from the learn more table.
+    the \c {Qt Linguist} link from the learn more table. We will not
+    look at the implementation of \c quit() slot and the \c main()
+    function, but you can check out the source code if you want to.
 
     \section2 Learn More
 
@@ -305,9 +308,9 @@
     using \c qmake's \c -project option.
 
     \code
-        HEADERS =  notepad.h
-        SOURCES =  notepad.cpp \
-                   main.cpp
+ 1        HEADERS =  notepad.h
+ 2        SOURCES =  notepad.cpp \
+ 3                   main.cpp
     \endcode
 
     The following shell commands build the example.
@@ -330,29 +333,29 @@
     Let us look at the new \c Notepad class definition.
 
     \code
-        #include <QtGui>
-
-        class Notepad : public QMainWindow
-        {
-            Q_OBJECT
-
-        public:
-            Notepad();
-
-        private slots:
-            void open();
-            void save();
-            void quit();
-
-        private:
-            QTextEdit *textEdit;
-
-            QAction *openAction;
-            QAction *saveAction;
-            QAction *exitAction;
-
-            QMenu *fileMenu;
-        };
+ 2        #include <QtGui>
+ 3 
+ 4        class Notepad : public QMainWindow
+ 5        {
+ 6            Q_OBJECT
+ 7 
+ 8        public:
+ 9            Notepad();
+10
+11        private slots:
+12            void open();
+13            void save();
+14            void quit();
+15
+16        private:
+17            QTextEdit *textEdit;
+18
+19            QAction *openAction;
+20            QAction *saveAction;
+21            QAction *exitAction;
+22
+23            QMenu *fileMenu;
+24        };
     \endcode
 
     We include two more slots that can save and open a document. We
@@ -369,27 +372,27 @@
     GUI.
 
     \code
-        Notepad::Notepad()
-        {
-            saveAction = new QAction(tr("&Open"), this);
-            saveAction = new QAction(tr("&Save"), this);
-            exitAction = new QAction(tr("E&xit"), this);
-
-            connect(openAction, SIGNAL(triggered()), this, SLOT(open()));
-            connect(saveAction, SIGNAL(triggered()), this, SLOT(save()));
-            connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-
-            fileMenu = menuBar()->addMenu(tr("&File"));
-            fileMenu->addAction(openAction);
-            fileMenu->addAction(saveAction);
-            fileMenu->addSeparator();
-            fileMenu->addAction(exitAction);
-
-            textEdit = new QTextEdit;
-            setCentralWidget(textEdit);
-
-            setWindowTitle(tr("Notepad"));
-        }
+25        Notepad::Notepad()
+26        {
+27            saveAction = new QAction(tr("&Open"), this);
+28            saveAction = new QAction(tr("&Save"), this);
+29            exitAction = new QAction(tr("E&xit"), this);
+30
+31            connect(openAction, SIGNAL(triggered()), this, SLOT(open()));
+32            connect(saveAction, SIGNAL(triggered()), this, SLOT(save()));
+33            connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+34
+35            fileMenu = menuBar()->addMenu(tr("&File"));
+36            fileMenu->addAction(openAction);
+37            fileMenu->addAction(saveAction);
+38            fileMenu->addSeparator();
+39            fileMenu->addAction(exitAction);
+40
+41            textEdit = new QTextEdit;
+42            setCentralWidget(textEdit);
+43
+44            setWindowTitle(tr("Notepad"));
+45        }
     \endcode
 
     \l{QAction}s are created with the text that should appear on the
@@ -426,28 +429,29 @@
     We will start with the \c open() slot:
 
     \code
-        QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
-            tr("Text Files (*.txt);;C++ Files (*.cpp *.h)"));
-
-        if (fileName != "") {
-            QFile file(fileName);
-            if (!file.open(QIODevice::ReadOnly)) {
-                QMessageBox::critical(this, tr("Error"),
-                    tr("Could not open file"));
-                return; 
-            }
-            QString contents = file.readAll().constData();
-            textEdit->setPlainText(contents);
-            file.close();
-        }
+48    void Notepad::open()
+49    {
+50        QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
+51            tr("Text Files (*.txt);;C++ Files (*.cpp *.h)"));
+52
+53        if (fileName != "") {
+54            QFile file(fileName);
+55            if (!file.open(QIODevice::ReadOnly)) {
+56                QMessageBox::critical(this, tr("Error"), tr("Could not open file"));
+57                return;
+58            }
+59            QTextStream in(&file);
+60            textEdit->setText(in.readAll());
+61            file.close();
+62        }
+63    }
     \endcode
 
     The first step is asking the user for the name of the file to
     open. Qt comes with QFileDialog, which is a dialog from which the
     user can select a file. The image above shows the dialog on
     Kubuntu. The static \l{QFileDialog::}{getOpenFileName()} function
-    displays a modal file dialog, and does not return until the user
-    has selected a file. It returns the file path of the file
+    displays a modal file dialog. It returns the file path of the file
     selected, or an empty string if the user canceled the dialog. 
 
     If we have a file name, we try to open the file with
@@ -458,38 +462,38 @@
     message (see the QMessageBox class description for further
     details).
 
-    Actually reading in the data is trivial using the
-    \l{QIODevice::}{readAll()} function, which returns all data in the
-    file in a QByteArray. The \l{QByteArray::}{constData()} returns all
-    data in the array as a const char*, which QString has a
-    constructor for. The contents can then be displayed in the text
+    Actually reading in the data is trivial using the QTextStream
+    class, which wraps the QFile object. The
+    \l{QTextStream::}{readAll()} function returns the contents of the
+    file as a QString. The contents can then be displayed in the text
     edit. We then \l{QIODevice::}{close()} the file to return the file
     descriptor back to the operating system.
 
     Now, let us move on to the the \c save() slot.
 
     \code
-        QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "",
-            tr("Text Files (*.txt);;C++ Files (*.cpp *.h)"));
-
-        if (fileName != "") {
-            QFile file(fileName);
-            if (!file.open(QIODevice::WriteOnly)) {
-                // error message
-            } else {
-                QTextStream stream(&file);
-                stream << textEdit->toPlainText();
-                stream.flush();
-                file.close();
-            }
-        }
+65    void Notepad::save()
+66    {
+67        QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "",
+68        tr("Text Files (*.txt);;C++ Files (*.cpp *.h)"));
+69
+70        if (fileName != "") {
+71            QFile file(fileName);
+72            if (!file.open(QIODevice::WriteOnly)) {
+73                // error message
+74            } else {
+75                QTextStream stream(&file);
+76                stream << textEdit->toPlainText();
+77                stream.flush();
+78                file.close();
+79            }
+80        }
+81    }
     \endcode
 
     When we write the contents of the text edit to the file, we use
-    the QTextStream class, which wraps the QFile object. The text
-    stream can write QStrings directly to the file; QFile only accepts
-    raw data (char*) with the \l{QIODevice::}{write()} functions of
-    QIODevice.
+    the QTextStream class again. QTextStream can also write
+    \l{QString}s to the file with the << operator.
 
     \section2 Learn More
 

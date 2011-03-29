@@ -301,3 +301,20 @@
     \externalpage http://qt.nokia.com/developer/learning/online/training/training-day-at-developer-days-2009/
     \title Training Day at Qt Developer Days 2009
 */
+/*!
+    \externalpage http://doc.qt.nokia.com/qtmobility/all-examples.html
+    \title external: Qt Mobility Examples
+*/
+/*!
+    \externalpage http://qt.nokia.com/developer/learning/online/training
+    \title Qt eLearning
+*/
+/*!
+    \externalpage http://qt.nokia.com/developer/learning/online/training
+    \title Qt eLearning Training Materials
+*/
+/*!
+    \externalpage http://qt.nokia.com/developer/learning/online/talks/developerdays2010
+    \title Qt Developer Days 2010
+*/
+
