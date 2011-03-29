@@ -1,4 +1,4 @@
-// Commit: ab71df83ba4eb9d749efc0f3a2d4a0fe5486023f
+// Commit: 695a39410c8ce186a2ce78cef51093c55fc32643
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -131,7 +131,7 @@ QSize QSGImageBase::sourceSize() const
 
     int width = d->sourcesize.width();
     int height = d->sourcesize.height();
-    return QSize(width != -1 ? width : implicitWidth(), height != -1 ? height : implicitHeight());
+    return QSize(width != -1 ? width : d->pix.width(), height != -1 ? height : d->pix.height());
 }
 
 bool QSGImageBase::cache() const

@@ -1,4 +1,4 @@
-// Commit: 5ddfe819e93462eff396c24d10c0446c4cd9b0ac
+// Commit: 695a39410c8ce186a2ce78cef51093c55fc32643
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -146,14 +146,16 @@ void QSGImage::updatePaintedGeometry()
     if (d->fillMode == PreserveAspectFit) {
         if (!d->pix.width() || !d->pix.height())
             return;
-        qreal widthScale = width() / qreal(d->pix.width());
-        qreal heightScale = height() / qreal(d->pix.height());
+        qreal w = widthValid() ? width() : d->pix.width();
+        qreal widthScale = w / qreal(d->pix.width());
+        qreal h = heightValid() ? height() : d->pix.height();
+        qreal heightScale = h / qreal(d->pix.height());
         if (widthScale <= heightScale) {
-            d->paintedWidth = width();
+            d->paintedWidth = w;
             d->paintedHeight = widthScale * qreal(d->pix.height());
         } else if(heightScale < widthScale) {
             d->paintedWidth = heightScale * qreal(d->pix.width());
-            d->paintedHeight = height();
+            d->paintedHeight = h;
         }
         if (widthValid() && !heightValid()) {
             setImplicitHeight(d->paintedHeight);
