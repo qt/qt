@@ -2460,7 +2460,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         //qmake it
         if(!subtarget->profile.isEmpty()) {
             QString out = subtarget->makefile;
-            QString in = fileFixify(in_directory + subtarget->profile, out_directory, QString(), FileFixifyAbsolute);
+            QString in = fileFixify(in_directory + subtarget->profile, FileFixifyAbsolute);
             if(out.startsWith(in_directory))
                 out = out.mid(in_directory.length());
             t << mkfile << ": " << "\n\t";
