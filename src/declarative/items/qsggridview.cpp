@@ -636,7 +636,7 @@ void QSGGridViewPrivate::refill(qreal from, qreal to, bool doBuffer)
     if (!lazyRelease || !changed || deferredRelease) { // avoid destroying items in the same frame that we create
         while (visibleItems.count() > 1
                && (item = visibleItems.first())
-                    && item->endRowPos() < bufferFrom - rowSize()*(item->colPos()/colSize()+1)/(columns+1)) {
+                    && item->rowPos()+rowSize()-1 < bufferFrom - rowSize()*(item->colPos()/colSize()+1)/(columns+1)) {
             if (item->attached->delayRemove())
                 break;
 //            qDebug() << "refill: remove first" << visibleIndex << "top end pos" << item->endRowPos();
@@ -648,7 +648,7 @@ void QSGGridViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         }
         while (visibleItems.count() > 1
                && (item = visibleItems.last())
-                    && item->rowPos()+rowSize()-1 < bufferFrom - rowSize()*(item->colPos()/colSize()+1)/(columns+1)) {
+                    && item->rowPos() > bufferTo + rowSize()*(columns - item->colPos()/colSize())/(columns+1)) {
             if (item->attached->delayRemove())
                 break;
 //            qDebug() << "refill: remove last" << visibleIndex+visibleItems.count()-1;
