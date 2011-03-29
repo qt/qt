@@ -364,7 +364,7 @@ MakefileGenerator::findFilesInVPATH(QStringList l, uchar flags, const QString &v
                     dir = regex.left(regex.lastIndexOf(Option::dir_sep) + 1);
                     real_dir = dir;
                     if(!(flags & VPATH_NoFixify))
-                        real_dir = fileFixify(real_dir, qmake_getpwd(), Option::output_dir);
+                        real_dir = fileFixify(real_dir, qmake_getpwd(), Option::output_dir) + '/';
                     regex.remove(0, dir.length());
                 }
                 if(real_dir.isEmpty() || exists(real_dir)) {
@@ -383,16 +383,15 @@ MakefileGenerator::findFilesInVPATH(QStringList l, uchar flags, const QString &v
                         for(int i = (int)files.count()-1; i >= 0; i--) {
                             if(files[i] == "." || files[i] == "..")
                                 continue;
-                            a = dir + files[i];
+                            a = real_dir + files[i];
                             if(!(flags & VPATH_NoFixify))
                                 a = fileFixify(a);
                             l.insert(val_it, a);
                         }
                     }
                 } else {
-                    debug_msg(1, "%s:%d Cannot match %s%c%s, as %s does not exist.",
+                    debug_msg(1, "%s:%d Cannot match %s%s, as %s does not exist.",
                               __FILE__, __LINE__, real_dir.toLatin1().constData(),
-                              QDir::separator().toLatin1(),
                               regex.toLatin1().constData(), real_dir.toLatin1().constData());
                     if(flags & VPATH_RemoveMissingFiles)
                         remove_file = true;
