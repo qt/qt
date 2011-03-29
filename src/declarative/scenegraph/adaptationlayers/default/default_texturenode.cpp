@@ -222,7 +222,9 @@ void TextureProviderMaterialWithOpacityShader::initialize()
 
 
 DefaultTextureNode::DefaultTextureNode()
-    : m_dirtyGeometry(false)
+    : m_texture(0)
+    , m_sourceRect(0, 0, 1, 1)
+    , m_dirtyGeometry(false)
     , m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4)
 {
     setMaterial(&m_materialO);

@@ -82,51 +82,12 @@ class QSGTextureProvider;
 class Q_DECLARATIVE_EXPORT TextureNodeInterface : public GeometryNode
 {
 public:
-    TextureNodeInterface() : m_texture(0), m_sourceRect(0, 1, 1, -1) { }
-
     virtual void setTargetRect(const QRectF &rect) = 0;
-    QRectF targetRect() const { return m_targetRect; }
-
-    // Normalized source coordinates..
     virtual void setSourceRect(const QRectF &rect) = 0;
-    QRectF sourceRect() const { return m_sourceRect; }
-
     virtual void setTexture(QSGTextureProvider *texture) = 0;
-    QSGTextureProvider *texture() const { return m_texture; }
-
     virtual NodeSubType subType() const { return TextureNodeInterfaceSubType; }
-
     virtual void update() = 0;
-
-protected:
-    QSGTextureProvider *m_texture;
-    QRectF m_targetRect;
-    QRectF m_sourceRect;
 };
-
-
-//typedef QSharedPointer<const QGLTexture2D> QGLTexture2DConstPtr;
-//typedef QSharedPointer<QGLTexture2D> QGLTexture2DPtr;
-
-//class TextureAtlasInterface
-//{
-//public:
-//    enum Flag
-//    {
-//        DynamicFlag = 0x01 // Set if images are added to the texture atlas every few frames.
-//    };
-
-//    TextureAtlasInterface(uint flags) : m_flags(flags) { }
-//    virtual ~TextureAtlasInterface() { }
-
-//    virtual QGLTexture2DConstPtr texture() = 0;
-//    virtual QRect allocate(const QImage &image, bool clampToEdge) = 0;
-//    virtual void deallocate(const QRect &rect) = 0;
-
-//    uint flags() const { return m_flags; }
-//protected:
-//    uint m_flags;
-//};
 
 
 class Q_DECLARATIVE_EXPORT GlyphNodeInterface: public GeometryNode
