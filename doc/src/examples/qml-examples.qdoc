@@ -270,23 +270,55 @@
 */
 
 /*!
-    \title Positioners: Adding and Removing Items Example
-    \example declarative/positioners/addandremove
+    \title Right-to-left User Interfaces: Text Alignment Example
+    \example declarative/righttoleft/textalignment
 
-    This example shows how to use the positioner elements such as \l Row, \l Column,
-    \l Grid and \l Flow, in particular how to add and remove items with appropriate transitions.
+    This example shows how the horizontal alignment of \l Text,
+    \l TextInput and \l TextEdit is affected by the reading direction
+    of the text and by the layout mirrroring. Click on the gray buttons
+    shown at the bottom of the example to toggle between different
+    horizontal alignment options.
 
-    \image qml-positioners-example.png
+    \sa {QML Right-to-left User Interfaces}
 */
 
 /*!
-    \title Positioners: Layout Direction Example
-    \example declarative/positioners/layoutdirection
+    \title Right-to-left User Interfaces: Layout Direction Example
+    \example declarative/righttoleft/layoutdirection
 
     This example shows how to control the horizontal layout direction of 
-    \l Row, \l Grid and \l Flow positioners.
+    \l Row, \l Grid and \l Flow positioners, and \l ListView and \l GridView
+    model views. Click on the gray buttons shown at the bottom of the example
+    to toggle the layout direction of the shown elements.
 
-    \image qml-positioners-layoutdirection-example.png
+    \image qml-righttoleft-layoutdirection-example.png
+
+    \sa {QML Right-to-left User Interfaces}
+*/
+
+
+/*!
+    \title Right-to-left User Interfaces: Layout Mirroring Example
+    \example declarative/righttoleft/layoutmirroring
+
+    This example shows how to mirror the application layouts
+    using \l LayoutMirroring attached property. Click on the grey button
+    shown at the bottom of the example to enable or disable the
+    layout mirroring.
+
+    \image qml-righttoleft-layoutmirroring-example.png
+
+    \sa {QML Right-to-left User Interfaces}
+*/
+
+/*!
+    \title Positioners Example
+    \example declarative/positioners
+
+    This example shows how to use the positioner elements such as \l Row, \l Column,
+    \l Grid and \l Flow.
+
+    \image qml-positioners-example.png
 */
 
 /*!
@@ -456,7 +488,7 @@
 
 
 /*!
-    \title Screen orientation
+    \title Screen Orientation
     \example declarative/screenorientation
 
     This example shows how to implement screen orientation support for your application.

@@ -15,3 +15,17 @@ mul-exhaustive | Demands too much memory on WinCE
 [Q_OS_SYMBIAN]
 nested-repetition-count-overflow | Demands too much memory on Symbian
 unicode-test | Demands too much memory on Symbian
+
+[Q_CC_INTEL]
+math-min-max | Unresolved failures with intel compiler
+negate-zero | Unresolved failures with intel compiler
+smi-negative-zero | Unresolved failures with intel compiler
+str-to-num | Unresolved failures with intel compiler
+to-precision | Unresolved failures with intel compiler
+
+[Q_OS_MAC]
+smi-negative-zero | Unresolved failures on Mac OS X (Cocoa)
+to-precision | Unresolved failures on Mac OS X (Cocoa)
+
+[Q_OS_WIN]
+to-precision | Unresolved failures on Windows

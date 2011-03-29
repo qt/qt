@@ -54,6 +54,10 @@
 
 QT_BEGIN_NAMESPACE
 
+
+// ### Qt 5: see tests/benchmarks/corelib/tools/qhash/qhash_string.cpp
+// Hashing of the whole string is a waste of cycles.
+
 /*
     These functions are based on Peter J. Weinberger's hash function
     (from the Dragon Book). The constant 24 in the original function

@@ -179,6 +179,7 @@ private slots:
     void aliasBindingsOverrideTarget();
     void aliasWritesOverrideBindings();
     void pushCleanContext();
+    void realToInt();
 
     void include();
 
@@ -660,17 +661,31 @@ void tst_qdeclarativeecmascript::overrideExtensionProperties()
 
 void tst_qdeclarativeecmascript::attachedProperties()
 {
-    QDeclarativeComponent component(&engine, TEST_FILE("attachedProperty.qml"));
-    QObject *object = component.create();
-    QVERIFY(object != 0);
-    QCOMPARE(object->property("a").toInt(), 19);
-    QCOMPARE(object->property("b").toInt(), 19);
-    QCOMPARE(object->property("c").toInt(), 19);
-    QCOMPARE(object->property("d").toInt(), 19);
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("attachedProperty.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+        QCOMPARE(object->property("a").toInt(), 19);
+        QCOMPARE(object->property("b").toInt(), 19);
+        QCOMPARE(object->property("c").toInt(), 19);
+        QCOMPARE(object->property("d").toInt(), 19);
+    }
 
-    delete object;
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("writeAttachedProperty.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
 
-    // ### Need to test attached property assignment
+        delete object;
+
+        QMetaObject::invokeMethod(object, "writeValue2");
+
+        MyQmlAttachedObject *attached =
+            qobject_cast<MyQmlAttachedObject *>(qmlAttachedPropertiesObject<MyQmlObject>(object));
+        QVERIFY(attached != 0);
+
+        QCOMPARE(attached->value2(), 9);
+    }
 }
 
 void tst_qdeclarativeecmascript::enums()
@@ -3428,6 +3443,18 @@ void tst_qdeclarativeecmascript::pushCleanContext()
     // Check that function objects created in these contexts work
     QCOMPARE(func1.call().toInt32(), 15);
     QCOMPARE(func2.call().toInt32(), 6);
+}
+
+void tst_qdeclarativeecmascript::realToInt()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("realToInt.qml"));
+    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
+    QVERIFY(object != 0);
+
+    QMetaObject::invokeMethod(object, "test1");
+    QCOMPARE(object->value(), int(4));
+    QMetaObject::invokeMethod(object, "test2");
+    QCOMPARE(object->value(), int(8));
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)

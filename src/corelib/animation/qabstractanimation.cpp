@@ -167,7 +167,7 @@ Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer)
 
 QUnifiedTimer::QUnifiedTimer() :
     QObject(), defaultDriver(this), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL),
-    insideTick(false), currentAnimationIdx(0), consistentTiming(false), slowMode(false),
+    currentAnimationIdx(0), insideTick(false), consistentTiming(false), slowMode(false),
     slowdownFactor(5.0f), isPauseTimerActive(false), runningLeafAnimations(0)
 {
     time.invalidate();

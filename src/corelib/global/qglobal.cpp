@@ -1876,7 +1876,7 @@ QSysInfo::SymbianVersion QSysInfo::symbianVersion()
                 else if (minor == 1) {
                     return cachedSymbianVersion = SV_SF_2;
                 }
-                else if (minor == 2) {
+                else if (minor >= 2) {
                     return cachedSymbianVersion = SV_SF_3;
                 }
             }

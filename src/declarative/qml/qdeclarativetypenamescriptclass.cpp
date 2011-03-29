@@ -177,7 +177,7 @@ QDeclarativeTypeNameScriptClass::property(Object *obj, const Identifier &name)
     }
 }
 
-void QDeclarativeTypeNameScriptClass::setProperty(Object *o, const Identifier &n, const QScriptValue &v)
+void QDeclarativeTypeNameScriptClass::setProperty(Object *, const Identifier &n, const QScriptValue &v)
 {
     Q_ASSERT(!type);
 
