@@ -124,6 +124,7 @@ public:
         manifestWriter.writeNamespace(manifestNS, QString::fromLatin1("manifest"));
         manifestWriter.writeStartDocument();
         manifestWriter.writeStartElement(manifestNS, QString::fromLatin1("manifest"));
+        manifestWriter.writeAttribute(manifestNS, QString::fromLatin1("version"), QString::fromLatin1("1.2"));
         addFile(QString::fromLatin1("/"), QString::fromLatin1("application/vnd.oasis.opendocument.text"));
         addFile(QString::fromLatin1("content.xml"), QString::fromLatin1("text/xml"));
     }
@@ -778,6 +779,7 @@ bool QTextOdfWriter::writeAll()
     writer.writeNamespace(svgNS, QString::fromLatin1("svg"));
     writer.writeStartDocument();
     writer.writeStartElement(officeNS, QString::fromLatin1("document-content"));
+    writer.writeAttribute(officeNS, QString::fromLatin1("version"), QString::fromLatin1("1.2"));
 
     // add fragments. (for character formats)
     QTextDocumentPrivate::FragmentIterator fragIt = m_document->docHandle()->begin();
