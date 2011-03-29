@@ -1890,7 +1890,11 @@ void tst_qsgtextinput::openInputPanelOnClick()
 {
     QSGView view(QUrl::fromLocalFile(SRCDIR "/data/openInputPanel.qml"));
     MyInputContext ic;
+    // QSGCanvas won't set the Qt::WA_InputMethodEnabled flag unless a suitable item has focus
+    // and QWidget won't allow an input context to be set when the flag is not set.
+    view.setAttribute(Qt::WA_InputMethodEnabled, true);
     view.setInputContext(&ic);
+    view.setAttribute(Qt::WA_InputMethodEnabled, false);
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
@@ -1932,7 +1936,11 @@ void tst_qsgtextinput::openInputPanelOnFocus()
 {
     QSGView view(QUrl::fromLocalFile(SRCDIR "/data/openInputPanel.qml"));
     MyInputContext ic;
+    // QSGCanvas won't set the Qt::WA_InputMethodEnabled flag unless a suitable item has focus
+    // and QWidget won't allow an input context to be set when the flag is not set.
+    view.setAttribute(Qt::WA_InputMethodEnabled, true);
     view.setInputContext(&ic);
+    view.setAttribute(Qt::WA_InputMethodEnabled, false);
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
