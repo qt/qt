@@ -307,11 +307,6 @@ QPoint QWindowSurface::offset(const QWidget *widget) const
   window surface.
 */
 
-bool QWindowSurface::hasStaticContentsSupport() const
-{
-    return false;
-}
-
 void QWindowSurface::setStaticContents(const QRegion &region)
 {
     d_ptr->staticContents = region;
@@ -324,22 +319,12 @@ QRegion QWindowSurface::staticContents() const
 
 bool QWindowSurface::hasStaticContents() const
 {
-    return hasStaticContentsSupport() && !d_ptr->staticContents.isEmpty();
+    return hasFeature(QWindowSurface::StaticContents) && !d_ptr->staticContents.isEmpty();
 }
 
-bool QWindowSurface::hasPartialUpdateSupport() const
+QWindowSurface::WindowSurfaceFeatures QWindowSurface::features() const
 {
-    return true;
-}
-
-/*!
-  Says whether the window surface's contents are preserved on flush.
-  If not, the window surface contents need to be fully repainted before the
-  next flush.
-*/
-bool QWindowSurface::hasPreservedContents() const
-{
-    return hasPartialUpdateSupport();
+    return PartialUpdates | PreservedContents;
 }
 
 #ifdef Q_WS_QPA

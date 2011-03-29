@@ -1154,14 +1154,14 @@ QImage *QGLWindowSurface::buffer(const QWidget *widget)
     return &d_ptr->buffers.last();
 }
 
-bool QGLWindowSurface::hasPartialUpdateSupport() const
+QWindowSurface::WindowSurfaceFeatures QGLWindowSurface::features() const
 {
-    return !d_ptr->destructive_swap_buffers || d_ptr->swap_region_support;
-}
-
-bool QGLWindowSurface::hasPreservedContents() const
-{
-    return !d_ptr->destructive_swap_buffers;
+    WindowSurfaceFeatures features = 0;
+    if (!d_ptr->destructive_swap_buffers || d_ptr->swap_region_support)
+        features |= PartialUpdates;
+    if (!d_ptr->destructive_swap_buffers)
+        features |= PreservedContents;
+    return features;
 }
 
 QT_END_NAMESPACE
