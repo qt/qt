@@ -483,19 +483,22 @@ MakefileGenerator::init()
                              subs.at(i).toLatin1().constData());
                     continue;
                 }
-                inn = tinn.first();
-                outn = toutn.first();
+                inn = fileFixify(tinn.first(), qmake_getpwd());
+                outn = fileFixify(toutn.first(), qmake_getpwd(), Option::output_dir);
             } else {
-                inn = subs.at(i);
+                inn = fileFixify(subs.at(i), qmake_getpwd());
+                if (!QFile::exists(inn)) {
+                    // random insanity for backwards compat: .in file specified with absolute out dir
+                    inn = fileFixify(subs.at(i));
+                }
                 if(!inn.endsWith(".in")) {
                     warn_msg(WarnLogic, "Substitute '%s' does not end with '.in'",
                              inn.toLatin1().constData());
                     continue;
                 }
-                outn = inn.left(inn.length()-3);
+                outn = fileFixify(inn.left(inn.length()-3), qmake_getpwd(), Option::output_dir);
             }
-            QFile in(fileFixify(inn));
-            QFile out(fileFixify(outn, qmake_getpwd(), Option::output_dir));
+            QFile in(inn);
             if(in.open(QFile::ReadOnly)) {
                 QString contents;
                 QStack<int> state;
@@ -547,6 +550,7 @@ MakefileGenerator::init()
                         contents += project->expand(line, in.fileName(), count);
                     }
                 }
+                QFile out(outn);
                 if(out.exists() && out.open(QFile::ReadOnly)) {
                     QString old = QString::fromUtf8(out.readAll());
                     if(contents == old) {
