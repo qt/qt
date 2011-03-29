@@ -176,6 +176,7 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
 
 #if !defined(Q_OS_MAC) && _POSIX_VERSION < 200809L
     // realpath(X,0) is not supported
+    Q_UNUSED(data);
     return QFileSystemEntry(slowCanonicalized(absoluteName(entry).filePath()));
 #else
     char *ret = 0;

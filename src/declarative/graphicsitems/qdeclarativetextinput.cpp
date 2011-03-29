@@ -399,10 +399,10 @@ bool QDeclarativeTextInputPrivate::setHAlign(QDeclarativeTextInput::HAlignment a
     if ((hAlign != alignment || forceAlign) && alignment <= QDeclarativeTextInput::AlignHCenter) { // justify not supported
         QDeclarativeTextInput::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
         hAlign = alignment;
-        return true;
         emit q->horizontalAlignmentChanged(alignment);
         if (oldEffectiveHAlign != q->effectiveHAlign())
             emit q->effectiveHorizontalAlignmentChanged();
+        return true;
     }
     return false;
 }

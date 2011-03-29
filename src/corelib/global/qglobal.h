@@ -755,7 +755,7 @@ namespace QT_NAMESPACE {}
 #      define Q_DECL_IMPORT     __declspec(dllimport)
 #    endif
 #    if __HP_aCC-0 >= 061200
-#      define Q_DECL_ALIGNED(n) __attribute__((aligned(n)))
+#      define Q_DECL_ALIGN(n) __attribute__((aligned(n)))
 #    endif
 #    if __HP_aCC-0 >= 062000
 #      define Q_DECL_EXPORT     __attribute__((visibility("default")))
